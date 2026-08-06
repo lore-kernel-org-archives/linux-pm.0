@@ -1,169 +1,243 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CB63B2F30;
-	Thu,  6 Aug 2026 14:25:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A06E2C3768;
+	Thu,  6 Aug 2026 14:36:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786026318; cv=none; b=EmxZTz5O56ydWrvAD3tPhdUvV5qIgrXzvcZ/HB9akdXrOM9/wNPuJOdUWJTLgwQvaCumlU75bi7cwqGMdGda511VhO9hJLpaeSCMboxAHUsHInk0UyoFIHuPpHKevdB0vcSucIap7MFg/F+9HBUI8ZmrWA72a/m8sZ+irSSqH4g=
+	t=1786026984; cv=none; b=SJ0jrHfJ7CJ3V2c9RI23IMW8MBq9F7V8Nt2iRxAfXA83tWsXdAYO4jME/VyZ3ZbO8ViP7d81v3+3bVPv/NwW3kXsqx/uj9ImJfHbYm+WbcH33n1Ivjh7BC/Zy0re4/dMIJNfGzxF8U+naFmZxiMDYGYzR7DdR5DFy3rgmj8s5iw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786026318; c=relaxed/simple;
-	bh=n41D7CPfzQ0nKdjLa43P+AsHXKSgoqHzBama4K2Rkg4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DF+lV1O0GfUmjvkRoBdbymP7q6LjKU4wGIsJ5LI8LP9umZS0DXN6A85q3J0QnnNC1N11XJ27AhThaaTDo/mwfZquSG0QyoMeaP+K5XenC6/7DQbL353Drjab90IFS/hASEbHpBckro4vARy9yOgQrJ+4Cw3bvriqjCNfZLVwHrY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=vT5I0PFZ; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1786026984; c=relaxed/simple;
+	bh=I5U/3QMOREYQLQtBCGPZb8D/ULcgP7XxXdTi6Mn1G7U=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=g1paaad15cd7Zb3n5pXBmQxhYi6NR1HRtYr/yoQyYC4lSDvM4JkrVg7Y7eCdPxfaOkjucUlJT4KTwpIDXEi231Tn/WodbckNVLneffJRkK2EZt0+20/UezRlZokH8Toj0oyuJV0TAU4kjdNK2E8EdLd8MJJkypQwO16KHK4jeAc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Zv4woaL6; arc=none smtp.client-ip=198.175.65.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="vT5I0PFZ"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 38F4E153B;
-	Thu,  6 Aug 2026 07:25:11 -0700 (PDT)
-Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9163E3F9A2;
-	Thu,  6 Aug 2026 07:25:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786026315; bh=n41D7CPfzQ0nKdjLa43P+AsHXKSgoqHzBama4K2Rkg4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=vT5I0PFZETFFuMReGPnZ4ZnuHUB1rg6H28ObX42Ttc9TgtjsB0aZKa56mWN6ax6jR
-	 4OaHc6qFYK+5DvKY/C2hCuhbgk1+L1HD3EU3QQosS2pj3KszoSrKH463dR5h05KGLl
-	 lFC+cy1jGXWa4ipMPxHz3nH6F9wfcLUTH5GNKtaA=
-Message-ID: <cba363cd-8e24-4638-b8c4-3e48d538bb2d@arm.com>
-Date: Thu, 6 Aug 2026 15:25:10 +0100
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Zv4woaL6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786026981; x=1817562981;
+  h=date:from:to:cc:subject:message-id;
+  bh=I5U/3QMOREYQLQtBCGPZb8D/ULcgP7XxXdTi6Mn1G7U=;
+  b=Zv4woaL6qDQSyWcgqAVKNcjpOLr0JleiwBlnjxczsq5NUEEWbFx5dHrD
+   LdyXqbmUPap9qEHYN1kW4z03Jcpmsy7JXx5iCqVbN/l0hguYaG+LwrdWF
+   W4Qo/x8PsHD9IHG6jq8DFAfMSa5HAAKQkaAuE3zumQ/k+oYfSVMGb1Ewv
+   lRMcIfYMy56F2+DY7dLsqd88KdmybNxDhae+KURhWVInOfLiTwNhXoYly
+   CuQQZuCrdbDLUWxseSZ7gZBp+UQaE47ZrzV+7l2O7hsJ4/NevyNkrgm6r
+   xclAS450dw0+ZeczYVjB6Ai4hfrgu8lMIggWtlFUcyejdX37PDUH8jxNu
+   w==;
+X-CSE-ConnectionGUID: +h7t3DzHR9mWpoc+uDfb3A==
+X-CSE-MsgGUID: Jm/VOtFSRQ+zWtKoqOxY8A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="90502547"
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; 
+   d="scan'208";a="90502547"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Aug 2026 07:36:19 -0700
+X-CSE-ConnectionGUID: i6Glns09Q3a/E0KIi1fO6g==
+X-CSE-MsgGUID: Fyeu2qmcS0m3iQzsUk4rgA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; 
+   d="scan'208";a="259500577"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+  by fmviesa008.fm.intel.com with ESMTP; 06 Aug 2026 07:36:17 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wrzCg-00000000FMl-3g8m;
+	Thu, 06 Aug 2026 14:36:14 +0000
+Date: Thu, 06 Aug 2026 22:35:24 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 39cd7b5ec8fe62bb4ac533f629819a2203828db5
+Message-ID: <202608062212.Mt42KW53-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RESEND][PATCH 0/3] ACPI: CPPC: Reduce .target() callback
- overhead
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Len Brown <lenb@kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>,
- Lifeng Zheng <zhenglifeng1@huawei.com>,
- Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com
-References: <20260803210527.1285229-1-christian.loehle@arm.com>
- <f48c36fe-446f-4f83-8d2d-0913aafc377e@arm.com>
- <4bae4fa9-b2fc-48e8-9f11-b3cf520e9c0d@arm.com>
- <CAJZ5v0hkE708Qn5rX26X9i1+tGgoYOYyBmoc0zUw4N7m=r8m3w@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0hkE708Qn5rX26X9i1+tGgoYOYyBmoc0zUw4N7m=r8m3w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-On 8/6/26 11:36, Rafael J. Wysocki (Intel) wrote:
-> On Thu, Aug 6, 2026 at 12:05 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 8/3/26 23:28, Christian Loehle wrote:
->>> On 8/3/26 22:05, Christian Loehle wrote:
->>>> cppc-cpufreq reaches cppc_set_perf() from every target callback.  For
->>>> direct SystemMemory controls, that path currently does several steps
->>>> which are unnecessary once the immutable _CPC layout is known:
->>>>
->>>>   - a full-width write first reads the access unit and merges the value.
->>>>   - every write takes the descriptor's RMW lock, even when its access unit
->>>>     is not shared with another _CPC entry.
->>>>   - cppc_set_perf() evaluates the same three PCC predicates at each phase
->>>>     of the transaction.
->>>>
->>>> Remove those costs while retaining the existing conservative paths for
->>>> partial fields, overlapping or malformed access units, and PCC controls.
->>>>
->>>> The series was tested on Arm Power-Orion O6 and AmpereOne systems using
->>>> cppc-cpufreq and schedutil.  An rt-app task pinned to one CPU ran for
->>>> 500 us every 2 ms with uclamp.min=512, for 5000 periods per run.  schedutil
->>>> rate_limit_us was 1000.  cppc_cpufreq_fast_switch() latency was measured
->>>> for 100 ten-second runs.  Each sample is the mean callback latency within
->>>> one run, and the table reports the median and sample standard deviation
->>>> of those samples.
->>>>
->>>> Orion O6               median       stdev       callbacks
->>>> baseline               5703 ns      307 ns       188017
->>>> complete series        5023 ns      240 ns       188209
->>>> ==> 680 ns (11.9%) reduction
->>>>
->>>> AmpereOne              median       stdev
->>>> baseline               2090 ns      157 ns
->>>> complete series      1907.5 ns      140 ns
->>>> ==> 182.5 ns (8.7%) reduction
->>>>
->>>> The cumulative intermediate results on the Orion O6 attribute roughly half
->>>> of the gain to each of the first two patches: avoiding the read reduced
->>>> the median by 284 ns (5.0%), and avoiding the lock reduced it by another
->>>> 336 ns (6.2%).
->>>> Together they account for 620 ns of the 680 ns total reduction.
->>>>
->>>> With the same arm64 configuration and GCC 11.4, caching the PCC predicate
->>>> also reduces cppc_set_perf() from 1124 to 884 bytes.  The generated
->>>> function has 60 fewer instructions, 17 fewer loads and 20 fewer branches.
->>>>
->>>> This series is based on the CPPC fixes posted at (already queued):
->>>> https://lore.kernel.org/lkml/20260722093825.1030594-1-christian.loehle@arm.com/
->>>>
->>>> and the separately posted fix still under review:
->>>> https://lore.kernel.org/lkml/20260724104042.1481804-1-christian.loehle@arm.com/
->>>>
->>>> PS:
->>>> There's a final optimization that I actually wanted to make but decided to
->>>> split it out for now as it somewhat replicated Sumit's series:
->>>> Skipping redundant perf ctrl writes in cpufreq-cppc if registers are non-PCC
->>>> and !shared (because the values are unchanged, the
->>>> !autonomous-common-case), but that requires the driver to have a more
->>>> complex caching- and atomic-updating machinery in place, similar to
->>>> hotplug. As opposed to this series the optimization would be for the
->>>> microcontroller handling the CPPC requests, which may be shared across
->>>> many CPUs and therefore redundant requests can increase the dvfs
->>>> transition latency.
->>>> That patch will follow once Sumit's is queued:
->>>> https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
->>>>
->>>> [RESEND] for the new base-commit specifier below
->>>>
->>>> Christian Loehle (3):
->>>>   ACPI: CPPC: Avoid unnecessary reads for full-width writes
->>>>   ACPI: CPPC: Avoid locking standalone full-width registers
->>>>   ACPI: CPPC: Evaluate performance-control PCC use once
->>>>
->>>>  drivers/acpi/cppc_acpi.c | 135 +++++++++++++++++++++++++++++++--------
->>>>  include/acpi/cppc_acpi.h |   5 +-
->>>>  2 files changed, 113 insertions(+), 27 deletions(-)
->>>>
->>>>
->>>> base-commit: 075b74841bd0065a3bda3440873c747938e69b68
->>>
->>> Nice, so that worked:
->>> https://sashiko.dev/#/patchset/20260803210527.1285229-1-christian.loehle@arm.com
->>> Seems no findings on $SUBJECT but the rest of the comments it has
->>> look legit to me? I'll go take another look tomorrow:
->>
->> So I have patches for these all and will post them in a minute.
->>
->>>
->>> 1. Using per-CPU cpc_desc->rmw_lock for SYSTEM_MEMORY CPPC control register that
->>> may be shared.
->>
->> The solution here sucks unfortunately.
->> Obviously expanding the per-CPU rmw_lock to per-policy is reasonable, but unfortunately
->> that doesn't prevent something like:
->> Policy 0 Desired: address X, bits 7:0,  access size 32
->> Policy 1 Desired: address X, bits 15:8, access size 32
->> which would be a compliant GAS description and would require a global lock for rmw.
->>
->> And of course even worse, now that Desired is write-only rmw isn't possible at all
->> anymore.
->> I'm leaning to just reject these edge-cases that hopefully don't actually exist
->> (and require _CPC rev4 to be full access-unit width)
->> Opinions?
-> 
-> Fail initialization on insane platform setups I'd say.
-> 
-> There's no promise that Linux will support compliant setups that are
-> too much pain to deal with.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 39cd7b5ec8fe62bb4ac533f629819a2203828db5  Merge branch 'thermal-hwmon' into fixes
 
-Ok done, I would delay posting until the your bleeding-edge hits linux-next, in the
-hopes of being able to supply a valid base-commit for Sashiko.
+elapsed time: 1576m
+
+configs tested: 166
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                            allnoconfig    gcc-16.1.0
+alpha                           allyesconfig    gcc-16.1.0
+alpha                              defconfig    gcc-16.1.0
+arc                             alldefconfig    gcc-16.1.0
+arc                             allmodconfig    gcc-16.1.0
+arc                             allyesconfig    gcc-16.1.0
+arc                  randconfig-001-20260806    gcc-11.5.0
+arc                  randconfig-002-20260806    gcc-11.5.0
+arm                  randconfig-001-20260806    gcc-11.5.0
+arm                  randconfig-002-20260806    gcc-11.5.0
+arm                  randconfig-003-20260806    gcc-11.5.0
+arm                  randconfig-004-20260806    gcc-11.5.0
+arm64                randconfig-001-20260805    clang-24
+arm64                randconfig-001-20260806    gcc-13.4.0
+arm64                randconfig-002-20260805    gcc-8.5.0
+arm64                randconfig-002-20260806    gcc-13.4.0
+arm64                randconfig-003-20260805    clang-24
+arm64                randconfig-003-20260806    gcc-13.4.0
+arm64                randconfig-004-20260805    clang-24
+arm64                randconfig-004-20260806    gcc-13.4.0
+csky                            allmodconfig    gcc-16.1.0
+csky                 randconfig-001-20260805    gcc-16.1.0
+csky                 randconfig-001-20260806    gcc-13.4.0
+csky                 randconfig-002-20260805    gcc-10.5.0
+csky                 randconfig-002-20260806    gcc-13.4.0
+hexagon              randconfig-001-20260805    clang-17
+hexagon              randconfig-001-20260806    clang-24
+hexagon              randconfig-002-20260805    clang-19
+hexagon              randconfig-002-20260806    clang-24
+i386                            allmodconfig    gcc-14
+i386       buildonly-randconfig-001-20260806    gcc-14
+i386       buildonly-randconfig-002-20260806    gcc-14
+i386       buildonly-randconfig-003-20260806    gcc-14
+i386       buildonly-randconfig-004-20260806    gcc-14
+i386       buildonly-randconfig-005-20260806    gcc-14
+i386       buildonly-randconfig-006-20260806    gcc-14
+i386                          randconfig-001    clang-22
+i386                 randconfig-001-20260805    clang-22
+i386                 randconfig-001-20260806    clang-22
+i386                 randconfig-002-20260805    clang-22
+i386                 randconfig-002-20260806    clang-22
+i386                 randconfig-003-20260805    gcc-14
+i386                 randconfig-003-20260806    clang-22
+i386                 randconfig-004-20260805    clang-22
+i386                 randconfig-004-20260806    clang-22
+i386                 randconfig-005-20260805    gcc-14
+i386                 randconfig-005-20260806    clang-22
+i386                 randconfig-006-20260805    gcc-13
+i386                 randconfig-006-20260806    clang-22
+i386                 randconfig-007-20260805    gcc-14
+i386                 randconfig-007-20260806    clang-22
+i386                 randconfig-011-20260805    gcc-14
+i386                 randconfig-011-20260806    clang-22
+i386                 randconfig-012-20260805    gcc-14
+i386                 randconfig-012-20260806    clang-22
+i386                 randconfig-013-20260805    clang-22
+i386                 randconfig-013-20260806    clang-22
+i386                 randconfig-014-20260805    clang-22
+i386                 randconfig-014-20260806    clang-22
+i386                 randconfig-015-20260805    gcc-14
+i386                 randconfig-015-20260806    clang-22
+i386                 randconfig-016-20260805    gcc-14
+i386                 randconfig-016-20260806    clang-22
+i386                 randconfig-017-20260805    gcc-14
+i386                 randconfig-017-20260806    clang-22
+loongarch                          defconfig    clang-24
+loongarch            randconfig-001-20260805    clang-18
+loongarch            randconfig-001-20260806    clang-24
+loongarch            randconfig-002-20260805    clang-18
+loongarch            randconfig-002-20260806    clang-24
+m68k                      m5208evb_defconfig    gcc-16.1.0
+mips                          xway_defconfig    clang-19
+nios2                           allmodconfig    gcc-11.5.0
+nios2                            allnoconfig    gcc-11.5.0
+nios2                randconfig-001-20260805    gcc-10.5.0
+nios2                randconfig-001-20260806    clang-24
+nios2                randconfig-002-20260805    gcc-11.5.0
+nios2                randconfig-002-20260806    clang-24
+parisc                          allmodconfig    gcc-16.1.0
+parisc                          allyesconfig    gcc-16.1.0
+parisc                             defconfig    gcc-16.1.0
+parisc               randconfig-001-20260806    gcc-8.5.0
+parisc               randconfig-002-20260806    gcc-8.5.0
+powerpc              randconfig-001-20260806    gcc-8.5.0
+powerpc              randconfig-002-20260806    gcc-8.5.0
+powerpc64            randconfig-001-20260806    gcc-8.5.0
+powerpc64            randconfig-002-20260806    gcc-8.5.0
+riscv                         randconfig-001    gcc-13.4.0
+riscv                randconfig-001-20260806    gcc-13.4.0
+riscv                randconfig-002-20260806    gcc-13.4.0
+s390                 randconfig-001-20260806    gcc-13.4.0
+s390                 randconfig-002-20260806    gcc-13.4.0
+sh                                 defconfig    gcc-16.1.0
+sh                   randconfig-001-20260806    gcc-13.4.0
+sh                   randconfig-002-20260806    gcc-13.4.0
+sparc                         randconfig-001    gcc-8.5.0
+sparc                randconfig-001-20260805    gcc-16.1.0
+sparc                randconfig-001-20260806    gcc-8.5.0
+sparc                randconfig-002-20260805    gcc-11.5.0
+sparc                randconfig-002-20260806    gcc-8.5.0
+sparc64              randconfig-001-20260805    gcc-9.5.0
+sparc64              randconfig-001-20260806    gcc-8.5.0
+sparc64              randconfig-002-20260805    gcc-8.5.0
+sparc64              randconfig-002-20260806    gcc-8.5.0
+um                   randconfig-001-20260805    gcc-14
+um                   randconfig-001-20260806    gcc-8.5.0
+um                   randconfig-002-20260805    gcc-14
+um                   randconfig-002-20260806    gcc-8.5.0
+x86_64              buildonly-randconfig-001    clang-22
+x86_64     buildonly-randconfig-001-20260805    gcc-14
+x86_64     buildonly-randconfig-001-20260806    clang-22
+x86_64     buildonly-randconfig-002-20260805    clang-22
+x86_64     buildonly-randconfig-002-20260806    clang-22
+x86_64     buildonly-randconfig-003-20260805    clang-22
+x86_64     buildonly-randconfig-003-20260806    clang-22
+x86_64     buildonly-randconfig-004-20260805    gcc-13
+x86_64     buildonly-randconfig-004-20260806    clang-22
+x86_64     buildonly-randconfig-005-20260805    gcc-14
+x86_64     buildonly-randconfig-005-20260806    clang-22
+x86_64     buildonly-randconfig-006-20260805    clang-22
+x86_64     buildonly-randconfig-006-20260806    clang-22
+x86_64                                 kexec    clang-22
+x86_64                        randconfig-001    gcc-14
+x86_64               randconfig-001-20260805    gcc-14
+x86_64               randconfig-001-20260806    clang-22
+x86_64               randconfig-002-20260805    gcc-14
+x86_64               randconfig-002-20260806    clang-22
+x86_64               randconfig-003-20260805    clang-22
+x86_64               randconfig-003-20260806    clang-22
+x86_64               randconfig-004-20260805    gcc-14
+x86_64               randconfig-004-20260806    clang-22
+x86_64               randconfig-005-20260805    gcc-14
+x86_64               randconfig-005-20260806    clang-22
+x86_64               randconfig-006-20260805    gcc-14
+x86_64               randconfig-006-20260806    clang-22
+x86_64                        randconfig-011    clang-22
+x86_64                        randconfig-011    gcc-14
+x86_64               randconfig-011-20260805    gcc-14
+x86_64               randconfig-011-20260806    clang-22
+x86_64               randconfig-012-20260805    gcc-14
+x86_64               randconfig-012-20260806    clang-22
+x86_64               randconfig-013-20260805    gcc-14
+x86_64               randconfig-013-20260806    clang-22
+x86_64               randconfig-014-20260805    clang-22
+x86_64               randconfig-014-20260806    clang-22
+x86_64               randconfig-015-20260805    clang-22
+x86_64               randconfig-015-20260806    clang-22
+x86_64               randconfig-016-20260805    clang-22
+x86_64               randconfig-016-20260806    clang-22
+x86_64                        randconfig-071    gcc-14
+x86_64               randconfig-071-20260805    clang-22
+x86_64               randconfig-071-20260806    gcc-14
+x86_64               randconfig-072-20260805    gcc-14
+x86_64               randconfig-072-20260806    gcc-14
+x86_64               randconfig-073-20260805    gcc-13
+x86_64               randconfig-073-20260806    gcc-14
+x86_64               randconfig-074-20260805    clang-22
+x86_64               randconfig-074-20260806    gcc-14
+x86_64               randconfig-075-20260805    clang-22
+x86_64               randconfig-075-20260806    gcc-14
+x86_64               randconfig-076-20260805    clang-22
+x86_64               randconfig-076-20260806    gcc-14
+x86_64                          rhel-9.4-bpf    gcc-14
+xtensa               randconfig-001-20260805    gcc-13.4.0
+xtensa               randconfig-001-20260806    gcc-8.5.0
+xtensa               randconfig-002-20260806    gcc-8.5.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
