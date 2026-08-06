@@ -1,131 +1,157 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E00247ECDD
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 15:50:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 232E6481FCA;
+	Thu,  6 Aug 2026 17:40:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786031414; cv=none; b=SrI04t8KPi3NfQRIPCRmmzSA1xSHE0DeGnZUf0bWHKHChrVtMXypuLt7oXSlR321H02Gh88+jkJYd50B0es07dzwmiPTn/AsuoIORGpzpzmX/PVdgVrlIL6QBlk7HhiGTxQxK5MoUg9RHfwpOUUBCzSB7P+dYogga09MH6Wdadc=
+	t=1786038059; cv=none; b=SY15D+Ve2btwkfU7ggsWmYFvQVbTeMkMUK7fyKVqjzliwscMO/taDK7moXQPl3gmfWjC+Dalr19Foj/wSNW1J/X5ZWrB+oa466BuVcew4mzR1d992mUiwX5Fjda/TqxFBhbXRPMnhhjdFeZDyoSuUllufKblNGvbecJFP1Rm1tA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786031414; c=relaxed/simple;
-	bh=ZXflIJh6gXo/o6+vJH//R495vESydSLexbO1Blx5Dcg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IVRi7bkoPI6lXsURmuD2twEK5Am7XdGXqdNbWoMu0eOIaQ7LvHRkIpG0FWRbCqGos2tFb/9N30TxjHKUGtDHpH2TfO5tofnyGqXwrY2/KexBS8RkorYIdTDolL7w++Bvo7BMjgBcr7R3P0ZEbhpJak/Q2t82kskunJdbPoF/FfQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ac8vE4Nn; arc=none smtp.client-ip=209.85.218.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1786038059; c=relaxed/simple;
+	bh=jR6UAf+W3pRyagiBnBIthX9L1RTvVK8tgmNzQD67mJU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GnxA61I61T8q3hiKRA2zTWkPq4jZoCjbelZ06oazTGLVBlSRkHxB7DOC5PTDTSBV4C07/yjbMVAfafT7IVI9tjJC9x1WbOGmFfE/HdV9bz/C7nzmeb70h0UZXyb0uethVduKy1Fq3pnyjBYrx4m9rz9gyvQy9RXBX8d5JH4yV30=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lWpTxuxP; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ac8vE4Nn"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-c1f5208b38dso425994066b.0
-        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 08:50:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1786031409; x=1786636209; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=asCFiYJveau6ClMWqMUirF9GQ1J++sD+ZiiBvAODmD0=;
-        b=ac8vE4NnA0/DIeo408i1/AoUGZtdCglYQ6GZ/O2hu7l5fGxoh63IxsBbKC2dxmp61q
-         TTsh3f6VyerC4NK1KrUqL2sRvLir5mX6Vn/aO9X3aUmodLGraWztOVgVhUkTfwZKw940
-         V5qsrF2Zc+TKwvxN4apADpNZr9zn03nE8ow9Q=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786031409; x=1786636209;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=asCFiYJveau6ClMWqMUirF9GQ1J++sD+ZiiBvAODmD0=;
-        b=pon1+Tngf4UPcp2Ac53mui5v45vzWFE9gJquW9Jq/mWwTRWQI9oMvdnZ3pTQ+nnTT5
-         45eDNa1f870tX0lW4pfULeWw5mHGdadeyJVdK7qe/59LLZJEGlhdf7zGTiw6gFCc23di
-         skYpZ4dRnGRAHBI836c6x4ECBxcKoAxLhAgYDmsSNyM9j5LB7+8fpa6Ia8RR3+pxfs2Z
-         AYfbhxUko4LGpAyOZKwoFbhpe4ZBzZiOkQ8FaWH9GiVUzL1ABxOdC7iSBrQKp2RUOpqP
-         NzHSwAdhAUHdfDesgDke0Ekueyu5/8xxUlVtNMzfUFdRSnjVhMIfEWItxauTipaqQgyW
-         iHrA==
-X-Gm-Message-State: AOJu0YxqzkS9/zW8RtvK5tHFTIMsWCgtxUhsHyiKgdj6YEBRGhfRk2WG
-	jMFzEqEURO54TcFbaFsUoseN6V3VQpE0fJ5o4hKMc2vma63+ujurlXdqU7J4AnDhXL0=
-X-Gm-Gg: AR+sD125m+BYugjMmVpF9ntFKUpVOkqwd2Tcblrliy9ibML8jgHUuBFGrgbBiXL+ZiH
-	+tiRZF61H1xFaXUMpKpVvhMmWaFqEig7IwlC/anmVNzFI42e3+3BgTZMqt0y0RCW5mL2LximKba
-	sM2w1KW9ihEBLzMe419CFJQvPyVhc+ynPCQpaEIAUplMEGyy4+mYKPWLxgRS21YEsk5V7NT764b
-	xd/Pmv7+/X6io528Zp2cb+24N80MfjiJWOU4zT7R88DXn6H0D08v+0nC464HK9Kp2Zzvgfigpzl
-	5ZR3pzHoGGuD5kcSdxbprgbLAtFbnA7QogkgTOthY2BpwxuTp5ZG128abmmc2sJmgIYIpuUO/tQ
-	8l94faYiqTE0+XYPmW35KFXfXBlkmIsb2xtCOSUXzcRbUmVTDbfIkDrlWAaV/e2U/foHuO0atNn
-	dT8ZfkeOFZ4wxSWNmMCpbTXgJytVbcZALBBmXCBaLDw6RmSyAZsULTqR5tgCXxN+FbUZ0+5Q==
-X-Received: by 2002:a17:906:fe4b:b0:c16:6c84:4b8e with SMTP id a640c23a62f3a-c2039cc42bamr762859666b.14.1786031409153;
-        Thu, 06 Aug 2026 08:50:09 -0700 (PDT)
-Received: from [192.168.1.128] ([38.15.57.99])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c203624e6c8sm270451566b.15.2026.08.06.08.50.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 06 Aug 2026 08:50:08 -0700 (PDT)
-Message-ID: <22e2acc9-b822-4119-802a-74efc6df1509@linuxfoundation.org>
-Date: Thu, 6 Aug 2026 09:50:03 -0600
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lWpTxuxP"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786038058; x=1817574058;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=jR6UAf+W3pRyagiBnBIthX9L1RTvVK8tgmNzQD67mJU=;
+  b=lWpTxuxPDWz8JQzO9DOn/GoslLZ7c1UN3NkPUIy08mh9OA2HKcWIcxuy
+   ihbPUl7o8B8tjcSghoWzuPTmAZH4cZfv/ra1ox4CtUy71ep0ZUEyzJbNJ
+   Ed0cFP4tDWbTzm+7pFJfZK0+LWTm0k93ApptxeFJRDmpeNdtLKpwGPZfd
+   BcodF6DnuNYkysOLHvssREQN1nEPz1eUI0zOb3u1IkN/cc/I04ncO8Cjo
+   5nV9l5B1oifh1XR181yst5Hguru/xgQAiBIvIjZOjZYwkHYjJE3bFzPAy
+   uc8RnMtnlJ+CKjQW1u4HLwdyPWb6XgynmYpFQxlsh6OMYTlkpzGZjTWdm
+   g==;
+X-CSE-ConnectionGUID: r5Vd7SBkRP6MLumyYFCKOg==
+X-CSE-MsgGUID: 02BNnFMdQoa8q6shNRLTDg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="98151986"
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; 
+   d="scan'208";a="98151986"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Aug 2026 10:40:57 -0700
+X-CSE-ConnectionGUID: 7DB5m3cyQx2LtjOXhuPo6g==
+X-CSE-MsgGUID: 1SUtF5e8QmWqOPxccB+TSA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; 
+   d="scan'208";a="300373251"
+Received: from igk-lkp-server01.igk.intel.com (HELO 3cba2a188a06) ([10.211.93.152])
+  by orviesa001.jf.intel.com with ESMTP; 06 Aug 2026 10:40:51 -0700
+Received: from kbuild by 3cba2a188a06 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1ws25I-000000004f4-1D7z;
+	Thu, 06 Aug 2026 17:40:48 +0000
+Date: Thu, 6 Aug 2026 19:40:10 +0200
+From: kernel test robot <lkp@intel.com>
+To: Markus Elfring <Markus.Elfring@web.de>, acpica-devel@lists.linux.dev,
+	bpf@vger.kernel.org, coresight@lists.linaro.org,
+	kvm@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+	linux-kselftest@vger.kernel.org, linux-mm@kvack.org,
+	linux-perf-users@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	mptcp@lists.linux.dev, netdev@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org, virtualization@lists.linux.dev,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Alex Mastro <amastro@fb.com>, Alex Williamson <alex@shazbot.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Andi Kleen <ak@linux.intel.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Ankur Arora <ankur.a.arora@oracle.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [PATCH] tools: Use fputc() calls in some functions
+Message-ID: <202608061909.wj199SHx-lkp@intel.com>
+References: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] cpupower: fix topology array handling
-To: Ali Ahmet Memis <ali@iusegentoo.com>, Shuah Khan <shuah@kernel.org>,
- Thomas Renninger <trenn@suse.com>, "John B . Wyatt IV" <jwyatt@redhat.com>,
- John Kacur <jkacur@redhat.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <skhan@linuxfoundation.org>
-References: <20260803175215.117518-1-ali@iusegentoo.com>
- <b503143a-4716-4af2-a754-9fcef9eced35@linuxfoundation.org>
- <20260805114305.97160-1-ali@iusegentoo.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20260805114305.97160-1-ali@iusegentoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
 
-On 8/5/26 05:43, Ali Ahmet Memis wrote:
-> On Tue, 4 Aug 2026 14:45:48 -0600 Shuah Khan wrote:
->> Did you think about a scenario when the following check will be tru - i.e
->> core == -1 is trur?
-> 
-> I went looking for one and could not find it, so that branch may well be
-> dead. What I checked:
+Hi Markus,
 
-That is really the questions - the branch isn't dead, it is in the wrong
-place.
+kernel test robot noticed the following build errors:
 
-Sounds like you don't have a real scenario to test this change. This why
-I am not eager to take either of these patches.
+[auto build test ERROR on perf-tools-next/perf-tools-next]
+[also build test ERROR on tip/perf/core perf-tools/perf-tools linus/master v7.2-rc6 next-20260806]
+[cannot apply to acme/perf/core]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-However, did you consider simplifying the logic in these conditionals?
+url:    https://github.com/intel-lab-lkp/linux/commits/Markus-Elfring/tools-Use-fputc-calls-in-some-functions/20260806-165154
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.git perf-tools-next
+patch link:    https://lore.kernel.org/r/48f2d61f-d468-49b7-881e-f00777db073f%40web.de
+patch subject: [PATCH] tools: Use fputc() calls in some functions
+config: x86_64-kexec (https://download.01.org/0day-ci/archive/20260806/202608061909.wj199SHx-lkp@intel.com/config)
+compiler: clang version 22.1.8 (https://github.com/llvm/llvm-project ca7933e47d3a3451d81e72ac174dcb5aa28b59d1)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260806/202608061909.wj199SHx-lkp@intel.com/reproduce)
 
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202608061909.wj199SHx-lkp@intel.com/
 
-if(sysfs_topology_read_file(
-                         cpu,
-                         "physical_package_id",
-                         &(cpu_top->core_info[cpu].pkg)) < 0) {
-                         cpu_top->core_info[cpu].pkg = -1;
-                         cpu_top->core_info[cpu].core = -1;
-                         continue;
+All errors (new ones prefixed by >>):
 
--- Is this continue necessary here?
+>> builtin-check.c:300:8: error: incompatible pointer to integer conversion passing 'FILE *' (aka 'struct _IO_FILE *') to parameter of type 'int' [-Wint-conversion]
+     300 |         fputc(stderr, '\n');
+         |               ^~~~~~
+   /usr/include/stdio.h:155:16: note: expanded from macro 'stderr'
+     155 | #define stderr stderr
+         |                ^~~~~~
+   /usr/include/stdio.h:611:23: note: passing argument to parameter '__c' here
+     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
+         |                       ^
+>> builtin-check.c:300:16: error: incompatible integer to pointer conversion passing 'int' to parameter of type 'FILE *' (aka 'struct _IO_FILE *') [-Wint-conversion]
+     300 |         fputc(stderr, '\n');
+         |                       ^~~~
+   /usr/include/stdio.h:611:34: note: passing argument to parameter '__stream' here
+     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
+         |                                  ^
+   2 errors generated.
+   make[5]: *** [tools/build/Makefile.build:95: tools/objtool/builtin-check.o] Error 1
+>> disas.c:540:9: error: incompatible pointer to integer conversion passing 'FILE *' (aka 'struct _IO_FILE *') to parameter of type 'int' [-Wint-conversion]
+     540 |                 fputc(stream, '\n');
+         |                       ^~~~~~
+   /usr/include/stdio.h:611:23: note: passing argument to parameter '__c' here
+     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
+         |                       ^
+>> disas.c:540:17: error: incompatible integer to pointer conversion passing 'int' to parameter of type 'FILE *' (aka 'struct _IO_FILE *') [-Wint-conversion]
+     540 |                 fputc(stream, '\n');
+         |                               ^~~~
+   /usr/include/stdio.h:611:34: note: passing argument to parameter '__stream' here
+     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
+         |                                  ^
+   2 errors generated.
+   make[5]: *** [tools/build/Makefile.build:95: tools/objtool/disas.o] Error 1
+   make[5]: Target '__build' not remade because of errors.
+   make[4]: *** [Makefile:123: tools/objtool/objtool-in.o] Error 2
+   make[4]: Target 'all' not remade because of errors.
+   make[3]: *** [Makefile:74: objtool] Error 2
+   make[2]: *** [Makefile:1587: tools/objtool] Error 2
+   make[2]: Target 'prepare' not remade because of errors.
+   make[1]: *** [Makefile:248: __sub-make] Error 2
+   make[1]: Target 'prepare' not remade because of errors.
+   make: *** [Makefile:248: __sub-make] Error 2
+   make: Target 'prepare' not remade because of errors.
 
-                 }
-                 if(sysfs_topology_read_file(
-                         cpu,
-                         "core_id",
-                         &(cpu_top->core_info[cpu].core)) < 0) {
-                         cpu_top->core_info[cpu].pkg = -1;
-                         cpu_top->core_info[cpu].core = -1;
-                         continue;
-
--- Is this continue necessary here?
-
-                 }
-
-I think the following logic makes sense without the continue(s)
-
-                 if (cpu_top->core_info[cpu].core == -1) {
-                         strncpy(cpu_top->core_info[cpu].core_cpu_list, "-1", CPULIST_BUFFER);
-                         continue;
-                 }
-
-thanks,
--- Shuah
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
