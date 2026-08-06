@@ -1,180 +1,144 @@
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-f80.google.com (mail-ot1-f80.google.com [209.85.210.80])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D32C3E316B;
-	Wed,  5 Aug 2026 22:38:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D19F3ACA64
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 00:00:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.80
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785969539; cv=none; b=S/Z4oL6NnebxiVr8voMurqNrI8uqxml9yeuPPGNZJzlCNGs3WsJCTCwnHNYPEddg6yrzDU/guWPAKDVy55CwAknqHy/1HmyCW1FMPF2Qu7K4S+w7I6+XaPWMviBB7o3/8XaueT1ME4/N1fbMvfQeuqsiShkIQEm9PERw+PJS1VU=
+	t=1785974437; cv=none; b=ULLxKQw3Hz/0eDShG50RHhc9t+rukHqBrZ9BQMJ3z9G/Grb2NoFLnUV9UarKjQQqw10y+c7PeOYElYASbaUZXRM+6rKH0OCg5rp6AKm6ol9K1+TxGawT9cKQdfsHD15/0RkrMqNcnciuM0Vq0PgJHo/kbgan8PN/lrMYMotoowc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785969539; c=relaxed/simple;
-	bh=fysVipfONh/x9yJFLNjTer3RjlXeynbaGnDOhvC9ZS8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nHTOy/so3RaIqEVrFXMRU42KiwAX880HcbmEf3GDwn4jOd6de4K24Xq7J9xYYQ4VTiwOIoZOb66EqJCcNzhtIM1qRweejdTm6TGmL06igs2gJ9KIdt1kMfxC0XG+nvD+E/ZlDDD4vIBXC1ZAbwNXngU2v/5H89aPbPUaZyL7uqs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=Csf9NuPU; arc=none smtp.client-ip=80.241.56.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="Csf9NuPU"
-Received: from smtp102.mailbox.org (smtp102.mailbox.org [10.196.197.102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4hFlgx2py8zMlH2;
-	Thu, 06 Aug 2026 00:38:53 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1785969533;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uS+RCfKyjG2UtT4+awjQRyRPyTMRZoUZeNGtWmbYJPA=;
-	b=Csf9NuPUw00gLrfyzQpMvzedX0iF5woxs6AsivUK3fODBr/XLypjdeQgDq8UMF1Dw3DMHD
-	QdWCzMYs/AXDgbmp6veIJWmlwG6QzhimzwxZPPEL4qwtLzMdDMut47kb180pVf2WAY3HhA
-	G7l0lspMaE/nrnKj1Mwr46i+vKiy/worVbkZCCo/8L7UARVc1mfRXr8UZzb70vNN4R0xow
-	m1vnQZHcQ/91YoSRewdVdBQRCK8IX6sYjNA788Sxh856Xk7Zs+3Msm27FXAFGdQfOz1Y4Q
-	YI/QyD9et2mr5rQcu5tvxm2CubXt2BwFtcAu2/cj2ffCA+AeWKeN8LPDAX0DJw==
-Message-ID: <0124d3a3-81dc-44ce-88a2-9426c65ac46c@mailbox.org>
-Date: Thu, 6 Aug 2026 00:38:48 +0200
+	s=arc-20240116; t=1785974437; c=relaxed/simple;
+	bh=hcohk4NzbRT14PGGfBMWxdKRFk+Z0cwS1gPHlcbGaK8=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=aRGIZ+EDMXBCm6Jl3rYK/vWsvBhSGbjmbbKval49bwZC746LCcPPDlnIl1eSqKFYpOD+FC18ON9vS5DQwEPczrtKGbLiRNw3wTO/w7pc4RwICmeDHPi04or0gdqhDX+jR8sZ0AawzoytXKRqNK9G4ITmtilTIcmXEBImPpYy+8g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.210.80
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-ot1-f80.google.com with SMTP id 46e09a7af769-7e9e2db9914so503852a34.1
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 17:00:35 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785974434; x=1786579234;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=/HajvAZFk0gPgBAXqiTmSSdY8BxkppvZ2ryfU4N5QNM=;
+        b=HMcBts2SaTIR0P2Xket4TUsRY0mFv2utd0OGErgYE7j8YThHQgfGxKVorj9EBLmORh
+         sVq6YQlWf+9wqu9QkgKZAEkiwsDdu87zA1dgW8Ayp/wYfACYZZNQeWodUqjTHX/oUonH
+         p3iNc510jakJ5vD+dYx4hT1gNwYoLyq1TNDvtEb+XPjZYJUmF3Rjr6yA17wxv6e59Pzo
+         t1NJxu0tT8g8JxJdA44yGywBtzQSeU54+Sqpmsb0gEejHYSZ/kYLjDhEc4hLnX4l9l4f
+         phAMMJ32+XdRGArUeUdnVeaNSsEd2ZvbZO4PD0ZxyINFZ2PQXEVeLh28sk6O2Ef3EzT5
+         z8KA==
+X-Forwarded-Encrypted: i=1; AHgh+RrbdBkD6I6UA3E/TX0OiMOqDdDWZoaOiWD5wAGGnpyveZXXCfoLj/2tXEdGqOeltqWciX4YG0USaQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzlprKSgNcVzETspLZ1OVEZMOdTErY0M+A9YyuN+1AzU0DBd82N
+	TKqxA7fxlaM+fkqN0ZLOOS5NZ+/xWFeM66tBvzL1kUJC+RRYBUFOojEFa1zEjKtbn+wh7A1AvYW
+	Hpkz04MKuKxWTbHNBIGcLbv6bOKrK3CjGVHYC6NstkwYcmFLelAff4BX13dA=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH v3 4/6] pmdomain: renesas: Add R-Car X5H MDLC driver
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
- Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <cover.1785941595.git.geert+renesas@glider.be>
- <89e6a71b35703f10e12f520af1f389b5f40f4b35.1785941595.git.geert+renesas@glider.be>
-Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <89e6a71b35703f10e12f520af1f389b5f40f4b35.1785941595.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: a370a64fff6b4dfe338
-X-MBO-RS-META: 355w3c5a4crihgw76irh7wwwrs3zhmwk
+X-Received: by 2002:a05:6820:2215:b0:6ae:7f68:22f3 with SMTP id
+ 006d021491bc7-6aeb24aa301mr1600861eaf.16.1785974434448; Wed, 05 Aug 2026
+ 17:00:34 -0700 (PDT)
+Date: Wed, 05 Aug 2026 17:00:34 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6a73cea2.01d0871a.3a0d52.000b.GAE@google.com>
+Subject: [syzbot] [pm?] WARNING in __set_task_frozen
+From: syzbot <syzbot+209eccd8f507de9f7f1b@syzkaller.appspotmail.com>
+To: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	pavel@kernel.org, rafael@kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On 8/5/26 5:20 PM, Geert Uytterhoeven wrote:
+Hello,
 
-Hello Geert,
+syzbot found the following issue on:
 
-[...]
+HEAD commit:    848acc8ffe1b Merge tag 'fsverity-for-linus' of git://git.k..
+git tree:       upstream
+console+strace: https://syzkaller.appspot.com/x/log.txt?x=11cd7e32580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=cb17729fb04b1e3a
+dashboard link: https://syzkaller.appspot.com/bug?extid=209eccd8f507de9f7f1b
+compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14fa93b9580000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=17dd7649580000
 
-> +DEFINE_MDLC_RESET_WRAPPER(reset)
-> +DEFINE_MDLC_RESET_WRAPPER(assert)
-> +DEFINE_MDLC_RESET_WRAPPER(deassert)
-> +DEFINE_MDLC_RESET_WRAPPER(status)
-> +
-> +static const struct reset_control_ops r8a78000_mdlc_reset_ops = {
-> +	.reset = r8a78000_mdlc_reset,
-> +	.assert = r8a78000_mdlc_assert,
-> +	.deassert = r8a78000_mdlc_deassert,
-> +	.status = r8a78000_mdlc_status,
-> +};
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/375d27e96ecb/disk-848acc8f.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/4ba19a656b9d/vmlinux-848acc8f.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/7c2a17aaee7c/bzImage-848acc8f.xz
 
-Please keep the list sorted alphabetically.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+209eccd8f507de9f7f1b@syzkaller.appspotmail.com
 
-> +static int r8a78000_mdlc_attach_dev(struct generic_pm_domain *domain,
-> +				    struct device *dev)
-> +{
-> +	struct device_node *np = dev->of_node;
-> +	struct r8a78000_mdlc_priv *priv;
-> +	struct of_phandle_args pd_spec;
-> +	const struct mod_map *map;
-> +	unsigned int id;
-> +	int ret;
-> +
-> +	ret = of_parse_phandle_with_args(np, "power-domains",
-> +					 "#power-domain-cells", 0, &pd_spec);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	if (pd_spec.args_count != 2) {
-> +		of_node_put(pd_spec.np);
+------------[ cut here ]------------
+debug_locks && p->lockdep_depth
+WARNING: kernel/freezer.c:139 at __set_task_frozen+0x260/0x340 kernel/freezer.c:139, CPU#0: syz-executor276/5646
+Modules linked in:
+CPU: 0 UID: 0 PID: 5646 Comm: syz-executor276 Not tainted syzkaller #0 PREEMPT_{RT,(full)} 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/24/2026
+RIP: 0010:__set_task_frozen+0x260/0x340 kernel/freezer.c:139
+Code: 00 80 00 00 89 e8 5b 41 5c 41 5d 41 5e 41 5f 5d e9 15 09 97 09 cc e8 ef 21 15 00 90 0f 0b 90 e9 f7 fe ff ff e8 e1 21 15 00 90 <0f> 0b 90 eb 93 44 89 e1 80 e1 07 80 c1 03 38 c1 0f 8c c3 fd ff ff
+RSP: 0018:ffffc9000453f9f0 EFLAGS: 00010093
+RAX: ffffffff81b0b75f RBX: ffff888040865d00 RCX: ffff88801eaebe00
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 0000000000000002 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffffff81b0b500 R12: ffff888040865d18
+R13: 1ffff1100810cba3 R14: 0000000000000000 R15: ffff888040866900
+FS:  0000555557b46400(0000) GS:ffff888125c3e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000555557b577e8 CR3: 000000003c3b8000 CR4: 00000000003526f0
+Call Trace:
+ <TASK>
+ task_call_func+0x1aa/0x260 kernel/sched/core.c:4495
+ __freeze_task kernel/freezer.c:150 [inline]
+ freeze_task+0x216/0x390 kernel/freezer.c:169
+ try_to_freeze_tasks+0x190/0x620 kernel/power/process.c:54
+ freeze_processes+0xce/0x1e0 kernel/power/process.c:137
+ suspend_freeze_processes kernel/power/power.h:281 [inline]
+ suspend_prepare kernel/power/suspend.c:387 [inline]
+ enter_state kernel/power/suspend.c:609 [inline]
+ pm_suspend+0x2f1/0x760 kernel/power/suspend.c:644
+ state_store+0x206/0x290 kernel/power/main.c:819
+ kernfs_fop_write_iter+0x3a5/0x540 fs/kernfs/file.c:345
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x61e/0xbb0 fs/read_write.c:687
+ ksys_write+0x156/0x270 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0x174/0x580 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7fae06a8bea9
+Code: c0 79 93 eb d5 48 8d 7c 1d 00 eb 99 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 d8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffcfa30da68 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 0000200000000000 RCX: 00007fae06a8bea9
+RDX: 0000000000000003 RSI: 0000200000000200 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 000000000000000a R09: 000000000000000a
+R10: 000000000000000a R11: 0000000000000246 R12: 00007ffcfa30dd78
+R13: 0000000000000002 R14: 0000200000000003 R15: 0000000000000000
+ </TASK>
 
-Maybe some "goto error" fail path which does of_node_put() wouldn't hurt 
-here, since the of_node_put() is duplicated in here multiple times.
 
-> +		return -EINVAL;
-> +	}
-> +
-> +	scoped_guard(mutex, &r8a78000_mdlc_lock) {
-> +		hlist_for_each_entry(priv, &r8a78000_mdlc_list, link) {
-> +			if (priv->np == pd_spec.np)
-> +				break;
-> +		}
-> +	}
-> +
-> +	if (!priv) {
-> +		dev_err(dev, "%s: MDLC %pOF not found\n", __func__, pd_spec.np);
-> +		of_node_put(pd_spec.np);
-> +		return -ENODEV;
-> +	}
-> +
-> +	id = pd_spec.args[1];
-> +	of_node_put(pd_spec.np);
-> +
-> +	map = mod_map_find(priv->mod_map, id);
-> +	if (!map) {
-> +		dev_err(dev, "Unknown module 0x%x\n", id);
-> +		return -ENOENT;
-> +	}
-> +
-> +	dev_dbg(dev, "Ignoring HW module 0x%x\n", id);
-> +	return 0;
-> +}
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-[...]
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
-> +static int r8a78000_mdlc_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct device_node *np = dev->of_node;
-> +	struct r8a78000_mdlc_priv *priv;
-> +	const struct mdlc_info *info;
-> +	struct resource *res;
-> +	int ret;
-> +
-> +	ret = r8a78000_genpd_always_on_singleton(dev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	info = of_device_get_match_data(dev);
-> +	if (!info)
-> +		return -ENODEV;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	priv->dev = dev;
-> +	priv->np = np;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res)
-> +		return -ENODEV;
-> +
-> +	for (; info->base; info++) {
-> +		if (info->base == res->start)
-> +			break;
-> +	}
-> +
-> +	if (!info->base) {
-> +		dev_dbg(dev, "Unsupported MDLC instance 0x%pa\n", &res->start);
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
 
-return dev_err_probe() might be more appropriate here, even if that 
-would be more chatty until the support for various MDLC nodes lands.
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
 
-Some dev_info_probe() would be even better, but we don't have that.
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
 
-[...]
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
