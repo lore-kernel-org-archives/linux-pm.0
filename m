@@ -1,173 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46BC23DD503;
-	Thu,  6 Aug 2026 09:01:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4FDE641F5C1;
+	Thu,  6 Aug 2026 09:02:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786006887; cv=none; b=QtxpJQ6WAsPH7iMFvKQ+6j6mIbCuiweGrfQR4Bt9I0f+3IEKgqBDEnUwE1dEyiSmZgn2SOGKguaqoQnjUV8euarRRQZjNnU4A/5Locn2M7E4UT/4VVgJJa+ftORd9f90cNB5AK6Tou0EP63I3Ob2lrfU376MH+vzMrlS4ly/HDE=
+	t=1786006932; cv=none; b=pWvLGxWyJDAauCaPoA7LXTp9suUQekSOXovJ8OmfTwDErmbSkWnE/c3s/kzvRnZQ0hdMx0WGtTfubDeMqkAqpbk0CHOG4Itj98zzCu8QQo8A0/RceJM1NckArv8x1Y4Gcr6zyNjBC6rj4mEp730EJaR+cWlzybx5DZY0/E9RaJU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786006887; c=relaxed/simple;
-	bh=QPeb6M2iCPCZMs8c9dwgYHumyO34WqnHwJvzcycTgqc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=m9ddhym8dNCckuUCk4EorvWAnm28i4egREbhGaVNXIvhEqQGtDk/5BwcOVtevZblVuupZovUU35ao3OJw3eLmNmOOIq0VvSxf0NKDDVwkOqZ9G4UPpyjA3pG5wE86ju8F2dMEfNm8GdsS6XqKhSEf85UtYuzCpo8JCIbgKWZkdc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=b/fMIERL; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786006932; c=relaxed/simple;
+	bh=m5NHGSN+QWQ8jGKH8m7qhVAsGzAtYJFkQ76VmJgsTDk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MhowiPvV9pDJCsN14bh6Y40QOxw7fdx44PAj0/BwQvqh+7H3OaksrC7BqZ0VI+7pjf/jHlzGr8AH6hR3nicwKRk8MJ0wH1oSGO9qUP6jb0+EEX19zH+mAH/XyKPBtYfNlDychdKew5vWtKzI9RMWeAmiU1a6Pj6HaC7Os1HOGy4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=nHbm64lf; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="b/fMIERL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B74C1F000E9;
-	Thu,  6 Aug 2026 09:01:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1786006885;
-	bh=BFIPNtqlQDio3zu8anhXqcJnHiAHEd5OCYYW3ygP5rw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=b/fMIERLf3DnkVBBBpX/DgXd+ILZ2zjw8i3J4VAFOyRJ8tiZr+fIvnWdw3oT+MDwO
-	 97Q/jdEKy6O1itc6zggqJwPjUfEHPn7wHo6gNbQSpvIXCzluvgL0xAYXUjE7kkWkTa
-	 5UEY+wcl68dG+8T6PxHsfaN6YU5eczKyETTy5pJg=
-Date: Thu, 6 Aug 2026 11:01:07 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Yichong Chen <chenyichong@uniontech.com>
-Cc: rafael@kernel.org, dakr@kernel.org, djakov@kernel.org,
-	quic_mdtipton@quicinc.com, vkoul@kernel.org,
-	yung-chuan.liao@linux.intel.com, pierre-louis.bossart@linux.dev,
-	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] interconnect: debugfs: replace writable string
- helper
-Message-ID: <2026080632-delighted-bonsai-18b7@gregkh>
-References: <20260806084854.1019789-1-chenyichong@uniontech.com>
- <20260806084854.1019789-2-chenyichong@uniontech.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="nHbm64lf"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9EFEA153B;
+	Thu,  6 Aug 2026 02:02:05 -0700 (PDT)
+Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C32153F632;
+	Thu,  6 Aug 2026 02:02:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786006929; bh=m5NHGSN+QWQ8jGKH8m7qhVAsGzAtYJFkQ76VmJgsTDk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=nHbm64lfHdIi0J0dmQAmkTIhjYo1crK4cdBFSbfZpyrGGNMXAmRdw8/MhqmY+4A0U
+	 yWqibBUr7FTRRN1mKfc7wnVdc8YbhfizL/Wv1UfJHWmlKDz7l8VLr1Oi/uPl3ryG0i
+	 OT8xONLCw8KzRSpHBvjn/aiV1CNskCWtQyM479fo=
+Message-ID: <7a4be9a1-4b00-49c4-bdbf-649268e78c7a@arm.com>
+Date: Thu, 6 Aug 2026 10:02:03 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260806084854.1019789-2-chenyichong@uniontech.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] sched/cpufreq: Update schedutil's DVFS request to
+ reach the boost frequencies
+To: Sibi Sankar <sibi.sankar@oss.qualcomm.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
+ linux-arm-msm@vger.kernel.org, juri.lelli@redhat.com,
+ vincent.guittot@linaro.org, dietmar.eggemann@arm.com
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com,
+ mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
+ linux-pm@vger.kernel.org, Ionela Voinescu <Ionela.Voinescu@arm.com>,
+ Beata Michalska <Beata.Michalska@arm.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>
+References: <20260806044230.909961-1-sibi.sankar@oss.qualcomm.com>
+ <20260806044230.909961-3-sibi.sankar@oss.qualcomm.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260806044230.909961-3-sibi.sankar@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 06, 2026 at 04:48:52PM +0800, Yichong Chen wrote:
-> debugfs_create_str() is being made read-only because its generic write path
-> is hard to make safe without adding more locking to the helper.
+On 8/6/26 05:42, Sibi Sankar wrote:
+> capacity_freq_ref, exposed to schedutil via get_capacity_ref_freq(),
+> was introduced by commit 9942cb22ea45 ("sched/topology: Add a new
+> arch_scale_freq_ref() method") as a fixed anchor that does not move at
+> runtime. However, schedutil uses that same fixed anchor as the reference
+> plugged into map_util_freq() which saturates exactly at capacity_freq_ref.
 > 
-> Convert the interconnect debugfs client src_node and dst_node entries to
-> local file operations before removing writable string support from
-> debugfs_create_str().  Protect the string replacement and path lookup with
-> the existing debugfs_lock.
+> As a result, a system with cpufreq boost enabled effectively never runs at
+> boost frequencies under schedutil-governed load. Fix this by plugging in
+> policy-max into the map_util_freq equation, so that the DVFS requests
+> translates to the actual cpufreq driver ceiling.
 > 
-> Signed-off-by: Yichong Chen <chenyichong@uniontech.com>
+> Signed-off-by: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
 > ---
->  drivers/interconnect/debugfs-client.c | 75 ++++++++++++++++++++++-----
->  1 file changed, 62 insertions(+), 13 deletions(-)
+>  kernel/sched/cpufreq_schedutil.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/interconnect/debugfs-client.c b/drivers/interconnect/debugfs-client.c
-> index 08df9188ef94..b71c25fd9314 100644
-> --- a/drivers/interconnect/debugfs-client.c
-> +++ b/drivers/interconnect/debugfs-client.c
-> @@ -5,6 +5,7 @@
->  #include <linux/debugfs.h>
->  #include <linux/interconnect.h>
->  #include <linux/platform_device.h>
-> +#include <linux/slab.h>
->  
->  #include "internal.h"
->  
-> @@ -36,6 +37,59 @@ struct debugfs_path {
->  	struct list_head list;
->  };
->  
-> +static ssize_t icc_node_read(struct file *file, char __user *user_buf,
-> +			     size_t count, loff_t *ppos)
-> +{
-> +	char **node = file->private_data;
-> +	char *copy;
-> +	size_t len;
-> +	ssize_t ret;
-> +
-> +	mutex_lock(&debugfs_lock);
-> +	copy = kstrdup(*node ?: "", GFP_KERNEL);
-> +	mutex_unlock(&debugfs_lock);
-
-scoped guard?
-
-> +	if (!copy)
-> +		return -ENOMEM;
-> +
-> +	len = strlen(copy);
-> +	copy[len++] = '\n';
-> +	ret = simple_read_from_buffer(user_buf, count, ppos, copy, len);
-> +	kfree(copy);
-> +	return ret;
-> +}
-> +
-> +static ssize_t icc_node_write(struct file *file, const char __user *user_buf,
-> +			      size_t count, loff_t *ppos)
-> +{
-> +	char **node = file->private_data;
-> +	char *old, *new;
-> +
-> +	if (*ppos)
-> +		return -EINVAL;
-> +	if (count + 1 > PAGE_SIZE)
-> +		return -E2BIG;
-> +
-> +	new = memdup_user_nul(user_buf, count);
-> +	if (IS_ERR(new))
-> +		return PTR_ERR(new);
-> +	strim(new);
-> +
-> +	mutex_lock(&debugfs_lock);
-> +	old = *node;
-> +	*node = new;
-> +	mutex_unlock(&debugfs_lock);
-
-Same here.
-
-> +
-> +	kfree(old);
-> +	return count;
-> +}
-> +
-> +static const struct file_operations icc_node_fops = {
-> +	.open = simple_open,
-> +	.read = icc_node_read,
-> +	.write = icc_node_write,
-> +	.llseek = default_llseek,
-> +};
-> +
->  static struct icc_path *get_path(const char *src, const char *dst)
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index a1782755efcc..dcefbeaa0702 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -195,10 +195,17 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>  				  unsigned long util, unsigned long max)
 >  {
->  	struct debugfs_path *path;
-> @@ -56,24 +110,17 @@ static int icc_get_set(void *data, u64 val)
+>  	struct cpufreq_policy *policy = sg_policy->policy;
+> -	unsigned int freq;
+> +	unsigned int freq, ref;
 >  
->  	mutex_lock(&debugfs_lock);
->  
-> -	rcu_read_lock();
-> -	src = rcu_dereference(src_node);
-> -	dst = rcu_dereference(dst_node);
-> -
->  	/*
->  	 * If we've already looked up a path, then use the existing one instead
->  	 * of calling icc_get() again. This allows for updating previous BW
->  	 * votes when "get" is written to multiple times for multiple paths.
->  	 */
-> -	cur_path = get_path(src, dst);
-> -	if (cur_path) {
-> -		rcu_read_unlock();
-> +	cur_path = get_path(src_node, dst_node);
-> +	if (cur_path)
->  		goto out;
-> -	}
->  
-> -	src = kstrdup(src, GFP_ATOMIC);
-> -	dst = kstrdup(dst, GFP_ATOMIC);
-> -	rcu_read_unlock();
-> +	src = kstrdup(src_node, GFP_KERNEL);
-> +	dst = kstrdup(dst_node, GFP_KERNEL);
+> -	freq = get_capacity_ref_freq(policy);
+> -	freq = map_util_freq(util, freq, max);
+> +	ref = get_capacity_ref_freq(policy);
+> +
+> +	/*
+> +	 * That fixed anchor governs how utilization is interpreted, but
+> +	 * the DVFS request is free to target the current policy ceiling.
+> +	 * Using ref alone would saturate the util->freq map at ref so
+> +	 * use policy->max to reach boost frequencies.
 
-Why is GFP_KERNEL now ok, while GFP_ATOMIC wasn't?  Is this the rcu
-stuff interacting somehow?
+I'm not sure those two statements are compatible with the implementation below?
+util / max is expressed in the capacity scale established using ref, multiplying
+that ratio by policy->max changes the interpretation of every util value.
 
-thanks,
 
-greg k-h
+> +	 */
+> +	freq = map_util_freq(util, max(ref, READ_ONCE(policy->max)), max);
+
+Isn't the underlying problem that schedutil can't handle requests above capacity 1024?
+
+effective_cpu_util() caps util at max, and sugov_effective_cpu_perf() applies
+the 25% headroom before clipping the result back to that same value.
+Therefore the input here cannot exceed 1024, and mapping it against ref
+can never request a frequency above ref.
+Using policy->max makes boost reachable, but also stretches the complete frequency range.
+For example, with ref = 4454400, policy->max = 4723200, and effective util 640, the request
+changes from 2784000 to 2952000.
+
+Making 'boost frequencies' truly compatible with schedutil (or PELT/CAS for that matter)
+is a discussion that is yet to be had?
+See also
+https://lore.kernel.org/lkml/20250626093018.106265-1-dietmar.eggemann@arm.com/
+
