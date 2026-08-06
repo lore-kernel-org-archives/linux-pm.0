@@ -1,86 +1,140 @@
-Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 688F02D7DCF;
-	Thu,  6 Aug 2026 12:54:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB5212DECD3
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 12:56:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786020842; cv=none; b=W7W5Qe49HLg3lGIbkQ4D7aJGGmNyN8+kJHPEv4vSYEdhBALQUWZvyQ9x7BrNvG80+BE209rfS/0x5gGKXo++VJqi2vJUBCNAqWCvvocKWnDW3DN8CMWAtjRt2qLX9NJ81nOJXBFO0qN3OXoMZSi9Hul8hhGxMu7VKJfr1lbbNzo=
+	t=1786021003; cv=none; b=RgvffpCsxcsSsxeTgBxafV88+HTJNa8jYHCKGflIpAkGKaT4pqii8kSRV1I6EMyL9DJ/pRMIiLXYxrVYADKOz/P9+e5h59XC+XWQSVleCQC0Szfu8KDIGxC9YpXBglC3/4FhoeizoRaFrogme6SRNlwWKpFnQpH403kEg8RTXYI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786020842; c=relaxed/simple;
-	bh=4aNJudDXH+RGTN1Q8MDeFjkoURQAlY9fgjB3FjkGJM8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=D+k68Ot2GVqKBJ7YYDzVS1Yip45TVRB/fcG5DwmOWP5HuvoEyu2v0kn9SgZ7hk7B7qCuAtFum6d1plbX+Ovm2J4HUM9boa1Bm6jI1HU0a1/3mx+5j3UVNoPMoqvWhtKWi3F1xXGyg34DjHgak7jSXCaGsSRedC6xvovl/s1LsZg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=SalejtA8; arc=none smtp.client-ip=80.241.56.161
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	s=arc-20240116; t=1786021003; c=relaxed/simple;
+	bh=QCQe6V7fsK9rYzZ1ujueP23Ip5K9q3t050Z97x+nXKI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=toMv1B1DGRExOB6Tk3dntl4I7DFxA82gED6pctNBdVJYnOxYbXB4hZ4nrZY0cvoPQG1yCG0ODYehxVnMBFIITGx1ErnqaDq2FluEHFB1bykNGHtvzVxTZcv0KaPrXaEWu7oZTF7i+lI/Lu13jX02FWlUxJXq9WeYAig9OtQH7CI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dxbnSI16; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="SalejtA8"
-Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4hG6fQ4wWHzKnSY;
-	Thu, 06 Aug 2026 14:53:50 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1786020830;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=3gPYjDd+JPWeY1o74poWekzAi3fnx4Dq4Me1Ix+wXdo=;
-	b=SalejtA8AWY6uPEczWcOa/cZXzI/nFLnL5c8pcM7vKPRH0by35LMoHSCPO0bxDVd2UcA6l
-	jhYVkOGyDEHUIMiYPVZ7vyz7VrmgANupuMqL5mgUgpXUnpDSMqZDY/i4lXRPFH5yTuj04w
-	jFI09TbwjbrT+6Pl6EsquKJ44HK4DvMoTNxddBYGN0daeEJ6d2/nBy1rK7d4sFJ4MXMbRD
-	MQN60NJ4i6cAgvb5gbjaFydu+znCZyOX0rbsfRAUZx9bCwphs2rKqd6ijJHI8a3XemtgIJ
-	hpw32DVG+NB7Fme0Huxb6DdsBASNua/51sXMDmu7C8gDtcqN79/h8+K1n3bM1A==
-Message-ID: <5920e231-a8b4-40eb-8239-23656fef02e3@mailbox.org>
-Date: Thu, 6 Aug 2026 14:53:45 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dxbnSI16"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FE011F00ADE
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 12:56:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786021001;
+	bh=4hboTcTVAq68vsN4PT4ENqfM/2qs0WVFAG1Tw3ymRrc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=dxbnSI16rtMEeAsf7Kef/HfGw2OsKmS3n7FzzsOa8KiOec9QGXOulcBL7RnQT4Zhx
+	 9adMQdtC3yNIp6SaABIt+9CSpaWVCzntuPQw0HIVcBAkbBcF5ns9jloXyFBjJBHV6p
+	 Ilfhg6DzhozsbfJ6GMmE00cN4McHP1zgj8CJX9UR1ic3vGdtEV9S3rqN5qB3XrJC4I
+	 gBce7jMqB3q4dY/f7XvwBwQiugDJodSQDhM55N42VMDLeoTGT5Q+UQpUP2U1Khcula
+	 bFmVw3OUyjLc4j+Y7C8uv+xgbs8Obv71qvLCCoyG89BrRTAUnmcQqhUgxay7mhY4dS
+	 If1pO/qZty89Q==
+Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5b29599b81cso2760952e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 05:56:41 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Ro1Ja/ydEtCcqjkOrYonTi1yRT2MZIfNcseLvHCCQur1cnWcGnBCw4Fr2x6QOSVA3JyWLN9/CqtTw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwTJ46eQ7eohzrqTko9lDFs8kakAUvMVEA6HaztDSh2VG+TRrYv
+	t5RrrLwDIF5fHwVIfT3kV5gl7/GCH/YG8fchaWLaU7BAPbijsoQFFnNjnCr5FSl8HsFmkdFvugK
+	fOxYm0utUTXv3iNf3bi865S4VDtASaXk=
+X-Received: by 2002:a05:6512:258b:b0:5ae:a93c:a993 with SMTP id
+ 2adb3069b0e04-5b2f4ccc8e5mr1957621e87.52.1786020999929; Thu, 06 Aug 2026
+ 05:56:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH v3 4/6] pmdomain: renesas: Add R-Car X5H MDLC driver
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
- Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <cover.1785941595.git.geert+renesas@glider.be>
- <89e6a71b35703f10e12f520af1f389b5f40f4b35.1785941595.git.geert+renesas@glider.be>
- <0124d3a3-81dc-44ce-88a2-9426c65ac46c@mailbox.org>
- <CAMuHMdXHPjzCidCkfyF0c9fndAmAte1DuhxGZt=WY=_jxpwU+Q@mail.gmail.com>
-Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <CAMuHMdXHPjzCidCkfyF0c9fndAmAte1DuhxGZt=WY=_jxpwU+Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-META: 9w1txx9bbib55itrouywbtz774kmecwr
-X-MBO-RS-ID: 6c5d70869975684d6c0
+References: <20260806072656.1386351-1-sh_def@163.com>
+In-Reply-To: <20260806072656.1386351-1-sh_def@163.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 6 Aug 2026 14:56:28 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iKPxKqEsd7MD_d2FcQmb7PrGVNkC4PHH0Psswyf-ZKsg@mail.gmail.com>
+X-Gm-Features: AUfX_mww1yVSsM0DViczYUTnhyrlCJ_TCjmcAT04zb5jUN5MhtopY9dVE2SYKiU
+Message-ID: <CAJZ5v0iKPxKqEsd7MD_d2FcQmb7PrGVNkC4PHH0Psswyf-ZKsg@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: schedutil: Fix rate limit overflow
+To: Hui Su <sh_def@163.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
+	mingo@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 8/6/26 9:49 AM, Geert Uytterhoeven wrote:
+On Thu, Aug 6, 2026 at 9:28=E2=80=AFAM Hui Su <sh_def@163.com> wrote:
+>
+> rate_limit_us is an unsigned int, while NSEC_PER_USEC is defined as
+> 1000L. On 32-bit systems, the multiplication is therefore performed
+> using 32-bit unsigned arithmetic before the result is assigned to
+> freq_update_delay_ns.
+>
+> For example, writing 4294968 to rate_limit_us wraps the delay from
+> 4294968000 ns to 704 ns. This makes schedutil update far more often
+> than configured.
+>
+> Add sugov_update_rate_limit_us() to widen rate_limit_us to s64 before
+> converting it to nanoseconds. Use the helper when updating the tunable
+> through sysfs and when starting the governor, so both paths perform the
+> conversion without overflow.
+>
+> Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler=
+ utilization data")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Hui Su <sh_def@163.com>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> ---
+> Changes in v2:
+> - Clarify why the multiplication uses 32-bit unsigned arithmetic on
+>   32-bit systems.
+> - Cast rate_limit_us to s64 to match freq_update_delay_ns.
+> - Add Zhongqiu's Reviewed-by tag.
+>
+> v1: https://lore.kernel.org/r/20260805143942.805176-1-sh_def@163.com
+>
+>  kernel/sched/cpufreq_schedutil.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sche=
+dutil.c
+> index dff4ee04694c..51910b30c8da 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -61,6 +61,12 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+>
+>  /************************ Governor internals ***********************/
+>
+> +static void sugov_update_rate_limit_us(struct sugov_policy *sg_policy)
+> +{
 
-Hello Geert,
+Please add a comment here to explain why the direct type cast is
+necessary or people will be sending patches to remove it.
 
->>> +     if (!info->base) {
->>> +             dev_dbg(dev, "Unsupported MDLC instance 0x%pa\n", &res->start);
->>
->> return dev_err_probe() might be more appropriate here, even if that
->> would be more chatty until the support for various MDLC nodes lands.
-> 
-> Indeed, it would be very chatty, and may confuse users, that's why
-> I used dev_dbg().  We can revisit that later.
-
-All right.
-
--- 
-Best regards,
-Marek Vasut
+> +       sg_policy->freq_update_delay_ns =3D
+> +               (s64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+> +}
+> +
+>  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64=
+ time)
+>  {
+>         s64 delta_ns;
+> @@ -606,7 +612,7 @@ rate_limit_us_store(struct gov_attr_set *attr_set, co=
+nst char *buf, size_t count
+>         tunables->rate_limit_us =3D rate_limit_us;
+>
+>         list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_h=
+ook)
+> -               sg_policy->freq_update_delay_ns =3D rate_limit_us * NSEC_=
+PER_USEC;
+> +               sugov_update_rate_limit_us(sg_policy);
+>
+>         return count;
+>  }
+> @@ -848,7 +854,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+>         void (*uu)(struct update_util_data *data, u64 time, unsigned int =
+flags);
+>         unsigned int cpu;
+>
+> -       sg_policy->freq_update_delay_ns =3D sg_policy->tunables->rate_lim=
+it_us * NSEC_PER_USEC;
+> +       sugov_update_rate_limit_us(sg_policy);
+>         sg_policy->last_freq_update_time        =3D 0;
+>         sg_policy->next_freq                    =3D 0;
+>         sg_policy->work_in_progress             =3D false;
+> --
+> 2.43.0
+>
