@@ -1,140 +1,228 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB5212DECD3
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 12:56:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1B6E3382F9;
+	Thu,  6 Aug 2026 13:19:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786021003; cv=none; b=RgvffpCsxcsSsxeTgBxafV88+HTJNa8jYHCKGflIpAkGKaT4pqii8kSRV1I6EMyL9DJ/pRMIiLXYxrVYADKOz/P9+e5h59XC+XWQSVleCQC0Szfu8KDIGxC9YpXBglC3/4FhoeizoRaFrogme6SRNlwWKpFnQpH403kEg8RTXYI=
+	t=1786022362; cv=none; b=k67lf/gEjLQT6GfgOjk+Yo6hqXbhy06jPbt9HCR9lEJu8X49VsONSRL7a6PCG95ShLjFGkNRIWk//G9ec2QBn590IiH4FGFjZEahfmNalj0cv2G9kgjyOnfX9ZlJiR4DKWFQtvMglLwpmpMKQg4tWBag9cw9gzG7STGteX3BCwY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786021003; c=relaxed/simple;
-	bh=QCQe6V7fsK9rYzZ1ujueP23Ip5K9q3t050Z97x+nXKI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=toMv1B1DGRExOB6Tk3dntl4I7DFxA82gED6pctNBdVJYnOxYbXB4hZ4nrZY0cvoPQG1yCG0ODYehxVnMBFIITGx1ErnqaDq2FluEHFB1bykNGHtvzVxTZcv0KaPrXaEWu7oZTF7i+lI/Lu13jX02FWlUxJXq9WeYAig9OtQH7CI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dxbnSI16; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786022362; c=relaxed/simple;
+	bh=X9wiHcdZyT6uK9JZ6cIuCTNvjFx8pyMLXoGwDHwq1NE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YXugyf0b1osQ+z5h8Lv6mpQHAlN4PpdMJXmYyKkijawCd/ShcOY0bD5Uoqdn533ssGGmqXjxLXHftBDjBBKhgrk9N3WsXW4afU18jvdKWvfb19zLifkNpLPeyLB5fa76jNjXtNLdXToYD45+jbm0/ZcobdclnEXcdR0uStEhqJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=h5ZjNBgl; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dxbnSI16"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FE011F00ADE
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 12:56:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786021001;
-	bh=4hboTcTVAq68vsN4PT4ENqfM/2qs0WVFAG1Tw3ymRrc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=dxbnSI16rtMEeAsf7Kef/HfGw2OsKmS3n7FzzsOa8KiOec9QGXOulcBL7RnQT4Zhx
-	 9adMQdtC3yNIp6SaABIt+9CSpaWVCzntuPQw0HIVcBAkbBcF5ns9jloXyFBjJBHV6p
-	 Ilfhg6DzhozsbfJ6GMmE00cN4McHP1zgj8CJX9UR1ic3vGdtEV9S3rqN5qB3XrJC4I
-	 gBce7jMqB3q4dY/f7XvwBwQiugDJodSQDhM55N42VMDLeoTGT5Q+UQpUP2U1Khcula
-	 bFmVw3OUyjLc4j+Y7C8uv+xgbs8Obv71qvLCCoyG89BrRTAUnmcQqhUgxay7mhY4dS
-	 If1pO/qZty89Q==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5b29599b81cso2760952e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 05:56:41 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Ro1Ja/ydEtCcqjkOrYonTi1yRT2MZIfNcseLvHCCQur1cnWcGnBCw4Fr2x6QOSVA3JyWLN9/CqtTw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwTJ46eQ7eohzrqTko9lDFs8kakAUvMVEA6HaztDSh2VG+TRrYv
-	t5RrrLwDIF5fHwVIfT3kV5gl7/GCH/YG8fchaWLaU7BAPbijsoQFFnNjnCr5FSl8HsFmkdFvugK
-	fOxYm0utUTXv3iNf3bi865S4VDtASaXk=
-X-Received: by 2002:a05:6512:258b:b0:5ae:a93c:a993 with SMTP id
- 2adb3069b0e04-5b2f4ccc8e5mr1957621e87.52.1786020999929; Thu, 06 Aug 2026
- 05:56:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="h5ZjNBgl"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786022357; x=1817558357;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=X9wiHcdZyT6uK9JZ6cIuCTNvjFx8pyMLXoGwDHwq1NE=;
+  b=h5ZjNBglidCB5OfDkNsmpGciZXuKe5e4G/90v3VHH5agaQOXcxBkmARx
+   fTfnEPE1afknjKXajbWNAy9F9FPyDQe0tTlpvgnqUt0tiR7on6oxhXOEv
+   TM9/QrrRaocR2cHvZMkVwIkPxZObe3YheHpIW+Sq0vYNXpU7MbVXcLEv+
+   4uRwe5Zrgo2hq7yU2ObHv/wcghZVSu5MwAtrlDm/qAIWd2NA2hjs0OZ8u
+   9tlRgY16qVQMSEKQkjRVWIDcKrPcfoasURf4Yx/S3JlptKo2M7cCagi90
+   CvNQ0ILZIYZxn/Z/3/IGa0qhVTYQH/8ZItP/cvumuW2tTwpGWzdCWvylH
+   Q==;
+X-CSE-ConnectionGUID: LhhIvclUSR2My5kLs9KJ0g==
+X-CSE-MsgGUID: Yv/KwflaQlWhVRB4DWKc2g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="74149494"
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; 
+   d="scan'208";a="74149494"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Aug 2026 06:19:08 -0700
+X-CSE-ConnectionGUID: WgxdP/45QyOmO3RBmkg5dQ==
+X-CSE-MsgGUID: BN0SnQSaSJS6K7UB7Y7vfg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; 
+   d="scan'208";a="260338028"
+Received: from mkosciow-mobl1.ger.corp.intel.com (HELO ahunter6-desk) ([10.245.244.200])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Aug 2026 06:19:05 -0700
+From: Adrian Hunter <adrian.hunter@intel.com>
+To: alexandre.belloni@bootlin.com
+Cc: Frank.Li@nxp.com,
+	akhilrajeev@nvidia.com,
+	mukesh.savaliya@oss.qualcomm.com,
+	rafael@kernel.org,
+	linux-i3c@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH V4 00/14] i3c: Support IBI-based system wakeup
+Date: Thu,  6 Aug 2026 16:18:43 +0300
+Message-ID: <20260806131857.119830-1-adrian.hunter@intel.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260806072656.1386351-1-sh_def@163.com>
-In-Reply-To: <20260806072656.1386351-1-sh_def@163.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 6 Aug 2026 14:56:28 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iKPxKqEsd7MD_d2FcQmb7PrGVNkC4PHH0Psswyf-ZKsg@mail.gmail.com>
-X-Gm-Features: AUfX_mww1yVSsM0DViczYUTnhyrlCJ_TCjmcAT04zb5jUN5MhtopY9dVE2SYKiU
-Message-ID: <CAJZ5v0iKPxKqEsd7MD_d2FcQmb7PrGVNkC4PHH0Psswyf-ZKsg@mail.gmail.com>
-Subject: Re: [PATCH v2] cpufreq: schedutil: Fix rate limit overflow
-To: Hui Su <sh_def@163.com>
-Cc: rafael@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
-	mingo@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 6, 2026 at 9:28=E2=80=AFAM Hui Su <sh_def@163.com> wrote:
->
-> rate_limit_us is an unsigned int, while NSEC_PER_USEC is defined as
-> 1000L. On 32-bit systems, the multiplication is therefore performed
-> using 32-bit unsigned arithmetic before the result is assigned to
-> freq_update_delay_ns.
->
-> For example, writing 4294968 to rate_limit_us wraps the delay from
-> 4294968000 ns to 704 ns. This makes schedutil update far more often
-> than configured.
->
-> Add sugov_update_rate_limit_us() to widen rate_limit_us to s64 before
-> converting it to nanoseconds. Use the helper when updating the tunable
-> through sysfs and when starting the governor, so both paths perform the
-> conversion without overflow.
->
-> Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler=
- utilization data")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Hui Su <sh_def@163.com>
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - Clarify why the multiplication uses 32-bit unsigned arithmetic on
->   32-bit systems.
-> - Cast rate_limit_us to s64 to match freq_update_delay_ns.
-> - Add Zhongqiu's Reviewed-by tag.
->
-> v1: https://lore.kernel.org/r/20260805143942.805176-1-sh_def@163.com
->
->  kernel/sched/cpufreq_schedutil.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sche=
-dutil.c
-> index dff4ee04694c..51910b30c8da 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -61,6 +61,12 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
->
->  /************************ Governor internals ***********************/
->
-> +static void sugov_update_rate_limit_us(struct sugov_policy *sg_policy)
-> +{
+Hi
 
-Please add a comment here to explain why the direct type cast is
-necessary or people will be sending patches to remove it.
+Intel LPSS I3C controllers support up to two I3C busses and can wake the
+system from an In-Band Interrupt (IBI) via a PCI PME.  Today that wakeup
+capability lives only at the PCI function, with no way to express which
+I3C device is actually responsible for waking the system, and no way for
+user space to enable or disable wakeup on a per-device basis.
 
-> +       sg_policy->freq_update_delay_ns =3D
-> +               (s64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
-> +}
-> +
->  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64=
- time)
->  {
->         s64 delta_ns;
-> @@ -606,7 +612,7 @@ rate_limit_us_store(struct gov_attr_set *attr_set, co=
-nst char *buf, size_t count
->         tunables->rate_limit_us =3D rate_limit_us;
->
->         list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_h=
-ook)
-> -               sg_policy->freq_update_delay_ns =3D rate_limit_us * NSEC_=
-PER_USEC;
-> +               sugov_update_rate_limit_us(sg_policy);
->
->         return count;
->  }
-> @@ -848,7 +854,7 @@ static int sugov_start(struct cpufreq_policy *policy)
->         void (*uu)(struct update_util_data *data, u64 time, unsigned int =
-flags);
->         unsigned int cpu;
->
-> -       sg_policy->freq_update_delay_ns =3D sg_policy->tunables->rate_lim=
-it_us * NSEC_PER_USEC;
-> +       sugov_update_rate_limit_us(sg_policy);
->         sg_policy->last_freq_update_time        =3D 0;
->         sg_policy->next_freq                    =3D 0;
->         sg_policy->work_in_progress             =3D false;
-> --
-> 2.43.0
->
+This series pushes the wakeup capability down to the individual I3C
+devices and then aggregates the resulting wakeup state back up to the PCI
+device.
+
+An IBI-capable I3C device on a bus whose controller can wake the system
+is marked as wakeup capable, so it can be managed through the standard
+device wakeup framework (e.g. via power/wakeup in sysfs).  When such a
+device is enabled for wakeup, a wakeup event is reported each time it
+queues an IBI.
+
+At suspend time, the mipi-i3c-hci PCI driver aggregates the wakeup
+configuration of the I3C devices across its HCI instances (up to two I3C
+busses) and enables PCI wakeup (PME) only when at least one attached I3C
+device is enabled as a wakeup source and has IBI enabled.  This keeps
+the PCI wakeup state in sync with the actual requirements of the devices
+on the busses.
+
+The series is organised as follows:
+
+ - Patch 1 fixes a pre-existing recursive acquisition of the bus rwsem
+   in i3c_master_register_new_i3c_devs().  The remaining patches add
+   work to that same function, so the locking is corrected first.
+
+ - Patches 2-7 fix use-after-free and unlocked accesses of the i3c_device
+   desc pointer.  Moving device registration out from under the bus lock
+   in patch 1 is what makes it possible to take the bus lock in the
+   helpers that run during registration.
+
+ - Patches 8-11 add the generic I3C core support: an ibi_wakeup flag for
+   controllers, marking IBI-capable devices as wakeup capable, reporting
+   wakeup events on IBIs, a helper to query whether any device on a bus
+   has both wakeup and IBI enabled, and a fix to reject IBI requests
+   from devices that do not advertise IBI capability.
+
+ - Patches 12-14 wire this up for the mipi-i3c-hci driver: propagate the
+   aggregated I3C wakeup requirements to the PCI function, factor out
+   i3c_hci_sysdev() for the shared device lookup, and advertise IBI
+   wakeup capability when the underlying system device can wake the
+   system.
+
+Note, since the PCI wakeup state is now derived from the wakeup
+configuration of the attached I3C devices, the PCI device's
+power/wakeup sysfs attribute no longer provides independent wakeup
+control.
+
+
+Changes in V4:
+
+    i3c: master: Fix recursive locking during device registration
+	Expanded the kernel-doc for the new struct i3c_device @node
+	member to note that it is only for use by
+	i3c_master_register_new_i3c_devs() and is not protected by a
+	lock.
+
+    i3c: master: Fix use-after-free of master->this
+	Also reset master->this and bus.cur_master to NULL on the
+	i3c_master_set_info() error path before freeing the allocated
+	device.  Tidied up the commit message wording.
+
+    i3c: master: Support IBI-based wakeup capability
+	Shortened the comment about IBI-capable devices being wakeup
+	capable.
+
+    i3c: master: Add helper to query bus wakeup requirements
+	Renamed i3c_master_any_wakeup_enabled() to
+	i3c_master_has_wakeup_enabled_devs().
+
+    i3c: mipi-i3c-hci-pci: Propagate I3C wakeup requirements to PCI
+	Updated for the rename of i3c_master_any_wakeup_enabled() to
+	i3c_master_has_wakeup_enabled_devs().
+
+    i3c: mipi-i3c-hci: Factor out i3c_hci_sysdev()
+	Reworked the comment that moves with the code into kernel-doc,
+	and mentioned that in the commit message.
+
+    i3c: mipi-i3c-hci: Advertise IBI wakeup capability
+	Updated the i3c_hci_sysdev() kernel-doc to mention system PM and
+	wakeup, in place of the old comment tweak.
+
+    Added Frank Li's Reviewed-by and Mukesh Savaliya's Acked-by tags.
+
+
+Changes in V3:
+
+    Added 6 patches (2-7) that fix use-after-free and unlocked accesses
+    of the i3c_device desc pointer.  Moving device registration out from
+    under the bus lock in patch 1 is what allows that pointer to be
+    protected in the helpers that run during registration.
+
+    i3c: master: Fix recursive locking during device registration
+	Added Cc: stable@vger.kernel.org
+
+    i3c: master: Add helper to query bus wakeup requirements
+	Skip the master device explicitly.  Noted in the kernel-doc that
+	wakeup enablement is user space policy, so the helper is meant to
+	be called from a system suspend callback.
+
+    Added Frank Li's Reviewed-by tags.
+
+    Rebased onto i3c/next.
+
+
+Changes in V2:
+
+    Dropped the RFC tag.
+
+    i3c: master: Fix recursive locking during device registration
+	New patch
+
+    i3c: master: Support IBI-based wakeup capability
+	Dropped the redundant #include <linux/pm_wakeup.h>.  That header
+	must not be included directly, and linux/device.h, which is
+	already included, provides device_set_wakeup_capable().
+
+    i3c: master: Add helper to query bus wakeup requirements
+	i3c_master_any_wakeup_enabled() now also requires the device to
+	have IBI enabled, not just system wakeup enabled, so that a
+	device with no active IBI request does not keep PCI PME enabled.
+	desc->ibi_lock is taken while checking.  The commit message and
+	kernel-doc are updated to match.
+
+    Rebased onto i3c/next.
+
+
+Adrian Hunter (14):
+      i3c: master: Fix recursive locking during device registration
+      i3c: Fix unlocked dereference of dev->desc in i3c_device_get_supported_xfer_mode()
+      i3c: master: Do not treat master device as a duplicate target
+      i3c: master: Fix use-after-free of master->this
+      i3c: Make dev->desc locking assumptions explicit
+      i3c: master: Fix potential UAF in i3c_device_uevent()
+      i3c: master: Fix potential UAF in i3c_device_match()
+      i3c: master: Support IBI-based wakeup capability
+      i3c: master: Report wakeup events for IBIs
+      i3c: master: Add helper to query bus wakeup requirements
+      i3c: master: Reject IBI requests from non-IBI-capable devices
+      i3c: mipi-i3c-hci-pci: Propagate I3C wakeup requirements to PCI
+      i3c: mipi-i3c-hci: Factor out i3c_hci_sysdev()
+      i3c: mipi-i3c-hci: Advertise IBI wakeup capability
+
+ drivers/i3c/device.c                               |  13 +--
+ drivers/i3c/internals.h                            |   5 +
+ drivers/i3c/master.c                               | 119 ++++++++++++++++-----
+ drivers/i3c/master/mipi-i3c-hci/core.c             |  20 ++++
+ drivers/i3c/master/mipi-i3c-hci/dma.c              |  15 +--
+ drivers/i3c/master/mipi-i3c-hci/hci.h              |   2 +
+ drivers/i3c/master/mipi-i3c-hci/mipi-i3c-hci-pci.c |  23 +++-
+ include/linux/i3c/master.h                         |   6 ++
+ 8 files changed, 155 insertions(+), 48 deletions(-)
+
+
+Regards
+Adrian
