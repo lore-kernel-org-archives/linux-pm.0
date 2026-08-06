@@ -1,151 +1,105 @@
-Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A94F43DEFF1;
-	Thu,  6 Aug 2026 06:36:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B1273DEFF1
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:41:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785998182; cv=none; b=OW/xE8+4tPvpBHFeyooTOrAlykvK0Zpp1Ww4PuaF42v6I38d3FneHf5jmRQaMiA2X0XUAXc0HDXNLjgbSevihwiT+PzbiOK4rdb2r3xHeiKqZJicZceBleN8aiwOnP1bE1s8GqKbsG46LZOhvsBrLfrntW3DYo00l6MdDjzU0+A=
+	t=1785998462; cv=none; b=tDF3Rx8EVUmGd/EdcX+l8KoK71soMh4OZhJYzKW6n4rtcnwuMerDcrYnrdOQbNxy9KjXwnfGzD+ZpmWluGtwQSxQqUGBzPPo9A1ZLADn5dEUd1PdWnjv0JUQOxVFrXX4nCYo+sN+9Kph7DVM5wBJAbnBS5h0zXjoT+ipE8TL7I8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785998182; c=relaxed/simple;
-	bh=U4X+rhj/sXR+vtuG+XLMw3JDpabQzZVg4RMgkgdiYpU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ceISx3wf9YQ8eFI8eHecmbEdyQgMGHPPr2jb2mzn7rXzspi9yKBZINjujlhypyuHYu7kkAk7DLUUjd4gmrlTUL4d4hm/78lcWJdB3THO+LEGt8+wF3p7gZMhYBRNyoofHHPQw+LxCti3AzhnkLtXM9RmiJ7LpPHSVQhhBhbudhY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=1puoFuVj; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=G9C2+b4U; arc=none smtp.client-ip=202.12.124.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
+	s=arc-20240116; t=1785998462; c=relaxed/simple;
+	bh=+ieNpYftwP3fdQx/oqU0wgv6bnj24ofZj0CnjsRIfWg=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=LiBrJ9x1wGPnDNe+okgc0c+Jj67S3vvAhigJuDW71N4PIusBmOuLiAK3YmHmoSRBPWnoVCz7yr/ceztfRIdYm+YZ04VB7/+na8Ac4guTpar0jV8BEGoKdiOhW0oZeigBIBmiO1XZve7T98B29jgV6kDoOOi9QdXLs4ezFhxz4GI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=LdEXHVGH; arc=none smtp.client-ip=209.85.214.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="1puoFuVj";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="G9C2+b4U"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.stl.internal (Postfix) with ESMTP id 995101300165;
-	Thu,  6 Aug 2026 02:36:04 -0400 (EDT)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-04.internal (MEProxy); Thu, 06 Aug 2026 02:36:05 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
-	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
-	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1785998164; x=
-	1786001764; bh=sgu7nAbq8Yx5koaOMKJWboxHdobCAGSow6z6pMfKPGU=; b=1
-	puoFuVjNERzwVWN0t22cIXz+deO4xgXn/Yn+6FkOmLHlXm7cnNgXO0QN68aO9ILC
-	LoiLk/7MWB9BDccQuLdx8iZlM8QB0Jg7YbzKXGuaMx/fTiGSrFIbyjbeKPFn1Hfy
-	Bj+DSKqFdmB4Y+W4TlE9mHo4istLQZGxbOp28FytrB9vz/A6I1uXYfu3sXedhMU7
-	jDtyFyVwjHm961xc6jzuZoa7jiKZlbM5oalpIVzDOaj4OaaT3mc0Ia8aaoWE9dDw
-	Fv6/nkCs/qPc9rLzraCJg5d77l4fW1Wm4Mn0SGsA7Z7rThzisURGdBadHAh9kS8p
-	NtUfBxsEp/Nrd10GoRg0g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1785998164; x=1786001764; bh=s
-	gu7nAbq8Yx5koaOMKJWboxHdobCAGSow6z6pMfKPGU=; b=G9C2+b4UWlPuB3JYP
-	uLtmvJRPN4B6+j0SXyZff2fi/mbZNtkI5BsPTzii57azW83r4JPGnJn+oP87LlXu
-	uzMK5FoIAp78F9XIfJDO/Bc9TlUCyZgtBB6LtaVq3KqvNDVgGlARRU9ZcwA03RKc
-	fWAVBiJLW510K8TZ0MmP4hqyECLKIb1p7Y2Nbjl2fdlg5z02GLLJHkfNvfKTRbOf
-	wxXfrhm2EfTTc3PgIb+AdKudyla9JZYzs5kR9mxlMLYtcjNaRG0cRj5wEtQilaQn
-	FRPxJxcXywGFvrJ2OGuDbUWjgzaHA8gAmW5PpzvYkkuFUuEqE/XlrdFVAAT3z6+A
-	2n0zA==
-X-ME-Sender: <xms:VCt0ast72_PppLC-vbFNWAr4fmvLj9QXF77FP7toQlx2Tuo0fLzMzg>
-    <xme:VCt0allGcodj5pUuAqPS3BSQ7an4MpprS47MBseXp7PZ33Qu6kor2-6nd80LEMab5
-    dZxXofTHPGKHO43iIf56rsw-fz1566dDA6MgxrLIGnnlfeKCaE__UaS>
-X-ME-Received: <xmr:VCt0ajk2MoeANJT9Wdyf_MA9nQ9R8p1RXOvXsjkJUd5R6CK5bMjlsYAnEc-dHw5vdIcMhPYTjg>
-X-ME-Proxy-Cause: dmFkZTFONgeA2O3pwjIbPcMCTqIJqr8rt4x9wj1HWpKtWqUM08CHxAytH4b3Wcxne+7M9Y
-    PXPM0VguFKPHRj7GsPgHOCGdBiHCvhUSS0VPsXiwRKvCWrXPAstwqnluAM2XfUZr49eWpS
-    e+UecSjujmJ2AT270+mwV76lh/D6/9znIOY6mQx5cMF79T+XdTHspX14zKQTkVq2imOTsH
-    vp93U39Lnk9e3xSvtrqjBURQNo6oCQMtbFhYzXBG6dEvWqKT8clHR5x+RedZsGjCkMON3x
-    w67ON4vBChW2U2GPv48gIMgNJJLmEWZg5zEIGItcQU7FX5BKLMjAr+kfs3S2cJ4Ku2vNei
-    eTyzZo7cemSdKbqcslTdF9+Fnu6Wnz4g9+SP/0PbxOIZE8eibAnqIUUyYrpwfADWd8/jkQ
-    lyZiACxDgx6oXDCrfC75glZna01b4xAevCxCiaFfAJqGJP9faeFM9Zqtowd3xeiNo9JDG8
-    sQZoBFeT/sjP33Sq6xmNDkviAk90SnbPS6sC/dCYlVmUFCE7qI6m0SKYsfQm7Z5BG1nfOl
-    I3/74cQkajuQVirurXoz2U6V0p2pKZC8lAqpTB9XLjVAYR1m08HfIcgnKVrE/pnSXn2IHW
-    kgORTPywBrs6TDNtcDLqwDCpnKfCeAZtwCPFUjdUjIzIasboxPsOfrMoZgqg
-X-ME-Proxy: <xmx:VCt0aojnAKsgkWNOX9a1LKyPFFgx-mQSnCJBRtXQd3VwGT7-mJ96lA>
-    <xmx:VCt0atF1xf1Ud6hOaB97940z0VNbJ5I2zp9gom9BP1Cd33SsAsOPrw>
-    <xmx:VCt0arblB6kuyR8R_IRRsl8evZYmQ2Dsa8DnadgUAAlAa30MJRqFpw>
-    <xmx:VCt0aoOv8qyUnC-n_2c3zzJCIcFdlDdVGqC-7N1M-nCs7C_2ygC27w>
-    <xmx:VCt0as3pvbaerTG75kRiWOpxwx6SbePvKk0caBaqAS4ASjQMqc-0KdN_>
-Feedback-ID: i7a5e4b5f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 6 Aug 2026 02:35:56 -0400 (EDT)
-From: Jiaxing Hu <gahing@gahingwoo.com>
-To: tomeu@tomeuvizoso.net,
-	heiko@sntech.de,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	ulfh@kernel.org,
-	p.zabel@pengutronix.de,
-	ogabbay@kernel.org,
-	zhangqing@rock-chips.com
-Cc: royalnet026@gmail.com,
-	alchark@flipper.net,
-	chaoyi.chen@rock-chips.com,
-	diederik@cknow-tech.com,
-	dri-devel@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	iommu@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [RFC PATCH v6 9/9] arm64: dts: rockchip: rk3576-rock-4d: enable NPU
-Date: Thu,  6 Aug 2026 18:34:13 +1200
-Message-ID: <20260806063413.350184-10-gahing@gahingwoo.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260806063413.350184-1-gahing@gahingwoo.com>
-References: <20260806063413.350184-1-gahing@gahingwoo.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LdEXHVGH"
+Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-2cf452def93so4810215ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:41:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1785998460; x=1786603260; darn=vger.kernel.org;
+        h=content-disposition:content-type:mime-version:message-id:subject:cc
+         :to:from:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=4KrtVVdnJpRkxCHWS+gT4fEPtiIBwhvi3D3PiEK4HKg=;
+        b=LdEXHVGHPQYlgkcyJkYStAR8QF8K9J99lmJFJ8jvWWCRv2QlZWs53NlyAhfLcoOmVE
+         EwNkSwfgW0tQNG4Bq9+qmJuajY3e19LUYcOFY7nz8CMIWv0PPsTMZxCh64VlLyEupiyW
+         C/hgRU74tVPaw7NGpKhV01LoZhMLJuUKNNJzzkOXbCiqXMKZdgyY8D38BOuj2imEKJzB
+         KaMPx4tFtqs5LA9CNtRQF7QFNUO0rn1jEuGL7Yn/09uyg1cQISbxWNUmIzqFj9+oiWtL
+         7bPv0IUMmv5ftC2B0FRgQYFzqIi7qgJqpqVvHuA+Sp2TatTfg7JEtVtO63BT9FBGCSKP
+         HxBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785998460; x=1786603260;
+        h=content-disposition:content-type:mime-version:message-id:subject:cc
+         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=4KrtVVdnJpRkxCHWS+gT4fEPtiIBwhvi3D3PiEK4HKg=;
+        b=J+XrluA0PDImQygVsHOi3eXNlLQ+M4rWA6Z6191fIYfNYtpAW5wKBSAZO4cBdkCDfT
+         qBHgkdhs3VIaHUMg0+4+HCMmYhw6Dow15iW+Wp+0iKxKbCOOJq/ib02Hy6rqcrxrxpqP
+         OnVwExiTbCQjfPdt+8Kfz8kBHZlCUyPYSeEg1PIFR716xzVxpGqJ2Ys/ZM73uMIqwYC3
+         F4qrRx03prYdfueBbK/dV2ZY0htcUg0duCzliwrthyDhu017KSfivJTANtVWqKakd8rI
+         KsKXAiXr660MyahmYc1C5b+wimfU+QztQ2+LmnhUSHK3AXVGC7HEuWI0L0s8dCCmuq8O
+         4UCg==
+X-Gm-Message-State: AOJu0YyLT/NSoqxl5t/n31g9MQifANkN9oIAiubB4cg9NWnYcso4VrYL
+	70dP6xuAiNxH+J17BYf/DHwRyIGMQWS6kqtOKbIjQRhrlFdv/p6uMzL81xGX7RQAr50=
+X-Gm-Gg: AR+sD11HRbS5ooZhPRQliZSlBQxx4HLEZjG+9BmyXbAOxhfSf+HCesDschs+t0LT19g
+	ajfsE9fE8qnJHeDxGnZBeOMqsU0PRityh5f+Y9LeVOLYri/BGPMtqAZIzllGSk8ltZr4ofZGaky
+	ZK8OvlQC/1F+01W0MaqUgfQbZGKy6R50XdfO9zZ2+9pF+zEul1BdRZk2bd7sznwUIcThu3pnwRi
+	Yq5VsGkWCQA43Kveiu1MSXHFaLWM3JKx/cb0pOAaMcbPw6uyTMtis79HtuHRb77LF2XNkkDV+x1
+	j91TKoNY/tcllomoKf5EQ+1h27VR/BqPbfYsKqa6oLbdRqbxe92fMZzezD6K7ADMybfBFwwVsox
+	6cHGNP1SfCWOOevtFojf2T+ksVhzXKAbnYs2MDCx8WUeaIrXNftpZXRMizdSkdj3b37sgciF8Uj
+	JDxhzHUEM+Ns/nadi/Ps1+8LrC8ZHYsBjhb4S0l7nwh0sZXZ6MnWrV7JLFMYQq
+X-Received: by 2002:a17:903:1845:b0:2bd:2c3a:2a36 with SMTP id d9443c01a7336-2d0f121ed8amr61613285ad.0.1785998460302;
+        Wed, 05 Aug 2026 23:41:00 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3158673be4dsm30695841eec.16.2026.08.05.23.40.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 05 Aug 2026 23:40:59 -0700 (PDT)
+Date: Thu, 6 Aug 2026 12:10:56 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>
+Subject: [GIT PULL] OPP updates 7.3
+Message-ID: <id2g5cfhmuiy7mkf5vlfkefkh35miye2qdsgnivbkecera4wur@y33swy7czaua>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Enable rknn_core_0 and its IOMMU on the Radxa ROCK 4D and supply the
-core from vdd_npu_s0.
+The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482:
 
-The supply is marked always-on because the NPU power domains are what
-gate the block here, and dropping the rail underneath them takes an
-async SError on the next power-on rather than a clean retry. Only
-rknn_core_0 is enabled: the driver binds one core per node and the
-second core is left to whoever can test it.
+  Linux 7.2-rc1 (2026-06-28 12:01:31 -0700)
 
-Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
----
- arch/arm64/boot/dts/rockchip/rk3576-rock-4d.dts | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+are available in the Git repository at:
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3576-rock-4d.dts b/arch/arm64/boot/dts/rockchip/rk3576-rock-4d.dts
-index 272af1012..965e0906b 100644
---- a/arch/arm64/boot/dts/rockchip/rk3576-rock-4d.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3576-rock-4d.dts
-@@ -442,6 +442,7 @@ regulator-state-mem {
- 			};
- 
- 			vdd_npu_s0: dcdc-reg2 {
-+				regulator-always-on;
- 				regulator-boot-on;
- 				regulator-enable-ramp-delay = <400>;
- 				regulator-min-microvolt = <550000>;
-@@ -869,3 +870,12 @@ vp0_out_hdmi: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
- 		remote-endpoint = <&hdmi_in_vp0>;
- 	};
- };
-+
-+&rknn_core_0 {
-+	npu-supply = <&vdd_npu_s0>;
-+	status = "okay";
-+};
-+
-+&rknn_mmu_0 {
-+	status = "okay";
-+};
+  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/opp-updates-7.3
+
+for you to fetch changes up to 84f05af0975c9f9c8ffee0361d6f7cbb1f289231:
+
+  opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer (2026-08-06 11:54:14 +0530)
+
+----------------------------------------------------------------
+OPP updates for 7.3
+
+- Fix cleanup ordering around scope-based pointers (Gregor Herburger).
+
+- Use clk_get_optional() for optional clocks (Praveen Talari).
+
+----------------------------------------------------------------
+Gregor Herburger (1):
+      OPP: Fix cleanup ordering
+
+Praveen Talari (1):
+      opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer
+
+ drivers/opp/core.c | 67 +++++++++++++++++++++++++++++--------------------------------------
+ 1 file changed, 29 insertions(+), 38 deletions(-)
+
 -- 
-2.43.0
-
+viresh
