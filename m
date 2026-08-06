@@ -1,112 +1,218 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4945F2E888C
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:12:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E13C3D79FD
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:17:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785996771; cv=none; b=A20r4Iqckc+fP8ccDFna/N1im4J35w1181AOve6OSisB+QmifMmhjyG1DQoqfELTS+LtD4kWvIqCHtkUuZ+I0e6sWeouuAkZ5H11n5zxNsWnD8FaxAUDhHQhb6DHylF5vJAMr3g9bnKZkYuUaw3vEh6ero0YDl5KW1w+l2NvOwI=
+	t=1785997078; cv=none; b=BsiDk4jBl0pV3jWCvT5by0jX/YXV10oe1GEG9eUIyRUKpL62XTptLfjBOogOhseKjHhcIJdoiVBaszi7xoA08EjOCvWxHwF+bHME0wZpz07XrH9TuEyZBPvTeEbCGn+TrhTKBDRaqyvS1munMT5gPcoYWZeHUsjcCxQ3HCunjVE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785996771; c=relaxed/simple;
-	bh=EKElwWAbTDWthMpKF+ZWvr/9mi2EhJADPAtIsbWv5rQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=p8HcgCVwpag8gPHB4ml18UjTIYOsiH6B1imlVtLlrSkR/+e8ngeDSwedcgUwkBRmjo3pp52MC5NaIsXMTB3g+lYN7uC+/WLL5qYpfQwJAI7vd3X6mS/lrnj3tNUZdPi1YHzevZjXMwFkw9OpE6TrL8ClDvTwh20bP26SrY2QaxE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=R24qYjSO; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1785997078; c=relaxed/simple;
+	bh=WOuEJhvl2qrZtKj8atfAzb7IYB3fO5C9klrW+kllfPk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QGtCSfw1m3oq1ZGO8/Vui5pvnoiaG4FkV3HFPm2uHcBaToTE8FYCR1jCHIWNQ3D/IO7ATotkIH+kgClNEjDBbM8Q8Slb/sS1tuujcOslC5nzF59DtVY/ywoUyhBLKt0/4uAVdzDkMEGcwnV1OdHgQa8sVq0f501YXTURDw8/lAw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ZJdBvNuj; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Y6W1kPUh; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="R24qYjSO"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2cc891373e0so22777325ad.2
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:12:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ZJdBvNuj";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Y6W1kPUh"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Nb31R4063346
+	for <linux-pm@vger.kernel.org>; Thu, 6 Aug 2026 06:17:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	wWoOi9kfJdwN9ldzBQDFhMJIGe4x9Biq0zX9zwnu+28=; b=ZJdBvNujW1YPC9SP
+	TeNgu5issziDmsY+bgXEto/Xd/gOoKEj3Q0T8IFTF9Xq5fi/2khpomO78t56wTaS
+	jfDh2GmJ50iSQS3U1EooboYEUL/XR2wv0grPCXUYWE5MKuH2GKQsIVMmEZDhtR+t
+	fyS5VO8Iepm1gl+Qkl0UcMEOZ3DoPySsWTOmlDm0cehJmw+rmNHtSpwSQbTrHYEe
+	tAGL2w8ypOYwzNLFjoS1chFUKWUTx3PtwWnsaK6VsbTy05rYmxCDaWxdVyVjKr7I
+	dWySKX93xR/7yxaWhBofRyyuUeCJYsFoaFjbQkXq/a2yedIJhC6T9dJeBe1WMWbK
+	1/Skvw==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fv5x5kvpp-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 06:17:56 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-848544a8496so2123723b3a.0
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:17:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1785996769; x=1786601569; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=N/Noaa1/5CoT0jOkbG3HQUWESYiE8Rvb0ack3Temr4U=;
-        b=R24qYjSO0CfdN2Z/2b3A5l8PfFcvbQ2jgUjhAhl6QSizsGQqG0jw0rilOWZsf+aTSB
-         v7kFnF/BkWR3bCmtFpZW8uSx+dsJcACZs18zpujI3InaceIN7vso+4PcLE/p/BjanCwC
-         z3TljwtnPTiUeavbs53Jb8OvTAK602GRqKa0fzXC0aHC/gCaJLzhQq86HYePBzEpSlZj
-         0y44ZWvKUqe7qTHqoECntgwzxc6xXsXfMQeYYz+a6l9aehj6pirGbTC3ZrvofnU8+Gvp
-         /tDTNbpp9ebMY6vp9dMWT+i+Q4ufqLInSnVGfKZHBApNsjGIMxZZp8+MzGbxCRCfi8tr
-         wtRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785996769; x=1786601569;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1785997075; x=1786601875; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=N/Noaa1/5CoT0jOkbG3HQUWESYiE8Rvb0ack3Temr4U=;
-        b=ZZe5XfNLFUL/+4nA0+FfSg07pJXTNu4ZJeu7UXVH91S3grRmZ+m91ecoYerRNMDHz0
-         XM7OnK7LaJj8KQ2T/r0mptfS4FhH3SNxhnSsHBbu73gv8xIeSB6wnzB5u6ZqOhk3gl09
-         kdHCV0Y8A+q+KdGm1/tnTDthxAD2B/LY/B/LPR8J6iDr62jGZGdX+BhKuW/BOmu+kUL7
-         5WtZ4jEMA7+KZv25AHuRUtbRGAO8e0IkUuyjUa1AfZMHirw6QNFlpRhOo6IoD2FjzorI
-         h8nkSMlTZNgFh2MomTosAAdC6WJEN1jwdU3fB0WtMEwj0ascZ/HKn+7cJmqkhUpUexGx
-         vq1A==
-X-Forwarded-Encrypted: i=1; AHgh+RqzGtjT+6++n/4GkhqpW1xPIVNd7i1ms6E1Ftchssv/gbi6nwmLx5k2Yg9fBIEuLlOijLSXY1B9UQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxvOIMu/ICqfYWeEJLxznJmpLgr1RuNiF65AglsQ3+O2DkD6KUB
-	OCoaWEu3yEBCAN2odfZvcFu4UXediqmDrWnQxV91UD5hH0SpxDcHxx+lyLf4+gp0R0k=
-X-Gm-Gg: AR+sD13F7Ct9K3Dv6vHH4HEuEQntVXTZwv4YAk1wW+ZfIZr4jd9HVAZetkNgKpU2dSX
-	2LxDsBJ+prb/RosONnngGJc0d9+0XzW4dRRc1+90P1HBN5fIxmUBNCEOXVPphNqpK1i0RiQoej+
-	6ZAZL19povtOWuk2j9H0MsA47eKB6ASE1zHIHuN5VwWHfTwzDg6kcKcAN3xPdnqypugMyTco3P1
-	B7E3i2jPEwHiM/5JVCPcJGnCnPpGBvqdP73SHs84G1J6OibezrnHEpe28Ioo5rR17g+0qdCSLyF
-	QVoCKnYGnw0auJUXzEAdyypxXbonwVu0LlUsaGWw+oJFtRYfyw33SsuD6PYl6E7d0DbsDFDdJ1z
-	7yqb2cBkbnHzOV9T6zoAUBvCZV28e35mStGDmRcCA0GR1czdXnKtLORcFECHLlbs2XCNkClllqc
-	sR6vOIPxaotlkdAJ0UiyaSNwC2Q2XlYYB555zPPWDBQlNhSg3ThLpj2guGFkq9
-X-Received: by 2002:a05:6a20:430b:b0:3bf:9b3d:61bb with SMTP id adf61e73a8af0-3cb85ee779fmr14662992637.16.1785996769547;
-        Wed, 05 Aug 2026 23:12:49 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315863fb350sm24210421eec.8.2026.08.05.23.12.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Aug 2026 23:12:48 -0700 (PDT)
-Date: Thu, 6 Aug 2026 11:42:46 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Karl Mehltretter <kmehltretter@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, 
-	Fabio Estevam <festevam@gmail.com>, Anson Huang <b20788@freescale.com>, linux-pm@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: imx6q: fix devres accumulation across driver
- rebind
-Message-ID: <xale3cobuizjnufkp2fkvxmq66dl2cmuoh6szd4d4vhwfcxizp@4kp2zcpu2ndw>
-References: <20260806050902.90550-1-kmehltretter@gmail.com>
+        bh=wWoOi9kfJdwN9ldzBQDFhMJIGe4x9Biq0zX9zwnu+28=;
+        b=Y6W1kPUhwMueIs5IXgsEi5Ex2CT1vWTJwHE51Z3u5g9vcSfN/Urn18H1fmOLgmqjMR
+         IWRLPYXjfrJvZ6ak987iIKfmBDrTvvz5YG+Ul2+fRJF+CTzUMQ88fAF0wpgy5wcaFsIQ
+         /J9DkgoFbc2dmo95VNzX29C07OVM8hnhyFcEKpMcSzlEVYcyJzQhNgdGFEL2XrO/egaF
+         Sv3ax1vMXhZntdMGzfOqR/Gmjt2u6LsA2EHMYkpZV1qIwcb6XBIIT871tA3aB9l6UoDC
+         NZWfJEyM3Q1xcYoJW8LdClCriUFx4DJGnSpbLsaK4u6pPArLQKSNBJshydfT0/FNhHdY
+         I3iQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785997075; x=1786601875;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=wWoOi9kfJdwN9ldzBQDFhMJIGe4x9Biq0zX9zwnu+28=;
+        b=ktyB5Xh1AB3IGxZAUOW2aOG9Cwrc4YQ/onMIOxwljpaPZMgDEX/A6O62ttfRnzl+vI
+         iiDu4q2xGMGhgCUsqNFBS/8spIbggiiuIr8M29GdNcCH1dHzyNMZDDkG7lNWZEniv0L/
+         VZFEctnknKsnqXVRHQjRW2STwihgF7phuULMFrTeCN29JPVFG84NepU2RTv4X5nz+Xwz
+         S4LdvWysFRqdfajGdtX2cPWBn7O3o3URb1W5c2gYBSMzaibtEuVGLLCY2mqg3GmUuEr2
+         3bCgs8zK1/JXqdu6cwJw3nankPyEOWbWmpmhzuk1IKeO2I78iUbQRogFDrLKEAlpUeAH
+         C1KA==
+X-Gm-Message-State: AOJu0YwPAivLl4iIIVXWd3WxYurxsd27Kj80hT2oSLg8po5wIB7alKBJ
+	4/8IIjoX48xiQW9NuG8FqDTa9E46ivuS1jmxqL0HOo+jrupCKTscWRJvUxYV2DMNlLnT4x98koj
+	++3eITY5ZxL2sAR6roxXd2UFStwKiBmLwlXsW8k8kOZFNsZRM3IvizZ5/X3+kOw==
+X-Gm-Gg: AR+sD12yZQfUaMD5f2F4G8oZwBiQmLmhQer6SWFTxOHaeHLSWCLlh6fAyHqT5ZezC6c
+	ItrB1qTLeRB08uAlU/YJS4gQ7Ik7+ycmbg216X90AHVezNV9tysMg5Hll6Rs9HEdw8veuWvCPf0
+	kcApEasPLmk+WVW114uhUCStBlLkGke7UZ/00d7dpKQkVkuCxcXysjdY7APuaz4ABC/sWvnLm2t
+	Z8zBTUjShxXLwpGWoYFBFXUKzLCP0u7UdFPQT3bkaXgFnl6oLB3DtAdx70DcSzUTHuS97LMUaZg
+	oQPcdj7uA60jfE3vkqTYUkDf3bHaVYAr9oDsqxeEqvzWir+6pKRp0CAIJ6pwlq0EWJrJdzUB5DK
+	Tt7FCiLX5RJZsaAVth6eOLI8aCdpMSOeK8pVd0W3g6wjeG7PGMDJ7/WNa0JL34v5XcPgIL7Gj
+X-Received: by 2002:a05:6a00:12d0:b0:848:4ff5:5316 with SMTP id d2e1a72fcca58-84f2e006b31mr12828326b3a.19.1785997075233;
+        Wed, 05 Aug 2026 23:17:55 -0700 (PDT)
+X-Received: by 2002:a05:6a00:12d0:b0:848:4ff5:5316 with SMTP id d2e1a72fcca58-84f2e006b31mr12828302b3a.19.1785997074774;
+        Wed, 05 Aug 2026 23:17:54 -0700 (PDT)
+Received: from [10.133.33.183] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84f453b2688sm664295b3a.22.2026.08.05.23.17.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 05 Aug 2026 23:17:54 -0700 (PDT)
+Message-ID: <4606a5b1-dc38-4af0-8244-0b84d5bc4322@oss.qualcomm.com>
+Date: Thu, 6 Aug 2026 14:17:47 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260806050902.90550-1-kmehltretter@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: schedutil: Fix rate limit overflow
+To: Hui Su <sh_def@163.com>, rafael@kernel.org, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        zhongqiu.han@oss.qualcomm.com
+References: <20260805143942.805176-1-sh_def@163.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20260805143942.805176-1-sh_def@163.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDA0NiBTYWx0ZWRfX59YV45xKqjwd
+ cwJEybBidnJwiNs2as0pOvHwOW8aSZjNbglcUYmVsZKBDvF7A/Ecwn/+aF+PIIzxATul1ULz4fE
+ cr2iwGt5XMXViI8A7SnjHYqaiiDpFzy036p6wl5njklt47YYcNCmVHjeu65Hskkl3/Gaqbw6uhn
+ l0qzxcAmBcoCUlBwXd8GTU+8CCNdl5JQwaM+WTrZGSci77M/+Do2dNWKJQj2xShx3IoJTDdoi7i
+ +lR4gNJr+0thIGXt0EXd81tzKIEGfjk+99qAxLOkJ1tEcm71ajZpYYCz0xSYtO1pckCCNyTnqbJ
+ yFDfaeve6T+FYFpSxTJSAYbQ5F1aaDpSptxE4N7gFxba/IYu98U9oYKnclnafNjE7why/vmfdR1
+ pUsmSpvRg3ttIyZGEDIZbB1iSqA+C7cTICcasuwI4gxqpLoCHOc5Vklv5e8scPJqA4qgViGg2Mt
+ V4Bi21djNw3hMlh+k8Q==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDA0NiBTYWx0ZWRfX9mWJz3nqmryf
+ fGK8EiQ7pB2frgqr5mWzEW4pkHULMl3Q/oQkJ/hatXwtLJDbeIA9QbTvuvuiM8P5Ikl7JV/LXiZ
+ v5qLvyfYE0cjQK9SJg35Fq99q7THeNM=
+X-Proofpoint-GUID: jMoWEBCEYXcj9acpCK4z9ib1_bm8VDB6
+X-Authority-Analysis: v=2.4 cv=cIbQdFeN c=1 sm=1 tr=0 ts=6a742714 cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=c92rfblmAAAA:8 a=Byx-y9mGAAAA:8 a=EUspDBNiAAAA:8 a=baNAD00l4KdnJNx0rl8A:9
+ a=QEXdDO2ut3YA:10 a=2VI0MkxyNR6bbpdq8BZq:22 a=GvGzcOZaWPEFPQC_NcjD:22
+X-Proofpoint-ORIG-GUID: jMoWEBCEYXcj9acpCK4z9ib1_bm8VDB6
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-05_06,2026-08-05_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0 priorityscore=1501
+ impostorscore=0 bulkscore=0 clxscore=1015 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608060046
 
-On 06-08-26, 07:09, Karl Mehltretter wrote:
-> imx6_soc_volt is allocated with devm_kcalloc(cpu_dev, ...), where cpu_dev
-> is the CPU device from get_cpu_device(0). That device is never unbound, so
-> its devres list is never released, and imx6q_cpufreq_remove() does not free
-> the array either. Every probe therefore adds an allocation that stays for
-> the lifetime of the system.
-> 
-> Allocate against the platform device instead. Its devres is released when
-> the driver is unbound, which is exactly the lifetime the array wants:
-> imx6q_set_target() reads it, and nothing may reach that after
-> cpufreq_unregister_driver().
-> 
-> That makes the array actually go away on unbind, so also clear the
-> file-scope pointer in remove and on the failed-probe path, rather than
-> leave it pointing at memory devres is about to release.
-> 
-> Tested by rebinding the driver on qemu's mcimx6ul-evk.
-> 
-> Fixes: b4573d1d657a ("cpufreq: imx6q: correct VDDSOC/PU voltage scaling when cpufreq is changed")
-> Assisted-by: Claude:claude-opus-5
-> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+On 8/5/2026 10:39 PM, Hui Su wrote:
+> rate_limit_us is unsigned int. On 32-bit systems, multiplying it by
+> NSEC_PER_USEC is therefore carried out in 32-bit arithmetic before
 
-Applied. Thanks.
+The real issue is that NSEC_PER_USEC is a long, which is only 32 bits on
+32-bit systems. By contrast, unsigned int is 32 bits on both 32-bit and
+64-bit platforms.
+
+> the result is assigned to freq_update_delay_ns.
+> 
+> For example, writing 4294968 to rate_limit_us wraps the delay from
+> 4294968000 ns to 704 ns. This makes schedutil update far more often
+> than configured.
+> 
+> Add sugov_update_rate_limit_us() to widen the value to u64 before
+> converting units. Use it when updating the tunable through sysfs and
+> when starting the governor, so both paths set the same valid delay.
+> 
+> Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler utilization data")
+> Signed-off-by: Hui Su <sh_def@163.com>
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index dff4ee04694c2b90301ed0fa158a509a3423cee1..8bf7a2c34b9f200d8f5776205ea2a7f495e04e69 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -61,6 +61,12 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+>   
+>   /************************ Governor internals ***********************/
+>   
+> +static void sugov_update_rate_limit_us(struct sugov_policy *sg_policy)
+> +{
+> +	sg_policy->freq_update_delay_ns =
+> +		(u64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+
+Small nit: better to use (s64) to match the type of
+freq_update_delay_ns.
+
+Besides, sashiko report one torn read issue,
+https://sashiko.dev/#/patchset/20260805143942.805176-1-sh_def%40163.com
+
+On 32-bit systems, the torn-read mechanism itself is pre-existing and
+not introduced by this patch. However, this patch does change
+its impact: the main difference is that, prior to this patch, the upper
+32 bits were effectively always zero. After this change, a previously
+written large value(In practice, configuring rate_limit_us to a
+very large value, especially one exceeding 4,294,968 us (about 4.29
+seconds), is neither reasonable nor common.) may leave non zero upper 32
+bits, allowing sugov_should_update_freq() to theoretically observe a
+mixed value (old upper 32 bits + new lower 32 bits) and temporarily
+treat freq_update_delay_ns as much larger than intended. This could
+cause one frequency update to be skipped, but since
+cpufreq_update_util() runs in a hot path, the next invocation would be
+expected to observe the correct value. Using atomic64 or a lock on this
+hot path would be more costly than it's worth. Based on that, I think we
+can keep this torn read as is. Please correct me if anyone disagrees.
+
+With the commit log updated,
+
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+
+
+> +}
+> +
+>   static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>   {
+>   	s64 delta_ns;
+> @@ -606,7 +612,7 @@ rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf, size_t count
+>   	tunables->rate_limit_us = rate_limit_us;
+>   
+>   	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook)
+> -		sg_policy->freq_update_delay_ns = rate_limit_us * NSEC_PER_USEC;
+> +		sugov_update_rate_limit_us(sg_policy);
+>   
+>   	return count;
+>   }
+> @@ -848,7 +854,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+>   	void (*uu)(struct update_util_data *data, u64 time, unsigned int flags);
+>   	unsigned int cpu;
+>   
+> -	sg_policy->freq_update_delay_ns	= sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+> +	sugov_update_rate_limit_us(sg_policy);
+>   	sg_policy->last_freq_update_time	= 0;
+>   	sg_policy->next_freq			= 0;
+>   	sg_policy->work_in_progress		= false;
+
 
 -- 
-viresh
+Thx and BRs,
+Zhongqiu Han
