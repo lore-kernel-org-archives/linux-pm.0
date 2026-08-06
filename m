@@ -1,133 +1,169 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 261A22F30;
-	Thu,  6 Aug 2026 14:24:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CB63B2F30;
+	Thu,  6 Aug 2026 14:25:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786026263; cv=none; b=VrOZ96I6MqlFkMvanKridLxhjQriH1d7W0syxopaXH26o5t02KxuvsyYG94Nb3SEa2X4LaXzxlQ4+9CehvjaruSoRSD9iShQRsLozL8JqOcGzVa+g8693AltaawRaxKI6eaizvVUU5FhD8a0r8y6VDHJjKJFurUW7dI6PJZ56Rs=
+	t=1786026318; cv=none; b=EmxZTz5O56ydWrvAD3tPhdUvV5qIgrXzvcZ/HB9akdXrOM9/wNPuJOdUWJTLgwQvaCumlU75bi7cwqGMdGda511VhO9hJLpaeSCMboxAHUsHInk0UyoFIHuPpHKevdB0vcSucIap7MFg/F+9HBUI8ZmrWA72a/m8sZ+irSSqH4g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786026263; c=relaxed/simple;
-	bh=rPzBobGjahlQxhs2KnLi8bN9L5wDTX2pwajw9BaYypA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Rli0Ef9MyhSjKSVyu4vyfpS0gF+6cOyxI94qaBXCMlYdykXQfOw3f2p79HDSMqlmTR+U9cot8UskEtos9vP7FYODIhHxM/oU1tF7CScz55yFwVAw0Hys6n+quamuyCSFsoKTolSAOBpMUisrTIQK83emIXW2VlHrT7u6OetJcwU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=jq7HXznk; arc=none smtp.client-ip=117.135.210.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1786026318; c=relaxed/simple;
+	bh=n41D7CPfzQ0nKdjLa43P+AsHXKSgoqHzBama4K2Rkg4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DF+lV1O0GfUmjvkRoBdbymP7q6LjKU4wGIsJ5LI8LP9umZS0DXN6A85q3J0QnnNC1N11XJ27AhThaaTDo/mwfZquSG0QyoMeaP+K5XenC6/7DQbL353Drjab90IFS/hASEbHpBckro4vARy9yOgQrJ+4Cw3bvriqjCNfZLVwHrY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=vT5I0PFZ; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="jq7HXznk"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=hk
-	Tg6mHF8DBpPRWMwU8ltRJwRzU0JFRz4+Z+nAy7ZO4=; b=jq7HXznkoRpRdNVNKA
-	8A5pgKG3zrruf1Hf3/FpPVEYZh6owK8cFhblL+/DK6IKWLN1SDiCrtyButfOxwa2
-	qk9pcC+GGBj+nZ3Jw57pqwGxn4ryks5YOZJ6v02zVioo/9bXdAN9v/cplkrJ+v3z
-	i9U0ORpcYj37valxSc2AtnBpY=
-Received: from localhost (unknown [])
-	by gzsmtp5 (Coremail) with SMTP id QCgvCgDX0+jSmHRqis_NKw--.47030S2;
-	Thu, 06 Aug 2026 22:23:15 +0800 (CST)
-From: Hui Su <sh_def@163.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	zhongqiu.han@oss.qualcomm.com,
-	Hui Su <sh_def@163.com>
-Subject: [PATCH v3] cpufreq: schedutil: Fix rate limit overflow
-Date: Thu,  6 Aug 2026 22:23:04 +0800
-Message-ID: <20260806142304.1761454-1-sh_def@163.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="vT5I0PFZ"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 38F4E153B;
+	Thu,  6 Aug 2026 07:25:11 -0700 (PDT)
+Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9163E3F9A2;
+	Thu,  6 Aug 2026 07:25:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786026315; bh=n41D7CPfzQ0nKdjLa43P+AsHXKSgoqHzBama4K2Rkg4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=vT5I0PFZETFFuMReGPnZ4ZnuHUB1rg6H28ObX42Ttc9TgtjsB0aZKa56mWN6ax6jR
+	 4OaHc6qFYK+5DvKY/C2hCuhbgk1+L1HD3EU3QQosS2pj3KszoSrKH463dR5h05KGLl
+	 lFC+cy1jGXWa4ipMPxHz3nH6F9wfcLUTH5GNKtaA=
+Message-ID: <cba363cd-8e24-4638-b8c4-3e48d538bb2d@arm.com>
+Date: Thu, 6 Aug 2026 15:25:10 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RESEND][PATCH 0/3] ACPI: CPPC: Reduce .target() callback
+ overhead
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Len Brown <lenb@kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>,
+ Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com
+References: <20260803210527.1285229-1-christian.loehle@arm.com>
+ <f48c36fe-446f-4f83-8d2d-0913aafc377e@arm.com>
+ <4bae4fa9-b2fc-48e8-9f11-b3cf520e9c0d@arm.com>
+ <CAJZ5v0hkE708Qn5rX26X9i1+tGgoYOYyBmoc0zUw4N7m=r8m3w@mail.gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAJZ5v0hkE708Qn5rX26X9i1+tGgoYOYyBmoc0zUw4N7m=r8m3w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:QCgvCgDX0+jSmHRqis_NKw--.47030S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxZw4xXFy5urWUAF1DtF15XFb_yoW5Zr45pF
-	ZIk3y0yr40qry7trs3C3ZruF15uF48J39rKryfCa1vywn8Kw1Fg34Iyrs0ga47AF9Ykr4f
-	A3WYqFW5ur18A37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0piHq2tUUUUU=
-X-CM-SenderInfo: xvkbvvri6rljoofrz/xtbCwRQTcmp0mNSmLQAA3t
 
-rate_limit_us is an unsigned int, while NSEC_PER_USEC is defined as
-1000L. On 32-bit systems, the multiplication is therefore performed
-using 32-bit unsigned arithmetic before the result is assigned to
-freq_update_delay_ns.
+On 8/6/26 11:36, Rafael J. Wysocki (Intel) wrote:
+> On Thu, Aug 6, 2026 at 12:05 PM Christian Loehle
+> <christian.loehle@arm.com> wrote:
+>>
+>> On 8/3/26 23:28, Christian Loehle wrote:
+>>> On 8/3/26 22:05, Christian Loehle wrote:
+>>>> cppc-cpufreq reaches cppc_set_perf() from every target callback.  For
+>>>> direct SystemMemory controls, that path currently does several steps
+>>>> which are unnecessary once the immutable _CPC layout is known:
+>>>>
+>>>>   - a full-width write first reads the access unit and merges the value.
+>>>>   - every write takes the descriptor's RMW lock, even when its access unit
+>>>>     is not shared with another _CPC entry.
+>>>>   - cppc_set_perf() evaluates the same three PCC predicates at each phase
+>>>>     of the transaction.
+>>>>
+>>>> Remove those costs while retaining the existing conservative paths for
+>>>> partial fields, overlapping or malformed access units, and PCC controls.
+>>>>
+>>>> The series was tested on Arm Power-Orion O6 and AmpereOne systems using
+>>>> cppc-cpufreq and schedutil.  An rt-app task pinned to one CPU ran for
+>>>> 500 us every 2 ms with uclamp.min=512, for 5000 periods per run.  schedutil
+>>>> rate_limit_us was 1000.  cppc_cpufreq_fast_switch() latency was measured
+>>>> for 100 ten-second runs.  Each sample is the mean callback latency within
+>>>> one run, and the table reports the median and sample standard deviation
+>>>> of those samples.
+>>>>
+>>>> Orion O6               median       stdev       callbacks
+>>>> baseline               5703 ns      307 ns       188017
+>>>> complete series        5023 ns      240 ns       188209
+>>>> ==> 680 ns (11.9%) reduction
+>>>>
+>>>> AmpereOne              median       stdev
+>>>> baseline               2090 ns      157 ns
+>>>> complete series      1907.5 ns      140 ns
+>>>> ==> 182.5 ns (8.7%) reduction
+>>>>
+>>>> The cumulative intermediate results on the Orion O6 attribute roughly half
+>>>> of the gain to each of the first two patches: avoiding the read reduced
+>>>> the median by 284 ns (5.0%), and avoiding the lock reduced it by another
+>>>> 336 ns (6.2%).
+>>>> Together they account for 620 ns of the 680 ns total reduction.
+>>>>
+>>>> With the same arm64 configuration and GCC 11.4, caching the PCC predicate
+>>>> also reduces cppc_set_perf() from 1124 to 884 bytes.  The generated
+>>>> function has 60 fewer instructions, 17 fewer loads and 20 fewer branches.
+>>>>
+>>>> This series is based on the CPPC fixes posted at (already queued):
+>>>> https://lore.kernel.org/lkml/20260722093825.1030594-1-christian.loehle@arm.com/
+>>>>
+>>>> and the separately posted fix still under review:
+>>>> https://lore.kernel.org/lkml/20260724104042.1481804-1-christian.loehle@arm.com/
+>>>>
+>>>> PS:
+>>>> There's a final optimization that I actually wanted to make but decided to
+>>>> split it out for now as it somewhat replicated Sumit's series:
+>>>> Skipping redundant perf ctrl writes in cpufreq-cppc if registers are non-PCC
+>>>> and !shared (because the values are unchanged, the
+>>>> !autonomous-common-case), but that requires the driver to have a more
+>>>> complex caching- and atomic-updating machinery in place, similar to
+>>>> hotplug. As opposed to this series the optimization would be for the
+>>>> microcontroller handling the CPPC requests, which may be shared across
+>>>> many CPUs and therefore redundant requests can increase the dvfs
+>>>> transition latency.
+>>>> That patch will follow once Sumit's is queued:
+>>>> https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
+>>>>
+>>>> [RESEND] for the new base-commit specifier below
+>>>>
+>>>> Christian Loehle (3):
+>>>>   ACPI: CPPC: Avoid unnecessary reads for full-width writes
+>>>>   ACPI: CPPC: Avoid locking standalone full-width registers
+>>>>   ACPI: CPPC: Evaluate performance-control PCC use once
+>>>>
+>>>>  drivers/acpi/cppc_acpi.c | 135 +++++++++++++++++++++++++++++++--------
+>>>>  include/acpi/cppc_acpi.h |   5 +-
+>>>>  2 files changed, 113 insertions(+), 27 deletions(-)
+>>>>
+>>>>
+>>>> base-commit: 075b74841bd0065a3bda3440873c747938e69b68
+>>>
+>>> Nice, so that worked:
+>>> https://sashiko.dev/#/patchset/20260803210527.1285229-1-christian.loehle@arm.com
+>>> Seems no findings on $SUBJECT but the rest of the comments it has
+>>> look legit to me? I'll go take another look tomorrow:
+>>
+>> So I have patches for these all and will post them in a minute.
+>>
+>>>
+>>> 1. Using per-CPU cpc_desc->rmw_lock for SYSTEM_MEMORY CPPC control register that
+>>> may be shared.
+>>
+>> The solution here sucks unfortunately.
+>> Obviously expanding the per-CPU rmw_lock to per-policy is reasonable, but unfortunately
+>> that doesn't prevent something like:
+>> Policy 0 Desired: address X, bits 7:0,  access size 32
+>> Policy 1 Desired: address X, bits 15:8, access size 32
+>> which would be a compliant GAS description and would require a global lock for rmw.
+>>
+>> And of course even worse, now that Desired is write-only rmw isn't possible at all
+>> anymore.
+>> I'm leaning to just reject these edge-cases that hopefully don't actually exist
+>> (and require _CPC rev4 to be full access-unit width)
+>> Opinions?
+> 
+> Fail initialization on insane platform setups I'd say.
+> 
+> There's no promise that Linux will support compliant setups that are
+> too much pain to deal with.
 
-For example, writing 4294968 to rate_limit_us wraps the delay from
-4294968000 ns to 704 ns. This makes schedutil update far more often
-than configured.
-
-Add sugov_update_rate_limit_us() to widen rate_limit_us to s64 before
-converting it to nanoseconds. Use the helper when updating the tunable
-through sysfs and when starting the governor, so both paths perform the
-conversion without overflow.
-
-Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler utilization data")
-Cc: stable@vger.kernel.org
-Signed-off-by: Hui Su <sh_def@163.com>
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
----
-Changes in v3:
-- Add a comment explaining why rate_limit_us must be cast before
-  multiplication.
-
-v2: https://lore.kernel.org/r/20260806072656.1386351-1-sh_def@163.com
-
-Changes in v2:
-- Clarify why the multiplication uses 32-bit unsigned arithmetic on
-  32-bit systems.
-- Cast rate_limit_us to s64 to match freq_update_delay_ns.
-- Add Zhongqiu's Reviewed-by tag.
-
-v1: https://lore.kernel.org/r/20260805143942.805176-1-sh_def@163.com
-
- kernel/sched/cpufreq_schedutil.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index dff4ee04694c..614ff0d33c01 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -61,6 +61,17 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
- 
- /************************ Governor internals ***********************/
- 
-+static void sugov_update_rate_limit_us(struct sugov_policy *sg_policy)
-+{
-+	/*
-+	 * Cast rate_limit_us before multiplication to force 64-bit arithmetic.
-+	 * Otherwise, on 32-bit platforms, both operands are converted to
-+	 * 32-bit unsigned long and the multiplication may overflow.
-+	 */
-+	sg_policy->freq_update_delay_ns =
-+		(s64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
-+}
-+
- static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- {
- 	s64 delta_ns;
-@@ -606,7 +617,7 @@ rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf, size_t count
- 	tunables->rate_limit_us = rate_limit_us;
- 
- 	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook)
--		sg_policy->freq_update_delay_ns = rate_limit_us * NSEC_PER_USEC;
-+		sugov_update_rate_limit_us(sg_policy);
- 
- 	return count;
- }
-@@ -848,7 +859,7 @@ static int sugov_start(struct cpufreq_policy *policy)
- 	void (*uu)(struct update_util_data *data, u64 time, unsigned int flags);
- 	unsigned int cpu;
- 
--	sg_policy->freq_update_delay_ns	= sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
-+	sugov_update_rate_limit_us(sg_policy);
- 	sg_policy->last_freq_update_time	= 0;
- 	sg_policy->next_freq			= 0;
- 	sg_policy->work_in_progress		= false;
--- 
-2.43.0
-
+Ok done, I would delay posting until the your bleeding-edge hits linux-next, in the
+hopes of being able to supply a valid base-commit for Sashiko.
