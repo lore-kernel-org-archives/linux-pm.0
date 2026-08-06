@@ -1,68 +1,68 @@
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
+Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B1273DEFF1
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:41:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97F903876A7
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:41:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785998462; cv=none; b=tDF3Rx8EVUmGd/EdcX+l8KoK71soMh4OZhJYzKW6n4rtcnwuMerDcrYnrdOQbNxy9KjXwnfGzD+ZpmWluGtwQSxQqUGBzPPo9A1ZLADn5dEUd1PdWnjv0JUQOxVFrXX4nCYo+sN+9Kph7DVM5wBJAbnBS5h0zXjoT+ipE8TL7I8=
+	t=1785998499; cv=none; b=szBywYtSYdrGcKixDHL2BA6UHxrQ4gUyvPAQPKu2j+wkB7OPIEEI7ZoxqbF7ATY2uyn01YHA3f6I5Ic9Qtn8goDrETzjvBacukxoCbo15xMx2lGtu3a3FD2KXpjpRjNwdix7QbTaDqpikymJwwOn82oPQjinfwAMadEyEUMQIx0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785998462; c=relaxed/simple;
-	bh=+ieNpYftwP3fdQx/oqU0wgv6bnj24ofZj0CnjsRIfWg=;
+	s=arc-20240116; t=1785998499; c=relaxed/simple;
+	bh=jT/b65AheROeycVvzzXHPx0QumPN1qfWe3p2JB8pfHU=;
 	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=LiBrJ9x1wGPnDNe+okgc0c+Jj67S3vvAhigJuDW71N4PIusBmOuLiAK3YmHmoSRBPWnoVCz7yr/ceztfRIdYm+YZ04VB7/+na8Ac4guTpar0jV8BEGoKdiOhW0oZeigBIBmiO1XZve7T98B29jgV6kDoOOi9QdXLs4ezFhxz4GI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=LdEXHVGH; arc=none smtp.client-ip=209.85.214.169
+	 Content-Disposition; b=IQ/BGYYMYo48bQLr1w4tWzBAAAcaM9HHzR2/u7HD7GUpKS15gZT5f9pkrtxsyaI0yXo8NZ+kxMDqw9nDICXxRThyhi8GnGREtVV8rwAe0oGDOH9S+1goSqNXLoxgrtUEQPVUYMsOhb6Fwxy8qHkwYflgtbnPcfQ4hQ7ew2IL4gU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=xtAGLNyw; arc=none smtp.client-ip=209.85.215.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LdEXHVGH"
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-2cf452def93so4810215ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:41:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xtAGLNyw"
+Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-ca97d139d8dso1216777a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:41:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1785998460; x=1786603260; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1785998498; x=1786603298; darn=vger.kernel.org;
         h=content-disposition:content-type:mime-version:message-id:subject:cc
          :to:from:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=4KrtVVdnJpRkxCHWS+gT4fEPtiIBwhvi3D3PiEK4HKg=;
-        b=LdEXHVGHPQYlgkcyJkYStAR8QF8K9J99lmJFJ8jvWWCRv2QlZWs53NlyAhfLcoOmVE
-         EwNkSwfgW0tQNG4Bq9+qmJuajY3e19LUYcOFY7nz8CMIWv0PPsTMZxCh64VlLyEupiyW
-         C/hgRU74tVPaw7NGpKhV01LoZhMLJuUKNNJzzkOXbCiqXMKZdgyY8D38BOuj2imEKJzB
-         KaMPx4tFtqs5LA9CNtRQF7QFNUO0rn1jEuGL7Yn/09uyg1cQISbxWNUmIzqFj9+oiWtL
-         7bPv0IUMmv5ftC2B0FRgQYFzqIi7qgJqpqVvHuA+Sp2TatTfg7JEtVtO63BT9FBGCSKP
-         HxBw==
+        bh=6cR4ttVz7/mybJUP8a33vEkGCZOo/mIBMLrRSStJEls=;
+        b=xtAGLNywYweigdlAnHGFw3nLo2L6L9o38RV38Nq0V0d1gOWuIbJbTbPJ+sxy6zxfdk
+         JES0K4axkAZeRfsU9TvNx8ca+RDNdXbOjJG8WATr+ce4Rb7BwW4xYlAvbXibPlMepxff
+         TDA+OwGczzaBhy2pub1Rwqz8hvq0aFaaH/geobNRvtUON0ImeLJi+yJcn8HwL68sBbpW
+         1JwY13gvcjX65mEWkMGZAjjvLdF/fQVqXdjdPL/BTWyzs066AJoykvzt7D1nLK/6+igX
+         CzAv66HMhaWh+QttkHsyVcZOAKLLO8cIWaRXnxvZ01pKamCxCFDKsI/NZStsZ/PNWjhW
+         ivaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785998460; x=1786603260;
+        d=1e100.net; s=20251104; t=1785998498; x=1786603298;
         h=content-disposition:content-type:mime-version:message-id:subject:cc
          :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=4KrtVVdnJpRkxCHWS+gT4fEPtiIBwhvi3D3PiEK4HKg=;
-        b=J+XrluA0PDImQygVsHOi3eXNlLQ+M4rWA6Z6191fIYfNYtpAW5wKBSAZO4cBdkCDfT
-         qBHgkdhs3VIaHUMg0+4+HCMmYhw6Dow15iW+Wp+0iKxKbCOOJq/ib02Hy6rqcrxrxpqP
-         OnVwExiTbCQjfPdt+8Kfz8kBHZlCUyPYSeEg1PIFR716xzVxpGqJ2Ys/ZM73uMIqwYC3
-         F4qrRx03prYdfueBbK/dV2ZY0htcUg0duCzliwrthyDhu017KSfivJTANtVWqKakd8rI
-         KsKXAiXr660MyahmYc1C5b+wimfU+QztQ2+LmnhUSHK3AXVGC7HEuWI0L0s8dCCmuq8O
-         4UCg==
-X-Gm-Message-State: AOJu0YyLT/NSoqxl5t/n31g9MQifANkN9oIAiubB4cg9NWnYcso4VrYL
-	70dP6xuAiNxH+J17BYf/DHwRyIGMQWS6kqtOKbIjQRhrlFdv/p6uMzL81xGX7RQAr50=
-X-Gm-Gg: AR+sD11HRbS5ooZhPRQliZSlBQxx4HLEZjG+9BmyXbAOxhfSf+HCesDschs+t0LT19g
-	ajfsE9fE8qnJHeDxGnZBeOMqsU0PRityh5f+Y9LeVOLYri/BGPMtqAZIzllGSk8ltZr4ofZGaky
-	ZK8OvlQC/1F+01W0MaqUgfQbZGKy6R50XdfO9zZ2+9pF+zEul1BdRZk2bd7sznwUIcThu3pnwRi
-	Yq5VsGkWCQA43Kveiu1MSXHFaLWM3JKx/cb0pOAaMcbPw6uyTMtis79HtuHRb77LF2XNkkDV+x1
-	j91TKoNY/tcllomoKf5EQ+1h27VR/BqPbfYsKqa6oLbdRqbxe92fMZzezD6K7ADMybfBFwwVsox
-	6cHGNP1SfCWOOevtFojf2T+ksVhzXKAbnYs2MDCx8WUeaIrXNftpZXRMizdSkdj3b37sgciF8Uj
-	JDxhzHUEM+Ns/nadi/Ps1+8LrC8ZHYsBjhb4S0l7nwh0sZXZ6MnWrV7JLFMYQq
-X-Received: by 2002:a17:903:1845:b0:2bd:2c3a:2a36 with SMTP id d9443c01a7336-2d0f121ed8amr61613285ad.0.1785998460302;
-        Wed, 05 Aug 2026 23:41:00 -0700 (PDT)
+        bh=6cR4ttVz7/mybJUP8a33vEkGCZOo/mIBMLrRSStJEls=;
+        b=l05JlrlMkOUOFIPu1VagcIRGZQUMi5gJ0bsyDY3iH6s3tWzcRbxldXzA7K+OfWb+tY
+         mHnGI+1jes84xWkWLBl+pksH77moorbWkOXYV4/eSvdQxqrxr+Im/+5TuR5x5/siEO9P
+         vC3npwGrgN1KtFa2wqpBKsGqBmrzPZtb/Wgg357aMmJqsLB/7zARpIjlaE92JIXxrkYL
+         LuuC8lLHi1IbKwVFV4s95YR5gEygBNrPNi9Xlanp2mBrNVFdJ2Q2SfA3MQCSxRatSbJV
+         LH2QWnD2HVm+Eq0wP2mrRjie6o+5m4frkQKr9Ha3zPYRc4oWXueLki65A0mKpUS56OWq
+         8d2Q==
+X-Gm-Message-State: AOJu0Yxe8A7uqGo/j/R2ErRuv5d1yf4CKsuvppEzOF4TYFXg5GM2dT+k
+	xdL4sWEp+4FpGJx1ZIayVqd1OyOgJoKlkMGkE3Ar3j3ofUMY5tyfmozKQ6aDDuKr/6o=
+X-Gm-Gg: AR+sD10dmkRfkW8lLm749hERqp4oLpIPKXeMnrsEe498w1HVQx4Y++Gu7CAJnXHLPVO
+	UmwG2jjeGhqygIhevoCmhmvwYrenNX7dsNNOaoDkOwyySoh9j+CdW5SLeMyK6SrlQbVm60TLb4T
+	z09QEP9vEFdFBLkxT9LaZphd1VCTRVRPwivwN1ll5TemTkDc6cKB6CyPwDcJXf8GWOmPIklJfRr
+	3UreeLLiuGbV3FRUr5DLJM4zPkodm29lD5arQnu3sM/11953D9UhyvpOeOO3jcxnbclY9nCFM4M
+	SongWwj9hSocScPoSYFYI+kop1VjqLGZyizoWVDPaP7t7OHo7xJIMEXvC46uHAQ+UBmvr8CwpwU
+	pjVw2CDAmrAjV3owYUAA3RU5oMY/izEiJAr1qoSnN5zKRzUSfbyyRddBbbtU8fBOAPaf68YyLoc
+	D+Yj8rW+Wj8r9iz2gSuZ3LNoPlMMinavMI4rvy8XkWrZSBO7Z+Bd/EJPw5Shg+
+X-Received: by 2002:a05:6a21:3181:b0:3c3:6544:6083 with SMTP id adf61e73a8af0-3cb85bdca07mr15754207637.0.1785998497793;
+        Wed, 05 Aug 2026 23:41:37 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3158673be4dsm30695841eec.16.2026.08.05.23.40.58
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315ae6c1fd4sm1500620eec.14.2026.08.05.23.41.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Aug 2026 23:40:59 -0700 (PDT)
-Date: Thu, 6 Aug 2026 12:10:56 +0530
+        Wed, 05 Aug 2026 23:41:36 -0700 (PDT)
+Date: Thu, 6 Aug 2026 12:11:34 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>
-Subject: [GIT PULL] OPP updates 7.3
-Message-ID: <id2g5cfhmuiy7mkf5vlfkefkh35miye2qdsgnivbkecera4wur@y33swy7czaua>
+Subject: [GIT PULL] cpufreq/arm updates for 7.3
+Message-ID: <ji5tgqbqadfypamzmr26pizz6f6mrvr75wndg5nd7exa52vm7u@eksikcoeenpj>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -78,28 +78,60 @@ The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482:
 
 are available in the Git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/opp-updates-7.3
+  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufreq-arm-updates-7.3
 
-for you to fetch changes up to 84f05af0975c9f9c8ffee0361d6f7cbb1f289231:
+for you to fetch changes up to 8c3afcf27fa4582c1ab912503dc8a4ebb8dc0f82:
 
-  opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer (2026-08-06 11:54:14 +0530)
-
-----------------------------------------------------------------
-OPP updates for 7.3
-
-- Fix cleanup ordering around scope-based pointers (Gregor Herburger).
-
-- Use clk_get_optional() for optional clocks (Praveen Talari).
+  cpufreq: imx6q: fix out-of-bounds write when probed more than once (2026-08-06 11:54:41 +0530)
 
 ----------------------------------------------------------------
-Gregor Herburger (1):
-      OPP: Fix cleanup ordering
+CPUFreq arm updates for 7.3
 
-Praveen Talari (1):
-      opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer
+- Minor fixes / cleanups in cpufreq drivers (Dan Carpenter, Guru Das
+  Srinagesh, Haoxiang Li, Karl Mehltretter, Sasha Finkelstein, and Pan
+  Chuang).
 
- drivers/opp/core.c | 67 +++++++++++++++++++++++++++++--------------------------------------
- 1 file changed, 29 insertions(+), 38 deletions(-)
+- Fix cpufreq table creation and bios_limits() callback in the Rust
+  bindings (Priya Bala Govindasamy).
+
+- Add IPQ5210 support to qcom-nvmem driver (Varadarajan Narayanan).
+
+----------------------------------------------------------------
+Dan Carpenter (1):
+      cpufreq: spear: Fix an IS_ERR() vs NULL bug in spear1340_set_cpu_rate()
+
+Guru Das Srinagesh (1):
+      rust: rcpufreq_dt: use vertical import style
+
+Haoxiang Li (1):
+      cpufreq: apple-soc: Fix OPP table cleanup
+
+Karl Mehltretter (2):
+      cpufreq: imx6q: fix devres accumulation across driver rebind
+      cpufreq: imx6q: fix out-of-bounds write when probed more than once
+
+Pan Chuang (1):
+      cpufreq: brcmstb-avs: Remove redundant dev_err()
+
+Priya Bala Govindasamy (2):
+      rust: cpufreq: Add CPUFREQ_TABLE_END as last table entry in TableBuilder::to_table
+      rust: cpufreq: Fix temporary write in Registration::bios_limit_callback
+
+Sasha Finkelstein (1):
+      cpufreq: apple-soc: Calculate frequency as a 64-bit value
+
+Varadarajan Narayanan (1):
+      cpufreq: qcom-nvmem: Add IPQ5210 support
+
+ drivers/cpufreq/apple-soc-cpufreq.c   | 38 +++++++++++++++-----------------------
+ drivers/cpufreq/brcmstb-avs-cpufreq.c |  5 +----
+ drivers/cpufreq/cpufreq-dt-platdev.c  |  1 +
+ drivers/cpufreq/imx6q-cpufreq.c       |  6 ++++--
+ drivers/cpufreq/qcom-cpufreq-nvmem.c  |  8 ++++++++
+ drivers/cpufreq/rcpufreq_dt.rs        | 13 ++++++++++---
+ drivers/cpufreq/spear-cpufreq.c       |  4 ++--
+ rust/kernel/cpufreq.rs                | 24 +++++++++++++++++-------
+ 8 files changed, 58 insertions(+), 41 deletions(-)
 
 -- 
 viresh
