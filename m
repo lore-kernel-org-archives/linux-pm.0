@@ -1,144 +1,108 @@
-Received: from mail-ot1-f80.google.com (mail-ot1-f80.google.com [209.85.210.80])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D19F3ACA64
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 00:00:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.80
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCF22349CD2
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 00:56:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785974437; cv=none; b=ULLxKQw3Hz/0eDShG50RHhc9t+rukHqBrZ9BQMJ3z9G/Grb2NoFLnUV9UarKjQQqw10y+c7PeOYElYASbaUZXRM+6rKH0OCg5rp6AKm6ol9K1+TxGawT9cKQdfsHD15/0RkrMqNcnciuM0Vq0PgJHo/kbgan8PN/lrMYMotoowc=
+	t=1785977790; cv=none; b=sp2fvo+KjqfxyqFs+NWH6a3rlr3qV+vGcu7iC3fZ60E8RWVo6mfz3VhVIdognH1ftYuqa0+y7ZNlJLW3M+HjrrAWwiOow9gcnS2V/QBQLzKBGhf7Le7SOFYbZSwxZoybnV08LswoibpQu0QF9F77yK65YLhsJbiSnBF4v/wLobk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785974437; c=relaxed/simple;
-	bh=hcohk4NzbRT14PGGfBMWxdKRFk+Z0cwS1gPHlcbGaK8=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=aRGIZ+EDMXBCm6Jl3rYK/vWsvBhSGbjmbbKval49bwZC746LCcPPDlnIl1eSqKFYpOD+FC18ON9vS5DQwEPczrtKGbLiRNw3wTO/w7pc4RwICmeDHPi04or0gdqhDX+jR8sZ0AawzoytXKRqNK9G4ITmtilTIcmXEBImPpYy+8g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.210.80
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-ot1-f80.google.com with SMTP id 46e09a7af769-7e9e2db9914so503852a34.1
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 17:00:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785974434; x=1786579234;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/HajvAZFk0gPgBAXqiTmSSdY8BxkppvZ2ryfU4N5QNM=;
-        b=HMcBts2SaTIR0P2Xket4TUsRY0mFv2utd0OGErgYE7j8YThHQgfGxKVorj9EBLmORh
-         sVq6YQlWf+9wqu9QkgKZAEkiwsDdu87zA1dgW8Ayp/wYfACYZZNQeWodUqjTHX/oUonH
-         p3iNc510jakJ5vD+dYx4hT1gNwYoLyq1TNDvtEb+XPjZYJUmF3Rjr6yA17wxv6e59Pzo
-         t1NJxu0tT8g8JxJdA44yGywBtzQSeU54+Sqpmsb0gEejHYSZ/kYLjDhEc4hLnX4l9l4f
-         phAMMJ32+XdRGArUeUdnVeaNSsEd2ZvbZO4PD0ZxyINFZ2PQXEVeLh28sk6O2Ef3EzT5
-         z8KA==
-X-Forwarded-Encrypted: i=1; AHgh+RrbdBkD6I6UA3E/TX0OiMOqDdDWZoaOiWD5wAGGnpyveZXXCfoLj/2tXEdGqOeltqWciX4YG0USaQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzlprKSgNcVzETspLZ1OVEZMOdTErY0M+A9YyuN+1AzU0DBd82N
-	TKqxA7fxlaM+fkqN0ZLOOS5NZ+/xWFeM66tBvzL1kUJC+RRYBUFOojEFa1zEjKtbn+wh7A1AvYW
-	Hpkz04MKuKxWTbHNBIGcLbv6bOKrK3CjGVHYC6NstkwYcmFLelAff4BX13dA=
+	s=arc-20240116; t=1785977790; c=relaxed/simple;
+	bh=q5qto7q6St/Ue9IF5HLUyJ7+iNpjBzl/BR/tr4rTl/4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NROjaLZ1JVu6ktGtkv3OouMW0PctRtBQbfT7ZWLIAFG94jGiOPZFP08i9GY6c8obb8tSHggeq98kJBtwYrDEokpvQ67dHQS4MUCdOQv053IRLqBppKnMUM4ypoiuFepfRawCCq8zrI0wSWrkTjRVq0r68lHq2lyJuzWSvX9rOxs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: a376c254913111f1aa26b74ffac11d73-20260806
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:d241f2f0-376a-4b78-989e-9ecd2b31d93c,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:422c005b18c63f922ad3c371f6b07ad1,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|136|817|865|898,TC:nil,C
+	ontent:-10|-8|-5|14|50,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil
+	,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: a376c254913111f1aa26b74ffac11d73-20260806
+X-User: xiongxin@kylinos.cn
+Received: from [10.42.13.16] [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <xiongxin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
+	with ESMTP id 1318032427; Thu, 06 Aug 2026 08:56:20 +0800
+Message-ID: <65192d9f-a60c-42cf-9ff5-59f52377c9d4@kylinos.cn>
+Date: Thu, 6 Aug 2026 08:56:18 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:2215:b0:6ae:7f68:22f3 with SMTP id
- 006d021491bc7-6aeb24aa301mr1600861eaf.16.1785974434448; Wed, 05 Aug 2026
- 17:00:34 -0700 (PDT)
-Date: Wed, 05 Aug 2026 17:00:34 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a73cea2.01d0871a.3a0d52.000b.GAE@google.com>
-Subject: [syzbot] [pm?] WARNING in __set_task_frozen
-From: syzbot <syzbot+209eccd8f507de9f7f1b@syzkaller.appspotmail.com>
-To: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	pavel@kernel.org, rafael@kernel.org, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] PM: hibernate: flush icache for restored pages from task
+ context
+To: Will Deacon <will@kernel.org>
+Cc: rafael@kernel.org, pavel@kernel.org, james.morse@arm.com,
+ linux-pm@vger.kernel.org, Riwen Lu <luriwen@kylinos.cn>
+References: <20260803055412.63981-1-xiongxin@kylinos.cn>
+ <anH1mvwdiQxjwfw1@willie-the-truck>
+Content-Language: en-US
+From: Xiong Xin <xiongxin@kylinos.cn>
+In-Reply-To: <anH1mvwdiQxjwfw1@willie-the-truck>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hello,
+> On Mon, Aug 03, 2026 at 01:54:12PM +0800, Xiong Xin wrote:
+>> When resuming from hibernation with `hibernate=nocompress`, the kernel
+>> loads the image via load_image(), which submits read bios asynchronously
+>> and waits on them with hib_wait_io(). The bio completion callback
+>> hib_end_io() runs from the block IRQ/softirq path.
+>>
+>> Commit f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages
+>> restored in-place") added a flush_icache_range() call inside hib_end_io()
+>> (under clean_pages_on_read). On architectures such as ARM64,
+>> flush_icache_range() ends with kick_all_cpus_sync() -> smp_call_function()
+>> (wait=1), which contains:
+>>
+>>      WARN_ON_ONCE(!in_task());
+>>
+>> Because hib_end_io() executes in hardirq/softirq context, in_task() is
+>> always false there, and the WARN fires which happens while the resume
+>> task is asleep in hib_wait_io() and the CPU is idle, the warning log as
+>> follows:
+> 
+> Hmm, do we have any secondary CPUs online at this point? I wonder if
+> either smp_call_function() could push the WARN() down into the branch
+> where it knows it is going to call remotely or whether we could elide
+> the call to kick_all_cpus_sync() altogether in that case?
 
-syzbot found the following issue on:
+Thanks for the review.
 
-HEAD commit:    848acc8ffe1b Merge tag 'fsverity-for-linus' of git://git.k..
-git tree:       upstream
-console+strace: https://syzkaller.appspot.com/x/log.txt?x=11cd7e32580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=cb17729fb04b1e3a
-dashboard link: https://syzkaller.appspot.com/bug?extid=209eccd8f507de9f7f1b
-compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14fa93b9580000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=17dd7649580000
+Q1: Do we have any secondary CPUs online at this point?
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/375d27e96ecb/disk-848acc8f.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/4ba19a656b9d/vmlinux-848acc8f.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/7c2a17aaee7c/bzImage-848acc8f.xz
+Yes, the secondary CPUs are online, but they are all (almost) in the idle
+loop state. The current problem is that the CPU enters idle state due 
+toio wait and there are no other processes that can be scheduled (All 
+userprocesses and most kernel threads have been frozen). Then it is 
+awakenedby an interrupt (irq) to handle the asynchronous IO callback 
+function
+hib_end_io(). As a result, the kick_all_cpus_sync() call is triggered
+in the interrupt context, leading to the generation of a WARNING message.
+Is this unrelated to whether other CPUs are online?
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+209eccd8f507de9f7f1b@syzkaller.appspotmail.com
+Q: Could we elide kick_all_cpus_sync() when all other CPUs are idle?
 
-------------[ cut here ]------------
-debug_locks && p->lockdep_depth
-WARNING: kernel/freezer.c:139 at __set_task_frozen+0x260/0x340 kernel/freezer.c:139, CPU#0: syz-executor276/5646
-Modules linked in:
-CPU: 0 UID: 0 PID: 5646 Comm: syz-executor276 Not tainted syzkaller #0 PREEMPT_{RT,(full)} 
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/24/2026
-RIP: 0010:__set_task_frozen+0x260/0x340 kernel/freezer.c:139
-Code: 00 80 00 00 89 e8 5b 41 5c 41 5d 41 5e 41 5f 5d e9 15 09 97 09 cc e8 ef 21 15 00 90 0f 0b 90 e9 f7 fe ff ff e8 e1 21 15 00 90 <0f> 0b 90 eb 93 44 89 e1 80 e1 07 80 c1 03 38 c1 0f 8c c3 fd ff ff
-RSP: 0018:ffffc9000453f9f0 EFLAGS: 00010093
-RAX: ffffffff81b0b75f RBX: ffff888040865d00 RCX: ffff88801eaebe00
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: 0000000000000002 R08: 0000000000000000 R09: 0000000000000000
-R10: dffffc0000000000 R11: ffffffff81b0b500 R12: ffff888040865d18
-R13: 1ffff1100810cba3 R14: 0000000000000000 R15: ffff888040866900
-FS:  0000555557b46400(0000) GS:ffff888125c3e000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000555557b577e8 CR3: 000000003c3b8000 CR4: 00000000003526f0
-Call Trace:
- <TASK>
- task_call_func+0x1aa/0x260 kernel/sched/core.c:4495
- __freeze_task kernel/freezer.c:150 [inline]
- freeze_task+0x216/0x390 kernel/freezer.c:169
- try_to_freeze_tasks+0x190/0x620 kernel/power/process.c:54
- freeze_processes+0xce/0x1e0 kernel/power/process.c:137
- suspend_freeze_processes kernel/power/power.h:281 [inline]
- suspend_prepare kernel/power/suspend.c:387 [inline]
- enter_state kernel/power/suspend.c:609 [inline]
- pm_suspend+0x2f1/0x760 kernel/power/suspend.c:644
- state_store+0x206/0x290 kernel/power/main.c:819
- kernfs_fop_write_iter+0x3a5/0x540 fs/kernfs/file.c:345
- new_sync_write fs/read_write.c:595 [inline]
- vfs_write+0x61e/0xbb0 fs/read_write.c:687
- ksys_write+0x156/0x270 fs/read_write.c:739
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0x174/0x580 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7fae06a8bea9
-Code: c0 79 93 eb d5 48 8d 7c 1d 00 eb 99 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 d8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007ffcfa30da68 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 0000200000000000 RCX: 00007fae06a8bea9
-RDX: 0000000000000003 RSI: 0000200000000200 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 000000000000000a R09: 000000000000000a
-R10: 000000000000000a R11: 0000000000000246 R12: 00007ffcfa30dd78
-R13: 0000000000000002 R14: 0000200000000003 R15: 0000000000000000
- </TASK>
+That's a good suggestion.
 
+But as far as I know, the idle check cannot be made race-free. idle_cpu()
+or available_idle_cpu() is a best-effort snapshot. There is a TOCTOU window
+between the check and the elision during which another CPU can be woken by
+any interrupt and start executing the flushed range with stale I-cache 
+entries.
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+So, in the flush_icache_range() function, is it safe to check whether all
+other CPUs are in the idle state?
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
-
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
