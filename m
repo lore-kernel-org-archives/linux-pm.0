@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8FDE84477E6;
-	Fri,  7 Aug 2026 11:13:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DF6DC472F92;
+	Fri,  7 Aug 2026 11:13:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786101230; cv=none; b=goX8OYTWe7bnfr3JVY5Ym74C/6MLX18y3EH//XQ6Q6txIs2VtOHOVlq5R1EdyMHamdoeaNX8syy/yaM4eVmtBYqpg/0lATABMTbo0n/rImsleoqJn2JtG4NFa8+3dCFlgPZlxNZhIzip2B//lnf9W6JTJdJ9i2vpDVKE6vJ2KkE=
+	t=1786101232; cv=none; b=B4aTMU/B1L8RTVpBgsoXR7jApXJnDWQnmCM0lYO4b+C+h5gtm22deLcO7yfyvaJ5xPTBI3a9X3Beg69tcoFK3lPpue5biY4Dt3/Rz/zmveTXfVOZ9zHJbSOdMnCPRASzDsKvEGaxNCy91hihVzIoKyr0ddOYAtEGGNCT81UvR2o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786101230; c=relaxed/simple;
-	bh=p0n2ELavy35QF/Or53ZWYLfGOrfhm1LHA7+pfF6GAxQ=;
+	s=arc-20240116; t=1786101232; c=relaxed/simple;
+	bh=7a0GirumEDdHHQ/Z8P050Cgx9QYuO7/hotLkwJMhE2k=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=BBHVW7aawOf7wtlztuBzDF1mvAg19vU+9ZAS33dSmmI43xarmXOclccL4yIXpcFAIQ3kvkWrdnNl70gXTDgmoV2nbwduls6sAF34X0+muStY7Nt75IYUjTOAlRoMplNV22NUpxZDWfo17k7RLcxs2tv2ysStPoz+UdeBNbHKaC0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=glMQGM7/; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=HYW/IMcULn+7nudO1ZhVmbZMDV1m59Ky+RTdUvSdcnvPcHweScxKYzIOCUNC8yEmAjhCMZ12BQHB32dG670RUOYL6Cv1lZ/P0IwTpesYaKGv8KeDrJ/0IwnzfxOPAsrB8hBAZ7nmQgydo4w+j82WDh9kGS/ncOtHBZCwMaNL5ZM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=bFpe96QO; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="glMQGM7/"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="bFpe96QO"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2265E1A9A;
-	Fri,  7 Aug 2026 04:13:44 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 613AE1516;
+	Fri,  7 Aug 2026 04:13:46 -0700 (PDT)
 Received: from e127648.cambridge.arm.com (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A39A83F86F;
-	Fri,  7 Aug 2026 04:13:45 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 79B003F86F;
+	Fri,  7 Aug 2026 04:13:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786101228; bh=p0n2ELavy35QF/Or53ZWYLfGOrfhm1LHA7+pfF6GAxQ=;
+	t=1786101230; bh=7a0GirumEDdHHQ/Z8P050Cgx9QYuO7/hotLkwJMhE2k=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=glMQGM7/J1jE9SQIQp21GuhGncSMX7jSdrxpmETQPkjQdZRMDYB1k/n8Pt6GFjRrF
-	 /sGF8a00ey+WRweOyr+0Dz9zs/krp+XidXlQu0pCLdY4d0rUN94iCOAfZWInKq/Oqo
-	 dzG6oyIj4U9+Q0+CyJ40iPfV5Mg+uetBZbw1uj/w=
+	b=bFpe96QOX8qypc/pDCZsNabzzFxAAN/uX915mk2B2lGQlwEHAZ7453ckkrjo7x1ph
+	 Q8J+4kyL3O6lv+Z/5aB6tJ66NmqqzJPDUMPlcYk0GE5XqYOFpD/bVG+OQRPp9+dhIN
+	 VZwvr8PdrVReGq+hqYQ89LsIbGLR5Yd7cKEth3yA=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -41,9 +41,9 @@ Cc: linux-pm@vger.kernel.org,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH 14/15] ACPI: CPPC: Validate SystemIO overlaps across processors
-Date: Fri,  7 Aug 2026 12:13:02 +0100
-Message-Id: <20260807111303.1062391-15-christian.loehle@arm.com>
+Subject: [PATCH 15/15] ACPI: CPPC: Clear Performance Limited without a stale read
+Date: Fri,  7 Aug 2026 12:13:03 +0100
+Message-Id: <20260807111303.1062391-16-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260807111303.1062391-1-christian.loehle@arm.com>
 References: <20260807111303.1062391-1-christian.loehle@arm.com>
@@ -55,76 +55,84 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-System I/O port space is global, but the overlap check only compares
-registers within one _CPC package.  Whole-width accesses from different
-processors can therefore target partially overlapping port ranges and
-clobber each other.
+The Performance Limited status bits are sticky and write-zero-to-clear.
+ACPI 6.6 Section 8.4.6.1.3.2 also requires both entities to use interlocked
+accesses.
 
-Extend the physical interval registry to SystemIO.  Permit read-only
-overlap and exact full-width aliases of the same logical CPPC entry.
-Reject every other cross-processor overlap involving a writable entry.
+cppc_set_perf_limited() currently reads the register, computes a new value,
+and writes it in a separate transaction. If the platform reports another
+excursion between those transactions, the stale write can clear that new
+event.
 
-Fixes: a2c8f92bea5f ("ACPI: CPPC: Implement support for SystemIO registers")
+Write zero to the requested bits and one to the other defined status bits
+directly. Keep reserved bits zero as required for hardware status registers
+by ACPI 6.6 Section 4.6.1. This removes the stale read window.
+
+Reject SystemMemory descriptions which require read-modify-write to
+preserve the containing access unit, because the per-descriptor spinlock
+cannot interlock that RMW with platform updates. Also reject 64-bit
+SystemMemory descriptions on 32-bit kernels, where generic readq()/writeq()
+may be split into two 32-bit operations and cannot provide the required
+portable interlocked access. A naturally aligned full-width QWord remains
+supported on 64-bit kernels, where the architecture provides a native
+64-bit MMIO accessor.
+
+Fixes: 13c45a26635f ("ACPI: CPPC: add APIs and sysfs interface for perf_limited")
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/acpi/cppc_acpi.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index bcb3a6f075f0..621b190aea3c 100644
+index 621b190aea3c..4f55607fc116 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -138,6 +138,7 @@ INTERVAL_TREE_DEFINE(struct cpc_non_mmio_node, rb, u64, subtree_last,
- 		     cpc_non_mmio_itree)
+@@ -406,6 +406,13 @@ static int cpc_validate_sysmem_reg(const struct cpc_desc *cpc_desc,
+ 		       cpc_desc->cpu_id, cpc_desc->version, name);
+ 		return -EINVAL;
+ 	}
++	if (reg_idx == PERF_LIMITED &&
++	    (gas->bit_offset || gas->bit_width != access_width ||
++	     (access_width == 64 && !IS_ENABLED(CONFIG_64BIT)))) {
++		pr_err("CPU%d: Performance Limited register cannot use an interlocked SystemMemory access\n",
++		       cpc_desc->cpu_id);
++		return -EINVAL;
++	}
  
- static struct rb_root_cached cpc_pcc_trees[MAX_PCC_SUBSPACES];
-+static struct rb_root_cached cpc_sysio_tree = RB_ROOT_CACHED;
- static DEFINE_MUTEX(cpc_non_mmio_lock);
+ 	return 0;
  
- static struct cpc_sysmem_node *cpc_sysmem_first(u64 start, u64 last)
-@@ -590,6 +591,8 @@ static struct rb_root_cached *cpc_non_mmio_tree(u8 space_id, u8 pcc_ss_id)
+@@ -3054,9 +3061,6 @@ EXPORT_SYMBOL_GPL(cppc_get_perf_limited);
+  */
+ int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
  {
- 	if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM)
- 		return &cpc_pcc_trees[pcc_ss_id];
-+	if (space_id == ACPI_ADR_SPACE_SYSTEM_IO)
-+		return &cpc_sysio_tree;
- 	return NULL;
- }
- 
-@@ -607,7 +610,8 @@ static int cpc_validate_non_mmio_pair(const struct cpc_non_mmio_node *a,
- 	    a->last == b->last)
+-	u64 current_val, new_val;
+-	int ret;
+-
+ 	/* Only bits 0 and 1 are valid */
+ 	if (bits_to_clear & ~CPPC_PERF_LIMITED_MASK)
+ 		return -EINVAL;
+@@ -3064,14 +3068,13 @@ int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
+ 	if (!bits_to_clear)
  		return 0;
  
--	name = "PCC";
-+	name = a->space_id == ACPI_ADR_SPACE_PLATFORM_COMM ?
-+	       "PCC" : "SystemIO";
- 	pr_err("CPU%d: %s _CPC register %u conflicts with CPU%d register %u\n",
- 	       a->desc->cpu_id, name, a->reg_idx, b->desc->cpu_id,
- 	       b->reg_idx);
-@@ -662,10 +666,11 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
- 			continue;
+-	ret = cppc_get_perf_limited(cpu, &current_val);
+-	if (ret)
+-		return ret;
+-
+-	/* Clear the specified bits */
+-	new_val = current_val & ~bits_to_clear;
+-
+-	return cppc_set_reg_val(cpu, PERF_LIMITED, new_val);
++	/*
++	 * Performance Limited is write-zero-to-clear.  Write one to the other
++	 * defined sticky bits so a concurrently reported event is not cleared
++	 * using a value obtained by an earlier, separate read transaction.
++	 */
++	return cppc_set_reg_val(cpu, PERF_LIMITED,
++				CPPC_PERF_LIMITED_MASK & ~bits_to_clear);
+ }
+ EXPORT_SYMBOL_GPL(cppc_set_perf_limited);
  
- 		space_id = reg->cpc_entry.reg.space_id;
--		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM)
-+		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM &&
-+		    space_id != ACPI_ADR_SPACE_SYSTEM_IO)
- 			continue;
- 
--		if (pcc_ss_id < 0) {
-+		if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM && pcc_ss_id < 0) {
- 			ret = -EINVAL;
- 			goto out_unregister;
- 		}
-@@ -677,7 +682,8 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
- 		node->desc = cpc_desc;
- 		node->reg_idx = i;
- 		node->space_id = space_id;
--		node->pcc_ss_id = pcc_ss_id;
-+		node->pcc_ss_id = space_id == ACPI_ADR_SPACE_PLATFORM_COMM ?
-+				      pcc_ss_id : 0;
- 		tree = cpc_non_mmio_tree(space_id, node->pcc_ss_id);
- 
- 		match = cpc_non_mmio_itree_iter_first(tree, node->start,
 -- 
 2.34.1
 
