@@ -1,107 +1,122 @@
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Received: from out-184.mta1.migadu.com (out-184.mta1.migadu.com [95.215.58.184])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 446DF42AF95;
-	Fri,  7 Aug 2026 13:16:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.67.10.101
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECDDB3F4125
+	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 13:33:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.184
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786108609; cv=none; b=hWYjO8Sbu2QJ9Smwk5tpwp0YmUErF/XC9OV57x5d/lLFeKbf7hLL/g3aH/QfxPFKk+aXmcid15BVeeMbyfC5uY4yKZm0tuo678cxtzY1EL1QwiCaVW1nMKXO70Q54uchC1ezD7Ly76O4YM7VQePwzfMzxpB2bHJCdHKoNWSYjXM=
+	t=1786109591; cv=none; b=WLJQQ/pRhYUz7utT03mKKRJsBfr15GCDb0r6dXULnHfEpJ2ZiXyNsgeyJ29VY3shOY31h+D9z/dDvPt25Ao8JS4eZIk1UIoj6fpbYM+JKy5qVHtqPEP1+kTqT7CbIBBnJQB+yzUqb2vATNwR8hA7hZRN+9ezi1x/aBP46kMjPcQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786108609; c=relaxed/simple;
-	bh=275TKm/AQkopBHdkuCASW4g5iuoN/RumyTuzpPTV1hM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CXVekynKQmGeIby6YeYYeqtJsR2AIyNUP8EfoD2nu46QS2E//1OyiNSjX+Qb5OEronpRyd9rq9NC0kvIaLgeVobcGZEjYT8xMkgZULHB2bndRUnshX80AI9DpsFiT5nsUrA9c7NdtUgQ34o0Xl9QJcHYsVu6kqIAc1UAb8WPmho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; spf=pass smtp.mailfrom=lunn.ch; dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b=Whe+yB5E; arc=none smtp.client-ip=156.67.10.101
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lunn.ch
+	s=arc-20240116; t=1786109591; c=relaxed/simple;
+	bh=EvU8X8riwgBxPt95qK6fSgEun1V6d4CbtDjwgcsvFH8=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=P74vfX87THIkmmBi6vXsyawhyhw7isH3pen7C0hiKCMJ6POnr1u8zVexnj9Ta1Mk2VtzbsfKfhufG3esZgRksHap0hbN88NY/l/FHN4QmUBilsVu0hTO9mE4vviKdQ8X0yqxXM7O5j8LLyqA9PvX9V6m3cNxF/CA3EPhr2jzOXA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com; spf=pass smtp.mailfrom=cknow-tech.com; dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b=b0KVAaI/; arc=none smtp.client-ip=95.215.58.184
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cknow-tech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b="Whe+yB5E"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=+UWe1yX17cQB95ay+ZQVnMP9BDbpBIsEUhuX6QM+s5k=; b=Whe+yB5EzI7EwATAG4Fcqi+MVA
-	1pbi7YHrp2BcRjzSXdZeMLPCt0+KAnR7GC/mWBOksTVDZmIiDTUhGJXF+vxK6JpmUTeY33Oel/4il
-	bXO7Xw2qYhMpUJU2Wtd//FmZJnTBd6PBAk1Bff+M9eJefIJp9rupik76288n4JScNOcY=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1wsKQB-00GZWU-M9; Fri, 07 Aug 2026 15:15:35 +0200
-Date: Fri, 7 Aug 2026 15:15:35 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: James Hilliard <james.hilliard1@gmail.com>
-Cc: Heiner Kallweit <hkallweit1@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Richard Cochran <richardcochran@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Jonas Gorski <jonas.gorski@gmail.com>,
-	Vladimir Oltean <olteanv@gmail.com>,
-	Ciprian Regus <ciprian.regus@analog.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Mark Einon <mark.einon@gmail.com>,
-	Iyappan Subramanian <iyappan@os.amperecomputing.com>,
-	Keyur Chudgar <keyur@os.amperecomputing.com>,
-	Michael Chan <michael.chan@broadcom.com>,
-	=?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Pavan Chebbi <pavan.chebbi@broadcom.com>,
-	=?iso-8859-1?Q?Th=E9o?= Lebrun <theo.lebrun@bootlin.com>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Wei Fang <wei.fang@nxp.com>, Frank Li <frank.li@nxp.com>,
-	Shenwei Wang <shenwei.wang@nxp.com>,
-	Jijie Shao <shaojijie@huawei.com>,
-	Jian Shen <shenjian15@huawei.com>,
-	Bryan Whitehead <bryan.whitehead@microchip.com>,
-	UNGLinuxDriver@microchip.com, Vladimir Zapolskiy <vz@mleia.com>,
-	Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>,
-	Parthiban Veerasooran <parthiban.veerasooran@microchip.com>,
-	Timur Tabi <timur@kernel.org>, nic_swsd@realtek.com,
-	Byungho An <bh74.an@samsung.com>,
-	Steve Glendinning <steve.glendinning@shawell.net>,
-	Maxime Chevallier <maxime.chevallier@bootlin.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	FUJITA Tomonori <fujita.tomonori@gmail.com>,
-	Siddharth Vadapalli <s-vadapalli@ti.com>,
-	Roger Quadros <rogerq@kernel.org>,
-	Jiawen Wu <jiawenwu@trustnetic.com>,
-	Mengyuan Lou <mengyuanlou@net-swift.com>,
-	Thangaraj Samynathan <Thangaraj.S@microchip.com>,
-	Sebastian Reichel <sre@kernel.org>, Simon Horman <horms@kernel.org>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-omap@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH net-next v4 0/4] net: mdio: support dynamic OF device
- changes
-Message-ID: <b2e83ba0-2e9c-4105-b806-8a155e8b9aa5@lunn.ch>
-References: <20260806-submit-mdio-of-dynamic-v2-v4-0-4beb0c50d5ba@gmail.com>
+	dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b="b0KVAaI/"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260806-submit-mdio-of-dynamic-v2-v4-0-4beb0c50d5ba@gmail.com>
+Mime-Version: 1.0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cknow-tech.com;
+	s=key1; t=1786109585;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+n8Po8atSSkMnPysk0cqVTEi9Ye8QqiCHIVEioALzPE=;
+	b=b0KVAaI/pv6kp+yfCYn3YYDHWnfZnrLzbBjAc7J0fWB0yU+BGkTD9gBklUKIRPlMGP1UmG
+	iLV/byVAOt2RGu/78okKn+Az+NsAw7d7PZ7PV0xXRPvUgVxPrP2UgTk3Hity2+EvLn60vm
+	K0hzqZEhHP5VaM8bovkIcDxp9lzroZkGHqTMJELbohLhTgjRxCSMl9z5B4HOfgB9YpYaLj
+	LCpObAZHLExhCQeQjcEY9p8H0ulFZYXNCMiLqq9St4/9sjBimMDJsQX18r+07sNxx3WocS
+	vYQBU3HJBxewZHW5DWg7X+V0cIlkORa87DI+z8yBQVn/isxzM6bX5N8Kg4WK4w==
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 07 Aug 2026 15:32:52 +0200
+Message-Id: <DKIR028TZNJ3.3BGQJYSWX2BMN@cknow-tech.com>
+Cc: <royalnet026@gmail.com>, <alchark@flipper.net>,
+ <chaoyi.chen@rock-chips.com>, <dri-devel@lists.freedesktop.org>,
+ <linux-rockchip@lists.infradead.org>, <iommu@lists.linux.dev>,
+ <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH v6 7/9] accel/rocket: add RK3576 NPU (RKNN) support
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: "Diederik de Haas" <diederik@cknow-tech.com>
+To: "Robin Murphy" <robin.murphy@arm.com>, "Diederik de Haas"
+ <diederik@cknow-tech.com>, "Jiaxing Hu" <gahing@gahingwoo.com>,
+ <tomeu@tomeuvizoso.net>, <heiko@sntech.de>, <robh@kernel.org>,
+ <krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joro@8bytes.org>,
+ <will@kernel.org>, <ulfh@kernel.org>, <p.zabel@pengutronix.de>,
+ <ogabbay@kernel.org>, <zhangqing@rock-chips.com>
+References: <20260806063413.350184-1-gahing@gahingwoo.com>
+ <20260806063413.350184-8-gahing@gahingwoo.com>
+ <DKIKXY8XZVPF.3RFR4ISK6Y4QX@cknow-tech.com>
+ <fb94bd28-fdbf-4f99-a6ff-b5ab18c64345@arm.com>
+In-Reply-To: <fb94bd28-fdbf-4f99-a6ff-b5ab18c64345@arm.com>
+X-Migadu-Flow: FLOW_OUT
 
-On Thu, Aug 06, 2026 at 09:54:19PM -0600, James Hilliard wrote:
-> MDIO buses enumerate firmware children only when the bus is registered. A
-> later devicetree overlay or status transition is ignored, unlike on I2C and
-> SPI buses. Supporting live reconfiguration also means that population and
-> removal can race address scanning, PHY attachment and bus teardown.
+On Fri Aug 7, 2026 at 2:55 PM CEST, Robin Murphy wrote:
+> On 07/08/2026 9:48 am, Diederik de Haas wrote:
+>> On Thu Aug 6, 2026 at 8:34 AM CEST, Jiaxing Hu wrote:
+>>> The RK3576 has two cores of the same RKNN block and a few platform
+>>> differences:
+>>>
+>>>   - the CBUF (convolution buffer) has its own clock domain, so the core
+>>>     needs six clocks rather than four;
+>>>   - the BIU reset moved into the power domain, leaving one reset here;
+>>>   - the NPU spans two power domains, and a device with more than one is
+>>>     skipped by the driver-core single-domain auto-attach, so the list h=
+as
+>>>     to be attached explicitly;
+>>>   - the DPU completion interrupt is armed exactly as on RK3588 but neve=
+r
+>>>     reaches the GIC. The completion is visible in INTERRUPT_RAW_STATUS,
+>>=20
+>> I don't know if it's relevant, so just a data point:
+>> - RK3588 has Cortex A-76 + A-55, which have an External GICv4
+>> - RK3576 has Cortex A-72 + A-53, which have an External GICv3
+>
+> Nope, RK3588 has GIC-600, which is very much v3 still. I guess RK3576=20
+> probably has GIC-500 like RK3399 given the CPUs, but that shouldn't make=
+=20
+> any meaningful difference here.
 
-Please make the bootloader work around the issues, and drop this
-patchset.
+Unsurprisingly, you're (almost) correct :)
+I looked at this document when I wrote that:
+https://www.arm.com/-/media/Arm%20Developer%20Community/PDF/Cortex-A%20R%20=
+M%20datasheets/Arm%20Cortex-A%20Comparison%20Table_v4.pdf
 
-	Andrew
+But the RK3588 TRM Part 1 Chapter 11 'GIC600' says:
+"The GIC600 supports the GICv3 architecture ..."
+"The version of GIC600 is r1p6-00rel0."
+
+The RK3576 TRM Part 1 Chapter 13 'Generic Interrupt Controller (GIC)' says:
+"There is a generic interrupt controller (GIC400) in RK3576 which generates
+physical interrupts to Cortex-A53/Cortex-A72."
+
+And RK3399 TRM Part 1 Chapter 11 'Generic Interrupt Controller (GIC)' says:
+"The GIC-500 in RK3399 provides registers for managing interrupt sources,
+interrupt behavior, and interrupt routing to one or more cores."
+
+Cheers,
+  Diederik
+
+> If the interrupt never fires at all then possibly the signal depends on=
+=20
+> some additional clock or power domain in order to propagate, or it's=20
+> just described incorrectly; or if other interrupt sources within the=20
+> NPU/IOMMU do still work then maybe there's some additional masking=20
+> control that's been overlooked, or perhaps it it just terminally broken.
+>
+> (And FWIW I'm also inclined to agree with the other comments that=20
+> refactoring existing code to make room for new stuff, then actually=20
+> adding the new stuff, should probably be two separate steps if it's not=
+=20
+> completely trivial)
+>
+> Thanks,
+> Robin.
