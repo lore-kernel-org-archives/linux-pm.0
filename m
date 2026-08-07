@@ -1,28 +1,28 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013023.outbound.protection.outlook.com [40.93.196.23])
+Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazon11012047.outbound.protection.outlook.com [40.107.200.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8495A4570E1;
-	Fri,  7 Aug 2026 21:49:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.23
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 954894519A5;
+	Fri,  7 Aug 2026 21:49:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.200.47
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786139377; cv=fail; b=guY7POeTgUvri8l6M5URqmeuXHqXd6/KPgnkAjFvyMKowTR8ftOyAicFB95OzsEZJiGrk10Zg5p/r9GFGjSu+AwbBkHlLcTwpBA49DFMri+Psu3NBo9tevEwgfCqBtp3CtWdf4xYGw//ju8KS0a6kbyu/Tw/YFV6EiNI7iXJsUg=
+	t=1786139386; cv=fail; b=PTWxYsArLTRycgwedJbodOt+yqgV2OdjZ9nj7wk0K54Io5j9cM3EIfVxZW+FgwpYPzJ2wR/2YzJ0r6HBp99Ty2SiIFRbIvKA6EYddCvEhnWwBJT8br39Sxq24IUiWsEKvqR4iCciH7EkVkzIT6g9sPk8lYWeBAUaq++6M3jweL0=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786139377; c=relaxed/simple;
-	bh=VmX91WZ5UdubdWatOZ/oQOsi3lU60Tsjb8q3sbNq75U=;
+	s=arc-20240116; t=1786139386; c=relaxed/simple;
+	bh=NmQHoFbkff7z/1qbHHuFsABLgSs91eeU0XsUuy+xaec=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=rypPD5zSACPb+SnlYhBJwnNUjtiNUXacdVjllgOt8fPXRxUixLGQ7XyzRfxpq/bwWy8WCIkXD3wuo89foDO0joFxSds4YOwlXMb3YJSIPyIzLd05h8esgkTnO1B/9W9du1dYtVXF8tcpFBGys7L7i5BXaR4Y1NcYL7s0XNSZtrE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=tv/quz0B; arc=fail smtp.client-ip=40.93.196.23
+	 MIME-Version:Content-Type; b=osWKYuzvUulG7TzQA85ewfykyJvkIsM1OT37NJ2zSjkR3BfdEoD70QruuSI5H4b9DMxxd29yyZRmxHN4AfS0wpfHYYbEb8wlj3xWSOZMug+nlSSQUVCG26eKZuxMJPBMFE1pzSSklIMdMpMTld5OJWCpL8TxxK3popaq7RZ516s=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=l3Z0eXB9; arc=fail smtp.client-ip=40.107.200.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="tv/quz0B"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="l3Z0eXB9"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=tVxliHvOs8wChCcDlK6/+FvyQSf9X1wzx8psbYYohUdZG3r/RDJmU77Cm+DjoycpOJjXgX1N4n2iR6boElKLSWcjL1D/DAoDxNXRWCNFEFfVvwM69ZV7fMP9TvP1B5jxef+eg9ws/VOZImaoY4IF0EYxPK54ud++FY1Fz4Qx8mcLvwggBAO9i42pwF/EPloL+TCgUapsHa8CwK/MKb6z4ag3cwW8/aMNv6035BM0Zt0U7ZPWuIXwlnWUz7DOBOyy8M36jzLi2HZU6lIIVxakJdcin4Ak88prhhyUoAxJ2IcsDdbr3/N2kHnncZcZzO8mEwbpv44iKcBIjnzcV/cKEw==
+ b=d6uUMdn/PaBCEAh5og/kiY8gAjELwP9B1RVpCAZg7Z14WY3QANUWB0IT0WYo0T35frRWbmtMEZcsdzR98n6y2OiGObxB11/vzA+rm2rC2X+eIkuQiqRl36zC1i9+tTqeIscQ+J+p37Jx0/R95rcK0BXzQlet6jlnI8+oWOZXw971h4AhruMYpncNrjjJXBaA+rgXXs4pKC4E8yoyy2w3qAVLqRrhZsYY5RJ7HmsKhhFGj5Pm/bBVplN0Pf2AMcqw87djnFds374pTcT8zTsAxRHohaJunNQWLx7ZR2vd7rG+IiVRrJh9zZoEGaGFct/s7ctvt6LMms4mX9WeD9YElQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fowqZ9G1SCoOO34OGpKBpSlQTp1c/jJgJXFblI2lpBU=;
- b=FOzAG++bvAraCuuGzy2BtyCfvstGYavwnHvLEueHaDSJV2JKq4AFGZbxL1Buz158CiCn7LS/+X3hzKzc3qLAM+bd59bbGpNAHluXZqoFZl2/jOBH2cKSUBxuAOphP9ZL6v3FsqqZlXL6lRWmxibASnT1GWYnGvtOCf2sQX8qmmH3MeAYX+dD208xP4poS2FdVFB0okI2cHMks/IBsHSjoyqzJ14Z6/oFWMgVQg1jBQ3u3/bHQQrIfySx+jBInKLvvLN6n8Qg1OchiZSPZR682iDV5FeE3x4hL+eXKsPxC1la5p9c2JWc4Gl2u1pE00ep6u/VooZI0zRX6E3Pu0aWIQ==
+ bh=Lym1rL/qn6z7zlvtpm4oIQvSc0X1EeSlUZF66y5vmSE=;
+ b=W3Q0MPZgYYcMJYPHrNssZJ6xDzG4WGZk53rn6e+RlLlHDZL5cY1+9JXyxB4zUYqn5mYXq2hjBwMU7BIvwZkWfl8IzGUOWuMByD9cjMzPyfVEBcFt+mR/1T0P05B+/HzvuWPDyqungMpqpGNhA5xDmHyMJkZsnKMuWtV/Sn+AbRZZ5bK/KrLZCWyhWuPJ7m9LArOXBOpeXegnbNWaetNi2C0pOtJZl7LZnCB3W9MwAYYsv+wLIwHEXpbniTvpPdG8i33f4R3tnaTbBjTxCbCMQC7I0ImBRISnAKTzlP2AtiLDyyR16ZfMwPl/RSiZOMa4o1JVheN9fAfiq2ormA5gXA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
  dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
@@ -30,18 +30,18 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fowqZ9G1SCoOO34OGpKBpSlQTp1c/jJgJXFblI2lpBU=;
- b=tv/quz0B4mg+tbVXsADfoGA2OkLtvIb3YJ+zEv6rOyqbk2FyKuvoMAlxBTWIbr05nP23pzLZF+WBrnG7ZFD89P9FKi4vtfo81dskB6pt6CThoFm05+e0yRh8G0QH4JmcQTndp5fPL2OkH7WAHg8v1mlrvgBiOOjD7Qg8llAeVE/wnh0TXrL45RTNNDTR5Mzhgw9zbnrEZ0jilDMoHco2fvR4I2LNj5Vqsnwcm8pRf7JOhom8mODGwSZcDlf4qeedNJENjjTlLd91oP9PoJ88G1guWi/Pgmh7BG//073JKUcsgOOclUxMK4wGGsoYsMNXgUr5ErbKNRwJM+aCt6oR9w==
-Received: from BY3PR03CA0002.namprd03.prod.outlook.com (2603:10b6:a03:39a::7)
- by CH3PR12MB8728.namprd12.prod.outlook.com (2603:10b6:610:171::12) with
+ bh=Lym1rL/qn6z7zlvtpm4oIQvSc0X1EeSlUZF66y5vmSE=;
+ b=l3Z0eXB9V8EdKnsJWGVyun26Dwl4kqjh6veGP1BJ5nQ06YHhSgs7M3H0ETHOR9hS8oXsYihec1YkyjiyoOr2WxvsgMSnDFXsMkntKTffEwwgXGs9vBPAsD6eyOOZHo3I4Xg3ZVmkkqAlV8xQjAPzpr0d4jFgRFGjsqVM0A2NbzzXChv52oa1RAbfz7BJXGIwMZXqDw4BAJNZgw+G+Q/DFvpz/xw/E5thqNCrcL15rYgNaJsNjG3+gPBkGLISbcCbKdJjYmTQ/ykwnFxDsXAOixCA1zgX2tK66hQIKZmgLgK2kowWsxXeb0V87jM+R90pO+jC/PK6HbRRQu6GlLuh5A==
+Received: from SJ0PR05CA0005.namprd05.prod.outlook.com (2603:10b6:a03:33b::10)
+ by BN5PR12MB9539.namprd12.prod.outlook.com (2603:10b6:408:2aa::10) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.23; Fri, 7 Aug
- 2026 21:49:29 +0000
-Received: from BY1PEPF0001AE1D.namprd04.prod.outlook.com
- (2603:10b6:a03:39a:cafe::2b) by BY3PR03CA0002.outlook.office365.com
- (2603:10b6:a03:39a::7) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.292.24 via Frontend Transport; Fri, 7
- Aug 2026 21:49:29 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.24; Fri, 7 Aug
+ 2026 21:49:38 +0000
+Received: from BY1PEPF0001AE19.namprd04.prod.outlook.com
+ (2603:10b6:a03:33b:cafe::1) by SJ0PR05CA0005.outlook.office365.com
+ (2603:10b6:a03:33b::10) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.292.21 via Frontend Transport; Fri, 7
+ Aug 2026 21:49:38 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
  smtp.mailfrom=nvidia.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=nvidia.com;
@@ -49,20 +49,20 @@ Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
  216.228.117.161 as permitted sender) receiver=protection.outlook.com;
  client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
 Received: from mail.nvidia.com (216.228.117.161) by
- BY1PEPF0001AE1D.mail.protection.outlook.com (10.167.242.106) with Microsoft
+ BY1PEPF0001AE19.mail.protection.outlook.com (10.167.242.101) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.315.6 via Frontend Transport; Fri, 7 Aug 2026 21:49:28 +0000
-Received: from rnnvmail203.nvidia.com (10.129.68.9) by mail.nvidia.com
+ 15.21.315.6 via Frontend Transport; Fri, 7 Aug 2026 21:49:38 +0000
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
  (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 7 Aug
- 2026 14:49:11 -0700
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by rnnvmail203.nvidia.com
- (10.129.68.9) with Microsoft SMTP Server (version=TLS1_2,
+ 2026 14:49:23 -0700
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by rnnvmail201.nvidia.com
+ (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 7 Aug
- 2026 14:49:10 -0700
+ 2026 14:49:22 -0700
 Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
  (10.129.68.8) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Fri, 7 Aug 2026 14:49:04 -0700
+ Transport; Fri, 7 Aug 2026 14:49:16 -0700
 From: Sumit Gupta <sumitg@nvidia.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
 	<christian.loehle@arm.com>, <ionela.voinescu@arm.com>,
@@ -74,9 +74,9 @@ To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
 CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <vsethi@nvidia.com>,
 	<ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <mochs@nvidia.com>,
 	<bbasu@nvidia.com>, <sumitg@nvidia.com>
-Subject: [PATCH v7 1/3] ACPI: CPPC: Add ospm_nominal_perf support
-Date: Sat, 8 Aug 2026 03:18:35 +0530
-Message-ID: <20260807214837.863209-2-sumitg@nvidia.com>
+Subject: [PATCH v7 2/3] cpufreq: CPPC: Add ospm_nominal_freq attribute
+Date: Sat, 8 Aug 2026 03:18:36 +0530
+Message-ID: <20260807214837.863209-3-sumitg@nvidia.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260807214837.863209-1-sumitg@nvidia.com>
 References: <20260807214837.863209-1-sumitg@nvidia.com>
@@ -92,155 +92,224 @@ Content-Type: text/plain
 X-NV-OnPremToCloud: ExternallySecured
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BY1PEPF0001AE1D:EE_|CH3PR12MB8728:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1128d0e4-d406-4191-fffa-08def4cdc1d5
+X-MS-TrafficTypeDiagnostic: BY1PEPF0001AE19:EE_|BN5PR12MB9539:EE_
+X-MS-Office365-Filtering-Correlation-Id: de1ec0d1-48f7-4a7f-3802-08def4cdc775
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|7416014|376014|36860700016|1800799024|82310400026|921020|6133799003|10067099003|56012099006|11063799006|18002099003|22082099003;
+	BCL:0;ARA:13230040|23010399003|7416014|376014|82310400026|1800799024|36860700016|921020|6133799003|10067099003|11063799006|56012099006|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	b8cY/vOpYwSwCSQS7HuIsDsy1l68Vq405x5LG5tBmmaRR1AOc+6D2/Bpw+7Vov3vOrqiuGx1sv/YSJ/lUw9f6SQB7Gzivm34LzEyx8kjf0p8N/EcP1mLQMVTUl9FjTF+yf9F9UTKbpmba5QHgTdJgamA08RnxZHdZ88xfCoiegEJYCaDGnAXf24JpZ6zeKl9+amBbXIECcC7nMrIqrbjYEE3JloJMxurrYebymlICpQZXYzneEq4OCil+het/7pAK/VlHrjSi7Gva4xKLIyx1kgW8Y1vgXMYptpB6cx8PIpfGgtmn3gNtW3iXVcv9/cM9gwM8QLyDVenLRDAebKB0jk7QRwc/bqF1eflCiQngqX8Y7MQ2GG66lI7l1JyL4QNI+KShsUjsW0vXauW/gpWeeWdORya+BiSmyFIzW88DXnT8tQq2d098/WeU7PHTDsEcrDS5XJUPSZPvoiNcnqmZwQAAIY/8Mpf8zA92V+L7PDE0A5ck3m0fwuN7gJQhCo/hwG51vLvp6N/TMp3rdAS04TgfpBlI5OKN3y38LlP3l1pzkvR3ft4u0vJ57XT8+RW0uegaJkqfMjXP8hPjrCtsQiVUh7TrSee42kPyC7SeNyL7db22SB04gUcSCLkjI7L9/KdZCKQ9UcW06I1pfdGyqll13iYdvXpkpBvcx90Xqd/AKKdqtsftf4LwfrbTOY+nAeljceui1wKxYiu1DPo7SAZUHqykZ0Ck3bIHf7sRSttlzQE8PwdIBZx6vA+Mp3m
+	IFPHOQzIGzcMHFBlx0xTTRoLDqM3ii5YUrVeObU7jVz8t0IkIXJTgOqZxoMz821T+ZzAcl8pM7mx1ipPA6bmkpvkYK1pZOKQ9CuvnmpQSwBbyQRmCaHmfdJdWkady3/gsYuiNw1ekmC1HJD1bx9jAOjdny8FdEet2ajEhzDAUZaGRnVVAZWR+GpzUhYAcmrKYdMdG3uepi8+Kz6KOJpp6h6cYKG4UMzAj6R9pnfJdoFXEtdhGoB005B+k5IbklANaXcg0j/IHCiPrg6N6v+wDFNgIagPOdKXKP19OkdSdlxowBJ1xgOwv6o8p1+rkj6Ifu8FhGPCkGyuV2ph22KwiKd26y4QNu0cPkA52kfb+f0culd2EeYwg4Dzw5KVhSVLWWOZphbeypfcnzlvGvJfc3/2CGvY0LfkC3EI/bo9Qz2H2LLikZ9lvmE6n62SD1wV+5ch76l1bGZC0FSaxIXNGZdcJwXC2XhWukAl68sy5eQ88Gi1pAXL6GfWKHCEY45uqhZxef5Ekr3udBvERjsDdpVSW7dc+R0djUC5NVVbkI6fxWWYJZHArV5P+MbMkumNXlv+a4+YN9iDlAkdBShSjtHHMYySZnstGfJqYKQydw4cuDJhv3UMuwr2aVfHKq1G5LHl+VFBCrXsheR4xHdOKrLWL8nlQ+2Qq8VFfYd4kVJy/+VonJGBnecu6uO74iEEZmBhd3r/r9T689K25dHSC8Gt/zyD+/Cx7pAytf0NYk9zjh83z8+hFzjzqVV+vf9d
 X-Forefront-Antispam-Report:
-	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(36860700016)(1800799024)(82310400026)(921020)(6133799003)(10067099003)(56012099006)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(82310400026)(1800799024)(36860700016)(921020)(6133799003)(10067099003)(11063799006)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	d0jsn9EpUptwxpXSKON4cM0nzBSgDGuMEN54j6CEGxnY08xXEYtUPb/9VZ08p7vU4fMiCX4McpPl6mRphjFtbNMWnKFWA7ZYCazxuFWH63vYzYEbzWgEIBZDiCQW6wpl0Lh3LsvYiWAEGikdwuaY5QFZ0byOawnIkxv3w2Rac/e5hAQF3SbrOVn8wLYWP918LVDqTay+zxc8NdxXBM3M7vPZKhv+YblFevEuX+yS1qgoBmDzeRK/WD0/8rcmayuN53IROJpy8FbK1Vuu3RsnwNsj7OK/tSrTkKHvUq6EgPjpU9e+ZYOSyGHYtkOrJglBCfBiuu5ICpnH7+j3NuiHR9v5WVSREU3YhaVoIkLkCOtjcODw6LEeEZQ8OKLTr5n/BNBtPpOumJwngaKIT2oeM2K8eT2eyCzBJJL+BmGtpqxYWQYlaf8r/QEjEWAqvvtc
+	a7oHUQAPEATn400g79+OyUuBbvLMtqaHnibNfyHuAV/249ij2Cm2v/V/UvazKpJXpZ1urjcR+m2dptuO2w1q2mPAUsEqqEaD2qhi0/nI8ZqKULTxluNhx2s9HH9tKDG873TBIjyuAdWQ4GfCSXJ/KM1xPjwVGTWEE0J+E9/ZLu8S3cuQu/Kz/v5QNKZpa4v61XIQpvYo4/+rCq4T4w8iM4Ve8BV63F19BSWrCOsGpGSEFV2wMj9M9vprnhuuqL0x1tcLK2wYV1K4U1IebL6f2lKfYdzdFt9olT8eSSIsNV/hYbhh8N6xPuWIQdcS2HJfliRTGSH2dV2sk4d1GKQg4S711/8lHR8UxA+SlB+WwCRA5huYc99p9DV0owCJP+BaCW62cgeoqvKVxy7dIN/RDkanQadbBILkugg1PopGxLBKkrArBMChrosG6eT25quL
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 21:49:28.9901
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 21:49:38.3771
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1128d0e4-d406-4191-fffa-08def4cdc1d5
+X-MS-Exchange-CrossTenant-Network-Message-Id: de1ec0d1-48f7-4a7f-3802-08def4cdc775
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	BY1PEPF0001AE1D.namprd04.prod.outlook.com
+	BY1PEPF0001AE19.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8728
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN5PR12MB9539
 
-Expose the OSPM Nominal Performance register (ACPI 6.6, Section
-8.4.6.1.2.6), which conveys the nominal performance level at which the
-platform may run. Unlike the read-only Nominal Performance register, it
-is writable, so OSPM can ask for a nominal level below the
-platform-reported one, which then becomes the boundary between boosted
-and throttled operation for the platform's power and thermal decisions.
+OSPM Nominal Performance (ACPI 6.6, Section 8.4.6.1.2.6) lets the OS
+request a nominal performance level below the platform-reported one. The
+platform treats performance above that level as boosted and below it as
+throttled for its power and thermal decisions. A lower value moves that
+boundary down, so sustained work runs at a lower point while the range
+above it remains available as boost.
 
-Add cppc_set_ospm_nominal_perf() to write the register. Per the spec,
-the value must lie in [Lowest Performance, Nominal Performance], which
-the caller is responsible for validating.
+Expose it as a per-policy cpufreq attribute in kHz, matching the unit
+convention of the other frequency attributes:
 
-Add cppc_ospm_nominal_perf_supported() to report whether the platform
-implements the register as writable, since a write-only register cannot
-be probed by reading it. Factor the writable-register check out of
-cppc_set_reg_val() into cpc_reg_writable() and use it for both, so
-support is never reported for a register that a write would reject.
+  /sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
+
+The attribute is write-only as the register cannot be read back. Writes
+are converted with cppc_khz_to_perf() and rejected unless they fall in
+[Lowest Performance, Nominal Performance].
+
+Also track the register in the OSPM-set save/restore table, so a
+requested value survives CPU hotplug and suspend/resume. The store
+handler records the request rather than init() capturing a firmware
+value, and driver unload reverts the register to the platform-reported
+Nominal Performance.
 
 Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
 ---
- drivers/acpi/cppc_acpi.c | 48 ++++++++++++++++++++++++++++++++++++++--
- include/acpi/cppc_acpi.h | 10 +++++++++
- 2 files changed, 56 insertions(+), 2 deletions(-)
+ .../ABI/testing/sysfs-devices-system-cpu      | 24 +++++++
+ drivers/cpufreq/cppc_cpufreq.c                | 70 +++++++++++++++++--
+ 2 files changed, 90 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 9e882b3911e6..b6bf46cb06cb 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1388,6 +1388,13 @@ static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u
- 	return ret;
- }
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index 82d10d556cc8..59aafcb2af97 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -346,6 +346,30 @@ Description:	Performance Limited
  
-+/* If a register is writeable, it must be a buffer and not null */
-+static bool cpc_reg_writable(const struct cpc_register_resource *reg)
+ 		This file is only present if the cppc-cpufreq driver is in use.
+ 
++What:		/sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
++Date:		August 2026
++Contact:	linux-pm@vger.kernel.org
++Description:	OSPM Nominal Performance (kHz), write-only
++
++		OSPM uses this attribute to request a nominal performance level
++		lower than the platform-reported nominal. The platform treats
++		performance above this level as boost and below as throttle for
++		power and thermal decisions.
++
++		Write a value in kHz, between the frequencies corresponding to
++		Lowest Performance and Nominal Performance. The register cannot
++		be read back, so this attribute has no read side.
++
++		Note that tasks may be migrated from one CPU to another by the
++		scheduler's load-balancing algorithm, and if different OSPM
++		Nominal Performance values are set for those CPUs (through
++		different cpufreq policies), that may lead to undesirable
++		outcomes. To avoid such issues it is better to set the same
++		value across all policies, or to pin every task potentially
++		sensitive to it to a specific CPU.
++
++		This file is only present if the cppc-cpufreq driver is in use.
++
+ What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
+ Date:		August 2008
+ KernelVersion:	2.6.27
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 32f38b0c492b..fe714e71826a 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -33,11 +33,13 @@ static struct cpufreq_driver cppc_cpufreq_driver;
+  * reapplied from online() across CPU hotplug, and the firmware value is
+  * restored from offline().
+  *
+- * Autonomous Selection (auto_sel) is kept first, as writes to the registers
+- * listed after it only have meaning while autonomous selection is enabled.
++ * Autonomous Selection (auto_sel) splits the list: the registers before it are
++ * independent of it, and those after it have meaning only while autonomous
++ * selection is enabled. Place a new register on the matching side.
+  */
+ enum cppc_saved_reg_id {
+-	CPPC_SAVED_AUTO_SEL,
++	CPPC_SAVED_OSPM_NOMINAL_PERF,
++	CPPC_SAVED_AUTO_SEL,	/* Entries below need auto_sel enabled. */
+ 	CPPC_SAVED_EPP,
+ 	CPPC_SAVED_AUTO_ACT_WINDOW,
+ 	CPPC_NR_SAVED_REGS,
+@@ -50,6 +52,11 @@ struct cppc_saved_reg {
+ };
+ 
+ static const struct cppc_saved_reg cppc_saved_regs[CPPC_NR_SAVED_REGS] = {
++	/* Write-only: the requested value is tracked in software. */
++	[CPPC_SAVED_OSPM_NOMINAL_PERF] = {
++		.name = "ospm_nominal_perf",
++		.set = cppc_set_ospm_nominal_perf,
++	},
+ 	[CPPC_SAVED_AUTO_SEL] = {
+ 		.name = "auto_sel",
+ 		.get = cppc_get_auto_sel,
+@@ -79,6 +86,9 @@ enum cppc_saved_type {
+  *                   could not be read
+  *   requested_val - value in effect when the policy last went offline,
+  *                   reapplied at online(). U64_MAX if none
++ *
++ * A write-only register cannot be read back, so its store handler sets
++ * firmware_val and requested_val instead of init() and offline().
+  */
+ struct cppc_saved_vals {
+ 	u64 firmware_val;
+@@ -135,7 +145,17 @@ static void cppc_cpufreq_save_regs(struct cpufreq_policy *policy,
+ 		st->suspend_regs_handled = false;
+ 
+ 	for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
+-		if (cppc_saved_regs[i].get(cpu, &val))
++		const struct cppc_saved_reg *reg = &cppc_saved_regs[i];
++
++		/*
++		 * A write-only register cannot be read back. It has no
++		 * firmware value to capture, and its requested value comes
++		 * from the store handler, so do not overwrite it here.
++		 */
++		if (!reg->get && saved_type == CPPC_SAVED_REQUESTED)
++			continue;
++
++		if (!reg->get || reg->get(cpu, &val))
+ 			val = U64_MAX;
+ 
+ 		if (saved_type == CPPC_SAVED_FIRMWARE) {
+@@ -197,6 +217,12 @@ static void cppc_cpufreq_apply_saved_regs(struct cpufreq_policy *policy,
+ 	u64 auto_sel, val;
+ 	int i;
+ 
++	/* Registers before auto_sel do not depend on it. */
++	for (i = 0; i < CPPC_SAVED_AUTO_SEL; i++) {
++		val = cppc_cpufreq_saved_reg_value(st, i, saved_type);
++		cppc_cpufreq_write_saved_reg(cpu, i, val, saved_type);
++	}
++
+ 	auto_sel = cppc_cpufreq_saved_reg_value(st, CPPC_SAVED_AUTO_SEL,
+ 						saved_type);
+ 
+@@ -1385,11 +1411,46 @@ static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
+ CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
+ 			 cppc_set_perf_limited)
+ 
++static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
++				       const char *buf, size_t count)
 +{
-+	return reg->type == ACPI_TYPE_BUFFER &&
-+	       !IS_NULL_REG(&reg->cpc_entry.reg);
++	struct cppc_cpudata *cpu_data = policy->driver_data;
++	struct cppc_saved_vals *st;
++	unsigned int freq_khz;
++	u32 perf;
++	int ret;
++
++	ret = kstrtouint(buf, 0, &freq_khz);
++	if (ret)
++		return ret;
++
++	perf = cppc_khz_to_perf(&cpu_data->perf_caps, freq_khz);
++	if (perf < cpu_data->perf_caps.lowest_perf ||
++	    perf > cpu_data->perf_caps.nominal_perf)
++		return -EINVAL;
++
++	ret = cppc_set_ospm_nominal_perf(policy->cpu, perf);
++	if (ret)
++		return ret;
++
++	/*
++	 * Track the request in software: requested_val is reapplied across
++	 * hotplug, and firmware_val makes the register revert to the platform
++	 * Nominal on driver unload, since the value cannot be read back.
++	 */
++	st = &cppc_cpufreq_policy_state(policy)->regs[CPPC_SAVED_OSPM_NOMINAL_PERF];
++	st->requested_val = perf;
++	st->firmware_val = cpu_data->perf_caps.nominal_perf;
++
++	return count;
 +}
 +
- static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
- {
- 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-@@ -1400,8 +1407,7 @@ static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
+ cpufreq_freq_attr_ro(freqdomain_cpus);
+ cpufreq_freq_attr_rw(auto_select);
+ cpufreq_freq_attr_rw(auto_act_window);
+ cpufreq_freq_attr_rw(energy_performance_preference_val);
+ cpufreq_freq_attr_rw(perf_limited);
++cpufreq_freq_attr_wo(ospm_nominal_freq);
  
- 	reg = &cpc_desc->cpc_regs[reg_idx];
+ static struct freq_attr *cppc_cpufreq_attr[] = {
+ 	&freqdomain_cpus,
+@@ -1397,6 +1458,7 @@ static struct freq_attr *cppc_cpufreq_attr[] = {
+ 	&auto_act_window,
+ 	&energy_performance_preference_val,
+ 	&perf_limited,
++	&ospm_nominal_freq,
+ 	NULL,
+ };
  
--	/* if a register is writeable, it must be a buffer and not null */
--	if ((reg->type != ACPI_TYPE_BUFFER) || IS_NULL_REG(&reg->cpc_entry.reg)) {
-+	if (!cpc_reg_writable(reg)) {
- 		pr_debug("CPC register is not supported\n");
- 		return -EOPNOTSUPP;
- 	}
-@@ -1832,6 +1838,44 @@ int cppc_set_epp(int cpu, u64 epp_val)
- }
- EXPORT_SYMBOL_GPL(cppc_set_epp);
- 
-+/**
-+ * cppc_set_ospm_nominal_perf() - Write OSPM Nominal Performance register.
-+ * @cpu: CPU on which to write register.
-+ * @ospm_nominal_perf: Value to write to the OSPM Nominal Performance register.
-+ *
-+ * OSPM Nominal Performance conveys the desired nominal performance level
-+ * at which the platform may run. Per ACPI 6.6, s8.4.6.1.2.6, the value
-+ * must lie within [Lowest Performance, Nominal Performance] and may be
-+ * set independently of Minimum, Maximum and Desired performance. The
-+ * caller is responsible for validating the range.
-+ *
-+ * Return: 0 on success or negative error code.
-+ */
-+int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
-+{
-+	return cppc_set_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
-+}
-+EXPORT_SYMBOL_GPL(cppc_set_ospm_nominal_perf);
-+
-+/**
-+ * cppc_ospm_nominal_perf_supported() - Check OSPM Nominal Performance support.
-+ * @cpu: CPU to query.
-+ *
-+ * The OSPM Nominal Performance register is write-only, so its value
-+ * cannot be read back. This only reports whether the platform implements
-+ * it as a writable register.
-+ *
-+ * Return: true if the register is supported, false otherwise.
-+ */
-+bool cppc_ospm_nominal_perf_supported(int cpu)
-+{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+
-+	return cpc_desc &&
-+	       cpc_reg_writable(&cpc_desc->cpc_regs[OSPM_NOMINAL_PERF]);
-+}
-+EXPORT_SYMBOL_GPL(cppc_ospm_nominal_perf_supported);
-+
- /**
-  * cppc_get_auto_act_window() - Read autonomous activity window register.
-  * @cpu: CPU from which to read register.
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 3394e1b208be..a078ad5964c2 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -185,6 +185,8 @@ extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
- extern int cppc_get_epp_perf(int cpunum, u64 *epp_perf);
- extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable);
- extern int cppc_set_epp(int cpu, u64 epp_val);
-+extern int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf);
-+extern bool cppc_ospm_nominal_perf_supported(int cpu);
- extern int cppc_get_auto_act_window(int cpu, u64 *auto_act_window);
- extern int cppc_set_auto_act_window(int cpu, u64 auto_act_window);
- extern int cppc_get_auto_sel(int cpu, u64 *enable);
-@@ -277,6 +279,14 @@ static inline int cppc_set_epp(int cpu, u64 epp_val)
- {
- 	return -EOPNOTSUPP;
- }
-+static inline int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline bool cppc_ospm_nominal_perf_supported(int cpu)
-+{
-+	return false;
-+}
- static inline int cppc_get_auto_act_window(int cpu, u64 *auto_act_window)
- {
- 	return -EOPNOTSUPP;
 -- 
 2.34.1
 
