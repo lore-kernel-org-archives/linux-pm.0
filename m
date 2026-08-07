@@ -1,132 +1,63 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 55F083191D6;
-	Fri,  7 Aug 2026 14:24:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 384C1175A84;
+	Fri,  7 Aug 2026 14:28:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786112679; cv=none; b=AKTtXtSzcQjf8lA7y0TXeHimPsul8h11Ox7b5qucNWcKCvrDW0DQlxglbzsqHiHz+Hn1sBrVEORO116H1i66c+ZPt+dfezeYz0urp8sdPKcFd8W196Xi28OGanvBu2ZpSXyXkkGNJSjSwZLd9MMtwsqMWo9P/fDa/T0mloRTEnU=
+	t=1786112884; cv=none; b=liTqa2eDNRQkXHdPq447N7IhmlkzbMoEzBD9V8/rgkARdHp2at0yS+KMUI7ZaI0OVH/8nctf9eSn6nucjOoJrkjV4IYIMN9J4h7SBbKOW/HIoqzdusDBM6+lslb+dho8gajPLbxYb95zBnj1R3tHUV1zIOxBwHJkAawvbGnjcbw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786112679; c=relaxed/simple;
-	bh=bjWAifFxgtUCdE82wAQsbJm5us80D5W3SDsxqOZvTLk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MVvQKSYknYrDFBLV7jcsqZ805TiInkt2iWKKfV2RNuDX3PXUC5+I1dH+SH8wURSDgCunJdT0pj37QDdJsf7k6aSpT6e0tgZfhmbXGwI8+3eywy0+cXDe3Sk+K23zQ28YsxVKB5XId7PMMmoSv7qSANs+3LsgoTRkz5NZKaOgrX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=fqv7xemQ; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1786112884; c=relaxed/simple;
+	bh=eTwNuBsTrZiv1FJcpSHvo/FgI+9qYJDy9Oh5TeLcOLY=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=DV7/Kt1A2j9jPOgNrCVNIXGhe/0IpxPyvsq+s09Qo5zfhRXkMaB/gNmEiEjiEIEv7LNcXdaEbykZpVhb5HwdtqtKD2aXgCoyQZJWJlxNWAbDvNQlOVleUaau388/cbRXUOm79NLhbWJhRUkay3Uwvl5PZWE9ooLywoin3B0HvwY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Urlo3nQI; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="fqv7xemQ"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8E5681BCA;
-	Fri,  7 Aug 2026 07:24:33 -0700 (PDT)
-Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 968CD3F9A2;
-	Fri,  7 Aug 2026 07:24:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786112677; bh=bjWAifFxgtUCdE82wAQsbJm5us80D5W3SDsxqOZvTLk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=fqv7xemQXZNRzwDmanQKRIX//hiRV55JHD/WtmdOucJL18W+Ow6vQUW2O/z5m3ITW
-	 zD+IcEt+Oc71EROtAEMUNkOegbtod7cvwWo/Ir3jKcoybAd3wyDANa7bMhUxrUN0dg
-	 qBLDpY4RMr/RODVycbR4HtbqXI1pe2UJguxWQS28=
-Message-ID: <a89f7d1e-6996-4956-b4be-a7bb9eb1dd8a@arm.com>
-Date: Fri, 7 Aug 2026 15:24:33 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Urlo3nQI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F6781F000E9;
+	Fri,  7 Aug 2026 14:28:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786112883;
+	bh=WXOBCpK5C0Kz6GLpR2E0EWdSyN9+ta5qJz5/lYNs2nk=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=Urlo3nQIRQsF1y/gLXPJYxKN25YOenzZ9u0zV+Pt0ju+nJxgUQqVKD+07nQvuEjgM
+	 4GCkYqibdDjXMa9aC0/QEuTWzGrwApFtfyp86dKEeAwinCpZ0iX2LMEJt3YovzYXEo
+	 +f55TZ3VExNAYPm0Z7AmysXr6DqPLulqglK8YF0Z+NEUkxDgoXtmqcz34R+/lxYbkN
+	 DjMzBh/9eGtijJpv4bm9z89YyrLp8oLP6RcOtLvqhetUOfNFCGbOdTjOie9WWoUPnZ
+	 Ky5KgNGtAM5zMOrnmNMhVEu7E2ltjyTmowS7kVTBEHDP2LuK8AplAktb/aamRHIbAJ
+	 +eYyZJlUspIiw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 0D4B6380CECE;
+	Fri,  7 Aug 2026 14:27:23 +0000 (UTC)
+Subject: Re: [GIT PULL] Thermal control fixes for 7.2-rc7
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0jEYTmtFHHiR5+NELM-xbErnhtP1JzqOseYWGqA6nnZjw@mail.gmail.com>
+References: <CAJZ5v0jEYTmtFHHiR5+NELM-xbErnhtP1JzqOseYWGqA6nnZjw@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jEYTmtFHHiR5+NELM-xbErnhtP1JzqOseYWGqA6nnZjw@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.2-rc7
+X-PR-Tracked-Commit-Id: ff8da20b6f47c48d46e47f93f7a59e2d56ee9107
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 7cbe91a4be8536a3f17fb00828fc3f024f0a1e61
+Message-Id: <178611284159.1826887.13340841624235901668.pr-tracker-bot@kernel.org>
+Date: Fri, 07 Aug 2026 14:27:21 +0000
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v6 7/9] accel/rocket: add RK3576 NPU (RKNN) support
-To: Diederik de Haas <diederik@cknow-tech.com>,
- Jiaxing Hu <gahing@gahingwoo.com>, tomeu@tomeuvizoso.net, heiko@sntech.de,
- robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, joro@8bytes.org,
- will@kernel.org, ulfh@kernel.org, p.zabel@pengutronix.de,
- ogabbay@kernel.org, zhangqing@rock-chips.com
-Cc: royalnet026@gmail.com, alchark@flipper.net, chaoyi.chen@rock-chips.com,
- dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
- iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20260806063413.350184-1-gahing@gahingwoo.com>
- <20260806063413.350184-8-gahing@gahingwoo.com>
- <DKIKXY8XZVPF.3RFR4ISK6Y4QX@cknow-tech.com>
- <fb94bd28-fdbf-4f99-a6ff-b5ab18c64345@arm.com>
- <DKIR028TZNJ3.3BGQJYSWX2BMN@cknow-tech.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <DKIR028TZNJ3.3BGQJYSWX2BMN@cknow-tech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 07/08/2026 2:32 pm, Diederik de Haas wrote:
-> On Fri Aug 7, 2026 at 2:55 PM CEST, Robin Murphy wrote:
->> On 07/08/2026 9:48 am, Diederik de Haas wrote:
->>> On Thu Aug 6, 2026 at 8:34 AM CEST, Jiaxing Hu wrote:
->>>> The RK3576 has two cores of the same RKNN block and a few platform
->>>> differences:
->>>>
->>>>    - the CBUF (convolution buffer) has its own clock domain, so the core
->>>>      needs six clocks rather than four;
->>>>    - the BIU reset moved into the power domain, leaving one reset here;
->>>>    - the NPU spans two power domains, and a device with more than one is
->>>>      skipped by the driver-core single-domain auto-attach, so the list has
->>>>      to be attached explicitly;
->>>>    - the DPU completion interrupt is armed exactly as on RK3588 but never
->>>>      reaches the GIC. The completion is visible in INTERRUPT_RAW_STATUS,
->>>
->>> I don't know if it's relevant, so just a data point:
->>> - RK3588 has Cortex A-76 + A-55, which have an External GICv4
->>> - RK3576 has Cortex A-72 + A-53, which have an External GICv3
->>
->> Nope, RK3588 has GIC-600, which is very much v3 still. I guess RK3576
->> probably has GIC-500 like RK3399 given the CPUs, but that shouldn't make
->> any meaningful difference here.
-> 
-> Unsurprisingly, you're (almost) correct :)
-> I looked at this document when I wrote that:
-> https://www.arm.com/-/media/Arm%20Developer%20Community/PDF/Cortex-A%20R%20M%20datasheets/Arm%20Cortex-A%20Comparison%20Table_v4.pdf
+The pull request you sent on Fri, 7 Aug 2026 14:17:24 +0200:
 
-Ah, that list is effectively describing the *maximum* capabilities of 
-the v8 cores' respective GIC-CPU interface implementations. It's really 
-just saying that cores which predate GICv4 don't implement the 
-additional system registers relevant to direct injection (and of course 
-the v7 cores which predate GICv3 don't have a system register interface 
-at all).
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-7.2-rc7
 
-> But the RK3588 TRM Part 1 Chapter 11 'GIC600' says:
-> "The GIC600 supports the GICv3 architecture ..."
-> "The version of GIC600 is r1p6-00rel0."
-> 
-> The RK3576 TRM Part 1 Chapter 13 'Generic Interrupt Controller (GIC)' says:
-> "There is a generic interrupt controller (GIC400) in RK3576 which generates
-> physical interrupts to Cortex-A53/Cortex-A72."
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/7cbe91a4be8536a3f17fb00828fc3f024f0a1e61
 
-Oh wow, indeed perhaps I should have just looked at the upstream DT :)
-Going back to GICv2 seems like a mildly surprising choice at this point 
-in time, but fair enough, sometimes power/area costs beat performance. 
-My point still remains valid that the GIC implementation itself should 
-have no impact on the behaviour of SPIs that are correctly described in 
-the DT.
+Thank you!
 
-Cheers,
-Robin.
-
-> And RK3399 TRM Part 1 Chapter 11 'Generic Interrupt Controller (GIC)' says:
-> "The GIC-500 in RK3399 provides registers for managing interrupt sources,
-> interrupt behavior, and interrupt routing to one or more cores."
-> 
-> Cheers,
->    Diederik
-> 
->> If the interrupt never fires at all then possibly the signal depends on
->> some additional clock or power domain in order to propagate, or it's
->> just described incorrectly; or if other interrupt sources within the
->> NPU/IOMMU do still work then maybe there's some additional masking
->> control that's been overlooked, or perhaps it it just terminally broken.
->>
->> (And FWIW I'm also inclined to agree with the other comments that
->> refactoring existing code to make room for new stuff, then actually
->> adding the new stuff, should probably be two separate steps if it's not
->> completely trivial)
->>
->> Thanks,
->> Robin.
-
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
