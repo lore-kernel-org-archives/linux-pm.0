@@ -1,96 +1,131 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f9.google.com (mail-pj2-f9.google.com [74.125.227.137])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFF2537B02E;
-	Fri,  7 Aug 2026 06:03:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68E7F446C17
+	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 06:09:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.137
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786082635; cv=none; b=jKFc3QZMTSM9dXcQLYfa7RZwUN7RsRGp88vYQD7XhZhFok+fbLHVEypJBSoAfugqj3qCc+thQTjAX930c547Dkd3OJwHBloeHqR47yDxlfIWoI30GdGAhgza3jD7DZFtZ8zJ+ahhuQoXz4Jsvn8M7cjD87TxvYyHr3AaSquK4xw=
+	t=1786082943; cv=none; b=XGA9hGyLduPKQulDZQ7m1SQbO9oTdtRy1GUh8QlKVrtUGrstnN2WreoczO4+JYeIlDT4Sx+hAvSC3CBJedzwrE98BRBhChmAfDw5gTAot3cVvd0piAyGW4QCblUhngmIKbuuCxmZogf+BpDvComrzV67cDLi7ioMQA5kgyDB6K0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786082635; c=relaxed/simple;
-	bh=r79KBSafuypr2IL7FZR5tHn+AYGzsbkYbXZeTVqxWeI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MVGljVta2GzyxccQ4BpV0uMyrLCRC2/J8vcxTkU/pkg8/ldQA/CFLmDW3t+2q/Q+UO4kFcsgjdL4V5htEWgnvex+n4E0umBTYEvs0z9hVpBgQQ9Ctjweyl1GQ1wtR3inKJMjPG71O+B6kGTTjMBW70EhNEc46Hd87yZL+hMPw/k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JQG+Okni; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JQG+Okni"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E6771F000E9;
-	Fri,  7 Aug 2026 06:03:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786082634;
-	bh=OnjnoPTc2IU8C5hw2ZSi8CiARlOXZApAwqNm8RU5PYc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=JQG+OknipBtwjmOkl7R15Eji5ytxCL9qh/lVqe+DB/hJhj5SWrf+zLf4cNaj/CHCV
-	 xaDVax4X+pBh+FN2ei6AHbq0oyqY8A4+C0tj59Qi4UgqS8BPeLkO96Xo+LfcDtcjbP
-	 QoojMnK3xxD1VsakhQMR7w50A3/YBnlX6nG+3p3SmLVoHGyW4Xj8DBiUoO28VqID7I
-	 /y2iock8d2/fQ8Tt55Cdzl0NuuHxBxZq07PK52xtrFY3UDvLCuluegTT2Z/X5ltIbK
-	 uY1p1d7YLHEgIhy+Msw45EdRmIPtxMpGRNuI/9cFGi+k7kBCXMqrJRyuy+8YxhaOq7
-	 k5J1uKW/EV05A==
-Date: Fri, 7 Aug 2026 08:03:30 +0200
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
-	Alessio Belle <alessio.belle@imgtec.com>, Luigi Santivetti <luigi.santivetti@imgtec.com>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Jeff Johnson <jjohnson@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Chen-Yu Tsai <wens@kernel.org>, 
-	Loic Poulain <loic.poulain@oss.qualcomm.com>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	imagination@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-wireless@vger.kernel.org, 
-	ath10k@lists.infradead.org, linux-pci@vger.kernel.org, 
-	Jeff Johnson <jeff.johnson@oss.qualcomm.com>
-Subject: Re: [PATCH v3] power: sequencing: rename pwrseq_power_on/off() to
- pwrseq_enable/disable()
-Message-ID: <nbsevqzspfbiptmq2mlxx2yo5z2wk5hdbc6f66yfjklmtl6hc7@ut47v44qgzgu>
-References: <20260731-pwrseq-vote-rename-v3-1-44e60b8be053@oss.qualcomm.com>
+	s=arc-20240116; t=1786082943; c=relaxed/simple;
+	bh=G92p6xIwW5k8DiXIIq1p0j8PFjL/M9f4voq1+o4nThU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CtJnZmi32IZb60djKAxBN4eYuDRrYU2MqVmw9xB36P5YXhKOOoD3LlYi9rmNtcD6tSCAc3US3eh3RgoIB/doPcdJhuNrg1sVGD7gvRvmoIvf6O34ULKkESx+USJLZ/HMPpQwHCZ8ckUQfY0fgtiWR6wEprYGbC5zaDbhCmxbFUc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.137
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pj2-f9.google.com with SMTP id 98e67ed59e1d1-38ed4d37526so1844563a91.1
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 23:09:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786082941; x=1786687741;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=w+GRDhzCEsFlEMJWqbvody6GbI+xrEdhYtIOzqWM2Ps=;
+        b=Zef8nWDlZnCDOurnLF5/+1LJqXoAKwkuYzVLV9RmmrbuteDOGhAuaPgMvAnp3w8y50
+         TLpLjwmzOz4d6uGDD/NhcMwI0sKKvxczshVAwY8rQrY9FvDws7Hdwzz6ZS0x3tqG3l1w
+         KHGq9TuUXcfM9sP8ZFWuyADWMsGiERBp2tNUG+yi33fYH8C6GCpPPyeSYtwXlwY1DMsF
+         hdS8kis3VeFYzI6cRdEQR21sYJyHV2AuitqajGY5rpCtJArcuBzZ+32cKiUpUVsTqDFE
+         3AIMDAll6fx2pssimLciYoQzGmgXfmk0TRhJXfkHe5Yd2KgwmqIUlXGVu5lJkpFvyloY
+         P5dQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoGsIURzmNIA+QUhlZPRWF9UkUDQ2Jn0aKCchVuv36xnPMMhvbPS0QMQEpTxzJS4pzepIFhls4Jow==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwuC8SPJ6EplTaWEB0o7rAVRLB4Ocy75c6vOfkvv68GaxXkSwJO
+	ei8Qq3Ca4ApDe1sOVmIpD+ix26BHRdide6J7Rp50Iga9QxbEQaLGD7HO
+X-Gm-Gg: AR+sD11MkY5HFoNbjeuJ4EllTEU1a2ydUXi4UpnQXrIhYig2gveJPxth+tNdZq9JDfz
+	BuZhQDwjRfcEfUGJ/2k8kSYbzxsLy0dEJ5E/eeyClag3xwD9JoZknQQ3ZzqzWZo+uSPYthy+Ajp
+	wAsN98e8ypyArlT8C0L16Zi9UCYvQKaI9m1kBiNY354rqpJXFXHHOFyiAmRZ6uSPpWJSDW08yNO
+	3A96G5vNzU6/4lRwezu95Huq4A/LuMQZ1D7TWQaFltnSN/VMsg0+5NorNzIoQBqtrH+pdZBL6bW
+	wQpFPsmHTdzZl4ItA92COIv/Q+TtLZIZZWXeMmTIg9ftO7CZbA+oRbihUgXOfXEg6YXgRUJKFsY
+	CZILYYPP7m88eqowarcKgWQZYqwZrG86PEAcRMQTDl1/E9LT2T6LZGliI0HB/2R+Et1EAsB1xMi
+	8u/ntRFWnLaAQw2soyRzYhH0AahpUrdlI2++WxNhIrjPclo9KmEWx/AyKiyVnGGFW5BYvow/iAs
+	g6OFfLFmA==
+X-Received: by 2002:a17:90b:1c0a:b0:380:105f:8ffd with SMTP id 98e67ed59e1d1-3903c5dc172mr18602717a91.16.1786082940620;
+        Thu, 06 Aug 2026 23:09:00 -0700 (PDT)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39085dbe349sm3434375a91.4.2026.08.06.23.08.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Aug 2026 23:09:00 -0700 (PDT)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: Sudeep Holla <sudeep.holla@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	linux-kernel@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [PATCH v5 0/3] cpufreq: cppc: Handle Highest Performance changes at runtime
+Date: Fri,  7 Aug 2026 14:08:45 +0800
+Message-ID: <20260807060848.832929-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260731-pwrseq-vote-rename-v3-1-44e60b8be053@oss.qualcomm.com>
 
-On Fri, Jul 31, 2026 at 03:42:18PM +0200, Bartosz Golaszewski wrote:
-> The way power sequencing works means that a call to pwrseq_power_on()
-> does not necessarily result in the pwrseq target being powered-on at
-> that time: it may have already been powered on before. Similarly: a call
-> to pwrseq_power_off() does not have to result in an actual powering off
-> of resources: there may still be other users that requested a power-on
-> before.
-> 
-> We will also introduce the concept of "non-controllable" pwrseq targets
-> soon which further increases the disconnect between the naming
-> convention and the actual semantics.
-> 
-> What consumers of pwrseq descriptors actually do is: they *vote* for a
-> powering on of a given target or retract that vote. These operations
-> could be called get/put in line with runtime PM but this could become
-> confusing since we already provide pwrseq_get/put() for a different
-> purpose. pwrseq_vote_on/off() also have been rejected as unusual in
-> the tree.
-> 
-> Change the name of the two functions to pwrseq_enable/disable() which
-> better reflects their purpose and semantics and also mirrors other
-> enable-counted resources like regulators and clocks. No functional change
-> intended.
-> 
-> If at any point users need to know *when* the exact power event happens,
-> we can provide that information in the form of a notifier.
-> 
-> Acked-by: Jeff Johnson <jeff.johnson@oss.qualcomm.com>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Hi Rafael, Pierre,
 
-Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+This series adds support for handling ACPI CPPC Highest Performance
+register changes at runtime, triggered by Notify(0x85) on a processor
+device.
 
-- Mani
+When the platform changes the Highest Performance value (e.g. due to
+thermal or power budget adjustments), the OSPM must re-evaluate the
+cached capability and propagate the change to the cpufreq policy,
+the scheduler's CPU capacity model, and the frequency invariance
+engine.
+
+The series is split into three patches:
+  Patch 1: Core update_limits callback with boost QoS handling.
+  Patch 2: Refactor autonomous perf bounds into a reusable helper
+           and wire it into update_limits with error logging.
+  Patch 3: Topology subsystem runtime capacity updates with
+           validation, early-return optimization, and concurrent-safe
+           normalization.
+
+v4 -> v5:
+  - Move cpu_data and caps pointer assignments after
+    guard(cpufreq_policy_write) in cppc_cpufreq_update_limits() to
+    avoid potential use-after-free if concurrent CPU offline frees
+    driver_data before the lock is acquired (Sashiko)
+  - Extract cppc_cpufreq_sync_boost_limits() from update_limits to
+    handle boost_supported re-evaluation, cpuinfo.max_freq tracking,
+    and boost_freq_req QoS update in a dedicated helper. The helper
+    always updates the QoS request (even when boost becomes
+    unsupported) to clear stale constraint values, and forcibly
+    disables boost_enabled when boost disappears at runtime
+  - Add highest_perf validation in topology_update_cpu_capacity():
+    reject values below lowest_perf to prevent corrupted register
+    reads from propagating into the scheduler capacity model
+  - Add early-return in topology_update_cpu_capacity() when
+    raw_capacity[cpu] is unchanged, avoiding redundant normalization
+    and schedule_work() calls
+  - Add zero capacity_scale guard in topology_update_cpu_capacity()
+    to prevent division by zero in the normalization loop
+  - Move guard(mutex) before the raw_capacity NULL check so that
+    the pointer read is protected by the lock
+  - Add CONFIG_GENERIC_ARCH_TOPOLOGY guard with no-op stub in
+    arch_topology.h for configs where the topology subsystem is
+    disabled
+
+Xueqin Luo (3):
+  cpufreq: cppc: Add update_limits support for Highest Performance
+    changes
+  cpufreq: cppc: Refactor autonomous perf bounds into helper
+  arch_topology: Add topology_update_cpu_capacity() for runtime updates
+
+ drivers/base/arch_topology.c   |  76 ++++++++++++++++
+ drivers/cpufreq/cppc_cpufreq.c | 157 ++++++++++++++++++++++++++++++---
+ include/linux/arch_topology.h  |  13 +++
+ 3 files changed, 233 insertions(+), 13 deletions(-)
 
 -- 
-மணிவண்ணன் சதாசிவம்
+2.43.0
+
