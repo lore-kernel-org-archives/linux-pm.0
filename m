@@ -1,141 +1,141 @@
-Received: from fout-a5-smtp.messagingengine.com (fout-a5-smtp.messagingengine.com [103.168.172.148])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 633B542D777;
-	Fri,  7 Aug 2026 10:36:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.148
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786099013; cv=none; b=KdavyqCXEJIjy1M4op4CVP0nLOF+FEk6eKYFLSdG3ZBqCyaVP1jLUUttUlt6ZFwCrtnD8HbURY7Zj3ESjdFKDl/WDBdhzuzcOeR+nFNUyUosvMtuMrqJ0zkf6+I8GaZdaiPepIAqUFo2QiVylv5CPOVWsliLA/TCAt5TlSCGIAA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786099013; c=relaxed/simple;
-	bh=MA8tGMGXrwHcXlwOTOPvyb9m4xBzGAvwD4AEB5gK0ds=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NC/KbS1azebUL9IQmlKHs/osiZCtjV+TGwrY82DBTeH0HtJsDdJoDnpmYZGHw5QSizxm7CNWycxoCniOtVM5B5xLnXYNGoXjxsyEreFoP8RpvH3Yoz/hPSYk2Y+6SKA+7Xe3vUy9iBaNXbWF5avLNtEWoJstPo4LscIVCg4cHlw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se; spf=pass smtp.mailfrom=ragnatech.se; dkim=pass (2048-bit key) header.d=ragnatech.se header.i=@ragnatech.se header.b=OOcpDe/t; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=CpRsfHIl; arc=none smtp.client-ip=103.168.172.148
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 764E542D74B
+	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 11:05:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.181
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786100704; cv=pass; b=nyc9avecK5DEq60b2OKXXUQ1Q9j8aqEZRgIVdwbjSGOkRk6PNyWqKIHvl9Wp3lguoBUCp35fw68L734FAf/u/RB0wfwduferPA3y9E2JdZWyJ+QMkEren3KPWeXucheFtr526Huw8SDTuzYx4I3wOCC1uT1UCx42rxcO1uibvok=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786100704; c=relaxed/simple;
+	bh=7KhMblWPk9Mxjw0VSwSuCZtpex2QSzhBO4rxVqclDig=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=t5ew2fjapwNkyp1Kol613+8pvslEZDU70gnNd0lLIRA9ds79YB2L7mjRlFLRmFgEmOL6XRa7yXvNtljdzkz+jVwX5SjFgRHcwSxufgYgsoXFPaZZa0iXeagLqw4fhPsN6feNOpH6Hz8h34+9ub0l03xlefJ45ODvf2YTvb9W2nI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pjxPWYnv; arc=pass smtp.client-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ragnatech.se header.i=@ragnatech.se header.b="OOcpDe/t";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="CpRsfHIl"
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfout.phl.internal (Postfix) with ESMTP id CE4CDEC0139;
-	Fri,  7 Aug 2026 06:36:47 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Fri, 07 Aug 2026 06:36:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1786099007;
-	 x=1786185407; bh=kv5Gw0RyssW0l4PPEmycjQlZWXkmi9/Opd01nGEEwxQ=; b=
-	OOcpDe/t+T6tjrOBLNk2nRrww6MOjJ5bzxqhrh/T11ALQ+jc8Q+n026Z3wwHNxM1
-	JJ6np98IKMWgrsfWw+XDx9iHwNvf4lyZ4hn2zRrqyovCEc4WojZgGwK7lVHOvnCI
-	wRsS1QQvuQl/loEj/LK1sPcAJMwi+x28v1Ox5LMk6qtCRldHxJdA2J740F8wLmPE
-	ZrFdDULdYep6V3wHM42wkD+ygVQp6HxKrrBkF08cgC2IGQB1gxWRdFsaFPuxpJn7
-	JTUniFDd0+YvJBpg9Z/c5tawwWuSVfzo2zf1m1PSIn+ZLaTB7tPvvFvTzXQmfOYJ
-	COiyIOugqfLf8DoN3fyGzw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1786099007; x=
-	1786185407; bh=kv5Gw0RyssW0l4PPEmycjQlZWXkmi9/Opd01nGEEwxQ=; b=C
-	pRsfHIl1DGEjLHCei6Dd8k1QM2hjNsTQln7Bno4sYaIEnIDXjWLLvwdIM5ke/AZO
-	AjLRGbZeJDyq9qbiBqAC9WhX9idVqrTFyLSa2ztIONCdSMDSlgZ9t/l2z3O6ziMZ
-	mW3MasfjOSjYN3Xbc54zVByocBg0V/y8vTSStYeZZ7a5IbBlw21KRE+IX1SRIGWI
-	NFaZMwTEJswuqI/XwVAj0NsvfVcPz0YwStCckQeVRtnaG61FznwKn1lJCq8/z4xH
-	Z2kUi6xOZXHPaQYbHGJduPHfZFdJyLyCRQJi24/B4x8eE9+T8+QQWWL8UmpbMfgo
-	IDYlT1yVxcOzB8ElsBo0w==
-X-ME-Sender: <xms:P7V1ai568EfOt7a-83H6ohJ9I3i3k7_yf9KZSZeemofjjlor31KPBA>
-    <xme:P7V1asXMO2meg7UQfZvozI5dyLKqMFtU1Nmqt480TlRQ9xN0QDLXr3Jjg5MXCv83R
-    7nLZfO8rEG72OaxQnTPLn4_o8iVM9dOW8Tz0U5NCdfWSAGnaUV2qfw5>
-X-ME-Received: <xmr:P7V1ahOe7oQrAJGi3U_KhJt3SFrH2dqJ7wyqhgMPOBGFkzRQ4pPx41s1A9d7baQUKeI3pRBRXmbW0aLr2OI_Cp-0b0UuBaU>
-X-ME-Proxy-Cause: dmFkZTFci/dH1JCbv9AfP7TRe8QxwtPwefa5BCWgd28SMx0En1COK20QOjwoQor74t1EWW
-    gwnGVqCL5CcS7Zumte3pJlJZCxJBIeJPZVwVrDZwe0sDMm+NxFy7v1h6s991Mrw+2wRBXy
-    a9Gu/0+N+OeW3YPUkzWhivgDddkA5XFZzoClYart8KLaecRTt9l9eCUPYrmQI4w9Rc6PqU
-    OHdXT/nxP3tNMNlsaOFmYyNWVBHJhndqR6/uoCIkW8z+F/IRA2t1G1T0eMyyelowla3OC5
-    X7z9/PpfkB9TbbW/Olq+BktktK8FmFeM+2Usbz3WmpL1dGGvMnyLd7GftWE8t7kk53PcbL
-    /gSw8GmujsNceOZQws4jsjTQ4t9rZ7Wq9lJVU4KLGNQsOYkgQ0kT8EqcsbbR1NDvJXffyY
-    rpO6BemIwmZY4HgB4qb9EQm0Spk1cgxRGUSMIiVc/rpZmuIKTewL+Qhtb4J5FTZzYmEuvH
-    BBBe/tCNedffPYKMfC9Y1EmkYIIc5aHarLf6+YkI75sRXMhbj/4bSpN9me+NcqqUmhGWdd
-    BxkXxgUwvugxF5CMW7yhNTNic3eeg1THsvTcvxvvR/MX52ienZ7jZ0WsxfNx5qY4wAmW1U
-    +dbDPNA0bADX2SqlwuZ2iqtPhzW/SK1LIwVxmlqcLxqpgCzW1volA0owotgg
-X-ME-Proxy: <xmx:P7V1argvtIXsd8r-Pq3JhjETKsnxZmZhTMwJHmapF3ywKdr6v5-mEQ>
-    <xmx:P7V1av6r4nhDCoLl1G2QBqMmFfuOxrUDUvmROePkXX8_bPkl0_OKpw>
-    <xmx:P7V1aqfO5KRUbP8S-AKbDI52mwLT32-7hBbiMyf9sZsdfCRREnRQrg>
-    <xmx:P7V1agCPWy9raK0hQbBufAR3RBHTpAg87TxcV7EdY7DdyiX9tvWbCg>
-    <xmx:P7V1ahtue3FFqClKrDJF26gWePhBZhspkMOkY9BNSWtXmob_k40BwWfn>
-Feedback-ID: i80c9496c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 7 Aug 2026 06:36:46 -0400 (EDT)
-Date: Fri, 7 Aug 2026 12:36:45 +0200
-From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-To: Bui Duc Phuc <phucduc.bui@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Markus Mayer <mmayer@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	rafael@kernel.org, Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1/2] thermal/drivers/rcar_gen3: Handle -ENXIO from
- optional IRQ lookup
-Message-ID: <20260807103645.GE1316230@ragnatech.se>
-References: <20260807093058.42840-1-phucduc.bui@gmail.com>
- <CAMuHMdWJ3W2JKmxaKaa-A-Zk633cf4UwbESi+F1_h4tX1AhRng@mail.gmail.com>
- <CAABR9nF7sAT4C+W_qE8GVKhrtTjdm=DcpJH548RzFaYLuED+3A@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pjxPWYnv"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-c966b9ee9cbso2200641a12.1
+        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 04:05:01 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786100700; cv=none;
+        d=google.com; s=arc-20260327;
+        b=J3Xx90riMjeLiJw+YNQbmFuCjM+6MR0FGRzgeAxLktTxXOfv+lsYTVKQDo05qKBmdb
+         1EZWZWsWwTPcLQzRVj/MwdMaE3ylOtYwPgsuYNPxdkiYMhHVKZ7HweSfAN3R5KKL6DXV
+         eOw+zhPvLE2e+M1Cqm1H2c+28iPnP9y3sxGHINQ2FzFo7b19ubgolBDt42bKttjVyB4E
+         t7EorTo9mStFQMjDjkDXeGKU2ZPPbOuwuwkONLbkrCA8Bm7Od5NnLJiHfVwIg9forH5+
+         T19495Kifegv45DIKX5XOnXJZFLuzBrA5zxX8Uf69Hz/H3tE+epTzlgKHZ/VElef5Uip
+         UAhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=lIbXpFTj/4jIXWlkQ6czPnMrtaq4DBoRJvyvQNnOL8U=;
+        fh=sfNj3oGloB1DBLZa/fBkG81QleM0p+B9WRWfnrEgmVw=;
+        b=Ym5/32ydNJ60mY/WHhEyIHvNXXVcXDWr6PRsfNe5+FMM4xV1umy0+JhPxMrpwaMV+R
+         umDrTX+0GCrK+RVTwAtgqYfZM6lNmfLhNFUbZbfcmytiMa5xVbViELGUBkGmxRVTcqEl
+         75Iyt3PwIGrBtQiYQlP+woEuZ221tH0Rda5MzI/ZjfTtJRrrAFn7lBkKPE2uxhzPEDoP
+         VABkqYiale3wDA3jvqKUE0SGrz2EADYnnqbduVEkd6c81Ktz4IH0tvEwcRPIDQF+3Ecq
+         G1Z5lYtQn7VkkEGLsEB4yt7fhICBkic2Qo6rFn5t758pSFhg2pCeO2v8N/dmjCXvVWNX
+         MGeA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786100700; x=1786705500; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=lIbXpFTj/4jIXWlkQ6czPnMrtaq4DBoRJvyvQNnOL8U=;
+        b=pjxPWYnvqtTgD9d6wWVRFzczQ0HU90bmwUNzz6V3qoHFdWhvDNqdIcqt4aumV7a+Vz
+         ynvSJCrn9m84x6zFJZyvhogftq7+phyM95OuvpEtU2qkpKj7kPEih3S/+RYnfFGj3BU1
+         W/nWHypHtGRi0DTYWBgICZTpnoeL16vWpvXyM9TuRVEx0bpiOQYIK5ivaCFomfsyb0fi
+         UfS8Rg1DhD8emqjRIzTCVsREqyixDPcIP7Wsnv1v8cSePGDsjCfHW6U3EAcRzRuAep+y
+         UFiJq119tIqdMpckQmV6ZnWkiPDlg6u9wP5hIv+gu+igMzzDIiu/clVD0koLGw9Q2mti
+         RbXw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786100700; x=1786705500;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=lIbXpFTj/4jIXWlkQ6czPnMrtaq4DBoRJvyvQNnOL8U=;
+        b=ErLIt01XI0iAyuGzlUsXZ4fJmXEvb/81h0mAE3IvCRz/5gqdsbXNOgA2zO/PwTQ9Uw
+         VrWhTEzeqjHOhpd5IdlzQtYyhgQdLiMHpCTW5WXUSv6j163TZD5vbOxDJERv0TSIXNpM
+         LmQ+RDEW/Tu8+LFgsaWscS8EO+RWt3vEZB5nbNhsJwH7t6bj8Sa/9FaQM7FEG5d8TFk2
+         A6YVAbq5vk1mhhglNf9D3dvvcO13uhrjjNKOe+v/2WL6TkfDz0dIkVMnyVfxIaNZynv0
+         KCbGMfkefYOLTLo4iqjijezZ7BLgM/CUZVQFLbaJFu9a21E2r0glk24CpYX1YwrSyGla
+         fjHw==
+X-Forwarded-Encrypted: i=1; AHgh+Rpm3WwxDPTE/+TghGMd6F4U2NXporodSlEFvG4ZN2ZpztaZlUqV1o+b0kdrV5NJxQwaQwfpzkZD5Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyKXhku3U1GpCSPBV6OrswazzSE39pzIWQ7qX0LQCg9ZMC0+peh
+	tvshW6hGafMs6r5o+wVOk7pvcgHUXq3eF8wW8khrFGAZZW4eOy7IcXrdf8lyNPSwlOtcKrwBS2y
+	80V+X/VUFC575MkRyyRJEDgNOeR7Kg1c=
+X-Gm-Gg: AR+sD10PpQVHDqPVzPVm0bu4BuPuxe7FLHZB1vpuIXaFTwihmuI0DSDp9wEyp5ViIa2
+	q+ZSFOpp0W67/4s3UElM2+C+I8XHiGlQQElsZlnhnaWtrZxU8qUIV+xGWWHBOQyyjUldH5chzJR
+	tXXXKLrDaOSwe9WuJnipBl8lqZwk3Ot707+WkeVpmIW3f1uzk1B7cOcnVmuQt+3gW9aqTZ26gqB
+	vXoJKWsV5UNQnbqYDmFsIV01/zBkOj5rAmilimmMwIQMoj/sITZVElx2y+HEji2Pd+dQpXpcRUZ
+	jFciM1X1uTkWVgpCrVKu8AFt2ejo3fS6MsRS4Y9w1LxpOsQBUF2OP+4Mk7TRUlOysoncWFE0hU/
+	CEeD2GfparNRJE+1IYi5MsdzJXwvVFCfkYJJs4nM5adrYEDPuDXb5fuMq
+X-Received: by 2002:a05:6300:670b:b0:3c0:ac0f:6558 with SMTP id
+ adf61e73a8af0-3cb85e99259mr26552578637.2.1786100700044; Fri, 07 Aug 2026
+ 04:05:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAABR9nF7sAT4C+W_qE8GVKhrtTjdm=DcpJH548RzFaYLuED+3A@mail.gmail.com>
+References: <20260807093058.42840-1-phucduc.bui@gmail.com> <CAMuHMdWJ3W2JKmxaKaa-A-Zk633cf4UwbESi+F1_h4tX1AhRng@mail.gmail.com>
+ <CAABR9nF7sAT4C+W_qE8GVKhrtTjdm=DcpJH548RzFaYLuED+3A@mail.gmail.com> <20260807103645.GE1316230@ragnatech.se>
+In-Reply-To: <20260807103645.GE1316230@ragnatech.se>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Fri, 7 Aug 2026 18:04:48 +0700
+X-Gm-Features: AUfX_myqnP9cM0o7YKZHIMOZ9idGY0mI36nu52n1v9bZ-QIC3TPihkA-_6FUpl4
+Message-ID: <CAABR9nGAY6BjA2mRsv+2hkB1kv0QDJX6osXyEMw6jsjE+j2+vQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] thermal/drivers/rcar_gen3: Handle -ENXIO from
+ optional IRQ lookup
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Markus Mayer <mmayer@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, rafael@kernel.org, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026-08-07 17:11:44 +0700, Bui Duc Phuc wrote:
-> Hi Geert,
-> 
-> Thank you for your feedback.
-> 
-> > >                 irq = platform_get_irq_optional(pdev, i);
-> > > -               if (irq < 0)
-> > > +               if (irq < 0 && irq != -ENXIO)
-> > >                         return irq;
-> > >
-> >
-> > So the code may continue using -ENXIO as an interrupt number (and fail)?
-> >
-> 
-> Yes, you are right. We should probably handle it similarly to:
-> https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/thermal/renesas/rcar_thermal.c#L422
-> and only assign the IRQ when the return value is positive:
-> if (ret > 0)
->    irq = ret;
-> 
-> > Why is this change needed at all?
-> > The caller of rcar_gen3_thermal_request_irqs() knows how to handle
-> > failures, as IRQs are optional.
-> >
-> 
-> Regarding the caller, I only found rcar_gen3_thermal_request_irqs()
-> being called here:
-> https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/thermal/renesas/rcar_gen3_thermal.c#L530
-> It does not appear to handle the error return there, so I don't think
-> the caller currently handles these failures explicitly.
+Hi Niklas S=C3=B6derlund,
 
-Yes it does. If it can't get the optional interrupts the driver does not 
-support setting trip-points in hardware. No?
+Thank you for your feedback .
 
-> 
-> Best regards,
-> Phuc
+> > Regarding the caller, I only found rcar_gen3_thermal_request_irqs()
+> > being called here:
+> > https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/thermal/renesa=
+s/rcar_gen3_thermal.c#L530
+> > It does not appear to handle the error return there, so I don't think
+> > the caller currently handles these failures explicitly.
+>
+> Yes it does. If it can't get the optional interrupts the driver does not
+> support setting trip-points in hardware. No?
+>
 
--- 
-Kind Regards,
-Niklas Söderlund
+Yes, for -ENXIO, you're right.
+The caller treats it as the absence of optional IRQs and disables
+hardware trip-point support.
+However, this also means that -EPROBE_DEFER, -EINVAL, and other errors
+are currently treated the same way.
+The caller does not distinguish these errors from -ENXIO, so the probe
+continues instead of propagating the actual error.
+
+I think the caller should distinguish -ENXIO from other errors:
+keep the current behavior for -ENXIO, but propagate -EPROBE_DEFER,
+-EINVAL, and other errors.
+
+ret =3D rcar_gen3_thermal_request_irqs(priv, pdev);
+if (ret =3D=3D -ENXIO) {
+        priv->ops.set_trips =3D NULL;
+} else if (ret) {
+        return ret;
+}
+
+Best regards,
+Phuc
