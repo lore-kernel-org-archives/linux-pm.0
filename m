@@ -1,178 +1,321 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011054.outbound.protection.outlook.com [52.101.65.54])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AF34355055;
-	Fri,  7 Aug 2026 19:53:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.54
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786132401; cv=fail; b=rYuRvxeztDIT+vlaGBb8PgAATLQSVWPfJFqo7GFDCLapg+bCP9F4nUs0wD4tczj57w3VLaiLg4cinWM/8nxKiuoCws0ZIREbT9AcLwPbIleD6onlWY13AqsoWfieAuY8VXk7xv2FDWMX8zztF/TEatDG8J25p3uyLoeM7s6KdLw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786132401; c=relaxed/simple;
-	bh=3Nhmm10f7uYoo7fMtl7gq+erJsn0RHHi5y07jeKs4C0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=IkQ9Q4L5RsblQ7YzoQumBeq7egz7sTneLqFzHz8zSaRqOyLgTmJ3utsGgluCHlFVu3GLqc7xHEtcinG9mUD+pOuIT+jy2VDrWjHCHznyHRZz1LpOSPqUsaEYPvTHj/nBwNrEwRPNGyX8CsdMLYKlNToyyvavTVydwgb4Xe8PmBA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=BHrT98qu; arc=fail smtp.client-ip=52.101.65.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE79641D11B
+	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 20:04:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786133048; cv=none; b=jTxY2Z7bcxTyj6OIP6hmbkC0tidfxN7zB5KkDyf1cV5mEa6hMqYdG2q33bKKukDbTe32xJEaNKvxkFX1p+qGAgTPXompiCUbYbHGWBYz3ILrToDcSJCXokD8BmxQaSgSUwQksXbHMU9mwe3nTd6vNE5p419O7OeCZEMRO7q+dnU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786133048; c=relaxed/simple;
+	bh=YhktGsZSyl3pw8vKmz55aHodW+8qoIC+F791+3qIRsQ=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=TMiEUBl+V6UciFsDZPDNm8Ts9S6IpiaaGgZm3cpE7GyqZGDA+TB8d4GrGDdkaSjc5m1q83iD+jbNAC+V86dKG8Jftgxf+L5iAHw+pcy9dNZG6MoQYZ70HDBFFL0wBuaWxvhTMebjuUzFkN5IrVq8m2jE3R2l8MFYnvwvU4MBimQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ArWkX4k3; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CUpMmVBi; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="BHrT98qu"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=OAXxGtLnBo1sU8pa0Raak/D6gvw5cIzWJH2gdez0LhHEs5hcmAa41eFylJ0QVziF6gAJ6fkIz97tW7ZJqGmsEym+nPAD4skWM4emqEuJMbVMhY5pI0SwhdOlF6pEXAVhaQ4D/ArxkspLpeVcrPzM3XNow+rMEUcpDeosyl/Y1dmO2tHwbuFLyxA6O84Uccd9iZfpCJT3asZsaAR9Bt0w8WZ2jNdkPlvTHKjCrpaTA/ks+ydG2VGDJ0VBs5N96J1HH/bGmbjRJUnblkgHgQWelAvIzUJrXTKAe276dPXKmG2orRldBYClt49atX5m8sx01SxDCn1RMbre6UvwAwNSIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=09+ly3wj4zkUBYXUu00CgDhn5h3Z/QHsn3bvHMYNdBY=;
- b=F1mh4hQNdQfDlRU7cyHhV41pQirukWSyKavtjmgzhp4BMeCIkPFZbSTgIrZ0c7Nx2v5Qzxozxk+2zcqlgqnIWW4hgjB8eNG+OgM/XMOuVY9o10ZKwtR7hKNuTMotCN9btbEieYEWlDvWtPkf/bJ71FwV/4pOW/kkEcc9i6Tsm9a6yhJeagwJcxet5LcChd4JIpmSR/xImPB2fFTgVBJmo9wUSFxNssuz/IlkSg5S6z3ihdZDDyxX4R+WW714BdVcVmFZ2O3P1lOOE4aTN9dCYYLKpfOS2HM74Ic6cv0ssv+jb7WpJtXVvqCkycNNcYQZT0dL16dCqdy+2dBvrDNvsg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=09+ly3wj4zkUBYXUu00CgDhn5h3Z/QHsn3bvHMYNdBY=;
- b=BHrT98qu7XxF7d+9ZgfeC0yMJ1nFAHLu+9+KwddvKTKBOAhBGJIHhgQ0j7mCguK2eEAsvXk2kDbXgS2e8mW+JzmsiYl0TvH1dGSlODXv5NiVAazLVi4Emo1ITsBiYr7GkTU/a3gqC8VvYyGbHm9RyfNwHU79CIj6p5Crp2T+tXT8Pwgiz7ej0cTvtpX58iJAon1aN8AvMepYjIXwwaM0B4YdrvHmko5kWW7HsRoGiuUAnE6+Mp6Ewads4Csx3OBJexlspeF+eM7DxMcABDltb25OnXD8yuzU5T5PmcbCf0fw/Zg/ZUf4xYf1v8kaDCJ3juOayw5EF8gpPsUvVCinLQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AS8PR04MB8247.eurprd04.prod.outlook.com (2603:10a6:20b:3f2::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.24; Fri, 7 Aug
- 2026 19:53:16 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0292.018; Fri, 7 Aug 2026
- 19:53:16 +0000
-From: Frank.Li@oss.nxp.com
-To: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	festevam@gmail.com,
-	amitkumar.karwar@nxp.com,
-	neeraj.sanjaykale@nxp.com,
-	marcel@holtmann.org,
-	luiz.dentz@gmail.com,
-	hongxing.zhu@nxp.com,
-	l.stach@pengutronix.de,
-	lpieralisi@kernel.org,
-	kwilczynski@kernel.org,
-	mani@kernel.org,
-	bhelgaas@google.com,
-	brgl@kernel.org,
-	"Sherry Sun (OSS)" <sherry.sun@oss.nxp.com>
-Cc: Frank Li <Frank.Li@nxp.com>,
-	imx@lists.linux.dev,
-	linux-pci@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-bluetooth@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	sherry.sun@nxp.com
-Subject: Re: (subset) [PATCH V6 0/4] Add PCIe M.2 Key E connector support for NXP i.MX boards
-Date: Fri,  7 Aug 2026 15:53:05 -0400
-Message-ID: <178613233956.1446311.6562635307844065538.b4-ty@b4>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260713023435.235765-1-sherry.sun@oss.nxp.com>
-References: <20260713023435.235765-1-sherry.sun@oss.nxp.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: PH8P221CA0009.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:510:2d8::12) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ArWkX4k3";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CUpMmVBi"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 677ImFJD1474004
+	for <linux-pm@vger.kernel.org>; Fri, 7 Aug 2026 20:04:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=YAHTsN1SxcEB9glrMdNJNx
+	I2xfAf21NmyL4IW+ixmjY=; b=ArWkX4k3wtfCGqcQJxXN1NhB0hhVLaoVZ+0Q20
+	JM8chgRi+m1u6GJnaPY9z8SbG8ZHn8k08dSpm9/T3NKjwpfdq+Tl5eqqWQ1sxMBk
+	qGSt2H4My1faq5Tna5u1fWLwoEyr+sRooo1h8Fl7fUcYfA4Xk1/BRC1UlK3QvQ3U
+	+IN4nShoDz6srGmUrgfbTYWjbxkg+Dgb5/xqmIQgMFr1rrohCnB2CWMJV0KlJk5T
+	+89iL+h9pdsW3Z0o7OaLvYDf1Bpb5CPqyAEp9tgCxb8F5Exia8VN3ZENNGfc1fux
+	XWbArWLGoyuvR34GVUOewqDX6dd1o3CzLg4U22O5ArOVGN/A==
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fwhk3ha9u-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 20:04:05 +0000 (GMT)
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-51c20762d21so44387471cf.0
+        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 13:04:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1786133045; x=1786737845; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:subject:from:cc:to
+         :content-language:user-agent:mime-version:date:message-id:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=YAHTsN1SxcEB9glrMdNJNxI2xfAf21NmyL4IW+ixmjY=;
+        b=CUpMmVBitoGh6ezexEPzx1crY9hI9VMtipZOLYMaPLvQNmpVGNclVPBXljTMC8WYdD
+         W4CzAGH/FNg38Px4ekFKvzgZmTX15S28zgAWSy450vL4Ppt5nCZOjHvyCuBfOZkb1+dC
+         faLghOAmYtZKOUuv3/jPiq4wnPRGp+cvj57whrSFaWsU9m6Cv/es7uIND/TQfQTDWj9B
+         y4sQsTWOP/67K8ef5BHn8alJdOnnEYgmXkcv28Gz25E0YDR+gGdv7TDfkgs0NFrOnX7n
+         aCBn4hpb36th2M6JDI6sVofEBkjD+6HezBfyoFKLzl9kl6BTDrBt+/n9GG7y2wOridsd
+         2jnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786133045; x=1786737845;
+        h=content-transfer-encoding:content-type:subject:from:cc:to
+         :content-language:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YAHTsN1SxcEB9glrMdNJNxI2xfAf21NmyL4IW+ixmjY=;
+        b=n+VhjoZX4uSj3xDhydzBz2yPxph8bLYoLyWkH+IbuggpywzqzPpuxV40Ws1YbcmWbc
+         LXIulR6q6rQN1wBmevp0w2jR33xPOaIVCyiHrE6Xd7Kka4sNV2ZokqHwtKMrfJcVrfJq
+         9nKkYRJNZSmE3tnBUdnQ7lCorLKwGVpok2kWrDvfmvEafvpAlmCn9NgpglsMo6mYOXus
+         AdE7MpdXw8V85HAZZZvpX77fvEMumlnu4V8AHNLwQDXEI8GWaJzZAS6yVEWBmFeiSKlk
+         9CS3piRChESY4oxSi3LoqCWXqmOxUXJiNWI/rqhAcpLccyEP+9j17PFyiTh5fAXrcBFy
+         m4ig==
+X-Forwarded-Encrypted: i=1; AHgh+RqPUOV7CKmV6Ww0TdqWf6rLEojiqEzw0Yr/JKL9DjOnFoAPG095T3ZJGj1UsgU7v3OhXURAM7Mq+w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwFKg3PhI7Nhyur5jnPtyBj4Zt4Irh+hluZ7F+5d3nUxSZW3jkO
+	nTyBfPnuO8ELMItatCtC/KZ1LoClfFVqa441F6jGLV4mhlW+QOMXDoYyR4xDfYCHhgZKEjKlEFq
+	b20nybPx13V/E+UI2OQAMwGWJCNmJty2sifeVbghS2rT4jYzp7EIBrrdyhq5hDw==
+X-Gm-Gg: AR+sD10yfMSFuLJdRfdwC/vteU30zSYvGSo56MmCjNJm/d8svrTMk/8K6B4p1D0xMTE
+	de7KA38NeCcHkF+162RoAaGPY0tPauKFmyw0KRR/RVvhBA1Kd54tyK23MfMcfOwNMqgfZkh7YC/
+	VTh6IjpYiubJH3tHGUKjRU5VlduOwUBXxU/z+8QQD2juF/JhcTLB8kA4MxIPZ3skH38qxAwwMBa
+	vFJXC339sJbZ4RCu/+fDr4R9+OcV9JX9YHzgrER2X/kcTJl64di8b+tS9VMJSI6B1Z5JkzQCDlk
+	ftwj8WEJxoUUAdiJa/M2NHt3dT6MDGdqZueb5/jf6pOAxOOxmQ3691xo9PPpVHeMc1lJY1mKVBq
+	d/Q5eF9TRzANMN68hSz5BolmxvNYBk+z3BbJHbtOsTxfc7A==
+X-Received: by 2002:a05:622a:480f:b0:52b:581e:1274 with SMTP id d75a77b69052e-52d18ec82e0mr78363441cf.19.1786133044748;
+        Fri, 07 Aug 2026 13:04:04 -0700 (PDT)
+X-Received: by 2002:a05:622a:480f:b0:52b:581e:1274 with SMTP id d75a77b69052e-52d18ec82e0mr78362521cf.19.1786133044238;
+        Fri, 07 Aug 2026 13:04:04 -0700 (PDT)
+Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48002150952sm7544093f8f.15.2026.08.07.13.03.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 07 Aug 2026 13:04:03 -0700 (PDT)
+Message-ID: <7d85c5c6-3ee3-4ce6-aeeb-e4f15cb57b32@oss.qualcomm.com>
+Date: Fri, 7 Aug 2026 22:03:55 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AS8PR04MB8247:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4b0e1ffd-dd4a-496f-679c-08def4bd8570
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|23010399003|376014|19092799006|366016|1800799024|921020|10067099003|56012099006|11063799006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	90i4oNbJy8GOykOTx9fFCHv1+6uVkUwYjkfdNkGlUMNWR3xRsbiUcGQ+WESjtNyMj5LXfFdETyjVPMuMBJshp5ciGwglBvaiVxZGb0FmXdKnKUUQuFo2OdCbUypbesIJ+R3dzjOtPIv5YvtQC/zsWxHGPNHUQ9hZgpDHHVZydA5ktuJZooMk4GH9LjnO3+wpM1VqU8weKLm5zt7G7NkZoDtLXmvqeu8Urne8acz61CzTe4a0kz2TdStz4pYwHt1n0khbpOfbcQzKdWYZ3c1gbXa5Ypkq0X+CCKv5uCo7j6EGBk35kQctpvWKHfhzQ3ESxQC9f+CzOBrD85iikmTTSMxqqDF8q6d722k/CSBOLH8jh8LbOyswFUz1l/9NInXOcOZ2pSKK2fmHL9EpOiyLrwK3+M3fw+Uf3zWFEsgmq5CHS6M/d0AJUO+Z8PEMrHDJDVgh8D3FsQoMRdm2C8O3KGByABYy2r/xEZ471Vshy2I3bwb763NleZwuHjgZticl7u3RcJYggpGigl2M7kX6RRDpwyF5zuyt7tH6/JvhY7AznN05Zp03TqThw6JwwCY1KDqTQhPno3ggk357n+zKbWZNyqkMtIaeSLCQVgITl7QmqIZJnu618/mrPNHKqHqQSnaQqi66DuLx0Vx1Pk/3HK5JmY2hwfUovHjrRYyO+r9SHGvGbpmkxBzKhcxxD7D34SNBFEtUmIGpLjn39z0MUw==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(376014)(19092799006)(366016)(1800799024)(921020)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZThjSkIzbHpLS1Y0THNmK2ZWMjllYU9WWkFnTjZBbVZsTUM3L1VSNVkzQjFq?=
- =?utf-8?B?TnZHK1V5anNycFowQmpGeUdEV2xaZVBsa2gzWWFLOVVZY1FCV2tqTy9aakUv?=
- =?utf-8?B?QTlhTS9ZQU9aajUzbHU4a2I1bng2aVJoQXlDZmp5ZFNHWTdvcjNmZTBja05h?=
- =?utf-8?B?WTRQSXlVLzNzL3FMTEkyVXVUQlJXUzFJckQ4Qkx0SWdhZjlYdlNLNjF4Tkp3?=
- =?utf-8?B?SjVxZTlQVGM2VE1nQ0ZuaXl4ZWJLRXJUcGNEeXp5VXRCbVA4VkdWa1pBMytW?=
- =?utf-8?B?dzhYMVNlaWpmVFRjbmtXcUorME9DdVVPeEtYbFkwb05qZ1NKOTFlcnZOeUJt?=
- =?utf-8?B?MlhZTHMxKy9zMGZVbWk3L0FvSENrTVY4VHlnYjN1Uzh4SjJSek5vcDlianBK?=
- =?utf-8?B?Myt4d21jYVBTUnY2MGFqTjJaYmxZR3ZKSXhUOEZuNkluV0pTK2dwRXNkWUdn?=
- =?utf-8?B?eGlHQ21xVEJwY0NvM2xDalRNN2NQVWd4dnZCV29DSkJrOUQzalpLUnE4amhk?=
- =?utf-8?B?V1lxRU1jOWZoWFlsb3U3WWxGcWxEZjhoNzQwNlZ2SXk1L0ViUmdJUFhRNnNu?=
- =?utf-8?B?TmJEYlVYTWR4RjNqQ1ViL01CSE5zTWFIdVg3V3BEMEtIWXowZU1lY1BuMUwx?=
- =?utf-8?B?UnA3dGc0TklISzg4QnFTVW9uS1NZQm9mVVFYUWpFOWROb2NNL2pHNVdKeVMx?=
- =?utf-8?B?U0UwbDJIZ2pOZjdXcFY4VmxuQUc1djlocTdMejNVWnB2WHNGVms3NjBPdktV?=
- =?utf-8?B?TXdweVJZVkxUR0xiRG9nU2FnU3A3dHRaa29DYVpWZnZBN3h6YUJmZWhnRkMv?=
- =?utf-8?B?YjNmTGlaT1VFYXVTbHFOK01qVERRdldCUWlZYkVRWWhLNlNMZ3FyMGxuNnBM?=
- =?utf-8?B?V2tPai9mdUdhODlIMjloNWtQOUcwYnhjYlBoWU5sK1pIWHZ4MEhpb0ZWeSs1?=
- =?utf-8?B?dEMvek94b2Y2cTFuSFdKL0c2TjAwcmttQzdzK1U4aHJucTBPNXBBRXZ2WFdy?=
- =?utf-8?B?M1pBdndqRU12Qy9YelhpSlhRNEtiSUE4OE94b2ZaM0NxZll6OHRWYTB4dUxN?=
- =?utf-8?B?MWNHemFCVHI0MFRTQmlJM013M2ljazB4VlZPYVFja3ljSzJwRUwydjliSi8z?=
- =?utf-8?B?d2pqOUhwZUl2dUdqdnhiRFlHYnVobURlcWFKRHg4YThneG5yRjBqQzRtN2Y3?=
- =?utf-8?B?a2RTTGE0SXE2YzdvSWVLU1hOV0VOMVZwWnVNTGY5VDJHa2t0T1FPRUtzSzNr?=
- =?utf-8?B?ZVhseW5oMFZ4ancxbUhoYXhJZmdlZjlxNElFQUhDT2ZTcVlJRW1QeHB1YThR?=
- =?utf-8?B?Uzh5RVpzZi9ud3l4Q3RhNEZvMm1JbDF0anpkMFduNWhQWVViVmZ0RUZMNjdw?=
- =?utf-8?B?UGlpakptYXd6VEo4cThtMVFuNFRmTjc0WnMxZzM1VW5SK1d3aWRrQ0tjYmJp?=
- =?utf-8?B?ZzFqUzdxRVUyRWREN0I0cDdxbWFTZUppckMyZ2hYMnNwQ0EwOXhYZWp1VXFD?=
- =?utf-8?B?NC83WUpINzNCMFFkeWxTQ2k3cHVMZGtmL0FGYlJtMUZoOVZDMkVLcFAwVkN3?=
- =?utf-8?B?VFhJcFhhTlBjQml2RGlKRDE3Zld0czZ4OWo2dC90dmthcUdPd3Jwall6cStH?=
- =?utf-8?B?dXIxb3JsaEN5NmJ3S3BTWUpOWTdoeFB2cXhVZkZZU21lZFpseUN3L04rTllW?=
- =?utf-8?B?dWkzT1QrenFCQlYxeGJ0MzJSMjhBa1I0YzhMc1hHbkh5V2hJaDZhMmNabVU1?=
- =?utf-8?B?TThNVHFZWk9rdXcvNTBIZVBGV0lFazBvTXhEeEwwOXZsajlqQU5LN0F6UzhF?=
- =?utf-8?B?cmNjOTNmanZDQnZZb3dDVTgwWFhrOEhQMFFNY1FUM0RUU0NxVlNxWkVldWtS?=
- =?utf-8?B?N1kvbklBOUJhcXB3c0kyb1h0T2RXZ2tIa25UVFVGTzJJcHVybzkycCtJSklZ?=
- =?utf-8?B?YW5sdU9kS0NRMnpzb3NVTmlidFhOWkpsd0YrTE11N3RIdGVsclNBNzl5Yk9l?=
- =?utf-8?B?K1MxTllYY082aDlsMFpkY2dBbVFkVGdrTElKeVU5WFFkQkM4VUxKbEhhNmJU?=
- =?utf-8?B?MW5jRlZzdElGbW5WMmhEWEswRmN2d2JJNXcyeUJYdU9jUnEzdHdmUG9idS9T?=
- =?utf-8?B?ZFhnT05PZ1Q0ODhaN0N5UVJEUStHc3kvTUp3dUdQVEtpOFkxajlvbUIvRXdh?=
- =?utf-8?B?a0V4VFZPSlhjandtODQzUnc1WGE1MGFPVUNRbFdydGMrbVJoNUg5WFBDNjls?=
- =?utf-8?B?VmtSa2dBQTZJS29hYzFXV0Ivc2J4cGpWd0hnQW1UWWZuRitjOTA3NmZMVU5k?=
- =?utf-8?B?SjZta1VycFFxM2V6MnQ4S29qdThFdTRRZG5LdnYydEdueXN3VU9DUko5QXI4?=
- =?utf-8?Q?HcEii9rieK2NXVnoZBSy7KvQqu6u89rIaEQqA?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4b0e1ffd-dd4a-496f-679c-08def4bd8570
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 19:53:15.9751
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: UB4PfL8FhwJwBwi6rQyUpV8dfGjSP9sJoJb6vBdc/pnJqoD8NDTJk66f962Y0P3X9dvsenSmRyF1JJw/Kq4cLz4cpRjfNtWVRIREK18nTT/Y5cTbNkQIGHhlyjc31070
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8247
-
-From: Frank Li <Frank.Li@nxp.com>
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <Lukasz.Luba@arm.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Bryan B. Lima" <bblima@usp.br>, Dan Carpenter <error27@gmail.com>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Christian Marangi <ansuelsmth@gmail.com>,
+        Rakesh Kota <rakesh.kota@oss.qualcomm.com>,
+        Can Peng <pengcan@kylinos.cn>,
+        Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
+        Haritha S K <haritha.k@oss.qualcomm.com>,
+        Pei Xiao <xiaopei01@kylinos.cn>, marek.vasut+renesas@gmail.com,
+        Linux PM mailing list <linux-pm@vger.kernel.org>,
+        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+        Andreas Haufler <andreas@haufler.info>,
+        Pan Chuang <panchuang@vivo.com>, surendra <kr494167@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Subject: [GIT PULL] thermal drivers for v7.3-rc1
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=RKaD2Yi+ c=1 sm=1 tr=0 ts=6a763a35 cx=c_pps
+ a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=VwQbUJbxAAAA:8 a=uyM6vb5DrBnEitOwxxEA:9 a=QEXdDO2ut3YA:10
+ a=a_PwQJl-kcHnX1M80qC6:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDE1NiBTYWx0ZWRfX65jDoxTAXJXd
+ 42MAcWXJDgN3aYlECwINCdMaw4ASCeXe+DPOd4JT7dHaUuH5XyTYRh1nhuKhbgI0vqwvFWUjFa1
+ TnoKhKEPi7qKLjqyNRXeEXGTrZYrHVE=
+X-Proofpoint-ORIG-GUID: ke_IZf-e-Nm7aCUdMOMFEmt4kb0CO7H7
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDE1NiBTYWx0ZWRfXz9Sy80o1mPGf
+ L70kGnn0VFHjekHJ7smN3St0B3vzwpwVohfsHiKlkiufTIENB8PuclalrFN9MjQLWmq3MxA6gJN
+ fj8BgSr6xYq6YqbTxigxBtK70Sw9p6DRuUyoeHqcnsm40S8Lq72NUeQsVIT+MiZTEdghcN84GVC
+ igb7ztpN6ZepSvgEflvFwyt1TBxb4ko66gCzh10cnVWfDXv7I6Xvy1zD60V+1nAh3giCGXBWM5f
+ Snxekkgpl5T+Ph5OOtS69k97YhmvTZIk//nRqCIjWjSiXnTMK3sZ//FnrWJpP9K/oTAZ2Fe0Lu4
+ Uyr+FVhOULDfblePmj0figZMpQyuQ8z/BaqgSt7w3igx8qrCLsPhG5hgaUVh2y2cDFT1wPvEqvY
+ ULmV5bB+cdcJBmaZOpaYiq2QSPwXlyNN2EJLsEFfQXJpTtTm5M+EOMU+X0AtEdVR9JPwx2lNNZH
+ l5TTjcc/vgZKELxmYWg==
+X-Proofpoint-GUID: ke_IZf-e-Nm7aCUdMOMFEmt4kb0CO7H7
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-07_04,2026-08-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 phishscore=0 impostorscore=0
+ adultscore=0 spamscore=0 clxscore=1015 priorityscore=1501 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608070156
 
 
-On Mon, 13 Jul 2026 10:34:31 +0800, Sherry Sun (OSS) wrote:
-> From: Sherry Sun <sherry.sun@nxp.com>
->
-> This series adds support for NXP Wi-Fi/BT combo chips (88W9098, AW693)
-> inserted into PCIe M.2 Key E connectors on i.MX95-19x19-EVK boards.
->
-> For M.2 cards that rely on PCIe L2 link state and wake-up mechanisms, the
-> card must remain powered during suspend. Patch #2 uses the existing
-> dw_pcie_rp::skip_pwrctrl_off flag to skip power-off during suspend and skip
-> power-on during the init path.
->
-> [...]
+Hi Rafael,
 
-Applied to imx/dt64-intend, thanks!
+please consider the following changes since commit 
+8cdeaa50eae8dad34885515f62559ee83e7e8dda:
 
-[4/4] arm64: dts: imx95-19x19-evk: Describe the PCIe M.2 Key E connector
-      commit: 825817212686334aa7c3c04d6e2797647ef7fa6e
+   Linux 7.2-rc2 (2026-07-05 14:44:06 -1000)
 
-Best regards,
---
-Frank Li <Frank.Li@nxp.com>
+are available in the Git repository at:
+
+  
+ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git 
+tags/thermal-v7.3-rc1
+
+for you to fetch changes up to 55c16e15ff9f91bc994a20124b83faf27f0e3690:
+
+   thermal/drivers: Remove redundant error messages on IRQ request 
+failure (2026-08-07 17:27:28 +0200)
+
+----------------------------------------------------------------
+- Move thermal_zone_device_enable() to the right place in order to
+   prevent calling it if the thermal zone registration failed (Dan
+   Carpenter)
+
+- Improve bitfield manipulations on Armada (Bryan B. Lima)
+
+- Remove unneeded 'fast_io' on Sun8i and Armada (Wolfram Sang)
+
+- Fix wrong boundary when clamping the low values in the set_trips()
+   callback and fix wrong mask when setting the temperature interval on
+   Airoha (Christian Marangi)
+
+- Make use of the regmap API in order to support the Airoha AN7583
+   (Christian Marangi)
+
+- Fix adc_tm5_get_temp() return check value on the QCom SPMI ADC
+   sensor (Rakesh Kota)
+
+- Fix unbalanced clock enablement when the resume fails on the iMX
+   driver (Can Peng)
+
+- Add Qualcomm Master BandGap thermal monitor support (Satya Priya
+   Kakitapalli)
+
+- Add Maili Temperature bindings compatible (Haritha S K)
+
+- Add a devm action to clean hardware interrupts, sampling, and
+   control registers on Spacemit K1 (Pei Xiao)
+
+- Fix trivial typo in an OF code comment (Marek Vasut)
+
+- Remove unecessary print on Qcom SPMI ADC driver when a call to
+   devm_request_threaded_irq() fails as this one already prints a
+   message (Jishnu Prakash)
+
+- Add support for QCom PMIC5 Gen3 ADC by using auxialiary driver and
+   shared interrupt with the IIO driver (Jishnu Prakash)
+
+- Make resets optional on MT8196 and add the corresponding property in
+   the DT bindings (AngeloGioacchino Del Regno)
+
+- Fix clock staying enabled with the resume operation fails on Qoriq
+   (Can Peng)
+
+- Fix wrong closing brace position in thermal library header (Andreas
+   Haufler)
+
+- Fix low and high trip point validation by moving the check after the
+   clamp on the spacemit driver (surendra)
+
+- Remove redundant error messages on IRQ request failure (Pan Chuang)
+
+----------------------------------------------------------------
+Andreas Haufler (1):
+       tools/lib/thermal: Fix misplaced extern "C" closing brace
+
+AngeloGioacchino Del Regno (2):
+       dt-bindings: thermal: mediatek: Make resets optional for MT8196
+       thermal/drivers/mediatek/lvts_thermal: Make reset optional for MT8196
+
+Bryan B. Lima (1):
+       thermal/drivers/armada: Use bitfield and bitmask macros
+
+Can Peng (2):
+       thermal/drivers/imx: Disable clock on runtime resume failure
+       thermal/drivers/qoriq: Disable clock on resume failure
+
+Christian Marangi (7):
+       thermal/drivers/airoha: Fix copy paste error on clamp_t low temp
+       thermal/drivers/airoha: Fix copy paste error for sen internal
+       thermal/drivers/airoha: Convert to regmap API
+       thermal/drivers/airoha: Generalize probe function
+       thermal/drivers/airoha: Generalize get_thermal_ADC and set_mux 
+function
+       dt-bindings: arm: airoha: Add the chip-scu node for AN7583 SoC
+       thermal/drivers/airoha: Add support for AN7583 Thermal Sensor
+
+Dan Carpenter (1):
+       thermal/drivers/rcar: Fix error checking in probe()
+
+Haritha S K (1):
+       dt-bindings: thermal: qcom-tsens: Document the Maili Temperature 
+Sensor
+
+Jishnu Prakash (3):
+       iio: adc: qcom-spmi-adc5-gen3: Remove an unnecessary print
+       iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ with ADC_TM 
+auxiliary driver
+       thermal/drivers/qcom: add support for PMIC5 Gen3 ADC thermal 
+monitoring
+
+Marek Vasut (1):
+       thermal/of: Fix trivial enabled typo
+
+Pan Chuang (1):
+       thermal/drivers: Remove redundant error messages on IRQ request 
+failure
+
+Pei Xiao (1):
+       thermal/drivers/spacemit/k1: Add shutdown action and reorder 
+registration order
+
+Rakesh Kota (1):
+       thermal/drivers/qcom-spmi-adc-tm5: Drop IIO_VAL_INT check in 
+adc_tm5_get_temp
+
+Satya Priya Kakitapalli (2):
+       dt-bindings: thermal: Add Qualcomm MBG thermal monitor support
+       thermal/drivers/qcom: Add support for Qualcomm MBG thermal monitoring
+
+Wolfram Sang (1):
+       thermal: Remove unneeded 'fast_io' parameter in regmap_config
+
+surendra (1):
+       thermal/drivers/spacemit: Validate clamped trip thresholds
+
+  .../bindings/arm/airoha,en7581-chip-scu.yaml       |  14 +
+  .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |   4 +
+  .../bindings/thermal/mediatek,lvts-thermal.yaml    |  13 +-
+  .../bindings/thermal/qcom,pm8775-mbg-tm.yaml       |  72 ++++
+  .../devicetree/bindings/thermal/qcom-tsens.yaml    |   1 +
+  drivers/iio/adc/qcom-spmi-adc5-gen3.c              |  69 +---
+  drivers/thermal/airoha_thermal.c                   | 382 
++++++++++++++++++----
+  drivers/thermal/armada_thermal.c                   | 106 +++---
+  drivers/thermal/broadcom/brcmstb_thermal.c         |   3 +-
+  drivers/thermal/db8500_thermal.c                   |   8 +-
+  drivers/thermal/hisi_thermal.c                     |   4 +-
+  drivers/thermal/imx91_thermal.c                    |   2 +-
+  drivers/thermal/imx_thermal.c                      |  13 +-
+  .../int340x_thermal/processor_thermal_device_pci.c |   8 +-
+  drivers/thermal/intel/intel_bxt_pmic_thermal.c     |   4 +-
+  drivers/thermal/loongson2_thermal.c                |   2 +-
+  drivers/thermal/max77620_thermal.c                 |   8 +-
+  drivers/thermal/mediatek/lvts_thermal.c            |  17 +-
+  drivers/thermal/qcom/Kconfig                       |  23 ++
+  drivers/thermal/qcom/Makefile                      |   2 +
+  drivers/thermal/qcom/lmh.c                         |   1 -
+  drivers/thermal/qcom/qcom-spmi-adc-tm5.c           |   3 -
+  drivers/thermal/qcom/qcom-spmi-mbg-tm.c            | 256 ++++++++++++++
+  drivers/thermal/qcom/tsens.c                       |   5 +-
+  drivers/thermal/qoriq_thermal.c                    |  13 +-
+  drivers/thermal/renesas/rcar_thermal.c             |  19 +-
+  drivers/thermal/renesas/rzg3e_thermal.c            |   4 +-
+  drivers/thermal/rockchip_thermal.c                 |   3 +-
+  drivers/thermal/samsung/exynos_tmu.c               |   4 +-
+  drivers/thermal/spacemit/k1_tsensor.c              |  78 ++++-
+  drivers/thermal/st/st_thermal_memmap.c             |   4 +-
+  drivers/thermal/st/stm_thermal.c                   |   5 +-
+  drivers/thermal/sun8i_thermal.c                    |   1 -
+  drivers/thermal/tegra/soctherm.c                   |   8 +-
+  drivers/thermal/tegra/tegra30-tsensor.c            |   3 +-
+  drivers/thermal/thermal-fw.c                       |  12 +
+  drivers/thermal/thermal_fw.c                       |  97 ++++++
+  drivers/thermal/thermal_of.c                       |   2 +-
+  include/linux/iio/adc/qcom-adc5-gen3-common.h      |   2 -
+  tools/lib/thermal/include/thermal.h                |   4 +-
+  40 files changed, 995 insertions(+), 284 deletions(-)
+  create mode 100644 
+Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
+  create mode 100644 drivers/thermal/qcom/qcom-spmi-mbg-tm.c
+  create mode 100644 drivers/thermal/thermal-fw.c
+  create mode 100644 drivers/thermal/thermal_fw.c
