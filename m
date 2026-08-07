@@ -1,264 +1,198 @@
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010014.outbound.protection.outlook.com [52.101.193.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com [209.85.217.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A63F3546CF;
-	Fri,  7 Aug 2026 21:49:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D71C5427FA8
+	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 22:32:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.217.42
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786139396; cv=fail; b=aBhSQ0AsDPZ2JNj8pHnIp4Br/Tezu/Q0fSXAxdPbwHPiAQUv+POwopGCM5g2QmRdT1jFnkWenEyPvHalPeqVmXFG3CyzCSn5Sg2tFLWjLcDWPGydVhcdYs5vHmSv0VPSjVIV+iZZF/j24RN1/qN+ZNvbEiDFwm/+EoaDbTFZmOo=
+	t=1786141968; cv=pass; b=pWkkgmFJcRNEQ82mLCYRAF8R+6INjteYj52QGuN2XNCln22bbgNXf5vo1QKbVdfCXjAWTP5N3wIOX4B1C+//FfzAE4tdHMc6Ms/shSWwJwCmLaMLpZyVuD9GnUObEqM1pWpCUrEy8sLOGrfxyvlCX4S43ZeCwrTsiVZKK+NYKA0=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786139396; c=relaxed/simple;
-	bh=7Laf5vwbfqDjveHOfT+yDWuPMHLaXvJnHti/SkHxEpU=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QdTB2PnqXMPffx2gTkkict81SdTKfdwpbxe4dqw4iH0NSo8iI8HdCsNn+60jPWPLTxH237iF8oSDLgNT8oAYinWyBgEFozcdEJpzN9jcOlXZ9wkzbohCHCKQj+y/CPGNlSpMDKkQbyuhtEjDcDn2/6THsnkxsiBixsgI+k7HmLQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=Q2stfrQo; arc=fail smtp.client-ip=52.101.193.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1786141968; c=relaxed/simple;
+	bh=JwddWGJZUPZTzv6QSlQzcPEBc+v0AeD0PB2XVffGRak=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=q4GWbDfbDr2niXy2+jElAS6eDzXNRfuym53bBtDjsGBfjxKXhYoEGVUP9je70j/Jx/Ond14VXv3cB+xakH9yZkC+rEawcBsu+x6ucnOpogyveRdGmvZmb0ULG1Iai0jfM3QPwFEk9cmHU6pxSpsutqtWVY+hT73CG4faq6q0yd8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GywWj4T2; arc=pass smtp.client-ip=209.85.217.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="Q2stfrQo"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=O+nQDBHzw6ZDdtx8Dhb2OdEvt8grHaIjmx814jg663BwE2B4L3Lqdo7FLuJmKM5lxtxZxQ3/igu7fl4pVtN/oO/5P1m0LR8B9OiDQhRkB3vaeP7W88FC0USuLLEFSi6+jYpGAyH+eWjD+MYQy3TshManGSnkP9jczLZrzq2q1BYeF2pr++MyxnLfdRx63LZZCcPQG5bUzgE+K9tU8Zz+B1csmNtYZfWRbJbYZnLgkuUCoGTc2v7OaNN3Fck6Jrh5ucMm22NB5vYT/7OSW96cKJ5HUhreFmThSjH4KzzmfGhcPEAlw3SjBPmSoIYms5V4UD9LXAJhFH/369aFYFEt6w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=xfrAVW6krSwnY8c/gbZIS8Nb16CcK+izLwzk5gdupCE=;
- b=SUjpdLwvUyGx5s5Gh/L0QBp6cAjBx92AOuvzJpakeC7ZSwS3R5zLFAWQfIT8KnC8+IzQkdSncFD44QITEpSlOV1sIIsjXzmpAuxdrsd7xGRZfxtxRxr/E2vUrTt53K1xNT0Z+P1emu1VBrH1TNreZ0g8g7XBsWdqNXO4LiYmQg724znFnuDNdkiNp86a7S7KUZABuS6Iv1j//C0WkJV1JDqq9VN7VjXWSTKLlgjMBdPo6aYvRX5QjxlOSKrASPWZj4cyvdCqyg39BQxxe1Ogs1DlUDx7ucMNW2f64zxuW3IFwO9rSd9/1vO1lrQ0bb+IR1uBVRCBs1iOk7es0socxg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xfrAVW6krSwnY8c/gbZIS8Nb16CcK+izLwzk5gdupCE=;
- b=Q2stfrQoHRINICFwjk+sEGi6mrayeibidP5ElLosPZc5CGX0RxKOu08kFpjFwTEsC8um98rlsdEEoFecD3mkL5JilcuqUNZAmNqgr9ZCPoJs6oDmJ/42n9NgF3jGX9NCIiFA7x/bwiKCZ/acIkFFX6nqs5adzreXZFnSVerh18V+bY/hRcPbpsy0JFdfqHw3ys/4ilaH2l3zuG1lVAozJok+XCjvmgRY5qpHjVgRK/DB++8lvOSOh49kh2g4mQAXOuIVePbQRpZ/UOIe6sBEgg7CZtwmEyww8FXBJ7KoFgCLAsBnHN2eEinM/2Dth/D+WNObF/YBukCoWVkqSQ0Gvw==
-Received: from BN9PR03CA0323.namprd03.prod.outlook.com (2603:10b6:408:112::28)
- by PH7PR12MB8179.namprd12.prod.outlook.com (2603:10b6:510:2b8::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.21; Fri, 7 Aug
- 2026 21:49:46 +0000
-Received: from BN1PEPF00006003.namprd05.prod.outlook.com
- (2603:10b6:408:112:cafe::6d) by BN9PR03CA0323.outlook.office365.com
- (2603:10b6:408:112::28) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.292.23 via Frontend Transport; Fri, 7
- Aug 2026 21:49:46 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.160) by
- BN1PEPF00006003.mail.protection.outlook.com (10.167.243.235) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.315.6 via Frontend Transport; Fri, 7 Aug 2026 21:49:46 +0000
-Received: from rnnvmail202.nvidia.com (10.129.68.7) by mail.nvidia.com
- (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Fri, 7 Aug
- 2026 14:49:31 -0700
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by rnnvmail202.nvidia.com
- (10.129.68.7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 7 Aug
- 2026 14:49:30 -0700
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Fri, 7 Aug 2026 14:49:24 -0700
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
-	<christian.loehle@arm.com>, <ionela.voinescu@arm.com>,
-	<zhenglifeng1@huawei.com>, <zhanjie9@hisilicon.com>, <lenb@kernel.org>,
-	<saket.dumbre@intel.co>, <mario.limonciello@amd.com>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-acpi@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
-	<linux-tegra@vger.kernel.org>
-CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <vsethi@nvidia.com>,
-	<ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <mochs@nvidia.com>,
-	<bbasu@nvidia.com>, <sumitg@nvidia.com>
-Subject: [PATCH v7 3/3] cpufreq: CPPC: Reflect the OSPM nominal in boost and limits
-Date: Sat, 8 Aug 2026 03:18:37 +0530
-Message-ID: <20260807214837.863209-4-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260807214837.863209-1-sumitg@nvidia.com>
-References: <20260807214837.863209-1-sumitg@nvidia.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GywWj4T2"
+Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-76535268562so18622137.3
+        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 15:32:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786141964; cv=none;
+        d=google.com; s=arc-20260327;
+        b=L3xwnIeQcK2IQWXAzPz2mSQKzChm9+MgbRNmiGM4s98iILmbRYHjOKZkdF7P+lTVR4
+         UzDDqW6Maz1FR5QL+KAjg7J+5sjx1rIBegTqXMr69pJSNkXkKa7zMLp2oQKjF7MZOWhG
+         NhNp8NFlzLpUDgadlhh0/YCkKDffLbyAaxasdlq2dWd0mX7kIKCE9bMkOcXZ5sWUkC5/
+         0n6Q6wfegIgB47Bl8OH32C+VuPgXus5DEo9GgKSiGzL9Ry3W3b4UjbTtDeMsrBJ4ECme
+         rXxXMJKXhN+0vwdy2hF7NoEOO/DsQoElSOl2Zpt7+OMF3hrcL0Hwxe3lAVy+6erNpNRi
+         e12w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=fS+xnTply4IXaJCkwQuW09XhcpXvBoF9FN6yjQ3qbqc=;
+        fh=YGv/XsMSJ2Ldq66MR/ZJZX9qvobM4ViFlautv/wz/nM=;
+        b=W9wKV5GBU1t2I2FZS1wDHr1uVuRJJoqGqD/mGWmXNjSTn2vYwXXmc3hGAwfHn3C4dj
+         21P81tP8eb/l5CrRQDxqtDd1onebbcG5Fj2uH485moFhhMzf1zqn4PwYOdceMtVRl76G
+         iaKhMBHrDxxcRpXgGNk6JrdK02vISIqcPT54YsDk6oePMD9kHIBmun+XiuIC+Kjx6Qaz
+         LRffn9hTK72ixJ2kk4/tJQtXYjGTJq9orfz1f+88cGyTxVJ1XSWZ4AwMyTRqhVIfW4d3
+         qIyATj5jPgA+TQkItZ6AnbsDyGuDBsx/buVI50xj4uFL89tBlMjzabFAm5JqM87Sv0/l
+         xt6g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786141964; x=1786746764; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=fS+xnTply4IXaJCkwQuW09XhcpXvBoF9FN6yjQ3qbqc=;
+        b=GywWj4T2knf15AfgTJDbwBtzDTM92LNdaEDsAKitc0j+V+AV9/s1lNumRYmw8JyXsV
+         inHxrDkThPxGbu2lwTFe8Rg/yGX+cKCE8uS1LT/27grnY+YW9SuvNUskO9yJQ7c6oHO+
+         BVWYZj0yK7obxq3WixDue7BwQg6s6d6oCRzhFXFuiKMKh/1rGXPAq63sFA4BFsi4JShS
+         +Cu8fQF2G9hSV5mMXJts7ebH8DYzoxR7Ygf+MOEQ1uVSWUjtbXeuf5q+faL2HORjo1ER
+         T1W/3PJ0QzYqThy+eUWFaAqz+7mLL6BW5gMq1U4eWbQsBiY6qanO4y0iJCNRgsYGSGut
+         Etgw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786141964; x=1786746764;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=fS+xnTply4IXaJCkwQuW09XhcpXvBoF9FN6yjQ3qbqc=;
+        b=JB+2GOr8d2cjzHFSbSILfe+gMHVCK03BfXzjiG0sMUM6QLbZNSWlkNhRE84SCLTnr2
+         b6Uptv2Cqq4uEha0L9/MGbG7dr2Og0795IAdNZKhuFJSl30ImY1ijfsUASJVp8OTlJSe
+         XpwExDbtYjRjBu+rPzWaQAuDMnMFMqcpABZRM+Zh3cJakqKnif7hb+YP/G9NIS74F9VS
+         fb3sYV9tZbEpOaty83JaKB7KzgsCbiDcveRyeirbIawTUWLH2evH3Ax5D62atKPAai4j
+         HzUz23fps1NwleAb9lBaLqxpC5L3SXv3aFBHwgiA2DitP8vX6XQjKMt8xeQIsRT5r3Fb
+         yc5Q==
+X-Forwarded-Encrypted: i=1; AHgh+Rofxu2/w8sw2TvSze4XgZhfu4ocbNvo54pN5aDxcNW8Dg27AE/thHYl5zrB7BsSMq52WCVKb7n63g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywqrkb6EE2yjaYUwFqFv6TrvODNOB3M2BkOasxPkAlHQMpDrjSM
+	1FMEdkWzFDlAn0YTa7GLhNQw7dqhMjLUQmy7c3cQtfnaz1Nusyr/Tn6/diGAqIjJDmchU011hwn
+	pEmlfe5ce2pkU0yuPxkP7JmR3jpxDCOs=
+X-Gm-Gg: AR+sD10lhzChczBT2Uc8rzR0Nu+h/oQFE+tpMCeSEZv2wmQJG4JP3zECuztyVurZMiL
+	ljBw9c74IikHu3i6kaB4Yt0OGw9psRfyjjJFbckPtwZT18olyIW6TQYCf2CFU/F6QZmn35eYPKM
+	x6L6xJ6pg2GCUiaEM30aHMTykRPS9APtjQ93pmOOUouwszUK1qhui99Bj6FPYEYiE+a0CIan9PA
+	3JnBh/8GY1WuM99CReEK6FZfmHBZk00jJkxVUij55tx97cximvT89EdB+wkOaU7QD76pQ5wxSTt
+	s287Ic/wh6L7Rt5W8Pm4dMdW8MlHysCp/Kt0LsMIhn7huoIql72gpNpvjHiGzuKRzWpL4myRoKH
+	ZUc2yELmkpUCGqpjxgZqSK5fl1cKXzMKV5rLmLe/9etxJ8FDRd8IsOevpdFj2kfb9vtENAeu1LH
+	eHdjTToMkKPnGgMnaO4bibcZGJGpUtXq/Ee3b4
+X-Received: by 2002:a05:6102:c10:b0:75f:e517:ec96 with SMTP id
+ ada2fe7eead31-760e3194fc4mr6510269137.0.1786141963578; Fri, 07 Aug 2026
+ 15:32:43 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN1PEPF00006003:EE_|PH7PR12MB8179:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8db03e87-46e9-4ec4-eb3d-08def4cdcc08
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|7416014|1800799024|82310400026|36860700016|921020|56012099006|10067099003|11063799006|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	JDY9U3vfcevP0Jhan1cnyw4MxxqVvoqQuyECAo6e9M9BTy51zbplM67HAE1xznSCpLiRBAvRnQS6C+dBiIPY5PfK4uYCIs4NsAugtqgyyAjuG6CsSxri0OfpNzPSFhbmQoAq8e3aX8Yhwo+JAM+/COrcs+SW3CfzLzbB08mF/VyR55QVwyzD3uGz0nZF6JgvtAcnPR6NiiPLn+f7iv8u5FUGoUbwfDfOhoR3LJvmUkAXHyleFhw/0PKS1mNtYdWfJY1+/vc6pBLMlaBTEMrVTk1Svt2s9p71LuS7stl26Yd/IbQIHCGlDvo53Lm5sBioldgdufpw6bB962qlMKhlvlOosT9/KYzcX4PvAiQg0qIGCuN7nsDNSLnzFd7X/jDVA1TQUQMy8uy47z20f6OV2kzvrr6cqBQH8H6ljx16PDB6Hj+7P8Unfy9bZxEbqfP5VtBEuXRO5/bfsYSrU+jjbPDmfQdbx/xMR/q6cSKTxL0ZyQkSloGgsIcKAwOs62VFt7NVMI/BhNUIG3H8wN6Z1xDmkvbxlYEjaIAZEcrqOUIOCP1vqXHpWU835/G91Yu0t/zWf3WWyk59GxIsXeslUm7U7NWaRgsHgIgo/D9k7tVXPUNq9MzUCIJQtWMYH16nfZ/ZlisrE76oTrjXL8zqueBwk3KD3IWjG57EHuzlkwcJV+pXiaIQtbuBG3wVs5p67TiKbMsWTgJAFa7EEUxGdL0k4hX1xX1DbJnUFGsk1lwaJ/O3/+1Zo7WoPjqDlnJw
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(23010399003)(376014)(7416014)(1800799024)(82310400026)(36860700016)(921020)(56012099006)(10067099003)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	nPW+M/9I8wgJC/C2u/kClo2CMYjlKAkt4rEEnlfQ9uNbM9Wd+cpSXcGnqStolv9hCVnjDrXikWGYWjf9rNE7EC8RhROhJhcB+o2CsDoxVQaBPD03DMn5GxQL4sl9T1jd1HRo7IaBJ/jROA0baH9Z0AfvO//AAx1z2v5G1zKi3N0P1iaU7vHu1VukXL2AGV4/dq4wh19xBy3bBIZYTh2e/aGhnfhF5M0Rd16pW34qFdAoY6EsKjv4N1rxMopRYao+CxnqIB/GP/49b978YLdpf0cWUs7YcJYjaPiIu5LI3UoDHcx9Fq8xsNtcfVTmpiCy299Jg1fKO5MqYMkZ5BYig3vETTFJYMvQIMX+uOfet3u/Ysv4y9Em7pG95O14l/jYh3/E2vb1dvKbpf5OzLKj95gcaRMiFLHfkeEnzJWvNLVBWBTbrmDc+/Cp3eCFIs1/
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 21:49:46.0009
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8db03e87-46e9-4ec4-eb3d-08def4cdcc08
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN1PEPF00006003.namprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB8179
+References: <20260806-submit-mdio-of-dynamic-v2-v4-0-4beb0c50d5ba@gmail.com>
+ <b2e83ba0-2e9c-4105-b806-8a155e8b9aa5@lunn.ch> <CADvTj4rame1n8eQL2GUOaJHnOcR_cqNxzNYO+QeCLYDczEFeUA@mail.gmail.com>
+ <ddce5cfa-8cf9-4f9e-ab0a-0b415706876a@lunn.ch> <CADvTj4qxGVw+PW2LeF-a3h1XfmirQZGfJA9-6Czt72XASbVLBQ@mail.gmail.com>
+ <4aeebecb-81fe-4f09-9dfe-a3be2f778bb8@lunn.ch> <CADvTj4qrYYA-e+9iJ+q4UaZteUjpypRa6HBSmwp-ajwPbwYERg@mail.gmail.com>
+ <3cd188e7-7dc4-4d67-82de-e2ef3edee232@lunn.ch> <CADvTj4pJG56UERve8BfbYzjCLO4KBDDuFviTcz1ivuwUFRMdxA@mail.gmail.com>
+ <e0ed0a61-8878-46e8-805f-c0869b97da7d@lunn.ch>
+In-Reply-To: <e0ed0a61-8878-46e8-805f-c0869b97da7d@lunn.ch>
+From: James Hilliard <james.hilliard1@gmail.com>
+Date: Fri, 7 Aug 2026 16:32:32 -0600
+X-Gm-Features: AUfX_mxyCMJ9oLuM4JTN6om3edbz324m6hnUZwCI6mNxVQPiU_32JZeN9SnoDtk
+Message-ID: <CADvTj4rq2+scjiG8Uf771Q9ykhqDCFbAmNgNbHedyUteW-A0Jw@mail.gmail.com>
+Subject: Re: [PATCH net-next v4 0/4] net: mdio: support dynamic OF device changes
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Heiner Kallweit <hkallweit1@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Florian Fainelli <f.fainelli@gmail.com>, Richard Cochran <richardcochran@gmail.com>, 
+	Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, Jonas Gorski <jonas.gorski@gmail.com>, 
+	Vladimir Oltean <olteanv@gmail.com>, Ciprian Regus <ciprian.regus@analog.com>, 
+	Andreas Larsson <andreas@gaisler.com>, Mark Einon <mark.einon@gmail.com>, 
+	Iyappan Subramanian <iyappan@os.amperecomputing.com>, 
+	Keyur Chudgar <keyur@os.amperecomputing.com>, Michael Chan <michael.chan@broadcom.com>, 
+	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Doug Berger <opendmb@gmail.com>, 
+	Pavan Chebbi <pavan.chebbi@broadcom.com>, =?UTF-8?B?VGjDqW8gTGVicnVu?= <theo.lebrun@bootlin.com>, 
+	Conor Dooley <conor.dooley@microchip.com>, Wei Fang <wei.fang@nxp.com>, 
+	Frank Li <frank.li@nxp.com>, Shenwei Wang <shenwei.wang@nxp.com>, 
+	Jijie Shao <shaojijie@huawei.com>, Jian Shen <shenjian15@huawei.com>, 
+	Bryan Whitehead <bryan.whitehead@microchip.com>, UNGLinuxDriver@microchip.com, 
+	Vladimir Zapolskiy <vz@mleia.com>, Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>, 
+	Parthiban Veerasooran <parthiban.veerasooran@microchip.com>, Timur Tabi <timur@kernel.org>, 
+	nic_swsd@realtek.com, Byungho An <bh74.an@samsung.com>, 
+	Steve Glendinning <steve.glendinning@shawell.net>, 
+	Maxime Chevallier <maxime.chevallier@bootlin.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, FUJITA Tomonori <fujita.tomonori@gmail.com>, 
+	Siddharth Vadapalli <s-vadapalli@ti.com>, Roger Quadros <rogerq@kernel.org>, 
+	Jiawen Wu <jiawenwu@trustnetic.com>, Mengyuan Lou <mengyuanlou@net-swift.com>, 
+	Thangaraj Samynathan <Thangaraj.S@microchip.com>, Sebastian Reichel <sre@kernel.org>, 
+	Simon Horman <horms@kernel.org>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org, 
+	linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Boost is the performance range above nominal, so lowering the OSPM
-Nominal Performance enlarges the boost range and drops the non-boost
-ceiling. Keep the policy limits consistent with the register.
+On Fri, Aug 7, 2026 at 2:26=E2=80=AFPM Andrew Lunn <andrew@lunn.ch> wrote:
+>
+> > So should I just drop the final "net: mdio: support dynamic OF device
+> > changes" patch and keep the MDIO hardening patches?
+>
+> If you can provide suitable commit messages which indicate you are
+> fixing real problems.
 
-Add cppc_cpufreq_effective_nominal(), which returns the OSPM Nominal
-Performance when set and the platform nominal otherwise. Use it for the
-non-boost ceiling in set_boost(), and to update the policy limits when
-ospm_nominal_freq is written.
+I guess I'm just trying to figure out if mdio map hotplug safety is somethi=
+ng
+that's considered to be a real issue or not when most existing drivers tend
+to sidestep the safety issues.
 
-The cpufreq core caps scaling_max_freq with a per-policy QoS request,
-boost_freq_req, that it sets to cpuinfo.max_freq and refreshes only when
-boost is toggled. A write to ospm_nominal_freq changes cpuinfo.max_freq
-without toggling boost, so cppc_cpufreq_update_nominal_limits() updates
-the request itself, rather than leaving scaling_max_freq at the old
-nominal.
+If OF_DYNAMIC is something that will eventually be supported for mdio
+then this is something that will be needed eventually anyways.
 
-When boost is enabled the ceiling is highest_perf, not the nominal, so
-the update is skipped. set_boost() applies the new nominal when boost is
-turned off.
+> We get way too many AI generated patches which
+> fix theoretical issues which nobody ever encounters.
 
-A platform with highest_perf == nominal_perf has no boost range at boot.
-Lowering the OSPM nominal from sysfs can create one. The core, however,
-adds its boost FREQ_QOS_MAX request only at policy setup, and only if
-boost_supported is already set. Set boost_supported in init() when the
-OSPM register is supported and highest_perf > lowest_perf. Boost can
-then be enabled after the nominal is lowered.
+I did hit it in practice with my original series so I used that for validat=
+ing
+the fixes, however my later revisions use a different design that uses
+phy_package instead of a separate ctrl driver which avoids the need
+for OF_DYNAMIC support for mdio.
 
-Suggested-by: Pierre Gondois <pierre.gondois@arm.com>
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 65 ++++++++++++++++++++++++++++++++--
- 1 file changed, 62 insertions(+), 3 deletions(-)
+> That is wasting a
+> lot of Reviewer time, preventing me and other reviewers from helping
+> developers doing real work adding new hardware support, or fixing bugs
+> which both them.
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index fe714e71826a..bcac46ad25c3 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -892,6 +892,27 @@ static void cppc_cpufreq_put_cpu_data(struct cpufreq_policy *policy)
- 	policy->driver_data = NULL;
- }
- 
-+/*
-+ * Return the non-boost performance ceiling: the OSPM Nominal Performance the
-+ * driver last requested, or the platform-reported Nominal Performance if none
-+ * was requested.
-+ *
-+ * The register is write-only, so the requested value comes from the
-+ * software-tracked state rather than from hardware.
-+ */
-+static u32 cppc_cpufreq_effective_nominal(struct cpufreq_policy *policy)
-+{
-+	const struct cppc_saved_vals *st = cppc_cpufreq_policy_state(policy)->regs;
-+	struct cppc_cpudata *cpu_data = policy->driver_data;
-+	u64 ospm_nominal = st[CPPC_SAVED_OSPM_NOMINAL_PERF].requested_val;
-+
-+	/* U64_MAX means OSPM has not selected a nominal level. */
-+	if (ospm_nominal == U64_MAX)
-+		return cpu_data->perf_caps.nominal_perf;
-+
-+	return (u32)ospm_nominal;
-+}
-+
- static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
-@@ -950,9 +971,14 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	/*
- 	 * If 'highest_perf' is greater than 'nominal_perf', we assume CPU Boost
--	 * is supported.
-+	 * is supported. A writable OSPM Nominal Performance register can also
-+	 * open a boost range at runtime by lowering the nominal, so assume
-+	 * boost is supported in that case too, letting the core register its
-+	 * QoS request up front.
- 	 */
--	if (caps->highest_perf > caps->nominal_perf)
-+	if (caps->highest_perf > caps->nominal_perf ||
-+	    (caps->highest_perf > caps->lowest_perf &&
-+	     cppc_ospm_nominal_perf_supported(cpu)))
- 		policy->boost_supported = true;
- 
- 	/* Set policy->cur to max now. The governors will adjust later. */
-@@ -1233,11 +1259,12 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- {
- 	struct cppc_cpudata *cpu_data = policy->driver_data;
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
-+	u32 nominal = cppc_cpufreq_effective_nominal(policy);
- 
- 	if (state)
- 		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf);
- 	else
--		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
-+		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, nominal);
- 
- 	return 0;
- }
-@@ -1411,6 +1438,36 @@ static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
- CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
- 			 cppc_set_perf_limited)
- 
-+/*
-+ * While boost is disabled, the nominal is the ceiling. Set cpuinfo.max_freq to
-+ * it and update the core's boost_freq_req to match. The core only syncs
-+ * boost_freq_req when boost is enabled or disabled, so a plain nominal change
-+ * must update it here.
-+ */
-+static void cppc_cpufreq_update_nominal_limits(struct cpufreq_policy *policy)
-+{
-+	struct cppc_cpudata *cpu_data = policy->driver_data;
-+	u32 nominal;
-+	int ret;
-+
-+	if (policy->boost_enabled)
-+		return;
-+
-+	nominal = cppc_cpufreq_effective_nominal(policy);
-+	policy->cpuinfo.max_freq = cppc_perf_to_khz(&cpu_data->perf_caps,
-+						    nominal);
-+
-+	if (freq_qos_request_active(&policy->boost_freq_req)) {
-+		ret = freq_qos_update_request(&policy->boost_freq_req,
-+					      policy->cpuinfo.max_freq);
-+		if (ret < 0)
-+			pr_debug("Failed to update boost limit on CPU%u (%d)\n",
-+				 policy->cpu, ret);
-+	}
-+
-+	refresh_frequency_limits(policy);
-+}
-+
- static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
- 				       const char *buf, size_t count)
- {
-@@ -1442,6 +1499,8 @@ static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
- 	st->requested_val = perf;
- 	st->firmware_val = cpu_data->perf_caps.nominal_perf;
- 
-+	cppc_cpufreq_update_nominal_limits(policy);
-+
- 	return count;
- }
- 
--- 
-2.34.1
+So to me it seems like hotplug safety for the mdio api is mostly an API
+footgun at the moment if anything for existing drivers, so I figured since
+I already had done a lot of the work refactoring it to be safer that I shou=
+ld
+then submit that upstream anyways.
 
+Most of my embedded Linux designs heavily incorporate different
+hardware autodetection/autoconfiguration techniques which is probably
+one reason I like the idea of making more use of the OF_DYNAMIC
+feature where feasible for the kernel.
+
+> Those are the people which i prefer to help, not the
+> newbies using AI and have never taken Operating Systems 101.
+
+I'm certainly not a newbie[0] but I have been using AI workflows quite
+extensively as AI greatly increases the speed at which I can iterate on
+patches as well as significantly increasing code quality.
+
+In general I run all my patches through many rounds of AI review before
+submitting as well to try and reduce the amount of bugs and such in
+addition to my own manual review.
+
+Whether or not to preemptively refactor code like this mdio code is kind
+of a personal preference however so it's not always clear to me whether
+or not it's something I should be submitting fixes for upstream.
+
+Maybe incorporating AI tools more in your own workflows can help with
+keeping maintainer workload manageable? I certainly use AI a lot when
+reviewing code from other developers.
+
+[0] https://lore.kernel.org/all/?q=3Djames.hilliard1@gmail.com
+
+>
+>        Andrew
+>
