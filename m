@@ -1,211 +1,237 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9320B379982
-	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 14:41:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B03E37757C;
+	Fri,  7 Aug 2026 14:57:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786113708; cv=none; b=rQNaJ8KWTbWmUynGz5nGcUHcVBJ55cyfPo0M7A3v8LWrqcyixmpIbq7l0qhNoNo2vaSAQmVL/euOei2nrC+/MocRpUQFNY5mLLkyDef02E+0uXQ6ZGfnenxn1mjIXE3UaDviYsycOu0T948RtA3/RkG5v8VE3q/iyRjBv7moKdM=
+	t=1786114647; cv=none; b=S/psDBsejc39cFkru5Rjx5AcULTjsz9aJLxzSvl962Z22J28EPE6Nu0JVUXqQtRn4KbrnGiYyygvBcRltP1tC1Zhup/aUW/NtkJ9f6SZeuv5TCsGZ0zpGoz1Uw4NOsjYgZYt5lMgB2TgrrOKIkS/al1jTnwfVx5dBviZQbSNbag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786113708; c=relaxed/simple;
-	bh=Y/56oPVEffBjxjNx1h3W7hMYUb1prIOk5BYimmeMUXk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BeDY/oOPRVmWU0ul9pf7ttalfLotE8A7E9kTeDEhwRfEHug16rWoACTpCryOtudkDkTRJLPSLdNgZN8DLNnfz7zx36nSIG71nhx8kcPwnp+oz/+unZijL02JBrfwCSQTGeaa61irZuUtNTRTvIcD685YnIGQcXRXXtu5+FuJ2+s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=inE+e8Zu; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=j5sOVe1Q; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1786114647; c=relaxed/simple;
+	bh=2WaCSZxGgKegINJiKaWcVoLXmsHSne+ig0soIFKdlOc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HoCcLjkINycDAEB6aIhnVc04zrIvQ522CqUkhcdELsGSdhLwuf+y18DQTzb/ehFl7diVA6mvnVktUb2MyO1Z+xV7OFYOw4c6P6mtWJQY0fIXdR4YYMzYi9WFmqdjUXE8wUeNXHPQP6xeztE2QxKMABFXj1QmfxtYxpvn5wjTCYc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ceUTztws; arc=none smtp.client-ip=198.175.65.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="inE+e8Zu";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="j5sOVe1Q"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 677CgGG1942900
-	for <linux-pm@vger.kernel.org>; Fri, 7 Aug 2026 14:41:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	sjt0nLmUyvEX6y/ApHEY54VT/ZTHOS9hutf9WJJqwBU=; b=inE+e8Zu3U2Owgqb
-	RRZyczQhWDCJuW0ZbaXjYA93JFyksduCDH78lpaiXp00n0Q5J0Pd0dZ8mVAvYrrr
-	jEdOCjIE61mT1LXwtZbNUUQdHHQoC3zKjYoC+31+ZxuIlZrQp8U9qQ8JMPKh2F8e
-	/VrxAOk5NHw8nuBrY0GGKu+pLBqn7Wd99kHpbh13jAWg9ISNKoajtDJbO6KzZHyc
-	KwLau6KKiMGJbM1h09xfB1WpLz3/PdUhNg9biLATmoDX6rjffoTQnkfOK2LeNWq8
-	lqf5HxqQYaflPkEJoLcwKS5ve3rwYgjPSPb0YuhwhO5FcCJvKTv4tWuZdRobLMHA
-	ipYMOQ==
-Received: from mail-yw1-f200.google.com (mail-yw1-f200.google.com [209.85.128.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fvy6hceu2-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 14:41:29 +0000 (GMT)
-Received: by mail-yw1-f200.google.com with SMTP id 00721157ae682-81e735bcceaso52106887b3.3
-        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 07:41:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786113688; x=1786718488; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=sjt0nLmUyvEX6y/ApHEY54VT/ZTHOS9hutf9WJJqwBU=;
-        b=j5sOVe1QAExmwATaefwJJOFlrCVJz/ozXtPpjihlPuQBEDyn3rYFnSc6+JQgJbrpNp
-         DbdIHPuR299DtByravIfueq5D38urqRAAFVlNmht6BFNgdNE0uApKqtoSZ57hFOB5ley
-         oMPgM7vLtgrHQ9MAYCMffNMd2W8IOQ3kyMv8XKS/HAkU36nyUt2Wk0w+mZAoeDDZjzB2
-         tHPJ+FTyIbFVik2mDh4kQyNBz9jMmvtyGhYAw0qISM69fV1vxBZJfiIcua1VL7kruv16
-         mKeq3QymcryQrw364gZ6VXVH6Q842NMNf8/abruc3OluoTdTZmqBwDnSjE39KRogKbmz
-         pOlA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786113688; x=1786718488;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=sjt0nLmUyvEX6y/ApHEY54VT/ZTHOS9hutf9WJJqwBU=;
-        b=RY/0F2Ebm9nfdnw8UD6T/WhH5RHx7J3kd5250C05WT97Dth+2Mf1zr2RqxAvCtt0ko
-         XJLTPhIyuXOjM6g7K/cSHu8liD3ZWdUUX5tnxmTlJmxVT7jvnJbosIi+XFHOMCnjdmRQ
-         KCbgeUA5ubR/OCaLJAtW2eKOCNwUpL0+admNDdpKo4umQAQ0xkW4qRxf3T4VP6YslXGv
-         vKSxxgmAp/UhzBYwLeHblUEX+coFk/g2eZFuXVW55LzIc0moi08Io6ZPVXuMGcWudq2C
-         xI7Zb00JzH9dAW1qg/Ub+nvVia8BnzWDGHCaEyZAl6iiDxQ2+t2tmIv8oZkFTTud2d/Z
-         la1Q==
-X-Forwarded-Encrypted: i=1; AHgh+Ro5/VI77Iuhgm4zxaLerYVpYIl6BUn6uU9iFwogTtcfFPGiAzCIWJc+GkE34H3EZGeMqy9WNLyJGg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwSUKZb4Dcf48LnEVyB7w3Dbf7WC5gLn1jLfwLBd06ussSAze7w
-	qeYuMZLU6SPKKT3WvDkSyjZ2tyMk8aK6Ip8/LrygxUpuudn9MeXOAeJYaNSgpIq+DdNV9J1Ghx0
-	stKU/olAQY09ZUVL72UJ6fDhCnn31xcUThrhyaIlkf8PygfiVzbLdD6HFOd6x3w==
-X-Gm-Gg: AR+sD12gr60/CVjESDnX69lsHgcQzNPEi86uzXjI0p18ONwVU1Ig9eAAzrywJKJYQPy
-	zZMIN+MB6WBReUO3yCoqjkDZ7FU9QwpTvOJorEDMHbb3xU9jUPAaDeHnTkztkiBtfRMiLNa70mq
-	/83nwHZrhMWki0Sn8N/ZTKpIE+CSpvAfD2j4q1R2+Yxe+NVSuVqPu1oC77+3BzTCTA7CizuNfGF
-	o9beZydrGhm+gO3dYlg33UbuNAJax+sDV3mM17byfEs5xJa4dt5AUaCPm8+EYqv9exTH49UnUe0
-	z0zUROCpGWbbzzAGWW6Zm/kbNwOm5Kgy8w4LMQdt3uD+tc34UTQOxyU0iGSJ90F2f90YLIFOBkJ
-	bAeDImOS+Ov6ms58F4f3769Y6HV6qYfqy8Gn8OZQGDawHxFguRs0jwwuesC/U3cDDIH+b7v9mbz
-	PgsyATZ5FA/LMe0qz5lQ==
-X-Received: by 2002:a05:690c:111:b0:820:1251:d2c2 with SMTP id 00721157ae682-82445b54398mr18986137b3.28.1786113688550;
-        Fri, 07 Aug 2026 07:41:28 -0700 (PDT)
-X-Received: by 2002:a05:690c:111:b0:820:1251:d2c2 with SMTP id 00721157ae682-82445b54398mr18985777b3.28.1786113687954;
-        Fri, 07 Aug 2026 07:41:27 -0700 (PDT)
-Received: from [10.190.200.255] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-823f6a0f824sm10637287b3.42.2026.08.07.07.41.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 07 Aug 2026 07:41:26 -0700 (PDT)
-Message-ID: <5a0a9216-5dba-4b25-968a-353b30f642b5@oss.qualcomm.com>
-Date: Fri, 7 Aug 2026 20:11:19 +0530
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ceUTztws"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786114645; x=1817650645;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=2WaCSZxGgKegINJiKaWcVoLXmsHSne+ig0soIFKdlOc=;
+  b=ceUTztwsnV2EN18DqlafzS7jfiCZARcYpVkDAMFnawV18HjT7AIBUbjW
+   zJauM9j5Y8tOcv0z9iZCezOdvdA1EEg4sPpxpldFJ3kizTNvtGzAidvjH
+   ouaHSj4AIMf/NqVhiNWmXMNaj9UvpJRALowpcVY6lHFC2cduMt8hJv81V
+   UFbahztoMLQz1GA5Tui6CAvJxs+HAEUgvIkYVMVfHhI8Jc3rEGostSp9Z
+   eoYnjL/1kuaClR0c5b5uS89fW2DI8N2KMgA98Ws8XSeY7TZlqHLqXUTJQ
+   DnMFtdv/g7HjWfswPe1cjfPguUKI0u0r4bYhVM8O73Wj83tMRZudH3Lae
+   Q==;
+X-CSE-ConnectionGUID: q/LUZLRbSQ6RhdSZRNFcng==
+X-CSE-MsgGUID: gMGR95WxQsak7UBpGzxGIA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11868"; a="86485177"
+X-IronPort-AV: E=Sophos;i="6.25,210,1779174000"; 
+   d="scan'208";a="86485177"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Aug 2026 07:57:24 -0700
+X-CSE-ConnectionGUID: LTUT01a3QiGxeOn43IKJ6A==
+X-CSE-MsgGUID: AysX7V1uQ/OddxOyWtxgVQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,210,1779174000"; 
+   d="scan'208";a="259809873"
+Received: from amilburn-desk.amilburn-desk (HELO ahunter6-desk) ([10.245.245.114])
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Aug 2026 07:56:46 -0700
+From: Adrian Hunter <adrian.hunter@intel.com>
+To: alexandre.belloni@bootlin.com
+Cc: Frank.Li@nxp.com,
+	akhilrajeev@nvidia.com,
+	mukesh.savaliya@oss.qualcomm.com,
+	rafael@kernel.org,
+	linux-i3c@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH V5 00/14] i3c: Support IBI-based system wakeup
+Date: Fri,  7 Aug 2026 17:56:24 +0300
+Message-ID: <20260807145638.168865-1-adrian.hunter@intel.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] sched/cpufreq: Update schedutil's DVFS request to
- reach the boost frequencies
-To: Vincent Guittot <vincent.guittot@linaro.org>,
-        Christian Loehle <christian.loehle@arm.com>
-Cc: rafael@kernel.org, viresh.kumar@linaro.org, mingo@redhat.com,
-        peterz@infradead.org, linux-arm-msm@vger.kernel.org,
-        juri.lelli@redhat.com, dietmar.eggemann@arm.com,
-        linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
-        linux-pm@vger.kernel.org, Ionela Voinescu <Ionela.Voinescu@arm.com>,
-        Beata Michalska <Beata.Michalska@arm.com>
-References: <20260806044230.909961-1-sibi.sankar@oss.qualcomm.com>
- <20260806044230.909961-3-sibi.sankar@oss.qualcomm.com>
- <7a4be9a1-4b00-49c4-bdbf-649268e78c7a@arm.com>
- <CAKfTPtBoevmq8_Rens2Le=AGqMZRo56oD4eMGX2_2Pj_Vt9zCg@mail.gmail.com>
-Content-Language: en-US
-From: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-In-Reply-To: <CAKfTPtBoevmq8_Rens2Le=AGqMZRo56oD4eMGX2_2Pj_Vt9zCg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: MIrzVYm4qX4J5jOCikPc8UMg3dshSPhj
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDExNCBTYWx0ZWRfX2eeHBjR/w47D
- KWhpUo9O+TOY3q/YWUv4zJHmd/WzM4ncXUru2ezzUrYsu3XIOL3TauPwAFs4ZeWhn+XIG/QHa0D
- 3c5aKEVm9wmhkiFqb0nEUrQQe8THNL0Z7CjxrKw4nvomBkHPfZRZRbd0HvbkehKH6xjrOcLytbN
- hUbvgwa+voQVju7Tx3B4WA8uTdwOk8lszhDq7O6EZCtkiy+whNHozxeiORWOM8kZHr7b+P3lV0H
- n4cEpF4v2kPbAgTC0vfRbChAY6IIE6dpfzjdLPglgyP29p63PwEWGUdm8m6m7TXX0hrYc5ut89Y
- DVVLJuFTPrrR0meTW04SPi4jsQjJHUv/ir9G8IWJPNCHXntJ1UHC87jCqAjzf/HyD3K7DlWLjlR
- cqoO03gz7OOKtktQSTNvcjGdflBTlw57/jpljvl9cojoq+Bbsqr9d9Nj1D6qPdtxk6jnzi5mjhA
- 3yNdk+q3Cj3swKlwy/A==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDExNCBTYWx0ZWRfX6TZKcE4OnLV7
- z+HyCBHPdABO5mBGaj6xlx2Th/7pPiYnM/ypj4xEwhGT2NDoZhgJP3xiCeJie+3lbjQr152c8zk
- yEYVKkQgG8Nqh18ruGh9jKQJADqeC9c=
-X-Proofpoint-ORIG-GUID: MIrzVYm4qX4J5jOCikPc8UMg3dshSPhj
-X-Authority-Analysis: v=2.4 cv=MbpcfZ/f c=1 sm=1 tr=0 ts=6a75ee99 cx=c_pps
- a=NMvoxGxYzVyQPkMeJjVPKg==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8 a=EUspDBNiAAAA:8 a=bYoXCjE1SysOf1r2alEA:9
- a=QEXdDO2ut3YA:10 a=kLokIza1BN8a-hAJ3hfR:22 a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-07_02,2026-08-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 priorityscore=1501 clxscore=1015 malwarescore=0
- bulkscore=0 lowpriorityscore=0 suspectscore=0 spamscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608070114
+Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
+Content-Transfer-Encoding: 8bit
+
+Hi
 
 
-On 8/6/2026 8:43 PM, Vincent Guittot wrote:
-> On Thu, 6 Aug 2026 at 11:02, Christian Loehle <christian.loehle@arm.com> wrote:
->> On 8/6/26 05:42, Sibi Sankar wrote:
->>> capacity_freq_ref, exposed to schedutil via get_capacity_ref_freq(),
->>> was introduced by commit 9942cb22ea45 ("sched/topology: Add a new
->>> arch_scale_freq_ref() method") as a fixed anchor that does not move at
->>> runtime. However, schedutil uses that same fixed anchor as the reference
->>> plugged into map_util_freq() which saturates exactly at capacity_freq_ref.
->>>
->>> As a result, a system with cpufreq boost enabled effectively never runs at
->>> boost frequencies under schedutil-governed load. Fix this by plugging in
->>> policy-max into the map_util_freq equation, so that the DVFS requests
->>> translates to the actual cpufreq driver ceiling.
->>>
->>> Signed-off-by: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
->>> ---
->>>   kernel/sched/cpufreq_schedutil.c | 13 ++++++++++---
->>>   1 file changed, 10 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->>> index a1782755efcc..dcefbeaa0702 100644
->>> --- a/kernel/sched/cpufreq_schedutil.c
->>> +++ b/kernel/sched/cpufreq_schedutil.c
->>> @@ -195,10 +195,17 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->>>                                  unsigned long util, unsigned long max)
->>>   {
->>>        struct cpufreq_policy *policy = sg_policy->policy;
->>> -     unsigned int freq;
->>> +     unsigned int freq, ref;
->>>
->>> -     freq = get_capacity_ref_freq(policy);
->>> -     freq = map_util_freq(util, freq, max);
->>> +     ref = get_capacity_ref_freq(policy);
->>> +
->>> +     /*
->>> +      * That fixed anchor governs how utilization is interpreted, but
->>> +      * the DVFS request is free to target the current policy ceiling.
->>> +      * Using ref alone would saturate the util->freq map at ref so
->>> +      * use policy->max to reach boost frequencies.
->> I'm not sure those two statements are compatible with the implementation below?
->> util / max is expressed in the capacity scale established using ref, multiplying
->> that ratio by policy->max changes the interpretation of every util value.
->>
->>
->>> +      */
->>> +     freq = map_util_freq(util, max(ref, READ_ONCE(policy->max)), max);
->> Isn't the underlying problem that schedutil can't handle requests above capacity 1024?
->>
->> effective_cpu_util() caps util at max, and sugov_effective_cpu_perf() applies
->> the 25% headroom before clipping the result back to that same value.
->> Therefore the input here cannot exceed 1024, and mapping it against ref
->> can never request a frequency above ref.
->> Using policy->max makes boost reachable, but also stretches the complete frequency range.
->> For example, with ref = 4454400, policy->max = 4723200, and effective util 640, the request
->> changes from 2784000 to 2952000.
->>
->> Making 'boost frequencies' truly compatible with schedutil (or PELT/CAS for that matter)
->> is a discussion that is yet to be had?
->> See also
->> https://lore.kernel.org/lkml/20250626093018.106265-1-dietmar.eggemann@arm.com/
-> cpufreq_pressure and freq_qos_update_request could handle the case
-> where boost freq is used as the ref freq when setting capacity but
-> disabled. I can't remember if everything was already in place when we
-> discussed this last time
+	Note: all patches except patch 7 now have Frank's Rev'd-by
 
-Christian/Vincent,
-Thanks, will look at how acpi-cpufreq/ccp-cpufreq in the x86 world handle
-this and try out some of the suggestions in the link and get back.
 
->
+Intel LPSS I3C controllers support up to two I3C busses and can wake the
+system from an In-Band Interrupt (IBI) via a PCI PME.  Today that wakeup
+capability lives only at the PCI function, with no way to express which
+I3C device is actually responsible for waking the system, and no way for
+user space to enable or disable wakeup on a per-device basis.
+
+This series pushes the wakeup capability down to the individual I3C
+devices and then aggregates the resulting wakeup state back up to the PCI
+device.
+
+An IBI-capable I3C device on a bus whose controller can wake the system
+is marked as wakeup capable, so it can be managed through the standard
+device wakeup framework (e.g. via power/wakeup in sysfs).  When such a
+device is enabled for wakeup, a wakeup event is reported each time it
+queues an IBI.
+
+At suspend time, the mipi-i3c-hci PCI driver aggregates the wakeup
+configuration of the I3C devices across its HCI instances (up to two I3C
+busses) and enables PCI wakeup (PME) only when at least one attached I3C
+device is enabled as a wakeup source and has IBI enabled.  This keeps
+the PCI wakeup state in sync with the actual requirements of the devices
+on the busses.
+
+The series is organised as follows:
+
+ - Patch 1 fixes a pre-existing recursive acquisition of the bus rwsem
+   in i3c_master_register_new_i3c_devs().  The remaining patches add
+   work to that same function, so the locking is corrected first.
+
+ - Patches 2-7 fix use-after-free and unlocked accesses of the i3c_device
+   desc pointer.  Moving device registration out from under the bus lock
+   in patch 1 is what makes it possible to take the bus lock in the
+   helpers that run during registration.
+
+ - Patches 8-11 add the generic I3C core support: an ibi_wakeup flag for
+   controllers, marking IBI-capable devices as wakeup capable, reporting
+   wakeup events on IBIs, a helper to query whether any device on a bus
+   has both wakeup and IBI enabled, and a fix to reject IBI requests
+   from devices that do not advertise IBI capability.
+
+ - Patches 12-14 wire this up for the mipi-i3c-hci driver: propagate the
+   aggregated I3C wakeup requirements to the PCI function, factor out
+   i3c_hci_sysdev() for the shared device lookup, and advertise IBI
+   wakeup capability when the underlying system device can wake the
+   system.
+
+Note, since the PCI wakeup state is now derived from the wakeup
+configuration of the attached I3C devices, the PCI device's
+power/wakeup sysfs attribute no longer provides independent wakeup
+control.
+
+
+Changes in V5:
+
+    Added Frank Li's Reviewed-by and Mukesh Savaliya's Acked-by tags.
+
+
+Changes in V4:
+
+    i3c: master: Fix recursive locking during device registration
+	Expanded the kernel-doc for the new struct i3c_device @node
+	member to note that it is only for use by
+	i3c_master_register_new_i3c_devs() and is not protected by a
+	lock.
+
+    i3c: master: Fix use-after-free of master->this
+	Also reset master->this and bus.cur_master to NULL on the
+	i3c_master_set_info() error path before freeing the allocated
+	device.  Tidied up the commit message wording.
+
+    i3c: master: Support IBI-based wakeup capability
+	Shortened the comment about IBI-capable devices being wakeup
+	capable.
+
+    i3c: master: Add helper to query bus wakeup requirements
+	Renamed i3c_master_any_wakeup_enabled() to
+	i3c_master_has_wakeup_enabled_devs().
+
+    i3c: mipi-i3c-hci-pci: Propagate I3C wakeup requirements to PCI
+	Updated for the rename of i3c_master_any_wakeup_enabled() to
+	i3c_master_has_wakeup_enabled_devs().
+
+    i3c: mipi-i3c-hci: Factor out i3c_hci_sysdev()
+	Reworked the comment that moves with the code into kernel-doc,
+	and mentioned that in the commit message.
+
+    i3c: mipi-i3c-hci: Advertise IBI wakeup capability
+	Updated the i3c_hci_sysdev() kernel-doc to mention system PM and
+	wakeup, in place of the old comment tweak.
+
+    Added Frank Li's Reviewed-by and Mukesh Savaliya's Acked-by tags.
+
+
+Changes in V3:
+
+    Added 6 patches (2-7) that fix use-after-free and unlocked accesses
+    of the i3c_device desc pointer.  Moving device registration out from
+    under the bus lock in patch 1 is what allows that pointer to be
+    protected in the helpers that run during registration.
+
+    i3c: master: Fix recursive locking during device registration
+	Added Cc: stable@vger.kernel.org
+
+    i3c: master: Add helper to query bus wakeup requirements
+	Skip the master device explicitly.  Noted in the kernel-doc that
+	wakeup enablement is user space policy, so the helper is meant to
+	be called from a system suspend callback.
+
+    Added Frank Li's Reviewed-by tags.
+
+    Rebased onto i3c/next.
+
+
+Changes in V2:
+
+    Dropped the RFC tag.
+
+    i3c: master: Fix recursive locking during device registration
+	New patch
+
+    i3c: master: Support IBI-based wakeup capability
+	Dropped the redundant #include <linux/pm_wakeup.h>.  That header
+	must not be included directly, and linux/device.h, which is
+	already included, provides device_set_wakeup_capable().
+
+    i3c: master: Add helper to query bus wakeup requirements
+	i3c_master_any_wakeup_enabled() now also requires the device to
+	have IBI enabled, not just system wakeup enabled, so that a
+	device with no active IBI request does not keep PCI PME enabled.
+	desc->ibi_lock is taken while checking.  The commit message and
+	kernel-doc are updated to match.
+
+    Rebased onto i3c/next.
+
+
+Adrian Hunter (14):
+      i3c: master: Fix recursive locking during device registration
+      i3c: Fix unlocked dereference of dev->desc in i3c_device_get_supported_xfer_mode()
+      i3c: master: Do not treat master device as a duplicate target
+      i3c: master: Fix use-after-free of master->this
+      i3c: Make dev->desc locking assumptions explicit
+      i3c: master: Fix potential UAF in i3c_device_uevent()
+      i3c: master: Fix potential UAF in i3c_device_match()
+      i3c: master: Support IBI-based wakeup capability
+      i3c: master: Report wakeup events for IBIs
+      i3c: master: Add helper to query bus wakeup requirements
+      i3c: master: Reject IBI requests from non-IBI-capable devices
+      i3c: mipi-i3c-hci-pci: Propagate I3C wakeup requirements to PCI
+      i3c: mipi-i3c-hci: Factor out i3c_hci_sysdev()
+      i3c: mipi-i3c-hci: Advertise IBI wakeup capability
+
+ drivers/i3c/device.c                               |  13 +--
+ drivers/i3c/internals.h                            |   5 +
+ drivers/i3c/master.c                               | 119 ++++++++++++++++-----
+ drivers/i3c/master/mipi-i3c-hci/core.c             |  20 ++++
+ drivers/i3c/master/mipi-i3c-hci/dma.c              |  15 +--
+ drivers/i3c/master/mipi-i3c-hci/hci.h              |   2 +
+ drivers/i3c/master/mipi-i3c-hci/mipi-i3c-hci-pci.c |  23 +++-
+ include/linux/i3c/master.h                         |   6 ++
+ 8 files changed, 155 insertions(+), 48 deletions(-)
+
+
+Regards
+Adrian
