@@ -1,141 +1,258 @@
-Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 764E542D74B
-	for <linux-pm@vger.kernel.org>; Fri,  7 Aug 2026 11:05:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.181
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786100704; cv=pass; b=nyc9avecK5DEq60b2OKXXUQ1Q9j8aqEZRgIVdwbjSGOkRk6PNyWqKIHvl9Wp3lguoBUCp35fw68L734FAf/u/RB0wfwduferPA3y9E2JdZWyJ+QMkEren3KPWeXucheFtr526Huw8SDTuzYx4I3wOCC1uT1UCx42rxcO1uibvok=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786100704; c=relaxed/simple;
-	bh=7KhMblWPk9Mxjw0VSwSuCZtpex2QSzhBO4rxVqclDig=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=t5ew2fjapwNkyp1Kol613+8pvslEZDU70gnNd0lLIRA9ds79YB2L7mjRlFLRmFgEmOL6XRa7yXvNtljdzkz+jVwX5SjFgRHcwSxufgYgsoXFPaZZa0iXeagLqw4fhPsN6feNOpH6Hz8h34+9ub0l03xlefJ45ODvf2YTvb9W2nI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pjxPWYnv; arc=pass smtp.client-ip=209.85.215.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 821583C6A57;
+	Fri,  7 Aug 2026 11:13:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786101193; cv=none; b=YG1MpvhQh8wP6qS0FrgULp8DiaJdu1QE2o09JXbkQrhZghjqXDkFqFIotjbyxwP+WyA+WP5KwNsiZrTXQAlUCGZnyGDdWjkCjYyU7/34X186ZlpsdrHOcSSb6mODHur8LBnfDKPVPERM12VsD+xmCK2cJPA//GS0uRQShQ0AG7w=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786101193; c=relaxed/simple;
+	bh=cV3wwCJS42A2GRJ8N4/Ohe+bmtWthVZFZwvyxKINpWA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=IQQBt1S9oxjXX3joyh4WencILFIxbM/vKo4tm2abnIbcuYgQQ2q/r80CFdO9zPKq7I0pLQVrfOHb8ZHYcCBgrqOEp2kJNRUN/SVVg5XwjnpnUUgAMqz7Cv4/DuwZn3/6ZKYF5g5uFxnjTCcN5zHvRcA2gja3hvS9TWjSIdz4w4U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=doxD8kcv; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pjxPWYnv"
-Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-c966b9ee9cbso2200641a12.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2026 04:05:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786100700; cv=none;
-        d=google.com; s=arc-20260327;
-        b=J3Xx90riMjeLiJw+YNQbmFuCjM+6MR0FGRzgeAxLktTxXOfv+lsYTVKQDo05qKBmdb
-         1EZWZWsWwTPcLQzRVj/MwdMaE3ylOtYwPgsuYNPxdkiYMhHVKZ7HweSfAN3R5KKL6DXV
-         eOw+zhPvLE2e+M1Cqm1H2c+28iPnP9y3sxGHINQ2FzFo7b19ubgolBDt42bKttjVyB4E
-         t7EorTo9mStFQMjDjkDXeGKU2ZPPbOuwuwkONLbkrCA8Bm7Od5NnLJiHfVwIg9forH5+
-         T19495Kifegv45DIKX5XOnXJZFLuzBrA5zxX8Uf69Hz/H3tE+epTzlgKHZ/VElef5Uip
-         UAhw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=lIbXpFTj/4jIXWlkQ6czPnMrtaq4DBoRJvyvQNnOL8U=;
-        fh=sfNj3oGloB1DBLZa/fBkG81QleM0p+B9WRWfnrEgmVw=;
-        b=Ym5/32ydNJ60mY/WHhEyIHvNXXVcXDWr6PRsfNe5+FMM4xV1umy0+JhPxMrpwaMV+R
-         umDrTX+0GCrK+RVTwAtgqYfZM6lNmfLhNFUbZbfcmytiMa5xVbViELGUBkGmxRVTcqEl
-         75Iyt3PwIGrBtQiYQlP+woEuZ221tH0Rda5MzI/ZjfTtJRrrAFn7lBkKPE2uxhzPEDoP
-         VABkqYiale3wDA3jvqKUE0SGrz2EADYnnqbduVEkd6c81Ktz4IH0tvEwcRPIDQF+3Ecq
-         G1Z5lYtQn7VkkEGLsEB4yt7fhICBkic2Qo6rFn5t758pSFhg2pCeO2v8N/dmjCXvVWNX
-         MGeA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786100700; x=1786705500; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=lIbXpFTj/4jIXWlkQ6czPnMrtaq4DBoRJvyvQNnOL8U=;
-        b=pjxPWYnvqtTgD9d6wWVRFzczQ0HU90bmwUNzz6V3qoHFdWhvDNqdIcqt4aumV7a+Vz
-         ynvSJCrn9m84x6zFJZyvhogftq7+phyM95OuvpEtU2qkpKj7kPEih3S/+RYnfFGj3BU1
-         W/nWHypHtGRi0DTYWBgICZTpnoeL16vWpvXyM9TuRVEx0bpiOQYIK5ivaCFomfsyb0fi
-         UfS8Rg1DhD8emqjRIzTCVsREqyixDPcIP7Wsnv1v8cSePGDsjCfHW6U3EAcRzRuAep+y
-         UFiJq119tIqdMpckQmV6ZnWkiPDlg6u9wP5hIv+gu+igMzzDIiu/clVD0koLGw9Q2mti
-         RbXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786100700; x=1786705500;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lIbXpFTj/4jIXWlkQ6czPnMrtaq4DBoRJvyvQNnOL8U=;
-        b=ErLIt01XI0iAyuGzlUsXZ4fJmXEvb/81h0mAE3IvCRz/5gqdsbXNOgA2zO/PwTQ9Uw
-         VrWhTEzeqjHOhpd5IdlzQtYyhgQdLiMHpCTW5WXUSv6j163TZD5vbOxDJERv0TSIXNpM
-         LmQ+RDEW/Tu8+LFgsaWscS8EO+RWt3vEZB5nbNhsJwH7t6bj8Sa/9FaQM7FEG5d8TFk2
-         A6YVAbq5vk1mhhglNf9D3dvvcO13uhrjjNKOe+v/2WL6TkfDz0dIkVMnyVfxIaNZynv0
-         KCbGMfkefYOLTLo4iqjijezZ7BLgM/CUZVQFLbaJFu9a21E2r0glk24CpYX1YwrSyGla
-         fjHw==
-X-Forwarded-Encrypted: i=1; AHgh+Rpm3WwxDPTE/+TghGMd6F4U2NXporodSlEFvG4ZN2ZpztaZlUqV1o+b0kdrV5NJxQwaQwfpzkZD5Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyKXhku3U1GpCSPBV6OrswazzSE39pzIWQ7qX0LQCg9ZMC0+peh
-	tvshW6hGafMs6r5o+wVOk7pvcgHUXq3eF8wW8khrFGAZZW4eOy7IcXrdf8lyNPSwlOtcKrwBS2y
-	80V+X/VUFC575MkRyyRJEDgNOeR7Kg1c=
-X-Gm-Gg: AR+sD10PpQVHDqPVzPVm0bu4BuPuxe7FLHZB1vpuIXaFTwihmuI0DSDp9wEyp5ViIa2
-	q+ZSFOpp0W67/4s3UElM2+C+I8XHiGlQQElsZlnhnaWtrZxU8qUIV+xGWWHBOQyyjUldH5chzJR
-	tXXXKLrDaOSwe9WuJnipBl8lqZwk3Ot707+WkeVpmIW3f1uzk1B7cOcnVmuQt+3gW9aqTZ26gqB
-	vXoJKWsV5UNQnbqYDmFsIV01/zBkOj5rAmilimmMwIQMoj/sITZVElx2y+HEji2Pd+dQpXpcRUZ
-	jFciM1X1uTkWVgpCrVKu8AFt2ejo3fS6MsRS4Y9w1LxpOsQBUF2OP+4Mk7TRUlOysoncWFE0hU/
-	CEeD2GfparNRJE+1IYi5MsdzJXwvVFCfkYJJs4nM5adrYEDPuDXb5fuMq
-X-Received: by 2002:a05:6300:670b:b0:3c0:ac0f:6558 with SMTP id
- adf61e73a8af0-3cb85e99259mr26552578637.2.1786100700044; Fri, 07 Aug 2026
- 04:05:00 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="doxD8kcv"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EC65A1516;
+	Fri,  7 Aug 2026 04:13:06 -0700 (PDT)
+Received: from e127648.cambridge.arm.com (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 056D73F86F;
+	Fri,  7 Aug 2026 04:13:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786101190; bh=cV3wwCJS42A2GRJ8N4/Ohe+bmtWthVZFZwvyxKINpWA=;
+	h=From:To:Cc:Subject:Date:From;
+	b=doxD8kcv/4l/H6xJDzMJsykHICY/Q90EI3by05XsW2vmSuN2OM0UPYEmGPzTkryl/
+	 sO6LZd31leTJVZB0K82bmq1N8Aj4QVFuEBtbnG1xhKMwvi8+FeYqj2/ckU3lSIe5iQ
+	 3BOcyqgSVvKdOBBzmQ3Hs0YaO0yn9Zkn0VfVkPV8=
+From: Christian Loehle <christian.loehle@arm.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Len Brown <lenb@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Sudeep Holla <sudeep.holla@arm.com>,
+	Ionela Voinescu <ionela.voinescu@arm.com>,
+	zhongqiu.han@oss.qualcomm.com,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH 00/15] ACPI: CPPC: Fix register access and lifetime bugs
+Date: Fri,  7 Aug 2026 12:12:48 +0100
+Message-Id: <20260807111303.1062391-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260807093058.42840-1-phucduc.bui@gmail.com> <CAMuHMdWJ3W2JKmxaKaa-A-Zk633cf4UwbESi+F1_h4tX1AhRng@mail.gmail.com>
- <CAABR9nF7sAT4C+W_qE8GVKhrtTjdm=DcpJH548RzFaYLuED+3A@mail.gmail.com> <20260807103645.GE1316230@ragnatech.se>
-In-Reply-To: <20260807103645.GE1316230@ragnatech.se>
-From: Bui Duc Phuc <phucduc.bui@gmail.com>
-Date: Fri, 7 Aug 2026 18:04:48 +0700
-X-Gm-Features: AUfX_myqnP9cM0o7YKZHIMOZ9idGY0mI36nu52n1v9bZ-QIC3TPihkA-_6FUpl4
-Message-ID: <CAABR9nGAY6BjA2mRsv+2hkB1kv0QDJX6osXyEMw6jsjE+j2+vQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] thermal/drivers/rcar_gen3: Handle -ENXIO from
- optional IRQ lookup
-To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Markus Mayer <mmayer@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, rafael@kernel.org, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Niklas S=C3=B6derlund,
+First of all, sorry this got so out of hand, initially this was just
+trying to fix some relatively simple issues found by sashiko in an
+earlier (unrelated) series.
+But with me touching more and more code and going through rounds of AI
+review that kept finding more and more pre-existing issues I've arrived
+at this.
 
-Thank you for your feedback .
+This series fixes correctness and robustness issues found while reviewing
+the CPPC control path. They affect malformed _CPC handling, error
+propagation, PCC ownership and cleanup, CPC object lifetime, register field
+access, cross-processor aliases, and Performance Limited clearing.
 
-> > Regarding the caller, I only found rcar_gen3_thermal_request_irqs()
-> > being called here:
-> > https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/thermal/renesa=
-s/rcar_gen3_thermal.c#L530
-> > It does not appear to handle the error return there, so I don't think
-> > the caller currently handles these failures explicitly.
->
-> Yes it does. If it can't get the optional interrupts the driver does not
-> support setting trip-points in hardware. No?
->
+Series structure
+================
 
-Yes, for -ENXIO, you're right.
-The caller treats it as the absence of optional IRQs and disables
-hardware trip-point support.
-However, this also means that -EPROBE_DEFER, -EINVAL, and other errors
-are currently treated the same way.
-The caller does not distinguish these errors from -ENXIO, so the probe
-continues instead of propagating the actual error.
+Patches 1-8 are deliberately small, independently useful fixes. They
+validate the _CPC encoding consumed by cppc-acpi, propagate control-write
+errors, serialize PCC payload updates, correct 64-bit field masks, and fix
+descriptor and PCC lifetime handling.
 
-I think the caller should distinguish -ENXIO from other errors:
-keep the current behavior for -ENXIO, but propagate -EPROBE_DEFER,
--EINVAL, and other errors.
+Patches 9-15 are the register-layout hardening portion. Geometry validation
+is more substantial because safe RMW and alias handling depend on the
+physical access unit, not merely on a logical _CPC entry or _PSD domain.
+These patches normalize and validate each supported address space before
+building probe-only physical interval registries. Keeping this work in the
+same posting gives the complete safety boundary and a single base for
+review, while each transport and bug retains its own Fixes provenance.
+Feel free to treat the two parts as independent series, I didn't split it
+because they're all technically fixes and to get Sashiko review for the
+whole lot.
 
-ret =3D rcar_gen3_thermal_request_irqs(priv, pdev);
-if (ret =3D=3D -ENXIO) {
-        priv->ops.set_trips =3D NULL;
-} else if (ret) {
-        return ret;
-}
+No interval lookup is added to the scheduler hot path. Full-width
+SystemMemory writes remain lockless. RMW locking remains necessary only for
+a partial field, where we must preserve the other bits in its access
+unit. The existing per-descriptor raw lock continues to cover disjoint
+partial fields within one _CPC package; probe rejects cross-descriptor
+layouts that it cannot protect.
 
-Best regards,
-Phuc
+Parsing and control semantics
+=============================
+
+The parser now validates the package header before indexing it, bounds the
+BYTE and DWORD Integer forms before conversion, and validates the Generic
+Register descriptor consumed by cppc-acpi. It deliberately tolerates
+trailing ResourceTemplate data instead of imposing a new EndTag
+compatibility requirement.
+
+Writable controls must be Buffer-encoded registers. Minimum and Maximum
+Performance are checked as the pair required by ACPI 6.6 Sections
+8.4.6.1.2.1 and 8.4.6.1.2.2. Object presence is kept separate from the
+Integer-zero convention for absent optional fields, so Lowest Performance
+may retain the valid abstract value zero.
+
+Performance Limited is one deliberate compatibility exception. ACPI lists
+it as required, but permits a platform with no limiting indication to
+always return zero, and deployed firmware represents that case with a NULL
+descriptor. CPPC control does not depend on this status register, so we
+continues to accept that encoding. A present _CPC package which otherwise
+fails parsing or initialization now emits an error instead of silently
+preventing cpufreq registration.
+
+Compound performance and EPP updates propagate errors and perform every
+fallible non-PCC write before modifying the PCC payload. Updates across
+address spaces cannot be atomic, but a known non-PCC failure can no longer
+commit only the PCC portion or leave an unsent value for a later command.
+
+SystemMemory locking and support boundary
+=========================================
+
+A partial SystemMemory field requires RMW to preserve the rest of its
+access unit. Commit 60949b7b8054 ("ACPI: CPPC: Fix MASK_VAL() usage") used
+a per-_CPC lock and noted that a global lock would be needed if physical
+registers were shared between packages.
+
+ACPI does not make _PSD a physical-register ownership boundary. Rather than
+put a global raw lock or lookup into the scheduler path, this series makes
+the cheaper per-descriptor model's assumptions enforceable at probe.
+
+Supported SystemMemory layouts are:
+
+  - naturally aligned 8-, 16-, 32-, and 64-bit access units;
+  - lockless full-width controls;
+  - read-only aliases;
+  - exact full-width writable aliases, including 64-bit aliases on 64-bit
+    kernels;
+  - disjoint partial writers within one descriptor, serialized by its
+    rmw_lock; and
+  - a partial writer sharing an access unit with a disjoint read-only
+    field.
+
+Probe rejects overlapping logical fields involving a writer, another field
+inside a full-width writable access unit, cross-descriptor partial writers,
+unaligned accesses, and exact writable 64-bit aliases on 32-bit kernels.
+These layouts were not safely supported by the old per-descriptor lock or
+generic writeq(); rejecting them turns possible corruption into a visible
+probe failure rather than removing working support.
+
+PCC access and locking
+======================
+
+The PCC protocol requires OSPM to acquire the subspace before changing its
+command or payload. Single-register and EPP updates now hold pcc_lock
+across ownership acquisition, payload staging, and command submission.
+
+ACPI 6.6's implementation example places a mandatory 32-bit Delivered
+Performance Counter at unaligned PCC offset 0x116. Performance controls may
+also use byte-multiple widths such as 24 bits. PCC therefore uses
+byte-oriented I/O with explicit little-endian encoding for zero-offset,
+byte-multiple fields from 8 through 64 bits. A short per-subspace payload
+lock protects concurrent aliased copies made under the shared side of
+pcc_lock; it does not replace the protocol ownership lock.
+
+Bit-level PCC fields require RMW and remain unsupported. An unsupported
+optional field is marked absent, but a present inaccessible CPPC Enable
+fails probe because OSPM must write it before using CPPC. Thus the
+ACPI-legal one-bit CPPC Enable used by the specification example is a
+documented kernel limitation. The old accessor could not program it
+correctly either, so an explicit error is safer than silently proceeding
+without enabling CPPC.
+
+Every retained PCC field is bounds checked against the shared-memory
+region. A subspace-keyed interval registry permits read-only overlap and
+exact same-control aliases while rejecting every other writable overlap
+across processors.
+
+SystemIO support boundary
+=========================
+
+SystemIO supports Bit Offset zero, full 8-, 16-, or 32-bit accesses ending
+at or below port 0xffff, including legacy Access Size zero when Bit Width
+supplies the size. Partial fields never worked because the driver neither
+shifted them nor preserved adjacent bits, so they now fail visibly instead
+of being misprogrammed.
+
+On kernels without CONFIG_HAS_IOPORT, SystemIO entries are rejected or
+disabled according to the affected control's semantics. Runtime accessors
+also return -EOPNOTSUPP rather than treating an I/O port as a
+physical-memory address. A global port interval registry rejects
+cross-processor writable overlap.
+
+Write-only and Performance Limited controls
+===========================================
+
+Between _CPC revisions 3 and 4, Desired Performance changed from
+Read/Write to Write, and revision 4 added write-only OSPM Nominal
+Performance. ACPI 6.6 Section 4.6.3 says reads from write-only positions
+are undefined. Explicit reads of both controls are rejected, as are
+SystemMemory layouts which would implicitly read them for RMW. Full-width
+writes remain supported.
+
+Performance Limited is sticky, write-zero-to-clear, and requires
+interlocked accesses under ACPI 6.6 Section 8.4.6.1.3.2. The old separate
+read and write could clear a new event reported between transactions. The
+clear path now writes zero only to requested status bits and one to the
+other defined bits. Partial SystemMemory forms are rejected because a
+spinlock cannot interlock an enclosing RMW with platform updates. QWord
+forms are also rejected on 32-bit kernels, where the MMIO accessor may be
+split into two 32-bit operations; naturally aligned, full-width QWords
+remain supported on 64-bit kernels.
+
+Lifetime and cleanup
+====================
+
+CPC descriptors are released through their kobject callback, keeping their
+storage and mappings alive for outstanding sysfs references. Every PCC
+allocation, reference, and acquired channel is unwound on probe failure,
+and the per-CPU PCC index is initialized before every early return. PCC
+allocation uses a separate temporary result, so its success cannot turn a
+later parse failure into a successful probe return.
+
+
+Patches 1, 2, 4-7, and 9 address findings reported by Sashiko while
+reviewing:
+
+  https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+
+The series is based on Rafael's bleeding-edge, the base-commit specified below is
+linux-next for Sashiko review.
+
+Christian Loehle (15):
+  ACPI: CPPC: Validate the _CPC package header
+  ACPI: CPPC: Validate _CPC entry and control semantics
+  ACPI: CPPC: Propagate performance-control write errors
+  ACPI: CPPC: Use 64-bit masks for register fields
+  ACPI: CPPC: Serialize PCC single-register payload updates
+  ACPI: CPPC: Serialize PCC EPP payload updates
+  ACPI: CPPC: Release CPC descriptors through kobject
+  ACPI: CPPC: Release PCC data after probe failures
+  ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
+  ACPI: CPPC: Reject reads and RMW of write-only controls
+  ACPI: CPPC: Validate and access PCC register layouts
+  ACPI: CPPC: Validate SystemIO register layouts
+  ACPI: CPPC: Validate PCC overlaps across processors
+  ACPI: CPPC: Validate SystemIO overlaps across processors
+  ACPI: CPPC: Clear Performance Limited without a stale read
+
+ drivers/acpi/cppc_acpi.c | 1231 ++++++++++++++++++++++++++++++++------
+ include/acpi/cppc_acpi.h |    7 +-
+ 2 files changed, 1065 insertions(+), 173 deletions(-)
+
+base-commit: ea2bff00da89d7767d677bb68470130ba96f4928
+-- 
+2.34.1
+
