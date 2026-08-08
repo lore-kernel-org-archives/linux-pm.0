@@ -1,104 +1,176 @@
-Received: from smtp.smtpout.orange.fr (smtp-26.smtpout.orange.fr [80.12.242.26])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E390F37D12E;
-	Sat,  8 Aug 2026 20:25:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.26
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CDCC37E5DB;
+	Sat,  8 Aug 2026 21:06:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786220704; cv=none; b=t3imrG9oKwsP8AXG7rTokMWohUgW4ZrIqYzNO48N0smkr7Tg6EMdYMX29T6FCSOIbkp0UREzYyTjKq3j66UjyiUWX+tSUYCW8rWoDMfU565mFyJuFn56OXZ5Dp/e3iwJ89Tyr2WXaTbQRQNmc44OdItZl2v539/6xiA1JiFUb54=
+	t=1786223218; cv=none; b=jvb6QVTqvuEDl9o6zR/Ew8T3cL15WeH280ZzTt1QkHVh+waCJqeXbN0dAn0bTY1LzXGKldIYaTUCY/FpNllPXhn1uLnUWj77fVII8172fsbcuwYF23nz0OiE7ngUuhQYeS3tVnx6HVG09jnoYKSmL9JvRMBPWmuv6JRh1R8KRiM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786220704; c=relaxed/simple;
-	bh=akIElZ664VnThhT/O583ioHadFcoj3UoY4fB8Adz9ys=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ru4TqvYABdtMiqjPnFd6gpAqQZpjU8Czb9dIlk7sX6FpyRjXJ2jbnd2xbbmAFdnvdN/6se5llj0UYQJNmryQkj53sPLrj+9+4TLrUfpAtYtXouoMkieO1d+etVkJYD4GDsj0HLoM1t0Jpa981Hi+0PbTIzzMkieFAkqmDkoZyNk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=Zk3RD5K5; arc=none smtp.client-ip=80.12.242.26
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1786223218; c=relaxed/simple;
+	bh=3uaIIBiCU8ZU2xp1Kg6FoVtc0HMvElGXp9+wOyz+WT0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Li2mvTFAA/sqxWHu9NJ0Y7+xBYkn6+sqdCTu2sscQoiIqVFbKI7HPef2c7E00lh17/cCRVFeVkUUUg9T+1HyxKnvjNCxeLwNx56cN2NQDPMs/aUxA6CvktuK4dD/VMpF9WbSSqeT6cI+NG8Du105MwYVjavP/3ZduyPEryKGeWE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=X52o9e3M; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="Zk3RD5K5"
-Received: from device-101.home ([10.64.95.115])
-	by smtp.orange.fr with ESMTP
-	id sna6wGeV0xVuJsna6wvBy1; Sat, 08 Aug 2026 22:23:46 +0200
-Received: from device-101.home ([IPv6:2a01:cb10:785:b00:6128:9b8c:c203:905])
-	by smtp.orange.fr with ESMTPSA
-	id snZww80X0VmS1snZwwkz1T; Sat, 08 Aug 2026 22:23:39 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1786220619;
-	bh=Ll+F6nXFSqpVhu4IsFAP7UVPO/qt/IPQf17t5zCa43c=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=Zk3RD5K55BZ+T/D1ZOwUQvj5+2diY/4gCOhQ+FoOAgQ8Y3bVrLwYB9qldsbSVqSHe
-	 prxaEo1Y0kJYxP6yq/lS7tfMbS6r6UcxM2oufRHpBHpZqQSSaOd97onbJyBX2UzJcI
-	 YreeOTlxvlC6hCbT/u5Npm+ifZGQpdf4/WbDN5lSxf40sb2a49ze9bleflMDhSlw9S
-	 ORqumwfWEE9XyVoSracsePste0lrlBlj9rifV0uZNMqn1A2WvtTy78/CZC8UTSFlN3
-	 lPQg5x/r0MOY0e5ftefHf1BQUHDTXLK4+YC4BDpIDDCIxFq3LTd0tsuCFSZpUu/II2
-	 poi7Xo7OI2BhA==
-X-ME-Helo: device-101.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sat, 08 Aug 2026 22:23:39 +0200
-X-ME-IP: 2a01:cb10:785:b00:6128:9b8c:c203:905
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="X52o9e3M"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786223216; x=1817759216;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=3uaIIBiCU8ZU2xp1Kg6FoVtc0HMvElGXp9+wOyz+WT0=;
+  b=X52o9e3MngSS0AWFPwuPrm15jHtdN2Fc9TInpVIWhiy+gLwHOPraZ017
+   rTvJtnN0O4b1HRQ4EfL1BYivkArR+o0B6vZcgTxVHkq9+E/405542IeWU
+   ZWV0EfN0H8svww+Vgg82Ojf0FqnW0jVs2N8RpjLJPuYMbRwoEF2I2cKbA
+   F6hSPvx3jy0y2OkBU3D2jnV90YywvvnyPm5Aws6EUXxRCpo/lPaRj0nXw
+   lr30Y5qs7yIs6eKl41dknrOtKoiEDzcGLAbmJrBS6EVM+vJsscnxtyD8m
+   mtn+MzAV1of9KWeV5t+qY93+5lo8V48llCBE6SKUOeS+50LCraahMhGYM
+   A==;
+X-CSE-ConnectionGUID: 5JQvV/7lQoG0YnnO6PskBA==
+X-CSE-MsgGUID: 3+KRzg9/Qp2FYdXgvTWBFg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11869"; a="86672656"
+X-IronPort-AV: E=Sophos;i="6.25,212,1779174000"; 
+   d="scan'208";a="86672656"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Aug 2026 14:06:55 -0700
+X-CSE-ConnectionGUID: Y7Sn9Uc9RfqymAl2nC60yw==
+X-CSE-MsgGUID: d7mDPEAGQHiTjs47ogbYrQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,212,1779174000"; 
+   d="scan'208";a="259365082"
+Received: from slindbla-desk.ger.corp.intel.com (HELO localhost) ([10.245.244.2])
+  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Aug 2026 14:06:51 -0700
+Date: Sun, 9 Aug 2026 00:06:48 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-pm@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] thermal/drivers/imx9: Constify struct thermal_zone_device_ops
-Date: Sat,  8 Aug 2026 22:23:33 +0200
-Message-ID: <5cce9ea713edcf2aa3c0efd5d31e9d9fd9f40a88.1786220585.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.55.0
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>, linux-iio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+	Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
+	Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
+	Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+Subject: Re: [PATCH 2/7] iio: adc: qcom-spmi-adc5-gen3: Add support for QCOM
+ PMIC5 Gen4 ADC
+Message-ID: <aneaaJ_gmyyLh8mY@ashevche-desk.local>
+References: <20260731-pmic5_gen4_adc-v1-0-9c49b2eea6f9@oss.qualcomm.com>
+ <20260731-pmic5_gen4_adc-v1-2-9c49b2eea6f9@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260731-pmic5_gen4_adc-v1-2-9c49b2eea6f9@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-'struct thermal_zone_device_ops' is not modified in this driver.
+On Fri, Jul 31, 2026 at 11:36:15PM +0530, Jishnu Prakash wrote:
+> PMIC5 Gen4 ADC is similar to PMIC5 Gen3 ADC, with several changes made
+> for improved performance, mostly at the hardware level.
+> 
+> One significant software change is that ratiometric conversion resolution
+> has been increased from 14 bits to 16 bits, so the maximum value of
+> these measurements needs to be updated for Gen4. Add a new scaling
+> function for thermistor channels which use this type of conversion.
+> 
+> In the latest PMIC arbiter version (v8), there can be up to 4 buses
+> under the PMIC arbiter and 32 PMICs under each bus. In order to
+> support communication between ADC on the master PMIC and ADCs on any
+> of the other PMICs, a field of width 2 bits is added for bus index
+> and the bits for SID are extended from 4 to 5 bits, in the SID
+> register. Add support for this.
+> 
+> In addition, it is possible that the master PMIC has ADC of one generation
+> and it needs to communicate with another PMIC with ADC of a different
+> generation. Add new DT properties "qcom,adc5-gen3" and "qcom,adc5-gen4",
+> to distinguish Gen3 channels under a Gen4 master and Gen4 channels
+> under a Gen3 master respectively, to ensure that their conversions are handled
+> correctly.
 
-Constifying this structure moves some data to a read-only section, so
-increases overall security, especially when the structure holds some
-function pointers.
+...
 
-On a x86_64, with allmodconfig:
-Before:
-======
-   text	   data	    bss	    dec	    hex	filename
-   8567	   2144	      0	  10711	   29d7	drivers/thermal/imx91_thermal.o
+> +static const struct adc5_channels adc5_gen4_chans_pmic[ADC5_MAX_CHANNEL] = {
+> +	[ADC5_GEN4_OFFSET_REF]		= ADC5_CHAN_VOLT(0,
+> +						SCALE_HW_CALIB_DEFAULT)
 
-After:
-=====
-   text	   data	    bss	    dec	    hex	filename
-   8695	   2016	      0	  10711	   29d7	drivers/thermal/imx91_thermal.o
+Always nice to see a macro with the embedded comma...
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Compile tested only.
----
- drivers/thermal/imx91_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +	[ADC5_GEN4_1P25VREF]		= ADC5_CHAN_VOLT(0,
+> +						SCALE_HW_CALIB_DEFAULT)
+> +	[ADC5_GEN4_VPH_PWR]		= ADC5_CHAN_VOLT(1,
+> +						SCALE_HW_CALIB_DEFAULT)
+> +	[ADC5_GEN4_VBAT_SNS_QBG]	= ADC5_CHAN_VOLT(1,
+> +						SCALE_HW_CALIB_DEFAULT)
+> +	[ADC5_GEN4_DIE_TEMP]		= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_PMIC_THERM_PM7)
+> +	[ADC5_GEN4_AMUX1_THM_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX2_THM_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX3_THM_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX4_THM_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX5_THM_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX6_THM_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX1_GPIO_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX2_GPIO_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX3_GPIO_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX4_GPIO_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +	[ADC5_GEN4_AMUX5_GPIO_100K_PU]	= ADC5_CHAN_TEMP(0,
+> +						SCALE_HW_CALIB_THERM_100K_PU_GEN4)
+> +};
 
-diff --git a/drivers/thermal/imx91_thermal.c b/drivers/thermal/imx91_thermal.c
-index 25915bb702be..892a25440e06 100644
---- a/drivers/thermal/imx91_thermal.c
-+++ b/drivers/thermal/imx91_thermal.c
-@@ -225,7 +225,7 @@ static int imx91_tmu_change_mode(struct thermal_zone_device *tz, enum thermal_de
- 	return 0;
- }
- 
--static struct thermal_zone_device_ops tmu_tz_ops = {
-+static const struct thermal_zone_device_ops tmu_tz_ops = {
- 	.get_temp = imx91_tmu_get_temp,
- 	.change_mode = imx91_tmu_change_mode,
- 	.set_trips = imx91_tmu_set_trips,
+...
+
+>  enum adc5_cal_method {
+>  	ADC5_NO_CAL = 0,
+
+(here as well, see below)
+
+>  	ADC5_RATIOMETRIC_CAL,
+
+>  };
+>  
+> +enum adc_generation {
+> +	ADC5_GEN3 = 0,
+
+Why is this assignment? What's wrong with the C standard?
+
+> +	ADC5_GEN4,
+
+If these are related to HW communication protocol or bit fields, all of them
+must be explicitly assigned (to make code robust against changes in the middle
+of enum).
+
+> +};
+
 -- 
-2.55.0
+With Best Regards,
+Andy Shevchenko
+
 
