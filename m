@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 78E173B19CF;
-	Sat,  8 Aug 2026 08:28:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 709973AEB38;
+	Sat,  8 Aug 2026 08:28:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786177708; cv=none; b=pVKaBJJQS/JwXUHbKmI/pZSIU/cwvrHeFhhU63dkkoFd5z19955oDbSIg5622Gg//9XvqRBZaC8khdkwPoVbUqjZ1/faPEqR9Ofe6/JfX/7awlexej9sm6+CSx/fPcmtz39WiOGqC+yzbc6jSQMHN0cM1MhzWPh5LXJ7QHBJaTs=
+	t=1786177710; cv=none; b=fxJ6cQwlSN8abl36tlqglSa+S7FaHHGUpe6Z3ZKX6wnBxDUaVvS1MYzjEeh4HFFQGzWdlg0CW4e/m3vzAHPjQAJkIF7DadBQpZNX3o4TDXylu2j7qllWerKy9pnAxNgLR0HjH8PODyYinU9nNoQ77d13Z9Slbes6AtioPUUItjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786177708; c=relaxed/simple;
-	bh=NEuWmpm8exHnKXyXeHMwhs1WxxSioYSZspx6qsbyaq8=;
+	s=arc-20240116; t=1786177710; c=relaxed/simple;
+	bh=DFm9VnFDDcKFl5J2NfKUAgrZ8gnr11eM0CT/+rRFQZw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ptS0ntNUJjExCu1E+JujpHFXwYFVSUsmqhAIXUhv8AJ1//aGMSVqR8MTVH6JSJPySBm6BxUuqDxn1YNSRx4Dkz60r2sl1haigTwRxpQWN+sK/4y7+tCZOkZBb6akM/9XqEP/TALVTruInVBAyNqOtAJOIHN7cyPzldR71YQx2D4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=DOwnLqwW; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=AsqHQyN4+Je+5X6+2Ft4iNvKCwwnd3BsuuqtYzyzRr5LNJnBg7q3iqQ9+lq/YDzrYCKEZzBLP+Dw/tw/xsZkaR2QXDobqrudUJbhvKvRA9rSs3DjvPcFM2CYuT8WiPhMY/OO0g51Fi4AMDxXzvoHvGMHCpoylBmu3pFpInoIerQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=KdxVTLlt; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="DOwnLqwW"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="KdxVTLlt"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B84A01BF3;
-	Sat,  8 Aug 2026 01:28:21 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B8CEC1A9A;
+	Sat,  8 Aug 2026 01:28:24 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.5.149])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5C9453F9A2;
-	Sat,  8 Aug 2026 01:28:23 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3BAB93F9A2;
+	Sat,  8 Aug 2026 01:28:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786177705; bh=NEuWmpm8exHnKXyXeHMwhs1WxxSioYSZspx6qsbyaq8=;
+	t=1786177708; bh=DFm9VnFDDcKFl5J2NfKUAgrZ8gnr11eM0CT/+rRFQZw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DOwnLqwWacjxSxfxYXQBDAMK4nr7dLVvei0KTYRZD1KdeY6gxYvu743XSO7104Tsn
-	 8hZJSwt6ew5MXPx0p6KgKcrlU5f/Dy2Vr4wOCHQPWl420k+LuaAxADmcEUwM54RDsL
-	 G+Dq14duHvL69IjCEuf6JP1xSRfqytrOyjutiQAY=
+	b=KdxVTLlt6FpTmK+0WnZGWJjcs7849KyiAyruEAG+A2cDtPXPx5Ft7WAGOdUwq84CN
+	 OaEA+P5Nv8H/tcPqXmURe06939K5cg6iJyNH8yYZTSp8kV7HXuVQw7xvhugpxjjTKa
+	 tKnWmYKAiGPHK4rbU8xjkRquCROO2P5ssDoOAgt4=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -41,9 +41,9 @@ Cc: linux-pm@vger.kernel.org,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH v2 13/15] ACPI: CPPC: Validate PCC overlaps across processors
-Date: Sat,  8 Aug 2026 09:26:42 +0100
-Message-Id: <20260808082644.1251332-14-christian.loehle@arm.com>
+Subject: [PATCH v2 14/15] ACPI: CPPC: Validate SystemIO overlaps across processors
+Date: Sat,  8 Aug 2026 09:26:43 +0100
+Message-Id: <20260808082644.1251332-15-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260808082644.1251332-1-christian.loehle@arm.com>
 References: <20260808082644.1251332-1-christian.loehle@arm.com>
@@ -55,263 +55,76 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-PCC shared-memory offsets are physical within a subspace, but the existing
-overlap check stops at one _CPC package. Two processors can therefore pass
-probe with writable ranges which overlap in the same PCC subspace.
+System I/O port space is global, but the overlap check only compares
+registers within one _CPC package.  Whole-width accesses from different
+processors can therefore target partially overlapping port ranges and
+clobber each other.
 
-This is unsafe in the performance path, where CPUs may stage requests
-concurrently while holding the shared side of pcc_lock. Partially
-overlapping stores can construct a payload which belongs to neither request
-before a doorbell submits it.
+Extend the physical interval registry to SystemIO.  Permit read-only
+overlap and exact full-width aliases of the same logical CPPC entry.
+Reject every other cross-processor overlap involving a writable entry.
 
-Index retained PCC byte ranges by subspace and physical interval. Permit
-read-only overlap and exact aliases of the same logical CPPC entry. The
-per-subspace payload lock serializes exact writable aliases, including
-multi-byte fields copied with byte-oriented I/O. Reject every other overlap
-involving a writable entry.
-
-The interval tree keeps registration proportional to real overlaps rather
-than to the number of processors. Remove entries when processor teardown
-unpublishes its CPC descriptor, including every probe-failure path after
-registration.
-
-Fixes: 85b1407bf6d2 ("ACPI / CPPC: Make CPPC ACPI driver aware of PCC subspace IDs")
+Fixes: a2c8f92bea5f ("ACPI: CPPC: Implement support for SystemIO registers")
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 157 +++++++++++++++++++++++++++++++++++++++
- include/acpi/cppc_acpi.h |   2 +
- 2 files changed, 159 insertions(+)
+ drivers/acpi/cppc_acpi.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index c39b022f1573..36f4f4e32523 100644
+index 36f4f4e32523..fbbc71671717 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -108,6 +108,18 @@ struct cpc_sysmem_node {
- 	bool registered;
- };
+@@ -138,6 +138,7 @@ INTERVAL_TREE_DEFINE(struct cpc_non_mmio_node, rb, u64, subtree_last,
+ 		     cpc_non_mmio_itree)
  
-+struct cpc_non_mmio_node {
-+	struct rb_node rb;
-+	u64 subtree_last;
-+	u64 start;
-+	u64 last;
-+	struct cpc_desc *desc;
-+	unsigned int reg_idx;
-+	u8 space_id;
-+	u8 pcc_ss_id;
-+	bool registered;
-+};
-+
- #define CPC_SYSMEM_START(node) ((node)->start)
- #define CPC_SYSMEM_LAST(node) ((node)->last)
+ static struct rb_root_cached cpc_pcc_trees[MAX_PCC_SUBSPACES];
++static struct rb_root_cached cpc_sysio_tree = RB_ROOT_CACHED;
+ static DEFINE_MUTEX(cpc_non_mmio_lock);
  
-@@ -118,6 +130,16 @@ INTERVAL_TREE_DEFINE(struct cpc_sysmem_node, rb, u64, subtree_last,
- static struct rb_root_cached cpc_sysmem_tree = RB_ROOT_CACHED;
- static DEFINE_MUTEX(cpc_sysmem_lock);
- 
-+#define CPC_NON_MMIO_START(node) ((node)->start)
-+#define CPC_NON_MMIO_LAST(node) ((node)->last)
-+
-+INTERVAL_TREE_DEFINE(struct cpc_non_mmio_node, rb, u64, subtree_last,
-+		     CPC_NON_MMIO_START, CPC_NON_MMIO_LAST, static inline,
-+		     cpc_non_mmio_itree)
-+
-+static struct rb_root_cached cpc_pcc_trees[MAX_PCC_SUBSPACES];
-+static DEFINE_MUTEX(cpc_non_mmio_lock);
-+
  static struct cpc_sysmem_node *cpc_sysmem_first(u64 start, u64 last)
+@@ -590,6 +591,8 @@ static struct rb_root_cached *cpc_non_mmio_tree(u8 space_id, u8 pcc_ss_id)
  {
- 	return cpc_sysmem_itree_iter_first(&cpc_sysmem_tree, start, last);
-@@ -564,6 +586,134 @@ static int cpc_validate_non_mmio_overlaps(struct cpc_desc *cpc_desc,
- 	return 0;
+ 	if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM)
+ 		return &cpc_pcc_trees[pcc_ss_id];
++	if (space_id == ACPI_ADR_SPACE_SYSTEM_IO)
++		return &cpc_sysio_tree;
+ 	return NULL;
  }
  
-+static struct rb_root_cached *cpc_non_mmio_tree(u8 space_id, u8 pcc_ss_id)
-+{
-+	if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM)
-+		return &cpc_pcc_trees[pcc_ss_id];
-+	return NULL;
-+}
-+
-+static int cpc_validate_non_mmio_pair(const struct cpc_non_mmio_node *a,
-+				      const struct cpc_non_mmio_node *b)
-+{
-+	bool a_writable = cpc_reg_is_writable(a->reg_idx);
-+	bool b_writable = cpc_reg_is_writable(b->reg_idx);
-+	const char *name;
-+
-+	if (!a_writable && !b_writable)
-+		return 0;
-+
-+	if (a->reg_idx == b->reg_idx && a->start == b->start &&
-+	    a->last == b->last)
-+		return 0;
-+
-+	name = "PCC";
-+	pr_err("CPU%d: %s _CPC register %u conflicts with CPU%d register %u\n",
-+	       a->desc->cpu_id, name, a->reg_idx, b->desc->cpu_id,
-+	       b->reg_idx);
-+	return -EINVAL;
-+}
-+
-+static void cpc_unregister_non_mmio_desc_locked(struct cpc_desc *cpc_desc)
-+{
-+	unsigned int i;
-+
-+	if (!cpc_desc->non_mmio_nodes)
-+		return;
-+
-+	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
-+		struct cpc_non_mmio_node *node = &cpc_desc->non_mmio_nodes[i];
-+		struct rb_root_cached *tree;
-+
-+		if (!node->registered)
-+			continue;
-+
-+		tree = cpc_non_mmio_tree(node->space_id, node->pcc_ss_id);
-+		cpc_non_mmio_itree_remove(node, tree);
-+	}
-+
-+	kfree(cpc_desc->non_mmio_nodes);
-+	cpc_desc->non_mmio_nodes = NULL;
-+}
-+
-+static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
-+				      int pcc_ss_id)
-+{
-+	unsigned int nr_regs = cpc_desc->num_entries - 2;
-+	unsigned int i;
-+	int ret = 0;
-+
-+	cpc_desc->non_mmio_nodes = kcalloc(nr_regs,
-+					   sizeof(*cpc_desc->non_mmio_nodes),
-+					   GFP_KERNEL);
-+	if (!cpc_desc->non_mmio_nodes)
-+		return -ENOMEM;
-+
-+	mutex_lock(&cpc_non_mmio_lock);
-+
-+	for (i = 0; i < nr_regs; i++) {
-+		struct cpc_register_resource *reg = &cpc_desc->cpc_regs[i];
-+		struct cpc_non_mmio_node *match, *node;
-+		struct rb_root_cached *tree;
-+		u8 space_id;
-+		u64 size;
-+
-+		if (!CPC_SUPPORTED(reg) || reg->type != ACPI_TYPE_BUFFER)
-+			continue;
-+
-+		space_id = reg->cpc_entry.reg.space_id;
-+		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM)
-+			continue;
-+
-+		if (pcc_ss_id < 0) {
-+			ret = -EINVAL;
-+			goto out_unregister;
-+		}
-+
-+		node = &cpc_desc->non_mmio_nodes[i];
-+		size = cpc_non_mmio_access_size(reg);
-+		node->start = reg->cpc_entry.reg.address;
-+		node->last = node->start + size - 1;
-+		node->desc = cpc_desc;
-+		node->reg_idx = i;
-+		node->space_id = space_id;
-+		node->pcc_ss_id = pcc_ss_id;
-+		tree = cpc_non_mmio_tree(space_id, node->pcc_ss_id);
-+
-+		match = cpc_non_mmio_itree_iter_first(tree, node->start,
-+						      node->last);
-+		while (match) {
-+			ret = cpc_validate_non_mmio_pair(node, match);
-+			if (ret)
-+				goto out_unregister;
-+
-+			match = cpc_non_mmio_itree_iter_next(match, node->start,
-+							     node->last);
-+		}
-+
-+		cpc_non_mmio_itree_insert(node, tree);
-+		node->registered = true;
-+	}
-+
-+	mutex_unlock(&cpc_non_mmio_lock);
-+	return 0;
-+
-+out_unregister:
-+	cpc_unregister_non_mmio_desc_locked(cpc_desc);
-+	mutex_unlock(&cpc_non_mmio_lock);
-+	return ret;
-+}
-+
-+static void cpc_unregister_non_mmio_desc(struct cpc_desc *cpc_desc)
-+{
-+	if (!cpc_desc->non_mmio_nodes)
-+		return;
-+
-+	mutex_lock(&cpc_non_mmio_lock);
-+	cpc_unregister_non_mmio_desc_locked(cpc_desc);
-+	mutex_unlock(&cpc_non_mmio_lock);
-+}
-+
- static void cpc_mark_rmw_lock_users(struct cpc_desc *cpc_desc)
- {
- 	int i;
-@@ -797,6 +947,7 @@ static void cppc_free_desc(struct cpc_desc *cpc_ptr)
- {
- 	unsigned int i;
+@@ -607,7 +610,8 @@ static int cpc_validate_non_mmio_pair(const struct cpc_non_mmio_node *a,
+ 	    a->last == b->last)
+ 		return 0;
  
-+	cpc_unregister_non_mmio_desc(cpc_ptr);
- 	cpc_unregister_sysmem_desc(cpc_ptr);
+-	name = "PCC";
++	name = a->space_id == ACPI_ADR_SPACE_PLATFORM_COMM ?
++	       "PCC" : "SystemIO";
+ 	pr_err("CPU%d: %s _CPC register %u conflicts with CPU%d register %u\n",
+ 	       a->desc->cpu_id, name, a->reg_idx, b->desc->cpu_id,
+ 	       b->reg_idx);
+@@ -662,10 +666,11 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
+ 			continue;
  
- 	for (i = 2; i < cpc_ptr->num_entries; i++) {
-@@ -1640,6 +1791,10 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 	if (ret)
- 		goto out_free;
+ 		space_id = reg->cpc_entry.reg.space_id;
+-		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM)
++		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM &&
++		    space_id != ACPI_ADR_SPACE_SYSTEM_IO)
+ 			continue;
  
-+	ret = cpc_register_non_mmio_desc(cpc_ptr, pcc_subspace_id);
-+	if (ret)
-+		goto out_free;
-+
- 	/* Everything looks okay */
- 	pr_debug("Parsed CPC struct for CPU: %d\n", pr->id);
+-		if (pcc_ss_id < 0) {
++		if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM && pcc_ss_id < 0) {
+ 			ret = -EINVAL;
+ 			goto out_unregister;
+ 		}
+@@ -677,7 +682,8 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
+ 		node->desc = cpc_desc;
+ 		node->reg_idx = i;
+ 		node->space_id = space_id;
+-		node->pcc_ss_id = pcc_ss_id;
++		node->pcc_ss_id = space_id == ACPI_ADR_SPACE_PLATFORM_COMM ?
++				      pcc_ss_id : 0;
+ 		tree = cpc_non_mmio_tree(space_id, node->pcc_ss_id);
  
-@@ -1657,6 +1812,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 			"acpi_cppc");
- 	if (ret) {
- 		per_cpu(cpc_desc_ptr, pr->id) = NULL;
-+		cpc_unregister_non_mmio_desc(cpc_ptr);
- 		cpc_unregister_sysmem_desc(cpc_ptr);
- 		kobject_put(&cpc_ptr->kobj);
- 		goto out_pcc_put;
-@@ -1700,6 +1856,7 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
- 	pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, pr->id);
- 	per_cpu(cpc_desc_ptr, pr->id) = NULL;
- 	kobject_del(&cpc_ptr->kobj);
-+	cpc_unregister_non_mmio_desc(cpc_ptr);
- 	cpc_unregister_sysmem_desc(cpc_ptr);
- 
- 	pcc_data_put(pcc_ss_id);
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index c4f47c312054..dbcd25878ab6 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -78,6 +78,7 @@ struct cpc_register_resource {
- };
- 
- struct cpc_sysmem_node;
-+struct cpc_non_mmio_node;
- 
- /* Container to hold the CPC details for each CPU */
- struct cpc_desc {
-@@ -91,6 +92,7 @@ struct cpc_desc {
- 	struct cpc_register_resource cpc_regs[MAX_CPC_REG_ENT];
- 	struct acpi_psd_package domain_info;
- 	struct cpc_sysmem_node *sysmem_nodes;
-+	struct cpc_non_mmio_node *non_mmio_nodes;
- 	struct kobject kobj;
- };
- 
+ 		match = cpc_non_mmio_itree_iter_first(tree, node->start,
 -- 
 2.34.1
 
