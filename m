@@ -1,125 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6668347BDB;
-	Sat,  8 Aug 2026 13:37:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50C914503B
+	for <linux-pm@vger.kernel.org>; Sat,  8 Aug 2026 15:06:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786196245; cv=none; b=KHwffd3dTwjHVzL1tvRgEPAzKdRFWL7E+2rY0finJW1efH06hOHzsTFn2bH895Ou+L9E/zHdEcssxP4rj9UuKajM6gGw+FjQtuMfAdhn9uOCssy0mm2bQmWQ60D3s0O5WXpsvX+F+3HORRIvNDdba4WKg2OXVCV/gryi8zDA2gw=
+	t=1786201590; cv=none; b=iTpkR54o051Ayqrq/2/UU9oe+TUlvjejuueVJ+Jcj7ba2NPNfFzfvgo0mC2+JMvFjDCZSeNcNICSLG/wC2itfwayIBP/Fs/iSoL+Cp8FO6Bi8+godnRh5DiQjVxQKOF8xREVi4nATQiEhrKGbZysO7cFXJuI0qfb9WorckRIrnQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786196245; c=relaxed/simple;
-	bh=tpHJYZNxf2nYrtj7FDtPjnf+Jx1PWTLozsVVZ+lcDkk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sRidIQRE0/5HwpEuV2A+0WWSSy9FwBkWKaoJVQpAbW5Qbyl1UFNhxBgZ96XTBxL9CrxVMcSsxMajj7B4gMjO+yZVwDCumSfvDTGpcMNutsqLODUF23IowAJlFQZLT7khZULFzuj8DaKFsuMuUxPVA/AdeoYkmvHnQ/C5RJtbhYA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FUjnV6vG; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786201590; c=relaxed/simple;
+	bh=PPYPzJX9a4B5NH2AzDQdzEGk/UgM6BOz7z8ralQXwtA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=XdY2DP0jMHnxlti6x4tGukVejs88C4PwqOW3pGvFTgBWOsYfhb/NXnvVlAA+S5HQWv0NwTsJLxoWG5+VMO9hbAmbaP2kyEiqt7OM1+//IQzVcL0rsdnpddjXSFJjN8nVIiaCTF3UuLiTHOtjo/VySsoYqZxIE/7FBZ4SDRuqnTM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=g2Y+JT9f; arc=none smtp.client-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FUjnV6vG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDA231F000E9;
-	Sat,  8 Aug 2026 13:37:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786196244;
-	bh=kK6ttjBVpFTnDiEcxRQNzQgAOeQ3lyUy8TS5HJIHKGc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=FUjnV6vGRgB1RsW1v/7L9bM6zLztqFy9wFzHM2wBcHZzoqeNLyQs6uFwUTnS0Puc7
-	 FYhtmEqyRaxJdgiu4aBgAUlJ0p3lJG5SDc74W5VBm652s6OSsQsTwDmE/DOmvXkAla
-	 9XIDPit8vqjEDmXkTY715O0YM/ZzngcIbCDE/GXAlOxQpO63heT5gVWdzAsDu0AxT3
-	 eUmR62IfKIbk7toyLyQfDQhzFhH6n1K8+0na/+3+BtrXMjTmCIn2W+WAUY5ky+dEg8
-	 v/+qMJT4qOfZgwGaOLSx7me+0Pu3xgkN0pKl0GatFhk9Lqo24ACkC1e1IjmMrmc0Ot
-	 PXzpPTRpcMmEw==
-Message-ID: <011bb1d7-51af-4ec7-a11a-c268d86c00e9@kernel.org>
-Date: Sat, 8 Aug 2026 15:37:20 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="g2Y+JT9f"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4995b0343c1so4419805e9.3
+        for <linux-pm@vger.kernel.org>; Sat, 08 Aug 2026 08:06:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786201587; x=1786806387; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=W2ll9eOek77lqJYz2Lwuo/2xHZKLi6mWDDbbpXtd1VU=;
+        b=g2Y+JT9f3sCfsm/iuwtJG/5lA2WgJyg8rkD+1/FlO/gBNo/BCgcJSGaGGdwwV0ItL0
+         KLuIQkAb0GCfOGG3CruMkprG0DH0WJO7saIaggVMQaBCG9ousfHF/3IA6j25DUIXY1hv
+         AQNtulv8pCkNxUK4TCCh6le2yrqkZlWNPzUMjU6fnzm8rfSZGo27+dXov4KIMtuBTORy
+         F2Bw81Bubs57Bq+oB8QVXZmWvb9Dz9mFrFXL9HPJETaJy4W0ONLf2GUqexHtNR4vQX2Y
+         IBszMF3t2WIvb6khFrSa5YFdEwAun19wuvFfObFy8beTJPlRPV9EWog809ydymRwhSWp
+         EHuw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786201587; x=1786806387;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=W2ll9eOek77lqJYz2Lwuo/2xHZKLi6mWDDbbpXtd1VU=;
+        b=UeKu3b3k4XQJOJRIjs2rVW80WKSJgkVhxuQ4GuyiOgQbXiR+9o3CBaLn0wD7ZMPNiI
+         ZDTHoh+L8aJ6pwBtPJwMCMUEFAjmPKsoQtIk3cxicC6d+Cqmq9LALZdLbPWEUiHQUfe3
+         s10jYKKSTUKtTOyTlDL+gAxiWiv/wrCHi7A1vUSlG4aaQq8kOF0Y3VJuX8Im2BlntFVG
+         viMCf7ycMUXXIGJo8PyAjOIguA8+0Jxtzp44x5O+qkT49xjbtOecCr+dnrC5wUph5oSC
+         rSNBq1lhIbpHjRhWQZu7FaC1Nk/TrI2dgqGdYGP3+xWNTUI8zbbRxlXuSLcmj2DV9CVn
+         c/CQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rpvyg/b5lptLB3tsczn45XC1R9q9jd9aQJUu+OJkbBLhi9FWFJaPnstrYanvcIpQWvLuG+UzSLz1Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx1OhH0YiRCIbIYR5Qy/cTMnWTL8ZQblLX+mmFQwulW7jQywGkq
+	PfR43JG15+qDmfFplImYcQV9wYYqkHkbWT6F7IEznXPpaJdUSUqAIvT3
+X-Gm-Gg: AR+sD129bw7oaLfC/XOUaqBHEq78OSbj8UfAlY+vaZXR39/9XGUCvJCnofLISi38DoL
+	fvrLl2O7taY+YX5fLcd717Cywy+yh9KKRr/SRhL0GR0x+R0JySFKnhz9RK/wTdARwnFqglDAom3
+	IykuFofQryJ7cF9QvIE6twY5e3Us8GgIcMpTAQiGOJRnivoqqYPLDbaXhsr74bRW6DHnxwG0zKe
+	BlSrALTMVECgrU+fINH5QMKZ/gkyFFf+nRX1+5x67t7sRewPfYobsrG2Lluh0VBgj6oQvMe5a3/
+	0U1sAFR4lDnYwgYzgG4VgCeUO14kIUCetJq+gYlQnTkhsKAW/k6OrDt1eVc1Dg4zFFnQ2fCCkyK
+	TLUOoOq1fnJhtzPMk/KVuGLz+EtLYTkHXNn6d+uUv9w7+n/p5vAkqXkTYL5QldhZ0P3EXD4so6Z
+	txJcZhw44z2DqObJ7Yxdns/qlIe63y2FskBFdf7vLc1BGYti0IpdPB5eckDKAYpGrAp/ist83MS
+	qR66LBJcyl08DFarRHq3UlUtP+LzOMxGTjSNQYkXLd+/LXanra7vtRpcH2z8n07GFp6RL3VNd/B
+	gdQkJJfFNy+1jfrFZPwXrOngA+l653+VeJzSboblVP5F8w==
+X-Received: by 2002:a05:600c:4594:b0:499:5f7a:7ea2 with SMTP id 5b1f17b1804b1-4995f7a7ec4mr138657645e9.12.1786201587163;
+        Sat, 08 Aug 2026 08:06:27 -0700 (PDT)
+Received: from MacBook-Pro-von-Karl.localdomain (dynamic-077-007-004-134.77.7.pool.telefonica.de. [77.7.4.134])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-480021e7b3fsm17000478f8f.20.2026.08.08.08.06.25
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sat, 08 Aug 2026 08:06:26 -0700 (PDT)
+From: Karl Mehltretter <kmehltretter@gmail.com>
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+	Brian Masney <bmasney@redhat.com>,
+	linux-pm@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] pmdomain: mediatek: mfg: initialize prev_o in mtk_mfg_attach_dev()
+Date: Sat,  8 Aug 2026 17:05:06 +0200
+Message-Id: <20260808150506.78534-1-kmehltretter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] Documentation: sysfs-class-power: Update Long_Life
- description
-To: "Derek J. Clark" <derekjohn.clark@gmail.com>,
- Sebastian Reichel <sre@kernel.org>
-Cc: "Pierre-Loup A . Griffais" <pgriffais@valvesoftware.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-api@vger.kernel.org
-References: <20260803210720.23844-1-derekjohn.clark@gmail.com>
-From: Hans de Goede <hansg@kernel.org>
-Content-Language: en-US, nl
-In-Reply-To: <20260803210720.23844-1-derekjohn.clark@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi Derek,
+mtk_mfg_attach_dev() reads prev_o on the first iteration of its loop,
+in "if (prev_o && prev_o->freq == o->freq)", before prev_o is assigned
+at the end of the loop body. On that first iteration, evaluating prev_o
+reads an indeterminate value. If it is non-NULL, the condition
+dereferences a stale or invalid pointer, potentially faulting or
+incorrectly skipping the first OPP.
 
-On 3-Aug-26 23:07, Derek J. Clark wrote:
-> While adding charge limiting support to the Lenovo WMI drivers, there
-> was some back and forth about whether charge_types or
-> charge_control_end_threshold was the appropriate attribute to expose a
-> battery charge limiting toggle that is fixed in the BIOS. The confusion
-> arose because the charge_control_end_threshold description closely
-> matches the functional change the hardware is making, while the
-> charge_types functionality better suits the actual an on/off toggle that
-> occurs in the BIOS. This specific scenario is not explicitly enumerated
-> in the documentation, though it is fairly common.
-> 
-> Given that the original intention was to use it this way[1],[2], and that
-> the samsung-laptop[3], ideapad-laptop[4], and lenovo-wmi-other[5] drivers
-> all use the convention of charge_types with an exposed Long_Life and
-> Standard value for this, codify it in the Documentation to avoid confusion
-> in the future.
-> 
-> [1] https://lore.kernel.org/linux-pm/49993a42-aa91-46bf-acef-4a089db4c2db@redhat.com/
-> [2] https://lore.kernel.org/platform-driver-x86/20241209204051.8786-1-hdegoede@redhat.com/
-> [3] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=de2884c6cdd3d133704ce37393590dd1c761500c
-> [4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=da8f2708f9b69707f4efeb432a18395e46b4666f
-> [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ca8fc065b88b327acbfdc33454efea391639716
-> 
-> Suggested-by: Hans de Goede <hansg@kernel.org>
-> Signed-off-by: Derek J. Clark  <derekjohn.clark@gmail.com>
+Initialize prev_o to NULL. This matches the intent as well: there is no
+previous OPP to compare against on the first iteration.
 
-Thank you for updating the docs, patch looks good to me:
+Found with Clang's -Wconditional-uninitialized.
 
-Reviewed-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
+Fixes: f08e7a4e8d6ac ("pmdomain: mediatek: Add support for MFlexGraphics")
+Assisted-by: Claude:claude-fable-5
+Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+---
+ drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Regards,
-
-Hans
-
-
-> ---
->  Documentation/ABI/testing/sysfs-class-power | 14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-> index 5641f1fd5fd6..98b389845d1e 100644
-> --- a/Documentation/ABI/testing/sysfs-class-power
-> +++ b/Documentation/ABI/testing/sysfs-class-power
-> @@ -365,9 +365,12 @@ Contact:	linux-pm@vger.kernel.org
->  Description:
->  		Represents a battery percentage level, above which charging will
->  		stop. Not all hardware is capable of setting this to an arbitrary
-> -		percentage. Drivers will round written values to the nearest
-> -		supported value. Reading back the value will show the actual
-> -		threshold set by the driver.
-> +		value, instead providing different minimum, maximum, or step
-> +		values. Drivers will round written values to the nearest supported
-> +		value. Reading back the value will show the actual threshold set
-> +		by the driver. For hardware that only supports a single fixed
-> +		value, use charge_types with a value of "Long Life" (vs "Standard")
-> +		instead'
->  
->  		Access: Read, Write
->  
-> @@ -398,8 +401,9 @@ Description:
->  			when to start and stop charging. Advanced users
->  			can use this to drastically extend battery life.
->  		Long Life:
-> -			The charger reduces its charging rate in order to
-> -			prolong the battery health.
-> +			The charger firmware reduces its charging rate and/or
-> +			maximum charging percentage to a hardware specified
-> +			fixed limit in order to prolong the battery health.
->  		Bypass:
->  			The charger bypasses the charging path around the
->  			integrated converter allowing for a "smart" wall
-
+diff --git a/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c b/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
+index 53bdab66cf157..9a8a38d98cce7 100644
+--- a/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
++++ b/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
+@@ -657,7 +657,7 @@ static int mtk_mfg_attach_dev(struct generic_pm_domain *pd, struct device *dev)
+ 	struct mtk_mfg *mfg = mtk_mfg_from_genpd(pd);
+ 	struct dev_pm_opp_data *so = mfg->stack_opps;
+ 	struct dev_pm_opp_data *go = mfg->gpu_opps;
+-	struct dev_pm_opp_data *prev_o;
++	struct dev_pm_opp_data *prev_o = NULL;
+ 	struct dev_pm_opp_data *o;
+ 	int i, ret;
+ 
+-- 
+2.53.0
