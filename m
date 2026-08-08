@@ -1,161 +1,147 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CC0EE3B19CF;
-	Sat,  8 Aug 2026 08:28:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7938F414A13;
+	Sat,  8 Aug 2026 13:08:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786177713; cv=none; b=KB2Zi0VdD7kMcZmHMZ4meVS+2DNMGncu3Ze3+PWBLL0+Wl0fO/N6AwcTWXQy8kUm+OuIyNtO26Pr6ZAFOVFsw91yZTpYufhm99pShzDZDFERLBVl5KriX8nURfoyEMv0kmzAs6/3dZLbZoLTakmTzOu3HetqEWHAmbcxA+b9fu8=
+	t=1786194494; cv=none; b=ONJoJt7NfnO2As9EvENHhVmmf3xW/Wyt+EOX+bbbTKJLwe2L73/RJBKjc4meBHz8OOWy91kuA7YnRSFKKSbGC//6EPFm+NQsDkFoyOEzSjNann94g+Do99/l5gPx/4njFIhzc2uUl/CvA9NHdXspDX1tgyeqbrAMdBLiJB22CXI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786177713; c=relaxed/simple;
-	bh=x2W/qudr6wfVbY9UCho1t8cvHsFS/wHJFGI6BbnPIe0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=U7Z8yYxhpPLBp4SIGwBfWzqIlTRR0V0g+C+c94Ac1FcHYcKY7cqZ8qFUVpGMU2eWFKod/PchNp4c5MkpRHxISbrxi4UtF9imN/DYvp773hdnT7UhuqR9mwxRKMAUXCnTnSdUMaymrs2lgozfHDVpm7nFj2dIru/TEjZqRWTli9I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=BjHoCqlr; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1786194494; c=relaxed/simple;
+	bh=GwhrTKCAlSl7hU2RyOnT+4NutiWEf9BBN09MOKeCbR4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CcWmJVN3rjTx3mw+Ucd/LaiKugQq8Uw3fI2EHvJ+/sanFivw6xbJTnR/cSR42eGFOHbyKlBdb+04dDLKZPxWlZ+MkmuWvpaj+iwm86zPxp4HLdc4ufOyHbOsiRtvydxSun2ryiFwoTEiunxtWqCl4mvS4rh5QIXYk3/zpeVy0pI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=Vf8gTwkH; arc=none smtp.client-ip=185.246.85.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="BjHoCqlr"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6D1201BF3;
-	Sat,  8 Aug 2026 01:28:27 -0700 (PDT)
-Received: from e127648.arm.com (unknown [10.57.5.149])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 11EC93F9A2;
-	Sat,  8 Aug 2026 01:28:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786177711; bh=x2W/qudr6wfVbY9UCho1t8cvHsFS/wHJFGI6BbnPIe0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BjHoCqlrGreoykr8fxv9gAjT94BvjYbSoxr59EjPv8LU8yh5voZaZnqEQdH6eQj0O
-	 FJs+flX77qBoBf/qljS7ORf7anbdG51I/oOPvfp2jjep7vZ5N5Y//QW3X83y40dR+b
-	 cVZiW/Tw2DVx2Pkw8P/tGuyRqmFv+vpp8h8AEEWs=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Len Brown <lenb@kernel.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v2 15/15] ACPI: CPPC: Clear Performance Limited without a stale read
-Date: Sat,  8 Aug 2026 09:26:44 +0100
-Message-Id: <20260808082644.1251332-16-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260808082644.1251332-1-christian.loehle@arm.com>
-References: <20260808082644.1251332-1-christian.loehle@arm.com>
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="Vf8gTwkH"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 3B25C4E41148;
+	Sat,  8 Aug 2026 13:08:01 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id DE4EF6045E;
+	Sat,  8 Aug 2026 13:08:00 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 4624211C484AF;
+	Sat,  8 Aug 2026 15:07:52 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1786194475; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=ClGEAPMJrUrIAPf3I4J7siyiOrLD1L2Dp/wz05pGPJM=;
+	b=Vf8gTwkHq6yQajcRFlm+fSn+kLxl8YAnX3+QoVivp8YugpNiQuLprPFY0RKx0Z4rIEC+sh
+	A0xu3gKObPE2BUbcyZ4nYmftKZ6YTNlNli0Qb6Jlzdz2GOi5PNp+/5DtFRoNs+7Aqai+bw
+	ID13oTWQxwsIJSKQhgd64sECxqNMBAfMk684IdUiFHVnH/9PMgipv06icQ3j221jgLck10
+	HtQH1UKa1NFObu++mIXJUCd2sqrsWV9Ji+cSZfdyVbC4gApjyTGVqbuNfXsOuY+DckFy0K
+	Sqfe+Jf4S3egLOz7z+O2U1sn+duUDVPFU10ihjN5MTzLH/WhxLedSHyJg98K6g==
+Date: Sat, 8 Aug 2026 15:07:52 +0200
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Frank Li <Frank.li@oss.nxp.com>
+Cc: Adrian Hunter <adrian.hunter@intel.com>, Frank.Li@nxp.com,
+	akhilrajeev@nvidia.com, mukesh.savaliya@oss.qualcomm.com,
+	rafael@kernel.org, linux-i3c@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH V5 07/14] i3c: master: Fix potential UAF in
+ i3c_device_match()
+Message-ID: <2026080813075281786283@mail.local>
+References: <20260807145638.168865-1-adrian.hunter@intel.com>
+ <20260807145638.168865-8-adrian.hunter@intel.com>
+ <anY1dU59JIvV-6BB@lizhi-Precision-Tower-5810>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <anY1dU59JIvV-6BB@lizhi-Precision-Tower-5810>
+X-Last-TLS-Session-Version: TLSv1.3
 
-The Performance Limited status bits are sticky and write-zero-to-clear.
-ACPI 6.6 Section 8.4.6.1.3.2 also requires both entities to use interlocked
-accesses.
+On 07/08/2026 15:43:49-0400, Frank Li wrote:
+> On Fri, Aug 07, 2026 at 05:56:31PM +0300, Adrian Hunter wrote:
+> > i3c_device_match() dereferences i3cdev->desc without holding the bus
+> > normal-use lock.  Since the descriptor pointer can be replaced
+> > concurrently, the dereference can race with descriptor replacement and
+> > result in a use-after-free.
+> >
+> > Protect access to i3cdev->desc with the normal-use lock.  While the lock
+> > is held, the descriptor is guaranteed to remain valid, so the NULL check
+> > is also unnecessary and can be removed.
+> >
+> > This change depends on "i3c: master: Fix recursive locking during device
+> 
+> Remove "This change",  just depend on ...
+> 
+> > registration".  Prior to that change, taking the normal-use lock in
+> > i3c_device_match() could recurse on bus->lock during device
+> > registration.
+> >
+> > This fixes "i3c: master: match I3C device through DT and ACPI".
+> 
+> It should be fixes tag, but this patch still not in linus tree yet, not
+> sure how alex handle this.
+> 
 
-cppc_set_perf_limited() currently reads the register, computes a new value,
-and writes it in a separate transaction. If the platform reports another
-excursion between those transactions, the stale write can clear that new
-event.
+I've added the Fixes tag, this works as long as the tree isn't rebased
+before send the PR to Linus.
 
-Write zero to the requested bits and one to the other defined status bits
-directly. Keep reserved bits zero as required for hardware status registers
-by ACPI 6.6 Section 4.6.1. This removes the stale read window.
+> Alex:
+> 	Maybe rebase i3c tree,
+> 
+> move "i3c: master: Fix recursive locking during device" before
+> "i3c: master: match I3C device through DT and ACPI"
+> 
+> Then squash this into "i3c: master: match I3C device through DT and ACPI"
+> 
+> Or simple ignore "this fixes ..." sentense.
+> 
+> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> 
+> Frank
+> 
+> >
+> > Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+> > ---
+> >
+> >
+> > Changes in V4 and V5:
+> >
+> > 	None
+> >
+> > Changes in V3:
+> >
+> > 	New patch
+> >
+> >
+> >  drivers/i3c/master.c | 4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/i3c/master.c b/drivers/i3c/master.c
+> > index ee771ac0b203..83e04a2c202a 100644
+> > --- a/drivers/i3c/master.c
+> > +++ b/drivers/i3c/master.c
+> > @@ -347,8 +347,10 @@ static int i3c_device_match(struct device *dev, const struct device_driver *drv)
+> >  	i3cdev = dev_to_i3cdev(dev);
+> >  	i3cdrv = drv_to_i3cdrv(drv);
+> >
+> > -	if (i3cdev->desc && i3cdev->desc->boardinfo)
+> > +	i3c_bus_normaluse_lock(i3cdev->bus);
+> > +	if (i3cdev->desc->boardinfo)
+> >  		static_addr_method = i3cdev->desc->boardinfo->static_addr_method;
+> > +	i3c_bus_normaluse_unlock(i3cdev->bus);
+> >
+> >  	/*
+> >  	 * SETAASA-based devices need not always have a matching ID since
+> > --
+> > 2.53.0
+> >
+> 
+> -- 
+> linux-i3c mailing list
+> linux-i3c@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-i3c
 
-Reject SystemMemory descriptions which require read-modify-write to
-preserve the containing access unit, because the per-descriptor spinlock
-cannot interlock that RMW with platform updates. Also reject 64-bit
-SystemMemory descriptions on 32-bit kernels, where generic readq()/writeq()
-may be split into two 32-bit operations and cannot provide the required
-portable interlocked access. A naturally aligned full-width QWord remains
-supported on 64-bit kernels, where the architecture provides a native
-64-bit MMIO accessor.
-
-Performance Limited status is not required for CPPC control. If firmware
-describes it using an access that Linux cannot interlock safely, disable
-that status register instead of rejecting the processor's otherwise usable
-_CPC package.
-
-Fixes: 13c45a26635f ("ACPI: CPPC: add APIs and sysfs interface for perf_limited")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/acpi/cppc_acpi.c | 33 ++++++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index fbbc71671717..426e94434376 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -414,6 +414,13 @@ static int cpc_validate_sysmem_reg(const struct cpc_desc *cpc_desc,
- 		       cpc_desc->cpu_id, cpc_desc->version, name);
- 		return -EINVAL;
- 	}
-+	if (reg_idx == PERF_LIMITED &&
-+	    (gas->bit_offset || gas->bit_width != access_width ||
-+	     (access_width == 64 && !IS_ENABLED(CONFIG_64BIT)))) {
-+		pr_err("CPU%d: Performance Limited register cannot use an interlocked SystemMemory access\n",
-+		       cpc_desc->cpu_id);
-+		return -EINVAL;
-+	}
- 
- 	return 0;
- 
-@@ -441,6 +448,14 @@ static int cpc_resolve_unsupported(struct cpc_desc *cpc_desc,
- 		if (!(unsupported & BIT(i)))
- 			continue;
- 
-+		/* CPPC control does not depend on Performance Limited status. */
-+		if (i == PERF_LIMITED) {
-+			pr_warn("CPU%d: ignoring inaccessible Performance Limited register\n",
-+				cpc_desc->cpu_id);
-+			cpc_disable_reg(cpc_desc, i);
-+			continue;
-+		}
-+
- 		if (i == DESIRED_PERF && cpc_immutable_autonomous(cpc_desc)) {
- 			pr_warn("CPU%d: ignoring inaccessible Desired Performance register in autonomous mode\n",
- 				cpc_desc->cpu_id);
-@@ -3080,9 +3095,6 @@ EXPORT_SYMBOL_GPL(cppc_get_perf_limited);
-  */
- int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
- {
--	u64 current_val, new_val;
--	int ret;
--
- 	/* Only bits 0 and 1 are valid */
- 	if (bits_to_clear & ~CPPC_PERF_LIMITED_MASK)
- 		return -EINVAL;
-@@ -3090,14 +3102,13 @@ int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
- 	if (!bits_to_clear)
- 		return 0;
- 
--	ret = cppc_get_perf_limited(cpu, &current_val);
--	if (ret)
--		return ret;
--
--	/* Clear the specified bits */
--	new_val = current_val & ~bits_to_clear;
--
--	return cppc_set_reg_val(cpu, PERF_LIMITED, new_val);
-+	/*
-+	 * Performance Limited is write-zero-to-clear.  Write one to the other
-+	 * defined sticky bits so a concurrently reported event is not cleared
-+	 * using a value obtained by an earlier, separate read transaction.
-+	 */
-+	return cppc_set_reg_val(cpu, PERF_LIMITED,
-+				CPPC_PERF_LIMITED_MASK & ~bits_to_clear);
- }
- EXPORT_SYMBOL_GPL(cppc_set_perf_limited);
- 
 -- 
-2.34.1
-
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
