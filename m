@@ -1,104 +1,125 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBC72355814
-	for <linux-pm@vger.kernel.org>; Sat,  8 Aug 2026 13:10:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6668347BDB;
+	Sat,  8 Aug 2026 13:37:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786194608; cv=none; b=YwRGAQgBPSSTWJ7wcFMcgOcsvKLafhu5ElAlGudmFsiQ4/3B2HVbiCc3E9wogIDwlNAbAwecPvAQWT9f0d0mRFlfje3IObNsvBiyy3h+pXyyDvksn7P6gaqcvAEGszHojhBD4yQf0Z7Fa4vc6L+Y7rSXVO0IxmrDA2R8Y+WSc5Y=
+	t=1786196245; cv=none; b=KHwffd3dTwjHVzL1tvRgEPAzKdRFWL7E+2rY0finJW1efH06hOHzsTFn2bH895Ou+L9E/zHdEcssxP4rj9UuKajM6gGw+FjQtuMfAdhn9uOCssy0mm2bQmWQ60D3s0O5WXpsvX+F+3HORRIvNDdba4WKg2OXVCV/gryi8zDA2gw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786194608; c=relaxed/simple;
-	bh=fr3bS5GlrTWlBf7aT/KNHnWHhjka8Q/sSUca+lFQC5s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GxuToZae9vOx0dutZFZzV38t6bRSwLwD8E9AgmGy1ICQmMmiyFNm8ivWoIn0jWhV5QOosZp7ZMD9Indb8Mj/5ACo0WetfI6p4rNJKLw7xEW31E/0iMClBcSLUlbx0PLlQymXU5G/zu88qz+IbcngclJpYHYNvmt2Zv2IWSlo/Ho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=SRd9t2ad; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1786196245; c=relaxed/simple;
+	bh=tpHJYZNxf2nYrtj7FDtPjnf+Jx1PWTLozsVVZ+lcDkk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sRidIQRE0/5HwpEuV2A+0WWSSy9FwBkWKaoJVQpAbW5Qbyl1UFNhxBgZ96XTBxL9CrxVMcSsxMajj7B4gMjO+yZVwDCumSfvDTGpcMNutsqLODUF23IowAJlFQZLT7khZULFzuj8DaKFsuMuUxPVA/AdeoYkmvHnQ/C5RJtbhYA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FUjnV6vG; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="SRd9t2ad"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 185D04E41148;
-	Sat,  8 Aug 2026 13:10:02 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id C3C326045E;
-	Sat,  8 Aug 2026 13:10:01 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 2D95B11C484B0;
-	Sat,  8 Aug 2026 15:09:54 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1786194597; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=d6Ombx8W2xUsoJI4UirYQflZ8xZfFceChNXFr4Zl2Wg=;
-	b=SRd9t2adlKOOM5gJobjr7CUU7eoDzspr4QqX+OzexssJTVz1APrfCVp4oRR657bVbdMuc0
-	G9vtTIlPbKPcqdN0C0QPsIPVewFo3LGaPYhn4Du4/1z3kkqUJVgwANhWclukAIanqH6Gmj
-	EY3u6QuPmh5N+ObS6I+PRYf3ufkiYkm/jUPK8Bl8gSAWYF9/9SC6xtH9gCKNyyHdfEnTC0
-	EjcW6VRfMR17dlMwy7Yiq8F15bojmbs8vqaA1TjLPZXGtPijwu+/Fe1VFIQiIbsPKLi8zu
-	nVzFgM536D6uQDOpTGpS+ciSkyJt4Eys/nSWHJoqmARzn3Warvum4qzFx/2iWA==
-Date: Sat, 8 Aug 2026 15:09:54 +0200
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Frank.Li@nxp.com, akhilrajeev@nvidia.com,
-	mukesh.savaliya@oss.qualcomm.com, rafael@kernel.org,
-	linux-i3c@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH V5 00/14] i3c: Support IBI-based system wakeup
-Message-ID: <178619453324.3720475.10667925428274179741.b4-ty@b4>
-References: <20260807145638.168865-1-adrian.hunter@intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FUjnV6vG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDA231F000E9;
+	Sat,  8 Aug 2026 13:37:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786196244;
+	bh=kK6ttjBVpFTnDiEcxRQNzQgAOeQ3lyUy8TS5HJIHKGc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=FUjnV6vGRgB1RsW1v/7L9bM6zLztqFy9wFzHM2wBcHZzoqeNLyQs6uFwUTnS0Puc7
+	 FYhtmEqyRaxJdgiu4aBgAUlJ0p3lJG5SDc74W5VBm652s6OSsQsTwDmE/DOmvXkAla
+	 9XIDPit8vqjEDmXkTY715O0YM/ZzngcIbCDE/GXAlOxQpO63heT5gVWdzAsDu0AxT3
+	 eUmR62IfKIbk7toyLyQfDQhzFhH6n1K8+0na/+3+BtrXMjTmCIn2W+WAUY5ky+dEg8
+	 v/+qMJT4qOfZgwGaOLSx7me+0Pu3xgkN0pKl0GatFhk9Lqo24ACkC1e1IjmMrmc0Ot
+	 PXzpPTRpcMmEw==
+Message-ID: <011bb1d7-51af-4ec7-a11a-c268d86c00e9@kernel.org>
+Date: Sat, 8 Aug 2026 15:37:20 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260807145638.168865-1-adrian.hunter@intel.com>
-X-Last-TLS-Session-Version: TLSv1.3
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] Documentation: sysfs-class-power: Update Long_Life
+ description
+To: "Derek J. Clark" <derekjohn.clark@gmail.com>,
+ Sebastian Reichel <sre@kernel.org>
+Cc: "Pierre-Loup A . Griffais" <pgriffais@valvesoftware.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-api@vger.kernel.org
+References: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+From: Hans de Goede <hansg@kernel.org>
+Content-Language: en-US, nl
+In-Reply-To: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Fri, 07 Aug 2026 17:56:24 +0300, Adrian Hunter wrote:
-> 	Note: all patches except patch 7 now have Frank's Rev'd-by
+Hi Derek,
+
+On 3-Aug-26 23:07, Derek J. Clark wrote:
+> While adding charge limiting support to the Lenovo WMI drivers, there
+> was some back and forth about whether charge_types or
+> charge_control_end_threshold was the appropriate attribute to expose a
+> battery charge limiting toggle that is fixed in the BIOS. The confusion
+> arose because the charge_control_end_threshold description closely
+> matches the functional change the hardware is making, while the
+> charge_types functionality better suits the actual an on/off toggle that
+> occurs in the BIOS. This specific scenario is not explicitly enumerated
+> in the documentation, though it is fairly common.
 > 
+> Given that the original intention was to use it this way[1],[2], and that
+> the samsung-laptop[3], ideapad-laptop[4], and lenovo-wmi-other[5] drivers
+> all use the convention of charge_types with an exposed Long_Life and
+> Standard value for this, codify it in the Documentation to avoid confusion
+> in the future.
 > 
-> Intel LPSS I3C controllers support up to two I3C busses and can wake the
-> system from an In-Band Interrupt (IBI) via a PCI PME.  Today that wakeup
-> capability lives only at the PCI function, with no way to express which
-> I3C device is actually responsible for waking the system, and no way for
-> user space to enable or disable wakeup on a per-device basis.
+> [1] https://lore.kernel.org/linux-pm/49993a42-aa91-46bf-acef-4a089db4c2db@redhat.com/
+> [2] https://lore.kernel.org/platform-driver-x86/20241209204051.8786-1-hdegoede@redhat.com/
+> [3] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=de2884c6cdd3d133704ce37393590dd1c761500c
+> [4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=da8f2708f9b69707f4efeb432a18395e46b4666f
+> [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ca8fc065b88b327acbfdc33454efea391639716
 > 
-> [...]
+> Suggested-by: Hans de Goede <hansg@kernel.org>
+> Signed-off-by: Derek J. Clark  <derekjohn.clark@gmail.com>
 
-Applied, thanks!
+Thank you for updating the docs, patch looks good to me:
 
-[01/14] i3c: master: Fix recursive locking during device registration
-        https://git.kernel.org/i3c/c/456f832e5fc2
-[02/14] i3c: Fix unlocked dereference of dev->desc in i3c_device_get_supported_xfer_mode()
-        https://git.kernel.org/i3c/c/8bed7f4fa710
-[03/14] i3c: master: Do not treat master device as a duplicate target
-        https://git.kernel.org/i3c/c/4dc1b3eeba79
-[04/14] i3c: master: Fix use-after-free of master->this
-        https://git.kernel.org/i3c/c/feb0ed76601f
-[05/14] i3c: Make dev->desc locking assumptions explicit
-        https://git.kernel.org/i3c/c/4083d192f6f3
-[06/14] i3c: master: Fix potential UAF in i3c_device_uevent()
-        https://git.kernel.org/i3c/c/e5e8dd2e959f
-[07/14] i3c: master: Fix potential UAF in i3c_device_match()
-        https://git.kernel.org/i3c/c/f44d3b15326c
-[08/14] i3c: master: Support IBI-based wakeup capability
-        https://git.kernel.org/i3c/c/9fd18a865591
-[09/14] i3c: master: Report wakeup events for IBIs
-        https://git.kernel.org/i3c/c/ff2b20f8f1ff
-[10/14] i3c: master: Add helper to query bus wakeup requirements
-        https://git.kernel.org/i3c/c/60ff731f0690
-[11/14] i3c: master: Reject IBI requests from non-IBI-capable devices
-        https://git.kernel.org/i3c/c/087efc8e88e2
-[12/14] i3c: mipi-i3c-hci-pci: Propagate I3C wakeup requirements to PCI
-        https://git.kernel.org/i3c/c/94da8edf849b
-[13/14] i3c: mipi-i3c-hci: Factor out i3c_hci_sysdev()
-        https://git.kernel.org/i3c/c/842e46925ef9
-[14/14] i3c: mipi-i3c-hci: Advertise IBI wakeup capability
-        https://git.kernel.org/i3c/c/1421e948a32a
+Reviewed-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
 
-Best regards,
+Regards,
 
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Hans
+
+
+> ---
+>  Documentation/ABI/testing/sysfs-class-power | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+> index 5641f1fd5fd6..98b389845d1e 100644
+> --- a/Documentation/ABI/testing/sysfs-class-power
+> +++ b/Documentation/ABI/testing/sysfs-class-power
+> @@ -365,9 +365,12 @@ Contact:	linux-pm@vger.kernel.org
+>  Description:
+>  		Represents a battery percentage level, above which charging will
+>  		stop. Not all hardware is capable of setting this to an arbitrary
+> -		percentage. Drivers will round written values to the nearest
+> -		supported value. Reading back the value will show the actual
+> -		threshold set by the driver.
+> +		value, instead providing different minimum, maximum, or step
+> +		values. Drivers will round written values to the nearest supported
+> +		value. Reading back the value will show the actual threshold set
+> +		by the driver. For hardware that only supports a single fixed
+> +		value, use charge_types with a value of "Long Life" (vs "Standard")
+> +		instead'
+>  
+>  		Access: Read, Write
+>  
+> @@ -398,8 +401,9 @@ Description:
+>  			when to start and stop charging. Advanced users
+>  			can use this to drastically extend battery life.
+>  		Long Life:
+> -			The charger reduces its charging rate in order to
+> -			prolong the battery health.
+> +			The charger firmware reduces its charging rate and/or
+> +			maximum charging percentage to a hardware specified
+> +			fixed limit in order to prolong the battery health.
+>  		Bypass:
+>  			The charger bypasses the charging path around the
+>  			integrated converter allowing for a "smart" wall
+
