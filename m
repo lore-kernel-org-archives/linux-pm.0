@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9B81329BD91;
-	Sun,  9 Aug 2026 07:01:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 34D3329B8E1;
+	Sun,  9 Aug 2026 07:18:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786258879; cv=none; b=TZLKOKNEkHkJFAus6o8rBxi0uN334smJwM/jtGLMCB5rh0m7jLOQwTZzsPc5AEf1xabLKDODr/UcGZmmdWpbVI16vBNtACdoKwWIDFh7wk42D2St2EXoKySn2N+BI+Z1nOIeln0hEaVD95hgbudFUtPbeepC55CinFZnb+1OnqQ=
+	t=1786259935; cv=none; b=R9+ngW5WO18QBY9i1syzubepXbReA/BzMxl9GqWGVRpoa03LXwO1m1IVNIYwR7wzlCunJ0pXfrHES1YaNpnDyzac9bCsLd5/5YnxH1Gii5Q/MZ3Et7USNTNr76xi1uUufEqj/QUEhLeKIW1lvLyo+5CtRL/+8IfFoC4wu8sO7nw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786258879; c=relaxed/simple;
-	bh=liX76EDjpuPfqNjDBiQ5/uYqQay7K7uRyw71A3O7odE=;
+	s=arc-20240116; t=1786259935; c=relaxed/simple;
+	bh=z1B8t17SMV/Bwo6gMhiaisUrcwYjmLpcTBK4eZa54PU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nOZgSO4I1+0FTVCbbgsengN6sBytxq0D7hEw9WcbB19s2s8zCw1aDTtqaZI74E+LFavYwUsPhmKQo7q/CjVrXkdH3WzvtYYBH3UCNwHXA8Uwh9SmKf2S/tL2ueJwDbL8cIun7k5FHjbr3x5zRMOA6j4xnzlNuuGeNbVwm9ZqVJQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=rKnUGT7j; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=HKcFNWjcn6IF/np5FjEY76w/kJVswhWK2B+upECn8dWwr4FY7Lqzs1JEus/dWm1PS1RNzXjblIaXueU/ZMkqoFjn1vykQSPP8UgX8Zx/mWmQTfpTH0SubQ+jmEBvkLwuU+2l8wUf9ECwfOvWCC7WYU2BQ9k533k7ICSNC0GavQA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=GF7Qbjaf; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="rKnUGT7j"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="GF7Qbjaf"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CFE3E152B;
-	Sun,  9 Aug 2026 00:01:12 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 81DB6152B;
+	Sun,  9 Aug 2026 00:18:48 -0700 (PDT)
 Received: from [10.57.4.198] (unknown [10.57.4.198])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DF92B3F9A2;
-	Sun,  9 Aug 2026 00:01:13 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A36E33F632;
+	Sun,  9 Aug 2026 00:18:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786258876; bh=liX76EDjpuPfqNjDBiQ5/uYqQay7K7uRyw71A3O7odE=;
+	t=1786259932; bh=z1B8t17SMV/Bwo6gMhiaisUrcwYjmLpcTBK4eZa54PU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=rKnUGT7jdSVCUZ6SfmwwHxkrWx9XG388ljgPHYH4WIGog+2sJG7lt+RDVp+qlO+Ow
-	 LGvZ6C2QRBjZD9j756JoGQlmjKVDp/hVF6KE/Q9+qdxMM/aD8WAvB6jXJXqKAUNXYc
-	 /UYv3IBnfxhucYCzQHWAswNCoLtYyCZJOzggpySw=
-Message-ID: <82ad961e-6b87-482c-bbb1-f63a6974341e@arm.com>
-Date: Sun, 9 Aug 2026 08:01:11 +0100
+	b=GF7Qbjafryzrz6NpqbnGxgHZzyrr6zzKIQE2HKA0OBo15f1Rctf5RgnKXkkblzxZ2
+	 D3sWHEO38Vk3XDGXNEtnBjYS9u8xQLVwQOMWPDyRJA13h+Q62RVpIbSpHJJjgXxX70
+	 srO7vH72BDpmpx+uSAtAdPREsUUD8hpXOi1nn3hE=
+Message-ID: <8831def0-2b6c-477d-8f43-025a4a0cbca2@arm.com>
+Date: Sun, 9 Aug 2026 08:18:47 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 15/15] ACPI: CPPC: Clear Performance Limited without a
- stale read
+Subject: Re: [PATCH v3 00/15] ACPI: CPPC: Fix register access and lifetime
+ bugs
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
@@ -44,128 +44,283 @@ Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
  Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
  Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
  Sudeep Holla <sudeep.holla@arm.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com,
- Sashiko <sashiko-bot@kernel.org>
+ Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com
 References: <20260809062549.1415955-1-christian.loehle@arm.com>
- <20260809062549.1415955-16-christian.loehle@arm.com>
 Content-Language: en-US
 From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260809062549.1415955-16-christian.loehle@arm.com>
+In-Reply-To: <20260809062549.1415955-1-christian.loehle@arm.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
 On 8/9/26 07:25, Christian Loehle wrote:
-> The Performance Limited status bits are sticky and write-zero-to-clear.
-> ACPI 6.6 Section 8.4.6.1.3.2 also requires both entities to use interlocked
-> accesses.
+> First of all, sorry this got so out of hand, initially this was just
+> trying to fix some relatively simple issues found by sashiko in an
+> earlier (unrelated) series.
+> But with me touching more and more code and going through rounds of AI
+> review that kept finding more and more pre-existing issues I've arrived
+> at this.
 > 
-> cppc_set_perf_limited() currently reads the register, computes a new value,
-> and writes it in a separate transaction. If the platform reports another
-> excursion between those transactions, the stale write can clear that new
-> event.
+> This series fixes correctness and robustness issues found while reviewing
+> the CPPC control path. They affect malformed _CPC handling, error
+> propagation, PCC ownership and cleanup, CPC object lifetime, register field
+> access, cross-processor aliases, and Performance Limited clearing.
 > 
-> Write zero to the requested bits and one to the other defined status bits
-> directly. Keep reserved bits zero as required for hardware status registers
-> by ACPI 6.6 Section 4.6.1. This removes the stale read window.
+> Series structure
+> ================
 > 
-> Reject SystemMemory descriptions which require read-modify-write to
-> preserve the containing access unit, because the per-descriptor spinlock
-> cannot interlock that RMW with platform updates. Also reject 64-bit
-> SystemMemory descriptions on 32-bit kernels, where generic readq()/writeq()
-> may be split into two 32-bit operations and cannot provide the required
-> portable interlocked access. A naturally aligned full-width QWord remains
-> supported on 64-bit kernels, where the architecture provides a native
-> 64-bit MMIO accessor.
+> Patches 1-8 are deliberately small, independently useful fixes. They
+> validate the _CPC encoding consumed by cppc-acpi, propagate control-write
+> errors, serialize PCC payload updates, correct 64-bit field masks, and fix
+> descriptor and PCC lifetime handling.
 > 
-> Performance Limited status is not required for CPPC control. If firmware
-> describes it using an access that Linux cannot interlock safely, disable
-> that status register instead of rejecting the processor's otherwise usable
-> _CPC package.
+> Patches 9-15 are the register-layout hardening portion. Geometry validation
+> is more substantial because safe RMW and alias handling depend on the
+> physical access unit, not merely on a logical _CPC entry or _PSD domain.
+> These patches normalize and validate each supported address space before
+> building probe-only physical interval registries. Keeping this work in the
+> same posting gives the complete safety boundary and a single base for
+> review, while each transport and bug retains its own Fixes provenance.
+> Feel free to treat the two parts as independent series, I didn't split it
+> because they're all technically fixes and to get Sashiko review for the
+> whole lot.
 > 
-> Fixes: 13c45a26635f ("ACPI: CPPC: add APIs and sysfs interface for perf_limited")
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
-> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> ---
->  drivers/acpi/cppc_acpi.c | 33 ++++++++++++++++++++++-----------
->  1 file changed, 22 insertions(+), 11 deletions(-)
+> No interval lookup is added to the scheduler hot path. Full-width
+> SystemMemory writes remain lockless. RMW locking remains necessary only for
+> a partial field, where we must preserve the other bits in its access
+> unit. The existing per-descriptor raw lock continues to cover disjoint
+> partial fields within one _CPC package; probe rejects cross-descriptor
+> layouts that it cannot protect.
 > 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 67d7f81a21b7..9afc285c9314 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -414,6 +414,13 @@ static int cpc_validate_sysmem_reg(const struct cpc_desc *cpc_desc,
->  		       cpc_desc->cpu_id, cpc_desc->version, name);
->  		return -EINVAL;
->  	}
-> +	if (reg_idx == PERF_LIMITED &&
-> +	    (gas->bit_offset || gas->bit_width != access_width ||
-> +	     (access_width == 64 && !IS_ENABLED(CONFIG_64BIT)))) {
-> +		pr_err("CPU%d: Performance Limited register cannot use an interlocked SystemMemory access\n",
-> +		       cpc_desc->cpu_id);
-> +		return -EINVAL;
-> +	}
->  
->  	return 0;
->  
-> @@ -441,6 +448,14 @@ static int cpc_resolve_unsupported(struct cpc_desc *cpc_desc,
->  		if (!(unsupported & BIT(i)))
->  			continue;
->  
-> +		/* CPPC control does not depend on Performance Limited status. */
-> +		if (i == PERF_LIMITED) {
-> +			pr_warn("CPU%d: ignoring inaccessible Performance Limited register\n",
-> +				cpc_desc->cpu_id);
-> +			cpc_disable_reg(cpc_desc, i);
-> +			continue;
-> +		}
-> +
->  		if (i == DESIRED_PERF && cpc_immutable_autonomous(cpc_desc)) {
->  			pr_warn("CPU%d: ignoring inaccessible Desired Performance register in autonomous mode\n",
->  				cpc_desc->cpu_id);
-> @@ -3081,9 +3096,6 @@ EXPORT_SYMBOL_GPL(cppc_get_perf_limited);
->   */
->  int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
->  {
-> -	u64 current_val, new_val;
-> -	int ret;
-> -
->  	/* Only bits 0 and 1 are valid */
->  	if (bits_to_clear & ~CPPC_PERF_LIMITED_MASK)
->  		return -EINVAL;
-> @@ -3091,14 +3103,13 @@ int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
->  	if (!bits_to_clear)
->  		return 0;
->  
-> -	ret = cppc_get_perf_limited(cpu, &current_val);
-> -	if (ret)
-> -		return ret;
-> -
-> -	/* Clear the specified bits */
-> -	new_val = current_val & ~bits_to_clear;
-> -
-> -	return cppc_set_reg_val(cpu, PERF_LIMITED, new_val);
-> +	/*
-> +	 * Performance Limited is write-zero-to-clear.  Write one to the other
-> +	 * defined sticky bits so a concurrently reported event is not cleared
-> +	 * using a value obtained by an earlier, separate read transaction.
-> +	 */
-> +	return cppc_set_reg_val(cpu, PERF_LIMITED,
-> +				CPPC_PERF_LIMITED_MASK & ~bits_to_clear);
+> Parsing and control semantics
+> =============================
+> 
+> The parser now validates the package header before indexing it, bounds the
+> BYTE and DWORD Integer forms before conversion, and validates the Generic
+> Register descriptor consumed by cppc-acpi. NumEntries may not exceed the AML
+> package count, but additional trailing package elements are ignored because
+> doing so is safe and preserves compatibility with padded firmware. The parser
+> likewise tolerates trailing ResourceTemplate data instead of imposing a new
+> EndTag compatibility requirement.
+> 
+> Writable controls must be Buffer-encoded registers. Minimum and Maximum
+> Performance are checked as the pair required by ACPI 6.6 Sections
+> 8.4.6.1.2.1 and 8.4.6.1.2.2. Object presence is kept separate from the
+> Integer-zero convention for absent optional fields, so Lowest Performance
+> may retain the valid abstract value zero.
+> 
+> Performance Limited is one deliberate compatibility exception. ACPI lists
+> it as required, but permits a platform with no limiting indication to
+> always return zero, and deployed firmware represents that case with a NULL
+> descriptor. CPPC control does not depend on this status register, so we
+> continue to accept that encoding. A present _CPC package which otherwise
+> fails parsing or initialization now emits an error instead of silently
+> preventing cpufreq registration.
+> 
+> Compound performance and EPP updates propagate errors and perform every
+> fallible non-PCC write before modifying the PCC payload. Updates across
+> address spaces cannot be atomic, but a known non-PCC failure can no longer
+> commit only the PCC portion or leave an unsent value for a later command.
+> 
+> SystemMemory locking and support boundary
+> =========================================
+> 
+> A partial SystemMemory field requires RMW to preserve the rest of its
+> access unit. Commit 60949b7b8054 ("ACPI: CPPC: Fix MASK_VAL() usage") used
+> a per-_CPC lock and noted that a global lock would be needed if physical
+> registers were shared between packages.
+> 
+> ACPI does not make _PSD a physical-register ownership boundary. Rather than
+> put a global raw lock or lookup into the scheduler path, this series makes
+> the cheaper per-descriptor model's assumptions enforceable at probe.
+> 
+> Supported SystemMemory layouts are:
+> 
+>   - naturally aligned 8-, 16-, 32-, and 64-bit access units;
+>   - lockless full-width controls;
+>   - read-only aliases;
+>   - exact full-width writable aliases, including 64-bit aliases on 64-bit
+>     kernels;
+>   - disjoint partial writers within one descriptor, serialized by its
+>     rmw_lock; and
+>   - a partial writer sharing an access unit with a disjoint read-only
+>     field.
+> 
+> Probe rejects overlapping logical fields involving a writer, another field
+> inside a full-width writable access unit, cross-descriptor partial writers,
+> unaligned accesses, and exact writable 64-bit aliases on 32-bit kernels.
+> These layouts were not safely supported by the old per-descriptor lock or
+> generic writeq(); rejecting them turns possible corruption into a visible
+> probe failure rather than removing working support.
+> 
+> PCC access and locking
+> ======================
+> 
+> The PCC protocol requires OSPM to acquire the subspace before changing its
+> command or payload. Single-register and EPP updates now hold pcc_lock
+> across ownership acquisition, payload staging, and command submission.
+> 
+> ACPI 6.6's implementation example places a mandatory 32-bit Delivered
+> Performance Counter at unaligned PCC offset 0x116. Performance controls may
+> also use byte-multiple widths such as 24 bits. PCC therefore uses
+> byte-oriented I/O with explicit little-endian encoding for zero-offset,
+> byte-multiple fields from 8 through 64 bits. A short per-subspace payload
+> lock protects concurrent aliased copies made under the shared side of
+> pcc_lock; it does not replace the protocol ownership lock.
+> 
+> Bit-level PCC fields require RMW and remain unsupported. An unsupported
+> optional field is marked absent, but a present inaccessible CPPC Enable
+> fails probe because OSPM must write it before using CPPC. Thus the
+> ACPI-legal one-bit CPPC Enable used by the specification example is a
+> documented kernel limitation. The old accessor could not program it
+> correctly either, so an explicit error is safer than silently proceeding
+> without enabling CPPC.
+> 
+> Every retained PCC field is bounds checked against the shared-memory
+> region. A subspace-keyed interval registry permits read-only overlap and
+> exact same-control aliases while rejecting every other writable overlap
+> across processors.
+> 
+> SystemIO support boundary
+> =========================
+> 
+> SystemIO supports Bit Offset zero, full 8-, 16-, or 32-bit accesses ending
+> at or below port 0xffff, including legacy Access Size zero when Bit Width
+> supplies the size. Partial fields never worked because the driver neither
+> shifted them nor preserved adjacent bits, so they now fail visibly instead
+> of being misprogrammed.
+> 
+> On kernels without CONFIG_HAS_IOPORT, SystemIO entries are rejected or
+> disabled according to the affected control's semantics. Runtime accessors
+> also return -EOPNOTSUPP rather than treating an I/O port as a
+> physical-memory address. A global port interval registry rejects
+> cross-processor writable overlap.
+> 
+> Write-only and Performance Limited controls
+> ===========================================
+> 
+> Between _CPC revisions 3 and 4, Desired Performance changed from
+> Read/Write to Write, and revision 4 added write-only OSPM Nominal
+> Performance. ACPI 6.6 Section 4.6.3 says reads from write-only positions
+> are undefined. Explicit reads of both controls are rejected, as are
+> SystemMemory layouts which would implicitly read them for RMW. Full-width
+> writes remain supported.
+> 
+> Performance Limited is sticky, write-zero-to-clear, and requires
+> interlocked accesses under ACPI 6.6 Section 8.4.6.1.3.2. The old separate
+> read and write could clear a new event reported between transactions. The
+> clear path now writes zero only to requested status bits and one to the
+> other defined bits. Partial SystemMemory forms cannot be used because a
+> spinlock cannot interlock an enclosing RMW with platform updates. QWord
+> forms cannot be used on 32-bit kernels, where the MMIO accessor may be
+> split into two 32-bit operations; naturally aligned, full-width QWords
+> remain supported on 64-bit kernels. Since CPPC control does not depend on
+> Performance Limited status, an unusable description disables that status
+> register instead of rejecting the processor's otherwise usable _CPC.
+> 
+> Lifetime and cleanup
+> ====================
+> 
+> CPC descriptors are released through their kobject callback, keeping their
+> storage and mappings alive for outstanding sysfs references. Every PCC
+> allocation, reference, and acquired channel is unwound on probe failure,
+> and the per-CPU PCC index is initialized before every early return. PCC
+> allocation uses a separate temporary result, so its success cannot turn a
+> later parse failure into a successful probe return.
+> 
+> Changes since v2
+> ================
+> 
+>   - Relaxed the exact NumEntries/package-count match to tolerate safe trailing
+>     package elements while still rejecting any count that could cause an
+>     out-of-bounds walk.
+>   - Made patch 10 independently preserve immutable-autonomous setups whose
+>     inaccessible Desired Performance register requires RMW, rather than
+>     relying on patch 11 to restore that exception.
+>     
+> Sashiko v2 review not addressed 
+> ===============================
+> 
+>   - Kept Guaranteed Performance Buffer-only. The suggestion was to accept a
+>     nonzero Integer, but ACPI 6.6 Table 8.23 permits only a Buffer for this
+>     entry.
+> 
+> Deferred follow-up work
+> =======================
+> 
+> Sashiko also identified a broader pre-existing lifetime question which this
+> series does not attempt to solve. In-kernel accessors read the per-CPU
+> cpc_desc_ptr without acquiring a reference, while processor teardown can
+> unpublish and eventually release the descriptor and its PCC data. The kobject
+> change here fixes the concrete sysfs lifetime bug, but a NULL pcc_data check
+> would not protect a caller which already holds a stale pointer. Closing this
+> properly requires defining the kernel accessor lifetime contract and then
+> using CPU-hotplug serialization / safe referencing across all callers,
+> therefore will be handled by a follow-up.
+> 
+> ACPI-legal bit-level PCC and SystemIO fields also remain unsupported. In
+> particular, the ACPI example's one-bit PCC CPPC Enable register cannot be
+> implemented by the old whole-value accessors. Supporting these descriptions
+> requires transport-specific field extraction and an RMW operation which obeys
+> PCC ownership or safely preserves adjacent SystemIO bits, just accepting the
+> descriptors would silently program the wrong value. Therefore continue to
+> disable optional inaccessible fields where safe and reject a present
+> inaccessible CPPC Enable control.
+> Full support, if even needed, belongs in a separate follow-up.
+> 
+> The review additionally suggested validating the complete AML
+> ResourceTemplate, including its EndTag. We currently validate the Register
+> descriptor we consume and tolerate trailing firmware data. I don't really
+> see the point of ever doing this, but definitely not in this series,
+> where I'm trying to guarantee that no reasonably working platform is
+> regressing.
+> 
+> Patches 1, 2, 4-7, and 9 address findings reported by Sashiko while
+> reviewing:
+> 
+>   https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+> 
+> Patches 3, 5, 6, 9, 10, and 15 address findings from the follow-up review:
+> 
+>   https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
+> 
+> Patches 1 and 10 address findings from the v2 review:
+> 
+>   https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
+> 
+> The series is based on Rafael's bleeding-edge
+> 77acf59d7cf1 ("Merge branch 'acpi-cppc' into bleeding-edge")
+> the base-commit specified below is linux-next for Sashiko review.
+> It applies cleanly on either.
+> 
+> Christian Loehle (15):
+>   ACPI: CPPC: Validate the _CPC package header
+>   ACPI: CPPC: Validate _CPC entry and control semantics
+>   ACPI: CPPC: Propagate performance-control write errors
+>   ACPI: CPPC: Use 64-bit masks for register fields
+>   ACPI: CPPC: Serialize PCC single-register payload updates
+>   ACPI: CPPC: Serialize PCC EPP payload updates
+>   ACPI: CPPC: Release CPC descriptors through kobject
+>   ACPI: CPPC: Release PCC data after probe failures
+>   ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
+>   ACPI: CPPC: Reject reads and RMW of write-only controls
+>   ACPI: CPPC: Validate and access PCC register layouts
+>   ACPI: CPPC: Validate SystemIO register layouts
+>   ACPI: CPPC: Validate PCC overlaps across processors
+>   ACPI: CPPC: Validate SystemIO overlaps across processors
+>   ACPI: CPPC: Clear Performance Limited without a stale read
+> 
+>  drivers/acpi/cppc_acpi.c | 1298 ++++++++++++++++++++++++++++++++------
+>  include/acpi/cppc_acpi.h |    7 +-
+>  2 files changed, 1116 insertions(+), 189 deletions(-)
+> 
+> base-commit: ea2bff00da89d7767d677bb68470130ba96f4928
 
-Sashiko review:
-"Does writing 0 to the reserved bits unconditionally clear them in this
-write-zero-to-clear register?
-Because CPPC_PERF_LIMITED_MASK masks off the upper reserved bits, the bitwise
-AND results in 0 being written to bits 2-63. In a write-zero-to-clear (W0C)
-register, 0 is the active clearing value, which could result in silent data loss
-for sticky events in reserved bits defined by future ACPI versions.
-While keeping reserved bits zero is the historical rule for standard
-write-one-to-clear status registers, doing so here converts a small race
-condition in the previous RMW logic into an unconditional clearing of all
-reserved bits.
-To safely preserve reserved bits in a W0C register, should this write 1s to the
-reserved bits instead (for example, by simply writing ~bits_to_clear)?"
+Looks like Sashiko is happy with this now, so human-reviewers, feel free
+to have a go!
 
-I won't adopt that proposal because ACPI 6.6 §4.6.1 explicitly requires
-to write zero to reserved bits in status registers. We must not write 1s here.
+Also I'm afraid this won't be the last series, Sashiko found 20 pre-existing
+issues again, I haven't looked at all of them in detail but the ones I have
+look legitimate to me and some are at least non-trivial to fix.
+(Some are also issues fixed by $SUBJECT but reviewed in an earlier patch.)
+I didn't see anything super urgent in it though so I might just let things
+settle before posting that.
