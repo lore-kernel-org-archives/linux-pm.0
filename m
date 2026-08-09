@@ -1,233 +1,318 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B6FA22B8DF;
-	Sun,  9 Aug 2026 01:45:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1B623B640;
+	Sun,  9 Aug 2026 06:26:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786239941; cv=none; b=GlqW/v2DsWRQxCuygthNoacdbEJqtXEEHBIsgV6UlbqUHS3clY2ARKGfZpAt1TYP/imnUUxeXuLcMC6UCjdcdZ/kN6z66UbrRhWchF7P2YQ2ujcW1VszklnjWer6iAAHvR8WD9Q0tuBVM/N1EushUEzJRK652lFn7UXeghzuz00=
+	t=1786256764; cv=none; b=YUc5Ht+5/MSVdbz9Rs4GH7kHKO9PFG6vZTa0s4WSvJBEWiNs3GeONIT2b4fChuit+CsR843U/2IGGnFJwhQp9Zzq/OcwIEUwVpb57J34thYrqpDK2jxWUs7scChKgy0i6k874MXbB+0/cTJXiwmkUqD0Yvs3xCGm++bq7O6kIGQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786239941; c=relaxed/simple;
-	bh=lJFUiFz9Tg/81GF4Re7Nl98AENohZfxRJD2CQffKlxk=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=qYhsTUY1eepJvWofBNKipWBWZ6+XuGWpdRidxWGHyClb3Z5R5zcX7OVw0EEdoq5CpEAkl9OVgvkI6TTqGz42HLHm+fXZ1rTmJHITiUt15eC5q52QFTGr+j7e//v+aG9dxjHszd5tpU5q2N9ntpkCAw9elwccPxKD4OVcb/O80ec=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aejGRsPW; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1786256764; c=relaxed/simple;
+	bh=/E6QqIAjSw+qJAyAFwvU1w6SZt6KVDdy3pkn2E8VyP8=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PmVf79oY5f0N0SomzCIlkjP0ggB2Sevha9i+7TndX2tGlow3W/OZ4oyLzRYQIBLHcwM5FohH+53T6R9BKA9UQGRIHk5xqRAn8B8KP2v3uPK3eA8FpHAjR0Xn5r83jRuV0x+qoe6D0qzrlst+F4fmuIUTP50gTvAxkRE/LDbaEbo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=mqBqVokl; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aejGRsPW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786239939; x=1817775939;
-  h=date:from:to:cc:subject:message-id;
-  bh=lJFUiFz9Tg/81GF4Re7Nl98AENohZfxRJD2CQffKlxk=;
-  b=aejGRsPWiEqgD2cSY/rh1bBA3e2tw7zY+b3hQKCxrSnsBpYluSSQ+xz4
-   MWnBck8UPVpYKOQtorL7WD3gag3YpuqylBo5KoqtV+XbgAPP2VoT7AOzc
-   CpRJ2Zc5nekSIpHMD4ps61+/lEh0T6aMqhh5EeI/mmMb1osiqso1GBQLP
-   n4M9S4zZb8gLEOZIVklWurkZyp5DLGXNtmJaP3UVJHZYRsTQIEEjyCv7a
-   ZZGTk0bB6HrvM8GeS9BPpWVih77bKjQQuWiQk6X0DnWM4IkLOvyDeyN+L
-   fQuY+LO1jc+eZ20bdSJ6drb7stq5LbzhzouboYeEnKegpaaMT2xVrDhlD
-   g==;
-X-CSE-ConnectionGUID: vc9+KMoUTACiOPM9Nz6IUw==
-X-CSE-MsgGUID: A9elZI1mTge9EOmPV/LKnw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11869"; a="109589865"
-X-IronPort-AV: E=Sophos;i="6.25,213,1779174000"; 
-   d="scan'208";a="109589865"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Aug 2026 18:45:38 -0700
-X-CSE-ConnectionGUID: 31IXYjFzTgKhQcAuYZNeEw==
-X-CSE-MsgGUID: ycXMe8TlSYCpkAoVdqSh+Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,213,1779174000"; 
-   d="scan'208";a="264706584"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
-  by fmviesa004.fm.intel.com with ESMTP; 08 Aug 2026 18:45:36 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wssbV-00000000LIC-3lMH;
-	Sun, 09 Aug 2026 01:45:33 +0000
-Date: Sun, 09 Aug 2026 09:45:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- ad0487e3f7c2ce63f9e74dbaf139671c04c5874e
-Message-ID: <202608090952.k7rsEj7b-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="mqBqVokl"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2A474152B;
+	Sat,  8 Aug 2026 23:25:56 -0700 (PDT)
+Received: from e127648.arm.com (unknown [10.57.4.198])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 141C63F9A2;
+	Sat,  8 Aug 2026 23:25:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786256760; bh=/E6QqIAjSw+qJAyAFwvU1w6SZt6KVDdy3pkn2E8VyP8=;
+	h=From:To:Cc:Subject:Date:From;
+	b=mqBqVoklUO5d0d8bkG/B7LeoqkaoC7YhEl+7dES9Yt18spiIR4+XHV33ckJeVoDCZ
+	 Svn44/lT67tnzOKdopvY9PmeQvxrgYLiPkfM6AC4hjDBee03W9SMNj+hkdr4YsLY/t
+	 WwOSZLrajnPggvDeOx97GP3ZG+74TFU+rZi5Is+0=
+From: Christian Loehle <christian.loehle@arm.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Len Brown <lenb@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Sudeep Holla <sudeep.holla@arm.com>,
+	Ionela Voinescu <ionela.voinescu@arm.com>,
+	zhongqiu.han@oss.qualcomm.com,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH v3 00/15] ACPI: CPPC: Fix register access and lifetime bugs
+Date: Sun,  9 Aug 2026 07:25:34 +0100
+Message-Id: <20260809062549.1415955-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: ad0487e3f7c2ce63f9e74dbaf139671c04c5874e  Merge branch 'acpi-apei' into bleeding-edge
+First of all, sorry this got so out of hand, initially this was just
+trying to fix some relatively simple issues found by sashiko in an
+earlier (unrelated) series.
+But with me touching more and more code and going through rounds of AI
+review that kept finding more and more pre-existing issues I've arrived
+at this.
 
-elapsed time: 1907m
+This series fixes correctness and robustness issues found while reviewing
+the CPPC control path. They affect malformed _CPC handling, error
+propagation, PCC ownership and cleanup, CPC object lifetime, register field
+access, cross-processor aliases, and Performance Limited clearing.
 
-configs tested: 156
-configs skipped: 2
+Series structure
+================
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Patches 1-8 are deliberately small, independently useful fixes. They
+validate the _CPC encoding consumed by cppc-acpi, propagate control-write
+errors, serialize PCC payload updates, correct 64-bit field masks, and fix
+descriptor and PCC lifetime handling.
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arc                  randconfig-001-20260808    gcc-9.5.0
-arc                  randconfig-001-20260809    gcc-12.5.0
-arc                  randconfig-002-20260808    gcc-9.5.0
-arc                  randconfig-002-20260809    gcc-12.5.0
-arm                  randconfig-001-20260808    gcc-9.5.0
-arm                  randconfig-001-20260809    gcc-12.5.0
-arm                  randconfig-002-20260808    gcc-9.5.0
-arm                  randconfig-002-20260809    gcc-12.5.0
-arm                  randconfig-003-20260808    gcc-9.5.0
-arm                  randconfig-003-20260809    gcc-12.5.0
-arm                  randconfig-004-20260808    gcc-9.5.0
-arm                  randconfig-004-20260809    gcc-12.5.0
-arm64                         randconfig-001    gcc-11.5.0
-arm64                randconfig-001-20260808    gcc-11.5.0
-arm64                randconfig-002-20260808    gcc-11.5.0
-arm64                randconfig-003-20260808    gcc-11.5.0
-arm64                randconfig-004-20260808    gcc-11.5.0
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260808    gcc-11.5.0
-csky                 randconfig-002-20260808    gcc-11.5.0
-hexagon                       randconfig-001    gcc-12.5.0
-hexagon              randconfig-001-20260808    gcc-16.1.0
-hexagon              randconfig-001-20260809    gcc-12.5.0
-hexagon              randconfig-002-20260808    gcc-16.1.0
-hexagon              randconfig-002-20260809    gcc-12.5.0
-i386                            allmodconfig    gcc-14
-i386                buildonly-randconfig-001    clang-22
-i386       buildonly-randconfig-001-20260808    clang-22
-i386       buildonly-randconfig-001-20260809    clang-22
-i386       buildonly-randconfig-002-20260808    clang-22
-i386       buildonly-randconfig-002-20260809    clang-22
-i386       buildonly-randconfig-003-20260808    clang-22
-i386       buildonly-randconfig-003-20260809    clang-22
-i386       buildonly-randconfig-004-20260808    clang-22
-i386       buildonly-randconfig-004-20260809    clang-22
-i386       buildonly-randconfig-005-20260808    clang-22
-i386       buildonly-randconfig-005-20260809    clang-22
-i386       buildonly-randconfig-006-20260808    clang-22
-i386       buildonly-randconfig-006-20260809    clang-22
-i386                 randconfig-001-20260808    clang-22
-i386                 randconfig-002-20260808    clang-22
-i386                 randconfig-003-20260808    clang-22
-i386                 randconfig-004-20260808    clang-22
-i386                 randconfig-005-20260808    clang-22
-i386                 randconfig-006-20260808    clang-22
-i386                 randconfig-007-20260808    clang-22
-i386                 randconfig-011-20260808    clang-22
-i386                 randconfig-012-20260808    clang-22
-i386                 randconfig-013-20260808    clang-22
-i386                 randconfig-014-20260808    clang-22
-i386                 randconfig-015-20260808    clang-22
-i386                 randconfig-016-20260808    clang-22
-i386                 randconfig-017-20260808    clang-22
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260808    gcc-16.1.0
-loongarch            randconfig-001-20260809    gcc-12.5.0
-loongarch            randconfig-002-20260808    gcc-16.1.0
-loongarch            randconfig-002-20260809    gcc-12.5.0
-m68k                         sun3x_defconfig    gcc-16.1.0
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260808    gcc-16.1.0
-nios2                randconfig-001-20260809    gcc-12.5.0
-nios2                randconfig-002-20260808    gcc-16.1.0
-nios2                randconfig-002-20260809    gcc-12.5.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc               randconfig-001-20260808    gcc-8.5.0
-parisc               randconfig-001-20260809    gcc-8.5.0
-parisc               randconfig-002-20260808    gcc-8.5.0
-parisc               randconfig-002-20260809    gcc-8.5.0
-powerpc              randconfig-001-20260808    gcc-8.5.0
-powerpc              randconfig-001-20260809    gcc-8.5.0
-powerpc              randconfig-002-20260808    gcc-8.5.0
-powerpc              randconfig-002-20260809    gcc-8.5.0
-powerpc64            randconfig-001-20260808    gcc-8.5.0
-powerpc64            randconfig-001-20260809    gcc-8.5.0
-powerpc64            randconfig-002-20260808    gcc-8.5.0
-powerpc64            randconfig-002-20260809    gcc-8.5.0
-riscv                randconfig-001-20260808    clang-24
-riscv                randconfig-001-20260809    clang-24
-riscv                randconfig-002-20260808    clang-24
-riscv                randconfig-002-20260809    clang-24
-s390                 randconfig-001-20260808    clang-24
-s390                 randconfig-001-20260809    clang-24
-s390                 randconfig-002-20260808    clang-24
-s390                 randconfig-002-20260809    clang-24
-sh                                 defconfig    gcc-16.1.0
-sh                   randconfig-001-20260808    clang-24
-sh                   randconfig-001-20260809    clang-24
-sh                   randconfig-002-20260808    clang-24
-sh                   randconfig-002-20260809    clang-24
-sparc                         randconfig-001    gcc-11.5.0
-sparc                randconfig-001-20260808    gcc-8.5.0
-sparc                randconfig-001-20260809    gcc-11.5.0
-sparc                randconfig-002-20260808    gcc-8.5.0
-sparc                randconfig-002-20260809    gcc-11.5.0
-sparc64              randconfig-001-20260808    gcc-8.5.0
-sparc64              randconfig-001-20260809    gcc-11.5.0
-sparc64              randconfig-002-20260808    gcc-8.5.0
-sparc64              randconfig-002-20260809    gcc-11.5.0
-um                   randconfig-001-20260808    gcc-8.5.0
-um                   randconfig-001-20260809    gcc-11.5.0
-um                   randconfig-002-20260808    gcc-8.5.0
-um                   randconfig-002-20260809    gcc-11.5.0
-x86_64     buildonly-randconfig-001-20260808    gcc-14
-x86_64     buildonly-randconfig-001-20260809    clang-22
-x86_64     buildonly-randconfig-002-20260808    gcc-14
-x86_64     buildonly-randconfig-002-20260809    clang-22
-x86_64     buildonly-randconfig-003-20260808    gcc-14
-x86_64     buildonly-randconfig-003-20260809    clang-22
-x86_64     buildonly-randconfig-004-20260808    gcc-14
-x86_64     buildonly-randconfig-004-20260809    clang-22
-x86_64     buildonly-randconfig-005-20260808    gcc-14
-x86_64     buildonly-randconfig-005-20260809    clang-22
-x86_64     buildonly-randconfig-006-20260808    gcc-14
-x86_64     buildonly-randconfig-006-20260809    clang-22
-x86_64                                 kexec    clang-22
-x86_64                        randconfig-001    clang-22
-x86_64               randconfig-001-20260808    clang-22
-x86_64               randconfig-001-20260809    clang-22
-x86_64               randconfig-002-20260808    clang-22
-x86_64               randconfig-002-20260809    clang-22
-x86_64               randconfig-003-20260808    clang-22
-x86_64               randconfig-003-20260809    clang-22
-x86_64               randconfig-004-20260808    clang-22
-x86_64               randconfig-004-20260809    clang-22
-x86_64               randconfig-005-20260808    clang-22
-x86_64               randconfig-005-20260809    clang-22
-x86_64               randconfig-006-20260808    clang-22
-x86_64               randconfig-006-20260809    clang-22
-x86_64               randconfig-011-20260808    clang-22
-x86_64               randconfig-012-20260808    clang-22
-x86_64               randconfig-013-20260808    clang-22
-x86_64               randconfig-014-20260808    clang-22
-x86_64               randconfig-015-20260808    clang-22
-x86_64               randconfig-016-20260808    clang-22
-x86_64                        randconfig-071    gcc-14
-x86_64               randconfig-071-20260808    gcc-14
-x86_64               randconfig-072-20260808    gcc-14
-x86_64               randconfig-073-20260808    gcc-14
-x86_64               randconfig-074-20260808    gcc-14
-x86_64               randconfig-075-20260808    gcc-14
-x86_64               randconfig-076-20260808    gcc-14
-x86_64                          rhel-9.4-bpf    gcc-14
-xtensa                 nommu_kc705_defconfig    gcc-16.1.0
-xtensa               randconfig-001-20260808    gcc-8.5.0
-xtensa               randconfig-001-20260809    gcc-11.5.0
-xtensa               randconfig-002-20260808    gcc-8.5.0
-xtensa               randconfig-002-20260809    gcc-11.5.0
+Patches 9-15 are the register-layout hardening portion. Geometry validation
+is more substantial because safe RMW and alias handling depend on the
+physical access unit, not merely on a logical _CPC entry or _PSD domain.
+These patches normalize and validate each supported address space before
+building probe-only physical interval registries. Keeping this work in the
+same posting gives the complete safety boundary and a single base for
+review, while each transport and bug retains its own Fixes provenance.
+Feel free to treat the two parts as independent series, I didn't split it
+because they're all technically fixes and to get Sashiko review for the
+whole lot.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+No interval lookup is added to the scheduler hot path. Full-width
+SystemMemory writes remain lockless. RMW locking remains necessary only for
+a partial field, where we must preserve the other bits in its access
+unit. The existing per-descriptor raw lock continues to cover disjoint
+partial fields within one _CPC package; probe rejects cross-descriptor
+layouts that it cannot protect.
+
+Parsing and control semantics
+=============================
+
+The parser now validates the package header before indexing it, bounds the
+BYTE and DWORD Integer forms before conversion, and validates the Generic
+Register descriptor consumed by cppc-acpi. NumEntries may not exceed the AML
+package count, but additional trailing package elements are ignored because
+doing so is safe and preserves compatibility with padded firmware. The parser
+likewise tolerates trailing ResourceTemplate data instead of imposing a new
+EndTag compatibility requirement.
+
+Writable controls must be Buffer-encoded registers. Minimum and Maximum
+Performance are checked as the pair required by ACPI 6.6 Sections
+8.4.6.1.2.1 and 8.4.6.1.2.2. Object presence is kept separate from the
+Integer-zero convention for absent optional fields, so Lowest Performance
+may retain the valid abstract value zero.
+
+Performance Limited is one deliberate compatibility exception. ACPI lists
+it as required, but permits a platform with no limiting indication to
+always return zero, and deployed firmware represents that case with a NULL
+descriptor. CPPC control does not depend on this status register, so we
+continue to accept that encoding. A present _CPC package which otherwise
+fails parsing or initialization now emits an error instead of silently
+preventing cpufreq registration.
+
+Compound performance and EPP updates propagate errors and perform every
+fallible non-PCC write before modifying the PCC payload. Updates across
+address spaces cannot be atomic, but a known non-PCC failure can no longer
+commit only the PCC portion or leave an unsent value for a later command.
+
+SystemMemory locking and support boundary
+=========================================
+
+A partial SystemMemory field requires RMW to preserve the rest of its
+access unit. Commit 60949b7b8054 ("ACPI: CPPC: Fix MASK_VAL() usage") used
+a per-_CPC lock and noted that a global lock would be needed if physical
+registers were shared between packages.
+
+ACPI does not make _PSD a physical-register ownership boundary. Rather than
+put a global raw lock or lookup into the scheduler path, this series makes
+the cheaper per-descriptor model's assumptions enforceable at probe.
+
+Supported SystemMemory layouts are:
+
+  - naturally aligned 8-, 16-, 32-, and 64-bit access units;
+  - lockless full-width controls;
+  - read-only aliases;
+  - exact full-width writable aliases, including 64-bit aliases on 64-bit
+    kernels;
+  - disjoint partial writers within one descriptor, serialized by its
+    rmw_lock; and
+  - a partial writer sharing an access unit with a disjoint read-only
+    field.
+
+Probe rejects overlapping logical fields involving a writer, another field
+inside a full-width writable access unit, cross-descriptor partial writers,
+unaligned accesses, and exact writable 64-bit aliases on 32-bit kernels.
+These layouts were not safely supported by the old per-descriptor lock or
+generic writeq(); rejecting them turns possible corruption into a visible
+probe failure rather than removing working support.
+
+PCC access and locking
+======================
+
+The PCC protocol requires OSPM to acquire the subspace before changing its
+command or payload. Single-register and EPP updates now hold pcc_lock
+across ownership acquisition, payload staging, and command submission.
+
+ACPI 6.6's implementation example places a mandatory 32-bit Delivered
+Performance Counter at unaligned PCC offset 0x116. Performance controls may
+also use byte-multiple widths such as 24 bits. PCC therefore uses
+byte-oriented I/O with explicit little-endian encoding for zero-offset,
+byte-multiple fields from 8 through 64 bits. A short per-subspace payload
+lock protects concurrent aliased copies made under the shared side of
+pcc_lock; it does not replace the protocol ownership lock.
+
+Bit-level PCC fields require RMW and remain unsupported. An unsupported
+optional field is marked absent, but a present inaccessible CPPC Enable
+fails probe because OSPM must write it before using CPPC. Thus the
+ACPI-legal one-bit CPPC Enable used by the specification example is a
+documented kernel limitation. The old accessor could not program it
+correctly either, so an explicit error is safer than silently proceeding
+without enabling CPPC.
+
+Every retained PCC field is bounds checked against the shared-memory
+region. A subspace-keyed interval registry permits read-only overlap and
+exact same-control aliases while rejecting every other writable overlap
+across processors.
+
+SystemIO support boundary
+=========================
+
+SystemIO supports Bit Offset zero, full 8-, 16-, or 32-bit accesses ending
+at or below port 0xffff, including legacy Access Size zero when Bit Width
+supplies the size. Partial fields never worked because the driver neither
+shifted them nor preserved adjacent bits, so they now fail visibly instead
+of being misprogrammed.
+
+On kernels without CONFIG_HAS_IOPORT, SystemIO entries are rejected or
+disabled according to the affected control's semantics. Runtime accessors
+also return -EOPNOTSUPP rather than treating an I/O port as a
+physical-memory address. A global port interval registry rejects
+cross-processor writable overlap.
+
+Write-only and Performance Limited controls
+===========================================
+
+Between _CPC revisions 3 and 4, Desired Performance changed from
+Read/Write to Write, and revision 4 added write-only OSPM Nominal
+Performance. ACPI 6.6 Section 4.6.3 says reads from write-only positions
+are undefined. Explicit reads of both controls are rejected, as are
+SystemMemory layouts which would implicitly read them for RMW. Full-width
+writes remain supported.
+
+Performance Limited is sticky, write-zero-to-clear, and requires
+interlocked accesses under ACPI 6.6 Section 8.4.6.1.3.2. The old separate
+read and write could clear a new event reported between transactions. The
+clear path now writes zero only to requested status bits and one to the
+other defined bits. Partial SystemMemory forms cannot be used because a
+spinlock cannot interlock an enclosing RMW with platform updates. QWord
+forms cannot be used on 32-bit kernels, where the MMIO accessor may be
+split into two 32-bit operations; naturally aligned, full-width QWords
+remain supported on 64-bit kernels. Since CPPC control does not depend on
+Performance Limited status, an unusable description disables that status
+register instead of rejecting the processor's otherwise usable _CPC.
+
+Lifetime and cleanup
+====================
+
+CPC descriptors are released through their kobject callback, keeping their
+storage and mappings alive for outstanding sysfs references. Every PCC
+allocation, reference, and acquired channel is unwound on probe failure,
+and the per-CPU PCC index is initialized before every early return. PCC
+allocation uses a separate temporary result, so its success cannot turn a
+later parse failure into a successful probe return.
+
+Changes since v2
+================
+
+  - Relaxed the exact NumEntries/package-count match to tolerate safe trailing
+    package elements while still rejecting any count that could cause an
+    out-of-bounds walk.
+  - Made patch 10 independently preserve immutable-autonomous setups whose
+    inaccessible Desired Performance register requires RMW, rather than
+    relying on patch 11 to restore that exception.
+    
+Sashiko v2 review not addressed 
+===============================
+
+  - Kept Guaranteed Performance Buffer-only. The suggestion was to accept a
+    nonzero Integer, but ACPI 6.6 Table 8.23 permits only a Buffer for this
+    entry.
+
+Deferred follow-up work
+=======================
+
+Sashiko also identified a broader pre-existing lifetime question which this
+series does not attempt to solve. In-kernel accessors read the per-CPU
+cpc_desc_ptr without acquiring a reference, while processor teardown can
+unpublish and eventually release the descriptor and its PCC data. The kobject
+change here fixes the concrete sysfs lifetime bug, but a NULL pcc_data check
+would not protect a caller which already holds a stale pointer. Closing this
+properly requires defining the kernel accessor lifetime contract and then
+using CPU-hotplug serialization / safe referencing across all callers,
+therefore will be handled by a follow-up.
+
+ACPI-legal bit-level PCC and SystemIO fields also remain unsupported. In
+particular, the ACPI example's one-bit PCC CPPC Enable register cannot be
+implemented by the old whole-value accessors. Supporting these descriptions
+requires transport-specific field extraction and an RMW operation which obeys
+PCC ownership or safely preserves adjacent SystemIO bits, just accepting the
+descriptors would silently program the wrong value. Therefore continue to
+disable optional inaccessible fields where safe and reject a present
+inaccessible CPPC Enable control.
+Full support, if even needed, belongs in a separate follow-up.
+
+The review additionally suggested validating the complete AML
+ResourceTemplate, including its EndTag. We currently validate the Register
+descriptor we consume and tolerate trailing firmware data. I don't really
+see the point of ever doing this, but definitely not in this series,
+where I'm trying to guarantee that no reasonably working platform is
+regressing.
+
+Patches 1, 2, 4-7, and 9 address findings reported by Sashiko while
+reviewing:
+
+  https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+
+Patches 3, 5, 6, 9, 10, and 15 address findings from the follow-up review:
+
+  https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
+
+Patches 1 and 10 address findings from the v2 review:
+
+  https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
+
+The series is based on Rafael's bleeding-edge
+77acf59d7cf1 ("Merge branch 'acpi-cppc' into bleeding-edge")
+the base-commit specified below is linux-next for Sashiko review.
+It applies cleanly on either.
+
+Christian Loehle (15):
+  ACPI: CPPC: Validate the _CPC package header
+  ACPI: CPPC: Validate _CPC entry and control semantics
+  ACPI: CPPC: Propagate performance-control write errors
+  ACPI: CPPC: Use 64-bit masks for register fields
+  ACPI: CPPC: Serialize PCC single-register payload updates
+  ACPI: CPPC: Serialize PCC EPP payload updates
+  ACPI: CPPC: Release CPC descriptors through kobject
+  ACPI: CPPC: Release PCC data after probe failures
+  ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
+  ACPI: CPPC: Reject reads and RMW of write-only controls
+  ACPI: CPPC: Validate and access PCC register layouts
+  ACPI: CPPC: Validate SystemIO register layouts
+  ACPI: CPPC: Validate PCC overlaps across processors
+  ACPI: CPPC: Validate SystemIO overlaps across processors
+  ACPI: CPPC: Clear Performance Limited without a stale read
+
+ drivers/acpi/cppc_acpi.c | 1298 ++++++++++++++++++++++++++++++++------
+ include/acpi/cppc_acpi.h |    7 +-
+ 2 files changed, 1116 insertions(+), 189 deletions(-)
+
+base-commit: ea2bff00da89d7767d677bb68470130ba96f4928
+-- 
+2.34.1
+
