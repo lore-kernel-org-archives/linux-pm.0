@@ -1,139 +1,233 @@
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E7A537755C
-	for <linux-pm@vger.kernel.org>; Sat,  8 Aug 2026 21:45:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B6FA22B8DF;
+	Sun,  9 Aug 2026 01:45:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786225518; cv=none; b=OlqsWDa0HLZTkUbUArCKd8sYj99K1VjY6yXELVfoY22Vr7Q5+GMIGw2kGHrrYothIthnikgM83t52CjI7PKR0Lnm3Q/clTPlVIrWG4U7bD+oPmPcJ9E5ajRkCsNYMAHS9ggPx0RFEufgV9i+v7T7ptywB2GtmRJR419sfvgJ3K8=
+	t=1786239941; cv=none; b=GlqW/v2DsWRQxCuygthNoacdbEJqtXEEHBIsgV6UlbqUHS3clY2ARKGfZpAt1TYP/imnUUxeXuLcMC6UCjdcdZ/kN6z66UbrRhWchF7P2YQ2ujcW1VszklnjWer6iAAHvR8WD9Q0tuBVM/N1EushUEzJRK652lFn7UXeghzuz00=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786225518; c=relaxed/simple;
-	bh=hOGTV5ZOsL4kx/Q0FR6cxiFxpMfZE+LbKJAIogwdIRI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hYufolJuhz+WOv6JxkQ1E3aNtks4OqT9SP9AQ6FzJ5s+iJaAyUq/SaED1ADqjwhT361i7Xg4Xk6o35C3mMr0u/ZGQ3BPsxw3B8gyjjEeqg9Qbta46uC+ALn5rQGTDRcAMrMBo71BMROYKJTSXWXvBprVYkiTWEh6m7ssXfSqusE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=icXHXXp1; arc=none smtp.client-ip=209.85.215.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1786239941; c=relaxed/simple;
+	bh=lJFUiFz9Tg/81GF4Re7Nl98AENohZfxRJD2CQffKlxk=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=qYhsTUY1eepJvWofBNKipWBWZ6+XuGWpdRidxWGHyClb3Z5R5zcX7OVw0EEdoq5CpEAkl9OVgvkI6TTqGz42HLHm+fXZ1rTmJHITiUt15eC5q52QFTGr+j7e//v+aG9dxjHszd5tpU5q2N9ntpkCAw9elwccPxKD4OVcb/O80ec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aejGRsPW; arc=none smtp.client-ip=198.175.65.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="icXHXXp1"
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-c998fd549a8so480291a12.2
-        for <linux-pm@vger.kernel.org>; Sat, 08 Aug 2026 14:45:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786225517; x=1786830317; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=TWzyFxcV5fFu/M+6J2M1a01Ovc9+42gveuGFxl2QWXQ=;
-        b=icXHXXp1eULjMMAkoglcxSm3UbEiYi1Dl//6L6Eez4erQqFjw3eXzjJPQPVXbcOy8n
-         MMtdmriCsaGttNxM4FMa58G68NlPQkeQanKEhkY6zRpUhXyx8UVH0H4ZBgt1GrqgC6JY
-         HLl2oHbbxPqW1IzN57FErIKNZaWweT7EqdIhAjVpEOebAOiXPNJPrJPpcuw/aMHESdDC
-         cqSvV+3ru5iLBZT5wGuuInk4iJmgrr1hJFNgNsKGlFCPvb31ehUylh3e5ebxcD5ZNrHS
-         dVeStllTGc6v/toAaKr3OLC54/xR/Wt7QGKN+XpelDsS0pezqpRdrC5ATMFv9aJmIkfL
-         YkOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786225517; x=1786830317;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=TWzyFxcV5fFu/M+6J2M1a01Ovc9+42gveuGFxl2QWXQ=;
-        b=TtpOJDj/8Y+0QsMto6EX++gyRAOE136c2L02IaaOvAgEDwxnLSGftv2AOLnZURIWvq
-         G8UD9QjBR7ZFaktOIvMlg0NQxb70c+ZLE9zPrY0MrdJbCZn51iReMSSyFHINs9hj+rwi
-         HafLIeb+sY0twFkcwm24MFaS1UyW6IkvIVbbEn+9EdZc2QJkdeXDPDTQuIwaYYG9+kUU
-         X84lS+U09GUZnAM7azRQr3j3UCJZAfTu8r6jQl5JIq87WqDiwQDg7orAFlIv5rbL9+35
-         D+tqdi6IIfyA4Zu5rQL20DL8X3vmQCfxlISuI56AqmmrA5lnG/uAD2QJkBivlRFwdn0X
-         tdnw==
-X-Gm-Message-State: AOJu0YxQDTjKUwN7QeZ1MBDLdSGEz/4qz0Kap5qf4x9F028baB9dLViL
-	k3OTzbNyka5dmiRTSyHn1GaFbBmkjxa8z2c2L4cP3Fw49uPnaZloKTRM
-X-Gm-Gg: AR+sD10gPzK/XBLO8i9lXGK5iTNoPNpQDIO9VYHVtmIKZE9E9rhsC8rh6ApgJ8E39gn
-	4NyQ4yAYRD9A4R+PTx2ETG0wnLRO+420Ot5Q1NtsMplxGa3bjeodwnf3iQ7d7XRKGpfnWQLi5EF
-	Nk/XW7hUkaRoq1Mha9xXTLYTp+OXgJhwAgi3q0Q1Xr4VdWwEUDC7KZvbTIHeES7ywC5FzsN1saE
-	wgspARqAxlVlc+bpDCpzsSBxHJ01IsdaKQBqecaOOpwDCDaKMWNVr9gfZiqUtYN6IZgI8NRkCYA
-	JEloHw9R0Xa66c9qdZ03zOg/DLNc0bw/mwbuaLZr1Z9tKvk7vEwt4HdMdFjhBr9eC6GMAcuYpo1
-	KoINQ/L3TTq483aKCOiAV1j5hKxxmzynzidMAFWezm4AZG5NGCGf+344A4UnCOdNeaXXLeP65uO
-	6MMl5GtDeowTM9vxxZHCbJhfzEoPxA1ljJSn7vudt1g5/+NJbdS3ppy5qUEmA9KMqNx0hN1jaMY
-	nFRBxdb1Z/bFOgZaA1+cAobX5PVDtXw78kFk0PCemqFjK405VqYSTy1XPBvgOeMQ71otnjB
-X-Received: by 2002:a05:6a20:cf8d:b0:3c3:94a8:7c18 with SMTP id adf61e73a8af0-3cb8603af1amr40795284637.37.1786225516634;
-        Sat, 08 Aug 2026 14:45:16 -0700 (PDT)
-Received: from bloom.localdomain ([2604:3d09:178e:e100::6868])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cbe8f35b781sm2194551a12.18.2026.08.08.14.45.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 08 Aug 2026 14:45:15 -0700 (PDT)
-From: Ivy Lopez <skunkolee@gmail.com>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Ivy Lopez <skunkolee@gmail.com>
-Subject: [PATCH] power: supply: ds2760_battery: fix NULL pointer dereference in w1_ds2760_remove_slave()
-Date: Sat,  8 Aug 2026 15:44:58 -0600
-Message-ID: <20260808214458.201324-1-skunkolee@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aejGRsPW"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786239939; x=1817775939;
+  h=date:from:to:cc:subject:message-id;
+  bh=lJFUiFz9Tg/81GF4Re7Nl98AENohZfxRJD2CQffKlxk=;
+  b=aejGRsPWiEqgD2cSY/rh1bBA3e2tw7zY+b3hQKCxrSnsBpYluSSQ+xz4
+   MWnBck8UPVpYKOQtorL7WD3gag3YpuqylBo5KoqtV+XbgAPP2VoT7AOzc
+   CpRJ2Zc5nekSIpHMD4ps61+/lEh0T6aMqhh5EeI/mmMb1osiqso1GBQLP
+   n4M9S4zZb8gLEOZIVklWurkZyp5DLGXNtmJaP3UVJHZYRsTQIEEjyCv7a
+   ZZGTk0bB6HrvM8GeS9BPpWVih77bKjQQuWiQk6X0DnWM4IkLOvyDeyN+L
+   fQuY+LO1jc+eZ20bdSJ6drb7stq5LbzhzouboYeEnKegpaaMT2xVrDhlD
+   g==;
+X-CSE-ConnectionGUID: vc9+KMoUTACiOPM9Nz6IUw==
+X-CSE-MsgGUID: A9elZI1mTge9EOmPV/LKnw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11869"; a="109589865"
+X-IronPort-AV: E=Sophos;i="6.25,213,1779174000"; 
+   d="scan'208";a="109589865"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Aug 2026 18:45:38 -0700
+X-CSE-ConnectionGUID: 31IXYjFzTgKhQcAuYZNeEw==
+X-CSE-MsgGUID: ycXMe8TlSYCpkAoVdqSh+Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,213,1779174000"; 
+   d="scan'208";a="264706584"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+  by fmviesa004.fm.intel.com with ESMTP; 08 Aug 2026 18:45:36 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wssbV-00000000LIC-3lMH;
+	Sun, 09 Aug 2026 01:45:33 +0000
+Date: Sun, 09 Aug 2026 09:45:08 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ ad0487e3f7c2ce63f9e74dbaf139671c04c5874e
+Message-ID: <202608090952.k7rsEj7b-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-w1_ds2760_add_slave()'s failure paths (di_alloc_failed, batt_failed,
-workqueue_failed) are all empty labels that just return the error
-code, with no explicit unwind. This works for di itself and the
-registered power supply, both are devm-managed against the w1 slave
-device and get cleaned up automatically. But di->monitor_wqueue and
-di->pm_notifier are not devm-managed, and are only ever set up in
-the success tail of the function, after the workqueue allocation and
-power supply registration have both succeeded.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: ad0487e3f7c2ce63f9e74dbaf139671c04c5874e  Merge branch 'acpi-apei' into bleeding-edge
 
-The w1 core's BUS_NOTIFY_ADD_DEVICE handling in w1_family_notify()
-logs and returns on a failing add_slave(), but does not prevent the
-w1 slave device from later being removed from the bus, which
-triggers BUS_NOTIFY_DEL_DEVICE and an unconditional call to
-remove_slave(). This means w1_ds2760_remove_slave() is effectively
-the only failure-unwind path for a partially initialized di, and
-needs to treat every field as potentially never having been set.
+elapsed time: 1907m
 
-Currently it does not: it unconditionally calls
-destroy_workqueue(di->monitor_wqueue), which crashes with a NULL
-pointer dereference if add_slave() failed before or during the
-workqueue allocation (e.g. on a power_supply_register() failure, as
-seen when a colliding sysfs name from a misdetected slave device
-causes registration to fail).
+configs tested: 156
+configs skipped: 2
 
-sl->family_data can also be NULL if add_slave() failed at its own
-allocation, before family_data was ever set, which would crash on
-the very first dereference in remove_slave().
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Fix both: return early if di is NULL, and only call
-destroy_workqueue() if monitor_wqueue was actually allocated.
-unregister_pm_notifier() and cancel_delayed_work_sync() are safe to
-call unconditionally: the former is a no-op if the notifier was
-never registered, and the latter operates on the embedded
-delayed_work struct, which is always validly initialized by the
-time remove_slave() can run with a non-NULL di.
+tested configs:
+alpha                            allnoconfig    gcc-16.1.0
+alpha                           allyesconfig    gcc-16.1.0
+alpha                              defconfig    gcc-16.1.0
+arc                             allmodconfig    gcc-16.1.0
+arc                             allyesconfig    gcc-16.1.0
+arc                  randconfig-001-20260808    gcc-9.5.0
+arc                  randconfig-001-20260809    gcc-12.5.0
+arc                  randconfig-002-20260808    gcc-9.5.0
+arc                  randconfig-002-20260809    gcc-12.5.0
+arm                  randconfig-001-20260808    gcc-9.5.0
+arm                  randconfig-001-20260809    gcc-12.5.0
+arm                  randconfig-002-20260808    gcc-9.5.0
+arm                  randconfig-002-20260809    gcc-12.5.0
+arm                  randconfig-003-20260808    gcc-9.5.0
+arm                  randconfig-003-20260809    gcc-12.5.0
+arm                  randconfig-004-20260808    gcc-9.5.0
+arm                  randconfig-004-20260809    gcc-12.5.0
+arm64                         randconfig-001    gcc-11.5.0
+arm64                randconfig-001-20260808    gcc-11.5.0
+arm64                randconfig-002-20260808    gcc-11.5.0
+arm64                randconfig-003-20260808    gcc-11.5.0
+arm64                randconfig-004-20260808    gcc-11.5.0
+csky                            allmodconfig    gcc-16.1.0
+csky                 randconfig-001-20260808    gcc-11.5.0
+csky                 randconfig-002-20260808    gcc-11.5.0
+hexagon                       randconfig-001    gcc-12.5.0
+hexagon              randconfig-001-20260808    gcc-16.1.0
+hexagon              randconfig-001-20260809    gcc-12.5.0
+hexagon              randconfig-002-20260808    gcc-16.1.0
+hexagon              randconfig-002-20260809    gcc-12.5.0
+i386                            allmodconfig    gcc-14
+i386                buildonly-randconfig-001    clang-22
+i386       buildonly-randconfig-001-20260808    clang-22
+i386       buildonly-randconfig-001-20260809    clang-22
+i386       buildonly-randconfig-002-20260808    clang-22
+i386       buildonly-randconfig-002-20260809    clang-22
+i386       buildonly-randconfig-003-20260808    clang-22
+i386       buildonly-randconfig-003-20260809    clang-22
+i386       buildonly-randconfig-004-20260808    clang-22
+i386       buildonly-randconfig-004-20260809    clang-22
+i386       buildonly-randconfig-005-20260808    clang-22
+i386       buildonly-randconfig-005-20260809    clang-22
+i386       buildonly-randconfig-006-20260808    clang-22
+i386       buildonly-randconfig-006-20260809    clang-22
+i386                 randconfig-001-20260808    clang-22
+i386                 randconfig-002-20260808    clang-22
+i386                 randconfig-003-20260808    clang-22
+i386                 randconfig-004-20260808    clang-22
+i386                 randconfig-005-20260808    clang-22
+i386                 randconfig-006-20260808    clang-22
+i386                 randconfig-007-20260808    clang-22
+i386                 randconfig-011-20260808    clang-22
+i386                 randconfig-012-20260808    clang-22
+i386                 randconfig-013-20260808    clang-22
+i386                 randconfig-014-20260808    clang-22
+i386                 randconfig-015-20260808    clang-22
+i386                 randconfig-016-20260808    clang-22
+i386                 randconfig-017-20260808    clang-22
+loongarch                          defconfig    clang-24
+loongarch            randconfig-001-20260808    gcc-16.1.0
+loongarch            randconfig-001-20260809    gcc-12.5.0
+loongarch            randconfig-002-20260808    gcc-16.1.0
+loongarch            randconfig-002-20260809    gcc-12.5.0
+m68k                         sun3x_defconfig    gcc-16.1.0
+nios2                           allmodconfig    gcc-11.5.0
+nios2                            allnoconfig    gcc-11.5.0
+nios2                randconfig-001-20260808    gcc-16.1.0
+nios2                randconfig-001-20260809    gcc-12.5.0
+nios2                randconfig-002-20260808    gcc-16.1.0
+nios2                randconfig-002-20260809    gcc-12.5.0
+parisc                          allmodconfig    gcc-16.1.0
+parisc                          allyesconfig    gcc-16.1.0
+parisc                             defconfig    gcc-16.1.0
+parisc               randconfig-001-20260808    gcc-8.5.0
+parisc               randconfig-001-20260809    gcc-8.5.0
+parisc               randconfig-002-20260808    gcc-8.5.0
+parisc               randconfig-002-20260809    gcc-8.5.0
+powerpc              randconfig-001-20260808    gcc-8.5.0
+powerpc              randconfig-001-20260809    gcc-8.5.0
+powerpc              randconfig-002-20260808    gcc-8.5.0
+powerpc              randconfig-002-20260809    gcc-8.5.0
+powerpc64            randconfig-001-20260808    gcc-8.5.0
+powerpc64            randconfig-001-20260809    gcc-8.5.0
+powerpc64            randconfig-002-20260808    gcc-8.5.0
+powerpc64            randconfig-002-20260809    gcc-8.5.0
+riscv                randconfig-001-20260808    clang-24
+riscv                randconfig-001-20260809    clang-24
+riscv                randconfig-002-20260808    clang-24
+riscv                randconfig-002-20260809    clang-24
+s390                 randconfig-001-20260808    clang-24
+s390                 randconfig-001-20260809    clang-24
+s390                 randconfig-002-20260808    clang-24
+s390                 randconfig-002-20260809    clang-24
+sh                                 defconfig    gcc-16.1.0
+sh                   randconfig-001-20260808    clang-24
+sh                   randconfig-001-20260809    clang-24
+sh                   randconfig-002-20260808    clang-24
+sh                   randconfig-002-20260809    clang-24
+sparc                         randconfig-001    gcc-11.5.0
+sparc                randconfig-001-20260808    gcc-8.5.0
+sparc                randconfig-001-20260809    gcc-11.5.0
+sparc                randconfig-002-20260808    gcc-8.5.0
+sparc                randconfig-002-20260809    gcc-11.5.0
+sparc64              randconfig-001-20260808    gcc-8.5.0
+sparc64              randconfig-001-20260809    gcc-11.5.0
+sparc64              randconfig-002-20260808    gcc-8.5.0
+sparc64              randconfig-002-20260809    gcc-11.5.0
+um                   randconfig-001-20260808    gcc-8.5.0
+um                   randconfig-001-20260809    gcc-11.5.0
+um                   randconfig-002-20260808    gcc-8.5.0
+um                   randconfig-002-20260809    gcc-11.5.0
+x86_64     buildonly-randconfig-001-20260808    gcc-14
+x86_64     buildonly-randconfig-001-20260809    clang-22
+x86_64     buildonly-randconfig-002-20260808    gcc-14
+x86_64     buildonly-randconfig-002-20260809    clang-22
+x86_64     buildonly-randconfig-003-20260808    gcc-14
+x86_64     buildonly-randconfig-003-20260809    clang-22
+x86_64     buildonly-randconfig-004-20260808    gcc-14
+x86_64     buildonly-randconfig-004-20260809    clang-22
+x86_64     buildonly-randconfig-005-20260808    gcc-14
+x86_64     buildonly-randconfig-005-20260809    clang-22
+x86_64     buildonly-randconfig-006-20260808    gcc-14
+x86_64     buildonly-randconfig-006-20260809    clang-22
+x86_64                                 kexec    clang-22
+x86_64                        randconfig-001    clang-22
+x86_64               randconfig-001-20260808    clang-22
+x86_64               randconfig-001-20260809    clang-22
+x86_64               randconfig-002-20260808    clang-22
+x86_64               randconfig-002-20260809    clang-22
+x86_64               randconfig-003-20260808    clang-22
+x86_64               randconfig-003-20260809    clang-22
+x86_64               randconfig-004-20260808    clang-22
+x86_64               randconfig-004-20260809    clang-22
+x86_64               randconfig-005-20260808    clang-22
+x86_64               randconfig-005-20260809    clang-22
+x86_64               randconfig-006-20260808    clang-22
+x86_64               randconfig-006-20260809    clang-22
+x86_64               randconfig-011-20260808    clang-22
+x86_64               randconfig-012-20260808    clang-22
+x86_64               randconfig-013-20260808    clang-22
+x86_64               randconfig-014-20260808    clang-22
+x86_64               randconfig-015-20260808    clang-22
+x86_64               randconfig-016-20260808    clang-22
+x86_64                        randconfig-071    gcc-14
+x86_64               randconfig-071-20260808    gcc-14
+x86_64               randconfig-072-20260808    gcc-14
+x86_64               randconfig-073-20260808    gcc-14
+x86_64               randconfig-074-20260808    gcc-14
+x86_64               randconfig-075-20260808    gcc-14
+x86_64               randconfig-076-20260808    gcc-14
+x86_64                          rhel-9.4-bpf    gcc-14
+xtensa                 nommu_kc705_defconfig    gcc-16.1.0
+xtensa               randconfig-001-20260808    gcc-8.5.0
+xtensa               randconfig-001-20260809    gcc-11.5.0
+xtensa               randconfig-002-20260808    gcc-8.5.0
+xtensa               randconfig-002-20260809    gcc-11.5.0
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=217832
-Signed-off-by: Ivy Lopez <skunkolee@gmail.com>
----
- drivers/power/supply/ds2760_battery.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply/ds2760_battery.c
-index 142c7492c3c2..3c2433f6b5e9 100644
---- a/drivers/power/supply/ds2760_battery.c
-+++ b/drivers/power/supply/ds2760_battery.c
-@@ -723,9 +723,13 @@ static void w1_ds2760_remove_slave(struct w1_slave *sl)
- {
- 	struct ds2760_device_info *di = sl->family_data;
- 
-+	if (!di)
-+		return;
-+
- 	unregister_pm_notifier(&di->pm_notifier);
- 	cancel_delayed_work_sync(&di->monitor_work);
--	destroy_workqueue(di->monitor_wqueue);
-+	if (di->monitor_wqueue)
-+		destroy_workqueue(di->monitor_wqueue);
- }
- 
- #ifdef CONFIG_OF
--- 
-2.55.0
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
