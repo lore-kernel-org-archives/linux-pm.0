@@ -1,145 +1,144 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A48AE3BB107
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 11:01:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBE6E3BB685
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 11:03:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786359671; cv=none; b=qxSENMb3sZ1QOezGk0387fMQGDkRQhT1ZbNHRzbMzmEI+vYs+pcmGDF35GKZVh4xED59y5je7OY54PqIJCneiuC74l/wa4nY4r+hLQPixXVwawL8hEd34fT+keFvEEzOVpm0emHiIUrEp7WNkETOwe5iXxQY3RLzMPA05PYGBiA=
+	t=1786359811; cv=none; b=CnB1rvQEjGCjyMJGFEx3nYY/CAHS++rljWwAHqIqDdVSJlUFzjJZ7SgzLZYfJcVA91w62VxZfT/7UJ1TVzSllp5+mIQwl/dCBU02F4EJd5d314tEM2rxtPtkby+iU+upbhKid0S7RCqN3tcjf1IlRZ3gwzF5E2T8JbY4ogWY/no=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786359671; c=relaxed/simple;
-	bh=pFfOm6QPUdjcAHRhW+KhtnVdVDxBYYj+3InpXS0SGWs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=G6onxQx0Kkq6dP8AkDU0xWPdxDMSW0xCAfAHaKPA5bR1/rJdoKy3OeRTvj7AxRaEIEfUcULHI7PZGVmBUn7vMEjaEnKI4tKti89bGAs4wsEjfdM3z7q0cnx5Cb6NvTdF3t6ahba1Zieb3wqf1XaTcB+EwG1EE4VXrHjuWUfev6Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X5X8L/4C; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786359811; c=relaxed/simple;
+	bh=p49IchS1moer5f9ixq9X0KkzRurkRwI24S8WQ72LvTw=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qTO0DuSmYemq/a7Jo6S0HR3OdhcllU1qTp2Mn6ICj8eqCsmPBBpNIuhCjv4NcscxAmGywqcYqCkCTzV7sYE8Jo7A2CZtFdgn9e6+H//7XXMgljwBzfQKPGzjYVw3GaPVAISadhBHEjixP/O+ZooFX3KucwZFlp8lVr9WVKGfJRg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PdWyUmhy; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X5X8L/4C"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E87811F00A3D
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 11:01:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PdWyUmhy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D2D01F0155C
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 11:03:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786359669;
-	bh=Gg7NYLihy0yhhoGsR6TvR7b81PTDY5aUKkDBFrt/+tI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=X5X8L/4CV0NI0gipwjIo7SEuB6RexeMVNcYQK4+aD/43MYo5DUam+MI83JMRuiBRz
-	 nC9oksx6sNZjgt/QxqQqT0yolTWgmo4uoIqp58duQqo73yoDUZfbYcYCKtQ6kzI7KC
-	 8gSgjC/9/uIn+Ln58iGdmxGg0TfHSkh3JaauIgTjG7g1Mtphwi/ehG2Z68xeuMhmvx
-	 5P+w9mO/32K117DtYbwL5SFIJxxbJh0nb7/zOYoT7NTLUAGU2mX914Mb+u89EP7n7+
-	 YwJSr2T4HIEEufO/CuaDUsGw7X3xdnMRXtBCZV3r+vidtRWgNCWOouM0Dl4rjvEoE1
-	 L9dh+Yqr5HcFA==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5b2a4359d16so1487081e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 04:01:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqKkks5F+nptYpghGMAlS4kjvMAw7gJRPLk2QSqO3hesgcwEYbWHquo11rc1fT/vruEnklm3+dp5A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxK57JxrHGGRkADZk9XfNa+Dyn1XpVqI3HhPHkVzhpCHQy7XqkM
-	WNRxwpVxXCRZg35NXnCrclt1BOgze5AsLEJL/SJFqXUuH5JxXtg5A6/J4PpNRXCKmpFx+edVwiC
-	RtPgRfs6A1N24WV7h1dzk/FMiftrguVk=
-X-Received: by 2002:a05:6512:1054:b0:5b2:eb46:1e66 with SMTP id
- 2adb3069b0e04-5b3181a259fmr135671e87.14.1786359668218; Mon, 10 Aug 2026
- 04:01:08 -0700 (PDT)
+	s=k20260515; t=1786359809;
+	bh=ekwf+Zy2P4O9p1ZEiUBKTIiE5IQ8iZ2Cubn4LVEzpyY=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=PdWyUmhy2AasE+KLSnEw1XSU70YHC5HSdHrKy1otm9Lzgbn9zbYcVShJ4LOzbyAVn
+	 GpCp40kZKFJ696slzMadXDSCfyokg4pWnXY1TCnwGYomnVsi/qbxH9TlR1NSt0IDBs
+	 zjcYwEDHnsC+rmnUTdJ68gbm1a5b/6jZP0g5KbGykg74EhRavTqBTy0dnYw6ojAX0+
+	 665yWOCea3+VPGQReiwpe3jmwm4CyEQ7+smo9LML2nxQPFmzF6Itv4H/mGcWNcxzyS
+	 9crUlqnc0lZm5yxIWBInqSX08UTidePGgYpjGyywZmnNJUb/8eWNKfr1EALiNNQnwy
+	 7IUlzT0KqP4zw==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5b3119957f0so1154918e87.1
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 04:03:29 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rq1uR9DdJKIb7CArnU/bfkJ9jokf9hWT2F27uIie5wkUvnYhuKSyQID71dV1RzfI43fgaXgM6OtPw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxooBQ0vmNIKcy4vr6l6jyRoSW3CLKk0pjkHN3BqitJCccwK73x
+	+w2ANiLMpLu0crvuwEVFuyEf4zwnu3qpjqv0AnYU9jqE1diuNvZ9MNsxIuthL+UWEMWtjt2pb1k
+	u90EBoVxLzFxgN8MLH+S5IakeBAdpk8B4EWWKqIB6NA==
+X-Received: by 2002:a05:6512:610:10b0:5b2:9391:40e1 with SMTP id
+ 2adb3069b0e04-5b2f4cdc1a1mr4534940e87.51.1786359808243; Mon, 10 Aug 2026
+ 04:03:28 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 10 Aug 2026 06:03:26 -0500
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 10 Aug 2026 06:03:26 -0500
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260809-kuno-soc-support-v1-9-5e0ede4a0c72@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <7d85c5c6-3ee3-4ce6-aeeb-e4f15cb57b32@oss.qualcomm.com>
-In-Reply-To: <7d85c5c6-3ee3-4ce6-aeeb-e4f15cb57b32@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 10 Aug 2026 13:00:51 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hSKHdXXT0rQrj3Cmg4QZY_Bpp5H1RkWAJGTbeZQNYreQ@mail.gmail.com>
-X-Gm-Features: AUfX_mwg0-vgqumwEaOjlKy_ovLo78wQQpdZS1sUlDCmHZeGALcltF4saxBWa2c
-Message-ID: <CAJZ5v0hSKHdXXT0rQrj3Cmg4QZY_Bpp5H1RkWAJGTbeZQNYreQ@mail.gmail.com>
-Subject: Re: [GIT PULL] thermal drivers for v7.3-rc1
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <Lukasz.Luba@arm.com>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Bryan B. Lima" <bblima@usp.br>, 
-	Dan Carpenter <error27@gmail.com>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Christian Marangi <ansuelsmth@gmail.com>, Rakesh Kota <rakesh.kota@oss.qualcomm.com>, 
-	Can Peng <pengcan@kylinos.cn>, Satya Priya Kakitapalli <quic_skakitap@quicinc.com>, 
-	Haritha S K <haritha.k@oss.qualcomm.com>, Pei Xiao <xiaopei01@kylinos.cn>, 
-	marek.vasut+renesas@gmail.com, 
-	Linux PM mailing list <linux-pm@vger.kernel.org>, Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Andreas Haufler <andreas@haufler.info>, Pan Chuang <panchuang@vivo.com>, surendra <kr494167@gmail.com>
+References: <20260809-kuno-soc-support-v1-0-5e0ede4a0c72@oss.qualcomm.com> <20260809-kuno-soc-support-v1-9-5e0ede4a0c72@oss.qualcomm.com>
+Date: Mon, 10 Aug 2026 06:03:26 -0500
+X-Gmail-Original-Message-ID: <CAMRc=MeRNMug6hZ8Jcv7drVfKbLRxG=FG8r9--PkwEpcj5JuCA@mail.gmail.com>
+X-Gm-Features: AUfX_myvx7TjMFh-i1Xu8rFjTgNwvi8c6AXDbCHE0yc0UfXzrx62czbv7eUvtQs
+Message-ID: <CAMRc=MeRNMug6hZ8Jcv7drVfKbLRxG=FG8r9--PkwEpcj5JuCA@mail.gmail.com>
+Subject: Re: [PATCH 09/15] pinctrl: qcom: Add Kuno pinctrl driver
+To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney@redhat.com>, Taniya Das <quic_tdas@quicinc.com>, 
+	Georgi Djakov <djakov@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+	Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>, Robert Marko <robimarko@gmail.com>, 
+	Guru Das Srinagesh <linux@gurudas.dev>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi Daniel,
+On Sun, 9 Aug 2026 09:27:08 +0200, Hardeep Sharma
+<hardeep.sharma@oss.qualcomm.com> said:
+> Add the TLMM pinctrl driver for the Qualcomm Kuno platform, supporting
+> 110 GPIOs and their pin multiplexing, pin configuration and gpiolib
+> interface through the common pinctrl-msm driver.
+>
+> Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+> ---
+> +
 
-On Fri, Aug 7, 2026 at 10:04=E2=80=AFPM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
->
-> Hi Rafael,
->
-> please consider the following changes since commit
-> 8cdeaa50eae8dad34885515f62559ee83e7e8dda:
->
->    Linux 7.2-rc2 (2026-07-05 14:44:06 -1000)
->
-> are available in the Git repository at:
->
->
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
-> tags/thermal-v7.3-rc1
->
-> for you to fetch changes up to 55c16e15ff9f91bc994a20124b83faf27f0e3690:
->
->    thermal/drivers: Remove redundant error messages on IRQ request
-> failure (2026-08-07 17:27:28 +0200)
->
-> ----------------------------------------------------------------
-> - Move thermal_zone_device_enable() to the right place in order to
->    prevent calling it if the thermal zone registration failed (Dan
->    Carpenter)
->
-> - Improve bitfield manipulations on Armada (Bryan B. Lima)
->
-> - Remove unneeded 'fast_io' on Sun8i and Armada (Wolfram Sang)
->
-> - Fix wrong boundary when clamping the low values in the set_trips()
->    callback and fix wrong mask when setting the temperature interval on
->    Airoha (Christian Marangi)
->
-> - Make use of the regmap API in order to support the Airoha AN7583
->    (Christian Marangi)
->
-> - Fix adc_tm5_get_temp() return check value on the QCom SPMI ADC
->    sensor (Rakesh Kota)
->
-> - Fix unbalanced clock enablement when the resume fails on the iMX
->    driver (Can Peng)
->
-> - Add Qualcomm Master BandGap thermal monitor support (Satya Priya
->    Kakitapalli)
->
-> - Add Maili Temperature bindings compatible (Haritha S K)
->
-> - Add a devm action to clean hardware interrupts, sampling, and
->    control registers on Spacemit K1 (Pei Xiao)
->
-> - Fix trivial typo in an OF code comment (Marek Vasut)
->
-> - Remove unecessary print on Qcom SPMI ADC driver when a call to
->    devm_request_threaded_irq() fails as this one already prints a
->    message (Jishnu Prakash)
->
-> - Add support for QCom PMIC5 Gen3 ADC by using auxialiary driver and
->    shared interrupt with the IIO driver (Jishnu Prakash)
->
-> - Make resets optional on MT8196 and add the corresponding property in
->    the DT bindings (AngeloGioacchino Del Regno)
->
-> - Fix clock staying enabled with the resume operation fails on Qoriq
->    (Can Peng)
->
-> - Fix wrong closing brace position in thermal library header (Andreas
->    Haufler)
->
-> - Fix low and high trip point validation by moving the check after the
->    clamp on the spacemit driver (surendra)
->
-> - Remove redundant error messages on IRQ request failure (Pan Chuang)
->
+...
 
-Pulled and added to linux-pm/thermal, thanks!
+> +static const struct pinfunction kuno_functions[] = {
+> +	MSM_PIN_FUNCTION(gpio),
+
+MSM_GPIO_PIN_FUNCTION() ?
+
+> +	MSM_PIN_FUNCTION(audio_ref_clk),
+> +	MSM_PIN_FUNCTION(coex_uart),
+> +	MSM_PIN_FUNCTION(ebi2_lcd_a),
+> +	MSM_PIN_FUNCTION(ebi2_lcd_cs),
+> +	MSM_PIN_FUNCTION(ebi2_lcd_reset),
+> +	MSM_PIN_FUNCTION(ebi2_lcd_te),
+> +	MSM_PIN_FUNCTION(emac_mdc),
+> +	MSM_PIN_FUNCTION(emac_mdio),
+> +	MSM_PIN_FUNCTION(emac_pps_in),
+> +	MSM_PIN_FUNCTION(emac_ptp_aux),
+> +	MSM_PIN_FUNCTION(emac_ptp_pps),
+> +	MSM_PIN_FUNCTION(gcc_gp1_clk),
+> +	MSM_PIN_FUNCTION(gcc_gp2_clk),
+> +	MSM_PIN_FUNCTION(gcc_gp3_clk),
+> +	MSM_PIN_FUNCTION(mi2s0_data0),
+> +	MSM_PIN_FUNCTION(mi2s0_data1),
+> +	MSM_PIN_FUNCTION(mi2s0_sck),
+> +	MSM_PIN_FUNCTION(mi2s0_ws),
+> +	MSM_PIN_FUNCTION(mi2s1_data0),
+> +	MSM_PIN_FUNCTION(mi2s1_data1),
+> +	MSM_PIN_FUNCTION(mi2s1_sck),
+> +	MSM_PIN_FUNCTION(mi2s1_ws),
+> +	MSM_PIN_FUNCTION(mi2s_mclk),
+> +	MSM_PIN_FUNCTION(nav_gpio),
+
+Possibly here too?
+
+> +	MSM_PIN_FUNCTION(pci_e_rst),
+> +	MSM_PIN_FUNCTION(pcie_clkreq_n),
+> +	MSM_PIN_FUNCTION(pll_bist_sync),
+> +	MSM_PIN_FUNCTION(pll_clk_aux),
+> +	MSM_PIN_FUNCTION(qdss_cti_trig0),
+> +	MSM_PIN_FUNCTION(qdss_cti_trig1),
+> +	MSM_PIN_FUNCTION(qdss_gpio_traceclk),
+> +	MSM_PIN_FUNCTION(qdss_gpio_tracectl),
+> +	MSM_PIN_FUNCTION(qup0_se0),
+> +	MSM_PIN_FUNCTION(qup0_se1),
+> +	MSM_PIN_FUNCTION(qup0_se2),
+> +	MSM_PIN_FUNCTION(qup0_se3_mira),
+> +	MSM_PIN_FUNCTION(qup0_se3_mirb),
+> +	MSM_PIN_FUNCTION(qup0_se4),
+> +	MSM_PIN_FUNCTION(sdc4_clk),
+> +	MSM_PIN_FUNCTION(sdc4_cmd),
+> +	MSM_PIN_FUNCTION(sdc4_data),
+> +	MSM_PIN_FUNCTION(sdc4_tb_trig),
+> +	MSM_PIN_FUNCTION(sgmii_phy_intr),
+> +	MSM_PIN_FUNCTION(spmi_coex_clk),
+> +	MSM_PIN_FUNCTION(spmi_coex_data),
+> +	MSM_PIN_FUNCTION(spmi_vgi_hwevent),
+> +	MSM_PIN_FUNCTION(uim1_clk),
+> +	MSM_PIN_FUNCTION(uim1_data),
+> +	MSM_PIN_FUNCTION(uim1_present),
+> +	MSM_PIN_FUNCTION(uim1_reset),
+> +	MSM_PIN_FUNCTION(usb2phy_ac_en),
+> +};
+> +
+
+Bart
