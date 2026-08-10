@@ -1,169 +1,160 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from fhigh-a1-smtp.messagingengine.com (fhigh-a1-smtp.messagingengine.com [103.168.172.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A55503DA7EE
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 12:15:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E6493D952E;
+	Mon, 10 Aug 2026 12:19:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786364150; cv=none; b=LwIhKG9k1kjqp3R4eL/T+1VHbEFB29+xm/EPSxpD83pbAR1w/78+BO+ceMOoOmw5R+czeqwtkYSIkzLT/i6fRyOJnW0jCEKfim8j73+baRwMvfFf+icXRx6TETzHY2e+8KYYDh/ZsW/dwJORT6GDCYipoRBdOqRd5ZsBLRWxOic=
+	t=1786364360; cv=none; b=cLoD/CoI0YVrnzQymEU257byVk668dkjUDh+YPy2i08Gg1oMIiFUBmpaiO/EjKfNA5aUnca6whPG9QFAkt3W5blO+wJo23AMdEs7uB1iLG/5Xs7cUVj91FkKna4n56j7XHEZgGW79Lee+1rx4FndEDgldZnk9/7rcRDfYdTjjuY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786364150; c=relaxed/simple;
-	bh=pxualnNlmo7YthKcXIIvriepZ/5ljp8QuHSHQiHYqO0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:Cc:From:
-	 In-Reply-To:Content-Type; b=iS/t5lZP5BiL3G0lBDGdZ5q7g44iLUprIO7Q7MugGglfTCYims3bl2NPK/HgiPCxl99nHeIokFazdFcUsDbTBHCxHRFiGpLyVllv4GQVtCX/C8YwAyNOHyi81QTZLKEBBNWnK1OPBpZfKTt9BLcoRkjx/f8FM6c9VXqOrgwpZEM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hjB47tlO; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=AKYm7SJv; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1786364360; c=relaxed/simple;
+	bh=rvDl1NZrMjACOeMwLTukdq6COoqukX883McrkB8fLh0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a63Zi03jhA15B7Feb9Sd3xQhhlUBYXRWXYBFpvIDxFTUc6SkYa7S5XvXA4cfFQHtwgqQqwPTcvUJxWb7MM14oTGvavsxMfkMl7vSZag48UwJpuEDlcwzzk/3jje3r+motF8tVRqls5FKk+bCpN6CITT74T/9m/T0TE9khYu1Hrs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se; spf=pass smtp.mailfrom=ragnatech.se; dkim=pass (2048-bit key) header.d=ragnatech.se header.i=@ragnatech.se header.b=At7PjhLJ; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=Ryj7KPmi; arc=none smtp.client-ip=103.168.172.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hjB47tlO";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="AKYm7SJv"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67A9RxAV872426
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 12:15:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	r5/uSnkWrBqhnPOKlandBmdCcng880qvU9W4Z1j8HbI=; b=hjB47tlOABVwefmI
-	99o91r1Ogy/n1kJeu00Fq5Q/3cJVNfdfFhjob16TSK36/qBkqwo05Dg0SKVDyAr8
-	Pfxh4Y+23qVgEfWVgwvAz1RvDZstofgfAWecbJFBpGoanCp0tLLLp7zmB9188IFH
-	SVOA8hTzd+6NYp9pcC97KsA15IyF6P8aqSgPH6faz4u4J4d+XxwbOAAvN+pWCdzx
-	sN4/Lxi0dN4YwIIptffLpWb7wQJeA1zWSPa1OEpcTbqa4clakunvNewnpa4v9zwd
-	8sB8KrBk5yzehY4Uw7M4xHTvp4/QFurQlHBfTCbSMzwwNpe2+AFEkGopMNUiFPJR
-	H3T8yQ==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fy8v59d7r-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 12:15:48 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38fcaa5f82cso1911519a91.3
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 05:15:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786364148; x=1786968948; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from:cc
-         :content-language:references:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=r5/uSnkWrBqhnPOKlandBmdCcng880qvU9W4Z1j8HbI=;
-        b=AKYm7SJvZd/btsV5f7lj6Ptz0nUKugHJWRS1jd7EBP3wDSwnSyonPnD96dylMqbzQL
-         /2CE+lIpKORSR4m68oczlSepaKeGNfgHG0VnRJJairZJ9EvKu6dfHGixscQu0NjJ8K8q
-         oS+AUYcfiobGiBK11I3fgNjQVSXOGiGAMcMTOrYzgsPbyZgcaO4b4R+iz/ZpnobpqCsb
-         zP8D0/5PPFEilws/yKJc95m78Qk/gjQGXmnH+c5dXcGLXnofPOxZecKQcmES+fmJ2AIP
-         u9CN0w5IWHw5ueF3aYyb5rrNyaRWNiCsNW6+peU9LlPf3cijehE7pR07KOMLP2rxOX0D
-         aZZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786364148; x=1786968948;
-        h=content-transfer-encoding:content-type:in-reply-to:from:cc
-         :content-language:references:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=r5/uSnkWrBqhnPOKlandBmdCcng880qvU9W4Z1j8HbI=;
-        b=dhCSvkqcz7RcONd4zADZexQi6AMcnBEBaM4kNNcSECMGTSyYNJvraijNLXNz2XSKiO
-         eUvHDt1ehBX/tDhXYMJZRsJVIr4iiM8DWEas8HET2m+IXfqMNGg6uLBfoWhxPVZfh7oj
-         YwiYuVPti+wuUAoFQYX5Gb8r/TIPW5BY7i3/S2ZO8R8UGol9yjcmiES/urN9vdhdASh5
-         6Z2cRu43GcEkPdYA1frEAahUsps21qFA+Uhfy7CwuYKvgrQWCjKuIDAH+EuD8oiHxuOy
-         WxTxJ9Ed4eC7iFBU3ygr+GM9jh7KY3FFnpgLfW1GhFFs6A4/1U197UczUzQ7IQZttddM
-         58QA==
-X-Forwarded-Encrypted: i=1; AHgh+RrWV18k6iynYmY3UP74RMiNGEjZzMVbvTl7k2EFIW9/LiKqzC436futpnCHT0WKlW5C/NZ9FDw2FQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxocPVp4+R4vfWLorxrBpkdklvucyUdfR7gXkv1vfMqizwiQe2S
-	grNCPCPAD7IDfinCe6F3Ve/ywoAgVVuuvUZaPGmzt5QjHHLm3f8pQ8IRzasUHQwkmfocOPp4UV1
-	IOFrxiDuPu/CPW0qbW6L3EPq5ux41v18u7fshWJItDFJBoYAftePHLuBPqaObfQ==
-X-Gm-Gg: AR+sD10N/XSCyZP5pyuUqojvfmllY9SIu2RTIpPGRjubLsYWTQlisSHvlwzPOHUTBxs
-	k5yfqtAB0CwcKUfDzsWphRiYwDFviW3FvyfoT2mwaOEsd2AICa9zWrBTXg4Vp1y4p52eYCZRdju
-	NNxxHxx4U3NmD0ViQ36a9CT5TjQ1iw2XEChkGvpgitfkhVdXHJ2XGkQxQKdRQPZ65+qN65laFSi
-	3RN7lvTrK8iy0tRqJHdGzILxhol1YjqFCp4d0vCKAkPfMH/8jVih9fvLHM5WAdGh6WFJYSl0/VK
-	Q/qdPPT5lFWubbkI6CZj2tgLpRtofvQQXYaiinWk+EsxZsjCVoeyP+9+nKdl6+fSr+bi+jz4z/M
-	fWZjbvx1M4qLWdi0md5gJ645LI4QKEA==
-X-Received: by 2002:a17:90b:51ca:b0:390:b41a:b92a with SMTP id 98e67ed59e1d1-392cc912a89mr1098555a91.4.1786364147591;
-        Mon, 10 Aug 2026 05:15:47 -0700 (PDT)
-X-Received: by 2002:a17:90b:51ca:b0:390:b41a:b92a with SMTP id 98e67ed59e1d1-392cc912a89mr1098497a91.4.1786364147144;
-        Mon, 10 Aug 2026 05:15:47 -0700 (PDT)
-Received: from [10.239.133.197] ([114.94.8.21])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3925fc6f13dsm12428530a91.1.2026.08.10.05.15.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 10 Aug 2026 05:15:46 -0700 (PDT)
-Message-ID: <ebc24dce-c17d-43bb-9c36-b105f4e1d55d@oss.qualcomm.com>
-Date: Mon, 10 Aug 2026 20:15:42 +0800
+	dkim=pass (2048-bit key) header.d=ragnatech.se header.i=@ragnatech.se header.b="At7PjhLJ";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Ryj7KPmi"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id 9328814000DA;
+	Mon, 10 Aug 2026 08:19:17 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-04.internal (MEProxy); Mon, 10 Aug 2026 08:19:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1786364357;
+	 x=1786450757; bh=DBwv38UeXEElytz9teiFCRmmtzj4WSjjGc8R94lRcZc=; b=
+	At7PjhLJ+qoC8h/+9Sz3M2X1AtLWdRoebeFcGKiGfSpwZvXyhRfMtJyhWVbZQnKp
+	8CHhgt7pd1pS/eOHVhEXALVvlukn9KLR+rn1eDbYc/MPZJBVPdJT73XprvzyNrJr
+	UWChHySxzA/GRYtjRQPz1ko2uCXBioxn6BhOMx/xAuCEmvGUK8tXvznY5k7tY/r7
+	EHCt6rTosqwUQ+MrgwvzLAV5zRu7VSJQGzmh6NMwEfMFo2CsNycdbAd93khC8ONH
+	i1/2xgYr6jLiVSxohDFJ6w+VSAU5ncryRd3hFdeKVJDtpJPAiQu2rdSmU7vpS/lo
+	zIcQmDzwotiaFY3brpTtwg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1786364357; x=
+	1786450757; bh=DBwv38UeXEElytz9teiFCRmmtzj4WSjjGc8R94lRcZc=; b=R
+	yj7KPmiGNVki5pGQxYZvz2JGUaHQ6fJfKlk5yyDOcW+uu49YI+6tBq1Pw1pe41P7
+	VMmhu0I/Gmnh8PQlqxAGAuiZuwfvYsumyYqmOqzmpj8tVAoDb4TZK/2C/CnDyZqR
+	rU/ESUFLQWZ0Y7miboAf9brL0tmQe+6KIZ8XFr4xUKoKXXAPjvVyotefyMOAky14
+	SCHyfDRqEF5YprflqPezecBFWck6ivLq4pRgjyytrDDwT6sj1/ffx/MBmBFiiWgN
+	FKQaIkYUV/abpNyX0PdOroQIJYfZWRbjWntVxNvln9Ujg08vI8QebMS10bBGXdTh
+	LlLSVzlMDh0J2qiwhtnMQ==
+X-ME-Sender: <xms:xMF5alEbU2A7gQhdsNx7y9Ybnt7jIozoXHTmtIZ69eVoRrEkFpIJ7A>
+    <xme:xMF5amvneVv1zlM5ftYgK7s8obtof-psYIa3lcMQO28AkBGUmIVsm9xensy_JLwjE
+    c1i1jXzpTA6Uv5pbn-g5V03zrC6mmLk0m0GvbowQU-asfBRGV18TTg>
+X-ME-Received: <xmr:xMF5ark7MdxNFHjLit9ke_hfQCurH1GciG56iSGDUyERr5wpYhJRHahHg237q1GC8od6vSwafBoeWOvyVuovRnKejhtpDiU>
+X-ME-Proxy-Cause: dmFkZTEDDqrNSdgSsKCPCdPI3lxCUuqB8DUfkCYBJ3tKCtz/LAyfDJv3pqAO+Y0tOOyUvz
+    09OhP42vTck3IcUy6AJUmupZeSfBoWtnYR8IXLhk+1ZuchcO5HP/wvlEP6+ULFcaLKhMEw
+    wYpu+Z+esai9O/xmG04bWobemuAAvK84/9bBP1x1Nn3hXc4hXirNczsQ30KX0XhyE7e+Z4
+    irM+sZHZ6wnwR4KMWD8ZqFwgyXGAqE5KfkpvN0bopVdsIYR+OamtCXyhHhrYVHfvnvbRDw
+    HNLmEfzoet/7qsMfkmuoBR3Aw1YYbgyFVW4W9TA0U9C/jbVCLSeTB6thsaHqXQghI3TVKB
+    YzfCKYJM0wU5yeW4G8xc779ghB27rDlqfAmgtbWRIhzPMK7HyeYVLO6OG9hDXPWG2Wp/5d
+    UkpAR6BjIgoFUz3R4Wtlin8X2C/wRtVQpm/zwY/SryyJWqCJmU0Xctr9MfJwmo/ejpsxZw
+    11bH01BBoJ8zc8ac6NrfyBODrLuUJeLfZDXgMYW8AQs9xMnOQw+l6ZRoQNMu0XNzAcn+zK
+    HO17OMMy/W5h/5aj5ZbWq1WK49rDKSDyTSmVssfwktD3GTjpUHE8cJLiZak91Agd6+983n
+    NHB7i8+KX16HUoTXQsbi4TOPims+cGYSDmHBUBArVyCZKL91wWKUagb50TZA
+X-ME-Proxy: <xmx:xMF5apO4XwBvlUnDgGrnuWw7I2BqkD6YMXbYBgzGc-17lYIFl7rrBg>
+    <xmx:xMF5anxI4HY9O4mHGEF9t7rPsthJhP88sud1UIY-zSU2guds4BsX6g>
+    <xmx:xMF5autoVZSScBTAkYxeyOv0uu1pwVhDpKfz_ZzDPb_EkfxmcxJ1Tg>
+    <xmx:xMF5aibTb_uX-TDzltbXqQ7NPv785UfAZf9trYiIoWq_8C3m68dmyg>
+    <xmx:xcF5asiIf3ZigFz8JiPSeH-NAlgtL5Zul_hi9y8d1QA4x4BUmQD7RRU3>
+Feedback-ID: i80c9496c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 10 Aug 2026 08:19:16 -0400 (EDT)
+Date: Mon, 10 Aug 2026 14:19:14 +0200
+From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+To: phucduc.bui@gmail.com
+Cc: Markus Mayer <mmayer@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	rafael@kernel.org, Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 1/2] thermal/drivers/rcar_gen3: Handle -ENXIO from
+ optional IRQ lookup
+Message-ID: <20260810121914.GA2757863@ragnatech.se>
+References: <20260810111841.77898-1-phucduc.bui@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: acpi-cpufreq: Initialize cmd.val in drv_read()
-To: lirongqing <lirongqing@baidu.com>,
-        "Rafael J . Wysocki"
- <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-References: <20260810061045.2397-1-lirongqing@baidu.com>
- <20260810061045.2397-2-lirongqing@baidu.com>
-Content-Language: en-US
-Cc: zhongqiu.han@oss.qualcomm.com
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260810061045.2397-2-lirongqing@baidu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODEwMDEwNCBTYWx0ZWRfX2ex6R+3l+4vs
- dC8eyeVWdwLMUbfYdhdJ/lFalD+OFhQiGTiZBRTXFP5r1LX4EIb8H7A+x31xBqZN6nzXXKX9Oj9
- 11C/69ctg/Gkzq3R6VB+Q9g31bsfMmI=
-X-Authority-Analysis: v=2.4 cv=J6qaKgnS c=1 sm=1 tr=0 ts=6a79c0f4 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=2QSLavsyAAAA:8 a=zuLzuavZAAAA:8 a=hP-e37SESAiXYNlssCwA:9 a=QEXdDO2ut3YA:10
- a=rl5im9kqc5Lf4LNbBjHf:22 a=9H_80fVQ3bbXSWzY4Kdq:22
-X-Proofpoint-GUID: X6ZC0y0JGj-xg0PnpgYhqIVGGqF8L4g5
-X-Proofpoint-ORIG-GUID: X6ZC0y0JGj-xg0PnpgYhqIVGGqF8L4g5
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEwMDEwNCBTYWx0ZWRfX5pry04f+Rx0t
- mFCDvsmFjk+AiRHy//OASVdRroxqqK18Cq3oMb/up752FC9RsPzTYABYMN+8PxW0aTBFYSzV+w1
- VZ+hMcj23BjnNNoTUVCw9iZS4f3G68daYBH6d6+Nps/Bz/k6M8U8pz6x3DYUKphNtmHJfd2G1bX
- 6twW0LJtpsvXOzXHUXYynh7yYEWnO1K6cdTNu8Tc8Osp8VnFu9FBobWLzM4CfucC03eZHhuUAPt
- gt71fDS/eA6oCK0WHDpYd0c4rJsxJ+WKyjSnl3fxdPeZuBH24+YkV+x9vx90p9MoVmzP9ZSKmAy
- 6zMkLyFDV6MfT07fr9aCGtDGsbpARp/rXoElTGtu7LD6u3ggETHJbZR1BiebK9C25y/nfCa+AiR
- 0N2p52giUh8HNL7HzHJpHNHbsa1Q8JHEeIi5oDSzws+JSp5l8DHlvBGjuRu27QMH4kAc+7G+6Q1
- VhSrmqc/t0AQf7U3D9A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-10_02,2026-08-07_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 spamscore=0 lowpriorityscore=0 priorityscore=1501
- impostorscore=0 clxscore=1015 adultscore=0 bulkscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608100104
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260810111841.77898-1-phucduc.bui@gmail.com>
 
-On 8/10/2026 2:10 PM, lirongqing wrote:
-> From: Li RongQing <lirongqing@baidu.com>
+Hi Bui,
+
+Thanks for your work.
+
+On 2026-08-10 18:18:40 +0700, phucduc.bui@gmail.com wrote:
+> From: bui duc phuc <phucduc.bui@gmail.com>
 > 
-> In drv_read(), struct drv_cmd cmd is allocated on the stack with .val left
-> uninitialized. If smp_call_function_any() fails, do_drv_read() will not
-> run to populate cmd.val. As a result, drv_read() would return uninitialized
-> stack data.
+> rcar_gen3_thermal_request_irqs() may return -ENXIO when no optional
+> IRQ is available. The caller currently treats all negative return values
+> the same way, disabling hardware trip-point support and continuing probe.
 > 
-> Fix this by explicitly initializing .val to 0 when declaring cmd.
+> Distinguish -ENXIO from other errors so that the existing behavior is
+> preserved when the optional IRQ is absent, while errors such as
+> -EPROBE_DEFER, -EINVAL, and other failures are propagated to the
+> caller.
 > 
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 > ---
->   drivers/cpufreq/acpi-cpufreq.c | 1 +
->   1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index cd2ca87..6c7ece9 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -308,6 +308,7 @@ static u32 drv_read(struct acpi_cpufreq_data *data, const struct cpumask *mask)
->   	struct acpi_processor_performance *perf = to_perf_data(data);
->   	struct drv_cmd cmd = {
->   		.reg = &perf->control_register,
-> +		.val = 0,
+> Link v1 : 
+> https://lore.kernel.org/all/20260807093058.42840-1-phucduc.bui@gmail.com/
+> Changes in v2: 
+>  - Update the commit message.
+>  - Move error handling to the caller.
+> 
+>  drivers/thermal/renesas/rcar_gen3_thermal.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
+> index 94804816e9e1..04a57ff724f4 100644
+> --- a/drivers/thermal/renesas/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
+> @@ -527,8 +527,11 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  	priv->info = of_device_get_match_data(dev);
+>  	platform_set_drvdata(pdev, priv);
+>  
+> -	if (rcar_gen3_thermal_request_irqs(priv, pdev))
+> +	ret = rcar_gen3_thermal_request_irqs(priv, pdev);
+> +	if (ret == -ENXIO)
+>  		priv->ops.set_trips = NULL;
+> +	else if (ret)
+> +		return ret;
 
-Will the compiler handle this automatically?
+I'm not sure I like this.
 
-https://en.cppreference.com/c/language/initialization
+The old behavior is that for any reason we can't get the optional IRQ 
+the driver still works, but without hardware trip points.
 
+While the new behavior is that if *something* other then the IRQ not 
+being available we fail probe. What is the gain here? What benefit is 
+there from the driver not providing thermal readouts if say for example 
+getting the optional IRQ would return -EINVAL ?
 
->   		.func.read = data->cpu_freq_read,
->   	};
->   	int err;
-
+>  
+>  	pm_runtime_enable(dev);
+>  	pm_runtime_get_sync(dev);
+> -- 
+> 2.43.0
+> 
 
 -- 
-Thx and BRs,
-Zhongqiu Han
+Kind Regards,
+Niklas Söderlund
