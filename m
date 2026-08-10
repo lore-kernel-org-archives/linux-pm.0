@@ -1,167 +1,131 @@
-Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com [209.85.222.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A4D7407CE8
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 14:50:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3C644052A5;
+	Mon, 10 Aug 2026 14:50:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786373435; cv=none; b=iGYadOHcVVdMrmlsD/3E4X7ZCqmNgNFsOXPf1ok+h1N1b/jRIU5R50/MJrEnI/eyzY3pM8IpZXeVwVhe4/vyC07eeEpJOuUJZq2chJb/V5vwuEWk0bak5axBehWWJb5G/usqkIbxyZd9/NDCecIFEH1ksQr5SGEhU3Xi61efue8=
+	t=1786373458; cv=none; b=e0r6zXhYiXzaaDfVE9UBXhtNP1KVQd2jJSBopg5ijwXwsINwDIWQFE0tmGJk+/63Vxtad2gJt3QYgiRN0EyYAFk+7TGtdJWJq1DuOe4VLkbBvTrIE9VOF9TEvUHAbCRVjchqKsU51HmJMsHQD4DTnXa5bYAd2NUYE3+U0AHpDF8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786373435; c=relaxed/simple;
-	bh=n5rMYOLB08GVMHx1R8PCKx0D3UZSKzHrcfaS81rxPSs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=vCg851q0gBRCOwMEf41GechUX2OYItxcsH3/VRT7N5d2zD1AZe1lg4h9FU2jHaNdAH8tmQGjNyEs5h6SuGsx26xUfjLIjj+VAXyjuUfAfWQS4Be095cFRmrhAiKPiti+hYhN6i0OcD6bVBeJtxA9HQKchHPjIZXN7ZM7TxWkC2I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-9674d727c0aso3014651241.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 07:50:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786373432; x=1786978232;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=LDUVqF9bGKPqsW39iH6LzgBQf6STHLl+9ztnXalCrFc=;
-        b=G/6b502pjUi3EmRwMgAeMDj6gcXYChWprloqaClQ+OKI5QQIuNu0X6vILbeU49aEOO
-         wI9gOgeQDF8XLAC7D8er6LVDZtqsOu9HWtows8yaxwJpIxm8nnOpvhBMMc3bv3XmnAWY
-         djtDESbMOsWlJjxr2Dr0VIWMzUAKLrcgsIfeZoECEBfKbhomK5558Ggpb76KdPc3KPwV
-         svKAFIsaWQH7hxMBg5K/bHbtqAkpPOg1afhV47A/8lyxH1oGeMJjyTsY7nImM4kUhlbf
-         WEtl4+iVXGFw2nXWdAx1kxR03Vl5+o3SVMMhQDDEGAOcRtFcZnl2icDFR7Us66xWq1oM
-         sIPg==
-X-Forwarded-Encrypted: i=1; AHgh+RqAcCFd5eqsm86agD1TVvw15XYTFNDD8ilEN6NCFk60PbSDfoyr4wf8o7RQVcOdbojMiBpJLk9Qzw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxFYfb65sCVIHqrIBfgXV5u+lSijjOozutxnpFOMX6qt4aiev68
-	enQppnPKltUs0QkTfJQKwqfL6JfDh71czx8/L+jWb1+IXKdWV0iRU3fkpHrSBkGn
-X-Gm-Gg: AR+sD10Nd4IG9lbYh3t+56Hf+Wou5T+QX3hropgtGRVmSHLVoBVyNPdkxZjRcmDi5ZS
-	HSZA/J+VZU0Mvro2Shb94iWXEnI4xjiUgVlfUNFGYaz4wDlomzaxSeTJwN9yanWhigE3v88/MJo
-	0T769NeR4nN9azbiobEcRLxq/fpDLAPS2LzHyfe1TqZSpKKETMRboUFPU3zQsHxnv1m9CUCcP4E
-	WMPfBdxospa68vVTGLjeq/wrASRAmPIUhTbYudDJ2MpkhgI1rCEjIIKLbe5tYgrsfUT2e2QMfOj
-	Wqhep29yyknxpd3MvonkZ+rHw2Isq/LkFT81M2FwiZ2cTQhm9Z+pKiskn1ZCbnBSzd/Gdc3NR0G
-	+jQkxlVIdXPFYCY/bTLy9kWD+wRGQQUlp1PvyQ7ub8w4O7dJ49+yZBUFqL7c6LaUM9pkO3+/fii
-	/r4aFmQqnM7ZGSRAq2OhhoENGS9b/1TpF23p/6gs0p5XHfDZOfdBKvwOFmU/LWrZqQH/VNRi1DG
-	and5KHXlftG4Y7OrG0TlYi/qw==
-X-Received: by 2002:a05:6102:2082:b0:74d:5456:b6fb with SMTP id ada2fe7eead31-7652241d10cmr1596996137.16.1786373432328;
-        Mon, 10 Aug 2026 07:50:32 -0700 (PDT)
-Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-979f2e53fb5sm3636387241.1.2026.08.10.07.50.31
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 10 Aug 2026 07:50:31 -0700 (PDT)
-Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-977ba4d3b49so1516164241.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 07:50:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rpn418I8zDll7DV00Feph7dlby3vJZi1P65OqFZTLEENdPCT6tM4pSEapoK780q5txrkDbXE8Hkwg==@vger.kernel.org
-X-Received: by 2002:a05:6102:2082:b0:74d:5456:b6fb with SMTP id
- ada2fe7eead31-7652241d10cmr1596982137.16.1786373431244; Mon, 10 Aug 2026
- 07:50:31 -0700 (PDT)
+	s=arc-20240116; t=1786373458; c=relaxed/simple;
+	bh=tH3rx8/+Q5rouhJitSXYc6N2CxHBREEp6evdA5XDPQw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=eZlSadr0NZJOW02z+th7O97Uh/Vw1gH/JrX6zHiFocZLWwNtezFtzzSJYCqLJdUr7XUqQ/vgSyO1YkeMu2W1AQ5LoaKUje+afQLgqOfz61/wD0ykfS2eKLJXqgXR4B5vhNyAe6/jj6TnlASoDnE6UBIAih2cTmYXEFDT9JBGgak=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=He4OLeeC; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="He4OLeeC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 881E81F00A3E;
+	Mon, 10 Aug 2026 14:50:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786373456;
+	bh=KekliF3rQQsc6gjTlgSqEc3Pq8Q6ZjODES/M7RTSo3U=;
+	h=From:To:Cc:Subject:Date;
+	b=He4OLeeC3S06RkWWW3RzhcvtN4ZoGBMdNz3Pd2Xe7OkWH/yeMXa37YGhta892UwfM
+	 JJSP0rU2yPvcyHkixuxo6xQfykjcTiZXIMduKAYbxmXguVl4mJ0e77pW447HgKFB3T
+	 FlqVP/u9X53hBF+WfyJ75HW4ML6PhdLemPztH8sErLIoEOEaSLZ4/Geu9tIzcYhPsg
+	 h37/1A0mGfp9rHCKuQ217L56QjXzgw2MJhjWKPOAY/mdE6cQjsdypMM6g280L0MG2z
+	 CZSMwnFgYr7qLForTiTNw2n5W0PdMi75fmmBFI9/HMdrrB2wyZwvldjKWCIHcuD8F9
+	 /8pMwyI1Xjieg==
+From: Georgi Djakov <djakov@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	djakov@kernel.org
+Subject: [GIT PULL] interconnect changes for 7.3
+Date: Mon, 10 Aug 2026 17:50:47 +0300
+Message-Id: <20260810145047.422910-1-djakov@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1785941595.git.geert+renesas@glider.be> <CAPx+jO87d7H92KSR7R7ObR05sM2JcHBCo+YuUf_1gE-KwhR7CQ@mail.gmail.com>
-In-Reply-To: <CAPx+jO87d7H92KSR7R7ObR05sM2JcHBCo+YuUf_1gE-KwhR7CQ@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 10 Aug 2026 16:50:19 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdW78wFHKP8n2P_MEVASO3MFHCjXkEWSFXfE3-mCjkhsgA@mail.gmail.com>
-X-Gm-Features: AUfX_mzSDh0l0A6CyrHddRhefJg-h_HSruJEAkSrbmndCIqd_rMaLktXcM1WovQ
-Message-ID: <CAMuHMdW78wFHKP8n2P_MEVASO3MFHCjXkEWSFXfE3-mCjkhsgA@mail.gmail.com>
-Subject: Re: [PATCH v3 0/6] R-Car X5H CPG/MDLC support
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Ulf,
+Hello Greg,
 
-On Mon, 10 Aug 2026 at 16:18, Ulf Hansson <ulf.hansson@oss.qualcomm.com> wr=
-ote:
-> On Wed, Aug 5, 2026 at 5:21=E2=80=AFPM Geert Uytterhoeven
-> <geert+renesas@glider.be> wrote:
-> > This patch series adds minimal support for the Renesas R-Car X5H Clock
-> > Pulse Generator (CPG) and Module Controller (MDLC), to aim for replacin=
-g
-> > the dummy clocks in r8a78000.dtsi with proper hardware description.
-> > These two components are closely related, in the sense that they are
-> > both supposed to be accessed through the ARM System Control and
-> > Management Interface (SCMI) on the Ironhide development board.
-> >
-> > This series consists of three parts:
-> >   1. Patches 1-2 add DT bindings and DT binding definitions,
-> >   2. Patches 3-4 add minimal CPG and MDLC drivers,
-> >   3. Patches 5-6 update the DTS.
-> > Note that this series depends on v7.2-rc2, due to the use of
-> > <linux/device-id/of.h>.
-> >
-> > Changes compared to v2[1]:
-> >   - Add Acked-by, Reviewed-by,
-> >   - Add fixed-rate clocks to kerneldoc of r8a78000_cpg_priv.map,
-> >   - Use devm_clk_hw_register_fixed_rate(), drop unregister_fixed_clks()=
-,
-> >   - Drop fill_clk_map(), as it is not really needed until SCMI remappin=
-g
-> >     support is added later,
-> >   - Replace <linux/mod_devicetable.h> by more specific
-> >     <linux/device-id/of.h> in v7.2-rc2,
-> >   - Add a comment to document only always-on domains are supported,
-> >   - Consistently use /* sentinel */ for zero sentinels,
-> >   - Drop trailing commas from sentinels,
-> >   - Sort MDLC nodes (alphabetically, by label).
-> >
-> > Major changes compared to v1[2] (more detail in the individual patches)=
-:
-> >   - Add default support not using SCMI,
-> >   - Drop everything related to SCMI.
-> >
-> > Note that this series does not use or rely on SCMI in any way.
-> > SCMI remapping support will be added in a subsequent series (old versio=
-n
-> > at [3]).
-> > Full hardware support without using SCMI could be added, too, if anyone
-> > would care about that use case.
-> >
-> > For testing, I have pushed this series plus additional work (including
-> > a rebased and updated version of [3]) to [4].
-> >
-> > While I know it is getting late in the cycle, this work (especially the
-> > DT bindings) are a dependency for about any R-Car X5H progress, so it
-> > would be good to have it included in v7.3.
-> > Hence I plan to queue the clock patches (1, 3) in renesas-clk for v7.3
-> > (Stephen still hasn't merged my earlier PR for v7.3 anyway).
-> > Ulf: It would be great if you could take the pmdomain patches (2, 4).
->
-> Patch 2 applied for next, but I left patch4 for now as it didn't apply
+This is the pull request with interconnect changes for the v7.3-rc1
+merge window. As always, the short summary is in the signed tag.
 
-Thank you!
+All patches have been in linux-next for more than two weeks. There
+are no reported issues. Please pull into char-misc-next when
+possible.
 
-> cleanly (drivers/soc/renesas/Kconfig had a conflict), thanks!
+Thanks,
+Georgi
 
-I guess your tree still has the duplicate "default ARCH_RENESAS"?
-Patch 4 just adds a single line there, and the conflict should be easy
-to fix.
 
-If you want to send me a new patch, please let me know.
+The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482:
 
-Thanks again!
+  Linux 7.2-rc1 (2026-06-28 12:01:31 -0700)
 
-Gr{oetje,eeting}s,
+are available in the Git repository at:
 
-                        Geert
+  git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-7.3-rc1
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+for you to fetch changes up to 9621c81fd2eb7db4b647814b7b6e537744831e60:
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+  Merge branch 'icc-misc' into icc-next (2026-07-22 13:51:41 +0300)
+
+----------------------------------------------------------------
+This pull request contains the following interconnect updates for
+the 7.3-rc1 merge window:
+
+- New driver for Maili SoC
+- Add support for QoS on the SC8280XP SoC
+- Add support for QoS on the x1e80100 SoC
+- Add EPSS L3 scaling support for Shikra SoC
+- Add COMPILE_TEST support for some platforms
+- Misc tiny improvements and fixes
+
+Signed-off-by: Georgi Djakov <djakov@kernel.org>
+
+----------------------------------------------------------------
+Georgi Djakov (5):
+      Merge branch 'icc-sc8280xp' into icc-next
+      Merge branch 'icc-x1e80100' into icc-next
+      Merge branch 'icc-shikra' into icc-next
+      Merge branch 'icc-maili' into icc-next
+      Merge branch 'icc-misc' into icc-next
+
+Kuan-Wei Chiu (1):
+      interconnect: Fix use after free in icc_get() and of_icc_get_by_index()
+
+Li Jun (1):
+      interconnect: debugfs-client: add NULL check for platform_device_alloc
+
+Raviteja Laggyshetty (6):
+      dt-bindings: interconnect: qcom,x1e80100-rpmh: add clocks property to enable QoS
+      interconnect: qcom: x1e80100: enable QoS configuration
+      dt-bindings: interconnect: qcom,osm-l3: Add EPSS L3 DT binding for Qualcomm Shikra SoC
+      interconnect: qcom: Add EPSS L3 scaling support for Shikra SoC
+      dt-bindings: interconnect: qcom: document the RPMh Network-On-Chip interconnect in Maili SoC
+      interconnect: qcom: add Maili interconnect provider driver
+
+Rosen Penev (2):
+      interconnect: qcom: add COMPILE_TEST
+      interconnect: qcom: simplify allocation
+
+Xilin Wu (2):
+      dt-bindings: interconnect: qcom,sc8280xp-rpmh: Add reg and clocks for QoS
+      interconnect: qcom: sc8280xp: Enable QoS configuration
+
+ .../devicetree/bindings/interconnect/qcom,maili-rpmh.yaml      |  127 +
+ .../devicetree/bindings/interconnect/qcom,osm-l3.yaml          |    2 +
+ .../devicetree/bindings/interconnect/qcom,sc8280xp-rpmh.yaml   |   99 +-
+ .../devicetree/bindings/interconnect/qcom,x1e80100-rpmh.yaml   |   72 +
+ drivers/interconnect/core.c                                    |    7 +-
+ drivers/interconnect/debugfs-client.c                          |    2 +
+ drivers/interconnect/qcom/Kconfig                              |   12 +-
+ drivers/interconnect/qcom/Makefile                             |    2 +
+ drivers/interconnect/qcom/icc-rpm.c                            |    7 +-
+ drivers/interconnect/qcom/icc-rpm.h                            |    8 +-
+ drivers/interconnect/qcom/maili.c                              | 2091 ++++++++
+ drivers/interconnect/qcom/osm-l3.c                             |   16 +-
+ drivers/interconnect/qcom/sc8280xp.c                           |  356 ++
+ drivers/interconnect/qcom/x1e80100.c                           |  485 ++
+ include/dt-bindings/interconnect/qcom,maili-rpmh.h             |  171 +
+ 15 files changed, 3442 insertions(+), 15 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,maili-rpmh.yaml
+ create mode 100644 drivers/interconnect/qcom/maili.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,maili-rpmh.h
