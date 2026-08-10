@@ -1,145 +1,186 @@
-Received: from mail-yx1-f47.google.com (mail-yx1-f47.google.com [74.125.224.47])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15CD4442B34
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 19:43:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.47
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786390986; cv=pass; b=eMuIfQlz1OPEiBAIBDlaTJNVb6+zEPCg6+jTWi9zsD9mb/QIS3kKVhLzTkZanZ4Wg5Ukb22G9LgD3I6G0jr9X4rNEcwVbXv05ctHzMlRrUVO9TT23XHhDcs5EL9bcjIMtU3sm6GOwbJkZcNV4l8qNnpzPz1tM2GRqhwc3D5HuTE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786390986; c=relaxed/simple;
-	bh=sSfTl/Btn2V10b+yQ0O+ip8v3QAAuBldP5gKNtUYnog=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZiUePCpBbxLHqkfHf4kuLan5ldb9FsLwOTJwn/VKV9CZhe3FDVYaWckKBvcmT+FDM2Uz2lG8yi5Q+AX+88MN0r98ktNDjlrg9CPr5aJvpGuFHUlclhoyNJb08B5oyESjq9ds+q/wBEq/plPBQYQ6qU7rvd/oqGtJ5nIZ6rEokv8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems; spf=pass smtp.mailfrom=starlabs.systems; dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b=ZVBolws8; arc=pass smtp.client-ip=74.125.224.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starlabs.systems
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1993FCB1C
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 20:02:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786392123; cv=none; b=eDww8i8Tr6mTYWEn3GIoU9rlU4tL46jRRBcyigLZ+xdfURkqXEXzQRF6ZUD4wZr00eZGoSn4N8UW6V2Rc0/KBpeuuCcIPdZx4SKMDJjcsiL9w4/orftGDZRVmUYZ8qUG52uo+WwaE0J4QKD8arp+T+oIOJAWspDg+fMeA0W2joM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786392123; c=relaxed/simple;
+	bh=q9lVT+c+hzgPwLnQ067ugjs05Z+KIZPQR/Ta3Mhuk+s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=LEi+6woVvQCzNUz/CvyeO45bTqxVyn7lVcz6WeZutkYsYdQzM5PR7ixWc8jgS824hBderz1wvfGUOA7nG+J4DvSmasHICvayVmcovH6iEChcYypT/3tJMcDNwipne8EF3eoTC1kvauMLAHLiW4qNP6wuCm7LJoTdK6b5o7Ou/P0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cy14mL28; arc=none smtp.client-ip=209.85.128.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b="ZVBolws8"
-Received: by mail-yx1-f47.google.com with SMTP id 956f58d0204a3-664b05d408bso1921960d50.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 12:43:03 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786390983; cv=none;
-        d=google.com; s=arc-20260327;
-        b=pTX7hgoZ907Jev3OIBky1bE/+AE9HyE3YJS6XXnur0yGO/IVF7O0KoVdB18+XvElPM
-         t+zTFl4MuZMDHT93lIKw9hd2GIokhUoQSPUkrFmt5mdxTveikDTuYvvlKpCZdyqdll6X
-         oBIdpEvtSZE1Pya13bSotBOA0ZF2s8ixNOJoEVduvVxNDvW9uW04UEic6SZS1iuXauWu
-         VonH5hCIDBT0bc5qgo257zs6GIOpWCWY/cwFHAaJr1aQBTjeUz24ZOA5+fe/p73Puh2G
-         ZdtDdHkCX3m+LKg17ozWKodHlFuUffYS3sgSqwGptcWY6QgyRUdNwHynQV6uBUzGzEg0
-         EauQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=EjY4g3T95g6mKD1MBixHXdc5wVPM/K5AAfu326hoiTU=;
-        fh=Ergp7Yx7CGZftq96XgojbcaiTxcMmur5dhTNrDtBUhg=;
-        b=qxSrpDU+gp1FvFlJWpqRJy01EZ3E0tfJz79/79v8rwJFzXvUL7HE5q1TJZl/z3rULL
-         3yJIm2Qa3zeFbLB8ZExT3JcwdN1SDrI34EnNXILYX81LNpWyztZHm7Zh9h8BxzJ25TcV
-         KCgD7exXmUOs9MKihS8EkJEEpABOXWZRgitvVGlVZDKcBliTPcC39n/IXWAPpj9lI3yH
-         nQFSuHAjt/9nqEoboCyjigU1i7Vgr4jlt1Lo56ZNsYs0To8KtkZD8kwDi31tPhPdU0xV
-         vQaXWB+S/MBFQrvuto5MIrebKpTdo3zb87lY+DBusPtPwDhID9/IOd+Y0pF3gIzt9jut
-         EMZw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cy14mL28"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4954afac04bso24518645e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 13:02:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=starlabs-systems.20251104.gappssmtp.com; s=20251104; t=1786390983; x=1786995783; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=EjY4g3T95g6mKD1MBixHXdc5wVPM/K5AAfu326hoiTU=;
-        b=ZVBolws8HymJq/a9EC5vw8PVShpucmZFddxLUOYZ4c+BSfeTaKA2lWth9Hai6bfsvu
-         T4vwdueKHe1w72P8zOmHSE1yDp6AkRxktE32fydqzcmGGraMBIM0/KU4abN3dSZ5w4aU
-         ZDM6S1EMZjzii2DpNYMeQvb0W6Q+NW8zPiInuTBOi3bxfKE95yVvKpUdEMOWudm4t8C3
-         YRReAIe9fcoKZCH/laQl+BKB5Y4QhJi/DVcBB88Vx6mxThndezeCAIXyW+3xkosxa1Bb
-         m7IQzAhsbf1oxiIRjPmwbBcngbnaO49+zBgmgxfxcHqBAA3XRx4KYeomSivz2yM+Ohzc
-         fHjQ==
+        d=gmail.com; s=20251104; t=1786392119; x=1786996919; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=exfw+BpSiYeouKj8oOQeysjMtDRV6oyZO/QGXxK66VI=;
+        b=cy14mL28mbkUSVUBNO2+zTobr8LuajlhsxaSELsEh9BV84mTKLaazjF6e/PCub50d8
+         KUNAHWt38bHRtdbAaV5KYSuqpyyDS5oIK+ZosQYHWI6hZ2SWTB/rjH2toPYvCMjnwsac
+         XuM4LCW5PWVUkxCK85pwtMsgjuDjSAb+IlK1pvKB0aXKPEHl0VqqYTRs9FXmAnTv7xuC
+         o7MncJoBOOsmRRmZtAW3CspMo3DIwIFSTmNIBYldEyt1RVRfNtBCvD0VruNtVB/TH+Lp
+         JyVt4hpOsMv6aR0mft+Lnl+MLckdzp7psrZ2z3yH0NCqHE8VvUkHpAg/ywecfnZVPWiW
+         yq0A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786390983; x=1786995783;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=EjY4g3T95g6mKD1MBixHXdc5wVPM/K5AAfu326hoiTU=;
-        b=D8/gENxL/yRBbOoO/pzV4zL8Mviy2FoLiDha78VlbEaPWS/M2+uY4WaYMLJjhhcubo
-         5VBLW2IJM+nD2dAdlE6i6hqKS3dhZf3bdl/mBkkxDB33hIYrRb9F8cW/MMPfygtfEuDW
-         aX3w7rBnPVWpbjzel3IZWB5+jmrwLNdsSCEso9u83MfQPIWD24JijignsfyLz3emzXUk
-         seK1vtx1J0UkvzGWEyQ6k2OODkv3etd1brQ07lsHFojbt8ifSjgUsGnl9tHz3lX7TUb6
-         JjhYd76vP4pOccQZEGLqMak/pKBzO3kKzoUWYjuJ+E3YPskoCLqW+tS1vKnGWTtE+mnL
-         gGdw==
-X-Forwarded-Encrypted: i=1; AHgh+RqY8Y6+gFEIyMn1QOuIf++9hlNjHTSUY6418OKdJ3qqyFMFpYOtHEJZexXssF8Asimv8cViVUAWJA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzuzEC76kVsrWRBJ8pfT4VeB+dj+FYWt5nzkF6FhHNTQrIVOJBY
-	eY0hQc5N1VCYA877l9YWAirpsX9sbVYFSOU4X4p4t8hyyu9aEhJ5/TSe/EmhD333dx+juaIsa5C
-	Udq6VLR+nG2rDKP6R/i4iehlfyO7Z75yOcbC7KoZU
-X-Gm-Gg: AR+sD10KH+tflNTW5OfAxXKqi5xWgd0GTmVDEH8z/y2ArAImmSIFDmTDNOgfP4Y7SE+
-	XmDAidtVucs17wH7QbWvhhE9WtbC60pHfdEB2pcmZ8uT2ErqIUv7xRdX9kx1X3RRk4epgIJkGBd
-	s0o9stWY7bbJrkMcc2/b3wlqVtCZ0rkYd6ASkH29pko96cQk81x1EE1YUXs5xUfV+0NmZNlPM0h
-	c4xOdPTY48pEktYvDN80wMVfq5aGlA+vW0oJ5OcblJF2OdpVnI1J95S0M/COlATWYp7mQ4RI59n
-	YuXMdugLzaHxObelFD6C0jz2HDK5iSwaD2bca6m3rOU23kfxkZhQOAKf2alcMU1ClqDhjqhTduY
-	=
-X-Received: by 2002:a05:690e:d84:b0:668:2439:c5f8 with SMTP id
- 956f58d0204a3-66b193cb346mr328299d50.12.1786390982630; Mon, 10 Aug 2026
- 12:43:02 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1786392119; x=1786996919;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=exfw+BpSiYeouKj8oOQeysjMtDRV6oyZO/QGXxK66VI=;
+        b=VvLmNkY45zV5Z4CQdr1SkPBBfEFXD4648YjKN6SwJWuXDuSh6FNd7qFxcpMCEapetH
+         em2lIrWW+LprwEnTIDsrYzw/lJhmQgDYcKkm27kHsYO/iyK1IAjyawHsqhgtHN7KCJuk
+         jonhuq3wr5ANRjPIpoMepApNzcFJgtI6LcoS0VeDhWlogwF69NbJIS4HxpcKnqFIyMpC
+         s5gXzNFXSDkM/H0HEElmyINleirBj12bO3oSDbFnlWC1+7gc3klQslnSPmQNSXBtwtgl
+         wS7+cHY1lX0KeVKyz/TqJbh8Vlla4nFDggLlra/mgjU8B9+wZEQa6xsaFCWezZYqjhVG
+         QkjQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rriu12LZJzwghzRRZWLxOIVbEoXnF0zL9NyGh+sFdpH79s6l7CYzjHJuSn+Aw9UG6HC2N4utKmiBA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwpZHOFWKsgegshUBZi9cTb8Vhw9/4f/l/0o89R7uvKR4AgXlLy
+	Ipwky/vIShJa/svOM1sN3zPDvlYImEhQfx8tC2YMA09k2DcPSt7eKlOO
+X-Gm-Gg: AR+sD11r6G8vIA3K9bCqTieOg+E3sVjxFPY1CTgXwBge/Hz9qhLUS7P/aeOI+V7miQA
+	2Z60raYLeB6vDt4RMrMRTwonx3O9n7cmK+H51YMoxk7IORdbFkLVvZ1rqHUjZ3slGHv58oRYqHG
+	1OOY/yy+WKjBtg6A+vh2dIR5n6w6i6NLoDboyi9nl6byK3tFtKuEjaCLffZY9jj+bGUZVzIHIu4
+	MYsoSStoj+505W9qzx58Imeeja0K8MUJN/xPFBAgR/SnwVrUS7PmBcprC+620wSQLKxV29P5TPK
+	PqaWUw+EAgOhlTnDdIIXoX9t6biRxih/PnQJ2nL71unAmKeWROPImQRav7Mbvy01/+Suz9kGlxi
+	KHBlWXcAi0Ftd5F9x4YSp2sFz6Z6FJLThhPrm/imUYgmemIAil4Pui6JzCSYsQnPW1mbXJzKYjw
+	IypR9w8AQV6V2BaORUZyhJHT9rijypb9f7kUHIpgm89eKP2cADozECKmvB4sZ4gko6atFZrOOKv
+	1WN18d/KFb/FR9Bjy3YDis=
+X-Received: by 2002:a05:600c:19d1:b0:495:4749:16a7 with SMTP id 5b1f17b1804b1-4996199bd2dmr283023555e9.14.1786392118717;
+        Mon, 10 Aug 2026 13:01:58 -0700 (PDT)
+Received: from localhost.localdomain ([2a0d:3344:2841:7708:a101:2b8a:f76:a00f])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4997415df9asm12835825e9.13.2026.08.10.13.01.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Aug 2026 13:01:58 -0700 (PDT)
+From: =?UTF-8?q?Juan=20Manuel=20L=C3=B3pez=20Carrillo?= <juanmanuellopezcarrillo@gmail.com>
+To: iuncuim@gmail.com
+Cc: wens@kernel.org,
+	anarsoul@gmail.com,
+	tiny.windzz@gmail.com,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	jernej.skrabec@gmail.com,
+	samuel@sholland.org,
+	p.zabel@pengutronix.de,
+	andre.przywara@arm.com,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	=?UTF-8?q?Juan=20Manuel=20L=C3=B3pez=20Carrillo?= <juanmanuellopezcarrillo@gmail.com>
+Subject: Re: [PATCH v5 4/5] thermal/drivers/sun8i: Add support for A523 THS0/1 controllers
+Date: Mon, 10 Aug 2026 22:01:55 +0200
+Message-ID: <20260810200155.965544-1-juanmanuellopezcarrillo@gmail.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260704171411.1413349-5-iuncuim@gmail.com>
+References: <20260704171411.1413349-1-iuncuim@gmail.com> <20260704171411.1413349-5-iuncuim@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <4430d02d34617dd2d3cb506202fe44d5e45c053b.1785838418.git.sean@starlabs.systems>
- <20260804184920.GBanI0MCMbnglz7Ncc@fat_crate.local> <CABtds-0MUDmxK_Vd_P8CijwzUhQEV4eWNzx1+DbN2wfnY4dbrA@mail.gmail.com>
- <20260806012923.GEanPjc0w24EdEquDk@fat_crate.local> <131d39d6-c2a9-4d80-99e9-526d347bf608@amd.com>
-In-Reply-To: <131d39d6-c2a9-4d80-99e9-526d347bf608@amd.com>
-From: Sean Rhodes <sean@starlabs.systems>
-Date: Mon, 10 Aug 2026 20:42:51 +0100
-X-Gm-Features: AUfX_myzko68P5cjgRn0jWZDGqZNNBv0osckw3ROSluup1iI9UrlkNPgrntOcow
-Message-ID: <CABtds-1wb1zt4cP9jrUhivRZKEqG6Geq5XtK4j3R4hr-6nMkfw@mail.gmail.com>
-Subject: Re: [PATCH] x86/pm: Save AMD CPUID leaf 7 across S3
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: Borislav Petkov <bp@alien8.de>, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Mon, 10 Aug 2026 at 19:31, Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
->
->
-> On 8/5/26 20:29, Borislav Petkov wrote:
-> > On Tue, Aug 04, 2026 at 08:22:36PM +0100, Sean Rhodes wrote:
-> >> If you're saying that because there might be a firmware solution, I am
-> >> all ears, but this issue is present with AMI CRB and coreboot+FSP -
-> >> hit a wall trying to fix it there.
-> >
->
-> Does this only happen in coreboot + FSP?  Or it also happens in latest UEFI?
+Hi Mikhail, Chen-Yu,
 
-Also UEFI
+Andre pointed me at this series. I have a T527 (A523 family) Orange Pi 4A
+here, so I applied v5 on top of v7.2-rc7 and ran it on the board. It works:
 
->
-> Does it only happen in S3 or also S0i3?
-> How about S4?
+  thermal_zone0  cpu4-thermal   43.0 C idle   49.1 C under load
+  thermal_zone1  cpu0-thermal   43.2 C idle   49.2 C under load
+  thermal_zone2  gpu-thermal    42.8 C idle   47.2 C under load
+  thermal_zone3  ddr-thermal    43.8 C idle   49.3 C under load
 
-Only S3
+(60 s of busy loops on all eight cores.) Boot is clean, no errors from the
+driver, and the readings track load sensibly, so:
 
->
-> > I'm making sure you're using the latest one which might potentially have
-> > a fix...
-> >
-> >> Why not?
-> >
-> > Because we're not fixing three things with one patch and without a proper
-> > justification for the other two.
-> >
->
-> I would expect the restore of this register to be the platform
-> firmware's responsibility.
->
-> I don't know right now if this a BIOS bug, an suspend/resume bug, or how
-> wide of an impact it is.
->
-> Your fix might make sense for "this single platform", but we don't have
-> any evidence it's needed for any other one just yet.
->
-> We shouldn't make changes because there "might" be a problem.  We need
-> affirmation from testing or an assertion from the BIOS team.
+Tested-by: Juan Manuel López Carrillo <juanmanuellopezcarrillo@gmail.com>
 
-Ack
+While testing I looked into the open question about the extra sensor,
+because I had reached a different number in my own out-of-tree work: I use
+sensor_num = 4 for this controller, and this series uses 3.
+
+> Are you sure? The calibration data is written to the sensor register.
+> The BSP simply reads the sensor data from the GPU sensor, and passes it
+> off as the value for the NPU sensor. No extra calculation involving the
+> calibration data is done.
+
+What the BSP does in software and what the hardware has look like two
+different things here. The T527 User Manual v0.92 documents four sensors on
+this controller: THS_EN (offset 0x04, page 452) has THS0_EN..THS3_EN in bits
+3:0 with 31:4 reserved, and page 459 lists four data registers, THS0_DATA
+0xC0, THS1_DATA 0xC4, THS2_DATA 0xC8 and THS3_DATA 0xCC, the last described
+as "Temperature measurement data of Sensor3". THS_DATA_INTC, THS_SHUT_INTC
+and THS_ALARM_INTC likewise have four per-sensor bits.
+
+A documented register is not a wired-up sensor, so I measured it. With this
+series running, THS_EN reads 0x7, so sensor 3 is off and THS3_DATA is 0x0,
+as expected. Setting bit 3 and reading the four data registers once per
+second (raw 12-bit values; lower means hotter on this part):
+
+  idle          THS0 0x875   THS1 0x874   THS2 0x87C   THS3 0x85E
+  under load    THS0 0x83C   THS1 0x83C   THS2 0x852   THS3 0x836
+  delta          -57          -56          -42          -40
+
+Sensor 3 starts reading as soon as it is enabled, sits at its own offset of
+about 0x1C from sensor 2 instead of mirroring it, fluctuates independently
+between consecutive reads, and follows the load. So there are four live
+channels on this controller and the series reads three. I restored THS_EN to
+0x7 afterwards.
+
+What I cannot tell you is which channel belongs to which block, and I want
+to be honest that my own tree does not settle it either. I followed a vendor
+recipe that goes the other way round from what you describe: it treats the
+GPU channel (id 2) as unreliable and reads channel 3 in its place. Your
+reading is that the vendor takes the GPU channel and reports it as NPU. Both
+cannot be right, and I have no way to tell which block each channel actually
+sits next to. All I am claiming is the electrical part: channel 3 is alive
+and independent.
+
+One more thing you may want to check, and I am less confident about this
+one. Applying your calibration code to my SID gives 0x90D, 0x90D and 0x90E
+for sensors 0..2, and 0x92B for the ths0/DDR sensor. In the bits your switch
+does not consume, between caldata[4] and the ths0 field, there is a further
+12-bit value of 0x919, in the same numeric range as the other four. That
+would fit the factory having calibrated four sensors on this controller, but
+I have not verified the exact packing, so please take it as a hint and not
+as a claim.
+
+If you do end up reading channel 3, there is a trap worth knowing about.
+Right after the block is enabled that channel can still be at 0 while its
+first conversion is pending. With the two-slope formula a raw 0 works out to
+about 183 C, which is above the 110 C critical trip, so the board powers off
+2.8 s into boot while it is actually at ~50 C. I hit exactly that and had to
+guard against a zero reading before using it.
+
+I am happy to run whatever test would help on this board, including reading
+channel 3 with proper calibration if you respin with sensor_num = 4.
+
+Finally, a data point for the naming issue Chen-Yu raised on 5/5. On this
+boot the kernel prints:
+
+  thermal_sys: No trip points found for thermal-sensor@2009400 id=2
+
+The gpu-thermal zone does define three trips, but inside a container named
+"gpu-trips", so the thermal core silently ignores all of them. Renaming the
+containers to "trips" is not only what the binding requires, it is what makes
+those trips take effect at all.
+
+Cheers,
+Juan
