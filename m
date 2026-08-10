@@ -1,99 +1,80 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D980843553C;
-	Mon, 10 Aug 2026 18:03:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23F2E435511
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 18:06:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786385014; cv=none; b=V7MS58RD0YoFafWWgYUTf0UTR8ZuyfZLWm1XQDgDyhRPz9Oa85SYUzZS4SFsH5zGYE4NNs6/jnLIup7u5a/aJ7waxgEnuZb/TFDNfehNqXQJrJ4Z13l1dkBFVHDWcNfHJt88d+NBZFGJZwitewx4A7UY+mOHqLuYuaMjM+axAWg=
+	t=1786385200; cv=none; b=ixPALfsgB+QD1DIs+Ksxjl47wqj9ENBoWPaAt5MOqmeFDkQWBpDHILLjhtDHvXEQ8Z7Nk3/SVBLVUOItYU6Ah08GM9QU4FcKJXePyviH/s2VD7Jq6Xv4A+zBanzaeu56NQZPJLMmICPH9na5eTslmo7uLv+w+p8z0pRCEBi+OwQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786385014; c=relaxed/simple;
-	bh=9j2cXTMr33B3CluqB5kVZiijY9sixvHdaGdO1LZY3Lo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SbTQi/YVgjXt7G4R5xPcBxVzFtjlw85n5SFpPi31hZ+ItgkwG+gwpoH8yX+CCrGtQZM8L0y/8Acbg2XRpws7XKPvXp0Ex5qRNwvH9JoaASn2EAUT5QMkcDZqozvAyz9pU7kMQSH52L7THXrS9b+ZxPL1V+i9VMpkYo4DVis2hQo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nexYiE2w; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1786385200; c=relaxed/simple;
+	bh=hgcymRn06CEzZYivG2OYevh3C3pdHTxTa6lD6AY+ufg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=iN1wmZHrR4T4Es6kDPohKmEYotDtAWCI3WgHA/Aq6yMbZvXqBIZBjcpkZoWAQEYIWhfjj8PwMAaGUtcZhB6bJbJ9FNLMmKQ9gr/VO45dCclY0D5aDwY3OpjLdJ+T8isZ/wqTbgsWdBnC2Usk5wAzZhydOntoHkqcsObaq/fpDfw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kh5VROtZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nexYiE2w"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786385009; x=1817921009;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=9j2cXTMr33B3CluqB5kVZiijY9sixvHdaGdO1LZY3Lo=;
-  b=nexYiE2wCiNoAjF1qvdAL8DgOTvM4kz/kW+rx7xavQEoGbOOaCMuuffb
-   6Dt1S5BEiodIn3qPtkcjCpnuoAEr/YT/G/QFqYrzW1loa8v9K1ByzNFeH
-   TN7dxeTJTUUnSVCi1Kb5d8zPX+KeQQPqKotgKLvwU+orCt/8t4NLKsYHn
-   e3Yvwm2H9Q4J+jW7rEpW+ipSMSd5tAYL/vIanE/PgFeie0clWcdtn2kus
-   d4P1nuVL6kXkSd7GeHiycY7OdR6An7tKk0tOkxqYdeAVm+QaeYCDBYbJs
-   d+roOAuhN6cb5z2klzoD8/npSAe2T8nX4Jq4fAdghM4FDAn5tAqbJy5Vw
-   w==;
-X-CSE-ConnectionGUID: jKzN7UlwQ3mGvr7XNT6BsQ==
-X-CSE-MsgGUID: opoINpNEQIu39k+KrVvaLA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11871"; a="86028797"
-X-IronPort-AV: E=Sophos;i="6.25,216,1779174000"; 
-   d="scan'208";a="86028797"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Aug 2026 11:03:28 -0700
-X-CSE-ConnectionGUID: L148/2C9QWmXPL0WkLAPiQ==
-X-CSE-MsgGUID: Sq2SIAJeR6i887N5G5oR1g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,216,1779174000"; 
-   d="scan'208";a="293031839"
-Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.244.99])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Aug 2026 11:03:25 -0700
-Date: Mon, 10 Aug 2026 21:03:22 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Matti Vaittinen <mazziesaccount@gmail.com>
-Cc: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-	Matti Vaittinen <matti.vaittinen@linux.dev>,
-	Andreas Kemnade <andreas@kemnade.info>,
-	Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kalle Niemi <kaleposti@gmail.com>,
-	Topi =?iso-8859-1?Q?Sonkaj=E4rvi?= <sonkajarvi@hotmail.com>,
-	Mikko Mutanen <mikko.mutanen@fi.rohmeurope.com>,
-	Markus Laine <markus.laine@fi.rohmeurope.com>
-Subject: Re: [PATCH 5/5] power: supply: bd99954: Drop bad register fields
-Message-ID: <anoSamyqNwUzo5ad@ashevche-desk.local>
-References: <cover.1786356145.git.mazziesaccount@gmail.com>
- <758fd430d02286a6f18603a8aecfe443f5ddeb8e.1786356145.git.mazziesaccount@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kh5VROtZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1C401F00A3F
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 18:06:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786385199;
+	bh=hgcymRn06CEzZYivG2OYevh3C3pdHTxTa6lD6AY+ufg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=kh5VROtZSFG4V4setKEx58r+aXrbRhkM81FNJEhyhDuJ/kqBlm2afkySKxEryEAjI
+	 kjgF9+Rzmf5899CrwmI6A6BinooXbmJ8xOLd9j5nNWR8EJGqVS7CIYJ65g3JccUAhK
+	 YSmjSLQ6tdF2Y+sk8wXbvIY3/urHkouBnvsSMyt8ImL79tDL9CVLuRuUTvRzGEJe4b
+	 GVn6NHwdDrRcbH48z1LRvff7doLUQD+emJgzW7U8p93t1gHIChWUJWPOGYztkhp7Qq
+	 zPpEsDdJX8prSupqD4Jhu/aXxeLWDPU8oTBtvhBCbxYXte6I3F09YVBQlzRk6BCsFo
+	 sHjiQQvHJfAkQ==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5aeb8c19017so2735976e87.0
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 11:06:38 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rq7dJdO+kkbEf8AN6lgZJZObK+Kxrraz/QYWDRc5i/MlCQIVWDduK/yABMvBri8J+yGVY0FyM6sjg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy+6slMseCU7l+7cE5i6vXZUP55uX4yXCtBD4S5e2Fe0dKZB38c
+	o33ozrqQYSzUs0+YeWAfzSjk1TNFqi9xHTJ4r7RGt3scbcTkNsJpX6mqB4K8dMfWO37U1oJlZ4R
+	6GWKu1valKriOwMrfpvqyLPz7/8IHoCU=
+X-Received: by 2002:a05:6512:baa:b0:5b2:f437:2a88 with SMTP id
+ 2adb3069b0e04-5b2f4cc7be5mr5978880e87.36.1786385197772; Mon, 10 Aug 2026
+ 11:06:37 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <758fd430d02286a6f18603a8aecfe443f5ddeb8e.1786356145.git.mazziesaccount@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+References: <20260809-kuno-soc-support-v1-0-5e0ede4a0c72@oss.qualcomm.com>
+In-Reply-To: <20260809-kuno-soc-support-v1-0-5e0ede4a0c72@oss.qualcomm.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Mon, 10 Aug 2026 20:06:24 +0200
+X-Gmail-Original-Message-ID: <CAD++jL=kW+K6noeaO9=zktgveVbYmbZsWUWo3r-V0S7V90FDLw@mail.gmail.com>
+X-Gm-Features: AUfX_mymdEhf6vtyoDczgdrTd_h0sSGCYBoPOdLs8lQcTMbtLbfi04PfIu1dDG4
+Message-ID: <CAD++jL=kW+K6noeaO9=zktgveVbYmbZsWUWo3r-V0S7V90FDLw@mail.gmail.com>
+Subject: Re: [PATCH 00/15] Add initial support for Qualcomm Kuno SoC
+To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney@redhat.com>, Taniya Das <quic_tdas@quicinc.com>, 
+	Georgi Djakov <djakov@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Radu Rendec <radu@rendec.net>, Robert Marko <robimarko@gmail.com>, 
+	Guru Das Srinagesh <linux@gurudas.dev>, linux-arm-msm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-gpio@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Aug 10, 2026 at 01:10:03PM +0300, Matti Vaittinen wrote:
+On Sun, Aug 9, 2026 at 9:27=E2=80=AFAM Hardeep Sharma
+<hardeep.sharma@oss.qualcomm.com> wrote:
 
-> The bd99954 driver creates regmap fields for all the registers. All the
-> fields for VBUS_UCD_FCTRL_SET (extended command 0x33) are accidentally
-> created for VCC_UCD_FCTRL_SET (extended command 0x2b), causing all
-> reads/writes for the fields to access wrong register. Luckily the fields
-> for VBUS_UCD_FCTRL_SET are unused.
-> 
-> Taking a look at the data-sheet:
-> https://fscdn.rohm.com/en/products/databook/datasheet/ic/power/battery_management/bd99954xxx-e.pdf
+> This series adds initial support for the Qualcomm Kuno SoC and the Kuno
+> IDP reference board.
+>
+> Kuno is a 32-bit ARM (Cortex-A7) Qualcomm platform. This series brings up
+> the essential SoC infrastructure required to boot to a serial console:
 
-Make it a Link or Datasheet tag.
+Is there some special reason why you are not posting this patch series
+to the most relevant mailing list i.e. linux-arm-kernel?
 
-> all the fields in the VBUS_UCD_FCTRL_SET are marked as:
-> "In normal operation, please don’t set these registers" with not much of
-> additional documentation. As the fields are wrong and because there seems
-> to be no users of the fields - it is better to just drop them. This will
-> also decrease the memory footprint.
-> 
-> Drop incorrect VBUS_UCD_FCTRL_SET fields.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Yours,
+Linus Walleij
