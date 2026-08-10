@@ -1,195 +1,242 @@
-Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ABDF348C7D
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 10:24:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6632B3B27E7;
+	Mon, 10 Aug 2026 10:27:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786357480; cv=none; b=NMKZmk1ZcYAQ/yz9Jlp7r1vXj5Hh9uAfMjYECR0+BWhV7Gx2qg66zymDyTgH33G6Ge+90ZoNr9h8hUdwn498S/JNwV3WhyfuUuzHO3aWuqsYs1wuVqfYki2Udsj+HlxSBdGhQcbu6SKdM7aGxwpZMRTAWp4TblH917as6xDkhsM=
+	t=1786357644; cv=none; b=mYs3oSE/2OL7nQ7lE1jwZclmtNOwBGV/ohokQJqA8uPzNnBYeiVsTSMjIFY3RmWd/2/Y8Hx5P8J8fsFqga5D1QO4x+k8c8LFkSGlwHJFewe6Rasg3EX0YFeUyQecGhNVsvAuFAPaLqTtuHZloP8xJa7llPa7cZy2xTyShkCnvRo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786357480; c=relaxed/simple;
-	bh=yQ1afM2ceyrCs9PVtue+UD7EIdsF3F7rJR66vz9gCho=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=jSYfJq54VKUGKNWT9tbCf2nUti5Rt9+jXx06Rw5vemIk8cq0zZ7M9wD3jsZd41f7sAB2Sx5orm0WW5Fez3w2DX17DFEzwHblrEVDxKB+u+QiIGYUp0wr04M/3l8QTOqmuX7iUXqVStT4oCA8di4pNPTNPfKoXphpZfDNLd9W6uw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.198
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-485ebc5706cso5350897b6e.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 03:24:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786357477; x=1786962277;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=diOkV4n/K0fzmwoWMYwrzjoYAkxku91O+AW0RHw0zbY=;
-        b=X/0vxG3mtC0CA8d92gSlRz8HrnqWklL/DKkNU0E/g1QGMiKkk9CiElHx3xLBD1mebd
-         5BO3+Y8yAoHjNPoK/bYZ5bW4Af2wA/pp4OooseR0CyMJyOnmewaT1RXf03/A4ckwYxYx
-         SRGuyllL10lW0LgcwovcQTYp9oxrtLTfgbYq7izF4WZQVxjC+XnSPAiRfrfDnszZ7alT
-         GCAr3YZ/MLzYfcn8tP8+CHEh1eEdXMOrvLuTaS3VYPDxoB1Nq5fkKXjjjY8iivcHc8zH
-         RD1OULtdSP6GApN+z6cpvSTOYPB5hTG4nl0meaDwVPmgC9IuUChZOSeVSoI7k7wHD9V1
-         BFUg==
-X-Forwarded-Encrypted: i=1; AHgh+RpOx/fOmPquQSQkj01RbSctlDghFIgvrqg2v40RkH62fELPvCvv7+mseiv2JOUTxbvG51LLfKYlzA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwKHe//WTZM9aLyiM/7dvdpubP4L9JHn6bNiaC74FS6ucXpbTgE
-	A5qVud+YILHFUTVvwu1qZTSsE4KOV3DXewj9cXkXBxp7bwgtOo1yE1a1sahgwxCrdDi+bRNRvTz
-	HbcAa6gwWhOox1EXSaQgyjye8JEy5S7Ub0V9CH5gFLKoJRxhgnuJnoTogiJY=
+	s=arc-20240116; t=1786357644; c=relaxed/simple;
+	bh=eMo7RiFxf486lOJsy0lJdVppqNImmgiXhVLqpPYRKxo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GBiPO8ymMneHHqyNeK3Z1kfuyuKMX+zazmgh+8bQnzrVjpv3cCIPIx/9FobeWYV9gF+BF/Qn8N0ge/ddDgEmiLgQ9o0wG+oLnGPEvPkoxKPH8Chd5TDZ2V16siEvKD+H7QbhpSH1klv+oSGu/t/RpO6YqMVlH8TJNd4EQSAm5WY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=K7jzu2pt; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="K7jzu2pt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9CB61F000E9;
+	Mon, 10 Aug 2026 10:27:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786357643;
+	bh=dXt/1L/uHFM3OLFJe78YGdrRxxWdzR6Xr8tdcZbXvnc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=K7jzu2ptlkM364QmUboSzRgav59W+7lFiSK5EyjU/sDCNrbPA7HHbaJnXOKyEw2d3
+	 wLM70UY8XCrQcE5JlmoS2psn0NBAt4BeMQFM1UFJ6OY1ik0BzFszrNEcPM9/nOMc+Y
+	 xb0AVjre8gwilijbDP3GTjVfbS+2Udes2dOXgqOvGILmtym40kRYEBBynMF8Z6Icx7
+	 HWutXkJXB4CaNXG5rr8qlHaMqc8cv2y8+lm7WqeHiVwVPlYG7+7vknob1/bEdhy/ap
+	 m1BNituEWxd1unN9rKnd4PrTFpMMoz4XdEHUobAPdjHeXuM3hS5EJ8Y9yCLCQ01wgY
+	 /9QdkhOSg5ZZw==
+Message-ID: <7ba2ec58-8717-4fea-8c79-c4923741aaac@kernel.org>
+Date: Mon, 10 Aug 2026 12:27:11 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:2381:b0:492:c9a4:2104 with SMTP id
- 5614622812f47-4b1af83fae5mr9019870b6e.10.1786357477383; Mon, 10 Aug 2026
- 03:24:37 -0700 (PDT)
-Date: Mon, 10 Aug 2026 03:24:37 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a79a6e5.01d0871a.3a0d52.00a7.GAE@google.com>
-Subject: [syzbot] [pm?] WARNING: ODEBUG bug in trace_suspend_resume (2)
-From: syzbot <syzbot+98850521518b962c5bab@syzkaller.appspotmail.com>
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/6] dt-bindings: bluetooth: qca: add QCC2072
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Rahul Samana <rahul.samana@oss.qualcomm.com>,
+ Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann
+ <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
+ Rocky Liao <quic_rjliao@quicinc.com>, Manivannan Sadhasivam
+ <mani@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <brgl@bgdev.pl>,
+ linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+ quic_mohamull@quicinc.com, quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
+References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
+ <20260727-rb3-industrial-bt-uart-v2-1-2d100f30e202@oss.qualcomm.com>
+ <20260731-first-righteous-bear-dd72ed@quoll>
+ <712f8a14-d2a1-4a90-82f9-05cd694f2658@oss.qualcomm.com>
+ <c1875dd6-fe3a-4a69-a6fd-b461c8fba6e4@kernel.org>
+ <6d6465bb-47ac-464c-af4e-0ca72325705f@oss.qualcomm.com>
+ <8a388310-d3cc-4d02-abb6-0eb98c24cfce@kernel.org>
+ <4523441f-498a-4bbd-80f3-97a7a9206c00@oss.qualcomm.com>
+ <6e0b9e79-ccd4-4689-9a6b-9b4fc556d5e4@kernel.org>
+ <dduqm25cy2j3ab7gu65qjho76gifij3sgnvgsgqyvncjxa46x6@vg7egioz5vxx>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <dduqm25cy2j3ab7gu65qjho76gifij3sgnvgsgqyvncjxa46x6@vg7egioz5vxx>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hello,
+On 07/08/2026 11:57, Dmitry Baryshkov wrote:
+> On Sat, Aug 01, 2026 at 05:49:53PM +0200, Krzysztof Kozlowski wrote:
+>> On 01/08/2026 17:31, Rahul Samana wrote:
+>>>
+>>>
+>>> On 01-08-2026 20:18, Krzysztof Kozlowski wrote:
+>>>> On 31/07/2026 17:51, Rahul Samana wrote:
+>>>>>
+>>>>>
+>>>>> On 31-07-2026 20:34, Krzysztof Kozlowski wrote:
+>>>>>> On 31/07/2026 16:45, Rahul Samana wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>> On 31-07-2026 15:16, Krzysztof Kozlowski wrote:
+>>>>>>>> On Mon, Jul 27, 2026 at 09:15:01PM +0530, Rahul Samana wrote:
+>>>>>>>>> QCC2072 can be used on M.2 E-key cards where the card power resources are
+>>>>>>>>> described by the pcie-m2-e-connector node. In that setup, the M.2 power
+>>>>>>>>> sequencing provider creates the Bluetooth serdev child after matching the
+>>>>>>>>> QCC2072 PCI function.
+>>>>>>>>>
+>>>>>>>>> Integrated non-M.2 designs need board-specific power resources. Document
+>>>>>>>>> only the compatible for now and leave those properties to be added with
+>>>>>>>>> matching driver support.
+>>>>>>>>>
+>>>>>>>>> Document the qcom,qcc2072-bt compatible used for QCC2072 Bluetooth
+>>>>>>>>> controllers connected over UART.
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Rahul Samana <rahul.samana@oss.qualcomm.com>
+>>>>>>>>
+>>>>>>>> NAK, exactly same comments as before.
+>>>>>>>>
+>>>>>>>> Nothing got improved, although what is weird - original SoB is gone, so
+>>>>>>>> this is legally dubious work.
+>>>>>>>>
+>>>>>>>> Best regards,
+>>>>>>>> Krzysztof
+>>>>>>>>
+>>>>>>>
+>>>>>>> Hi Krzysztof,
+>>>>>>>
+>>>>>>> Thanks for the review.
+>>>>>>>
+>>>>>>> For the binding contents, I tried to capture the current scope in the binding
+>>>>>>> description itself. This series supports QCC2072 only as an M.2 E-key card,
+>>>>>>> where the card power resources are described by the pcie-m2-e-connector node
+>>>>>>> and the M.2 pwrseq provider creates the Bluetooth serdev child.
+>>>>>>>
+>>>>>>> The binding also says:
+>>>>>>>
+>>>>>>>   Integrated non-M.2 designs require board-specific power resources. Those
+>>>>>>>   properties, together with a static devicetree example, should be added when
+>>>>>>>   integrated non-M.2 support is added.
+>>>>>>
+>>>>>> Bindings must be complete and your driver support is irrelevant here.
+>>>>>>
+>>>>>> If you claim this is a PCI device thus you do not need any resources,
+>>>>>> then the binding is not needed either. PCI devices are enumerable. And
+>>>>>> to prove it: look at your DTS. Do you see qcom,qcc2072-bt being used? No.
+>>>>>>
+>>>>>>>
+>>>>>>> We do not currently have an integrated non-M.2 QCC2072 design, so I do not
+>>>>>>> have board-specific regulator supplies to document for that topology.
+>>>>>>>
+>>>>>>> Could you please suggest how you would prefer this binding to be handled for
+>>>>>>> the current M.2-only use case? 
+>>>>>>
+>>>>>> Drop the binding, you do not need it.
+>>>>>>
+>>>>>> Anyway the problem is that more comments were ignored.
+>>>>>>
+>>>>>
+>>>>> Hi Krzysztof,
+>>>>>
+>>>>> Just to clarify the reason for adding this binding in v2: 
+>>>>> v1 did not add a binding because this series only targets the M.2 use case.
+>>>>>
+>>>>> I added the minimal binding in v2 because checkpatch reported
+>>>>> qcom,qcc2072-bt as an undocumented compatible, and I interpreted the request
+>>>>> to fix the checkpatch warnings as requiring this compatible to be documented.
+>>>>> I also had the earlier feedback in mind, where the indirect
+>>>>> qcom,qcc2072-bt compatible was pushed back because it was undocumented:
+>>>>>
+>>>>> https://lore.kernel.org/all/20260703-eliza_evk-v1-3-7624440bd76d@oss.qualcomm.com/
+>>>>>
+>>>>> Based on your clarification here, I will drop the binding patch in v3 and
+>>>>> keep qcom,qcc2072-bt only as the pwrseq-created child compatible for this
+>>>>> M.2 case.
+>>>>
+>>>> My previous statement is also valid, please read entire threads.
+>>>>
+>>>> You cannot have undocumented qcom,qcc2072-bt.
+>>>>
+>>>> I ask you to drop both, because they are not needed. But feel free to
+>>>> prove me wrong, see my first paragraph in the previous reply.
+>>>>
+>>>>
+>>> The PCIe M.2 power sequencing driver, pwrseq-pcie-m2.c, uses
+>>> pwrseq_m2_pci_ids to translate the enumerated PCI function into the
+>>> Bluetooth compatible used for the generated serdev child.
+>>>
+>>> For example, WCN7850 maps PCI ID 17cb:1107 to qcom,wcn7850-bt, then hci_qca
+>>> matches that compatible to select qca_soc_data_wcn7850.
+>>>
+>>> For QCC2072, pwrseq-pcie-m2.c matches PCI ID 17cb:1112 and creates the
+>>> generated Bluetooth serdev child with compatible "qcom,qcc2072-bt". The
+>>> hci_qca driver then matches "qcom,qcc2072-bt" and uses qca_soc_data_qcc2072
+>>> as the controller-specific data.
+>>
+>> The purpose of Devicetree is not to describe Linux internal driver
+>> matching. Do not use compatibles for that.
+> 
+> So, if instead of M.2 module the WiFi chip gets soldered to the main
+> board, the qcom,qcc2072-bt wll be a legitimate compat string?
 
-syzbot found the following issue on:
+Yes, just like the rest of compatibles in the power sequencing driver
+(and bindings).
 
-HEAD commit:    db2ddb871435 Linux 7.2-rc7
-git tree:       https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux master
-console output: https://syzkaller.appspot.com/x/log.txt?x=11212149580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=fa49d7bda29d9792
-dashboard link: https://syzkaller.appspot.com/bug?extid=98850521518b962c5bab
-compiler:       arm-linux-gnueabi-gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
-userspace arch: arm
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=145762c6580000
+> 
+> Also, I understand your concerns about the DT bindings / usage, but
+> speaking about the driver ;-)
+> The BT is a serial driver attached to a serial bus. There only two
+> options to bind a serial driver: OF and ACPI. But maybe we should add
+> something like serial_device_id and let serials have internal IDs.
+> It sounded strange in the beginning, but now I think it is a correct way
+> to go.
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+98850521518b962c5bab@syzkaller.appspotmail.com
+Driver get away with that limitation, because we had DTS for the
+existing entries. This is the first one without DTS.
 
-ODEBUG: object df805d04 is NOT on stack df864000, but annotated.
-------------[ cut here ]------------
-WARNING: lib/debugobjects.c:672 at debug_object_is_on_stack lib/debugobjects.c:672 [inline], CPU#1: swapper/1/0
-WARNING: lib/debugobjects.c:672 at lookup_object_or_alloc.part.0+0x180/0x1ec lib/debugobjects.c:705, CPU#1: swapper/1/0
-Modules linked in:
-Kernel panic - not syncing: kernel: panic_on_warn set ...
-CPU: 1 UID: 0 PID: 0 Comm: swapper/1 Not tainted syzkaller #0 PREEMPT 
-Hardware name: ARM-Versatile Express
-Call trace: frame pointer underflow
-[<80201998>] (dump_backtrace) from [<80201a8c>] (show_stack+0x18/0x1c arch/arm/kernel/traps.c:257)
- r7:82a20f78 r6:00000000 r5:82333374 r4:00000001
-[<80201a74>] (show_stack) from [<8021ec68>] (__dump_stack lib/dump_stack.c:94 [inline])
-[<80201a74>] (show_stack) from [<8021ec68>] (dump_stack_lvl+0x5c/0x70 lib/dump_stack.c:120)
-[<8021ec0c>] (dump_stack_lvl) from [<8021ec94>] (dump_stack+0x18/0x1c lib/dump_stack.c:129)
- r7:82a20f78 r6:00000000 r5:8317e200 r4:82c83d40
-[<8021ec7c>] (dump_stack) from [<80202590>] (vpanic+0x114/0x320 kernel/panic.c:651)
-[<8020247c>] (vpanic) from [<802027d0>] (trace_suspend_resume+0x0/0x100 kernel/panic.c:788)
- r7:8095e608
-[<8020279c>] (panic) from [<80251a80>] (check_panic_on_warn kernel/panic.c:525 [inline])
-[<8020279c>] (panic) from [<80251a80>] (get_taint+0x0/0x1c kernel/panic.c:520)
- r3:82a0b144 r2:00000001 r1:823190d8 r0:82320a34
-[<80251a08>] (check_panic_on_warn) from [<80251bfc>] (__warn+0x98/0x1a4 kernel/panic.c:1104)
-[<80251b64>] (__warn) from [<80251e80>] (warn_slowpath_fmt+0x178/0x1f4 kernel/panic.c:1136)
- r8:00000009 r7:8238dd84 r6:df805c1c r5:8317e200 r4:00000000
-[<80251d0c>] (warn_slowpath_fmt) from [<8095e608>] (debug_object_is_on_stack lib/debugobjects.c:672 [inline])
-[<80251d0c>] (warn_slowpath_fmt) from [<8095e608>] (lookup_object_or_alloc.part.0+0x180/0x1ec lib/debugobjects.c:705)
- r10:00000001 r9:81c04360 r8:df805d04 r7:00000000 r6:82d1bbf4 r5:82cfc288
- r4:852e1270
-[<8095e488>] (lookup_object_or_alloc.part.0) from [<8095ec18>] (lookup_object_or_alloc lib/debugobjects.c:682 [inline])
-[<8095e488>] (lookup_object_or_alloc.part.0) from [<8095ec18>] (__debug_object_init+0x140/0x1d8 lib/debugobjects.c:798)
- r10:0001f930 r9:82cfc2c4 r8:00000001 r7:81c04360 r6:20000113 r5:82d1bbf8
- r4:df805d04 r3:00000001
-[<8095ead8>] (__debug_object_init) from [<8095ed04>] (debug_object_init_on_stack lib/debugobjects.c:849 [inline])
-[<8095ead8>] (__debug_object_init) from [<8095ed04>] (debug_object_init_on_stack+0x28/0x2c lib/debugobjects.c:844)
- r10:df805eac r9:fffff2a8 r8:00000101 r7:00000000 r6:ddde3e00 r5:82b62308
- r4:00000000
-[<8095ecdc>] (debug_object_init_on_stack) from [<80300a84>] (init_rcu_head_on_stack+0x18/0x1c kernel/rcu/update.c:487)
-[<80300a6c>] (init_rcu_head_on_stack) from [<80304e4c>] (__synchronize_srcu+0x7c/0xcc kernel/rcu/srcutree.c:1494)
-[<80304dd0>] (__synchronize_srcu) from [<80304f38>] (synchronize_srcu_expedited kernel/rcu/srcutree.c:1521 [inline])
-[<80304dd0>] (__synchronize_srcu) from [<80304f38>] (synchronize_srcu+0x78/0x14c kernel/rcu/srcutree.c:1577)
- r5:60000113 r4:82b62308
-[<80304ec0>] (synchronize_srcu) from [<80bf0cd0>] (wakeup_source_remove drivers/base/power/wakeup.c:201 [inline])
-[<80304ec0>] (synchronize_srcu) from [<80bf0cd0>] (wakeup_source_unregister.part.0+0x64/0x1b4 drivers/base/power/wakeup.c:237)
- r7:00000000 r6:862c4100 r5:00000113 r4:86469f00
-[<80bf0c6c>] (wakeup_source_unregister.part.0) from [<80bf0e38>] (wakeup_source_unregister+0x18/0x1c drivers/base/power/wakeup.c:236)
- r7:00000000 r6:862c4100 r5:866aa000 r4:866aa008
-[<80bf0e20>] (wakeup_source_unregister) from [<812f2368>] (mmc_host_classdev_release+0x1c/0x58 drivers/mmc/core/host.c:69)
-[<812f234c>] (mmc_host_classdev_release) from [<80bcd9cc>] (device_release+0x40/0xb0 drivers/base/core.c:2636)
- r5:851bc500 r4:866aa008
-[<80bcd98c>] (device_release) from [<81b351d0>] (kobject_cleanup lib/kobject.c:689 [inline])
-[<80bcd98c>] (device_release) from [<81b351d0>] (kobject_release lib/kobject.c:720 [inline])
-[<80bcd98c>] (device_release) from [<81b351d0>] (kref_put include/linux/kref.h:65 [inline])
-[<80bcd98c>] (device_release) from [<81b351d0>] (kobject_put+0xa0/0x258 lib/kobject.c:737)
- r5:81d5ae9c r4:866aa008
-[<81b35130>] (kobject_put) from [<80bcdb40>] (put_device+0x18/0x1c drivers/base/core.c:3880)
- r8:00000101 r7:81310b3c r6:866aa000 r5:00000000 r4:866aa000
-[<80bcdb28>] (put_device) from [<812f2ac4>] (mmc_free_host+0x28/0x2c drivers/mmc/core/host.c:702)
-[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (vub300_delete drivers/mmc/host/vub300.c:379 [inline])
-[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (kref_put include/linux/kref.h:65 [inline])
-[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (vub300_inactivity_timer_expired drivers/mmc/host/vub300.c:747 [inline])
-[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (vub300_inactivity_timer_expired+0x160/0x1b8 drivers/mmc/host/vub300.c:742)
- r5:00000000 r4:866aaaec
-[<81310b3c>] (vub300_inactivity_timer_expired) from [<8032ef48>] (call_timer_fn+0x30/0x268 kernel/time/timer.c:1748)
- r7:81310b3c r6:8317e200 r5:866aaaec r4:866aaaec
-[<8032ef18>] (call_timer_fn) from [<8032f41c>] (expire_timers kernel/time/timer.c:1799 [inline])
-[<8032ef18>] (call_timer_fn) from [<8032f41c>] (__run_timers+0x29c/0x420 kernel/time/timer.c:2374)
- r10:df805eac r9:fffff2a8 r8:00000000 r7:81310b3c r6:82a0b150 r5:866aaaec
- r4:ddddafc0
-[<8032f180>] (__run_timers) from [<8032f608>] (__run_timer_base kernel/time/timer.c:2386 [inline])
-[<8032f180>] (__run_timers) from [<8032f608>] (__run_timer_base kernel/time/timer.c:2378 [inline])
-[<8032f180>] (__run_timers) from [<8032f608>] (run_timer_base+0x68/0x78 kernel/time/timer.c:2395)
- r10:8317e200 r9:00000082 r8:00000101 r7:00000004 r6:00000002 r5:00000001
- r4:ddddafc0
-[<8032f5a0>] (run_timer_base) from [<8032f634>] (run_timer_softirq+0x1c/0x34 kernel/time/timer.c:2405)
- r4:82a03084
-[<8032f618>] (run_timer_softirq) from [<8025b0dc>] (handle_softirqs+0x160/0x4e4 kernel/softirq.c:622)
-[<8025af7c>] (handle_softirqs) from [<8025b5fc>] (__do_softirq kernel/softirq.c:656 [inline])
-[<8025af7c>] (handle_softirqs) from [<8025b5fc>] (invoke_softirq kernel/softirq.c:496 [inline])
-[<8025af7c>] (handle_softirqs) from [<8025b5fc>] (__irq_exit_rcu+0x150/0x1d0 kernel/softirq.c:735)
- r10:824e709c r9:8317e200 r8:00000000 r7:df865f18 r6:824e709c r5:82522544
- r4:8317e200
-[<8025b4ac>] (__irq_exit_rcu) from [<8025b934>] (irq_exit+0x10/0x18 kernel/softirq.c:764)
- r5:82522544 r4:828d3e6c
-[<8025b924>] (irq_exit) from [<81b5d85c>] (generic_handle_arch_irq+0x7c/0x80 kernel/irq/handle.c:293)
-[<81b5d7e0>] (generic_handle_arch_irq) from [<81b2a4e0>] (call_with_stack+0x1c/0x20 arch/arm/lib/call_with_stack.S:40)
- r9:8317e200 r8:00000000 r7:df865f4c r6:ffffffff r5:20000013 r4:81b5f0d0
-[<81b2a4c4>] (call_with_stack) from [<80200bec>] (__irq_svc+0x8c/0xbc arch/arm/kernel/entry-armv.S:228)
-Exception stack(0xdf865f18 to 0xdf865f60)
-5f00:                                                       00000001 82333374
-5f20: 000780b4 00000001 8317e200 00000001 00000000 828d3170 00000000 82a0b1c4
-5f40: 824e709c df865f84 df865f58 df865f68 81b5e500 81b5f0d0 20000013 ffffffff
-[<81b5f084>] (default_idle_call) from [<802b80fc>] (cpuidle_idle_call kernel/sched/idle.c:199 [inline])
-[<81b5f084>] (default_idle_call) from [<802b80fc>] (do_idle+0x240/0x3c0 kernel/sched/idle.c:355)
- r7:828d3170 r6:00000000 r5:82a0b1a4 r4:8317e200
-[<802b7ebc>] (do_idle) from [<802b858c>] (cpu_startup_entry+0x30/0x34 kernel/sched/idle.c:454)
- r10:00000000 r9:414fc0f0 r8:80003000 r7:82c834a4 r6:30c0387d r5:00000001
- r4:00000090
-[<802b855c>] (cpu_startup_entry) from [<8022fc54>] (secondary_start_kernel+0x12c/0x198 arch/arm/kernel/smp.c:478)
-[<8022fb28>] (secondary_start_kernel) from [<80220094>] (__enable_mmu+0x0/0xc arch/arm/kernel/head.S:446)
- r5:00000000 r4:830b70c0
-Rebooting in 86400 seconds..
-
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
-
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
+Best regards,
+Krzysztof
