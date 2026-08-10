@@ -1,225 +1,167 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2B93F3FF8A5;
-	Mon, 10 Aug 2026 14:33:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com [209.85.222.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A4D7407CE8
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 14:50:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786372420; cv=none; b=ROSZyWlS6ucX5TKSzBQhomNML030BkxWfSMrfg+2ycNamY7ieV0UMgkRl31PtxtC1C4MR/WS1G9TqBe421wrWKD++musLY9yaW8IUPAaHK+ykcjPR6fpWIet3U77XhbiHQGsH11uNcrPxwdYeq3XQdcEqNRwEjc4eqCT69ESsWI=
+	t=1786373435; cv=none; b=iGYadOHcVVdMrmlsD/3E4X7ZCqmNgNFsOXPf1ok+h1N1b/jRIU5R50/MJrEnI/eyzY3pM8IpZXeVwVhe4/vyC07eeEpJOuUJZq2chJb/V5vwuEWk0bak5axBehWWJb5G/usqkIbxyZd9/NDCecIFEH1ksQr5SGEhU3Xi61efue8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786372420; c=relaxed/simple;
-	bh=AfxvFoS/ftUkTwWYkLmLR+Bd4Y9eH94xPiNFj7HC8Jk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UGxMaO9CWernZrDPkzPLnaeKN0spKijPOESMmFchXzCcwe16boF+MBqLZyoyrzgZqyN8gqChUGbkQmBXS1Wxl9FLCU2zTEBETBcWXlpIBi0Dehi68hABU7uJrpU8KpheqRnrjYJfx8ykoU9WZ5KHt0mWO4Zd5dw9XGXKMRfgohE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YsyWqvkn; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YsyWqvkn"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 73F0314BF;
-	Mon, 10 Aug 2026 07:33:33 -0700 (PDT)
-Received: from [10.57.68.246] (unknown [10.57.68.246])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3CB743F86F;
-	Mon, 10 Aug 2026 07:33:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786372417; bh=AfxvFoS/ftUkTwWYkLmLR+Bd4Y9eH94xPiNFj7HC8Jk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=YsyWqvkn3zsbqmwUzojlwwxZiJWAhA5osq4Apo+zJQwSZ31nGBMbsz5YEFrfjPJws
-	 Fu6KLmk2gaIj8EdMnB6Rs1wnM4gGU1k+E+EmkW9KHiVthutehonzSY8ZArGF/78MJ8
-	 1ywnp7HGYi/dKwMA176okwj+xcFO4uvLEpgEE9d8=
-Message-ID: <840da3ba-1d65-4a28-a072-a586ea4dfce5@arm.com>
-Date: Mon, 10 Aug 2026 15:33:33 +0100
+	s=arc-20240116; t=1786373435; c=relaxed/simple;
+	bh=n5rMYOLB08GVMHx1R8PCKx0D3UZSKzHrcfaS81rxPSs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=vCg851q0gBRCOwMEf41GechUX2OYItxcsH3/VRT7N5d2zD1AZe1lg4h9FU2jHaNdAH8tmQGjNyEs5h6SuGsx26xUfjLIjj+VAXyjuUfAfWQS4Be095cFRmrhAiKPiti+hYhN6i0OcD6bVBeJtxA9HQKchHPjIZXN7ZM7TxWkC2I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-9674d727c0aso3014651241.1
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 07:50:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786373432; x=1786978232;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=LDUVqF9bGKPqsW39iH6LzgBQf6STHLl+9ztnXalCrFc=;
+        b=G/6b502pjUi3EmRwMgAeMDj6gcXYChWprloqaClQ+OKI5QQIuNu0X6vILbeU49aEOO
+         wI9gOgeQDF8XLAC7D8er6LVDZtqsOu9HWtows8yaxwJpIxm8nnOpvhBMMc3bv3XmnAWY
+         djtDESbMOsWlJjxr2Dr0VIWMzUAKLrcgsIfeZoECEBfKbhomK5558Ggpb76KdPc3KPwV
+         svKAFIsaWQH7hxMBg5K/bHbtqAkpPOg1afhV47A/8lyxH1oGeMJjyTsY7nImM4kUhlbf
+         WEtl4+iVXGFw2nXWdAx1kxR03Vl5+o3SVMMhQDDEGAOcRtFcZnl2icDFR7Us66xWq1oM
+         sIPg==
+X-Forwarded-Encrypted: i=1; AHgh+RqAcCFd5eqsm86agD1TVvw15XYTFNDD8ilEN6NCFk60PbSDfoyr4wf8o7RQVcOdbojMiBpJLk9Qzw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxFYfb65sCVIHqrIBfgXV5u+lSijjOozutxnpFOMX6qt4aiev68
+	enQppnPKltUs0QkTfJQKwqfL6JfDh71czx8/L+jWb1+IXKdWV0iRU3fkpHrSBkGn
+X-Gm-Gg: AR+sD10Nd4IG9lbYh3t+56Hf+Wou5T+QX3hropgtGRVmSHLVoBVyNPdkxZjRcmDi5ZS
+	HSZA/J+VZU0Mvro2Shb94iWXEnI4xjiUgVlfUNFGYaz4wDlomzaxSeTJwN9yanWhigE3v88/MJo
+	0T769NeR4nN9azbiobEcRLxq/fpDLAPS2LzHyfe1TqZSpKKETMRboUFPU3zQsHxnv1m9CUCcP4E
+	WMPfBdxospa68vVTGLjeq/wrASRAmPIUhTbYudDJ2MpkhgI1rCEjIIKLbe5tYgrsfUT2e2QMfOj
+	Wqhep29yyknxpd3MvonkZ+rHw2Isq/LkFT81M2FwiZ2cTQhm9Z+pKiskn1ZCbnBSzd/Gdc3NR0G
+	+jQkxlVIdXPFYCY/bTLy9kWD+wRGQQUlp1PvyQ7ub8w4O7dJ49+yZBUFqL7c6LaUM9pkO3+/fii
+	/r4aFmQqnM7ZGSRAq2OhhoENGS9b/1TpF23p/6gs0p5XHfDZOfdBKvwOFmU/LWrZqQH/VNRi1DG
+	and5KHXlftG4Y7OrG0TlYi/qw==
+X-Received: by 2002:a05:6102:2082:b0:74d:5456:b6fb with SMTP id ada2fe7eead31-7652241d10cmr1596996137.16.1786373432328;
+        Mon, 10 Aug 2026 07:50:32 -0700 (PDT)
+Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-979f2e53fb5sm3636387241.1.2026.08.10.07.50.31
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 10 Aug 2026 07:50:31 -0700 (PDT)
+Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-977ba4d3b49so1516164241.1
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 07:50:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rpn418I8zDll7DV00Feph7dlby3vJZi1P65OqFZTLEENdPCT6tM4pSEapoK780q5txrkDbXE8Hkwg==@vger.kernel.org
+X-Received: by 2002:a05:6102:2082:b0:74d:5456:b6fb with SMTP id
+ ada2fe7eead31-7652241d10cmr1596982137.16.1786373431244; Mon, 10 Aug 2026
+ 07:50:31 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 3/3] arch_topology: Add topology_update_cpu_capacity()
- for runtime updates
-To: Xueqin Luo <luoxueqin@kylinos.cn>, Sudeep Holla
- <sudeep.holla@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich
- <dakr@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Beata Michalska <Beata.Michalska@arm.com>,
- Ionela Voinescu <Ionela.Voinescu@arm.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng
- <zhenglifeng1@huawei.com>, Pierre Gondois <pierre.gondois@arm.com>,
- Sumit Gupta <sumitg@nvidia.com>, linux-kernel@vger.kernel.org,
- driver-core@lists.linux.dev, linux-pm@vger.kernel.org
-References: <20260807060848.832929-1-luoxueqin@kylinos.cn>
- <20260807060848.832929-4-luoxueqin@kylinos.cn>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260807060848.832929-4-luoxueqin@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <cover.1785941595.git.geert+renesas@glider.be> <CAPx+jO87d7H92KSR7R7ObR05sM2JcHBCo+YuUf_1gE-KwhR7CQ@mail.gmail.com>
+In-Reply-To: <CAPx+jO87d7H92KSR7R7ObR05sM2JcHBCo+YuUf_1gE-KwhR7CQ@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 10 Aug 2026 16:50:19 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdW78wFHKP8n2P_MEVASO3MFHCjXkEWSFXfE3-mCjkhsgA@mail.gmail.com>
+X-Gm-Features: AUfX_mzSDh0l0A6CyrHddRhefJg-h_HSruJEAkSrbmndCIqd_rMaLktXcM1WovQ
+Message-ID: <CAMuHMdW78wFHKP8n2P_MEVASO3MFHCjXkEWSFXfE3-mCjkhsgA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/6] R-Car X5H CPG/MDLC support
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 8/7/26 07:08, Xueqin Luo wrote:
-> When the CPPC Highest Performance register changes at runtime
-> (e.g. via ACPI Notify(0x85)), the scheduler's view of CPU capacity
-> and the frequency invariance engine's reference values become stale,
-> as topology_init_cpu_capacity_cppc() is only called once during boot.
-> 
-> Keep raw_capacity allocated after CPPC init instead of freeing it,
-> and introduce topology_update_cpu_capacity() to update per-CPU
-> raw_capacity, capacity_freq_ref, and the normalized CPU capacity
-> scale at runtime. Provide a no-op stub when GENERIC_ARCH_TOPOLOGY
-> is disabled so cppc_cpufreq can link on those configs. Skip updates
-> when the value is unchanged and reject a zero capacity_scale to
-> avoid division by zero.
-> 
-> Call this from cppc_cpufreq_update_limits() for every CPU in the
-> policy so shared-policy Notify(0x85) targeting a non-policy CPU
-> still refreshes the correct topology capacity.
-> 
-> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
-> ---
->  drivers/base/arch_topology.c   | 76 ++++++++++++++++++++++++++++++++++
->  drivers/cpufreq/cppc_cpufreq.c |  2 +
->  include/linux/arch_topology.h  | 13 ++++++
->  3 files changed, 91 insertions(+)
-> 
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> index 8c5e47c28d9a..27f2bfa9f326 100644
-> --- a/drivers/base/arch_topology.c
-> +++ b/drivers/base/arch_topology.c
-> @@ -229,6 +229,7 @@ static void update_topology_flags_workfn(struct work_struct *work)
->  }
->  
->  static u32 *raw_capacity;
-> +static DEFINE_MUTEX(raw_capacity_lock);
->  
->  static int free_raw_capacity(void)
->  {
-> @@ -372,13 +373,88 @@ static inline void topology_init_cpu_capacity_cppc(void)
->  	schedule_work(&update_topology_flags_work);
->  	pr_debug("cpu_capacity: cpu_capacity initialization done\n");
->  
-> +	/*
-> +	 * Keep raw_capacity for runtime updates via
-> +	 * topology_update_cpu_capacity().
-> +	 */
-> +	return;
-> +
->  exit:
->  	free_raw_capacity();
->  }
-> +
->  void acpi_processor_init_invariance_cppc(void)
->  {
->  	topology_init_cpu_capacity_cppc();
->  }
-> +
-> +/**
-> + * topology_update_cpu_capacity - Update CPU capacity after highest_perf change
-> + * @cpu: CPU whose highest performance changed
-> + * @perf_caps: Updated CPPC performance capabilities for @cpu
-> + *
-> + * When the CPPC Highest Performance register changes at runtime
-> + * (e.g. via Notify(0x85)), the scheduler's view of CPU capacity
-> + * and the frequency invariance engine's reference values become
-> + * stale. This function updates the per-CPU raw_capacity,
-> + * capacity_freq_ref and freq_inv max ratio, then re-normalizes the
-> + * CPU capacity scale for all possible CPUs and triggers a sched
-> + * domain rebuild. If the value is unchanged, everything is skipped.
-> + */
-> +void topology_update_cpu_capacity(unsigned int cpu,
-> +				  struct cppc_perf_caps *perf_caps)
-> +{
-> +	u32 highest_perf = perf_caps->highest_perf;
-> +	u64 capacity, capacity_scale = 0;
-> +	int c;
-> +
-> +	guard(mutex)(&raw_capacity_lock);
-> +
-> +	if (!raw_capacity || cpu >= num_possible_cpus())
-> +		return;
-> +
-> +	/*
-> +	 * Validate: highest_perf must be >= nominal_perf and >= lowest_perf,
-> +	 * consistent with the boot-time check in topology_init_cpu_capacity_cppc().
-> +	 */
-> +	if (highest_perf < perf_caps->lowest_perf) {
-> +		pr_warn("cpu_capacity: CPU%d invalid highest_perf=%u (nominal=%u, lowest=%u), skipping\n",
-> +			cpu, highest_perf, perf_caps->nominal_perf,
-> +			perf_caps->lowest_perf);
-> +		return;
-> +	}
-> +
-> +	if (raw_capacity[cpu] == highest_perf)
-> +		return;
-> +
-> +	pr_debug("cpu_capacity: CPU%d cpu_capacity=%u -> %u (raw)\n",
-> +		 cpu, raw_capacity[cpu], highest_perf);
-> +
-> +	raw_capacity[cpu] = highest_perf;
+Hi Ulf,
 
-Does this actually work if highest_perf would now be the equivalent for >1024?
+On Mon, 10 Aug 2026 at 16:18, Ulf Hansson <ulf.hansson@oss.qualcomm.com> wr=
+ote:
+> On Wed, Aug 5, 2026 at 5:21=E2=80=AFPM Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+> > This patch series adds minimal support for the Renesas R-Car X5H Clock
+> > Pulse Generator (CPG) and Module Controller (MDLC), to aim for replacin=
+g
+> > the dummy clocks in r8a78000.dtsi with proper hardware description.
+> > These two components are closely related, in the sense that they are
+> > both supposed to be accessed through the ARM System Control and
+> > Management Interface (SCMI) on the Ironhide development board.
+> >
+> > This series consists of three parts:
+> >   1. Patches 1-2 add DT bindings and DT binding definitions,
+> >   2. Patches 3-4 add minimal CPG and MDLC drivers,
+> >   3. Patches 5-6 update the DTS.
+> > Note that this series depends on v7.2-rc2, due to the use of
+> > <linux/device-id/of.h>.
+> >
+> > Changes compared to v2[1]:
+> >   - Add Acked-by, Reviewed-by,
+> >   - Add fixed-rate clocks to kerneldoc of r8a78000_cpg_priv.map,
+> >   - Use devm_clk_hw_register_fixed_rate(), drop unregister_fixed_clks()=
+,
+> >   - Drop fill_clk_map(), as it is not really needed until SCMI remappin=
+g
+> >     support is added later,
+> >   - Replace <linux/mod_devicetable.h> by more specific
+> >     <linux/device-id/of.h> in v7.2-rc2,
+> >   - Add a comment to document only always-on domains are supported,
+> >   - Consistently use /* sentinel */ for zero sentinels,
+> >   - Drop trailing commas from sentinels,
+> >   - Sort MDLC nodes (alphabetically, by label).
+> >
+> > Major changes compared to v1[2] (more detail in the individual patches)=
+:
+> >   - Add default support not using SCMI,
+> >   - Drop everything related to SCMI.
+> >
+> > Note that this series does not use or rely on SCMI in any way.
+> > SCMI remapping support will be added in a subsequent series (old versio=
+n
+> > at [3]).
+> > Full hardware support without using SCMI could be added, too, if anyone
+> > would care about that use case.
+> >
+> > For testing, I have pushed this series plus additional work (including
+> > a rebased and updated version of [3]) to [4].
+> >
+> > While I know it is getting late in the cycle, this work (especially the
+> > DT bindings) are a dependency for about any R-Car X5H progress, so it
+> > would be good to have it included in v7.3.
+> > Hence I plan to queue the clock patches (1, 3) in renesas-clk for v7.3
+> > (Stephen still hasn't merged my earlier PR for v7.3 anyway).
+> > Ulf: It would be great if you could take the pmdomain patches (2, 4).
+>
+> Patch 2 applied for next, but I left patch4 for now as it didn't apply
 
-> +	per_cpu(capacity_freq_ref, cpu) =
-> +		cppc_perf_to_khz(perf_caps, highest_perf);
-> +	freq_inv_set_max_ratio(cpu,
-> +			       per_cpu(capacity_freq_ref, cpu) * HZ_PER_KHZ);
-> +
-> +	/* Re-normalize all CPUs: capacity is relative. */
-> +	for_each_possible_cpu(c)
-> +		capacity_scale = max_t(u64, capacity_scale, raw_capacity[c]);
-> +
-> +	if (!capacity_scale)
-> +		return;
-> +
-> +	for_each_possible_cpu(c) {
-> +		capacity = raw_capacity[c];
-> +		capacity = div64_u64(capacity << SCHED_CAPACITY_SHIFT,
-> +				     capacity_scale);
-> +		topology_set_cpu_scale(c, capacity);
-> +		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
-> +			 c, topology_get_cpu_scale(c));
-> +	}
-> +
-> +	schedule_work(&update_topology_flags_work);
-> +}
-> +EXPORT_SYMBOL_GPL(topology_update_cpu_capacity);
->  #endif
->  
->  #ifdef CONFIG_CPU_FREQ
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 09d7745a609f..1480be537eaa 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -979,6 +979,8 @@ static void cppc_cpufreq_update_limits(struct cpufreq_policy *policy)
->  
->  	refresh_frequency_limits(policy);
->  
-> +	topology_update_cpu_capacity(policy->cpu, caps);
-> +
->  	/*
->  	 * Autonomous selection mode uses MIN/MAX performance as runtime
->  	 * hardware control bounds. Re-program them when highest_perf
-> diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-> index ebd7f8935f96..9415cb6a6c2b 100644
-> --- a/include/linux/arch_topology.h
-> +++ b/include/linux/arch_topology.h
-> @@ -11,6 +11,19 @@
->  void topology_normalize_cpu_scale(void);
->  int topology_update_cpu_topology(void);
->  
-> +#ifdef CONFIG_ACPI_CPPC_LIB
-> +struct cppc_perf_caps;
-> +#ifdef CONFIG_GENERIC_ARCH_TOPOLOGY
-> +void topology_update_cpu_capacity(unsigned int cpu,
-> +				  struct cppc_perf_caps *perf_caps);
-> +#else
-> +static inline void
-> +topology_update_cpu_capacity(unsigned int cpu, struct cppc_perf_caps *perf_caps)
-> +{
-> +}
-> +#endif
-> +#endif
-> +
->  struct device_node;
->  bool topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
->  
+Thank you!
 
+> cleanly (drivers/soc/renesas/Kconfig had a conflict), thanks!
+
+I guess your tree still has the duplicate "default ARCH_RENESAS"?
+Patch 4 just adds a single line there, and the conflict should be easy
+to fix.
+
+If you want to send me a new patch, please let me know.
+
+Thanks again!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
