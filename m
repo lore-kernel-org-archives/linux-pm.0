@@ -1,399 +1,171 @@
-Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11013012.outbound.protection.outlook.com [52.101.83.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEFF03F823D
-	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 18:49:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786387788; cv=none; b=uMZEl5NrhNWcinJ5neR+r0KYPipCBZFNiULlM7CxVpHUwDOkd1GTA0IWrWeUZcrXSQ5f07ARJ4Grg4Rxl8M+8v2vOU2AHl6K5drOWcWsI87NrLqtHRkeyk9sMYR3MYAA21K1dyikCUzuT5TULKyvvSK2TR/64K3OZEo6EcZLr7Q=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786387788; c=relaxed/simple;
-	bh=+PNdr7UOBN0D/P4Ki/Y+qRdGWST8WSd5FOmFZnh3mBY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=KGvOtw3k9n5rv0KkCndViYJ4j0W7TyXzSxCYLNARtqpuv6zjYElYexQPKsz1eeEAAru+Vy0ogqaJ20eJBGjzUfCotKLlIJyKtY95FAOn7SjF56ZUBz2oyUQiVel/Mz7mD+/3bbc7eWkhGI7FueUym2AEiniKj64B5f79rqd5Ouo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fXMDCBjk; arc=none smtp.client-ip=209.85.216.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F86043B3C5;
+	Mon, 10 Aug 2026 19:09:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.12
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786388997; cv=fail; b=t7RP2KI84bhnc/rJ+7X7rpKk4NzO8dzwoe81kAyOZRc7ShbVxjdpUU6t9PzvLl71Q3Y9MI+5RITa8MD4jg52hssLl7vn8VpzuZkJKqlni7wQWz559mJmHgfB1SaEfPagWd04CoH+7vb+/dsJnh3yDAeyJyL22x7m04H1GWhO7A0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786388997; c=relaxed/simple;
+	bh=29blRmyJTctHX+9d3Qmgp4U7gA4RpVkEdhgfogppDqg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=JiG+VSePjCwX1taAt6szMtTe05hBS3H7BAjrrFNvyQ13HOzqAo0RBOpM3nURjKs6WdSdKUiT9OdVOccpORaUHEbo9U7jJ25pWGGnQ6aRqX5e6g7QqrsoV7ulTrqPnURIhIFTGhAnlcRWjeFS1sSEeTF47sb7bEUmncx7RYwqkRc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=mdrJ+KnJ; arc=fail smtp.client-ip=52.101.83.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fXMDCBjk"
-Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-38ecc48b3deso423500a91.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 11:49:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786387786; x=1786992586; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=Fgt1He7MakmEe7A8QhkQSNnwfjvCnynEk+19Oz9BHoQ=;
-        b=fXMDCBjk8N0Ewm75eIjQ5vsANXNHpSAXy0DKCyGmE89v3tV5MHSQi6E/CSxhPAsg6s
-         QIMZJNUCeBIUnlZuqiSLaI9ISpPwPsaoPkGJUsObpI6rGVAMpkGX2snrksoTIoisnK0y
-         D6TKr2Nf/5IqxcytcoTtWQN2mpYFDur6yfWxXx+DyGKutBauS4UWwpGZJrod/GdUARJ4
-         6gXJXWjJg7DWBlGZ0iEJf09LN6AM9hMVc1RsM3GENhDLmisY5z78UIDGk5I/MMFmwquI
-         3tA2H/LJkqW14a+yZzOT3NNLvjrQ+llPFUX8hJh5k54IoMUnl64HovtrQE7VjFnUQflh
-         rA/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786387786; x=1786992586;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=Fgt1He7MakmEe7A8QhkQSNnwfjvCnynEk+19Oz9BHoQ=;
-        b=HPB8n7dHqvjOkr7ohj+vqyVpAplBSgSEc7cdMrlU4TKQ5BuYhK1yAxlIE2GKUDAkRg
-         UCg0ddAfxDXTtUbRPvZoZ+k5S8uFhak9UfGLuyycNYXzluMU4iHE0OdrPUx8plHXOxxu
-         86gyzkCXaduo1daxUTu/H8IH4jwa/m5JWRFFT1AcmYs3Mg86QVSU8TFV/vQQNvvezc9y
-         TzFy5C9Ge68a6VK/f52cVquB3TijaWBhjvZRmjIGrwl6PtHAI7tDf2QGGQbn8PBCMv3x
-         89pJKBuPA/mwWltfiJfbh+YjRzXv8pAPfqDcKQn2WP1YsHsIrzJVvv5BwtiLkiirH8KM
-         pz8Q==
-X-Gm-Message-State: AOJu0Yyk6eS1KGj+/1eBa2BHQOZ2dFQUDwoO6ZhDgE5+1zLQsFcJirth
-	7d+o/Nrn42oStSRu+X8+YouamuBHODo7f1HlJJmgkWA1gcoTesN1D/6y
-X-Gm-Gg: AR+sD10soRwztP7pVl5kDJHw0xV0MN71OJ3j4SBOh8pLhxdQLwPrf4vrncUMpgHhCOL
-	rSDBg9j9JaPfaD4EAShg3pBLcoJ7YVDShAtdnGTGnuwOF6IxxO++vkYDE5gjuzo0DgBAT54R26l
-	hDMsU9o/MG0SI8T2tmPelVxyEWlfzabWVFAq3uC0Wr3u22u9QVCt1MQJSPhBgEZP7XWVqQwMhH6
-	pwdvR2AXnkgSAkFr9Cg7QXaWFHuMGPWNeW+QD2k5mUZY7l6hrcujdjpF7GGE//F2TvWfoFKpyRV
-	60gkSMKECZuqIg/PCYQtrDj3HN2tv/Bak43aLCGcFw6zM7gQp04PTET4E/SJyEdmqVHtCAv33oY
-	hdln/EBERodB+qEs2ObcrZttOC0Qa8bJJCyS05+GyeMThPnZFCmtq965Pk4bjXoP8vkmlSyeA+8
-	6sYEjbGCfOPpeThC781XGLO+m/9BOmHoK2UfT0uSzaZDFv1LxBfODB7dRtttH4MBUHJB0=
-X-Received: by 2002:a17:90b:1fc8:b0:38e:ab3f:2c99 with SMTP id 98e67ed59e1d1-3903c628181mr33192889a91.2.1786387786236;
-        Mon, 10 Aug 2026 11:49:46 -0700 (PDT)
-Received: from [172.17.0.1] ([2409:40c2:5004:a08:95b5:64f6:95fc:7bec])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-141019c2ddasm40132740c88.7.2026.08.10.11.49.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Aug 2026 11:49:45 -0700 (PDT)
-From: Bhargav Joshi <j.bhargav.u@gmail.com>
-Date: Tue, 11 Aug 2026 00:19:28 +0530
-Subject: [PATCH v2] dt-bindings: thermal: ti,omap-bandgap: Convert to DT
- schema
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="mdrJ+KnJ"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=yYmWZaimcaB4B3s+w3koQIdlSGLq+eEP2F3DzISn9XWLjZ52Ff6ukKw0v4AOgDMRMOVZwxl5gxl48GbsFHuOwxkZ63Bw5qRTAkIy/Rx0cqLHREzeDEO4bY0hUM2qtob8RSRNMC2JEWj/pp0oaOLc7aZRx1N+WZuZvW3g+enT3knyqd12Wu5/YpEnyLdHWHs7uD0Go5v3ZDpGI83bgo9AbuJsivrr/0sn563lSFySBK6fkFYsTAor/3/WfBtr/6cVGeqEBC2kJPXufj6VJ6pzaJJgt6ez/02zp00srsIsp+9mlDROXtNG60JwI53V5Ad6z0qLlMOxdqLtAZY6g1eQ/g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RiaUOwpA/oii5hbppLKigwy3gfUsFrped7pqyuMw6s0=;
+ b=KHrb5Xz1xTe1iugvS/OT+h+RLWB2QRBnOLgIBBosaLcIqK7q9KqoEoclKTdTriyJ/QlZOMhNLAnmz8fNq8ogjz3/HEudxqk4VLCQCOz63oGFqrI2bbVzsOnvMA9iitgKD0ZQ/9EgL/3fXBxPc5yn64FHlnGaGWGgpzIB//oyTErJ3cLLxPAZRWQU46x1HaxVkZLpP6uYrZOOaIECyd831/+hznKS2fBlRXG7MSe8flG4qpZDBr8swdL9hOjFxRHBUzj+yWUf6XiA07mB9FouhrB+C6yyYa3j4pitqvtyT7xgrlPaeX9E8ctZPOxRzDbn15VGPpwb6NggfroYEL5h1Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RiaUOwpA/oii5hbppLKigwy3gfUsFrped7pqyuMw6s0=;
+ b=mdrJ+KnJRSRkrV8/t6MESEQOtY+sEbPgglwlDy5FOUSHl5BJjQmJXpuyiQPGj4s0GsYKvJgOnpvC/c59Snw4lGYOlUqH0d/i0e6UE608c6OLiVdy3h9PGObdA3TLwFkN9r9kmB53rmUFdrxistrCcdsJKI3LHEu2UhdtNlFsduMqpOKstEEbTnseTqVuuGGt8s3MowUWyiMXfzHbbtQZLsXszODVR1JYCT1cZUNGtWAxg/92FG0C8E6x2AWZ/aGY6NJHolVXZRCAgSX470JFvOtY5MVhzQrUit287cm57j1A0tmRDfOY/I9ZPELxcgS6thLDu/3JiIl7SCx3SPn4wQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by AS4PR04MB9508.eurprd04.prod.outlook.com (2603:10a6:20b:4cb::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
+ 2026 19:09:52 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0292.024; Mon, 10 Aug 2026
+ 19:09:52 +0000
+Date: Mon, 10 Aug 2026 14:09:42 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] thermal/drivers/imx9: Constify struct
+ thermal_zone_device_ops
+Message-ID: <anoh9t4oqR7XhS74@SMW015318>
+References: <5cce9ea713edcf2aa3c0efd5d31e9d9fd9f40a88.1786220585.git.christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5cce9ea713edcf2aa3c0efd5d31e9d9fd9f40a88.1786220585.git.christophe.jaillet@wanadoo.fr>
+X-ClientProxiedBy: SN7PR18CA0007.namprd18.prod.outlook.com
+ (2603:10b6:806:f3::27) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260811-ti-bandgap-v2-1-6fec2a71c394@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/03NTQqDMBCG4avIrJuSRIylq95DXEziqFPqD4mVF
- vHuTSyFLl/45pkNAnmmANdsA08rB57GGPqUgetx7EhwExu01EaWuRQLC4tj0+Es2tLmzpTYGjQ
- QD2ZPLb8OrKq/HZ72Tm5JQlr0HJbJv49vq0q7H6z+4VUJJZCIIlxcCi1v3YD8OLtpgHrf9w9qT
- hTWtgAAAA==
-X-Change-ID: 20260730-ti-bandgap-f7b3c67af6a6
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, goledhruva@gmail.com, m-chawdhry@ti.com, 
- daniel.baluta@gmail.com, simona.toaca@nxp.com, j.bhargav.u@gmail.com
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786387779; l=7915;
- i=j.bhargav.u@gmail.com; h=from:subject:message-id;
- bh=+PNdr7UOBN0D/P4Ki/Y+qRdGWST8WSd5FOmFZnh3mBY=;
- b=sd/2FvOfRdpNJxTMaMKWtX+ESdk1lNtkaLf6chIQeEq/C0lh34goXhr0RAIdgcHvdFE0TJXIN
- JUzsqmXfuDLAaAeBj1VoC7BhY/IROcNvpyFEWZkARknArWgJay51+VX
-X-Developer-Key: i=j.bhargav.u@gmail.com; a=ed25519;
- pk=IqNDwUZKECEA+n8wXctFLBbYL9NhFstZNbOznm/nX1k=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AS4PR04MB9508:EE_
+X-MS-Office365-Filtering-Correlation-Id: 54b3b593-8348-44d4-4fe5-08def712f484
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|19092799006|23010399003|366016|1800799024|376014|7416014|11063799006|56012099006|10067099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	C4Idyw6SzJk2SruzYuAsv5geVOIPaEuwsgFW5rzEnK01298uCYlY26iIsY6+pdm17H23EkbzuHhsOuCnFtH+0Nzv3ZxXpaePwwwIIFtQv05O46YGx1XgUJ54q8NMilL7OB8bGHafQlwLmxeuCBotV1b8ppEdsE19lU8dcQf7CH5k7kdFp7Jxx2is1ViH1b6V9EusMkNeZusht4NQy+AZDfIxq/8XzTkPDYqLGB1k+a59L4HL/m4gLoFw5Tyb0EtQs9MDyfFSDMlXhtx2GCcXqp5JV2gBSna3NslImNXRn9qJfFm1w6U9wws0w2C9Njw+EZSgGwJLzyo3kfNScSYpTANwWA2SwKLPL1QXhYb7FjkccTVj/3Z5iu87fbVBNrlcHLyqcViSp4m1UgKEy6lwi3iw9/2NvL8n3vrwOWvZI/ddkuH22lC4S73/LHUs3lGnaGOZBuTu9E5KGotZjaeW9TfFuxr+eX/ZLPdPrnMQmX3FOeM0TMLKZ8zxbjHGp8Dp85+8AUStKV8kYm8jXJlrWgIRMCwDVRYHyxRPM6uOgcBvG3+mzmVEch6S/zg+RSan5ufXfwDc8jeNuSyfGF50j0ctOYSwPVsXVhi5XKnn22jUIe6N3y38zL5HoA0hnNvbgwrxDkbUZsYZZzHA8UXO63llPIdoKVM2loj13kDMj5Y=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(366016)(1800799024)(376014)(7416014)(11063799006)(56012099006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?YF3HCMLFpgoTMce8NTuOey7sZCa8aNE9NR/KCpyAQ0/D3fBT6wcKmM5TCaT/?=
+ =?us-ascii?Q?B3RDHL8+2FbiQuNMHT9dA9KFd+/XQu2xDw2F/YktmGriOtBmULXNZPh3gDdG?=
+ =?us-ascii?Q?QVkw3968cSS1RBCAqUv+gq+17Eua+OiwSlGEbozrvysmW4fuap2IZpn7f9if?=
+ =?us-ascii?Q?70RdClkA2fiTpX+5xBcqXWFAFjGz+m6n5wjbpiy3hsN15Vo/sHStSC/1Te3z?=
+ =?us-ascii?Q?J6+hUuxhGYQ+OH+DdHPwEX979hJIfO0xvUveJyPr89Hxjg10OmcHUCJIYOMX?=
+ =?us-ascii?Q?HG+HOhpNGmzQL7S8z5FF+x7OGk9dWR6Bhaee9p7cVseSe4gvKEZlxW1TGV7W?=
+ =?us-ascii?Q?4U67z67bXWcHMYOal34x0XWz8GRIe8oUFn4WgK5DOI/jaO+Y18t0VsxGqYug?=
+ =?us-ascii?Q?7MdL2ivnEa7MItrkMx4xDfiziQdyr/qFPe7kNYib/ymTq1Z9tk4f8SZT3JVi?=
+ =?us-ascii?Q?Dsz86ZAHs2LwL2plIVPnEJLdPruUipFMTMdI6OW0j5NXP2x+8z5XTiVuwvVB?=
+ =?us-ascii?Q?3f5+H9eKdwUsNDm3Z4cA4oNPCQlSqv+jkS1yDrIP2aFjncTD5qq45dM7D4hd?=
+ =?us-ascii?Q?ukVwV1rQSV3N5ArlIlNrOuIcvfU40uPKAM36ey10bXYEoN3D8yY65E4wTzfT?=
+ =?us-ascii?Q?H9d0E04gz8lxGZV/Hx+rxEmxUphcPxqRG2nrBEAINPsmWrwaCnXzxqSFp2vS?=
+ =?us-ascii?Q?a0t/iZyKVU/vOJxPy7mXJ7ago63apsJJpFepK/KBuwzEFQGKkjxw93qbMY9A?=
+ =?us-ascii?Q?a/0EzTFC/6Y1KPyjCi+aIeug6B9NZrLOCp+NpTCqH+5GDsb2mumwCZZM5+Fy?=
+ =?us-ascii?Q?6gIazEW/fMd6RMUiqxL5yYFvN+qWSlA7Gq5/0rDbUNUkJUaCbFoRwrhTEq6E?=
+ =?us-ascii?Q?h6cxuGqiPGUP1iyc6DqO9jAqE57T3IsJmqFIxkhV6b6zz1J255JrbeCwFWxR?=
+ =?us-ascii?Q?7rKMRiIvcXPItGIJhkGwIpGO3B8OIRXRnB8p0gDBz02P34mMO640nZYdNTdU?=
+ =?us-ascii?Q?lxLg33nIsuwgsmpWw70Ho1hvlVphiTbV4/lsQi5cfCJqsZtYe+uIgMdCNdpa?=
+ =?us-ascii?Q?WUJjZzRLQJJeTTBrB8Ez9J7QUj+0N8vKAQCrAvbL1J3F1q926KNL3MZkWkzJ?=
+ =?us-ascii?Q?T5NqCNNwRE+re+QqXjk2KqACGzHlhGI6z211PNn9PNULz1qH90twc0Z8qAR+?=
+ =?us-ascii?Q?SWFG1flTBSqfCGwJheUhvogACkxS/OlCP075x9mSHU7gUYZlrL54WVXucLYQ?=
+ =?us-ascii?Q?goj095t5L9Lj+VUCDmA2gkV8dj3XrqlHJEJooa2FUMD3bWMf8S8CROFYDsPI?=
+ =?us-ascii?Q?902qS0epwkxx4uLYfVHT/rqX/m02WsFxUiNfcNRaFcaV7QdRW5HRffoD5WW3?=
+ =?us-ascii?Q?5ArWHbft5P0RQ+dAfzTEJWbr0anLfDASFkXJFwOwncFLx9iuupSGPOP6n0y9?=
+ =?us-ascii?Q?XIczZK47nE/RvaOsY0ugXEHRU51aLp1JRby1okX23V+QC3Q2G03bQeIkaz7Z?=
+ =?us-ascii?Q?gSGfR7A5BgVpBA5klO+eAtV0UgiVdktMzBx01YLEWLanPyqeduh9roVieEtk?=
+ =?us-ascii?Q?FEJJv43lPzYajbMU3IyYxaSIsbGEoUA/fVPAZwM8NGT6AxfwFBgAyRvq80ub?=
+ =?us-ascii?Q?wXvooT/bwBi+Cn1pSURwTfgEdKkagXpoMd5d9hllj3As0uV1uQcPW3TOzp9X?=
+ =?us-ascii?Q?W3vu+1h9jj5Ot4FIbQLENSyAUpAxAR3pv8iXtG7wyqT1oOs8pa3PSlEAE1gW?=
+ =?us-ascii?Q?V69BEQTd2uTITeMGIkQxvnTElVRE5AgZQa6B2/apnjRKksfEs7pj?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 54b3b593-8348-44d4-4fe5-08def712f484
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 19:09:51.9809
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: tEMy07HyODPJUW8IH5pgAdDTLXi+jE2isf0WQtmCeqved730ugbuWaNbi+FFMaz/4bar/t9hLHnvQI/G5jvXskS+zNPKamN9rzOYEwODdam4lkS9qLXKsXmMBXmGL4oB
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS4PR04MB9508
 
-Convert Texas Instruments OMAP SCM bandgap from legacy text to DT schema
+On Sat, Aug 08, 2026 at 10:23:33PM +0200, Christophe JAILLET wrote:
+> 'struct thermal_zone_device_ops' is not modified in this driver.
+>
+> Constifying this structure moves some data to a read-only section, so
+> increases overall security, especially when the structure holds some
+> function pointers.
+>
+> On a x86_64, with allmodconfig:
+> Before:
+> ======
+>    text	   data	    bss	    dec	    hex	filename
+>    8567	   2144	      0	  10711	   29d7	drivers/thermal/imx91_thermal.o
+>
+> After:
+> =====
+>    text	   data	    bss	    dec	    hex	filename
+>    8695	   2016	      0	  10711	   29d7	drivers/thermal/imx91_thermal.o
+>
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> ---
 
-Add "ti,dra752-bandgap" to compatible which was missing in text binding
-but used and matched by same driver.
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
-Document the "#thermal-sensor-cells" property, which was missing from
-the original text binding but is required in practice by all in-tree
-users via the common thermal-sensor.yaml binding.
-
-Signed-off-by: Bhargav Joshi <j.bhargav.u@gmail.com>
----
-Changes in v2:
-- Dropped unnecessary interrupts in if/then block
-- Dropped extra examples
-- Link to v1: https://lore.kernel.org/r/20260731-ti-bandgap-v1-1-aeee6a658520@gmail.com
----
- .../bindings/thermal/ti,omap-bandgap.yaml          | 177 +++++++++++++++++++++
- .../devicetree/bindings/thermal/ti_soc_thermal.txt |  88 ----------
- 2 files changed, 177 insertions(+), 88 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml b/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml
-new file mode 100644
-index 000000000000..091b7be28461
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml
-@@ -0,0 +1,177 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/ti,omap-bandgap.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Texas Instruments OMAP SCM bandgap
-+
-+maintainers:
-+  - Eduardo Valentin <edubezval@gmail.com>
-+
-+description:
-+  In the System Control Module, OMAP supplies a voltage reference and a
-+  temperature sensor feature that are gathered in the band gap voltage and
-+  temperature sensor (VBGAPTS) module. The band gap provides current and
-+  voltage reference for its internal circuits and other analog IP blocks. The
-+  analog-to-digital converter (ADC) produces an output value that is
-+  proportional to the silicon temperature.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ti,omap34xx-bandgap
-+      - ti,omap36xx-bandgap
-+      - ti,omap4430-bandgap
-+      - ti,omap4460-bandgap
-+      - ti,omap4470-bandgap
-+      - ti,omap5430-bandgap
-+      - ti,dra752-bandgap
-+
-+  reg:
-+    minItems: 1
-+    maxItems: 6
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  gpios:
-+    maxItems: 1
-+    description:
-+      used to inform which GPIO line the tshut signal is routed to. The
-+      informed GPIO will be treated as an IRQ;
-+
-+  "#thermal-sensor-cells":
-+    enum: [0, 1]
-+
-+required:
-+  - compatible
-+  - reg
-+
-+allOf:
-+  - $ref: thermal-sensor.yaml#
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - ti,omap34xx-bandgap
-+              - ti,omap36xx-bandgap
-+
-+    then:
-+      properties:
-+        reg:
-+          minItems: 1
-+          maxItems: 1
-+
-+        interrupts: false
-+
-+        gpios: false
-+
-+        "#thermal-sensor-cells":
-+          const: 0
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: ti,omap4430-bandgap
-+
-+    then:
-+      properties:
-+        reg:
-+          minItems: 2
-+          maxItems: 2
-+
-+        interrupts: false
-+
-+        "#thermal-sensor-cells":
-+          const: 0
-+
-+      required:
-+        - gpios
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - ti,omap4460-bandgap
-+              - ti,omap4470-bandgap
-+
-+    then:
-+      properties:
-+        reg:
-+          minItems: 3
-+          maxItems: 3
-+
-+        "#thermal-sensor-cells":
-+          const: 0
-+
-+      required:
-+        - interrupts
-+        - gpios
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: ti,omap5430-bandgap
-+
-+    then:
-+      properties:
-+        reg:
-+          minItems: 4
-+          maxItems: 4
-+
-+        gpios: false
-+
-+        "#thermal-sensor-cells":
-+          const: 1
-+
-+      required:
-+        - interrupts
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: ti,dra752-bandgap
-+
-+    then:
-+      properties:
-+        reg:
-+          minItems: 6
-+          maxItems: 6
-+
-+        gpios: false
-+
-+        "#thermal-sensor-cells":
-+          const: 1
-+
-+      required:
-+        - interrupts
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    bandgap@48002524 {
-+        compatible = "ti,omap34xx-bandgap";
-+        reg = <0x48002524 0x4>;
-+        #thermal-sensor-cells = <0>;
-+    };
-+
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+
-+    bandgap@4a0021e0 {
-+        compatible = "ti,dra752-bandgap";
-+        reg = <0x4a0021e0 0xc>, <0x4a00232c 0xc>,
-+              <0x4a002380 0x2c>, <0x4a0023c0 0x3c>,
-+              <0x4a002564 0x8>, <0x4a002574 0x50>;
-+        interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>; /* talert */
-+        #thermal-sensor-cells = <1>;
-+    };
-diff --git a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
-deleted file mode 100644
-index 6299dd8de339..000000000000
---- a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
-+++ /dev/null
-@@ -1,88 +0,0 @@
--* Texas Instrument OMAP SCM bandgap bindings
--
--In the System Control Module, OMAP supplies a voltage reference
--and a temperature sensor feature that are gathered in the band
--gap voltage and temperature sensor (VBGAPTS) module. The band
--gap provides current and voltage reference for its internal
--circuits and other analog IP blocks. The analog-to-digital
--converter (ADC) produces an output value that is proportional
--to the silicon temperature.
--
--Required properties:
--- compatible : Should be:
--  - "ti,omap34xx-bandgap" : for OMAP34xx bandgap
--  - "ti,omap36xx-bandgap" : for OMAP36xx bandgap
--  - "ti,omap4430-bandgap" : for OMAP4430 bandgap
--  - "ti,omap4460-bandgap" : for OMAP4460 bandgap
--  - "ti,omap4470-bandgap" : for OMAP4470 bandgap
--  - "ti,omap5430-bandgap" : for OMAP5430 bandgap
--- interrupts : this entry should indicate which interrupt line
--the talert signal is routed to;
--Specific:
--- gpios : this entry should be used to inform which GPIO
--line the tshut signal is routed to. The informed GPIO will
--be treated as an IRQ;
--- regs : this entry must also be specified and it is specific
--to each bandgap version, because the mapping may change from
--soc to soc, apart of depending on available features.
--
--Example:
--OMAP34xx:
--bandgap {
--	reg = <0x48002524 0x4>;
--	compatible = "ti,omap34xx-bandgap";
--};
--
--OMAP36xx:
--bandgap {
--	reg = <0x48002524 0x4>;
--	compatible = "ti,omap36xx-bandgap";
--};
--
--OMAP4430:
--bandgap {
--	reg = <0x4a002260 0x4 0x4a00232C 0x4>;
--	compatible = "ti,omap4430-bandgap";
--};
--
--OMAP4460:
--bandgap {
--	reg = <0x4a002260 0x4
--		0x4a00232C 0x4
--		0x4a002378 0x18>;
--	compatible = "ti,omap4460-bandgap";
--	interrupts = <0 126 4>; /* talert */
--	gpios = <&gpio3 22 0>; /* tshut */
--};
--
--OMAP4470:
--bandgap {
--	reg = <0x4a002260 0x4
--		0x4a00232C 0x4
--		0x4a002378 0x18>;
--	compatible = "ti,omap4470-bandgap";
--	interrupts = <0 126 4>; /* talert */
--	gpios = <&gpio3 22 0>; /* tshut */
--};
--
--OMAP5430:
--bandgap {
--	reg = <0x4a0021e0 0xc
--		0x4a00232c 0xc
--		0x4a002380 0x2c
--		0x4a0023C0 0x3c>;
--	compatible = "ti,omap5430-bandgap";
--	interrupts = <0 126 4>; /* talert */
--};
--
--DRA752:
--bandgap {
--	reg = <0x4a0021e0 0xc
--		0x4a00232c 0xc
--		0x4a002380 0x2c
--		0x4a0023C0 0x3c
--		0x4a002564 0x8
--		0x4a002574 0x50>;
--	compatible = "ti,dra752-bandgap";
--	interrupts = <0 126 4>; /* talert */
--};
-
----
-base-commit: fc02acf6ac0ccde0c805c2daa9148683cdd01ba8
-change-id: 20260730-ti-bandgap-f7b3c67af6a6
-
-Best regards,
--- 
-Bhargav
-
+> Compile tested only.
+> ---
+>  drivers/thermal/imx91_thermal.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/imx91_thermal.c b/drivers/thermal/imx91_thermal.c
+> index 25915bb702be..892a25440e06 100644
+> --- a/drivers/thermal/imx91_thermal.c
+> +++ b/drivers/thermal/imx91_thermal.c
+> @@ -225,7 +225,7 @@ static int imx91_tmu_change_mode(struct thermal_zone_device *tz, enum thermal_de
+>  	return 0;
+>  }
+>
+> -static struct thermal_zone_device_ops tmu_tz_ops = {
+> +static const struct thermal_zone_device_ops tmu_tz_ops = {
+>  	.get_temp = imx91_tmu_get_temp,
+>  	.change_mode = imx91_tmu_change_mode,
+>  	.set_trips = imx91_tmu_set_trips,
+> --
+> 2.55.0
+>
+>
