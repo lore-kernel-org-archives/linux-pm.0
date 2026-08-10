@@ -1,44 +1,44 @@
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010056.outbound.protection.outlook.com [52.101.193.56])
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010008.outbound.protection.outlook.com [40.93.198.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0859A37BE64;
-	Mon, 10 Aug 2026 10:11:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C8333B42E3;
+	Mon, 10 Aug 2026 10:11:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.8
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786356671; cv=fail; b=WZDQYDLxnaIo/ccXlLq3iQfbYm/30dL029/9mBZb1HWGQipVHLq64CP+yXq8HFgqlqRe5FuTTqPegVoPJmHQgfM9hUiVqKQvGr2vuPenuVG1P5N7cBhGLIVJxi9ua0uk0f+E07nh6NOCeYUVmzc3Kcg7OinTClJFiKu2YQ6/bWY=
+	t=1786356671; cv=fail; b=Fo3rvhwW4r+qamnMDyYSw80MC/i6jGgZNuQzETwAn3V8DrC4MNdkUKJ2fewaXvt5y1vbsO1R9beT1VAwz2jYL0QCR86Zj9KK7j7Qc5FcoXWXdR/tW55Ku/S0jpLeJVlPFcTTWoyezFs/JJE8Uit8gbe6QEiIsUXmOq2gd4+Nt44=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1786356671; c=relaxed/simple;
-	bh=pdyMGQOWVpHiZvYK+sBLHA1yc2RdaBnSGpQUhSfYk/Y=;
+	bh=++5vCM3L0XVwuyZAuwtFmNM8HR5LWP7tV4l8YHHeF38=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=abm2GtphpRNFTT5cjcAauuLikauXl0M68QYgIglo8/wgj7xM6E5mLQD7ZutrZPvIg2zSZcogz7kOzoGq1wfGLBqG06VLXtiOHemb04Hry/ZcnU6UhXRgWT9SPWcCKCEvAurZUEfT8WH0UUBtwyFmGQCHzoF6lK9eCslv0neU67Q=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=2orqBGsj; arc=fail smtp.client-ip=52.101.193.56
+	 MIME-Version:Content-Type; b=ZvuQdJDRmgV/ashUykjqtQ3CzwF9BTRF9mtzmZmh2U6OJcQfyjwceCYhj/UHv/JNxiTzXA9oo9v8YFje/CKeiGhl6QlitaoLbezPWVEeQAyTJxeLTcYv+FBY87FvIB/TgIlCusVRoHFuC3pCk/b+4G2Cn9Niv/I4XA93INwHDK0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=b5bAW+lK; arc=fail smtp.client-ip=40.93.198.8
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="2orqBGsj"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="b5bAW+lK"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=YANa15ZCNrsyd51R79k9srcHtZBLhsHq2bkUN1FzsDKrgeNu1jxYFdNUVf4uSTitZYWzhYhHo/rsmdcsi9Hkwer+U6tNT1FJBV03LdjHaZPZC2pKn8jmcltCPWnlAf3JpeERfdAEjsalfmHHobHNuE8itjWeaAT3L3QOhpixC9TpoLfylBtikuPZF1Nx+WzhR/PBBesnHZKs5Hv4ta6bjos2JF8GS2cPl+OxkOMO8judFk7V/nbjzmdwt6CDWRWBfMzLJobIwRSf77Dh6iOoCIGTJJgIHrKxBpfDqD3F8RIH0Kt1kqGAVjcUWXSraqgt0WRLYlhYFDM1zbLCSrp1Iw==
+ b=Xob2xNUjPJl3bZVpaD6gL0BucoBM7VydbSKX2xo1aBbZRyaUTV/AllrFyVeMEkfVVsUqNIZ8Mr56zvZIpm9pjpIQxStVQEK3AvpLMeaYbCNg84U7HYWDkB6Eh3cV/0NFeZ4REQeLs2JqSWZ7NLNlTh7/rbe4T9p2RAmej9/QqQDhlLU/5JTcGhbZhhY8Oc5z4mc82fMwWwEqYRnEcE2SvkgnINFY4sbLq3dWOkWCvtbDBQVz16RIJS6dLopkOm/lADZiuiXXEXwnTnrI9pSnF8yqsb5Y5Yddw829DWEKAW5gDQ5BRR4MQmrR5QpNSdB32lc+YOwoRkeDkXyVI1I8pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qgo++gapbyKAN7efsozfVy6LXp+Nson+cUklixs29fk=;
- b=TPSxC8B7OvD/cIS3ZS7lygTYtXm1IkWqS+lEiHWfYjsRW5PckvF44Po3dd7K/NN3E/8KFJp6Cg2gEbP6DhVctedHY6FnfkMq0AnVSS61R1w3SqgeA8rInIIWS04wXqFVhNz5i2ylgBPxRUeOdOws7g4Hb27tzaiuxyOAD0d4Z69l/Hh5+pGXzWQfSsLsM/N43bUamQC4Vu0V2FSQk95tBDcMc4vj/wIoRgi8RttQ6IfWPaxF2YZFVRxIbXvMzFt9NQd9jNDgPNGlrlq+M7mTgu1Tv+6UTYEYx5hvJvMkXk7GTH0Cem3Oq46ZU6+/7ipGfJLXE27KWuA0KrnT3DphcQ==
+ bh=9Il8a+a/QXWQplt0OgEQaM0OnSHmRfhZtUkpBsOMr70=;
+ b=jjWJU1GY2OM31Y3WKNqzDuwIUGGwlRnpGaqPCyRwvZj12GVxs3JdBlyZnQ3FpyACDDz0/XWLBn6eViuzguAuIVWMDnjE7On3rY0a3kpf1PRV7HPAZ58CdBJRImaIP3LwpLU0WabCIv4hyKnoYn3Q358D51HIyEDBaaT4mz4vYE7etTDuPLLb/kcHU5kt/doGLL9tJ7KsA94XW8tRKw5WG9c6kWDidf3wye0reuYn7spW+pcX/UVE0a5/1jAoLyMasDeh5QEf92GzD49KfUR5qs5IX/TIPZjkYA5PGMDOzFxuzPAYF0+FsrouUD4JOS3UUoTg3jw0DZZYdOey7iDJFg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qgo++gapbyKAN7efsozfVy6LXp+Nson+cUklixs29fk=;
- b=2orqBGsjakeVWf2j8/nwllNjCIyAJ0mjtr0z7cCt5VaLXZqJdy72BWrMpacQJbRPikjYZbUIkI/O/o19uDsa1KbNyBeuVq++PBpwVzJeWB0/N7d41SqoQkhAoXcJ8ylSCi/h3XNBMu/Lj/VJU9XgZvGC3qreEpsYROIsgcpBZIs=
-Received: from CH0PR13CA0012.namprd13.prod.outlook.com (2603:10b6:610:b1::17)
- by PH7PR12MB6489.namprd12.prod.outlook.com (2603:10b6:510:1f7::21) with
+ bh=9Il8a+a/QXWQplt0OgEQaM0OnSHmRfhZtUkpBsOMr70=;
+ b=b5bAW+lKoulU6aKtCSJ/UWUyzbXgVqDq4wkCB3sp/b6VBPKvGMR9prIUFu6O42zOFJLZeeWpORr1I8jC7jj1wCL8tvxwnEYtMKRPAvbPeUg5W3gFsbOv86sCWDS9SBuiYCjSf2NH00+Fer4DwKQOn9ngOjF35FmcQAZUupWO3JM=
+Received: from CH0PR13CA0026.namprd13.prod.outlook.com (2603:10b6:610:b1::31)
+ by DS2PR12MB9616.namprd12.prod.outlook.com (2603:10b6:8:275::5) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
  2026 10:11:05 +0000
 Received: from CH2PEPF0000009F.namprd02.prod.outlook.com
- (2603:10b6:610:b1:cafe::10) by CH0PR13CA0012.outlook.office365.com
- (2603:10b6:610:b1::17) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10b6:610:b1:cafe::70) by CH0PR13CA0026.outlook.office365.com
+ (2603:10b6:610:b1::31) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.315.11 via Frontend Transport; Mon,
  10 Aug 2026 10:11:05 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
@@ -50,18 +50,18 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from satlexmb07.amd.com (165.204.84.17) by
  CH2PEPF0000009F.mail.protection.outlook.com (10.167.244.21) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.315.6 via Frontend Transport; Mon, 10 Aug 2026 10:11:04 +0000
+ 15.21.315.6 via Frontend Transport; Mon, 10 Aug 2026 10:11:05 +0000
 Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 10 Aug
- 2026 05:10:58 -0500
+ 2026 05:10:59 -0500
 Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb10.amd.com
  (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 10 Aug
- 2026 05:05:12 -0500
+ 2026 05:05:16 -0500
 Received: from xhdappanad40.xilinx.com (10.180.168.240) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.45 via Frontend
- Transport; Mon, 10 Aug 2026 05:05:09 -0500
+ Transport; Mon, 10 Aug 2026 05:05:12 -0500
 From: Golla Nagendra <nagendra.golla@amd.com>
 To: <vkoul@kernel.org>, <Frank.Li@kernel.org>, <michal.simek@amd.com>,
 	<robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
@@ -69,9 +69,9 @@ To: <vkoul@kernel.org>, <Frank.Li@kernel.org>, <michal.simek@amd.com>,
 CC: <git@amd.com>, <dmaengine@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
 	<linux-pm@vger.kernel.org>, <nagendra.golla@amd.com>
-Subject: [PATCH V3 4/6] dt-bindings: dma: xlnx,zynqmp-dma: Add Versal Net compatible support
-Date: Mon, 10 Aug 2026 15:34:50 +0530
-Message-ID: <20260810100452.426320-5-nagendra.golla@amd.com>
+Subject: [PATCH V3 5/6] dmaengine: zynqmp_dma: Add new compatible string for Versal Net
+Date: Mon, 10 Aug 2026 15:34:51 +0530
+Message-ID: <20260810100452.426320-6-nagendra.golla@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260810100452.426320-1-nagendra.golla@amd.com>
 References: <20260810100452.426320-1-nagendra.golla@amd.com>
@@ -85,115 +85,81 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH2PEPF0000009F:EE_|PH7PR12MB6489:EE_
-X-MS-Office365-Filtering-Correlation-Id: 502ae4ec-cbda-40ad-b644-08def6c7b04d
+X-MS-TrafficTypeDiagnostic: CH2PEPF0000009F:EE_|DS2PR12MB9616:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6000b4f1-be88-4066-d47f-08def6c7b0ab
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|82310400026|36860700016|6133799003|11063799006|56012099006|10067099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|82310400026|36860700016|11063799006|56012099006|10067099003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	0dHlVpkfPJ1zOVlH7pX/mIG/erhcU/Ta4a37ycheAj0ZCGkjvPypItRM8r8hmc37RF5538nVX++4JLtsmqefdwByRPE2moRGfp3kAXsEfQ4/JYer1AMCkS/2OMvzRddbhIuWu8FQpPfJlYooYAJHdlLdHh37yLl3ef92pDftly7KqzWwEnsbdnf0fdm4xoh+vQODMao0xgYnk+CwZicTYQvz9CvCV8gUDeo9xC2vUSGn6zkfWPsYG30IgtkLCYmya23Ik1lrtDRqE9JPELnPhC9EU1l9fWJOAeaX24jvni+LyJVCMacC6nUCqpKjhnMer7AM/2LcV6Gi774yQb9/QQhpFHoTsgc/NsiCsQXbjAVUvy1rTcC2nTZ0YodadiwVd6AGH3UfHzQzP3GxeeurPLVlnslJqoXXSxU2CPIEZPclMNWob24yXgcoxFbbyMsdBdwV+NfxS6gvLu04RzLbab7iD5qxImH61sXx8Ai1yJImDEA1uZ4TXp1+dbUNa/cG32W6upLVV2uUuVMoJnrulTDWR95SvijhtU8K3c0YZDydZIQMu5cUUVuJ82VWhEyCi3DddW/6jEq3HWXz3/bH0mIyNwwQ2wReLlLPv+Nsv992WsISPCT0p8hrh0jhugtob/NTylSYLOgRaSj+osdjq/F6/H23n0iVkXHc7YTGe1cKFcQTyJPsdP5VKWZDL3wfiQC0+cvPCvnejxtJgRi7oQ==
+	teE3TbpwcwfykRMQ1SV3+D3MzXsiM91Ovd/ao4Q3I0s1XdrFl2qK+rCJo9jbeY5Z9Kt/4jWPzPjWvnKfRNrAmz3wZ6eiFOpZ+VTyp7uRF2hBgwP+U69m+C1qMCpRoihYOCCyqzKj++iDH4gtKUiNwaEQAf28M5un8uMX/J0M1IfinrdMbKHcEX8iOFDncMvHzlXb1G05W4heVilc2Ljim4jONfEvmASb0nFvu8IRR7kchWAo8tNdYgBFtqkTKiFrEfNPBJAHys3I+DMP21SGz46Jbwf30YCB4FBZAmDOArPpae7Y+AhIt8QceIrIeT92GdZTOAxpEafV+xEsz2sKXyy0cNnR7vAMdfW2Gj5w/hSXwXHnOm1tBROtEm7EZ7mrQkdmrw4ldMg5lnRHwwRm5w9f2dahO9zajjYyB2I8167n/baVYtUvwWQuo8GLaI1dEdln7p4dr2NLpPb5zXXuUm6NKrCI1+Yq74jOKwTXepz+FmIY3+Dk4NpOMDNOeakb82jJcdDI16DuB+iZQ1RDr9cOVWS5dzi9HXDXhX8Lzz20+lWqrGW9/z66tbdenbTTivFnOIctbaKQLzNxqyrByChH8yOZhtLlm/XxQqOrDFLtDiS/BNWISMxA4jNC0kBJjOXq0SCW8O9Nm84hUGori+L+T+MsVEETk4jr+RoVBLyz0F9xfxgKwjGA7SDkMljwPrJ7/chFZqWiKLFjuAX7/Q==
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(82310400026)(36860700016)(6133799003)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(82310400026)(36860700016)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	wMLsOZcRKI0oZC6UgCykitxh2P7EzCtA+MUK/CwfVA82CXcux0atLmlo5i8Y8YpzpwuPLTeFgEOsLL34ENRTaYOmyFwDftwZa3r6InwzngkytUa+rhPf6DRChBdFGUclgoPQWdPO3/M/cGARpE3hXMjJFG955sZN/EJI8BWbf020udUc9rOnRbl+F9xRLTO28ObmgzHjGTaS+17S6zOuL/pMBgcYCtkjf2LyHtfQFUS9TeiObsLUCXaq6JIibAsRXLG+N0oYaNXSfvMGVDgIdnR4j6vUdj7jXjoFFppGtAH1uPnXiWSoiXNRI7C+aRftr2CYxzDMQ2D7aHriMGfSLUBuZCw4IwSu2yTKptv5/XD+miwyY9CiCt7GhQp1y+CXhrssHe42BtvvdOX/BW/NAZapgF0p2ATgWvaTI0H7Z0zePnhmtLJMVXkXhu2rOj6d
+	9HGHeNR9RUAUq2TYQepJSuQ1panvYISiddWCpfY47yZyiKdi7aXPJTu0+nxX5yWfZXuhJdA/tfCH51d7UprkW/g7xzquWkmG6ZBIKur8RwTKgvmUIy+aQq9xG1H5uKnvqvu5xfkPbKxg3h1bo7hj5AFboPOJtrwePEDlzGI+rNlcqZI/zJopjVN8mkc7ITb+Q5FYaPfroVe0UlIjPtUR/ryGcP4nbHN2+ZOMDSiBE4mZdWmUyilSZuAD2mjm4IOoau7TMi2lceqjnTXDfDZavbF20bP92Dag0gsmFSCgmEMrlwS/Olq5xmpLYXn8N335d8asTCxtIjjK2hA7j/mA5HqwmgiLKbCCl1Ylpec0k4DVj06V0QZNQ2JZURM8M+xys+GUhBCQt6Nwfz7hVyE5JMhopSe5CnAeMs5r7xAiKpeOuFEYqMo4lYwRQTZ95ZiG
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 10:11:04.9677
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 10:11:05.5869
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 502ae4ec-cbda-40ad-b644-08def6c7b04d
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6000b4f1-be88-4066-d47f-08def6c7b0ab
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	CH2PEPF0000009F.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6489
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS2PR12MB9616
 
-From: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
+Versal Net previously used the legacy xlnx,zynqmp-dma-1.0 compatible
+string. Add amd,versal-net-dma-1.0 to the of_device_id match table
+with SoC-specific match data via versal_net_dma_config.
 
-Introduce a new compatible string amd,versal-net-dma-1.0 for
-Versal Net ZDMA.The new compatible requires xlnx,zynqmp-dma-1.0 as a
-fallback.
+Introduce a has_reset field in zynqmp_dma_config to indicate whether
+the compatible requires a per-channel reset during probe.
 
-Add a reset property to describe the per-channel reset line exposed
-on Versal Gen2 and Versal Net. Mark the resets property as required
-for both Versal Gen2 and Versal Net, and not applicable for other
-platforms.
-
-Note that making resets required for Versal Gen2 results in an ABI
-break but this is unavoidable. When DMA is used by two software components
-back to back (e.g., firmware before Linux boot), DMA functionality fails
-due to configuration differences or the DMA being left in a bad state by
-the previous user. The channel can only be cleanly re-configured after
-a DMA channel reset,making it essential.
-
-Signed-off-by: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
-Co-developed-by: Golla Nagendra <nagendra.golla@amd.com>
 Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
 ---
 Changes in V3:
-- Use allOf:if:then: to restrict the resets property per-compatible,
-  making it required for amd,versal2-dma-1.0 and amd,versal-net-dma-1.0
-  and explicitly setting resets: false for all other platforms
-- Add amd,versal-net-dma-1.0 compatible string with xlnx,zynqmp-dma-1.0
-  as fallback
-- Switch compatible from enum to oneOf to accommodate the new multi-item
-  entry for Versal Net
-- Add ABI break justification
+- New patch: add amd,versal-net-dma-1.0 to the driver match table with
+  versal_net_dma_config (has_reset=true, offset=0) 
 ---
- .../dma/xilinx/xlnx,zynqmp-dma-1.0.yaml       | 25 ++++++++++++++++---
- 1 file changed, 22 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-index 2da86037ad79..87c65aef5c7d 100644
---- a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-+++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-@@ -18,15 +18,31 @@ maintainers:
+ drivers/dma/xilinx/zynqmp_dma.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
+index b03171e37e27..7561416b8e62 100644
+--- a/drivers/dma/xilinx/zynqmp_dma.c
++++ b/drivers/dma/xilinx/zynqmp_dma.c
+@@ -259,13 +259,20 @@ struct zynqmp_dma_device {
+ };
  
- allOf:
-   - $ref: ../dma-controller.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - amd,versal2-dma-1.0
-+              - amd,versal-net-dma-1.0
-+    then:
-+      required:
-+        - resets
-+    else:
-+      properties:
-+        resets: false
+ struct zynqmp_dma_config {
++	bool has_reset;
+ 	u32 offset;
+ };
  
- properties:
-   "#dma-cells":
-     const: 1
+ static const struct zynqmp_dma_config versal2_dma_config = {
++	.has_reset = true,
+ 	.offset = IRQ_REG_OFFSET,
+ };
  
-   compatible:
--    enum:
--      - amd,versal2-dma-1.0
--      - xlnx,zynqmp-dma-1.0
-+    oneOf:
-+      - const: amd,versal2-dma-1.0
-+      - const: xlnx,zynqmp-dma-1.0
-+      - items:
-+          - const: amd,versal-net-dma-1.0
-+          - const: xlnx,zynqmp-dma-1.0
- 
-   reg:
-     description: memory map for gdma/adma module access
-@@ -59,6 +75,9 @@ properties:
-   power-domains:
-     maxItems: 1
- 
-+  resets:
-+    maxItems: 1
++/* offset = 0: Versal Net uses base IRQ register address */
++static const struct zynqmp_dma_config versal_net_dma_config = {
++	.has_reset = true,
++};
 +
-   dma-coherent: true
+ static inline void zynqmp_dma_writeq(struct zynqmp_dma_chan *chan, u32 reg,
+ 				     u64 value)
+ {
+@@ -1184,6 +1191,7 @@ static void zynqmp_dma_remove(struct platform_device *pdev)
  
- required:
+ static const struct of_device_id zynqmp_dma_of_match[] = {
+ 	{ .compatible = "amd,versal2-dma-1.0", .data = &versal2_dma_config },
++	{ .compatible = "amd,versal-net-dma-1.0", .data = &versal_net_dma_config },
+ 	{ .compatible = "xlnx,zynqmp-dma-1.0", },
+ 	{}
+ };
 -- 
 2.43.7
 
