@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CB08400990;
-	Mon, 10 Aug 2026 16:23:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D8A741A4EE;
+	Mon, 10 Aug 2026 16:26:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786378991; cv=none; b=pQ1+ySW4gcP+SqZuOcwj9yKIyeLdnXyjzmwhTKjdzr3bCStAQVNO9oufTgQIlSOqN0PQwrhQDNEH4bFRYlLbpC84xJqBPLixeRrq2MmiKu3yX0xXFxsRj+V9bZ5aVmMjU9Gxz3abxN9I0qYlSXmpggf07w6P0SOrfJUcZnHrmvc=
+	t=1786379196; cv=none; b=CGnpF5MhfvgKwdPmrT5X8c1pAz7yL0D8trjfQFB6CWjH+1TvCriMw8VSWrW17Y6sSLoY/Uf4A2Re6C2rQTPJGSj27ETyLX0e7g0K+45kuitNL1uzaSJSk47tI5uktNI+8icP/I6IlWCM2G00hnUKUh9BD+MoM5+yjROlczpWlLY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786378991; c=relaxed/simple;
-	bh=mGT8QD7jB4Wb8ZM2FeAM7BQM9tRihA4YEGKxUS6HeWU=;
+	s=arc-20240116; t=1786379196; c=relaxed/simple;
+	bh=ysPMNBeJ2ay+VOXT1/Gdtq9+3bpoy6chLIHWvgB0SHY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fXuDDdLPkTVQNbKy8836a62p0wuceProYsIFrB7gMXK61m1IXekslsKuF7i8AYdu9PANLXfBhh7K45rZIX9F7BRmapeMo3ys5DBO2aTB672KQnswJ34ZbwT5OPrXpQIT1ycVzL8dm3Z+vrW4hrLXOlWqelYkepmOOJwidw7D3vI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RHhq2xZo; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=Hw7dkEpju4bxSh9Nnyycl2YHyLoh0dIwufcmQnQZrMjlARHRvyGIX39YJWJHawVZmsNKu8T4LbZmz+ugSUe+YCAkNv7DplZiviQF+7Ha50QbmbFsS+dH9HShlKxgoFq/jijSIQMOw7jnHIJte2di/L4sy/O0Pb+SZI9TE3yu2N8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iZLUvply; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RHhq2xZo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B39BE1F00A3A;
-	Mon, 10 Aug 2026 16:23:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iZLUvply"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CE791F00A3A;
+	Mon, 10 Aug 2026 16:26:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786378990;
-	bh=d0AdmS0+9+fwLhJajay5Wlura89yduV8D2X5f2OXIDQ=;
+	s=k20260515; t=1786379185;
+	bh=SUi8TvaGZ/ONLDR20xtbgTj2PSwgrawqHUmwvPH281Y=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=RHhq2xZoUFCgUI7UI6s1aaeIvL/fRyWwpBuKEbQAzqGhkI8dafmAQ0xxrTdSEMqCp
-	 kWD2mxr1W8Mc4pR8K8h4kXmRp0bBKm3PFZ527M50UAZQNSKHdNi9drPgZbFHEAcxk+
-	 ZJrLjmvEfQhCUa/C05YRE2iBCdrfdZotaUZy2yCeuk8wWA5iF2wcPMwbxU0LLpRilN
-	 qLpUE9gxCE7x/e7GsHkouU4AiikecyE7mpDtdgMYMZHeYdQmhflFwyGhJ99Pp1svdY
-	 vGUjl6F7LvctmxArlaEstfsywjuq2svHmTp47cb3mNxtKWfQaoI11cqOw5f68F8R82
-	 FwbVbCUI9YrsQ==
-Date: Mon, 10 Aug 2026 18:22:58 +0200
+	b=iZLUvplyIcNz5VE9d3kCC55idVkZrcMUkNQMbp9OGxSTxJfNYZ4yr2JOIOsKLJAn8
+	 OObjougUbmk/38Tg1bYoCpjH+ub9h5QwXhL5o/8zljucHR+7DSNhua66AetPZHytcQ
+	 3y2CRfYBQvSNkeuKQbvgCx8L6hlt9D3WV679tfLe6BvPHzmCHXlH9U99BxReF/HGin
+	 TL4hR+2U4zuEU+faiR9plq7xmFoQFSgBVHxVjTPoHNr+pLGwQl794ToVshVql7ZgUD
+	 g+L0acQ0yPs3jYsKAs1idJ115olPzn+IoDNqdAlrajYd2g8cEdKKUpyT9Dcts4aZoC
+	 Zur8II8DGV73g==
+Date: Mon, 10 Aug 2026 18:26:15 +0200
 From: Manivannan Sadhasivam <mani@kernel.org>
 To: Chen-Yu Tsai <wenst@chromium.org>
 Cc: Bartosz Golaszewski <brgl@kernel.org>, 
@@ -41,11 +41,11 @@ Cc: Bartosz Golaszewski <brgl@kernel.org>,
 	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
 	Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v7 12/16] power: sequencing: pcie-m2: support matching on
- remote "port" node
-Message-ID: <2qwnxzyxcnwepqpmjj2bc5jgo6dgytcuz7equqm6p4hruoy7hb@7lkl7dxksxgf>
+Subject: Re: [PATCH v7 13/16] power: sequencing: pcie-m2: Add usb and sdio
+ targets for E-key connector
+Message-ID: <hxidwwqeooyo4fwjc6rmbsfv35b2af7flub23qcpwin6bqj5ff@h46sqvwc6k6i>
 References: <20260724084328.3943997-1-wenst@chromium.org>
- <20260724084328.3943997-13-wenst@chromium.org>
+ <20260724084328.3943997-14-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,48 +55,27 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260724084328.3943997-13-wenst@chromium.org>
+In-Reply-To: <20260724084328.3943997-14-wenst@chromium.org>
 
-On Fri, Jul 24, 2026 at 04:43:21PM +0800, Chen-Yu Tsai wrote:
-> A USB hub can have multiple ports, and this driver needs to
-> differentiate which port is being matched to. The USB hub driver now
-> associates the "port" node with the usb_port device, so here we can
-> use the remote "port" node to check for a match. Then fall back to
-> the remote device node for the other connection types.
+On Fri, Jul 24, 2026 at 04:43:22PM +0800, Chen-Yu Tsai wrote:
+> The M.2 E-key connector allows either PCIe or SDIO for WiFi and USB or
+> UART for BT. Currently the driver only supports PCIe and UART.
 > 
-> Also rewrite the existing "remote == dev_of_node(dev)" with
-> device_match_of_node() for consistency.
+> Add power sequencing targets for SDIO and USB. To avoid adding a
+> complicated dependency tree, rename the existing power sequencing units
+> "pcie" and "uart" to "wifi" and "bt". The existing target names are left
+> untouched. The new "sdio" and "usb" targets just point to the renamed
+> "wifi" and "bt" units.
+> 
+> The "unit" names are internal to the power sequencing framework, and
+> should be confined to a single provider. The names are only
+> informational. Dependencies are tracked with pointers to other units.
+> 
+> The "target" names are the strings that the consumer uses to acquire a
+> descriptor with. As these remain the same, existing users will continue
+> to work.
 > 
 > Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
-> ---
-> Changes since v4:
-> - Dropped blank line between __free() variable declaration and
->   subsequent use of the variable in conditional
-> 
-> Changes since v3:
-> - Drop redundant device node validity check; device_match_of_node()
->   does it internally
-> 
-> Changes since v2:
-> - Use device_match_of_node()
-> ---
->  drivers/power/sequencing/pwrseq-pcie-m2.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-> index 83fe6a1396bc..691cad0a6dd0 100644
-> --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-> @@ -175,9 +175,16 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
->  	 * parent matches the OF node of 'dev'.
->  	 */
->  	for_each_endpoint_of_node(ctx->of_node, endpoint) {
-> +		/* USB port devices are tied to the port nodes. */
-
-I'd reword this comment to:
-		/* Try the remote port node first */
-
-With this change,
 
 Reviewed-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
