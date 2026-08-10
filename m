@@ -1,172 +1,195 @@
-Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011038.outbound.protection.outlook.com [52.101.52.38])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE5653B9610;
-	Mon, 10 Aug 2026 10:11:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.38
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786356684; cv=fail; b=TSvIzb2OBI05WZmkk5tvL5V5bkXa9GbfGRQMe/SJ95IBDIcu21zfuH4WGPTBeplth4mBgdLYXiD++can8g0aAj4enhmTIoytetqlZBBkNTCgZGfzQUjRwBgSyraDUUFiuKLlj3ioBbbKDMnXqChVDiKZcOxPGwHweoiqKGdeTBY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786356684; c=relaxed/simple;
-	bh=M5AqN6vPDShzT1jOwE1H+GetpyOEe1xxYFDAMIRhkTo=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=sVi6Y0Bk7IeCjpPsWqKkLAhEMODslIYSnOBXmrTX7RkKggqxPL0/n66IIkAVxKYXSBYs1cZGYGwqFCWgIWt5xFrWolDuvaNtgaz8Q+GKHRTnSyonlyiEb7DNDW0bynvUA3Rfxca3ZP1lwJfML/OMchrVUVweo4XRkqfQE3frhpA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=kX6Yfjzf; arc=fail smtp.client-ip=52.101.52.38
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="kX6Yfjzf"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=MiaioyjV7gbSgUxY040Z+QvNC4iKg+NNN/s8LeYO0c6KHbf6aAeEA6H0q7rhAf9oG7A5RsJBKdowFYQMXGBIf4yQU5QiL9zk7cOexIWVRBQgutqtgJ2misAml153TtI0C+zjg1QD+Kg/lSRci8VoRo3exXEI7wGOOYR3FCPXq3e0SA7/Bgjq0u9JxsNDIxF3S0nPG1aZJLHE41sjp3sggawMV++dasVJj+9fU3uSGbeJ26yO5PCdrtwd9M8cAhIdhgAm0HBkUSeL70RJ7wr9tbtL1SGo2nfGs1eqv53l3KA0oNVMi00sZ24jFHGtFkd+OyQEyUHLN2ydNoEYH1XmXA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ycyF+5IHRcwkuQwpWz7twlFJJBn/LQbm4NZIln42zJo=;
- b=rPhgE9pR1fH7dnJ8+6HcEZaPBN+aVDHhB4wAeHb0FUbDIWo2XNYcPEWtROjcw8RhEBXktj3M8JtQZtMk1Z+AGcv281fKEP9XYM1C2/gIQxwdssq4tri5OIK0AwJ4UHz7isnNBqaUD+yXwYOZ2OQ0hPISh/8Qzl7Gw2jhu9LghnddN4LBOyrU0qifRqncFDoz+zFbtfgwIvJUf2CaCoDSBI1JJ5N6BfRF3NCQkyYQkrNeJ/6OZKQiaF+1HY27qFDTMTGal8Bj8PVDaNuZ7cQ93w5fRL2JYqBJqSZjrhNh+tul3xm9tdxYFOSCS6w50UjwSQr/SLRdp8z2vQTh1q9aoA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ycyF+5IHRcwkuQwpWz7twlFJJBn/LQbm4NZIln42zJo=;
- b=kX6YfjzfR+/XfVXihi+ZKr2vYkAk8/Jx7uVrL6MKbrw3z+GFFAJB1ADhhNdR7yPRLTX7kNV4xxUwVlQftDd5EtRO+87k9E76FoFJ5kCfCGAD3SHYAgdwuGoXP8O8pW2hAtTeIMabRM2L4EsbRnvg51ToCrDuPOFAouAinBY4QFY=
-Received: from MW4PR03CA0336.namprd03.prod.outlook.com (2603:10b6:303:dc::11)
- by MW4PR12MB6753.namprd12.prod.outlook.com (2603:10b6:303:1ec::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
- 2026 10:11:17 +0000
-Received: from SJ1PEPF00001CE8.namprd03.prod.outlook.com
- (2603:10b6:303:dc:cafe::21) by MW4PR03CA0336.outlook.office365.com
- (2603:10b6:303:dc::11) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.292.25 via Frontend Transport; Mon,
- 10 Aug 2026 10:11:17 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- SJ1PEPF00001CE8.mail.protection.outlook.com (10.167.242.24) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.315.6 via Frontend Transport; Mon, 10 Aug 2026 10:11:16 +0000
-Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 10 Aug
- 2026 05:10:59 -0500
-Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb10.amd.com
- (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 10 Aug
- 2026 05:05:20 -0500
-Received: from xhdappanad40.xilinx.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.45 via Frontend
- Transport; Mon, 10 Aug 2026 05:05:16 -0500
-From: Golla Nagendra <nagendra.golla@amd.com>
-To: <vkoul@kernel.org>, <Frank.Li@kernel.org>, <michal.simek@amd.com>,
-	<robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
-	<rafael@kernel.org>
-CC: <git@amd.com>, <dmaengine@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <nagendra.golla@amd.com>
-Subject: [PATCH V3 6/6] dmaengine: zynqmp_dma: Add per-channel reset support
-Date: Mon, 10 Aug 2026 15:34:52 +0530
-Message-ID: <20260810100452.426320-7-nagendra.golla@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260810100452.426320-1-nagendra.golla@amd.com>
-References: <20260810100452.426320-1-nagendra.golla@amd.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ABDF348C7D
+	for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 10:24:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.198
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786357480; cv=none; b=NMKZmk1ZcYAQ/yz9Jlp7r1vXj5Hh9uAfMjYECR0+BWhV7Gx2qg66zymDyTgH33G6Ge+90ZoNr9h8hUdwn498S/JNwV3WhyfuUuzHO3aWuqsYs1wuVqfYki2Udsj+HlxSBdGhQcbu6SKdM7aGxwpZMRTAWp4TblH917as6xDkhsM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786357480; c=relaxed/simple;
+	bh=yQ1afM2ceyrCs9PVtue+UD7EIdsF3F7rJR66vz9gCho=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=jSYfJq54VKUGKNWT9tbCf2nUti5Rt9+jXx06Rw5vemIk8cq0zZ7M9wD3jsZd41f7sAB2Sx5orm0WW5Fez3w2DX17DFEzwHblrEVDxKB+u+QiIGYUp0wr04M/3l8QTOqmuX7iUXqVStT4oCA8di4pNPTNPfKoXphpZfDNLd9W6uw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.198
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-485ebc5706cso5350897b6e.0
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 03:24:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786357477; x=1786962277;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=diOkV4n/K0fzmwoWMYwrzjoYAkxku91O+AW0RHw0zbY=;
+        b=X/0vxG3mtC0CA8d92gSlRz8HrnqWklL/DKkNU0E/g1QGMiKkk9CiElHx3xLBD1mebd
+         5BO3+Y8yAoHjNPoK/bYZ5bW4Af2wA/pp4OooseR0CyMJyOnmewaT1RXf03/A4ckwYxYx
+         SRGuyllL10lW0LgcwovcQTYp9oxrtLTfgbYq7izF4WZQVxjC+XnSPAiRfrfDnszZ7alT
+         GCAr3YZ/MLzYfcn8tP8+CHEh1eEdXMOrvLuTaS3VYPDxoB1Nq5fkKXjjjY8iivcHc8zH
+         RD1OULtdSP6GApN+z6cpvSTOYPB5hTG4nl0meaDwVPmgC9IuUChZOSeVSoI7k7wHD9V1
+         BFUg==
+X-Forwarded-Encrypted: i=1; AHgh+RpOx/fOmPquQSQkj01RbSctlDghFIgvrqg2v40RkH62fELPvCvv7+mseiv2JOUTxbvG51LLfKYlzA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKHe//WTZM9aLyiM/7dvdpubP4L9JHn6bNiaC74FS6ucXpbTgE
+	A5qVud+YILHFUTVvwu1qZTSsE4KOV3DXewj9cXkXBxp7bwgtOo1yE1a1sahgwxCrdDi+bRNRvTz
+	HbcAa6gwWhOox1EXSaQgyjye8JEy5S7Ub0V9CH5gFLKoJRxhgnuJnoTogiJY=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00001CE8:EE_|MW4PR12MB6753:EE_
-X-MS-Office365-Filtering-Correlation-Id: 88716c31-c584-4f97-22b1-08def6c7b76b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|82310400026|36860700016|6133799003|11063799006|56012099006|10067099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	7RnBIL4zU9yw/hLsCC+ArRjbwjgiY8dDb4k9lRs4l1nveOtmzwCtDDQPEON2xffdPsr6wrWlFbvOOkSjyU3k3terS4cvy3a4oVt7G5Lly19nDrNdZVzGWIRvTmn/Ay9Bh//K8gxwwzzCmOH7vfFMlz6NT9nKAsUXu6TD66rF2/xON/aEp3YNvCfqQc5Is1y2KoETDOVICRx/B33vibS+8/4MzbeEw/GLVq0xW9nsDe1S9GKD9FIGAMb+lBSueP9ADoJnkKJKzBAvKNMY24MX4qJVsv3Z9LwD0djTH13ASsKQsAvjSrhZardFeDZsVOEoa0iwySXIx0wKzD4l/tZ/a4jgQVHLj/qfFQiTc20oiJbQy6w5hvxpOTtBqZ8m0YNWbQnLbtAyR9D4Cr1TcaZjhi0eWKpDoW1nHG/Fo5cfDCsAUf2Ipl24A6c8kjmsIVPDsDl16zks1SP5XiNbb4jxcHd4QjYC77tlrzGwMS1s4WN1hWFvus9XXGfTXcJSKAIPIxGx0rD2LuJru7rg24+CJNVk+opovdqV0DM+kqL/oXbkA0DjvZ7cj+TM1I618YtjQPSA1FKFEAMlKPWhAaicGdAt5Q46xLVmqYSArgZzFyVi3Tm2lAKLouzvMg+AiAYroatHhsqujFzpGoFiCpP0p8ALj7Pte040QYnHCzgGgbcAbL09foMp7NbdJkOLKBz0TseflPvgqRzuDf3rxIwPKg==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(82310400026)(36860700016)(6133799003)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	PolPHrNw5Ibvhz6H2+S9JY64fV5zacPSRY2S9iY3wqyIvUPX50o6vSFbPDea5lZCM7d7w5XNcFVMl782dqpznS8aMmxPEgaXW7fI+xyity3+wi4JiU7UyXb3tFmoi14mzNxpjjcy+KD7WOokDp9crrBEEfgGY3cAE9PzGs7lp3Wvp13GKLV+YGQ9O5fLJkDzccKqIfD3j9mwuMZTVnGcxR6qc2tUr1iNuxz8ueyjF+R3R8uxtBPTm5Ci8j2k2/IMzfrs7rqsRuJEW0ORUC8mJTYU9Ibk0ChSbcZGzU+n0G3yna6Sd1v89GpSIQX3OkfK0UXU8oCAq2+3AQH+JMVWHPVuKy8RuutVSgrNJrfFhLiA4+IZHSyP5F61Nx/DuqFgW6jue42EbTHK4/IN/5dTblnOjUJP0CUdW4d0UhVNriebmTxy2bz7nuG7Z/yYd1g0
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 10:11:16.7932
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 88716c31-c584-4f97-22b1-08def6c7b76b
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF00001CE8.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB6753
+X-Received: by 2002:a05:6808:2381:b0:492:c9a4:2104 with SMTP id
+ 5614622812f47-4b1af83fae5mr9019870b6e.10.1786357477383; Mon, 10 Aug 2026
+ 03:24:37 -0700 (PDT)
+Date: Mon, 10 Aug 2026 03:24:37 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6a79a6e5.01d0871a.3a0d52.00a7.GAE@google.com>
+Subject: [syzbot] [pm?] WARNING: ODEBUG bug in trace_suspend_resume (2)
+From: syzbot <syzbot+98850521518b962c5bab@syzkaller.appspotmail.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-Versal Gen2 and Versal Net expose a dedicated reset line per ZDMA
-channel. Use device_reset() to trigger a mandatory reset pulse on the
-channel during probe when match data indicates reset is supported.
+Hello,
 
-The has_reset field in zynqmp_dma_config controls whether reset is
-performed for a given compatible. For Versal Net and Versal Gen2,
-has_reset is set to true, so device_reset() is called and probe fails
-if the resets property is missing in the device tree. For legacy SoCs,
-match_data is NULL and has_reset defaults to false,so the reset path
-is skipped entirely.
+syzbot found the following issue on:
 
-Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
+HEAD commit:    db2ddb871435 Linux 7.2-rc7
+git tree:       https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux master
+console output: https://syzkaller.appspot.com/x/log.txt?x=11212149580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=fa49d7bda29d9792
+dashboard link: https://syzkaller.appspot.com/bug?extid=98850521518b962c5bab
+compiler:       arm-linux-gnueabi-gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
+userspace arch: arm
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=145762c6580000
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+98850521518b962c5bab@syzkaller.appspotmail.com
+
+ODEBUG: object df805d04 is NOT on stack df864000, but annotated.
+------------[ cut here ]------------
+WARNING: lib/debugobjects.c:672 at debug_object_is_on_stack lib/debugobjects.c:672 [inline], CPU#1: swapper/1/0
+WARNING: lib/debugobjects.c:672 at lookup_object_or_alloc.part.0+0x180/0x1ec lib/debugobjects.c:705, CPU#1: swapper/1/0
+Modules linked in:
+Kernel panic - not syncing: kernel: panic_on_warn set ...
+CPU: 1 UID: 0 PID: 0 Comm: swapper/1 Not tainted syzkaller #0 PREEMPT 
+Hardware name: ARM-Versatile Express
+Call trace: frame pointer underflow
+[<80201998>] (dump_backtrace) from [<80201a8c>] (show_stack+0x18/0x1c arch/arm/kernel/traps.c:257)
+ r7:82a20f78 r6:00000000 r5:82333374 r4:00000001
+[<80201a74>] (show_stack) from [<8021ec68>] (__dump_stack lib/dump_stack.c:94 [inline])
+[<80201a74>] (show_stack) from [<8021ec68>] (dump_stack_lvl+0x5c/0x70 lib/dump_stack.c:120)
+[<8021ec0c>] (dump_stack_lvl) from [<8021ec94>] (dump_stack+0x18/0x1c lib/dump_stack.c:129)
+ r7:82a20f78 r6:00000000 r5:8317e200 r4:82c83d40
+[<8021ec7c>] (dump_stack) from [<80202590>] (vpanic+0x114/0x320 kernel/panic.c:651)
+[<8020247c>] (vpanic) from [<802027d0>] (trace_suspend_resume+0x0/0x100 kernel/panic.c:788)
+ r7:8095e608
+[<8020279c>] (panic) from [<80251a80>] (check_panic_on_warn kernel/panic.c:525 [inline])
+[<8020279c>] (panic) from [<80251a80>] (get_taint+0x0/0x1c kernel/panic.c:520)
+ r3:82a0b144 r2:00000001 r1:823190d8 r0:82320a34
+[<80251a08>] (check_panic_on_warn) from [<80251bfc>] (__warn+0x98/0x1a4 kernel/panic.c:1104)
+[<80251b64>] (__warn) from [<80251e80>] (warn_slowpath_fmt+0x178/0x1f4 kernel/panic.c:1136)
+ r8:00000009 r7:8238dd84 r6:df805c1c r5:8317e200 r4:00000000
+[<80251d0c>] (warn_slowpath_fmt) from [<8095e608>] (debug_object_is_on_stack lib/debugobjects.c:672 [inline])
+[<80251d0c>] (warn_slowpath_fmt) from [<8095e608>] (lookup_object_or_alloc.part.0+0x180/0x1ec lib/debugobjects.c:705)
+ r10:00000001 r9:81c04360 r8:df805d04 r7:00000000 r6:82d1bbf4 r5:82cfc288
+ r4:852e1270
+[<8095e488>] (lookup_object_or_alloc.part.0) from [<8095ec18>] (lookup_object_or_alloc lib/debugobjects.c:682 [inline])
+[<8095e488>] (lookup_object_or_alloc.part.0) from [<8095ec18>] (__debug_object_init+0x140/0x1d8 lib/debugobjects.c:798)
+ r10:0001f930 r9:82cfc2c4 r8:00000001 r7:81c04360 r6:20000113 r5:82d1bbf8
+ r4:df805d04 r3:00000001
+[<8095ead8>] (__debug_object_init) from [<8095ed04>] (debug_object_init_on_stack lib/debugobjects.c:849 [inline])
+[<8095ead8>] (__debug_object_init) from [<8095ed04>] (debug_object_init_on_stack+0x28/0x2c lib/debugobjects.c:844)
+ r10:df805eac r9:fffff2a8 r8:00000101 r7:00000000 r6:ddde3e00 r5:82b62308
+ r4:00000000
+[<8095ecdc>] (debug_object_init_on_stack) from [<80300a84>] (init_rcu_head_on_stack+0x18/0x1c kernel/rcu/update.c:487)
+[<80300a6c>] (init_rcu_head_on_stack) from [<80304e4c>] (__synchronize_srcu+0x7c/0xcc kernel/rcu/srcutree.c:1494)
+[<80304dd0>] (__synchronize_srcu) from [<80304f38>] (synchronize_srcu_expedited kernel/rcu/srcutree.c:1521 [inline])
+[<80304dd0>] (__synchronize_srcu) from [<80304f38>] (synchronize_srcu+0x78/0x14c kernel/rcu/srcutree.c:1577)
+ r5:60000113 r4:82b62308
+[<80304ec0>] (synchronize_srcu) from [<80bf0cd0>] (wakeup_source_remove drivers/base/power/wakeup.c:201 [inline])
+[<80304ec0>] (synchronize_srcu) from [<80bf0cd0>] (wakeup_source_unregister.part.0+0x64/0x1b4 drivers/base/power/wakeup.c:237)
+ r7:00000000 r6:862c4100 r5:00000113 r4:86469f00
+[<80bf0c6c>] (wakeup_source_unregister.part.0) from [<80bf0e38>] (wakeup_source_unregister+0x18/0x1c drivers/base/power/wakeup.c:236)
+ r7:00000000 r6:862c4100 r5:866aa000 r4:866aa008
+[<80bf0e20>] (wakeup_source_unregister) from [<812f2368>] (mmc_host_classdev_release+0x1c/0x58 drivers/mmc/core/host.c:69)
+[<812f234c>] (mmc_host_classdev_release) from [<80bcd9cc>] (device_release+0x40/0xb0 drivers/base/core.c:2636)
+ r5:851bc500 r4:866aa008
+[<80bcd98c>] (device_release) from [<81b351d0>] (kobject_cleanup lib/kobject.c:689 [inline])
+[<80bcd98c>] (device_release) from [<81b351d0>] (kobject_release lib/kobject.c:720 [inline])
+[<80bcd98c>] (device_release) from [<81b351d0>] (kref_put include/linux/kref.h:65 [inline])
+[<80bcd98c>] (device_release) from [<81b351d0>] (kobject_put+0xa0/0x258 lib/kobject.c:737)
+ r5:81d5ae9c r4:866aa008
+[<81b35130>] (kobject_put) from [<80bcdb40>] (put_device+0x18/0x1c drivers/base/core.c:3880)
+ r8:00000101 r7:81310b3c r6:866aa000 r5:00000000 r4:866aa000
+[<80bcdb28>] (put_device) from [<812f2ac4>] (mmc_free_host+0x28/0x2c drivers/mmc/core/host.c:702)
+[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (vub300_delete drivers/mmc/host/vub300.c:379 [inline])
+[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (kref_put include/linux/kref.h:65 [inline])
+[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (vub300_inactivity_timer_expired drivers/mmc/host/vub300.c:747 [inline])
+[<812f2a9c>] (mmc_free_host) from [<81310c9c>] (vub300_inactivity_timer_expired+0x160/0x1b8 drivers/mmc/host/vub300.c:742)
+ r5:00000000 r4:866aaaec
+[<81310b3c>] (vub300_inactivity_timer_expired) from [<8032ef48>] (call_timer_fn+0x30/0x268 kernel/time/timer.c:1748)
+ r7:81310b3c r6:8317e200 r5:866aaaec r4:866aaaec
+[<8032ef18>] (call_timer_fn) from [<8032f41c>] (expire_timers kernel/time/timer.c:1799 [inline])
+[<8032ef18>] (call_timer_fn) from [<8032f41c>] (__run_timers+0x29c/0x420 kernel/time/timer.c:2374)
+ r10:df805eac r9:fffff2a8 r8:00000000 r7:81310b3c r6:82a0b150 r5:866aaaec
+ r4:ddddafc0
+[<8032f180>] (__run_timers) from [<8032f608>] (__run_timer_base kernel/time/timer.c:2386 [inline])
+[<8032f180>] (__run_timers) from [<8032f608>] (__run_timer_base kernel/time/timer.c:2378 [inline])
+[<8032f180>] (__run_timers) from [<8032f608>] (run_timer_base+0x68/0x78 kernel/time/timer.c:2395)
+ r10:8317e200 r9:00000082 r8:00000101 r7:00000004 r6:00000002 r5:00000001
+ r4:ddddafc0
+[<8032f5a0>] (run_timer_base) from [<8032f634>] (run_timer_softirq+0x1c/0x34 kernel/time/timer.c:2405)
+ r4:82a03084
+[<8032f618>] (run_timer_softirq) from [<8025b0dc>] (handle_softirqs+0x160/0x4e4 kernel/softirq.c:622)
+[<8025af7c>] (handle_softirqs) from [<8025b5fc>] (__do_softirq kernel/softirq.c:656 [inline])
+[<8025af7c>] (handle_softirqs) from [<8025b5fc>] (invoke_softirq kernel/softirq.c:496 [inline])
+[<8025af7c>] (handle_softirqs) from [<8025b5fc>] (__irq_exit_rcu+0x150/0x1d0 kernel/softirq.c:735)
+ r10:824e709c r9:8317e200 r8:00000000 r7:df865f18 r6:824e709c r5:82522544
+ r4:8317e200
+[<8025b4ac>] (__irq_exit_rcu) from [<8025b934>] (irq_exit+0x10/0x18 kernel/softirq.c:764)
+ r5:82522544 r4:828d3e6c
+[<8025b924>] (irq_exit) from [<81b5d85c>] (generic_handle_arch_irq+0x7c/0x80 kernel/irq/handle.c:293)
+[<81b5d7e0>] (generic_handle_arch_irq) from [<81b2a4e0>] (call_with_stack+0x1c/0x20 arch/arm/lib/call_with_stack.S:40)
+ r9:8317e200 r8:00000000 r7:df865f4c r6:ffffffff r5:20000013 r4:81b5f0d0
+[<81b2a4c4>] (call_with_stack) from [<80200bec>] (__irq_svc+0x8c/0xbc arch/arm/kernel/entry-armv.S:228)
+Exception stack(0xdf865f18 to 0xdf865f60)
+5f00:                                                       00000001 82333374
+5f20: 000780b4 00000001 8317e200 00000001 00000000 828d3170 00000000 82a0b1c4
+5f40: 824e709c df865f84 df865f58 df865f68 81b5e500 81b5f0d0 20000013 ffffffff
+[<81b5f084>] (default_idle_call) from [<802b80fc>] (cpuidle_idle_call kernel/sched/idle.c:199 [inline])
+[<81b5f084>] (default_idle_call) from [<802b80fc>] (do_idle+0x240/0x3c0 kernel/sched/idle.c:355)
+ r7:828d3170 r6:00000000 r5:82a0b1a4 r4:8317e200
+[<802b7ebc>] (do_idle) from [<802b858c>] (cpu_startup_entry+0x30/0x34 kernel/sched/idle.c:454)
+ r10:00000000 r9:414fc0f0 r8:80003000 r7:82c834a4 r6:30c0387d r5:00000001
+ r4:00000090
+[<802b855c>] (cpu_startup_entry) from [<8022fc54>] (secondary_start_kernel+0x12c/0x198 arch/arm/kernel/smp.c:478)
+[<8022fb28>] (secondary_start_kernel) from [<80220094>] (__enable_mmu+0x0/0xc arch/arm/kernel/head.S:446)
+ r5:00000000 r4:830b70c0
+Rebooting in 86400 seconds..
+
+
 ---
-Changes in V3:
-- Introduce has_reset flag in zynqmp_dma_config to gate the reset path
-  per-compatible instead of calling device_reset() unconditionally
-- Move the of_device_get_match_data() call before the reset block so
-  has_reset can be checked in the same code path that reads irq_offset
----
- drivers/dma/xilinx/zynqmp_dma.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
-index 7561416b8e62..7ec6598ea587 100644
---- a/drivers/dma/xilinx/zynqmp_dma.c
-+++ b/drivers/dma/xilinx/zynqmp_dma.c
-@@ -18,6 +18,7 @@
- #include <linux/clk.h>
- #include <linux/io-64-nonatomic-lo-hi.h>
- #include <linux/pm_runtime.h>
-+#include <linux/reset.h>
- 
- #include "../dmaengine.h"
- 
-@@ -928,6 +929,14 @@ static int zynqmp_dma_chan_probe(struct zynqmp_dma_device *zdev,
- 	if (IS_ERR(chan->regs))
- 		return PTR_ERR(chan->regs);
- 
-+	match_data = of_device_get_match_data(&pdev->dev);
-+	if (match_data && match_data->has_reset) {
-+		err = device_reset(&pdev->dev);
-+		if (err)
-+			return dev_err_probe(&pdev->dev, err,
-+					     "failed to reset channel\n");
-+	}
-+
- 	chan->bus_width = ZYNQMP_DMA_BUS_WIDTH_64;
- 	chan->dst_burst_len = ZYNQMP_DMA_MAX_DST_BURST_LEN;
- 	chan->src_burst_len = ZYNQMP_DMA_MAX_SRC_BURST_LEN;
-@@ -943,7 +952,6 @@ static int zynqmp_dma_chan_probe(struct zynqmp_dma_device *zdev,
- 		return -EINVAL;
- 	}
- 
--	match_data = of_device_get_match_data(&pdev->dev);
- 	if (match_data)
- 		chan->irq_offset = match_data->offset;
- 
--- 
-2.43.7
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
