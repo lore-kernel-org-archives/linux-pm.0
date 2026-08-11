@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 610624334C3;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61121434404;
 	Tue, 11 Aug 2026 23:30:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786491013; cv=none; b=tXQozspsTQwQE/4KSngTz1jXqntMwlt3Xf3Tp9blgbJdayIbvkAF4/qyEet/M8gFLj7+geDMNgdpTKV1yDSPJecYB2k+qas9XHNJJBQic87AqRavPrHrjNcBiK6lqI3UXxjhrrj5JI0g2ltyNlAbrXSEeJ0AKjoJOkJUV90YIwg=
+	t=1786491013; cv=none; b=MNdeOqyq1ZFjxkTjMrYMWVYsTqmj9SXIZRzfDbv0PfiQ+X7btrh4DnSZyilbdUxE5Eqo/SW5UQs43s0Ri9DARWwOTKBBPsa9VmIYOSbnAd1ESpr60HqOM3Da/55QQPC/O26l06u8L68OhECgXF4FXtXNKmxiSUqcRy89C0WQ5IQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1786491013; c=relaxed/simple;
-	bh=qv1nbnQj5yoUuqvBAtie8PCjm4uOhcMDB/ozlhiCEnI=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=cspQ6zt33XlzE7Fi8Y9itl+oyQE0oxs9U5FOS78weQ9kgYir1MLLOxP9Ofxy7d/GKEEDW5J5jp5pUugNZYyhZ383YyF140pfP+capxvuQCCKSP0dv6hi/OKSproXBmXiwU7H+KTk2g49BxbjDw2Gmm2YgZ4L6OY74F/BdPBq4h8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LA+fLs79; arc=none smtp.client-ip=10.30.226.201
+	bh=ANh+hAN+mJ2qTvzYOi2dLKnglttlmygNN/T5MmXnEmg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=h79g8c6ZbySwbJC00J8legbmIkVk+b2wSLF/niEW5E8EeFqSaFgea9buC3VDHO8/CrM8yNh6aEFRBwN2ERtuHTdW/Zs0xHfIx+a3y7fQmt9lb2u29fe2BpqOSW4WdSyx4J0MvSGGBZRVwAhcTz8Lzre8COF4xafsORp9gf7bxvg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F/1XdPqY; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LA+fLs79"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 03A36C2BCC7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F/1XdPqY"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 266B3C2BCFA;
 	Tue, 11 Aug 2026 23:30:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1786491013;
-	bh=qv1nbnQj5yoUuqvBAtie8PCjm4uOhcMDB/ozlhiCEnI=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=LA+fLs79sMwO3/BfSIEypVA4EWzEoJVef6ynFAK9DEY/3UEZeQRoTVJ+5N9nJ1BHp
-	 OaA32QMf7YNB0SjAOfADHpFjla38tdXYfVoTSHTGdZPiarmmC5/P1I8lFY3vqJ1Zhh
-	 TQMi1OvDMW57dWv/3W1aI/bj+0pkReJib0UNa930qhhPpkjuZwpSNxlnvbH2We/Vvz
-	 IyszL2iFUmtRPRJuhh8yAIiKoqdcF7HmdkmrVgs4CMFAyM9loL5JBDlLzhWkXO1kS8
-	 Gfrq/qR+Xiumr8b1FhIPM7scZfl9ua/fF7vqAsKnxwwqyiOInOSfib+Qx840JS33+L
-	 VxF7Odb9qPCzw==
+	bh=ANh+hAN+mJ2qTvzYOi2dLKnglttlmygNN/T5MmXnEmg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=F/1XdPqYRD5ACV/pCeRqXWvsT67KQW5DV2B6zSWN43r1j1ATRP7bVASBco5aRibNj
+	 ApKohOVX+LhnNHS9DkY0MQOWGpfVMy7D6Feg3jlNQ6qWkQ8TVKqALOka49HBETCxCs
+	 5es/ygr3hXqYKPEGwfZqNPaTXmdjnIpXOZvHzBtgseXsrmMuMf0FP79ev1gz9JzCJP
+	 FrloXz7ykS7fd6HFy1PGueK/EtDlsgoA3wKezV4OZuf3+rnNS8BvQ4mO8MZ4YFCHx0
+	 1LTiShYBbEibPW3qjlqkLriz4cH7e76IOh8G98zVsgEdxZjLz9REETMUrPi2AsdF4i
+	 69TmMQSVPtTEg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E463DC5B56A;
-	Tue, 11 Aug 2026 23:30:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17F5AC5CFE7;
+	Tue, 11 Aug 2026 23:30:13 +0000 (UTC)
 From: Robin Snyders via B4 Relay <devnull+robin.snyders.xyz@kernel.org>
-Subject: [PATCH 0/5] power: supply: qcom_smbx: fix watchdog and battery
- properties
-Date: Wed, 12 Aug 2026 01:29:57 +0200
-Message-Id: <20260812-qcom-smbx-fixes-v1-0-eb48246be599@snyders.xyz>
+Date: Wed, 12 Aug 2026 01:30:00 +0200
+Subject: [PATCH 3/5] power: supply: qcom_smbx: fix float voltage selector
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,21 +40,20 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3LMQqAMAxA0atIZgO2iqhXEQeNUTO01QZEKN7d4
- vj4/ATKUVhhKBJEvkUl+AxTFkDH7HdGWbPBVratOmPxouBQ3fLgJg8rNmTnxbQ1UU+QrzPyH/I
- 0Tu/7AamrjhxhAAAA
-X-Change-ID: 20260812-qcom-smbx-fixes-4c2ab163cc9c
+Message-Id: <20260812-qcom-smbx-fixes-v1-3-eb48246be599@snyders.xyz>
+References: <20260812-qcom-smbx-fixes-v1-0-eb48246be599@snyders.xyz>
+In-Reply-To: <20260812-qcom-smbx-fixes-v1-0-eb48246be599@snyders.xyz>
 To: Casey Connolly <casey.connolly@linaro.org>, 
  Sebastian Reichel <sre@kernel.org>
 Cc: Robin Snyders <robin@snyders.xyz>, linux-arm-msm@vger.kernel.org, 
  linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>, stable@vger.kernel.org
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786491008; l=2069;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786491008; l=1518;
  i=robin@snyders.xyz; s=default; h=from:subject:message-id;
- bh=qv1nbnQj5yoUuqvBAtie8PCjm4uOhcMDB/ozlhiCEnI=;
- b=GxwMvT7WZEjD0iuci8XI4SkTBX064+9afDqfQqrUj0PKAY84eYnyrbGM/7ekyZ8uDD+h8h2mQ
- LL/Klww2FVoApy8bGPGhz17PqYWs3Ef0qQlsbISz+i0AVuZBLhhjNET
+ bh=6UyH258rSK3oQF7Z0c6NQwggo0QjJynT2bHO0YhRjAg=;
+ b=lJ18uawkS2hZQVHV+VPTSVZbIOHjQW9p0C5FG1X18Rfu6Kz4vlvguWFi21xzWprrhT+KbtskK
+ DF4MeGyozd9DEztOOMAr0M+DswB+K/ZBNk4ZS7EeGu6uZ6AltY7ecIO
 X-Developer-Key: i=robin@snyders.xyz; a=ed25519;
  pk=Mdk5dNn+Tkcy7BWexDxBLR/s1BNz8WdqDPnr3qtYBIU=
 X-Endpoint-Received: by B4 Relay for robin@snyders.xyz/default with
@@ -63,51 +61,46 @@ X-Endpoint-Received: by B4 Relay for robin@snyders.xyz/default with
 X-Original-From: Robin Snyders <robin@snyders.xyz>
 Reply-To: robin@snyders.xyz
 
-Fix five bugs in the existing Qualcomm SMB2 charger driver.
+From: Robin Snyders <robin@snyders.xyz>
 
-The watchdog bark handler omits the charger peripheral base and can write
-an unrelated SPMI register. Battery health handling compares the complete
-status register instead of testing its independent fault bits. The
-float-voltage calculation is one selector step too high, and its battery
-target is neither selected nor validated safely. Finally, the
-battery-overvoltage IRQ ignores read errors and only publishes assertion,
-leaving health and status stale after the falling-edge recovery interrupt.
+FLOAT_VOLTAGE_CFG encodes 3,487,500 uV as selector zero and advances in
+7,500 uV steps. The current calculation adds one to that selector, so it
+programs the requested float voltage one step too high.
 
-The float-voltage validation patch prefers the constant-charge target,
-falls back to the design voltage, and preserves the firmware setting when
-both optional properties are absent. It also restores the pre-probe
-charging-enable state if hardware initialization or any later probe step
-fails, preventing probe failure from changing that state.
+Remove the extra offset and name the hardware encoding constants.
 
-All five issues were introduced with the driver. The patches carry the
-same Fixes tag and are marked for stable.
-
-This series is also the declared prerequisite for the SMB5 v2 series,
-whose driver refactoring overlaps the health, overvoltage and
-float-voltage code.
-
-The driver builds with LLVM W=1 and passes sparse without driver
-warnings. All five patches pass checkpatch --strict.
-
-Based on linux-next 20260811 (5e6de6a2b522).
-
+Fixes: 8648aeb5d7b7 ("power: supply: add Qualcomm PMI8998 SMB2 Charger driver")
+Cc: stable@vger.kernel.org
 Signed-off-by: Robin Snyders <robin@snyders.xyz>
 ---
-Robin Snyders (5):
-      power: supply: qcom_smbx: include base when petting watchdog
-      power: supply: qcom_smbx: test battery health status bits
-      power: supply: qcom_smbx: fix float voltage selector
-      power: supply: qcom_smbx: validate battery float voltage
-      power: supply: qcom_smbx: notify battery overvoltage recovery
+ drivers/power/supply/qcom_smbx.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
- drivers/power/supply/qcom_smbx.c | 98 ++++++++++++++++++++++++++++++++--------
- 1 file changed, 78 insertions(+), 20 deletions(-)
----
-base-commit: 5e6de6a2b522f659defacb1551d0465ba6ce13cf
-change-id: 20260812-qcom-smbx-fixes-4c2ab163cc9c
+diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
+index 0e50d81aefc2a..e236b95c0ebf3 100644
+--- a/drivers/power/supply/qcom_smbx.c
++++ b/drivers/power/supply/qcom_smbx.c
+@@ -352,6 +352,8 @@
+ 
+ /* pmi8998 registers represent current in increments of 1/40th of an amp */
+ #define CURRENT_SCALE_FACTOR				25000
++#define SMB2_FLOAT_VOLTAGE_MIN_UV			3487500
++#define SMB2_FLOAT_VOLTAGE_STEP_UV			7500
+ /* clang-format on */
+ 
+ enum charger_status {
+@@ -993,7 +995,8 @@ static int smb_probe(struct platform_device *pdev)
+ 		return dev_err_probe(chip->dev, rc,
+ 				     "Failed to init status change work\n");
+ 
+-	rc = (chip->batt_info->voltage_max_design_uv - 3487500) / 7500 + 1;
++	rc = (chip->batt_info->voltage_max_design_uv -
++	      SMB2_FLOAT_VOLTAGE_MIN_UV) / SMB2_FLOAT_VOLTAGE_STEP_UV;
+ 	rc = regmap_update_bits(chip->regmap, chip->base + FLOAT_VOLTAGE_CFG,
+ 				FLOAT_VOLTAGE_SETTING_MASK, rc);
+ 	if (rc < 0)
 
-Best regards,
 -- 
-Robin Snyders <robin@snyders.xyz>
+2.54.0
 
 
