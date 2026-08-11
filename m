@@ -1,157 +1,102 @@
-Received: from mail-vs1-f43.google.com (mail-vs1-f43.google.com [209.85.217.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5188A392C3A
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 07:28:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 334B2416139
+	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 08:21:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786433318; cv=none; b=ZSZThTJcaHkKId9FbcDaLkse3zLUDpFqI2zazM8o8xYkSbn/WmMZ3+pown3pGyUwawJBgKQvvnadQSIwfuBnSbqtipR6r8mZpxxtlD2Pn5BA6Pm6WncOH/RByVDe4fRCOiKE0f9e7IJoY5K0eoy1Eb/feDYFktcZX21pOXGl0gQ=
+	t=1786436504; cv=none; b=bfc0/jhO3JJOoSf4h8ioapxm64wy03vG3Rm5e0CThg6CVTpYC/sUqGkswsf0xsy6zUkZxTzGQN4NjBjQBHw//nGQAJqBTON0mPjb8p7HKYUYxpBvlWkdwgKyTLb2Z6vpVcw4Mexc/uCcEktyDjmnSk6SpFNy9X+W0f0KNK108eQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786433318; c=relaxed/simple;
-	bh=v2/j0Oj6p53ESVa3PLPBywwI9wRtN5XU+zJPWA/4EVk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=B/c8QVAjeXbWB2uJ1scxfN6L9CNfLc5TvzNziT9nLvZrn0uNc6JgFGACGR0IYZHRexkZpWHicB0LewcWQCW7/IxnIM0dGkShW2rFRf3bYnM2OMsMxCegJG8BNH35En7uiZmQUVZM9Py5g0N41HDJb2NE7NUMPjLz+qTr72jKtqU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f43.google.com with SMTP id ada2fe7eead31-74aa416ebb1so519866137.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 00:28:36 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786433315; x=1787038115;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=bbDA2HJhRK7uccW2i/9tvYlKy7xqWbKNdvfK5Qlf1as=;
-        b=NzrZEM7o6X4Ln7afhdGjyp0iYIlHgD8q0D8erlOz4MoVKR4CvaaCqXwJHzS+C1gJVi
-         CbEtv5hITMAmvhx9vcdZfdYMf4UZT6i72ylLHcTh4xzoe1TQJgGlNCsKHvfHKI7z3m0B
-         XXqXFAAITR8oLxbJYBFpnP6A6ZL8sWhDGiDgKMV0gedJ3Nuzn47iE5KoQyoP6PWoOYz/
-         QjAkiod09/UO2OsRTX4JvAw7MV9p4p49xbRKSpvpR/mr1j80aJvVo6ihr7tZauYvMGE6
-         weQXJQIn0woIN6nYKOPfC1creE+vu+CF7B8DvLAh40WiFJTWE5zWI019rBe9a4lfmCe2
-         dJ2g==
-X-Forwarded-Encrypted: i=1; AHgh+RpPnOS4TzhcuYDI/WL1BO49O8kF6/IelmeyJeZLT4Ze4HihKbGRuis72jdAAtHAE4hLvFnBOgvbAg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzggb5fffQhBRyc1qhN1DboFBZyzxxEuITywPEWL1M6GfiNMOOp
-	G0TNgpKJrUQacKVl52FFIjjAHe24T3senIGgwSZbnIO6FiZ9FjtZrsHzDgymamv1
-X-Gm-Gg: AR+sD11eqwJTPIsohNDSvbjAaaFnqlN5vNPqiiCg7yhgYy6c602kUwv2hzAtWWPN8wF
-	17TlN8/RS1haniiu4XyVT16RNuHvqGy9Vi9nRQAEcf8hMhyVfk45K6meIK6JAF/1RRP5vA3WVyZ
-	AFJ1TEdluGQKaO8kSIdq+Fmzl27IBTbZrSaDWDtPSh+3bU2il5fInOX0DzUAnoKLJIJ5jrCaF+m
-	OTBoHhwiFsHSGuPReXf5kbHTTHDB53CZ10U2reFzjgMFu3vDxYgPPHW0wxGV2Dx95PKIXZObfki
-	ccWoKJG/9yIiW4jXkUEa873uDqOiPGpxKREHCMhUdad4eG8cWcGd4MldwcJrWA/cBkGwnYWXsn+
-	IZbNXa2EcACTs6ib+jn/POPxOccFD+NLGqw0e34wSuCUeR9bzSvNThCLtHRBz2mQXhOOrP+lw8V
-	qUwQ8mkSBN0VRC6/PgHlUghXrEp+A0/U83CvUnz4v0ghllh1XRRA1ZdyVwQ6zst9YkKWKAUNSl+
-	dsQhBGMT5JjbM6Dhk0heCwGjA==
-X-Received: by 2002:a05:6102:5789:b0:74a:be82:73a6 with SMTP id ada2fe7eead31-76b560a071cmr301436137.8.1786433315138;
-        Tue, 11 Aug 2026 00:28:35 -0700 (PDT)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-97a365fb92bsm149797241.1.2026.08.11.00.28.34
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Aug 2026 00:28:34 -0700 (PDT)
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-74aa416ebb1so519858137.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 00:28:34 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RoyTUO5Xb7r/alXXAYserphB0CP9BDKYbOFzFvSe83cDxXv+TCXwSF5TJLLG9v3XJFl9yTN8OHWSA==@vger.kernel.org
-X-Received: by 2002:a05:6102:4187:b0:75f:e517:ec96 with SMTP id
- ada2fe7eead31-76b51b25220mr340921137.0.1786433314033; Tue, 11 Aug 2026
- 00:28:34 -0700 (PDT)
+	s=arc-20240116; t=1786436504; c=relaxed/simple;
+	bh=1P60yeqQ3jiIxpYyG9voDbKPXLyZCOei7vSuoqYbXR0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=T2kx5MROv0SYzg+VHP31x+kpsy5/nie91/Olr8GZq/SvP59CiWWufvvrZ8gTsrYA4Rn1AZzG9Lq49a1YgIbX2dVLop5iM6JPqwoqZepP6C64VM859k4N3htyC/gDvvBLo3s+5k1WReZ5GeL0kaSArks1SBsU5kQdXNLWXwHG0e8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SliWy1FW; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SliWy1FW"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786436500; x=1817972500;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=1P60yeqQ3jiIxpYyG9voDbKPXLyZCOei7vSuoqYbXR0=;
+  b=SliWy1FWZpxWSh6lCJ1OmFktHfNuHQqEUzBMT7o1XlJhOt/qRo0Gf1BV
+   asgPymuwfgzC80mEIOcjd4qCgw9DEj/WL1CiWStyAO+Q2n/OTBwzfnsqj
+   0+w++souq0jBGa1EUevkF4IzO7X65JT89YmXi65aAU7ntARjWQsocgu4Z
+   CjleHG8TixnQ6ZPSnyek5NxwpDk5fs+L6KDI7loGwip0i8mQDImgghdJe
+   O3Y50V75pDhSW4eeyxl8HNfCCGLwVy/q5c96Zz3aB4UMCUOIrZFKqYh37
+   Vb4q1lgrdfbu1CtY0yNw109lBcB1tvX9w/KMeA3KddTIWS2SRPY+ljEKs
+   w==;
+X-CSE-ConnectionGUID: uyv47nFURDa7tDmi3kY+VA==
+X-CSE-MsgGUID: g347jR6HQSeVKkkmkBN4yA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11871"; a="97558191"
+X-IronPort-AV: E=Sophos;i="6.25,217,1779174000"; 
+   d="scan'208";a="97558191"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Aug 2026 01:21:39 -0700
+X-CSE-ConnectionGUID: K3+2uR+sTBa69X0oEy0onw==
+X-CSE-MsgGUID: j4gHbkfdSVm4lsUrpcNp2Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,217,1779174000"; 
+   d="scan'208";a="259008005"
+Received: from baandr0id001.iind.intel.com ([10.49.109.195])
+  by fmviesa006.fm.intel.com with ESMTP; 11 Aug 2026 01:21:37 -0700
+From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+To: rafael@kernel.org,
+	artem.bityutskiy@linux.intel.com,
+	lenb@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+Subject: [PATCH] intel_idle: Fix C6S and C10 latency values for Pantherlake
+Date: Tue, 11 Aug 2026 13:47:29 +0530
+Message-Id: <20260811081729.186571-1-kaushlendra.kumar@intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260810111841.77898-1-phucduc.bui@gmail.com> <20260810121914.GA2757863@ragnatech.se>
- <CAABR9nFkFyhzQO7UGsaiSDcZ8km9=nv-2+4xWo40EG6c555Lbg@mail.gmail.com>
-In-Reply-To: <CAABR9nFkFyhzQO7UGsaiSDcZ8km9=nv-2+4xWo40EG6c555Lbg@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 11 Aug 2026 09:28:23 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXXR1GH7-nPmYv5i7ooB3kpqjOvY3A3vR36vYLVnv99Og@mail.gmail.com>
-X-Gm-Features: AUfX_myuDTBVQLkzG41xoEKKZVf2OG_s5XczCeosvzRfItD6qUWkIcj6z1Z8K0g
-Message-ID: <CAMuHMdXXR1GH7-nPmYv5i7ooB3kpqjOvY3A3vR36vYLVnv99Og@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] thermal/drivers/rcar_gen3: Handle -ENXIO from
- optional IRQ lookup
-To: Bui Duc Phuc <phucduc.bui@gmail.com>
-Cc: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
-	Markus Mayer <mmayer@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, rafael@kernel.org, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Phuc,
+Correct the values using BIOS ACPI _CST characterization data read from
+a Pantherlake device via
+/sys/devices/system/cpu/cpu0/cpuidle/stateN/{latency,residency}:
 
-On Tue, 11 Aug 2026 at 04:02, Bui Duc Phuc <phucduc.bui@gmail.com> wrote:
-> > > -     if (rcar_gen3_thermal_request_irqs(priv, pdev))
-> > > +     ret = rcar_gen3_thermal_request_irqs(priv, pdev);
-> > > +     if (ret == -ENXIO)
-> > >               priv->ops.set_trips = NULL;
-> > > +     else if (ret)
-> > > +             return ret;
-> >
-> > I'm not sure I like this.
-> >
-> > The old behavior is that for any reason we can't get the optional IRQ
-> > the driver still works, but without hardware trip points.
->
-> Regarding the old behavior, it was handled like this:
-> ------------------------------
-> irq = platform_get_irq_optional(pdev, i);
->         if (irq < 0)
->                 return irq;
-> ------------------------------
-> As I understand it, this is essentially the behavior of
-> platform_get_irq() itself:
->
-> https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/base/platform.c#L301
+  C6S: exit_latency 300->127, target_residency 300->381
+  C10: exit_latency 370->1048, target_residency 2500->3144
 
-Except that platform_get_irq() prints an error message, too, which
-we want to suppress.
+Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+---
+ drivers/idle/intel_idle.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> This could be understood as rcar-gen3 not actually supporting an optional IRQ.
-> If you still want to keep the old behavior, then I think we should switch to
-> platform_get_irq() instead of platform_get_irq_optional(), since using
-> the latter
-> could give a misleading impression that rcar-gen3 supports an optional IRQ.
->
-> Incidentally, I also don't quite understand why rcar-gen2 supports an
-> optional IRQ
-> while rcar-gen3 does not. Is there a hardware limitation on rcar-gen3
-> that requires
-> the IRQ to be present, or is this just a difference in the driver
-> implementation?
-
-On R-Car Gen3, thermal has an interrupt.
-On R-Car Gen4, thermal does not have an interrupt, but routes this
-signal to the ECM.
-
-> Regarding the benefit of the new behavior:
->
-> If rcar-gen3 actually supports an optional IRQ, I think the benefit is
-> that it reflects
-> the actual state of the system. It allows the developer to know that
-> something went
-> wrong and investigate or fix the underlying issue. In the case of
-> `-EPROBE_DEFER`,
-> the benefit is even clearer, as it allows the kernel to defer the
-> probe and retry it later
-> when the dependency becomes available.
->
-> If we silently ignore the error as we do currently, the driver may
-> still be able to provide
-> thermal information as you mentioned. However, can we still guarantee
-> the correctness
-> and safety of the system?
-
--EPROBE_DEFER should indeed be handled correctly.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 651408df9c24..0b5c94c7cd3a 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -1010,16 +1010,16 @@ static struct cpuidle_state ptl_cstates[] __initdata = {
+ 		.name = "C6S",
+ 		.desc = "MWAIT 0x21",
+ 		.flags = MWAIT2flg(0x21) | CPUIDLE_FLAG_TLB_FLUSHED,
+-		.exit_latency = 300,
+-		.target_residency = 300,
++		.exit_latency = 127,
++		.target_residency = 381,
+ 		.enter = &intel_idle,
+ 		.enter_s2idle = intel_idle_s2idle, },
+ 	{
+ 		.name = "C10",
+ 		.desc = "MWAIT 0x60",
+ 		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
+-		.exit_latency = 370,
+-		.target_residency = 2500,
++		.exit_latency = 1048,
++		.target_residency = 3144,
+ 		.enter = &intel_idle,
+ 		.enter_s2idle = intel_idle_s2idle, },
+ 	{
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.34.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
