@@ -1,44 +1,44 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011024.outbound.protection.outlook.com [52.101.65.24])
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012057.outbound.protection.outlook.com [52.101.66.57])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 182EA3603F8;
-	Tue, 11 Aug 2026 11:48:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.24
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9393E368D45;
+	Tue, 11 Aug 2026 11:48:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.66.57
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786448890; cv=fail; b=ObaYZRQioW7yJdktJ8yD9xI5sebCd12gW0L84DoZRTjZXJr6j2b1jSaU/FjhcAN2dzxe9tmVyp0oKkxCZw0PQnYNjISAZPgpxbKmje9cGQnhCFu1Mzce10PzNspo+HwyxyR1j8E1JqJ9hNOriR04tn1v5/gktD2A7Kg35sNGm/E=
+	t=1786448890; cv=fail; b=V14ADnsLWX1g1TCY/Bjm1HkrOYAFC6Nqd/flQYRpUS0RiQ42A9dvvMK1HeMq7wSydBcqubEhc5hd4NW3UgoGk3AE63D05q+9N+O+iQVA8SdMLwn/e4+sv42GWgmmdJuK9xUnPC/pmd5PfaKsyoV9118gVuyM/SUutEnu5jLy4ag=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1786448890; c=relaxed/simple;
-	bh=VLaAC64aj6w1vAqHyuh3V5Krn26jiYRWKVpm/GWDAeo=;
+	bh=p/2tyu5c2aM8dFPVg+81qE9rpoBkzoDA7y5Q+GnsOPU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=EjLSZPr1W+Z60nhQO7ZoW0uTZO4/Idva+HUnltoaxstG0LVm/IgUnrrl9Y81K2wLg6qkKObVZHICRQKksaU57vah1ZCzvdRr/Ofokwd8xzo59TkDRJFPtNE4ovonhT+q6izf00EIJJRu0STQfocN7rmYj9nFY8CrWx7QFeBYZRE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=COUzk8Am; arc=fail smtp.client-ip=52.101.65.24
+	 In-Reply-To:To:CC; b=NTyiCMhkHOaZG+tliInSw/q6fbGexvmqx+YUvhu6GhPdYQDxk9niZ2FkaLAkcM5wk3DsmH9iNqtHaoma3MnhdqYXTkzZjZ2iqGTpD3/4XkcN9EbcKajPcZ74WP57Lni5H34Xuj56terVRxHdHCpoo6EXDCbpWGsgUolTPiER0VY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=R1e7WL8P; arc=fail smtp.client-ip=52.101.66.57
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="COUzk8Am"
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="R1e7WL8P"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=b3PXGlp3Gq2Wf+BZ35ZMA6pqxFJL32raZFvpqGAuJHSOZQ6XN+PpPvuDNS8ngiUNwlyJPVW2krbVs+ws43D/ZSydIUKvEmGZakYvK73nEGIf6hmiRT1u5hVqkZEnxdjHlvjB0qXwORx3aIWHRi+I1j7ifXwtOVf1gp7srQd/eon2p7cIUoSdzI+Dwpa5FSuiqFDWxdb7vv+i/RUFqzEhes7I37sxZenVlQdfeXSjc0RQZdE/GfMWqbJ89+hvfF3fT0ohS9QHu3Db1/cwZQZIf7p8F5BLML4MEPi7Dz/kstxZ3XWkmfqapoqL3Zi1+qZQiecgj+fF8nACegw6e/8w5g==
+ b=Rb1ThXW4mcgD6TurDqbtXWx6JAzIF/EOxp3L3y2PdKfsq0k9i5FsEZWhxJGqAGIdAGSjmWtjrPNl0uBlhpyL22RGMvRHFMvDUOM5PRjqCuww/o5NK0MCpudq8eIlanb9MNQaUuEVDPoXDBWFm+vD3uz3AyxpOPMqIc/dZC0E+5uZ+Ylez/vHfNMDcgVdsh0tF0aazemYvnmrQfnNYB2h+2l2iPE5rlx6jLTQ8LebYDWG/hP0ErWSuLQM6e+XJdw+TMNAi2jR4DbQUNYAMLrasy8ZYg46wowTk/LuuZ4hT2P2fh49X+bzecQegQ3uLyzb08Ek84oO1nYchj+Cda7SLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=794lcFXHVqF4CHY0K2iETKL68oK3mJX1JhcmQi0qPQc=;
- b=r8jmb5RdFNXgxbDFQxsOT2PyhsDHMKrtwQKxAqCwmP4cRVWswJkqjSW4qpYf3EvXQnx61CE6ttTrllNAJCEBGVkxFwF5lj9iedNL3VSjofEDCsHa0HW/ctnrNdg/yn5X4LRpC7MGXCDNNVDeVQ7mvwjMDQhuviVg3nP9QAujpPrtUH/9aohNWt0qwiCI/YUUl6pC9DqHjQ1Hc1y41z6s5mrh5kpJAlBg6poCgTbu7VkEZaIs6khl3JtJeqGO2vOhmh3dx5ieV+s8tcCO8jm0O1Wk/3Q1+wrnsQ3GqJ4C0GY141F8FVzHRvX9Ip8FHHRoG80aEbLNdbfg3se7CyIRhw==
+ bh=NGyW9yLQfCWuH/hzqYFbhpxX+t4ky8Jkvcgumwr6EVs=;
+ b=F501YGUTAXi1fTbdqKf3tKVYh86nr/jao1IX3oyaEZ2HPfayFAIcsgh/bor1KQCkjnFNRU/H1FiU51k5iDheHwhhdUWc4DCBlgQll/JDRvTGuT7TvLz2lyhfNaefF+yb5mCWboKQZ1RkZXVqsrZuUit5X9JioEzPG8O4UcOaGBMplBeETXHMWEP3bG+xadp6cLWrZ98umn+aBtXk95/SGSmBVHCkfjdNKb3EzEun2lFLctd6736D54S99tcVlK57KhR0dnXiQKnAD98mgXSCX2hm5xR8Gp/ECCaND9RrtrIgnRBQbtsYUPoDMzHeguqu1ye9rjKmAA8MD3mIrTdsXA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=collabora.com smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=794lcFXHVqF4CHY0K2iETKL68oK3mJX1JhcmQi0qPQc=;
- b=COUzk8AmNWmcALJgvu1BuhL28eWN4oyU4ebJHwxEdlF5pPMpfcF+fBJhDKZAixU0fQxDlLsJ0CbYOULx+k4xbOwnMk2/1gR5Y6nPj4Cn+aswHTCdeHZuZDXQRhsV/TwasRuYp8PNxXIxRxVbur5bWSFOoZBykolfx5pqL60JmLI=
-Received: from AS4P192CA0015.EURP192.PROD.OUTLOOK.COM (2603:10a6:20b:5da::10)
- by PA6PR02MB10524.eurprd02.prod.outlook.com (2603:10a6:102:3d1::7) with
+ bh=NGyW9yLQfCWuH/hzqYFbhpxX+t4ky8Jkvcgumwr6EVs=;
+ b=R1e7WL8P7ZQJk93YzoXO6aJTc+m7NDHSHcQ+zPKCix6aysg8YtLZYi+DL8raf81FYteaEn74rZW0WRZE2WPwbvklPqjeRMmn11BQ7G4dmwIpRg2b0HW7+bZ5kt0YVHyHfYYio6sgzdmrBEbklfitudyqFjrnWaCVF6lHL9yfr14=
+Received: from AS4P192CA0002.EURP192.PROD.OUTLOOK.COM (2603:10a6:20b:5da::9)
+ by AS8PR02MB7111.eurprd02.prod.outlook.com (2603:10a6:20b:2b5::16) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Tue, 11 Aug
  2026 11:48:04 +0000
 Received: from AM3PEPF0000A792.eurprd04.prod.outlook.com
- (2603:10a6:20b:5da:cafe::86) by AS4P192CA0015.outlook.office365.com
- (2603:10a6:20b:5da::10) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10a6:20b:5da:cafe::78) by AS4P192CA0002.outlook.office365.com
+ (2603:10a6:20b:5da::9) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.315.11 via Frontend Transport; Tue,
  11 Aug 2026 11:48:04 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
@@ -51,21 +51,25 @@ Received: from mail.axis.com (195.60.68.100) by
  AM3PEPF0000A792.mail.protection.outlook.com (10.167.16.121) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
  15.21.315.6 via Frontend Transport; Tue, 11 Aug 2026 11:48:04 +0000
-Received: from se-mail10w.axis.com (10.20.40.10) by se-mail11w.axis.com
+Received: from SE-MAILARCH01W.axis.com (10.20.40.15) by se-mail11w.axis.com
  (10.20.40.11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Tue, 11 Aug
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.1748.39; Tue, 11 Aug
  2026 13:48:03 +0200
-Received: from se-intmail01x.se.axis.com (10.4.0.28) by se-mail10w.axis.com
- (10.20.40.10) with Microsoft SMTP Server id 15.2.1748.39 via Frontend
+Received: from se-mail11w.axis.com (10.20.40.11) by SE-MAILARCH01W.axis.com
+ (10.20.40.15) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.61; Tue, 11 Aug
+ 2026 13:48:03 +0200
+Received: from se-intmail01x.se.axis.com (10.4.0.28) by se-mail11w.axis.com
+ (10.20.40.11) with Microsoft SMTP Server id 15.2.1748.39 via Frontend
  Transport; Tue, 11 Aug 2026 13:48:03 +0200
 Received: from lap5cd525d1j1.sto.se.axis.com (dh-10-133-4-142.sto.se.axis.com [10.133.4.142])
-	by se-intmail01x.se.axis.com (Postfix) with ESMTP id 7B5062341;
+	by se-intmail01x.se.axis.com (Postfix) with ESMTP id 687DF17C8;
 	Tue, 11 Aug 2026 13:48:03 +0200 (CEST)
 Received: by lap5cd525d1j1.sto.se.axis.com (Postfix, from userid 22105)
-	id 4E374838AEB7; Tue, 11 Aug 2026 13:48:03 +0200 (CEST)
+	id 4D661834C4E9; Tue, 11 Aug 2026 13:48:03 +0200 (CEST)
 From: Henrik Grimler <henrik.grimler@axis.com>
-Date: Tue, 11 Aug 2026 13:47:47 +0200
-Subject: [PATCH 5/5] power: supply: bq27xxx: bq27z561: fix invalid
+Date: Tue, 11 Aug 2026 13:47:46 +0200
+Subject: [PATCH 4/5] power: supply: bq27xxx: bq28z610: fix invalid
  AverageEnergy address
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -75,7 +79,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20260811-bq27z746-v1-5-3a4fa38205cc@axis.com>
+Message-ID: <20260811-bq27z746-v1-4-3a4fa38205cc@axis.com>
 References: <20260811-bq27z746-v1-0-3a4fa38205cc@axis.com>
 In-Reply-To: <20260811-bq27z746-v1-0-3a4fa38205cc@axis.com>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
@@ -89,60 +93,60 @@ CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
 X-Mailer: b4 0.13.0
 X-Developer-Signature: v=1; a=openpgp-sha256; l=1117;
  i=henrik.grimler@axis.com; h=from:subject:message-id;
- bh=VLaAC64aj6w1vAqHyuh3V5Krn26jiYRWKVpm/GWDAeo=;
- b=owGbwMvMwMW4gT3Pk7swMZvxtFoSQ1Y19wePYLHznrcnXjnVvr/prt3zoKgw/8pF+9w99n2Y/
- Kfm/lTTTkZjFgZGLgZZMUUWnXrNddM75VMkVz46CzOIlQlkCgMXpwBM5KoE+3+3b7q8ijETSg5u
- TYz1Zy7muXhBwMGORUBU6HKD+PJ/Wpq+eezq5/mfd2S2K5ZOee92IaNYs+jetVPzXSXXF3f3+PS
- alhlr73oaYMFpIBunYCPQ5OGUqjN1zbaZP6MnbT+ivveHxMcdZZ81qmvU/ues0Y2L1Ji5yG2zjt
- 3ynwIuQfWmOZukfaWPu8Zxu0zdkRGmtWn137O/VHVDbmRVJ33+fPWzwA3mnQ9nHWX8OyHFtyP8q
- OuRGf5HM1e3syeJyzaIfy3WLmZP6DhiY5P85sSK/ymnIpIf1GxfGbnvX39vn8fJW3EBV9nfml9N
- 5YyzT4pzdm18bHp7Od8Os7IiRrWvnztstE6s4l+qusQSAA==
+ bh=p/2tyu5c2aM8dFPVg+81qE9rpoBkzoDA7y5Q+GnsOPU=;
+ b=owEBbQGS/pANAwAKAbAHbkkLcWFrAcsmYgBqewvsxTZuVouoUVE5FelQgQyVNjprjxoBvpPH0
+ jFrfO4zH1qJATMEAAEKAB0WIQQsfymul4kfZBmp4s2wB25JC3FhawUCansL7AAKCRCwB25JC3Fh
+ a7+LB/sHjVuNu4pzIyfqM5Ijni9vO4GRdlb+GZW5KlsppXRltTi3XBxctoAH3K2wmu9bKEG86VU
+ NJjydfDCWx7+0PAfsaiOTgRzuYA/O2lcw/6PQ8vYIXW+qo4u548Z8VUN/jV5CMB6nHqjN91PQQ8
+ VJxG2LU4GrSZ5vyHjCZxaxAnx3I4NXsVAgNiHWyAO0NKq+d019DkKKN/M+0pmRK87t78MvK6QS3
+ LHiJFXQUH3/RK0R2TWHzoa+HdXzxirBqaDpBdmTVpnBQbH3svaiA14queb6hNGZbTbwZ9AjxvHS
+ u9FIXz3UZB17uBzAsmWgRWk0IaGv9nMG/TSKQ5w5NPAP+1Cw
 X-Developer-Key: i=henrik.grimler@axis.com; a=openpgp;
  fpr=2C7F29AE97891F6419A9E2CDB0076E490B71616B
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM3PEPF0000A792:EE_|PA6PR02MB10524:EE_
-X-MS-Office365-Filtering-Correlation-Id: 25be8dce-23cb-413c-fbf6-08def79e6746
+X-MS-TrafficTypeDiagnostic: AM3PEPF0000A792:EE_|AS8PR02MB7111:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3cf1940e-6547-49eb-272c-08def79e67a5
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|82310400026|376014|7416014|1800799024|23010399003|11063799006|56012099006|10067099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|36860700016|1800799024|82310400026|23010399003|376014|7416014|56012099006|11063799006|10067099003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	FGdRqfUUxZtT/o2dLlQAB/8qlpbBoSKVDXGFM6Oucpsprfxfzef6sQESulFMwEHi1xwqKakWopEB2TBcAFhejFr53/1OQlCqLVFXPyuk0PfZyEDQQ1Sbw1g3YdXlP1r7HOVUTY86DitHyPYtoM9QAj1ojRluEzezzT+MAFMIss2U+L0DFL7ytgA2GOQDr+MZmK7MUUPpZ4grrCQ+np9PywqkTEVuAqXgwrLqHJOEEM2qmGPuHj+ZQ9+kau4P/SDB6XjSIk15elypPR3OzmEXcs4CvQ/UhrPVVgimfBsN+hExlL7muWPdx2GUTH7lto61xoeZ09Eord1bJvGuOB0TMw45YyNWGprHf/fFmxxKBdq9QnNhNHYg2ko8zj0GPzb9/Om0fJCF5OoKG5kcmO8AgfqNgQ1pA3POGf6Jz4+3W46UKzgvrnqiXRobNTNTD9YA1pCQFE4BPb485MtNVNigvMFzD9geO2AaI4O4/wueGN0T8sMSCdAp+WI9d7/bPH1/D+bNOyziNS11+FEO6Uy1f9fRV3+L4Xyc45PKRn53ICYDpR0cQS7gF2myv8XcAvlg3bX83HzIGPblGutiSRWbHJ/m4zb9LZz9U9wmhuHQMTdtnc0nwlsvvITRMJG0gJCclnc2qhhy5mtdoZgr5c0jypUqHc9/zybnjAjlI3B4ZV6MJgP/xaorMLA1UA20LqRNT72AOBIVU7pnySVBEOBK3Q==
+	Zp8MsYSPvt4fWj8MT0toypcF61v6t1AV2jbtbNUEMQV2AhKFSuYMAzKkyxmsuRunMUwoS9vPcv9S70//Q4jFcoeIwfeLE24Ig0Q+lpNofF3iZlc9mlecH5poNpAfgF5iaM5A00qlXJgCNDSyYRXi7NVDphNKa+JhQeOTnD6FlXVb/x1a9Dzi2QRaTbV8IHzHF/pCkZfe/b3SIprwqU6evqAbCgToOi8EQ7jRdB5WD/L59m76qruYp1KttushS1QMnxh67CUG6XB4BRFZVJqxQi6gFVPEr29e9l0H3piQ9G4XONg5pQJPyZt9nQtw1bQH39wSF3g2wiPmbPqaAlaHo0x22U7Vk3PwLyjPSC/noD2N6PPi4Mma3luYy3y0U+3+r0cueloV0u8HoP5ffC6Q1/uhPVmm26dwzIrdv7IAwlIKqqXXTN9Z2WfE0+NjJFzCUoeUL2cKs5e+wgsCyCcyPGSNnGdPjMU7hgy6l8q8vdS1UPjjaHtOqCHPsPCVeo7Mdx5vMhwTWzeB3xts9VExC3WZJ6VN3VFYwOe+B+wpYc+UM06X+h6rQ7WLNrzTNfVAsnDncN7/JXd+XTir4KHtSOUaEkbwvkB0xS0/exIARGv8pcpJW/SUYOrPicOCWNoQZNTl27AY6voG78FpLVWliZU9vkRIx8bTwfszpQGh0Noz7FuxphD2WqJK9+/Fe1TTm5TbPKIHuysTE9LLbeB3Vg==
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(376014)(7416014)(1800799024)(23010399003)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(1800799024)(82310400026)(23010399003)(376014)(7416014)(56012099006)(11063799006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	x5NTdivhfMX89r+fXnuD8bOZvTyRha5iHjyFVq0mCh9ACL1mFx5xLGK+QAwJUDvaiFT41yXOlYqQ/2EEgDnfb/0rwa0zRAM8iF9yCE70rKx437W+f42/eBvqyQmEcVVITgNHmWg72olnBp4zZUG9lSeWjvpEYRnfFqtI/U8/fE7B1WzGflDodC7yKrXhozE7bPPzU6ZtMrg4CE6KpgRiXFZgr6HzPzzUwznvgNA/mLVSeNkd9J3K/wiDtA0zgmpxqphRAMaosT0g0HVUu6GH+SB1AeIAwYT3s/i5tciBYU2cMrVSqACcfGDI6tPixrr6ok5qOmR3A7ZKddFVV2cH1e4OK4EazzEnPXmUxI9Csn6T8eZcd9k8WNRcGHn5ie6UXM8ET/X93l3uFyGHMYUQSGqzzklV11KdvZjAjIn1H/q3SdG1WsK7OLc2xftDDR/t
+	yU5vkYS9vySiR7nwKSx5nvCXEltvhFxm3GNkksVgUUBwE3HrwnZZiYfpusVFN7Imvmrq+C9qMSuRdAl/Z62jl5ymUVYEbu73iiULMR2Go4KGxLQBiUBdp2gYDVPt9NS9N+0/fqgd3DCXtG1yktyBB4CD7ktj47We5UpniX9QNryyXhF/hHSi1WGeKWA+ZWZB0QFIxDGFCSChTEATboEbMBCw2PxiFXvlO93madgTy/5XZlKMLtEdTIJbSrOrVxILOBo0AkiRTP/g/fuwhxDuQ4TQjzTe/6mfcpCTxVwNECv41FQrrS4pTzWBlXZmgsEKSLUEronE3PuHaEKc21iTnB4rC8GFbLKyr52OYZfZU5cg1IFvJjwcFuuvNRjUYXoj0ZeKLXhunw0jJHwswqX7cS/WCLmn9y2eGhbDR8+wMHFJ+e+MuSL8TJAm69blNpzX
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Aug 2026 11:48:04.2386
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Aug 2026 11:48:04.8558
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 25be8dce-23cb-413c-fbf6-08def79e6746
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3cf1940e-6547-49eb-272c-08def79e67a5
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	AM3PEPF0000A792.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6PR02MB10524
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR02MB7111
 
-bq27z561 currently uses the AveragePower reg, 0x22, for reading both
+bq28z610 currently uses the AveragePower reg, 0x22, for reading both
 AveragePower and AvailableEnergy. The technical reference manual does
 not mention AvailableEnergy, and it does not make sense to read a
 cumulative, always positive, property like AvailableEnergy from a rate
 property like AveragePower. Set REG_AE as invalid to fix it.
 
-Fixes: 6f24ff97e323 ("power: supply: bq27xxx_battery: Add the BQ27Z561 Battery monitor")
+Fixes: 707d678a5c7c ("power: supply: bq27xxx_battery: Add the BQ28z610 Battery monitor")
 Signed-off-by: Henrik Grimler <henrik.grimler@axis.com>
 ---
  drivers/power/supply/bq27xxx_battery.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 4985eb54090e..5aed8b24119b 100644
+index e28eca53c7ee..4985eb54090e 100644
 --- a/drivers/power/supply/bq27xxx_battery.c
 +++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -496,7 +496,7 @@ static u8
+@@ -518,7 +518,7 @@ static u8
  		[BQ27XXX_REG_RC] = 0x10,
  		[BQ27XXX_REG_FCC] = 0x12,
  		[BQ27XXX_REG_CYCT] = 0x2a,
