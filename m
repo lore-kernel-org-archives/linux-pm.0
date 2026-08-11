@@ -1,68 +1,33 @@
-Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CB0841D63C
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 08:47:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B9E341DEE9;
+	Tue, 11 Aug 2026 08:50:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786438026; cv=none; b=OEBLAOE38sCL9+h5L0vCG453qG5WrOhu76UZWFQoSdex2SCtUka7yMGGN2255uUeOJ8V/r6lT8tZdhHttLwb6Oy9Ct6Qd9ayCeQfkSqgkerh+bP4mUOesxb1OajBjRua7q2bMajjG4sSJ1oqZ948gTIZDt2AzHCMof3piTFs68w=
+	t=1786438248; cv=none; b=W/4EykvfM+27sa0FP4fSpYeWzUkPpWw/Q0VwSSrF/lGvkcQg5zY3QkXEcp9jp2C9aKBEY6B6O2ZsBN02cWcqYox7Sz8qr+xCvjeT1tpnzsHeogU9AY6FSRS4hnvEWh+pCe33eWObckjPjrqkVnlWUrlY+FlkMOfu0BdDl+VEiO0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786438026; c=relaxed/simple;
-	bh=EVZVpJBRdZCy+qujCaf5OnM7atnyetFlOKsXkQ2K0ow=;
+	s=arc-20240116; t=1786438248; c=relaxed/simple;
+	bh=dWB25sGhcq8FuoI602wsHmNQSnHdIvIMUxnWnKrBswY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=o21g8VQvu7nrHmxexqOdgx7Lu1YnSpwe3AMLlHEuFZubx7OSXwysBUtKmQoCwG4RotypcnWtL248lhf5SKWIC+Le0HHMf8i9WJX90QMrLwmvDZalWwfenaVVe1MfQ/khHSBYnqoXYSuEZr0JZVOhZAyFdF2PyoZbew1iH67rS6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gCj/wndN; arc=none smtp.client-ip=209.85.167.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=Cn7QHTzEbwiaaqtq1VAPjIXuRcPAuZ000CKuQfIwpCRcoJGugap+gaVxsNdC1nHBDejkvjwUW6B81fHGA5Xl3hQC236vaqS6/MtmB2YdcS5oyl+NmNAjQreCwfEikNUlIunPn3CEEcSh76WPpZYFlu9vVZELL7vouMw/FYPf9ZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SDI72LW1; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gCj/wndN"
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5b00d083818so678097e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 01:47:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786438022; x=1787042822; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=IiZI9DdC23B8FjIXst2Hzamy5igvzMmXHo3Scfcb8/c=;
-        b=gCj/wndN3UPZ+4T1x0H8A+2z5DgFrY75y7zG2QEXZUEv+lp7vEMsMinJdrMddIsE2Q
-         cckUhiafGlOf3zSqErATU+GXWooAelVH4ns7QiBKuAumdLOwo+X1ayk4V4xzbbHDwEes
-         Yu/YrMeLHHvDtWu1PXqU0+b/u+ohdx8iussELEeseJW2NR0V5iStDxS9X6vPfrd3hek8
-         pHtE8sBlwRpmethgvoR1RJoAzJb5Ab2q2UYGfl6xwryf81hVC3wE4euIXfa790SKj4+M
-         YABzHyPbIiNcofbD5W1bB3FFRa2u9b1yTk8vHZha/MSTuHxLmkp16NIC6zA9g9Fk2q7P
-         DVBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786438022; x=1787042822;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IiZI9DdC23B8FjIXst2Hzamy5igvzMmXHo3Scfcb8/c=;
-        b=Br0tGKad4oPxyXLbLc8I4M3DWOkWx21d0pxXU1iBnxYIW+pQek9l8Hl1q4bmqScASN
-         PkdTE1v3HYB/EvBuQvrSBRmZ3/sxBg+wOl0iwoQzOeyga1o8YrxDgGqn/sZGXey+OXMf
-         COG0KcVDGnXLijgGEwdb0Mhez5TKb7PiQnU9PDigo5IKqbtLd8D5FekHWNjZaaDZ5iu9
-         gSCtFi5rWLrMlJ84FXIoDaF7GwVYayKMJta9AJ83o4vY57KTp1h92VlvxEc0sB8yoJVX
-         06Wu7KxxTfDkFvrgHFh7f4ZFFAiG3Be0teH2Ge0Py3FXW46Pf8aXXnGnl1cS2Mq/7XxJ
-         ZI9Q==
-X-Forwarded-Encrypted: i=1; AHgh+Roz+kAORAsuZ1Q/B1m7wPah3RDtuYhMaHwuEcXscb3M/pLkTdSotwjMhtSwQS4W/D2SFNrrV+sPkA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwOORKkvMcxK11OaFGIK+RmFUsUziV1VqIE6DQy35a2hfsrV3cX
-	33PndPgWJw5b/LkPwLRtUFDUK5TYgX1CUjzxnxtaL8cT7VPZYMpUSgeW
-X-Gm-Gg: AR+sD13i1YARx/6bHZjvV2sO2fvoQi7cvINQPdMA9YZYJr6ujSDo6LBxTI8rydAXL5g
-	hnXbR0k2z14TEgZXaK63eUMGQmmfE5KOdKy1gb4Lw07QCchua9Kkrqpmzf1an90UjB+F3U8XdLr
-	IdGdR5dYqXr67HlUKsl5V/rz3q3KM4G5IeA5kP8uUOm0EzwJngTBHtYuc17qXzR1iw5IeFRuNIT
-	8UDvaYobIFxmbyN1eANeUQ32+KKuCtEp60s6QPCeeD8D9dEVF2EGDW27cqooB3IincLMSN/25zl
-	wVRuLG2dfthChlMUlmxH7aXjN/jWfpbJx1C2O/G7MTuyYg9JPFOxxysAanlfE6zMCDr+wAbQ5ev
-	GMhXn836opjDE7+e0k9vhT0W0vLRuV+qPc8LtQPolH9u281u+bnF8HCRXYnNmd7QYJxaM27Eixe
-	JFMymozLeC4tJYhV7ALwLr2w0l1afIbGwaB5XP8YnKjFUjPqQZRUlZnuwKTn/oSz2jshoQyJNKA
-	qYgt33yFKYGDgiu8EhHYJAJ/EJnm3RI2GrYEHoNlqGHzQ==
-X-Received: by 2002:ac2:51c5:0:b0:5b1:4c14:9b3d with SMTP id 2adb3069b0e04-5b448846503mr288807e87.11.1786438021919;
-        Tue, 11 Aug 2026 01:47:01 -0700 (PDT)
-Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a0fa6e0f9dsm1178621fa.41.2026.08.11.01.46.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Aug 2026 01:47:00 -0700 (PDT)
-Message-ID: <440e5deb-8a2c-4379-bc58-e838b427e48e@gmail.com>
-Date: Tue, 11 Aug 2026 11:46:59 +0300
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SDI72LW1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC9B51F000E9;
+	Tue, 11 Aug 2026 08:50:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786438246;
+	bh=xDxyEXtzHvgQKp8J3x9yHFukPPBxgoXWnQiZ1BdGJSQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=SDI72LW1aYJxudWX2V2mwcPX18IyCR5q6qs+lNChh8Dul1fBVq0cA4+dRWKX0DyRS
+	 buQD5GT3I86itYcugquO7fT7BaxMiSPSuursk/XHkG78rAT+IUX1Ve2SRxC3VZxg+1
+	 guqm1m78k5GEx38wE5z44x34xvkS8oAd6toiQvo9U37ZO/4RK1ZthspE8i1b0CmLaz
+	 +YZX+O7LK9o7bvHcXRKVmuUqnAjZTg6P3yBBsRmzTYTMaKFZC6sn3RukSxm8yDAtWY
+	 9vx4PEue/pOr1FRvV8rS5ysVhfOihrFyV5n1Xj97lXLEu36/U8CnL/likjkx7To9dy
+	 B/KAXjGnln0pg==
+Message-ID: <2a20f0c3-ac4f-46f3-a3d8-901bacd3a071@kernel.org>
+Date: Tue, 11 Aug 2026 10:50:41 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,72 +35,73 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/5] power: supply: bd71828: Fix current direction
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
- Matti Vaittinen <matti.vaittinen@linux.dev>,
- Andreas Kemnade <andreas@kemnade.info>, Sebastian Reichel <sre@kernel.org>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Kalle Niemi <kaleposti@gmail.com>, =?UTF-8?Q?Topi_Sonkaj=C3=A4rvi?=
- <sonkajarvi@hotmail.com>, Mikko Mutanen <mikko.mutanen@fi.rohmeurope.com>,
- Markus Laine <markus.laine@fi.rohmeurope.com>
-References: <cover.1786356145.git.mazziesaccount@gmail.com>
- <22c6816204b3f2a8b50df8171e384937822d195b.1786356145.git.mazziesaccount@gmail.com>
- <anoH7BweSt-ZPAe0@ashevche-desk.local>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <anoH7BweSt-ZPAe0@ashevche-desk.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH RESEND v2] dt-bindings: interconnect: qcom-bwmon: Add
+ Maili cpu-bwmon compatible
+To: Yijie Yang <yijie.yang@oss.qualcomm.com>,
+ Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260811-bwmon-v2-1-80f7f150ab9e@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260811-bwmon-v2-1-80f7f150ab9e@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-Thanks for the review(s) Andy.
+On 11/08/2026 10:46, Yijie Yang wrote:
+> Add the Qualcomm Maili SoC compatible string for the CPU bandwidth
+> monitor (BWMONv4). This falls back to the sdm845-bwmon compatible,
+> consistent with the existing pattern used by other recent SoCs such as
+> sm8750 and kaanapali.
+> 
+> Signed-off-by: Yijie Yang <yijie.yang@oss.qualcomm.com>
+> ---
 
-On 10/08/2026 20:18, Andy Shevchenko wrote:
-> On Mon, Aug 10, 2026 at 01:09:07PM +0300, Matti Vaittinen wrote:
-> 
->> Both the current and the average current registers contain same
->> 'direction' -bit to denote the direction of the current. The code
->> reading these registers incorrectly caches the direction read from the
->> first register, and uses it also for the second.
->>
->> Fix this by initializing the direction bit for both register reads.
-> 
-> ...
-> 
->> static int bd71828_get_current_ds_adc(struct bd71828_power *pwr, int *curr, int
-> 
->>   {
->>   	__be16 tmp_curr;
->>   	char *tmp = (char *)&tmp_curr;
->> -	int dir = 1;
->>   	int regs[] = { pwr->regs->ibat, pwr->regs->ibat_avg };
->>   	int *vals[] = { curr, curr_avg };
->>   	int ret, i;
-> 
->> -	for (dir = 1, i = 0; i < ARRAY_SIZE(regs); i++) {
->> +	for (i = 0; i < ARRAY_SIZE(regs); i++) {
-> 
-> 
-> While at it
-> 
-> 	for (unsigned int i = 0; i < ARRAY_SIZE(regs); i++) {
-> 
->> +		int dir = 1;
-> 
-> 
-> ...and drop it from the top declaration.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Nope. I'm not a fan of introducing variables inside loop conditions. 
-It's too easy for me to miss them. And, even if I liked the idea (and I 
-don't), it is not a change related to the actual fix - and making it for 
-this loop only would make the style inconsistent in this file.
-
-Yours,
-	-- Matti
-
--- 
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
-
-~~ When things go utterly wrong vim users can always type :help! ~~
+Best regards,
+Krzysztof
