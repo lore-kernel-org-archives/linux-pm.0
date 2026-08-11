@@ -1,222 +1,126 @@
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010007.outbound.protection.outlook.com [52.101.69.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C18342D97A6;
-	Tue, 11 Aug 2026 16:41:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.69.7
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786466492; cv=fail; b=G5rugVMlY7/n9/Iz6/zvpMt8Hxkcbt7kX3Vxa9PFiUBENzs2ivY/SLYzJDQy195+cRel6G9iElnDVaW0S3aWIAyduiUWcZK+Vf/7/eRu34sEGvmTX6Bq+p1K9L7JydThyoDr/pYXnDn8Tl67sVVF1XlyCTFHn+EW8a+K2+DKEMk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786466492; c=relaxed/simple;
-	bh=HQpMDZN5uS6D/9itdZO6x07tfGSamo1QqJmDNBU9PB0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=PkzjZUfCZfytRtOhrBedjWm7lFJnP7b+bdTV1GdAe5p5nvnLH7b8w19M897DysH8PoHhDlFWfeYk77MfRSdnpug1GRErowEhLA8WKq2reTGDxpA99IevI/W0N5grHDCAFs1rdUsX7DnPhnycAN9psYQWpsg3X7WFYtZhH2Jxkws=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=uP5GjrHg; arc=fail smtp.client-ip=52.101.69.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F86842A792
+	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 17:25:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.51
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786469140; cv=none; b=jV08rBuOOsJojA6aJQhOUPhy9Alwadxy71rtjjdTJlMpMRCpL9a3MUt9Dnz1XPJUnJaM7CDMDvMT42efut0QtHtgTT7IQHIP9io2N8hqLtRsoBcBX+wacw+J7fXLE/GBi1m2w6vySIy6ejq1c8jdQFpJ7FR5Id6EmsbFOXKX2CQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786469140; c=relaxed/simple;
+	bh=j9xuvDkjhkF7rs02mEs/P4EHZ8kZ6D31eE96ugnCGo8=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=rV7HIs16ig9xAjl+OBsg7z8ayL//dxFf5V6ZwHAQoTRfxt/wOZxE65xx3069O8CESYncIuscIQ9g6zTH52nu2C7RXdao6ze1ZYJDHJ33xdxhkMJtSDPv6js8eQPlyjg8StW2FJQSk4MA1jQ8PLotQnhRGs5zt8ttfloVNBNyoEw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ebPryeX3; arc=none smtp.client-ip=209.85.221.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="uP5GjrHg"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BNpv1o8R1wJvulI33pcQJFczTICjfzdVV+PQtA16g0rvWfpOz51lFKWgOU8ayakxeMqKOeDxuUYl/OKoIo2S9p1D4KKcMCByU429lawuHft1thKUAzyb8FZNohFcoQOynNVxui4/+j/VjxRRGxqjVmdvEilkRmjvUB60kYjck3mXkYWmi+s2okpgCxKJqK8WFgo2EtzDfOR2/wfuihcoiZ5n7S2hFgv71k1P5GawhDu9dXvlfrynRPOB/cZpXp08hym230r+qVaNHHFTdN0roYlSERvGiy63tEgIyrkNYCAo9icydIIzYFeFppvAsMgItbLgkziZyJQtUowtzfEZLg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=i48chlIC8MGrNcplBgNHWogpwtPx0OgX1Egpa9AI+FE=;
- b=mfjneMj+XOYQJq5cQZixCMP4+bF3F8VRpOvTyJIye4vN0xQ7RjPwqnv1sKsUrMyHvD521myXxdycFJE0TEGrrzAP+10BdMI946A4kHppfuN1F2h45IPPa6bGx1v8otv+VxLl0c/zD+O4OYPcJ3UjdypJaey8A0D9KeAD2Jl9XYLn0ZgA/VneQVLROwH6ApZt42agWpz+NtE8CBNZNpIV/sv7m3M6XZOY2Qmy+JcTMXC81Q0JgTljoxPYn8omsmsJ3vKcw+pi473EbCo14dTQ079jfY5iXa+W8eog5e1LqLLl+YXdUI92F/acXVe0e7mczihOd6LbRP+FUFcIHrr7gg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=i48chlIC8MGrNcplBgNHWogpwtPx0OgX1Egpa9AI+FE=;
- b=uP5GjrHgm+lggjh95V+ULIDZy75kpFWrzbQeu37qcArA9UPESDbT8glPvoGDBcoG/hQb1WaDHp4mcG6pUieTS3fj+ve7ugbyBgW/f9I02/Rxzsk0Imwk4PMxihEQpeAIbf8Uy13ouN5qlFTDat3vB3EKcksDS10mV6H0vLiFHNJ+NC8dFVKFRvejKBLqzxXf79Vw/ZOsWZplwm6mRDFc2UmpvRUB7Y3vvej54U9ZxV6t5J8IDWJM0CfwGnyT0MX1w4fVeCmGGhyMM7iHK5/xODwvT/twa4G3YIOQ8/0IJYwnQxRLNo7OYoXAkAbMCzQbgJ1iHXxaW6LVepYSeg1Bfg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by VI0PR04MB10928.eurprd04.prod.outlook.com (2603:10a6:800:261::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Tue, 11 Aug
- 2026 16:41:27 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0292.024; Tue, 11 Aug 2026
- 16:41:27 +0000
-Date: Tue, 11 Aug 2026 11:41:15 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Golla Nagendra <nagendra.golla@amd.com>
-Cc: vkoul@kernel.org, Frank.Li@kernel.org, michal.simek@amd.com,
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	rafael@kernel.org, git@amd.com, dmaengine@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH V3 4/6] dt-bindings: dma: xlnx,zynqmp-dma: Add Versal Net
- compatible support
-Message-ID: <antQqyT-slTnY2e1@SMW015318>
-References: <20260810100452.426320-1-nagendra.golla@amd.com>
- <20260810100452.426320-5-nagendra.golla@amd.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260810100452.426320-5-nagendra.golla@amd.com>
-X-ClientProxiedBy: PH0PR07CA0039.namprd07.prod.outlook.com
- (2603:10b6:510:e::14) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ebPryeX3"
+Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-47f59f25ec4so6697f8f.2
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 10:25:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786469137; x=1787073937; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=T42Ar1lFV3Ht11LsBsPmcUqkhywRfx/FzW0kv5ycwfw=;
+        b=ebPryeX3wNj3WKyAybwCiMmZetdFN2Zwb6rtdOSLMHMMdbIRV65TUNPA7S6JTpA80A
+         v3l8GbmyuB65MniK8OR/e6tO/RyyiKF6TtdVeNqVE4408dGsWy+XRvDzGDjGWLdfna6h
+         7OK2Nr9xTSwBi0CXaZtIWHNa3ofvtoyNVtPi2nQ8QU+Hk59Fi4ggsqFwAf0ZAi4Bmfie
+         uV0d/5cDmSpt5JerjU40V5JKPjZwrVEFjaLZVZBq+aESzztaG8PSxK5ChtmDS8BmWLq5
+         HzVjYmHiFkNDZhGYy1PmSh7jcSLbvKtE+SsfKcInd5BNX4bWYReW9OSeUW99/GUO05tY
+         1eZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786469137; x=1787073937;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=T42Ar1lFV3Ht11LsBsPmcUqkhywRfx/FzW0kv5ycwfw=;
+        b=hVYniKweyd9M36uVM+QzF6q44FqcC0CwOUxWgLDk8rge96uBKkztV/U4+9uXXdo7io
+         i99r/29+hi1dQoWanzFzCpwndh+b9AADKP19ChAa2H67q2DJntl64SaXeHH9EHD7CZu0
+         JRuMcMyIkq4cLLOkU2uPlJjFPAb7p9re2lUhdoop3giEvpbmtx3lzYfoAxCOPIyLYlaQ
+         WQHaDy+5lXa4gAmwquNharXz2NIz63YMZ3lIxJQBUIdKN0EhkFQMwa9bzWKPe5DjQ/O+
+         Lh0NmAKn/9ncR7u9xWbb30Ii3eaA5SclWoGpixolAfr2gF+ZXSoHY7roNyxa3JFM/Pip
+         +PZA==
+X-Gm-Message-State: AOJu0Yx8Q10bXHJjYDa4Ryurd4HvK+Ip06n1xZpAwsI0e/Cd3+tBQ2Z/
+	BdiT1tCRHlSMuoskk3DiAFgKOmWtnk9suU6wQWZJsu5eIa5pC+1T2r51
+X-Gm-Gg: AR+sD13nX1hCxcLjFQwA8L9rRZ8smG3L5tfEGt5GMdmuXuIO2DR2hbi/g5BOPBXLYzi
+	u2MtTCjgNeuHRNLPgfY7PUV8EKW0DPt5a7qmibrMpjGD0hrzH6uNySElcl3jhXcQ+GNbTxxhQVA
+	U03RkHMNLaYzgjjzVQ0vp+xPsC5VCVobmB8ryGaodBE7VGnZDPwpj4LrzPHt+WZUjFdwXJHiEla
+	YWOJKg7qcb7L3pLF+nXghq7fh7qxJiPqNfjPWMElm5ALyp6zWlWBSINHunl1EVPGHAqwTZSHnMb
+	vj9EeA1bUZJQJFtlfbU630NVx1QUXNI+SIE3gz5ht4I/6UdLKl3EWasymngKc0V3rzy46+Sp16R
+	yIDF0FcEPdScneK5pjED29sA3QxwaCJ+mqWkJa77AUVzJGbM8Z2SXS7kzUFGGTIRIWsbqfPLW3k
+	K1hamGyEbwPtVuHywC0nXIXMrFqo7aSZz3OUOgF+QjDQwjHqPzA4ph47obHaBR+g==
+X-Received: by 2002:adf:e012:0:10b0:47f:6981:a043 with SMTP id ffacd0b85a97d-4814add668fmr6557849f8f.26.1786469137057;
+        Tue, 11 Aug 2026 10:25:37 -0700 (PDT)
+Received: from [10.245.245.29] ([134.191.227.48])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4814a72ce1esm6565288f8f.34.2026.08.11.10.25.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Aug 2026 10:25:36 -0700 (PDT)
+Message-ID: <8cdc18896a03d13ebea065ab27991a71e460069b.camel@gmail.com>
+Subject: Re: [PATCH] intel_idle: Fix C6S and C10 latency values for
+ Pantherlake
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: "Kumar, Kaushlendra" <kaushlendra.kumar@intel.com>, "rafael@kernel.org"
+	 <rafael@kernel.org>, "lenb@kernel.org" <lenb@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Date: Tue, 11 Aug 2026 20:25:34 +0300
+In-Reply-To: <LV3PR11MB87680CA8F9B3172110B7EBD0F5DD2@LV3PR11MB8768.namprd11.prod.outlook.com>
+References: <20260811081729.186571-1-kaushlendra.kumar@intel.com>
+	 <9f75245a24905368dade4d172727933c4e1a74af.camel@gmail.com>
+	 <LV3PR11MB87680CA8F9B3172110B7EBD0F5DD2@LV3PR11MB8768.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.2 (3.60.2-1.fc44) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|VI0PR04MB10928:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4df7a7e4-b2f2-437e-0cdb-08def7c7635d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|366016|1800799024|376014|7416014|23010399003|10067099003|56012099006|11063799006|4143699003|6133799003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	NV+8nMl7f1To4QsYrp+hPctxfIOOlTLDlQjd7whpFeTiztJlyxJHNrfBEN5pXg0qDWf2I53xudEuB1701HfeBBggQo11ZYkFjezkk5SId0GLOsdhfWxlTcGADCYxMK4MgPFl9dYwRLtZ9P1mSME5wAgWyokTjCiuUrUtdNsQj7Wq2aPng1Kufx850iNUFp+FFpdChWOUI88aK+r1gjlVBTla4Weh1KVRLdBtS8LG2AXWzCj1BSLFtHVF1NyoXX5EQZBROENUwkJXJghHaMdteQGlfR1WA5a9/cFGR3mtC24WJYluF13IDlvlOnHgWwN4nUSpuk0JiClU4zwJKZeSXNR7wp6W1wepQC0zVXaWcltOBQAqbR6MxRIVvtliS8H+7m+jpMmuqTdP+d1OSa0c6bWV7zfRvSUOeAhgyBnfWTEdKm4OjRfjJNy8M95LbVxvUS5mTgsofVa0hy3UE/RKQ5AEZvi5wpFXljg/7rW7G3dZcEFwIKyzt/nE65OHsjs44R5dFbhktDcwowciimwHBnshWCn2VL0+jRyPoeNt4F2T+EVWGS2geir1l/HItKv9bJqIzmhGZSTl8jw/UziPteXMCsaoZ9FmhsSRxAHSFAAJLK8sv2/9CrMrI8efhjayuQC7obnP8Br/JECbdF8ElSpZaM2KCOfEjWywn1VTjoM=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(376014)(7416014)(23010399003)(10067099003)(56012099006)(11063799006)(4143699003)(6133799003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?SUX5YPx7At1dJhj9SWxeisrYWax7s+isVZfgkwkLzYUGc3ZqorqtzrJnVDs2?=
- =?us-ascii?Q?RA1Sw4EMnB8B+kMqdpEc//3P5uf+5mtPI7dc42YIwYllIgvRnugzem9R7Qzh?=
- =?us-ascii?Q?57VeLGb/+7hkR2K/9faRNeSgcTazZek6p5F+XBO1V0wEpV3CvngFmnleTpxw?=
- =?us-ascii?Q?UuDyO+H6rSW9XDSXuBaFkqK4rKEt54fBtehc9GLZyg5ac5vWbgINNPIdeznG?=
- =?us-ascii?Q?DR7iAOWaSc4juEfK1+usU7nTAf3ofkIUnJ2/wMfdv68sniezS2D59vYaoaSz?=
- =?us-ascii?Q?9xG2YfnqLKUahP3MY7j13gpHwuYyW3iGgE+RzFDc6Ol+vtpRT6N5Y1hD4NU/?=
- =?us-ascii?Q?7bNrqhl1HJlvWIyemJpw0HQQp1SUBFEYYRFyV94hdiqaMtiG7N0B2E+gsi4W?=
- =?us-ascii?Q?HEnEpjuM35aQHEb60QaGKcYxHeIWy8IF4yWz/Bh3W3PSEqcfeevxb89wnSDH?=
- =?us-ascii?Q?Op/4Vkgk8akEYDg6VpoOP3I4+lOcVRrQ1YlZiLkD+3xiGi4ubMlIvZ6SOTxf?=
- =?us-ascii?Q?BwI/jtNELulWbJsa8RmiThVl5kYynulkOSPkYVVr++ZfGvS14CEbW0CFZRTp?=
- =?us-ascii?Q?OqBYJxxCFpzAghyIg2uVm4aVO2gOpZmYXyGHYsj+1Hm0sR3mJSW7ClnUH8vP?=
- =?us-ascii?Q?WXhReLlGYf7oioEkqjQ7L69VQYEQ3da9k+KDUhauNP+VaCWRNYGkPeK4VhkW?=
- =?us-ascii?Q?83rcUa3ahkOQBp6bl/+QC7zvu4ReQnkWCQskFZyt1veQXaV9mL7byf2cyWeo?=
- =?us-ascii?Q?CCFRz8IppCmaz7T3WqmqI3mu3UvTwYNrxKj8EVUS13wdx5tHP0fxecoZMJrc?=
- =?us-ascii?Q?xXYA4y8h0lpQS0fkxY73Ag+TygA+GpytBZHO/uqamH7bniOS/FgJD37+CMWS?=
- =?us-ascii?Q?+cPs8mie/sApzbJ23aWd1PaJxu5M9xLF/D8HGqE3vqb21JhdT5XamVEX+Aum?=
- =?us-ascii?Q?KOcK7WpWkieNcG9FRwsBvMPxs04kzRPIS0wwMcAyQdifLd6stpiHkM+MZJr/?=
- =?us-ascii?Q?74KhivFidFXAH2JaUvCu5OsDOYhbWu6dPYUgscTcty7yqgJUiv7jet2pdBWr?=
- =?us-ascii?Q?RmnTM7xPCnS5QpOXBgQAe6Fxm0iDmv0ZT6i6JXKAIUrz2+8k3RnWm1tVM4Yp?=
- =?us-ascii?Q?hy0mbp+Y1rf6lpEOnQuK57C45/vKD6+zXTYESiBd6S1bJZc/F4QSnXyFjlI5?=
- =?us-ascii?Q?qPrFP2tmVkqlnD6e3I7AnjKh/xarR7naXVieCYKQ6VFGxFHVkEnx4lemwUAM?=
- =?us-ascii?Q?XFoo+NqK5OtwtHlU+KTnVF+iGdU9BliWSDXxuNbXBhTih+R+URFD/07PwIRf?=
- =?us-ascii?Q?BlN6/DihoKw9eHcKr9E0uipS25MK+7PCGyo6rgsfxuQBlL5lYnGUSFVTFcUi?=
- =?us-ascii?Q?irV0cWcIKmDVQ4g7jBclczqJ5xG5nfKTL7EYaREI97p+3dnrO3fumtCG9jWZ?=
- =?us-ascii?Q?fiBWcIgwnIWV/cfjLIj+30wg7w1E+ac0NVlfHZB4THL/ue5wWFzK7Q/eix82?=
- =?us-ascii?Q?rtxHSCTvU2hk/9i6RI3WFO7WpcXEYnsw7rjCwDnYSgvYrDd8iSVkLuvfU4/p?=
- =?us-ascii?Q?kCKhHT9UpB3JSIopri0Y0DKqowmoIFZ6PPp1nCzG0BHNfmxhE0NNAtrluR46?=
- =?us-ascii?Q?0BcufIFkP9QubIAHoQx2w5NMg75J1QPURWsn3ICog2/3No/mtk1Ak5vbgb5s?=
- =?us-ascii?Q?dbwuu/iapJVJ+05XM2XnfhtTZR9JVf0kCn9sZ/1qjUnV9w+KijhdBYPBzezp?=
- =?us-ascii?Q?a43apgVmiGhkWXEEYNTvHvPGr9ZOORvgMhHpTbJiceStXRSN6svb?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4df7a7e4-b2f2-437e-0cdb-08def7c7635d
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Aug 2026 16:41:27.3617
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: fo4S1kql9zW5W+Eff5odSNWPv6OLL1qHRjn6fEqiDgi+tf1TPhpxjqAXiC2jpS4mNY8RCzTusOaBWNEYleoGsx/L0IloiFCbr5hEh6Tr8HmHwTcBkqFdU/3gHEjAeGG4
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB10928
 
-On Mon, Aug 10, 2026 at 03:34:50PM +0530, Golla Nagendra wrote:
-> From: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
->
-> Introduce a new compatible string amd,versal-net-dma-1.0 for
-> Versal Net ZDMA.The new compatible requires xlnx,zynqmp-dma-1.0 as a
-> fallback.
->
-> Add a reset property to describe the per-channel reset line exposed
-> on Versal Gen2 and Versal Net.
+On Tue, 2026-08-11 at 10:36 +0000, Kumar, Kaushlendra wrote:
+> On Tue, 2026-08-11 at 13:47 +0530, <reviewer> wrote:
+> > The current values are based on what I measured using wult/pbe tool.
+> >=20
+> > I think it will be better to explain the problem and how this patch
+> > fixes it, give some details about workload. And ideally, also provided
+> > turbostat output when it runs in parallel with the workload before and
+> > after this patch.
+>=20
+> Thank you for the feedback.
+>=20
+> Looking at other platforms in intel_idle, C-state latency values are
+> generally sourced from BIOS ACPI _CST characterization data. For
+> example, MTL-L C6 (exit_latency=3D140, target_residency=3D420) and ADL-L
+> C6 (exit_latency=3D170, target_residency=3D500) match their respective
+> ACPI _CST tables.
 
-why only one reset if per-channel reset line?
+So there are platforms that have intel_idle table and that do not have
+it.
 
-> Mark the resets property as required
-> for both Versal Gen2 and Versal Net, and not applicable for other
-> platforms.
->
-> Note that making resets required for Versal Gen2 results in an ABI
-> break but this is unavoidable. When DMA is used by two software components
-> back to back (e.g., firmware before Linux boot), DMA functionality fails
-> due to configuration differences or the DMA being left in a bad state by
-> the previous user. The channel can only be cleanly re-configured after
-> a DMA channel reset,making it essential.
->
-> Signed-off-by: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
-> Co-developed-by: Golla Nagendra <nagendra.golla@amd.com>
-> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
-> ---
-> Changes in V3:
-> - Use allOf:if:then: to restrict the resets property per-compatible,
->   making it required for amd,versal2-dma-1.0 and amd,versal-net-dma-1.0
->   and explicitly setting resets: false for all other platforms
-> - Add amd,versal-net-dma-1.0 compatible string with xlnx,zynqmp-dma-1.0
->   as fallback
-> - Switch compatible from enum to oneOf to accommodate the new multi-item
->   entry for Versal Net
-> - Add ABI break justification
-> ---
->  .../dma/xilinx/xlnx,zynqmp-dma-1.0.yaml       | 25 ++++++++++++++++---
->  1 file changed, 22 insertions(+), 3 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-> index 2da86037ad79..87c65aef5c7d 100644
-> --- a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-> +++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-> @@ -18,15 +18,31 @@ maintainers:
->
->  allOf:
->    - $ref: ../dma-controller.yaml#
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - amd,versal2-dma-1.0
-> +              - amd,versal-net-dma-1.0
-> +    then:
-> +      required:
-> +        - resets
-> +    else:
-> +      properties:
-> +        resets: false
->
->  properties:
->    "#dma-cells":
->      const: 1
->
->    compatible:
-> -    enum:
-> -      - amd,versal2-dma-1.0
-> -      - xlnx,zynqmp-dma-1.0
-> +    oneOf:
-> +      - const: amd,versal2-dma-1.0
-> +      - const: xlnx,zynqmp-dma-1.0
+> For PTL, I observed a discrepancy. The ACPI _CST on a Pantherlake-L
+> device  reports:
+>=20
+>   C6S: latency=3D127us, residency=3D381us
+>   C10: latency=3D1048us, residency=3D3144us
 
-         use enum
-	 - enum
-             - amd,versal2-dma-1.0
-             - xlnx,zynqmp-dma-1.0
+Discrepancy -> difference.
 
-> +      - items:
-> +          - const: amd,versal-net-dma-1.0
-> +          - const: xlnx,zynqmp-dma-1.0
->
->    reg:
->      description: memory map for gdma/adma module access
-> @@ -59,6 +75,9 @@ properties:
->    power-domains:
->      maxItems: 1
->
-> +  resets:
-> +    maxItems: 1
-> +
->    dma-coherent: true
->
->  required:
-> --
-> 2.43.7
->
+> Could you clarify which reference was used for other platforms =E2=80=94 =
+ACPI
+> _CST or wult =E2=80=94 so we can apply a consistent methodology for PTL?
+
+Platforms that do not have intel_idle custom table, use latency from
+ACPI _CST table. It only provides latency. Target residency is
+calculated as 3x latency.
+
+I do not know about _CST numbers. I only know that in many cases they
+are not what I can observe using wult tool.
+
+Panther Lake is the only client platform that I measured with the tools
+I developed, and submitted the numbers based on wult and pbe data that
+I got.
+
+Artem.
