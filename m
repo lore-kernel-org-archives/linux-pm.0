@@ -1,189 +1,171 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B80B6380FD7
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 01:15:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786410909; cv=none; b=dQ4GK4NC1dNyDlTbld6y1Y91bdM3I7FkBPUptaMBcmDgC0biEFZNjNRL3dB0R0Mdtl6AcdKjNBt50/oCracxSDkgNyIyRulaOTBGqL+l245c2JSzpaq+0BSNLKxx/xDXRa0a/XwymY/8olqgwDA4mrLP1ATABtVqlPBMbbGQMH8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786410909; c=relaxed/simple;
-	bh=GueRRaGK153pH2lJbZ8XAdC1P9r2Q+bS3QvQGYSD6Gs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mXNJTe1/TQevhe0FVJo08XYDzTrhB5nL426uWvLvcaWrmNdrRb/LfC4LLKO2au+Pn4qnc/P0VpngfLDwxdYeV36LP/4AFsWb1OFddLQRHs2TGzVtx94Blmsj7zzszYBeRob4q9c1Fon3zOKfE32IL6o+4n/AoQjN3XlOQMjdLpg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Isu7Zsmx; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Boq5MrXN; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76C8D13B5B3
+	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 02:02:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.182
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786413748; cv=pass; b=pclKnYzAH2kHzoZB/THbPK4YHLaiy8YkxG0FpQaseozFriV6loXDVQgGsL2jAz3WMewzSMGCfOXTnN4sCoFceTV6yp1D3R/GHkhsZntgRGGObfxi2PKIC/NF+Fn8aZWNwi+Rc26Lo3+M98MrwMBbAxYeWH2lbGbS8MNny/pdZBA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786413748; c=relaxed/simple;
+	bh=y3aVQsDghQY2kqVVbN7I258OZu2z/52XifB3SugTRdo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hQPyMnn1zvGdxqVb3SFQ2xWKavJHzSHW7nBpu3bL+vKdaThVqHwai/CSkS7klG1/+2pGGzMK7oeXXI+/a3pUUee3aCmvFqalOx/SQTcq6lxiW6FU+JX5Ozf8YWnW2n90ri6uuAkKOIBFWr1ih9dNhf6zStVKsQCebsDdO0TpRfA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=H3mfgHk1; arc=pass smtp.client-ip=209.85.214.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Isu7Zsmx";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Boq5MrXN"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67AMqVeh4158371
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 01:15:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=GGaUnVMUNJgXa28mOYG9JE92
-	ABLir+NK9V0hKydCvc4=; b=Isu7ZsmxeG/DdK1qdM8rQPW5sU18oqleRDKkyXS5
-	KK1SIMJwez3qh4KCOnHBbjGXadVXbfzEE/CjtM7/L4ztfGRca2DrCtqYkzQpwB5E
-	jf0WqZXFuETpkUD2ZX+1UcoUw6dxmqFu1iTOmXjW8SixqCUFCjeyPobZSxbyBECy
-	527CYDKYCj3O5JfqBYwpV6jChtUgPVL7waX2UqGW85h1C42SWzqonwDanul2xPXr
-	CHFVtJxoWuUPiXeKwvGN2fyCfk5oR48IQ/Jiq/O+T7WXguMzO/XrcemJIAAzseYJ
-	QuHwt27KZrIrh8vF0iKnXtqK+MmxTKbmHUgGpk/on8lWsQ==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fyhp8j4t3-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 01:15:05 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-52827090cc5so6813231cf.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 18:15:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H3mfgHk1"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2ceaf8a1265so39480685ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2026 19:02:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786413747; cv=none;
+        d=google.com; s=arc-20260327;
+        b=j3/qJGtglHERqlAjDU5bS/bHllyXl/TQixTtZZSqUCHFZIQBnHFXD+aosMKqu4v7a5
+         S0gUcTehzC9H1/U1CAzGQlg1y/Wr5+p4ot3rHbVmTsi2mvWcn8H2pQmF5MtT5NuCm7Ef
+         Xuowv8LNoz9+FeiFplEIokDbvkTlcNz/52EMpTG8L8Vg+zai3y9wyRP8bBOJ7H1mmpVa
+         cxEC03lg9EXJBTNd/y3KzxlbPDATfcd5ZsbtxLZ+KLEq80Xzqtejcg6vxnHs3o/vEfEp
+         fvLc+eyiV6Yz60wtPfkf+oiGpm0SSOr24Z/0TR05BmMhcyp/PhXKLtP8tyHfiII4M+CD
+         7waw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=J2ie5zT76vulUOKxlmSFoYHsSNdJQnoxvireTA5JYWQ=;
+        fh=pJxoa9M6OPf4tD46wJSgV5uYQTrYg3leBow+D8unOIY=;
+        b=kn1Va1qtvN7uOndlc8dT/W8T+FHoEAjCekSxzd9XM0kAMF1ZZtzXBCbnE4fCQmhyBE
+         QtjJeBZv/8/wx0UJmUy2XL/XhrIggaG1W7rA5mtXYV0W+JCh8X4GHeTkerqEc+WXHQhI
+         Bx9dWdyHRlqwtihY0coJ0M4RM03uQMhC0LtuIwaFlaYuXU53vyg3UIxy8ZDNq7rFJrgI
+         UYkz6aBZsar21Ec3QQeMiI2ubivu0OStxKAIS9dn2jfc9UxGDiJmz1krkZgNdnuuD4eK
+         cfOImxuj7bPZ70nyj53CaByhdB1KmS4kGCmkNrVhmIUE8y7J6zsCUvbnhSAUP9jyJPtC
+         ocSQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786410905; x=1787015705; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=GGaUnVMUNJgXa28mOYG9JE92ABLir+NK9V0hKydCvc4=;
-        b=Boq5MrXN67JbyUwUfoGbG31wYICW4SE0EFs10HpqdMu/8W72tKG0VtO/C67hT2KIiE
-         Ut900h+smkXMKZe0PE5Zd0iRnk+FzhFTUbyRrzGKbYjdw0h7gdvkzYYLrwOV8vyDKqSE
-         ZYDcVe6uFWHbCeJWDzL8pVSWb5PLOfLmvWVtLNW3x1fMPefg1O+JdN+aIzzwMV+U91LG
-         yxv9GrJDDiT6O/1FL+yYJ8y3gAp89r9p8Q728LGXEyw0YsjC7ShMsZo8XtCeE1wwo0Ra
-         RZJN7ctDq38W47rWfgXOUHPxUvHcErs7pQNy6fhduc8/80WlcifiNTVPS/7FQKpCfuPa
-         xCBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786410905; x=1787015705;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1786413747; x=1787018547; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=GGaUnVMUNJgXa28mOYG9JE92ABLir+NK9V0hKydCvc4=;
-        b=Q82nKzEHv/fLBO1WVkCBXk5Jax+Ltbn6BzdOmvo1qAgTifAslMNV/L2bLwYJp8Q+fe
-         etnXnzfBRT0h14Or6C5eePXViPbfWA9gz7dq3JxEL4WESGYNFcOTtA7fQUm1TtihNoNl
-         4hyCRP9JzdadQj40RMWjtl6OonXOkxonMDZL3qDsy7kfftRRpZbrX4v6sAlB3cojjkvt
-         L8ogfwubscNC7af1ytMCS1QwTJpM7ah6rGOU4HeZ2hUALXwNFuExqxTOn2wrwzRWhHk6
-         1oxRLfd13WwYAmFa5BLOKgUEKq3Sb7UVmD0g8BJbvDZ8Rp9c7u8CDbGbZO7aITpdQvB+
-         /hyw==
-X-Forwarded-Encrypted: i=1; AHgh+Rqm8l1s1sZpstYWdMZ1W8i/l/iZAwWuuFVGedSYS/DeXEyjs+/szW5rfN+AT6nKHt3rOMEIYD1ZTA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YytEunDSnhGpnaaVGoVseC18083U16CSsj8+io5eqzLcc76z5QJ
-	ChIOu0Z7aWbhsEEDCbtCxz2TkUjBafL82neGaZIXEAPIfdCqE6BLyXZDNsRLx6p3jmis2rD5kIb
-	WqEr4ke+gGeudqp7d9LXuVPkcbsURyuPEAatS0mvs5d3UGgDQ5VSWttjnO4gfIA==
-X-Gm-Gg: AR+sD122pKnWtxAiQFVrVBNZPl5wdxWzV/s4h4YnXr21/7UdAtjtVcAE0yMQ7aqzQim
-	VpzKCR9U01qNmCxtZWUNMJ4/sjQjnhixnyeSBDmvfxtx1nwRYVvXbRImUJv01hI3R8e8zJ5Djnz
-	vwY8MxHx/HMOUx/89PxMzrfItALv/EKF4G7veIRbXo8tzE08ZHtP2cK4QdbqZhLcGU4tbC87KTR
-	rReRJDldJqXl4VWbuCsDIIYN5H4u/mvzy/Kd9UHdOlZurqZAquEH+Hn1bZ2jaxA4yVAZql6+0Kt
-	ZxglnH+Vi5G+Ot7kC1MNA/nGIzF33x1jVQwiXqUMjXeotLMu4mbLJEV+8qhIpLG/8Pd5lHJF2wn
-	7RNwA0FFCQ3/95zmJ9iuU45f8CbfRzlIThYcYAXMFPPFCYcmH0jAa+Sdh14wG+trIi0DiODVOri
-	VyyVpqtSH2dI/ovA==
-X-Received: by 2002:a05:622a:30d:b0:50e:474a:47e1 with SMTP id d75a77b69052e-52d514bf630mr27102841cf.10.1786410905080;
-        Mon, 10 Aug 2026 18:15:05 -0700 (PDT)
-X-Received: by 2002:a05:622a:30d:b0:50e:474a:47e1 with SMTP id d75a77b69052e-52d514bf630mr27102351cf.10.1786410904654;
-        Mon, 10 Aug 2026 18:15:04 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b3056eafc0sm2347318e87.76.2026.08.10.18.15.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Aug 2026 18:15:03 -0700 (PDT)
-Date: Tue, 11 Aug 2026 04:15:00 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-        Taniya Das <quic_tdas@quicinc.com>, Georgi Djakov <djakov@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Linus Walleij <linusw@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
-        Radu Rendec <radu@rendec.net>, Robert Marko <robimarko@gmail.com>,
-        Guru Das Srinagesh <linux@gurudas.dev>, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-gpio@vger.kernel.org
-Subject: Re: [PATCH 01/15] soc: qcom: geni-se: allow selection on 32-bit ARM
- Qualcomm SoCs
-Message-ID: <vxpntlaebf4an2wgebgbwk2rdkingzjecdgylqv36wmxtyqju3@hkip3wqgendw>
-References: <20260809-kuno-soc-support-v1-0-5e0ede4a0c72@oss.qualcomm.com>
- <20260809-kuno-soc-support-v1-1-5e0ede4a0c72@oss.qualcomm.com>
- <7f4qs6su5fd5ilecy4r72suk6mqvj7oouz7ahgatxthqavrfia@wxilczij4unf>
+        bh=J2ie5zT76vulUOKxlmSFoYHsSNdJQnoxvireTA5JYWQ=;
+        b=H3mfgHk1kgvpefkMHqf4k0LnFohv7CSurXLeguDo834vFao2sTp7B/NPAqY171A8jY
+         A/A4qF6cmhzBRAKjDF2RQlF24cPdkY+pagC6M1DdUrT+FcPFbGsYe9c8HY23mN/FeAFN
+         F6UHQtYqmCE1G3NIQ+gM2B7DC8a7N5Jrh3LiFlkzEJhaJ2SpDPR0VUSHhtgPqgwS0Esx
+         CVZrc27x8GbqV36D5n0QtowHYaaH7JhDUCv72cmmo7lub+hlaAee6K4cLVwGdD+e5KqK
+         r+DM2/sg9BrE3aSoM+gdHsnwbeSAWV11y+OFtkdobdOP82R9QM+njUuY+qvZxE0oc2D9
+         Pdpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786413747; x=1787018547;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=J2ie5zT76vulUOKxlmSFoYHsSNdJQnoxvireTA5JYWQ=;
+        b=SaJTSuJuyk6/xZc/uP6FPgGRtHZ/U7g6NQRYe664No38H3wSyZrzYRlbHaIIVYOjmm
+         oe9fHfapG8zQP576UeG4WsG3WGHoWMD1I86nbMkVas+ZqqYB+bBhsSOCoqqxgG2wox/p
+         aLu2krlftMLV8nCweeoUyBW0N5YML/f18UqpZozx+ZPSvYmdSpo1CTXuEOfuMylrE6xS
+         SOYm3sTqBx51fRSm7fuZXw++qrRZrIOvPHHw/1tek+QoVillrpuUF21IfBfVu3pv+YKB
+         MFuyub1aolvyYrOTLvItyFx7qr/cvES4bCxNFqzpaq0tqlxX2h5QV6MmOvl0zZndlY/K
+         aLgQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoEcfKIZRs3NuUg2fNqR3MzxLwkXoJFuE+i9bY/BmJ1Xd6On760NxYAis/rZF+FHbs50QOVqh1NBA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyydTkVXdohkLfFx7r9Rjb7M55D9oTy/JoIGJ/ykMWpuRuXHBcx
+	WvF1CN1/8yIeLreUyTlgqxyl0EJ5d70WD2ZZDBdmCsnTs9xzbZC0UFduKIrExChqfEwjfv8ignh
+	kc1DSaobP34YrLRkleysg7bj+O2z7Xfk=
+X-Gm-Gg: AR+sD13Q2/R/3hVaFaR3QA0hwXHEP97Urog71ZexIWMDAyioPPHCLTIFjUR7jsO4Z4e
+	IEbyHB9JUgXrrQZf6msxf8makqsNvZwylFICDVuLPPn0msxLaZxSzGA1ZTiU5jwNnMbQEU1AJ4N
+	EQKlnPQ790SI3fgRmeEzMNAZcrf0fb8iX3uVH39y/D0c4/MzOHulzg62mM+LvPZSMUhmTaoTXce
+	MfGM6D+hWWgnOlAMnipG18Q9lAx+/V5YU1KG80aPcQNdUXiwgMGQ/A9haBRsVjs+6nJ8PxRXYeu
+	gzg0f8SGx1FurrecMheIZhk5e6cclE1cAh5EV/OcuKoLVW10Vsd+4GYVDHttjr1ez8rdM5zruWI
+	KjjY64Z2gRMT0R+T6pj+mMcz9Qnvzs8P7Gr2BVtxDf01qC2i/USYzHU4m
+X-Received: by 2002:a17:903:3201:b0:2ca:481:de45 with SMTP id
+ d9443c01a7336-2d3177d887fmr819395ad.6.1786413746763; Mon, 10 Aug 2026
+ 19:02:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7f4qs6su5fd5ilecy4r72suk6mqvj7oouz7ahgatxthqavrfia@wxilczij4unf>
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODExMDAwNyBTYWx0ZWRfX4d1tZZrGJUON
- 1UxQ1s7XZZuETvYfPySW+RhroIm9Ifh12uPF5J5nyQMod+tkQ+K5mYuGSFbqBmjTDPGtMNKfr7u
- HNGbFpJ7HXS+g9Nus4buI/T2TgLaqJk=
-X-Proofpoint-GUID: EYVJ_muWg33gvV4W7TvCuwwKbiAa9sf6
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODExMDAwNyBTYWx0ZWRfX7LSAE4eXzXH2
- 4BytgpYzChqGKOWpIn6xjHDb44shgaRROYuy5HiZpmhieGdoTYh+lYRDAJpcxldRsJhpIahgRlI
- 9Zfo23pUTJ06EqT+iTcc52V1Sbi9L+1bsFtlE8keIa0mbQZu3AF/j9NSfRWRbx6T2eD12HR/7Sn
- V5mVJ4IoRjqCbwjFq/AZ++S3R+BbleCBGoSAjC7MOx4GkJmEkw2fo04OWmBBrbX42wTHTIWh09z
- Vu+oNC6hVdlRk7V335qTtfIMB5LrFA5BIEmvrGrhiGjMHD0IN2YjvCNvotR4YiagIpPojYw1uB+
- mi2LsAhG2JZXRXMucZGt5C704bW+4sILKPXatYj/9FUdppIt5j9FJKjhAAOvLO4ba/kp6FYi93L
- +aJn5WpQteRqBuoomATZnvBralwcXRx5WStwv2qVffEKFvbnkcXWRAq1vNX3iK3D5/45XndhVx2
- XgGbyHKiPm1T9yh34xQ==
-X-Authority-Analysis: v=2.4 cv=RM+D2Yi+ c=1 sm=1 tr=0 ts=6a7a779a cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=EUspDBNiAAAA:8
- a=SI9sQr29kBuAMZg-vOEA:9 a=CjuIK1q_8ugA:10 a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-ORIG-GUID: EYVJ_muWg33gvV4W7TvCuwwKbiAa9sf6
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-10_06,2026-08-10_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0 impostorscore=0 phishscore=0 malwarescore=0
- priorityscore=1501 spamscore=0 clxscore=1015 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608110007
+References: <20260810111841.77898-1-phucduc.bui@gmail.com> <20260810121914.GA2757863@ragnatech.se>
+In-Reply-To: <20260810121914.GA2757863@ragnatech.se>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Tue, 11 Aug 2026 09:02:15 +0700
+X-Gm-Features: AUfX_mx0gm4Mq6CMcIZ_Ee9wYl18KOH9W6eWXEblgpbB3dv-eRX3URinfX2ag78
+Message-ID: <CAABR9nFkFyhzQO7UGsaiSDcZ8km9=nv-2+4xWo40EG6c555Lbg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] thermal/drivers/rcar_gen3: Handle -ENXIO from
+ optional IRQ lookup
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+Cc: Markus Mayer <mmayer@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, rafael@kernel.org, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, Aug 11, 2026 at 03:48:00AM +0300, Dmitry Baryshkov wrote:
-> On Sun, Aug 09, 2026 at 12:57:00PM +0530, Hardeep Sharma wrote:
-> > Commit e10b198a94c6 ("soc: qcom: Restrict drivers per ARM/ARM64")
-> > tightened QCOM_GENI_SE's dependency to ARM64 || COMPILE_TEST on the
-> > assumption that no ARMv7 Qualcomm SoC uses the GENI Serial Engine
-> > hardware.
-> > 
-> > Kuno, a 32-bit ARM Cortex-A7 Qualcomm SoC, uses the GENI-based QUP
-> > wrapper for its debug UART, so this assumption no longer holds.
-> > 
-> > Fixes: e10b198a94c6 ("soc: qcom: Restrict drivers per ARM/ARM64")
-> > Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
-> > ---
-> >  drivers/soc/qcom/Kconfig | 1 -
-> >  1 file changed, 1 deletion(-)
-> > 
-> > diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
-> > index fd4d4ecd2df0..5b3c9d31fd7f 100644
-> > --- a/drivers/soc/qcom/Kconfig
-> > +++ b/drivers/soc/qcom/Kconfig
-> > @@ -39,7 +39,6 @@ config QCOM_COMMAND_DB
-> >  
-> >  config QCOM_GENI_SE
-> >  	tristate "Qualcomm GENI Serial Engine Driver"
-> > -	depends on ARM64 || COMPILE_TEST
-> 
-> depends on ARM || ARM64 || COMPILE_TEST
+Hi Niklas,
 
-Or depends on ARCH_QCOM || COMPILE_TEST
+Thank you for your feedback.
 
-> 
-> >  	default ARCH_QCOM
-> >  	help
-> >  	  This driver is used to manage Generic Interface (GENI) firmware based
-> > 
-> > -- 
-> > 2.43.0
-> > 
-> 
-> -- 
-> With best wishes
-> Dmitry
+> > -     if (rcar_gen3_thermal_request_irqs(priv, pdev))
+> > +     ret = rcar_gen3_thermal_request_irqs(priv, pdev);
+> > +     if (ret == -ENXIO)
+> >               priv->ops.set_trips = NULL;
+> > +     else if (ret)
+> > +             return ret;
+>
+> I'm not sure I like this.
+>
+> The old behavior is that for any reason we can't get the optional IRQ
+> the driver still works, but without hardware trip points.
+>
 
--- 
-With best wishes
-Dmitry
+Regarding the old behavior, it was handled like this:
+------------------------------
+irq = platform_get_irq_optional(pdev, i);
+        if (irq < 0)
+                return irq;
+------------------------------
+As I understand it, this is essentially the behavior of
+platform_get_irq() itself:
+
+https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/base/platform.c#L301
+
+This could be understood as rcar-gen3 not actually supporting an optional IRQ.
+If you still want to keep the old behavior, then I think we should switch to
+platform_get_irq() instead of platform_get_irq_optional(), since using
+the latter
+could give a misleading impression that rcar-gen3 supports an optional IRQ.
+
+Incidentally, I also don't quite understand why rcar-gen2 supports an
+optional IRQ
+while rcar-gen3 does not. Is there a hardware limitation on rcar-gen3
+that requires
+the IRQ to be present, or is this just a difference in the driver
+implementation?
+
+https://elixir.bootlin.com/linux/v7.2-rc6/source/drivers/thermal/renesas/rcar_thermal.c#L422
+
+> While the new behavior is that if *something* other then the IRQ not
+> being available we fail probe. What is the gain here? What benefit is
+> there from the driver not providing thermal readouts if say for example
+> getting the optional IRQ would return -EINVAL ?
+>
+
+Regarding the benefit of the new behavior:
+
+If rcar-gen3 actually supports an optional IRQ, I think the benefit is
+that it reflects
+the actual state of the system. It allows the developer to know that
+something went
+wrong and investigate or fix the underlying issue. In the case of
+`-EPROBE_DEFER`,
+the benefit is even clearer, as it allows the kernel to defer the
+probe and retry it later
+when the dependency becomes available.
+
+If we silently ignore the error as we do currently, the driver may
+still be able to provide
+thermal information as you mentioned. However, can we still guarantee
+the correctness
+and safety of the system?
+
+Best regards,
+Phuc
