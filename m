@@ -1,1243 +1,433 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A651D43932B;
-	Tue, 11 Aug 2026 23:57:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F03AA4334A0;
+	Tue, 11 Aug 2026 23:58:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786492658; cv=none; b=iD17TNkT4VY8oZHN/YBSERtNFUb/EBXGe2AagIdIgvGXAzMKhIhtlhX3SQiRySSEaofw2W22Ku6ymmc1SCKOtwswATDnOaNQ2/N7w01kLdWXqhkEoq2drZvXPc/LgFONBHVGiT198tQ/nKktGjCpsgTNwUP4mjUKwgSXzVSlgI0=
+	t=1786492697; cv=none; b=NuguUJitZTjcQGnhrw39B2fnIEUG6idtsViQCRtEkk54WQ0Vk1ZlSqd3zlFWoWZLdrrfubdG4qosSay/HuPT9L8bYX1ZFTLbNUFUXKZ99ilQETw+WYZslNG1MeeEAMGGX/UeFxRlxcZeN1TYcLtsEjIbHIQktjKgdDVk2uYmOPE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786492658; c=relaxed/simple;
-	bh=zQ4PiMl7RlSjjIx+D+/zTevTS2Sdfxye6X+5nUguFV4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=YAc00/f0zi48yLhRTbSCwp4edJdDIlmZ/I67nVUfJ65khs12KQNGcnG1gLBPFPCT7ThZIzYci4e/prdu16ug5dKhIKLpbgj7WsHWYPXD0U/U7VrzyXi/b1yb4hyQ6SmTHPPAetrGpyw/QEXXpgUrVIrXBhcTnbjfvPn4KnMaOcs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LiWD3+My; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1786492697; c=relaxed/simple;
+	bh=b7dQev5Ku9pkTnreR36tN19QYIy6STNKVTtZccOSqrY=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=EOoNL1XBpcxYhNdKE0B4sVs72r8qEfrs7tcw+FWzG5WI1Ur0FQESaoWsZqQrE0K9/xWpuRrfU5y1iONR6rzKNCpSMpDJRuxjAMSXNgvLmG0zaipSPaLY+DavnvO1ZYSvReHf3d3QlLeKztD2OYe8OnrWXIfP0D+7zk9M5usv51s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d4RqXzEv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LiWD3+My"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 57559C2BCF4;
-	Tue, 11 Aug 2026 23:57:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1786492658;
-	bh=zQ4PiMl7RlSjjIx+D+/zTevTS2Sdfxye6X+5nUguFV4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=LiWD3+Myg/l4UkNFwGAc4Rr23fh8AdU7tubcO5VJAauqBCMqcheXOtWyQSdvQOVBp
-	 UV0EMZvFAh5DTqsUen0g/Js6ccK1bESzA7NWHXeU4Q1ugEHUs/0Edn+omDy9RNRkDI
-	 8dkvBRG0DmxxA/0jgf0yDxYf2RsMWqxoZVCc2YagWo6akMm4ZAG35CAKYpS/M8tjxy
-	 eFuEKaRsZ2hHe8eUFdm1nrp5ZjOIEHrLWT95LISba7ibF9WEIYl8HxN8TssjLHTGs3
-	 2LEUZ1WG7lQrWKSw0QmYKO5Z2a+dqWl/UsQt6PrxpZqZwCmQq9KlQGkcLebdHJJYkc
-	 cVHXiaauGLm2A==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47011C5CFDB;
-	Tue, 11 Aug 2026 23:57:38 +0000 (UTC)
-From: Robin Snyders via B4 Relay <devnull+robin.snyders.xyz@kernel.org>
-Date: Wed, 12 Aug 2026 01:57:00 +0200
-Subject: [PATCH v2 2/2] power: supply: qcom_smbx: add SMB5 support
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d4RqXzEv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E6DA1F000E9;
+	Tue, 11 Aug 2026 23:58:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786492695;
+	bh=EVMsQ3Od/WQnrEZmwQjHueMQ/bSOuNCGNfxfosJYuiE=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=d4RqXzEv5yvX18P2SsTJ9bayg+1aTVcULSpZ/CORVW6PBimDGIBbP8YNv3bK4xchR
+	 vn1NNN30ywJN5I0VTwr3wwYNtmp7iHuSf3sOZ5iatn9iOBssnVbDk09MbnyjbQ/p1Z
+	 jfQeABPEprmUr7glCdHKss+kHuyUiais4+Z0WWLSuLu3789J1NvoUEaB4EcYOurYRa
+	 qP3bfEFyEs3Hp3GLE85iZxWcBgcOaNhzUcAeS/fXRRFuSRKMEQm6Oy4r+9vvpm+Wcs
+	 PmcrlnYyhJ/vLTpRdiDbKJ1abO689XzxF68aF0s0rH3W4OmijgF2XwEj6V2psSRa1n
+	 eZIvKKt6y6xew==
+Date: Tue, 11 Aug 2026 18:58:14 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-gpio@vger.kernel.org, quic_vbadigan@quicinc.com,
+	sherry.sun@nxp.com, driver-core@lists.linux.dev,
+	devicetree@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Manivannan Sadhasivam <mani@kernel.org>
+Subject: Re: [PATCH v12] PCI: Add support for PCIe WAKE# interrupt
+Message-ID: <20260811235814.GA815007@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260812-submit-qcom-smbx-send-v1-v2-2-f504b8f9bfad@snyders.xyz>
-References: <20260812-submit-qcom-smbx-send-v1-v2-0-f504b8f9bfad@snyders.xyz>
-In-Reply-To: <20260812-submit-qcom-smbx-send-v1-v2-0-f504b8f9bfad@snyders.xyz>
-To: Casey Connolly <casey.connolly@linaro.org>, 
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: Robin Snyders <robin@snyders.xyz>, linux-arm-msm@vger.kernel.org, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Joel Selvaraj <foss@joelselvaraj.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786492653; l=39197;
- i=robin@snyders.xyz; s=default; h=from:subject:message-id;
- bh=GRW4M5DIwkD1sC1BI5JoPvuym1s4ETYSYNihqtS7aXw=;
- b=3AWmFAn5vgM7N38T3Fh4pfIqtUiM8pkNfaah7F6CUu02okNZsFk27lIZtbE3eAoyhnhVEuCN0
- WQCy2Me0KC7BlWS8lyHhzN8ag1PHxdHso0yprctxrot40xXLOv6Jcka
-X-Developer-Key: i=robin@snyders.xyz; a=ed25519;
- pk=Mdk5dNn+Tkcy7BWexDxBLR/s1BNz8WdqDPnr3qtYBIU=
-X-Endpoint-Received: by B4 Relay for robin@snyders.xyz/default with
- auth_id=938
-X-Original-From: Robin Snyders <robin@snyders.xyz>
-Reply-To: robin@snyders.xyz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260707-wakeirq_support-v12-1-b4453f5bcc97@oss.qualcomm.com>
 
-From: Casey Connolly <casey.connolly@linaro.org>
+On Tue, Jul 07, 2026 at 05:01:43PM +0530, Krishna Chaitanya Chundru wrote:
+> According to the PCI Express specification (PCIe r7.0, Section 5.3.3.2),
+> two link wakeup mechanisms are defined: Beacon and WAKE#. Beacon is a
+> hardware-only mechanism and is invisible to software (PCIe r7.0,
+> Section 4.2.7.8.1). This change adds support for the WAKE# mechanism
+> in the PCI core.
+> 
+> According to the PCIe specification, multiple WAKE# signals can exist in
+> a system or each component in the hierarchy could share a single WAKE#
+> signal. In configurations involving a PCIe switch, each downstream port
+> (DSP) of the switch may be connected to a separate WAKE# line, allowing
+> each endpoint to signal WAKE# independently. From figure 5.4 in sec
+> 5.3.3.2, WAKE# can also be terminated at the switch itself. Such topologies
+> are typically not described in Device Tree, therefore it is out of scope
+> for this series.
+> 
+> To support this, the WAKE# should be described in the device tree node of
+> the endpoint/bridge. If all endpoints share a single WAKE# line, then each
+> endpoint node shall describe the same WAKE# signal or a single WAKE# in
+> the Root Port node.
+> 
+> In pci_device_add(), PCI framework will search for the WAKE# in device
+> node. Once found, register for the wake IRQ through
+> dev_pm_set_dedicated_wake_irq() associates a wakeup IRQ with a device
+> and requests it, but the PM core keeps the IRQ disabled by default. The
+> IRQ is enabled by the PM core, only when the device is permitted to wake
+> the system, i.e. during system suspend and after runtime suspend, and
+> only when device wakeup is enabled.
+> 
+> If the same WAKE# GPIO is described in multiple device tree nodes, only the
+> first device that successfully registers the wake IRQ will succeed, while
+> subsequent registrations may fail. This limitation does not affect
+> functional correctness, since WAKE# is only used to bring the link to D0,
+> and endpoint-specific wakeup handling is resolved later through
+> PME detection (PME_EN is set in suspend path by PCI core by default).
+> 
+> When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume() to
+> bring the device back to an active power state, such as transitioning from
+> D3cold to D0. Once the device is active and the link is usable, the
+> endpoint may generate a PME, which is then handled by the PCI core through
+> PME polling or the PCIe PME service driver to complete the wakeup of the
+> endpoint.
+> 
+> WAKE# is added in dts schema and merged based on below links.
+> 
+> Link: https://lore.kernel.org/all/20250515090517.3506772-1-krishna.chundru@oss.qualcomm.com/
+> Link: https://github.com/devicetree-org/dt-schema/pull/170
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Acked-by: Manivannan Sadhasivam <mani@kernel.org>
+> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
 
-Introduce support for the SMB5 charger found on PM7250B, PM8150B and
-related Qualcomm PMICs.
+Applied to pci/wake for v7.3, thanks!
 
-SMB5 uses different DCDC status offsets, charger-state encodings and
-electrical ranges. Select these from per-PMIC match data, including the
-PM8150B-compatible parameter block used by PM7250B. Read overvoltage
-from the SMB5 status bit, use the already-prescaled IIO voltage reading,
-and convert the SMB5 current-sense voltage to microamps. Use battery-info
-property presence when selecting voltage and current targets.
-
-Keep Type-C power-role and VBUS control with the dedicated TCPM and
-regulator drivers. Clear the unsupported HVDCP negotiation modes so stale
-firmware settings cannot raise VBUS. Leave the firmware recharge policy
-unchanged and match the downstream default of ADC-based AICL disabled,
-while enabling periodic hardware AICL with its twelve-second SMB5 rerun
-interval. Preserve the existing three-second SMB2 interval.
-
-Program the battery limits from the power-supply registration init
-callback before device_add publishes the properties. Gate writable
-properties until the IRQ and wake setup and final input and charging
-enables are complete, preventing userspace from racing the
-suspend-configure-enable sequence.
-
-Suspend USB input and charging before SMB5 initialization. On a later
-failure, restore the original charging-enable state before the
-input-suspend state; leave the input suspended if charging cannot be
-restored. Cancel status work before unregistering the power supply during
-managed teardown. Update the Kconfig description to cover both charger
-generations.
-
-On a OnePlus 7T Pro, register reads from the initial implementation
-confirmed the programmed 4.40 V, 1.50 A and 500 mA limits. A 180-second
-guarded charging trace and a subsequent 600-second runtime trace
-completed without crossing the voltage guard.
-
-Signed-off-by: Casey Connolly <casey.connolly@linaro.org>
-Co-developed-by: Joel Selvaraj <foss@joelselvaraj.com>
-Signed-off-by: Joel Selvaraj <foss@joelselvaraj.com>
-Co-developed-by: Robin Snyders <robin@snyders.xyz>
-Signed-off-by: Robin Snyders <robin@snyders.xyz>
----
- drivers/power/supply/Kconfig     |   8 +-
- drivers/power/supply/qcom_smbx.c | 766 +++++++++++++++++++++++++++++++--------
- 2 files changed, 612 insertions(+), 162 deletions(-)
-
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index b89ef40df7f82..1159a7711919d 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -1173,13 +1173,13 @@ config BATTERY_CHARGER_SURFACE_RT
- 	  will be called surface-rt-ec.
- 
- config CHARGER_QCOM_SMB2
--	tristate "Qualcomm PMI8998 PMIC charger driver"
-+	tristate "Qualcomm SMB2 and SMB5 charger driver"
- 	depends on MFD_SPMI_PMIC
- 	depends on IIO
- 	help
--	  Say Y here to enable the Qualcomm PMIC Charger driver. This
--	  adds support for the SMB2 switch mode battery charger found
--	  in PMI8998 and related PMICs.
-+	  Say Y here to enable the Qualcomm PMIC charger driver. This adds
-+	  support for the SMB2 and SMB5 switch-mode battery chargers found
-+	  in PMI8998, PM660, PM7250B and PM8150B PMICs.
- 
- config FUEL_GAUGE_MM8013
- 	tristate "Mitsumi MM8013 fuel gauge driver"
-diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
-index 71f5a48594129..f99982ebb964f 100644
---- a/drivers/power/supply/qcom_smbx.c
-+++ b/drivers/power/supply/qcom_smbx.c
-@@ -23,6 +23,13 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- 
-+enum smb_generation {
-+	SMB2,
-+	SMB5,
-+};
-+
-+#define SMB_REG_OFFSET(smb) ((smb)->gen == SMB2 ? 0x600 : 0x100)
-+
- /* clang-format off */
- #define BATTERY_CHARGER_STATUS_1			0x06
- #define BVR_INITIAL_RAMP_BIT				BIT(7)
-@@ -34,14 +41,20 @@
- #define BATTERY_CHARGER_STATUS_2			0x07
- #define INPUT_CURRENT_LIMITED_BIT			BIT(7)
- #define CHARGER_ERROR_STATUS_SFT_EXPIRE_BIT		BIT(6)
--#define CHARGER_ERROR_STATUS_BAT_OV_BIT			BIT(5)
-+#define SMB2_CHARGER_ERROR_STATUS_BAT_OV_BIT		BIT(5)
- #define CHARGER_ERROR_STATUS_BAT_TERM_MISSING_BIT	BIT(4)
- #define BAT_TEMP_STATUS_MASK				GENMASK(3, 0)
- #define BAT_TEMP_STATUS_SOFT_LIMIT_MASK			GENMASK(3, 2)
--#define BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT		BIT(3)
--#define BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT		BIT(2)
--#define BAT_TEMP_STATUS_TOO_HOT_BIT			BIT(1)
--#define BAT_TEMP_STATUS_TOO_COLD_BIT			BIT(0)
-+#define SMB2_BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT		BIT(3)
-+#define SMB2_BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT	BIT(2)
-+#define SMB2_BAT_TEMP_STATUS_TOO_HOT_BIT			BIT(1)
-+#define SMB2_BAT_TEMP_STATUS_TOO_COLD_BIT		BIT(0)
-+
-+#define SMB5_CHARGER_ERROR_STATUS_BAT_OV_BIT		BIT(1)
-+#define SMB5_BAT_TEMP_STATUS_HOT_SOFT_BIT		BIT(5)
-+#define SMB5_BAT_TEMP_STATUS_COLD_SOFT_BIT		BIT(4)
-+#define SMB5_BAT_TEMP_STATUS_TOO_HOT_BIT			BIT(3)
-+#define SMB5_BAT_TEMP_STATUS_TOO_COLD_BIT		BIT(2)
- 
- #define BATTERY_CHARGER_STATUS_4			0x0A
- #define CHARGE_CURRENT_POST_JEITA_MASK			GENMASK(7, 0)
-@@ -78,10 +91,10 @@
- #define FLOAT_VOLTAGE_CFG				0x70
- #define FLOAT_VOLTAGE_SETTING_MASK			GENMASK(7, 0)
- 
--#define FG_UPDATE_CFG_2_SEL				0x7D
-+#define SMB2_FG_UPDATE_CFG_2_SEL			0x7D
- #define SOC_LT_OTG_THRESH_SEL_BIT			BIT(3)
--#define SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(2)
--#define VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(1)
-+#define SMB2_SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(2)
-+#define SMB2_VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(1)
- #define IBT_LT_CHG_TERM_THRESH_SEL_BIT			BIT(0)
- 
- #define JEITA_EN_CFG					0x90
-@@ -189,9 +202,11 @@
- #define TYPEC_TRYSINK_DETECT_STATUS_BIT			BIT(0)
- 
- #define CMD_APSD					0x341
--#define ICL_OVERRIDE_BIT				BIT(1)
- #define APSD_RERUN_BIT					BIT(0)
- 
-+#define CMD_ICL_OVERRIDE				0x342
-+#define ICL_OVERRIDE_BIT				BIT(0)
-+
- #define TYPE_C_CFG					0x358
- #define APSD_START_ON_CC_BIT				BIT(7)
- #define WAIT_FOR_APSD_BIT				BIT(6)
-@@ -260,7 +275,7 @@
- #define EXIT_SNK_BASED_ON_CC_BIT			BIT(7)
- #define VCONN_EN_ORIENTATION_BIT			BIT(6)
- #define TYPEC_VCONN_OVERCURR_INT_EN_BIT			BIT(5)
--#define VCONN_EN_SRC_BIT				BIT(4)
-+#define SMB2_VCONN_EN_SRC_BIT				BIT(4)
- #define VCONN_EN_VALUE_BIT				BIT(3)
- #define TYPEC_POWER_ROLE_CMD_MASK			GENMASK(2, 0)
- #define UFP_EN_CMD_BIT					BIT(2)
-@@ -274,7 +289,7 @@
- #define SUSPEND_ON_COLLAPSE_USBIN_BIT			BIT(7)
- #define USBIN_AICL_HDC_EN_BIT				BIT(6)
- #define USBIN_AICL_START_AT_MAX_BIT			BIT(5)
--#define USBIN_AICL_RERUN_EN_BIT				BIT(4)
-+#define USBIN_AICL_PERIODIC_RERUN_EN_BIT		BIT(4)
- #define USBIN_AICL_ADC_EN_BIT				BIT(3)
- #define USBIN_AICL_EN_BIT				BIT(2)
- #define USBIN_HV_COLLAPSE_RESPONSE_BIT			BIT(1)
-@@ -303,10 +318,12 @@
- #define AICL_SWITCH_ENABLE_BIT				BIT(1)
- #define ZIN_ICL_ENABLE_BIT				BIT(0)
- 
--#define ICL_STATUS					0x607
- #define INPUT_CURRENT_LIMIT_MASK			GENMASK(7, 0)
- 
--#define POWER_PATH_STATUS				0x60B
-+#define SMB2_ICL_STATUS					0x607
-+#define SMB5_AICL_ICL_STATUS				0x108
-+
-+#define POWER_PATH_STATUS(smb)				(SMB_REG_OFFSET(smb) + 0x0B)
- #define P_PATH_INPUT_SS_DONE_BIT			BIT(7)
- #define P_PATH_USBIN_SUSPEND_STS_BIT			BIT(6)
- #define P_PATH_DCIN_SUSPEND_STS_BIT			BIT(5)
-@@ -335,6 +352,8 @@
- 
- #define AICL_RERUN_TIME_CFG				0x661
- #define AICL_RERUN_TIME_MASK				GENMASK(1, 0)
-+#define AICL_RERUN_TIME_3_SECS				0
-+#define AICL_RERUN_TIME_12_SECS				1
- 
- #define STAT_CFG					0x690
- #define STAT_SW_OVERRIDE_VALUE_BIT			BIT(7)
-@@ -350,22 +369,30 @@
- #define DCP_CURRENT_UA					1500000
- #define CURRENT_MAX_UA					DCP_CURRENT_UA
- 
--/* pmi8998 registers represent current in increments of 1/40th of an amp */
--#define CURRENT_SCALE_FACTOR				25000
--#define SMB2_FLOAT_VOLTAGE_MIN_UV			3487500
--#define SMB2_FLOAT_VOLTAGE_MAX_UV			4920000
--#define SMB2_FLOAT_VOLTAGE_STEP_UV			7500
-+/* PMI8998 registers represent current in increments of 1/40th of an amp. */
-+#define SMB2_CURRENT_STEP_UA				25000
- /* clang-format on */
- 
--enum charger_status {
--	TRICKLE_CHARGE = 0,
--	PRE_CHARGE,
--	FAST_CHARGE,
--	FULLON_CHARGE,
--	TAPER_CHARGE,
--	TERMINATE_CHARGE,
--	INHIBIT_CHARGE,
--	DISABLE_CHARGE,
-+enum smb2_charger_status {
-+	SMB2_TRICKLE_CHARGE = 0,
-+	SMB2_PRE_CHARGE,
-+	SMB2_FAST_CHARGE,
-+	SMB2_FULLON_CHARGE,
-+	SMB2_TAPER_CHARGE,
-+	SMB2_TERMINATE_CHARGE,
-+	SMB2_INHIBIT_CHARGE,
-+	SMB2_DISABLE_CHARGE,
-+};
-+
-+enum smb5_charger_status {
-+	SMB5_INHIBIT_CHARGE = 0,
-+	SMB5_TRICKLE_CHARGE,
-+	SMB5_PRE_CHARGE,
-+	SMB5_FULLON_CHARGE,
-+	SMB5_TAPER_CHARGE,
-+	SMB5_TERMINATE_CHARGE,
-+	SMB5_PAUSE_CHARGE,
-+	SMB5_DISABLE_CHARGE,
- };
- 
- struct smb_init_register {
-@@ -374,14 +401,23 @@ struct smb_init_register {
- 	u8 val;
- };
- 
-+struct smb_match_data;
-+
- /**
-  * struct smb_chip - smb chip structure
-  * @dev:		Device reference for power_supply
-  * @name:		The platform device name
-  * @base:		Base address for smb registers
-  * @regmap:		Register map
-- * @batt_info:		Battery data from DT
-+ * @match_data:		Per-PMIC hardware parameters
-+ * @gen:		Charger hardware generation
-+ * @icl_max_ua:		Maximum programmable USB input current
-+ * @icl_step_ua:	USB input current register step
-+ * @icl_status:		Effective input current status register offset
-+ * @usbin_current_scale: USB input current-sense scale
-+ * @initial_usb_suspend:	USB input suspend state before SMB5 setup
-  * @initial_charge_enable: Charging enable state before hardware setup
-+ * @probe_complete:	Whether runtime property writes are safe
-  * @status_change_work: Worker to handle plug/unplug events
-  * @cable_irq:		USB plugin IRQ
-  * @wakeup_enabled:	If the cable IRQ will cause a wakeup
-@@ -394,8 +430,15 @@ struct smb_chip {
- 	const char *name;
- 	unsigned int base;
- 	struct regmap *regmap;
--	struct power_supply_battery_info *batt_info;
-+	const struct smb_match_data *match_data;
-+	enum smb_generation gen;
-+	unsigned int icl_max_ua;
-+	unsigned int icl_step_ua;
-+	u16 icl_status;
-+	unsigned int usbin_current_scale;
-+	u8 initial_usb_suspend;
- 	u8 initial_charge_enable;
-+	bool probe_complete;
- 
- 	struct delayed_work status_change_work;
- 	int cable_irq;
-@@ -407,6 +450,22 @@ struct smb_chip {
- 	struct power_supply *chg_psy;
- };
- 
-+struct smb_match_data {
-+	const char *name;
-+	enum smb_generation gen;
-+	size_t init_seq_len;
-+	unsigned int fv_min_uv;
-+	unsigned int fv_max_uv;
-+	unsigned int fv_step_uv;
-+	unsigned int fcc_max_ua;
-+	unsigned int fcc_step_ua;
-+	unsigned int icl_max_ua;
-+	unsigned int icl_step_ua;
-+	u16 icl_status;
-+	unsigned int usbin_current_scale;
-+	const struct smb_init_register *init_seq;
-+};
-+
- static enum power_supply_property smb_properties[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
-@@ -424,7 +483,7 @@ static int smb_get_prop_usb_online(struct smb_chip *chip, int *val)
- 	unsigned int stat;
- 	int rc;
- 
--	rc = regmap_read(chip->regmap, chip->base + POWER_PATH_STATUS, &stat);
-+	rc = regmap_read(chip->regmap, chip->base + POWER_PATH_STATUS(chip), &stat);
- 	if (rc < 0) {
- 		dev_err(chip->dev, "Couldn't read power path status: %d\n", rc);
- 		return rc;
-@@ -479,9 +538,80 @@ static int smb_apsd_get_charger_type(struct smb_chip *chip, int *val)
- 	return 0;
- }
- 
-+/* Return 1 when in overvoltage state, else 0 or -errno */
-+static int smbx_ov_status(struct smb_chip *chip)
-+{
-+	u8 mask;
-+	int rc;
-+	u32 val;
-+
-+	switch (chip->gen) {
-+	case SMB2:
-+		mask = SMB2_CHARGER_ERROR_STATUS_BAT_OV_BIT;
-+		break;
-+	case SMB5:
-+		mask = SMB5_CHARGER_ERROR_STATUS_BAT_OV_BIT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	rc = regmap_read(chip->regmap,
-+			 chip->base + BATTERY_CHARGER_STATUS_2, &val);
-+	if (rc)
-+		return rc;
-+
-+	return !!(val & mask);
-+}
-+
-+static int smb_map_charge_status(struct smb_chip *chip, u32 stat, int *val)
-+{
-+	switch (chip->gen) {
-+	case SMB2:
-+		switch (stat) {
-+		case SMB2_TRICKLE_CHARGE:
-+		case SMB2_PRE_CHARGE:
-+		case SMB2_FAST_CHARGE:
-+		case SMB2_FULLON_CHARGE:
-+		case SMB2_TAPER_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_CHARGING;
-+			return 0;
-+		case SMB2_TERMINATE_CHARGE:
-+		case SMB2_INHIBIT_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_FULL;
-+			return 0;
-+		case SMB2_DISABLE_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			return 0;
-+		}
-+		break;
-+	case SMB5:
-+		switch (stat) {
-+		case SMB5_TRICKLE_CHARGE:
-+		case SMB5_PRE_CHARGE:
-+		case SMB5_FULLON_CHARGE:
-+		case SMB5_TAPER_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_CHARGING;
-+			return 0;
-+		case SMB5_TERMINATE_CHARGE:
-+		case SMB5_INHIBIT_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_FULL;
-+			return 0;
-+		case SMB5_PAUSE_CHARGE:
-+		case SMB5_DISABLE_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			return 0;
-+		}
-+		break;
-+	}
-+
-+	*val = POWER_SUPPLY_STATUS_UNKNOWN;
-+	return 0;
-+}
-+
- static int smb_get_prop_status(struct smb_chip *chip, int *val)
- {
--	unsigned char stat[2];
-+	u32 stat;
- 	int usb_online = 0;
- 	int rc;
- 
-@@ -491,49 +621,36 @@ static int smb_get_prop_status(struct smb_chip *chip, int *val)
- 		return rc;
- 	}
- 
--	rc = regmap_bulk_read(chip->regmap,
--			      chip->base + BATTERY_CHARGER_STATUS_1, &stat, 2);
-+	rc = regmap_read(chip->regmap,
-+			 chip->base + BATTERY_CHARGER_STATUS_1, &stat);
- 	if (rc < 0) {
- 		dev_err(chip->dev, "Failed to read charging status ret=%d\n",
- 			rc);
- 		return rc;
- 	}
- 
--	if (stat[1] & CHARGER_ERROR_STATUS_BAT_OV_BIT) {
-+	rc = smbx_ov_status(chip);
-+	if (rc < 0)
-+		return rc;
-+
-+	/* In overvoltage state */
-+	if (rc == 1) {
- 		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		return 0;
- 	}
- 
--	stat[0] = stat[0] & BATTERY_CHARGER_STATUS_MASK;
-+	stat &= BATTERY_CHARGER_STATUS_MASK;
- 
--	switch (stat[0]) {
--	case TRICKLE_CHARGE:
--	case PRE_CHARGE:
--	case FAST_CHARGE:
--	case FULLON_CHARGE:
--	case TAPER_CHARGE:
--		*val = POWER_SUPPLY_STATUS_CHARGING;
--		return rc;
--	case DISABLE_CHARGE:
--		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
--		return rc;
--	case TERMINATE_CHARGE:
--	case INHIBIT_CHARGE:
--		*val = POWER_SUPPLY_STATUS_FULL;
--		return rc;
--	default:
--		*val = POWER_SUPPLY_STATUS_UNKNOWN;
--		return rc;
--	}
-+	return smb_map_charge_status(chip, stat, val);
- }
- 
- static inline int smb_get_current_limit(struct smb_chip *chip,
- 					 unsigned int *val)
- {
--	int rc = regmap_read(chip->regmap, chip->base + ICL_STATUS, val);
-+	int rc = regmap_read(chip->regmap, chip->base + chip->icl_status, val);
- 
- 	if (rc >= 0)
--		*val *= CURRENT_SCALE_FACTOR;
-+		*val *= chip->icl_step_ua;
- 	return rc;
- }
- 
-@@ -541,12 +658,13 @@ static int smb_set_current_limit(struct smb_chip *chip, unsigned int val)
- {
- 	unsigned char val_raw;
- 
--	if (val > 4800000) {
-+	if (val > chip->icl_max_ua) {
- 		dev_err(chip->dev,
--			"Can't set current limit higher than 4800000uA");
-+			"Can't set current limit higher than %uuA",
-+			chip->icl_max_ua);
- 		return -EINVAL;
- 	}
--	val_raw = val / CURRENT_SCALE_FACTOR;
-+	val_raw = val / chip->icl_step_ua;
- 
- 	return regmap_write(chip->regmap, chip->base + USBIN_CURRENT_LIMIT_CFG,
- 			    val_raw);
-@@ -607,12 +725,10 @@ static void smb_status_change_work(struct work_struct *work)
- static int smb_get_iio_chan(struct smb_chip *chip, struct iio_channel *chan,
- 			     int *val)
- {
--	int rc;
--	union power_supply_propval status;
-+	int rc, status;
- 
--	rc = power_supply_get_property(chip->chg_psy, POWER_SUPPLY_PROP_STATUS,
--				       &status);
--	if (rc < 0 || status.intval != POWER_SUPPLY_STATUS_CHARGING) {
-+	rc = smb_get_prop_status(chip, &status);
-+	if (rc < 0 || status != POWER_SUPPLY_STATUS_CHARGING) {
- 		*val = 0;
- 		return 0;
- 	}
-@@ -625,7 +741,61 @@ static int smb_get_iio_chan(struct smb_chip *chip, struct iio_channel *chan,
- 	return iio_read_channel_processed(chan, val);
- }
- 
--static int smb_get_prop_health(struct smb_chip *chip, int *val)
-+static int smb_get_prop_current_now(struct smb_chip *chip, int *val)
-+{
-+	s64 current_ua;
-+	int rc;
-+
-+	rc = smb_get_iio_chan(chip, chip->usb_in_i_chan, val);
-+	if (rc < 0)
-+		return rc;
-+
-+	current_ua = (s64)*val * chip->usbin_current_scale;
-+	if (current_ua < INT_MIN || current_ua > INT_MAX)
-+		return -ERANGE;
-+
-+	*val = (int)current_ua;
-+	return 0;
-+}
-+
-+static int smb5_get_prop_health(struct smb_chip *chip, int *val)
-+{
-+	int rc;
-+	unsigned int stat;
-+
-+	rc = smbx_ov_status(chip);
-+	if (rc < 0) {
-+		dev_err(chip->dev,
-+			"Couldn't determine overvoltage status: %d\n", rc);
-+		return rc;
-+	}
-+	if (rc) {
-+		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		return 0;
-+	}
-+
-+	rc = regmap_read(chip->regmap, chip->base + BATTERY_CHARGER_STATUS_7,
-+			 &stat);
-+	if (rc < 0) {
-+		dev_err(chip->dev, "Couldn't read charger status 7 rc=%d\n", rc);
-+		return rc;
-+	}
-+
-+	if (stat & SMB5_BAT_TEMP_STATUS_TOO_COLD_BIT)
-+		*val = POWER_SUPPLY_HEALTH_COLD;
-+	else if (stat & SMB5_BAT_TEMP_STATUS_TOO_HOT_BIT)
-+		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
-+	else if (stat & SMB5_BAT_TEMP_STATUS_COLD_SOFT_BIT)
-+		*val = POWER_SUPPLY_HEALTH_COOL;
-+	else if (stat & SMB5_BAT_TEMP_STATUS_HOT_SOFT_BIT)
-+		*val = POWER_SUPPLY_HEALTH_WARM;
-+	else
-+		*val = POWER_SUPPLY_HEALTH_GOOD;
-+
-+	return 0;
-+}
-+
-+static int smb2_get_prop_health(struct smb_chip *chip, int *val)
- {
- 	int rc;
- 	unsigned int stat;
-@@ -637,15 +807,15 @@ static int smb_get_prop_health(struct smb_chip *chip, int *val)
- 		return rc;
- 	}
- 
--	if (stat & CHARGER_ERROR_STATUS_BAT_OV_BIT)
-+	if (stat & SMB2_CHARGER_ERROR_STATUS_BAT_OV_BIT)
- 		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
--	else if (stat & BAT_TEMP_STATUS_TOO_COLD_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_TOO_COLD_BIT)
- 		*val = POWER_SUPPLY_HEALTH_COLD;
--	else if (stat & BAT_TEMP_STATUS_TOO_HOT_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_TOO_HOT_BIT)
- 		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
--	else if (stat & BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT)
- 		*val = POWER_SUPPLY_HEALTH_COOL;
--	else if (stat & BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT)
- 		*val = POWER_SUPPLY_HEALTH_WARM;
- 	else
- 		*val = POWER_SUPPLY_HEALTH_GOOD;
-@@ -653,6 +823,19 @@ static int smb_get_prop_health(struct smb_chip *chip, int *val)
- 	return 0;
- }
- 
-+static int smb_get_prop_health(struct smb_chip *chip, int *val)
-+{
-+	switch (chip->gen) {
-+	case SMB2:
-+		return smb2_get_prop_health(chip, val);
-+	case SMB5:
-+		return smb5_get_prop_health(chip, val);
-+	default:
-+		dev_err(chip->dev, "unsupported SMB chip generation\n");
-+		return -EINVAL;
-+	}
-+}
-+
- static int smb_get_property(struct power_supply *psy,
- 			     enum power_supply_property psp,
- 			     union power_supply_propval *val)
-@@ -669,8 +852,7 @@ static int smb_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
- 		return smb_get_current_limit(chip, &val->intval);
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
--		return smb_get_iio_chan(chip, chip->usb_in_i_chan,
--					 &val->intval);
-+		return smb_get_prop_current_now(chip, &val->intval);
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 		return smb_get_iio_chan(chip, chip->usb_in_v_chan,
- 					 &val->intval);
-@@ -694,6 +876,9 @@ static int smb_set_property(struct power_supply *psy,
- {
- 	struct smb_chip *chip = power_supply_get_drvdata(psy);
- 
-+	if (!READ_ONCE(chip->probe_complete))
-+		return -EAGAIN;
-+
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
- 		return regmap_update_bits(chip->regmap, chip->base + USBIN_CMD_IL,
-@@ -721,17 +906,15 @@ static int smb_property_is_writable(struct power_supply *psy,
- static irqreturn_t smb_handle_batt_overvoltage(int irq, void *data)
- {
- 	struct smb_chip *chip = data;
--	unsigned int status;
- 	int rc;
- 
--	rc = regmap_read(chip->regmap,
--			 chip->base + BATTERY_CHARGER_STATUS_2, &status);
-+	rc = smbx_ov_status(chip);
- 	if (rc < 0) {
--		dev_err(chip->dev, "Couldn't read charger status: %d\n", rc);
-+		dev_err(chip->dev, "could not read overvoltage status: %d\n", rc);
- 		return IRQ_HANDLED;
- 	}
- 
--	if (status & CHARGER_ERROR_STATUS_BAT_OV_BIT) {
-+	if (rc) {
- 		/* The hardware stops charging automatically */
- 		dev_err(chip->dev, "battery overvoltage detected\n");
- 	}
-@@ -777,6 +960,123 @@ static irqreturn_t smb_handle_wdog_bark(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
-+static bool smb_batt_info_has_prop(struct power_supply_battery_info *batt_info,
-+				   enum power_supply_property prop)
-+{
-+	return power_supply_battery_info_has_prop(batt_info, prop);
-+}
-+
-+static int smb_power_supply_init(struct power_supply *psy)
-+{
-+	struct smb_chip *chip = power_supply_get_drvdata(psy);
-+	const struct smb_match_data *match_data = chip->match_data;
-+	struct power_supply_battery_info *batt_info;
-+	unsigned int fast_charge_current_sel;
-+	unsigned int float_voltage_sel;
-+	bool program_float_voltage = true;
-+	int fast_charge_current_ua;
-+	int float_voltage_uv;
-+	int rc;
-+
-+	rc = power_supply_get_battery_info(psy, &batt_info);
-+	if (rc)
-+		return dev_err_probe(chip->dev, rc,
-+				     "Failed to get battery info\n");
-+
-+	if (smb_batt_info_has_prop(batt_info,
-+				   POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)) {
-+		float_voltage_uv = batt_info->constant_charge_voltage_max_uv;
-+	} else if (smb_batt_info_has_prop(batt_info,
-+					  POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN)) {
-+		float_voltage_uv = batt_info->voltage_max_design_uv;
-+	} else {
-+		dev_warn(chip->dev,
-+			 "No battery float voltage; preserving hardware setting\n");
-+		program_float_voltage = false;
-+	}
-+
-+	if (program_float_voltage) {
-+		if (float_voltage_uv < match_data->fv_min_uv ||
-+		    float_voltage_uv > match_data->fv_max_uv) {
-+			rc = dev_err_probe(chip->dev, -EINVAL,
-+					   "float voltage %d uV outside %u-%u uV\n",
-+					   float_voltage_uv,
-+					   match_data->fv_min_uv,
-+					   match_data->fv_max_uv);
-+			goto out_put_batt_info;
-+		}
-+
-+		float_voltage_sel =
-+			(float_voltage_uv - match_data->fv_min_uv) /
-+			match_data->fv_step_uv;
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + FLOAT_VOLTAGE_CFG,
-+					FLOAT_VOLTAGE_SETTING_MASK,
-+					float_voltage_sel);
-+		if (rc < 0) {
-+			rc = dev_err_probe(chip->dev, rc,
-+					   "could not set float voltage\n");
-+			goto out_put_batt_info;
-+		}
-+	}
-+
-+	if (chip->gen == SMB5) {
-+		if (smb_batt_info_has_prop(batt_info,
-+					   POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX))
-+			fast_charge_current_ua =
-+				batt_info->constant_charge_current_max_ua;
-+		else
-+			fast_charge_current_ua = DCP_CURRENT_UA;
-+
-+		if (fast_charge_current_ua > match_data->fcc_max_ua) {
-+			rc = dev_err_probe(chip->dev, -EINVAL,
-+					   "fast charge current %d uA exceeds %u uA\n",
-+					   fast_charge_current_ua,
-+					   match_data->fcc_max_ua);
-+			goto out_put_batt_info;
-+		}
-+
-+		fast_charge_current_sel = fast_charge_current_ua /
-+			match_data->fcc_step_ua;
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + FAST_CHARGE_CURRENT_CFG,
-+					FAST_CHARGE_CURRENT_SETTING_MASK,
-+					fast_charge_current_sel);
-+		if (rc < 0) {
-+			rc = dev_err_probe(chip->dev, rc,
-+					   "could not set fast charge current\n");
-+			goto out_put_batt_info;
-+		}
-+
-+		rc = smb_set_current_limit(chip, SDP_CURRENT_UA);
-+		if (rc < 0) {
-+			rc = dev_err_probe(chip->dev, rc,
-+					   "could not set USB input current\n");
-+			goto out_put_batt_info;
-+		}
-+
-+		if (program_float_voltage)
-+			dev_info(chip->dev,
-+				 "charge limits: float=%u uV fast=%u uA input=%u uA\n",
-+				 match_data->fv_min_uv +
-+				 float_voltage_sel * match_data->fv_step_uv,
-+				 fast_charge_current_sel * match_data->fcc_step_ua,
-+				 SDP_CURRENT_UA);
-+		else
-+			dev_info(chip->dev,
-+				 "charge limits: float=firmware fast=%u uA input=%u uA\n",
-+				 fast_charge_current_sel * match_data->fcc_step_ua,
-+				 SDP_CURRENT_UA);
-+	}
-+
-+	rc = 0;
-+
-+out_put_batt_info:
-+	power_supply_put_battery_info(psy, batt_info);
-+
-+	return rc;
-+}
-+
- static const struct power_supply_desc smb_psy_desc = {
- 	.name = "pmi8998_charger",
- 	.type = POWER_SUPPLY_TYPE_USB,
-@@ -789,19 +1089,65 @@ static const struct power_supply_desc smb_psy_desc = {
- 	.get_property = smb_get_property,
- 	.set_property = smb_set_property,
- 	.property_is_writeable = smb_property_is_writable,
-+	.init = smb_power_supply_init,
-+};
-+
-+/* Init sequence derived from vendor downstream driver */
-+static const struct smb_init_register smb5_init_seq[] = {
-+	/* TCPM owns Type-C; prevent BC1.2 detection from starting on CC. */
-+	{ .addr = TYPE_C_CFG,
-+	  .mask = APSD_START_ON_CC_BIT,
-+	  .val = 0 },
-+	/* Enable BC1.2 source detection without unsupported HVDCP negotiation. */
-+	{ .addr = USBIN_OPTIONS_1_CFG,
-+	  .mask = HVDCP_AUTH_ALG_EN_CFG_BIT |
-+		  HVDCP_AUTONOMOUS_MODE_EN_CFG_BIT | AUTO_SRC_DETECT_BIT |
-+		  HVDCP_EN_BIT,
-+	  .val = AUTO_SRC_DETECT_BIT },
-+	/* Set the default SDP charger type to a 500ma USB 2.0 port */
-+	{ .addr = USBIN_ICL_OPTIONS,
-+	  .mask = USBIN_MODE_CHG_BIT,
-+	  .val = USBIN_MODE_CHG_BIT },
-+	{ .addr = CMD_ICL_OVERRIDE,
-+	  .mask = ICL_OVERRIDE_BIT,
-+	  .val = 0 },
-+	{ .addr = USBIN_LOAD_CFG,
-+	  .mask = ICL_OVERRIDE_AFTER_APSD_BIT,
-+	  .val = 0 },
-+	/* Disable watchdog */
-+	{ .addr = SNARL_BARK_BITE_WD_CFG, .mask = 0xff, .val = 0 },
-+	{ .addr = WD_CFG,
-+	  .mask = WATCHDOG_TRIGGER_AFP_EN_BIT | WDOG_TIMER_EN_ON_PLUGIN_BIT |
-+		  BARK_WDOG_INT_EN_BIT,
-+	  .val = 0 },
-+	/*
-+	 * Enable Automatic Input Current Limit, this will slowly ramp up the current
-+	 * When connected to a wall charger, and automatically stop when it detects
-+	 * the charger current limit (voltage drop?) or it reaches the programmed limit.
-+	 */
-+	{ .addr = USBIN_AICL_OPTIONS_CFG,
-+	  .mask = USBIN_AICL_PERIODIC_RERUN_EN_BIT | USBIN_AICL_ADC_EN_BIT
-+			| USBIN_AICL_EN_BIT | SUSPEND_ON_COLLAPSE_USBIN_BIT,
-+	  .val = USBIN_AICL_PERIODIC_RERUN_EN_BIT | USBIN_AICL_EN_BIT |
-+		 SUSPEND_ON_COLLAPSE_USBIN_BIT },
-+	{ .addr = AICL_RERUN_TIME_CFG,
-+	  .mask = AICL_RERUN_TIME_MASK,
-+	  .val = AICL_RERUN_TIME_12_SECS },
- };
- 
- /* Init sequence derived from vendor downstream driver */
--static const struct smb_init_register smb_init_seq[] = {
--	{ .addr = AICL_RERUN_TIME_CFG, .mask = AICL_RERUN_TIME_MASK, .val = 0 },
-+static const struct smb_init_register smb2_init_seq[] = {
-+	{ .addr = AICL_RERUN_TIME_CFG,
-+	  .mask = AICL_RERUN_TIME_MASK,
-+	  .val = AICL_RERUN_TIME_3_SECS },
- 	/*
- 	 * By default configure us as an upstream facing port
- 	 * FIXME: This will be handled by the type-c driver
- 	 */
- 	{ .addr = TYPE_C_INTRPT_ENB_SOFTWARE_CTRL,
--	  .mask = TYPEC_POWER_ROLE_CMD_MASK | VCONN_EN_SRC_BIT |
-+	  .mask = TYPEC_POWER_ROLE_CMD_MASK | SMB2_VCONN_EN_SRC_BIT |
- 		  VCONN_EN_VALUE_BIT,
--	  .val = VCONN_EN_SRC_BIT },
-+	  .val = SMB2_VCONN_EN_SRC_BIT },
- 	/*
- 	 * Disable Type-C factory mode and stay in Attached.SRC state when VCONN
- 	 * over-current happens
-@@ -815,10 +1161,10 @@ static const struct smb_init_register smb_init_seq[] = {
- 	 * Use VBAT to determine the recharge threshold when battery is full
- 	 * rather than the state of charge.
- 	 */
--	{ .addr = FG_UPDATE_CFG_2_SEL,
--	  .mask = SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT |
--		  VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT,
--	  .val = VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT },
-+	{ .addr = SMB2_FG_UPDATE_CFG_2_SEL,
-+	  .mask = SMB2_SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT |
-+		  SMB2_VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT,
-+	  .val = SMB2_VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT },
- 	/* Enable charging */
- 	{ .addr = USBIN_OPTIONS_1_CFG, .mask = HVDCP_EN_BIT, .val = 0 },
- 	{ .addr = CHARGING_ENABLE_CMD,
-@@ -883,7 +1229,7 @@ static const struct smb_init_register smb_init_seq[] = {
- 	 */
- 	{ .addr = PRE_CHARGE_CURRENT_CFG,
- 	  .mask = PRE_CHARGE_CURRENT_SETTING_MASK,
--	  .val = 500000 / CURRENT_SCALE_FACTOR },
-+	  .val = 500000 / SMB2_CURRENT_STEP_UA },
- 	/*
- 	 * This overrides all of the current limit options exposed to userspace
- 	 * and prevents the device from pulling more than ~1A. This is done
-@@ -891,20 +1237,85 @@ static const struct smb_init_register smb_init_seq[] = {
- 	 */
- 	{ .addr = FAST_CHARGE_CURRENT_CFG,
- 	  .mask = FAST_CHARGE_CURRENT_SETTING_MASK,
--	  .val = 1000000 / CURRENT_SCALE_FACTOR },
-+	  .val = 1000000 / SMB2_CURRENT_STEP_UA },
-+};
-+
-+static const struct smb_match_data pmi8998_match_data = {
-+	.init_seq = smb2_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb2_init_seq),
-+	.name = "pmi8998",
-+	.gen = SMB2,
-+	.fv_min_uv = 3487500,
-+	.fv_max_uv = 4920000,
-+	.fv_step_uv = 7500,
-+	.fcc_max_ua = 4500000,
-+	.fcc_step_ua = 25000,
-+	.icl_max_ua = 4800000,
-+	.icl_step_ua = 25000,
-+	.icl_status = SMB2_ICL_STATUS,
-+	.usbin_current_scale = 1,
-+};
-+
-+static const struct smb_match_data pm660_match_data = {
-+	.init_seq = smb2_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb2_init_seq),
-+	.name = "pm660",
-+	.gen = SMB2,
-+	.fv_min_uv = 3487500,
-+	.fv_max_uv = 4920000,
-+	.fv_step_uv = 7500,
-+	.fcc_max_ua = 4500000,
-+	.fcc_step_ua = 25000,
-+	.icl_max_ua = 4800000,
-+	.icl_step_ua = 25000,
-+	.icl_status = SMB2_ICL_STATUS,
-+	.usbin_current_scale = 1,
-+};
-+
-+static const struct smb_match_data pm8150b_match_data = {
-+	.init_seq = smb5_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb5_init_seq),
-+	.name = "pm8150b",
-+	.gen = SMB5,
-+	.fv_min_uv = 3600000,
-+	.fv_max_uv = 4790000,
-+	.fv_step_uv = 10000,
-+	.fcc_max_ua = 8000000,
-+	.fcc_step_ua = 50000,
-+	.icl_max_ua = 5000000,
-+	.icl_step_ua = 50000,
-+	.icl_status = SMB5_AICL_ICL_STATUS,
-+	.usbin_current_scale = 5,
-+};
-+
-+static const struct smb_match_data pm7250b_match_data = {
-+	.init_seq = smb5_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb5_init_seq),
-+	.name = "pm7250b",
-+	.gen = SMB5,
-+	.fv_min_uv = 3600000,
-+	.fv_max_uv = 4790000,
-+	.fv_step_uv = 10000,
-+	.fcc_max_ua = 8000000,
-+	.fcc_step_ua = 50000,
-+	.icl_max_ua = 5000000,
-+	.icl_step_ua = 50000,
-+	.icl_status = SMB5_AICL_ICL_STATUS,
-+	.usbin_current_scale = 5,
- };
- 
--static int smb_init_hw(struct smb_chip *chip)
-+static int smb_init_hw(struct smb_chip *chip,
-+		       const struct smb_init_register *init_seq, size_t len)
- {
- 	int rc, i;
- 
--	for (i = 0; i < ARRAY_SIZE(smb_init_seq); i++) {
-+	for (i = 0; i < len; i++) {
- 		dev_dbg(chip->dev, "%d: Writing 0x%02x to 0x%02x\n", i,
--			smb_init_seq[i].val, smb_init_seq[i].addr);
-+			init_seq[i].val, init_seq[i].addr);
- 		rc = regmap_update_bits(chip->regmap,
--					chip->base + smb_init_seq[i].addr,
--					smb_init_seq[i].mask,
--					smb_init_seq[i].val);
-+					chip->base + init_seq[i].addr,
-+					init_seq[i].mask,
-+					init_seq[i].val);
- 		if (rc < 0)
- 			return dev_err_probe(chip->dev, rc,
- 					     "%s: init command %d failed\n",
-@@ -914,19 +1325,6 @@ static int smb_init_hw(struct smb_chip *chip)
- 	return 0;
- }
- 
--static void smb_restore_charge_enable(void *data)
--{
--	struct smb_chip *chip = data;
--	int rc;
--
--	rc = regmap_update_bits(chip->regmap,
--				chip->base + CHARGING_ENABLE_CMD,
--				CHARGING_ENABLE_CMD_BIT,
--				chip->initial_charge_enable);
--	if (rc < 0)
--		dev_err(chip->dev, "Couldn't restore charging state: %d\n", rc);
--}
--
- static int smb_init_irq(struct smb_chip *chip, int *irq, const char *name,
- 			 irqreturn_t (*handler)(int irq, void *data))
- {
-@@ -948,14 +1346,38 @@ static int smb_init_irq(struct smb_chip *chip, int *irq, const char *name,
- 	return 0;
- }
- 
-+static void smb_restore_charge_state(void *data)
-+{
-+	struct smb_chip *chip = data;
-+	int rc;
-+
-+	rc = regmap_update_bits(chip->regmap,
-+				chip->base + CHARGING_ENABLE_CMD,
-+				CHARGING_ENABLE_CMD_BIT,
-+				chip->initial_charge_enable);
-+	if (rc < 0) {
-+		dev_err(chip->dev, "could not restore charging state: %d\n", rc);
-+		return;
-+	}
-+
-+	if (chip->gen == SMB5) {
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + USBIN_CMD_IL,
-+					USBIN_SUSPEND_BIT,
-+					chip->initial_usb_suspend);
-+		if (rc < 0)
-+			dev_err(chip->dev,
-+				"could not restore USB input state: %d\n", rc);
-+	}
-+}
-+
- static int smb_probe(struct platform_device *pdev)
- {
- 	struct power_supply_config supply_config = {};
- 	struct power_supply_desc *desc;
- 	struct smb_chip *chip;
--	unsigned int charge_enable;
--	unsigned int float_voltage_sel;
--	int float_voltage_uv;
-+	const struct smb_match_data *match_data;
-+	unsigned int reg;
- 	int rc, irq;
- 
- 	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-@@ -986,19 +1408,57 @@ static int smb_probe(struct platform_device *pdev)
- 				     "Couldn't get usbin_i IIO channel\n");
- 	}
- 
--	rc = regmap_read(chip->regmap, chip->base + CHARGING_ENABLE_CMD,
--			 &charge_enable);
-+	match_data = device_get_match_data(chip->dev);
-+	if (!match_data)
-+		return dev_err_probe(chip->dev, -ENODEV,
-+				     "missing match data\n");
-+
-+	chip->gen = match_data->gen;
-+	chip->match_data = match_data;
-+	chip->icl_max_ua = match_data->icl_max_ua;
-+	chip->icl_step_ua = match_data->icl_step_ua;
-+	chip->icl_status = match_data->icl_status;
-+	chip->usbin_current_scale = match_data->usbin_current_scale;
-+
-+	dev_info(chip->dev, "Generation %s\n", chip->gen == SMB2 ? "SMB2" : "SMB5");
-+	if (chip->gen == SMB5) {
-+		rc = regmap_read(chip->regmap, chip->base + USBIN_CMD_IL, &reg);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not read USB input state\n");
-+		chip->initial_usb_suspend = reg & USBIN_SUSPEND_BIT;
-+	}
-+
-+	rc = regmap_read(chip->regmap,
-+			 chip->base + CHARGING_ENABLE_CMD, &reg);
- 	if (rc < 0)
- 		return dev_err_probe(chip->dev, rc,
--				     "Couldn't read charging state\n");
-+				     "could not read charging state\n");
-+	chip->initial_charge_enable = reg & CHARGING_ENABLE_CMD_BIT;
- 
--	chip->initial_charge_enable = charge_enable & CHARGING_ENABLE_CMD_BIT;
--	rc = devm_add_action_or_reset(chip->dev, smb_restore_charge_enable, chip);
--	if (rc)
--		return dev_err_probe(chip->dev, rc,
--				     "Couldn't register charging state rollback\n");
-+	rc = devm_add_action_or_reset(chip->dev,
-+				      smb_restore_charge_state, chip);
-+	if (rc < 0)
-+		return rc;
- 
--	rc = smb_init_hw(chip);
-+	if (chip->gen == SMB5) {
-+		/* Do not use bootloader charge limits while configuring SMB5. */
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + USBIN_CMD_IL,
-+					USBIN_SUSPEND_BIT, USBIN_SUSPEND_BIT);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not suspend USB input\n");
-+
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + CHARGING_ENABLE_CMD,
-+					CHARGING_ENABLE_CMD_BIT, 0);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not disable charging\n");
-+	}
-+
-+	rc = smb_init_hw(chip, match_data->init_seq, match_data->init_seq_len);
- 	if (rc < 0)
- 		return rc;
- 
-@@ -1011,7 +1471,7 @@ static int smb_probe(struct platform_device *pdev)
- 	memcpy(desc, &smb_psy_desc, sizeof(smb_psy_desc));
- 	desc->name =
- 		devm_kasprintf(chip->dev, GFP_KERNEL, "%s-charger",
--			       (const char *)device_get_match_data(chip->dev));
-+			       match_data->name);
- 	if (!desc->name)
- 		return -ENOMEM;
- 
-@@ -1021,46 +1481,13 @@ static int smb_probe(struct platform_device *pdev)
- 		return dev_err_probe(chip->dev, PTR_ERR(chip->chg_psy),
- 				     "failed to register power supply\n");
- 
--	rc = power_supply_get_battery_info(chip->chg_psy, &chip->batt_info);
--	if (rc)
--		return dev_err_probe(chip->dev, rc,
--				     "Failed to get battery info\n");
--
--	rc = devm_delayed_work_autocancel(chip->dev, &chip->status_change_work,
-+	rc = devm_delayed_work_autocancel(chip->dev,
-+					  &chip->status_change_work,
- 					  smb_status_change_work);
- 	if (rc)
- 		return dev_err_probe(chip->dev, rc,
- 				     "Failed to init status change work\n");
- 
--	if (power_supply_battery_info_has_prop(chip->batt_info,
--					       POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)) {
--		float_voltage_uv =
--			chip->batt_info->constant_charge_voltage_max_uv;
--	} else if (power_supply_battery_info_has_prop(chip->batt_info,
--					      POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN)) {
--		float_voltage_uv = chip->batt_info->voltage_max_design_uv;
--	} else {
--		dev_warn(chip->dev, "No battery float voltage; preserving hardware setting\n");
--		goto skip_float_voltage;
--	}
--
--	if (float_voltage_uv < SMB2_FLOAT_VOLTAGE_MIN_UV ||
--	    float_voltage_uv > SMB2_FLOAT_VOLTAGE_MAX_UV)
--		return dev_err_probe(chip->dev, -EINVAL,
--				     "float voltage %d uV outside %d-%d uV\n",
--				     float_voltage_uv,
--				     SMB2_FLOAT_VOLTAGE_MIN_UV,
--				     SMB2_FLOAT_VOLTAGE_MAX_UV);
--
--	float_voltage_sel =
--		(float_voltage_uv - SMB2_FLOAT_VOLTAGE_MIN_UV) /
--		SMB2_FLOAT_VOLTAGE_STEP_UV;
--	rc = regmap_update_bits(chip->regmap, chip->base + FLOAT_VOLTAGE_CFG,
--				FLOAT_VOLTAGE_SETTING_MASK, float_voltage_sel);
--	if (rc < 0)
--		return dev_err_probe(chip->dev, rc, "Couldn't set vbat max\n");
--
--skip_float_voltage:
- 	rc = smb_init_irq(chip, &irq, "bat-ov", smb_handle_batt_overvoltage);
- 	if (rc < 0)
- 		return rc;
-@@ -1084,9 +1511,30 @@ static int smb_probe(struct platform_device *pdev)
- 	if (rc < 0)
- 		return dev_err_probe(chip->dev, rc, "Couldn't set wake irq\n");
- 
--	devm_remove_action(chip->dev, smb_restore_charge_enable, chip);
-+	if (chip->gen == SMB2)
-+		devm_remove_action(chip->dev, smb_restore_charge_state, chip);
-+
-+	if (chip->gen == SMB5) {
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + CHARGING_ENABLE_CMD,
-+					CHARGING_ENABLE_CMD_BIT,
-+					CHARGING_ENABLE_CMD_BIT);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not enable charging\n");
-+
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + USBIN_CMD_IL,
-+					USBIN_SUSPEND_BIT, 0);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not enable USB input\n");
-+
-+		devm_remove_action(chip->dev, smb_restore_charge_state, chip);
-+	}
- 
- 	platform_set_drvdata(pdev, chip);
-+	WRITE_ONCE(chip->probe_complete, true);
- 
- 	/* Initialise charger state */
- 	schedule_delayed_work(&chip->status_change_work, 0);
-@@ -1095,8 +1543,10 @@ static int smb_probe(struct platform_device *pdev)
- }
- 
- static const struct of_device_id smb_match_id_table[] = {
--	{ .compatible = "qcom,pmi8998-charger", .data = "pmi8998" },
--	{ .compatible = "qcom,pm660-charger", .data = "pm660" },
-+	{ .compatible = "qcom,pmi8998-charger", .data = &pmi8998_match_data },
-+	{ .compatible = "qcom,pm660-charger", .data = &pm660_match_data },
-+	{ .compatible = "qcom,pm7250b-charger", .data = &pm7250b_match_data },
-+	{ .compatible = "qcom,pm8150b-charger", .data = &pm8150b_match_data },
- 	{ /* sentinal */ }
- };
- MODULE_DEVICE_TABLE(of, smb_match_id_table);
-@@ -1112,5 +1562,5 @@ static struct platform_driver qcom_spmi_smb = {
- module_platform_driver(qcom_spmi_smb);
- 
- MODULE_AUTHOR("Casey Connolly <casey.connolly@linaro.org>");
--MODULE_DESCRIPTION("Qualcomm SMB2 Charger Driver");
-+MODULE_DESCRIPTION("Qualcomm SMB2 and SMB5 Charger Driver");
- MODULE_LICENSE("GPL");
-
--- 
-2.54.0
-
-
+> ---
+> PCIe WAKE# interrupt is needed for bringing back PCIe device state from
+> D3cold to D0.
+> 
+> This is pending from long time, there was two attempts done previously to
+> add WAKE# support[1], [2]. Those series tried to add support for legacy
+> interrupts along with WAKE#. Legacy interrupts are already available in
+> the latest kernel and we can ignore them. For the wake IRQ the series is
+> trying to use interrupts property define in the device tree.
+> 
+> WAKE# is added in dts schema and merged based on this patch.
+> https://lore.kernel.org/all/20250515090517.3506772-1-krishna.chundru@oss.qualcomm.com/
+> 
+> [1]: https://lore.kernel.org/all/b2b91240-95fe-145d-502c-d52225497a34@nvidia.com/T/
+> [2]: https://lore.kernel.org/all/20171226023646.17722-1-jeffy.chen@rock-chips.com/
+> ---
+> Changes in v12:
+> - move platform_pci_configure_wake() before device_add() (sashiko).
+> - set irq type based on the wake-gpios property (Sashiko).
+> - Link to v11: https://patch.msgid.link/20260624-wakeirq_support-v11-1-120fbfaebe59@oss.qualcomm.com
+> 
+> Changes in v11:
+> - Add device_init_wakeup() as client driver is not expected to enable
+>   bridge dev wakeup capability.
+> - Link to v10: https://patch.msgid.link/20260511-wakeirq_support-v10-0-c10af9c9eb8c@oss.qualcomm.com
+> 
+> Changes in v10:
+> - As sashiko pointed, shared irq has plenty of race conditions.
+> - So we are moving away from the shared IRQ patch and registering with
+>   dedicated wake irq only, as part of wake irq the link will come to D0
+>   as the parent controller driver will be runtime resume first and then
+>   pme service will kick in wake up correct endpoint driver.
+> - Removed device_init_wakeup() since it enabling wakeup explicitly,
+>   which is not intended as this should be set by endpoint driver only.
+> - Link to v9: https://lore.kernel.org/r/20260403-wakeirq_support-v9-0-1cbecf3b58d7@oss.qualcomm.com
+> 
+> Changes in v9:
+> - Call device_init_wakeup() only if
+>   dev_pm_set_dedicated_shared_wake_irq() succeeds (Mani).
+> - Change the IRQ_TYPE from IRQ_TYPE_EDGE_FALLING to IRQ_TYPE_LEVEL_LOW (Mani).
+> - Link to v8: https://lore.kernel.org/r/20260313-wakeirq_support-v8-0-48a0a702518a@oss.qualcomm.com
+> 
+> Changes in v8:
+> - Moved the stub functions under CONFIG_OF_IRQ(mani).
+> - Added the description of how dev_pm_set_dedicated_shared_wake_irq()
+>   works.
+> - Link to v7: https://lore.kernel.org/r/20260218-wakeirq_support-v7-0-0d4689830207@oss.qualcomm.com
+> 
+> Changes in v7:
+> - Updated the commit text (Mani).
+> - Couple of nits like using pci_err instead of dev_err,
+>   use platform_pci_configure_wake(), platform_pci_remove_wake() instead
+>   of calling directly calling pci_configure_of_wake_gpio() & pci_remove_of_wake_gpio() etc (Mani).
+> - Add a new fwnode_gpiod_get() API that wraps fwnode_gpiod_get_index(..0..), similar to
+>   devm_fwnode_gpiod_get() (Mani).
+> - Link to v6: https://lore.kernel.org/r/20251127-wakeirq_support-v6-0-60f581f94205@oss.qualcomm.com
+> 
+> Changes in v6:
+> - Change the name to dev_pm_set_dedicated_shared_wake_irq() and make the
+>   changes pointed by (Rafael). 
+> - Link to v5: https://lore.kernel.org/r/20251107-wakeirq_support-v5-0-464e17f2c20c@oss.qualcomm.com
+> 
+> Changes in v5:
+> - Enable WAKE# irq only when there is wake -gpios defined in its device
+>   tree node (Bjorn).
+> - For legacy bindings for direct atach check in root port if we haven't
+>   find the wake in the endpoint node.
+> - Instead of hooking wake in driver bound case, do it in the framework
+>   irrespective of the driver state (Bjorn).
+> - Link to v4: https://lore.kernel.org/r/20250801-wake_irq_support-v4-0-6b6639013a1a@oss.qualcomm.com
+> 
+> Changes in v4:
+> - Move wake from portdrv to core framework to endpoint (Bjorn).
+> - Added support for multiple WAKE# case (Bjorn). But traverse from
+>   endpoint upstream port to root port till you get WAKE#. And use
+>   IRQF_SHARED flag for requesting interrupts.
+> - Link to v3: https://lore.kernel.org/r/20250605-wake_irq_support-v3-0-7ba56dc909a5@oss.qualcomm.com
+> 
+> Changes in v3:
+> - Update the commit messages, function names etc as suggested by Mani.
+> - return wake_irq if returns error (Neil).
+> - Link to v2: https://lore.kernel.org/r/20250419-wake_irq_support-v2-0-06baed9a87a1@oss.qualcomm.com
+> 
+> Changes in v2:
+> - Move the wake irq teardown after pcie_port_device_remove
+>   and move of_pci_setup_wake_irq before pcie_link_rcec (Lukas)
+> - teardown wake irq in shutdown also.
+> - Link to v1: https://lore.kernel.org/r/20250401-wake_irq_support-v1-0-d2e22f4a0efd@oss.qualcomm.com
+> 
+> To: Bjorn Helgaas <bhelgaas@google.com>
+> To: Rob Herring <robh@kernel.org>
+> To: Saravana Kannan <saravanak@kernel.org>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> ---
+>  drivers/pci/of.c       | 78 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/pci/pci.c      | 11 +++++++
+>  drivers/pci/pci.h      |  2 ++
+>  drivers/pci/probe.c    |  2 ++
+>  drivers/pci/remove.c   |  1 +
+>  include/linux/of_pci.h |  6 ++++
+>  include/linux/pci.h    |  2 ++
+>  7 files changed, 102 insertions(+)
+> 
+> diff --git a/drivers/pci/of.c b/drivers/pci/of.c
+> index 8b18c4ba845c..5df6b11cdf9f 100644
+> --- a/drivers/pci/of.c
+> +++ b/drivers/pci/of.c
+> @@ -7,6 +7,7 @@
+>  #define pr_fmt(fmt)	"PCI: OF: " fmt
+>  
+>  #include <linux/cleanup.h>
+> +#include <linux/gpio/consumer.h>
+>  #include <linux/irqdomain.h>
+>  #include <linux/kernel.h>
+>  #include <linux/pci.h>
+> @@ -15,6 +16,7 @@
+>  #include <linux/of_address.h>
+>  #include <linux/of_pci.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/pm_wakeirq.h>
+>  #include "pci.h"
+>  
+>  #ifdef CONFIG_PCI
+> @@ -586,6 +588,82 @@ int of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin)
+>  	return irq_create_of_mapping(&oirq);
+>  }
+>  EXPORT_SYMBOL_GPL(of_irq_parse_and_map_pci);
+> +
+> +static void pci_configure_wake_irq(struct pci_dev *pdev, struct gpio_desc *wake)
+> +{
+> +	int ret, wake_irq, irq_type;
+> +
+> +	wake_irq = gpiod_to_irq(wake);
+> +	if (wake_irq < 0) {
+> +		pci_err(pdev, "Failed to get wake irq: %d\n", wake_irq);
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * dev_pm_set_dedicated_wake_irq() associates a wakeup IRQ with the
+> +	 * device and requests it, but the PM core keeps it disabled by default.
+> +	 * The IRQ is enabled only when the device is allowed to wake the system
+> +	 * (during system suspend and after runtime suspend), and only if device
+> +	 * wakeup is enabled.
+> +	 *
+> +	 * When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume()
+> +	 * to bring the device back to an active power state (e.g. from D3cold to D0).
+> +	 * Once the device is active and the link is usable, the endpoint may signal
+> +	 * a PME, which is then handled by the PCI core (either via PME polling or the
+> +	 * PCIe PME service driver) to wakeup particular endpoint.
+> +	 */
+> +	ret = dev_pm_set_dedicated_wake_irq(&pdev->dev, wake_irq);
+> +	if (ret < 0) {
+> +		pci_err(pdev, "Failed to set WAKE# IRQ: %d\n", ret);
+> +		return;
+> +	}
+> +
+> +	irq_type = gpiod_is_active_low(wake) ? IRQ_TYPE_LEVEL_LOW :
+> +						IRQ_TYPE_LEVEL_HIGH;
+> +	ret = irq_set_irq_type(wake_irq, irq_type);
+> +	if (ret < 0) {
+> +		dev_pm_clear_wake_irq(&pdev->dev);
+> +		pci_err(pdev, "Failed to set irq_type: %d\n", ret);
+> +		return;
+> +	}
+> +
+> +	device_init_wakeup(&pdev->dev, true);
+> +}
+> +
+> +void pci_configure_of_wake_gpio(struct pci_dev *dev)
+> +{
+> +	struct device_node *dn = pci_device_to_OF_node(dev);
+> +	struct gpio_desc *gpio;
+> +
+> +	if (!dn && !dev->wake)
+> +		return;
+> +	/*
+> +	 * fwnode_gpiod_get() may fail with -EBUSY (e.g. shared WAKE#), but the
+> +	 * actual WAKE# trigger from the device would still work and the host
+> +	 * controller driver will enable power to the topology.
+> +	 *
+> +	 * -EPROBE_DEFER cannot be propagated here since pci_device_add() has no
+> +	 *  retry mechanism.
+> +	 */
+> +	gpio = fwnode_gpiod_get(of_fwnode_handle(dn), "wake", GPIOD_IN, NULL);
+> +	if (!IS_ERR(gpio)) {
+> +		dev->wake = gpio;
+> +		pci_configure_wake_irq(dev, gpio);
+> +	}
+> +}
+> +
+> +void pci_remove_of_wake_gpio(struct pci_dev *dev)
+> +{
+> +	struct device_node *dn = pci_device_to_OF_node(dev);
+> +
+> +	if (!dn)
+> +		return;
+> +
+> +	device_init_wakeup(&dev->dev, false);
+> +	dev_pm_clear_wake_irq(&dev->dev);
+> +	gpiod_put(dev->wake);
+> +	dev->wake = NULL;
+> +}
+>  #endif	/* CONFIG_OF_IRQ */
+>  
+>  static int pci_parse_request_of_pci_ranges(struct device *dev,
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 77b17b13ee61..14ec6c064cf1 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/lockdep.h>
+>  #include <linux/msi.h>
+>  #include <linux/of.h>
+> +#include <linux/of_pci.h>
+>  #include <linux/pci.h>
+>  #include <linux/pm.h>
+>  #include <linux/slab.h>
+> @@ -1114,6 +1115,16 @@ static inline bool platform_pci_bridge_d3(struct pci_dev *dev)
+>  	return acpi_pci_bridge_d3(dev);
+>  }
+>  
+> +void platform_pci_configure_wake(struct pci_dev *dev)
+> +{
+> +	pci_configure_of_wake_gpio(dev);
+> +}
+> +
+> +void platform_pci_remove_wake(struct pci_dev *dev)
+> +{
+> +	pci_remove_of_wake_gpio(dev);
+> +}
+> +
+>  /**
+>   * pci_update_current_state - Read power state of given device and cache it
+>   * @dev: PCI device to handle.
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 4469e1a77f3c..17d392dfda51 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -285,6 +285,8 @@ void pci_msix_init(struct pci_dev *dev);
+>  bool pci_bridge_d3_possible(struct pci_dev *dev);
+>  void pci_bridge_d3_update(struct pci_dev *dev);
+>  int pci_bridge_wait_for_secondary_bus(struct pci_dev *dev, char *reset_type);
+> +void platform_pci_configure_wake(struct pci_dev *dev);
+> +void platform_pci_remove_wake(struct pci_dev *dev);
+>  
+>  static inline bool pci_bus_rrs_vendor_id(u32 l)
+>  {
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index dd0abbc63e18..27008e2ea5af 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2749,6 +2749,8 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+>  
+>  	pci_init_capabilities(dev);
+>  
+> +	platform_pci_configure_wake(dev);
+> +
+>  	/*
+>  	 * Add the device to our list of discovered devices
+>  	 * and the bus list for fixup functions, etc.
+> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+> index d8bffa21498a..e711ac1d4e38 100644
+> --- a/drivers/pci/remove.c
+> +++ b/drivers/pci/remove.c
+> @@ -34,6 +34,7 @@ static void pci_destroy_dev(struct pci_dev *dev)
+>  	if (pci_dev_test_and_set_removed(dev))
+>  		return;
+>  
+> +	platform_pci_remove_wake(dev);
+>  	pci_doe_sysfs_teardown(dev);
+>  	pci_npem_remove(dev);
+>  
+> diff --git a/include/linux/of_pci.h b/include/linux/of_pci.h
+> index 29658c0ee71f..649fe8eafcfa 100644
+> --- a/include/linux/of_pci.h
+> +++ b/include/linux/of_pci.h
+> @@ -30,12 +30,18 @@ static inline void of_pci_check_probe_only(void) { }
+>  
+>  #if IS_ENABLED(CONFIG_OF_IRQ)
+>  int of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin);
+> +void pci_configure_of_wake_gpio(struct pci_dev *dev);
+> +void pci_remove_of_wake_gpio(struct pci_dev *dev);
+>  #else
+>  static inline int
+>  of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin)
+>  {
+>  	return 0;
+>  }
+> +
+> +static inline void pci_configure_of_wake_gpio(struct pci_dev *dev) { }
+> +
+> +static inline void pci_remove_of_wake_gpio(struct pci_dev *dev) { }
+>  #endif
+>  
+>  #endif
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 64b308b6e61c..09134d0a559f 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -587,6 +587,8 @@ struct pci_dev {
+>  	/* These methods index pci_reset_fn_methods[] */
+>  	u8 reset_methods[PCI_NUM_RESET_METHODS]; /* In priority order */
+>  
+> +	struct gpio_desc *wake; /* Holds WAKE# gpio */
+> +
+>  #ifdef CONFIG_PCIE_TPH
+>  	u16		tph_cap;	/* TPH capability offset */
+>  	u8		tph_mode;	/* TPH mode */
+> 
+> ---
+> base-commit: 0e35b9b6ec0ffcc5e23cbdec09f5c622ad532b53
+> change-id: 20251104-wakeirq_support-f54c4baa18c5
+> 
+> Best regards,
+> --  
+> Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+> 
