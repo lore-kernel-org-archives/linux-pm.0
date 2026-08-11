@@ -1,166 +1,177 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com [209.85.222.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53CC341DE02
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 09:11:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EC01426D0A
+	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 09:15:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786439467; cv=none; b=sitwbjuoOwdWYluILqiU09WyObKi97+GMS01P190O2aU67v3C9hnvrsmqx/oO0QU7oo50m+YQA/9u5IZKzFBlCivFsQrzC4Ei4TZkqt3+p/lZySOJnQLRX5jtRM8tYslOtYaDScrwFp5l3PAyX/e6dM1nb32HpcYpyiAgTds33Q=
+	t=1786439730; cv=none; b=MZaKY/cbQjgOxJJWiyoIGshnZGbiT4XarD5VSLA57umjOiDyFg7/uTpXbB1yGYDG+pAC2RwlcaOGzDwtd8SKrrXb1Y4TXWUYY5g/5qt2yjFZ2wLZmQ5LLWkQuu/hI3KFVgczkzIH5SIP13ve6B+JL3cfMewiQdITL8CmAWMT5pE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786439467; c=relaxed/simple;
-	bh=g/sbI5oXcAE+LgcHG3CEAclXiNKltiwKtzuhR22iZJU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=brlydfUubDacPSXTkdOA+3dJ6RBd41fTUX6m3knNrtH3STfH7q9A7hiqoHxIHsf9DYYif/g6swccdH415hhpTLcXWKPyt6yALdMfYSboUm/uvgBfYWQACwgGZvnv2j+n7YSiCDvYNgxBcEHtsswRjsthS4dnJue74ZHPEpMLACs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=YjcosBLi; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=C9Aumoqo; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="YjcosBLi";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="C9Aumoqo"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67B7HEw73552694
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 09:11:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	6VViPe+Oj+T3kRKRU1AgaHow4Wbuy+422OfMAgT80X8=; b=YjcosBLiv/+poUe0
-	6OrKxJu8hmzQ0iSgmf9s2h0iIKZjlHua7o5DrcgVD7dKEMc6xd/YrbXUBNZnKl2F
-	uoaXVjyz21Y26qe1CKYDvLVxXJFkIf0rbXWtS4Gs2cE59x9bu+Vj8PB5LXYZTD4d
-	a8stiUoMM765CxmkjXO3zE34wXoz1qD0hfzOsy8kTLBLkpT/FBEr5DUo0FmZlc2f
-	mEbzVCOsBx13cg5mwHIez81gkwQruIUChl4SFQKdNYBgaGvuvbrlUDd0K20kRnao
-	jPomNdpK3THtYsYFmsDfRAS+ZSPI2IqCyDqo4N0xy6U4GFSiLMu1DzmENKuKsjyH
-	VPaI8g==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fyqmk20w5-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 09:11:05 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2d04908139bso56370275ad.2
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 02:11:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786439465; x=1787044265; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=6VViPe+Oj+T3kRKRU1AgaHow4Wbuy+422OfMAgT80X8=;
-        b=C9AumoqoA+TtEll4wpMDRd2Emsxj3GvksOqZ6AAYsVcVBY1m2DnsHsPl9NtOKnxp/C
-         pdne6sw0GP6dJVHT/7gbHGVED8GxkRFqlIQoD2KxQymNcPYadwUaGmI4MnJ29GWQVQCg
-         K9bRZ0YML3zBPzMn3u8zId2mAHneMfvD72NyemileGY+70sEDFZ1EZM2Qs3D1GGUv0jf
-         AjfvPt9J0eIczjx/lMaGHa/ajA08GsTnO+Xojw5cqlGsFQ9eaYY8bDAKn6CqKS4Q+3Hf
-         7fWT0axOoyH1fVJEWQhfqZkqFvqNJwjaAsx7y8KGBETiKgRbxhkSoU8Y0V/gcYdw42um
-         WUZw==
+	s=arc-20240116; t=1786439730; c=relaxed/simple;
+	bh=/UkVbiyABCOWkQkk1ensSSE3l3aZFpZe6kVjhYLKH8s=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=utK2qKZEfjZIobbcjWuqVodM/apd2UQD5ivz97gXSnKT8xdjtDYNScB3Lhysnx1ip1twytIxrTIdwFCCmF2VeWzGkDWRtDXOHernb2zB3cKHWr8itfjDJwS9O7J4Woy+Y9+9odZ+RIQfcNhHEbCbVPOppuMnFaiibIX6taoFVKs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f48.google.com with SMTP id a1e0cc1a2514c-9696319e14dso193794241.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 02:15:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786439465; x=1787044265;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6VViPe+Oj+T3kRKRU1AgaHow4Wbuy+422OfMAgT80X8=;
-        b=CeUG7mBSG7JJEFT5PsyIwnEnvWEr+Hz5aF9nqXMqoZX53EjwSBF2qiQaYosWklmeAd
-         A5+NDQp+4awBjdYALfW0SOVSwBDYpvqp5mHyEXnychW7+oK8RuWZ0NgyRDxT4IwhYO/t
-         eonfx2/m2oyOlr6RRytmOKS0WcXWQG+C6Lq8p1y0EXV1qhBVO6pP82OY2+lAakgWHE8J
-         Ntr0k+M8OmJrgyqpZTCcE86Sg5GZ7mQyZQpS7N/mrWm1dChu6Uzq0cM7h/elSMe+lCqk
-         gXfClNPPu2T2dLzWfiHuXptgTE2kHDL6JZCeMqEw+/8QPRT7KWr1zsf5zpPex5VCt558
-         Arqg==
-X-Forwarded-Encrypted: i=1; AHgh+RrzyZmc3o5nzLqZ52JuHWBBwXDaPY8Ii5sXVc2yKkUfY4+1fLx+9fNs7E7fRvM2YSulZJTgUvNzIQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyoV1WFS6BDTISCH1fFNwQoMwP1IfWjNungnff5Ar7n9pkNAMM+
-	hUCzRRaatwoCv1gJKf1n8gZl/yIW//MjcXBMiDs6pZU3gakeKPbmDnOIkEGW/RGcsJjOPMkoJlD
-	GIscj9KQNyPiVK7d3vwkZ0k47Wmm2DX/wPHCZLSi7/fF8YYNiUfaW7NCJPCWZCg==
-X-Gm-Gg: AR+sD12OT0ge/KFDor+1jVB51ZLrigbhkBpphaVDNvN/P6/Br31SF+A72WXwivqZgd+
-	PApQf3N62t7m7w3fYloPbF3fl+li2pUL783iu4fpfA9BcogQB42YDo+lF/BTTknIAgKdCRgcQVg
-	vTiUZ0JCmAXSkbhQ362NhLY3UkxHisDt9YU86d+sKWYtKj12/13262CCdaWOVi7/1kcXB1sxu68
-	lskORWpFegIQV+bW/JA28niPM0YrCFQKyygxH8TRFwXTOa1CGyM/5IGE5mDwF3BYkaNuKpZ4aYw
-	2qMdRw86odFo8X9m76t/tydiMJyVdq3xytDlGulHhTS1BmHmackGKGKXFIad4SNWzJdX6TlNsth
-	FSTbixbhDLKX1x5c+kZ1aTU4J
-X-Received: by 2002:a17:902:eb8b:b0:2c8:25c8:85a6 with SMTP id d9443c01a7336-2d3177cce77mr22356165ad.2.1786439464682;
-        Tue, 11 Aug 2026 02:11:04 -0700 (PDT)
-X-Received: by 2002:a17:902:eb8b:b0:2c8:25c8:85a6 with SMTP id d9443c01a7336-2d3177cce77mr22355575ad.2.1786439464191;
-        Tue, 11 Aug 2026 02:11:04 -0700 (PDT)
-Received: from [10.64.68.239] ([114.94.8.21])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d31621a0dasm4306675ad.69.2026.08.11.02.11.01
+        d=1e100.net; s=20251104; t=1786439727; x=1787044527;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=14plqPeyH6RsdU2VmFKnJtMB+pmrsGKI/JGoWS24hKY=;
+        b=iVGSVm/1xcN9Yq0KGvssfJIrx+DrjoBv1a4MgaSOUIch1hf4X7Fip0iuMUf/bsr5Rp
+         tb88rldvKgzbd6PBA1o9yTQkhSe8ZyPA5fYjLKVkMnuOwvzuX3jL080iaD0glm5XRUdB
+         TIqunMqpzmjmAf3xbthwswcD/2PDuACHmjvnr+S/DWa53SlLmWxk3MnWw8mMZanCdD38
+         KtMSsXB32sm+rCDGKrw3UzkxBDiYaXQjssTZE6Wr+CuYuTBtvxQHIWDBoYEGbRr+FeEZ
+         Ic0u23CRhC0eseZHjZ1RliFkz8DQst8NfX566/9Tq9y7he6dCz3uU0Dhh7FABxpPutuG
+         PXkQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqjDs/6oLmx4AyLBtDw3MLRS5JmZeBOE3pKPSvxgctyJopVMz8dcNRISdDaqJ7RhXB7b6Zo89/qqA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzyAjhaD/i8YgXa8OBj16FMGh1t0SNg4AyYcrK2Tm+034BnNxF6
+	jHkt5Qc6uDZUy0dM56jD5fOwZxwxYVR7HT2IgSNu19RHg7vrTBUzzw6OQb5LLG28
+X-Gm-Gg: AR+sD10imfiYQSLxGk2JiAGFTd7et3yyrvHWO0guWPRLtiVJf58iWM5A1xcfzGdwDrd
+	9fTACXXUbAlSelCT3hqsclQFPhz3AymI4ewyJ2Zd10M6CN/P6QDvwkt/p/aDbPYWirKldTgESCo
+	K8sgeGT85IhFLpZ4JYBukgRptnkjYL6zvdvzZPEczVobweBj94PibnnmMDTEqfNKWt1MOBacFZX
+	ZWtkYIbnLQD7khIOexNIIytq+gZZpmgVVGeISdHercI2J43SY1Lp3qwESuIEOWCSf9Bh37iRhgm
+	hveEuTPAeNbT21r6aRmML7u1ngM9EgXZ5RGpxwldYcbWqXh9eRG87J91P2x8XwTXuhmvn94q0qr
+	EgB6d0BwPUwboGauyUyT+1E9l6QCb4rnM13bvWGs8Xu3kVZ1Rkg79BcrFzcfTBpnePjc6o7Iymt
+	ZVstobQlX93GgCL6YWpfox7k1sI+SeJAJ/RNB90rnkzdyoOWymawtXqt1nNHFGg/k6fe5Xu0DH8
+	HOY1Rc1uDth7TqtsRN2pBwwww==
+X-Received: by 2002:a05:6102:26c8:b0:6d4:ba3e:bf97 with SMTP id ada2fe7eead31-76b55788fc0mr397967137.4.1786439726803;
+        Tue, 11 Aug 2026 02:15:26 -0700 (PDT)
+Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com. [209.85.222.54])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-97a365fba59sm216072241.2.2026.08.11.02.15.26
+        for <linux-pm@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Aug 2026 02:11:03 -0700 (PDT)
-Message-ID: <ef0b034b-a969-409e-a2c2-4c7fa95b57c3@oss.qualcomm.com>
-Date: Tue, 11 Aug 2026 17:10:59 +0800
+        Tue, 11 Aug 2026 02:15:26 -0700 (PDT)
+Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-9696319e14dso193787241.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 02:15:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Ro1CD003AG3Og7E02VMNn7/tfP6FWrnxZ0igP0G/wRUAw3A7q/bV+9vLIMAhJ1NjOXNJEPzZWhdRA==@vger.kernel.org
+X-Received: by 2002:a05:6102:941:b0:738:1fcb:f276 with SMTP id
+ ada2fe7eead31-76b5527db20mr448203137.1.1786439726421; Tue, 11 Aug 2026
+ 02:15:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND v2] dt-bindings: interconnect: qcom-bwmon: Add
- Maili cpu-bwmon compatible
-To: Krzysztof Kozlowski <krzk@kernel.org>, Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260811-bwmon-v2-1-80f7f150ab9e@oss.qualcomm.com>
- <366132c2-273f-4b8e-948d-4956e5241881@oss.qualcomm.com>
- <d8d89181-bc76-4023-87fd-02e85f5c8d49@kernel.org>
-Content-Language: en-US
-From: Yijie Yang <yijie.yang@oss.qualcomm.com>
-In-Reply-To: <d8d89181-bc76-4023-87fd-02e85f5c8d49@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODExMDA3NSBTYWx0ZWRfX7A3M4SsYtlZ5
- 8gvFNKBQU+PMcf9zbLXtY9ImDdDjOAKkKdF/Q5jrDlWTkJPHsbxWBVbAJzgro4vsePdWb+v4Dk4
- kz0f8SHRZxCttbdp4L9heVYruvCWwPpQWtA44I3XjRzqXzSKCNWa8I+9cDN26cn4UFrrqg12zI4
- bcC5r2C/qr3YiKiuqUW/FQHorXSdgR5DoA/f9huEkR12JjAJkBVp+g3MTG7X6jMwewWTFX9raIb
- MECS4a2/AUjpRKr2jX94KTWGIVr2WlqN9pMvZ+anwLCqmZlT3pLrZfuQJ212sgQrWWvzVInVOsU
- v4UzLLZpRksp2TaA84wPahILXxnAiYwFrHveKE6Z8kM61k78TpwVf61+3eGOGrxs/74B6HmR2mO
- bLNfMImTpHb7dQ8PMuUKFjydy+4AHxwu2zcxRcLJl31E3goS8TngfAHRDxV/xwoAnAAQoRPPiIU
- OW1zTdGyKlQwXq0MEog==
-X-Authority-Analysis: v=2.4 cv=O4YJeh9W c=1 sm=1 tr=0 ts=6a7ae729 cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=DiU9YXepysN1ymkdEgsA:9 a=QEXdDO2ut3YA:10
- a=324X-CrmTo6CU4MGRt3R:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODExMDA3NSBTYWx0ZWRfX3eFC1BtLAwfH
- 8i3p1MUB489cw6uDKsGHmIw9+xlm+60Tzd+H2O3YE2149mL2FNVUCA/zHyK65fQTwKPUylVYbF7
- yli5KoAjnLrvPcuY420Gk1W5dWHhsLY=
-X-Proofpoint-GUID: m-cXtMWtVM_Cc8VK5HOIUI2Jk3RXH7nn
-X-Proofpoint-ORIG-GUID: m-cXtMWtVM_Cc8VK5HOIUI2Jk3RXH7nn
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-10_06,2026-08-10_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 lowpriorityscore=0 impostorscore=0 malwarescore=0
- priorityscore=1501 suspectscore=0 spamscore=0 bulkscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608110075
+References: <cover.1785941595.git.geert+renesas@glider.be> <CAPx+jO87d7H92KSR7R7ObR05sM2JcHBCo+YuUf_1gE-KwhR7CQ@mail.gmail.com>
+ <CAMuHMdW78wFHKP8n2P_MEVASO3MFHCjXkEWSFXfE3-mCjkhsgA@mail.gmail.com>
+In-Reply-To: <CAMuHMdW78wFHKP8n2P_MEVASO3MFHCjXkEWSFXfE3-mCjkhsgA@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 11 Aug 2026 11:15:13 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdV15qa+bntYdeEysEc3rJ4dNhQxiVJd-moAGTNyfPdDkA@mail.gmail.com>
+X-Gm-Features: AUfX_mzrvqkMTS8THhoJKajeDFG8F23c6THOaD8Dreq76GI2rXJHX-LkuIBfF_U
+Message-ID: <CAMuHMdV15qa+bntYdeEysEc3rJ4dNhQxiVJd-moAGTNyfPdDkA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/6] R-Car X5H CPG/MDLC support
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+Hi Ulf,
 
+On Mon, 10 Aug 2026 at 16:50, Geert Uytterhoeven <geert@linux-m68k.org> wro=
+te:
+> On Mon, 10 Aug 2026 at 16:18, Ulf Hansson <ulf.hansson@oss.qualcomm.com> =
+wrote:
+> > On Wed, Aug 5, 2026 at 5:21=E2=80=AFPM Geert Uytterhoeven
+> > <geert+renesas@glider.be> wrote:
+> > > This patch series adds minimal support for the Renesas R-Car X5H Cloc=
+k
+> > > Pulse Generator (CPG) and Module Controller (MDLC), to aim for replac=
+ing
+> > > the dummy clocks in r8a78000.dtsi with proper hardware description.
+> > > These two components are closely related, in the sense that they are
+> > > both supposed to be accessed through the ARM System Control and
+> > > Management Interface (SCMI) on the Ironhide development board.
+> > >
+> > > This series consists of three parts:
+> > >   1. Patches 1-2 add DT bindings and DT binding definitions,
+> > >   2. Patches 3-4 add minimal CPG and MDLC drivers,
+> > >   3. Patches 5-6 update the DTS.
+> > > Note that this series depends on v7.2-rc2, due to the use of
+> > > <linux/device-id/of.h>.
+> > >
+> > > Changes compared to v2[1]:
+> > >   - Add Acked-by, Reviewed-by,
+> > >   - Add fixed-rate clocks to kerneldoc of r8a78000_cpg_priv.map,
+> > >   - Use devm_clk_hw_register_fixed_rate(), drop unregister_fixed_clks=
+(),
+> > >   - Drop fill_clk_map(), as it is not really needed until SCMI remapp=
+ing
+> > >     support is added later,
+> > >   - Replace <linux/mod_devicetable.h> by more specific
+> > >     <linux/device-id/of.h> in v7.2-rc2,
+> > >   - Add a comment to document only always-on domains are supported,
+> > >   - Consistently use /* sentinel */ for zero sentinels,
+> > >   - Drop trailing commas from sentinels,
+> > >   - Sort MDLC nodes (alphabetically, by label).
+> > >
+> > > Major changes compared to v1[2] (more detail in the individual patche=
+s):
+> > >   - Add default support not using SCMI,
+> > >   - Drop everything related to SCMI.
+> > >
+> > > Note that this series does not use or rely on SCMI in any way.
+> > > SCMI remapping support will be added in a subsequent series (old vers=
+ion
+> > > at [3]).
+> > > Full hardware support without using SCMI could be added, too, if anyo=
+ne
+> > > would care about that use case.
+> > >
+> > > For testing, I have pushed this series plus additional work (includin=
+g
+> > > a rebased and updated version of [3]) to [4].
+> > >
+> > > While I know it is getting late in the cycle, this work (especially t=
+he
+> > > DT bindings) are a dependency for about any R-Car X5H progress, so it
+> > > would be good to have it included in v7.3.
+> > > Hence I plan to queue the clock patches (1, 3) in renesas-clk for v7.=
+3
+> > > (Stephen still hasn't merged my earlier PR for v7.3 anyway).
+> > > Ulf: It would be great if you could take the pmdomain patches (2, 4).
+> >
+> > Patch 2 applied for next, but I left patch4 for now as it didn't apply
+>
+> Thank you!
+>
+> > cleanly (drivers/soc/renesas/Kconfig had a conflict), thanks!
+>
+> I guess your tree still has the duplicate "default ARCH_RENESAS"?
+> Patch 4 just adds a single line there, and the conflict should be easy
+> to fix.
+>
+> If you want to send me a new patch, please let me know.
 
-On 8/11/2026 4:57 PM, Krzysztof Kozlowski wrote:
-> On 11/08/2026 10:53, Yijie Yang wrote:
->>> ---
->>> base-commit: 550604d6c9b9efc8d068aff94dc301694a7afdee
->>> change-id: 20260512-bwmon-ecb43fda63c9
->>>
->>> Best regards,
->>> --
->>> Yijie Yang <yijie.yang@oss.qualcomm.com>
->>
->> Sorry for missing the previous Reviewed-by and Acked-by tags. I'll send
->> a v3 update to include them.
->>
-> 
-> So how is this resend actually helping to get the code merged. :/
-> 
-> Best regards,
-> Krzysztof
+I have sent a v4 against pmdomain/next:
+https://lore.kernel.org/all/d4bd0cc7f26c1bcdc260edb994b4971cb5dd3a10.178643=
+8424.git.geert+renesas@glider.be/
 
-Fair point. The patch itself hasn't changed. I only realized after 
-sending the RESEND that I had dropped the previously received 
-Reviewed-by and Acked-by tags. I won't spinning a new version just for that.
+Gr{oetje,eeting}s,
 
-Previously received trailers:
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Reviewed-by: Jingyi Wang <jingyi.wang@oss.qualcomm.com>
+                        Geert
 
--- 
-Best Regards,
-Yijie
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
