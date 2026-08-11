@@ -1,102 +1,146 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 334B2416139
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 08:21:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19319416CF4;
+	Tue, 11 Aug 2026 08:37:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786436504; cv=none; b=bfc0/jhO3JJOoSf4h8ioapxm64wy03vG3Rm5e0CThg6CVTpYC/sUqGkswsf0xsy6zUkZxTzGQN4NjBjQBHw//nGQAJqBTON0mPjb8p7HKYUYxpBvlWkdwgKyTLb2Z6vpVcw4Mexc/uCcEktyDjmnSk6SpFNy9X+W0f0KNK108eQ=
+	t=1786437470; cv=none; b=phv5aA9AIejz/Rxst9DNgYYtHPO/eMYseaWzDgRag1acIijFHAPBdofIIDLtfha3+jBl364peVL38HqVZ+1DKpzPBmWx9g/ffzMk/Fhk/HzAt2363Rabmg+yhFmaRhPDNOzeLGgvcKQSBkbFh0j/85yv7hPwg8oXDXKHf+2O3/s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786436504; c=relaxed/simple;
-	bh=1P60yeqQ3jiIxpYyG9voDbKPXLyZCOei7vSuoqYbXR0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=T2kx5MROv0SYzg+VHP31x+kpsy5/nie91/Olr8GZq/SvP59CiWWufvvrZ8gTsrYA4Rn1AZzG9Lq49a1YgIbX2dVLop5iM6JPqwoqZepP6C64VM859k4N3htyC/gDvvBLo3s+5k1WReZ5GeL0kaSArks1SBsU5kQdXNLWXwHG0e8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SliWy1FW; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1786437470; c=relaxed/simple;
+	bh=ch2VZcF0grYih0yOT/whjAaAflovv1AgsISvBsyTzfc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=XJMbWgAL/YP3XAzk117oEVR4GrxRq1XbfuoOpa22UF/BAJTz4EGOokrEZGhBSskQbDcg7WZSHvT+8Fidt/byONtmJT3QUst2n/GGChjFErDxI+kzOzJXYm9YnwnD8Ip+ymcOhAdD0YVoLGADEVo41ktglnjz4UQpquCYHD+GsVA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rrgU7J2Y; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SliWy1FW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786436500; x=1817972500;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=1P60yeqQ3jiIxpYyG9voDbKPXLyZCOei7vSuoqYbXR0=;
-  b=SliWy1FWZpxWSh6lCJ1OmFktHfNuHQqEUzBMT7o1XlJhOt/qRo0Gf1BV
-   asgPymuwfgzC80mEIOcjd4qCgw9DEj/WL1CiWStyAO+Q2n/OTBwzfnsqj
-   0+w++souq0jBGa1EUevkF4IzO7X65JT89YmXi65aAU7ntARjWQsocgu4Z
-   CjleHG8TixnQ6ZPSnyek5NxwpDk5fs+L6KDI7loGwip0i8mQDImgghdJe
-   O3Y50V75pDhSW4eeyxl8HNfCCGLwVy/q5c96Zz3aB4UMCUOIrZFKqYh37
-   Vb4q1lgrdfbu1CtY0yNw109lBcB1tvX9w/KMeA3KddTIWS2SRPY+ljEKs
-   w==;
-X-CSE-ConnectionGUID: uyv47nFURDa7tDmi3kY+VA==
-X-CSE-MsgGUID: g347jR6HQSeVKkkmkBN4yA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11871"; a="97558191"
-X-IronPort-AV: E=Sophos;i="6.25,217,1779174000"; 
-   d="scan'208";a="97558191"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Aug 2026 01:21:39 -0700
-X-CSE-ConnectionGUID: K3+2uR+sTBa69X0oEy0onw==
-X-CSE-MsgGUID: j4gHbkfdSVm4lsUrpcNp2Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,217,1779174000"; 
-   d="scan'208";a="259008005"
-Received: from baandr0id001.iind.intel.com ([10.49.109.195])
-  by fmviesa006.fm.intel.com with ESMTP; 11 Aug 2026 01:21:37 -0700
-From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-To: rafael@kernel.org,
-	artem.bityutskiy@linux.intel.com,
-	lenb@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-Subject: [PATCH] intel_idle: Fix C6S and C10 latency values for Pantherlake
-Date: Tue, 11 Aug 2026 13:47:29 +0530
-Message-Id: <20260811081729.186571-1-kaushlendra.kumar@intel.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rrgU7J2Y"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AD873C2BCF7;
+	Tue, 11 Aug 2026 08:37:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1786437469;
+	bh=ch2VZcF0grYih0yOT/whjAaAflovv1AgsISvBsyTzfc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=rrgU7J2Y1V9rqx/kqmCd+p24ryn8GdNYFQIdhyyXPjWh9474PD5hjKr+vajyUuh2w
+	 0rkOf02D05OUqOb9ZMhREMPNJ7BZ7cKO27WTQrrNxcBbpujrSMW1WRVXlpFh2W8yXH
+	 HhoQ+bAggqEoOjELhqvXmX0kZdJ1k+edMG9VFLRddKQ8Lj7nAYjwS+fbcbBCzcgTOf
+	 uS0R/xH+ifKUth54aH3bbJVpO/A59mMXrtvpmCiNGCA7YncZXQRGtY2dGl7dOZYof3
+	 yHEZWGhOyLiO+Fl+7yRRkI5vSMZAqhgKbydm9Wd7fa21kgpM92JqaHmU3f8oGehpZz
+	 T3jcEqEvXpCqQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D6DAC5CFCF;
+	Tue, 11 Aug 2026 08:37:49 +0000 (UTC)
+From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
+Date: Tue, 11 Aug 2026 08:37:43 +0000
+Subject: [PATCH v2 1/2] dt-bindings: thermal: amlogic: Add A9 thermal
+ bindings
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260811-a9-thermal-v2-1-7ddc33b11b9a@amlogic.com>
+References: <20260811-a9-thermal-v2-0-7ddc33b11b9a@amlogic.com>
+In-Reply-To: <20260811-a9-thermal-v2-0-7ddc33b11b9a@amlogic.com>
+To: Guillaume La Roque <glaroque@baylibre.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Xianwei Zhao <xianwei.zhao@amlogic.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786437467; l=1992;
+ i=xianwei.zhao@amlogic.com; s=20251216; h=from:subject:message-id;
+ bh=gngHN4z9n9SyMoa266ohNEAmKi+Ijay9m70fUU9mI0o=;
+ b=37ZiIJ+xetzlRFfaxCJYoIvP1OvG88dwoQmjgOt2EWfSButDyuYBCfWh8YWRam8zT9L9sswQ0
+ /nu4f6ZKAdgBdRU37UleFI7zV9sRpkDKL998dVYZoSx1Az1qNyBXccF
+X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
+ pk=dWwxtWCxC6FHRurOmxEtr34SuBYU+WJowV/ZmRJ7H+k=
+X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20251216 with
+ auth_id=578
+X-Original-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+Reply-To: xianwei.zhao@amlogic.com
 
-Correct the values using BIOS ACPI _CST characterization data read from
-a Pantherlake device via
-/sys/devices/system/cpu/cpu0/cpuidle/stateN/{latency,residency}:
+From: Xianwei Zhao <xianwei.zhao@amlogic.com>
 
-  C6S: exit_latency 300->127, target_residency 300->381
-  C10: exit_latency 370->1048, target_residency 2500->3144
+Document the thermal controller compatibles for the Amlogic A9 SoC.
 
-Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+Describe the required "core" and "plck" clocks, add the optional
+"amlogic,hw-reset-temp" property, and update the schema constraints for
+A9-specific thermal controllers.
+
+Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
 ---
- drivers/idle/intel_idle.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ .../bindings/thermal/amlogic,thermal.yaml          | 28 +++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 651408df9c24..0b5c94c7cd3a 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -1010,16 +1010,16 @@ static struct cpuidle_state ptl_cstates[] __initdata = {
- 		.name = "C6S",
- 		.desc = "MWAIT 0x21",
- 		.flags = MWAIT2flg(0x21) | CPUIDLE_FLAG_TLB_FLUSHED,
--		.exit_latency = 300,
--		.target_residency = 300,
-+		.exit_latency = 127,
-+		.target_residency = 381,
- 		.enter = &intel_idle,
- 		.enter_s2idle = intel_idle_s2idle, },
- 	{
- 		.name = "C10",
- 		.desc = "MWAIT 0x60",
- 		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
--		.exit_latency = 370,
--		.target_residency = 2500,
-+		.exit_latency = 1048,
-+		.target_residency = 3144,
- 		.enter = &intel_idle,
- 		.enter_s2idle = intel_idle_s2idle, },
- 	{
+diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+index 8cfa44dcda58..f73ee66bcc47 100644
+--- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+@@ -23,6 +23,7 @@ properties:
+           - const: amlogic,g12a-thermal
+       - enum:
+           - amlogic,a1-cpu-thermal
++          - amlogic,a9-thermal
+           - amlogic,t7-thermal
+ 
+   reg:
+@@ -32,7 +33,13 @@ properties:
+     maxItems: 1
+ 
+   clocks:
+-    maxItems: 1
++    minItems: 1
++    maxItems: 2
++
++  clock-names:
++    items:
++      - const: core
++      - const: pclk
+ 
+   power-domains:
+     maxItems: 1
+@@ -52,6 +59,10 @@ properties:
+           - description: phandle to the secure monitor
+           - description: sensor index to get specific calibration data
+ 
++  amlogic,hw-reset-temp:
++    description: The hardware-controlled reset temperature value.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
+ required:
+   - compatible
+   - reg
+@@ -73,6 +84,21 @@ allOf:
+       required:
+         - amlogic,secure-monitor
+ 
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - amlogic,a9-thermal
++    then:
++      required:
++        - clock-names
++    else:
++      properties:
++        clocks:
++          maxItems: 1
++        clock-names: false
++
+ unevaluatedProperties: false
+ 
+ examples:
+
 -- 
-2.34.1
+2.52.0
+
 
