@@ -1,84 +1,95 @@
-Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC10C406269
-	for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 20:32:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE1BC345EBF;
+	Tue, 11 Aug 2026 20:35:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786480349; cv=none; b=OWsgCUuhgYMdQF7lnjuGgiSJ1fdu7cnp9z/OBTY6nlRDuSXnP3FgLUHn3fAJImUtVyWbcPq32uo0k25Zam51B6y6NGUC4a/kRYlmJZHpi2do2pcPbMv4PNmJvOdkdRNpZZEs/3go6u2We70vgYmPzywq2QOoHRlGG5/60bHmOkg=
+	t=1786480516; cv=none; b=bL9RoRPV7VwTe7MdBEK8jI2OGSDtbAAX4HAZUVcgmOWzpYByTsyYBaJCMzlLWW9ifjWahVNWg0dddr7xamz1gw/rrnu4rPbkigKbflYnXEDMhoGnq534diwqOZ+D1OrRUzxSFUceVR6q14tsMVcRXOvyO5QkU4xInHHK2+j+ZBI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786480349; c=relaxed/simple;
-	bh=xGVoyx3H1xa7O5ggebmgELFcL0maGp4GwMqGGS5/f8Y=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=YFboJmgJzS0JvLebvp87PmjwBZLgn7ZmHEBXY2a7YM7HvZLVd2PWrV9ErIHKpOZSDiBeRvCRWVnLsR1HoRzwpwfiO2+DOzoMhf4uw1HSYIpaoX1YjlFYnLM2YI/ztLPQiJrurBSKf3QYkUfNmz4FlNPTFGyvPi58VZ1K79Uj4Ss=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.198
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-48e5de5a23cso55183b6e.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2026 13:32:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786480347; x=1787085147;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3G4uaJ8PeLnqz4rPjc+/lx1N6kU1ZqHXQhRBK14wL8s=;
-        b=bIgfkBtZRbkZnoLjUPtC+WtQeZhrTpqFiK9o3Hlz9gE7GT4cbe6inBDxQZmaT4OtuW
-         qqIvuclH8Tgt7aIHmUzT7gZbyXqBSst1YS8sndqJ6cpB5jJ5wEPGqom6NXuBs/XWTEU4
-         lzsImeIC/tkcgdGnQYhGUqE57U5IqqPTrkaiDo8CcyPS7oVHCY0/Sb44aVc1HuTUAbFp
-         cHXqpg6NKa6oBh99t9ghuhIy4ckafEyo4I0+mGwToE1degDl8cGqs450/N0cYceqjOkQ
-         oeL6/L6aokNZjSIK/3cBo8ptR6Vl1cfzkbGd7QDD7NbDal19nYBRoJUJMuI4PJl/I2pF
-         OtuQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rp/uzCaXhaQTM+FwQGooZjjsFa08U13QY7Nvplg2yrkV0WvdIXn3VmRb1BjBSNhaqSE6kQlEK2w/A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwL6WanoAwFIgy/W1TNSNh2diZxT+owvZiPLN7GkFM1rsCLSijQ
-	PLlshGu7MDV/iamJwhPKAR3Xa6eMcgxksvsFB0nrbKHcOvk9gNX+EvbCLOO/oIn7KWYR1cq2fq3
-	UulwaAWW/W7/AGMZYpWPtNdV0X7rDKjVLFv9SrflrPuam81XMQU+mtEtSA90=
+	s=arc-20240116; t=1786480516; c=relaxed/simple;
+	bh=/q6sFHhFLpno9qM7ZXdnG4oRJRbNjKO9vu4PxKxhL2s=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=iMXoh2XbqpQnAV0y1GIU+xa/+lDEq3efOsXExg++eoA7W2+vKfyuDp/d/CsWYJvBjINN+xYiqUxAJSqdaDB7S5BclDFUlGyqlDMCAdfsFF9HTrwMg7bRKgivWJ8aQspFfeQICBjP2M5ZTY4hj892Nl5dsjJKlWu8csxhQu2ca54=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=u7bv3/LF; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="u7bv3/LF"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 647C9C2BCF4;
+	Tue, 11 Aug 2026 20:35:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1786480516;
+	bh=/q6sFHhFLpno9qM7ZXdnG4oRJRbNjKO9vu4PxKxhL2s=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=u7bv3/LFW9rSc2+VDX4Qq62ueW+/6GEy5MSDQGvDd6D2CDrI55u/mfuKx41p/9Uqg
+	 iv3zWTupR3ucIzf5bK4l5edCA92MXPX4FJUdh34LsroCC6dQAXAEJHj7wjokxXqGim
+	 fuoH4pcrAjX2UaJY8LutVAEJTFLHJNO3nh9Ej48uMC53XR2klAqig5hth6vp7umJuo
+	 TKCnZ+kwrcpi/k3JU0lozN8gO6FX97tFz65EePXaewQjpc0ltyLap6nmL0shcvOZld
+	 rIAfUglQ2IsLvLszLFXZcvGFewEq3XuA4VHxLfEwWz6dpYWVCV/5VUEJK6Eln03Z+h
+	 ptw/TIj77GwxA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 414D3C5AC67;
+	Tue, 11 Aug 2026 20:35:16 +0000 (UTC)
+From: Robin Snyders via B4 Relay <devnull+robin.snyders.xyz@kernel.org>
+Date: Tue, 11 Aug 2026 22:35:04 +0200
+Subject: [PATCH 1/3] dt-bindings: power: supply: qcom,pmi8998-charger: add
+ SMB5 PMICs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:3a0f:b0:4a0:97bc:53a6 with SMTP id
- 5614622812f47-4b209da2989mr2001054b6e.7.1786480346776; Tue, 11 Aug 2026
- 13:32:26 -0700 (PDT)
-Date: Tue, 11 Aug 2026 13:32:26 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a7b86da.3668565d.e8814.0005.GAE@google.com>
-Subject: [syzbot] Monthly pm report (Aug 2026)
-From: syzbot <syzbot+list098e8749aa2abd4da260@syzkaller.appspotmail.com>
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260811-submit-qcom-smbx-send-v1-v1-1-feec6cfa123a@snyders.xyz>
+References: <20260811-submit-qcom-smbx-send-v1-v1-0-feec6cfa123a@snyders.xyz>
+In-Reply-To: <20260811-submit-qcom-smbx-send-v1-v1-0-feec6cfa123a@snyders.xyz>
+To: Casey Connolly <casey.connolly@linaro.org>, 
+ Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Robin Snyders <robin@snyders.xyz>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786480511; l=939;
+ i=robin@snyders.xyz; s=default; h=from:subject:message-id;
+ bh=EYGMyPfkRuuk1QHQrRSaTrAt/JZBY5TFPUfwjprLJoo=;
+ b=2zjhn0rcir35V690AgI3vmDGAQrUmO7XzcAqZ+hVyAZytBBhtfX27vBplyTSo98tY/LqROTKm
+ yfITkTgkAncCRUOYpk9JJD3BerrASJ/Qgk3rQA2AMeerhPIc46udQEt
+X-Developer-Key: i=robin@snyders.xyz; a=ed25519;
+ pk=Mdk5dNn+Tkcy7BWexDxBLR/s1BNz8WdqDPnr3qtYBIU=
+X-Endpoint-Received: by B4 Relay for robin@snyders.xyz/default with
+ auth_id=938
+X-Original-From: Robin Snyders <robin@snyders.xyz>
+Reply-To: robin@snyders.xyz
 
-Hello pm maintainers/developers,
+From: Casey Connolly <casey.connolly@linaro.org>
 
-This is a 31-day syzbot report for the pm subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/pm
+Add compatible strings for PM7250B and PM8150B, which contain the SMB5
+generation of the Qualcomm switch-mode battery charger.
 
-During the period, 4 new issues were detected and 0 were fixed.
-In total, 5 issues are still open and 13 have already been fixed.
-There are also 5 low-priority issues.
-
-Some of the still happening issues:
-
-Ref Crashes Repro Title
-<1> 2       Yes   WARNING: ODEBUG bug in trace_suspend_resume (2)
-                  https://syzkaller.appspot.com/bug?extid=98850521518b962c5bab
-<2> 1       No    inconsistent lock state in lock_sync
-                  https://syzkaller.appspot.com/bug?extid=7b4431d5335ca2d9f771
-<3> 106     No    KASAN: invalid-access Read in swsusp_save
-                  https://syzkaller.appspot.com/bug?extid=461576769f21a04b4bc0
-
+Signed-off-by: Casey Connolly <casey.connolly@linaro.org>
+Signed-off-by: Robin Snyders <robin@snyders.xyz>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ .../devicetree/bindings/power/supply/qcom,pmi8998-charger.yaml          | 2 ++
+ 1 file changed, 2 insertions(+)
 
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
+diff --git a/Documentation/devicetree/bindings/power/supply/qcom,pmi8998-charger.yaml b/Documentation/devicetree/bindings/power/supply/qcom,pmi8998-charger.yaml
+index 70f5cd6eaeab..9e200ba3f3a8 100644
+--- a/Documentation/devicetree/bindings/power/supply/qcom,pmi8998-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/qcom,pmi8998-charger.yaml
+@@ -12,6 +12,8 @@ maintainers:
+ properties:
+   compatible:
+     enum:
++      - qcom,pm7250b-charger
++      - qcom,pm8150b-charger
+       - qcom,pmi8998-charger
+       - qcom,pm660-charger
+ 
 
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
+-- 
+2.54.0
 
-You may send multiple commands in a single email message.
+
