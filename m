@@ -1,113 +1,119 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16AB8437118
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 12:50:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58372332610;
+	Wed, 12 Aug 2026 13:25:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786539029; cv=none; b=X0sNpcehR8XJCsFj9p+ChYK7wUQcee933B6dayIe2+cbXzOfVCnXlCwiWCPI1btrmfp4YZpyY9DVZdwIBrNZqfUc5fgmLzIq0qLRK/CTt7MCLC3cgtcI+6+SYwBhjUP51gLrxx5TpUrnKy/VvRvEqd2EwGGxE1E3nFCaXeUnOGU=
+	t=1786541142; cv=none; b=kTRSt5WED7T1q7B7L+lItX+BsepZhVEgOXnYvcKfuTvHfv3hBoRQKRv9gq692AahYDGM+mpK6AQM8IDAdRfm0LyJRMgWZC+Srf865iVX92xdzP8cfmCfxtikoA68P83yMYalNmV0q1psbHJ/GQmtaF+DY5pKtzdb+uEd2DSeWlA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786539029; c=relaxed/simple;
-	bh=W3xeRc919Z+Q7xzdSiV8sqtMh9UHpzb6myu6PztEbT0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Zgi70nT1c7qjvKRtp6Z8i0iyWfNtwXCACdc0zUTGKvFh1BNd/zG0U7kBrKozriLogtBkeo/Hr2BVOFmyDzL9oqPoLmXBmS1ACDNuAUtJ/VYbOqPNeSWTWZI4oTYo2dYQxfzpSiAccuArZbKyAKKYcHAp1Hn5q0lC+YF+c6UQNM0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZHnGsBZi; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786541142; c=relaxed/simple;
+	bh=iMMr7BVoCnAiNC4c+t+ovPY0rzFvelMbWGxbDS8xn8Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=C/qKDbXRyN2xVDL7WEXsxTEAIDz/yKPBtHTO8CZmpezo3VT4JDS4ru058OUhvyClhhjCgl/6ccI+YbluiVQbUcQDylA4gffdchTGgFMjcU1+lCH93Woo66bAEnGf1rSVHKPzSVsBfFYsoyycjA7MyF1vFogswutJwF507A+bs6g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JkyjbaKQ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZHnGsBZi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A054C1F00ADB
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 12:50:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JkyjbaKQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D8BF1F000E9;
+	Wed, 12 Aug 2026 13:25:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786539027;
-	bh=W3xeRc919Z+Q7xzdSiV8sqtMh9UHpzb6myu6PztEbT0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ZHnGsBZi19kedmCoYIqndzPT0xfIJkIKMu/4av9epglvpFKYdhB7qCBK/JIvoMPdq
-	 rhN3fXmAZcKY5Vt/aJd9aIJV8fuMEQ+v039ogqWZAioTAXffHaJ0ZmF6+2omQrUgDB
-	 rL/xPQ4bppcp+d/Hre65EWPcRVZz3DBkERVGrD6wbRhWmc970M0c1ag4xG69l2+/eh
-	 Ubi8F2Mkv2EX2wLHXwufAuiPZarswJPt4xEGdLcb+dTSujtTy+si66hrzvhlCWrQCN
-	 9IEfbzBGM5xzFY1hNI3yMvM1c07eWT/y5uM9W4Yt/lAjvYDBYU1M7QGoPzYvQGRjxM
-	 w0DnAPe/ppjUQ==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5b015532f7bso997083e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 05:50:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrnnoE6N7VpNbH7SIhxKO6k9W51julc0SxdZGOlvwHBMpF3UhkmYc7s2aK+Lpl/X86RJ7AatAD/2g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwHfmBhE0/J3tOepk+AC9zHjulA58w1F4pChkUM2GEPGz6+Uut4
-	Z8XdZ+2ADsHU7z0ftHYrskBJiL/o67+gokErRrJJC/R9XS5PkjgPQC/2o84K5oreaIlXkZk8cZl
-	/HZ8IoQsQWOx0fxwxs0AayDqG4nEUBUs=
-X-Received: by 2002:a05:6512:2306:b0:5b2:f426:9c67 with SMTP id
- 2adb3069b0e04-5b44e2e1a07mr759527e87.19.1786539026029; Wed, 12 Aug 2026
- 05:50:26 -0700 (PDT)
+	s=k20260515; t=1786541141;
+	bh=XdWKg3Z14pzkjiIKFnBBxrtOl91QbWJYbzd6e96ktA8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=JkyjbaKQcvZkv8h6FOccIz/vgPW5PWA50Jru9v74xeCJrCWHuwDvkzSZtawDpWsTl
+	 fa3pz2SueGRrasjvZ9rsaVVRPEALCEqUOP6/s1zeKosF6z4kxae8rUOA/AgT5SbqEz
+	 gDPizQVq14lxbVrg9YUbSX6to0qe9QtIbnquZ1XUYh50+qlQlcPCybCohbTHrG0n37
+	 myvuGH2exrgu00cOgcLjIpKmR2DJl8SgB6sLo25rrDEKpOKQSZhppe997YixQRgviL
+	 /2ic0KDVFJ0kQeSEAvXDk3IfI3Dm5UdHJdc+WoV53B853PuyKftMqNl660d1ruqgJB
+	 ZBlLKEUkXXSBg==
+Date: Wed, 12 Aug 2026 14:25:31 +0100
+From: Lee Jones <lee@kernel.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	John Stultz <john.stultz@linaro.org>,
+	Moritz Fischer <moritz.fischer@ettus.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+	Andre Draszik <andre.draszik@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org, mfd@lists.linux.dev,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Subject: Re: [PATCH v24 08/12] mfd: psci-mfd: Add psci-reboot-mode child cell
+Message-ID: <20260812132531.GS1072730@google.com>
+References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
+ <20260803-arm-psci-system_reset2-vendor-reboots-v24-8-889281373870@oss.qualcomm.com>
+ <20260812081856.GF1072730@google.com>
+ <CAMRc=Me7Nua8xgKA43rCH9SV2DQoCyAuOqb+KNDTuPxv_H5y9A@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <91946ecf-05a2-4479-bade-3d0803bdcba2@oss.qualcomm.com>
- <cf0365de-77ee-4ae9-96bf-0652c172f425@oss.qualcomm.com> <CAJZ5v0ibXHOsa4Pp=A00cKCOiBnk9SMpSk_n9JE2qSYTRZzYrA@mail.gmail.com>
- <86ba3abc-c538-4d56-ac2c-3154b95e00b2@oss.qualcomm.com>
-In-Reply-To: <86ba3abc-c538-4d56-ac2c-3154b95e00b2@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 12 Aug 2026 14:50:06 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g2G7L0hS64Eh14927P7g+eX_3KB_qUehBoa2OUfh+ung@mail.gmail.com>
-X-Gm-Features: AUfX_mw2cNdf090onpOyglc5AwIz5FFJHXnnmag1WS1Gb3Bn6I6op33rvy2W7Xs
-Message-ID: <CAJZ5v0g2G7L0hS64Eh14927P7g+eX_3KB_qUehBoa2OUfh+ung@mail.gmail.com>
-Subject: Re: [GIT PULL] thermal drivers fixes for v7.3-rc1
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, 
-	Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
-	Linux PM mailing list <linux-pm@vger.kernel.org>, "Bryan B. Lima" <bblima@usp.br>, 
-	Miquel Raynal <miquel.raynal@bootlin.com>, 
-	Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAMRc=Me7Nua8xgKA43rCH9SV2DQoCyAuOqb+KNDTuPxv_H5y9A@mail.gmail.com>
 
-On Wed, Aug 12, 2026 at 2:43=E2=80=AFPM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> On 8/12/26 13:28, Rafael J. Wysocki (Intel) wrote:
-> > Hi Daniel,
-> >
-> > On Tue, Aug 11, 2026 at 4:48=E2=80=AFPM Daniel Lezcano
-> > <daniel.lezcano@oss.qualcomm.com> wrote:
-> >>
-> >>
-> >> Hi Rafael,
-> >>
-> >> please ignore this PR because there is a missing SoB.
-> >>
-> >> I'll fix it and meanwhile update the linux-next branch so it will fix
-> >> the build issue.
-> >
-> > Well, the build issue is still there in my thermal branch though.
-> >
-> > I've now remerged my linux-next branch to avoid exposing the thermal
-> > drivers merge I did previously and I'll wait for another PR from you.
-> > Worst-case I'll skip the thermal drivers material in my first 7.3-rc1
-> > thermal PR.
-> There are 3 fixes on top of the PR.
->
-> One is obviously to be folded with the existing series as it is my fault
-> I forgot to add the file after fixing a conflict [1] which led to the
-> linux-next build failure.
->
-> But two were reported by lkp [2][3]. May I take the opportunity to fold
-> them with the patches they fix and shall I keep them as is ?
->
-> [1]
-> https://lore.kernel.org/all/20260811145427.3089426-1-daniel.lezcano@kerne=
-l.org/
->
-> [2]
-> https://lore.kernel.org/all/20260811094935.2941313-1-daniel.lezcano@kerne=
-l.org/
->
-> [3]
-> https://lore.kernel.org/all/20260811094747.2940616-1-daniel.lezcano@kerne=
-l.org/
+On Wed, 12 Aug 2026, Bartosz Golaszewski wrote:
 
-At this point it's better to do additional fix commits on top of the
-previous material as it has all been exposed in my thermal branch for
-which there are no history rewrites.
+> On Wed, 12 Aug 2026 10:18:56 +0200, Lee Jones <lee@kernel.org> said:
+> > On Mon, 03 Aug 2026, Shivendra Pratap wrote:
+> >
+> >> The PSCI "reboot-mode" node does not define a compatible because it is a
+> >> configuration of boot-states provided by the underlying firmware. With
+> >> the new firmware-node based cells in mfd-core, this node can now be
+> >> exposed as a proper child cell.
+> >>
+> >> Add the psci-reboot-mode child cell to the psci-mfd driver with a
+> >> named_fwnode. Add psci-cpuidle-domain cell first to isolate it from
+> >> reboot-mode failures.
+> >>
+> >> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> >> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> >> ---
+> 
+> ...
+> 
+> >> +	if (ret) {
+> >> +		if (ret == -ENOMEM)
+> >> +			goto out;
+> >> +		dev_warn(&pdev->dev, "reboot-mode child cell failed to add: %d\n", ret);
+> >
+> > Okay Yoda, but why is this okay?
+> >
+> 
+> Hi Lee,
+> 
+> I'd like to call you out on this because making snarky comments on a non-native
+> English speaker's syntax is really not OK. Please don't do this. As a native
+> speaker you could have just proposed a better sounding version.
 
-Please send me a PR with all of the fixes on top of the current HEAD
-of my thermal branch.
+It wasn't supposed to be offensive, it just made me chuckle.
+
+I unreservedly apologise if any offence or ill-feeling that may have occurred.
+
+-- 
+Lee Jones
