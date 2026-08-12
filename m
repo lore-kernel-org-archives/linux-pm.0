@@ -1,38 +1,38 @@
-Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6E0B372696;
-	Wed, 12 Aug 2026 01:54:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.223
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1953371CFF;
+	Wed, 12 Aug 2026 01:54:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786499677; cv=none; b=FgtrIfQJ7y8HCQItB+UC0cGnVt69npw8Wr01LVNW2V0/Kjc7Gu0b5sjDnRQF9AezdaAqJSqi8NakUSSr2ZOeOXJwAaMv3eDyGbLOOkyvb6bfGJsHvieCePgvfYO7gcIDN2bcSMCBFjZ8cIbhlV5xO32hDIqKtqBqNNpMGrjm7Nw=
+	t=1786499678; cv=none; b=T96tB9r73sWsUAfcrdtV4WeiC5PVOgFJtmZ1//bc5KPoQ4y2ET0ja+Xj+qSUxU4cvbw2tGi1c4VyHuHUGrHPetOmBW70OxuNthoDKrjABOarguPBWHUS3mOtzlnVpRSlIXJMKCR1cTMbSm+W5iwKFA2xEuGjTD5qNUcWlcoRb4g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786499677; c=relaxed/simple;
-	bh=5XmVZl6186sCsRh37nU8yJgLh37NFG4kCSw+UJtUTbg=;
+	s=arc-20240116; t=1786499678; c=relaxed/simple;
+	bh=Pdyn01ETs/TPNcRKTejGGKn3Lvp/cyjB3+r4JaYkOxI=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mNIgWv2V+SHQg3XlcEwZFaghokwqG4g2DETa7RMtmgDe+t2GfCIozOW21j3Wgy3bACM0Q2QTx6F7yKRgxJlsHQpf4lNchnX/G5m62IMexomMP5dgSn/610knEp/8N5Q1ZVWPW4SMXTbUEJmRPGmm409Mh1s6ZP4o1Drl+krl7Lc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=5mAzYbIC; arc=none smtp.client-ip=113.46.200.223
+	 MIME-Version:Content-Type; b=rzV/fTRun3r8z2lbGELqBi9g/HwbD+qZ6QENMFvquqUYYmfMisfE4DPTfZROYUU5eG+IBiFWVAUvL1dL5wHRm/dFn7JeZuVSw0kBxhhK4teTB3Uy7v9lv+FuRwkzECTLaRhAiV8NHzyqPico2SFbGZmPOH9vQfqYWJoI0VDq2EU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=D6xeNl5n; arc=none smtp.client-ip=113.46.200.222
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="5mAzYbIC"
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="D6xeNl5n"
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=lWkWSvLfhkBwzal7ykQjYimAjO7pZ2iSPFmIW5hs0fs=;
-	b=5mAzYbICq9LwWe+HzF9E0o9vRQ7jX9bxZxM+9bpzMm1wDF8ihpAendXo4vmtsMxjKfM+mShTF
-	Ys8nTL/JMFm4WuS/a0a9qqZ+9gk01bR/xAe0MzREh5zyMjFVuMDmn4Fd+p+qlz6mkLBy32yCzxQ
-	ym8SuuHt3V/GwiY75IimmGk=
+	bh=Rh83EaNYRqmAhG/BdnqS5kQ6Bg6zMu3GoGaveSHo+e0=;
+	b=D6xeNl5nPVjjO2LcB1lYJMIA5fK4YwH5bIyrbi+bPHim8aYr55+V3yOSyHIhpis4BvreIJ2/c
+	KlZS8guvxYz1uXFsMhJthZUUzN/4mTMmTvqA2E2yK+RWzF027XecBDE/POson7If0jVp9g9/ZLu
+	EFKdUAn4KDyE5zYmPSqx4IQ=
 Received: from mail.maildlp.com (unknown [172.19.163.127])
-	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4hKWVR71bHzmVXX;
-	Wed, 12 Aug 2026 09:43:43 +0800 (CST)
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4hKWVT1743zLlX5;
+	Wed, 12 Aug 2026 09:43:45 +0800 (CST)
 Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id D1A6940572;
-	Wed, 12 Aug 2026 09:54:20 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id D046B40572;
+	Wed, 12 Aug 2026 09:54:21 +0800 (CST)
 Received: from localhost.localdomain (10.50.163.32) by
  kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.36; Wed, 12 Aug 2026 09:54:20 +0800
+ 15.2.1544.36; Wed, 12 Aug 2026 09:54:21 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>,
 	<lenb@kernel.org>, <zhanjie9@hisilicon.com>, <pierre.gondois@arm.com>,
@@ -42,9 +42,9 @@ CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
 	<linuxarm@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
 	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
 	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
-Subject: [PATCH v3 2/8] ACPI: CPPC: Refactor element parsing into parse_cpc_element()
-Date: Wed, 12 Aug 2026 09:52:10 +0800
-Message-ID: <20260812015217.74598-3-zhenglifeng1@huawei.com>
+Subject: [PATCH v3 4/8] ACPI: CPPC: Parse Resource Priority Register entries from _CPC package
+Date: Wed, 12 Aug 2026 09:52:12 +0800
+Message-ID: <20260812015217.74598-5-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20260812015217.74598-1-zhenglifeng1@huawei.com>
 References: <20260812015217.74598-1-zhenglifeng1@huawei.com>
@@ -59,131 +59,133 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
  kwepemf100001.china.huawei.com (7.202.181.215)
 
-acpi_cppc_processor_probe() contains a large inline block (~70 lines)
-that handles ACPI_TYPE_INTEGER and ACPI_TYPE_BUFFER entries in the _CPC
-package.  This block will need to be reused for parsing individual
-elements inside the nested RESOURCE_PRIORITY sub-packages that CPPC v4
-defines (Section 8.4.6.1.2.7).
+CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) defines the Resource Priority
+entry as a Package of sub-packages, each containing:
 
-Extract the Integer / Buffer handling into a standalone parse_cpc_element()
-helper so that both the top-level _CPC loop and the upcoming package
-parser can share the same logic for register validation, PCC subspace
-tracking, SystemMemory ioremap, and SystemIO / FFH checks.
+  - CONTROLLED_RESOURCES: a Package of integer resource IDs
+  - ENABLE_VALUE / ENABLE_REGISTER: enable/disable control
+  - PRIORITY_COUNT / PRIORITY_REGISTER: priority level setting
 
-No functional change; the new function reproduces the original behaviour
-exactly.
+These allow OSPM to set relative priority among processors for shared
+resources such as boost, throttle, L2/L3 cache, and memory bandwidth.
+
+Implement parse_priority_regs() which:
+
+  1. Validates each sub-package has the expected element count
+     (RESOURCE_PRIORITY_NUM).
+  2. Allocates cpc_register_resource arrays for the sub-package
+     elements and the nested CONTROLLED_RESOURCES list.
+  3. Parses CONTROLLED_RESOURCES as integers and the remaining
+     entries (ENABLE_REGISTER, PRIORITY_REGISTER, etc.) via
+     parse_cpc_element() so that register descriptors, PCC subspace
+     tracking, and ioremap are handled consistently.
+  4. Wires the parser into the main _CPC probe loop, replacing the
+     previous "package type not supported" stub with full parsing for
+     RESOURCE_PRIORITY while rejecting unexpected Package entries.
+
+The probe and _exit() error/cleanup paths already use
+free_reg_resource(), which recursively frees Package-type entries,
+so no additional cleanup changes are needed.
+
+Add the resource_priority_regs enumeration that defines the indices
+into each Resource Priority sub-package (CONTROLLED_RESOURCES,
+ENABLE_VALUE, ENABLE_REGISTER, PRIORITY_COUNT, PRIORITY_REGISTER)
+and RESOURCE_PRIORITY_NUM as the element count sentinel.
 
 Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 ---
- drivers/acpi/cppc_acpi.c | 186 +++++++++++++++++++++++----------------
- 1 file changed, 108 insertions(+), 78 deletions(-)
+ drivers/acpi/cppc_acpi.c | 137 ++++++++++++++++++++++++++++++++++++---
+ include/acpi/cppc_acpi.h |  13 ++++
+ 2 files changed, 142 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 9f572f481241..47ececf214c4 100644
+index dce15d875c62..b5563d75d6c5 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -650,6 +650,109 @@ static int pcc_data_alloc(int pcc_ss_id)
- 	return 0;
+@@ -777,6 +777,91 @@ static void free_reg_resource(struct cpc_register_resource *cpc_reg)
+ 	}
  }
  
 +/**
-+ * parse_cpc_element - Parse a single CPC element into a cpc_register_resource.
-+ * @cpc_obj:          Pointer to the ACPI object representing the CPC element.
-+ * @cpc_reg:          Output CPC register resource to populate.
-+ * @pcc_subspace_id:  In/out pointer to PCC subspace ID; extracted once on first
-+ *                    PCC-type register and validated for consistency thereafter.
-+ * @cpu:              CPU number, used for debug messages.
-+ * @entry_num:        Index within the CPC table entries, used for diagnostics.
++ * parse_priority_regs - Parse the RESOURCE_PRIORITY nested package structure.
++ * @cpc_obj:         ACPI Package object for the RESOURCE_PRIORITY entry.
++ * @regs:            Output array of cpc_register_resource to fill.
++ * @pcc_subspace_id: In/out pointer to PCC subspace ID.
++ * @cpu:             CPU number, used for debug messages.
 + *
-+ * Handles ACPI_TYPE_INTEGER (static value) and ACPI_TYPE_BUFFER (register
-+ * descriptor).  Sets up PCC subspace tracking, ioremap for SystemMemory,
-+ * and validates SystemIO / FFH register parameters.
++ * The RESOURCE_PRIORITY entry (CPPC v4) is a Package of sub-packages.
++ * Each sub-package has RESOURCE_PRIORITY_NUM elements:
++ *   [0] = Package of integers (CONTROLLED_RESOURCES list)
++ *   [1] = ENABLE_VALUE, [2] = ENABLE_REGISTER,
++ *   [3] = PRIORITY_COUNT, [4] = PRIORITY_REGISTER
 + *
-+ * Return: 0 on success, -ENODATA on invalid or unsupported data.
++ * Return: 0 on success, -ENODATA on malformed data, -ENOMEM on allocation failure.
 + */
-+static int parse_cpc_element(union acpi_object *cpc_obj,
-+			     struct cpc_register_resource *cpc_reg,
-+			     int *pcc_subspace_id, u32 cpu, unsigned int entry_num)
++static int parse_priority_regs(union acpi_object *cpc_obj,
++			       struct cpc_register_resource *regs,
++			       int *pcc_subspace_id, u32 cpu)
 +{
-+	struct cpc_reg *gas_t;
++	struct cpc_register_resource *reg_elements;
++	union acpi_object reg_desc_obj;
++	unsigned int i, j, resources_count;
++	int ret;
 +
-+	if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
-+		cpc_reg->type = ACPI_TYPE_INTEGER;
-+		cpc_reg->cpc_entry.int_value = cpc_obj->integer.value;
-+	} else if (cpc_obj->type == ACPI_TYPE_BUFFER) {
-+		gas_t = (struct cpc_reg *)cpc_obj->buffer.pointer;
-+
-+		/*
-+		 * The PCC Subspace index is encoded inside
-+		 * the CPC table entries. The same PCC index
-+		 * will be used for all the PCC entries,
-+		 * so extract it only once.
-+		 */
-+		if (gas_t->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
-+			if (*pcc_subspace_id < 0) {
-+				*pcc_subspace_id = gas_t->access_width;
-+				if (pcc_data_alloc(*pcc_subspace_id))
-+					return -ENODATA;
-+			} else if (*pcc_subspace_id != gas_t->access_width) {
-+				pr_debug("Mismatched PCC ids in _CPC for CPU:%d\n",
-+					 cpu);
-+				return -ENODATA;
-+			}
-+		} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
-+			if (gas_t->address) {
-+				void __iomem *addr;
-+				size_t access_width;
-+
-+				if (!osc_cpc_flexible_adr_space_confirmed) {
-+					pr_debug("Flexible address space capability not supported\n");
-+					if (!cpc_supported_by_cpu())
-+						return -ENODATA;
-+				}
-+
-+				access_width = GET_BIT_WIDTH(gas_t) / 8;
-+				addr = ioremap(gas_t->address, access_width);
-+				if (!addr)
-+					return -ENODATA;
-+				cpc_reg->sys_mem_vaddr = addr;
-+			}
-+		} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
-+			if (gas_t->access_width < 1 || gas_t->access_width > 3) {
-+				/*
-+				 * 1 = 8-bit, 2 = 16-bit, and 3 = 32-bit.
-+				 * SystemIO doesn't implement 64-bit
-+				 * registers.
-+				 */
-+				pr_debug("Invalid access width %d for SystemIO register in _CPC\n",
-+					 gas_t->access_width);
-+				return -ENODATA;
-+			}
-+			if (gas_t->address & OVER_16BTS_MASK) {
-+				/* SystemIO registers use 16-bit integer addresses */
-+				pr_debug("Invalid IO port %llu for SystemIO register in _CPC\n",
-+					 gas_t->address);
-+				return -ENODATA;
-+			}
-+			if (!osc_cpc_flexible_adr_space_confirmed) {
-+				pr_debug("Flexible address space capability not supported\n");
-+				if (!cpc_supported_by_cpu())
-+					return -ENODATA;
-+			}
-+		} else {
-+			if (gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE ||
-+			    !cpc_ffh_supported()) {
-+				/* Support only PCC, SystemMemory, SystemIO, and FFH type regs. */
-+				pr_debug("Unsupported register type (%d) in _CPC\n",
-+					 gas_t->space_id);
-+				return -ENODATA;
-+			}
++	for (i = 0; i < cpc_obj->package.count; i++) {
++		reg_desc_obj = cpc_obj->package.elements[i];
++		if (reg_desc_obj.type != ACPI_TYPE_PACKAGE ||
++		    reg_desc_obj.package.count != RESOURCE_PRIORITY_NUM) {
++			pr_debug("Malformed priority regs sub-pkg: type %d count %d, expected %d for CPU:%d\n",
++				 reg_desc_obj.type, reg_desc_obj.package.count,
++				 RESOURCE_PRIORITY_NUM, cpu);
++			return -ENODATA;
 +		}
 +
-+		cpc_reg->type = ACPI_TYPE_BUFFER;
-+		memcpy(&cpc_reg->cpc_entry.reg, gas_t, sizeof(*gas_t));
-+	} else {
-+		pr_debug("Invalid entry type (%d) in _CPC for CPU:%d\n",
-+			 entry_num, cpu);
-+		return -ENODATA;
++		reg_elements = kzalloc_objs(struct cpc_register_resource, RESOURCE_PRIORITY_NUM);
++		if (!reg_elements) {
++			pr_debug("Failed to allocate reg_elements for CPU:%d\n", cpu);
++			return -ENOMEM;
++		}
++
++		/*
++		 * Assign values immediately after successful allocation to ensure that resources
++		 * can be properly released.
++		 */
++		regs[i].type = ACPI_TYPE_PACKAGE;
++		regs[i].cpc_entry.package.count = RESOURCE_PRIORITY_NUM;
++		regs[i].cpc_entry.package.elements = reg_elements;
++
++		resources_count = reg_desc_obj.package.elements[0].package.count;
++
++		if (reg_desc_obj.package.elements[0].type != ACPI_TYPE_PACKAGE ||
++		    !resources_count) {
++			pr_debug("Invalid priority sub-elements: type %d count %d for CPU:%d\n",
++				 reg_desc_obj.package.elements[0].type, resources_count, cpu);
++			return -ENODATA;
++		}
++
++		reg_elements[0].cpc_entry.package.elements =
++			kzalloc_objs(struct cpc_register_resource, resources_count);
++		if (!reg_elements[0].cpc_entry.package.elements) {
++			pr_debug("Failed to allocate %d priority sub-elements for CPU:%d\n",
++				 resources_count, cpu);
++			return -ENOMEM;
++		}
++
++		reg_elements[0].type = ACPI_TYPE_PACKAGE;
++		reg_elements[0].cpc_entry.package.count = resources_count;
++
++		for (j = 0; j < reg_elements[0].cpc_entry.package.count; j++) {
++			reg_elements[0].cpc_entry.package.elements[j].type = ACPI_TYPE_INTEGER;
++			reg_elements[0].cpc_entry.package.elements[j].cpc_entry.int_value =
++				reg_desc_obj.package.elements[0].package.elements[j].integer.value;
++		}
++
++		for (j = 1; j < RESOURCE_PRIORITY_NUM; j++) {
++			ret = parse_cpc_element(&reg_desc_obj.package.elements[j], &reg_elements[j],
++						pcc_subspace_id, cpu, RESOURCE_PRIORITY);
++			if (ret)
++				return ret;
++		}
 +	}
 +
 +	return 0;
@@ -192,110 +194,105 @@ index 9f572f481241..47ececf214c4 100644
  /*
   * An example CPC table looks like the following.
   *
-@@ -690,7 +793,6 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+@@ -815,6 +900,7 @@ static void free_reg_resource(struct cpc_register_resource *cpc_reg)
+ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ {
  	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
++	struct cpc_register_resource *pkg_elements;
  	union acpi_object *out_obj, *cpc_obj;
  	struct cpc_desc *cpc_ptr;
--	struct cpc_reg *gas_t;
  	struct device *cpu_dev;
- 	acpi_handle handle = pr->handle;
- 	unsigned int num_ent, i, cpc_rev;
-@@ -778,80 +880,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+@@ -823,6 +909,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	int pcc_subspace_id = -1;
+ 	acpi_status status;
+ 	int ret = -ENODATA;
++	u32 pkg_count;
+ 
+ 	if (!osc_sb_cppc2_support_acked) {
+ 		pr_debug("CPPC v2 _OSC not acked\n");
+@@ -904,16 +991,50 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
  	for (i = 2; i < num_ent; i++) {
  		cpc_obj = &out_obj->package.elements[i];
  
--		if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
--			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
--			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = cpc_obj->integer.value;
--		} else if (cpc_obj->type == ACPI_TYPE_BUFFER) {
--			gas_t = (struct cpc_reg *)
--				cpc_obj->buffer.pointer;
--
--			/*
--			 * The PCC Subspace index is encoded inside
--			 * the CPC table entries. The same PCC index
--			 * will be used for all the PCC entries,
--			 * so extract it only once.
--			 */
--			if (gas_t->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
--				if (pcc_subspace_id < 0) {
--					pcc_subspace_id = gas_t->access_width;
--					if (pcc_data_alloc(pcc_subspace_id))
--						goto out_free;
--				} else if (pcc_subspace_id != gas_t->access_width) {
--					pr_debug("Mismatched PCC ids in _CPC for CPU:%d\n",
--						 pr->id);
--					goto out_free;
--				}
--			} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
--				if (gas_t->address) {
--					void __iomem *addr;
--					size_t access_width;
--
--					if (!osc_cpc_flexible_adr_space_confirmed) {
--						pr_debug("Flexible address space capability not supported\n");
--						if (!cpc_supported_by_cpu())
--							goto out_free;
--					}
--
--					access_width = GET_BIT_WIDTH(gas_t) / 8;
--					addr = ioremap(gas_t->address, access_width);
--					if (!addr)
--						goto out_free;
--					cpc_ptr->cpc_regs[i-2].sys_mem_vaddr = addr;
--				}
--			} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
--				if (gas_t->access_width < 1 || gas_t->access_width > 3) {
--					/*
--					 * 1 = 8-bit, 2 = 16-bit, and 3 = 32-bit.
--					 * SystemIO doesn't implement 64-bit
--					 * registers.
--					 */
--					pr_debug("Invalid access width %d for SystemIO register in _CPC\n",
--						 gas_t->access_width);
--					goto out_free;
--				}
--				if (gas_t->address & OVER_16BTS_MASK) {
--					/* SystemIO registers use 16-bit integer addresses */
--					pr_debug("Invalid IO port %llu for SystemIO register in _CPC\n",
--						 gas_t->address);
--					goto out_free;
--				}
--				if (!osc_cpc_flexible_adr_space_confirmed) {
--					pr_debug("Flexible address space capability not supported\n");
--					if (!cpc_supported_by_cpu())
--						goto out_free;
--				}
--			} else {
--				if (gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE || !cpc_ffh_supported()) {
--					/* Support only PCC, SystemMemory, SystemIO, and FFH type regs. */
--					pr_debug("Unsupported register type (%d) in _CPC\n",
--						 gas_t->space_id);
--					goto out_free;
--				}
--			}
--
--			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_BUFFER;
--			memcpy(&cpc_ptr->cpc_regs[i-2].cpc_entry.reg, gas_t, sizeof(*gas_t));
--		} else if (cpc_obj->type == ACPI_TYPE_PACKAGE && (i - 2) == RESOURCE_PRIORITY) {
-+		if (cpc_obj->type == ACPI_TYPE_PACKAGE && (i - 2) == RESOURCE_PRIORITY) {
- 			/*
- 			 * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priority as a
- 			 * Package of Resource Priority Register Descriptor sub-packages.
-@@ -862,9 +891,10 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
- 			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
- 		} else {
--			pr_debug("Invalid entry type (%d) in _CPC for CPU:%d\n",
--				 i, pr->id);
--			goto out_free;
-+			ret = parse_cpc_element(cpc_obj, &cpc_ptr->cpc_regs[i-2],
-+						&pcc_subspace_id, pr->id, i);
-+			if (ret)
+-		if (cpc_obj->type == ACPI_TYPE_PACKAGE && (i - 2) == RESOURCE_PRIORITY) {
++		/*
++		 * Package-type entries are used for nested structures such as
++		 * RESOURCE_PRIORITY (CPPC v4). Only RESOURCE_PRIORITY is
++		 * currently supported; any other Package entry is rejected.
++		 */
++		if (cpc_obj->type == ACPI_TYPE_PACKAGE) {
++			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_PACKAGE;
++			cpc_ptr->cpc_regs[i-2].cpc_entry.package.count = 0;
++			cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements = NULL;
++
++			pkg_count = cpc_obj->package.count;
++			if (!pkg_count) {
++				pr_debug("Empty package entry at index %d for CPU:%d\n",
++					 i, pr->id);
++				continue;
++			}
++
++			pkg_elements = kzalloc_objs(struct cpc_register_resource, pkg_count);
++			if (!pkg_elements) {
++				ret = -ENOMEM;
 +				goto out_free;
- 		}
- 	}
- 	per_cpu(cpu_pcc_subspace_idx, pr->id) = pcc_subspace_id;
++			}
++
+ 			/*
+-			 * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priority as a
+-			 * Package of Resource Priority Register Descriptor sub-packages.
+-			 * Parsing the full structure is not yet supported.
+-			 * Mark the register as unsupported for now.
++			 * Assign values immediately after successful allocation to ensure that
++			 * resources can be properly released.
+ 			 */
+-			pr_debug("CPU:%d Resource Priority not supported\n", pr->id);
+-			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
+-			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
++			cpc_ptr->cpc_regs[i-2].cpc_entry.package.count = pkg_count;
++			cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements = pkg_elements;
++
++			if (i - 2 == RESOURCE_PRIORITY) {
++				ret = parse_priority_regs(cpc_obj, pkg_elements,
++							  &pcc_subspace_id, pr->id);
++				if (ret)
++					goto out_free;
++
++				pr_debug("Parsed RESOURCE_PRIORITY (%d sub-pkgs) for CPU:%d\n",
++					 pkg_count, pr->id);
++			} else {
++				pr_debug("Unexpected ACPI_TYPE_PACKAGE at index %d for CPU:%d\n",
++					 i, pr->id);
++				ret = -ENODATA;
++				goto out_free;
++			}
+ 		} else {
+ 			ret = parse_cpc_element(cpc_obj, &cpc_ptr->cpc_regs[i-2],
+ 						&pcc_subspace_id, pr->id, i);
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 1839582b80be..19f8a722654b 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -123,6 +123,19 @@ enum cppc_regs {
+ 	RESOURCE_PRIORITY,
+ };
+ 
++/*
++ * Indices into each sub-package of the RESOURCE_PRIORITY entry.
++ * RESOURCE_PRIORITY_NUM serves as the element count / loop bound.
++ */
++enum resource_priority_regs {
++	CONTROLLED_RESOURCES,	/* Package of integer resource IDs */
++	ENABLE_VALUE,		/* Enable/disable value */
++	ENABLE_REGISTER,	/* Register for enable/disable control */
++	PRIORITY_COUNT,		/* Number of priority levels */
++	PRIORITY_REGISTER,	/* Register for priority setting */
++	RESOURCE_PRIORITY_NUM,	/* Number of elements (sentinel) */
++};
++
+ /*
+  * Categorization of registers as described
+  * in the ACPI v.5.1 spec.
 -- 
 2.33.0
 
