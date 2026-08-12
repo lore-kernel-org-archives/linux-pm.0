@@ -1,70 +1,82 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A52503A9630;
-	Wed, 12 Aug 2026 11:25:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35AA2433059
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 11:29:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786533947; cv=none; b=iPKSdmqs0RRK3pCgGuLzpoRkKkp6OPtyLESOkDNkrqtEEDnCAAOJ15DuW40xAEjF84VixBmgNgCAyIKLJFDSE/R+EfJGe5cG9W3IUROZiD+f8u8tdXP9K0N0fMcBT4zGDHwU217yXzeufm4pn2bTLXS4S0D1O+x488zD4MDmIJI=
+	t=1786534148; cv=none; b=nyAPX0ptHRMF1YUMNG6YfInl/32ChF2uDPMeUBc0lN04uLFsmpR4hK7EY2+gG8HMr7dL3fENJHEvO8wAp2uvX3KAw+/3XKuVOQYV43ePndVzPYYfBPdRzDCBiOfNhDKZYVCCKDCf+Gl7VaDD1OHHN58KrY2mzlWZiYxv3rLAqkA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786533947; c=relaxed/simple;
-	bh=I2wXAp1K+YI5d/NgOO42iMyLG3QE2f0VK42W3SoUxAk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=mDHNIqkI4RubOra1rBrSC/xf3yJXqOj0DbAJ/yQa/DKSiLwNbZ45mdLVMY1qZQ00syX3ZlxOvH84CdLgGBQgKmhFdNT4ryHfJv4FO+XQ9lkC9j3F4iMbz6kK4zQom+Q+GXTErPiNZ0XWp0bVPOjl6FFHdmcP5jJqDbxlRhEd4Aw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ICLDTn3p; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786534148; c=relaxed/simple;
+	bh=0nY9fKoJJBS9kQQL2Pz4lkzIHWLG89ECleCOdO02RIo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=EI8cEg73vXqC3GjDDWZ3zea5B0umXMILVY30fLTykfsJvMQsiBfz/GCuwq1nbppYZ1zwnbEiFToCydUnxNt3Ao0SUZAshvcM8spmdw58lxbSUvzHWUr8SG2alu/wCGrwizRWym7MQwW7v63xNxwEMQThbIp4PEoP0V+cgPsougc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Blvoe04O; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ICLDTn3p"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F119D1F000E9;
-	Wed, 12 Aug 2026 11:25:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Blvoe04O"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D3C71F00ADE
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 11:29:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786533945;
-	bh=ddodq+ZTTmGF3leYzH9QS+cPvj+UgDzxn1f/c1nGk3Y=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=ICLDTn3pyzoqViRux6DSg3UvYyCDcWDlQiQPWaIpQ7VeaE0dnPOCGt8Pm80wjpikR
-	 2PCYsQqyRfuqL3wJD/cCkmwhw5nCJL2OHr8td+phjGwuHqX8fp2fDCnLP7oq7CVtCj
-	 nD0D7GT8iYd6EFCCYbwTHsuILrnGg/b0c5AAbnvT6SQd0A6hl6+VzS5ni9oeB6rkOl
-	 OTzV0iiIIplCA5IzN1ZeDEBELn/OZnjrdQHFuI9XBYnf1wNS25NwCYDHzmwTP3qfsh
-	 Ud3HSgRNkUjkEGCfM88VGn/0J0iVn3HXpCzQZZCyriwfS0Uuo5NB3JvIgUc7BYdssb
-	 jTIUwVJHgSurQ==
-From: Lee Jones <lee@kernel.org>
-To: Binbin Zhou <zhoubb.aaron@gmail.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Yinbo Zhu <zhuyinbo@loongson.cn>, 
- zhanghongchen <zhanghongchen@loongson.cn>, 
- "Rafael J . Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Lee Jones <lee@kernel.org>, 
- Huacai Chen <chenhuacai@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Binbin Zhou <zhoubinbin@loongson.cn>
-Cc: Huacai Chen <chenhuacai@kernel.org>, devicetree@vger.kernel.org, 
- linux-pm@vger.kernel.org, mfd@lists.linux.dev
-In-Reply-To: <b76405a88b0cded91ba370139d7223fe2d6953df.1785829933.git.zhoubinbin@loongson.cn>
-References: <b76405a88b0cded91ba370139d7223fe2d6953df.1785829933.git.zhoubinbin@loongson.cn>
-Subject: Re: (subset) [PATCH v4 3/5] dt-bindings: mfd: syscon: Allow syscon
- compatible for Loongson-2K0300 chip id
-Message-Id: <178653394272.1364218.6326646131780320669.b4-ty@b4>
-Date: Wed, 12 Aug 2026 12:25:42 +0100
+	s=k20260515; t=1786534147;
+	bh=0nY9fKoJJBS9kQQL2Pz4lkzIHWLG89ECleCOdO02RIo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Blvoe04OuGAWkJng8xtrxKqFwBdA1ijFBbxsbG9Wj7GfSqwfEULav3lxZhD+3l28W
+	 3EsIcJpMZ36VU/KQUQwUk6CqexR5G4FW7V2H9AamJJa3T51KClaOrubn3F3bXwtGnK
+	 XlKALaO3MDPKPqpzrrQuGA4qmM58aPJF9GubFSm1GePTQhjDuGuCZfrvwzAdVFNO2A
+	 V5C1pMe3nhhWdj/PxYSmFgVY10bSxR0Pn0wi0+EYdw4ctxepwMvg2EAIHlT0j7y5mk
+	 WL7GsVUVTAyceLePjz/qLpqbDq2IoMiPPPWG70QlrQFamHJd2sXqULt1FnM4YvNas9
+	 wITuiSNCh0VaQ==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5b2a4359d16so779122e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 04:29:07 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RprskbUW7Oi74Ot0sNJH6bEcXO/n4E/ypptiwnpRaQ3V0Fi4pji9jHuMRcNe91FyOGZepQQu8GAdg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw2JXX3oInQfhuHyjMd2Z61ZtqdV0ziy2MvI+AJzxImBVSJtdz/
+	dwbk5TrPtDCIVYhWKFkrQNUasRgL3Y4GesycEFxK3mTmyCWF2oEp20NCUdVM5ImJJV6AS6BrAc7
+	5ybdGDxs5iyNiTyzcf7aPRgUNrKWlfqo=
+X-Received: by 2002:a05:6512:ac7:b0:5b1:5829:b8ca with SMTP id
+ 2adb3069b0e04-5b44e31111fmr672726e87.26.1786534145527; Wed, 12 Aug 2026
+ 04:29:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.16-dev-ad80c
+References: <91946ecf-05a2-4479-bade-3d0803bdcba2@oss.qualcomm.com> <cf0365de-77ee-4ae9-96bf-0652c172f425@oss.qualcomm.com>
+In-Reply-To: <cf0365de-77ee-4ae9-96bf-0652c172f425@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 12 Aug 2026 13:28:45 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ibXHOsa4Pp=A00cKCOiBnk9SMpSk_n9JE2qSYTRZzYrA@mail.gmail.com>
+X-Gm-Features: AUfX_mx-NiwaEAY5gqdgMY-_MQY4Ck0H309u0v1skT_yvAzOEmcWtMIEI-f1QEU
+Message-ID: <CAJZ5v0ibXHOsa4Pp=A00cKCOiBnk9SMpSk_n9JE2qSYTRZzYrA@mail.gmail.com>
+Subject: Re: [GIT PULL] thermal drivers fixes for v7.3-rc1
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, 
+	Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
+	Linux PM mailing list <linux-pm@vger.kernel.org>, "Bryan B. Lima" <bblima@usp.br>, 
+	Miquel Raynal <miquel.raynal@bootlin.com>, 
+	Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 04 Aug 2026 20:43:56 +0800, Binbin Zhou wrote:
-> The Loongson-2K0300 SoC exposes its chip ID registers through a syscon
-> interface. Add the specific compatible `loongson,ls2k0300-chipid-syscon`
-> to the allowed list of syscon bindings so that it can be referenced from
-> the thermal node via a phandle.
+Hi Daniel,
 
-Applied, thanks!
+On Tue, Aug 11, 2026 at 4:48=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+>
+> Hi Rafael,
+>
+> please ignore this PR because there is a missing SoB.
+>
+> I'll fix it and meanwhile update the linux-next branch so it will fix
+> the build issue.
 
-[3/5] dt-bindings: mfd: syscon: Allow syscon compatible for Loongson-2K0300 chip id
-      commit: 2b02aa1b547a57e1e7aad1364a57520cf4ac49cf
+Well, the build issue is still there in my thermal branch though.
 
---
-Lee Jones [李琼斯]
+I've now remerged my linux-next branch to avoid exposing the thermal
+drivers merge I did previously and I'll wait for another PR from you.
+Worst-case I'll skip the thermal drivers material in my first 7.3-rc1
+thermal PR.
 
+Thanks!
