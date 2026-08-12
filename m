@@ -1,229 +1,86 @@
-Received: from mx5.mail-out.lima-city.de (mx5.mail-out.lima-city.de [91.216.248.207])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7541A3546C8;
-	Wed, 12 Aug 2026 12:03:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.216.248.207
+Received: from outbound.baidu.com (mx14.baidu.com [220.181.3.101])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 140CF42379A
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 12:06:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.181.3.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786536232; cv=none; b=NaeHwhpFt5ZK/VfRmAGzWQ1GH3K8nMTSowTCV2xtDAVh/j4MFSY+zLWgTCQ4vdw4UqhedsLY22WbQZZSaDS/269Ueq+7Xd5TPc/ViuRiKxQe8NqN6F0EwpKH7UP0jyNXIAI7mvBGCJ21B3bDqB/kF9a/nRxaQdmassb2ofbLWOE=
+	t=1786536386; cv=none; b=o6dGfuZcUIRtmFM0RGA/PbNpfVKQUJLCsvxOztxhQlbn//knnW2qhhO+TGdNwTVmQ5cBYT3cSJ53rv5kBMy81EeHoDTjIl8X9j5vMUpHBv5W9CexznbCwmg1NLk+7LnHPDsSTiyti26LSCkNGVaQIqGlM3qIcsiqr24EwbGGes0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786536232; c=relaxed/simple;
-	bh=kvpBh02FRfteHfgHwO5CYuK1PrTOzwA3xxXqAWpXKc8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=utZxyxjffJNj89+DuJCMUmRd6Faff1UgvNf5YkJo9I5VsY5fxWEcKJ2RY/NwhATlhqXAIdOuzFS1Ty7Z+hogvwOIR37+5SJmDsRsN09sgcho0xahtnivCigiDVgOqDfsPkg1p7SFLiF3ipGumtSKI3Es+P/x5gvoonlkuFVjRoU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=deq.rocks; spf=none smtp.mailfrom=deq.rocks; dkim=pass (2048-bit key) header.d=deq.rocks header.i=@deq.rocks header.b=wnCDNiel; arc=none smtp.client-ip=91.216.248.207
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=deq.rocks
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=deq.rocks
+	s=arc-20240116; t=1786536386; c=relaxed/simple;
+	bh=b5LYsj9lc8gMBOEVrqpCzZIDumfmcImGpMkrfSUja6g=;
+	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=ksKCZMNP/d+Dgp9kYsj3I4LoshltbwxGvoYo9p1lhI+sBFZzQU2FjKUIbBaprxdqCaakFdPrkJl4X/9mHpfiT8KzopMJ6q1gvPQyZ0yjmy8NZs53GB2mZVWwoXK95IqnDwP3KNv0bmOg6pKLAwsQlz/OSS3A3xiZ7zOhROa3PMI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass smtp.mailfrom=baidu.com; dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b=VK/Q6J8I; arc=none smtp.client-ip=220.181.3.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=deq.rocks header.i=@deq.rocks header.b="wnCDNiel"
-From: Andre Eikmeyer <dev@deq.rocks>
-X-Lima-ML-UUID: ae1f50a7-1b19-44d8-b6d4-d2eb0f197f70
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=deq.rocks;
-	s=securedbylima-20251205; t=1786536219;
-	bh=kvpBh02FRfteHfgHwO5CYuK1PrTOzwA3xxXqAWpXKc8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=wnCDNiel0WNIh0FyQByH3cB6lNK/N0zzuFhCU3HxZjQFt3p3pnQPrgl+2SRTUfIFV
-	 jkaOmkKVp/DY68OKedhqEefhWCJHK+YuIiN5Mr/Ns21F7foyZ3z3YlaxcK9N6p2Ben
-	 IQGnK/VyXPVQpPwZgdaHalnNw+25/6FrLxT7oTkGcNjejLdkdeWEvubyjotYAl+DdK
-	 0sV0rA37+etzHbWEPX9f60FpXBLFXw4MrwmjATepTz7AtTjAGGh9V37YhFS6zH64LU
-	 xaShiUnOPl0X+az1GwTXA+2KpWwJLhdZ6dHIeHv25ATmdQvhe+a/tmaWhnu5PMoyAK
-	 NCo7oPetnNkoQ==
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	linux-acpi@vger.kernel.org
-Cc: Len Brown <lenb@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andre Eikmeyer <dev@deq.rocks>
-Subject: [PATCH] ACPI: x86: Apple T2 systems need early CPU offlining
-Date: Wed, 12 Aug 2026 14:03:26 +0200
-Message-ID: <20260812120326.155226-1-dev@deq.rocks>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b="VK/Q6J8I"
+X-MD-Sfrom: lirongqing@baidu.com
+X-MD-SrcIP: 172.31.50.48
+From: "Li,Rongqing" <lirongqing@baidu.com>
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: =?utf-8?B?562U5aSNOiBb5aSW6YOo6YKu5Lu2XSBSZTogW1BBVENIXSBjcHVmcmVxOiBh?=
+ =?utf-8?B?Y3BpLWNwdWZyZXE6IGFkZCBOVUxMIGNoZWNrIGZvciBhY3BpX3BlcmZfZGF0?=
+ =?utf-8?Q?a_before_freeing?=
+Thread-Topic: =?utf-8?B?W+WklumDqOmCruS7tl0gUmU6IFtQQVRDSF0gY3B1ZnJlcTogYWNwaS1jcHVm?=
+ =?utf-8?B?cmVxOiBhZGQgTlVMTCBjaGVjayBmb3IgYWNwaV9wZXJmX2RhdGEgYmVmb3Jl?=
+ =?utf-8?Q?_freeing?=
+Thread-Index: AQHdKI8Cln1etqt6Vk69uVeR3qrM8baWnXgAgAO24hA=
+Date: Wed, 12 Aug 2026 12:06:12 +0000
+Message-ID: <342485f49c66426c930d38fa19718ba1@baidu.com>
+References: <20260810061045.2397-1-lirongqing@baidu.com>
+ <3c7c27f1-8ccd-4b1a-a21e-9bde219bd9d0@oss.qualcomm.com>
+In-Reply-To: <3c7c27f1-8ccd-4b1a-a21e-9bde219bd9d0@oss.qualcomm.com>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1786536374;
+	bh=b5LYsj9lc8gMBOEVrqpCzZIDumfmcImGpMkrfSUja6g=;
+	h=From:To:Subject:Date:Message-ID:Content-Type;
+	b=VK/Q6J8IPl/2QyTBIuwRJmAWaZCV2+Dl79/VtMEa9+RuUXWXV2cjYx4XoMN1JPZ47
+	 TSmRvO63U1FyKpM6zummBZ0oo1MjPUsWFru0zaKvpLOiG1rvrXllGYZ3yAhTZ1+V1q
+	 u5T4jyd4rhDwMBlOX7Wsh/J2L3IP2Ab3O5Hq/FWLsxP2bD+mmzFjs3oZp/yhHW0LYN
+	 7GArgNJKIs8Xvr0XMERlzvXwCGIzSnX9dV5qEOgXmP4H6sJ6R7Bmt2q3xGg8zUIW91
+	 vXKQOwJq8NXmG6A+RZ44UmPfnkAoIfU7enXAQgkNtKi6/qgj5yAlSbOgorgFa1N4E4
+	 O1/4313gSPH0g==
 
-Hello everyone,
-
-Linux reports _OSI("Darwin") on x86 Apple systems. On T2 Macs, the
-selected firmware suspend path makes secondary CPU startup during early
-resume take several seconds per CPU. The same CPUs can be brought online
-normally after platform resume.
-
-We therefore move secondary CPU hotplug outside the generic CPU PM
-notifier window on T2 systems. A prepare notifier runs before the CPU
-core blocks hotplug, while a post notifier restores only the CPUs it
-removed after the core enables hotplug again.
-
-This reduces CPU bring-up during resume from several seconds per CPU to a
-fraction of a second. The change was tested on MacBookPro15,1,
-MacBookPro16,2, MacBookAir9,1 and a 27-inch T2 iMac.
-
-Signed-off-by: Andre Eikmeyer <dev@deq.rocks>
----
- drivers/acpi/x86/apple.c | 140 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 140 insertions(+)
-
-diff --git a/drivers/acpi/x86/apple.c b/drivers/acpi/x86/apple.c
-index 45d0f16..5595a6a 100644
---- a/drivers/acpi/x86/apple.c
-+++ b/drivers/acpi/x86/apple.c
-@@ -6,7 +6,13 @@
- 
- #include <linux/acpi.h>
- #include <linux/bitmap.h>
-+#include <linux/cpu.h>
-+#include <linux/cpuhplock.h>
-+#include <linux/init.h>
-+#include <linux/notifier.h>
-+#include <linux/pci.h>
- #include <linux/platform_data/x86/apple.h>
-+#include <linux/suspend.h>
- #include <linux/uuid.h>
- #include "../internal.h"
- 
-@@ -146,3 +152,137 @@ out_free:
- 	ACPI_FREE(props);
- 	bitmap_free(valid);
- }
-+
-+#ifdef CONFIG_PM_SLEEP_SMP
-+/*
-+ * The ACPI path selected by _OSI("Darwin") leaves Apple T2 systems in a
-+ * state where bringing secondary CPUs online during early resume may take
-+ * several seconds per CPU. Normal CPU hotplug after platform resume is not
-+ * affected, so we move it outside the generic suspend CPU hotplug window.
-+ */
-+static cpumask_var_t apple_t2_offlined_cpus;
-+
-+#define PCI_DEVICE_ID_APPLE_T2_BRIDGE 0x1801
-+
-+static bool __init apple_t2_present(void)
-+{
-+	struct pci_dev *pdev;
-+
-+	if (!x86_apple_machine)
-+		return false;
-+
-+	pdev = pci_get_device(PCI_VENDOR_ID_APPLE,
-+			      PCI_DEVICE_ID_APPLE_T2_BRIDGE, NULL);
-+	if (!pdev)
-+		return false;
-+
-+	pci_dev_put(pdev);
-+	return true;
-+}
-+
-+static void apple_t2_restore_cpus(void)
-+{
-+	unsigned int cpu;
-+	int ret;
-+
-+	for_each_cpu(cpu, apple_t2_offlined_cpus) {
-+		ret = add_cpu(cpu);
-+		if (ret) {
-+			pr_err("ACPI: Apple T2 failed to restore CPU%u: %d\n",
-+			       cpu, ret);
-+			continue;
-+		}
-+
-+		cpumask_clear_cpu(cpu, apple_t2_offlined_cpus);
-+	}
-+}
-+
-+static void apple_t2_offline_cpus(void)
-+{
-+	unsigned int cpu;
-+	int ret;
-+
-+	if (!cpumask_empty(apple_t2_offlined_cpus)) {
-+		pr_err("ACPI: Apple T2 CPUs from the previous suspend remain offline\n");
-+		apple_t2_restore_cpus();
-+		if (!cpumask_empty(apple_t2_offlined_cpus)) {
-+			pr_err("ACPI: Apple T2 early CPU offlining skipped\n");
-+			return;
-+		}
-+	}
-+
-+	for_each_online_cpu(cpu) {
-+		if (cpu == 0)
-+			continue;
-+
-+		ret = remove_cpu(cpu);
-+		if (ret) {
-+			pr_err("ACPI: Apple T2 failed to offline CPU%u: %d\n",
-+			       cpu, ret);
-+			continue;
-+		}
-+
-+		cpumask_set_cpu(cpu, apple_t2_offlined_cpus);
-+	}
-+}
-+
-+static int apple_t2_cpu_prepare(struct notifier_block *nb,
-+				unsigned long action, void *unused)
-+{
-+	if (action == PM_SUSPEND_PREPARE)
-+		apple_t2_offline_cpus();
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int apple_t2_cpu_restore(struct notifier_block *nb,
-+				unsigned long action, void *unused)
-+{
-+	if (action == PM_POST_SUSPEND)
-+		apple_t2_restore_cpus();
-+
-+	return NOTIFY_OK;
-+}
-+
-+/*
-+ * The CPU core PM notifier runs at priority 0. We offline CPUs before
-+ * hotplug is blocked, then restore them after it enables hotplug again.
-+ */
-+static struct notifier_block apple_t2_cpu_prepare_nb = {
-+	.notifier_call = apple_t2_cpu_prepare,
-+	.priority = 1,
-+};
-+
-+static struct notifier_block apple_t2_cpu_restore_nb = {
-+	.notifier_call = apple_t2_cpu_restore,
-+	.priority = -1,
-+};
-+
-+static int __init apple_t2_cpu_pm_init(void)
-+{
-+	int ret;
-+
-+	if (!apple_t2_present())
-+		return 0;
-+
-+	if (!alloc_cpumask_var(&apple_t2_offlined_cpus, GFP_KERNEL))
-+		return -ENOMEM;
-+
-+	ret = register_pm_notifier(&apple_t2_cpu_prepare_nb);
-+	if (ret)
-+		goto free_mask;
-+
-+	ret = register_pm_notifier(&apple_t2_cpu_restore_nb);
-+	if (ret)
-+		goto unregister_prepare;
-+
-+	return 0;
-+
-+unregister_prepare:
-+	unregister_pm_notifier(&apple_t2_cpu_prepare_nb);
-+free_mask:
-+	free_cpumask_var(apple_t2_offlined_cpus);
-+	return ret;
-+}
-+late_initcall(apple_t2_cpu_pm_init);
-+#endif
--- 
-2.55.0
-
+DQoNCj4gPg0KPiA+IElmIGFsbG9jX3BlcmNwdSgpIGZhaWxzIGluIGFjcGlfY3B1ZnJlcV9lYXJs
+eV9pbml0KCksIGFjcGlfcGVyZl9kYXRhDQo+ID4gaXMgTlVMTC4gIENhbGxpbmcgZnJlZV9hY3Bp
+X3BlcmZfZGF0YSgpIHdpbGwgZXhlY3V0ZSBwZXJfY3B1X3B0cihOVUxMLA0KPiA+IGkpLCB3aGlj
+aCBkb2VzIG5vdCByZXR1cm4gTlVMTCBidXQgYW4gb2Zmc2V0IHBvaW50ZXIuDQo+IA0KPiBIaSBS
+b25nUWluZywNCj4gDQo+IENvdWxkIHlvdSBwbGVhc2UgY29uZmlybSBpZiBhY3BpX3BlcmZfZGF0
+YSgpIGNhbiBldmVyIGJlIGV4ZWN1dGVkIHdoZW4NCj4gYWxsb2NfcGVyY3B1KCkgZmFpbHM/DQoN
+CllvdSBhcmUgcmlnaHQsIGFjcGlfcGVyZl9kYXRhKCkgY2FuIG5vdCBiZSBjYWxsZWQgd2hlbiBh
+bGxvY19wZXJjcHUoKSBmYWlscw0KDQpQbGVhc2UgZHJvcCB0aGlzIHBhdGNoDQoNCnRoYW5rcyAN
+Cg0KW0xpLFJvbmdxaW5nXSANCg0KDQoNCj4gDQo+IA0KPiA+IERlcmVmZXJlbmNpbmcgLT5zaGFy
+ZWRfY3B1X21hcCBvbiB0aGlzIGludmFsaWQgcG9pbnRlciBsZWFkcyB0byBhIGtlcm5lbA0KPiA+
+IGNyYXNoLg0KPiA+DQo+ID4gRml4IHRoZXNlIGlzc3VlcyBieSBhZGRpbmcgYSBOVUxMIGNoZWNr
+IGF0IHRoZSBzdGFydCBvZg0KPiA+IGZyZWVfYWNwaV9wZXJmX2RhdGEoKSBhbmQgc2V0dGluZyBh
+Y3BpX3BlcmZfZGF0YSB0byBOVUxMIGFmdGVyIGZyZWVpbmcuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBMaSBSb25nUWluZyA8bGlyb25ncWluZ0BiYWlkdS5jb20+DQo+ID4gLS0tDQo+ID4gICBk
+cml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMgfCA1ICsrKystDQo+ID4gICAxIGZpbGUgY2hh
+bmdlZCwgNCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL2FjcGkt
+Y3B1ZnJlcS5jDQo+ID4gaW5kZXggODdlNDkyMy4uY2QyY2E4NyAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMNCj4gPiArKysgYi9kcml2ZXJzL2NwdWZyZXEv
+YWNwaS1jcHVmcmVxLmMNCj4gPiBAQCAtNTE3LDExICs1MTcsMTQgQEAgc3RhdGljIHZvaWQgZnJl
+ZV9hY3BpX3BlcmZfZGF0YSh2b2lkKQ0KPiA+ICAgew0KPiA+ICAgCXVuc2lnbmVkIGludCBpOw0K
+PiA+DQo+ID4gLQkvKiBGcmVlaW5nIGEgTlVMTCBwb2ludGVyIGlzIE9LLCBhbmQgYWxsb2NfcGVy
+Y3B1IHplcm9lcy4gKi8NCj4gPiArCWlmICghYWNwaV9wZXJmX2RhdGEpDQo+ID4gKwkJcmV0dXJu
+Ow0KPiA+ICsNCj4gPiAgIAlmb3JfZWFjaF9wb3NzaWJsZV9jcHUoaSkNCj4gPiAgIAkJZnJlZV9j
+cHVtYXNrX3ZhcihwZXJfY3B1X3B0cihhY3BpX3BlcmZfZGF0YSwgaSkNCj4gPiAgIAkJCQkgLT5z
+aGFyZWRfY3B1X21hcCk7DQo+ID4gICAJZnJlZV9wZXJjcHUoYWNwaV9wZXJmX2RhdGEpOw0KPiA+
+ICsJYWNwaV9wZXJmX2RhdGEgPSBOVUxMOw0KPiA+ICAgfQ0KPiA+DQo+ID4gICBzdGF0aWMgaW50
+IGNwdWZyZXFfYm9vc3RfZG93bl9wcmVwKHVuc2lnbmVkIGludCBjcHUpDQo+IA0KPiANCj4gLS0N
+Cj4gVGh4IGFuZCBCUnMsDQo+IFpob25ncWl1IEhhbg0K
