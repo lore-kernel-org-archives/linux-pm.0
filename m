@@ -1,148 +1,273 @@
-Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from flow-b8-smtp.messagingengine.com (flow-b8-smtp.messagingengine.com [202.12.124.143])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83D2840927A
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 09:40:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB9BD40FDAD;
+	Wed, 12 Aug 2026 09:41:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.143
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786527654; cv=none; b=kksPJ410z5Zl5WiOO+NgA/xZ4Zx0TjkQOptSQpda1VrrGi0+0/SG0FQSZAWxNy6Gs9LzK9xH42v0O3r+cN8f6J9WV1/hoLGNbbNSgUcoBJGBaLGtcxlw24kuyDzP4/0wGLBTjsYc0u6jZjjCXsUvaPLH7cARn+JERJwBp6rgPnM=
+	t=1786527683; cv=none; b=fZjoXbN2Ym2nEbPesrg+GaG4QD/qCwY78TnVh3s+qx2JtVlZrk0dDcvIQGaJvNgGbo4KxbkF1j4PUXeIB/0Ki6Ads/LSdD7+rRAhDQxbr1WOG/jBKPDEUP/HyS8WwaKw2z4pnmls1AsBT3DYgTpvYMvL+JcB7dbx9grUrFCxxsA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786527654; c=relaxed/simple;
-	bh=vEnWUoUaz+j1jutZ0x7mn3UZx68qpKOkRpdbj6GiR4Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TGgiKzISG+y3zpdBULUyNB82pEvUN9V51El4r/fhx9lt83IiIdPzU8gdJLjCu8W4JqxYRye08l8+yz6v9goxRgWHqof+wobIiKyb7iq/lngb8+if7LNifkkNP6sjGzlHA3WSkTR2c560jZN9hk4UnghL8b5MxGCfOQxwSkUnvmU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bFi6eUae; arc=none smtp.client-ip=209.85.208.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1786527683; c=relaxed/simple;
+	bh=6QPynWrMzLJ0HW2fmIrfr1z8hcilft2HswPt7Sat954=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RUtHtCRrSpjNCLmNboYhmKTOuB8Mmmy/kaox5Re3n76oZVrMAe36KHOzpR9MsPeWnJz0fNQUEkgA0HO18YvY5axQZfjbVjpxnVE5129AGTwD4kUh1vmn1k4KEf7d0fXLS3Df/6uQwuA1NuKST+O3Srwyx5X84KGYCqXiG4YCnmo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=Do3+aaE4; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=btQRECF2; arc=none smtp.client-ip=202.12.124.143
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bFi6eUae"
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-39c74722e27so10445131fa.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 02:40:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786527649; x=1787132449; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=+dz/gXZ21acjG3092zZMnoEfpN4U+nzeRDfy7pXv4tc=;
-        b=bFi6eUaegxpFKCUdkGx55uamKhQFU5NhFgKu6SOXKPmz5dMu9QrHXQTj7gMOu8l6GA
-         rKMEtyVxKcRSl2uUJwPCzSiYJjNh7WfRufyY4aF2H2HLHB29zUh6rFCGZYF1dWZZLqbz
-         1hgHu8J/MeDAazc9FAGXkzm4ioBc9/wDCUw0zyzfGmY+LEHk5wOjgtHfX1cmNglcTVM1
-         1+754oJrU9BUEUNnxzXrUiMBPm1byGG31+a/kqy9dLSsplFz7GKRcVlj0hOi8Ps7JvP7
-         InaWJv/SlY1ocMKZfN1LfjF1vT8/xUTJmesTl0tW6D3hsUnLnAFjyth5kO1h/MnoEv4g
-         mWgw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786527649; x=1787132449;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=+dz/gXZ21acjG3092zZMnoEfpN4U+nzeRDfy7pXv4tc=;
-        b=pVD4QxJGAirGbKn4WOlNbkynpZJ1DK7zz0dlwpugjizkdvFAvZcpHQwxb0qWLONAAz
-         o03WomLfkyb3xdGp1CBMWSOY/NV3n5IdcDplF1c4vZvhFZ9ZG+Zz2QqPn0AmQuOpxkca
-         Ff/Lzyn5y7jF3+ruPEU9LhsjzP0dMXAID/FYMNAJyNIcX3lOpOR2lZq39L8lt8lFx3+m
-         VX30Q63vweCrnBPEPPcz5fbJCHMPCDc0vhh8gNX67O0Gzd/sUM7lHC1M6Ke8oAhwFasj
-         ADmyVU8ydPUF1vzQ+q8pLe/YaqhkdJXxX02gdiJlSeyJO+ZMMx9NoxoZLfdtjc0QmsBD
-         waRg==
-X-Forwarded-Encrypted: i=1; AHgh+RpegG49fd0F/uNjDTK9wEWUoRopkVFeAj96RuK0wFMr3dYL729q18lB77wXETTJol72dFy9LPwSHw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxS9AlfUAJMHulrFOBDTUhzNn5LjfNjmCfHhqu8djuq6bRvxLKR
-	mvvIDU2zrJOatPZibFhaa9Q/6BLPKwgpJ/GrenOqkLUi8jmhakCspEk+
-X-Gm-Gg: AR+sD12YQvCsWx3RCvpWS27IXh9mVQ+esn3SPcLHkhLeTz3hmxBJ1qiiuhtD45i8iqb
-	fbeaaR6pUzE5p+gql5uJ3weIO3F/SYiLLtlqnKZE42F84ZMd1fdaJoVZByTIje2ae14KZSmOcPO
-	IiTDT8JvjRjRbYrLaIesQXyg9iI5KM5t0SYwPsb3TE/chHlr2NohRdjUpX0nvdKogNSXfYMwlVk
-	s52mDOFJCTQaM3KXM/M9APdtexfBQQuB8h4noCpaOzrp10Feg0HfFq51xzJspkiSuvUAhBEvnRQ
-	hujH6a4WqPsylErNRSLeveRkE7ZgMeEIFUmwm6iOdutnnRQ7j0s2IjXpLptzPpOViONcg3GKnLG
-	J/sHwnJR3Y+DGdFi+QSXUVGIV5Mks0lsM6akaXHd7f5HYyK9sQYmJKPLwPvy1SY2e5axaCe+vrj
-	4gG+DmnxWQNpqFMM7L3i25xU9lw6uPBuN6EqFDfX0g8cpsVOhX/D06Uzko4tmXlsHBuT2W
-X-Received: by 2002:a2e:a9a2:0:b0:39b:11f9:6132 with SMTP id 38308e7fff4ca-3a102a5d000mr8943151fa.1.1786527648997;
-        Wed, 12 Aug 2026 02:40:48 -0700 (PDT)
-Received: from [10.38.18.54] ([213.255.186.37])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a107d20f1esm3277211fa.16.2026.08.12.02.40.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 12 Aug 2026 02:40:48 -0700 (PDT)
-Message-ID: <1b08ee53-5adf-4de1-afdc-4419797142d8@gmail.com>
-Date: Wed, 12 Aug 2026 12:40:47 +0300
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="Do3+aaE4";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="btQRECF2"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.stl.internal (Postfix) with ESMTP id 31829130082A;
+	Wed, 12 Aug 2026 05:41:19 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-04.internal (MEProxy); Wed, 12 Aug 2026 05:41:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
+	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
+	:from:in-reply-to:message-id:mime-version:reply-to:subject
+	:subject:to:to; s=fm1; t=1786527679; x=1786531279; bh=XTtrf9QqIJ
+	0aEwhEPUrpZWj0OOWgjuwh9E5x/Ee+vU4=; b=Do3+aaE4i5NUeaY7SfW37Pv25l
+	QUqp2DkEix2OMEKW2ejeNDwBY/EZZJUenQZ9uSZbixupOlZFEntTSb/QgCwgDacH
+	DvRtGzpFbGUAcconqSl45ZnVslcobtb3T2yIbJoFvqL91siSMIHyys2Ik8aeBezx
+	cPSyTv00jaYgSTGCvFJm4FcR0k8+D3jIe7pms7OgT3wSz1chERp709rnNx4cT3VN
+	3kx6Hzw3lUVdqJTzRwjuWoK/dMPvv02dUf7xsWhHSHsqF80UKw80zbNmZzw3hT/s
+	Is3t2Itf6eSVFFeCjLKJv8O438bKp3P29x4jYr8YW7WuK0aVQiYctqgx0+XA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
+	1786527679; x=1786531279; bh=XTtrf9QqIJ0aEwhEPUrpZWj0OOWgjuwh9E5
+	x/Ee+vU4=; b=btQRECF23aTza3IYQHkV0GTKQTlE9dEXDtuTd/kLYeJ/N7cEJDm
+	IiWhKkB3lU2kKH62Qxxd8PYm4pFiZExgW8NFXZ2ty+39XHTMUz8KafzqvX33Mz8l
+	bN5z6UeDkps6q495gzqtxHxZdBGRMrlrBkAh6qRmH4108GXIiGlEln6nZVgdrsrB
+	dbtXdnK3n9mgxVWkKzuGMPw26XnJffPU1NZAdNQP5ToIU9YwXdcu5xgjzllOEwZo
+	f8rYVGKQVPAgHql625a8leMv6hzYuM92/u9WEOrL1/PLKNeD58iSHTxu9auqL2cT
+	8JQoyz87j8UF8vYqO3jQhkcMT35PiJFMqbg==
+X-ME-Sender: <xms:vT98agsS4QSOhkQqfbZHJbaLgpeDzpyE7L3Y-NJdEfiMKEh_aLXNwA>
+    <xme:vT98apm_0M54j0_nYdAd-EU1oQhgcJGidYpopFQlqfKZykD40vLEkbOGdnzJBo7HM
+    rhc1FpJLSggX5iIcivIIH27w_OZeW-Q3llEmsgUhumHB7AbnLq1vvJx>
+X-ME-Received: <xmr:vT98anlWWxK6HWMo_ofmolGB5kfxu4NBl0RxXN8h1FSrNT0QeARtr_Grh6jK49GcPP0k99NycQ>
+X-ME-Proxy-Cause: dmFkZTGczlsc6lTmWVXF5EdFbdBVrzj/e7Ns03qZEcXkYEtO1ejPPywerw48yQ4lW5hk3J
+    fT+nPF6HwKq4wLnadj9B/7Dxa+JyDDEx+4c7COf2RfNTk8z5C7N//KLe5jziAvw/TtX/Jp
+    OrC/dIaTR/CyYlCFQH75cyZe9sWyJHnxZXS6yI7T6OJVjuheIcXU/eK6bZTz4XhwORckp+
+    14uoPBgn1Yp6vTSRddKOl657KK8RRAbUi7J1na8KuT9wzNcxlASvghh7F98Jutl24ebq9g
+    llnAP0pM5Ea0ZgFR9n5XPa2NKSElqXsALbI2HKi6XGVMFztOK0Iz3JFRIByX2nDIiMMtXZ
+    UayMLhX5L+S5al0XL9J/cmf77OnCUAbzlK/sgfcDEOMzs5USN3TTAHwETXv90c4PKmhd3E
+    Zmz/EZ0BjpxB8OvYiYRpneXAP1XbgYOrNEKBJcIp5n8s/2jaS0bqmK1X9Vn9sof/vgYmTk
+    bvyl8cFXFIBWFfgbSL2CbvQsUC+cHXRo+QL67C/1tkaNU1MwgMrG1H86LT0nPU5APvaGh/
+    KlRbyLA/BLZ9XeMTVX8Jka4laTBy/2rMvzmVvmGiEmGpS/a8BNddhIHgaQa5EQZWWVVCcX
+    CbidpSWly9KWj0mV1YU1or1O0uOzTW9F4XmzyDq/iNxuoMmBJCXvIZyMncMA
+X-ME-Proxy: <xmx:vT98asgifRk94cDkLTcUXFX_FUWxfgO-0kb2gLskTwBeV5Ojuj0TzQ>
+    <xmx:vT98ahEw5sSI2tHzovJwRUzDykMjOANd2zw1vm7Hrt-VyGlwwnr3pQ>
+    <xmx:vT98avayTAxSp2mQzvqpSvIiwOmlD7KiA7oU_mZBJwpqmrk6-gihEA>
+    <xmx:vT98asOTpXiddBNbBAhaBCxSGY5yEyHgNNio6EsY_QOjmeHZJgZIPA>
+    <xmx:vj98auwTyboyMhBm7PhDqpWlPNQ7n7PA3U2Yrp9MTW6bqezTSakjfVHi>
+Feedback-ID: i7a5e4b5f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 12 Aug 2026 05:41:09 -0400 (EDT)
+From: Jiaxing Hu <gahing@gahingwoo.com>
+To: tomeu@tomeuvizoso.net,
+	heiko@sntech.de,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joro@8bytes.org,
+	will@kernel.org,
+	robin.murphy@arm.com,
+	ulfh@kernel.org,
+	p.zabel@pengutronix.de,
+	ogabbay@kernel.org,
+	zhangqing@rock-chips.com
+Cc: royalnet026@gmail.com,
+	alchark@flipper.net,
+	chaoyi.chen@rock-chips.com,
+	diederik@cknow-tech.com,
+	dri-devel@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	iommu@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Jiaxing Hu <gahing@gahingwoo.com>
+Subject: [PATCH v7 00/10] accel/rocket: RK3576 NPU (RKNN) enablement
+Date: Wed, 12 Aug 2026 21:40:55 +1200
+Message-ID: <20260812094106.1391698-1-gahing@gahingwoo.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/5] power: supply: bd71828: Fix current direction
-To: Andreas Kemnade <andreas@kemnade.info>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Matti Vaittinen <matti.vaittinen@linux.dev>,
- Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
- Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Kalle Niemi <kaleposti@gmail.com>,
- =?UTF-8?Q?Topi_Sonkaj=C3=A4rvi?= <sonkajarvi@hotmail.com>,
- Mikko Mutanen <mikko.mutanen@fi.rohmeurope.com>,
- Markus Laine <markus.laine@fi.rohmeurope.com>
-References: <cover.1786356145.git.mazziesaccount@gmail.com>
- <22c6816204b3f2a8b50df8171e384937822d195b.1786356145.git.mazziesaccount@gmail.com>
- <20260812101050.575c9bfb@kemnade.info> <anwsIK9ITpcDkZos@ashevche-desk.local>
- <20260812102536.63579b89@kemnade.info>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <20260812102536.63579b89@kemnade.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 12/08/2026 11:25, Andreas Kemnade wrote:
-> On Wed, 12 Aug 2026 11:17:36 +0300
-> Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
-> 
->> On Wed, Aug 12, 2026 at 10:10:50AM +0200, Andreas Kemnade wrote:
->>> On Mon, 10 Aug 2026 13:09:07 +0300
->>> Matti Vaittinen <matti.vaittinen@linux.dev> wrote:
->>
->> ...
->>
->>> That code is complicated. What about a generic 16bit non_2complemented sign
->>> to 2-complemented sign function/macro. Such would have prevented the error
->>> in the first places. So &vals[i] = signbit_to_2complement(be16_to_cpu(tmp_curr), 15) * pwr->curr_factor
->>
->> Do you mean existing sign_extend32() from bitops.h?
->>
-> 
-> I don't think it does what is needed. Here we have
-> 
-> 0000 0000 0000 0001 -> 1
-> Usually we have
-> 
-> 1111 1111 1111 1111 -> -1
-> 
-> but here
-> 
-> 1000 0000 0000 0001 -> -1
-> 
-> If I do understand things correctly. I not find something useful
-> in bitops.h.
-> 
+Based on Igor Paunovic's "[PATCH v2] accel/rocket: request the core
+clocks by name", as v6 was:
 
-Thanks for the review and testing Andreas! We share the same 
-(mis?)understanding. ;)
+  https://lore.kernel.org/linux-rockchip/20260729130743.128876-1-royalnet026@gmail.com/
 
-I am not sure this is so widely used it'd warrant a generic macro. I am 
-afraid that if someone encountered similar design, he would not expect a 
-generic macro to exist. My gut feeling is that this is too marginal to 
-be widely useful. I am not against it though, if someone wants to 
-implement it.
+Tested on a Radxa ROCK 4D, on next-20260730.
 
-What comes to complexity - I agree. The code is messy, but mostly 
-because of "clever hacks" done so values are in arrays indexed by loop.
+The thing this series has been describing as unsolved since v3 is solved,
+and it was one register write. That changes the cover letter more than it
+changes the patches, so the correction comes first.
 
-I, however, would like to see a minimal backportable fix, and 
-potentially, larger clean-up which can then go in as a feature, without 
-any rush.
+The claim I have to withdraw
+============================
 
-Yours,
-	-- Matti
+Every version of this series from v1 to v6 has said that the RK3576's
+completion interrupt is armed exactly as on RK3588 and never reaches the
+GIC, and v6 shipped an hrtimer that samples INTERRUPT_RAW_STATUS instead
+of waiting for it. That is not true. The interrupt works.
+
+It never fired because the block believed it had 28672 tasks left to
+run, so the job was never complete. PC_TASK_CON packs the task number
+with three controls above it, and the field widths are not the same on
+both SoCs:
+
+  RK3588   BIT[11:0] task_number, BIT[12] pp_en, BIT[13] count_clear
+  RK3576   BIT[15:0] task_number, BIT[16] pp_en, BIT[17] count_clear,
+           BIT[18] last_layer_clear
+
+rocket_registers.h is generated from the RK3588 description, so writing
+it unchanged on an RK3576 asks for task_number 0x7001, that is 28673
+tasks, and puts TASK_COUNT_CLEAR on a bit that does nothing. The counter
+was then only ever cleared by a reset, which is precisely the "one task
+per reset" shape v6 reported, and it is why every completion path I
+added looked necessary.
+
+It was found by taking an ordered trace of every register write during
+one submit and diffing it against the same trace from the vendor driver
+on the same board. Exactly one value differed.
+
+Robin and Diederik, my apologies for the thread that premise cost you.
+Robin's shortlist for an interrupt that never arrives was an extra clock
+or power domain in the path, a masking control that had been overlooked,
+a wrong description, or terminally broken hardware. It was none of those,
+because the interrupt was not the thing that was wrong.
+
+Chaoyi Chen of Rockchip confirmed the layout on the list, including the
+fourth control at BIT(18) that the trace could not have named:
+
+  https://lore.kernel.org/all/4f300b78-d96d-4d98-8819-dc292b0c9b97@rock-chips.com/
+
+I sent a correction to the list when this landed rather than leaving it
+until now:
+
+  https://lore.kernel.org/all/20260807211629.1573228-1-gahing@gahingwoo.com/
+
+So v7 drops the poll entirely. There is no hrtimer, no poll work, no
+second completion path and no arbitration between two of them. A job is
+retired by its interrupt, the way it is on RK3588.
+
+Changes in v7
+=============
+
+  * accel/rocket: PC_TASK_CON is written with the RK3576 field layout.
+    The defines are in rocket_job.c rather than in rocket_registers.h,
+    which is generated and says not to edit it by hand.
+
+  * accel/rocket: the completion poll and everything supporting it is
+    gone: poll_completion, the hrtimer, the work, poll_seq and its
+    mirror, poll_dying, the teardown ordering in rocket_job_fini() and
+    the arbitration in rocket_job_handle_irq(). 7/9 in v6 was 142 added
+    lines in rocket_job.c and 8/10 here is 90, most of which is the
+    comment explaining the register.
+
+  * accel/rocket: the job_lock fix is its own patch now, 1/10, with a
+    Fixes tag. It is an RK3588 bug and it was buried in the middle of a
+    preparation patch in v6, where nobody could backport it.
+
+  * accel/rocket: the power domain list is attached before
+    iommu_group_get() rather than after rocket_job_init(). In v6 a
+    failure there returned without unwinding either of them. Igor caught
+    it. Moving the call is better than adding an unwind path, since
+    everything before that point is devres managed and a plain return is
+    then correct. It also keeps commit f509a081f6a2
+    ("accel/rocket: fix unwinding in error path in rocket_core_init")
+    from having a second copy of itself to keep in step.
+
+  * accel/rocket: struct rocket_core's clks[] no longer grows in 7/10.
+    Igor pointed out that 7/10 claimed nothing changes for RK3588 while
+    growing the array there, with the two extra names only arriving in
+    8/10. The array now grows in the patch that adds the names.
+
+  * The series is 10 patches rather than 9 because of the split above.
+    Nothing else moved.
+
+What this means for the split in 7/10 and 8/10
+==============================================
+
+Diederik asked for the enablement to be split and Igor seconded it, and
+v6 did that. The split survives v7 unchanged: 7/10 is the soc_data
+plumbing with RK3588 keeping four clocks and two resets, and 8/10 is the
+RK3576 enablement. What changed is that 8/10 is now much smaller.
+
+Where it stands
+===============
+
+With every debug knob off, on a ROCK 4D:
+
+  * the NPU probes with the two domain list and no attach failure;
+  * a convolution submitted three times with three different inputs is
+    byte exact against the CPU reference each time, with no reset in
+    between and with nothing retiring the job but the interrupt;
+  * the NPU's line in /proc/interrupts goes from zero to three across
+    those three submits, one each and no more;
+  * unbind and rebind is clean with no warning;
+  * every patch builds on its own;
+  * dt_binding_check is clean on all three bindings the series touches.
+
+The measurement in v6 that could not tell a recomputation from an
+untouched output buffer has been replaced by one that can: the inputs
+differ between submits, so a stale buffer cannot pass.
+
+That was run on this branch with nothing else applied. The out of tree
+work this hardware has needed for the userspace investigation, including
+an rk_iommu flush_iotlb_all that is neither upstream nor in this series,
+is not present, and the userspace results below are the same without it.
+
+The userspace side is a separate matter and is not part of this series.
+It runs regular convolutions, depthwise convolutions and the first
+convolution of MobileNet V1 byte exact per output channel against the
+CPU reference, and two chained operators come out at the accuracy the
+hardware's own arithmetic allows. A whole MobileNet does not run yet.
+Nothing that is still wrong there is in the kernel.
+
+Igor, thank you again for the RK3588 review. Both of the things you
+found in v6 are addressed above and the completion path has changed
+enough that it needs another look rather than a carried tag. Your offer
+to run this on all three RK3588 cores would be very welcome, since the
+only behaviour change to RK3588 in the series is the job_lock ordering
+in 1/10 and I cannot test it here.
+
+Jiaxing Hu (10):
+  accel/rocket: take the completion register writes under job_lock
+  dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
+  dt-bindings: power: rockchip: allow resets in a power domain node
+  dt-bindings: iommu: rockchip: allow the RK3576 NPU MMU clock set
+  pmdomain/rockchip: add optional per-domain power-on settle delay
+  pmdomain/rockchip: cycle optional power-domain resets on power-on
+  accel/rocket: select the per-core clock and reset counts from match
+    data
+  accel/rocket: add RK3576 NPU (RKNN) support
+  arm64: dts: rockchip: rk3576: add NPU (RKNN) nodes
+  arm64: dts: rockchip: rk3576-rock-4d: enable NPU
+
+ .../bindings/iommu/rockchip,iommu.yaml        |  8 ++
+ .../npu/rockchip,rk3588-rknn-core.yaml        | 47 +++++++++-
+ .../power/rockchip,power-controller.yaml      |  8 ++
+ .../boot/dts/rockchip/rk3576-rock-4d.dts      | 10 +++
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi      | 80 ++++++++++++++++-
+ drivers/accel/rocket/rocket_core.c            | 28 +++++-
+ drivers/accel/rocket/rocket_core.h            | 11 ++-
+ drivers/accel/rocket/rocket_device.c          |  4 +
+ drivers/accel/rocket/rocket_drv.c             | 22 ++++-
+ drivers/accel/rocket/rocket_job.c             | 90 ++++++++++++++-----
+ drivers/pmdomain/rockchip/pm-domains.c        | 71 ++++++++++-----
+ 11 files changed, 324 insertions(+), 55 deletions(-)
 
 -- 
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
+2.43.0
 
-~~ When things go utterly wrong vim users can always type :help! ~~
