@@ -1,149 +1,164 @@
-Received: from ixit.cz (ixit.cz [84.42.129.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CA25435504;
-	Wed, 12 Aug 2026 11:40:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84ACE435AA1
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 11:50:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786534828; cv=none; b=MYR0K2oDmXvpEz/hj+VYkImZvEe56JDzIf9v8HfP9pHnV0fg8+s1yOjPKfY/z2ToXQrfkeyChDAx/qy8D+lA5sTsAsOgOdYQuaohBTgHN3BCOAr5QK4oNmriWsR/62EI5OPL1sFAzYbxZaACNDu9euNE+hoW7C2C/ZXKe7Tgxdc=
+	t=1786535417; cv=none; b=tKDaAVjxDbZvLnDRh68Sj6bFx1N7+j+6IuIGM6c3vW/deTpA6Tq/u8NcKeX7T1l0lct3VSkgOTrDp3o8k7r1yVnOWRwL+smohZe+9trN8AAL5sJoDv4OVm/gCo910bYDWSN6Enpp8W0BfQPRJMz0ztUu6TbXQzeReOi6aIxRAO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786534828; c=relaxed/simple;
-	bh=4h/0oLp2h7IE8pA6uZy4AQLNovG4Wqu1oVEvekedYSA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DMtnPU65fDILrYTo06tAmD6FYYIn1zJsAuJnegXnWuziHVXUQid6568tUFVNXgYy95C9ba9qWj4DkiDh5w4Wk33jomaRjzVkLi+qPcPeyTIu1LhxIZAldGbwT9uJ4Yx15P8QrJRiJ3XepybbmGbdWH4i6WvoFrW3a+cArlYqY08=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=GB7ysRj8; arc=none smtp.client-ip=84.42.129.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
+	s=arc-20240116; t=1786535417; c=relaxed/simple;
+	bh=8/0nwJ5lnRn3Y3yl0yFRYA7zxu5zVJ7w96ZSy/sAiRw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V35vhtOYpyRNisL8ozBQYHMtdj2GspmvdU0nNAmXqKfNVRJmxFnJqVRdnNsRHXqK6vtD50KcHrlPJ2zEtG+j67KCmcGCB3BWHAKODtVu0o7JFwuZHV4UArtJY6eLEO/PznHn6yMY9OyxesqMHn6asYOiCTdWEA8SFvFmYvQ/eug=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=S3pLDnNh; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="GB7ysRj8"
-Received: from [172.16.124.192] (ip-78-44-13-22.bb.vodafone.cz [78.44.13.22])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by ixit.cz (Postfix) with ESMTPSA id B6B8F53401E6;
-	Wed, 12 Aug 2026 13:40:23 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
-	t=1786534824;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=KArXhTGikECnnXJBaKJQL5HiSiaclLz+gY4N4WdWjRA=;
-	b=GB7ysRj8pn9j8ajPfl9zs1ENqu8qTVII284Qf4FOevTFQfE6k//3GPYoLp5AlMyfiII8KF
-	bmiL05O4Yw4ptY+RPGmR1DHhpv3qai5XeDSN/rTPsAXphZx0FOsSqW7It7FR4+276wuubB
-	XtmhSyiGNND8ETSKmaPTKjjifL1M/ik=
-Message-ID: <cce3fe36-322e-49ed-8928-3aef813faad7@ixit.cz>
-Date: Wed, 12 Aug 2026 13:40:23 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S3pLDnNh"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-47f84023916so710341f8f.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 04:50:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786535414; x=1787140214; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=A999a1eUHTXyHyUaTUVFT56YXEqwnzjX5/b3MG+b7Ls=;
+        b=S3pLDnNhgvM2tBWXWkV1HQvHXDe4/uIiGe5QYjHaJ6FHrpY/Wkz2gIsKd8rx+WjhHl
+         p2Hr4WXlkm4mduzH0n7YRoZniH1ZHDoBxACqXg+h4ZkabAjJPk95OGGTReu6/k4W8JZV
+         NNrwzrdnZ1kkUj865lCz3Z6vtgytm8wgNqb+A6Ni+ygQpvT1KK+5g8lqMod9FiIiUxjQ
+         5P+qq2fXLVoSyrgMJx7GCGW1ZaKdmKLQjc7aL5+9Wn8EExHr4O445YmzOglvsSW8vZeQ
+         cL/yg0uAQTotSbk/RVweZ4Zcgthcs4FDVtVoAOJuuhWhdSkwIx6bgViN9J5N4MEg/TY/
+         DMjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786535414; x=1787140214;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=A999a1eUHTXyHyUaTUVFT56YXEqwnzjX5/b3MG+b7Ls=;
+        b=BO2y04zPoNWBHs2+sJQoA9745Kalnn46WnNXLnnHtOkQOiBf6+2v0BMTiBMevaZzd/
+         K8Ltqo/Te4vfLfn/46tSYqYISw4FoEtoPUeYrYgKbqQ49BZBqKFAFSdPStUQl6SF2+S/
+         +2EbPTK6O1N4rNpgxSZYdHXP1J0/8/HVUG8HqHdeeAqwa7zWm2L1n9aLMTx37wz3jJo1
+         +TVXtMNLq9kkZMtsQlBvMdhUxkFbk08Ch8V6tIag80ZSLLqHcKnHuBAVTYdxgAHxb/2K
+         4sN5+F2e7ia4bE1y1ky0Y0I9YLvC2l5lFoaEZMZV/BdkC/uBzfVheyHErzWo4gGFsCCG
+         bymA==
+X-Forwarded-Encrypted: i=1; AHgh+RolA/7BZ2X3yAnfxtxFis6Joeyt5o0nL0Q0lb/L5x9GDkTm0ZKgGcZp1ABa+aAWyBrmI9BJ4J9oRA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxRXb1zK5jEsSNsWe7MOPpseY9/luZ16OOPLkEENk26FSqWw1bU
+	hkrLtyxsMCR1yIwWVY5q3uLvNrQwjsoF0210sB8Sx2Z4Psu5O0mTe1+j
+X-Gm-Gg: AR+sD12lGuUHB82LnBk1lmFIRkRbWNr06BkQ8YEcdcI5aZwJZ9UedjbNESwKbqWMexg
+	fUbAMbLcMu1RAhpdRSCaOXOIayfSCIj6y9kpkVb+qer9HNiIaLkWvEhKO0B8NzMrEJUMz/u7nT0
+	72idqX5IAV0H+3fXkVvWPhjde5SXen+0NV4l+qp2D5rQYdP5Xg/cXdH/5sFzNwMXgjLXIEAAwbb
+	gb+BtrDhoDMy3qDIBYFF7ckE0HZVna3NRvMpsxj5t5qszSVIZ0FjSMUKBsUJdgK6i1HWlJUp+tA
+	M2JMbGsOtJgJe1ylF+UZqXeN8Le6KWXNS6YRmG1CR9JdvlCTH7+CXsfzH3Y+sIHe5afgcBVKSkd
+	D3tTtIk5Rjjcs382kksHuwaOgbetLKc+GVOEk/Q/pmzIoymdUv2TguY4WcH4YVXx89ZSX6BFkE/
+	GWUbBfVblIqSoInRu+SZ07lELDPDQR18Eh9NV11fxIWj7AMHmMK4+mCETPqBvrR5sSpeQqedEJJ
+	pvGsYN/rGGJgg==
+X-Received: by 2002:a05:6000:2903:b0:47f:eb80:ff42 with SMTP id ffacd0b85a97d-481528abe08mr5741601f8f.4.1786535413564;
+        Wed, 12 Aug 2026 04:50:13 -0700 (PDT)
+Received: from localhost.localdomain ([2a00:23c4:a702:d301:94c0:1825:d248:50ae])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4815231c308sm6219090f8f.11.2026.08.12.04.50.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Aug 2026 04:50:13 -0700 (PDT)
+From: Biju <biju.das.au@gmail.com>
+X-Google-Original-From: Biju <biju.das.jz@bp.renesas.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>
+Cc: Biju Das <biju.das.jz@bp.renesas.com>,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+	Biju Das <biju.das.au@gmail.com>
+Subject: [PATCH v3 0/3] Add RZ/G3L PWRRDY power sequencing support
+Date: Wed, 12 Aug 2026 12:50:02 +0100
+Message-ID: <20260812115010.108322-1-biju.das.jz@bp.renesas.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/33] Add support for Qualcomm Snapdragon SM7150 SoC and
- Google Pixel 4a
-To: Jens Reidel <adrian@mainlining.org>, Danila Tikhonov
- <danila@jiaxyga.com>, Miro Mraz <mraz.miro@seznam.cz>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-watchdog@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-phy@lists.infradead.org, linux-mmc@vger.kernel.org,
- netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
- dmaengine@vger.kernel.org, linux-crypto@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
- linux-remoteproc@vger.kernel.org, dri-devel@lists.freedesktop.org,
- neil.armstrong@linaro.org, linux-hardening@vger.kernel.org,
- linux@mainlining.org, Connor Mitchell <c.dog29@hotmail.com>
-References: <20250422-sm7150-upstream-v1-0-bf9a9081631d@jiaxyga.com>
- <2ca2b774-fd7f-4612-b38d-f60e32ff6f9a@mainlining.org>
- <283096ad-ae1b-42b8-8312-b192f735fc80@linaro.org>
-Content-Language: en-US
-From: David Heidelberg <david@ixit.cz>
-Autocrypt: addr=david@ixit.cz; keydata=
- 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
-In-Reply-To: <283096ad-ae1b-42b8-8312-b192f735fc80@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+From: Biju Das <biju.das.jz@bp.renesas.com>
 
+Hi All,
 
-On 23/04/2025 09:26, Neil Armstrong wrote:
-> Hi,
-> 
-> On 23/04/2025 00:07, Jens Reidel wrote:
->> Hi everyone,
->>
->> apologies for the mess this created. Danila's mail provider ratelimited him 
->> halfway through sending the series and the attempt to re-try sending the 
->> second half an hour later ended up with a new message ID (I think due to not 
->> using --in-reply-to).
->> He asked me to let you know that this will be resolved later and the whole 
->> series will be re-sent once the problems are resolved.
-> 
-> The b4 web submission is a great alternative when the mail provider is rate 
-> limited:
-> https://b4.docs.kernel.org/en/latest/contributor/send.html#web-endpoint
-> 
+Some RZ SoCs (e.g. RZ/G3L) have a PWRRDY register that signals power
+readiness for various IPs (USB, DSI, CSI, etc.) to their respective
+controllers. This register is part of the SYSC IP. Add a dedicated
+power sequencing driver to handle these signals.
 
-I see people interested in moving Pixel 4a forward, but it seems this was never 
-upstreamed? I looked at sm7150 repository [1] where I see FROMLIST, but these 
-patches never arrived to the list and this series is from 2025.
+This series adds that support:
 
-Should we expect v2 (re)based on recent tree?
+- Patch 1 adds a pwrrdy_pwrseq flag to struct rz_sysc_soc_id_init_data,
+  sets it for RZ/G3L, and has the SYSC driver register a
+  "pwrseq-pwrrdy" auxiliary device when the flag is set, so a
+  dedicated driver can bind to it and handle the sequencing.
 
-Thanks
-David
+- Patch 2 adds that dedicated driver, pwrseq-renesas-pwrrdy, which
+  binds to the auxiliary device exposed by patch 1 and exposes
+  usb-pwrrdy, dsi-pwrrdy, and csi-pwrrdy pwrseq targets, toggling the
+  appropriate bits in the SYS_PWRRDY_N register via the parent SYSC
+  driver's regmap.
 
-[1] 
-https://github.com/sm7150-mainline/linux/commit/7ea41523c678e94a7c048936052b5b1b1b109cdd
+- Patch 3 selects POWER_SEQUENCING_RENESAS_PWRRDY from
+  SYSC_R9A08G046 so the new driver is built whenever RZ/G3L SYSC
+  support is enabled.
+  
+This series is based on proposal for power sequence driver [1]
+for USB PWRRDY signal and DSI PWRRDY signal[2].
 
-> Neil
-> 
->>
->> Best regards,
->> Jens
-> 
-> 
+v2->v3:
+ * Updated commit description by dropping devm_add_action_or_reset().
+ * Config now selects AUXILIARY_BUS to avoid compilation issues.
+ * Dropped the cast in devm_auxiliary_device_create().
+ * SYSC_RZ and POWER_SEQUENCING_RENESAS_PWRRDY config selects
+   AUXILIARY_BUS to avoid compilation issues.
+ * Added match for consumer device and added of_device.h header file.
+ * Replaced regmap_update_bits()->regmap_assign_bits() and updated
+   the function parameter of pwrseq_rzg3l_set_pwrrdy().
+ * Simpilfied probe() return with PTR_ERR_OR_ZERO macro.
+ * SYSC_R9A08G046 config selects POWER_SEQUENCING as 
+   POWER_SEQUENCING_RENESAS_PWRRDY is defined inside an if
+   POWER_SEQUENCING block in drivers/power/sequencing/Kconfig.
+v1->v2:
+ * Switched to devm_auxiliary_device_create().
+ * Added regmap parameter to rz_sysc_pwrrdy_pwrseq_init(),so that regmap
+   can be passed as platform data.
+ * Added a comment in pwrseq_rzg3l_pwrrdy_match().
+ * Dropped dev_get_regmap() from probe as regmap is now part of platform
+   data.
+ * Added a blank line before devm_pwrseq_device_register() in probe.
+ * Dropped the error message devm_pwrseq_device_register() as probe prints
+   failure message.
+ * Dropped local variables dev and regmap from probe().
+ 
+ [1] https://lore.kernel.org/all/c7fc31f1247332196516394a22f6feef9733a0b4.camel@pengutronix.de/#t
+ [2] https://lore.kernel.org/all/20260704093433.273672-1-biju.das.jz@bp.renesas.com/T/#mb6f18d8fa9a194fc0a15db5f4938df420da7b6b5
+
+Biju Das (3):
+  soc: renesas: rz-sysc: Register auxiliary device for PWRRDY power
+    sequencer
+  power: sequencing: Add Renesas RZ/G3L Power Ready driver
+  soc: renesas: Kconfig: Select POWER_SEQUENCING_RENESAS_PWRRDY for
+    R9A08G046
+
+ drivers/power/sequencing/Kconfig              |   9 ++
+ drivers/power/sequencing/Makefile             |   1 +
+ .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 147 ++++++++++++++++++
+ drivers/soc/renesas/Kconfig                   |   3 +
+ drivers/soc/renesas/r9a08g046-sysc.c          |   1 +
+ drivers/soc/renesas/rz-sysc.c                 |  21 +++
+ drivers/soc/renesas/rz-sysc.h                 |   2 +
+ 7 files changed, 184 insertions(+)
+ create mode 100644 drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+
+-- 
+2.43.0
+
