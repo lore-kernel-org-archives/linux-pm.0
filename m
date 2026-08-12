@@ -1,32 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F37D0411F9E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F39B0470433;
 	Wed, 12 Aug 2026 22:23:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786573434; cv=none; b=SSh0NFx54Y1OYUjFXrylDXQUrPrgckJ0baArzAIqGHhqrtkS1wSdzL1ApuVqYRWf6w7WhIekfQ4gjY6OVDS6ITckLuJBiCAv1B8LH2U5LPs2WnBNtVxGKgNzQfOPKqiQlOV/8dsrbg4H/mF1xzNoL3shiatwBflpRSnlVrDw0Ak=
+	t=1786573434; cv=none; b=FESAFoF0+n9e+TUuR0dapXO0AM+2EgIoCOUFd5Dd/P8rV7KP3jZF1+AaYOtcCxq4dPd8HyLGUYI8ZHp8TbpAIiMdrPZTxlU6gs92lpV9/gH61l1Y6VEJiWeB7Lv8zBgJZ+X3FkePppecU2pHoIEmP0suLTlhvKIsC7OjJNAkSEQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1786573434; c=relaxed/simple;
-	bh=gMgmV3P5nIbMo9/0xJSwTj8/wRbVEJ2t23zfDyZrJvg=;
+	bh=I4N3GkfnWBrdnGVWcJ4/0T0GQBm6TU+YSXmN3mJ96Ak=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Wl5aSPGJFYsCD+8o6JQIuaQIdQN9zK1qrYekW+Cp/qU/Zgef8avZ0Tm6+KeZANt00s6ZfJEoEiZWKRKgfz8vMBy1BdI25USVEm/AWIhIrL0AiZ429CQ1NtMkn8vshkeXrPsdl03XK0SBJLGrVMvmKOer5sjqnxJ+pKUW8B0JkbA=
+	 MIME-Version:Content-Type; b=CD6fHLZ7LtsILKHYyWaukAPZ0ZZU1dAy6MogCwf/v+62BqgHuY6F2uQQYAZ52uLwcoyoa5W5Enu1lxLbYdz0VThL3OoUMk2L/r+RncJVeqLqFJcUzvbM8cFFYj5Y/bwcJCye8V//FYhRSRV2WQO/vR4hnqc4zTdqW7w4n0zRyIQ=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A04D1F00A3A;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A223D1F00A3F;
 	Wed, 12 Aug 2026 22:23:52 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 9F4F11830B5; Thu, 13 Aug 2026 00:23:50 +0200 (CEST)
+	id 7FB681830B2; Thu, 13 Aug 2026 00:23:50 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Jianing Li <m13940358460@163.com>
-Cc: Iskren Chernev <me@iskren.info>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Matheus Castello <matheus@castello.eng.br>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20260810004701.1683-1-m13940358460@163.com>
-References: <20260810004701.1683-1-m13940358460@163.com>
-Subject: Re: [PATCH] power: supply: max17040: synchronize work cancellation
- on suspend
-Message-Id: <178657343063.347615.2933073571109497351.b4-ty@b4>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Tingguo Cheng <tingguo.cheng@oss.qualcomm.com>
+Cc: Rakesh Kota <rakesh.kota@oss.qualcomm.com>, 
+ Fenglin Wu <fenglin.wu@oss.qualcomm.com>, 
+ Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Tingguo Cheng <tingguoc@qti.qualcomm.com>
+In-Reply-To: <20260812-fix-qcom-batt-chemistry-strn-v1-1-458545e02641@oss.qualcomm.com>
+References: <20260812-fix-qcom-batt-chemistry-strn-v1-1-458545e02641@oss.qualcomm.com>
+Subject: Re: [PATCH] power: supply: qcom_battmgr: fix battery chemistry
+ strncmp length
+Message-Id: <178657343050.347615.7967420952689531445.b4-ty@b4>
 Date: Thu, 13 Aug 2026 00:23:50 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -39,21 +41,16 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.15.2
 
 
-On Mon, 10 Aug 2026 08:47:01 +0800, Jianing Li wrote:
-> max17040_work() requeues itself after every poll. cancel_delayed_work()
-> only cancels a pending instance and does not wait for a callback that is
-> already running.
-> 
-> If system suspend races with the polling callback, the callback can
-> continue accessing the fuel gauge and requeue itself after the suspend
-> callback returns.
-> 
-> [...]
+On Wed, 12 Aug 2026 00:44:47 -0700, Tingguo Cheng wrote:
+> The battery_chemistry field is a 4-byte array without guaranteed null
+> termination. Using BATTMGR_CHEMISTRY_LEN (4) as the strncmp length for
+> 3-character string literals implicitly requires chemistry[3] == '\0',
+> which may not hold. Use 3 instead to match only the significant bytes.
 
 Applied, thanks!
 
-[1/1] power: supply: max17040: synchronize work cancellation on suspend
-      commit: 86a3a8a926aa5969c329d1df2d3259f189961bbc
+[1/1] power: supply: qcom_battmgr: fix battery chemistry strncmp length
+      commit: 37689bcbc41b3850781b6c84f90cb4bd632bfbf0
 
 Best regards,
 -- 
