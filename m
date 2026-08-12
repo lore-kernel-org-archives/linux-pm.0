@@ -1,123 +1,133 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta0.migadu.com (out-14.mta0.migadu.com [91.218.175.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4ADF3424D7C;
-	Wed, 12 Aug 2026 10:43:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF837429CD5
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 10:46:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786531394; cv=none; b=TCvrhdsepjWTtU7K+e9W9qXcApBUXcZZGXcG+2r4ZtIrg741E25hkkJaRL2rmGRk8Mg5Cs1UfmrEzYCDaKIhL3oyWlHrjoYVz736XbIqOKghtH+9I6FML4duSGIir1QOXD6M6KO5sF5X/eekkr8dchd1ao/WnUWEhFSndgGVUxQ=
+	t=1786531597; cv=none; b=YKYlX8S3fLcrizC5ifTlA/DrOaz/h2cpLjS+991Ra3rs21GbcX2z+jQU0E//DwZWEO65yGmWAvh4+BVaWAw4tifq7dczDft6ke8phfqdbofyeU6OlNsmKZZoOQ1UOEEC71X2bfCh7P43RddQNh4TkivmfPSszpHqZ92YsA4xm10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786531394; c=relaxed/simple;
-	bh=SY7TzhA7Ok0veY7GBmSUMAEdyo5mNMQZRbN1lxKK2jw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=un7ohpKsxd28JlcqIrSTBcZW1TbURDGvhnZ0e/I98xzpW2b2bBh5r9n8aunRWdybqEKX13kvWEtmdKVzNEjOq5rWFE+q0f4w9FMqFR6iv0VE7ykZellGPx6CJoyawWsv1oW8AKCpT+XuyW0Qnh2xIYdU3+wm8u5ViINTm5YNKMw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ltMzeIQZ; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786531597; c=relaxed/simple;
+	bh=jEdVtLUq6P/fnp0VQPDEUME0wY+Z9SUacgM2EjSQXx8=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=Oj6l5pJfuaZ3Q3RaRYapEuxC5enFViOfsof6nTrxQ/PSeoY54v7RKwlONGs/GuVHhPTN+15oyx721ZLrU12Oh5dmu8SDu2a9zik0kgl67OYo4OTtPt2321WR5mvYhN/wUhP7F9IIJvxOO3V1Q2bAkJMuYIZEwusvGFtsSQjgGRc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com; spf=pass smtp.mailfrom=cknow-tech.com; dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b=A36WZeEm; arc=none smtp.client-ip=91.218.175.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cknow-tech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ltMzeIQZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A3C31F000E9;
-	Wed, 12 Aug 2026 10:43:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786531393;
-	bh=zTxtUzbw2CP7qzFDOd8XF82HMw4zOXtbtAjcgTQm07Y=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ltMzeIQZcdZIqZprcX/FAsp9b8pPmHH3UiKGIPZihGl77y6b+AticxA7JACKpWWUx
-	 0PRXseHzevvsyFXTYWDSulY2m8HGvkQ9f5EgV2hKeEmBo+ZTSkBfN6A5DiHPfr3GYH
-	 hLqjtHx+N+zPRg63DHV3krOfwWrkRK6M3q/z4DZzVkylsz8NmWYh9obxH7AgzHt78G
-	 e+Leq+hOzXoxZuF0BFtjBYT9EX+FPuOza+tUVoUZlSVdr3/kU47cn4PNTNjbTkSfQw
-	 EmoMb6tgP7h+H9Qwvb4CNlYbPZ4eDS+Otlao+UaSjA5MaEbu/1NZcZIWeuUZJ8Ke31
-	 yOnTf/b/Zdy/g==
-Date: Wed, 12 Aug 2026 12:43:06 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Golla Nagendra <nagendra.golla@amd.com>
-Cc: vkoul@kernel.org, Frank.Li@kernel.org, michal.simek@amd.com, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, rafael@kernel.org, 
-	git@amd.com, dmaengine@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH V3 4/6] dt-bindings: dma: xlnx,zynqmp-dma: Add Versal Net
- compatible support
-Message-ID: <20260812-benevolent-ammonite-of-mathematics-5dcafc@quoll>
-References: <20260810100452.426320-1-nagendra.golla@amd.com>
- <20260810100452.426320-5-nagendra.golla@amd.com>
+	dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b="A36WZeEm"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=jEdVtLUq6P/fnp0VQPDEUME0wY+Z9SUacgM2EjSQXx8=;
+ c=simple/simple; d=cknow-tech.com;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1786531592; v=1; x=1787136392;
+ b=A36WZeEmnAngoq4JvyLZYL5YYC51oK/6AIG8iuABfU2U7np39+RPA7UZAUf8xDACInGcpl/t
+ h8WgCT8CGsutVb1ykv++AWjscIyi6nhKsr5EZB7fK38fa4LOrqoEn5KBxQwVm6/09Bw08pAI5kx
+ AhMu4WoanKDFhasBMD5ZAOqpW+jd19NPCLb8R1LtIGosyUznwpX13fsg0JVX//OGcZS2pUTcDX1
+ lUSlLEGaDltWiHO8SMfmd2uDBrPmaYDiCHmUQ4zr5hjcgYf47eKixnhG1kLxWca1K8SRJH7SHeq
+ nJ+Z1XIclMBI/N5KAB48t3FDGY+d6mEp63ClHQQyhdNpw==
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: from localhost (92.254.112.55)
+	by smtp.migadu.com with ESMTPS id bdf0263f67b1a77a;
+	Wed, 12 Aug 2026 10:45:27 +0000
+X-Migadu-Scanner: mta11.migadu.com
+Authentication-Results: mta11.migadu.com;
+	none
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260810100452.426320-5-nagendra.golla@amd.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 12 Aug 2026 12:45:18 +0200
+Message-Id: <DKMWKH7ECZZM.3GL6MUEUO2Q1N@cknow-tech.com>
+Cc: <royalnet026@gmail.com>, <alchark@flipper.net>,
+ <chaoyi.chen@rock-chips.com>, <diederik@cknow-tech.com>,
+ <dri-devel@lists.freedesktop.org>, <linux-rockchip@lists.infradead.org>,
+ <iommu@lists.linux.dev>, <linux-pm@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v7 04/10] dt-bindings: iommu: rockchip: allow the RK3576
+ NPU MMU clock set
+From: "Diederik de Haas" <diederik@cknow-tech.com>
+To: "Jiaxing Hu" <gahing@gahingwoo.com>, <tomeu@tomeuvizoso.net>,
+ <heiko@sntech.de>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+ <conor+dt@kernel.org>, <joro@8bytes.org>, <will@kernel.org>,
+ <robin.murphy@arm.com>, <ulfh@kernel.org>, <p.zabel@pengutronix.de>,
+ <ogabbay@kernel.org>, <zhangqing@rock-chips.com>
+X-Mailer: aerc 0.22.0-9-ge948bb7230f4
+References: <20260812094106.1391698-1-gahing@gahingwoo.com>
+ <20260812094106.1391698-5-gahing@gahingwoo.com>
+In-Reply-To: <20260812094106.1391698-5-gahing@gahingwoo.com>
 
-On Mon, Aug 10, 2026 at 03:34:50PM +0530, Golla Nagendra wrote:
-> From: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
-> 
-> Introduce a new compatible string amd,versal-net-dma-1.0 for
-> Versal Net ZDMA.The new compatible requires xlnx,zynqmp-dma-1.0 as a
-> fallback.
-> 
-> Add a reset property to describe the per-channel reset line exposed
-> on Versal Gen2 and Versal Net. Mark the resets property as required
-> for both Versal Gen2 and Versal Net, and not applicable for other
-> platforms.
+Hi Jiaxing,
 
-I cannot find previous discussion in my inbox and cover letter has no
-links to previous versions (when finally will you start using b4?), so
-you might get the same review over and over.
-
-> 
-> Note that making resets required for Versal Gen2 results in an ABI
-> break but this is unavoidable. When DMA is used by two software components
-> back to back (e.g., firmware before Linux boot), DMA functionality fails
-> due to configuration differences or the DMA being left in a bad state by
-> the previous user. The channel can only be cleanly re-configured after
-> a DMA channel reset,making it essential.
-
-So this was never working? What exactly is unavoidable?
-
-> 
-> Signed-off-by: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
-> Co-developed-by: Golla Nagendra <nagendra.golla@amd.com>
-> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
+On Wed Aug 12, 2026 at 11:40 AM CEST, Jiaxing Hu wrote:
+> The RK3576 NPU MMUs need more than aclk and iface. With only those two
+> enabled the MMU accepts reads but silently drops register writes: a
+> DTE_ADDR value written from the power domain, while the domain clocks
+> are still on, reads back correctly, and the write rk_iommu_resume() does
+> microseconds later does not land at all. The vendor DT names the CBUF
+> clocks as that MMU's interface clocks and its driver keeps every NPU
+> clock on for as long as the device is powered.
+>
+> The driver side of this is already upstream, commit 841363ebb508
+> ("iommu/rockchip: Take all DT clocks"), which switched rk_iommu to
+> devm_clk_bulk_get_all(). Widen the schema to match so those nodes can
+> be described. minItems stays at 2, so every existing devicetree, which
+> all carry exactly aclk and iface, is unaffected.
+>
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 > ---
-> Changes in V3:
-> - Use allOf:if:then: to restrict the resets property per-compatible,
->   making it required for amd,versal2-dma-1.0 and amd,versal-net-dma-1.0
->   and explicitly setting resets: false for all other platforms
-> - Add amd,versal-net-dma-1.0 compatible string with xlnx,zynqmp-dma-1.0
->   as fallback
-> - Switch compatible from enum to oneOf to accommodate the new multi-item
->   entry for Versal Net
-> - Add ABI break justification
-> ---
->  .../dma/xilinx/xlnx,zynqmp-dma-1.0.yaml       | 25 ++++++++++++++++---
->  1 file changed, 22 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-> index 2da86037ad79..87c65aef5c7d 100644
-> --- a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-> +++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
-> @@ -18,15 +18,31 @@ maintainers:
->  
->  allOf:
->    - $ref: ../dma-controller.yaml#
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - amd,versal2-dma-1.0
-> +              - amd,versal-net-dma-1.0
+>  .../devicetree/bindings/iommu/rockchip,iommu.yaml         | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml =
+b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+> index 6ce41d11f..a3cedcaaa 100644
+> --- a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+> +++ b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+> @@ -42,14 +42,22 @@ properties:
+>      minItems: 1
+> =20
+>    clocks:
+> +    minItems: 2
+>      items:
+>        - description: Core clock
+>        - description: Interface clock
+> +      - description: Compute clock, RK3576 NPU MMUs only
+> +      - description: Convolution buffer core clock, RK3576 NPU MMUs only
+> +      - description: Convolution buffer interface clock, RK3576 NPU MMUs=
+ only
 
-> +    then:
-> +      required:
-> +        - resets
-> +    else:
-> +      properties:
-> +        resets: false
+Drop the ", RK3576 NPU MMUs only" part as it is not future proof, not
+needed, not enforceable and not enforced.
 
-Entire allOf goes after "required:" block, by convention, see
-example-schema.
+IIUC, only a RK3576 NPU MMU can and should have 5 clocks, but a non-NPU
+RK3576 MMU should only have 2 clocks, just like any MMU for RK3568 and
+RK3588.
+So you'd need a new compatible for RK3576 NPU MMU and enforce that only
+that one has exactly 5 clocks, while all other compatibles are only
+allowed to have 2 clocks.
+=20
+Right now, it is allowed that a ``rockchip,rk3568-iommu`` compatible has
+5 clocks while a RK3576 NPU MMU only has 2. Both are incorrect.
 
-Best regards,
-Krzysztof
+Cheers,
+  Diederik
+
+>    clock-names:
+> +    minItems: 2
+>      items:
+>        - const: aclk
+>        - const: iface
+> +      - const: npu
+> +      - const: aclk_cbuf
+> +      - const: hclk_cbuf
+> =20
+>    "#iommu-cells":
+>      const: 0
+
 
