@@ -1,166 +1,180 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7E742F8E93
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 18:47:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38A0C3845D5
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 20:44:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786560427; cv=none; b=BOTM6SSpXNdyyEDRiVYLPhoWa+HgJ3lmRRQzjC/tAPyoqSv90nZIMPKgY/DdHjY1llZtLDpAHQHMZNDspT9zHz34yOvXp6JILUPdLR0MRsySHh9ucGRlhyH+cdQQLNLnSkYsJAuPrsUaK4yggnpukhCUY1ZCEBWNVk8GqrjRefY=
+	t=1786567487; cv=none; b=GOoFcGBCa9PbFpBGBO1uW5Mfrb1/kwRJPawkquwxypBdfZwov3sftPet8TiuIf3+sigDmFak/cfrwr7xAjk/eA4uD6w6nuiwXHlZ464XRahpTSC0YdLfZg85Y0GqKnfnhvg+tBGdv2NqsxVM9zoVSwdV4i9WvrX7FWNQvAccP88=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786560427; c=relaxed/simple;
-	bh=vgLcBFjUyF9dsrQARImHXFlbmGo8PPdF+S5lujB9Py4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=V6CykgDrJ8r0JuhBt64yvRyWLU5p007Nl0KF7qXQLZsQJoMghe5v9F2NBZ5ugyJ4Wl7EirlrrJTsCEWw4Y95TJpq59dMO8X9tIMKR6cVwOY0vHaHfqmm1gnkK5DRzSr+MFM4GrmAutnvH34iJEHi/nKh7FWoOIPhfq2HbCy9in0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ErEW3HU4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=R7xlFNME; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1786567487; c=relaxed/simple;
+	bh=97qht0VSPclh2jfvCYKsb9HY6Jg+kX97joSQ/dpqcrg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SVwijEb+0f1ABjo+33NrsddndSXtnslavpkQXmTa+9vYfdFuXQ3QMU8aOR1URhYLOH4K4hymDH+Gfw5cyCQfIHKWQZxvOw/Gu+r9s9V+sCVNb8Y4LKIa5TcZt6M82LQp+tn+SZNQl/V9JYcsG0QvSuVf3epj6UqIKCEfnG5qBE8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uy0bz81f; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ErEW3HU4";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="R7xlFNME"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67CI8iM11497901
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 18:47:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=+9KjwlB+VepBlVYOnDYLDplB
-	PswkuldRjCac+kgR9nc=; b=ErEW3HU4rCmis8W9Rx1wQdw35HHUWPbpH37tRq2r
-	/BPMzun4rk9ZWt0CMq8IwLXztHyfrO999oh5Ut+kiEIfCGLJE2k9IFB3mGOBGFXb
-	kTir3lIgW+1YTLiXJPJSeu3Ly44LStpujXHXkcTFgHVQkVxOk6amPxCnlYk0oxSn
-	jzkyJcEDxnOiaQmVdwpVMu9tzG9/tLjvu0bnicExrIS54Lj3GnHdI1U2kmgjN9kh
-	pw8kt06ei/8sdBqlNZHfnIvgVNzhY8Q0lS0YyEbrSJ+41DhqcDcXaEF6W+WcLZ2A
-	W4AmDuKHyLJhr9txBHKACStbyTrk12ZBGO4dDjrNA94HxQ==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g0nutams1-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 18:47:04 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-51c07f25de2so11486871cf.3
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 11:47:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786560424; x=1787165224; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=+9KjwlB+VepBlVYOnDYLDplBPswkuldRjCac+kgR9nc=;
-        b=R7xlFNME9QhiWY2SQoGxminlhJ+MRYBG/VpjG9hFxJOPdvzCQX9pCF9v2MKPqrr2y/
-         IQ14GmLUeg8XITUxdYYc0tkF1TRIq5TC4qfnK5k36iXIrGQ6wg5j16uPu+CLj82fW+5J
-         Sht8OWnl7cfpHUNwDVFA3L8bwPPfGdN6HzgdRu9mwf9FQQhQw4NuM3qd6uHadWi7HbJx
-         otQdFb9HcMHwUmIm3RfJv1+jW4ZeaiqyOUSbYICaMQIAX+jEYLcx0Q+l+yIfBzVvU5RQ
-         rIsnCsPk+Sgr09Xs2hmJzevNm93aI69n5eTcHOtd3rgwHk5PJjKdIosIVLG629tZLMSQ
-         Tnlg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786560424; x=1787165224;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=+9KjwlB+VepBlVYOnDYLDplBPswkuldRjCac+kgR9nc=;
-        b=ChOmemIsFDk0M2r4jCFcO+ufdBvPKIUOsBXyONNWdVcCvkifa5kacMlUAd581D2eh0
-         eyLAI1oQVCvgYLJ221po5fZz1HrRTtfxRNlZGISEO9MfT5+v5CYbkjKFKDDD//w/PYAO
-         LJWNtCJR/cTwkXgkT6/tnCDtd2crA15+ycBJb+lK8jkAlSFF/4JQJQWJuTANK9i1TRYA
-         Yc7SkiPN2Slp5thXhx093IFBqmIDkHat2r8MW4zPQt+U/hE+fFOgHUQCdIyTe5R8JOzW
-         ZjVpwXcps9jOyKy+4tdrzhJlUsfKJwMbZ2lWlJvJfAlTpqqq8No3oj8qSKo60su5wrtb
-         nlDA==
-X-Forwarded-Encrypted: i=1; AHgh+Ro07nmalKdska8og/sdbES4rGHcEhVuc7KicMlhk+xCXdDekcDtcru5sdeu5e07uHyeTv3Yv6Ogew==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzvu2dMZDPrASpaxVKDmYUtjVQMxwwPWz6BPQE6Td3lwcVzRJWw
-	FogmJX0qMGT8t83EqSDYYL/d6xxSgS4Q8+VYhqQ2C1IzcJ5n+z8Gma1x7PsQ2MHjE/jRec5xWPx
-	1NIzPgU6HYJG6d0EVJK2YWojY5eWWKht9iUHySfBhBfTVff436tR6AwuOpyiD3g==
-X-Gm-Gg: AR+sD116fG5TG7SEmLvDFx4fgrnKu0ekKMMCpIqRmgygBM48w3RdM059FK1r2NP8svC
-	j6Js8crocMh3qc8gNf7tlt4NC9yuWwwMBzdsyikeyyX21hJqyyGPkfkUmQjMr7Uvx1w304xqHHG
-	rZhvarotwMEA0JI/w0xGUcmy7zhW5vkfqK79YxUQbL/ta+O6lmeZB0tVX0CkUA2cJBvNe1w4mGg
-	fXCc5VFN7Ulla9b8sO29eMC8tQ/PhmWBLUjlwQAw/6bYcUWO1fdBmR7BV8KG7uvBWvNRWoz/wB4
-	pbfz3qQPxLMDQPD8fNILCOBMMnujDvJBImoqtDtG+Io3WceNXvqFM2ajqpUI60jccSdKIa/qE3U
-	uSJZPlf1YIjbRL5flGgaKMG2NuO3gyHZxoz5ch+NUDbbxZJBIXgZaP7QybCSjCZfd5+/pqG2JxT
-	u2SgTUxnM85DR1
-X-Received: by 2002:a05:622a:c15:b0:51c:bb79:a52d with SMTP id d75a77b69052e-52d73c86f42mr3220701cf.14.1786560423913;
-        Wed, 12 Aug 2026 11:47:03 -0700 (PDT)
-X-Received: by 2002:a05:622a:c15:b0:51c:bb79:a52d with SMTP id d75a77b69052e-52d73c86f42mr3220091cf.14.1786560423479;
-        Wed, 12 Aug 2026 11:47:03 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b453a548d5sm7054e87.39.2026.08.12.11.47.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Aug 2026 11:47:02 -0700 (PDT)
-Date: Wed, 12 Aug 2026 21:46:58 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: Georgi Djakov <djakov@kernel.org>, linux-kernel@vger.kernel.org,
-        kernel-janitors@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH] interconnect: qcom: Constify struct qcom_icc_qosbox
-Message-ID: <5nhxxcayafpu2gknp6hazzyvj5q363eqooucfijbmz6oxftkjd@b4rs6snqkhxt>
-References: <f9d9ab49e961b3bf3f9bad39f22cf8b06afb2381.1786554463.git.christophe.jaillet@wanadoo.fr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uy0bz81f"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9ADA1F00A3D
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 20:44:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786567485;
+	bh=a2HwOrWbYV21vmm25vN7HnI+FZl++WM5Q7n6oQOswLk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Uy0bz81fjPJ9vcn2DmayoQIUCRzL/QYhwnSdHKsoXQ5fwdOBuSGoWVrKGGZoLIexS
+	 Tfaw/V7p0uvOgnCh7rDJEy+vieSxAdyHyKDP9wtRK+lAp+chKxw+8l5gdDCsZps/zh
+	 rDk8Zo39T4RGNUYWFEuukEfoXi3iXSCnHt/W56mC0JUrrW3FU6fvhExQ0fg8nU+PVR
+	 LoaDqPFya9A068HKfmLZaMSABDGzAablUESmPh2RcYzG8bNvpjXsoo4e+MXKEuju0h
+	 GhZ4XqJxGnZzXWV9bm62UZivhX8KmweIJBnOoL/mf3mhBxoBKQmJZhHHNG/GdNEhXs
+	 HLHs4teGhbW+g==
+Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-39f20d19895so516851fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 13:44:45 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RrIt+6BcGDLffybQ460OROcAlWlJuZM9OgvXjYVptN+J6R7pwMz14/GmSgaHh/WqnXyRq961HSlQQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKt9Q4lkAPy/J3olbPkzAH56YtabtDNJFisEcjL/6Jj8bkelUs
+	F7tz7LwA98e0udtZg/Ej6bR3/nvAXr0Q12Yf3pJOnyJ3gYViiFFiWiJf59hqGxHRkIWlqs6Vwbd
+	D7YKuFn18/JfwiZ3n1ZTivP/XdTht5/I=
+X-Received: by 2002:a2e:bc07:0:b0:3a1:1882:7406 with SMTP id
+ 38308e7fff4ca-3a11a680595mr1382691fa.10.1786567484298; Wed, 12 Aug 2026
+ 13:44:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f9d9ab49e961b3bf3f9bad39f22cf8b06afb2381.1786554463.git.christophe.jaillet@wanadoo.fr>
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODEyMDE1MSBTYWx0ZWRfXyjggZe91MsX9
- +IFvNWyuZ078BAkn1o1jksULQKH0RgGTAAgAkyaro8MvJrFhDpFAGGUXzmsZK7aTMhY659ILvo6
- Xx2QCKWdYsUmjYX/rT05Qy4M6g0Fc7E=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEyMDE1MSBTYWx0ZWRfXx9RIGvuiYM0D
- Bmqe0EbfpFnMJ26X9UpuJRAjGpcvdXMgQIrlQmuhWFTIzLTGGGpQ9GMPXVPX9FbkByvn0CW1vuP
- lsUYhH1F/zBUlGSP7IVaOGqKukJVCUoSX2jeQdiwZBHegXJJyWizLi1T5sG81gRes5wVgnCjDsk
- T1IqpKuePh9jJY1um73M7UkYbRlUH1aWKhTaOTmcZ2xUiFTMgznxEFk9RrNhpzvno1dh0YIcf+r
- U666uVe2SIuG77YZcy9O+moXgya83t5c7otdPAoZXcLTgGfwGSobEHV/hC5k3vZ2sSnaJssEbh3
- Q6/EURowtl+j5XcckeXzBe53/zpHrO0DMJ69irh1zOG+t8T9iMrvKOO/djng/FENeWfzOb7RH9k
- e2KFdOpXbmkfFeJ7soXs6FVQ+2o2k4spBDQaMkDYjYSUQ9gtemezkIh4fpCPUpzfsJfN5ZrCOL+
- cMWmLoYqZ2FEn9TUxOQ==
-X-Proofpoint-ORIG-GUID: TDYA3Z5yCWHumO01gU2ExcQyMgDw5kDj
-X-Authority-Analysis: v=2.4 cv=POA/P/qC c=1 sm=1 tr=0 ts=6a7cbfa8 cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=EUspDBNiAAAA:8
- a=DA585B7Y4R_hzP9QSM4A:9 a=CjuIK1q_8ugA:10 a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-GUID: TDYA3Z5yCWHumO01gU2ExcQyMgDw5kDj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-12_05,2026-08-12_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015
- impostorscore=0 bulkscore=0 suspectscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608120151
+References: <202608121937.J7M1vGVB-lkp@intel.com>
+In-Reply-To: <202608121937.J7M1vGVB-lkp@intel.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 12 Aug 2026 22:44:24 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gaAfZFuwze2rU4gACoOE2jjF6dfAOELC2vqBCwV2bhJA@mail.gmail.com>
+X-Gm-Features: AUfX_mw9nJN8CrL84lPdWL0yx9XAlkSOSroFbZMr9MseA62Cpw25_GGw3k9RjJA
+Message-ID: <CAJZ5v0gaAfZFuwze2rU4gACoOE2jjF6dfAOELC2vqBCwV2bhJA@mail.gmail.com>
+Subject: Re: [rafael-pm:bleeding-edge] BUILD SUCCESS fc02d96a639b5b4ca32bd249e971e5d0aafeb874
+To: kernel test robot <lkp@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 12, 2026 at 07:08:42PM +0200, Christophe JAILLET wrote:
-> 'struct qcom_icc_qosbox' are not modified in these drivers.
-> 
-> Constifying these structures moves some data to a read-only section, so
-> increases overall security.
-> 
-> On a x86_64, with allmodconfig:
-> Before:
-> ======
->    text	   data	    bss	    dec	    hex	filename
->    7807	  18632	      0	  26439	   6747	drivers/interconnect/qcom/eliza.o
->   10027	  20176	      0	  30203	   75fb	drivers/interconnect/qcom/milos.o
->    8768	  22640	      0	  31408	   7ab0	drivers/interconnect/qcom/sm6350.o
->    7626	  22000	      0	  29626	   73ba	drivers/interconnect/qcom/sm8650.o
-> 
-> After:
-> =====
->    text	   data	    bss	    dec	    hex	filename
->    8095	  18344	      0	  26439	   6747	drivers/interconnect/qcom/eliza.o
->   11079	  19120	      0	  30199	   75f7	drivers/interconnect/qcom/milos.o
->    9668	  21744	      0	  31412	   7ab4	drivers/interconnect/qcom/sm6350.o
->    8746	  20880	      0	  29626	   73ba	drivers/interconnect/qcom/sm8650.o
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> Compile tested only.
-> ---
->  drivers/interconnect/qcom/eliza.c  | 18 ++++----
->  drivers/interconnect/qcom/milos.c  | 66 ++++++++++++++--------------
->  drivers/interconnect/qcom/sm6350.c | 56 ++++++++++++------------
->  drivers/interconnect/qcom/sm8650.c | 70 +++++++++++++++---------------
->  4 files changed, 105 insertions(+), 105 deletions(-)
-> 
+On Wed, Aug 12, 2026 at 1:24=E2=80=AFPM kernel test robot <lkp@intel.com> w=
+rote:
+>
+> tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux=
+-pm.git bleeding-edge
+> branch HEAD: fc02d96a639b5b4ca32bd249e971e5d0aafeb874  Merge branch 'test=
+/acpi-driver' into testing
+>
+> elapsed time: 1515m
+>
+> configs tested: 98
+> configs skipped: 2
+>
+> The following configs have been built successfully.
+> More configs may be tested in the coming days.
+>
+> tested configs:
+> alpha                            allnoconfig    gcc-16.1.0
+> alpha                           allyesconfig    gcc-16.1.0
+> alpha                              defconfig    gcc-16.1.0
+> arc                             allmodconfig    gcc-16.1.0
+> arc                             allyesconfig    gcc-16.1.0
+> arc                  randconfig-001-20260812    gcc-12.5.0
+> arc                  randconfig-002-20260812    gcc-10.5.0
+> arm                  randconfig-001-20260812    clang-19
+> arm                  randconfig-002-20260812    gcc-12.5.0
+> arm                  randconfig-003-20260812    gcc-14.3.0
+> arm                  randconfig-004-20260812    clang-24
+> arm64                randconfig-001-20260812    clang-24
+> arm64                randconfig-002-20260812    clang-20
+> arm64                randconfig-003-20260812    clang-17
+> arm64                randconfig-004-20260812    clang-24
+> csky                            allmodconfig    gcc-16.1.0
+> csky                 randconfig-001-20260812    gcc-10.5.0
+> csky                 randconfig-002-20260812    gcc-16.1.0
+> hexagon              randconfig-001-20260812    clang-24
+> hexagon              randconfig-002-20260812    clang-17
+> i386                            allmodconfig    gcc-14
+> i386       buildonly-randconfig-001-20260812    clang-22
+> i386       buildonly-randconfig-002-20260812    gcc-14
+> i386       buildonly-randconfig-003-20260812    clang-22
+> i386       buildonly-randconfig-004-20260812    clang-22
+> i386       buildonly-randconfig-005-20260812    gcc-14
+> i386       buildonly-randconfig-006-20260812    clang-22
+> i386                          randconfig-001    clang-22
+> i386                 randconfig-001-20260812    gcc-14
+> i386                 randconfig-002-20260812    gcc-14
+> i386                 randconfig-003-20260812    clang-22
+> i386                 randconfig-004-20260812    gcc-14
+> i386                 randconfig-005-20260812    gcc-14
+> i386                 randconfig-006-20260812    clang-22
+> i386                 randconfig-007-20260812    gcc-14
+> i386                 randconfig-011-20260812    gcc-14
+> i386                 randconfig-012-20260812    gcc-12
+> i386                 randconfig-013-20260812    clang-22
+> i386                 randconfig-014-20260812    clang-22
+> i386                 randconfig-015-20260812    clang-22
+> i386                 randconfig-016-20260812    clang-22
+> i386                 randconfig-017-20260812    clang-22
+> loongarch                          defconfig    clang-24
+> loongarch            randconfig-001-20260812    clang-24
+> loongarch            randconfig-002-20260812    clang-24
+> nios2                           allmodconfig    gcc-11.5.0
+> nios2                            allnoconfig    gcc-11.5.0
+> nios2                randconfig-001-20260812    gcc-11.5.0
+> nios2                randconfig-002-20260812    gcc-10.5.0
+> openrisc        de0_nano_multicore_defconfig    gcc-16.1.0
+> parisc                          allmodconfig    gcc-16.1.0
+> parisc                          allyesconfig    gcc-16.1.0
+> parisc                             defconfig    gcc-16.1.0
+> parisc                        randconfig-001    gcc-8.5.0
+> parisc               randconfig-001-20260812    gcc-8.5.0
+> parisc               randconfig-002-20260812    gcc-8.5.0
+> powerpc              randconfig-001-20260812    gcc-14.3.0
+> powerpc              randconfig-002-20260812    clang-24
+> powerpc64            randconfig-001-20260812    clang-17
+> powerpc64            randconfig-002-20260812    clang-24
+> riscv                randconfig-001-20260812    clang-20
+> riscv                randconfig-002-20260812    gcc-8.5.0
+> s390                 randconfig-001-20260812    gcc-9.5.0
+> s390                 randconfig-002-20260812    clang-24
+> sh                                 defconfig    gcc-16.1.0
+> sh                   randconfig-001-20260812    gcc-14.3.0
+> sh                   randconfig-002-20260812    gcc-12.5.0
+> sparc                randconfig-001-20260812    gcc-15.2.0
+> sparc                randconfig-002-20260812    gcc-13.4.0
+> sparc64              randconfig-001-20260812    gcc-15.2.0
+> sparc64              randconfig-002-20260812    gcc-13.4.0
+> um                   randconfig-001-20260812    clang-17
+> um                   randconfig-002-20260812    clang-20
+> x86_64     buildonly-randconfig-001-20260812    gcc-14
+> x86_64     buildonly-randconfig-002-20260812    gcc-14
+> x86_64     buildonly-randconfig-003-20260812    clang-22
+> x86_64     buildonly-randconfig-004-20260812    gcc-14
+> x86_64     buildonly-randconfig-005-20260812    gcc-14
+> x86_64     buildonly-randconfig-006-20260812    gcc-14
+> x86_64               randconfig-001-20260812    clang-22
+> x86_64               randconfig-002-20260812    gcc-14
+> x86_64               randconfig-003-20260812    gcc-14
+> x86_64               randconfig-004-20260812    clang-22
+> x86_64               randconfig-005-20260812    clang-22
+> x86_64               randconfig-006-20260812    clang-22
+> x86_64               randconfig-011-20260812    clang-22
+> x86_64               randconfig-012-20260812    clang-22
+> x86_64               randconfig-013-20260812    clang-22
+> x86_64               randconfig-014-20260812    gcc-14
+> x86_64               randconfig-015-20260812    clang-22
+> x86_64               randconfig-016-20260812    clang-22
+> x86_64               randconfig-071-20260811    clang-22
+> x86_64               randconfig-072-20260811    gcc-14
+> x86_64               randconfig-073-20260811    gcc-14
+> x86_64               randconfig-074-20260811    gcc-14
+> x86_64               randconfig-075-20260811    clang-22
+> x86_64               randconfig-076-20260811    gcc-14
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+I'm wondering why we don't do "x86_64 allmodconfig" and so we don't
+catch failures like this one in linux-next:
 
+https://lore.kernel.org/lkml/annVRNepH48qe6b8@sirena.org.uk/
 
--- 
-With best wishes
-Dmitry
+Honestly, doing "i386 allmodconfig" without doing "x86_64
+allmodconfig" is somewhat couter-intuitive IMV.
+
+> xtensa               randconfig-001-20260812    gcc-15.2.0
