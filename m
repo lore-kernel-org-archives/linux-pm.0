@@ -1,237 +1,168 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10309476699
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 15:34:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3BB43321A7
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 15:48:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786548885; cv=none; b=GwxCx4McNilWqIQCuaFl/jX+ytkgf3PMMvtvwiH29147q9igOZca7qf9NG7zbpB+Xa9M1Pr9wyglT/pM73lrbIEdfGYvhrh93hzaQk1jPnzJAsKt8YfopIFBIyh2imfy4RN+eibOJcnH/vbCLfAuzHHeJtg9M7Aw0j7Jo76PSz4=
+	t=1786549688; cv=none; b=fAhZHIi0GS0j2yWu0ZmRIHBmXUR19cE9TRib/jDaiJT9B3gnAUZQyyaIzX99d5mcV20n1yGq2gKSya1jYSwDqoGzzhYmPP5qAyxhdA3OmW6wwbHVsTapSoGynuhpCcsuTtuMzngfkDM0/KqhYyboPAH3P9zoktkX6h4S76N/t44=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786548885; c=relaxed/simple;
-	bh=x0XfJfYYmm0lZckHiSTrULL19u0GEKu1sJMJbH7EwyY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qXG+0t/FIb8EMKeedv0FU71n98vxOBX6BJZtQtqgEdUHR3/zTd0y8XFwSao4rjAmuGL3cWDa20inpe7reTw5W/Al5ei8a/BxT/qq5VmdPnUHuxRCkkBuNcAHjvVzQMC9yLiZdBsjss9wgXVSoSc94Gsbe5rzZHgvCBbQPGDxim8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XFJpR9Hy; arc=none smtp.client-ip=209.85.216.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1786549688; c=relaxed/simple;
+	bh=zI3TNPPe6L8M7xlS1nDQbUrr8AfIzmyJ+pWobJL8pkA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WJbzCGcAbMfxWSBreOirsm0Cm9Q2v/i4Yo/wbOfrhEU7BGCNDbPQzgnKMishY4aCx7x/9/bVFTiPGaFlQxd35fIItVo6M3WqyPWOziPBSer/Mm5bBIZ+xYMvnWtUulP44/I+bUQ0yTYwag+CzCLfviDBzKJbWk2fSP2CgK9fFRE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=VAbBZY4E; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=VuZt0ZQt; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XFJpR9Hy"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-38f620399a0so1111405a91.2
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 08:34:36 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="VAbBZY4E";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="VuZt0ZQt"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67CDbbbr3995473
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 15:48:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	6eI30N4Qm5PW71y0No3cx03eQ8pMDtF1rEz5kRS8Gxc=; b=VAbBZY4E/j0w6E0j
+	hjKUn8qJcZscS7lWuAx9OCuhh/GqXF3hXB6ImbrsomP5Nu3TIHqTYoHkhLarllxg
+	PuaeZta3NKvvYqxqq9SpvjhfjQoD0+Nu7OwnwXimUeoJFpg3acv+y6ux5e2pbmJD
+	4OdkazOg0ekTcpYgepq5O/82gqpGt2kgwKiQupJLvOl3CSR9IlG6aY+nJEKjGgaL
+	KCJSb/kE2Ibi8B5YqkCYpRnWwA3RJBjCBWpz/eSed6mTCq8IL9nsqVafACcfs7nx
+	S8mdXMD+tmXbRSkTIGu5YyjZeFZj5qmFEHg/E8KSNBdMUriNyiIWJWPlmVgsmdd8
+	ATkLIA==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g0m6rj4v6-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 15:48:06 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2ce8a76df2dso18392135ad.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 08:48:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786548873; x=1787153673; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=fzIk5I7OqDCOAhpxa2DhuDUN9BeeRjYb7EQC4Ahia0I=;
-        b=XFJpR9Hyc8Lt2lxvmcKjpWT7qA5Lv0Wp74VAnzbEFy/nbzJvnRpccTNcBpOX84y+j1
-         Lxv5U9cmTQFxcw95NLAj1d1Zr68cI4J5L8+Yv8tEPDbvppTypDY9FhNEI8yYK0EHLM3c
-         KtB/jk0EC5vXa3FNej7452fEg5YfCfSlpc5SqyZrbIjvQgIwijFogwO5vccuU6Bbo1IH
-         GHfKHEJwjw1dq11r0B7YS2aoF36SheP+Hdnk1OTPmrOHF7Gp87qUG22d4Z75pF5J4L6N
-         U8cibdvEdUgyS+mrsuUqGEEwY2KG6i+sWpibhrnYb3qB7supSglugw5qKeOtyWJb1Mnx
-         UUmA==
+        d=oss.qualcomm.com; s=google; t=1786549685; x=1787154485; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=6eI30N4Qm5PW71y0No3cx03eQ8pMDtF1rEz5kRS8Gxc=;
+        b=VuZt0ZQtC86h5OE7CmuwN/oO8Hb0/jUaS9Xb+zu3ALM0vehl3cD4g7/UJ/uwJniGzQ
+         Dny0ETvnn/T/nZbvNxduNYpzP68qrUDOQFceD/+k/sF0HjpHMQAO/ZFXlAilCWyRHDQT
+         8Q+VLGzpggXV+zL8/QU3Wg72v/uIgTLEeg6cVGI4zt1mhgVaPas+NinQ9JC9+GuyeiSQ
+         0h17pEy0+UK0O3kOQITCNMwwNIDhuVMUSgg26ViheOPksk3nyNMpYn2wNLwpbI0C2r3L
+         LTZPzhEPQJEGJHsvuOw0EKmqeAZMQ1ob2KzLWXIjK/8nawKns5DdYx2dC+YmiOo909BK
+         PNiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786548873; x=1787153673;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=fzIk5I7OqDCOAhpxa2DhuDUN9BeeRjYb7EQC4Ahia0I=;
-        b=ARWTjwMLWJUw9HheZcXlOi+10jYHXNx6r7jY+rkUCuuzm5req8dazhHrXQpPiroUbR
-         EDqvjDlea3xuElnRiJ1CqjRXfw8YRKdtmR32XOqcjWZHPYz4rTOw0IOh7/+C7flfqgoz
-         73DUxFBTEHApCaJREp0BPv3ZRXj1ZHqGNEI5OLaZXJAyz5w0NQvGmfz7jZtM+z/gD/RE
-         TMSkaQlds3FpMP1yyJb/EaxGIb/dsnvkVG4bjGuQj0TPrUD+H1IkQcR2OrPvgZ4eTT6E
-         JxsdyQcsBlpfx7lMFgYVS08Pq0Ek/v8FUd69X6Eh83ADQi8znWMmDyoSjDpOcN6Dhu4/
-         +mgg==
-X-Forwarded-Encrypted: i=1; AHgh+Rpuyq13EM7/IHB6K/IOTgEa4AfesJdRePOAO+DjM5owLhPkQAPRJ+e77FcNj/St465GDJ84ZcFeEQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyCvoCwyDzF7DMlPw7YBrWPigB2C9CbtsyxMF9/Sr3L313ugHiM
-	gsJ/EWX4jw7axlYfTL1srjNk1U/AqKyrktfJ7WddMv2LrHpvfy4UUh8=
-X-Gm-Gg: AR+sD12f/2meJIJxgBmu9oUFW60It6iUtyFb+OdI8aAi2Di2SXhFTJMAFgvAzQoW3s6
-	eakRY5bqsXZHvPeActglCEyYu/MP/Crgms4yrZApWhPY5RTNsW9nHjde9tT/Fw8J9epWvMDdjgT
-	FfCSz/g5G2WyCzXCVCAh19yFa6WTCXR+PllaFn3Yn7wQJX03i6U0XOvqFvdOkCZ205U7Tr64fBK
-	/XJEqGKPNnQ8u2zlhGJNo8WRdgJWBvg46+pJ41vOw4fcrbtJfvTV4FJS1lL44aAO971mR2zC9gS
-	uXq4imK++tTDHm2d2R+UJEpHvlzJ23Rrggq/di9qSZo5PejfRj3H1hpJEf/JiPS/+AeuTXxD4Pj
-	teOPW4iUc7QzrzOJa1k3QvqgL3Cki2N81nFtU9dE4rldEKBlUdaPIlxy5x8rQD9UKY18XfIme3V
-	T6AV9sLCzGunMo5pV9Th61lHN7fwPMy8U6VdhH/+AmrTMQWx00O5/mWP57y3zAKvRmY2VDmCP+1
-	ad+MgFqymlXBtaixqCxsushiLPM71ZzENQ=
-X-Received: by 2002:a17:90a:d64f:b0:390:8361:a532 with SMTP id 98e67ed59e1d1-393011eea08mr7525677a91.7.1786548872437;
-        Wed, 12 Aug 2026 08:34:32 -0700 (PDT)
-Received: from at-Standard-PC-Q35-ICH9-2009.. ([14.97.72.18])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31dba3e9791sm7160804eec.0.2026.08.12.08.34.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Aug 2026 08:34:32 -0700 (PDT)
-From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
-To: 
-Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
-	Andre Eikmeyer <andre@negmaster.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Sven Peter <sven@kernel.org>,
-	Janne Grunau <j@jannau.net>,
-	Neal Gompa <neal@gompa.dev>,
-	Sebastian Reichel <sre@kernel.org>,
-	Andreas Noever <andreas.noever@gmail.com>,
-	Mika Westerberg <westeri@kernel.org>,
-	Yehezkel Bernat <YehezkelShB@gmail.com>,
-	linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org
-Subject: [PATCH RESEND v7] thunderbolt: Add device links for Apple T2 NHI
-Date: Wed, 12 Aug 2026 11:34:07 -0400
-Message-ID: <20260812153411.1159-2-atharvatiwarilinuxdev@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260812153411.1159-1-atharvatiwarilinuxdev@gmail.com>
-References: <20260812153411.1159-1-atharvatiwarilinuxdev@gmail.com>
+        d=1e100.net; s=20251104; t=1786549685; x=1787154485;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=6eI30N4Qm5PW71y0No3cx03eQ8pMDtF1rEz5kRS8Gxc=;
+        b=DtiAYpJDckPYsDPBEmMfCdSp9KPUv64hKfL5xsIT8BrMAPcNhof+OEXM334ueSLeXT
+         tu7fhgGeHujKWEi+10uiCNaQ98ruMZ35IdX4zBOPCO5zB4wXXCwbI6IEixsqF/AQbxl2
+         Tl+JXT8cjT73ljaozwovJLYMtdfkJ9//vrqefgWYj2Annug7T0Ai2jIjZNEBYzYWkZnY
+         i6FLs2m9hXyyyzMxnxWCcZ6RgCrdYnizhNOhPKh8+wTFJhyW1FWOHm8FYvzjz07NVLor
+         5iupcsEgy105+vbL2iE7yWtstEB6vaNx8iUyMMWCdZ7hyqiy0+tKbLwUH9+Eegh6jKZv
+         0SMg==
+X-Forwarded-Encrypted: i=1; AHgh+RpCGR+lS/cAsHQmYW89/j2k8APwh8FQJoBSYJA3SVc8fCUzdctHjUh3biAd0j6YCdrRpIcOE7ygCg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyDAeoCm2adjNWq4pp4w8OaBVUm+IkG4iFXjuzlvh8Ut539erVX
+	Dh6ka6nL+GElZyKX0SPEFe3QeKwh1k7JFoeTLYAg2HyY3xp2NE3rHrd7uOYrKf+ZOENde6JFGBg
+	kSKLx26PiH+8ANwXAcIw+kclBDTn0P/bvCBkR6jaYRL0UilcaW0hr1TZTqugMWA==
+X-Gm-Gg: AR+sD10BBmxC3DQGwONA/WcFurtlTFSkNIgeaPf4Vrv2DSpL1Qh/5URx6nOpBQrOfvE
+	rhfb0WPvHNYwCQwbzmMBHexJSvkZUxYdrNb6/1rFDXilQmsWabY3ZyXvouSyLaMljkGQhkAPcgP
+	m0XxxDlBNAzJ401IahU6iWs+zU/xotuMVUjqB+IjLbrSgh763iz7AB8oVGgD/kOUe2BHAI9V/Tt
+	Pg+3SchL/qB5mMxAlcLCD0v9KhqHoozL+jgGAp+FI2ZaGssVK86h52kEYIILCXN8hfwEPPDvOLG
+	EKAIxRLwcLi+SkbSZe5e4acF2Z0qj1u3InKhdETgd9iaMu+W/16UKHh0FEnwe602rPPkTvnGE+T
+	FkurOa/vMqey4culQblcSFXkbY+tp
+X-Received: by 2002:a17:902:fc4d:b0:2c0:db23:4c4 with SMTP id d9443c01a7336-2d34567e628mr70678245ad.16.1786549685450;
+        Wed, 12 Aug 2026 08:48:05 -0700 (PDT)
+X-Received: by 2002:a17:902:fc4d:b0:2c0:db23:4c4 with SMTP id d9443c01a7336-2d34567e628mr70677715ad.16.1786549684965;
+        Wed, 12 Aug 2026 08:48:04 -0700 (PDT)
+Received: from [192.168.29.179] ([49.43.225.2])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31cf6d7a3c7sm18740573eec.29.2026.08.12.08.47.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 12 Aug 2026 08:48:04 -0700 (PDT)
+Message-ID: <71b867fb-f7fc-4d82-a02b-3d0e7874a6e3@oss.qualcomm.com>
+Date: Wed, 12 Aug 2026 21:17:56 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] arm64: dts: qcom: qcm2290: Hook up MPM
+To: Marek Szyprowski <m.szyprowski@samsung.com>,
+        Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Konrad Dybcio <konradybcio@kernel.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+        Krzysztof Kozlowski
+ <krzk+dt@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+References: <20231215-topic-mpm_dt-v1-0-c6636fc75ce3@linaro.org>
+ <CGME20260709114143eucas1p18463122323bdeae8e63b1d13cd626b55@eucas1p1.samsung.com>
+ <20231215-topic-mpm_dt-v1-3-c6636fc75ce3@linaro.org>
+ <dadff7a9-bf04-49fb-8c55-5605e99be7fc@samsung.com>
+ <CAPx+jO9d1qH12mxg-n1rkbp6Xd__sdrSMeoc7CPELE+jgxRYHA@mail.gmail.com>
+ <e83dffd9-e54f-45a8-b997-e84b5beead71@oss.qualcomm.com>
+ <b434e198-2778-4dd6-8896-f7f54bc9b8e2@samsung.com>
+ <ff6f8e27-5489-4d63-afeb-a38881d717d0@oss.qualcomm.com>
+ <869727ae-e4b9-419a-98e2-798c1aec5223@samsung.com>
+Content-Language: en-US
+From: "Maulik Shah (mkshah)" <maulik.shah@oss.qualcomm.com>
+In-Reply-To: <869727ae-e4b9-419a-98e2-798c1aec5223@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEyMDEyOCBTYWx0ZWRfXzmy5igFBdOKk
+ 65yj21nzc3w09Zw3NuiQ5cZ/Z7sCJUrLwufbLXKekSJ/1JNZjK0I6pjGEM7vN9EXVwRbLNm1/dX
+ RN3cJzL9PMshEn8g1B6HV65Y3Dk+C2HQInoGQ62Zzr/ZV6ZqUmL3293vfYk8aYWv111XGozP1jo
+ LBmMiQJj3nf2qys6sgdWcnWccfPkP3cnNSEI7o0V7AHt31xzu0K6LK7WuhrdiJ1CJLSsmvbpZO4
+ Emo7zRY9SnPTt5ClIkLL7Vob9N7VjDx+OWP+9fqQR7bI0i0eX8Pbv8VWFN8aea2iyCZrDCpTCTc
+ 3X9hXfYkvITmFX0QEgg3+++Yh3j/OGCV7uOHlcy4DC56pGV/QeeDDmyEqPKlAw8LGgUGLnlzYcC
+ gT3oT/HmhF6G77eBFcj4TQGCs2VVgIrIf9xOYbm72YZ3ScscVPaNPfpl0EnxPNkWwRNSilqS79W
+ IOTxTMvkTFYBtY9N2Vw==
+X-Authority-Analysis: v=2.4 cv=Wb08rUhX c=1 sm=1 tr=0 ts=6a7c95b6 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=ltT/yu60HBk4Fd3MSdKqqg==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=eRr2Iam4zZPITqxNHqkA:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
+ a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-GUID: YdAM_qcENU79KCfQ2LPn1DqZ87-F-aSG
+X-Proofpoint-ORIG-GUID: YdAM_qcENU79KCfQ2LPn1DqZ87-F-aSG
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODEyMDEyOCBTYWx0ZWRfX01ADNd3F9COe
+ /P3woXTkVWlZ3QJAvhlJ96asZph4Dwh11zrPJTpiyfIT2uJ0niRf0imOIOocD7kDToO0TRphGlh
+ O8Ma+UyX3X98VkItqFUsHYfQSlXJPWQ=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-12_04,2026-08-12_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 impostorscore=0 phishscore=0 lowpriorityscore=0 suspectscore=0
+ priorityscore=1501 malwarescore=0 spamscore=0 adultscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608120128
 
-Ice Lake Thunderbolt NHI That are only on T2 Macs. The NHI and its
-associated PCIe Root Ports all sit directly on the Root Complex
-with no upstream port. Identify the tunneled PCIe Root Ports by
-their PCI IDs and create device links back to the NHI so that
-PCIe tunnels can be re-established after sleep.
 
-And on other Thunderbolt NHI's, like Titan Ridge, the default method
-is used to add device links.
 
-Co-developed-by: Andre Eikmeyer <andre@negmaster.com>
-Signed-off-by: Andre Eikmeyer <andre@negmaster.com>
+On 7/16/2026 2:06 PM, Marek Szyprowski wrote:
+> On 15.07.2026 14:37, Maulik Shah (mkshah) wrote:
+>> On 7/15/2026 11:44 AM, Marek Szyprowski wrote:
+>>> On 14.07.2026 15:29, Maulik Shah (mkshah) wrote:
 
-Signed-off-by: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
----
-Changes in v7:
-- Used pci_lock_rescan_remove to prevent race conditons.
-- Fixed patch format.
+[...]
 
-Changes in v6:
-- Used for_each_pci_bridge in Icelake section
-- Removed has_apple_t2_chip as its not required now
+>>
+>> Agatti device tree change in the series [2] only removed power-domain-cells# but did not add power-domains = <&cluster_pd>;
+>> with the reason that qrb2210-rb1.dts had deleted "cluster_pd" however qrb2210-arduino-imola.dts still have it.
+>>
+>> so below change on top of [1] series would avoid the BUG from mpm_cpu_pm_callback().
+> 
+> This change moves the 'invalid wait context' warning from boot time to system suspend/resume path (although the system suspend/resume is and was broken on UnoQ at least with current next with and without the patchset from this thread):
 
-Changes in v5:
-- Used Icelake root PCI IDs for detection of root ports instead of TRP
+I am working on this to fix this warning for system suspend/resume path as well as regular cpu/cluster idle path, will update soon.
 
-Changes in v4:
-- Limited TRP check to T2 Icelake systems only
-- Optimized has_apple_t2_chip check
-- Included pci.h to drivers/thunderbolt/tb.c
-- Used __free(pci_dev_put) to avoid label
+Thanks,
+Maulik
 
-Changes in v3:
-- Fix build errors with non-x86 machines
-- Used __initconst for apple_t2_devices
-- Removed UEFI_QUIRK_SKIP_CERT as its unused now
-- Used IS_ENABLED(CONFIG_ACPI) in tb_apple_add_links for the T2 part
-- Removed !bid check to remove warning with -Waddress
-
-Changes in v2:
-- Used a less generic name for has_t2_chip
-- Used DMI instead of PCI for has_apple_t2_chip to avoid PCI problems
-- Initialized ret in tb_apple_add_links
-
-Link to v6:
-https://lore.kernel.org/all/20260730223435.2874-1-atharvatiwarilinuxdev@gmail.com/
-
-Link to v5:
-https://lore.kernel.org/all/20260727211807.1223-1-atharvatiwarilinuxdev@gmail.com/
-
-Link to v4:
-https://lore.kernel.org/all/20260724164641.2239-1-atharvatiwarilinuxdev@gmail.com/
-
-Link to v3:
-https://lore.kernel.org/all/20260721063412.11588-1-atharvatiwarilinuxdev@gmail.com/
-
-Link to v2:
-https://lore.kernel.org/all/20260721054506.11871-1-atharvatiwarilinuxdev@gmail.com/
-
-Link to v1:
-https://lore.kernel.org/all/20260719180308.1398-1-atharvatiwarilinuxdev@gmail.com/
-
- drivers/thunderbolt/tb.c | 49 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thunderbolt/tb.c b/drivers/thunderbolt/tb.c
-index c69c323e6952..2534c6378000 100644
---- a/drivers/thunderbolt/tb.c
-+++ b/drivers/thunderbolt/tb.c
-@@ -9,6 +9,7 @@
- #include <linux/slab.h>
- #include <linux/errno.h>
- #include <linux/delay.h>
-+#include <linux/pci.h>
- #include <linux/pm_runtime.h>
- #include <linux/platform_data/x86/apple.h>
- 
-@@ -3305,16 +3306,62 @@ static const struct tb_cm_ops tb_cm_ops = {
- static bool tb_apple_add_links(struct tb_nhi *nhi)
- {
- 	struct pci_dev *upstream, *pdev;
--	bool ret;
-+	bool ret = false;
- 
- 	if (!x86_apple_machine)
- 		return false;
- 
-+	/* Identify the tunneled PCIe Root Ports by their PCI IDs
-+	 * on Macs with Icelake NHI's
-+	 * and create device links so that
-+	 * PCIe tunnels can be re-established after sleep.
-+	 */
-+	if (nhi->pdev->device == PCI_DEVICE_ID_INTEL_ICL_NHI0 ||
-+		nhi->pdev->device == PCI_DEVICE_ID_INTEL_ICL_NHI1) {
-+		const struct device_link *link;
-+
-+		pci_lock_rescan_remove();
-+
-+		for_each_pci_bridge(pdev, nhi->pdev->bus) {
-+			if (!pci_is_pcie(pdev) || pci_pcie_type(pdev) != PCI_EXP_TYPE_ROOT_PORT)
-+				continue;
-+
-+			switch (pdev->device) {
-+			/* Ice Lake Thunderbolt 3 PCIe Root Ports */
-+			case 0x8a1d:
-+			case 0x8a1f:
-+			case 0x8a21:
-+			case 0x8a23:
-+				break;
-+			default:
-+				continue;
-+			}
-+
-+			link = device_link_add(&pdev->dev, &nhi->pdev->dev,
-+					DL_FLAG_AUTOREMOVE_SUPPLIER |
-+					DL_FLAG_PM_RUNTIME);
-+			if (link) {
-+				dev_dbg(&nhi->pdev->dev, "created link from %s\n",
-+					dev_name(&pdev->dev));
-+				ret = true;
-+			} else {
-+				dev_warn(&nhi->pdev->dev,
-+					"device link creation from %s failed\n",
-+					dev_name(&pdev->dev));
-+			}
-+		}
-+
-+		pci_unlock_rescan_remove();
-+		return ret;
-+	}
-+
- 	switch (nhi->pdev->device) {
- 	case PCI_DEVICE_ID_INTEL_LIGHT_RIDGE:
- 	case PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C:
- 	case PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_NHI:
- 	case PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI:
-+	case PCI_DEVICE_ID_INTEL_TITAN_RIDGE_2C_NHI:
-+	case PCI_DEVICE_ID_INTEL_TITAN_RIDGE_4C_NHI:
- 		break;
- 	default:
- 		return false;
--- 
-2.43.0
 
