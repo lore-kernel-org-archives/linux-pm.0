@@ -1,86 +1,44 @@
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx5.mail-out.lima-city.de (mx5.mail-out.lima-city.de [91.216.248.207])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EA2A437112
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 11:50:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7541A3546C8;
+	Wed, 12 Aug 2026 12:03:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.216.248.207
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786535420; cv=none; b=jPR8L/THaaqHO7Ms8UL6N08ejnYgwC+wF26vUOBo2R0LGRT89PAjq2l35ghkpuga2GzK+KjxNTIGTtYGYinfC4JzoXdZImuox5yTQZshhXzPVaOSqsacAQrBCJ6KnbvJXiMWTPM52CJC9Qbf0L6q8M6amBDG+edq8viuJeCT8bc=
+	t=1786536232; cv=none; b=NaeHwhpFt5ZK/VfRmAGzWQ1GH3K8nMTSowTCV2xtDAVh/j4MFSY+zLWgTCQ4vdw4UqhedsLY22WbQZZSaDS/269Ueq+7Xd5TPc/ViuRiKxQe8NqN6F0EwpKH7UP0jyNXIAI7mvBGCJ21B3bDqB/kF9a/nRxaQdmassb2ofbLWOE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786535420; c=relaxed/simple;
-	bh=O3XwjStOaxxkm6S+xsfQIly9TfHEqpXVApRGfmtkooE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XcGB/h8CUdaVGbK+/1ca4SiH2DA8xOguiT5KNPlN7/iwUl5SgRs0QQsSJzZW80efNr8Z10v7+8EX4pPLu+U4RrSg3Eke8iHAsgiE83YfIEyUifcqGMg3ydNapEbYecYaBqOXwA7DOtllVIF6vyhxE9QQGJqQDte8db059KShfks=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YXu+mgbV; arc=none smtp.client-ip=209.85.128.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1786536232; c=relaxed/simple;
+	bh=kvpBh02FRfteHfgHwO5CYuK1PrTOzwA3xxXqAWpXKc8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=utZxyxjffJNj89+DuJCMUmRd6Faff1UgvNf5YkJo9I5VsY5fxWEcKJ2RY/NwhATlhqXAIdOuzFS1Ty7Z+hogvwOIR37+5SJmDsRsN09sgcho0xahtnivCigiDVgOqDfsPkg1p7SFLiF3ipGumtSKI3Es+P/x5gvoonlkuFVjRoU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=deq.rocks; spf=none smtp.mailfrom=deq.rocks; dkim=pass (2048-bit key) header.d=deq.rocks header.i=@deq.rocks header.b=wnCDNiel; arc=none smtp.client-ip=91.216.248.207
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=deq.rocks
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=deq.rocks
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YXu+mgbV"
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-49802c418b5so7549455e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 04:50:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786535416; x=1787140216; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=BkkjL7JZr7VOG0pjsLKe6o2AuEC+HHEDjz0jBPa85Ow=;
-        b=YXu+mgbVPNMjTX98vL19/rgiVQNJI57ztjLb6k1SgEB14ZWwMc9++2ikADZ4NDeAM3
-         iYOZ1jhmUcLWQypjIviphSzc60KkfdN8YqNJ71YtYxWHbLX6OxDvTTvkyqkFYl9YlrYU
-         sI24hGmfe9Fg67mD1C+WOabkKUqZ1skGAX7IedIaCSdPYHSu/ZjkfWu21mwXDbRZtYyI
-         14oVV+3CcCPcncyLR/3Lq0p4wFBQnWyVpno6tNlJ4u9soV9L/4578K71fMZVmvt1M/oF
-         gu5IBhmpCfsBIYunoz3avQs5evStKI0va2uIU9p3zCiKq5UI8KSPS6/Prx+gRenYqyfN
-         Ou0g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786535416; x=1787140216;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=BkkjL7JZr7VOG0pjsLKe6o2AuEC+HHEDjz0jBPa85Ow=;
-        b=LUeMHmRR9SVqm8tbGfkvlmF0DOXkOND48n1NkXqJtX6h2diDdU5chygvQydEItNKB+
-         HcoHE3PqEYqUA6zTtfFvwLacm6u8fID+H1ldx8yvpiRykffbZLbyCsPg+3TGP0OoY9hM
-         LebjkUVd0RBjc1vMelv6N89abAqDxbN5M/mPwOQINkERS1bwwfA7xmE4kNX/+d8ndAK0
-         fE5IVwMKffQxLHXMvBSgkb68JOOzxM2Rkkwpi1NStK70QvEEsZpS3W4zfUjf7NSvvzqh
-         Qy+B8LJx5j3XAqZcWHO4FovXKeslYHuSZKe8NXF1ZsvQAqii5KYI7LEGLZOPUuU3anyL
-         TYOA==
-X-Forwarded-Encrypted: i=1; AHgh+RoecEhjfoApi8KgIdJ0eHV3mh9Tb0Ox6wf4C8tB0eORhBVVeAn4DZrBD0zi6yV+Khbp7wJHARuz/Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyu+8VeRo5PGPiNwUdVjlUyEKzthx5FOv0o9oXbTRUbN1E6zzTQ
-	fymG3j+2ePGP7/loKQRf5gtIV9kR8KB6D8zcqO44wDKqMwuD8iu24ta2
-X-Gm-Gg: AR+sD13hwVqbxsTSfAMjmkrfw7Dk45XI63t4+t59GTlf+o1GUorVpaBAvjSKtYmBnjg
-	5hYnqz0AbP2/FGu/8EYidvbxAy70Fi9YKBVN1UO2E0DeEPT42bHCExFyi0kdOl40213B7ymhEcO
-	/9g0uUuWN034houY5+HUHv6R7Qxs5cNh3Y2SywpVE6VV64hSN90KECEIgF1dscJFgIBK3v8oBox
-	PM8rMpR7UkCUehcz3IT9jjG4/8OLBOz257/rPeUe+ObHs1WjJS6LzIhxlDhDp/o8+bOQ8sz5qHX
-	kCTN1CtNY5D8HAAxtSAO/2xj6cvNeK7lPxFmk/q1PHlx8aPbUneDDvU/SvCwTpwUkGTmLedjWJS
-	YPgvlscJ3ipQLCUbT89uLjrHRBIArndZzVkA90zDoHYpboVyQrfvGsUwgsrvMfFMMqYjAO5Wlfw
-	/xGDif8SjeGA5NmG+nMyCUgjtUT60EProtZ2edGAUxvIVIUC8UrmQLst6clN+qZzKh6E6ZdjkMa
-	P8+z3MTrQH4Ww==
-X-Received: by 2002:a05:600c:8b52:b0:495:4491:b8c2 with SMTP id 5b1f17b1804b1-4997c0e6f2emr70408475e9.3.1786535415543;
-        Wed, 12 Aug 2026 04:50:15 -0700 (PDT)
-Received: from localhost.localdomain ([2a00:23c4:a702:d301:94c0:1825:d248:50ae])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4815231c308sm6219090f8f.11.2026.08.12.04.50.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Aug 2026 04:50:15 -0700 (PDT)
-From: Biju <biju.das.au@gmail.com>
-X-Google-Original-From: Biju <biju.das.jz@bp.renesas.com>
-To: Bartosz Golaszewski <brgl@kernel.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Magnus Damm <magnus.damm@gmail.com>
-Cc: Biju Das <biju.das.jz@bp.renesas.com>,
-	linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=deq.rocks header.i=@deq.rocks header.b="wnCDNiel"
+From: Andre Eikmeyer <dev@deq.rocks>
+X-Lima-ML-UUID: ae1f50a7-1b19-44d8-b6d4-d2eb0f197f70
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=deq.rocks;
+	s=securedbylima-20251205; t=1786536219;
+	bh=kvpBh02FRfteHfgHwO5CYuK1PrTOzwA3xxXqAWpXKc8=;
+	h=From:To:Cc:Subject:Date:From;
+	b=wnCDNiel0WNIh0FyQByH3cB6lNK/N0zzuFhCU3HxZjQFt3p3pnQPrgl+2SRTUfIFV
+	 jkaOmkKVp/DY68OKedhqEefhWCJHK+YuIiN5Mr/Ns21F7foyZ3z3YlaxcK9N6p2Ben
+	 IQGnK/VyXPVQpPwZgdaHalnNw+25/6FrLxT7oTkGcNjejLdkdeWEvubyjotYAl+DdK
+	 0sV0rA37+etzHbWEPX9f60FpXBLFXw4MrwmjATepTz7AtTjAGGh9V37YhFS6zH64LU
+	 xaShiUnOPl0X+az1GwTXA+2KpWwJLhdZ6dHIeHv25ATmdQvhe+a/tmaWhnu5PMoyAK
+	 NCo7oPetnNkoQ==
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	linux-acpi@vger.kernel.org
+Cc: Len Brown <lenb@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
 	linux-pm@vger.kernel.org,
-	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	Biju Das <biju.das.au@gmail.com>,
-	linux-renesas-soc@vger.kernel.org
-Subject: [PATCH v3 2/3] power: sequencing: Add Renesas RZ/G3L Power Ready driver
-Date: Wed, 12 Aug 2026 12:50:04 +0100
-Message-ID: <20260812115010.108322-3-biju.das.jz@bp.renesas.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260812115010.108322-1-biju.das.jz@bp.renesas.com>
-References: <20260812115010.108322-1-biju.das.jz@bp.renesas.com>
+	linux-kernel@vger.kernel.org,
+	Andre Eikmeyer <dev@deq.rocks>
+Subject: [PATCH] ACPI: x86: Apple T2 systems need early CPU offlining
+Date: Wed, 12 Aug 2026 14:03:26 +0200
+Message-ID: <20260812120326.155226-1-dev@deq.rocks>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,221 +47,183 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Biju Das <biju.das.jz@bp.renesas.com>
+Hello everyone,
 
-Add a power sequencing driver for the Renesas RZ/G3L PWRRDY module,
-which signals power readiness for various IPs (USB, DSI, CSI etc.) on the
-SoC. The driver binds as an auxiliary device to the parent SYSC driver,
-using its regmap to toggle the SYS_PWRRDY_N register bits, and exposes
-{usb,dsi,csi}-pwrrdy pwrseq targets.
+Linux reports _OSI("Darwin") on x86 Apple systems. On T2 Macs, the
+selected firmware suspend path makes secondary CPU startup during early
+resume take several seconds per CPU. The same CPUs can be brought online
+normally after platform resume.
 
-Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+We therefore move secondary CPU hotplug outside the generic CPU PM
+notifier window on T2 systems. A prepare notifier runs before the CPU
+core blocks hotplug, while a post notifier restores only the CPUs it
+removed after the core enables hotplug again.
+
+This reduces CPU bring-up during resume from several seconds per CPU to a
+fraction of a second. The change was tested on MacBookPro15,1,
+MacBookPro16,2, MacBookAir9,1 and a 27-inch T2 iMac.
+
+Signed-off-by: Andre Eikmeyer <dev@deq.rocks>
 ---
-v2->v3:
- * Kconfig selects AUXILIARY_BUS to avoid compilation issues.
- * Added match for consumer device and added of_device.h header file.
- * Replaced regmap_update_bits()->regmap_assign_bits() and updated
-   the function parameter of pwrseq_rzg3l_set_pwrrdy().
- * Simpilfied probe() return with PTR_ERR_OR_ZERO macro.
-v1->v2:
- * Added a comment in pwrseq_rzg3l_pwrrdy_match().
- * Dropped dev_get_regmap() from probe as regmap is now part of platform
-   data.
- * Added a blank line before devm_pwrseq_device_register() in probe.
- * Dropped the error message devm_pwrseq_device_register() as probe prints
-   failure message.
- * Dropped local variables dev and regmap from probe().
----
- drivers/power/sequencing/Kconfig              |   9 ++
- drivers/power/sequencing/Makefile             |   1 +
- .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 147 ++++++++++++++++++
- 3 files changed, 157 insertions(+)
- create mode 100644 drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+ drivers/acpi/x86/apple.c | 140 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 140 insertions(+)
 
-diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/Kconfig
-index 1c5f5820f5b7..286d4e300845 100644
---- a/drivers/power/sequencing/Kconfig
-+++ b/drivers/power/sequencing/Kconfig
-@@ -27,6 +27,15 @@ config POWER_SEQUENCING_QCOM_WCN
- 	  this driver is needed for correct power control or else we'd risk not
- 	  respecting the required delays between enabling Bluetooth and WLAN.
+diff --git a/drivers/acpi/x86/apple.c b/drivers/acpi/x86/apple.c
+index 45d0f16..5595a6a 100644
+--- a/drivers/acpi/x86/apple.c
++++ b/drivers/acpi/x86/apple.c
+@@ -6,7 +6,13 @@
  
-+config POWER_SEQUENCING_RENESAS_PWRRDY
-+	tristate "Renesas Power Ready sequencing driver"
-+	depends on SYSC_RZ || COMPILE_TEST
-+	select AUXILIARY_BUS
-+	help
-+	  Say Y here to enable the power sequencing driver for the Renesas
-+	  Power Ready signals. This driver handles the power ready signals
-+	  required to power on the various IP's on RZ/G3L platform.
+ #include <linux/acpi.h>
+ #include <linux/bitmap.h>
++#include <linux/cpu.h>
++#include <linux/cpuhplock.h>
++#include <linux/init.h>
++#include <linux/notifier.h>
++#include <linux/pci.h>
+ #include <linux/platform_data/x86/apple.h>
++#include <linux/suspend.h>
+ #include <linux/uuid.h>
+ #include "../internal.h"
+ 
+@@ -146,3 +152,137 @@ out_free:
+ 	ACPI_FREE(props);
+ 	bitmap_free(valid);
+ }
 +
- config POWER_SEQUENCING_TH1520_GPU
- 	tristate "T-HEAD TH1520 GPU power sequencing driver"
- 	depends on (ARCH_THEAD && AUXILIARY_BUS) || COMPILE_TEST
-diff --git a/drivers/power/sequencing/Makefile b/drivers/power/sequencing/Makefile
-index 0911d4618298..b33d08d82f43 100644
---- a/drivers/power/sequencing/Makefile
-+++ b/drivers/power/sequencing/Makefile
-@@ -4,5 +4,6 @@ obj-$(CONFIG_POWER_SEQUENCING)		+= pwrseq-core.o
- pwrseq-core-y				:= core.o
- 
- obj-$(CONFIG_POWER_SEQUENCING_QCOM_WCN)	+= pwrseq-qcom-wcn.o
-+obj-$(CONFIG_POWER_SEQUENCING_RENESAS_PWRRDY) += pwrseq-renesas-pwrrdy.o
- obj-$(CONFIG_POWER_SEQUENCING_TH1520_GPU) += pwrseq-thead-gpu.o
- obj-$(CONFIG_POWER_SEQUENCING_PCIE_M2)	+= pwrseq-pcie-m2.o
-diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-new file mode 100644
-index 000000000000..8dfc65034a1c
---- /dev/null
-+++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-@@ -0,0 +1,147 @@
-+// SPDX-License-Identifier: GPL-2.0
++#ifdef CONFIG_PM_SLEEP_SMP
 +/*
-+ * Renesas RZ/G3L Power Ready driver
-+ *
++ * The ACPI path selected by _OSI("Darwin") leaves Apple T2 systems in a
++ * state where bringing secondary CPUs online during early resume may take
++ * several seconds per CPU. Normal CPU hotplug after platform resume is not
++ * affected, so we move it outside the generic suspend CPU hotplug window.
 + */
++static cpumask_var_t apple_t2_offlined_cpus;
 +
-+#include <linux/auxiliary_bus.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/pwrseq/provider.h>
-+#include <linux/regmap.h>
++#define PCI_DEVICE_ID_APPLE_T2_BRIDGE 0x1801
 +
-+#define SYS_PWRRDY_N		0xd70
-+#define SYS_PWRRDY_N_USB_MASK	BIT(0)
-+#define SYS_PWRRDY_N_DSI_MASK	BIT(1)
-+#define SYS_PWRRDY_N_CSI_MASK	BIT(2)
-+
-+static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mask,
-+				   bool val)
++static bool __init apple_t2_present(void)
 +{
-+	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
++	struct pci_dev *pdev;
 +
-+	return regmap_assign_bits(regmap, SYS_PWRRDY_N, mask, val);
++	if (!x86_apple_machine)
++		return false;
++
++	pdev = pci_get_device(PCI_VENDOR_ID_APPLE,
++			      PCI_DEVICE_ID_APPLE_T2_BRIDGE, NULL);
++	if (!pdev)
++		return false;
++
++	pci_dev_put(pdev);
++	return true;
 +}
 +
-+static int pwrseq_rzg3l_usb_pwrrdy_enable(struct pwrseq_device *pwrseq)
++static void apple_t2_restore_cpus(void)
 +{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 0);
++	unsigned int cpu;
++	int ret;
++
++	for_each_cpu(cpu, apple_t2_offlined_cpus) {
++		ret = add_cpu(cpu);
++		if (ret) {
++			pr_err("ACPI: Apple T2 failed to restore CPU%u: %d\n",
++			       cpu, ret);
++			continue;
++		}
++
++		cpumask_clear_cpu(cpu, apple_t2_offlined_cpus);
++	}
 +}
 +
-+static int pwrseq_rzg3l_usb_pwrrdy_disable(struct pwrseq_device *pwrseq)
++static void apple_t2_offline_cpus(void)
 +{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 1);
++	unsigned int cpu;
++	int ret;
++
++	if (!cpumask_empty(apple_t2_offlined_cpus)) {
++		pr_err("ACPI: Apple T2 CPUs from the previous suspend remain offline\n");
++		apple_t2_restore_cpus();
++		if (!cpumask_empty(apple_t2_offlined_cpus)) {
++			pr_err("ACPI: Apple T2 early CPU offlining skipped\n");
++			return;
++		}
++	}
++
++	for_each_online_cpu(cpu) {
++		if (cpu == 0)
++			continue;
++
++		ret = remove_cpu(cpu);
++		if (ret) {
++			pr_err("ACPI: Apple T2 failed to offline CPU%u: %d\n",
++			       cpu, ret);
++			continue;
++		}
++
++		cpumask_set_cpu(cpu, apple_t2_offlined_cpus);
++	}
 +}
 +
-+static const struct pwrseq_unit_data pwrseq_rzg3l_usb_pwrrdy_unit = {
-+	.name = "usb-pwrrdy-power-sequence",
-+	.enable = pwrseq_rzg3l_usb_pwrrdy_enable,
-+	.disable = pwrseq_rzg3l_usb_pwrrdy_disable,
-+};
-+
-+static int pwrseq_rzg3l_dsi_pwrrdy_enable(struct pwrseq_device *pwrseq)
++static int apple_t2_cpu_prepare(struct notifier_block *nb,
++				unsigned long action, void *unused)
 +{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 0);
++	if (action == PM_SUSPEND_PREPARE)
++		apple_t2_offline_cpus();
++
++	return NOTIFY_OK;
 +}
 +
-+static int pwrseq_rzg3l_dsi_pwrrdy_disable(struct pwrseq_device *pwrseq)
++static int apple_t2_cpu_restore(struct notifier_block *nb,
++				unsigned long action, void *unused)
 +{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 1);
++	if (action == PM_POST_SUSPEND)
++		apple_t2_restore_cpus();
++
++	return NOTIFY_OK;
 +}
 +
-+static const struct pwrseq_unit_data pwrseq_rzg3l_dsi_pwrrdy_unit = {
-+	.name = "dsi-pwrrdy-sequence",
-+	.enable = pwrseq_rzg3l_dsi_pwrrdy_enable,
-+	.disable = pwrseq_rzg3l_dsi_pwrrdy_disable,
++/*
++ * The CPU core PM notifier runs at priority 0. We offline CPUs before
++ * hotplug is blocked, then restore them after it enables hotplug again.
++ */
++static struct notifier_block apple_t2_cpu_prepare_nb = {
++	.notifier_call = apple_t2_cpu_prepare,
++	.priority = 1,
 +};
 +
-+static int pwrseq_rzg3l_csi_pwrrdy_enable(struct pwrseq_device *pwrseq)
++static struct notifier_block apple_t2_cpu_restore_nb = {
++	.notifier_call = apple_t2_cpu_restore,
++	.priority = -1,
++};
++
++static int __init apple_t2_cpu_pm_init(void)
 +{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 0);
++	int ret;
++
++	if (!apple_t2_present())
++		return 0;
++
++	if (!alloc_cpumask_var(&apple_t2_offlined_cpus, GFP_KERNEL))
++		return -ENOMEM;
++
++	ret = register_pm_notifier(&apple_t2_cpu_prepare_nb);
++	if (ret)
++		goto free_mask;
++
++	ret = register_pm_notifier(&apple_t2_cpu_restore_nb);
++	if (ret)
++		goto unregister_prepare;
++
++	return 0;
++
++unregister_prepare:
++	unregister_pm_notifier(&apple_t2_cpu_prepare_nb);
++free_mask:
++	free_cpumask_var(apple_t2_offlined_cpus);
++	return ret;
 +}
-+
-+static int pwrseq_rzg3l_csi_pwrrdy_disable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 1);
-+}
-+
-+static const struct pwrseq_unit_data pwrseq_rzg3l_csi_pwrrdy_unit = {
-+	.name = "csi-pwrrdy-power-sequence",
-+	.enable = pwrseq_rzg3l_csi_pwrrdy_enable,
-+	.disable = pwrseq_rzg3l_csi_pwrrdy_disable,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_rzg3l_usb_pwrrdy_target = {
-+	.name = "usb-pwrrdy",
-+	.unit = &pwrseq_rzg3l_usb_pwrrdy_unit,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_rzg3l_dsi_pwrrdy_target = {
-+	.name = "dsi-pwrrdy",
-+	.unit = &pwrseq_rzg3l_dsi_pwrrdy_unit,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_rzg3l_csi_pwrrdy_target = {
-+	.name = "csi-pwrrdy",
-+	.unit = &pwrseq_rzg3l_csi_pwrrdy_unit,
-+};
-+
-+static const struct pwrseq_target_data *pwrseq_rzg3l_pwrrdy_targets[] = {
-+	&pwrseq_rzg3l_usb_pwrrdy_target,
-+	&pwrseq_rzg3l_dsi_pwrrdy_target,
-+	&pwrseq_rzg3l_csi_pwrrdy_target,
-+	NULL
-+};
-+
-+static int pwrseq_rzg3l_pwrrdy_match(struct pwrseq_device *pwrseq,
-+				     struct device *dev)
-+{
-+	static const struct of_device_id pwrseq_rzg3l_consumer_match[] = {
-+		{ .compatible = "renesas,r9a08g046-mipi-dsi" },
-+		{ .compatible = "renesas,r9a08g046-usbphy-ctrl" },
-+		{ /* sentinel */ }
-+	};
-+	const struct of_device_id *match;
-+
-+	match = of_match_device(pwrseq_rzg3l_consumer_match, dev);
-+	if (!match)
-+		return PWRSEQ_NO_MATCH;
-+
-+	return PWRSEQ_MATCH_OK;
-+}
-+
-+static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
-+				     const struct auxiliary_device_id *id)
-+{
-+	struct pwrseq_device *pwrseq;
-+	struct pwrseq_config config = {
-+		.parent = &adev->dev,
-+		.owner = THIS_MODULE,
-+		.drvdata = adev->dev.platform_data,
-+		.match = pwrseq_rzg3l_pwrrdy_match,
-+		.targets = pwrseq_rzg3l_pwrrdy_targets,
-+	};
-+
-+	pwrseq = devm_pwrseq_device_register(&adev->dev, &config);
-+
-+	return PTR_ERR_OR_ZERO(pwrseq);
-+}
-+
-+static const struct auxiliary_device_id pwrseq_rzg3l_pwrrdy_id_table[] = {
-+	{ .name = "rz_sysc.pwrseq-pwrrdy" },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(auxiliary, pwrseq_rzg3l_pwrrdy_id_table);
-+
-+static struct auxiliary_driver pwrseq_rzg3l_pwrrdy_driver = {
-+	.driver = {
-+		.name = "pwrseq-rzg3l-pwrrdy",
-+	},
-+	.probe = pwrseq_rzg3l_pwrrdy_probe,
-+	.id_table = pwrseq_rzg3l_pwrrdy_id_table,
-+};
-+module_auxiliary_driver(pwrseq_rzg3l_pwrrdy_driver);
-+
-+MODULE_AUTHOR("Biju Das <biju.das.jz@bp.renesas.com>");
-+MODULE_DESCRIPTION("Renesas RZ/G3L Power Ready Driver");
-+MODULE_LICENSE("GPL");
++late_initcall(apple_t2_cpu_pm_init);
++#endif
 -- 
-2.43.0
+2.55.0
 
