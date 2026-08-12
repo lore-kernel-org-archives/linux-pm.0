@@ -1,198 +1,162 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EADC23FFFA5
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 21:32:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71A11220698;
+	Wed, 12 Aug 2026 22:00:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786570380; cv=none; b=j3Xg+vYwOZfK6vc8ERLbXK/pOQaq66Lz3zJqQkKciEDurNQ5mXsNJeDwhiyDa3vGFsSrISBw5Y4VsnBiV0dWQxbl7UddXOgxhVYySynRcerpbNsnoDagkA9VCkWktghs1OQcwiy8pYlLX/AE3iVNAKXKG9SNCS95z2DK5pzQB1g=
+	t=1786572041; cv=none; b=u0sK4L2DiP4a4pbPXwrB3wM75zbLpslkPewR/xHCyPv/oSTc1UcmDOwuqewFfi/Q9B6D8U+aInqZ6z19BDBa9W5Wmmes0Sydg7FmvjT3yOUFTcP7mOO4W0XkfuZcrGJ0t9phpvJ6VF/EYFsD9/MyOv03MftjV+uGw7kGPdFnTRc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786570380; c=relaxed/simple;
-	bh=H9KAVrZ9EZXmZGJEXhr95r4m410l7raCqTQ83d5is70=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HqFnvhVfXmmbexgoclzBR0Iko8OOWfKbqNjc03UuiCsgBMB+xhhzhPVeAaVHJi3zhBVdj8ijiOJW0VhBSmfHPSfUs9GM+TJh+XFhf1oMDNHXL1POQyW8MAUNE0Wnvb/vdw1h+FrxTQ+SL8pt3v5Y2nzcw2c4GNoBUhsUvDIsucY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aW1bJDN2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=F0RqNahi; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1786572041; c=relaxed/simple;
+	bh=LnbJ+JeCswXplJXMAQXK07KvINJS1qVW4aAcrmdWAjg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=pHZFOJ3YOzlC+nqIwj6ahhPyD2JOU8xsdktLYWKPnxT7VsA0ltk4MNQice+UzbEm0YL4R2BVSj1O8MjbMoNWpGvo4us/Yhl+ZEGf2UXUlUc/2RZhvbKZfHlA1ba20bFSdmAZlCKkaeHD4dinsyJKuccq+foDoRDvI9lJXSsmJok=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FUnSbkEV; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aW1bJDN2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="F0RqNahi"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67CK2bxZ4038349
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 21:32:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	XkSewvAsCOUodUnPgBSMzzLWKqt2tzeTdiNW08oBack=; b=aW1bJDN2aChrcGdn
-	Ppkq0I+Y/FK9ZreN86GjnnpPX9LIuloi9Ja/boy74i+N/x3MQn0KsBPik6kJ1wXe
-	DwnHiIXqpoCZDjc0mn6udwtfFgw7OVPursBG+F20Gywu0QNcr2RWWEnP7USi84GT
-	E8gJIUAyECJ+vqBU8E1ongcMz1i2mvLo41QuGfZODWzt17wULfTc1JYs0RnH9+fl
-	s92qEmwNMDzhpCxaErv94RWwlbRKFBvCStsuAnUNW2vQ289JU6zoUxQjIw067Jhc
-	dvBTv22qXYrBYowNDXr3UrPh3B9VoRImjdc5oRFgi0m8gNID14UHSd86bssDKt4q
-	HHV91g==
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g0mndbha5-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 21:32:57 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51c26012cd0so246451cf.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 14:32:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786570376; x=1787175176; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XkSewvAsCOUodUnPgBSMzzLWKqt2tzeTdiNW08oBack=;
-        b=F0RqNahikgv0QdZiXNIpu1IL2tcjSo9ghK63TmbQRMmCIuVEGdNUEIXr3ZMZkd4A/F
-         5eile0ZeB6bNZvWSc8HVRRfF/mGyIN6D49d0vmBTQMvxroPiztg4SiwrVrfou97NpV4u
-         TL2Pl1Q6HAqS5giOIvqT/dPeM8xlPCUWts/uVmIdqVu9sSe3UJQ1C49qOuCSE+D0YoKh
-         /Wuv1sftA4ZXZFrGXfawyMpAt7PeyUxoR6Ef+WTdwdhYlKl1Eh/Iwy38/8gsk+IFHnPB
-         FmnR8+cSu/M0EPej5ipHaKSBmqDhODPBWk8Vvs/w3EL09AEVSav+jC/Rstulvyx+luNR
-         VfDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786570376; x=1787175176;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=XkSewvAsCOUodUnPgBSMzzLWKqt2tzeTdiNW08oBack=;
-        b=WFLZzAO00GhF1sUGAFnNyCw3pSGexTh8IB5EuKFAwWkzDvothj+IYk37Q/gfJr5sq+
-         cJbMHTWs/05+F/V1azlriac15dolkwUtsiV8s5kLsoiCzj6zRXmKGPJjLsjIX7snPCrn
-         xC1TDP9ZLoCknawMq2ZXknP88oBBH8qJjxd0rkZ+lwmrZOi6K1nPPkByXzO0RsJQnDQh
-         TZcgiuaPmKPWSbqOdpNMYXse0II6De4VqaieRxvsEapkOh9dPncKR6qKEnDzZKKgQfyO
-         OXHPvm39bNCZsvXHSGaKgS9WhP7bLmM9gw/+x6BDoj56n4xRbV5wBLWg6tmZeqFuYwSt
-         UShA==
-X-Forwarded-Encrypted: i=1; AHgh+RpmHOMlUMPhN/neVUONCY5yfr7MvhEk2RnjHQLGHnuSgmL29FulruBxzXqvyPmrl4+a9iSoLL1Paw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzgTGnBqq1KFEHOclfAPnQogQpvhJalmaGrYi8wVkcPG+OYHXpV
-	yI2bjWNmI9Fe+8l612zKtQVvhTEhUubsnONZM2mVYJRwhM3mFBaGMNvYU4Ew11gfAmRRePTVn7z
-	cUZz2pVOSCGCtJbrA2Js7If5Vk0iSmilfRqC9DQ14IDI7/uiUoUw66Cjc+Q1mCw==
-X-Gm-Gg: AR+sD138rjZ5pub8OW/bkBYFnWTrue3N7ONAmPLx1Pm/PgxWbpQvjAERFmMiC/rULft
-	BKPbJZ/soTrXFC2qA5PiYKZab9yskryIkVivQ6+MshrRdUqWK4Nx19dql+5rNUdx+f6Fzx31DkP
-	yV6tVkmDbV83Qkh3/zm8HGj8tW/ugscaCZGsi/uj8Wmfyii0p8GdhBaKm1ZBkIyMy7RnR1Y5882
-	qDTW3/xD0QwSatHR7qSRG+fAxeeHlCDHYIW8Tmk32vNYOEzYFrBYTZ1cLI4Elvr028MXtqNe7WQ
-	9zioxv0KqzYq6BwXxvaCmuER2C8d0m2xaOaznL82ik2a4/WPauAVG0iRMyljn4hjD77QkxABgwM
-	Gp/Nf2b5amBIJFpicQ/L5Yfs7z/QgIcJxAq6xcnPXlOvhtQkA79VKGegZuFSc9bo=
-X-Received: by 2002:a05:622a:1b94:b0:52d:3352:f7bc with SMTP id d75a77b69052e-52d73ddf4c9mr12509661cf.31.1786570376319;
-        Wed, 12 Aug 2026 14:32:56 -0700 (PDT)
-X-Received: by 2002:a05:622a:1b94:b0:52d:3352:f7bc with SMTP id d75a77b69052e-52d73ddf4c9mr12509231cf.31.1786570375916;
-        Wed, 12 Aug 2026 14:32:55 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:d71e:6d83:9df1:6316? ([2a05:6e02:1041:c10:d71e:6d83:9df1:6316])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49981b0f4afsm18768125e9.5.2026.08.12.14.32.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 12 Aug 2026 14:32:54 -0700 (PDT)
-Message-ID: <55f4589a-5146-4f46-aed1-39a1c3a15ac8@oss.qualcomm.com>
-Date: Wed, 12 Aug 2026 23:32:53 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FUnSbkEV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5E4B1F00A3D;
+	Wed, 12 Aug 2026 22:00:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786572040;
+	bh=/fxcypdfsHQxGrlHyL5T6WH+ue/KrXluoAPpP4CF32o=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=FUnSbkEVI62Ee+i8OCT2F2DroYYvx3oGuMpeBbXpjlD2j0gs/BJXptvxMXLbZojtk
+	 /nOEqkBNsXAAd2OmV81vHLOxdr+RPbSFORuM8FkOlKLhy37V5KKktNa5FVQ9Y03BN8
+	 46wvjHFe9lIRHIf2vKlTaH0YzasPpPRweoQwUskmg6nuUFoTFtrfmpxaUAQXJiSf6L
+	 L6hAHwkaJSFfUuj97bQkA0YHwpnK4A3/mXUiYLNWx7F2tm9R5icJazF1w07p2ZZqTx
+	 tLUWSkOmjdABN7IgflLeClxy1Gw8tE+XVvNgeS0tGsISOO+H15JRR5pA/qoRMPXI6A
+	 2amdIDa03iHNQ==
+Received: by venus (Postfix, from userid 1000)
+	id B68441830B0; Thu, 13 Aug 2026 00:00:37 +0200 (CEST)
+Date: Thu, 13 Aug 2026 00:00:37 +0200
+From: Sebastian Reichel <sre@kernel.org>
+To: Ivy Lopez <skunkolee@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: ds2760_battery: fix NULL pointer
+ dereference in w1_ds2760_remove_slave()
+Message-ID: <anznUnfc6JODjnVc@venus>
+References: <20260808214458.201324-1-skunkolee@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [GIT PULL] thermal drivers fixes for v7.3-rc1
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Mark Brown <broonie@kernel.org>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM mailing list <linux-pm@vger.kernel.org>,
-        "Bryan B. Lima" <bblima@usp.br>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-References: <91946ecf-05a2-4479-bade-3d0803bdcba2@oss.qualcomm.com>
- <cf0365de-77ee-4ae9-96bf-0652c172f425@oss.qualcomm.com>
- <CAJZ5v0ibXHOsa4Pp=A00cKCOiBnk9SMpSk_n9JE2qSYTRZzYrA@mail.gmail.com>
- <86ba3abc-c538-4d56-ac2c-3154b95e00b2@oss.qualcomm.com>
- <CAJZ5v0g2G7L0hS64Eh14927P7g+eX_3KB_qUehBoa2OUfh+ung@mail.gmail.com>
- <61e48b08-1a91-4d3a-8617-f25980038bfc@oss.qualcomm.com>
- <CAJZ5v0gi9n4ZAf7YZsf_dXhqYKA3DHZpR_fLmxgukogNKVbb6g@mail.gmail.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <CAJZ5v0gi9n4ZAf7YZsf_dXhqYKA3DHZpR_fLmxgukogNKVbb6g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODEyMDE3MyBTYWx0ZWRfXxyF1vHvUDuHC
- P46M7NEaiMzTxPaD6tP+VKA6gmkK1AyPspMHFboK+26EXC6+RinowvdCrt9jU5WHjaaV6vCxUEa
- Fjbb7CM8ZaDDWtjZY867s0xSyfi0zQ0=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEyMDE3MyBTYWx0ZWRfX8Cn4NtStu+kL
- vCqBau4AgDgpyz1WoYryyknOVXhiotAxB9wQEHWpgjYmNRhzlR5A0secdL1MTaXqHBKLNS52UT/
- J1gWyXFONfKbqbJoZiBhl9MPL2V8nR2E6dEcC2Tuzk7yRKag/WW14pmZQwY8VW+LMObbhFEY5wN
- 0ysJlKrTFmXq1Syld3Gao7eLLOOBIT8JvZLWeN2/6tjEsob6e9ZK/6Lp5ZgVaecJk7DBHmVycSF
- gevdzlAEDzWq67LnXJWzKyiGF1I3UR/n5ovmuRU2xngWTDVdMisHtcucETU+qZCwazUWeO1sMPZ
- N302hX5T7rNpGkEeifnM7BDuS4pxurv+pHq6SD9kYkq9SzCR4qHUTNYntEC2WTQcMqW0U2H7jNZ
- ORLhHPXUdoae8tOdtTFLe8IhPTltfXGMYVzRRf+d6o+Im0BdqoDvJg188kvZaMqkSFMvns50JZA
- +Yp+z4IQIxHI73oSS/w==
-X-Proofpoint-GUID: lkkHIJLFQWz7H5yRR334dNpPBOH41k52
-X-Authority-Analysis: v=2.4 cv=C87ZDwP+ c=1 sm=1 tr=0 ts=6a7ce689 cx=c_pps
- a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=p-CSxRuzmnTlOi1juYIA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=dawVfQjAaf238kedN5IG:22
-X-Proofpoint-ORIG-GUID: lkkHIJLFQWz7H5yRR334dNpPBOH41k52
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-12_06,2026-08-12_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0
- clxscore=1015 priorityscore=1501 bulkscore=0 adultscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608120173
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="b7aughngvmr5cvlw"
+Content-Disposition: inline
+In-Reply-To: <20260808214458.201324-1-skunkolee@gmail.com>
 
-On 8/12/26 18:04, Rafael J. Wysocki (Intel) wrote:
-> On Wed, Aug 12, 2026 at 5:16 PM Daniel Lezcano
-> <daniel.lezcano@oss.qualcomm.com> wrote:
->>
->> On 8/12/26 14:50, Rafael J. Wysocki (Intel) wrote:
->>> On Wed, Aug 12, 2026 at 2:43 PM Daniel Lezcano
->>> <daniel.lezcano@oss.qualcomm.com> wrote:
->>>>
->>>> On 8/12/26 13:28, Rafael J. Wysocki (Intel) wrote:
->>>>> Hi Daniel,
->>>>>
->>>>> On Tue, Aug 11, 2026 at 4:48 PM Daniel Lezcano
->>>>> <daniel.lezcano@oss.qualcomm.com> wrote:
->>>>>>
->>>>>>
->>>>>> Hi Rafael,
->>>>>>
->>>>>> please ignore this PR because there is a missing SoB.
->>>>>>
->>>>>> I'll fix it and meanwhile update the linux-next branch so it will fix
->>>>>> the build issue.
->>>>>
->>>>> Well, the build issue is still there in my thermal branch though.
->>>>>
->>>>> I've now remerged my linux-next branch to avoid exposing the thermal
->>>>> drivers merge I did previously and I'll wait for another PR from you.
->>>>> Worst-case I'll skip the thermal drivers material in my first 7.3-rc1
->>>>> thermal PR.
->>>> There are 3 fixes on top of the PR.
->>>>
->>>> One is obviously to be folded with the existing series as it is my fault
->>>> I forgot to add the file after fixing a conflict [1] which led to the
->>>> linux-next build failure.
->>>>
->>>> But two were reported by lkp [2][3]. May I take the opportunity to fold
->>>> them with the patches they fix and shall I keep them as is ?
->>>>
->>>> [1]
->>>> https://lore.kernel.org/all/20260811145427.3089426-1-daniel.lezcano@kernel.org/
->>>>
->>>> [2]
->>>> https://lore.kernel.org/all/20260811094935.2941313-1-daniel.lezcano@kernel.org/
->>>>
->>>> [3]
->>>> https://lore.kernel.org/all/20260811094747.2940616-1-daniel.lezcano@kernel.org/
->>>
->>> At this point it's better to do additional fix commits on top of the
->>> previous material as it has all been exposed in my thermal branch for
->>> which there are no history rewrites.
->>>
->>> Please send me a PR with all of the fixes on top of the current HEAD
->>> of my thermal branch.
->>
->> Do you mean linux-pm/thermal ?
-> 
-> Yes, that one.
 
-It has my PR in it, should it be reset ?
+--b7aughngvmr5cvlw
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] power: supply: ds2760_battery: fix NULL pointer
+ dereference in w1_ds2760_remove_slave()
+MIME-Version: 1.0
+
+Hi,
+
+On Sat, Aug 08, 2026 at 03:44:58PM -0600, Ivy Lopez wrote:
+> w1_ds2760_add_slave()'s failure paths (di_alloc_failed, batt_failed,
+> workqueue_failed) are all empty labels that just return the error
+> code, with no explicit unwind. This works for di itself and the
+> registered power supply, both are devm-managed against the w1 slave
+> device and get cleaned up automatically. But di->monitor_wqueue and
+> di->pm_notifier are not devm-managed, and are only ever set up in
+> the success tail of the function, after the workqueue allocation and
+> power supply registration have both succeeded.
+>=20
+> The w1 core's BUS_NOTIFY_ADD_DEVICE handling in w1_family_notify()
+> logs and returns on a failing add_slave(), but does not prevent the
+> w1 slave device from later being removed from the bus, which
+> triggers BUS_NOTIFY_DEL_DEVICE and an unconditional call to
+> remove_slave(). This means w1_ds2760_remove_slave() is effectively
+> the only failure-unwind path for a partially initialized di, and
+> needs to treat every field as potentially never having been set.
+>=20
+> Currently it does not: it unconditionally calls
+> destroy_workqueue(di->monitor_wqueue), which crashes with a NULL
+> pointer dereference if add_slave() failed before or during the
+> workqueue allocation (e.g. on a power_supply_register() failure, as
+> seen when a colliding sysfs name from a misdetected slave device
+> causes registration to fail).
+>=20
+> sl->family_data can also be NULL if add_slave() failed at its own
+> allocation, before family_data was ever set, which would crash on
+> the very first dereference in remove_slave().
+>=20
+> Fix both: return early if di is NULL, and only call
+> destroy_workqueue() if monitor_wqueue was actually allocated.
+> unregister_pm_notifier() and cancel_delayed_work_sync() are safe to
+> call unconditionally: the former is a no-op if the notifier was
+> never registered, and the latter operates on the embedded
+> delayed_work struct, which is always validly initialized by the
+> time remove_slave() can run with a non-NULL di.
+>=20
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217832
+> Signed-off-by: Ivy Lopez <skunkolee@gmail.com>
+
+This should get a Fixes tag.
+
+> ---
+>  drivers/power/supply/ds2760_battery.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply=
+/ds2760_battery.c
+> index 142c7492c3c2..3c2433f6b5e9 100644
+> --- a/drivers/power/supply/ds2760_battery.c
+> +++ b/drivers/power/supply/ds2760_battery.c
+> @@ -723,9 +723,13 @@ static void w1_ds2760_remove_slave(struct w1_slave *=
+sl)
+>  {
+>  	struct ds2760_device_info *di =3D sl->family_data;
+> =20
+> +	if (!di)
+> +		return;
+> +
+>  	unregister_pm_notifier(&di->pm_notifier);
+>  	cancel_delayed_work_sync(&di->monitor_work);
+> -	destroy_workqueue(di->monitor_wqueue);
+> +	if (di->monitor_wqueue)
+> +		destroy_workqueue(di->monitor_wqueue);
+
+Considering the driver has mostly been converted to device managed
+resources already, I think it makes sense to simply use
+devm_alloc_ordered_workqueue() in the probe function and thus avoid
+this problem. Also while at it switch INIT_DELAYED_WORK to
+devm_delayed_work_autocancel() to get rid of
+w1_ds2760_remove_slave(). Just make sure to do this *after*
+allocating the workqueue.
+
+Last but not least use devm_add_action_or_reset() for the
+unregister_pm_notifier and simply drop the complete
+w1_ds2760_remove_slave() function.
+
+Greetings,
+
+-- Sebastian
+
+--b7aughngvmr5cvlw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmp87QIACgkQ2O7X88g7
++po4ZQ/+JrT+aJQZAGyNOXIOm490f7clxMKbAIT7xkzKuKZU5UKeVZMEtIJ2a1qO
+tzEWrhpV+ISMIxTJnblwbFzAKLaZdL8TDWSbu5y/EObfa06OPzcHebOEALa0X6KZ
+KYslZBj1FHaN90NhNbt25rFIA4vurFA3jz/53RGjvCAZh9vuXmWJGnIgN9/mGYPr
+P0gnOhh38PKXKk9RhcK74u0+oaIaVMbWBZ2cTtzEk4iuV6ipQ1G5U3cYd8hj4iO0
+IGmkzWQeA2KTwdFTrpEHlAuNjP9ROdVoLiQO6XAEgU2PEScKl+ROCg9o/TvGSPQl
+1bmFBsuuDW10zrIIlB6FS4NkDrZ2mLiXRhgigFpeXdH8ES4hADRO2/TmmiXOMC3D
+lHmJ5mD4CgLn4PyKrh8mT99yxrY1Ycb9WX8YYNKllLqWEpU1HHlAwFh/8xC4manh
+Upu1WHgfYgvFv9yBhoxShGuHKj1qK2qu7yX1EUZlJzDKxPgWlK8fCctPlMkG8gjY
+MIE8L5y8YC9AXXhCzDRrX0smpxkxLOPMu9HbcGZB68LSKpg4V2PDlK/yph/Cjgbi
++lPTUn4EBMGC0MnV5VIz9nwS3X/CuLELOHUXWFt/reg0iNF6D4dwOds68kSM8uhL
+c4RG2AWgs/LMmBTSCBYAo3AUOCWVTiI4gTQTIHVzIpMVyN8GPAM=
+=BIJh
+-----END PGP SIGNATURE-----
+
+--b7aughngvmr5cvlw--
