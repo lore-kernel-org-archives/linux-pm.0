@@ -1,30 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3B12480DCF;
-	Wed, 12 Aug 2026 22:23:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0831A490BF3;
+	Wed, 12 Aug 2026 22:23:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786573434; cv=none; b=JR4Lo5tYrp3jkL8nCuAMxzGmQrB+FSKwz/Awp7ffxnYS31xW4L7u8nPxbBPEM6jxhrDD8gYPObYmFrn2UA2al5hme3015xtRK9o+ybSVgc8T3MBFvgrS2iT85DyEkHmf4juWh7yVV02zKsowpt3XHpJGbw36WUVqcpitaubU1MY=
+	t=1786573436; cv=none; b=rl/JQrIk6qkFNE78jrFL3S/p8G8qnvHp8KZh2ZkqHg++bD2WLO63MN1dlj42Kr9EktGKfxJVHU3gAZgzUzqnO1B5NgvYP4G9Y2cMYKiVZkPxw/gls1Y8G8QkUH/2cHo1Ty4La/YnDXTBegHzdq5A7nWjuC8amfu8U9pbXc2j1Qw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786573434; c=relaxed/simple;
-	bh=4rBy0aGKrGXkT7jiVw96Zsubk87BhS+usgc+nKum1dE=;
+	s=arc-20240116; t=1786573436; c=relaxed/simple;
+	bh=H0iO3BbTmsaEUVQqmclqhJy6reajrRzBv2PelkDRQO4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=D4FM0Pbf+3fHAMLn0EZuusPP5O8VUXC1NuTHXzVtDcgRxAccQCa6T3Aagdvy/G2dh0gDuA9sFCrMcVf/Vu58TxmuRJwz3xbEqtLKqNzri+FWy8tq8Mcfxyo7Y3+Dhk+vxdymc64/F2cEeOC1bhHq0DJUV1Pdpde1EbFh7Ww/QAc=
+	 MIME-Version:Content-Type; b=jQPnWam3vXyn02MW6c+y9e7ZOim7zaIqRSPLd7fbI03Rl52KF1tLI8ad2n5HZGx8S0z2gyz/8mo9kbpcEAzEKtqsET7q1ZJ2qDP21NLWMg0sH58bEXUgjnff/dhMrhJoqeO4wN25dP6hjYnQxXj3V5VYrKOjjz8ecwbaWI16IsM=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FBD01F00A3E;
-	Wed, 12 Aug 2026 22:23:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E7B21F000E9;
+	Wed, 12 Aug 2026 22:23:54 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 91D5C1830B4; Thu, 13 Aug 2026 00:23:50 +0200 (CEST)
+	id B025B1830B6; Thu, 13 Aug 2026 00:23:50 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: sre@kernel.org, Fan Wu <fanwu01@zju.edu.cn>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org
-In-Reply-To: <20260807033520.8551-1-fanwu01@zju.edu.cn>
-References: <20260807033520.8551-1-fanwu01@zju.edu.cn>
-Subject: Re: [PATCH] power: supply: lp8727: fix use-after-free in
- lp8727_release_irq()
-Message-Id: <178657343058.347615.7085557597766857502.b4-ty@b4>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+ "Andrew F. Davis" <afd@ti.com>, Chris Lapa <chris@lapa.com.au>, 
+ Dan Murphy <dmurphy@ti.com>, Henrik Grimler <henrik.grimler@axis.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, kernel@axis.com
+In-Reply-To: <20260811-bq27z746-v1-0-3a4fa38205cc@axis.com>
+References: <20260811-bq27z746-v1-0-3a4fa38205cc@axis.com>
+Subject: Re: (subset) [PATCH 0/5] power: supply: bq27xxx: add bq27z746, and
+ fix some regs
+Message-Id: <178657343070.347615.1954029174145037148.b4-ty@b4>
 Date: Thu, 13 Aug 2026 00:23:50 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,20 +42,26 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.15.2
 
 
-On Fri, 07 Aug 2026 03:35:20 +0000, Fan Wu wrote:
-> lp8727_isr_func(), the threaded IRQ handler, is the only caller that arms
-> pchg->work via schedule_delayed_work().  lp8727_release_irq() currently
-> cancels the work before freeing the IRQ, so an IRQ delivered in between
-> can re-arm the work through the threaded handler.  After .remove returns
-> the devm layer frees pchg while lp8727_delayed_func() may still run and
-> dereference it.
+On Tue, 11 Aug 2026 13:47:42 +0200, Henrik Grimler wrote:
+> bq27z746 is similar to bq27z561 but with additional protection
+> functionality. The standard register set is identical, but the
+> extended registers accessed through AltManufacturerAccess has
+> differences.
+> 
+> While working with bq27z746 I looked at some of the technical
+> reference manuals for the other bq27xxx devices, and noticed some
+> discrepancies with the driver. Fix these issues while we are at it.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: lp8727: fix use-after-free in lp8727_release_irq()
-      commit: ceb6ac43b0f591722401922ceb958ce2616935e0
+[3/5] power: supply: bq27xxx: bq27520g4: fix REG_TTES address
+      commit: c774a623c821a173c950e1297f8e8c85a89455be
+[4/5] power: supply: bq27xxx: bq28z610: fix invalid AverageEnergy address
+      commit: e9387e9ab5121f330d313afb90430c02200f9782
+[5/5] power: supply: bq27xxx: bq27z561: fix invalid AverageEnergy address
+      (no commit info)
 
 Best regards,
 -- 
