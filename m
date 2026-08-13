@@ -1,143 +1,146 @@
-Received: from ixit.cz (ixit.cz [84.42.129.46])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A57B432D0F5;
-	Thu, 13 Aug 2026 09:20:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 128673B6BE3
+	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 09:27:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786612831; cv=none; b=pc9cq6Q0YmGs1plpSl7cb4qXT2mwP9BPVpA+O1vLLYIu/fRkkZppodZ5Wna29qPOKamntEdYkgzdmBuM1xwAyYss1ZGObQmF/ZAp67enW6XPKKY3M6pAS1Emil3A8E3qdKfZcMfjfhQhGAhS5jBFKS5dvWzDIU/k2k1YnO9ytXs=
+	t=1786613261; cv=none; b=QzqNdyak8b5mdWNzejKAHA38Uv4QG30NeR+zBZYIVeQGnwtoJoGQ8gc8GFGfSqz2UZyxBFLcUGLALSEC88KOz4fE1kUit9ecIXk4zRwkCBc/oI3yaamRl24cJdJWMpv7+E3itPdeSX/JnVpA63rTzKJHFr3sAhqO6GPDKgLXSXk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786612831; c=relaxed/simple;
-	bh=XSbxuFNDxlXVpQ/cS578M2yFcGMkc7DG8pgNdZPizcw=;
-	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
-	 Cc:In-Reply-To:To; b=r6MS6xcjUZisslsbzqA12opEBkddOi83zt8xbCOO2KUxk8K1Alxq1JFmsyNhRMdRcyA75EwzAqKvpz/KlsemzRLbfzwH5DeylfJdWt4h1YA/n8rMvHY9+HA5aCb+9rjrx28+gQPrEuxVEBcVNTTmU+qx3xxGv+Kn0vkYzDf9V54=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=LZXlAaqM; arc=none smtp.client-ip=84.42.129.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
+	s=arc-20240116; t=1786613261; c=relaxed/simple;
+	bh=ap5TmlZjYPps+f+nxZ/Boy/5HkgNM2uC+CweCihS/lI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GRzkKqLocKlFYt85d1Ha/Y/1I71n8/UuNkjtHYHl1XudDgAfdIGShkDoedhaT8v4gqhZkyG8Royi2l+LMCZzNhqtJqM8Gixm4BFKHA6e1OWIDqEMS3zraOXgj24Phb+apewb2V1mBmCEVu+Vo5/liZ9j6GOk4UDa+Rd7nkM55iU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OhC0/SAX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="LZXlAaqM"
-Received: from smtpclient.apple (85-70-170-181.rcd.o2.cz [85.70.170.181])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by ixit.cz (Postfix) with ESMTPSA id BC3165340217;
-	Thu, 13 Aug 2026 11:20:21 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
-	t=1786612821;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=XSbxuFNDxlXVpQ/cS578M2yFcGMkc7DG8pgNdZPizcw=;
-	b=LZXlAaqMDuz1Eu1qoATS2mQYnT7CsZwlU8A/IXlgD06ajK8b+e6H1n9LYw4UJuCZm5U/K1
-	45EC+UwLTUEFW7hK5NTe7T8cn5/fV82S+8GeZjkxTS2flC4JayGWz1E96Y3dcIj8ur1J4R
-	hWWn2JaZ0EhUTvH7hyEn/4YiTGlPbJw=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-From: David Heidelberg <david@ixit.cz>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OhC0/SAX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9ACC51F00ACF
+	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 09:27:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786613257;
+	bh=oBCX82m5ZSqSPdIThLcKGwKHLqMpKpSAuFVKZ/GEKSo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=OhC0/SAX5Q79/y0KqU33dF6pj+HlKqW52wKXAAK0mhQnt2Mcu8/FwjRAJGMhRVBTc
+	 JZkOlkBucP/GbLbHPx8lCgHWQju25Tfsc+Wocms1o6dY7vfMzgtpkhaoK3XeWNmBvd
+	 PN2c3t3sS+79ysl9xWoC6st5ryKfJR7pAS1ETkIFP3iB/7Zwmq9xVXBkOYm1Vpv5Fm
+	 BTGJHw4W032q6fnDBTX+85dtAZ34RCBO/SjUOQFSgt8xDTJGDg5twWLk+biKxakTfm
+	 +B7HItQK1nGDgxsPR7I59PVuBAW13gj0Iw0XVDLpUMaW98ib6rGsm7DMhZgUm5Cuzx
+	 rdTSW+vN4dA9w==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5aeb24c0807so1446383e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 02:27:37 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rp3N347aS5OPLwX38U50f42AIHwDaW+aGbNuDj9cg157QcwQIFOZ98n6YCOzTctmWwL51RwJJ0ZVQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxxHywow1xpdFPhVnKRRgu5J2u9Z1NbP/3ClKcUigwtnOEK6UUC
+	nD4mzygsCdCFkrTYBo1k8WTpGoo1AJF8YwkDD6OAv4WsrLoDyeDLr0BILOQUJv1LpOJdxOHy5JO
+	gNaIuOgSIPkHQ+nBjwpfgL1yS+EaVxjI=
+X-Received: by 2002:a05:6512:3144:b0:5b0:bc3:dc0e with SMTP id
+ 2adb3069b0e04-5b453f8f859mr385593e87.29.1786613256046; Thu, 13 Aug 2026
+ 02:27:36 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 00/33] Add support for Qualcomm Snapdragon SM7150 SoC and Google Pixel 4a
-Date: Thu, 13 Aug 2026 11:20:11 +0200
-Message-Id: <7B026D92-3826-494D-B1A9-EF01D41B4461@ixit.cz>
-References: <b15b2687-0c2e-43b2-ac9e-78e04e77e065@mainlining.org>
-Cc: Jens Reidel <adrian@mainlining.org>,
- Danila Tikhonov <danila@jiaxyga.com>, Miro Mraz <mraz.miro@seznam.cz>,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-watchdog@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-phy@lists.infradead.org, linux-mmc@vger.kernel.org,
- netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
- dmaengine@vger.kernel.org, linux-crypto@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
- linux-remoteproc@vger.kernel.org, dri-devel@lists.freedesktop.org,
- neil.armstrong@linaro.org, linux-hardening@vger.kernel.org,
- linux@mainlining.org, Connor Mitchell <c.dog29@hotmail.com>
-In-Reply-To: <b15b2687-0c2e-43b2-ac9e-78e04e77e065@mainlining.org>
-To: Danila Tikhonov <danila@mainlining.org>
-X-Mailer: iPhone Mail (23G71)
+MIME-Version: 1.0
+References: <91946ecf-05a2-4479-bade-3d0803bdcba2@oss.qualcomm.com>
+ <cf0365de-77ee-4ae9-96bf-0652c172f425@oss.qualcomm.com> <CAJZ5v0ibXHOsa4Pp=A00cKCOiBnk9SMpSk_n9JE2qSYTRZzYrA@mail.gmail.com>
+ <86ba3abc-c538-4d56-ac2c-3154b95e00b2@oss.qualcomm.com> <CAJZ5v0g2G7L0hS64Eh14927P7g+eX_3KB_qUehBoa2OUfh+ung@mail.gmail.com>
+ <61e48b08-1a91-4d3a-8617-f25980038bfc@oss.qualcomm.com> <CAJZ5v0gi9n4ZAf7YZsf_dXhqYKA3DHZpR_fLmxgukogNKVbb6g@mail.gmail.com>
+ <55f4589a-5146-4f46-aed1-39a1c3a15ac8@oss.qualcomm.com> <CAJZ5v0gwXQ3Y=6g=TnR5rpqAkdNCOsNa_yqGcMO5KHOOPuwQog@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gwXQ3Y=6g=TnR5rpqAkdNCOsNa_yqGcMO5KHOOPuwQog@mail.gmail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 13 Aug 2026 11:27:14 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gD_48j--P_auMSG=s8M7SzVmnU+e2=sxpn5CQsFp=ZFg@mail.gmail.com>
+X-Gm-Features: AUfX_mwXlFT8Af9RwkQZWJVdDyZT4SlXH9RlfovIScwib5DN1hPFWXX89uVOE7w
+Message-ID: <CAJZ5v0gD_48j--P_auMSG=s8M7SzVmnU+e2=sxpn5CQsFp=ZFg@mail.gmail.com>
+Subject: Re: [GIT PULL] thermal drivers fixes for v7.3-rc1
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Mark Brown <broonie@kernel.org>, Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
+	Linux PM mailing list <linux-pm@vger.kernel.org>, "Bryan B. Lima" <bblima@usp.br>, 
+	Miquel Raynal <miquel.raynal@bootlin.com>, 
+	Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Aug 13, 2026 at 11:17=E2=80=AFAM Rafael J. Wysocki (Intel)
+<rafael@kernel.org> wrote:
+>
+> On Wed, Aug 12, 2026 at 11:33=E2=80=AFPM Daniel Lezcano
+> <daniel.lezcano@oss.qualcomm.com> wrote:
+> >
+> > On 8/12/26 18:04, Rafael J. Wysocki (Intel) wrote:
+> > > On Wed, Aug 12, 2026 at 5:16=E2=80=AFPM Daniel Lezcano
+> > > <daniel.lezcano@oss.qualcomm.com> wrote:
+> > >>
+> > >> On 8/12/26 14:50, Rafael J. Wysocki (Intel) wrote:
+> > >>> On Wed, Aug 12, 2026 at 2:43=E2=80=AFPM Daniel Lezcano
+> > >>> <daniel.lezcano@oss.qualcomm.com> wrote:
+> > >>>>
+> > >>>> On 8/12/26 13:28, Rafael J. Wysocki (Intel) wrote:
+> > >>>>> Hi Daniel,
+> > >>>>>
+> > >>>>> On Tue, Aug 11, 2026 at 4:48=E2=80=AFPM Daniel Lezcano
+> > >>>>> <daniel.lezcano@oss.qualcomm.com> wrote:
+> > >>>>>>
+> > >>>>>>
+> > >>>>>> Hi Rafael,
+> > >>>>>>
+> > >>>>>> please ignore this PR because there is a missing SoB.
+> > >>>>>>
+> > >>>>>> I'll fix it and meanwhile update the linux-next branch so it wil=
+l fix
+> > >>>>>> the build issue.
+> > >>>>>
+> > >>>>> Well, the build issue is still there in my thermal branch though.
+> > >>>>>
+> > >>>>> I've now remerged my linux-next branch to avoid exposing the ther=
+mal
+> > >>>>> drivers merge I did previously and I'll wait for another PR from =
+you.
+> > >>>>> Worst-case I'll skip the thermal drivers material in my first 7.3=
+-rc1
+> > >>>>> thermal PR.
+> > >>>> There are 3 fixes on top of the PR.
+> > >>>>
+> > >>>> One is obviously to be folded with the existing series as it is my=
+ fault
+> > >>>> I forgot to add the file after fixing a conflict [1] which led to =
+the
+> > >>>> linux-next build failure.
+> > >>>>
+> > >>>> But two were reported by lkp [2][3]. May I take the opportunity to=
+ fold
+> > >>>> them with the patches they fix and shall I keep them as is ?
+> > >>>>
+> > >>>> [1]
+> > >>>> https://lore.kernel.org/all/20260811145427.3089426-1-daniel.lezcan=
+o@kernel.org/
+> > >>>>
+> > >>>> [2]
+> > >>>> https://lore.kernel.org/all/20260811094935.2941313-1-daniel.lezcan=
+o@kernel.org/
+> > >>>>
+> > >>>> [3]
+> > >>>> https://lore.kernel.org/all/20260811094747.2940616-1-daniel.lezcan=
+o@kernel.org/
+> > >>>
+> > >>> At this point it's better to do additional fix commits on top of th=
+e
+> > >>> previous material as it has all been exposed in my thermal branch f=
+or
+> > >>> which there are no history rewrites.
+> > >>>
+> > >>> Please send me a PR with all of the fixes on top of the current HEA=
+D
+> > >>> of my thermal branch.
+> > >>
+> > >> Do you mean linux-pm/thermal ?
+> > >
+> > > Yes, that one.
+> >
+> > It has my PR in it, should it be reset ?
+>
+> No, it shouldn't.  Please send another fix PR on top of this one.
 
-> On 12. 8. 2026, at 22:54, Danila Tikhonov <danila@mainlining.org> wrote:
->=20
-> =EF=BB=BFHi David,
->=20
-> Thank you for your comment.
->=20
->> On 12/08/2026 14:40, David Heidelberg wrote:
->>=20
->>=20
->>> On 23/04/2025 09:26, Neil Armstrong wrote:
->>> Hi,
->>>=20
->>> On 23/04/2025 00:07, Jens Reidel wrote:
->>>> Hi everyone,
->>>>=20
->>>> apologies for the mess this created. Danila's mail provider ratelimited=
- him halfway through sending the series and the attempt to re-try sending th=
-e second half an hour later ended up with a new message ID (I think due to n=
-ot using --in-reply-to).
->>>> He asked me to let you know that this will be resolved later and the wh=
-ole series will be re-sent once the problems are resolved.
->>>=20
->>> The b4 web submission is a great alternative when the mail provider is r=
-ate limited:
->>> https://b4.docs.kernel.org/en/latest/contributor/send.html#web-endpoint
->>>=20
->>=20
->> I see people interested in moving Pixel 4a forward, but it seems this was=
- never upstreamed? I looked at sm7150 repository [1] where I see FROMLIST, b=
-ut these patches never arrived to the list and this series is from 2025.
->>=20
->> Should we expect v2 (re)based on recent tree?
->>=20
->=20
-> I'd definitely like to get back to upstreaming SM7150 and the devices
-> based on it, but I don't think there's much value in continuing with
-> this particular series as-is. A lot has changed in the kernel over the
-> past year, which would require substantial changes throughout the series
-> and would effectively force the maintainers to review it from scratch
-> anyway.
-
-After longer period of time maintainers will have to do full review anyway. S=
-ure, the reviews needs to be addressed :)
-
->=20
-> I'd also like to split the series up to avoid targeting such a large
-> number of maintainers in a single submission.
-
-Yes, that=E2=80=99s exactly what=E2=80=99s needed (at least for the part pat=
-ches I saw).
-
-> Hopefully, I'll be able to
-> find some time to work on this in the near future.
-
-Where the most recent patchset can be found? Just in case someone wanted to p=
-ush some bits in meantime.
-
-Thanks
-David
-
->=20
->=20
->> Thanks
->> David
->>=20
->> [1] https://github.com/sm7150-mainline/linux/commit/7ea41523c678e94a7c048=
-936052b5b1b1b109cdd
->>=20
->>> Neil
->>>=20
->>>>=20
->>>> Best regards,
->>>> Jens
->>>=20
->>>=20
-> ---
-> Best regards,
-> Danila
+To be more precise, please just make this new PR only contain fixes on
+top of the previous one.
