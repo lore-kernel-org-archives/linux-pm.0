@@ -1,112 +1,99 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88DE83955E8;
-	Thu, 13 Aug 2026 08:54:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from outbound.baidu.com (mx16.baidu.com [111.202.115.101])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 17DED38239F;
+	Thu, 13 Aug 2026 09:02:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.202.115.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786611255; cv=none; b=Y95v8wVGQTmJQngyXqMGhsfJYq4qDpHSLDKztIXyVz8CNSknAQoNOHM9E1Mq9k0cBFRVekAVo4U00zHI3qFJK8kwcXyFzCLn3GCC2i14MGQDZQUZxSzyjMvWl4HhCUwMiRY5wg/9uv9R2oVYm++yVeFxy1BbdT266Xj0M9UkIBo=
+	t=1786611732; cv=none; b=tlQYXhH2qhQ+nhYFxaAkuaSfTPYJNh4Q0UsvQDsoQBKsaICoQCmPAkYnigxE9AYYTPBhgpwz5cgeaU4yipn6PIH2fpJb4AhWDda3cIg5TKRPkIASbqvocnUtPmV5Lv56WOWr14Ry9WHH2LNQwq5iV/U6hb3iAaAcuKYJ5TSgBzo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786611255; c=relaxed/simple;
-	bh=ya7+gkMSCtIE0DuOHJ+7IIxcGMBtBW1vI2vxcmT3O6U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=e9bt3jfdMKqVj4GHUkG65QF5B98/xE4d7x85HaY6dYr3v/onpKKXxq3/4ae9kg6Bv8sliRyNL/cxUAdIMQbddZNc3f+kZ33RE8m/n37s3DGrUtUsFoKGOGsnWXQ7W+xHaMqQ9bl18FG5Jd+UPP25GWik0qaqL9gh+ascCWoMuiY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LdDGGliG; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786611732; c=relaxed/simple;
+	bh=3ngXCeyvGnHfWKSqJVpav60LYKdm6LAbQLhsgQ8Fruw=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=mpCn3IXV2TvbZYTXdKDXe6tfATeWwiWUY8ZPeGE2Rgu3sfRdnh7srw/+B8YQpMvux5lZjfyxi9Tr4ywW+J+WZDx8z5EP4LqENjPq1tLNHY83iA9kCjjag3RLlKSCj3QUuT4rWKPMD4JeJiDfLbrh4ZdA2L409sc2OQX28JCC3SE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass smtp.mailfrom=baidu.com; dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b=VfkyoseM; arc=none smtp.client-ip=111.202.115.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LdDGGliG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0073F1F00A3A;
-	Thu, 13 Aug 2026 08:54:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786611254;
-	bh=I1MNXpPx0FgeCJXMj+UI/UAtsN5uIJXp6y3+35rpExk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LdDGGliGWac/IfmV9OJJNtwWI5dnnbJWAstzCfTp7XfOhNXKTAWwr2X2Mz1HNlKtp
-	 kny4vthYjJ+ZMntSTyWZCcGPeKca6mD7wr4JGCPYpBIu7jz5AxY6UeH4EcmPRSzYbC
-	 fGg1E9k/2B8s6nR54J6mH7iERcYln8iM7eQNcNLQnxoEepi015sNoJBDwUBFbtVMdr
-	 fkVrmvmDDYiQxzlP6/nkl0snqH9lInMgp+hxdspTV1+2tQuvgtO+EP+V6TtvbO4mLM
-	 QaX5lJwTcq1yemLZl3Zl9eZk3RANVSqOaXrGoEoWxnCAS24JMNaKaK5vYaqcE53081
-	 2K5AyjYdGLxaw==
-Date: Thu, 13 Aug 2026 10:54:07 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Robin Snyders <robin@snyders.xyz>
-Cc: Casey Connolly <casey.connolly@linaro.org>, 
-	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Joel Selvaraj <foss@joelselvaraj.com>
-Subject: Re: [PATCH v2 2/2] power: supply: qcom_smbx: add SMB5 support
-Message-ID: <20260813-granite-pronghorn-of-gaiety-d27f65@quoll>
-References: <20260812-submit-qcom-smbx-send-v1-v2-0-f504b8f9bfad@snyders.xyz>
- <20260812-submit-qcom-smbx-send-v1-v2-2-f504b8f9bfad@snyders.xyz>
+	dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b="VfkyoseM"
+X-MD-Sfrom: lirongqing@baidu.com
+X-MD-SrcIP: 172.31.50.47
+From: lirongqing <lirongqing@baidu.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: <zhongqiu.han@oss.qualcomm.com>, Li RongQing <lirongqing@baidu.com>
+Subject: [PATCH v2 1/2] cpufreq: acpi-cpufreq: fix P-state index mismatch in extract_io()
+Date: Thu, 13 Aug 2026 17:01:44 +0800
+Message-ID: <20260813090145.2450-2-lirongqing@baidu.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20260813090145.2450-1-lirongqing@baidu.com>
+References: <20260813090145.2450-1-lirongqing@baidu.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260812-submit-qcom-smbx-send-v1-v2-2-f504b8f9bfad@snyders.xyz>
+Content-Type: text/plain
+X-ClientProxiedBy: bjhj-exc6.internal.baidu.com (172.31.3.16) To
+ bjkjy-exc3.internal.baidu.com (172.31.50.47)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1786611718;
+	bh=RiA2nDSsa39q/3zStCXF8prWJYGTHdP7bM/LW+mUF4c=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
+	b=VfkyoseMZNbGcmsmi8xDLqI7h1ZtqlLxamcM0tVIiAGCJug7nzFE8c7PPnyD7rtE0
+	 A5QWLV2eIJfsaVOB3Rsv9DaL39+7KBwVdxuTOs8eXhSmV1uBqvr+bklQa6xhlvWDj/
+	 fqnT34N+4Ytxc57YkTroYWJAQoD6v+yM2mGk0jlsGUTEqGPkjz+WD4HJlWPmUaqr5L
+	 mjls8nNtoQiw3CUeZwR3EPf9LCsYV3AcGe2hCq3LzZRrLO/gOzqqctF31vx7s111bZ
+	 wOdOdT8DjWRtnVx2+1H/l8PKFwjLDxE/Zvt5v+TZejPbZQjsprIURmQ7Dm0i1kF+XU
+	 aiZA7/k8O7rgw==
 
-On Wed, Aug 12, 2026 at 01:57:00AM +0200, Robin Snyders wrote:
-> +	if (chip->gen == SMB5) {
-> +		rc = regmap_update_bits(chip->regmap,
-> +					chip->base + CHARGING_ENABLE_CMD,
-> +					CHARGING_ENABLE_CMD_BIT,
-> +					CHARGING_ENABLE_CMD_BIT);
-> +		if (rc < 0)
-> +			return dev_err_probe(chip->dev, rc,
-> +					     "could not enable charging\n");
-> +
-> +		rc = regmap_update_bits(chip->regmap,
-> +					chip->base + USBIN_CMD_IL,
-> +					USBIN_SUSPEND_BIT, 0);
-> +		if (rc < 0)
-> +			return dev_err_probe(chip->dev, rc,
-> +					     "could not enable USB input\n");
-> +
-> +		devm_remove_action(chip->dev, smb_restore_charge_state, chip);
-> +	}
->  
->  	platform_set_drvdata(pdev, chip);
-> +	WRITE_ONCE(chip->probe_complete, true);
+From: Li RongQing <lirongqing@baidu.com>
 
-No, please do not invent custom probe ordering/synchronization patterns.
+When policy->freq_table is built in acpi_cpufreq_cpu_init(), entries
+with duplicate frequencies are skipped. The original P-state index for
+each remaining entry is stored in freq_table[].driver_data, so the index
+space of freq_table no longer matches perf->states[].
 
-If you need this, it means either core is broken or your driver has
-issues. In both cases the source must be fixed, not through custom
-one-driver solution.
+extract_io() walks perf->states[] with index i and uses the same i to
+index policy->freq_table[i]. This causes two problems when duplicate
+frequencies exist:
 
->  
->  	/* Initialise charger state */
->  	schedule_delayed_work(&chip->status_change_work, 0);
-> @@ -1095,8 +1543,10 @@ static int smb_probe(struct platform_device *pdev)
->  }
->  
->  static const struct of_device_id smb_match_id_table[] = {
-> -	{ .compatible = "qcom,pmi8998-charger", .data = "pmi8998" },
-> -	{ .compatible = "qcom,pm660-charger", .data = "pm660" },
-> +	{ .compatible = "qcom,pmi8998-charger", .data = &pmi8998_match_data },
-> +	{ .compatible = "qcom,pm660-charger", .data = &pm660_match_data },
-> +	{ .compatible = "qcom,pm7250b-charger", .data = &pm7250b_match_data },
+  - Returning the frequency of the wrong P-state
+  - Returning 0 from a zeroed tail entry, or even CPUFREQ_TABLE_END
+    (~1u) reported as 0xfffffffe kHz
 
-Your bindings commit msg claims this is fully compatible with pm8150b,
-so above is confusing. Is one superset of another? Then it should be
-explained in commit msg of the binding.
+Fix it by walking policy->freq_table with cpufreq_for_each_entry() and
+using perf->states[pos->driver_data].status, aligning with extract_msr().
 
-> +	{ .compatible = "qcom,pm8150b-charger", .data = &pm8150b_match_data },
->  	{ /* sentinal */ }
->  };
->  MODULE_DEVICE_TABLE(of, smb_match_id_table);
-> @@ -1112,5 +1562,5 @@ static struct platform_driver qcom_spmi_smb = {
->  module_platform_driver(qcom_spmi_smb);
->  
->  MODULE_AUTHOR("Casey Connolly <casey.connolly@linaro.org>");
-> -MODULE_DESCRIPTION("Qualcomm SMB2 Charger Driver");
-> +MODULE_DESCRIPTION("Qualcomm SMB2 and SMB5 Charger Driver");
->  MODULE_LICENSE("GPL");
-> 
-> -- 
-> 2.54.0
-> 
-> 
+Fixes: 8cee1eed8e78 ("cpufreq: ACPI: Remove freq_table from acpi_cpufreq_data")
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 21639d9..1abe9ab 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -197,14 +197,13 @@ static unsigned extract_io(struct cpufreq_policy *policy, u32 value)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 	struct acpi_processor_performance *perf;
+-	int i;
++	struct cpufreq_frequency_table *pos;
+ 
+ 	perf = to_perf_data(data);
+ 
+-	for (i = 0; i < perf->state_count; i++) {
+-		if (value == perf->states[i].status)
+-			return policy->freq_table[i].frequency;
+-	}
++	cpufreq_for_each_entry(pos, policy->freq_table)
++		if (value == perf->states[pos->driver_data].status)
++			return pos->frequency;
+ 	return 0;
+ }
+ 
+-- 
+2.9.4
+
