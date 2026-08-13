@@ -1,113 +1,74 @@
-Received: from outbound.baidu.com (mx16.baidu.com [111.202.115.101])
-	by smtp.subspace.kernel.org (Postfix) with SMTP id 0318A328B77;
-	Thu, 13 Aug 2026 07:02:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.202.115.101
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B06723E25B;
+	Thu, 13 Aug 2026 07:04:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786604560; cv=none; b=oNuUUh0Ya04EKYfsFX4X259jIsfvwlHYUALlS60gDdKrNmUZY8QQVOs2C5MNV72cEQAQEoRSIeun4a4Tf+fztAqrghkmUsXYqEovsPDmqajzFZvrV0jGpFcuKqPcNoxH7VZOfMynAaSj9oKHZsqIuqCs3/lqgu8Ao7j9/ky6KZQ=
+	t=1786604688; cv=none; b=Cf7qUi2vn5F1zZ5OC1uQxnGT1aUMe077rYh0WJ4XUX8XCwUhXAMIkA0na1IJyda/xLNWvxjSXRxveUlSMHIEVVissSpysBwR1mpanNNxN25sUnDKPeD1mBVOwsqjLjaCba4X214CHRhuVQTYgP+g1m+p2jxAOm2vOmPblquUjyU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786604560; c=relaxed/simple;
-	bh=jUKWOiLluaJLNKossXrmzGm1XzpUha7VYcecZHo333Y=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=l4yrd5a7RZjd1XbOsBfhWd9ls1lmJZ9pTH59F7elxULUf2mqFDmr6qvVGr8tyEVVfTHZBbG21zLKhzuwVuVwlXePCWfmCxJJwfL4pViQkmXwbOnyQq/XSpXTc847R9WpmRYm9+FaS0umUidlJ8g0oexs8D0v+TX82755mkponI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass smtp.mailfrom=baidu.com; dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b=JgntCIxf; arc=none smtp.client-ip=111.202.115.101
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
+	s=arc-20240116; t=1786604688; c=relaxed/simple;
+	bh=Xwg6ij+JkN5Y9SjjYbTcaEwZL7mVJIq7yRMTLCz4L8w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lD7hdh/LYA5z2D+3hbZuiRE9dMuPo1o3xiE6XnKBZaQJ2hp6eF8fdRU0xMc1b9UnQgQZtb+jdQjZefBsCkKV8vgI5mzX20+bqeRl854J/dZRLm4liHUbETa6dONwTMPpf3o4zojQUEKxsRYvNg+c9R7XG2uu5mUaTOG5xxR54+E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D5i0th3p; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b="JgntCIxf"
-X-MD-Sfrom: lirongqing@baidu.com
-X-MD-SrcIP: 172.31.3.14
-From: "Li,Rongqing" <lirongqing@baidu.com>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, "Rafael J . Wysocki"
-	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: =?utf-8?B?562U5aSNOiBb5aSW6YOo6YKu5Lu2XSBSZTogW1BBVENIXSBjcHVmcmVxOiBh?=
- =?utf-8?B?Y3BpLWNwdWZyZXE6IFVzaW5nIGNwdWZyZXFfZm9yX2VhY2hfZW50cnkoKSB0?=
- =?utf-8?Q?o_iterate_in_extract=5Fio()?=
-Thread-Topic: =?utf-8?B?W+WklumDqOmCruS7tl0gUmU6IFtQQVRDSF0gY3B1ZnJlcTogYWNwaS1jcHVm?=
- =?utf-8?B?cmVxOiBVc2luZyBjcHVmcmVxX2Zvcl9lYWNoX2VudHJ5KCkgdG8gaXRlcmF0?=
- =?utf-8?Q?e_in_extract=5Fio()?=
-Thread-Index: AQHdKI8Le7VxXVz2zkibce6mzCLljraZ7kiAgAGhh6A=
-Date: Thu, 13 Aug 2026 06:54:02 +0000
-Message-ID: <ddbcc1da67d34db7ac5d42a64064b954@baidu.com>
-References: <20260810061045.2397-1-lirongqing@baidu.com>
- <20260810061045.2397-3-lirongqing@baidu.com>
- <b375a4bb-2df2-4b9b-ba28-6ef153a89c70@oss.qualcomm.com>
-In-Reply-To: <b375a4bb-2df2-4b9b-ba28-6ef153a89c70@oss.qualcomm.com>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D5i0th3p"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86A561F000E9;
+	Thu, 13 Aug 2026 07:04:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786604686;
+	bh=UgWct9UeMHk4UFxQ8VlRHLlm0oUzUbQW0gcOeCF6jPk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=D5i0th3pYQMKiwMgNEoa1BpFL/0SSTZCFcvB9XduSctmIHD/XE/DkxQV4Hb7t7a3O
+	 jcxUPx+tHbFnXa51HVopZLAEfDmBsjpBtNo3qvptbCeOEEgvKGX2MwwGT9+/1Rwo1r
+	 Q+J+xq4+PAlB/1EFWPzaSKkl4bQoY0zvPu9cHv8wDrkV0FU/JNZpAUWOkf3jjPHX+x
+	 sv5BgEshyQkr4CuXPXvHydzBfpfl0ZvKdkoLFhbTS8o4N2AZyciqNqqPqU7GsZ5jAG
+	 UpJf5rlnBsuOyUvognZ0TKCPqnHlFtH7r9mXCA/fhoukVVrA2FcnkbYsxZXIXRrltP
+	 bRrcKN9+xOjKg==
+Date: Thu, 13 Aug 2026 09:04:37 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Jiaxing Hu <gahing@gahingwoo.com>
+Cc: tomeu@tomeuvizoso.net, heiko@sntech.de, robh@kernel.org, 
+	krzk+dt@kernel.org, conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, 
+	robin.murphy@arm.com, ulfh@kernel.org, p.zabel@pengutronix.de, ogabbay@kernel.org, 
+	zhangqing@rock-chips.com, royalnet026@gmail.com, alchark@flipper.net, 
+	chaoyi.chen@rock-chips.com, diederik@cknow-tech.com, dri-devel@lists.freedesktop.org, 
+	linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 02/10] dt-bindings: npu: rockchip: add
+ rockchip,rk3576-rknn-core
+Message-ID: <20260813-apricot-bat-of-vigor-65ba20@quoll>
+References: <20260812094106.1391698-1-gahing@gahingwoo.com>
+ <20260812094106.1391698-3-gahing@gahingwoo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
-	s=selector1; t=1786604046;
-	bh=jUKWOiLluaJLNKossXrmzGm1XzpUha7VYcecZHo333Y=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
-	b=JgntCIxfKUhSSE693kJstYHgsZXBcl4rQc659gTxt6kceG+9BCSyEXknvGeEWs447
-	 CnZ5JYXxAEH9FvBhyFd5YjEvNxbrE3ok+5NDlqClilD7jGQ3utbqKkjkE/at8eGCKx
-	 ibBTtXR7jPFoFZNAQSu91O6rAd7pNAibyPb3VGEuEopPeJSay/mInTeM6h2cdAvlGL
-	 yipn49FKAoTlPW/hFiqrz7FaN0krhbHnO4Rnm34iqAK1MXb9cQf2GLQz3o8rN0zcyW
-	 XK1a8w0Ddqyo3s1WRPBesmzlFj/JGBu7VhlbtC/Abpq4eN0EAEAmRZUdthJ3zh3QST
-	 a2jQMv41668IA==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260812094106.1391698-3-gahing@gahingwoo.com>
 
-DQoNCj4gPiBGcm9tOiBMaSBSb25nUWluZyA8bGlyb25ncWluZ0BiYWlkdS5jb20+DQo+ID4NCj4g
-PiBJbiBleHRyYWN0X2lvKCksIHRoZSBsb29wIGl0ZXJhdGVzIHVwIHRvIHBlcmYtPnN0YXRlX2Nv
-dW50LiBIb3dldmVyLA0KPiA+IHdoZW4gYnVpbGRpbmcgcG9saWN5LT5mcmVxX3RhYmxlIGluIGFj
-cGlfY3B1ZnJlcV9jcHVfaW5pdCgpLCBkdXBsaWNhdGUNCj4gPiBmcmVxdWVuY3kgZW50cmllcyBh
-cmUgc2tpcHBlZCwgbWFraW5nIGZyZXFfdGFibGUgc21hbGxlciB0aGFuDQo+ID4gcGVyZi0+c3Rh
-dGVfY291bnQuDQo+ID4NCj4gPiBJdGVyYXRpbmcgcGVyZi0+c3RhdGVfY291bnQgdGltZXMgZGly
-ZWN0bHkgb3ZlciBwb2xpY3ktPmZyZXFfdGFibGVbaV0NCj4gPiBjYW4gcmVzdWx0IGluIG91dC1v
-Zi1ib3VuZHMgYXJyYXkgcmVhZHMuIEZ1cnRoZXJtb3JlLA0KPiA+IHBvbGljeS0+ZnJlcV90YWJs
-ZVtpXQ0KPiANCj4gVGhlcmUgaXMgbm8gb3V0LW9mLWJvdW5kcyBhY2Nlc3MuIFRoZSBhcnJheSBo
-YXMgInN0YXRlX2NvdW50ICsgMSINCj4gZWxlbWVudHMsIHNvIGV2ZXJ5IGluZGV4IGluICJbMCwg
-c3RhdGVfY291bnQpIiBpcyBpbnNpZGUgdGhlIGFsbG9jYXRpb24uDQo+IHJpZ2h0PyBUaGUgY2hh
-bmdlbG9nIGxvb2tzIGxpa2UgYSBtZW1vcnktc2FmZXR5IGZpeCwgd2hpY2ggaXQgaXMgbm90LCBh
-bmQgdGhhdA0KPiB3b3JkaW5nIGFsb25lIHdvdWxkIGdldCB0aGUgcGF0Y2ggKG1pcylyb3V0ZWQg
-dG8gc3RhYmxlIGFuZCB0byBDVkUgYm90cy4NCj4gDQo+ID4gZG9lcyBub3QgbmVjZXNzYXJpbHkg
-Y29ycmVzcG9uZCB0byBwZXJmLT5zdGF0ZXNbaV0sIGFzIHRoZSBvcmlnaW5hbA0KPiA+IFAtc3Rh
-dGUgaW5kZXggaXMgc3RvcmVkIGluIGZyZXFfdGFibGVbZW50cnldLmRyaXZlcl9kYXRhLg0KPiAN
-Cj4gWWVzLCB0aGUgcmVhbCBkZWZlY3QgaXMgdGhlIGluZGV4IHNwYWNlIG1pc21hdGNoLg0KPiAN
-Cj4gTWlnaHQgYmUgZ29vZCB0byBub3RlIHRoZSBzaWRlIGVmZmVjdHMgb2YgaXQsIEFGQUlDVA0K
-PiANCj4gZnJlcV90YWJsZVtpXSBpcyBub3QgcGVyZi0+c3RhdGVzW2ldIG9uY2UgYW55IF9QU1Mg
-ZW50cnkgaGFzIGJlZW4gc2tpcHBlZC4gVGhlDQo+IGZ1bmN0aW9uIGNhbiB0aGVyZWZvcmUgcmV0
-dXJuIGEgZnJlcXVlbmN5IGJlbG9uZ2luZyB0byBhIGRpZmZlcmVudCBQLXN0YXRlLCBvcg0KPiAw
-ICh6ZXJvZWQgdGFpbCBlbnRyaWVzKSwgb3IgQ1BVRlJFUV9UQUJMRV9FTkQNCj4gKH4xdSkgd2hl
-biAiaSA9PSB2YWxpZF9zdGF0ZXMiLCBpLmUuIDB4ZmZmZmZmZmUga0h6IHJlcG9ydGVkIGFzIGEg
-ZnJlcXVlbmN5LiBUaGF0DQo+IGxhc3Qgb25lIGlzIHdvcnRoIHNwZWxsaW5nIG91dC4NCj4gDQo+
-ID4NCj4gPiBGaXggdGhpcyBieSB1c2luZyBjcHVmcmVxX2Zvcl9lYWNoX2VudHJ5KCkgdG8gaXRl
-cmF0ZSBvdmVyDQo+ID4gcG9saWN5LT5mcmVxX3RhYmxlLCBzaW1pbGFyIHRvIGV4dHJhY3RfbXNy
-KCkuDQo+ID4NCj4gDQo+IFBsZWFzZSBhZGQgb25lIEZpeGVzIHRhZyBoZXJlIGFzIHdlbGwuDQo+
-IA0KPiA+IFNpZ25lZC1vZmYtYnk6IExpIFJvbmdRaW5nIDxsaXJvbmdxaW5nQGJhaWR1LmNvbT4N
-Cj4gPiAtLS0NCj4gPiAgIGRyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyB8IDkgKysrKy0t
-LS0tDQo+ID4gICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygt
-KQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYw0K
-PiA+IGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5jIGluZGV4IDIxNjM5ZDkuLjg3ZTQ5
-MjMgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5jDQo+ID4g
-KysrIGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5jDQo+ID4gQEAgLTE5NiwxNSArMTk2
-LDE0IEBAIHN0YXRpYyBpbnQgY2hlY2tfYW1kX2h3cHN0YXRlX2NwdSh1bnNpZ25lZCBpbnQNCj4g
-Y3B1aWQpDQo+ID4gICBzdGF0aWMgdW5zaWduZWQgZXh0cmFjdF9pbyhzdHJ1Y3QgY3B1ZnJlcV9w
-b2xpY3kgKnBvbGljeSwgdTMyIHZhbHVlKQ0KPiA+ICAgew0KPiA+ICAgCXN0cnVjdCBhY3BpX2Nw
-dWZyZXFfZGF0YSAqZGF0YSA9IHBvbGljeS0+ZHJpdmVyX2RhdGE7DQo+ID4gKwlzdHJ1Y3QgY3B1
-ZnJlcV9mcmVxdWVuY3lfdGFibGUgKnBvczsNCj4gPiAgIAlzdHJ1Y3QgYWNwaV9wcm9jZXNzb3Jf
-cGVyZm9ybWFuY2UgKnBlcmY7DQo+ID4gLQlpbnQgaTsNCj4gPg0KPiA+ICAgCXBlcmYgPSB0b19w
-ZXJmX2RhdGEoZGF0YSk7DQo+ID4NCj4gPiAtCWZvciAoaSA9IDA7IGkgPCBwZXJmLT5zdGF0ZV9j
-b3VudDsgaSsrKSB7DQo+ID4gLQkJaWYgKHZhbHVlID09IHBlcmYtPnN0YXRlc1tpXS5zdGF0dXMp
-DQo+ID4gLQkJCXJldHVybiBwb2xpY3ktPmZyZXFfdGFibGVbaV0uZnJlcXVlbmN5Ow0KPiA+IC0J
-fQ0KPiA+ICsJY3B1ZnJlcV9mb3JfZWFjaF9lbnRyeShwb3MsIHBvbGljeS0+ZnJlcV90YWJsZSkN
-Cj4gPiArCQlpZiAodmFsdWUgPT0gcGVyZi0+c3RhdGVzW3Bvcy0+ZHJpdmVyX2RhdGFdLnN0YXR1
-cykNCj4gPiArCQkJcmV0dXJuIHBvcy0+ZnJlcXVlbmN5Ow0KPiA+ICAgCXJldHVybiAwOw0KPiA+
-ICAgfQ0KPiANCj4gT25lIG1vcmUgcG90ZW50aWFsIHNhbWUgaXNzdWUgaXMgaW4gZnVuYyBnZXRf
-Y3VyX2ZyZXFfb25fY3B1KCkNCj4gDQo+IGNhY2hlZF9mcmVxID0gcG9saWN5LT5mcmVxX3RhYmxl
-W3RvX3BlcmZfZGF0YShkYXRhKS0+c3RhdGVdLmZyZXF1ZW5jeTsNCj4gDQo+IEl0IGlzIGJldHRl
-ciB0byBmaXggaXQgYXMgd2VsbC4NCj4gDQo+IEZvciB2MiwgcGxlYXNlIHVzZSAuL3NjcmlwdHMv
-Z2V0X21haW50YWluZXIucGwgdG8gZ2VuZXJhdGUgdGhlIENDIGxpc3Qgc28NCj4gbGludXgta2Vy
-bmVsQHZnZXIua2VybmVsLm9yZyBkb2Vzbid0IGdldCBtaXNzZWQuIFRoYW5rcw0KPiANCg0KSSB3
-aWxsIHNlbmQgdjLvvIx0aGFua3MNCg0KW0xpLFJvbmdxaW5nXSANCg0KDQo+IA0KPiA+DQo+IA0K
-PiANCj4gLS0NCj4gVGh4IGFuZCBCUnMsDQo+IFpob25ncWl1IEhhbg0K
+On Wed, Aug 12, 2026 at 09:40:57PM +1200, Jiaxing Hu wrote:
+> The RK3576 NPU has two cores of the same RKNN block the RK3588 binding
+> already describes, but it wires them up differently: two extra CBUF
+> clocks, two power domains per core, and a single reset instead of two.
+> It also has no NPU SRAM supply.
+> 
+> Widen the property ranges to cover both, then pin each SoC back to its
+> own shape in allOf so nothing loosens for RK3588, and keep sram-supply
+> required for rockchip,rk3588-rknn-core only.
+> 
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+> ---
+>  .../npu/rockchip,rk3588-rknn-core.yaml        | 47 +++++++++++++++++--
+>  1 file changed, 44 insertions(+), 3 deletions(-)
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+
+Best regards,
+Krzysztof
+
