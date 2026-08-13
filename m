@@ -1,84 +1,105 @@
-Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CC2E2F1FEC
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 00:43:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CF3D20E334;
+	Thu, 13 Aug 2026 01:17:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786581808; cv=none; b=h86prFIyg/leEVGmQgX1hb4BpXq9YWReaLtrZ2IHocyVl7PJEE7Sl1C7yJ5r9jUJkW8uy1KPt/8YxYo4nHHn2DZBFZjTvenFkYxbBbYOAtJMkl0JI2Qo1UFlfkihEX0V35g/4qcOr16B5PKi1cwt2Itc8eCP5TzXSjFLgTsARps=
+	t=1786583853; cv=none; b=cuYbNLJrnXUPazDtpK41UGW25CvoNoriNU0Vyq7otsImodUhnHC2R1CNZUgWhtBXgoqMk2292LM0Lbz2pJY95qA9AhjX3Z/U3qVXLZhQx48UfXfpatPYjbWCaV0ameCdDExwKpym01iJDzZazvmR6rLojZINlZNyLJhrVG0bA8w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786581808; c=relaxed/simple;
-	bh=xbn7Orbzsrgd9Q/Y2/ehXdUJJE+ipSXiHDZD+/c8I00=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HxrD45ZCT1w4DTpTGNo6zke3Ar+aPNs2HSwqGt3yP6A924jUywSkFfRSkAO4lRjQi7rXb2w0VFz6XSCwxZL64pFbaCOdK///URLMxITq05j03AnqRLHPqNCuzTyPw3UrkOKQw8HkIKJ4fRXpMauYujKPupULeZBPFMimZBxIXKY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gpzYHaP/; arc=none smtp.client-ip=209.85.214.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1786583853; c=relaxed/simple;
+	bh=BoAQijyylgl9c8sSNAPJL6Pd0GB60Ydb6KEiTtDKzwA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=pySCrZAra6bhqn/SuTB2Fb9spm5QB1pFYtzK1QWzPXsx/BtO2Q1HWbBaRaw5c5MxsgWPGnwhpq7u4d2ggNQnaHqpeDoi8FADdY7kiEbK+n8IpG5kaE+YLB3b+JPb17Qfp0xjzLDfpD32RQkOw6l0KXeJYV7WDXQDEDoakBGuzMk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AqD/1iKa; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gpzYHaP/"
-Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2cc7e86e7aeso21494435ad.2
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 17:43:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786581807; x=1787186607; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=xbn7Orbzsrgd9Q/Y2/ehXdUJJE+ipSXiHDZD+/c8I00=;
-        b=gpzYHaP/ZnDi+xvFbhM8d3yf2Xc5hRbgGMfionUVZ3nMRhzOrmNvK146Ytfo4+WuGk
-         TdBcBzhOzqbJPtkc+jGE1ej1JJHIMOaYxuf68F6NbG7dM8R4oR/nQ9meuhwWLoSrLVwC
-         i1Wp1PE1ginmKKkPqxzMjSIu8aifz2kJH/x9Q3gwpdKS+Y4h1k/2MFIV3bZSgvPwZXiv
-         zfuQvpo6eInTamt/YO8yA086lu3uLr0bNyvT7D9xtUw1aA4sxg5/qdyjWk6IyRcwMVC/
-         4O3wTXFAO8PbpVM/L76Wgugi/pNPkEAhVnqkgUXozkgdUY7kQkYQBinyB/dlxIPO4jUi
-         KthA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786581807; x=1787186607;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=xbn7Orbzsrgd9Q/Y2/ehXdUJJE+ipSXiHDZD+/c8I00=;
-        b=o1ZDFdCO6/gZIHGnZc7dEtMLx3WdpT6LibwYT1ZTuM4pcwf8yecnwObi/M55UsMjLn
-         /Y5RrKP1np+fMCPTlCe0pey85uCyhBmJpCmXZ4wQC0/OIqN9h+oHUmVzZxartH7FroRT
-         /4kDVszYX3WIv83jcj07dKqtpUUgelp1tgPTQaekC2lx4qDSMBFMnl1n1/+L8tqfdFqM
-         he9to5UDzeIG8ZFhWPnBSmZZYaRwhcDAmdKRo6rhLjI7iF3VuNQaxSpIKAR8sfhfCZX/
-         E1OnGRSBkFyePMmUA/7lCrHFW/a+sU56e+AphsusJzM4iyZuLR4vsqxntZuGnHvjS2bN
-         RJ0g==
-X-Gm-Message-State: AOJu0YwMmLnmnOmFoleHEQiE/55y8yJ3Vm/tKZ43w2joX++JLRRKQVw8
-	uxyIda61b6NU31St+5Jtq8Pia9rNLT7uZ72RRAY+Vi4KG3xdBbsU4Oc4
-X-Gm-Gg: AR+sD10zTwzx1CJ4udy9Fq37ixjTsCA6OHCDxG3GKNqZ+onQgw/2xJbuF5R9AH5XnwK
-	EYe2R+8K6czd8R2ag2ZF/x060jt0iodVlNQ7yHNwK5amEJhvxfGa/ohAQSM0tOPN/bIYsIB0Rmy
-	bf2tsNDMvdnKITBz0dbbO0qqErGY7TnVlC2w+Mm+YG3JzQldBEbAVWnW8DBkCmP1hXdT0mE1G+N
-	Nb2N6prRVEpybk71hBzQg+O2jhnhHa2r18knr/l2wWfw9exusFEvFP5CTo0m9qtSaTciHuLahCK
-	pDsPF374O6b72Q7LRFaYmWTWPhLj5WqxOeCpTGKmTMJlTWDo2Tl27aBUeZSlBRONrtEk3H4DWN/
-	NKT4gMHRYkCFxOjmEd2JPjVKetjeudf9Fn+lo8Sn86A4tPtn2tZGL3IEUEnpOIVyjVEEXWdK8qH
-	QE08Xvw24WqbWdMZlK0kLsONvOn9fVNzc0bcdVxNUsn5k5ngjOkGfYIZqMqvv2x4kJA7iIKjCWr
-	6T6Pr9qbeLovPBgrGhnJ0CNr5jK71VXAIKMplseQjFxF5vciHNuPYGEKD4y
-X-Received: by 2002:a17:90b:268c:b0:37f:a915:1c29 with SMTP id 98e67ed59e1d1-3931e27b831mr2599587a91.19.1786581806681;
-        Wed, 12 Aug 2026 17:43:26 -0700 (PDT)
-Received: from bloom.localdomain ([2604:3d09:178e:e100::6868])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3931efaaae5sm762570a91.0.2026.08.12.17.43.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Aug 2026 17:43:26 -0700 (PDT)
-From: Ivy Lopez <skunkolee@gmail.com>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w1: fix spelling mistakes in comments across the subsystem
-Date: Wed, 12 Aug 2026 18:43:13 -0600
-Message-ID: <20260813004313.31000-1-skunkolee@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260813004113.29943-2-skunkolee@gmail.com>
-References: <20260813004113.29943-2-skunkolee@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AqD/1iKa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4E581F000E9;
+	Thu, 13 Aug 2026 01:17:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786583852;
+	bh=We2rCgMJ7y9Yy2HND4vPUfHIpTeXfWeTJqdY+HyvBsA=;
+	h=From:Date:Subject:To:Cc;
+	b=AqD/1iKaQKAR85pu1WRpvwrg5fdEu0SR40u1K+Gt86FLKE5qfJ26WCuo1tnQRyNoL
+	 mtbS7YQFlF2Ur2C+QxtKTnCLqOVQzST3seQE+eMbzxLJpPbkL3jmDpRDxCxATX9va2
+	 781oHEpnvpc4Sb0cgfp2/qOGgJQvOogMIP+wiITWTocIi9o+cRgjiA7AP95qm++0oL
+	 JHFfTwG+/YQUSYoDgzCPgIQDG4K21EXEQjxxbz4LmkiXZqq4eoq2r1eMUu7DcKvxWz
+	 gvS3g5P3xMTO98suOxyomMPx5e+BA9lh70bw0r3KJRzsjFfVBH9PwcMcWyr+oyYFkf
+	 21kvWGTz0IAjA==
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Wed, 12 Aug 2026 18:17:22 -0700
+Subject: [PATCH linux-next] thermal/drivers/qcom-spmi-mbg-tm: Add module
+ namespace import for IIO_CONSUMER
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260812-qcom-spmi-mbg-tm-ns-modpost-error-v1-1-d849390d2714@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWNywrCMBAAf6Xs2YU2oER/RTw0yaaumIfZVAKl/
+ 27U4zAws4FQYRK4DBsUerNwih2mwwD2PseFkF1nUKM6jXpS+LIpoOTAGMyCNWAUDMnlJBWplFT
+ Qz04bUv6sjxZ6Jxfy3H6PKzw5rg0jtQq3v5PVPMjW7wT2/QONPd53kQAAAA==
+X-Change-ID: 20260812-qcom-spmi-mbg-tm-ns-modpost-error-fad8be2f985c
+To: Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Mark Brown <broonie@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+ linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Nathan Chancellor <nathan@kernel.org>
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1885; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=BoAQijyylgl9c8sSNAPJL6Pd0GB60Ydb6KEiTtDKzwA=;
+ b=owGbwMvMwCUmm602sfCA1DTG02pJDFm10mp5y5S5bgTxL9/1x/vIwslh7/ecv7lEzmxH0mYdd
+ d3fBuZ6HaUsDGJcDLJiiizVj1WPGxrOOct449QkmDmsTCBDGLg4BWAiweEMf2UcXReICP82zKo8
+ +19JZtKvjH2Rzp/jGDJmvNDbHh7qacrwP813YrUk/y+ekK7Mr2dXXap5Urmq+lyy6JqFKj+FH5c
+ cZAIA
+X-Developer-Key: i=nathan@kernel.org; a=openpgp;
+ fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 
-Apologies! This was sent to you by mistake due to a stale patch
-file left in my outgoing queue. It's unrelated to the ds2760 series
-and already correctly merged via a separate thread with Krzysztof
-Kozlowski. Please disregard!
+Commit ebf1d03dab96 ("iio: inkern: Use namespaced exports") in the iio
+tree restricts certain exported core functions that a driver added in
+commit c3dce117333c ("thermal/drivers/qcom: Add support for Qualcomm MBG
+thermal monitoring") from the thermal tree uses, causing modpost to
+warn (or error without CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS):
 
-ivy
+  ERROR: modpost: drivers/thermal/qcom/qcom-spmi-mbg-tm.ko: module uses symbol 'devm_iio_channel_get' from namespace 'IIO_CONSUMER', but does not import it.
+  ERROR: modpost: drivers/thermal/qcom/qcom-spmi-mbg-tm.ko: module uses symbol 'iio_read_channel_processed' from namespace 'IIO_CONSUMER', but does not import it.
+
+Add the IIO_CONSUMER namespace import to clear up the error.
+
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+I am not sure how this should be handled. As far as I can tell, there is
+no error if this patch is applied to the thermal tree directly but it
+would leave an "orphaned" module namespace import until the iio and
+thermal trees are combined, which may not be preferable. Otherwise, it
+would need to be applied to whatever merge happens second (hence
+including Mark and Jonathan in this conversation).
+---
+ drivers/thermal/qcom/qcom-spmi-mbg-tm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/thermal/qcom/qcom-spmi-mbg-tm.c b/drivers/thermal/qcom/qcom-spmi-mbg-tm.c
+index 0492d5eeca01..a05bb444627a 100644
+--- a/drivers/thermal/qcom/qcom-spmi-mbg-tm.c
++++ b/drivers/thermal/qcom/qcom-spmi-mbg-tm.c
+@@ -254,3 +254,4 @@ module_platform_driver(mbg_tm_driver);
+ 
+ MODULE_DESCRIPTION("PMIC MBG Temperature monitor driver");
+ MODULE_LICENSE("GPL");
++MODULE_IMPORT_NS("IIO_CONSUMER");
+
+---
+base-commit: 28d012efb4327f9c75d5e042a7c91e9a542efa98
+change-id: 20260812-qcom-spmi-mbg-tm-ns-modpost-error-fad8be2f985c
+
+Best regards,
+--  
+Cheers,
+Nathan
+
