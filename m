@@ -1,32 +1,33 @@
-Received: from latitanza.investici.org (latitanza.investici.org [185.218.207.228])
+Received: from confino.investici.org (confino.investici.org [93.190.126.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77D99328B77;
-	Thu, 13 Aug 2026 07:43:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.218.207.228
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B826236728F;
+	Thu, 13 Aug 2026 07:43:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=93.190.126.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786607028; cv=none; b=FInBMMB3v6QgUcyJ78E2QjBAiyqDL/9i4E0EhQYQJufzLIMjGsO0Vuubevz9NBLaBQimIN0KjiqVFYHQ5QsGhLOhsdQh/WCCuvW6rG7vRjo0CC/n0tWhn4vgPr/FLZvWDho2X5lrKIRIFGB9ff8AY3NeMYiUyX7xmVvj0k99wKQ=
+	t=1786607030; cv=none; b=J8ww+LzFBHQVZAtO54UfoyklkRLpgZxeS4S0kssRRTfByuyx5UyeG72btsGnXc8YiE9wqgHQzXi9mLmOnfm/73w5t01H/N8WnGslq/mg1oSPLtS6jiNXoAAfggLtLooCRGsENWXMwF8hsvMZI8A8mpLTzwxaYQbhW3T1YUmJdxY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786607028; c=relaxed/simple;
-	bh=17hA/R8YqhqyJkXkLOuSEV56FpzYKNU6rDLLYmKQ7gc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=htPl52CgmfGwudMNHRY95QqjuvRyf63ZIHRfMlO1mwvAdVO9V273Y6/7tiEoolNQjnp/CJ8OXgztwtIyM3dXD3RhV/rCFFTKa/DXU/pKsnQRnA7UUdcvlNViosIpptqa6IixeMThejemrAEqCZsf0U1vvwk3CdAEd293JQlFCYI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; spf=pass smtp.mailfrom=grrlz.net; dkim=pass (1024-bit key) header.d=grrlz.net header.i=@grrlz.net header.b=HrkNkxQg; arc=none smtp.client-ip=185.218.207.228
+	s=arc-20240116; t=1786607030; c=relaxed/simple;
+	bh=wYYOcp+X7mzUdzTfl3hBNAyGN3nOGQ9ySfFeueDy/Jo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=glIk4HG5eTtbOb29zaqotX96JqayUoaopyJnkTS14P3c/hZzLWBQVdKG9AxRWC3K4UvcOJM9HzWowFrcricTaZpL7jw9Qh6lWi26dHFOOBav4OdnUOeyfuEooFtt/o4Z4oOYUf7yDCz9wcvtogkvu8Zw9eULsreZo3jcuDp1kw8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; spf=pass smtp.mailfrom=grrlz.net; dkim=pass (1024-bit key) header.d=grrlz.net header.i=@grrlz.net header.b=VWNWGmia; arc=none smtp.client-ip=93.190.126.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=grrlz.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=grrlz.net header.i=@grrlz.net header.b="HrkNkxQg"
+	dkim=pass (1024-bit key) header.d=grrlz.net header.i=@grrlz.net header.b="VWNWGmia"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
-	s=stigmate; t=1786607022;
-	bh=3Mt6jCjQJy8mo44c4uzTVZTEcvtOr1Vt4OtXGR3/gXI=;
-	h=From:To:Cc:Subject:Date:From;
-	b=HrkNkxQgxUeigC/HWS7I2zJIXoZqIK4gMQ5yKt8tOlyit1tjFlGu42+5dVQF0eyYX
-	 YkV7Cf6c2DfhF6Nw+00xddVyHZxrpEkS3hFWnC8r9leiBeSFGpqiiA4Yu+zhJbKh/5
-	 5yR8JXgXIm5GMF47BhlEvtK7tbt+rm1/EHlF2GHI=
-Received: from mx3.investici.org (unknown [127.0.0.1])
-	by latitanza.investici.org (Postfix) with UTF8SMTP id 4hLHRL2XsCzGpG7;
-	Thu, 13 Aug 2026 07:43:42 +0000 (UTC)
-Received: by mx3.investici.org (Postfix) id 4hLHRK71x6zGpG6;
-	Thu, 13 Aug 2026 07:43:41 +0000 (UTC)
+	s=stigmate; t=1786607025;
+	bh=9LifHOjCDZK6bCJxMXB8vcP5n7P8CcG/fRfKFgpm28c=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=VWNWGmiaGkf0IB9Llfdj1Ze/66BLUQ6kfeRvV2G+4SXss+y8ff+hXo1awd4t8tXms
+	 XUWzNrnvjPzMDenUIhjttGD6R/KV5FUClfUtjfIzVVARoGqPpUxSmNePTpBqV1nKkh
+	 pTAG2IOjy4yhFkMkyFFd3gaaAdmVhKkKYIseDIgo=
+Received: from mx1.investici.org (unknown [127.0.0.1])
+	by confino.investici.org (Postfix) with UTF8SMTP id 4hLHRP3zzLz10wR;
+	Thu, 13 Aug 2026 07:43:45 +0000 (UTC)
+Received: by mx1.investici.org (Postfix) id 4hLHRN6PZrz10w2;
+	Thu, 13 Aug 2026 07:43:44 +0000 (UTC)
 From: Bradley Morgan <include@grrlz.net>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: Thierry Reding <treding@nvidia.com>,
@@ -36,10 +37,12 @@ Cc: Thierry Reding <treding@nvidia.com>,
 	Rosen Penev <rosenp@gmail.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] PM: cpu: Restore the RCU grace period to cpu_pm_unregister_notifier()
-Date: Thu, 13 Aug 2026 07:43:41 +0000
-Message-ID: <20260813074343.26460-1-include@grrlz.net>
+Subject: [PATCH 1/2] clocksource/drivers/timer-ti-dm: Unregister CPU PM notifier outside of the timer lock
+Date: Thu, 13 Aug 2026 07:43:42 +0000
+Message-ID: <20260813074343.26460-2-include@grrlz.net>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260813074343.26460-1-include@grrlz.net>
+References: <20260813074343.26460-1-include@grrlz.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,24 +51,54 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Since commit b2f6662ac08d ("PM: cpu: Make notifier chain use a
-raw_spinlock_t") cpu_pm_unregister_notifier() no longer waits for an
-RCU grace period, but cpu_pm_notify() still walks the chain with only
-rcu_read_lock() held. A driver that frees its notifier block right
-after unregistering can race with a concurrent walker.
+omap_dm_timer_remove() calls cpu_pm_unregister_notifier() with
+dm_timer_lock held and interrupts disabled. Nothing sleeps in there
+today, but it pins the helper into a context where it can never be
+allowed to sleep, which is in the way of restoring the RCU grace
+period on the cpu_pm notifier chain.
 
-Patch 1 moves the one caller that unregisters from atomic context out
-from under its spinlock, patch 2 restores the grace period.
+Do the list lookup under the lock and move the unregister after the
+unlock. Nothing can race it at that point: remove() owns the device,
+and once the timer is off the list nobody can reach it anymore.
 
-Bradley Morgan (2):
-  clocksource/drivers/timer-ti-dm: Unregister CPU PM notifier outside of
-    the timer lock
-  PM: cpu: Restore synchronize_rcu() to cpu_pm_unregister_notifier()
-
+Signed-off-by: Bradley Morgan <include@grrlz.net>
+---
  drivers/clocksource/timer-ti-dm.c | 9 ++++++---
- kernel/cpu_pm.c                   | 9 ++++++++-
- 2 files changed, 14 insertions(+), 4 deletions(-)
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/clocksource/timer-ti-dm.c b/drivers/clocksource/timer-ti-dm.c
+index bd06afb7d522..032e102bdd0a 100644
+--- a/drivers/clocksource/timer-ti-dm.c
++++ b/drivers/clocksource/timer-ti-dm.c
+@@ -1530,7 +1530,7 @@ static int omap_dm_timer_probe(struct platform_device *pdev)
+  */
+ static void omap_dm_timer_remove(struct platform_device *pdev)
+ {
+-	struct dmtimer *timer;
++	struct dmtimer *timer, *found = NULL;
+ 	unsigned long flags;
+ 	int ret = -EINVAL;
+ 
+@@ -1538,14 +1538,17 @@ static void omap_dm_timer_remove(struct platform_device *pdev)
+ 	list_for_each_entry(timer, &omap_timer_list, node)
+ 		if (!strcmp(dev_name(&timer->pdev->dev),
+ 			    dev_name(&pdev->dev))) {
+-			if (!(timer->capability & OMAP_TIMER_ALWON))
+-				cpu_pm_unregister_notifier(&timer->nb);
+ 			list_del(&timer->node);
++			found = timer;
+ 			ret = 0;
+ 			break;
+ 		}
+ 	spin_unlock_irqrestore(&dm_timer_lock, flags);
+ 
++	/* Unregister outside the lock: cpu_pm_unregister_notifier() may sleep. */
++	if (found && !(found->capability & OMAP_TIMER_ALWON))
++		cpu_pm_unregister_notifier(&found->nb);
++
+ 	pm_runtime_disable(&pdev->dev);
+ 
+ 	if (ret)
 -- 
 2.47.3
 
