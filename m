@@ -1,113 +1,297 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C9442BE639
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 11:52:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4AAB3BD225;
+	Thu, 13 Aug 2026 12:38:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786621979; cv=none; b=UIJGsh1o5yVUAZ8T++gEtjv5H41A+bcntfrjuYb7IceaCtHJvQOBu8orHLjvGQSiCg4NRc+w8gZJgsG4nOgK7NBkyGnSp3LtXU34dEJnk/VRfgiAt1CkWbTFicosEiAC2a6me0DK/hFmx4n/PPX9s5QGelhTmypQgwUGs2mRz4A=
+	t=1786624732; cv=none; b=G3YRrO5YWlopvIYXznvyNUVyrqGd2VhQkCI5794KUg2UkGr8RVd7SpzinG7ZwUNr25hQNCk30+bGGQRxxamqc/9OykKC2WxSj/33SdEz6QxYF7HZppT960XFA/ReJdkO8KeJj1on8Q2qd2O8jf6dauD7sPJfsWBd5gX7VhE9XEw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786621979; c=relaxed/simple;
-	bh=3+mL7sLw774TWm8srN2xcPDLwTpzOXiXFyMo1RJsCVg=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=kEzqU0982CiBKAo7/L3tzRRp28dJSkDDxA8kpbskE1CP9JmMpIcUugMNOcYrfJlTrtlTiUX4acSV6nhDqYQ/WMM2RAkaOjMSPruXlu95bgv+SD6qlox7r1FM/STIY3i3HpOZxnBZJpcThU8uE1LgLe03xPoKw7pPee6foKuNf04=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=k1apJ9LV; arc=none smtp.client-ip=209.85.128.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1786624732; c=relaxed/simple;
+	bh=l6kqcTsMKzlAtJHGFOG2awd1t7J9zIBNdmxrYPkmxNQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=PijT8Ye/mdSYaoLN4RuZDxIuQkbApxoqbnBHHuy4NFYrGHS+OyLTX41hywogk6jLhlKnNyg6uBMhM68xOmBZckGW+yKTrcToBcFc/H+UzrkTsjUMyz3sdG8+l/42Ch/spEUAX24DVBKskzihgJsLjMPhotmYQqXX7pvEGFg/fso=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D/qsNX5x; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="k1apJ9LV"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-49802c418b5so19958955e9.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 04:52:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1786621974; x=1787226774; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=3+mL7sLw774TWm8srN2xcPDLwTpzOXiXFyMo1RJsCVg=;
-        b=k1apJ9LV3PV3h+qr58bcA94CHzubTPuSFKv94hxj76CLTNcuE1J7AC97EynuvO2TJ5
-         /foh9ocA4+OLI1jv/iPseljCcDNyHmRuNpOe3x57imNW6/FP+fj9C9egfBQ9QnEBIPbY
-         MgrERFXNvIe0+ZZc0LhUA+nG9cYKv4ikbwhoyyYPzti8D6uSDLal8pS3mayJHdYktVRq
-         hqAmmDyLI+98nk4zErP03mgrGZ64zvNnQ7gaahZ3sVR+zM4wXHwiCbKMstZX5/CpoehJ
-         1ZtqpGwbo3v2ih0LbptVtVL6PyPXYdv3DUl+uoC6eBvjv+UH/wr9gsrSYYO3LOBV2nP4
-         kcoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786621974; x=1787226774;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3+mL7sLw774TWm8srN2xcPDLwTpzOXiXFyMo1RJsCVg=;
-        b=XTsGEXTTgASWRD63rm8yUHHnxlmUnNUhGL+eRoQQLi3fr/aagXf86q82ndjizA9xD1
-         0J/o/tlkgy9YSLdKvVBGddoqabpn1izcGbuKpQgfCk6IuVFGgUn4Bc/QLut1tZSfoh/P
-         +bUq7JxX1ifxGUZ4BTAlvW5DbPOIWAl4nyRzQQ7Wc7Jr4jceVoVZa8fXGNTpYc7lF1IX
-         A7NeTF4Bs6AKDJgGE/P/iuX68WxyeX4ScXHETO/WR5gprX32HvPspgIExl7eelRtfq5D
-         EDRDbd+ROnI9ZqPew38b69jjvDyD9GT3sNy9E700qkfvbazABIfxVOCsyokUf7WavSMX
-         P/gQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpNsAdlk6MxGrF5EgiJgffvLoYlxl15HCyYIuQ0VAAQjlKOcdibDlLNv5SQthKqpJMiF/kVgd8keA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwDzyF4QiWNUkKxPdV78mwDrnCrfuS7cbf+Sfk6C+5hhkf76Gp3
-	7wDHF/N8tPJuqLl5OPC3CyRf6OluncTHt8qcIF39JvbDmqtyg8d2FecCKD+aRXXbArg=
-X-Gm-Gg: AR+sD11fNPQ6Hyv4yymdfVIGE9ivXRqlJiA0OZIG6h3Tsx65GYrNEzQ3dQXfFt8EwVa
-	sFplDzwypCOkGCitNjeKZay/4pnC/G1wQ794P8LXlrB0jsqbApSGyCXEqq/33nEAK+boPw4fHlh
-	Z54woGOyBjr2ojg49wcK5WPaaanvJaB+gSZmOmqkLC1cGVpU8VvnPfrvE/tSKpVd0gCvPM5kMMz
-	Qo19T7NSrm8AVtCPwizsFdAa+fHA3hnEgy0gKt3Mw8lvNqZzYC1j9ANt6EwLC5FWANRCGQiMtN2
-	ZeiTg4AOOfGLYEmoEScNKo+oFvMvjkiyOjj/U9gKPWIAW9LVrbF0foq5axmWDOJnadHk1cEalIZ
-	95WJcTFZ3z21XQw7LkI+y2he66mODAcFb9CMUPmeWWzwfktgIlu6KgrVW/p5xkzwka64Dc1/xeM
-	u4U30VrIZjTJ592mBoPrHgnwC/RuN6fujxBLt213xAB9zP1aL96FlSoX9vfB0SH4UKyun1590NE
-	HziXFVJUo6AbGG3rf9/tbPA3dXB0HxSqQRsSrGP0IGGLF0SafVK6vl4X1DCY4ff
-X-Received: by 2002:a05:600c:3153:b0:499:7ce1:d8af with SMTP id 5b1f17b1804b1-4998219bd2cmr62067605e9.1.1786621973610;
-        Thu, 13 Aug 2026 04:52:53 -0700 (PDT)
-Received: from localhost ([2a00:2381:fd67:101:c11:afa0:9e5d:4eee])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49981b0f4afsm72097455e9.5.2026.08.13.04.52.52
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 13 Aug 2026 04:52:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D/qsNX5x"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 048DF1F000E9;
+	Thu, 13 Aug 2026 12:38:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786624731;
+	bh=LBP1ThiJDiqMaPUW1k9BGd4ceLpbU1ZyA9FI9qbdQ7Q=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=D/qsNX5xklT6SE2DiETI0i94S7g9+6U0xsNx33gQlU6zUQCsgryLjqLfDMnmhYOK0
+	 2bhiDt7foF/iK0glpKcOAc4o423Ry/3L7VJIfn0JWywvQBTEi9bZ5oaTPDO4tLpREj
+	 b4S/5B5/kH41ebLY4v53hDfK4NlYeXuf3Dxf+yJPB9WBdFOgt0TgJk7hf8obw7M97y
+	 6asPwAjuwjFHg7BA9TStZb44VKxrFf1uisjJYptSpigN0bG5dm6XRMFrbUK0ZaiXIO
+	 sKfUjOinvtJiMtcSjBxsRgMjbKnuGCG5kP6FmpQNdBeBug+typBAs53ml0rnrSP2JU
+	 Lc7O/qslA0ouA==
+Date: Thu, 13 Aug 2026 13:38:41 +0100
+From: Lee Jones <lee@kernel.org>
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	John Stultz <john.stultz@linaro.org>,
+	Moritz Fischer <moritz.fischer@ettus.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+	Andre Draszik <andre.draszik@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org, mfd@lists.linux.dev,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v24 04/12] mfd: psci-mfd: Add PSCI MFD driver for
+ cpuidle-psci-domain cell
+Message-ID: <20260813123841.GC1820248@google.com>
+References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
+ <20260803-arm-psci-system_reset2-vendor-reboots-v24-4-889281373870@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 13 Aug 2026 12:52:52 +0100
-Message-Id: <DKNSMR9KRFQH.3SQDYW46B42FV@linaro.org>
-Cc: <jyescas@google.com>, <linux-kernel@vger.kernel.org>,
- <linux-samsung-soc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <linux-hardening@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, "Krzysztof Kozlowski"
- <krzysztof.kozlowski@oss.qualcomm.com>, "Rob Herring" <robh@kernel.org>,
- "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor Dooley"
- <conor+dt@kernel.org>, "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
- "Krzysztof Kozlowski" <krzk@kernel.org>, "Kees Cook" <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, "Peter Griffin"
- <peter.griffin@linaro.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, "Alim Akhtar" <alim.akhtar@samsung.com>
-Subject: Re: [PATCH v8 0/5] thermal: samsung: Add support for Google GS101
- TMU
-From: "Alexey Klimov" <alexey.klimov@linaro.org>
-To: "Tudor Ambarus" <tudor.ambarus@linaro.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@kernel.org>, "Zhang
- Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>
-X-Mailer: aerc 0.20.0
-References: <20260603-acpm-tmu-v8-0-0f1810a356e6@linaro.org>
-In-Reply-To: <20260603-acpm-tmu-v8-0-0f1810a356e6@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260803-arm-psci-system_reset2-vendor-reboots-v24-4-889281373870@oss.qualcomm.com>
 
-Hi all,
+On Mon, 03 Aug 2026, Shivendra Pratap wrote:
 
-On Wed Jun 3, 2026 at 2:00 PM BST, Tudor Ambarus wrote:
-> Add support for the Thermal Management Unit (TMU) on the Google GS101
-> SoC.
+> PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
+> Currently, both the PSCI core driver and cpuidle-psci-domain bind
+> directly to the same PSCI node "arm,psci-1.0". Additional consumers, if
+> introduced, would also need to bind in the same way, leading to several
+> drivers attached to a single device node.
+> 
+> Introduce a PSCI MFD driver that binds to "arm,psci-1.0" and registers
+> PSCI child cells. As the first user, register cpuidle-psci-domain as a
+> child cell.
+> 
+> Update cpuidle-psci-domain to probe as an MFD child and use the parent
+> PSCI node for power-domain traversal.
+> 
+> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> ---
+>  MAINTAINERS                           |  1 +
+>  drivers/cpuidle/Kconfig.arm           |  1 +
+>  drivers/cpuidle/cpuidle-psci-domain.c |  9 +-------
+>  drivers/mfd/Kconfig                   | 12 ++++++++++
+>  drivers/mfd/Makefile                  |  2 ++
+>  drivers/mfd/psci-mfd.c                | 43 +++++++++++++++++++++++++++++++++++
 
-AFAICS there are no new comments and no updates and Tudor said he is
-waiting on feedback from thermal maintainers (for 2 months now),
-what's the status of this?
-Apart from some required updates [1], [2], is there anything else should
-be updated here?
+We don't usually allow the use of the term MFD in devices.
 
-Best regards,
-Alexey
+What does this do?  Is it a mux?  psci-mux?
 
-[1]: https://lore.kernel.org/linux-samsung-soc/08d7299968e14e5fc07fa4791479=
-abd9a2b11c2d.camel@linaro.org/
-[2]: https://lore.kernel.org/linux-samsung-soc/DJHQR4IAYPDF.2BOI33M1O4CMO@l=
-inaro.org/
+If not, think about what it is and call it that instead.
 
+>  6 files changed, 60 insertions(+), 8 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index fe67f7bfa44c..0b6e4f89f319 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -21671,6 +21671,7 @@ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+>  S:	Maintained
+>  F:	Documentation/devicetree/bindings/arm/psci.yaml
+>  F:	drivers/firmware/psci/
+> +F:	drivers/mfd/psci-mfd.c
+>  F:	include/linux/psci.h
+>  F:	include/uapi/linux/psci.h
+>  
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> index b88b01aa5829..c5ecca0d7397 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -36,6 +36,7 @@ config ARM_PSCI_CPUIDLE_DOMAIN
+>  	bool "PSCI CPU idle Domain"
+>  	depends on ARM_PSCI_CPUIDLE
+>  	depends on PM_GENERIC_DOMAINS_OF
+> +	depends on MFD_PSCI
+>  	select DT_IDLE_GENPD
+>  	default y
+>  	help
+> diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+> index b9e4ad7d43a3..a2d01810f295 100644
+> --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> @@ -17,7 +17,6 @@
+>  #include <linux/pm_runtime.h>
+>  #include <linux/psci.h>
+>  #include <linux/slab.h>
+> -#include <linux/string.h>
+>  
+>  #include "cpuidle-psci.h"
+>  #include "dt_idle_genpd.h"
+> @@ -122,14 +121,9 @@ static void psci_pd_remove(void)
+>  	}
+>  }
+>  
+> -static const struct of_device_id psci_of_match[] = {
+> -	{ .compatible = "arm,psci-1.0" },
+> -	{}
+> -};
+> -
+>  static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+>  {
+> -	struct device_node *np = pdev->dev.of_node;
+> +	struct device_node *np = pdev->dev.parent->of_node;
+
+dev_of_node(pdev->dev.parent);
+
+>  	bool use_osi = psci_has_osi_support();
+>  	int ret = 0, pd_count = 0;
+>  
+> @@ -181,7 +175,6 @@ static struct platform_driver psci_cpuidle_domain_driver = {
+>  	.probe  = psci_cpuidle_domain_probe,
+>  	.driver = {
+>  		.name = "psci-cpuidle-domain",
+> -		.of_match_table = psci_of_match,
+>  	},
+>  };
+>  
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index e4fd4572472f..d18655d76172 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -2374,6 +2374,18 @@ config MFD_KHADAS_MCU
+>  	  additional drivers must be enabled in order to use the functionality
+>  	  of the device.
+>  
+> +config MFD_PSCI
+> +	bool "PSCI MFD for psci child cells"
+
+"PSCI mux for registering PSCI component devices" ?
+
+> +	depends on ARM_PSCI_FW
+> +	depends on OF
+> +	select MFD_CORE
+> +	default y
+> +	help
+> +	  PSCI MFD registers PSCI child cells and exposes them as
+> +	  platform devices.
+
+This is what all DT related MFD devices do.
+
+> +       Child drivers are probed only if enabled in the
+> +	  kernel configuration.
+
+Nothing new here either.  This is the norm.
+
+"PSCI Mux is a Linux specific device splitter designed to register
+ multiple PSCI related components via a single Device Tree compatible.
+ Without it, devices would each bind to a single node ... <which causes
+ problems with x, y and z>"
+
+> +       Select this option whenever a supported PSCI
+> +	  child driver is selected.
+> +
+>  config MFD_ACER_A500_EC
+>  	tristate "Support for Acer Iconia Tab A500 Embedded Controller"
+>  	depends on I2C
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 72d3944b0ad8..f3edfad702ff 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -24,6 +24,8 @@ obj-$(CONFIG_MFD_EXYNOS_LPASS)	+= exynos-lpass.o
+>  obj-$(CONFIG_MFD_GATEWORKS_GSC)	+= gateworks-gsc.o
+>  obj-$(CONFIG_MFD_MACSMC)	+= macsmc.o
+>  
+> +obj-$(CONFIG_MFD_PSCI)		+= psci-mfd.o
+> +
+>  obj-$(CONFIG_MFD_TI_LP873X)	+= lp873x.o
+>  obj-$(CONFIG_MFD_TI_LP87565)	+= lp87565.o
+>  obj-$(CONFIG_MFD_TI_AM335X_TSCADC)	+= ti_am335x_tscadc.o
+> diff --git a/drivers/mfd/psci-mfd.c b/drivers/mfd/psci-mfd.c
+> new file mode 100644
+> index 000000000000..7affd6bb09dd
+> --- /dev/null
+> +++ b/drivers/mfd/psci-mfd.c
+> @@ -0,0 +1,43 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> + */
+> +
+> +#include <linux/mfd/core.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +
+> +static const struct mfd_cell psci_cells[] = {
+> +	{
+> +		.name = "psci-cpuidle-domain",
+> +	},
+> +};
+
+MFD_CELL_NAME() ?
+
+MFD drivers have to support more than one device from the get-go.
+Please add your other device here in this patch.
+
+> +static int psci_mfd_probe(struct platform_device *pdev)
+
+No to _mfd_.
+
+> +{
+> +	return devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_AUTO, psci_cells,
+> +				   ARRAY_SIZE(psci_cells), NULL, 0, NULL);
+> +}
+> +
+> +static const struct of_device_id psci_mfd_of_match[] = {
+> +	{ .compatible = "arm,psci-1.0" },
+> +	{ }
+> +};
+> +
+> +static struct platform_driver psci_mfd_driver = {
+> +	.probe = psci_mfd_probe,
+> +	.driver = {
+> +		.name = "psci-mfd",
+> +		.of_match_table = psci_mfd_of_match,
+> +	},
+> +};
+> +
+> +static int __init psci_mfd_init(void)
+> +{
+> +	return platform_driver_register(&psci_mfd_driver);
+> +}
+> +
+
+Remove this line.
+
+> +core_initcall(psci_mfd_init);
+
+This is usually a hack.  Why can't you use -EPROBE_DEFER?
+
+> +
+> +MODULE_LICENSE("GPL");
+> 
+> -- 
+> 2.34.1
+> 
+
+-- 
+Lee Jones
