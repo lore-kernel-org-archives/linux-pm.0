@@ -1,268 +1,200 @@
-Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 333AF29A309
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 00:24:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C04482E7F2C
+	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 00:41:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786580652; cv=none; b=GJv78Fxi2QuWjzpH4ON5ThcraQNLcqyNGh745FOkbGzKVjV2ekzH3btT9u+vhzfDpp/fgL76z74ANZ0Oh0z90OXZtgUzCC5wreK841RxtLH/bgDnjEjsONMfziesgss4uPq9XZ+9rTi6DMktHIXvKE6SFi+rzWQjtigEg+VnNTY=
+	t=1786581693; cv=none; b=T6STVy7esfxI/VzWNTZEdL1Ra13dMSvOwGPo/04VKPB7imzw7UUjeGaaWjGXZJAisvoXfom9dCtTiRGa8bHx3t+byY0FDIka/NmnvyV2JjUGpturGjVQU80QSXTSUIQSF+x5fL3lbpUCHrlpFfXJoD3hlCQGnkmnDXwsKlAkMCk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786580652; c=relaxed/simple;
-	bh=KKhbaM4BxrQAo99VUNbaxK5TbHK9MBI5zEqik+L6/eg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=gq791W8XXTmh/etHuS5WeKXgLn3Ypal8UNNChv8TzlCBDPLnjtDt2scB9T+qdSMd0j/GD/5a3o5ivXqtu7d+uVoqlUWA3tf1Pl/T0TigpHLPnMdVwmpwuenfKgbkpW9se+eW5iEaiC354FTOSxZAghYDgaaBA27mVIcajZnaVMY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oWxgwHgx; arc=none smtp.client-ip=209.85.214.176
+	s=arc-20240116; t=1786581693; c=relaxed/simple;
+	bh=gra1sMSV6yYCMeejvMA5gVNI1Kptv4TlwEllYa3rQ1k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=sNU+kLliKGjk/JNHCk7OsgqozUEivWOdd8soplOT5GF0++76tVJ48Cg2dM1x09T3mgZ5lWKWojnMoAW6e9S46N4PJk8EmNWtLKts74Xb9uRqeMGeh+9PVCBBdpy1ErhD5LjVvzPYaPn3Me7ULthGanMz+oLpVTjmDlHXGmZRJpE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Vl6GghzT; arc=none smtp.client-ip=209.85.215.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oWxgwHgx"
-Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2cf420670bbso3623845ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 17:24:10 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Vl6GghzT"
+Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-ca00f126b7eso168864a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2026 17:41:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786580650; x=1787185450; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=NKCLFuxWFMT16xVoGG+Whvfm+fbrPxkhcIeAiIoBa7w=;
-        b=oWxgwHgxCv9nonA/gPWu3q/GHr808vZFjXwYo+6c622vQzs944229HPra58SfeC58C
-         Sih1XoepeR4ri8Fll7JR4FolkqK6ITkoerr4qsQ8StdhUx7kFuBDBBOtB1xbyLlR7Lbd
-         Qj2tlbf4Irhcxj767QsQYX2zEpBFk7vHlPiw2/eesQ087+OmDMr4QTJmaRSksg7Y7UEi
-         aauJVgPr67wnkNcq5TU4201Te0YMKrc3clULY6qauKku9WZaGRxkYhEbfq9wZaE3B62B
-         +mnzL4zACIFCNoarZ4IzOovsyCVaY+zhqK5JY7xN7lEsEbS6hC710CFwQhGXj6T30D/t
-         u94w==
+        d=gmail.com; s=20251104; t=1786581691; x=1787186491; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=OZfZJJ3ks18rL3wPJ75S3YpkxlVt9q0GrbTQIG0UeZg=;
+        b=Vl6GghzT2evu/NUT5v80cHDoVh4AD01gKIimJt1EDgsvjoGR1bfYZE9M2qPAacu5QP
+         1IJTuxX/FaDtj9x1SkVsUQkINSxzSiR4TGWyG+KCcLDz5YmRqENtNUiZ8YR/WfU1Q9HH
+         oYU4+PIrDu0N0vccJX7Zp+RtYg4vVyy8C++DK3ckGvXNn9XaCu0A7HPE58Gjggd5KVjH
+         XsqpIbgyfywaHGeF7StR2HzM6KNdgix7c5ZK43kzptvJWhLqVu9PJvZ2wyEi6DAmr/y+
+         lbGkik7TXuHTriB8VADLmfHrxc4+a6aJJfefXcKzBJyfxxK1IrHP1k1sMjVCM2WHzKNQ
+         UEKg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786580650; x=1787185450;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=NKCLFuxWFMT16xVoGG+Whvfm+fbrPxkhcIeAiIoBa7w=;
-        b=mBcF5ETpiHt2DASQ3xPLKqhB10mXv4aRfPhvNLKi3Q9qhan+oyG0WFnVceXZRc5zca
-         SkHbYM9ksDqkoeb2uDVWpCuNuyV9f1pRCFXnem/Mt48EZJCW3v4uHmVaI7U6QG5u2GPl
-         xLXFQsk94EXEOjdEL6f9tQDFwWm5ad7tcpgEUdZyQ1F8OOINqDr+rQ9ZmDntyoyvfB5p
-         lV3HYpKM0joGk8huoXOV10yF/LF3sD9exvnMKs+rIQim3ZOpnXtYvVbohFNBM1i3Ddsf
-         k2N+6IO3uyxpau7CFHk2MbCvrQqpPKU50uN4/Ff0XQAeHBPPIbUEVG+9bRDgUhvPqwTY
-         E7eQ==
-X-Gm-Message-State: AOJu0YzxzCpe6Al8MwkEwOo1MyYgrKfuRZea8Em1yQ34K762wj2wnev9
-	/slPpmqWfGfSLAznIZPDG5ZsEbV8y2njJDTxcAttoFksu6hIdtI1JKaZ
-X-Gm-Gg: AR+sD115Nl14nZ33olpX6MsRQsIweWYNeoAI+0txzgKNUJ3yLdQt6FlokfTplG/KIR+
-	/gg2wCs61yapnuN5OPrREPacxHX4Q8oKdk3mL0H8PO6AxVavjxVMjVCCoPjanzaYLypxGlFQFpG
-	bDdLNgQ5wRxBoZ/QCDdyoN4CtogJD7eENULTU03qd3eII2asI5U4Nzs1p9Hu4/1w9H4Iz5gjuJ8
-	LIJq2POZ06tpXA8jaN6s5Z8TQ8ddCEsY1xOm5H7M0OXTHLQRGuJwI8iQNH24Z+wsoT8T3aEYnAH
-	lk/jXRcshyj7ER0pVM6V+5jw5OMQKmFk1zcgT/iVOL7ZfZmO1D7SNZTyEH4AyG2cfHlvK1nMJBz
-	7Y8GvKoj29XM2LQRfmyL6JwKQ6NsmSEEIXKoTvljX3MUAu0cw/bwnED75Mfxilx4t2uaLVAuHTW
-	YQGabIkLK+NlLXmM78jrJkNwY+I5NJBhjO54uCjfZ74h7OFDXY446LE+5OA0s8YYH03dI1wg==
-X-Received: by 2002:a17:903:2c50:b0:2c9:ed4a:c3a4 with SMTP id d9443c01a7336-2d37d19f10fmr16271005ad.0.1786580650275;
-        Wed, 12 Aug 2026 17:24:10 -0700 (PDT)
-Received: from [10.219.45.252] ([2409:40c2:504e:6b:b46f:70e9:d340:f24c])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31ebc75d8casm1281289eec.3.2026.08.12.17.24.01
+        d=1e100.net; s=20251104; t=1786581691; x=1787186491;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=OZfZJJ3ks18rL3wPJ75S3YpkxlVt9q0GrbTQIG0UeZg=;
+        b=hvr57mkIkoaTwP4bBDnbUD6J1WdExswVFMamQxnoneWnJikevTcOKK6e/PpIO26qfZ
+         BWPwom8gH0n30QsxzUgei7kSMdXSb0HG20ay4YNkgpug/AvRzVtqqCH+OVewMucOKGeB
+         BupBKsKwW8HyBxewnq61E28UF9q4NnJhU6u57nJy36yN5RaUQgaZVw2r73Fcw//W+VkY
+         O20pM+rGpl3I3FLDxuMCgB/p4BTE+pm3vjwab4SpiQ1IieTHt5AF50bIY44MTiWPgtX5
+         j8HQM7Pk3TuMHvTf9rssE+wfQwb8rIe6+Fk9bzadJH8nI9vbCjo8wrhJ6rVdXgKzooDb
+         fQxA==
+X-Gm-Message-State: AOJu0YzjkhLC931kT4A8/GU234L/z//SQrboddDr56kvvAeVr6so+yHQ
+	OLGvEoSNCORN1HpirzXfO2tQDP4VsDA7BE06ESpmlM96EGtElrZR1KFB
+X-Gm-Gg: AR+sD11VGfnMA0LXtXuJKNWpJ01mMYa6cY9d/IhwfeILqzNfuDZFMHomztmd933A4G9
+	n6tyD1rAJBIQWmrsv5dU46WDJMOyCUiJronOWUH52IsWFiAiki+kVElO5+IMEyfLuyyt19lBXwl
+	P2TvP1v+F3JfzDUuZELX8SZTYtHuFa4haTR/TLmzx50n5UwcGAbCx+ap0gKo3BhMOasRUYmwr4Q
+	C/li8rx2Q4ZpUwTWehOAYtmUtt5SckS0l7C7EUZVzflkAtyGJU7vP8Q+f7D7KG8qyHwDKtkjo30
+	i7gs1/Y3SlbmYp8paDqw/LOiJuMU8rAGpAImSNU/AhGnhtMAOTzZ09rSwOofkYcVO5xcRXWyB8W
+	qvJnwiLszjvMbpctSPdKxb7TFnhADJEM4oe7LvxhhyhbIjukYKUOJC3tEBLV7hjCXmaEGiffCc5
+	1QbXH2k9RCBy48N7vAMjciQ0Htmpx6XdCKeYcEmbafY6Vt/yKme3A8dPilVymEUcuJyNT+zkA2x
+	LPuz5AQp99bL1bikx7aQ2XXi1ILWetihBwMgpcVcIADLjYhMLS3mTS/xV4ARA==
+X-Received: by 2002:a05:6a00:2e04:b0:82f:2b0:2809 with SMTP id d2e1a72fcca58-84fc6c84f61mr1723057b3a.1.1786581690837;
+        Wed, 12 Aug 2026 17:41:30 -0700 (PDT)
+Received: from bloom.localdomain ([2604:3d09:178e:e100::6868])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84fc4565c6bsm207084b3a.3.2026.08.12.17.41.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Aug 2026 17:24:09 -0700 (PDT)
-From: Bhargav Joshi <j.bhargav.u@gmail.com>
-Date: Thu, 13 Aug 2026 05:53:55 +0530
-Subject: [PATCH] dt-bindings: power: reset: ti,keystone-reset: Convert to
- DT schema
+        Wed, 12 Aug 2026 17:41:30 -0700 (PDT)
+From: Ivy Lopez <skunkolee@gmail.com>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Ivy Lopez <skunkolee@gmail.com>
+Subject: [PATCH v2] power: supply: ds2760_battery: convert to devm-managed workqueue and pm_notifier
+Date: Wed, 12 Aug 2026 18:41:12 -0600
+Message-ID: <20260813004113.29943-1-skunkolee@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260808214458.201324-1-skunkolee@gmail.com>
+References: <20260808214458.201324-1-skunkolee@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260813-ti-keystone-reset-v1-1-189389503324@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDC0Nj3ZJM3ezUyuKS/LxU3aLU4tQSXcvEJKNkC2MLQzNTQyWgvoKi1LT
- MCrCZ0bG1tQAIMI4MYwAAAA==
-X-Change-ID: 20260813-ti-keystone-reset-9ab2c8381651
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Andrew Davis <afd@ti.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, goledhruva@gmail.com, m-chawdhry@ti.com, 
- daniel.baluta@gmail.com, simona.toaca@nxp.com, j.bhargav.u@gmail.com
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786580640; l=5960;
- i=j.bhargav.u@gmail.com; h=from:subject:message-id;
- bh=KKhbaM4BxrQAo99VUNbaxK5TbHK9MBI5zEqik+L6/eg=;
- b=rfvimOCvmz/n3PG+Z4uohyIHgOufEyjXp0KoHzEkCWj2NIX5R2s6a2f2YKxUyHeuQXlP+pTZC
- lPH/5tSSLhIB9fsXouPWuNxQi94GKXS4u6AxUL5QhbimD1uBPThRp33
-X-Developer-Key: i=j.bhargav.u@gmail.com; a=ed25519;
- pk=IqNDwUZKECEA+n8wXctFLBbYL9NhFstZNbOznm/nX1k=
+Content-Transfer-Encoding: 8bit
 
-Convert Texas Instruments Keystone SoC Reset Controller from text to DT
-schema. no new functional changes.
+Following review feedback, convert the driver to use devm-managed
+resources instead of manual cleanup in w1_ds2760_remove_slave():
 
-Signed-off-by: Bhargav Joshi <j.bhargav.u@gmail.com>
+- devm_alloc_ordered_workqueue() for the monitor workqueue
+- devm_delayed_work_autocancel() for the monitor delayed work
+- devm_add_action_or_reset() to unregister the pm_notifier
+
+This removes the need for w1_ds2760_remove_slave() entirely, along
+with the NULL checks it required to safely handle a partially
+initialized di on an add_slave() failure path.
+
+Fixes: bf4973553737 ("power: supply: ds2760_battery: merge ds2760 supply driver with its w1 slave companion")
+Suggested-by: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Ivy Lopez <skunkolee@gmail.com>
 ---
- .../bindings/power/reset/keystone-reset.txt        | 67 ------------------
- .../bindings/power/reset/ti,keystone-reset.yaml    | 81 ++++++++++++++++++++++
- 2 files changed, 81 insertions(+), 67 deletions(-)
+ drivers/power/supply/ds2760_battery.c | 54 +++++++++++----------------
+ 1 file changed, 21 insertions(+), 33 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/keystone-reset.txt b/Documentation/devicetree/bindings/power/reset/keystone-reset.txt
-deleted file mode 100644
-index c5c03789ed1e..000000000000
---- a/Documentation/devicetree/bindings/power/reset/keystone-reset.txt
-+++ /dev/null
-@@ -1,67 +0,0 @@
--* Device tree bindings for Texas Instruments keystone reset
--
--This node is intended to allow SoC reset in case of software reset
--of selected watchdogs.
--
--The Keystone SoCs can contain up to 4 watchdog timers to reset
--SoC. Each watchdog timer event input is connected to the Reset Mux
--block. The Reset Mux block can be configured to cause reset or not.
--
--Additionally soft or hard reset can be configured.
--
--Required properties:
--
--- compatible:		ti,keystone-reset
--
--- ti,syscon-pll:	phandle/offset pair. The phandle to syscon used to
--			access pll controller registers and the offset to use
--			reset control registers.
--
--- ti,syscon-dev:	phandle/offset pair. The phandle to syscon used to
--			access device state control registers and the offset
--			in order to use mux block registers for all watchdogs.
--
--Optional properties:
--
--- ti,soft-reset:	Boolean option indicating soft reset.
--			By default hard reset is used.
--
--- ti,wdt-list:		WDT list that can cause SoC reset. It's not related
--			to WDT driver, it's just needed to enable a SoC related
--			reset that's triggered by one of WDTs. The list is
--			in format: <0>, <2>; It can be in random order and
--			begins from 0 to 3, as keystone can contain up to 4 SoC
--			reset watchdogs and can be in random order.
--
--Example 1:
--Setup keystone reset so that in case software reset or
--WDT0 is triggered it issues hard reset for SoC.
--
--pllctrl: pll-controller@2310000 {
--	compatible = "ti,keystone-pllctrl", "syscon";
--	reg = <0x02310000 0x200>;
--};
--
--devctrl: device-state-control@2620000 {
--	compatible = "ti,keystone-devctrl", "syscon";
--	reg = <0x02620000 0x1000>;
--};
--
--rstctrl: reset-controller {
--	compatible = "ti,keystone-reset";
--	ti,syscon-pll = <&pllctrl 0xe4>;
--	ti,syscon-dev = <&devctrl 0x328>;
--	ti,wdt-list = <0>;
--};
--
--Example 2:
--Setup keystone reset so that in case of software reset or
--WDT0 or WDT2 is triggered it issues soft reset for SoC.
--
--rstctrl: reset-controller {
--	compatible = "ti,keystone-reset";
--	ti,syscon-pll = <&pllctrl 0xe4>;
--	ti,syscon-dev = <&devctrl 0x328>;
--	ti,wdt-list = <0>, <2>;
--	ti,soft-reset;
--};
-diff --git a/Documentation/devicetree/bindings/power/reset/ti,keystone-reset.yaml b/Documentation/devicetree/bindings/power/reset/ti,keystone-reset.yaml
-new file mode 100644
-index 000000000000..ecc68d37f07e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/ti,keystone-reset.yaml
-@@ -0,0 +1,81 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/reset/ti,keystone-reset.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply/ds2760_battery.c
+index 3c2433f6b5e9..901aaaf916c4 100644
+--- a/drivers/power/supply/ds2760_battery.c
++++ b/drivers/power/supply/ds2760_battery.c
+@@ -23,6 +23,7 @@
+ #include <linux/param.h>
+ #include <linux/jiffies.h>
+ #include <linux/workqueue.h>
++#include <linux/devm-helpers.h>
+ #include <linux/pm.h>
+ #include <linux/slab.h>
+ #include <linux/platform_device.h>
+@@ -621,6 +622,11 @@ static int ds2760_pm_notifier(struct notifier_block *notifier,
+ 	return NOTIFY_DONE;
+ }
+ 
++static void ds2760_battery_unregister_pm_notifier(void *notifier)
++{
++	unregister_pm_notifier(notifier);
++}
 +
-+title: TI Keystone SoC Reset Controller
+ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ {
+ 	struct power_supply_config psy_cfg = {};
+@@ -631,10 +637,8 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ 	char status;
+ 
+ 	di = devm_kzalloc(dev, sizeof(*di), GFP_KERNEL);
+-	if (!di) {
+-		retval = -ENOMEM;
+-		goto di_alloc_failed;
+-	}
++	if (!di)
++		return -ENOMEM;
+ 
+ 	snprintf(name, sizeof(name), "ds2760-battery.%d", dev->id);
+ 
+@@ -695,41 +699,26 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ 	di->bat = devm_power_supply_register(dev, &di->bat_desc, &psy_cfg);
+ 	if (IS_ERR(di->bat)) {
+ 		dev_err(di->dev, "failed to register battery\n");
+-		retval = PTR_ERR(di->bat);
+-		goto batt_failed;
++		return PTR_ERR(di->bat);
+ 	}
+ 
+-	INIT_DELAYED_WORK(&di->monitor_work, ds2760_battery_work);
+-	di->monitor_wqueue = alloc_ordered_workqueue(name, WQ_MEM_RECLAIM);
+-	if (!di->monitor_wqueue) {
+-		retval = -ESRCH;
+-		goto workqueue_failed;
+-	}
++	di->monitor_wqueue = devm_alloc_ordered_workqueue(dev, name, WQ_MEM_RECLAIM);
++	if (!di->monitor_wqueue)
++		return -ESRCH;
 +
-+maintainers:
-+  - Andrew Davis <afd@ti.com>
++	retval = devm_delayed_work_autocancel(dev, &di->monitor_work,
++						 ds2760_battery_work);
++	if (retval)
++		return retval;
 +
-+description:
-+  This is intended to allow SoC reset in case of software reset of selected
-+  watchdogs. The Keystone SoCs can contain up to 4 watchdog timers to reset
-+  SoC. Each watchdog timer event input is connected to the Reset Mux block. The
-+  Reset Mux block can be configured to cause reset or not. Additionally soft or
-+  hard reset can be configured.
-+
-+properties:
-+  compatible:
-+    const: ti,keystone-reset
-+
-+  reg:
-+    maxItems: 1
-+
-+  ti,syscon-pll:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description:
-+      The phandle to syscon used to access pll controller registers and the
-+      offset to use reset control registers.
-+    items:
-+      - items:
-+          - description: phandle to pll controller syscon
-+          - description: offset within pll controller register space
-+
-+  ti,syscon-dev:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description:
-+      The phandle to syscon used to access device state control registers and
-+      the offset in order to use mux block registers for all watchdogs.
-+    items:
-+      - items:
-+          - description: phandle to device state control syscon
-+          - description: offset within device state control register
-+
-+  ti,soft-reset:
-+    type: boolean
-+    description:
-+      Boolean option indicating soft reset. By default hard reset is used.
-+
-+  ti,wdt-list:
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    description:
-+      WDT list that can cause SoC reset. It's not related to WDT driver, it's
-+      just needed to enable a SoC related reset that's triggered by one of
-+      WDTs. The list is in format- <0>, <2>; It can be in random order and
-+      begins from 0 to 3, as keystone can contain up to 4 SoC reset watchdogs
-+      and can be in random order.
-+    minItems: 1
-+    maxItems: 4
-+    items:
-+      minimum: 0
-+      maximum: 3
-+
-+required:
-+  - compatible
-+  - reg
-+  - ti,syscon-pll
-+  - ti,syscon-dev
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    reset-controller@328 {
-+        compatible = "ti,keystone-reset";
-+        reg = <0x328 0x10>;
-+        ti,syscon-pll = <&pllctrl 0xe4>;
-+        ti,syscon-dev = <&devctrl 0x328>;
-+        ti,wdt-list = <0>;
-+    };
-
----
-base-commit: 3d6d817622b0a9721e3cc404df3469171582be13
-change-id: 20260813-ti-keystone-reset-9ab2c8381651
-
-Best regards,
+ 	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ * 1);
+ 
+ 	di->pm_notifier.notifier_call = ds2760_pm_notifier;
+ 	register_pm_notifier(&di->pm_notifier);
+ 
+-	goto success;
+-
+-workqueue_failed:
+-batt_failed:
+-di_alloc_failed:
+-success:
+-	return retval;
+-}
+-
+-static void w1_ds2760_remove_slave(struct w1_slave *sl)
+-{
+-	struct ds2760_device_info *di = sl->family_data;
+-
+-	if (!di)
+-		return;
+-
+-	unregister_pm_notifier(&di->pm_notifier);
+-	cancel_delayed_work_sync(&di->monitor_work);
+-	if (di->monitor_wqueue)
+-		destroy_workqueue(di->monitor_wqueue);
++	return devm_add_action_or_reset(dev,
++					   ds2760_battery_unregister_pm_notifier,
++					   &di->pm_notifier);
+ }
+ 
+ #ifdef CONFIG_OF
+@@ -741,7 +730,6 @@ static const struct of_device_id w1_ds2760_of_ids[] = {
+ 
+ static const struct w1_family_ops w1_ds2760_fops = {
+ 	.add_slave	= w1_ds2760_add_slave,
+-	.remove_slave	= w1_ds2760_remove_slave,
+ 	.groups		= w1_ds2760_groups,
+ };
+ 
 -- 
-Bhargav
+2.55.0
 
