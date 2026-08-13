@@ -1,45 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D00493002B9;
-	Thu, 13 Aug 2026 08:34:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5C6C43C047;
+	Thu, 13 Aug 2026 08:51:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786610061; cv=none; b=jRuDob8zVThhdjZQmIHb3LUhDIJStuoHDphFN8JbrY178+kOZaIOA+hW/voCfQk+PWOUH6CUsBUwv7UZQk3ws9EY3NpDrBcYgQDuv4cP16SpdzB4XRk9ytPC2sjdsosL8sN77hvaI1SxO5LVSFjG7vtR5ap8l8MMjONMErYubSY=
+	t=1786611075; cv=none; b=dxye3MFn+ndn9FVSHkfoGLGJ5TR7dPVvuyvCEDLzJIiUSqmsumsK82pCAHtGHytOIW9ZSMbTHymEMJF8PW8y1DqF8QV5M61DjG9HaeOGTxLu6Hy6+a0ZUQRhoNnltj62XnO5NJSclHza9c6Cv6fRieEfQWvfasBvM3SUIc0XXik=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786610061; c=relaxed/simple;
-	bh=T5OE6vfLFkwTA7UckY8AakFKzL2IpkBCaEQOENVAl1w=;
+	s=arc-20240116; t=1786611075; c=relaxed/simple;
+	bh=f3/KPsBBroifBY/x1+qsQGeW7+UaKmEIgPQZzrBw1Wo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IQ3IUKKEIcvDDYHIvMa2HuYT5KEJG5KJUGPHNuAKYdkR4aQ0Hjn6tdIcSFOi4+dGb6W+eid027mqbV925nOY4vIbmkJsYHl8fe/SGihSDmq5dVeGWt8Mug1i1oNLOGdQuvauG2g5I/yiT1dx+GkcbRPJP8jgxainXLXP5mFFf2E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l/6seGxq; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=cClj6FdkWNsl8+nfRSS5RFFm2PWWfJ0H2ue9kZ1zK5qwBtgd5qfal1cXyOmSRcyD2ECkjh6Q8NwcRT8g0mosqmEFHNVjgY9FKrqgiUhgCD04HJkGOMVzXX7tFTENhg5n8s1aPLl779JyGH07ZAHSoLGawIs90KNEBRrhFERb7Vg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bYV4QiSW; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l/6seGxq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33F0B1F00A3D;
-	Thu, 13 Aug 2026 08:34:16 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bYV4QiSW"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81C371F00A3A;
+	Thu, 13 Aug 2026 08:51:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786610060;
-	bh=WpZmjViDNj9nPaLPOPz80qmgBiPaTATNXRxIiuNLGPM=;
+	s=k20260515; t=1786611072;
+	bh=dxFwWNpXsoqF4JYxqwH1P1tBS6gN5IiCOOgnJayn4hI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=l/6seGxqYKQq+Tq19hbgN6CZEv31KMnguf9IiS1xtIFwLl5YKjP7K1gQtpVZDA/Xc
-	 ZVP3AgkvfNR2z6bcXXf0z8fyvcMfFOf3c0QEDXeQ0XTOgK6VrZZxztw/ZHZxKVkvbP
-	 YVKvbkyGznmuoWMLr6WGSy0gcM4T2hMZbURDQW0dG/pITzWEMXlIeJikzl8GT0Qace
-	 dTGdCxr7xxAv7ncOfenDSB3BVwOquVDYIXmbDZb9SFdYxNSNxD5S5V0yJt3Mpz4/G7
-	 kt/G4slgftrgO73nkweSgd7/zDI5rmhDGgL9xYGGquorTpWJpcgGABxtQ+DAL8sRz+
-	 N50kXkFG6ghEg==
-Date: Thu, 13 Aug 2026 10:34:12 +0200
+	b=bYV4QiSWiiXjOO5izt/O8zZXvXH6fUxbswgM7s37CXMKL5/MqGpYcNMIZU9qLsPez
+	 tdmWjQxDj+InyZUud/Y25ncuFz66+cGwblsp5GmsBT6vxtD9JfMzISWCIlNhyEhqoL
+	 Zcuzvek2IW0EGK7kBqia4qSOZhaO8FnSDK4Vgf4Ljh0nBIj0zrMMI4kkTPMkOGYevd
+	 lHRtQQN3Rrk70R0G8gzkDDgdfEK9l4HRtS9Sl+WwU2KCjAaKdUfKvQnXhL5mXiNRwt
+	 5p4gfdhhhEkQOZP8O3gvXUHoVdlmNnTygQG54iZDkpheLX33rbeEdDt3CKDbpz4A08
+	 ROiZ0gI4z+jUg==
+Date: Thu, 13 Aug 2026 10:51:05 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+To: Robin Snyders <robin@snyders.xyz>
+Cc: Casey Connolly <casey.connolly@linaro.org>, 
+	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, 
-	Konrad Dybcio <konradybcio@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] dt-bindings: interconnect: Add Qualcomm IPQ9650
- support
-Message-ID: <20260813-flashy-topaz-antelope-dc9706@quoll>
-References: <20260811-ipq9650_icc-v2-0-55b8efbd62c6@oss.qualcomm.com>
- <20260811-ipq9650_icc-v2-1-55b8efbd62c6@oss.qualcomm.com>
+	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] dt-bindings: power: supply: qcom,pmi8998-charger:
+ add SMB5 PMICs
+Message-ID: <20260813-festive-holistic-shellfish-1ee0de@quoll>
+References: <20260812-submit-qcom-smbx-send-v1-v2-0-f504b8f9bfad@snyders.xyz>
+ <20260812-submit-qcom-smbx-send-v1-v2-1-f504b8f9bfad@snyders.xyz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,25 +47,32 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260811-ipq9650_icc-v2-1-55b8efbd62c6@oss.qualcomm.com>
+In-Reply-To: <20260812-submit-qcom-smbx-send-v1-v2-1-f504b8f9bfad@snyders.xyz>
 
-On Tue, Aug 11, 2026 at 09:23:08PM +0530, Kathiravan Thirumoorthy wrote:
-> On Qualcomm IPQ9650 platform the interconnect busses don't have separate
-> RPM / RPMh controls. Instead they require direct votes through the GCC.
-> To unify hardware descriptions (and software interfaces) between this
-> platform and other Qualcomm platforms, make GCC export corresponding NoC
-> clocks as interconnects. Add IDs for these Network-on-Chip interfaces.
-> The GCC schema already defines #interconnect-cells since it was added in
-> the commit f92b778251ad ("dt-bindings: clock: add Qualcomm IPQ9650
-> GCC").
+On Wed, Aug 12, 2026 at 01:56:59AM +0200, Robin Snyders wrote:
+> From: Casey Connolly <casey.connolly@linaro.org>
 > 
-> Acked-by: Georgi Djakov <djakov@kernel.org>
-> Signed-off-by: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
-> ---
->  include/dt-bindings/interconnect/qcom,ipq9650.h | 28 +++++++++++++++++++++++++
->  1 file changed, 28 insertions(+)
+> Add compatible strings for PM7250B and PM8150B, which contain the SMB5
+> generation of the Qualcomm switch-mode battery charger. PM7250B uses the
+> same charger interface and parameters as PM8150B, so require the PM8150B
+> compatible as its fallback.
+> 
+> Clarify the IIO channel descriptions because SMB5 exposes a USB current-
+> sense voltage while SMB2 exposes an already-converted current.
+> 
+> Signed-off-by: Casey Connolly <casey.connolly@linaro.org>
+> Signed-off-by: Robin Snyders <robin@snyders.xyz>
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+I don't get one thing - you used b4 to send it, so how could this be
+threaded to some other email thread? Do not introduce custom workflows,
+please. b4 is there to make it right, so just use it in standard way -
+b4 trailers, b4 prep -c, b4 prep --edit-cover, b4 prep --check, b4 send.
+
+> ---
+>  .../bindings/power/supply/qcom,pmi8998-charger.yaml     | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
