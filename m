@@ -1,118 +1,96 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6821A47A860
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 13:06:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD45647D455
+	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 13:23:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786626403; cv=none; b=jG5ukGEOVMV0W+yqr9shambF9M7SMZulFnip0wM/pR5P9vcRb9szOsKrnhWqds7WnX1Vjs/a+h/CinfuPTh4W95CV3qPM/NMyxawPi/BgjWogXHx/tKdrSSFNy5l3fK9OGlQSitiqiyG6tNk90G2MoRwcYtlYTx8DRkdIji1+Ak=
+	t=1786627427; cv=none; b=RUsj+fvuSgh+tNHYbvmaPv6cCq0v3p+A61K+OJjq9nGzHMlm5KqJFwRAtwt95XQEbG9BpMqKYbIvWHViRLDY2BszDU1QgxWFxueWMqSvUqX2vb9aXbQwjEDW6KX/595wX5YgLRqa4IwMX420QG+MGKKx92CpRyPKSg/xRAnT5oI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786626403; c=relaxed/simple;
-	bh=RAl0NVbjiiOs/VyeCemRv0TwYR+tlbA9P9uIHNsY6dg=;
+	s=arc-20240116; t=1786627427; c=relaxed/simple;
+	bh=OEyzqY1ehWdK4EpMuKknlyHXg5Txx69Ju077+bEeRNA=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lWR3dsfe7H8UyBBqhnD4Ub+UyDQZhKuHw5q4DY7bg5ueXDErVU5/mLjxQ+8RuZG0dEfNoYwMJarcgA2ezizmgiA+aRg/z6fV3oxVNCurZDsZtICTNSysxcRON8axLc1Ko/yC/RnfprfPtFVrizbYLzG86b8lalSd0Ne3+1y/8+M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UXZVJtg/; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=RipnUNx3zbVEFrjfRUjM7vbOe5fxkK8c5R93PneeL3tNkXZ7AMz3VTTcnFXhSaLzRcgNAlfkfRRaKc2sBF5tbBXhmqIWkojl59jhnJon6XMcgtg8teOv0+SyBB6V76GWcpUq6O2/eHWZcXmkjz0uZpQBIZk6XkV4XzKBaJZKfbo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mCY/B7d2; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UXZVJtg/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 291BE1F00A3F
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 13:06:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mCY/B7d2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 851B51F00A3A
+	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 13:23:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786626401;
-	bh=yQWzU2idhtJFEfGoc824MA5NHjwICFqfWvq6sgVbqeQ=;
+	s=k20260515; t=1786627425;
+	bh=OEyzqY1ehWdK4EpMuKknlyHXg5Txx69Ju077+bEeRNA=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=UXZVJtg/2Rx9ZJDFRk0rV1flaUPuLIwsFB15lmMdTdhvITsZVwhmJRtAnjke2dcPM
-	 EyRKKSNQ46Dic9or1D5n8yp3ruC6CRTB/JD/ODBDLgVK7E1aiovyORp16hMh26KRV0
-	 vSTog3v+nnYt16PpUwy45UrNG4GHKDhwZraJe/dAxnXBz/2P+sZXENL5cs7QkxnZkm
-	 L9pyu9aXIFzSOlfUJrzqIAtd4pkKh4llCsHlijG4RoUesbzNt1DjM706dqp4X6MGYv
-	 Aw2HVGG/ig688WXvWgyVx0jbQPESHqofU2l5ysylFdNzHOHIx9rVqGavvn1L0wQjwM
-	 npFITTaSA+U4A==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5b29599b81cso891111e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 06:06:41 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Roms2dYkKDHkoUkVfeww3RQJwFtU08WT/HzXfjWIf8Uzp/JXnJvcbWGUu3aXcEVVA1pgZa9OoYwbg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyxLwIcALuHUPs4jhYlO+m4HTmI0mM0FQpghT7ZAqgl6e+xdZoZ
-	4Y7NI6Hq+6w/grtxfSIhmHhgriPYu4GEb23MupeBSAeVab01v5oFzvTsbaYUK3AMbWTcqb4b/go
-	4VdAnig23LR5P1KozjUiUYlMyPq5nq6Rp9+hST2zavA==
-X-Received: by 2002:a05:651c:31cd:b0:39c:7859:a2d8 with SMTP id
- 38308e7fff4ca-3a11a819760mr7294241fa.27.1786626399530; Thu, 13 Aug 2026
- 06:06:39 -0700 (PDT)
+	b=mCY/B7d2EVA7uya/uFwelIwP0X0tP0Mf2IGzL5AGHE4pivNrIVFnmXngvxGiTnXoO
+	 zaBKGzTAHT2z666GhuGiVBkI35y2tiWosVoebvtsBSWMDg7L2p8ZShZSaV2o5EtFpr
+	 xciyo7Ztx+/lT0XCurJFdRDBdyfvKnJWzPHKTZM5TLABM8Wh2WzIW+b/55mZL64g1m
+	 wdiHuOJdCAf0PJAiPovK1kfdJDTUEmi+ZWH+w/DyfofuKQUlQu18Gf52Vo2BtBKP5V
+	 3RRQ4EilG+uTjNnFe6WIVhRItgR8BQGcqGrX2bR9LbW9zBjJpMbyGGQevBAdDFRNrz
+	 B1wRWBmKa6PTQ==
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-39faaf1efd3so15479151fa.0
+        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 06:23:45 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoZGunM4R/PF0R3wHFLDLD//U/OiY6Fpw3nMPwR9oYZ0qkK9LZCuI9prZuUHG+Bv+eNpdh+nFAVIQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwrqdiPdNIhY/z8pg7FW4QMHlhx6Pb/UT7dqpcMJuk6qCPSSwkV
+	7yZkj9pFTWM889H8X7je5ByoJsZGhr27pzeFHYkl9z1vHx8VqGMmCjmfFhqvnOOxJad7Sv4D5E9
+	zlBlTTxMsxfk6d0jAJHuN6Mi36urHKnUyzvK9K3TF9A==
+X-Received: by 2002:a05:651c:b07:b0:3a1:2b72:b992 with SMTP id
+ 38308e7fff4ca-3a12b72ba9fmr1886351fa.23.1786627424290; Thu, 13 Aug 2026
+ 06:23:44 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 13 Aug 2026 13:06:38 +0000
+ HTTPREST; Thu, 13 Aug 2026 06:23:43 -0700
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 13 Aug 2026 13:06:38 +0000
+ HTTPREST; Thu, 13 Aug 2026 06:23:43 -0700
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260813123841.GC1820248@google.com>
+In-Reply-To: <20260720-monza-wireless-v5-3-69ec6743543c@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
- <20260803-arm-psci-system_reset2-vendor-reboots-v24-4-889281373870@oss.qualcomm.com>
- <20260813123841.GC1820248@google.com>
-Date: Thu, 13 Aug 2026 13:06:38 +0000
-X-Gmail-Original-Message-ID: <CAMRc=MdA_zM_pHCmk7dd7kosqvNmFgA+iXvHS4qpNs9bdsUMCg@mail.gmail.com>
-X-Gm-Features: AUfX_mxLcl-KphrvU6gLOMupiRghMpmm1J92bVQek0OJwjAsSLdXf3P9i5s9MC4
-Message-ID: <CAMRc=MdA_zM_pHCmk7dd7kosqvNmFgA+iXvHS4qpNs9bdsUMCg@mail.gmail.com>
-Subject: Re: [PATCH v24 04/12] mfd: psci-mfd: Add PSCI MFD driver for
- cpuidle-psci-domain cell
-To: Lee Jones <lee@kernel.org>
-Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Souvik Chakravarty <Souvik.Chakravarty@arm.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	Mark Rutland <mark.rutland@arm.com>, Conor Dooley <conor+dt@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, John Stultz <john.stultz@linaro.org>, 
-	Moritz Fischer <moritz.fischer@ettus.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	mfd@lists.linux.dev, Srinivas Kandagatla <srini@kernel.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+References: <20260720-monza-wireless-v5-0-69ec6743543c@oss.qualcomm.com> <20260720-monza-wireless-v5-3-69ec6743543c@oss.qualcomm.com>
+Date: Thu, 13 Aug 2026 06:23:43 -0700
+X-Gmail-Original-Message-ID: <CAMRc=Md6dL8uggf8OJH=tNzCewh7N0AVdVEs5qQreRM3GvcNng@mail.gmail.com>
+X-Gm-Features: AUfX_mx61ZVP34DETlpjsRwYgr3TOISCyOvMoQJeDq10_4_GoxNP6u95XH3-RVQ
+Message-ID: <CAMRc=Md6dL8uggf8OJH=tNzCewh7N0AVdVEs5qQreRM3GvcNng@mail.gmail.com>
+Subject: Re: [PATCH v5 03/11] power: sequencing: Add pwrseq_is_controllable() API
+To: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
+	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 13 Aug 2026 14:38:41 +0200, Lee Jones <lee@kernel.org> said:
-> On Mon, 03 Aug 2026, Shivendra Pratap wrote:
+On Mon, 20 Jul 2026 10:04:05 +0200, Loic Poulain
+<loic.poulain@oss.qualcomm.com> said:
+> On some boards a power sequencing target has no host-controllable enable
+> for its function, for instance when the enable line is not wired up to a
+> GPIO and is hardwired to an always-on level. The pcie-m2 "uart" target is
+> one such example: when the M.2 connector does not route the W_DISABLE2#
+> signal to a host GPIO, its enable/disable are no-ops and the consumer
+> cannot gate the Bluetooth function at all or exclusively.
 >
->> PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
->> Currently, both the PSCI core driver and cpuidle-psci-domain bind
->> directly to the same PSCI node "arm,psci-1.0". Additional consumers, if
->> introduced, would also need to bind in the same way, leading to several
->> drivers attached to a single device node.
->>
->> Introduce a PSCI MFD driver that binds to "arm,psci-1.0" and registers
->> PSCI child cells. As the first user, register cpuidle-psci-domain as a
->> child cell.
->>
->> Update cpuidle-psci-domain to probe as an MFD child and use the parent
->> PSCI node for power-domain traversal.
->>
->> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
->> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
->> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
->> ---
->>  MAINTAINERS                           |  1 +
->>  drivers/cpuidle/Kconfig.arm           |  1 +
->>  drivers/cpuidle/cpuidle-psci-domain.c |  9 +-------
->>  drivers/mfd/Kconfig                   | 12 ++++++++++
->>  drivers/mfd/Makefile                  |  2 ++
->>  drivers/mfd/psci-mfd.c                | 43 +++++++++++++++++++++++++++++++++++
+> Add a generic pwrseq_is_controllable() helper. It reports whether the
+> target's final unit provides a host-controllable dedicated power actuator.
+> The target can implement a new optional is_controllable() callback,
+> reporting whether that actuator is effective on this target (for example
+> depending on GPIO presence). If the target does not provide the callback,
+> it is assumed to be controllable.
 >
-> We don't usually allow the use of the term MFD in devices.
+> Note this only describes the target's own enable actuator. It does not
+> imply that a power-off reaches an electrical OFF state, since a target may
+> have multiple consumers. It also does not mean that power is uncontrolled
+> for the target's dependencies: those may still be gated on their own. And
+> it does not restrict consumers from calling pwrseq_power_off() either,
+> which remains valid to drop this consumer's vote on the (possibly shared)
+> resources and dependencies of the target.
 >
-> What does this do?  Is it a mux?  psci-mux?
->
-> If not, think about what it is and call it that instead.
->
+> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
+> ---
 
-My two cents: I'd call it drivers/mfd/arm-psci.c
+I don't think it'll make v7.3 but:
 
-Bartosz
+Acked-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
