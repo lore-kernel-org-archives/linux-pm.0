@@ -1,114 +1,74 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB68237EFE4
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 19:02:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A931625;
+	Fri, 14 Aug 2026 00:05:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786647726; cv=none; b=oDDN9K2QRh1ZGFdDBAHzb+StCynHt3EjSV7F1Y1kT2D8mKKem0ZY/doNa1sJsTVONOcqmX4DEufdf7pYFdGr07vPU7zKji9ieYySC9iu5AjIDrizhnlsFJX6iIdhewoS94Hch9tBKnC+XO/7kokdhw9J0z1sl0aFbbWEkyKPdLA=
+	t=1786665911; cv=none; b=g32R/lE464wgYF4pCUxeeprfCpJ6j/uGjIyxahOGB/7f/UhXaaw9UPuB+JQGmpCNuRcjSXLdNVj96hINS5Jf8vjj3mXvIVtvofwLeR5dICkcKXA2L3tMxQ4zZOZ4h/n3gdh2Ux3CxH0qIzQdgg2WWPoUKdfojGBoFVLRmdBGgOE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786647726; c=relaxed/simple;
-	bh=WpTsmZPh+xA4CuSe3W5eF4OeOihCnTNllNHkyE4t/rw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Uf8p+6zGaobJn/N0TnEv4OJdPHcMHCfzKpEmZsAIdQad7ESoZZ3x72y6pqLZerM6jWbtwibjBUQq237L0kFMNiylQ7ivhngMfgbyVEEUe4uMTLW1svyJHrUu2Tq8EvFbqh3NlQkk867LV+i0cpEkFOOWIBEXQyChIfy3wkfs6Kg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A6d2ODWY; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786665911; c=relaxed/simple;
+	bh=HTYz+1+OXx/VMQAT+H8BrHcyFrgGh7it1g/3K6nlOgg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZOWE1kw8av0xJZgyWJwwDkZuSasf00IKR4JavP5rWR+tcfkiiSHI/xwP07PIirmWl2MVcTVi0njG4CuEaAMA5fcvesRX5IT6z9vxW1LM7fnHn6orfvipXd6n9nSKdsx3zatcl2GKQ0GoE5Psx+eK79lMxAk/JdDS7dI4sFrcfkU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tz7opB8B; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A6d2ODWY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 948F41F00ADB
-	for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 19:02:05 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tz7opB8B"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AAEA11F000E9;
+	Fri, 14 Aug 2026 00:05:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786647725;
-	bh=7XtP+yf/djpFxQy4oMz+DWQ7ozEeQd8CQGDADFYcLr8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=A6d2ODWYlAeZDvN275UgSVQVaDWoBqyLGqmo2OOKJnZbTPCyQLfrJXQhgX/tjoXsF
-	 cKDsKEiawGIBbhn5o1jIwQWhKkhelpQLM28cuLmJF65nM1wNh7B8qYf+y/ZiX9iwsF
-	 +5Y/sCVwnYBPZFwnZSANJyz/iJMHArQcs7781JIWYbYz5uc+Gshx7HtV73OQuxDu2C
-	 rP2cGizRFwlMko/YGInIKBHNgJUzw1Op6aPjh4HcwqOTwQZlUCjheiG15ElueR0UQo
-	 U772ZwTi51sdmO9mgZOlv0+BMDxKPTmbJvur+nI7P4M2o+T3eQB2sWQl32PHsZ7NXx
-	 83In+qy7dOE6Q==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3a115c08b0bso1784771fa.0
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2026 12:02:05 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RoQGVVMVaD/UCEG3aWzC933Y+rjjqw8haAWQOCXI03ybL7Y1xGCNFc3STwkcbR03wkdWiSIyBXQmw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzv8zoCS63v16tty/PYpxVg1GT2ou+NlePMZAA7j3XW0/DjMqvF
-	j1TOlklKgHR2TFvYRszLOUTrb6CKyjW7NmLX4C/y3J7/iJKmprvHahiYNCuPotSsOzfPGmD4FGd
-	II7zz3VJwpAVI+kJE/HO6SqYN4R256Go=
-X-Received: by 2002:ac2:51c8:0:b0:5b2:a5e9:3a9e with SMTP id
- 2adb3069b0e04-5b45919edb9mr2462e87.48.1786647724009; Thu, 13 Aug 2026
- 12:02:04 -0700 (PDT)
+	s=k20260515; t=1786665910;
+	bh=2UwPabubH9K9Mv/vNFA1OjOJl8HywX8fyL/3Qra5Beg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Tz7opB8Bi2eT5DOEbKUoUua+D6kQFLVGivUrNK3XJBghP9xctbaM3RJIXpTlM7SiH
+	 tmaserpW23FVCqUKMIpt7mBOXxxnzbmzR9DUiy/oJ2Nmvznir6u8tqIVDegrgv3Eaa
+	 oUmdzrenCWQzxBri2pCAUTWkXHh6+YQGVO0XTW9XD+6FqZcellRQ1hg33XDz3LaH98
+	 lc00dM9FLu08MrvpyNF6iIEme7ns+F/KVkVL4D+rA9+sP68p0Z9j9JVMML5c8dj/on
+	 rGF3wWG5+Nm2TEUkCZj9DExnlv9wt+RNg4Z6qFgQS0xGajF/hyVOM5BZzZ6f20Szrd
+	 G8QgZKUAKccuA==
+Date: Thu, 13 Aug 2026 17:05:05 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Mark Brown <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>, linux-iio@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Subject: Re: [PATCH linux-next] thermal/drivers/qcom-spmi-mbg-tm: Add module
+ namespace import for IIO_CONSUMER
+Message-ID: <20260814000505.GA3919970@ax162>
+References: <20260812-qcom-spmi-mbg-tm-ns-modpost-error-v1-1-d849390d2714@kernel.org>
+ <20260813023543.6936b188@jic23-huawei>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <468d3bf3-fbdb-4548-bde8-1c94ad6f15da@oss.qualcomm.com>
-In-Reply-To: <468d3bf3-fbdb-4548-bde8-1c94ad6f15da@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 13 Aug 2026 21:01:42 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jwVVedFiw0NcL8pNN1CsxvVfRNOn17L_oW5aQbC04XVQ@mail.gmail.com>
-X-Gm-Features: AUfX_mwnWUDfJyFCPY-ZW3rA5o_XZsXOXtM31NZ0n-VMUlWSv7WHaHEEb7aYvj4
-Message-ID: <CAJZ5v0jwVVedFiw0NcL8pNN1CsxvVfRNOn17L_oW5aQbC04XVQ@mail.gmail.com>
-Subject: Re: [GIT PULL] [resend] thermal drivers fixes for v7.3-rc1
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <Lukasz.Luba@arm.com>, 
-	Zhang Rui <rui.zhang@intel.com>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
-	Linux PM mailing list <linux-pm@vger.kernel.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Miquel Raynal <miquel.raynal@bootlin.com>, 
-	Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260813023543.6936b188@jic23-huawei>
 
-Hi Daniel,
+On Thu, Aug 13, 2026 at 02:35:43AM +0100, Jonathan Cameron wrote:
+> I did plan for this being a possible issue:
+> 
+> Ideal is merge 
+> https://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git #iio-inkern-namespace-ib
+> to the thermal tree.  If I'd called that out originally (or a thermal
+> rebase is a possibility) it would be cleaner to do this before the
+> qcom patch adds another user then squash what you have here in the appropriate
+> patch.  Alternative is do it as a merge conflict resolution whilst merging
+> in that tree.  If the second, I'd also mention that in the thermal pull request to
+> Linus given it's a little unusual.
 
-On Thu, Aug 13, 2026 at 5:53=E2=80=AFPM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> Hi Rafael,
->
-> please consider the following changes since commit
-> ccda015d76736dc5ccefc70a040b9304a6c2000f:
->
->    Merge tag 'thermal-v7.3-rc1' of
-> ssh://gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux
-> (2026-08-10 12:53:41 +0200)
->
-> are available in the Git repository at:
->
->
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
-> tags/thermal-v7.3-rc1-fixes
->
-> for you to fetch changes up to 61faa946db1a9c94a3f48e587235d9b41bd8b07d:
->
->    thermal/drivers/armada: Fix missing bitfields include (2026-08-13
-> 17:12:42 +0200)
+Ah, I did not realize that you had a stable branch with the module
+namespace patch. Merging that in then applying this to the thermal tree
+seems like the best course of action. If rebasing is possible, I do not
+mind this patch being squashed into the original.
 
-Pulled and added to linux-pm.git/thermal and it will be merged into my
-linux-next branch tomorrow.
-
-Thanks!
-
-
-> ----------------------------------------------------------------
-> - Fix missing bitfield include headers in Armada and QCom SPM BMG
->    drivers (Daniel Lezcano)
->
-> - Fix missed file when manually applying a change after a conflict
->    resolution for the QCom SPMI ADC TM5 Gen3 (Daniel Lezcano)
->
-> ----------------------------------------------------------------
-> Daniel Lezcano (2):
->        thermal/drivers/qcom/spm mbg tm: Fix missing bitfield header
->        thermal/drivers/armada: Fix missing bitfields include
->
-> Jishnu Prakash (1):
->        thermal/drivers/qcom: Fix missing spmi adc tm5 gen3 file
->
->   drivers/thermal/armada_thermal.c              |   1 +
->   drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c | 434
-> ++++++++++++++++++++++++++
->   drivers/thermal/qcom/qcom-spmi-mbg-tm.c       |   2 +-
->   3 files changed, 436 insertions(+), 1 deletion(-)
->   create mode 100644 drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
+-- 
+Cheers,
+Nathan
