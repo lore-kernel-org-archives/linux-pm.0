@@ -1,88 +1,86 @@
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A3A334A773;
-	Fri, 14 Aug 2026 04:56:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2177233938B;
+	Fri, 14 Aug 2026 06:30:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786683369; cv=none; b=CBESiL3lZxZNYFNWzykYpFb+vaSX//d4V/HIs/cwmgOYmZLfToNjLUkxKYOup1Kt3opzNteTkL5uCBfRpy5GkwBdls7aOMNtjEn4i/OU8WPHYGEGw0lyJfczkrrrHD3Jbe5Aej919eV8/gTLzkmrtrZxOC4jzW/1EFTMjj6ED+A=
+	t=1786689036; cv=none; b=IpFCPFLp/fzvIXvXyqYLb/twDhBeGTQEPiiw+A+P0VDQlV8xCjCvW2Co35BZm1wsfabsBahwUVNsGZLj+QCQKYZIrv5IYYr+nkotCxHy+3EjB8MYKAcoWyZrTc28/b5dBI2b8h8f/+zQURKGa12miXii68VH1UcIedCAdVJzJLE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786683369; c=relaxed/simple;
-	bh=Ks1V5XSRODmumNlyPA1TO0YOQ2IvAcisEQANVgM5r8s=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=Hb6pxYArt8dRSqfMQlNFO3kKITJqBAY2ao/sSzmfUX9qC3KywJAmaYgLdx2OCTNZrUlQmbYWFSywjqto26jzlJljScM9XEq78Y1g/aTTA48RFQqaO1o0GCzF73C3UHQp6URNrfx69kzDqrBt9BFzM/3CjtJ0SKCv+gYAqtTVu6Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=XpNmq1Or; arc=none smtp.client-ip=198.137.202.133
+	s=arc-20240116; t=1786689036; c=relaxed/simple;
+	bh=00WqtERUtnYBEUzQd0/SsEG+LWqmr6egKXeBQhrAo2I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=t028Cac6kVHo1GIfHFe3j4mnRMcmtslVwvR9zYQypMCz6184HTKEL/ddOynpnD++Z59cevY8gdVAkf7EU7Qs7ltRy69tEGK7c8Z8zP2KeCp+0ToMhhb8rPO213ek8sReFDlOkUv2F3PmjXgqq34WC5M9Jo88zTwv3OUmRXbkrMI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=WsNtQ8Tn; arc=none smtp.client-ip=198.137.202.133
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XpNmq1Or"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WsNtQ8Tn"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Cc:Content-ID:Content-Description;
-	bh=bDP63tpL4siQ/lHSUsYZcgI8mBQWH6zkvM1fIiNwoUs=; b=XpNmq1OrgfuJBQTTJRRlhOh976
-	ESM45S/OcCAf5VbAT0Je+G1ltop2AP8grklMsC647a6dr8Dr8rrkwZv4H3SAB8Xss/8bDs8CLFFKq
-	kRr+EJRZ/uA80S84eCyu+iw85XGErfO2iPPuQgZy+c62wheKJtShaTY/d7xeHiQ6HkaQSqh/LacOh
-	PDY9d32+SHBblyXUY2p+9/qOL+Hktba71mBcEJxnEZC5hqh19kqLKygRpS+TXNhP4P3pmuXd85Piy
-	WkRJfTahsW8bcqxEYWQe5bkaJ5Zdz8RypM4WIBy9zIFemtUC56cB8aF/HOd+9QJ0Xwmi6kpoW+QeK
-	ccMUXW/A==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wujxX-00000001ws4-3IcM;
-	Fri, 14 Aug 2026 04:55:59 +0000
-Message-ID: <b28f5646-48db-4d6f-89f8-409551f1b7b1@infradead.org>
-Date: Thu, 13 Aug 2026 21:55:57 -0700
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Transfer-Encoding
+	:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=00WqtERUtnYBEUzQd0/SsEG+LWqmr6egKXeBQhrAo2I=; b=WsNtQ8TniakQxZNdnuggvJh74C
+	OE+4sgkHXEZuda9o7TCIN8ZpLZKayt5lMhfPBdi9qDc9BllPvmwc41LE3Qr0O6NB/jVAV2LwQuFig
+	FlIYI5FxGw1AG6pjRP5HOMuYO5WfUr8kHRcZ5XmnhP5l608QVpHTXsW/QRiOF9QYwFUb+EdK34tUE
+	XdU8zGpWXJQx8aCNuUFimFxp5McV/biDcAuI44NAc+pepbC7nfgSfQjLeLxMmXbAsHtq7BhOwpN9J
+	r7MJ/rT1jha6cCGI6WlKmC2yAcqtpZJ5m7y8EPyTIiQMCzeTMqJ9JXrKo+i+hgy46uCKXsdA/qzEI
+	gu1YioiQ==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wulR0-000000022L3-2Xh4;
+	Fri, 14 Aug 2026 06:30:31 +0000
+Date: Thu, 13 Aug 2026 23:30:30 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Daeho Jeong <daeho43@gmail.com>
+Cc: Bart Van Assche <bvanassche@acm.org>,
+	Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+	linux-f2fs-devel@lists.sourceforge.net, kernel-team@android.com,
+	Daeho Jeong <daehojeong@google.com>, linux-fsdevel@vger.kernel.org,
+	linux-block@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2] f2fs: quiesce background threads during system
+ suspend using PM notifier
+Message-ID: <an62BorNrc-IX228@infradead.org>
+References: <20260806170108.2100312-1-daeho43@gmail.com>
+ <ann0OPPglToV_hjs@infradead.org>
+ <ff74edb1-43c7-485f-ab78-ec13b500a0bb@acm.org>
+ <CACOAw_zqOS0vHdQV6WoUJyxnDf=kdDAz27pNGDLdQLUdUYOzBQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] Doc: admin-guide: pm: Removed unnecessary backticks
-To: Bhaskar Chowdhury <unixbhaskar@gmail.com>, ray.huang@amd.com,
- mario.limonciello@amd.com, perry.yuan@amd.com, kprateek.nayak@amd.com,
- corbet@lwn.net, skhan@linuxfoundation.org, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260814035753.1978031-1-unixbhaskar@gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260814035753.1978031-1-unixbhaskar@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CACOAw_zqOS0vHdQV6WoUJyxnDf=kdDAz27pNGDLdQLUdUYOzBQ@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
+On Mon, Aug 10, 2026 at 09:53:14AM -0700, Daeho Jeong wrote:
+> On Mon, Aug 10, 2026 at 9:34 AM Bart Van Assche <bvanassche@acm.org> wrote:
+> > This information was shared earlier with Daeho
+> > (https://b.corp.google.com/issues/515470309#comment45): [ ... ]
 
+This does not seem to be information available to the public.
 
-On 8/13/26 8:52 PM, Bhaskar Chowdhury wrote:
-> Removed the superfluous backticks in the sentence.
-> 
-> Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
-> ---
->  Documentation/admin-guide/pm/amd-pstate.rst | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-> index c7bf7cc2db87..a37a51c8b042 100644
-> --- a/Documentation/admin-guide/pm/amd-pstate.rst
-> +++ b/Documentation/admin-guide/pm/amd-pstate.rst
-> @@ -471,7 +471,7 @@ update the core ranking and set the cpu's priority.
->  Kernel Parameters
->  -----------------
-> 
-> -``amd-pstate`` peferred core`` has two states: enable and disable.
-> +``amd-pstate`` peferred core has two states: enable and disable.
+> f2fs threads are already freezable: f2fs_gc and f2fs_discard are
+> already registered with set_freezable() and call try_to_freeze().
+> However, a race window exists: a thread checks freezing() (false),
+> calls submit_bio(), and gets trapped inside __bio_queue_enter().
+> Because it gets blocked before reaching try_to_freeze(), it triggers a
+> PM freezer timeout.
 
-                  preferred
+This does sound very much like a block layer freezing issue.
 
-Otherwise LGTM.
+> Point taken. Aside from this f2fs patch, I agree that addressing this
+> at the block layer or PM subsystem level would be a much cleaner,
+> system-wide solution.
+> I’ll give more thought to how we can properly solve this race
+> condition for the entire system, and I'll loop in the relevant
+> PM/block maintainers if a viable generic approach emerges.
 
->  Enable/disable states can be chosen by different kernel parameters.
->  Default enable ``amd-pstate`` preferred core.
-> 
-> --
-> 2.54.0
-
-
--- 
-~Randy
+Thanks, it would be great to fix this properly.
 
