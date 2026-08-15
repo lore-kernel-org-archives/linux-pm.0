@@ -1,75 +1,138 @@
-Received: from mta1.migadu.com (out-49.mta1.migadu.com [95.215.58.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2C4C35E944
-	for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2026 09:51:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EE454192F7;
+	Sat, 15 Aug 2026 12:52:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786787517; cv=none; b=qaYUMuu2e8zWZbcM1ksQJM8HLQDMSLUFV3gXR15uTgFJAHKihY7MNJ8hj4Y4afiYFCSaXhcGbCLl85nKoylUDWB9triqrurNSNj7S+tHIRUFWBrRe7NNZU0tuBfMPvl1Kimw9ywmHWWWJxdo2wix0XZks7QMTGAWj1lseIQ3dLQ=
+	t=1786798337; cv=none; b=iVs9X81QS5azsWaog+b8RD63f6l5qkqtFutrhXT/sf/njNSSM8WvV3nW9/FJ9mRtY/bq5HLzNS7/2KoWWi4n277IS2q4czAcoZHMMubJowjpxtb0oO9Ml6CLiR3+YL5slNugSUQvxcpA8j1MMKIFEgc0Bzq28urxILOt0y5SD6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786787517; c=relaxed/simple;
-	bh=QWdTBcf0vqrmBmp4CDFL905KC/WN+kA12wxfTkcS118=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kw9BNL0t7a9Tj59BGZlPLu8liety10/GHtP+LHGyIDmPHTHu+mCL3//oTdZf9/mMXWrQWkqPgFpnxUzQTwpcEbCyZZkpeIPiwOYqbMT/z+PKYZayC3QbbEVtS3zWpRqypyW60vccIZ6/ujqYUzB9VJyBZsF1L/fAGvNBeirJX5M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=L+mY1cZr; arc=none smtp.client-ip=95.215.58.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1786798337; c=relaxed/simple;
+	bh=Umy4SAEo6uAoGiafMqH/85OiBfhesCYOE6/0DYL77NA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uJSDVW+mNFOllhrilTwz5JQwnlfgn/HwlFO2rayV4zw8Fnm8z3ZCRWx+PkkI3SSmZDsoAjkBAa5vQInro/2R/fYa90vQNT9iG0i48EzIXrf7A180Ae+DaFdltcPjE/wbinGfyvHaTY/jbPVbTtvKzdO2xwOPuNWZGvguOq95T/Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ex7HRrY0; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="L+mY1cZr"
-X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=QWdTBcf0vqrmBmp4CDFL905KC/WN+kA12wxfTkcS118=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1786787513; v=1; x=1787392313;
- b=L+mY1cZr+aT4pJZVkwl9rA6dkHLs1Ajy8vO+4N9yN1ZMlA4iNYe+MEHfHeJajLmZv+X36O0J
- WFwMMb2ZQC7aM1GV9E4yeGaCYiXJBF+YaXLaRvO5D3jj/QtIoef+6ipqgMX/xYvez2MwQflKA7C
- rTo4L900yKHlHabj6Qo5v8zo=
-X-Envelope-To: linux-pm@vger.kernel.org
-Received: from fedora.fritz.box (62.216.208.217)
-	by mta11.migadu.com with ESMTPS id 5daa9b9628cb2088;
-	Sat, 15 Aug 2026 09:51:53 +0000
-X-Migadu-Flow: FLOW_OUT
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Yury Norov <ynorov@nvidia.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: intel: powerclamp: Drop redundant clamp() in duration_set()
-Date: Sat, 15 Aug 2026 11:51:41 +0200
-Message-ID: <20260815095143.3821-2-thorsten.blum@linux.dev>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ex7HRrY0"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786798336; x=1818334336;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Umy4SAEo6uAoGiafMqH/85OiBfhesCYOE6/0DYL77NA=;
+  b=Ex7HRrY0fl9nSE5da93WYZ1i0wqoZECYeDp0ietU41l8bkFKis0tkQH+
+   kI9J4BAFT2jc+8B+n0HyxkF1f56tplpG4lU0ObJcWDOiLpyK8235jsaLh
+   EKyNXqIt0rmJtn6tAwoUqMTQ7G5X5fjbftLZtXDWNQFPegOLg/PH/5Odb
+   iZ7jfJ9dlerhrB5snruuUCKXrpPLw49JKR/cpfx2x3iVo4C9Y4vMxVVUU
+   iXWU5NxTp14WByxpyXUifYbUYZjF/dU7UASeHupYfy9z6tmf860IYGJeQ
+   4j3dm8bNHg545lZeu5ok8IxGF6EJf8xy9bxT2W6ZL68l9mD7pUvkAV9ur
+   w==;
+X-CSE-ConnectionGUID: d8Sd3b6jR56VU6JVfVhZfg==
+X-CSE-MsgGUID: nG+N2dvoQTuqf4IX2nt6Vg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11875"; a="91023688"
+X-IronPort-AV: E=Sophos;i="6.25,225,1779174000"; 
+   d="scan'208";a="91023688"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2026 05:52:15 -0700
+X-CSE-ConnectionGUID: qgYPuavERiqmzOgHBS5DTA==
+X-CSE-MsgGUID: 5SFEft+rQ2uPG02kkBDAnw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,225,1779174000"; 
+   d="scan'208";a="268323227"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+  by orviesa004.jf.intel.com with ESMTP; 15 Aug 2026 05:52:12 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wvDru-00000000c1y-1d3n;
+	Sat, 15 Aug 2026 12:52:10 +0000
+Date: Sat, 15 Aug 2026 20:51:37 +0800
+From: kernel test robot <lkp@intel.com>
+To: jipinghuang <jipihuan@qti.qualcomm.com>, rafael@kernel.org,
+	daniel.lezcano@kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	jipinghuang <jipihuan@qti.qualcomm.com>
+Subject: Re: [PATCH] Fixed a bug related to thermal framework boundary
+ conditions: trip points do not need to be updated when polling is active,
+ whereas they must be update to re-enable the irq when polling is inactive
+Message-ID: <202608152020.udg9HfCU-lkp@intel.com>
+References: <20260728024856.1596951-1-jipihuan@qti.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=788; i=thorsten.blum@linux.dev; h=from:subject; bh=QWdTBcf0vqrmBmp4CDFL905KC/WN+kA12wxfTkcS118=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkNZutzfr0O9DUXEdB99JSn8WxY0dt5l3y/PikWlWzrf rxpyo6kjlIWBjEuBlkxRZYHs37M8C2tqdxkErETZg4rE8gQBi5OAZjIRwtGhl2dFnyfDEPMMk49 dT678obLlvlHqx7G7apefSFFM+PV0z+MDAsN+7/aPFeMy73G8zL/j8aBDH1P+fqydJWnL2X4v90 8zwgA
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260728024856.1596951-1-jipihuan@qti.qualcomm.com>
 
-duration_set() rejects any new_duration outside the valid range before
-the assignment, making the clamp() call redundant.
+Hi jipinghuang,
 
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- drivers/thermal/intel/intel_powerclamp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+kernel test robot noticed the following build errors:
 
-diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
-index bd7fd98dc310..1efdaabc4bb8 100644
---- a/drivers/thermal/intel/intel_powerclamp.c
-+++ b/drivers/thermal/intel/intel_powerclamp.c
-@@ -94,7 +94,7 @@ static int duration_set(const char *arg, const struct kernel_param *kp)
- 	}
- 
- 	mutex_lock(&powerclamp_lock);
--	duration = clamp(new_duration, 6ul, 25ul) * 1000;
-+	duration = new_duration * 1000;
- 	mutex_unlock(&powerclamp_lock);
- exit:
- 
+[auto build test ERROR on rafael-pm/thermal]
+[also build test ERROR on linus/master v7.2-rc7 next-20260813]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/jipinghuang/Fixed-a-bug-related-to-thermal-framework-boundary-conditions-trip-points-do-not-need-to-be-updated-when-polling-is-activ/20260814-212058
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
+patch link:    https://lore.kernel.org/r/20260728024856.1596951-1-jipihuan%40qti.qualcomm.com
+patch subject: [PATCH] Fixed a bug related to thermal framework boundary conditions: trip points do not need to be updated when polling is active, whereas they must be update to re-enable the irq when polling is inactive
+config: x86_64-kexec (https://download.01.org/0day-ci/archive/20260815/202608152020.udg9HfCU-lkp@intel.com/config)
+compiler: clang version 22.1.3 (https://github.com/llvm/llvm-project e9846648fd6183ee6d8cbdb4502213fcf902a211)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260815/202608152020.udg9HfCU-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202608152020.udg9HfCU-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/thermal/thermal_trip.c:64:83: error: use of undeclared identifier 'trip_temp'
+      64 |         if (tz->prev_low_trip == low && tz->prev_high_trip == high && tz->temperature >= trip_temp)
+         |                                                                                          ^~~~~~~~~
+   1 error generated.
+
+
+vim +/trip_temp +64 drivers/thermal/thermal_trip.c
+
+    53	
+    54	void thermal_zone_set_trips(struct thermal_zone_device *tz, int low, int high)
+    55	{
+    56		int ret;
+    57	
+    58		lockdep_assert_held(&tz->lock);
+    59	
+    60		if (!tz->ops.set_trips)
+    61			return;
+    62	
+    63		/* No need to change trip points */
+  > 64		if (tz->prev_low_trip == low && tz->prev_high_trip == high && tz->temperature >= trip_temp)
+    65			return;
+    66	
+    67		tz->prev_low_trip = low;
+    68		tz->prev_high_trip = high;
+    69	
+    70		dev_dbg(&tz->device,
+    71			"new temperature boundaries: %d < x < %d\n", low, high);
+    72	
+    73		/*
+    74		 * Set a temperature window. When this window is left the driver
+    75		 * must inform the thermal core via thermal_zone_device_update.
+    76		 */
+    77		ret = tz->ops.set_trips(tz, low, high);
+    78		if (ret)
+    79			dev_err(&tz->device, "Failed to set trips: %d\n", ret);
+    80	}
+    81	
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
