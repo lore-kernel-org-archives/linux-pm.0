@@ -1,68 +1,92 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDE9A230BE9;
-	Sat, 15 Aug 2026 20:47:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04895331EB0;
+	Sat, 15 Aug 2026 23:59:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786826828; cv=none; b=QAP5HKW4x4HlYs/RMUtWa8RaIyne8NdU5uAj7kGx/uojAhKlPDyhsN38KofufMW7DaSCXuESaCKTmK75af6rsteeb9a56TxT6u72unbkgSWGZ64CCrPTdiBg9+viibG2vAGyf8CtXKcUoEWShw0DE281J7jlSPdkHao+iU1Ke84=
+	t=1786838355; cv=none; b=MCcG94hoLlyST31inq+oSkRv8f6CSlO0TXUJ6IH/y1np3z+bCc44UTsIcR2iSf6rn2T5NEBwsk3RXUTS5IvCCFsgu5tkjPTqx0wxbHOJuwQfANkI9ws6auR9CSkAJn7/hn32GixhuVeaWkmnroi+D7YKERqPvjxWCpjlfyJkNp0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786826828; c=relaxed/simple;
-	bh=EGMqk8YyWE0MT4Vvvcwh1JTXrwsd39uYIGnhi7a+Ep8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tHhV5rM5xpOvE4M9Kv6WzF4qmaYc437/ZUWYXSspAMwVoHl72Xh5Z2Lk9IFDdFLVJBhpHLVhegU08cGTJfXcBgS93JebhmoxbYIlTX6HHU5zMpsXQNZzO+FW2DC/QdGvJl6qFo2dOAEaChML2tuPouCkHqPLeiivkEAlGfO0XHY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PMBMn+dG; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786838355; c=relaxed/simple;
+	bh=vQIy8Lzzf7v2RWIWimMjFYNxRWwl3Vhpoo9uAAAkoCo=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=GFJb6Z9mBUipRxIAK8WXBVAZdVv6S5wxASTvAsmFYn/DvuvnBqEvLwt97OEX0z2Kjy6VTwXDxCUt4paXLGYmKEVqQsPA+sGWY0EvxXSWk/PUMDRH5peepLfN6dWrH8u+ni1IxvL5KEIwZ0D8Bqj/2boGJx/b/SCuLkObtexZFb0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Opn47OdJ; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PMBMn+dG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68AF71F000E9;
-	Sat, 15 Aug 2026 20:47:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786826826;
-	bh=d306Y2pLMoH+tssTgx0Bs6ZYvO5VsVEYshmJWtDJLzw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=PMBMn+dGIJ1OyQDRPWNpyJQWGwD8YECe0/g4Z757cxhTtttBeIHaRXRveYMFD4ALh
-	 fFn2OmyKZLHKQWxCUMbrNewHwIl4HAt88lTDqsC9JVkMwi7slztP75iqYoVshw0Ywq
-	 bN7DsG97hcGmt6UT879xEtQQisnhZNQ+eYWWoLvPes8OGAzjZMvingde9fjiq+f6Of
-	 9asH/TSx6UxKipRpHC/n+I36O9hRGjRiVBIhh7SBzfc0cYxHMZeYEHRSM32xRiy9tp
-	 Abb2GopHQ5tArSeVZRFsag9waHe943d5JP3SiTopdq/Io9QBqYezoqRmG9+mpNCEdY
-	 07svd3nhiQ1yg==
-Date: Sat, 15 Aug 2026 15:47:06 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Yijie Yang <yijie.yang@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, linux-kernel@vger.kernel.org,
-	Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	Conor Dooley <conor+dt@kernel.org>
-Subject: Re: [PATCH RESEND v2] dt-bindings: interconnect: qcom-bwmon: Add
- Maili cpu-bwmon compatible
-Message-ID: <178682681257.2186154.3664708840148254329.robh@kernel.org>
-References: <20260811-bwmon-v2-1-80f7f150ab9e@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Opn47OdJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786838354; x=1818374354;
+  h=date:from:to:cc:subject:message-id;
+  bh=vQIy8Lzzf7v2RWIWimMjFYNxRWwl3Vhpoo9uAAAkoCo=;
+  b=Opn47OdJfUwqudc0afd+92hTiTUF4lC7qLQ3RGAVKS0/Gh5WCDhKxnd1
+   PtkdPS9hVs0rTO6X5Ul4wQyiB6qQ3nI7ValpNglGuEkwD396kw2XkWwN2
+   w/H1XdoJDLax0d7iij6nlXe3AgYzrDnEJSrZpCSOwpd47wetPMgr18bQi
+   cZuPWoO9lDx4/SZviI9o2reAekYCorvPbKNUv2yNgf0AwDfFfxERFiYbs
+   FsKTFc4UE1l6f+nc6soBUKDQ4O9h+rvuDtQpQPC1oejrZMXyztEpYE9hq
+   uRgwObX7IGn9Ol53/DmVupYNaANCuzsehyvhNH6aUcuAxQBzwxlHFOxl1
+   Q==;
+X-CSE-ConnectionGUID: J8aLLxp6Q5K6B/Seej2lBw==
+X-CSE-MsgGUID: naebMU/mQYKPJcmp1pbADw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11876"; a="91040093"
+X-IronPort-AV: E=Sophos;i="6.25,226,1779174000"; 
+   d="scan'208";a="91040093"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2026 16:59:14 -0700
+X-CSE-ConnectionGUID: I3WyOQdSSwWn1/lZhLZH8A==
+X-CSE-MsgGUID: eqDNzFi6Te2+T3Cf+VgvHg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,226,1779174000"; 
+   d="scan'208";a="268815524"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+  by orviesa005.jf.intel.com with ESMTP; 15 Aug 2026 16:59:13 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wvOHO-00000000cXE-1Mcj;
+	Sat, 15 Aug 2026 23:59:10 +0000
+Date: Sun, 16 Aug 2026 07:58:35 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ db408378f6e367f0065d9617f16850179fed82bb
+Message-ID: <202608160722.s59iBg8Q-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260811-bwmon-v2-1-80f7f150ab9e@oss.qualcomm.com>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: db408378f6e367f0065d9617f16850179fed82bb  Merge branch 'acpi-soc' into bleeding-edge
 
-On Tue, 11 Aug 2026 16:46:47 +0800, Yijie Yang wrote:
-> Add the Qualcomm Maili SoC compatible string for the CPU bandwidth
-> monitor (BWMONv4). This falls back to the sdm845-bwmon compatible,
-> consistent with the existing pattern used by other recent SoCs such as
-> sm8750 and kaanapali.
-> 
-> Signed-off-by: Yijie Yang <yijie.yang@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - Drop Assisted-by tag; no functional change.
-> - Link to v1: https://patch.msgid.link/20260525-bwmon-v1-1-b8f6e189c3e3@oss.qualcomm.com
-> ---
->  Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
+elapsed time: 770m
 
-Applied, thanks!
+configs tested: 15
+configs skipped: 1
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha            allnoconfig    gcc-16.1.0
+alpha           allyesconfig    gcc-16.1.0
+alpha              defconfig    gcc-16.1.0
+arc             allmodconfig    gcc-16.1.0
+arc             allyesconfig    gcc-16.1.0
+csky            allmodconfig    gcc-16.1.0
+i386            allmodconfig    gcc-14
+loongarch          defconfig    clang-24
+nios2           allmodconfig    gcc-11.5.0
+nios2            allnoconfig    gcc-11.5.0
+parisc          allmodconfig    gcc-16.1.0
+parisc          allyesconfig    gcc-16.1.0
+parisc             defconfig    gcc-16.1.0
+sh                 defconfig    gcc-16.1.0
+sh         rsk7264_defconfig    gcc-16.1.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
