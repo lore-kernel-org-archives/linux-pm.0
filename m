@@ -1,100 +1,151 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C19664AA4;
-	Sat, 15 Aug 2026 17:03:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 530FC20125F
+	for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2026 17:06:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786813398; cv=none; b=Zks2Mx45BtvTsG/OFDXPr6VK4DQGrwfHFhKO3Zrnte9pC0ohNrzYG/o1/dGbo/wURkABp826tAExiD+raL0TxHWSPppwds57o+HPkrT97kHmsRkaweHPvCkjtbaqlSTh4DRwJtJpTauCRMhw+rLdrU2KKyRS9MIxM1Zgp0e4nx8=
+	t=1786813561; cv=none; b=ZjbW4CI37i10PVaLJc/CuzSa4O01g25hBwYxX553cSGvOdZHKesQMp44E5liW/kiXhJRmwTDDOSqElWHwxjkIpEjBE+m7aeVoznW5cZJYmbmr1xu7gUVgwYnv7LFQalFGROr+mmvwXMHjiemMQjs7UKSxsDJDnMHDrvpR4TTth4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786813398; c=relaxed/simple;
-	bh=bhBevUaAPMWbseENPldR+wLNZfFOj2Lewcx/FkNQ1Xc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=M/ZcdZO4FvEGiH8IpGP8EutzI7reaYh4/ORHucXoyvvndEiLwhvJNcCQu0+2THlP/hPYx0SZ8YbCF27bQZJyhXvI7fEQqk6YXLVba5DkuwjQhDVi6I5HnF468QN1q3K5ymLE9A4G8inPgbksEc8YgBUoXZusSnbdZI5HH8rf5K4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=LrKrJeZl; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1786813561; c=relaxed/simple;
+	bh=A6PvZk+pSZLRvR1PMUUKeXFHnO6m31GeXD9y2pbQqFs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GKBSWKd/ciF+0ECBzcCnC/zpndZZ/7RkfH4f6V1zHU5v/Wy9+1Lvk6K3jJwjsYGUaGelV6T3P2bUTmJV8vvw7Rnh5irLL/ZDdIEyHfSLZ/HixQk0TFxyS/MMY64QDLmT7MGmvv/87f5KoXlwD4mc3qWo/aF8flmvluPoMoYJTuI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YiVVEbSJ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="LrKrJeZl"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=VZVxuuCkqs9rOSZKXIO0YrnLkGj5pbh5BNRbfAikvGU=; b=LrKrJeZlyGK0gYbA3E82W/QPRI
-	roqqre6dtw/KBNKPTKm/NSbBfTDQ830+Ne0FHXO6bfvWLLrRS04b8FsDePQQ0SVDno8LGF0+YpWiF
-	xVcveyVKE0aITFePdFFdoVPp1hHBpoV4xXIroCyXqANUsbrz0mCn/arJ4TBfbKGRABYb/GnRh8sFx
-	rBnE0RO0ALtPwZny8yg4q9C+T7Re4GFAkrlUR4V+p6XoiFuV6iljfy/+ct2BvqP8aHD//aej3sdkn
-	q256eKkQFsAB+rS1RkNIOC1DKAtn0NCv6UiKVMRJQDVSzMCvx6Gcm7zaaxg2ENt8Np+pfGPmx8j1r
-	6pABzU6w==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wvHmr-00000003xiD-0mrq;
-	Sat, 15 Aug 2026 17:03:13 +0000
-Message-ID: <05fe5a97-0870-4685-acd8-5149e1a9e1dd@infradead.org>
-Date: Sat, 15 Aug 2026 10:03:11 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YiVVEbSJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0914D1F00ACA
+	for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2026 17:05:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786813560;
+	bh=IGcJjF4HqZWjZBlfYhpWdcCLsDd2mWif2jAJ3D7ZI2w=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=YiVVEbSJN+tcRONFmq7Pya2FIPOROiLTOUQNpJE3r87FWWbfBf1eV5eVjpSryn5cd
+	 JD/kJcWLu75l4SFsBPinrKWZ+DeFyAHQCgJr0zomv/L5hdtyeWhDImiGr07KwbLRcH
+	 nzowfprgQJLgZ8b0GELAI6LIxDFVSDHKKmJGNunTNO1fcmkR11VUIsy1qOmH7hFmU+
+	 Sp8VtnRWecKqEVb0ONHN1hN1v3syEMg5AgFTzlH/AGXSP4yr929QcHyMcIYTaWlB5S
+	 LELxuncbAzmWCp1W+ZJPK3eL/sK3KBARwsHNgzPRAcbmMJ92ThMuKRANpL1P37OrPU
+	 yil6QzU1GXBoA==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5aebd52488cso2168909e87.2
+        for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2026 10:05:59 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RprzvGIGEE89yd0GZ13ckPomFQSYKX88Y1wBlYFXjjEEBI48m7V+h6a6bbOdl5mDdtJw8IyO7afCA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxqlm2c6Fhj4zZ5YvBtbXL7WCWY0dcoOUO3+LcsDmQw7DI1ldrS
+	gyLb7C8rAg7yz1iiUIwZ3MtUCKl2o2ogXaKgNTtNkQIFQFcKNO5jiLmhcbHMYbvjqs6z28ciFp0
+	ZD7WjsdV+pTs3NH0nZvxMrHTmcs5Q9bQ=
+X-Received: by 2002:a05:6512:a91:b0:5b0:cce:da00 with SMTP id
+ 2adb3069b0e04-5b4596bbe02mr1836180e87.1.1786813558396; Sat, 15 Aug 2026
+ 10:05:58 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] docs: kernel-parameters: add CPU_FREQ, CPU_IDLE build
- options
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org
-References: <20260811052251.1274451-1-rdunlap@infradead.org>
- <CAJZ5v0iaB8dBGncqwrdMim__Oq8YWBCKp6Ms_js3LtUaMjpfxg@mail.gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <CAJZ5v0iaB8dBGncqwrdMim__Oq8YWBCKp6Ms_js3LtUaMjpfxg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260806142304.1761454-1-sh_def@163.com>
+In-Reply-To: <20260806142304.1761454-1-sh_def@163.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Sat, 15 Aug 2026 19:05:32 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0h=9nMsQU9nnYi-tVHPd7erHi-a+EEMAmTEq-ZueebZhA@mail.gmail.com>
+X-Gm-Features: AcwNN1VEdYJltUSZDmqKZAs5I35hqRKI3UmUW2VuHtLfZki8wlVeLjxkq7PjIOA
+Message-ID: <CAJZ5v0h=9nMsQU9nnYi-tVHPd7erHi-a+EEMAmTEq-ZueebZhA@mail.gmail.com>
+Subject: Re: [PATCH v3] cpufreq: schedutil: Fix rate limit overflow
+To: Hui Su <sh_def@163.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
+	mingo@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Aug 6, 2026 at 4:23=E2=80=AFPM Hui Su <sh_def@163.com> wrote:
+>
+> rate_limit_us is an unsigned int, while NSEC_PER_USEC is defined as
+> 1000L. On 32-bit systems, the multiplication is therefore performed
+> using 32-bit unsigned arithmetic before the result is assigned to
+> freq_update_delay_ns.
+>
+> For example, writing 4294968 to rate_limit_us wraps the delay from
+> 4294968000 ns to 704 ns. This makes schedutil update far more often
+> than configured.
+>
+> Add sugov_update_rate_limit_us() to widen rate_limit_us to s64 before
+> converting it to nanoseconds. Use the helper when updating the tunable
+> through sysfs and when starting the governor, so both paths perform the
+> conversion without overflow.
+>
+> Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler=
+ utilization data")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Hui Su <sh_def@163.com>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
+Applied as 7.3 material, thanks!
 
-On 8/15/26 9:55 AM, Rafael J. Wysocki (Intel) wrote:
-> On Tue, Aug 11, 2026 at 7:22 AM Randy Dunlap <rdunlap@infradead.org> wrote:
->>
->> CPU_FREQ and CPU_IDLE are used in descriptions of some kernel parameters
->> so add their descriptions to the build options list.
->>
->> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
->> ---
->> Cc: Jonathan Corbet <corbet@lwn.net>
->> Cc: Shuah Khan <skhan@linuxfoundation.org>
->> Cc: linux-doc@vger.kernel.org
->> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: Daniel Lezcano <daniel.lezcano@kernel.org>
->> Cc: linux-pm@vger.kernel.org
->>
->>  Documentation/admin-guide/kernel-parameters.txt |    2 ++
->>  1 file changed, 2 insertions(+)
->>
->> --- linux-next-20260810.orig/Documentation/admin-guide/kernel-parameters.txt
->> +++ linux-next-20260810/Documentation/admin-guide/kernel-parameters.txt
->> @@ -8,6 +8,8 @@
->>         ARM64   ARM64 architecture is enabled.
->>         CLK     Common clock infrastructure is enabled.
->>         CMA     Contiguous Memory Area support is enabled.
->> +       CPU_FREQ CPU_FREQ is enabled.
->> +       CPU_IDLE CPU_IDLE PM is enabled.
-> 
-> What about
-> 
-> +       CPU_FREQ CPU frequency scaling is enabled.
-> +       CPU_IDLE CPU idle time management is enabled.
-
-Sure, no problem. Will send v2.
-
->>         DRM     Direct Rendering Management support is enabled.
->>         DYNAMIC_DEBUG Build in debug messages and enable them at runtime
->>         EARLY   Parameter processed too early to be embedded in initrd.
-
--- 
-~Randy
-
+> ---
+> Changes in v3:
+> - Add a comment explaining why rate_limit_us must be cast before
+>   multiplication.
+>
+> v2: https://lore.kernel.org/r/20260806072656.1386351-1-sh_def@163.com
+>
+> Changes in v2:
+> - Clarify why the multiplication uses 32-bit unsigned arithmetic on
+>   32-bit systems.
+> - Cast rate_limit_us to s64 to match freq_update_delay_ns.
+> - Add Zhongqiu's Reviewed-by tag.
+>
+> v1: https://lore.kernel.org/r/20260805143942.805176-1-sh_def@163.com
+>
+>  kernel/sched/cpufreq_schedutil.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sche=
+dutil.c
+> index dff4ee04694c..614ff0d33c01 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -61,6 +61,17 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+>
+>  /************************ Governor internals ***********************/
+>
+> +static void sugov_update_rate_limit_us(struct sugov_policy *sg_policy)
+> +{
+> +       /*
+> +        * Cast rate_limit_us before multiplication to force 64-bit arith=
+metic.
+> +        * Otherwise, on 32-bit platforms, both operands are converted to
+> +        * 32-bit unsigned long and the multiplication may overflow.
+> +        */
+> +       sg_policy->freq_update_delay_ns =3D
+> +               (s64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
+> +}
+> +
+>  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64=
+ time)
+>  {
+>         s64 delta_ns;
+> @@ -606,7 +617,7 @@ rate_limit_us_store(struct gov_attr_set *attr_set, co=
+nst char *buf, size_t count
+>         tunables->rate_limit_us =3D rate_limit_us;
+>
+>         list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_h=
+ook)
+> -               sg_policy->freq_update_delay_ns =3D rate_limit_us * NSEC_=
+PER_USEC;
+> +               sugov_update_rate_limit_us(sg_policy);
+>
+>         return count;
+>  }
+> @@ -848,7 +859,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+>         void (*uu)(struct update_util_data *data, u64 time, unsigned int =
+flags);
+>         unsigned int cpu;
+>
+> -       sg_policy->freq_update_delay_ns =3D sg_policy->tunables->rate_lim=
+it_us * NSEC_PER_USEC;
+> +       sugov_update_rate_limit_us(sg_policy);
+>         sg_policy->last_freq_update_time        =3D 0;
+>         sg_policy->next_freq                    =3D 0;
+>         sg_policy->work_in_progress             =3D false;
+> --
+> 2.43.0
+>
