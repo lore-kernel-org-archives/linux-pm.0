@@ -1,46 +1,46 @@
-Received: from mta0.migadu.com (out-65.mta0.migadu.com [91.218.175.65])
+Received: from mta1.migadu.com (out-49.mta1.migadu.com [95.215.58.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72FEF35A925
-	for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2026 09:24:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.65
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2C4C35E944
+	for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2026 09:51:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786785869; cv=none; b=BnMoJsmEhmA7YGHqDwFHi3TAs7WFujS9jBXd3ArApgT3fe7kjBoJVr5d1rXAVzHZKNHRkGQGGfDR5eLF8ZreNH4rkD45WmU1T87cd+LoX/D1waXkg2z/olEEnxQl9FNH8zqt8mQrlNTxVwd+B1am10tAOt5ejKrrDghKCdNvceg=
+	t=1786787517; cv=none; b=qaYUMuu2e8zWZbcM1ksQJM8HLQDMSLUFV3gXR15uTgFJAHKihY7MNJ8hj4Y4afiYFCSaXhcGbCLl85nKoylUDWB9triqrurNSNj7S+tHIRUFWBrRe7NNZU0tuBfMPvl1Kimw9ywmHWWWJxdo2wix0XZks7QMTGAWj1lseIQ3dLQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786785869; c=relaxed/simple;
-	bh=2+BzI0yPnKYTHXuQVokoBfWwLn75WttFQlQXlkjxwLc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oHbyB9iByWw3Rwg9pcxePMXE5uqNd/IQeUmAIs3ahKxZXvX6FQWneZWckv4UHDHgMVwg/mgWsYRYhSllZ8hgu/IGD9VJ1xQdgzgvSJSvdoAS4o+7hAuOyfOQ+cqePOgddCIiJ/9rbKeZQ1rqrbrpztLkpxswnuyr+VZZDehopxQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=QKpVqzDb; arc=none smtp.client-ip=91.218.175.65
+	s=arc-20240116; t=1786787517; c=relaxed/simple;
+	bh=QWdTBcf0vqrmBmp4CDFL905KC/WN+kA12wxfTkcS118=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kw9BNL0t7a9Tj59BGZlPLu8liety10/GHtP+LHGyIDmPHTHu+mCL3//oTdZf9/mMXWrQWkqPgFpnxUzQTwpcEbCyZZkpeIPiwOYqbMT/z+PKYZayC3QbbEVtS3zWpRqypyW60vccIZ6/ujqYUzB9VJyBZsF1L/fAGvNBeirJX5M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=L+mY1cZr; arc=none smtp.client-ip=95.215.58.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="QKpVqzDb"
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="L+mY1cZr"
 X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=2+BzI0yPnKYTHXuQVokoBfWwLn75WttFQlQXlkjxwLc=;
+DKIM-Signature: a=rsa-sha256; bh=QWdTBcf0vqrmBmp4CDFL905KC/WN+kA12wxfTkcS118=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1786785865; v=1; x=1787390665;
- b=QKpVqzDb/JDWafM6PVkdUFbaV0+KpfqSpbhxnEBxC3la+OyuUwbkNobUJXRBoq8ZDyk2qzPT
- SXMDmimNowIZ9RNhEek2uCVnrDs+jJgh/lDdHsnas0CfJNkfTZJuGCSJRixWNFxyKn4w0ac7wFa
- TYo94fUqb4YnXvQXIDXT+mJI=
+ t=1786787513; v=1; x=1787392313;
+ b=L+mY1cZr+aT4pJZVkwl9rA6dkHLs1Ajy8vO+4N9yN1ZMlA4iNYe+MEHfHeJajLmZv+X36O0J
+ WFwMMb2ZQC7aM1GV9E4yeGaCYiXJBF+YaXLaRvO5D3jj/QtIoef+6ipqgMX/xYvez2MwQflKA7C
+ rTo4L900yKHlHabj6Qo5v8zo=
 X-Envelope-To: linux-pm@vger.kernel.org
 Received: from fedora.fritz.box (62.216.208.217)
-	by mta10.migadu.com with ESMTPS id 0b75b71cbebdd497;
-	Sat, 15 Aug 2026 09:24:25 +0000
+	by mta11.migadu.com with ESMTPS id 5daa9b9628cb2088;
+	Sat, 15 Aug 2026 09:51:53 +0000
 X-Migadu-Flow: FLOW_OUT
 From: Thorsten Blum <thorsten.blum@linux.dev>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
 	Zhang Rui <rui.zhang@intel.com>,
 	Lukasz Luba <lukasz.luba@arm.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Thorsten Blum <thorsten.blum@linux.dev>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Yury Norov <ynorov@nvidia.com>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: intel: int340x: Drop redundant else in proc_thermal_add()
-Date: Sat, 15 Aug 2026 11:24:18 +0200
-Message-ID: <20260815092419.91246-2-thorsten.blum@linux.dev>
+Subject: [PATCH] thermal: intel: powerclamp: Drop redundant clamp() in duration_set()
+Date: Sat, 15 Aug 2026 11:51:41 +0200
+Message-ID: <20260815095143.3821-2-thorsten.blum@linux.dev>
 X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -48,30 +48,28 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1023; i=thorsten.blum@linux.dev; h=from:subject; bh=2+BzI0yPnKYTHXuQVokoBfWwLn75WttFQlQXlkjxwLc=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkNBs4y+fvUfuk47thqlvQnoGMVc/vbNpflJQusK99d+ 2bFGVrUUcrCIMbFICumyPJg1o8ZvqU1lZtMInbCzGFlAhnCwMUpABN558nI0HSl1+a+SpT4T9HL /FE7fyca7mK/Fpha/zGbub+jZ17MB4b/cRzteXHuIStmmhhGP3dLLDgZ8kxs5zfGt5sEhaufG9k xAAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=788; i=thorsten.blum@linux.dev; h=from:subject; bh=QWdTBcf0vqrmBmp4CDFL905KC/WN+kA12wxfTkcS118=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkNZutzfr0O9DUXEdB99JSn8WxY0dt5l3y/PikWlWzrf rxpyo6kjlIWBjEuBlkxRZYHs37M8C2tqdxkErETZg4rE8gQBi5OAZjIRwtGhl2dFnyfDEPMMk49 dT678obLlvlHqx7G7apefSFFM+PV0z+MDAsN+7/aPFeMy73G8zL/j8aBDH1P+fqydJWnL2X4v90 8zwgA
 X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
 
-Drop the redundant else branch since ret is immediately overwritten.
+duration_set() rejects any new_duration outside the valid range before
+the assignment, making the clamp() call redundant.
 
 Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 ---
- .../thermal/intel/int340x_thermal/processor_thermal_device.c  | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/thermal/intel/intel_powerclamp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index f80dbe2ca7e4..0a007a6413df 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -291,10 +291,8 @@ int proc_thermal_add(struct device *dev, struct proc_thermal_device *proc_priv)
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index bd7fd98dc310..1efdaabc4bb8 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -94,7 +94,7 @@ static int duration_set(const char *arg, const struct kernel_param *kp)
  	}
  
- 	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, get_temp);
--	if (IS_ERR(proc_priv->int340x_zone)) {
-+	if (IS_ERR(proc_priv->int340x_zone))
- 		return PTR_ERR(proc_priv->int340x_zone);
--	} else
--		ret = 0;
+ 	mutex_lock(&powerclamp_lock);
+-	duration = clamp(new_duration, 6ul, 25ul) * 1000;
++	duration = new_duration * 1000;
+ 	mutex_unlock(&powerclamp_lock);
+ exit:
  
- 	ret = acpi_install_notify_handler(adev->handle, ACPI_DEVICE_NOTIFY,
- 					  proc_thermal_notify,
