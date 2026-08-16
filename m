@@ -1,92 +1,142 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04895331EB0;
-	Sat, 15 Aug 2026 23:59:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A03EE3DDAF5;
+	Sun, 16 Aug 2026 10:59:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786838355; cv=none; b=MCcG94hoLlyST31inq+oSkRv8f6CSlO0TXUJ6IH/y1np3z+bCc44UTsIcR2iSf6rn2T5NEBwsk3RXUTS5IvCCFsgu5tkjPTqx0wxbHOJuwQfANkI9ws6auR9CSkAJn7/hn32GixhuVeaWkmnroi+D7YKERqPvjxWCpjlfyJkNp0=
+	t=1786877984; cv=none; b=YBmJAAkzCKqZH2ieGYWdJF3001uBxqGq5yfqNuVg2T1JWb2pnw8JoyjUWEia1v1jCWKcAplv2gPegbhnNsCvY78lpxpI+0emrakmCm9k/CwGw+M5diJ+oZ8P3yoivoU2808CXYiryYxxQmDsKHE4OqLz9vH22f0JK+rTyhq3tF4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786838355; c=relaxed/simple;
-	bh=vQIy8Lzzf7v2RWIWimMjFYNxRWwl3Vhpoo9uAAAkoCo=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=GFJb6Z9mBUipRxIAK8WXBVAZdVv6S5wxASTvAsmFYn/DvuvnBqEvLwt97OEX0z2Kjy6VTwXDxCUt4paXLGYmKEVqQsPA+sGWY0EvxXSWk/PUMDRH5peepLfN6dWrH8u+ni1IxvL5KEIwZ0D8Bqj/2boGJx/b/SCuLkObtexZFb0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Opn47OdJ; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1786877984; c=relaxed/simple;
+	bh=Dp/y+C/fFrXHny/NWuQXx1T+5aNdNaC6T4hmZHkAX7c=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=RMpBI6RdZybSio8V8lfgTGXXFqdklrWsnMu0kZX6gzJKAnksmZv7m8rVDO0iNDQ/YMzgP6EM8f/Lw/BmWn0VPuglL80eYzhzdk0FyIanEjdxovAy6g0qVxfwtgeeA5/6AUGiPcyYtEatK1ON1WwR20N3DIqE7+yXhBreioqUIBE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mQiCOZPM; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Opn47OdJ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786838354; x=1818374354;
-  h=date:from:to:cc:subject:message-id;
-  bh=vQIy8Lzzf7v2RWIWimMjFYNxRWwl3Vhpoo9uAAAkoCo=;
-  b=Opn47OdJfUwqudc0afd+92hTiTUF4lC7qLQ3RGAVKS0/Gh5WCDhKxnd1
-   PtkdPS9hVs0rTO6X5Ul4wQyiB6qQ3nI7ValpNglGuEkwD396kw2XkWwN2
-   w/H1XdoJDLax0d7iij6nlXe3AgYzrDnEJSrZpCSOwpd47wetPMgr18bQi
-   cZuPWoO9lDx4/SZviI9o2reAekYCorvPbKNUv2yNgf0AwDfFfxERFiYbs
-   FsKTFc4UE1l6f+nc6soBUKDQ4O9h+rvuDtQpQPC1oejrZMXyztEpYE9hq
-   uRgwObX7IGn9Ol53/DmVupYNaANCuzsehyvhNH6aUcuAxQBzwxlHFOxl1
-   Q==;
-X-CSE-ConnectionGUID: J8aLLxp6Q5K6B/Seej2lBw==
-X-CSE-MsgGUID: naebMU/mQYKPJcmp1pbADw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11876"; a="91040093"
-X-IronPort-AV: E=Sophos;i="6.25,226,1779174000"; 
-   d="scan'208";a="91040093"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2026 16:59:14 -0700
-X-CSE-ConnectionGUID: I3WyOQdSSwWn1/lZhLZH8A==
-X-CSE-MsgGUID: eqDNzFi6Te2+T3Cf+VgvHg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,226,1779174000"; 
-   d="scan'208";a="268815524"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
-  by orviesa005.jf.intel.com with ESMTP; 15 Aug 2026 16:59:13 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wvOHO-00000000cXE-1Mcj;
-	Sat, 15 Aug 2026 23:59:10 +0000
-Date: Sun, 16 Aug 2026 07:58:35 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- db408378f6e367f0065d9617f16850179fed82bb
-Message-ID: <202608160722.s59iBg8Q-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mQiCOZPM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A78C61F000E9;
+	Sun, 16 Aug 2026 10:59:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786877980;
+	bh=EZMPuLn9lWRyJJinQ2c8b4OBBKHlDa+Kb1vfYZjvPU0=;
+	h=From:Subject:Date:To:Cc;
+	b=mQiCOZPM10WFNlwj6S+/etLcOZ5lICzoIZa7PUr5atzrLfNCvr7yIRbgAh4jotlxM
+	 5JyYhCmGz/YoEQDsBDLbHt0Y3c6AmaQ8D8x/q9pWH75AG7Ru5Mgprs/KNnXKyqaBsL
+	 ejEpD2MHgWO73u0i3IFYum3fH4NH4kLKFKL5lO5dSr8ry9s8ne7h/aTShk4Y6Vpn7i
+	 5CuWmafPB+x4jOqhGz0dGaKnl/EFmtwKu92IwkMy/uGbXJ4TNzKbV8gfkMfk2nTONT
+	 mXjoku8XZsHQEWPnLFJuHj0gUgLc1MIXrDVZ1zTgt+/HzmRe1K+5BFceKLBRkqx4gB
+	 ukxJvdpWvHM9g==
+From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+Subject: [PATCH 0/6] arch, mm/execmem: resolve confusion about
+ set_direct_map_valid_noflush()
+Date: Sun, 16 Aug 2026 13:59:23 +0300
+Message-Id: <20260816-execmem-set-vm-perms-v0-2-v1-0-90944a3ad43f@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWM0QqDMBAEf0XuuUc1iJX+SulDkq41pRclF0UQ/
+ 11tH2fZmZUUKUDpXqyUMAcNQzyguhTkexvf4PA6mExpmrKtGsYCLxBWZJ6FRyRRnks27Cza+mb
+ rrqk7OvwxoQvLr/14/lkn94HPZ/B8OKtgl2z0/TmJDFmuIjxFzdZ9Qdu2A009wYShAAAA
+X-Change-ID: 20260816-execmem-set-vm-perms-v0-2-bae847a4f64f
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: =?utf-8?q?Adrian_Barna=C5=9B?= <abarnas@google.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, Alexandre Ghiti <alex@ghiti.fr>, 
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, 
+ Brendan Jackman <brendan.jackman@linux.dev>, 
+ Catalin Marinas <catalin.marinas@arm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, 
+ David Hildenbrand <david@kernel.org>, 
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
+ Heiko Carstens <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+ Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, 
+ Mike Rapoport <rppt@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Paul Walmsley <pjw@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+ Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Ryan Roberts <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>, 
+ Thomas Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>, 
+ Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, 
+ Will Deacon <will@kernel.org>, x86@kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-mm@kvack.org, linux-pm@vger.kernel.org, 
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+ loongarch@lists.linux.dev
+X-Mailer: b4 0.17-dev
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: db408378f6e367f0065d9617f16850179fed82bb  Merge branch 'acpi-soc' into bleeding-edge
+Recent discussion about implementation of execmem's ROX caches on arm64
+revealed a confusion about how set_direct_map_valid_noflush()
+implemented on different architectures.
 
-elapsed time: 770m
+On arm64 it sets or clears the PTE_VALID bit marking a PTE as present or
+not present.
 
-configs tested: 15
-configs skipped: 1
+On other architectures it's a range version of
+set_direct_map_invalid_noflush() and set_direct_map_default_noflush()
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Unlike arm64::set_direct_map_valid_noflush(),
+set_direct_map_default_noflush() not only marks PTE as present, but also
+sets its default protection mode.
 
-tested configs:
-alpha            allnoconfig    gcc-16.1.0
-alpha           allyesconfig    gcc-16.1.0
-alpha              defconfig    gcc-16.1.0
-arc             allmodconfig    gcc-16.1.0
-arc             allyesconfig    gcc-16.1.0
-csky            allmodconfig    gcc-16.1.0
-i386            allmodconfig    gcc-14
-loongarch          defconfig    clang-24
-nios2           allmodconfig    gcc-11.5.0
-nios2            allnoconfig    gcc-11.5.0
-parisc          allmodconfig    gcc-16.1.0
-parisc          allyesconfig    gcc-16.1.0
-parisc             defconfig    gcc-16.1.0
-sh                 defconfig    gcc-16.1.0
-sh         rsk7264_defconfig    gcc-16.1.0
+Other than that, initial design of execmem ROX caches didn't rely on
+restoration of large mappings that's now available on x86, but
+completely removed the memory allocated for the ROX cache from the
+direct map to ensure that large mappings are not split. This precluded
+usage of VM_FLUSH_RESET_PERMS for the ROX cache allocations and required
+execmem to implement manipulation of the direct map alias.
+
+Current implementation of ROX caches does not remove the direct map
+alias but simply calls set_memory_rox() that updates the permissions in
+both vmalloc address space and the direct map and relies on
+collapse_large_pages() in x86 CPA to keep large mappings.
+
+This allow using VM_FLUSH_RESET_PERMS for execmem ROX cache allocations
+with small adjustments to set_direct_map APIs and vmalloc::reset_perms()
+behaviour: adding number of pages parameter to set_direct_map APIs and
+making resetting of the direct map permissions in vmalloc VMAP_HUGE
+friendly.
+
+Implement these adjustments, make execmem always use
+VM_FLUSH_RESET_PERMS and revert set_direct_map_valid_noflush() changes.
+
+[1] https://lore.kernel.org/all/20260611130144.1385343-4-abarnas@google.com
+
+---
+Mike Rapoport (Microsoft) (6):
+      set_memory: add number of pages parameter to set_direct_map APIs
+      mm/vmalloc: set area's page_order after allocation succeeds
+      mm/vmalloc: constify vm parameter of get_vm_area_page_order()
+      mm/vmalloc: make set_area_direct_map HUGE_VMAP friendly
+      mm/execmem: use VM_FLUSH_RESET_PERMS for ROX cache allocations
+      Revert "arch: introduce set_direct_map_valid_noflush()"
+
+ arch/arm64/include/asm/set_memory.h     |  5 ++--
+ arch/arm64/mm/pageattr.c                | 24 ++++---------------
+ arch/loongarch/include/asm/set_memory.h |  5 ++--
+ arch/loongarch/mm/pageattr.c            | 27 ++++-----------------
+ arch/riscv/include/asm/set_memory.h     |  5 ++--
+ arch/riscv/mm/pageattr.c                | 23 ++++--------------
+ arch/s390/include/asm/set_memory.h      |  5 ++--
+ arch/s390/mm/pageattr.c                 | 20 ++++------------
+ arch/x86/include/asm/set_memory.h       |  5 ++--
+ arch/x86/mm/pat/set_memory.c            | 16 ++++---------
+ include/linux/set_memory.h              | 12 ++++------
+ kernel/power/snapshot.c                 |  4 ++--
+ mm/execmem.c                            | 42 ++++++---------------------------
+ mm/secretmem.c                          |  6 ++---
+ mm/vmalloc.c                            | 31 ++++++++++++++++--------
+ mm/vmalloc.h                            |  2 +-
+ 16 files changed, 68 insertions(+), 164 deletions(-)
+---
+base-commit: 1029098ee3275ea5b78e329ce132262affa2f8cc
+change-id: 20260816-execmem-set-vm-perms-v0-2-bae847a4f64f
 
 --
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Sincerely yours,
+Mike.
+
