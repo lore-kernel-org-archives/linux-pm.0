@@ -1,86 +1,87 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 749BC43B3E2
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:34:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 167E0439F6F
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:43:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786973652; cv=none; b=JEnJVvG+M6lCb3K5rKyW1P0paF8+QQsvRqWza9kwCFs2Wm0eeLoO08OyTq9cMCksBsJSx8R0TXuUQ05C8aPUT5lDir9FdK5i0r0QUYbzDRYztt8Z7JeQlkiPk93nsPYUdZrlBDFW8h6svTUADLQDyMXGTBE+kYadYqZ2QFToBI0=
+	t=1786974190; cv=none; b=SDbkKb8PcG/A6CgDceVM/7m9cr/nLObk/D70kpmEUKJLKnB/5ES8TqvLFExSeu4za5naxqknmJ01gJF2ZqiGFrt8Cj8sgLSzsoRXgF8bvobjNxF6iInbmXFvnSAYsUB3dMd0rfzbbYwuBPelbNuZL1hwHhJdMiIjBd+G7KVIEm4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786973652; c=relaxed/simple;
-	bh=FGuszqknZFozF7pKzpAoA04EqrXSP2JnLU572u497H0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
-	 In-Reply-To:Content-Type; b=F51/SviqU9nEzVzusjkoBN35vmW1FpbPCofMhTlK+CmxDDCmhH8h3aSjYIo61KQ6ihJwU7SJjdAjZ5pPg1IOrU1Pwl3377xypu0SY4VZCPxOD7/PYAcao2LiU6S9O9sEYL50KZC7dcbqJWRvRBu/dixxEWTu7f/mpNI0r/t89hs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ATMbm9u+; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=J1vo5uAA; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1786974190; c=relaxed/simple;
+	bh=qqLvjb2Elb3FkUURTZ8DaEFjPYAiQE9nj5Xz5BxcjoA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=u7/fkDGAn6vL7yCexLkFiRX7BbjtM3JSqD8qMH2l0qRTo9Tt6JmFzVWO0hidabguKef5FCfFslZNzSpgJDn2DZCDNgvoW8fjdnFtZsEPH5ksQV/l6L8QFpD9YGfmrzThozpdwPijOXpvldbsZ7hKl8oChFLoXcxAJeaCfPtpOQ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aXp1MmBt; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=gTO1yiyh; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ATMbm9u+";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="J1vo5uAA"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HD6KKR2431695
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:34:05 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aXp1MmBt";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="gTO1yiyh"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HD61Vw2329828
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:43:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	iWD3BGVe7Jxn1EGjVKUV/jvwmRStEg8cJXdcbwX3Hvs=; b=ATMbm9u+4AcFkAJx
-	MYzc3VNuFi7GZdikG+AkyOI8Ndw0fu1pqVPltKtmuZztI4kBCHn7EqdgFdtdQqMU
-	SqOuE6U5JkiPsawIeAK+/Hu45Mc26wwP35XSvWOT0mCczVGlTqfaBIByNq3m2QzN
-	Vqe1qRJ/rlxMcoIU0RpRCUHdi9ZSsrnT4mkZZzgdQgNUOSuYEeHQBudZVbtTOc6M
-	beGGu0GeDwOP9bN459TGQlSBYiqZp/T7OIt0KLREd92fM6bpw9BYdBv9iCg164Fz
-	DULWcfx/XRHweSEzzYUai9Mo5Y6rZkrXGBMOHJwJPtamyt2b8i01VgVAA06U9mmb
-	Xy4Lwg==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g3wrehegc-1
+	FUi1Ed4tbVFVG10HnIR5+E8xIvkprA3oG5hrzoj+z/M=; b=aXp1MmBtty1BQMei
+	PbRVOkhD3g8tb2bRrp9KrkuIaxeEg2qxHuZA66DnRlM8cyrEdyJHVsyVfdXbLk4l
+	WE9kTc53n5tuUZkEuqie25QBeLkxIPPpeCl3aVrrEKYeA+X2rSbWFELSci5VH/ce
+	14sKa565PKv3DUN1EsWC881P+fHM6nFXvGxcNm/Od/sHksRHOX6T7jZwVaqC0kfe
+	j63F0xvREL/e6u/PCxnY6EnNvWkF+Wpl3JW6/72r2f0tktHg2PBt8c0tMpFdNydA
+	Efq4tTtNfOUVG7E7iPXihypiwKKqZjg/Gxdg5rz501LpRNDJPHEAceugz2P1u+F0
+	8xJrKw==
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g3vghsvrp-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:34:05 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38e8fee6af3so3987570a91.1
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 06:34:05 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:43:07 +0000 (GMT)
+Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-8f39a46efd9so43733106d6.1
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 06:43:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786973645; x=1787578445; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:cc:from
-         :content-language:references:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=iWD3BGVe7Jxn1EGjVKUV/jvwmRStEg8cJXdcbwX3Hvs=;
-        b=J1vo5uAAIK66ZZDJ76+jdFIzT+hvFGWRsTO8WgYEjEdYEq9CB32xZQRDqptn/NjFXb
-         iTzl/KpexjpVTcFpX/3Sew4B89ulBIbgr/6WIGjmwfAgbzi25wkU79j43JcD4Fh9KK4f
-         jTEJmJjxcbnFzHKlKGXw45AZ+yMB2QSrBrgeou1sQegIxgUDje16DMn3hs/06/zFX38h
-         wifeY2WYNBQAHEYBJC/3/AoQRA771D5XP5SdXX2ZRx3uSji0ycBt7S9xbi2XiDfPd4mD
-         8DCqt+FEE0IuiYlE0Tfpxe0+6CTKJhpEkrkSkbWZD4ZWGP0wY6z1iTNmN+tjcqcOX/uQ
-         SalA==
+        d=oss.qualcomm.com; s=google; t=1786974187; x=1787578987; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=FUi1Ed4tbVFVG10HnIR5+E8xIvkprA3oG5hrzoj+z/M=;
+        b=gTO1yiyhQitj4WdQMbgAjWCAtmyZKfwlscEbGAMVVddT3upXi7N1nE89Bsd6pUNzw7
+         bsSkx5/Dd6xp6FGzOg2IvEpD1JqsS1Z/lS4U6mZgatuMvYR/GSPyQQDla+A/ZX+qVaX9
+         j8dUnnKhbyi3WreNKPFOXw9WCAeFYTd8ua3IeX/mGJT4ZlZxifJXZfhlteVcLIprDA8V
+         65DdIlheMf9MChuFYiLENaroAf+r0P9wZiMUBAFVUwLBqmheGCW/s6H6gL7zCOXQXe96
+         sRjU9qf0UbX2L5rX7DP0dM0aq8pQ9WRI0pRA5bXUW6AurGIaTLumXa/8W75+knoD8FKg
+         fyVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786973645; x=1787578445;
-        h=content-transfer-encoding:content-type:in-reply-to:cc:from
-         :content-language:references:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1786974187; x=1787578987;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=iWD3BGVe7Jxn1EGjVKUV/jvwmRStEg8cJXdcbwX3Hvs=;
-        b=MFw/hsEUDx1Zv3N6yy3s2dpd94Z0ETtcLrEzd7Fkmz95zuV1DMgYCsQvjtDOUY1kdK
-         6HVPdyYmGIwwPFM6wKAyf/55uVuPXRE2zjwcbWelIVKIb9pD2TldkMjrttcFx4nWTwpQ
-         qdpiSXS6PzrOXvdcGPTsU/sS2+rZj8QyDblm9LWhs+B5NxR9d0dphfoJWSyVpPV1ZIPa
-         fudVB5evd/iQWz2aH8ApeH8qxAGUPvWdjTjQTNo4tXUb2vbAgQNwwDm3a0PbYxxE4C4h
-         J7Jk4tincppuxRYmZWCYepUhmc4i1WhTBEAMM/2rnPKZWGFWtT70lFmOFVD9+OnmjRPx
-         CFfA==
-X-Forwarded-Encrypted: i=1; AHgh+RqI+D51PsyOooiBFwAbMAKd+uKklJHFlxNElMVRfhMejBW85UxPgO79uvC1HQRudT3qSpQq/lSNsA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxPQuGuVCEOGpZvaGf5tvktxzUhM0PqhsVBupKMe2Ppkt4BHbuJ
-	SNNPD9Kxb84oCfy6koQHWrWvH+yBULMcVUzsDviJeDduCQ9j/VBe67LV1J84mTJjpRc2m+C9P79
-	ijiKh9Fxx7KHVKsuVn/K3EVa5Xt9WCH+nTB+Ez+6G3gcrchhT516xv/k3FLMI5Q==
-X-Gm-Gg: AR+sD13+uFDPOdwU9majGCd3EmeBJFOjZFl1JUQzN9wVu6roo7Idw3y5uX25Rvru40f
-	w/rtwxJv6zJBhEGwtLkOyp4TPiIe5MVb6qH81PtB8iYLM7oCZG037WFEuBJ04SPQWqd0KnYfdau
-	aH7H94ndKxiRcYAjmnZJXQetcPj6ni0BWxKgFD+rZFXYgfp7FJoBZNCIapUccKVQl9PCyo0NInx
-	sHmkPRVOORgt6JDaYWDSD7tiyDB8qq9JotmWLONeCUTlysTcBkh5qimvekJYe65LSmp1cQSMvhs
-	r9zPiU9zaWUD/mZAmRfampsMZ+T5xvoLEIIkKDrYE4CkSR+BSjJ+NCTYwLvgscrVwEVGMReDQRB
-	L28oWBPFeRTuwOukJmpnPSZskr0zk6rBpRWOHLpD8muiYrKtKM/rQ4F6HIyNvol2DiD9F2kg=
-X-Received: by 2002:a17:90b:2d92:b0:36b:77b9:5c8c with SMTP id 98e67ed59e1d1-3933babae61mr26190131a91.17.1786973644566;
-        Mon, 17 Aug 2026 06:34:04 -0700 (PDT)
-X-Received: by 2002:a17:90b:2d92:b0:36b:77b9:5c8c with SMTP id 98e67ed59e1d1-3933babae61mr26190069a91.17.1786973643937;
-        Mon, 17 Aug 2026 06:34:03 -0700 (PDT)
-Received: from [10.133.33.95] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39339b1edb2sm5424828a91.0.2026.08.17.06.34.01
+        bh=FUi1Ed4tbVFVG10HnIR5+E8xIvkprA3oG5hrzoj+z/M=;
+        b=PoVmw7VC/+u6NO70a/LoJtRlSmr8hXPg8qX3DiMgM/7+QdA+Wv0vZdHLTzdU20WTjT
+         9h8FzFyMgqPqP5IBKfuMTTd543qTzQUrXGvyOcLMlHH8TM83XLtNJW9BbGYWm3OGRmc9
+         3Jk8wIutGUob6vp6YeUTLyhY5CiGYmAwSrGgag9Mb6UemsHQgLxZ8lZeonYaFjevXlec
+         +uvVr89iuKscPutqdLKErqS6M6vzjsbZGPDFKPc0I1e/bQdhS7EtK8Mk4u4ThlCIUUFA
+         pzbhSEuCAAg5oJlZUqb9lh1FKqQCFzgaa5cPAPMjRRiGFzL0shzbPyYn1Lib2nrBTTp5
+         Y17Q==
+X-Forwarded-Encrypted: i=1; AHgh+RrVqsd0Besg+VJ3S9nxP2XcK4suMtLbbnq8i6CG7UCopTCYk0fISIRET60CxTeNNLa/oqCQ6/RkUA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwfHFyOf55Eg6kNdV+Nk/hFJ1ChJ0p90X4kAQ9719Dylz8yICjy
+	GtodkqRoRlv5OIgxRwDn0LazYLKiTU/D0Qb7JydCb0eNBYeGPm3tuzG1/X9csU+Czfv2IUuKhJd
+	v9o8M3Cg7jyxTPFEePjyPUEVJNQxpS3+EiTi9CIG8LA4tj0fCiqpnBq/wN4yEdg==
+X-Gm-Gg: AR+sD10YTDR2i3WsE4iU0YB5N7gyYgPRAPp8Oxbb8Pah0g+6plCu+15jL6y9GRtp4oM
+	079DtFLKyBjbIIDEL61n9pup/r8T/SD8ga/4CuI6M9CFVlif0yQKqDaHqWuSj2tifkrkWafuIoB
+	gs166ydAJAATRMIT0XUWvAl8NPicKvv3i9aRncMydbU6B8Lf1r5XH5KmYi3b5Q2que6jTMMqujF
+	ShHOuBuT2d2NsYtiEBq8o1bS59IKnzM8UitpJgo9HbGtn50T0UY6jhUPlTR65UKX/Ouk34uls1j
+	ZZDTpXjR6MbtUTBMwpmRhVyea6YGnHkFSU+biDDzAyN3h+0HNkRZBfxNrUtYb9wbTBEsZgkX8NW
+	jTWnTHNkAsVC7dEYWOCCfQUPKVA5zR4xx
+X-Received: by 2002:a05:6214:da5:b0:908:488b:14f with SMTP id 6a1803df08f44-90a809cfdb6mr331432876d6.5.1786974187208;
+        Mon, 17 Aug 2026 06:43:07 -0700 (PDT)
+X-Received: by 2002:a05:6214:da5:b0:908:488b:14f with SMTP id 6a1803df08f44-90a809cfdb6mr331432306d6.5.1786974186747;
+        Mon, 17 Aug 2026 06:43:06 -0700 (PDT)
+Received: from [192.168.1.6] ([122.171.16.103])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-90c45976942sm9108656d6.42.2026.08.17.06.42.57
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Aug 2026 06:34:03 -0700 (PDT)
-Message-ID: <a647d4a0-d713-4e73-8b16-b73dd3b35ce4@oss.qualcomm.com>
-Date: Mon, 17 Aug 2026 21:33:59 +0800
+        Mon, 17 Aug 2026 06:43:06 -0700 (PDT)
+Message-ID: <4e7a398b-e75c-4dca-8380-440ca7cb22c6@oss.qualcomm.com>
+Date: Mon, 17 Aug 2026 19:12:55 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -88,137 +89,109 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
- in extract_io()
-To: lirongqing <lirongqing@baidu.com>,
-        "Rafael J . Wysocki"
- <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20260813090145.2450-1-lirongqing@baidu.com>
- <20260813090145.2450-2-lirongqing@baidu.com>
+Subject: Re: [PATCH v2 09/15] pinctrl: qcom: Add Kuno pinctrl driver
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd
+ <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+        Taniya Das <quic_tdas@quicinc.com>, Georgi Djakov <djakov@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>,
+        Linus Walleij <linusw@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+        Radu Rendec <radu@rendec.net>, Robert Marko <robimarko@gmail.com>,
+        Guru Das Srinagesh <linux@gurudas.dev>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-gpio@vger.kernel.org
+References: <20260814-kuno-soc-support-v2-0-3079794f0f73@oss.qualcomm.com>
+ <20260814-kuno-soc-support-v2-9-3079794f0f73@oss.qualcomm.com>
+ <b88c7884-f86b-460d-9880-8dbc23798b02@oss.qualcomm.com>
 Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: zhongqiu.han@oss.qualcomm.com
-In-Reply-To: <20260813090145.2450-2-lirongqing@baidu.com>
+From: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+In-Reply-To: <b88c7884-f86b-460d-9880-8dbc23798b02@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=FqI1OWrq c=1 sm=1 tr=0 ts=6a830dcd cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=P9gKQCAu c=1 sm=1 tr=0 ts=6a830fec cx=c_pps
+ a=oc9J++0uMp73DTRD5QyR2A==:117 a=deEPgmDcWg2uv8mOPSE3jA==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=zuLzuavZAAAA:8 a=B83gT7kL6Ddqc7TX8wIA:9 a=QEXdDO2ut3YA:10
- a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-ORIG-GUID: qcHuxbQSl92mk2OyFe39hgv0701ntiIt
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDEwMyBTYWx0ZWRfX8Sd1exBGwlBo
- T9AbPxXcG8mYh3gmG6706KTbpxJm3vIu4LIQguSGViv/5iXEVkghjiwe2WKk5IyJZDc6BznLZqD
- aqoOlLMlYhzL0ZlEGZyZbmkOV8oCR7wjnApyppbuaiGWkkVjJ0VYrt18xncjOlVNeQqSH63aGOk
- flSGk/7sdE8eZKjOLP5TvX+VO6/I1pxmXqMdFR8g1mNmuQ7Z2axkV/NpETxYYNWJigPnAsHM628
- J5mtADYeafkBfbrIK+Z0YMJx0m7IKQguCs6nXWrtsCvOqm/LBbEi7xBGMeDHsVedWXc9ThMUgsf
- Qwz6AJ92Ov2lEqrJ3j6PhiCgNm5LARIYg1bSE69DzTl719XAho6dbLcQvEYYdGz3Cf6TkHO5JJT
- 6kD+IJ2levGq4kERJmTGKzEJUhc1YzWejxKYK4P7Ob9nBThB4ZXNzMGMtx1/JEJ3S56TVb3mUCc
- DMfdGH/nc2pn28twN1g==
-X-Proofpoint-GUID: qcHuxbQSl92mk2OyFe39hgv0701ntiIt
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDEwMyBTYWx0ZWRfX9GW2h9O3wpxP
- 4NWKGDAUXxHzcP0wmMknBs0VsNPUXe0kbY1twadTGAHiNea52nycHGSPXWH3zgIkt961NKmDdoL
- N6oNsxq283YXNjub97NUDD8L0SezMdM=
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=EUspDBNiAAAA:8 a=xskrFx3CC3nc2tfbzagA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=iYH6xdkBrDN1Jqds4HTS:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDEwNSBTYWx0ZWRfX7qvp/L9H5oSZ
+ QuNnLGc0RUMsa85F6G36ze4oBrjh9/5Y01cztM4Hx3IwiUQoJJRSd3ioeFUnngZhUwIwfwluNVt
+ 20qbMiYgj7mrij8ckoN6LM9U8HMj2fQ=
+X-Proofpoint-ORIG-GUID: q_jeO9pQSbwFPuQBdkfoIdu-RUpL3akE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDEwNSBTYWx0ZWRfX5Mqcj2w6L68n
+ Zb5hGo4JJtV/W4vLjvg781b+60rpmhjyoohgB5KcjEKRXinx5WdawFiWc5CC1neXTKOR+tle9Tj
+ VWKbFxuXG8kOmG//MnnAfs+rKiEW82wVRqB+hxvZdvAO04xkz5zdTQFzw4PIl6EbDSpQytYX2oS
+ Q9sy595vC1prqhV7Wlqe0rxHN6gsB1GjBDP3l1AWbcfxDFDrqTlqu2RAe45d81qD1paK73ZALb9
+ ot81dbS5W5r3eNrC8LdIgZWlhoIIlvsdvFX3jwKAgisGiGVVKnkp/9UQXYZsEN6Jqywt+duwzUF
+ E1I2vsK3pu9/i5BepDXmX6JRn7BlN/8LkrCly2o6KFLdm1aFBcUWb/J8tr/xwxw4/MYjgl+pPZc
+ 4MtL9Zc3peUvOeUyyqzsZhFHg8SSHKRtr3IpO8/6VmesmzDXsLk/BLFVGAhuNdvbFVuB6OROhj2
+ 3+VgQdGq7N09p/aCsXA==
+X-Proofpoint-GUID: q_jeO9pQSbwFPuQBdkfoIdu-RUpL3akE
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-17_01,2026-08-12_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 adultscore=0 priorityscore=1501 bulkscore=0
- suspectscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608170103
-
-On 8/13/2026 5:01 PM, lirongqing wrote:
-> From: Li RongQing <lirongqing@baidu.com>
-> 
-> When policy->freq_table is built in acpi_cpufreq_cpu_init(), entries
-> with duplicate frequencies are skipped. The original P-state index for
-> each remaining entry is stored in freq_table[].driver_data, so the index
-> space of freq_table no longer matches perf->states[].
-> 
-> extract_io() walks perf->states[] with index i and uses the same i to
-> index policy->freq_table[i]. This causes two problems when duplicate
-> frequencies exist:
-> 
->    - Returning the frequency of the wrong P-state
->    - Returning 0 from a zeroed tail entry, or even CPUFREQ_TABLE_END
->      (~1u) reported as 0xfffffffe kHz
-
-AFAICT, It may be worth expanding the changelog to cover the
-consequences described below , particularly the resulting divergence
-between the hardware state and the cpufreq core's view of the current
-frequency:
-
-Furthermore, extract_io() is only reachable on ACPI_ADR_SPACE_SYSTEM_IO
-platforms, where cpufreq_driver->get is not installed, so its only
-caller in practice is check_freqs(), i.e. only when the
-acpi_pstate_strict module parameter is set.
-
-There, the mismatched lookup makes the frequency comparison fail even
-though drv_write() has already switched the hardware to the requested
-P-state.  So check_freqs() sleeps through all 100 iterations - at least
-~1 ms of usleep_range() plus 100 cross-CPU calls and I/O port reads, all
-with policy->rwsem held - and ->target_index() returns -EAGAIN. perf
-->state is therefore left at its previous value while the hardware sits
-at the new one.
-
-The core then restores policy->cur to the old frequency, and
-because __cpufreq_driver_target() returns early when the requested
-frequency equals policy->cur, the driver is not called again for it - so
-the control register is not rewritten and the CPU is left running at a
-frequency the core does not know about.
+ clxscore=1015 impostorscore=0 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 adultscore=0 spamscore=0 phishscore=0 bulkscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608170105
 
 
-> 
-> Fix it by walking policy->freq_table with cpufreq_for_each_entry() and
-> using perf->states[pos->driver_data].status, aligning with extract_msr().
-> 
-> Fixes: 8cee1eed8e78 ("cpufreq: ACPI: Remove freq_table from acpi_cpufreq_data")
+On 8/17/2026 6:54 PM, Konrad Dybcio wrote:
+> On 8/14/26 9:31 AM, Hardeep Sharma wrote:
+>> Add the TLMM pinctrl driver for the Qualcomm Kuno platform, supporting
+>> 110 GPIOs and their pin multiplexing, pin configuration and gpiolib
+>> interface through the common pinctrl-msm driver.
+>>
+>> Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+>> ---
+> [...]
+>
+>> +	[65] = PINGROUP(65, qup0_se1, qdss_cti_trig1, qdss_cti_trig1, NA, NA, NA, NA, NA, NA),
+>> +	[66] = PINGROUP(66, qup0_se1, qdss_cti_trig1, qdss_cti_trig1, NA, NA, NA, NA, NA, NA),
+> Function3 can't be selected because of repeating names
+>
+> In qdss_cti_trig1_groups, you have qdss_cti_trig1 specified twice.
+> Perhaps there was a longer name that got truncated?
+>
+> Konrad
 
-The real tag should be fe27cb358835 ("[CPUFREQ][2/8] acpi:
-reorganize code to make MSR support addition easier")
+Thanks Konrad for review.
 
-That commit added both the entry-skipping loop with the
-freq_table[].index (now .driver_data) back-pointer, which is what makes
-the two indices diverge, and the faulty lookup itself -- back then in a
-function called extract_freq(). dde9f7ba60ad ("[CPUFREQ][3/8] acpi
-cpufreq: Pull in MSR based transition support") merely renamed it to
-extract_io().
+It's a real qdss_cti_trig1 line - the in/out
+mirror partner of funcsel 2:
 
+    GPIO65: fsel2 = qdss_cti_trig1_in_mirb, fsel3 = qdss_cti_trig1_out_mire
+    GPIO66: fsel2 = qdss_cti_trig1_out_mirb, fsel3 = qdss_cti_trig1_in_mire
 
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> ---
->   drivers/cpufreq/acpi-cpufreq.c | 9 ++++-----
->   1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 21639d9..1abe9ab 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -197,14 +197,13 @@ static unsigned extract_io(struct cpufreq_policy *policy, u32 value)
->   {
->   	struct acpi_cpufreq_data *data = policy->driver_data;
->   	struct acpi_processor_performance *perf;
-> -	int i;
-> +	struct cpufreq_frequency_table *pos;
->   
->   	perf = to_perf_data(data);
->   
-> -	for (i = 0; i < perf->state_count; i++) {
-> -		if (value == perf->states[i].status)
-> -			return policy->freq_table[i].frequency;
-> -	}
-> +	cpufreq_for_each_entry(pos, policy->freq_table)
-> +		if (value == perf->states[pos->driver_data].status)
-> +			return pos->frequency;
->   	return 0;
->   }
->   
+Both map to the same name because the driver uses one coarse
+"qdss_cti_trig1" for the in/out mirror variants.
 
+Listing the function on both funcsels is the normal sdx convention for
+these mirror pairs - the in-tree drivers do it, including the same pins
+on sdx65:
 
--- 
-Thx and BRs,
-Zhongqiu Han
+    - sdx55 [16][17][22][23][54][55][94][95] → in pinctrl-sdx55.c, pins
+16, 17, 22, 23, 54, 55, 94, 95 each repeat qdss_cti at two funcsels.
+    - sdx65 [65]/[66] → in pinctrl-sdx65.c, pins 65 and 66 do it —
+    - sdx75 [16][52][53][56][57][78][79] → in pinctrl-sdx75.c, those pins
+do it.
+
+Only funcsel 2
+is selectable from DT (first-match), which is expected and matches those
+drivers.
+
+Best Wishes
+
+Hardeep Sharma
+
