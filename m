@@ -1,67 +1,118 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from pdx-out-008.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-008.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.42.203.116])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED6B046DFF3;
-	Mon, 17 Aug 2026 18:30:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA74B3D4114;
+	Mon, 17 Aug 2026 21:27:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.42.203.116
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786991425; cv=none; b=V2dJR03Y/1R4yqb1Q1q5AiSQJ0YpP2vvFbsaI6mazeVvmAq4TnSBDhqTIEXCptlIsqyojb5IjBu2kiH2QU7K1fNr9lDlVRj5DCyjcuvguB+91sC1i12Gvuzflvew+lu0jgeDwb4RSmfpIRCNdhADqSv6nYlmAb/ZS7v568MHK0o=
+	t=1787002069; cv=none; b=CuQ1KTiXSznnHwqTWD6bIFAlK1o8kULiiiR33KwneGBP6mxkmHY2eRCsHeXrleLYiNOb1WbmytCFIremtVapOOZejmyOIAAtFmb4r7AowrRChpIFgBlFkP1Q4+2MENdSH77SGP+slzXW/MQPbmkePEJlHtTxx8rSyTVAYIA1BOc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786991425; c=relaxed/simple;
-	bh=NilObdHYEVgJ8SGvNk1Sj2GRgOyjUIKfhuB1JExerxA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RS/Q+ifKuGulGqaJlA4VbHXJRqxa93vFRhDYYewV7oMeTq6/0DyQp8TXv7ygQZYf8mqZM6fzfEzOwBLrm9cZKrGZ1Me8WwdV7pnoqurJIy0ZJ5eI2mAe6j84cnR7/aogHtE3YgcuzotpnvXHRi6EIpkGoGLQ51/6w3oBHC4NWj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uli4xpFx; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787002069; c=relaxed/simple;
+	bh=60fJekTBbR11gLxTaWREoBHR2j+XFQ7jRlnXGTD55OM=;
+	h=MIME-Version:Content-Type:Subject:From:To:CC:In-Reply-To:
+	 References:Date:Message-ID; b=dCqqXChbH9mJ43eysV5r5a9zQev0k3tmATfKPQpMXqET8afB6cN1v7vb7/Xu4sO0MyKWPWPKP5VPraWWn2+Nr14vPaW4CoFaT0rBD8b6DnrSpzsWTZAv6d/7eyuEJK3gmMvWZpiI+9MEjB9sTL1EE24hozNllOg5gzRIDezXWO0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; spf=pass smtp.mailfrom=amazon.com; dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.b=rmgMpLAJ; arc=none smtp.client-ip=52.42.203.116
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uli4xpFx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 628431F000E9;
-	Mon, 17 Aug 2026 18:30:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786991424;
-	bh=pWicw3wdyX2Cf/d1fATA10bx2J8IVOMaFPlUNYeHVQ0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Uli4xpFxmyrHSMu6NIWChiMnMG4R+IERaI7UQ5vUao/T9tZ3Ns+glcKpEynzgx9zH
-	 FbyqwkDzxvvVA0tTcdTZ/1zA4zAUsAVgHLcGO2UfkDBr1vC21OeVyEbk53FgIy8WuE
-	 aFMnmz9uSzdbfnPDGbDzjdbpUT8ZZGtOInFKZoLGpJMXK8EsAlLA8GPsctYJjO30fz
-	 VIZJWyo95ha+CjMwudMaa6Qtl04cNEtlN5QNzfFfsPQFcRfMgOqnOkGWKP1nN64Jib
-	 7kQ1+q1QZ8LNJ5Y1b/ugIRtYw5CDi7beUMkBMTjCALcbhMq1xvHA9ghp9AeV0FWmO1
-	 lhqH6ZrA/gEhQ==
-Date: Mon, 17 Aug 2026 13:30:22 -0500
-From: Rob Herring <robh@kernel.org>
-To: Chanwoo Choi <cw00.choi@samsung.com>,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Peter Griffin <peter.griffin@linaro.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: devfreq: samsung,exynos-ppmu: Use standard
- regex syntax
-Message-ID: <20260817183022.GA1718712-robh@kernel.org>
-References: <20260813174037.2263884-1-robh@kernel.org>
+	dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.b="rmgMpLAJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
+  t=1787002067; x=1818538067;
+  h=mime-version:content-transfer-encoding:subject:from:to:
+   cc:in-reply-to:references:date:message-id;
+  bh=7HAQgr7W1Px6oodKSFEqrJXQ5YZXceMvyj/wLnrYFcQ=;
+  b=rmgMpLAJ3TQdFYt7QiKq0Haj+EHDDde5UBphOpTqvcrMDXj3fwtJ2uyj
+   q8qBtI5gBLeeE9x1PuGC7He7nT+WiEx1KP4D4paBtI7s72x9SjDTLouFT
+   1pv6yIPZ0KrSnNDLzgFDeRgg2DTcCsxihEYO3RhUiVt/xm/acdI/8HDCq
+   f6a7c7WQS2Cb2j7CdLz+xZnBC/kApC6wg2ZiYVh/w0qgylTO4XT6TRFAz
+   SVpWTbIJFIpT+VkqAyzZUpBjgH1hAqazhotHFSkqpzD48g47XpjOWrkfr
+   ukXTh4OL/HSTy3A+ukRqPLDRbIZoXfGcTCedsKjhzE4r7C2BgSM2fDfa/
+   A==;
+X-CSE-ConnectionGUID: xqkOYIIoS5iXSHPq31YmEg==
+X-CSE-MsgGUID: siGmvPlBSnSUzy7Vob9ogQ==
+X-IronPort-AV: E=Sophos;i="6.25,229,1779148800"; 
+   d="scan'208";a="26237258"
+Received: from ip-10-5-9-48.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.9.48])
+  by internal-pdx-out-008.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Aug 2026 21:27:47 +0000
+Received: from EX19MTAUWB001.ant.amazon.com [205.251.233.104:13272]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.54.183:2525] with esmtp (Farcaster)
+ id 05c9af25-051b-43f7-8f28-ec338ccbac36; Mon, 17 Aug 2026 21:27:47 +0000 (UTC)
+X-Farcaster-Flow-ID: 05c9af25-051b-43f7-8f28-ec338ccbac36
+Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
+ EX19MTAUWB001.ant.amazon.com (10.250.64.248) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
+ Mon, 17 Aug 2026 21:27:47 +0000
+Received: from u34cccd802f2d52.ant.amazon.com (10.106.178.24) by
+ EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
+ Mon, 17 Aug 2026 21:27:43 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260813174037.2263884-1-robh@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v14 13/15] arm64/delay: enable testing
+ smp_cond_load_relaxed_timeout()
+From: Haris Okanovic <harisokn@amazon.com>
+To: Ankur Arora <ankur.a.arora@oracle.com>
+CC: Will Deacon <will@kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arch@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-pm@vger.kernel.org>, <bpf@vger.kernel.org>, <arnd@arndb.de>,
+	<catalin.marinas@arm.com>, <peterz@infradead.org>,
+	<akpm@linux-foundation.org>, <mark.rutland@arm.com>, <harisokn@amazon.com>,
+	<cl@gentwo.org>, <ast@kernel.org>, <rafael@kernel.org>,
+	<daniel.lezcano@linaro.org>, <memxor@gmail.com>, <zhenglifeng1@huawei.com>,
+	<xueshuai@linux.alibaba.com>, <rdunlap@infradead.org>,
+	<david.laight.linux@gmail.com>, <broonie@kernel.org>,
+	<joao.m.martins@oracle.com>, <boris.ostrovsky@oracle.com>,
+	<konrad.wilk@oracle.com>, <ashok.bhat@arm.com>
+In-Reply-To: <87tspi7lzk.fsf@oracle.com>
+References: <20260714073041.40250-1-ankur.a.arora@oracle.com>
+ <20260714073041.40250-14-ankur.a.arora@oracle.com>
+ <amiUWpsL1QGf929i@willie-the-truck> <87tspi7lzk.fsf@oracle.com>
+Date: Mon, 17 Aug 2026 16:27:29 -0500
+Message-ID: <178700204950.2504314.3914062953110867251.b4-reply@b4>
+X-Mailer: b4 0.15.2
+X-ClientProxiedBy: EX19D038UWC001.ant.amazon.com (10.13.139.213) To
+ EX19D001UWA001.ant.amazon.com (10.13.138.214)
 
-On Thu, Aug 13, 2026 at 12:39:58PM -0500, Rob Herring (Arm) wrote:
-> The "{,N}" regex syntax is non-standard, but happens to be supported by
-> python re module. It is equivalent to "{0,N}" which is more commonly
-> supported. This fixes using a rust implementation of the DT schema
-> tools.
+Hi Ankur,
+
+On 2026-07-28 16:06 -0700, Ankur Arora wrote:
 > 
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> ---
->  .../devicetree/bindings/devfreq/event/samsung,exynos-ppmu.yaml  | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Will Deacon <will@kernel.org> writes:
+> 
+> > Hello, Ankur,
+> >
+> > On Tue, Jul 14, 2026 at 12:30:39AM -0700, Ankur Arora wrote:
+> >> This enables the barrier tests to be built as a module.
+> >>
+> >> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> >> Cc: Will Deacon <will@kernel.org>
+> >> Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+> >> ---
+> >>  arch/arm64/lib/delay.c               | 2 ++
+> >>  drivers/clocksource/arm_arch_timer.c | 2 ++
+> >>  2 files changed, 4 insertions(+)
+> >
+> > Acked-by: Will Deacon <will@kernel.org>
+> 
+> Thanks Will.
+> 
+> > I think this is looking good from the arm64 side now (and appears to have
+> > all the relevant Acks). What's the plan to get this series merged?
+> 
+> Let me ask Andrew if he can pick this up via nonmm.
 
-Applied, thanks.
+Any progress on merging this?
 
-Rob
+> 
+> --
+> ankur
+> 
+
+
