@@ -1,147 +1,147 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta1.migadu.com (out-38.mta1.migadu.com [95.215.58.38])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19AF543B4B5;
-	Mon, 17 Aug 2026 15:14:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8478442F71B
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 15:14:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.38
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786979668; cv=none; b=no+6oo23Uhk1mTig64mEgVCwPCEl22rXYqdH0LPtXs1X2c6etTlQ81lC+2tQfxlqSGb2DDBPkac+GF8VFfRnhUT1/GvM48bGoPxvU+EYYsOY+4IlsuTIVyggzo29tb3ioTfyTf5XnBNhj8zaHR2d/Zh+sZ9/NDlg1ut2xGYDiKU=
+	t=1786979669; cv=none; b=GMsJTZHXT30ifaMAhVPygWtcbuamrU31m49jOcqkhxLL7gjm8jMqkHw3tT8R4m5wI3dkNGcRxCPvmFAOJ8A+rASm6reTO8EgT8bLmRH0l/+vs7FkAJe2f6LFXEVFqbTtZlm1c6KtwOO3xh7UgI1q5o7bqtXce2+vYaIXjLjWtSA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786979668; c=relaxed/simple;
-	bh=1z105iIZ8VI0R+psTUUd3kO1ynRbgbdFNgPw34X7ZfU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LqJ36lBJtauNWEWGgMNON1x84p/2ZU2OHBiS8S2khoCwzNkkjwK83S7PVDaGZLmdQaZw2offeYeUaZ+JW6bop8WEGaTHicIGOK7A1D/ZGwvyaiWlpEkSdOz72Ssuag23yFzBDeB6fAG/RHrM2V1tzQupHJK6XeSv7xYjAR15QRQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UOKdsEBe; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786979669; c=relaxed/simple;
+	bh=/kpJHgkNpi750FH/SGpyKpVgqGqCSp4Wcpe2Zcb2oTU=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=d0rsIiXHHo8FMXL65+5fwLfYlRcmSEGOIvaQF0OHqfZ3ohiGLqulHRFKGajAYhRs6pZUww3fm/ax1ULYo53G4QpvQzmLYkK2uu9RX3CD9G2dh9uiIlZRwGVNhHD6gWNOG8wPlhHMYH8I0A1aZ+H51rgWHUhY7iReftQ2qqRv3e4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=uk6XiQ57; arc=none smtp.client-ip=95.215.58.38
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UOKdsEBe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0029D1F000E9;
-	Mon, 17 Aug 2026 15:14:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786979666;
-	bh=nkK55auWwn9VFLsei6e7YzHGhJL1QZe3JhbvIISaRPk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=UOKdsEBeMZZ6U3bGU2drJ8nbgt95yhXOtKqrXHG7WhnHOdTFQr3Fku53K5OYpAidV
-	 4/1vBZB0qMycJbpHDd5hqUG/nNO0W2KQaeMJTmwAfjxogTbjGt/xyGoPVjInkfGrW2
-	 QxZjIsmYqmMq4T52MjSQt5LJANPgKBMTqjPg4XmWGy17EFV4kAsQEkf1MQqgS3Oi7D
-	 8+ngKvCL3lUilZPRnB1eaEbjXFZmcW9584AlE2/JIHH7NZwf0z6LTZMJWAx75Jouh7
-	 AX2AyiN9wiClalhpVERr3mIS1yzKymn3iSjJxfGsNsSBMRR2Ovj0SYvNMVaG+S4a7C
-	 KqTOoxWNLQx5w==
-Message-ID: <75eca5af-017e-4e6a-9e22-1e395be6e45a@kernel.org>
-Date: Mon, 17 Aug 2026 17:14:18 +0200
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="uk6XiQ57"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=/kpJHgkNpi750FH/SGpyKpVgqGqCSp4Wcpe2Zcb2oTU=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1786979664; v=1; x=1787584464;
+ b=uk6XiQ57o1D6iibPFn5TKPWCDhnmKhFXuHkfhwAfmPyXniTm8i72E8hoRSgSS6FxCFvtJatD
+ kUmnfMkBx9oLsAHHiig6ksIVwQO3iIA/8ohr2/mwK3ZKLP8lPZNwYrmBTas2k/yJBioKWe+JgDx
+ DjSVklLEX0StH/n1O0kQZ3Bc=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: from localhost (212.133.41.51)
+	by smtp.migadu.com with ESMTPS id b6551f00886cde4e;
+	Mon, 17 Aug 2026 15:14:23 +0000
+X-Migadu-Flow: FLOW_OUT
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/5] dt-bindings: power: bq27xxx: document bq27z746
-To: Henrik Grimler <Henrik.Grimler@axis.com>
-Cc: Kernel <Kernel@axis.com>, Alexander Svarvare
- <Alexander.Svarvare@axis.com>,
- "sebastian.reichel@collabora.com" <sebastian.reichel@collabora.com>,
- "afd@ti.com" <afd@ti.com>, "dmurphy@ti.com" <dmurphy@ti.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "robh@kernel.org" <robh@kernel.org>, "pali@kernel.org" <pali@kernel.org>,
- "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
- "chris@lapa.com.au" <chris@lapa.com.au>, "sre@kernel.org" <sre@kernel.org>,
- "conor+dt@kernel.org" <conor+dt@kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20260811-bq27z746-v1-0-3a4fa38205cc@axis.com>
- <20260811-bq27z746-v1-1-3a4fa38205cc@axis.com>
- <20260817-talented-brave-clam-f5e6e6@quoll>
- <bbd0548a01d7020947f025f0632a0994f4acd77d.camel@axis.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <bbd0548a01d7020947f025f0632a0994f4acd77d.camel@axis.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Date: Mon, 17 Aug 2026 17:14:19 +0200
+Message-Id: <DKRBF6LQY1L7.13CIBHAU0A87D@linux.dev>
+Cc: =?utf-8?q?Adrian_Barna=C5=9B?= <abarnas@google.com>, "Albert Ou"
+ <aou@eecs.berkeley.edu>, "Alexander Gordeev" <agordeev@linux.ibm.com>,
+ "Alexandre Ghiti" <alex@ghiti.fr>, "Andy Lutomirski" <luto@kernel.org>,
+ "Borislav Petkov" <bp@alien8.de>, "Brendan Jackman"
+ <brendan.jackman@linux.dev>, "Catalin Marinas" <catalin.marinas@arm.com>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>, "Dave Hansen"
+ <dave.hansen@linux.intel.com>, "David Hildenbrand" <david@kernel.org>,
+ "Gerald Schaefer" <gerald.schaefer@linux.ibm.com>, "Heiko Carstens"
+ <hca@linux.ibm.com>, "Huacai Chen" <chenhuacai@kernel.org>, "Ingo Molnar"
+ <mingo@redhat.com>, "Len Brown" <lenb@kernel.org>, "Palmer Dabbelt"
+ <palmer@dabbelt.com>, "Paul Walmsley" <pjw@kernel.org>, "Pavel Machek"
+ <pavel@kernel.org>, "Peter Zijlstra" <peterz@infradead.org>, "H. Peter
+ Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Ryan
+ Roberts" <ryan.roberts@arm.com>, "Sven Schnelle" <svens@linux.ibm.com>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Uladzislau Rezki" <urezki@gmail.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>, "WANG Xuerui" <kernel@xen0n.name>,
+ "Will Deacon" <will@kernel.org>, <x86@kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <linux-mm@kvack.org>, <linux-pm@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+ <loongarch@lists.linux.dev>, <yosry@kernel.org>
+Subject: Re: [PATCH 6/6] Revert "arch: introduce
+ set_direct_map_valid_noflush()"
+From: "Brendan Jackman" <brendan.jackman@linux.dev>
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>, "Andrew Morton"
+ <akpm@linux-foundation.org>
+X-Mailer: aerc 0.21.0
+References: <20260816-execmem-set-vm-perms-v0-2-v1-0-90944a3ad43f@kernel.org> <20260816-execmem-set-vm-perms-v0-2-v1-6-90944a3ad43f@kernel.org>
+In-Reply-To: <20260816-execmem-set-vm-perms-v0-2-v1-6-90944a3ad43f@kernel.org>
 
-On 17/08/2026 17:00, Henrik Grimler wrote:
-> Hi Krzysztof, 
-> 
-> Thanks for the comment!
-> 
-> On Mon, 2026-08-17 at 09:50 +0200, Krzysztof Kozlowski wrote:
->> On Tue, Aug 11, 2026 at 01:47:43PM +0200, Henrik Grimler wrote:
->>> Add compatible for Texas Instruments bq27z746 fuel gauge, which is
->>> similar to its sibling bqz27561, but with more protection
->>> functionality.
->>
->> "More" means superset? Driver code says it is compatible, so this has to
->> be explained 
-> 
-> I will update the commit message to explain the differences. Main
-> difference is that bq27z746 has integrated protection logic, and can
-> control external MOSFETs to stop charging/discharging if an issue is
-> detected (like overcurrent or overvoltage), or to keep the rest of the
-> system fully powered off in shipping mode. bq27z561 does not have such
-> protection circuitry, so best it can do if it detects issues is to send
-> an interrupt to some other component.
-> 
-> The standard register map is almost identical between the devices.
-> bq27z561 has 6 extra registers at the end that bq27z746 lacks though,
-> which I missed when comparing the TRMs the first time (so bq27z561 map
-> is a superset of bq27z746's). Neither of these extra registers are
-> supported/handled by the Linux driver through. I will update all the
-> commit messages for v2 to clarify.
-> 
-> There are also additional "ManufacturerAccess" registers where there
-> are some more differences between bq27z561 and bq27z746 mostly related
-> to the above mentioned MOSFET control, but the current Linux driver
-> does not read or handle any "ManufacturerAccess" register. One of my
-> colleagues has sent a patch to add support for reading PROP_MODEL_NAME
-> from these additional registers for bq27z561 though [1]. This model
-> name register is the same for bq27z561 and bq27z746.
-> 
-> In summary the chips have differences, but I expect it will be fine for
-> the driver to use same regs and props for bq27z746 and bq27z561.
+On Sun Aug 16, 2026 at 12:59 PM CEST, Mike Rapoport (Microsoft) wrote:
+> Commit 0c6378a71574 ("arch: introduce set_direct_map_valid_noflush()")
+> added set_direct_map_valid_noflush() to allow updating the direct map
+> for a physically contiguous range in execmem.
+>
+> As Brendan recently pointed out [1], this API is confusing because on
+> arm64 it means that is sets VALID bit in ptes, while on other
+> architectures it is an analog of set_direct_map_default_noflush().
+>
+> The only user of set_direct_map_valid_noflush() was execmem's ROX cache
+> freeing path and it was switched to utilize VM_FLUSH_RESET_PERMS for
+> resetting permissions of the direct map alias.
+>
+> With the last user gone and with set_direct_map_{invalid,default}_noflush=
+()
+> accepting number of pages as a parameter, set_direct_map_valid_noflush()
+> become a copy of set_memory_valid() on arm64 and a duplicate of
+> set_direct_map_{invalid,default}_noflush() on other architecture, it is
+> safe to remove set_direct_map_valid_noflush().
+>
+> Also drop a stale comment in arm64::__kernel_map_pages() that Linus
+> bothered to add when merging changes containing set_direct_map_valid_nofl=
+ush()
+> to his tree.
+>
+> This reverts commit 0c6378a71574daa6cd1534ad42a956e3262756c7.
+>
+> [1] https://lore.kernel.org/all/DJ69RCVRBO0Y.3JCYSW50IC4RC@linux.dev
+>
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-Well, superset is exactly what compatibility is about.
+Quick dump of my understanding (ignoring the NG bit on arm64)
 
-Best regards,
-Krzysztof
+- set_direct_map_invalid_noflush():
+
+    x86: clear P and RW (and DIRTY)
+    arm64: clear VALID
+
+  So these look out of sync to me
+
+- set_direct_map_default_noflush():
+
+    x86: set P and RW
+    arm64: set VALID and WRITE, clear RDONLY
+
+- set_direct_map_valid_noflush(..., true):
+
+    x86: exactly the same as set_direct_map_default_noflush()
+         (but with a `nr` arg)
+    arm64: set VALID
+
+- set_direct_map_valid_noflush(..., false):
+
+    both archs: exactly the same as set_direct_map_invalid_noflush()
+         (but with a `nr` arg)
+
+So basically the big issue here is specifically that
+set_direct_map_valid_noflush(..., true) is special on arm64 and not x86.
+
+And we fix that by jut deleting the API. SGTM!
+
+The other issue I can see here is that set_direct_map_invalid_noflush()
+clears RW on x86 but doesn't set RDONLY on arm64. So if you unmap
+something using set_direct_map_invalid_noflush(), then map it again
+using something other than set_direct_map_default_noflush(), you get
+different behaviour between the archs.
+
+I think the answer to that is probably: doing that is a bug, i.e.
+_invalid_noflush() and _default_noflush() are a pair that you have to
+use together. But I haven't checked if this is currently the case. Maybe
+it would still make sense to just align these fully?
+
+Anyway, aside from all this yapping, getting rid of _valid_noflush()
+seems like an unambiguous win here so thanks for the cleanup!
+
+Reviewed-by: Brendan Jackman <brendan.jackman@linux.dev>
