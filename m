@@ -1,338 +1,358 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from flow-a6-smtp.messagingengine.com (flow-a6-smtp.messagingengine.com [103.168.172.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADB3D3F8257
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 11:16:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34220402BB7;
+	Mon, 17 Aug 2026 11:36:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786965422; cv=none; b=M+H46gS8mn82q2F3L6eDXvL0u/sWNpMPy0EpbrV1KXT1cUuezUPuORa+rx/4JauiIrj5Ny9yhhSoz+TFVlwMfOnbL4y2GVzqi6R8nnGTwgEtlP8KL3WwqmoXjZiSWegjTmDTZbLIlLJe0cW/BwftG0Hg4N231nCPLU5uv47NScw=
+	t=1786966579; cv=none; b=O5oR+zP5vdODT4hCfSZJe2Cevpfycy7EhR3OVzqob6//fLgsAghbd25No1g809lVPmGebKmZTxYt9Ps9b1F9EFhxc+9xt0alXg/wvyi/NrdNabQixulnD7NyGYyP37bGboXaDFYoOOXDw6hS3+omv8KZqmCnCswH2OzFXjOjHuM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786965422; c=relaxed/simple;
-	bh=2wfWP6H/3nksqWj0OPT5pd7J9hPiUH+LOqOSe8S00tk=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=Z9i7igVqJvKomiqaRIrhmR0CmQ5zGbJe8c/HXbvpldpMT8GGntde8hQx2hKgl97fKhht75osX94P/3dktppytHBDoR4Dvwi0O/JWz+DDF6XNRkIYc2Ep1tfmEoqjbCeD9W9BXx93ZljIMVaMhGVk9PISC9gscAvS6W4W2/esKjg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=NoZzNLBu; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=O/4CxQts; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1786966579; c=relaxed/simple;
+	bh=MLys/WEhoW7dxAncZl6rAgMBm0EjMvxNjlBIWHu/smA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SH7FFgvGzlIi+E2xb5fNyCgnI9tFA2/0yQZExNRVo1ZLNk0o0VpqmLoCd4+aZ2ae8ymh1rHeR6sEy/mfmW6xjmopXzzus/ouQhefECQbRzzSNmBu6wocS1rhUWAkAHm2PB8CgCXvueBwmXaoBjJJE5lq9lfLmFDnBYXgFNTEn8k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=hRCVg2ag; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=Nda+cjmh; arc=none smtp.client-ip=103.168.172.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="NoZzNLBu";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="O/4CxQts"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67H9dfMx1533560
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 11:16:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	bV8ZOhAcbGhQlSu4TLOqqTEjXBrty3GGurN3PrivxxA=; b=NoZzNLBukgr2NHHP
-	aw5otS6og+gH1DJVj4XSmG16L/yQfThdXY3eqd5Xuffz5J0hjgfzI/yEIfT4RL4B
-	Xrmz5k6L4k3aJyANzgjljawbRqKJkIcOfqQ/NV47F9ivO5US7aZhlvjGFOUdZ8Np
-	jTIgu4mZWPaTQjdWo+HWU6qkN810moqR7ahvw9Gi8Hqipy896HCaU2vD11YDKN1o
-	dLQ++vxonggX09ovUa8+VBuZ111Bnrbxlo99nzWd4aXRqS6rO+VwYnAQqh6TC/zs
-	aU0uCboXrtBKjLm73wcfQhE41NExWBZi6ToUt+GvVhkyBgESeaPPjtLLbX9Zqatd
-	EyMZvA==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g3xb1gr4s-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 11:16:58 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-933023a5980so557974285a.3
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 04:16:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786965418; x=1787570218; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=bV8ZOhAcbGhQlSu4TLOqqTEjXBrty3GGurN3PrivxxA=;
-        b=O/4CxQtsVOStF28mGmFzvL/qrT1dc1RHUU0DRlpxDjrbaPRzdaOTr0gKUWlnKon0S/
-         ThcZYJ+mRjvO1UshsUJUZiXRc3VxZ4nF4r34Ln/KFIiKL8HRt9mGyQvLIWcHVg+7d5Uv
-         JcUmkd/e9jTejVyy8Rl4JxXDsadiNl+VJvkHSyRO/8PVPQg74VRklKDGeM5MsKF2S54N
-         PvAYSKSBg8cz4l3Q9100eTL+KefCQEKDaJ7JNJD2pkh5kH1CxAsQroA2pJZy8edguhL6
-         zjXUG22N8s6t9VWicH0s7YGMsUjmtK3XbegqhcsvL9OEuORBaCQ7vLODlQc73cgp2TI3
-         xBkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786965418; x=1787570218;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=bV8ZOhAcbGhQlSu4TLOqqTEjXBrty3GGurN3PrivxxA=;
-        b=nZlHXzrAgvymBYVUEkDvFvB1m9VJXhCPJoNI/1GSsidQ4Sc0wPthKR6yhrxeGe21RS
-         qtgRRwbZnXAzpaLc0thXn+/lpgpeVCOKHgEEWWL5rJBPGL0pFA2ueVG3V7jtWF+H6tPx
-         M2iAsm/Ale9pEsoosJS0noOIiIWuUIdu5yrnFJwrcYCYemePO7t5vHWxL3Cv68rGun4H
-         UOOQrCm6NkgA4qvW14swXVFLcYA0K/KDdmFVX4HubJtXBz9iqenff2DHvSZry1dLMhBU
-         Ae1z8sR9+sF45f+IVXhHBiSV5i6RSEIFjJ2SHWWVVVOJleDz1X3n2IMtAZT4VPJAklqS
-         3NXg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro1NXYCbERDI2e/0NSwG3Hag41M5Vw5cfXfrPApRw+lqpHmBARf540C61N/jPWcscCIT6k5m5ZkeQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yye4twEy4ce8JDbx2uAZs2U2jOerT+dlrEineW1dO19RvrQ/eaB
-	ZcUL0eUWXsWdi4WolBuMwZRi1EGm83thKCKIRqFIgWQQcQhTVbziA0hzgWlPPhyNpNmzVXqbRI8
-	FO0OFxss8qBgddjPSJAzB6jWEEtws3Tq/Rye0PowFmBlUxmgdpbm1LYo569b/5g==
-X-Gm-Gg: AR+sD12h2B4QFKtzWUqT5znhCV3K8guN1aZTAStbpV2MzYr25L7Rq1GHRuYe8IOVVt6
-	FEh/+mxOZQLX8QfzMIs1+XEzu3nQnD8c5MnEIMcfz6O9xS8jkqBW9Mi7sjhBdfXlUaOeO7qGjsV
-	6CBTEQBuZBBn95hgGJ+qFiIGfYMXXcfOEu/x6txZ7uOrWt9za+ITWk5xpdKND2ux2dU6nfyXOez
-	Zpbqjn4WH1qBHQhB2OgjSQFFTSW42s5twatfuzXo7t8vYzcGth25T/iIhH7Go3H1zqlahRE+v9N
-	7KfXKCk9SfFunKdvlkyfjSnHreTweo/a5blXW2NJiVYF3FykLyy2VzUOinkM4w/ByU+NTGJFdga
-	RvVmz1jTPCDC76MbolnxuSNNUCIxSWjIB
-X-Received: by 2002:a05:620a:1a07:b0:920:4f78:3d7 with SMTP id af79cd13be357-936d2142788mr2264667485a.3.1786965417620;
-        Mon, 17 Aug 2026 04:16:57 -0700 (PDT)
-X-Received: by 2002:a05:620a:1a07:b0:920:4f78:3d7 with SMTP id af79cd13be357-936d2142788mr2264661685a.3.1786965416937;
-        Mon, 17 Aug 2026 04:16:56 -0700 (PDT)
-Received: from [192.168.1.73] ([92.247.57.178])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4999d0fb85csm45234705e9.11.2026.08.17.04.16.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Aug 2026 04:16:56 -0700 (PDT)
-Message-ID: <3345fb17-aea0-4568-b7b2-c394cd76900c@oss.qualcomm.com>
-Date: Mon, 17 Aug 2026 14:16:54 +0300
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="hRCVg2ag";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Nda+cjmh"
+Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
+	by mailflow.phl.internal (Postfix) with ESMTP id 41C0C138014E;
+	Mon, 17 Aug 2026 07:36:16 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-06.internal (MEProxy); Mon, 17 Aug 2026 07:36:16 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
+	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
+	:from:in-reply-to:message-id:mime-version:reply-to:subject
+	:subject:to:to; s=fm2; t=1786966576; x=1786970176; bh=1GshB+4sV9
+	tcaNJER/C3LzeLGQgY1tsolyUJ2BVkWFE=; b=hRCVg2ag+v6VbKMFntY9VrEcji
+	VDM6e0EKUBGOgcQP7l9+Hpdfg3x7pSzU+QjAKzIuqd4/mYk8D2vqlBwKZhsynlNq
+	q8juUaTfkf8U6shKXrBzwzkIc6592G9L2l1GZ0FhSj3XdBXrVgw6/ULVxk0WUUwc
+	QhztbCsZg5uFWnnIr/rQX/EeANCs9vnW5Sp7PinTaS17nzQJ1/1MFlzjD2jObOk7
+	CZYE9xQD6M2BtDcSquCcSwSSjznLzkXYKfTVj73aBoROYRnN/diLsTKBqvZPQ7wP
+	QM19knBndEOm9c5ppJ3V3TrEfpEExnmw2yWVP1yLqpWSrroPPoa3jDdTzOdw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
+	1786966576; x=1786970176; bh=1GshB+4sV9tcaNJER/C3LzeLGQgY1tsolyU
+	J2BVkWFE=; b=Nda+cjmhpWdKxGqX1K7+8D04DtSWU1ChqrhvB+cEpRBKD91FWPh
+	3oKhI/0UKltkjqmBtWA4dBdR9g2LsG/h5feYj6RszN5Pi7yVU/jAGCl68LCUU3Yv
+	mUmZPx/qy6bsIOCBBfMNN2blx2Lr0ZFu7S5jZPmmHDaBQCOQeZjJeY17RskQs/6g
+	Vbiif/0lwxwPvLlOyLpBnx4AfSxtUKk4QPSeqAlZzXlzOXoMpz8oodH2uetnkWDm
+	J+V6e5aDiesuc8H62aAawbVYea2wzRDng9l1ocwbHPKw7Q/XUWkw3RICz4KbTDi/
+	29inscvJ1gHXvr058xuuyLpM67vsasTTpzQ==
+X-ME-Sender: <xms:LvKCaiHyrqCmw3lhKBfqPhxc67_TGzvGCoEBBXzCO2W7PALgitTJvA>
+    <xme:LvKCavfsFMV4zuixAsGTjDn3Q7PqgwrctHyibc36H-BNI7ffNj51lYIz55t7Osw_r
+    W2qwS1YmhTOe6ztHqpqlxM1LbiHgPm5zKxgZHy5agx6gIFs4X_qba8Z>
+X-ME-Received: <xmr:LvKCan8bzYTiPkDgCyF1zuC5nTNTR-iyS4uHivkCJ_yztzl1l2hlu7yGMBzxJjrKzTnfDm4-Iw>
+X-ME-Proxy-Cause: dmFkZTF73vtWrQGeIsbtPAgjcfyVjJNIthmC6WyfbioTlnvM80d2Mww5dPmZoHE0ubD6aB
+    EPDAzYhwv4Rn1W5OCMLfNbMGnUt5nBq1+jg2nmSdyc1BiKH8twAI7vOqzTvPaNn/moJEKg
+    Cx4WBvEDI6QBaSOGOFQVVERUcPXyPijBAtny9Gzv00kKQ4ZIYC3lEwrMtgl0O2B5Kl1Lgl
+    lYMpoB3zw8kZ5NQZCTn7RHJ/3NqVSSFM0vow5IWbXW3JNBicBZNnIExouR/Dl3OrA+l2Wb
+    WfUzc86cpt/h+HATXZ4wWGBHykWRG5xDkBO5o3xx5CjTuE2GyAKRVDYciZLlbsBHDyzChp
+    8ne9l2xNVVGXutkt88C5VnmTMlnldPh/pYdfrloORZTwRx4DH9vdmRWPyWS/7Qt0R97/l+
+    g50BZG4e/wXHPFasido5YVFmTfwqiz7/yiVLqueTCn8ezGAR2dQJ41NbdIoFYoQaZxr4II
+    9ADJ/xgKo8BXDCo+R1CJXwOHKBe9+Sm63YzyN30UdCTenXIKlwKhm9/WnYKlnRbcP3rM/n
+    d2G+kBpsprk21XPrgLzwkwUczLUmcWlLYp25rDjQoBvAVnKpWctFkdQJHtTyfOLyMTp7+B
+    w/iGO7q6HcUKNn28PhI62Fch/V0+5mB2lDwetO8zc9MXU+xr1FaJvbnp2qeg
+X-ME-Proxy: <xmx:LvKCalZqeeCPIZsapJcLV81fO4XXk8ceoLZjamtD5PuvqIN1k-0myQ>
+    <xmx:LvKCaoc7gkGAAKeZox9EDOC4KwVVhqq6fabLIEEd0i9zI8FtM2hUdA>
+    <xmx:LvKCajSY0TEmrFU3HRS9ymcChxt95tAIBELrTume2dZRE6YRyHcarg>
+    <xmx:LvKCainjWPGaZYu0RpIODCXA3ce0f8yF3QRBgjaXvO9-Zz4SGQAKsA>
+    <xmx:L_KCalr-n7ak-OSRN7NEwDirHW3zbUDgJyfFYkhl853zm165j-gEtGcJ>
+Feedback-ID: i7a5e4b5f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 17 Aug 2026 07:36:06 -0400 (EDT)
+From: Jiaxing Hu <gahing@gahingwoo.com>
+To: tomeu@tomeuvizoso.net,
+	heiko@sntech.de,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joro@8bytes.org,
+	will@kernel.org,
+	robin.murphy@arm.com,
+	ulfh@kernel.org,
+	p.zabel@pengutronix.de,
+	ogabbay@kernel.org,
+	zhangqing@rock-chips.com
+Cc: royalnet026@gmail.com,
+	chaoyi.chen@rock-chips.com,
+	diederik@cknow-tech.com,
+	alchark@flipper.net,
+	dri-devel@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	iommu@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Jiaxing Hu <gahing@gahingwoo.com>
+Subject: [PATCH v8 00/12] accel/rocket: RK3576 NPU (RKNN) enablement
+Date: Mon, 17 Aug 2026 23:35:51 +1200
+Message-ID: <20260817113603.1436067-1-gahing@gahingwoo.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 1/3] dt-bindings: interconnect: Add Qualcomm CAMNOC ICC
- binding
-From: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: djakov@kernel.org, andersson@kernel.org, konradybcio@kernel.org,
-        robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-        krzysztof.kozlowski@oss.qualcomm.com, odelu.kukatla@oss.qualcomm.com,
-        raviteja.laggyshetty@oss.qualcomm.com, vivek.aknurwar@oss.qualcomm.com,
-        quic_afilipov@quicinc.com, loic.poulain@oss.qualcomm.com,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Gjorgji Rosikopulos (Consultant)" <gjorgji.rosikopulos@oss.qualcomm.com>
-References: <20260807114951.4164439-1-atanas.filipov@oss.qualcomm.com>
- <20260807114951.4164439-2-atanas.filipov@oss.qualcomm.com>
- <2ssduce25rimjg7bry6dxzrf2d4f7msqqa2lvukwuxxacm36yc@lylvi42lwmm3>
- <65c47a9b-5f1d-4e17-bbed-4c37369025ff@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <65c47a9b-5f1d-4e17-bbed-4c37369025ff@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=Ua9hjqSN c=1 sm=1 tr=0 ts=6a82edaa cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=ybD9qRDIDfZaXNPQ7Ca20A==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=gEfo2CItAAAA:8 a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8 a=b0g1OgHxPeTUUs2uv0QA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=PEH46H7Ffwr30OY-TuGO:22
- a=sptkURWiP4Gy88Gu7hUp:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-GUID: y7icoGNXp2U3nEo3NxnTcbYSGPIPFspa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDA4NSBTYWx0ZWRfX0gMJd9yiQqPx
- /+6IYVnBQUhiYpGUU6cjjJOwEfOTZQVZmx/YqpcgYg8CueQPwKYAnu6CkHgM51Pg1SlLW6p6bkL
- APZPRWNU1q8RQVj7O9lgsVBryStXr4LumxIe5TOjPxSodyeDLIP4F6HLbKnINzm3ElRHi2+b7ZP
- kFd43Evluzj+AbQkjpVtSU7PQ15P3YEv47+IVWgiz88p4epmHw4PaMzfCWgeMd5rLPv81lFurgr
- 1IiIA03L/aCyfEwGzGnbyhDhiVwf/ynmk/vO31RbzhwLl5S2bbfBz7nFKmeIJTLRFaGWru84Wd+
- iQqZ2n3s/MJosHq2ogwzN0ZkFvg+8jB+OWHxCGFIt6J4dR2/pTfQHbmdz04mBiNKfwsGZseH2lE
- JSYQYXCsF1za2oyOhPY26HPiTh+UOzklB2jmeoI6hwEdnIFE7+f7f/erLG2IvoGmNGvxUyphUo6
- 0PkyjyzihKKfSerVhnA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDA4NSBTYWx0ZWRfXwzZq7LGB19n8
- Z3SBc1aKnV07HKmH77K7yMvyTldZcSZUXyyN1FiFX5tc7r5I8jO1cpy+nmx6wdQasKrrWepREtE
- xRqt819Ah4+bpiYElSEV4I9py/fuEzU=
-X-Proofpoint-ORIG-GUID: y7icoGNXp2U3nEo3NxnTcbYSGPIPFspa
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-16_06,2026-08-12_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 priorityscore=1501 malwarescore=0 suspectscore=0
- impostorscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608170085
 
-On 8/11/2026 2:59 PM, Atanas Filipov wrote:
-> On 8/8/2026 12:12 AM, Dmitry Baryshkov wrote:
->> On Fri, Aug 07, 2026 at 02:49:49PM +0300, Atanas Filipov wrote:
->>> Add a device tree binding for the Qualcomm Camera Network-on-Chip
->>> (CAMNOC) interconnect provider. CAMNOC is the internal AXI
->>> interconnect within the camera subsystem that arbitrates bandwidth
->>> between camera sub-devices and the external memory interconnect.
->>>
->>> The CAMNOC ICC provider aggregates bandwidth requests from multiple
->>> independent consumers and scales the CAMNOC AXI clock accordingly,
->>> avoiding the race conditions that arise when each consumer calls
->>> clk_set_rate() directly on the shared clock.
->>>
->>> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
->>> ---
->>>   .../bindings/interconnect/qcom,camnoc.yaml    | 98 +++++++++++++++++++
->>>   .../dt-bindings/interconnect/qcom,camnoc.h    | 12 +++
->>>   2 files changed, 110 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/interconnect/ 
->>> qcom,camnoc.yaml
->>>   create mode 100644 include/dt-bindings/interconnect/qcom,camnoc.h
->>>
->>> diff --git a/Documentation/devicetree/bindings/interconnect/ 
->>> qcom,camnoc.yaml b/Documentation/devicetree/bindings/interconnect/ 
->>> qcom,camnoc.yaml
->>> new file mode 100644
->>> index 000000000000..b2f5c140ff80
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
->>> @@ -0,0 +1,98 @@
->>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->>> +%YAML 1.2
->>> +---
->>> +$id: http://devicetree.org/schemas/interconnect/qcom,camnoc.yaml#
->>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->>> +
->>> +title: Qualcomm Camera NOC (CAMNOC) Interconnect Provider
->>> +
->>> +maintainers:
->>> +  - Aleksandar Filipov <quic_afilipov@quicinc.com>
->>> +
->>> +description:
->>> +  The Camera Network-on-Chip (CAMNOC) is the internal AXI interconnect
->>> +  within the Qualcomm camera subsystem. It arbitrates AXI bandwidth
->>> +  between camera sub-devices (IFE, JPEG, BPS, etc.) and the external
->>> +  memory interconnect. Multiple consumers may independently request
->>> +  bandwidth; the CAMNOC ICC provider aggregates these requests and
->>> +  scales CAM_CC_CAMNOC_AXI_CLK accordingly.
->>> +
->>> +properties:
->>> +  compatible:
->>> +    enum:
->>> +      - qcom,sm8250-cam-virt
->>> +
->>> +  clocks:
->>> +    items:
->>> +      - description: CAMNOC AXI clock
->>> +
->>> +  clock-names:
->>> +    items:
->>> +      - const: camnoc_axi
->>> +
->>> +  '#interconnect-cells':
->>> +    const: 1
->>> +
->>> +required:
->>> +  - compatible
->>> +  - clocks
->>> +  - clock-names
->>> +  - '#interconnect-cells'
->>> +
->>> +additionalProperties: false
->>> +
->>> +examples:
->>> +  - |
->>> +    #include <dt-bindings/clock/qcom,camcc-sm8250.h>
->>> +    #include <dt-bindings/interconnect/qcom,camnoc.h>
->>> +
->>> +    camnoc_icc: interconnect {
->>> +        compatible = "qcom,sm8250-cam-virt";
->>> +        clocks = <&camcc CAM_CC_CAMNOC_AXI_CLK>;
->>> +        clock-names = "camnoc_axi";
->>> +        #interconnect-cells = <1>;
->>> +    };
->>> +
->>> +    /* Example camera sub-device consuming the CAMNOC provider above */
->>> +    camera-subsystem@ac53000 {
->>> +        reg = <0x0ac53000 0x1000>;
->>> +
->>> +        interconnects = <&camnoc_icc MASTER_CAMNOC_JPEG
->>> +                         &camnoc_icc SLAVE_CAMNOC_AXI>;
->>> +        interconnect-names = "camnoc";
->>> +
->>> +        /*
->>> +         * Optional: an operating-points-v2 table lets the consumer
->>> +         * drive its CAMNOC bandwidth vote from the same OPP that
->>> +         * selects its core clock rate and RPMh performance state.
->>
->> Is this a table for the camera-subsystem or for the CAMNOC_AXI_CLK? In
->> the latter case, the OPP table should be a part of the camnoc device.
->>
+Based on Igor Paunovic's "[PATCH v2] accel/rocket: request the core
+clocks by name", as v6 and v7 were.
 
-The OPP table belongs to the consumer, not to the CAMNOC provider.
-Each consumer (IFE, JPEG, BPS, etc.) has its own dedicated core clock
-(opp-hz) and its own CAMNOC bandwidth requirement (opp-peak-kBps) that
-depends on its operating point, resolution, and quality settings. These
-differ per sub-device, so a single shared OPP table in cam_virt would
-not be meaningful.
+  https://lore.kernel.org/linux-rockchip/20260729130743.128876-1-royalnet026@gmail.com/
 
-The cam_virt node only owns CAM_CC_CAMNOC_AXI_CLK and aggregates votes
-from all consumers -- it has no knowledge of individual consumer
-operating points.
+Tested on a Radxa ROCK 4D, on next-20260814.
 
-> 
-> The OPP table in the example belongs to the consumer device, not to the 
-> CAMNOC provider. It describes the operating points
-> of the camera sub-device itself: core clock frequency, RPMh performance 
-> state, and CAMNOC bandwidth vote bundled together in
-> a single OPP entry. The opp-peak-kBps field is the bandwidth the 
-> consumer passes to icc_set_bw() when it transitions to that
-> operating point.
-> 
-> This follows the standard ICC consumer pattern: the consumer owns the 
-> OPP table and uses opp-peak-kBps to drive its bandwidth
-> vote. The CAMNOC provider has no per-consumer bandwidth table of its own 
-> — it only aggregates the votes it receives.
-> 
-> The comment in the example was perhaps misleading. I will reword it in 
-> v2 to make it clear that the OPP table belongs to the
-> consumer and that opp-peak-kBps is the ICC bandwidth vote, not a clock 
-> rate table for CAMNOC_AXI_CLK.
-> 
->>> +         */
->>> +        operating-points-v2 = <&camera_opp_table>;
->>> +
->>> +        camera_opp_table: opp-table {
->>> +            compatible = "operating-points-v2";
->>> +
->>> +            opp-100000000 {
->>> +                opp-hz = /bits/ 64 <100000000>;
->>> +                opp-peak-kBps = <22246>;
->>> +                required-opps = <&rpmhpd_opp_min_svs>;
->>> +            };
->>> +
->>> +            opp-200000000 {
->>> +                opp-hz = /bits/ 64 <200000000>;
->>> +                opp-peak-kBps = <44492>;
->>> +                required-opps = <&rpmhpd_opp_low_svs>;
->>> +            };
->>> +
->>> +            opp-400000000 {
->>> +                opp-hz = /bits/ 64 <400000000>;
->>> +                opp-peak-kBps = <88983>;
->>> +                required-opps = <&rpmhpd_opp_svs>;
->>> +            };
->>> +
->>> +            opp-480000000 {
->>> +                opp-hz = /bits/ 64 <480000000>;
->>> +                opp-peak-kBps = <106780>;
->>> +                required-opps = <&rpmhpd_opp_svs_l1>;
->>> +            };
->>> +        };
->>> +    };
->>> diff --git a/include/dt-bindings/interconnect/qcom,camnoc.h b/ 
->>> include/dt-bindings/interconnect/qcom,camnoc.h
->>> new file mode 100644
->>> index 000000000000..a03f5e3f6446
->>> --- /dev/null
->>> +++ b/include/dt-bindings/interconnect/qcom,camnoc.h
->>> @@ -0,0 +1,12 @@
->>> +/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
->>> +/*
->>> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
->>> + */
->>> +
->>> +#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_CAMNOC_H
->>> +#define __DT_BINDINGS_INTERCONNECT_QCOM_CAMNOC_H
->>> +
->>> +#define MASTER_CAMNOC_JPEG    0
->>
->> I guess, there are other connection ports. Please describe them.
+This adds the RK3576 NPU to accel/rocket, which today supports RK3588
+only. The RK3576 carries two cores of the same RKNN block, wired up
+differently. Two extra convolution buffer clocks, two power domains per
+core, one reset rather than two, no NPU SRAM rail, and a PC_TASK_CON
+that packs the task number into sixteen bits rather than twelve.
 
-Addressed in v2: qcom,camnoc.h now lists all SM8250 CAMNOC master ports
-(IFE 0/1, IFE Lite 0-4, BPS, IPE 0/1, JPEG, JPEG DMA, CDM, FD, SBI,
-ICP) with a short comment per group.
+Nothing about the completion path has changed since v7. The interrupt
+retires the job, there is no poll, and the register field layout that
+v7 corrected is unchanged here.
 
-Thanks for the review.
-Atanas
+Three sentences I am taking back
+================================
 
->>
->>> +#define SLAVE_CAMNOC_AXI    1
->>> +
->>> +#endif /* __DT_BINDINGS_INTERCONNECT_QCOM_CAMNOC_H */
->>> -- 
->>> 2.34.1
->>>
->>
-> 
+v7 shipped three commit messages that each stated a cause with nothing
+behind it. None of the three is load bearing for the code, but all
+three read as evidence, so v8 corrects them rather than leaving them
+in.
+
+  * The rock-4d patch said that dropping the NPU rail underneath the
+    power domains takes an async SError on the next power-on. I went
+    looking for the run behind that and there is none, and the runs
+    below go the other way, since the rail is genuinely down between
+    jobs now and the block comes back and computes.
+
+  * The settle delay patch said that without the delay
+    rockchip_pmu_restore_qos() reads back zeroes. That function only
+    writes, so it cannot read back anything. The delay itself stays,
+    because it was arrived at on this board, but v8 does not attach a
+    mechanism to it that I cannot show.
+
+  * The enablement patch said the BIU reset moved into the power domain
+    on RK3576. What I can show is narrower. RK3576 has no per core hclk
+    reset, which is why one reset is left on the core, and the domain
+    nodes carry a BIU reset that the pmdomain patch cycles. That the
+    second is the first relocated is not something I have evidence for.
+
+The NPU rail now follows the power domain
+=========================================
+
+Chaoyi Chen asked what consumes npu-supply. Nothing does, anywhere in
+the tree. There is no regulator call in drivers/accel/rocket, and
+grepping for npu-supply and sram-supply finds no reader at all, so the
+RK3588 boards that set them are in the same position. In v7 the
+regulator-always-on line was the only thing holding vdd_npu_s0 up.
+
+The property that does have a consumer is domain-supply on the power
+domain node, which rockchip_pd_power() takes, and
+rk3588-rock-5b-5bp-5t.dtsi already wires the same rail that way. Moving
+it needs two changes rather than one. rockchip_pd_regulator_enable()
+returns before it looks at the property unless the domain carries
+need_regulator, and the macro the RK3576 table is built from does not
+set that field, so the wiring on its own does nothing.
+
+v8 threads need_regulator through to the RK3576 NPU domains, moves the
+rail to domain-supply, and drops regulator-always-on. Measured on a
+ROCK 4D with always-on gone.
+
+  regulator debugfs open_count   1, so the domain did take the rail
+  sampled beside an inference    use_count 1, the rail is up for the job
+  at rest, three separate reads  use_count 0 and state disabled
+  genpd npu active_time          rises about 60ms per inference
+  inferences either side         128 of 128 channels correct both times
+
+npu-supply stays on the core node because the binding requires it, and
+nothing reads it there. Whether that property should exist at all is
+wider than this series and v8 does not try to settle it.
+
+Changes in v8
+=============
+
+Igor Paunovic
+
+  * The stale comment describing the completion poll is gone. v7
+    deleted the machinery it describes and left the comment above no
+    code at all.
+
+  * Factoring the completion tail out of rocket_job_handle_irq() is its
+    own patch now, 3/12, and no longer sits inside the patch that adds
+    RK3576. It is placed after the job_lock fix rather than before it,
+    since 1/12 carries a Fixes tag and should stay the smallest thing
+    that fixes the bug rather than land on top of a restructure it does
+    not need. 10/12 has no shared path changes left in it.
+
+  * The synchronize_irq() you asked about is 2/12. drm_sched_stop()
+    returns without waiting for a threaded handler that is already
+    running, so the comment saying remaining interrupts have been
+    handled was an assumption. It goes before the guard rather than
+    inside it, since the handler takes job_lock. It does not fix a
+    handler that has already read in_flight_job finishing work on a job
+    the reset is about to drop, and the message says so.
+
+  * Your Tested-by from the three core RK3588 run is carried on 1/12,
+    which is unchanged from v7.
+
+Krzysztof Kozlowski
+
+  * The paragraph explaining devicetree syntax is out of the power
+    domain binding commit message.
+
+  * resets is maxItems 1 rather than 30. Both RK3576 NPU domains carry
+    exactly one, and the 30 was copied from the clocks property above
+    it without asking what it would mean here. Whoever turns up with a
+    domain that needs more can widen it.
+
+  * The block scalar is gone.
+
+  * The new property reaches an example in that file. v8 adds one
+    resets line to the RK3399 example already there.
+
+Diederik de Haas
+
+  * The RK3576 NPU MMUs get a compatible of their own,
+    rockchip,rk3576-npu-iommu, with an allOf pinning both clock sets.
+    v7 had a minItems of 2 and three descriptions ending in "RK3576 NPU
+    MMUs only", which is a comment rather than a schema, and it left
+    both of the spellings you named valid. An rk3568-iommu with five
+    clocks and an RK3576 NPU MMU with two are now each rejected. The
+    DTS patch moves with it, since v7's MMU nodes used the plain
+    rockchip,rk3576-iommu string. This is the second version you have
+    asked for it.
+
+Chaoyi Chen
+
+  * The rail moves to domain-supply with need_regulator threaded
+    through, as above, and regulator-always-on is gone.
+
+Commit messages
+
+  * The three sentences in the section above are corrected.
+
+The series is 12 patches rather than 10. One is the extraction split
+out at 3/12, the other is the synchronize_irq() fix at 2/12. Nothing
+else moved.
+
+Where it stands
+===============
+
+With every debug knob off, on a ROCK 4D.
+
+  * the NPU probes and reads its core version, so the two domain attach
+    list succeeded, since that call fails the probe when it fails;
+  * a convolution submitted three times with three different inputs
+    matches the CPU reference within one count on every one of its 128
+    channels each time, with no reset in between and with nothing
+    retiring the job but the interrupt. It is not byte exact, and an
+    earlier version of this letter said it was. 204788, 204760 and
+    204767 pixels of 204800 are identical across the three, and the
+    remainder are off by one. Feeding the first input again after the
+    rebind below reproduces its count exactly;
+  * the NPU's line in /proc/interrupts goes from zero to three across
+    those three submits, one each and no more;
+  * the rail is disabled at rest and enabled during a job, and the
+    inferences either side of that are 128 of 128 channels correct;
+  * unbind and rebind logs no warning, no call trace and no refcount
+    message, and the rebound block computes, taking that interrupt
+    count from three to four;
+  * every patch builds on its own at W=1 with no warnings;
+  * dt_binding_check is clean on all three bindings the series touches.
+
+That was run on this branch with nothing else applied. The out of tree
+work this hardware has needed for the userspace investigation,
+including an rk_iommu flush_iotlb_all that is neither upstream nor in
+this series, is not present.
+
+What does not work, and it is worth knowing before anyone drives it.
+The reset path does not bring the block back. Timing a job out twice on
+purpose, the driver logs its timeout, and a few seconds later rk_iommu
+logs
+
+  Error during raw reset. MMU_DTE_ADDR is not functioning
+
+and the next inference returns a whole surface of the output zero point.
+Both pairs behaved the same way. The ordinary path is unaffected, the
+two inferences before the first timeout in that same run are 128 of 128.
+This is existing behaviour rather than something the series introduces,
+and 2/12 does not address it. That patch only stops the reset racing a
+handler that is still running, which is a different thing from the block
+coming back afterwards. Whatever is wrong sits between rocket_core_reset()
+and rk_iommu re-enabling the MMU on the next attach, and I have not
+worked it out yet.
+
+The userspace, and what is wrong with it
+========================================
+
+The userspace side is a Mesa merge request and it is not merged.
+
+  https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/43804
+
+It is not part of this series. A whole MobileNet V1 now runs on RK3576
+through it, with 1000 of the 1001 outputs within one count of the CPU
+reference.
+
+There is one limitation in that Mesa driver that a reader should know
+about before taking the numbers above at face value. A convolution
+output never falls below the output zero point. For a network whose
+convolutions carry a fused ReLU that is invisible, because the clamp
+the graph asks for and the clamp the driver imposes land in the same
+place, and MobileNet V1 is such a network. Anywhere else it is visible
+and it is wrong.
+
+It is mine rather than the hardware's. The vendor userspace on this
+same silicon does not clamp, across five models including one with
+conv2d-cal's geometry and two carrying its zero point, and Igor's run
+of upstream Mesa on RK3588 does not clamp either. I have not found it
+yet. The register stream is byte identical to the vendor's at that
+geometry apart from addresses, the requantisation, the pad value and
+the padding. Nothing that is still wrong there is in the kernel.
+
+Thank you to Igor, Krzysztof, Diederik and Chaoyi for the v7 reviews.
+Igor, 2/12 and 3/12 did not exist when you read v7, so they want a
+look before any tag lands on them.
+
+Jiaxing Hu (12):
+  accel/rocket: take the completion register writes under job_lock
+  accel/rocket: wait for a running IRQ handler before resetting a core
+  accel/rocket: factor the completion tail out of the IRQ handler
+  dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
+  dt-bindings: power: rockchip: allow resets in a power domain node
+  dt-bindings: iommu: rockchip: describe the RK3576 NPU MMU
+  pmdomain/rockchip: add optional per-domain power-on settle delay
+  pmdomain/rockchip: cycle optional power-domain resets on power-on
+  accel/rocket: select the per-core clock and reset counts from match
+    data
+  accel/rocket: add RK3576 NPU (RKNN) support
+  arm64: dts: rockchip: rk3576: add NPU (RKNN) nodes
+  arm64: dts: rockchip: rk3576-rock-4d: enable NPU
+
+ .../bindings/iommu/rockchip,iommu.yaml        | 28 ++++++
+ .../npu/rockchip,rk3588-rknn-core.yaml        | 47 ++++++++-
+ .../power/rockchip,power-controller.yaml      |  8 ++
+ .../boot/dts/rockchip/rk3576-rock-4d.dts      | 13 +++
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi      | 82 +++++++++++++++-
+ drivers/accel/rocket/rocket_core.c            | 28 +++++-
+ drivers/accel/rocket/rocket_core.h            | 11 ++-
+ drivers/accel/rocket/rocket_device.c          |  7 +-
+ drivers/accel/rocket/rocket_drv.c             | 28 ++++--
+ drivers/accel/rocket/rocket_drv.h             |  2 +
+ drivers/accel/rocket/rocket_job.c             | 97 ++++++++++++++-----
+ drivers/pmdomain/rockchip/pm-domains.c        | 75 +++++++++-----
+ 12 files changed, 364 insertions(+), 62 deletions(-)
+
+
+base-commit: 4477a78374a57c3809b172ad30cceabda48c47c6
+prerequisite-patch-id: 46ebb679e93d3d25393e8cbf8fc3c955bcc01bd4
+-- 
+2.43.0
 
