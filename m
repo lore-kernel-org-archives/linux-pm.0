@@ -1,87 +1,86 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F216B439F6F
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:25:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 749BC43B3E2
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:34:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786973127; cv=none; b=OB4nRtGSMtQRwJ1i3TVG0Wk/mgYulLsXGiOgIPTHt7Wq/4dDSIdBG3SmfyCvsDGZ7AeZnwtJxXGBZhYbrlDQ9txrekJNQ3kug1Ps0Vq9Alhv2LmleFlz7KWNfGoR2Gpu8RPPof63v8f9yNKePZREOIR06gktsXwKAm9ZKfCjFew=
+	t=1786973652; cv=none; b=JEnJVvG+M6lCb3K5rKyW1P0paF8+QQsvRqWza9kwCFs2Wm0eeLoO08OyTq9cMCksBsJSx8R0TXuUQ05C8aPUT5lDir9FdK5i0r0QUYbzDRYztt8Z7JeQlkiPk93nsPYUdZrlBDFW8h6svTUADLQDyMXGTBE+kYadYqZ2QFToBI0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786973127; c=relaxed/simple;
-	bh=GXDnqv4IufDcpMPjGsoOmnbxEx1h09J0mGjA6yUpyEU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cjX4Lq88eTx6IPwQqjQ26TEXBoqmzCH4M8DkBEYNrkJBFKvVaVeGilURU/1yWHcPqZfyfy1tAFAx8qXstkeIkTYX3ZCNlpI6KRm97nQCpExzQrWCqjFmr6XsfLv4I4lYcl+hX1CXpi7buZ+1O2hYJprvsmfYJIelAZohLMgJ77E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=fMmMMqJB; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ZuCW2WWD; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1786973652; c=relaxed/simple;
+	bh=FGuszqknZFozF7pKzpAoA04EqrXSP2JnLU572u497H0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
+	 In-Reply-To:Content-Type; b=F51/SviqU9nEzVzusjkoBN35vmW1FpbPCofMhTlK+CmxDDCmhH8h3aSjYIo61KQ6ihJwU7SJjdAjZ5pPg1IOrU1Pwl3377xypu0SY4VZCPxOD7/PYAcao2LiU6S9O9sEYL50KZC7dcbqJWRvRBu/dixxEWTu7f/mpNI0r/t89hs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ATMbm9u+; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=J1vo5uAA; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="fMmMMqJB";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ZuCW2WWD"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ATMbm9u+";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="J1vo5uAA"
 Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HD6JKp2431665
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:25:20 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HD6KKR2431695
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:34:05 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mYGdTzVFMPdsqDTRpn/GM9XVeOL5og0Ffywf3aiaCxY=; b=fMmMMqJBlYjCqfMd
-	HyqpcJy5MgaoCPvIDypo2cWJ0Z350/W9xqJhAhDtiyLM7eEhOj6UQlvFA7TElTcj
-	gqh9WlRQVL+6HWl4YFkxx8toHwa3JY9EX9+GHkQWeBzdv2jTvfE2EY6BXQGiFoZx
-	n5DjkHjikTuOzPpfhRRLTWWov80K290qsqd4POpSctGs8awR0cenQDIu1Zufdp6u
-	XfhHKnHXjYT4tC+XJ/tuQSUzDroyAfqusVYB/UNnpt9Gy19vFempvGPPZAFa2LB4
-	zYOJ5s8rclBHmRuLEfjO6SAjy4SXZ0I//lH5SgpTBMul2zzHJC7RNRxSwHNXGhem
-	gWrpZA==
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g3wrehd71-1
+	iWD3BGVe7Jxn1EGjVKUV/jvwmRStEg8cJXdcbwX3Hvs=; b=ATMbm9u+4AcFkAJx
+	MYzc3VNuFi7GZdikG+AkyOI8Ndw0fu1pqVPltKtmuZztI4kBCHn7EqdgFdtdQqMU
+	SqOuE6U5JkiPsawIeAK+/Hu45Mc26wwP35XSvWOT0mCczVGlTqfaBIByNq3m2QzN
+	Vqe1qRJ/rlxMcoIU0RpRCUHdi9ZSsrnT4mkZZzgdQgNUOSuYEeHQBudZVbtTOc6M
+	beGGu0GeDwOP9bN459TGQlSBYiqZp/T7OIt0KLREd92fM6bpw9BYdBv9iCg164Fz
+	DULWcfx/XRHweSEzzYUai9Mo5Y6rZkrXGBMOHJwJPtamyt2b8i01VgVAA06U9mmb
+	Xy4Lwg==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g3wrehegc-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:25:20 +0000 (GMT)
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-52d7ef17031so2413361cf.1
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 06:25:20 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 13:34:05 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38e8fee6af3so3987570a91.1
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 06:34:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786973120; x=1787577920; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=mYGdTzVFMPdsqDTRpn/GM9XVeOL5og0Ffywf3aiaCxY=;
-        b=ZuCW2WWDS/ZGBmjzVt1vJ+tZTIJ0KIFwisfY1Jb9ypGK4+38xTvXmjmbvQw16mTorf
-         hzFsvD7MWsvwuEjRqkN1ilBBGsyb117pj+SHxRmqk8TOtj85m6/iGJ7ZJ1Zf+Z2klwH3
-         AcOjiwwIy9Kzvfl7WC1ptPgJOAlPka9Z4Di7WS1UZkQIGwwbftghFRNNiuYo6YR+nphI
-         n1xelyIZRI3GLlxUp+Z0WD+dYfb2JCntlorJ1/U6vSguSxsdt6VwgXx0M3MANzpaV56O
-         6RTLvFj38PHW6p6A+C0fhUDrpM06HH8LGkwgPdZ4dono0OFgHp+fPm8Klo7mjK/RdSZG
-         NGkQ==
+        d=oss.qualcomm.com; s=google; t=1786973645; x=1787578445; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:cc:from
+         :content-language:references:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=iWD3BGVe7Jxn1EGjVKUV/jvwmRStEg8cJXdcbwX3Hvs=;
+        b=J1vo5uAAIK66ZZDJ76+jdFIzT+hvFGWRsTO8WgYEjEdYEq9CB32xZQRDqptn/NjFXb
+         iTzl/KpexjpVTcFpX/3Sew4B89ulBIbgr/6WIGjmwfAgbzi25wkU79j43JcD4Fh9KK4f
+         jTEJmJjxcbnFzHKlKGXw45AZ+yMB2QSrBrgeou1sQegIxgUDje16DMn3hs/06/zFX38h
+         wifeY2WYNBQAHEYBJC/3/AoQRA771D5XP5SdXX2ZRx3uSji0ycBt7S9xbi2XiDfPd4mD
+         8DCqt+FEE0IuiYlE0Tfpxe0+6CTKJhpEkrkSkbWZD4ZWGP0wY6z1iTNmN+tjcqcOX/uQ
+         SalA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786973120; x=1787577920;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1786973645; x=1787578445;
+        h=content-transfer-encoding:content-type:in-reply-to:cc:from
+         :content-language:references:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=mYGdTzVFMPdsqDTRpn/GM9XVeOL5og0Ffywf3aiaCxY=;
-        b=Fardw4qhozfWg0kBA6mrZ3T3/aFd0btlkKASnHsyZdofD+MT/ejb9JqHRq8296/4pB
-         wHHa7XZ/n63KvxpYZnhHuSU582GkQFY9TOm7nxzukRe2xHWVNOlYqlZssw6VZIZxjah5
-         6E3oWIJBzhFyXo9KsZ+BrO3CHyOD8BFXnYBR6/vtNPz1Zq6HpFTbpkaVTq/JKPplsy/S
-         7FRbimqD2IsiE+vBP3+hCdFjFS03ctKj2wlRCJlnhrLxVUKpMrBrXQIro/7w99FPb0w/
-         20du65Pq1ua4ULOzbxjCv2rRQ6rqg+EDXu4oWKKZtpPUCjlCWnPKdSacHbRFCpe8t1nr
-         oRWQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrNy3KQ+TQGiKmUFw47ftf4vxr+fujZlhIYlwQa866i+STzRez75vl7iLDVHr/IMu6UV8UYNLeHjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxSJlMczD1hYdPFP5b9X70r+vURcICz9FFayxqDAPrebvZODcUs
-	KDTKILR3qITvdz8V5nSjwJ+F9/D3E8xoRl08zn4/jL/H79TvwLzzYGNhojFhSz9FtrwVBWHi0Vu
-	K6363dffpc2nAhI3jwRw45TSarExEea8JBpYzqg6dTc0rxBiTmFGm4BwipBiGEw==
-X-Gm-Gg: AR+sD13VYOi4IBlVv+ujugcGX8ng1V4uP3x7hlzTCeHj8ob002tR7vPjV0HoqHgASqv
-	BdLxKgGtYK65uTLSqTPUDVgsf9e82aXoEsaKycKg4if1vC/u9+M9Wq2bwfz90TX0j8uP/M7MYRq
-	dnGF43NzMk6DjAy94dJ1fcXWYS3WiEVScP1VPrLVbtHRTbIbGNc6/4F5KBnIbHdam/d79WZVncT
-	sCAsKd2hnhG6L6yptlHDj4M3jxDR2/zJcGqo6hZapBcEfz/kf6f4SUKYrNuL6yyY7fQzGSTLu6f
-	yghdBUZHvJI/X+VmGvh3tcwOL7GqPhde2XXKUhMJxK8lUJSCj0nMJ1bZ+eFDYvAb53lDEKWoi7/
-	PZnPEi0BeSdOtRtSFP+pxzXFf
-X-Received: by 2002:ac8:5a8b:0:b0:51c:845b:ac4 with SMTP id d75a77b69052e-52d8547a9e4mr190072421cf.3.1786973120235;
-        Mon, 17 Aug 2026 06:25:20 -0700 (PDT)
-X-Received: by 2002:ac8:5a8b:0:b0:51c:845b:ac4 with SMTP id d75a77b69052e-52d8547a9e4mr190072121cf.3.1786973119817;
-        Mon, 17 Aug 2026 06:25:19 -0700 (PDT)
-Received: from [192.168.120.193] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2185b97936sm29266066b.43.2026.08.17.06.25.16
+        bh=iWD3BGVe7Jxn1EGjVKUV/jvwmRStEg8cJXdcbwX3Hvs=;
+        b=MFw/hsEUDx1Zv3N6yy3s2dpd94Z0ETtcLrEzd7Fkmz95zuV1DMgYCsQvjtDOUY1kdK
+         6HVPdyYmGIwwPFM6wKAyf/55uVuPXRE2zjwcbWelIVKIb9pD2TldkMjrttcFx4nWTwpQ
+         qdpiSXS6PzrOXvdcGPTsU/sS2+rZj8QyDblm9LWhs+B5NxR9d0dphfoJWSyVpPV1ZIPa
+         fudVB5evd/iQWz2aH8ApeH8qxAGUPvWdjTjQTNo4tXUb2vbAgQNwwDm3a0PbYxxE4C4h
+         J7Jk4tincppuxRYmZWCYepUhmc4i1WhTBEAMM/2rnPKZWGFWtT70lFmOFVD9+OnmjRPx
+         CFfA==
+X-Forwarded-Encrypted: i=1; AHgh+RqI+D51PsyOooiBFwAbMAKd+uKklJHFlxNElMVRfhMejBW85UxPgO79uvC1HQRudT3qSpQq/lSNsA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxPQuGuVCEOGpZvaGf5tvktxzUhM0PqhsVBupKMe2Ppkt4BHbuJ
+	SNNPD9Kxb84oCfy6koQHWrWvH+yBULMcVUzsDviJeDduCQ9j/VBe67LV1J84mTJjpRc2m+C9P79
+	ijiKh9Fxx7KHVKsuVn/K3EVa5Xt9WCH+nTB+Ez+6G3gcrchhT516xv/k3FLMI5Q==
+X-Gm-Gg: AR+sD13+uFDPOdwU9majGCd3EmeBJFOjZFl1JUQzN9wVu6roo7Idw3y5uX25Rvru40f
+	w/rtwxJv6zJBhEGwtLkOyp4TPiIe5MVb6qH81PtB8iYLM7oCZG037WFEuBJ04SPQWqd0KnYfdau
+	aH7H94ndKxiRcYAjmnZJXQetcPj6ni0BWxKgFD+rZFXYgfp7FJoBZNCIapUccKVQl9PCyo0NInx
+	sHmkPRVOORgt6JDaYWDSD7tiyDB8qq9JotmWLONeCUTlysTcBkh5qimvekJYe65LSmp1cQSMvhs
+	r9zPiU9zaWUD/mZAmRfampsMZ+T5xvoLEIIkKDrYE4CkSR+BSjJ+NCTYwLvgscrVwEVGMReDQRB
+	L28oWBPFeRTuwOukJmpnPSZskr0zk6rBpRWOHLpD8muiYrKtKM/rQ4F6HIyNvol2DiD9F2kg=
+X-Received: by 2002:a17:90b:2d92:b0:36b:77b9:5c8c with SMTP id 98e67ed59e1d1-3933babae61mr26190131a91.17.1786973644566;
+        Mon, 17 Aug 2026 06:34:04 -0700 (PDT)
+X-Received: by 2002:a17:90b:2d92:b0:36b:77b9:5c8c with SMTP id 98e67ed59e1d1-3933babae61mr26190069a91.17.1786973643937;
+        Mon, 17 Aug 2026 06:34:03 -0700 (PDT)
+Received: from [10.133.33.95] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39339b1edb2sm5424828a91.0.2026.08.17.06.34.01
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Aug 2026 06:25:19 -0700 (PDT)
-Message-ID: <57af0ad2-2afb-4951-b17c-918e9ed08ef2@oss.qualcomm.com>
-Date: Mon, 17 Aug 2026 15:25:15 +0200
+        Mon, 17 Aug 2026 06:34:03 -0700 (PDT)
+Message-ID: <a647d4a0-d713-4e73-8b16-b73dd3b35ce4@oss.qualcomm.com>
+Date: Mon, 17 Aug 2026 21:33:59 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,53 +88,40 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 11/15] clk: qcom: Add Global Clock Controller driver
- for Kuno
-To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd
- <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-        Taniya Das <quic_tdas@quicinc.com>, Georgi Djakov <djakov@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Linus Walleij <linusw@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
-        Radu Rendec <radu@rendec.net>, Robert Marko <robimarko@gmail.com>,
-        Guru Das Srinagesh <linux@gurudas.dev>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-gpio@vger.kernel.org
-References: <20260814-kuno-soc-support-v2-0-3079794f0f73@oss.qualcomm.com>
- <20260814-kuno-soc-support-v2-11-3079794f0f73@oss.qualcomm.com>
+Subject: Re: [PATCH v2 1/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
+ in extract_io()
+To: lirongqing <lirongqing@baidu.com>,
+        "Rafael J . Wysocki"
+ <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20260813090145.2450-1-lirongqing@baidu.com>
+ <20260813090145.2450-2-lirongqing@baidu.com>
 Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260814-kuno-soc-support-v2-11-3079794f0f73@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: zhongqiu.han@oss.qualcomm.com
+In-Reply-To: <20260813090145.2450-2-lirongqing@baidu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=FqI1OWrq c=1 sm=1 tr=0 ts=6a830bc0 cx=c_pps
- a=JbAStetqSzwMeJznSMzCyw==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+X-Authority-Analysis: v=2.4 cv=FqI1OWrq c=1 sm=1 tr=0 ts=6a830dcd cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
  a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=TGsF1qQkE8-pbLwaU88A:9 a=QEXdDO2ut3YA:10
- a=uxP6HrT_eTzRwkO_Te1X:22
-X-Proofpoint-ORIG-GUID: g4n11x1wrUWfkeaGVuRdFSWlK0DQqqUk
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDEwMiBTYWx0ZWRfX0xOYdnp0Z6eA
- fJpFNjeDHvf0/daTj1HRQKirwbZClZK8VdY+nP5jTh0o+74xkUUdTVlRt09mbcmqj/sujlsof6C
- q/N5paaalMkgz09+y2Rt6YFRO6fTIF4U0GIR0prsw1Cg8GU+Y3feSLWIzPepMTJTMXbQMXyGhh9
- efuR1SZSXbjOMjwhGxfQ69a5zEqQ3IunjhEj0sCiTlQUWSIu2AeIfECm16/jPg3CB5bkQ34cZoG
- JMZ6Yp6o1Wh8NYJlTCSzJJr19YwevviIRRFbLspiAv7zt9pwYrjvxAikJifm2uTKDlzwk5ONqX/
- WnrG40zctiOxiD6XqbDRNg1OeQZGZ3pbHzYN5cR28zkFJc40roLC/KtsMWdTBz+G+qnKRU3mgoT
- Qs52Vp3ADSeorRQkdEi/rltEObni7tUtCXBRGYUd7qoTp7ksetqEMDyV7qDwooHoCRcJ9sYVxtO
- c/QKlYtZiK9aeNpBwQA==
-X-Proofpoint-GUID: g4n11x1wrUWfkeaGVuRdFSWlK0DQqqUk
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDEwMiBTYWx0ZWRfXxdHD4Xb/v5cl
- a/+g0A0vcf1E1P3sJcqm2TnzA3tgEV9zkdEd1cw97vGZU7IXbRVZWS2qxTUwUmNzCoSVo0RN73W
- m6+7kAyNeb1xS1tQ6Qb0w8e0zAmMD2U=
+ a=zuLzuavZAAAA:8 a=B83gT7kL6Ddqc7TX8wIA:9 a=QEXdDO2ut3YA:10
+ a=rl5im9kqc5Lf4LNbBjHf:22
+X-Proofpoint-ORIG-GUID: qcHuxbQSl92mk2OyFe39hgv0701ntiIt
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDEwMyBTYWx0ZWRfX8Sd1exBGwlBo
+ T9AbPxXcG8mYh3gmG6706KTbpxJm3vIu4LIQguSGViv/5iXEVkghjiwe2WKk5IyJZDc6BznLZqD
+ aqoOlLMlYhzL0ZlEGZyZbmkOV8oCR7wjnApyppbuaiGWkkVjJ0VYrt18xncjOlVNeQqSH63aGOk
+ flSGk/7sdE8eZKjOLP5TvX+VO6/I1pxmXqMdFR8g1mNmuQ7Z2axkV/NpETxYYNWJigPnAsHM628
+ J5mtADYeafkBfbrIK+Z0YMJx0m7IKQguCs6nXWrtsCvOqm/LBbEi7xBGMeDHsVedWXc9ThMUgsf
+ Qwz6AJ92Ov2lEqrJ3j6PhiCgNm5LARIYg1bSE69DzTl719XAho6dbLcQvEYYdGz3Cf6TkHO5JJT
+ 6kD+IJ2levGq4kERJmTGKzEJUhc1YzWejxKYK4P7Ob9nBThB4ZXNzMGMtx1/JEJ3S56TVb3mUCc
+ DMfdGH/nc2pn28twN1g==
+X-Proofpoint-GUID: qcHuxbQSl92mk2OyFe39hgv0701ntiIt
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDEwMyBTYWx0ZWRfX9GW2h9O3wpxP
+ 4NWKGDAUXxHzcP0wmMknBs0VsNPUXe0kbY1twadTGAHiNea52nycHGSPXWH3zgIkt961NKmDdoL
+ N6oNsxq283YXNjub97NUDD8L0SezMdM=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-17_01,2026-08-12_01,2025-10-01_01
@@ -143,17 +129,96 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 spamscore=0 adultscore=0 priorityscore=1501 bulkscore=0
  suspectscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0 impostorscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608170102
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608170103
 
-On 8/14/26 9:31 AM, Hardeep Sharma wrote:
-> Add the global clock controller (GCC) driver for the Qualcomm Kuno SoC,
-> providing the PLLs, root clock generators, gate/branch clocks and resets
-> used by the peripheral devices such as UART, SPI, I2C, USB, SD, PCIe and
-> Ethernet.
+On 8/13/2026 5:01 PM, lirongqing wrote:
+> From: Li RongQing <lirongqing@baidu.com>
 > 
-> Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+> When policy->freq_table is built in acpi_cpufreq_cpu_init(), entries
+> with duplicate frequencies are skipped. The original P-state index for
+> each remaining entry is stored in freq_table[].driver_data, so the index
+> space of freq_table no longer matches perf->states[].
+> 
+> extract_io() walks perf->states[] with index i and uses the same i to
+> index policy->freq_table[i]. This causes two problems when duplicate
+> frequencies exist:
+> 
+>    - Returning the frequency of the wrong P-state
+>    - Returning 0 from a zeroed tail entry, or even CPUFREQ_TABLE_END
+>      (~1u) reported as 0xfffffffe kHz
+
+AFAICT, It may be worth expanding the changelog to cover the
+consequences described below , particularly the resulting divergence
+between the hardware state and the cpufreq core's view of the current
+frequency:
+
+Furthermore, extract_io() is only reachable on ACPI_ADR_SPACE_SYSTEM_IO
+platforms, where cpufreq_driver->get is not installed, so its only
+caller in practice is check_freqs(), i.e. only when the
+acpi_pstate_strict module parameter is set.
+
+There, the mismatched lookup makes the frequency comparison fail even
+though drv_write() has already switched the hardware to the requested
+P-state.  So check_freqs() sleeps through all 100 iterations - at least
+~1 ms of usleep_range() plus 100 cross-CPU calls and I/O port reads, all
+with policy->rwsem held - and ->target_index() returns -EAGAIN. perf
+->state is therefore left at its previous value while the hardware sits
+at the new one.
+
+The core then restores policy->cur to the old frequency, and
+because __cpufreq_driver_target() returns early when the requested
+frequency equals policy->cur, the driver is not called again for it - so
+the control register is not rewritten and the CPU is left running at a
+frequency the core does not know about.
+
+
+> 
+> Fix it by walking policy->freq_table with cpufreq_for_each_entry() and
+> using perf->states[pos->driver_data].status, aligning with extract_msr().
+> 
+> Fixes: 8cee1eed8e78 ("cpufreq: ACPI: Remove freq_table from acpi_cpufreq_data")
+
+The real tag should be fe27cb358835 ("[CPUFREQ][2/8] acpi:
+reorganize code to make MSR support addition easier")
+
+That commit added both the entry-skipping loop with the
+freq_table[].index (now .driver_data) back-pointer, which is what makes
+the two indices diverge, and the faulty lookup itself -- back then in a
+function called extract_freq(). dde9f7ba60ad ("[CPUFREQ][3/8] acpi
+cpufreq: Pull in MSR based transition support") merely renamed it to
+extract_io().
+
+
+> Signed-off-by: Li RongQing <lirongqing@baidu.com>
 > ---
+>   drivers/cpufreq/acpi-cpufreq.c | 9 ++++-----
+>   1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 21639d9..1abe9ab 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -197,14 +197,13 @@ static unsigned extract_io(struct cpufreq_policy *policy, u32 value)
+>   {
+>   	struct acpi_cpufreq_data *data = policy->driver_data;
+>   	struct acpi_processor_performance *perf;
+> -	int i;
+> +	struct cpufreq_frequency_table *pos;
+>   
+>   	perf = to_perf_data(data);
+>   
+> -	for (i = 0; i < perf->state_count; i++) {
+> -		if (value == perf->states[i].status)
+> -			return policy->freq_table[i].frequency;
+> -	}
+> +	cpufreq_for_each_entry(pos, policy->freq_table)
+> +		if (value == perf->states[pos->driver_data].status)
+> +			return pos->frequency;
+>   	return 0;
+>   }
+>   
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-Konrad
+-- 
+Thx and BRs,
+Zhongqiu Han
