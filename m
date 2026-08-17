@@ -1,84 +1,74 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+Received: from mail-pj2-f3.google.com (mail-pj2-f3.google.com [74.125.227.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DC0E3EDE72
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 09:43:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AB4D3D170C
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 10:01:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786959809; cv=none; b=F8v42C3zVgsOZpxx0f0Xe4gduPayzE3T8Vtuutzpx36sY+MH/uV6kYTJ7oI7OYYe/Qkejwps4ZpQEqHoDvYOcmodK3CQcz9g0Mij09oTr8I3r9Xbykyg4L+itHbGKJ2T1r6S/BGQIAjMSGSmN987LzlqcQNdD5NfaZ8T9txyP54=
+	t=1786960875; cv=none; b=gZfHflesSEz9W4cq/hbbxfqqIh4H2qqRINx8UYOlDjCLw8I3ACgx6cJukRgTRdd1f4yKQkgAseEArmbh+MkYteBzQTr+sSO7Wnb4oCxi0rm/2BlUyXPGPjuiWpYQXSOWOwxT3vz341yE7Hv2gtY5mTdrYiMos3lhqiSNTLf96Hk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786959809; c=relaxed/simple;
-	bh=AYV2llpwHVx2jpCfwLLNfUkWZvtKPwZ698vf4LkmWB4=;
+	s=arc-20240116; t=1786960875; c=relaxed/simple;
+	bh=QFwGflSg/xbQtdgC7RkCRrTPWLiVkClzm6dle6b12Sg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Q8lJK1q4YomUhE67VR5Pkg9N2ZSZrdzcCpI3ep/1BK9N0S0cHi5ApW+KHR96DzBmjMdZ3ItFB0XMIbAL78nWnnoGcz3KpPci47VOdcug6/EslgUhZWey1Cva89sMsEnKdo9TNVvUAprVeQJnnIextmrtJZv5NxHVJOEAfOOqI7Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DIfuvWJ6; arc=none smtp.client-ip=209.85.128.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 MIME-Version; b=nJ0j8cuDma//Zdi6KKYK6vZtQuqlFQzsTzxRW7APT4tNKCCz+viy4YAOa0gqXVmi6MGDNj7w4NeOZlXtQxv/XT4qp7ACXlUw7uUBZlknsloYpk5gj6iWRnqgSGLoLIbEiNSNOr2gvNpUW/nw9r0HaG8kDcaOxUPSnIwzLaHb2sE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DIfuvWJ6"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-4995df974b3so1486735e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 02:43:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786959803; x=1787564603; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=iJxT22zdZziRjbZwbed7OeV6jhdxmd27WO3H1gy/w60=;
-        b=DIfuvWJ6zju3wW7Z8XHRffCrOWx1bsQYELMvpXppqd/DlTKlsixHXVgN1IhAuZwXYW
-         LHi+b/S0cFHiFf+ohSTr0Z3ZbrRHOPTqerI0TF1XEMfqzBm9r73uyMScTf30pEH6CiPR
-         nvMmeFJA9J2z7QePUo3acg7Q7Eo3J0N6Lv+l8Mzy6rhPod+UYw5NYecS1KBHaIMtQtqM
-         xabOnPKtTpb61tkZye6EAwh9norucdtBU5zto91it3qtpmZV8sBHy/7MicVLiIhkRt4c
-         J+aWbKZ6EkhdBcCQ1XSPanAMjCIGFvjR0nWuJw1lT+CIDip3woidjAWdNvMyEPNK2Em7
-         wsNg==
+Received: by mail-pj2-f3.google.com with SMTP id d9443c01a7336-2ca4f02483cso4409245ad.1
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 03:01:04 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786959803; x=1787564603;
+        d=1e100.net; s=20251104; t=1786960862; x=1787565662;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=iJxT22zdZziRjbZwbed7OeV6jhdxmd27WO3H1gy/w60=;
-        b=lVJe6qMNUgn1p4j1TBzMHTfN5xKdKAXt/j4WX5xokmUIHLa1tf9ryz6A3mcqq5Ye3Y
-         +EyNXLgzWEd0OTycunUA06b6Q9Gtss+MPSON1OofuedOIMonuUmQHTWDkvCUNW61PKC5
-         b71xr8ZEPWHG4fDVIuMr1DUKClCgmNDysOd/auxWal0RyL+h/XTXQFSU6yUcC1EMl2Mg
-         TeKzkzlUC7POvAvcymq6F7n40mjzYT5KfL9+XhLOwfFGdpDWTV2JUavVHtyvPYmtOqgm
-         3JuNTuNbGS3uXVbwnFLX+31oggiMD6ti3kN41konsb/K3rg3TjRHhi21awnjU0kyzfO3
-         qWvQ==
-X-Forwarded-Encrypted: i=1; AHgh+RphFpHPS0rX06UrvrA3O6T5l7SZdeCj2L0ze+mlsYV4o3kEVMlYx/jc3cua/BEJr3AbUM6cFUGnwA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzxZfGoPdW8VpDnNPiYhdv+tH1B+H+aTVkyu7qZFNZ2QCwSbV9K
-	dPwGuDVO1+XFtYGnmoNfACvkFdZnRMmY7Vv2YMx+SWT78ArLbOncNthp
-X-Gm-Gg: AR+sD11lvPTlrdiXQn/LlbM0QN9y7eAwSj5RH9+CSYkWvO2/LDSpNTW08N6QWQJ0Ntp
-	/CJ3TUmnotI9lo2tpUMIrvZPMVYVdCM4x9BUGILS8L9dllfv5Y1eiANehgowZY/b96XSnptQmrm
-	AfDIfhNjedGs3Poap5PN4ionZYbpMhS/+KDwG+nq0yAkpsD4/Z39pghX/TpbzegmZImaUcnBQUn
-	/TKl1Y63qcwH0eDfwYGhYwhQlD3O3jqgy92QP+2Z75aknSn5115SauCSbNlhuStOPtpBh3JvFJE
-	MaDkKjnan9GNTPbxjHrY/gn864r/rJ08ld8RC5MMLCpKIEaQI4cZGZAlDdyaVgIO4mJBBbAdK0D
-	XSMDlTgrfSd64r7I+CqYJKxx9dtwDKisxC7zYZFJCcnQ28HrOrQ0G8Cwe8CqgdIdC3F7fBH+Uyr
-	Ng/B27cEVTOGxbR5i1MHtdOmnSfPlNW69xL22A+Zc0hDbi6qQFSnv8zgij+2q98YFLgp74Ae3hv
-	9+J1NqKMFVx1TvOJdTUq17UJvHtWu1UKNzSSpL3ew6ouebdl1Q1Aw8WYLNiLBzIs+vhzw==
-X-Received: by 2002:a05:600c:8714:b0:498:8e6:d463 with SMTP id 5b1f17b1804b1-4998792fee6mr180593925e9.1.1786959802911;
-        Mon, 17 Aug 2026 02:43:22 -0700 (PDT)
-Received: from OrangePi5-Plus.BB-HOME (20014C4E1B8FC50027494B64639367E4.dsl.pool.telekom.hu. [2001:4c4e:1b8f:c500:2749:4b64:6393:67e4])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-482a5b783basm2546509f8f.30.2026.08.17.02.43.21
+        bh=SFJhRYMaeccSWN7O5plNjrZM7NMQ7y9/USAmz9QApWk=;
+        b=nzTSvkr1kwuHA1OjYDrtMS73ixgY1hgIc5FmKY4qxuw/b42jEt3IILbNMSsA+tEXmh
+         t0PDGL+tKJJXEk7JCjdrzXMiWk52h71SwJiIqX47pQwWQQSTtunmxy2nWPbUprV9tzOb
+         aPAk8AM3v+VCZOofJEvs+q8hHCzGvSUn23ytSrmmiA7uUiEEmbIKWVhQC9dpMKVzttQ7
+         lQvHHXX1oNPsxX4rdYw/N9wEwlyF0d1Be1xaDDx+CQ8eU96VpCV/wXSXYdsSKrbgAhXW
+         mBmHg4+H66l7Rc2ApmzXTWbRAu20CGRGavty9iAXmY0dEDw3ioNYVJQx1et/7bdOZ1Y6
+         Ge5w==
+X-Forwarded-Encrypted: i=1; AHgh+RpDaBI2ejOaKDW9QWzfsxOi6fRlZLGRWWGk+Al1v5z6gOYHwHZdFXdFEZpiEJfqASZPjQFTl+v2YA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YziW6/h9VSKlJZ1+VjxrtsYClT2IlpR18L3X3rgz8ZarQU88UhC
+	zC3VceuMpVbo2Z3cM0kwphmaHXfONZBTJVnTdjKeOgN6KDBvSs+zJrT2
+X-Gm-Gg: AR+sD11HbbevCnYO3J3449EJMYKzL75jipAJYS/o9wzsCRhBJkgPe0OLd8GimUHYnUl
+	E1e45zKfLy7S65Vkwmuf5NLKgPUYA0hynNjTNP8HqE4EKXxSmHCGlovZ+XObVlGZifmBwBMXqAC
+	PtawRzmKFgt/ST8ZkW67SY7rRCzeBPzpw9Ax34PhabmPxjyqaFs70+HqHRsPSSs8fN7fLjiogBX
+	m2SVmVmxEPz4OQuhLlt29SLQVyF8LidMWQbEfxPPelSy5ULoVfV+zNEMOh157Hq/P+8nscoI+yh
+	vxKc2EXv1bvgkL22vF2LOFqtJNE4csu+MYtP7UqK3YUeevzYiJBjMIJn4f090JCNrK71YW8rjKY
+	N1WFvctTJVdWaTYTmb7WOmFqu+7QmOtdQtUFKPNlQ8O7HTQOgNZ5V2CAhcLCHTdTiCnvmW+q9MK
+	AmG1+IwOYa4BqAjsUBrI6MN7eguBWfeHHr8q5R82AseQaKA16cNElmbFnz3uzHu4JRrC+fMc88K
+	8uIKbxdMAc=
+X-Received: by 2002:a17:902:d2cf:b0:2ca:c847:8e41 with SMTP id d9443c01a7336-2d3affcc11bmr193339195ad.11.1786960862073;
+        Mon, 17 Aug 2026 03:01:02 -0700 (PDT)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d5c1ecb162sm274525ad.69.2026.08.17.03.00.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Aug 2026 02:43:22 -0700 (PDT)
-From: Igor Paunovic <royalnet026@gmail.com>
-To: Muhammed Subair <msubair@hotmail.com>
-Cc: Igor Paunovic <royalnet026@gmail.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Sandy Huang <hjc@rock-chips.com>,
-	Andy Yan <andy.yan@rock-chips.com>,
-	Alexey Charkov <alchark@flipper.net>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
-	Ulf Hansson <ulfh@kernel.org>,
+        Mon, 17 Aug 2026 03:01:01 -0700 (PDT)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: christian.loehle@arm.com
+Cc: Beata.Michalska@arm.com,
+	Ionela.Voinescu@arm.com,
+	dakr@kernel.org,
+	dietmar.eggemann@arm.com,
+	driver-core@lists.linux.dev,
+	gregkh@linuxfoundation.org,
+	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: RK3576: rockchip-pm-domain fw_devlink device-link failures for nested power-domain nodes
-Date: Mon, 17 Aug 2026 11:42:53 +0200
-Message-ID: <20260817094258.23332-1-royalnet026@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <DU0P190MB244579F0C395F1F41CA729A8BCDC2@DU0P190MB2445.EURP190.PROD.OUTLOOK.COM>
-References: <DU0P190MB244579F0C395F1F41CA729A8BCDC2@DU0P190MB2445.EURP190.PROD.OUTLOOK.COM>
+	luoxueqin@kylinos.cn,
+	pierre.gondois@arm.com,
+	rafael@kernel.org,
+	sudeep.holla@kernel.org,
+	sumitg@nvidia.com,
+	viresh.kumar@linaro.org,
+	zhanjie9@hisilicon.com,
+	zhenglifeng1@huawei.com
+Subject: Re: [PATCH v5 3/3] arch_topology: Add topology_update_cpu_capacity() for runtime updates
+Date: Mon, 17 Aug 2026 18:00:42 +0800
+Message-ID: <20260817100042.1291471-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <840da3ba-1d65-4a28-a072-a586ea4dfce5@arm.com>
+References: <840da3ba-1d65-4a28-a072-a586ea4dfce5@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -87,75 +77,56 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi Subair,
+Hi Christian,
 
-Your diagnosis is right, and the answer to your first question is: this
-is not RK3576 missing anything. RK3588 does the same thing.
+Thanks for the review.
 
-From my Orange Pi 5 Plus on mainline 7.2.0-rc7, one line per boot:
+> Does this actually work if highest_perf would now be the equivalent
+> for >1024?
 
-  [    2.215019] rockchip-pm-domain fd8d8000.power-management:power-controller:
-      Failed to create device link (0x180) with supplier spi2.0 for
-      /power-management@fd8d8000/power-controller/power-domain@12
+Yes, it works correctly. I verified this on an arm64 8-core big.LITTLE
+system (kernel 7.2.0-rc7-next-20260810). The runtime highest_perf change
+was simulated by writing to a debugfs hook that invokes
+cpufreq_update_limits() on the CPU, exercising the exact same code
+path as ACPI Notify(0x85):
 
-Same driver, same 0x180, same nested-child path, different SoC. And the
-trigger on my board is a different property than yours: power-domain@12
-and power-domain@8 here carry `domain-supply`, so the supplier resolves
-to the SPI-attached PMIC regulator rather than to `soc` via `clocks`.
-Two different properties on two different SoCs producing the same
-message is a fairly strong sign the cause is structural rather than a
-per-SoC DT omission. So I would drop your option 1.
+  LITTLE cores (cpu0-2,4-6): highest_perf=1900, cpu_capacity=670
+  big cores    (cpu3,7):      highest_perf=2900, cpu_capacity=1024
 
-On the flags, for whoever picks this up: 0x180 is
-DL_FLAG_SYNC_STATE_ONLY | DL_FLAG_INFERRED, i.e.
-FW_DEVLINK_FLAGS_PERMISSIVE in drivers/base/core.c, and that value is
-taken on the branch where the fwnode declaring the dependency is not the
-device's own fwnode:
+The normalization is purely relative:
+  capacity_scale = max(raw_capacity[all CPUs])
+  cpu_capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT) / capacity_scale
 
-	if (con->fwnode == link->consumer)
-		flags = fw_devlink_get_flags(link->flags);
-	else
-		flags = FW_DEVLINK_FLAGS_PERMISSIVE;
+Test results with runtime highest_perf changes via debugfs:
 
-which is exactly the nested-child case you describe. Worth noting that
-DL_FLAG_CYCLE is a separate bit, so a cycle-tagged link would print
-0x380.
+Test                        cpu0   cpu1   cpu2   cpu3   cpu4   cpu5   cpu6   cpu7
+---------------------------------------------------------------------------------
+baseline                     670    670    670   1024    670    670    670   1024
+cpu0 highest_perf=800        282    670    670   1024    670    670    670   1024
+cpu0 highest_perf=2048       723    670    670   1024    670    670    670   1024
+cpu0 highest_perf=4096      1024    475    475    725    475    475    475    725
+cpu3 highest_perf=3000      1024    475    475    750    475    475    475    725
+restored to hw values        670    670    670   1024    670    670    670   1024
 
-More usefully: this has already been explained on-list. Sebastian
-Reichel answered the same message class for RK3588 on 12 June 2026,
-replying to Diederik de Haas's reports on nanopc-t6-lts, nanopc-t6-plus
-and Rock 5B (identical 0x180, power-domain@8 and @12, suppliers 2-0042
-and spi2.0):
+Key observations:
 
-  https://lore.kernel.org/all/aixze8zFboY3huSf@venus/
+1. highest_perf=2048 (>1024, but < capacity_scale=2900):
+   cpu0 capacity = (2048 << 10) / 2900 = 723. Matches exactly.
+   capacity_scale stays 2900 (cpu3/cpu7 still max), so other CPUs
+   are unaffected.
 
-His explanation is a cyclic dependency arising because all domains are
-provided by a single power-controller device: to probe the regulator you
-need the bus controller, which needs its power domain, which needs the
-power-controller, which needs the regulator. I would read that message
-before going further, and I would not treat this as cosmetic. He is
-explicit that it is "neither super bad, nor completely harmless",
-because the kernel ends up missing dependency information and pays for
-it in extra -EPROBE_DEFER rounds. He also says fixing it properly needs
-substantial restructuring of the Rockchip power-controller driver, which
-is a rather bigger answer than any of your three options.
+2. highest_perf=4096 (> capacity_scale=2900):
+   capacity_scale shifts to 4096. cpu0 becomes the new max at 1024.
+   All other CPUs are re-normalized downward proportionally:
+   LITTLE: (1900 << 10) / 4096 = 475
+   big:    (2900 << 10) / 4096 = 725
 
-One last thing, and I mean it helpfully: I think you have mailed the
-wrong people. Your To: list is get_maintainer.pl output for
-drivers/gpu/drm/rockchip, which is why five DRM maintainers were on a
-power-domain question while the people who own it were not. For the
-subsystems you are actually asking about:
+3. Restore: writing back hw values fully restores original capacities.
+   No state leakage.
 
-  drivers/pmdomain/rockchip/  ->  Ulf Hansson, linux-pm@vger.kernel.org
-  drivers/of/ (fw_devlink)    ->  Saravana Kannan,
-                                  devicetree@vger.kernel.org
+In summary: the normalization is ratio-based and architecture-agnostic.
+Whether highest_perf is 100, 1024, or 4096, the relative capacity
+model remains consistent. 
 
-I have added linux-pm and Ulf here, and dropped the DRM maintainers and
-dri-devel since the topic is not DRM. If you follow up, consider adding
-Saravana and devicetree as well, and run scripts/get_maintainer.pl
-against the files you are asking about rather than reusing a recipient
-list from another thread. That is most likely why this went five days
-without an answer.
-
-Regards,
-Igor
+Best regards,
+Xueqin
