@@ -1,166 +1,227 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A19DC417D80
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 12:45:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786970761; cv=none; b=kQr0/t2FUs2d6nuVZBcNFaZiS8IhuLAqlHZhe7dZHZWO1yABsVydgwZr1L7b6TWTFlbK9HTMxY+S4OfS9qvGVCdcs8JJR5lPfpvh9W+GWW7AItjp0MWZsN90g+eGc9bssENPA74E/ECoDth1DCBAO+XFnxltXu3vtAWt2BLSE6c=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786970761; c=relaxed/simple;
-	bh=akLUhO+MsKf1233ngisGv9yxbFsLF+SiGkybxWkTLwM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
-	 In-Reply-To:Content-Type; b=PH9M0u/mPAkUMik4Bkc/mAZf8uesYqey+SowDvmXlsjdvVH8wueJLXrGIxHB7Hs6h+2cwug4diaclkVVtnBXvkPkLN+8RZEkS2qViHG+qS+dMXGh11EznTAmQiU4YfeYelZkUQagHdMB6Zn5UEuOE+5y8Fqs735OiQ3K4Amb+Ss=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=A+3q7ZiH; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=D9Wbl+yb; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C84023AC0ED
+	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 12:51:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.170
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786971086; cv=pass; b=MzVPAejYHZWg6OCZlhTGams2+ImcxaJzh8uXDj7kIGVFgZgAxyPNinwz80nXUPbl50Q5epK1pzXdtndguz4QxHc2pxLTjDsy0c/Eop3zmO0L89TLRF6U8XsOzoYYyslQ2g104KElHEWZp2JFuslvlgU+tl9bqg4VwZueIj1sqjg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786971086; c=relaxed/simple;
+	bh=tyz9EcqboelxA3psXnq/gGKah+H4IaeTuowTMl/uuqM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KmAVg5cM2i//OX6a33BOsDCEzHitnxG4QhtenyGR4FJ6T2UnXzHrndFtfbt2QiGJ6xHy9cPwc1Rf+Bpae6s67ymEgBoB8qK3Kskf6CoPU/70w0RZMpcV37g5JnIcaI3yAEyqO6dDbsKwY6XM6q6cLv560281iCQb7anEiYNWMuM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RVamGXzG; arc=pass smtp.client-ip=209.85.128.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="A+3q7ZiH";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="D9Wbl+yb"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HCAhbi2206627
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 12:45:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	zlvXqbuhFI5WDJM1M3oD6suqM7DRXo9zn3DG6aOMOPE=; b=A+3q7ZiHosJjKhvZ
-	vKhDAerUR5c6g1WpyKgp5B8kWIvcf++F0gyniaXnkhm7yqNMmYQ+Kbgj7HSFg7g7
-	/CAiTQWNS89z9NzmeshKkqJPQNwAFidkx3yuGVfD2J5NfyiiZ0Mfdmzt/PnQ55nZ
-	TTZJFORIJJ7YbUt2WmmegZc1fT0fTIQPQPljK8CTQ70wnUEoxognldJvzCEC5W0B
-	al3S09aIzBvQdIc8PtfeHcVCkjDkaC9qYIsFgM+q6lmQmEa04uzPEXcKKrc4sfFR
-	sRJflBycd1kOqGUBUnFCkOxIOH1uET/XX/5yLCykHNzp4Oja9LyRRwzlohvY2dyH
-	WTSgVQ==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g3vghsn5m-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 12:45:58 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2cfc52ddc55so53259155ad.3
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 05:45:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RVamGXzG"
+Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-836c2907a24so1556777b3.0
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2026 05:51:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786971084; cv=none;
+        d=google.com; s=arc-20260327;
+        b=j92NAAmS63p7ITyvPCLodvA3b+3VmRO2lY4SNS34iZf4r4i3HIOlFtyknEgFleqUOB
+         AgHdhjVXpfV5jtE5DYX5eGaek00eCOHLr/bmjb05WgIEdNQ4YmRWbJgeCp60Cvsfgec8
+         8g0uhWeVYKG4CHOQKHpbC5f2OPTZGOao7yFF3tK70sRrsL3YqH38ccUdDVbkmIN4kgaD
+         XQ28F7hScbOygA2xWRNCY+V8ogDEQrUn75TyHvIAxXx9NG2bCKn9N2ZImLDwdnV0QlEu
+         F7cp0J8swimExT1BnFJrlB6avhC3csQJj8kwROQOgbaWmPgckUn00S2cJjgmCDWrNL9M
+         7GlQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=IsoFeL55aXnoSLzM6IlQSU+HvX9Cmm12pl1T+E59Rcg=;
+        fh=JcAJz7JeFap4HNUq/UhcxbuEkTqa0HHlq4KJih3xabc=;
+        b=f7cQGaMyLKuCguTIiFEzJnsLSShHm8VCUpCA8Nb8uiLPHb43XIFUONcRuydcmbLN0n
+         NPsjuSuZCD7/WJALMfXaW/EXp+mBsn32YTJLbHSTUJ9FgUbKV5GjGm6lJrfgmxAFPupt
+         KW3IcgHHPa2tE3vvfbFYWqmUI1AkVaeEA1iWhQXKw8AyxUTA8tvGjXwi6s6Fh66elAdI
+         BZh3ToD8N1WdVuBP8/nzDQd9oJRcGxb5afI96t7cCDyExXeObv3azvPZm6J65qr9eEaw
+         GOJNlaaihYj6z5oNEz1A2JKSYS/ZRkrsPsggf//wKPhv8cL5S+tpLXgBYeGVkDYFmWf5
+         RbWQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1786970757; x=1787575557; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:cc:from
-         :content-language:references:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zlvXqbuhFI5WDJM1M3oD6suqM7DRXo9zn3DG6aOMOPE=;
-        b=D9Wbl+yb5j0mek1fW97rMsAWCSlsOV8j3RVQ/bZnb5QWvzOqgMa6GHVN5D81VvV6Ut
-         Zl1MlN8nfXpVqIX6/W0W5LJSTLGr4VYy1jQQ1QvcBn7z3Nde2riru1ml7iYYJ8gjVXOf
-         +GYV0B4I6jkAKymtI0w51twrzqabrZM7GXr6m4ABF/vHaUI58fM0L1Jr9IpmOpThQFFE
-         AJ0yRV+Rvz+gtjPst0GUkOs11wZBnbSMYPMcVCaJbY7YSFKkMN6Du/zmBl4TBuFMyLIY
-         qMFtqZOoGn9v9+ZtaLiO2/4L4V8emYPWA6t9twp6WWDvxbujr0+1mlyf4vt6n+ge+5DZ
-         XqzA==
+        d=gmail.com; s=20251104; t=1786971084; x=1787575884; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=IsoFeL55aXnoSLzM6IlQSU+HvX9Cmm12pl1T+E59Rcg=;
+        b=RVamGXzGTBQe4nUqxk8JcQV4dzF6Iuqg/A3aq93CT0XlWqjrArO3RG8bkShRxiADXI
+         Xb+2O1a8cRVVG4X1aJq+3g1Gdr0X3iAAKaOuf0v9lVGUPpoWMXkG06LucFFwDFGIwOkB
+         mbxiuwiqk4k9EZOCzrFB/yfduyd76b47u5OVt/kZzHjJldOKqiNoiY1UaHyTvrte3E61
+         5hQMZaP/rgZ/DHgQdBgxhlADB1tiX18zRXeFQG2Mql1W1WC6HYgzQWBbtaHNmLsoN59y
+         UiDVq0caD8ofvF/l2YIpB7oHIvfxVDFjm/4PCiOewO8Bk3sTxPloM6HX1eLIJas6qDKK
+         bEtw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786970757; x=1787575557;
-        h=content-transfer-encoding:content-type:in-reply-to:cc:from
-         :content-language:references:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=zlvXqbuhFI5WDJM1M3oD6suqM7DRXo9zn3DG6aOMOPE=;
-        b=MwfKnsdf+ZCvpzqWZNrjmUFkHSBS3vQ9C6hddAdygljMB8X3evaaMi9Sgm9tscSwp3
-         aN5uW36MkxrHGHUWwx0ijF1OaztIjKgFvhZYgYWKH/kFw6xmJQlzvPZsH2LCdHaU2b48
-         FP7PGOwWsWemiqSHs7pnywrg4wd+4FxyaHQEXSAnYldUTBnJ+I2TlGSEWZe5Dxeh6n4B
-         lmFsp0cnVCnv+FSx9YcESb4pS7Hv2MsCIGn/XOYrwLutu+Dphz2Qxe8rxGMW5IyUtznF
-         W0iCNbE7hyytwlSK/jVLraa1ci21gJXB3BNYq/ESIH8UV11ToFlsauakw9iBSHenTgjy
-         MUAg==
-X-Forwarded-Encrypted: i=1; AHgh+RrNbrd5rdzRjk9HpwH7jKLyPtQDZ4PJt0D8Holo1PfSPSveltpUfmrGmLWucoqsTadPsREwgODG8g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxb70vIS4LBnKJ7WpoXI9RQMYnQnpnfy94LQFiQk+A1JknP/XYa
-	F/OUqyNRtjnZgkj6JSmx5zeVAVhm3dkZCMSY6/EhIf829uBrzHPNPM+4DLn9j+p3IQmk/pnpOUb
-	XAV7uACDilDy82WKbfRe6i8pCwIblXKa4dlOUT4ne3ljdDHL5NuFGQbV/ta5WUg==
-X-Gm-Gg: AR+sD11GV5Umr4pxBY459Ih66ef5ZvrR8peO4PcSawkStZmEZ+AQPYFHC7D16ODcIyx
-	/rZNw7pe4g+Tp5MK1DGHHdqUXlc2cbS0Gb1ScUk5Gjl0DA1xUM/2acKY8qIv3zC8VtEWFj3oJz7
-	S/he5SXxMNc4CSwkGpAB7/q55Hvfl3nC2C0w9Ex1+gf3y8WEOsDczTYWDomFs6Pc+IfTr6oiSE0
-	CncuIHDGLHYoLtLbsoNMVc0McQAkghrsggDeusgJKt79G4AQSW6UACDC/4AAcee8rF66sS+4qgr
-	aqH3r+l0EIiGI+Zv4f+VOS25S4+kG9YJoETykJ1550Ws/JK5vpPG7BHz9j6+eR1mCLgHoSYWtOn
-	r5Q3Q3pF6nXpMaztBzxI4EvTGN5DybbWRkdBU3klWerlGKnH3SvFA36YYzQmZEM6KnugeQdI=
-X-Received: by 2002:a05:6a20:6a21:b0:3b5:489c:7bb5 with SMTP id adf61e73a8af0-3cc71d1e1c7mr25995245637.28.1786970757370;
-        Mon, 17 Aug 2026 05:45:57 -0700 (PDT)
-X-Received: by 2002:a05:6a20:6a21:b0:3b5:489c:7bb5 with SMTP id adf61e73a8af0-3cc71d1e1c7mr25995178637.28.1786970756756;
-        Mon, 17 Aug 2026 05:45:56 -0700 (PDT)
-Received: from [10.133.33.95] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc13bf235fcsm684836a12.9.2026.08.17.05.45.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Aug 2026 05:45:56 -0700 (PDT)
-Message-ID: <8327e7fe-7acb-4fff-8347-b6d5fb4de427@oss.qualcomm.com>
-Date: Mon, 17 Aug 2026 20:45:50 +0800
+        d=1e100.net; s=20251104; t=1786971084; x=1787575884;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=IsoFeL55aXnoSLzM6IlQSU+HvX9Cmm12pl1T+E59Rcg=;
+        b=pyivdTG1PpoD5VhgtzB37Le3U3nMhSXrYLYgIjYQCN5nvHrHlijZXT4EdcmFKBoES3
+         DTOGlKsFG2uf+2IvO9XW+CAi6E5LkGN6lAJAIwAmyfoo+xiKCr7ajGVokEDuEJKbJF6P
+         ep/IaAJdC4UWpvrZWUi2tCr1BH2THM7HhgWZIIPj/zfKj+y0yA4G0fJSpaw5XHL+qhcp
+         UZ06ahXT5lVcRlXBnFp+XkbYH2ffSXme9C6BbLSx/6sMHpEd5ZkEqF/naZg/f3swKuRi
+         4lY3asHp3chNqQbEmkKCzuq6jz2ANThGQrCKJUvcD+IPQeA2L+4Eo0dQtrMcInyJpFej
+         5IQA==
+X-Forwarded-Encrypted: i=1; AHgh+RpzVN4Ii6J8T/cCKPKl83JryMZM4bTp8vCzy4EgS1bOOxgVw8cesrHhoIkBA8XXmoWdt/YQT4R0Cw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwEYyUEXdCjXB1zsw4fqcQKuM6zcp7crnbl4PRjO9uaIgE0U6kp
+	d/HpJHMWHC19lT7mFVJ67FPEfLP5BIertsB2GIjwQT2G3C4tfkV40MNYgexvLrA5o4tTJqeKhT7
+	BuFiU/StjZGIaVVlCNO8HGS1m4kQ0LMI=
+X-Gm-Gg: AR+sD138Zn+3BR3webGYDMM1t5bM9mfez06m/rEBc/cSJV7RoJlvFS/3R7bGHl6A0ii
+	2HGbN64ws8AwgIPaZRXJ3bwIWTbU5Y0uh56oeQy9Ryjb+5Xi98y4sMhPRyuCJ04upxJWV5vGBc5
+	DIVUdUB3hgZRmkUCq0ZieJXbL66bGBPWihljDbFeOFQ/qyN0Dquy2C9vNqnKED/77OR7+7hU77I
+	Kdt375KMjO5jQN1dnKRCN3HN7fbj6P04lyoc2mjTwS11l1bqxByhtFPtv5UCEOiQ+8gVoUgtoII
+	sAQZtTYBVRty7rqo5hfOXbDeFlWJCOFwb9tdjJvDnIdo64Y30fWx4MrlIAK2W66H9CPoPwr7LvD
+	ZUfI=
+X-Received: by 2002:a05:690c:b0f:b0:80d:5c71:d08c with SMTP id
+ 00721157ae682-8371308c88amr90606897b3.3.1786971083604; Mon, 17 Aug 2026
+ 05:51:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
- in freq lookups
-To: lirongqing <lirongqing@baidu.com>,
-        "Rafael J . Wysocki"
- <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20260813090145.2450-1-lirongqing@baidu.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: zhongqiu.han@oss.qualcomm.com
-In-Reply-To: <20260813090145.2450-1-lirongqing@baidu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=P9gKQCAu c=1 sm=1 tr=0 ts=6a830286 cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=zuLzuavZAAAA:8 a=m2pJCCGmavP_bDTzO2wA:9 a=QEXdDO2ut3YA:10
- a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDA5NyBTYWx0ZWRfX7UObJ8ORKgOC
- TC4MCTA658VVxoYrk+7wtGjce2z2EwAXA98iQovY9Y1/DWhAgZ4/Du3D7ymobPbispV4C0XTX6O
- 539P4QXTS6HY4/9yauUON3uTHOaf4J0=
-X-Proofpoint-ORIG-GUID: GxC89ryOr1ABxQKQ8sBXKOCvoTOiX68W
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDA5NyBTYWx0ZWRfX/obn4YT+s/At
- T+9LiPXhGEHJQ9k/TTBFOfkaxfyomMrhinwmbtDOpzIVmrxPbq7W2ODE/X/TUQ9jwkjYzYJ5xLA
- 0ITmvuIGWgIFB878/1hhD4TC1XVSnZTwi9059HFIjaovZdixapWVIQbNlMB7s/9+s2Y9NhbiGIp
- R0fZu5SVc9BaGZc/sQqOzWdjTx8YwNH9Qo+75eGtWW+OyMNyzk9PsB49wbHJkl5EcpHDXCz5rMO
- ULIayT4ocJocVnpmV8L4qDrVMJK5YlhtO0tOLVVyz9PwzWGfbsogu2ldE4yHRqA6vdsqjX6HOM6
- PTR1hCFkC+7p7HFWJRITX570oOvsBWPJ2vw6ZIxR3Na9kBogTwnwrXy+d7HpazgIqU2pHJJJ+LY
- T8qZNtFKo+muhVty50o76Bcx0nWs8N0ixsIzjwuGjJa6kda1N5+qAUcaZM1invfcIX8V7PtPyM9
- g6ZsSDEzI4OOaugG4FQ==
-X-Proofpoint-GUID: GxC89ryOr1ABxQKQ8sBXKOCvoTOiX68W
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-17_01,2026-08-12_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 adultscore=0 spamscore=0 phishscore=0 bulkscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608170097
+References: <20260817113603.1436067-1-gahing@gahingwoo.com> <20260817113603.1436067-4-gahing@gahingwoo.com>
+In-Reply-To: <20260817113603.1436067-4-gahing@gahingwoo.com>
+From: Igor Paunovic <royalnet026@gmail.com>
+Date: Mon, 17 Aug 2026 14:51:12 +0200
+X-Gm-Features: AcwNN1W5X2wGC2Q1I1TaTBqzvN2kUY3psEQZvOBiX0NX6cHaLHwnhi2fG-mcjGs
+Message-ID: <CAEWPSH4VAR5VTJUW4PdJczrtueQzPzzo6og8PzWaupwd-t=BFQ@mail.gmail.com>
+Subject: Re: [PATCH v8 03/12] accel/rocket: factor the completion tail out of
+ the IRQ handler
+To: Jiaxing Hu <gahing@gahingwoo.com>
+Cc: tomeu@tomeuvizoso.net, heiko@sntech.de, robh@kernel.org, 
+	krzk+dt@kernel.org, conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, 
+	robin.murphy@arm.com, ulfh@kernel.org, p.zabel@pengutronix.de, 
+	ogabbay@kernel.org, zhangqing@rock-chips.com, chaoyi.chen@rock-chips.com, 
+	diederik@cknow-tech.com, alchark@flipper.net, dri-devel@lists.freedesktop.org, 
+	linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 8/13/2026 5:01 PM, lirongqing wrote:
-> From: Li RongQing <lirongqing@baidu.com>
-> 
-> policy->freq_table is built with duplicate _PSS frequencies dropped, so it
-> no longer lines up positionally with perf->states[]; the original P-state
-> index is kept in freq_table[].driver_data. extract_io() and
-> get_cur_freq_on_cpu() indexed freq_table[] with a perf->states[] index
-> anyway, which can return the frequency of a wrong P-state.
-> 
-> Changes since v1:
-> - Reword patch 1: v1 described it as an out-of-bounds read, which is wrong;
->    it is an index-mismatch / wrong-result bug, not a memory-safety issue.
-> - Add patch 2 for get_cur_freq_on_cpu().
-> - Add Fixes: tags (not exact, but reasonable backport targets).
+Hi Jiaxing,
 
-Hi RongQing,
+You asked for a look at this one, so I checked it as a no functional
+change refactor rather than only reading it. It holds.
 
-The Fixes tag should point to the commit that introduced the bug.
+I reconstructed the three source states from the posted diffs and built
+the before and after with the driver's own kernel flags for arm64.
+rocket_job_handle_irq() is static and inlines into
+rocket_job_irq_handler_thread(); at -O2 both states emit the same calls
+and the same stack frame, and differ only in which side of the branch
+the rocket_job_hw_submit() call is laid out on.
 
-> 
-> Li RongQing (2):
->    cpufreq: acpi-cpufreq: fix P-state index mismatch in extract_io()
->    cpufreq: acpi-cpufreq: fix P-state index mismatch in
->      get_cur_freq_on_cpu()
-> 
->   drivers/cpufreq/acpi-cpufreq.c | 18 ++++++++++++------
->   1 file changed, 12 insertions(+), 6 deletions(-)
-> 
+The load bearing sentence in your message is the early return, and that
+checks out too. At -O1 the pre-3/12 code emits mutex_unlock twice, once
+on the path straight after rocket_job_hw_submit() and once at the guard
+exit. That is the scoped_guard cleanup firing on the early return. After
+3/12 there is one, because the return leaves the helper and all three
+paths converge on the guard exit. Both versions unlock exactly once on
+every path.
+
+"Nothing follows it" also holds through the rest of the series, not only
+here. 10/12 is the only later patch that touches rocket_job.c, and its
+two hunks are the defines at the top and the PC_TASK_CON write inside
+rocket_job_hw_submit(). Nothing is added after the scoped_guard in the
+handler anywhere in v8.
+
+While reconstructing the base I checked where the series sits.
+drivers/accel/rocket/rocket_job.c in next-20260814 hashes to 3141f210f,
+which is exactly 1/12's pre-image, and applying 1, 2 and 3 in order
+reproduces 5f0f9682e, d484a3a6f and 0bb11c718 byte for byte. So these
+three apply to an unmodified linux-next rocket_job.c and need neither
+the RK3576 patches nor my clocks-by-name patch. Tomeu, that is meant as
+information in case you want to pick them up independently, not as a
+request for a re-cut.
+
+Reviewed-by: Igor Paunovic <royalnet026@gmail.com>
+
+Regards,
+Igor
 
 
--- 
-Thx and BRs,
-Zhongqiu Han
+On Mon, Aug 17, 2026 at 1:36=E2=80=AFPM Jiaxing Hu <gahing@gahingwoo.com> w=
+rote:
+>
+> rocket_job_handle_irq() stops the block and then either starts the job's
+> next task or retires the job. The second half is a step of its own and
+> reads better with a name, now that taking the register writes under
+> job_lock has moved it a level deeper inside the scoped guard.
+>
+> Move it to rocket_job_next_locked(). The early return that used to leave
+> the handler now leaves the helper, which is the same thing here: the
+> scoped guard drops job_lock either way and nothing follows it.
+>
+> Doing it as its own patch keeps the locking fix at the head of the
+> series minimal, so a bisect that stops before this one gets that fix and
+> nothing else. There is one caller, and no functional change.
+>
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+> ---
+>  drivers/accel/rocket/rocket_job.c | 31 ++++++++++++++++++++-----------
+>  1 file changed, 20 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/roc=
+ket_job.c
+> index d484a3a6f..0bb11c718 100644
+> --- a/drivers/accel/rocket/rocket_job.c
+> +++ b/drivers/accel/rocket/rocket_job.c
+> @@ -341,6 +341,25 @@ static struct dma_fence *rocket_job_run(struct drm_s=
+ched_job *sched_job)
+>         return ERR_PTR(ret);
+>  }
+>
+> +/* Start the job's next task, or retire it. Caller holds job_lock. */
+> +static void rocket_job_next_locked(struct rocket_core *core)
+> +{
+> +       lockdep_assert_held(&core->job_lock);
+> +
+> +       if (!core->in_flight_job)
+> +               return;
+> +
+> +       if (core->in_flight_job->next_task_idx < core->in_flight_job->tas=
+k_count) {
+> +               rocket_job_hw_submit(core, core->in_flight_job);
+> +               return;
+> +       }
+> +
+> +       iommu_detach_group(NULL, iommu_group_get(core->dev));
+> +       dma_fence_signal(core->in_flight_job->done_fence);
+> +       pm_runtime_put_autosuspend(core->dev);
+> +       core->in_flight_job =3D NULL;
+> +}
+> +
+>  static void rocket_job_handle_irq(struct rocket_core *core)
+>  {
+>         pm_runtime_mark_last_busy(core->dev);
+> @@ -354,17 +373,7 @@ static void rocket_job_handle_irq(struct rocket_core=
+ *core)
+>                 rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+>                 rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+>
+> -               if (core->in_flight_job) {
+> -                       if (core->in_flight_job->next_task_idx < core->in=
+_flight_job->task_count) {
+> -                               rocket_job_hw_submit(core, core->in_fligh=
+t_job);
+> -                               return;
+> -                       }
+> -
+> -                       iommu_detach_group(NULL, iommu_group_get(core->de=
+v));
+> -                       dma_fence_signal(core->in_flight_job->done_fence)=
+;
+> -                       pm_runtime_put_autosuspend(core->dev);
+> -                       core->in_flight_job =3D NULL;
+> -               }
+> +               rocket_job_next_locked(core);
+>         }
+>  }
+>
+> --
+> 2.43.0
+>
