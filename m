@@ -1,101 +1,118 @@
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C968A32E13B
-	for <linux-pm@vger.kernel.org>; Tue, 18 Aug 2026 14:28:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0FF337F8CC
+	for <linux-pm@vger.kernel.org>; Tue, 18 Aug 2026 15:10:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787063310; cv=none; b=CHA7Dsx0eJ1k00TKHrMZe7aRFYJet78Eg7f++f2COJly2IKmvqSB9lrmKOh0t3MqMhpUQcbOUZmt4v6RkCwb4HSXwU11nFvjqA500gulq2OBr3oam/tzkcP4OmZi2PpnJBPWHYLyb1Z2/zo57FKU0o7xcKo+Nh4FcLIGgfdAbGY=
+	t=1787065845; cv=none; b=V81Yg3SYj3uTzlgZy9mRkgA00K87EYDRy2gNkYgEKZnR0FeVt6aCFCdRkhh1bZbQnnqDT4fOJLD6R7wIEVZ2DSohyqBwJE+ZDKTkm6F9CBhqJbAdk9SeSqyHldv6Zj6/SuDUU6E6qYkgYzJKmAPHyOfplNZTEaeEjVq2TIgDXtE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787063310; c=relaxed/simple;
-	bh=baHwBqrRku0dVBgM9HHXZGHdWlLRvvfzCWPsKKs9a9c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hEwJoamEZdvMDLJuMl/ckLdw7XTWVOiNwf9Xm9UtHgq9UQr+elKXyi5fz/lmLTVtjD1uqMRKSX9+8azqQieu7dzPx+GaceXABC0TXCt/AHFQu9Gox+FPHN0sJQ6EIP6PT+V80wATf8C2VQXmkk+fB55i0PG2SDVvl5k6M3v9EeA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.218.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	s=arc-20240116; t=1787065845; c=relaxed/simple;
+	bh=XZ4hAV9fFse8n9VMFwqhdJ52136MQa8txkIr3VvJTkU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OEjidEtTIMd1U5GrvzkGlNSEW1uaUukVF/do3iz7uOS4tAB6QRQsvJxTiI9h49pR/p3ibsSE/ct8h3X+QUUQPqMIIrLjAv21C3FbzggI0mj+JRbkQM4yf8eHAGjmjOaFHZgQhUCVVB5P+gvsmx0dm2q2S4yDMVauRKGSc83etpo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=D/DGuEHe; arc=none smtp.client-ip=209.85.218.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-c15d47266baso524605766b.3
-        for <linux-pm@vger.kernel.org>; Tue, 18 Aug 2026 07:28:28 -0700 (PDT)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D/DGuEHe"
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c1671ec8692so646010566b.0
+        for <linux-pm@vger.kernel.org>; Tue, 18 Aug 2026 08:10:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787065842; x=1787670642; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=teOP2uP44OhR2SoM/Oy3bMAWk99Bs5sno8zRbiNQZ5Y=;
+        b=D/DGuEHeO+ZGhi3uUHyS3stYHnY8PbRP4mDb0E4410URH5OUkNPY2cJXLOB/nkMtyh
+         v4XM/9Ezio7l9MTHzX7etGgJMFY5FxwaarzcJJWykYPCO7HfmI8KRdnJjW8wqoLkbvbz
+         WAHI0HJ12qSvf4Bi9iSHTunEs3ZvgNwCWedvZGLREmJQ+HUnP7V5vMRDfBgV1S3dAMeS
+         Ttf3HE8/+bGSQE9zk/MYjNuCD8cSP8S8ufFQMbe7lZgwJLkbatiGncJyia6ht5JAzaVh
+         tFb71yWSHh78h4sJffcVlXu5ufV4l2To0uRyh8CdZwdbPSihNoUXnvwSlcYGk21fEwSn
+         hUOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787063307; x=1787668107;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=ZLIjthuIrGXlcqthi795B+F5PspdtZv0oAeSQHVFTME=;
-        b=U1g9le3oEHspomdhVmShlwOHliEFjlAsf/o3n+iNj/UZcKeyL4wlPSA4//k84wbdGa
-         DP0WNBH+CtK+7e0/ge7pwi2D5ExcGLDngep6hPNRm54iYVf9q3C9wzZjmMZ773Yjer10
-         G6lgU4ldF/i0tKx5S/Pnj+RTPWjMoAF/tSTnRZA4ACQ+zgseiG4EBndgB0PJzP+Ev/kx
-         5SjRSyfNNCCdAs7IJ72wAgMneuqhEXYXMl5mdKsInT4mobNREb/f9gABpkJ1W1rW96Er
-         y9LIxY/TFDqu89RbP44essshAosGsO607i2Kxj7Q76+m7JA6YbkamNpK7daec3HXTyEY
-         qsvg==
-X-Forwarded-Encrypted: i=1; AHgh+RrEx8Swd1Iejhhb1ahuKk5WnLQdJTX0jMdEOHLdb0qQLTlzE4JL0SUdl1dILc6rvxVj7QSl0br/9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw8PmhLRhJs9S9q5sWA8A41jKphHHwuSgj3v0qSapEM5auyS1nJ
-	McoY+euzUWgfOY9+O5KRcvayWcpaF89i4CZBwEkDLxjWVA+2mF/hnayX0TuhqdMTAgA=
-X-Gm-Gg: AR+sD12l21/Lx63vUlhsAhIb7zXNdrLv5rpGULzn5EWsUXnqJCT/+WUKPaMwq9hK/Dr
-	SlXS2o5ps0Q3cjJ5eSYdZjiTsdVosLSAplKpyH20oZUPcEM3JAsk56WRUvOO220Zez+OIfMDl94
-	x26l+NpPARu3WqLFsX0342mJ1l4bJJaA2Tj4oTseXH5gRGiI/eMUDsTmvLli9p0v6IEpXxIzCOx
-	a2OCE/l+9n2nfiZMgKG/FbmfLsjAZlPG0+V77KdzDH/tB32r42L9R+YZlZoRnmwPUIaxh2WiEor
-	Ki7cHbtBtV5k8/P7HD7WR6FHeu3osUhhOC23RfFm+CX9LW/0gzsfH/j6iQjW04enbq4T34itXbX
-	B8yThNKwlNarq/TenkQl9fXYsT95eq7+GLDb8W3BA7JTkAh1EwSCXSvKBxRtsBTvssKE6Hmd1Tz
-	BxYpqW3TDatMLuiW7B1H6bIwQWzp75BJt89jEoZAt5wUiAHOq9RCGSY4xnJ6HrzaQVYXkckmEZP
-	YHCGR2B8T9oTAA8EGoCEfrsYdgHlW3qgCch
-X-Received: by 2002:a17:907:97c2:b0:c12:e178:9e68 with SMTP id a640c23a62f3a-c212a1da3famr1546502966b.19.1787063306919;
-        Tue, 18 Aug 2026 07:28:26 -0700 (PDT)
-Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com. [209.85.208.41])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2185bc9a35sm162249666b.63.2026.08.18.07.28.26
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Aug 2026 07:28:26 -0700 (PDT)
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-6a17c04563fso6997918a12.3
-        for <linux-pm@vger.kernel.org>; Tue, 18 Aug 2026 07:28:26 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpdgkECeSoIASiUtlkbwXiAt/rgApSGE7eKItjfuSu2YnbJt+UEt91PuZr/Y9wlzD5khoDPynL8Og==@vger.kernel.org
-X-Received: by 2002:a05:6402:4608:b0:6a3:6b8f:94c4 with SMTP id
- 4fb4d7f45d1cf-6a38a9bf8ffmr14480778a12.16.1787063305828; Tue, 18 Aug 2026
- 07:28:25 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1787065842; x=1787670642;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=teOP2uP44OhR2SoM/Oy3bMAWk99Bs5sno8zRbiNQZ5Y=;
+        b=kkwthqeu7wUYlVO8nNTVipGwPR+osfSA1pSN0Qq5WYEhQfn1r26RdLikIXilnxHXIv
+         gDYp+wG61Eo2H210J0BhMfcsJlVbVDEOgtP+/Utv/1exkelocJ97MY3Rsx2/ymtJb2+O
+         xQ56u/h1oq+t9d+Jro7qCpWPS6/7Mtu8V2kPBtxAfBwo0xDIyd5baqXHL6YZ46kgA8N0
+         4VowaDVwLWeYEHfO1h65WLP4FoPQS+tBLAN1isGXWOJes82w2/Z0q6U5UFX0SiXtuDKy
+         lBT8WVlSj8uIFg++86Tmxnjbd1LEqzZLxOhWBsqlnvDRiWDXScGrsQCMBjy7QXCnewqC
+         HOqw==
+X-Forwarded-Encrypted: i=1; AHgh+RoaEWItbgaRInSdy+9uDc3EgOl65HdPLgLXbCTi6nRtDZ3d9fKsxnKSpH754/oaZYRO8Tdmsv4+kA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx4epLZFVpIwDC8XGut8wN5xI+UQwTeG/Alu4oi5rsxJk6mX9oK
+	Os1YsYaO/vqN4UHzZPOfDqIqj+Ewd8lVoJovdSxlV6mWnfvZO9XJsMnx
+X-Gm-Gg: AR+sD13hdg+h0z6FMl4KT/xZeod9EAmXApFtpH8B3KbDGzCk5Nc8L/pVKo+KPQIj3SE
+	qAxXb2Uqw2P5YZpYwS3fBcOthoFKHhYtpc9mt0YJcj+KyyF5FSlik0E/HyuAU4Ri5Ek4hkpvNO+
+	L2gt4vbtepwt1zCjFIybwoF7xp1fRU2h3UXwKO+Z9VrBmEMjLVI4ABFVZ53NNIPZ2A2BWpz5BEh
+	C5sbKMmU/7rz9uFuPw+SPa55H9M/0feOd7W5TDceoe+1llcdwvmH/ytaY83MCtA58sEDkbnP5Nv
+	B++VV2y+7vbBS07M24izn9GpwOuFtifqr35uGHHpuocFVTqLWRmrCXyqC0GmhF2wXegdR2hanl6
+	xqRUfHbixaEg0zHuxDOH5x9DjuBAKOKKXTBL5RhC/wb2dVAQT2aSijIruSQe4GxHqwPA0+OmYkt
+	VqPVhSN18TkN+Ue4/8eIbaSDy7NSwx9FDfEIOOiHcvPHtUvc35aTKmhq9zU0cwER4IAOuMVg3pW
+	VNZGm3xMZ6ciq9YWcuQcQ==
+X-Received: by 2002:a17:907:928c:b0:bf0:b39:dcc8 with SMTP id a640c23a62f3a-c212a1da2bamr1864248066b.26.1787065841859;
+        Tue, 18 Aug 2026 08:10:41 -0700 (PDT)
+Received: from workstation (161-53-210-87.ftth.glasoperator.nl. [87.210.53.161])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c217fe69cf4sm205772266b.3.2026.08.18.08.10.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Aug 2026 08:10:41 -0700 (PDT)
+From: "user.email" <zstaseg@gmail.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Stanislav Zaikin <zstaseg@gmail.com>
+Subject: [RFC PATCH v2 0/3] Add Xiaomi 12 Lite 5G (taoyao) battery support
+Date: Tue, 18 Aug 2026 17:10:36 +0200
+Message-ID: <20260818151039.409767-1-zstaseg@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <tencent_64AA3EA1C81C724ED7D0A90390E677BC5205@qq.com>
-In-Reply-To: <tencent_64AA3EA1C81C724ED7D0A90390E677BC5205@qq.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 18 Aug 2026 16:28:11 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXKCnC3RODV0sUyn=011pM68iQDFjC2-AB-OG-F5kw8rQ@mail.gmail.com>
-X-Gm-Features: AcwNN1V1hV47wV6X-u_mwvW55lLkp61RRBplSHKa4nvu94V8GF4oXbguLAe_tb8
-Message-ID: <CAMuHMdXKCnC3RODV0sUyn=011pM68iQDFjC2-AB-OG-F5kw8rQ@mail.gmail.com>
-Subject: Re: [PATCH] thermal: rcar-thermal: fix runtime PM cleanup
-To: Jiawen Liu <1298662399@qq.com>
-Cc: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Jiawen,
+From: Stanislav Zaikin <zstaseg@gmail.com>
 
-Thanks for your patch!
+Xiaomi 12 Lite 5G (taoyao) has an additional property with ID 12 that
+breaks the parsing in qcom_battmgr. Fix that by introducing separate
+maps for lookups properties in both directions.
 
-On Tue, 18 Aug 2026 at 15:16, Jiawen Liu <1298662399@qq.com> wrote:
-> Update rcar_thermal_probe() for the confirmed driver lifecycle defect.
->
-> Keep the change limited to the concrete operation shown in the final
-> patch.
+The other approach that I tried is manual shifting properties:
 
-Please write a better patch description.
++	if (battmgr->variant == QCOM_BATTMGR_TAOYAO && prop > BATT_CHG_CTRL_LIM_MAX)
++		prop++;
+...
++		if (battmgr->variant == QCOM_BATTMGR_TAOYAO && property > BATT_CHG_CTRL_LIM_MAX + 1)
++			property--;
 
->
-> Signed-off-by: jiawen <1298662399@qq.com>
+But I found that more obscure.
 
-Gr{oetje,eeting}s,
+Will be happy to switch if the maintainers prefer this one.
 
-                        Geert
+Changes in v2:
+- Keep the qcom,sm7325-pmic-glink SoC fallback in the compatible chain
+  of the taoyao pmic-glink node (review feedback, patch #1 and #3)
+
+Stanislav Zaikin (3):
+  dt-bindings: soc: qcom: add xiaomi,taoyao-pmic-glink compatible
+  power: supply: qcom_battmgr: add Xiaomi taoyao support
+  arm64: dts: qcom: sm7325-xiaomi-taoyao: switch to device-specific
+    pmic-glink compatible
+
+ .../bindings/soc/qcom/qcom,pmic-glink.yaml    |  5 ++
+ .../boot/dts/qcom/sm7325-xiaomi-taoyao.dts    |  3 +-
+ drivers/power/supply/qcom_battmgr.c           | 86 ++++++++++++++++++-
+ 3 files changed, 89 insertions(+), 5 deletions(-)
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+2.53.0
