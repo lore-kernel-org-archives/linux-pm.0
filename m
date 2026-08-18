@@ -1,63 +1,101 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3CF548987E;
-	Tue, 18 Aug 2026 19:15:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1024637C924;
+	Tue, 18 Aug 2026 23:09:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787080547; cv=none; b=NMCKNCXUzNxg3ljtzw8gG0OP3IItiZEkB8fQd9n+Ys5izdH3KAQCCI3e3gn+spOL6V/9MMBrdWntUOBYactEyzlyV+F/ADwF/tT3LesImzWH4+MYxifGkU9efnboutDvrWQs4UNbP2sSn1r85xXKNqo/mKaPow2657/hn9S8w+s=
+	t=1787094559; cv=none; b=XOx9Rss0dsXLQ7wxVai9k4XsS7Lb1czYGGNlRNKs+NYxoez2p+GjX1GVCO9dZjRyLixAMeMEKLmxrmgEXXCgSyfxmeMRs3uTwJyGdAfc892PhqRoO1RfVvXZ7jcrLeWpW78w6GAobFOtgdtbk2sq1B8pqpBrDDQiz1paR3FAMS0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787080547; c=relaxed/simple;
-	bh=Bhkg2VFr2e7d0EVDE7PMDzXEBf3b1s2CQHN3QKRMBuE=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=p/Zp6pB7KePSfd7XqbabPbCOOiZJKPv5HM7sACflzEsp/Cq9X7sXrl4ZxkbHG8NNky/qihSJAWCXtMZiz+TBq1vGdvU3OjmOu+6+56oaxWIb24WRFUfqJgwn2r2eMUcVed695LLFRuue5EYOGSE+wg+Pn03kTi3L9C4vc8o2784=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SfbmOz/b; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787094559; c=relaxed/simple;
+	bh=lNAfDM0z2yNm21h4eNJm0QulnqJDC5G37akXIcOvH20=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=VW0ZPBebpgVGqHAnhi3pHIl7HQNlWs4xzG/2wTNQ6uXL7YN4U4E3s/7a2+ozFKXJhOjnrtTLHYu5eI3morru+J7z+zo9I8otI0IkMDd7EK7k0UP2BfuYY2RRgr9JElp6aUKrRPjWHtgf/WqsyCAk4eAg5neJu8NpvlLGAmrVoyY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j/Z+JW4e; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SfbmOz/b"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5607C1F01558;
-	Tue, 18 Aug 2026 19:15:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j/Z+JW4e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A08901F000E9;
+	Tue, 18 Aug 2026 23:09:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787080518;
-	bh=M5htUiu2/uaw43DPS42F+8AN9dTjaV7mr87Va9qNGM4=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=SfbmOz/bLyAxcdcDOl8Y3YlisOvPk7NGN8ZCta2RWH1glVKOkBWAb7pHx9rZYoH6+
-	 E0An0ysYHKUQxfv+mGO61aEYhlWuQYuQIRjGB9/03HMENS8KWINwiF8QjVYHk+kXdH
-	 z28Gt9qmox+ZPJj0a8lxSb1OqIQxYRkZtHa1/D8eo+8rEdnpsadFDFebaLY8x9bXRT
-	 r0XHo71ICKTGh3f3MLC/ER3sxp0EP9KjWN+Ecfd1XPolyFPgCcbfzCfA+FXeMPPaPq
-	 VM8Z/59KyiSkYP9ENQ0eHPGyT0Ni5PTo2yIQWGtIIZxbg3xmFH7NkaxjSkmqq0ZhjM
-	 sUa9+mvOxzprA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 19A083927051;
-	Tue, 18 Aug 2026 19:14:31 +0000 (UTC)
-Subject: Re: [GIT PULL] ACPI support updates for 7.3-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0h7+MKn52LePu1qqJucAqGpJB3cHZu7Adccsy1TQEJ4rw@mail.gmail.com>
-References: <CAJZ5v0h7+MKn52LePu1qqJucAqGpJB3cHZu7Adccsy1TQEJ4rw@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0h7+MKn52LePu1qqJucAqGpJB3cHZu7Adccsy1TQEJ4rw@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-7.3-rc1
-X-PR-Tracked-Commit-Id: 79ba234b396b0fdcb3a82dd8aa872348f4069aae
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 0d508f1745b57272d4d4a3d50dc35aa2a3682238
-Message-Id: <178708046962.2235733.16368250721941782187.pr-tracker-bot@kernel.org>
-Date: Tue, 18 Aug 2026 19:14:29 +0000
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>
+	s=k20260515; t=1787094558;
+	bh=B2rI3b8Hia0vW/fa4o3rfnpG+Pj+Dz6m9hUtKiuIVMA=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject;
+	b=j/Z+JW4eF5i8XfXi6M+/mKNpwaMAMODOHQT8SFusgY5fdkEatnADBM7Qas860H2yH
+	 upzwxOdrb/zsix7A6tyuhp/j6nCW6wDoeUmHOP8oluGm4lOAlZzkcVMnp6Prk71NW8
+	 GY+Bl1B52OJ5nqyhickvKFJ+U7nWCtAOxdfkNVq0XFg+w01h4ip5N9YO9PUgDRVDyY
+	 JOBWRGyPSyju2XrHbP2YN7AltitifSQtE9s/aTr9mRkuUU64swBlmdOy8TdmootFl4
+	 qMe/tgRLjkJOIca2Juc8bYDy66XYKvJojMopIc0skNKkA8iL7oL5/sO98GgWNAWl36
+	 2Kko/la8nfTQQ==
+Date: Tue, 18 Aug 2026 18:09:15 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, tomeu@tomeuvizoso.net, 
+ p.zabel@pengutronix.de, ulfh@kernel.org, will@kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ conor+dt@kernel.org, chaoyi.chen@rock-chips.com, 
+ dri-devel@lists.freedesktop.org, zhangqing@rock-chips.com, 
+ linux-arm-kernel@lists.infradead.org, joro@8bytes.org, 
+ devicetree@vger.kernel.org, iommu@lists.linux.dev, linux-pm@vger.kernel.org, 
+ linux-rockchip@lists.infradead.org, krzk+dt@kernel.org, alchark@flipper.net, 
+ ogabbay@kernel.org, royalnet026@gmail.com, diederik@cknow-tech.com, 
+ robin.murphy@arm.com, heiko@sntech.de
+To: Jiaxing Hu <gahing@gahingwoo.com>
+In-Reply-To: <20260817113603.1436067-5-gahing@gahingwoo.com>
+References: <20260817113603.1436067-1-gahing@gahingwoo.com>
+ <20260817113603.1436067-5-gahing@gahingwoo.com>
+Message-Id: <178709455518.1014304.1443906758035976924.robh@kernel.org>
+Subject: Re: [PATCH v8 04/12] dt-bindings: npu: rockchip: add
+ rockchip,rk3576-rknn-core
 
-The pull request you sent on Thu, 13 Aug 2026 20:52:00 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-7.3-rc1
+On Mon, 17 Aug 2026 23:35:55 +1200, Jiaxing Hu wrote:
+> The RK3576 NPU has two cores of the same RKNN block the RK3588 binding
+> already describes, but it wires them up differently: two extra CBUF
+> clocks, two power domains per core, and a single reset instead of two.
+> It also has no NPU SRAM supply.
+> 
+> Widen the property ranges to cover both, then pin each SoC back to its
+> own shape in allOf so nothing loosens for RK3588, and keep sram-supply
+> required for rockchip,rk3588-rknn-core only.
+> 
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> ---
+>  .../npu/rockchip,rk3588-rknn-core.yaml        | 47 +++++++++++++++++--
+>  1 file changed, 44 insertions(+), 3 deletions(-)
+> 
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/0d508f1745b57272d4d4a3d50dc35aa2a3682238
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Thank you!
+yamllint warnings/errors:
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml: Unresolvable reference: /schemas/input/qcom,spmi-haptics.yaml#
+
+doc reference errors (make refcheckdocs):
+Documentation/translations/pt_BR/process/security-bugs.rst: :doc:`regular path submission </../../../process/submitting-patches>`
+Documentation/translations/zh_CN/how-to.rst: Documentation/translations/zh_CN/xxx.rst
+arch/arm/xen/enlighten.c: Documentation/devicetree/bindings/arm/xen.txt
+
+See https://patchwork.kernel.org/project/devicetree/patch/20260817113603.1436067-5-gahing@gahingwoo.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
