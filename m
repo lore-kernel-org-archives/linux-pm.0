@@ -1,119 +1,117 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 08ACB47CC71;
-	Tue, 18 Aug 2026 16:10:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from xmbghk7.mail.qq.com (xmbghk7.mail.qq.com [43.163.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 180C947CC8D;
+	Tue, 18 Aug 2026 16:18:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=43.163.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787069443; cv=none; b=qOpuviOKrzchNR57fyTIcKcZo0NmXz+KaWr+J7LOmwGL9+cjWodT50Zp0sDTOkO+aAtL6fBCSR8k5B8FrAwqc+zrB3bNR85dQfz94/I8D95YpnBOZBspk3PJNKDxGjzR/UXRzWl8RX5Y1YwFMLaPDMa4ZiVVa2oEWIcPJ4fT/UA=
+	t=1787069934; cv=none; b=drTT1YeHMnaRbY4T60KAUeY73z1XOD/65vlr58rbW3TL7rxzJtthmYigUHyogvUzF65z2a1n2AWii/1mXq1rMboAma1sPQ9htdIqR4XweywaytUzBZTwhqN3bWX6UBMxZR/qL9ieA7EqceBJuImDm6wZr2WoNuAuaWg5Cd3ZA+Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787069443; c=relaxed/simple;
-	bh=1yXR7c6RYA/4K5q55flP0Y5hn0BebEcUl3UTHOa2tNs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=k27JKCS2iOv81tNpVi0DHQEJtXWYunl0ByPCIyEkmPC88TBEK+C1jUrdjW+rHFu0ZUOnldrrpw1SFdiNDA09EVs6jORVQT16Ex9WjMcpG5zH/HZNlw8uMA7wAuI1IEeInL7HCcGEDb9VZ86FRqtvSZI0aj3GXY/yIH888WI5A/E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=r01YAmRY; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1787069934; c=relaxed/simple;
+	bh=1ScycsAa5oOmb6+2okTCaHSYs7E/VybkZJAYubYjwkQ=;
+	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=gAJVS9VCZG+YGyTXkISSbtiGb4gUDMNUOkCVrvJbV37OlU02HxmsNzPh6NFjrDY9WwaqYI6OuUT8I7vawaIlA30Loemq1wQVhjwMA1bQDNMeYjWgvytzRYxu8GGHCnKf1EYu5/VzMCoGqY+iUaWce6Vg9uxZU8Wd7wzEIsHOZkw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=kceisutE; arc=none smtp.client-ip=43.163.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="r01YAmRY"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5FC471A00;
-	Tue, 18 Aug 2026 09:10:32 -0700 (PDT)
-Received: from [10.1.39.91] (unknown [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3D0E13F85F;
-	Tue, 18 Aug 2026 09:10:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1787069436; bh=1yXR7c6RYA/4K5q55flP0Y5hn0BebEcUl3UTHOa2tNs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=r01YAmRY0CFAfOkL1NYcGpNT9K4IMObLLcDxfbA6Vp8LSIS7esA3c8rwzv8OsD2vS
-	 H8q53ceXGBDILnVDjxRSOngso8ifEZNnqrMd6FLp0FGT4NAEfRJKl5GpDt+eWu5Xj4
-	 VGO1l/YWQHjDGiWcFpjgF7kO+bDKOK8OVvVD9UfM=
-Message-ID: <bc9c2236-6411-4ff1-a03c-d97997b5f780@arm.com>
-Date: Tue, 18 Aug 2026 17:10:32 +0100
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="kceisutE"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1787069922; bh=7yFVWt2ZhQx0h57GYNYoYDR6FUUtvz+o1d4NQW0TJkQ=;
+	h=From:To:Cc:Subject:Date;
+	b=kceisutEDhu4w++sxEEjXXzABDNc/2obLHLPWjn8PTMfe2nMn8aIWhqwn54TI0qJB
+	 u3ljnYaljZDLsB7WxRK9vL9XtTfGAnjdmETvvV6hdXmJh6jQUsFKKECOr/cCP6H1+7
+	 wjeZHXgcGzlAKZR5o9kFK9FRy+Jc1yQuDXnWwrBs=
+Received: from zs-ASUS-TUF-Gaming-F16-FX607JV-FX607JV.. ([124.79.168.208])
+	by newxmesmtplogicsvrsza63-0.qq.com (NewEsmtp) with SMTP
+	id 4A79FA19; Wed, 19 Aug 2026 00:18:39 +0800
+X-QQ-mid: xmsmtpt1787069919tzegpa7zr
+Message-ID: <tencent_C5AC0A02FC01F700E764F8C2E3ECE4F41009@qq.com>
+X-QQ-XMAILINFO: N7h1OCCDntujx3GZKOoy1qvB8rhaucD0H9CBaJ64/hrODxuJNeXMbL3megbJUb
+	 rQXMVg338xQjf2CN6AfrAmWwzK1EMg8JAJ3tNk6Jcq0qRSAbfdo2XI0tHMu3n6NGQRt5ly+C8WGa
+	 N84BGF7O/YXgtk/RahNSrXWu0WW/FudFnofc9YzFUSMaqFqWh3NsUoHjMzcMj3hZ1BvhAhuK9QVq
+	 NZkeFXwPm0KEJyXFUBngh2ak/WgTNPg9tjmdxBq+vaBeg6ZwEK4jnUiPQj5hELmzLIG1yeH1vs1c
+	 iEglOUgD9DFud/QfeABtx8SLSGrD+9cHuw1T5TM26CbJ4/+JRVT+bEy8k6P/nfIgsHkmo971To0r
+	 dkNUzX+UmhN9CfBA7o93BE9MFLpXvHyXAiI3kkHKb1jbOZj+noF9v+RSfwLp4sTaPM87yv9jma3b
+	 YkwHNpDlohsikfmDqwOYzUrY+ckSFfGbwDixBLgEvTu1XzY8qqsulkhrjKlAwsz4l/hzFk6IMDzH
+	 6FQww7ZwOLZyaViYZbdPwnWWAoMkKza+lfwW8nIyOjmjpZLdYuNFcXWBPirVGcgOimxQxuAvDPoX
+	 A5gDK2yJn8deyYmvCEz8oVhxS6TU5fmmKeZ9GgYbEXF9qlZJ0CUZjWyVolNfV/XpjjK2MPji3QIR
+	 HNUmqtZAh5OOd3RVgzc6I73NGujSzJcaEi5s2jmJ4wYoorV6TXmKEQtq5YIOsmqfwndrIVTB77EO
+	 8IiPEbiFSC7Y/sYJCxgoR4fuPg+lfTYKP5Ex7ipp5NltVBL4IFG7meCempqjv2tqFByIYTuy7hVh
+	 L+mZdQXGXpMiMfvqFjjWRMUn7i/0LOju1201r7lss39rbiAxiBTgA7JQTIwyhQ8Xu/UYiCXZKw+e
+	 AmuO37YH0/djh9bypmfLz3i1Tbu1SarUaUTwqrCf9k3asdGWQ/oyQHkgwJpK8OXY7fZxk2AibC/x
+	 qEKx5ms/iINynS9Xj2nJORbAWD1JxeX2f1asHSFcLSdnJmvgVCxweKd6nl9x6iSx2Hda6t/RXYDq
+	 VEHBIflY9TTmSU6YhHQN/gU9znZO5MeDUIA9Pi3QnuDam74V9VQF9vxU9oRYk=
+X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
+From: Shibo Zhu <3499129952@qq.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>,
+	linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v1] PM: sleep: Unblock runtime PM when device prepare fails
+Date: Wed, 19 Aug 2026 00:18:39 +0800
+X-OQ-MSGID: <20260818161839.158128-1-3499129952@qq.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpuidle: Deny idle entry when CPU already have IPI
- interrupt pending
-To: "Maulik Shah (mkshah)" <maulik.shah@oss.qualcomm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-References: <20260403-cpuidle_ipi-v2-1-b3e44b032e2c@oss.qualcomm.com>
- <CAJZ5v0jXwtBz3z4h3ehJTuaqYN4z7=wOv_LGnjQ4LQMP0TBKmA@mail.gmail.com>
- <5cfd774e-8797-4765-a36a-c3dc2d6ac004@oss.qualcomm.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <5cfd774e-8797-4765-a36a-c3dc2d6ac004@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 4/13/26 06:03, Maulik Shah (mkshah) wrote:
-> 
-> 
-> On 4/6/2026 8:37 PM, Rafael J. Wysocki wrote:
->> On Fri, Apr 3, 2026 at 6:08 AM Maulik Shah <maulik.shah@oss.qualcomm.com> wrote:
->>>
->>> CPU can get IPI interrupt from another CPU while it is executing
->>> cpuidle_select() or about to execute same. The selection do not account
->>> for pending interrupts and may continue to enter selected idle state only
->>> to exit immediately.
->>>
->>> Example trace collected when there is cross CPU IPI.
->>>
->>>  [000] 154.892148: sched_waking: comm=sugov:4 pid=491 prio=-1 target_cpu=007
->>>  [000] 154.892148: ipi_raise: target_mask=00000000,00000080 (Function call interrupts)
->>>  [007] 154.892162: cpu_idle: state=2 cpu_id=7
->>>  [007] 154.892208: cpu_idle: state=4294967295 cpu_id=7
->>>  [007] 154.892211: irq_handler_entry: irq=2 name=IPI
->>>  [007] 154.892211: ipi_entry: (Function call interrupts)
->>>  [007] 154.892213: sched_wakeup: comm=sugov:4 pid=491 prio=-1 target_cpu=007
->>>  [007] 154.892214: ipi_exit: (Function call interrupts)
->>>
->>> This impacts performance and the above count increments.
->>>
->>> commit ccde6525183c ("smp: Introduce a helper function to check for pending
->>> IPIs") already introduced a helper function to check the pending IPIs and
->>> it is used in pmdomain governor to deny the cluster level idle state when
->>> there is a pending IPI on any of cluster CPUs.
->>>
->>> This however does not stop CPU to enter CPU level idle state. Make use of
->>> same at CPUidle to deny the idle entry when there is already IPI pending.
->>>
->>> With change observing glmark2 [1] off screen scores improving in the range
->>> of 25% to 30% on Qualcomm lemans-evk board which is arm64 based having two
->>> clusters each with 4 CPUs.
->>>
->>> [1] https://github.com/glmark2/glmark2
->>>
->>> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
->>> ---
->>> Changes in v2:
->>> - Fix cpumask argument of cpus_peek_for_pending_ipi() to take single cpu
->>> - Link to v1: https://lore.kernel.org/r/20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com
->>> ---
->>>  drivers/cpuidle/cpuidle.c | 3 +++
->>>  1 file changed, 3 insertions(+)
->>>
->>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->>> index c7876e9e024f9076663063ad21cfc69343fdbbe7..c01e57df64ca5af8c28da3d971500b3f38306cdf 100644
->>> --- a/drivers/cpuidle/cpuidle.c
->>> +++ b/drivers/cpuidle/cpuidle.c
->>> @@ -224,6 +224,9 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
->>>         bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
->>>         ktime_t time_start, time_end;
->>>
->>> +       if (cpus_peek_for_pending_ipi(cpumask_of(dev->cpu)))
->>> +               return -EBUSY;
->>> +
->>
->> Why do you want to check it here and not in cpuidle_idle_call(), for example?
-> 
-> It can be moved in cpuidle_idle_call(), just before call_cpuidle() too.
-> The intention is to check after cpuidle_select() is done.
-> 
-What do we do about the cpuidle stats in that case?
-I'm thinking primiarly about last_residency_ns and rejected here.
+device_prepare() blocks runtime PM for a device with runtime PM disabled
+before invoking its system-sleep ->prepare() callback. For a device that
+has never enabled runtime PM, this changes dev->power.last_status from
+RPM_INVALID to RPM_BLOCKED.
+
+If the callback returns an error, dpm_prepare() does not move the device
+to dpm_prepared_list. Consequently, the recovery path through
+dpm_complete() never calls device_complete() for the failing device.
+
+The error path drops the runtime PM usage reference, but does not clear
+RPM_BLOCKED. A later legitimate pm_runtime_enable() then reports:
+
+  Attempt to enable runtime PM when it is blocked
+
+before clearing the stale state.
+
+Call pm_runtime_unblock() on the prepare error path before dropping the
+runtime PM reference, matching the cleanup performed by device_complete().
+
+The issue was reproduced with a platform test device whose ->prepare()
+callback returns -EIO while runtime PM has never been enabled. Before
+the fix, last_status remained RPM_BLOCKED after the failed suspend and
+the first pm_runtime_enable() produced the warning above. With the fix,
+last_status is restored to RPM_INVALID and the warning is absent.
+
+Fixes: 3e5eee147b7b ("PM: Block enabling of runtime PM during system suspend")
+Cc: stable@vger.kernel.org
+Assisted-by: Codex:gpt-5.6-sol
+Assisted-by: ChatGPT:GPT-5.6 Sol
+Signed-off-by: Shibo Zhu <3499129952@qq.com>
+---
+ drivers/base/power/main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index f71467f6ada4..4ed2e9b7e99b 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -2234,6 +2234,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 
+ 	if (ret < 0) {
+ 		suspend_report_result(dev, callback, ret);
++		pm_runtime_unblock(dev);
+ 		pm_runtime_put(dev);
+ 		return ret;
+ 	}
+
+base-commit: 0f23d56f17fdfc7db69d51f64c8b91bbab947aa9
+-- 
+2.43.0
+
