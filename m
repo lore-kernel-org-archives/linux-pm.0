@@ -1,167 +1,120 @@
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ECF4471431
-	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 11:50:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D67263A05F2
+	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 13:30:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787140210; cv=none; b=KkHkLNj0Hrpb6kRFaEJD+oJGl8Tspo+Mj7x4PtGYDuXGxTd/6Q9UpwSNo+orqRRFWAB1/Wy85J3l2TR/cSccLE2YuJOYceXrcy/Glm4Uet8Bzx7JkY6GIO3dr8wo9S2Ki90Qk4HiskYjeqTHGZyPaqTBaEislyt1e1xfQB8jTIo=
+	t=1787146246; cv=none; b=UcCdi6UUdz5xkkw8AHbebsZVZnwF/ilIiKLOjw9W0ZcdZ9AEXFETyKiNnLj2tXbgzwkcJ2YQMRxEJtAAHCBNKaQ3+t+jMu37tPuhY0xhPNEkFW3zLpJ9F6amp09BNDKHy2KmCEXdfs2a8S9HxeXxnzja0+yJQc9+FG4gqpmwTEQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787140210; c=relaxed/simple;
-	bh=dLbO/KZ9p8AfNKJwP2FWUdac1cvSGmTwIke+Nm9losM=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XH6tC+mlBpPxQJDKkQOo/HObM2icyIv4lUNG7gySybekhwSy4q7FC6pkH/T9w4ncWjX1F7iT+9TZXuZB2F0G3Hz/Z2PT/mDr3YfpAjk4bNw9px+wqeP3Ld4l9FBuLxiWGO4RjHtgtVY+Td1VoJzLs2Vrz9yV70LZt1+Qq6R4LMU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AL5UHIHA; arc=none smtp.client-ip=209.85.208.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787146246; c=relaxed/simple;
+	bh=4gSwkan2L6CEisBgarTBd82x+gm9pt9Nh/78UILyg5A=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fSp3sBEqSFOorBXMZkzMyQuldBkox3z+dBUEDfrVCbKzw2B2gxX02raqLKU/4YFi6N3BP+5hSAxWBwqWryx+LSYmu6EnId4MjUIkIK4ej/WY8RPnNkaQBWCBsRFODMHtp7NvhPBi1lzSM2gLFp8FvMmy5k/3X9yyuGo45CwCTA0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aPUasIj9; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AL5UHIHA"
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39faa67fabaso5944641fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 04:50:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787140204; x=1787745004; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=qb8vbO35I9ReDoy08LYZaOcpJWIqiGdFJcRUGNTu904=;
-        b=AL5UHIHAef6lcN8kJ5xWmpUSc6DfKmb5R5GES6ugTd4YzL9tFeF25Oqj696fCo5iMk
-         4iNI+IK4qfOa+KtCsR3TQjcAsNqWGen9z0sLlnIKNmF7g+7bG1DB0yGMy7lnpZM2sJFC
-         HR2uemSYF23n6jDeQBdNgmzjIXgCLfGkPKOuKJVpod9z6jIoLWSyh7V6sk3vcxX2KIwx
-         FoSWHZX21uaCSAlF8LLnjmoHg4zP8tyoGJ5IArD8snEWxgb4lmjpv4qFCimSTFi9Q2uD
-         uEnxGT8IeWExka3oNuUTcb1wnn6stWEyhkQ4Hce2XGOj0GV9xNHh2uIS+tHhO6fUV0HZ
-         NDIg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787140204; x=1787745004;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=qb8vbO35I9ReDoy08LYZaOcpJWIqiGdFJcRUGNTu904=;
-        b=nWBSWvFPgnm0n6mYZzIGZhMMMa50/wIdi3gNUM9mpasO7Nz8LlUyC8GWvr45kZYOoY
-         cZHOB+1MhjprEEjvo6tnDTny8iVp0HbjIuJLCiYpxTjW/wtWtUCIgG4D4KW0gQ2lFfaB
-         n/q/p4nnWYSMM23NUqZcPRzs2yG1dVwbY+4XHk45N6XQpRLyOOR3Eyjy+1bHR0vvIRdY
-         cQKRiVdZP1tlZfNOs540kbi033rCHpJEiP47bZSrf8XMlP8rMhRCLB+fdY05sbcAWesx
-         CklA1vsw1kpaW25L5eG6dQMzx7bDymTFe+XNHT8oi3TthPiLYqWfTa7P/4u9u5GGitnH
-         SmYw==
-X-Forwarded-Encrypted: i=1; AHgh+RqSuYWboey3G3sRrTViewnxq00wSZnYsSvPQIk4q8hlKaC/0pmGnDaH8Misj5JZqcEvvgyv9htkMg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YycpJU8wGFF46epinqGjRunleORCjDFSFSJg9Qp9OjPXglQ7xiq
-	4CsC+TG3CSr/Onvw8o8vPuEgXXaFKb3FJdn7vsSg9z6dNRxv3MIFIDEv
-X-Gm-Gg: AR+sD10jBbXhKaiJItJ2zzY9xe19o+GIlQKhL2l5P96IUDpbqsj3lso8crkLSr9UiUb
-	0qU8jaOooPIRW2X6CSBJeQMwojZZmXuAmJXec5BjS/8bz0k9gIfQ1wbYa25abkfIQi6P5k/70oq
-	auwGYTOObt3UN2/RebTcqtxja0rQK8e5ti8tLRUwLGLXiisgNSHJYMaMK3XOhQpvFpMAYibxaA5
-	5nDu8tWU2+5nMIyWf+poSI5NfhS7cZMaMUziNlWxlJPfhwb7td8Dst0OiZvIjobM6KTL+/XjYhT
-	+aSi9VmsxGxT9GKUCEkAxvWhsLKzkaY9S4XIrLpUgvilVPYIJT0gwWxf17IIDyP7TZE1Ws/jGYu
-	Z9mXfukYHmo1bQDXj0XSoH++n5tlhGQlCqWI8UOl9BvCGo1fxAimbaKCGfsgzj56m5ml58tL/0/
-	Qmy+DcX2TMdC4+8ZQfFCMdI+eKlw0nitc5DAQ2QOsV9jHvCmTjadmFMHB40vsOxJcEST49IFI3Z
-	Bj3Uby8adjGJshZMGs=
-X-Received: by 2002:a05:651c:3135:b0:39b:48c1:8cd4 with SMTP id 38308e7fff4ca-3a18996bd7dmr7858151fa.7.1787140203900;
-        Wed, 19 Aug 2026 04:50:03 -0700 (PDT)
-Received: from pc636 (host-95-193-137-165.mobileonline.telia.com. [95.193.137.165])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a18a8e8579sm4123321fa.0.2026.08.19.04.50.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Aug 2026 04:50:03 -0700 (PDT)
-From: Uladzislau Rezki <urezki@gmail.com>
-X-Google-Original-From: Uladzislau Rezki <urezki@pc636>
-Date: Wed, 19 Aug 2026 13:49:58 +0200
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Adrian =?utf-8?Q?Barna=C5=9B?= <abarnas@google.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Alexandre Ghiti <alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Brendan Jackman <brendan.jackman@linux.dev>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@kernel.org>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Len Brown <lenb@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>,
-	Will Deacon <will@kernel.org>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-pm@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	loongarch@lists.linux.dev
-Subject: Re: [PATCH 3/6] mm/vmalloc: constify vm parameter of
- get_vm_area_page_order()
-Message-ID: <aoWYZk7xNfjwuzQ_@pc636>
-References: <20260816-execmem-set-vm-perms-v0-2-v1-0-90944a3ad43f@kernel.org>
- <20260816-execmem-set-vm-perms-v0-2-v1-3-90944a3ad43f@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aPUasIj9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A65C1F00A3E
+	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 13:30:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787146243;
+	bh=Wy+D+ESTTq/dSV8mhmm+rhMC+Crd5u0rz0n4yla+hGs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=aPUasIj9J9ETAKkXY+xz3TK125/aXZYjKzFmuOkfbiiU6/19xiRkGoYKKBAsT8WxR
+	 QBKYCqbs49DV3cgMcXgHT6zGootPM+lszjhmfFD9fcpQYefWkk1lRr56QoIqqH6iEN
+	 rC6xB0mB9mkb1GOgRBaXc5IY5EMSRj8qW60VDICji5wM+RBJQog6XmfZXcVUfrNZVL
+	 tI0TyZHQ+3I+wgbDVL/bPi+wsJQha090rSdqoQfAnpwtw64dUr2Wd12xOYZ93ECvLT
+	 4oLbcbZ+qzeRb0Yb/VtQi4oH7EvFBO6jE2r5JxA6u49vhaerF/9ndVpaKe6aShnILS
+	 GQJEhWHiA5uGg==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5b0231a3e86so1077632e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 06:30:43 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RorhvQ8FiTSbrSFgGD2T/NeIpzjCQW9MVq/bFMpG1cz21PqKYDZmT4CmmgY9yXNq0WKvxsaJ77jrg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwdvLMx1M+u0jml8SvBITVXDbM+m/jU8Mh1ik4sCA8u4M5vNSY+
+	s4HrldTbbOlWfCphKQ0nHH9/rg68OSpUFgc77scA3YPQIR1ExtyyOD9e1H/KoUCLdmQtDupRJFX
+	yIcuNBojHYJhHQ38O88NtrQJF9XWAK6o=
+X-Received: by 2002:a05:6512:6d1:b0:5aa:5ef9:a33 with SMTP id
+ 2adb3069b0e04-5b478bdb85fmr1801632e87.25.1787146241774; Wed, 19 Aug 2026
+ 06:30:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260816-execmem-set-vm-perms-v0-2-v1-3-90944a3ad43f@kernel.org>
+References: <20260618-ux500-power-domains-v7-1-v1-0-eb5e50b1a588@kernel.org>
+ <20260618-ux500-power-domains-v7-1-v1-10-eb5e50b1a588@kernel.org> <CAPx+jO-ow2vo2wMxERLGse88wLoaR=HLdOWk6Qwv97ZdbE4R5Q@mail.gmail.com>
+In-Reply-To: <CAPx+jO-ow2vo2wMxERLGse88wLoaR=HLdOWk6Qwv97ZdbE4R5Q@mail.gmail.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Wed, 19 Aug 2026 15:30:29 +0200
+X-Gmail-Original-Message-ID: <CAD++jLnzDmxW_SoJ9H1tS2_r+jd7A7FpLVp37nK=dOEPj=GExA@mail.gmail.com>
+X-Gm-Features: AcwNN1VzmKR08mtjCfHfPMShMvTxNHeVOcLQxu2aSZ4UbCwVZegKiNNfpCmjf24
+Message-ID: <CAD++jLnzDmxW_SoJ9H1tS2_r+jd7A7FpLVp37nK=dOEPj=GExA@mail.gmail.com>
+Subject: Re: [PATCH 10/11] regulator: db8500: Add power domain regulators
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Mark Brown <broonie@kernel.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, Lee Jones <lee@kernel.org>, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	dmaengine@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Aug 16, 2026 at 01:59:26PM +0300, Mike Rapoport (Microsoft) wrote:
-> get_vm_area_page_order() and vm_area_page_order() do not need to modify
-> struct vm_struct passed to them.
-> 
-> Constify the parameter.
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
->  mm/vmalloc.c | 4 ++--
->  mm/vmalloc.h | 2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 6822f0fe9583..fc7993db4152 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -3124,7 +3124,7 @@ EXPORT_SYMBOL(vm_map_ram);
->  
->  static struct vm_struct *vmlist __initdata;
->  
-> -static inline unsigned int vm_area_page_order(struct vm_struct *vm)
-> +static inline unsigned int vm_area_page_order(const struct vm_struct *vm)
->  {
->  #ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
->  	return vm->page_order;
-> @@ -3133,7 +3133,7 @@ static inline unsigned int vm_area_page_order(struct vm_struct *vm)
->  #endif
->  }
->  
-> -unsigned int get_vm_area_page_order(struct vm_struct *vm)
-> +unsigned int get_vm_area_page_order(const struct vm_struct *vm)
->  {
->  	return vm_area_page_order(vm);
->  }
-> diff --git a/mm/vmalloc.h b/mm/vmalloc.h
-> index 8866ddcff668..211869f36509 100644
-> --- a/mm/vmalloc.h
-> +++ b/mm/vmalloc.h
-> @@ -12,7 +12,7 @@ void __init vmalloc_init(void);
->  int __must_check vmap_pages_range_noflush(unsigned long addr, unsigned long end,
->  		pgprot_t prot, struct page **pages,
->  		unsigned int page_shift, gfp_t gfp_mask);
-> -unsigned int get_vm_area_page_order(struct vm_struct *vm);
-> +unsigned int get_vm_area_page_order(const struct vm_struct *vm);
->  #else
->  static inline void vmalloc_init(void) {}
->  
-> 
-> -- 
-> 2.53.0
-> 
-LGTM:
+On Wed, Jul 8, 2026 at 5:53=E2=80=AFPM Ulf Hansson <ulf.hansson@oss.qualcom=
+m.com> wrote:
 
-Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+> On Thu, Jun 18, 2026 at 7:01=E2=80=AFAM Linus Walleij <linusw@kernel.org>=
+ wrote:
+> >
+> > Add a DB8500 regulator driver for the VAPE and VSMPS2 compatibility nod=
+es.
+> >
+> > Back the regulator enable state with the corresponding power domains.
+> >
+> > This is done for off-chip consumers: the corresponding voltage rails ar=
+e
+> > routed out so they are used for powering different peripherals using
+> > these voltages as supplies.
+> >
+> > Assisted-by: Codex:gpt-5-5
+> > Signed-off-by: Linus Walleij <linusw@kernel.org>
+(...)
+> > @@ -673,6 +673,7 @@ db8500-prcmu-regulators {
+> >                                 // DB8500_REGULATOR_VAPE
+> >                                 db8500_vape_reg: db8500_vape {
+> >                                         regulator-always-on;
+> > +                                       power-domains =3D <&pm_domains =
+DOMAIN_VAPE>;
+>
+> Hmm, isn't this the other way around? The power-domains node should
+> have a regulator supply?
 
---
-Uladzislau Rezki
+They probably have that, but that is not what this is about,
+it's the other way around.
+
+> We may even consider to skip to model the regulator altogether and
+> make the power domain operate directly on the prcmu instead.
+
+That is what the series tries to do, as a whole. Sorry if that was unclear.=
+..
+
+What we do in this patch is to deal with the fact that two of the power
+domains, when enabled, also turn on two external power rails outside
+of the SoC.
+
+Since external components such as I2C devices cannot really be
+claimed as "being inside a power domain" they take a regulator.
+
+This is based on my understanding that power domains is an
+SoC-internal concept only, so there is a clear boundary if something
+outside of the SoC starts to use such an externalized power rail.
+
+All this regulator does is to make sure the corresponding power domain
+is enabled when the regulator is enabled.
+
+I will repost all the patches once v7.3-rc1 is out.
+
+Yours,
+Linus Walleij
