@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 625DB37A839;
-	Wed, 19 Aug 2026 09:52:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFE08448D05;
+	Wed, 19 Aug 2026 09:52:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787133141; cv=none; b=aDM1QRMm/f9b6o9NVKlIOJ6fqFFFASweYBn2Hxt6EXH3otbXlzrQ4oIZHVs3vESTFdfYQVvOHHnHYjE0m0J9qcAfhZk1RUzCNp3T6RJ/0VCwwUdHasHoH/Oikfc1LXdZv6hIKgjfGgbulI3DNuGiup4ggAsHJ57mVunY03K+3zc=
+	t=1787133184; cv=none; b=r4izB7F57C4B8EToGv2GwMC//aeaSElYothkJ3nROhukQPowZOSldnq0RQpY4rvSUMUPWCW6rvc96rx9mx6ZhEQFUkmCUY9MlIsIW44d6R8l86J2R69ijDd04LC8UVYW/ZobxlvSScCyGCaP3+Y/byAjlPlJPQB0Zhbd+Q/O/x8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787133141; c=relaxed/simple;
-	bh=0Iuwhyf2mtHErp0gsHJMOgTCZUllNcHr3PSGJe29acc=;
+	s=arc-20240116; t=1787133184; c=relaxed/simple;
+	bh=y3QwPQKoyacYdfx+yFRTRRsHiOAJDm4MlXs9xs0Bc4A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Rt7eqZCYvd8CyUuJXB1Q4GyyswzxDZsxkjfoPhMpJDN1fALzAzXxO7JqWYzocpEueQNjOmmgUCyGmVwj/531gDeJDlqm8b6TGfweFUob/HACe4hADZTQjYGoKGbbY52lLujjWjPIWJWm7liayT5+uSrD0xOWVLKkyLO430vjOcA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Fi6F00zQ; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ms6dO01IOboHhuUWIh7FCBw8KwtcAQyzsGwUTxBMCNj3kFpVDb5l6BdBx9Fw/CCtcn5QPJGrmr4P/BUFklbaOvLSmCkKVBClkr7BtgFbAlxpQdY12bjIDIrAsLgbg6BAnO4mF3SGRe0pjhl8D4a7fvkGaxCMmTE652IL5XFhYoQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LOHTrXaU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Fi6F00zQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F299C1F000E9;
-	Wed, 19 Aug 2026 09:52:17 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LOHTrXaU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC92B1F000E9;
+	Wed, 19 Aug 2026 09:52:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787133139;
-	bh=htmKr8wrzhOuksy0WSYGeTFilrl0ymuvoTGQwdDcFJk=;
+	s=k20260515; t=1787133177;
+	bh=NYRoBK8EbGRRmGCMJEI3e7DjEmkit0ExY6GnKbvmDck=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Fi6F00zQi+bhkN5m5k+uQ+b+gsurGvwSkEdNhgIRrIBJw/FbkVQ689JV7e+tHpsY8
-	 wnh9WHpwaSAe0UcManfIjxW2q7CZZZiQINw3Bb1MZ6+e6cyIDv92UOwwtMOtVmNw2/
-	 IPf+Q7PxE6LbXHoJcNgeW4YeAWAAHKUWoXep4UUUW5XPLTN/6nyCpkx/hgFVAAnn0J
-	 ayEUHF6wf7ST0g56Q4kwEu23jY1vSHEZcw0BITithCqk2Kmi1jQTAptGoKuLQJdihy
-	 PFnMcaQG+2uc3XvCBXdYXuDro7gEsI5Y8hiCElIJjSiON9PcyGa0WLN+Seu4vyVts9
-	 Fj/ooktBK+OnQ==
-Date: Wed, 19 Aug 2026 11:52:14 +0200
+	b=LOHTrXaUkr12UCZtKv6s4wUUdz6KmaoKLeF5dtHsGQTOXRNkvOylhVjWuD9nZcWeO
+	 RPZGC2QK35WCD+4GeYSUMeKE0p9DsDPq9mEmuwI3UBTfqocW0+4xFxqyXdjRDuk43e
+	 Y00/f6T6IZNJsdMUmCipIbvc6Se76rW9vdnckAX5uS5JHP/Bh2r179Om0OjloVsArZ
+	 9/6kxErl+SKOURLiRaDJS9cx0UEeDVL0V+ChJnwufTA7uH+aq1rfYb2tZCHO2qja1w
+	 1ALuBRRoYVEXuwzggwY7zFjgyPA+QaIzxpu+5quiRXM1643WN5Uf0cOFzXZ+ujOlh8
+	 j5AgGckBUP0iQ==
+Date: Wed, 19 Aug 2026 11:52:53 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Henrik Grimler <henrik.grimler@axis.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -35,10 +35,11 @@ Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
 	Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
 	linux-kernel@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>, 
 	kernel@axis.com
-Subject: Re: [PATCH v2 2/3] dt-bindings: power: bq27xxx: document bq27z746
-Message-ID: <20260819-amiable-outrageous-sturgeon-98e7a7@quoll>
+Subject: Re: [PATCH v2 1/3] dt-bindings: power: bq27xxx: bq27z561: allow
+ interrupts property
+Message-ID: <20260819-unstoppable-okapi-of-energy-dcfe19@quoll>
 References: <20260818-bq27z746-v2-0-0371e206665f@axis.com>
- <20260818-bq27z746-v2-2-0371e206665f@axis.com>
+ <20260818-bq27z746-v2-1-0371e206665f@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,23 +48,18 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260818-bq27z746-v2-2-0371e206665f@axis.com>
+In-Reply-To: <20260818-bq27z746-v2-1-0371e206665f@axis.com>
 
-On Tue, Aug 18, 2026 at 11:48:21AM +0200, Henrik Grimler wrote:
-> Add compatible for Texas Instruments bq27z746 fuel gauge, which is
-> similar to its sibling bq27z561. Unlike bq27z561, bq27z746 includes
-> some protection logic and can drive external MOSFETs. The register map
-> is a subset of the one found in bq27z561, with bq27z561 having six
-> extra registers at the end at 0x70 - 0x7A.
+On Tue, Aug 18, 2026 at 11:48:20AM +0200, Henrik Grimler wrote:
+> According to the technical reference manual for bq27z561 it has
+> support for an interrupt on an INT pin. Remove it from the list of
+> devices without interrupt support to better describe the hardware.
 > 
-> Among the ManufacturerAccess registers there are some more differences
-> mainly related to MOSFET control and deep sleep/shipping mode.
-> 
+> Fixes: b4f7a727c29c ("dt-bindings: power: supply: bq27xxx: document optional interrupt")
 > Signed-off-by: Henrik Grimler <henrik.grimler@axis.com>
 > ---
->  Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 1 +
->  1 file changed, 1 insertion(+)
-
+>  Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 1 -
+>  1 file changed, 1 deletion(-)
 
 Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
