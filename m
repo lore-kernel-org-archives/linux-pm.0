@@ -1,60 +1,60 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9498D489873;
-	Wed, 19 Aug 2026 17:20:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57DB348EBF6;
+	Wed, 19 Aug 2026 17:20:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787160062; cv=none; b=JwJp/fjqozba/XPftZ488647PiwyVovsvaBMyr+j2OVVlIr82d51+1PZeCMimW22X3HaRyn2ch9YKT4mJrpy//Fu1I1y1vJIOHk9rwytcRVyg2XlXXpmSdYFrWgYL/2wv0sNwbtgdTpzAl/ikEafusxInJvw0mbUlSKwqT9rEfg=
+	t=1787160067; cv=none; b=XoqNHZlnfVvAzgCnnw99CeVWCV/2dhyWbc4i99/kUDJ9fnNID5x3PRh51rHryB/a5WRwinbERK5MiUfOCngarpdwmqJvGVAMThdOeSGNw8zxPqNTcalix/Y6QhehOVyzXpOt9xDy2WpYEiw/SdPKpZRfpTEemSRSC7tsHgKWxN4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787160062; c=relaxed/simple;
-	bh=xpIseNJ8SHEVT5uSQmvEEGA0JV/wcPHKkw2L+yJXCeI=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=BxwvBfHvYguh+4ejVLjIbGCInwuNSt5eTZnLDlJ22GJ/lIiOyYZng/VQxhBQmgqxumoF7wt4lXKtOggADnknd4kXWYf7AkeS3mmvEPtjnaHsxYU4iSZqv9kBG1U93lAJCt6A0WpCzhlw9lfMn3xUH09CUCTfQKu1wp9YI04jfjk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OA4XH17k; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787160067; c=relaxed/simple;
+	bh=tRUurqDXoNOfocrY+UxNfcHmgSJHV8gmomC5Z8GIXEM=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=KivFKc0QH9Qkkr0LLtfH66I2Mpe2jAfVqVjSnHZC5F2Y7TuGVkZbapp4W7qmuH4CBVlW9NqSOb5/KIC1e9eFROrvg8r6HK9WKUlc4Ugv0aRzIEcF6bPFWqYt0EcnYVGVMUNYdAzgfXWbeMwV/4bMK+bq9OUA0tL2RygMfK/cs6g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GlVrEGQ7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OA4XH17k"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 561E11F338CF;
-	Wed, 19 Aug 2026 17:20:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GlVrEGQ7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 994411F338C5;
+	Wed, 19 Aug 2026 17:20:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787160055;
-	bh=imEHt27mUhxQ58R44WgkTdQcFGZixGru/Rw969OaqtY=;
+	s=k20260515; t=1787160053;
+	bh=q09MIeffxh9uHj3whXhkUw4sMsPh+iJvKHP6K+054Uw=;
 	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=OA4XH17kgEwXC9nbTZ5FV84tBgY60IrNVGMRr+33XsSy6z08k3yMcwojQJlcVc3Mb
-	 UQZHi3/v/3v/GpeHwkkggEmyIf8bSzc398SG10kJDhvIY+3/+c/NyjkdMSjbDxaVHJ
-	 ILOCvbNH5dtnxOnLu5xEjtd1N57FHBx15RoHN12OJexbZ9TtkrQQk/a41LdqqoliK9
-	 HcJ2vwRvBJFJW9w44PVWN1gMUkwJ7L8cRgvp3R1LfJ/MDIaULhCbP580h8d+PjWwH0
-	 6JVsj3Q0WZuFjgJ3WoRVedR6Tkv1uFKoNuXGCI2VFKM80E4zDM04gQMrWWg+7BCfzp
-	 Am95YehXVlf5g==
+	b=GlVrEGQ78Wa2NVrDHRpA2GypTDfBNjclcnTpeEDJWi9HptyMg9IR7yMCXiigIL+ck
+	 LpreaALXgFCEnTV38KmJFjGK9Uc2SrpBYwUset/2y3FjHZpXcr4rxDcl9la408iUmf
+	 KWpY4loNRskHYezhLeaJlhgsTGG9bS8tN+REN2ggQeeoU1V0qIp4R25zS9ngZm1pe2
+	 C03VYmMD6i7bjBw6SiHGAiIdrQTKKQHsZV5T5lcXw6u6lJs0EFTBVXsEV5OzdmnMqk
+	 KQAVy5eJ+k7Cuzr6Nam0QDaGVXn8plEN9//M6giedWQSGgXeqPi063D3ZMgU+ZsZ2i
+	 aLwYaDkHqFgwA==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 8395838119E7;
-	Wed, 19 Aug 2026 17:20:07 +0000 (UTC)
-Subject: Re: [GIT PULL] pmdomain updates for v7.3
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BD19438119E7;
+	Wed, 19 Aug 2026 17:20:05 +0000 (UTC)
+Subject: Re: [GIT PULL] power sequencing updates for v7.3-rc1
 From: pr-tracker-bot@kernel.org
-In-Reply-To: <20260817113836.134458-1-ulf.hansson@oss.qualcomm.com>
-References: <20260817113836.134458-1-ulf.hansson@oss.qualcomm.com>
+In-Reply-To: <20260813082754.9972-1-bartosz.golaszewski@oss.qualcomm.com>
+References: <20260813082754.9972-1-bartosz.golaszewski@oss.qualcomm.com>
 X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20260817113836.134458-1-ulf.hansson@oss.qualcomm.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.3
-X-PR-Tracked-Commit-Id: 3ca7b513aec1db32b75b909395be1111c1198afb
+X-PR-Tracked-Message-Id: <20260813082754.9972-1-bartosz.golaszewski@oss.qualcomm.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-updates-for-v7.3-rc1
+X-PR-Tracked-Commit-Id: a39ac4651e3b9d2ca78b6d3dc2a81a6bd25fa616
 X-PR-Merge-Tree: torvalds/linux.git
 X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: ee1b6365f07a14e987dd0f994fc7d46966037ea9
-Message-Id: <178716000620.3599392.1518378382337655084.pr-tracker-bot@kernel.org>
-Date: Wed, 19 Aug 2026 17:20:06 +0000
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Linus <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, linux-arm-kernel@lists.infradead.org
+X-PR-Merge-Commit-Id: d0d82a84c965915ac13d08b726b4cb440d90b122
+Message-Id: <178716000454.3599392.2484292795060051827.pr-tracker-bot@kernel.org>
+Date: Wed, 19 Aug 2026 17:20:04 +0000
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, brgl@kernel.org, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-The pull request you sent on Mon, 17 Aug 2026 13:38:26 +0200:
+The pull request you sent on Thu, 13 Aug 2026 10:27:54 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.3
+> git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-updates-for-v7.3-rc1
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/ee1b6365f07a14e987dd0f994fc7d46966037ea9
+https://git.kernel.org/torvalds/c/d0d82a84c965915ac13d08b726b4cb440d90b122
 
 Thank you!
 
