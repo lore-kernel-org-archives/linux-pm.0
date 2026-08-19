@@ -1,157 +1,146 @@
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com [209.85.217.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34A683F44EF
-	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 08:37:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DF373D3486
+	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 08:42:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787128677; cv=none; b=VNUA/auXSsUnhyRb0aRCNZfHOobxqQ2wyQleGQ8E+Ykzn0Z3qBOVi7UihMT00UcNVM8ShXw0RJKb4qJhvADS5HdkArW9NaAjE//z9ICnqUa2cMgYjexihruCwuGuheV0oUX4f2dlTPgHLR0T98+02m/4pd8BZqmjltf8D/5MApc=
+	t=1787128925; cv=none; b=PxROzd7/t1HLcSsmCNgN7fqrl39FrycwqMeQWE0XesVjKTE7G1LeGFqgJcOrRVdFNLmuWZaIFENGs1y0NOr826xeEjBW+WuSKPEf2KAKzi52Cjxtl5ObstgswKb/oq/idqkoUcn2YYqW5A++aEb/TSNGKoZ/GNrt3zPwhhPXiek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787128677; c=relaxed/simple;
-	bh=J8OvenS2hCs5THMJYtmCxf16EEHr+bum+fX8PSaJgqY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WTw4CnhuK2BmxFwp1xxFHggJ1LTHIghKEhFLsa20MCmd7y0A7W0v3YPFS60Ff61Fz0Q/vKJTROxBoE5NL2ERWP/K/gwfMn/XpVlB8BVLkmx0FVTcjzqtcc+ewHBF6mZ+eK28U1bP/W9pnQzJBCbjLjyGzp3iKhDqxGHEd9MLGwM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ak616cRj; arc=none smtp.client-ip=209.85.218.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	s=arc-20240116; t=1787128925; c=relaxed/simple;
+	bh=+1jwVbFxW0XLlovd1xlFsqF4mv3a/J7TGbtos8pkWHE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=X9LJWFdc9aKl1Bt4f8rKZsAJCj78NVARDaPK8P9/7j8l8z+X+Knir8XpXcTgbvi+rtefTD6txV4Hhu1IvcvDsn3XL4turJ/J3sudENxlV3AAfP/200EKi4H7u7UJwQ4fmm0ncM/MvzbUFUKf8VN+4bDJ3dQhiPJvjaKiV2g31iA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ak616cRj"
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-c20e70a0962so97800966b.2
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 01:37:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787128674; x=1787733474; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OWyG58LZRk0FpypFIgr97MJusUzcaJB4SA6RQG40M3M=;
-        b=Ak616cRjhRj8soNDK7wk18/0mrwuHmdnqpxX9rrWLfhizs9Iqf4aYqJbi6lgW3v1RW
-         BV65ktICdj4HQYf8U4oDZnXSCvPtQyEUdxbr8WuDAZ1kMo6lP+laox5xnAFgKppfUWvm
-         1kRQ9oMBpOFimzkWqsEbddmOlvbwpm+b5/ftM7Gke4OnGpSvzYYGJ0MroM/bOsJilYRc
-         6zNsJus2INwTfkMb7hKoy5Lwdckmhn8y5dghJhWU00EYEkavTQVsbvMahvvLP0uTm3RO
-         NpfT43vvnK12MTUqQGurkY+9Bzi/+SlAOnVsYpuoXUUlOsuHVudpqdf7DzcQR6NTjJsF
-         g9tA==
+Received: by mail-vs1-f52.google.com with SMTP id ada2fe7eead31-73b909fbb6bso485611137.2
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 01:42:02 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787128674; x=1787733474;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=OWyG58LZRk0FpypFIgr97MJusUzcaJB4SA6RQG40M3M=;
-        b=Vd4ZI3lIq3HDh+DeudzT1wem10ztwShtxnM+d8IJnGNOFRfkAgw7VdnUv951vLYH6v
-         k0oZC4mKVfAfw6M0C9HqhaGkZ7u8w2G0VfYp98W9zSef1Qh0tpW3CqhPxImSrsGVq8ia
-         9hRn4RnN9/EdU+Whto/EshbtpD2FiUC3Jkju8w3XkhBKNZavcYBLMNHYQbJYpFLXBVF2
-         PkTrwR782jZBztTdlTCZCUswxMc0FgtPEqG/jxI/+3mYuGR50AzzHXko4IoeMvCp+JZd
-         qudmt7+haMqKFypqaoD2OGlVSungZz5V59Mgznf8Jith8YViQ7SIX9D7bm56CVq9OmQk
-         OPuw==
-X-Forwarded-Encrypted: i=1; AHgh+RpwZuZrpwbRXr3lsGWTjaAIq+X3mXoM3oIPo4+c+3+On++vvS7299YqYzcgUJuLS6VpemehyNL6QQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzZUGOZaCLmFu92rN2Nv220MlJICZGDpsEV23rDepA5fqmgngXf
-	aUCNtmkmTVZaxS4gBf4rBTakQY1WxVMVoS16S/ZbHWwvp7MxNp/ZdUvs
-X-Gm-Gg: AR+sD117bpG7dOFj1x22HXI7PSrb81PTLpw8ljjRyJX1r/onq3Uaa09wmpjHfw1+Lnr
-	oNrFg1qvWUikZnBPE/unKbbineHTuqL/jGu55i2mUMcsUbcuJx8axEMAyR6sWL2y8jdy+WD74a1
-	9vSGVo5LKlVtia3UqtUbl5D+EQtEmT6Zs/0zwx2jC3EKKJXpGiMTJlzWmCbm9+IgFd+7YAQqf3i
-	sOUE6DdfI9yE05m6hfllHnynBSZ1bUxe3gi4XR1R2I+7mpW5vJ+9DDsBcLu7J5HynkiTZLPTY4K
-	+DU6Lgfwkkizqik5LAhgkH9Y28TUmTtR5xrch7N/s9sWcR8T5iBwxTqb3XW04Sl9uHJQy8TzEBI
-	nB66C1S3wTHho35SZIswJLA4D0L2vGBpqfWXkysynB8QJ/FxaGK1eBp9Y+s0m9VaLHZj+S98Nd/
-	pmhUP/Q/LbhZULZ7xk/Q9LW1dWMVkAO3YeCLLJ44KvRhu8774ybmTbwUKuluP4zolUyMEpab8SG
-	KHjqcz6lD1zM3bxzrird75OpA==
-X-Received: by 2002:a17:907:3e1e:b0:c15:fc59:cdf3 with SMTP id a640c23a62f3a-c242e206084mr165876966b.12.1787128674163;
-        Wed, 19 Aug 2026 01:37:54 -0700 (PDT)
-Received: from [192.168.1.30] (161-53-210-87.ftth.glasoperator.nl. [87.210.53.161])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c243c38b379sm43248966b.39.2026.08.19.01.37.53
+        d=1e100.net; s=20251104; t=1787128922; x=1787733722;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=mkSyFl4tju91Z3EtUpcu+YMXfyGSyMxiBe3tnse0SDE=;
+        b=TK2xxfTLvXXm5BAoQpD7fpdedoA/h84+w45aEjwApkLfgkHBKStC0p2r7zwrfcfavQ
+         Y3Hs7r2f5MIg8w9/TYTK/zv6+TPH7RV3ioFFyVtVD+5AT0DRUjc3vth+UYXW8CAXPEnz
+         o0wq9dgXj5QYvwXZ0AqktDx+okM2SBdrrgaXDidOLzvrPAXkHPwsA7xwYZsJVrsCIQHj
+         muuZnzyBPd1BtT2sfpnf/5mP/UG388pvj/zb060GLo3lH3Bvo9XoXtF1IrM7WxGb3rsy
+         XdwMGVryQ88nokWD6TBkoZV93urSIWJdylMclvOny81JfukVk+KgmI8vG12yIM6DR0xK
+         qAFQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqFuBReCTk8R/EGr5qUVf+SOMsXGe4uJDu8W2tJ39QdD+mHkBGHh5xMkWUBE8Fk9t2LC94QQO4zgA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzpi58VoqjMh2wVpwWwYMut9klv8DnONMrAihOHJ27JSzanOSJe
+	+mpUbHEYAvE6H/tOZmMKTTXEJ6CsmfC5I8mptjOUV96iT+8qJxw9Zxp44oUmudc/vIU=
+X-Gm-Gg: AR+sD13WnbWLsHdHir2xJEITyRIok8OGKhP8j36qOjXPixO+Y2V6sJISiWwLQJp1gUj
+	dQJVwMliaqxhrp0/se49zWCLkL2mmGScbJqGC6boqmD2ctgU9bhoeS/I6cbzYvVSRlSoKL0Hdnc
+	/+HS5GnensJBRqDuTwbfFzePesli1uH/jqT7zmY4ySTF89Cx3Km0rUOtEhl3ycomkhn3rQFTFPk
+	a6vdgOrwRpbv0aZrwKmBG9bLPGMJHY2dsQYXlwKny7LG8d7fdtLm7Ce7gcKyIhTHuARcw4sCnjs
+	mGBA6XMmr+MXjTY0UrpAeX/MyKCdf+AAmzJN45HDVZGlG4bzpm5WmbekbuuKUqk4sC/acnhU9Ug
+	8vRmw4cn/Hb7wKOzIOZoAv3JHfa8EGze/Sv1JuuCpCZZEqQhce+rjKHdal/uZX/My4ntbFgv3iV
+	JHokEarrhLXLIsKDqfGc5r6hiclDHOC5fuNGtTr/1pHGEIHpPFlHRc1s0/buLUcuRJxfCMzXXPn
+	08TSlPswXF6siA22kdsy8Uc7w==
+X-Received: by 2002:a05:6102:8099:b0:764:ff65:fe5b with SMTP id ada2fe7eead31-777f8f8f722mr1019475137.5.1787128921774;
+        Wed, 19 Aug 2026 01:42:01 -0700 (PDT)
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com. [209.85.217.46])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-97c4e76271asm1456705241.1.2026.08.19.01.42.01
+        for <linux-pm@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 19 Aug 2026 01:37:53 -0700 (PDT)
-Message-ID: <590e7881-de96-4de4-bb50-1e91439b92ef@gmail.com>
-Date: Wed, 19 Aug 2026 10:37:53 +0200
+        Wed, 19 Aug 2026 01:42:01 -0700 (PDT)
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-7542a2ee156so463791137.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 01:42:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqEGikTSzzx88UU5MCg6IbT8HLCLafESv7g22WkB80RMjkAfrORHa+5M8HUxb1IF/qAhDedAmx8bA==@vger.kernel.org
+X-Received: by 2002:a05:6102:5cc2:b0:775:3925:9d21 with SMTP id
+ ada2fe7eead31-777faba5e6dmr972550137.9.1787128921299; Wed, 19 Aug 2026
+ 01:42:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] power: supply: qcom_battmgr: add Xiaomi taoyao
- support
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260818151039.409767-1-zstaseg@gmail.com>
- <20260818151039.409767-3-zstaseg@gmail.com>
- <20260819-slick-spotted-chamois-962510@quoll>
-Content-Language: en-US
-From: Stanislav Zaikin <zstaseg@gmail.com>
-In-Reply-To: <20260819-slick-spotted-chamois-962510@quoll>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260812115010.108322-1-biju.das.jz@bp.renesas.com>
+ <20260812115010.108322-3-biju.das.jz@bp.renesas.com> <CAMuHMdU+asd-YNYx_supbAvYWcEJYQrFKqBVv-emeN0Jy8ME8g@mail.gmail.com>
+ <TY3PR01MB113464399E7C6C5D6B72A423B86A52@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+In-Reply-To: <TY3PR01MB113464399E7C6C5D6B72A423B86A52@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 19 Aug 2026 10:41:50 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU2tP-V9H0QthQ8=orDMxXSsLmzv=krkpn7YgYXCR7+Tw@mail.gmail.com>
+X-Gm-Features: AcwNN1WfYoDYq5jMyxRuvnD2LhmVxHJ_oTDz65LLltJ8ov67AVHcAz3vnT9l3BA
+Message-ID: <CAMuHMdU2tP-V9H0QthQ8=orDMxXSsLmzv=krkpn7YgYXCR7+Tw@mail.gmail.com>
+Subject: Re: [PATCH v3 2/3] power: sequencing: Add Renesas RZ/G3L Power Ready driver
+To: Biju Das <biju.das.jz@bp.renesas.com>
+Cc: "biju.das.au" <biju.das.au@gmail.com>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	"laurent.pinchart" <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	"magnus.damm" <magnus.damm@gmail.com>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
+	"linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On 8/19/26 9:11 AM, Krzysztof Kozlowski wrote:
-> On Tue, Aug 18, 2026 at 05:10:38PM +0200, user.email wrote:
->> From: Stanislav Zaikin <zstaseg@gmail.com>
->>
->> The Xiaomi taoyao firmware defines an additional BATT_CONSTANT_CURRENT
->> property (ID 12) between BATT_CHG_CTRL_LIM_MAX and BATT_TEMP, shifting
->> all higher battery property IDs by one.
->>
->> Signed-off-by: Stanislav Zaikin <zstaseg@gmail.com>
->> ---
->>   drivers/power/supply/qcom_battmgr.c | 86 +++++++++++++++++++++++++++--
->>   1 file changed, 82 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
->> index 490137a23d00..390d7c75e36f 100644
->> --- a/drivers/power/supply/qcom_battmgr.c
->> +++ b/drivers/power/supply/qcom_battmgr.c
->> @@ -24,6 +24,7 @@ enum qcom_battmgr_variant {
->>   	QCOM_BATTMGR_SM8350,
->>   	QCOM_BATTMGR_SM8550,
->>   	QCOM_BATTMGR_X1E80100,
->> +	QCOM_BATTMGR_TAOYAO,
-> 
-> T < X, do not introduce entries in random order
+Hi Biju,
 
-Hello Krzysztof,
-Thank you for the review.
+On Wed, 19 Aug 2026 at 10:18, Biju Das <biju.das.jz@bp.renesas.com> wrote:
+> > From: Geert Uytterhoeven <geert@linux-m68k.org>
+> > On Wed, 12 Aug 2026 at 13:50, Biju <biju.das.au@gmail.com> wrote:
+> > > From: Biju Das <biju.das.jz@bp.renesas.com>
+> > >
+> > > Add a power sequencing driver for the Renesas RZ/G3L PWRRDY module,
+> > > which signals power readiness for various IPs (USB, DSI, CSI etc.) on
+> > > the SoC. The driver binds as an auxiliary device to the parent SYSC
+> > > driver, using its regmap to toggle the SYS_PWRRDY_N register bits, and
+> > > exposes {usb,dsi,csi}-pwrrdy pwrseq targets.
+> > >
+> > > Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+> >
+> > > --- a/drivers/power/sequencing/Kconfig
+> > > +++ b/drivers/power/sequencing/Kconfig
+> > > @@ -27,6 +27,15 @@ config POWER_SEQUENCING_QCOM_WCN
+> > >           this driver is needed for correct power control or else we'd risk not
+> > >           respecting the required delays between enabling Bluetooth and WLAN.
+> > >
+> > > +config POWER_SEQUENCING_RENESAS_PWRRDY
+> > > +       tristate "Renesas Power Ready sequencing driver"
+> > > +       depends on SYSC_RZ || COMPILE_TEST
+> > > +       select AUXILIARY_BUS
+> >
+> > Could this cause circular dependency problems with ...
+>
+> You mean this to be fixed as??
+>
+> depends on SYSC_RZ || (COMPILE_TEST && AUXILIARY_BUS)
+>
+> So that there won't be any build issue with COMPILE_TEST for
+> Auxiliary bus API's
 
-Will fix in v3.
+Sorry for being unclear: probably the three exisiting "depends on
+AUXILIARY_BUS" should be changed to "select AUXILIARY_BUS".
 
->> @@ -1381,6 +1453,11 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
->>   	switch (opcode) {
->>   	case BATTMGR_BAT_PROPERTY_GET:
->>   		property = le32_to_cpu(resp->intval.property);
->> +
->> +		if (battmgr->variant == QCOM_BATTMGR_TAOYAO &&
->> +		    property < ARRAY_SIZE(taoyao_to_canonical))
->> +			property = taoyao_to_canonical[property];
-> 
-> So device is or is not compatible with sm7325? Above code suggests that
-> it is not. How does it work when bound by sm7325 compatible?
+> > > +       help
+> > > +         Say Y here to enable the power sequencing driver for the Renesas
+> > > +         Power Ready signals. This driver handles the power ready signals
+> > > +         required to power on the various IP's on RZ/G3L platform.
+> > > +
+> > >  config POWER_SEQUENCING_TH1520_GPU
+> > >         tristate "T-HEAD TH1520 GPU power sequencing driver"
+> > >         depends on (ARCH_THEAD && AUXILIARY_BUS) || COMPILE_TEST
+> >
+> > ... e.g. this, due to a mix of (a lot of) selects and (only three) depends?
+>
+> I believe this should give build error if COMPILE_TEST enabled for this driver
+> Without AUXILIARY_BUS enabled??
 
-The device is sm7325-based and when bound to sm7325-pmic-glink it falls 
-back to QCOM_BATTMGR_SM8350 property map. However, due to shifted 
-property IDs baked into taoyao's firmware the parsing of roughly the 2nd 
-half of properties is broken.
+Possibly, as the auxiliary bus doesn't seem to define dummies in case
+AUXILIARY_BUS is not enabled.
 
-And any userspace process that reads the battery properties via sysfs 
-suffers from 1s timeouts and it basically hangs my DE.
+Gr{oetje,eeting}s,
 
-Since this is an RFC: do you think this approach is better than what I 
-described in cover letter? (manually shifting property IDs)
+                        Geert
 
->> @@ -1617,6 +1694,7 @@ static const struct of_device_id qcom_battmgr_of_variants[] = {
->>   	{ .compatible = "qcom,sc8280xp-pmic-glink", .data = (void *)QCOM_BATTMGR_SC8280XP },
->>   	{ .compatible = "qcom,sm8550-pmic-glink", .data = (void *)QCOM_BATTMGR_SM8550 },
->>   	{ .compatible = "qcom,x1e80100-pmic-glink", .data = (void *)QCOM_BATTMGR_X1E80100 },
->> +	{ .compatible = "xiaomi,taoyao-pmic-glink", .data = (void *)QCOM_BATTMGR_TAOYAO },
-> 
-> And here as well wrong order
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Will fix in v3.
-
---
-Best regards,
-Stanislav
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
