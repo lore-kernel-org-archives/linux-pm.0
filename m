@@ -1,166 +1,158 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA9FC48A2D0
-	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 16:56:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4F783BE652
+	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 17:08:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787158582; cv=none; b=ANuJvMbGlyY6mP2aXovZoaJIRqRx89zC0n1PaIRcTZq7I1oMjuVRFqvosQmbMZbIm5dl53S0EQVT0BmKeCFWhhW/Wj8qMium5OEDgH2RgvHX4xuI+/Dfjq+VjkV70Ymc6gIG9phMWeE10ub4vIci0RuYb35tbUYtue5jrbnJ0bg=
+	t=1787159333; cv=none; b=RHidZOKfX9ARMBXFUXUDeg9wSLNGajbP/LmawTlPjFq+WRY3t7rDlmPEcdx6zorRSXbcYj2bpzh+7x+GsIL3Jizn99LpHMoJwKUWemS9oSUpM5/ekoDqkN2evvoFeRBEUAEXye6HmlgPDoHTtDTkv8eL6QZiMG9yBLXeHQ6wXw8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787158582; c=relaxed/simple;
-	bh=Qrnv8qH2T52Rds3B+tQNiGt/EbIPH7XsOJpXNsPQrZc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jjXl111SxKL1+/PPxCZKrQOXs3Bl2l9xwbLliSMfZ2dICykvYYi7KZk7FbZVwhxMsWnBtbSrIZ3lgg1EoM9Iw5hAiweUOxB3FhCtXJY0hV8ZhQ6nWP6Z1lCGzxRjugMqAKdG6BEV0TngqoA/0DKGQz8Ttopr/JyS75aSPFZD+Vo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=C3MYYDu6; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UWhn7u6D; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1787159333; c=relaxed/simple;
+	bh=Tf5wc7bu3a3TFETKLQNvn2N82/G6xfLEOxnV625fL3w=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=iDw7UC8JVJLGN68XEr8mJGjAYX/EZYPmB8ud8cKANdSqQvd7VWV82rxFTxFBJ8koAwH2YJQ5xp9+ksS5nuAnLZRjfosm0vPHK9Woh7SiYsR1sJtdbTRf3BJjUEPrwOV5N4uaoiFdOSsf8hHzNDahcBpolIFAykZYBkyy6sCm1xg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=dWMY/oyO; arc=none smtp.client-ip=209.85.210.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="C3MYYDu6";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UWhn7u6D"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67JEbVir067649
-	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 16:56:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=zIe6pwh84/c
-	gjHJc/ZPARHNyhcZMHDOU3m6rWSmarLw=; b=C3MYYDu6yuNXMf9wnhG8s3G5bS/
-	dS2KJZ8yTOcdUpUkUkPwNXyOPTjinPVhqJ8mlFYVQB+DF7bsLlWQC20YWzRmj9MC
-	fW8T4OpuXdYB5TtTz0pyVTTbGOkKN8Ophb/+dbYa6M28KCGuVM8hJgGHdJZ5mIAB
-	MOQ9OxRFUCbc+4AFOJRq2UwQNgZVzxGr0AuBTxwOr8ie12a+tFDhQ+11MYtKiGc5
-	ccBx71/ArPwD8NquMPuqpghS/C10i2qb+SrQ2ENE/YJf8s9G9T7WEYaTdDjTy1XQ
-	79lW+sn5As+t2n1+zoTlSqdqm5Jug6d9bQUoqzcb8luNZUefQRjQ4N5FcnQ==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g5e5d0u1b-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 16:56:18 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93494527488so221704385a.3
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 09:56:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="dWMY/oyO"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-84862b0d5f8so1064849b3a.3
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2026 10:08:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1787158577; x=1787763377; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=zIe6pwh84/cgjHJc/ZPARHNyhcZMHDOU3m6rWSmarLw=;
-        b=UWhn7u6Ddhi4HpN3/ibxw2WxAEW9G/xjco6Id+fzOSwCKFXdErJfwRzwNDhPEKMzul
-         kF9fo2gNcZL0GYOR84UFRFS5L5TD/gg5K9yGrr2Xi8IpKDdiYpKYhRdtOk2Zmajt7LMh
-         n5wHOzlEXwjBkbyx4QOO7ZfvcXa6bdtruxRNoO74Q5VoldXP4oCUG5AV5vSubqt7KOdZ
-         QqiniAFOzC+pHvjV407B8lcsIiLlukXMbAvGYhZMXPlwSbnWUEMdIIGoFuaHpEVJlEbD
-         WA0tV32pDYkgJ6CH3GLHR5LYwpbgonv4/COmDPz4uELRMn8HGFrs4i4nNO5RN5kxspZ0
-         iN9g==
+        d=baylibre.com; s=google; t=1787159330; x=1787764130; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=mslSTT4HR6M/LY8MZKEoPtjWWSb5EtDljl3c3rxu7Ww=;
+        b=dWMY/oyOxEjy7a0slqdW4/Fr185g7hEx2u9K8pb1uYuUlzx8nr7sadiCRdFxjzxMfw
+         OgM5LDegWToQRTIg7s/imKXsduqOlODndBE23DaOjhCBceDyTKdkyu+R+zWMHsRmL0hE
+         vhCe44KFi2oZ9KMSgv4xSdH3hnLkCSeLA6lphoo5482Gs8AepNhhM50TqLSk9NI03V9L
+         +50U1ubLkBC8bwQMQ4zFm+95J0SAtNkeaDcp2XIjp0xQDtIeoObQr+CNa2Oju24KLfOz
+         WE2Luvy52uQoKMRKeI7Rb5tqDm6FKc45PH1othyDkhEG9XgHANzIQXwDv+AyHlNpXdyO
+         /Wsw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787158577; x=1787763377;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zIe6pwh84/cgjHJc/ZPARHNyhcZMHDOU3m6rWSmarLw=;
-        b=on3fTs3rJ6G2DTVHCM+vlIV5YJpt23ButeWi2mYjm+K1GZmccdazMVOcAJfAqBzC4v
-         rNVIPQtnJK7a63itkAiUj8fZFIiLFvvriDwMNM3Z9a/S9S8v5lhqXq02dwQGVev7nz0j
-         Nio4SYga6gBvYLrdgIKin5MIPQUKOlv079idkaWVbfB8sld0wcQmf+slTNdHDyvPtRqD
-         ASlZRD8kLLkJI/Xk/7aQSw7408XQOIAJ6ayf/yTepYZoAUPN/6eFCDraPSZM6jsg3i0w
-         pulOvCQ8TbWW7P0UC6yWKLosSIbdIBWeDhOYegWYh16NHMGNebV6FFYq+UlmfmIsjsBy
-         FqPw==
-X-Forwarded-Encrypted: i=1; AHgh+RpnobdhJ8H52jjvO8/OYkuFegD497LuJAj8QzAzq5d5G9/9asLE28vxgfwBTvibRmfRhKAyVXL93Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyY4r+1x9FH1x3uKGRz2CYfoQvxgl5YQwjGqLAH8VdXjuoo0Nmw
-	Io152umRC1hbmYt40LqDFUi3gFjG21EAwtDv/qscJ5fx6OZ/QdYK91MEk007bnfnuLsTtVwru4G
-	8ZShdkmCe9NIRjWlqP6acq9uv6ACKGet5wQiyk+BbDUgA2l1MYS5ev1ZxJDPSFg==
-X-Gm-Gg: AR+sD115VxSdDUDaYnp4ILiM4mbe4BlG0J2fCr+dDzhA3+bCVEiJT4cXJg3HaJOdh1N
-	MmVBdz02QIQe6nYqluzYsbDcGEnMl0+rymiP7py3S7DCSug4ulOJ0Q8/bSyk7iFR1Vk+GOe/gTh
-	gZqIIfhAcjJ9cYWkEXWKz8OyLQWcBZLiQHqpE8Zzgst9aMAsfVdXKV4dvp+d4PtCEbp6C6DgPQD
-	X9wCOP1ev7iEme/2L0i3LW5o4q6dzZgfZEp3TyBEGGdVwIzvRvouEJE7YGrtv+cet5ZLCCu7oZo
-	7UB00eqehSacudRrmfnGJfdWnI/vBA2NMWJWlAhGH6BOKDqerrBVrSXdHhDO1gR0GTDJhKxqit3
-	kFoktr5Bi2eqrClR0whGgDVRXQgrY
-X-Received: by 2002:a05:620a:1710:b0:932:ddff:123d with SMTP id af79cd13be357-9371e6f64b6mr620296985a.29.1787158577056;
-        Wed, 19 Aug 2026 09:56:17 -0700 (PDT)
-X-Received: by 2002:a05:620a:1710:b0:932:ddff:123d with SMTP id af79cd13be357-9371e6f64b6mr620291885a.29.1787158576588;
-        Wed, 19 Aug 2026 09:56:16 -0700 (PDT)
-Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:2e33:a343:bae0:905b])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-482b1441c78sm6952317f8f.2.2026.08.19.09.56.15
+        d=1e100.net; s=20251104; t=1787159330; x=1787764130;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=mslSTT4HR6M/LY8MZKEoPtjWWSb5EtDljl3c3rxu7Ww=;
+        b=dfMBmpQdNuO+rKGP6tnm3KvbOkVXVfiYJ8zbN5RyD5/QBYQhvACyOSxARYp6YmvsW2
+         WvxmyL515GHfBWEmsof9RUqSjptvhRaMKzmlquW8Ik6IodqetVBYt8GPvLa0vsFGvZfJ
+         rLpW8SghvJ0jyQU96whjL8dK2n8LTLFzLcaDCuFdbtg81dL05UKXBYaL1ATbF4pgHbII
+         oqvj0O5bWfk81cZQUk2beYSfIIS2IQOsKI7R1DdtsHIvXtq0G+amegaTnnVZjfXU2eM2
+         eFBbE6KD8Me/P4bwoHFhyeXzBV/1dIu6hlTFvTU6XF2Qi00U20wC556d+Pm7xhcIM74D
+         m34A==
+X-Forwarded-Encrypted: i=1; AHgh+RqaXFsMuuMNIwv2oy5+BfYd03r0xy68/bKfgIXyMylxMIgBK0+LtFenaryHXwmqffvXmvm1WWfhvQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz8MyMu7jGi/LhXwnVSrOY7qvADNbQmbImAzUdUl07Hd1GWD0ld
+	jBUGIHjs1NOuqS1BdDN45f3TXl09XNggj3WjmkiUElD+92rO89f5KVcGaH7GnVX0/bWrOk7WJB0
+	WjCgOtpo=
+X-Gm-Gg: AR+sD115myMPKIYcMZbuLSinlp1wSMlXfP8yDoj0cn6QPAg2vo+ndTCxDvbQWZvg3rM
+	y3H2SB+hhPJuHgbHRlNBlfw8d7xDyNuXWTJDkNrh8RPn38uQsP5s7i0Cidl19g3pFVD8JqQ2Wkv
+	Y984GBBgiiPimnJCvTqWBiM/5E/jfgDE00IZue/KMiOzTI/NoX72PgTASIiaNO+qXNpTsCKi52m
+	7GFuD7XensMQQfFOciDlkRMYZfljlP6EsY91WeGE+DjnpYw1v5vGeuP2vQh0ITMIlfpMX7PqsIa
+	lUcrmn8Vn85TkoSONGkXn6Zabi5mceKkzwcEvJZ/TRGgZx9ya6WRUa5vwGVTxZ6EuJqjxL7/Eo9
+	6jgzUo5jWt2u4pRe7qu2b65CK/FbRF36pOkmn+xw9jIA2R03ymIiwtrGPv+/WSdYkQga0giN/2W
+	L5B/tDSn2GEmLF4rsD3eibnqGhkqApoasd+TuDCa2/Ns7uM3NS/msyvd3UVw==
+X-Received: by 2002:a05:6a00:190e:b0:848:30c3:45dd with SMTP id d2e1a72fcca58-851d38eecc5mr8723562b3a.11.1787159330113;
+        Wed, 19 Aug 2026 10:08:50 -0700 (PDT)
+Received: from localhost ([71.212.202.210])
+        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-851d3362cf8sm941272b3a.4.2026.08.19.10.08.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Aug 2026 09:56:15 -0700 (PDT)
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-To: daniel.lezcano@oss.qualcomm.com, rafael@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v1 3/4] powercap: dtpm: Rename Rockchip virtual node descriptor
-Date: Wed, 19 Aug 2026 18:56:04 +0200
-Message-ID: <20260819165605.1398880-4-daniel.lezcano@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260819165605.1398880-1-daniel.lezcano@oss.qualcomm.com>
-References: <20260819165605.1398880-1-daniel.lezcano@oss.qualcomm.com>
+        Wed, 19 Aug 2026 10:08:49 -0700 (PDT)
+From: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Subject: [PATCH v4 0/4] PM: QoS/pmdomains: support resume latencies for
+ system-wide PM
+Date: Wed, 19 Aug 2026 10:08:35 -0700
+Message-Id: <20260819-topic-lpm-pmdomain-device-constraints-v4-0-7ceb095f5474@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE5MDEzMSBTYWx0ZWRfX29otMuhc7TY4
- Usx6rUHrZR3jcawL18JrAreWUUfUcNbMPajXcIZmezF0xV3kQNhxq9vajMCNprgohNm5tDs85jl
- l/025k7ySkCh3o3uEvGTplc3CY/rZ+SaLQTRyqtbQHaclRMJ9RHmj7VOGQmK8tw8/bpIrtzomKx
- NegxsSLWniIzCh16RZ5gqDbl5v/l8PLkvulz8qrteOcJiiOfv7ZKJA0lCtpnGJ86j4eleULZq9h
- 1VaHMPBCbwI+54grxiH81838BpkqA28e4TCueHhNQloX7VClucmqod0qDEdvn6lB8Wc9/HY5ec4
- SSFBFeT2jDUNUoJ1/K9J5ocFzk4H3okeuDCt3PSeiGtnBw/yKuQ/nPvpArN/k1iwGlVyU5QNIdL
- do4UiS9OP3++4ZHX4rGM5A6P4MvYHJciLA31XOWjyvWYhaS+tM+AkDLVEalTgavM/mOfUGk8mZa
- 5Wum0fN4jNikRoRjdSA==
-X-Authority-Analysis: v=2.4 cv=cuOrVV4i c=1 sm=1 tr=0 ts=6a85e032 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=Sv0fKeRqtYgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=YMgV9FUhrdKAYTUUvYB2:22 a=EUspDBNiAAAA:8 a=_NZqlvP9bvTAGtRSC3sA:9
- a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-ORIG-GUID: Kn-gIMih4o4pX-zONEOVVrnO7LWH1DBN
-X-Proofpoint-GUID: Kn-gIMih4o4pX-zONEOVVrnO7LWH1DBN
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE5MDEzMSBTYWx0ZWRfX1GcaZtlaKjvT
- KZnPDFMVZzDPcJG8UYTVLJXy1AHVRlS/Ir2sVxSzPU702bK4zeqzBuLQFlBAqIYXfffb/p7H6Qi
- pcA0O1ejnPwkcHfAigs0DYTclytypMU=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-19_04,2026-08-19_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 malwarescore=0 suspectscore=0 phishscore=0
- clxscore=1015 lowpriorityscore=0 adultscore=0 spamscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608190131
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIABPjhWoC/5XOTW7DIBAF4KtYrEsE2BiaVe9RZcHP0IwUGwcIa
+ hT57iXOIlLVRbp8o5nvzY1kSAiZ7LsbSVAxY5xbGN464o5m/gKKvmUimBgZF4yWuKCjp2Wiy+T
+ jZHCmvt05oC7OuaQ2KJmCBKUdDFoyQZq1JAj4vfV8Hh45wfnS6spjSKzJd2KasOy7qnaC3PeOm
+ EtM1+29yrfFf35SOWWUMx3c4IIJDj6suZ7QJti1tq2kiicsmHwVFg0eeVAWlO+lcX/A/RMeOX8
+ V7huspB/fh15Lru0veF3XH5Cijei3AQAA
+X-Change-ID: 20260120-topic-lpm-pmdomain-device-constraints-e5e78ce48502
+To: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+ Ulf Hansson <ulfh@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2507; i=khilman@baylibre.com;
+ h=from:subject:message-id; bh=Tf5wc7bu3a3TFETKLQNvn2N82/G6xfLEOxnV625fL3w=;
+ b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBqheMgxpyeMoXOurPYKKet9ku4mWzlISVIg3+V2
+ 3yIF+jK5aGJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCaoXjIAAKCRBZNxia0/vG
+ ZUfrD/wNw16gVuaGsrPjkk9lyjfCmDNYttx4l401oKQfNGMkitabHiAbWQEsYSQ27lFWaU3tT/E
+ JjwaNZvWwyLFTXgvjtuEIKRAN6dPf0w8LoqbH6cnlVLMyhXZsf2m8i9gluRiBfcBvlpXRX1ro0V
+ ZL7OKmJzY+9p1JP6pVjiIWPCerd9JQefWbalWt3Tz9WSBIZUAzpR5P5XiV3bpTpyZcVa1cr1r3i
+ EEO7mGwIMfOtC0YAl26GXsVwfuS+2HVAXnYRwLVKqDZRePWgaj6G3q3/AN8nUBAhBsxGnfIGo+w
+ KcF7gKLrQ3dtKazfIx2VV7PzHpOuwXWyzazn8pX8GKC6W/pd2ZMJlAtUBOzga1f/2z9K26XIUWk
+ Ged6Pc1kN5fVWkZ4G/m0Mjmj5cu/cH0CaI4p3Kx0wj0VuBdVgwD+j5F3VQ8ZyDMaqfxF5NzDjqQ
+ swUKt8apoiJPoFrtGff20Iw+a5zUtSSSFr1LB+91fRZumcHK+JVvfBOPDizQSxlEyWjiiz5dYje
+ BLrmOnUiAFdUhEc/idxfx0P5vvIJ6paZXY7rz/MMwEjnbPrylkMOHVf05ke67zFVVyDQiiRdQTu
+ 4iQnJ64ADdAaX9VJr2Xn53F3beu7vfDTRjmwuNwhF1cdD+Nt92Iz6r058loonA/eQQsWSIq9aaE
+ VNfqWtUFMsA7LBg==
+X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
+ fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
 
-The virtual DTPM node descriptor is named after the RK3399 even though
-it does not contain any SoC-specific information.
+Currently QoS resume latencies are only considered for runtime PM
+transitions of pmdomains, which remains the default.
 
-Rename it to rockchip_virtual so it can be reused by other Rockchip SoC
-hierarchies.
+In order to also support QoS resume latencies during system-wide PM,
+add a new flag to indicate a resume latency should be used for
+system-wide PM *in addition to* runtime PM.
 
-No functional change intended.
+If a user requires a different latency value for system-wide PM
+compared to runtime PM, then the runtime PM value can be set for
+normal operations, and the system-wide value (and flag) can be set by
+during suspend (for example in a drivers ->prepare() hook) and the
+runtime PM value can be restored after resume (for example, in a
+driver's ->complete() hook.)
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+To: Rafael J. Wysocki <rafael@kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+To: linux-pm@vger.kernel.org
+
+Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 ---
- drivers/soc/rockchip/dtpm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Changes in v4:
+- added corresponding WRITE_ONCE() to match READ_ONCE()
+- rebase to v7.2
+- Link to v3: https://patch.msgid.link/20260611-topic-lpm-pmdomain-device-constraints-v3-0-75d69438518b@baylibre.com
 
-diff --git a/drivers/soc/rockchip/dtpm.c b/drivers/soc/rockchip/dtpm.c
-index 451417ae5715..5f7f238a15fe 100644
---- a/drivers/soc/rockchip/dtpm.c
-+++ b/drivers/soc/rockchip/dtpm.c
-@@ -11,7 +11,7 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
- 
--static struct dtpm_node rk3399_virtual = {
-+static struct dtpm_node rockchip_virtual = {
- 	.type = DTPM_NODE_VIRTUAL,
- };
- 
-@@ -33,12 +33,12 @@ static struct dtpm_node rk3399_gpu = {
- static struct powercap_node __initdata rk3399_nodes[] = {
- 	[0] = {
- 		.name = "rk3399",
--		.data = &rk3399_virtual,
-+		.data = &rockchip_virtual,
- 	},
- 	[1] = {
- 		.name = "package",
- 		.parent = &rk3399_nodes[0],
--		.data = &rk3399_virtual,
-+		.data = &rockchip_virtual,
- 	},
- 	[2] = {
- 		.name = "cpu0-cpufreq",
--- 
-2.43.0
+Changes in v3:
+- rebased to v7.0
+- fix PREEMPT_RT: add new helper for lockless read of flags for atomic contexts 
+- update kerneldoc for genpd_for_each_child() as requested by Ulf
+- Link to v2: https://patch.msgid.link/20260205-topic-lpm-pmdomain-device-constraints-v2-0-61f7be7d35ac@baylibre.com
+
+Changes in v2:
+- drop the userspace interface
+- add genpd helper to iterate over all devices in domain and child domains
+- new flag means latency applies to runtime PM *and* system-wide PM
+- Link to v1: https://patch.msgid.link/20260120-topic-lpm-pmdomain-device-constraints-v1-0-108fc4cfafce@baylibre.com
+
+---
+Kevin Hilman (TI) (4):
+      PM / QoS: add flag to indicate latency applies system-wide
+      PM / QoS: add lockless read for flags
+      pmdomain: core: add genpd_for_each_child() helper
+      pmdomain: add support system-wide resume latency constraints
+
+ drivers/pmdomain/core.c     | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/pmdomain/core.h     | 17 +++++++++++++++++
+ drivers/pmdomain/governor.c | 56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_qos.h      |  9 +++++++++
+ kernel/power/qos.c          |  4 ++--
+ 5 files changed, 129 insertions(+), 2 deletions(-)
+---
+base-commit: 237a1c39e8dfd3e1c6f1f023eea37a48ec04cc63
+change-id: 20260120-topic-lpm-pmdomain-device-constraints-e5e78ce48502
+
+Best regards,
+--  
+Kevin Hilman (TI) <khilman@baylibre.com>
 
