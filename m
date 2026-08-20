@@ -1,217 +1,176 @@
-Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11022140.outbound.protection.outlook.com [52.101.126.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12FD53C10A8;
-	Thu, 20 Aug 2026 07:16:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.140
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787210210; cv=fail; b=c8+SYAYq1Irz1FeGzl/2oOPaAZItr2XHFqywWc0Vc5OJFJM3pCGqfSMOyXnldVofBIje1jDsgUNsG0HlKGaoXl5MLjo6ocB/N0TLpB/FfQWzLTtSzSsoPyGhhqyS2UtadVode3ZfERZRcv2Dfp6Z31yuHmmJ3V7/9FhgTtF3JfY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787210210; c=relaxed/simple;
-	bh=Dh5p6dsdEmPjsk2SCFStIN5b7GoxVYm2zHm6VGgJ4/Y=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=uaNHEEy+iucnA1oGsjmFSEysNSScHFif40TuRA45A2UTeKvNuKBcRIEYpeB6JCa/AOl9SYa175GrYf8xi3f6QRspcKNXze3tPl5YMvMrD9VaF5BApqaxu49B8Os85qi7LvWjPWdAYELVNKuOeCTHR7LfXE1wIMxmn2lDeIlytHU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com; spf=pass smtp.mailfrom=amlogic.com; dkim=pass (2048-bit key) header.d=amlogic.com header.i=@amlogic.com header.b=HH+WeleN; arc=fail smtp.client-ip=52.101.126.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amlogic.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE67730D405
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 07:26:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.169
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787210804; cv=none; b=dBT6AUtnv40rdln89HpuC5lAshCuG0A1OzEKF751ebjXK7/gIZWg3XBGx7c/RQoQ1k0bG8l/sgR2aaE0BTrWs/2UCpXEUvNaU4Gox3aL+Xi7XfpAPDJVbCdnUGhKxOKJBeDP0iyjXyNLx2f9m4iYDu/tNhmlUAZQOjnxYYt+5MI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787210804; c=relaxed/simple;
+	bh=syjUuMyE1FVCHZoraDkCPBZ1qJTc86g+j3kAqZUyDFk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ovYZb7XoqAcaq3qKTKyZk/jWZbAwH/5m/3Us2KjA4FeneuBLkJjpgrp4PW5hdFMoGtq22G9xh/kqgC2bPeHCsTjAQztgku5u5/EWjpowbSEqXF5B5eRrPJhhpgdd+6NHzO4QeGAGUF+D2wWYfy+1y9YkN8yJKhHxKur+o8qLgi4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iqtJYWab; arc=none smtp.client-ip=209.85.210.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amlogic.com header.i=@amlogic.com header.b="HH+WeleN"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=X7HT4ihVyto2ppE9nrLyBlBF2wHqBrn1CarrniCEWOhh18gjNnR+ZJ29WyqZrbLKldC9c5swvGUE6YRvpvL9yxudIru+0t8P1Hs4BmU6+D0PfsCCiPYAVmUHs3e1ZGpfrM92WuWTtJ39htYB8jYTszkucS52U41hKuH5mBANgodfjRvYrJEVBWjaWSiVd+z3si7bbSDq0WIRvRe22lc4JUe9VmbvAk9op3HIEP6DC2w0dZX4fL94KfAT4WaH7x5wFx243ptpy0dr1fXzMuWOkz5kZRxZ+3zgbGnU2cxEa+wUEAlgjpUwxk/shrh+tLBDiVe1eU2803innArWj6WFdQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ZIqsH1g76e9owGbBonrZZzsDN/aYRlRrWA1CAQ0TMqc=;
- b=MqroaBcGC1E7Y2SfOxk1GB01w/gy+TEWhLQRtG69l5WgIj8cbfYDb5FS4Px75UcuyLWK6HYZzgyau4/zzzW06t5WyFNaWawtD51ceZs9PYfH6eozkty8/gsk0VlUllEDzaMi9f2muIoHcXwhgjYMD4fKt5peUfSORHER5RFPXbPjnQVMHA4+euAZJVZKo71tRqUeGyBwcSzNpQ5ZmKbFJL7h4OTk9A6wOJH+SV670rCSUlOUe4+sjpaVONKl8jugAu+mEzsyT/ezZzPfATxQDJ8Giqumax0RVWW6yVrPeVQhMwg+J0o+TcAfhGjzXyGaOpRozme+4xTb5HEcmVhyWA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amlogic.com; dmarc=pass action=none header.from=amlogic.com;
- dkim=pass header.d=amlogic.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amlogic.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ZIqsH1g76e9owGbBonrZZzsDN/aYRlRrWA1CAQ0TMqc=;
- b=HH+WeleNhQin4jAsX8eMP9yS+4XGyHeeSWeY9eJj/DlnFRnBjx2UY6kSNGa7KpPiayBxVMQBFx7KyBeTj4WDgFyoxqDAKvLexUnnrJVMY2DN9C+/9pzf/nENiHRqR/4vv0PjOcYE4QNJ0XhylgtMM3B0NzYADawBG4BjynMuNqv2SGOVuwkG71Ew5w/eJtHeVwyK7vJtUHC9Fltnph7bnzXD9+dcDvV9l9z40gqm5qlSR89SnGds8S/vDX+u0f+jqgb/wOeD++uw186bwzsUg2UILcotuBH8fvySkvb8m+ap7iMmHqGXibGHAhr1wcUgQs0sMn7MMTEoDQ6/xdNt1A==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amlogic.com;
-Received: from TYZPR03MB6896.apcprd03.prod.outlook.com (2603:1096:400:289::14)
- by OSQPR03MB8484.apcprd03.prod.outlook.com (2603:1096:604:27a::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Thu, 20 Aug
- 2026 07:16:42 +0000
-Received: from TYZPR03MB6896.apcprd03.prod.outlook.com
- ([fe80::78d4:9dee:2e32:d1e4]) by TYZPR03MB6896.apcprd03.prod.outlook.com
- ([fe80::78d4:9dee:2e32:d1e4%7]) with mapi id 15.21.0339.007; Thu, 20 Aug 2026
- 07:16:42 +0000
-Message-ID: <d259882a-fdda-4336-bbd7-ff1b8bbaf8af@amlogic.com>
-Date: Thu, 20 Aug 2026 15:16:37 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] dt-bindings: thermal: amlogic: Add A9 thermal
- bindings
-Content-Language: en-US
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Guillaume La Roque <glaroque@baylibre.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
- linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260811-a9-thermal-v2-0-7ddc33b11b9a@amlogic.com>
- <20260811-a9-thermal-v2-1-7ddc33b11b9a@amlogic.com>
- <20260813-international-optimal-limpet-dfb06e@quoll>
- <114b6c15-2975-44dd-8593-2fd23422b254@amlogic.com>
- <7e4c40b5-e156-48fb-af0c-3c2d9271cb02@kernel.org>
-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
-In-Reply-To: <7e4c40b5-e156-48fb-af0c-3c2d9271cb02@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SL2P216CA0136.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:1::15) To TYZPR03MB6896.apcprd03.prod.outlook.com
- (2603:1096:400:289::14)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iqtJYWab"
+Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-84a652535dcso1130807b3a.3
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 00:26:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787210802; x=1787815602; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=8FpAmuQv/0D1SendrGr4xs5zcx8uXf/Ui4UAqXK6/V0=;
+        b=iqtJYWabjNNyXuqRlbKRlfp5SOYxV50Mic7t/1tA3m5j2X8X4ck824iaC36wY2nHi+
+         ICrPszKsPLxzdVSZNYsO1DQRZvPwYEm4dhlk0/u6FfzZAWlTc3koWxmZ8oTcAs9qjm8X
+         q41ebM3vsO7BmTPunR0CZ+87eYqspQa6Y57L3i2VkWnbWudbfn9EgcjjHGEEEiyGRoiG
+         P/KevDnJ7wHMV93cRDiTC1sTATabIbDk+GxT5BSO0JZDE99XmXwYpjkFGod2w01nghZW
+         0TJjUCOlw4ho23CpnR3tibtCEK90gkd/DQBlcH6K9GqxefWDBicS4cCn5pVUpTvbNZba
+         oWWg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787210802; x=1787815602;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=8FpAmuQv/0D1SendrGr4xs5zcx8uXf/Ui4UAqXK6/V0=;
+        b=N4mFZxlS9/d1hUmxje9VrgvW0/1fmd7IQxM+0r0JCIUzIggi+8cvwJrMIOGoV7trug
+         43TplcHKewSBjWibgcU3GZF3I+wxTMJAOfeEnrNhPxOHSFm4QYGuujsvtIxN7d0qS6f/
+         o0df4GaZkQ1kbgp/tZcgflmuUaMVE1DbGrPp0ovR+0x6JNL4Wtm6h/O6ivQOFOwGV89H
+         D93uMzySU+U8R3vPP9nj9zrgiRXYO8d/3gYMXJjTBWihGRkfk6AyIZdVkuTWOe37VjRa
+         b6VV5cGukjniP4o8h0VnOmev7wKRohud4B9ehjEsCF3VSUeeItwhboRr1gTbESGPDAO5
+         TZnA==
+X-Forwarded-Encrypted: i=1; AHgh+RrjIbMa/A5o4okez4eGX4Je0tKbFgMBKyKB3qNWzE6YlzLve43tJJ7vwMaPAV/fwzeW+Fl5VOhF1g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzf11AZj3hylW1aU/s/xCQA0LLGPjoWkD85wnBi+/7t4TQbdWYS
+	6pKec4K8P76S9l4hi31GX0jHaUZTOCv/KzxJbBjvAXa7krPxaSLBqg0/7pOVJ8Q=
+X-Gm-Gg: AR+sD10nCoLiyJ/gl/2wVOZX8lUp0JiVOHKdEXbIP4YmU0mVmk2vOl+1EXaCKWLenbO
+	h1+B7u4v/m25HxdPNSVqwtAayjWZwI3SGUFbb3dwtbAJYJn0EgL7+JXUvbiDmab2/t3l5G3wjis
+	UPhisKOIHgzHKiCkxlPRbEokZv8TE2Fw3gl9lcySW9XM6hIlXuJKQYCLnJ9+bSCeJxqLbH72KmX
+	jvoWqHFjwi8rsmFM54GMHptewDJkHgS8UqOh9rmgP/wEsO9hruYAqAKo2A0qN3m9jkFmA2TGOxM
+	ueFArAoYqIssGb6LSe/uwrUlDLIz1ImNw+pFSJQvI3u/8GnHDsES8QrjRTtOofY23B00WvLMhE6
+	10xJ+Rk7hLub5aodPZTnPqfcegTv0bDAM+4VChJzoLSMGrUNWp3I8sDMbuLYQWC8ApgE9k7HHFx
+	okEwSCIOqDrz0VXN40M1qSANpGnTC/Euii8mlMd4ahSouwu9k2qp+S8kk+RHEP12qm06vIQZz60
+	fQuH6av0/Dw
+X-Received: by 2002:a05:6a00:c81:b0:851:b007:2fe0 with SMTP id d2e1a72fcca58-851d3820363mr17061044b3a.1.1787210802084;
+        Thu, 20 Aug 2026 00:26:42 -0700 (PDT)
+Received: from DL2XHKPB4.dl.net ([103.63.104.162])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-851d33b4135sm1360621b3a.27.2026.08.20.00.26.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 20 Aug 2026 00:26:41 -0700 (PDT)
+From: Triet Hoang <triet.hoang.dev@gmail.com>
+To: myungjoo.ham@samsung.com
+Cc: kyungmin.park@samsung.com,
+	cw00.choi@samsung.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev,
+	Triet Hoang <triet.hoang.dev@gmail.com>
+Subject: [PATCH] PM / devfreq: Convert to DEFINE_SIMPLE_DEV_PM_OPS()
+Date: Thu, 20 Aug 2026 14:26:36 +0700
+Message-ID: <20260820072636.2049617-1-triet.hoang.dev@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TYZPR03MB6896:EE_|OSQPR03MB8484:EE_
-X-MS-Office365-Filtering-Correlation-Id: 250a340b-8a70-4f9a-1752-08defe8afbe9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|366016|7416014|23010399003|10067099003|3023799007|56012099006|6133799003|18002099003|22082099003|4143699003|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	25Lcq7ITtEaoN2f6dDwuIahPb7QcTSH9hlm8ObXcgNo7jYpTPxw+O9HIaX42Ockh9dDBrUiGzXB7pu3AQzosZvaiOrHqkqKxEnRbhzSRh7AmukjmtbJ7SIuGX91VkbvH/eZ1/3Q4gC3Eklcs6Kko//rxGFT634z/U3xSwaai/fqla1qDCtb6qibmZn2ezI0/g7qK5vYfyLDm0TH0hmRRsTl2p5U37fc5TaBPn7dQ5+JkXbrRQTgS/+Err3v7ao2H6zTtX+qM+CX5PSivL4XW5hcg4EsXlh4lgBhxceWx4XKrVDbUNdAAwS93Grmg9ansC3MN655u84fhjo/Euo2WQGt8I6NvRvNS1NSkW5q7+k/BjKFgfeniciD6RWd159m8MKyhht0jQnHKh+ZECfjPqYR0iCKaUaYcvZqWHbBhi+oMm1MvmpYzmTos+uoznD+gh+zWj325Yqjk52ciTL8hSDMc6+7tGHpjPtO6QNKoXn/RwipN0ZKAVIh5hfBpVPDxIIEipnjgqCDC0+e6N9Cit2VaiQbrx7BLToeqSy/RPa2WX6lM+iLbDgJb42jEu0wQ3rfcF3ukVsGfgVLqnOkRDG+rc33MbEkb1NzwBg+EVnGPWan/1XvpmtJ5qsY0RQgPtvaOjIJuIkd+DAvV0/UOqw0sFfBmRjTCIZ2UJIBgv2U=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR03MB6896.apcprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(7416014)(23010399003)(10067099003)(3023799007)(56012099006)(6133799003)(18002099003)(22082099003)(4143699003)(11063799006);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?SFoxR3g4WS90TXZmSHgvYkM4NXEyY052T1RJaVp2WW5lcVFCckM4ZzRXNVhj?=
- =?utf-8?B?cDdxWnlGelBGRFc1U2Z5VnQvbUkwUWRtcnJTUXpXUHM2bExGVUZsRXFiT28r?=
- =?utf-8?B?RWZKKys3QXV1V1VtMU5NOHJWcFFxSkdXUjRuMUdWTk9KK0pnV1I4Nmw2NWEz?=
- =?utf-8?B?NnRkRWtOYVEvVEdXZjA3REhBRTIyM0xLK281dE4rTHE3QWw3MVlEOXRrcVJJ?=
- =?utf-8?B?REVVQjRJcXRzcUVncjE4VGM4QnU1dmN3SjhZeVpaQjB5bHByU3ZxNUFXbG01?=
- =?utf-8?B?RnV5SUsrbTYydTdSbXAyTjZHenBDazFvZ0ZxL21IemdQQitYWE5MbmxZK3Y1?=
- =?utf-8?B?aFpITXlLRU85dVRjZjh1R0hqbUd4R2tYSm5HS1Q0YzRtZlcvbmxSWjJrTHpZ?=
- =?utf-8?B?TXhubmhVNGU0eHRmMmVYbDh1MVU5VXJkaXRKVjVvbkd2VVJRcUpyRkdvZmxP?=
- =?utf-8?B?dkIvSytKVlkxQXRzVS9XcnExNk0xZ1pUUXJOK0JFaTB2N0ZMQjBscFJsaXd4?=
- =?utf-8?B?TWozdUx3VFIrbU10QUYvVUozVmRpeEJLd2F0Y1o2aE9FbU9jYm9UK2k2RkVv?=
- =?utf-8?B?UXZxcVhOTXlLcTNoUGhZdWthUUVoQTRlZjB6NitKWlgzY0FlSDZZTHZKSU9P?=
- =?utf-8?B?LzJWYXYweHYrNVE3RU5NNi8wSkhrUTNkRzFHRDVOakJoOU1nc0hHRHhhMktk?=
- =?utf-8?B?Tmt4Nis4YVR4Vlp4bzBoMHFPSE50TXNrS2t0Y2piVXArUTFUaTd4bmNVVmZz?=
- =?utf-8?B?dDNxT2J6M0Y2Vlk2bUYvQ2dDa0cwNVl4K3pZYU5uSEV4OE03MWZIaVduL1Fj?=
- =?utf-8?B?eGdLTkU4UURaSEFWRGVNUUNSUVduNE9rZ2Y3ZHVZRmxUSWRjUVVudWd2QnIw?=
- =?utf-8?B?OWRNbFhvblV2ak1iMy9qSFk3cS9PbXgwREdHZkVWTlFmR2tSajhFOTdocVRv?=
- =?utf-8?B?ZndYWWpsYkNGUytKZlJqcGRUQmU5TTJ2OU9JSFZJbVdHOGVoR3VvMFEyN1BC?=
- =?utf-8?B?Zk9nSVgrMWNUZTNDYWd4RkVvT0QrbTFQL2dITUpCWnpRby9VRUNPRmJkQXBl?=
- =?utf-8?B?VUZlN0J5RjZxeWYzOHZRMjk1czgxWXk4MlBMVFVMY3JKdTljNkxRM2tBTS9u?=
- =?utf-8?B?djFMalhoNkY5aEw0YzczV2lvMk54TEpnZjlzOWIzb0xaalZZUDYyR01pWmIr?=
- =?utf-8?B?RmdVN09wSVdhL0dTSTZ5WndJbWRGQkxMMGIrSThFdVI5eHJpcWdmUU9mS295?=
- =?utf-8?B?MEZYb2dSUzMySUYwV21PZmVhWlhzTU9Oa0d1SE9WTG52YXkrNU1QL0hnOEhX?=
- =?utf-8?B?L0VXWmZOZlVwNlV4eWFiTEZaemJCU2praXlONDJ5ZTUwWlFCM2pIU2lzaHBi?=
- =?utf-8?B?bXJxRFlYeERrU2dZQUJ2Z3dibyt4c2ROVHUwS01IaUtzdDNtN3hhZHg3VlFS?=
- =?utf-8?B?M25vYzhTMDBvZ3pEa2lPS21YMUtmSllaMDhyOEVXdjk3cU90NVp5TEF5UHc2?=
- =?utf-8?B?R2NjZk1NUlhOT2RBdDd6MFp5Wi9KeXpqZ3JjZGk1cEd5Ujdmb3N5bFZxRGly?=
- =?utf-8?B?ZSt1Q1NHNEt1Wlp2TzI2Q0FFVTgvVk9qOXkyYWZEaXZQMEpjbzlTeG5lelpW?=
- =?utf-8?B?MEpMbWJIY292MzVVYlg3N2tQcXVoTE9xMS9WdTBRejJLdkJTT1FOWkhnOU5a?=
- =?utf-8?B?SU5Zdm1iNndxM0Y3WGcrdU14S1dOMFNVU2pISlFDT245YlN6VXlUU21VMmhR?=
- =?utf-8?B?WDNodjF2OVlZcEJZdXE3UjFFZDVISE1HaTJObEdXUEliYnNqV0YzQytGbmxS?=
- =?utf-8?B?cTVTTlNBQVBWY1E5M3hwWWFpUjhmcVFzUllVY1BDTEI2RzJvUngyWWhjTjZa?=
- =?utf-8?B?TWFpQkNZYW1DUndQd1RhVi9LN0tUcFJaamkvaGVNUVhLRnZmMlYvMSt3WTJu?=
- =?utf-8?B?a1NaRFhmMnE3ejZuckF4YXNYUlJJTXZqd0JWR3B4RFZjRFlrcnZuYm9DNDhz?=
- =?utf-8?B?MDhVQ3o0SmNpUnAyV1ZyYXJqY2ZuYnoyVUJqdmVaT250ME1OVTA1RHhGckRI?=
- =?utf-8?B?bUZla1lWRk9mMFJXWTQrS3A3Tk9uQkxaZ29jK25iYnlpQUFmWDM5OSsvYTVv?=
- =?utf-8?B?d2tmOWlDdkxDQ3BMN2U3OSt0cTZBMk13eXhpRU0vWUJzZzJoR2g5M2NLT2h0?=
- =?utf-8?B?UGM3d2ZvSEpJMktWUG5ZY2xoSDA3amF6L2c2cFhCamVzRmRpdzVoSFFOTDlL?=
- =?utf-8?B?ZzJXVk4vUTV1VTFUNjkrRndFM00xRGhWb1M0UjBsUnhBNHhhbkllc3d4VTlv?=
- =?utf-8?B?OHVjWkwzNUp0MXNSOEJUcStYRzlmbW1pVFVlTjZvWk9ybHpIcXk3dz09?=
-X-OriginatorOrg: amlogic.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 250a340b-8a70-4f9a-1752-08defe8afbe9
-X-MS-Exchange-CrossTenant-AuthSource: TYZPR03MB6896.apcprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Aug 2026 07:16:41.9470
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 0df2add9-25ca-4b3a-acb4-c99ddf0b1114
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: T0gu+kPQFvwJ9df8eoGCz4hvA3J0ichEL1zZII+PFen/7nyr+nCc+8kQHLOPARWXf8h25Qbj1JX6Vajik+8aV9iKZUcE5YDFGu0QxYELiAQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OSQPR03MB8484
+Content-Transfer-Encoding: 8bit
 
+Convert the deprecated SIMPLE_DEV_PM_OPS
+to DEFINE_SIMPLE_DEV_PM_OPS and pm_sleep_ptr().
 
+This lets us drop the __maybe_unused annotations from the suspend and
+resume callbacks, and reduces kernel size in case CONFIG_PM or
+CONFIG_PM_SLEEP is disabled.
 
-On 2026/8/20 14:49, Krzysztof Kozlowski wrote:
-> On 20/08/2026 08:38, Xianwei Zhao wrote:
->> Hi Krzysztof,
->>      Thanks for your review.
->>
->> On 2026/8/13 16:28, Krzysztof Kozlowski wrote:
->>> On Tue, Aug 11, 2026 at 08:37:43AM +0000, Xianwei Zhao wrote:
->>>> Document the thermal controller compatibles for the Amlogic A9 SoC.
->>>>
->>>> Describe the required "core" and "plck" clocks, add the optional
->>>> "amlogic,hw-reset-temp" property, and update the schema constraints for
->>>> A9-specific thermal controllers.
->>>>
->>>> Signed-off-by: Xianwei Zhao<xianwei.zhao@amlogic.com>
->>>> ---
->>>>    .../bindings/thermal/amlogic,thermal.yaml          | 28 +++++++++++++++++++++-
->>>>    1 file changed, 27 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->>>> index 8cfa44dcda58..f73ee66bcc47 100644
->>>> --- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->>>> +++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->>>> @@ -23,6 +23,7 @@ properties:
->>>>              - const: amlogic,g12a-thermal
->>>>          - enum:
->>>>              - amlogic,a1-cpu-thermal
->>>> +          - amlogic,a9-thermal
->>>>              - amlogic,t7-thermal
->>>>
->>>>      reg:
->>>> @@ -32,7 +33,13 @@ properties:
->>>>        maxItems: 1
->>>>
->>>>      clocks:
->>>> -    maxItems: 1
->>>> +    minItems: 1
->>>> +    maxItems: 2
->>>> +
->>>> +  clock-names:
->>>> +    items:
->>>> +      - const: core
->>>> +      - const: pclk
->>>>
->>>>      power-domains:
->>>>        maxItems: 1
->>>> @@ -52,6 +59,10 @@ properties:
->>>>              - description: phandle to the secure monitor
->>>>              - description: sensor index to get specific calibration data
->>>>
->>>> +  amlogic,hw-reset-temp:
->>>> +    description: The hardware-controlled reset temperature value.
->>>> +    $ref: /schemas/types.yaml#/definitions/uint32
->>> Thermal zones define that, not custom properties.
->>>
->> There are some differences here. The thermal zone goes through a
->> software-controlled process and eventually triggers a restart or
->> shutdown. There is some time between the temperature reaching the
->> threshold and the actual restart or shutdown. In contrast, this
-> This feels like Linux problem, not binding? Fix Linux.
-> 
->> attribute configures a hardware-level protection mechanism that directly
->> triggers a restart when the temperature reaches the configured threshold.
->>
->> If that's the case, do I also get it from Thermal zones?
-> 
-> Thermal zones define your hardware temperature constraints, not custom
-> properties.
-> 
+Signed-off-by: Triet Hoang <triet.hoang.dev@gmail.com>
+---
+ drivers/devfreq/rk3399_dmc.c     | 8 ++++----
+ drivers/devfreq/sun8i-a33-mbus.c | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-I will remove "amlogic,hw-reset-temp" property.
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index dbdce7636ca5..3ebc817fa608 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -243,7 +243,7 @@ static int rk3399_dmcfreq_get_cur_freq(struct device *dev, unsigned long *freq)
+ 	return 0;
+ }
+ 
+-static __maybe_unused int rk3399_dmcfreq_suspend(struct device *dev)
++static int rk3399_dmcfreq_suspend(struct device *dev)
+ {
+ 	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
+ 	int ret = 0;
+@@ -263,7 +263,7 @@ static __maybe_unused int rk3399_dmcfreq_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
++static int rk3399_dmcfreq_resume(struct device *dev)
+ {
+ 	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
+ 	int ret = 0;
+@@ -282,7 +282,7 @@ static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
+ 	return ret;
+ }
+ 
+-static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
++static DEFINE_SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
+ 			 rk3399_dmcfreq_resume);
+ 
+ static int rk3399_dmcfreq_of_props(struct rk3399_dmcfreq *data,
+@@ -477,7 +477,7 @@ static struct platform_driver rk3399_dmcfreq_driver = {
+ 	.remove = rk3399_dmcfreq_remove,
+ 	.driver = {
+ 		.name	= "rk3399-dmc-freq",
+-		.pm	= &rk3399_dmcfreq_pm,
++		.pm	= pm_sleep_ptr(&rk3399_dmcfreq_pm),
+ 		.of_match_table = rk3399dmc_devfreq_of_match,
+ 	},
+ };
+diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33-mbus.c
+index 4bd5657558d6..1636501c753e 100644
+--- a/drivers/devfreq/sun8i-a33-mbus.c
++++ b/drivers/devfreq/sun8i-a33-mbus.c
+@@ -312,7 +312,7 @@ static int sun8i_a33_mbus_hw_init(struct device *dev,
+ 	return 0;
+ }
+ 
+-static int __maybe_unused sun8i_a33_mbus_suspend(struct device *dev)
++static int sun8i_a33_mbus_suspend(struct device *dev)
+ {
+ 	struct sun8i_a33_mbus *priv = dev_get_drvdata(dev);
+ 
+@@ -321,7 +321,7 @@ static int __maybe_unused sun8i_a33_mbus_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int __maybe_unused sun8i_a33_mbus_resume(struct device *dev)
++static int sun8i_a33_mbus_resume(struct device *dev)
+ {
+ 	struct sun8i_a33_mbus *priv = dev_get_drvdata(dev);
+ 
+@@ -470,7 +470,7 @@ static const struct of_device_id sun8i_a33_mbus_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, sun8i_a33_mbus_of_match);
+ 
+-static SIMPLE_DEV_PM_OPS(sun8i_a33_mbus_pm_ops,
++static DEFINE_SIMPLE_DEV_PM_OPS(sun8i_a33_mbus_pm_ops,
+ 			 sun8i_a33_mbus_suspend, sun8i_a33_mbus_resume);
+ 
+ static struct platform_driver sun8i_a33_mbus_driver = {
+@@ -479,7 +479,7 @@ static struct platform_driver sun8i_a33_mbus_driver = {
+ 	.driver	= {
+ 		.name		= "sun8i-a33-mbus",
+ 		.of_match_table	= sun8i_a33_mbus_of_match,
+-		.pm		= pm_ptr(&sun8i_a33_mbus_pm_ops),
++		.pm		= pm_sleep_ptr(&sun8i_a33_mbus_pm_ops),
+ 	},
+ };
+ module_platform_driver(sun8i_a33_mbus_driver);
+-- 
+2.53.0
 
-> 
-> Best regards,
-> Krzysztof
