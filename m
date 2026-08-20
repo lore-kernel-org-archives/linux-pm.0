@@ -1,232 +1,273 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7733943E48A
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:24:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 890C443E4B5
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:25:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787228649; cv=none; b=t5ELUs1hu+m4VI8+UlYsq4g66f/gMzMRsVA0k6pfOOk5lLzxFwHpkbdvlEvFxBI3zIl5s8SIT4NYw1+Fb0FcmUoZk3BOP/uuQQ8lTdjbNIbWZOvk89UnY4EMLx+ZhoPPHJJE7z0lF0kfQ1Ph66kbNFgiL32gXgrQ0ELah27AdKk=
+	t=1787228742; cv=none; b=M9Ec9LUytfBXUZ3XYX/E4ykVbze2WMTOeB47+Sr7FqiGeHNWxlulWyq4kfa1ZRD47XJlIUpaaBBqK9dlzom1pCwRwOAEkVieKyYE4M5NugWo/qRdLu2vD/JCXRhx4T8oFYK0LRuBuNvUvBjxe63b+OqGkgfJD965e0iu2Lq+R74=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787228649; c=relaxed/simple;
-	bh=Ui/hP+QL6ancseNG+Kxx4ozLzkd475S3Hpqx/mBIMOE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YOJSgIWtA+og7BT7kkqGnxQSRPKNr65WqiV+l+doo677M/yaxkjGyHnOVRL0B8lLtWurmaoWpA1EcvJs+TTgg7JaYsKn7fPCr1WiOs/Az3xN0FTYsjr4gsyNVEEDPwO7zS7Iv62wp94iyzyqr8JUcLC1CmYh/d4W5KqYpUCuBVc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=IxEFfG+H; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=LbV1c7Or; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1787228742; c=relaxed/simple;
+	bh=5EqwE72lB3dCmSiHsbuHnJ0dwESRP2TpD3/4zPtIdKk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jDC9K/n4roTHwRDoeEp8PJ57DRyXisyRbnZPK2Ok6cUbpJUGxd8Qu3po0wsSX6agykuB9hWQcNkp+00NdU/rUKY7AlSewzdSNkdPLtAYXC5ZdjdMq+enZMvZ0AWobtIrLhw6jnlXyu0NlznMF/LvHkPrmxvlatG3o2MK9IX9N7o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=o+PuASMV; arc=none smtp.client-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="IxEFfG+H";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="LbV1c7Or"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67K8jlQW2529721
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:24:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	VrlmU7VL41FHOTbD5cdWiU9bgIS+YIxBeShNI/+hVa8=; b=IxEFfG+HvpqHgjUT
-	8T+BKA4fVOxl4OpBOyg1Lxel3uyzrNtTzCbUjRgVqlswqf1tfMPVcnr9eKJTZimJ
-	HSjHsaMOeTimK4Qqg0YlgU69rhk9CqAdL8Og7zJQkutG1PsUYxzcWN+H2yOQd284
-	03DPREM6YVDrBDOsv+l83l1YQkhtb9e4XvsVtnZyw8ZnAZfNZgIoCF0NI3ug/5MD
-	9RkJXR1Z5+UQu+zbqYEE3yYoBGRtjbM20yK+EU6R2F5D6+jetX7+Yhm+xb3bFuQR
-	vO+Gz8i/zhwbd+Au+1HmzbRR1IIH1j57ho9kpMS/N+PKgCNfb2q04G982vTeyWvP
-	Uh3JzA==
-Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g5xbv8svk-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:24:06 +0000 (GMT)
-Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-84a251c2e3eso1174792b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 05:24:06 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o+PuASMV"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-49954b88fffso22518955e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 05:25:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1787228645; x=1787833445; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=VrlmU7VL41FHOTbD5cdWiU9bgIS+YIxBeShNI/+hVa8=;
-        b=LbV1c7OrRv6E2M4pViwbC8HGwXPowcUiCJIK8x0oz/yIXxY5D2PObocPTkA0t9ZvIA
-         mLVXF72BWgf07xSM+jQBHwD2WkcCfGs9IxdLaCm7zs67gumkWeGvzKR6YmrO5uFoJTTE
-         sah5O+BrJ1MVu6aiL+4PToHNRbl3/rHUzq3aPirlzmn9dmBwiW6EiOqrgxm6SmF/mGFH
-         kvNLV0kxr6wqm36aJfOO9BoqFEXoLrLzyset5zFBFcarJlTr7kg03Q6NpS0smJodOil0
-         dOg00UlC0t2j0gqhiHhnPIYzyIpwuQQdhhpGRg9Pl13r76mMJQdvwB99A+mnOtuktPY+
-         Im2g==
+        d=gmail.com; s=20251104; t=1787228739; x=1787833539; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=5cG8/G+LZIThnaZEGrxtNWIAVyCLkFjFn4+BdzM/oQk=;
+        b=o+PuASMVWoDB/6hcukGdp8k7jHbAEFIEZAer0oxRBKTQeFJXoX0CccxjHaC77W8ssM
+         rfs2CJOfDKjdjAPiMztIcvhzITas7DwG4DBousmBNJNzQshwht13gfsd/Z9eTLyp0U7A
+         /kaR4VAk3Yr/4553+0xBScO9riuLX6asHqt7u4PaNMWFBNbA08Qhh4r3vum8m5TUKPgE
+         OYtIJmcEMuP0FlFEmfC6pzj/72poKncZ/kqg18dPTowamIR+u9uEYkphrNGZ0qpb+oer
+         xvFDqSaYxc4VAZdY63bnjfQ5peWmuATh90f+dADTTL6h7eC7HMXbU92aYS4mEMhjFHDO
+         +YRg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787228645; x=1787833445;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1787228739; x=1787833539;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=VrlmU7VL41FHOTbD5cdWiU9bgIS+YIxBeShNI/+hVa8=;
-        b=cRKNBznMhakGNWE7DDWQs06ShEbq46XJwM7imFzAsBpSXJND8P+6PP+OOgtpSKL9VJ
-         NPBiQ0qil0Vc+sw3mpMC/bnqiNeaoYtKrF5g6MNjNAfKK7Aue/8nGx2s+K7KvOJfp/ki
-         Hl445XTjxJaNFD5ncceYp+sBI/iLwn3OGzF9RSbW0km5FHkFKEiF1ork7BDgYpn3JAO3
-         0yvmHOAJXT9j2MrzXp3AHzuf/OJm3/i2ZeDCHbIZd9jooBIhqcryMGu0TNkikO3XsAwP
-         6DhyCgf0odiw4M5Xvccb0ftH+iPFmdT/RJT/ZxGpA6dgFUkzhOwP42eJ55hN8vPPiPbR
-         qCEg==
-X-Forwarded-Encrypted: i=1; AHgh+RrSH6B5yVJcugV9S5ZWLOWgEFmLwh96hUVjCU6qRYUjQPfMWgpV5RABEPtgbFmOKOPKTajYp6oikg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YybYguAdpWbxovSj/14trZLSuEaw3PTBTdTM1J84xregBfnpgjn
-	RrRjmPguU202sRfTSEF6T+YdotR5hZdPsDlGtOezpNH/f5GeSp8h66p9RDFZ3/h+RTJtxbf0bSw
-	WSuhXr7jQB5yhi5awKf2Js8cB//QCFFQ+HL++sL1n5NMmWmh4XDING1NRkUWSLQlZAzSAG//z
-X-Gm-Gg: AR+sD11M7CTpnAnMGswLJ8JOS1A4INsEFjuRrOr/tys53HsO4MRg3GBUyDW98Rd+MKS
-	mzqqSacAhBN/EFnzYM7HgYCU1uaXGj6N0ZzC67Tb95t7HM0PDn8zlDlkCaCwQhovfm/azEySqeG
-	mVYsYS2E7KmLL12fBi3vrMIEFCyTCTRIyNqHRN1E1ZFCJciqR3lerlXqjmPwi2Apa7obKBDwvt4
-	O1o1s+97SPWjZGZYCvFDPxehTzgUNMYF45bmJz4RHo13CMF7oWNx33OKFHlLtUJmSr3t7dd9xhT
-	ZMBDc5MdmNn2AyWCcjjX9RYcLihj11ahNrs34Gfw/4PJO38ClN+29aEuhKI7v+xfytGfw9sDjwo
-	6CnHKUL5fzSExUki7FGImf0CXfT+eflodrBY/6yDlLLRGbN5DIJyywq1/t6tKzN+ZmGLdnXyZ
-X-Received: by 2002:a05:6a00:4007:b0:84b:e69f:1b3f with SMTP id d2e1a72fcca58-851dfa00aa2mr6762128b3a.8.1787228645249;
-        Thu, 20 Aug 2026 05:24:05 -0700 (PDT)
-X-Received: by 2002:a05:6a00:4007:b0:84b:e69f:1b3f with SMTP id d2e1a72fcca58-851dfa00aa2mr6762048b3a.8.1787228644731;
-        Thu, 20 Aug 2026 05:24:04 -0700 (PDT)
-Received: from [10.133.33.112] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-851d36185c8sm1601613b3a.38.2026.08.20.05.24.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 20 Aug 2026 05:24:04 -0700 (PDT)
-Message-ID: <fed97fbc-7d78-4509-86c2-cb302d3957db@oss.qualcomm.com>
-Date: Thu, 20 Aug 2026 20:23:59 +0800
+        bh=5cG8/G+LZIThnaZEGrxtNWIAVyCLkFjFn4+BdzM/oQk=;
+        b=qu3IndaBBbedSm5H1L7gPZ/cO32U3/9Ome/h5pFC+ZwnnDIVEvOLPGiWGkuL7QM8W3
+         y37P6KAJkq023SXX6UKktbnoLUluSV4FJG8GtRzq7TEbbjKeN0eUqC95K7tv1HCWI+MK
+         tsuFINrahGqRrJ7JV3caGb2Pt8+sSCLIUq8WNqEWt4VWEyGfuwJ+qrRCqtg7L4kGtKFX
+         fnR/MTziw9foZP9r0SgxGjzw6Lei1fKtZIKE+FaRU6jRue6QNYaETyA4Fo3LeC8bpmZo
+         kkz9saaBfxk88fCMCGhPITnCo0U2o4YSTlqIuhEYzHO5k33fNihGXwRdhN06u/xc0Jww
+         OfFg==
+X-Forwarded-Encrypted: i=1; AHgh+RqEBnE+cPlGRH2XNJLOkiADxg+NdRzHyrrvtRtwPfTsUFqQ4EuOom2MrJVNHPM+leEE9u6x4ffOXQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxYLCodbP9uq2Q1OfD1iEvbRItVhM+TvF22w3boxTU6dvsorvH8
+	BhPXlCXXeIS+c5O74aLr+pk1PMztz/d9D9/qes8qa46gqunYBZ+c6Pq1
+X-Gm-Gg: AR+sD12J0HyjHNm3U65aovnMQXNQps61LgqKeb0OQLsEPRDlBxnrvv8kUqitDWPBfs0
+	zhBXoIKOGiTdsNMFEpwJ/K1JqW3cv5vMUq2fDCU6OVnOH9f6GE3Np+H+f+3Dd4skCFVpEZuM6XC
+	ZKdM3ZOl4J9XcWWPG0ZsBXlKPTYEFN2+AfdkLytasrjAv0VZiXurXMi2hAThlROZi9t29tumWqj
+	A+4IT24H62oIAaAwmb1S0uX6Jrni9ML28mf3lHoP0c4K7ayGyWIAYg3jNBuEmUqhyHr6BbZTG3V
+	zet9WiwNCFyGU+s8W7abGLk2Tk4UBbmczDFxoYXIoRosX5GMSor2AIvMw/4UHCdA/sfSUPrRdhk
+	6G+mh9V5OXkzO1c3EjR3yyW4OK2ocEVgvfkN/lftY652YstL1Mke0UtTl3lBn8ALjooSOXSqk+C
+	V7I3LtARUzaLEGhm3kaivSynbGCpIfusFLAZGBTmG4j4WsyXMcUi5mdcIwTsJn9Cd8
+X-Received: by 2002:a05:600c:34d1:b0:499:49f3:77b1 with SMTP id 5b1f17b1804b1-499aa14a6a6mr214121195e9.3.1787228738421;
+        Thu, 20 Aug 2026 05:25:38 -0700 (PDT)
+Received: from luca-vm.. ([81.56.18.151])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-499ab2a8b34sm170494645e9.8.2026.08.20.05.25.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 20 Aug 2026 05:25:37 -0700 (PDT)
+From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+To: linux-mediatek@lists.infradead.org
+Cc: Luca Leonardo Scorcia <l.scorcia@gmail.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sen Chu <sen.chu@mediatek.com>,
+	Sean Wang <sean.wang@mediatek.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>,
+	Lee Jones <lee@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Linus Walleij <linusw@kernel.org>,
+	Val Packett <val@packett.cool>,
+	Julien Massot <julien.massot@collabora.com>,
+	Fabien Parent <parent.f@gmail.com>,
+	Akari Tsuyukusa <akkun11.open@gmail.com>,
+	Chen Zhong <chen.zhong@mediatek.com>,
+	linux-input@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	mfd@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org
+Subject: [PATCH RESEND v9 0/9] Add support for MT6392 PMIC
+Date: Thu, 20 Aug 2026 14:19:58 +0200
+Message-ID: <20260820122242.120039-1-l.scorcia@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/5] cpufreq: loongson3: Use global physical CPU ID in
- get/target callbacks
-To: Huacai Chen <chenhuacai@loongson.cn>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Huacai Chen <chenhuacai@kernel.org>
-Cc: loongarch@lists.linux.dev, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Xuerui Wang <kernel@xen0n.name>,
-        Jiaxun Yang <jiaxun.yang@flygoat.com>, stable@vger.kernel.org,
-        Hongliang Wang <wanghongliang@loongson.cn>,
-        zhongqiu.han@oss.qualcomm.com
-References: <20260818123921.3600606-1-chenhuacai@loongson.cn>
- <20260818123921.3600606-5-chenhuacai@loongson.cn>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260818123921.3600606-5-chenhuacai@loongson.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=AMKAkK6n c=1 sm=1 tr=0 ts=6a86f1e6 cx=c_pps
- a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=VwQbUJbxAAAA:8 a=civxVzKdHa92ALpkkEcA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=OpyuDcXvxspvyRM73sMx:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIwMDA5MiBTYWx0ZWRfX4ayVleBtYmh6
- VttmzRymVvXwDmIp9vOjxlgheLF/HVVUslFuGiGtXGo9lz/tFzvjTpht+HJ98P+AQmHABGh0hxm
- bS8wermwHC7qihL4aWKmDystrdKr1UTsKpwiuVbM4PUyo6WOoqZh+sk2/keCtaGiY0SPvlUH5CL
- h7Oa5MxqLn8rT7v6ip/dnNQd5z+tINoT9391dLT/yTxweNJq/SzBwKnjaRU7BHLD9TRwCzL8Car
- s0cuZwjlrIZ4MBDYqsd9G6T417EXWpi+sEPpJN1c0JWuzb1as8e6Bd3pWyf+RMKTifnIchdt6o3
- G8wr0dxAF4hHWO9kv/2nsy/daOB447Xr3C/NSVi/VOGtHHTTaG9QdLWA1IHGpwk110h1NamYy5t
- CB9bbQZmRuDM1kVNIcwjY/3wRf5964NyOsbFWgDkEiBCeekl3MGLwixzpjKIXOUiN630o8d/zts
- RHTHB4Gf/Ljwl720fhw==
-X-Proofpoint-GUID: KSNtsNLqv5lf8Gtp4f_bdOruD0OzY3Lh
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODIwMDA5MiBTYWx0ZWRfX3wSXGD36ZEQL
- tHK/SC+mSFa67ZMSL8I8rjHNW2fghHI0ImWRpdSh21BOIal0of64iGJtBGJyGAT8ep8CwpcDHWg
- CBpMfTNb9+NT4LLm4RKbGBFARHW9D6A=
-X-Proofpoint-ORIG-GUID: KSNtsNLqv5lf8Gtp4f_bdOruD0OzY3Lh
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-19_06,2026-08-19_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
- adultscore=0 suspectscore=0 malwarescore=0 impostorscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608200092
 
-On 8/18/2026 8:39 PM, Huacai Chen wrote:
-> Our server productions (e.g. Loongson-3D6000/3E6000) can have discrete
-> global physical CPU IDs while the core ID inside the packages are always
-> continuous. In these cases we should use global physical CPU IDs to get
-> and set frequencies.
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Hongliang Wang <wanghongliang@loongson.cn>
-> Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
-> ---
->   drivers/cpufreq/loongson3_cpufreq.c | 20 +++++++++++---------
->   1 file changed, 11 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/loongson3_cpufreq.c
-> index e3cd78a5ab18..c75c0e30e881 100644
-> --- a/drivers/cpufreq/loongson3_cpufreq.c
-> +++ b/drivers/cpufreq/loongson3_cpufreq.c
-> @@ -219,38 +219,40 @@ static inline int do_service_request(u32 id, u32 info, u32 cmd, u32 val, u32 ext
->   
->   static unsigned int loongson3_cpufreq_get(unsigned int cpu)
->   {
-> -	int ret;
-> +	int ret, core = cpu_logical_map(cpu);
->   
-> -	ret = do_service_request(cpu, FREQ_INFO_TYPE_FREQ, CMD_GET_FREQ_INFO, 0, 0);
-> +	ret = do_service_request(core, FREQ_INFO_TYPE_FREQ, CMD_GET_FREQ_INFO, 0, 0);
+The MediaTek MT6392 PMIC is usually found on devices powered by
+the MT8516/MT8167 SoC and is yet another MT6323/MT6397 variant.
 
-As patch 5/5 changelog:
+This series is mostly based around patches submitted a couple
+years ago by Fabien Parent and not merged and from Val Packett's
+submission from Jan 2025 that included extra cleanups, fixes, and a
+new dtsi file similar to ones that exist for other PMICs. Some
+comments weren't addressed and the series was ultimately not merged.
 
-"However, IOCSR read/write can only perform on the current node, while
-sometimes we want to perform on other nodes"
+These patches enable four functions: keys, regulator, pinctrl and RTC.
+Mono speaker amp will follow later as I need to work further on the
+audio codec.
 
-However, patch 4/5 starts passing the global CPU number without updating
-do_service_request(), which is only changed in patch 5/5. Doesn't that
-mean patch 4/5 is broken on its own?
+I added a handful of device tree improvements to fix some dtbs_check
+errors, added support for the pinctrl device and addressed the comments
+from last year's reviews.
 
->   
->   	return ret * KILO;
->   }
->   
+Please note that patch 0006 and 0008 depend on patch 0005 as they need the
+registers.h file, but belong to different driver areas. I'm not sure if
+I'm supposed to squash them even if they belong to different driver
+areas of if it's fine like this. Any advice is welcome.
 
-A separate issue， do_service_request() can return errno such as -EPERM,
-it will cause .get() func return a large unsigned integer value.
+Patch 0009 also depends on patch 0003 because of mt6392-regulator.h.
 
+The series has been tested on Xiaomi Mi Smart Clock X04G, on the
+Lenovo Smart Clock 2 CD-24502F and on Sony PlayStation Classic Mini
+SCPH-1000R.
 
->   static int loongson3_cpufreq_target(struct cpufreq_policy *policy, unsigned int index)
->   {
-> -	int ret;
-> +	int ret, core = cpu_logical_map(policy->cpu);
->   
-> -	ret = do_service_request(cpu_data[policy->cpu].core,
-> -				 FREQ_INFO_TYPE_LEVEL, CMD_SET_FREQ_INFO, index, 0);
-> +	ret = do_service_request(core, FREQ_INFO_TYPE_LEVEL, CMD_SET_FREQ_INFO,
-> +				 index, 0);
->   
->   	return (ret >= 0) ? 0 : ret;
->   }
->   
->   static int configure_freq_table(int cpu)
->   {
-> -	int i, ret, boost_level, max_level, freq_level;
-> +	int i, ret, core, boost_level, max_level, freq_level;
->   	struct platform_device *pdev = cpufreq_get_driver_data();
->   	struct loongson3_freq_data *data;
->   
->   	if (per_cpu(freq_data, cpu))
->   		return 0;
->   
-> -	ret = do_service_request(cpu, 0, CMD_GET_FREQ_LEVEL_NUM, 0, 0);
-> +	core = cpu_logical_map(cpu);
-> +
-> +	ret = do_service_request(core, 0, CMD_GET_FREQ_LEVEL_NUM, 0, 0);
->   	if (ret < 0)
->   		return ret;
->   	max_level = ret;
->   
-> -	ret = do_service_request(cpu, 0, CMD_GET_FREQ_BOOST_LEVEL, 0, 0);
-> +	ret = do_service_request(core, 0, CMD_GET_FREQ_BOOST_LEVEL, 0, 0);
->   	if (ret < 0)
->   		return ret;
->   	boost_level = ret;
-> @@ -263,7 +265,7 @@ static int configure_freq_table(int cpu)
->   	data->def_freq_level = boost_level - 1;
->   
->   	for (i = 0; i < freq_level; i++) {
-> -		ret = do_service_request(cpu, FREQ_INFO_TYPE_FREQ, CMD_GET_FREQ_LEVEL_INFO, i, 0);
-> +		ret = do_service_request(core, FREQ_INFO_TYPE_FREQ, CMD_GET_FREQ_LEVEL_INFO, i, 0);
->   		if (ret < 0) {
->   			devm_kfree(&pdev->dev, data);
->   			return ret;
+Changes in v9:
+- Correct binding for vrtc as it does not support mode setting.
 
+From sashiko:
+- Added missing include in MFD documentation example.
+- Fixed constraints for regulator-initial-mode in regulator binding.
+- Fixed wrong register write while setting LDO standby mode.
+- Added missing pmic interrupt definition in the pumpkin-common include.
+
+Changes in v8 [9]:
+From reviewers:
+- Added example code to the MFD device binding, removed it from the
+  regulators docs.
+- Added minItems/maxItems constraints on the regulator mode definitions,
+  improved the mode constants.
+- Fixed formatting issues in the regulator binding.
+- Import the mt6392.dtsi file in pumpkin-common.dtsi, as it was originally
+  meant in [8].
+
+From sashiko:
+- Added more explicit constraints on the regulator modes definitions.
+- Use the appropriate modeget register for LDO regulators, Buck registers
+  don't have the corresponding register according to the data sheet.
+- Added the missing of_map_mode function.
+- Removed some debugging code that had no use and masked error codes.
+
+Changes in v7 [7]:
+- Removed patch 0008 dependency on patch 0003.
+- Reintroduced the regulator driver. In earlier revisions of this series,
+  it was proposed to remove the dedicated compatible for the regulator
+  device [3]. The driver does not use actually it, but it is not possible
+  at this time to remove it from the bindings since it's a required
+  property.
+
+  Making the regulator-required property conditional was NACKed in [5],
+  with the suggestion to create a separate binding altogether for devices
+  that do not require the compatible property. I tried implementing this,
+  but since the parent device needs to be declared as compatible with
+  mt6323, it leads to a warning in dt_binding_check since mt6323 would
+  be declared as a compatible in both mt6392 and mt6397.
+
+  In the end the only regulator driver from the mt6397 documentation that
+  still declares an of_match is mt6397-regulator and it does not seem
+  to be necessary, so it should be possible to remove it and make the
+  regulator compatible optional for all regulators, but that change would
+  probably deserve its own separate patch series.
+
+Changes in v6 [6]:
+- Dropped the regulators driver for the moment
+- Explained the FCHR key name origin in the commit message
+- Introduced the MFD_CELL_* macro in the sub-devices definitions.
+  A separate, independent commit introduced MFD_CELL_* to all the
+  subdevices in the mt6397-core.c file for consistency
+- Replaced of_device_get_match_data with device_get_match_data
+- Removed the mfd_match_data enum in favor of the preexisting
+  chip_id enum
+- Adjusted the error message if the device is unsupported
+
+Changes in v5 [5]:
+- Double checked regulator driver with data sheet and Android sources.
+  The data sheet I have misses a lot of register descriptions, but
+  Android sources have been helpful to fill the gaps
+- Reintroduced the required attribute for the regulator compatible
+  in the bindings
+- Fixed the missing reference to the MT6392 schema
+- Fixed casts/unused vars reported by kernel test robot
+- Removed Reviewed-by tags from the regulator patches as they have been
+  modified in this version
+
+Changes in v4 [4]:
+- Dropped usage of the regulator compatible
+- Fixed commit messages text to properly reference the target subsystem
+- Added supply rails to the regulator
+- Reworked the regulator schema and PMIC dtsi. Now all supplies are
+  documented and the schema no longer includes voltage information
+- Removed redundant ldo- / buck- prefixes
+- Renamed the pinfunc header to mediatek,mt6392-pinfunc.h
+- Modified the MFD driver to use a simple identifier in the of_match
+  data properties
+
+Changes in v3 [3]:
+- Added pinctrl device
+- Changed mt6397-rtc fallback to mt6323-rtc
+- Added schema for regulators
+- Fixed checkpatch issues
+
+Changes in v2 [2]:
+- Replaced explicit compatibles with fallbacks
+
+Initial version: [1]
+
+[1] https://lore.kernel.org/linux-mediatek/cover.1771865014.git.l.scorcia@gmail.com/
+[2] https://lore.kernel.org/linux-mediatek/20260306120521.163654-1-l.scorcia@gmail.com/
+[3] https://lore.kernel.org/linux-mediatek/20260317184507.523060-1-l.scorcia@gmail.com/
+[4] https://lore.kernel.org/linux-mediatek/20260330083429.359819-1-l.scorcia@gmail.com/
+[5] https://lore.kernel.org/linux-mediatek/20260420213529.1645560-1-l.scorcia@gmail.com/
+[6] https://lore.kernel.org/linux-mediatek/20260612200717.361018-1-l.scorcia@gmail.com/
+[7] https://lore.kernel.org/linux-mediatek/20260615071836.362883-1-l.scorcia@gmail.com/
+[8] https://lore.kernel.org/linux-mediatek/20190323211612.860-25-fparent@baylibre.com/
+[9] https://lore.kernel.org/linux-mediatek/20260620200032.334192-1-l.scorcia@gmail.com/
+
+Fabien Parent (3):
+  dt-bindings: input: mtk-pmic-keys: Add MT6392 PMIC keys
+  mfd: mt6397: Add support for MT6392 PMIC
+  regulator: Add MediaTek MT6392 regulator
+
+Luca Leonardo Scorcia (4):
+  dt-bindings: mfd: mt6397: Add MT6392 PMIC
+  regulator: dt-bindings: Add MediaTek MT6392 PMIC
+  mfd: mt6397: Use MFD_CELL_* to describe sub-devices
+  pinctrl: mediatek: mt6397: Add MediaTek MT6392
+
+Val Packett (2):
+  input: keyboard: mtk-pmic-keys: Add MT6392 support
+  arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
+
+ .../bindings/input/mediatek,pmic-keys.yaml    |   1 +
+ .../bindings/mfd/mediatek,mt6397.yaml         |  75 ++
+ .../regulator/mediatek,mt6392-regulator.yaml  | 112 +++
+ arch/arm64/boot/dts/mediatek/mt6392.dtsi      | 145 ++++
+ .../boot/dts/mediatek/pumpkin-common.dtsi     |   7 +
+ drivers/input/keyboard/mtk-pmic-keys.c        |  17 +
+ drivers/mfd/mt6397-core.c                     | 295 ++++---
+ drivers/mfd/mt6397-irq.c                      |   8 +
+ drivers/pinctrl/mediatek/pinctrl-mt6397.c     |  37 +-
+ drivers/pinctrl/mediatek/pinctrl-mtk-mt6392.h |  64 ++
+ drivers/regulator/Kconfig                     |   9 +
+ drivers/regulator/Makefile                    |   1 +
+ drivers/regulator/mt6392-regulator.c          | 764 ++++++++++++++++++
+ .../regulator/mediatek,mt6392-regulator.h     |  23 +
+ include/linux/mfd/mt6392/core.h               |  43 +
+ include/linux/mfd/mt6392/registers.h          | 488 +++++++++++
+ include/linux/mfd/mt6397/core.h               |   1 +
+ include/linux/regulator/mt6392-regulator.h    |  42 +
+ 18 files changed, 1970 insertions(+), 162 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/regulator/mediatek,mt6392-regulator.yaml
+ create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
+ create mode 100644 drivers/pinctrl/mediatek/pinctrl-mtk-mt6392.h
+ create mode 100644 drivers/regulator/mt6392-regulator.c
+ create mode 100644 include/dt-bindings/regulator/mediatek,mt6392-regulator.h
+ create mode 100644 include/linux/mfd/mt6392/core.h
+ create mode 100644 include/linux/mfd/mt6392/registers.h
+ create mode 100644 include/linux/regulator/mt6392-regulator.h
 
 -- 
-Thx and BRs,
-Zhongqiu Han
+2.43.0
+
