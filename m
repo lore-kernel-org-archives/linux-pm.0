@@ -1,182 +1,103 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE4053D8911
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 21:15:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B1853D566B
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 21:22:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787260537; cv=none; b=BLPMx8R5aLD1nkhLgJXf5/b1/Zd0gzUBxK8Vfz+Lf5W0LyptWRVmkYULedCYWexSgI5LlS3S+klEyxriS24LCx3tHLl3VpJUUrAf2w4w1tjsUleRiKQsfxXzLjVz8pQ6fVtL6dKXqQymestf6AMkvhPLRald/URsCySFyZbCZOs=
+	t=1787260979; cv=none; b=BgjvFe3k/+uLjl9iLwdRubdKU0AktbbBZKMNFVzfAN/Q+ictkXZ6/x3gLSnF1xatZZ78fzmkKwRFHyFMU6SUp0hWtwTxbpadWuqZnFeUfW12U9fADh08yj47m37BUP7LooPIpO8bVVv5KLj1ocjUcTdBirIucymkTSuiS2lC0dE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787260537; c=relaxed/simple;
-	bh=6tHTxcGcf3qDqooWVW2XAvm5BMt6IgR0w1IsO3llPrY=;
+	s=arc-20240116; t=1787260979; c=relaxed/simple;
+	bh=HJQbxsoH0cwuqnv8/ixox7FiIthbzATvp6/cnyjjGYU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BGyCYkCMw69VMlKM42x4KXIUJeQk1M+EB4VaB7wFTZ3AXBRTvNL2GVIUt1XFUm4NvhOXTQvKWmz/rlB5i017sByOM2QBTxQINI9S6JJRg3CW9JcxvPICpWYj7PFI094aS1Ngf/GpVO62HrV6pZxAQV6PEJcTn/XWlkXrxZGeQBA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KxD0P2Rq; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=WUN8xns1aI7lkmRlkZtlhgkDY2Mm4EqXcMrZWoPNvAfeyIveTYfoOkfSwXFhhJAN6U5cFROaoi2iFp2O0OxytRdvqR3/0Nw5nIO7O+9wv3aBJULwEQ1PVkjWdbmWSbkOSqB9HEQwAcLFVsAy4KHpSjbvv72rCtwdyMshP13CA2E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=G33WI/ET; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KxD0P2Rq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55F111F00ACA
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 21:15:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="G33WI/ET"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FC571F00ADB
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 21:22:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787260532;
-	bh=vls28WfAEHy8an42tyy13JaQerngNJ1kVMZVjLN55wo=;
+	s=k20260515; t=1787260978;
+	bh=VJLcJmZ7PKLdiogUheBUseQCClad5bh7dSYg6Zcb9lA=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=KxD0P2RqgwLPcwRnwtf1gh+UjbkkMFm7aObJrLWbohTiUFpcHG+LD1PDJ1ULcOi0F
-	 V5G4ANUq3BAUxElT0iUbbAa/lrdkoQ+syPkrLZ1BQj9/AOxIITvSydkZ8jIxnbpHFJ
-	 rjc+2Y6BQjs7F5CrglUOCQDRLsQr3Nh61Ai26X7L2WfA+GSe9pCag2SRGLiVyGgNVh
-	 dNT+4g7NdqwK7KKXIFjCQY1+RJVu/c0WRvWvylGrDeZTL3oZ3vOKyAPHoa/sySVlSl
-	 dDnPmHDUojfvmQauW3ISaBVND/sE5UTmuXrQLKah1QLgSCSdkuRMXXPvlQFxbqzWgP
-	 JG0+dWwmXJeVQ==
-Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-39c86945164so4029021fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 14:15:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrgPPCYz1qHaw4dHJfkCmPah5T3QQd4eEZ8aJEtdTzItYvqQ0UCC/xz6r1N9ozm6BNIW6xyVsupEA==@vger.kernel.org
-X-Gm-Message-State: AFuF++mS4nZlWUFYcRllNTedN+rfuYLXp3wkxJO1bzVfe1QtpKFHNuBV
-	6pEXPro50PZTp+kGxQUvkov7jxq8hRIhsvTox0WNvYbEn1I46VFNfCQcDAwd/p2TF0CIuMm7p0T
-	VDDvS0PCAOOFGna5LIBRzvb7NFiboYSk=
-X-Received: by 2002:a2e:a58f:0:b0:3a1:4509:937e with SMTP id
- 38308e7fff4ca-3a1aeb17a9dmr4360081fa.4.1787260530736; Thu, 20 Aug 2026
- 14:15:30 -0700 (PDT)
+	b=G33WI/ETVtK3djnOudzyTnd3jxLil4nNaQGs9fpWawPfDtgLh+rqL9iGXnUV+hZLD
+	 57JTJ558flF+OgpgNq5YNGbov39lYivMN/+JKYzrQQqVw3i+uQ1VXUPvX23zAHvRh4
+	 d41BWPC+w/vl06iOPkG6P3PMP1Dkbu1MZVRPyyJyi/gUFH7gLRGv2mJEjSFKCxva4K
+	 UcBlG2VmgIKgWLaxiw8wjp9prfI2MSuVk2356v3GFWXTowOyjpozXdZxjv7eN7uH9R
+	 G04pIrMQ7vIVeJWznsrlPZw6nb7ux9lNSHnLcS1CVmzFFrGAQx0hTh94FJZN+MDU4t
+	 MV2zHETalGCFw==
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-39ca300db70so4428051fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 14:22:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rpo1/C8IRIXCg8uwahkoHaHbMNufPLNicf9MmUqT7LO67ZaWcjFMINLezQRMsZpBV2DakzukbfgZw==@vger.kernel.org
+X-Gm-Message-State: AFuF++kvHfGb3NYS5ZTFRzBEmyJ7w+ZiW1FHzc5Ll+GRF7oLpNqKjZw/
+	3erqAuurZQE3mWQN2pwTymML32pddvVyhI9LwhdWsg6eiAxLYLZ4tUqmVZUdP7tkpAaM2dorbbI
+	cN2N3tK7tK8UKCJVtprKxXbBT2ewJfMA=
+X-Received: by 2002:a05:6512:3c98:b0:5b1:5fb6:5cf6 with SMTP id
+ 2adb3069b0e04-5b48421a6c2mr388620e87.17.1787260976694; Thu, 20 Aug 2026
+ 14:22:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260814031008.750911-1-yifan2.li@intel.com> <1a967189-2195-4e66-9656-deb61589e5fc@linux.intel.com>
-In-Reply-To: <1a967189-2195-4e66-9656-deb61589e5fc@linux.intel.com>
+References: <20260812042842.15209-1-phucduc.bui@gmail.com> <20260812042842.15209-2-phucduc.bui@gmail.com>
+In-Reply-To: <20260812042842.15209-2-phucduc.bui@gmail.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 20 Aug 2026 23:14:56 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hLvSE-9c3+NZZtaB_3ir+kvDb_GiuLN_kTKTjZ7B1+ag@mail.gmail.com>
-X-Gm-Features: AcwNN1WCSOFNkGXCoEpS1yOdvKP4pBn7bEihElo9IaTvrJzMAK-xFV1wYlk9Krs
-Message-ID: <CAJZ5v0hLvSE-9c3+NZZtaB_3ir+kvDb_GiuLN_kTKTjZ7B1+ag@mail.gmail.com>
-Subject: Re: [PATCH] powercap: intel_rapl: Sign-extend the PMU delta on
- counter wraparound
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, 
-	Li Yifan <yifan2.li@intel.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, srinivas.pandruvada@linux.intel.com, 
-	jianfeng.gao@intel.com, anand.b.jyoti@intel.com, lili.li@intel.com
+Date: Thu, 20 Aug 2026 23:22:20 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iBTiz=q5Gyrw3tbyq8nQmCkcdP3Y4NA4i_2Qa1Qn2dPQ@mail.gmail.com>
+X-Gm-Features: AcwNN1UDN7rZHwlTLDGYe7_rY75ivBxiKIpjATkCxD6Ta0HOwsVH8As-3Siqjrc
+Message-ID: <CAJZ5v0iBTiz=q5Gyrw3tbyq8nQmCkcdP3Y4NA4i_2Qa1Qn2dPQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] thermal: hwmon: Remove redundant OOM message
+To: phucduc.bui@gmail.com
+Cc: Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>, rafael@kernel.org, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 14, 2026 at 7:46=E2=80=AFPM Kuppuswamy Sathyanarayanan
-<sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+On Wed, Aug 12, 2026 at 6:29=E2=80=AFAM <phucduc.bui@gmail.com> wrote:
 >
+> From: bui duc phuc <phucduc.bui@gmail.com>
 >
+> Remove the dev_warn() after a failed devres_alloc(). This is
+> consistent with checkpatch's OOM_MESSAGE convention: no error
+> message is needed after a kzalloc()-style allocation failure.
 >
-> On 8/13/2026 8:10 PM, Li Yifan wrote:
-> > From: "Li, Yifan" <yifan2.li@intel.com>
-> >
-> > The RAPL PMU misreports energy when the hardware energy counter
-> > overflows and wraps back to zero.  perf event counts are defined to
-> > increase monotonically, but a single wraparound makes the PMU event
-> > count jump backwards by nearly the full counter range, and consumers
-> > that take the difference of two reads in unsigned arithmetic then
-> > underflow and report an absurd value.
-> >
-> > On a Panther Lake system (energy unit 61.035 uJ, counter range
-> > 262144 J) the package counter wraps every ~2.9 hours at 25 W, and
-> > turbostat prints one bogus sample per wraparound, per domain:
-> >
-> >   PkgTmp  PkgWatt         CorWatt GFXWatt RAMWatt SysWatt
-> >   44      24.97           16.30   3.90    1.87    2145386370.35
-> >   43      2145240612.10   16.13   4.02    1.91    40.46
-> >
-> > The RAPL energy counters are 32-bit wide on every register interface:
-> > MSR, MMIO and TPMI all describe ENERGY_COUNTER with a GENMASK(31, 0)
-> > mask.  rapl_read_data_raw() applies that mask, so event_read_counter()
-> > returns the counter zero-extended in a u64.
-> >
-> > rapl_event_update() then computes
-> >
-> >       delta =3D new_raw_count - prev_raw_count;
-> >
-> > without reducing the result modulo 2^32.  While the counter does not
-> > wrap this is correct, but once the hardware counter wraps,
-> > new_raw_count < prev_raw_count and delta becomes (true_delta - 2^32),
-> > a large negative value.  Declaring delta as s64 only makes that value
-> > representable; it does not correct it.  That bogus delta is scaled and
-> > added to event->count, which is where the backwards jump comes from.
-> >
-> > Fix it the way arch/x86/events/rapl.c has done since the RAPL PMU was
-> > first introduced: shift both values up so that the 64-bit subtraction
-> > reduces modulo 2^32, then shift the difference back down with an
-> > arithmetic shift to sign-extend it.
-> >
-> > This is correct as long as at most one wraparound happens between two
-> > updates, which the existing overflow hrtimer already guarantees: its
-> > period is half of the counter range at the 200 W reference used in
-> > rapl_package_add_pmu_locked().
-> >
-> > The problem has been present since the powercap RAPL PMU was added, but
-> > only affected TPMI RAPL until commit 748d6ba43afd ("powercap:
-> > intel_rapl: Enable MSR-based RAPL PMU support") routed MSR RAPL through
-> > the same PMU, which exposed it on client platforms such as Panther Lake=
-.
-> >
-> > Fixes: 575024a8aa7c ("powercap: intel_rapl: Introduce APIs for PMU supp=
-ort")
-> > Reported-by: Jyoti, Anand B <anand.b.jyoti@intel.com>
-> > Signed-off-by: Li, Yifan <yifan2.li@intel.com>
-> > Signed-off-by: Gao Jianfeng <jianfeng.gao@intel.com>
-> > Tested-by: Jyoti, Anand B <anand.b.jyoti@intel.com>
-> > ---
->
-> Looks good to me.
->
-> Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux=
-.intel.com>
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 
-Applied as 7.3-rc material, thanks!
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
 
-> >  drivers/powercap/intel_rapl_common.c | 11 ++++++++++-
-> >  1 file changed, 10 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/in=
-tel_rapl_common.c
-> > index 1006d183d508..6b7d11a0abc5 100644
-> > --- a/drivers/powercap/intel_rapl_common.c
-> > +++ b/drivers/powercap/intel_rapl_common.c
-> > @@ -32,6 +32,9 @@
-> >
-> >  #define ENERGY_STATUS_MASK           GENMASK(31, 0)
-> >
-> > +/* Width of the RAPL energy counters, see the *_ENERGY_STATUS_MASK def=
-ines */
-> > +#define RAPL_CNTR_WIDTH                      32
-> > +
-> >  #define POWER_UNIT_OFFSET            0x00
-> >  #define POWER_UNIT_MASK                      GENMASK(3, 0)
-> >
-> > @@ -1227,6 +1230,7 @@ static u64 rapl_event_update(struct perf_event *e=
-vent)
-> >       struct rapl_package_pmu_data *data =3D event_to_pmu_data(event);
-> >       u64 prev_raw_count, new_raw_count;
-> >       s64 delta, sdelta;
-> > +     int shift =3D 64 - RAPL_CNTR_WIDTH;
-> >
-> >       /*
-> >        * Follow the generic code to drain hwc->prev_count.
-> > @@ -1243,8 +1247,13 @@ static u64 rapl_event_update(struct perf_event *=
-event)
-> >        * Now we have the new raw value and have updated the prev
-> >        * timestamp already. We can now calculate the elapsed delta
-> >        * (event-)time and add that to the generic event.
-> > +      *
-> > +      * Careful, the counter is narrower than u64 and is not
-> > +      * sign-extended above its physical width.  Shift both values up
-> > +      * so that the subtraction wraps, then shift the result back down=
+and I'm assuming that this will be routed along with the rest of the series=
 .
-> >        */
-> > -     delta =3D new_raw_count - prev_raw_count;
-> > +     delta =3D (new_raw_count << shift) - (prev_raw_count << shift);
-> > +     delta >>=3D shift;
-> >
-> >       /*
-> >        * Scale delta to smallest unit (2^-32)
-> >
-> > base-commit: f5bbbfec59b4e2fb7520a91de3df8a6174325d6a
+
+Thanks!
+
+> ---
+>  drivers/thermal/thermal_hwmon.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 >
+> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hw=
+mon.c
+> index ec73d03a1e60..747ac87d1c37 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -269,10 +269,8 @@ int devm_thermal_add_hwmon_sysfs(struct device *dev,=
+ struct thermal_zone_device
+>
+>         ptr =3D devres_alloc(devm_thermal_hwmon_release, sizeof(*ptr),
+>                            GFP_KERNEL);
+> -       if (!ptr) {
+> -               dev_warn(dev, "Failed to allocate device resource data\n"=
+);
+> +       if (!ptr)
+>                 return -ENOMEM;
+> -       }
+>
+>         ret =3D thermal_add_hwmon_sysfs(tz);
+>         if (ret) {
 > --
-> Sathyanarayanan Kuppuswamy
-> Linux Kernel Developer
+> 2.43.0
 >
