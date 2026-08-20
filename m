@@ -1,125 +1,111 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 677C947AF56
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 16:23:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.46
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787243011; cv=pass; b=RBvXctCdlEhdyhobWu3H1BB3qurjBbYCYuKH2sroPO3Jw9wXQb6Q5jU/9MBaMK+WcODNKP7SAV9y98E1C4DM6AzJC/gVGyxt9XTB4bPIn3Trrym9mcvNjuOA6+qyYoC9/UJ4y0xAldBlNt5KjADF4n5uNZ9ICGd+Ct91OrOEl1o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787243011; c=relaxed/simple;
-	bh=nM7522pMTSm6ohXpjcirSMLxO2bUSl44i0fllcYRFAk=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E4A643BDD0
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 19:56:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787255796; cv=none; b=sqJyTuwxDO0tPdKNH1Iy2Brx/fRGvWVnqocdCqEJz0Xtg1NDRvKlNfzq530KhTfu73ebvOZBVWmrW/ccNTLX4UHwsAorcGdmAj+VVY02pqJ1hAMYvFKc8CA2db4GkIvxFVUAiBAs9uKek7Erow5cPEu7VkpZlHxFrBq3Tno86gs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787255796; c=relaxed/simple;
+	bh=9xrGMqmHjp1iEoXN6GQhHoDMjC0407aUDZbBVQacVyc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DoHi53YAHvmia9iICxLzsEXg+vs2XjQZr8CnQmQqS9iLk+0pk+MNosakF7PHobHBM9NoHfzvbMrxW5Ry4wMRWqfU3+k374uOv3peaYk78ETgs/os1yY6cHKeBImhBLz7ViOyHkaSKY2PUYQbsN3wKEP5Q9f2j44BjSqLHdWZDM4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bOlEWY0M; arc=pass smtp.client-ip=209.85.218.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=WYhcym9oaiVG0rbfB6Vb9qYBrBk/6M/Vc+EeGiMlFAo6KHZTlDQuz01k4ZMLzFihC6yGITAXPOcEQ7rXmYygkt66N9G85GjLmj1nXKLQJEbTzzAKXN9HdxdHjtSwd8RoZlk9EsDkp5l1mkjf9IuzBlo5ArTarP9ONlZuLqpU9WM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HYKeaJ8E; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bOlEWY0M"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-c15d111ca99so2764466b.0
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 09:23:29 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1787243008; cv=none;
-        d=google.com; s=arc-20260327;
-        b=RLXa0FwHjL8acVteoAUcpceWwICRHgzxo10DDHAD5Q95R0nsJKQKF+qQK5DG/qM54j
-         NaC3VHwUASfPrj863Z36tEH9qrUACv5g+gXFlS/6Rti6iEVhJ1YxBWhqFz7jxLK2zGOz
-         UuddtLJ0/XwnjvHv8nhkNY2ysZd4afgO6n0WURZQwfmOC/8q5oA5MZj3maDS1NdzK2O9
-         D8+ONnZwgiHXS/ZtjMHlPdj0BiOPFFWi0TUCSlXYxtUasPk/h98XtGA/WRBgyh5TFGKI
-         pXoj0FWhI7t6E3Z4S9YoIv8QrAl56CnUj8wPSvyleCxd/Zc0fbfgn2wpYO5ZabtZAmic
-         Kl/A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=yKhR9WkhIUiBs/DXzAMG9ly3j13B+5WjNx96hhgAatQ=;
-        fh=1nL4f5ijRX1wtrie5qVXqcIGHXjTPj50XS0NeJ9SQxM=;
-        b=j/N1Ae8REjTpkm5n4GtB/Pg+xvAtw9lEtTstim0EDrmgok6xLJsT1jyaisqzlqswvD
-         Je7l3lh8n9bx02lJuChTqpbXvd4iZ0zCYTg84GNqjadNf4IWhxQ1Dwnp84u2Sl4Z2yLl
-         R8gqNQpqCJGXPR+zpe6/i+RkfkT/T2mFLduDpabGyoZu86vBReokvG/e8GvJKTJsjno+
-         6MFh81I+GTVF1fe/xzwFlWQHTTHOap3as1H69GOXTwEhv9VQCcN7pgVd+4HPpiUOUsWr
-         8qi1ZYTvoKXOQXYL3JPbrCNIMSnyN2eg6RuS9hjrAXl+TqGmdlp6PZcwt+dRhvg/h7I1
-         hlBQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787243008; x=1787847808; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=yKhR9WkhIUiBs/DXzAMG9ly3j13B+5WjNx96hhgAatQ=;
-        b=bOlEWY0Mb292rIMAKTE6vd/2FxvUetWzvZEY63S9Avih8hLO9+PCK5rb0GHwFLtbKH
-         kk6Yyekz7v8JyRhvAMKxxrElNC5posK7Q/kEiwL2lTIIDaq9/a08fizXIo7lDyJrgqP0
-         b5gdhtWHvAoPgZjSNxI+CQ4NsOydysVImcu+u/xsGrEcKrPHk5smpVKqGROCgs7aVEkv
-         yFqwB/fLbbyTtVeP8L4wcLkSq/Ot1NHJjgJ8Y/wFGbCLecv3jNkvmi+gt/rtzxb6/A5F
-         2a6XcFm0RVzDVbzeeb5oq8dNKe2jOt7WD5xzQ7b54KuQM0ddOntBTLtv02t+AFfyfokM
-         Igwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787243008; x=1787847808;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=yKhR9WkhIUiBs/DXzAMG9ly3j13B+5WjNx96hhgAatQ=;
-        b=o4FbFk7tnr0sEP33+xqzb3yNASrIkuzy4EQ1D+yTUWzTkHicPtQBuxkpESSt3NDwRI
-         dBAK9IQXpOwatf72q685lXHVACULG9Lg+soX01vbJhNki6aHzYUgsi43k3VJ9dzIotDU
-         O0BWtVBRA8uzQyZYfelKF1UU6o2S5YG1S66k5j0paE+G6N4qYvmMjxiIAf3Uw9cAq6VD
-         bvnmLsWLEXHGdE8NcQQ2Zf90Ikfj4i3JIgma6fhAkjFx3JHY8vmYzCJBti527qg1vg67
-         FsE3QMvfRU0rCBnSJ7sOQxOSERd6IQIpFB4J+oo5A52yvy1tvVniOO2aP67D5mk0NDz9
-         Y1kQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rprr6CFcz3R0a48FUdANGSSZ19HljUbC8IXLmOb1EWrrFAHg/Vt9k4EislrB5VXnRAcgbd9x5Y/Pw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwrJx8kW1RD3ujxha6ftpZN8EDQd/ZizHw6uHlIYaykLcIOXRYx
-	62V83oj3fWK37CqQ2bhVIRIDlcLXUEwJvltuwsUkXGj12vMchmkd17xr95XUhYPrjaerdN7N85V
-	OgwJQYn6+tcqphwRP9EweFtp3NFDEcLA=
-X-Gm-Gg: AR+sD1037HzBJCEByfCWWUwz1eZt7CO8JhYUe9DWM0k+EzyHL41Gh67z0nu4ZZUffAg
-	gVPYpgvxoiqXR3dgWMsyDUbsVfY1gC5wBAr3SnZ2jMoFHyuprN11t73J56aRtHVETwECbFsRi6M
-	osCEop+UUoIdYXZOSJY8jyBi/z0mXu0gxwXQY6AERoN6TfA78x3GKbzziGHpe3fPqGE6y5JK3hI
-	ejAg6ElnSZi8rnTLxgqXQYXh0jm9mbgGrfC6liSJflEwlC1OcYPUafuhsCNvit+tB6h2PuVelrr
-	o3mVuYy+IpEGeHJX8xHe/rBEi7QHYpRcYusA4hopd40=
-X-Received: by 2002:a17:907:a647:b0:c12:9b93:61fd with SMTP id
- a640c23a62f3a-c23e86dd23fmr1141726266b.6.1787243007488; Thu, 20 Aug 2026
- 09:23:27 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HYKeaJ8E"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE2EA1F00A3A
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 19:56:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787255795;
+	bh=2z+2unxSg7GpmJ8c46gGp6qg6u61tYyclxOWI2BnMy0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=HYKeaJ8EVg6aGsDuj9/B5YPYYv77QXf5MiHsc0u+ouDTfnaWAXo2lhvov85FFOP5O
+	 ew7okj+jHT51Vg4F0TSLb2VDy743edetbSnVHaKqSPQZWA9xSzSQAaklTMedfFwUsc
+	 UdiOA82FRZ3Swyvjy2ydESqjyvOOcapxZTilQj89PPH4mkwF1+Lpvo8OwY69qXezFM
+	 7eMyQ026Pt1Oybz55UsbaZoP6siw3NqNl3KOJIojARir3k9JiBcy0G3m3Dv4wgJUVE
+	 6GmL/ar/02aaEQk4gf7NJhTqwgc1foDZzzOILnBYcKBWkq4yOxV57RzdsKhwf9e8qo
+	 bWSR/SWT/eZXA==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-39faf9e2c62so2329761fa.3
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:56:34 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoWnL+p2Ory8l8pPY+rR5OPK9HYf+Mma1xf8mHHcUVJH9csaGq0T2I+I2BGKPL2zmFTm52Uj8fMlw==@vger.kernel.org
+X-Gm-Message-State: AFuF++mCEBw1mKkyrXbTT9Cy747HbDm0f6pfcXVTb65jLAFD8Cn2qkUm
+	6iydQkT8l5oZ8HO8tgnBfdPQ7UQrq47xmI0E8aOhAyhkRBzRTs+PKzuq3CTaCytqaA5XVMvBYWW
+	Jp2FP7OR+YEmMN5x1QJTDeuEf8EbTeTw=
+X-Received: by 2002:a05:651c:2113:b0:39f:bc94:eba6 with SMTP id
+ 38308e7fff4ca-3a1aec5094fmr3023481fa.14.1787255793404; Thu, 20 Aug 2026
+ 12:56:33 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260820122242.120039-1-l.scorcia@gmail.com> <20260820122242.120039-2-l.scorcia@gmail.com>
-In-Reply-To: <20260820122242.120039-2-l.scorcia@gmail.com>
-From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Date: Thu, 20 Aug 2026 18:23:16 +0200
-X-Gm-Features: AcwNN1WN15gIPFE-wS5GMikP40k9b6tUzSd1TSg8R6uNQUbH06o6RfXy9sJzOY8
-Message-ID: <CAORyz2Lgo=teK89gxm6QBMfREY=_cAFN2TuLUFvwGcYpozkWww@mail.gmail.com>
-Subject: Re: [PATCH v9 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
-To: linux-mediatek@lists.infradead.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
-	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
-	Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Linus Walleij <linusw@kernel.org>, Val Packett <val@packett.cool>, 
-	Julien Massot <julien.massot@collabora.com>, Fabien Parent <parent.f@gmail.com>, 
-	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
-	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
+References: <20260726040303.280299-1-sumeet4linux@gmail.com> <CAJ9orWRp=zKJBHm1sS_ZiXuA8nhi-Cddi+s2JxWcfmsRdC7SwA@mail.gmail.com>
+In-Reply-To: <CAJ9orWRp=zKJBHm1sS_ZiXuA8nhi-Cddi+s2JxWcfmsRdC7SwA@mail.gmail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 20 Aug 2026 21:56:00 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jTx9=4pj90=VQ61tZ9A+qyX=rk6GM_Y1KSNG5kJrYarw@mail.gmail.com>
+X-Gm-Features: AcwNN1XJ2zyRBV_kNWLCPZVviT_UWkDEivEBvgUU8WMFKamGP1Va5GWPVjY_JDY
+Message-ID: <CAJZ5v0jTx9=4pj90=VQ61tZ9A+qyX=rk6GM_Y1KSNG5kJrYarw@mail.gmail.com>
+Subject: Re: [PATCH] powercap: intel_rapl: Fix kernel panic during PMU unbind
+To: "Sumeet R.P." <sumeet4linux@gmail.com>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> --- a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> @@ -40,6 +40,10 @@ properties:
->            - mediatek,mt6397
-> +      - items:
-> +          - enum:
-> +              - mediatek,mt6392
-> +          - const: mediatek,mt6323
->        - items:
+On Sat, Aug 15, 2026 at 8:45=E2=80=AFPM Sumeet R.P. <sumeet4linux@gmail.com=
+> wrote:
+>
+> On Sun, Jul 26, 2026 at 9:33=E2=80=AFAM Sumeet Pawnikar <sumeet4linux@gma=
+il.com> wrote:
+> >
+> > rapl_package_add_pmu() fails internally at perf_pmu_register(),
+> > and rapl_pmu_update() leaves the global rapl_pmu.pmu structure
+> > zero-initialized via memset and returns an error. But any
+> > previously probed packages retain has_pmu =3D true.
+> >
+> > When the driver is subsequently unbound or removed,
+> > rapl_package_remove_pmu_locked() sees has_pmu =3D=3D true and
+> > unconditionally calls perf_pmu_unregister(&rapl_pmu.pmu) on the
+> > zeroed-out structure. This attempts a list_del_rcu() on a NULL
+> > list head, immediately causing a kernel panic.
+> >
+> > Fix this by checking if the PMU is actually registered before
+> > attempting to unregister it.
+> >
+> > Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+>
+> Hi Rafael,
+>
+> Gentle ping.
+> Any chance for this to go into next rc ?
 
-Please disregard this patch/series. Sashiko correctly pointed out that
-it's not necessary and actually wrong to provide a fallback on
-"mediatek,mt6323", which was needed on a previous iteration of the
-series but not in the current one.
-I will mark the series as archived on patchwork and provide a revised
-v10 once completed testing on devices.
--- 
-Luca Leonardo Scorcia
-l.scorcia@gmail.com
+It looks like I lost track of it, sorry.
+
+Can you please resend it and make sure that your name in the S-o-b tag
+is the same as in the From: header?
+
+> > ---
+> >  drivers/powercap/intel_rapl_common.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/in=
+tel_rapl_common.c
+> > index 1006d183d508..22100f1ca222 100644
+> > --- a/drivers/powercap/intel_rapl_common.c
+> > +++ b/drivers/powercap/intel_rapl_common.c
+> > @@ -1652,7 +1652,8 @@ void rapl_package_remove_pmu_locked(struct rapl_p=
+ackage *rp)
+> >                         return;
+> >         }
+> >
+> > -       perf_pmu_unregister(&rapl_pmu.pmu);
+> > +       if (rapl_pmu.registered)
+> > +               perf_pmu_unregister(&rapl_pmu.pmu);
+> >         memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
+> >  }
+> >  EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu_locked, "INTEL_RAPL");
+> > --
+> > 2.43.0
+> >
