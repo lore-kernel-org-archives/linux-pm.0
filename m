@@ -1,297 +1,214 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1B3E44102D
-	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:27:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64AED442B2E
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:35:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787228852; cv=none; b=nCC77lP7lUrEQv5iu+jKcNji6rt5j8ASnC56dxEsS0lv8OQzrpNXBqvcIB9k9Wj0SGn5f3vdN5GtUPxua7jH1QXPH7FCe0OkGMWk1DAfLmdOOOyNc+QvEI0XVzJ2J+e5hS8AzWHwL6MjD2Ox1nXUlxs49auaBtqCNrwZSFbEN94=
+	t=1787229340; cv=none; b=FkuM8WptW8HYnoCUEP99t0xL6ZpcDrwKGLr82fYG61EViqm79QSKINnjVweSWWqmXhtno2NLyZ0XNkpVwWL+rRQqdWamwfxnYkrUqK/ugdjUhf7v0lb5QcFVj9I1V9ocde0hJmvlnrmGuJrxXKkLvYWLELROTC+z9Z0/qNFoHs0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787228852; c=relaxed/simple;
-	bh=V4KKdfr8DfRRh3LWQ8yuK8mbPU0WBdm0yMJnzWuIj64=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nt8n+UME2VVSBsczCegwd8SOU0zLU7NRSHDHBndwzTEYvObb1dupWpx5YSuHZjtf2HladdHj/Cc/uCg2NUb/le0g5P+MXDIDKGAtIZAFFvmIipscEk9IZhelU7CQbHgDjdenZHxq2b0amP1h85oKX65myoAWkGtk3/h9EF0zLTA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=p06fBsBf; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787229340; c=relaxed/simple;
+	bh=zLJG/f14PS8IWMmKFHbSudOFvttrq1FN6y5gEITIHpQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Gueb875j6a7L7BbbSnhbwArYVCy1nHRvgm6u3llmBCniwqeHYN5IbAQt42K0cUjTRSGGGE2L+hNcW7GGfHgDpI8LJ0BMUKRkNW0YjVlmCgPQlPpL4b7r9FUid/y0/V4I9d7QZUc1mW8aH+ire93D/m8teINfGXViwNHLD5WMzj8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=WCOjQ2Yz; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=PA0Po746; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p06fBsBf"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4956869750eso14231795e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 05:27:29 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="WCOjQ2Yz";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="PA0Po746"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67K8PC4K2465314
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:35:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	nvhd0zZOpOWlXPQG6hjDdSgimOp5ylGte8t4ByQ3TVI=; b=WCOjQ2Yz+ctme2+G
+	930MCKEQixYauFh2behIj4WORi+WRFrD3VgbG1s99Kr2Pwb/PBdfapRnmaVz7gdm
+	ZrL++AdweLK1nyEN26K6779di+4MSP/UI3+YYyXFsKPu4xj5VhFER/AkCmLhYu9L
+	UteIYKBg1uaPrldwpi6HNrkkUo0ozmKui9U9NWI5IQj0qr2ja7aIBgt2zkbz+0xJ
+	e9wi9+3PRSo8PLHwZtx0+MG9D3OxdHMMU+KmjbMYzwz3/qDNcUnF1g5FxyO7qKhb
+	zCCOFv/O5H512wkqgknQuP0eWbVnlPjhmAZrulvz9OUZfLDz7CRs/nMdkkqS3qlS
+	3qzz4A==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g5x29gx1j-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 12:35:38 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8486c3411c8so2559051b3a.2
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 05:35:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787228848; x=1787833648; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=0JuDNoBLL9wGwEY+LStgj97yBD0YrPno/mDC4ibcIpA=;
-        b=p06fBsBfpIth6O8wiSOBY4iM+2DAPrKpwLMriMWEkh5Js8QHKsLE0QHfJErH61ZJUJ
-         sO8GAGVWeLVaIOq9LkfFKB+C2qPZfPYz6Lf9rdIsMC/kUxbfOQTxtmUsPAeBNcpw0SmM
-         YnPZa2ot6wXBgeg6x+8JMA7Zb/w+1Mw1EFXDEMkw2po61ueVdIWXC23THp7pvZ0qQzwk
-         hUgYMSWadl9ztTAltbsAMk9aDLnvQPPyHEywuVuYak44+BlJJnbhW3Q69ikiJNLF1VEV
-         En3krF5s1dyPP6qBFM5eeLZ4Rm8m7Lr5j/kynWVT4o191jwMl7k/JIyNx/Nk6b2TOAsS
-         auRA==
+        d=oss.qualcomm.com; s=google; t=1787229338; x=1787834138; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=nvhd0zZOpOWlXPQG6hjDdSgimOp5ylGte8t4ByQ3TVI=;
+        b=PA0Po746V9ydMk1cYNPRnsAxf5UPB5dF7C1FPnC3d8xDPBSQXez9Utg9NaKpKWiHjk
+         gkeTEk3SwGu1XvCgniEgtZ0k0r32Ju1NOL8TjSa98mMearhRkQAgkxyrr3zbSD3YU+vK
+         ouyDbMzy+A21WvMYwBrorLi3BR+NBwVQylKqved/P/uT97UviiGjbPIj8N26i+l8Sg88
+         M4yOypcod/gGBNvHP+jlo66azQfW6LmKV1r1TLgVmV6nNl0ktlgXtcuWcZL729JHHDhC
+         WeIJ9VB7j7LCFZcbkTR0uNJ0D64fVqhcsiaIKtm6X5/Nu5zQrj9KsF+ZOQNOYJohr62W
+         pCYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787228848; x=1787833648;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0JuDNoBLL9wGwEY+LStgj97yBD0YrPno/mDC4ibcIpA=;
-        b=PHoY0DNVtBEhK7+rqvP6EIxOdltP1hKPsd7Xi11GNEVWDQluNegLMxizvUqD+aJ2iB
-         +esEKUozTVRIZ1xmnr+B85zvHDvxHLeKwirJe75/T9JwqLsQwgIStMBUDLxh+p5bhTzv
-         aD3TpHceNaOsDcAZkQqXhen92GzeKQm7YdRSc18xBfQkkfjWC7vsck1dGoyrH1nSGu/a
-         9zRq8QGtLRf2LlsGU4gl09QATcTdPf4zKH38wxL1+a51fJwwsV6HNSM2LgV0wU/3dMhu
-         eikrKn5vlSHoH+6S6R7r91l1sGHjvB8czOecErXU+SK9k+s4clm86sF790YDqUqaS0Uu
-         k/2Q==
-X-Forwarded-Encrypted: i=1; AHgh+RrDlRpb70jIzXv7/isFC9q3n2p0h96GtQzSN2L7CEUcPh7NGmzxUewPRqmefdeSCvhgFWRsRhD6Kg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywz5W1W6OvW65UPsNhElFgQVxkwn5fzFcxf/gjxaDCx8yFNPeMy
-	SNVVeDW04qZf6KI9AcXYMI9e8LOjX1sYFwCDMs8OsoSOvB6GE68Lwl0W
-X-Gm-Gg: AR+sD10cE81QGn1ftCImrl874HRfKOizhIW1O5VZE2TXUDBNBTeYktnJt3v/Kcm8Tzf
-	pBXuVvYBqmkbyQAQzAILvSzLxQT/z7UmSPLhJVrksXRkDg3gHe8x9SY6qBYubn+GXSzu/J/5XvH
-	KmoL6ZPsBDW54eguCJ4zuiLbVWRFuo9QalXnY2IuljdJ3VKNXa3ZMUQuMCyems8Y6yVxcXyc7OJ
-	nD3BZk9D2kB6yufIH0Lp/c6TPfsX1otlxXwlkMZmP7k45jvwXzAM/OWzbWj3GCE/hj0q1InG/A/
-	eUigifGQDNUt79GBDRVg9zvOI25Ia+PJjNUKyxrnb5j5wlQyjPMj9RIGemDpGtjpg1z+LNV36O0
-	xAa0C0dUzjOAf1k3yy/fldQMNf6L6PGxe9HURJRs8AZhS+6nJktyaapZ41bWVcaDoplkfD3zzDf
-	qkofGIi7jhosVDTEr+awQVpr72ma+MpmVFZaeCGdnARsrqdnLKjXgzJw==
-X-Received: by 2002:a05:600c:5253:b0:499:79b9:e226 with SMTP id 5b1f17b1804b1-499aa109edbmr192185265e9.0.1787228847876;
-        Thu, 20 Aug 2026 05:27:27 -0700 (PDT)
-Received: from luca-vm.. ([81.56.18.151])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-499ab2a8b34sm170494645e9.8.2026.08.20.05.27.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Aug 2026 05:27:27 -0700 (PDT)
-From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-To: linux-mediatek@lists.infradead.org
-Cc: Val Packett <val@packett.cool>,
-	Luca Leonardo Scorcia <l.scorcia@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>,
-	Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Julien Massot <julien.massot@collabora.com>,
-	Fabien Parent <parent.f@gmail.com>,
-	Akari Tsuyukusa <akkun11.open@gmail.com>,
-	Chen Zhong <chen.zhong@mediatek.com>,
-	linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mfd@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org
-Subject: [PATCH v9 9/9] arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
-Date: Thu, 20 Aug 2026 14:20:07 +0200
-Message-ID: <20260820122242.120039-10-l.scorcia@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260820122242.120039-1-l.scorcia@gmail.com>
-References: <20260820122242.120039-1-l.scorcia@gmail.com>
+        d=1e100.net; s=20251104; t=1787229338; x=1787834138;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nvhd0zZOpOWlXPQG6hjDdSgimOp5ylGte8t4ByQ3TVI=;
+        b=jUH6xQjes1JG/9cAjOrfI61Nb8x94ccRH0BBt0SLpqpc2jYak/f0qrppO68U28FZdA
+         TWt117WZfZDhCm6ZeUE7LoddkFb3BJt94SkAAjnUbcbfjzSVs7cOn7t1tN+g7qF1gCzc
+         e5CUjlPkezNbZ1JBNpHWk5Vn2MEFCc1c2IqdECiOxbzwdybj720RA82wsmgw7ElxEpar
+         oHtJLzJGozoWPntvzmuXhTPEcmRjeh4fiurtVZ9smrldw6XF+7DqkMnScBLcp/SXoBMc
+         ajz53y/0kqSGY69Yl+QSf5Purs4IeWMa83CixC/T5qUsu4/vgXooRpuUH+r0GYgIwKqF
+         ixoQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrL05jfma585pSO3AWyhdjuXc9+N9HXZdYvCRAgLJJ67rg/B0sXDBBgd6bktq/cu1t94Vqvot9tFA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw5RfpWNba6v8JiPfz8VJwOMGyBbUa3YHSvcLwLL8WaoI2sUVjY
+	rEfGir7efHAdtFzFPfkejl+82NNbDMAnftYd9b7qJW6T4/QluRRriBpmttzh4Rap6bjU1xUGUfZ
+	aKnQvv8YJ0omPqURwrzBUGJfrtkzgllbcADpu7HupUWNsCCBsxSPG7LCnerR8Kg==
+X-Gm-Gg: AR+sD11/OLAOq63sXdY7LCHLHxXCsyy2qoiR/AKON/07bYCbe6Q3YaBcvmlg354BAJP
+	fW7YeVulcvYTTJLoc+7oR1qdLdjoFeHStnE6QKpEeOjmPNteytmWNDEHIQBaQCG1JeREZXuWRvy
+	pSFZpVYk8FDl3vcDf3wF/DlcWvk6lw68Vzk6MzlwMofVN/CYT8unDhkY40HZXjEXvtqyXkmkL4F
+	S+J4IrDjwAuPKXc1qbIHk10oJ584aw795SSVKOrNuMHqqp4ncZSTZ4nLYQZTtn7qD4IkKoE1A4U
+	VDodtUdcrCkzmjsVcLt9Be2fG27vmL8SuQK7XhDh8EqvKuntVDJq/0Kc06T0jnhCn0RFj5lWbqC
+	8QX0tEFVrq6i5aLup/edVsw4j3B+VTbNJvWvrzlDgSqk+9C1C0HoYB3OFqhanpXuZdsIAYHb+
+X-Received: by 2002:a05:6a00:4c11:b0:84a:29a7:f650 with SMTP id d2e1a72fcca58-851d348dd44mr21853602b3a.0.1787229337933;
+        Thu, 20 Aug 2026 05:35:37 -0700 (PDT)
+X-Received: by 2002:a05:6a00:4c11:b0:84a:29a7:f650 with SMTP id d2e1a72fcca58-851d348dd44mr21853463b3a.0.1787229337347;
+        Thu, 20 Aug 2026 05:35:37 -0700 (PDT)
+Received: from [10.133.33.112] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc1556753b7sm1768171a12.16.2026.08.20.05.35.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 20 Aug 2026 05:35:36 -0700 (PDT)
+Message-ID: <49b8a931-f814-45c1-97f4-cbb825dec700@oss.qualcomm.com>
+Date: Thu, 20 Aug 2026 20:35:32 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/5] cpufreq: loongson3: Replace per-package mutex with
+ per-node
+To: Huacai Chen <chenhuacai@loongson.cn>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Huacai Chen <chenhuacai@kernel.org>
+Cc: loongarch@lists.linux.dev, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Xuerui Wang <kernel@xen0n.name>,
+        Jiaxun Yang <jiaxun.yang@flygoat.com>, stable@vger.kernel.org,
+        Hongliang Wang <wanghongliang@loongson.cn>,
+        zhongqiu.han@oss.qualcomm.com
+References: <20260818123921.3600606-1-chenhuacai@loongson.cn>
+ <20260818123921.3600606-4-chenhuacai@loongson.cn>
+ <3f352680-7090-456a-ab08-2d3367641783@oss.qualcomm.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <3f352680-7090-456a-ab08-2d3367641783@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: cwtCBYClxFdkrEXyxLEJJ1zcbUQmKogG
+X-Authority-Analysis: v=2.4 cv=V8BNF+ni c=1 sm=1 tr=0 ts=6a86f49a cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=VwQbUJbxAAAA:8 a=LayQR5MyJkDDx0UqswYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=IoOABgeZipijB_acs4fv:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIwMDA5MyBTYWx0ZWRfX8AtymjMvLuNo
+ vlWH6t7kgg9j3hb4W1F73/whYmJ7aYcZj4jSMo/skYCcuDyHwpAc4yES95sbAmTA2tEbrYf4g5c
+ fxS1uaLsR/KqEQ4aoMJZpLG9aeAqSAgMLp+ff+Nn8Z406FLjylGCuXG9FPtrKsrrA/1MPfP62KG
+ FPXDp1cobmwNM7xI9nzpoPy8ivEliuJHo578pXUo7zvg1FLmbbCRH3G+vE2ueJZUcXcKyNfYL9f
+ dHKLcVDD0cOCHUyTLCfyrQwUNE5ikjmaTZujuVKRfatTlUAgKCkndD1ZRnILdYaTcFDUJjp4lPf
+ 0tiMQK6Bv1UMR0jNV1cOj96OaE3IuGSRWDugPMSyu055Aaa426GFWgPoEPW/Hqzt/bHZpVXV0eM
+ qjeK86itGyaoiXjlH2KCGY9MHfoUltZ5QSkoJ08+6jrOAUdv4kv+KnM6lYEZamCCLW87R1jmFu6
+ Gwmnmog2ae29Bds5qwA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIwMDA5MyBTYWx0ZWRfX3FzQ0tB8eRIq
+ ODD0ci0pkt5cIfQ2LUw6QcMkfg7EOFYj5XSSiJ/VuSe6qt/dtPB8HwBOJKBTNhhHFCdBLCn7UZ+
+ IXEcGkvS9rOlTqUtzzMx8N/auRy2T0I=
+X-Proofpoint-GUID: cwtCBYClxFdkrEXyxLEJJ1zcbUQmKogG
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-19_06,2026-08-19_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 malwarescore=0 clxscore=1015 bulkscore=0 adultscore=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 suspectscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608200093
 
-From: Val Packett <val@packett.cool>
+On 8/20/2026 7:34 PM, Zhongqiu Han wrote:
+> On 8/18/2026 8:39 PM, Huacai Chen wrote:
+>> Our server productions (e.g. Loongson-3D6000/3E6000) can have multiple
+>> nodes in one package and SMC mailboxes are also per-node. So replace the
+>> per-package mutex with per-node one.
+>>
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Hongliang Wang <wanghongliang@loongson.cn>
+>> Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
+>> ---
+>>   drivers/cpufreq/loongson3_cpufreq.c | 14 +++++++-------
+>>   1 file changed, 7 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/ 
+>> loongson3_cpufreq.c
+>> index 630f679aa739..e3cd78a5ab18 100644
+>> --- a/drivers/cpufreq/loongson3_cpufreq.c
+>> +++ b/drivers/cpufreq/loongson3_cpufreq.c
+>> @@ -169,7 +169,7 @@ struct loongson3_freq_data {
+>>       struct cpufreq_frequency_table table[];
+>>   };
+>> -static struct mutex cpufreq_mutex[MAX_PACKAGES];
+>> +static struct mutex cpufreq_mutex[MAX_NUMNODES];
+>>   static struct cpufreq_driver loongson3_cpufreq_driver;
+>>   static DEFINE_PER_CPU(struct loongson3_freq_data *, freq_data);
+>> @@ -177,14 +177,14 @@ static inline int do_service_request(u32 id, u32 
+>> info, u32 cmd, u32 val, u32 ext
+>>   {
+>>       int retries;
+>>       unsigned int cpu = raw_smp_processor_id();
+>> -    unsigned int package = cpu_data[cpu].package;
+>> +    unsigned int nid = cpu_to_node(cpu);
 
-Add the dtsi to be included by all boards using the MT6392 PMIC,
-providing support for regulator, keys, pinctrl and RTC.
+What if NUMA is disabled?
 
-Import the new file in the shared device tree for the Pumpkin boards.
+>>       union smc_message msg, last;
+>> -    mutex_lock(&cpufreq_mutex[package]);
+>> +    mutex_lock(&cpufreq_mutex[nid]);
+>>       last.value = iocsr_read32(LOONGARCH_IOCSR_SMCMBX);
+>>       if (!last.complete) {
+>> -        mutex_unlock(&cpufreq_mutex[package]);
+>> +        mutex_unlock(&cpufreq_mutex[nid]);
+>>           return -EPERM;
+>>       }
+>> @@ -208,11 +208,11 @@ static inline int do_service_request(u32 id, u32 
+>> info, u32 cmd, u32 val, u32 ext
+>>       }
+>>       if (!msg.complete || msg.cmd != CMD_OK) {
+>> -        mutex_unlock(&cpufreq_mutex[package]);
+>> +        mutex_unlock(&cpufreq_mutex[nid]);
+>>           return -EPERM;
+>>       }
+>> -    mutex_unlock(&cpufreq_mutex[package]);
+>> +    mutex_unlock(&cpufreq_mutex[nid]);
+> 
+> An optimization independent of this patch: considering to use
+> guard(mutex)(xxx.lock)
+> 
+>>       return msg.val;
+>>   }
+>> @@ -337,7 +337,7 @@ static int loongson3_cpufreq_probe(struct 
+>> platform_device *pdev)
+>>   {
+>>       int i, ret;
+>> -    for (i = 0; i < MAX_PACKAGES; i++) {
+>> +    for (i = 0; i < MAX_NUMNODES; i++) {
+>>           ret = devm_mutex_init(&pdev->dev, &cpufreq_mutex[i]);
+>>           if (ret)
+>>               return ret;
+> 
+> 
 
-Signed-off-by: Val Packett <val@packett.cool>
-Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- arch/arm64/boot/dts/mediatek/mt6392.dtsi      | 145 ++++++++++++++++++
- .../boot/dts/mediatek/pumpkin-common.dtsi     |   7 +
- 2 files changed, 152 insertions(+)
- create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt6392.dtsi b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-new file mode 100644
-index 000000000000..69d63c153d9e
---- /dev/null
-+++ b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-@@ -0,0 +1,145 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2019 MediaTek Inc.
-+ * Copyright (c) 2024 Val Packett <val@packett.cool>
-+ * Copyright (c) 2026 Luca Leonardo Scorcia <l.scorcia@gmail.com>
-+ */
-+
-+#include <dt-bindings/input/input.h>
-+#include <dt-bindings/regulator/mediatek,mt6392-regulator.h>
-+
-+&pwrap {
-+	pmic: pmic {
-+		compatible = "mediatek,mt6392", "mediatek,mt6323";
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		mt6392keys: keys {
-+			compatible = "mediatek,mt6392-keys";
-+
-+			key-power {
-+				linux,keycodes = <KEY_POWER>;
-+				wakeup-source;
-+			};
-+
-+			key-home {
-+				linux,keycodes = <KEY_HOME>;
-+				wakeup-source;
-+			};
-+		};
-+
-+		mt6392pio: pinctrl {
-+			compatible = "mediatek,mt6392-pinctrl";
-+
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
-+
-+		mt6392regulators: regulators {
-+			compatible = "mediatek,mt6392-regulator";
-+
-+			/* Fixed supply defined in the data sheet */
-+			avddldo-supply = <&mt6392_vsys_reg>;
-+
-+			mt6392_vcore_reg: vcore {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_BUCK_MODE_FORCE_PWM>;
-+			};
-+			mt6392_vproc_reg: vproc {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_BUCK_MODE_FORCE_PWM>;
-+			};
-+			mt6392_vsys_reg: vsys {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_BUCK_MODE_FORCE_PWM>;
-+			};
-+			mt6392_vaud28_reg: vaud28 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vxo22_reg: vxo22 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vaud22_reg: vaud22 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vadc18_reg: vadc18 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcama_reg: vcama { };
-+			mt6392_vcn35_reg: vcn35 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vio28_reg: vio28 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vusb_reg: vusb {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vmc_reg: vmc {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vmch_reg: vmch {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vemc3v3_reg: vemc3v3 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcamaf_reg: vcamaf {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vgp1_reg: vgp1 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vgp2_reg: vgp2 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vefuse_reg: vefuse {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vm25_reg: vm25 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vdig18_reg: vdig18 { };
-+			mt6392_vm_reg: vm {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vio18_reg: vio18 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcn18_reg: vcn18 {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcamd_reg: vcamd {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vcamio_reg: vcamio {
-+				regulator-allowed-modes = <MT6392_REGULATOR_MODE_NORMAL
-+							   MT6392_LDO_MODE_LP>;
-+			};
-+			mt6392_vrtc_reg: vrtc { };
-+		};
-+
-+		mt6392rtc: rtc {
-+			compatible = "mediatek,mt6392-rtc", "mediatek,mt6323-rtc";
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi b/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-index 805fb82138a8..b19d5792bd89 100644
---- a/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/pumpkin-common.dtsi
-@@ -6,6 +6,8 @@
- 
- #include <dt-bindings/gpio/gpio.h>
- 
-+#include "mt6392.dtsi"
-+
- / {
- 	aliases {
- 		serial0 = &uart0;
-@@ -160,6 +162,11 @@ &i2c2 {
- 	status = "okay";
- };
- 
-+&pmic {
-+	interrupt-parent = <&pio>;
-+	interrupts = <28 IRQ_TYPE_LEVEL_HIGH>;
-+};
-+
- &uart0 {
- 	status = "okay";
- };
 -- 
-2.43.0
-
+Thx and BRs,
+Zhongqiu Han
