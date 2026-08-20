@@ -1,1251 +1,326 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4DD6409129;
-	Thu, 20 Aug 2026 10:03:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1651B40B375;
+	Thu, 20 Aug 2026 10:07:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787220230; cv=none; b=oP4xYSymXfT1j3mMx49acinwXReIfabN5A1VeQQeyksrc8n9kEh5dJO5AF1wLflsqp7H1bQ+hsRtLpGLbR/AMeG+QpKOjFWRqK0adq7VuraLwwV449NMVKneuGb+9zWD2fJLVt0RmB3Oa01796grbLrBME4TODdwdmpKQqYw0IA=
+	t=1787220464; cv=none; b=RnPsjMac8plDr229uA03G56W+S/+dNNWciXETJ8q5Tu9CNbvyW/w1KT/kOqINlEXA35Nf0GuhXXKkcZBIlksoN+MPumYD5rDQp995oyxbr1aeZ/p881FkqttHkbupQBZnwG4oOIiPq0QdFLW8joy2c33SWJlZDEQ0VfWkRWDb3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787220230; c=relaxed/simple;
-	bh=I0zLD7v3Utqh/e7TJLQ4Eye2xqMmBA+kHgl8fWwXlFg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SywgiUdAxpID5jIAlsbEjQYlv9+SeV+fi7jrR28h3KHMXIGOKoCetsHTSGyt8NEF9EMBXKcxuC9ONMiUKNtZ4vcoi5AxmQ6MR4I7i1snyBYt2+9HqnZhKFHX2dCVto9qSsDi6PneF0yiLk+bXZJk/6IMgUCwG9i52g+5s0W8mjQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D1lZ7Unv; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1787220464; c=relaxed/simple;
+	bh=usWo1lzd8oo9vsEU5DybwrGUexyd8AyKPlCgjho/PPs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=co0BR3jdYq4a6qRL8ZvUCBcnyE2yxKv3kyQ2yf+P/dtDRBpuA8h0BpumexZMHrAMbQ3ygup57snjFFgUxgSZS9mKfM2EvjNWQ9Rhgr1mbRduPe6nGVB8b2HbgYVZud7T9tUvwCcXVNQxPXGIwn+T1d737mG+LwMnwnmUNuHMzrw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=W3fN2njS; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D1lZ7Unv"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7E463C2BCC7;
-	Thu, 20 Aug 2026 10:03:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1787220230;
-	bh=I0zLD7v3Utqh/e7TJLQ4Eye2xqMmBA+kHgl8fWwXlFg=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=D1lZ7UnvE/9UVuQcGFX3IBXrwQBjdRBoyPJS2Mjq5JDdI3cxRiUiikEAgGuuLfYr5
-	 2Ll5ipEINjHufcCEO4mxMKQBP9J88Nbw1jrKt0dGuHh1+oJnUtIkCALMlc+k8Iq0xv
-	 WdSRopsQzuWuxTDUN1HaD+aOL/hOq8zbhPV8mqwuh7ojumCnx0ZdbIQpVsXL8XZtGp
-	 qfpt6hIhckpmPj00bHJR/wplR3Bivek/FtRDBzBCmACaptbTJcbavICO78dtZCO9oN
-	 J2BEw4tOOdWPjSotJV63aIIIpuLqDCY8LP/Omaz2c/QvfyzSiYz2ImZUI0wasuQgsR
-	 zmoEkEFv7GmQg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CFA9C5DF81;
-	Thu, 20 Aug 2026 10:03:50 +0000 (UTC)
-From: Robin Snyders via B4 Relay <devnull+robin.snyders.xyz@kernel.org>
-Date: Thu, 20 Aug 2026 12:03:50 +0200
-Subject: [PATCH v4 2/2] power: supply: qcom_smbx: add SMB5 support
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="W3fN2njS"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0D49114BF;
+	Thu, 20 Aug 2026 03:07:33 -0700 (PDT)
+Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 075B33FA32;
+	Thu, 20 Aug 2026 03:07:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1787220456; bh=usWo1lzd8oo9vsEU5DybwrGUexyd8AyKPlCgjho/PPs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=W3fN2njS5vpD6Lv/kYiW/UQHmfxT9X4J9QKQikeMOhoABP61v9ENQhdi0FW0JvfWV
+	 7tGgi4QB3Pmwe8w8vJOG33iAlA72bVpl8IV8dL+5rYs3JWZ2qS/vk3zM+VRzANtADI
+	 FICRUxIRRQ1ZD/zQOmNSVSw91kMqfGbYfPbeAQ5E=
+Message-ID: <15234e9c-b9a5-434d-836f-e2e2ebc036c9@arm.com>
+Date: Thu, 20 Aug 2026 11:07:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 00/15] ACPI: CPPC: Fix register access and lifetime
+ bugs
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+ Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com,
+ K Prateek Nayak <kprateek.nayak@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ jarredwhite@linux.microsoft.com, "Gautham R . Shenoy"
+ <gautham.shenoy@amd.com>,
+ Shubhang Kaushik OS <shubhang@os.amperecomputing.com>,
+ vanshikonda@os.amperecomputing.com
+References: <20260809062549.1415955-1-christian.loehle@arm.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260809062549.1415955-1-christian.loehle@arm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260820-submit-qcom-smbx-send-v1-v4-2-818dabb2771e@snyders.xyz>
-References: <20260820-submit-qcom-smbx-send-v1-v4-0-818dabb2771e@snyders.xyz>
-In-Reply-To: <20260820-submit-qcom-smbx-send-v1-v4-0-818dabb2771e@snyders.xyz>
-To: Casey Connolly <casey.connolly@linaro.org>, 
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: Robin Snyders <robin@snyders.xyz>, linux-arm-msm@vger.kernel.org, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
- Joel Selvaraj <foss@joelselvaraj.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787220228; l=39479;
- i=robin@snyders.xyz; s=default; h=from:subject:message-id;
- bh=o3SQF2QIbPIA8pCsTJDWBepzJElD7nbKfgU+CHA1pPY=;
- b=hF6BOrdPAguVCa3kOLIV/Jya3xBlEmxtDTVnaGWv8t64JiyODZqP4NWbde+U+NepeoCElqawM
- xZ+BH+SMG2aBsiNELf7Gv/RD40VcRUdoTwb0JP9+fPWyzkGTO0hTDty
-X-Developer-Key: i=robin@snyders.xyz; a=ed25519;
- pk=Mdk5dNn+Tkcy7BWexDxBLR/s1BNz8WdqDPnr3qtYBIU=
-X-Endpoint-Received: by B4 Relay for robin@snyders.xyz/default with
- auth_id=938
-X-Original-From: Robin Snyders <robin@snyders.xyz>
-Reply-To: robin@snyders.xyz
 
-From: Casey Connolly <casey.connolly@linaro.org>
+On 8/9/26 07:25, Christian Loehle wrote:
+> First of all, sorry this got so out of hand, initially this was just
+> trying to fix some relatively simple issues found by sashiko in an
+> earlier (unrelated) series.
+> But with me touching more and more code and going through rounds of AI
+> review that kept finding more and more pre-existing issues I've arrived
+> at this.
+> 
+> This series fixes correctness and robustness issues found while reviewing
+> the CPPC control path. They affect malformed _CPC handling, error
+> propagation, PCC ownership and cleanup, CPC object lifetime, register field
+> access, cross-processor aliases, and Performance Limited clearing.
+> 
+> Series structure
+> ================
+> 
+> Patches 1-8 are deliberately small, independently useful fixes. They
+> validate the _CPC encoding consumed by cppc-acpi, propagate control-write
+> errors, serialize PCC payload updates, correct 64-bit field masks, and fix
+> descriptor and PCC lifetime handling.
+> 
+> Patches 9-15 are the register-layout hardening portion. Geometry validation
+> is more substantial because safe RMW and alias handling depend on the
+> physical access unit, not merely on a logical _CPC entry or _PSD domain.
+> These patches normalize and validate each supported address space before
+> building probe-only physical interval registries. Keeping this work in the
+> same posting gives the complete safety boundary and a single base for
+> review, while each transport and bug retains its own Fixes provenance.
+> Feel free to treat the two parts as independent series, I didn't split it
+> because they're all technically fixes and to get Sashiko review for the
+> whole lot.
+> 
+> No interval lookup is added to the scheduler hot path. Full-width
+> SystemMemory writes remain lockless. RMW locking remains necessary only for
+> a partial field, where we must preserve the other bits in its access
+> unit. The existing per-descriptor raw lock continues to cover disjoint
+> partial fields within one _CPC package; probe rejects cross-descriptor
+> layouts that it cannot protect.
+> 
+> Parsing and control semantics
+> =============================
+> 
+> The parser now validates the package header before indexing it, bounds the
+> BYTE and DWORD Integer forms before conversion, and validates the Generic
+> Register descriptor consumed by cppc-acpi. NumEntries may not exceed the AML
+> package count, but additional trailing package elements are ignored because
+> doing so is safe and preserves compatibility with padded firmware. The parser
+> likewise tolerates trailing ResourceTemplate data instead of imposing a new
+> EndTag compatibility requirement.
+> 
+> Writable controls must be Buffer-encoded registers. Minimum and Maximum
+> Performance are checked as the pair required by ACPI 6.6 Sections
+> 8.4.6.1.2.1 and 8.4.6.1.2.2. Object presence is kept separate from the
+> Integer-zero convention for absent optional fields, so Lowest Performance
+> may retain the valid abstract value zero.
+> 
+> Performance Limited is one deliberate compatibility exception. ACPI lists
+> it as required, but permits a platform with no limiting indication to
+> always return zero, and deployed firmware represents that case with a NULL
+> descriptor. CPPC control does not depend on this status register, so we
+> continue to accept that encoding. A present _CPC package which otherwise
+> fails parsing or initialization now emits an error instead of silently
+> preventing cpufreq registration.
+> 
+> Compound performance and EPP updates propagate errors and perform every
+> fallible non-PCC write before modifying the PCC payload. Updates across
+> address spaces cannot be atomic, but a known non-PCC failure can no longer
+> commit only the PCC portion or leave an unsent value for a later command.
+> 
+> SystemMemory locking and support boundary
+> =========================================
+> 
+> A partial SystemMemory field requires RMW to preserve the rest of its
+> access unit. Commit 60949b7b8054 ("ACPI: CPPC: Fix MASK_VAL() usage") used
+> a per-_CPC lock and noted that a global lock would be needed if physical
+> registers were shared between packages.
+> 
+> ACPI does not make _PSD a physical-register ownership boundary. Rather than
+> put a global raw lock or lookup into the scheduler path, this series makes
+> the cheaper per-descriptor model's assumptions enforceable at probe.
+> 
+> Supported SystemMemory layouts are:
+> 
+>   - naturally aligned 8-, 16-, 32-, and 64-bit access units;
+>   - lockless full-width controls;
+>   - read-only aliases;
+>   - exact full-width writable aliases, including 64-bit aliases on 64-bit
+>     kernels;
+>   - disjoint partial writers within one descriptor, serialized by its
+>     rmw_lock; and
+>   - a partial writer sharing an access unit with a disjoint read-only
+>     field.
+> 
+> Probe rejects overlapping logical fields involving a writer, another field
+> inside a full-width writable access unit, cross-descriptor partial writers,
+> unaligned accesses, and exact writable 64-bit aliases on 32-bit kernels.
+> These layouts were not safely supported by the old per-descriptor lock or
+> generic writeq(); rejecting them turns possible corruption into a visible
+> probe failure rather than removing working support.
+> 
+> PCC access and locking
+> ======================
+> 
+> The PCC protocol requires OSPM to acquire the subspace before changing its
+> command or payload. Single-register and EPP updates now hold pcc_lock
+> across ownership acquisition, payload staging, and command submission.
+> 
+> ACPI 6.6's implementation example places a mandatory 32-bit Delivered
+> Performance Counter at unaligned PCC offset 0x116. Performance controls may
+> also use byte-multiple widths such as 24 bits. PCC therefore uses
+> byte-oriented I/O with explicit little-endian encoding for zero-offset,
+> byte-multiple fields from 8 through 64 bits. A short per-subspace payload
+> lock protects concurrent aliased copies made under the shared side of
+> pcc_lock; it does not replace the protocol ownership lock.
+> 
+> Bit-level PCC fields require RMW and remain unsupported. An unsupported
+> optional field is marked absent, but a present inaccessible CPPC Enable
+> fails probe because OSPM must write it before using CPPC. Thus the
+> ACPI-legal one-bit CPPC Enable used by the specification example is a
+> documented kernel limitation. The old accessor could not program it
+> correctly either, so an explicit error is safer than silently proceeding
+> without enabling CPPC.
+> 
+> Every retained PCC field is bounds checked against the shared-memory
+> region. A subspace-keyed interval registry permits read-only overlap and
+> exact same-control aliases while rejecting every other writable overlap
+> across processors.
+> 
+> SystemIO support boundary
+> =========================
+> 
+> SystemIO supports Bit Offset zero, full 8-, 16-, or 32-bit accesses ending
+> at or below port 0xffff, including legacy Access Size zero when Bit Width
+> supplies the size. Partial fields never worked because the driver neither
+> shifted them nor preserved adjacent bits, so they now fail visibly instead
+> of being misprogrammed.
+> 
+> On kernels without CONFIG_HAS_IOPORT, SystemIO entries are rejected or
+> disabled according to the affected control's semantics. Runtime accessors
+> also return -EOPNOTSUPP rather than treating an I/O port as a
+> physical-memory address. A global port interval registry rejects
+> cross-processor writable overlap.
+> 
+> Write-only and Performance Limited controls
+> ===========================================
+> 
+> Between _CPC revisions 3 and 4, Desired Performance changed from
+> Read/Write to Write, and revision 4 added write-only OSPM Nominal
+> Performance. ACPI 6.6 Section 4.6.3 says reads from write-only positions
+> are undefined. Explicit reads of both controls are rejected, as are
+> SystemMemory layouts which would implicitly read them for RMW. Full-width
+> writes remain supported.
+> 
+> Performance Limited is sticky, write-zero-to-clear, and requires
+> interlocked accesses under ACPI 6.6 Section 8.4.6.1.3.2. The old separate
+> read and write could clear a new event reported between transactions. The
+> clear path now writes zero only to requested status bits and one to the
+> other defined bits. Partial SystemMemory forms cannot be used because a
+> spinlock cannot interlock an enclosing RMW with platform updates. QWord
+> forms cannot be used on 32-bit kernels, where the MMIO accessor may be
+> split into two 32-bit operations; naturally aligned, full-width QWords
+> remain supported on 64-bit kernels. Since CPPC control does not depend on
+> Performance Limited status, an unusable description disables that status
+> register instead of rejecting the processor's otherwise usable _CPC.
+> 
+> Lifetime and cleanup
+> ====================
+> 
+> CPC descriptors are released through their kobject callback, keeping their
+> storage and mappings alive for outstanding sysfs references. Every PCC
+> allocation, reference, and acquired channel is unwound on probe failure,
+> and the per-CPU PCC index is initialized before every early return. PCC
+> allocation uses a separate temporary result, so its success cannot turn a
+> later parse failure into a successful probe return.
+> 
+> Changes since v2
+> ================
+> 
+>   - Relaxed the exact NumEntries/package-count match to tolerate safe trailing
+>     package elements while still rejecting any count that could cause an
+>     out-of-bounds walk.
+>   - Made patch 10 independently preserve immutable-autonomous setups whose
+>     inaccessible Desired Performance register requires RMW, rather than
+>     relying on patch 11 to restore that exception.
+>     
+> Sashiko v2 review not addressed 
+> ===============================
+> 
+>   - Kept Guaranteed Performance Buffer-only. The suggestion was to accept a
+>     nonzero Integer, but ACPI 6.6 Table 8.23 permits only a Buffer for this
+>     entry.
+> 
+> Deferred follow-up work
+> =======================
+> 
+> Sashiko also identified a broader pre-existing lifetime question which this
+> series does not attempt to solve. In-kernel accessors read the per-CPU
+> cpc_desc_ptr without acquiring a reference, while processor teardown can
+> unpublish and eventually release the descriptor and its PCC data. The kobject
+> change here fixes the concrete sysfs lifetime bug, but a NULL pcc_data check
+> would not protect a caller which already holds a stale pointer. Closing this
+> properly requires defining the kernel accessor lifetime contract and then
+> using CPU-hotplug serialization / safe referencing across all callers,
+> therefore will be handled by a follow-up.
+> 
+> ACPI-legal bit-level PCC and SystemIO fields also remain unsupported. In
+> particular, the ACPI example's one-bit PCC CPPC Enable register cannot be
+> implemented by the old whole-value accessors. Supporting these descriptions
+> requires transport-specific field extraction and an RMW operation which obeys
+> PCC ownership or safely preserves adjacent SystemIO bits, just accepting the
+> descriptors would silently program the wrong value. Therefore continue to
+> disable optional inaccessible fields where safe and reject a present
+> inaccessible CPPC Enable control.
+> Full support, if even needed, belongs in a separate follow-up.
+> 
+> The review additionally suggested validating the complete AML
+> ResourceTemplate, including its EndTag. We currently validate the Register
+> descriptor we consume and tolerate trailing firmware data. I don't really
+> see the point of ever doing this, but definitely not in this series,
+> where I'm trying to guarantee that no reasonably working platform is
+> regressing.
+> 
+> Patches 1, 2, 4-7, and 9 address findings reported by Sashiko while
+> reviewing:
+> 
+>   https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+> 
+> Patches 3, 5, 6, 9, 10, and 15 address findings from the follow-up review:
+> 
+>   https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
+> 
+> Patches 1 and 10 address findings from the v2 review:
+> 
+>   https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
+> 
+> The series is based on Rafael's bleeding-edge
+> 77acf59d7cf1 ("Merge branch 'acpi-cppc' into bleeding-edge")
+> the base-commit specified below is linux-next for Sashiko review.
+> It applies cleanly on either.
+> 
+> Christian Loehle (15):
+>   ACPI: CPPC: Validate the _CPC package header
+>   ACPI: CPPC: Validate _CPC entry and control semantics
+>   ACPI: CPPC: Propagate performance-control write errors
+>   ACPI: CPPC: Use 64-bit masks for register fields
+>   ACPI: CPPC: Serialize PCC single-register payload updates
+>   ACPI: CPPC: Serialize PCC EPP payload updates
+>   ACPI: CPPC: Release CPC descriptors through kobject
+>   ACPI: CPPC: Release PCC data after probe failures
+>   ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
+>   ACPI: CPPC: Reject reads and RMW of write-only controls
+>   ACPI: CPPC: Validate and access PCC register layouts
+>   ACPI: CPPC: Validate SystemIO register layouts
+>   ACPI: CPPC: Validate PCC overlaps across processors
+>   ACPI: CPPC: Validate SystemIO overlaps across processors
+>   ACPI: CPPC: Clear Performance Limited without a stale read
+> 
+>  drivers/acpi/cppc_acpi.c | 1298 ++++++++++++++++++++++++++++++++------
+>  include/acpi/cppc_acpi.h |    7 +-
+>  2 files changed, 1116 insertions(+), 189 deletions(-)
+> 
+> base-commit: ea2bff00da89d7767d677bb68470130ba96f4928
 
-Introduce support for the SMB5 charger found on PM7250B, PM8150B and
-related Qualcomm PMICs.
-
-SMB5 uses different DCDC status offsets, charger-state encodings and
-electrical ranges. Select these from per-PMIC match data, with PM7250B
-using the PM8150B compatible fallback and parameter block. Read
-overvoltage from the SMB5 status bit, use the already-prescaled IIO
-voltage reading, and convert the SMB5 current-sense voltage to microamps.
-Use battery-info property presence when selecting voltage and current
-targets.
-
-Keep Type-C power-role and VBUS control with the dedicated TCPM and
-regulator drivers. Clear the unsupported HVDCP negotiation modes so stale
-firmware settings cannot raise VBUS. Leave the firmware recharge policy
-unchanged and match the downstream default of ADC-based AICL disabled,
-while enabling periodic hardware AICL with its twelve-second SMB5 rerun
-interval. Preserve the existing three-second SMB2 interval.
-
-PM8150B places the charger and VBUS regulator in the same DCDC peripheral,
-but the SMB5 path does not write the regulator registers. qcom_smbx reads
-0x1108 and 0x110b, while qcom_usb_vbus-regulator writes 0x1140, 0x1152
-and 0x1153. The SMB2-only OTG configuration write to 0x1153 is not part
-of the SMB5 initialization sequence. The TCPM port and PD PHY use the
-separate 0x15xx and 0x17xx peripherals. Name the USBIN BC1.2 integration
-register and SMB2-only OTG definitions accordingly to make this ownership
-boundary explicit.
-
-Program the battery limits and complete SMB5 input and charging setup
-from the power-supply registration init callback before device_add
-publishes the properties. This makes all public callbacks safe without
-driver-specific probe synchronization.
-
-Suspend USB input and charging before SMB5 initialization. On a later
-failure, restore the original charging-enable state before the
-input-suspend state; leave the input suspended if charging cannot be
-restored. Cancel status work before unregistering the power supply during
-managed teardown. Update the Kconfig description to cover both charger
-generations.
-
-On a OnePlus 7T Pro, register reads from the initial implementation
-confirmed the programmed 4.40 V, 1.50 A and 500 mA limits. A 180-second
-guarded charging trace and a subsequent 600-second runtime trace
-completed without crossing the voltage guard.
-
-Signed-off-by: Casey Connolly <casey.connolly@linaro.org>
-Co-developed-by: Joel Selvaraj <foss@joelselvaraj.com>
-Signed-off-by: Joel Selvaraj <foss@joelselvaraj.com>
-Co-developed-by: Robin Snyders <robin@snyders.xyz>
-Signed-off-by: Robin Snyders <robin@snyders.xyz>
----
- drivers/power/supply/Kconfig     |   8 +-
- drivers/power/supply/qcom_smbx.c | 757 ++++++++++++++++++++++++++++++---------
- 2 files changed, 598 insertions(+), 167 deletions(-)
-
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index b89ef40df7f8..1159a7711919 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -1173,13 +1173,13 @@ config BATTERY_CHARGER_SURFACE_RT
- 	  will be called surface-rt-ec.
- 
- config CHARGER_QCOM_SMB2
--	tristate "Qualcomm PMI8998 PMIC charger driver"
-+	tristate "Qualcomm SMB2 and SMB5 charger driver"
- 	depends on MFD_SPMI_PMIC
- 	depends on IIO
- 	help
--	  Say Y here to enable the Qualcomm PMIC Charger driver. This
--	  adds support for the SMB2 switch mode battery charger found
--	  in PMI8998 and related PMICs.
-+	  Say Y here to enable the Qualcomm PMIC charger driver. This adds
-+	  support for the SMB2 and SMB5 switch-mode battery chargers found
-+	  in PMI8998, PM660, PM7250B and PM8150B PMICs.
- 
- config FUEL_GAUGE_MM8013
- 	tristate "Mitsumi MM8013 fuel gauge driver"
-diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
-index 71f5a4859412..bc2b1cd3ed68 100644
---- a/drivers/power/supply/qcom_smbx.c
-+++ b/drivers/power/supply/qcom_smbx.c
-@@ -23,6 +23,13 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- 
-+enum smb_generation {
-+	SMB2,
-+	SMB5,
-+};
-+
-+#define SMB_REG_OFFSET(smb) ((smb)->gen == SMB2 ? 0x600 : 0x100)
-+
- /* clang-format off */
- #define BATTERY_CHARGER_STATUS_1			0x06
- #define BVR_INITIAL_RAMP_BIT				BIT(7)
-@@ -34,14 +41,20 @@
- #define BATTERY_CHARGER_STATUS_2			0x07
- #define INPUT_CURRENT_LIMITED_BIT			BIT(7)
- #define CHARGER_ERROR_STATUS_SFT_EXPIRE_BIT		BIT(6)
--#define CHARGER_ERROR_STATUS_BAT_OV_BIT			BIT(5)
-+#define SMB2_CHARGER_ERROR_STATUS_BAT_OV_BIT		BIT(5)
- #define CHARGER_ERROR_STATUS_BAT_TERM_MISSING_BIT	BIT(4)
- #define BAT_TEMP_STATUS_MASK				GENMASK(3, 0)
- #define BAT_TEMP_STATUS_SOFT_LIMIT_MASK			GENMASK(3, 2)
--#define BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT		BIT(3)
--#define BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT		BIT(2)
--#define BAT_TEMP_STATUS_TOO_HOT_BIT			BIT(1)
--#define BAT_TEMP_STATUS_TOO_COLD_BIT			BIT(0)
-+#define SMB2_BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT		BIT(3)
-+#define SMB2_BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT	BIT(2)
-+#define SMB2_BAT_TEMP_STATUS_TOO_HOT_BIT			BIT(1)
-+#define SMB2_BAT_TEMP_STATUS_TOO_COLD_BIT		BIT(0)
-+
-+#define SMB5_CHARGER_ERROR_STATUS_BAT_OV_BIT		BIT(1)
-+#define SMB5_BAT_TEMP_STATUS_HOT_SOFT_BIT		BIT(5)
-+#define SMB5_BAT_TEMP_STATUS_COLD_SOFT_BIT		BIT(4)
-+#define SMB5_BAT_TEMP_STATUS_TOO_HOT_BIT			BIT(3)
-+#define SMB5_BAT_TEMP_STATUS_TOO_COLD_BIT		BIT(2)
- 
- #define BATTERY_CHARGER_STATUS_4			0x0A
- #define CHARGE_CURRENT_POST_JEITA_MASK			GENMASK(7, 0)
-@@ -78,10 +91,10 @@
- #define FLOAT_VOLTAGE_CFG				0x70
- #define FLOAT_VOLTAGE_SETTING_MASK			GENMASK(7, 0)
- 
--#define FG_UPDATE_CFG_2_SEL				0x7D
-+#define SMB2_FG_UPDATE_CFG_2_SEL			0x7D
- #define SOC_LT_OTG_THRESH_SEL_BIT			BIT(3)
--#define SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(2)
--#define VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(1)
-+#define SMB2_SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(2)
-+#define SMB2_VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT		BIT(1)
- #define IBT_LT_CHG_TERM_THRESH_SEL_BIT			BIT(0)
- 
- #define JEITA_EN_CFG					0x90
-@@ -101,13 +114,13 @@
- #define USBIN_LT_3P6V_RT_STS_BIT			BIT(1)
- #define USBIN_COLLAPSE_RT_STS_BIT			BIT(0)
- 
--#define OTG_CFG						0x153
-+#define SMB2_OTG_CFG					0x153
- #define OTG_RESERVED_MASK				GENMASK(7, 6)
- #define DIS_OTG_ON_TLIM_BIT				BIT(5)
- #define QUICKSTART_OTG_FASTROLESWAP_BIT			BIT(4)
- #define INCREASE_DFP_TIME_BIT				BIT(3)
- #define ENABLE_OTG_IN_DEBUG_MODE_BIT			BIT(2)
--#define OTG_EN_SRC_CFG_BIT				BIT(1)
-+#define SMB2_OTG_EN_SRC_CFG_BIT				BIT(1)
- #define CONCURRENT_MODE_CFG_BIT				BIT(0)
- 
- #define OTG_ENG_OTG_CFG					0x1C0
-@@ -189,10 +202,12 @@
- #define TYPEC_TRYSINK_DETECT_STATUS_BIT			BIT(0)
- 
- #define CMD_APSD					0x341
--#define ICL_OVERRIDE_BIT				BIT(1)
- #define APSD_RERUN_BIT					BIT(0)
- 
--#define TYPE_C_CFG					0x358
-+#define CMD_ICL_OVERRIDE				0x342
-+#define ICL_OVERRIDE_BIT				BIT(0)
-+
-+#define USBIN_TYPE_C_CFG				0x358
- #define APSD_START_ON_CC_BIT				BIT(7)
- #define WAIT_FOR_APSD_BIT				BIT(6)
- #define FACTORY_MODE_DETECTION_EN_BIT			BIT(5)
-@@ -260,7 +275,7 @@
- #define EXIT_SNK_BASED_ON_CC_BIT			BIT(7)
- #define VCONN_EN_ORIENTATION_BIT			BIT(6)
- #define TYPEC_VCONN_OVERCURR_INT_EN_BIT			BIT(5)
--#define VCONN_EN_SRC_BIT				BIT(4)
-+#define SMB2_VCONN_EN_SRC_BIT				BIT(4)
- #define VCONN_EN_VALUE_BIT				BIT(3)
- #define TYPEC_POWER_ROLE_CMD_MASK			GENMASK(2, 0)
- #define UFP_EN_CMD_BIT					BIT(2)
-@@ -274,7 +289,7 @@
- #define SUSPEND_ON_COLLAPSE_USBIN_BIT			BIT(7)
- #define USBIN_AICL_HDC_EN_BIT				BIT(6)
- #define USBIN_AICL_START_AT_MAX_BIT			BIT(5)
--#define USBIN_AICL_RERUN_EN_BIT				BIT(4)
-+#define USBIN_AICL_PERIODIC_RERUN_EN_BIT		BIT(4)
- #define USBIN_AICL_ADC_EN_BIT				BIT(3)
- #define USBIN_AICL_EN_BIT				BIT(2)
- #define USBIN_HV_COLLAPSE_RESPONSE_BIT			BIT(1)
-@@ -303,10 +318,12 @@
- #define AICL_SWITCH_ENABLE_BIT				BIT(1)
- #define ZIN_ICL_ENABLE_BIT				BIT(0)
- 
--#define ICL_STATUS					0x607
- #define INPUT_CURRENT_LIMIT_MASK			GENMASK(7, 0)
- 
--#define POWER_PATH_STATUS				0x60B
-+#define SMB2_ICL_STATUS					0x607
-+#define SMB5_AICL_ICL_STATUS				0x108
-+
-+#define POWER_PATH_STATUS(smb)				(SMB_REG_OFFSET(smb) + 0x0B)
- #define P_PATH_INPUT_SS_DONE_BIT			BIT(7)
- #define P_PATH_USBIN_SUSPEND_STS_BIT			BIT(6)
- #define P_PATH_DCIN_SUSPEND_STS_BIT			BIT(5)
-@@ -335,6 +352,8 @@
- 
- #define AICL_RERUN_TIME_CFG				0x661
- #define AICL_RERUN_TIME_MASK				GENMASK(1, 0)
-+#define AICL_RERUN_TIME_3_SECS				0
-+#define AICL_RERUN_TIME_12_SECS				1
- 
- #define STAT_CFG					0x690
- #define STAT_SW_OVERRIDE_VALUE_BIT			BIT(7)
-@@ -350,22 +369,30 @@
- #define DCP_CURRENT_UA					1500000
- #define CURRENT_MAX_UA					DCP_CURRENT_UA
- 
--/* pmi8998 registers represent current in increments of 1/40th of an amp */
--#define CURRENT_SCALE_FACTOR				25000
--#define SMB2_FLOAT_VOLTAGE_MIN_UV			3487500
--#define SMB2_FLOAT_VOLTAGE_MAX_UV			4920000
--#define SMB2_FLOAT_VOLTAGE_STEP_UV			7500
-+/* PMI8998 registers represent current in increments of 1/40th of an amp. */
-+#define SMB2_CURRENT_STEP_UA				25000
- /* clang-format on */
- 
--enum charger_status {
--	TRICKLE_CHARGE = 0,
--	PRE_CHARGE,
--	FAST_CHARGE,
--	FULLON_CHARGE,
--	TAPER_CHARGE,
--	TERMINATE_CHARGE,
--	INHIBIT_CHARGE,
--	DISABLE_CHARGE,
-+enum smb2_charger_status {
-+	SMB2_TRICKLE_CHARGE = 0,
-+	SMB2_PRE_CHARGE,
-+	SMB2_FAST_CHARGE,
-+	SMB2_FULLON_CHARGE,
-+	SMB2_TAPER_CHARGE,
-+	SMB2_TERMINATE_CHARGE,
-+	SMB2_INHIBIT_CHARGE,
-+	SMB2_DISABLE_CHARGE,
-+};
-+
-+enum smb5_charger_status {
-+	SMB5_INHIBIT_CHARGE = 0,
-+	SMB5_TRICKLE_CHARGE,
-+	SMB5_PRE_CHARGE,
-+	SMB5_FULLON_CHARGE,
-+	SMB5_TAPER_CHARGE,
-+	SMB5_TERMINATE_CHARGE,
-+	SMB5_PAUSE_CHARGE,
-+	SMB5_DISABLE_CHARGE,
- };
- 
- struct smb_init_register {
-@@ -374,13 +401,21 @@ struct smb_init_register {
- 	u8 val;
- };
- 
-+struct smb_match_data;
-+
- /**
-  * struct smb_chip - smb chip structure
-  * @dev:		Device reference for power_supply
-  * @name:		The platform device name
-  * @base:		Base address for smb registers
-  * @regmap:		Register map
-- * @batt_info:		Battery data from DT
-+ * @match_data:		Per-PMIC hardware parameters
-+ * @gen:		Charger hardware generation
-+ * @icl_max_ua:		Maximum programmable USB input current
-+ * @icl_step_ua:	USB input current register step
-+ * @icl_status:		Effective input current status register offset
-+ * @usbin_current_scale: USB input current-sense scale
-+ * @initial_usb_suspend:	USB input suspend state before SMB5 setup
-  * @initial_charge_enable: Charging enable state before hardware setup
-  * @status_change_work: Worker to handle plug/unplug events
-  * @cable_irq:		USB plugin IRQ
-@@ -394,7 +429,13 @@ struct smb_chip {
- 	const char *name;
- 	unsigned int base;
- 	struct regmap *regmap;
--	struct power_supply_battery_info *batt_info;
-+	const struct smb_match_data *match_data;
-+	enum smb_generation gen;
-+	unsigned int icl_max_ua;
-+	unsigned int icl_step_ua;
-+	u16 icl_status;
-+	unsigned int usbin_current_scale;
-+	u8 initial_usb_suspend;
- 	u8 initial_charge_enable;
- 
- 	struct delayed_work status_change_work;
-@@ -407,6 +448,22 @@ struct smb_chip {
- 	struct power_supply *chg_psy;
- };
- 
-+struct smb_match_data {
-+	const char *name;
-+	enum smb_generation gen;
-+	size_t init_seq_len;
-+	unsigned int fv_min_uv;
-+	unsigned int fv_max_uv;
-+	unsigned int fv_step_uv;
-+	unsigned int fcc_max_ua;
-+	unsigned int fcc_step_ua;
-+	unsigned int icl_max_ua;
-+	unsigned int icl_step_ua;
-+	u16 icl_status;
-+	unsigned int usbin_current_scale;
-+	const struct smb_init_register *init_seq;
-+};
-+
- static enum power_supply_property smb_properties[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
-@@ -424,7 +481,7 @@ static int smb_get_prop_usb_online(struct smb_chip *chip, int *val)
- 	unsigned int stat;
- 	int rc;
- 
--	rc = regmap_read(chip->regmap, chip->base + POWER_PATH_STATUS, &stat);
-+	rc = regmap_read(chip->regmap, chip->base + POWER_PATH_STATUS(chip), &stat);
- 	if (rc < 0) {
- 		dev_err(chip->dev, "Couldn't read power path status: %d\n", rc);
- 		return rc;
-@@ -479,9 +536,80 @@ static int smb_apsd_get_charger_type(struct smb_chip *chip, int *val)
- 	return 0;
- }
- 
-+/* Return 1 when in overvoltage state, else 0 or -errno */
-+static int smbx_ov_status(struct smb_chip *chip)
-+{
-+	u8 mask;
-+	int rc;
-+	u32 val;
-+
-+	switch (chip->gen) {
-+	case SMB2:
-+		mask = SMB2_CHARGER_ERROR_STATUS_BAT_OV_BIT;
-+		break;
-+	case SMB5:
-+		mask = SMB5_CHARGER_ERROR_STATUS_BAT_OV_BIT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	rc = regmap_read(chip->regmap,
-+			 chip->base + BATTERY_CHARGER_STATUS_2, &val);
-+	if (rc)
-+		return rc;
-+
-+	return !!(val & mask);
-+}
-+
-+static int smb_map_charge_status(struct smb_chip *chip, u32 stat, int *val)
-+{
-+	switch (chip->gen) {
-+	case SMB2:
-+		switch (stat) {
-+		case SMB2_TRICKLE_CHARGE:
-+		case SMB2_PRE_CHARGE:
-+		case SMB2_FAST_CHARGE:
-+		case SMB2_FULLON_CHARGE:
-+		case SMB2_TAPER_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_CHARGING;
-+			return 0;
-+		case SMB2_TERMINATE_CHARGE:
-+		case SMB2_INHIBIT_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_FULL;
-+			return 0;
-+		case SMB2_DISABLE_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			return 0;
-+		}
-+		break;
-+	case SMB5:
-+		switch (stat) {
-+		case SMB5_TRICKLE_CHARGE:
-+		case SMB5_PRE_CHARGE:
-+		case SMB5_FULLON_CHARGE:
-+		case SMB5_TAPER_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_CHARGING;
-+			return 0;
-+		case SMB5_TERMINATE_CHARGE:
-+		case SMB5_INHIBIT_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_FULL;
-+			return 0;
-+		case SMB5_PAUSE_CHARGE:
-+		case SMB5_DISABLE_CHARGE:
-+			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			return 0;
-+		}
-+		break;
-+	}
-+
-+	*val = POWER_SUPPLY_STATUS_UNKNOWN;
-+	return 0;
-+}
-+
- static int smb_get_prop_status(struct smb_chip *chip, int *val)
- {
--	unsigned char stat[2];
-+	u32 stat;
- 	int usb_online = 0;
- 	int rc;
- 
-@@ -491,49 +619,36 @@ static int smb_get_prop_status(struct smb_chip *chip, int *val)
- 		return rc;
- 	}
- 
--	rc = regmap_bulk_read(chip->regmap,
--			      chip->base + BATTERY_CHARGER_STATUS_1, &stat, 2);
-+	rc = regmap_read(chip->regmap,
-+			 chip->base + BATTERY_CHARGER_STATUS_1, &stat);
- 	if (rc < 0) {
- 		dev_err(chip->dev, "Failed to read charging status ret=%d\n",
- 			rc);
- 		return rc;
- 	}
- 
--	if (stat[1] & CHARGER_ERROR_STATUS_BAT_OV_BIT) {
-+	rc = smbx_ov_status(chip);
-+	if (rc < 0)
-+		return rc;
-+
-+	/* In overvoltage state */
-+	if (rc == 1) {
- 		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		return 0;
- 	}
- 
--	stat[0] = stat[0] & BATTERY_CHARGER_STATUS_MASK;
-+	stat &= BATTERY_CHARGER_STATUS_MASK;
- 
--	switch (stat[0]) {
--	case TRICKLE_CHARGE:
--	case PRE_CHARGE:
--	case FAST_CHARGE:
--	case FULLON_CHARGE:
--	case TAPER_CHARGE:
--		*val = POWER_SUPPLY_STATUS_CHARGING;
--		return rc;
--	case DISABLE_CHARGE:
--		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
--		return rc;
--	case TERMINATE_CHARGE:
--	case INHIBIT_CHARGE:
--		*val = POWER_SUPPLY_STATUS_FULL;
--		return rc;
--	default:
--		*val = POWER_SUPPLY_STATUS_UNKNOWN;
--		return rc;
--	}
-+	return smb_map_charge_status(chip, stat, val);
- }
- 
- static inline int smb_get_current_limit(struct smb_chip *chip,
- 					 unsigned int *val)
- {
--	int rc = regmap_read(chip->regmap, chip->base + ICL_STATUS, val);
-+	int rc = regmap_read(chip->regmap, chip->base + chip->icl_status, val);
- 
- 	if (rc >= 0)
--		*val *= CURRENT_SCALE_FACTOR;
-+		*val *= chip->icl_step_ua;
- 	return rc;
- }
- 
-@@ -541,12 +656,13 @@ static int smb_set_current_limit(struct smb_chip *chip, unsigned int val)
- {
- 	unsigned char val_raw;
- 
--	if (val > 4800000) {
-+	if (val > chip->icl_max_ua) {
- 		dev_err(chip->dev,
--			"Can't set current limit higher than 4800000uA");
-+			"Can't set current limit higher than %uuA",
-+			chip->icl_max_ua);
- 		return -EINVAL;
- 	}
--	val_raw = val / CURRENT_SCALE_FACTOR;
-+	val_raw = val / chip->icl_step_ua;
- 
- 	return regmap_write(chip->regmap, chip->base + USBIN_CURRENT_LIMIT_CFG,
- 			    val_raw);
-@@ -607,12 +723,10 @@ static void smb_status_change_work(struct work_struct *work)
- static int smb_get_iio_chan(struct smb_chip *chip, struct iio_channel *chan,
- 			     int *val)
- {
--	int rc;
--	union power_supply_propval status;
-+	int rc, status;
- 
--	rc = power_supply_get_property(chip->chg_psy, POWER_SUPPLY_PROP_STATUS,
--				       &status);
--	if (rc < 0 || status.intval != POWER_SUPPLY_STATUS_CHARGING) {
-+	rc = smb_get_prop_status(chip, &status);
-+	if (rc < 0 || status != POWER_SUPPLY_STATUS_CHARGING) {
- 		*val = 0;
- 		return 0;
- 	}
-@@ -625,7 +739,61 @@ static int smb_get_iio_chan(struct smb_chip *chip, struct iio_channel *chan,
- 	return iio_read_channel_processed(chan, val);
- }
- 
--static int smb_get_prop_health(struct smb_chip *chip, int *val)
-+static int smb_get_prop_current_now(struct smb_chip *chip, int *val)
-+{
-+	s64 current_ua;
-+	int rc;
-+
-+	rc = smb_get_iio_chan(chip, chip->usb_in_i_chan, val);
-+	if (rc < 0)
-+		return rc;
-+
-+	current_ua = (s64)*val * chip->usbin_current_scale;
-+	if (current_ua < INT_MIN || current_ua > INT_MAX)
-+		return -ERANGE;
-+
-+	*val = (int)current_ua;
-+	return 0;
-+}
-+
-+static int smb5_get_prop_health(struct smb_chip *chip, int *val)
-+{
-+	int rc;
-+	unsigned int stat;
-+
-+	rc = smbx_ov_status(chip);
-+	if (rc < 0) {
-+		dev_err(chip->dev,
-+			"Couldn't determine overvoltage status: %d\n", rc);
-+		return rc;
-+	}
-+	if (rc) {
-+		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		return 0;
-+	}
-+
-+	rc = regmap_read(chip->regmap, chip->base + BATTERY_CHARGER_STATUS_7,
-+			 &stat);
-+	if (rc < 0) {
-+		dev_err(chip->dev, "Couldn't read charger status 7 rc=%d\n", rc);
-+		return rc;
-+	}
-+
-+	if (stat & SMB5_BAT_TEMP_STATUS_TOO_COLD_BIT)
-+		*val = POWER_SUPPLY_HEALTH_COLD;
-+	else if (stat & SMB5_BAT_TEMP_STATUS_TOO_HOT_BIT)
-+		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
-+	else if (stat & SMB5_BAT_TEMP_STATUS_COLD_SOFT_BIT)
-+		*val = POWER_SUPPLY_HEALTH_COOL;
-+	else if (stat & SMB5_BAT_TEMP_STATUS_HOT_SOFT_BIT)
-+		*val = POWER_SUPPLY_HEALTH_WARM;
-+	else
-+		*val = POWER_SUPPLY_HEALTH_GOOD;
-+
-+	return 0;
-+}
-+
-+static int smb2_get_prop_health(struct smb_chip *chip, int *val)
- {
- 	int rc;
- 	unsigned int stat;
-@@ -637,15 +805,15 @@ static int smb_get_prop_health(struct smb_chip *chip, int *val)
- 		return rc;
- 	}
- 
--	if (stat & CHARGER_ERROR_STATUS_BAT_OV_BIT)
-+	if (stat & SMB2_CHARGER_ERROR_STATUS_BAT_OV_BIT)
- 		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
--	else if (stat & BAT_TEMP_STATUS_TOO_COLD_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_TOO_COLD_BIT)
- 		*val = POWER_SUPPLY_HEALTH_COLD;
--	else if (stat & BAT_TEMP_STATUS_TOO_HOT_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_TOO_HOT_BIT)
- 		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
--	else if (stat & BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_COLD_SOFT_LIMIT_BIT)
- 		*val = POWER_SUPPLY_HEALTH_COOL;
--	else if (stat & BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT)
-+	else if (stat & SMB2_BAT_TEMP_STATUS_HOT_SOFT_LIMIT_BIT)
- 		*val = POWER_SUPPLY_HEALTH_WARM;
- 	else
- 		*val = POWER_SUPPLY_HEALTH_GOOD;
-@@ -653,6 +821,19 @@ static int smb_get_prop_health(struct smb_chip *chip, int *val)
- 	return 0;
- }
- 
-+static int smb_get_prop_health(struct smb_chip *chip, int *val)
-+{
-+	switch (chip->gen) {
-+	case SMB2:
-+		return smb2_get_prop_health(chip, val);
-+	case SMB5:
-+		return smb5_get_prop_health(chip, val);
-+	default:
-+		dev_err(chip->dev, "unsupported SMB chip generation\n");
-+		return -EINVAL;
-+	}
-+}
-+
- static int smb_get_property(struct power_supply *psy,
- 			     enum power_supply_property psp,
- 			     union power_supply_propval *val)
-@@ -669,8 +850,7 @@ static int smb_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
- 		return smb_get_current_limit(chip, &val->intval);
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
--		return smb_get_iio_chan(chip, chip->usb_in_i_chan,
--					 &val->intval);
-+		return smb_get_prop_current_now(chip, &val->intval);
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 		return smb_get_iio_chan(chip, chip->usb_in_v_chan,
- 					 &val->intval);
-@@ -721,17 +901,15 @@ static int smb_property_is_writable(struct power_supply *psy,
- static irqreturn_t smb_handle_batt_overvoltage(int irq, void *data)
- {
- 	struct smb_chip *chip = data;
--	unsigned int status;
- 	int rc;
- 
--	rc = regmap_read(chip->regmap,
--			 chip->base + BATTERY_CHARGER_STATUS_2, &status);
-+	rc = smbx_ov_status(chip);
- 	if (rc < 0) {
--		dev_err(chip->dev, "Couldn't read charger status: %d\n", rc);
-+		dev_err(chip->dev, "could not read overvoltage status: %d\n", rc);
- 		return IRQ_HANDLED;
- 	}
- 
--	if (status & CHARGER_ERROR_STATUS_BAT_OV_BIT) {
-+	if (rc) {
- 		/* The hardware stops charging automatically */
- 		dev_err(chip->dev, "battery overvoltage detected\n");
- 	}
-@@ -777,6 +955,144 @@ static irqreturn_t smb_handle_wdog_bark(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
-+static bool smb_batt_info_has_prop(struct power_supply_battery_info *batt_info,
-+				   enum power_supply_property prop)
-+{
-+	return power_supply_battery_info_has_prop(batt_info, prop);
-+}
-+
-+static int smb_power_supply_init(struct power_supply *psy)
-+{
-+	struct smb_chip *chip = power_supply_get_drvdata(psy);
-+	const struct smb_match_data *match_data = chip->match_data;
-+	struct power_supply_battery_info *batt_info;
-+	unsigned int fast_charge_current_sel;
-+	unsigned int float_voltage_sel;
-+	bool program_float_voltage = true;
-+	int fast_charge_current_ua;
-+	int float_voltage_uv;
-+	int rc;
-+
-+	rc = power_supply_get_battery_info(psy, &batt_info);
-+	if (rc)
-+		return dev_err_probe(chip->dev, rc,
-+				     "Failed to get battery info\n");
-+
-+	if (smb_batt_info_has_prop(batt_info,
-+				   POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)) {
-+		float_voltage_uv = batt_info->constant_charge_voltage_max_uv;
-+	} else if (smb_batt_info_has_prop(batt_info,
-+					  POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN)) {
-+		float_voltage_uv = batt_info->voltage_max_design_uv;
-+	} else {
-+		dev_warn(chip->dev,
-+			 "No battery float voltage; preserving hardware setting\n");
-+		program_float_voltage = false;
-+	}
-+
-+	if (program_float_voltage) {
-+		if (float_voltage_uv < match_data->fv_min_uv ||
-+		    float_voltage_uv > match_data->fv_max_uv) {
-+			rc = dev_err_probe(chip->dev, -EINVAL,
-+					   "float voltage %d uV outside %u-%u uV\n",
-+					   float_voltage_uv,
-+					   match_data->fv_min_uv,
-+					   match_data->fv_max_uv);
-+			goto out_put_batt_info;
-+		}
-+
-+		float_voltage_sel =
-+			(float_voltage_uv - match_data->fv_min_uv) /
-+			match_data->fv_step_uv;
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + FLOAT_VOLTAGE_CFG,
-+					FLOAT_VOLTAGE_SETTING_MASK,
-+					float_voltage_sel);
-+		if (rc < 0) {
-+			rc = dev_err_probe(chip->dev, rc,
-+					   "could not set float voltage\n");
-+			goto out_put_batt_info;
-+		}
-+	}
-+
-+	if (chip->gen == SMB5) {
-+		if (smb_batt_info_has_prop(batt_info,
-+					   POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX))
-+			fast_charge_current_ua =
-+				batt_info->constant_charge_current_max_ua;
-+		else
-+			fast_charge_current_ua = DCP_CURRENT_UA;
-+
-+		if (fast_charge_current_ua > match_data->fcc_max_ua) {
-+			rc = dev_err_probe(chip->dev, -EINVAL,
-+					   "fast charge current %d uA exceeds %u uA\n",
-+					   fast_charge_current_ua,
-+					   match_data->fcc_max_ua);
-+			goto out_put_batt_info;
-+		}
-+
-+		fast_charge_current_sel = fast_charge_current_ua /
-+			match_data->fcc_step_ua;
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + FAST_CHARGE_CURRENT_CFG,
-+					FAST_CHARGE_CURRENT_SETTING_MASK,
-+					fast_charge_current_sel);
-+		if (rc < 0) {
-+			rc = dev_err_probe(chip->dev, rc,
-+					   "could not set fast charge current\n");
-+			goto out_put_batt_info;
-+		}
-+
-+		rc = smb_set_current_limit(chip, SDP_CURRENT_UA);
-+		if (rc < 0) {
-+			rc = dev_err_probe(chip->dev, rc,
-+					   "could not set USB input current\n");
-+			goto out_put_batt_info;
-+		}
-+
-+		if (program_float_voltage)
-+			dev_info(chip->dev,
-+				 "charge limits: float=%u uV fast=%u uA input=%u uA\n",
-+				 match_data->fv_min_uv +
-+				 float_voltage_sel * match_data->fv_step_uv,
-+				 fast_charge_current_sel * match_data->fcc_step_ua,
-+				 SDP_CURRENT_UA);
-+		else
-+			dev_info(chip->dev,
-+				 "charge limits: float=firmware fast=%u uA input=%u uA\n",
-+				 fast_charge_current_sel * match_data->fcc_step_ua,
-+				 SDP_CURRENT_UA);
-+	}
-+
-+	rc = 0;
-+
-+out_put_batt_info:
-+	power_supply_put_battery_info(psy, batt_info);
-+
-+	if (rc)
-+		return rc;
-+
-+	if (chip->gen != SMB5)
-+		return 0;
-+
-+	rc = regmap_update_bits(chip->regmap,
-+				chip->base + CHARGING_ENABLE_CMD,
-+				CHARGING_ENABLE_CMD_BIT,
-+				CHARGING_ENABLE_CMD_BIT);
-+	if (rc < 0)
-+		return dev_err_probe(chip->dev, rc,
-+				     "could not enable charging\n");
-+
-+	rc = regmap_update_bits(chip->regmap,
-+				chip->base + USBIN_CMD_IL,
-+				USBIN_SUSPEND_BIT, 0);
-+	if (rc < 0)
-+		return dev_err_probe(chip->dev, rc,
-+				     "could not enable USB input\n");
-+
-+	return 0;
-+}
-+
- static const struct power_supply_desc smb_psy_desc = {
- 	.name = "pmi8998_charger",
- 	.type = POWER_SUPPLY_TYPE_USB,
-@@ -789,36 +1105,85 @@ static const struct power_supply_desc smb_psy_desc = {
- 	.get_property = smb_get_property,
- 	.set_property = smb_set_property,
- 	.property_is_writeable = smb_property_is_writable,
-+	.init = smb_power_supply_init,
-+};
-+
-+/* Init sequence derived from vendor downstream driver */
-+static const struct smb_init_register smb5_init_seq[] = {
-+	/*
-+	 * TCPM owns the separate Type-C peripheral. This register only
-+	 * controls how the charger's USBIN peripheral starts BC1.2 detection.
-+	 */
-+	{ .addr = USBIN_TYPE_C_CFG,
-+	  .mask = APSD_START_ON_CC_BIT,
-+	  .val = 0 },
-+	/* Enable BC1.2 source detection without unsupported HVDCP negotiation. */
-+	{ .addr = USBIN_OPTIONS_1_CFG,
-+	  .mask = HVDCP_AUTH_ALG_EN_CFG_BIT |
-+		  HVDCP_AUTONOMOUS_MODE_EN_CFG_BIT | AUTO_SRC_DETECT_BIT |
-+		  HVDCP_EN_BIT,
-+	  .val = AUTO_SRC_DETECT_BIT },
-+	/* Set the default SDP charger type to a 500ma USB 2.0 port */
-+	{ .addr = USBIN_ICL_OPTIONS,
-+	  .mask = USBIN_MODE_CHG_BIT,
-+	  .val = USBIN_MODE_CHG_BIT },
-+	{ .addr = CMD_ICL_OVERRIDE,
-+	  .mask = ICL_OVERRIDE_BIT,
-+	  .val = 0 },
-+	{ .addr = USBIN_LOAD_CFG,
-+	  .mask = ICL_OVERRIDE_AFTER_APSD_BIT,
-+	  .val = 0 },
-+	/* Disable watchdog */
-+	{ .addr = SNARL_BARK_BITE_WD_CFG, .mask = 0xff, .val = 0 },
-+	{ .addr = WD_CFG,
-+	  .mask = WATCHDOG_TRIGGER_AFP_EN_BIT | WDOG_TIMER_EN_ON_PLUGIN_BIT |
-+		  BARK_WDOG_INT_EN_BIT,
-+	  .val = 0 },
-+	/*
-+	 * Enable Automatic Input Current Limit, this will slowly ramp up the current
-+	 * When connected to a wall charger, and automatically stop when it detects
-+	 * the charger current limit (voltage drop?) or it reaches the programmed limit.
-+	 */
-+	{ .addr = USBIN_AICL_OPTIONS_CFG,
-+	  .mask = USBIN_AICL_PERIODIC_RERUN_EN_BIT | USBIN_AICL_ADC_EN_BIT
-+			| USBIN_AICL_EN_BIT | SUSPEND_ON_COLLAPSE_USBIN_BIT,
-+	  .val = USBIN_AICL_PERIODIC_RERUN_EN_BIT | USBIN_AICL_EN_BIT |
-+		 SUSPEND_ON_COLLAPSE_USBIN_BIT },
-+	{ .addr = AICL_RERUN_TIME_CFG,
-+	  .mask = AICL_RERUN_TIME_MASK,
-+	  .val = AICL_RERUN_TIME_12_SECS },
- };
- 
- /* Init sequence derived from vendor downstream driver */
--static const struct smb_init_register smb_init_seq[] = {
--	{ .addr = AICL_RERUN_TIME_CFG, .mask = AICL_RERUN_TIME_MASK, .val = 0 },
-+static const struct smb_init_register smb2_init_seq[] = {
-+	{ .addr = AICL_RERUN_TIME_CFG,
-+	  .mask = AICL_RERUN_TIME_MASK,
-+	  .val = AICL_RERUN_TIME_3_SECS },
- 	/*
- 	 * By default configure us as an upstream facing port
- 	 * FIXME: This will be handled by the type-c driver
- 	 */
- 	{ .addr = TYPE_C_INTRPT_ENB_SOFTWARE_CTRL,
--	  .mask = TYPEC_POWER_ROLE_CMD_MASK | VCONN_EN_SRC_BIT |
-+	  .mask = TYPEC_POWER_ROLE_CMD_MASK | SMB2_VCONN_EN_SRC_BIT |
- 		  VCONN_EN_VALUE_BIT,
--	  .val = VCONN_EN_SRC_BIT },
-+	  .val = SMB2_VCONN_EN_SRC_BIT },
- 	/*
- 	 * Disable Type-C factory mode and stay in Attached.SRC state when VCONN
- 	 * over-current happens
- 	 */
--	{ .addr = TYPE_C_CFG,
-+	{ .addr = USBIN_TYPE_C_CFG,
- 	  .mask = FACTORY_MODE_DETECTION_EN_BIT | VCONN_OC_CFG_BIT,
- 	  .val = 0 },
- 	/* Configure VBUS for software control */
--	{ .addr = OTG_CFG, .mask = OTG_EN_SRC_CFG_BIT, .val = 0 },
-+	{ .addr = SMB2_OTG_CFG, .mask = SMB2_OTG_EN_SRC_CFG_BIT, .val = 0 },
- 	/*
- 	 * Use VBAT to determine the recharge threshold when battery is full
- 	 * rather than the state of charge.
- 	 */
--	{ .addr = FG_UPDATE_CFG_2_SEL,
--	  .mask = SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT |
--		  VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT,
--	  .val = VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT },
-+	{ .addr = SMB2_FG_UPDATE_CFG_2_SEL,
-+	  .mask = SMB2_SOC_LT_CHG_RECHARGE_THRESH_SEL_BIT |
-+		  SMB2_VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT,
-+	  .val = SMB2_VBT_LT_CHG_RECHARGE_THRESH_SEL_BIT },
- 	/* Enable charging */
- 	{ .addr = USBIN_OPTIONS_1_CFG, .mask = HVDCP_EN_BIT, .val = 0 },
- 	{ .addr = CHARGING_ENABLE_CMD,
-@@ -883,7 +1248,7 @@ static const struct smb_init_register smb_init_seq[] = {
- 	 */
- 	{ .addr = PRE_CHARGE_CURRENT_CFG,
- 	  .mask = PRE_CHARGE_CURRENT_SETTING_MASK,
--	  .val = 500000 / CURRENT_SCALE_FACTOR },
-+	  .val = 500000 / SMB2_CURRENT_STEP_UA },
- 	/*
- 	 * This overrides all of the current limit options exposed to userspace
- 	 * and prevents the device from pulling more than ~1A. This is done
-@@ -891,20 +1256,69 @@ static const struct smb_init_register smb_init_seq[] = {
- 	 */
- 	{ .addr = FAST_CHARGE_CURRENT_CFG,
- 	  .mask = FAST_CHARGE_CURRENT_SETTING_MASK,
--	  .val = 1000000 / CURRENT_SCALE_FACTOR },
-+	  .val = 1000000 / SMB2_CURRENT_STEP_UA },
-+};
-+
-+static const struct smb_match_data pmi8998_match_data = {
-+	.init_seq = smb2_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb2_init_seq),
-+	.name = "pmi8998",
-+	.gen = SMB2,
-+	.fv_min_uv = 3487500,
-+	.fv_max_uv = 4920000,
-+	.fv_step_uv = 7500,
-+	.fcc_max_ua = 4500000,
-+	.fcc_step_ua = 25000,
-+	.icl_max_ua = 4800000,
-+	.icl_step_ua = 25000,
-+	.icl_status = SMB2_ICL_STATUS,
-+	.usbin_current_scale = 1,
-+};
-+
-+static const struct smb_match_data pm660_match_data = {
-+	.init_seq = smb2_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb2_init_seq),
-+	.name = "pm660",
-+	.gen = SMB2,
-+	.fv_min_uv = 3487500,
-+	.fv_max_uv = 4920000,
-+	.fv_step_uv = 7500,
-+	.fcc_max_ua = 4500000,
-+	.fcc_step_ua = 25000,
-+	.icl_max_ua = 4800000,
-+	.icl_step_ua = 25000,
-+	.icl_status = SMB2_ICL_STATUS,
-+	.usbin_current_scale = 1,
- };
- 
--static int smb_init_hw(struct smb_chip *chip)
-+static const struct smb_match_data pm8150b_match_data = {
-+	.init_seq = smb5_init_seq,
-+	.init_seq_len = ARRAY_SIZE(smb5_init_seq),
-+	.name = "pm8150b",
-+	.gen = SMB5,
-+	.fv_min_uv = 3600000,
-+	.fv_max_uv = 4790000,
-+	.fv_step_uv = 10000,
-+	.fcc_max_ua = 8000000,
-+	.fcc_step_ua = 50000,
-+	.icl_max_ua = 5000000,
-+	.icl_step_ua = 50000,
-+	.icl_status = SMB5_AICL_ICL_STATUS,
-+	.usbin_current_scale = 5,
-+};
-+
-+static int smb_init_hw(struct smb_chip *chip,
-+		       const struct smb_init_register *init_seq, size_t len)
- {
- 	int rc, i;
- 
--	for (i = 0; i < ARRAY_SIZE(smb_init_seq); i++) {
-+	for (i = 0; i < len; i++) {
- 		dev_dbg(chip->dev, "%d: Writing 0x%02x to 0x%02x\n", i,
--			smb_init_seq[i].val, smb_init_seq[i].addr);
-+			init_seq[i].val, init_seq[i].addr);
- 		rc = regmap_update_bits(chip->regmap,
--					chip->base + smb_init_seq[i].addr,
--					smb_init_seq[i].mask,
--					smb_init_seq[i].val);
-+					chip->base + init_seq[i].addr,
-+					init_seq[i].mask,
-+					init_seq[i].val);
- 		if (rc < 0)
- 			return dev_err_probe(chip->dev, rc,
- 					     "%s: init command %d failed\n",
-@@ -914,19 +1328,6 @@ static int smb_init_hw(struct smb_chip *chip)
- 	return 0;
- }
- 
--static void smb_restore_charge_enable(void *data)
--{
--	struct smb_chip *chip = data;
--	int rc;
--
--	rc = regmap_update_bits(chip->regmap,
--				chip->base + CHARGING_ENABLE_CMD,
--				CHARGING_ENABLE_CMD_BIT,
--				chip->initial_charge_enable);
--	if (rc < 0)
--		dev_err(chip->dev, "Couldn't restore charging state: %d\n", rc);
--}
--
- static int smb_init_irq(struct smb_chip *chip, int *irq, const char *name,
- 			 irqreturn_t (*handler)(int irq, void *data))
- {
-@@ -948,14 +1349,38 @@ static int smb_init_irq(struct smb_chip *chip, int *irq, const char *name,
- 	return 0;
- }
- 
-+static void smb_restore_charge_state(void *data)
-+{
-+	struct smb_chip *chip = data;
-+	int rc;
-+
-+	rc = regmap_update_bits(chip->regmap,
-+				chip->base + CHARGING_ENABLE_CMD,
-+				CHARGING_ENABLE_CMD_BIT,
-+				chip->initial_charge_enable);
-+	if (rc < 0) {
-+		dev_err(chip->dev, "could not restore charging state: %d\n", rc);
-+		return;
-+	}
-+
-+	if (chip->gen == SMB5) {
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + USBIN_CMD_IL,
-+					USBIN_SUSPEND_BIT,
-+					chip->initial_usb_suspend);
-+		if (rc < 0)
-+			dev_err(chip->dev,
-+				"could not restore USB input state: %d\n", rc);
-+	}
-+}
-+
- static int smb_probe(struct platform_device *pdev)
- {
- 	struct power_supply_config supply_config = {};
- 	struct power_supply_desc *desc;
- 	struct smb_chip *chip;
--	unsigned int charge_enable;
--	unsigned int float_voltage_sel;
--	int float_voltage_uv;
-+	const struct smb_match_data *match_data;
-+	unsigned int reg;
- 	int rc, irq;
- 
- 	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-@@ -986,19 +1411,57 @@ static int smb_probe(struct platform_device *pdev)
- 				     "Couldn't get usbin_i IIO channel\n");
- 	}
- 
--	rc = regmap_read(chip->regmap, chip->base + CHARGING_ENABLE_CMD,
--			 &charge_enable);
-+	match_data = device_get_match_data(chip->dev);
-+	if (!match_data)
-+		return dev_err_probe(chip->dev, -ENODEV,
-+				     "missing match data\n");
-+
-+	chip->gen = match_data->gen;
-+	chip->match_data = match_data;
-+	chip->icl_max_ua = match_data->icl_max_ua;
-+	chip->icl_step_ua = match_data->icl_step_ua;
-+	chip->icl_status = match_data->icl_status;
-+	chip->usbin_current_scale = match_data->usbin_current_scale;
-+
-+	dev_info(chip->dev, "Generation %s\n", chip->gen == SMB2 ? "SMB2" : "SMB5");
-+	if (chip->gen == SMB5) {
-+		rc = regmap_read(chip->regmap, chip->base + USBIN_CMD_IL, &reg);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not read USB input state\n");
-+		chip->initial_usb_suspend = reg & USBIN_SUSPEND_BIT;
-+	}
-+
-+	rc = regmap_read(chip->regmap,
-+			 chip->base + CHARGING_ENABLE_CMD, &reg);
- 	if (rc < 0)
- 		return dev_err_probe(chip->dev, rc,
--				     "Couldn't read charging state\n");
-+				     "could not read charging state\n");
-+	chip->initial_charge_enable = reg & CHARGING_ENABLE_CMD_BIT;
- 
--	chip->initial_charge_enable = charge_enable & CHARGING_ENABLE_CMD_BIT;
--	rc = devm_add_action_or_reset(chip->dev, smb_restore_charge_enable, chip);
--	if (rc)
--		return dev_err_probe(chip->dev, rc,
--				     "Couldn't register charging state rollback\n");
-+	rc = devm_add_action_or_reset(chip->dev,
-+				      smb_restore_charge_state, chip);
-+	if (rc < 0)
-+		return rc;
-+
-+	if (chip->gen == SMB5) {
-+		/* Do not use bootloader charge limits while configuring SMB5. */
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + USBIN_CMD_IL,
-+					USBIN_SUSPEND_BIT, USBIN_SUSPEND_BIT);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not suspend USB input\n");
- 
--	rc = smb_init_hw(chip);
-+		rc = regmap_update_bits(chip->regmap,
-+					chip->base + CHARGING_ENABLE_CMD,
-+					CHARGING_ENABLE_CMD_BIT, 0);
-+		if (rc < 0)
-+			return dev_err_probe(chip->dev, rc,
-+					     "could not disable charging\n");
-+	}
-+
-+	rc = smb_init_hw(chip, match_data->init_seq, match_data->init_seq_len);
- 	if (rc < 0)
- 		return rc;
- 
-@@ -1011,7 +1474,7 @@ static int smb_probe(struct platform_device *pdev)
- 	memcpy(desc, &smb_psy_desc, sizeof(smb_psy_desc));
- 	desc->name =
- 		devm_kasprintf(chip->dev, GFP_KERNEL, "%s-charger",
--			       (const char *)device_get_match_data(chip->dev));
-+			       match_data->name);
- 	if (!desc->name)
- 		return -ENOMEM;
- 
-@@ -1021,46 +1484,13 @@ static int smb_probe(struct platform_device *pdev)
- 		return dev_err_probe(chip->dev, PTR_ERR(chip->chg_psy),
- 				     "failed to register power supply\n");
- 
--	rc = power_supply_get_battery_info(chip->chg_psy, &chip->batt_info);
--	if (rc)
--		return dev_err_probe(chip->dev, rc,
--				     "Failed to get battery info\n");
--
--	rc = devm_delayed_work_autocancel(chip->dev, &chip->status_change_work,
-+	rc = devm_delayed_work_autocancel(chip->dev,
-+					  &chip->status_change_work,
- 					  smb_status_change_work);
- 	if (rc)
- 		return dev_err_probe(chip->dev, rc,
- 				     "Failed to init status change work\n");
- 
--	if (power_supply_battery_info_has_prop(chip->batt_info,
--					       POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX)) {
--		float_voltage_uv =
--			chip->batt_info->constant_charge_voltage_max_uv;
--	} else if (power_supply_battery_info_has_prop(chip->batt_info,
--					      POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN)) {
--		float_voltage_uv = chip->batt_info->voltage_max_design_uv;
--	} else {
--		dev_warn(chip->dev, "No battery float voltage; preserving hardware setting\n");
--		goto skip_float_voltage;
--	}
--
--	if (float_voltage_uv < SMB2_FLOAT_VOLTAGE_MIN_UV ||
--	    float_voltage_uv > SMB2_FLOAT_VOLTAGE_MAX_UV)
--		return dev_err_probe(chip->dev, -EINVAL,
--				     "float voltage %d uV outside %d-%d uV\n",
--				     float_voltage_uv,
--				     SMB2_FLOAT_VOLTAGE_MIN_UV,
--				     SMB2_FLOAT_VOLTAGE_MAX_UV);
--
--	float_voltage_sel =
--		(float_voltage_uv - SMB2_FLOAT_VOLTAGE_MIN_UV) /
--		SMB2_FLOAT_VOLTAGE_STEP_UV;
--	rc = regmap_update_bits(chip->regmap, chip->base + FLOAT_VOLTAGE_CFG,
--				FLOAT_VOLTAGE_SETTING_MASK, float_voltage_sel);
--	if (rc < 0)
--		return dev_err_probe(chip->dev, rc, "Couldn't set vbat max\n");
--
--skip_float_voltage:
- 	rc = smb_init_irq(chip, &irq, "bat-ov", smb_handle_batt_overvoltage);
- 	if (rc < 0)
- 		return rc;
-@@ -1084,7 +1514,7 @@ static int smb_probe(struct platform_device *pdev)
- 	if (rc < 0)
- 		return dev_err_probe(chip->dev, rc, "Couldn't set wake irq\n");
- 
--	devm_remove_action(chip->dev, smb_restore_charge_enable, chip);
-+	devm_remove_action(chip->dev, smb_restore_charge_state, chip);
- 
- 	platform_set_drvdata(pdev, chip);
- 
-@@ -1095,8 +1525,9 @@ static int smb_probe(struct platform_device *pdev)
- }
- 
- static const struct of_device_id smb_match_id_table[] = {
--	{ .compatible = "qcom,pmi8998-charger", .data = "pmi8998" },
--	{ .compatible = "qcom,pm660-charger", .data = "pm660" },
-+	{ .compatible = "qcom,pmi8998-charger", .data = &pmi8998_match_data },
-+	{ .compatible = "qcom,pm660-charger", .data = &pm660_match_data },
-+	{ .compatible = "qcom,pm8150b-charger", .data = &pm8150b_match_data },
- 	{ /* sentinal */ }
- };
- MODULE_DEVICE_TABLE(of, smb_match_id_table);
-@@ -1112,5 +1543,5 @@ static struct platform_driver qcom_spmi_smb = {
- module_platform_driver(qcom_spmi_smb);
- 
- MODULE_AUTHOR("Casey Connolly <casey.connolly@linaro.org>");
--MODULE_DESCRIPTION("Qualcomm SMB2 Charger Driver");
-+MODULE_DESCRIPTION("Qualcomm SMB2 and SMB5 Charger Driver");
- MODULE_LICENSE("GPL");
-
--- 
-2.54.0
-
-
+Gentle ping on this in particular to the CCs not involved in the merge window.
+Even just a Tested-by: that the new CPC validation didn't break your platform would
+be appreciated!
