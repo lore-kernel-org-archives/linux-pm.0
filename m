@@ -1,118 +1,192 @@
-Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com [209.85.222.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9890B199FB0
-	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 22:37:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98CAF3998AF;
+	Fri, 21 Aug 2026 23:30:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787351850; cv=none; b=oO8kEz44IOOh94qI+361SEw7iAQpVFaJzZbDcq0VjatFt0BQiU2d5f8mjCVoadYYvpzENwx83soXZ2EmREkriJpKsWaHKr2ejFODugD+ffgPguAdApr86S89TSNObTvaGGD2fT1pYJ9peb2BZRRofhajG4M1HYroIX9T+Ig6DTY=
+	t=1787355017; cv=none; b=lYtPHvdSBerJy1lXQ4sJ3PI3+Why03QR9NoOpFNhoFPCoZi6hEPEjB4ba8uoqA1Zu/tecubCvvAwsqICmGpntiCzAKj0MyRAdsvRhGnj60H9Zz+bo5z2ZKOdA6fI2mG6bntJtFg19bBXTkH6FOLdXBt9SL8pd5GfE4PJwb2HW5A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787351850; c=relaxed/simple;
-	bh=s0mbgR1B/3e3hk97RKicR6EngEFS8QxUOV6OgZeuQt8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CgpUw+skBOSrIlZBXLQ4Y2ngobwJUGeopEZCYgA1yaVLsgLaT4by//3AN3YpoF4HVc21GC7xcxyUvvhRnn0SewYK/ueuOShuKNvfGOcH1OM+gSfSdNtxJV8q2r6VOnZ8RIWWwUV/3W0KSxH9Q5jUpK8qVD89sbfbad8Va0Nt5Ko=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=b3ATPNuF; arc=none smtp.client-ip=209.85.222.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1787355017; c=relaxed/simple;
+	bh=MdK9rRHNyWJYLFRZyYYiCTN2IYQprF7r183bLLMS4j8=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=mvrf6oaq8Ee4Imo2FQZXOXA3t80FUWya3CxAt9ccJxsKVOfKWRc2IUv3NqjGGnz5IhSwxZzQzEbAyEhTf/dnyqMi7mFiQotx2+adm650zuvJfrsY+p3/g9Ncc3PKZ8r53obXTjJycBAOfleXS9Ri+BDXYgAipv3EyDVkvgDlSL4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jo+ZWh2I; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="b3ATPNuF"
-Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-96723c7151eso566167241.2
-        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 15:37:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1787351847; x=1787956647; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Ibjvuzdx+Tl1DxNX7IbQEnv5VU652wCRXclJCpK/iM4=;
-        b=b3ATPNuFhZulHF8Ak/CH25/bEuczjB/oXXm0V/nhJLwB/CdQLBViMDK9JwbU1vcN5f
-         DeuoKmJhWGvTMJmTPGudmYHXpbMfUEJiOo+OyLv0YNorCl3TVHluj0QmsYNM+ctyB4kH
-         0DNdTREnvo5A6yjspWqgNH+1j21CFyughKbOk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787351847; x=1787956647;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Ibjvuzdx+Tl1DxNX7IbQEnv5VU652wCRXclJCpK/iM4=;
-        b=VuOWsgdUHBXwE1R+DWs6u7NkTEfwLU55xNlxdki+c42EiaPQcHL+WJftHmol8+lANl
-         M/aN8R/vZ8JQZpeaohnLcZwMNZvPnDAiwQXPe9YTIUF6GQZ59GCuR/aX24F6Sxob/iGk
-         BYFge8WZ97eQ5hQt1MkVu0wHC2oGf6vhgnJ2A3cKxQIPVlVHAv5LmkBrFPB0hwNqO1Y7
-         xqMOohIEk5e5s1D8nJnWoGIss5kBejhoF1VcRN0y3LbTqHaAzQM53iMGxR47R3iUiXTL
-         VF4pOZWvL6DywmUuY6ZJOnPOe04stZWlD4gc7hOGTBFd2uJeXmeUHuOKCE3R/Z6jIErq
-         EGrg==
-X-Forwarded-Encrypted: i=1; AHgh+RoHg+/4ljYNVgaOiHTStQfq5paQWegViXB0C35wBOxozFjHGWojAfHk9acI4I9C5/JZapnJCacqXw==@vger.kernel.org
-X-Gm-Message-State: AFuF++m0Mm/zjYivRVygErUm1rv0IVTp4iTVboU+nvoKIyT1UoelKOlR
-	fK/w+mrYL6zH882CnxKZ+Dj/FQWoXTRlSpfRUS5AFBolA4249dBlzHmPP7Ftsa+HJ/qY8zB7j99
-	990k=
-X-Gm-Gg: AR+sD13+GbTjUHjannp+MRl4qrjXvI7wvp1LuULdGbsTAXCbqpzxtZVKh5WERpw7f9w
-	BL3IB+G3Lyn4qfaXPuqN/BKdnxdE0QINqJTIZdU9VH6tYZm8oyy8CRTYFtdESL+5Ft1JR/L5pqc
-	ve+jV+URMouwaYY/om35giDV+7w2bIlL7fI6lPpo42tPLXqIgId2H58BbixvKBug9GPc7xoJdP5
-	6h5yukxzvg6wNmrvRcg+UesfowWHYWEt4SaX7M3ab8C1BnrApr6H6WQ/oymBkMwebNQMo0VXcVy
-	1SdyL3LFAxdQtkyPn/w4LjiYAVn8I9qjj+kOcU4RxUZ+URjFK2XQWWxfYAt4mmn0GafbHQcEA5r
-	N7/KIGmq9Oq3+FRX17UZLvSqh/rkLQcPR8Jm9PKs4ZZdZNJY0dX+ZKShwLDnN0OvRveRBWAz4dn
-	t5EUfw260fBnil8WZmnKQ53My857FFBrmQuBCFlMGLSYIfAbRT5zpHRIwT1eJb6aZlvl+OJ+pIG
-	dBwMvjcixFe4RCJ5ZryIFLlYvYayyyi
-X-Received: by 2002:a05:6102:14a4:b0:77b:a40d:920 with SMTP id ada2fe7eead31-77bd33928e4mr680428137.13.1787351847444;
-        Fri, 21 Aug 2026 15:37:27 -0700 (PDT)
-Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com. [209.85.222.47])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-777daea8e4bsm10395468137.2.2026.08.21.15.37.25
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 21 Aug 2026 15:37:25 -0700 (PDT)
-Received: by mail-ua1-f47.google.com with SMTP id a1e0cc1a2514c-96723c7151eso566156241.2
-        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 15:37:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqMjLFCFm7OuPCilhYSV8bOEhQxtblGky7dIrtfHC7mRmpMEZmL7dvsvR6LFnfmGyYZZyRAWVWipA==@vger.kernel.org
-X-Received: by 2002:a05:6102:5124:b0:77a:d089:3de7 with SMTP id
- ada2fe7eead31-77bd0ac29aemr671472137.4.1787351844660; Fri, 21 Aug 2026
- 15:37:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jo+ZWh2I"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41C6C1F000E9;
+	Fri, 21 Aug 2026 23:30:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787355015;
+	bh=Ibh9L+fRKuXLx86P55NwGkzi3Fg5cFtJydY7cjyAm4U=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=Jo+ZWh2IV9lEA2k8h5u9hhVtzVtqeQMYpiAwi0wYMxp9rY8L5Zm1ua8zPZU6/AfJd
+	 U5y5D+P05QhZHqjBUPUSIWd0K5UWiVwOE/6GjJSC7zNEF4lfD9n3I8ikLLTtyxQoOn
+	 +Q6+WHXCBSaqZ2hzn85nku/MM+T7cLQtKVk8j79hdKDKOFDVkdZLn9hk5FUH32AxE7
+	 1I3BaJUWZqublQzewv/De7vZ8c6QLKgdIgITgA6sSpPUyFS9N+xRPcbJb7yiCK8FDm
+	 UMfkpQAOu/RjFiLRXwEKB+QRX+scE2lOrdhPSIAo7Q0FelLBYFFxNbdlLqNH0uYaaC
+	 gQmfSVGVsY2kQ==
+Date: Sat, 22 Aug 2026 00:30:08 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Amit Kucheria <amitk@kernel.org>, Thara Gopinath
+ <thara.gopinath@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel
+ Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, Kamal Wadhwa
+ <kamal.wadhwa@oss.qualcomm.com>, Anjelique Melendez
+ <anjelique.melendez@oss.qualcomm.com>, Manaf Meethalavalappu Pallikunhi
+ <manaf.pallikunhi@oss.qualcomm.com>, Priyansh Jain
+ <priyansh.jain@oss.qualcomm.com>
+Subject: Re: [PATCH 2/7] iio: adc: qcom-spmi-adc5-gen3: Add support for QCOM
+ PMIC5 Gen4 ADC
+Message-ID: <20260822003008.0d13144d@jic23-huawei>
+In-Reply-To: <04990044-45b3-45ca-9e39-925d5bbe62e2@oss.qualcomm.com>
+References: <20260731-pmic5_gen4_adc-v1-0-9c49b2eea6f9@oss.qualcomm.com>
+	<20260731-pmic5_gen4_adc-v1-2-9c49b2eea6f9@oss.qualcomm.com>
+	<20260803011400.1fb6c93a@jic23-huawei>
+	<a98d90bd-aa9d-4af3-aa54-3a34300070d4@oss.qualcomm.com>
+	<20260807001822.31f7c137@jic23-huawei>
+	<f2b2f590-de3e-4f10-b883-92845f59412d@oss.qualcomm.com>
+	<20260815030830.24fc732f@jic23-huawei>
+	<04990044-45b3-45ca-9e39-925d5bbe62e2@oss.qualcomm.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260821170648.3097673-1-mrungta@google.com>
-In-Reply-To: <20260821170648.3097673-1-mrungta@google.com>
-From: Doug Anderson <dianders@chromium.org>
-Date: Fri, 21 Aug 2026 15:37:13 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=UDw4WEGAjr4eY2qoPVbs9h9J1SJU88OjHgTnqXUSwotw@mail.gmail.com>
-X-Gm-Features: AcwNN1WGrJG5_bxCdBWoSfRR0lNfg_tXwcq51fkh5y5rtpDnrxN0Z4zNEa69sjQ
-Message-ID: <CAD=FV=UDw4WEGAjr4eY2qoPVbs9h9J1SJU88OjHgTnqXUSwotw@mail.gmail.com>
-Subject: Re: [PATCH] PM: sleep: Add DPM watchdog to late/early/noirq phases
-To: Mayank Rungta <mrungta@google.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Tzung-Bi Shih <tzungbi@kernel.org>, linux-pm@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi,
+On Fri, 21 Aug 2026 10:24:39 +0530
+Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
 
-On Fri, Aug 21, 2026 at 10:06=E2=80=AFAM Mayank Rungta <mrungta@google.com>=
- wrote:
->
-> Extend the DPM watchdog to wrap device_suspend_late, device_suspend_noirq=
-,
-> device_resume_early, and device_resume_noirq callbacks. If a driver hangs
-> during these transitions, the watchdog will fire and dump a stack trace
-> to help identify the offending driver.
->
-> To prevent false-positive timeouts, the watchdog is set only after
-> waiting for subordinate (during suspend) and superior (during resume)
-> devices.
->
-> Signed-off-by: Mayank Rungta <mrungta@google.com>
-> ---
-> Testing:
-> - Tested on an ARM64 SoC (Pixel platform running a 6.18-based kernel with
->   DPM watchdog enabled; Android 6.18 kernel has latest DPM changes
->   backported).
->
->  drivers/base/power/main.c | 25 ++++++++++++++++++++++---
->  1 file changed, 22 insertions(+), 3 deletions(-)
+> Hi Jonathan,
+> 
+> On 8/15/2026 7:38 AM, Jonathan Cameron wrote:
+> > On Fri, 7 Aug 2026 13:37:02 +0530
+> > Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+> >   
+> >> Hi Jonathan,
+> >>
+> >> On 8/7/2026 4:48 AM, Jonathan Cameron wrote:  
+> >>> On Thu, 6 Aug 2026 16:22:16 +0530
+> >>> Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+> >>>     
+> >>>> Hi Jonathan,
+> >>>>
+> >>>> On 8/3/2026 5:44 AM, Jonathan Cameron wrote:    
+> >>>>> On Fri, 31 Jul 2026 23:36:15 +0530
+> >>>>> Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+> >>>>>       
+> >>>>>> PMIC5 Gen4 ADC is similar to PMIC5 Gen3 ADC, with several changes made
+> >>>>>> for improved performance, mostly at the hardware level.
+> >>>>>>
+> >>>>>> One significant software change is that ratiometric conversion resolution
+> >>>>>> has been increased from 14 bits to 16 bits, so the maximum value of
+> >>>>>> these measurements needs to be updated for Gen4. Add a new scaling
+> >>>>>> function for thermistor channels which use this type of conversion.
+> >>>>>>
+> >>>>>> In the latest PMIC arbiter version (v8), there can be up to 4 buses
+> >>>>>> under the PMIC arbiter and 32 PMICs under each bus. In order to
+> >>>>>> support communication between ADC on the master PMIC and ADCs on any
+> >>>>>> of the other PMICs, a field of width 2 bits is added for bus index
+> >>>>>> and the bits for SID are extended from 4 to 5 bits, in the SID
+> >>>>>> register. Add support for this.
+> >>>>>>
+> >>>>>> In addition, it is possible that the master PMIC has ADC of one generation
+> >>>>>> and it needs to communicate with another PMIC with ADC of a different
+> >>>>>> generation.      
+> >>>>>
+> >>>>> "Possible" sounds a bit hypothetical.  Can we state this actually happens
+> >>>>> on some devices?      
+> >>>>
+> >>>> Considering existing upstream platforms, this is applicable for SM8750. I'll
+> >>>> mention this in the next version of the series.    
+> >>>
+> >>> What happens on that platform today?  Wrong values?  Should this be treated
+> >>> as a fix rather than a feature?     
+> >>
+> >> There is no issue on that platform right now as ADC channels needing this
+> >> support are not added yet. SM8750 board files only include pmk8550.dtsi, which
+> >> has the top-level Gen3 ADC peripheral and some ADC channels on the same PMIC.
+> >> Gen4 support would be needed only when PMIH0108 ADC channels are added.  
+> > 
+> > I guess chances of anyone running an older kernel that the device tree on
+> > that device is low as other critical stuff won't be supported?
+> > 
+> > If there is something easy to point to for that, add a note to the patch
+> > description as it justifies this not being a fix.
+> >   
+> 
+> Sorry, I did not fully understand your concern here. Are you asking if
+> SM8750 runs on any older kernels and the lack of Gen4 ADC support may be an
+> issue there?
+> This would not happen - let me try explaining with some more details.
+> 
+> DT support for SM8750 has been present since kernel version 6.14. At that
+> time, it included pmk8550.dtsi, but this file did not have an ADC peripheral
+> at the time.
+> 
+> The Gen3 ADC peripheral was added in pmk8550.dtsi very recently in this series
+> from Neil Armstrong: https://lore.kernel.org/all/20260721-topic-sm8x50-adc5-gen3-v6-0-a507f4a1e537@linaro.org/,
+> and I see this series is present only in linux-next right now.
+> 
+> With this change applied, the ADC peripheral with 3 channels of
+> PMK8550 alone (which is Gen3) would appear for SM8750. This
+> would work as its functionality is fully supported by the existing
+> Gen3 driver.
+> 
+> Gen4 support is needed only when we add full ADC support for SM8750,
+> meaning when we add channels under all its other PMICs (PMIH0108
+> specifically as it's Gen4.).
+> 
+> Would it work if I mention in the commit message that SM8750, added from
+> kernel 6.14 without ADC support initially, would need this mixed-generation
+> support, but only once we add the full ADC support (for all its PMICs)?
 
-I reviewed this patch for Mayank before he sent it. It seems correct /
-useful to me, so I'm happy with:
+In the ideal world we would assume no coupling between device tree seen
+on a board and the kernel with which a device tree was pushed out.  For
+many devices the delivery path is independent.
 
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
+As such we might well see a dt with the new property and a kernel that
+predates it's introduction.  If there is another reason such a kernel
+will simply not boot on that board, then that would be a valid argument
+why we can skip striving for the ideal.  Similarly if the driver
+would not bind for some other reason.  If either of those is the case then
+add a comment to the patch to say so.
+
+Otherwise, I'd like to see the extra property dt patch (arguably a fix
+but not critical to mark it as such) + a patch for the driver support
+for the new property (also arguably a fix).
+
+That would cover the older driver and decision on whether to backport
+that could then be made (or left to downstream users).
+
+On top of that then build the new compatible support.
+
+Superficially this looks to me like a bit of minor patch reorg so
+I think it is worth doing even if we don't expect to ever run into the
+theoretical problems form a miss match!
+
+Thanks
+
+Jonathan
+
+> 
+> Thanks,
+> Jishnu
+> 
+> 
+> > Thanks,
+> > 
+> > Jonathan  
+> 
+
