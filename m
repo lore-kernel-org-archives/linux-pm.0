@@ -1,114 +1,198 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9C5B48A2A9
-	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 12:37:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.49
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787315843; cv=none; b=GImoEfCW+BGwPloR4AizW+k04iBkMaqJv73thPZnc7h6u4vI5fG+rgBWAE0+J5NROBkElPBxC1sRnZKLO0gOj9iorU2jn0G8Ye0/ambbXGa+xHS4MINs6ZTx5pQXuwDQ0gMiT9G60DCatXvpmKQdG9Bl71bxRpCJ0ylFLQYgwQ4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787315843; c=relaxed/simple;
-	bh=a2V+I7UeXRDj3lHU2NGFDjdBIe3drc9UQsymhMr1D/4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=thFr9YNux2tgIutx8E8n3ERaQWKGaYktfPKMtoENtGQTcezvFPkDOeSgvDzJ+QxICSr9n/LwuyEGKl8WeuV6gP16KWTBalFlylydlel2qCyHFwdl48EYgm/BnRwG3eyIfgytNBUyeJ4Ud0qwZK5Kr8kM5rGQXtZwZE1NPI/RoAA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LeOTDygC; arc=none smtp.client-ip=209.85.218.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 304B4477280
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 12:51:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787316700; cv=pass; b=Yb5lMN8qKCrIPC2XGaGMlb4C1wfVC25r4zuShD4KIPRWKvLauNcfMiEPqPDi06gPQkGvE4m+XQeLgmn8+j5z3PdO7fDifSKFucocMrvM4SjkqpruCLPD6BhiIygC2G6oZEac2JS58h7mBQ2UtCLYWZb55a8ae8TtvT87ynTVoqg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787316700; c=relaxed/simple;
+	bh=fZbb9v4e2sk6/OnDmZnaaF3vmjmxv3DVkekcYhG8d5o=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Tp49YVsFietc8ctTxKea/yAkU2axgvLMKaDj2WRlH/8PiPhbnnlvq9rPDcxsUFPBph0BW/NmNv3haOiBFPhU6QRLyaIdrCvp+OJxkRjPjr6xA/WwrpB6AtDvlZDXyDEdyyCG8WF/27+Jm6sJC3zuWRi35ZJJaVLvq+ZgiTjNPCQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=TxAtR3li; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ewc3U80T; arc=pass smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LeOTDygC"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-c1c52d920b8so136608166b.2
-        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 05:37:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="TxAtR3li";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ewc3U80T"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67LCowbl2356231
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 12:51:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	OX8Kh+7PnOwt46WAC1QaJaLq8pinJzLn9zW07ubaMoo=; b=TxAtR3liTbaL0Hia
+	95Zbr6NdFTGIDe0fK4fJUWbNOREu4ldJzKYTmbmTnonEPZPZ6q4KfcBNrDt8oNT7
+	n/bjMWYHFdX59oyQcs+066+e5LwMt5YN6JA8DBPw0EMiFip1ZreMkSZTPFBxP2V8
+	GOmM/KXtQxDTx/cW9eXcHRumPmf1Yr8Cqh0Jo42AFwulfZUN4ttBDSOv1Vl1aqau
+	7ukVDIhC2B+ZJtUyBRDpjUpcMoMjm58gfL1sEykw+OTkiZzi2V1RL9pcZmdNguR+
+	/blkOopN4tSlxuZ9iZiPMS7Jdw3+HgwyDEokHWkhV88BEsLEGvlCAsY6RZteo+it
+	S4VsBA==
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g6gdn9nht-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 12:51:36 +0000 (GMT)
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2ccd1958e8fso14826905ad.2
+        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 05:51:36 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787316696; cv=none;
+        d=google.com; s=arc-20260327;
+        b=sElZEzXPynZOExsuInrTOk+I0sohVj4v+X0nQZr0HYHpQwW3DVlPqQH4dkPEqyDlyx
+         khTkpz7iVnvwlMdZf1xf9McW/5Y8So6Y0psgX2/rc+Oxaj4Kx4TqBAzPp+g2v4NmObQU
+         reEsvMoF91KxJMI9wOo4GtO7tQJWTlPeexc3zGlIkeprzOTxQlGNyNN4aXd35ArmE7HY
+         Lze2MhpemrL6y/QDPPb1Fi3J5y8SvvXj2hWkOfOc/URlaTzFF7L9GSj+AqCI1rDjGRVW
+         YuJEEqclR/CO9kjWllgeKGWwbbB0NOwboxMJdvD3ckxaHJjJbfmq4CKrruwJF1zbKfry
+         d0tQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=OX8Kh+7PnOwt46WAC1QaJaLq8pinJzLn9zW07ubaMoo=;
+        fh=KHWyGZAoR6k9NOy4lLd0zZJFncSsKbJBbgtdT6IPDsM=;
+        b=aYO0pYeDq+F+6om6cBzgeKBFVdVtyrhOp8GeB7oaV3hm6OgPg0VIJAUwKxZunGVlzH
+         oH9o/VzSAi18rME+OugCkkzlMv5UACYdzXe4tInVVhNPOVmvRmQyz6bvcS24R1tbircq
+         VPhf3ub+zjTDw5HSGaY1Y7smOwzKDgbjEg+2mKieXAASkosRoW/+MA+m02U6L4t9fXGU
+         nS1KLBhSrDj0mGGBDIJZCNeN9JNKLq+76fRU18TgkdKKNY1jBfgqCXBXyA2IgsW++IG3
+         EnhJswM5OTCFvCyfejtrpHVnd5rn1GjzzAk/0tB43lAIO62Sj7gOtAhu0l8mOI7T8Qnt
+         yw8Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787315837; x=1787920637; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=CC6zM5DNH7SSIqqjxl1MzTwo2sU+cNMvlHaMx4m2Zy8=;
-        b=LeOTDygCXGkBZ1wZum1J79iHIB1rXhswcjl4Vxr1/j1k7at99FMQ8uG32FTKnitp9t
-         6zjDQ69WuS/p2/HbgxHMXMizbu07txQ+RWqTruNxAuBslksMkzbATgteR3m3yBtlAE02
-         N9IB/qHFXYNzT1DHwmW9und2ANyFS4pg9r9PdwKPPuYn+GScIjDhT5FY205oQ4oouCZR
-         RTkMsthNvcCcJOdHDBPtXYEUIrrKod8/7FP9YiCWq5aHnkSl3wk/CLp8A03qbdwH0rTp
-         R3ZBNOgjjrU1wjFqb7x96uz8zjCSEu62o1mc7puYEgIoU5ICwiDPCvvwwI77kPb4SxlP
-         KUvA==
+        d=oss.qualcomm.com; s=google; t=1787316696; x=1787921496; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=OX8Kh+7PnOwt46WAC1QaJaLq8pinJzLn9zW07ubaMoo=;
+        b=Ewc3U80TW2Qt3ljglCcLUza3h/Pk6+orf5SabxZxUUtydWaNiqWQ9YIq4pUlUpZjlb
+         EqFWGsqAKU8/PbNh1a34O0fajpbFtjTTiiYV1hP6+OT70HIRr7LrHgCHXL59kpTkSZ5v
+         4A34IaSvThoLAEzlD3w6HyfVZzC3gIe9YpgKtOXN79NKmxHMihvDslWvgv+rMPp62jFm
+         c1iffH6o2JbaGhqCwegJ6nj4KV3MfI0W5em/enmZBln5oIgcmFcowxuWzpWtDKYc6LXk
+         NRzOpPTCcVyXMqW80Wos/ll0C2DRmbppSw51qtMe6ipwxqaQWnK+KMLyKK+DF/I6y+52
+         eJZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787315837; x=1787920637;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=CC6zM5DNH7SSIqqjxl1MzTwo2sU+cNMvlHaMx4m2Zy8=;
-        b=bz0JjJn1Skbe2OBx79w0HJLoX8QuKm13UsNOs1waMqcp87o653ukjk4Rw3MqaEMEDh
-         qn77Q5+X3T+Di/IL4zBrpPjrj2fAQAV52drE+SwiUcvrFwekZIDNSwM/mW3SWMm1cGBo
-         5bidSLnXX1XTcLXGuJ/HHHBraFzMTKB9X2isrufyJCEVZCBQSAl6eghZpm3+fJpyzJzm
-         M60+exCC+bQN2R2VpKZo99lqYOv6QcOq1a9YWTAWPyIoYHc7/QTBAXlQ3+wRPrZHepCo
-         +kkUva/c5tEvQOmx64uSE16olEo1yiXtTdcnMSy628Zf0GUDbIV+XGqE0/vsjPz3gB+3
-         xZGA==
-X-Forwarded-Encrypted: i=1; AHgh+Rratnw0gWPpMoLcGhG3HwEKGsfy1lwSJV7H2nTYHg3t9XrshUh5KiAkgTAjPPpJdP+bO1yU73D2tA==@vger.kernel.org
-X-Gm-Message-State: AFuF++lHKBANFAYd355lUQcHmMdEu0O8SVXDTmCKOcKN1aOWWmYlv9lb
-	qtBL6/u3QH3MHRtdAnfnmuNI2AW5BQswsBbvWnOkQV3LtQ0rzS91eI7H
-X-Gm-Gg: AR+sD13u4PCreMqvEIxEV7/1z5Ge3ywPxaMuFyYfCwVxC2k+xLZkGl9/T7Tqp+5d4cQ
-	+//YGKMBTED7zd7dC+fPCWa2pdg451UsWdT0CWA6F0LlUcninXul2V3HodFxD1Pp2Wr/6GbxRPL
-	wlGF7nnEOf2Qa5F7nqqIxpFcDxBlVmtWp1ZT1E2y5//6TyjxLkATpCnicfHt2sb6lPopHyPH2PE
-	yM+ss5qXZ7Ym3BzVobbxpVq/+Ql5iEjge8OLzNrsLfyCvhbzIEJq22xjA4IwK6vNFKtl7ssSn23
-	PHgwSD/aLG+1MH5BaYtUBbO1m2J7qcLpOuO7INYMpa99VzuqIRW8/4QyOirnxBhLPrwA7fNszfO
-	UYGoYbkAolgwcPAc40XaNhewIr1a7a5rTWRnpb6V6p/uAknZBQ0ITDDxdCOVKZq85KM2fHPDaF+
-	kdXY2OnWN+mYUN9aSSPjK0GUqBSnrbS81M2wI9K7U04ce/elgc34u96LDd4pxGg1jrahEU/Ztvx
-	tbYlF0qAnqyr9uNrunJ4Q==
-X-Received: by 2002:a17:906:f359:b0:c15:f0b8:eb91 with SMTP id a640c23a62f3a-c246a359a52mr510507766b.7.1787315837384;
-        Fri, 21 Aug 2026 05:37:17 -0700 (PDT)
-Received: from workstation (161-53-210-87.ftth.glasoperator.nl. [87.210.53.161])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c24591e0397sm451194666b.53.2026.08.21.05.37.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Aug 2026 05:37:16 -0700 (PDT)
-From: Stanislav Zaikin <zstaseg@gmail.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Stanislav Zaikin <zstaseg@gmail.com>
-Subject: [RFC PATCH v3 3/3] arm64: dts: qcom: sm7325-xiaomi-taoyao: switch to device-specific pmic-glink compatible
-Date: Fri, 21 Aug 2026 14:37:11 +0200
-Message-ID: <20260821123711.1579539-4-zstaseg@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260821123711.1579539-1-zstaseg@gmail.com>
-References: <20260821123711.1579539-1-zstaseg@gmail.com>
+        d=1e100.net; s=20251104; t=1787316696; x=1787921496;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=OX8Kh+7PnOwt46WAC1QaJaLq8pinJzLn9zW07ubaMoo=;
+        b=k4vHI/+I9wq78FKHSqf/sJLlt78ivbrrz+qj/dS9IpeQP/DEl3lUiOj7WMtmHpNPpj
+         3vAO7ZaaiQ98UoiSblQ1BU3tt10dF6DqBCgY8e+ifQY8JXqL6t2dSXiwkA2sTnXXIref
+         Z3weVN8EJ90c63L+wjsHlx2MMCIe1gmFA3B8UngRCj6Uy5dDrsathrSgGRuWaVpwqujV
+         Q50FxY9DcTYPGlq5qqq7ISTtq1UNe6LiHrfOLz3C7+fqH0yOkdKWJdGzlMDY0Kf4EQAQ
+         nJG5C3iWY/GdK04Vwx9gWoPQm4nlekj3pW3KYB7yEkZdaflT9L5hK9JTvE/ZzXqiZXUP
+         YzpA==
+X-Forwarded-Encrypted: i=1; AHgh+RrBD0zjPiextfZ8UJfP0ai9smYYbqeRp3tXzu1pEMy5s2R5MZ+Hu669u2KGkOR4jj3MX3xeB2vfhA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzM4PmPdnOwDBFUBUyfeXVo8zLVklsKG33nyNrXR70+vGNZESex
+	xSwlFAgbDfOwEfJCZ/Ez3fDCBFib4aZeFoWIukbRlCxs0e4Fw18ekbtGTDRkSWB5r0wYt+O9Osz
+	lMo88mNq0MJfOQ7OJxjrSA7FaV6YorSEqT7HW5SSpZFRIsJQpZy5+1Fkuc8/EK/XuX9xvO8Vx7Q
+	FaX70727bkdS3G67bnoDmyyie6aLpIlv+LmP2H
+X-Gm-Gg: AR+sD10b09OvjlbT2CsLJqMv4kdVB4pgeONNWuZZHSOLskf2N02BQ2x7wf+4uwJvzGi
+	uzZeYNwifPjyUeRClXZ4sHvqeuOdB6HLpyn8xJWfH3msDI01UGKDIvf3mrzwc2a8tbm8/cArduP
+	an/H5/o8rNum+rUQwg5s5yU8dOD1PLndAdV16Ef1t5qeFfOt3Ek+O1B2VL8g==
+X-Received: by 2002:a05:6a20:d74c:b0:3c3:b57b:645e with SMTP id adf61e73a8af0-3cd2fe23ae8mr13247614637.5.1787316696108;
+        Fri, 21 Aug 2026 05:51:36 -0700 (PDT)
+X-Received: by 2002:a05:6a20:d74c:b0:3c3:b57b:645e with SMTP id
+ adf61e73a8af0-3cd2fe23ae8mr13247497637.5.1787316695591; Fri, 21 Aug 2026
+ 05:51:35 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260819-pmdomain-revert-adding-mxc-mmcx-on-eliza-v1-1-0608e7900b9a@oss.qualcomm.com>
+In-Reply-To: <20260819-pmdomain-revert-adding-mxc-mmcx-on-eliza-v1-1-0608e7900b9a@oss.qualcomm.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Fri, 21 Aug 2026 14:51:24 +0200
+X-Gm-Features: AcwNN1VEQ7RIyD8FZDlATdfFkVI8H4V_7PjBAw26wxnRmKQq2VE3dRp_xLlAr3I
+Message-ID: <CAPx+jO_WgxJSyW_ZPYLrYaQMJMv6w918CQupeHoPSr7JPxqa8Q@mail.gmail.com>
+Subject: Re: [PATCH] Revert "pmdomain: qcom: rpmhpd: Add missing MXC and MMCX
+ power domains for Eliza"
+To: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, stable@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIxMDA5NyBTYWx0ZWRfXwpzwN0YBTQgV
+ P0hgSX/LNwOWLQq2VPOb8ifCQOlUSX8g3jttno3BRcY58yvO/Kgywse8KP5YwjCeeo4MZIJQoYk
+ I+7yVAHEdAmZHtWV/tNmfZxilwok4CiJbgupb+PWcFHKNez4xVkr1QshYoFwBLGSp1QRxN91arS
+ U7qKbBdcjJKIX5TPFy5Zk/xGvfxnsYtM+cnajK5DcTlT6CN98iswDzD3k9ExOrLee0LtIvBwCSx
+ O31prZZWAViCIklL+9UnmP+HLThO8E54LWswupUL36IjGdJqLS7a5vIhvzcXpEWDMPv/uwbYLax
+ Ff+JDFmN6akPQLS57jE8MFu8YBXkBMs/qNaN2sK7MBGCiYpL7DEuPgY/GAHg3QBqKLjcWGAJJKK
+ KaQtQbvsO3c6CsWNDFbohlsh8997qaWOiYYUjSO7FMHWQRwPY3+Fhix4cUUE0b5sX4w9GXA92wD
+ Rfuhtw+aHhzdZUu0OSg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIxMDA5NyBTYWx0ZWRfX29IAQlJljB1G
+ bJ98K0v5Ss4ntOMTrHuP5S7IpRmF51FIOrm1A/YUPHpxezFjJQYZHbe+OvolXUWuHHdt6jlsiJ1
+ absufjhq1yguNwWkLUWJ21DsLqqU8hY=
+X-Proofpoint-ORIG-GUID: UiYGRuSbMwqGHn5_uEIjTI8cITSUBXKP
+X-Authority-Analysis: v=2.4 cv=BJyDalQG c=1 sm=1 tr=0 ts=6a8849d8 cx=c_pps
+ a=cmESyDAEBpBGqyK7t0alAg==:117 a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8 a=Xfj96N0bkABj-llejB0A:9
+ a=QEXdDO2ut3YA:10 a=1OuFwYUASf3TG4hYMiVC:22
+X-Proofpoint-GUID: UiYGRuSbMwqGHn5_uEIjTI8cITSUBXKP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-21_04,2026-08-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 malwarescore=0 bulkscore=0 clxscore=1015 impostorscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 suspectscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608210097
 
-Switch taoyao to "xiaomi,taoyao-pmic-glink" compatible so
-qcom_battmgr can identify the device and apply its taoyao-specific
-battery property mapping, required because its firmware shifts
-battery property IDs relative to the generic sm7325-pmic-glink
-firmware.
+On Wed, Aug 19, 2026 at 7:55=E2=80=AFAM Abel Vesa <abel.vesa@oss.qualcomm.c=
+om> wrote:
+>
+> This reverts commit b48a0a0a76ccecec60f0568e2af4d89994b08bec, which
+> wrongfully added the MXC and MMCX power domains on Eliza.
+>
+> Even though they are indeed available in cmd-db, which has been the sourc=
+e
+> of information for adding these two, at hardware level they are not
+> actually wired up. Therefore they need to be dropped.
+>
+> Fixes: b48a0a0a76cc ("pmdomain: qcom: rpmhpd: Add missing MXC and MMCX po=
+wer domains for Eliza")
+> Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 
-Signed-off-by: Stanislav Zaikin <zstaseg@gmail.com>
----
- arch/arm64/boot/dts/qcom/sm7325-xiaomi-taoyao.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Applied for fixes and by adding a stable tag, thanks!
 
-diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-taoyao.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-taoyao.dts
-index 6f8bc65bb99b..bc4dfa49ef38 100644
---- a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-taoyao.dts
-+++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-taoyao.dts
-@@ -72,7 +72,7 @@ key-volume-up {
- 	};
- 
- 	pmic-glink {
--		compatible = "qcom,sm7325-pmic-glink",
-+		compatible = "xiaomi,taoyao-pmic-glink",
- 			     "qcom,qcm6490-pmic-glink",
- 			     "qcom,pmic-glink";
- 
--- 
-2.53.0
+Kind regards
+Uffe
 
+
+> ---
+>  drivers/pmdomain/qcom/rpmhpd.c | 4 ----
+>  1 file changed, 4 deletions(-)
+>
+> diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhp=
+d.c
+> index 96e4bd2f5a14..90743275942d 100644
+> --- a/drivers/pmdomain/qcom/rpmhpd.c
+> +++ b/drivers/pmdomain/qcom/rpmhpd.c
+> @@ -241,13 +241,9 @@ static struct rpmhpd *eliza_rpmhpds[] =3D {
+>         [RPMHPD_GFX] =3D &gfx,
+>         [RPMHPD_LCX] =3D &lcx,
+>         [RPMHPD_LMX] =3D &lmx,
+> -       [RPMHPD_MMCX] =3D &mmcx,
+> -       [RPMHPD_MMCX_AO] =3D &mmcx_ao,
+>         [RPMHPD_MSS] =3D &mss,
+>         [RPMHPD_MX] =3D &mx,
+>         [RPMHPD_MX_AO] =3D &mx_ao,
+> -       [RPMHPD_MXC] =3D &mxc,
+> -       [RPMHPD_MXC_AO] =3D &mxc_ao,
+>         [RPMHPD_NSP] =3D &nsp,
+>  };
+>
+>
+> ---
+> base-commit: 5453bc3279e9f8578ac3e534d476240e40c879e1
+> change-id: 20260819-pmdomain-revert-adding-mxc-mmcx-on-eliza-647d25519f0c
+>
+> Best regards,
+> --
+> Abel Vesa <abel.vesa@oss.qualcomm.com>
+>
