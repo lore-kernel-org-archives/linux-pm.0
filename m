@@ -1,69 +1,69 @@
-Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFB1743D510
-	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 14:59:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDD494C9579
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 14:59:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787324368; cv=none; b=VuAx08/C/ydUeFB8xl6IJ+xP+3vNOE+BXvglEPk1EkdOZ7JiQ+8NNjGT+LQt7yS6kA3d1LvHvF8JrfFfMIZoQRTNEOK94RNf8OxSbYcD9y07YCoBbU20EMvQ65hRJW8tVdJU/10L6pxU+eV7AR/wck1mQnlC4JZkdxIshqJ6MHM=
+	t=1787324370; cv=none; b=NQgvKhDjbQ+IVIVSCtA3TuoNk2ShDWURJ5EhxJknDuXYZ+kipA9VnpbvVOJVOTFmoXu3/COVrCfr4TV677H3efb33P1jtk0q7XoyQd1nsivqb65hlW+M/J/T4ou/CUdCe/h3mthyFTYXha1ElhuAxI6pUe8PtJRlu7GvWiZjhbo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787324368; c=relaxed/simple;
-	bh=rH5zmUK9SzoukX9NWfQSCfvEsqUGZmMdB2p0Tr+O7s0=;
+	s=arc-20240116; t=1787324370; c=relaxed/simple;
+	bh=MFMnu7MMa0CHJ6IkSia6DPQ5adij+E8bN/z5A2eXBLY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FECK5nKVchervSTm/ORsi2hPxd3T638ZsFjcbkMpfIWb08ALsbofmXY/vWpla0eKfdwrQG/VXz5ygGckf43e4x8BMkbxnWaesFVBZnCm4l0NvBRDm87DyPTjwiI85aa9pf6QpOK9e+PSfJGKyVw/ly4R1hhwWuNAk+UB3GRIz8g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nuZYwyfk; arc=none smtp.client-ip=209.85.208.49
+	 In-Reply-To:To:Cc; b=NXWL/98Cd/aAZRaqUXRgUkQsUIhKg9iOOaojLq1PMxxbfOkEerGGbOAww7lmvEGEQoc7hWXwXq7fsa3ppTt9jFqVNMm1GG573EXFYXpp/734NE/c35cX9LXsJwpnmqCGs3F5RlvIbm36FzXLG5lqo41OjWlxBWk/EWgPzOLbobQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=B35AVIR1; arc=none smtp.client-ip=209.85.208.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nuZYwyfk"
-Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-69f7fa1c548so2243730a12.2
-        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 07:59:25 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B35AVIR1"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-6a10d02ff43so2487564a12.0
+        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 07:59:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787324364; x=1787929164; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1787324365; x=1787929165; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=i28649nrMbrzjwe7lKZ6MKTSXfJUvAObdfOOl+7VWTs=;
-        b=nuZYwyfkbV5ZRqjs82ast6UW1y79yY0pumJSXBsXCiwVBIzCTzQUk2LslBg/vpbCDl
-         plRABzIvlEnVJ0TntEz2NS3Fz8HMHdJHv7JdJ7UTZidn2t4m4MsnW60SWZyaxDynOVsB
-         bUOQ5+QbJtca6fMhdGPhsrOLtD7p1V8rLFVJ34PsUR1jGS1D8o0nf1rQXqlGrE/x2KFT
-         tsybFqjhzeSjyw1U+VnGORXrn0oheKenIhTbyWe9PneAT5Jb9gpGj9zTxIWxYP+WaLLm
-         f6SIc+0nbJA/yGmSvy7wWpCvP7eCgRRmyFGeFjTbErgoUWAkdDiKuYqkTf1af+d2195n
-         Hrhg==
+        bh=OmCssIUI07ufWPm/xfAJqm7bns7S+UOY74WOaOcLcEg=;
+        b=B35AVIR1rk06bzvqL8mUQhRPFl6dLUlM2u1PxFjwcQ52zXHgLJXiRQa1Y3IIl1q9xG
+         wIrEPgGTdT7KFr7c04tg+Css4NQqiyaaT1WoTGHqDC8mB3fE34ZJ2WEOaPOty+cqwfFZ
+         dZYZqse4H2yu5BCuzYCInaOSQ6pgg6P/jhtpb6c0e4wbKCvKu9sooTi7RXziy02PXjlE
+         ENiDtDyZ8YGuKtKxZXXf5VO+eVd50uPQrxm+3mUBkuLrfs1B1exLUU2X+dhtA7Z+K9Nl
+         IFO/b9CBF3KgaT65ABSeC9Llcu+VVhuN7I90m+gWSxBka2rY8pEILLOtMAEP+bDLitI1
+         GA6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787324364; x=1787929164;
+        d=1e100.net; s=20251104; t=1787324365; x=1787929165;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=i28649nrMbrzjwe7lKZ6MKTSXfJUvAObdfOOl+7VWTs=;
-        b=aOV/NcL8gZuQAtCizm+TxuQn9tyTC5lhJUM2l6zOpUVilceOLHjV4zxMqkPBwiJ/qr
-         wZezP0xcTZu5cllc3kD4i+18hpfkHP+k2rrIOaDnErBbEuOBktKCSEA4SQMk3M+39luk
-         V27M2cvyYu7wJ5liyTvRhRjV4tx4hi0lJnZDOv2zZ/nSseMBRYwsIM3us/zKqb3600/L
-         /V76tOeLaLglOogXjJGX57SX+sjaioGRYexvZIs27g0NY26/iGmoCcab3Q4r/7DypWCV
-         ryGpmEwklnkX59A0+x27+nxqTm/bqDsEe36Im4WuSOdDxibL1mYFISxugWYn02qOQZ3n
-         Gp9g==
-X-Forwarded-Encrypted: i=1; AHgh+RqY1qf30avWdmVW0M2Fub5nCY+pipkcUrbbuCUQPt2Si7e/rEArBzt/7otPMKKYFIlx4F7fUq+xyQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kwhloR2vqa8cCRL6NFELI1FlTqvm1Bik8QnbW+GKDDrzrgegTV
-	7VO7s79skyk+wxDKAb9qFj3aQWV6dBx3jSyJdzK7M0xFIMzDF/+gEVkI
-X-Gm-Gg: AR+sD11pMTxKBbdWEnkmIf9SUVl3F42f4m9xXeA7ahkUROGTipXCdRWRLkuAJm7aaJb
-	sUAbtGhShqKvA6VTRwi4YSLx17l5DzAOEn1z9yzaMCQDU5wXBMnYVREhiKvamc+ZLpQQ79dKT5p
-	9C+LSvCgr8OBkkdAM8QeJbJ+8h3rZzE5hWyJILc4C7tHGSL1MRqiit2wRceFp1Y0RKcdMRJeQOM
-	qYAUgMgOMg2T7KUhDuoSHoHg77A3giY/nU8Q2zZL1GvxR2x6x4ohQmTOXeFdN0SmvwVpjOuSuri
-	nEmRzdAXkIJWMDE1rJh0Fi8TJTjlVkL6HXQnrpXhmoTgEAVEbG/wYwiF866uaqy/LEiZsJiyKKe
-	kgKubR8MBKGknqJri+UCibURHYM7hb7ifIoALxATV1lzw0xpygG7Z1mhS07JoxHzGMGlzdDa/HH
-	ULB14MPSEK2WH4W8Vh8PLgWIVgqfN8H8NpwpLAIFdBwtfaxM+7jV92v+K3vOWE0biNFRSljBCiS
-	owsF699eTMqG+Acdq38azBPEm679ruLxkVd4JTDf1sNUGfiNnk7RKuOxRHWLJy23zQ1De7CiSKQ
-	FX6OdiGjGI2g1T0u75B0XTR/1N33gcv66OFiuw==
-X-Received: by 2002:a05:6402:322a:b0:6a1:f895:1ba with SMTP id 4fb4d7f45d1cf-6a42f20b899mr8424396a12.12.1787324363509;
-        Fri, 21 Aug 2026 07:59:23 -0700 (PDT)
+        bh=OmCssIUI07ufWPm/xfAJqm7bns7S+UOY74WOaOcLcEg=;
+        b=pJiGJRxNdUcverWGp4LUUvwM2Fof2nA5oet9CX8flu+ykQnTApwwUbLNP6FC/YSW66
+         N7SYA6v+OJek6l1IJaf0xv9nhLdlJ0pOd3kJBnRaMvlEvt1ax0iu4GGfqtgW3C6473x5
+         s+Hns29C1OLP232ZdbFXRPsnMjTrdUdCFV9/Cs0Qad66eXSqPUeFfrPB/1EaUnJ/W5pk
+         pcn+PnP++3V94ZwWfiZwXBUK0jgyLm+OvCCDf9Q/65EyaoyKwObUrkWd0m9CKVs3pOU7
+         r20TXH28ZkIRW4LCfrW9x6i4ps/SQtajIb/66AYkgjBx0rPlYdLqTs1bWLql8e0pWfAJ
+         Dgsw==
+X-Forwarded-Encrypted: i=1; AHgh+RoWn0hNWBPFia44eHAIhADw4rS65hmzfVRRnLBNImCh+yPhMH7XZuruUHfoWck8v17ptHK+eDFz4g==@vger.kernel.org
+X-Gm-Message-State: AFuF++mFoeC6BeniHrQQbGRsdwKYCpk+IJc9SwWhDfh5q7V2YTPwg/Ji
+	xwu0AHUe94NP/gVwP52a770wMv0hcbzgQIT+ARjQYRXZ7D8+H71hssoc
+X-Gm-Gg: AR+sD11MRw5Yy/tO0TY/U8iwRA8YgGU/gW28XWxkrK87OdloSmR+uiB7QW4jSrXsKq9
+	QxjB0PdmMbz11RcPQXSjES5XtNxDxyh1l96tzutdFSzKIDfkaPQrCRleLmWZytLXGyGd+BmyRu4
+	DHztMRwKCklnTkONSLEKzyAk4MLDhiRyXsSefORtmsOI1nGMJX65KFZvabwXApom/3LAn7GhuVp
+	7QJggAfHqthR6D/G8DVm3V4Zgw5CXMbAtci0hnoAlGt8IpbAACn/lkdJwYne3yOcaNLhcWCi4rg
+	DujlA2TYse4PNsJKNZhVCePSPtoYQJIJKQ6SO/srAAk46K/pTiTip2qUlAcL0BlTj5x4a8LM9Tf
+	/nV4S5cOZyzhtt51RonyLp4Ox0Rsj19Yl99SGeHF2gymrBUuxWDwKKrpLUKYy/zN+Z40dHGCwBy
+	ZMa2I0qnPNTBHy7QAy03gO5NjZcf2bXgVKa8prIwqNVJ9iEvudL1OxfJrU0P9oMmJc06AoqllCn
+	BMEVwy+mXFl1+i0v5n3RMlvtbb6RFc+rKv6Ls1+h54HNEVtQbrv/6dwPZ5DOc67NhtDHpHmamUX
+	40rJ9TI8or4EVM82tmPo2VO90VCqBDkSCNrNrQ==
+X-Received: by 2002:a05:6402:5406:b0:698:c13e:179a with SMTP id 4fb4d7f45d1cf-6a42f1bcdb3mr7491043a12.10.1787324364681;
+        Fri, 21 Aug 2026 07:59:24 -0700 (PDT)
 Received: from [127.0.1.1] (248.201.173.83.static.wline.lns.sme.cust.swisscom.ch. [83.173.201.248])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6a411971b19sm6577066a12.11.2026.08.21.07.59.22
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6a411971b19sm6577066a12.11.2026.08.21.07.59.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Aug 2026 07:59:23 -0700 (PDT)
+        Fri, 21 Aug 2026 07:59:24 -0700 (PDT)
 From: Franz Schnyder <fra.schnyder@gmail.com>
-Date: Fri, 21 Aug 2026 16:58:57 +0200
-Subject: [PATCH 1/2] arm64: dts: imx8qm-ss-conn: Add USB HSIC related nodes
+Date: Fri, 21 Aug 2026 16:58:58 +0200
+Subject: [PATCH 2/2] arm64: dts: apalis-imx8: Add USB HSIC support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,7 +72,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260821-add-apalis-imx8-usbhsic-v1-1-fb93d73ead44@toradex.com>
+Message-Id: <20260821-add-apalis-imx8-usbhsic-v1-2-fb93d73ead44@toradex.com>
 References: <20260821-add-apalis-imx8-usbhsic-v1-0-fb93d73ead44@toradex.com>
 In-Reply-To: <20260821-add-apalis-imx8-usbhsic-v1-0-fb93d73ead44@toradex.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -94,71 +94,94 @@ X-Mailer: b4 0.15.2
 
 From: Franz Schnyder <franz.schnyder@toradex.com>
 
-Add the required nodes to support the iMX8QM/QP USB HSIC host controller.
-
-Keep the HSIC host node in the QM/QP specific dtsi to not conflict with
-the address used by usbotg2 on the iMX8DXL variant.
+Enable the USB HSIC host path on Apalis iMX8 modules.
 
 Signed-off-by: Franz Schnyder <franz.schnyder@toradex.com>
 ---
- arch/arm64/boot/dts/freescale/imx8-ss-conn.dtsi   |  9 ++++++++
- arch/arm64/boot/dts/freescale/imx8qm-ss-conn.dtsi | 26 +++++++++++++++++++++++
- 2 files changed, 35 insertions(+)
+ arch/arm64/boot/dts/freescale/imx8-apalis-eval.dtsi      |  6 +++++-
+ .../arm64/boot/dts/freescale/imx8-apalis-ixora-v1.1.dtsi |  6 +++++-
+ .../arm64/boot/dts/freescale/imx8-apalis-ixora-v1.2.dtsi |  6 +++++-
+ arch/arm64/boot/dts/freescale/imx8-apalis-v1.1.dtsi      | 16 +++++++++++++++-
+ 4 files changed, 30 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8-ss-conn.dtsi b/arch/arm64/boot/dts/freescale/imx8-ss-conn.dtsi
-index 176e2e332f87c..44eee9abacfb1 100644
---- a/arch/arm64/boot/dts/freescale/imx8-ss-conn.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8-ss-conn.dtsi
-@@ -384,3 +384,12 @@ gpmi: nand-controller@5b812000 {
- 		status = "disabled";
- 	};
+diff --git a/arch/arm64/boot/dts/freescale/imx8-apalis-eval.dtsi b/arch/arm64/boot/dts/freescale/imx8-apalis-eval.dtsi
+index 6f5af37ba9af9..1d4e92f674f87 100644
+--- a/arch/arm64/boot/dts/freescale/imx8-apalis-eval.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8-apalis-eval.dtsi
+@@ -133,7 +133,11 @@ &spdif0 {
+ 	status = "okay";
  };
-+
-+usbphynop2: usbphynop2 {
-+	compatible = "usb-nop-xceiv";
-+	#phy-cells = <0>;
-+	clocks = <&usb2_lpcg IMX_LPCG_CLK_7>;
-+	clock-names = "main_clk";
-+	power-domains = <&pd IMX_SC_R_USB_0_PHY>;
+ 
+-/* TODO: Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++/* Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++&usbh1 {
++	vbus-supply = <&reg_usb_host_vbus>;
++	status = "okay";
++};
+ 
+ /* Apalis USBO1 */
+ &usbotg1 {
+diff --git a/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.1.dtsi b/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.1.dtsi
+index 93f485140b20c..68fb2eb8c7e67 100644
+--- a/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.1.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.1.dtsi
+@@ -222,7 +222,11 @@ &spdif0 {
+ 	status = "okay";
+ };
+ 
+-/* TODO: Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++/* Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++&usbh1 {
++	vbus-supply = <&reg_usb_host_vbus>;
++	status = "okay";
++};
+ 
+ /* Apalis USBO1 */
+ &usbotg1 {
+diff --git a/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.2.dtsi b/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.2.dtsi
+index 5c86bcee55fb7..baf09624fb27c 100644
+--- a/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.2.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8-apalis-ixora-v1.2.dtsi
+@@ -271,7 +271,11 @@ &spdif0 {
+ 	status = "okay";
+ };
+ 
+-/* TODO: Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++/* Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++&usbh1 {
++	vbus-supply = <&reg_usb_host_vbus>;
++	status = "okay";
++};
+ 
+ /* Apalis USBO1 */
+ &usbotg1 {
+diff --git a/arch/arm64/boot/dts/freescale/imx8-apalis-v1.1.dtsi b/arch/arm64/boot/dts/freescale/imx8-apalis-v1.1.dtsi
+index 681f24810d52e..64604f91d5673 100644
+--- a/arch/arm64/boot/dts/freescale/imx8-apalis-v1.1.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8-apalis-v1.1.dtsi
+@@ -870,7 +870,21 @@ &spdif0 {
+ 	status = "okay";
+ };
+ 
+-/* TODO: Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++/* Apalis USBH2, Apalis USBH3 and on-module Wi-Fi via on-module HSIC Hub */
++&usbh1 {
++	pinctrl-names = "idle", "active";
++	pinctrl-0 = <&pinctrl_usb_hsic_idle>;
++	pinctrl-1 = <&pinctrl_usb_hsic_active>;
++	adp-disable;
++	disable-over-current;
++	hnp-disable;
++	srp-disable;
 +	status = "disabled";
 +};
-diff --git a/arch/arm64/boot/dts/freescale/imx8qm-ss-conn.dtsi b/arch/arm64/boot/dts/freescale/imx8qm-ss-conn.dtsi
-index ccf9f510e0f88..168f89eebeedb 100644
---- a/arch/arm64/boot/dts/freescale/imx8qm-ss-conn.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8qm-ss-conn.dtsi
-@@ -4,6 +4,32 @@
-  *	Dong Aisheng <aisheng.dong@nxp.com>
-  */
- 
-+&conn_subsys {
-+	usbh1: usb@5b0e0000 {
-+		compatible = "fsl,imx7ulp-usb", "fsl,imx6ul-usb", "fsl,imx27-usb";
-+		reg = <0x5b0e0000 0x200>;
-+		interrupt-parent = <&gic>;
-+		interrupts = <GIC_SPI 268 IRQ_TYPE_LEVEL_HIGH>;
-+		phy_type = "hsic";
-+		dr_mode = "host";
-+		fsl,usbphy = <&usbphynop2>;
-+		fsl,usbmisc = <&usbmisc2 0>;
-+		clocks = <&usb2_lpcg IMX_LPCG_CLK_6>;
-+		ahb-burst-config = <0x0>;
-+		tx-burst-size-dword = <0x10>;
-+		rx-burst-size-dword = <0x10>;
-+		#stream-id-cells = <1>;
-+		power-domains = <&pd IMX_SC_R_USB_1>;
-+		status = "disabled";
-+	};
 +
-+	usbmisc2: usbmisc@5b0e0200 {
-+		compatible = "fsl,imx7ulp-usbmisc", "fsl,imx7d-usbmisc", "fsl,imx6q-usbmisc";
-+		#index-cells = <1>;
-+		reg = <0x5b0e0200 0x200>;
-+	};
++&usbphynop2 {
++	status = "okay";
 +};
-+
- &usbphy1 {
- 	compatible = "fsl,imx8qm-usbphy", "fsl,imx7ulp-usbphy";
- };
+ 
+ /* Apalis USBH4 */
+ &usb3_phy {
 
 -- 
 2.43.0
