@@ -1,441 +1,168 @@
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A1B93624BF
-	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 03:03:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08C503559C9
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 03:24:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787281417; cv=none; b=JJcJhr7ZEIFhU5uYnIZbBgxHnH/C/PynTP6fcoftVGU+NBqJyzcutmx9s+0Vec2vkI8FIGZj7+HPl42G3ppn8tGqlm36tzBAJ+vVDRisfvEC0u28vYSmMbXJD2YGUFRXfq0u+IaRmWG3i1oB3uQYmD56Yr1ao5Q8JTBZd8QZKsQ=
+	t=1787282696; cv=none; b=OCbzgVRwWhenMKknEm3oLuHIgYfzWTkCALe5rFu480vdAZKL46FiAbGIDwCPO8MvRsuW2ljI/JtwAcrvb4yFA352oB4MZiZKIwNpmteIWPbQLXCdh+bPv8ZU2Jhv+u8bwV8c8SXXsidDeIh7TVnnegPqVxTAWT1Stl5sGmHf+ss=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787281417; c=relaxed/simple;
-	bh=ONfX4Wfb1971TeDAprFg/ky8Azx+mOBa/NJjy+4EUTk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=X4Xlu/c0McJl1OnQfo6Ru+a4JeEV1bR/+0ckTcfiOmwBEyI2fOH3myU6mpDLQEncz1KxGqLTiUY3EMRNGHWMVeNydcohhZ67/kM01TwKX8AP+sn+OnlBXV4UJ5O79SrQ+XkJE3neHYyywJUfM0mNCuUk2pBiD4qFyhYOjY9Bxn0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mswin.me; spf=none smtp.mailfrom=mswin.me; dkim=pass (2048-bit key) header.d=mswin-me.20251104.gappssmtp.com header.i=@mswin-me.20251104.gappssmtp.com header.b=hpeGBF2e; arc=none smtp.client-ip=209.85.218.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mswin.me
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=mswin.me
+	s=arc-20240116; t=1787282696; c=relaxed/simple;
+	bh=r/+VpJ85Yz70wWRxT5yl6As9ddZBD9nhzoahm+SFZKg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GPXldo1EECUTaz6Iz0kHmJ0uTuNRCL2Xgw/Rr/S4X9DUvD+BWdIrjDCHEI7weCaDM6+Zt6UF0RmKhm8mAWmzA/cWH8FU3ckVe5471GTVtEebMryYIT4Uy8Kb8aLF/u6N6koITypHPxl7jmK8e/VDIQWQLErIhuP0MYQDqtTLPus=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=md/KYDa0; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HIv8GtJ7; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mswin-me.20251104.gappssmtp.com header.i=@mswin-me.20251104.gappssmtp.com header.b="hpeGBF2e"
-Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-c1600d040e4so74686066b.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 20:03:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="md/KYDa0";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HIv8GtJ7"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67L21YD11024112
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 03:24:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=SlIkn/kUR+9KoU2/9RIyh2hg
+	yJrbFpNU877EzuaIyr8=; b=md/KYDa0qD4cvRqRYnTNM2muFiVqfmFH2z+0+YAM
+	ok9vtvBEKPVUDwRWGAO6qiYn9mbuFNTP8dYCv4w9DZvawNWVU4XZ+cStkRugQnZw
+	/PhGBzeD2imvfQLEKi+MqMeBG7Pg/g7CuArF5RWVhz95Kze7WxYDiL1HUdEZpUVw
+	kaAXXYDCrrmx8m8ABTVtYrfWr9kEZD9KHh06zYc+RRQmbIkX4R0FeFaE8uOz9ihw
+	FIWY/4JahYOMeu/ISMxK0GQUGtDGz7FkrARJf0B7/7Av3mzXXQW8eF1KFExAWis7
+	3GlAVlZX6E9Vhy6eivs2hJEZCXLydOwoPIrsAyYLF9oqRw==
+Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g5yg1c1qs-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2026 03:24:53 +0000 (GMT)
+Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-744e7c36621so173063137.3
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2026 20:24:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=mswin-me.20251104.gappssmtp.com; s=20251104; t=1787281414; x=1787886214; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=BGYQMxlFuqVDdtl5kyo6xRsi2rXbipb/DXKi83EWaV4=;
-        b=hpeGBF2euMgdxT1qoCIoLw0n+JEPqaMT6EwvLFFS1+7DLyWq/ix24cstfa05w+Hh04
-         F23j/xboy7omi/BzqyY/t3CafiQNOgftEm5ofskF+VvHoiaG31tmfOH1YM2dRcjO3ZcX
-         CXD+uFXHJ532Wi7w1FHBZnUz6+RpCyDzyGNO++sH2iYIdP23HYf1pamme8w8XgclpwPc
-         BH6DR7Lfkau0E7OpKhcFdNtPV/0MZEUTf9PDHwKSabJiS/wptLnvZ9zEMqO1YWShRRKs
-         AP2kqnxSPWPZSsj+nh/vLWSYGtwZxufDp9sYYqhLBUpKDFUFEenMGORmHI5Fh08EWHLl
-         928w==
+        d=oss.qualcomm.com; s=google; t=1787282693; x=1787887493; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=SlIkn/kUR+9KoU2/9RIyh2hgyJrbFpNU877EzuaIyr8=;
+        b=HIv8GtJ7numVcjnuEag3LJyoq4qyvh3J8SKz3/xTcyzxeEf4aOrTGtff4xXgCE9kIS
+         UkyNSTd2xx7AInJ73dzmU/TpYcConuVLJXjf58Tb83yWaQ0cFvfFbyK/DEEYFL033KXM
+         sQAq+lXbmJzey5hbra5kd69qsiHTNDb1rNNW1iHMl9opkcKz12y/ecfCFZgs3Yy458Pf
+         aOgU0PwiD8X8HxndYfhf0UsD7Gxbxx7hNpu+ZQkN6REpoeXxXbOUvuLaWaKqEPIkgS8q
+         mgzuQdVIvT090qMNvqvgm7fRFGOzubnjF33aj29/uBA56nshkMZ0sDVTXOmXrJruXSiX
+         i1zA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787281414; x=1787886214;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=BGYQMxlFuqVDdtl5kyo6xRsi2rXbipb/DXKi83EWaV4=;
-        b=qjmQX+ltdniI7GQVoy6SYZ3RPEfqcPSMKPykn9Vapiz5lFgZw6fMAf7SvTZm//vtFY
-         ZcEXbgtk96MNNV4Fifkfq1dc79j27v/acJyve2kQJ6OV9oH1PFQquwKEnR/+AjEQojOH
-         qb1Tp/XrKxYVrU7aAMnyOkpj8QGOXpBofkWSZSAsWh5hOK/8N8HcSfDNgbe4+7y3SnU9
-         uo3tQgl0GcfPbDuHk8AXkd90kRTXktQhpjtF2WEbpCgGRaliuPR8UIaLaoDNxGokOZv/
-         1yQhPRxo+baWFAlEVL/wav1P7UZBF2nXbBUOk5wKtU9gNQZFeglYDCjhCZ1P/o3Uhemm
-         A7Rg==
-X-Forwarded-Encrypted: i=1; AHgh+Rri86N85Ss9VVmQQQSdChLiYOuymBBsq96t+EetupDAnUo4y7XRbV9eie2Lu5XEMGUtmgjz1yf+Fg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw51BvPDAP3mvPYlp0WbpMxXYTcmi30sNowR2BGqv9Hu65b7BSy
-	/ej+TBxi7lJ6k3d2BikKzYAoWUOBR1yXHpkFjbfyyH1aTU/wlBbeteY/OZT52qe+Y88=
-X-Gm-Gg: AR+sD12NlhefVMpQU9gnd7oFxCR2FOlky8MLSkrsk0tSKxdgJZOuRiYDf7NEFOM8+XV
-	8BJmjtIFzEQxNbEtOxpYB0m9hemRG/kPFz1ouf196HYBvgIgFDQQEGwMLpVgsf3gQU1sEntdCQ4
-	JIQpatx5dyHrJQ4R6EKTeRtr5uLAL00bhWfS11JDyStpAcsTNO1hIA5yktA6MnpUFUX2eTeHaNV
-	XtohECOnilUWBzYI+N6a21mJZu0wGCKsLykt83sRzyjsIzJ+88mDVXSKLNixPGzFi65hvFl6lXc
-	6GeNth55QSUJxI/DUzMWwe4G6mkJfcLAF47WCwEwg5aF0GBWFvo8CLZRpKNt2DrCMA7nvVRJCZV
-	aKiqhZnWRjqzbLYGTEywh++WTJrux9d8Zo8InKZv5mxqr7oUy+eIaGw7QRvuykFjvO7WsPdqVDZ
-	0hWjaTE0XYtB8nul3ef/2Cltk4C7F38HRQKyPyHbKgpG+sE2ulfsO1nh6xPNG+tphsGA==
-X-Received: by 2002:a17:907:3e1d:b0:c20:fd32:d9f5 with SMTP id a640c23a62f3a-c244d7d6f49mr766880766b.13.1787281413726;
-        Thu, 20 Aug 2026 20:03:33 -0700 (PDT)
-Received: from zephyr.int.serkovo.ru ([85.17.200.167])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c24591df293sm274875866b.45.2026.08.20.20.03.31
+        d=1e100.net; s=20251104; t=1787282693; x=1787887493;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SlIkn/kUR+9KoU2/9RIyh2hgyJrbFpNU877EzuaIyr8=;
+        b=HsxGuSKTtJcGrjEmkimPiXz8auhS54N+PMqAn5A1NQKmxe5F/M37W7m4j0N6vk4M1A
+         iD5XpbvDYHLPSnC9HfZ0Q36c20og9dw447yIqwpTgS5FamyFCM063Mzq4c5J3pxQ3/ZZ
+         bU8bdmekgMqsf5hm5axC48OfVXMXKk908T+wL2H5wJYYmhvWvQ3IfOeSnrZEl9kpAlmK
+         hJKkhTT6wW9ibG+B1gPL4DC/XcWeFSk+mh3cyZV6NUj2T67bc6kbi03dR2XZMQ43JHod
+         GQX3WDTOJ6nj06WHeqWlUtf5tK3kv0KDBeckdafeQGZLc+aKdSei0IV1q/zks49LO5s5
+         puMQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrK7Vm76p7wRNGCzZy33NtEHuUamU7p2JRYNy2m99BJRqVYFnYhNY7T9bUrZUrb2pqSQP7TNS5nrw==@vger.kernel.org
+X-Gm-Message-State: AFuF++nCJem8ZmgK/A8pOXQ8aLToAuptimBtB/t3GBWhtVZ9Pz8pLQFh
+	OMREHMOtylWHyxYxNhwEqu7T/0pUf0RskLr3gLLAslUfygtgNo008sEGpPywD+Gs383S/vHnXJQ
+	Mr2IlhSo6KaY1VOGH9FivafRtt0Y7ej4AIYf01iju9rhOd+JIx2Q/1KNOnnXnEA==
+X-Gm-Gg: AR+sD12eZTugvG6uaA/z8ABYlwHRRmON0/iqsEH6o36rteaL6UvMZIR64t4xEeNAprI
+	ljcyB4KHcWPZMJphtlI5kGJl5MVOOPjGRub/qM59P2LQVFVw8/WAASPSjOjtMccgrFWgzN8T3aH
+	P9JHGFXICdtjdXkZwvCPr9v1ZaM/T/ValGxMvC2gH4fiAap6SpM4GMcFrrwFfetqhq/J87XpG59
+	lJ7n9o+x2Dy2FPSdgjAOHpfQRVEUy8xgs1KajcRwK39weRigbxamqd9yA6f097EmmhHIjgquc5b
+	nVu7cv9GMsMNuYDmWvSs0kUvyWa9Wzygz2ivGPbUo6P0xmmAsz11TSrh49zJro8AbDvt/rEOFJo
+	poCUAyI9Amt+huds=
+X-Received: by 2002:a05:6102:580d:b0:779:dc0d:2b2d with SMTP id ada2fe7eead31-77a63642798mr1213006137.8.1787282692929;
+        Thu, 20 Aug 2026 20:24:52 -0700 (PDT)
+X-Received: by 2002:a05:6102:580d:b0:779:dc0d:2b2d with SMTP id ada2fe7eead31-77a63642798mr1212984137.8.1787282692340;
+        Thu, 20 Aug 2026 20:24:52 -0700 (PDT)
+Received: from oss.qualcomm.com ([188.27.161.240])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6a3feec9e2esm4138134a12.5.2026.08.20.20.24.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Aug 2026 20:03:33 -0700 (PDT)
-From: Roman Linev <admin@mswin.me>
-To: Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Roman Linev <admin@mswin.me>
-Subject: [PATCH 2/2] arm64: dts: qcom: sm6125: add TSENS and thermal zones
-Date: Fri, 21 Aug 2026 06:03:25 +0300
-Message-ID: <20260821030325.1823829-3-admin@mswin.me>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260821030325.1823829-1-admin@mswin.me>
-References: <20260821030325.1823829-1-admin@mswin.me>
+        Thu, 20 Aug 2026 20:24:50 -0700 (PDT)
+Date: Fri, 21 Aug 2026 06:24:48 +0300
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Maulik Shah <maulik.shah@oss.qualcomm.com>,
+        Yuanfang Zhang <yuanfang.zhang@oss.qualcomm.com>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Ulf Hansson <ulfh@kernel.org>
+Subject: Re: [RFC PATCH 3/3] cpuidle: psci: Initialize the PM domains in
+ powered off state for OSI
+Message-ID: <3s2qeh2teckoalwqaekcs6zk4bpsrdi5ackkn5uu4qyygvawmu@k3lvlpm4fipg>
+References: <20260819151457.256959-1-ulf.hansson@oss.qualcomm.com>
+ <20260819151457.256959-4-ulf.hansson@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260819151457.256959-4-ulf.hansson@oss.qualcomm.com>
+X-Proofpoint-ORIG-GUID: lHIIkiGM31PFEXTANRCxM0wKjlBr6Nbc
+X-Authority-Analysis: v=2.4 cv=G7Is1dk5 c=1 sm=1 tr=0 ts=6a87c505 cx=c_pps
+ a=P2rfLEam3zuxRRdjJWA2cw==:117 a=wUpz7uCjLrEXi01cjX+DLw==:17
+ a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=elYLTxGRisG19N56oD0A:9 a=CjuIK1q_8ugA:10
+ a=ODZdjJIeia2B_SHc_B0f:22
+X-Proofpoint-GUID: lHIIkiGM31PFEXTANRCxM0wKjlBr6Nbc
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIxMDAyMiBTYWx0ZWRfX14PKd/HeIdh0
+ oWxDljVTWixmycYAzaLF19wKTaZy6inT6fSAE6AoIhRrfV2cxGQxK4WYIndTGykllCa68Adv+rK
+ rwVMaXZITldNmfgzz9qBjK40pQNO3Bs=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIxMDAyMiBTYWx0ZWRfX87OAaoIJ0RGU
+ iWdJIdKyVUyc+WOBldlBbXsRbh0k80QOt6ekwB62kkmjdcPmdo/gRGZkK6gmHvAbx64WAv/lcFs
+ g9fZ5Q3HGUavboAAMn7VOaQTTafd88d3aqtlaTjsJ1kq1ULFyDvqgqPv0Gk7rhgEm22R0/tzfOR
+ dCgwv0Zs7rq7fNqXeD4KujTQvg10cVis+X9xYbdlboWURBlAUKPJpeFBk6+gRfjlf72MY0XzPpK
+ bPuxIu30+q1hqA80t8oYwZFOiBWBWK9nYtmTnMapkWsnDP+xF8jrM/K6dronjo96foOPwEqMf/H
+ NACN07Px8cvp5XgxQ1pMgPnvBv0LqEzzkWFAKsjy94WDVR4R8q9YgTPnTK9LBbcDVqqYhoe6n6Z
+ emLWYh95RFZgabqssjbWPMMugpPgE5txHd3AMUE+DZWv9LkSjQXBVkuRMuv6MiFBQFiDzp51aid
+ SK0TDIkndQQjDrtJjrg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-21_01,2026-08-20_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 clxscore=1015 phishscore=0 bulkscore=0
+ lowpriorityscore=0 priorityscore=1501 adultscore=0 malwarescore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608210022
 
-SM6125 has a TSENS v2 controller with 16 sensors, at 0x04411000 (TM) and
-0x04410000 (SROT), with SPI 275 as "uplow" and SPI 190 as "critical".
-The register and interrupt layout is identical to SM6115's, and being v2
-the block self-calibrates, so it needs no qfprom nvmem cells and no new
-driver code: it binds through the existing qcom,tsens-v2 fallback.
+On 26-08-19 17:14:53, Ulf Hansson wrote:
+> From: Ulf Hansson <ulfh@kernel.org>
+> 
+> At the point when the PM domain and the topology are registered through the
+> genpd subsystem, it's not really known whether corresponding CPUs are
+> online and thus if the PM domain should be initialized as powered on or
+> not. Instead this information becomes available when the CPU devices gets
+> attached to their respective PM domain through dt_idle_attach_cpu().
+> 
+> This is a problem when using PSCI OS-initiated mode, as we may end up with
+> a PM domain that has the genpd's status indicating it to be powered on,
+> while it in fact may not be the case. In the less severe scenario, this
+> leads to selecting a shallower domain idle state for the PM domain than
+> necessary. A more critical problem is when a non-CPU device shares the PM
+> domain, leading to their corresponding drivers not being able to trust the
+> status of it.
 
-Add the controller and thermal zones for the 15 sensors that are used.
-The sensor-to-zone mapping comes from the downstream device tree for
-Xiaomi Mi A3 (laurel_sprout), cross-checked against mainline sm6115.dtsi,
-which agrees on sensors 2, 3, 4, 13, 14 and 15. Sensor 5 is not
-referenced downstream and is left out.
+Exactly why a third state like GENPD_STATE_UNKNOWN would be more
+fitting, IMO. Maybe something we can do at some point.
 
-No cooling devices are wired up: SM6125 has no GPU node upstream yet, so
-there is nothing to reference. The zones report temperature and carry
-passive and critical trips; cooling maps can be added alongside the
-consumers when those land.
+This solution works for now as well.
 
-Tested on Xiaomi Mi A3 (sm6125): tsens0 binds at 4411000.thermal-sensor
-with no dmesg output, the thermal zone count goes from 5 to 20, and the
-15 new die zones read 37.7-39.6 degrees Celsius at idle. Under a 660 s
-glmark2-es2-drm soak the hottest zone reached 52.2 degrees Celsius, well
-below its 85 degrees Celsius passive trip.
+> 
+> Let's fix these problems by initializing the state for the genpd's to be
+> powered off and in the deepest possible domain idle state, when using
+> OS-initiated mode. The support for ->sync_state() is maintained by setting
+> the GENPD_FLAG_OFF_STAY_ON for the genpds in question.
+> 
+> Reported-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+> Link: https://lore.kernel.org/all/20260811-domain_off_ss3-v1-0-6a0a0fc023f5@oss.qualcomm.com/
+> Signed-off-by: Ulf Hansson <ulfh@kernel.org>
 
-Both SM6125 boards still build with no new dtc warnings.
-
-Signed-off-by: Roman Linev <admin@mswin.me>
----
- arch/arm64/boot/dts/qcom/sm6125.dtsi | 299 +++++++++++++++++++++++++++
- 1 file changed, 299 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/sm6125.dtsi b/arch/arm64/boot/dts/qcom/sm6125.dtsi
-index 86de1560b..ed7fb5b75 100644
---- a/arch/arm64/boot/dts/qcom/sm6125.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm6125.dtsi
-@@ -719,6 +719,17 @@ spmi_bus: spmi@1c40000 {
- 			#interrupt-cells = <4>;
- 		};
- 
-+		tsens0: thermal-sensor@4411000 {
-+			compatible = "qcom,sm6125-tsens", "qcom,tsens-v2";
-+			reg = <0x0 0x04411000 0x0 0x1ff>, /* TM */
-+			      <0x0 0x04410000 0x0 0x8>; /* SROT */
-+			#qcom,sensors = <16>;
-+			interrupts = <GIC_SPI 275 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "uplow", "critical";
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		rpm_msg_ram: sram@45f0000 {
- 			compatible = "qcom,rpm-msg-ram";
- 			reg = <0x0 0x045f0000 0x0 0x7000>;
-@@ -1634,6 +1645,294 @@ intc: interrupt-controller@f200000 {
- 		};
- 	};
- 
-+	thermal-zones {
-+		/*
-+		 * Sensor-to-zone mapping verified against the downstream
-+		 * laurel_sprout device tree (tsens@4410000, sensors 0..15) and
-+		 * cross-checked with mainline sm6115.dtsi, which agrees on
-+		 * sensors 2, 3, 4, 13, 14 and 15. Sensor 5 is unused by the
-+		 * downstream tree and is therefore left out.
-+		 * cpu4..cpu7 are the downstream cpu-1-{0..3} (cluster 1) sensors.
-+		 */
-+		aoss0-thermal {
-+			thermal-sensors = <&tsens0 0>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cdsp-thermal {
-+			thermal-sensors = <&tsens0 1>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		wlan-thermal {
-+			thermal-sensors = <&tsens0 2>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		camera-thermal {
-+			thermal-sensors = <&tsens0 3>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		video-thermal {
-+			thermal-sensors = <&tsens0 4>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpuss0-thermal {
-+			thermal-sensors = <&tsens0 6>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpuss1-thermal {
-+			thermal-sensors = <&tsens0 7>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpuss2-thermal {
-+			thermal-sensors = <&tsens0 8>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu4-thermal {
-+			thermal-sensors = <&tsens0 9>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu5-thermal {
-+			thermal-sensors = <&tsens0 10>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu6-thermal {
-+			thermal-sensors = <&tsens0 11>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu7-thermal {
-+			thermal-sensors = <&tsens0 12>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		modem0-thermal {
-+			thermal-sensors = <&tsens0 13>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		display-thermal {
-+			thermal-sensors = <&tsens0 14>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens0 15>;
-+
-+			trips {
-+				trip-point0 {
-+					temperature = <85000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+
-+				trip-point1 {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				trip-point2 {
-+					temperature = <115000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv8-timer";
- 		interrupts = <GIC_PPI 1 IRQ_TYPE_LEVEL_LOW>,
--- 
-2.55.0
-
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
