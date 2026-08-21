@@ -1,51 +1,51 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012035.outbound.protection.outlook.com [52.101.48.35])
+Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012015.outbound.protection.outlook.com [40.107.209.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C26E440625;
-	Fri, 21 Aug 2026 04:28:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.35
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE9FF381EBC;
+	Fri, 21 Aug 2026 04:30:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.15
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787286488; cv=fail; b=h3Zw45BnYy3XLq4AEgPDVgTvFMd8UnevBHOlOKkFufCKhRJQam0CUzpf/8Ff4/97LgAZuXwPSmHrz8wdKdH2TcdVd7zYYPLIrdkDv1VHAamSqUJcR+8FW2gKhRax7L4cXWKD3PwL4FuAmsyDOJOee1Ft3ES/iSQ98mZxhPhuy+U=
+	t=1787286658; cv=fail; b=XyiLuh/xZmX8zbCsdVwW/M/U8Ku1oDZYo3Vh+A9ix6jFCxsBCVwI6ESu7LtzsjEKIU44upDzkKqyfU2NIdEaqu2QkrDq2ZSSckJ1GQr1zY5x15uLAE01gOgfIQdjzgwrtJsf/PcAQ/sdS29T8OsHyJmPydcpXlF/8AUxXOlrUlU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787286488; c=relaxed/simple;
-	bh=k30F85gIAsZxN2RAS4fJ8/iKovFmcmvtsZQoYXGfC78=;
+	s=arc-20240116; t=1787286658; c=relaxed/simple;
+	bh=SCZ+VWT3Fe9Q1RGJN/OccAz5n81W6eKViDkqD5l3EGo=;
 	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=WgFTfL68Qv9Q2I1WbiGIoKqyG3nv158rp4k+FS973HJFyP2wtS3647TYqRuqGzDSPvy38rh3dpF/PDktb+7SHh9CT5lgfV/x43CG8PuF6n5Brry9GOV1GAm6juynH7UNVxeh+w4ZpJgaxs03hXVWxHn2u6fozc4g9sKi0KTegCo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=rJYYeK5F; arc=fail smtp.client-ip=52.101.48.35
+	 Content-Type:MIME-Version; b=qz2/InwLsiH0sm45etY//RO2E9etFMmMN6xhd0zVb9SPYTowxIZhI4ZfovI3nykcmZXA8oBB2uzeESWP9JjrjkKzFGf23y3UZ7yV7u2MxKNxzywcONurY2PTrgG13PI3t5kRmhLE6fEeVxZ65auW0k7dhT8M7ZDf8tm+QIwK/rQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=TRugsU/i; arc=fail smtp.client-ip=40.107.209.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="rJYYeK5F"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="TRugsU/i"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=E16FTOnwpgVZmYyTkw9ufXbE/jFKrkfi7tNMJmJKQYi7t1nFF3LjCWuwfXaCFMUyBV7cY2kdEy2lAMq1XhZ/d+Mz2K98LNcV//8/J5tC3S+mPbpbenbYF+sRJPCHNg4te2vrFmKJV5VkSVYK26PHGJjuWdEOmMD+nFTb4+FNxeCJG9s02tQdI7E2+/o99uh4M3Dre31dPadTPk/NwAJxl3bERxFQcnHP5Ne/nngrICbv2ow8q5EQtWBjx1HMOje9D6F5M6rJJ43xRJrE9LK2JtDFaDm0Nthu6pM2Ewo4mU3Z4OhUVjNZw+bwHOBCvxExn4Zcs4H/DAr5u01US2MhOQ==
+ b=SeFg/UUnsQh3qrmmmUAPi/+KBDFLSo3555kQUmbIiX4i2mYlunltH73FA5ZF5LmWeDUfFyzCMHFYuFlDwx1bKDBEKZ/uLDGrFuxrM6i6sONM8ELA6sLMfdo7hiki5gZcv1eZkKMoFnu+nHjPByR5RJgj79QZ6PKqNZ6FnLscF4G8oay/MT9XNjR4h2J4jyx6/8Wdq/aiK/7tMTrl1EdzeR9eu6VNDYC8Nkptm4nex5FaaEaN3YBUvk/bCTRaZeHNRMKiMzR52TvuPFFXVmG+wBPuyepcLZdzpfFihuoU+YlBvw0K6d7YtBJEW2ZeI/Pgnfq3AEtEOQV6aI+PJTT2OA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GQUzvakqCKTZ2KEwsy641aPUscenx3BFjIPUkcYvhE8=;
- b=Y6dwo33OysRI/aJ2Te6lkhGD/GqKiDx/7Hf/PHay5RuoXYG+nblRFnc7fh1h5PzubSb1XBdeoWiMNN4hB/SXf+qBt7Ac1FLH3bfgW+iSY0d4szDYx2WYzcqFzMHjJBK8n+1Scj6C8ItS8DpsAHBMhI8cOFj6pTxXdLVX8Pd2wVA8MhcYdgNPUBy0AovurQ8W+6gELOPs/3V5eadP6t8qYt2GUJxDQzQNKn0AYzf5t/JArmFr66npWCpWm7Rd6lcDZN9aPqJ1T3nL+pTPetRrlsiDqXGDMrHGbLiO3ABtn5KTVud5WBVF7yHgabwqoqqA/VyoLA/ryNs2/p3yGYiLOw==
+ bh=lRuDooq4PEa3a7nVd4TkBWCSjj4cSjJ+h3KbUFho21Y=;
+ b=NkHHtZX+BerZSGk4v/KdhuYNsGquzGOddlVYe3SYqNhtHTKnnCiZI6KYPI5EZmiWDVPxl43sikm3J2X4+TAwSqlQJRxIQu19MOLO7XpIiwRuaZI+WXoPM142meGHSkffZ5Mn9SojksMjcHLnzelXExoK6XKyW4oJPExOp/O2dvYjJWzvleyNmpNtZnN2y6WWWgQ7Tibk6iIKKSQQlEQQ2SgcGhubL4jBX566OIvewZok0drG66wnsxjZM6uRrhJBDr2bvvpQJeAvuSaqMSZ1PNGYKYrJcscJFt/+GqhL2i2+7gzeMiuE9X4K5DnLVdUNLYfUZhDZUgeGCpCaMDOzfA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
  header.d=amd.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GQUzvakqCKTZ2KEwsy641aPUscenx3BFjIPUkcYvhE8=;
- b=rJYYeK5FF+phq/xfhQGfO+BIZUwyObp9Gfh3TVSeWqCkXVICBHWqEVFZ6libi3fJuTwtSwzTiFtlWMhGYpoBtdzVTuRZ7dG9Xssis7I2Eg69pHYtUVjCSAd1EBkDEeLKHOi5VHt13LgtxlWBM1D1+KmF5uPW5k5PXgmAQj/A3Q0=
+ bh=lRuDooq4PEa3a7nVd4TkBWCSjj4cSjJ+h3KbUFho21Y=;
+ b=TRugsU/iYK9ZiQAIJB7aZodPqL57PXh9KZsa29oFwni+/ueRZ5H+Kk2hAlwXC7tcqY5TecAAlHQ3Gp6/5ax2Y3LszPF/lHRp1O45LhG+V+ReQNjaWZztVI9zwwZXmehnMpVidNnAmGTQ7FL+tUGTgCEAQQeMU8dRFhoxsKDK8M0=
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=amd.com;
 Received: from DS4PR12MB999075.namprd12.prod.outlook.com (2603:10b6:8:2fc::20)
- by PH7PR12MB6696.namprd12.prod.outlook.com (2603:10b6:510:1b3::10) with
+ by CH2PR12MB4245.namprd12.prod.outlook.com (2603:10b6:610:af::15) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Fri, 21 Aug
- 2026 04:27:58 +0000
+ 2026 04:30:49 +0000
 Received: from DS4PR12MB999075.namprd12.prod.outlook.com
  ([fe80::4c9d:851d:3f44:800f]) by DS4PR12MB999075.namprd12.prod.outlook.com
  ([fe80::4c9d:851d:3f44:800f%6]) with mapi id 15.21.0339.008; Fri, 21 Aug 2026
- 04:27:58 +0000
-Message-ID: <25b9e249-053f-4560-ab3c-eaa30bf0b240@amd.com>
-Date: Fri, 21 Aug 2026 09:57:49 +0530
+ 04:30:49 +0000
+Message-ID: <a75c97df-d956-462a-b44f-9fa984cd5423@amd.com>
+Date: Fri, 21 Aug 2026 10:00:41 +0530
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V3 1/6] dmaengine: zynqmp_dma: Fix PM usage count handling
- in probe error path
+Subject: Re: [PATCH V3 4/6] dt-bindings: dma: xlnx,zynqmp-dma: Add Versal Net
+ compatible support
 To: Frank Li <Frank.li@oss.nxp.com>
 Cc: vkoul@kernel.org, Frank.Li@kernel.org, michal.simek@amd.com,
  robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, rafael@kernel.org,
@@ -53,14 +53,14 @@ Cc: vkoul@kernel.org, Frank.Li@kernel.org, michal.simek@amd.com,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org
 References: <20260810100452.426320-1-nagendra.golla@amd.com>
- <20260810100452.426320-2-nagendra.golla@amd.com> <antKJr1N3A111W_V@SMW015318>
+ <20260810100452.426320-5-nagendra.golla@amd.com> <antQqyT-slTnY2e1@SMW015318>
 Content-Language: en-US
 From: "Golla, Nagendra" <Nagendra.Golla@amd.com>
-In-Reply-To: <antKJr1N3A111W_V@SMW015318>
+In-Reply-To: <antQqyT-slTnY2e1@SMW015318>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MA0PR01CA0001.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:80::14) To DS4PR12MB999075.namprd12.prod.outlook.com
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MA0P287CA0002.INDP287.PROD.OUTLOOK.COM
+ (2603:1096:a01:d9::8) To DS4PR12MB999075.namprd12.prod.outlook.com
  (2603:10b6:8:2fc::20)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -69,136 +69,176 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS4PR12MB999075:EE_|PH7PR12MB6696:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7eecc757-7b4b-49dd-bf9e-08deff3c941f
+X-MS-TrafficTypeDiagnostic: DS4PR12MB999075:EE_|CH2PR12MB4245:EE_
+X-MS-Office365-Filtering-Correlation-Id: a9f758d9-2eb1-4ff9-a750-08deff3cfa14
 X-LD-Processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|366016|56012099006|11063799006|10067099003|4143699003|18002099003|22082099003;
+	BCL:0;ARA:13230040|23010399003|1800799024|366016|376014|7416014|22082099003|56012099006|18002099003|6133799003|4143699003|10067099003|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	qn8MSFk9K53f1bweGhV6r46GwpFwMWV5ghly6M2RuFILXFvQDmv9hqx6tN02MzYzGhHUBdiwGQv3b1mjqYFWLqu0w6GMADPQR3ZKVykmO2tZQMMV9D6H4LbJYoWYSQd3P85pWOh2A9vlh0OmsxdncXTiTWu4iIWU4qu7ooaCHonMrbDGgVQ5d3TexsVLQD3MBhj1/ajlgGJPyoKUugaEuLjitwyM/b9rUrEW3w0FgcQJ182Vcc8SaZUjp6s+1Eg/TcMtNbm9NhN3h1nXRgWNAgJjVHWsyoMlG+qmQEPTKPK1uEzGiXbN5FHAzAfgJUt2uaJz9Y50Hs9ARSniBh7LEF2LC0hMNciNC7fsoNUvhTDHl0l/pQmBxlLiVMZC4UTFn+miK3M28xhuuY77L8OLsbRtvvo70t3DuKZOYJgBooJXq+81s5anpY5nKpal8NM2j4vzUcz9k1Ebvfm1qgOc8sBw5uZKx31Didm8X2T8MPfGmpMSj/S6ZUAIVA76Vkd49ujzoughaW88Qc3QSLugatVXybg8Eiedofw+CuUXDZEuWYTKl5AN8/zciD0LvMKybqLGRRhggFr4yKdhJSxszvoh5ycQA4SFEnHD9EuibdUONJcUbLAIbuKFImuj/OesXa40XwstBDPNesvanSGJz47CV/Up8c5mJTanVq5FpCo=
+	/gsrWaSLH8t+apCBvIi1E77wSMPHWJLC/pU74pQuOVpVKr7BnjjFnuiJzRTb0G6ifgOMnOw03zOB2W4T3nvk6TJu8wMRp3ORAKEEgXqzFOgt6CG2sFeQoOevsfb5eTvEyZU6p90uNRJ+cgSHfPPee5WP8Zhvbe4QOKxbYn86q1yP0dZvIUAiYpGZFYC1RAzqCa+GOxnzau9AhpVax751LO+S7YJhRv9cFghatRA24vY6qBWbS01eTtr4MUjPGDPfOOXF49dXIcSVGe66VVIQcpLKeWH3mLLA0lR/23x3bm0jwgrGBT2bxSHRxCN2hkOvDLBUP/T/08pXwfXuXIyj0oIV8mHGGBYv+GH2e9xZYHuttaMOxEXG9Yz/pO9I3fUULCm5nJ3z6TCXYxl1x6xN7RMowRtEBQO5F2L/Go0stVDnYJWWOfCp6hvR3QETTyd2O5XWTtoSUfpZZqa9D6ZiEE6wNJoizy4J8ev2uFvJLMPYuF2wu9RujQQBYIK2+y2xMCGA/w2NtLDoftxG6g+H9ERLbqSOoGVupRsuNYqXkPqN2klvAiNnKNEFK9yF9uA6kawx7weSfIzLhf47AsRG/Q4why0j6qccsXqYxQANjhOjhsb/ONZleNOkU6xnlAxxPzMYSY/X2te0DVqt77mwXmq51DRyAjMDi5qxGIFKlag=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS4PR12MB999075.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(366016)(56012099006)(11063799006)(10067099003)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS4PR12MB999075.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(366016)(376014)(7416014)(22082099003)(56012099006)(18002099003)(6133799003)(4143699003)(10067099003)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?S1hvNUJabVM5VndrVm95cGdVQ1VtdktVcG1KeXJZUzJzS2JXSmJsSklqR0lN?=
- =?utf-8?B?dlFXMkw1Rys2bk4xK3hyUjE4ekp5NWw1YnBqUU45ZnJlQXdtSG9XZXlaZlQ1?=
- =?utf-8?B?Vkp5L1Y0TWE5UktqeVEyRUpxRkgvSHcrMnZTMUJ3NG0zbEZpV0pHOXVyRS8y?=
- =?utf-8?B?cHVBNlJGTk5EMVU4aW1QQlhhek1CQWZpUmQva01Kc1VYcUY4NGxHNHlMbUdI?=
- =?utf-8?B?OVBHOEdsM3kwS2dEMVZqaThJdElSY2lOM1BZcWRVTlZxTW00empzclBmTVo0?=
- =?utf-8?B?MHNlMWtTVjIyQTYwMVRpT01BMXVrKzh5TVZEblJxcjR2UFlhZVNHb3JEckFj?=
- =?utf-8?B?WE1naC80dms0cEZhRk1ZVThIM3BqUlNTOVJxK0hqa3daZENDRlZvYWNMTDhO?=
- =?utf-8?B?WnRDWnMyYWNIVk40ejdoL0J0NmVCTVZiR3dmOFpnTVNtMjRJMDdPdGpxL0sv?=
- =?utf-8?B?STh4YjFIMjdZdnJZeXR6KzFkUFpmMGJ1alhhSjBXQXlkeTdGMTBYSkZKTlFN?=
- =?utf-8?B?YjRmODdpUmpUZlAwTGhleWdPSFd2TDdDMlF2dmRhUDZFNTFUcitBSVA4aFpk?=
- =?utf-8?B?cjUvTzZKQklyRGxORTQvOGExdTRzak5DRTNLYkF2L2gzb1NSRDIra2JZVWo5?=
- =?utf-8?B?WlUxRDBPYlc3MHpKdmpaTEx1bG5kenY4RlRIMnZ5czZtU1pKcFJBZHhacXoz?=
- =?utf-8?B?REh3Z2NseTYwU25LVzQ2YmJsNmZDREt2U3FmTGF5dVloV2ovMUpIcVVZVFFa?=
- =?utf-8?B?enJzeEZ1TVQ0U01WRGlaZ1NqM1VwelpEcjlVTWEyTlRJcGpxSDkxSHk1cG8w?=
- =?utf-8?B?NTdoVlpESFlhQmN4VmxGemtnSk5LQ0tqWXI3bDBsLzFGRzR2Y1BFenhpenVh?=
- =?utf-8?B?RExVUkJYUVlDYmVLSTRvY1dmVkdWd3Q1MHdGZWNYNVVCckI5WnU5REpsV2Z3?=
- =?utf-8?B?clJKU1BYa0lVeFRxdzBFZlVESXBCTDZpQ2dMU2NTRGcxRkpmcWRrMVJlY0Yy?=
- =?utf-8?B?U1VLOVprMFN3bklNN3o3bnkzR05adFVjK0NoeXVCZ0pNc1dseExzZTNZNnVp?=
- =?utf-8?B?WGx3K2JIRytRRk12Sjl5ejROK0tZTE5FTDNKZXo0N0lDbmcxdnA4SXgxWmxp?=
- =?utf-8?B?NzEwMEVUTUVaL1NjOVlaTFNEemRreGprN2ZwTjBhd1hDYUxFdVpYdEx6R0lL?=
- =?utf-8?B?T0FTSlBGMmc1K3JNZkZYS1d5dVhmQmJ0TmVaenpDZithMDdDeVZ6YzlEQm05?=
- =?utf-8?B?TzNabG1xdkhDQWZ5SldDb2MrY1VFdVplNlBEd2JXOHNwZk1zZk5SMWhoLzlk?=
- =?utf-8?B?cTdQTTlRSmdaaVRwSmdvWVpPNkRDVVoxVGtSQ1hMV245SDhpVE45RHlxckpw?=
- =?utf-8?B?QnJ5dFhPdUVzNjgya0RCdzBPMC9RbERSMlVFay9IS2pBYmtEMk1KV0FYT2RC?=
- =?utf-8?B?YTFaM0dWbHB5NWpFVm5JTXZDWThvZjl6YlVmckk3RzJuU1Q5dk1zRnBGWS9n?=
- =?utf-8?B?SU1mQThuNUZabm0yaXYyYzJkRitrVVlaRklqRmRsMks0dFpqU3JWaTJxWS95?=
- =?utf-8?B?MkVkWDZXTWo3WjJOamZYOFlNeFpFa1ZENWRPc2VOc1ZLZFJPK2Q3WmQ4RDlT?=
- =?utf-8?B?ZFBXOW9MWmJFazcvQm5YU05OQXFIdVFKb0ptdm8wb25Sblo1VFphcVp6SEVj?=
- =?utf-8?B?dTJ5SFdPdC91YXRhZm1kOE85ZHFSSFVGTDVtcEdRVUg4cGovbTFmQ3VOYytU?=
- =?utf-8?B?Z3RJM1k4aXJ4TUE0aWpuZkVCWngvRFlnRitOcnk4WUFMOWtNcnFzeWpIUUdx?=
- =?utf-8?B?Qm55eHY1d2p4RVRqTDZGNlgvdlVNMnVFRk52dzMvYzgxaFZPUDFRMS9pNUI0?=
- =?utf-8?B?M0lZN0g4ZmY3cW4wc3NuSGVDSEFqd1dzTmYwL1lzSE5mc01zZGRzbStxVkFH?=
- =?utf-8?B?azQ1WnZ2T1BMSEFjclQyU2IzS1JZYkt5NW1TUFMwOGt5S2lnN2lyK3drQy9v?=
- =?utf-8?B?OGdoTWtqck1OMm9jaTAvRkJaSDlobzhaV2pQMmVmZ1hQN2diUENSTU1DRzdl?=
- =?utf-8?B?UFMzaVFRYVJSWHhHaDJwTU1leXJ0MVVMZ0p0M2Nlb2p4OUFiMnVoZ3ZrU0xO?=
- =?utf-8?B?TjVIbFFvMTI2QTdMS0lad2VWc0M3ZmpOZW5iYXBGNlg5bmhKME52ZzluVDFs?=
- =?utf-8?B?MHIvL3lOYW9hMWtrNy9DTDIrVFFVZGo3UTF6RUhYNEZRNWtmWngrQmYxTjk1?=
- =?utf-8?B?UDVxRzJqbVF0L3RMajhIb2xpbnJjZkFGeHB4TWlFTUQwemxWU1lpdE5XQWh1?=
- =?utf-8?B?VFptSndtTllQb3dqS0NvUk1hWUtZTUxsN1hHSzBIWmlZL1dwWENxZz09?=
+	=?utf-8?B?bTRZM056MlFtK0w2ekNTcllqM3YwQVhCam1QbWIrbW5lRWNPOXJUaW9yTWZI?=
+ =?utf-8?B?cUNUR3FOZUNJS0tZTGpLZmZTT1pNSk9DdlNDS2Mwdk5waHNqTEJwWE53MXVM?=
+ =?utf-8?B?UzBhbGdvY0czUzZUL1pqbzJYaENyeVNmQm1CNldCRGNtcnVjQk9vOXE4VXpE?=
+ =?utf-8?B?ZWlKTmRRMlU4b0Q4R2hScU9hM1Y4NXFXdlFUdEdMTmphQzNkTFkyQjA4bG1i?=
+ =?utf-8?B?YnBXRTFyR0sraFlKcit4RjVLd0pQVnhIMWRjUjVNMXBFeGQ2VU0xTkZHbUJY?=
+ =?utf-8?B?SFBKZ2ltTlFTUWFTbW1ob0VGNlp4TCtrYllHakxGWHF2Q0hvQTdyYzN1Vysr?=
+ =?utf-8?B?ai9CcUovcFdCTWFieHBqRFNwc1BJenB1bGlEY2ZwVFNYZUNaRCtxRVFKUzF5?=
+ =?utf-8?B?MnM1YktWbmNMOVZwS3RxbDBsdSs2eEdFamlQUm5PbHZxbEhqSllac1V4Uko2?=
+ =?utf-8?B?QmNNdXZUY0tVdmpTZHRQR3FSbWJKNVBVZWNQYldFdHBCLzRIaGJnbXBGWTFK?=
+ =?utf-8?B?bW1mNG16d1pYMm96cHlWb01WYmxnWEZyZXBTbEplOVBJRXA0YS84T2pGbVdQ?=
+ =?utf-8?B?ZGtRZnpyV09KNDJXNDI3UFVOZXM3RDFsK3ZMRzBya3M5L0taZDYyZ1ZVUXNT?=
+ =?utf-8?B?a1UyRkc1ZTF6alRENm1rZ1NHOE82T0hWSktWTWJUbzFZVm1JdEtmM2IrcEEr?=
+ =?utf-8?B?YithdStpKzZiWVcyZFpiQlA0QlZxZHRsNVpuT2lzNmpOSFk3bG9LR3lNL0ZT?=
+ =?utf-8?B?V0pIZVhNek5DREtPUVRkcG1hSmFPS2RpWVR2Ykd4dDRpb0NZOXdIbWFzUnpa?=
+ =?utf-8?B?ZTNpWjBRYklNb09ydDZGUEdobDZPeVJrdndyVmtycjVWQm9BQVFNLzdMNTJU?=
+ =?utf-8?B?UnRMV2pLVWV2bEJlRFBKNVM4Q0R3Q1Fkd1NzN3J6TEl1Wk9TWklzSk9IbHNv?=
+ =?utf-8?B?bjhtRXpiWWxsbkZ2MnhTRVg0VHFZWlptb0p2QlZoOTFTTG1VeC96SFNKM1JE?=
+ =?utf-8?B?N3JMUmZaR09IYVJTY0U1WFhrYzQvMXlrU1FzZFpNOGgxbUF0ME1WY0dtSmp5?=
+ =?utf-8?B?K0x1WkpCQkNyM1NpU3dzblpYTHNLTys0OU9FSHlrdmVRQXZJUExNUVZRLzRM?=
+ =?utf-8?B?K04veVg2L0p1dGZHajFuL1FmVHB1K2trR00zRk5NR0FYc3ZYeHlTZkpER2g3?=
+ =?utf-8?B?R24zZ051eVJ6Y3JvRXFsYlQwdGswa0pzQXJndUF1bHkyTU93MXJMeXRCZzJJ?=
+ =?utf-8?B?MUIxekEvdmJObDdCQjJaTDZaclBleThEUkNJTVNXd0dYYUVxN1Z0amFid0VI?=
+ =?utf-8?B?Ti90TXh3TXpXU3YzOHczZmxOYWFweXNUd1h1KzVqejZFUW1RR3NPN09oWTJG?=
+ =?utf-8?B?bUJPdm10WE1ZM2w5NDBkQzNxWjRPdCttVHlDWDVsWDZVM0xtVmNRTUxuQ2Z3?=
+ =?utf-8?B?aFl5TEZKU3kzZFBoQkpQOCtPeVpOejJ5a3c3OFFuaGwwcnlSeklDK0JKcmhZ?=
+ =?utf-8?B?NnJ6VHpkNnRESFRnU0lDaGRBYXAwS1lJd2dqWFYzOVpERFBzcy8ySmFxRm9k?=
+ =?utf-8?B?aWl0dkx4dG9pQ0tteVdvbDBNMW9yZndPRXlXaVlMMnhYbUNBNUpxbmpaTGJB?=
+ =?utf-8?B?bEZUajRPc2JjSkdSR20zcmh1SGp6bkpIN0NlT1NWcEdqOTZNeDhXak5ETkEv?=
+ =?utf-8?B?Y1p3ZFlnOXMzM0hxQlJJalNiRWpBV1NDdVllOVBzOGRFOVFxMjRHZlVtNW1Q?=
+ =?utf-8?B?V3MxOFUrNU9KSW5iWURmUXJ3a0QxOXBscThXNTFEK0pXZ2pLYWpPd2ZYeDVM?=
+ =?utf-8?B?NyszSDBoNzk1ZjhMRHBCcldsYUJQUW00WXRtOEFTSHJsZ2dYTkkvREYzTVUx?=
+ =?utf-8?B?cW9mTGtzNWd4a3liR2tmSHBVeUlKT2dGWHhRRmVUQ3pDbEx6SVBIUTd4SVd2?=
+ =?utf-8?B?cytYTHRaMmg2dDdqSlROTzZsV005dXQwZWpjNFZHa1hMeUZLemdFa2tMeWls?=
+ =?utf-8?B?Rmp4QmFsd1hTRDlkaHc2cTZyRnNZUFNIanRIWVhQclNoUFJ0c084cXFteHd6?=
+ =?utf-8?B?dkRNRk4vQU1yNFUzMlhjK1l5WDRPdXdUcXBCMys1djZiMDZmNlJlSHYwSnlv?=
+ =?utf-8?B?VDUwZ1FiWFBXOG5WT0RFOXdSRjJZOWkxUXhJaDJ6NTZzVVZtMFpUV0FEMUJ4?=
+ =?utf-8?B?UUlBV3pVNEsyZjFOeXBRQUVYK1hEblRNcUVmbjJBcU9hTnd5Ykt6QUt6VUZR?=
+ =?utf-8?B?OTlOWEtJTHZmMW0yYnU1RjNKUGVLaHR0M1pzSWNZdHBNcVdocjhKMnFmd0hh?=
+ =?utf-8?B?bkRJMFVnak5rWDdiTFlCVllOVzdWdWtTWThrcXhPZ3NEcXliTGlUdz09?=
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7eecc757-7b4b-49dd-bf9e-08deff3c941f
+X-MS-Exchange-CrossTenant-Network-Message-Id: a9f758d9-2eb1-4ff9-a750-08deff3cfa14
 X-MS-Exchange-CrossTenant-AuthSource: DS4PR12MB999075.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2026 04:27:58.4685
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2026 04:30:49.3183
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: cCE5B8BzCPTKjF6vb8v88mjLoxvJGkZGB6p0yx1156kYxxXn4YxRgbEffnJoJC3+7rYxOriGH0sinhdpWuQUvw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6696
+X-MS-Exchange-CrossTenant-UserPrincipalName: DRCt0HM9IDXobEYc3Grk9MtqWkHJnp/U22qEr4iphqjWp0Z7YZLQesJFUsuq/Np7IrECpcAWjxnsVsHlLQRRlQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB4245
 
 Hi Frank
 
-On 8/11/2026 9:43 PM, Frank Li wrote:
-> On Mon, Aug 10, 2026 at 03:34:47PM +0530, Golla Nagendra wrote:
->> When pm_runtime_resume_and_get() succeeds during probe, it increments
->> the usage count and enables clocks. If a later step (e.g., channel
->> probe) fails, the error path only called pm_runtime_disable() without
->> a matching pm_runtime_put_sync(), leaking the reference and the clock
->> enable.
+On 8/11/2026 10:11 PM, Frank Li wrote:
+> On Mon, Aug 10, 2026 at 03:34:50PM +0530, Golla Nagendra wrote:
+>> From: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
 >>
->> Add an else branch to drop the usage count acquired by
->> pm_runtime_resume_and_get() when runtime PM is still enabled, letting
->> the PM core suspend/disable clocks on the success-then-later-failure
->> path.
+>> Introduce a new compatible string amd,versal-net-dma-1.0 for
+>> Versal Net ZDMA.The new compatible requires xlnx,zynqmp-dma-1.0 as a
+>> fallback.
 >>
->> Fixes: 64c6f7da8c2c ("dmaengine: zynqmp_dma: Add runtime pm support")
->> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
->> ---
->> Changes in V3:
->> - New patch: split from V2 2/3 per Frank Li's review to keep the PM usage
->>    count fix separate from the per-channel reset changes
->> ---
->>   drivers/dma/xilinx/zynqmp_dma.c | 2 ++
->>   1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
->> index f6a812e49ddc..87986f65d24c 100644
->> --- a/drivers/dma/xilinx/zynqmp_dma.c
->> +++ b/drivers/dma/xilinx/zynqmp_dma.c
->> @@ -1152,6 +1152,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
->>   err_disable_pm:
->>   	if (!pm_runtime_enabled(zdev->dev))
+>> Add a reset property to describe the per-channel reset line exposed
+>> on Versal Gen2 and Versal Net.
 > 
-> You just enable runtime pm above few lines.  Is it for CONFIG_PM?
-> 
-> You should check return value of pm_runtime_enable(), or change to use
-> 
-> devm_pm_runtime_enable().
-> 
-> if devm_runtime_enable() failure, you can direct return. Need check
-> pm_runtime_enabled() here again.
-> 
->>   		zynqmp_dma_runtime_suspend(zdev->dev);
->> +	else
->> +		pm_runtime_put_sync(zdev->dev);
-> 
-> This one suggest use PM acquire to fix this.
+> why only one reset if per-channel reset line?
 Thanks for the review
 
-The probe error path already holds a reference from 
-pm_runtime_resume_and_get().Using PM_RUNTIME_ACQUIRE_IF_ACTIVE() here 
-would acquire a second reference on top of the existing one incrementing 
-the usage count to 2, and the guard releasing one at scope exit would 
-still leave one leaked reference. The guard is designed for cases where 
-no reference is held yet (like the IRQ handler). Here we just need to 
-release the one existing reference, so i am using the 
-pm_runtime_put_sync_suspend().
+Each ZDMA channel has its own DT node, so maxItems: 1 means one reset 
+per channel node — which is exactly the per-channel reset.
 
 Thanks,
 Nagendra
+
 > 
-> Frank
+>> Mark the resets property as required
+>> for both Versal Gen2 and Versal Net, and not applicable for other
+>> platforms.
+>>
+>> Note that making resets required for Versal Gen2 results in an ABI
+>> break but this is unavoidable. When DMA is used by two software components
+>> back to back (e.g., firmware before Linux boot), DMA functionality fails
+>> due to configuration differences or the DMA being left in a bad state by
+>> the previous user. The channel can only be cleanly re-configured after
+>> a DMA channel reset,making it essential.
+>>
+>> Signed-off-by: Jay Buddhabhatti <jay.buddhabhatti@amd.com>
+>> Co-developed-by: Golla Nagendra <nagendra.golla@amd.com>
+>> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
+>> ---
+>> Changes in V3:
+>> - Use allOf:if:then: to restrict the resets property per-compatible,
+>>    making it required for amd,versal2-dma-1.0 and amd,versal-net-dma-1.0
+>>    and explicitly setting resets: false for all other platforms
+>> - Add amd,versal-net-dma-1.0 compatible string with xlnx,zynqmp-dma-1.0
+>>    as fallback
+>> - Switch compatible from enum to oneOf to accommodate the new multi-item
+>>    entry for Versal Net
+>> - Add ABI break justification
+>> ---
+>>   .../dma/xilinx/xlnx,zynqmp-dma-1.0.yaml       | 25 ++++++++++++++++---
+>>   1 file changed, 22 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
+>> index 2da86037ad79..87c65aef5c7d 100644
+>> --- a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
+>> +++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
+>> @@ -18,15 +18,31 @@ maintainers:
+>>
+>>   allOf:
+>>     - $ref: ../dma-controller.yaml#
+>> +  - if:
+>> +      properties:
+>> +        compatible:
+>> +          contains:
+>> +            enum:
+>> +              - amd,versal2-dma-1.0
+>> +              - amd,versal-net-dma-1.0
+>> +    then:
+>> +      required:
+>> +        - resets
+>> +    else:
+>> +      properties:
+>> +        resets: false
+>>
+>>   properties:
+>>     "#dma-cells":
+>>       const: 1
+>>
+>>     compatible:
+>> -    enum:
+>> -      - amd,versal2-dma-1.0
+>> -      - xlnx,zynqmp-dma-1.0
+>> +    oneOf:
+>> +      - const: amd,versal2-dma-1.0
+>> +      - const: xlnx,zynqmp-dma-1.0
 > 
->>   	pm_runtime_disable(zdev->dev);
->>   	return ret;
->>   }
+>           use enum
+> 	 - enum
+>               - amd,versal2-dma-1.0
+>               - xlnx,zynqmp-dma-1.0
+> 
+>> +      - items:
+>> +          - const: amd,versal-net-dma-1.0
+>> +          - const: xlnx,zynqmp-dma-1.0
+>>
+>>     reg:
+>>       description: memory map for gdma/adma module access
+>> @@ -59,6 +75,9 @@ properties:
+>>     power-domains:
+>>       maxItems: 1
+>>
+>> +  resets:
+>> +    maxItems: 1
+>> +
+>>     dma-coherent: true
+>>
+>>   required:
 >> --
 >> 2.43.7
 >>
