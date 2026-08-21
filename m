@@ -1,168 +1,205 @@
-Received: from TY3P286CU002.outbound.protection.outlook.com (mail-japaneastazon11010036.outbound.protection.outlook.com [52.101.229.36])
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011025.outbound.protection.outlook.com [52.101.65.25])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA7954D2ED9;
-	Fri, 21 Aug 2026 15:06:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.229.36
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DF67342CB3;
+	Fri, 21 Aug 2026 15:09:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.25
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787324768; cv=fail; b=Rbx8kY5xYgRbL0dLZu2o8PDyDkv36HBqCusn7z/W85dUq4sTSHf3POaDAq7RYHwz9lJYxJOCt1WBibLInInY8SIZWEIaUB+6dkAOFEMNXCySE2VFW950+NYNqVgjyVdrJpf0VH/OotJd8V2uxXmUUkeR2mTbmuaQZZb0fbnlt/w=
+	t=1787324976; cv=fail; b=rtNSFwL/BOb+lltd3nu8+3UaFrJzbsIcexKb+uURLv9cqjcFO3PWn9wcVOQAHrA6xqVDY/MbJ9UAZEQlIRQeSelGQHSEIWy1+CT0hFvyarL655b/Bu5R5HYIZm1RTCePGMB4Ste3xpECT1ETa7QdrSd8ByN0Z5SNY3CC9u6TR8o=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787324768; c=relaxed/simple;
-	bh=5Bk7ltC/ntxPfaUK0i1VEhPrEy8iijYALj6illRAsx4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NiMDkuEYfCbeZkP0NnK0tbsa0SCnJazvHbQSWsmlSLmftkgBbAQzrHyRNRsICqi2vzyQe1bi6yx/tTcHjDmnGZZAKdFV5lU+FGJ8j1F+aK5b5R6OGA1T0EXjmyA2rDyBUfd1hMLvx4PVc0jSk/1ETaywEDTPvTwO3G+5OI4C+8U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=bMQSyt+r; arc=fail smtp.client-ip=52.101.229.36
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
+	s=arc-20240116; t=1787324976; c=relaxed/simple;
+	bh=vvXd+36fnUpUrJKqPx/Gy7SCTl+XVQT2V48Jc6CFxAo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=nwKUc111pczXEWLmgVu8xafVUqk4euwbt3ePblsNsLY/HVwJQncrtnIEZwHF5UckXthy+lxWd0K3ku2Ht40SdcFQVi8ZOOBzSKv9qcQT2dPuTLL+wtG1GMThpv50cIsUV95sgCyox3QB/Qb6Lutw5BTlVsJ+GT9hGN0DL8jTy3s=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=SfmqDlJE; arc=fail smtp.client-ip=52.101.65.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="bMQSyt+r"
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="SfmqDlJE"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=dQ31QrqJc0ywgAMJakVhccBucPp8kdXaKKOaYMbsYh4qIHp+U/k3n+tu31BnEbS4dmRDxv/gfhap+IvE6BU7NC+KO2OqkgZlDJspN/LLE1L02wGjGK7333iLumHAVYLCyjXjAzLuhS9W0I7LkCExHCjkk1SGKt9pEkRyg26uLBToQLmS/T1IP/Gx2ETS0dkOKv/kSBMdh2xcYSTly6mfO+NiiOJE0BvruyWDmbeWuaWQIRWzUUsMm2BM1AzTKdpkeJqxdwqrnmD0en1pQnX7ZHRixi/qlupSvVkgkxr00TeE9jFMKW56haBEF4Noi6oSjLeQwdc7+F3DA/ZGIJHoQw==
+ b=SBWdnuvlDeYpG4NrUVlGRoZPofTDx1dCohczhnr9hSUOdYQT3sY61SeJ5Ss/tmkD9JSVUftnkhOHU04YNhoVraxyLp40+rOBox407WBW3slFyyStksZxgZb+qHwq3Yqgtv1fWGRzNA6fxK78nuSn7iW3a7PV/7I2IxWz1l8SFwPIT32aMX4POObiVRSojzbAHZLA+wpZLGs+K4iTz69olIOyfhkb6crkeAXTzMUtvU/ZV954COvFVTWJvq9Arwq/t8qmcFQkig4IgAFSlPWa3Dqp78AclG9iNfcw1Xa8xJ+Dw+M274eQwFTu6Kd6KtIgwv32lBZ9DwZusHOT1o+hcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gFbG9eQcK1uMXbs7elrFvAbAiI+H3ZcnUwKdTZLs1Qc=;
- b=xzeEJJLEgjrH7O83N5ZNjOPRjmZ9Kcl2BKOurFmD2XEKtHhV1J1wgNWwMABRLsTF3m7dr7cSP9BZYURp2GY3ULoo2beiuep+A96oEBQVmeVebpudzvRvD5MMkNuOzT/xcnfJhs3aWlb7AFW8qQsdFT4AqbxAlfCo6BuHYoBt0XsIRw5XTlLQEakyzvcPFUsmPaokoAjTeoTg92dggYgncB2rgOnTZyHrEA871NaldQc9WaOM3ZJEevw/qrC4HYVA6eEH/F6V7anTsA1Qjsl2ZNNaXYjca15vheuSdM+Z191PGET8ry6lx/N9+fH4JbTvxz4yZNmbSTdnk4k3mb4YkQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 8.62.32.50) smtp.rcpttodomain=baylibre.com smtp.mailfrom=renesas.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=renesas.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
- s=selector1;
+ bh=usC3DNBBIj4TQugu5d3XwlmyqLcAb1e/M5i7z3Gh1qo=;
+ b=jGa6jiT5mbyl8s13xzuwg7eAGJ9NDIdlLVERnxs/U7F0R9nnE6shg81MkaA8YGX1vcckySECVxV948Di5b/TONFMSjOdl4p3vA2iwkzRreRjaQSiD8SNLnkcy32yAef/YIqiu50d59iO2NCREVOfzmYGvMz1dVMNJUolNq4THkzZeHXIUl6WSCRCg3wuZBofU3mFTjwdem04kV3i2EjRQsPMG+aM4YZsmIx39LLl5T5S6jxOUoGmnf6UD2CK/WPhTcAxfq2yOnCagCjS6eS9EhBtnz0J7kiN0cXgldCFhR1xS3/+md4y0BmtyqC3QfKERbFIdVPxjg438Hci5aFKTw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gFbG9eQcK1uMXbs7elrFvAbAiI+H3ZcnUwKdTZLs1Qc=;
- b=bMQSyt+r/v6K3y0F7XKP3exlK9zGuDtrpSIFovU6J7xb+L85ZDksO2/S2K59s6NG4IMXhggwaJ6O3j/Niiez8KQy+DrK0dTe0qtbSpO0k2OKYmEUUOf1riXC5O9B2mntTqDPQXaoKEFoSNivUKFoetEylGGmAdxIpG28aCGNG94=
-Received: from OS7PR01CA0251.jpnprd01.prod.outlook.com (2603:1096:604:24b::8)
- by TYRPR01MB16205.jpnprd01.prod.outlook.com (2603:1096:405:2e7::13) with
+ bh=usC3DNBBIj4TQugu5d3XwlmyqLcAb1e/M5i7z3Gh1qo=;
+ b=SfmqDlJEdLr1cpcDmPQeQ6QbCws/VpaEhYki1l4dJ4NDJi0jwIz3MJld9ztcGGsqvAT6XZP6huIufYez8akw5u9kMkIdFNAYAM9+XKliSFkW7MWB0Yozxcs1NDIDmAuqlabaNSfnHlG0h9YadMMDZ7RlZ12fVW9RfuOYxOQ7wTsl6/7DA39sDkZxbVdeDPj2mt6Xa5gNWirKsItG4kX9Qg9a8uswgzHAtkgSfePa2g/U9ldzmUhbdYMf5xQ8fDG/UE0HwL7fHWjeok4sXY3hwKP0qtMMS4xy+BMWQ7+Iqs3TH6Y3kK+Ez3/wDEJC/su8kl3MnoweYnRGo5iSFWj33g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by PA2PR04MB10279.eurprd04.prod.outlook.com (2603:10a6:102:406::7) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.11; Fri, 21 Aug
- 2026 15:06:02 +0000
-Received: from OS1PEPF0000D213.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:604:24b:cafe::47) by OS7PR01CA0251.outlook.office365.com
- (2603:1096:604:24b::8) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.339.11 via Frontend Transport; Fri,
- 21 Aug 2026 15:06:02 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 8.62.32.50)
- smtp.mailfrom=renesas.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=renesas.com;
-Received-SPF: Pass (protection.outlook.com: domain of renesas.com designates
- 8.62.32.50 as permitted sender) receiver=protection.outlook.com;
- client-ip=8.62.32.50; helo=ejcrelay005p.adwin.renesas.com; pr=E
-Received: from ejcrelay005p.adwin.renesas.com (8.62.32.50) by
- OS1PEPF0000D213.mail.protection.outlook.com (10.167.240.20) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.360.3
- via Frontend Transport; Fri, 21 Aug 2026 15:06:02 +0000
-Received: from laptop.adwin.renesas.com (unknown [10.226.37.103])
-	by ejcrelay005p.adwin.renesas.com (Postfix) with ESMTP id 7409930002AF;
-	Sat, 22 Aug 2026 00:05:57 +0900 (JST)
-From: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Ulf Hansson <ulfh@kernel.org>
-Cc: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>,
-	linux-renesas-soc@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Chris Paterson <Chris.Paterson2@renesas.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Subject: [PATCH 10/10] arm64: dts: renesas: Add HiHope RZ/G2M v3.0 SoC sub board support
-Date: Fri, 21 Aug 2026 15:03:35 +0000
-Message-ID: <20260821150408.73829-11-ayman.chaudhry.kc@renesas.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
-References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
+ 2026 15:09:32 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0339.008; Fri, 21 Aug 2026
+ 15:09:32 +0000
+Date: Fri, 21 Aug 2026 10:09:22 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: "Golla, Nagendra" <Nagendra.Golla@amd.com>
+Cc: vkoul@kernel.org, Frank.Li@kernel.org, michal.simek@amd.com,
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	rafael@kernel.org, git@amd.com, dmaengine@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH V3 1/6] dmaengine: zynqmp_dma: Fix PM usage count
+ handling in probe error path
+Message-ID: <aohqItUOivG0UXhC@SMW015318>
+References: <20260810100452.426320-1-nagendra.golla@amd.com>
+ <20260810100452.426320-2-nagendra.golla@amd.com>
+ <antKJr1N3A111W_V@SMW015318>
+ <25b9e249-053f-4560-ab3c-eaa30bf0b240@amd.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25b9e249-053f-4560-ab3c-eaa30bf0b240@amd.com>
+X-ClientProxiedBy: PH8P221CA0023.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:510:2d8::11) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: OS1PEPF0000D213:EE_|TYRPR01MB16205:EE_
-Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 79c4c0b0-7154-4507-aab1-08deff95b77f
-X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|PA2PR04MB10279:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3e971bc0-3205-4610-c06f-08deff963429
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700016|1800799024|376014|7416014|23010399003|10067099003|56012099006|11063799006|22082099003|18002099003;
+	BCL:0;ARA:13230040|366016|376014|7416014|23010399003|19092799006|1800799024|18002099003|22082099003|56012099006|11063799006|4143699003|10067099003;
 X-Microsoft-Antispam-Message-Info:
-	3BkzGnK8X1P+Y9ovZlTLdrKh5jB0aB/Q9t2Zx8ELxT00uE+hA476ySg08CzhYuGVvNE1AGo5DMpKipl1FKg1El/ROCE932S/gHRu7cGqQ9ybtB/lZKX9zjAZ2kWl82Ry4cXJVqq0va0Hhi1xXek4bYRl9Kwc4tipRtvdgI51WxAQqJBbpLXpwRxGwm2DkiUyfDV6DFUXEUxeeUwF4NwjZrKHpv8cWuWEMt1d4dnXZmVOR1DeiV5pvEYFYxbbKAj1Zm31SfWErzwpWnOlOTRPZ/5Tf7l1HSOZvx/LSoXb2NKDM9geAtLIFD/ssTJpAmYNkBVVcU9AICFmgj0WVucaKlUqUaaOsAHbnivYLGi51WepEeLLmJAOeYYcRQg89doN+s7OogUitiERpNP1EKK1cnsjjN3cuQvIBNX+rTgKVt4p7MAUEvSP/8ABf9bTzzxRgnH46W+6Ab+gzMEeUyfGkTtYlQK/v/sHFX2nxK98s3s59ojlYJ2bLo5DLV1slzLeBoeePU3VyspxP+cdx8XLHMwOpa8xlGmocSFg+4K6d0IAfM1FNnsGZn9NFdTY2dzcBK2LaCjZV6QxxvpGFpAkLL5UUQHJHzKgBJrQmgiXwcLKpb53ofRbaVfoDRfoFH/n/5NElsz0HPBZAD/Aq6W+bWyXIeOg3UjhbQTDR6GhMFvErj46LA5idzQSJJmiBIE4nxzEEXLJGFbCvjvHjg/5qg==
+	UoEtNOi7EUn5fnnr/oW+F/czsBEgUUui2/iMboUVOuL5vOb7KipkRVqZ7UT1p3QbPUeupEzmUaE+l80ZU51vIZOqIWtPEYSokFVX9YhmOP9gydkb8aEGVIs7mfOTPas1JkP9DuyJZswCfqanatsCeMei1y1SNcotg95aehvgABtH357q+cpe7pacZkF2TX6vrl1yfYD7UgaJgWNMVCU6RKMxt2mxrZoI+ZAUElY7H7aZBSkmEGGjdw0AGqIvBeGocWiUDhZwdeJLeEBClqVTs/ln5EkB28bV2i4WCNOcSyqhC12ac0UWM+5O9hHrk+qv+1FjGTPBYOiMgq/LF72o1cvAKaeE6nZy7HE9VrA6MUay0YBpUpr4DLYJP7PGiJIQhS0tGkSKmrG432LSg4W9pGnF/HpP4Yewzq8zfD6El1oQ2xSIDHSKDyQGYTXHqec0bc7ACn0tq0vqJD7/4B9pvWcZiZvkO8vYC3OzmEUHu+Co4cWTpAJSviCtiCnxdq+CBoeNWuOSAbqU9LIKKF4cfFXbwEH8Wun/jCBQCTNJz8EeHIVjhJuwmUUqkX0A/v5ursJynRk8m4gtYsLexhyiCruYZZsLm6pOsRdkcVtZznirNSSh0+zOYY0SurwZdfkSbkxZmhyJuYjp/0p9gv5Fg5faUWyKnXP9dClLgMJr4sI=
 X-Forefront-Antispam-Report:
-	CIP:8.62.32.50;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ejcrelay005p.adwin.renesas.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(1800799024)(376014)(7416014)(23010399003)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(23010399003)(19092799006)(1800799024)(18002099003)(22082099003)(56012099006)(11063799006)(4143699003)(10067099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	ZARLA8bpk93l5uO01V+3S0IbX4OZH4O39E1rs0olMtHSli2MQ6y4JWBRCuCRTBdprkFMIUhQE1XI5ESPCO6bUBJ8TWsZFPBqFhTivVfh7qnKBgRebVoYPRa/F39E1+YtgO1rfEOsdyQKhCAbViliFkxGAXEIPxodYmLyYQ/kpvQZaOA37zfMIetGNqad0MpJ0V39WywNF2WA3+dcZw1bTjAgKzTcYbC5mdakw7Z0DhSwLOC2MBTpNvCVx0WVGPoi1/N3/b5xVzrEECJJ9F/oY1G2tcQkzxjTIBeYCfk7nfQaIwggBpBg9sEHvenzEsdC27NuQ2s/Np0Q7AbA543Onym75alrjN7b96ILYIv2a8ovkp80UCl7CIuY3FvQikxvydDXYpNhhoDDl2ZGD78nXK+CJ7OVIUkH4G9IWIO2cb/qCY+szxkfqbGN68+L0TIk
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2026 15:06:02.6366
+	=?us-ascii?Q?q5sSk6d3HEIVOD285KSnx6kVwCYnTsPtriFbT6DS4rjYsTChmvZWBisj4FJR?=
+ =?us-ascii?Q?KCC/j226xfOfhx2GPbBK1QwoCYKseR8O++BIf2prD2uuLThqyo+WKKUlIOnc?=
+ =?us-ascii?Q?TBA0TedVGJKOYcGIYwezZgrVv2GleSn0eZ2clL0XXlMhp5CiajXEDhHi+/o9?=
+ =?us-ascii?Q?EdYRf4gr4PPctMsNlouxdmRc3/ciyERPvpFe2vNbniDUh4wn/QxH3+U6pMzC?=
+ =?us-ascii?Q?/Ha9eL8hWncHb8TPnqqFsjaJCsMM2aVs6vQ0P4GTRyWsDfDi2a33ZHobmHK6?=
+ =?us-ascii?Q?IUfctZa74iKOLnN9X9BhPuRzBiTaeuscWd7WxxByXHe+z4QdnYGbCVPkJNYP?=
+ =?us-ascii?Q?DfD6hf2NklUmagSY/O0xeZIcPQ3+a1FPYjGshuuYlY+kTzE+JahGPzf9RrPx?=
+ =?us-ascii?Q?i15lFLcQhTLRbZ9Zgz59+UqRODxKA2FSvZzZoiwAdFs6Fh9BjPGRcy+TJk8B?=
+ =?us-ascii?Q?geVLBdjOsuzX4TpE5E4ErBhYEiApQ/AbxmmwGQICkKGvQLhVGlwPrNr+bCYJ?=
+ =?us-ascii?Q?mUM8S2wDdOmde9uR8D7TBp5FAFUdZCSEYZEJGxTZhyEpe4BmPjsFdxcnmK2D?=
+ =?us-ascii?Q?T/laNSlYxSWOeXcidtDsUBqhuPjPDbJOaPD++s3DZ7fdJCDx4/oBKPPOCJEj?=
+ =?us-ascii?Q?TXtN9EQUxHP5vls7/ErcSu8cX++dC5bG3GCurXqdJ8tOPi/RYhsiQ2eg2pqP?=
+ =?us-ascii?Q?Zb3Ykz7KRWbMfkEt7Tfa74D2KqNuSOv8eYTbGGGFqIPPKAighuNH6+YmxZaT?=
+ =?us-ascii?Q?cN99NzIc75uWQ7c0tHSh9CL9UeBGgoCcu57Qj2ROVfkDo2y1BvclqEVTTSjh?=
+ =?us-ascii?Q?v+82g91FZZCxf3nmLruE8sg0f3V0KYQktJr7OMVOUqVMd9AiDeC+kpvTlBDe?=
+ =?us-ascii?Q?a6sT/uHYMdv7kBAmG+XAbcAe90p+x5nhRf5q9rZv+x1Aos4n+VrUH13Gq6eZ?=
+ =?us-ascii?Q?zOoDbb6pRsfbmIET1hX7v2f8P6BKcDiJD8IeflgYqO8SAjtiWTsbnYOGrfX8?=
+ =?us-ascii?Q?GYgX8HIJrTfGwLBXH0pvNhFEfroKnw2EHJpylfA8yh3RlrrOwDOLq8Gw7liP?=
+ =?us-ascii?Q?86xxmabQuWuFAzg01MELiOcMeGYMIir2CmqgKyw+/byRwqTONnQUHw/LZpRo?=
+ =?us-ascii?Q?bNJDwu9r0sp/79R3Z1QZr9s1+47D5AKoLnZ1Bk2MeJ2VP8KA8rrhaCTMVexr?=
+ =?us-ascii?Q?2X4SFP4VR2by+6oHyvrLwci94CvWL806aIjiIvr+V4PP96k2vuNqVX/E6/EN?=
+ =?us-ascii?Q?byxm6D35xsj4hu8kywpENOIuvvOBeOG56SPZbXQ9aTF2xfaazaC53kywL15s?=
+ =?us-ascii?Q?5xtOJteVqYbCfcTP0/oNH6Ydq4n9eeYN1MdKDT27wVY+ggl974mntzAvY5bf?=
+ =?us-ascii?Q?bUuo2SYoPewrk0ZGirpkgmQsy/hYXkHkS6ucm5M6jaoAAG3Uwa+v+HJ1c8jZ?=
+ =?us-ascii?Q?ltV4dvNH+c+Q9Xd0TsjNAopZZtTgYMB5qFkzZE1RhnhukErJJrEnKTlIBTxD?=
+ =?us-ascii?Q?yk2FeozzRka7hfdu+5rSnrw2VUxHvSYJgyFAiITfSW4DLlu+nDfUtKNZI9cv?=
+ =?us-ascii?Q?C0KH+QBVLHp5jt3Tja7wP8+vrhlZ5xEkrfhkCjsEmbEhMYp9FAnPj7/YWew4?=
+ =?us-ascii?Q?beuAuL/AMj4rWKY+HVV6hKjuLSTQMHXqiKRU5RM7VE5MR7xq+4+n3c0PvUHg?=
+ =?us-ascii?Q?gry5aftZvTUfXpamsS2P7idKEbl5411a3SuOYBVCSPYJpqAV5f7XCmBrP9Sl?=
+ =?us-ascii?Q?4y85Lpf8wUvPTF9q26luZbxDme9rlh6s1wVwoGQGK+3HoxzJevG3?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3e971bc0-3205-4610-c06f-08deff963429
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2026 15:09:32.1235
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 79c4c0b0-7154-4507-aab1-08deff95b77f
-X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=53d82571-da19-47e4-9cb4-625a166a4a2a;Ip=[8.62.32.50];Helo=[ejcrelay005p.adwin.renesas.com]
-X-MS-Exchange-CrossTenant-AuthSource: OS1PEPF0000D213.JPNP286.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYRPR01MB16205
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: e/4gN2nckKpyKWwC8fcNi/dUzf30V4UH4t/fLPHNlpIa/SKmzn5R5J5qKxuSu9PVJ0a2D6ms8T4mTydHEU2i57D5xqBB1xsmWiAK/0gdRabdZsqxG1l3eM8DIn6tb+B5
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR04MB10279
 
-The HiHope RZ/G2M sub board sits below the HiHope RZ/G2M v3.0
-(a.k.a. R8A774A3) SoC main board.
+On Fri, Aug 21, 2026 at 09:57:49AM +0530, Golla, Nagendra wrote:
+> Hi Frank
+>
+> On 8/11/2026 9:43 PM, Frank Li wrote:
+> > On Mon, Aug 10, 2026 at 03:34:47PM +0530, Golla Nagendra wrote:
+> > > When pm_runtime_resume_and_get() succeeds during probe, it increments
+> > > the usage count and enables clocks. If a later step (e.g., channel
+> > > probe) fails, the error path only called pm_runtime_disable() without
+> > > a matching pm_runtime_put_sync(), leaking the reference and the clock
+> > > enable.
+> > >
+> > > Add an else branch to drop the usage count acquired by
+> > > pm_runtime_resume_and_get() when runtime PM is still enabled, letting
+> > > the PM core suspend/disable clocks on the success-then-later-failure
+> > > path.
+> > >
+> > > Fixes: 64c6f7da8c2c ("dmaengine: zynqmp_dma: Add runtime pm support")
+> > > Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
+> > > ---
+> > > Changes in V3:
+> > > - New patch: split from V2 2/3 per Frank Li's review to keep the PM usage
+> > >    count fix separate from the per-channel reset changes
+> > > ---
+> > >   drivers/dma/xilinx/zynqmp_dma.c | 2 ++
+> > >   1 file changed, 2 insertions(+)
+> > >
+> > > diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
+> > > index f6a812e49ddc..87986f65d24c 100644
+> > > --- a/drivers/dma/xilinx/zynqmp_dma.c
+> > > +++ b/drivers/dma/xilinx/zynqmp_dma.c
+> > > @@ -1152,6 +1152,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+> > >   err_disable_pm:
+> > >   	if (!pm_runtime_enabled(zdev->dev))
+> >
+> > You just enable runtime pm above few lines.  Is it for CONFIG_PM?
+> >
+> > You should check return value of pm_runtime_enable(), or change to use
+> >
+> > devm_pm_runtime_enable().
+> >
+> > if devm_runtime_enable() failure, you can direct return. Need check
+> > pm_runtime_enabled() here again.
+> >
+> > >   		zynqmp_dma_runtime_suspend(zdev->dev);
+> > > +	else
+> > > +		pm_runtime_put_sync(zdev->dev);
+> >
+> > This one suggest use PM acquire to fix this.
+> Thanks for the review
+>
+> The probe error path already holds a reference from
+> pm_runtime_resume_and_get().Using PM_RUNTIME_ACQUIRE_IF_ACTIVE() here would
 
-The RZ/G2M v3.0 SoC sub board is similar to the RZ/G2M v1.3 SoC sub
-board, so there are already DTSI files available in the kernel. These
-DTSI files will be included once additional support (e.g. CAN, PCIe
-and ethernet) is added for the RZ/G2M v3.0 SoC.
+My means replace pm_runtime_resume_and_get() with PM_RUNTIME_ACQUIRE_IF_ACTIVE()
 
-Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
----
- arch/arm64/boot/dts/renesas/Makefile               |  1 +
- .../boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts  | 14 ++++++++++++++
- 2 files changed, 15 insertions(+)
- create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts
+> acquire a second reference on top of the existing one incrementing the usage
+> count to 2, and the guard releasing one at scope exit would still leave one
+> leaked reference. The guard is designed for cases where no reference is held
+> yet (like the IRQ handler). Here we just need to release the one existing
 
-diff --git a/arch/arm64/boot/dts/renesas/Makefile b/arch/arm64/boot/dts/renesas/Makefile
-index 6ae96027664d..346670b10ada 100644
---- a/arch/arm64/boot/dts/renesas/Makefile
-+++ b/arch/arm64/boot/dts/renesas/Makefile
-@@ -9,6 +9,7 @@ dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2-ex.dtb
- dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2-ex-idk-1110wr.dtb
- 
- dtb-$(CONFIG_ARCH_R8A774A3) += r8a774a3-hihope-rzg2m.dtb
-+dtb-$(CONFIG_ARCH_R8A774A3) += r8a774a3-hihope-rzg2m-ex.dtb
- 
- dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-beacon-rzg2n-kit.dtb
- dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-hihope-rzg2n.dtb
-diff --git a/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts
-new file mode 100644
-index 000000000000..fc46ce321d59
---- /dev/null
-+++ b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts
-@@ -0,0 +1,14 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Device Tree Source for the HiHope RZ/G2M v3.0 SoC sub board
-+ *
-+ * Copyright (C) 2026 Renesas Electronics Corp.
-+ */
-+
-+#include "r8a774a3-hihope-rzg2m.dts"
-+
-+/ {
-+       model = "HopeRun HiHope RZ/G2M v3.0 with sub board";
-+       compatible = "hoperun,hihope-rzg2-ex", "hoperun,hihope-rzg2m",
-+                    "renesas,r8a774a3";
-+};
--- 
-2.34.1
+call pm_runtime_put() before return 0 at probe, which have not hold
+runtime pm count for IRQ.
 
+Frank
+
+> reference, so i am using the pm_runtime_put_sync_suspend().
+>
+> Thanks,
+> Nagendra
+> >
+> > Frank
+> >
+> > >   	pm_runtime_disable(zdev->dev);
+> > >   	return ret;
+> > >   }
+> > > --
+> > > 2.43.7
+> > >
+>
