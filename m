@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBCE925B0AB;
-	Sat, 22 Aug 2026 07:34:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAE5333A9E1;
+	Sat, 22 Aug 2026 07:39:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787384076; cv=none; b=GBfBiRiRrc/RFfTIRFSOuW7KZohGD16GrVKZDDs/5lUKJb4Cj+uKQawtDd/oXX36ORYjmmnh+c0bQm8yPZNAM1e44SeyXrZqaiMpknHUreAdTBhbir4jXLAG4ufxMIPI7rs0CmI8ymCiOFJ3jdFw2N7T/TlDY/FKryubKXiKWgM=
+	t=1787384343; cv=none; b=bkirich2ja13iSm10tCC9U01tcMF83WuhLRO4o5boIYhVExIkL9nG5LLZk2yJfoNsnWfZZKetj+8B3mDkyng8HQWNzctXtZfZJ69QeTH4ENqYSCXMi3zGpHEnJKHL1T9VBoQPKpijZc4LKoK6x7WU5FsfR3pO3ueqVpw4kdwGVc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787384076; c=relaxed/simple;
-	bh=90REFPPhEhahEFCoj6DkLHQJNHRCp0iZA3hUxTEboVU=;
+	s=arc-20240116; t=1787384343; c=relaxed/simple;
+	bh=20a6T6gfT4W5qmnR0IrhYYQg42UJNxpelFM+vKlIzts=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kNDoyF1ar5Sa2oAsU5snDD7AvSVzFfqcfAs1iVB8Y8VGeBWFJ2zjekT5M29HHtAT7JszU2vH7KO0n2DlhMEeA6zV3VwsCA8zhhdLI82CW7R62lYd3HbBRV9VHSZjkrCY9ZVZ5Zis9498NvNjQ+4MzUiWwofxGmoUsWGyEmE3ajI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZfSBuoxX; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=Z6h9zTHKxz9GkPK8xzBMBI0EQLehqjfVRlwfd0g4T3mool/8M/ffEZY9tz1NbVnuEhTqhUhNxxSfm6oOGPKNZ9D7bEQd2l+oyKfTpNjxRo4+GOJMzYb0yPONaKyvdYLiE8UmcQbOPGb4S86T3NVw8WsIJFq3dAPf0t7Iz7wmaWA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b1glk2k4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZfSBuoxX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F0B31F000E9;
-	Sat, 22 Aug 2026 07:34:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b1glk2k4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A530C1F000E9;
+	Sat, 22 Aug 2026 07:38:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787384075;
-	bh=EBjiLlyfcEu1qiNpxtheocg4JqndTcjnc/whTfw321M=;
+	s=k20260515; t=1787384341;
+	bh=yxr1RTUyhpEzexigkTUOYj2YkjiALBk7cwuLfHLoWhw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ZfSBuoxXb5q2qXzPgUjyZ2aR2ul8VDNCvHnIz97qCO75C5sZOT6TL/NlVq9qMsuPU
-	 teywPwBkFPfNyToM68PUucDCFf/xJ7x4uymcZ48dN/HVZke4PDoHTIwgsalxJHSrIe
-	 2IkKSuwjeOGd9UP2GZCn+tLlqQhHFqt3dmUYnjuNuo/nSyn9iUl/I+Mv3/JwINh/t3
-	 v1+oXJuhxQHBYU+c3Nx94N06BpR1cEHiRVeF24oQxQcrllIncJNgu1hMxp5RbzRFfS
-	 HUEUoiZ4OeupGJ3YoAVKHKiAxt4C9N0rdj8qcvPybUZbU9RDVM3QNgBjGDAvGAf6TQ
-	 kDJ+OkGMS1IRQ==
-Message-ID: <69eaebbd-4f24-4167-a8ef-42925a92a4ca@kernel.org>
-Date: Sat, 22 Aug 2026 09:34:26 +0200
+	b=b1glk2k40qB8dX5lLhDAvudDvtFkuzSyLzo1JY5Q8j0hSsZJ3NJ2LML6TlRZ5GswT
+	 7Ekgb/1vALB6v3GCqYm4j6jQk3xUYf9F1ru/ECBWGYj24rF2szfwIvvh9ev7wUZjb9
+	 CslsXIxNbyT5Oopd28Tfpy46F4KWB3qThbkelu9NZE5f0dbPaaXos3RLypkCxgFJOf
+	 hK031J0UNOUjGRzBOftKd1DgmvSvekyVRkObuLtwrbDNRHJUh2QOQHxcMcdvKKNnhO
+	 GGb6r7Ew0Wjw9raX13M8l4WMm+xAdU/Y2JbxwTsQpWSUk/E/l1eswlVQ/7bExIHYhm
+	 bIEnRjhLtaSXg==
+Message-ID: <bb0972e8-852f-48b5-82c3-325962e0f743@kernel.org>
+Date: Sat, 22 Aug 2026 09:38:51 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 09/10] arm64: dts: renesas: Add HiHope RZ/G2M v3.0 SoC
- main board support
+Subject: Re: [PATCH 08/10] arm64: dts: renesas: Add initial SoC DTSI for
+ RZ/G2M v3.0
 To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>,
  Geert Uytterhoeven <geert+renesas@glider.be>,
  Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh@kernel.org>,
@@ -51,7 +51,7 @@ Cc: linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org,
  Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
- <20260821150408.73829-10-ayman.chaudhry.kc@renesas.com>
+ <20260821150408.73829-9-ayman.chaudhry.kc@renesas.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -97,79 +97,226 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260821150408.73829-10-ayman.chaudhry.kc@renesas.com>
+In-Reply-To: <20260821150408.73829-9-ayman.chaudhry.kc@renesas.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 21/08/2026 17:03, Ayman Chaudhry wrote:
-> Add support for the HiHope RZ/G2M v3.0 (a.k.a. R8A774A3) SoC main
-> board.
-> 
-> The RZ/G2M v3.0 SoC main board is similar to the RZ/G2M v1.3 SoC main
-> board, so there are already DTSI files available in the kernel. These
-> DTSI files will be included once additional support (e.g. I2C, GPIO
-> and sound) is added for the RZ/G2M v3.0 SoC.
+> Add initial Device Tree Source Include (DTSI) file for the Renesas
+> RZ/G2M v3.0 (a.k.a. R8A774A3) SoC with basic support.
 > 
 > Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
 > ---
->  arch/arm64/boot/dts/renesas/Makefile          |  2 +
->  .../dts/renesas/r8a774a3-hihope-rzg2m.dts     | 50 +++++++++++++++++++
->  2 files changed, 52 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
+>  arch/arm64/boot/dts/renesas/r8a774a3.dtsi | 302 ++++++++++++++++++++++
+>  1 file changed, 302 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3.dtsi
 > 
-> diff --git a/arch/arm64/boot/dts/renesas/Makefile b/arch/arm64/boot/dts/renesas/Makefile
-> index 8bf155badd11..6ae96027664d 100644
-> --- a/arch/arm64/boot/dts/renesas/Makefile
-> +++ b/arch/arm64/boot/dts/renesas/Makefile
-> @@ -8,6 +8,8 @@ dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2.dtb
->  dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2-ex.dtb
->  dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2-ex-idk-1110wr.dtb
->  
-> +dtb-$(CONFIG_ARCH_R8A774A3) += r8a774a3-hihope-rzg2m.dtb
-> +
->  dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-beacon-rzg2n-kit.dtb
->  dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-hihope-rzg2n.dtb
->  dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-hihope-rzg2n-ex.dtb
-> diff --git a/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
+> diff --git a/arch/arm64/boot/dts/renesas/r8a774a3.dtsi b/arch/arm64/boot/dts/renesas/r8a774a3.dtsi
 > new file mode 100644
-> index 000000000000..f51ba4fd602e
+> index 000000000000..f60a31612b39
 > --- /dev/null
-> +++ b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
-> @@ -0,0 +1,50 @@
+> +++ b/arch/arm64/boot/dts/renesas/r8a774a3.dtsi
+> @@ -0,0 +1,302 @@
 > +// SPDX-License-Identifier: GPL-2.0
 > +/*
-> + * Device Tree Source for the HiHope RZ/G2M v3.0 SoC main board
+> + * Device Tree Source for the r8a774a3 SoC
 > + *
-> + *Copyright (C) 2026 Renesas Electronics Corp.
+> + * Copyright (C) 2026 Renesas Electronics Corp.
 > + */
 > +
-> +/dts-v1/;
-> +#include "r8a774a3.dtsi"
+> +#include <dt-bindings/interrupt-controller/irq.h>
+> +#include <dt-bindings/interrupt-controller/arm-gic.h>
+> +#include <dt-bindings/clock/r8a774a3-cpg-mssr.h>
+> +#include <dt-bindings/power/r8a774a3-sysc.h>
 > +
 > +/ {
-> +	model = "HopeRun HiHope RZ/G2M v3.0 main board based on r8a774a3";
-> +	compatible = "hoperun,hihope-rzg2m", "renesas,r8a774a3";
+> +	compatible = "renesas,r8a774a3";
+> +	#address-cells = <2>;
+> +	#size-cells = <2>;
+> +	interrupt-parent = <&gic>;
 > +
-> +	memory@48000000 {
-> +		device_type = "memory";
-> +		/* First 128MiB is reserved for secure area */
-> +		reg = <0x0 0x48000000 0x0 0x78000000>;
+> +	cluster0_opp: opp-table-0 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp-500000000 {
+> +			opp-hz = /bits/ 64 <500000000>;
+> +			opp-microvolt = <820000>;
+> +			clock-latency-ns = <300000>;
+> +		};
+> +		opp-1000000000 {
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			opp-microvolt = <820000>;
+> +			clock-latency-ns = <300000>;
+> +		};
+> +		opp-1500000000 {
+> +			opp-hz = /bits/ 64 <1500000000>;
+> +			opp-microvolt = <820000>;
+> +			clock-latency-ns = <300000>;
+> +			opp-suspend;
+> +		};
 > +	};
 > +
-> +	memory@600000000 {
-> +		device_type = "memory";
-> +		reg = <0x6 0x00000000 0x0 0x80000000>;
+> +	cluster1_opp: opp-table-1 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp-800000000 {
+> +			opp-hz = /bits/ 64 <800000000>;
+> +			opp-microvolt = <820000>;
+> +			clock-latency-ns = <300000>;
+> +		};
+> +		opp-1000000000 {
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			opp-microvolt = <820000>;
+> +			clock-latency-ns = <300000>;
+> +		};
+> +		opp-1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			opp-microvolt = <820000>;
+> +			clock-latency-ns = <300000>;
+> +		};
 > +	};
 > +
-> +	aliases {
-> +		serial0 = &scif2;
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		cpu-map {
+> +			cluster0 {
+> +				core0 {
+> +					cpu = <&a57_0>;
+> +				};
+> +				core1 {
+> +					cpu = <&a57_1>;
+> +				};
+> +			};
+> +
+> +			cluster1 {
+> +				core0 {
+> +					cpu = <&a53_0>;
+> +				};
+> +				core1 {
+> +					cpu = <&a53_1>;
+> +				};
+> +				core2 {
+> +					cpu = <&a53_2>;
+> +				};
+> +				core3 {
+> +					cpu = <&a53_3>;
+> +				};
+> +			};
+> +		};
+> +
+> +		a57_0: cpu@0 {
+> +			compatible = "arm,cortex-a57";
+> +			reg = <0x0>;
+> +			device_type = "cpu";
+> +			power-domains = <&sysc R8A774A3_PD_CA57_CPU0>;
+> +			next-level-cache = <&L2_CA57>;
+> +			enable-method = "psci";
+> +			dynamic-power-coefficient = <854>;
+> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z>;
+> +			operating-points-v2 = <&cluster0_opp>;
+> +			capacity-dmips-mhz = <1024>;
+> +		};
+> +
+> +		a57_1: cpu@1 {
+> +			compatible = "arm,cortex-a57";
+> +			reg = <0x1>;
+> +			device_type = "cpu";
+> +			power-domains = <&sysc R8A774A3_PD_CA57_CPU1>;
+> +			next-level-cache = <&L2_CA57>;
+> +			enable-method = "psci";
+> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z>;
+> +			operating-points-v2 = <&cluster0_opp>;
+> +			capacity-dmips-mhz = <1024>;
+> +		};
+> +
+> +		a53_0: cpu@100 {
+> +			compatible = "arm,cortex-a53";
+> +			reg = <0x100>;
+> +			device_type = "cpu";
+> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU0>;
+> +			next-level-cache = <&L2_CA53>;
+> +			enable-method = "psci";
+> +			dynamic-power-coefficient = <277>;
+> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
+> +			operating-points-v2 = <&cluster1_opp>;
+> +			capacity-dmips-mhz = <560>;
+> +		};
+> +
+> +		a53_1: cpu@101 {
+> +			compatible = "arm,cortex-a53";
+> +			reg = <0x101>;
+> +			device_type = "cpu";
+> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU1>;
+> +			next-level-cache = <&L2_CA53>;
+> +			enable-method = "psci";
+> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
+> +			operating-points-v2 = <&cluster1_opp>;
+> +			capacity-dmips-mhz = <560>;
+> +		};
+> +
+> +		a53_2: cpu@102 {
+> +			compatible = "arm,cortex-a53";
+> +			reg = <0x102>;
+> +			device_type = "cpu";
+> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU2>;
+> +			next-level-cache = <&L2_CA53>;
+> +			enable-method = "psci";
+> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
+> +			operating-points-v2 = <&cluster1_opp>;
+> +			capacity-dmips-mhz = <560>;
+> +		};
+> +
+> +		a53_3: cpu@103 {
+> +			compatible = "arm,cortex-a53";
+> +			reg = <0x103>;
+> +			device_type = "cpu";
+> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU3>;
+> +			next-level-cache = <&L2_CA53>;
+> +			enable-method = "psci";
+> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
+> +			operating-points-v2 = <&cluster1_opp>;
+> +			capacity-dmips-mhz = <560>;
+> +		};
+> +
+> +		L2_CA57: cache-controller-0 {
+> +			compatible = "cache";
+> +			power-domains = <&sysc R8A774A3_PD_CA57_SCU>;
+> +			cache-unified;
+> +			cache-level = <2>;
+> +		};
+> +
+> +		L2_CA53: cache-controller-1 {
+> +			compatible = "cache";
+> +			power-domains = <&sysc R8A774A3_PD_CA53_SCU>;
+> +			cache-unified;
+> +			cache-level = <2>;
+> +		};
 > +	};
 > +
-> +	chosen {
-> +		bootargs = "ignore_loglevel";
+> +	extal_clk: extal {
+> +		compatible = "fixed-clock";
+> +		#clock-cells = <0>;
+> +		/* This value must be overridden by the board */
+> +		clock-frequency = <0>;
+> +		bootph-all;
+> +	};
+> +
+> +	extalr_clk: extalr {
+> +		compatible = "fixed-clock";
+> +		#clock-cells = <0>;
+> +		/* This value must be overridden by the board */
+> +		clock-frequency = <0>;
+> +		bootph-all;
+> +	};
+> +
+> +	pmu_a53 {
 
-Drop bootargs. Not a mainline DTS attribute. Why should my board ignore
-loglevel? How is it hardware description?
+Please, do not send us downstream code. It looks awfully like one. It's
+long time fixed in all upstream platforms. Also, this causes now warnings.
 
 Best regards,
 Krzysztof
