@@ -1,130 +1,170 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+Received: from mail-ed1-f47.google.com (mail-ed1-f47.google.com [209.85.208.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4627423EAAD
-	for <linux-pm@vger.kernel.org>; Sat, 22 Aug 2026 11:43:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787399012; cv=none; b=ahSm3V8f0pMX+3L0sM4ZdD4sDwu5JJAl9byvAcgVVt8bLSA4FIVPb7R2TXAHPPimYirnLtWPn3bIJ9Tmy6U3M+zO9ii0uEZ0KYFn8Pn2P5mHMqc6l3N8JAO5+7cm07kYG0vSm6p9jTJ2AVeNiSXqBmXwtvtnulSZRu9wRTlr/mo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787399012; c=relaxed/simple;
-	bh=CN9bI5JSc4R97kTthHOYaRIf79ONlFCVPEmvKFOn3m4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OdWiMUoh2lFbipZ8YMqQApqjk8xLuLBYlt3SrLIxqf2/jEz/IxrAhB0zH/YwP+BusIA87dcgN57nvRRb2S5P/5MWgdup1mwncuO6HKSZum4WHkwGI/qtGwins1L8WpbRprItm89U11KXLsRxg1VHl/aKTVJetcDUXCJFMd1/X7U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E9UvHy6p; arc=none smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 395F11F30A9
+	for <linux-pm@vger.kernel.org>; Sat, 22 Aug 2026 11:47:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.47
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787399242; cv=pass; b=EorEOvYEy/U1mLK7qR54le2F6LxZUo4yZmh2R1g8vKsBslDzIzu/jl04gcNg0d2tU87dgbWEfo17d18rCtQm9a+gTp91Gcgzirl0NgXSgkvegn63PuHeojB5MB6dcF8qUjtBuokTXi7TDze6hHQny5tSRLSaHQlQbrLgmouXX04=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787399242; c=relaxed/simple;
+	bh=qHmpEdlmXXOXi6wvb0cIar8CvnEcA5vmGJgJLOF+v68=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=PpU+K+Evu8N+nQz2dPpSvmKqlQeqiA7ZI80r8+UVDjwqiu+FWrDRVF/LRgOnsgwhf5ACdHcfvBphCbun/icXER+YJnnQo/xwuti3+xvuBLnivZGoNHBPH0aw4KnS3riLoIXpNk/x+JIl8lK+EOzljWuhuLAkgr2mBCceQPlC36U=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FAcb3jNk; arc=pass smtp.client-ip=209.85.208.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E9UvHy6p"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2cfbbdfa60bso14996665ad.3
-        for <linux-pm@vger.kernel.org>; Sat, 22 Aug 2026 04:43:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FAcb3jNk"
+Received: by mail-ed1-f47.google.com with SMTP id 4fb4d7f45d1cf-6a17211b9ecso5195737a12.2
+        for <linux-pm@vger.kernel.org>; Sat, 22 Aug 2026 04:47:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787399239; cv=none;
+        d=google.com; s=arc-20260327;
+        b=oqPCH2a8xWDS0ShKEt6nSsduo06l/hkXxcmvIaKam0FhVKJwL6cujfQg4HjqRzwJ0x
+         AHdrsQup6Xz7+Cw6wpd74o3KQz+V1Tz+iK7hkMle8kPqfFj8ZSR6Vqn6BMs3wtjzSQL2
+         7LKma/l+Czco1cVT9Givu4nRm49tAd/kiICAiQzzb4XJ7kSN8nnwZMr7k4ccbJk2jAQE
+         wcR1PV88rgwvIB68IbCai+V+WMlpYYDsM+KUMxyfcAaBL3FRgUDj6xJ/m7sEjPVfmNIk
+         z1klClipxsFIc76RSeVuRFEQHMGkgIiDqlHqR54yL2en1sxqjmlWYmYxcfafRfpsWEGu
+         EKDg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=qHmpEdlmXXOXi6wvb0cIar8CvnEcA5vmGJgJLOF+v68=;
+        fh=ceOXfP/wo4HhkBDp7lxdYJY4TKY+jJh35fEBMWIRoPI=;
+        b=JiKiXsTeCDi6mLCPpSZSpjnClZRPSm/4hnSZTu7g5hGoGt0D6w6MwzP6zXZNL6pV3U
+         LI/j0tIrZ0krRZan2mMbN7Wfk84/JWbEDLNiZF1Fy2wjm3qnb1EwNTWB8qYH3Yw8InP0
+         e8kL8GsC4c7fT2J+CLXj8eavgqSvup792ryVsZf8BBMZgv4vwNKxxIirca7XktIVCltK
+         vd/eRdraiUOuGLesZq50mC/7jsaJ3uzTxuvfeDRrtorAjUmjfkixkfjgZ+z2EXn5Fmpy
+         dWw3+jtjYoW3aL3ftINL/D14WmEG7LtwK14lc8sdguWJ51HyqGsMMqRDZ+AntR0SqxAN
+         yhkA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787399010; x=1788003810; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=t2malKHbWrEiaEypSgDR5cpQ350oJBSIdozLYtaZr0U=;
-        b=E9UvHy6pTEg9aSuc+Or0H2dYeVyWRKeUz4NLVouAJdgyYxGsBnpWpLR30lnKJaqNe5
-         v43U/C/mEgsJEk9Wm7DgP5JO/9h7a3+by2YTlvLhUH806TmLLUOgdN1cjlivS1Z0abDZ
-         gMxDC3+MwIuYhVnt4tawgYKJJb95yy5wu/42jM6ZWYndKRfA74fMMrs2aXKO9o6J7JbX
-         L6pNmy8QH/64dHAzT4LWrYQfjMMH6EPaX0NObuC55wacKuO0jMlBUyZCLmN7wX1Bmiie
-         62bt9N8GSWVb2PzFuFTtpJbv7GwmC5WhrnISk4Q9gnsDQGj8rFonkUJtL07CsFwiE5HI
-         a0+g==
+        d=gmail.com; s=20251104; t=1787399239; x=1788004039; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=qHmpEdlmXXOXi6wvb0cIar8CvnEcA5vmGJgJLOF+v68=;
+        b=FAcb3jNkHOQm1XRHulYZZLhp5lR8yDWpmqJZLDzWCL1QmBOH/htETckWDvlNp1XEkW
+         EstVpW4iX8mgCKnjumpn5Id/tI+ZFdnHre1ajctR4g5pEGI0MMXsEjgDRZ/yhsN6hJNm
+         uZNYmdAvVF7039gkhiA6GlzIM97l+xIf3PBl5O8R9VOxUmJ1zrxHadMLAg3jA5EhnCrb
+         PbSM+4ygaf7eRYYpDcl2O9zG9flXVVtsADtIBIW4d1fb7I0UzkNBJvlHd5EcGQJ9A/xu
+         7TGXa4tlXl7O44oVdTz4GNTymMxSeN1kyDVcEwMLmcGSX7sYHlkfzOf0IpVXI3SJ+kFp
+         k8hQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787399010; x=1788003810;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=t2malKHbWrEiaEypSgDR5cpQ350oJBSIdozLYtaZr0U=;
-        b=sWr6KJxttXSf9CRuvgDp2U+8IMVLmwUE71XdiiG1dOqwoZzRNxbqIa5b/AbkjOXvec
-         Kx+JBS+8nOuPk1/CMRM9Nq1RMPkoWJoLCJB7OwIJiOA/wKbvhAH1Q557X7hN6Z1PRH0b
-         w2pMX+S9dtLLJxXyJ4P4SWTjnBUmMReBpYz/tiI4Mq6rVWBsSdROm3AkDGwygyxX5dtY
-         yp1HuezRps2Fp6cSfxT9Cg5VuLrJkl0Me8+R3qhn7kQDZHrFxp/Q7R0xYgjC/7Qe/vmc
-         r5Aqdtu2oUaeJECoBuYH7x+xLAYCVIz+Kk8fxui2h5jeAmFxu+i1s3qdI0SemeTA/a2E
-         tUfg==
-X-Forwarded-Encrypted: i=1; AHgh+Roce7Eu5ziwSXT+Roi9WYGkKRjwPGV+VeWxBPPYPwgf2T6owM/bs5c5SGNijPVhNSOuHsU03PwRKA==@vger.kernel.org
-X-Gm-Message-State: AFuF++k9sl5WcYSRUtAx9YSszfQkkwHFL8b1nr2KtO+YyEKnRBWgHcBW
-	3ZXussFFW7bKn63yAw0daDIX5uir0ZmFU0+rEZQXUR6RsbdQM43CmWkw
-X-Gm-Gg: AR+sD13n8ZzSnUipHfOEttNSfTN9lXFrj3GU71XDPaaY7BQxrfRtUdd+p4vqj1guPEZ
-	b0we7s9a/pPhIUcOVtw9hS7rM39PDY+fJpIWny0EtBDMX5pvjQ1BtEc9pqq/xGjzWGszO+Kfx9a
-	FM9kU07fEE2gQufU9FlVGRZLpfy0orDUPUdN0RZyKrUbww0C8bpqPHZ6mQVWV+uSLkovFlKBMjR
-	vUMxy1DWQ6zN4/5r6PB4qyPNWWgp6MAnbGvE88cpBNBrgfjaoyHe2R+WXU9W9tG8ceN2A/nCn7K
-	Qcw9hb3dHcIErklpVMYBmCpYJooetlvRZWQor0BxbFSkQQWHJF2ZIkGIjnrqzNkHvbVtMzFxoBa
-	vrAmbr6ErE/2rKV3HGIErDxSab8VJWFiY63CDnS04EuZT2RTEeddz/hs4FReEPGs89wxTMMhac3
-	TzDwxOM7p6TtvqnKljnuXJbz0XTcgXbeb1mOSCQeBv0AXwcAjYXwPNcFP2woY=
-X-Received: by 2002:a17:903:1206:b0:2ca:1b97:70c5 with SMTP id d9443c01a7336-2d64adaff50mr208053965ad.4.1787399010397;
-        Sat, 22 Aug 2026 04:43:30 -0700 (PDT)
-Received: from gmail.com ([58.84.62.206])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327f923f2c0sm9387324eec.30.2026.08.22.04.43.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 22 Aug 2026 04:43:29 -0700 (PDT)
-From: Sumeet Pawnikar <sumeet4linux@gmail.com>
-To: lukasz.luba@arm.com,
-	rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	rui.zhang@intel.com,
-	linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	sumeet4linux@gmail.com
-Subject: [PATCH] thermal: gov_power_allocator: Fix NULL pointer dereference in update_tz()
-Date: Sat, 22 Aug 2026 17:12:36 +0530
-Message-ID: <20260822114236.15998-1-sumeet4linux@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20251104; t=1787399239; x=1788004039;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=qHmpEdlmXXOXi6wvb0cIar8CvnEcA5vmGJgJLOF+v68=;
+        b=gUnpCD5iBvhJOGxR5SYVUL3RFLauGwVyQkv9Rb0ZOn+6bUi6CoQDl5c53Vn802lAlD
+         qpl8f7gCPt9+K2SbtJ2FaL2c7K4v6ZISMv90xH2NPR/q+bpN3gAAehyJ3RmQ3k+oXLYc
+         CtVpvTQ4pW5Gy3g69wGpu8niWE79OEV/SgWDXsDIuMYkx9UHxZyXii2ycqHQHRsMWx5e
+         U8gYEM2cVE6XYn2h2Zw2wDngR14VGazTZKFn68t0Sbq3dqGc/Fkt/GXiAVCZixoSivrM
+         IOplwVxUkumG/U/NXi8zMCQ18qQb/JohgYhSJWHlEN3nxgQxijRp8y6JxD1yuE6K7LSd
+         6YFA==
+X-Gm-Message-State: AFuF++kSCsCfcJ/mUjkoszCN9Wrn1SEITk52eF26taM07JAqPCfvAqb/
+	2MmRBLNGiuL03ZIn8esPaSyp6cb+RpCkakR5q+kTNDlffP7BKtkYvKOKjjDruHmDTGabugSajPJ
+	+iwk9dRLG1hxt37rmMWbvKSY286irjMZ2qKo+t3A=
+X-Gm-Gg: AR+sD1390yrlsPbsZX3sMCNB5AYZZaJuMUKuUxmVCpVP3ViCtxRwsTEJGUrpZ0NT8dI
+	+d8NGJnXNtNg12vAffn8Pp+qY4CYghqddvk5Xi1c5Z+wRoeIAhWE8QEm937p9Kp1QPzvAJt4Op8
+	nSluqMX+SYW9TB86F5PXbSda1OCE9A78qDj69xnMaQNfCProccUpSUPvHhVPzQJoEBCE8abCvB2
+	5ZagivRBrI39o1JAt5E0jmd94v7DdeJwLV36Pm/rT1FTVJWIpzyIMgoi5BR5OzOXzuJr6AvW1H2
+	LGvR+WZSjQ8zvFze8kMlvRewb8sR3w+nOLcDuSdRq78wVQR3KZmG1g==
+X-Received: by 2002:a05:6402:505b:b0:69c:811f:8f5 with SMTP id
+ 4fb4d7f45d1cf-6a42f1b9325mr14652573a12.6.1787399239230; Sat, 22 Aug 2026
+ 04:47:19 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: David Smith <smithd98@gmail.com>
+Date: Sat, 22 Aug 2026 07:46:42 -0400
+X-Gm-Features: AcwNN1XUm-HyeO-6u7VzOjlBmYYqLLkCkzvQ4_Vr3pQc-NoAb3JmO8BytsfOWy0
+Message-ID: <CAJVKnz-nj2rk33U9pNMaxzKDOvqZNaQBE5otdCc8Znt8m97anw@mail.gmail.com>
+Subject: amd-pstate: Cezanne data fabric sync flood on DC gated by CPPC max_perf
+To: linux-pm@vger.kernel.org
+Cc: ray.huang@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com, 
+	kprateek.nayak@amd.com, gautham.shenoy@amd.com
+Content-Type: text/plain; charset="UTF-8"
 
-power_allocator_update_tz() unconditionally derives the trip descriptor of
-params->trip_max as below,
-  const struct thermal_trip_desc *td = trip_to_trip_desc(params->trip_max);
-and then walks td->thermal_instances. However, params->trip_max is allowed
-to be NULL and in that case the list walk dereferences a bogus pointer
-derived from NULL which oops the kernel.
+Hi,
 
-get_governor_trips() picks trip_switch_on and trip_max out of the trip
-table of the zone. When the zone has neither a passive nor an active trip
-point, last_active is NULL and params->trip_max is left NULL. This is an
-explicitly supported configuration, as documented in the function
-get_governor_trips() as below,
-  If there are no passive or active trip points, then the governor won't
-  do anything. In fact, its throttle function won't be called at all.
+I have a reproducible AMD data fabric sync flood (reset code 0x08000800) on
+an HP ProBook 445 G8 (Ryzen 7 5800U, Cezanne, family 25 model 80 stepping 0)
+that appears to be gated by the CPPC max_perf value in combination with EPP,
+and not by any physical operating point. 13 confirmed hard resets.
 
-Return early from power_allocator_update_tz() when params->trip_max is NULL
-and only compute the trip descriptor after that check. There is nothing to
-update in that case anyway, with no trip_max and there are no thermal
-instances for the governor to account for, num_actors stays zero and
-total_weight is irrelevant.
+Bugzilla, with full data and a 770 KB evidence attachment:
+https://www.google.com/url?q=https://bugzilla.kernel.org/show_bug.cgi?id%3D221909&source=gmail&ust=1787484988593000&sa=E
 
-Fixes: 912e97c67cc3 ("thermal: gov_power_allocator: Move memory allocation out of throttle()")
+x86/amd: Previous system reset reason [0x08000800]: an uncorrected error
+caused a data fabric sync flood event
 
-Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
----
- drivers/thermal/gov_power_allocator.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Summary of the controlling experiment. All rows are on battery, same pack,
+same charge range, same workload (llama.cpp 128-token prefill, ~6.7GB model,
+CPU only, held warm). Peaks are from amdgpu hwmon plus RAPL:
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index 37f2e22a999e..b5c254187628 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -660,10 +660,15 @@ static void power_allocator_update_tz(struct thermal_zone_device *tz,
- 				      enum thermal_notify_event reason)
- {
- 	struct power_allocator_params *params = tz->governor_data;
--	const struct thermal_trip_desc *td = trip_to_trip_desc(params->trip_max);
-+	const struct thermal_trip_desc *td;
- 	struct thermal_instance *instance;
- 	int num_actors = 0;
- 
-+	if (!params->trip_max)
-+		return;
-+
-+	td = trip_to_trip_desc(params->trip_max);
-+
- 	switch (reason) {
- 	case THERMAL_TZ_BIND_CDEV:
- 	case THERMAL_TZ_UNBIND_CDEV:
--- 
-2.43.0
+EPP / governor smax_freq max_perf fmax vddgfx tctl steps deaths
+balance_performance / powersave 4508086 166 3617 1175mV 63.8C 12 4
+balance_performance / powersave 4500000 165 - - - 1 1
+balance_performance / powersave 4100000 ~151 4017 - 84.9C 8 0
+balance_performance / powersave 3800000 140 3748 1275mV 71.5C 33 0
+performance / performance 4508086 166 4374 1462mV 85.8C 8 0
+balance_power / powersave (AC) 4508086 166 4117 1431mV 84.0C 8 0
 
+Rows 1 and 5 are the interesting pair: identical scaling_max_freq, identical
+power source, identical workload, differing only in EPP and governor. Row 5
+runs 757 MHz faster, 287 mV higher and 22 C hotter than row 1 and survives
+8/8, while row 1 dies about 14 seconds into a step.
+
+So: pinning perf high is safe, clamping the range low is safe, and lethal is
+the wide range with autonomous SMU ramping - balance_performance + powersave
+across max_perf 166 on DC. This looks to me like autonomous perf-state
+transition handling on DC rather than any operating point the part reaches.
+Consistent with that, scaling_max_freq=3800000 prevents it even though the
+workload never exceeds ~2.9 GHz uncapped; the cap narrows the range rather
+than lowering the ceiling.
+
+Never reproduced on AC. Reproduced on 7.1.8 and 6.18.44-lts, and on BIOS
+01.21.00 and 01.22.00. amd-pstate-epp, status active, prefcore enabled.
+Microcode 0xa500014, verified loaded.
+
+Ruled out: memtest86+ 7.20 five passes clean; HP preboot diagnostics all
+pass; thermal (dies at 63.8C, survives at 85.8C); NVMe HMB (AER is OS-owned
+and clean, ASPM disabled by FADT); OOM. Also the battery pack, which is worn
+(~430 mOhm, sags to 9.48V under load) and was my leading hypothesis until the
+row-1-vs-row-5 control above rejected it - no battery model fails at
+3617 MHz / 1175 mV and succeeds at 4374 MHz / 1462 mV on the same charge.
+
+Note this is a single machine. I have not been able to confirm it on another
+445 G8 or another 5800U, so I cannot rule out that it is specific to this
+unit.
+
+Questions:
+
+1. Is there a known Cezanne erratum covering data fabric sync floods
+triggered by autonomous CPPC perf-state transitions on DC?
+
+2. Is the DC vs AC asymmetry expected - does the SMU run a materially
+different perf-state transition policy on DC that could expose this?
+
+3. Would a DMI-matched amd_pstate quirk clamping max_perf on DC be
+acceptable upstream for affected platforms, or is this strictly an
+AGESA/PMFW fix to route through the OEM? I am happy to write and test
+the patch if you tell me the shape you would accept - I did not want to
+send one cold given amd_pstate has no AC/DC awareness today.
+
+4. Is there any way to get a fabric-side error record on a platform with no
+APEI tables (no BERT/HEST/ERST here), to identify which agent flooded?
+
+Current workaround, if useful to anyone hitting this: cap scaling_max_freq
+to 3800000 on DC only. 33 ladder steps plus a 35 minute mixed-load soak at
+load average 29-34 with zero resets, against 5 deaths in 13 uncapped steps.
+
+Happy to run further tests on this machine - it reproduces in under a minute
+and I have it instrumented at 5 ms resolution. I have the full boot ledger of
+all 13 resets, per-crash triage, and the 5 ms RAPL/hwmon sample sets for every
+row above; the bugzilla attachment has all of it.
+
+Thanks,
+Dave Smith
