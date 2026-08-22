@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDE53493652;
-	Sat, 22 Aug 2026 07:31:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBCE925B0AB;
+	Sat, 22 Aug 2026 07:34:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787383881; cv=none; b=pc2cRPiM8qGvUwLFZJHvUddb0gmaG0UTV0DSpUlOiN3gKaEcSrgRLocFtRDo5qLfiguiblGrVqGMrFRTfKV4U5scVXo5EYI7hZBbaT/tQ8ENVMdhbqaN4qmRojJTzLmbWMBzKWuxgopY7eFLdfwGgBiLgMNHaBGEw3Z0fvPuR+s=
+	t=1787384076; cv=none; b=GBfBiRiRrc/RFfTIRFSOuW7KZohGD16GrVKZDDs/5lUKJb4Cj+uKQawtDd/oXX36ORYjmmnh+c0bQm8yPZNAM1e44SeyXrZqaiMpknHUreAdTBhbir4jXLAG4ufxMIPI7rs0CmI8ymCiOFJ3jdFw2N7T/TlDY/FKryubKXiKWgM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787383881; c=relaxed/simple;
-	bh=TgyenYlZ9U/oz7EB5DnySJjeRwFXAopuINdUiEA4zgs=;
+	s=arc-20240116; t=1787384076; c=relaxed/simple;
+	bh=90REFPPhEhahEFCoj6DkLHQJNHRCp0iZA3hUxTEboVU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=owvUx/UWZy4rdLinVx+d/uAhc/c1ayc0WR0sRaIC1QPWfQnvxHrllI6Zr6GL3UP46HMQGcHqoIVg482F7GFVF36dinRyiW+Jfs1jfhbG8T4dHMQQVb2afmHHZ/EiPb7i91W66QFLMbfewTSfVhhfP6zhBowX69h3iwnDI39ZGJs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SmNVFxz2; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=kNDoyF1ar5Sa2oAsU5snDD7AvSVzFfqcfAs1iVB8Y8VGeBWFJ2zjekT5M29HHtAT7JszU2vH7KO0n2DlhMEeA6zV3VwsCA8zhhdLI82CW7R62lYd3HbBRV9VHSZjkrCY9ZVZ5Zis9498NvNjQ+4MzUiWwofxGmoUsWGyEmE3ajI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZfSBuoxX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SmNVFxz2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 122A01F000E9;
-	Sat, 22 Aug 2026 07:31:13 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZfSBuoxX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F0B31F000E9;
+	Sat, 22 Aug 2026 07:34:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787383880;
-	bh=FeeYFt8G5k8PO49+DBGRA52Xs+/5lK7V9MrKRV0pM9M=;
+	s=k20260515; t=1787384075;
+	bh=EBjiLlyfcEu1qiNpxtheocg4JqndTcjnc/whTfw321M=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=SmNVFxz2QWs5pRtoFJSPxw5Oj87g0NfEYT/dj+0evVaNMTNJXcSWN1kknEMCUdmi6
-	 VS7w1uMHWWFs3LYb0BCOwjn5RN2PehahzzNAVR6A1268urxc4YED2hyAdZAeElc9Fx
-	 /le/fBLhLUGbS05EpSspElnCmAZp/SwtmBfIUztDH8+xY0Vulp+tFd3iwue/sYZpme
-	 73TioYURk/D6UuPrDMO/dP3/JixqrInXVQjXe/EaqXmFrdcx8D0daac49sPb7G5LQy
-	 LDtuKtNGBTbs76LIaMlRQVy034uIvN4MRaleS7auynKkLtnXat7O2mfibh0CZKnPJQ
-	 ashRt9JWjPOew==
-Message-ID: <74e1a947-39ea-4451-bb4c-178a56b6b4ad@kernel.org>
-Date: Sat, 22 Aug 2026 09:31:11 +0200
+	b=ZfSBuoxXb5q2qXzPgUjyZ2aR2ul8VDNCvHnIz97qCO75C5sZOT6TL/NlVq9qMsuPU
+	 teywPwBkFPfNyToM68PUucDCFf/xJ7x4uymcZ48dN/HVZke4PDoHTIwgsalxJHSrIe
+	 2IkKSuwjeOGd9UP2GZCn+tLlqQhHFqt3dmUYnjuNuo/nSyn9iUl/I+Mv3/JwINh/t3
+	 v1+oXJuhxQHBYU+c3Nx94N06BpR1cEHiRVeF24oQxQcrllIncJNgu1hMxp5RbzRFfS
+	 HUEUoiZ4OeupGJ3YoAVKHKiAxt4C9N0rdj8qcvPybUZbU9RDVM3QNgBjGDAvGAf6TQ
+	 kDJ+OkGMS1IRQ==
+Message-ID: <69eaebbd-4f24-4167-a8ef-42925a92a4ca@kernel.org>
+Date: Sat, 22 Aug 2026 09:34:26 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/10] dt-bindings: clock: Add r8a774a3 CPG Core Clock
- definitions
+Subject: Re: [PATCH 09/10] arm64: dts: renesas: Add HiHope RZ/G2M v3.0 SoC
+ main board support
 To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>,
  Geert Uytterhoeven <geert+renesas@glider.be>,
  Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh@kernel.org>,
@@ -51,7 +51,7 @@ Cc: linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org,
  Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
- <20260821150408.73829-7-ayman.chaudhry.kc@renesas.com>
+ <20260821150408.73829-10-ayman.chaudhry.kc@renesas.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -97,22 +97,79 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260821150408.73829-7-ayman.chaudhry.kc@renesas.com>
+In-Reply-To: <20260821150408.73829-10-ayman.chaudhry.kc@renesas.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 21/08/2026 17:03, Ayman Chaudhry wrote:
-> Add all the Renesas RZ/G2M v3.0 (a.k.a. R8A774A3) SoC Clock Pulse
-> Generator Core Clock Outputs, as listed in Table 11.3 ("List of Clocks
-> [RZ/G2M V1.3, RZ/G2M V3.0]") of the RZ/G2 Hardware User's Manual.
+> Add support for the HiHope RZ/G2M v3.0 (a.k.a. R8A774A3) SoC main
+> board.
+> 
+> The RZ/G2M v3.0 SoC main board is similar to the RZ/G2M v1.3 SoC main
+> board, so there are already DTSI files available in the kernel. These
+> DTSI files will be included once additional support (e.g. I2C, GPIO
+> and sound) is added for the RZ/G2M v3.0 SoC.
 > 
 > Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
 > ---
->  include/dt-bindings/clock/r8a774a3-cpg-mssr.h | 59 +++++++++++++++++++
+>  arch/arm64/boot/dts/renesas/Makefile          |  2 +
+>  .../dts/renesas/r8a774a3-hihope-rzg2m.dts     | 50 +++++++++++++++++++
+>  2 files changed, 52 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
+> 
+> diff --git a/arch/arm64/boot/dts/renesas/Makefile b/arch/arm64/boot/dts/renesas/Makefile
+> index 8bf155badd11..6ae96027664d 100644
+> --- a/arch/arm64/boot/dts/renesas/Makefile
+> +++ b/arch/arm64/boot/dts/renesas/Makefile
+> @@ -8,6 +8,8 @@ dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2.dtb
+>  dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2-ex.dtb
+>  dtb-$(CONFIG_ARCH_R8A774A1) += r8a774a1-hihope-rzg2m-rev2-ex-idk-1110wr.dtb
+>  
+> +dtb-$(CONFIG_ARCH_R8A774A3) += r8a774a3-hihope-rzg2m.dtb
+> +
+>  dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-beacon-rzg2n-kit.dtb
+>  dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-hihope-rzg2n.dtb
+>  dtb-$(CONFIG_ARCH_R8A774B1) += r8a774b1-hihope-rzg2n-ex.dtb
+> diff --git a/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
+> new file mode 100644
+> index 000000000000..f51ba4fd602e
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
+> @@ -0,0 +1,50 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Device Tree Source for the HiHope RZ/G2M v3.0 SoC main board
+> + *
+> + *Copyright (C) 2026 Renesas Electronics Corp.
+> + */
+> +
+> +/dts-v1/;
+> +#include "r8a774a3.dtsi"
+> +
+> +/ {
+> +	model = "HopeRun HiHope RZ/G2M v3.0 main board based on r8a774a3";
+> +	compatible = "hoperun,hihope-rzg2m", "renesas,r8a774a3";
+> +
+> +	memory@48000000 {
+> +		device_type = "memory";
+> +		/* First 128MiB is reserved for secure area */
+> +		reg = <0x0 0x48000000 0x0 0x78000000>;
+> +	};
+> +
+> +	memory@600000000 {
+> +		device_type = "memory";
+> +		reg = <0x6 0x00000000 0x0 0x80000000>;
+> +	};
+> +
+> +	aliases {
+> +		serial0 = &scif2;
+> +	};
+> +
+> +	chosen {
+> +		bootargs = "ignore_loglevel";
 
-Same comments. Why are you using discouraged naming and why are you
-sending it SEPARATELY from the binding?
-
+Drop bootargs. Not a mainline DTS attribute. Why should my board ignore
+loglevel? How is it hardware description?
 
 Best regards,
 Krzysztof
