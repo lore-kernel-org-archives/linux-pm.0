@@ -1,322 +1,107 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAE5333A9E1;
-	Sat, 22 Aug 2026 07:39:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787384343; cv=none; b=bkirich2ja13iSm10tCC9U01tcMF83WuhLRO4o5boIYhVExIkL9nG5LLZk2yJfoNsnWfZZKetj+8B3mDkyng8HQWNzctXtZfZJ69QeTH4ENqYSCXMi3zGpHEnJKHL1T9VBoQPKpijZc4LKoK6x7WU5FsfR3pO3ueqVpw4kdwGVc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787384343; c=relaxed/simple;
-	bh=20a6T6gfT4W5qmnR0IrhYYQg42UJNxpelFM+vKlIzts=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Z6h9zTHKxz9GkPK8xzBMBI0EQLehqjfVRlwfd0g4T3mool/8M/ffEZY9tz1NbVnuEhTqhUhNxxSfm6oOGPKNZ9D7bEQd2l+oyKfTpNjxRo4+GOJMzYb0yPONaKyvdYLiE8UmcQbOPGb4S86T3NVw8WsIJFq3dAPf0t7Iz7wmaWA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b1glk2k4; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89FEB36B910
+	for <linux-pm@vger.kernel.org>; Sat, 22 Aug 2026 09:12:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.174
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787389977; cv=pass; b=L2BmePbBJ7vfZMax4iTsogMIEPpGPaCEdzguEV2teWhWO8c21Dwjt+C9cLCSy9zBdCdKr2ozU8JOUikotr4O9I3RTAZJMODKsLJkYDWtUppRel/RYHKG6AGq/6Rbz/y0Ljvs+sJeUakBxto18z+uNPeyGepqFMZcmlh9A6XMto4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787389977; c=relaxed/simple;
+	bh=2MwHIoHjfQgFOXH1q3c7Fke9NA/pcypshND1SuBjvCA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=X1Cgz3i/ldtW4iXFjh9P6tZvTWDKC0XMSaol6+iYcN1BkMW3HiICnufUaEyG+ZvZl3ynoEOQe/NlsnATxdMSN52GL+FMKKxoD0qsH1PESKjcjh4k0sPY8EQBYcZXs4Gun4P0VojXwuvX1qira7SjI9vIOAXuodL7escuF6akGmM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Td5S6gB1; arc=pass smtp.client-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b1glk2k4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A530C1F000E9;
-	Sat, 22 Aug 2026 07:38:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787384341;
-	bh=yxr1RTUyhpEzexigkTUOYj2YkjiALBk7cwuLfHLoWhw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=b1glk2k40qB8dX5lLhDAvudDvtFkuzSyLzo1JY5Q8j0hSsZJ3NJ2LML6TlRZ5GswT
-	 7Ekgb/1vALB6v3GCqYm4j6jQk3xUYf9F1ru/ECBWGYj24rF2szfwIvvh9ev7wUZjb9
-	 CslsXIxNbyT5Oopd28Tfpy46F4KWB3qThbkelu9NZE5f0dbPaaXos3RLypkCxgFJOf
-	 hK031J0UNOUjGRzBOftKd1DgmvSvekyVRkObuLtwrbDNRHJUh2QOQHxcMcdvKKNnhO
-	 GGb6r7Ew0Wjw9raX13M8l4WMm+xAdU/Y2JbxwTsQpWSUk/E/l1eswlVQ/7bExIHYhm
-	 bIEnRjhLtaSXg==
-Message-ID: <bb0972e8-852f-48b5-82c3-325962e0f743@kernel.org>
-Date: Sat, 22 Aug 2026 09:38:51 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Td5S6gB1"
+Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2d53197d8b5so18910085ad.3
+        for <linux-pm@vger.kernel.org>; Sat, 22 Aug 2026 02:12:56 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787389976; cv=none;
+        d=google.com; s=arc-20260327;
+        b=VtrrfN3ZAG4Fq8g9n2n9WK+ndHbCjLj9Sgi2hR8o1XqA2UdenzhooqDxH4fL5CEXfz
+         c9GQ42m7a5Hw5Tov0Dy/yzBkiJJqB19aCCNXDklxMiP5jdCf+8njMwrMSSfWdwkIb7Ee
+         EfQwhf+BQrr6FUxIhCYv/B2HrWOBoGYLVkNG9dhmKCalod2ibFlKk14Ie4P4otVKOJUU
+         qBMzltF8RB7R0QqCKVk1Sp+MIsWjzS9TZpZV7aMUSpsIm0MYiPVjDxjSTQYp/+uTCIFA
+         pKtwXmOkDhDJ0CJdn+GEA7Rk5ScmatkYWL1e1RRd+XRaJrjYHLNlR82L/D+F/+aSXR38
+         aVXg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=2MwHIoHjfQgFOXH1q3c7Fke9NA/pcypshND1SuBjvCA=;
+        fh=6xRaco8UPQa6n0lGETcjuzUy4waksngIOTOCW7o/y8E=;
+        b=YBn59YqzT3FMDDVhqVxaDuL6vryyNuEias7ML+dzRO43zVnDp0ejQM45fcaQr8Lo6r
+         /IpInvD9kuj9Q7wcrgHb5r0+yIf3ohacpOmSxYiiLmB8BuJik9lojKEXKtCAVEWn6DB2
+         qURKq/wio0jy1p7Yug5oTNUXd2qaBa3wYGQA7hlVhiK1W31Pkj262yEih0DFt8OTv+Lv
+         bdnpY/x6JFkjerub3lsB4Dt2tGhEx6XPAs4bz+GwmMSA6Koff76xfoB2rHv/9A9Z1sxw
+         3XWrlN+4VbAqux3/b9d9eu6x8ASUWCqEbdhvmTLJeQK1szL0KsWU/slE4jxMHuzkoGqV
+         Ho0Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787389976; x=1787994776; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2MwHIoHjfQgFOXH1q3c7Fke9NA/pcypshND1SuBjvCA=;
+        b=Td5S6gB1its1QHuLe38gfny8OwhP1U1Bdx/7Dv9rbzYSDynpQlnVeRyBMLKxHjZJdu
+         oUk4BuBTVJqUXWhdDtUnJLm2Sy37Nldn+UFTm6LSGCa8eCrklesC1uh4vycE7WeRKigp
+         5QTH5kMvimTYdn1rL+vGYB4dSRkv4E1xbg39SSDLJd0wHHfaxmVpFTuSNwtm/CFHRqcX
+         m8EIJagb2/hnp+kFPLLcJSbqwzakLRHKt+g4Mv+5yjx07zfXZUBg95/L16fpPQKUnRpe
+         YgV6zJHgmCizclxxQhF/jJw2O+vjqSAGcDS13U4GgtE3xGE870+z4rdVWUy81TXXy8nV
+         mkkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787389976; x=1787994776;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=2MwHIoHjfQgFOXH1q3c7Fke9NA/pcypshND1SuBjvCA=;
+        b=Tjql/KZCEWhlDDYc6MwOm3bD29aL1Tr6WVvKGEtWdUgC4g/mFBEQ0SrI0ODrj5GGrm
+         WYZSHIbaQsll7r8KxWPuGXW9tUtGrkuypJKICt57agRQlO4Ke1FMRzjrWY6pIrY2RWrl
+         tYVNrv1nOYVoS+7Rd7oK4JzvFxonnER6qkfxWv3skAbWe7e2UH/Bku8yml4xfR6SB7kU
+         bTj+xCwMj7u9ZJq1XqOa0pez0i9G5cBdwO8Y6Ve2DhDGaFXPWhaKAspiU/wfBIu+IvS4
+         FgEzhAFiiUcG0yKMkxa75MM0rEVVGC+ZASlj/XDTBkSduBPquarpPhLKe+5Ibr4NbTRt
+         x1FA==
+X-Forwarded-Encrypted: i=1; AHgh+Rp7QoQ1hNX0MPzhc3LpO7LzPHJU5c5SmrxtgWtlzRad9ktYQadHAGdWGL60aQK3JodFEGv6yh3Ajg==@vger.kernel.org
+X-Gm-Message-State: AFuF++mPVZL4hxJecMTrgtuoXBjR/FOc/10inTnu3F5WYe6VjLHTMfpg
+	VB2LmRYCsurcsNJ31E/WWDhNgm+Mf0agqe8kLyNjADYjiqoSUC1IVGbM+tq8WJIbzOabIRhOZfJ
+	Ol1VoJX2hWFGyCUE9keSf60P6XzE7FLs=
+X-Gm-Gg: AR+sD11Vylh5D0tUZpqJWuNZvBAS7xKq/1LWQLFbJqYE09Msol+9jGlrDnE4EcnnoOE
+	usgl22UGw9amev3z84XSxs9/Xr1of8C0V7u/uDKyVWu6e1rjZV1eEgxb66BmaCDJBP3OwKvqzV9
+	HVWwFY++yQF6GmXZ+++vtdHS9ifcBnKyX1snRqGxLa7nrEAmFUVLMQtQLM5kdC21W7+7LrjQwgs
+	j/nzVnRuKJDHrkmEY2Yc+Fqm9t0TLj38jokPqpCjgHos02qmYayv45ZiQOc9ASzGEts6vjSagxh
+	auQnp2dZRpaebFjb/EqvlAQufUzQYfkep+qjwdZ7TNYfG21jonsr/WKAlMXiohujiQuDbq9L+jw
+	G2t6cCJwhl5L5xSBZxFF5EDQr8XnZWz390DtlGhvjGKwnvBimNkSN7KJ4XOZtC333pHaiJMZ3wh
+	m8KaN8/yg8iWFfhg==
+X-Received: by 2002:a17:903:354b:b0:2d3:2e86:647a with SMTP id
+ d9443c01a7336-2d64af6f896mr239987105ad.5.1787389975945; Sat, 22 Aug 2026
+ 02:12:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 08/10] arm64: dts: renesas: Add initial SoC DTSI for
- RZ/G2M v3.0
-To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
- Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>
-Cc: linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, Chris Paterson <Chris.Paterson2@renesas.com>,
- Biju Das <biju.das.jz@bp.renesas.com>,
- Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
- Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
- <20260821150408.73829-9-ayman.chaudhry.kc@renesas.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
- /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
- s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
- EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
- rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
- DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
- IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
- vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
- oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
- sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
- vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
- Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
- BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
- 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
- f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
- WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
- XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
- IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
- YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
- p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
- GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
- YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
- vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
- ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
- QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
- +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
- wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
- c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
- K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
- n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
- qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260821150408.73829-9-ayman.chaudhry.kc@renesas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260812042842.15209-1-phucduc.bui@gmail.com> <20260812042842.15209-2-phucduc.bui@gmail.com>
+ <d62e3e3d-9639-4f11-a9f1-460d300c2ac0@oss.qualcomm.com>
+In-Reply-To: <d62e3e3d-9639-4f11-a9f1-460d300c2ac0@oss.qualcomm.com>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Sat, 22 Aug 2026 16:12:44 +0700
+X-Gm-Features: AcwNN1WymSu3M-4thaXX2g8igzJ8ORKE90IN_Y9QZEBt6T109X5SSm7wsMyE3vI
+Message-ID: <CAABR9nHGbJ3iNvMZFG2bKV029OWWLQnJSNt3+Da3EgTraT0WhQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] thermal: hwmon: Remove redundant OOM message
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>, rafael@kernel.org, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 21/08/2026 17:03, Ayman Chaudhry wrote:
-> Add initial Device Tree Source Include (DTSI) file for the Renesas
-> RZ/G2M v3.0 (a.k.a. R8A774A3) SoC with basic support.
-> 
-> Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
-> ---
->  arch/arm64/boot/dts/renesas/r8a774a3.dtsi | 302 ++++++++++++++++++++++
->  1 file changed, 302 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3.dtsi
-> 
-> diff --git a/arch/arm64/boot/dts/renesas/r8a774a3.dtsi b/arch/arm64/boot/dts/renesas/r8a774a3.dtsi
-> new file mode 100644
-> index 000000000000..f60a31612b39
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/renesas/r8a774a3.dtsi
-> @@ -0,0 +1,302 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Device Tree Source for the r8a774a3 SoC
-> + *
-> + * Copyright (C) 2026 Renesas Electronics Corp.
-> + */
-> +
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +#include <dt-bindings/interrupt-controller/arm-gic.h>
-> +#include <dt-bindings/clock/r8a774a3-cpg-mssr.h>
-> +#include <dt-bindings/power/r8a774a3-sysc.h>
-> +
-> +/ {
-> +	compatible = "renesas,r8a774a3";
-> +	#address-cells = <2>;
-> +	#size-cells = <2>;
-> +	interrupt-parent = <&gic>;
-> +
-> +	cluster0_opp: opp-table-0 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-500000000 {
-> +			opp-hz = /bits/ 64 <500000000>;
-> +			opp-microvolt = <820000>;
-> +			clock-latency-ns = <300000>;
-> +		};
-> +		opp-1000000000 {
-> +			opp-hz = /bits/ 64 <1000000000>;
-> +			opp-microvolt = <820000>;
-> +			clock-latency-ns = <300000>;
-> +		};
-> +		opp-1500000000 {
-> +			opp-hz = /bits/ 64 <1500000000>;
-> +			opp-microvolt = <820000>;
-> +			clock-latency-ns = <300000>;
-> +			opp-suspend;
-> +		};
-> +	};
-> +
-> +	cluster1_opp: opp-table-1 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-800000000 {
-> +			opp-hz = /bits/ 64 <800000000>;
-> +			opp-microvolt = <820000>;
-> +			clock-latency-ns = <300000>;
-> +		};
-> +		opp-1000000000 {
-> +			opp-hz = /bits/ 64 <1000000000>;
-> +			opp-microvolt = <820000>;
-> +			clock-latency-ns = <300000>;
-> +		};
-> +		opp-1200000000 {
-> +			opp-hz = /bits/ 64 <1200000000>;
-> +			opp-microvolt = <820000>;
-> +			clock-latency-ns = <300000>;
-> +		};
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu-map {
-> +			cluster0 {
-> +				core0 {
-> +					cpu = <&a57_0>;
-> +				};
-> +				core1 {
-> +					cpu = <&a57_1>;
-> +				};
-> +			};
-> +
-> +			cluster1 {
-> +				core0 {
-> +					cpu = <&a53_0>;
-> +				};
-> +				core1 {
-> +					cpu = <&a53_1>;
-> +				};
-> +				core2 {
-> +					cpu = <&a53_2>;
-> +				};
-> +				core3 {
-> +					cpu = <&a53_3>;
-> +				};
-> +			};
-> +		};
-> +
-> +		a57_0: cpu@0 {
-> +			compatible = "arm,cortex-a57";
-> +			reg = <0x0>;
-> +			device_type = "cpu";
-> +			power-domains = <&sysc R8A774A3_PD_CA57_CPU0>;
-> +			next-level-cache = <&L2_CA57>;
-> +			enable-method = "psci";
-> +			dynamic-power-coefficient = <854>;
-> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z>;
-> +			operating-points-v2 = <&cluster0_opp>;
-> +			capacity-dmips-mhz = <1024>;
-> +		};
-> +
-> +		a57_1: cpu@1 {
-> +			compatible = "arm,cortex-a57";
-> +			reg = <0x1>;
-> +			device_type = "cpu";
-> +			power-domains = <&sysc R8A774A3_PD_CA57_CPU1>;
-> +			next-level-cache = <&L2_CA57>;
-> +			enable-method = "psci";
-> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z>;
-> +			operating-points-v2 = <&cluster0_opp>;
-> +			capacity-dmips-mhz = <1024>;
-> +		};
-> +
-> +		a53_0: cpu@100 {
-> +			compatible = "arm,cortex-a53";
-> +			reg = <0x100>;
-> +			device_type = "cpu";
-> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU0>;
-> +			next-level-cache = <&L2_CA53>;
-> +			enable-method = "psci";
-> +			dynamic-power-coefficient = <277>;
-> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
-> +			operating-points-v2 = <&cluster1_opp>;
-> +			capacity-dmips-mhz = <560>;
-> +		};
-> +
-> +		a53_1: cpu@101 {
-> +			compatible = "arm,cortex-a53";
-> +			reg = <0x101>;
-> +			device_type = "cpu";
-> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU1>;
-> +			next-level-cache = <&L2_CA53>;
-> +			enable-method = "psci";
-> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
-> +			operating-points-v2 = <&cluster1_opp>;
-> +			capacity-dmips-mhz = <560>;
-> +		};
-> +
-> +		a53_2: cpu@102 {
-> +			compatible = "arm,cortex-a53";
-> +			reg = <0x102>;
-> +			device_type = "cpu";
-> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU2>;
-> +			next-level-cache = <&L2_CA53>;
-> +			enable-method = "psci";
-> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
-> +			operating-points-v2 = <&cluster1_opp>;
-> +			capacity-dmips-mhz = <560>;
-> +		};
-> +
-> +		a53_3: cpu@103 {
-> +			compatible = "arm,cortex-a53";
-> +			reg = <0x103>;
-> +			device_type = "cpu";
-> +			power-domains = <&sysc R8A774A3_PD_CA53_CPU3>;
-> +			next-level-cache = <&L2_CA53>;
-> +			enable-method = "psci";
-> +			clocks = <&cpg CPG_CORE R8A774A3_CLK_Z2>;
-> +			operating-points-v2 = <&cluster1_opp>;
-> +			capacity-dmips-mhz = <560>;
-> +		};
-> +
-> +		L2_CA57: cache-controller-0 {
-> +			compatible = "cache";
-> +			power-domains = <&sysc R8A774A3_PD_CA57_SCU>;
-> +			cache-unified;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		L2_CA53: cache-controller-1 {
-> +			compatible = "cache";
-> +			power-domains = <&sysc R8A774A3_PD_CA53_SCU>;
-> +			cache-unified;
-> +			cache-level = <2>;
-> +		};
-> +	};
-> +
-> +	extal_clk: extal {
-> +		compatible = "fixed-clock";
-> +		#clock-cells = <0>;
-> +		/* This value must be overridden by the board */
-> +		clock-frequency = <0>;
-> +		bootph-all;
-> +	};
-> +
-> +	extalr_clk: extalr {
-> +		compatible = "fixed-clock";
-> +		#clock-cells = <0>;
-> +		/* This value must be overridden by the board */
-> +		clock-frequency = <0>;
-> +		bootph-all;
-> +	};
-> +
-> +	pmu_a53 {
+Hi Rafael and Daniel,
 
-Please, do not send us downstream code. It looks awfully like one. It's
-long time fixed in all upstream platforms. Also, this causes now warnings.
+Thanks for your reviews and Acks.
 
 Best regards,
-Krzysztof
+Phuc
