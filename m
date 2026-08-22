@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEAD5376A19;
-	Sat, 22 Aug 2026 07:29:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDE53493652;
+	Sat, 22 Aug 2026 07:31:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787383797; cv=none; b=NmtTm5s73OZhSDw2QztAmfh3KIK0fOnqOmisQBdFSD+aw5DoQIwllw36bYEztMX8EOcPptM1KeMXCZ+liPkm20MlYosP0ipNGzxrgvQLPQKbmO4qqjuG+XtexlRYh4J0s+N3HPYY1/iFwYpUH0aOCKwrvS/PRDijNp6joaiOIfs=
+	t=1787383881; cv=none; b=pc2cRPiM8qGvUwLFZJHvUddb0gmaG0UTV0DSpUlOiN3gKaEcSrgRLocFtRDo5qLfiguiblGrVqGMrFRTfKV4U5scVXo5EYI7hZBbaT/tQ8ENVMdhbqaN4qmRojJTzLmbWMBzKWuxgopY7eFLdfwGgBiLgMNHaBGEw3Z0fvPuR+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787383797; c=relaxed/simple;
-	bh=eLtbJyeOFCL8+ZJ05LuveDQaCku1Mqljqd6pBpX3Akc=;
+	s=arc-20240116; t=1787383881; c=relaxed/simple;
+	bh=TgyenYlZ9U/oz7EB5DnySJjeRwFXAopuINdUiEA4zgs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=k/NngqNeSuoW2TrzPefXddsSlYZR2gTYX1EagsycBhmgLHaVzO9azGuo1q40uhTE6HNIcD/RQSl31dhHqL9H0mXHIpS3jzSh18D56cnYLpH1NJpZdX7hCiGR0QkSzuVyWpSJ4pNnf6Qb+DHbjL/ziVLYpJrcte9V5hZge5ejmCY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DUGjJrlO; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=owvUx/UWZy4rdLinVx+d/uAhc/c1ayc0WR0sRaIC1QPWfQnvxHrllI6Zr6GL3UP46HMQGcHqoIVg482F7GFVF36dinRyiW+Jfs1jfhbG8T4dHMQQVb2afmHHZ/EiPb7i91W66QFLMbfewTSfVhhfP6zhBowX69h3iwnDI39ZGJs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SmNVFxz2; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DUGjJrlO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E492E1F000E9;
-	Sat, 22 Aug 2026 07:29:49 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SmNVFxz2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 122A01F000E9;
+	Sat, 22 Aug 2026 07:31:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787383796;
-	bh=SwjlM+iws+8CDXMH63ul3ZL8LMDDFMdt8lY+0ZAlkFM=;
+	s=k20260515; t=1787383880;
+	bh=FeeYFt8G5k8PO49+DBGRA52Xs+/5lK7V9MrKRV0pM9M=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=DUGjJrlO5cD7QPWN+Qx6swvpNtOkpJb9jVXYHlO3oaMkzsPnGtecPoA/ZGnpLcts+
-	 hW0pNZoj+/jDOyEXA7V2lxUT2FzrlCfFUmkk2mK8ERwRZqKZbfg/DKZUMeFET0rpAa
-	 f5OKryCb47llAG3OyVMfXnph3Lpq0i+CARiAgZF5W5Crhc29LTH8chekcT/UWT50yz
-	 t4rr3cMpIfWaIelSSbgkfKoGJ6ZRv5VszZOxpOS1qVhngyX/GDPiUriHa1h5Z+M9KF
-	 xdYlc6FioJzCs1z8uwm4Jdt6VE2r6ENWefFonrcTaqDJP3NAAqPbAFsTUtdy4GKecT
-	 mJtIU8bvTACkw==
-Message-ID: <b2f486b8-a391-41bc-8a7f-dc81c6752205@kernel.org>
-Date: Sat, 22 Aug 2026 09:29:47 +0200
+	b=SmNVFxz2QWs5pRtoFJSPxw5Oj87g0NfEYT/dj+0evVaNMTNJXcSWN1kknEMCUdmi6
+	 VS7w1uMHWWFs3LYb0BCOwjn5RN2PehahzzNAVR6A1268urxc4YED2hyAdZAeElc9Fx
+	 /le/fBLhLUGbS05EpSspElnCmAZp/SwtmBfIUztDH8+xY0Vulp+tFd3iwue/sYZpme
+	 73TioYURk/D6UuPrDMO/dP3/JixqrInXVQjXe/EaqXmFrdcx8D0daac49sPb7G5LQy
+	 LDtuKtNGBTbs76LIaMlRQVy034uIvN4MRaleS7auynKkLtnXat7O2mfibh0CZKnPJQ
+	 ashRt9JWjPOew==
+Message-ID: <74e1a947-39ea-4451-bb4c-178a56b6b4ad@kernel.org>
+Date: Sat, 22 Aug 2026 09:31:11 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 02/10] dt-bindings: power: Add r8a774a3 SYSC power domain
+Subject: Re: [PATCH 06/10] dt-bindings: clock: Add r8a774a3 CPG Core Clock
  definitions
 To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>,
  Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -51,7 +51,7 @@ Cc: linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org,
  Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
- <20260821150408.73829-3-ayman.chaudhry.kc@renesas.com>
+ <20260821150408.73829-7-ayman.chaudhry.kc@renesas.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -97,59 +97,22 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260821150408.73829-3-ayman.chaudhry.kc@renesas.com>
+In-Reply-To: <20260821150408.73829-7-ayman.chaudhry.kc@renesas.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 21/08/2026 17:03, Ayman Chaudhry wrote:
-> This patch adds power domain indices for the Renesas RZ/G2M v3.0
-
-
-Please do not use "This commit/patch/change", but imperative mood. See
-longer explanation here:
-https://elixir.bootlin.com/linux/v6.16/source/Documentation/process/submitting-patches.rst#L94
-
-> (a.k.a. R8A774A3) SoC.
+> Add all the Renesas RZ/G2M v3.0 (a.k.a. R8A774A3) SoC Clock Pulse
+> Generator Core Clock Outputs, as listed in Table 11.3 ("List of Clocks
+> [RZ/G2M V1.3, RZ/G2M V3.0]") of the RZ/G2 Hardware User's Manual.
 > 
 > Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
 > ---
->  include/dt-bindings/power/r8a774a3-sysc.h | 30 +++++++++++++++++++++++
+>  include/dt-bindings/clock/r8a774a3-cpg-mssr.h | 59 +++++++++++++++++++
 
-Filename must match compatible.
+Same comments. Why are you using discouraged naming and why are you
+sending it SEPARATELY from the binding?
 
-
->  1 file changed, 30 insertions(+)
->  create mode 100644 include/dt-bindings/power/r8a774a3-sysc.h
-> 
-> diff --git a/include/dt-bindings/power/r8a774a3-sysc.h b/include/dt-bindings/power/r8a774a3-sysc.h
-> new file mode 100644
-> index 000000000000..5694a422b771
-> --- /dev/null
-> +++ b/include/dt-bindings/power/r8a774a3-sysc.h
-> @@ -0,0 +1,30 @@
-> +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> +/*
-> + * Copyright (C) 2026 Renesas Electronics Corp.
-> + */
-> +#ifndef __DT_BINDINGS_POWER_R8A774A3_SYSC_H__
-> +#define __DT_BINDINGS_POWER_R8A774A3_SYSC_H__
-> +
-> +/*
-> + * These power domain indices match the numbers of the interrupt bits
-
-No, that's not a binding then.
-
-Also, why is this sent separately from the binding?
-
-> + * representing the power areas in the various Interrupt Registers
-> + * (e.g. SYSCISR, Interrupt Status Register)
-> + */
-> +
-> +#define R8A774A3_PD_CA57_CPU0		 0
-> +#define R8A774A3_PD_CA57_CPU1		 1
-> +#define R8A774A3_PD_CA53_CPU0		 5
-
-No, value is 2. Or not a binding.
 
 Best regards,
 Krzysztof
