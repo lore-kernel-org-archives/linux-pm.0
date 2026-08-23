@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB739331EA8
-	for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2026 16:40:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1708A1A681C
+	for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2026 16:45:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787503252; cv=none; b=WttMyHqIJAfMrwxEJTZG1WDOrH8QErF6i3fUTcnrY0aic3e612Nqns0VtccsRenwo7fT7E/VyNw4d2UK8fluOkC2NOshTZfRBjTP5KCX8RFzirHO53BupsStqW/waMIjF31yEnqI2Hth1H60NcmWkb0kAcFJAQZzUYjLj9WoW9c=
+	t=1787503525; cv=none; b=U+oFYwYwoaLzJZE2H2bN9tbqukCGFQ2n/+Bc3TscDsDIVlsvbplUrG+V4E3ixqR9ivMqo8N5ULbrCuSlxCtvmG8EhPxtz4RQU5148BodwYPCtbGwZkZSr1ayUHHSHtW8iPYRVkiF3ZeMMLHoC+HS6/V7MhPJ00P6pvr0z9MtsgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787503252; c=relaxed/simple;
-	bh=/BmFo+4B8BJKStw9tjIO+Mf+W4Ya7v8vTOq0zh8E4jM=;
+	s=arc-20240116; t=1787503525; c=relaxed/simple;
+	bh=2Djwe1QCWiBmJrk/QXcz5mi6Tskcp8XaiFf3qBzhV+A=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=fdJsPOjhNYzXzLeEAKizLizSV9+Jxsbanw5p6pZf44aA1rFPpIcserP9EasSILt+pgjgQy+OVqQI/IBfIiWp7Ep5yCUJdxUU3U6aXk0+wH0C9vZIqWGu0RINBfAaGaMjxzngKMYEzpChxjtHBhpTD68/5Mhzfnf16vxkdHxBBhE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TSt4fWTv; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:MIME-Version; b=FzkV0YD47EusvZcCoVhoHaM/ya6SzNTiIoHsMIe0o41YOqmCJVNEGbmOgdqzUfOQqWXS5H2AGO5f16MwXIy8H3yLWhJKW9d5fe/3sPowI1uR96vo6+jQhKxekJ4dwwKisj8IQlnK8Pq32x3EEw02vgMZbU0/CaCamIBHN8bm6vY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uK3xyaPm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TSt4fWTv"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2BCC1C2BCFB
-	for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2026 16:40:52 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uK3xyaPm"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B7BEBC2BCFB
+	for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2026 16:45:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1787503252;
-	bh=/BmFo+4B8BJKStw9tjIO+Mf+W4Ya7v8vTOq0zh8E4jM=;
+	s=k20201202; t=1787503524;
+	bh=2Djwe1QCWiBmJrk/QXcz5mi6Tskcp8XaiFf3qBzhV+A=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=TSt4fWTvNMGI6GPwnqnQ03bFrZLShx4KAXEEeQhBmHCmFOo5AIzOdC48hwndjQYa7
-	 oTJzi5/iUSVjJF7dXFxkGPHR+bJMdb0lEtRlH8v2w5vPZzOoXuUDSjZ0yjRcotvILE
-	 Ria5o4BOZtHg6v+pAtmgbHlSp+Mbd7MqNdnNbcpabRh0tp7hSyIdgOqDFB5oJNZ5t5
-	 xtJQiERu0T/Ff5BAWU2NjXm2ZIOYHxB+cnos5Rz2oFTVMsO1X8KAPf6o1gknlq1prw
-	 k4lju9mBGLUt9a/NvuaCqnhnz+UKo1bGnhAKidyqc+r3gmJQPfbnztCAaSH7eNVb7I
-	 KcjCRZXocUqYA==
+	b=uK3xyaPmk3xxqJqn79qMAqGyKOXf3V2O+4VmbpvBj70z28mhIZO+IsRmKf8iuZDg2
+	 /4AlrFzPSNySV09cffv1dHYlGlUTflmz4HPUdsxyAtdu6ndauE9T3uiA2/AaVDedxl
+	 DmeEoF/+B9Ps37MyWTw2IuVHluek9dQeiLaaHhz5tB1YKyYBebw5FYMLbZwLZU9xi2
+	 5QxbobOoaUzU3rUsHeTjompYI/ObhduAaqvXSWtl06dALN5stYMQAAl4IbrSa6eq1w
+	 8otcY3JSu9SmL5PQBAvl2+5qnYI5RN93BhZWBp5UcsJhQlgA+IR9zCUB2ZKXkX58V4
+	 wSp+R3njcG6og==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 108FFC433E1; Sun, 23 Aug 2026 16:40:52 +0000 (UTC)
+	id 9A6D2C4160E; Sun, 23 Aug 2026 16:45:24 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [Bug 221909] amd-pstate: Cezanne (Ryzen 7 5800U) data fabric sync
  flood on DC gated by CPPC max_perf
-Date: Sun, 23 Aug 2026 16:40:51 +0000
+Date: Sun, 23 Aug 2026 16:45:24 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -47,8 +47,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-221909-137361-dSnwMDiXfT@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-221909-137361-Ze73lTYH42@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-221909-137361@https.bugzilla.kernel.org/>
 References: <bug-221909-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -64,22 +64,13 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D221909
 
-luc (l.perneel@luperco.com) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |l.perneel@luperco.com
-
---- Comment #2 from luc (l.perneel@luperco.com) ---
-I would like to add the following link:
-https://gist.github.com/eliottness/ded6bce8163689dc426732d0670c7a28 which
-contains more background and tests done.
-
-There are several people hit by this issue, which was not a problem in older
-kernels. Not sure when it was introduced, but my machine has run more than a
-year stable, until an update caused it to take a newer kernel... since then=
- I
-have such a failure on average each 14 days.
+--- Comment #3 from luc (l.perneel@luperco.com) ---
+I want also to add, that the issue is triggered out of the blue. There is no
+need to add some load or anything. An idling system can hit it as well. Als=
+o no
+traces at all in the kernel before the sudden reboot, it is only the next b=
+oot
+that the reset cause is printed in the kernel logs.
 
 --=20
 You may reply to this email to add a comment.
