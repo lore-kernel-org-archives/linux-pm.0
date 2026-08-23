@@ -1,35 +1,68 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from delivery.antispam.mailspamprotection.com (delivery.antispam.mailspamprotection.com [185.56.87.0])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17AC4364E9A;
-	Sun, 23 Aug 2026 11:47:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787485644; cv=none; b=PJZHrAuipaUu7Wobz1koSnOjG88k2f6VgT8LFDpemtPAH5sWvyjp3JmPdb+y5VDdUHsSmRjpiA6+JYnCn8DsKIM2b2HA9NWrFbUoWC9hYmGoadCQxFYuNZWLKjDcHkzdBRkEix497oUYr5T/v8d/Dfg64x4zNHLl+mzjlZPRcJg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787485644; c=relaxed/simple;
-	bh=MNRjvTTt8IfwZwVvv6zFQE87itIn91NumGhXUwn8QgE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LzAiXFNeMF3OHjn5ae+2TzOxsOoxau/BWfbKCntuRsh/zoQb2YTWQQGbf7eX3lNze+RmqjGWBsInlu8OwNCvzVqdPSI4nxdV51C3+5ZSBIlZQA3A9Xl5Cqe0m80DR9pJH5BWs+xXhCQyEbSPM23EdIiVfYYS2VWzT/JX+YfIOmU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GR+EPnx5; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B886332ED6;
+	Sun, 23 Aug 2026 16:32:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.56.87.0
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787502733; cv=pass; b=obiQFRjDECQTE/8F1eA/lPVrQNbdcw1AcMn5U5jciP8a16tSG2kYmkJl2p0pR/BpLn7lZ/rgK0clXKsgM8OrovVKeJ5pg5NJlriDeLTUzaouq5H1iZOwoGC6a4S9/sgBPByIeV1twQE9a+abdmFIEZPsZgZikYUykd25r+/csSw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787502733; c=relaxed/simple;
+	bh=5dN1ImORKqAUgZTovNpT9cUgG37m8afF+78fxaTm3Eo=;
+	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
+	 References:Date:Message-Id; b=TA7JpU3jbg3nTZ4EHGXjGdu3u6wlsfU4SLCLp7TEoPlxgC5TMvCOcMOld4ShZARpWiXsdRIzEkgXvBg88rmHaIdFVJAbTUCdKuRhcp8OzsYlYG+ENmBln1FzGdmHuIPPjH1scbSi9botBrZ397F3Wldy7P8QeyXX9pGomViO9Hg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it; spf=pass smtp.mailfrom=valla.it; dkim=pass (1024-bit key) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.b=CvTvSS+8; dkim=pass (1024-bit key) header.d=valla.it header.i=@valla.it header.b=rTObEa7l; arc=pass smtp.client-ip=185.56.87.0
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=valla.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GR+EPnx5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 556CD1F000E9;
-	Sun, 23 Aug 2026 11:47:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787485641;
-	bh=rfbXl9VbJJ1Sdgb3CrdMLA7PizvK3A5LrpuhhYPyjKk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=GR+EPnx5JjY2y6j2cwBoRe0ZQZtjiH2t4gW4CnhBU2dF6EGQ33O3EG4r/XGhlIllJ
-	 Nst1G2RRcvVnDgOs+kdrsPo+ejiCqMxSMT3q8IasWBptn0CaCORZMotXXqGrNG+dyU
-	 4lt9XqVoCJW6Q53Y3KDib+kzow6QjVst9U8Sj9RsiHQw5+cRbFos337JWxSqAryu4+
-	 u8qU9iTiUiyiI0D7T4HZ4fgUXdy1voMsKSF/kTKGtA5hn5O/8+OQoRG+vrG+RsA5kw
-	 JqABmzemuKva4V8kAFXy8rgAovNcAraYmYYzFnwEJZTx4MnIBVew+F1qpb8B85epVg
-	 bwj5C14j/M9KQ==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Sun, 23 Aug 2026 14:46:17 +0300
-Subject: [PATCH v2 6/6] Revert "arch: introduce
- set_direct_map_valid_noflush()"
+	dkim=pass (1024-bit key) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.b="CvTvSS+8";
+	dkim=pass (1024-bit key) header.d=valla.it header.i=@valla.it header.b="rTObEa7l"
+ARC-Seal: i=1; cv=none; a=rsa-sha256; d=outgoing.instance-europe-west4-80d2.prod.antispam.mailspamprotection.com; s=arckey; t=1787502729;
+	 b=5YE5WMoAL1huYR9erafbDpkj3I37tqEx5vV3oF5DFLQzCitPuYJGbhIkhN/Viws7/+zwXdsqj6
+	  ENfzVoG4Kfe0ywypBEjN1lE4DpfjhYgmg4uhwasjRdgi4F6mhGP7I/x7+X/rKsp1IXaaod4cw4
+	  oGx18x80DLWmVDMYPUTWzmjDM1caEh//gIdHAF7T0DMQnFkM32LCZi1huPDR5tW7JTjVVb90Aq
+	  buzzMrLh6d5Cgt+4tN3fjRUHHQiHjHDDesrJ1vRaT5ba0BRZv+lcKUO6AAMMUgttgXyq1GOKTP
+	  HoqUTB+q8y5xcEBf6KGxCaktlIFm1xAy2Fw2BntcI+Okxw==;
+ARC-Authentication-Results: i=1; outgoing.instance-europe-west4-80d2.prod.antispam.mailspamprotection.com; smtp.remote-ip=35.214.173.214;
+	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
+	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
+	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
+	arc=none
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed; d=outgoing.instance-europe-west4-80d2.prod.antispam.mailspamprotection.com; s=arckey; t=1787502729;
+	bh=5dN1ImORKqAUgZTovNpT9cUgG37m8afF+78fxaTm3Eo=;
+	h=Message-ID:Date:References:In-Reply-To:Cc:To:From:Subject:
+	  Content-Transfer-Encoding:Content-Type:MIME-Version:DKIM-Signature:
+	  DKIM-Signature;
+	b=Z3xesdG4reZZpGb2ho1SA0dinaxTvfAvC8fnsWdlNyiQytl3Oik81YJbdI3jBNvM++Jry/moTs
+	  uHo4S2bIUCME3G+E56d2LNODsJCd6Dc7ISuigsCced/ssAiV2yFJw4s91oFOU+3eM8jpOsnxU1
+	  cpyzbdNrv4bM5PwlIYXWA3P34w2nAhVc7sp720DZmK0SkaXlUpm+RWW+vAyC+xpRuE5tDV/7yP
+	  Lz3MkiuHgHaVK+ZqWDMrfm7rTuG4VB4dEM6OkQRs2dR1DyLKmeGEP1iBud0VWvNs+tiezR/0YK
+	  qFd1oPOwLGMwKUMk4QGqgUXsZE0stcm7rm1p7SUx89BgoA==;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=antispam.mailspamprotection.com; s=default; h=CFBL-Feedback-ID:CFBL-Address
+	:Message-Id:Date:Cc:To:From:Subject:Content-Transfer-Encoding:Content-Type:
+	MIME-Version:Reply-To:List-Unsubscribe;
+	bh=l5zxUfEJrziejSOin0jHlVkLHq8RGIm7aPdntTfjl/I=; b=CvTvSS+82uU1OwRmhjkkwq3M+x
+	GwsputQ1zuyAujWmqSyC42czCz3Aeb02kJVpNYAzlakb5rj9ZY4S+vnX3bMCyJYOKVTJKbK7d0ktG
+	UlscJHrZyuW8RUubgmhIh15bQ4ubLNvljx41XzeJV3eG+quj8BwBABCJVM7HgZuEXADk=;
+Received: from 214.173.214.35.bc.googleusercontent.com ([35.214.173.214] helo=esm19.siteground.biz)
+	by instance-europe-west4-80d2.prod.antispam.mailspamprotection.com with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.99.5)
+	(envelope-from <francesco@valla.it>)
+	id 1wyA7i-0000000Fj1O-1OVl;
+	Sun, 23 Aug 2026 15:28:39 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=valla.it;
+	s=default; h=Date:Cc:To:From:Subject:list-help:list-unsubscribe:
+	list-subscribe:list-post:list-owner:list-archive;
+	bh=l5zxUfEJrziejSOin0jHlVkLHq8RGIm7aPdntTfjl/I=; b=rTObEa7lGbkYRGKYn0rY87UTd1
+	gA2vJE/Hb7gJkVPa2mzJFtFag6KY5Qll+GEGLMkBFyztCon720qj98HlBlmQiZn/BIZC5lthJdElW
+	ymlkNPP0h/Rc2WOcbXAXXTJgSl6EginRRKN5N2I+URW8OY7cLvZ9aNPJiI0cFaMTElFI=;
+Received: from [87.5.139.196] (port=62816 helo=[192.168.178.158])
+	by esm19.siteground.biz with essmtpa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.99.5)
+	(envelope-from <francesco@valla.it>)
+	id 1wyA7P-000000002aX-0APe;
+	Sun, 23 Aug 2026 15:28:19 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,278 +71,186 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260823-execmem-set-vm-perms-v0-2-v2-6-b013a37d84b3@kernel.org>
-References: <20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org>
-In-Reply-To: <20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?utf-8?q?Adrian_Barna=C5=9B?= <abarnas@google.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, Alexandre Ghiti <alex@ghiti.fr>, 
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, 
- Brendan Jackman <brendan.jackman@linux.dev>, 
- Catalin Marinas <catalin.marinas@arm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Dave Hansen <dave.hansen@linux.intel.com>, 
- David Hildenbrand <david@kernel.org>, 
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
- Heiko Carstens <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>, 
- Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Paul Walmsley <pjw@kernel.org>, Pavel Machek <pavel@kernel.org>, 
- Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Ryan Roberts <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>, 
- Thomas Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>, 
- Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, 
- Will Deacon <will@kernel.org>, x86@kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-mm@kvack.org, linux-pm@vger.kernel.org, 
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
- loongarch@lists.linux.dev
-X-Mailer: b4 0.17-dev
+Subject: Re: [PATCH v12 5/6] power: reset: Introduce PSCR Recording
+ Framework for Non-Volatile Storage
+From: Francesco Valla <francesco@valla.it>
+To: Oleksij Rempel <o.rempel@pengutronix.de>
+Cc: Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>, 
+ Tzung-Bi Shih <tzungbi@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, kernel@pengutronix.de, 
+ linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, 
+ Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+ linux-pm@vger.kernel.org, =?utf-8?q?S=C3=B8ren_Andersen?= <san@skov.dk>, 
+ Guenter Roeck <groeck@chromium.org>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Ahmad Fatoum <a.fatoum@pengutronix.de>, 
+ Andrew Morton <akpm@linux-foundation.org>, Kees Cook <kees@kernel.org>, 
+ Faruque Ansari <faruque.ansari@oss.qualcomm.com>, 
+ Francesco Valla <francesco@valla.it>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ chrome-platform@lists.linux.dev
+In-Reply-To: <20260731095959.296056-6-o.rempel@pengutronix.de>
+References: <20260731095959.296056-1-o.rempel@pengutronix.de>
+ <20260731095959.296056-6-o.rempel@pengutronix.de>
+Date: Sun, 23 Aug 2026 17:28:11 +0200
+Message-Id: <178749889134.204450.5740187753642158305.b4-review@b4>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4292; i=francesco@valla.it;
+ h=from:subject:message-id; bh=5dN1ImORKqAUgZTovNpT9cUgG37m8afF+78fxaTm3Eo=;
+ b=owGbwMvMwCX2aH1OUIzHTgbG02pJDFndgpPWLG16UNq2dm/6s0eixbNe7vJcYad79e3Wlqe2T
+ PvvP75X3FHKwiDGxSArpsgSsu7GvT1zzb+lbWB8BDOHlQlkCAMXpwBMRDiVkeHo3LXqPJL9Rhn+
+ tz0sHs4ok8l8ozE9TC4mttw5+Gj5umBGhoXX5A7PeSa79NzfOX06QpbLj9t3RE+KPmLVFJ0S5Jj
+ +hAUA
+X-Developer-Key: i=francesco@valla.it; a=openpgp;
+ fpr=CC70CBC9AA13257C6CCED8669601767CA07CA0EA
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - esm19.siteground.biz
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - valla.it
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-SGantispam-id: 9a1066689d24ec207e1d349dfdbcb88c
+X-AntiAbuse: ID - 9a1066689d24ec207e1d349dfdbcb88c
+AntiSpam-DLS: false
+AntiSpam-DLSP: 
+AntiSpam-DLSRS: 
+AntiSpam-TS: 1.0
+CFBL-Address: feedback@antispam.mailspamprotection.com; report=arf
+CFBL-Feedback-ID: 1wyA7i-0000000Fj1O-1OVl-feedback@antispam.mailspamprotection.com
+Authentication-Results: outgoing.instance-europe-west4-80d2.prod.antispam.mailspamprotection.com;
+	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
+	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
+	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
+	arc=none
 
-Commit 0c6378a71574 ("arch: introduce set_direct_map_valid_noflush()")
-added set_direct_map_valid_noflush() to allow updating the direct map
-for a physically contiguous range in execmem.
+Hi Oleksij,
 
-As Brendan recently pointed out [1], this API is confusing because on
-arm64 it means that is sets VALID bit in ptes, while on other
-architectures it is an analog of set_direct_map_default_noflush().
+sorry for the late reply. I was wondering about this series some time
+ago and it was a nice surprise to find a new revision in my inbox.
 
-The only user of set_direct_map_valid_noflush() was execmem's ROX cache
-freeing path and it was switched to utilize VM_FLUSH_RESET_PERMS for
-resetting permissions of the direct map alias.
+> Introduce the Power State Change Reasons Recording (PSCRR) framework: a
+> generic mechanism to record why the last power state change (shutdown or
+> reboot) happened - under-voltage, thermal, watchdog, software-triggered,
+> etc. - so a postmortem reason survives a reboot or an abrupt power loss.
+> 
+> PSCRR is built around providers. A provider is either a hardware reason
+> source (a PMIC, SoC reset controller or watchdog exposing a reset cause)
+> or a recorder that persists the reason across a power cycle (an NVMEM or
+> RTC scratch cell). Each provider gets a directory under
+> /sys/kernel/pscrr/providerN/ exposing its name, backing device, the set
+> of observed reasons (as tokens), its capabilities, the reasons it
+> supports and - for recorders - a record policy. The reason set is
+> deliberately not collapsed to a single winning cause, since resets are
+> often multi-causal.
+> 
+> Reasons are the numeric enum psc_reason values from reboot.h, shared with
+> the POWER_ON_REASON_* vocabulary, so they store compactly in small
+> battery-backed cells. The current reason (get/set_psc_reason(), set by
+> the thermal/regulator/hw_protection paths) is written to every recorder
+> from the reboot notifier.
+> 
+> Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+>
 
-With the last user gone and with set_direct_map_{invalid,default}_noflush()
-accepting number of pages as a parameter, set_direct_map_valid_noflush()
-become a copy of set_memory_valid() on arm64 and a duplicate of
-set_direct_map_{invalid,default}_noflush() on other architecture, it is
-safe to remove set_direct_map_valid_noflush().
+[...]
 
-Also drop a stale comment in arm64::__kernel_map_pages() that Linus
-bothered to add when merging changes containing set_direct_map_valid_noflush()
-to his tree.
+> +/*----------------------------------------------------------------------*/
+> +/* Provider registration */
+> +/*----------------------------------------------------------------------*/
+> +
+> +/**
+> + * pscrr_provider_register - register a power state change reason provider
+> + * @p: caller-owned provider description
+> + *
+> + * Creates /sys/kernel/pscrr/providerN/ with "name" and "reason" attributes
+> + * and, when @p->dev is set, a "device" symlink. @p->reason is writable when
+> + * @p provides write_reason(). The provider must outlive the matching
+> + * pscrr_provider_unregister() call.
+> + *
+> + * Return: 0 on success or a negative errno.
+> + */
+> +int pscrr_provider_register(struct pscrr_provider *p)
+> +{
+> +	struct pscrr_provider_dir *dir;
+> +	int ret;
+> +
+> +	if (!p || !p->name || !p->ops || !p->ops->read_reasons)
+> +		return -EINVAL;
+> +
+> +	dir = kzalloc_obj(*dir);
+> +	if (!dir)
+> +		return -ENOMEM;
+> +
+> +	dir->provider = p;
+> +	dir->policy = PSCRR_RECORD_FIRST;
+> +
+> +	scoped_guard(mutex, &pscrr_lock) {
+> +		if (!pscrr_root) {
+> +			kfree(dir);
+> +			return -ENODEV;
+> +		}
 
-This reverts commit 0c6378a71574daa6cd1534ad42a956e3262756c7.
+Since the existence of pscrr_root is not protected by the lock, consider
+to move this check before the allocation. 
 
-[1] https://lore.kernel.org/all/DJ69RCVRBO0Y.3JCYSW50IC4RC@linux.dev
+> +
+> +		dir->id = ida_alloc(&pscrr_ida, GFP_KERNEL);
+> +		if (dir->id < 0) {
+> +			ret = dir->id;
+> +			kfree(dir);
+> +			return ret;
+> +		}
+> +
 
-Reviewed-by: Brendan Jackman <brendan.jackman@linux.dev>
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- arch/arm64/include/asm/set_memory.h     |  1 -
- arch/arm64/mm/pageattr.c                | 16 ----------------
- arch/loongarch/include/asm/set_memory.h |  1 -
- arch/loongarch/mm/pageattr.c            | 19 -------------------
- arch/riscv/include/asm/set_memory.h     |  1 -
- arch/riscv/mm/pageattr.c                | 15 ---------------
- arch/s390/include/asm/set_memory.h      |  1 -
- arch/s390/mm/pageattr.c                 | 12 ------------
- arch/x86/include/asm/set_memory.h       |  1 -
- arch/x86/mm/pat/set_memory.c            |  8 --------
- include/linux/set_memory.h              |  6 ------
- 11 files changed, 81 deletions(-)
+Given that ida_alloc() should be safe to call without locking, couldn't
+the scoped_guard be limited to the list operation below? Or, if the
+goal is to protect against sysfs access during a provider registration,
+right before the call to sysfs_create_link()?
 
-diff --git a/arch/arm64/include/asm/set_memory.h b/arch/arm64/include/asm/set_memory.h
-index b07fd4e026ea..0091ba12200e 100644
---- a/arch/arm64/include/asm/set_memory.h
-+++ b/arch/arm64/include/asm/set_memory.h
-@@ -13,7 +13,6 @@ int set_memory_valid(unsigned long addr, int numpages, int enable);
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int numpages);
- int set_direct_map_default_noflush(struct page *page, unsigned int numpages);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- int set_memory_encrypted(unsigned long addr, int numpages);
-diff --git a/arch/arm64/mm/pageattr.c b/arch/arm64/mm/pageattr.c
-index db8d60a84d14..132938b32eb1 100644
---- a/arch/arm64/mm/pageattr.c
-+++ b/arch/arm64/mm/pageattr.c
-@@ -355,23 +355,7 @@ int realm_register_memory_enc_ops(void)
- 	return arm64_mem_crypt_ops_register(&realm_crypt_ops);
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	unsigned long addr = (unsigned long)page_address(page);
--
--	if (!can_set_direct_map())
--		return 0;
--
--	return set_memory_valid(addr, nr, valid);
--}
--
- #ifdef CONFIG_DEBUG_PAGEALLOC
--/*
-- * This is - apart from the return value - doing the same
-- * thing as the new set_direct_map_valid_noflush() function.
-- *
-- * Unify? Explain the conceptual differences?
-- */
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
- 	if (!can_set_direct_map())
-diff --git a/arch/loongarch/include/asm/set_memory.h b/arch/loongarch/include/asm/set_memory.h
-index 563aab92896e..4bb01172fbc2 100644
---- a/arch/loongarch/include/asm/set_memory.h
-+++ b/arch/loongarch/include/asm/set_memory.h
-@@ -17,6 +17,5 @@ int set_memory_rw(unsigned long addr, int numpages);
- bool kernel_page_present(struct page *page);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- 
- #endif /* _ASM_LOONGARCH_SET_MEMORY_H */
-diff --git a/arch/loongarch/mm/pageattr.c b/arch/loongarch/mm/pageattr.c
-index 43ad2a104f19..a7dcff40f759 100644
---- a/arch/loongarch/mm/pageattr.c
-+++ b/arch/loongarch/mm/pageattr.c
-@@ -217,22 +217,3 @@ int set_direct_map_invalid_noflush(struct page *page, unsigned int nr)
- 
- 	return __set_memory(addr, nr, __pgprot(0), __pgprot(_PAGE_PRESENT | _PAGE_VALID));
- }
--
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	unsigned long addr = (unsigned long)page_address(page);
--	pgprot_t set, clear;
--
--	if (addr < vm_map_base)
--		return 0;
--
--	if (valid) {
--		set = PAGE_KERNEL;
--		clear = __pgprot(0);
--	} else {
--		set = __pgprot(0);
--		clear = __pgprot(_PAGE_PRESENT | _PAGE_VALID);
--	}
--
--	return __set_memory(addr, nr, set, clear);
--}
-diff --git a/arch/riscv/include/asm/set_memory.h b/arch/riscv/include/asm/set_memory.h
-index db1d0ed82b69..e9f9960c1947 100644
---- a/arch/riscv/include/asm/set_memory.h
-+++ b/arch/riscv/include/asm/set_memory.h
-@@ -42,7 +42,6 @@ static inline int set_kernel_memory(char *startp, char *endp,
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- #endif /* __ASSEMBLER__ */
-diff --git a/arch/riscv/mm/pageattr.c b/arch/riscv/mm/pageattr.c
-index 20ef95b1d0c3..5b3cf326455d 100644
---- a/arch/riscv/mm/pageattr.c
-+++ b/arch/riscv/mm/pageattr.c
-@@ -386,21 +386,6 @@ int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- 			    PAGE_KERNEL, __pgprot(_PAGE_EXEC));
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	pgprot_t set, clear;
--
--	if (valid) {
--		set = PAGE_KERNEL;
--		clear = __pgprot(_PAGE_EXEC);
--	} else {
--		set = __pgprot(0);
--		clear = __pgprot(_PAGE_PRESENT);
--	}
--
--	return __set_memory((unsigned long)page_address(page), nr, set, clear);
--}
--
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static int debug_pagealloc_set_page(pte_t *pte, unsigned long addr, void *data)
- {
-diff --git a/arch/s390/include/asm/set_memory.h b/arch/s390/include/asm/set_memory.h
-index 6b0aa9147ed8..e3562bf0c1aa 100644
---- a/arch/s390/include/asm/set_memory.h
-+++ b/arch/s390/include/asm/set_memory.h
-@@ -62,7 +62,6 @@ __SET_MEMORY_FUNC(set_memory_4k, SET_MEMORY_4K)
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- #endif
-diff --git a/arch/s390/mm/pageattr.c b/arch/s390/mm/pageattr.c
-index 02d992b251cb..f46a666bc5c7 100644
---- a/arch/s390/mm/pageattr.c
-+++ b/arch/s390/mm/pageattr.c
-@@ -397,18 +397,6 @@ int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- 	return __set_memory((unsigned long)page_to_virt(page), nr, SET_MEMORY_DEF);
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	unsigned long flags;
--
--	if (valid)
--		flags = SET_MEMORY_DEF;
--	else
--		flags = SET_MEMORY_INV;
--
--	return __set_memory((unsigned long)page_to_virt(page), nr, flags);
--}
--
- bool kernel_page_present(struct page *page)
- {
- 	unsigned long addr;
-diff --git a/arch/x86/include/asm/set_memory.h b/arch/x86/include/asm/set_memory.h
-index 0c4235d159f4..39271a5ea925 100644
---- a/arch/x86/include/asm/set_memory.h
-+++ b/arch/x86/include/asm/set_memory.h
-@@ -88,7 +88,6 @@ int set_pages_rw(struct page *page, int numpages);
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- extern int kernel_set_to_readonly;
-diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index 9022354e26e9..a6b2912a4837 100644
---- a/arch/x86/mm/pat/set_memory.c
-+++ b/arch/x86/mm/pat/set_memory.c
-@@ -2683,14 +2683,6 @@ int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- 	return __set_pages_p(page, nr);
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	if (valid)
--		return __set_pages_p(page, nr);
--
--	return __set_pages_np(page, nr);
--}
--
- #ifdef CONFIG_DEBUG_PAGEALLOC
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
-diff --git a/include/linux/set_memory.h b/include/linux/set_memory.h
-index 0b77f1d7d8b9..3fe293cfed8c 100644
---- a/include/linux/set_memory.h
-+++ b/include/linux/set_memory.h
-@@ -36,12 +36,6 @@ static inline int set_direct_map_default_noflush(struct page *page,
- 	return 0;
- }
- 
--static inline int set_direct_map_valid_noflush(struct page *page,
--					       unsigned nr, bool valid)
--{
--	return 0;
--}
--
- static inline bool kernel_page_present(struct page *page)
- {
- 	return true;
+> +		ret = kobject_init_and_add(&dir->kobj, &pscrr_dir_ktype,
+> +					   pscrr_root, "provider%d", dir->id);
+> +		if (ret) {
+> +			/*
+> +			 * kobject_init_and_add() failed: per its contract only
+> +			 * kobject_put() may follow, no kobject_del(). The
+> +			 * kobject is not in sysfs, so this is safe under the
+> +			 * lock.
+> +			 */
+> +			ida_free(&pscrr_ida, dir->id);
+> +			kobject_put(&dir->kobj);
+> +			return ret;
+> +		}
+> +
+> +		if (p->dev) {
+> +			ret = sysfs_create_link(&dir->kobj, &p->dev->kobj,
+> +						"device");
+> +			if (ret)
+> +				break;
+> +		}
+> +
+> +		list_add_tail(&dir->node, &pscrr_dirs);
+> +		return 0;
+> +	}
+> +
+> +	/*
+> +	 * sysfs_create_link() failed after the directory was created: tear it
+> +	 * down outside pscrr_lock (kobject_del() drains sysfs stores that take
+> +	 * the lock) and release the id only once the directory is gone.
+> +	 */
+> +	kobject_del(&dir->kobj);
+> +	ida_free(&pscrr_ida, dir->id);
+> +	kobject_put(&dir->kobj);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(pscrr_provider_register);
+> +
+
+Regards,
+
+Francesco
 
 -- 
-2.53.0
-
+Francesco Valla <francesco@valla.it>
