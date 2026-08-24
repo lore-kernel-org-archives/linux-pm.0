@@ -1,175 +1,125 @@
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazolkn19012056.outbound.protection.outlook.com [52.103.66.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F81641DDF2;
-	Mon, 24 Aug 2026 13:06:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.66.56
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787576809; cv=fail; b=T2G/YZtTS4gEGKRkkwBqPtne6bKY/f5R35MOmX5F4RWgV/cUUPE/+Du/8vsY0adyB9s0iv2k/omevnPY8QDtEmL3eCSMQA8uaT0yUl42ki7SJvH5VI7wqwb23Jy2NlRlI2j773sM6Qv2B2o4IF6cj49f1tIsVrGzX+y/gqIAx24=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787576809; c=relaxed/simple;
-	bh=sU+kdKLm995xUKrYQqgY4GQU3IX2furNfRTIsLAer5E=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=fFDc4ws2R4fRejv0Xqgokc4grB9W3RKpgwyw0hOMyiW18FEEwJYJ/BpKwYq6CwgvEce3oJWF0C5ir18dFZar4cxZ+u5qhKJTpFMWXLKm+Nh3JkStFMEQ1sFE7DyNh9oRXEMYn8p5XJRClQvFiQGxbhWBC2Pw1ldyIY5kNDLsNxo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=NKbhFiK9; arc=fail smtp.client-ip=52.103.66.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B0F2421241
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 13:06:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787576817; cv=none; b=s+oAAQryRI5M6WETnr9yN990F4G8RJfAMzJMO5oDoKSOVWcNDvDblAiqBq9/PkHlMZJfQMw8PyawRcmI+Lonikbr4tr+RIk1ojnM51H0VzgrFIG7lgIl+xsY0KiwaqZ9gBtLCnmO1Yq8Bf31diSTZvzrC1lWitR2E2GD8up3LYc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787576817; c=relaxed/simple;
+	bh=S4gVIUWwuoALYuzwzRm82WuAYzYN5KLWtNbqZ/oM/+w=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=D/lKh3kDyuTvaxuOhbQTXU0TIHxKD6znFjpxpKJieYrkhVl6m3JEEu60/HANdPMSxIWBZjlqGYRJwjB6eG8Z3pNio0ZxsVVyKts6DIAY0TyFTmt2gB9dTbGlmxwPragi4h/alfYJkqT4I7wRHMHct6V4J/v+eq4r0mZDH28tYPE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FR4ldn4+; arc=none smtp.client-ip=209.85.216.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="NKbhFiK9"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=R2gj9HqUal1hNySuFglDUIKp/ueV5cQwra40YZZlpVumdACo8U++k+02b1OwK2WVZ4HcjJlYd+Nz1aYuB9LKTiuTqgu8wqOkmW3Ldw0/mPrhPnxPctDFH3CHZ0hSmCLE/Zay01icGG8mb3XwqLJdCAhg5PEWomi3dWdVRbVRqLKBN/3PGkFYSNrN/gSotc0x15lgzVp9EDsc7aT0NNHbkHUzEwpiZcg4S+7huoxsIqoo6r52wb7jX9Rq7pA/5bh14N2sxHeGkqX2+C7c8qBCmDJn1vkllXpUhEI7HHcMIipI1lpN4PmCJR0CQTg989D/mewhWdpOfFq+A1OON3wICg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oAuVtbrqt9jpRa/p4YTFyZN1IisVgFiXtYOEerAnjns=;
- b=vFIgIm7wUiA1+6NB+epbsKJ2m/kxx4braY7rD9oHopMIOZCY8cFnInBp+gd0BlmWsDT7VkF6Hilwa6GvKFaiZWiTWan9d1JSytTJvIt2EzsLIInPjliIcKNWer4Ob5dZ59BJCmHNZfVTxC+Vx/LCjl5M8ByJjeQl1yxVToc34V2ygCMGStFPXc3OvV5xRRmcTCT/SQgpZDxoLBXnlTyIfyVcC7oyQRPrgen10ADqJrS8x8hXkLgRDCM6l2P9waWaXlLQ7Uflrbx0tLtb5BW/u22vbxr6Vz8F5GCZ8xy+rmiq8gr5Ah7I+ABPStnpaMKfz8wreAtvcy4PvYr45kztgA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oAuVtbrqt9jpRa/p4YTFyZN1IisVgFiXtYOEerAnjns=;
- b=NKbhFiK9w7UTkZoiTJRyaACMUHWjMNEaLCo2bHWrOOggbm/dQZHc+RR7XnN4ps/VGyswlfVEyO3cT1nJPUczQWX6PBp9u85QjWmBDM02IvEZz/z2ISKK8Bpv2TXoVOYlY8KaekyvnVELIUyXwRq5nIUhzd70TDIK0kXIwNZukzvFuOCQsEkImV2OyV7jfkvn3BDmgkwF7KIHYW/6Z0YcqHKrKHFY6rcukYI13vuiCEF2JWKEepRqjFsh/Ujs/3fsaR24qBvgYUhz3sDQ5p6UfKSPKOI1oECcFMnELNqv9LbG2EwxvCw2sif8ThXKzfrRvNnnxfm+odRCinFNdgHMAA==
-Received: from SI2PR04MB4931.apcprd04.prod.outlook.com (2603:1096:4:149::12)
- by SEYPR04MB7723.apcprd04.prod.outlook.com (2603:1096:101:20b::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.6; Mon, 24 Aug
- 2026 13:06:39 +0000
-Received: from SI2PR04MB4931.apcprd04.prod.outlook.com
- ([fe80::8a7a:9439:be86:eb78]) by SI2PR04MB4931.apcprd04.prod.outlook.com
- ([fe80::8a7a:9439:be86:eb78%4]) with mapi id 15.21.0360.005; Mon, 24 Aug 2026
- 13:06:39 +0000
-From: Jianyong Wu <jianyong.wu@outlook.com>
-To: Hongyan Xia <hongyan.xia@transsion.com>, Vincent Guittot
-	<vincent.guittot@linaro.org>
-CC: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli
-	<juri.lelli@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, Viresh
- Kumar <viresh.kumar@linaro.org>, Zhongqiu Han
-	<zhongqiu.han@oss.qualcomm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>, "linux-pm@vger.kernel.org"
-	<linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "zhongyuan@hygon.cn" <zhongyuan@hygon.cn>,
-	"huangsj@hygon.cn" <huangsj@hygon.cn>
-Subject: Re: [PATCH] sched/fair: Only apply cpufreq pressure where frequency
- is invariant
-Thread-Topic: [PATCH] sched/fair: Only apply cpufreq pressure where frequency
- is invariant
-Thread-Index: AQHdMUC/r5X8cuCab02pF7K2A36l27askygAgACdZwA=
-Date: Mon, 24 Aug 2026 13:06:39 +0000
-Message-ID: <F16AADE6-B6B7-4997-9CC1-A2E323498B7F@outlook.com>
-References: <20260821073927.455475-1-wujianyong@hygon.cn>
- <fea033f4-a680-445f-b231-2a0cc1dded8b@transsion.com>
-In-Reply-To: <fea033f4-a680-445f-b231-2a0cc1dded8b@transsion.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-exchange-messagesentrepresentingtype: 1
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SI2PR04MB4931:EE_|SEYPR04MB7723:EE_
-x-ms-office365-filtering-correlation-id: 4b080189-a6aa-4708-cd35-08df01e088de
-x-microsoft-antispam:
- BCL:0;ARA:14566002|8060799015|19110799012|31061999003|8062599012|15080799012|19101099003|25010399006|4140399003|52005399003|40105399003|2607281247196008|102099032|3412199025|440099028;
-x-microsoft-antispam-message-info:
- gey8tEUQs/IbUjvqWVz7+FJ8wFoW+rgJPt8NZxABKgWVWTG/x0klm+cD3A74BDtElnsVmBqlycnV5iV1x6oBGVwVC+0Md8xfvSco2tPQD5ToZ6u/oAAjAT5rUD0Cj8BmsJMW28p7sf25I/aQVI3/Xu8UyaMcMMAZXwAYBfbU5e+9siQYiKQGfEXpoCkXcq3/P5N0NAGx1dSVybH6LXe/NcHfqti9lPoRQQ1z9VFR/PrNRXHDWsM4MibRVRXtxAUQeUdNDxA8AjbToHYdsZWfsMj6x9h3UzPsVn33EwGacXi8p7pMt1qJL3+wiOvtGmL/6T1ZM5Ha4F0r8Oiyqa8pt/K05AjDVZDIn1uMwB8/76wB5Wt5DGmCwXHTqAAfFyC1oq7dJc+E7BulJrHrTcXpfrRAfHtayVOGvSTckNLC8Q2jx1E0Nm0+cv0kTtIf8uA703eMsXx09VlD5dlHDz8aN1kfF/KLDKS03bIlLzWooAg49baqj4Lnu1DCSglbGUm5RvPhVCW/dwsiltIKUitIkW6GkdOP4tdVuyt/nESM72ILQ8BP/3T5o4cKpq5KVMXnM3iWZVQ+NWjLMkDb3cPEvRi+0wE/yR0Pm9gdbkW/PnWXtwLog3693VxCRPQREJaZ2F2x4YxLF1H6bboPnkGd9PwoP5YG3iWNfbA+rm4ZvYVROsMZ56C1CcSpOvd5W1mG0AaVSeA3LK1npOHsagHw/peQH8qKUDfuMYy3ed0cr7lfjM92jhwMpJTqbZEeXVlNPDle7Z8xgduL93xb7UQIV9zzqkd71mFdHlPAM7VjITHG5+M1QkFAAi0KsxTM3SKJnsstaYTGJPJbiZcxGKsxVLyny+YfsyUlWXegnBE8vo+zn69AcaqIcfpHkrGDxcOnsevzKerUCpTgBmGtODwhzbHpNymF4FlOY95NLD3kMo1kQ7Ohd3xaOxqYz7GbE9Mj
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?Gn/tf5hygZu3cMwIVS0uJ3ZDWEtuExwJ17jrZ3zHpzKbsk71P+5N4XJbkUag?=
- =?us-ascii?Q?MtY+COpLMrA3tH2TGWtVcITEW/BWDHoPsLeVzeYHzZbWhDNQ2lENUuvujGSF?=
- =?us-ascii?Q?U1w1iYgX6n00xXR+zklQrVL+5vYT5tBj1ApmIoIGoLEaCpRV+7LOuHc1OQaa?=
- =?us-ascii?Q?nPk2+ukUXXwg2bhXrylhhObRxEcIxpo4Cb4SZE880hIpEaPFirhhtWibCSvZ?=
- =?us-ascii?Q?0zNc/uR0tRkz/cYblQ24R8kZAjvVTSAlMCNqCpsbFooybuXUbkrzKDEhPnmt?=
- =?us-ascii?Q?W//1v47Ul/gUkbBNNtQ2uwaFzY8kz4Z+jOZZoF69/woWlxQ4OeaAOE5NPLXO?=
- =?us-ascii?Q?myWYwiL1k33rYAbYRf/NNR8gJ8tYiF1jYiXZUUQ2xp7AWs3PkPwqfKrLwBhw?=
- =?us-ascii?Q?WLMX71FvPbxN4unUt+cilR4CeMUgBLGgqcLoo8GhZI4t0y4yIyKH5DYAKsVG?=
- =?us-ascii?Q?P+XyTRMsrH9/uUoq20m2ZqY1pddzYMWeyOx1rfclBmHgJV5RKw8d8STkzbE5?=
- =?us-ascii?Q?EVaU+h2cauSqzW7SQ5I/35fHgANpNs3uDoRReLE1sy6PkFwilME9K4BwOYYm?=
- =?us-ascii?Q?2ZL2H8A2V3PZZs44elrReahTeOnMY0h9fUR+6g1ksreH2AsC9TlVkdWbQi+S?=
- =?us-ascii?Q?DlSboQi9fXy/0KW1kuIMSOnLAg561qbLnSLW6qehz+xJ9nCtBO5VgjcSJ3bZ?=
- =?us-ascii?Q?CQlufQ9A2G3UnOIwcZM8zl+tD7LPjymrBX0PHHd7K8m56xW9jsSJAPIUtz7V?=
- =?us-ascii?Q?qN07PSa6C/0c0Z71gp2LMEBUFKE0Mi6mH1ObvalHL9BcVDSx7WKdSwPb4hg9?=
- =?us-ascii?Q?skR+ResLy8T6P3VANGiGQmutGZ3t6GPVBhU32N3cjE9wKFrWZGWWe5LLflEo?=
- =?us-ascii?Q?zwVoU3K0Dfcic6LjfMdMzLtbN7HG/olcFQQN2r3PjB30/ukAOsMODmdkVGyT?=
- =?us-ascii?Q?BOyhIbObVkKW/AVAgeeKUCg7Ihp9plL9dfoMHnzbQ/2FA3zzAKDwS6sTHquH?=
- =?us-ascii?Q?R1EyA5E2t1SU+iqLzvmBv/pdOfD13LUDhQMoh7AmmKgnerGnStRY4YNRYfQH?=
- =?us-ascii?Q?cKj7pcH2Br0axAzucudyDtxoX6pg5xxray+jeJSLKgohf+pIPCjjoZFW9jLJ?=
- =?us-ascii?Q?IYq6FZm2AZNcNowMzDcwi+XTMaFpj13wzDC7VH2gPrkU/JD+g8WA6sTZx1bE?=
- =?us-ascii?Q?JV30q1FqkHl6J/T3IUa/ImDp26VVCyPTpFtN7Zplt3nfPc+hA6IYrecFaqaQ?=
- =?us-ascii?Q?Xue5F83ANdEJ5q5TldfOtgfDYRVIv6xvaHLURwer0932BqkUr7Prfwm2MfR5?=
- =?us-ascii?Q?ZNPGxFnEjlYluANkiFbmJUFp/GV86G1Rta0HKE/NGVwHT2fK9+Ak5CEzC+GC?=
- =?us-ascii?Q?sBAz0DxE5cc5klFp58XFSzpGmO0/PJlJR6OW2T6TCUHlx48Zzw=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <041235A4040E1444A60603343A639399@apcprd04.prod.outlook.com>
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FR4ldn4+"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-3856d6fbcb3so2918690a91.2
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 06:06:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787576815; x=1788181615; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=g3FdfDbvToHSgtTrj8YFlW83QqqTfihaw6vnLz7PZc8=;
+        b=FR4ldn4+0piraMrYiGpAT5yAvUsgGTNMIaDUDHRkGNjLabNaCiuNYz+yhgFO+uZ7KD
+         ljgQklwBfFcEK9uisZYjF80BfeHVWFKfXJoXSt6Ef6aBfse63Dr+Q6gTeSG1lsiq8E1e
+         A9FpuflxRcLf7WghoNBUAPW7OHg3kBuNn9/aFfdK16tJ7fSk0mLlCa0neGIue8pTbTMU
+         RMr70B8unMIaTnTJSItezUK6+a6Z5pCivH/SSckiq7MTNphl9eMhDdRbxpX+8ebZfWTa
+         BXPhobbTkcMwI59YLzliwRJ/mF6u/+197G/jYZN04v6fIDqX13LinD2N7HtSLEy/sYGj
+         WEKw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787576815; x=1788181615;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=g3FdfDbvToHSgtTrj8YFlW83QqqTfihaw6vnLz7PZc8=;
+        b=ciIIfCLhpWy/egEEiZMnLr8WMNjpu+lB+7qvKUYKepnXzDTujOTZjCgLhR6Q0WxhVN
+         kmwMMg1TS0ZkucjZ5R98Hh0orvXuctP2D/TXrBy02NCAx7/inCrgHGHXj4e4Y2iDljSN
+         IN1slXG5L1o5306tnH2g6SCRtovqOydbmxzgMbOWZYi21u9B2aJr+stPfD2ErxGzRu0m
+         X3KYAoQ89QLUbXq3WSkRZg/2n924LEfrRVKpMNsO4b1ZaF9/RsTRjnhuGX51wWd1e6O+
+         Lbl9RSijR1tfWf+p8fsH9px3/SlElypbnMOJKkDqAZLGx5J1RK7BvwuFaEii/YyF+Kgr
+         hcag==
+X-Forwarded-Encrypted: i=1; AHgh+RqfUtdj7uju0+nMRx2pb5Szgy/Fyq8MdFsM6vSqTKVCUllv1maJZyPKjX8SkvmpXXtQLmsb2UzJng==@vger.kernel.org
+X-Gm-Message-State: AFuF++m3mzwS/21OaCWw73Bnsvq62sQuMZ/3daoPien8lq4L/vJ4G4h4
+	kQKUYQ5SO53GvggWobh2/8+ysj0ABqF9mrImuKTMILuu+a5X+QhmVladLpdGZ/+C
+X-Gm-Gg: AR+sD12ddZ65pUukhoUMPXSI8LG3xDDrI9Sa4euJJtXa0h+RBKSoNPlPMdAOUW2grWJ
+	tt94Yn1EPytEU5kBsA6WX9vQVShxSRmNrPUZZ3IwpLIDmZ4Iqxd4WeWaXRJZHMT9RZEstSPeUos
+	tDFNjcnVtZyUbVSMsWln+Vw+ulSbxEhU+IBWWQ7d297nRGiiNbPttwWzfl6VA5krsj9QTw/ONJB
+	N9WoYlMezRp2FcB1cMqSo/AOyNxeFOU/7KlLaQpume2GohR3+6kSSF6thzbahldRkE1HC/qyYhg
+	jpXQIf6ejmnJnPaxQJdlNbmshunQobrGXHX1gfPGYV7h5kZy1BnFCwkp6/h3D06bksmIXIrVgfe
+	QbZPX3jKvNEK53T08+/v9PgN4jxwXsKngbw4zlb2ZSMZPGtETKpIb1T6EsACmeUnTdy1B6Et7Xh
+	rrM7BfCYzjQ8F3pf1urHt/9aD6xg3uhiUM1CSrdMKO2sazxRlV7Ac+wfRt/VCca3+JNgmcmExqF
+	1yyIhG1IlkiiSCh0dsdI437
+X-Received: by 2002:a17:90b:33c2:b0:38e:c232:9d3f with SMTP id 98e67ed59e1d1-395c3597c56mr43924218a91.5.1787576815440;
+        Mon, 24 Aug 2026 06:06:55 -0700 (PDT)
+Received: from localhost.localdomain ([152.59.223.115])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327f92359c9sm26409711eec.27.2026.08.24.06.06.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Aug 2026 06:06:55 -0700 (PDT)
+From: Sreeshankar K <sreeshankar0910@gmail.com>
+To: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	andersson@kernel.org,
+	mturquette@baylibre.com,
+	sboyd@kernel.org,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	konradybcio@kernel.org,
+	tglx@kernel.org,
+	ulfh@kernel.org
+Cc: bmasney@redhat.com,
+	radu@rendec.net,
+	abel.vesa@oss.qualcomm.com,
+	lpieralisi@kernel.org,
+	taniya.das@oss.qualcomm.com,
+	danila@mainlining.org,
+	davidwronek@gmail.com,
+	mani@kernel.org,
+	robimarko@gmail.com,
+	linux@gurudas.dev,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Sreeshankar K <sreeshankar0910@gmail.com>
+Subject: [PATCH v5 11/13] dt-bindings: interrupt-controller: qcom,pdc: Document SM7250 PDC
+Date: Mon, 24 Aug 2026 13:04:35 +0000
+Message-ID: <20260824130437.2771-12-sreeshankar0910@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260824130437.2771-1-sreeshankar0910@gmail.com>
+References: <20260824130437.2771-1-sreeshankar0910@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SI2PR04MB4931.apcprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4b080189-a6aa-4708-cd35-08df01e088de
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Aug 2026 13:06:39.0078
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR04MB7723
+Content-Transfer-Encoding: 8bit
 
-Hi Vincent, Hongyan,
+Document the PDC block on the SM7250 SoC.
 
-Thanks for your comments.
+Signed-off-by: Sreeshankar K <sreeshankar0910@gmail.com>
+---
+ .../devicetree/bindings/interrupt-controller/qcom,pdc.yaml       | 1 +
+ 1 file changed, 1 insertion(+)
 
-My original commit message did not clearly describe the concrete issue
-being fixed, and its explanation based on frequency invariance was not
-correct. After looking into this further, I found that the issue I
-observed has a different cause: the cpuinfo.max_freq fallback added by
-d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall back to
-cpuinfo.max_freq").
-
-The commit message says:
-
-  However, in the absence of arch_scale_freq_ref(), it is reasonable
-  to assume that cpuinfo.max_freq is the maximum sustainable frequency
-  for the given cpufreq policy.
-
-That assumption does not always hold.
-
-On an x86 server using acpi-cpufreq, cpuinfo.max_freq includes the
-autonomous boost frequency, while policy->max is resolved to the
-highest selectable _PSS state. With boost enabled and policy->max
-unchanged at that state, the measured CPU frequency can still exceed
-policy->max. Thus, policy->max does not represent an effective hardware
-maximum-frequency cap in this case.
-
-Nevertheless, the cpuinfo.max_freq fallback makes
-cpufreq_update_pressure() calculate positive pressure for every policy,
-although no effective maximum-frequency restriction has been applied.
-
-The underlying issue is that cpuinfo.max_freq is the maximum possible
-operating frequency and may include an autonomous boost frequency,
-whereas policy->max may represent the highest selectable _PSS state.
-Consequently, policy->max < cpuinfo.max_freq does not necessarily mean
-that the available CPU capacity has been capped.
-
-
-Therefore, this patch checks the wrong condition and is not the right fix. =
-I will drop it.
-
-Instead, I am investigating a fix for the reference-frequency fallback
-in the cpufreq subsystem. One possible approach is to use the highest
-non-boost frequency-table entry when arch_scale_freq_ref() is
-unavailable, and only fall back to cpuinfo.max_freq for drivers without
-such an entry.
-
-Does that approach sound reasonable?
-
-Thanks
-Jianyong
-
->=20
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
+index 8162a49d4..c30b88589 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
++++ b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
+@@ -50,6 +50,7 @@ properties:
+           - qcom,sdx75-pdc
+           - qcom,sm4450-pdc
+           - qcom,sm6350-pdc
++          - qcom,sm7250-pdc
+           - qcom,sm8150-pdc
+           - qcom,sm8250-pdc
+           - qcom,sm8350-pdc
+-- 
+2.43.0
 
