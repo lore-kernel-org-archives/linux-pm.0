@@ -1,313 +1,195 @@
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22EFE45A2BC
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 15:58:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 157353FC5B9
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:10:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787587088; cv=none; b=UcXS1tXg/4peAS9gAIjvYiaAprIqUsuG0NPLqOC0D38wARgChBzSSHyn6Cn8z5POk4JNJABefBWXPcEoU3/4Ox9x7IvoibO722LaFOhSNItjbshooYdY/+8TebigL1deyzlk54wOwM0v+Ilxb5XHEp4fzBmZKmlYNb+QTONzqRE=
+	t=1787587817; cv=none; b=JS49zRbpOqaWTeFYRCc7aVCuuJDwqBvWviuBRMvEnAS3cTAcj49+Zk2eObsHgtiYvlbPJf7emE/xACjZeX8Veqa0rn61nXrAKSWYvzIT+K6hji/0wubPXvwSnACMMUk6qZjTLFDncc4HnAY6jY2ffTcs0qEjYF8mOY0T+YzPAy4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787587088; c=relaxed/simple;
-	bh=Me5WofGk/SZRmiK89R50NVJUk7M/6dcktu4uRTpjcUE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=a1jKvBXa0FU4fqRINY2CF56kVL1ask3kVoh3RSNgcevCsbueyzXc6jkh9hqQs3hZESosYvO50H8IjzeFucuVYiiJpO+Cagpu6rtQOvZ8sQSeROO62UCiSi/EiIL9OeLaQZnaJLw+ICBgcmnneEsZaRmvyBXAZkVg421wmqUGPBM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lfyTGcsS; arc=none smtp.client-ip=209.85.215.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787587817; c=relaxed/simple;
+	bh=WYp79WvhieUNZCmKVcztP08DuWzU2r2nD9piZtP2e4w=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UeNwngVHPPmN9YPxsDEtbVmfQxZn7a+PXwERXuaOY9U954CQy5MJeSUGaeRsEfm2V2NDobINnCjsTBWElpv1NN4JgB/THx7wPXNFfpE7ZHq8NDAPaV44IsNe7JEbpjltfGIrSRH2FsRik/DdlEww3fDHMi4CoIJmTcnFUTQRr2g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OYH5cA2K; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lfyTGcsS"
-Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-cbedf433a99so3545652a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 08:58:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787587083; x=1788191883; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=BY3D6q63ODXVixus4xdfU0vp7F5Ma7CkAlm3CVp5Okg=;
-        b=lfyTGcsSPt4l2BxqWhFjXxBWPvko8VmSFkU+/3lnPKr2biMU/hhiGWOaSHMj7aXfPQ
-         OHYPaziI3oSq16tke+iCPHx8LrP4S464o70TFxwLLTzwQPrW7vb95071Fojev4I/+UDK
-         h12qUrT4C4eb4kwBiTYS3IzpoCmOHjpfxfNZA2lN+7UFuOlhKfXWHocNLnRtWsZjyPjP
-         XfKQ9ZcEOkG7t1GZ5TCi5kkuYSkINVaN4AUOPvsTyyUc9v4caCgrqzij643UIwdGbuYs
-         VpZ91qhfrQ+4fn6n2qlrspHy5xuptcm3D1WDK4AYqZAZaNS7CAnYxE8bdZl6Tp04Lt+5
-         yHkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787587083; x=1788191883;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=BY3D6q63ODXVixus4xdfU0vp7F5Ma7CkAlm3CVp5Okg=;
-        b=UvTpCL+Pe0EEzCLotUUB55rciXrbiJPpawEI4/ZzZpR5PL2inGOy5Q2v4ojQkrD5D4
-         xW+NiUbn+MQEc9hZ+8rHe5+iLeg7p5WyK02Sb7pt4sKIsJNf+fzND2m2Gk0Et9ugnoCW
-         s+FnoTR2yF1Eo9NQ3P0lDio0+o2blutQc1E2I7+KGOz2nUx1Z1Ngg6beMhqafUe5WXd7
-         /5sy/zxXtxoA6HEMoPgPiSGCMggbJ6IS9UCFtvFb2ieMC/o39oNTOVhBXLLXXLW0N++t
-         e5OPFPVpBGVMIx8fKDwShCHdvDW1p3kk3LJWFB3s0sNdacO5SD9ESKqPZDG4hMofIpls
-         IIkw==
-X-Forwarded-Encrypted: i=1; AHgh+RqiOcCgXMSZfcAgtlLxqCh/EPLc2ysiXBd2l6d/Z05FwBN3m2rEaEp4JhDxTuC7ekaFGMkI0mEfdQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kO3ovDPi1eQwehLr+7mwa+ONfspzFg2kjpCzIv21CoDyLZyLiZ
-	NOmXAq3/icNCkIrIXoO0ZIFzVU+zEJ3NP3fkPabQcJuY59AV10IssAAo
-X-Gm-Gg: AR+sD1164/8Z4QW8l16cp296KapuvzkJtyh+jlHUq/bQgi34CNcCS3pXadPkLUQEcri
-	UlmS9kLc/+69HGuBcYVeJREplCFewXyngOJ4pswnMMttmuwYWI2pfoPCBfUPdwu7qbL35b4+f2k
-	cPxxSKrIRAK8jzW89Du51KMaqjpaGZqcgle8ZFnD7WhWnVdLAQChNBuVTa+RYDjbKmBWCb5HXpS
-	rflCZZ50swqAMbTo2XNa6ggRLN1v05lGPqfNqFPRHz6LANDcisk8BTmgINqQQLkfyQeanSbWJDh
-	VrwMVhLafg2vTIUcwK3ZFKgq85O4nrGfyuGryQ4/AWVIjqbDdekBRcMgBNHs9uXXWs8Vtoic8UG
-	YiEkmBVrgDyne7fAAppWAEbDvuHzNL+PYaLVEb1mvF2SWdOjLfnSuPZ/qEQnrvStcNgNi7r//Au
-	ZiYnNvHDQjAJRd07OqgIWpkUrWh2OjtpeLVYzVgn3/Haev/bzU6CevRJHCxkf0Ug==
-X-Received: by 2002:a05:6a20:1605:b0:3c3:b57b:6285 with SMTP id adf61e73a8af0-3cd3003dc4fmr58213911637.13.1787587082858;
-        Mon, 24 Aug 2026 08:58:02 -0700 (PDT)
-Received: from sh170r6 ([47.221.33.210])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327f90c0dd3sm29943267eec.7.2026.08.24.08.58.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Aug 2026 08:58:02 -0700 (PDT)
-From: Matt DeVillier <matt.devillier@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: Matt DeVillier <matt.devillier@gmail.com>,
-	Benson Leung <bleung@chromium.org>,
-	Guenter Roeck <groeck@chromium.org>,
-	chrome-platform@lists.linux.dev (open list:CHROMEOS EC SUBDRIVERS),
-	linux-pm@vger.kernel.org (open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] power: supply: cros_charge-control: adopt EC charge state on probe
-Date: Mon, 24 Aug 2026 10:57:18 -0500
-Message-ID: <20260824155736.1186510-1-matt.devillier@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OYH5cA2K"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAD361F000E9
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:10:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787587816;
+	bh=9lfE4kJBZz3AqUd+UVhYQB7YyX6PkGx6pUwKpB5sKG0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=OYH5cA2KUwZwkSI+n9o41oNxtoiRF41uqnHCXK4h91qks1o6VL5i4zRSXoczX1BBm
+	 RXd0Fu186mGnoU0yjo+R/CChP0PWvn4ZV40wI6g4CSuDM9zIjHTKQnN3eJIPMOGLA5
+	 ivD3JES8/IKNdEVgh+v21SJL3PcorNGv6loS5cCOvCPUO7WQN4LWja4pcHqdCqBLvB
+	 7fLgD6g1GzYlPgY31RBLGg457nfJ6sDaZX0rucZGuXpp47+OgPnDxEmaa/naGgMECl
+	 zCEUjiwk+6kbAN+vfVm3TYaqsKE8zRM2w5Vm1Y8cXMxbE/MivibTh7lwlmSRx9aCvS
+	 Cg8cI8qhOiuJQ==
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-39dbe684115so320281fa.1
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:10:15 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoluYORR/gWmYRsCFuZOn2FDv2OLV7ISDvDoYm9BReWa9TTixt1/xa3UbnI5WrUxCKJwzG1AsHZkQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++knIWnud/C9pdBjqd4xIt6psbrXZf6GcXSeDrtP7r8HlngQ8dwB
+	Yf5lmUSmLEoE4LDaM1bx34qFVOE//CPkARUIZZ9PivtZfNitqAQ/K4qfQeqsz2ibHIVXrylEFM9
+	djK9y5uL3ReLegBhMbR+Spu/bdNuR6Yg=
+X-Received: by 2002:a2e:bc82:0:b0:396:ade7:4153 with SMTP id
+ 38308e7fff4ca-3a1ed6f4061mr640871fa.0.1787587814368; Mon, 24 Aug 2026
+ 09:10:14 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260811061530.21789-1-jkoolstra@xs4all.nl>
+In-Reply-To: <20260811061530.21789-1-jkoolstra@xs4all.nl>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 24 Aug 2026 18:09:33 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i0PQEMTOT6UqWO87jCdV539ns-KcP69n++eQsz_NG0zA@mail.gmail.com>
+X-Gm-Features: AcwNN1Vw_f3gJ9-ik0-5o_-rxbVsDApCxrOUXBD3-HgJUcrld_w14x51Y6yKZxY
+Message-ID: <CAJZ5v0i0PQEMTOT6UqWO87jCdV539ns-KcP69n++eQsz_NG0zA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: change thermal_class to a const struct
+To: Jori Koolstra <jkoolstra@xs4all.nl>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
+	driver-core@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The driver previously always forced AUTO with no charge limits at
-probe, which discarded sustainer thresholds and modes set by firmware
-or firmware setup before the kernel loaded.
+On Tue, Aug 11, 2026 at 8:17=E2=80=AFAM Jori Koolstra <jkoolstra@xs4all.nl>=
+ wrote:
+>
+> The class_create() call has been deprecated in favor of class_register()
+> as the driver core now allows for a struct class to be in read-only
+> memory. Change thermal_class to be a const struct class and drop the
+> class_create() call.
 
-For command versions that support GET (v2+), read the EC state into
-the driver cache instead. Valid sustainer limits are adopted as AUTO
-with those thresholds: while the sustainer is active the EC may report
-IDLE or DISCHARGE as a transient hold/discharge step, which must not
-be exposed as inhibit-charge or force-discharge. Sustainer off
-(-1/-1) still maps to Linux "no limit" (0/100); other invalid limit
-pairs are remapped the same way with a warning.
+This has been deliberately changed the other way around not too long
+ago, in commit
 
-If GET fails, fall back to the previous defaults and SET them on the
-EC. Command version 1 still cannot report state and keeps forcing a
-well-known configuration.
+34f54003643e thermal/core: Allocate the thermal class dynamically
 
-Signed-off-by: Matt DeVillier <matt.devillier@gmail.com>
----
- drivers/power/supply/cros_charge-control.c | 159 ++++++++++++++++++---
- 1 file changed, 142 insertions(+), 17 deletions(-)
+and it was then argued that it would be better to allocate the class
+dynamically.
 
-diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
-index e0f168624807..fd620317cfba 100644
---- a/drivers/power/supply/cros_charge-control.c
-+++ b/drivers/power/supply/cros_charge-control.c
-@@ -21,12 +21,22 @@
- 
- /*
-  * Semantics of data *returned* from the EC API and Linux sysfs differ
-- * slightly, also the v1 API can not return any data.
-- * To match the expected sysfs API, data is never read back from the EC but
-- * cached in the driver.
-+ * slightly:
-+ *  - EC sustainer off is lower=upper=-1
-+ *  - Linux "no limit" is start=0, end=100
-+ * Also the v1 API can not return any data.
-  *
-- * Changes to the EC bypassing the driver will not be reflected in sysfs.
-- * Any change to "charge_behaviour" will synchronize the EC with the driver state.
-+ * While the sustainer is active the EC may report IDLE or DISCHARGE as the
-+ * current charge-control mode; that is an internal hold/discharge step, not a
-+ * Linux inhibit-charge / force-discharge request. Valid sustainer limits are
-+ * therefore adopted as AUTO with the reported thresholds.
-+ *
-+ * Sysfs reads come from a driver-side cache. On probe, command versions that
-+ * support GET (v2+) are initialized from the EC so firmware or firmware-setup
-+ * programmed limits and modes are preserved (unlike earlier behaviour that
-+ * always forced AUTO with no limits). v1 still forces a well-known EC state.
-+ * Subsequent sysfs writes keep the cache and EC in sync; changes that bypass
-+ * the driver are not reflected until the next probe.
-  */
- 
- struct cros_chctl_priv {
-@@ -44,18 +54,20 @@ struct cros_chctl_priv {
- };
- 
- static int cros_chctl_send_charge_control_cmd(struct cros_ec_device *cros_ec,
--					      u8 cmd_version, struct ec_params_charge_control *req)
-+					      u8 cmd_version,
-+					      struct ec_params_charge_control *req,
-+					      struct ec_response_charge_control *resp)
- {
--	int ret;
- 	static const u8 outsizes[] = {
- 		[1] = offsetof(struct ec_params_charge_control, cmd),
- 		[2] = sizeof(struct ec_params_charge_control),
- 		[3] = sizeof(struct ec_params_charge_control),
- 	};
-+	size_t insize = resp ? sizeof(*resp) : 0;
-+	int ret;
- 
- 	ret = cros_ec_cmd(cros_ec, cmd_version, EC_CMD_CHARGE_CONTROL, req,
--			  outsizes[cmd_version], NULL, 0);
--
-+			  outsizes[cmd_version], resp, insize);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -94,7 +106,126 @@ static int cros_chctl_configure_ec(struct cros_chctl_priv *priv)
- 		req.sustain_soc.upper = -1;
- 	}
- 
--	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version, &req);
-+	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version,
-+						  &req, NULL);
-+}
-+
-+static int cros_chctl_get_ec_status(struct cros_chctl_priv *priv,
-+				    struct ec_response_charge_control *resp)
-+{
-+	struct ec_params_charge_control req = {
-+		.cmd = EC_CHARGE_CONTROL_CMD_GET,
-+	};
-+
-+	lockdep_assert_held(&priv->lock);
-+
-+	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version,
-+						  &req, resp);
-+}
-+
-+static void cros_chctl_set_default_state(struct cros_chctl_priv *priv)
-+{
-+	priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+	priv->current_start_threshold = 0;
-+	priv->current_end_threshold = 100;
-+}
-+
-+static bool cros_chctl_sustainer_limits_valid(s8 lower, s8 upper)
-+{
-+	return lower >= 0 && upper >= 0 && lower <= 100 && upper <= 100 &&
-+	       lower <= upper;
-+}
-+
-+static int cros_chctl_adopt_ec_mode(struct cros_chctl_priv *priv, u32 mode)
-+{
-+	switch (mode) {
-+	case CHARGE_CONTROL_NORMAL:
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		return 0;
-+	case CHARGE_CONTROL_IDLE:
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-+		return 0;
-+	case CHARGE_CONTROL_DISCHARGE:
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+		return 0;
-+	default:
-+		dev_warn(priv->dev, "unknown charge control mode %u\n", mode);
-+		return -EINVAL;
-+	}
-+}
-+
-+static int cros_chctl_adopt_ec_state(struct cros_chctl_priv *priv)
-+{
-+	struct ec_response_charge_control resp = {};
-+	s8 lower, upper;
-+	int ret;
-+
-+	lockdep_assert_held(&priv->lock);
-+
-+	ret = cros_chctl_get_ec_status(priv, &resp);
-+	if (ret < 0)
-+		return ret;
-+
-+	lower = resp.sustain_soc.lower;
-+	upper = resp.sustain_soc.upper;
-+
-+	/*
-+	 * Valid sustainer limits mean "auto with thresholds". The EC mode may
-+	 * be IDLE/DISCHARGE while the sustainer holds or bleeds SoC; do not
-+	 * expose that as inhibit-charge / force-discharge.
-+	 */
-+	if (cros_chctl_sustainer_limits_valid(lower, upper)) {
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		priv->current_start_threshold = lower;
-+		priv->current_end_threshold = upper;
-+	} else {
-+		ret = cros_chctl_adopt_ec_mode(priv, resp.mode);
-+		if (ret < 0)
-+			return ret;
-+
-+		/*
-+		 * Sustainer off is lower=upper=-1 → Linux "no limit" (0/100).
-+		 * Any other non-valid pair is unexpected; remap and warn.
-+		 */
-+		if (!(lower == -1 && upper == -1))
-+			dev_warn(priv->dev,
-+				 "invalid EC sustainer limits (%d/%d), treating as no limit\n",
-+				 lower, upper);
-+
-+		priv->current_start_threshold = 0;
-+		priv->current_end_threshold = 100;
-+	}
-+
-+	dev_dbg(priv->dev,
-+		"adopted EC charge state: behaviour=%d start=%u end=%u (ec mode=%u)\n",
-+		priv->current_behaviour, priv->current_start_threshold,
-+		priv->current_end_threshold, resp.mode);
-+
-+	return 0;
-+}
-+
-+static int cros_chctl_init_state(struct cros_chctl_priv *priv)
-+{
-+	int ret;
-+
-+	lockdep_assert_held(&priv->lock);
-+
-+	cros_chctl_set_default_state(priv);
-+
-+	/* v1 cannot report current state; force a well-known EC configuration. */
-+	if (priv->cmd_version < 2)
-+		return cros_chctl_configure_ec(priv);
-+
-+	ret = cros_chctl_adopt_ec_state(priv);
-+	if (ret < 0) {
-+		dev_warn(priv->dev,
-+			 "failed to read EC charge state (%d), applying defaults\n",
-+			 ret);
-+		cros_chctl_set_default_state(priv);
-+		return cros_chctl_configure_ec(priv);
-+	}
-+
-+	return 0;
- }
- 
- static int cros_chctl_psy_ext_get_prop(struct power_supply *psy,
-@@ -152,7 +283,6 @@ static int cros_chctl_psy_ext_set_threshold(struct cros_chctl_priv *priv,
- 	return 0;
- }
- 
--
- static int cros_chctl_psy_ext_set_prop(struct power_supply *psy,
- 				       const struct power_supply_ext *ext,
- 				       void *data,
-@@ -305,13 +435,8 @@ static int cros_chctl_probe(struct platform_device *pdev)
- 	priv->battery_hook.add_battery = cros_chctl_add_battery;
- 	priv->battery_hook.remove_battery = cros_chctl_remove_battery;
- 
--	priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
--	priv->current_start_threshold = 0;
--	priv->current_end_threshold = 100;
--
--	/* Bring EC into well-known state */
- 	scoped_guard(mutex, &priv->lock)
--		ret = cros_chctl_configure_ec(priv);
-+		ret = cros_chctl_init_state(priv);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-2.53.0
+You seem to have a differing opinion.
 
+Is there any plan to remove class_create() from the kernel?  If there
+isn't, I'd rather stop this back-and-forth dance and leave the code
+as-is.
+
+> Compile tested only.
+
+That is, not tested.
+
+> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Jori Koolstra <jkoolstra@xs4all.nl>
+> ---
+>  drivers/thermal/thermal_core.c | 24 +++++++++++-------------
+>  1 file changed, 11 insertions(+), 13 deletions(-)
+>
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index 28a20d4b475c..36220113ca8e 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -889,7 +889,9 @@ static void thermal_unbind_cdev_from_trip(struct ther=
+mal_zone_device *tz,
+>         kfree(pos);
+>  }
+>
+> -static struct class *thermal_class __ro_after_init;
+> +static const struct class thermal_class =3D {
+> +       .name   =3D "thermal"
+> +};
+>
+>  static inline
+>  void print_bind_err_msg(struct thermal_zone_device *tz,
+> @@ -973,7 +975,7 @@ thermal_cooling_device_alloc(const char *type, const =
+struct thermal_cooling_devi
+>             !ops->set_cur_state)
+>                 return ERR_PTR(-EINVAL);
+>
+> -       if (!thermal_class)
+> +       if (!class_is_registered(&thermal_class))
+
+Any chance to reduce the overhead of this check (in all places where
+it is done)?
+
+>                 return ERR_PTR(-ENODEV);
+>
+>         cdev =3D kzalloc_obj(*cdev);
+> @@ -1010,7 +1012,7 @@ int thermal_cooling_device_add(struct thermal_cooli=
+ng_device *cdev, void *devdat
+>         mutex_init(&cdev->lock);
+>         INIT_LIST_HEAD(&cdev->thermal_instances);
+>         cdev->updated =3D false;
+> -       cdev->device.class =3D thermal_class;
+> +       cdev->device.class =3D &thermal_class;
+>         cdev->device.release =3D thermal_cdev_release;
+>         device_initialize(&cdev->device);
+>         cdev->devdata =3D devdata;
+> @@ -1447,7 +1449,7 @@ thermal_zone_device_register_with_trips(const char =
+*type,
+>         if (polling_delay && passive_delay > polling_delay)
+>                 return ERR_PTR(-EINVAL);
+>
+> -       if (!thermal_class)
+> +       if (!class_is_registered(&thermal_class))
+>                 return ERR_PTR(-ENODEV);
+>
+>         tz =3D kzalloc_flex(*tz, trips, num_trips);
+> @@ -1483,7 +1485,7 @@ thermal_zone_device_register_with_trips(const char =
+*type,
+>         if (!tz->ops.critical)
+>                 tz->ops.critical =3D thermal_zone_device_critical;
+>
+> -       tz->device.class =3D thermal_class;
+> +       tz->device.class =3D &thermal_class;
+>         tz->device.release =3D thermal_zone_device_release;
+>         tz->devdata =3D devdata;
+>         tz->num_trips =3D num_trips;
+> @@ -1745,7 +1747,7 @@ static void __thermal_pm_prepare(void)
+>
+>  void thermal_pm_prepare(void)
+>  {
+> -       if (!thermal_class)
+> +       if (!class_is_registered(&thermal_class))
+>                 return;
+>
+>         __thermal_pm_prepare();
+> @@ -1776,7 +1778,7 @@ void thermal_pm_complete(void)
+>  {
+>         struct thermal_zone_device *tz;
+>
+> -       if (!thermal_class)
+> +       if (!class_is_registered(&thermal_class))
+>                 return;
+>
+>         guard(mutex)(&thermal_list_lock);
+> @@ -1789,7 +1791,6 @@ void thermal_pm_complete(void)
+>
+>  static int __init thermal_init(void)
+>  {
+> -       struct class *tc;
+>         int result;
+>
+>         thermal_debug_init();
+> @@ -1808,13 +1809,10 @@ static int __init thermal_init(void)
+>         if (result)
+>                 goto unregister_governors;
+>
+> -       tc =3D class_create("thermal");
+> -       if (IS_ERR(tc)) {
+> -               result =3D PTR_ERR(tc);
+> +       result =3D class_register(&thermal_class);
+> +       if (result)
+>                 goto unregister_governors;
+> -       }
+>
+> -       thermal_class =3D tc;
+>         return 0;
+>
+>  unregister_governors:
+> --
