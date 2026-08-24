@@ -1,70 +1,73 @@
 Received: from flow-b1-smtp.messagingengine.com (flow-b1-smtp.messagingengine.com [202.12.124.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9773D3EEAC4;
-	Mon, 24 Aug 2026 11:09:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50B4D403E9C;
+	Mon, 24 Aug 2026 11:09:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.136
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787569757; cv=none; b=TSs3f2Sd6rRRwf6IKSE1xDWcrS4aXevH8fDbgc4bYtAU5HaBWiHYyA4DTy3XzPYHkVyIc3fm+MU4FEBa0ZTvzafC2ZdHMVpxdPRIJSbfLGyicrCatyLeShv2I5JXA6BVm99m0y2per6fzlKT0qJsQ29Qseeyo0N9BxPKei3qGDg=
+	t=1787569767; cv=none; b=B+ZnELwtAg0+N2HpAqXGiGCJiFhi6WS9Tv5ZySdK2hTJcujY65zNcGOWp3fTr3Ez9DblODdeWpwNDKCT3Up2f1x3E/0xLcT8OL4v7Nrz5MFniIKs5lB8ONnkQ/KFbyU1um0eW93vXUc84BHBP+S/X1adL42l8fowPdDXTPS48LY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787569757; c=relaxed/simple;
-	bh=LiNQyF1EmMFfRrgRgV4qxL5qB76MSrpv6mludB4ICHI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YJJmynFo7lf0fkfJr1TmQyn8dLrWNIrv8lazH8UWYgpXs2Oq4fkzTn+VvJ7ztnllIjb7+58qRVBiWoR03mTX9Q+H/CCyBMGYrW/eeHgNiwPVkulPsd4WncnfIRFIz2jDVEDqbSRsMnblbCjYuVg97HUFAFV/yghjwfs/dt8+JH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=klN+LqOf; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=chjWAmYO; arc=none smtp.client-ip=202.12.124.136
+	s=arc-20240116; t=1787569767; c=relaxed/simple;
+	bh=tlg1zGjylBLNUM0UO5lGTdVugx9lVmieiDA+AM9me9k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=crjKrBh0bhGQOJtENTNmNy9jQ5UgG7UUUFAPIG/axgjfTi5UUgpwxXDhpweAqMrIIPeFfn3LCWisrrhErKp/C9eBCCOS+MjokP3BXqXovxctWUdMVl8CRf2QkbifKskEn9a7XgrkjK8dduoMnIgkYISFUPCuBYnq4umUS86EeIo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=Lbe4zwGs; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=en05nMgQ; arc=none smtp.client-ip=202.12.124.136
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="klN+LqOf";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="chjWAmYO"
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="Lbe4zwGs";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="en05nMgQ"
 Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailflow.stl.internal (Postfix) with ESMTP id 2525C1300124;
-	Mon, 24 Aug 2026 07:09:14 -0400 (EDT)
+	by mailflow.stl.internal (Postfix) with ESMTP id 299D61300124;
+	Mon, 24 Aug 2026 07:09:24 -0400 (EDT)
 Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Mon, 24 Aug 2026 07:09:14 -0400
+  by phl-compute-06.internal (MEProxy); Mon, 24 Aug 2026 07:09:24 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
-	:from:in-reply-to:message-id:mime-version:reply-to:subject
-	:subject:to:to; s=fm2; t=1787569753; x=1787573353; bh=oKDwkKFdwr
-	cmFN7x0IH5wcFZWSaTZtPwLThwa5S+U3E=; b=klN+LqOf/qYi0/5sz3c48ozaRL
-	sbRav5EW6VfC3hCckf6j0Ycbc0b5AmFqR/d16ewvoh1+k5MmvlpuyqsoHCResYzV
-	v+Z0X2ZTjGpw2+e0LYnYsIX4L1mnTQ3yy7o0MXYGVxvAZo780X7XVIK04k8USwS3
-	sB0veH9CpTbRG0w7mpFUIPfEh9c4j0JCPu3ogfuPIViIYZ+SdPe4nHhZuRtUxbNT
-	xz70OseChRqrytJBd3qGF1MpFsSsFkkMb0kXylzotDi6XqUruWNycraERVXiLsE0
-	5PYymyOKm+YZh45iiXZdBteGgHNJlxi4d6x7IkRzNSI98/HrsZo4JxpDAqLw==
+	:from:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=fm2; t=1787569764; x=
+	1787573364; bh=FTYy85YaRXU7jvCVYmoRlG7bSU2LigxqGLsoOU4vW4o=; b=L
+	be4zwGsBEurRouuitmk4pBuOHGxqotRdq/QlTu0FbmU8PIqGtH1iZzLP5gDszZ8L
+	5lrexUqrlSR5j/4DuWr9X7cOmIpATuYquOs7Sn00LM46iKfZI57FFjx8WI48bavS
+	hsS2y+IacDltwocxxJhjfmabH4YBQFHSoTJA0EqvWmgNM6aNitB/AnbWREzSrQwb
+	NALXjBg6c5dxeEHVz6jOnGo23VzIiuuGYpTejGaCrx5X4+ZMQKz5mysYo1Jpms7I
+	sLCDE9mb4oohumRxiPt/ANI4yuWvRTHmnq2Iv0+cHp0TDQVvi0kI17PNs+Zi7ed6
+	Zi18OvEcCOvA95hXE2KgQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-	1787569753; x=1787573353; bh=oKDwkKFdwrcmFN7x0IH5wcFZWSaTZtPwLTh
-	wa5S+U3E=; b=chjWAmYOTiDOzYds7G+pP43Kt79gfwddn/0MNNpBioNWzS36PAe
-	vvYtTYJrqA9cEmAT4nBTUY2A4yn6FnoIYOkyQYDg8utooBnXCVFP4MS1pjlR9QYj
-	NCCogsWaxBilZkLqAKmukcJ4xTVEzWIKiPS5SlfFWk17FMymfeJSi5g0xpgqf0gJ
-	mg6C0WjB8a5gNUjOb8iuqTEatsTb75IDjQgrpiXl64XaN72OnG61JwuTeh6Znaws
-	UbywihBsReSB2Cv6KHvc0Ilvzj190iA7Z4LKvaGVvHK4TcwTI1ubq7PoUblygmsx
-	FePInCAWY3PDNFqFXmoPRblTBY3vSobalZQ==
-X-ME-Sender: <xms:VyaMal0Sf4gum3Zrhe7v1_BrGLz_NA-lOvJf9_N2gcxNZVYweiJFTw>
-    <xme:VyaMar_eOP0hCl0j99HxffZKuk4nS3xyWBSad5zkoD16RHbZ9YLHVVMQJwoxDB1bp
-    8HAEeaPhpIXXpaB-hp8jGMWpnu1D4CWEOok3PF1tW-Rl5UVmuHsPYt2>
-X-ME-Received: <xmr:VyaMajN4QjrgCU6GEoEa2w3uIShxhGcUXqLX_ypGCvIccfr-W5rZxQOph2SEhKASy1bLsdBxNQ>
-X-ME-Proxy-Cause: dmFkZTEmiCd0WkfWdWqfQiCmPz7vfgcmfReIbpni7lOV+CDWG0kkA23NO/IVtO+gBTF1hE
-    sRR82hYA857JlUBXdSxvNZxNiHA7XKFBVmcM7J4iD0HWSGI2S7jdSuwkfw6MrzYiPjHrEH
-    pMdj5rmGeTwSmpfbatYhAR81nxpJ+JyZS00wEMkE9Y1pzdQgBhPU9RYhrIr82Wz9o4xzjM
-    E0EYKk8e7qzT3f6yrgtQL2hx1o7o+VLbTxjs5pwQxd2B6p1a9ApbDsaYkHnBgmaiQZjJ8G
-    p+76A7WdT4gh0IYQTmP706Q1s3Hm4vQQFgnKTsej9PiVx0Ka1yLX+NmljEW9kcNe42YVZ9
-    cF4JgRGEzVaG8b/VW3caDnB/MiNHVHcPAXS0J818xRTZV9NJCfZ16cdzNe/VvB9wt2HEPt
-    FFIatQiN0LOXMmmhJE1bpEBF6eSYxW2pRl4ICoNRrq9oRTTQy69QHfftvvFvhTgZcdZPya
-    0JE4tcIYNWZOUNoHDioIpOK9TOYMSS+t1ZEeu3JNZ1PzMoFqxSHmpjw+skmuw+dvsg6Ovd
-    un5umSAqdpYL/5EzjgzZZwNKm6/WeRipo2gmFooWbOfzT8kzMtGu9z/ycgG21n+NMC944o
-    a4BmdNvCpg5PYjSPa/h7WEPC3PKCnkpeMJ7Fe41fb0IyTMgZGfKQKei8beKQ
-X-ME-Proxy: <xmx:VyaMavC2_3ZOCTtj2GgaPw-Nv9blcBx76zZqcLO-A-sBUuU_YNLXJA>
-    <xmx:VyaMalNZBGUs3GRSH-eENCE1eccR4F4AuPtGgte9YsinDw1trL6Pww>
-    <xmx:VyaMalbgeJANa4v8WjT1Khj9RblHmN-MFSQBkmnebY3IQmCF5JEU_w>
-    <xmx:VyaMakOEnZ5eQv4wS854ZIqZk7sD3i1kYDHb5UFrKa3TR3O0bKnkHA>
-    <xmx:WSaMageWIVIYxp37zZKQ5DbfsRt4i9PLT_jgDpHX9aHdhgR8rowxPJH6>
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
+	:x-me-sender:x-sasl-enc; s=fm3; t=1787569764; x=1787573364; bh=F
+	TYy85YaRXU7jvCVYmoRlG7bSU2LigxqGLsoOU4vW4o=; b=en05nMgQI8/DYhZvp
+	h4JckhU8+s6VFm9V6gw4gxKULrFjVSqU+4ld0MDfGdGonqXJ6z51HrfC1diCpnco
+	4ltwi+QgpjEBkE59DWGyjjwto1QdE1al5kcPC4idiHBa5ci2KYQcFtG5QJ0JgWSa
+	QMUv+CYMgxPwbeeozJ1yK6M39ByNhKI27gkkEYyIvg9dwKR3t6ycITDPPQXtLmCZ
+	cGcm4A694Ev2n+bA/ykgNhebKnpRjC4T79biCOhsbJeuR8RQwDgQujnotu8ByFLd
+	YPiz4pv3ib5ZH0M191OsLqBbTDSuncQBxmJaEJM4GC5tyuBlgPQBUCqFllR9feg1
+	C/A+A==
+X-ME-Sender: <xms:YyaMat92suaHnqAFzm-BQxHq1tjeuVe3tv_wtZogz4iMp5Tf8msEHQ>
+    <xme:YyaMahl2P6mLhuWUuULfUWTk21PyzKnoaZHq_r5SfCJw8cE2TjLaunuckNBFzf0Vl
+    1cDflTXDF6phyo1Ig94am4ALhMn5yseI-g6e6Ykj6ZwoL2MiQY9ysw>
+X-ME-Received: <xmr:YyaMaoXFA_hj1GRRb9BsOlh4njtwiugeNKSbfM-4TDrpARXW8HwaKMUJlAJhwv_LPsCUb1UU4Q>
+X-ME-Proxy-Cause: dmFkZTFZCbpsgW1YFD8tkPvHCNfxYRvTZ4blFH/NRV/HzygHIZO36nEMOhE1d730qpXJvh
+    mj3vwdyckgY6cjcLbWoO+E+Y3xnZHjj3a4qFKPUp4C1ItOyypDc5v9ubc43QMrvknpo3YV
+    t254bBqkhHFILTMaiaOskey67wujVC060Hg7shRsjYN75EBvtRkSi+gTwzTAT9QI5uwF5a
+    jKY8X+yRsMvgEojvqKUbS+n33ebqC8Mk85kgoigVyIrVFWYfmyd/lA/A6ULdG/inFBXWp7
+    ziuYhhyF6f7lNHjxbQ4kgWN86q7p7VmrRBdAb8OqXw1LSsz5kDP4W0+4ny2SVIkbn/oddh
+    +njcyhOooUEeYlxso39Ruv5OzuUgnOOiLqyWUs6Pbv/SycCTUX9Sfn5QfHpLBy92hhcD7m
+    lYossoEFBC+I8hXEZ9Gu6JmLsJkpFW4ZA3TxD+oldH/Ed2QLGG1izPgyxWm3thrL2B4URJ
+    UF7Jv9nmy3T4Pi7HOuWWS8pYo3k2dIhhL6i2c05l52dJSnSU7pTSnStj/x4/kTBQYAaLML
+    73DqzZ2rD1a00CT/PSEt2i/nETJ4sMR6vpQsj8hawp1fIRb0UPW4i4aDBW3xPGTOYcbGTL
+    2UuX8l5ZqI8vFrSTJNy0t9BzioJ8hGmW6zBAqGxm72yCFbY0MUIAu1ru5CjQ
+X-ME-Proxy: <xmx:YyaMatpOXVHUj8nNW7pT5a0fH0koWzrtb8S_hcpZgq-AZf_XWhEo_A>
+    <xmx:YyaMavVDEm3tpuHaxsJpiRP6mDfzrOStDhBaJ_ATkAs8K0FyjMdPTA>
+    <xmx:YyaMalBTi0g-5Zsrs_M6CrHFpbGfvClYeCJQmx0bsTYVURohJRSVwA>
+    <xmx:YyaMarUUPVxSAeqU8AeHmfpIxdrJncHBb5XZRVr5CeF-nscGAVwQzw>
+    <xmx:YyaMaoHjRiHPa99CkSqHUWME-fWl4GnJnzHWsFnv68KLjO000-hs_O3Q>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 24 Aug 2026 07:09:04 -0400 (EDT)
+ 24 Aug 2026 07:09:17 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -91,10 +94,12 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v9 00/13] accel/rocket: RK3576 NPU (RKNN) enablement
-Date: Mon, 24 Aug 2026 23:08:49 +1200
-Message-ID: <cover.1787568658.git.gahing@gahingwoo.com>
+Subject: [PATCH v9 01/13] accel/rocket: take the completion register writes under job_lock
+Date: Mon, 24 Aug 2026 23:08:50 +1200
+Message-ID: <f1805c2bce56c89d8ace35f67c665b24bab90965.1787568944.git.gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1787568658.git.gahing@gahingwoo.com>
+References: <cover.1787568658.git.gahing@gahingwoo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -103,124 +108,58 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Based on Igor Paunovic's "[PATCH v2] accel/rocket: request the core
-clocks by name", as v6 through v8 were.
+rocket_job_handle_irq() writes OPERATION_ENABLE and INTERRUPT_CLEAR before
+taking job_lock, while rocket_job_hw_submit() writes OPERATION_ENABLE from
+inside it. The two can therefore race: a completion being handled on one core
+can write its zero after a submit on the same core has written its one, and
+stop a task that has only just started.
 
-  https://lore.kernel.org/linux-rockchip/20260729130743.128876-1-royalnet026@gmail.com/
+Nothing in tree hits this often, because the interrupt is the only completion
+path and it does not overlap its own submit, but the ordering is wrong on its
+own terms.
 
-Tested on a Radxa ROCK 4D, on next-20260814.
+Move both writes inside the existing scoped_guard() rather than adding a second
+critical section, so stopping the block and deciding what to start next are one
+atomic step.
 
-This adds the RK3576 NPU to accel/rocket, which today supports RK3588
-only. The RK3576 carries two cores of the same RKNN block, wired up
-differently. Two extra convolution buffer clocks, two power domains per
-core, one reset rather than two, no NPU SRAM rail, and a PC_TASK_CON
-that packs the task number into sixteen bits rather than twelve.
+Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
+Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores
+---
+ drivers/accel/rocket/rocket_job.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-What changed since v8
-
-A new 3/13, and the rest is answers to the v8 thread.
-
-RK3576 did not recover from a job timeout. The block came back with
-MMU_DTE_ADDR complaining and every following inference returned the
-output zero point. rocket_reset() called pm_runtime_put_noidle(), which
-drops the usage count without starting the idle path, so the core stayed
-runtime-active, the power domain never dropped, the BIU reset the domain
-cycles on power-on never fired, and the MMU never answered again.
-
-pm_runtime_put_autosuspend() is the whole fix. Measured three runs in one
-boot on a ROCK 4D with one variable between them, each forcing a timeout
-and then running the same convolution:
-
-  put                after the timeout          the next inference
-  put_noidle         runtime-active, rail up    0 of 128, MMU_DTE_ADDR
-  put_autosuspend    suspended, rail down       128 of 128, no message
-  put_noidle again   runtime-active, rail up    0 of 128, MMU_DTE_ADDR
-
-The third run is there so the failure reads as deterministic rather than
-intermittent.
-
-Igor Paunovic ran the differential on RK3588: 45 induced resets across
-three cores, with and without 1/13 and 2/13, and the domain dropped every
-time with no MMU message on either kernel. That is what scopes this to
-RK3576. An earlier draft of 3/13 carried Reported-by on his name and that
-was wrong. He called it "your non-recovery" and said he could not
-reproduce it, and the put_noidle against put_autosuspend split was mine.
-He is on 3/13 for the RK3588 result, which is what he contributed.
-
-2/13 now masks the block before synchronize_irq(). hw_submit() arms
-INTERRUPT_MASK on every submit and only the hardirq clears it, so on an
-ordinary timeout it is still live and a completion can arrive after the
-sync returns. The next submit re-arms it. Igor Paunovic raised this and
-wrote the line.
-
-That write is guarded by pm_runtime_get_if_active(), and it needs to be.
-It is the first register access rocket_reset() has ever made, and the
-function holds no runtime PM reference of its own. The only one in the
-window belongs to in_flight_job, and the completion path can have put it
-before the timeout worker arrives. drm_sched_stop() sits in between, can
-block, and subtracts every pending job's credits, so nothing keeps the
-core resumed. A register access with the domain down takes an async
-SError on this hardware, which is the failure 6/13 and 8/13 describe from
-the power-on side. Igor asked the general form of this on v8, whether
-rocket_reset() should hold a reference, and it was deferred because
-nothing in the path touched a register. 2/13 is what makes it matter.
-
-His Tested-by on the v8 shape of that patch is deliberately not carried
-here, because this is not the patch he tested. 1/13 is unchanged and
-keeps his.
-
-11/13 includes <linux/device-id/of.h> rather than
-<linux/mod_devicetable.h>, which Uwe Kleine-Koenig asked for. The driver
-needed nothing else out of the wider header.
-
-5/13 carries a git note naming the base and the one prerequisite, so the
-dependency is in the patch rather than only in this letter, which Rob
-Herring's bot asked for. dt_binding_check is clean on all three bindings
-the series touches with dtschema 2026.6 and yamllint 1.38.0, and
-CHECK_DTBS is clean on all 13 rk3576 and all 48 rk3588 dtbs.
-
-Two things I have left alone and would rather hear about than guess at.
-8/13 does three things: it adds the settle delay, renames a macro, and
-gives RK3576_PD_NPU a regulator, which also makes every RK3576 board
-force that domain off at probe. It may want splitting. And 12/13 gives
-each core both NPU domains, which is the description that has been
-tested here rather than the topology; if it should be one domain per
-core, 5/13's minItems has to change with it.
-
-Nothing else moved. The completion path, the register field layout v7
-corrected, and the rail and reset arrangement v8 settled are all
-unchanged.
-
-Jiaxing Hu (13):
-  accel/rocket: take the completion register writes under job_lock
-  accel/rocket: wait for a running IRQ handler before resetting a core
-  accel/rocket: let the core suspend after a reset
-  accel/rocket: factor the completion tail out of the IRQ handler
-  dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
-  dt-bindings: power: rockchip: allow resets in a power domain node
-  dt-bindings: iommu: rockchip: describe the RK3576 NPU MMU
-  pmdomain/rockchip: add optional per-domain power-on settle delay
-  pmdomain/rockchip: cycle optional power-domain resets on power-on
-  accel/rocket: select the per-core clock and reset counts from match
-    data
-  accel/rocket: add RK3576 NPU (RKNN) support
-  arm64: dts: rockchip: rk3576: add NPU (RKNN) nodes
-  arm64: dts: rockchip: rk3576-rock-4d: enable NPU
-
- .../bindings/iommu/rockchip,iommu.yaml        |  28 +++++
- .../npu/rockchip,rk3588-rknn-core.yaml        |  47 ++++++-
- .../power/rockchip,power-controller.yaml      |   8 ++
- .../boot/dts/rockchip/rk3576-rock-4d.dts      |  13 ++
- arch/arm64/boot/dts/rockchip/rk3576.dtsi      |  82 +++++++++++-
- drivers/accel/rocket/rocket_core.c            |  28 ++++-
- drivers/accel/rocket/rocket_core.h            |  11 +-
- drivers/accel/rocket/rocket_device.c          |   7 +-
- drivers/accel/rocket/rocket_drv.c             |  28 ++++-
- drivers/accel/rocket/rocket_drv.h             |   2 +
- drivers/accel/rocket/rocket_job.c             | 119 ++++++++++++++----
- drivers/pmdomain/rockchip/pm-domains.c        |  75 +++++++----
- 12 files changed, 385 insertions(+), 63 deletions(-)
-
+diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
+index 3141f210f..5f0f9682e 100644
+--- a/drivers/accel/rocket/rocket_job.c
++++ b/drivers/accel/rocket/rocket_job.c
+@@ -345,10 +345,15 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ {
+ 	pm_runtime_mark_last_busy(core->dev);
+ 
+-	rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+-	rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
++	scoped_guard(mutex, &core->job_lock) {
++		/*
++		 * Stopping the block belongs under the lock. hw_submit() writes
++		 * OPERATION_ENABLE too, and outside the lock this zero can land
++		 * after that one and stop a task that has only just started.
++		 */
++		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
++		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+ 
+-	scoped_guard(mutex, &core->job_lock)
+ 		if (core->in_flight_job) {
+ 			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
+ 				rocket_job_hw_submit(core, core->in_flight_job);
+@@ -360,6 +365,7 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ 			pm_runtime_put_autosuspend(core->dev);
+ 			core->in_flight_job = NULL;
+ 		}
++	}
+ }
+ 
+ static void
 
 base-commit: d589af98928d20eb39b04ecce3eecbe7ec802222
 -- 
