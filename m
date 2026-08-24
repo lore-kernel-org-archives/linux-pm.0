@@ -1,186 +1,78 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF8DD377EA7
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:55:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 752B7377AB6;
+	Mon, 24 Aug 2026 16:56:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787590529; cv=none; b=iBYg2VxjBeE5bZmOe6siJPrPpS8BhtQqcJUTRSvQtFKtrfCISq/kexi9aMZ3mP+E+U1O0ORjiD2Vj6htEmcLCDQIpwIJTF8oGFGQiY5MGJMQbbqU7kyRIy5JSTLx5KXDumdQc/+glUoHCjbjctm2wEEoQx/Xm9bGozQ+dqZzuLg=
+	t=1787590570; cv=none; b=ZAhAaFyZp/dipZZRrHQfglqiqxTwRJ8LWgDMrswpLA4cVsIUxmjRlJYwuCHqymYW7c6bMh6KANGmy/W49hJBnn2oGKyHS6uRmo29XFX981YwZJipahXPo4PEggHAaLgXmnI/YgXYtaIUGVENRiTmTC95lZ5PiSpM5V6Ef89QMic=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787590529; c=relaxed/simple;
-	bh=AQoWXsfJHmwnAyLj5EhV03cDbyvTWuaUKTcrQyW8y+U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=tPsO3eVD5mFpKLjGYO10D8DfxDcGuA/WvCpLFyiaESKPMDX5piJmYr7KQMUuFZZdoSyIRb5aD2c/9oWBxFgOxZ43NDLpQDmO7xoveUqQcdOh+lKDGw4de9ar7daHmU3qaYYVQem8rXmBty2v3UWwkv41YIdCxvNCX1GB2WluSZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ByBN/BqV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=fm39jQD3; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1787590570; c=relaxed/simple;
+	bh=qUQjtkrXT9OQJ/hOuCnqlUXvjpEJ2WOuntgsmgU4EL8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DS3vzVfr07UHf5pQwUr6jxbIQrWU9shNdzaI+dz8Sf188QWixaxTtriEGMf/8akArm3WJGv65rPIny6MHrzYIh/1dvY4gYho0VgmukITvyWCCl0LIc+A6tEYlxNS1eONP+icy56aQLHtQX1NKS1aCRHSmgcwlfgHJ5tk3Ps6kSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=cOSMwhct; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ByBN/BqV";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="fm39jQD3"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67OFmu343329504
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:55:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	sfXILiAwBDaxvqRoSf8xZ7r6Qs2Yw0ErBR+u4/IPE9Q=; b=ByBN/BqVIwxSsv7C
-	5vePHD+qP1XPRv26tJh1xJpiFcWjFIupOTGGuEA8DnxthAUGC18zZH9r0NikPRN6
-	rJfhaYVRAHTyg9RT4OEGiUnReE6SxP0IPOnn9/wq1xBZB/4nAxhFptNLOz+w4jhk
-	h90r9/ZlrdfCYk3KFd0MroXEjuk3TXyh1N3Kljw34vKY0paYqhph/cdnGsdsjIzt
-	tafxak0YMW4qBZRh7kQQ2b6Ea3KhmBj3NiBivPKXZdYnwkIfoKODPe5k/T2Lok2X
-	YQgKuKOlCN9yM7tooAr1Oohc1oKaWPSWbtly6MNEYByj8rNTo4o2gf9FS2mQS8/u
-	impz9Q==
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g8j7r27a2-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:55:26 +0000 (GMT)
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-ca124bf0189so89352a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:55:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1787590526; x=1788195326; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=sfXILiAwBDaxvqRoSf8xZ7r6Qs2Yw0ErBR+u4/IPE9Q=;
-        b=fm39jQD3goMgBWbSoZzSPlvWcFuRCaK+9sWdNSPWOugP12xvsiqRClSZFyMdpq3a6m
-         d92S9v43j54olTYiPHK/0R8CktRHOnnKOoulkS2Ek/F8Phaxkko+oJafLjQtYO5te+8e
-         Z11jY+MCiJpAlmrWVm4YPHCV1MsNY/T6aTQenlYPFKQzpbFnab9xh4SuD+O9pf5pqA1B
-         v0LAfmDrFxbDTEGbBAh+M5daY9fPT6to4b47u8ABMaFA48vHOW4jlFOrXZcA5qz7rCvO
-         HDh47zZnnl7EIFUHeU7UxsScBng8NqV9TA9VJv/9oVPH3pvVG9xQ2OIvR7I0YxteCKis
-         YUJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787590526; x=1788195326;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=sfXILiAwBDaxvqRoSf8xZ7r6Qs2Yw0ErBR+u4/IPE9Q=;
-        b=qEtzQ2QL1QO2SMfJpXy2o/AS8AZEO2EqCV5Qx42OuRf28tj6cy9PNurGjZzo3UokTg
-         BR3mD4t4ScaZODWFXS1t1P0/reo8UAIxlArNrYe4+xBv+FE6/GpFNamzBYD4HRdyiica
-         M2J0noeRXi/RehB4M4HVk6A3N07Tt57USK9+xYouvhsRSSr1ymyF+XQ85z0HA3gvK2hT
-         qxXBR3sRtxq+zB2xqjdRyNwdStitS2uCI33Y8GbCZB26H49wkd/7A/nFbaE0iD/EajyT
-         Hymt78mcAUDJb4tT46+hiACJUq+EvXXInkxLSRFU319yL/SKjgp7PxVe0d/j7F7wqUnl
-         Je0w==
-X-Forwarded-Encrypted: i=1; AHgh+RrDojXLJJRr3azXKXTXfbjRErDEbfseuL3aCFlc9mTBSevZFK40Df84QneYUpdaxaJ7wCtvXtDZYw==@vger.kernel.org
-X-Gm-Message-State: AFuF++ljAaUjsFH3AwieHdj1LlxXmgA5IpY9qMx0v/CN9X5srRlGGNrv
-	XycB0Fz4SRbeS2yQ5u/7toTBOFpO1hefrh3PuYG1tAm9nyvMfzq3M3n2vU85c7eUs3ctWt014aO
-	p1wOAXM1vbawyt7R1ohz8jT0OPGW+NsWsIGW/dQlWKs+Kfya/QaCB/ghRmV/1uw==
-X-Gm-Gg: AR+sD11jGm+u3HWMGbYAtjN92MqlGMahKv5QPo/Vkz3C7mp91mWIwZpqsyvYVbIjl4e
-	DY6BL970ugbomJcvqiBa1l4Te4l5bIVIlw670uga4lVvi5P3j4CGXue4aioptoG1VyIncscqIcX
-	G574jETncsLV9pBGo8BZ2Hwkeso3u9pd2x9MkEYtMPo3nC7nxhvebWZ2DOeoN3aoTyIOvnJOj5d
-	EFlWkPxRKvTEAMuT+Wt1SKMWuW9xU6AVfLolh4+HqY6i6NtrHKVkUw8vz5lrLbqpwCXGgCdAgg4
-	Y3A/n8OKhWFRWj/6KVC1j8MoBGkbQcgHr1oanIhVgNw7xI/ZLK9tdEpQGAeYc5e8hKf5jh+uEU5
-	amt4IavCi7itu3ofUQwyYRwI8kikEOg==
-X-Received: by 2002:a05:6a20:431e:b0:3bf:b9de:8557 with SMTP id adf61e73a8af0-3cd8f294ee1mr683412637.9.1787590525666;
-        Mon, 24 Aug 2026 09:55:25 -0700 (PDT)
-X-Received: by 2002:a05:6a20:431e:b0:3bf:b9de:8557 with SMTP id adf61e73a8af0-3cd8f294ee1mr683336637.9.1787590525072;
-        Mon, 24 Aug 2026 09:55:25 -0700 (PDT)
-Received: from [192.168.0.6] ([49.204.106.1])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc199daeccbsm1253160a12.7.2026.08.24.09.55.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Aug 2026 09:55:24 -0700 (PDT)
-Message-ID: <e47bea2c-ddf5-4568-9a2d-a30a31793352@oss.qualcomm.com>
-Date: Mon, 24 Aug 2026 22:25:16 +0530
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="cOSMwhct"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A0471F0155E;
+	Mon, 24 Aug 2026 16:56:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1787590569;
+	bh=aVUNsYdJy/FbMJlOHEA8f+/GfBmyFwvR6FbrpO6Y4vQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=cOSMwhctCisiK+lAvh2P+xbtZh9l5VAThToxJjeE6QyS3Q3X4ZDtJe+x3UpW33WVW
+	 lO58BqQVMy37tQyzpJ5QdJxM84PtTkF1oWiS+2wZy6wkF+anYPLZWCRC2o1VeFDtZ5
+	 wsAzpwN/EqCKIF+OJ7CWQ9hlT/0YeNtgmadRO7TY=
+Date: Mon, 24 Aug 2026 18:56:05 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Jori Koolstra <jkoolstra@xs4all.nl>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	"open list:THERMAL" <linux-pm@vger.kernel.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	driver-core@lists.linux.dev
+Subject: Re: [PATCH] thermal: change thermal_class to a const struct
+Message-ID: <2026082411-flask-rewire-434f@gregkh>
+References: <20260811061530.21789-1-jkoolstra@xs4all.nl>
+ <CAJZ5v0i0PQEMTOT6UqWO87jCdV539ns-KcP69n++eQsz_NG0zA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/7] soc: qcom: geni-se: Populate clk_perf_tbl with SE
- source clock frequencies from perf OPP table
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Sudeep Holla <sudeep.holla@kernel.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Viken Dadhaniya <viken.dadhaniya@oss.qualcomm.com>,
-        Andi Shyti <andi.shyti@kernel.org>
-Cc: mukesh.savaliya@oss.qualcomm.com, chandana.chiluveru@oss.qualcomm.com,
-        arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-i2c@vger.kernel.org
-References: <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-0-61171ab1cdce@oss.qualcomm.com>
- <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-2-61171ab1cdce@oss.qualcomm.com>
- <d81d61fd-79d1-4bea-b93c-0afe44f9aab4@oss.qualcomm.com>
-Content-Language: en-US
-From: Praveen Talari <praveen.talari@oss.qualcomm.com>
-In-Reply-To: <d81d61fd-79d1-4bea-b93c-0afe44f9aab4@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI0MDE0MiBTYWx0ZWRfX7urTo0zC+dXn
- s4eDNVPYKDjv3N7Y69XyJ3dNbH/zf6B7mY8HuJfuA54Sz7P4Zk941cMFH1pHpIUmEfXGuSpotkC
- lLlHyJbVU1j3YSoJKX36p+bRtRoCVWLkEi+kzQxzvCwUNT+mbWO3YxA4yp9nM6wD7oHy03mW8La
- MurRP/8KUr0iZd/WMme5QaOJbSbWLF1GtonO4qj6dbLhdPE04qENx6ED/RzJK8YLZ5Hn3V3AEWk
- jsHB8OLOy9+Xxg9dZQHrqIMILTErWP51LNFaB6BeT+V9c2HWwHEPeercerYec7Jt83LzOf8CbME
- dc1mgm6MXEKYpMaSrkNoWfMK5iii1UdgRQZ0V1aVP2VWZQ7LObLXgLTm8WQp7GNTz/toUOil4qX
- k+bQ84wo8bHhyuKO//dOtTgFShYOA1eQEx9FTRdXDqkaIXISlL8xw6YaWgXMoyDG5KCC/VIsfTU
- q/rjzeybLjfLdsTFifQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI0MDE0MiBTYWx0ZWRfXzy6CjFgpyVSf
- 3rCbQt7ag7+45kobYeFHF7s7KxSNFJLk3d0BWVSDQznFscGmD7v5znmEzSb/MDRHoghmg0fb8Sb
- PIEkqaiWzEZsstm5mjIf+TMwnKrKCtI=
-X-Proofpoint-GUID: qvF3ynl5bwAtmBbmb_wG1gOqEsBQFxq8
-X-Authority-Analysis: v=2.4 cv=IL8yzAvG c=1 sm=1 tr=0 ts=6a8c777e cx=c_pps
- a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=3DKySdf3VQHjbkfL60kt6A==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=rko7XVifj6BEHbDbj-IA:9 a=QEXdDO2ut3YA:10 a=_Vgx9l1VpLgwpw_dHYaR:22
-X-Proofpoint-ORIG-GUID: qvF3ynl5bwAtmBbmb_wG1gOqEsBQFxq8
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-24_05,2026-08-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 phishscore=0 priorityscore=1501 suspectscore=0
- spamscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608240142
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0i0PQEMTOT6UqWO87jCdV539ns-KcP69n++eQsz_NG0zA@mail.gmail.com>
 
-HI Konrad,
+On Mon, Aug 24, 2026 at 06:09:33PM +0200, Rafael J. Wysocki (Intel) wrote:
+> On Tue, Aug 11, 2026 at 8:17 AM Jori Koolstra <jkoolstra@xs4all.nl> wrote:
+> >
+> > The class_create() call has been deprecated in favor of class_register()
+> > as the driver core now allows for a struct class to be in read-only
+> > memory. Change thermal_class to be a const struct class and drop the
+> > class_create() call.
+> 
+> This has been deliberately changed the other way around not too long
+> ago, in commit
+> 
+> 34f54003643e thermal/core: Allocate the thermal class dynamically
+> 
+> and it was then argued that it would be better to allocate the class
+> dynamically.
+> 
+> You seem to have a differing opinion.
+> 
+> Is there any plan to remove class_create() from the kernel?  If there
+> isn't, I'd rather stop this back-and-forth dance and leave the code
+> as-is.
 
-On 24-08-2026 20:26, Konrad Dybcio wrote:
-> On 8/4/26 9:57 PM, Praveen Talari wrote:
->> Currently, on the SA8255P platform, protocol drivers attached via
->> geni_se_domain_attach() treat each OPP on the perf domain as directly
->> corresponding to a protocol value such as a baudrate or requested
->> frequency, and simply request that OPP via
-> [...]
->
->> @@ -1175,6 +1181,29 @@ int geni_se_domain_attach(struct geni_se *se)
->>   	else if (ret < 0)
->>   		return ret;
->>   
->> +	perf_dev = se->pd_list->pd_devs[DOMAIN_IDX_PERF];
->> +
->> +	num_opps = dev_pm_opp_get_opp_count(perf_dev);
->> +	if (num_opps <= 0)
->> +		return num_opps < 0 ? num_opps : -ENODEV;
-> if (num_opps < 0)
-> 	return num_opps;
-> if (num_opps == 0)
-> 	return -ENODEV;
-Sure, will update in next patch.
->
->> +
->> +	se->clk_perf_tbl = devm_kcalloc(se->dev, num_opps,
->> +					sizeof(*se->clk_perf_tbl),
->> +					GFP_KERNEL);
->> +	if (!se->clk_perf_tbl)
->> +		return -ENOMEM;
->> +
->> +	for (i = 0, level = 0; i < num_opps; i++, level++) {
-> One iterator is sufficient here
+Yes, class_create() is going away.  I didn't notice commit 34f54003643e,
+but that's the wrong thing to do here.  We should just revert that
+instead.
 
-Will review and update.
+thanks,
 
-
-Thanks,
-
-Praveen Talari
-
->
-> Konrad
+greg k-h
