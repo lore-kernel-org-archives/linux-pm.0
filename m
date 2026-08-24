@@ -1,189 +1,238 @@
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022116.outbound.protection.outlook.com [40.107.75.116])
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011020.outbound.protection.outlook.com [52.101.52.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A55AADF76;
-	Mon, 24 Aug 2026 03:44:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.116
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5629B34F27F
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 04:37:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.20
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787543062; cv=fail; b=UprS9+gMojshAVr5jzY//h4tIwU0SuLSGHl4iDYz3I8cWss6b5OGQUeuezbvOd476r/yIDDU2nDEZnZQAfL7VGk4fA1g5OBleTxKO03IXnJ+N4OPYjt666lx1y9vLfKIE77N0q9LTrIrdvvZBgoIMS8m3lAtqMwwBYrXsh4yIRo=
+	t=1787546238; cv=fail; b=eCyldkDvUVOVE7SMKwFxSCHftsXFVSmnRl7uwY4pAH0u0iL3XzqnHztPxqvBxNrOWCPrKKEUQN88uxlz2BXc9/72B2wTVGvKjNcmbH7N7TFSjdGtUeC4AhlPEXs6UevP4DyiQ3W28ojCLcm4TZfajMXmk4xuW6l0VjQ86UGt4M4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787543062; c=relaxed/simple;
-	bh=DgflyNDHzfdYicEEzJlOh6ruZvRq3OVPPs0YkJA1VSs=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=plBJ76iRqqHmwkpVB0yTmDhsLI8rCMmm6QXxr7W0bI+Z9gO4xp3EMdCdFlrjc3WE8SdeprAzqo4Wdv5L9QN22aXCeGw0OINFtVbdPQxH6oV+B8fb/070CtawZIpPTEycjmcjmiOPbfxo/LvYFnVpcM5VEreds9rCjKlYtuK3V7w=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=transsion.com; spf=pass smtp.mailfrom=transsion.com; dkim=pass (1024-bit key) header.d=transsion.com header.i=@transsion.com header.b=lfWIwgCL; arc=fail smtp.client-ip=40.107.75.116
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=transsion.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=transsion.com
+	s=arc-20240116; t=1787546238; c=relaxed/simple;
+	bh=XONXAuOxjQs6VMivIpIRxQr5GqN8CXSJEBlOMiemPXM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=EvMRPBdcByP0un8S7cnJIlXzD0jcTN8jTgo7xJdCOkIScIgRSQ+ZB8ER/LZmaCu8yJhtyKOsnajeys6YFWBb+DdKYlkijvGL4DFMfCUeIVA6wbXWwxQ4AR4F2HI1Vbi9IsD3Wsj3R98bWSM0yuL/QZCF+/7N03enRaUnHS4JvHM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Ix//Rqf1; arc=fail smtp.client-ip=52.101.52.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=transsion.com header.i=@transsion.com header.b="lfWIwgCL"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Ix//Rqf1"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Lje0A8EtdaUIUwFmyC33pch3TnULSq4psELbU5b4mtyIlg5jsqob1/Nk27ru0kWMaA2hmpqtaHfhZQc29tnISSlgKBK9vKNHcQP9YWwKjioj4p0vCd7VgSHfjgc1LGftU5vY19bxP/eVZfVitb/tLZgbnxA+PB7O3Co8Z15n6/GzzOpql5yGI0yKDHyjv4rvsst3TYNczXX13afhriftM64T+NpWq2BwQ7j+imoY/O9aTEqxQPYrOxLDRsSgwKRN+vm8aKiuxms2el2VEcmGxG35bHxw+B9Gfz4+4cUaNfEyZACZwbXQy/VO50Ry3hapiXPfDmyp+DQBUhKTiS0tYQ==
+ b=UQqYMhewN5tVTIWVq6EfMaLImsPHtq9QHUF+H6XHO04G0S9SdUNG79SRUzk7zF9dO3YTF6OkYkdeD+Ve8QXmnTiXdUhEWEatJdw19VwTh4dc4Jgb67EFTfstxmpODC1Ubx9JdOlx9MBKZipeRfMLnvidw1u1+dhJgmpNFtA5dSZFBIxq4zIAwstHrkVrwIqU46Ald99CR7fFgAKLGL3JyYoe4nS+eoT4s92EGzuoqRRwlme1c2neiSDOa8tCzzRPyNNpRieTyRm1cYMjGXAKKuhl/qBGb33swKRP1Rhdysxnwc6gKNsfIKw8DSQ5eDYE2Flbp5+mbBw6JEQCkHs/xg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DgflyNDHzfdYicEEzJlOh6ruZvRq3OVPPs0YkJA1VSs=;
- b=HCPiZ/fD5kPJ3uuU7379srhRCxfkYFuEMBnTFBMq7DZxuCoyaCgSXB3taoQ76URLXsvIidNkFUv/s6b0druQpGOmkdVPhhwltbb2INd9YWzjz9qERdDbNV3/ssh/gmk9lbPuAUtltC+NyLyRwSMQ868PVxpoO1gmj5bmK8GHdckZrg+j5FuMVgb1ah2ezoYfiRm39O8Qd9pNfapCCFw0N/CjdLd7HGuMh438gcrENWkFQW25z0DPGHdZPnGJ3JPDC/TBopmWrDa0r6pRHTKulRCk67Uw/7OYHxgmL6u6zDSeMr2UDm6o9QqaR0X5fOy7BNCFi5YRjsTJxRxoppMdTA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=transsion.com; dmarc=pass action=none
- header.from=transsion.com; dkim=pass header.d=transsion.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=transsion.com;
- s=selector1;
+ bh=OJg58SkW+lexvpbRFo8YlEY3QuFR1D8vEIu5mHVsGaw=;
+ b=IDCYTjPdUSBU1/LhKOsz4LGKwr1Q/+DZyNkI7FnAJt/mSt6agsdjO/tMwhN5Bwh+A7u8C/9d9ILmZxVoEiW/2nprol+TNHjJW141LTT8FbExNIRg2HwIha7EtJIdMw1d9ZJqt7EhRyitERuxTEG/zPLYsJfqHKYcfkvnc9zWCrcIsDMcGxXdqXejm/XPUWgTERql3f3XreY24QGWUUOJ479yHjVP7ihDMig2I4mamwCq6mHqCTTgjpXTjA4yTZ0jfxZoSzf4EDhQW06D5Ov/dWZUbkhxuKbKm7MRs8rpohEDSXHtwAO7aGJxDzke7AZmQAH2sw1AbYzlzdukslN5CQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=gmail.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DgflyNDHzfdYicEEzJlOh6ruZvRq3OVPPs0YkJA1VSs=;
- b=lfWIwgCLxIXtYk3bsrbwUpBiCKWv2Q0CKqWIWw7Q65PPLxZzCZqvw+9zxRwnNd6hC6f+GEOGzPwpNlsKpdi4QlPq7nMxL5cqBJ1ef7bTWkWP/O/TAq/dt1yhXVebBbFkJqVsxcprg7wOu+p0zUG0wOzmv/eNv3TY+guj293Od7Q=
-Received: from KL1PR0401MB6196.apcprd04.prod.outlook.com
- (2603:1096:820:c7::13) by OS8PR04MB8280.apcprd04.prod.outlook.com
- (2603:1096:604:2a5::7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.6; Mon, 24 Aug
- 2026 03:44:15 +0000
-Received: from KL1PR0401MB6196.apcprd04.prod.outlook.com
- ([fe80::f2ee:1e28:9022:99f3]) by KL1PR0401MB6196.apcprd04.prod.outlook.com
- ([fe80::f2ee:1e28:9022:99f3%3]) with mapi id 15.21.0360.005; Mon, 24 Aug 2026
- 03:44:15 +0000
-From: Hongyan Xia <hongyan.xia@transsion.com>
-To: Jianyong Wu <wujianyong@hygon.cn>, Ingo Molnar <mingo@redhat.com>, Peter
- Zijlstra <peterz@infradead.org>, Vincent Guittot
-	<vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@redhat.com>
-CC: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
-	<viresh.kumar@linaro.org>, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>, K Prateek Nayak
-	<kprateek.nayak@amd.com>, "linux-pm@vger.kernel.org"
-	<linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "jianyong.wu@outlook.com"
-	<jianyong.wu@outlook.com>, "zhongyuan@hygon.cn" <zhongyuan@hygon.cn>,
-	"huangsj@hygon.cn" <huangsj@hygon.cn>
-Subject: Re: [PATCH] sched/fair: Only apply cpufreq pressure where frequency
- is invariant
-Thread-Topic: [PATCH] sched/fair: Only apply cpufreq pressure where frequency
- is invariant
-Thread-Index: AQHdM3mscPSSkrbdG0OLR3n/gvPslbasjrYA
-Date: Mon, 24 Aug 2026 03:44:14 +0000
-Message-ID: <fea033f4-a680-445f-b231-2a0cc1dded8b@transsion.com>
-References: <20260821073927.455475-1-wujianyong@hygon.cn>
-In-Reply-To: <20260821073927.455475-1-wujianyong@hygon.cn>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=transsion.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: KL1PR0401MB6196:EE_|OS8PR04MB8280:EE_
-x-ms-office365-filtering-correlation-id: f629be79-f8ba-4d52-89a8-08df0191f7dc
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|7416014|376014|1800799024|366016|23010399003|10067099003|38070700021|56012099006|11063799006|22082099003|18002099003;
-x-microsoft-antispam-message-info:
- NPgnDZd1hhCOuUPJO3Yf6p5zYz0nUvb33QJv9nNAJUaYAGwTpkIbpL2W798dp5il2gD7YuZ1etMmcyEtMPwqRwGT3YryqN4JNp92gypC0vVTLhJ3LXKYVISLIY/DYH0We11jrwC/zvQ2kWIqKBeeXL+NcpOwSdo8y0f9PLxih1HBF+pKO8bfd3URnXdQdNDx+nysmcd5Sz1zUBe3qzSdhQamo5798ESCZ0aM+KkwK3eOhSlVZK9YfWICZAOvAKWs1R+p14AQXggxJZG/UvgLMUkpz/tjf6FvJEDFWk4COayU3l3WfaDqx4laUgAg59Zv0kuvM3XmCkWmmDwWA8uHGVGZrqYqjOYCKskT3qinpEBpiiy/DAu3fUuVLqYkqfDypNvw+VNgQvcFjiXsKHG0MbDO5O/pPkgCoP9yEVsaG7ZXnHAeBtyapp9JCtei2eaJBMp5uFZTde+Cin1TWe1RcKYtQTDvGlHfc0+gBzDptQTvvhpyOrQyCrB4iQ0dCqzWB/jQfSR/oGCFZYo6u9/aA33a9G6tiTFUw64fSV3Yy2OBcugfNgTloDJHnOdz6vVP2i/pNitB4oU75MrkzyJi4P30XYFbelfTMZG0mvSWqzxh5wpYZLA3TjQo+2kUHmoqlVguJaIDU6wwfRHeVgPvqABYWsk1KQcvJaIEtG631vP5RlQ9gbzocDCz6EBHg6oY58EjyIkbdt/Do/waB/SgjnoohQl3hpYBboXSNrJxvek=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:KL1PR0401MB6196.apcprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(23010399003)(10067099003)(38070700021)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?cUxxWUlGS3RadmF1SG55aTRFSGhvYWtaQzNSV3doTG84TnJsWlNZU1dTZlp2?=
- =?utf-8?B?V0JCYkRHVkxWY2xQRUlpclFpL0hsU0RFbTFyUENDRzdrNFdiZ0IzYU9BSUJV?=
- =?utf-8?B?WjdjYW9xbi9VZCtFekd0Y2NRUXhxUWRiVldkeStQOVVPYlllUTlQaWVsZWkr?=
- =?utf-8?B?bWZKZElucjRkb0tIbS9CZS8rbnRpZzZQWTc0ZlJ5dHFiSkUxZ05XWmo4WUVE?=
- =?utf-8?B?dHRrTkcwR2pkOUJBZXI4ZVMxd2tzQ05SVmhmM01ERFhTcTZjWVd5K2dEYVpP?=
- =?utf-8?B?U25kWjZXV2s4QUljL0ptSzlieWxvMnA0SGlNNmFEeWowOUM4a3RDWDl3RG1n?=
- =?utf-8?B?cGdCbjFMQmx6UHpURnpxdGtPT2pTK1c5NjdIMkQ3bENmNUMvVVBoQnQrNXZ6?=
- =?utf-8?B?VFNZREFVRnhnVDFsNmNYSVY3NkZVazFhTk13SENpYm11ZU0yTkpNcUxwUytV?=
- =?utf-8?B?ZUlZOGkwdTlSUUNqNWdYbVJWTUM1RWh6YmhOSHpxcHFwNVFaRmVkMTRPVm5m?=
- =?utf-8?B?SGl1NVo3MmtNeUdGWG9JWTlxS05STEFkZG5QdkZqZDZCOThValUwOVc2TkVP?=
- =?utf-8?B?K0dLaUE2eWJ0VEFzQmVLdkgwUzU2T293RXhRdFF4M3BYTVB6dVh6alJSUmRM?=
- =?utf-8?B?REFxaHBBVHdxNldubDZWZUs0YTVwaUxBSjRzNTJCbGlqRDZLZ1YwNUxrZWx6?=
- =?utf-8?B?TXFZMUN5ZElOSjRQVUNyaFhrWXNrTzArTWxzYjkyMElYdXJBUGhpejNyL2hu?=
- =?utf-8?B?U0toOVI0RWNqU3RiaG8vMnhPdlg2Yldtb1BZWjFpNHlnQ21UMkF0bXRWM0ZM?=
- =?utf-8?B?UGF3Z3pId1NYWWJMeDRldnJDdXdSYi9wWGhyRHdJNkU5WGl3NC9kQnNMMTJO?=
- =?utf-8?B?ZHB2bFNqUWJ3UkNVM0dJcWVoVHRnazZDUDVHMWpYUzFCMWM5ZjVLOEN0ZVkx?=
- =?utf-8?B?WVYwVmgxeHM2TThoOG5ldGNKRlVLQVF0N2ZQVlZMVnhMQ2Voc0tJdHRIS1l4?=
- =?utf-8?B?V2pXR2JENWtWZ3Exc3dlK3VKMm9ZRTZYbzVCRU5lSTFRM1dRR0EvRGxGbTRw?=
- =?utf-8?B?Q0pFZHNPY0ZWNWNYQmt0Q3ZnNTJXblV4Vi9CZWloSG5KcTNHWWhWcks5T0NV?=
- =?utf-8?B?VW5tMzBqNlgvaFhOdHRBWDdkTUljR3NpTVBzTlBHSDJDNHAzVnBhclJDdGg0?=
- =?utf-8?B?Mkp5YnFqOUpGZ3QxQlVRK2xaZHJwWHIydS9xQTA5NjNGdG4rakJjN2NRVzJw?=
- =?utf-8?B?Lzc0Mm9uajgvb1MrbUFzaDFVV2FvWWZBQnR3R3Q2d09ucTZENTkzSmN4ejdE?=
- =?utf-8?B?YzlKT2NGbFpoWUFHVmMvWC9NY2ttSmZIT0t6SHdVMHRVak5mSlR1VmhzMCtY?=
- =?utf-8?B?MXBPL05NdVRLV1A0OGdKT0VGUXRzRjJMZGlkVFFha3RQT3BGV01ZdlVmdTc0?=
- =?utf-8?B?WlhncTlxcXhVYStwcmNTOVdURFh0aTI5YVhHYmNhRk03U1RhU2U1ZnlmVWRy?=
- =?utf-8?B?dUoxVnFFalFBb3RzRnNBS0xtWEJGRFlRMzR5NHpsMnNUYWV5SVF1SE8za3l3?=
- =?utf-8?B?MFpSa2RzNUp3M1k4MC8zamh2dU5lTHd3a0VGUUU2Q0dZdk5yUGxVY3BzeUNT?=
- =?utf-8?B?RG85cHBxTjVkNlNNMlBwcURleEorVjZWaDd5SzNWRVpiZEViTTVFSUtlU05y?=
- =?utf-8?B?OWNtY1Q2d2docU9rSnRjb3BqeUpPcWs5QUhnUDNPbmVUOEhpZTVBd2ZIUU5J?=
- =?utf-8?B?b2FQODBsdkcrc29GME1PQ3IxSXoxNWFraXdaNXdUNEl2a255dW9ISGhPUlh5?=
- =?utf-8?B?VFJKWGJvd1h5dDY2bmJtOE5uZTBXWGZvUWpDeVh6RmRRcDVqT0JhZmZmQTBL?=
- =?utf-8?B?Um51Njhlb0psdVNDZEp1QmhxbWtBVk5laFRJUFAxRGxmRkNNSERBcWtRaTNo?=
- =?utf-8?B?ZGIxaW5McUx2MkNzYTJBbkEyTWVDRzBVNWlzUnRobTVCN0ozN0wxSUkwRXBo?=
- =?utf-8?B?ZWpuUzhkL1YremUwTE1lcmZuY0ZsenVRZzFSOHJWM0U1blV2Q1Rtc25YVVM4?=
- =?utf-8?B?aEtpMVV4R29TSmhjSm5xU0lNakQxK3FkL0dKd0NsRFlCeXA4SHExdFFnWWxq?=
- =?utf-8?B?SnVqUjEwN2pEeElrc3M1cHFBUHhoMEFwb3J6SEs5UGU2ZjNQY25zNXB6bHEx?=
- =?utf-8?B?NVFyQ01TTHlKbVd2dXAwRlJCT2NBZ0FNY25OQ0R0bTBERWFvc056WHlMbFpN?=
- =?utf-8?B?dDVnMU00elFlTDFSZHpSYW5EdFVnZklnbUFNbmtkZ0doQ1pYS25uU2lNZWVI?=
- =?utf-8?B?M2VJRUw2aVhhcWNhY3dtclNWQ2liTkdpV2Q0RnEzK3UxWmk1MnJRcUM4azFO?=
- =?utf-8?Q?KZvDXsz/hcJ5pD4Q=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <E7A87E112CE418488DA292BA26D280FA@apcprd04.prod.outlook.com>
-Content-Transfer-Encoding: base64
+ bh=OJg58SkW+lexvpbRFo8YlEY3QuFR1D8vEIu5mHVsGaw=;
+ b=Ix//Rqf16pesLOUcVBXeq6y9AGDhlVnJKxYh93xGdep5pbn4xkd81Ea2lkEDxWapaN8T3vET0XxKsEBAB59c+jc+KkW5jUu9P83/vLksyFvLtOC6r/VQlrsr3eEl0UyTubN1kZGx7s7ZhTBwHimETbD7IoykaxYKBAfSF40QGv4=
+Received: from SA1P222CA0181.NAMP222.PROD.OUTLOOK.COM (2603:10b6:806:3c4::28)
+ by MN0PR12MB5737.namprd12.prod.outlook.com (2603:10b6:208:370::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.12; Mon, 24 Aug
+ 2026 04:37:09 +0000
+Received: from SN1PEPF000397B3.namprd05.prod.outlook.com
+ (2603:10b6:806:3c4:cafe::71) by SA1P222CA0181.outlook.office365.com
+ (2603:10b6:806:3c4::28) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.339.12 via Frontend Transport; Mon,
+ 24 Aug 2026 04:37:09 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ SN1PEPF000397B3.mail.protection.outlook.com (10.167.248.57) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.360.3 via Frontend Transport; Mon, 24 Aug 2026 04:37:09 +0000
+Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Sun, 23 Aug
+ 2026 23:37:08 -0500
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb10.amd.com
+ (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Sun, 23 Aug
+ 2026 23:37:08 -0500
+Received: from [10.136.43.157] (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.45 via Frontend
+ Transport; Sun, 23 Aug 2026 23:37:07 -0500
+Message-ID: <a5789fed-14c7-4760-bd45-dbc26bfe8df3@amd.com>
+Date: Mon, 24 Aug 2026 10:07:06 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: transsion.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: KL1PR0401MB6196.apcprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f629be79-f8ba-4d52-89a8-08df0191f7dc
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Aug 2026 03:44:14.9942
+User-Agent: Mozilla Thunderbird
+Subject: Re: amd-pstate: Cezanne data fabric sync flood on DC gated by CPPC
+ max_perf
+To: David Smith <smithd98@gmail.com>, <linux-pm@vger.kernel.org>
+CC: <ray.huang@amd.com>, <mario.limonciello@amd.com>, <perry.yuan@amd.com>
+References: <CAJVKnz-nj2rk33U9pNMaxzKDOvqZNaQBE5otdCc8Znt8m97anw@mail.gmail.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <CAJVKnz-nj2rk33U9pNMaxzKDOvqZNaQBE5otdCc8Znt8m97anw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN1PEPF000397B3:EE_|MN0PR12MB5737:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5c40af69-b898-4dd7-0032-08df01995bba
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|376014|1800799024|23010399003|82310400026|13003099007|6133799003|10067099003|56012099006|11063799006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	NnsbRQl6YBYDlFDv8gq29uAxwRjn8E1ShMstjx2iDFcvUYRYhaiWOoFJ+gpyJx5IUxR1y10XB/lbp5Rd66pdUQYQu8lL8/HBg6QFIR90YUTwpMUP7S2ZmEl6vpu78oXbn6Irm1KmEW8Xz/et6eBce+bYO5ulrmAYp6VCOhvDOydeUkwgteGW/nIy/gPRK7sHbmCjn3WnoIG16iBUWcxh3V/Ttf3yZOwUrHpPZWHQUPdT0h/yPgypOtFTvdtCRVSymbCWXjofj6Y+w7l1j2qkOLZSaA0ryPE0ooruByRrnQ7Uc0ySoZMEvOppx2b1iAfCc2QOOhkXt8SFVEK5NVsZke+qE6GeOnzzloFLJCt0Q/jlR0WV27bD76RsSrZIQIQmackfDsyRex2Cqflj77AkjHfczsP+bxVXlx3uPGf2PwdaOoLw/H1jLyMfCDbIDTXyvFr7C4efk2AiUjJCw9lN5aeNy4JV5LEW+gh0+4xG9pB4zDrxaTDHOFg6AasysulcqiMmaQcWKus1xAnVaZsdfJEobWRHw7i4epy+SmT9eSnlC16sdFKkglMc1v2doRKN85KaPvJEDY/COUWcZNiRV3pv3cb4Q9FpO7r4Q8ziX6ZG/hrATLiZat/gkVpA+o6gn/s/wgvui1rsORQZzx/e3w==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(1800799024)(23010399003)(82310400026)(13003099007)(6133799003)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	PgYWyUY2qLsyNC1VKIvD1dQ+NJYZiKb0Ip3d418TbnXyBU1dH/1Rtmk8cUDd6L4mWaml1zQjYUzHQdkMSGmXTfdp8SEOHwDoIqbpVxIrcEXdf4qDFJnktvEGd4U53QKidobx371KKfZq+/l9YCvD04nMcp6wbOldsxDmHrHwpVLDjso5YMhs92l/EHbhE4n+x29LhYTtXPxbwp/XvWavsxRoSdOmuHEXgfbRo65AHSWfbgZc3rHVJTYko5lD5TUknu0YIvpmL0f9oTgn9/ei95TPCX6wSiN21MWco8ssfiZ/JqjcnPvnb/ndJlItA0inqW63DSVQBB+HTqQfdBaCff5k/uzf4Yc5oiNqqCIvqcj1LAxRBJpWsmBW9StF7W098Mg/4M0CwWLu8dId9gV1qoC+lkPYabHXbf3+5b3x0+46U+X6+ZN/LoMEZefo9uEu
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Aug 2026 04:37:09.0077
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 2e8503a6-2d01-4333-8e36-6ab7c8cd7ae2
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Yr4FRmGt842Fck2UOhJZrWQnEHh36cmFwZSRA85e03F/7onT8vqbs8d8SwOnoX2olQXfPNNC5fEIimA6/rct0tSsD1hdwOSLFF5Q6nggw1w=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS8PR04MB8280
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5c40af69-b898-4dd7-0032-08df01995bba
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SN1PEPF000397B3.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB5737
 
-T24gOC8yMS8yMDI2IDM6MzkgUE0sIEppYW55b25nIFd1IHdyb3RlOg0KPiBjcHVmcmVxIHByZXNz
-dXJlIGxvd2VycyBhIENQVSdzIGNhcGFjaXR5IGJ5IHRoZSByYXRpbyBiZXR3ZWVuIHRoZSBoaWdo
-ZXN0DQo+IGZyZXF1ZW5jeSBpdCBtYXkgcmVhY2ggYW5kIHRoZSBoaWdoZXN0IG9uZSBpdCBjYW4g
-cmVhY2ggcmlnaHQgbm93Lg0KPiBVdGlsaXphdGlvbiBjYXJyaWVzIHRoZSBtYXRjaGluZyBzY2Fs
-aW5nIG9ubHkgd2hlcmUgdGhlIGFyY2hpdGVjdHVyZSBpcw0KPiBmcmVxdWVuY3kgaW52YXJpYW50
-OyB3aXRob3V0IGl0IGEgZnVsbHkgYnVzeSBDUFUgYWNjdW11bGF0ZXMgdGhlIHdob2xlDQo+IFND
-SEVEX0NBUEFDSVRZX1NDQUxFIHdoYXRldmVyIGZyZXF1ZW5jeSBpdCBydW5zIGF0Lg0KDQpHaXZl
-biBob3cgUEVMVCB3b3JrcywgYW55dGhpbmcgdGhhdCBpcyBhbHdheXMtcnVubmluZyB3aXRob3V0
-IGlkbGUgdGltZSANCnVuZGVyIFBFTFQgd2lsbCByZWFjaCAxMDI0IGV2ZW50dWFsbHkgcmVnYXJk
-bGVzcyBvZiBpbnZhcmlhbmNlLg0KDQo+IFJlZHVjaW5nIGNhcGFjaXR5IG9uIHN1Y2ggYSBzeXN0
-ZW0gc2NhbGVzIG9uZSBzaWRlIG9mIHRoZSBjb21wYXJpc29uIGFuZA0KPiBub3QgdGhlIG90aGVy
-LCBhbmQgYSBmdWxseSBidXN5IENQVSBlbmRzIHVwIHJlcG9ydGluZyBtb3JlIHV0aWxpemF0aW9u
-DQo+IHRoYW4gaXQgaXMgY3JlZGl0ZWQgd2l0aCBiZWluZyBhYmxlIHRvIHJ1bi4NCg0KU29ycnkg
-SSBkaWRuJ3QgcXVpdGUgY2F0Y2ggd2hhdCAnY29tcGFyaXNvbicgbWVhbnMsIGFuZCBpdCdzIGZh
-aXJseSANCm5vcm1hbCBmb3IgdGFzayBhbmQgQ1BVIHV0aWxpemF0aW9uIHRvIGV4Y2VlZCBjYXBh
-Y2l0eSB3LyBvciB3L28gDQppbnZhcmlhbmNlLiBXZSBqdXN0IG1hbnVhbGx5IGNhcCBpdCB0byBD
-UFUgY2FwYWNpdHkgaW4gYSBmZXcgcGxhY2VzLiANCkNvdWxkIHlvdSBiZSBtb3JlIHNwZWNpZmlj
-IG9uIHdoYXQgdGhlIHByb2JsZW0gaXM/DQoNCj4gVGhpcyBiZWNhbWUgcmVhY2hhYmxlIHdpdGgg
-Y29tbWl0IGQyZDVjMTI5ZDA3ZSAoImNwdWZyZXE6IE1ha2UNCj4gY3B1ZnJlcV91cGRhdGVfcHJl
-c3N1cmUoKSBmYWxsIGJhY2sgdG8gY3B1aW5mby5tYXhfZnJlcSIpOyBiZWZvcmUgaXQgdGhlDQo+
-IHByZXNzdXJlIHdhcyBhbHdheXMgemVybyB0aGVyZS4gV2hldGhlciB0aGF0IG1hdHRlcnMgZGVw
-ZW5kcyBvbiBmcmVxdWVuY3kNCj4gaW52YXJpYW5jZSByYXRoZXIgdGhhbiBvbiB0aGUgZmFsbGJh
-Y2sgaXRzZWxmOiBhIHN5c3RlbSB0aGF0IGhhcyBpdCBzY2FsZXMNCj4gYm90aCBzaWRlcyBhbmQg
-aXMgdW5hZmZlY3RlZCwgd2hpbGUgYSBzeXN0ZW0gdGhhdCBkb2VzIG5vdCBzY2FsZXMgb25seSB0
-aGUNCj4gY2FwYWNpdHkuDQo+IA0KPiBGaXhlczogZDJkNWMxMjlkMDdlICgiY3B1ZnJlcTogTWFr
-ZSBjcHVmcmVxX3VwZGF0ZV9wcmVzc3VyZSgpIGZhbGwgYmFjayB0byBjcHVpbmZvLm1heF9mcmVx
-IikNCj4gU2lnbmVkLW9mZi1ieTogSmlhbnlvbmcgV3UgPHd1amlhbnlvbmdAaHlnb24uY24+DQo+
-IC0tLQ0KPiAgIGtlcm5lbC9zY2hlZC9mYWlyLmMgfCAxMSArKysrKysrKystLQ0KPiAgIDEgZmls
-ZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0t
-Z2l0IGEva2VybmVsL3NjaGVkL2ZhaXIuYyBiL2tlcm5lbC9zY2hlZC9mYWlyLmMNCj4gaW5kZXgg
-YzE5YTAyNWQ4ZDY4Li5hMTYzZTAwYzk4ODIgMTAwNjQ0DQo+IC0tLSBhL2tlcm5lbC9zY2hlZC9m
-YWlyLmMNCj4gKysrIGIva2VybmVsL3NjaGVkL2ZhaXIuYw0KPiBAQCAtNTg1NCwxMCArNTg1NCwx
-NyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgdXRpbF9lc3RfZGVxdWV1ZShzdHJ1Y3QgY2ZzX3JxICpj
-ZnNfcnEsDQo+ICAgc3RhdGljIGlubGluZSB1bnNpZ25lZCBsb25nIGdldF9hY3R1YWxfY3B1X2Nh
-cGFjaXR5KGludCBjcHUpDQo+ICAgew0KPiAgIAl1bnNpZ25lZCBsb25nIGNhcGFjaXR5ID0gYXJj
-aF9zY2FsZV9jcHVfY2FwYWNpdHkoY3B1KTsNCj4gKwl1bnNpZ25lZCBsb25nIHByZXNzdXJlID0g
-aHdfbG9hZF9hdmcoY3B1X3JxKGNwdSkpOw0KPiAgIA0KPiAtCWNhcGFjaXR5IC09IG1heChod19s
-b2FkX2F2ZyhjcHVfcnEoY3B1KSksIGNwdWZyZXFfZ2V0X3ByZXNzdXJlKGNwdSkpOw0KPiArCS8q
-DQo+ICsJICogVXRpbGl6YXRpb24gb25seSBmb2xsb3dzIGZyZXF1ZW5jeSB3aGVyZSB0aGUgYXJj
-aGl0ZWN0dXJlIGlzDQo+ICsJICogZnJlcXVlbmN5IGludmFyaWFudC4gRWxzZXdoZXJlLCBsb3dl
-cmluZyB0aGUgY2FwYWNpdHkgd291bGQNCj4gKwkgKiBzY2FsZSBvbmUgc2lkZSBvZiB0aGUgY29t
-cGFyaXNvbiBhbmQgbm90IHRoZSBvdGhlci4NCj4gKwkgKi8NCj4gKwlpZiAoYXJjaF9zY2FsZV9m
-cmVxX2ludmFyaWFudCgpKQ0KPiArCQlwcmVzc3VyZSA9IG1heChwcmVzc3VyZSwgY3B1ZnJlcV9n
-ZXRfcHJlc3N1cmUoY3B1KSk7DQo+ICAgDQo+IC0JcmV0dXJuIGNhcGFjaXR5Ow0KPiArCXJldHVy
-biBjYXBhY2l0eSAtIHByZXNzdXJlOw0KPiAgIH0NCj4gICANCj4gICBzdGF0aWMgaW5saW5lIGlu
-dCB1dGlsX2ZpdHNfY3B1KHVuc2lnbmVkIGxvbmcgdXRpbCwNCg0K
+Hello David,
+
+On 8/22/2026 5:16 PM, David Smith wrote:
+> Hi,
+> 
+> I have a reproducible AMD data fabric sync flood (reset code 0x08000800) on
+> an HP ProBook 445 G8 (Ryzen 7 5800U, Cezanne, family 25 model 80 stepping 0)
+> that appears to be gated by the CPPC max_perf value in combination with EPP,
+> and not by any physical operating point. 13 confirmed hard resets.
+> 
+> Bugzilla, with full data and a 770 KB evidence attachment:
+> https://www.google.com/url?q=https://bugzilla.kernel.org/show_bug.cgi?id%3D221909&source=gmail&ust=1787484988593000&sa=E
+> 
+> x86/amd: Previous system reset reason [0x08000800]: an uncorrected error
+> caused a data fabric sync flood event
+> 
+> Summary of the controlling experiment. All rows are on battery, same pack,
+> same charge range, same workload (llama.cpp 128-token prefill, ~6.7GB model,
+> CPU only, held warm). Peaks are from amdgpu hwmon plus RAPL:
+> 
+> EPP / governor smax_freq max_perf fmax vddgfx tctl steps deaths
+> balance_performance / powersave 4508086 166 3617 1175mV 63.8C 12 4
+> balance_performance / powersave 4500000 165 - - - 1 1
+> balance_performance / powersave 4100000 ~151 4017 - 84.9C 8 0
+> balance_performance / powersave 3800000 140 3748 1275mV 71.5C 33 0
+> performance / performance 4508086 166 4374 1462mV 85.8C 8 0
+> balance_power / powersave (AC) 4508086 166 4117 1431mV 84.0C 8 0
+> 
+> Rows 1 and 5 are the interesting pair: identical scaling_max_freq, identical
+> power source, identical workload, differing only in EPP and governor. Row 5
+> runs 757 MHz faster, 287 mV higher and 22 C hotter than row 1 and survives
+> 8/8, while row 1 dies about 14 seconds into a step.
+
+Thank you for the detailed report. May I ask if the same problem reproduces
+with powersave governor + performance EPP. Essentially:
+
+  echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+  echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference
+
+It will help narrow down if this is indeed an EPP thing or there are more
+OS side interactions needed to observe the sync flood.
+
+> 
+> So: pinning perf high is safe, clamping the range low is safe, and lethal is
+> the wide range with autonomous SMU ramping - balance_performance + powersave
+> across max_perf 166 on DC. This looks to me like autonomous perf-state
+> transition handling on DC rather than any operating point the part reaches.
+> Consistent with that, scaling_max_freq=3800000 prevents it even though the
+> workload never exceeds ~2.9 GHz uncapped; the cap narrows the range rather
+> than lowering the ceiling.
+> 
+> Never reproduced on AC. Reproduced on 7.1.8 and 6.18.44-lts, and on BIOS
+> 01.21.00 and 01.22.00. amd-pstate-epp, status active, prefcore enabled.
+> Microcode 0xa500014, verified loaded.
+> 
+> Ruled out: memtest86+ 7.20 five passes clean; HP preboot diagnostics all
+> pass; thermal (dies at 63.8C, survives at 85.8C); NVMe HMB (AER is OS-owned
+> and clean, ASPM disabled by FADT); OOM. Also the battery pack, which is worn
+> (~430 mOhm, sags to 9.48V under load) and was my leading hypothesis until the
+> row-1-vs-row-5 control above rejected it - no battery model fails at
+> 3617 MHz / 1175 mV and succeeds at 4374 MHz / 1462 mV on the same charge.
+> 
+> Note this is a single machine. I have not been able to confirm it on another
+> 445 G8 or another 5800U, so I cannot rule out that it is specific to this
+> unit.
+
+I see you are on latest ucode but your BIOS seems to be slightly outdated
+based on the information on Bugzilla. From a quick Google search, I see a
+new version (01.25.00 Rev.A) available for your system at
+https://support.hp.com/si-en/drivers/hp-probook-445-g8-notebook-pc/38228745
+
+Could you try updating your BIOS and check if this is still reproducible?
+
+> 
+> Questions:
+> 
+> 1. Is there a known Cezanne erratum covering data fabric sync floods
+> triggered by autonomous CPPC perf-state transitions on DC?
+
+I couldn't find anything specific that links to CPPC autonomous selection
++ sync flood but my hunch is with DC + Performance EPP, the SMU is probably
+misjudging the power distribution and that leads to an unexpected
+CPU + iGPU + fabric power distribution which causes this.
+
+> 
+> 2. Is the DC vs AC asymmetry expected - does the SMU run a materially
+> different perf-state transition policy on DC that could expose this?
+
+Yes! With DC, the operating assumptions changes since the power envelope
+is more limited. Plus, there may be additional tuning from vendors to
+make a trade off between performance, thermals, and battery life.
+
+> 
+> 3. Would a DMI-matched amd_pstate quirk clamping max_perf on DC be
+> acceptable upstream for affected platforms, or is this strictly an
+> AGESA/PMFW fix to route through the OEM? I am happy to write and test
+> the patch if you tell me the shape you would accept - I did not want to
+> send one cold given amd_pstate has no AC/DC awareness today.
+
+I'll let Mario answer this since he may have more background.
+
+> 
+> 4. Is there any way to get a fabric-side error record on a platform with no
+> APEI tables (no BERT/HEST/ERST here), to identify which agent flooded?
+
+Again, I'll defer to Mario since he knows the features on the client
+side better.
+
+> 
+> Current workaround, if useful to anyone hitting this: cap scaling_max_freq
+> to 3800000 on DC only. 33 ladder steps plus a 35 minute mixed-load soak at
+> load average 29-34 with zero resets, against 5 deaths in 13 uncapped steps.
+
+Thank you again for all the experiments and figuring this workaround.
+
+> 
+> Happy to run further tests on this machine - it reproduces in under a minute
+> and I have it instrumented at 5 ms resolution. I have the full boot ledger of
+> all 13 resets, per-crash triage, and the 5 ms RAPL/hwmon sample sets for every
+> row above; the bugzilla attachment has all of it.
+
+Let me go look more at the data there but re-checking with the latest BIOS
+just in case something already solved this would be great if possible.
+
+-- 
+Thanks and Regards,
+Prateek
+
