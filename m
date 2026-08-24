@@ -1,113 +1,82 @@
-Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC7A63F6C39
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:18:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B5483F1AB9
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:29:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787563140; cv=none; b=TK2JT25tUbjDnLOf4C8tc7XF/h54BIYFk+6c3qe3cC98yXU2FEn6uY4LhkVvX2bkYD+SApq4uHrlJaQHluX8WU9+HOC89EbyRIT1ekJEQ3IRiECOSNTnACLJcS1Fv2/ftZ7SD5O0PxhQoQu6AYS8VCuVJ4Ww9q1LR2yqN16gvms=
+	t=1787563764; cv=none; b=BIr2cZYOHtHN0Kn5bk5U06658RodvcVzwDCCP1SWQibhDUMUc6grUGMof3ZSJ5W6EUShX7T1ErHgCK/eDq6/Q0d2xsVtS3dsreQ0vihpWTQ11zDxjJOlDikSJChqj2PYdfk1i+ZPpyNSsu/xfkjSHTPA2cEvepfoNNqqXlcqJ0U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787563140; c=relaxed/simple;
-	bh=WhHWUx1lkpZdwfjQMtwcJicNC0V9nwr/uenYypZhCYY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ihff74pJES5JParMcWgapSxqhDvIY0EAvwbqTs0eTPg6MeipZx543LFhwhXLWho44rf3UKMgAi6DQsJzhVEZwHc/MKNhUGuBz70qVLbb1RbvPDzpz/MI1Le05AWN23rsr8Vle2AuvFRNwIvbw2c2aPBfbXdVShihq6PFIVa+ug0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MiZts4lX; arc=none smtp.client-ip=209.85.210.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1787563764; c=relaxed/simple;
+	bh=SaJrbGxwzSHJgMPk0NkIgSbglqsEiWC7+eg/xh/RPV8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GpAEkWD/WuavrEry2viOQFgT016p1WNRQ6XHqpZo4vH2emzIcVIv2+53MBQ8a/XreTMddI7HuClNSD30VQvYKygIFd07Mh0s/00TUW9VPbeShbJVxcLJGQw5sRloT9H24DTT7jr/opgBWu62iPCXeDr/zg/ng13/8NriqiRqdaE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DK34VmRZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MiZts4lX"
-Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-8520161fdb9so2907999b3a.3
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 02:18:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1787563132; x=1788167932; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Pbr5eP75HMWDjVi5kSReXoq3ufPagXFdRczlYd+lCws=;
-        b=MiZts4lXoJkLr5HBI4HQPY7610zQ5iyr38oxrXtio882yooTVihC3CZYo859or82nk
-         G0mMU52DSVGVcAAIKiSZAmF1E4ennLMXvMTp9ouo1x2Ilz0HU1pL0T7SZQGAzcZMOxi8
-         VH8G39IcfEKDPR2F4CsGZKbs74ypLf0tL8LBYhAzt2e+vmF+vDrFBMvXY2kM/PdACuDn
-         2Cpdh9ucuRtkG9hp5oWb/NCoL/Zns/kqcnBNV92ml5YIU55tm6aKVfIXXWuiXiWqWJJB
-         jSTVr6Nn2H/V+eV/RYHBf23K6K23G3Rm4+KWGbbYAAMOb4VOGxbVf7FtmGTSTjZwKnEe
-         3iQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787563132; x=1788167932;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Pbr5eP75HMWDjVi5kSReXoq3ufPagXFdRczlYd+lCws=;
-        b=VNL/JCTPmgYwpls/CVbpzt6085guHXG1AwabdxuRaonzeMvjyc4AJIJLNmQ6xjr6Yz
-         wHpKBOj8mXURDl309uh5LE8jS4+g1x4Abik2efYMZanoymOkSYZtKcj8QkTViQf/xxQR
-         muZ8p24yBMWNb90zJUsJ1xGU6M+IOz3VewMMykOEQw8BSJW5pQZnHgVka1FOmabkEehv
-         7Bo0133S5/ZmgaJIMktTcBP0FRazRb0C16QFgucxBHQ87o5r6TagXnds4TdbNNJIOedV
-         mpnVbQsg4kprieA5eC33jVMgU161NLJ0b3mVc9opYrLnpnvUPLqCJPb6dsifohRzyCc+
-         2ZWQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rq8wQcipTnHQ4EqtLPKobkD/CNVoLxHudfbM6V453XL+gWg6N+xjWauVPsuBQ/foCLFJsEJwUSTEQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lzuOr4L6gxdC9czgrNdJG/zemGM4WfEEZW4RFfF8aCtGkuU0Ti
-	J8GGzZP7P6CxArH9+dPzkUE2a+KYdplkG0IBWO1ekqugtSisyXF4xvVkLcyR2X9X7b4=
-X-Gm-Gg: AR+sD13FO8xE/pRzjNy/2fJelqvMNlWTcb5mGRA/IC5gFPb0aSuvfIwIGK1MJy42Nqj
-	iGz6La+rBU4WbO1zK+S4mS8I6/K6xi8mHQdijubGkobrS/4OxMyFdz+7Jea4G0y8gmnqo7eRmN+
-	kTQslnG5elmqv/xnUKM1wZxbrlvxVDZElNgkBHNZNzQ7LxqR+8rL3AZ++9iJ++njwGqlkliCH1k
-	XkERnEgglzRsyVAS2w/o7Vy+LvHqnEzuOY1XhFwIAtx/v5FjNJVqEvEEzhj7Ifs4YTFG2FOffAe
-	x+KcT7QOZLuNkgqRaZDlQrxsUJ4tiPEDY7G0DOQypyeyzTca5JOOlqZTTs2qoqQuvlBb4rmGAc7
-	Fb7apRlJKjVoJOrS79oS3qeEGQIU3OUdQ9oNyjQcttbCieNmCMa3To/s9WIKElPMZDvbUy+QBNw
-	zRzXHCtAegBtsRYmK+gGP/Pz9nN9/Sm03EyRFLhpTkPfrxsizGrfUVQobKrI9ZkcIz
-X-Received: by 2002:a05:6a21:9981:b0:3c4:1916:9d40 with SMTP id adf61e73a8af0-3cd2ffc1753mr40291706637.12.1787563132361;
-        Mon, 24 Aug 2026 02:18:52 -0700 (PDT)
-Received: from localhost ([122.172.87.224])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327f923f2c0sm36790685eec.30.2026.08.24.02.18.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Aug 2026 02:18:51 -0700 (PDT)
-Date: Mon, 24 Aug 2026 14:48:48 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Sreeshankar K <sreeshankar0910@gmail.com>
-Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	andersson@kernel.org, mturquette@baylibre.com, sboyd@kernel.org,
-	rafael@kernel.org, konradybcio@kernel.org, tglx@kernel.org,
-	ulfh@kernel.org, bmasney@redhat.com, radu@rendec.net,
-	abel.vesa@oss.qualcomm.com, lpieralisi@kernel.org,
-	quic_tdas@quicinc.com, danila@mainlining.org, davidwronek@gmail.com,
-	mani@kernel.org, robimarko@gmail.com, linux@gurudas.dev,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 12/13] dt-bindings: cpufreq: qcom-hw: Document SM7250
- cpufreq hardware
-Message-ID: <aowMeGkWZQGmSmHx@vireshk-B250M-D3H>
-References: <20260821154030.2514-1-sreeshankar0910@gmail.com>
- <20260821154030.2514-13-sreeshankar0910@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DK34VmRZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18CB61F000E9
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:29:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787563762;
+	bh=cs8Z/DCd0467Xo4N9XjqKyZ3No34Yw905X8ZcaB3L1M=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=DK34VmRZDpWpqJaXHDdIzMd9s32QhvBRxDBTMy9ERx9PTdyuA2dt1TOCirBi+Dvhg
+	 A0pTx4acz9QUx3FXKCoaBlA46M0fuJcrsn7dHqMiAI8vaLWCdSX9l/jj66WIf4vu53
+	 erY7qAN0/BPEuEXsc4hHNz2+H1790iZUEZXFu5QPwiwXo1zdkJ7nQ6zvUPrZPSh/mX
+	 IXMBed0xt6ItS1Hv8VnZMeUHdshqylWbC7IQpZhBxE1aw8TFZX44O9HfB7KnxfwbUb
+	 lZygvEwVPTHFApMTI3UkrvQJl3HMRl5aTSZ/WE+Ez4asb+mILKtC84UFmutHDkxlRN
+	 tFy6wSWmfhW3g==
+Received: by mail-vk1-f178.google.com with SMTP id 71dfb90a1353d-5c5f23666d0so2523556e0c.3
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 02:29:22 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RplymWcghbqjOoyqCU06qlrEZHcDcLv6ranGy1+W229DVHb/4gJXb280Xkdicmq+/dH7nYSKvzvsA==@vger.kernel.org
+X-Gm-Message-State: AFuF++kki4M/wA7ltKqFdRjWVyLlNRZvlB/BHMRZGuS/yfpMShyXMEDX
+	f9E+IU3/66vdVcgE8v3IosGUDEo/k4bk2ohQw96l8uCKYW0zErUCX7tb7Y9bcePaEOsLPZODMPP
+	NjKiwBHAzzM3W/9h32iP97vM8KauGcLY=
+X-Received: by 2002:a05:6122:d8f:b0:5c5:d7aa:13ec with SMTP id
+ 71dfb90a1353d-5c5ff3afbb1mr10254511e0c.1.1787563761384; Mon, 24 Aug 2026
+ 02:29:21 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260821154030.2514-13-sreeshankar0910@gmail.com>
+References: <202608241339.0y44z2vK-lkp@intel.com> <aovYmy6AKkSgM9ve@rli9-mobl>
+In-Reply-To: <aovYmy6AKkSgM9ve@rli9-mobl>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 24 Aug 2026 11:28:39 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jrXkXP9mUoucSh3wo2eKXBrXAkuF2nDR3ZMjpMFZVZeg@mail.gmail.com>
+X-Gm-Features: AcwNN1XmxVTGjg_uzUCCapOD-By05vZNZCrMq4K10Bz5UPDc9CcHN63AGsjXzbc
+Message-ID: <CAJZ5v0jrXkXP9mUoucSh3wo2eKXBrXAkuF2nDR3ZMjpMFZVZeg@mail.gmail.com>
+Subject: Re: [rafael-pm:bleeding-edge] BUILD SUCCESS 361498477a97b6060e2441f64fc29da7b1e07eac
+To: Philip Li <philip.li@intel.com>
+Cc: kernel test robot <lkp@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 21-08-26, 15:40, Sreeshankar K wrote:
-> Document the cpufreq hardware on the SM7250 SoC.
-> 
-> Signed-off-by: Sreeshankar K <sreeshankar0910@gmail.com>
-> ---
->  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-> index 98eb36bff..2dc2c265c 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-> @@ -29,6 +29,7 @@ properties:
->                - qcom,sdm845-cpufreq-hw
->                - qcom,sm6115-cpufreq-hw
->                - qcom,sm6350-cpufreq-hw
-> +              - qcom,sm7250-cpufreq-hw
->                - qcom,sm8150-cpufreq-hw
->            - const: qcom,cpufreq-hw
+On Mon, Aug 24, 2026 at 7:37=E2=80=AFAM Philip Li <philip.li@intel.com> wro=
+te:
+>
+> On Mon, Aug 24, 2026 at 01:09:51PM +0800, kernel test robot wrote:
+> > tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/lin=
+ux-pm.git bleeding-edge
+> > branch HEAD: 361498477a97b6060e2441f64fc29da7b1e07eac  Merge branch 'ac=
+pi-button' into bleeding-edge
+> >
+> > elapsed time: 2941m
+> >
+> > configs tested: 101
+> > configs skipped: 1
+> >
+> > The following configs have been built successfully.
+> > More configs may be tested in the coming days.
+>
+> Hi Rafael, sorry that the test coverage is still not full for various arc=
+hes,
+> we are still working on this to avoid missing important kconfigs.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks for letting me know!
 
--- 
-viresh
+Kind regards,
+Rafael
