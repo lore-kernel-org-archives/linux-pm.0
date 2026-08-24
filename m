@@ -1,102 +1,100 @@
-Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD56725782D
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 06:16:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AA853AEF3E;
+	Mon, 24 Aug 2026 06:36:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787552198; cv=none; b=cToPcH56B846R28k/YPhfLR3AY4j+7wwqFUZRsCyk7Jzr9xK4xYUEpRxvJNDL7M2VA0ocavO7mpxZW78yJqLqe1w8GJ6TjajmgftjcQZjWOeVf1XmNfEzbWBAQRcIPXYWD4KoOAfmQ4ery4jhFQlG92mwieVZWZGIN2cGGSkUMA=
+	t=1787553377; cv=none; b=mbfsiFedgGCZvWsK+9fsyQxnat6TYsNBaJyFhHRrJJjtUXSlifKVDKdR4T69OEZnuu8982Iy5GmYYXtmKHgMrMDWAhVlThijGqyyHqGkpj1tk+dQOM3F2TnrapMbuRx5qOc0bwPJQPW8pHg0zrp0/TDv8pQjjW5WXhUTgBildHI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787552198; c=relaxed/simple;
-	bh=hCifVbDGqOxrFUw4MNslGn68BFtV8IG53qEmLcBRpUs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WQZemU4vhWFq3vQBu9fd0j2kWHxsIfpFSfKXpmBJ0FA/lwaZW2TdgxOroER9CUzABtCCmge+BebVBiO08fIrkJFUDbL+XSQ9pAWiGJI0TA3d3k60TETk4pf5pWkbyiN/5fiHgmy5p15OAijQODX7bY2N++4sx+MF/DcEUQcdWlA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Hz6mRcC/; arc=none smtp.client-ip=209.85.215.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787553377; c=relaxed/simple;
+	bh=JjT5CnkhEwXWKHCp5vcd75naMQ88yY8fBymV3FLZgIM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kfA4/5hNl5jReBLJ2MbGI8sUm7CUQqSbdWftzdRiTfmO/wFn4S7WS4Z5S4OX+H3uPpyvEq2eK+Y9+vbdNbZ6gVC+4C+GxXWlPbun3VhZM4C+tCKhypndFgW3aaK98SLGO3Tus6dBaR/2C9ZjfG9d8wD7Y2gX6V41oTUOC8ddBiA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Q1dcQ3e5; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Hz6mRcC/"
-Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-cc11a30a259so3150383a12.3
-        for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2026 23:16:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787552197; x=1788156997; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=gC1jlPM66qYJRvbEK/CdgJJpi3r0DAb/vsWww3jhyUc=;
-        b=Hz6mRcC/9qsaB9dXHwtBIWhsSBRW3xDnCmkXnHj5gsxDyePz+opaLXsHvZekTMNJv0
-         VZ3Q4R1CGdgDYu1V4xiGLL4VlobtNv2zCsWbznSldYAFRkC3Ix68I5V09LHjMb0icVph
-         BVA/soIB0ZaeXr+pYg2SWpOFMEkPt0sdaVZ8hXqTBPiw0pULL1ykWBax2rSiz5EGC7k/
-         PJcEfH2iuiGPRfpJJEKuxAvqHv/k7hkA8AL3x+LNzNZmjJyXTnTf66VrZkynQSHQFLPf
-         0GKDLfXmUL9ihI73DBsKeKo3/OBI24nlYfaJ7k02lsRwKfKEbnImhHod8QNmogpa7BS2
-         9A+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787552197; x=1788156997;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=gC1jlPM66qYJRvbEK/CdgJJpi3r0DAb/vsWww3jhyUc=;
-        b=imVaUHjlqSsWP+BrubXrEPidTgcnDKkAu2sO9fYtk7ZOmGMXpDsbOFy9qqX3SR+dk2
-         WKf91HEF8wc4vhX6C7Bs7WTr0m13Ss41CIrHC6wjx/I/6P5fuFD9o8bTC+XKvXF9DyAO
-         PRwSjFnNcwDQNCvQy1OoHFh6C44jg9WpsgVq9WwOpwMHieOdBFLjXVorO3OvWSRCl0ok
-         Vfp+0cax/lt2vXmCa1hGvWhYl227zkDLX69dBL2yrKQGeOnqK8bD/SeFbhrJ7rbCg12y
-         M8oIGhJ+3Dn4yU6r0Z3jFCeF3mmICIvcGyRXHS1ztx51+wLzrO8XgC1Jy9qjE/a7l5U5
-         Q5Pw==
-X-Forwarded-Encrypted: i=1; AHgh+RqI2ZhHXWiKC4bsOaBS2iwlD0w2WbMnmoh6WHADPD2N2j/J5vFPPnriSkRi98QZbgUsgY85lgKHAQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++ls0ImOXoia64QLViBXI+gKunBSPu8oBk+CAZpdnbZLDjFZIqIR
-	iiIhuC5uvR1ZDI3HmdOIhpAi6RqspRJerSn7Jw2oPlNPXNs2rmJOrHpp
-X-Gm-Gg: AR+sD119IPzgByJxRRBLHZv0mxlM6O/b1tb2vAGfjURsTfiWCSQaQDhdDxWlp2DiyYM
-	ljP/lo2vtNsjhriw0iXzQmzlHk1XXziZHUB0F9vWZMb4mB9Chxj9ZGRtiFamLoP97sHa1LbPCR/
-	Y69tCu0/bwksNds5YzFjVR3BnpAxwv+N6ODOyx5qee9kM4kH03g4cNfAiwzUfFVLJyGh3+jlfh7
-	8i5SFm1VasDwTaSEBOUAqCScorkmfYfepm+FbY6rBMC3NcvUiGDa2o/dkPDf0qUzRCnPTeJkr9J
-	wR3k71r4lQaxSF1Z1oDVZN9aLzl+WBsSefYnEXXarq0LzEUt05501BRCXmRsIe+Zn5cfebTQi3X
-	1zyxd7N2l56XN7zb/tUBz60jpyRcFJ6pVy0Ooj1d1ivQ6Gzf9LCFR8AwPMYkCD3Y1LShpIEoDG2
-	trSbgLpkGcw5KTVuiIrCAmxGb2CnWOfn72wwAv8TZFW/I06k2CDUXEKJbpPj4zflhi+vbb12OXK
-	g==
-X-Received: by 2002:a17:90b:5867:b0:395:4de4:92c8 with SMTP id 98e67ed59e1d1-395df4dcdbcmr32028018a91.15.1787552196838;
-        Sun, 23 Aug 2026 23:16:36 -0700 (PDT)
-Received: from Alone ([2a02:6ea0:d33b:6282::14])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-395e42cc144sm8514697a91.0.2026.08.23.23.16.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 23 Aug 2026 23:16:36 -0700 (PDT)
-From: Chhabilal Dangal <yogeshdangal66@gmail.com>
-To: rafael@kernel.org,
-	gregkh@linuxfoundation.org,
-	dakr@kernel.org
-Cc: lenb@kernel.org,
-	pavel@kernel.org,
-	linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Chhabilal Dangal <yogeshdangal66@gmail.com>
-Subject: [PATCH 2/2] driver core: power: Fix "sucessfully" typo in comment
-Date: Mon, 24 Aug 2026 12:01:21 +0545
-Message-ID: <20260824061621.356483-1-yogeshdangal66@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Q1dcQ3e5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02FCB1F00A3A;
+	Mon, 24 Aug 2026 06:36:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1787553375;
+	bh=U8VtGb2NKndAaPTn5SAVJTFXQN83mhgHX4TNHY4C+fM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Q1dcQ3e5meKm5O3ajEK+aHSkHZkkofm91E/qbuYhkiIpFcq3+4Lq5xqpY7V0ZWfiS
+	 QPhAIPCRBt4jfubDmuAfo8w8QgrqndU8Kd8aurIRTQiudzx9tM7yuhfdeZHiNxMCqs
+	 GTC/MSS6sKKUWarj84R88maPLFiol4zHo7fbMR5w=
+Date: Mon, 24 Aug 2026 08:34:34 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Chhabilal Dangal <yogeshdangal66@gmail.com>
+Cc: rafael@kernel.org, dakr@kernel.org, lenb@kernel.org, pavel@kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] driver core: power: Fix "sucessfully" typo in comment
+Message-ID: <2026082413-treason-krypton-b0b5@gregkh>
+References: <20260824061621.356483-1-yogeshdangal66@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260824061621.356483-1-yogeshdangal66@gmail.com>
 
-Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
----
- drivers/base/power/clock_ops.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Aug 24, 2026 at 12:01:21PM +0545, Chhabilal Dangal wrote:
+> Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
+> ---
+>  drivers/base/power/clock_ops.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index 59bb37e82..3b8ba2780 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -250,7 +250,7 @@ EXPORT_SYMBOL_GPL(pm_clk_add);
+>   *
+>   * Add the clock to the list of clocks used for the power management of @dev.
+>   * The power-management code will take control of the clock reference, so
+> - * callers should not call clk_put() on @clk after this function sucessfully
+> + * callers should not call clk_put() on @clk after this function successfully
+>   * returned.
+>   */
+>  int pm_clk_add_clk(struct device *dev, struct clk *clk)
+> -- 
+> 2.55.0
+> 
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 59bb37e82..3b8ba2780 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -250,7 +250,7 @@ EXPORT_SYMBOL_GPL(pm_clk_add);
-  *
-  * Add the clock to the list of clocks used for the power management of @dev.
-  * The power-management code will take control of the clock reference, so
-- * callers should not call clk_put() on @clk after this function sucessfully
-+ * callers should not call clk_put() on @clk after this function successfully
-  * returned.
-  */
- int pm_clk_add_clk(struct device *dev, struct clk *clk)
--- 
-2.55.0
+Hi,
 
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
+
+You are receiving this message because of the following common error(s)
+as indicated below:
+
+- You did not specify a description of why the patch is needed, or
+  possibly, any description at all, in the email body.  Please read the
+  section entitled "The canonical patch format" in the kernel file,
+  Documentation/process/submitting-patches.rst for what is needed in
+  order to properly describe the change.
+
+- This looks like a new version of a previously submitted patch, but you
+  did not list below the --- line any changes from the previous version.
+  Please read the section entitled "The canonical patch format" in the
+  kernel file, Documentation/process/submitting-patches.rst for what
+  needs to be done here to properly describe this.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot
