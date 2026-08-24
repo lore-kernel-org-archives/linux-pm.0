@@ -1,87 +1,128 @@
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8E761F1304;
-	Mon, 24 Aug 2026 17:09:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.79.88.28
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E647537C0FD;
+	Mon, 24 Aug 2026 17:53:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787591346; cv=none; b=KkCHjbANuPeV1Kph9VkgbCET/G15xDUlCdn0DmT6OIWUi1DBIj4AnxKf8zkbFioSF0VpV+mDm+V1BheuQOpshyi8PBAVT6YSaez5VT61RqpZqh6UGjto7kz69nNlC2Ss9YtTa1K36AVWba8eHLgj9PViXs8qIIyuPYQVUE9Oekc=
+	t=1787594003; cv=none; b=p2jZ1bcVGeD8NK0aajTyNDJKaR1x9YzUL2baqBhR3yPcboM+bitEXCkm9IJ8m0CjyhdZ8IpedNkWrhp15XI0/LpkfAzBGkLhVdhNDeQSASbrHXLRI4JgmjutSGhJLfL2tSJSHkvpyS6t1dj+fFW0mUhYnnv+8dayy+ixamjQ9EQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787591346; c=relaxed/simple;
-	bh=G+Ri+ZsNLL8qLdWXeN2U2L8mYOMa7JbDtLHZ3XwZt+g=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=BJj3bO4NT/zrVD3qPn6md6IRmHonLv91yMdBG/aN2XKn6wQkK8ahSq68xnrb+Pb9EDbjLmyXifmBEOElZIySP2lHVqBSs9vFNvWTSmgrI3fcVBfKour/xuvk8rzfHyydMnwpJQ4RFHd0ge2Qkow+zaP+OXoCXJmnGhe1Bz3WZS4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lwn.net; spf=pass smtp.mailfrom=lwn.net; dkim=pass (2048-bit key) header.d=lwn.net header.i=@lwn.net header.b=a3PGQH9C; arc=none smtp.client-ip=45.79.88.28
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lwn.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lwn.net
+	s=arc-20240116; t=1787594003; c=relaxed/simple;
+	bh=GRDPyGJmFQSjeGdiV3edsAOmBKKtu0raMpZkVG+cn3I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XnIpZnfTi0/lACp0Id/Pb6MANsHiqlveOT8FHLyd3PmciJEnP4gG7JlcGsBr3V52q068sVTMmuiZTGxTpLsFZpRVIoFhdE2K5kikLCJCR7Vs50getL6csQL7slssJqWX9j2nAEqhR9ID6JhiloFqv6Tz4NJZPhjSMGG/VxQ5wTs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ytd+dQ+g; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lwn.net header.i=@lwn.net header.b="a3PGQH9C"
-DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 449AF408F8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
-	t=1787591344; bh=4QPACclKxJX1bMZtEMX6vZ61x9d43Aig+ENkERQB9D0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=a3PGQH9CCSuO6xaS3kGOKVHH56DjvAJgJS29XaZh6/W4lKKFLr5VDZQIR1RjSMnhX
-	 bGQdisubeOMdReiyZAHLEPuz0BbyWfAbbtqiCZqrnf0stZ4XL+SaWI25fC0887IDar
-	 J2EEAtU3QjgNxKZrtToZPJZZ/NM0KVMdtJy3uX6jvH0a72f2gq3oVaD+0Q2WmwW3mK
-	 +p+qa4zmPskN2HAlBW9ylMwH9+IqC4PItP+xOgCsqj/NcWGg13+BoTsrkoqKMNNafS
-	 Iq3J3zKN/FWb0OTH0Re5TWRyctDDknpYSS5HP+dNDrVcH61pePudx9LY7BZjkstadO
-	 Nf+DKnNX2oBFA==
-Received: from localhost (unknown [IPv6:2601:280:4600:814::1fe])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by ms.lwn.net (Postfix) with ESMTPSA id 449AF408F8;
-	Mon, 24 Aug 2026 17:09:04 +0000 (UTC)
-From: Jonathan Corbet <corbet@lwn.net>
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>, Shuah Khan
- <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org, "Rafael J.
- Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2] docs: kernel-parameters: add CPU_FREQ, CPU_IDLE
- build options
-In-Reply-To: <20260815172934.3604009-1-rdunlap@infradead.org>
-References: <20260815172934.3604009-1-rdunlap@infradead.org>
-Date: Mon, 24 Aug 2026 11:09:03 -0600
-Message-ID: <87tsojxx74.fsf@trenco.lwn.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ytd+dQ+g"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF0C01F000E9;
+	Mon, 24 Aug 2026 17:53:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787594001;
+	bh=WTkAfBdmKUZP00QvDZJnnmTAH2RKjZorIKzDQ3I0sQ0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Ytd+dQ+gHuAoQuwbe9fL4vQQQ1OMU/YfR37+Hk4LCNv5qmdHDrGgaDHiQgUpXc0lJ
+	 9OBnVOhShG3Ngvrk1DpEstcD596Sr5xXd4hNVmiGycZVRQR+vux5LEccW/mBfDptiO
+	 yk36h0EZZ7oC6Vx/mFDQAWUc6nmzQ877yuCn++UDwzQvlGeAlpwiDTsbJ0sl/JE6TO
+	 JbS0nmRzD9VfbOa4Plxvfqxi6YRwm4mPtI2Pv/gw0aq3nkj8cmmagGphPkoF0PvNuL
+	 JRJ6x3I+EE/go0qL+bp1csmQEmjopRisv4Y5WuUJtbUUpnYGxVDOf8GtUfzW6x29No
+	 YI3cIImLkPXFg==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Danilo Krummrich <dakr@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Linux Driver Core Development <driver-core@lists.linux.dev>
+Subject:
+ [PATCH v1 2/2] Revert "thermal/core: Allocate the thermal class dynamically"
+Date: Mon, 24 Aug 2026 19:53:00 +0200
+Message-ID: <4761117.LvFx2qVVIh@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
+In-Reply-To: <12960456.O9o76ZdvQC@rafael.j.wysocki>
+References: <12960456.O9o76ZdvQC@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Randy Dunlap <rdunlap@infradead.org> writes:
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-> CPU_FREQ and CPU_IDLE are used in descriptions of some kernel parameters
-> so add their descriptions to the build options list.
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> ---
-> v2: wordsmithing by Rafael (thanks)
->
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Shuah Khan <skhan@linuxfoundation.org>
-> Cc: linux-doc@vger.kernel.org
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Daniel Lezcano <daniel.lezcano@kernel.org>
-> Cc: linux-pm@vger.kernel.org
->
->  Documentation/admin-guide/kernel-parameters.txt |    2 ++
->  1 file changed, 2 insertions(+)
->
-> --- linux-next-20260814.orig/Documentation/admin-guide/kernel-parameters.txt
-> +++ linux-next-20260814/Documentation/admin-guide/kernel-parameters.txt
-> @@ -8,6 +8,8 @@
->  	ARM64	ARM64 architecture is enabled.
->  	CLK	Common clock infrastructure is enabled.
->  	CMA	Contiguous Memory Area support is enabled.
-> +	CPU_FREQ CPU frequency scaling is enabled.
-> +	CPU_IDLE CPU idle time management is enabled.
->  	DRM	Direct Rendering Management support is enabled.
+This reverts commit 34f54003643e ("thermal/core: Allocate the thermal
+class dynamically") that went against driver core changes aiming at the
+elimination of class_create() [1].
 
-Applied, thanks.
+No intentional functional impact.
 
-jon
+Link: https://lore.kernel.org/linux-pm/2026082411-flask-rewire-434f@gregkh/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/thermal_core.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 2d9d8740491f..82e2f0d8a26d 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -889,7 +889,9 @@ static void thermal_unbind_cdev_from_trip(struct thermal_zone_device *tz,
+ 	kfree(pos);
+ }
+ 
+-static struct class *thermal_class __ro_after_init;
++static const struct class thermal_class = {
++	.name = "thermal",
++};
+ static bool thermal_class_unavailable __ro_after_init = true;
+ 
+ static inline
+@@ -1011,7 +1013,7 @@ int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void *devdat
+ 	mutex_init(&cdev->lock);
+ 	INIT_LIST_HEAD(&cdev->thermal_instances);
+ 	cdev->updated = false;
+-	cdev->device.class = thermal_class;
++	cdev->device.class = &thermal_class;
+ 	cdev->device.release = thermal_cdev_release;
+ 	device_initialize(&cdev->device);
+ 	cdev->devdata = devdata;
+@@ -1484,7 +1486,7 @@ thermal_zone_device_register_with_trips(const char *type,
+ 	if (!tz->ops.critical)
+ 		tz->ops.critical = thermal_zone_device_critical;
+ 
+-	tz->device.class = thermal_class;
++	tz->device.class = &thermal_class;
+ 	tz->device.release = thermal_zone_device_release;
+ 	tz->devdata = devdata;
+ 	tz->num_trips = num_trips;
+@@ -1790,7 +1792,6 @@ void thermal_pm_complete(void)
+ 
+ static int __init thermal_init(void)
+ {
+-	struct class *tc;
+ 	int result;
+ 
+ 	thermal_debug_init();
+@@ -1809,13 +1810,10 @@ static int __init thermal_init(void)
+ 	if (result)
+ 		goto unregister_governors;
+ 
+-	tc = class_create("thermal");
+-	if (IS_ERR(tc)) {
+-		result = PTR_ERR(tc);
++	result = class_register(&thermal_class);
++	if (result)
+ 		goto unregister_governors;
+-	}
+ 
+-	thermal_class = tc;
+ 	thermal_class_unavailable = false;
+ 
+ 	return 0;
+-- 
+2.51.0
+
+
+
+
