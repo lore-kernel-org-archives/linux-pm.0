@@ -1,140 +1,172 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2CE044334CA;
-	Mon, 24 Aug 2026 14:08:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787580483; cv=none; b=IbIZtFrtJ2YQ17Om4gbrpHrFiNtXy2aAzjjysrS/XwCXkbr07r9BBAR7Bn9oDl8rjalS3iZDozYWFD5FiQM61A9hbkSW1lYnjSH8Q6seyCiw4YlLwNA5w4m9s2e/K0n46MYTdsr+gNsraaWvqRgG5oxV3EmhkTVqRI6zBpe0RHY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787580483; c=relaxed/simple;
-	bh=sCQFN55hS6uh/3yu8BodGmrJUPakI9h3K67oyeqsq6I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cJbY+q192UMF5VtxPtmCIL8R7IM8zQz8sQsJr4bD6HGHhpgV5O5HmixWbF/5nX65VLCjr7hoC17ykrQLxcNBugFGNV7grfJXcs/WkMTDc34fNTSHXLZulzGvRvKJtwh6m6mfROiZueTjbiS2hUb0Z+oe/Z71LhgrXwf3ktWS9xw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=O949DjI0; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBA0342E406
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 14:15:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.45
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787580923; cv=pass; b=tDKYcjY2ChmbypdOvBxOmVoDPuYsXRknX5cLjTGMptJKCmxtI916dB8SkNJEy1fFu2ejc8/tUIg3gRIQX1+8xmZFEMYyvnkQK5wQ+Fph10EyRz3zBfphRJfG70nvfnyouEuZEwdztjRFfVZ5zBQiTuP83JqlhW5mydsZPxOB1/M=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787580923; c=relaxed/simple;
+	bh=0kks+j63StSPlXTF3OV31d0II5QMTMM20avDv0cE8Uc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=T7cW2IePdEYLSGCYPqdUNT9whALU/pd0s2edSIgK/2lR/qTZ/XICz9Tpwg8iAuXpc8QGFrqCj0Ak1SFtyfGvKZNK1pcyuXd9QC0PJCP5WwU9j+VjUTlYMH8Sal3z2S6sRMK0kbAafSvcRJZMzPx4vxvMQQvvJ96+AqxIZvDzP8w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=IDGJJ78F; arc=pass smtp.client-ip=209.85.218.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="O949DjI0"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 302F016F2;
-	Mon, 24 Aug 2026 07:07:56 -0700 (PDT)
-Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9B8383F85F;
-	Mon, 24 Aug 2026 07:07:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1787580480; bh=sCQFN55hS6uh/3yu8BodGmrJUPakI9h3K67oyeqsq6I=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=O949DjI0P/ZmgDkCcO/RhBBqs7cqisuPVDI64nCOyaV91Lk23zc5H8TEEnT8VrxzY
-	 wH7Yr+gnuxRqmCLsFrAD+5cZOYmdZawvqnOMjBemOfn91lXEVvOyqDq7whJP/BOIoE
-	 VuoETec0y6MxjhcXwH4OYxQy/H4D8WeSOlZ6gPZs=
-Message-ID: <a4da085b-5a42-4559-a677-3796acd65170@arm.com>
-Date: Mon, 24 Aug 2026 15:07:54 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IDGJJ78F"
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c2020421077so602080566b.3
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 07:15:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787580919; cv=none;
+        d=google.com; s=arc-20260327;
+        b=CxuO+H0yu0Up3jah/D8RrSj/pWDhV5TvEErBBDe0s2Gn3wD9a660LiWpxbcuaSNAOt
+         Z+zJiA0EJAIg8SZ4/rZsJ/xC6Sx7OkKSsOh/S/Vuy6BWhn1y1YRSFCKagWPjnqjLnabS
+         USYCsNa/+VaAR9/xhSftg2HzSH4qrzRVVU2IouU5WQshiCKMPgK37Pm70At8g9PWBOwA
+         VOA/s/PE6flk84qq1m1cD6byAjp87isPMxm00MuvXKeGb8QWMggAvkEqR4fev7/grG2+
+         q0DsXC9Ke53jxYy5WZqFZFw21kJ9l5SHEFJxkWBUiSbeaSg42n1sB1Om+Ceh08cUnteu
+         W+tw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=FrjX2y5M6BTYXuv5wkBHtI4BXsIYAL02A5EG/qzfCHQ=;
+        fh=YVZK/uizOclcqOjHtzLo7pnbL2JhD+hk3ncq9G4oM8E=;
+        b=ZN7gNnfSfdCEaVZBfXjmMEpdCX7yWrMpDMwzuW1UGOni1frWTuISSVL7vEXEM2suU+
+         yBbn6lNQzMpfhWojCQTeso9Xb3e4j2TO8SgZxTeVYko6miva70A6SaP5M5APd18tx+na
+         JCvdpfDbuYqvzLZ4UVw3cNOFCi9avr1zbgb+nrj+7W2igR3FOpOXBMCy/GgBhuVN5Thy
+         t4HJDxGJXZ1ucoyMKmgnsciym2pS6dizM721zPWOobGzR61sqbngncfnZ5mgQ/slVS9W
+         /X5nn9X7N516/+NmAxZ8pw2mNoqUgqSv5ywE5PWT4xVeAc1C3iirGzYEu5VS5BIYWD8R
+         NXPA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787580919; x=1788185719; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=FrjX2y5M6BTYXuv5wkBHtI4BXsIYAL02A5EG/qzfCHQ=;
+        b=IDGJJ78F3Ipc9tB0nbEffHy2jfdT1CrCCk4hIeHeL02LxT0clK4aILUCWwf2BolUbr
+         wxOMh2hBeW+7aJ1e9wNd3P+Hn3H1M773HuZi1a9uORkh3kauQNk66E9VImH2UnISY+du
+         H/zJedVRgM0APaG+w34ig2+9rvrfyHyCf8XtBv1mh3c1umdjzmjBsmHQ/0Wq3Qama6ff
+         +xhTGOqAbKhkOiWQm82qhjQqy+ls6ciwXytomojpFytyOWDJyFeSar4DdF6CyNrRxpgz
+         x33NlK9pJkVxTMVNaQzeTtnAgtlawn8Wze9sSXH2KsQgydBZS2VbU7qbClJljw6MIkgM
+         wNeA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787580919; x=1788185719;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=FrjX2y5M6BTYXuv5wkBHtI4BXsIYAL02A5EG/qzfCHQ=;
+        b=K46oGEqN/2ioplpzNAsATkZz2793JXvdQruOPuhUgJpQYhS4MInZPWJGCKsaGRMe3N
+         fELaC1uLopEkjZiaPOlPj0VCIqL2gMC9tuT2W+dl05thF2eC9GKzfn/5opJrx3cOoWw6
+         svLxghoNQ0s9k/VQvQXtN/pm8sIGEI0rWgCX3uQejOnZZCAnpg0L8tBS/zZp9IkB6rrn
+         oSlvhN2wCzGhNROmVuKCvsTDAnE4iSKHz+O1J0Q6fwcPTHbdVrS2k+v9tNVLWy+2q2Ni
+         r+OptlyXOhHZveQzSgxr1fWER3DPctVFMve7E8ud2DAqmkA7QeTUCFkv02WGSQufLeYW
+         sITw==
+X-Forwarded-Encrypted: i=1; AHgh+RpEEdcNul5BRicm5WUfeyw0c31iLNZW8BqbXek9R2Dl/PhpiOT3uAbPa9Ptmlu2uU/VspqIyCXkfQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++leFmIn9a5+iu4ta7k/Q9Lb+HO7bBdVMyehYo1JZ/CHH7FA8fJ0
+	2G1Xg3pANyPRj1wtz/qlBkgF1qCMgUWnA353YK/j9TWTQih68HCcttevsZ1KIvOj3DfjOeWtECx
+	j9vt7kMDLTWLZiJW+j+8UHbTEbEWscvs=
+X-Gm-Gg: AR+sD12AQ/N1Gv3aweAAaTnGoiOt9/ts6yMYL7rm48jN5LEmjC70ZIbj/qL33LJRCbQ
+	q56gizOm9F54waW97eYwaUNd/0NIX1n8XdlARS1+SCXgwMFNq38fDZyTsBgfj+y3OwUF8KMWIAW
+	wxTE9+RpX73BBKv3WlhnPol3KnZbOXMetc0lSl2KAilkTnEoFkT99Wn6aeYBGvSWWCBpLrDlDWm
+	sME8ISPsROX+I0hURtkkAoo6gUeBhQocy0tWpfxvDJVc4rx+e78b3XEIHlOLNyGIikpDFNBtKR7
+	E3NzQbKUe/DbDwtRYbMhjpggw0q7UD0lhYhwv1yH8hU5RLNKmKvpu5HDlFJ3QTih9HgRRBvlGUI
+	qdA==
+X-Received: by 2002:a17:907:3e9d:b0:c20:f4ee:7c97 with SMTP id
+ a640c23a62f3a-c2491c2846cmr2216363566b.5.1787580918870; Mon, 24 Aug 2026
+ 07:15:18 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sched/cpufreq: Reevaluate frequency before tickless idle
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- rafael@kernel.org, viresh.kumar@linaro.org, mingo@redhat.com,
- peterz@infradead.org, vincent.guittot@linaro.org, daniel.lezcano@kernel.org
-Cc: anna-maria@linutronix.de, frederic@kernel.org, tglx@linutronix.de,
- dietmar.eggemann@arm.com, jstultz@google.com, qyousef@layalina.io,
- hongyan.xia@transsion.com, sibi.sankar@oss.qualcomm.com,
- lukasz.luba@arm.com, morten.rasmussen@arm.com
-References: <20260824131842.2443385-1-christian.loehle@arm.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260824131842.2443385-1-christian.loehle@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260824130437.2771-1-sreeshankar0910@gmail.com>
+ <20260824130437.2771-5-sreeshankar0910@gmail.com> <5ybg37jlklgrkxseu24xytbom3v3rnzbwpudg7jftr6g3oqvo5@x4sfjci7v7m3>
+In-Reply-To: <5ybg37jlklgrkxseu24xytbom3v3rnzbwpudg7jftr6g3oqvo5@x4sfjci7v7m3>
+From: Sreeshankar K <sreeshankar0910@gmail.com>
+Date: Mon, 24 Aug 2026 19:45:07 +0530
+X-Gm-Features: AcwNN1WcsnGQSHLRyuZJ-yHONrPiOQJH8iqD06u4L2i4WB6_vuJbh1UpdH1J-_0
+Message-ID: <CAA-+ukJT1=RYfTFsRvkTsN+Yca5yhgS+1xS=Gb1HmFWaSQM2Sg@mail.gmail.com>
+Subject: Re: [PATCH v5 04/13] clk: qcom: Add Global Clock Controller (GCC)
+ driver for SM7250
+To: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	andersson@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, 
+	rafael@kernel.org, viresh.kumar@linaro.org, konradybcio@kernel.org, 
+	tglx@kernel.org, ulfh@kernel.org, bmasney@redhat.com, radu@rendec.net, 
+	lpieralisi@kernel.org, taniya.das@oss.qualcomm.com, danila@mainlining.org, 
+	davidwronek@gmail.com, mani@kernel.org, robimarko@gmail.com, 
+	linux@gurudas.dev, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 8/24/26 14:18, Christian Loehle wrote:
-> sugov_hold_freq() can preserve a UCLAMP_MIN-driven high frequency when
-> the runqueue goes idle. If cpuidle then stops the tick, no later
-> utilization update is guaranteed and a CPU using WFI can remain at an
-> unnecessarily high voltage for the entire idle period.
-> 
-> Issue a final cpufreq update when the idle tick actually transitions to
-> stopped and force single-policy schedutil past its rate limit. Keep the
-> existing hold behavior when the tick is retained.
-> 
-> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> ---
->  include/linux/sched/cpufreq.h    |  1 +
->  kernel/sched/cpufreq_schedutil.c |  5 ++++-
->  kernel/sched/idle.c              | 29 +++++++++++++++++++++++++++--
->  3 files changed, 32 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-> index bdd31ab93bc5..0814f6c79315 100644
-> --- a/include/linux/sched/cpufreq.h
-> +++ b/include/linux/sched/cpufreq.h
-> @@ -9,6 +9,7 @@
->   */
->  
->  #define SCHED_CPUFREQ_IOWAIT	(1U << 0)
-> +#define SCHED_CPUFREQ_IDLE	(1U << 1)
->  
->  #ifdef CONFIG_CPU_FREQ
->  struct cpufreq_policy;
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index a1782755efcc..90bf8d8bffb7 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -100,7 +100,7 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->  
->  		return true;
->  	} else if (sg_policy->need_freq_update) {
-> -		/* ignore_dl_rate_limit() wants a new frequency to be found. */
-> +		/* A forced update needs a new frequency to be found. */
->  		return true;
->  	}
->  
-> @@ -407,6 +407,9 @@ static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
->  	sugov_iowait_boost(sg_cpu, time, flags);
->  	sg_cpu->last_update = time;
->  
-> +	if (flags & SCHED_CPUFREQ_IDLE)
-> +		sg_cpu->sg_policy->need_freq_update = true;
-> +
->  	ignore_dl_rate_limit(sg_cpu);
->  
->  	if (!sugov_should_update_freq(sg_cpu->sg_policy, time))
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index eb73b65ce6c4..36f8840d0562 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -161,10 +161,35 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  	return cpuidle_enter(drv, dev, next_state);
->  }
->  
-> +static void idle_stop_tick(void)
-> +{
-> +#ifdef CONFIG_CPU_FREQ
-> +	bool was_stopped = tick_nohz_tick_stopped();
-> +#endif
-> +
-> +	tick_nohz_idle_stop_tick();
-> +
-> +#ifdef CONFIG_CPU_FREQ
-> +	/*
-> +	 * Run one last cpufreq update before entering idle with the tick
-> +	 * stopped, because no later update is guaranteed.
-> +	 */
-> +	if (!was_stopped && tick_nohz_tick_stopped()) {
-> +		struct rq *rq = this_rq();
-> +		struct rq_flags rf;
-> +
-> +		rq_lock(rq, &rf);
-> +		update_rq_clock(rq);
-> +		cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
+Thanks for the review.
 
-Sashiko correctly noted that this may lead to an infinite loop on
-slow-switch platforms where the pre-idle update results in another
-sugov kthread wakeup which in turn will result in a new pre-idle
-cpufreq update.
+Missed that, I apologize. I will send a v6 patchset with everything fixed.
 
-I will just track if sugov actually held a frequency and gate
-the update on that in v2.
+Thanks,
+Sreeshankar K
+
+On Mon, 24 Aug 2026 at 19:21, Abel Vesa <abel.vesa@oss.qualcomm.com> wrote:
+>
+> On 26-08-24 13:04:28, Sreeshankar K wrote:
+> > Add support for the global clock controller found on SM7250
+> > based devices. This should allow most non-multimedia device
+> > drivers to probe and control their clocks.
+> >
+> > Signed-off-by: Sreeshankar K <sreeshankar0910@gmail.com>
+> > ---
+> >  drivers/clk/qcom/Kconfig      |    9 +
+> >  drivers/clk/qcom/Makefile     |    1 +
+> >  drivers/clk/qcom/gcc-sm7250.c | 2275 +++++++++++++++++++++++++++++++++
+> >  3 files changed, 2285 insertions(+)
+> >  create mode 100644 drivers/clk/qcom/gcc-sm7250.c
+>
+> [...]
+>
+> > diff --git a/drivers/clk/qcom/gcc-sm7250.c b/drivers/clk/qcom/gcc-sm7250.c
+> > new file mode 100644
+> > index 000000000..bf75c8ec1
+> > --- /dev/null
+> > +++ b/drivers/clk/qcom/gcc-sm7250.c
+> > @@ -0,0 +1,2275 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+> > + * Copyright (c) 2026, Sreeshankar K <sreeshankar0910@gmail.com>
+> > + */
+> > +
+> > +
+>
+> [...]
+>
+> > +static struct clk_alpha_pll gpll0 = {
+> > +     .offset = 0x0,
+> > +     .regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_LUCID],
+> > +     .clkr = {
+> > +             .enable_reg = 0x52010,
+> > +             .enable_mask = BIT(0),
+> > +             .hw.init = &(struct clk_init_data){
+>
+> You missed my other comment from v4.
+>
+> const here and everywhere else.
+>
+> It is always a good practice to compare to other (older) drivers from
+> upstream.
+>
+> > +                     .name = "gpll0",
+> > +                     .parent_data = &(const struct clk_parent_data){
+> > +                             .index = DT_BI_TCXO,
+> > +                     },
+> > +                     .num_parents = 1,
+> > +                     .ops = &clk_alpha_pll_fixed_lucid_ops,
+> > +             },
+> > +     },
+> > +};
+> > +
+>
+> [...]
