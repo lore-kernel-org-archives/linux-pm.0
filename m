@@ -1,227 +1,118 @@
-Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.162])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com [209.85.222.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6639416854;
-	Mon, 24 Aug 2026 12:46:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.68.63.162
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B464941D239
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 12:54:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787575616; cv=none; b=DoZnWRV6BdwmQIc2dU8cXyvU3Bpv+2p5BxHVe7aQIWZHQXCSYQXIWz0UZeL8OfihCwCqdVlY4UN7Mt30pHMyneksL5N+I/wh5uuP912Xy1VL5GCFiIUaYm/TBoVdwB5NQ9Ctu8TvGdsLxAXu5SSyG8QDwe7yIk+zYPlIvnqNMDo=
+	t=1787576047; cv=none; b=aU7mBtxGFiP1DUkiVscmzzuiJg5m2pDOYR6Gv2xPVFg3ay4WiFHqQuK6nTPWCAyuyUj9Q6uR9FkwyAUaDJv3sV0ffCWsrmAMmhy50hoyuBH3gpsSJVHQm45TWSn/YCi9Bsi3CP92GD7baKvpfEG5Q6TQBf+3QervOMFuTWcupuQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787575616; c=relaxed/simple;
-	bh=0l2zeqrTdw9H+RHbIvbgxdX3SD9eSTkmI+cOQDy5rkw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TkNLh7NYyzHLKB2H8GfiGl+pb0DdFnh+SUszB7hUVJ0zvh06qvU58nrIlrG/WQC2iEozITiOaNM+JiAPsjIWa8DtwaUjHtr+xttdYmIFvXBGom6+blAXi3fpOE9IO8vjPT6aVXic/1VbDwOqosEwRrFT0gJ+0gkjeMcD5YiuD0Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=VgIg5y6m; arc=none smtp.client-ip=188.68.63.162
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="VgIg5y6m"
-Received: from mors-relay-8201.netcup.net (localhost [127.0.0.1])
-	by mors-relay-8201.netcup.net (Postfix) with ESMTPS id 4hT9dw0Nymz3v7T;
-	Mon, 24 Aug 2026 14:46:44 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
-	s=key2; t=1787575604;
-	bh=0l2zeqrTdw9H+RHbIvbgxdX3SD9eSTkmI+cOQDy5rkw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=VgIg5y6mlw/AaxlzF0RPGz8GioiHOn6lHFB9iqmBro/bqlk5JayWLHiAGIVX4dVVh
-	 SnYCdtI9o50EHgd+riNRziRCCdNT+zXJhzlZuoQ1a81QjY5nNwEqfCTjORTouw2oGm
-	 fgJKE7CTyMglcHxF/5GRMyQhReqJpjMYPKG265N76xHGSW9MM2xSV4lZx60T7Wqohy
-	 rYdK3YjnaC6TCpaW1OLI2eawqnC7YdYLYD9ItzCTl8nqTUEgKh2GVFszuV5GOueBLA
-	 1oFxoeZIQcIJ8SXJuYqD7571sdT1PC+wTpvwHx8ZDPqB85vh5JPWaH4J3wCOO3eNqQ
-	 g4YL4OeFGW7OA==
-Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
-	by mors-relay-8201.netcup.net (Postfix) with ESMTPS id 4hT9dv6nmPz3rj5;
-	Mon, 24 Aug 2026 14:46:43 +0200 (CEST)
-Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4hT9dt6r4zz8sZP;
-	Mon, 24 Aug 2026 14:46:42 +0200 (CEST)
-Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
-	by mxe9fb.netcup.net (Postfix) with ESMTPSA id E2E8D5FA38;
-	Mon, 24 Aug 2026 14:46:37 +0200 (CEST)
-Authentication-Results: mxe9fb;
-        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
-Received-SPF: pass (mxe9fb: connection is authenticated)
-Message-ID: <f64db45c-63f7-4f2e-aa10-e8ee5fd9accb@leemhuis.info>
-Date: Mon, 24 Aug 2026 14:46:36 +0200
+	s=arc-20240116; t=1787576047; c=relaxed/simple;
+	bh=22qCBYveRKFJxcMmmUW+ua4eXWAmfuygrtGmmXgJgbQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VpKzEIhPJu/W0sSfLZTUR4WY/79tSMDEVn1XBekYeYXWoWW/DfKNaOsNemj0lpocsJwOOdozPewH9AM2XrWMvsn3hn3N4OO7tltLuyYdg5bYW6wxBebBdl4CiIu80PiPKR7hDPpyMQNRUltrI38UmJzN1cZuNGAAcwSB8+RjhGg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f44.google.com with SMTP id a1e0cc1a2514c-97c7be9cb6dso1276905241.1
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 05:54:05 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787576044; x=1788180844;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Eom/X8opTXnjGOdU2jJfg3a1DGcqhjQm02nKfziCp2M=;
+        b=mMEejKF82hrOD2WzfyTpuouenWPIqIFSWC7lvvT5gavmccZr4jYEQOKCKKpPrT6iSz
+         I4EZusdIAdJOIoBHucXX1jNaZ6pBdJSX+RdP7R0lFXNjzCbzp/EnGQJQ58BPOeFNqEbu
+         B9vNEwrtlAxgfRsbRW5bU0RxKrMV55qqf90Bz3PVtXwmtaVUhHhg4cS6s+rKPuVSzOMV
+         3f/w2TNf/cnSxBrv7i8sx905YN+Wsl0eQXR0nIimjZyL+gWITwbLIcJry7WSYT1qfdoj
+         YPauC1qrGq3dCgk1FJnxsBHr+WClELkRdo8vywUllMb4EO654jBf11vSnfeWDoHNCbJo
+         4oBg==
+X-Forwarded-Encrypted: i=1; AHgh+RrprZD9QooSmA1S3WtLGyEoLb3UOIbwINZM15EX0BIXU8OEUS4dpFZE76wPJyVLcWHSOTk/wgW/+Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++lyqGtwG7dKbxCrMyX7CL8+2IseuqNE5cy1QfOVmU1zM9DOnBqN
+	PZs2fnRdZgBRhH2jJ/SSFWa/TswVwMjr4vHJureCAhvOfF4BDRWiKnL61h58MN/H
+X-Gm-Gg: AR+sD13tszq16PmhAPw0pZxAx5EqtLIdd37ryIEu7Hn1WqmKpFw9i105b0M5sE/M522
+	Lew2jfPMnR3mtjBowOaZOtPAoajy+lxxqSuWEqdQVY33t+yL/6r3DwLLBLMSg8pIHnP8KRvoDT0
+	CL5HExorpQ8jpae5sjYqDhdoqZaTYqF9e9zWCHPO2ugPIiJLxL1KGsZLqu1QvkKzNO7khV1Z2ku
+	yBgzLiS00qk+PYz8PLdoz7wMQsPy5SO6rZT0pNQBX43Yf0sUXcswoFA/Mc3nZGXSdzTLANQcUaS
+	Yd1NXHnpbx1nqtI14wHlMYDY1WUpwpx8rJctm8TugJtS25bcX9z88Kq1JlBBjiHraszXBT/hF4R
+	I/AxBTjmUwlsgXWEOLFzErwmSXF2QMaFWs00fHP4jA+USKqai8p6TTQtIjdxT2YogWS4m95DBoa
+	1Ndp5HXTEp+VHGp+faA0AU8ffterEaJlYiDnuOD6ZfRK/uRGjT85Zj+xwt/BonE0WXIQeDJWNp/
+	Sgvnz4a5OM3T1MOwwDmDlFnVLynIQArsABCyg==
+X-Received: by 2002:a05:6102:f8c:b0:77a:7cd:8473 with SMTP id ada2fe7eead31-77a62847969mr11221008137.4.1787576044528;
+        Mon, 24 Aug 2026 05:54:04 -0700 (PDT)
+Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-97c836fb2d8sm7464802241.10.2026.08.24.05.54.04
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2026 05:54:04 -0700 (PDT)
+Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-977168e4f3dso2616319241.0
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 05:54:04 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rrf5twGFR23HSwRt81ib5nK9eBPcXJGXXxUWo6ufYPsa7/xK+T3JcEEWDAwp0tFRbAuwLGf8SNvLg==@vger.kernel.org
+X-Received: by 2002:a05:6102:3c9d:b0:77b:b14e:b6c5 with SMTP id
+ ada2fe7eead31-77bb14ec487mr6712686137.9.1787576044162; Mon, 24 Aug 2026
+ 05:54:04 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [REGRESSION] PCIe/qcom: on-board WCN7850 link stuck in Polling on
- X1E80100 (Surface Pro 11)
-To: Manivannan Sadhasivam <mani@kernel.org>,
- Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
- franzelverbier <info@humanlearning.ch>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
- Lorenzo Pieralisi <lpieralisi@kernel.org>,
- Krzysztof Wilczynski <kwilczynski@kernel.org>, Rob Herring
- <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- regressions@lists.linux.dev, linux-pci@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260731122233.18345-1-info@humanlearning.ch>
- <qgol7nv7vrhdwt6sofbxip3dat3kag4xgoamgp6li25rkbn4oa@ie5dhaswmxbt>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Content-Language: de-DE, en-US
-In-Reply-To: <qgol7nv7vrhdwt6sofbxip3dat3kag4xgoamgp6li25rkbn4oa@ie5dhaswmxbt>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-PPP-Message-ID: 
- <178757559850.2729949.14311381177292394726@mxe9fb.netcup.net>
-X-Rspamd-Server: rspamd-worker-8404
-X-Rspamd-Queue-Id: E2E8D5FA38
-X-NC-CID: wfs2Aj5DfQ4rH2iAQKmoymFkKFqLoPerQgMfpVmfTihTsK25VqQ=
+References: <20260821150940.75282-1-ayman.chaudhry.kc@renesas.com>
+In-Reply-To: <20260821150940.75282-1-ayman.chaudhry.kc@renesas.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 24 Aug 2026 14:53:52 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUAWhwybqECDZWyMXNR8cv4GXvFe4BQV-m-Wax+j6U5hw@mail.gmail.com>
+X-Gm-Features: AcwNN1VBZ53Z8AyT5wwWA02V_hOL4uH3XypVon522o3KZn9AAHsHiFE4wR9dg0U
+Message-ID: <CAMuHMdUAWhwybqECDZWyMXNR8cv4GXvFe4BQV-m-Wax+j6U5hw@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: renesas: rcar-sysc: Update description of chan_offs
+To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 8/18/26 13:13, Manivannan Sadhasivam wrote:
-> + Krishna
+Hi Ayman,
 
-Hmm, nothing happened here. Or did it and I just missed it?
+On Fri, 21 Aug 2026 at 17:09, Ayman Chaudhry
+<ayman.chaudhry.kc@renesas.com> wrote:
+> The description of `rcar_sysc_area.chan_offs` does not clearly document
+> how the field is used.
+>
+> When `rcar_sysc_area.flags` is set to `PD_ALWAYS_ON`,
+> `rcar_sysc_area.chan_offs` gets ignored, therefore improve the
+> description of `rcar_sysc_area.chan_offs` to make it clear that the
+> field is set to 0 if power is always on.
+>
+> Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
 
-Krishna, it seemed Mani thought you might haven an idea what's wrong. Do
-you do by chance?
+Thanks for your patch!
 
-If not, I guess Franzelverbier might need to bisect this.
+> --- a/drivers/pmdomain/renesas/rcar-sysc.h
+> +++ b/drivers/pmdomain/renesas/rcar-sysc.h
+> @@ -29,7 +29,7 @@
+>
+>  struct rcar_sysc_area {
+>         const char *name;
+> -       u16 chan_offs;          /* Offset of PWRSR register for this area */
+> +       u16 chan_offs;          /* PWRSR register offset; or 0 if area is always on */
+>         u8 chan_bit;            /* Bit in PWR* (except for PWRUP in PWRSR) */
+>         u8 isr_bit;             /* Bit in SYSCI*R */
 
-Ciao, Thorsten
+The same is true for chan_bit, and almost true for irs_bit, too.
+So I'd rather correct all three comments at once.
 
-> On Fri, Jul 31, 2026 at 02:22:25PM +0200, franzelverbier wrote:
->> Hi,
->>
->> On a Microsoft Surface Pro 11 (Snapdragon X Elite, X1E80100, board
->> x1e80100-microsoft-denali-oled), the on-board WCN7850 Wi-Fi PCIe link
->> no longer trains on linux-next. It works on 6.17.
->>
->>   Good: v6.17
->>   Bad:  next-20260721, next-20260723
->>
->> #regzbot introduced: v6.17..next-20260721
->> #regzbot title: PCIe/qcom: WCN7850 link stuck in Polling on X1E80100
->>
->> The device sits behind PCIe controller 1c08000.pci (pcie4,
->> qcom,pcie-x1e80100, gen3x2) and has no PERST# GPIO -- it is
->> power-sequenced via wcn7850-pmu / pwrseq.
->>
->> Symptom
->> =======
->>
->>   qcom-pcie 1c08000.pci: Device found, but not active
->>   qcom-pcie 1c08000.pci: PCI host bridge to bus 0004:00
->>
->> dw_pcie_wait_for_link() finds the LTSSM in POLL_ACTIVE/POLL_COMPLIANCE
->> and returns -EIO. The endpoint 0004:01:00.0 is never enumerated, ath12k
->> never probes, and there is no wlan interface. On 6.17 the same
->> controller trains at ~0.6 s and ath12k probes normally.
->>
->> Ruled out: the chip is powered, and power control is bound
->> ==========================================================
->>
->> - Bluetooth on the same WCN7850 (UART) comes up fine, so the PMU and
->>   regulators are on.
->>
->> - pwrseq_qcom_wcn is loaded, and pci-pwrctrl-pwrseq is bound to the
->>   platform device 1c08000.pci:pcie@0:wifi@0 (compatible pci17cb,1107 is
->>   present in pwrseq_pwrctrl_of_match[]). The vddaon-supply
->>   validate_device() check passes.
->>
->> Ruled out: not a device-tree regression
->> =======================================
->>
->> The wifi@0, &pcie4 and &pcie4_phy nodes are equivalent between the 6.17
->> and 7.2 device trees -- same supplies, same compatibles. The only
->> difference in wifi@0 is "disable-rfkill;" (6.17), which is
->> post-enumeration ath12k behaviour and cannot affect link training.
->>
->> What changed
->> ============
->>
->> qcom_pcie_host_init() was reworked around the pci-pwrctrl framework,
->> and qcom_pcie_start_link() now calls qcom_pcie_common_set_equalization()
->> -- absent in 6.17 -- before enabling the LTSSM.
->>
->> Finding 1: Gen3 equalization prevents link training
->> ===================================================
->>
->> Forcing the port to Gen1 makes the link train and ath12k probe:
->>
->>   &pcie4 { max-link-speed = <1>; status = "okay"; };
->>
->>   qcom-pcie 1c08000.pci: PCIe Gen.1 x2 link up
->>   ath12k_wifi7_pci 0004:01:00.0: Wi-Fi 7 Hardware name: wcn7850 hw2.0
->>
->> qcom_pcie_common_set_equalization() only programs GEN3_EQ_* for speeds
->>> = 8GT, so max-link-speed=<1> skips it entirely, reproducing the 6.17
->> behaviour of no EQ programming.
->>
->> Note this is not a wrong preset value. The presets come from DT via
->> of_pci_get_equalization_presets() and are applied by the DWC host core.
->> In hamoa.dtsi:
->>
->>   pcie4  (pci@1c08000, gen3x2, on-board WCN7850)
->>     eq-presets-8gts = /bits/ 16 <0x5555 0x5555>;
->>
->>   pcie6a (pci@1bf8000, NVMe, gen4x4)
->>     eq-presets-8gts = /bits/ 16 <0x5555 0x5555 0x5555 0x5555>;
->>
->> Both use the same per-lane preset 0x5555. The NVMe port trains at Gen4
->> fine; only the WCN7850 port fails. So the WCN7850 endpoint specifically
->> cannot complete Gen3 equalization with these presets on this
->> controller, while an NVMe SSD on the same SoC can.
->>
->> The board DTS (x1-microsoft-denali.dtsi, also in mainline) leaves
->> &pcie4 as status = "okay" with no per-port override, so it inherits the
->> SoC preset.
->>
->> Finding 2: an LTSSM re-kick does not recover the link
->> =====================================================
->>
->> Even at Gen1, the link does not train on the first attempt at boot
->> (~4 s); in one instance it only came up much later via a pciehp slot
->> event. An experimental retry in qcom_pcie_start_link() toggling
->> PARF_LTSSM.LTSSM_EN (clear/set) for up to 30 s never recovered the
->> link.
->>
->> That suggests the endpoint needs a full power/reset re-sequence
->> (pwrseq) to leave the failed state, not just an LTSSM restart -- i.e.
->> the pwrseq power-on may be racing link bring-up at boot for PERST-less
->> on-board devices.
->>
->> When the link does come up late (fragmented CMA, tight PCI windows),
->> secondary symptoms appear that are absent on a clean boot-time
->> bring-up:
->>
->>   ath12k ... qmi dma allocation failed
->>   BAR 0 ... failed to assign
->>   rfkill ... Hard blocked: yes
->>
->> Questions
->> =========
->>
->> 1. Are the qcom_pcie_common_set_equalization() Gen3 EQ presets expected
->>    to be safe for a gen3x2 PHY driving an on-board WCN7850? They
->>    prevent link training here, and skipping them (Gen1) works.
->>
->> 2. Is pci-pwrctrl/pwrseq power-on racing link training at boot for
->>    on-board devices with no PERST# GPIO, such that the endpoint is not
->>    ready on the first LTSSM attempt and cannot be recovered by an LTSSM
->>    re-kick?
->>
->> I have not bisected to a single commit yet -- the range above is v6.17
->> to next-20260721. I am happy to bisect, test patches, or dump any
->> register on this hardware; rebuilding is a short loop here.
->>
->> Environment
->> ===========
->>
->> linux-next next-20260723, CONFIG_PCIE_QCOM=y, CONFIG_CMA_SIZE_MBYTES=128,
->> ath12k, board x1e80100-microsoft-denali-oled, Arch Linux ARM (aarch64).
->>
->> Thanks,
->> franzelverbier
-> 
+>         s8 parent;              /* -1 if none */
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
