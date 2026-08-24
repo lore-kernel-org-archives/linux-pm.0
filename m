@@ -1,73 +1,73 @@
 Received: from flow-b1-smtp.messagingengine.com (flow-b1-smtp.messagingengine.com [202.12.124.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39DC340926C;
-	Mon, 24 Aug 2026 11:09:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7C844078F2;
+	Mon, 24 Aug 2026 11:10:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.136
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787569800; cv=none; b=RahemU0L0UlYZHA/79gvxSpYKOlLVLjwICR2LrNmmZlvGCK4HhmeeUaGBNmgqH/1rmOQWXznc7u5warcKJlik6PZbACTTQE1i1IHuyWto5MwvamHYi2JEg6ry0uxbzCFqC/S8WV7sqdw87lIRivw4mSDQCmOpWImsdYL4ejtfMw=
+	t=1787569812; cv=none; b=BqHjPhChYtejNYHXPHGa+fM54Y/lNcLpNvjvkXtNXiIDAAKBrqPoaDEnZFq9b77ViyAbO+/wCvuEZ02KM+jy4CMKoMELhO6EijdjH5nas60uhg/H5A63XhKYw50N1c8dnC5d3xcOuB7LNkwWcVFqmgDyudzNQh6IrdwedlI+KLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787569800; c=relaxed/simple;
-	bh=SRHQE8bCG1hZarDfuj2dLy5ZE4gG7sSEuLmBWXWIfB4=;
+	s=arc-20240116; t=1787569812; c=relaxed/simple;
+	bh=NEsxuPX5MEC4uueUZv3V5rYxGhi3i5wdU0ScVrfkiDg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bRJ9fdR5fnHci1cTUWctSq0vOuZjUQCHTmCneE64uM62BFGG6+hDGInf3ORUtLmMcOSahcnW2bC7vOYa3vQBEeL0UPEFQ1vIW8LF7xLDvOElNLLOAivfmqjC2m04NU9/dcwK861zvdgn4qRbegPP6r57XZJMWTIwcFlRq3JmxdQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=Nm0AxSaQ; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=WAYbjAfj; arc=none smtp.client-ip=202.12.124.136
+	 MIME-Version; b=RvIecAaZ0k4lBuTceez5VM8RNtKUeRszcP2KX/ke4jJiP2YGCziyB1vI0PzL1TR0JfrdmdeDF0qJuFJ+lY83BKvQfauSq9XRP7bxMeVKmFg5awEndg59XeKl1nUqnMPg2vFtR2nZPElNiZODM990CH5q5/+e0+vEcLx9GXtFQhI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=kLDJkNZh; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=c4X0gETv; arc=none smtp.client-ip=202.12.124.136
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="Nm0AxSaQ";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="WAYbjAfj"
-Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
-	by mailflow.stl.internal (Postfix) with ESMTP id 0CE781300124;
-	Mon, 24 Aug 2026 07:09:58 -0400 (EDT)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-02.internal (MEProxy); Mon, 24 Aug 2026 07:09:58 -0400
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="kLDJkNZh";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="c4X0gETv"
+Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
+	by mailflow.stl.internal (Postfix) with ESMTP id 27AFF1300139;
+	Mon, 24 Aug 2026 07:10:09 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-05.internal (MEProxy); Mon, 24 Aug 2026 07:10:10 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1787569797; x=
-	1787573397; bh=hIs4JGkCZbe1hIfuDPjKMzbKJ3jJLbxC1l4hzdrLCRw=; b=N
-	m0AxSaQdVAR5t/IE9UNljz+/HDgO7A/txsHhD5N7WRrY8jEcG0JmEJr7eBMqRsuy
-	FzVmoQNRMpu7yT3uRBo7oCviC47TlAM6+8mp820Z2oz+55KL4ISdsO348vtnJJ5b
-	BcdRrT+iki8tq2nQviXa8tozFu1+IL3iL6lGmQCS3ZfRe1RSdc2lu1cHewzQf92F
-	hnSprEw6E0gcobBhLEYlx2kaa8o8VC4rpDC69d2ftcPlDi91P1NkzbhiFwe8EEe/
-	ZZ5V8DXShht8JWutmQoJw4c74h0Weeo0jIdDXw6esv4siV8XVDSdWJ2R8Du2EjW8
-	viBHF7Io8zRGWnJZRF+eQ==
+	:reply-to:subject:subject:to:to; s=fm2; t=1787569808; x=
+	1787573408; bh=OySDevrrI40i+GobXOkYgg/pX4BBqshAOlV1V9u/EO4=; b=k
+	LDJkNZhuBrgrtUXiRN598I9QaQJpPXa+ArVJrc1s6soWvOcelF0uvhyryS6TuKsU
+	OQBcxhtZ/cnpLLkAegEYW/JnGw4t7YNO2CcQXR0H4Yt1i2sVAPB16WKCL8smV7PI
+	xmaQeiCuDP8jEL9wUsHfnozWoyh7Id320wKEf3FmSiEXaSEkVjEoPhAzqTWkdUR4
+	bHy+CisvMR6O3RbutLyeGnMTXMcdHGEni2aLE92Th/W5dOzequ3QEbwqy6GiKIAN
+	9i/Aavcl6XBAZZvbDp/lRKBa0dTE28G8MyEMgB2N+qiuu2B3Dcak5u+vj+5SwZ7A
+	eHJ+DCgO49dsnV3mVjcrQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1787569797; x=1787573397; bh=h
-	Is4JGkCZbe1hIfuDPjKMzbKJ3jJLbxC1l4hzdrLCRw=; b=WAYbjAfjgdl0Bx3lr
-	bssNeGTKRBLStJyuV3rd/mjxY8k9CMAuOqnaOdOQGJMzA/+EqiFqihw5IFYoo8yu
-	FvCPf9+5C4UzgsexqwkNebjsm4ynq+hDx+azbktGS/92secoDJXL3iKqE8tPho4u
-	jOyBsI18vJnXHLiLEctMDj+S63aRbazW3N96NWhxUk94fPizH0jatwFeHhUnNk1R
-	bEjjrfB/rV/M9iYnv+1qOPSbRS0oH+hvS8FEip5dx4sYo0FKF5kv+SMQfvXeTZzc
-	12PJVr9LNx+xBMl+aVaIaMUCofXAq03bSo0kHUr4o7Zu0SfEWPSg0+hn7WLRzbMK
-	L5Dug==
-X-ME-Sender: <xms:hSaMal9K4pqV1OEL8MnTCMKz-gawl2UUt-H-xoUAg16MaXXTCmxX9A>
-    <xme:hSaMapmDoVOBUp2rHVDpQEyQzOmHh34xhc6XsXKypzRAEwLmfLrDOUtfppMRn1QUO
-    UTL6PCH27SZZrMJVKHhvobvtSYUI_x1_Rvjn8DV_pFXrwOn_0lg-m2V>
-X-ME-Received: <xmr:hSaMagWF5A25bDSx14mapbaiP8nxRv35Poob8fls_Mb8Y-tajPIZKCGYY3EPBivI4wjGw22xdw>
-X-ME-Proxy-Cause: dmFkZTFZCbpsgW1YFD8tkPvHCNfxYRvTZ4blFH/NRV/HzygHIZO36nEMOhE1d730qpXJvh
-    mj3vwdyckgY6cjcLbWoO+E+Y3xnZHjj3a4qFKPUp4C1ItOyypDc5v9ubc43QMrvknpo3YV
-    t254bBqkhHFILTMaiaOskey67wujVC060Hg7shRsjYN75EBvtRkSi+gTwzTAT9QI5uwF5a
-    jKY8X+yRsMvgEojvqKUbS+n33ebqC8Mk85kgoigVyIrVFWYfmyd/lA/A6ULdG/inFBXWp7
-    ziuYhhyF6f7lNHjxbQ4kgWN86q7p7VmrRBdAb8OqXw1LSsz5kDP4W0+4ny2SVIkbn/odGN
-    XXQIbzmB/vcLF1NlXS+kM2UIUaMF5Cqm9KOuiSdlbWEUDKfHso/+J57OohIKreHXTg+BxZ
-    8sHl3bGdMIwg0h+ro1NqYo85skD7QF+zT83v+ttuT4mfno7zwuo11ScZcwElamMqO0DkvP
-    ZJnyU0KxFbHDHolO7OapXFq4k7hhW5zLmCjVi4XuJrm01Yk0OozeY4Cub80lZWvK/TqKfp
-    nwX6Imjv2xArvLbG8iXYCgqao5DyRYJv8ZLcODTGnfO2twC1vZl660wcbL+K5lvimqVx4m
-    rKI5ZgSpyQrToA9yHwyrI7HgY1Ek24Zsd7jmGHx2TWYb7qx0g7e1dLaEp1wQ
-X-ME-Proxy: <xmx:hSaMalrYGxiVPXgaIeiKh_NFsN3OpYFkVekfKYBI80w0RDNycBrraQ>
-    <xmx:hSaManXPu_3UdDjB22Ht1edrpOiMsukVWMxSuQF-nUWRd7EyBmUFKQ>
-    <xmx:hSaMatC4EM4Zmdq_kVXGpcW8NXVrh6dVYvozbjjkt9DILrrkf1fllA>
-    <xmx:hSaMajVMOqGDyp2PbBD-mygbs-bUgbnTKjQDj1hic-QAXhdygxc8PQ>
-    <xmx:hSaMav0t_dzFiV_Zy68weuYw4hnY_pisrcsygNF3wCM8zWcrorbdylNm>
+	:x-me-sender:x-sasl-enc; s=fm3; t=1787569808; x=1787573408; bh=O
+	ySDevrrI40i+GobXOkYgg/pX4BBqshAOlV1V9u/EO4=; b=c4X0gETvxpud7gAkI
+	Mo+M4+6Vy0NVk5/hmcFbj/ZSfX2oX8BT8cFPJpbPy9++8UlRsUYBexGRQEuHHUjh
+	l6qiToLFY3YDrSVkzUcgT6EjZkwUCTs3MAGfSVEKN+Y8Eml7vqRGNxwQEbyPQmPF
+	OVF6E9ZxLuJ8ATe6X6uPzb0FWa22je6Fvlo33KvQtdnyIJUQi5aufAuUoC918zih
+	VSK02VePJ35Pd8rnLvHRCNGGU6HSoW9mdLzIVPR14O7I3HYq36yWcd9eBcq8ivdC
+	ltNftVfikKltlRLyOCLymBJePhHQbhQuid3LCps1FBd5guKh2IOqWIEv8qoGNDRW
+	/BrLQ==
+X-ME-Sender: <xms:kCaMah8PgVI26cyrow6uaAHrQtUBRhOtH9qafcACH1JApNzHsxDz9g>
+    <xme:kCaMavB7e9jU7ns9TKI7qWJ3tu9Hd4ajnS6lb34jaVWFGJ-W0ovoy5epiNnV0CV7s
+    upnd1w8vE1Z1S88JWJJP2_xYM5hnJDHKAzxmsr9Tifxzb63ZC35sYqW>
+X-ME-Received: <xmr:kCaManDO_si51pcgcyExwxVaSDzR4s4_scezQlSQHF8dvjuiP0jqHA8kYHcCNbNjNP9FMdto3g>
+X-ME-Proxy-Cause: dmFkZTF5gEktT6ey77lDLiQq6f/Ez8J2CsM/d3gBsm6ZfoPCVc/9AV7mEHI5Zbyf95LLfC
+    4CQZzzSMKsGOWFY6Gt1SR6Kg796PA74a5HKg+kJTffI+dHfHM7XpLXiY581SkqQlRS1Qpb
+    Wc7L/7AOy1fxPA6AupG4lWF4eQcqcj+B5Us1y3xgEinw7ECHWnH4TUGN/Wc0N0DXq0ZSfP
+    9JPYy4GlPPuk3ysPhnSrwkCDIcEjzIDaM1hfK2Baaq1+/twwAHRGUHWNns+kLLhO/Id8IP
+    KX24rOTlVfxpe1eJUKO7ADpaCjWUyCdmClqx1ou3BnFgw7zCxe6lZ464NK9v0PjzehFWRA
+    aMitl1K9EXew2L0hWcnZpdyjgHglxBzMFJZjTGpr/KtQHho8oE8reUdvDIXf7rEl5mSe5C
+    EFbjSeKgoqqLuobmWa3MusLGDQHpDuN5v8pnD0G+U3GxZhsQei25SwhJqRv8hUAfLIfg2g
+    /R9CJ6v8GwISb1okOacpc6GID+KB5xawCaopqBus0RMSKjupmg2J9+xpzcnD/Cy/w8U5Ed
+    iALIWWNvYf0ZyK3zyrTTPIs97CbUhqwqJtI5uTs5I1NuBjVYCQOWtTqkYDTPba84JNYrhL
+    GgVuGThX3FY4vt56XjYSjY9dYTD99cx0d+TRVFHDIlEjjsLWrrt52EBOeQ0Q
+X-ME-Proxy: <xmx:kCaMavLkRTUUhkOHCNJXh-L7E7-wEi7jw2HhRkn4Uf4PaFmGsLIl5A>
+    <xmx:kCaMahSRfQkpVVuCnA0CyThVBds5U9BdyXSxbigzhNeEnC3n-b5gAg>
+    <xmx:kCaMaiQVNqlOfKxAMJCfRyYfSXvCYK1gh1WYXB8p5XMzACDi5xFwvg>
+    <xmx:kCaMas5u2eEimsgi_uIUCOfJjp3Kqe3idNqUkQzQEy3kYg8YGjPoNw>
+    <xmx:kCaMaqjeGuVRO7NjLgFLdBkPNcWLZiCN70Oi0wzoks5tbh5ZokY2To0x>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 24 Aug 2026 07:09:49 -0400 (EDT)
+ 24 Aug 2026 07:10:00 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -93,10 +93,11 @@ Cc: royalnet026@gmail.com,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v9 04/13] accel/rocket: factor the completion tail out of the IRQ handler
-Date: Mon, 24 Aug 2026 23:08:53 +1200
-Message-ID: <4ce8b384a2f0c2ba389e4ac070c1f91d9802fe8b.1787568944.git.gahing@gahingwoo.com>
+	Jiaxing Hu <gahing@gahingwoo.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v9 05/13] dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
+Date: Mon, 24 Aug 2026 23:08:54 +1200
+Message-ID: <ed82f56171bbab8b150d3512412cda12e7e09a7d.1787568944.git.gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <f1805c2bce56c89d8ace35f67c665b24bab90965.1787568944.git.gahing@gahingwoo.com>
 References: <f1805c2bce56c89d8ace35f67c665b24bab90965.1787568944.git.gahing@gahingwoo.com>
@@ -108,73 +109,111 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-rocket_job_handle_irq() stops the block and then either starts the job's
-next task or retires the job. The second half is a step of its own and
-reads better with a name, now that taking the register writes under
-job_lock has moved it a level deeper inside the scoped guard.
+The RK3576 NPU has two cores of the same RKNN block the RK3588 binding
+already describes, but it wires them up differently: two extra CBUF
+clocks, two power domains per core, and a single reset instead of two.
+It also has no NPU SRAM supply.
 
-Move it to rocket_job_next_locked(). The early return that used to leave
-the handler now leaves the helper, which is the same thing here: the
-scoped guard drops job_lock either way and nothing follows it.
-
-Doing it as its own patch keeps the locking fix at the head of the
-series minimal, so a bisect that stops before this one gets that fix and
-nothing else. There is one caller, and no functional change.
+Widen the property ranges to cover both, then pin each SoC back to its
+own shape in allOf so nothing loosens for RK3588, and keep sram-supply
+required for rockchip,rk3588-rknn-core only.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-Reviewed-by: Igor Paunovic <royalnet026@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 ---
- drivers/accel/rocket/rocket_job.c | 31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+ .../npu/rockchip,rk3588-rknn-core.yaml        | 47 +++++++++++++++++--
+ 1 file changed, 44 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
-index a89ab49e1..69e29f40f 100644
---- a/drivers/accel/rocket/rocket_job.c
-+++ b/drivers/accel/rocket/rocket_job.c
-@@ -341,6 +341,25 @@ static struct dma_fence *rocket_job_run(struct drm_sched_job *sched_job)
- 	return ERR_PTR(ret);
- }
+diff --git a/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml b/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml
+index caca2a490..3b611b64c 100644
+--- a/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml
++++ b/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml
+@@ -21,6 +21,7 @@ properties:
  
-+/* Start the job's next task, or retire it. Caller holds job_lock. */
-+static void rocket_job_next_locked(struct rocket_core *core)
-+{
-+	lockdep_assert_held(&core->job_lock);
-+
-+	if (!core->in_flight_job)
-+		return;
-+
-+	if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
-+		rocket_job_hw_submit(core, core->in_flight_job);
-+		return;
-+	}
-+
-+	iommu_detach_group(NULL, iommu_group_get(core->dev));
-+	dma_fence_signal(core->in_flight_job->done_fence);
-+	pm_runtime_put_autosuspend(core->dev);
-+	core->in_flight_job = NULL;
-+}
-+
- static void rocket_job_handle_irq(struct rocket_core *core)
- {
- 	pm_runtime_mark_last_busy(core->dev);
-@@ -354,17 +373,7 @@ static void rocket_job_handle_irq(struct rocket_core *core)
- 		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
- 		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+   compatible:
+     enum:
++      - rockchip,rk3576-rknn-core
+       - rockchip,rk3588-rknn-core
  
--		if (core->in_flight_job) {
--			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
--				rocket_job_hw_submit(core, core->in_flight_job);
--				return;
--			}
--
--			iommu_detach_group(NULL, iommu_group_get(core->dev));
--			dma_fence_signal(core->in_flight_job->done_fence);
--			pm_runtime_put_autosuspend(core->dev);
--			core->in_flight_job = NULL;
--		}
-+		rocket_job_next_locked(core);
- 	}
- }
+   reg:
+@@ -33,14 +34,18 @@ properties:
+       - const: core # Main NPU core processing unit registers
+ 
+   clocks:
+-    maxItems: 4
++    minItems: 4
++    maxItems: 6
+ 
+   clock-names:
++    minItems: 4
+     items:
+       - const: aclk
+       - const: hclk
+       - const: npu
+       - const: pclk
++      - const: aclk_cbuf
++      - const: hclk_cbuf
+ 
+   interrupts:
+     maxItems: 1
+@@ -51,12 +56,15 @@ properties:
+   npu-supply: true
+ 
+   power-domains:
+-    maxItems: 1
++    minItems: 1
++    maxItems: 2
+ 
+   resets:
++    minItems: 1
+     maxItems: 2
+ 
+   reset-names:
++    minItems: 1
+     items:
+       - const: srst_a
+       - const: srst_h
+@@ -75,7 +83,40 @@ required:
+   - resets
+   - reset-names
+   - npu-supply
+-  - sram-supply
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: rockchip,rk3588-rknn-core
++    then:
++      properties:
++        clocks:
++          maxItems: 4
++        clock-names:
++          maxItems: 4
++        power-domains:
++          maxItems: 1
++        resets:
++          minItems: 2
++        reset-names:
++          minItems: 2
++      required:
++        - sram-supply
++    else:
++      properties:
++        clocks:
++          minItems: 6
++        clock-names:
++          minItems: 6
++        power-domains:
++          minItems: 2
++        resets:
++          maxItems: 1
++        reset-names:
++          maxItems: 1
++        sram-supply: false
+ 
+ additionalProperties: false
  
 -- 
 2.43.0
