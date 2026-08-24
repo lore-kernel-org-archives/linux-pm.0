@@ -1,82 +1,82 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B5483F1AB9
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:29:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 001203F3294
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 10:33:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787563764; cv=none; b=BIr2cZYOHtHN0Kn5bk5U06658RodvcVzwDCCP1SWQibhDUMUc6grUGMof3ZSJ5W6EUShX7T1ErHgCK/eDq6/Q0d2xsVtS3dsreQ0vihpWTQ11zDxjJOlDikSJChqj2PYdfk1i+ZPpyNSsu/xfkjSHTPA2cEvepfoNNqqXlcqJ0U=
+	t=1787567583; cv=none; b=tBzeEKtWm2CpcpIivpYn/f89Sq5jNeVmVImhanHYdU0bSwGkRkNy6d/YyXxgBEOdTlylGF3uHQhlL3Ois4vnTonvo0BkJ6UJWvla/14/r7AUQjnUaH/pYjplomYZ7TQSTLEBi6upqvZ20UrcWixN7fdUpvB4j9CrYD1V8gw7yu0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787563764; c=relaxed/simple;
-	bh=SaJrbGxwzSHJgMPk0NkIgSbglqsEiWC7+eg/xh/RPV8=;
+	s=arc-20240116; t=1787567583; c=relaxed/simple;
+	bh=weNxL9twIrm/RsFpoaE3cbLeAHaBLxjPZ57ywio1sKU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GpAEkWD/WuavrEry2viOQFgT016p1WNRQ6XHqpZo4vH2emzIcVIv2+53MBQ8a/XreTMddI7HuClNSD30VQvYKygIFd07Mh0s/00TUW9VPbeShbJVxcLJGQw5sRloT9H24DTT7jr/opgBWu62iPCXeDr/zg/ng13/8NriqiRqdaE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DK34VmRZ; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=pNxlf4otjl6phaWdztjfzv+sGewJaDkG36otOwvzo33NNFLt3SnrcIp55IeAZmh3xTiAKJ/FtvTRsSxOYXVFhCGgoHYZOh9bR8EtMbue4OhhLATzosOS53pbueEYW3ecffc29EXi142mSSJYB/e3xU4+z3EZbWOCrWz5o5B8UJo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j1flZ+nI; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DK34VmRZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18CB61F000E9
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:29:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j1flZ+nI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BABEE1F00A3E
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 10:33:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787563762;
-	bh=cs8Z/DCd0467Xo4N9XjqKyZ3No34Yw905X8ZcaB3L1M=;
+	s=k20260515; t=1787567581;
+	bh=weNxL9twIrm/RsFpoaE3cbLeAHaBLxjPZ57ywio1sKU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=DK34VmRZDpWpqJaXHDdIzMd9s32QhvBRxDBTMy9ERx9PTdyuA2dt1TOCirBi+Dvhg
-	 A0pTx4acz9QUx3FXKCoaBlA46M0fuJcrsn7dHqMiAI8vaLWCdSX9l/jj66WIf4vu53
-	 erY7qAN0/BPEuEXsc4hHNz2+H1790iZUEZXFu5QPwiwXo1zdkJ7nQ6zvUPrZPSh/mX
-	 IXMBed0xt6ItS1Hv8VnZMeUHdshqylWbC7IQpZhBxE1aw8TFZX44O9HfB7KnxfwbUb
-	 lZygvEwVPTHFApMTI3UkrvQJl3HMRl5aTSZ/WE+Ez4asb+mILKtC84UFmutHDkxlRN
-	 tFy6wSWmfhW3g==
-Received: by mail-vk1-f178.google.com with SMTP id 71dfb90a1353d-5c5f23666d0so2523556e0c.3
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 02:29:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RplymWcghbqjOoyqCU06qlrEZHcDcLv6ranGy1+W229DVHb/4gJXb280Xkdicmq+/dH7nYSKvzvsA==@vger.kernel.org
-X-Gm-Message-State: AFuF++kki4M/wA7ltKqFdRjWVyLlNRZvlB/BHMRZGuS/yfpMShyXMEDX
-	f9E+IU3/66vdVcgE8v3IosGUDEo/k4bk2ohQw96l8uCKYW0zErUCX7tb7Y9bcePaEOsLPZODMPP
-	NjKiwBHAzzM3W/9h32iP97vM8KauGcLY=
-X-Received: by 2002:a05:6122:d8f:b0:5c5:d7aa:13ec with SMTP id
- 71dfb90a1353d-5c5ff3afbb1mr10254511e0c.1.1787563761384; Mon, 24 Aug 2026
- 02:29:21 -0700 (PDT)
+	b=j1flZ+nIH3ncX+zJK8XmSQCCjt41icF2l+wPlBRmtO/lkvD7ad6q+ab+hPMompeLP
+	 mCAzMncPCPOJtBLQAB0a8tgtCNx7YZv0rd1X1BZ2AiHT9MAqsxLSNizJUaW4/jcGPj
+	 vcZ2d6Jnnr7gjacEJlzJi3mkJmzVDZ3vnOwZ/aYwjyG7fG52QiFOjsst2KuTnT4RJB
+	 LnbR5FFSqkcXB+N0aY0AGtHQeXvBndq2Gp0v1QftMq3O13YVYyL+coBp4Z1z52R1wk
+	 X1PuUxef7ordWFxK5jvROWB8lQWqtRVDnqNhS/RTMfAslMxr0rZhEYXPp2u7fowiBq
+	 CAgT2asXYntiQ==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-39fa5e3a428so22205661fa.1
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 03:33:01 -0700 (PDT)
+X-Gm-Message-State: AFuF++k66PpXmWMMhzXzXdOQx5OB0ZgYYeMrvJjpd+ukcgXmNB2UQ4P6
+	ITrHaoJb/u3BF/ysLSuQlKA/uPyLWTYBYpVr2/lwVmZdZV203kg7Q7cdMyJCfv0CWkcuqzanWBm
+	7+eFF+rVws60tKfhecmlUFGxkQAlfiOw=
+X-Received: by 2002:a05:651c:c91:b0:39f:6001:824a with SMTP id
+ 38308e7fff4ca-3a19697e16cmr74890591fa.6.1787567580109; Mon, 24 Aug 2026
+ 03:33:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <202608241339.0y44z2vK-lkp@intel.com> <aovYmy6AKkSgM9ve@rli9-mobl>
-In-Reply-To: <aovYmy6AKkSgM9ve@rli9-mobl>
+References: <20260822094657.12489-1-sumeet4linux@gmail.com> <bytk4rnkmttixn5y23fhgg64hvgtg3qkurk364h5swf4ufyul6@dd4k3suk67w7>
+In-Reply-To: <bytk4rnkmttixn5y23fhgg64hvgtg3qkurk364h5swf4ufyul6@dd4k3suk67w7>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 24 Aug 2026 11:28:39 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jrXkXP9mUoucSh3wo2eKXBrXAkuF2nDR3ZMjpMFZVZeg@mail.gmail.com>
-X-Gm-Features: AcwNN1XmxVTGjg_uzUCCapOD-By05vZNZCrMq4K10Bz5UPDc9CcHN63AGsjXzbc
-Message-ID: <CAJZ5v0jrXkXP9mUoucSh3wo2eKXBrXAkuF2nDR3ZMjpMFZVZeg@mail.gmail.com>
-Subject: Re: [rafael-pm:bleeding-edge] BUILD SUCCESS 361498477a97b6060e2441f64fc29da7b1e07eac
-To: Philip Li <philip.li@intel.com>
-Cc: kernel test robot <lkp@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, 
-	linux-pm@vger.kernel.org
+Date: Mon, 24 Aug 2026 12:32:18 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hpaccbRZLJ+Y5Xo-3c9ynagPfwuJ2UvMcKARZv-AGYXA@mail.gmail.com>
+X-Gm-Features: AcwNN1Wfe1e3VMVqn9-rrfuI9JLgeLAGcbLjJP4KJqZRr852yRyH-u5pRZBihSI
+Message-ID: <CAJZ5v0hpaccbRZLJ+Y5Xo-3c9ynagPfwuJ2UvMcKARZv-AGYXA@mail.gmail.com>
+Subject: Re: [PATCH RESEND] powercap: intel_rapl: Fix kernel panic during PMU unbind
+To: Abel Vesa <abel.vesa@oss.qualcomm.com>, Sumeet Pawnikar <sumeet4linux@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Aug 24, 2026 at 7:37=E2=80=AFAM Philip Li <philip.li@intel.com> wro=
-te:
+On Mon, Aug 24, 2026 at 9:35=E2=80=AFAM Abel Vesa <abel.vesa@oss.qualcomm.c=
+om> wrote:
 >
-> On Mon, Aug 24, 2026 at 01:09:51PM +0800, kernel test robot wrote:
-> > tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/lin=
-ux-pm.git bleeding-edge
-> > branch HEAD: 361498477a97b6060e2441f64fc29da7b1e07eac  Merge branch 'ac=
-pi-button' into bleeding-edge
+> On 26-08-22 15:16:57, Sumeet Pawnikar wrote:
+> > From: Sumeet Pawnikar <sumeet4linux@gmail.com>
 > >
-> > elapsed time: 2941m
+> > rapl_package_add_pmu() fails internally at perf_pmu_register(),
+> > and rapl_pmu_update() leaves the global rapl_pmu.pmu structure
+> > zero-initialized via memset and returns an error. But any
+> > previously probed packages retain has_pmu =3D true.
 > >
-> > configs tested: 101
-> > configs skipped: 1
+> > When the driver is subsequently unbound or removed,
+> > rapl_package_remove_pmu_locked() sees has_pmu =3D=3D true and
+> > unconditionally calls perf_pmu_unregister(&rapl_pmu.pmu) on the
+> > zeroed-out structure. This attempts a list_del_rcu() on a NULL
+> > list head, immediately causing a kernel panic.
 > >
-> > The following configs have been built successfully.
-> > More configs may be tested in the coming days.
+> > Fix this by checking if the PMU is actually registered before
+> > attempting to unregister it.
+> >
+> > Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
 >
-> Hi Rafael, sorry that the test coverage is still not full for various arc=
-hes,
-> we are still working on this to avoid missing important kconfigs.
+> Looks OK to me, so:
+>
+> Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 
-Thanks for letting me know!
-
-Kind regards,
-Rafael
+Applied as 7.3-rc material, thanks!
