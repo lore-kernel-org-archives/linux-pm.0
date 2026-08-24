@@ -1,94 +1,186 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E46704399E2
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:32:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF8DD377EA7
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:55:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787589148; cv=none; b=jcmFMRaDfpjEV5sXVnf93PAobddY5Ji1823DCLfGncjrZbxj6IbMhxsuB60F6XFibaPcWclTKrww3b4I6fGYhxSDyzSIYjr1kHXHEzhMrq8SgBhHp9bZ+KCB0+VW4GmGypkNVMUEoNBAD+i1B175wJ+Bxb2VX90vZczhFBUJ70s=
+	t=1787590529; cv=none; b=iBYg2VxjBeE5bZmOe6siJPrPpS8BhtQqcJUTRSvQtFKtrfCISq/kexi9aMZ3mP+E+U1O0ORjiD2Vj6htEmcLCDQIpwIJTF8oGFGQiY5MGJMQbbqU7kyRIy5JSTLx5KXDumdQc/+glUoHCjbjctm2wEEoQx/Xm9bGozQ+dqZzuLg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787589148; c=relaxed/simple;
-	bh=delsunFBhigFzFxwVc6fV+1IhX8HaVo1TsY19s6s2bg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Xp5fWC+ABVFMllNpdFqEYEW+zpxq1iuuL+qWr+nNe4LszHerKqbYR6Xu+mT937lhMBuVGG995E2SDXkOJPecDA4C9hwP0YZ3ApwhMTsP/FmQrRLPGxcuhJv3dDhA4I6yHrSRvf7b/BRbp36liJzHDKj1nF6DzeguE+YlboMe/3w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WE1O6Eif; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787590529; c=relaxed/simple;
+	bh=AQoWXsfJHmwnAyLj5EhV03cDbyvTWuaUKTcrQyW8y+U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=tPsO3eVD5mFpKLjGYO10D8DfxDcGuA/WvCpLFyiaESKPMDX5piJmYr7KQMUuFZZdoSyIRb5aD2c/9oWBxFgOxZ43NDLpQDmO7xoveUqQcdOh+lKDGw4de9ar7daHmU3qaYYVQem8rXmBty2v3UWwkv41YIdCxvNCX1GB2WluSZQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ByBN/BqV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=fm39jQD3; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WE1O6Eif"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBCC11F00ACA
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:32:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787589146;
-	bh=delsunFBhigFzFxwVc6fV+1IhX8HaVo1TsY19s6s2bg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=WE1O6EifxorV/Q1il/hYqO4C23MtUrGLr+0WdEJRK0msuV8FLUuBGt48iwehvL7GN
-	 ptN5RIO8pJfZAWBoAaXnFlcCDK41PH2Wx7sf/l780IcydwIitnwHy+WzD1K9niZoeo
-	 ab99MBArMN8hYBK7d6K2CSzulT97fYdIo8tEjl26R/MtAeMN+VLnJ3oDYkCsWAQY8g
-	 wspmf3IDT0TaW7ambKZ0EOf3h2goaK3zdUoEoG11Qfb892ODpdZ+yHBWyeGK50cxrY
-	 3NBJPqRX/eDuytuwNVrUu2YBAu6LDSm5H8CBemugIjpbKr7mI7Q992QI5zIMnc7Gbu
-	 TqybGaqOtUMrw==
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39f1ac13687so24986891fa.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:32:26 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrHEymn1Q1SNdrRW6pNus+zdGbL40tt/sNqk5vTF44/z8rf9zDKfgqAEl8nXnOu2KB93/eYPr1fKg==@vger.kernel.org
-X-Gm-Message-State: AFuF++ncxkqpyewWB2jHBBPICoLoHuWdJ09FuRjVxy71W1mz8uxut0aH
-	IF4lhL0kIymQ5bM74Rc4Im+PHsLWDBFzvhMqAyv3jh8TDaQXiVAKZCLph4icFA9LFM6VBE78u5z
-	3CFH7CaSjFr4Vrwvonhauop3Srb6pZpA=
-X-Received: by 2002:a05:651c:54a:b0:38e:a12c:418c with SMTP id
- 38308e7fff4ca-3a1aec6b9a6mr61528621fa.11.1787589145188; Mon, 24 Aug 2026
- 09:32:25 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ByBN/BqV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="fm39jQD3"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67OFmu343329504
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:55:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	sfXILiAwBDaxvqRoSf8xZ7r6Qs2Yw0ErBR+u4/IPE9Q=; b=ByBN/BqVIwxSsv7C
+	5vePHD+qP1XPRv26tJh1xJpiFcWjFIupOTGGuEA8DnxthAUGC18zZH9r0NikPRN6
+	rJfhaYVRAHTyg9RT4OEGiUnReE6SxP0IPOnn9/wq1xBZB/4nAxhFptNLOz+w4jhk
+	h90r9/ZlrdfCYk3KFd0MroXEjuk3TXyh1N3Kljw34vKY0paYqhph/cdnGsdsjIzt
+	tafxak0YMW4qBZRh7kQQ2b6Ea3KhmBj3NiBivPKXZdYnwkIfoKODPe5k/T2Lok2X
+	YQgKuKOlCN9yM7tooAr1Oohc1oKaWPSWbtly6MNEYByj8rNTo4o2gf9FS2mQS8/u
+	impz9Q==
+Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g8j7r27a2-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 16:55:26 +0000 (GMT)
+Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-ca124bf0189so89352a12.0
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 09:55:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1787590526; x=1788195326; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=sfXILiAwBDaxvqRoSf8xZ7r6Qs2Yw0ErBR+u4/IPE9Q=;
+        b=fm39jQD3goMgBWbSoZzSPlvWcFuRCaK+9sWdNSPWOugP12xvsiqRClSZFyMdpq3a6m
+         d92S9v43j54olTYiPHK/0R8CktRHOnnKOoulkS2Ek/F8Phaxkko+oJafLjQtYO5te+8e
+         Z11jY+MCiJpAlmrWVm4YPHCV1MsNY/T6aTQenlYPFKQzpbFnab9xh4SuD+O9pf5pqA1B
+         v0LAfmDrFxbDTEGbBAh+M5daY9fPT6to4b47u8ABMaFA48vHOW4jlFOrXZcA5qz7rCvO
+         HDh47zZnnl7EIFUHeU7UxsScBng8NqV9TA9VJv/9oVPH3pvVG9xQ2OIvR7I0YxteCKis
+         YUJA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787590526; x=1788195326;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=sfXILiAwBDaxvqRoSf8xZ7r6Qs2Yw0ErBR+u4/IPE9Q=;
+        b=qEtzQ2QL1QO2SMfJpXy2o/AS8AZEO2EqCV5Qx42OuRf28tj6cy9PNurGjZzo3UokTg
+         BR3mD4t4ScaZODWFXS1t1P0/reo8UAIxlArNrYe4+xBv+FE6/GpFNamzBYD4HRdyiica
+         M2J0noeRXi/RehB4M4HVk6A3N07Tt57USK9+xYouvhsRSSr1ymyF+XQ85z0HA3gvK2hT
+         qxXBR3sRtxq+zB2xqjdRyNwdStitS2uCI33Y8GbCZB26H49wkd/7A/nFbaE0iD/EajyT
+         Hymt78mcAUDJb4tT46+hiACJUq+EvXXInkxLSRFU319yL/SKjgp7PxVe0d/j7F7wqUnl
+         Je0w==
+X-Forwarded-Encrypted: i=1; AHgh+RrDojXLJJRr3azXKXTXfbjRErDEbfseuL3aCFlc9mTBSevZFK40Df84QneYUpdaxaJ7wCtvXtDZYw==@vger.kernel.org
+X-Gm-Message-State: AFuF++ljAaUjsFH3AwieHdj1LlxXmgA5IpY9qMx0v/CN9X5srRlGGNrv
+	XycB0Fz4SRbeS2yQ5u/7toTBOFpO1hefrh3PuYG1tAm9nyvMfzq3M3n2vU85c7eUs3ctWt014aO
+	p1wOAXM1vbawyt7R1ohz8jT0OPGW+NsWsIGW/dQlWKs+Kfya/QaCB/ghRmV/1uw==
+X-Gm-Gg: AR+sD11jGm+u3HWMGbYAtjN92MqlGMahKv5QPo/Vkz3C7mp91mWIwZpqsyvYVbIjl4e
+	DY6BL970ugbomJcvqiBa1l4Te4l5bIVIlw670uga4lVvi5P3j4CGXue4aioptoG1VyIncscqIcX
+	G574jETncsLV9pBGo8BZ2Hwkeso3u9pd2x9MkEYtMPo3nC7nxhvebWZ2DOeoN3aoTyIOvnJOj5d
+	EFlWkPxRKvTEAMuT+Wt1SKMWuW9xU6AVfLolh4+HqY6i6NtrHKVkUw8vz5lrLbqpwCXGgCdAgg4
+	Y3A/n8OKhWFRWj/6KVC1j8MoBGkbQcgHr1oanIhVgNw7xI/ZLK9tdEpQGAeYc5e8hKf5jh+uEU5
+	amt4IavCi7itu3ofUQwyYRwI8kikEOg==
+X-Received: by 2002:a05:6a20:431e:b0:3bf:b9de:8557 with SMTP id adf61e73a8af0-3cd8f294ee1mr683412637.9.1787590525666;
+        Mon, 24 Aug 2026 09:55:25 -0700 (PDT)
+X-Received: by 2002:a05:6a20:431e:b0:3bf:b9de:8557 with SMTP id adf61e73a8af0-3cd8f294ee1mr683336637.9.1787590525072;
+        Mon, 24 Aug 2026 09:55:25 -0700 (PDT)
+Received: from [192.168.0.6] ([49.204.106.1])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc199daeccbsm1253160a12.7.2026.08.24.09.55.18
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2026 09:55:24 -0700 (PDT)
+Message-ID: <e47bea2c-ddf5-4568-9a2d-a30a31793352@oss.qualcomm.com>
+Date: Mon, 24 Aug 2026 22:25:16 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260710-critical_trip-v1-1-780d0b40bb96@oss.qualcomm.com>
- <CAJZ5v0hD7OvQfOUja7mC+nXpH2cDfYjeGMgf7WKREXt3rSNOEw@mail.gmail.com> <c372d0ee-7b55-4483-8e44-ea6c68c3501d@oss.qualcomm.com>
-In-Reply-To: <c372d0ee-7b55-4483-8e44-ea6c68c3501d@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 24 Aug 2026 18:31:42 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i_=cZH3tB6W51wkh7Xq4XxbtKuMdUxnnKcdwokec4YsA@mail.gmail.com>
-X-Gm-Features: AcwNN1WfZpeEFyPwplWIDryGNykfk71bTiZOWcDn8FpIfrHhgovB0XSuOdf1-uU
-Message-ID: <CAJZ5v0i_=cZH3tB6W51wkh7Xq4XxbtKuMdUxnnKcdwokec4YsA@mail.gmail.com>
-Subject: Re: [PATCH] thermal: core: warn on non-critical trips at or above
- critical temp
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/7] soc: qcom: geni-se: Populate clk_perf_tbl with SE
+ source clock frequencies from perf OPP table
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Sudeep Holla <sudeep.holla@kernel.org>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>, Mark Brown <broonie@kernel.org>,
+        Viken Dadhaniya <viken.dadhaniya@oss.qualcomm.com>,
+        Andi Shyti <andi.shyti@kernel.org>
+Cc: mukesh.savaliya@oss.qualcomm.com, chandana.chiluveru@oss.qualcomm.com,
+        arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-i2c@vger.kernel.org
+References: <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-0-61171ab1cdce@oss.qualcomm.com>
+ <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-2-61171ab1cdce@oss.qualcomm.com>
+ <d81d61fd-79d1-4bea-b93c-0afe44f9aab4@oss.qualcomm.com>
+Content-Language: en-US
+From: Praveen Talari <praveen.talari@oss.qualcomm.com>
+In-Reply-To: <d81d61fd-79d1-4bea-b93c-0afe44f9aab4@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI0MDE0MiBTYWx0ZWRfX7urTo0zC+dXn
+ s4eDNVPYKDjv3N7Y69XyJ3dNbH/zf6B7mY8HuJfuA54Sz7P4Zk941cMFH1pHpIUmEfXGuSpotkC
+ lLlHyJbVU1j3YSoJKX36p+bRtRoCVWLkEi+kzQxzvCwUNT+mbWO3YxA4yp9nM6wD7oHy03mW8La
+ MurRP/8KUr0iZd/WMme5QaOJbSbWLF1GtonO4qj6dbLhdPE04qENx6ED/RzJK8YLZ5Hn3V3AEWk
+ jsHB8OLOy9+Xxg9dZQHrqIMILTErWP51LNFaB6BeT+V9c2HWwHEPeercerYec7Jt83LzOf8CbME
+ dc1mgm6MXEKYpMaSrkNoWfMK5iii1UdgRQZ0V1aVP2VWZQ7LObLXgLTm8WQp7GNTz/toUOil4qX
+ k+bQ84wo8bHhyuKO//dOtTgFShYOA1eQEx9FTRdXDqkaIXISlL8xw6YaWgXMoyDG5KCC/VIsfTU
+ q/rjzeybLjfLdsTFifQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI0MDE0MiBTYWx0ZWRfXzy6CjFgpyVSf
+ 3rCbQt7ag7+45kobYeFHF7s7KxSNFJLk3d0BWVSDQznFscGmD7v5znmEzSb/MDRHoghmg0fb8Sb
+ PIEkqaiWzEZsstm5mjIf+TMwnKrKCtI=
+X-Proofpoint-GUID: qvF3ynl5bwAtmBbmb_wG1gOqEsBQFxq8
+X-Authority-Analysis: v=2.4 cv=IL8yzAvG c=1 sm=1 tr=0 ts=6a8c777e cx=c_pps
+ a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=3DKySdf3VQHjbkfL60kt6A==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=rko7XVifj6BEHbDbj-IA:9 a=QEXdDO2ut3YA:10 a=_Vgx9l1VpLgwpw_dHYaR:22
+X-Proofpoint-ORIG-GUID: qvF3ynl5bwAtmBbmb_wG1gOqEsBQFxq8
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-24_05,2026-08-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 malwarescore=0 phishscore=0 priorityscore=1501 suspectscore=0
+ spamscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608240142
 
-On Tue, Jul 28, 2026 at 12:12=E2=80=AFAM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> On 7/22/26 21:43, Rafael J. Wysocki (Intel) wrote:
-> > On Fri, Jul 10, 2026 at 11:12=E2=80=AFAM Gaurav Kohli
-> > <gaurav.kohli@oss.qualcomm.com> wrote:
-> >>
-> >> Thermal zones can be registered or updated with non-critical trips at =
-or
-> >> above the critical trip temperature. Such trips cannot provide useful
-> >> mitigation before critical trip handling runs, and a HOT trip at that
-> >> temperature can coincide with shutdown.
-> >>
-> >> Warn at registration time and on trip temperature changes to surface
-> >> misconfigured platform data and incorrect dynamic updates early. When
-> >> multiple critical trips exist, warn against the lowest one.
-> >>
-> >> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-> >
-> > There are a couple of reasons why I don't like this, the most
-> > important one being the overhead: two walks over all trips added to
-> > every trip temperature update is a bit of a stretch.
-> >
-> > Moreover, the messages produced by this code may not even be noticed
-> > on systems in the field and users may not be able to do anything about
-> > them, so the benefit is questionable.
->
-> Would it make sense to sort the trip points when they are registered.
-> Then limit the changes to the interval between trip-1 and trip+1 ?
+HI Konrad,
 
-Sorting the trps in the core is problematic because by the time the
-core sees them, they may have been associated with some internal data
-structures of the driver ordered in the same way.
+On 24-08-2026 20:26, Konrad Dybcio wrote:
+> On 8/4/26 9:57 PM, Praveen Talari wrote:
+>> Currently, on the SA8255P platform, protocol drivers attached via
+>> geni_se_domain_attach() treat each OPP on the perf domain as directly
+>> corresponding to a protocol value such as a baudrate or requested
+>> frequency, and simply request that OPP via
+> [...]
+>
+>> @@ -1175,6 +1181,29 @@ int geni_se_domain_attach(struct geni_se *se)
+>>   	else if (ret < 0)
+>>   		return ret;
+>>   
+>> +	perf_dev = se->pd_list->pd_devs[DOMAIN_IDX_PERF];
+>> +
+>> +	num_opps = dev_pm_opp_get_opp_count(perf_dev);
+>> +	if (num_opps <= 0)
+>> +		return num_opps < 0 ? num_opps : -ENODEV;
+> if (num_opps < 0)
+> 	return num_opps;
+> if (num_opps == 0)
+> 	return -ENODEV;
+Sure, will update in next patch.
+>
+>> +
+>> +	se->clk_perf_tbl = devm_kcalloc(se->dev, num_opps,
+>> +					sizeof(*se->clk_perf_tbl),
+>> +					GFP_KERNEL);
+>> +	if (!se->clk_perf_tbl)
+>> +		return -ENOMEM;
+>> +
+>> +	for (i = 0, level = 0; i < num_opps; i++, level++) {
+> One iterator is sufficient here
+
+Will review and update.
+
+
+Thanks,
+
+Praveen Talari
+
+>
+> Konrad
