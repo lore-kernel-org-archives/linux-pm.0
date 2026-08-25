@@ -1,199 +1,216 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B82A647F766;
-	Tue, 25 Aug 2026 16:51:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CD09935E1BF;
+	Tue, 25 Aug 2026 17:58:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787676718; cv=none; b=Zb1uICVRLAvVvIV9iJfwDnRgRIa2I1ZDzLjfxWHmZ99fs6v0pOedHwSKjVYHLhQLs3ie0vFyQ9EQle9YSPCm0VDYTueCnxeNfyMBI4PSqxZIyOUd4hZ32Hu9tc61CUtLVGIppDYaanrQOPBjnCqVzubarPtlbFXzj14khDUCCUw=
+	t=1787680740; cv=none; b=emuTN36UL3bhjJjQ/z7HMzZ0zrbGifaM5GLWOUELf3Be5M4OAxHFrlQ7ymt/iwvSoErhWk3z8X5E2FOgWaSi5bBloD2lVeJf01fgUwJuZHwfkY+eU5ymgpC1eZorKSizWXMRXbNEVRd8NpeNJM03aaM5EJ/f7/2FDO0kutaepms=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787676718; c=relaxed/simple;
-	bh=kwNPdpVBs+eBnXtqBwqlGpl0BNKWOhPNcLWXN+DhtPI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WC8xPOw7xHaaF3g4gzCLpYBgYu7Vd+Gokon/3sJ5ce3O297erMBhaHzgGj6FVdxKwSJW7KU0dJmTnBvZtj1QuNhSgBqote7H3ymjrZ+LjqJQzIhVFtA+FhoEqaqNlt+rNCOUM7So2RuKcLSq00sHLHehlBmt26zOXzsN9JWdzgE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=pXg/4/lH; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1787680740; c=relaxed/simple;
+	bh=Rc0r6Hu0f4sYeR5CeICME6asPrr8+ELEN8zoSRZZliI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dnrQPeFhrTrS/w+Moa5JljPW1E8ibx/PL8FShvtEpmMwU2AiWUywGn1kJM6lisPjoO2GOlWpCgZ52AM8D0mFj7oBNDEq0fplte8Cr7PwEIdtf9a5eqevaN+icIjoveFHl5NqUBJiOyuQXB3NKLYR3sgjufTDJrgRC76YNUB5aSY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Y/9QpPBJ; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="pXg/4/lH"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1787676714;
-	bh=kwNPdpVBs+eBnXtqBwqlGpl0BNKWOhPNcLWXN+DhtPI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=pXg/4/lHWiYV7PklUVzgw5QqOabDBEfalC9RcOmEwV0+0wh4UOakwpxGPllhFl3sW
-	 8WoS+3ZLp+7i9aLjGKX+BZwdEeWHazQrz/K/BJI9RgbfWrzCC5O8V7dfpWV6h6UU23
-	 9jQvLXz09B5bCmwlaTD9YPSBprkRRz+QVcqI5gdQ=
-Date: Tue, 25 Aug 2026 18:51:52 +0200
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: Matt DeVillier <matt.devillier@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>, 
-	Guenter Roeck <groeck@chromium.org>, chrome-platform@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] power: supply: cros_charge-control: adopt EC charge
- state on probe
-Message-ID: <93b00121-77ad-4dd0-8c58-e00d1f33b405@t-8ch.de>
-References: <20260824155736.1186510-1-matt.devillier@gmail.com>
- <20260825120929.13168-1-matt.devillier@gmail.com>
- <20260825120929.13168-2-matt.devillier@gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Y/9QpPBJ"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 01CC61A9A;
+	Tue, 25 Aug 2026 10:58:53 -0700 (PDT)
+Received: from [10.57.6.192] (unknown [10.57.6.192])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 50E083F85F;
+	Tue, 25 Aug 2026 10:58:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1787680736; bh=Rc0r6Hu0f4sYeR5CeICME6asPrr8+ELEN8zoSRZZliI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Y/9QpPBJlqoPmSXFUZV02Id7gMigyEH3OeMQeVzJhZI7ON8zBnGkAo6hDUEzRBdwP
+	 qnnINMELShcg0oppx/v1m2ErsS/xG0EwhaGjPkL/2zdyvPE3UDQvyDpXgp0sU8rao/
+	 lOzDfjr459ivBi6Ic4bTukaoCZu5OqAHQ++keiI4=
+Message-ID: <b9049e0a-8de6-4a9f-94b6-8be353ee7355@arm.com>
+Date: Tue, 25 Aug 2026 18:58:51 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260825120929.13168-2-matt.devillier@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] sched/cpufreq: Reevaluate frequency before tickless idle
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Hongyan Xia <hongyan.xia@transsion.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "rafael@kernel.org" <rafael@kernel.org>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "mingo@redhat.com" <mingo@redhat.com>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "daniel.lezcano@kernel.org" <daniel.lezcano@kernel.org>,
+ "anna-maria@linutronix.de" <anna-maria@linutronix.de>,
+ "frederic@kernel.org" <frederic@kernel.org>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "dietmar.eggemann@arm.com" <dietmar.eggemann@arm.com>,
+ "jstultz@google.com" <jstultz@google.com>,
+ "qyousef@layalina.io" <qyousef@layalina.io>,
+ "sibi.sankar@oss.qualcomm.com" <sibi.sankar@oss.qualcomm.com>,
+ "lukasz.luba@arm.com" <lukasz.luba@arm.com>,
+ "morten.rasmussen@arm.com" <morten.rasmussen@arm.com>
+References: <20260824131842.2443385-1-christian.loehle@arm.com>
+ <14b8edb7-3515-42dd-86bc-c61872921b5d@transsion.com>
+ <31716152-14b6-46bc-88f6-b7fccc1e9377@arm.com>
+ <CAKfTPtDj7fxV9w+q10aXaHAFuBEgzBfiWx3yiBt_eS_qV1ATjg@mail.gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAKfTPtDj7fxV9w+q10aXaHAFuBEgzBfiWx3yiBt_eS_qV1ATjg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On 2026-08-25 07:09:00-0500, Matt DeVillier wrote:
-> The driver previously always forced AUTO with no charge limits at
-> probe, which discarded sustainer thresholds and modes set by firmware
-> or firmware setup before the kernel loaded.
+On 8/25/26 13:52, Vincent Guittot wrote:
+> On Tue, 25 Aug 2026 at 11:00, Christian Loehle <christian.loehle@arm.com> wrote:
+>>
+>> On 8/25/26 03:51, Hongyan Xia wrote:
+>>> On 8/24/2026 9:18 PM, Christian Loehle wrote:
+>>>> sugov_hold_freq() can preserve a UCLAMP_MIN-driven high frequency when
+>>>> the runqueue goes idle. If cpuidle then stops the tick, no later
+>>>> utilization update is guaranteed and a CPU using WFI can remain at an
+>>>> unnecessarily high voltage for the entire idle period.
+>>>>
+>>>> Issue a final cpufreq update when the idle tick actually transitions to
+>>>> stopped and force single-policy schedutil past its rate limit. Keep the
+>>>> existing hold behavior when the tick is retained.
+>>>>
+>>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+>>>> ---
+>>>>   include/linux/sched/cpufreq.h    |  1 +
+>>>>   kernel/sched/cpufreq_schedutil.c |  5 ++++-
+>>>>   kernel/sched/idle.c              | 29 +++++++++++++++++++++++++++--
+>>>>   3 files changed, 32 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+>>>> index bdd31ab93bc5..0814f6c79315 100644
+>>>> --- a/include/linux/sched/cpufreq.h
+>>>> +++ b/include/linux/sched/cpufreq.h
+>>>> @@ -9,6 +9,7 @@
+>>>>    */
+>>>>
+>>>>   #define SCHED_CPUFREQ_IOWAIT       (1U << 0)
+>>>> +#define SCHED_CPUFREQ_IDLE  (1U << 1)
+>>>>
+>>>>   #ifdef CONFIG_CPU_FREQ
+>>>>   struct cpufreq_policy;
+>>>> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+>>>> index a1782755efcc..90bf8d8bffb7 100644
+>>>> --- a/kernel/sched/cpufreq_schedutil.c
+>>>> +++ b/kernel/sched/cpufreq_schedutil.c
+>>>> @@ -100,7 +100,7 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>>>>
+>>>>              return true;
+>>>>      } else if (sg_policy->need_freq_update) {
+>>>> -            /* ignore_dl_rate_limit() wants a new frequency to be found. */
+>>>> +            /* A forced update needs a new frequency to be found. */
+>>>>              return true;
+>>>>      }
+>>>>
+>>>> @@ -407,6 +407,9 @@ static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
+>>>>      sugov_iowait_boost(sg_cpu, time, flags);
+>>>>      sg_cpu->last_update = time;
+>>>>
+>>>> +    if (flags & SCHED_CPUFREQ_IDLE)
+>>>> +            sg_cpu->sg_policy->need_freq_update = true;
+>>>> +
+>>>>      ignore_dl_rate_limit(sg_cpu);
+>>>>
+>>>>      if (!sugov_should_update_freq(sg_cpu->sg_policy, time))
+>>>> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+>>>> index eb73b65ce6c4..36f8840d0562 100644
+>>>> --- a/kernel/sched/idle.c
+>>>> +++ b/kernel/sched/idle.c
+>>>> @@ -161,10 +161,35 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>>>>      return cpuidle_enter(drv, dev, next_state);
+>>>>   }
+>>>>
+>>>> +static void idle_stop_tick(void)
+>>>> +{
+>>>> +#ifdef CONFIG_CPU_FREQ
+>>>> +    bool was_stopped = tick_nohz_tick_stopped();
+>>>> +#endif
+>>>> +
+>>>> +    tick_nohz_idle_stop_tick();
+>>>> +
+>>>> +#ifdef CONFIG_CPU_FREQ
+>>>> +    /*
+>>>> +     * Run one last cpufreq update before entering idle with the tick
+>>>> +     * stopped, because no later update is guaranteed.
+>>>> +     */
+>>>> +    if (!was_stopped && tick_nohz_tick_stopped()) {
+>>>> +            struct rq *rq = this_rq();
+>>>> +            struct rq_flags rf;
+>>>> +
+>>>> +            rq_lock(rq, &rf);
+>>>> +            update_rq_clock(rq);
+>>>> +            cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
+>>>> +            rq_unlock(rq, &rf);
+>>>> +    }
+>>>> +#endif
+>>>> +}
+>>>> +
+>>>>   static void idle_call_stop_or_retain_tick(bool stop_tick)
+>>>>   {
+>>>>      if (stop_tick || tick_nohz_tick_stopped())
+>>>> -            tick_nohz_idle_stop_tick();
+>>>> +            idle_stop_tick();
+>>>>      else
+>>>>              tick_nohz_idle_retain_tick();
+>>>>   }
+>>>> @@ -225,7 +250,7 @@ static void cpuidle_idle_call(bool stop_tick)
+>>>>                      max_latency_ns = dev->forced_idle_latency_limit_ns;
+>>>>              }
+>>>>
+>>>> -            tick_nohz_idle_stop_tick();
+>>>> +            idle_stop_tick();
+>>>>
+>>>>              next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
+>>>>              call_cpuidle(drv, dev, next_state);
+>>>
+>>> LGTM, minus the Sashiko issue.
+>>>
+>>> One side note is that I briefly looked at similar things before, not
+>>> just for sugov_hold_freq() but for going idle in general. It might be
+>>> desirable to predict the util *after* wake-up and use it to drive
+>>> frequency one last time before going idle for any CPU. This avoids
+>>> holding high frequencies in update_single() and also avoids idling CPUs
+>>> holding high frequencies for the entire cluster in update_shared().
+>>>
+>>> But predictions are hard and the energy savings aren't much so I didn't
+>>> spend much time on it. Not sure if there are better ideas.
+>>
+>> Funnily enough the slow-switch case makes this a lot more complicated,
+>> in particular with PREEMPT_RT :/
+>> My current approach is to have an irq work for the next tick for
+>> the sugov_hold_freq() case, that checks if it hasn't seen another update
+>> for the tick duration and then drops the hold_freq.
+>> It's not ideal because of course it disabled the tick-stop by one tick,
+>> but it's the best approach I can come up with now.
+>> We could do something similar for decayed blocked utilization (i.e. have
+>> an irq work for when utilization would reach lowest OPP (or an intermediate
+>> step?) and decay that then).
+>>
+>> That being said I do think the hold_freq and the blocked utilization are
+>> separate issues, they just might have a similar-looking solution...
+>> I can post an RFC for the latter, that being said I'm not entirely convinced
+>> myself that it's worth it, while I think the hold_freq is just clearly wrong
+>> behavior.
 > 
-> For command versions that support GET (v2+), read the EC state into
-> the driver cache instead. Valid sustainer limits are adopted as AUTO
-> with those thresholds: while the sustainer is active the EC may report
-> IDLE or DISCHARGE as a transient hold/discharge step, which must not
-> be exposed as inhibit-charge or force-discharge. Sustainer off
-> (-1/-1) still maps to Linux "no limit" (0/100); other invalid limit
-> pairs are remapped the same way with a warning and pushed back to
-> the EC so the cache stays in sync.
+> IIRC some past discussions, keeping the frequency when going idle was
+> a desired behavior because switching back to a high frequency took
+> time and slow down the wakeup (in particular with the cpufreq slow
+> path), and the power cost was not huge because long idle times would
+> power off the power domain, and idle time in WFI would be corrected by
+> the next tick. Do I understand correctly that in your case you only
+> have WFI, so you never power down domain for long sleep ?
 > 
-> If GET fails, fall back to the previous defaults and SET them on the
-> EC. Command version 1 still cannot report state and keeps forcing a
-> well-known configuration.
-> 
-> Signed-off-by: Matt DeVillier <matt.devillier@gmail.com>
+> I'm not sure I get why you want to decrease frequency in WFI instead
+> of letting the tick update the utilization. Or Am I missing something
+> in your use case ?
 
-Something seems to have gone wrong when sending the v2.
-Two mails are sent, the first has the old patch and the changelog,
-the second one has no changelog but the correct v2.
-
-I have a few small nitpicks left, but in any case:
-
-Acked-by: Thomas Weißschuh <linux@weissschuh.net>
-
-> ---
->  drivers/power/supply/cros_charge-control.c | 157 ++++++++++++++++++---
->  1 file changed, 139 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
-> index e0f168624807..07bcc6a9aeef 100644
-> --- a/drivers/power/supply/cros_charge-control.c
-> +++ b/drivers/power/supply/cros_charge-control.c
-> @@ -21,12 +21,22 @@
-
-(...)
-  
->  struct cros_chctl_priv {
-> @@ -44,18 +54,23 @@ struct cros_chctl_priv {
->  };
->  
->  static int cros_chctl_send_charge_control_cmd(struct cros_ec_device *cros_ec,
-> -					      u8 cmd_version, struct ec_params_charge_control *req)
-> +					      u8 cmd_version,
-> +					      struct ec_params_charge_control *req,
-> +					      struct ec_response_charge_control *resp)
->  {
-> -	int ret;
->  	static const u8 outsizes[] = {
->  		[1] = offsetof(struct ec_params_charge_control, cmd),
->  		[2] = sizeof(struct ec_params_charge_control),
->  		[3] = sizeof(struct ec_params_charge_control),
->  	};
-> +	size_t insize = resp ? sizeof(*resp) : 0;
-> +	int ret;
->  
-> -	ret = cros_ec_cmd(cros_ec, cmd_version, EC_CMD_CHARGE_CONTROL, req,
-> -			  outsizes[cmd_version], NULL, 0);
-> +	if (resp)
-> +		*resp = (struct ec_response_charge_control){};
->  
-> +	ret = cros_ec_cmd(cros_ec, cmd_version, EC_CMD_CHARGE_CONTROL, req,
-> +			  outsizes[cmd_version], resp, insize);
->  	if (ret < 0)
->  		return ret;
->  
-> @@ -94,7 +109,120 @@ static int cros_chctl_configure_ec(struct cros_chctl_priv *priv)
->  		req.sustain_soc.upper = -1;
->  	}
->  
-> -	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version, &req);
-> +	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version,
-> +						  &req, NULL);
-
-This can also go on a single line.
-
-> +}
-> +
-> +static int cros_chctl_get_ec_status(struct cros_chctl_priv *priv,
-> +				    struct ec_response_charge_control *resp)
-> +{
-> +	struct ec_params_charge_control req = {
-> +		.cmd = EC_CHARGE_CONTROL_CMD_GET,
-> +	};
-> +
-> +	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version,
-> +						  &req, resp);
-
-Ditto.
-
-> +}
-> +
-> +static void cros_chctl_set_default_state(struct cros_chctl_priv *priv)
-> +{
-> +	lockdep_assert_held(&priv->lock);
-> +
-> +	priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-> +	priv->current_start_threshold = 0;
-> +	priv->current_end_threshold = 100;
-> +}
-> +
-> +static bool cros_chctl_sustainer_limits_valid(s8 lower, s8 upper)
-> +{
-> +	return lower >= 0 && upper >= 0 && lower <= 100 && upper <= 100 && lower <= upper;
-> +}
-> +
-> +static int cros_chctl_adopt_ec_mode(struct cros_chctl_priv *priv, u32 mode)
-> +{
-> +	lockdep_assert_held(&priv->lock);
-> +
-> +	switch (mode) {
-> +	case CHARGE_CONTROL_NORMAL:
-> +		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-> +		return 0;
-> +	case CHARGE_CONTROL_IDLE:
-> +		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-> +		return 0;
-> +	case CHARGE_CONTROL_DISCHARGE:
-> +		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-> +		return 0;
-> +	default:
-> +		dev_warn(priv->dev, "unknown charge control mode %u\n", mode);
-> +		return -EINVAL;
-
-The error number is never used. The function could return a bool instead.
-
-> +	}
-> +}
-> +
-> +static int cros_chctl_init_state(struct cros_chctl_priv *priv)
-> +{
-
-(...)
-
-> +defaults:
-> +	cros_chctl_set_default_state(priv);
-> +	return cros_chctl_configure_ec(priv);
-
-This might as well be inline instead of an extra label.
-
->  }
->  
->  static int cros_chctl_psy_ext_get_prop(struct power_supply *psy,
-> @@ -152,7 +280,6 @@ static int cros_chctl_psy_ext_set_threshold(struct cros_chctl_priv *priv,
->  	return 0;
->  }
-
-(...)
+I'm specifically worried about WFI + stopped tick, I think the rest
+is acceptable.
