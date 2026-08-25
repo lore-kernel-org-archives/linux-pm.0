@@ -1,269 +1,240 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from CWXP265CU010.outbound.protection.outlook.com (mail-ukwestazon11022086.outbound.protection.outlook.com [52.101.101.86])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7770481679
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 13:34:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787664867; cv=none; b=n4abtECdtWBnp+DL+a9Pa3mcuC1PtL6BzgnOmAQO1VODtb8jWs9xf9AEW+WmQoiRxy95TRMIAZzhuK1pq4OnVlLn3R7NsMMUFkQeUVz0DdsEptHJFHjAg5ZglxwtnDvMWhF7fQgEGG82Jc/q1tkY/H+EF+aM3gksEoTolGflDac=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787664867; c=relaxed/simple;
-	bh=bLAQYO2fVtjrZJZjogehxs4N3O4/AoaOHSJblctpWIU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IfbkkdDsSB2GWm7JCoA8NOo55gqJ0IXIUPGhmmY5wkfbMKy/ijWt8ZZGHWdx1WrOhK5ex0C1NjHvceTg09Zq0xkZw8ojoTX7/6aXKtEBdb4xOYoTW4I4r/4QFpaFuRJgIDD5t5LBAI5lJzLrOC34dCpTZBYIoRaerT/ZS8KFdAA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Fnffekqe; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=fsCtb6M0; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1335470421;
+	Tue, 25 Aug 2026 13:37:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.101.86
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787665032; cv=fail; b=N2BUJzMx5rrBf1CYe4YRrhJpZBzOxRhsMc38f3Ejg+jU33ajoti8jZ3hEjAbl+l4ygyGflFmcwUCbFiYTRGGTuBis8ku3TRYWbniLr0+UeM7BoEYqHOepdbGI0Xol5JlFKebrvJfb9sUsPpL3/R+GSe97uNoV5gfTV8mXx4hGG8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787665032; c=relaxed/simple;
+	bh=Zy+OOeDq3ZYpZkQ98k7kLPeUBp8dalKmgW1we7zpO7Y=;
+	h=Content-Type:Date:Message-Id:From:To:Cc:Subject:References:
+	 In-Reply-To:MIME-Version; b=umBe4VOMsa0VsXh6HV6Wi0HzPH5n8YsylIpxz1LtN6CpLOnaC5R13+FYoUN0vOU3U+beS1qSts3c2xAStlNLrZ/ljpD9PJpIZGn5csCQYX2EjvXSjtfbg0RCEEOUtSZe8Ny+tDTwOWPUs1IyqYw61ihXcLjcP9+rUhuCjtOVCLg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=uz8eUJa+; arc=fail smtp.client-ip=52.101.101.86
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Fnffekqe";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="fsCtb6M0"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67PD3qcf2027549
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 13:34:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	TaVfdGUEZ4eLonecVULryIdNy5Y/IszLAAF0qOUkWYs=; b=FnffekqeV8VFB+Ck
-	19eFxD/ZL3SeOCpShcRv2c3Ha5sn3Offs2Oow35eByVWEaXH7foOXc9kBf8VrffX
-	EhmcvQ4WsT7din/nntI5p8KYtNKnnxQxsQOQuiHv1MMlbHD6kMsfOBvHjpbAqtyZ
-	ZYuJ99fzWV64B4SG2tZWxFNHn6JJtoN5rFLoX1GjAm5MbqL81OeJ5WU8+2eBLFDE
-	/Yy/VwhB68O8TI9YcA3R8jtrnG8guEr7MyRkap8Wr32Xo8+oQgK5644aD+IMhvDT
-	vvV7iaBydDKFowLV8EYzd/ErMlUsQIz8ZorUIfyzVVW58FowK4KwSLKn1Sh+e80F
-	bNUdYg==
-Received: from mail-ot1-f72.google.com (mail-ot1-f72.google.com [209.85.210.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g9bku84n8-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 13:34:25 +0000 (GMT)
-Received: by mail-ot1-f72.google.com with SMTP id 46e09a7af769-7e9ee20bde0so10468473a34.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 06:34:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1787664864; x=1788269664; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=TaVfdGUEZ4eLonecVULryIdNy5Y/IszLAAF0qOUkWYs=;
-        b=fsCtb6M0SPeSoWTNKHAJ4U2W2WAzB43ii4Pbi1caVwXav9K5gfVykb9Ctq5ivGoBg+
-         J/nboOSQegFUTf6zSybpBBeU4N2vJGfp0wm0FvRliVnGVwg0iS9pHhkAU43AG324yYT9
-         CU2d1gmYBWnhwrLtFepLFV0dn+hDzfvZX6l5zkPzjWMYbOnXZUGRtL46m5NulXKjpvmU
-         7/y3bbrM54cRImhCPM1NqANsKbc1BefqtnlIkm8sIQNxPB52ggRljxMl1ma5CWAi5A9e
-         6OXlTR5PONbUHx0MzSLSfiVu75urEK591lfJEa20oSlBusSmzsqhcB7FAPMxAimJNhEv
-         JnmA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787664864; x=1788269664;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=TaVfdGUEZ4eLonecVULryIdNy5Y/IszLAAF0qOUkWYs=;
-        b=UoGBj+iKVsbLHe4hzjVu4iQlJ2OaGxMHAg9Udi9mxhgVTrps2Ek1gr+wE6bpcBxOvB
-         eCvBePkX9/INWEtUZLX5ZqOdCWhfocxYPhtQV9vmReqsiBz+2CfVyz0soYXpSMrdnwsU
-         o8iu5hW39s2A/tmJC6LRRUA5250042RQifKQPQ1PK3mSbH2BeDsatwt4HaXeUaZu242X
-         Kr/M8fkMsDZ0Ux2tatP0DpB+1nrh/6xzGBBdBMauY5pR1i2djTaKOAY6Nonm+jkb2qPl
-         LEgczdQAv6ZEVM7C7F4mQ+cOdRJ3zZfG1O8f7DdI/e9n3CZbrQCB6Fq8f4bu7Z4Z+PSi
-         ZuvQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rqbu1a1BgNOled36K3kcTS5yI6QGEoyxW36iopIk2vbKwh+0xpw+vbXiJiqHg8750ztGPps2Tv1Vw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lRogu+fEXCLLVzOmoSv62UirZR5Z+5qw75Ym8bssvnkNEqvP61
-	/dn+/MGyQui5gtY1eOcZnfkHDnwueXCHqFYw9+a9ij0bbYV4hBc2yJmgsFN+AHWhz1grAWuLYBH
-	UGf2f5BPHoBonThJYxblAc6HisPZz+9M4oG6SZnMx76K0sYcWPM2yjatGOmfRcw==
-X-Gm-Gg: AR+sD11a/YOvag9iwE44McJ5Enz72Sl0RV+I8bQzIBT0Qgcr/DGXwA2vs3fRYm1jZRY
-	sjjHxe9CR8zjQQ+36uCHNxSW00Gg9r+S/2Q+J9lr1KPje+2CpUxLImT3DJoKx4twewe2CpEYXos
-	EFyjRyBA0VdLtOncg9r9tCni6SRR9FZoC/WVOD3q0+RaY3NgDEqfIuimUPqBLzB1/c5MasLzbnh
-	48RGMx4q3KpcBQ1T9uV/zZ+mYO/DHbL0QB7GKzIuPVhmwPpLFWaLJ25z2/as/eZYoo9Ux/L1XHe
-	pJZhqaAgrWGpTD0nU1aTbc7nU0pCXgp/7KjVxvyrdVy6hxkRAgZjvVlHRDa//vDNPM3Crfuxw+W
-	8Cf4SuZ6+ZTDbJd8rhA5gSVwlZGhdBrhE
-X-Received: by 2002:a05:6830:4116:b0:7f3:a8ac:45fe with SMTP id 46e09a7af769-7f461510b2fmr33747260a34.11.1787664864237;
-        Tue, 25 Aug 2026 06:34:24 -0700 (PDT)
-X-Received: by 2002:a05:6830:4116:b0:7f3:a8ac:45fe with SMTP id 46e09a7af769-7f461510b2fmr33747175a34.11.1787664863701;
-        Tue, 25 Aug 2026 06:34:23 -0700 (PDT)
-Received: from [192.168.0.7] ([49.204.109.155])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7f48fc866b5sm7180397a34.23.2026.08.25.06.34.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Aug 2026 06:34:23 -0700 (PDT)
-Message-ID: <57b9cb3c-6fcc-4f61-b372-97de8058ffac@oss.qualcomm.com>
-Date: Tue, 25 Aug 2026 19:04:14 +0530
+	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="uz8eUJa+"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=soPK5Hzeh1Ma2hiY3VvNvVd65OXdpJG9p0x9/kryqMmqLV8keCsb6ujUQ8BdHsMlIjPMU/OT0LczFuEOD0i52V6NihZ8OEYsCNKTVTWSQdJEIdzuuRZouuwboyVWNfl4Vp06W/TAZfEuq5C/hjeyr6UtlY05eiQae+hjLwMbyjR/vrUHYthdLLDbinY1/h06c8qIfVeHZBFPPBXu86H/5rg7dlJsYVswPuMZI5EF+r15oX8v0qq8GAK0kVKh7gNiuZdWTLYFGk8u4+S789KB+dU6gfC8BcuWQCi0PovsFQgc794BjLs/N8S72NY6ZxnAghByVGFXkXV32TuRSh8izQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Ya9oRL8hQP+2VLtBxg6F1Mzaryv1xrYEgcVxsJjZcJ8=;
+ b=Ukpy0hvJt/zFRT7icrDACplAs+vmDny/IoIE09uGM0I/G89/fXluOcirb/IiyDhkUOJzb0+W1spGLB4zt82ircFJZL8rDZ+Egjn6B+QC7Q07o/8ROyxs0QEObWaDMKo1vScA/nthmfic1NhPxSOD1t8YG+ELk7EZQC54fJ9jtmv7dtAdkQ/P3wSFNc+YEMq/f0W0UgoWORw64xL8Ut/ThQKH8yVGPFnR4xF7WUjp06XZHBohfbNxGkctT1vOr3eIGM3DmfYl9q+J61fo/zr6grfo+3mvrFkW7Ox8lJop8mj40ZvV/w5x3nYxrAXG4nRMSXHFGvMCEMdOvLEI2w4iTQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Ya9oRL8hQP+2VLtBxg6F1Mzaryv1xrYEgcVxsJjZcJ8=;
+ b=uz8eUJa+6rfo6qLAawCaUbE6dE3IhmFU1x7osIlmNjCzo+EC9qU1wV2n5ALAwfHLh/+qM/L3seqLbbMM/0SAyFjIvAkJrk8q/XoXLlkK9QXSGN0COVVFP1dc7EnP6NSjFKk2rSRuNOPT8a4S1IEv2ab5kvGbgJxP1iDOJtdubsk=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:4ab::19)
+ by CWLP265MB2929.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:cb::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.6; Tue, 25 Aug
+ 2026 13:37:06 +0000
+Received: from LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::f60b:1537:68d7:4fc1]) by LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::f60b:1537:68d7:4fc1%4]) with mapi id 15.21.0360.005; Tue, 25 Aug 2026
+ 13:37:06 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 25 Aug 2026 14:37:05 +0100
+Message-Id: <DKY2D3AP6PZG.9RIX8KB3FF7P@garyguo.net>
+From: "Gary Guo" <gary@garyguo.net>
+To: "Danilo Krummrich" <dakr@kernel.org>, "Andreas Hindborg"
+ <a.hindborg@kernel.org>
+Cc: "Lorenzo Stoakes" <ljs@kernel.org>, "Vlastimil Babka"
+ <vbabka@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, "Uladzislau
+ Rezki" <urezki@gmail.com>, "Miguel Ojeda" <ojeda@kernel.org>, "Boqun Feng"
+ <boqun@kernel.org>, "Gary Guo" <gary@garyguo.net>,
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, "Benno Lossin"
+ <lossin@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>, "Trevor Gross"
+ <tmgross@umich.edu>, "Daniel Almeida" <daniel.almeida@collabora.com>,
+ "Tamir Duberstein" <tamird@kernel.org>, "Alexandre Courbot"
+ <acourbot@nvidia.com>, =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>,
+ "Lyude Paul" <lyude@redhat.com>, "Greg Kroah-Hartman"
+ <gregkh@linuxfoundation.org>, =?utf-8?q?Arve_Hj=C3=B8nnev=C3=A5g?=
+ <arve@android.com>, "Todd Kjos" <tkjos@android.com>, "Christian Brauner"
+ <brauner@kernel.org>, "Carlos Llamas" <cmllamas@google.com>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, "Dave Ertman" <david.m.ertman@intel.com>,
+ "Leon Romanovsky" <leon@kernel.org>, "Paul Moore" <paul@paul-moore.com>,
+ "Serge Hallyn" <sergeh@kernel.org>, "David Airlie" <airlied@gmail.com>,
+ "Simona Vetter" <simona@ffwll.ch>, "Alexander Viro"
+ <viro@zeniv.linux.org.uk>, "Jan Kara" <jack@suse.cz>, "Igor Korotin"
+ <igor.korotin@linux.dev>, "Viresh Kumar" <vireshk@kernel.org>, "Nishanth
+ Menon" <nm@ti.com>, "Stephen Boyd" <sboyd@kernel.org>, "Bjorn Helgaas"
+ <bhelgaas@google.com>, =?utf-8?q?Krzysztof_Wilczy=C5=84ski?=
+ <kwilczynski@kernel.org>, "Pavel Tikhomirov" <ptikhomirov@virtuozzo.com>,
+ "Michal Wilczynski" <m.wilczynski@samsung.com>, "Ira Weiny"
+ <iweiny@kernel.org>, "Philipp Stanner" <phasta@kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-mm@kvack.org>, <driver-core@lists.linux.dev>,
+ <linux-block@vger.kernel.org>, <linux-security-module@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-fsdevel@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-pwm@vger.kernel.org>, <linux-usb@vger.kernel.org>, "Oliver Mangold"
+ <oliver.mangold@pm.me>
+Subject: Re: [PATCH v20 7/8] rust: Add `OwnableRefCounted`
+X-Mailer: aerc 0.22.0
+References: <20260824-unique-ref-v20-0-490735672187@kernel.org>
+ <20260824-unique-ref-v20-7-490735672187@kernel.org>
+ <DKY1WYBNR288.36W5V60TR81MG@kernel.org>
+In-Reply-To: <DKY1WYBNR288.36W5V60TR81MG@kernel.org>
+X-ClientProxiedBy: LO4P123CA0560.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:33b::18) To LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:4ab::19)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 6/7] i2c: qcom-geni: Use common GENI resource
- initialization helper
-To: Mukesh Savaliya <mukesh.savaliya@oss.qualcomm.com>,
-        konrad.dybcio@oss.qualcomm.com, Sudeep Holla <sudeep.holla@kernel.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Viken Dadhaniya <viken.dadhaniya@oss.qualcomm.com>,
-        Andi Shyti <andi.shyti@kernel.org>
-Cc: chandana.chiluveru@oss.qualcomm.com, arm-scmi@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-i2c@vger.kernel.org
-References: <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-0-61171ab1cdce@oss.qualcomm.com>
- <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-6-61171ab1cdce@oss.qualcomm.com>
- <2329d1dc-9907-4338-8bb6-2a32e3e261ee@oss.qualcomm.com>
-Content-Language: en-US
-From: Praveen Talari <praveen.talari@oss.qualcomm.com>
-In-Reply-To: <2329d1dc-9907-4338-8bb6-2a32e3e261ee@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: v5kbZHQ7fUt12XkJGHKtGHQkPLT5kZIp
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI1MDExNSBTYWx0ZWRfX0551bTNc7jgS
- fLtZCyQnKqW4v+rkjDEK+4eD3J9fHOmihgOW6U6KcUBD3i9syC0s4R5p20+VMrLmVv7xjl1EMYr
- /eJsYEoNeHX73jAplZ+w/3kqXeP5dPM=
-X-Authority-Analysis: v=2.4 cv=TZGmcxQh c=1 sm=1 tr=0 ts=6a8d99e1 cx=c_pps
- a=+3WqYijBVYhDct2f5Fivkw==:117 a=V2Vt80KW7rYiXl8IeOG9JA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=atO44hwG55kBqV7UmNcA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=eYe2g0i6gJ5uXG_o6N4q:22
-X-Proofpoint-GUID: v5kbZHQ7fUt12XkJGHKtGHQkPLT5kZIp
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI1MDExNSBTYWx0ZWRfX+N3Ftu53KBVr
- fNoZ8y2GRDzpmuNmcf0v01L9SLm+1IuC/zhwZYrzBfXMTzjdDgsgL0CmX7/grC0Zis1c3WbpBC/
- hyW0mzBMnG4cOOZAeGKmPSm8rDqDKMviUhKriIVPZtuaH0gUBfuXarw6DuVZ/6DwHxWhnvTBADU
- xn+qSQVPfNew7xZXdgNa9BydBqpB6AFXZUVgX74PAKkRHEzXq/1Q+yTXcuoMO5zG6cVkOSmjZLr
- 6EZNvgX9o/KSltyW7Y0gL2TrOm6Xh8SFFaAvzIC3GchLx0KBYZeBQazsGKxcXXACRxz3Vcmg6vY
- bMaRELtPlxsjzCodZsartEokaSGtb+xsCweQMqikBFCdBtKH0VNL4H5nSVKrenjnd1ZRz/oPAQp
- 0LlgCaWegjIH6zQInGoDbCFNbk0LhKUnIa5jjsiRr3Xje2GXuLckLfaWBpZ3LGcOLnDikUT7El7
- /aHhCk5821xBXORwfdw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-25_03,2026-08-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 spamscore=0 bulkscore=0 adultscore=0
- suspectscore=0 lowpriorityscore=0 malwarescore=0 phishscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608250115
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOAP265MB8560:EE_|CWLP265MB2929:EE_
+X-MS-Office365-Filtering-Correlation-Id: 55cd4131-fb3b-4955-65fb-08df02adf49c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|10070799003|7416014|376014|366016|1800799024|10067099003|6133799003|3023799007|22082099003|18002099003|4143699003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	pI7vH5zk0fwrZi33VGpjVwtMdNELTnTL14q7n2jxhjyNl0rVT1z7TMUWa8wCH4Ki0nlr/kHq3quHHfIGlpluPf+96fZlgn1d7pSznlUUacjYP9H8ZbzPBHwaLBcMrmdp9n5hxMwRa7IvKWt/RbhJ+UxwelLgqIJyad0xNozwtTD9sbxIith8ugiyZOjD80CNlt5xMzXAIR06/iPKo+hd7LcSOuvKA9O276R1CBzui18rHlnTlOUH2PaHOePw5VnfXQwKesJkKF/4d5zjchi5q7qFveq5yVnUzyyVp/kvKHKRIZCb73xn4tuCUYY1k8wYXvy0G9gaOaFMGE4B2vhbNt+HVAz0E2GwK3+1/d3WavLMZZNyYAHWqWOfMmACzj+ONlLWxZcAKwqN22fVFQ7Yiic4Wy2f+nJ3fHRvDEOqHVKeXQJd9HhpQGXJWLTr00sBzPW+0omei7YMDT0uWp9bB3MpxpP0cAqkDv0v+0kf2FQOfLZ3jqpceejh5AdftoM3zbnKg5Iw/W7Q6xhY8waqWcKuQWt5yj2Xzmn+wtucKOpjlkY+Q9l2xP1ddHUgUii1CqBaTCKjpROW0mi2khMffHn7GyuBP9Z1qU12JVhY2p/l4RJU/y3tCLPVezF39PsEk6Or0cfsOsuk6JdRVzPEAMTjkevcZyo7yHZJ5uJ6wuQ=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(10070799003)(7416014)(376014)(366016)(1800799024)(10067099003)(6133799003)(3023799007)(22082099003)(18002099003)(4143699003)(56012099006);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?Vi8zVjk3R2ZrTnVvNVFLbG1tOGU3dVNDS1ZqdDVKSkNmdEVmMnZTQXJPYTRC?=
+ =?utf-8?B?TmNya3lVekd2WWtWcTJPM1J3THJpMGZYM213U1htQWxuMWNWL0E2eEpHUmFy?=
+ =?utf-8?B?VGlXSHQwelNzYitSZUhGaHZic2d4YVl4NW1vTnR5eEY0QXBtc1dEejVkaFNh?=
+ =?utf-8?B?Mm5iNi9xK3VxY3E1VTRHQjdDdVdGWGMrdlpCN2s0U210U3Nkc0p2TUxqY2hz?=
+ =?utf-8?B?dUd0bkhFbXc4TCtwMXRJVm9IL3Y3T25nWjN2eUJuWEM0cVV3bWtBVHBkL09K?=
+ =?utf-8?B?blNUNFB3UTlKVDhtZnNDcEFnd3p5b3BQb1pQeEdiY0R2UldhS0lwOTBVSmhw?=
+ =?utf-8?B?eWdkS0ppeDZ1SkZybDhYQW5tRGY5U0FsS2NIL0xHcCtBUGIzTUgrdmZMR3dC?=
+ =?utf-8?B?STFzVzgxMnpCSndobjRVZ1J5bC9iWUZZMFlUc0IxMTlyRXdCbmhFYk9Eb0F0?=
+ =?utf-8?B?V0E4Yk1QWmdrYmdxUmxmOXJaclVRbzVEd0RYSEtOMDRMNmN6a1VyelJzTG9a?=
+ =?utf-8?B?b1oyc0NHRVdvNFlGNU0rVDlEbnlHbmxQb2poRXJIS2RPZGF0Zk84ZmZHZTRp?=
+ =?utf-8?B?Q2ovOHB4c3l4UEoramJJK1hSWDlzWXU0SmtoSFQ3SjVCWFJ5dEd4am4zZ0Ni?=
+ =?utf-8?B?TzNIeXlZT3NVVWdHdVQ0KzlIdnFXQ2hQWlpVL0VQdkxQMUZjaTV0TnhHZ29D?=
+ =?utf-8?B?VS9XSUp2NUJMWjVHV1o3WWw3MU9VOURLaVpaSTQ4OWNvakVZdk51ckN0Vm9n?=
+ =?utf-8?B?TjQwVGUzWDQwNzhVWU03bXlqZEJUdkY1NE9tZncvU3hRN0kxa3V3M2EvaXFQ?=
+ =?utf-8?B?MHZXY2RZM0FLQzI2K0Z5QzM2eCtsaFIwWDlITkZUcWNtcDc3Qmo2RE5lUEZR?=
+ =?utf-8?B?WUtsYWlBZjJNUjlIT1JIWHlvbUF1V3g0L281enQzM2g3bVYxWkNibjFTNEEy?=
+ =?utf-8?B?VDY5a2ZwUGRzS3FGTUFhOXB1SmNMMllzMUhxTE1QSHJ6TUQzRkMwYkhhQWRy?=
+ =?utf-8?B?dnpqVWRIaDAzMWU0bmZjYnd5dmdtMEpaOTVsY0QwZGFtL01YYnNwVnM0b2l0?=
+ =?utf-8?B?RFR4UHBRZDUvVENEQnlPVW1kOEV2VFdVY2hmWlZwMG0rMUZuRFV3dWZpSVpo?=
+ =?utf-8?B?dDNLNktBaTMreDUzY1BQdy9FS21VeFR4WHlsWTF5VlFIZ3JFSVArc2d5UWhx?=
+ =?utf-8?B?QmJvTW50SDdYTjhhclA5d2tOZ0ZobWtzZ2tBUVNPUG1KRzJOeithQkVqeW9K?=
+ =?utf-8?B?Y1p5NmpNcDZGeTFuZ1ptUDdEUWUySkc4L1FheGE5NytXVVZyK1I3UmRFWGdB?=
+ =?utf-8?B?MXhzTXNKdml2TUl4M0hGaDZsanBPOUtUTTJRRHJndFVsNUp2U3NKZERuOGlt?=
+ =?utf-8?B?RFF3a3FQUGtkbWxucUZFRHZYdTIwZ2w5SXhiOXBQeUJURG5OVFhJd2h5dFNY?=
+ =?utf-8?B?WlRXdE13OEM4eEJDMEhZaFByaHdHMWtrRHdoMTJDMjhyTXExZTNmd2VsOE1Q?=
+ =?utf-8?B?c200S015TEFxQ2FoNWVRblRVeXpwMjV2WEJlbVlHTndMb2lRVCtMMmlFMFFo?=
+ =?utf-8?B?VlVHSWxUc282aVVnZXBJWjZpZTlrYURaRkVXUEJIcE84bjdaQnhyOVNaTDNQ?=
+ =?utf-8?B?Vk00V1RpWEtoL3B6ZEorZUl5Z1o3RkNjeDBLQ2ZQYXZPZ1pvWTFudzBDdlFq?=
+ =?utf-8?B?QWkyczY1ZS9LcFRXRkR5VlZYWXdnOWJCQjVNOTBjV0ZyV2R2d2RTdWdBdHNS?=
+ =?utf-8?B?eWs1U0EwYWFSR0xhbDFUWktBZ2tjZlpRYm12eTZ0eENRTUR0K0hnZEYya0FQ?=
+ =?utf-8?B?eUh0K3dDNjlJOTNYRjhnMFZoczI5RDN0ZDUyNEw3TFFGNUsrTENRMW4yNXRp?=
+ =?utf-8?B?Z005MTR5OXNOdzZxVll1RkdkNFlkNmExV3FrRTZUU0pTcWhIc210MXhDM1M3?=
+ =?utf-8?B?UGdzSnZKWU9ad3M4ZENtSDJub0kxRDFhcVlaM0V2M1Vqcy9zeWVZS0h3NHZL?=
+ =?utf-8?B?ckh4YTVZcXBTRWV5TWFnaGRsQVVxbjlUcDkrck1QbnBncXRrUU5NUHJ5bDdt?=
+ =?utf-8?B?TG1KM2JYNlUrVUFibzdXU0FzNE8wV1ZacmJPbWVGQmFvOVpKUDZSbFpkTFZK?=
+ =?utf-8?B?bGIwVUJSQXRIbWJQWVpCNTIrUnkzUUpYWnlac0hxVGwzcURJZDlQblAvODdk?=
+ =?utf-8?B?cmRwK1BvZzNvaGsyRTVtUGNNWWtxQkxZL0pnd0I5RncxZ3NHNXJoWFZCbTVp?=
+ =?utf-8?B?TS9PMlJidExtL2cwam0vQTBCOXZhWk9EOXhwcHJsYXNxd2VvQUt5NVJxazNM?=
+ =?utf-8?B?VlZ1WmZnWS9mT3E2ejN5ZDk3WnY3cU1JQlJ0Y1pxU1VVbXh5M0Y2QT09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: 55cd4131-fb3b-4955-65fb-08df02adf49c
+X-MS-Exchange-CrossTenant-AuthSource: LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Aug 2026 13:37:06.7305
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ALYGD5KXtFjCjlHERzfTe5xeiAY16ZVzMXD5zwRYCceH7qCL+ulKruVPV4cG6JZttYO2EAq7s80+lbqKyFH9dg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CWLP265MB2929
 
-Hi Mukesh
+On Tue Aug 25, 2026 at 2:16 PM BST, Danilo Krummrich wrote:
+> On Mon Aug 24, 2026 at 1:17 PM CEST, Andreas Hindborg wrote:
+>> +/// struct Foo {
+>> +///     refcount: Cell<usize>,
+>> +/// }
+>> +///
+>> +/// impl Foo {
+>> +///     fn new() -> Result<Owned<Self>> {
+>> +///         // We are just using a `KBox` here to handle the actual all=
+ocation, as our `Foo` is
+>> +///         // not actually a C-allocated object.
+>> +///         // INVARIANT: We initialize `refcount` to 1, satisfying the=
+ invariants.
+>> +///         let result =3D KBox::new(
+>> +///             Foo {
+>> +///                 refcount: Cell::new(1),
+>> +///             },
+>> +///             flags::GFP_KERNEL,
+>> +///         )?;
+>> +///         let result =3D KBox::into_non_null(result);
+>> +///         // SAFETY:
+>> +///         //  - We just allocated the `Self`, thus it is valid and we=
+ own it.
+>> +///         //  - We can transfer this ownership to the `from_raw` meth=
+od.
+>> +///         Ok(unsafe { Owned::from_raw(result) })
+>> +///     }
+>> +/// }
+>> +///
+>> +/// // SAFETY: We increment and decrement each time the respective func=
+tion is called and only free
+>> +/// // the `Foo` when the refcount reaches zero.
+>> +/// unsafe impl RefCounted for Foo {
+>> +///     fn inc_ref(&self) {
+>> +///         self.refcount.replace(self.refcount.get() + 1);
+>> +///     }
+>> +///
+>> +///     unsafe fn dec_ref(this: NonNull<Self>) {
+>> +///         // SAFETY: By requirement on calling this function, the ref=
+count is non-zero,
+>> +///         // implying the underlying object is valid.
+>> +///         let refcount =3D unsafe { &this.as_ref().refcount };
+>> +///         let new_refcount =3D refcount.get() - 1;
+>> +///         if new_refcount =3D=3D 0 {
+>> +///             // The `Foo` will be dropped when `KBox` goes out of sc=
+ope.
+>> +///             // SAFETY: The [`KBox<Foo>`] is still alive as the old =
+refcount is 1. We can pass
+>> +///             // ownership to the [`KBox`] as by requirement on calli=
+ng this function,
+>> +///             // the `Self` will no longer be used by the caller.
+>> +///             unsafe { KBox::from_raw(this.as_ptr()) };
+>> +///         } else {
+>> +///             refcount.replace(new_refcount);
+>> +///         }
+>> +///     }
+>> +/// }
+>
+> This is valid as Foo is !Sync, but I think it does look racy on casual re=
+ading
+> and possibly even encourages people to do the wrong thing, i.e. to peek a
+> reference count and subsequently act on the read value.
+>
+> Besides that, if the value can't be shared across tasks it's not overly u=
+seful
+> in the kernel to reference count it in the first place. Do you have a bet=
+ter
+> example for this?  Maybe a broken down version of the one that motivates =
+the
+> patch?
 
-On 24-08-2026 18:42, Mukesh Savaliya wrote:
->
->
-> On 8/5/2026 1:27 AM, Praveen Talari wrote:
->
-> [...]
->
->> @@ -228,10 +228,13 @@ static int qcom_geni_i2c_conf(struct geni_se 
->> *se, unsigned long freq)
->>       val |= itr->t_low_cnt << LOW_COUNTER_SHFT;
->>       val |= itr->t_cycle_cnt;
->>       writel_relaxed(val, gi2c->se.base + SE_I2C_SCL_COUNTERS);
->> +
->>       trace_geni_i2c_bus_setup(gi2c->se.dev, gi2c->clk_freq_out,
->>                    itr->clk_div, itr->t_high_cnt,
->>                    itr->t_low_cnt, itr->t_cycle_cnt);
->> -    return 0;
->> +
->
-> This looks wrong to me.
-> First accessed registers and then we are setting ICC vote ? we should 
-> enable resources first.
+I think the series is very old and might even predate the `sync::Refcount`.=
+ But
+given that we have that type now, the example should do the correct thing a=
+nd
+use that instead.
 
-At this point the hardware resources are already enabled and  the ICC 
-call only updates
-
-the interconnect bandwidth vote. Therefore there is no dependency 
-requiring the
-
-ICC vote to be issued before these register accesses.
-
->
->> +    return geni_icc_set_bw_ab(&gi2c->se, GENI_DEFAULT_BW, 
->> GENI_DEFAULT_BW,
->> +                  Bps_to_icc(gi2c->clk_freq_out));
->>   }
->>     static void geni_i2c_err_misc(struct geni_i2c_dev *gi2c)
->> @@ -1100,24 +1103,6 @@ static int geni_i2c_init(struct geni_i2c_dev 
->> *gi2c)
->>       return ret;
->>   }
->>   -static int geni_i2c_resources_init(struct geni_se *se)
->> -{
->> -    struct geni_i2c_dev *gi2c = dev_get_drvdata(se->dev);
->> -    int ret;
->> -
->> -    ret = geni_se_resources_init(&gi2c->se);
->> -    if (ret)
->> -        return ret;
->> -
->> -    ret = geni_i2c_clk_map_idx(gi2c);
->> -    if (ret)
->> -        return dev_err_probe(gi2c->se.dev, ret, "Invalid clk 
->> frequency %d Hz\n",
->> -                     gi2c->clk_freq_out);
->> -
->> -    return geni_icc_set_bw_ab(&gi2c->se, GENI_DEFAULT_BW, 
->> GENI_DEFAULT_BW,
->> -                  Bps_to_icc(gi2c->clk_freq_out));
->> -}
->> -
->>   static int geni_i2c_probe(struct platform_device *pdev)
->>   {
->>       struct geni_i2c_dev *gi2c;
->> @@ -1188,6 +1173,11 @@ static int geni_i2c_probe(struct 
->> platform_device *pdev)
->>       if (ret < 0)
->>           return ret;
->>   +    ret = geni_i2c_clk_map_idx(gi2c);
->> +    if (ret)
->> +        return dev_err_probe(gi2c->se.dev, ret, "Invalid clk 
->> frequency %d Hz\n",
->> +                     gi2c->clk_freq_out);
->> +
->
-> why not move to geni_i2c_init() ?
->
-> Check recent patch @ i2c: qcom-geni: add I2C frequency table for 32 
-> MHz firmware-based SEs.
-Okay let me review it and update.
->
->
-> Let's agree to move there, to avoid issue.
->
->>       ret = i2c_add_adapter(&gi2c->adap);
->>       if (ret)
->>           return dev_err_probe(dev, ret, "Error adding i2c adapter\n");
->> @@ -1281,7 +1271,7 @@ static const struct dev_pm_ops geni_i2c_pm_ops = {
->>   };
->>     static const struct geni_i2c_desc geni_i2c = {
->> -    .resources_init = geni_i2c_resources_init,
->> +    .resources_init = geni_se_resources_init,
->
-> why to add common driver function to i2c ? and also spi, uart ?
-
-
-The goal was to provide a common helper that avoids duplicating
-
-the same logic across multiple consumer drivers. As a side note,
-
-this refactoring was done based on Konrad's earlier suggestion to
-
-consolidate the functionality into a generic implementation.
-
-> Can we not call that function from within i2c specific hookup function 
-> ? i think design wise should keep i2c as local function.
->
-> Also driver specific anything can be managed in local function.
->
->>       .set_rate = qcom_geni_i2c_conf,
->>       .power_on = geni_se_resources_activate,
->>       .power_off = geni_se_resources_deactivate,
->> @@ -1290,7 +1280,7 @@ static const struct geni_i2c_desc geni_i2c = {
->>   static const struct geni_i2c_desc i2c_master_hub = {
->>       .no_dma_support = true,
->>       .tx_fifo_depth = 16,
->> -    .resources_init = geni_i2c_resources_init,
->> +    .resources_init = geni_se_resources_init,
->>       .set_rate = qcom_geni_i2c_conf,
->>       .power_on = geni_se_resources_activate,
->>       .power_off = geni_se_resources_deactivate,
->>
->
+Best,
+Gary
