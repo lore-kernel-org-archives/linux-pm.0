@@ -1,109 +1,145 @@
-Received: from mail-pj2-f10.google.com (mail-pj2-f10.google.com [74.125.227.138])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE3C8468C38
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 13:14:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.138
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C33146F4A0;
+	Tue, 25 Aug 2026 13:16:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787663655; cv=none; b=Q63K1d+pMxTXwc/GpLXIfLfSQBG5AsFmqFQnCLhIxVpXVR+bVwQjdfl54Oahs0JXOB3vMXK5OM0X9jTlyKWfHFazINFKbB/ZL0dzL4muJB/+g20nWL3UPIELrLoFVVBu07/ylMwHzjMpXzbTsK1A72IvZ2gmxEJmyDDmmLlwRDs=
+	t=1787663773; cv=none; b=qcrgO4V4vzzkVXSaEvgWncqm0eWUxO3DvmoDkZi2Hp0salFzpeu0wodqQCVYFYxcY29crlsfi9kDBWA3DYNPEpUIi1kKPxFG/X03Zb+J3yhUbnnRsO/jvx86PaTos47Au26QeqDw1Tn4fUTt5lL65iEFr+mDXnMmsB2xbADCOD8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787663655; c=relaxed/simple;
-	bh=4ISMhpMniE/8ybSFGW89rkvY0P+M11KGu0j76X6uQkY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BsSwt4c0AKEqV1roTGlhOYlnHzZh01M5FAggw51yozCIoK2Jsmh9o2KB97eyn7IWtcrcCt7DoiL1XBzsp1oL4WBWTtqO5QMgh3IZ9XWT/F4VkbDyt8q+TA1dLZPOemC1wFJDmAX/tye7k/D0kKwMdnOp5dfAyVn4Kl/fO93le9s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.138
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pj2-f10.google.com with SMTP id d9443c01a7336-2cf49dc298bso35551995ad.0
-        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 06:14:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787663652; x=1788268452;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3jSubmSbLPyvICbixwT9x8CgWie9Qul0y0X7w0A8fPs=;
-        b=FZqShZ4VMMgOcjK+R/RD4bFBb0+2NqCwT21PKEK8jKdmT+vyQzRzfqOGu9aBIj97wM
-         kto1n52/XTj43fUtfqQ1xdPB5F+nJlGHHmVt34oR5gVuEPH4W99nk8nDNfvIhX4MYuh6
-         EdVNgWp0dW89ocdCadPpiw6zqEDLH3fK85WqezCt8wa5P9Gyfv4nqXrPCSEI+rOepODc
-         zVgZUn/MttMCh4NX+/xreSISa8gj2wLWc0K/WDa9plzZY5kmw3y1ppivPNNBwH4Z5eeK
-         Cima1wRJxujwp42+2mt6OeJMC8VhD0bq2spPTAXrzQR1JSo8JqaEuLZqlplr+sv39DkW
-         5zrw==
-X-Forwarded-Encrypted: i=1; AHgh+Ro4KUthSSW3VKbt5toZ6SIX2Gysh00w8Igrk7/3xAFZOSWT8Xmzc6k0yKG6r8WGUZF11ytsLUwWwg==@vger.kernel.org
-X-Gm-Message-State: AFuF++m8CYfTSDZqkttyfng11VFDGhjT+pqxRzxW28mYw9IE1wQl1lGr
-	30i9/OTRJyu1SjM30MgGaWh+Z3G9eCkvKh3yjKal4beWjk1G4WfW3kNu
-X-Gm-Gg: AR+sD11g4FIesbqVoBAA6xGmmMxpW47RpnXGQ4z+gXyx4BmJ3mpJTd2eFtMLXVu7Umz
-	9MgCpZBk+aYQsPEoKeb/SpxQOBa/b2arOaPBddSdwC7hhiyTlVpWkTDX1KmT+g+ZUuz2uDzoJe0
-	Ws+esgPY456s5jJn38kvCeN8jy2U9ALNww+1M20N+U+iZCGomlpfvP3KYjMfdxFmJLL5N/eePEN
-	DDZY/2FrqV2BjfkbK/ALdxkvp5xXKfEMY//NILskbfYg/9beICwEtF/w73NrLUCvfOewPHyJoKF
-	E31CJTVIP/AJRulZw0fi/vNSaaEIgTPWJOrY8EmbJzI2z/mP3Y/S3Kaq2rIy9HN+vZHFvlvYcFY
-	sijXTqDAHvOXsSXIo4SEruQ4MQKCdF345/lDCBHmurBBVRDq2PTYI7DjGj7GDp9mnCErJ36Ge0m
-	svcycz8rpG3cYa8byG5/alRMHpEp6PhAROfvMrDRiz333q/GsxB+M6dUXzasDq/GBh7w1gohSH6
-	SsPPFIvUg==
-X-Received: by 2002:a17:902:f546:b0:2bf:dd0:c8b1 with SMTP id d9443c01a7336-2d6dc655395mr110099795ad.0.1787663651649;
-        Tue, 25 Aug 2026 06:14:11 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.169])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d676788239sm27087285ad.18.2026.08.25.06.14.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Aug 2026 06:14:11 -0700 (PDT)
-From: Xueqin Luo <luoxueqin@kylinos.cn>
-To: Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] cpufreq/amd-pstate: Restore previous EPP if profile_name allocation fails
-Date: Tue, 25 Aug 2026 21:14:00 +0800
-Message-ID: <20260825131400.1509428-1-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1787663773; c=relaxed/simple;
+	bh=wq5Y5El/WmYkY1phAK+kZjbNSU+OK/F8wzdDHG1sfes=;
+	h=Mime-Version:Content-Type:Date:Message-Id:To:From:Subject:Cc:
+	 References:In-Reply-To; b=js4jg5WObkleW3/ihA0NulHhKu5HvErPOZO/at3n5LwfJ0gQi4INX46SULevGC4TntBcVES3ZZZAnWy7UGsKYJBDjZkm8kQoyqfMCkIhNBfS7YCR2/1omOVyPzZR/W9H9egpNL9gLcErExzK0OVBUTrnBVi63c62u8Ozq5cvRAU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jOOaAim6; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jOOaAim6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 337BA1F00A3A;
+	Tue, 25 Aug 2026 13:16:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787663772;
+	bh=SJq7313Y8SDZUpZpBKpgvRr+tGT4kF99sb5KXxTJs5M=;
+	h=Date:To:From:Subject:Cc:References:In-Reply-To;
+	b=jOOaAim6vepRVMufMhXqW+jdR92Uj/CQip+PzFYfubv/OMZ3eyUSRGWiKKmKNc3Qs
+	 CIm4t5wBReG0/EzVZMMYQaCDwyoS3D65nGSJBRGnjlSdgcrmSdhqvsDrsmHHFvg81d
+	 1a8XfJN8Etg9fgBwxvXnF/+QyTa7KXeMaLqVz3T7rfFs5ePpHmWgzlp0ic560K2ES8
+	 +sKY3nnCCb3UYoS5DX0VufYTeHjc+/HK7+EsZ/TDSLU4pY9wuI+v6lBKKxY6ZU55MY
+	 42LtwLW+ei/NoBBso+QNdCFfVmnM/IhMY8bURoNTKHVq9tVjiB5WIiT8PMFwPcIb5m
+	 Ow2FZWe/ZmKAw==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 25 Aug 2026 15:16:00 +0200
+Message-Id: <DKY1WYBNR288.36W5V60TR81MG@kernel.org>
+To: "Andreas Hindborg" <a.hindborg@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH v20 7/8] rust: Add `OwnableRefCounted`
+Cc: "Lorenzo Stoakes" <ljs@kernel.org>, "Vlastimil Babka"
+ <vbabka@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, "Uladzislau
+ Rezki" <urezki@gmail.com>, "Miguel Ojeda" <ojeda@kernel.org>, "Boqun Feng"
+ <boqun@kernel.org>, "Gary Guo" <gary@garyguo.net>,
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, "Benno Lossin"
+ <lossin@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>, "Trevor Gross"
+ <tmgross@umich.edu>, "Daniel Almeida" <daniel.almeida@collabora.com>,
+ "Tamir Duberstein" <tamird@kernel.org>, "Alexandre Courbot"
+ <acourbot@nvidia.com>, =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>,
+ "Lyude Paul" <lyude@redhat.com>, "Greg Kroah-Hartman"
+ <gregkh@linuxfoundation.org>, =?utf-8?q?Arve_Hj=C3=B8nnev=C3=A5g?=
+ <arve@android.com>, "Todd Kjos" <tkjos@android.com>, "Christian Brauner"
+ <brauner@kernel.org>, "Carlos Llamas" <cmllamas@google.com>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, "Dave Ertman" <david.m.ertman@intel.com>,
+ "Leon Romanovsky" <leon@kernel.org>, "Paul Moore" <paul@paul-moore.com>,
+ "Serge Hallyn" <sergeh@kernel.org>, "David Airlie" <airlied@gmail.com>,
+ "Simona Vetter" <simona@ffwll.ch>, "Alexander Viro"
+ <viro@zeniv.linux.org.uk>, "Jan Kara" <jack@suse.cz>, "Igor Korotin"
+ <igor.korotin@linux.dev>, "Viresh Kumar" <vireshk@kernel.org>, "Nishanth
+ Menon" <nm@ti.com>, "Stephen Boyd" <sboyd@kernel.org>, "Bjorn Helgaas"
+ <bhelgaas@google.com>, =?utf-8?q?Krzysztof_Wilczy=C5=84ski?=
+ <kwilczynski@kernel.org>, "Pavel Tikhomirov" <ptikhomirov@virtuozzo.com>,
+ "Michal Wilczynski" <m.wilczynski@samsung.com>, "Ira Weiny"
+ <iweiny@kernel.org>, "Philipp Stanner" <phasta@kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-mm@kvack.org>, <driver-core@lists.linux.dev>,
+ <linux-block@vger.kernel.org>, <linux-security-module@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-fsdevel@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-pwm@vger.kernel.org>, <linux-usb@vger.kernel.org>, "Oliver Mangold"
+ <oliver.mangold@pm.me>
+References: <20260824-unique-ref-v20-0-490735672187@kernel.org>
+ <20260824-unique-ref-v20-7-490735672187@kernel.org>
+In-Reply-To: <20260824-unique-ref-v20-7-490735672187@kernel.org>
 
-amd_pstate_set_dynamic_epp() first applies the EPP value derived from
-the current platform profile via amd_pstate_set_epp() and only then
-allocates the profile name and registers the platform profile handler
-and the power supply notifier.  All failures after the EPP has been
-programmed jump to the cleanup label, which restores the previously
-programmed EPP value.
+On Mon Aug 24, 2026 at 1:17 PM CEST, Andreas Hindborg wrote:
+> +/// struct Foo {
+> +///     refcount: Cell<usize>,
+> +/// }
+> +///
+> +/// impl Foo {
+> +///     fn new() -> Result<Owned<Self>> {
+> +///         // We are just using a `KBox` here to handle the actual allo=
+cation, as our `Foo` is
+> +///         // not actually a C-allocated object.
+> +///         // INVARIANT: We initialize `refcount` to 1, satisfying the =
+invariants.
+> +///         let result =3D KBox::new(
+> +///             Foo {
+> +///                 refcount: Cell::new(1),
+> +///             },
+> +///             flags::GFP_KERNEL,
+> +///         )?;
+> +///         let result =3D KBox::into_non_null(result);
+> +///         // SAFETY:
+> +///         //  - We just allocated the `Self`, thus it is valid and we =
+own it.
+> +///         //  - We can transfer this ownership to the `from_raw` metho=
+d.
+> +///         Ok(unsafe { Owned::from_raw(result) })
+> +///     }
+> +/// }
+> +///
+> +/// // SAFETY: We increment and decrement each time the respective funct=
+ion is called and only free
+> +/// // the `Foo` when the refcount reaches zero.
+> +/// unsafe impl RefCounted for Foo {
+> +///     fn inc_ref(&self) {
+> +///         self.refcount.replace(self.refcount.get() + 1);
+> +///     }
+> +///
+> +///     unsafe fn dec_ref(this: NonNull<Self>) {
+> +///         // SAFETY: By requirement on calling this function, the refc=
+ount is non-zero,
+> +///         // implying the underlying object is valid.
+> +///         let refcount =3D unsafe { &this.as_ref().refcount };
+> +///         let new_refcount =3D refcount.get() - 1;
+> +///         if new_refcount =3D=3D 0 {
+> +///             // The `Foo` will be dropped when `KBox` goes out of sco=
+pe.
+> +///             // SAFETY: The [`KBox<Foo>`] is still alive as the old r=
+efcount is 1. We can pass
+> +///             // ownership to the [`KBox`] as by requirement on callin=
+g this function,
+> +///             // the `Self` will no longer be used by the caller.
+> +///             unsafe { KBox::from_raw(this.as_ptr()) };
+> +///         } else {
+> +///             refcount.replace(new_refcount);
+> +///         }
+> +///     }
+> +/// }
 
-However, if the kasprintf() of the profile name fails, the function
-returns -ENOMEM directly, bypassing the cleanup label, so the EPP value
-programmed above is never rolled back even though enabling dynamic EPP
-has failed.
+This is valid as Foo is !Sync, but I think it does look racy on casual read=
+ing
+and possibly even encourages people to do the wrong thing, i.e. to peek a
+reference count and subsequently act on the read value.
 
-Make the allocation failure path jump to the cleanup label as well, so
-that the previous EPP value is restored consistently on all error
-paths.
-
-Fixes: b7294b627598 ("cpufreq/amd-pstate: Add dynamic EPP as an "energy_performance_preference" mode")
-Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
----
- drivers/cpufreq/amd-pstate.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index d4ff8b228f86..083094d23bff 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1292,8 +1292,10 @@ static int amd_pstate_set_dynamic_epp(struct cpufreq_policy *policy)
- 		return ret;
- 
- 	cpudata->profile_name = kasprintf(GFP_KERNEL, "amd-pstate-epp-cpu%d", cpudata->cpu);
--	if (!cpudata->profile_name)
--		return -ENOMEM;
-+	if (!cpudata->profile_name) {
-+		ret = -ENOMEM;
-+		goto cleanup;
-+	}
- 
- 	cpudata->ppdev = platform_profile_register(get_cpu_device(policy->cpu),
- 						   cpudata->profile_name,
--- 
-2.43.0
-
+Besides that, if the value can't be shared across tasks it's not overly use=
+ful
+in the kernel to reference count it in the first place. Do you have a bette=
+r
+example for this?  Maybe a broken down version of the one that motivates th=
+e
+patch?
