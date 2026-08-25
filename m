@@ -1,316 +1,180 @@
-Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com [209.85.210.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB99A402430
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 12:09:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ED4438757D
+	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 12:12:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787659810; cv=none; b=rpXsKsnDq0J3mx5qbPhfzoSkRyD+fLrueje1JwNa/TzAv5ajkoDOj9Ok+5GGXY+tbGf8Wi5oS53FBvQwbJ6MtCRvme91Ek49lQJCHj76im/SMX4BX1i3tLWaceby8U/b5DamFAhExpbmFBfiSx8o0zUSobWgQuUZEZvA5D7s7TU=
+	t=1787659978; cv=none; b=td6CVLFlbVSmNQMVbayURXKc4XLW0ih+e8X8c6CtvA/hM7X8LZmpUoi0iRAC6H53sNqqg7e3cCLVSQwWGnBGZv1rOpJqKV/XSsVFDTmifB2C/6LLx5HHM3phc5nHOfy8KNF9JQgJEE/iKBUiDXyGFfapACmhkWc6QOlVhz2hONM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787659810; c=relaxed/simple;
-	bh=8ITZt2wBHZZdTs2DpxzxP5k4/k1k9rbpaZSwHeD+pLg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HG8QuoeVjXycRxJj9qALNfJWtOaO0Wgu1/51nkjlR9tDETQriAEb1w+N4ciOc7wHFfr1PcP2YAimKeBHLOBRzvLxAqShERKVTCbZmPVoUYmmoNmQBDHGixBnQNjUlWaggT5Dkp9I6LnZMUT9lx/B0POpMSt7XrKadUdRPJsj6w4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=I612C2ez; arc=none smtp.client-ip=209.85.210.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787659978; c=relaxed/simple;
+	bh=Zy/uplELbej2l31ZzUf+KHC+qlsRNpMsRObEQAmlf2M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KzMbUnrUPDfiXPox54/oqiLj9AlkG/tkDx6ZknftwrQq2/ZpNeDXyEJq5cHYkkyLNamEfw26ksD4r+PXH25WVxa1d9BxHUz+5p0zFM/ZFPHzgICsikv0uyp3F4+qUZ1TgeLjo7q3gik8j0FlQajgsFXFwjKtS37fgI7aevS3LBQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=STOUkQyJ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BRrv3QaN; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I612C2ez"
-Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-7eb61bbeb25so5795544a34.1
-        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 05:09:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="STOUkQyJ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BRrv3QaN"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67PAut521152810
+	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 12:12:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	GFYBfDMFLN7EfoYr1yKrbGv2vHYSkMdELyDJzYvM8Ig=; b=STOUkQyJC7MwAcPo
+	Lbed1T5mcuXzoWZ/nuwaFsLC6jSrjPmBAWI6RJh8b7LtXeUfHOhZRtsXfQxf9Vqp
+	KCQNJJ1FKLH9Eq0r4aRYaAjEztgCNCPhurViedD2PdncOZeug+uuCiuBLlw1VUVH
+	t1C/yMCkhhJVUPN8CkycbQvVo4tfB7wjqggy2VFEDxKNvB53bsInutWnIykI4G6l
+	h+N/Sb+lc1ubOSbSrz7SeulJL61RzM9eRNMaX9i5rMxhcUIafUFJzw73JXVJUWf3
+	MJh4L5jgK64xm9wNlWGMNkigYGmk6dmc7dofB1ZwJaPCAMRKzCqMvJeKwIMurqZ1
+	BJjszQ==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g93nastn4-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 12:12:56 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2d02df2bf09so46168505ad.0
+        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 05:12:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787659798; x=1788264598; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=d3ZWyjOYMOtjykrHLScPAtNYPY3rrra1A30T9BgJzlo=;
-        b=I612C2ezbg6TbuxD4VyRGKryoOaOxIF4/FElf9ThBat5FbrE0JeDdGkVf8R3gN675f
-         HlR3po01N3jahxNBy1kiOM4OyOZ5o743gz2JZWzlvjtZond3uYcQozdt3TL4W0+E6hPD
-         ND+RVhmVw6f4RHzOMiiYsvKlMzhy2CVmwsL6iMlNY2ncZxtA8quFu1/dHf7SpKHav6n+
-         qnml9iPDunojA+UicYJ8ypYDbuv1aAr025p5LEvyfur9IO9urMEbTc1bPT0MVL4SRpW2
-         aEeEd+v2U5od7N2wYL+zySzdoo2ssgm4GhEE1pUEtrdIC1ARRz4ZVJpqrvAp0qIOVHxY
-         ARxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787659798; x=1788264598;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1787659976; x=1788264776; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=d3ZWyjOYMOtjykrHLScPAtNYPY3rrra1A30T9BgJzlo=;
-        b=JQRMK8ayrQxu6nVLcTXADBkoxx2iELDROKVFHPD9yEozChsnOHCaK39YwUs2JITxX3
-         EuDREvRkomw+pKFNZxvkM4Oa28SIcKXpehVnepTEEPuhieeWVXcw8ictmOp3WMtvVwpU
-         3NfbzM1XQpyPONEA3pJw4hF55YMIF2NTSfDjXEkItCBb30Z68BkR7THsF0n3gaZgrGN5
-         TQWftOCf3Ja0A56MV0z9h3rDwmpCPtYFnaSPRMwFU6vOlHiQ4r39srERBocGDBkklonS
-         zfE+w1fCIfIIjL0dZVJqHZam0snSQV1Bzbw3Fqz1WJgPWt/zCqVF2WgSFlaLujQRGWSt
-         P6aw==
-X-Forwarded-Encrypted: i=1; AHgh+RqPHHVRyqRcYYcXQr1IOewuZyEcfKsY+SpaRKzqC/CvW6po/2Fqy/oxF1TLGwKBeXIyFg5tv3wALw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kaxTf8BqR1iYLTIlfslZsUWbvc5HuC2P4NURQt/tP+EybsryYc
-	tRkv43XlKkoTW1UyxszLOeQ36WTTgwQvchlr79jfChG1L2qMQZ/EG/lG
-X-Gm-Gg: AR+sD10GUg5BY4IRp1dOL4RlY75lZZDnrh8NhFziVfaT4wbCnYI7X9P7RlXYLkmwm+h
-	zdc+ZB4HB6QS1q8RROqV7H02+ZdkAEZ/3hGQnX1e6FBDsYJdyF+nUlW39FIU29Gr2LdJVCwxFmE
-	I1C8tF2qKxe0pS050A63kBA5Mbbn1Q0NnZOhPkl9sTRGcRxPSOqt/d9fsgMN1413XAs2N7xZywi
-	AwW09hrW7RYbodgC4gEWO9F1B8Wven9tTo1BpKbV5Rplbo0VJKAeLbdsf/m8B4ScHq86wZJ4h2K
-	6Gw1p4tcUvllqE8LpXFPLYdMt04wEGaTlKD7Qe2VuAziQM9oSosbqpH2D1ItdVAr9RFpv2giFSs
-	EllK1Muas3osF/+4fUe4UEJ9DXKdjt6oHdMNzbiL8lnAD+ckGofLiWfc3/xg4IuCcfu0Qh0I/3g
-	Y306evWSdni7+EYGKZx861Zn8bnFtxbS6NjFcRYaTbF5p+MzqUtJ3qQNShzbN8
-X-Received: by 2002:a05:6830:6739:b0:7e9:bd00:c6ad with SMTP id 46e09a7af769-7f4afacc6e6mr5845580a34.16.1787659798318;
-        Tue, 25 Aug 2026 05:09:58 -0700 (PDT)
-Received: from sh170r6 ([47.221.33.210])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7f48fb1c290sm6635788a34.8.2026.08.25.05.09.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Aug 2026 05:09:57 -0700 (PDT)
-From: Matt DeVillier <matt.devillier@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: Matt DeVillier <matt.devillier@gmail.com>,
-	Benson Leung <bleung@chromium.org>,
-	Guenter Roeck <groeck@chromium.org>,
-	chrome-platform@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] power: supply: cros_charge-control: adopt EC charge state on probe
-Date: Tue, 25 Aug 2026 07:09:00 -0500
-Message-ID: <20260825120929.13168-2-matt.devillier@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260825120929.13168-1-matt.devillier@gmail.com>
-References: <20260824155736.1186510-1-matt.devillier@gmail.com>
- <20260825120929.13168-1-matt.devillier@gmail.com>
+        bh=GFYBfDMFLN7EfoYr1yKrbGv2vHYSkMdELyDJzYvM8Ig=;
+        b=BRrv3QaNeTjSo87ZDwyB5xp2VVjoiWYSLVb9cbx5nFH7E91zKSqMGZYR17cbrBSlVt
+         QwVWmUGu+24nxdkXvk5kcHOzwKx+QOHXkdAMmDFWKiE+eeNpE6wehyYxvWMjm9ydNUqW
+         c5wo5nv7t/rLLiHHGcy1/CFRRpRIk2PZ9MyI0UNA2YKb2HA1d6T7ZaO7mwL3ZpuW5Iu8
+         OC+yUuY8S6WbjKQoKmcERkHJpCYefBem5oQOT/LdbT/w0QtB830ItWnBM67tt2p3G1f2
+         wSStJd+DB/nF6/G7xZvcetQ5x/j2wSZVnVYgGOMv0PJ60SvLrOyeHn5QhJGjVl05/xNu
+         1nXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787659976; x=1788264776;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=GFYBfDMFLN7EfoYr1yKrbGv2vHYSkMdELyDJzYvM8Ig=;
+        b=XMCIbRXun4fqZO8J+M6FZCX0EqOua2q4Ewyk7czxeJQi3L4tD0TVI7A0HJXfiAoVhd
+         dd/oaU7qcoDF/HGeMEY9FX6JcNK7gOCTJcyCbiCXtguxA8f2sVSgb4oFx6GNqb50SALe
+         nOBeyzYVvhi0MeHRSIu0ZNIjoP3oK9VuIptWCUVOoORXeFkyuUan0QxkGWB4b5kq/3Rw
+         VRl6HoUOz33ll0x5IQ5VJOOWb+8Q0twM/YhUVy7DeUmcUqOUcRWJKWqfyRz1nqf0GiMP
+         GX3G1XySi+x778evpQrkLpKT6t/Ul0gupQ3WjDUfqjIu7lfKlIstWC8F3Lw2kaOzTzWb
+         AVGg==
+X-Forwarded-Encrypted: i=1; AHgh+Rr9HZ1Rw6OWE/sc7iBH/BoGRzfyeNzg/wKyNo4CcW5IwE/AjZbdy+qsqfFj3KQm8oLIIGRS1g929g==@vger.kernel.org
+X-Gm-Message-State: AFuF++n8s3phaZRxK+zgKnNjtxq3O6apSAXbClis+PgAA0wa9VWe0Io9
+	xGwjxDgHwRMW/0ETWYt+cc7zzUazb1XTgY0AdfZq85GDt33tesvCnuRxbYKVmVt6HUlM+U/9VwV
+	5rRKI0ZpLm+5ZdfTvCAx5bmQUUj8F5w82vP+ZCwXsdAliuNHTmCfPEMbwgOceZw==
+X-Gm-Gg: AR+sD10sC/xTElKoEToihZL+XIICP7VSLZkzhO81QnPpjE9a9miRuDCLRqwoHQq8xcP
+	NsrjEWgw+ggQK1QUcIYywoYnZv5A9opkNiwTtMABleHSeiW78jPuDukHI1OdKO4H41xn9aQRE+/
+	5biTX0Yag1N5hvdYgG8t2ibyxYe+Yde8bVnTmm27Miklir7juC4tlf2EeBuGyPdC9PaSjcmpu8f
+	2D7AWIIfPiy0CabuiGlaEkyX+YXxMk57gyRCZxh6fS/jqdKlSU2QDp2pHfX/+AID879DxBIxBKN
+	/Y1/r7urNSuUIRF1dXjA8igImS8vtcRSEfk1OBieTQWcQfeZWNFcgU5fjhtc6SMQxgu0HGpncWm
+	2BjcZN/N0ygMiCOqPGxLoQyzpRfxUJjs=
+X-Received: by 2002:a17:902:fd8c:b0:2cc:864b:539 with SMTP id d9443c01a7336-2d64addb782mr652487265ad.6.1787659976002;
+        Tue, 25 Aug 2026 05:12:56 -0700 (PDT)
+X-Received: by 2002:a17:902:fd8c:b0:2cc:864b:539 with SMTP id d9443c01a7336-2d64addb782mr652486155ad.6.1787659975506;
+        Tue, 25 Aug 2026 05:12:55 -0700 (PDT)
+Received: from [192.168.1.16] ([106.222.229.34])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d6768d9241sm28068785ad.71.2026.08.25.05.12.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Aug 2026 05:12:55 -0700 (PDT)
+Message-ID: <c9964dab-d396-497d-bb67-5e509fc8a085@oss.qualcomm.com>
+Date: Tue, 25 Aug 2026 17:42:47 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 7/9] arm64: dts: qcom: talos: Enable CDSP cooling
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        "Rafael J. Wysocki"
+ <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>, Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        cros-qcom-dts-watchers@chromium.org
+Cc: linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org,
+        manaf.pallikunhi@oss.qualcomm.com,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+References: <20260809-b4-qmi-tmd-v8-0-b15d47adc379@oss.qualcomm.com>
+ <20260809-b4-qmi-tmd-v8-7-b15d47adc379@oss.qualcomm.com>
+ <b471a134-397a-4f0a-9d79-1777ed067c54@oss.qualcomm.com>
+Content-Language: en-US
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <b471a134-397a-4f0a-9d79-1777ed067c54@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI1MDEwMyBTYWx0ZWRfXz/JtC/8LdK1C
+ f/FwrBHWW+f7pAqkWLGLcjMa0glUmJBv3kkNPaSdXbSw21ADKLhdSon0wPrEXIbG06Our/xFnHf
+ E8d4+Ng8HUSyQG73UlBqef/umnSHpq4=
+X-Proofpoint-ORIG-GUID: Fizf1FjXRZXXcnJIKSw0TOM9u2rFzMu3
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI1MDEwMyBTYWx0ZWRfXxnJelxrY8uvE
+ d1ol02Lag3QzT7zUz7cJv7DmCznHinLKAFhB2Wn3oAlsfOdwaEKGQH4nX3Khcwu6sJgcQi8/GbW
+ yr1df/vczkylwDXMWiYWLsO8bNseX8yLOnfCXNGpamTFGB5pUkD6aFISDl7xmNiWoBfTYAAnnnh
+ aGIkERAbvCaIZ5mrzUNE1oG3OBi4xh/P6ZrbmtBTdVBF/MVyPPzxYTr/NQVbnm2RpTrw8oBqt6C
+ RVG0NteKJhIVXuUHnuDvN80Ww53iafOqnNuJeMWZCnfHTZoKnWpjD+UMTtoVdkGjOGwWaYedIYj
+ N+v7rHeQ6XWGJTm39cyaBslpgltspAbCZPfOm7cyzFspVEv0jyU3rsVTNdNN0pPiHbSGROFMuyZ
+ VZFcJMrIr0wm7yHrraL8YZZdeaPoAarnVRXI8Zb1WFb9NnyuhrDXOq1Tzr5GwL8xokMdxukW9Ff
+ QppprvoIAUwaJaKpcXw==
+X-Proofpoint-GUID: Fizf1FjXRZXXcnJIKSw0TOM9u2rFzMu3
+X-Authority-Analysis: v=2.4 cv=W74IkxWk c=1 sm=1 tr=0 ts=6a8d86c8 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=x3UvaR+l8cLCJ1uKBUlNag==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=KkITgS1P2qNXoWSfFRAA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-25_03,2026-08-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 priorityscore=1501 impostorscore=0
+ clxscore=1015 spamscore=0 lowpriorityscore=0 bulkscore=0 phishscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608250103
 
-The driver previously always forced AUTO with no charge limits at
-probe, which discarded sustainer thresholds and modes set by firmware
-or firmware setup before the kernel loaded.
 
-For command versions that support GET (v2+), read the EC state into
-the driver cache instead. Valid sustainer limits are adopted as AUTO
-with those thresholds: while the sustainer is active the EC may report
-IDLE or DISCHARGE as a transient hold/discharge step, which must not
-be exposed as inhibit-charge or force-discharge. Sustainer off
-(-1/-1) still maps to Linux "no limit" (0/100); other invalid limit
-pairs are remapped the same way with a warning and pushed back to
-the EC so the cache stays in sync.
 
-If GET fails, fall back to the previous defaults and SET them on the
-EC. Command version 1 still cannot report state and keeps forcing a
-well-known configuration.
+On 8/24/2026 7:47 PM, Konrad Dybcio wrote:
+> On 8/9/26 2:29 PM, Gaurav Kohli wrote:
+>> Unlike the CPU, the CDSP does not throttle its speed automatically
+>> when it reaches high temperatures in talos.
+> 
+> [...]
+> 
+>> +			cooling-maps {
+>> +				map0 {
+>> +					trip = <&q6_hvx_alert0>;
+>> +					cooling-device = <&remoteproc_cdsp QCOM_TMD_CDSP_SW
+>> +							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+>> +				};
+>> +			};
+>>   		};
+>>   
+>>   		mdm-core-thermal {
+> 
+> Should this sensor also be bound to the rproc?
 
-Signed-off-by: Matt DeVillier <matt.devillier@gmail.com>
----
- drivers/power/supply/cros_charge-control.c | 157 ++++++++++++++++++---
- 1 file changed, 139 insertions(+), 18 deletions(-)
+Thanks for the review, Konrad.
 
-diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
-index e0f168624807..07bcc6a9aeef 100644
---- a/drivers/power/supply/cros_charge-control.c
-+++ b/drivers/power/supply/cros_charge-control.c
-@@ -21,12 +21,22 @@
- 
- /*
-  * Semantics of data *returned* from the EC API and Linux sysfs differ
-- * slightly, also the v1 API can not return any data.
-- * To match the expected sysfs API, data is never read back from the EC but
-- * cached in the driver.
-+ * slightly:
-+ *  - EC sustainer off is lower=upper=-1
-+ *  - Linux "no limit" is start=0, end=100
-+ * Also the v1 API can not return any data.
-  *
-- * Changes to the EC bypassing the driver will not be reflected in sysfs.
-- * Any change to "charge_behaviour" will synchronize the EC with the driver state.
-+ * While the sustainer is active the EC may report IDLE or DISCHARGE as the
-+ * current charge-control mode; that is an internal hold/discharge step, not a
-+ * Linux inhibit-charge / force-discharge request. Valid sustainer limits are
-+ * therefore adopted as AUTO with the reported thresholds.
-+ *
-+ * Sysfs reads come from a driver-side cache. On probe, command versions that
-+ * support GET (v2+) are initialized from the EC so firmware or firmware-setup
-+ * programmed limits and modes are preserved (unlike earlier behaviour that
-+ * always forced AUTO with no limits). v1 still forces a well-known EC state.
-+ * Subsequent sysfs writes keep the cache and EC in sync; changes that bypass
-+ * the driver are not reflected until the next probe.
-  */
- 
- struct cros_chctl_priv {
-@@ -44,18 +54,23 @@ struct cros_chctl_priv {
- };
- 
- static int cros_chctl_send_charge_control_cmd(struct cros_ec_device *cros_ec,
--					      u8 cmd_version, struct ec_params_charge_control *req)
-+					      u8 cmd_version,
-+					      struct ec_params_charge_control *req,
-+					      struct ec_response_charge_control *resp)
- {
--	int ret;
- 	static const u8 outsizes[] = {
- 		[1] = offsetof(struct ec_params_charge_control, cmd),
- 		[2] = sizeof(struct ec_params_charge_control),
- 		[3] = sizeof(struct ec_params_charge_control),
- 	};
-+	size_t insize = resp ? sizeof(*resp) : 0;
-+	int ret;
- 
--	ret = cros_ec_cmd(cros_ec, cmd_version, EC_CMD_CHARGE_CONTROL, req,
--			  outsizes[cmd_version], NULL, 0);
-+	if (resp)
-+		*resp = (struct ec_response_charge_control){};
- 
-+	ret = cros_ec_cmd(cros_ec, cmd_version, EC_CMD_CHARGE_CONTROL, req,
-+			  outsizes[cmd_version], resp, insize);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -94,7 +109,120 @@ static int cros_chctl_configure_ec(struct cros_chctl_priv *priv)
- 		req.sustain_soc.upper = -1;
- 	}
- 
--	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version, &req);
-+	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version,
-+						  &req, NULL);
-+}
-+
-+static int cros_chctl_get_ec_status(struct cros_chctl_priv *priv,
-+				    struct ec_response_charge_control *resp)
-+{
-+	struct ec_params_charge_control req = {
-+		.cmd = EC_CHARGE_CONTROL_CMD_GET,
-+	};
-+
-+	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version,
-+						  &req, resp);
-+}
-+
-+static void cros_chctl_set_default_state(struct cros_chctl_priv *priv)
-+{
-+	lockdep_assert_held(&priv->lock);
-+
-+	priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+	priv->current_start_threshold = 0;
-+	priv->current_end_threshold = 100;
-+}
-+
-+static bool cros_chctl_sustainer_limits_valid(s8 lower, s8 upper)
-+{
-+	return lower >= 0 && upper >= 0 && lower <= 100 && upper <= 100 && lower <= upper;
-+}
-+
-+static int cros_chctl_adopt_ec_mode(struct cros_chctl_priv *priv, u32 mode)
-+{
-+	lockdep_assert_held(&priv->lock);
-+
-+	switch (mode) {
-+	case CHARGE_CONTROL_NORMAL:
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		return 0;
-+	case CHARGE_CONTROL_IDLE:
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-+		return 0;
-+	case CHARGE_CONTROL_DISCHARGE:
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+		return 0;
-+	default:
-+		dev_warn(priv->dev, "unknown charge control mode %u\n", mode);
-+		return -EINVAL;
-+	}
-+}
-+
-+static int cros_chctl_init_state(struct cros_chctl_priv *priv)
-+{
-+	struct ec_response_charge_control resp;
-+	s8 lower, upper;
-+	int ret;
-+
-+	guard(mutex)(&priv->lock);
-+
-+	/* v1 cannot report current state; force a well-known EC configuration. */
-+	if (priv->cmd_version < 2) {
-+		cros_chctl_set_default_state(priv);
-+		return cros_chctl_configure_ec(priv);
-+	}
-+
-+	ret = cros_chctl_get_ec_status(priv, &resp);
-+	if (ret < 0) {
-+		dev_warn(priv->dev,
-+			 "failed to read EC charge state (%pe), applying defaults\n",
-+			 ERR_PTR(ret));
-+		goto defaults;
-+	}
-+
-+	lower = resp.sustain_soc.lower;
-+	upper = resp.sustain_soc.upper;
-+
-+	/*
-+	 * Valid sustainer limits mean "auto with thresholds". The EC mode may
-+	 * be IDLE/DISCHARGE while the sustainer holds or bleeds SoC; do not
-+	 * expose that as inhibit-charge / force-discharge.
-+	 */
-+	if (cros_chctl_sustainer_limits_valid(lower, upper)) {
-+		priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		priv->current_start_threshold = lower;
-+		priv->current_end_threshold = upper;
-+	} else {
-+		ret = cros_chctl_adopt_ec_mode(priv, resp.mode);
-+		if (ret < 0)
-+			goto defaults;
-+
-+		/*
-+		 * Sustainer off is lower=upper=-1 → Linux "no limit" (0/100).
-+		 * Any other non-valid pair is unexpected; remap, warn, and
-+		 * push the cleaned state back to the EC.
-+		 */
-+		priv->current_start_threshold = 0;
-+		priv->current_end_threshold = 100;
-+
-+		if (!(lower == -1 && upper == -1)) {
-+			dev_warn(priv->dev,
-+				 "invalid EC sustainer limits (%d/%d), treating as no limit\n",
-+				 lower, upper);
-+			return cros_chctl_configure_ec(priv);
-+		}
-+	}
-+
-+	dev_dbg(priv->dev,
-+		"adopted EC charge state: behaviour=%d start=%u end=%u (ec mode=%u)\n",
-+		priv->current_behaviour, priv->current_start_threshold,
-+		priv->current_end_threshold, resp.mode);
-+
-+	return 0;
-+
-+defaults:
-+	cros_chctl_set_default_state(priv);
-+	return cros_chctl_configure_ec(priv);
- }
- 
- static int cros_chctl_psy_ext_get_prop(struct power_supply *psy,
-@@ -152,7 +280,6 @@ static int cros_chctl_psy_ext_set_threshold(struct cros_chctl_priv *priv,
- 	return 0;
- }
- 
--
- static int cros_chctl_psy_ext_set_prop(struct power_supply *psy,
- 				       const struct power_supply_ext *ext,
- 				       void *data,
-@@ -305,13 +432,7 @@ static int cros_chctl_probe(struct platform_device *pdev)
- 	priv->battery_hook.add_battery = cros_chctl_add_battery;
- 	priv->battery_hook.remove_battery = cros_chctl_remove_battery;
- 
--	priv->current_behaviour = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
--	priv->current_start_threshold = 0;
--	priv->current_end_threshold = 100;
--
--	/* Bring EC into well-known state */
--	scoped_guard(mutex, &priv->lock)
--		ret = cros_chctl_configure_ec(priv);
-+	ret = cros_chctl_init_state(priv);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-2.53.0
+Talos does not have a modem remoteproc device defined in the DTS, looks
+like modem support is not present/disable for this target.
+
+> 
+> Konrad
 
