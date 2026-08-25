@@ -1,91 +1,113 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C787F2EA75E;
-	Mon, 24 Aug 2026 23:34:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 324661A704B;
+	Tue, 25 Aug 2026 02:00:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787614475; cv=none; b=ohqgPsh+hdF/Kyz6eICz0hH9XAWSUaLTaBwetNBLidzmsx1wXc7hoAkMIy1hluQ5scpzg8GH3fplevBDZEQSbPWGWeQMafg/I2xTsy6LM8gxcz9xRakpRB+FdhuOJANlaGsGwrXMH1ehfTjFOEKByL+nIvTF8lZrMBdskZ52Q6I=
+	t=1787623254; cv=none; b=jL3PdXrE9/2CX/RCEez3yEiJkWdrefHWzl3zahIws0bvaT0pVIRjtRhmdx92rkAv+jqC6Jkh29irE9QIptefv5Gc1MgUvHEO2LWVapxOmhJGvEbXmzfmUGXX3CzZeXgUZGtmOFDDv9biszveaiD7pJJ0p1nIiBUx7HT0fFBftGk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787614475; c=relaxed/simple;
-	bh=I8hw8QcYhrVE0Xtu/s4HveX5wFVFRiZ/9FuQd30RZQw=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=by2sfSw2gcTb7sDvrK135V34P2KP7vr/LMVGQZOeKMnhS8xhKu5PwrtwMp+CDpL/pT5IxRvfmX7lpKMB9dsc5oMG41RwwPJDWcsNreV3UlwApHwdGPlbKLuKGqJQXvSjV8UY6qXg7WgBaAsI16Ff2aydp/4Sxlx4y6gGbOogb4s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=PUVtNNWV; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1787623254; c=relaxed/simple;
+	bh=guMQe8VhuUcx6ei2ldcPojriHPJXPEJIpjG3ME4KyDI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=mA3x1pKFJxu9Eg1e6yjeJmzXYWz57quw8P8l3Lx6lwpNvvlpopsRfG1FXZRFPsRny9cDjP9gFth4z3NdKAgmePvd6kTnpJB/LH2xMtqBfejavhgYr+Z+t1V6P0QQReJxyHDRgvR5BqvSlYEsIXmKq3kads0aNjb20XtUM5nFMjk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=09S7TYJR; arc=none smtp.client-ip=113.46.200.227
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="PUVtNNWV"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1787614472; x=1819150472;
-  h=date:from:to:cc:subject:message-id;
-  bh=I8hw8QcYhrVE0Xtu/s4HveX5wFVFRiZ/9FuQd30RZQw=;
-  b=PUVtNNWVYDegcuS0V0bLqtEWpLYzIfVWQ7cGqsH4fCEBeekEGegj1XG1
-   KxByOCN6sOJDURdh4of65jWCoIcEsWgZ9YRX4Q/6S2VwNw88H/+k7ucGD
-   S7MeYp7RM2R0QQV/fuU6n2Qa/SEI45KR1CWqRGhQ44IyDiu8l0o4v7pjf
-   s8A/4DEZx9uQIgOTLOtL/F25kCcFSRu3CgbUMioDCvhZUllIRBKvGFG1i
-   L+SdWCPKQt6yj03mcCjH96yb89kEhYUDYlWmR+Sr04gOBA0bpyAcI2S0D
-   xGMv/Ltvc8Cz+bxUNvv3bdwgAbFsx2bXe175HDhn+8C/cCUw/U65JpLru
-   g==;
-X-CSE-ConnectionGUID: oHk1bNY6SfeCHLNJr/F3jQ==
-X-CSE-MsgGUID: TdFhCoUjR8GB9M2tAB4Kxw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="87841415"
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; 
-   d="scan'208";a="87841415"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 16:34:31 -0700
-X-CSE-ConnectionGUID: vAmsXkNvQMi2gzv0eMocnw==
-X-CSE-MsgGUID: k2SvPbSXTsCD9fzwmjL7wA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; 
-   d="scan'208";a="271336694"
-Received: from lkp-server01.sh.intel.com (HELO 3532383e6126) ([10.239.97.150])
-  by orviesa005.jf.intel.com with ESMTP; 24 Aug 2026 16:34:30 -0700
-Received: from kbuild by 3532383e6126 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wyeBK-000000004Yn-1ZiC;
-	Mon, 24 Aug 2026 23:34:24 +0000
-Date: Tue, 25 Aug 2026 07:33:32 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 9906109d1e9a0544cf0816740ba5a130400c6256
-Message-ID: <202608250720.hjGwJBus-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="09S7TYJR"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=eYNpA1Cjg66vAxWKuNBevFxzrmWfEW5RTnkNOKHT9Lo=;
+	b=09S7TYJRR1spigIQyapTYNO3i1aTuoityuW2zcGz++GJZJQF7Eyieq6o3XkABKDLxiVJVrBPU
+	SoDrMECSup+394btecfKJ/Ylk8UQWlet+lzsl2GSMdohwO47sZ6dNWeGU4GmiL7tXsZ5flRceTH
+	g8m58xRMV+c84F5uR3U9hZA=
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4hTW2B1SyqznTxv;
+	Tue, 25 Aug 2026 09:50:26 +0800 (CST)
+Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
+	by mail.maildlp.com (Postfix) with ESMTPS id 676B64057A;
+	Tue, 25 Aug 2026 10:00:41 +0800 (CST)
+Received: from [10.67.121.62] (10.67.121.62) by kwepemr200004.china.huawei.com
+ (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Tue, 25 Aug
+ 2026 10:00:40 +0800
+Message-ID: <5fe88f15-3164-4a9b-b490-334e91ad7644@huawei.com>
+Date: Tue, 25 Aug 2026 10:00:39 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1] PM: sleep: Unblock runtime PM when device prepare
+ fails
+To: Shibo Zhu <3499129952@qq.com>, "Rafael J . Wysocki" <rafael@kernel.org>
+CC: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich
+	<dakr@kernel.org>, Ulf Hansson <ulfh@kernel.org>, <linux-pm@vger.kernel.org>,
+	<driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>
+References: <tencent_C5AC0A02FC01F700E764F8C2E3ECE4F41009@qq.com>
+From: Pengjie Zhang <zhangpengjie2@huawei.com>
+In-Reply-To: <tencent_C5AC0A02FC01F700E764F8C2E3ECE4F41009@qq.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ kwepemr200004.china.huawei.com (7.202.195.241)
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 9906109d1e9a0544cf0816740ba5a130400c6256  Merge branch 'pm-powercap-next' into bleeding-edge
 
-elapsed time: 760m
+On 8/19/2026 12:18 AM, Shibo Zhu wrote:
+> device_prepare() blocks runtime PM for a device with runtime PM disabled
+> before invoking its system-sleep ->prepare() callback. For a device that
+> has never enabled runtime PM, this changes dev->power.last_status from
+> RPM_INVALID to RPM_BLOCKED.
+>
+> If the callback returns an error, dpm_prepare() does not move the device
+> to dpm_prepared_list. Consequently, the recovery path through
+> dpm_complete() never calls device_complete() for the failing device.
+>
+> The error path drops the runtime PM usage reference, but does not clear
+> RPM_BLOCKED. A later legitimate pm_runtime_enable() then reports:
+>
+>    Attempt to enable runtime PM when it is blocked
+>
+> before clearing the stale state.
+>
+> Call pm_runtime_unblock() on the prepare error path before dropping the
+> runtime PM reference, matching the cleanup performed by device_complete().
+>
+> The issue was reproduced with a platform test device whose ->prepare()
+> callback returns -EIO while runtime PM has never been enabled. Before
+> the fix, last_status remained RPM_BLOCKED after the failed suspend and
+> the first pm_runtime_enable() produced the warning above. With the fix,
+> last_status is restored to RPM_INVALID and the warning is absent.
+>
+> Fixes: 3e5eee147b7b ("PM: Block enabling of runtime PM during system suspend")
+> Cc: stable@vger.kernel.org
+> Assisted-by: Codex:gpt-5.6-sol
+> Assisted-by: ChatGPT:GPT-5.6 Sol
+> Signed-off-by: Shibo Zhu <3499129952@qq.com>
+> ---
+>   drivers/base/power/main.c | 1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index f71467f6ada4..4ed2e9b7e99b 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -2234,6 +2234,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>   
+>   	if (ret < 0) {
+>   		suspend_report_result(dev, callback, ret);
+> +		pm_runtime_unblock(dev);
+>   		pm_runtime_put(dev);
+>   		return ret;
+>   	}
 
-configs tested: 14
-configs skipped: 2
+LGTM.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Reviewed-by: Pengjie Zhang <zhangpengjie2@huawei.com>
 
-tested configs:
-alpha       allnoconfig    gcc-16.1.0
-alpha      allyesconfig    gcc-16.1.0
-alpha         defconfig    gcc-16.1.0
-arc        allmodconfig    gcc-16.1.0
-arc        allyesconfig    gcc-16.1.0
-csky       allmodconfig    gcc-16.1.0
-i386       allmodconfig    gcc-14
-loongarch     defconfig    clang-24
-nios2       allnoconfig    gcc-11.5.0
-parisc     allmodconfig    gcc-16.1.0
-parisc     allyesconfig    gcc-16.1.0
-parisc        defconfig    gcc-16.1.0
-sh            defconfig    gcc-16.1.0
-sparc      alldefconfig    gcc-16.1.0
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> base-commit: 0f23d56f17fdfc7db69d51f64c8b91bbab947aa9
