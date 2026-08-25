@@ -1,197 +1,446 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011041.outbound.protection.outlook.com [52.101.62.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C3B23B95EC
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 06:37:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787639861; cv=none; b=pElnlx4qauKbU7mxCvdlE31fX7k2nJbqM7/+szbMgFTmq71Z9VMpHUAIaWEltiE/WlBDSdnAxUmlfTuRQ4Fd5xWD/ZMFo2WTwRdlXhrsnX6g6uqKbzk1mSV4zEkitrgS1dVL4ny+YGRkZFHwKmzZTLDgYgOVWI6cVle+R6x1hDE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787639861; c=relaxed/simple;
-	bh=yo97lpl4nNxII91Vzrfgw341mjyAGF7ejKfRVRWWRhE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JcexOqXwR1UMODl+tYOHEnKAd9TAc63/uzTIV//ZVsK4ezOces19uRPIo3zoWhXnRD9MHOa7jqfskslB/OgCU1A3pcX+dfMeW3TeP7HjVJHbzyghaLR5tSmSVAOPiZtB6bqgcTq8Kh9hO8vnaO/8nmIyGGPAv46bnUUBslxrBTY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=IeYso8EF; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=entzteUa; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C2EFF9C0;
+	Tue, 25 Aug 2026 06:58:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.41
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787641138; cv=fail; b=ObHSdbmMBYYkqQn5r42hqi9fer4kTGr+XpGyFoWP3TY7UuY3ROwl1nR6I4R292oLopZSc2rHhMX3Yb10X838ryrATjTAkdy3kfjagqAsB5h61cRkMsJDRhXi6USYEfENTYnckg/lXrdUNGySRiwXMr1NkDPseUvKWkiABNQNBMY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787641138; c=relaxed/simple;
+	bh=rDHegkFWDfMIuXe6ZzFIR+I/VcEuFMYXMzUoHkMTa9E=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=CHmWpipXRjomFZyDS9RECfsFf2lJjcX5qdWDkAOqXF60fYdr/NXE/FCza0QhGt75I9citf1exXYcz9QSvoRnjDHRF12utbTIpC4CpECtNUhC8KpvzHDdhgyK+4c/SiXA8rAHPc5j7TACEfYmCBEsfUUSqT0a1exThQfC0bVJalU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=SIHCN24P; arc=fail smtp.client-ip=52.101.62.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="IeYso8EF";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="entzteUa"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67P2R5xQ125745
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 06:37:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Jw1MAdB13SYeIkOFk/i7GvPAS0J0ZWflfX+r3TnNVhs=; b=IeYso8EFIFUnELkC
-	w0Q1+hFFUG0upmRdYTS9GQ63q/2iWTS4ihsO2bmHV2EoAWHnrYB6K14p/+PLEU2t
-	5jULbTnu4w0NNj+zQ6QHPhGoyXPiaIeA6ZpTYb3oYiZyRsf0gXEF0Owe+Z0kLK4r
-	gRoHzR3z6rtHkf5Oc6GaFVo3QthyBSTwKCw7m/fvuJ0vgdjTwiDtXJbAOy8vPSez
-	N0Z8E2Y21xYj321yY3EidP+eV0TQgghZGy/m5wlHS1KECBgVJcaD7r4TcmLai6aa
-	6OgXWGL8xzOW8oen1/4BIgVbV45Jp1ZffUwvfZmEIuIAJbwO6aX1BXv+6oBwP0Hh
-	igT5Wg==
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g8rqujxbe-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 06:37:38 +0000 (GMT)
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-cbe77d6864dso7047730a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2026 23:37:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1787639858; x=1788244658; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Jw1MAdB13SYeIkOFk/i7GvPAS0J0ZWflfX+r3TnNVhs=;
-        b=entzteUa7Ge9F2Q30uCuLvczZKVJhgMIR2a5kYPHy4IDi12T4BPwLkE/53Sfu/1Eqm
-         ZDJbsRRC//gdAbcgCsvazEEXVVzeOFbc9RETVQUwh0PZEUfLPirD078swpqzQvtoJcQi
-         mxa1+8FKhr9sjqsvpziP075i1BEkG6EY6WaiCcdhmgkIit6jwVoo6OFp1ToL4Gj7BvVG
-         tht+KWquu5PL7k0dEZFDlWGk5sThfeBZJp4YbVNxRDgpS8qeM7NjCgShVk56TepYL+GD
-         Xr+bAqM7BWj/4w3qT/RGVHqvo3og0qA+RJaMRRbLOuRO8XcVxaWsKBNjgOPqVcM4RUFI
-         fHkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787639858; x=1788244658;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Jw1MAdB13SYeIkOFk/i7GvPAS0J0ZWflfX+r3TnNVhs=;
-        b=SUJF+HlQ7jvM9UpLZph9pLoIGoH7LVNJOD+QwUFxyge2IcwPu3/1Lb9wEPeoZkFo2s
-         RY9vQDGThCfcAIvfMfxKJKPToffXCSVQR1kNa0e4AnqKp/nNRz+b9KwJWaoYp/ylpf6E
-         Pm/ciEvypTRWSVMmQrm0q8+mhXm4MJUEPtvL5988BFqm7yXE2dCp+xORiJeP45ynnDz/
-         wKXYCDV0tqqPACuDtghd+hARtrn9fUYeTeFsBpL+Jeyt7mevhOxFLD06ADLsFt4Jqi8h
-         P7VVT6xP4geuIBKsU295EteD8NsLXjwgHRuVvZaqnr31+a6mTDxHq+wpGz+a4xOVUcnZ
-         d67w==
-X-Forwarded-Encrypted: i=1; AHgh+RqxM+MpHHchEYlQFIs2MDJQYRuM82Dd57tjhtLnuyu/mN0j1HwHfh8X1+9dGupj9MBRDpjmqnhnHw==@vger.kernel.org
-X-Gm-Message-State: AFuF++n6vOopC8/k77sHXrGgstlmCwSHHb64YAYqq3cKr8mgYUV+Z0OW
-	peaK6VGDmjg6sZWClQNaubO28fq1GKg2M11Orw+hdDNw7iY8T2Q9rnF4sMSXXAxmWYEgI3BwoNA
-	iPJqhDGTWycsOEqiRdoVJFaECzH/la/E926IQirZTRoDDxXRMb1egFoQt1o0FpA==
-X-Gm-Gg: AR+sD11DOy9l10Ak528wZ7dZ2OR+ePG72y1dz9BQ3FoFKDREdUrbtrVVyCU+gU0egke
-	R/cIKJ/bKDGSbVWpDZpTam4zlDhmerTesxhWkWf1ENc/wWjvC9oxCms071ZT7/dGfuI+GFHjeUU
-	4Eabk3SQXBSm7TXFqErSwnx6XjE2Hu2YGO2Rqv0hV55v8xshELKizfsihc5Xztf2ezB8OALuUMc
-	pXWoFlRBkO5Et+P6aVhaiYJOEVhzecfH92RulRF8HgoaC8Kg1Ot87MAl4wO0iALxT9MgHFrp/8s
-	XJ6m98ifWA23pYs+tcXTky6KIgqlqZJdk+itQ2MSnkr1uHUaSUi4qXHXKYLoTZAtynWJT5ZlCxq
-	VEdJ/y13KFRJQTlCJp25326xkRqOP5w==
-X-Received: by 2002:a05:6a00:22ca:b0:847:8b11:5966 with SMTP id d2e1a72fcca58-8523c7f122amr6773232b3a.1.1787639857956;
-        Mon, 24 Aug 2026 23:37:37 -0700 (PDT)
-X-Received: by 2002:a05:6a00:22ca:b0:847:8b11:5966 with SMTP id d2e1a72fcca58-8523c7f122amr6773185b3a.1.1787639857564;
-        Mon, 24 Aug 2026 23:37:37 -0700 (PDT)
-Received: from [10.217.198.242] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc199daed9asm1672400a12.5.2026.08.24.23.37.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Aug 2026 23:37:37 -0700 (PDT)
-Message-ID: <57908a66-cb60-4d72-b205-099660ba91bc@oss.qualcomm.com>
-Date: Tue, 25 Aug 2026 12:07:33 +0530
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="SIHCN24P"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=rv3aFyu4+0W91RiCXz/q/ZIspKNWNfm7U+oJkoChvCxJiUjSnvFTLG86XcJlByG9vCzsg3wZPmmfvZpOE/9mNj9ffegGUhYd2YJgIQQcLdevFnNTCd4OnjxDRJNvQnVfnw5d36BUjBmdFcPQfPZHHCMnxEv97nwuvDhGI1FfNQRxlfhyrzWs5IET2I7eCYBJgIka1n5qRM21lGLKJ5ptGwmpZULErRd3tczbMgpCOI8V7KSGVrepkqEe6Ie37EbL0yNfW5y4P7QdrahtYMyUS1KSpZaVXJXkwgfn91awiiPY06sMlc8SCE+OGW5h9xs1bOjgM5va0lDKhGmaWU/rNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=levMmdcfHRNRUHYJuvVcC0ByXlqHx92xxTafjGAZLaQ=;
+ b=xCYHQ6mfv8mK62R3GDP1fDL1Ja+V/3O6kaxzvkTvqaL2E5tYKEYDa/QtjyPdQ/ImXOL+1CVeYPz4nP3pGPHxnyzH4FZg0vXeP4bHCbQwr0Z50nN5BOy4to/W8hswiBuaISmmfswNlwG05ZkNtyOA5yz+9mwPqohvBdXuJFtUoJLk+N5fLClUD9MaojD3/VHvePDM21A+dC0GsJ0WQeH6xe9UKCt84Ee97s/+AOoZD67q3o6xEFyPgAHAGgyCNRLWBw4iY1QWZQe5uRrVTSLqLO3NWUXN0UFyQBGDhC3PVbk63klb04j7qFcpAoufLZZcPnirb+TaK/DVZ4cI23vGWQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=levMmdcfHRNRUHYJuvVcC0ByXlqHx92xxTafjGAZLaQ=;
+ b=SIHCN24PSgTbHoR5RAXZriI3XZpO4K24JY3olfh7hyoFC9gYnW7SIgzO/kwSg2r95ojDZtviw/+Neb3/hWge1040LYKCmscQgj7IVC/JcNPN74sDNBmJ/2b8iJ6IiYgFZtSHIzIy5Vob+46z7aVK5oBwXmR7MQ3LS6tc9qoxTZCWHv3f3K1K0gEpLlm63pXZwiDWSqXHuHvidX8wvDBx8KeFhbN2Ysd/tmMZKrbR6VUdpSqyyg4amI+2DQ2aPh7oeJAK2B3OHVHCS4W55o1GqzoOi1VkZ9ARAf0+jWMaxv2FIq9Um4L8g1HjLLK8X3Kn0EDWI2QlztL5T89UU4qHYw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DM4PR12MB5246.namprd12.prod.outlook.com (2603:10b6:5:399::17)
+ by CH3PR12MB9123.namprd12.prod.outlook.com (2603:10b6:610:1a4::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.12; Tue, 25 Aug
+ 2026 06:58:50 +0000
+Received: from DM4PR12MB5246.namprd12.prod.outlook.com
+ ([fe80::9c9e:30a1:5456:c485]) by DM4PR12MB5246.namprd12.prod.outlook.com
+ ([fe80::9c9e:30a1:5456:c485%6]) with mapi id 15.21.0339.012; Tue, 25 Aug 2026
+ 06:58:50 +0000
+Message-ID: <3a23d54c-5ce6-4225-82d3-453e7133fdf1@nvidia.com>
+Date: Tue, 25 Aug 2026 12:28:40 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 00/15] ACPI: CPPC: Fix register access and lifetime
+ bugs
+To: Christian Loehle <christian.loehle@arm.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+ Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sudeep Holla
+ <sudeep.holla@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
+ zhongqiu.han@oss.qualcomm.com, K Prateek Nayak <kprateek.nayak@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ jarredwhite@linux.microsoft.com, "Gautham R . Shenoy"
+ <gautham.shenoy@amd.com>,
+ Shubhang Kaushik OS <shubhang@os.amperecomputing.com>,
+ vanshikonda@os.amperecomputing.com
+References: <20260809062549.1415955-1-christian.loehle@arm.com>
+ <15234e9c-b9a5-434d-836f-e2e2ebc036c9@arm.com>
+Content-Language: en-US
+From: Sumit Gupta <sumitg@nvidia.com>
+In-Reply-To: <15234e9c-b9a5-434d-836f-e2e2ebc036c9@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: PNYPR01CA0079.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:2b4::12) To DM4PR12MB5246.namprd12.prod.outlook.com
+ (2603:10b6:5:399::17)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpuidle: Deny idle entry when CPU already have IPI
- interrupt pending
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Christian Loehle <christian.loehle@arm.com>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-References: <20260403-cpuidle_ipi-v2-1-b3e44b032e2c@oss.qualcomm.com>
- <CAJZ5v0jXwtBz3z4h3ehJTuaqYN4z7=wOv_LGnjQ4LQMP0TBKmA@mail.gmail.com>
- <5cfd774e-8797-4765-a36a-c3dc2d6ac004@oss.qualcomm.com>
- <bc9c2236-6411-4ff1-a03c-d97997b5f780@arm.com>
- <8b728c1a-f783-4660-8ed0-eb131875f2d2@oss.qualcomm.com>
- <6d5dfbaa-f0e0-425e-bacf-f177185d1eff@oss.qualcomm.com>
- <CAJZ5v0hhgGyKFb3ZWFAYyfqmyp7csWAGB7Dus4ZbohzEHQT4-Q@mail.gmail.com>
-Content-Language: en-US
-From: "Maulik Shah (mkshah)" <maulik.shah@oss.qualcomm.com>
-In-Reply-To: <CAJZ5v0hhgGyKFb3ZWFAYyfqmyp7csWAGB7Dus4ZbohzEHQT4-Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: 9sCN8AJb26ZbpKqyzvC_KewHQhGQc1Xd
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI1MDA1NCBTYWx0ZWRfXwNDMh9AmvsOB
- vaNUugKjUTXOpGRaZX87jh23v9jrOIGCmgPF747JI1hiPxoYbWtfRs+Vx08JNbLnYLRh4u4Bg9L
- O3x6+Ye2RyAlMyTcPO6NZxx/CIQbYYQ=
-X-Authority-Analysis: v=2.4 cv=CbQ4Irrl c=1 sm=1 tr=0 ts=6a8d3832 cx=c_pps
- a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=EUspDBNiAAAA:8 a=RoGA23PZG_bSAmPShQoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=_Vgx9l1VpLgwpw_dHYaR:22
-X-Proofpoint-GUID: 9sCN8AJb26ZbpKqyzvC_KewHQhGQc1Xd
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI1MDA1NCBTYWx0ZWRfX92CYUxTmUJO+
- fBhQ5sRNNOmOYYP3TUD1jmCkex+hsG9XZzEdHV4w9Wn+kwZcJ8Xm4tfzkUIIwE5cTfW4SBBXt2X
- uoknZ9jLFVh7ipMLqW/dhnGJLljh79pNpil3S/kL9m+VQ1t5El+FPFwt59OM3STl033hNZkU6dn
- SePbJhmYwoQlIE7DKnjoJ1ZIKX9YNbvVu6Cj872qNtP1Vm9cMXbMH0lKhj4lthW0w4W5Bmn/zrU
- HgGElpCtefsMeTHVaIybz8H8NBxXUpmPzwkuj4Z7mS7FCgzxllNCLtV0zqo0eToZeHt7kDRG2Wa
- w36mHkWvUJoyrrBiX4RQZ9GwyuDCcUpE4CrkPgeqH4ZjEFwm3X3X/j7Iv76WA6Yf3qYuDOcOebA
- AEMAucMLo32/MhA1tqdas88o28sMJs7x/Gh7ctd/2OpVEkoQdFoyWMtJay4aSeDWuxeG2DH7IZr
- t8bWbZqKWQ82nSI+yOQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-25_01,2026-08-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0 suspectscore=0
- impostorscore=0 malwarescore=0 spamscore=0 clxscore=1015 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608250054
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR12MB5246:EE_|CH3PR12MB9123:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1208f084-6670-486f-bc21-08df027650fc
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|23010399003|1800799024|366016|6133799003|3023799007|56012099006|10067099003|5023799004|11063799006|4143699003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	Iq0mYuB9S04ReB4UVaNosOwmiEw1hBncI0jMZC74GsWzochoVKb/pBZGR/mjldMH+BZ3MF+vVZrPlWJfhm0+9pLd1V1CwBBCICji4CNWB5rUK3FuJm8ceJ/NkOo0eEPv8/QmRbxCHXMoGJfUjV6lwApNyDsoLMJuDvyJLeWJ+k6q6vLYk/bPyW7kqGonNf2d7ha5vtcwznuqxqOFcNJwy/KrDLzL7BIgNjHJt7nzGnGTDvRaRZ+JeJ0I032COS1OAYhzewxirPFgl67zguDMplPIiRO8kqH/2EpqjKK/tZUSG/2GYCvjoQluKAQEq/Yj1kH/Gzt05e4IkKtLAf5a7nVAcoKSkEqld6V+A+bO/x+Rr38KsRYeQ74JjYOUWMfy6PGHVET+8cEgaev1szzs2RTHNqN8OgWXJ0VQ5o00WaqB38qtOK6PtZgqKeokw7W9sSLf5L28UKXOFHg45ASbwGBjUAN/qxYa4SHu6DheXzCdrPTxL5EuNnfzRNBxVnqCL1uLXrAx1Zukr+050axViufqWNqIPVwGSkoslItbPUa8fxKrGUB90Bc+cicEujDnVP8lPgQr4OqF661uVtKMGLVRJQUZnUFWeA7PNWeQC1eXzwCVhFfYTJFcGvihtM+AwPG+PJQyNQLccHxhYuuJLVEy26w5LSFZd8gm3p49DO0=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB5246.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(1800799024)(366016)(6133799003)(3023799007)(56012099006)(10067099003)(5023799004)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?UU1jQnhPQVN4cTByMEZ6ZkZqdXhja29EK0lrU0FjMTNFTmMyTzdGZnIyUGFL?=
+ =?utf-8?B?ZHI0Tzk5eitIYWw5Slh5Wlo2eE1aZVNYV0lHME9zOVE5c0hQelpONXNEeC9X?=
+ =?utf-8?B?cUJIRGxaMEZ3NkJhVVhBNTdLMDRMQ3FFSjBidTIreVRsSDErNXdqY1FMK0Vw?=
+ =?utf-8?B?SmFBTU5RQ0YwcURCNXZGZzhNQXpHYXNHclpWbzJ3NGdrQTBMbXRuUDhLeitQ?=
+ =?utf-8?B?ZktMOXZjdTFLUk11UWZwZGdTa1NDY3cvVWZuYk5TUnhNRm1VT0NDSkxJN0ZN?=
+ =?utf-8?B?cXdZdXowTEEwTHNmWnVYWGRrQ3pRb28zNkVhUm1VZThrQlliS0FxRUVJdml0?=
+ =?utf-8?B?WDdzSmQ1UjZrcy93QlVoYUZyNVR5TXBjdDRaZ0hCSEVwRE1YdEdISWlIV0N3?=
+ =?utf-8?B?V0ZCVzBUeHdNMFhTa0FWL0NrMzVNbTBlZnpxTDRPS24xTVJrN1RWelR5eG5H?=
+ =?utf-8?B?ajJCT3NXNXQvYmI3M1d0QTB6VFdvdDFvOWI4MFh4N2FsQUJVS1B6UThZeHRH?=
+ =?utf-8?B?WE13VysrRG9hdTE2b0ZVbDVZL3J1QjY0aHJDN0YyZEtJS2tGMXBLVjh0NnZE?=
+ =?utf-8?B?MEJ5dmw1cjA1TWNzaTg2UGZ6NVI4YlAvSXZpczI5NnpTZ0xRQXIvRTI2R1hJ?=
+ =?utf-8?B?UEVrbWZ0VHV6OG9OR0xlL0wrOE9CTUhnZ2liRExSRy90dnRBOVo0Ty90YXFx?=
+ =?utf-8?B?eVU0dCs4OEExdEREazBQUmdSS0hzSE85ZGIxTmI5cE92WFM5Z29SOUVVTCtv?=
+ =?utf-8?B?U1JTOC9KSFBrUGVoUnI1N0ExTVRidnZKRHNQcHJoN0ZQWEJrcllFdW9ZbHNE?=
+ =?utf-8?B?a3JqRTY3aG43bHc2ZWJaVGE5SWgrK2xVdDB1aytyaW43ZXFWQ0lvMnk3NElQ?=
+ =?utf-8?B?SEIvanR5VFhubW5yWStiVE1FU0h6YmJxZloxUERmN0RlbzZWNW9KblhEdjdo?=
+ =?utf-8?B?Tk1DMlJNWkJ0SnRTSHlNQ1oyNXZMaHlYNndYVkRWY0hUeThNeElPbTRjVk9J?=
+ =?utf-8?B?SWZPUjRTWVA3MHVPVGlxbHB0NVM3UEJhSmFpYTc5UFM1a3VnbDZxMTdIWFVQ?=
+ =?utf-8?B?N0NWZGtIem4yN2twWmJqLzVsV2JKNitiVFFYYUpIZmJhOUJLUStjREhQbDZO?=
+ =?utf-8?B?OTdmVEhoSG4xTW01MXRFZDFjb1REZ3ROejl0MXM0eVM3QlR5eU85anpSMmx3?=
+ =?utf-8?B?MEZoa0QrT3R1YmJRbUdqYWNQeXZEdkVFbkh3U2NTeWlTRU5MYkNUejFGdUhK?=
+ =?utf-8?B?WnZXZzVoc2hrVWRLNE94UENaWCtGb0FKODhGUVFVQTBlUmZ5WWJTSGV0bTFm?=
+ =?utf-8?B?WlYwQzVpdzVUdnJCT0tSRE14YnpCeEN2SzBnUmFwNEdaV0gyc2NsSkdCZERa?=
+ =?utf-8?B?NytxaW54OXFRQ0JNcXhFZlhNQzcyUHNaMWQxWDhJMTRUNGt3bjRDYzAyb0dr?=
+ =?utf-8?B?VzdPMERrZFNNcUhnU1JHemJzbHZ5V0duZnRibGNoZGI5d1lVNG9IQU5QSTF1?=
+ =?utf-8?B?V01QMTgyMzlWWEttU1hQUGRMRmFKMHdzQ1o5SUp5enJrbVNwVjVqR3Bad25r?=
+ =?utf-8?B?VDdqNVNCMWg4eXhKWXAzdDBkcjk0RzVUbjlEVzAxRm5nclpPMDlUSVZDODJL?=
+ =?utf-8?B?T1YvNUx4dEQwUjM4L3NsLzIrNzlRT204WXA0TGV5SUlzek81Qm9FMjFXa0xo?=
+ =?utf-8?B?SEt5NHA1NEJHU1hCKzFrODZNRndYVURTRUJGVWFWcUdYSnh5UVJZWk5TY3FM?=
+ =?utf-8?B?Z0R2S0JCcyt2ckdmdXgzV1B3WXJoajZjdXVlVmhyeHNFTFR3WEl4Y1RTcUo4?=
+ =?utf-8?B?UWdRbGplZzg1ZGdNV21VVFQvc3VsVGZvejAxdnlrTUVFTXVzZXZud3pYTkJJ?=
+ =?utf-8?B?TU51R2xrOFl2dTM4OXBEdEtYQjVrQVFra2szSjMyZStodzVLc0Zrb0t0K0sz?=
+ =?utf-8?B?T0JiMDN0OFhEMDNsaHpnbjIvQW04dmRNSG5sVFMxNXoxWWQwRW1jdmpjenBC?=
+ =?utf-8?B?SlVXa3RmampLRENob1VZSnNCRHZQRFVGMWdsSFNiOGY4YkJWS1ZGWTF5c1Zl?=
+ =?utf-8?B?ZVVwWjJWZkZZOS9oTWhLMk1ibmJMMmZmYkxyczVzYUhMNmZRU3d5b20vNTlq?=
+ =?utf-8?B?WXJJcUl6QjUvRUY5SVNSQSt1aU8yZHBYM3o0eExkYmhjd0tyenE5TW5VakdL?=
+ =?utf-8?B?RVVzRUl1Njg4MUhFenhQdkYwb2phYnlYUUNuQ1QvMXJjQ1FpcWl4eWpDSitC?=
+ =?utf-8?B?cm54TTR3bzJVaTJ3a3dFaTFTcFRyVE40dXhXNnJjYjIxamNtVCt5cE80R3Yz?=
+ =?utf-8?B?d0FKVXlWb2RoOUcyMGJ0U1RVODQ2OTZHQ2RFSGNndjVxb1JweUhLZz09?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1208f084-6670-486f-bc21-08df027650fc
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB5246.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Aug 2026 06:58:50.1379
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: PbU/uT4nQ7br+4EpIlQ/E6D6M8jZ40/patzetDJ7dIjeo9LwykQwPFWPxUpTON/EfL2PyE9JMBO5uv+d7lHV8w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB9123
+
+Hi Christian,
+
+Sorry for late reply.
 
 
-
-On 8/21/2026 6:33 PM, Rafael J. Wysocki (Intel) wrote:
-> On Fri, Aug 21, 2026 at 11:28 AM Daniel Lezcano
-> <daniel.lezcano@oss.qualcomm.com> wrote:
+On 20/08/26 15:37, Christian Loehle wrote:
+> External email: Use caution opening links or attachments
+>
+>
+> On 8/9/26 07:25, Christian Loehle wrote:
+>> First of all, sorry this got so out of hand, initially this was just
+>> trying to fix some relatively simple issues found by sashiko in an
+>> earlier (unrelated) series.
+>> But with me touching more and more code and going through rounds of AI
+>> review that kept finding more and more pre-existing issues I've arrived
+>> at this.
 >>
+>> This series fixes correctness and robustness issues found while reviewing
+>> the CPPC control path. They affect malformed _CPC handling, error
+>> propagation, PCC ownership and cleanup, CPC object lifetime, register field
+>> access, cross-processor aliases, and Performance Limited clearing.
 >>
->> Le 21/08/2026 à 07:03, Maulik Shah (mkshah) a écrit :
+>> Series structure
+>> ================
 >>
->> [ ... ]
->>>> What do we do about the cpuidle stats in that case?
->>>> I'm thinking primiarly about last_residency_ns and rejected here.
->>>
->>> As the idle entry will not happen (call_cpuidle() is not invoked)
->>> the stats would also not required to be updated.
->> I agree, with the IPI pending it is like the idle task should have not
->> be scheduled, so the idle call is aborted.
-> 
-> Which is why I think that this should be handled directly in the idle
-> loop and not in cpuidle_enter_state().
+>> Patches 1-8 are deliberately small, independently useful fixes. They
+>> validate the _CPC encoding consumed by cppc-acpi, propagate control-write
+>> errors, serialize PCC payload updates, correct 64-bit field masks, and fix
+>> descriptor and PCC lifetime handling.
+>>
+>> Patches 9-15 are the register-layout hardening portion. Geometry validation
+>> is more substantial because safe RMW and alias handling depend on the
+>> physical access unit, not merely on a logical _CPC entry or _PSD domain.
+>> These patches normalize and validate each supported address space before
+>> building probe-only physical interval registries. Keeping this work in the
+>> same posting gives the complete safety boundary and a single base for
+>> review, while each transport and bug retains its own Fixes provenance.
+>> Feel free to treat the two parts as independent series, I didn't split it
+>> because they're all technically fixes and to get Sashiko review for the
+>> whole lot.
+>>
+>> No interval lookup is added to the scheduler hot path. Full-width
+>> SystemMemory writes remain lockless. RMW locking remains necessary only for
+>> a partial field, where we must preserve the other bits in its access
+>> unit. The existing per-descriptor raw lock continues to cover disjoint
+>> partial fields within one _CPC package; probe rejects cross-descriptor
+>> layouts that it cannot protect.
+>>
+>> Parsing and control semantics
+>> =============================
+>>
+>> The parser now validates the package header before indexing it, bounds the
+>> BYTE and DWORD Integer forms before conversion, and validates the Generic
+>> Register descriptor consumed by cppc-acpi. NumEntries may not exceed the AML
+>> package count, but additional trailing package elements are ignored because
+>> doing so is safe and preserves compatibility with padded firmware. The parser
+>> likewise tolerates trailing ResourceTemplate data instead of imposing a new
+>> EndTag compatibility requirement.
+>>
+>> Writable controls must be Buffer-encoded registers. Minimum and Maximum
+>> Performance are checked as the pair required by ACPI 6.6 Sections
+>> 8.4.6.1.2.1 and 8.4.6.1.2.2. Object presence is kept separate from the
+>> Integer-zero convention for absent optional fields, so Lowest Performance
+>> may retain the valid abstract value zero.
+>>
+>> Performance Limited is one deliberate compatibility exception. ACPI lists
+>> it as required, but permits a platform with no limiting indication to
+>> always return zero, and deployed firmware represents that case with a NULL
+>> descriptor. CPPC control does not depend on this status register, so we
+>> continue to accept that encoding. A present _CPC package which otherwise
+>> fails parsing or initialization now emits an error instead of silently
+>> preventing cpufreq registration.
+>>
+>> Compound performance and EPP updates propagate errors and perform every
+>> fallible non-PCC write before modifying the PCC payload. Updates across
+>> address spaces cannot be atomic, but a known non-PCC failure can no longer
+>> commit only the PCC portion or leave an unsent value for a later command.
+>>
+>> SystemMemory locking and support boundary
+>> =========================================
+>>
+>> A partial SystemMemory field requires RMW to preserve the rest of its
+>> access unit. Commit 60949b7b8054 ("ACPI: CPPC: Fix MASK_VAL() usage") used
+>> a per-_CPC lock and noted that a global lock would be needed if physical
+>> registers were shared between packages.
+>>
+>> ACPI does not make _PSD a physical-register ownership boundary. Rather than
+>> put a global raw lock or lookup into the scheduler path, this series makes
+>> the cheaper per-descriptor model's assumptions enforceable at probe.
+>>
+>> Supported SystemMemory layouts are:
+>>
+>>    - naturally aligned 8-, 16-, 32-, and 64-bit access units;
+>>    - lockless full-width controls;
+>>    - read-only aliases;
+>>    - exact full-width writable aliases, including 64-bit aliases on 64-bit
+>>      kernels;
+>>    - disjoint partial writers within one descriptor, serialized by its
+>>      rmw_lock; and
+>>    - a partial writer sharing an access unit with a disjoint read-only
+>>      field.
+>>
+>> Probe rejects overlapping logical fields involving a writer, another field
+>> inside a full-width writable access unit, cross-descriptor partial writers,
+>> unaligned accesses, and exact writable 64-bit aliases on 32-bit kernels.
+>> These layouts were not safely supported by the old per-descriptor lock or
+>> generic writeq(); rejecting them turns possible corruption into a visible
+>> probe failure rather than removing working support.
+>>
+>> PCC access and locking
+>> ======================
+>>
+>> The PCC protocol requires OSPM to acquire the subspace before changing its
+>> command or payload. Single-register and EPP updates now hold pcc_lock
+>> across ownership acquisition, payload staging, and command submission.
+>>
+>> ACPI 6.6's implementation example places a mandatory 32-bit Delivered
+>> Performance Counter at unaligned PCC offset 0x116. Performance controls may
+>> also use byte-multiple widths such as 24 bits. PCC therefore uses
+>> byte-oriented I/O with explicit little-endian encoding for zero-offset,
+>> byte-multiple fields from 8 through 64 bits. A short per-subspace payload
+>> lock protects concurrent aliased copies made under the shared side of
+>> pcc_lock; it does not replace the protocol ownership lock.
+>>
+>> Bit-level PCC fields require RMW and remain unsupported. An unsupported
+>> optional field is marked absent, but a present inaccessible CPPC Enable
+>> fails probe because OSPM must write it before using CPPC. Thus the
+>> ACPI-legal one-bit CPPC Enable used by the specification example is a
+>> documented kernel limitation. The old accessor could not program it
+>> correctly either, so an explicit error is safer than silently proceeding
+>> without enabling CPPC.
+>>
+>> Every retained PCC field is bounds checked against the shared-memory
+>> region. A subspace-keyed interval registry permits read-only overlap and
+>> exact same-control aliases while rejecting every other writable overlap
+>> across processors.
+>>
+>> SystemIO support boundary
+>> =========================
+>>
+>> SystemIO supports Bit Offset zero, full 8-, 16-, or 32-bit accesses ending
+>> at or below port 0xffff, including legacy Access Size zero when Bit Width
+>> supplies the size. Partial fields never worked because the driver neither
+>> shifted them nor preserved adjacent bits, so they now fail visibly instead
+>> of being misprogrammed.
+>>
+>> On kernels without CONFIG_HAS_IOPORT, SystemIO entries are rejected or
+>> disabled according to the affected control's semantics. Runtime accessors
+>> also return -EOPNOTSUPP rather than treating an I/O port as a
+>> physical-memory address. A global port interval registry rejects
+>> cross-processor writable overlap.
+>>
+>> Write-only and Performance Limited controls
+>> ===========================================
+>>
+>> Between _CPC revisions 3 and 4, Desired Performance changed from
+>> Read/Write to Write, and revision 4 added write-only OSPM Nominal
+>> Performance. ACPI 6.6 Section 4.6.3 says reads from write-only positions
+>> are undefined. Explicit reads of both controls are rejected, as are
+>> SystemMemory layouts which would implicitly read them for RMW. Full-width
+>> writes remain supported.
+>>
+>> Performance Limited is sticky, write-zero-to-clear, and requires
+>> interlocked accesses under ACPI 6.6 Section 8.4.6.1.3.2. The old separate
+>> read and write could clear a new event reported between transactions. The
+>> clear path now writes zero only to requested status bits and one to the
+>> other defined bits. Partial SystemMemory forms cannot be used because a
+>> spinlock cannot interlock an enclosing RMW with platform updates. QWord
+>> forms cannot be used on 32-bit kernels, where the MMIO accessor may be
+>> split into two 32-bit operations; naturally aligned, full-width QWords
+>> remain supported on 64-bit kernels. Since CPPC control does not depend on
+>> Performance Limited status, an unusable description disables that status
+>> register instead of rejecting the processor's otherwise usable _CPC.
+>>
+>> Lifetime and cleanup
+>> ====================
+>>
+>> CPC descriptors are released through their kobject callback, keeping their
+>> storage and mappings alive for outstanding sysfs references. Every PCC
+>> allocation, reference, and acquired channel is unwound on probe failure,
+>> and the per-CPU PCC index is initialized before every early return. PCC
+>> allocation uses a separate temporary result, so its success cannot turn a
+>> later parse failure into a successful probe return.
+>>
+>> Changes since v2
+>> ================
+>>
+>>    - Relaxed the exact NumEntries/package-count match to tolerate safe trailing
+>>      package elements while still rejecting any count that could cause an
+>>      out-of-bounds walk.
+>>    - Made patch 10 independently preserve immutable-autonomous setups whose
+>>      inaccessible Desired Performance register requires RMW, rather than
+>>      relying on patch 11 to restore that exception.
+>>
+>> Sashiko v2 review not addressed
+>> ===============================
+>>
+>>    - Kept Guaranteed Performance Buffer-only. The suggestion was to accept a
+>>      nonzero Integer, but ACPI 6.6 Table 8.23 permits only a Buffer for this
+>>      entry.
+>>
+>> Deferred follow-up work
+>> =======================
+>>
+>> Sashiko also identified a broader pre-existing lifetime question which this
+>> series does not attempt to solve. In-kernel accessors read the per-CPU
+>> cpc_desc_ptr without acquiring a reference, while processor teardown can
+>> unpublish and eventually release the descriptor and its PCC data. The kobject
+>> change here fixes the concrete sysfs lifetime bug, but a NULL pcc_data check
+>> would not protect a caller which already holds a stale pointer. Closing this
+>> properly requires defining the kernel accessor lifetime contract and then
+>> using CPU-hotplug serialization / safe referencing across all callers,
+>> therefore will be handled by a follow-up.
+>>
+>> ACPI-legal bit-level PCC and SystemIO fields also remain unsupported. In
+>> particular, the ACPI example's one-bit PCC CPPC Enable register cannot be
+>> implemented by the old whole-value accessors. Supporting these descriptions
+>> requires transport-specific field extraction and an RMW operation which obeys
+>> PCC ownership or safely preserves adjacent SystemIO bits, just accepting the
+>> descriptors would silently program the wrong value. Therefore continue to
+>> disable optional inaccessible fields where safe and reject a present
+>> inaccessible CPPC Enable control.
+>> Full support, if even needed, belongs in a separate follow-up.
+>>
+>> The review additionally suggested validating the complete AML
+>> ResourceTemplate, including its EndTag. We currently validate the Register
+>> descriptor we consume and tolerate trailing firmware data. I don't really
+>> see the point of ever doing this, but definitely not in this series,
+>> where I'm trying to guarantee that no reasonably working platform is
+>> regressing.
+>>
+>> Patches 1, 2, 4-7, and 9 address findings reported by Sashiko while
+>> reviewing:
+>>
+>>    https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+>>
+>> Patches 3, 5, 6, 9, 10, and 15 address findings from the follow-up review:
+>>
+>>    https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
+>>
+>> Patches 1 and 10 address findings from the v2 review:
+>>
+>>    https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
+>>
+>> The series is based on Rafael's bleeding-edge
+>> 77acf59d7cf1 ("Merge branch 'acpi-cppc' into bleeding-edge")
+>> the base-commit specified below is linux-next for Sashiko review.
+>> It applies cleanly on either.
+>>
+>> Christian Loehle (15):
+>>    ACPI: CPPC: Validate the _CPC package header
+>>    ACPI: CPPC: Validate _CPC entry and control semantics
+>>    ACPI: CPPC: Propagate performance-control write errors
+>>    ACPI: CPPC: Use 64-bit masks for register fields
+>>    ACPI: CPPC: Serialize PCC single-register payload updates
+>>    ACPI: CPPC: Serialize PCC EPP payload updates
+>>    ACPI: CPPC: Release CPC descriptors through kobject
+>>    ACPI: CPPC: Release PCC data after probe failures
+>>    ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
+>>    ACPI: CPPC: Reject reads and RMW of write-only controls
+>>    ACPI: CPPC: Validate and access PCC register layouts
+>>    ACPI: CPPC: Validate SystemIO register layouts
+>>    ACPI: CPPC: Validate PCC overlaps across processors
+>>    ACPI: CPPC: Validate SystemIO overlaps across processors
+>>    ACPI: CPPC: Clear Performance Limited without a stale read
+>>
+>>   drivers/acpi/cppc_acpi.c | 1298 ++++++++++++++++++++++++++++++++------
+>>   include/acpi/cppc_acpi.h |    7 +-
+>>   2 files changed, 1116 insertions(+), 189 deletions(-)
+>>
+>> base-commit: ea2bff00da89d7767d677bb68470130ba96f4928
+> Gentle ping on this in particular to the CCs not involved in the merge window.
+> Even just a Tested-by: that the new CPC validation didn't break your platform would
+> be appreciated!
 
-The IPI is raised to the idle CPU which is still running cpuidle_select()
-but an idle entry with call_cpuidle() is not yet made.
+Tested the series on linux-next-20260824.
 
-with some additional traces added in menu governor, this is captured on LeMans SoC (8 CPUs) running GLMark2,
+With firmware reporting _CPC revision 3, every CPU logs:
+   ACPI CPPC: CPU0: Performance Limited register cannot use an 
+interlocked SystemMemory access
+   ACPI CPPC: CPU0: ignoring inaccessible Performance Limited register
 
-     in:imuxsock-1348    [007] d..2.   791.122080: sched_switch: prev_comm=in:imuxsock prev_pid=1348 prev_prio=120 prev_state=S ==> next_comm=swapper/7 next_pid=0 next_prio=120
+cppc_cpufreq still probes and frequency scaling works, though
+perf_limited interface reads 0 rather than reporting the
+register as unsupported.
 
-At this point CPU7 is idle, checking the 8 past samples logged in get_typical_interval(),
-at menu governor's menu_select().
+With revision 4, every CPU logs:
+   ACPI CPPC: CPU0: _CPC v4 Desired Performance register requires 
+unsupported read-modify-write
+   ACPI CPPC: CPU0: Performance Limited register cannot use an 
+interlocked SystemMemory access
+   ACPI CPPC: CPU0: _CPC v4 OSPM Nominal Performance register requires 
+unsupported read-modify-write
+   ACPI CPPC: CPU0: cannot access _CPC register 5
+   ACPI CPPC: CPU0: failed to initialize _CPC: -22
 
-          <idle>-0       [007] d..1.   791.122084: cpu_idle_history: samples 0=944 1=26010 2=6821 3=5033 4=664 5=1958 6=15226 7=4977
- systemd-journal-373     [006] d..3.   791.122085: sched_waking: comm=in:imuxsock pid=1348 prio=120 target_cpu=007
-          <idle>-0       [007] d..1.   791.122086: cpu_idle_predict_params: max_thresh=4294967295 min_thresh=-1 max=26010 min=664 divisor=8 avg=7704 avg_sq=59351616 variance=66916462
-          <idle>-0       [007] d..1.   791.122087: cpu_idle_history: samples 0=944 1=26010 2=6821 3=5033 4=664 5=1958 6=15226 7=4977
-
-CPU6 sends IPI to CPU7 at below point, CPU7 is still in the get_typical_interval() loop.
-
- systemd-journal-373     [006] d..3.   791.122087: ipi_send_cpu: cpu=7 callsite=ttwu_queue_wakelist+0x118/0x1c0 callback=generic_smp_call_function_single_interrupt+0x0/0x30
-          <idle>-0       [007] d..1.   791.122087: cpu_idle_predict_params: max_thresh=26010 min_thresh=-1 max=15226 min=664 divisor=7 avg=5089 avg_sq=25897921 variance=21762726
- systemd-journal-373     [006] d..3.   791.122087: ipi_raise: target_mask=00000000,00000080 (Function call interrupts)
-          <idle>-0       [007] d..1.   791.122088: cpu_idle_history: samples 0=944 1=26010 2=6821 3=5033 4=664 5=1958 6=15226 7=4977
-          <idle>-0       [007] d..1.   791.122088: cpu_idle_predict_params: max_thresh=15226 min_thresh=-1 max=6821 min=664 divisor=6 avg=3399 avg_sq=11553201 variance=5412374
-          <idle>-0       [007] d..1.   791.122091: cpu_idle_sleep_lengths: predicted_ns=4294967295000 next_timer_ns=42336718 timer_us=11215 latency_req=2000000000000
-
-CPU7 would have gone to state=2 (which involves PSCI CPU_SUSPEND SMC call to firmware)
-
-          <idle>-0       [007] d..1.   791.122101: cpu_idle_ipi_pending: IPI pending = 1
-
-With current change, the CPU7 will roll-back to running state.
+Here _CPC initialization fails on every CPU, so cppc_cpufreq does not
+register.
 
 Thanks,
-Maulik
+Sumit
 
-> 
-> In that case, cpuidle should not be involved at all (if it is
-> sufficiently important for special-casing which I'm still not
-> convinced about).
+
