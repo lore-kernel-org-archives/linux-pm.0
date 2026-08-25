@@ -1,33 +1,87 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id DE0903DE427;
-	Tue, 25 Aug 2026 08:25:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D0AA3E1686
+	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 08:28:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787646352; cv=none; b=VbJGLgHLl6u+Z+SlIDlxViafnfcGBCVxBRkjT0OUpofvzs3D8k4t28siuKDc3gvGqTx+0SSa/4ICSxcXXW+oRJzKlUkcGbu7JdqwFBSIXzxQtHfYZR2cCX+9syQrTI5UJI6K5dViDUfJHMOpu5NZv7mrpAWTSqdkUFTZ4iikT0I=
+	t=1787646527; cv=none; b=MpyHtWdsZ4NUlwpVE/6wLc97LBDWKlO0H7W5BeQpgHBkDi/I4bwEY8oBr5eyUcKhk4QqwGifr0CkoX9ogQy8sgIOxg3X8UtYX9Yf0Xr9aok4xXq8kSTCLTayf8WQ0bJJAQGWNHTub1TRdNFjZ0UAvlZIkZgAkYE+VvpQMQiMDzQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787646352; c=relaxed/simple;
-	bh=XDZG1Ro0kSFZHPf7K0Uq8fenD4RDxP02jKZKD6zsMd4=;
+	s=arc-20240116; t=1787646527; c=relaxed/simple;
+	bh=M6+Z/n2sPEdxSkumdm4fpxZDeQlqm0ww7+RLX0T8tDo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TyCufbEUlJ+Gn9ICOc2tlJjwpNpQbw1TdCiYiiIfKyGQGV30AhBW8OtB7btabxJVky0HcfU0l7l8cydjtW7Jd27vi1LkdJ8hQDEvOh4XWGhSkrUzetSypXmRh3mGE3a9RM2PFpGLYjhgT6Ah9ijmZkYDnvA0l0+5/TPCmjoMT9s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Mlq28UFC; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=rSdQNEOboFukwhCo6jw+v7iRbeC/N7B+/0/nyc4l+qG0+vPd8GKmn2Hcx1jtrd3jiRBb4e70M5sAO945Hyt6+FQn/RkjrefRsW7g+bRIVb+Prr9isxFugEC632oUZ9hXUiIgEGyD8U0nHxw3WrOOHepsYepT1Rc5GT/pq/GC6N8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hb9oUO/W; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=TBXtRCwp; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Mlq28UFC"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BC6E21BF7;
-	Tue, 25 Aug 2026 01:25:43 -0700 (PDT)
-Received: from [10.57.6.192] (unknown [10.57.6.192])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 60CF53F7D8;
-	Tue, 25 Aug 2026 01:25:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1787646347; bh=XDZG1Ro0kSFZHPf7K0Uq8fenD4RDxP02jKZKD6zsMd4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Mlq28UFChfVN6NT5rp6fppKyxfdFoItSaosY4UQgUM7dkqbKwfXa0UDw8Q5sv03Rr
-	 /bNm5/R0lJG3efGsIs4yVbF6486xQ9kPj2jvu1ofjo5hF18Xi/1l/ujRrrYqY6sAug
-	 7jUk91PB/T/x0cJGIRXgt3qQUxlUkhQavHTrF7sk=
-Message-ID: <ef37d738-4b25-4609-8bf0-6c2322ecbd02@arm.com>
-Date: Tue, 25 Aug 2026 09:25:41 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hb9oUO/W";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="TBXtRCwp"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67P88DN61934800
+	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 08:28:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	bYhkDV0y7XOpWdvVDzgGnrF9K75KOavFDUraFzDkeMs=; b=hb9oUO/W4rgIbipL
+	mGFectRAfdZBqpJCcwpB1ofAMp8oW3JaDF/3oGnhjjRjyg2iyuqKO8sZObFeUYzW
+	7XE0gnADDbK3HC628p4fbs6euvMI8a5pHQLTHFRdEUTtzDrjSyMl8nZt+7N17gNE
+	a6Ag6K4qIJCWKEDkW55cbGE9Bb5mQN0xLyYxDpbZ3+xtMAicAQYhWwoBzYbBAnYd
+	oJwJtB4UzeKUTFlm5AVzFHjTPEw4F5dMM/OUaIegUF5KBLFbnNTX6uozastRZTGS
+	gnZWV3jfiwK+AQ9Q7JIXqTIyUAS/+mlc7135RIl7S8IhUUXRL+FzM+CQev6emWL5
+	r1a6XQ==
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g92jqs5ye-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 08:28:44 +0000 (GMT)
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-51c07313be5so10608021cf.2
+        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2026 01:28:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1787646524; x=1788251324; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=bYhkDV0y7XOpWdvVDzgGnrF9K75KOavFDUraFzDkeMs=;
+        b=TBXtRCwpxmXRRev1Olbv/b/EPCsWPpbXDp82LD2cKU6aQD0fqrI2EsJ/dCLYiOu0am
+         Ly+mxDvjYbEYJQzHhrVYwc2pr4wRi94Der/PHL1DahPMHN2BYKk9hft+FN/vapI88avV
+         iYktJ5PT7XLqWQ5Ce1nVqjk+33mkwhDUx0rUJdyw1fZAEpJ6aZvsWKJrN9mhfRra3cvL
+         NLZKN6FuSig3cPw3f0rpldS18vyoXpxOBXUV4Mvav0hIjHsxaUWoeSQe9pIUBrzPRJgU
+         XuhVvRJBzVAGbTxoBB8ub9Q0SH7pNOdggjfYISndd0s4h4ZknlVkiDaVG95pUE1NPxEV
+         4vcw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787646524; x=1788251324;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=bYhkDV0y7XOpWdvVDzgGnrF9K75KOavFDUraFzDkeMs=;
+        b=ly2nczTDBPdTsdvhyzOsiqs8iu7XYcP9JgOdpGzXRnyvhfggLZjAJtLxf8KXEjCFgi
+         HyQ91vm5G0WcVKpPhqlTkHBHduvQpuA8h7Z2Cn9m3+AoBD5dbRnAXvVR5AZVqSClvX1Q
+         CQRxLLqRpbfroJokDJ6otduju8geEnWHYJL6Yg1eZcjtYaDnRy6KuSfZEmy2astJKAms
+         XsZaBWFhEcZTpz8SOCGcZjpWmm/h213OypyrpeUmnW65kpDyO2kcG4Ezw1BYJEOri3Jj
+         oxIcS0cxcBSPNt/Glik2i2dprV7dblFOkQwbjaDK0WFFvOIneVSIJclxHmJa2Qr/rOy/
+         KqPA==
+X-Forwarded-Encrypted: i=1; AHgh+RrPwPSSDYf+8wr7zefReeTJjuoasH4a+Kg9DmyIlRJAZCWcFZ2SjyzWAmbfLKnXwRS/VXuYqX6FpA==@vger.kernel.org
+X-Gm-Message-State: AFuF++m18OYlRBKtojCTHM0Ht2OK1d4BXzmik2MYx9xTXs5G8wsnXeD9
+	MzF6nXt70ZtzgRh3OuXRE4MR5XoTeTWvEbSz9WSJgkkjNTfB1n8MRoeOprWhpHATKm2qN0oel5O
+	DJPavsoRV0ryLFZImX8g/jDm5bSpdTm4hObwt0IOGX9BDqlptQH76UodVYOrxwA==
+X-Gm-Gg: AR+sD12vhS68WtK7upiS5S0TxSzgAdw0//f3oVqINXietuZOT82xlg5hOUWgRkDE1FC
+	4Sxjh6jXSWfW/tWVlAJjBgYUImlGS64SOxCnFHqWgnSs/8/4mSouDsCssZc2K27XmdIlNBYzoaP
+	WJzL0ucQJIxL2K/J+5gC8Tei8UzzqIShzLP7Lt+obyF2g7HrqiDEVc+B7+MHXhMUPINEx+pgZ+K
+	yk+XFGuxuTpcbyIJmIpmUY5asqXt0au3NoG+BQAHZsv9Ux8htPWCK7NxHh3FsTqlyOzG8N8+iV+
+	5QymKm76xQe7j08c00S6ivZ2TJeSnqQDZs2/O/5MNiJcEU+rsZJ/KdVrwfAnw1MuTsOevV3NedW
+	qw4F0twLIpARvXNBzl5qI3wEn
+X-Received: by 2002:ac8:5f50:0:b0:51b:f40b:2faf with SMTP id d75a77b69052e-52df5a35311mr225835471cf.4.1787646523837;
+        Tue, 25 Aug 2026 01:28:43 -0700 (PDT)
+X-Received: by 2002:ac8:5f50:0:b0:51b:f40b:2faf with SMTP id d75a77b69052e-52df5a35311mr225835341cf.4.1787646523448;
+        Tue, 25 Aug 2026 01:28:43 -0700 (PDT)
+Received: from [192.168.120.193] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c249629a901sm1820302366b.25.2026.08.25.01.28.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Aug 2026 01:28:42 -0700 (PDT)
+Message-ID: <8d8f7742-fd4a-4605-a9b1-153ace9e14a4@oss.qualcomm.com>
+Date: Tue, 25 Aug 2026 10:28:41 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,351 +89,91 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 00/15] ACPI: CPPC: Fix register access and lifetime
- bugs
-To: Sumit Gupta <sumitg@nvidia.com>, "Rafael J . Wysocki"
- <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
- Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
- Pierre Gondois <pierre.gondois@arm.com>, Sudeep Holla
- <sudeep.holla@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
- zhongqiu.han@oss.qualcomm.com, K Prateek Nayak <kprateek.nayak@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- jarredwhite@linux.microsoft.com, "Gautham R . Shenoy"
- <gautham.shenoy@amd.com>,
- Shubhang Kaushik OS <shubhang@os.amperecomputing.com>,
- vanshikonda@os.amperecomputing.com
-References: <20260809062549.1415955-1-christian.loehle@arm.com>
- <15234e9c-b9a5-434d-836f-e2e2ebc036c9@arm.com>
- <3a23d54c-5ce6-4225-82d3-453e7133fdf1@nvidia.com>
+Subject: Re: [PATCH 4/7] serial: qcom-geni: Use geni_se_set_rate() for source
+ clock configuration
+To: Praveen Talari <praveen.talari@oss.qualcomm.com>,
+        Sudeep Holla <sudeep.holla@kernel.org>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>, Mark Brown <broonie@kernel.org>,
+        Viken Dadhaniya <viken.dadhaniya@oss.qualcomm.com>,
+        Andi Shyti <andi.shyti@kernel.org>
+Cc: mukesh.savaliya@oss.qualcomm.com, chandana.chiluveru@oss.qualcomm.com,
+        arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-i2c@vger.kernel.org
+References: <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-0-61171ab1cdce@oss.qualcomm.com>
+ <20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-v1-4-61171ab1cdce@oss.qualcomm.com>
+ <4e0d636a-7975-4711-8070-6f71957b754e@oss.qualcomm.com>
+ <17735f83-fd07-4fad-97a3-727cfbeabbcb@oss.qualcomm.com>
 Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <3a23d54c-5ce6-4225-82d3-453e7133fdf1@nvidia.com>
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <17735f83-fd07-4fad-97a3-727cfbeabbcb@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: -Gl-9crUBhrRPafWond2sXANXU5FPzxI
+X-Proofpoint-ORIG-GUID: -Gl-9crUBhrRPafWond2sXANXU5FPzxI
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI1MDA3MSBTYWx0ZWRfX1e00V60DITcB
+ pDVx/RsX5/5P1iJTnfu/ZWRfEeMZeCXvBTQTjYnrLlGMp2yGTezmmb4ORpzB2uHncjghVnCHXRA
+ tUboLPIVTDUkQ+O9sfX6FUMxnkPnYU5ofxJrySZlrx+7c5BWlTMBpe5tptw8KAg4awuz7ks0X7c
+ qqoSx2sqwZ50z6YK8n+F6zXLGzMqZKGZxRDFoqij0gDAK4MYkw1fpFNsM5ARD8Bxyxj9eJxZHZU
+ UqklW+0XwFAaYeFUsoOPOQheA1VMX/ve1ZPg68rI+79v3KHO97n1LcAUK2ET0fqz3rNBY9TzftS
+ gIFqDpLkQXSiYcVMJPDxv63eOv2QMKxd83fT4muaTDJUffn8IK/SrNoD7PtKC0t3j3Jgy0kcymq
+ JwZBQGMTEB9/UdF47Hog9kxsUOlLgmMmUXySxc9XHqtXSIw52fHYG2vSFWYESwYQ2qjXi0DewyJ
+ CytWhxepjOn7/p/BuYg==
+X-Authority-Analysis: v=2.4 cv=JJULdcKb c=1 sm=1 tr=0 ts=6a8d523c cx=c_pps
+ a=WeENfcodrlLV9YRTxbY/uA==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=CZKBZ6wm4gaK5Uy4Yf8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=kacYvNCVWA4VmyqE58fU:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI1MDA3MSBTYWx0ZWRfX3XnwRcwsjOv4
+ O6AfLOKafjobbWWBx9QdgZHbRFS2NgzKoTpcOqjs3oLG8ihT1dIdwJAmStelxOi9uNj/CLZ0EYI
+ zK2DDTXkg6xGbJYRngocL9qBiHtekio=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-25_02,2026-08-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
+ suspectscore=0 impostorscore=0 malwarescore=0 priorityscore=1501 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608250071
 
-On 8/25/26 07:58, Sumit Gupta wrote:
-> Hi Christian,
+On 8/25/26 6:00 AM, Praveen Talari wrote:
+> HI Konrad,
 > 
-> Sorry for late reply.
-> 
-> 
-> On 20/08/26 15:37, Christian Loehle wrote:
->> External email: Use caution opening links or attachments
+> On 24-08-2026 20:35, Konrad Dybcio wrote:
+>> On 8/4/26 9:57 PM, Praveen Talari wrote:
+>>> The driver calls dev_pm_opp_set_rate() directly on uport->dev to apply
+>>> the computed source clock frequency, and dispatches baud rate handling
+>>> through a per-variant dev_data->set_rate() callback that either
+>>> recalculates the clock divider (Linux clock managed path) or selects
+>>> a performance level via geni_se_set_perf_level() (SA8255P firmware
+>>> managed path).
+>> [...]
 >>
+>>> +    geni_se_set_rate(&port->se, 0);
+>> This ends up calling dev_pm_opp_set_rate(0) [i see this is an existing
+>> bug in geni_se_resources_deactivate()], which removes the power vote,
+>> but does nothing to the clock (neither set_rate nor disable_unprepare),
+>> which will crash the platform
 >>
->> On 8/9/26 07:25, Christian Loehle wrote:
->>> First of all, sorry this got so out of hand, initially this was just
->>> trying to fix some relatively simple issues found by sashiko in an
->>> earlier (unrelated) series.
->>> But with me touching more and more code and going through rounds of AI
->>> review that kept finding more and more pre-existing issues I've arrived
->>> at this.
->>>
->>> This series fixes correctness and robustness issues found while reviewing
->>> the CPPC control path. They affect malformed _CPC handling, error
->>> propagation, PCC ownership and cleanup, CPC object lifetime, register field
->>> access, cross-processor aliases, and Performance Limited clearing.
->>>
->>> Series structure
->>> ================
->>>
->>> Patches 1-8 are deliberately small, independently useful fixes. They
->>> validate the _CPC encoding consumed by cppc-acpi, propagate control-write
->>> errors, serialize PCC payload updates, correct 64-bit field masks, and fix
->>> descriptor and PCC lifetime handling.
->>>
->>> Patches 9-15 are the register-layout hardening portion. Geometry validation
->>> is more substantial because safe RMW and alias handling depend on the
->>> physical access unit, not merely on a logical _CPC entry or _PSD domain.
->>> These patches normalize and validate each supported address space before
->>> building probe-only physical interval registries. Keeping this work in the
->>> same posting gives the complete safety boundary and a single base for
->>> review, while each transport and bug retains its own Fixes provenance.
->>> Feel free to treat the two parts as independent series, I didn't split it
->>> because they're all technically fixes and to get Sashiko review for the
->>> whole lot.
->>>
->>> No interval lookup is added to the scheduler hot path. Full-width
->>> SystemMemory writes remain lockless. RMW locking remains necessary only for
->>> a partial field, where we must preserve the other bits in its access
->>> unit. The existing per-descriptor raw lock continues to cover disjoint
->>> partial fields within one _CPC package; probe rejects cross-descriptor
->>> layouts that it cannot protect.
->>>
->>> Parsing and control semantics
->>> =============================
->>>
->>> The parser now validates the package header before indexing it, bounds the
->>> BYTE and DWORD Integer forms before conversion, and validates the Generic
->>> Register descriptor consumed by cppc-acpi. NumEntries may not exceed the AML
->>> package count, but additional trailing package elements are ignored because
->>> doing so is safe and preserves compatibility with padded firmware. The parser
->>> likewise tolerates trailing ResourceTemplate data instead of imposing a new
->>> EndTag compatibility requirement.
->>>
->>> Writable controls must be Buffer-encoded registers. Minimum and Maximum
->>> Performance are checked as the pair required by ACPI 6.6 Sections
->>> 8.4.6.1.2.1 and 8.4.6.1.2.2. Object presence is kept separate from the
->>> Integer-zero convention for absent optional fields, so Lowest Performance
->>> may retain the valid abstract value zero.
->>>
->>> Performance Limited is one deliberate compatibility exception. ACPI lists
->>> it as required, but permits a platform with no limiting indication to
->>> always return zero, and deployed firmware represents that case with a NULL
->>> descriptor. CPPC control does not depend on this status register, so we
->>> continue to accept that encoding. A present _CPC package which otherwise
->>> fails parsing or initialization now emits an error instead of silently
->>> preventing cpufreq registration.
->>>
->>> Compound performance and EPP updates propagate errors and perform every
->>> fallible non-PCC write before modifying the PCC payload. Updates across
->>> address spaces cannot be atomic, but a known non-PCC failure can no longer
->>> commit only the PCC portion or leave an unsent value for a later command.
->>>
->>> SystemMemory locking and support boundary
->>> =========================================
->>>
->>> A partial SystemMemory field requires RMW to preserve the rest of its
->>> access unit. Commit 60949b7b8054 ("ACPI: CPPC: Fix MASK_VAL() usage") used
->>> a per-_CPC lock and noted that a global lock would be needed if physical
->>> registers were shared between packages.
->>>
->>> ACPI does not make _PSD a physical-register ownership boundary. Rather than
->>> put a global raw lock or lookup into the scheduler path, this series makes
->>> the cheaper per-descriptor model's assumptions enforceable at probe.
->>>
->>> Supported SystemMemory layouts are:
->>>
->>>    - naturally aligned 8-, 16-, 32-, and 64-bit access units;
->>>    - lockless full-width controls;
->>>    - read-only aliases;
->>>    - exact full-width writable aliases, including 64-bit aliases on 64-bit
->>>      kernels;
->>>    - disjoint partial writers within one descriptor, serialized by its
->>>      rmw_lock; and
->>>    - a partial writer sharing an access unit with a disjoint read-only
->>>      field.
->>>
->>> Probe rejects overlapping logical fields involving a writer, another field
->>> inside a full-width writable access unit, cross-descriptor partial writers,
->>> unaligned accesses, and exact writable 64-bit aliases on 32-bit kernels.
->>> These layouts were not safely supported by the old per-descriptor lock or
->>> generic writeq(); rejecting them turns possible corruption into a visible
->>> probe failure rather than removing working support.
->>>
->>> PCC access and locking
->>> ======================
->>>
->>> The PCC protocol requires OSPM to acquire the subspace before changing its
->>> command or payload. Single-register and EPP updates now hold pcc_lock
->>> across ownership acquisition, payload staging, and command submission.
->>>
->>> ACPI 6.6's implementation example places a mandatory 32-bit Delivered
->>> Performance Counter at unaligned PCC offset 0x116. Performance controls may
->>> also use byte-multiple widths such as 24 bits. PCC therefore uses
->>> byte-oriented I/O with explicit little-endian encoding for zero-offset,
->>> byte-multiple fields from 8 through 64 bits. A short per-subspace payload
->>> lock protects concurrent aliased copies made under the shared side of
->>> pcc_lock; it does not replace the protocol ownership lock.
->>>
->>> Bit-level PCC fields require RMW and remain unsupported. An unsupported
->>> optional field is marked absent, but a present inaccessible CPPC Enable
->>> fails probe because OSPM must write it before using CPPC. Thus the
->>> ACPI-legal one-bit CPPC Enable used by the specification example is a
->>> documented kernel limitation. The old accessor could not program it
->>> correctly either, so an explicit error is safer than silently proceeding
->>> without enabling CPPC.
->>>
->>> Every retained PCC field is bounds checked against the shared-memory
->>> region. A subspace-keyed interval registry permits read-only overlap and
->>> exact same-control aliases while rejecting every other writable overlap
->>> across processors.
->>>
->>> SystemIO support boundary
->>> =========================
->>>
->>> SystemIO supports Bit Offset zero, full 8-, 16-, or 32-bit accesses ending
->>> at or below port 0xffff, including legacy Access Size zero when Bit Width
->>> supplies the size. Partial fields never worked because the driver neither
->>> shifted them nor preserved adjacent bits, so they now fail visibly instead
->>> of being misprogrammed.
->>>
->>> On kernels without CONFIG_HAS_IOPORT, SystemIO entries are rejected or
->>> disabled according to the affected control's semantics. Runtime accessors
->>> also return -EOPNOTSUPP rather than treating an I/O port as a
->>> physical-memory address. A global port interval registry rejects
->>> cross-processor writable overlap.
->>>
->>> Write-only and Performance Limited controls
->>> ===========================================
->>>
->>> Between _CPC revisions 3 and 4, Desired Performance changed from
->>> Read/Write to Write, and revision 4 added write-only OSPM Nominal
->>> Performance. ACPI 6.6 Section 4.6.3 says reads from write-only positions
->>> are undefined. Explicit reads of both controls are rejected, as are
->>> SystemMemory layouts which would implicitly read them for RMW. Full-width
->>> writes remain supported.
->>>
->>> Performance Limited is sticky, write-zero-to-clear, and requires
->>> interlocked accesses under ACPI 6.6 Section 8.4.6.1.3.2. The old separate
->>> read and write could clear a new event reported between transactions. The
->>> clear path now writes zero only to requested status bits and one to the
->>> other defined bits. Partial SystemMemory forms cannot be used because a
->>> spinlock cannot interlock an enclosing RMW with platform updates. QWord
->>> forms cannot be used on 32-bit kernels, where the MMIO accessor may be
->>> split into two 32-bit operations; naturally aligned, full-width QWords
->>> remain supported on 64-bit kernels. Since CPPC control does not depend on
->>> Performance Limited status, an unusable description disables that status
->>> register instead of rejecting the processor's otherwise usable _CPC.
->>>
->>> Lifetime and cleanup
->>> ====================
->>>
->>> CPC descriptors are released through their kobject callback, keeping their
->>> storage and mappings alive for outstanding sysfs references. Every PCC
->>> allocation, reference, and acquired channel is unwound on probe failure,
->>> and the per-CPU PCC index is initialized before every early return. PCC
->>> allocation uses a separate temporary result, so its success cannot turn a
->>> later parse failure into a successful probe return.
->>>
->>> Changes since v2
->>> ================
->>>
->>>    - Relaxed the exact NumEntries/package-count match to tolerate safe trailing
->>>      package elements while still rejecting any count that could cause an
->>>      out-of-bounds walk.
->>>    - Made patch 10 independently preserve immutable-autonomous setups whose
->>>      inaccessible Desired Performance register requires RMW, rather than
->>>      relying on patch 11 to restore that exception.
->>>
->>> Sashiko v2 review not addressed
->>> ===============================
->>>
->>>    - Kept Guaranteed Performance Buffer-only. The suggestion was to accept a
->>>      nonzero Integer, but ACPI 6.6 Table 8.23 permits only a Buffer for this
->>>      entry.
->>>
->>> Deferred follow-up work
->>> =======================
->>>
->>> Sashiko also identified a broader pre-existing lifetime question which this
->>> series does not attempt to solve. In-kernel accessors read the per-CPU
->>> cpc_desc_ptr without acquiring a reference, while processor teardown can
->>> unpublish and eventually release the descriptor and its PCC data. The kobject
->>> change here fixes the concrete sysfs lifetime bug, but a NULL pcc_data check
->>> would not protect a caller which already holds a stale pointer. Closing this
->>> properly requires defining the kernel accessor lifetime contract and then
->>> using CPU-hotplug serialization / safe referencing across all callers,
->>> therefore will be handled by a follow-up.
->>>
->>> ACPI-legal bit-level PCC and SystemIO fields also remain unsupported. In
->>> particular, the ACPI example's one-bit PCC CPPC Enable register cannot be
->>> implemented by the old whole-value accessors. Supporting these descriptions
->>> requires transport-specific field extraction and an RMW operation which obeys
->>> PCC ownership or safely preserves adjacent SystemIO bits, just accepting the
->>> descriptors would silently program the wrong value. Therefore continue to
->>> disable optional inaccessible fields where safe and reject a present
->>> inaccessible CPPC Enable control.
->>> Full support, if even needed, belongs in a separate follow-up.
->>>
->>> The review additionally suggested validating the complete AML
->>> ResourceTemplate, including its EndTag. We currently validate the Register
->>> descriptor we consume and tolerate trailing firmware data. I don't really
->>> see the point of ever doing this, but definitely not in this series,
->>> where I'm trying to guarantee that no reasonably working platform is
->>> regressing.
->>>
->>> Patches 1, 2, 4-7, and 9 address findings reported by Sashiko while
->>> reviewing:
->>>
->>>    https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
->>>
->>> Patches 3, 5, 6, 9, 10, and 15 address findings from the follow-up review:
->>>
->>>    https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
->>>
->>> Patches 1 and 10 address findings from the v2 review:
->>>
->>>    https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
->>>
->>> The series is based on Rafael's bleeding-edge
->>> 77acf59d7cf1 ("Merge branch 'acpi-cppc' into bleeding-edge")
->>> the base-commit specified below is linux-next for Sashiko review.
->>> It applies cleanly on either.
->>>
->>> Christian Loehle (15):
->>>    ACPI: CPPC: Validate the _CPC package header
->>>    ACPI: CPPC: Validate _CPC entry and control semantics
->>>    ACPI: CPPC: Propagate performance-control write errors
->>>    ACPI: CPPC: Use 64-bit masks for register fields
->>>    ACPI: CPPC: Serialize PCC single-register payload updates
->>>    ACPI: CPPC: Serialize PCC EPP payload updates
->>>    ACPI: CPPC: Release CPC descriptors through kobject
->>>    ACPI: CPPC: Release PCC data after probe failures
->>>    ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
->>>    ACPI: CPPC: Reject reads and RMW of write-only controls
->>>    ACPI: CPPC: Validate and access PCC register layouts
->>>    ACPI: CPPC: Validate SystemIO register layouts
->>>    ACPI: CPPC: Validate PCC overlaps across processors
->>>    ACPI: CPPC: Validate SystemIO overlaps across processors
->>>    ACPI: CPPC: Clear Performance Limited without a stale read
->>>
->>>   drivers/acpi/cppc_acpi.c | 1298 ++++++++++++++++++++++++++++++++------
->>>   include/acpi/cppc_acpi.h |    7 +-
->>>   2 files changed, 1116 insertions(+), 189 deletions(-)
->>>
->>> base-commit: ea2bff00da89d7767d677bb68470130ba96f4928
->> Gentle ping on this in particular to the CCs not involved in the merge window.
->> Even just a Tested-by: that the new CPC validation didn't break your platform would
->> be appreciated!
+>> Both of these calls (new and existing) should be removed. Clocks will
+>> be disabled by geni_se_clks_off() in geni_se_resources_deactivate().
+>>
+>> Then, we should do dev_pm_set_opp(se->dev, NULL) *after* they are off
+>> to remove any trailing OPP resources (i.e. icc votes defined in the OPP
+>> table in our case)
+> So, if I understand correctly, the expected sequence is:
 > 
-> Tested the series on linux-next-20260824.
-
-Thanks for testing, can you dump the CPC descriptors for both revisions?
-
+> 1. Disable the clocks.
 > 
-> With firmware reporting _CPC revision 3, every CPU logs:
->   ACPI CPPC: CPU0: Performance Limited register cannot use an interlocked SystemMemory access
->   ACPI CPPC: CPU0: ignoring inaccessible Performance Limited register
+> 2. Remove the OPP/performance resources.
 
-Assuming the detection here this is expected.
+Yes, otherwise there is no guarantee that the clocks have sufficient
+power for a given rate
 
-> 
-> cppc_cpufreq still probes and frequency scaling works, though
-> perf_limited interface reads 0 rather than reporting the
-> register as unsupported.
-
-Ack, I'll fix the getter.
-
-> 
-> With revision 4, every CPU logs:
->   ACPI CPPC: CPU0: _CPC v4 Desired Performance register requires unsupported read-modify-write
->   ACPI CPPC: CPU0: Performance Limited register cannot use an interlocked SystemMemory access
->   ACPI CPPC: CPU0: _CPC v4 OSPM Nominal Performance register requires unsupported read-modify-write
->   ACPI CPPC: CPU0: cannot access _CPC register 5
->   ACPI CPPC: CPU0: failed to initialize _CPC: -22
-> 
-> Here _CPC initialization fails on every CPU, so cppc_cpufreq does not
-> register.
-
-It would be nice to have your CPC descriptors here, but in case the detection isn't wrong we
-have:
-Desired (5), Performance Limited (13), and OSPM Nominal (21) inaccessible
-I'm assuming this platform supports both 0 and 1 for AUTO_SEL_ENABLE.
-We can disable Performance Limited then and OSPM Nominal but Desired we do need
-(unless the kernel forces AUTO_SEL_ENABLE=1?)
-We clearly cannot do a RMW on a write-only register (CPCv4), the only solution which
-may be possible is that we write all registers that lie in Desired access all the time,
-but that really depends on what registers those are. In case these registers are
-from other policies this would equate into a global lock, which clearly isn't what
-we would want.
-Any suggestion how this platform is supposed to work here?
-
-> 
-> Thanks,
-> Sumit
-> 
-> 
-
+Konrad
