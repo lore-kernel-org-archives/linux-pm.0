@@ -1,151 +1,153 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FB984418E6
-	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 14:49:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 03595377ED9;
+	Wed, 26 Aug 2026 14:49:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787755759; cv=none; b=m08gfTbpAA4xZ/gyH3e2Cz0wvCvM7Z825YHqXwlynZTfdvny1R+kMUqy7RQJTqbS8Jpjt2Gdq00VHwtji32gqeVo6rKmlseDnw2AoLMwrL+YyNH0bEqrUhXjvQBKV7mGM54F+5uIidOh3SSkxTAxRlyVVDJzHQZQ3UVE9ac2z0k=
+	t=1787755799; cv=none; b=FI5rUUWivV+I3k4bWT08eXCzrgaF5fRWXz3bDkZSoYm2VI08ankdU01LfHjSDvWO9Xy5g1rWe7nGJ4T8jjlmkZAmI9Rj7q26ifGHba0U8jJfqxncmTl8P8IbQz4qqB04cDOgv95NUWcwX9/Cw9SInL+VFg644OFArc+gOoYbW4E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787755759; c=relaxed/simple;
-	bh=MpOTDdeT3bZaQiGndCvq/Va6CUct8aokUQORS0TMbLY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=uN1WCqAMTiFSD4feCv4wRfzliLxtnq6qdbV0zTRpbErI6PfCLbVd+gK2xCZvuMoz9NsfikygD9Za2QBoNF3GpQ2dP86RSKj83w6ZDtR8tFVYK29pGLoo2aGVvjSJexwoeIM84YKiQ/qnTziyQ1mJwSq6hUNoPSPNF1VjyhoSAuE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UIDUneYj; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787755799; c=relaxed/simple;
+	bh=Vq/2s6AdYn1Pn4WdJkXiT1GDw21jVxXMDQUY35ZN+68=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EQ92OntDQLLmTszpmsxQeWXm2F5VMMNjPUo7BKUGjF0Al0/3iPYToNzHdZWvD6hN5urNwXSvrSD5pHBhbu9OWnbYDo2CRMN6EaZqGOFBqzSRa1z9x1isbtYfRUHOqBKhD9Vx2pO/sGA2gb2PwworXGcZo43xWhq20h44+fo9cxg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=bQxfUSG4; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UIDUneYj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4313D1F00A3F
-	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 14:49:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787755758;
-	bh=rud/Q9HeSKhNKPTtAJCWQV5WiQ/mLprflA5WGwiU49E=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=UIDUneYj2xnutD2YIM6X6HmUbmPJJpE+W9eQ0yNjGrsGSY0lted3lMvY4Q5qnDlRg
-	 PldyYwb5/M8+7Gfo6BqFQJCnCBYqP+4bkcxL5odA7ujiommtGehGh+SEbAWq/TqlEv
-	 fy5jIilPzNsWYLneca20MPsTKGc2pOTeRCedTPwNOC0Ggq5SJ4DIvFM3jBr7DDaZhd
-	 SiK9rBvCf0oFAgs7GIsiTV4cKIQMoWRFxSJzhUfnFWaQhBPVt5bSr8Y1WczbcZN7AP
-	 tVD+Bw+1HZ9VI3x3+eCNXvjB/0A3iVTplj/sZWubqD5qGQb/79U1JYi1ooGHDw8acl
-	 1juYRnaNRd+dg==
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-c160420289bso137823666b.0
-        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 07:49:18 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rq9KvUfiNIoPYnngjqAjdJad55MSX8LPO3wtngEqTTTDRwedQ04iiE0zB/VAX/HgtBbiajgzZMBKg==@vger.kernel.org
-X-Gm-Message-State: AFuF++mlympzILpBJ741FTu0PIlJXYB6s+Xl9GbZ1hdF7mjFgW9MXBs6
-	xlaBgy2YVoSxHOAa8VdQK4HmpJc3jWSqrdKdyOih8XLbFhLRswdaoVRRLyfNCHmPffjppWQ0jmU
-	V5aP0hhSCFYzqse2AlIxZM8Pjm7qLH0c=
-X-Received: by 2002:a17:907:1907:b0:c20:23f8:99a5 with SMTP id
- a640c23a62f3a-c250c2e9dd9mr941189066b.15.1787755756855; Wed, 26 Aug 2026
- 07:49:16 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="bQxfUSG4"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 564F916F2;
+	Wed, 26 Aug 2026 07:49:52 -0700 (PDT)
+Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1DB583F7D8;
+	Wed, 26 Aug 2026 07:49:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1787755796; bh=Vq/2s6AdYn1Pn4WdJkXiT1GDw21jVxXMDQUY35ZN+68=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=bQxfUSG40qLrZQvqQ4BNyk7AgtOtwIRKGXqjz5mh7Z/s+HrE6uKmblAaQbH3cYp+I
+	 1/rOtb55cTCj3dpsOHazX2WvfwUFChN5GNgbzqpKUvIEt9vrkKeiei5GfP/G4Jn/BJ
+	 ziReQTj9X80Df/awG1aOuf6nxtQOn3r9nejQoaQ0=
+Message-ID: <d5f1ea9b-53b7-4db2-983a-b5be8e71a371@arm.com>
+Date: Wed, 26 Aug 2026 15:49:52 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260818123921.3600606-1-chenhuacai@loongson.cn>
- <20260818123921.3600606-4-chenhuacai@loongson.cn> <3f352680-7090-456a-ab08-2d3367641783@oss.qualcomm.com>
-In-Reply-To: <3f352680-7090-456a-ab08-2d3367641783@oss.qualcomm.com>
-From: Huacai Chen <chenhuacai@kernel.org>
-Date: Wed, 26 Aug 2026 22:49:12 +0800
-X-Gmail-Original-Message-ID: <CAAhV-H6bq7R_0YiAQwFeveZEW7xenEceixJDuZDmOKCihCTbXg@mail.gmail.com>
-X-Gm-Features: AcwNN1XxNLvNZ4RDduvU0vO2hQJFT7eFm5aoCSIOk7FzLkC_iTiaUlOcaa7vqJY
-Message-ID: <CAAhV-H6bq7R_0YiAQwFeveZEW7xenEceixJDuZDmOKCihCTbXg@mail.gmail.com>
-Subject: Re: [PATCH 3/5] cpufreq: loongson3: Replace per-package mutex with per-node
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: Huacai Chen <chenhuacai@loongson.cn>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, loongarch@lists.linux.dev, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Xuerui Wang <kernel@xen0n.name>, Jiaxun Yang <jiaxun.yang@flygoat.com>, stable@vger.kernel.org, 
-	Hongliang Wang <wanghongliang@loongson.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 15/15] ACPI: CPPC: Clear Performance Limited without a
+ stale read
+To: Sumit Gupta <sumitg@nvidia.com>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+ Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sudeep Holla
+ <sudeep.holla@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
+ zhongqiu.han@oss.qualcomm.com, Sashiko <sashiko-bot@kernel.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+References: <20260826063019.670240-1-christian.loehle@arm.com>
+ <20260826063019.670240-16-christian.loehle@arm.com>
+ <fd10b117-56c4-4a4d-be36-d083ad0fceae@nvidia.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <fd10b117-56c4-4a4d-be36-d083ad0fceae@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi, Zhongqiu,
+On 8/26/26 14:59, Sumit Gupta wrote:
+> 
+> On 26/08/26 12:00, Christian Loehle wrote:
+>> External email: Use caution opening links or attachments
+>>
+>>
+>> The Performance Limited status bits are sticky and write-zero-to-clear.
+>> ACPI 6.6 Section 8.4.6.1.3.2 also requires both entities to use interlocked
+>> accesses.
+>>
+>> cppc_set_perf_limited() currently reads the register, computes a new value,
+>> and writes it in a separate transaction. If the platform reports another
+>> excursion between those transactions, the stale write can clear that new
+>> event.
+>>
+>> Write zero to the requested bits and one to the other defined status bits
+>> directly. Keep reserved bits zero as required for hardware status registers
+>> by ACPI 6.6 Section 4.6.1. This removes the stale read window.
+>>
+>> A partial SystemMemory field would still make the generic writer perform a
+>> read-modify-write to preserve the containing access unit. The
+>> per-descriptor spinlock cannot interlock that RMW with platform updates, so
+>> reject clears of such a field. Keep the descriptor mapped and readable,
+>> because reading the containing access unit once and extracting the field
+>> does not require RMW.
+>>
+>> Also reject another writable SystemMemory field sharing Performance
+>> Limited's access unit. Its RMW could similarly replay stale status bits,
+>> and an OSPM lock cannot serialize against the platform.
+>>
+>> Also reject 64-bit SystemMemory descriptions on 32-bit kernels, where
+>> generic readq()/writeq() may be split into two 32-bit operations and cannot
+>> provide the required portable interlocked access. A naturally aligned
+>> full-width QWord remains supported on 64-bit kernels, where the
+>> architecture provides a native 64-bit MMIO accessor.
+>>
+>> Performance Limited status is not required for CPPC control. If firmware
+>> describes it using an access which Linux cannot read safely, disable that
+>> status register instead of rejecting the processor's otherwise usable _CPC
+>> package. Report reads as unsupported rather than returning a synthetic
+>> zero, and emit a single warning for each nonfatal fallback.
+>>
+>> Fixes: 13c45a26635f ("ACPI: CPPC: add APIs and sysfs interface for perf_limited")
+>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>> Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
+>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+>> ---
+> 
+> Performance Limited is readable but not clear-able on my test platform,
+> with a warning on every CPU:
+> 
+>   ACPI CPPC: CPU0: Performance Limited register cannot be cleared safely; keeping it readable
+> 
+> This occurs with both _CPC revision 3 and revision 4.
+> 
+> Could clearing remain supported?
+> cppc_set_perf_limited() now builds the W0C value without reading the
+> register first. Here the field is 2 bits at Bit Offset 0 in a 32-bit
+> access unit. If Section 4.6.1 allows bits 31:2 to be treated as
+> reserved status bits, the value could be issued as a single 32-bit write
+> with those bits zero. That avoids RMW.
 
-On Thu, Aug 20, 2026 at 7:35=E2=80=AFPM Zhongqiu Han
-<zhongqiu.han@oss.qualcomm.com> wrote:
->
-> On 8/18/2026 8:39 PM, Huacai Chen wrote:
-> > Our server productions (e.g. Loongson-3D6000/3E6000) can have multiple
-> > nodes in one package and SMC mailboxes are also per-node. So replace th=
-e
-> > per-package mutex with per-node one.
-> >
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Hongliang Wang <wanghongliang@loongson.cn>
-> > Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
-> > ---
-> >   drivers/cpufreq/loongson3_cpufreq.c | 14 +++++++-------
-> >   1 file changed, 7 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/loon=
-gson3_cpufreq.c
-> > index 630f679aa739..e3cd78a5ab18 100644
-> > --- a/drivers/cpufreq/loongson3_cpufreq.c
-> > +++ b/drivers/cpufreq/loongson3_cpufreq.c
-> > @@ -169,7 +169,7 @@ struct loongson3_freq_data {
-> >       struct cpufreq_frequency_table table[];
-> >   };
-> >
-> > -static struct mutex cpufreq_mutex[MAX_PACKAGES];
-> > +static struct mutex cpufreq_mutex[MAX_NUMNODES];
-> >   static struct cpufreq_driver loongson3_cpufreq_driver;
-> >   static DEFINE_PER_CPU(struct loongson3_freq_data *, freq_data);
-> >
-> > @@ -177,14 +177,14 @@ static inline int do_service_request(u32 id, u32 =
-info, u32 cmd, u32 val, u32 ext
-> >   {
-> >       int retries;
-> >       unsigned int cpu =3D raw_smp_processor_id();
-> > -     unsigned int package =3D cpu_data[cpu].package;
-> > +     unsigned int nid =3D cpu_to_node(cpu);
-> >       union smc_message msg, last;
-> >
-> > -     mutex_lock(&cpufreq_mutex[package]);
-> > +     mutex_lock(&cpufreq_mutex[nid]);
-> >
-> >       last.value =3D iocsr_read32(LOONGARCH_IOCSR_SMCMBX);
-> >       if (!last.complete) {
-> > -             mutex_unlock(&cpufreq_mutex[package]);
-> > +             mutex_unlock(&cpufreq_mutex[nid]);
-> >               return -EPERM;
-> >       }
-> >
-> > @@ -208,11 +208,11 @@ static inline int do_service_request(u32 id, u32 =
-info, u32 cmd, u32 val, u32 ext
-> >       }
-> >
-> >       if (!msg.complete || msg.cmd !=3D CMD_OK) {
-> > -             mutex_unlock(&cpufreq_mutex[package]);
-> > +             mutex_unlock(&cpufreq_mutex[nid]);
-> >               return -EPERM;
-> >       }
-> >
-> > -     mutex_unlock(&cpufreq_mutex[package]);
-> > +     mutex_unlock(&cpufreq_mutex[nid]);
->
-> An optimization independent of this patch: considering to use
-> guard(mutex)(xxx.lock)
-This can be improved in the future, but not suitable in the bug fix patches=
-.
+Thanks. I agree that a single DWord write would avoid the RMW need but I
+don't think we can safely infer that bits 31:2 are reserved.
 
-Huacai
+Section 5.2.3.2 defines Register Bit Width as the size of the given
+register, while Access Size only specifies the transaction size.
+With Bit Width 2, Table 8.26 designates reserved bits only within that
+described register, it does not make the remaining bits of the 32-bit
+access unit part of Performance Limited. Those bits could contain
+unrelated state which must (generally) be preserved.
 
->
-> >
-> >       return msg.val;
-> >   }
-> > @@ -337,7 +337,7 @@ static int loongson3_cpufreq_probe(struct platform_=
-device *pdev)
-> >   {
-> >       int i, ret;
-> >
-> > -     for (i =3D 0; i < MAX_PACKAGES; i++) {
-> > +     for (i =3D 0; i < MAX_NUMNODES; i++) {
-> >               ret =3D devm_mutex_init(&pdev->dev, &cpufreq_mutex[i]);
-> >               if (ret)
-> >                       return ret;
->
->
-> --
-> Thx and BRs,
-> Zhongqiu Han
+> 
+> A full-width description already writes zero to the reserved bits.
+> Is the same treatment valid for bits outside the GAS Bit Width when
+> Bit Offset is zero?
+> 
+
+The full-width case is different: Bit Width 32 makes bits 31:2 part of the
+Performance Limited register, so Table 8.26 identifies them as reserved and
+Section 4.6.1 permits writing zero.
+
+Therefore I think the generic driver must keep a 2-bit/DWord descriptor
+readable but not clearable. If this platform guarantees that bits 31:2
+have no side effects, firmware should just describe the register with
+Bit Width 32? Then the current code would clear it using one DWord write.
+
+Does that make sense? Did I miss anything?
+
+> Apart from this, cppc_cpufreq probes and basic frequency scaling work
+> on this platform.
+> 
+
+Good to hear and thanks for testing!
+(That being said, I'll drop your tags for v5 unfortunately as I have changes
+in the middle of the series :/ )
