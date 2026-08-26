@@ -1,136 +1,167 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9D4035E93B;
-	Wed, 26 Aug 2026 16:04:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A9F5400988
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 18:38:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787760285; cv=none; b=A3VUexClCjhFQFLj1J0JklPNPhcSqESqnkRGwFK0NA98h0zoFSOL4QMTNWTkFjYquIqzT3Ty1/EUjTIqAY8lHYcuEVnGqB4kLZMHZ81tXAmdGxeHQUdka8hdn67wc6eDUbGGvi0LmJmyKKkUcA8uwJmFfAaN+GfB6ChFZUX2CVQ=
+	t=1787769517; cv=none; b=FMtIsKRVobUTvuW6u6UjbLSHitMkpI6Nhv4cTojcg8x6lgJOk45l2eNgVE3U3FpRgAjWnipDv67lYvsCVQmF77EFtj0N6mZNd+8Y0Ezkg1UK91QfRy6sQbtMInuHHBn+Ly2TKS1GRSF+QWoHlJTT0k/puuz8TzRomBszllZKHvw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787760285; c=relaxed/simple;
-	bh=J3HAsU1KwO4mqDetIrd6P/XZ/1/GwfDOnfmgJD5u77Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qmtjKeYUu25SkhnSg0O3h9qfVjfOqKy8ywci0tHldXekayiWCIBmR2hgaFDd/XgepWw/STl7J20xy6qY/TAGwVZ97ncnMgDDqolXWhtr1FO/yqOwQLZkJaqWWc0XxXB9DYlbyXeomvUUx1zXfF8way7J1sc/gSKbtVbxOIqIw1g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oXIEkoWy; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787769517; c=relaxed/simple;
+	bh=a0SCaZJ7sTZ0C5PezKa77Vpx+22P/KdPFjfBQCy7FF4=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=tpZ2smnkaTaIXUmDt9QD+mTwiPiaNkdpILUzPGmpcL31FxkYNZMVAOmnKTA/V4MiuoLwplM9ENuoyjnDbbTpED3R8NfvXiX6NGRh3QVVYw7IRZPYYnOYoFFR2+v80OYv4WgXuYnDS902LrYDmZ9j4Vsu+emDkXOGtG5oOr5a6S4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C34g0FpJ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oXIEkoWy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 187B41F000E9;
-	Wed, 26 Aug 2026 16:04:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C34g0FpJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72C361F000E9
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 18:38:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787760282;
-	bh=Y8nG5Q59DmZU2W8YTNmb9FicIVaa2DhnYG0xPHeq4QM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=oXIEkoWyhVF9O0ycvD4nLcJ11qe08oUKMmfsiwjwiio2a2VH9xvNqubdjmcmWTP9Y
-	 Bht9x/Wh39srsO4PB1OUiOIMYnQJNw1rxz0UhlitqScVm4QP2xUmeqyFmxvbmD6H6M
-	 kt9kyXF+EC9RJcq8TMqglLQPNm6bdQ06SQqHx1Z9z3r8g8FxbaFGdkeBT5grkeoVpo
-	 Wjh0jIhz6u6ZhOyO3gaXtFcf/O1sDe316jbE8/QJ2LREUwww1zshVu3Tz7Y4W0Xi4Z
-	 4Ij1967veWkgHclJ/mMqCWTw7xLAV0C+J/wS/qReNpbtyGnhlW1ipRQRU3rbwe9iB3
-	 imPHWJcoQmQfw==
-Date: Wed, 26 Aug 2026 17:04:28 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Mike Leach <mike.leach@arm.com>,
-	James Clark <james.clark@linaro.org>, Leo Yan <leo.yan@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Robert Foss <rfoss@kernel.org>,
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
-	Jonas Karlman <jonas@kwiboo.se>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Michal Simek <michal.simek@amd.com>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Mirela Rabulea <mirela.rabulea@nxp.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>,
-	Xiaowei Song <songxiaowei@hisilicon.com>,
-	Binghui Wang <wangbinghui@hisilicon.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Dvorkin Dmitry <dvorkin@tibbo.com>, Wells Lu <wellslutw@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
-	=?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
-	Mark Brown <broonie@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Boris Brezillon <bbrezillon@kernel.org>, info@mocean-labs.com,
-	Olof Johansson <olof@lixom.net>,
-	Shree Ramamoorthy <s-ramamoorthy@ti.com>,
-	coresight@lists.linaro.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-	imx@lists.linux.dev, linux-media@vger.kernel.org,
-	mfd@lists.linux.dev, linux-pci@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Drop redundant white-space around values in
- <>
-Message-ID: <20260826-frequent-parchment-b8baeeafd583@spud>
-References: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
+	s=k20260515; t=1787769505;
+	bh=/gCAVniLX3E0NkJo3jXJ7s6s8n++bS//gwCeoIN1iSg=;
+	h=From:Date:Subject:To:Cc;
+	b=C34g0FpJhfr7HYFayDJN/D2I6B+u0JPET+47PNcmnAELuxBCa2n1j21FL5YDu+8u3
+	 mI/5ev1RcwD4PHWA5pXk7zKC+ZzW8VkHD1qLVv95pnCW8Ij57UaoFKv2KWN47hJosc
+	 vwjMKqYQ7JcpQFViYfDk0b8/U5RQAIE7SZJYKwWdQfBYgn680/BnJDUe+LxqiUoZp/
+	 5E46STQXUJfYVEdD8OwBE3aQ22z2Mnn/I/pwoR3MDfbNkS6W39DiKL1TXz9j028fjK
+	 Pg3fqyPIHpLPwvox6RxbFV+yn/rBUObJUt4Ig9wDGjyaOlH0A5cUTx7f/uK5JDebuK
+	 phnv2iwjgHktw==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5b011edaf7dso1414563e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 11:38:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoiTNVrhFmDWyGI9SqqlOtS/0aCspxySWUwPQ3Zrf1rmsCKs8+SXvLJMwhlSdkwxSBhSOwHbUKNzw==@vger.kernel.org
+X-Gm-Message-State: AFuF++muFFxp5WvNi8F27azXQGD7s0XzmbZ7sFMh4Tt1wjZYAHI8LjoZ
+	FDSTyOO4/Zs3TOfiMeO4SDRhyRyXF5HAkvq7OunvQuHj0Ug5MXQ+fp4oDKHP8x8gHNzK1qzRiAy
+	T3Vnft2i+lruBBs0S07gHOYx331WtAI0=
+X-Received: by 2002:a05:6512:8381:b0:5b2:e95a:491d with SMTP id
+ 2adb3069b0e04-5b4a90579bbmr2382838e87.9.1787769503853; Wed, 26 Aug 2026
+ 11:38:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="P8HG2tUakdLhQuVM"
-Content-Disposition: inline
-In-Reply-To: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 26 Aug 2026 20:37:39 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jdSjMH_kYu6GQ1-AQ2TXHji2Vd1+v5YP8_CxXM3PUa6A@mail.gmail.com>
+X-Gm-Features: AcwNN1VtrMiz0zZhCTUSAvasLFrvwBziZCTREV0w_8th_19faQzUv6stuSDgShM
+Message-ID: <CAJZ5v0jdSjMH_kYu6GQ1-AQ2TXHji2Vd1+v5YP8_CxXM3PUa6A@mail.gmail.com>
+Subject: [GIT PULL] More ACPI support updates for 7.3-rc1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
---P8HG2tUakdLhQuVM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-On Wed, Aug 26, 2026 at 12:20:45PM +0200, Krzysztof Kozlowski wrote:
-> Correct a few white-space issues around <>, which will be flagged by
-> dt-check-style.  No functional changes.
+Please pull from the tag
 
-Tool seems pretty useful!
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-7.3-rc1-2
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+with top-most commit ea10c0b334e0dca944de2b5ecf57cf7e366674f4
 
->=20
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->=20
-> ---
->=20
-> Rob, Can you take it directly?
+ Merge branches 'acpi-battery', 'acpi-button', 'acpi-soc' and 'acpi-pfrut'
 
---P8HG2tUakdLhQuVM
-Content-Type: application/pgp-signature; name=signature.asc
+on top of commit 0d508f1745b57272d4d4a3d50dc35aa2a3682238
 
------BEGIN PGP SIGNATURE-----
+ Merge tag 'acpi-7.3-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCao8OjAAKCRB4tDGHoIJi
-0tqoAP9QAMmXPklodIMJgwkYAyiHY6wJXbsca2yegWqjDpaZ8gEAzCaVWA0HkeeD
-+jnyIqHP/qOtLch52tvPYIHhTjCRRQ8=
-=3be7
------END PGP SIGNATURE-----
+to receive more ACPI support updates for 7.3-rc1.
 
---P8HG2tUakdLhQuVM--
+These update documentation to reflect recent changes in the upstream
+ACPICA project, fix issues in the core ACPI device enumeration code
+(one of which has been introduced recently), improve the primary
+"physical" device lookup for ACPI device objects in that code, and
+update ACPI device drivers:
+
+ - Update MAINTAINERS, CREDITS and ACPI subsystem documentation to
+   reflect recent changes in the upstream ACPICA project (Rafael
+   Wysocki)
+
+ - Prevent the core ACPI enumeration code from combining device
+   resources that overlap completely in order to avoid resource
+   conflicts during platform device registration because there are
+   drivers that expect such resources to be present (Rafael Wysocki)
+
+ - Defer device power initialization during ACPI-based device
+   enumeration to the point when the given device is known to be present
+   and functional and all of its dependencies have been met (Peixin Xie)
+
+ - Fix bus ID cleanup on device_add() failures during ACPI device object
+   registration (Hongyan Xu)
+
+ - Introduce a new helper function for looking up the primary "physical"
+   device for a given ACPI device object and update the core ACPI device
+   enumeration code to use that function (Rafael Wysocki)
+
+ - Protect all battery properties with a separated mutex in the ACPI
+   battery driver to prevent race conditions from occurring and avoid
+   evaluating the _BST ACPI control method multiple times in parallel
+   for the same battery device (Rong Zhang)
+
+ - Add DMI quirk for the Razer Blade Pro 17 early 2020 lid switch to the
+   ACPI button driver (Robin Everaars)
+
+ - Convert fixed clock rates in the ACPI driver for AMD SoCs (APD) to
+   use HZ_PER_MHZ and add a clock frequency for the HJMC01 I2C
+   controller to it (Hongnan Li and Xiangyang Yu)
+
+ - Fix a stack buffer overflow in query_capability() in the ACPI
+   platform firmware runtime update driver (Anirudh Prasad)
+
+This material had a merge conflict against the driver core tree in
+linux-next as per
+
+https://lore.kernel.org/lkml/aoMvR5MHCsykmdEO@sirena.org.uk/
+
+Thanks!
+
+
+---------------
+
+Anirudh Prasad (1):
+      ACPI: pfr_update: fix stack buffer overflow in query_capability()
+
+Hongnan Li (1):
+      ACPI: APD: Convert fixed clock rates to use HZ_PER_MHZ
+
+Hongyan Xu (1):
+      ACPI: scan: fix bus ID cleanup on device_add() failures
+
+Peixin Xie (1):
+      ACPI: scan: Defer device power initialization
+
+Rafael J. Wysocki (7):
+      ACPI: bus: Introduce acpi_bus_get_primary_device()
+      ACPI: platform: Use acpi_bus_get_primary_device()
+      ACPI: scan: Use acpi_bus_get_primary_device()
+      ACPI: Add Bob Moore to CREDITS
+      ACPI: Update MAINTAINERS entry for ACPICA
+      ACPI: Update upstream ACPICA repository URL in documentation
+      ACPI: scan: Do not combine resources that overlap completely
+
+Robin Everaars (1):
+      ACPI: button: Add DMI quirk for Razer Blade Pro 17 early 2020 lid switch
+
+Rong Zhang (1):
+      ACPI: battery: Protect all properties with a separated mutex
+
+Xiangyang Yu (1):
+      ACPI: APD: Add clock frequency for HJMC01 I2C controller
+
+---------------
+
+ CREDITS                                            |   4 +
+ Documentation/driver-api/acpi/linuxized-acpica.rst |  10 +-
+ MAINTAINERS                                        |   6 +-
+ drivers/acpi/acpi_apd.c                            |  35 +++--
+ drivers/acpi/acpi_platform.c                       |  24 ++--
+ drivers/acpi/battery.c                             | 147 ++++++++++++++-------
+ drivers/acpi/bus.c                                 |  54 +++++---
+ drivers/acpi/button.c                              |  11 ++
+ drivers/acpi/pfr_update.c                          |  45 ++++---
+ drivers/acpi/power.c                               |   1 +
+ drivers/acpi/scan.c                                |  37 +++---
+ include/acpi/acpi_bus.h                            |   6 +
+ 12 files changed, 246 insertions(+), 134 deletions(-)
