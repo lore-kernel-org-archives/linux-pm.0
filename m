@@ -1,121 +1,204 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D627C296BD2;
-	Wed, 26 Aug 2026 14:51:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 516FB3F1AC6
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 15:00:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787755909; cv=none; b=X4WnCLnUtFWSH0EsCwE+sLLUWW8SEJuhxEcKuhCXsUd31doreyZr3ye6ticZKkm54BVPHEr2omuqYdV/mRRtCIrSgCfhDw85ukEjW+Dcj2RVlwYtuWnUAnb2KNn87AsNJMuTGQeqAVDltj+NAUkQmHfT7DCNf36u7MFnKP6yah4=
+	t=1787756407; cv=none; b=eLlRSEc9ICFTjPKqw/P/zQPicw4phDv7fsT2uH4h0vp6AxX8KyC59Nza7qePFTvgjv/9WdjvxOhLmNSc6PpO0EhcRman9ioSWN26IIW0NdHrEhJu+tibPNhqojCbch68tsiw1U5ah1r/h04YksCmzG4HTWuvxfHBLwhGXxAiais=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787755909; c=relaxed/simple;
-	bh=tOodu0VszRohRtMpFFB6dYKNtMAf7OMx0ItWyxqnr/k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y240Sqs+FDLC+nWvMGMXJAVRt3rgXH1Yi95w8zFuhTNxobROkUFkB39eJxpyBBMpZDRHaNinuf+LE3czbRGnQWts+Up5L7JkSpuVxnYfDKHTM19932/9BlnHPb3JC8s31JTlx6Uk4EDc8pOb8HWMOHEECdUQ/vMi9idzf7c8pDc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YXQ1DnZP; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1787756407; c=relaxed/simple;
+	bh=Cr+7Ne5f/+TDyPcwHi4vwSzkvlW1HMxQzI1IA9R5QC0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=cbfxbOn/taOz7lOCnZJGNUn/h4Fpm+kX1fKF5pQ1Mfa2uDaqxzlg4ynd8uxElT6zd4C3T3L+3Wffc3UGGHXAo9EUUm9MOEcWuTrWVyJIAT/MtsuE/qiypGPCZxP47kQ0x2WsV15DFAmaOGLqNX5gVTZqbPvAgufIVtakc7n1YHo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jjbJ9gGe; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YXQ1DnZP"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 15C231756;
-	Wed, 26 Aug 2026 07:51:43 -0700 (PDT)
-Received: from localhost (unknown [10.2.196.114])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 73BBD3F7D8;
-	Wed, 26 Aug 2026 07:51:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1787755906; bh=tOodu0VszRohRtMpFFB6dYKNtMAf7OMx0ItWyxqnr/k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YXQ1DnZPOLhXEtKbwELsDp94I7KPv6NJqCCc+P/ZvoSWmJ8KCcKahNh7+sQWL3CXe
-	 Epva2iw+zUipeNYduk/uateqT+WdNJ2g8p5ZxLII6bzY6QQhqe7ssRQ+Ghq+nqNteW
-	 f98Yr+78VjADUvqwt45aWv7UK+TBbIxawOLDtO68=
-Date: Wed, 26 Aug 2026 15:51:44 +0100
-From: Leo Yan <leo.yan@arm.com>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Mike Leach <mike.leach@arm.com>,
-	James Clark <james.clark@linaro.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Robert Foss <rfoss@kernel.org>,
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
-	Jonas Karlman <jonas@kwiboo.se>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Michal Simek <michal.simek@amd.com>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Mirela Rabulea <mirela.rabulea@nxp.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>,
-	Xiaowei Song <songxiaowei@hisilicon.com>,
-	Binghui Wang <wangbinghui@hisilicon.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Dvorkin Dmitry <dvorkin@tibbo.com>, Wells Lu <wellslutw@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
-	=?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
-	Mark Brown <broonie@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Boris Brezillon <bbrezillon@kernel.org>, info@mocean-labs.com,
-	Olof Johansson <olof@lixom.net>,
-	Shree Ramamoorthy <s-ramamoorthy@ti.com>,
-	coresight@lists.linaro.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-	imx@lists.linux.dev, linux-media@vger.kernel.org,
-	mfd@lists.linux.dev, linux-pci@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Drop redundant white-space around values in
- <>
-Message-ID: <20260826145144.GH8904@e132581.arm.com>
-References: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jjbJ9gGe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 381731F00AC4
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 15:00:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787756406;
+	bh=8gdTsLho+72ohCDvG38qUhOUx7W5mj8SHh5C721jzDg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=jjbJ9gGeSxoRWF5ue+qImZsRG/2aOSoK65NUMcDjafKVif+hmnSUX6O8amQvzpFBV
+	 8tyUVkxd/tySCEJdDGaaddziA74VGO8/ekB8x6fdpGyVZTB0SkqTM+gtQ6mKSITLQa
+	 n9rziWcULM8p0y4Kp6wQ3/fO16XvudInC8ur3Zo8MGWhYOf/UJfxMO9QWp5cKObsvX
+	 FKzvOqJyrA6euS0iSks1Tgq21BHnZpv8hzdRT8lHY900P67i7yATnfDJHpcsE2ZGwQ
+	 XwinPO3Gkwrh6Ls6RSBaWhSa7m4yVc9Y4Ep3Y02MUKG1hM0Braqlj9QU59UMl/FI7s
+	 E8Knnmc0QS/0g==
+Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-c20e70a0962so157901466b.2
+        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 08:00:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rpwg3kVcttwClF6DVJGAJgfU8mypWlFMX9/uAnjJrcRVC8dPT7AesC2s54Bvp5pGU0D62SF8wW2OA==@vger.kernel.org
+X-Gm-Message-State: AFuF++l47JGxu6ZKFSaZ8ftZMP8EQRMzK7K7fW5nuD+Hd6MgHMEfy0Hl
+	BGV20m1Pc6HovQ/uztCMsVrYbUgu/8QKP6fADFOkMNpl8ybIe6FY5HvcC3RMCFD08H9mO5PPtL6
+	p0Fe5j/MR4JlkCXmZdU7iEnW8zenQTXs=
+X-Received: by 2002:a17:907:60cc:b0:c16:12ff:dc8d with SMTP id
+ a640c23a62f3a-c250c2eecfcmr806398866b.14.1787756404651; Wed, 26 Aug 2026
+ 08:00:04 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
+References: <20260818123921.3600606-1-chenhuacai@loongson.cn>
+ <20260818123921.3600606-6-chenhuacai@loongson.cn> <a4b1ff9d-f71b-4cde-b225-70568ca8ba8b@oss.qualcomm.com>
+In-Reply-To: <a4b1ff9d-f71b-4cde-b225-70568ca8ba8b@oss.qualcomm.com>
+From: Huacai Chen <chenhuacai@kernel.org>
+Date: Wed, 26 Aug 2026 23:00:02 +0800
+X-Gmail-Original-Message-ID: <CAAhV-H5gbyo3CHj+b5YwwU1GZG47hThx3OJRAXCDEoJ2KKSnXw@mail.gmail.com>
+X-Gm-Features: AcwNN1VQa6Afwkbnm682NTMRbPkMfilGFghS6Oo4UEUbtoAP764SK6DKLwFI0NI
+Message-ID: <CAAhV-H5gbyo3CHj+b5YwwU1GZG47hThx3OJRAXCDEoJ2KKSnXw@mail.gmail.com>
+Subject: Re: [PATCH 5/5] cpufreq: loongson3: Replace IOCSR read/write with
+ MMIO ones
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: Huacai Chen <chenhuacai@loongson.cn>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, loongarch@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Xuerui Wang <kernel@xen0n.name>, Jiaxun Yang <jiaxun.yang@flygoat.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 26, 2026 at 12:20:45PM +0200, Krzysztof Kozlowski wrote:
+Hi, Zhongqiu,
 
-[...]
+On Thu, Aug 20, 2026 at 8:57=E2=80=AFPM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+>
+> On 8/18/2026 8:39 PM, Huacai Chen wrote:
+> > Our server productions (e.g. Loongson-3D6000/3E6000) can have multiple
+> > nodes in one package and SMC mailboxes are also per-node. However, IOCS=
+R
+> > read/write can only perform on the current node, while sometimes we wan=
+t
+> > to perform on other nodes (e.g. when switch governor, the get and targe=
+t
+> > callbacks are not run on target core). So replace IOCSR read/write with
+> > MMIO ones.
+> >
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
+> > ---
+> >   drivers/cpufreq/loongson3_cpufreq.c | 31 ++++++++++++++++++++++------=
+-
+> >   1 file changed, 24 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/loongson3_cpufreq.c b/drivers/cpufreq/loon=
+gson3_cpufreq.c
+> > index c75c0e30e881..e5062cd62390 100644
+> > --- a/drivers/cpufreq/loongson3_cpufreq.c
+> > +++ b/drivers/cpufreq/loongson3_cpufreq.c
+> > @@ -164,6 +164,12 @@ union smc_message {
+> >
+> >   #define FREQ_MAX_LEVEL                      16
+> >
+> > +#define MMIO_SMCMBX(node) \
+> > +     ((void __iomem *)(IO_BASE | (u64)(node) << NODE_ADDRSPACE_SHIFT |=
+ LOONGSON_REG_BASE | LOONGARCH_IOCSR_SMCMBX))
+> > +
+> > +#define MMIO_MISC_FUNC(node) \
+> > +     ((void __iomem *)(IO_BASE | (u64)(node) << NODE_ADDRSPACE_SHIFT |=
+ LOONGSON_REG_BASE | LOONGARCH_IOCSR_MISC_FUNC))
+> > +
+> >   struct loongson3_freq_data {
+> >       unsigned int def_freq_level;
+> >       struct cpufreq_frequency_table table[];
+> > @@ -176,13 +182,25 @@ static DEFINE_PER_CPU(struct loongson3_freq_data =
+*, freq_data);
+> >   static inline int do_service_request(u32 id, u32 info, u32 cmd, u32 v=
+al, u32 extra)
+> >   {
+> >       int retries;
+> > -     unsigned int cpu =3D raw_smp_processor_id();
+> > -     unsigned int nid =3D cpu_to_node(cpu);
+> > +     unsigned int cpu, nid;
+> >       union smc_message msg, last;
+> >
+> > +     switch (cmd) {
+> > +     case CMD_GET_FREQ_INFO:
+> > +     case CMD_SET_FREQ_INFO:
+> > +     case CMD_GET_FREQ_LEVEL_NUM:
+> > +     case CMD_GET_FREQ_LEVEL_INFO:
+> > +     case CMD_GET_FREQ_BOOST_LEVEL:
+> > +             cpu =3D cpu_number_map(id);
+>
+> cpu_number_map() is undefined when CONFIG_SMP=3Dn. Wouldn't that result i=
+n
+> a build failure?
+Yes, part of the code should be guarded by CONFIG_SMP here.
 
-> --- a/Documentation/devicetree/bindings/arm/arm,coresight-cti.yaml
-> +++ b/Documentation/devicetree/bindings/arm/arm,coresight-cti.yaml
-> @@ -308,7 +308,7 @@ examples:
->              arm,trig-in-sigs = <0 1>;
->              arm,trig-in-types = <PE_DBGTRIGGER
->                                   PE_PMUIRQ>;
-> -            arm,trig-out-sigs = <0 1 2 >;
-> +            arm,trig-out-sigs = <0 1 2>;
->              arm,trig-out-types = <PE_EDBGREQ
->                                    PE_DBGRESTART
->                                    PE_CTIIRQ>;
+>
+>
+> > +             break;
+> > +     default:
+> > +             cpu =3D raw_smp_processor_id();
+> > +     }
+> > +     nid =3D cpu_to_node(cpu);
+> > +
+> >       mutex_lock(&cpufreq_mutex[nid]);
+> >
+> > -     last.value =3D iocsr_read32(LOONGARCH_IOCSR_SMCMBX);
+> > +     last.value =3D readl(MMIO_SMCMBX(nid));
+> >       if (!last.complete) {
+> >               mutex_unlock(&cpufreq_mutex[nid]);
+> >               return -EPERM;
+> > @@ -195,12 +213,11 @@ static inline int do_service_request(u32 id, u32 =
+info, u32 cmd, u32 val, u32 ext
+> >       msg.extra       =3D extra;
+> >       msg.complete    =3D 0;
+> >
+> > -     iocsr_write32(msg.value, LOONGARCH_IOCSR_SMCMBX);
+> > -     iocsr_write32(iocsr_read32(LOONGARCH_IOCSR_MISC_FUNC) | IOCSR_MIS=
+C_FUNC_SOFT_INT,
+> > -                   LOONGARCH_IOCSR_MISC_FUNC);
+> > +     writel(msg.value, MMIO_SMCMBX(nid));
+> > +     writel(readl(MMIO_MISC_FUNC(nid)) | IOCSR_MISC_FUNC_SOFT_INT, MMI=
+O_MISC_FUNC(nid));
+> >
+> >       for (retries =3D 0; retries < 10000; retries++) {
+> > -             msg.value =3D iocsr_read32(LOONGARCH_IOCSR_SMCMBX);
+> > +             msg.value =3D readl(MMIO_SMCMBX(nid));
+> >               if (msg.complete)
+> >                       break;
+> >
+>
+>
+> Please ignore this comments if you do not think it is worth addressing:
+>
+> A separate issue, it seems that DVFS and Boost feature is set in
+> loongson3_cpufreq_probe(), what if about on other nodes (non-boot cpu
+> node) and what if cpu hotplug?
+Interesting question. After discussion with the firmware team, They
+told me that CMD_SET_FEATURE is a global command, the SMC firmware
+will align the settings for all nodes.
 
-For this CoreSight change:
+Huacai
 
-Reviewed-by: Leo Yan <leo.yan@arm.com>
+>
+> static int loongson3_cpufreq_probe(struct platform_device *pdev)
+> {
+>         int i, ret;
+>
+>         for (i =3D 0; i < MAX_PACKAGES; i++) {
+>                 ret =3D devm_mutex_init(&pdev->dev, &cpufreq_mutex[i]);
+>                 if (ret)
+>                         return ret;
+>         }
+>
+>         ret =3D do_service_request(0, 0, CMD_GET_VERSION, 0, 0);
+>         if (ret <=3D 0)
+>                 return -EPERM;
+>
+>         ret =3D do_service_request(FEATURE_DVFS, 0, CMD_SET_FEATURE,
+>                                  FEATURE_DVFS_ENABLE | FEATURE_DVFS_BOOST=
+, 0);
+>         if (ret < 0)
+>                 return -EPERM;
+>
+> ......
+>
+> }
+>
+>
+> --
+> Thx and BRs,
+> Zhongqiu Han
