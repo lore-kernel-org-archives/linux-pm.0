@@ -1,94 +1,63 @@
-Received: from sg-2-3.ptr.blmpb.com (sg-2-3.ptr.blmpb.com [71.18.227.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F255444A3F8
-	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 21:22:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=71.18.227.3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A187F41A8F;
+	Wed, 26 Aug 2026 21:41:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787779373; cv=none; b=sj+4jnDTwrh2wL27/GOJjMBcu8FToYwPGYaZAeH6gSmDHvK19ZXMgmZzEbwdgddtRXNr/8oEecqARCN6+1ZuwnhunFvxtewSGzj5BSdyXH+28Ui1Hxvs9Gy0cNwO6/lMcWMwhwEX/eHfsS24sLHs2pPHFEPokWlnSjGU2MXl69E=
+	t=1787780467; cv=none; b=MGvXpt4NVN9zIQcPVRF6dEDJxNBhf7nKqePDjhjLCI2eJq350F0x1XvXph/pkSh/IDhAuojNZZKz1gDioCbhqxBWCT1BUM4nYQy7KJJPXdaartnrEFREOTNHmNijSzij2sKe1TD2gSfOBrerfMfPoZh+Dd281uXm4Ldt/6m6qsY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787779373; c=relaxed/simple;
-	bh=X7jtbksA3CZPJmBAGM4XuJ8n1h4BDQWRewnDoQ44Gas=;
-	h=Content-Type:From:Date:To:Message-Id:Cc:Subject:Mime-Version; b=ZPqZ16IMVBVSzXRYkiU7uicoqlWNMStN1AJG0rMLB6UkoaIxGDcuAw4h8hmTN/de7rZsL951WCYBlGrM+N6WHyTjUVVLfM5jO8PJ9Ffu0o27XQSN1Q5XxFMSqEvuY/XL1yRMsAFwSR5eWThe+P3Xde9TIydERUseuRNLQrjVA8I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cherr.cc; spf=pass smtp.mailfrom=cherr.cc; dkim=pass (2048-bit key) header.d=cherr.cc header.i=@cherr.cc header.b=zI+QHNNi; arc=none smtp.client-ip=71.18.227.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cherr.cc
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cherr.cc
+	s=arc-20240116; t=1787780467; c=relaxed/simple;
+	bh=E42GyNYkVGzg1H9sN4aUey+/uKsmDF+JLnjo2kKL0N4=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=KhxXJARXA1+/ZfqKNDLqPmgKMhDMVlC2vY6VqV5L90N8MHLx8Wc4PkJabUW7T3pEVziLC6I1blntLE2OwiYo1d1YQrXI+LRMYnMXXtE93Pt3v0ZVlbbX0PK9DaGlN9MAu5wyz3T3R5+eD2vYF13n3EaaKSfnLxELB4Kg2gRHnUc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lkUFuZXn; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cherr.cc header.i=@cherr.cc header.b="zI+QHNNi"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=feishu2604220257; d=cherr.cc; t=1787779354; h=from:subject:
- mime-version:from:date:message-id:subject:to:cc:reply-to:content-type:
- mime-version:in-reply-to:message-id;
- bh=W9vZu2zKGaMGtvu0O3flOjnu9HCBU0WdS+0u+R/OMwA=;
- b=zI+QHNNi+QJTN2oAebXmuwvrU3YqPYW/1HdB2MH5s//UeTCJGTzZfqv8i6b+bly2XE0zsN
- uj6o9uId6fKLbsKujksDgO2xHHcUvyqPy7O4nr8P7yh1DECZeQbBvDmHHUquHWdkdg7rVN
- 2rl/i0jB/Tsc07wFuAf0J1OkHgKp1dLAvCzokyJguvnTaFM8837iMp/760SeWRTyfyIHsM
- n+HirKqV41LJDTcwjJLfd7YS0Q+kc7dD1iTVG6a3KxMKKiJ7LDVuVXYEqnmuOQHDYF3lTv
- h03PowKF15uLSf758i70VFI8W/N06vgqiTUzqcjxV9aV9acpvflRbQb/RxYpGQ==
-Content-Type: text/plain; charset=UTF-8
-From: "Shengzhuo Wei" <me@cherr.cc>
-Date: Thu, 27 Aug 2026 05:22:29 +0800
-Received: from [192.168.9.107] ([111.42.148.146]) by smtp.feishu.cn with ESMTPS; Thu, 27 Aug 2026 05:22:31 +0800
-Content-Transfer-Encoding: 7bit
-X-Lms-Return-Path: <lba+26a8f5918+8d0954+vger.kernel.org+me@cherr.cc>
-X-Change-Id: 20260827-bq27xxx-suspend-cancel-sync-7c60fc384041
-To: =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
-	"Sebastian Reichel" <sre@kernel.org>, "Hans de Goede" <hansg@kernel.org>, 
-	"Marek Vasut" <marex@denx.de>
-Message-Id: <20260827-bq27xxx-suspend-cancel-sync-v1-1-77a67711cbc3@cherr.cc>
-X-Original-From: Shengzhuo Wei <me@cherr.cc>
-X-B4-Tracking: v=1; b=H4sIABRZj2oC/yXMwQ6CMAwA0F8hPdtkTMKIv2I8QClaQiquYmYI/ +6E47u8FYyjsMGlWCHyR0yemlGeCqBHq3dG6bPBO1+7xgfsXj6klNAWm1l7pFaJJ7SvEgaq3UD npnJVCXmYIw+S9v16O2xLNzK9/yVs2w/SGAcsfwAAAA==
-Cc: "Sebastian Reichel" <sebastian.reichel@collabora.com>, 
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, 
-	<stable@vger.kernel.org>, "Shengzhuo Wei" <me@cherr.cc>
-Subject: [PATCH] power: supply: bq27xxx: synchronize work cancellation on suspend
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lkUFuZXn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 887131F000E9;
+	Wed, 26 Aug 2026 21:41:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787780466;
+	bh=zefBpv0c8aDWVTC0gasPG4uIiGjvH3sqCRbllk6SZxo=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=lkUFuZXntxJ8Qw4MHVI9qeaAb1PJdBGVLD10gnKppOIJKzdHrCrVG301dCa6L7ZqX
+	 EIFXpGY/TNjQjzGkQaXkd/hg6FHM4/UTF1xjOMmVlpnnhWIJYtGkUWKfO4EX5DKD29
+	 a2+ogsA0ZWpul/ogTtb6EFzWR0UqM1C1aH2GoykJnPwgEA267Y+8R9PitcJPh8h40y
+	 XNTHST+dv087cpKThlVgLRRR2loDoESnJEdJ5flvGU/lxgdioWrcq+g+Cwqn60LTk5
+	 YAthznFECw4IqQ+W6ifdgN9Z26Kylou0jAeoFR2p2O5yRzp2t2D/+LFdw2vtDWjOlJ
+	 iJH/52hgH5MuA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id D0CD33809A08;
+	Wed, 26 Aug 2026 21:40:13 +0000 (UTC)
+Subject: Re: [GIT PULL] More ACPI support updates for 7.3-rc1
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0jdSjMH_kYu6GQ1-AQ2TXHji2Vd1+v5YP8_CxXM3PUa6A@mail.gmail.com>
+References: <CAJZ5v0jdSjMH_kYu6GQ1-AQ2TXHji2Vd1+v5YP8_CxXM3PUa6A@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jdSjMH_kYu6GQ1-AQ2TXHji2Vd1+v5YP8_CxXM3PUa6A@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-7.3-rc1-2
+X-PR-Tracked-Commit-Id: ea10c0b334e0dca944de2b5ecf57cf7e366674f4
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 3382bfbca58c7d5ee3f31a7b37fbeb208e98e656
+Message-Id: <178778041263.904445.2781680551193452372.pr-tracker-bot@kernel.org>
+Date: Wed, 26 Aug 2026 21:40:12 +0000
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-X-Mailer: b4 0.16.0
 
-The poll work requeues itself via mod_delayed_work() while the device
-is not removed. cancel_delayed_work() does not wait for a callback
-that is already running, so a poll racing with suspend can keep
-issuing I2C transfers after suspend returns and requeue itself into
-early resume.
+The pull request you sent on Wed, 26 Aug 2026 20:37:39 +0200:
 
-Use cancel_delayed_work_sync() to quiesce polling before suspend
-completes, as the teardown path already does.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-7.3-rc1-2
 
-Fixes: dfcb264a01a9 ("power: supply: bq27xxx: Stop and start delayed work in suspend and resume")
-Cc: stable@vger.kernel.org
-Signed-off-by: Shengzhuo Wei <me@cherr.cc>
----
-Same class as 86a3a8a926aa ("power: supply: max17040: synchronize
-work cancellation on suspend"): suspend is the only remaining site
-using the non-synchronous cancel, the teardown path already uses
-cancel_delayed_work_sync().
----
- drivers/power/supply/bq27xxx_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/3382bfbca58c7d5ee3f31a7b37fbeb208e98e656
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 01c9ec1116fa..4d4809a70b62 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -2291,7 +2291,7 @@ static int bq27xxx_battery_suspend(struct device *dev)
- {
- 	struct bq27xxx_device_info *di = dev_get_drvdata(dev);
- 
--	cancel_delayed_work(&di->work);
-+	cancel_delayed_work_sync(&di->work);
- 	return 0;
- }
- 
+Thank you!
 
----
-base-commit: 45c13f3f9e3bb15fd89ff2864c6f627a3b4b4229
-change-id: 20260827-bq27xxx-suspend-cancel-sync-7c60fc384041
-
-Best regards,
---  
-Shengzhuo Wei <me@cherr.cc>
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
