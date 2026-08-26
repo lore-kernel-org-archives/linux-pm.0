@@ -1,312 +1,159 @@
-Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82F6D41DDF0
-	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 12:27:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05C5441DEE5
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 12:53:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787747274; cv=none; b=VFlPTS4cx5RgemRM0fbcVr3biwTSoikF6/5nA3w8lZWsHIgVbDUnJmyzvHZmENiixXVR5DdzkFoosbZ8nJ0xrpKIz8+Ep66no5Upy2BA5DfEEE5rfciLRXbbFABOV7K/+2rXAVEBDD4V8ILSRoUfpMpXY5FcjMFEu6SWz3rTkX0=
+	t=1787748782; cv=none; b=IiiXZDDC00hBvlt5iXi68WQnlBtEEsMcAqL8khdEGmuM/vdCkziw6ADxHpDoe9OOpzHjNk5a80j36CxjneYoL5bvB1z/xtr6jRcOFzniXw1Yx8fbNj6zF4+NLuuU4+Kmy+VCN1zMjKNVC7K7o2D3a+v4RHsdY74DaazDfna/vbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787747274; c=relaxed/simple;
-	bh=202dBnt6Qo/brTSaHLOXpkZXJ/J4sl7JjmQO9iqX6Rg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NrLbBDmYsMJ4gMbLFQrusLlUe9DA2qSuc9i1B4B0S1tLedoASZYroiSNxzJU0crGLdRtfkkidVg0f6YNJ258GJsHkzNMxe3mI/4cjMiN08aWxvR4eeynQAvdwClz1dvBPrdW9djhJn6FCX/vz7CRbhLJPs/+ZUvkl+A+einIrNM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=IuoPbFkm; arc=none smtp.client-ip=209.85.218.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787748782; c=relaxed/simple;
+	bh=tEj0puOMv3YPQfmZXyOKbvkusA1zz5vSWcDN0Blq+7E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dpXp2b5Vep5A2o+5qE83wPKK0XpkB/mw3KuyQ4GR6+Uj004VGFfxwsT54epK7WJsxjLRCxK95H9BYkSJV3Oi/aBSarWb9TGI8xa7bu3KXzv4CLXs/9xvZjth0/MxvVcAxHEA43CA1iZZB+a3itFWIb6eUE54b7CJaP/686UEI8E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=fqZ207VW; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=DSmQfIRc; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IuoPbFkm"
-Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-c247f6687dcso110998266b.2
-        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 05:27:51 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="fqZ207VW";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="DSmQfIRc"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67QCCHU4374872
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 12:53:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	2gECbtLim4IsFDtHK0zBICZjbKaXqnyx0T0kMypovFw=; b=fqZ207VWMmusFk0m
+	dp5WwvtBTNzgz+Bfh15kZyfnhSlNTXBBiM3G101KbvL8B5lP7nbDSdxjrthYcpq8
+	vYLjPqDi87xrdpu95sSyVm2y1oB25YBG0Ru0F42MmnIEAqpIYv+DmuJjTxp4f7sT
+	vv6pgIKgnppc5TqS8ISIhcGr3HvLoagNlHKs3fHpX6oD+JRtgbetvGjXddelJJJG
+	4sG5VEZPqviEHWF8RvuDJ39seOUucTc2jLiAJAiy9S66AggLpCcXF3ytIhiPWIxV
+	GE7Tz9Dft2aHw0nNbdsC+XUOp7VnagTYlDgZwQe92puF0oWcJQN+zjLZVo2KuFqJ
+	lE5N5A==
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g9smx9va9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 12:53:00 +0000 (GMT)
+Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-92e661ce1dcso20120585a.0
+        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2026 05:52:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787747269; x=1788352069; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4PXPX3KZ7Q5SDUIHinjMP0o4uSBXepq69NS8qzVhJGU=;
-        b=IuoPbFkmw7mQZizv3wsVNE8OE11xuTeAMAAKhnI7I2GXEft4k4kvJXj2svJcTp5qrq
-         HBOFLwblID89h1dSHKsmPHIL1RJnVyWPlHnMbIEky0gnaclPJpWf13xyIaDck0WhdWnK
-         MjEVFtRZgFByjVPC3e8vVK4ZYcWR8HZIwolS4p2gxXa3AlL61Abmby6KozgmsMcqZ0Gm
-         jSEXgzr/pHbFiKocWkia9O3KC4mILWEg76vtgwXO83OEfzUYdsGAMIoWYXTI7EI6nZCy
-         ppKgBftShlUKLdVVow6clwSHQ19h+KB3VxY/fPe+nVlwOnpCmVsQmuDx+xinLHbLHQb/
-         6iEg==
+        d=oss.qualcomm.com; s=google; t=1787748779; x=1788353579; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2gECbtLim4IsFDtHK0zBICZjbKaXqnyx0T0kMypovFw=;
+        b=DSmQfIRcrXVbUGNitJbFtzxYcBn5SR1YG43+hpGrqA7Cy8dlwbCce5Gt/xFvjL3n8z
+         iJ4+/pEqBkBuc3snAFB2wPatthPH0pdzNVEi6IIvlzQsq9vdlFB4epoOv7fNIsaQtgeN
+         2wVfE4OV9E3v8agsbU9qLebqFTRG8zlRXL+ah0KRioda79sDkDugY5CO5fzWZBGPdsyt
+         m6or8fLxhb6nd4rIBmQ2oEGcjxfmgzBq/KkeW9M7frABA3lgFMU6Lvcj9dtpNvhDIeIE
+         Z0uWw+zh7ivXgNi9gvOoYcSFa9L3ZjzBcQ0ijL0GK45YCcBAOvCeoUJMOXTQn1rI462l
+         9ppw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787747269; x=1788352069;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=4PXPX3KZ7Q5SDUIHinjMP0o4uSBXepq69NS8qzVhJGU=;
-        b=haR3hAEXDs5j3rz3tj37y0G8z7xXT9y7fi/IgeRrmSw5SAnEieR+1n2YlsPnm8ClXo
-         hzgncYHY6SxthqVGNBvrrt+xuh101SN4AziOPsYknoRQCKYNfakIEKIR32I9z1ItjYeU
-         fCEyWnm6zsnBsESoztm0m2CWYLWhZdDU3c3HdaDRpHidYmybZawEPduZFrCCNZ9Hj0uT
-         thaDzsZY/dVDnB90N6hubpuBCI5oSexz1PEbKi8OBQxCXr0K2xsL2/Z5aniqyj8whYRp
-         8BADyddlFNU7ejhOTfnTnu4Nrm40DYW64Jpk2cFpWj4RQo29q/w0sxJz+8W/yvj6bmBo
-         W5NA==
-X-Forwarded-Encrypted: i=1; AHgh+RrXD1oDlHi5w32N3mBFkK0VFUL3amXl16Q2cLkQ+fhF9AlwJ2TqeIiIRG8k5KFt4yo8yk6Ge50DsQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++ltU9zEPveGpXeo+v+Bo1KXHSOf6/yjfVudiE6S7v22D4pGoStO
-	nEtPClD7FYj810Ky7xHYyoWC/Mz1YVuCZXUIN2S6cTQJi19VNvVhtAck
-X-Gm-Gg: AR+sD12XJ7tyQerwyKVU9TdlPCPA/bbdMTnXXsyekwzh7K/mE4Jv5hmkwMQvBwF+3wn
-	W/3UbS8RNrhugUm6+JS1iitDlV4XfSHBb76mMJcQtn8Wd7CTCxTPblPyikNxcUeql+g9rd0lBt2
-	fVd6wB7Xhx9knHhZFV9prfXQEcUYTyRmosL8OiIhSLDjUJgj8ySxDf77H8OKB1LkjI5kSkEcxeU
-	wiNop6jxmCf7IpK9PFSWZ7wKh0O5aEAebLTdJQJlLJRVLXODV5SYVoCEp73rKrN9fxkVLdkvGsW
-	EWOga8Cukv8raKUjvbXbTqa9ZSBFGhB9rAd8CiVPqxfEVoBg2NXZD822OtLgUQC13+He8axMp8T
-	B5490fy6U27ZTcKEXCKlZxr7c8WtjLWl7/dCXFkG8JuazMwTtgUWdE1j7pGCHlIjo23G1LOFKO4
-	9bDUEuXEAeSfVhtYzqRhiNQ7QNpIFEszqfqYHVlqo2ata10H7TuKaJcqOeoPqde/kKWowWgpNQO
-	5tHZAz6PEsusg==
-X-Received: by 2002:a17:906:ee86:b0:c24:c22c:6372 with SMTP id a640c23a62f3a-c250bb57107mr696242466b.5.1787747269181;
-        Wed, 26 Aug 2026 05:27:49 -0700 (PDT)
-Received: from localhost.localdomain ([2a00:23c4:a702:d301:aa64:3da0:a259:ecd5])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c250a9b4e9csm504890266b.54.2026.08.26.05.27.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 26 Aug 2026 05:27:48 -0700 (PDT)
-From: Biju <biju.das.au@gmail.com>
-X-Google-Original-From: Biju <biju.das.jz@bp.renesas.com>
-To: Bartosz Golaszewski <brgl@kernel.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Magnus Damm <magnus.damm@gmail.com>
-Cc: Biju Das <biju.das.jz@bp.renesas.com>,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	Biju Das <biju.das.au@gmail.com>,
-	linux-renesas-soc@vger.kernel.org
-Subject: [PATCH v5 3/4] power: sequencing: Add Renesas RZ/G3L Power Ready driver
-Date: Wed, 26 Aug 2026 13:27:25 +0100
-Message-ID: <20260826122742.153643-4-biju.das.jz@bp.renesas.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260826122742.153643-1-biju.das.jz@bp.renesas.com>
-References: <20260826122742.153643-1-biju.das.jz@bp.renesas.com>
+        d=1e100.net; s=20251104; t=1787748779; x=1788353579;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=2gECbtLim4IsFDtHK0zBICZjbKaXqnyx0T0kMypovFw=;
+        b=htusLA73zpNHQcz+sgvxd2QU2gnonJcvdrs9IPY/8dxWgU1VI3ZbTrFAJaEVK88Wow
+         0grWQ91hrBqMUpRbR+UlutF75YwX9ZBcvUukGPN7LHyTcPGHrMmKJbBOxgiuxwEgvVj9
+         q0YwOvXlPFR6eq/a5N7x15KkxOLohY+uiMwgRwRe/tYz9saVajskiOCjPTXlTWKqa/P6
+         1CQTTR7BvDfkbDwb41cTdEZ/dmTAZJCUPQT0lwrppDIAwRJlB9UniV+WYJk4F2cjdz3V
+         yufPLTvgsDASJ+G/ELQruHMqo2WivBjQzZeW+OeVl434uZ7rX6fvOgA3oXDdyeEtZfgF
+         JkkA==
+X-Forwarded-Encrypted: i=1; AHgh+RoL+sBlsGZigRzfPd247awYiNEGKp1LXk50W1Ic867C6IhAMVDaqouBxp1vjmeRFQf5DLyKkLyueg==@vger.kernel.org
+X-Gm-Message-State: AFuF++kMikhQzMcmBn70nwUb1rcNmCFn7W9Kq2xcWEyxP5l9o+ZVgPJI
+	Y/HJbTCTngX70e5WMfo/gtcRMDiQxnAmwJXuLSm2CHOWyN7lK32KF7b1xZSVbMf6chD7L5XrF9K
+	g+mF9mYNvcfk8bRt6Qy5AZY/nsYuAxU2ZDr/3zJdYdlsqRWZHEuOJ5GpNlmL4WQ==
+X-Gm-Gg: AR+sD134VwiR4k5GJiw9bN9n/flTW8z5BEydSLkNJFikhECPXI7tVIcXcUEgheDn/xz
+	T4/wbiAaAA9ENnFs1LxMJHSCp0B+3CBsH+IlpXX5hj23ex0yk/H+1jkxb6LyUW4JAksHJRaejOD
+	P5JmOAMKZkxoWzGwSXdAtfpdSBB4w1uN649kuknGfYcBDpVfFTVbnrBACQ8ZQseGiNM6Vrqi8GG
+	2AN0L5kPM8nY+T/5nGe+UZJMHBg6f7k9iAFGI/+XOYV55fE5l+KwHhwSAE4WKZZGZ7R/nCkZBWm
+	w6ixTDUO5Kk/u439LSt9XUyCaDi0/dgv3aJMSt9wy6XDmi5pSMN2heyobnxDngrZ1xeC8LEORjs
+	SrrqcG/ByRQYQYyYHGNcA9Xvm
+X-Received: by 2002:ac8:7f03:0:b0:528:3722:a372 with SMTP id d75a77b69052e-52f9f774021mr205091cf.4.1787748779028;
+        Wed, 26 Aug 2026 05:52:59 -0700 (PDT)
+X-Received: by 2002:ac8:7f03:0:b0:528:3722:a372 with SMTP id d75a77b69052e-52f9f774021mr204581cf.4.1787748778493;
+        Wed, 26 Aug 2026 05:52:58 -0700 (PDT)
+Received: from [192.168.120.193] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c250a6fd676sm501014066b.17.2026.08.26.05.52.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 26 Aug 2026 05:52:57 -0700 (PDT)
+Message-ID: <a986fdf1-4acf-44e9-8abd-46dc6928eb34@oss.qualcomm.com>
+Date: Wed, 26 Aug 2026 14:52:55 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/4] dt-bindings: remoteproc: qcom,nord-pas: Switch CDSPs
+ to NMXC rail
+To: Shawn Guo <shengchao.guo@oss.qualcomm.com>, Ulf Hansson
+ <ulfh@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>
+Cc: Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Abel Vesa <abel.vesa@oss.qualcomm.com>,
+        Bartosz Golaszewski
+ <brgl@kernel.org>,
+        Anurag Pateriya <anurag.pateriya@oss.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20260826102746.633076-1-shengchao.guo@oss.qualcomm.com>
+ <20260826102746.633076-4-shengchao.guo@oss.qualcomm.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260826102746.633076-4-shengchao.guo@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=O/oJeh9W c=1 sm=1 tr=0 ts=6a8ee1ac cx=c_pps
+ a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=EUspDBNiAAAA:8 a=IZIQwfiFe1kYP54-uPYA:9 a=QEXdDO2ut3YA:10
+ a=PEH46H7Ffwr30OY-TuGO:22
+X-Proofpoint-GUID: xWsWrvJtP0_J0hMREfvtNRUr-BCRUj5q
+X-Proofpoint-ORIG-GUID: xWsWrvJtP0_J0hMREfvtNRUr-BCRUj5q
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI2MDEwNiBTYWx0ZWRfXyvifWNeEAOEg
+ ITMuhal3Z+g0SOjYbC92tsbVgCMtPtJWe92JLO6LnCGTZjb97fuq1j75zL7vtvJn+ACVB4o3qpA
+ hnKm9wlRDEqYg7cQwDCT3xEKMEfLufbOpT/EPUeA2Q+IU/LkqmdeCOqeb4REnXZc5zlVR7zcoL+
+ UO7rbEM6nUbxoWaCERlKtEMV9q8IP2AxpedfYt620ylSW4ktVzNY4P9j5ymy1kNeJPWgF+b2LH7
+ PfFTbS+MNhKHfAmwFcOMCMvbyAIu1O6RnGXADkcjHHNSIcDoWU/WfmlNIHHd6gLEkSalSqqYW9D
+ t3RaROK6LBWjifZq+LwKK9GsgPsnv42sinmUBXvKNbnH2ZXBkCG6ZZtk/p01k/VmfrXnBJIejLA
+ 61B+lYh8Y//WL2Tyc6SCp+xaJI+/2PM/lCGdRwoxjDoJLFin9ECVM0hXjSynAlYDHdIswEQxtXe
+ gDgQvirYKN0d5zJCKxQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI2MDEwNiBTYWx0ZWRfX4X5ovxaAPsow
+ yDKeMqyq9/j3Mr7i2Ng/FL9cb00K6jxIptekwwjRPcCIN9KOYbVDlRQdo63BwMLEbwr4p77k8G+
+ jeG4Zyj119kpYexV/IlOoi5EAW/s+yo=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-26_03,2026-08-26_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 spamscore=0 adultscore=0 impostorscore=0
+ lowpriorityscore=0 clxscore=1015 bulkscore=0 priorityscore=1501 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608260106
 
-From: Biju Das <biju.das.jz@bp.renesas.com>
+On 8/26/26 12:27 PM, Shawn Guo wrote:
+> Nord supplies the CDSP memory rail from a dedicated NMXC RPMh resource
+> instead of the shared MX rail, so the CDSPs have to reference "nmxc"
+> rather than "mx" as their second proxy power domain.
+> 
+> That makes the ADSP and CDSP name lists diverge at the second entry, so a
+> single top-level 'items' list can no longer describe both. Keep only the
+> item count at the top level and move the per-domain descriptions into the
+> respective branches of the existing conditional.
+> 
+> Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+> ---
 
-Add a power sequencing driver for the Renesas RZ/G3L PWRRDY module,
-which signals power readiness for various IPs (USB, DSI, CSI etc.) on the
-SoC. The driver binds as an auxiliary device to the parent SYSC driver,
-using its regmap to toggle the SYS_PWRRDY_N register bits, and exposes
-{usb,dsi,csi}-pwrrdy pwrseq targets.
+Is the name of the input not "mx" at the rproc anyway?
 
-Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
----
-v4->v5:
- * Replaced of_device_is_compatible()->of_device_compatible_match() in
-   pwrseq_rzg3l_pwrrdy_match().
-v3->v4:
- * Replace the large of_device_id structures by C strings, and
-   using of_device_is_compatible() will reduce kernel size.
- * Replaced of_device.h -> of.h
- * Dropped local variable pwrseq from pwrseq_rzg3l_pwrrdy_probe().
-v2->v3:
- * Kconfig selects AUXILIARY_BUS to avoid compilation issues.
- * Added match for consumer device and added of_device.h header file.
- * Replaced regmap_update_bits()->regmap_assign_bits() and updated
-   the function parameter of pwrseq_rzg3l_set_pwrrdy().
- * Simpilfied probe() return with PTR_ERR_OR_ZERO macro.
-v1->v2:
- * Added a comment in pwrseq_rzg3l_pwrrdy_match().
- * Dropped dev_get_regmap() from probe as regmap is now part of platform
-   data.
- * Added a blank line before devm_pwrseq_device_register() in probe.
- * Dropped the error message devm_pwrseq_device_register() as probe prints
-   failure message.
- * Dropped local variables dev and regmap from probe().
----
- drivers/power/sequencing/Kconfig              |   9 ++
- drivers/power/sequencing/Makefile             |   1 +
- .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 142 ++++++++++++++++++
- 3 files changed, 152 insertions(+)
- create mode 100644 drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-
-diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/Kconfig
-index 226c62704d9b..6b5d187dd4b5 100644
---- a/drivers/power/sequencing/Kconfig
-+++ b/drivers/power/sequencing/Kconfig
-@@ -27,6 +27,15 @@ config POWER_SEQUENCING_QCOM_WCN
- 	  this driver is needed for correct power control or else we'd risk not
- 	  respecting the required delays between enabling Bluetooth and WLAN.
- 
-+config POWER_SEQUENCING_RENESAS_PWRRDY
-+	tristate "Renesas Power Ready sequencing driver"
-+	depends on SYSC_RZ || COMPILE_TEST
-+	select AUXILIARY_BUS
-+	help
-+	  Say Y here to enable the power sequencing driver for the Renesas
-+	  Power Ready signals. This driver handles the power ready signals
-+	  required to power on the various IP's on RZ/G3L platform.
-+
- config POWER_SEQUENCING_TH1520_GPU
- 	tristate "T-HEAD TH1520 GPU power sequencing driver"
- 	depends on ARCH_THEAD || COMPILE_TEST
-diff --git a/drivers/power/sequencing/Makefile b/drivers/power/sequencing/Makefile
-index 0911d4618298..b33d08d82f43 100644
---- a/drivers/power/sequencing/Makefile
-+++ b/drivers/power/sequencing/Makefile
-@@ -4,5 +4,6 @@ obj-$(CONFIG_POWER_SEQUENCING)		+= pwrseq-core.o
- pwrseq-core-y				:= core.o
- 
- obj-$(CONFIG_POWER_SEQUENCING_QCOM_WCN)	+= pwrseq-qcom-wcn.o
-+obj-$(CONFIG_POWER_SEQUENCING_RENESAS_PWRRDY) += pwrseq-renesas-pwrrdy.o
- obj-$(CONFIG_POWER_SEQUENCING_TH1520_GPU) += pwrseq-thead-gpu.o
- obj-$(CONFIG_POWER_SEQUENCING_PCIE_M2)	+= pwrseq-pcie-m2.o
-diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-new file mode 100644
-index 000000000000..743855620501
---- /dev/null
-+++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-@@ -0,0 +1,142 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Renesas RZ/G3L Power Ready driver
-+ *
-+ */
-+
-+#include <linux/auxiliary_bus.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/pwrseq/provider.h>
-+#include <linux/regmap.h>
-+
-+#define SYS_PWRRDY_N		0xd70
-+#define SYS_PWRRDY_N_USB_MASK	BIT(0)
-+#define SYS_PWRRDY_N_DSI_MASK	BIT(1)
-+#define SYS_PWRRDY_N_CSI_MASK	BIT(2)
-+
-+static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mask,
-+				   bool val)
-+{
-+	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
-+
-+	return regmap_assign_bits(regmap, SYS_PWRRDY_N, mask, val);
-+}
-+
-+static int pwrseq_rzg3l_usb_pwrrdy_enable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 0);
-+}
-+
-+static int pwrseq_rzg3l_usb_pwrrdy_disable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 1);
-+}
-+
-+static const struct pwrseq_unit_data pwrseq_rzg3l_usb_pwrrdy_unit = {
-+	.name = "usb-pwrrdy-power-sequence",
-+	.enable = pwrseq_rzg3l_usb_pwrrdy_enable,
-+	.disable = pwrseq_rzg3l_usb_pwrrdy_disable,
-+};
-+
-+static int pwrseq_rzg3l_dsi_pwrrdy_enable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 0);
-+}
-+
-+static int pwrseq_rzg3l_dsi_pwrrdy_disable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 1);
-+}
-+
-+static const struct pwrseq_unit_data pwrseq_rzg3l_dsi_pwrrdy_unit = {
-+	.name = "dsi-pwrrdy-sequence",
-+	.enable = pwrseq_rzg3l_dsi_pwrrdy_enable,
-+	.disable = pwrseq_rzg3l_dsi_pwrrdy_disable,
-+};
-+
-+static int pwrseq_rzg3l_csi_pwrrdy_enable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 0);
-+}
-+
-+static int pwrseq_rzg3l_csi_pwrrdy_disable(struct pwrseq_device *pwrseq)
-+{
-+	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 1);
-+}
-+
-+static const struct pwrseq_unit_data pwrseq_rzg3l_csi_pwrrdy_unit = {
-+	.name = "csi-pwrrdy-power-sequence",
-+	.enable = pwrseq_rzg3l_csi_pwrrdy_enable,
-+	.disable = pwrseq_rzg3l_csi_pwrrdy_disable,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_rzg3l_usb_pwrrdy_target = {
-+	.name = "usb-pwrrdy",
-+	.unit = &pwrseq_rzg3l_usb_pwrrdy_unit,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_rzg3l_dsi_pwrrdy_target = {
-+	.name = "dsi-pwrrdy",
-+	.unit = &pwrseq_rzg3l_dsi_pwrrdy_unit,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_rzg3l_csi_pwrrdy_target = {
-+	.name = "csi-pwrrdy",
-+	.unit = &pwrseq_rzg3l_csi_pwrrdy_unit,
-+};
-+
-+static const struct pwrseq_target_data *pwrseq_rzg3l_pwrrdy_targets[] = {
-+	&pwrseq_rzg3l_usb_pwrrdy_target,
-+	&pwrseq_rzg3l_dsi_pwrrdy_target,
-+	&pwrseq_rzg3l_csi_pwrrdy_target,
-+	NULL
-+};
-+
-+static const char * const pwrseq_rzg3l_pwrrdy_compats[] = {
-+	"renesas,r9a08g046-usbphy-ctrl",
-+	"renesas,r9a08g046-mipi-dsi",
-+	NULL
-+};
-+
-+static int pwrseq_rzg3l_pwrrdy_match(struct pwrseq_device *pwrseq,
-+				     struct device *dev)
-+{
-+	if (of_device_compatible_match(dev->of_node, pwrseq_rzg3l_pwrrdy_compats))
-+		return PWRSEQ_MATCH_OK;
-+
-+	return PWRSEQ_NO_MATCH;
-+}
-+
-+static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
-+				     const struct auxiliary_device_id *id)
-+{
-+	struct pwrseq_config config = {
-+		.parent = &adev->dev,
-+		.owner = THIS_MODULE,
-+		.drvdata = adev->dev.platform_data,
-+		.match = pwrseq_rzg3l_pwrrdy_match,
-+		.targets = pwrseq_rzg3l_pwrrdy_targets,
-+	};
-+
-+	return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &config));
-+}
-+
-+static const struct auxiliary_device_id pwrseq_rzg3l_pwrrdy_id_table[] = {
-+	{ .name = "rz_sysc.pwrseq-pwrrdy" },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(auxiliary, pwrseq_rzg3l_pwrrdy_id_table);
-+
-+static struct auxiliary_driver pwrseq_rzg3l_pwrrdy_driver = {
-+	.driver = {
-+		.name = "pwrseq-rzg3l-pwrrdy",
-+	},
-+	.probe = pwrseq_rzg3l_pwrrdy_probe,
-+	.id_table = pwrseq_rzg3l_pwrrdy_id_table,
-+};
-+module_auxiliary_driver(pwrseq_rzg3l_pwrrdy_driver);
-+
-+MODULE_AUTHOR("Biju Das <biju.das.jz@bp.renesas.com>");
-+MODULE_DESCRIPTION("Renesas RZ/G3L Power Ready Driver");
-+MODULE_LICENSE("GPL");
--- 
-2.43.0
-
+Konrad
