@@ -1,109 +1,155 @@
-Received: from mail-pj2-f6.google.com (mail-pj2-f6.google.com [74.125.227.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 535DE3F88B9
-	for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2026 09:05:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DF563C1983;
+	Thu, 27 Aug 2026 09:23:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787821521; cv=none; b=S17QwrlG1hgP45OEXywQbtAW1B34o+jSFkqQCDn9cLDKqvaEtPMeCfAxYo6SKzhbKRpiY81GPMtpOs0TaPHT3Lt/c96fDvDuEfVtTxB747/9UY0sXg1p4DmP55FMO1hF7cgYAny+bJ2mjkEyEGUcZHxdg4R+4nlgsF//yY9U/Yw=
+	t=1787822594; cv=none; b=OJcgarDVGSOHYoLmBN1h8N93oHlmu6Q63ktulG7QhQPCi2MksPHygWc51IYHWRqtWTpw0iMnF2p7SUXU+UqI+B5iOoYBTbCTsbaISE7P5You4VVm8JLLZff6Jz8LAF/pydyH98NQjHeakQteP/wRSOXpeyebjCZTuJfeIXCGEKo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787821521; c=relaxed/simple;
-	bh=oN8YLZgjM7glwBTvFfgUO69SKZnq8TcdnbKsMa/7Cy0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z9imxa2gNZVmIhjs8q8tdpB8iHsEJVc+uDpAW9GDb30WK3dR0uVqj6BbleoRSuEid969CXS4erDnOt5Ouc1miOVzLEqw1hUkgCTjc0V5+8Yy69y7HgygOCUNJa3Q6E4G7gQQVNoUsWXX059TN94utcLkjrvmszVWdbiNb1QfTEQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pj2-f6.google.com with SMTP id 98e67ed59e1d1-3964deae8a7so181034a91.0
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2026 02:05:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787821514; x=1788426314;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=La9AuFLCROXXxoi0dY8Uwszt2DZMaT/nI3rGCZbvoXI=;
-        b=aoG8Hf/TizjGLZ6kpO+Ly0S0FGGlWf4oOXapT9rlVr0s2Dj/mfGJGTzcJq6fSMXVh9
-         AQSq2+OHxBDf5t3qSiKgbz3bjvMNXNcBsihUu5oMJ53MEFWYgC9i7k3X2Vv/5gH46Y0q
-         tb+A0BvNYh8vLDhsCZ4fZXIVD13ASR0yAvp+zmibNHw/GdvYzvQyVvwgdBZI53lfLJ0B
-         hgXnw84Vg1Jp1c0SXWjVD7OK/I5g8ZYfaFu2iaIawWsareI8qn2iqMaxz9mi6cZ48knr
-         kAJvIWZo8wtYZfHnnQDo0J2QUeNSH7oLz8rXqJamvcc/0OVq3/rE0ahRetn0tXcVkfoU
-         Qr7Q==
-X-Gm-Message-State: AFuF++mIoapcovDoTI5QV3jektWdhPgnz3/gMHRVNlDlbHaVEtjFuf6I
-	rhds5AP4BVyi5Kzx3a2BoH3bCw97a8nO2t5x4vAb3mhCBcKdQ0qtVCzo
-X-Gm-Gg: AR+sD10hijNYVda0+l2cigxYnTSqT8e2g6Eg/uvIOFy5wEC1dt1BKcSYc7/B18V1LCK
-	d10PK1r8VDOgjFakvMbyaKZlTnxPZph5EZRHTPdN2k+05bEH13sootmO21tjnI0ffE5nCZuu8ir
-	0hvIslD9UJu3o0M31YQESMCGH8seXJie/Ny6lWh8Iy7KMNCnyGpRoxHKui2QP38afGN/QccNEp3
-	ETipqvs2v+CRSgFYW/TwzbvGDTv8UfzcDC+Z94+tqGlUeSGj+Yr+zwerdgcCHUyFEDmzCEluaWx
-	kLLjMeFiWt+gaN6PG096r8RaPkoM7KijM00fDZFgtEF/9/wkH/EoxewcTbkZEN1rX6f37+iie0B
-	xCuTSoReckn4zn+0kgURUouUX7KMtMw+CL3tfMU65Npqwa8ZSFYVBN4ffa/xNKtauAnmva4ijaM
-	CzLJzwy+kKz6j+ExNNF+vMRdgJPhQGS7U0vkoreLp2UT85dKaPSoEKKH4r3yrE8cjzCXpkqX5p8
-	LBzYCwgRZkT/Us179b1
-X-Received: by 2002:a17:90b:4c4c:b0:37f:e326:6557 with SMTP id 98e67ed59e1d1-3966d43edbamr26043983a91.4.1787821514469;
-        Thu, 27 Aug 2026 02:05:14 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.169])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-396b0d81682sm1950678a91.7.2026.08.27.02.05.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Aug 2026 02:05:13 -0700 (PDT)
-From: Xueqin Luo <luoxueqin@kylinos.cn>
-To: rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	christian.loehle@arm.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Xueqin Luo <luoxueqin@kylinos.cn>
-Subject: [PATCH] cpuidle: teo: Do not return a disabled idle state
-Date: Thu, 27 Aug 2026 17:05:05 +0800
-Message-ID: <20260827090505.3703860-1-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1787822594; c=relaxed/simple;
+	bh=Ie/cAy9KfD2GFFkBETq1farDKVxA0DobOvxLT5gKbdM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nE58f044cC2WfDOwPRnzAxKWI1JTgwrCQEUz8Eq3RqBjp6mUTSiCLmjtsWmMTYcln6LrUbM7wDxh8zMvFIBS0QuVSqZyHBtLBgBBwGLrg7wYlP0+xO9Yi/WiMe5FcHimbPLSFhiBkOwrMFAsh+lT2F5eZylRJOt+G/6duyURCFM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZAo8Mbiv; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZAo8Mbiv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 447F31F000E9;
+	Thu, 27 Aug 2026 09:23:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787822593;
+	bh=YpLVvCqE/ILN9yRjN+e3+yelyQFbjeo1FO+mT4iZEAM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ZAo8MbivSaMM6VB4x3hWTb23uUkZRdAP/1Lwr7frPbKHkoe1XbTQ6x880wCmzrv8k
+	 80Agmzok9QTrw3t3noEKi8aslJFZ7tZRX4Z//IePMZbQwpUpl5Q2+r7WSekkKRRD76
+	 2Q3jPQhvXWLF2EC6C6Xc8ad7n8w3XDo4b6vmc5cDbDukbMi/6ex+bmXoxJaOTaXtEb
+	 9b6MqPIcXrX/HjfXr6NmHmLMai/giotLh4pZ9tfbAhZ74uNsU7UNp9Ic2QAzfeqm65
+	 A6TvKikprLN1htDXQFhY/gwACSHjeYdUmZuz6g5v/TytvjFjRXgaHbAhhl5b5KYjjF
+	 pM89CQa8kHyrg==
+Date: Thu, 27 Aug 2026 11:23:10 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>
+Subject: Re: [PATCH v2 1/3] dt-bindings: interconnect: Add Qualcomm CAMNOC
+ ICC binding
+Message-ID: <20260827-thistle-puffin-of-chivalry-bccc47@quoll>
+References: <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
+ <20260819093211.1436275-2-atanas.filipov@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260819093211.1436275-2-atanas.filipov@oss.qualcomm.com>
 
-If idle state 0 is disabled and none of the enabled idle states satisfies
-the PM QoS latency constraint, constraint_idx in teo_select() stays at its
-initial value of 0, because the loop that updates it starts at state 1,
-and so the candidate state index is capped at state 0, which is disabled,
-and that state is returned to the caller.
+On Wed, Aug 19, 2026 at 12:32:09PM +0300, Atanas Filipov wrote:
+> Add binding for the Qualcomm CAMNOC interconnect provider. CAMNOC is
+> the internal AXI interconnect within the camera subsystem. Multiple
+> sub-devices share CAM_CC_CAMNOC_AXI_CLK; the ICC provider aggregates
+> their bandwidth votes and scales the clock accordingly, avoiding the
+> last-writer-wins race from direct clk_set_rate() calls.
+> 
+> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+> ---
+>  .../bindings/interconnect/qcom,camnoc.yaml    | 124 ++++++++++++++++++
+>  .../dt-bindings/interconnect/qcom,camnoc.h    |  52 ++++++++
+>  2 files changed, 176 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+>  create mode 100644 include/dt-bindings/interconnect/qcom,camnoc.h
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+> new file mode 100644
+> index 000000000000..b2659db2cf27
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
 
-The cpuidle core does not validate the returned state index against the
-per-state disable flags, so the CPU ends up entering the disabled state 0.
+Filename must match compatible.
 
-Address this by falling back to the shallowest enabled idle state, found
-by the same loop that computes the candidate, whenever the state selected
-by the latency constraint check turns out to be disabled.
+> @@ -0,0 +1,124 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/interconnect/qcom,camnoc.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Qualcomm Camera NOC (CAMNOC) Interconnect Provider
+> +
+> +maintainers:
+> +  - Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+> +
+> +description:
+> +  The Camera Network-on-Chip (CAMNOC) is the internal AXI interconnect
+> +  within the Qualcomm camera subsystem. It arbitrates AXI bandwidth
+> +  between camera sub-devices (IFE, JPEG, BPS, IPE, etc.) and the external
+> +  memory interconnect. Multiple consumers may independently request
+> +  bandwidth via icc_set_bw(); the CAMNOC ICC provider aggregates all active
+> +  votes and scales CAM_CC_CAMNOC_AXI_CLK accordingly, avoiding the
+> +  last-writer-wins race that arises when each consumer calls clk_set_rate()
+> +  directly on the shared clock.
+> +
+> +  Each camera sub-device driver that shares the CAMNOC AXI clock should
+> +  obtain an ICC path from its master port to SLAVE_CAMNOC_AXI and vote for
+> +  bandwidth using the port IDs defined in
+> +  include/dt-bindings/interconnect/qcom,camnoc.h.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - qcom,sm8250-cam-virt
+> +
+> +  clocks:
+> +    items:
+> +      - description: CAMNOC AXI clock
+> +
+> +  clock-names:
+> +    items:
+> +      - const: camnoc_axi
+> +
+> +  '#interconnect-cells':
+> +    const: 1
+> +
+> +required:
+> +  - compatible
+> +  - clocks
+> +  - clock-names
+> +  - '#interconnect-cells'
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/qcom,camcc-sm8250.h>
+> +    #include <dt-bindings/interconnect/qcom,camnoc.h>
+> +
+> +    /* CAMNOC ICC provider node */
 
-Note that if none of the enabled idle states meets the latency constraint,
-choosing the shallowest enabled one is the least intrusive option, and it
-is also consistent with the behavior of the menu governor.
+Drop, redundant.
 
-Fixes: c410a9a142f1 ("cpuidle: teo: Change the main idle state selection logic")
-Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
----
- drivers/cpuidle/governors/teo.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+> +    cam_virt: interconnect-cam-virt {
 
-diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
-index ac43b9b013b3..b4b14c86b2a9 100644
---- a/drivers/cpuidle/governors/teo.c
-+++ b/drivers/cpuidle/governors/teo.c
-@@ -433,6 +433,14 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	if (idx > constraint_idx)
- 		idx = constraint_idx;
- 
-+	/*
-+	 * If the state selected above is disabled, which is only possible if
-+	 * it is state 0 (all of the enabled states violate the latency
-+	 * constraint in that case), fall back to the shallowest enabled one.
-+	 */
-+	if (dev->states_usage[idx].disable)
-+		idx = idx0;
-+
- 	/*
- 	 * If the tick has not been stopped and either the candidate state is
- 	 * state 0 or its target residency is low enough, there is basically
--- 
-2.43.0
+Drop unused label
+
+> +        compatible = "qcom,sm8250-cam-virt";
+> +        clocks = <&camcc CAM_CC_CAMNOC_AXI_CLK>;
+> +        clock-names = "camnoc_axi";
+> +        #interconnect-cells = <1>;
+> +    };
+> +
+> +    /*
+> +     * Simple consumer example: IFE sub-device voting for CAMNOC bandwidth
+
+
+And what are the writing schema/bindings asking about consumers? Or
+DTS101 slides? Look at other bindings instead of coming with own style.
+
+Best regards,
+Krzysztof
 
