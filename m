@@ -1,80 +1,100 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D604020125F
-	for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2026 12:33:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B739334C1D;
+	Thu, 27 Aug 2026 12:52:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787834007; cv=none; b=jWhIGWkmdPywpzhhSWGfjvKLvfX52Te1xYw1jQ5MF0bt2UZyGFwSH6zJ8DTa7DRSaVHO2rbkmCxD3htpPgqkCghXUfW6yPKjaGAf8OT7hwhi0JQ/BS9kzHDJxZPByfxBsOMF8v1CGiTSje8CzeYR3QZTqcqBHMxPcj9IbvrBp6o=
+	t=1787835182; cv=none; b=URMBBg8O5kJXRKDeMUWrZVdqKQeDThB8CElq8oaJYxIYzIkjd1TllKoz1rEnyT+gO3zewiFTuIGXd0H6GOdAnvWI0IeBe62MJFTNDLYYapa72OHkcDtx7sXOiinkWN7ClYEV+eXdMV8pLR08kASGWFeVqtjrg4RYHEb7Qw8oTRw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787834007; c=relaxed/simple;
-	bh=Hw5+Q73+ZWi9YmoMS+ZX9S0GXOSKMnNzUKiQEKe40vw=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version; b=JEs6MSqjo3PzR5qh7o5PRNWecU7TsESLqaKVSC1EWgf6pZHpEOAa03aMusPMsQIc+A9m5uAPnRhbMtqwZcHT/AuLF+n7l8IgwgU0df0veBvoa+8XYda55CUGgmNVcecv0n9Pbz5mki5YaEWwIe7I4AQDwNVOcQQhGSdAzGVI0Dw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 76d8c452a21311f19a56ed5b684f684d-20260827
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:0d98c23f-030e-487d-9ef0-a3ff47140e41,IP:0,U
-	RL:0,TC:0,Content:0,EDM:-25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:-25
-X-CID-META: VersionHash:7db8b62,CLOUDID:4cb7de44c5339ad4a551f7cbc1321b86,BulkI
-	D:nil,BulkQuantity:0,SF:102|136|850|865|898,TC:nil,Content:0|15|50,EDM:2|-
-	100,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
-	,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 76d8c452a21311f19a56ed5b684f684d-20260827
-X-User: lijun01@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <lijun01@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1170000177; Thu, 27 Aug 2026 20:33:10 +0800
-From: Li Jun <lijun01@kylinos.cn>
-To: lijun01@kylinos.cn,
-	rafael@kernel.org,
-	lenb@kernel.org,
-	pavel@kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] doc: power: update swsusp.txt references to swsusp.rst
-Date: Thu, 27 Aug 2026 20:32:56 +0800
-Message-Id: <20260827123256.2548946-1-lijun01@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	s=arc-20240116; t=1787835182; c=relaxed/simple;
+	bh=cWMqsYyhgOMCauTHPl5SX2JinPbM/WNNkUFbgOFH9bU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=m1jzXK8hTov1SF4efnjnp8qV2IBXp80xHvVGvPA2KwFS/XlQexraO403OeaxLea0lCiPhglCqkw+lXveg2oFRDFY3mUOZhX0WfGG/ZvUA6rnEA/qF4DISbsh8wQ/WTKhOk4z5ZccXT7Q3PVPMM4mrlQBRozPLCmBnPlsoQoKq2g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=c2NyS9LB; arc=none smtp.client-ip=192.198.163.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="c2NyS9LB"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1787835174; x=1819371174;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=cWMqsYyhgOMCauTHPl5SX2JinPbM/WNNkUFbgOFH9bU=;
+  b=c2NyS9LBbPO9HlxySyQRr0KZyS1mYBQqng70GvInz4Dh7faL3KXxFU2O
+   twEOsr41RNTADJtmjL5Z2up8N+NkOJG7ke5bBUPbHnv+0DAaCDkBgv9XC
+   KMQIQAHm3oZN7c6wSANm4lpGRHa5QCbr+swqqTsvf28pOSsooHq7n23F6
+   Ea8JknJGLyYihGOjGTnh971EmnVwdfPDXWI7xuz2Mv7ecFQBCU/CrEuor
+   SoCHiQOijo68fIgLYhcd86iRgxGaTwZW+Re4WqCP6/+pew5/QBClOTZb0
+   DzD51QuV04SnyaC+ZNvWXvJc++hgkL4ZWOeNXrIIGXSpamSufbLxmboc5
+   g==;
+X-CSE-ConnectionGUID: BpdGasMnR+SW1Fyofi4j0A==
+X-CSE-MsgGUID: L58OPdmtQsWH4723Y+311w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11887"; a="87277039"
+X-IronPort-AV: E=Sophos;i="6.25,246,1779174000"; 
+   d="scan'208";a="87277039"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Aug 2026 05:52:48 -0700
+X-CSE-ConnectionGUID: pLVIn83PRxq0EEvk+Q/VOA==
+X-CSE-MsgGUID: 7KPoMQCwTZimaaMjNox/QA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,246,1779174000"; 
+   d="scan'208";a="306080245"
+Received: from fpallare-mobl4.ger.corp.intel.com (HELO localhost) ([10.245.244.125])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Aug 2026 05:52:44 -0700
+Date: Thu, 27 Aug 2026 15:52:42 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+Cc: Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>, Vinod Koul <vkoul@kernel.org>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] thermal/drivers/qcom/spmi-mbg-tm: Import IIO_CONSUMER
+ namespace
+Message-ID: <apAzGkXpnMYHcnqJ@ashevche-desk.local>
+References: <20260827103555.883018-1-shengchao.guo@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260827103555.883018-1-shengchao.guo@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-The swsusp.txt documentation file has been renamed to swsusp.rst.
-Update the references in the Documentation/power/userland-swsusp.rst
-comments to use the correct filename.
+On Thu, Aug 27, 2026 at 06:35:55PM +0800, Shawn Guo wrote:
+> The IIO consumer interface symbols moved into the IIO_CONSUMER namespace,
+> so consumers must import it explicitly.  Without it modpost fails on
 
-Signed-off-by: Li Jun <lijun01@kylinos.cn>
----
- Documentation/power/userland-swsusp.rst | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> 'iio_read_channel_processed' and 'devm_iio_channel_get':
 
-diff --git a/Documentation/power/userland-swsusp.rst b/Documentation/power/userland-swsusp.rst
-index 1cf62d80a9ca..b00b850148b2 100644
---- a/Documentation/power/userland-swsusp.rst
-+++ b/Documentation/power/userland-swsusp.rst
-@@ -4,9 +4,9 @@ Documentation for userland software suspend interface
- 
- 	(C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
- 
--First, the warnings at the beginning of swsusp.txt still apply.
-+First, the warnings at the beginning of swsusp.rst still apply.
- 
--Second, you should read the FAQ in swsusp.txt _now_ if you have not
-+Second, you should read the FAQ in swsusp.rst _now_ if you have not
- done it already.
- 
- Now, to use the userland interface for software suspend you need special
+iio_read_channel_processed()
+devm_iio_channel_get()
+
+>   ERROR: modpost: drivers/thermal/qcom/qcom-spmi-mbg-tm.ko: module uses
+>   symbol 'iio_read_channel_processed' from namespace 'IIO_CONSUMER', but
+>   does not import it.
+
+> Fixes: ebf1d03dab96 ("iio: inkern: Use namespaced exports")
+
+Shouldn't this be backported to stable kernels?
+
+...
+
+Code wise looks good.
+
 -- 
-2.25.1
+With Best Regards,
+Andy Shevchenko
+
 
