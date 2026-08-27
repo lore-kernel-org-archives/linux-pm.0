@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C82E415F1F;
-	Thu, 27 Aug 2026 12:20:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E96D94483B9;
+	Thu, 27 Aug 2026 12:22:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787833221; cv=none; b=eudjKsyTXkZriyLMjdcNWRU7cO23GkhAOK+vF+9/f6Tv00yKcX2Q4GI4Cy+LtZ8rUBN1KBbTeRLam1YfzbZS723vHP0CJXiUKxCygVWvR/q1jEK7Kga7dzxUijzz1079AbsupfucuVV0obv/597Zxn/MXAEcgJPba8IN4ltnILQ=
+	t=1787833344; cv=none; b=ovm8alBOenl9Kqb9r2KSn8017lmicMUbB9+X7YDDKQlNPmSf82rM79hMdYhLuwxTBHgJ866OC0/mRN0ZAM6z4QCzZZNA3TcScUSoMDoMYyd4RVYugR8lc3bkRLi6HwMFAR7zH2G2MiAjXL0mEyOD+Pys5MkJxfybGyopaywlj4s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787833221; c=relaxed/simple;
-	bh=VHraeBIZleTsAxdBtv6ZKxlOuK71+qD7wSnonQkE2g0=;
+	s=arc-20240116; t=1787833344; c=relaxed/simple;
+	bh=GMUVwGOzMqoxRP1wJ8cvGZNsmZ2mlUnZ2XK2Rv/ACFQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rN3kOVqgc6OcCif+CWyKk4lRikcc6IC3+Icne7A1mbNIMlu8lwshrBYRwYqjMND/IZ0Bz9j7TAmBDyClyEDpWQKIdg+7gOv7j35ggWsBVm7U4loUnHFJfVYMK3Yzjwk0lDGtQ6qt6eIrKv7ioswgQSHO7UrgU6Trtu3bgRjRhSo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ns3c1dbg; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=icyOt7bkagVbl3069e4tIT7qimMbfIxkpXgIf+yHe3NySV49Vz25sosmzuC869wbHGNVHiRYRxddBpmhGyWxD2hLuki3sW/8g6ocXZuviae6NYB37kmHwIjxkfXBjohORw2wYo+U6WsyOIPrk1H5tulvCRHKJBYL0YVi18ghb9o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DHiOqh7H; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ns3c1dbg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F6301F000E9;
-	Thu, 27 Aug 2026 12:20:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DHiOqh7H"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E46901F000E9;
+	Thu, 27 Aug 2026 12:22:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787833220;
-	bh=JC8KEH2A5MaBWTLPjH1KEcQphE7kFFAbdhvua3h0dxM=;
+	s=k20260515; t=1787833342;
+	bh=mI7Ir8cW1HZGzrJ3IgYTBV4C/vSt21EnGOEbcNn3KgE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ns3c1dbgik71leiI5OFOgqECUIefVwx/zRnd6jyWTbatex/odpR1+VaXlszUnQ2Gz
-	 +Oc1OMOAS+mMgDM+HVN8N8q4Rq858mfCFiFs/XTZfwlnx+uuYcYMBkEr7t+vHGr7i/
-	 3bIp+aBVOQtpxadtjMEoJR0aoh5pTydMhZlUhEZW+4X9jmK+oP9iATtr77WsZX+I+l
-	 tD6rg9A4+diFFnctSArK3/GBlDNIe6DrQwBbHc5ckdLqaugZefKMG2koXa/vgeNH1B
-	 1rY1hp2+4lYToz7u5eOIBhnGonlqlBUvZ8a1d8tBLc+CtmH4LdAsz7kMLaH2cvjHKT
-	 ThEaoKXn0Y3vQ==
-Date: Thu, 27 Aug 2026 14:20:15 +0200
+	b=DHiOqh7Hc6UidV5DQSHUCuyQPRlT/1LcmtoaXOCgWNw3pwfOebHtmVjEWg03TFJl9
+	 /ibWFHUAwgyIbj1XBYsfyQUfMGF/o7hLcWVRrgrotr2JbHmhyTt5qh+J8LrIZSJnUB
+	 ShBey9nkwPM/fBCare/ty51WaL3wGiNJxg32piZilWMf6f+4e7t2PVm+LqVevgxsgR
+	 D65rGuNiiYDYTBjD+Th2JBoDt7Wudemp5/dFJcUu5sS3xBWCQqKahy4UuKmhgaHKeR
+	 M/FO/3gLgHBTWuHbUFUH7RBKvitxshy4w0z67OYYazfIHX1LlnTjXP2ze6lkOa5Js0
+	 moT1GDautIEZw==
+Date: Thu, 27 Aug 2026 14:22:18 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
 Cc: Bjorn Andersson <andersson@kernel.org>, 
@@ -41,10 +41,11 @@ Cc: Bjorn Andersson <andersson@kernel.org>,
 	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
 	linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org
-Subject: Re: [PATCH v3 06/15] dt-bindings: interconnect: Add Qualcomm Kuno NoC
-Message-ID: <20260827-predictable-mauve-catfish-3d5ad0@quoll>
+Subject: Re: [PATCH v3 10/15] dt-bindings: clock: qcom: Add Kuno Global Clock
+ Controller
+Message-ID: <20260827-tiger-of-sublime-flowers-eb8f90@quoll>
 References: <20260821-kuno-soc-support-v3-0-196e2b306368@oss.qualcomm.com>
- <20260821-kuno-soc-support-v3-6-196e2b306368@oss.qualcomm.com>
+ <20260821-kuno-soc-support-v3-10-196e2b306368@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -53,29 +54,15 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260821-kuno-soc-support-v3-6-196e2b306368@oss.qualcomm.com>
+In-Reply-To: <20260821-kuno-soc-support-v3-10-196e2b306368@oss.qualcomm.com>
 
-On Fri, Aug 21, 2026 at 09:38:59PM +0530, Hardeep Sharma wrote:
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - qcom,kuno-aggre-noc
-> +      - qcom,kuno-clk-virt
-> +      - qcom,kuno-cnoc-main
-> +      - qcom,kuno-dc-noc
-> +      - qcom,kuno-mc-virt
-> +      - qcom,kuno-mem-noc
-> +      - qcom,kuno-pcie-anoc
-> +      - qcom,kuno-system-noc
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
+On Fri, Aug 21, 2026 at 09:39:03PM +0530, Hardeep Sharma wrote:
+> Document the Global Clock Controller (GCC) binding and associated
+> clock/reset IDs for the Qualcomm Kuno SoC.
+> 
+> Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
 
-Missing minItems. I asked to open other bindings to see how this is
-done. So for example you took qcom,maili-rpmh.yaml. What do you see
-there but you do not see here?
+Sashiko comment was not answered and looks reasonable, dropping from Patchwork.
 
 Best regards,
 Krzysztof
