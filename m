@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BDFDC3624A8;
-	Thu, 27 Aug 2026 06:31:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 55B4D303CAB;
+	Thu, 27 Aug 2026 06:31:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787812293; cv=none; b=WgerzHPsNc18KFiimvBQjQaHgvqIbW3x8J9+EOmScTAajelTzNQR75Znqs0FEmmgESIgym+WUqsBOV3wMXBTp9QkjwyvpdYPZ1EB5LjCrGJeA7DonpZNcRSyDOKR7FAe41u8Sn4EfhmHsIaj0ZIydLN1nrgv15davJqZiXpS0UQ=
+	t=1787812294; cv=none; b=Y6IsEyAvV8cyg5akff8wZBwNQ01IGLTSrtJZq0AL7EomylCwlCZofcGq2AVmP5cfCF27zuRRq5EVWMb5Xg6euHeOraMtDdbLwu2cL/NzXrT0np0mDkUPj9sCQmIOJ3Jli6Pwm1zlgGmzmkjil2AjS7xDXOAL8eeSR/MlbH3qbAQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787812293; c=relaxed/simple;
-	bh=CIxZ8B9ZmnDyKGKJF5GwehKD7G1ho8BRwki8Ld1hSkI=;
+	s=arc-20240116; t=1787812294; c=relaxed/simple;
+	bh=kgT7HbsQTTEuGbH31fzxChvTf7/zr7ejraUuGK7rw1E=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=GcVl2hPHoBmLTxy9i4ymPGJrzM9hln69RieZzpbj2GlOFtpV4/+lXkOJ6ayBoxJAY0IuAd0bZwEBlaMw2xIzdmfON3ebCyuOT1RXST/PRLEmNDvqjycS8fWcA10oZ1nn+J/Y7jC3dzcyUjmhxZkZ1ER0L/QGkIRunV4cG2CjkME=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=FHtPtq8L; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=Y9LJVEECcid4ojUrp7waf3qnTkVqHob4gfg8WpRuqvq5R9Wa3222OnmaQ49MNrNxV5SjLwQqkyNzqsX5X/5wdxl3MM8d9+kTYvb1n9Jw6lqbILCrZxdVzo7Lf8UCkYjgi/Me1IrGVRvznH2FIJ7/DmTGbs319+WUhmgmB3ARIac=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=gqLFIG/r; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="FHtPtq8L"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="gqLFIG/r"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 787891691;
-	Wed, 26 Aug 2026 23:31:21 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1E717169E;
+	Wed, 26 Aug 2026 23:31:24 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.73.34])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id E55063F85F;
-	Wed, 26 Aug 2026 23:31:22 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id AD4293F85F;
+	Wed, 26 Aug 2026 23:31:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1787812285; bh=CIxZ8B9ZmnDyKGKJF5GwehKD7G1ho8BRwki8Ld1hSkI=;
+	t=1787812287; bh=kgT7HbsQTTEuGbH31fzxChvTf7/zr7ejraUuGK7rw1E=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=FHtPtq8LXylfTfv0hWLjJPrX3lVAt9StHgW0eFRUv9rVlBMhEvgskSv6YBFHrOpcw
-	 70LrfCOojPuARV4kPrXQNncFxifJN2OVOVzj9Vg3mve/wSMLR/CCXXjBdDzeI9kjpu
-	 FIzJ9/6Us3n0lc23mrCKWHcYNL3YslHUnpujisJs=
+	b=gqLFIG/rgiLVcaWh9T1Hch/YKEtKkhc3fy8pVFwdNK5/aiF5IvVubMV+zmUsyiS0U
+	 GCKutUvBMn0/hNU+yHamN6EmeeK6DVhWl9Dw+ViEMkFsmAxnpGq2IQVyLUsMpp2DN3
+	 D7lG7Gkw/MALNeUmA90jdNaLQcPpTRmXI7TjaRFk=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -42,9 +42,9 @@ Cc: linux-pm@vger.kernel.org,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>,
 	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v5 06/15] ACPI: CPPC: Serialize PCC EPP payload updates
-Date: Thu, 27 Aug 2026 07:30:51 +0100
-Message-Id: <20260827063100.2741066-7-christian.loehle@arm.com>
+Subject: [PATCH v5 07/15] ACPI: CPPC: Release CPC descriptors through kobject
+Date: Thu, 27 Aug 2026 07:30:52 +0100
+Message-Id: <20260827063100.2741066-8-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260827063100.2741066-1-christian.loehle@arm.com>
 References: <20260827063100.2741066-1-christian.loehle@arm.com>
@@ -56,149 +56,127 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-cppc_set_epp_perf() stages Autonomous Selection and Energy Performance
-Preference in the PCC shared region before taking pcc_lock. The platform
-may still own the subspace, or a concurrent command may consume or
-overwrite only part of the new payload.
+The CPC descriptor embeds the kobject used for its sysfs directory, but
+it has no release callback and processor exit frees the descriptor
+immediately after kobject_put(). It also unmaps register resources and
+releases PCC state before sysfs removal has drained active attribute
+callbacks.
 
-Take the PCC write lock and wait for OSPM ownership before staging either
-control. Keep the lock held until the complete payload has been submitted
-with CMD_WRITE, so firmware cannot observe a mixed transaction.
+Provide a release callback which unmaps and frees the descriptor, and use
+the same cleanup helper before kobject initialization. Once initialized,
+let kobject_put() own descriptor cleanup so its error path cannot free the
+object twice.
 
-For a mixed PCC/non-PCC description, complete every fallible non-PCC write
-before staging PCC data. Cross-address-space updates cannot be atomic, but
-a non-PCC failure can no longer leave an unsent value in shared memory for
-a later PCC command to consume.
+On processor exit, first unpublish the per-CPU descriptor and remove its
+sysfs directory, then release PCC state and drop the kobject reference.
+This keeps all resources valid while sysfs callbacks are active and also
+works with delayed kobject release.
 
-Classify every probe-validated writable control as either PCC or non-PCC.
-This covers SystemIO along with FFH and SystemMemory and avoids repeating a
-flexible-address-space _OSC decision that probe has already made.
-
-If ownership acquisition or PCC staging fails, abort any older pending
-performance batch before releasing the exclusive lock so its Phase-II
-waiters receive the error instead of sleeping indefinitely.
-
-This follows the PCC ownership sequence in ACPI 6.5 Section 14.5.
-
-Fixes: 7bc1fcd39901 ("ACPI: CPPC: Add AMD pstate energy performance preference cppc control")
+Fixes: 158c998ea44b ("ACPI / CPPC: add sysfs support to compute delivered performance")
 Reported-by: Sashiko <sashiko-bot@kernel.org>
 Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
-Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 74 ++++++++++++++++++++++++----------------
- 1 file changed, 44 insertions(+), 30 deletions(-)
+ drivers/acpi/cppc_acpi.c | 50 +++++++++++++++++++++++-----------------
+ 1 file changed, 29 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 3f025cfa30f6..0fda08628c27 100644
+index 0fda08628c27..4bf17d954d87 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -1909,8 +1909,10 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
- 	struct cpc_register_resource *auto_sel_reg;
- 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
--	bool autosel_ffh_sysmem;
--	bool epp_ffh_sysmem;
-+	bool auto_sel_pcc;
-+	bool auto_sel_non_pcc;
-+	bool epp_pcc;
-+	bool epp_non_pcc;
- 	int ret;
+@@ -350,7 +350,27 @@ static struct attribute *cppc_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(cppc);
  
- 	if (!cpc_desc) {
-@@ -1921,52 +1923,64 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
- 	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
- 	epp_set_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
- 
--	epp_ffh_sysmem = CPC_SUPPORTED(epp_set_reg) &&
--		(CPC_IN_FFH(epp_set_reg) || CPC_IN_SYSTEM_MEMORY(epp_set_reg));
--	autosel_ffh_sysmem = CPC_SUPPORTED(auto_sel_reg) &&
--		(CPC_IN_FFH(auto_sel_reg) || CPC_IN_SYSTEM_MEMORY(auto_sel_reg));
-+	auto_sel_pcc = cpc_is_writable(auto_sel_reg) &&
-+		CPC_IN_PCC(auto_sel_reg);
-+	epp_pcc = cpc_is_writable(epp_set_reg) && CPC_IN_PCC(epp_set_reg);
-+	auto_sel_non_pcc = cpc_is_writable(auto_sel_reg) && !auto_sel_pcc;
-+	epp_non_pcc = cpc_is_writable(epp_set_reg) && !epp_pcc;
- 
--	if (CPC_IN_PCC(epp_set_reg) || CPC_IN_PCC(auto_sel_reg)) {
-+	/* Complete fallible non-PCC writes before staging PCC data. */
-+	if (auto_sel_non_pcc) {
-+		ret = cpc_write(cpu, auto_sel_reg, enable);
-+		if (ret)
-+			return ret;
-+	}
-+	if (epp_non_pcc) {
-+		ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
-+		if (ret)
-+			return ret;
++static void cppc_free_desc(struct cpc_desc *cpc_ptr)
++{
++	unsigned int i;
++
++	for (i = 2; i < cpc_ptr->num_entries; i++) {
++		void __iomem *addr = cpc_ptr->cpc_regs[i - 2].sys_mem_vaddr;
++
++		if (addr)
++			iounmap(addr);
 +	}
 +
-+	if (epp_pcc || auto_sel_pcc) {
- 		if (pcc_ss_id < 0) {
- 			pr_debug("Invalid pcc_ss_id for CPU:%d\n", cpu);
- 			return -ENODEV;
- 		}
- 
--		if (cpc_is_writable(auto_sel_reg)) {
-+		pcc_ss_data = pcc_data[pcc_ss_id];
-+		if (!pcc_ss_data)
-+			return -ENODEV;
++	kfree(cpc_ptr);
++}
 +
-+		down_write(&pcc_ss_data->pcc_lock);
++static void cppc_kobj_release(struct kobject *kobj)
++{
++	cppc_free_desc(to_cpc_desc(kobj));
++}
 +
-+		ret = check_pcc_chan(pcc_ss_id, false);
-+		if (ret)
-+			goto out_unlock;
-+
-+		if (auto_sel_pcc) {
- 			ret = cpc_write(cpu, auto_sel_reg, enable);
- 			if (ret)
--				return ret;
-+				goto out_unlock;
- 		}
- 
--		if (cpc_is_writable(epp_set_reg)) {
-+		if (epp_pcc) {
- 			ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
- 			if (ret)
--				return ret;
-+				goto out_unlock;
- 		}
- 
--		pcc_ss_data = pcc_data[pcc_ss_id];
--
--		down_write(&pcc_ss_data->pcc_lock);
- 		/* after writing CPC, transfer the ownership of PCC to platform */
- 		ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
--		up_write(&pcc_ss_data->pcc_lock);
--	} else if (osc_cpc_flexible_adr_space_confirmed &&
--		   (epp_ffh_sysmem || autosel_ffh_sysmem)) {
--		if (autosel_ffh_sysmem) {
--			ret = cpc_write(cpu, auto_sel_reg, enable);
--			if (ret)
--				return ret;
--		}
- 
--		if (epp_ffh_sysmem) {
--			ret = cpc_write(cpu, epp_set_reg,
--					perf_ctrls->energy_perf);
--			if (ret)
--				return ret;
--		}
-+out_unlock:
-+		if (ret)
-+			cppc_abort_pending_pcc_write(pcc_ss_data, ret);
-+		up_write(&pcc_ss_data->pcc_lock);
-+	} else if (epp_non_pcc || auto_sel_non_pcc) {
-+		ret = 0;
- 	} else {
--		ret = -ENOTSUPP;
--		pr_debug("_CPC in PCC/FFH/SystemMemory are not supported\n");
-+		ret = -EOPNOTSUPP;
-+		pr_debug("No writable EPP controls for CPU:%d\n", cpu);
+ static const struct kobj_type cppc_ktype = {
++	.release = cppc_kobj_release,
+ 	.sysfs_ops = &kobj_sysfs_ops,
+ 	.default_groups = cppc_groups,
+ };
+@@ -1133,7 +1153,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	if (ret) {
+ 		per_cpu(cpc_desc_ptr, pr->id) = NULL;
+ 		kobject_put(&cpc_ptr->kobj);
+-		goto out_free;
++		goto out_buf_free;
  	}
  
- 	return ret;
+ 	kfree(output.pointer);
+@@ -1141,15 +1161,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 
+ out_free:
+ 	pr_err("CPU%d: failed to initialize _CPC: %d\n", pr->id, ret);
+-
+-	/* Free all the mapped sys mem areas for this CPU */
+-	for (i = 2; i < cpc_ptr->num_entries; i++) {
+-		void __iomem *addr = cpc_ptr->cpc_regs[i-2].sys_mem_vaddr;
+-
+-		if (addr)
+-			iounmap(addr);
+-	}
+-	kfree(cpc_ptr);
++	cppc_free_desc(cpc_ptr);
+ 
+ out_buf_free:
+ 	kfree(output.pointer);
+@@ -1166,10 +1178,14 @@ EXPORT_SYMBOL_GPL(acpi_cppc_processor_probe);
+ void acpi_cppc_processor_exit(struct acpi_processor *pr)
+ {
+ 	struct cpc_desc *cpc_ptr;
+-	unsigned int i;
+-	void __iomem *addr;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, pr->id);
+ 
++	cpc_ptr = per_cpu(cpc_desc_ptr, pr->id);
++	if (cpc_ptr) {
++		per_cpu(cpc_desc_ptr, pr->id) = NULL;
++		kobject_del(&cpc_ptr->kobj);
++	}
++
+ 	if (pcc_ss_id >= 0 && pcc_data[pcc_ss_id]) {
+ 		if (pcc_data[pcc_ss_id]->pcc_channel_acquired) {
+ 			pcc_data[pcc_ss_id]->refcount--;
+@@ -1180,20 +1196,12 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
+ 			}
+ 		}
+ 	}
++	per_cpu(cpu_pcc_subspace_idx, pr->id) = -1;
+ 
+-	cpc_ptr = per_cpu(cpc_desc_ptr, pr->id);
+ 	if (!cpc_ptr)
+ 		return;
+ 
+-	/* Free all the mapped sys mem areas for this CPU */
+-	for (i = 2; i < cpc_ptr->num_entries; i++) {
+-		addr = cpc_ptr->cpc_regs[i-2].sys_mem_vaddr;
+-		if (addr)
+-			iounmap(addr);
+-	}
+-
+ 	kobject_put(&cpc_ptr->kobj);
+-	kfree(cpc_ptr);
+ }
+ EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
+ 
 -- 
 2.34.1
 
