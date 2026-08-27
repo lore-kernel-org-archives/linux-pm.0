@@ -1,118 +1,129 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 470A924886A;
-	Thu, 27 Aug 2026 13:59:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F89147604A;
+	Thu, 27 Aug 2026 14:14:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787839178; cv=none; b=FJfOsArSha4bJY/5N985kAybxwXc7+0wITc53260qkQz4VxmhSe4Yl5qflneKLcevs+9l8BN7XYGz4YjhACftsU0H9uqtUhCGzP6lBp7ayOO9HVJpf7OVylCNOc7JwxuYoUfjlw+QmgVYCblsCdfxXdF67G11PEGM5nDrSqKPxc=
+	t=1787840072; cv=none; b=Ys9kQTjJV4UR5bn61Tb0U1XALc+2BU2LaWzn3uHUEOBNCP+Cc+J6EvIq0nwf3n7IjkentsUuVdOBbyJBpi2bN5FF1cqm6jiZFJ5DvnHjv7M2dl3rqPRdalr0bgX4vbIDXIv0pFTTu0A9OeJ4KyfEQGkdfZsCMWfaaVT1G4txubQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787839178; c=relaxed/simple;
-	bh=6QtYceN08ctRHiGOKb2Te5ZRLhVJhxy9KZZsmpog0uw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=hhm9mI5KGiuAWA/iBcQ5Fxu7q/lyT7f2iUVo6SdfxWVQQrBYfQhhr4ABFrKGdtt7L0UFo1pdQJbTUbzr7AM4SHLP7ql/ODz9aSTSMdZbQnpeHVitWPqxZRNLFO7WUSS3JegPSZhibjDm0QFTjb9RCCjAlQ6qXq5LFtYRwzbVtUI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PUOcZg2O; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787840072; c=relaxed/simple;
+	bh=yfm0l6U2JD7vyXzu8CeyNZgRDWe8o3K63SYpJUx897M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=j9wczCrrsS8DgU0VVEccJAIxQEicVja2P5r90YvbzJWLDtl/iSXe1sfl28xriFHEI2Ffw1WoKfnejy3If/aDkeaeTiJO04WEsEjspKGAU6lnkH+z9Mf2xxpoqB0Zry+LejWMVFF8DBmYLALQqx6B38segnREEfp77hr5zERGzjw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H/mf54W+; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PUOcZg2O"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07FBA1F000E9;
-	Thu, 27 Aug 2026 13:59:34 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H/mf54W+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E6D41F00A3F;
+	Thu, 27 Aug 2026 14:14:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787839176;
-	bh=YlYAmxTedcW+z4fH3/ZePc5utWgTFiPplYAQ6byAKJM=;
-	h=From:To:Cc:Subject:Date;
-	b=PUOcZg2OqkXJX8Sv/h7shs4Dy0sYV1xhlnOcbKILk4ut9aYpIGH/4Y8Vx7V+ID9Lk
-	 szZ0EGxiF18tx1SgGPB6fT5/INHoQzUCqq3JwjFCzmPnX7QGiJ/v4lyvPMJYC8N1Cb
-	 jko48HE/kS+Vh6aMVJMZHGZvVPITY4ylpxDC/uDHF+zqyLFDuC6BHaOnaAyr6a2N5h
-	 QN0ka7p/Rzm3KrKVDwOXJ5Kc8hPaTLKcZcJlTlYDmq9EqkDEvmKyfXje3g+IoU0FB6
-	 O3v0gMB8bKJHDjORaBbUjDZRpCrAXMjmfYMKFt1zb7IKDn/zpxASzatsIsxInqrAfF
-	 niv8RUIqYWXxA==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Linux ACPI <linux-acpi@vger.kernel.org>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Peixin Xie <peixin.xie@linux.spacemit.com>,
- Sakari Ailus <sakari.ailus@linux.intel.com>, Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v1] Revert "ACPI: scan: Defer device power initialization"
-Date: Thu, 27 Aug 2026 15:59:32 +0200
-Message-ID: <6029658.DvuYhMxLoT@rafael.j.wysocki>
-Organization: Linux Kernel Development - Intel
+	s=k20260515; t=1787840067;
+	bh=iPd05vfVGTTXMu8o+Kz/ydj1//S090ZmEizU6uZMvXQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=H/mf54W+MN//hu47JmgAU9exTPmvl0LBHB5ZzKhGEwexbRuvTYIkxj4GXgA835qnR
+	 9UEt8YKMOrQNOLAFi3nx7pgRQfY25zqX+764+u84p08c1ffcviu+w56HZl/bCUCG0L
+	 ihHFnT+8mC7h+ynswLMu1pkSIvecp+7uEK09sDoYo898fL5w+AT7uAHCJEisDnTdGu
+	 nqenwjGFq5F6mhrGpgDFQqyTszGxV2iYC0cv81MuAExmXpeZ0TN/UNxfU3/4Szp6vv
+	 o+MTXUDPIFfzalBFoZ+PepIPsLWVL0VjVaXlf2cPUDNh52Tp26khuu1cNEKxWPj+FD
+	 a0defbS1Qxr8A==
+Date: Thu, 27 Aug 2026 09:14:26 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Billy Tsai <billy_tsai@aspeedtech.com>, Mark Brown <broonie@kernel.org>,
+	imx@lists.linux.dev, mfd@lists.linux.dev,
+	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
+	Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org,
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Linus Walleij <linusw@kernel.org>, linux-pm@vger.kernel.org,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	linux-aspeed@lists.ozlabs.org, Wells Lu <wellslutw@gmail.com>,
+	Andrzej Hajda <andrzej.hajda@intel.com>, linux-pci@vger.kernel.org,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Conor Dooley <conor+dt@kernel.org>, Simona Vetter <simona@ffwll.ch>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Dvorkin Dmitry <dvorkin@tibbo.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	linux-spi@vger.kernel.org,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	=?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	dri-devel@lists.freedesktop.org,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	linux-iio@vger.kernel.org, Robert Foss <rfoss@kernel.org>,
+	Joel Stanley <joel@jms.id.au>, Olof Johansson <olof@lixom.net>,
+	coresight@lists.linaro.org, linux-input@vger.kernel.org,
+	linux-media@vger.kernel.org, Leo Yan <leo.yan@arm.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Boris Brezillon <bbrezillon@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>,
+	Shree Ramamoorthy <s-ramamoorthy@ti.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Fabio Estevam <festevam@gmail.com>, Mike Leach <mike.leach@arm.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Binghui Wang <wangbinghui@hisilicon.com>,
+	Zhang Rui <rui.zhang@intel.com>,
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Mirela Rabulea <mirela.rabulea@nxp.com>,
+	David Airlie <airlied@gmail.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-i2c@vger.kernel.org, David Lechner <dlechner@baylibre.com>,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Michal Simek <michal.simek@amd.com>, openbmc@lists.ozlabs.org,
+	James Clark <james.clark@linaro.org>,
+	Jonas Karlman <jonas@kwiboo.se>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Frank Li <Frank.Li@nxp.com>, devicetree@vger.kernel.org,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Xiaowei Song <songxiaowei@hisilicon.com>, info@mocean-labs.com
+Subject: Re: [PATCH] dt-bindings: Drop redundant white-space around values in
+ <>
+Message-ID: <178784006582.3145716.1041886875556731621.robh@kernel.org>
+References: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-
-Revert commit dc948f8b384a ("ACPI: scan: Defer device power
-initialization") that is incomplete and may cause ACPI power
-management of devices to fail.
-
-The problem is that PCI devices are associated with the
-corresponding ACPI device objects before acpi_bus_attach()
-runs for them, so after commit dc948f8b384a, ACPI power
-management will not be initialized for them before making
-that association.  Consequently, the reference counting of
-ACPI power resources may not work as expected going forward
-and power management issues may appear.  If they appear, they
-may be elusive and hard to diagnose.
-
-While this is fixable, I am not sure if fixing it on top of
-commit dc948f8b384a is the best way to go, so it is better to
-revert that commit for now and revisit the whole thing in the
-next cycle.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-@Xie: Sorry for catching this late.  The change is quite subtle
-and I should probably take care of doing it myself.
-
----
- drivers/acpi/power.c | 1 -
- drivers/acpi/scan.c  | 4 ++++
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-index 922ba9803a93..23a4e207a01e 100644
---- a/drivers/acpi/power.c
-+++ b/drivers/acpi/power.c
-@@ -954,7 +954,6 @@ struct acpi_device *acpi_add_power_resource(acpi_handle handle)
- 	INIT_LIST_HEAD(&resource->list_node);
- 	INIT_LIST_HEAD(&resource->dependents);
- 	device->power.state = ACPI_STATE_UNKNOWN;
--	device->flags.initialized = true;
- 
- 	/* Evaluate the object to get the system level and resource order. */
- 	status = acpi_evaluate_object(handle, NULL, NULL, &buffer);
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 7dcf784199fa..f48715ed827c 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -1144,6 +1144,9 @@ static void acpi_bus_get_power_flags(struct acpi_device *device)
- 		if (!list_empty(&device->power.states[ACPI_STATE_D3_HOT].resources))
- 			device->power.states[ACPI_STATE_D3_COLD].flags.valid = 1;
- 	}
-+
-+	if (acpi_bus_init_power(device))
-+		device->flags.power_manageable = 0;
- }
- 
- static void acpi_bus_get_flags(struct acpi_device *device)
-@@ -1825,6 +1828,7 @@ void acpi_init_device_object(struct acpi_device *device, acpi_handle handle,
- 	acpi_set_pnp_ids(handle, &device->pnp, type);
- 	acpi_init_properties(device);
- 	acpi_bus_get_flags(device);
-+	device->flags.initialized = true;
- 	device->flags.enumeration_by_parent =
- 		acpi_device_enumeration_by_parent(device);
- 	acpi_device_clear_enumerated(device);
--- 
-2.51.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
 
 
+On Wed, 26 Aug 2026 12:20:45 +0200, Krzysztof Kozlowski wrote:
+> Correct a few white-space issues around <>, which will be flagged by
+> dt-check-style.  No functional changes.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> 
+> ---
+> 
+> Rob, Can you take it directly?
+> ---
+>  .../bindings/arm/arm,coresight-cti.yaml       |  2 +-
+>  .../bindings/display/bridge/sil,sii9022.yaml  |  2 +-
+>  .../bindings/i2c/xlnx,xps-iic-2.00.a.yaml     |  4 ++--
+>  .../bindings/iio/light/upisemi,us5182.yaml    |  2 +-
+>  .../bindings/input/matrix-keymap.yaml         |  3 +--
+>  .../devicetree/bindings/input/ti,tca8418.yaml | 21 +++++++++----------
+>  .../bindings/media/nxp,imx8-jpeg.yaml         |  4 ++--
+>  .../devicetree/bindings/mfd/ti,tps65910.yaml  |  2 +-
+>  .../bindings/pci/hisilicon,kirin-pcie.yaml    |  4 ++--
+>  .../pinctrl/sunplus,sp7021-pinctrl.yaml       |  2 +-
+>  .../bindings/spi/aspeed,ast2600-fmc.yaml      |  6 +++---
+>  .../bindings/thermal/thermal-idle.yaml        |  2 +-
+>  12 files changed, 26 insertions(+), 28 deletions(-)
+> 
 
+Applied, thanks!
 
