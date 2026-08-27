@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 817853F2118;
-	Thu, 27 Aug 2026 09:26:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55A5B410D19;
+	Thu, 27 Aug 2026 09:28:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787822774; cv=none; b=LtopCIGBUkVHGN9xQzlD3kMEeIKlzLLi/fojV/YkLXd2Y3srw9Gu1EjVRPkIJEA/AQS37Z0AzUDKaENAM1p8tuVE2XBgSWQA0XrEBHHgcdm9iHJHHabubsacNATP8MeFKGURHboeAY7raVFF3uGctJoBCsATVdypv0cTmCYqwLI=
+	t=1787822893; cv=none; b=mAfm0/ESRYzXPCEmLBagHjMUSeysJQYJqBHc4bt/6b0YyZLcvNNarbCYLKrjDIwTzvUwS4O1MRcM7x70BRjtnOqRV2CbFBff6PxXN1gVrJgEk474EiZvh7blxb9KCjvJtdcbKMb3wsJ6yOMR2zaZjHUcrpBCSUo0g04XQEB9XcE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787822774; c=relaxed/simple;
-	bh=rIE65/ymZpAcqtr4AlJjpEOm2I1rQ2xgB2QT2KYdumk=;
+	s=arc-20240116; t=1787822893; c=relaxed/simple;
+	bh=KUOrSl08kaq3wxQo7kc9XBplvBbpwDE1HnwhooL6FxI=;
 	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=gzXa6rwoYWiAhK1nIczS+xElNmwyU+CYVbVGuFFuPvpqMJ5hGMj84VzLozgsjN+5WX0NEJTHI2B4xdmANdoxWekwTq89sdmEYGkrKMXQxK3KaFzKvVh8+1MPuk+C5+uwcQ/JBmrY7pLXCC2jPKRZh1eJOMKlY5/1votWDl1abTw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kPxq5cmM; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=ElvvaQv6CyLiZ7L7ARK7EVhW76F35gEeRObQS/WZiILR8kFXzhBaDaM8nNvAR2rkQxl8MmnFVJgQTy5S9I8rl0mht/1plFrqupwOyYIBuO8Ug8KRSrYn7cvJNU/RA199KEXLu/4qJ4H2z6FciGghX2D9SFY2bWXeXpMCwaBVd9Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oCkYl5r5; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kPxq5cmM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A19B1F000E9;
-	Thu, 27 Aug 2026 09:26:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oCkYl5r5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C85111F000E9;
+	Thu, 27 Aug 2026 09:28:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787822773;
-	bh=E99rsOQcbaa882Nk3LrLKvAFqT3/73tCOShiFdtmlyo=;
+	s=k20260515; t=1787822891;
+	bh=xpIxcszEdXdDhoogOCnntsApVSnYnaEd7+uCkyTP6xY=;
 	h=Date:Subject:From:To:Cc:References:In-Reply-To;
-	b=kPxq5cmMaNxBSvb9DNCcZYsIJiVzhvvP6l9+l2xf4WHdD7SVvvokXODcH9F2bDpO6
-	 qSnTlsVVRQVRjl3OM54hEAea+bxKEhLpzI440u1tJNmE6YNBlThoZlOJfnRp9ld0N0
-	 aSszUUWeikwcn2V4EJ+zMPkur+Yi3WPRRBTVNohT3aAb9CsDM4Iil4COAsZMRrjR16
-	 eOF+GFrBWr+m4xgvV/1xix29gwL/sIqEEVZVnoWePoGZCbWz/kMPv0l6w9qLLXQPgS
-	 SWP2yQktZHkjGVsYVJZCTs0vtkF7WHQj1OPnjoierlRSn/Q6ZfHeoFoQHFq2yjjNzK
-	 gPupAooKgZxoA==
-Message-ID: <dace72f7-d514-4e14-b16a-f02cfa6f7829@kernel.org>
-Date: Thu, 27 Aug 2026 11:26:07 +0200
+	b=oCkYl5r5VN+zKUyBPRrm4rC2z2Oe7+nJw0kgbxSS/MIggF2d7+dMSamjbfLMSD6Le
+	 vU1LuGCBVicpSPMsTsOqtUMulV4Fi1DzntvwlEV/7i9h0S9xbD4Ql4waZFuP3aSWz4
+	 MXL0bWjfBdwHfmNk2+XAYr+cNvyV5vo1m7y9OEQikMeUY3ZjF/QOv6MkFegcNND7Ih
+	 xq1feCGXJ776ACK7YwJ83XHp7nRftXvSKmuUjmluNVUaiqr2EnEVkmyVuRFIn1Ug3U
+	 i7sylulZ+GuIthCp1WAIb5hVpSS5m783yLCjvmjbSeWdBcIfJrq0x9SFMG5xtYMjZI
+	 8ilAVegfsZsdw==
+Message-ID: <d4473111-f9a5-4ebb-befe-c2d690c81009@kernel.org>
+Date: Thu, 27 Aug 2026 11:28:05 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] dt-bindings: interconnect: Add Qualcomm CAMNOC ICC
- binding
+Subject: Re: [PATCH v2 2/3] interconnect: qcom: Add CAMNOC interconnect
+ provider driver
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
 Cc: Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org,
@@ -48,8 +48,8 @@ Cc: Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org,
  Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
  Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>
 References: <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
- <20260819093211.1436275-2-atanas.filipov@oss.qualcomm.com>
- <20260827-thistle-puffin-of-chivalry-bccc47@quoll>
+ <20260819093211.1436275-3-atanas.filipov@oss.qualcomm.com>
+ <20260827-adept-traditional-earwig-e2c8c6@quoll>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
  xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
@@ -94,118 +94,35 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260827-thistle-puffin-of-chivalry-bccc47@quoll>
+In-Reply-To: <20260827-adept-traditional-earwig-e2c8c6@quoll>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 27/08/2026 11:23, Krzysztof Kozlowski wrote:
-> On Wed, Aug 19, 2026 at 12:32:09PM +0300, Atanas Filipov wrote:
->> Add binding for the Qualcomm CAMNOC interconnect provider. CAMNOC is
->> the internal AXI interconnect within the camera subsystem. Multiple
->> sub-devices share CAM_CC_CAMNOC_AXI_CLK; the ICC provider aggregates
->> their bandwidth votes and scales the clock accordingly, avoiding the
->> last-writer-wins race from direct clk_set_rate() calls.
->>
->> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
->> ---
->>  .../bindings/interconnect/qcom,camnoc.yaml    | 124 ++++++++++++++++++
->>  .../dt-bindings/interconnect/qcom,camnoc.h    |  52 ++++++++
->>  2 files changed, 176 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
->>  create mode 100644 include/dt-bindings/interconnect/qcom,camnoc.h
->>
->> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
->> new file mode 100644
->> index 000000000000..b2659db2cf27
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+On 27/08/2026 11:25, Krzysztof Kozlowski wrote:
+>> +static int qcom_camnoc_set(struct icc_node *src, struct icc_node *dst)
+>> +{
+>> +	struct qcom_camnoc_icc_provider *cp =
+>> +		to_camnoc_provider(src->provider);
+>> +	unsigned long rate;
+>> +
+>> +	/*
+>> +	 * peak_bw is the aggregated max across all consumers (kBps).
+>> +	 * Consumers encode the required clock frequency directly as kBps,
+>> +	 * so the conversion is simply: rate_hz = peak_bw * 1000.
+>> +	 * A vote of 0 means no requirement; leave the clock at its minimum.
+>> +	 */
+>> +	rate = icc_units_to_bps(dst->peak_bw);
+>> +
+>> +	return clk_set_rate(cp->clk, rate);
 > 
-> Filename must match compatible.
+> This driver does nothing to the ICC hardware, no votes. It only
+> translates kbps to Hz. This is not the purpose of ICC drivers.
 > 
->> @@ -0,0 +1,124 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/interconnect/qcom,camnoc.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Qualcomm Camera NOC (CAMNOC) Interconnect Provider
->> +
->> +maintainers:
->> +  - Atanas Filipov <atanas.filipov@oss.qualcomm.com>
->> +
->> +description:
->> +  The Camera Network-on-Chip (CAMNOC) is the internal AXI interconnect
->> +  within the Qualcomm camera subsystem. It arbitrates AXI bandwidth
->> +  between camera sub-devices (IFE, JPEG, BPS, IPE, etc.) and the external
->> +  memory interconnect. Multiple consumers may independently request
->> +  bandwidth via icc_set_bw(); the CAMNOC ICC provider aggregates all active
->> +  votes and scales CAM_CC_CAMNOC_AXI_CLK accordingly, avoiding the
->> +  last-writer-wins race that arises when each consumer calls clk_set_rate()
->> +  directly on the shared clock.
->> +
->> +  Each camera sub-device driver that shares the CAMNOC AXI clock should
->> +  obtain an ICC path from its master port to SLAVE_CAMNOC_AXI and vote for
->> +  bandwidth using the port IDs defined in
->> +  include/dt-bindings/interconnect/qcom,camnoc.h.
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - qcom,sm8250-cam-virt
->> +
->> +  clocks:
->> +    items:
->> +      - description: CAMNOC AXI clock
->> +
->> +  clock-names:
->> +    items:
->> +      - const: camnoc_axi
->> +
->> +  '#interconnect-cells':
->> +    const: 1
->> +
->> +required:
->> +  - compatible
->> +  - clocks
->> +  - clock-names
->> +  - '#interconnect-cells'
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    #include <dt-bindings/clock/qcom,camcc-sm8250.h>
->> +    #include <dt-bindings/interconnect/qcom,camnoc.h>
->> +
->> +    /* CAMNOC ICC provider node */
-> 
-> Drop, redundant.
-> 
->> +    cam_virt: interconnect-cam-virt {
-> 
-> Drop unused label
-> 
->> +        compatible = "qcom,sm8250-cam-virt";
->> +        clocks = <&camcc CAM_CC_CAMNOC_AXI_CLK>;
->> +        clock-names = "camnoc_axi";
->> +        #interconnect-cells = <1>;
->> +    };
->> +
->> +    /*
->> +     * Simple consumer example: IFE sub-device voting for CAMNOC bandwidth
-> 
-> 
-> And what are the writing schema/bindings asking about consumers? Or
-> DTS101 slides? Look at other bindings instead of coming with own style.
-> 
+> Looks heavily incomplete.
 
-
-And:
-Drop second/last, redundant "binding". The "dt-bindings" prefix is
-already stating that these are bindings.
-See also:
-https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
+And another proof of uselessness of this driver is that your example DTS
+references ICC path between camss components. Internal camss stuff does
+not need ICC representation in DT.
 
 Best regards,
 Krzysztof
