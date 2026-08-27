@@ -1,308 +1,211 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4282F33F8B4;
-	Thu, 27 Aug 2026 09:25:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 817853F2118;
+	Thu, 27 Aug 2026 09:26:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787822746; cv=none; b=VAs7x+guMYGKEyts9giarx/b2oRL+l7E78s9V/yjDcydmovcWBZhp3T5mOjnmT3qC6BWHRyD5QZluGPTVZMqIUi/lvAwHoz1L/9dEZCmn9M+dJ9EPXsXLCkJ2uFeWUTlzmtVqNCinVfYoktxtlhD5wO323MCePH/4h/Z97wXy7U=
+	t=1787822774; cv=none; b=LtopCIGBUkVHGN9xQzlD3kMEeIKlzLLi/fojV/YkLXd2Y3srw9Gu1EjVRPkIJEA/AQS37Z0AzUDKaENAM1p8tuVE2XBgSWQA0XrEBHHgcdm9iHJHHabubsacNATP8MeFKGURHboeAY7raVFF3uGctJoBCsATVdypv0cTmCYqwLI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787822746; c=relaxed/simple;
-	bh=RZjmR9q3jrx/PKiqPTeIBpOVcrpjQ1zCM1N9LZyzEic=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HlcG2jFRQCVCeoU3S8dLTBT5OiP9FhqwMJIBPqoS2qviTRpBmw/hM0EjWOqmk0mkmN6Cq/77f3dBdF1MM9BK3nnx+FHxmLkkS/weVl2pTYvJfjwRfDWZXYvUvrv0CVnRr1G3e6JYARum/nC4YTleNMDTKLS99+7EhjRjMHI+Osc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZUHvJGsy; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787822774; c=relaxed/simple;
+	bh=rIE65/ymZpAcqtr4AlJjpEOm2I1rQ2xgB2QT2KYdumk=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=gzXa6rwoYWiAhK1nIczS+xElNmwyU+CYVbVGuFFuPvpqMJ5hGMj84VzLozgsjN+5WX0NEJTHI2B4xdmANdoxWekwTq89sdmEYGkrKMXQxK3KaFzKvVh8+1MPuk+C5+uwcQ/JBmrY7pLXCC2jPKRZh1eJOMKlY5/1votWDl1abTw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kPxq5cmM; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZUHvJGsy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD67A1F000E9;
-	Thu, 27 Aug 2026 09:25:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kPxq5cmM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A19B1F000E9;
+	Thu, 27 Aug 2026 09:26:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787822744;
-	bh=5iuu6oQOV13rRPLbowkvqMfKcFgdwhTyKjWaPY0AwFY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ZUHvJGsyE/vAxFcgN1HSo8TaYA4jBRtAtIIY25E5uXZkGcFUusN1x9x8z3qd+oL+5
-	 jlLn5tc0cN3lXYea8LPnm0ApRQx/272ZjrXPHKLTwMipocckJvGCVCB3QojSVjmbl3
-	 8NqbhaxvsHRcqvy9LNcbHHbt/whktvzXpo6YUjKvM25bWkmlTOtkbGZYTHxcUd5P1n
-	 tB/GiL7HZZXJPhAk0ag11M1VrZ6yAjAVT3K4o7emyp0C8GXcBoF/3ByW1P7BLPCPjy
-	 f1vGqjPgqfN9O82vvkDkpkBl2njR1Ne7Vr1BSKkm9C5fLJFHB6KNOY7W8zzdp1tZqd
-	 I4e361sKq1deg==
-Date: Thu, 27 Aug 2026 11:25:41 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>
-Subject: Re: [PATCH v2 2/3] interconnect: qcom: Add CAMNOC interconnect
- provider driver
-Message-ID: <20260827-adept-traditional-earwig-e2c8c6@quoll>
-References: <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
- <20260819093211.1436275-3-atanas.filipov@oss.qualcomm.com>
+	s=k20260515; t=1787822773;
+	bh=E99rsOQcbaa882Nk3LrLKvAFqT3/73tCOShiFdtmlyo=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=kPxq5cmMaNxBSvb9DNCcZYsIJiVzhvvP6l9+l2xf4WHdD7SVvvokXODcH9F2bDpO6
+	 qSnTlsVVRQVRjl3OM54hEAea+bxKEhLpzI440u1tJNmE6YNBlThoZlOJfnRp9ld0N0
+	 aSszUUWeikwcn2V4EJ+zMPkur+Yi3WPRRBTVNohT3aAb9CsDM4Iil4COAsZMRrjR16
+	 eOF+GFrBWr+m4xgvV/1xix29gwL/sIqEEVZVnoWePoGZCbWz/kMPv0l6w9qLLXQPgS
+	 SWP2yQktZHkjGVsYVJZCTs0vtkF7WHQj1OPnjoierlRSn/Q6ZfHeoFoQHFq2yjjNzK
+	 gPupAooKgZxoA==
+Message-ID: <dace72f7-d514-4e14-b16a-f02cfa6f7829@kernel.org>
+Date: Thu, 27 Aug 2026 11:26:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260819093211.1436275-3-atanas.filipov@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] dt-bindings: interconnect: Add Qualcomm CAMNOC ICC
+ binding
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org,
+ linux-pm@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>
+References: <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
+ <20260819093211.1436275-2-atanas.filipov@oss.qualcomm.com>
+ <20260827-thistle-puffin-of-chivalry-bccc47@quoll>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
+ /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
+ s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
+ EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
+ rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
+ DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
+ IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
+ vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
+ oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
+ sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
+ vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
+ Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
+ BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
+ 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
+ f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
+ WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
+ XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
+ IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
+ YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
+ p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
+ GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
+ YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
+ vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
+ ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
+ QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
+ +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
+ wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
+ c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
+ K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
+ n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
+ qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
+In-Reply-To: <20260827-thistle-puffin-of-chivalry-bccc47@quoll>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 19, 2026 at 12:32:10PM +0300, Atanas Filipov wrote:
-> Add an ICC provider for the Qualcomm Camera NOC (CAMNOC). Multiple
-> camera sub-devices share CAM_CC_CAMNOC_AXI_CLK; direct clk_set_rate()
-> calls from each consumer cause a last-writer-wins race.
->=20
-> Each consumer obtains an ICC path to SLAVE_CAMNOC_AXI and votes via
-> icc_set_bw(). The ICC core aggregates votes (max peak_bw) and the
-> set() callback converts the result to clk_set_rate(). Consumers
-> encode the required frequency as peak_bw in kBps.
->=20
-> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
-> ---
->  drivers/interconnect/qcom/Kconfig       |  10 +
->  drivers/interconnect/qcom/Makefile      |   2 +
->  drivers/interconnect/qcom/qcom-camnoc.c | 279 ++++++++++++++++++++++++
->  3 files changed, 291 insertions(+)
->  create mode 100644 drivers/interconnect/qcom/qcom-camnoc.c
->=20
-> diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qco=
-m/Kconfig
-> index 5b8a094ca4ed..9d9d238019a0 100644
-> --- a/drivers/interconnect/qcom/Kconfig
-> +++ b/drivers/interconnect/qcom/Kconfig
-> @@ -135,6 +135,16 @@ config INTERCONNECT_QCOM_NORD
->  	  the RPMh hardware and communicates via Bus Clock Manager (BCM)
->  	  through the Resource State Coordinator (RSC).
-> =20
-> +config INTERCONNECT_QCOM_CAMNOC
-> +	tristate "Qualcomm CAMNOC interconnect driver"
-> +	depends on INTERCONNECT_QCOM || COMPILE_TEST
-> +	depends on ARM64 || COMPILE_TEST
+On 27/08/2026 11:23, Krzysztof Kozlowski wrote:
+> On Wed, Aug 19, 2026 at 12:32:09PM +0300, Atanas Filipov wrote:
+>> Add binding for the Qualcomm CAMNOC interconnect provider. CAMNOC is
+>> the internal AXI interconnect within the camera subsystem. Multiple
+>> sub-devices share CAM_CC_CAMNOC_AXI_CLK; the ICC provider aggregates
+>> their bandwidth votes and scales the clock accordingly, avoiding the
+>> last-writer-wins race from direct clk_set_rate() calls.
+>>
+>> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+>> ---
+>>  .../bindings/interconnect/qcom,camnoc.yaml    | 124 ++++++++++++++++++
+>>  .../dt-bindings/interconnect/qcom,camnoc.h    |  52 ++++++++
+>>  2 files changed, 176 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+>>  create mode 100644 include/dt-bindings/interconnect/qcom,camnoc.h
+>>
+>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+>> new file mode 100644
+>> index 000000000000..b2659db2cf27
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+> 
+> Filename must match compatible.
+> 
+>> @@ -0,0 +1,124 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/interconnect/qcom,camnoc.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Qualcomm Camera NOC (CAMNOC) Interconnect Provider
+>> +
+>> +maintainers:
+>> +  - Atanas Filipov <atanas.filipov@oss.qualcomm.com>
+>> +
+>> +description:
+>> +  The Camera Network-on-Chip (CAMNOC) is the internal AXI interconnect
+>> +  within the Qualcomm camera subsystem. It arbitrates AXI bandwidth
+>> +  between camera sub-devices (IFE, JPEG, BPS, IPE, etc.) and the external
+>> +  memory interconnect. Multiple consumers may independently request
+>> +  bandwidth via icc_set_bw(); the CAMNOC ICC provider aggregates all active
+>> +  votes and scales CAM_CC_CAMNOC_AXI_CLK accordingly, avoiding the
+>> +  last-writer-wins race that arises when each consumer calls clk_set_rate()
+>> +  directly on the shared clock.
+>> +
+>> +  Each camera sub-device driver that shares the CAMNOC AXI clock should
+>> +  obtain an ICC path from its master port to SLAVE_CAMNOC_AXI and vote for
+>> +  bandwidth using the port IDs defined in
+>> +  include/dt-bindings/interconnect/qcom,camnoc.h.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - qcom,sm8250-cam-virt
+>> +
+>> +  clocks:
+>> +    items:
+>> +      - description: CAMNOC AXI clock
+>> +
+>> +  clock-names:
+>> +    items:
+>> +      - const: camnoc_axi
+>> +
+>> +  '#interconnect-cells':
+>> +    const: 1
+>> +
+>> +required:
+>> +  - compatible
+>> +  - clocks
+>> +  - clock-names
+>> +  - '#interconnect-cells'
+>> +
+>> +additionalProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    #include <dt-bindings/clock/qcom,camcc-sm8250.h>
+>> +    #include <dt-bindings/interconnect/qcom,camnoc.h>
+>> +
+>> +    /* CAMNOC ICC provider node */
+> 
+> Drop, redundant.
+> 
+>> +    cam_virt: interconnect-cam-virt {
+> 
+> Drop unused label
+> 
+>> +        compatible = "qcom,sm8250-cam-virt";
+>> +        clocks = <&camcc CAM_CC_CAMNOC_AXI_CLK>;
+>> +        clock-names = "camnoc_axi";
+>> +        #interconnect-cells = <1>;
+>> +    };
+>> +
+>> +    /*
+>> +     * Simple consumer example: IFE sub-device voting for CAMNOC bandwidth
+> 
+> 
+> And what are the writing schema/bindings asking about consumers? Or
+> DTS101 slides? Look at other bindings instead of coming with own style.
+> 
 
-missing default ARCH_QCOM
 
-> +	help
-> +	  Say y here to support the Camera Network-on-Chip (CAMNOC)
-> +	  interconnect driver for Qualcomm SoCs. It aggregates bandwidth
-> +	  requests from camera sub-devices (IFE, JPEG, BPS, etc.) and
-> +	  scales CAM_CC_CAMNOC_AXI_CLK accordingly.
-> +
->  config INTERCONNECT_QCOM_OSM_L3
->  	tristate "Qualcomm OSM L3 interconnect driver"
->  	depends on INTERCONNECT_QCOM || COMPILE_TEST
-> diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qc=
-om/Makefile
-> index 1c7d410b40cc..52a5998ae6a8 100644
-> --- a/drivers/interconnect/qcom/Makefile
-> +++ b/drivers/interconnect/qcom/Makefile
-> @@ -18,6 +18,7 @@ qnoc-msm8974-objs			:=3D msm8974.o
->  qnoc-msm8976-objs			:=3D msm8976.o
->  qnoc-msm8996-objs			:=3D msm8996.o
->  qnoc-nord-objs				:=3D nord.o
-> +icc-camnoc-objs				:=3D qcom-camnoc.o
->  icc-osm-l3-objs				:=3D osm-l3.o
->  qnoc-qcm2290-objs			:=3D qcm2290.o
->  qnoc-qcs404-objs			:=3D qcs404.o
-> @@ -66,6 +67,7 @@ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8974) +=3D qnoc-msm89=
-74.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_MSM8976) +=3D qnoc-msm8976.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_MSM8996) +=3D qnoc-msm8996.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_NORD) +=3D qnoc-nord.o
-> +obj-$(CONFIG_INTERCONNECT_QCOM_CAMNOC) +=3D icc-camnoc.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_OSM_L3) +=3D icc-osm-l3.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_QCM2290) +=3D qnoc-qcm2290.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_QCS404) +=3D qnoc-qcs404.o
-> diff --git a/drivers/interconnect/qcom/qcom-camnoc.c b/drivers/interconne=
-ct/qcom/qcom-camnoc.c
-> new file mode 100644
-> index 000000000000..9a703b052b2d
-> --- /dev/null
-> +++ b/drivers/interconnect/qcom/qcom-camnoc.c
-> @@ -0,0 +1,279 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-> + *
-> + * Qualcomm Camera NOC (CAMNOC) interconnect provider.
-> + *
-> + * CAMNOC is the internal AXI interconnect within the Qualcomm camera
-> + * subsystem. Multiple camera sub-devices (IFE, JPEG, BPS, etc.) share
-> + * CAM_CC_CAMNOC_AXI_CLK. This driver acts as an ICC provider so that
-> + * each sub-device can independently vote for bandwidth; the ICC core
-> + * aggregates the votes (max of peak_bw across all consumers) and this
-> + * driver translates the result into a clk_set_rate() call, avoiding
-> + * the last-writer-wins race that occurs with direct clk_set_rate().
-> + *
-> + * Consumers express their required clock rate directly as peak_bw in
-> + * kBps (e.g. 400000 for 400 MHz).  The driver converts kBps =E2=86=92 H=
-z:
-> + *   rate_hz =3D peak_bw_kBps * 1000
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/interconnect-provider.h>
-> +#include <linux/interconnect.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <dt-bindings/interconnect/qcom,camnoc.h>
-> +
-> +#define to_camnoc_provider(_p) \
-> +	container_of(_p, struct qcom_camnoc_icc_provider, provider)
-> +
-> +struct qcom_camnoc_icc_provider {
-> +	struct clk *clk;
-> +	struct icc_provider provider;
-> +};
-> +
-> +struct qcom_camnoc_node {
-> +	const char *name;
-> +	u16 buswidth;
-> +};
-> +
-> +/* IFE */
-> +static const struct qcom_camnoc_node camnoc_master_ife_0 =3D {
-> +	.name =3D "master-camnoc-ife-0", .buswidth =3D 16
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_0_rdi =3D {
-> +	.name =3D "master-camnoc-ife-0-rdi", .buswidth =3D 16
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_1 =3D {
-> +	.name =3D "master-camnoc-ife-1", .buswidth =3D 16
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_1_rdi =3D {
-> +	.name =3D "master-camnoc-ife-1-rdi", .buswidth =3D 16
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_lite_0 =3D {
-> +	.name =3D "master-camnoc-ife-lite-0", .buswidth =3D 8
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_lite_1 =3D {
-> +	.name =3D "master-camnoc-ife-lite-1", .buswidth =3D 8
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_lite_2 =3D {
-> +	.name =3D "master-camnoc-ife-lite-2", .buswidth =3D 8
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_lite_3 =3D {
-> +	.name =3D "master-camnoc-ife-lite-3", .buswidth =3D 8
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ife_lite_4 =3D {
-> +	.name =3D "master-camnoc-ife-lite-4", .buswidth =3D 8
-> +};
-> +
-> +/* BPS */
-> +static const struct qcom_camnoc_node camnoc_master_bps =3D {
-> +	.name =3D "master-camnoc-bps", .buswidth =3D 16
-> +};
-> +
-> +/* IPE */
-> +static const struct qcom_camnoc_node camnoc_master_ipe_0 =3D {
-> +	.name =3D "master-camnoc-ipe-0", .buswidth =3D 16
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_ipe_1 =3D {
-> +	.name =3D "master-camnoc-ipe-1", .buswidth =3D 16
-> +};
-> +
-> +/* JPEG */
-> +static const struct qcom_camnoc_node camnoc_master_jpeg =3D {
-> +	.name =3D "master-camnoc-jpeg", .buswidth =3D 16
-> +};
-> +
-> +static const struct qcom_camnoc_node camnoc_master_jpeg_dma =3D {
-> +	.name =3D "master-camnoc-jpeg-dma", .buswidth =3D 16
-> +};
-> +
-> +/* CDM */
-> +static const struct qcom_camnoc_node camnoc_master_cdm =3D {
-> +	.name =3D "master-camnoc-cdm", .buswidth =3D 4
-> +};
-> +
-> +/* FD */
-> +static const struct qcom_camnoc_node camnoc_master_fd =3D {
-> +	.name =3D "master-camnoc-fd", .buswidth =3D 16
-> +};
-> +
-> +/* SBI */
-> +static const struct qcom_camnoc_node camnoc_master_sbi =3D {
-> +	.name =3D "master-camnoc-sbi", .buswidth =3D 16
-> +};
-> +
-> +/* ICP */
-> +static const struct qcom_camnoc_node camnoc_master_icp =3D {
-> +	.name =3D "master-camnoc-icp", .buswidth =3D 8
-> +};
-> +
-> +/* Slave */
-> +static const struct qcom_camnoc_node camnoc_slave_axi =3D {
-> +	.name =3D "slave-camnoc-axi", .buswidth =3D 32
-> +};
-> +
-> +static const struct qcom_camnoc_node * const camnoc_nodes[] =3D {
-> +	[MASTER_CAMNOC_IFE_0]      =3D &camnoc_master_ife_0,
-> +	[MASTER_CAMNOC_IFE_0_RDI]  =3D &camnoc_master_ife_0_rdi,
-> +	[MASTER_CAMNOC_IFE_1]      =3D &camnoc_master_ife_1,
-> +	[MASTER_CAMNOC_IFE_1_RDI]  =3D &camnoc_master_ife_1_rdi,
-> +	[MASTER_CAMNOC_IFE_LITE_0] =3D &camnoc_master_ife_lite_0,
-> +	[MASTER_CAMNOC_IFE_LITE_1] =3D &camnoc_master_ife_lite_1,
-> +	[MASTER_CAMNOC_IFE_LITE_2] =3D &camnoc_master_ife_lite_2,
-> +	[MASTER_CAMNOC_IFE_LITE_3] =3D &camnoc_master_ife_lite_3,
-> +	[MASTER_CAMNOC_IFE_LITE_4] =3D &camnoc_master_ife_lite_4,
-> +	[MASTER_CAMNOC_BPS]        =3D &camnoc_master_bps,
-> +	[MASTER_CAMNOC_IPE_0]      =3D &camnoc_master_ipe_0,
-> +	[MASTER_CAMNOC_IPE_1]      =3D &camnoc_master_ipe_1,
-> +	[MASTER_CAMNOC_JPEG]       =3D &camnoc_master_jpeg,
-> +	[MASTER_CAMNOC_JPEG_DMA]   =3D &camnoc_master_jpeg_dma,
-> +	[MASTER_CAMNOC_CDM]        =3D &camnoc_master_cdm,
-> +	[MASTER_CAMNOC_FD]         =3D &camnoc_master_fd,
-> +	[MASTER_CAMNOC_SBI]        =3D &camnoc_master_sbi,
-> +	[MASTER_CAMNOC_ICP]        =3D &camnoc_master_icp,
-> +	[SLAVE_CAMNOC_AXI]         =3D &camnoc_slave_axi,
-> +};
-> +
-> +#define CAMNOC_NUM_NODES	ARRAY_SIZE(camnoc_nodes)
-> +
-> +static int qcom_camnoc_get_bw(struct icc_node *node, u32 *avg, u32 *peak)
-> +{
-> +	*avg =3D 0;
-> +	*peak =3D 0;
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_camnoc_set(struct icc_node *src, struct icc_node *dst)
-> +{
-> +	struct qcom_camnoc_icc_provider *cp =3D
-> +		to_camnoc_provider(src->provider);
-> +	unsigned long rate;
-> +
-> +	/*
-> +	 * peak_bw is the aggregated max across all consumers (kBps).
-> +	 * Consumers encode the required clock frequency directly as kBps,
-> +	 * so the conversion is simply: rate_hz =3D peak_bw * 1000.
-> +	 * A vote of 0 means no requirement; leave the clock at its minimum.
-> +	 */
-> +	rate =3D icc_units_to_bps(dst->peak_bw);
-> +
-> +	return clk_set_rate(cp->clk, rate);
-
-This driver does nothing to the ICC hardware, no votes. It only
-translates kbps to Hz. This is not the purpose of ICC drivers.
-
-Looks heavily incomplete.
+And:
+Drop second/last, redundant "binding". The "dt-bindings" prefix is
+already stating that these are bindings.
+See also:
+https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/bindings/submitting-patches.rst#L23
 
 Best regards,
 Krzysztof
-
