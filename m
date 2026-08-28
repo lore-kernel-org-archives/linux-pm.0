@@ -1,113 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DA3D3C1F46;
-	Fri, 28 Aug 2026 05:39:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787895591; cv=none; b=SnNUFOuCtO86Vt3SBu8uHAchBn8gfY4pPd9nHBG9GyyvLTMj+MxiG0z2Db2sUDaALQU2HSW7vkZcZAcHRqkRukX96hL6BwhRZ8CjFNvU+V0IUyrccnFWE0sYW/2D/d/UIho3q2qwygkPd2qcTHVOMfMHViNPM4ZHBk8B9dsMbxE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787895591; c=relaxed/simple;
-	bh=3h4JFjRxkjF1egoB+58YA/nIOAVaqpAOF2nMj/qJqo8=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=p8f8Yil5Elmkht+WS1y21FTWxJMYqH6iIAdq4HO7SzEkB2fuSU+5f3yw+1Nk2aLaKlDUbWqhGSBT1G6bB0wNghmLnbQRs840OM8wTcYtb5XRvlLjolCxpHi48+1jT4zPr8DV4pCnKcJ6WiSBPIzAI31QIykovdRXZyH8XWvHiJ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=OUe/I4kK; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E76B5B5AB
+	for <linux-pm@vger.kernel.org>; Fri, 28 Aug 2026 05:47:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.179
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787896061; cv=pass; b=heJNFtEK/Z8P4UWl9uo7Jq0qHzEWWOmq45jNI4dNb/4vWyI0Oitfs12IfP0B+gO9VcVjtYDgR/GsmAcDGCCrXcUnuSil9A1XrBpNn8wRHWTpe9sDsTTeRMLL/22IYfkuxXyV1EETQEYFmAJgK+TcXKXZj4tx8Pch0T/l3JM3Y20=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787896061; c=relaxed/simple;
+	bh=DJsTYJIcYnU7vioWdYNKnIvZWxhAdOa6rfODFDd/5vs=;
+	h=From:MIME-Version:Date:Message-ID:Subject:To:Cc:Content-Type; b=d6vsgYCgW8V7RGH3hLZbzvfinLZ5CqhFK2fWKmvwRV/7dg4l7SeytylTaKpUq0rXwO4qU4q1b56253t0qiol4ACPKV10x9PZUZRURHFM7yRuejbkCgzUk0JjLKaOEQjxgTwNhOIi3KldJVDKpPCMXeU9eOaUcp+qPihLTc1QSI0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=berkeley.edu; spf=pass smtp.mailfrom=berkeley.edu; dkim=pass (2048-bit key) header.d=berkeley.edu header.i=@berkeley.edu header.b=Ozjk/rtq; arc=pass smtp.client-ip=209.85.214.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=berkeley.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=berkeley.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="OUe/I4kK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63F2A1F000E9;
-	Fri, 28 Aug 2026 05:39:48 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=berkeley.edu header.i=@berkeley.edu header.b="Ozjk/rtq"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2caea3f742bso11047795ad.0
+        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2026 22:47:39 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787896059; cv=none;
+        d=google.com; s=arc-20260327;
+        b=oR8dlLqQYL1lhxovSlmwVrTFCol6t4vPMxex0+ditqjC9aVJZfiMqAqwwl9oGTI7WQ
+         ZkCP+nUdFcbAxakUVZEZKgBezjOBbb2Cahp6unv6zZxMOB4wx3L4a5Vr2xPA7AUFaWe3
+         jc+1+hR9hsTWMfVe6PEtgIHj5KtytdQMNHsqnCS/n09r9/f/RfK5ZUQdK7AWd0SC2Coa
+         kcM7hi+hCvy0ODe6prU6fqH4dZxpHmXyqqyRl3nJKwSioyvz3iHeyJQ+ZoiHL/A9WLQ2
+         BrbQ/wn3LIce5FRK1gxP6nT9/Gl37oCvgdMr9bfe9mX+EdkdAWFBBUDckeOTgC1+VSVF
+         A18A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:mime-version:from:dkim-signature;
+        bh=xw0u3y77s06SS5fejAicY/4ObOINDzdiC2R7DRjet6U=;
+        fh=bBdkpa9nSe+qhOTqVQGhWWvVKWUC5H37lk88qrSmntY=;
+        b=dJFn1exSHhT9R9DUCMul0I94J2eIJVjaOXIe4bAXI8UftHh/XzVxzd84mm0c6zBlHk
+         slBp1ZJ4vNwZorzrWy6l0dcr0rTTcfMap98WYJ8WIyqYpHB7skp/OCiid1GRth8aWYmz
+         0FxY8sza8Q/aDt0In/jZZpffOJNCxs7kw83eLJ7ktlxZSKAQz5Jzx0T0uxIMit6vBLql
+         vqEa1/22aGXyZGF+3hQkYa08C8dZjYfqL8sghLcZLit8BPUg2XliTH+s1UZQOtx70aHE
+         CFP89D5yr6MKK4IUbAmRWxbWH75CNIOAIBtsbxSkzEf89TGKpV84LwsiU3o3CPfcYprW
+         ofMw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1787895589;
-	bh=saCp1ODXEDwi38FA7nL50yvKTMsyJL4w4PBPDdxbPpY=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=OUe/I4kKl1IqBcGIkGjmGrfcJVc9TLT2CvvQlffxqcLuYDyJcEvYYDfW1rZZPMhiH
-	 lYW/VNcrDLI36iGraqidaScttACFiGrJ1k7I/GKZaA2Ey07eH3kpV2Es2yikDQJn6I
-	 XvfKFsQX7UaaX+ke7/7cKng5/7pFHOWAuZm5Ev8I=
-Date: Thu, 27 Aug 2026 22:39:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Adrian =?UTF-8?Q?Barna=C5=9B?= <abarnas@google.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Alexandre Ghiti <alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Brendan Jackman
- <brendan.jackman@linux.dev>, Catalin Marinas <catalin.marinas@arm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>, Dave Hansen
- <dave.hansen@linux.intel.com>, David Hildenbrand <david@kernel.org>, Gerald
- Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens
- <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Len Brown <lenb@kernel.org>, Palmer Dabbelt
- <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, Pavel Machek
- <pavel@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin"
- <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ryan Roberts
- <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>, Thomas
- Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>, Vasily
- Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon
- <will@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- loongarch@lists.linux.dev
-Subject: Re: [PATCH v2 0/6] arch, mm/execmem: resolve confusion about
- set_direct_map_valid_noflush()
-Message-Id: <20260827223947.c773e6a7324eaf3fe0d8362f@linux-foundation.org>
-In-Reply-To: <20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org>
-References: <20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        d=berkeley.edu; s=google; t=1787896059; x=1788500859; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:mime-version:from:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=xw0u3y77s06SS5fejAicY/4ObOINDzdiC2R7DRjet6U=;
+        b=Ozjk/rtq9mPBn0Gea7jwhAGrjnlDLnSvVWSQllwZTylRK3/xR5VqFwBbcb8Te5RObL
+         C3yRXzWjUqev0Qt1YNd57YruwJfr3bq/hzf4B2gEbMA1Pab5/lMVox15pCSrLChGD/Uq
+         Fn06NVcycD13mr1gpuke1YLq59EJZuhZDa6NntWbfyxNOyFziJzvBbZDj8kw8KGLkf8n
+         dLrtqWv73aNQpn+bObdOivKOZ4JcL7p5DZo7tZR3XITOMIQmGaCUy1MG2wrq/Tb2ngok
+         RqoRDSY8md+yrC6960RCd6v8gqWQOfxWawkjeISJyhhyRnYUDRHAL/ehEUvoN8VGiAYg
+         WYPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787896059; x=1788500859;
+        h=content-type:cc:to:subject:message-id:date:mime-version:from
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=xw0u3y77s06SS5fejAicY/4ObOINDzdiC2R7DRjet6U=;
+        b=inNCQa+b4tnnM4l2/vc1UQg1otwTwwJjssGPf0dZjMBBHnOxX+nc3euATAxQKnFy/e
+         EXs2ftQ1DAwTOk/8q/Pkw3C0qASBgDq2WKaNrE6OuHdoLNZnxUq4veV+0KhEnnuj2Xi/
+         gLJUX/cfaKUF5F66PI2QHgBCSI3VvvblRywJkdEUDZn9Ucsx5lV5eZpr0x2z3DFkquiE
+         gwWaigFx18PDDut/AeW6NprKnTNixgah0jd5aJNWQ+heTTWpOVjn5uIJG8fklQAIFo6X
+         N2+zKrSqjBwDUKujQZYyWeNql8uIW0IIVHsd0pnrtb9tOehF1sRyT88k5jYY7qv6rtl8
+         OWGg==
+X-Forwarded-Encrypted: i=1; AHgh+RqzmpFDonfcf0uXoXieP3l51skK+nRG0/WK8QV5EJeNRS4jWtbP4XhRGrgVi1TXtdqelgJHwU+a7w==@vger.kernel.org
+X-Gm-Message-State: AFuF++mBPsg4s4kVlCunm/3oCeC00z3RVkEmEbalvwIk20ldAFQIYV8F
+	N/dVbgAk39+0Mcn6B0ChahEmruDFwp7j7boeFfdkwX5GocqmHBZyIeDi5+3dTTGsUYXSztK6a7D
+	vkmU67dNbld1t3I05okBwzPc5BukjxN6pd4+1CnfU
+X-Gm-Gg: AR+sD13XT58Xz1AV/jQ/J1kaMU/AUneDr0XHom6yI2XyAcid3ie+T5U/G3GwEFJT1gc
+	UCCcPZbBSQejNygIOlAD3vsTvDaFZILRJlaof0eSPz8UFmgdHt3e6/LtVTps72AtK7ouR6VjD7T
+	1cKZBEZdUOzo141r6KdWPlbVcXWaj5gL6z5nyecH48dnGG1QtchemTDTlRTPPUFaRe300iDNfaX
+	eh6Keh6l0RWf5i07VaL2J9zCZujH9X77/zia9SM+RaKLGiBi7FTy+Ey3hsH4xdf6oM+Je3XfA7A
+	tRDTwHT5jHXfGwVudMt7MzkAuI59czucHfEN2A3dcLeT8QFx3+wvBOmCiV/r5/NqOFBMlc/KE9r
+	FeOZAjrcCGTWSlBZnabETDPSio2LRLCoj
+X-Received: by 2002:a17:902:c103:b0:2d7:344f:4a6f with SMTP id
+ d9443c01a7336-2d74ded6d76mr60093875ad.8.1787896058433; Thu, 27 Aug 2026
+ 22:47:38 -0700 (PDT)
+Received: from 474444807712 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 28 Aug 2026 05:47:37 +0000
+Received: from 474444807712 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 28 Aug 2026 05:47:37 +0000
+From: Farhad Alemi <farhad.alemi@berkeley.edu>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Date: Fri, 28 Aug 2026 05:47:37 +0000
+X-Gm-Features: AcwNN1WysQaTDa4WYAtaf7a5tp6RrsTZa7alP9IXFixhGCml7UKU0kt_NQ3GowY
+Message-ID: <CA+0ovCj=ojp=46PzmrDUxf4sbNRtF32eKDe1FNmBCcFhnEP8+g@mail.gmail.com>
+Subject: [BUG] kernel BUG in mark_free_pages
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: falemi@asu.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Sun, 23 Aug 2026 14:46:11 +0300 "Mike Rapoport (Microsoft)" <rppt@kernel.org> wrote:
+Hello,
 
-> Recent discussion about implementation of execmem's ROX caches on arm64
+As part of the kernel research at ASU's SEFCOM
+lab, we hit the crash below. Crash reports can be found here:
 
-I'm assuming a "[1]" reference was intended here.
+  https://github.com/farhad-alemi/public_bug_reports/tree/main/181-kernel-bug-in-mark-free-pages/
 
-> revealed a confusion about how set_direct_map_valid_noflush()
-> implemented on different architectures.
-> 
-> On arm64 it sets or clears the PTE_VALID bit marking a PTE as present or
-> not present.
-> 
-> On other architectures it's a range version of
-> set_direct_map_invalid_noflush() and set_direct_map_default_noflush()
-> 
-> Unlike arm64::set_direct_map_valid_noflush(),
-> set_direct_map_default_noflush() not only marks PTE as present, but also
-> sets its default protection mode.
-> 
-> Other than that, initial design of execmem ROX caches didn't rely on
-> restoration of large mappings that's now available on x86, but
-> completely removed the memory allocated for the ROX cache from the
-> direct map to ensure that large mappings are not split. This precluded
-> usage of VM_FLUSH_RESET_PERMS for the ROX cache allocations and required
-> execmem to implement manipulation of the direct map alias.
-> 
-> Current implementation of ROX caches does not remove the direct map
-> alias but simply calls set_memory_rox() that updates the permissions in
-> both vmalloc address space and the direct map and relies on
-> collapse_large_pages() in x86 CPA to keep large mappings.
-> 
-> This allow using VM_FLUSH_RESET_PERMS for execmem ROX cache allocations
-> with small adjustments to set_direct_map APIs and vmalloc::reset_perms()
-> behaviour: adding number of pages parameter to set_direct_map APIs and
-> making resetting of the direct map permissions in vmalloc VMAP_HUGE
-> friendly.
-> 
-> Implement these adjustments, make execmem always use
-> VM_FLUSH_RESET_PERMS and revert set_direct_map_valid_noflush() changes.
-> 
-> [1] https://lore.kernel.org/all/20260611130144.1385343-4-abarnas@google.com
+  page:ffffea0004c00000 is uninitialized and poisoned
+  page dumped because: VM_BUG_ON_PAGE(PagePoisoned(page))
+  kernel BUG at ./include/linux/mm.h:2265!
+  Oops: invalid opcode: 0000 [#1] SMP KASAN NOPTI
+  RIP: 0010:page_to_nid include/linux/mm.h:2265 [inline]
+  RIP: 0010:mark_free_pages+0x49e/0x4b0 kernel/power/snapshot.c:1265
+  Call Trace:
+   mark_free_pages+0x49e/0x4b0 kernel/power/snapshot.c:1265
+   count_data_pages kernel/power/snapshot.c:1417 [inline]
+   hibernate_preallocate_memory+0x14f/0x750 kernel/power/snapshot.c:1859
+   hibernation_snapshot+0xaa/0x3d0 kernel/power/hibernate.c:429
+   hibernate+0x28f/0x680 kernel/power/hibernate.c:839
+   state_store+0x234/0x290 kernel/power/main.c:821
+   kernfs_fop_write_iter+0x2fa/0x480 fs/kernfs/file.c:352
+   ksys_write+0x14d/0x260 fs/read_write.c:740
 
-The patchset is perhaps a little green but I tossed it in there, thanks.
+Our reproducer.c is available upon request.
 
-I hit a few rejects in arch/x86/mm/pat/set_memory.c, but minor stuff.
+Happy to test a patch if that would help.
 
-I trust you've seen Sashiko's incidental oh-btw comments.
-
-	https://sashiko.dev/#/patchset/20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org
-
+Regards,
