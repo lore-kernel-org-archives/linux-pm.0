@@ -1,63 +1,100 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A99A63B42C4;
-	Fri, 28 Aug 2026 17:50:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D72E923EAA0;
+	Fri, 28 Aug 2026 18:44:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787939429; cv=none; b=WZCRr8t/4PehQEAx9z4Sh28UXQF4gDw/S+tApdibV7Jipa177MI7k9kpwun1E/HRWmRPIo2AfrLP3M+GnPdqMyIpRv3cNmIYIk1PWk6uA+n02rMkCU8njQKQ9ydyuUZf/lt5N9jq2qbJbk9pj10CW/ThIlSBU/V9p/UfLd5M9oA=
+	t=1787942685; cv=none; b=u+C72s7ma28WWBaKwyI051DFLoGzVsxOTivC4Rw0VPp4R7FKBsMJiOiqrliblOtL5bmMFsD3flbHXZWt+VEBbtHe9vo62OmYpUuS6JmgCrifTQv4DUjCbVKkCqrO4fU2Cy+hGpdn6O9B+d/S98pLTAtfqYhEsOwvpMz0ojIZm4k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787939429; c=relaxed/simple;
-	bh=OBSOHEA9enDimSlCYLaa/VvzdQu3fnthFdBAspB46lw=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=BzZqb7jd7yPjCQl4geQ064q7mR8YjVRFZujVYZa/7zJ23KtGNwHP7uz4vy53u/L/Ypr3yHeBc7BCOJbTZqfJxoEJ9FXI5Wp3eX5os7V5UNXaJ8ZEOyag+oWioJUsImRG4VyGpJzFv/HLAHUD2XTr9sNtljctSqhSPT/nSiIPufk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eCYqRkfE; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787942685; c=relaxed/simple;
+	bh=3jffpBVcukgUyYNOF1ssAjF3OhCA3KPbXMICgn/glIs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=G9OUh7rqwtu85ZyoVHqqLaSiVJskVy8TMOoGQx/i7qy/vvXZu72cPIr9elkqOMWy/NtN66fF7hEm9eWiXqxItaI41aE9IlRnbYKGsjxiHMhKG9YHcXPMv2eKhvNqBaj1/hHBckFdnsP1KMbbkpr/o7cFwo9n0CaNcf4Q4UzSKoQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QP0zpmXH; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eCYqRkfE"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 458BF1F000E9;
-	Fri, 28 Aug 2026 17:50:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QP0zpmXH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E8981F000E9;
+	Fri, 28 Aug 2026 18:44:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787939428;
-	bh=XntAcv8iQPyS1VXnsHoweRYIAdxgFQhXuceRGWYG8q0=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=eCYqRkfEXup5hFNaBshPoW5soNWfEotQm8yBQtBuSu5e99oAZQ3K2w3sNH/cz9gyp
-	 vSSolUECzayVlSSPe6317IPleHzBNDifBxneYJlb/CFbGMqIzN8pjyzesdeQDEuWY1
-	 GoW5oRBn4d5lZDhpD8M9Z8v7HkCquR2D964jY0hVdFcNiFtLFPjkl8HmioGSm7Qrxw
-	 kP6T503TgqWrRWr+wKxl+pl+Rv6/eUCy3odaSOzHr5vjP+yvcyl5BmJenEpnuVRXBa
-	 7Lsk4dUHCEBcGheSYCa2oyqRFt608dS4VW34ll2IL6Q8hbLZJGPQ6uUTfoQZhT9x9/
-	 Zw1NaTetDdopQ==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 56B90380AA67;
-	Fri, 28 Aug 2026 17:49:34 +0000 (UTC)
-Subject: Re: [GIT PULL] ACPI support fix for 7.3-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0i9xVAS9XWOOfB58w9oA5WTUQnx=QfLo=7Nnsup3KS-OA@mail.gmail.com>
-References: <CAJZ5v0i9xVAS9XWOOfB58w9oA5WTUQnx=QfLo=7Nnsup3KS-OA@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-acpi.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0i9xVAS9XWOOfB58w9oA5WTUQnx=QfLo=7Nnsup3KS-OA@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-7.3-rc1-3
-X-PR-Tracked-Commit-Id: 3b446d169a93e6abae9a93535369fa18bbcbefd9
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 344be13211d0fceb791a7da70ef810ad13340fe0
-Message-Id: <178793937295.2708560.3128394683288620075.pr-tracker-bot@kernel.org>
-Date: Fri, 28 Aug 2026 17:49:32 +0000
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	s=k20260515; t=1787942684;
+	bh=8fVC3zflRr7ax3cbdpWuGVK1Lo8LoOrXskquDbFPkzw=;
+	h=From:To:Cc:Subject:Date;
+	b=QP0zpmXHSEIuntr9BXJY8voPqfnC5T9tn9EUI8Dyx2SIFd6FG31JsJqWkkgW6jt5D
+	 jOOYJiPVZNBYho9VISR8o3+m3Xtp8nAfV1HmG6XHpvOSp5ULZ0AYG13BJJopKDidUz
+	 yTOpjcFEZsR6vhzP7TlTIQnjEEroNl0nUNHRxEPV4uAlVPwsmLgb2VsI9YE6oJE/1x
+	 3+mBan1SLSR7uKYOtMxfB0mzK2iJPobrRgl81UmoZlnYLu/LM4+DQ9ENemMNvkifnf
+	 YlQLOxJ7Rw1tEDX+5ZdOuIQybunlKEMuYfPSOW3I3v/NyWnbwFdw7S1grfYBd8mcAr
+	 mVKiLL7u4PdfA==
+From: Thorsten Blum <blum@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Yury Norov <ynorov@nvidia.com>
+Cc: Thorsten Blum <blum@kernel.org>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal: intel: powerclamp: Simplify idle_inject_update()
+Date: Fri, 28 Aug 2026 20:43:52 +0200
+Message-ID: <20260828184354.39423-2-blum@kernel.org>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1456; i=blum@kernel.org; h=from:subject; bh=3jffpBVcukgUyYNOF1ssAjF3OhCA3KPbXMICgn/glIs=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkTr732amjbcPHdhLJcj52r95QUyQgETrtjdW9nnRLH5 SlFtkeDO0pZGMS4GGTFFFkezPoxw7e0pnKTScROmDmsTCBDGLg4BWAiC6QZ/jseeHbpzIfgGd5W Kzx5jPqUPvebeObWc2y6nuEuyn4hzp3hf1CT/BXBneKli9lFkg51yv//xzL15dacY87nK9R0dqS acQAA
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
 
-The pull request you sent on Fri, 28 Aug 2026 17:47:05 +0200:
+Drop the local update variable and call idle_inject_set_duration()
+directly instead. Also return !should_skip directly.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-7.3-rc1-3
+Signed-off-by: Thorsten Blum <blum@kernel.org>
+---
+ drivers/thermal/intel/intel_powerclamp.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/344be13211d0fceb791a7da70ef810ad13340fe0
-
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index bd7fd98dc310..c693cea4c526 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -536,23 +536,16 @@ static struct idle_inject_device *ii_dev;
+  */
+ static bool idle_inject_update(void)
+ {
+-	bool update = false;
+-
+ 	/* We can't sleep in this callback */
+ 	if (!mutex_trylock(&powerclamp_lock))
+ 		return true;
+ 
+ 	if (!(powerclamp_data.count % powerclamp_data.window_size_now)) {
++		unsigned int runtime = get_run_time();
+ 
+ 		should_skip = powerclamp_adjust_controls(powerclamp_data.target_ratio,
+ 							 powerclamp_data.guard,
+ 							 powerclamp_data.window_size_now);
+-		update = true;
+-	}
+-
+-	if (update) {
+-		unsigned int runtime = get_run_time();
+-
+ 		idle_inject_set_duration(ii_dev, runtime, duration);
+ 	}
+ 
+@@ -560,10 +553,7 @@ static bool idle_inject_update(void)
+ 
+ 	mutex_unlock(&powerclamp_lock);
+ 
+-	if (should_skip)
+-		return false;
+-
+-	return true;
++	return !should_skip;
+ }
+ 
+ /* This function starts idle injection by calling idle_inject_start() */
