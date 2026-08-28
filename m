@@ -1,102 +1,292 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 616612ECE91
-	for <linux-pm@vger.kernel.org>; Fri, 28 Aug 2026 01:28:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4727A242D6B
+	for <linux-pm@vger.kernel.org>; Fri, 28 Aug 2026 01:39:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787880495; cv=none; b=TM8LjcnNDI7tMl8EI4JFyNfSIHtkdPnJ3P2bqmAGUvNnJmaIvRMwCnhVeFnvx2AmV0SkubaIiyJAz6RX2hojJEDtQs3znqeZC+WQEOWLI/2PWDcl/+x2S0w2Dn7HaP2X0AcKOeL7Z9RGD594YQKgEaJoBvlVumkAIUdktWAxf4g=
+	t=1787881198; cv=none; b=hjRAkcxicwevYYyfSvXfldP36OH8MUBosxopha3NncMbSuZuJo+eZAqizb4y95Vw3cwrZgFU41ZPgpqcqT9/pLZHTfNuPLpx7FaSU4qWhHYjzjqeQlJsahkIMcbsmlwM9G/wRde2p/gG1K+8kz0pU/u359owodsF+ZKEQb62Ckg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787880495; c=relaxed/simple;
-	bh=Sl0a9B9nADNHHFtAngkvL/Yf+242p1ix8kNJ/h47Www=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dOa6jCFBvweMegpAShXhpB6wDSKIyqjQPK2MyUYCOPXTfCGzNQJhoycPEXwdsGixEYEJ5LbwuOZ//v+2I0yMEwLqZ79mPgEXiURqGOJ+KZxrGSRtHUEUgJttYMWmI4XgPB3VmwU8U/tFShbGmG2T6xAl0Q4oiFEjIRZUzJKQOeQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CNeiVYTr; arc=none smtp.client-ip=209.85.214.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787881198; c=relaxed/simple;
+	bh=DO4SRlqDBHtd3mUlwplDvqW7KlbWhnct/JmPuJzZEAI=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=GK2vRooRL7vnCGU/Ma0HRnF6ZvtptKt0uTiNsSEI8N3YXJfv9vKI7GDmxrJ8UjS6m0kY2ewmBkCJnWMvZaZTaHSqFV0aR2XCHVOLLn7MnIbAnCqnFmEnqAZA4nZAL5ZQ0dfqgJmb+ugPnW4TGyLmyPls2xGcV0B58roF2f63gD4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IBWgdn6V; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CNeiVYTr"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2ce98cb8165so4596155ad.1
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2026 18:28:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787880494; x=1788485294; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Sl0a9B9nADNHHFtAngkvL/Yf+242p1ix8kNJ/h47Www=;
-        b=CNeiVYTr9OEgOc2fEclVcSp0tO6FEXbZNpzel5pCM6manF9ZiNbAel675L1spvzt+n
-         Mh6y5Qmdtn+MSyyLtokM1pPCcV4WruTDytnkjEVq/X/wXWyrQK3frjQEph8I323b+hi+
-         WzzkeCCblIm/45MsfVQy20FDcaJr6Nfjll6D3vyFsgdbFUmlyAyASHr2colQrAJk1dIw
-         NdGXfQwg2ol14dIMK4BTbLMAhGP1FNpQ4n0AS5lviJtdPAjWtX559h3QWII94agnVDTE
-         srA35nL9WLfIbQV7Nt44Rg9U7vMuemPNOFisVRjNOA7htyMHrxse36tSv4D6EDqWHbVR
-         i8VQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787880494; x=1788485294;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Sl0a9B9nADNHHFtAngkvL/Yf+242p1ix8kNJ/h47Www=;
-        b=AwwCS8mtXysxLoGKosR2S5L/g6r+H55wajptumScYcivihwLQYv6/k712wxc8Rsrkc
-         jWqcQDVnmQtI0JYwH/SCf7V1lpoBFywnfaCvbd/tllEbKGVzM6apnlPsBNNm7ryOb5qB
-         kK3GWqx7N5+5mSx02KagKQ+x2Hbk/INJA1LB2tN+E0ateRDV4GgyInBP14344FqQkiYc
-         CPgDjmiIyt4BZ8wDfnaPce9S/8vxvC5Yn4ROBvF/e3ldn2p/2Bqk7jtchkx8DaxGt1r1
-         bb/D59eEhKqrXwVUjta/SSqmBK3s7G0LVGwNdKhYfLdvTpPNb+xsVVlpGHGHauFd6KKB
-         BJZQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rr3Rz7NxfacvaEuaiiRyUq3nlHX2+OGQxDJ+vmVi+9ez2J6vl6A2OT7V3h9IGZyxVy7LDL5eM4mDg==@vger.kernel.org
-X-Gm-Message-State: AFuF++lGQLOwx+wZ6k/6wM3zT8cx88kkXxjW/87/7cI6Y+jiDo6WQT2F
-	ukRogjbHZxMWiJyt4wdsP8Sa+V/SRe3AfRvTPKcXfmkhojaAkSUcRGRG
-X-Gm-Gg: AR+sD11p1EPJ/dAod2njJ8UyW866xREdqGzuGI6TTPUVJJvuO1dxFH+Y2U3i9afhKlO
-	0ZNr1EcqCfDD8WVlbLSeeNQtCyHLQQuXienYp2lXwWWKKjpKB2cHwxxI5/A+Z76UGm0LBp3dz01
-	mzju17UF79QswZwMZTT0H159jeldkp4ILYOBps1PjUlYeNaDJmUNv3dv72dIiNP7GYoOYKFjixG
-	vl/QEyYyp0dO0A8UaabDHgTXbsakOsIBAt1Sr5k7XBzNu03mGyKQA0BHD7wh98+/Pv07WZn+z1v
-	FjX2ZX/q4eiwviRcbLMRBapNbLiP8wYL5oDi9j4AKCNToUNF3Zy604CoZdqeTnClipZPF1hWQJh
-	yPgERwezR6YkQX4tWTtFwOTFvbO6C0WeFFg/z5Ak9PaB8FkUUz3zNG3CSAuRF/SNFF7BamOknlp
-	rI3cz7sWI4oysM2iWQDeOzfzsGuKC70xTgZAlC061+Qn2sIQRCiM+Gbr2nnsBHFSNc1hN7unB5Y
-	A==
-X-Received: by 2002:a17:903:a90:b0:2cf:8aa7:7810 with SMTP id d9443c01a7336-2d74cc49176mr37059565ad.2.1787880493557;
-        Thu, 27 Aug 2026 18:28:13 -0700 (PDT)
-Received: from autotest.lge.net ([27.122.242.71])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d75988d8cesm633415ad.66.2026.08.27.18.28.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Aug 2026 18:28:13 -0700 (PDT)
-From: Dongbum Kim <dongbumkim75@gmail.com>
-X-Google-Original-From: Dongbum Kim <dongbum.kim@lge.com>
-To: hch@infradead.org
-Cc: dongbum.kim@lge.com,
-	dongbumkim75@gmail.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	pavel@kernel.org,
-	rafael@kernel.org
-Subject: Re: [PATCH] power: use EXPORT_SYMBOL() to export symbol
-Date: Fri, 28 Aug 2026 10:28:08 +0900
-Message-ID: <20260828012808.2462015-1-dongbum.kim@lge.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <ao0v6G68S_W5CBz5@infradead.org>
-References: <ao0v6G68S_W5CBz5@infradead.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IBWgdn6V"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C1E3CC19425
+	for <linux-pm@vger.kernel.org>; Fri, 28 Aug 2026 01:39:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1787881197;
+	bh=DO4SRlqDBHtd3mUlwplDvqW7KlbWhnct/JmPuJzZEAI=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=IBWgdn6VO7lDY+OZv+yWwb2/ZcodKj2NtPYOqOW2pWlKjS0UYHR0FJwJtPvnOYz9I
+	 1nRw7bt4JzzCO3QscK+WLLU05QYxzMSL89tRNMvsPFz3+o5JwTS0SobfTwEhFzHN5E
+	 IfxOY200J+808ak1cIzkLD034kFDQBvmn902rNdxe7RNMdVIej2SUHocDsFV06/gh3
+	 L7m3XXga7/ktis3y3i/9Z2bKtJWrHk+tN+U5pXC8a1niVRtdf9QV3TAhQPooRrecYE
+	 fCnrISmT2imF0ZwhvgxdN13KDeBTb8zjkEMQ18pJpjUAiqEVjO9JO4e5PPmrlF4fHw
+	 yT8UgcKdmBweA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id A6BDFC41614; Fri, 28 Aug 2026 01:39:57 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 221909] amd-pstate: Cezanne (Ryzen 7 5800U) data fabric sync
+ flood on DC gated by CPPC max_perf
+Date: Fri, 28 Aug 2026 01:39:57 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: smithd98@gmail.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-221909-137361-OhXiiiydyb@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-221909-137361@https.bugzilla.kernel.org/>
+References: <bug-221909-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-On Mon, Aug 24 2026, Christoph Hellwig wrote:
-> ...
+https://bugzilla.kernel.org/show_bug.cgi?id=3D221909
 
-Hello,
+--- Comment #5 from David Smith (smithd98@gmail.com) ---
+UPDATE 2026-08-27. ONE CLEAN NEW RESULT, AND TWO MECHANISMS EXCLUDED -
+INCLUDING THE ONE I WAS ABOUT TO PROPOSE.
 
-Thanks for the feedback.
-I agree that exporting freeze_timeout_msecs variable is not right way.
+This follows comment #4 and does not repeat it. Comment #4's withdrawals all
+still stand. What is new here is a single-variable A/B pair that isolates t=
+he
+frequency cap, and which also falsifies the voltage mechanism I had been
+building toward. I am reporting the exclusions because a falsified mechanism
+seems more useful than the confounded correlation I would otherwise have
+published.
 
-The real issue is that the driver thread cannot be frozen until timeout
-expired for try_to_freeze_tasks. I think freeze_timeout_msecs value is
-necessary for all module, including non-GPL modules, to prevent to fail
-try_to_freeze_tasks.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+1. THE ONE CLEAN RESULT: A SINGLE-VARIABLE PAIR
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+Everything in comment #0, and most of comment #4, is confounded in some way.
+This is not. It is the only experiment in this investigation in which exact=
+ly
+one variable moves.
 
-I will reconsider the approach.
+Both arms: same boot, same machine, same battery, same workload (llama.cpp
+128-token prefill, ~6.7 GB model, verified resident, CPU only), 27 minutes
+apart. Both with amdgpu power_dpm_force_performance_level=3Dhigh, which pins
+FCLK at its top DPM state. CPU VDD plane sampled at 492 Hz.
 
-Thanks,
-Dongbum.
+                              LETHAL              SURVIVOR
+  scaling_max_freq            4508086             3800000
+  FCLK                        1333 MHz, 100%      1333 MHz, 100%
+  FCLK transitions            0 in 23864 samples  0 in 66913 samples
+  VDDNB (SoC rail)            818 mV 84.5%        818 mV 94.0%
+  CPU VDD plane, peak         1250 mV             1281 mV
+  CPU VDD plane, % >=3D1300 mV  0.00%               0.00%
+  CPU VDD plane, % 1100-1300  25.6%               33.0%
+  exposure                    died at 20.9 s      survived 318 s, 9/9 steps
+  outcome                     0x08000800          clean
+
+scaling_max_freq is the only thing that differs. Prior cap-efficacy evidence
+in this bug was confounded: the compared runs differed in the cap AND in the
+power source. This pair is not.
+
+Note how harsh the survivor's configuration is. FCLK pinned at 1333 MHz is =
+the
+modifier that kills this machine FASTEST at stock max_perf - 11.6 s in one
+arm, 21 s in another. Under the cap it ran 318 s clean.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+2. EXCLUDED: CPU-PLANE VOLTAGE IS NOT THE MECHANISM
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+I had built a voltage story and was about to publish it: on DC at low thread
+counts the plane sits at 1.37-1.39 V for ~99% of the time, and I believed t=
+he
+cap protects by removing that operating point.
+
+The pair above kills it, in the awkward direction:
+
+  the run that SURVIVED sat at a HIGHER peak plane voltage (1281 vs 1250 mV)
+  and spent MORE time in the 1100-1300 mV band (33.0% vs 25.6%), for 15x
+  longer exposure - and lived.
+
+So CPU-plane voltage is not the discriminator: not as a peak, not as
+residency, not as dose. Withdrawn before publication rather than after.
+
+PROVENANCE CORRECTION, which anyone reading my hwmon numbers needs: the
+"vddgfx" column in comment #0's gating table is NOT a GPU rail. On this part
+it is the shared VDDCR_VDD plane and it tracks the CPU V/F point. Verified
+directly: 1 thread -> cores 4574 MHz, plane 1393 mV; 16 threads -> cores
+2761 MHz, plane 931 mV, i.e. the plane follows the CPU down while the iGPU
+clock also falls. Any reading of that column as GPU behaviour, mine include=
+d,
+was wrong.
+
+SECOND INSTRUMENTATION CAVEAT: I sampled that plane at 4 Hz for most of this
+investigation, while it updates about every 2.7 ms - roughly 1 value in 92.
+Any voltage conclusion in comment #0 or comment #4 was drawn from aliased
+data. The 492 Hz figures above are the first honest measurements I have of
+that rail.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+3. EXCLUDED: FABRIC DPM TRANSITIONS ARE NOT NECESSARY
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+Since the failure is a fabric sync flood, the obvious question is whether t=
+he
+fabric's own DPM transitions are involved. They are not:
+
+  FCLK pinned at 1333 MHz, 100% residency, ZERO transitions across 23864
+  samples at 492 Hz - and the machine sync-flooded anyway, 21 s in.
+
+I had also observed FCLK thrash (400<->1200, 13 transitions in 888 ms) in an
+earlier death captured at 50 Hz, and wondered whether it was causal. In this
+death the thrash is not merely downstream - it is entirely absent.
+
+Combined with section 2, and with VDDNB identical at 818 mV on both sides of
+the pair, that leaves:
+
+  EXCLUDED:  fabric DPM transitions, SoC-rail level, CPU-plane voltage
+  REMAINING: peak core frequency itself, or core current / di-dt at the top
+             P-states
+
+i.e. the fault lives in the top ~700 MHz, between 3.8 and 4.5 GHz, and is n=
+ot
+reachable through the plane voltage, the fabric clock, or the SoC rail.
+
+I cannot narrow it further from here. There is no writable PPT interface on
+this part - amdgpu hwmon exposes only power1_input, read-only - so I cannot
+hold frequency at stock and lower the power budget independently.
+
+The band 3.83-4.45 GHz is entirely untested. My coverage is <=3D3.80 GHz (0
+deaths, 52 steps), 4.48 GHz (1/1 dead), and 4.51 GHz stock (dies reliably).=
+ A
+cap at ~4.1 GHz bisects it. I will run that bisection if it is useful to
+anyone.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+4. INSTRUMENTATION WARNING: journald UNDER-REPORTS THE MOMENT OF DEATH
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+Relevant to anyone else triaging these resets from logs. In the death I
+captured at 492 Hz:
+
+  journald's last write      09:42:52
+  my sampler's last write    09:43:00.907   (fsync'd every 0.25 s)
+
+journald stops being flushed 8.0 seconds before the part actually resets. So
+the last line in your journal is NOT the moment of death, and "the machine =
+was
+idle when it died, because the last log line is idle" is an unsafe inferenc=
+e.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+5. CORRECTIONS TO COMMENT #4
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+(a) TIMING CLAIM WITHDRAWN. Comment #4 section 7 says the compute load
+    collapses to idle "0.3-2.8 s BEFORE" the reset, and treats that as cutt=
+ing
+    against a simple di/dt story. Withdraw that. Those gaps were computed
+    against journald's last write, which section 4 above shows is up to 8.0=
+ s
+    early, so they are not trustworthy. In the one death measured against a
+    reliable clock the collapse precedes the reset by under 0.4 s: last busy
+    sample 09:43:00.510 at 3065 MHz mean, first collapsed sample .758 at
+    498 MHz, reset at .907 - bounded between 0.15 and 0.40 s by the 250 ms
+    sampler. I am no longer claiming a long quiet interval before the flood.
+
+(b) UPDATED TALLIES.
+      At stock max_perf on DC:   14 deaths in 15 valid arms
+      At smax <=3D 3800000 on DC:  52 ladder steps + a 35-min mixed soak
+                                 + a 20-min integrity soak, 0 deaths
+    The 52 now includes the 9 steps from section 1, run with FCLK pinned at
+    1333 MHz. The ledger since 2026-08-21 now records 23 data-fabric sync
+    floods plus one hard hang.
+
+(c) The userspace-fault control in comment #4 section 7 becomes: two faults=
+ in
+    ~15 valid stock-max_perf arms, zero across 52 capped ladder steps and t=
+wo
+    capped soaks.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+6. WHERE IT STANDS
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+Still mitigated but not root-caused, and the mitigation is unchanged in for=
+m:
+cap scaling_max_freq to 3800000 on DC only.
+
+What is now closed: BIOS (three versions), C6 (both directions), EPP,
+governor, min_perf pinning, fabric clock pinning, three kernels, and - new
+here - CPU-plane voltage and SoC-rail level as mechanisms.
+
+What remains is peak core frequency itself, or core current / di-dt at the =
+top
+P-states in the 3.8-4.5 GHz band, plus the DC power path, which I cannot cl=
+ose
+without a replacement pack I am not able to test. I cannot separate those t=
+wo
+from userspace: there is no writable PPT interface here, and every voltage =
+and
+power number available to me from hwmon is an SMU self-report, while the one
+independent instrument - the battery EC - refreshes about every 9 s against=
+ an
+event lasting under a second.
+
+ADDITIONAL QUESTIONS
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+These are in addition to the four in comment #4.
+
+5. Is there any Cezanne rail telemetry that is NOT an SMU self-report? If t=
+he
+   SMU is the suspect and also the only witness, I cannot distinguish "the =
+SMU
+   commanded a bad V/F point" from "the rail sagged and the SMU did not see
+   it".
+
+6. Is there a debug interface to set a PPT limit on this part? amdgpu expos=
+es
+   only power1_input read-only here, so I cannot separate frequency from po=
+wer
+   budget - which is exactly the separation section 3 now needs.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
