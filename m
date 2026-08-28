@@ -1,99 +1,164 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8210834EF0D;
-	Fri, 28 Aug 2026 15:49:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61377357D0F
+	for <linux-pm@vger.kernel.org>; Fri, 28 Aug 2026 16:18:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787932149; cv=none; b=DTYrqhUfHKd3UwmRL6tdgYem8Xuj1WJt9Q2bw6L/Lz1AlKbb2y1VHwnN9BCPz90e8f9AkPIHnw+SBQXoJAReJ+u/z5/T0psWQW8M9OMl0JJ3rhzF09gf0pCbndOUAD8wYx11i71OHXsF+Aj3cMjmiTXgbh0ZE+bgs9LTLC8VqaU=
+	t=1787933926; cv=none; b=r0vIzn8kYegyWkOaCCBEtUbHg7xqCQcwqxNRmixtsNrAj0xagnpZv8cdsGzXJAf3ZS5ra5R/8F70s72BHv2+qBwbOkJi4qdsWUPSRTlwpxbCOp2ATHJCqWAFweTloKfPk/icxlDXU9OJREJc25bblGWOjDsnePwjW25oPYfnRgg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787932149; c=relaxed/simple;
-	bh=sHZOVGU6R6/vFFhYggjN+yCXZKs9BrwYs90kWOF1fQw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=n1YBGCwm3n60B6BNYudyrIgnQJ+VMJD/jmsN8Zlxj8wzodxiDXVhjCw+NC/F7T/vlHsMTF9GEmHaS6avT+xLxXLOYUoGa2S8FeM3dRWsTa6Kn57tU9k5S+tPaHKMP4f0mDEQ0K2IWZAeGSq+aF0FNy5e4H1wLWjnh1ZJKPrCvTo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Wewfgwfe; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1787933926; c=relaxed/simple;
+	bh=On0EpPCW7Xs+kBPpQMK/g/Ox2aYtF5AyHy/Ph11d7Nc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KZKaHeSLUJocIWfWVEufHpWek4l/mP8mqgjV1LMb+JNjAVdPdy6E2lFfuwLDZtaTCg7NAzwJ/4PeUn0ALQPOL3U51l0e1gKuxvuXpKRNLNQ2/Q0SHn/EX+8J/Kx8hLnCTNgVlGZhgrv8mcvfR5AapYWQCtmjofoZAlUytzVzYlw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bEd0fCVE; arc=none smtp.client-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Wewfgwfe"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 774C81570;
-	Fri, 28 Aug 2026 08:49:01 -0700 (PDT)
-Received: from [10.57.5.212] (unknown [10.57.5.212])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3EE903F7D8;
-	Fri, 28 Aug 2026 08:49:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1787932145; bh=sHZOVGU6R6/vFFhYggjN+yCXZKs9BrwYs90kWOF1fQw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=WewfgwfeSwyJd+CYEr3ZCa6Tk7A752y4K1FS7+SBfR6cFCYVmygGOw1g+1Fmb8dsQ
-	 riACJlR3qbViM5mhTQSpOMeoMVpo3HE+D8eyWyjo9S1kxKJJolqh7o1am0ChSEdtuz
-	 D/JUBbNehtgqsx/WjudNxOjWMnAAFB9qAUDFe+uQ=
-Message-ID: <d5f96d83-b5c4-4795-9675-7779f35be78f@arm.com>
-Date: Fri, 28 Aug 2026 16:49:02 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bEd0fCVE"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-47db714766aso1710809f8f.0
+        for <linux-pm@vger.kernel.org>; Fri, 28 Aug 2026 09:18:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787933922; x=1788538722; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=dASx059M7n9jDKHVd3+xN5EtgdIyRPi/zKAv/mkblak=;
+        b=bEd0fCVEn4pqUpscZe2rFpfwF3+19Y6p3CcnajMI0SKoPLFdt4ne3RjoqO2LDKUmxF
+         dDlJd/ZkLrRxi7mC/5DaQ9KRHE6niG4cRLKkY1hxc7IBCCkB/WdJUNo0Tj10BsF8P9GR
+         QU0tlh4vvTTkgOkb/Nthlu8JjJ3jc6jDADXU8asMP9O/1qaOt1luqzk16eSgq8WEnMfK
+         m29NFf7lYzkx0Nf2iUeJUm+tRHhzO29BAdp+i9DEFSGS/ab4NBjIsLXgPaL3DodxfZud
+         2Z+0yr03rMiOnmwSupzWkmTa6yYIAqmKZ06b34ZSmqDRAmYxmy8ZM4gNPdgmR2FBWrCt
+         o4fA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787933922; x=1788538722;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=dASx059M7n9jDKHVd3+xN5EtgdIyRPi/zKAv/mkblak=;
+        b=hvbiQPvpNePWjZFO+oAgtanXESSP2aAiE6KOIT3LwIy7Jake7l2fmA7rjkRRUwgCTt
+         XN7bL/VFb5eBjRUa6FyS5q8Vrib/YGdKeDtGdXJoM02mmHK/PbVdK1wSxGMTr03QXf4G
+         HakWn0aFE2cOr7z0eeOO1sLa9ktqawRzxXmvQz0PYFgEbD4y+2zqJ2RDPcpm5BPZVdpf
+         8NoFIuE4oTGUom6cjIpWDbv4iCIO01oCSaDoGT4xGqLNyW+0eUVecGezdlnez2zLpiw9
+         MA1VIXjnGbE+F4BSeFj7/X1Qdi/hFDmQqmbJSbkvD0S0IsmPnHXaMvxwO7+U+7KkD6P7
+         49bg==
+X-Forwarded-Encrypted: i=1; AHgh+RqDlGdaUceD/ev8obfG4NBOKovyEYBNnoFgqMesCffWy6DHQdMR2hZ8k4dsWfoK48FTv/L5HebMNQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nlUO59cndV3lC/PihVEVgVZIEErcRyqLLIXlnmLppspp5/25jn
+	j08SH5pLhLYtrRZMdT/Oge2PmvUIc+aDzE8TUqBkMYNdNBGeIyk2FDCH
+X-Gm-Gg: AR+sD104SiLnx5AZ6AqFqD+cfhGnOxcaae9uC5CUC0lqWy0zCwlVQV3IIv6P4aeWDh4
+	F6+g8bdpNzfDp/5TU4S7b0CeQfJYSVgjNaOHn/P3fejPwVV0H8r4uJ09OR6P/W14hsBDo2ZCfJ+
+	VOarKO4Vw0mZTcbQrj30J/Susw1FnVtH9Cq020FVy6oei2Ed04x7SrrJcIBXK+EwEkcYCfOo7Ol
+	rycUgR3s0MOPlb0yy8hcR74a9EfCqzISA/mMgpl4T2Wsxkv9cWRjc11EL1eEp13Bw0qN3exbQEy
+	dxiP0yH/FJ0wu/UF7Vxps+7Zxy8ep/kMa7jnTWKyIFiK2QmR8r9lOZKqD+Nk11OrVW/OUFbSPjg
+	r7AdKLSza+WFxbypRkeSLp4BJk+ydUyfBN18AFfzbvAhgDjgcc+D0Rd/vjFJnay/JvoY7em8AFh
+	GZTLx5p6wiN4q58AW37bmcGgf+JDVk4sMWkeSyKsh+a3DmC3Gdi1I8NmIsv/gSsPjIxrSy2lGd
+X-Received: by 2002:a05:6000:25e2:b0:482:e2f2:19c0 with SMTP id ffacd0b85a97d-483007e922cmr1959296f8f.3.1787933922555;
+        Fri, 28 Aug 2026 09:18:42 -0700 (PDT)
+Received: from main ([176.237.234.133])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-482fbb32ce2sm5294284f8f.33.2026.08.28.09.18.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Aug 2026 09:18:41 -0700 (PDT)
+From: Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	ojeda@kernel.org
+Cc: boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	aliceryhl@google.com,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	daniel.almeida@collabora.com,
+	tamird@kernel.org,
+	acourbot@nvidia.com,
+	work@onurozkan.dev,
+	linux-pm@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>
+Subject: [PATCH v2] rust: cpufreq: reject NULL from cpufreq_cpu_get()
+Date: Fri, 28 Aug 2026 19:16:57 +0300
+Message-ID: <20260828161834.29539-1-mehmet.mkoseoglu@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpuidle: teo: Do not return a disabled idle state
-To: Xueqin Luo <luoxueqin@kylinos.cn>, rafael@kernel.org,
- daniel.lezcano@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260828032457.2317326-1-luoxueqin@kylinos.cn>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260828032457.2317326-1-luoxueqin@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 8/28/26 04:24, Xueqin Luo wrote:
-> If idle state 0 is disabled and none of the enabled idle states satisfies
-> the PM QoS latency constraint, constraint_idx in teo_select() stays at its
-> initial value of 0, because the loop that updates it starts at state 1,
-> and so the candidate state index is capped at state 0, which is disabled,
-> and that state is returned to the caller.
-> 
-> The cpuidle core does not validate the returned state index against the
-> per-state disable flags, so the CPU ends up entering the disabled state 0.
-> 
-> To address this, ensure that constraint_idx is at least equal to the index
-> of the first enabled idle state (idx0), so that the candidate state is
-> never capped to a disabled one.
-> 
-> Fixes: c410a9a142f1 ("cpuidle: teo: Change the main idle state selection logic")
-> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
+cpufreq_cpu_get() returns either a referenced policy or NULL.
+PolicyCpu::from_cpu() passed its return value to from_err_ptr(), which
+rejects ERR_PTR values but accepts NULL.
 
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+If the lookup fails, Policy::from_raw_mut() therefore constructs a mutable
+reference from NULL. Dropping the resulting PolicyCpu then passes the
+invalid pointer to cpufreq_cpu_put(), causing an oops in kobject_put().
 
-> ---
-> v1 -> v2:
->     - Instead of falling back to idx0 after the candidate index has been
->       capped to a disabled state, ensure that constraint_idx is at least
->       equal to idx0 before the capping check (suggested by Rafael J. Wysocki).
-> 
->  drivers/cpuidle/governors/teo.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
-> index ac43b9b013b3..906f4f89e365 100644
-> --- a/drivers/cpuidle/governors/teo.c
-> +++ b/drivers/cpuidle/governors/teo.c
-> @@ -426,6 +426,17 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  		}
->  	}
->  
-> +	/*
-> +	 * If the latency constraint does not allow any of the enabled idle
-> +	 * states to be used, the candidate state index will be capped to 0
-> +	 * by the check below, but state 0 may be disabled.  To prevent the
-> +	 * selection of a disabled state in that case, ensure that
-> +	 * constraint_idx is at least equal to the index of the first
-> +	 * enabled idle state.
-> +	 */
-> +	if (constraint_idx < idx0)
-> +		constraint_idx = idx0;
-> +
->  	/*
->  	 * If there is a latency constraint, it may be necessary to select an
->  	 * idle state shallower than the current candidate one.
+Reject NULL with NonNull before constructing the Policy reference. Return
+ENODEV instead.
 
+A KUnit negative-control run reproduced the oops with the original
+conversion. The same test passed with this change. The reproducer is
+available on request.
+
+Fixes: 6ebdd7c93177 ("rust: cpufreq: Extend abstractions for policy and driver ops")
+Assisted-by: LLM
+Signed-off-by: Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>
+---
+Changes in v2:
+- Format modified imports using the kernel's vertical import style.
+
+ rust/kernel/cpufreq.rs | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
+index affa2b9490ef..4b992ea9a0f0 100644
+--- a/rust/kernel/cpufreq.rs
++++ b/rust/kernel/cpufreq.rs
+@@ -14,7 +14,13 @@
+     cpumask,
+     device::{Bound, Device},
+     devres,
+-    error::{code::*, from_err_ptr, from_result, to_result, Result, VTABLE_DEFAULT_ERROR},
++    error::{
++        code::*,
++        from_result,
++        to_result,
++        Result,
++        VTABLE_DEFAULT_ERROR, //
++    },
+     ffi::{c_char, c_ulong},
+     prelude::*,
+     types::ForeignOwnable,
+@@ -29,7 +35,10 @@
+     marker::PhantomData,
+     ops::{Deref, DerefMut},
+     pin::Pin,
+-    ptr,
++    ptr::{
++        self,
++        NonNull, //
++    },
+ };
+ 
+ use macros::vtable;
+@@ -687,12 +696,13 @@ fn clear_data<T: ForeignOwnable>(&mut self) -> Option<T> {
+ impl<'a> PolicyCpu<'a> {
+     fn from_cpu(cpu: CpuId) -> Result<Self> {
+         // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
+-        let ptr = from_err_ptr(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) })?;
++        let ptr =
++            NonNull::new(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) }).ok_or(ENODEV)?;
+ 
+         Ok(Self(
+             // SAFETY: The `ptr` is guaranteed to be valid and remains valid for the lifetime of
+             // the returned reference.
+-            unsafe { Policy::from_raw_mut(ptr) },
++            unsafe { Policy::from_raw_mut(ptr.as_ptr()) },
+         ))
+     }
+ }
+-- 
+2.55.0
