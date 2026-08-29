@@ -1,134 +1,178 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f178.google.com (mail-pg1-f178.google.com [209.85.215.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BDCB21CC5A;
-	Sat, 29 Aug 2026 10:48:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC688222580
+	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 13:49:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788000522; cv=none; b=QSXiSR8m3HgA5mrNhnyLlHG5P54Vs4PD+b61mcKICOhQvT0LgT0AT10WyYtfxlxpJ/7n5B427quQ0gjIWuIb5zY5McFDYv2xdg4YPjkaln8Tn0pKjwy6Cp/eFbdsKUvUrT6xIcZrn26xRZ9dLMxbHb1v3zStp+DK1/x8zs8v6pI=
+	t=1788011378; cv=none; b=SsugHgxkvn/ayrkV90jw6WkvXqmCEd3mlaXBNKn8HuRX/f1LWNqpqvxhvV+SnY3ZZENbE1XkzgC4hc4u2ETX+irRJMOGvz+ot9gM7eSHTp6vgooxkfLD6I1h21eFVL6D4pihxg/iaRb/Jp2vo5wZAvlV8Kq+fYLCW2UzElyE6DM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788000522; c=relaxed/simple;
-	bh=3F/+YtJTPXmp2oYrKToOY/XGOwgYSjO/cwvzuDz7TQg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZPnUQC2nFox9tkyLjFwOPRFxqv/ONsfFz4jm+u4bzzJtySEtOJVgzyhhJnL+MOULmKPsznu3JUVnvhTr8rQGQQzPgaAd/0Q45AWMLNMT+LFi/IgbJQgvvQ9ucsnHXHNnQWdcnFMTgUkPqlBND0w6T7+ROpt6596GiVB6/+ol6oc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LWRmvwZ5; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788011378; c=relaxed/simple;
+	bh=NDGfLTb+qMTcoqzmQ6Q/Oa9teGcC2yTW1B+lZiiFVVA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UT+niSyHW00eSVXr61EUHqj5BWCh0b/0cAJTD5ZaA00La+j6GKd8jQi6E3C7ZmNnQ0wpGEqpkFQIs3btVG193beHbyXyPXVG2qSnvLYsWhB6mI1LppIn/drUj7FWSGfifikwGSGWUwgfApFiqv1RQYK24RpSwOCZW8ffVI6hIRM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Qh8DuWkW; arc=none smtp.client-ip=209.85.215.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LWRmvwZ5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4C6B1F000E9;
-	Sat, 29 Aug 2026 10:48:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788000520;
-	bh=KFZ1nhGEZbR6O/VCAicWb32eNrolFHOIlFtmV4ujfk4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LWRmvwZ5mPls4Z+BaiG1qXwR10+CBxW+bUOShLfZyRmLMeWBsXFZbiPwmkePznqr5
-	 RDgCI5JSJI/PnwyJzmrjiTTIt4pQEyHh4ig4dGZIGujt3YWBOXTXM28p4gyqeJwbxf
-	 WsaqKftKKe5VsQ0VW/PEX8SxuQhw1GHVsePh+UKddYUexwRXUbdmDfNrJmoD2ZI1v6
-	 YA0GuLxzRK2viPxmPZf5a9S7TnaLyvMWbeiiVwoWcOVI5CYLFrXFWBc0Jr3YfAzGPD
-	 ENSQxCrpJykei+zA/nljjaxyFx/CEE02iM1psN14xjNoYwJ+aBxdLXjvTaTWkcJoke
-	 quOJdXXFQrxWg==
-Date: Sat, 29 Aug 2026 13:48:28 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian =?utf-8?Q?Barna=C5=9B?= <abarnas@google.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Alexandre Ghiti <alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Brendan Jackman <brendan.jackman@linux.dev>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@kernel.org>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Len Brown <lenb@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>,
-	Will Deacon <will@kernel.org>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-pm@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	loongarch@lists.linux.dev
-Subject: Re: [PATCH v2 0/6] arch, mm/execmem: resolve confusion about
- set_direct_map_valid_noflush()
-Message-ID: <apK4_MgCtPFlDwoc@kernel.org>
-References: <20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org>
- <20260827223947.c773e6a7324eaf3fe0d8362f@linux-foundation.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qh8DuWkW"
+Received: by mail-pg1-f178.google.com with SMTP id 41be03b00d2f7-ca12086c06eso1503908a12.0
+        for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 06:49:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788011375; x=1788616175; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=g3QtaABuS8qJhvVlLF8eFIQuUjWP6YhNYZcU2LoDrBc=;
+        b=Qh8DuWkWfcEEYNpIK7Ci9ln9vJtmZpXkyL6FuWBuv2T3ynLAbWXsXbrodXBqj1psQW
+         sRec49u9x0FuBdlj0gTLAYXVsSaLuTmPkXmjC7kCG6d+6kpkDWrz/Gifhr0harObpP/z
+         G6EfNtVMLMyapvT7Edgpk8c7zQ/eHud17sJKYRf4pFOHha2q+hUGS6MGX55vHzAUxUN7
+         pEv0/rdjSlUFsS7phza9AmS2AWPcpOkG3Tqpgk0N0MFuTSb8y5D25ciaOSDRl7LfgiPa
+         kdu8RUvQgFq0YO2S6sbxqMf6/hnWRc182UxiRBG5E4KMl6o/niivoKucOrafUEllWfzx
+         w4IQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788011375; x=1788616175;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=g3QtaABuS8qJhvVlLF8eFIQuUjWP6YhNYZcU2LoDrBc=;
+        b=aXGvrKBNat8ZwdJnPu7DJj7Hht9Q60V7w6c08cZRLKxAP0nb2ZplGn0/uj87hGNAl5
+         qJXE9ts0x5yWQZUkR+EvLD5Lr4CWQJa80j/JDT6Gmfn4Wr8zKDm978Si8GvTQJoIhCyQ
+         hvnDAbYLWmjhVGM5J9NT8kIwvpmEHZiHHELTclCzKKfR89fukUu66Z9ontwx3GEqhsXq
+         aJ5xPkRQeFECa2otd9mA2hv13nc0lGnD0a+itRubjGO3eGepBe49iR+ZyDPJGa6PYqzx
+         0uNCtBQXiDCXFPfvZmjqSpPa5WaYZVZeP4FebcJt1gWzxOCOVkmVnhpu7FXMXwUtIWr0
+         oSMQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwTVDMr9MFPFVezwYayQFyG85jVZXCOWzQW7zUE6oJZHaSytCynrM3z6zp37iMhJlOiJR5bUt8Afw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lwVnNhKeYB90ffBZxNBLLslQgHtm4oMl/HcEt+611tyemYUb1n
+	HH1GkMIdpvE3wZ89d9I6APmvZOSh18d4hT7EeXtok6a4pMdXq0sCJtCE
+X-Gm-Gg: AYBFou0jzpeDzJEbKt/nGoWvvbZuZn/4Dudlm3yJ0VF/b9iamr+d3abURbolV5b6Q6e
+	5VziZtXH7XzushO2WUCPg7Zd0uy9EMudvNRd95bC3IQJqSJqUuyGJFE2xoPqbEIwW6ds7C6OYwt
+	v7IBjvbMIrAYrO02vx+cDxUf4shgTFsxWSXH0BydEPoowibHtTfM7mFnWsG7R+Qz4kJoB7Pm3HY
+	l4oMt25m2UMeHIP+hfe6M4aMXLm7kZ8JN7K0JRcZvhdWvo/+ZwMNlSQdLOR3Lv+RJj1SAcmPe7F
+	1LILqQn12ZvdE/DDOasqCuVxqp9AHL/2rAGPOV9iTGMSIfKbq/tP9jtfE4ojrDf99q9hMbAJnZj
+	oXtFp8WuzBovFNNYG/XoYjC1RqhzV6srKs8GVlOpaD3T6F28lePt172qcBBmML+VUhjmumTrk2Z
+	EFwNuuo4GIaRIGoEI34AzjqGJy3TN47/36LHIqQ/Wfvxx1E9/6PR3cUFfm+fn06Q1dY/mzaw==
+X-Received: by 2002:a17:90b:5108:b0:398:9c00:29ea with SMTP id 98e67ed59e1d1-3989c003c23mr9792992a91.18.1788011375102;
+        Sat, 29 Aug 2026 06:49:35 -0700 (PDT)
+Received: from gmail.com ([58.84.62.132])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3286f9e2a95sm15206886eec.23.2026.08.29.06.49.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 29 Aug 2026 06:49:34 -0700 (PDT)
+From: Sumeet Pawnikar <sumeet4linux@gmail.com>
+To: vireshk@kernel.org,
+	nm@ti.com,
+	sboyd@kernel.org,
+	linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	sumeet4linux@gmail.com
+Subject: [PATCH] opp: Use %pe to print symbolic error name
+Date: Sat, 29 Aug 2026 19:19:24 +0530
+Message-ID: <20260829134925.8883-1-sumeet4linux@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260827223947.c773e6a7324eaf3fe0d8362f@linux-foundation.org>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 27, 2026 at 10:39:47PM -0700, Andrew Morton wrote:
-> On Sun, 23 Aug 2026 14:46:11 +0300 "Mike Rapoport (Microsoft)" <rppt@kernel.org> wrote:
-> 
-> > Recent discussion about implementation of execmem's ROX caches on arm64
-> 
-> I'm assuming a "[1]" reference was intended here.
+Replace PTR_ERR() and %ld with %pe and pass the original pointer directly
+to dev_dbg(), dev_warn(), dev_err() or pr_err(). The %pe format specifier
+prints a symbolic error name (e.g. -ENOMEM) when CONFIG_SYMBOLIC_ERRNAME
+is enabled, otherwise it falls back gracefully and prints the raw integer
+value. This makes error messages more readable without any functional
+change.
 
-Yes :)
+Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+---
+ drivers/opp/core.c | 24 ++++++++++++------------
+ drivers/opp/of.c   |  4 ++--
+ 2 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index cd0e82dae776..1e3b80a1f88e 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -453,8 +453,8 @@ int dev_pm_opp_get_opp_count(struct device *dev)
+ 		_find_opp_table(dev);
  
-> > revealed a confusion about how set_direct_map_valid_noflush()
-> > implemented on different architectures.
-> > 
-> > On arm64 it sets or clears the PTE_VALID bit marking a PTE as present or
-> > not present.
-> > 
-> > On other architectures it's a range version of
-> > set_direct_map_invalid_noflush() and set_direct_map_default_noflush()
-> > 
-> > Unlike arm64::set_direct_map_valid_noflush(),
-> > set_direct_map_default_noflush() not only marks PTE as present, but also
-> > sets its default protection mode.
-> > 
-> > Other than that, initial design of execmem ROX caches didn't rely on
-> > restoration of large mappings that's now available on x86, but
-> > completely removed the memory allocated for the ROX cache from the
-> > direct map to ensure that large mappings are not split. This precluded
-> > usage of VM_FLUSH_RESET_PERMS for the ROX cache allocations and required
-> > execmem to implement manipulation of the direct map alias.
-> > 
-> > Current implementation of ROX caches does not remove the direct map
-> > alias but simply calls set_memory_rox() that updates the permissions in
-> > both vmalloc address space and the direct map and relies on
-> > collapse_large_pages() in x86 CPA to keep large mappings.
-> > 
-> > This allow using VM_FLUSH_RESET_PERMS for execmem ROX cache allocations
-> > with small adjustments to set_direct_map APIs and vmalloc::reset_perms()
-> > behaviour: adding number of pages parameter to set_direct_map APIs and
-> > making resetting of the direct map permissions in vmalloc VMAP_HUGE
-> > friendly.
-> > 
-> > Implement these adjustments, make execmem always use
-> > VM_FLUSH_RESET_PERMS and revert set_direct_map_valid_noflush() changes.
-> > 
-> > [1] https://lore.kernel.org/all/20260611130144.1385343-4-abarnas@google.com
-> 
-> The patchset is perhaps a little green but I tossed it in there, thanks.
-> 
-> I hit a few rejects in arch/x86/mm/pat/set_memory.c, but minor stuff.
-> 
-> I trust you've seen Sashiko's incidental oh-btw comments.
-> 
-> 	https://sashiko.dev/#/patchset/20260823-execmem-set-vm-perms-v0-2-v2-0-b013a37d84b3@kernel.org
-
-Yeah, it did discover something fishy with the fallbacks handling.
-I'm looking into it.
+ 	if (IS_ERR(opp_table)) {
+-		dev_dbg(dev, "%s: OPP table not found (%ld)\n",
+-			__func__, PTR_ERR(opp_table));
++		dev_dbg(dev, "%s: OPP table not found (%pe)\n",
++			__func__, opp_table);
+ 		return PTR_ERR(opp_table);
+ 	}
  
-
+@@ -611,8 +611,8 @@ _find_key(struct device *dev, unsigned long *key, int index, bool available,
+ 		_find_opp_table(dev);
+ 
+ 	if (IS_ERR(opp_table)) {
+-		dev_err(dev, "%s: OPP table not found (%ld)\n", __func__,
+-			PTR_ERR(opp_table));
++		dev_err(dev, "%s: OPP table not found (%pe)\n", __func__,
++			opp_table);
+ 		return ERR_CAST(opp_table);
+ 	}
+ 
+@@ -722,8 +722,8 @@ struct dev_pm_opp *dev_pm_opp_find_key_exact(struct device *dev,
+ 	struct opp_table *opp_table __free(put_opp_table) = _find_opp_table(dev);
+ 
+ 	if (IS_ERR(opp_table)) {
+-		dev_err(dev, "%s: OPP table not found (%ld)\n", __func__,
+-			PTR_ERR(opp_table));
++		dev_err(dev, "%s: OPP table not found (%pe)\n", __func__,
++			opp_table);
+ 		return ERR_CAST(opp_table);
+ 	}
+ 
+@@ -1036,8 +1036,8 @@ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
+ 
+ 	/* Regulator not available for device */
+ 	if (IS_ERR(reg)) {
+-		dev_dbg(dev, "%s: regulator not available: %ld\n", __func__,
+-			PTR_ERR(reg));
++		dev_dbg(dev, "%s: regulator not available: %pe\n", __func__,
++			reg);
+ 		return 0;
+ 	}
+ 
+@@ -1448,8 +1448,8 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 		temp_freq = freq;
+ 		opp = _find_freq_ceil(opp_table, &temp_freq);
+ 		if (IS_ERR(opp)) {
+-			dev_err(dev, "%s: failed to find OPP for freq %lu (%ld)\n",
+-				__func__, freq, PTR_ERR(opp));
++			dev_err(dev, "%s: failed to find OPP for freq %lu (%pe)\n",
++				__func__, freq, opp);
+ 			return PTR_ERR(opp);
+ 		}
+ 
+@@ -2869,8 +2869,8 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
+ 	struct dev_pm_opp *opp __free(put_opp) = ERR_PTR(-ENODEV), *tmp_opp;
+ 
+ 	if (IS_ERR(opp_table)) {
+-		dev_warn(dev, "%s: Device OPP not found (%ld)\n", __func__,
+-			 PTR_ERR(opp_table));
++		dev_warn(dev, "%s: Device OPP not found (%pe)\n", __func__,
++			 opp_table);
+ 		return PTR_ERR(opp_table);
+ 	}
+ 
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index c02e20632fa6..d33265860553 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -1345,8 +1345,8 @@ int of_get_required_opp_performance_state(struct device_node *np, int index)
+ 		_find_table_of_opp_np(required_np);
+ 
+ 	if (IS_ERR(opp_table)) {
+-		pr_err("%s: Failed to find required OPP table %pOF: %ld\n",
+-		       __func__, np, PTR_ERR(opp_table));
++		pr_err("%s: Failed to find required OPP table %pOF: %pe\n",
++		       __func__, np, opp_table);
+ 		return PTR_ERR(opp_table);
+ 	}
+ 
 -- 
-Sincerely yours,
-Mike.
+2.43.0
+
