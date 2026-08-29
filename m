@@ -1,154 +1,261 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B52139C636;
-	Sat, 29 Aug 2026 16:17:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788020261; cv=none; b=U4AeDAKievODo8RjE88UB2FlZj9GsJHosX8XXN8XnB6YnBO1WvTjnL4JqBYU2N1rAZEaLRMFyONcR0J6elgwUauf1lAf6lIbVZlhmD5tq3sB2kcKeHmpfBiw33vYUvTUuFJ9UAR9ydinKavhqM2rznstKSVcBxE5T5+gnPZ5ooo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788020261; c=relaxed/simple;
-	bh=uZKY6mc+5pft/q3cAwuIhr586hkZ+KFWPhywxEQWTm4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WMxuDVkl+1mlagBJyNTIgxe7SmB/TZtKce9iei3rdgXqH4I21iqMaCdrhRSLaoRiB5Tz6KdL1SWxEr/YLMMUgcXGKtxY8HfdtjOuG8ckiEn85kP2kgBHiHfvNhj7hMlYrm1Lppwrwbo0YRUYAbBw3/vYvhMuDciGZRSb+8FKqPQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=grrlz.net; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=AGppSPD8; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=J5RldUj/; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=grrlz.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9F34356754
+	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 18:01:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.170
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788026475; cv=pass; b=MCESO/9k/lJWDbxbMbyHunnZRQBfUmb4qUqlyAEZ4cxJow0M79DfJ14FUJQUn89Isfl4swbHIRYlRrO+FBYNOG2JqTvuGOu0E4yAO+ocbOeJRKl1XUu0sDwuPiMT7NOkmWpSimxZhsX09cbQapeqkDSVAzkGHj+zblpO1DorCI0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788026475; c=relaxed/simple;
+	bh=1sRd5a9TSWmSja6VRlyotOK7ik2WNHK6l/Mz8aJuXu8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BeaX4J7vs3vRB3ucYJ6t5EsJJEmXhdyLV6GxLKVThsZHyBcwBq2henh/rivN/1znOjghVlOLjD3Pwm58XaWNGcgbfO3g2m1VWw6QMDwG9TxWL6ijZCkxW9BWPg6yTxYTS2Cizk6gZzkkeqTkkns4L5LkJHff2H9RxB+FujOi+w4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lam2fuRR; arc=pass smtp.client-ip=209.85.128.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="AGppSPD8";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="J5RldUj/"
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Date:Subject:To:From; t=1788020257; bh=ngSOMec2hvD+GVCYRJ3MZdS
-	rfGEKoGbtHjfNNfZkYJQ=; b=AGppSPD8iX/nu6kk7r/8CEPI3/4gXIlSNqo2StDtTK3PahSlKx
-	83zFMj4vJvlLzFQO28/oQr3m+LLNDiVRThMszJkKRkn895AomV0PK7TYSgLitsGJcJ8AASnuCVl
-	wbzQ83Egj8NkeBNjuqREY5s21Qb8wyCvd+gGc1bEQHOkljm43AXIzmjFjS+EXsHNrTmz7aPp2xV
-	w6EC3stCrIEldHtj7OVFy7DSrXapu+t0w0g6Z11DfiGe61iTxSj1KpmOfN+LwCbqU10j6qVtLEU
-	ukDQo80u7Y8Tuud+B+JmlT8BqtPQri2B8EG0CKxXEspX/IHZS5NTCwCpCo5qy3VSt4A==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Date:Subject:To:From; t=1788020257; bh=ngSOMec2hvD+GVCYRJ3MZdS
-	rfGEKoGbtHjfNNfZkYJQ=; b=J5RldUj/KuPJRh4/Du9+M2PfT4SGsTns7G3mjV3RRXj1kHdOUs
-	L3axmodW26y5YIef5wR956XVZGtEjMqlm2CQ==;
-From: Bradley Morgan <include@grrlz.net>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	brads@mainlining.org
-Subject: [PATCH 4/5] cpufreq: schedutil: convert to kthread_create_worker
-Date: Sat, 29 Aug 2026 16:17:38 +0000
-Message-ID: <20260829161738.19639-1-include@grrlz.net>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260829161150.16301-1-include@grrlz.net>
-References: <20260829161150.16301-1-include@grrlz.net>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lam2fuRR"
+Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-85aa9c1308dso21763167b3.3
+        for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 11:01:13 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788026473; cv=none;
+        d=google.com; s=arc-20260327;
+        b=loNKkvj6NvBYaSAS6zoPUipfXf/EkoSNImv8Yh9w5czqRB2OvUxTyhOxSyoUWEjOYK
+         2ngTNTimco/X1/oHGAegC58PN/RfEweSXFuGMr5YCBPWYWZVdTimSm8en9CU07B52vtj
+         uvu0wrNDH7QLiUTOE0QK4Plm1CAc/WehCZ78/5/tDgCYI53lc+QWhVROQpoXc5gdERep
+         zepXbT3WnP/eNYAU2dTaEuAIpClRiURppcoDH+cxPhtbvE6Q/yFlndKFKim1/zFQmTTZ
+         OIk5NPiIB50dDFRTT9lQUQG+tIuGvp3SkO8e8OPS1QhgTu+OWnwxbXr8XMSyQmovMukQ
+         fmuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=zyAXQp/4jyOBzaaoOvY2wevc4HK2X1KILrGcqriZeX0=;
+        fh=1hld73X5qF8twLKkZAc0qc/H7mo44GandfG6u7zml5g=;
+        b=BAP4z5AOKrAwQoG/DvO0zMjqaJ92UpRJx+7SS8T10DDz5DFhRkJd+8VFT5SSPVbUhh
+         dsTYMv9qUqR51js/EaW2rIZo+PJnKEJbngUGCWQhZn6eWZ98gC+j3XeUZ2oinAiwVsjG
+         gQrpoYHxI9ySPJ2CxtAtlkYsZcGF14VeFNrGC7+GG4pCUrtUAgavUBMKi4365AGxdzoG
+         PQBgoKWc0cLdZL2X4WNG3o9SAlXOYy8bzS0EZM05fuYkXkjHDCpsvgr1zO+Ic/zi2hEJ
+         CiooV+DQINpUDb/SA0DNQgDn4aIpCvPwXS4vKRu18BrYIsnkgoZWKzHJLYtoHwAQdfUa
+         OeUg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788026473; x=1788631273; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=zyAXQp/4jyOBzaaoOvY2wevc4HK2X1KILrGcqriZeX0=;
+        b=lam2fuRRCI1SABi3A+o7S3CBLkN52fBTZNtGvjrgyhoiP+vhyT9heOMbMbMBgqn1DX
+         GQ6QvcXxWKPKmOo1uuqSv9UhRnevGTN2fafvhe2Lw538xFc14JkrR9UoX/EpNQ70ss4J
+         0puWW5MRGr9i9IyN2nOjN6dtcMMk0hPvnMmaJuTvvrn7O+DbojgWMNJ1QHCUTI0ushmp
+         0pBkc5mGbq+jTSLi0NIaTAYvWcclv1MfaKQMlTcycU3+tr2qX6wzWY0IzJgJz4Op2YXx
+         CMUFwIsvXWy8X9BjoY25n8Biyw29meTMNxX9aoKvCBusW4imzFESfecfLPkECPYG14mV
+         s9pQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788026473; x=1788631273;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zyAXQp/4jyOBzaaoOvY2wevc4HK2X1KILrGcqriZeX0=;
+        b=lPjhr8SCxTIdM2x5xB8c/9WJKc3OxiH+Pu2h7BKWuuzITgKNvkLrxVHY6B+m6QIFqk
+         VZfvCQ8edN50/MF/un84fB3UVYPFZa9f5d14H/f2s+fCQZ9R5p1pu8eaCxUHjl4ZTU32
+         tLcsr9ZG1vU0B0c9tavwCryDFvb/k4rabile+umvNuWiLMY4h+17SJPIHu8sB+EC0ywx
+         midqnQwP3KRZeWu1QpC8ZQeH7+BeGbjEZXMQoCQFUjFR3EaQi9LvswMkw21CriIBdfFY
+         y2jllowwDXTnbGoLvvj5MPUorf6ybDAsAY7krNTI4OInvo5LehQW143mfsf++f+AAt/L
+         WasQ==
+X-Forwarded-Encrypted: i=1; AKwUvBy7/YwvTizTd6Pjg4hItEV+wwTNqbn9LSwis0TrczBnQ6qmnHcLBenmemZEpLQRUZ6nX7ZLZGi6IQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++lpk/ecYDcq9Ltawd4SvEKE9A2gtLNK7nMUrKgsmxm1dggbApHn
+	KNwR1gRcJs2s8dUzkgINghAQTZN86n1U/zycqXdU0UjnIVG4CqiiGpprpfbtdkajrxCeJOekLwl
+	85Vq5q7SV9SXR18NcILIJgiaYNz13gWo=
+X-Gm-Gg: AYBFou3XW/6qJK8La2WrNBE83pEDqwY+fsJK8Y4rcrna5IAllGtTyHFZ+zauD+bvPtc
+	IZx6k5V/Zs1nZbxd2ve+XFsOw/pSODw9qYWmekwKrZYEUnV99LNkzD/gjr4GZgxEDUQRvhVXB1v
+	1O6xY6KMYnlnd0br5lgJpKMzq+unsJh1ZDA0pjsuRsiQNKzcr7ycg8iio66Y0CjRIDeNPIeOrL6
+	kcCaujBRwSqJ+0EdGvtVv3RCymmIF9+HihNnK4xV7rGwawU/xszgKRyhVUuZuBmHl9DAbnjb4El
+	LN99ihnYHBe2jitJc4fV5SivQ/nmTFYOkw3DQXkD7lA=
+X-Received: by 2002:a05:690c:e3e8:b0:833:801:f715 with SMTP id
+ 00721157ae682-85d6cfc1a79mr59152097b3.18.1788026472590; Sat, 29 Aug 2026
+ 11:01:12 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260829164313.20905-1-sumeet4linux@gmail.com>
+In-Reply-To: <20260829164313.20905-1-sumeet4linux@gmail.com>
+From: Sumeet Pawnikar <sumeet4linux@gmail.com>
+Date: Sat, 29 Aug 2026 23:31:00 +0530
+X-Gm-Features: AcwNN1WYnr1uptvCdY81tIYvIva0raUvmVHygkBNedNaoKNTLwZKfsJtCDX3RAA
+Message-ID: <CAJ9orWSAYpCe1jq5aPNQ9H+ikt73+mZDTKbe-5MkVGJXihjEOA@mail.gmail.com>
+Subject: Re: [PATCH] powercap: intel_rapl: Fix rapl_packages list corruption
+To: rafael@kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Bradley Morgan <brads@mainlining.org>
+Added linux-pm mailing list now. Earlier by mistake I sent it to acpi
+mailing list.
 
-Embedding a kthread_worker and running kthread_worker_fn yourself is
-the old way. Convert cpufreq_schedutil to kthread_create_worker(),
-dropping the separate thread pointer.
 
-This is part of removing the worker->task self-assignment in
-kthread_worker_fn().
-
-Signed-off-by: Bradley Morgan <brads@mainlining.org>
----
- kernel/sched/cpufreq_schedutil.c | 33 ++++++++++++++------------------
- 1 file changed, 14 insertions(+), 19 deletions(-)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 49ccd6f1c185..5023c24d8a21 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -31,8 +31,7 @@ struct sugov_policy {
- 	struct			irq_work irq_work;
- 	struct			kthread_work work;
- 	struct			mutex work_lock;
--	struct			kthread_worker worker;
--	struct task_struct	*thread;
-+	struct			kthread_worker *worker;
- 	bool			work_in_progress;
- 
- 	bool			limits_changed;
-@@ -586,7 +585,7 @@ static void sugov_irq_work(struct irq_work *irq_work)
- 
- 	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
- 
--	kthread_queue_work(&sg_policy->worker, &sg_policy->work);
-+	kthread_queue_work(sg_policy->worker, &sg_policy->work);
- }
- 
- /************************** sysfs interface ************************/
-@@ -669,7 +668,6 @@ static void sugov_policy_free(struct sugov_policy *sg_policy)
- 
- static int sugov_kthread_create(struct sugov_policy *sg_policy)
- {
--	struct task_struct *thread;
- 	struct sched_attr attr = {
- 		.size		= sizeof(struct sched_attr),
- 		.sched_policy	= SCHED_DEADLINE,
-@@ -692,32 +690,29 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
- 		return 0;
- 
- 	kthread_init_work(&sg_policy->work, sugov_work);
--	kthread_init_worker(&sg_policy->worker);
--	thread = kthread_create(kthread_worker_fn, &sg_policy->worker,
--				"sugov:%d",
--				cpumask_first(policy->related_cpus));
--	if (IS_ERR(thread)) {
--		pr_err("failed to create sugov thread: %pe\n", thread);
--		return PTR_ERR(thread);
-+	sg_policy->worker = kthread_create_worker(0, "sugov:%d",
-+						cpumask_first(policy->related_cpus));
-+	if (IS_ERR(sg_policy->worker)) {
-+		pr_err("failed to create sugov thread: %pe\n", sg_policy->worker);
-+		return PTR_ERR(sg_policy->worker);
- 	}
- 
--	ret = sched_setattr_nocheck(thread, &attr);
-+	ret = sched_setattr_nocheck(sg_policy->worker->task, &attr);
- 	if (ret) {
--		kthread_stop(thread);
-+		kthread_destroy_worker(sg_policy->worker);
- 		pr_warn("%s: failed to set SCHED_DEADLINE\n", __func__);
- 		return ret;
- 	}
- 
--	sg_policy->thread = thread;
- 	if (policy->dvfs_possible_from_any_cpu)
--		set_cpus_allowed_ptr(thread, policy->related_cpus);
-+		set_cpus_allowed_ptr(sg_policy->worker->task, policy->related_cpus);
- 	else
--		kthread_bind_mask(thread, policy->related_cpus);
-+		kthread_bind_mask(sg_policy->worker->task, policy->related_cpus);
- 
- 	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
- 	mutex_init(&sg_policy->work_lock);
- 
--	wake_up_process(thread);
-+	wake_up_process(sg_policy->worker->task);
- 
- 	return 0;
- }
-@@ -728,8 +723,8 @@ static void sugov_kthread_stop(struct sugov_policy *sg_policy)
- 	if (sg_policy->policy->fast_switch_enabled)
- 		return;
- 
--	kthread_flush_worker(&sg_policy->worker);
--	kthread_stop(sg_policy->thread);
-+	kthread_flush_worker(sg_policy->worker);
-+	kthread_destroy_worker(sg_policy->worker);
- 	mutex_destroy(&sg_policy->work_lock);
- }
- 
--- 
-2.47.3
-
+On Sat, Aug 29, 2026 at 10:13=E2=80=AFPM Sumeet Pawnikar <sumeet4linux@gmai=
+l.com> wrote:
+>
+> The rapl_packages list was previously documented as being guarded by the
+> CPU hotplug lock (cpus_read_lock()). However, cpus_read_lock() is a
+> reader-writer semaphore taken for shared read access. This provides zero
+> mutual exclusion between multiple concurrent callers.
+>
+> Because auxiliary device probes (such as intel_rapl_tpmi_probe) can
+> execute concurrently on different CPUs, multiple packages can race on
+> list operations (list_add and list_del) inside
+> rapl_add_package_cpuslocked() and rapl_remove_package_cpuslocked(),
+> leading to list corruption.
+>
+> Introduce a dedicated rapl_packages_lock mutex to protect all additions,
+> removals and iterations of the rapl_packages list.
+>
+> Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+> ---
+>  drivers/powercap/intel_rapl_common.c | 29 ++++++++++++++++++++++++----
+>  1 file changed, 25 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/inte=
+l_rapl_common.c
+> index 70cab5f08bc6..e544629dbe30 100644
+> --- a/drivers/powercap/intel_rapl_common.c
+> +++ b/drivers/powercap/intel_rapl_common.c
+> @@ -175,7 +175,8 @@ static u64 rapl_unit_xlate(struct rapl_domain *rd,
+>                            enum unit_type type, u64 value, int to_raw);
+>  static void package_power_limit_irq_save(struct rapl_package *rp);
+>
+> -static LIST_HEAD(rapl_packages);       /* guarded by CPU hotplug lock */
+> +static DEFINE_MUTEX(rapl_packages_lock);
+> +static LIST_HEAD(rapl_packages);       /* guarded by rapl_packages_lock =
+*/
+>
+>  static const char *const rapl_domain_names[] =3D {
+>         "package",
+> @@ -1360,12 +1361,14 @@ static int rapl_pmu_event_init(struct perf_event =
+*event)
+>                 return -EINVAL;
+>
+>         /* Find out which Package the event belongs to */
+> +       mutex_lock(&rapl_packages_lock);
+>         list_for_each_entry(pos, &rapl_packages, plist) {
+>                 if (is_rp_pmu_cpu(pos, event->cpu)) {
+>                         rp =3D pos;
+>                         break;
+>                 }
+>         }
+> +       mutex_unlock(&rapl_packages_lock);
+>         if (!rp)
+>                 return -ENODEV;
+>
+> @@ -1445,9 +1448,11 @@ static ssize_t cpumask_show(struct device *dev,
+>         cpumask_clear(cpu_mask);
+>
+>         /* Choose a cpu for each RAPL Package */
+> +       mutex_lock(&rapl_packages_lock);
+>         list_for_each_entry(rp, &rapl_packages, plist) {
+>                 set_pmu_cpumask(rp, cpu_mask);
+>         }
+> +       mutex_unlock(&rapl_packages_lock);
+>         cpus_read_unlock();
+>
+>         ret =3D sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(cpu_mask));
+> @@ -1655,11 +1660,15 @@ void rapl_package_remove_pmu_locked(struct rapl_p=
+ackage *rp)
+>         if (!rp->has_pmu)
+>                 return;
+>
+> +       mutex_lock(&rapl_packages_lock);
+>         list_for_each_entry(pos, &rapl_packages, plist) {
+>                 /* PMU is still needed */
+> -               if (pos->has_pmu && pos !=3D rp)
+> +               if (pos->has_pmu && pos !=3D rp) {
+> +                       mutex_unlock(&rapl_packages_lock);
+>                         return;
+> +               }
+>         }
+> +       mutex_unlock(&rapl_packages_lock);
+>
+>         if (rapl_pmu.registered)
+>                 perf_pmu_unregister(&rapl_pmu.pmu);
+> @@ -1704,7 +1713,9 @@ void rapl_remove_package_cpuslocked(struct rapl_pac=
+kage *rp)
+>         /* do parent zone last */
+>         powercap_unregister_zone(rp->priv->control_type,
+>                                  &rd_package->power_zone);
+> +       mutex_lock(&rapl_packages_lock);
+>         list_del(&rp->plist);
+> +       mutex_unlock(&rapl_packages_lock);
+>         kfree(rp);
+>  }
+>  EXPORT_SYMBOL_NS_GPL(rapl_remove_package_cpuslocked, "INTEL_RAPL");
+> @@ -1749,11 +1760,15 @@ struct rapl_package *rapl_find_package_domain_cpu=
+slocked(int id, struct rapl_if_
+>         else
+>                 uid =3D id;
+>
+> +       mutex_lock(&rapl_packages_lock);
+>         list_for_each_entry(rp, &rapl_packages, plist) {
+> -               if (rp->id =3D=3D uid
+> -                   && rp->priv->control_type =3D=3D priv->control_type)
+> +               if (rp->id =3D=3D uid &&
+> +                   rp->priv->control_type =3D=3D priv->control_type) {
+> +                       mutex_unlock(&rapl_packages_lock);
+>                         return rp;
+> +               }
+>         }
+> +       mutex_unlock(&rapl_packages_lock);
+>
+>         return NULL;
+>  }
+> @@ -1810,7 +1825,9 @@ struct rapl_package *rapl_add_package_cpuslocked(in=
+t id, struct rapl_if_priv *pr
+>         ret =3D rapl_package_register_powercap(rp);
+>         if (!ret) {
+>                 INIT_LIST_HEAD(&rp->plist);
+> +               mutex_lock(&rapl_packages_lock);
+>                 list_add(&rp->plist, &rapl_packages);
+> +               mutex_unlock(&rapl_packages_lock);
+>                 return rp;
+>         }
+>
+> @@ -1835,6 +1852,7 @@ static void power_limit_state_save(void)
+>         int ret, i;
+>
+>         cpus_read_lock();
+> +       mutex_lock(&rapl_packages_lock);
+>         list_for_each_entry(rp, &rapl_packages, plist) {
+>                 if (!rp->power_zone)
+>                         continue;
+> @@ -1846,6 +1864,7 @@ static void power_limit_state_save(void)
+>                                 rd->rpl[i].last_power_limit =3D 0;
+>                 }
+>         }
+> +       mutex_unlock(&rapl_packages_lock);
+>         cpus_read_unlock();
+>  }
+>
+> @@ -1856,6 +1875,7 @@ static void power_limit_state_restore(void)
+>         int i;
+>
+>         cpus_read_lock();
+> +       mutex_lock(&rapl_packages_lock);
+>         list_for_each_entry(rp, &rapl_packages, plist) {
+>                 if (!rp->power_zone)
+>                         continue;
+> @@ -1865,6 +1885,7 @@ static void power_limit_state_restore(void)
+>                                 rapl_write_pl_data(rd, i, PL_LIMIT,
+>                                                rd->rpl[i].last_power_limi=
+t);
+>         }
+> +       mutex_unlock(&rapl_packages_lock);
+>         cpus_read_unlock();
+>  }
+>
+> --
+> 2.43.0
+>
