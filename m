@@ -1,53 +1,74 @@
-Received: from tabos.org (krueger-it.net [145.239.1.22])
+Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9107361670;
-	Sat, 29 Aug 2026 05:45:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=145.239.1.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6BCE3016E0
+	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 09:48:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787982354; cv=none; b=qgmrZrbuFqjvAc8EOoAbTZoEb5rOR3u8IZayquGA+Bu9WsFr+cIyFh3/6U1T6kBrAB77VQ58B2ASKemeaavZgsddHCPb5GVqabPZ2zk9OvdsgFRy0HVy8aG/qX1B8SB2fQ7sXyrGM1Fcp5EBO+zdr/+nwQmM2NF/ZTbUfc7tF8I=
+	t=1787996930; cv=none; b=A3IizpWf1xsQuIPwObDQbUCcnpm//lG22soyL6zPuRMdPvan7O4kJldyi7luTttl+OGkprLNbicfzdccy7gt+USok1sDQZCO42TyQs3t5mMRQ5wntLvGORUiycAB3Yff86w3j6EKBTwCy8wKSaKjN5Vhl8WsSWSb0oe7KvsZsq4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787982354; c=relaxed/simple;
-	bh=E24dwK4cuwwXfLQzX5CReQR5mwrDCDcxJr36SS/QdMw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UYlVQmgW7jdcGCIoirkxYoRQzQ3yx1xC8JgkFPGHLbGUGzB9KXiOzdjtUZy7z/OGez/oK9QrGumzJZ/CVoLzQFd8wwOh306Ghx5bLah+InOt17gHj2YYS7C/63PHxqkM/CHcmx/avIr9F6yrGLUWy0VY37Ugli5cC6dd41gE9Ss=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tabos.org; spf=pass smtp.mailfrom=tabos.org; dkim=pass (2048-bit key) header.d=tabos.org header.i=@tabos.org header.b=SMMRJVmY; arc=none smtp.client-ip=145.239.1.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tabos.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tabos.org
+	s=arc-20240116; t=1787996930; c=relaxed/simple;
+	bh=4NaOSnad3ovSdHyfMpXrqbIZhtmfgN/COGu0UHmwoHs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JOxczBLLxX7c8UpZZHiYvTNFpxX51a83p1jfSdzoY946qkeK+6l+VUFq/U7r6l+csIg6gl2WA87ZStDFNif51SwWoQHOMjPdPwIWJjbdT2V+k6IMywoJMHIPAZKeqIsedmKDP2nJd2geYCj4Ykn75x4imyA7RqWR5/K9uBkavO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lbrMLDRW; arc=none smtp.client-ip=209.85.218.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=tabos.org header.i=@tabos.org header.b="SMMRJVmY"
-Received: from c0d1ngstat1on.fritz.box (unknown [94.31.74.100])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by dserver.krueger-it.net (Postfix) with ESMTPSA id EF1E362E0AD6;
-	Sat, 29 Aug 2026 07:45:50 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=tabos.org;
-	s=default; t=1787982351;
-	bh=N1SW0mGrVZtGWZxF2NK7+a18wctDFv+987Jnlcw83Hk=; h=From:To:Subject;
-	b=SMMRJVmYoInedKIrHnuczC1u4+S4tIsA/9nJUn05aeJiSVdFZWWKAHigBiePJloJr
-	 4EXXvx2b+rwjzZ9GMPjnUhaZ/wSJx+FauuTVYvPdArM8e2m+yKyHmoNmaphdUsSu7S
-	 6M/2htACdY0rV2Mt1k1Ci0LTv7UnXgem61lLk+sW26uN8cDA2kswA47YS2h1kc+F7s
-	 3SBm0kaVb7sqJqt9NRd6w3UPmWl+3gfftbNAK65R2hniw/eKL1r8XPI4rBi2PihyHo
-	 cOakTZ7sehf+tDNYMTzMRQot09c9AQi85HX+ic7cHMRmo7OGt7/bLLGE7Zt0WVDCyK
-	 NgVl4pUF1rzGg==
-Authentication-Results: dserver.krueger-it.net;
-	spf=pass (sender IP is 94.31.74.100) smtp.mailfrom=jan.brummer@tabos.org smtp.helo=c0d1ngstat1on.fritz.box
-Received-SPF: pass (dserver.krueger-it.net: connection is authenticated)
-From: Jan-Michael Brummer <jan.brummer@tabos.org>
-To: sre@kernel.org
-Cc: andersson@kernel.org,
-	neil.armstrong@linaro.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jan-Michael Brummer <jan.brummer@tabos.org>
-Subject: [PATCH 2/2] power: supply: qcom_battmgr: expose CHARGE_NOW on SM8350-class firmware
-Date: Sat, 29 Aug 2026 07:45:46 +0200
-Message-ID: <20260829054546.86210-3-jan.brummer@tabos.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lbrMLDRW"
+Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-c1712a04ddaso278771466b.2
+        for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 02:48:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787996927; x=1788601727; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=vr48OlihL3z/Xr4r4Y0Vtz7OZXseZdEoR3eobBbUMjA=;
+        b=lbrMLDRWCYi4qxA381CMQ+ksTp55hmazEvRHuXeq+SOih+vW7HZzBXceDkKAziU147
+         4M+/Y82yZ2Bcd65EycYGqaNicX0UjNgSPBnLoHJ1xURRC9BIfKiJmMo3ED4QPY47oIMK
+         svlZM6XN60xwOY4gLrj1xcAsp+6yGLfnNOrRQ0yUqdel/hMY9gV/ZbaabmlrI2uGqbgt
+         ab3jKkcnY8KFKZ3QIkfgKofLUSvx7ppiKKH4t0Ax6mvxbInh9XH6DYjiIV7LT+X5tlxx
+         dyFvQWh0Lv07FsdZFIYfkToLQQOPRrxF5I0JUBC8sfENHStuGCaX6X5/iVjQ0/ofD08M
+         fK/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787996927; x=1788601727;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=vr48OlihL3z/Xr4r4Y0Vtz7OZXseZdEoR3eobBbUMjA=;
+        b=ieuWg5rp+W/snIF+kcPwvNP4dqgjbbsxisiRNblC/9HRpg04JMQs/oUuxgYiN/mPVd
+         NU9PAp5Q+JZ06uFiXDIRPoLywIT7kkJfc7EjkZSed9j+jQaRmXr5S7fdysRVkcQRbVPK
+         BpCxLQsPS+rEGyjepBONnTH+nN7c0rlMhYvyDRd0iVxC1JLBDyemt4d8/AUUL7f8X0yy
+         RXwd2Sc8YEQWbb87Cdkmky/bGVhJLF0VjNmXWOlluFNkXOilioMbJ9WX/Kdm20yP6UyC
+         xvCncDFAR7NvRPrRJXeV2U5LT4QCjcCXMJF6aGiRrOk4NrxJht7XOymmIkXPCo+5D/Zl
+         aSwg==
+X-Gm-Message-State: AFuF++m94qgKRUJ7UTJdLjkUX1+9R0wu3IDnKUv+Bxd1gDAXBRdBDeR+
+	KoSHp4Sk2T4rrtt1oaXOkmv23NWCqTdACaHPKy9UkNt/N0zPofeZVYvi
+X-Gm-Gg: AR+sD11XcJlGWa1DReN5gukABnYCwSAWRmSwiI4D4cAhb08VdDFDUkBvHG2H3zobUE6
+	7C1Dkm/obS7Wg6NZS6s8Pig9Jso5KxTEkyv6Xe56hkvuEpS9cnSAD2rLuyL4sdNdcl15KzNNNiM
+	CpV93K8LFHv9R0HieB8k5kpfxsw+uv2lW6N+xHnfT79iOthpla0GGXEKfWOv7rV5uCNQpV/wn/2
+	9J6pjmyxg770xJbu5DFG1JjCXTkGd7I5g4ku9KbQeGsE/7hP61yAJK+0yja+N2UWbFQnl8PJCMG
+	77xVwLraE475Yc6tnUYYkjT3vwspiu2Pp99dyvakH+tFXHq9mpSut+ZTW7GAGMH+GA38yOglaQb
+	RumEMOt5IsQS8f3v1T+TD9JUmQCCdJanP2KdcyTQvNUNd7tlLxz6wNmVndURHZaNBsbNSmRHZQe
+	jOmwFqc2ece1PRDbgPM1tEkzO1+x+WzojdykRnOdHPaQRFUu7Dq3tcigbLEP3mtOOzP7PJLIxHB
+	jv1sOs/dwJ+ihIjlS9B3U9GCA06klmx/8jxMI0=
+X-Received: by 2002:a17:907:c1f:b0:c21:757:1bb4 with SMTP id a640c23a62f3a-c25571d8ff6mr949921466b.16.1787996926837;
+        Sat, 29 Aug 2026 02:48:46 -0700 (PDT)
+Received: from Lenovo (public-gprs210891.centertel.pl. [46.134.163.12])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c255ee28596sm190811766b.20.2026.08.29.02.48.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 29 Aug 2026 02:48:46 -0700 (PDT)
+From: Marcin Dawid <mdawid@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	regressions@lists.linux.dev,
+	stable@vger.kernel.org,
+	"Jiakai Xu" <xujiakai24@mails.ucas.ac.cn>,
+	"Sasha Levin" <sashal@kernel.org>,
+	"Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+	linux-kernel@vger.kernel.org
+Subject: [REGRESSION] 6.12.y: s2idle hangs after 171ef40fce41 ("PM: sleep: Use complete() in device_pm_sleep_init()")
+Date: Sat, 29 Aug 2026 11:47:47 +0200
+Message-ID: <20260829094750.574649-1-mdawid@gmail.com>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260829054546.86210-1-jan.brummer@tabos.org>
-References: <20260829054546.86210-1-jan.brummer@tabos.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,72 +77,160 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The SM8350-class firmware does not implement a dedicated 'charge now'
-property. It does however report BATT_CHG_COUNTER, and on this class of
-firmware that value is the remaining charge in uAh rather than a
-monotonic counter. Measured on a Fairphone 5 with charge_full at
-4116000 uAh:
+Hi,
 
-  BATT_CHG_COUNTER   reported capacity   counter / charge_full
-  2434614            59%                 59.1%
-  3525354            85%                 85.6%
+My ThinkPad P16v stopped suspending after a kernel update. I bisected
+the problem to commit 171ef40fce41 ("PM: sleep: Use complete() in
+device_pm_sleep_init()"), the 6.12.y backport of mainline commit
+3855941f1e40. Reverting this commit fixes the problem.
 
-Map POWER_SUPPLY_PROP_CHARGE_NOW onto the same firmware property and
-store the value in status.capacity, which the CHARGE_NOW/ENERGY_NOW case
-of qcom_battmgr_bat_get_property() already reads.
+#regzbot introduced: 171ef40fce41b13f5115d988c45997e94113c7ab
 
-Together with the preceding patch this gives userspace both the full
-charge and the current charge. UPower now derives an energy level and
-runtime estimates in both directions:
+Symptoms:
+When I close the lid my laptop does not go to sleep and its fans
+keep running. If I open the lid, the screen stays black and the laptop does
+not respond. I must do a hard reset. Only the lid triggers this. Calling
+"systemctl suspend" with the lid open works.
 
-    state:               discharging      state:               charging
-    energy:              14.4347 Wh       energy:              15.6003 Wh
-    energy-full:         16.8807 Wh       energy-full:         18.1505 Wh
-    energy-rate:         3.39313 W        energy-rate:         7.3492 W
-    time to empty:       4.3 hours        time to full:        20.8 minutes
+In every hang, the kernel log ends like this, here on 6.12.105:
 
-Signed-off-by: Jan-Michael Brummer <jan.brummer@tabos.org>
----
- drivers/power/supply/qcom_battmgr.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+  [   94.290011] PM: suspend entry (s2idle)
+  [   94.296689] Filesystems sync: 0.004 seconds
 
-diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
-index 98a70e1..f7c120f 100644
---- a/drivers/power/supply/qcom_battmgr.c
-+++ b/drivers/power/supply/qcom_battmgr.c
-@@ -441,6 +441,7 @@ static const u8 sm8350_bat_prop_map[] = {
- 	[POWER_SUPPLY_PROP_CYCLE_COUNT] = BATT_CYCLE_COUNT,
- 	[POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN] =  BATT_CHG_FULL_DESIGN,
- 	[POWER_SUPPLY_PROP_CHARGE_FULL] = BATT_CHG_FULL,
-+	[POWER_SUPPLY_PROP_CHARGE_NOW] = BATT_CHG_COUNTER,
- 	[POWER_SUPPLY_PROP_MODEL_NAME] = BATT_MODEL_NAME,
- 	[POWER_SUPPLY_PROP_TIME_TO_FULL_AVG] = BATT_TTF_AVG,
- 	[POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG] = BATT_TTE_AVG,
-@@ -878,6 +879,7 @@ static const enum power_supply_property sm8350_bat_props[] = {
- 	POWER_SUPPLY_PROP_CYCLE_COUNT,
- 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
- 	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
- 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
-@@ -910,6 +912,7 @@ static const enum power_supply_property sm8550_bat_props[] = {
- 	POWER_SUPPLY_PROP_CYCLE_COUNT,
- 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
- 	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
- 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
-@@ -1442,7 +1445,10 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
- 			battmgr->info.technology = le32_to_cpu(resp->intval.value);
- 			break;
- 		case BATT_CHG_COUNTER:
--			battmgr->info.charge_count = le32_to_cpu(resp->intval.value);
-+			val = le32_to_cpu(resp->intval.value);
-+			battmgr->info.charge_count = val;
-+			/* the firmware reports the remaining charge here */
-+			battmgr->status.capacity = val;
- 			break;
- 		case BATT_CYCLE_COUNT:
- 			battmgr->info.cycle_count = le32_to_cpu(resp->intval.value);
+This is the last output visible in the journal.
+
+System:
+Manjaro Linux (rolling release), x86_64, systemd 261
+Lenovo ThinkPad P16v Gen 1 (21FE0011PB)
+AMD Ryzen 7 PRO 7840HS w/ Radeon 780M Graphics
+BIOS N3VET59W (1.59), 05/13/2025
+2x NVMe, WiFi Qualcomm QCNFA765 (ath11k_pci), USB4/Thunderbolt
+/sys/power/mem_sleep: [s2idle]   (the laptop does not support S3)
+
+Affected versions:
+
+  6.12.y: last working 6.12.96 -> first bad 6.12.97
+
+I only see the hang on 6.12.y. I also tested 6.18.45, 7.1.8 and mainline
+7.2, which carry the same commit and the laptop suspends normally on all
+three (see the table below).
+
+The latest 6.12.107 still has the commit and no fix or revert. I tested it
+and it hangs the same way.
+
+Reproducing the problem:
+I bisected stable branch between 6.12.96 (good) and 6.12.103 (bad).
+Every tested kernel was built from the kernel.org stable tree using
+config based on the Manjaro 6.12.96 (trimmed with make localmodconfig
+and updated with make olddefconfig).
+
+  171ef40fce41b13f5115d988c45997e94113c7ab is the first bad commit
+  PM: sleep: Use complete() in device_pm_sleep_init()
+  [ Upstream commit 3855941f1e4069182c895d5093c5fa589f5b38bd ]
+
+Bisect log:
+git bisect start
+# status: waiting for both 'good' and 'bad' commits
+# bad: [25c09b42358e73e1476e517b296edb6344f2e4bd] Linux 6.12.103
+git bisect bad 25c09b42358e73e1476e517b296edb6344f2e4bd
+# status: waiting for 'good' commit(s), 'bad' commit known
+# good: [6d15a1029d425b15c59463910ebdccc4afe760d6] Linux 6.12.96
+git bisect good 6d15a1029d425b15c59463910ebdccc4afe760d6
+# bad: [afb45d1142b3031f408c0505d1c3e89edc68fb49] iio: adc: ad7380: select REGMAP
+git bisect bad afb45d1142b3031f408c0505d1c3e89edc68fb49
+# bad: [29c801cbd8ad1a27adef6a325cc5a1e6ef275a97] selftest/mm: register existing mapping with userfaultfd in hugetlb-mremap
+git bisect bad 29c801cbd8ad1a27adef6a325cc5a1e6ef275a97
+# bad: [eb7cb798e563b3f3b3baeb9cc6f7455764267e50] IB/mlx5: Properly support implicit ODP rereg_mr
+git bisect bad eb7cb798e563b3f3b3baeb9cc6f7455764267e50
+# good: [5d52b6dc6fd0640e355877e8370b21eb84dc13e0] sysfs: clamp show() return value in sysfs_kf_read()
+git bisect good 5d52b6dc6fd0640e355877e8370b21eb84dc13e0
+# bad: [fa766e5e53ad389d6ec810783f5d5367010f9412] media: qcom: venus: drop extra padding in NV12 raw size calculation
+git bisect bad fa766e5e53ad389d6ec810783f5d5367010f9412
+# bad: [962eae1f30e57ac8e6e20a8b862e269145dc6d9a] driver core: Guard deferred probe timeout extension with delayed_work_pending()
+git bisect bad 962eae1f30e57ac8e6e20a8b862e269145dc6d9a
+# good: [16723523c74f90d487df270ae4dad263542aab26] cpufreq: conservative: Simplify frequency limit handling
+git bisect good 16723523c74f90d487df270ae4dad263542aab26
+# good: [7d9fbee252f84de3e6947a40eec01481c9d8afbb] RDMA/hns: Fix log flood after cmd_mbox failure
+git bisect good 7d9fbee252f84de3e6947a40eec01481c9d8afbb
+# bad: [7670a3a6ccaf6f081c474338d204461c67d9e126] MIPS: DEC: Remove do_IRQ() call indirection
+git bisect bad 7670a3a6ccaf6f081c474338d204461c67d9e126
+# bad: [171ef40fce41b13f5115d988c45997e94113c7ab] PM: sleep: Use complete() in device_pm_sleep_init()
+git bisect bad 171ef40fce41b13f5115d988c45997e94113c7ab
+# good: [5452b60cb1db44cf507aa9b85ab51901ed593c6c] RDMA/counter: Fix incorrect port index in rdma_counter_init() error cleanup
+git bisect good 5452b60cb1db44cf507aa9b85ab51901ed593c6c
+# first 'bad' commit: [171ef40fce41b13f5115d988c45997e94113c7ab] PM: sleep: Use complete() in device_pm_sleep_init()
+
+What I tested:
+All tests were done on the same machine, on AC power, by closing and
+opening the lid. One cycle means that the laptop went to sleep and woke
+up. The numbers come from the system journal:
+
+  6.12.96 Manjaro, before the commit       works  - 48 cycles over 29 days
+  6.12.103 (with the commit)               hangs  - first attempt after boot
+  6.12.103 with the commit reverted        works  - 5 cycles in one boot
+  6.12.103 /sys/power/pm_async set to 0    works  - 11 cycles in one boot
+  6.12.104 Manjaro                         hangs  - first attempt after boot
+  6.12.105 (with the commit)               hangs  - first attempt after boot
+  6.12.105 with the commit reverted        works  - 10 cycles in one boot
+  6.12.105 /sys/power/pm_async set to 0    works  - 11 cycles in one boot
+  6.12.107 (with the commit)               hangs  - first attempt after boot
+  6.18.45 Manjaro                          works  - 7 cycles over 2 boots
+  7.1.8 Manjaro                            works  - 12 cycles over 5 boots
+  7.2 mainline, built from source          works  - 11 cycles over 5 boots
+
+Every hang happened on the first suspend attempt after boot and never after
+a successful cycle.
+
+Setting /sys/power/pm_async to 0 is a workaround I found. The original bad
+kernel suspends normally with this flag set to 0. I have used this
+workaround without failures.
+
+Changing /sys/power/pm_async back to 1 on a running system did not
+immediately reproduce the problem. I did this on 6.12.105 and after 11
+successful cycles with pm_async=0 the next 3 cycles also worked. The first
+suspend attempt hung again after reboot.
+
+With the commit reverted, 6.12.105 logs this when I close the lid:
+
+  [  154.523353] PM: suspend entry (s2idle)
+  [  154.530033] Filesystems sync: 0.003 seconds
+  [  155.273772] Freezing user space processes
+  [...]
+  [  155.273951] PM: Some devices failed to suspend, or early wake event detected
+  [... device resume messages ...]
+  [  155.290012] PM: suspend exit
+  [  155.290087] PM: suspend entry (s2idle)
+  [  156.163505] Filesystems sync: 0.004 seconds
+  [... no error this time; the laptop enters s2idle and later resumes ...]
+  [  156.223357] PM: suspend exit
+
+With the commit present, the same 6.12.105 stops at the "Filesystems sync"
+line:
+
+  [   94.290011] PM: suspend entry (s2idle)
+  [   94.296689] Filesystems sync: 0.004 seconds
+
+6.18.45, 7.1.8 and mainline 7.2 contain the same change and log the same
+failed first attempt, but their second attempt suspends normally.
+
+Calling "systemctl suspend" with the lid open succeeds on the first
+attempt on 6.12.105 with the commit, never logs "Some devices failed to
+suspend" and did not hang in 18 cycles over 7 boots.
+
+My local settings:
+Kernel command line:
+  BOOT_IMAGE=/boot/vmlinuz-6.12-x86_64
+  root=UUID=985b52ba-a61a-41f8-ab5c-fad209ce7c44 rw zswap.enabled=0
+  resume=UUID=9f557da2-d7c5-4623-83c0-3ea696bb1b3c udev.log_priority=3
+Module options:
+  thinkpad_acpi fan_control=1
+Other:
+  /sys/power/disk set to "shutdown", vm.swappiness=100, vm.page-cluster=0,
+  CoolerControl daemon, a local systemd unit that reloads ath11k_pci
+  after resume
+
+
+I can test patches or collect more information if needed.
+
+Regards,
+Marcin Dawid
