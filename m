@@ -1,236 +1,173 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6BCE3016E0
-	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 09:48:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F1B357D0E
+	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 09:56:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787996930; cv=none; b=A3IizpWf1xsQuIPwObDQbUCcnpm//lG22soyL6zPuRMdPvan7O4kJldyi7luTttl+OGkprLNbicfzdccy7gt+USok1sDQZCO42TyQs3t5mMRQ5wntLvGORUiycAB3Yff86w3j6EKBTwCy8wKSaKjN5Vhl8WsSWSb0oe7KvsZsq4=
+	t=1787997394; cv=none; b=usdHNHMR9jdquhOoeTYWK7ZxV2WHaT27VMeolHgLi9gxg75F0ICPZ4osCgx7RmHb3tpnfGDALxr+CLjLXT2oDWFwQJ6XXC/IAZqYfrkJN7W9tGn3wUJgQLalgBjE2fQqBe1S6NIdBBm7V9k3enE6EGI1CVYCC9gkCLamJgqXMXA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787996930; c=relaxed/simple;
-	bh=4NaOSnad3ovSdHyfMpXrqbIZhtmfgN/COGu0UHmwoHs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JOxczBLLxX7c8UpZZHiYvTNFpxX51a83p1jfSdzoY946qkeK+6l+VUFq/U7r6l+csIg6gl2WA87ZStDFNif51SwWoQHOMjPdPwIWJjbdT2V+k6IMywoJMHIPAZKeqIsedmKDP2nJd2geYCj4Ykn75x4imyA7RqWR5/K9uBkavO4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lbrMLDRW; arc=none smtp.client-ip=209.85.218.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787997394; c=relaxed/simple;
+	bh=0WmC7NobsOauCrIbqv3KL2l7l4BaPEQF473/kYGDurY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NNr8gvqrh76kpZK7g7GAJ/5KDj7VOy7rjM/ubrYBnxWumLyPaMV1ch4BlsAC+8wNa8jROsVtPZdZktAcpWY3+R8FGRF5Nsk+XVsGr6TWtz/+1Fkk2dad8kcWki6cEBqa8Lfqrz/nC+V0WxLxfxD+u4utlQlFaE7UHu300Zqem4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=MnuS6kgJ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HmiqCxnd; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lbrMLDRW"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-c1712a04ddaso278771466b.2
-        for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 02:48:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="MnuS6kgJ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HmiqCxnd"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67T80Ia71414518
+	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 09:56:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=sMP0XaepjPlmJbxsbEQ8szt6
+	2Q73GNx5xhfDiowpknI=; b=MnuS6kgJNx/2HsQlolerc4EDXhHZG3qcndfYEFII
+	PQHhc3GkXA5PQxOhbczI+Wv2Fxyfc+XdNds3e/qkdTgDjRtZe1OS0XqCX4CRfbEq
+	A4gLEz38bnlI5JWJkbpOvtrfqBkf7k+JKUmC6NGaM0Kkat18lXwZB39U3SAFCIal
+	50n0q9h7v1hukZs9SihAHSpej31ojGlUde0gHgiW7D8BUtnLVEKHQWF4uZ6f6cpp
+	0DNpyAfa6aGgYFMJDgfBHaNTTujY0N95Ga/F7KM0rz6L9XY+gLoBxXLKFv8TeWGa
+	u4Oztfr96Kb6yi01KRPsABAnN0m6svTM4Uge9u43TwvwlQ==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gbqgygnm7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 09:56:32 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cbb92868263so1770803a12.2
+        for <linux-pm@vger.kernel.org>; Sat, 29 Aug 2026 02:56:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787996927; x=1788601727; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=vr48OlihL3z/Xr4r4Y0Vtz7OZXseZdEoR3eobBbUMjA=;
-        b=lbrMLDRWCYi4qxA381CMQ+ksTp55hmazEvRHuXeq+SOih+vW7HZzBXceDkKAziU147
-         4M+/Y82yZ2Bcd65EycYGqaNicX0UjNgSPBnLoHJ1xURRC9BIfKiJmMo3ED4QPY47oIMK
-         svlZM6XN60xwOY4gLrj1xcAsp+6yGLfnNOrRQ0yUqdel/hMY9gV/ZbaabmlrI2uGqbgt
-         ab3jKkcnY8KFKZ3QIkfgKofLUSvx7ppiKKH4t0Ax6mvxbInh9XH6DYjiIV7LT+X5tlxx
-         dyFvQWh0Lv07FsdZFIYfkToLQQOPRrxF5I0JUBC8sfENHStuGCaX6X5/iVjQ0/ofD08M
-         fK/w==
+        d=oss.qualcomm.com; s=google; t=1787997391; x=1788602191; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=sMP0XaepjPlmJbxsbEQ8szt62Q73GNx5xhfDiowpknI=;
+        b=HmiqCxnd+Cox8R7Xla6R80jnY8t0MkPm0q1UxB+eQJRlaELPxvlbrs+ze1Nx4Exeqr
+         c+br2GxNPGmf6eG4VXAGZAwJOW3G1AGMQYXjtKPClwwDhpPpuYoLPWvh734lpTOpw4CH
+         h6LKqVzGGcl7jU9YXp5aEooiySp0Q7JLcWiXAwiOqfc6OBdV5MLpi3WIHpf0W24UJRXl
+         H7hSK5qe7cGlsRKavvNjKQSU7n12xbbHkaWdbRyo2XpVWTmPdJVQa2X/V78xG/xkDG0H
+         dOGG+Xjd2/pRSd0hkVUZ19CnuLC8+DNZ5CZuh18gZz5jqRYMl5WJXg3CUkwAQvimZeBu
+         S4OQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787996927; x=1788601727;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=vr48OlihL3z/Xr4r4Y0Vtz7OZXseZdEoR3eobBbUMjA=;
-        b=ieuWg5rp+W/snIF+kcPwvNP4dqgjbbsxisiRNblC/9HRpg04JMQs/oUuxgYiN/mPVd
-         NU9PAp5Q+JZ06uFiXDIRPoLywIT7kkJfc7EjkZSed9j+jQaRmXr5S7fdysRVkcQRbVPK
-         BpCxLQsPS+rEGyjepBONnTH+nN7c0rlMhYvyDRd0iVxC1JLBDyemt4d8/AUUL7f8X0yy
-         RXwd2Sc8YEQWbb87Cdkmky/bGVhJLF0VjNmXWOlluFNkXOilioMbJ9WX/Kdm20yP6UyC
-         xvCncDFAR7NvRPrRJXeV2U5LT4QCjcCXMJF6aGiRrOk4NrxJht7XOymmIkXPCo+5D/Zl
-         aSwg==
-X-Gm-Message-State: AFuF++m94qgKRUJ7UTJdLjkUX1+9R0wu3IDnKUv+Bxd1gDAXBRdBDeR+
-	KoSHp4Sk2T4rrtt1oaXOkmv23NWCqTdACaHPKy9UkNt/N0zPofeZVYvi
-X-Gm-Gg: AR+sD11XcJlGWa1DReN5gukABnYCwSAWRmSwiI4D4cAhb08VdDFDUkBvHG2H3zobUE6
-	7C1Dkm/obS7Wg6NZS6s8Pig9Jso5KxTEkyv6Xe56hkvuEpS9cnSAD2rLuyL4sdNdcl15KzNNNiM
-	CpV93K8LFHv9R0HieB8k5kpfxsw+uv2lW6N+xHnfT79iOthpla0GGXEKfWOv7rV5uCNQpV/wn/2
-	9J6pjmyxg770xJbu5DFG1JjCXTkGd7I5g4ku9KbQeGsE/7hP61yAJK+0yja+N2UWbFQnl8PJCMG
-	77xVwLraE475Yc6tnUYYkjT3vwspiu2Pp99dyvakH+tFXHq9mpSut+ZTW7GAGMH+GA38yOglaQb
-	RumEMOt5IsQS8f3v1T+TD9JUmQCCdJanP2KdcyTQvNUNd7tlLxz6wNmVndURHZaNBsbNSmRHZQe
-	jOmwFqc2ece1PRDbgPM1tEkzO1+x+WzojdykRnOdHPaQRFUu7Dq3tcigbLEP3mtOOzP7PJLIxHB
-	jv1sOs/dwJ+ihIjlS9B3U9GCA06klmx/8jxMI0=
-X-Received: by 2002:a17:907:c1f:b0:c21:757:1bb4 with SMTP id a640c23a62f3a-c25571d8ff6mr949921466b.16.1787996926837;
-        Sat, 29 Aug 2026 02:48:46 -0700 (PDT)
-Received: from Lenovo (public-gprs210891.centertel.pl. [46.134.163.12])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c255ee28596sm190811766b.20.2026.08.29.02.48.45
+        d=1e100.net; s=20251104; t=1787997391; x=1788602191;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=sMP0XaepjPlmJbxsbEQ8szt62Q73GNx5xhfDiowpknI=;
+        b=Updr2z+JurMHLcP7GsLVwKwUwS5HcsKI+2Ssa35BBbN2A6otxF/l0jwjdccpJNfi18
+         pJ4uLxIKwrP4oeFmvSKEVDVzKvjZIApAQnocrjBRm4YKJ7TQaOFg1TIsgtH3E55PU5Z6
+         jfXoNc6cSv4GbTesYvHIgoHnrfcjfGYvzsIvymeeQuzQpQ3qQzxxHrhLTzOJyXmYlr8x
+         gFbNIbQ8OKLLXGF1T2b4/hXeIoiquH7dW8E8qSLfJxm4nYV1XdutdK8Xy+FxLYZvrzZR
+         wdlP9JHvq8aNqh8MmlFnFgTUPRHHGtKAopOcU75FATEYmCtkIp/IhTHoz9n3DWneBl1w
+         Qb6A==
+X-Forwarded-Encrypted: i=1; AHgh+RqfVGs5Qhkn/U7uwVu/h9S4qKZ2IpU8OFqs5hlNi8iFGbaK6ZUCehuTOnCBCYD6IEBnLdZGzd9oZA==@vger.kernel.org
+X-Gm-Message-State: AFuF++le0jbwRaaNZ1qrLdrLKxOs1HTriwZufLBTQxD+19Y8Ww8cvrmV
+	u8Wpuqb5XsZwv7dQcZnSj7hoXo7mBgNhS4CR4izUI4ib6wncHMLd9k173A2sYpVosFS+c7mB7R6
+	m9Jas/KSpCvUYLj1HiQP+df1XOQHeYSWPt+Gsu9cnFxg8PdIikxcL/BgwKl1TQA==
+X-Gm-Gg: AR+sD10Jx5yquprJDc5ULosoMcp597wx8WzJLsCUjt2JPGYksmwi2FxI0NXsqJ5KiSi
+	uHBb05Z+WFS6THiQtsMCu7MRig8ixcIy3TQcSFIybYd5xWeV6g/BbEnRSCIxdBDFtdKiI4Ci9se
+	bmULvUZ4WiKi57k+ZPuakZccCMMQHlx1iehTtNf+S3f11Av/NWBoxNJrCi6UDKg31ZuwOm8HY1z
+	UiElmHAEhZ7vdyMpKesNW77ettYcKJTH1X0/FZRKozh5kyzFl2k7tjII0q2tFHg7B4iD0AjRQHS
+	NiGVblMstFgaxLSY+ep4Q9qb+k3YkLBAmZ6htxfYb1GpdLVNECZZxAmzgnYlkTF9F5iMj3AuvNu
+	hIROuzAj6UxsWpFdeEK6xTMcYT+EyKi+ipSj5Khneh7U=
+X-Received: by 2002:a05:6a21:4014:b0:3d3:af44:ee11 with SMTP id adf61e73a8af0-3d3af44f155mr8533797637.26.1787997391341;
+        Sat, 29 Aug 2026 02:56:31 -0700 (PDT)
+X-Received: by 2002:a05:6a21:4014:b0:3d3:af44:ee11 with SMTP id adf61e73a8af0-3d3af44f155mr8533764637.26.1787997390926;
+        Sat, 29 Aug 2026 02:56:30 -0700 (PDT)
+Received: from QCOM-aGQu4IUr3Y (i-global052.qualcomm.com. [199.106.103.52])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-142e0d4b336sm13992370c88.8.2026.08.29.02.56.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 29 Aug 2026 02:48:46 -0700 (PDT)
-From: Marcin Dawid <mdawid@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	regressions@lists.linux.dev,
-	stable@vger.kernel.org,
-	"Jiakai Xu" <xujiakai24@mails.ucas.ac.cn>,
-	"Sasha Levin" <sashal@kernel.org>,
-	"Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-	linux-kernel@vger.kernel.org
-Subject: [REGRESSION] 6.12.y: s2idle hangs after 171ef40fce41 ("PM: sleep: Use complete() in device_pm_sleep_init()")
-Date: Sat, 29 Aug 2026 11:47:47 +0200
-Message-ID: <20260829094750.574649-1-mdawid@gmail.com>
-X-Mailer: git-send-email 2.55.0
+        Sat, 29 Aug 2026 02:56:30 -0700 (PDT)
+Date: Sat, 29 Aug 2026 17:56:24 +0800
+From: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Guenter Roeck <linux@roeck-us.net>, Vinod Koul <vkoul@kernel.org>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] thermal/drivers/qcom/spmi-mbg-tm: Import IIO_CONSUMER
+ namespace
+Message-ID: <apKsyKdePJ3HKT2N@QCOM-aGQu4IUr3Y>
+References: <20260827103555.883018-1-shengchao.guo@oss.qualcomm.com>
+ <apAzGkXpnMYHcnqJ@ashevche-desk.local>
+ <apBLL4x0h2kUaz-n@QCOM-aGQu4IUr3Y>
+ <20260828234249.0c729e5e@jic23-huawei>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260828234249.0c729e5e@jic23-huawei>
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI5MDA4NSBTYWx0ZWRfX88DjCcbnLeyn
+ EWaFlNrnQrqrUmIzHIVvYvZU63pIr6LJZB0CkHpZ7fWInvTNmJb1LreQNjjdTJljCeCaHVE/qcX
+ bbXN8TBHJwYB8ucxAjhFv5I7WU1bSWc=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI5MDA4NSBTYWx0ZWRfX8gFAJgxVQB0D
+ wOI3ai+VHeYnNlqDTy0eR7HyB3SUo7m4hR7nlv9ptud/TEuQKYw9wfqogCX9hCu6y1e2cEmt53o
+ f2Os4oRZ2vSF7RAhUBx6RT7un2CyXb8ZNijBeo9oxqtHee9pMxXT5XK2GVonzaDz1gG0J0nFSTl
+ E58iee7R4GfihwwEu3C3ODUVD1xh3hpfZAjclCHuoNJZAdE3RW1d0MN0fgA2I/MJ3TgjWnLJ9aP
+ JOVaYrmQE6/sccsO56X9ScZDyu08wypJB9awHc3196ANQ64ORO8xGKdK7wB2EuLkZ26e8YIRX5a
+ S2uVzy2E9ckUrVdAifQLut8EFDZdf1fgmKds42sM8dOCTyXzDee+LbEua92sfo2uMp8NAdTb14w
+ Fi9S23CcPr1rAkcR9ndMcI3H9B6nC5eA32y3YvHvWMk0jIReSY77SKQhAKConj3teWdMr6LKd7j
+ oj+ffJQ5NiN45rcrnDg==
+X-Proofpoint-ORIG-GUID: BTGxmi1x-Y7Kf7snlylGbcytKLlv2Ict
+X-Authority-Analysis: v=2.4 cv=R5Ez39RX c=1 sm=1 tr=0 ts=6a92acd0 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=b9+bayejhc3NMeqCNyeLQQ==:17
+ a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=EUspDBNiAAAA:8 a=YDW5RsgNVoE-659JHf8A:9 a=CjuIK1q_8ugA:10
+ a=x9snwWr2DeNwDh03kgHS:22
+X-Proofpoint-GUID: BTGxmi1x-Y7Kf7snlylGbcytKLlv2Ict
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-29_02,2026-08-27_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 phishscore=0 impostorscore=0 spamscore=0
+ bulkscore=0 adultscore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608290085
 
-Hi,
+On Fri, Aug 28, 2026 at 11:42:49PM +0100, Jonathan Cameron wrote:
+> On Thu, 27 Aug 2026 22:35:27 +0800
+> Shawn Guo <shengchao.guo@oss.qualcomm.com> wrote:
+> 
+> > On Thu, Aug 27, 2026 at 03:52:42PM +0300, Andy Shevchenko wrote:
+> > > On Thu, Aug 27, 2026 at 06:35:55PM +0800, Shawn Guo wrote:  
+> > > > The IIO consumer interface symbols moved into the IIO_CONSUMER namespace,
+> > > > so consumers must import it explicitly.  Without it modpost fails on  
+> > >   
+> > > > 'iio_read_channel_processed' and 'devm_iio_channel_get':  
+> > > 
+> > > iio_read_channel_processed()
+> > > devm_iio_channel_get()  
+> > 
+> > Sure, will update.
+> > 
+> > >   
+> > > >   ERROR: modpost: drivers/thermal/qcom/qcom-spmi-mbg-tm.ko: module uses
+> > > >   symbol 'iio_read_channel_processed' from namespace 'IIO_CONSUMER', but
+> > > >   does not import it.  
+> > >   
+> > > > Fixes: ebf1d03dab96 ("iio: inkern: Use namespaced exports")  
+> > > 
+> > > Shouldn't this be backported to stable kernels?  
+> > 
+> > The offending commit just landed on mainline during this merge window.
+> > So there is no stable kernels concerned by this.
+> 
+> There is a fix on the thermal tree. I though that was enough. Maybe this
+> races with that fix going upstream?
 
-My ThinkPad P16v stopped suspending after a kernel update. I bisected
-the problem to commit 171ef40fce41 ("PM: sleep: Use complete() in
-device_pm_sleep_init()"), the 6.12.y backport of mainline commit
-3855941f1e40. Reverting this commit fixes the problem.
+Ah, I see! That's a fix from Nathan Chancellor. Ignore mine then.
 
-#regzbot introduced: 171ef40fce41b13f5115d988c45997e94113c7ab
+Thanks Jonathan!
 
-Symptoms:
-When I close the lid my laptop does not go to sleep and its fans
-keep running. If I open the lid, the screen stays black and the laptop does
-not respond. I must do a hard reset. Only the lid triggers this. Calling
-"systemctl suspend" with the lid open works.
-
-In every hang, the kernel log ends like this, here on 6.12.105:
-
-  [   94.290011] PM: suspend entry (s2idle)
-  [   94.296689] Filesystems sync: 0.004 seconds
-
-This is the last output visible in the journal.
-
-System:
-Manjaro Linux (rolling release), x86_64, systemd 261
-Lenovo ThinkPad P16v Gen 1 (21FE0011PB)
-AMD Ryzen 7 PRO 7840HS w/ Radeon 780M Graphics
-BIOS N3VET59W (1.59), 05/13/2025
-2x NVMe, WiFi Qualcomm QCNFA765 (ath11k_pci), USB4/Thunderbolt
-/sys/power/mem_sleep: [s2idle]   (the laptop does not support S3)
-
-Affected versions:
-
-  6.12.y: last working 6.12.96 -> first bad 6.12.97
-
-I only see the hang on 6.12.y. I also tested 6.18.45, 7.1.8 and mainline
-7.2, which carry the same commit and the laptop suspends normally on all
-three (see the table below).
-
-The latest 6.12.107 still has the commit and no fix or revert. I tested it
-and it hangs the same way.
-
-Reproducing the problem:
-I bisected stable branch between 6.12.96 (good) and 6.12.103 (bad).
-Every tested kernel was built from the kernel.org stable tree using
-config based on the Manjaro 6.12.96 (trimmed with make localmodconfig
-and updated with make olddefconfig).
-
-  171ef40fce41b13f5115d988c45997e94113c7ab is the first bad commit
-  PM: sleep: Use complete() in device_pm_sleep_init()
-  [ Upstream commit 3855941f1e4069182c895d5093c5fa589f5b38bd ]
-
-Bisect log:
-git bisect start
-# status: waiting for both 'good' and 'bad' commits
-# bad: [25c09b42358e73e1476e517b296edb6344f2e4bd] Linux 6.12.103
-git bisect bad 25c09b42358e73e1476e517b296edb6344f2e4bd
-# status: waiting for 'good' commit(s), 'bad' commit known
-# good: [6d15a1029d425b15c59463910ebdccc4afe760d6] Linux 6.12.96
-git bisect good 6d15a1029d425b15c59463910ebdccc4afe760d6
-# bad: [afb45d1142b3031f408c0505d1c3e89edc68fb49] iio: adc: ad7380: select REGMAP
-git bisect bad afb45d1142b3031f408c0505d1c3e89edc68fb49
-# bad: [29c801cbd8ad1a27adef6a325cc5a1e6ef275a97] selftest/mm: register existing mapping with userfaultfd in hugetlb-mremap
-git bisect bad 29c801cbd8ad1a27adef6a325cc5a1e6ef275a97
-# bad: [eb7cb798e563b3f3b3baeb9cc6f7455764267e50] IB/mlx5: Properly support implicit ODP rereg_mr
-git bisect bad eb7cb798e563b3f3b3baeb9cc6f7455764267e50
-# good: [5d52b6dc6fd0640e355877e8370b21eb84dc13e0] sysfs: clamp show() return value in sysfs_kf_read()
-git bisect good 5d52b6dc6fd0640e355877e8370b21eb84dc13e0
-# bad: [fa766e5e53ad389d6ec810783f5d5367010f9412] media: qcom: venus: drop extra padding in NV12 raw size calculation
-git bisect bad fa766e5e53ad389d6ec810783f5d5367010f9412
-# bad: [962eae1f30e57ac8e6e20a8b862e269145dc6d9a] driver core: Guard deferred probe timeout extension with delayed_work_pending()
-git bisect bad 962eae1f30e57ac8e6e20a8b862e269145dc6d9a
-# good: [16723523c74f90d487df270ae4dad263542aab26] cpufreq: conservative: Simplify frequency limit handling
-git bisect good 16723523c74f90d487df270ae4dad263542aab26
-# good: [7d9fbee252f84de3e6947a40eec01481c9d8afbb] RDMA/hns: Fix log flood after cmd_mbox failure
-git bisect good 7d9fbee252f84de3e6947a40eec01481c9d8afbb
-# bad: [7670a3a6ccaf6f081c474338d204461c67d9e126] MIPS: DEC: Remove do_IRQ() call indirection
-git bisect bad 7670a3a6ccaf6f081c474338d204461c67d9e126
-# bad: [171ef40fce41b13f5115d988c45997e94113c7ab] PM: sleep: Use complete() in device_pm_sleep_init()
-git bisect bad 171ef40fce41b13f5115d988c45997e94113c7ab
-# good: [5452b60cb1db44cf507aa9b85ab51901ed593c6c] RDMA/counter: Fix incorrect port index in rdma_counter_init() error cleanup
-git bisect good 5452b60cb1db44cf507aa9b85ab51901ed593c6c
-# first 'bad' commit: [171ef40fce41b13f5115d988c45997e94113c7ab] PM: sleep: Use complete() in device_pm_sleep_init()
-
-What I tested:
-All tests were done on the same machine, on AC power, by closing and
-opening the lid. One cycle means that the laptop went to sleep and woke
-up. The numbers come from the system journal:
-
-  6.12.96 Manjaro, before the commit       works  - 48 cycles over 29 days
-  6.12.103 (with the commit)               hangs  - first attempt after boot
-  6.12.103 with the commit reverted        works  - 5 cycles in one boot
-  6.12.103 /sys/power/pm_async set to 0    works  - 11 cycles in one boot
-  6.12.104 Manjaro                         hangs  - first attempt after boot
-  6.12.105 (with the commit)               hangs  - first attempt after boot
-  6.12.105 with the commit reverted        works  - 10 cycles in one boot
-  6.12.105 /sys/power/pm_async set to 0    works  - 11 cycles in one boot
-  6.12.107 (with the commit)               hangs  - first attempt after boot
-  6.18.45 Manjaro                          works  - 7 cycles over 2 boots
-  7.1.8 Manjaro                            works  - 12 cycles over 5 boots
-  7.2 mainline, built from source          works  - 11 cycles over 5 boots
-
-Every hang happened on the first suspend attempt after boot and never after
-a successful cycle.
-
-Setting /sys/power/pm_async to 0 is a workaround I found. The original bad
-kernel suspends normally with this flag set to 0. I have used this
-workaround without failures.
-
-Changing /sys/power/pm_async back to 1 on a running system did not
-immediately reproduce the problem. I did this on 6.12.105 and after 11
-successful cycles with pm_async=0 the next 3 cycles also worked. The first
-suspend attempt hung again after reboot.
-
-With the commit reverted, 6.12.105 logs this when I close the lid:
-
-  [  154.523353] PM: suspend entry (s2idle)
-  [  154.530033] Filesystems sync: 0.003 seconds
-  [  155.273772] Freezing user space processes
-  [...]
-  [  155.273951] PM: Some devices failed to suspend, or early wake event detected
-  [... device resume messages ...]
-  [  155.290012] PM: suspend exit
-  [  155.290087] PM: suspend entry (s2idle)
-  [  156.163505] Filesystems sync: 0.004 seconds
-  [... no error this time; the laptop enters s2idle and later resumes ...]
-  [  156.223357] PM: suspend exit
-
-With the commit present, the same 6.12.105 stops at the "Filesystems sync"
-line:
-
-  [   94.290011] PM: suspend entry (s2idle)
-  [   94.296689] Filesystems sync: 0.004 seconds
-
-6.18.45, 7.1.8 and mainline 7.2 contain the same change and log the same
-failed first attempt, but their second attempt suspends normally.
-
-Calling "systemctl suspend" with the lid open succeeds on the first
-attempt on 6.12.105 with the commit, never logs "Some devices failed to
-suspend" and did not hang in 18 cycles over 7 boots.
-
-My local settings:
-Kernel command line:
-  BOOT_IMAGE=/boot/vmlinuz-6.12-x86_64
-  root=UUID=985b52ba-a61a-41f8-ab5c-fad209ce7c44 rw zswap.enabled=0
-  resume=UUID=9f557da2-d7c5-4623-83c0-3ea696bb1b3c udev.log_priority=3
-Module options:
-  thinkpad_acpi fan_control=1
-Other:
-  /sys/power/disk set to "shutdown", vm.swappiness=100, vm.page-cluster=0,
-  CoolerControl daemon, a local systemd unit that reloads ath11k_pci
-  after resume
-
-
-I can test patches or collect more information if needed.
-
-Regards,
-Marcin Dawid
+Shawn
