@@ -1,97 +1,53 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EED513A7F70
-	for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2026 10:10:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A3C823A1D05;
+	Sun, 30 Aug 2026 11:57:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788084637; cv=none; b=mqrhr9vDNfiuK5VGBgvcdjRk0ZVYxaqID/yno9a3gHDSOd6jYDf9IOtSsCWx4jlXdVe/PEZZWQ+9fyqkSOvInkwsYWfchpA7epmNYCZuupjB697AdGRK2/y1FJSGLesG7Ll/OtAyjREAZY1c4JXplfeklRiP9HP5RC3RF3l1hIA=
+	t=1788091055; cv=none; b=fEyk/sPQN4a6nibjUUeccQqk1jW7Z1fE1EFb9xIsfRx3E/9iSjyk/SzuJKaEBzyrx4uyQK7RBhy4r8zQEA4wPOp2BLg/32OH8654fVOAiPoDjHkio4jBhueedzg69LwNGkpabkDN6MgOkwqYl7CBvLLCEgip70Mgled0+IVOhc0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788084637; c=relaxed/simple;
-	bh=j5xquh3YmyWbm6HinwSL5zCuhiJDnGPgbOGMgZZ0rMQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rD9iJSEFoQE0tNaHPExvEsIb3bKCyYqsSLauHRK0dUYWIoLL1icXHAIJHuOsU/WC2ZlZhDouNHGWvDaST7YHWq7fVa0bRnPO7voPF6W/+hdbLpwxb3PRSzC7DhkAGQ1OVYN0eP18mYg4WDZ8yQubIXAORYo/VRHSMX9URZi9l+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=PgprtML1; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=DLJxuC6n; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1788091055; c=relaxed/simple;
+	bh=gdlYGOwHNrS02heE0QSaLRymK8B2DoVIz91gp6Wz3A8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=IdDyZCAdaOoHXBTDRO42IyBQzIdWnm+sBSXJ4uiAQRCmPdIt7533WRsakJuT/AjrDCGMb9tnAr1hEUzTGbpzphDXfUEuB3tZ/OmKBOmRjG+1FqcpsZ/JeJKhzYb5t4n3G8PMKdx06Svi1jMpC2ImidfXVy/2FxmlLJnpImG4ReU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=A6XxBb/X; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="PgprtML1";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="DLJxuC6n"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67UA7Euv917193
-	for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2026 10:10:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=tsnnJ/6NpmZ4Kbv6OZKO9KkoG7EvkwFyG/j
-	YSMybLiM=; b=PgprtML1Of3Mrfz+/Vg6qVghym1G7jiEme2994tYitEWpsew6FS
-	+40XKqY+85rJclL/shx6d8B7P+VvEd2DPvCJmHtt8BZf6pLkRJoS0mTeV5cH51I5
-	i3PJD0MdEzpAqXuqWAl7Xn2ZUdiFglr1I2KowgWOFgIPJgHBd3kz8g6d/fJtFp8e
-	jU0QzzKNFS+dTlGsoPLI9WeiML9fPVGcSabpBHRx/eXu41lBPsEzG9my0KJ7In75
-	mP9Bigp5Rp0pLtSuZAS2OFATr5VDBcsAUUiDZbcfMuJRWpYw0V+Sw4DmKDp0A5EI
-	2LyNz7o+CtxGh2ToSQFHZeiIn5ATXzo9Lww==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gbqdfjsrs-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2026 10:10:34 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2d001671a54so45899465ad.2
-        for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2026 03:10:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788084633; x=1788689433; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=tsnnJ/6NpmZ4Kbv6OZKO9KkoG7EvkwFyG/jYSMybLiM=;
-        b=DLJxuC6nTd11mg18vuDKvYjjxN8UGsqOTjqRl7y4Z8WIlgpB/8w7rXt6Wx09jdisyL
-         zV36lNAjQmNIDxA6PEgT0LlDl4M+TA2P2718Fx+9Qnw435fDLnVVe6WnpFUUNqCqsVCr
-         lnmlqnZG0kMxXNwQpL7V+OsA6mdyVuV/ZvlR9r5ABCPIaQZvDzR2aswtPjdSlfaO4QZp
-         wGOh/LcvZ5z6Eq3nS3e57T9gegQdCGcZqukhTX/uy9vnrT7n84YAcn7mQe+DJlEJD3Kv
-         JfMl5oWBOq2HrwruV2naa7Hd2eY3vLVL0c4O+1z6g6naSHdHDJqD2VI1COqKNyp8h70q
-         YmQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788084633; x=1788689433;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=tsnnJ/6NpmZ4Kbv6OZKO9KkoG7EvkwFyG/jYSMybLiM=;
-        b=etiz7sNY4kh/NUjRap3GYnxS1cp0pcZe7d86YxSS7JoQtppSunArvYDbNZ3ilni2lA
-         LhRh03rVkqO1jqI+e3tLNdAmPdDSTx1NcFmocMTAOLMlqPTH9s+/w8yTXjR6ppiCgAmQ
-         3RVZwnM72uoS4RhxLoH7yK9Xeh37zCjTVYjSVxmNLpyldBfHQWxQCk9ZOAmJh5DIBVUW
-         KsKuCIo1v7hmDeW4TC3SQqDR393ZF94Yia5PBy4qvcHhrHfChBHTZtxXyYO4Ni7Kljph
-         AlbYC/zJ3bQ0/50fQi0lzDD/NqdNy0swrYbbS9InyUgsIWNcC7z1NWs/g5z/4aiRyUOG
-         wx4w==
-X-Forwarded-Encrypted: i=1; AKwUvBw+r3ujSHurp4vO9wWNbNV/H9/7d7Q7PKAdPJDm7sgKpIZrExNkP3nRReXHhDhaETIh4QMo2CNH9A==@vger.kernel.org
-X-Gm-Message-State: AFuF++ncsIlBLVuM9nHbQbBRbl4oDiDdfKXwSGGe7Nplb9gUB2aNAXYP
-	UeEqR/i5uwnLY8g2XqOv/dCiK05kKFe+H7RcZIXQ0JCqeNsiyoCpr/i0RDsFGpge3j+RDn4gNLW
-	vLfBaiaMOSf9geZYo5gc9OfYaRolA/kKmqQCWgVVyRWhsoqXFmyNSm5Yw8Xp55Q==
-X-Gm-Gg: AYBFou0NtalZ+7baZLPIRzDbeTb8e7RO6j82YgxQI1I3XJ9sErVmBbiCOrRkDum7aiY
-	1xkusnNgJ/fqCd17Z4KURdG3R63BI6TS27qr3HKqBBjyaVmoBuPVdkqkpItCeWEty3g/4b+/ONs
-	cUOLVXRQdkPdQLXzhAiXZpaGT0wNMR2d5mmPH0HP+QVB3ik02dZQoDDQxWw/0+fR7bXZs+naj6U
-	pvHNxqzMszQPZ3GR+zw2vVY8HtOnI88EoDGxXrv4chROp4vqi7TrLl6sEwQ2TA09jKWkY847zgA
-	DXoq9zgeXErZjuCDRMxECQ5LRMJRiqQLtmCrbUKP2/Du3Wrs8G08QlVDKR6Xdmo/3g/7jp4L1DL
-	GzlgGS7TRRZlwRYfzcX7vmPIEPkgl+Jx8A6qcEONELFaja79eF7VTx6zww29n
-X-Received: by 2002:a17:902:f78b:b0:2c9:df1b:e948 with SMTP id d9443c01a7336-2d74dc78debmr313679715ad.4.1788084633423;
-        Sun, 30 Aug 2026 03:10:33 -0700 (PDT)
-X-Received: by 2002:a17:902:f78b:b0:2c9:df1b:e948 with SMTP id d9443c01a7336-2d74dc78debmr313679155ad.4.1788084633005;
-        Sun, 30 Aug 2026 03:10:33 -0700 (PDT)
-Received: from QCOM-aGQu4IUr3Y.qualcomm.com (i-global052.qualcomm.com. [199.106.103.52])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3286f7be440sm25312274eec.7.2026.08.30.03.10.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Aug 2026 03:10:32 -0700 (PDT)
-From: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-To: Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Dhruvin Rajpura <drajpura@qti.qualcomm.com>,
-        Shawn Guo <shengchao.guo@oss.qualcomm.com>
-Subject: [PATCH] dt-bindings: thermal: qcom,pm8775-mbg-tm: Document PMAU0102
-Date: Sun, 30 Aug 2026 18:10:25 +0800
-Message-ID: <20260830101025.191697-1-shengchao.guo@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="A6XxBb/X"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 620861595;
+	Sun, 30 Aug 2026 04:57:27 -0700 (PDT)
+Received: from e127648.arm.com (unknown [10.57.5.212])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B75193F66F;
+	Sun, 30 Aug 2026 04:57:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1788091051; bh=gdlYGOwHNrS02heE0QSaLRymK8B2DoVIz91gp6Wz3A8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=A6XxBb/X0sBk8S2SHOI9B/5y0VzUcvCJQxLZjv8xDTGXdQsMQoJD6Ar4mUQohB78O
+	 HS+ZIQtKSYVs1g//3q/fMnOv0ZhN2pG2q8NWUdVCLahSF1vqWO4uGFELmgoSsqlVia
+	 3sppAcm1KGVv/hdFw3zaQLl5emQA4tv7XRKIVuMA=
+From: Christian Loehle <christian.loehle@arm.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Len Brown <lenb@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Sudeep Holla <sudeep.holla@arm.com>,
+	Ionela Voinescu <ionela.voinescu@arm.com>,
+	zhongqiu.han@oss.qualcomm.com,
+	Christian Loehle <christian.loehle@arm.com>,
+	Sashiko <sashiko-bot@kernel.org>
+Subject: [PATCH v6 02/15] ACPI: CPPC: Validate _CPC entry and control semantics
+Date: Sun, 30 Aug 2026 12:56:31 +0100
+Message-Id: <20260830115644.2056983-3-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260830115644.2056983-1-christian.loehle@arm.com>
+References: <20260830115644.2056983-1-christian.loehle@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -99,63 +55,485 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMwMDA4NSBTYWx0ZWRfX2vadVtuQwAs3
- FS24nO1AQvgKWjyssrIOeonYgcYG8h8LV9lNG/jEE6jBGtZgAIK7YYynce0o8asfFiou0+rTYI6
- 3lJDeBJtMOdcbLaDzsguOrFDERmj2NyYBieaD3ldZYoxW3xKCdvuXoK627SocyN0p3uklWzpkIW
- b3AwYjhBXuYZzrMM/K2M8zSdfb4zbzea53mYk11DYRNevKoJJGwxeXFfbR/8b6HgxEx/yq8Vnhm
- jJy8YnDEbmnSIlR9uqghnr1PrnEESlcd6EleBYojOofXjJk/4jyYxnEouc2XKNo5XqRjU54sRJM
- 68VBbjzoXKrptvRHYYTKGc8+asAxNNcblvp4j68KRppbZJE6vcnQ5wbjspkbPVC2s7qWoYSbFWj
- 1YV1O5Xm3pATcFfdynokGOa7NCr3yX19UTercfW2Nq3AnagnX1rRVJdovdZJEEvzqYVRFz3W/wV
- 5SVTiuTJSgw3eJUxL5g==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODMwMDA4NSBTYWx0ZWRfXxr8ORR9tAJC+
- PI75WaSg8WAPS3f5CONj0vIcTIW+1Ft9/nN250Z/ON4/MHPXMy5SzC9OD+ohlKFThCCVfKKs9CN
- MwKUppJIQxsBgoMEt7/jElat6clPFgE=
-X-Authority-Analysis: v=2.4 cv=B7eJFutM c=1 sm=1 tr=0 ts=6a94019a cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=b9+bayejhc3NMeqCNyeLQQ==:17
- a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22 a=EUspDBNiAAAA:8
- a=DV00hUf6onYBliZHTqcA:9 a=324X-CrmTo6CU4MGRt3R:22
-X-Proofpoint-GUID: BOL95WPoc5xrJn6Wx-9rRcABh0gWz-Ph
-X-Proofpoint-ORIG-GUID: BOL95WPoc5xrJn6Wx-9rRcABh0gWz-Ph
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-30_03,2026-08-27_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 lowpriorityscore=0 suspectscore=0
- impostorscore=0 clxscore=1015 phishscore=0 malwarescore=0 bulkscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608300085
 
-From: Dhruvin Rajpura <drajpura@qti.qualcomm.com>
+Writable _CPC controls are Register descriptors encoded as Buffer objects.
+Integer entries represent fixed values or unsupported optional registers;
+Autonomous Selection Integer 1 is the special immutable form which enables
+operation without Desired Performance.
 
-Document MBG temperature monitor on PMAU0102 which is programming-model
-compatible with the one on PM8775.
+The parser accepts arbitrary object types and cpc_write() assumes that its
+argument contains a GAS. Malformed firmware can therefore make it interpret
+an Integer union member as a register.
 
-Signed-off-by: Dhruvin Rajpura <drajpura@qti.qualcomm.com>
-Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+Validate the portion of each encoding consumed by the driver: bound Integer
+DWORD forms to 32 bits, and require Buffer entries to start with a complete
+Generic Register descriptor with the expected header. Continue tolerating
+Integer 0 for an absent optional register and retain type checks in
+cpc_write() as defense in depth. Reject an attempt to disable immutable
+Autonomous Selection instead of silently applying only the EPP part of the
+request.
+
+Capability registers are read into u64 temporaries but exposed through u32
+fields. Reject values above U32_MAX instead of allowing them to be
+truncated. In particular, a truncated Highest Performance value can become
+a zero divisor in the performance-to-frequency conversion. Enforce the
+required ordering from Highest through Nominal, Lowest Nonlinear, and
+Lowest Performance, and constrain a present Guaranteed Performance to the
+inclusive Lowest-to-Nominal range. Also reject reversed frequency anchors
+and unequal frequency anchors with identical performance anchors. Those
+invalid tuples otherwise make affine-conversion differences wrap or divide
+by zero.
+
+Check mandatory object presence separately from the Integer-zero convention
+for absent optional fields. ACPI does not reserve zero in the abstract
+Lowest Performance scale, so accept a present Lowest Performance DWORD of
+zero when distinct frequency anchors provide a usable nonzero physical
+minimum. Retain the old rejection when that mapping is unavailable and the
+fallback conversion would expose a 0 kHz cpufreq endpoint.
+
+Minimum Performance also defines zero as a real no-limit value, but the
+exported cppc_set_perf() interface historically used zero to omit a bound.
+Add explicit validity flags so callers can request zero without changing
+that legacy convention. Populate the flags when reading the controls and
+mark the bounds supplied by amd-pstate explicitly.
+
+Performance Limited is listed as a required Buffer, but the interface does
+not depend on it to control performance and the specification permits a
+platform with no limiting indication to always report zero. Preserve
+the compatibility with firmware that represents that case using a NULL
+register descriptor instead of disabling CPPC entirely.
+
+Emit an error when a present _CPC package fails parsing or initialization
+so such firmware and resource failures no longer silently suppress cpufreq.
+Initialize malformed-package failures to -EINVAL and preserve specific
+allocation, mapping, and unsupported-access errors in that diagnostic.
+
+Fixes: 337aadff8e45 ("ACPI: Introduce CPU performance controls using CPPC")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- .../devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml    | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/acpi/cppc_acpi.c     | 172 ++++++++++++++++++++++++++++++-----
+ drivers/cpufreq/amd-pstate.c |  12 ++-
+ include/acpi/cppc_acpi.h     |   2 +
+ 3 files changed, 159 insertions(+), 27 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml b/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
-index 2e084d040625..ef8361a55389 100644
---- a/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
-@@ -21,7 +21,12 @@ description:
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 3b8cdf88e31d..6f3ffa4a1845 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -129,6 +129,21 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+ 				!!(cpc)->cpc_entry.int_value :		\
+ 				!IS_NULL_REG(&(cpc)->cpc_entry.reg))
  
- properties:
-   compatible:
--    const: qcom,pm8775-mbg-tm
-+    oneOf:
-+      - const: qcom,pm8775-mbg-tm
-+      - items:
-+          - enum:
-+              - qcom,pmau0102-mbg-tm
-+          - const: qcom,pm8775-mbg-tm
++static bool cpc_is_writable(const struct cpc_register_resource *cpc)
++{
++	return cpc->type == ACPI_TYPE_BUFFER &&
++	       !IS_NULL_REG(&cpc->cpc_entry.reg);
++}
++
++static bool cpc_entry_present(const struct cpc_register_resource *cpc)
++{
++	if (cpc->type == ACPI_TYPE_INTEGER)
++		return true;
++
++	return cpc->type == ACPI_TYPE_BUFFER &&
++	       !IS_NULL_REG(&cpc->cpc_entry.reg);
++}
++
+ /*
+  * Each bit indicates the optionality of the register in per-cpu
+  * cpc_regs[] with the corresponding index. 0 means mandatory and 1
+@@ -142,6 +157,29 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+  */
+ #define IS_OPTIONAL_CPC_REG(reg_idx) (REG_OPTIONAL & (1U << (reg_idx)))
  
-   reg:
-     maxItems: 1
++static bool cpc_integer_entry_valid(unsigned int reg_idx, u64 value)
++{
++	switch (reg_idx) {
++	case HIGHEST_PERF:
++	case NOMINAL_PERF:
++	case LOW_NON_LINEAR_PERF:
++	case LOWEST_PERF:
++	case CTR_WRAP_TIME:
++	case REFERENCE_PERF:
++	case LOWEST_FREQ:
++	case NOMINAL_FREQ:
++		return value <= U32_MAX;
++	case AUTO_SEL_ENABLE:
++		return value <= 1;
++	case DESIRED_PERF:
++		/* Validated against Autonomous Selection after parsing. */
++		return value == 0;
++	default:
++		/* Tolerate the customary Integer 0 for an absent option. */
++		return value == 0 && IS_OPTIONAL_CPC_REG(reg_idx);
++	}
++}
++
+ /*
+  * Arbitrary Retries in case the remote processor is slow to respond
+  * to PCC commands. Keeping it high enough to cover emulators where
+@@ -150,6 +188,8 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+ #define NUM_RETRIES 500ULL
+ 
+ #define OVER_16BTS_MASK ~0xFFFFULL
++#define CPC_GENERIC_REGISTER_DESCRIPTOR 0x82
++#define CPC_GENERIC_REGISTER_LENGTH (sizeof(struct cpc_reg) - 3)
+ 
+ #define define_one_cppc_ro(_name)		\
+ static struct kobj_attribute _name =		\
+@@ -773,8 +813,10 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	acpi_handle handle = pr->handle;
+ 	unsigned int num_ent, i, cpc_rev;
+ 	int pcc_subspace_id = -1;
++	bool cpc_present = false;
+ 	acpi_status status;
+ 	int ret = -ENODATA;
++	int err;
+ 
+ 	if (!osc_sb_cppc2_support_acked) {
+ 		pr_debug("CPPC v2 _OSC not acked\n");
+@@ -791,6 +833,8 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 		ret = -ENODEV;
+ 		goto out_buf_free;
+ 	}
++	cpc_present = true;
++	ret = -EINVAL;
+ 
+ 	out_obj = (union acpi_object *) output.pointer;
+ 	if (out_obj->package.count < 2) {
+@@ -871,11 +915,32 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 		cpc_obj = &out_obj->package.elements[i];
+ 
+ 		if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
+-			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
+-			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = cpc_obj->integer.value;
++			if (!cpc_integer_entry_valid(i - 2,
++						     cpc_obj->integer.value)) {
++				pr_debug("Invalid Integer _CPC register %u for CPU:%d\n",
++					 i - 2, pr->id);
++				ret = -EINVAL;
++				goto out_free;
++			}
++			cpc_ptr->cpc_regs[i - 2].type = ACPI_TYPE_INTEGER;
++			cpc_ptr->cpc_regs[i - 2].cpc_entry.int_value = cpc_obj->integer.value;
+ 		} else if (cpc_obj->type == ACPI_TYPE_BUFFER) {
++			if (cpc_obj->buffer.length < sizeof(*gas_t)) {
++				pr_debug("Invalid register descriptor for CPU:%d\n",
++					 pr->id);
++				ret = -EINVAL;
++				goto out_free;
++			}
++
+ 			gas_t = (struct cpc_reg *)
+ 				cpc_obj->buffer.pointer;
++			if (gas_t->descriptor != CPC_GENERIC_REGISTER_DESCRIPTOR ||
++			    gas_t->length != CPC_GENERIC_REGISTER_LENGTH) {
++				pr_debug("Invalid register resource for CPU:%d\n",
++					 pr->id);
++				ret = -EINVAL;
++				goto out_free;
++			}
+ 
+ 			/*
+ 			 * The PCC Subspace index is encoded inside
+@@ -886,8 +951,11 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 			if (gas_t->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
+ 				if (pcc_subspace_id < 0) {
+ 					pcc_subspace_id = gas_t->access_width;
+-					if (pcc_data_alloc(pcc_subspace_id))
++					err = pcc_data_alloc(pcc_subspace_id);
++					if (err) {
++						ret = err;
+ 						goto out_free;
++					}
+ 				} else if (pcc_subspace_id != gas_t->access_width) {
+ 					pr_debug("Mismatched PCC ids in _CPC for CPU:%d\n",
+ 						 pr->id);
+@@ -900,14 +968,18 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 
+ 					if (!osc_cpc_flexible_adr_space_confirmed) {
+ 						pr_debug("Flexible address space capability not supported\n");
++						ret = -EOPNOTSUPP;
+ 						if (!cpc_supported_by_cpu())
+ 							goto out_free;
++						ret = -EINVAL;
+ 					}
+ 
+ 					access_width = GET_BIT_WIDTH(gas_t) / 8;
+ 					addr = ioremap(gas_t->address, access_width);
+-					if (!addr)
++					if (!addr) {
++						ret = -ENOMEM;
+ 						goto out_free;
++					}
+ 					cpc_ptr->cpc_regs[i-2].sys_mem_vaddr = addr;
+ 				}
+ 			} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
+@@ -929,14 +1001,17 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 				}
+ 				if (!osc_cpc_flexible_adr_space_confirmed) {
+ 					pr_debug("Flexible address space capability not supported\n");
++					ret = -EOPNOTSUPP;
+ 					if (!cpc_supported_by_cpu())
+ 						goto out_free;
++					ret = -EINVAL;
+ 				}
+ 			} else {
+ 				if (gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE || !cpc_ffh_supported()) {
+ 					/* Support only PCC, SystemMemory, SystemIO, and FFH type regs. */
+ 					pr_debug("Unsupported register type (%d) in _CPC\n",
+ 						 gas_t->space_id);
++					ret = -EOPNOTSUPP;
+ 					goto out_free;
+ 				}
+ 			}
+@@ -961,15 +1036,35 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	}
+ 	per_cpu(cpu_pcc_subspace_idx, pr->id) = pcc_subspace_id;
+ 
++	/*
++	 * Performance Limited is required by the specification, but tolerate a
++	 * NULL descriptor used by firmware which cannot report limiting events.
++	 * CPPC control does not depend on this status.
++	 */
++	for (i = 0; i < num_ent - 2; i++) {
++		if (i != DESIRED_PERF && i != PERF_LIMITED &&
++		    !IS_OPTIONAL_CPC_REG(i) &&
++		    !cpc_entry_present(&cpc_ptr->cpc_regs[i])) {
++			pr_debug("CPU:%d lacks mandatory _CPC register %u\n",
++				 pr->id, i);
++			ret = -EINVAL;
++			goto out_free;
++		}
++	}
++
+ 	/*
+ 	 * In CPPC v1, DESIRED_PERF is mandatory. In CPPC v2, it is optional
+ 	 * only when AUTO_SEL_ENABLE is supported.
+ 	 */
+-	if (!CPC_SUPPORTED(&cpc_ptr->cpc_regs[DESIRED_PERF]) &&
++	if (!cpc_is_writable(&cpc_ptr->cpc_regs[DESIRED_PERF]) &&
+ 	    (!osc_sb_cppc2_support_acked ||
+-	     !CPC_SUPPORTED(&cpc_ptr->cpc_regs[AUTO_SEL_ENABLE])))
+-		pr_warn("Desired perf. register is mandatory if CPPC v2 is not supported "
+-			"or autonomous selection is disabled\n");
++	     cpc_ptr->cpc_regs[AUTO_SEL_ENABLE].type != ACPI_TYPE_INTEGER ||
++	     cpc_ptr->cpc_regs[AUTO_SEL_ENABLE].cpc_entry.int_value != 1)) {
++		pr_debug("CPU:%d lacks a writable Desired Performance register\n",
++			 pr->id);
++		ret = -EINVAL;
++		goto out_free;
++	}
+ 
+ 	/*
+ 	 * Initialize the remaining cpc_regs as unsupported.
+@@ -1037,6 +1132,8 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	kfree(cpc_ptr);
+ 
+ out_buf_free:
++	if (cpc_present)
++		pr_err("CPU%d: failed to initialize _CPC: %d\n", pr->id, ret);
+ 	kfree(output.pointer);
+ 	return ret;
+ }
+@@ -1217,11 +1314,18 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+ 	u64 prev_val;
+ 	void __iomem *vaddr = NULL;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+-	struct cpc_reg *reg = &reg_res->cpc_entry.reg;
++	struct cpc_reg *reg;
+ 	struct cpc_desc *cpc_desc;
+ 	unsigned long flags;
+ 	bool locked = false;
+ 
++	if (reg_res->type != ACPI_TYPE_BUFFER)
++		return -EOPNOTSUPP;
++
++	reg = &reg_res->cpc_entry.reg;
++	if (IS_NULL_REG(reg))
++		return -EOPNOTSUPP;
++
+ 	size = GET_BIT_WIDTH(reg);
+ 
+ 	if (IS_ENABLED(CONFIG_HAS_IOPORT) &&
+@@ -1364,7 +1468,9 @@ static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
+ 
+ 	reg = &cpc_desc->cpc_regs[reg_idx];
+ 
+-	if ((reg->type == ACPI_TYPE_INTEGER && IS_OPTIONAL_CPC_REG(reg_idx) &&
++	/* Desired may be absent for immutable autonomous selection. */
++	if ((reg->type == ACPI_TYPE_INTEGER &&
++	     (IS_OPTIONAL_CPC_REG(reg_idx) || reg_idx == DESIRED_PERF) &&
+ 	     !reg->cpc_entry.int_value) || (reg->type != ACPI_TYPE_INTEGER &&
+ 	     IS_NULL_REG(&reg->cpc_entry.reg))) {
+ 		pr_debug("CPC register is not supported\n");
+@@ -1415,7 +1521,7 @@ static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
+ 	reg = &cpc_desc->cpc_regs[reg_idx];
+ 
+ 	/* if a register is writeable, it must be a buffer and not null */
+-	if ((reg->type != ACPI_TYPE_BUFFER) || IS_NULL_REG(&reg->cpc_entry.reg)) {
++	if (!cpc_is_writable(reg)) {
+ 		pr_debug("CPC register is not supported\n");
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -1505,7 +1611,7 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 	struct cpc_register_resource *highest_reg, *lowest_reg,
+ 		*lowest_non_linear_reg, *nominal_reg, *reference_reg,
+ 		*guaranteed_reg, *low_freq_reg = NULL, *nom_freq_reg = NULL;
+-	u64 high, low, guaranteed, nom, ref, min_nonlinear,
++	u64 high, low, guaranteed = 0, nom, ref, min_nonlinear,
+ 	    low_f = 0, nom_f = 0;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+ 	struct cppc_pcc_data *pcc_ss_data = NULL;
+@@ -1588,7 +1694,12 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		goto out_err;
+ 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
+ 
+-	if (!high || !low || !nom || !ref || !min_nonlinear) {
++	if (!high || !nom || !ref || !min_nonlinear ||
++	    high > U32_MAX || low > U32_MAX || guaranteed > U32_MAX ||
++	    nom > U32_MAX || ref > U32_MAX || min_nonlinear > U32_MAX ||
++	    high < nom || nom < min_nonlinear || min_nonlinear < low ||
++	    (CPC_SUPPORTED(guaranteed_reg) &&
++	     (guaranteed < low || guaranteed > nom))) {
+ 		ret = -EFAULT;
+ 		goto out_err;
+ 	}
+@@ -1605,6 +1716,19 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		if (ret)
+ 			goto out_err;
+ 	}
++	/*
++	 * Require ordered anchors and a nonzero slope when frequencies differ.
++	 * A zero Lowest Performance needs that affine mapping to produce a
++	 * nonzero physical minimum frequency.
++	 */
++	if (low_f > U32_MAX || nom_f > U32_MAX ||
++	    (!low && (!low_f || !nom_f || low_f == nom_f)) ||
++	    (low_f && nom_f &&
++	     (nom_f < low_f || nom < low ||
++	      (nom_f != low_f && nom == low)))) {
++		ret = -EFAULT;
++		goto out_err;
++	}
+ 
+ 	perf_caps->lowest_freq = low_f;
+ 	perf_caps->nominal_freq = nom_f;
+@@ -1779,6 +1903,9 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
+ 
+ 	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
+ 	epp_set_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
++	if (!enable && auto_sel_reg->type == ACPI_TYPE_INTEGER &&
++	    auto_sel_reg->cpc_entry.int_value == 1)
++		return -EOPNOTSUPP;
+ 
+ 	epp_ffh_sysmem = CPC_SUPPORTED(epp_set_reg) &&
+ 		(CPC_IN_FFH(epp_set_reg) || CPC_IN_SYSTEM_MEMORY(epp_set_reg));
+@@ -1791,13 +1918,13 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
+ 			return -ENODEV;
+ 		}
+ 
+-		if (CPC_SUPPORTED(auto_sel_reg)) {
++		if (cpc_is_writable(auto_sel_reg)) {
+ 			ret = cpc_write(cpu, auto_sel_reg, enable);
+ 			if (ret)
+ 				return ret;
+ 		}
+ 
+-		if (CPC_SUPPORTED(epp_set_reg)) {
++		if (cpc_is_writable(epp_set_reg)) {
+ 			ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
+ 			if (ret)
+ 				return ret;
+@@ -1996,6 +2123,8 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
+ 	energy_perf_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
+ 	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
++	perf_ctrls->max_perf_valid = false;
++	perf_ctrls->min_perf_valid = false;
+ 
+ 	/* Are any of the regs PCC ?*/
+ 	if (CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg) ||
+@@ -2020,6 +2149,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 		ret = cpc_read(cpu, max_perf_reg, &max);
+ 		if (ret)
+ 			goto out_err;
++		perf_ctrls->max_perf_valid = true;
+ 	}
+ 	perf_ctrls->max_perf = max;
+ 
+@@ -2027,6 +2157,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 		ret = cpc_read(cpu, min_perf_reg, &min);
+ 		if (ret)
+ 			goto out_err;
++		perf_ctrls->min_perf_valid = true;
+ 	}
+ 	perf_ctrls->min_perf = min;
+ 
+@@ -2113,14 +2244,11 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	if (CPC_SUPPORTED(desired_reg))
+ 		cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
+ 
+-	/*
+-	 * Only write if min_perf and max_perf not zero. Some drivers pass zero
+-	 * value to min and max perf, but they don't mean to set the zero value,
+-	 * they just don't want to write to those registers.
+-	 */
+-	if (perf_ctrls->min_perf && CPC_SUPPORTED(min_perf_reg))
++	if (CPC_SUPPORTED(min_perf_reg) &&
++	    (perf_ctrls->min_perf || perf_ctrls->min_perf_valid))
+ 		cpc_write(cpu, min_perf_reg, perf_ctrls->min_perf);
+-	if (perf_ctrls->max_perf && CPC_SUPPORTED(max_perf_reg))
++	if (CPC_SUPPORTED(max_perf_reg) &&
++	    (perf_ctrls->max_perf || perf_ctrls->max_perf_valid))
+ 		cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
+ 
+ 	if (regs_in_pcc)
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index d4ff8b228f86..63f0ca5f19b3 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -544,7 +544,13 @@ static int shmem_update_perf(struct cpufreq_policy *policy, u8 min_perf,
+ 			     u8 des_perf, u8 max_perf, u8 epp, bool fast_switch)
+ {
+ 	struct amd_cpudata *cpudata = policy->driver_data;
+-	struct cppc_perf_ctrls perf_ctrls;
++	struct cppc_perf_ctrls perf_ctrls = {
++		.max_perf = max_perf,
++		.min_perf = min_perf,
++		.desired_perf = des_perf,
++		.max_perf_valid = true,
++		.min_perf_valid = true,
++	};
+ 	u64 value, prev;
+ 	int ret;
+ 
+@@ -577,10 +583,6 @@ static int shmem_update_perf(struct cpufreq_policy *policy, u8 min_perf,
+ 	if (value == prev)
+ 		return 0;
+ 
+-	perf_ctrls.max_perf = max_perf;
+-	perf_ctrls.min_perf = min_perf;
+-	perf_ctrls.desired_perf = des_perf;
+-
+ 	ret = cppc_set_perf(cpudata->cpu, &perf_ctrls);
+ 	if (ret)
+ 		return ret;
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 94a6277edab2..5dcbe65c5ddc 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -141,6 +141,8 @@ struct cppc_perf_ctrls {
+ 	u32 desired_perf;
+ 	u32 energy_perf;
+ 	bool auto_sel;
++	bool max_perf_valid;
++	bool min_perf_valid;
+ };
+ 
+ struct cppc_perf_fb_ctrs {
 -- 
-2.43.0
+2.34.1
 
