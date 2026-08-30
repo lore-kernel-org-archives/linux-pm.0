@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 88FB93B19D0;
-	Sun, 30 Aug 2026 11:57:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3004B3B27F4;
+	Sun, 30 Aug 2026 11:57:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788091077; cv=none; b=swGP9ASwh8Opu96/f+3Fr7qtnW82N+5pPdchfe4H0jU8YmmySVxioUDriwqWyikOIxH4xa3EFzh3t0P/KpDBV/HZPdGAPud9yiGSZprDx6/ll6B057Ux/7XCe8oXl/tTdmoUOfvYxa7Bo9IDJW3YrJTpdF2rQa8Hw22jAs8c300=
+	t=1788091080; cv=none; b=odnzG7Kb84GlrhYD0nF1z8pEpBi4yphvJCybHfBP8tMHEeNsKP9JCA8VDpqpIEBAEnRdlunr7cplsk7dlM6Ik0kpPo27hDCRYapHYvm0EY9n6Fj2Uz6FYJh3XRs/LIB3GVAQUps+Lk25clMXysg/pwswYTC2jXG0x9bf0fwUrQI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788091077; c=relaxed/simple;
-	bh=7zZy5pzFyhXYIy4HaLNuOF5zwJqYKloHSGw24dMLwos=;
+	s=arc-20240116; t=1788091080; c=relaxed/simple;
+	bh=j1UYadZb861/gp5AVwLuSoi4N9D96AgvHAadYAp0dc4=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=q3NSqFcs5OAOv8MNeV04GqRDin/bn2MPL+hnsVarJ8ko31k71uDqHXqcWN12v20/9m8wW3RiMpmCVDbXRF6CSRScQ1i/mTmImwj71OAbznGmu4gaARBojA95aW4ABEvrvwLjoZBIfuU5xSF1+McCT8iMzsTzGTU+1YZpA1m4V/k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ZnHibw8k; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=gKCv6W3qG6kZGHfIAHA00g5HnO8rTncCgOASjrMxb2FgcByCkBUj8P67TTEbjDmdYXxdYJe22T5J5TamXdqSKlqfKcZCyHm1FoJ62m/e9SA6v4pPjST1jGN8NMSLS8qr78bK6fRQZUOX/LVbwEz6dw+P6vPpEba3GzUH1V6UmRg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=HJW0xUVo; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ZnHibw8k"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="HJW0xUVo"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3711F1477;
-	Sun, 30 Aug 2026 04:57:51 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C89C814BF;
+	Sun, 30 Aug 2026 04:57:53 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.5.212])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 857663F66F;
-	Sun, 30 Aug 2026 04:57:52 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5748D3F66F;
+	Sun, 30 Aug 2026 04:57:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788091075; bh=7zZy5pzFyhXYIy4HaLNuOF5zwJqYKloHSGw24dMLwos=;
+	t=1788091077; bh=j1UYadZb861/gp5AVwLuSoi4N9D96AgvHAadYAp0dc4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ZnHibw8kTHqLm5g3gUC4fu5B+bEKF452d8Vaa3JncHWXR+pWm4BAZ0Jiq681Rbgbe
-	 N9JTPu0yI+OC2t1ucDeTc/i8pP+t6fav3osbZPHfGMbTlf7Or0ghbrYdgs1OPuyWgw
-	 feESb3uuyziOWyCaY+GBGh9mcRD9n1pT2sd+HBBc=
+	b=HJW0xUVooJSjxnA7N0bVIqnzSnHR/o8idCx7bwha1W1gGlyt/gkcVOcRChL7Uc9oz
+	 +d2JmbgSh0Bo6SciPIOTwoIvP1p8bBIP9j3vPIgugN6mbZy8bsgeUzc3Zz/2NW1zOl
+	 ccagDFlrsl1BvleR+LPrAw62RYATmF2j8+iSaPoA=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -40,11 +40,10 @@ Cc: linux-pm@vger.kernel.org,
 	Sudeep Holla <sudeep.holla@arm.com>,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v6 10/15] ACPI: CPPC: Reject direct reads of write-only controls
-Date: Sun, 30 Aug 2026 12:56:39 +0100
-Message-Id: <20260830115644.2056983-11-christian.loehle@arm.com>
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH v6 11/15] ACPI: CPPC: Validate and access PCC register layouts
+Date: Sun, 30 Aug 2026 12:56:40 +0100
+Message-Id: <20260830115644.2056983-12-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260830115644.2056983-1-christian.loehle@arm.com>
 References: <20260830115644.2056983-1-christian.loehle@arm.com>
@@ -56,365 +55,509 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Between _CPC revision 3 and revision 4, Desired Performance changed from
-Read/Write to Write. Revision 4 also added the write-only OSPM Nominal
-Performance control. ACPI 6.6 section 4.6.3 says reads of write-only bit
-positions produce undefined results.
+PCC GAS Access Size identifies the subspace, so the accessors use Bit Width
+as the field size. Their typed readw/readl/readq operations require natural
+alignment and support only 8, 16, 32, or 64 bits. This rejects valid
+firmware: ACPI 6.6 shows a mandatory 32-bit Delivered Performance Counter
+at unaligned offset 0x116, while read-only fields may use byte-multiple
+widths such as 24 bits.
 
-The public Desired Performance helper already rejects revision-4 readback,
-but the common register accessor still permits either write-only control to
-be read. Reject both centrally so new callers cannot consume undefined
-values.
+Support zero-offset, byte-multiple fields up to 64 bits with byte-oriented
+I/O and explicit little-endian encoding. A short per-subspace raw spinlock
+serializes aliased payload copies performed concurrently under the shared
+side of pcc_lock. Read-only fields may retain byte widths through 64 bits.
+Keep writable fields restricted to the previously supported 8-, 16-, 32-,
+and 64-bit geometries until cross-processor overlap validation is installed
+later in the series. Most CPPC controls are limited to 32 bits, so reject a
+64-bit encoding for them. Retain 64-bit Performance Limited, CPPC Enable,
+and Autonomous Selection Enable fields, whose specified sizes have only
+lower bounds. Fields with a nonzero bit offset or non-byte width still need
+unsupported RMW semantics and are rejected or disabled.
 
-A partial SystemMemory field still makes cpc_write() read its complete
-access unit to preserve bits outside the field. MASK_VAL_WRITE() replaces
-every bit of the field being written, so that field's undefined readback is
-not propagated. However, another writer sharing the access unit would
-preserve and replay the write-only field when performing its own RMW.
-Reject such pairs; a partial write-only field may share its access unit
-only with disjoint read-only fields. The descriptor lock serializes
-supported RMW, and the preceding validation rejects unsafe cross-descriptor
-partial writers.
+Order completion status before consuming returned payload bytes, and
+publish every byte-oriented payload store before another CPU can ring the
+doorbell. This preserves the PCC status/payload ordering despite relaxed
+MMIO and the short payload lock.
 
-Keep an invalid but locatable write-only SystemMemory descriptor
-represented during overlap validation, but mark it unreadable and
-unwritable. Otherwise a neighbouring RMW field could evade validation and
-replay undefined readback into the hidden control. Conservatively claim the
-larger of the declared access unit and logical field span. Check if the
-writer access unit covers the write-only field so harmless asymmetric
-geometries are not rejected. Preserve a decoded access-unit claim even when
-the malformed Bit Width is zero, and use that claimed range when testing
-whether another writer's access overlaps the hidden field.
+Defer the unsupported-field decision until the entire package is known. A
+provided but inaccessible CPPC Enable control fails probe because OSPM must
+write it before using CPPC. An inaccessible Desired control can be ignored
+only for immutable autonomous operation. If both Minimum and Maximum
+controls are inaccessible, disable the pair coherently; a one-sided
+inaccessible bound fails probe. The post-sanitization check enforces the
+specification requirement that both controls exist or neither does. Other
+inaccessible optional controls are marked absent; mandatory controls fail.
 
-A retained range-only descriptor cannot issue a transaction over that whole
-conservative claim. Keep the full-width ownership rule for accessible
-descriptors, but reject a full-width writer against a range-only descriptor
-only when its access covers the hidden logical field. Likewise, count only
-accessible descriptors as writers in the generic writer-conflict rules;
-the dedicated write-only-field check still protects a retained descriptor
-from an accessible writer's RMW.
+Keep the eventual probe result negative while temporary validation helpers
+succeed. This prevents a later malformed entry, unsupported address space,
+or mapping failure from freeing the descriptor and nevertheless returning
+success.
 
-Mark an inaccessible OSPM Nominal Performance control unsupported because
-it is optional. Do the same for inaccessible Desired Performance while
-parsing, then let the post-parse control check accept it only for immutable
-autonomous selection. This preserves the autonomous-only exception without
-accepting an unusable Desired control in non-autonomous mode.
+Apply the same control-specific policy to unsupported SystemMemory
+geometry. Once the PCC channel is available, verify every retained field
+fits after the eight-byte header and within shared memory, and reject
+overlapping logical ranges when either is writable.
 
-Do not advertise fast switching or zero transition latency unless Desired
-Performance remains writable. An inaccessible descriptor retained only for
-overlap validation still carries its original address-space identity, but
-cannot service a performance request.
+This deliberately does not implement bit-level PCC RMW. In particular, the
+one-bit CPPC Enable field in the specification example now produces an
+explicit probe failure instead of being silently treated as absent.
 
-Fixes: 71e1815113f7 ("ACPI: CPPC: Add support for CPPC v4")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
-Link: https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
+Fixes: 85b1407bf6d2 ("ACPI / CPPC: Make CPPC ACPI driver aware of PCC subspace IDs")
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 153 +++++++++++++++++++++++++++++++++++----
- include/acpi/cppc_acpi.h |   2 +
- 2 files changed, 141 insertions(+), 14 deletions(-)
+ drivers/acpi/cppc_acpi.c | 320 +++++++++++++++++++++++++++++++++------
+ 1 file changed, 275 insertions(+), 45 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 058f4c71d981..bb83b5c9ab31 100644
+index bb83b5c9ab31..d81ac477d184 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -171,7 +171,14 @@ static struct cpc_sysmem_node *cpc_sysmem_next(struct cpc_sysmem_node *node,
- static bool cpc_is_writable(const struct cpc_register_resource *cpc)
- {
- 	return cpc->type == ACPI_TYPE_BUFFER &&
--	       !IS_NULL_REG(&cpc->cpc_entry.reg);
-+	       !IS_NULL_REG(&cpc->cpc_entry.reg) &&
-+	       !cpc->cpc_entry.write_unsupported;
-+}
-+
-+static bool cpc_is_readable(const struct cpc_register_resource *cpc)
-+{
-+	return cpc->type != ACPI_TYPE_BUFFER ||
-+	       !cpc->cpc_entry.read_unsupported;
+@@ -74,6 +74,8 @@ struct cppc_pcc_data {
+ 	 *	Take write_lock for all purposes which gives exclusive access
+ 	 */
+ 	struct rw_semaphore pcc_lock;
++	/* Serialize byte-oriented accesses to aliased PCC payload fields. */
++	raw_spinlock_t payload_lock;
+ 
+ 	/* Wait queue for CPUs whose requests were batched */
+ 	wait_queue_head_t pcc_write_wait_q;
+@@ -132,9 +134,11 @@ static struct cpc_sysmem_node *cpc_sysmem_next(struct cpc_sysmem_node *node,
+ 	return cpc_sysmem_itree_iter_next(node, start, last);
  }
  
- static bool cpc_entry_present(const struct cpc_register_resource *cpc)
-@@ -313,6 +320,22 @@ static u64 cpc_sysmem_access_size(const struct cpc_register_resource *reg)
- 	return width / 8;
++#define CPC_PCC_HEADER_SIZE	0x8
++
+ /* pcc mapped address + header size + offset within PCC subspace */
+ #define GET_PCC_VADDR(offs, pcc_ss_id) (pcc_data[pcc_ss_id]->pcc_channel->shmem + \
+-						0x8 + (offs))
++						CPC_PCC_HEADER_SIZE + (offs))
+ 
+ /* Check if a CPC register is in PCC */
+ #define CPC_IN_PCC(cpc) ((cpc)->type == ACPI_TYPE_BUFFER &&		\
+@@ -448,6 +452,184 @@ static int cpc_validate_sysmem_reg(struct cpc_desc *cpc_desc,
+ 	return -EINVAL;
  }
  
-+static u64 cpc_sysmem_field_size(const struct cpc_reg *gas)
++static bool cpc_immutable_autonomous(const struct cpc_desc *cpc_desc)
 +{
-+	return DIV_ROUND_UP((u64)gas->bit_offset + gas->bit_width, 8);
++	const struct cpc_register_resource *reg;
++
++	reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
++	return osc_sb_cppc2_support_acked && reg->type == ACPI_TYPE_INTEGER &&
++	       reg->cpc_entry.int_value == 1;
 +}
 +
-+static u64 cpc_sysmem_claim_size(const struct cpc_register_resource *reg)
++static int cpc_resolve_unsupported(struct cpc_desc *cpc_desc,
++				   u32 unsupported)
 +{
-+	const struct cpc_reg *gas = &reg->cpc_entry.reg;
-+	u64 access_size = cpc_sysmem_access_size(reg);
++	unsigned int i;
++	u32 bounds = BIT(MIN_PERF) | BIT(MAX_PERF);
++	bool min_unusable, max_unusable;
 +
-+	if (!gas->bit_width)
-+		return access_size;
-+
-+	return max(access_size, cpc_sysmem_field_size(gas));
-+}
-+
- static bool cpc_reg_access_aligned(const struct cpc_reg *reg, u64 access_size)
- {
- 	/* x86 MMIO and port-I/O accessors support unaligned addresses. */
-@@ -324,8 +347,8 @@ static bool cpc_sysmem_access_units_overlap(const struct cpc_register_resource *
- {
- 	const struct cpc_reg *a_gas = &a->cpc_entry.reg;
- 	const struct cpc_reg *b_gas = &b->cpc_entry.reg;
--	u64 a_size = cpc_sysmem_access_size(a);
--	u64 b_size = cpc_sysmem_access_size(b);
-+	u64 a_size = cpc_sysmem_claim_size(a);
-+	u64 b_size = cpc_sysmem_claim_size(b);
- 
- 	/* Keep the conservative locking path for malformed access widths. */
- 	if (!a_size || !b_size)
-@@ -355,6 +378,21 @@ static bool cpc_reg_is_writable(unsigned int reg_idx)
- 	}
- }
- 
-+static bool cpc_reg_is_write_only(const struct cpc_desc *cpc_desc,
-+				  unsigned int reg_idx)
-+{
-+	return cpc_desc->version >= CPPC_V4_REV &&
-+	       (reg_idx == DESIRED_PERF || reg_idx == OSPM_NOMINAL_PERF);
-+}
-+
-+static void cpc_disable_reg(struct cpc_desc *cpc_desc, unsigned int reg_idx)
-+{
-+	struct cpc_register_resource *reg = &cpc_desc->cpc_regs[reg_idx];
-+
-+	reg->type = ACPI_TYPE_INTEGER;
-+	reg->cpc_entry.int_value = 0;
-+}
-+
- static bool cpc_sysmem_reg_needs_rmw(const struct cpc_register_resource *reg)
- {
- 	const struct cpc_reg *gas = &reg->cpc_entry.reg;
-@@ -363,7 +401,7 @@ static bool cpc_sysmem_reg_needs_rmw(const struct cpc_register_resource *reg)
- 	return gas->bit_offset || gas->bit_width != access_size * 8;
- }
- 
--static int cpc_validate_sysmem_reg(const struct cpc_desc *cpc_desc,
-+static int cpc_validate_sysmem_reg(struct cpc_desc *cpc_desc,
- 				   const struct cpc_reg *gas,
- 				   unsigned int reg_idx)
- {
-@@ -388,6 +426,23 @@ static int cpc_validate_sysmem_reg(const struct cpc_desc *cpc_desc,
- 	return 0;
- 
- invalid:
-+	access_size = 0;
-+	if (access_width == 8 || access_width == 16 ||
-+	    access_width == 32 || access_width == 64)
-+		access_size = access_width / 8;
-+	if (gas->bit_width)
-+		access_size = max(access_size, cpc_sysmem_field_size(gas));
-+	if (cpc_reg_is_write_only(cpc_desc, reg_idx) && gas->address &&
-+	    access_size && gas->address <= U64_MAX - (access_size - 1)) {
-+		struct cpc_register_resource *reg = &cpc_desc->cpc_regs[reg_idx];
-+
-+		pr_warn("CPU%d: _CPC v%d register %u is inaccessible; keeping its range reserved\n",
-+			cpc_desc->cpu_id, cpc_desc->version, reg_idx);
-+		reg->cpc_entry.read_unsupported = true;
-+		reg->cpc_entry.write_unsupported = true;
-+		return 0;
++	if (unsupported & bounds) {
++		min_unusable = (unsupported & BIT(MIN_PERF)) ||
++			       !cpc_is_writable(&cpc_desc->cpc_regs[MIN_PERF]);
++		max_unusable = (unsupported & BIT(MAX_PERF)) ||
++			       !cpc_is_writable(&cpc_desc->cpc_regs[MAX_PERF]);
++		if (min_unusable && max_unusable) {
++			pr_warn("CPU%d: ignoring inaccessible Minimum and Maximum Performance registers\n",
++				cpc_desc->cpu_id);
++			cpc_disable_reg(cpc_desc, MIN_PERF);
++			cpc_disable_reg(cpc_desc, MAX_PERF);
++			unsupported &= ~bounds;
++		}
 +	}
 +
- 	pr_debug("CPU:%d invalid SystemMemory GAS for _CPC register %u\n",
- 		 cpc_desc->cpu_id, reg_idx);
- 	return -EINVAL;
-@@ -445,6 +500,39 @@ static bool cpc_sysmem_fields_overlap(const struct cpc_register_resource *a,
- 	       !cpc_bit_position_before(&b_end, &a_start);
- }
- 
-+static bool cpc_sysmem_access_overlaps_field(const struct cpc_register_resource *access,
-+					     const struct cpc_register_resource *field)
-+{
-+	const struct cpc_reg *access_gas = &access->cpc_entry.reg;
-+	const struct cpc_reg *field_gas = &field->cpc_entry.reg;
-+	u64 access_last;
-+	u64 field_start;
-+	u64 field_last;
++	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
++		if (!(unsupported & BIT(i)))
++			continue;
 +
-+	if (!field_gas->bit_width)
-+		return cpc_sysmem_access_units_overlap(access, field);
++		if (i == DESIRED_PERF && cpc_immutable_autonomous(cpc_desc)) {
++			pr_warn("CPU%d: ignoring inaccessible Desired Performance register in autonomous mode\n",
++				cpc_desc->cpu_id);
++			cpc_disable_reg(cpc_desc, i);
++			continue;
++		}
 +
-+	access_last = access_gas->address +
-+		      cpc_sysmem_access_size(access) - 1;
-+	field_start = field_gas->address + field_gas->bit_offset / 8;
-+	field_last = field_gas->address +
-+		     (field_gas->bit_offset + field_gas->bit_width - 1) / 8;
++		/* A present Enable control must be usable to enter CPPC mode. */
++		if (i == ENABLE || i == MIN_PERF || i == MAX_PERF ||
++		    !IS_OPTIONAL_CPC_REG(i)) {
++			pr_err("CPU%d: cannot access _CPC register %u\n",
++			       cpc_desc->cpu_id, i);
++			return -EINVAL;
++		}
 +
-+	return access_gas->address <= field_last && field_start <= access_last;
++		pr_warn("CPU%d: ignoring inaccessible optional _CPC register %u\n",
++			cpc_desc->cpu_id, i);
++		cpc_disable_reg(cpc_desc, i);
++	}
++
++	return 0;
 +}
 +
-+static bool cpc_sysmem_full_width_conflicts(const struct cpc_register_resource *writer,
-+					    const struct cpc_register_resource *other)
++static int cpc_validate_required_controls(struct cpc_desc *cpc_desc)
 +{
++	bool have_min, have_max;
++	unsigned int i;
++
 +	/*
-+	 * An accessible descriptor may issue a transaction over its complete
-+	 * access unit.  A retained range-only descriptor cannot; protect only
-+	 * its logical field from the full-width writer.
++	 * Performance Limited is required by the specification, but tolerate a
++	 * NULL descriptor used by firmware which cannot report limiting events.
++	 * CPPC control does not depend on this status.
 +	 */
-+	return cpc_is_readable(other) || cpc_is_writable(other) ||
-+	       cpc_sysmem_access_overlaps_field(writer, other);
++	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
++		if (i != DESIRED_PERF && i != PERF_LIMITED &&
++		    !IS_OPTIONAL_CPC_REG(i) &&
++		    !cpc_entry_present(&cpc_desc->cpc_regs[i])) {
++			pr_debug("CPU:%d lacks mandatory _CPC register %u\n",
++				 cpc_desc->cpu_id, i);
++			return -EINVAL;
++		}
++	}
++
++	/* Desired may be absent only for immutable autonomous operation. */
++	if (!cpc_is_writable(&cpc_desc->cpc_regs[DESIRED_PERF]) &&
++	    !cpc_immutable_autonomous(cpc_desc)) {
++		pr_debug("CPU:%d lacks a writable Desired Performance register\n",
++			 cpc_desc->cpu_id);
++		return -EINVAL;
++	}
++
++	have_min = cpc_is_writable(&cpc_desc->cpc_regs[MIN_PERF]);
++	have_max = cpc_is_writable(&cpc_desc->cpc_regs[MAX_PERF]);
++	if (have_min != have_max) {
++		pr_err("CPU%d: _CPC must provide both Minimum and Maximum Performance or neither\n",
++		       cpc_desc->cpu_id);
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 +
- static bool cpc_same_sysmem_register(unsigned int a_idx,
- 				     const struct cpc_register_resource *a,
- 				     unsigned int b_idx,
-@@ -474,8 +562,8 @@ static int cpc_validate_sysmem_pair(const struct cpc_desc *a_desc,
- 	    !cpc_sysmem_access_units_overlap(a, b))
- 		return 0;
++static void cpc_validate_pcc_bounds(struct cpc_desc *cpc_desc,
++				    struct cppc_pcc_data *data,
++				    u32 *unsupported)
++{
++	u64 shmem_size = data->pcc_channel->shmem_size;
++	unsigned int i;
++
++	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
++		struct cpc_register_resource *reg = &cpc_desc->cpc_regs[i];
++		struct cpc_reg *gas;
++		u64 access_size;
++
++		if ((*unsupported & BIT(i)) || !CPC_SUPPORTED(reg) ||
++		    !CPC_IN_PCC(reg))
++			continue;
++
++		gas = &reg->cpc_entry.reg;
++		access_size = gas->bit_width / 8;
++		if (shmem_size >= CPC_PCC_HEADER_SIZE &&
++		    gas->address <= shmem_size - CPC_PCC_HEADER_SIZE &&
++		    access_size <= shmem_size - CPC_PCC_HEADER_SIZE - gas->address)
++			continue;
++
++		pr_debug("CPU%d: _CPC register %u exceeds the PCC shared region\n",
++			 cpc_desc->cpu_id, i);
++		*unsupported |= BIT(i);
++	}
++}
++
++static u64 cpc_non_mmio_access_size(const struct cpc_register_resource *reg)
++{
++	const struct cpc_reg *gas = &reg->cpc_entry.reg;
++
++	if (gas->space_id == ACPI_ADR_SPACE_PLATFORM_COMM)
++		return gas->bit_width / 8;
++
++	return cpc_reg_access_width(gas) / 8;
++}
++
++static int cpc_validate_non_mmio_overlaps(struct cpc_desc *cpc_desc,
++					  u8 space_id, const char *name)
++{
++	unsigned int i, j;
++
++	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
++		struct cpc_register_resource *a = &cpc_desc->cpc_regs[i];
++		const struct cpc_reg *a_gas;
++		u64 a_size;
++
++		if (!CPC_SUPPORTED(a) || a->type != ACPI_TYPE_BUFFER ||
++		    a->cpc_entry.reg.space_id != space_id)
++			continue;
++
++		a_gas = &a->cpc_entry.reg;
++		a_size = cpc_non_mmio_access_size(a);
++		for (j = i + 1; j < cpc_desc->num_entries - 2; j++) {
++			struct cpc_register_resource *b = &cpc_desc->cpc_regs[j];
++			const struct cpc_reg *b_gas;
++			u64 b_size;
++
++			if (!CPC_SUPPORTED(b) || b->type != ACPI_TYPE_BUFFER ||
++			    b->cpc_entry.reg.space_id != space_id)
++				continue;
++
++			b_gas = &b->cpc_entry.reg;
++			b_size = cpc_non_mmio_access_size(b);
++			if (!cpc_reg_is_writable(i) && !cpc_reg_is_writable(j))
++				continue;
++			if (a_gas->address < b_gas->address ?
++			    b_gas->address - a_gas->address >= a_size :
++			    a_gas->address - b_gas->address >= b_size)
++				continue;
++
++			pr_err("CPU%d: overlapping writable %s _CPC registers %u and %u\n",
++			       cpc_desc->cpu_id, name, i, j);
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
+ static void cpc_mark_rmw_lock_users(struct cpc_desc *cpc_desc)
+ {
+ 	int i;
+@@ -819,6 +1001,8 @@ static int check_pcc_chan(int pcc_ss_id, bool chk_err_bit)
+ 					pcc_ss_data->deadline_us);
  
--	a_writable = cpc_reg_is_writable(a_idx);
--	b_writable = cpc_reg_is_writable(b_idx);
-+	a_writable = cpc_reg_is_writable(a_idx) && cpc_is_writable(a);
-+	b_writable = cpc_reg_is_writable(b_idx) && cpc_is_writable(b);
- 	if (!a_writable && !b_writable)
- 		return 0;
- 
-@@ -498,8 +586,10 @@ static int cpc_validate_sysmem_pair(const struct cpc_desc *a_desc,
+ 	if (likely(!ret)) {
++		/* Order completion status before reading the returned payload. */
++		rmb();
+ 		pcc_ss_data->platform_owns_pcc = false;
+ 		if (chk_err_bit && (status & PCC_ERROR_MASK))
+ 			ret = -EIO;
+@@ -1260,6 +1444,7 @@ static int pcc_data_alloc(int pcc_ss_id)
+ 			ret = -ENOMEM;
+ 			goto out_unlock;
+ 		}
++		raw_spin_lock_init(&data->payload_lock);
+ 		pcc_data[pcc_ss_id] = data;
  	}
+ 	data->refcount++;
+@@ -1335,11 +1520,12 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	struct device *cpu_dev;
+ 	acpi_handle handle = pr->handle;
+ 	unsigned int num_ent, i, cpc_rev;
++	u32 unsupported_regs = 0;
+ 	int pcc_subspace_id = -1;
+ 	bool pcc_data_ref = false;
+ 	bool cpc_present = false;
+ 	acpi_status status;
+-	int ret = -ENODATA;
++	int ret = -EINVAL;
+ 	int err;
  
- 	/* A full-width writable register owns its complete access unit. */
--	if ((a_writable && !cpc_sysmem_reg_needs_rmw(a)) ||
--	    (b_writable && !cpc_sysmem_reg_needs_rmw(b)) ||
-+	if ((a_writable && !cpc_sysmem_reg_needs_rmw(a) &&
-+	     cpc_sysmem_full_width_conflicts(a, b)) ||
-+	    (b_writable && !cpc_sysmem_reg_needs_rmw(b) &&
-+	     cpc_sysmem_full_width_conflicts(b, a)) ||
- 	    (a_writable && b_writable && cpc_sysmem_fields_overlap(a, b)))
- 		goto conflict;
- 
-@@ -507,6 +597,18 @@ static int cpc_validate_sysmem_pair(const struct cpc_desc *a_desc,
- 	if (a_desc != b_desc && a_writable && b_writable)
- 		goto conflict;
- 
-+	/*
-+	 * RMW of either writer preserves the other field.  If that field is
-+	 * write-only, its readback is undefined and cannot safely be replayed.
-+	 */
-+	if ((cpc_reg_is_write_only(a_desc, a_idx) && b_writable &&
-+	     cpc_sysmem_reg_needs_rmw(b) &&
-+	     cpc_sysmem_access_overlaps_field(b, a)) ||
-+	    (cpc_reg_is_write_only(b_desc, b_idx) && a_writable &&
-+	     cpc_sysmem_reg_needs_rmw(a) &&
-+	     cpc_sysmem_access_overlaps_field(a, b)))
-+		goto conflict;
+ 	if (per_cpu(cpc_desc_ptr, pr->id))
+@@ -1483,6 +1669,24 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 			 * so extract it only once.
+ 			 */
+ 			if (gas_t->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
++				/* These registers have no specified 32-bit upper bound. */
++				bool wide_write = i - 2 == PERF_LIMITED ||
++						  i - 2 == ENABLE ||
++						  i - 2 == AUTO_SEL_ENABLE;
++				bool write_width_supported = gas_t->bit_width == 8 ||
++						     gas_t->bit_width == 16 ||
++						     gas_t->bit_width == 32 ||
++						     gas_t->bit_width == 64;
 +
- 	return 0;
- 
- conflict:
-@@ -589,7 +691,7 @@ static int cpc_register_sysmem_desc(struct cpc_desc *cpc_desc)
- 			continue;
- 
- 		node = &cpc_desc->sysmem_nodes[i];
--		size = cpc_sysmem_access_size(reg);
-+		size = cpc_sysmem_claim_size(reg);
- 		node->start = reg->cpc_entry.reg.address;
- 		node->last = node->start + size - 1;
- 		node->desc = cpc_desc;
-@@ -970,7 +1072,7 @@ bool cppc_allow_fast_switch(const struct cpumask *cpus)
- 		min_reg = &cpc_ptr->cpc_regs[MIN_PERF];
- 		max_reg = &cpc_ptr->cpc_regs[MAX_PERF];
- 
--		if (!CPC_SUPPORTED(desired_reg) ||
-+		if (!cpc_is_writable(desired_reg) ||
- 		    (!CPC_IN_SYSTEM_MEMORY(desired_reg) &&
- 		     !CPC_IN_SYSTEM_IO(desired_reg)) ||
- 		    (CPC_SUPPORTED(min_reg) &&
-@@ -1370,6 +1472,10 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 				goto out_free;
- 			}
- 
-+			cpc_ptr->cpc_regs[i - 2].type = ACPI_TYPE_BUFFER;
-+			memcpy(&cpc_ptr->cpc_regs[i - 2].cpc_entry.reg, gas_t,
-+			       sizeof(*gas_t));
++				if (!gas_t->bit_width || gas_t->bit_width > 64 ||
++				    gas_t->bit_offset || gas_t->bit_width % 8 ||
++				    (cpc_reg_is_writable(i - 2) &&
++				     (!write_width_supported ||
++				      (!wide_write && gas_t->bit_width > 32)))) {
++					unsupported_regs |= BIT(i - 2);
++					continue;
++				}
 +
- 			/*
- 			 * The PCC Subspace index is encoded inside
- 			 * the CPC table entries. The same PCC index
-@@ -1396,10 +1502,24 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 					size_t access_width;
- 
- 					err = cpc_validate_sysmem_reg(cpc_ptr, gas_t, i - 2);
-+					if (err && (i - 2 == DESIRED_PERF ||
-+						    i - 2 == OSPM_NOMINAL_PERF)) {
-+						const char *name = i - 2 == DESIRED_PERF ?
-+								   "Desired Performance" :
-+								   "OSPM Nominal Performance";
-+
-+						pr_warn("CPU%d: disabling inaccessible %s register\n",
-+							pr->id, name);
-+						cpc_disable_reg(cpc_ptr, i - 2);
-+						continue;
-+					}
- 					if (err) {
- 						ret = err;
- 						goto out_free;
- 					}
-+					if (!cpc_is_readable(&cpc_ptr->cpc_regs[i - 2]) &&
-+					    !cpc_is_writable(&cpc_ptr->cpc_regs[i - 2]))
-+						continue;
- 
- 					if (!osc_cpc_flexible_adr_space_confirmed) {
- 						pr_debug("Flexible address space capability not supported\n");
-@@ -1451,10 +1571,6 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 				if (pcc_subspace_id < 0) {
+ 					pcc_subspace_id = gas_t->access_width;
+ 					err = pcc_data_alloc(pcc_subspace_id);
+@@ -1494,6 +1698,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 				} else if (pcc_subspace_id != gas_t->access_width) {
+ 					pr_debug("Mismatched PCC ids in _CPC for CPU:%d\n",
+ 						 pr->id);
++					ret = -EINVAL;
  					goto out_free;
  				}
- 			}
+ 			} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
+@@ -1501,21 +1706,11 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 					void __iomem *addr;
+ 					size_t access_width;
+ 
+-					err = cpc_validate_sysmem_reg(cpc_ptr, gas_t, i - 2);
+-					if (err && (i - 2 == DESIRED_PERF ||
+-						    i - 2 == OSPM_NOMINAL_PERF)) {
+-						const char *name = i - 2 == DESIRED_PERF ?
+-								   "Desired Performance" :
+-								   "OSPM Nominal Performance";
 -
--			cpc_ptr->cpc_regs[i - 2].type = ACPI_TYPE_BUFFER;
--			memcpy(&cpc_ptr->cpc_regs[i - 2].cpc_entry.reg, gas_t,
--			       sizeof(*gas_t));
- 		} else if (cpc_obj->type == ACPI_TYPE_PACKAGE && (i - 2) == RESOURCE_PRIORITY) {
- 			/*
- 			 * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priority as a
-@@ -1794,6 +1910,10 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+-						pr_warn("CPU%d: disabling inaccessible %s register\n",
+-							pr->id, name);
+-						cpc_disable_reg(cpc_ptr, i - 2);
+-						continue;
+-					}
++					err = cpc_validate_sysmem_reg(cpc_ptr, gas_t,
++								      i - 2);
+ 					if (err) {
+-						ret = err;
+-						goto out_free;
++						unsupported_regs |= BIT(i - 2);
++						continue;
+ 					}
+ 					if (!cpc_is_readable(&cpc_ptr->cpc_regs[i - 2]) &&
+ 					    !cpc_is_writable(&cpc_ptr->cpc_regs[i - 2]))
+@@ -1589,35 +1784,14 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	}
+ 	per_cpu(cpu_pcc_subspace_idx, pr->id) = pcc_subspace_id;
+ 
+-	/*
+-	 * Performance Limited is required by the specification, but tolerate a
+-	 * NULL descriptor used by firmware which cannot report limiting events.
+-	 * CPPC control does not depend on this status.
+-	 */
+-	for (i = 0; i < num_ent - 2; i++) {
+-		if (i != DESIRED_PERF && i != PERF_LIMITED &&
+-		    !IS_OPTIONAL_CPC_REG(i) &&
+-		    !cpc_entry_present(&cpc_ptr->cpc_regs[i])) {
+-			pr_debug("CPU:%d lacks mandatory _CPC register %u\n",
+-				 pr->id, i);
+-			ret = -EINVAL;
+-			goto out_free;
+-		}
+-	}
++	ret = cpc_resolve_unsupported(cpc_ptr, unsupported_regs);
++	if (ret)
++		goto out_free;
++	unsupported_regs = 0;
+ 
+-	/*
+-	 * In CPPC v1, DESIRED_PERF is mandatory. In CPPC v2, it is optional
+-	 * only when AUTO_SEL_ENABLE is supported.
+-	 */
+-	if (!cpc_is_writable(&cpc_ptr->cpc_regs[DESIRED_PERF]) &&
+-	    (!osc_sb_cppc2_support_acked ||
+-	     cpc_ptr->cpc_regs[AUTO_SEL_ENABLE].type != ACPI_TYPE_INTEGER ||
+-	     cpc_ptr->cpc_regs[AUTO_SEL_ENABLE].cpc_entry.int_value != 1)) {
+-		pr_debug("CPU:%d lacks a writable Desired Performance register\n",
+-			 pr->id);
+-		ret = -EINVAL;
++	ret = cpc_validate_required_controls(cpc_ptr);
++	if (ret)
+ 		goto out_free;
+-	}
+ 
+ 	/*
+ 	 * Initialize the remaining cpc_regs as unsupported.
+@@ -1648,6 +1822,24 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 		if (ret)
+ 			goto out_free;
+ 	}
++	if (pcc_subspace_id >= 0) {
++		cpc_validate_pcc_bounds(cpc_ptr, pcc_data[pcc_subspace_id],
++					&unsupported_regs);
++
++		ret = cpc_resolve_unsupported(cpc_ptr, unsupported_regs);
++		if (ret)
++			goto out_free;
++	}
++
++	ret = cpc_validate_non_mmio_overlaps(cpc_ptr,
++					     ACPI_ADR_SPACE_PLATFORM_COMM,
++					     "PCC");
++	if (ret)
++		goto out_free;
++
++	ret = cpc_validate_required_controls(cpc_ptr);
++	if (ret)
++		goto out_free;
+ 
+ 	/* Everything looks okay */
+ 	pr_debug("Parsed CPC struct for CPU: %d\n", pr->id);
+@@ -1774,6 +1966,9 @@ int __weak cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
+ static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
+ {
+ 	void __iomem *vaddr = NULL;
++	unsigned long flags;
++	u8 buf[sizeof(*val)];
++	unsigned int i;
+ 	int size;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+ 	struct cpc_reg *reg = &reg_res->cpc_entry.reg;
+@@ -1801,13 +1996,29 @@ static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
+ 
+ 		*val = val_u32;
+ 		return 0;
+-	} else if (reg->space_id == ACPI_ADR_SPACE_PLATFORM_COMM && pcc_ss_id >= 0) {
++	} else if (reg->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
++		if (pcc_ss_id < 0 || !pcc_data[pcc_ss_id])
++			return -ENODEV;
++
+ 		/*
+ 		 * For registers in PCC space, the register size is determined
+ 		 * by the bit width field; the access size is used to indicate
+ 		 * the PCC subspace id.
+ 		 */
+ 		vaddr = GET_PCC_VADDR(reg->address, pcc_ss_id);
++		size = reg->bit_width / 8;
++		if (!size || size > sizeof(buf) || reg->bit_width % 8)
++			return -EFAULT;
++
++		raw_spin_lock_irqsave(&pcc_data[pcc_ss_id]->payload_lock, flags);
++		memcpy_fromio(buf, vaddr, size);
++		raw_spin_unlock_irqrestore(&pcc_data[pcc_ss_id]->payload_lock,
++					   flags);
++
++		*val = 0;
++		for (i = 0; i < size; i++)
++			*val |= (u64)buf[i] << (i * 8);
++		return 0;
+ 	}
+ 	else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
+ 		vaddr = reg_res->sys_mem_vaddr;
+@@ -1857,6 +2068,8 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+ 	struct cpc_reg *reg;
+ 	struct cpc_desc *cpc_desc;
+ 	unsigned long flags;
++	u8 buf[sizeof(val)];
++	unsigned int i;
+ 	bool locked = false;
+ 
+ 	if (reg_res->type != ACPI_TYPE_BUFFER)
+@@ -1881,13 +2094,30 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
  		}
  
- 		if (reg->bit_offset || reg->bit_width != size) {
-+			/*
-+			 * MASK_VAL_WRITE() discards the field's old bits, so undefined
-+			 * readback from a write-only field is not propagated.
-+			 */
- 			switch (size) {
- 			case 8:
- 				prev_val = readb_relaxed(vaddr);
-@@ -1885,6 +2005,8 @@ static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
- 		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
- 		return -ENODEV;
- 	}
-+	if (cpc_reg_is_write_only(cpc_desc, reg_idx))
-+		return -EOPNOTSUPP;
- 
- 	reg = &cpc_desc->cpc_regs[reg_idx];
- 
-@@ -2975,6 +3097,9 @@ int cppc_get_transition_latency(int cpu_num)
- 		return -ENODATA;
- 
- 	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
-+	if (!cpc_is_writable(desired_reg))
-+		return -ENODATA;
-+
- 	if (CPC_IN_SYSTEM_MEMORY(desired_reg) || CPC_IN_SYSTEM_IO(desired_reg))
  		return 0;
- 
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 168e3143e6ae..4e5f59bc95f8 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -72,6 +72,8 @@ struct cpc_register_resource {
- 		struct {
- 			struct cpc_reg reg;
- 			bool use_rmw_lock;
-+			bool read_unsupported;
-+			bool write_unsupported;
- 		};
- 		u64 int_value;
- 	} cpc_entry;
+-	} else if (reg->space_id == ACPI_ADR_SPACE_PLATFORM_COMM && pcc_ss_id >= 0) {
++	} else if (reg->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
++		if (pcc_ss_id < 0 || !pcc_data[pcc_ss_id])
++			return -ENODEV;
++
+ 		/*
+ 		 * For registers in PCC space, the register size is determined
+ 		 * by the bit width field; the access size is used to indicate
+ 		 * the PCC subspace id.
+ 		 */
+ 		vaddr = GET_PCC_VADDR(reg->address, pcc_ss_id);
++		size = reg->bit_width / 8;
++		if (!size || size > sizeof(buf) || reg->bit_width % 8)
++			return -EFAULT;
++
++		for (i = 0; i < size; i++)
++			buf[i] = val >> (i * 8);
++
++		raw_spin_lock_irqsave(&pcc_data[pcc_ss_id]->payload_lock, flags);
++		memcpy_toio(vaddr, buf, size);
++		/* Publish every payload byte before another CPU can ring the doorbell. */
++		wmb();
++		raw_spin_unlock_irqrestore(&pcc_data[pcc_ss_id]->payload_lock,
++					   flags);
++		return 0;
+ 	}
+ 	else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
+ 		vaddr = reg_res->sys_mem_vaddr;
 -- 
 2.34.1
 
