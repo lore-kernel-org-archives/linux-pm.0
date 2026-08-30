@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6C2033AAF4A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 88F7B3ADB8D;
 	Sun, 30 Aug 2026 11:57:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788091056; cv=none; b=MGn5JiuqKE9WB8IVsKvgeW6qXj57TuTloe5B7OFf69ns+lXann9bUa/Xn8EqMK0BCOnPJplCuUnCyXlkmC/ceWnHiobGHFSJkCeihekgJJeNa5Lj8hZXNQ1E2IdjHRePCjKCPzVU+VQYKbuNTEdgIBT0rY8gFOyJfWKviJmEcE0=
+	t=1788091057; cv=none; b=YGSDueLaWBshOOwU6cDJOrz/5UaMsSscKNbyLDiO5Qj04i2oVbJBcezURfhVT0jMLX9yKBIcMDOUwRbkf4jlZbKWy1l3efao6DaaWGUYLWAszYQDI7KjnhCsFcaCWBDClgcsGCE2F8EVQJiUBAcDrdveTzESeGJuxsIXhyfiqvk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788091056; c=relaxed/simple;
-	bh=y4x2hBtTKq/UTTtPQl7KCSgGM77FGT9bLH90ajPUoXw=;
+	s=arc-20240116; t=1788091057; c=relaxed/simple;
+	bh=f4PqBF7lxRv9lwTuK+Qzp0dMiUwIi+X2vIJk/GBTLpk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=F/hzuoyOEml8nAeWbnkeGNIVHqyz6BxVFpEW3l1qrGsxrwBoLC92x7xm0f6D0RRjK1snv6MgeI32mXXo304667stamfd0tdxThfopP5UZy/MTJFsGqISYkOUMWVPU4Ym5DmiJ8fPzmsBi5j/3oF+wBcXQU/UHOP1Pw8+6Rvv7U0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=VordWIci; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=enqPJ5fsk/AUq8r0Y5VcgSHt2x3LGsgRT5z0SWQbmXlab/kb/NwO5/BrlNxZ+CKnlqms3AQ3Tbl2rCgaHeJxqLB5u14kuMKqhl4YHq6gZWaz4ywtj+Pp9riBbnW7W+LynMvoU5W3PUOwcWNXHHPf1NbR7xh3BikZvbWy56EYu8I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=oKdc/4L4; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="VordWIci"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="oKdc/4L4"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 833B714BF;
-	Sun, 30 Aug 2026 04:57:24 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5C1661692;
+	Sun, 30 Aug 2026 04:57:30 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.5.212])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0FEB33F66F;
-	Sun, 30 Aug 2026 04:57:24 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 96A8B3F66F;
+	Sun, 30 Aug 2026 04:57:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788091048; bh=y4x2hBtTKq/UTTtPQl7KCSgGM77FGT9bLH90ajPUoXw=;
+	t=1788091054; bh=f4PqBF7lxRv9lwTuK+Qzp0dMiUwIi+X2vIJk/GBTLpk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VordWIciOpTP/LOwS9b8FkW1MiCui/16xibW2HbvyegNJQTu3GlHiYh53VTuwe/ah
-	 6E0NUuVFyofbhkKGn6LsbjxIcSlpRSLMPmjcXIzRAhq/L4WiVfTeMgGRLWqIatekUo
-	 48bsXgjLWBkvjZ1L7aCPFYTzUI/PDhAxloi6km8o=
+	b=oKdc/4L4YTSgzWV2Y1pkcnKKZPF7irKQovEK0OmvVIEyx2hkDyJ3MhiB6FpKRhJfA
+	 cQ9cNRzbzZ1XwY8e5A0ahAxuFeh+yE10KkvzzmsxFLctOsmusHFZIgNqJLu3X9nj40
+	 Zz3f4ToHYfxZUYW86lGB6CnHfE2Mwj9nkiLP9ZR8=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -42,9 +42,9 @@ Cc: linux-pm@vger.kernel.org,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>,
 	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v6 01/15] ACPI: CPPC: Validate the _CPC package header
-Date: Sun, 30 Aug 2026 12:56:30 +0100
-Message-Id: <20260830115644.2056983-2-christian.loehle@arm.com>
+Subject: [PATCH v6 03/15] ACPI: CPPC: Propagate performance-control write errors
+Date: Sun, 30 Aug 2026 12:56:32 +0100
+Message-Id: <20260830115644.2056983-4-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260830115644.2056983-1-christian.loehle@arm.com>
 References: <20260830115644.2056983-1-christian.loehle@arm.com>
@@ -56,80 +56,375 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The _CPC NumEntries field includes every package element, including
-NumEntries and Revision. acpi_cppc_processor_probe() nevertheless reads
-those first two elements before checking that they exist and trusts
-NumEntries when walking the remaining elements.
+cppc_set_perf() can skip malformed controls, discard cpc_write() failures,
+and report success without programming the requested performance tuple.
 
-Reject packages with fewer than two elements and NumEntries values which
-exceed the package count before accessing Revision or iterating over
-register descriptors. Although the specification defines NumEntries as the
-number of package elements, tolerate additional trailing elements because
-ignoring them is safe and avoids rejecting padded firmware.
+Return every control-write error to the caller and honor the explicit
+Minimum and Maximum Performance validity flags, so an explicit zero remains
+distinct from a legacy omitted bound. Validate every requested PCC field
+before changing either a direct control or the shared payload; after that
+check, PCC staging cannot fail partway through a tuple.
 
-Revision is specified as a BYTE, but the parser assigns its 64-bit AML
-Integer to an unsigned int before validating it. Reject values above U8_MAX
-before conversion so, for example, 0x100000004 cannot truncate to revision
-4.
+Keep the existing shared-lock batching for layouts whose writable
+performance controls all use PCC. Multiple Phase-I callers may set the
+pending flag to true while holding the shared side of pcc_lock. Mark that
+intentional same-value store with WRITE_ONCE(); transitions back to false
+remain protected by the exclusive side.
+
+A layout which mixes PCC with directly accessed controls needs stronger
+ordering. A fallible direct write cannot safely run alongside another CPU's
+staged PCC tuple: if it fails after changing a direct register, neither
+submitting nor discarding the shared batch can preserve the other request.
+Serialize the complete mixed transaction with the exclusive PCC lock.
+Drain an older pending batch before changing a direct control. Check the
+preceding PCC command for completion, then program the direct and PCC
+portions and submit the new command synchronously. Use the mixed-layout
+synchronization even when the current request omits its PCC-backed bounds,
+so a direct-only update cannot race a prior PCC command.
+
+Purely direct layouts continue to avoid the PCC lock. Cross-address-space
+updates cannot be atomic, but a known write failure no longer submits or
+cancels a tuple staged by another caller.
 
 Fixes: 337aadff8e45 ("ACPI: Introduce CPU performance controls using CPPC")
 Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
-Link: https://sashiko.dev/#/patchset/20260808082644.1251332-1-christian.loehle%40arm.com
+Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ drivers/acpi/cppc_acpi.c | 264 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 203 insertions(+), 61 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index fef54fcd00b7..3b8cdf88e31d 100644
+index 6f3ffa4a1845..925be772041c 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -793,6 +793,11 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+@@ -233,6 +233,19 @@ show_cppc_data(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, wraparound_time);
+ 			     (reg)->space_id != ACPI_ADR_SPACE_PLATFORM_COMM) ? \
+ 			    (8 << ((reg)->access_width - 1)) : (reg)->bit_width)
+ 
++static bool cpc_pcc_write_supported(const struct cpc_register_resource *reg)
++{
++	switch (GET_BIT_WIDTH(&reg->cpc_entry.reg)) {
++	case 8:
++	case 16:
++	case 32:
++	case 64:
++		return true;
++	default:
++		return false;
++	}
++}
++
+ /* Shift and apply the mask for CPC reads/writes */
+ #define MASK_VAL_READ(reg, val) (((val) >> (reg)->bit_offset) &				\
+ 					GENMASK(((reg)->bit_width) - 1, 0))
+@@ -373,13 +386,34 @@ static int check_pcc_chan(int pcc_ss_id, bool chk_err_bit)
+ 	return ret;
+ }
+ 
++static void cppc_complete_pcc_write(struct cppc_pcc_data *pcc_ss_data,
++				    int ret)
++{
++	int i;
++
++	if (unlikely(ret)) {
++		for_each_possible_cpu(i) {
++			struct cpc_desc *desc = per_cpu(cpc_desc_ptr, i);
++
++			if (!desc)
++				continue;
++
++			if (desc->write_cmd_id == pcc_ss_data->pcc_write_cnt)
++				desc->write_cmd_status = ret;
++		}
++	}
++
++	pcc_ss_data->pcc_write_cnt++;
++	wake_up_all(&pcc_ss_data->pcc_write_wait_q);
++}
++
+ /*
+  * This function transfers the ownership of the PCC to the platform
+  * So it must be called while holding write_lock(pcc_lock)
+  */
+ static int send_pcc_cmd(int pcc_ss_id, u16 cmd)
+ {
+-	int ret = -EIO, i;
++	int ret = -EIO;
+ 	struct cppc_pcc_data *pcc_ss_data = pcc_data[pcc_ss_id];
+ 	struct acpi_pcct_shared_memory __iomem *generic_comm_base =
+ 					pcc_ss_data->pcc_channel->shmem;
+@@ -471,21 +505,8 @@ static int send_pcc_cmd(int pcc_ss_id, u16 cmd)
+ 		mbox_client_txdone(pcc_ss_data->pcc_channel->mchan, ret);
+ 
+ end:
+-	if (cmd == CMD_WRITE) {
+-		if (unlikely(ret)) {
+-			for_each_possible_cpu(i) {
+-				struct cpc_desc *desc = per_cpu(cpc_desc_ptr, i);
+-
+-				if (!desc)
+-					continue;
+-
+-				if (desc->write_cmd_id == pcc_ss_data->pcc_write_cnt)
+-					desc->write_cmd_status = ret;
+-			}
+-		}
+-		pcc_ss_data->pcc_write_cnt++;
+-		wake_up_all(&pcc_ss_data->pcc_write_wait_q);
+-	}
++	if (cmd == CMD_WRITE)
++		cppc_complete_pcc_write(pcc_ss_data, ret);
+ 
+ 	return ret;
+ }
+@@ -2197,7 +2218,9 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	struct cpc_register_resource *desired_reg, *min_perf_reg, *max_perf_reg;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+ 	struct cppc_pcc_data *pcc_ss_data = NULL;
+-	bool regs_in_pcc;
++	bool desired_update, min_update, max_update;
++	bool desired_pcc, min_pcc, max_pcc, pcc_update;
++	bool pcc_layout, direct_layout, mixed_layout;
+ 	int ret = 0;
+ 
+ 	if (!cpc_desc) {
+@@ -2208,51 +2231,168 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+ 	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
+ 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
+-	regs_in_pcc = CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) ||
+-		      CPC_IN_PCC(max_perf_reg);
++	desired_update = cpc_is_writable(desired_reg);
++	min_update = cpc_is_writable(min_perf_reg) &&
++		     (perf_ctrls->min_perf || perf_ctrls->min_perf_valid);
++	max_update = cpc_is_writable(max_perf_reg) &&
++		     (perf_ctrls->max_perf || perf_ctrls->max_perf_valid);
++	desired_pcc = desired_update && CPC_IN_PCC(desired_reg);
++	min_pcc = min_update && CPC_IN_PCC(min_perf_reg);
++	max_pcc = max_update && CPC_IN_PCC(max_perf_reg);
++	pcc_update = desired_pcc || min_pcc || max_pcc;
++	pcc_layout = (cpc_is_writable(desired_reg) && CPC_IN_PCC(desired_reg)) ||
++		     (cpc_is_writable(min_perf_reg) && CPC_IN_PCC(min_perf_reg)) ||
++		     (cpc_is_writable(max_perf_reg) && CPC_IN_PCC(max_perf_reg));
++	direct_layout = (cpc_is_writable(desired_reg) &&
++			 !CPC_IN_PCC(desired_reg)) ||
++			(cpc_is_writable(min_perf_reg) &&
++			 !CPC_IN_PCC(min_perf_reg)) ||
++			(cpc_is_writable(max_perf_reg) &&
++			 !CPC_IN_PCC(max_perf_reg));
++	mixed_layout = pcc_layout && direct_layout;
++
++	/* Do not modify any control if a requested PCC field cannot be staged. */
++	if ((desired_pcc && !cpc_pcc_write_supported(desired_reg)) ||
++	    (min_pcc && !cpc_pcc_write_supported(min_perf_reg)) ||
++	    (max_pcc && !cpc_pcc_write_supported(max_perf_reg)))
++		return -EFAULT;
+ 
+-	/*
+-	 * This is Phase-I where we want to write to CPC registers
+-	 * -> We want all CPUs to be able to execute this phase in parallel
+-	 *
+-	 * Since read_lock can be acquired by multiple CPUs simultaneously we
+-	 * achieve that goal here
+-	 */
+-	if (regs_in_pcc) {
++	if (mixed_layout || pcc_update) {
+ 		if (pcc_ss_id < 0) {
+ 			pr_debug("Invalid pcc_ss_id\n");
+ 			return -ENODEV;
+ 		}
+ 		pcc_ss_data = pcc_data[pcc_ss_id];
+-		down_read(&pcc_ss_data->pcc_lock); /* BEGIN Phase-I */
++		if (!pcc_ss_data)
++			return -ENODEV;
++	}
++
++	/*
++	 * A mixed layout cannot batch fallible direct writes safely: another
++	 * CPU's staged PCC values may no longer match if a direct write fails.
++	 * Serialize the complete mixed transaction and drain an older batch
++	 * before changing a direct control.
++	 */
++	if (mixed_layout) {
++		down_write(&pcc_ss_data->pcc_lock);
++		if (pcc_ss_data->pending_pcc_write_cmd) {
++			ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++
+ 		if (pcc_ss_data->platform_owns_pcc) {
+ 			ret = check_pcc_chan(pcc_ss_id, false);
+-			if (ret) {
+-				up_read(&pcc_ss_data->pcc_lock);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++
++		if (desired_update && !desired_pcc) {
++			ret = cpc_write(cpu, desired_reg,
++					perf_ctrls->desired_perf);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++		if (min_update && !min_pcc) {
++			ret = cpc_write(cpu, min_perf_reg,
++					perf_ctrls->min_perf);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++		if (max_update && !max_pcc) {
++			ret = cpc_write(cpu, max_perf_reg,
++					perf_ctrls->max_perf);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++
++		if (desired_pcc) {
++			ret = cpc_write(cpu, desired_reg,
++					perf_ctrls->desired_perf);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++		if (min_pcc) {
++			ret = cpc_write(cpu, min_perf_reg,
++					perf_ctrls->min_perf);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++		if (max_pcc) {
++			ret = cpc_write(cpu, max_perf_reg,
++					perf_ctrls->max_perf);
++			if (ret)
++				goto out_mixed_unlock;
++		}
++
++		if (pcc_update) {
++			WRITE_ONCE(pcc_ss_data->pending_pcc_write_cmd, true);
++			cpc_desc->write_cmd_id = pcc_ss_data->pcc_write_cnt;
++			cpc_desc->write_cmd_status = 0;
++			ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
++		}
++
++out_mixed_unlock:
++		up_write(&pcc_ss_data->pcc_lock);
++		return ret;
++	}
++
++	/* A non-PCC layout has no shared payload to coordinate. */
++	if (!pcc_update) {
++		if (desired_update) {
++			ret = cpc_write(cpu, desired_reg,
++					perf_ctrls->desired_perf);
++			if (ret)
+ 				return ret;
+-			}
+ 		}
+-		/*
+-		 * Update the pending_write to make sure a PCC CMD_READ will not
+-		 * arrive and steal the channel during the switch to write lock
+-		 */
+-		pcc_ss_data->pending_pcc_write_cmd = true;
+-		cpc_desc->write_cmd_id = pcc_ss_data->pcc_write_cnt;
+-		cpc_desc->write_cmd_status = 0;
++		if (min_update) {
++			ret = cpc_write(cpu, min_perf_reg,
++					perf_ctrls->min_perf);
++			if (ret)
++				return ret;
++		}
++		if (max_update)
++			ret = cpc_write(cpu, max_perf_reg,
++					perf_ctrls->max_perf);
++		return ret;
  	}
  
- 	out_obj = (union acpi_object *) output.pointer;
-+	if (out_obj->package.count < 2) {
-+		pr_debug("Unexpected _CPC package count (%u) for CPU:%d\n",
-+			 out_obj->package.count, pr->id);
-+		goto out_buf_free;
+-	if (CPC_SUPPORTED(desired_reg))
+-		cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
++	down_read(&pcc_ss_data->pcc_lock); /* BEGIN Phase-I */
++	if (pcc_ss_data->platform_owns_pcc) {
++		ret = check_pcc_chan(pcc_ss_id, false);
++		if (ret)
++			goto out_pcc_read_unlock;
 +	}
  
- 	cpc_ptr = kzalloc_obj(struct cpc_desc);
- 	if (!cpc_ptr) {
-@@ -803,12 +808,15 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 	/* First entry is NumEntries. */
- 	cpc_obj = &out_obj->package.elements[0];
- 	if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
--		num_ent = cpc_obj->integer.value;
--		if (num_ent <= 1) {
--			pr_debug("Unexpected _CPC NumEntries value (%d) for CPU:%d\n",
--				 num_ent, pr->id);
-+		if (cpc_obj->integer.value < 2 ||
-+		    cpc_obj->integer.value > out_obj->package.count) {
-+			pr_debug("Invalid _CPC NumEntries (%llu) for package count (%u) on CPU:%d\n",
-+				 cpc_obj->integer.value, out_obj->package.count,
-+				 pr->id);
- 			goto out_free;
- 		}
+-	if (CPC_SUPPORTED(min_perf_reg) &&
+-	    (perf_ctrls->min_perf || perf_ctrls->min_perf_valid))
+-		cpc_write(cpu, min_perf_reg, perf_ctrls->min_perf);
+-	if (CPC_SUPPORTED(max_perf_reg) &&
+-	    (perf_ctrls->max_perf || perf_ctrls->max_perf_valid))
+-		cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
++	/*
++	 * This is Phase-I where we want to write to CPC registers
++	 * -> We want all CPUs to be able to execute this phase in parallel
++	 *
++	 * Since read_lock can be acquired by multiple CPUs simultaneously we
++	 * achieve that goal here.
++	 */
++	if (desired_pcc) {
++		ret = cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
++		if (ret)
++			goto out_pcc_read_unlock;
++	}
+ 
+-	if (regs_in_pcc)
+-		up_read(&pcc_ss_data->pcc_lock);	/* END Phase-I */
++	if (min_pcc) {
++		ret = cpc_write(cpu, min_perf_reg, perf_ctrls->min_perf);
++		if (ret)
++			goto out_pcc_read_unlock;
++	}
++	if (max_pcc) {
++		ret = cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
++		if (ret)
++			goto out_pcc_read_unlock;
++	}
 +
-+		num_ent = cpc_obj->integer.value;
- 	} else {
- 		pr_debug("Unexpected _CPC NumEntries entry type (%d) for CPU:%d\n",
- 			 cpc_obj->type, pr->id);
-@@ -818,6 +826,12 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 	/* Second entry should be revision. */
- 	cpc_obj = &out_obj->package.elements[1];
- 	if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
-+		if (cpc_obj->integer.value > U8_MAX) {
-+			pr_debug("Invalid _CPC Revision (%llu) for CPU:%d\n",
-+				 cpc_obj->integer.value, pr->id);
-+			ret = -EINVAL;
-+			goto out_free;
-+		}
- 		cpc_rev = cpc_obj->integer.value;
- 	} else {
- 		pr_debug("Unexpected _CPC Revision entry type (%d) for CPU:%d\n",
++	/* Block a PCC read until the staged payload has been submitted. */
++	WRITE_ONCE(pcc_ss_data->pending_pcc_write_cmd, true);
++	cpc_desc->write_cmd_id = pcc_ss_data->pcc_write_cnt;
++	cpc_desc->write_cmd_status = 0;
++	up_read(&pcc_ss_data->pcc_lock);	/* END Phase-I */
+ 	/*
+ 	 * This is Phase-II where we transfer the ownership of PCC to Platform
+ 	 *
+@@ -2299,20 +2439,22 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	 * case during a CMD_READ and if there are pending writes it delivers
+ 	 * the write command before servicing the read command
+ 	 */
+-	if (regs_in_pcc) {
+-		if (down_write_trylock(&pcc_ss_data->pcc_lock)) {/* BEGIN Phase-II */
+-			/* Update only if there are pending write commands */
+-			if (pcc_ss_data->pending_pcc_write_cmd)
+-				send_pcc_cmd(pcc_ss_id, CMD_WRITE);
+-			up_write(&pcc_ss_data->pcc_lock);	/* END Phase-II */
+-		} else
+-			/* Wait until pcc_write_cnt is updated by send_pcc_cmd */
+-			wait_event(pcc_ss_data->pcc_write_wait_q,
+-				   cpc_desc->write_cmd_id != pcc_ss_data->pcc_write_cnt);
+-
+-		/* send_pcc_cmd updates the status in case of failure */
+-		ret = cpc_desc->write_cmd_status;
++	if (down_write_trylock(&pcc_ss_data->pcc_lock)) {/* BEGIN Phase-II */
++		/* Update only if there are pending write commands */
++		if (pcc_ss_data->pending_pcc_write_cmd)
++			send_pcc_cmd(pcc_ss_id, CMD_WRITE);
++		up_write(&pcc_ss_data->pcc_lock);	/* END Phase-II */
++	} else {
++		/* Wait until pcc_write_cnt is updated by send_pcc_cmd */
++		wait_event(pcc_ss_data->pcc_write_wait_q,
++			   cpc_desc->write_cmd_id != pcc_ss_data->pcc_write_cnt);
+ 	}
++
++	/* send_pcc_cmd updates the status in case of failure */
++	return cpc_desc->write_cmd_status;
++
++out_pcc_read_unlock:
++	up_read(&pcc_ss_data->pcc_lock);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(cppc_set_perf);
 -- 
 2.34.1
 
