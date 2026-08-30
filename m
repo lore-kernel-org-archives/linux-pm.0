@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E8B1C3AF664;
-	Sun, 30 Aug 2026 11:57:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E8BAB3B27F1;
+	Sun, 30 Aug 2026 11:57:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788091068; cv=none; b=L7rKy0mMzw4dR8PbBRy93sE6c+KLAtuWm+qqyJPrHlwwwIt1IAeytcSSRbcIlynJVxF41IhF6EpZdIImQ+3DCSma03zonbjbL0a070LM3iD61RoLNv64JSuKEJd6ajRuUVvj8HqlwLcoOMy6gZ2gmsv7fXGZRugemvK/8rITkZQ=
+	t=1788091068; cv=none; b=GhJHvPSJsadVeEwRlbIhfSOYi0onMNIPdQsHCoOZU18Fm6UXIhRDc/LRlT6tVR48hEO1dfCFn8tpa9N81gWrLu5+cfYvI1iUBbqgVzxfyM4Atv7TiFk8aHVPaijQDteolCPzujfaho+PB7pIhunk4bfqRxG5YrpF1KdvTG4+PB8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1788091068; c=relaxed/simple;
-	bh=xWjbHlOHt4BCNK+1Z0xPZAur63ajOORItgwjHslQkcY=;
+	bh=BQgM1qrPaUWQz/CII0FAe9DlvpehPJgNouZhybA49g0=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=oxVL36Y2/plRSBj4u84qIsgNR/fN9hWP6Hz8pwstnOVnXBQjky0d3NtKn18XBHb+DeO1r+5/On9mknvDnPfRPoo8LEZPozml2SR+fsN6AaiopDhkb76EhNJf+394NrYIL36N85ViC7xuXKve6+2q6fLkEG9+XAAkc1pfUeZweMI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=oIbL/K+9; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=QC6wXSSQ3cIKdFP5kfMqMH3lK5Vm4VtfE9Td1wozhuILpJsjIpov5jPg1ciaG6J8prYE3elKJlTfw95ZavyaGN0CS8hazYQ4qAIJ/513zFkweH8tSrDO+DoXMC1ci4CimIwvFLC4ofS+lXDUNxV2FMpfGynxg3WPwoY1Uk5r/e4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=A6BkqB0q; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="oIbL/K+9"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="A6BkqB0q"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7E84C1595;
-	Sun, 30 Aug 2026 04:57:36 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A0F8914BF;
+	Sun, 30 Aug 2026 04:57:42 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.5.212])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 6F83A3F66F;
-	Sun, 30 Aug 2026 04:57:37 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 4F6993F66F;
+	Sun, 30 Aug 2026 04:57:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788091060; bh=xWjbHlOHt4BCNK+1Z0xPZAur63ajOORItgwjHslQkcY=;
+	t=1788091066; bh=BQgM1qrPaUWQz/CII0FAe9DlvpehPJgNouZhybA49g0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=oIbL/K+9WVW2VJq3paEg8+KS5XTHuh/G/MAtcdjES/JmxcZGWz0lc/Aoz5o691Uis
-	 a3OyL6hVpDlI2nDIBXlQ0nxAVL2hUYhCKOtQbwn4fo4Jo3W2s10VZEv0JrxeDT6a2C
-	 Mm8jufAUK3lnUcYnjy+MZqKe/R3//2kzaUjz76wo=
+	b=A6BkqB0qgiaLhifAJh3VURw9RMSsiLS2gGVLFmrJv4GWNrUS6j6rOzP3JAqJRb+XR
+	 wP5NF04pDdkRj5QtiRvjLJo7LK704yzldsUdLXwFqnPxERTRBq90xsof+VqOSYgqKn
+	 wlDjCy4TH3a6eMoJXevG6EulOPnTfZz+aQfMbCBI=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -42,9 +42,9 @@ Cc: linux-pm@vger.kernel.org,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>,
 	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v6 05/15] ACPI: CPPC: Serialize PCC single-register payload updates
-Date: Sun, 30 Aug 2026 12:56:34 +0100
-Message-Id: <20260830115644.2056983-6-christian.loehle@arm.com>
+Subject: [PATCH v6 07/15] ACPI: CPPC: Release CPC descriptors through kobject
+Date: Sun, 30 Aug 2026 12:56:36 +0100
+Message-Id: <20260830115644.2056983-8-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260830115644.2056983-1-christian.loehle@arm.com>
 References: <20260830115644.2056983-1-christian.loehle@arm.com>
@@ -56,96 +56,125 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The PCC doorbell protocol requires OSPM to confirm ownership of the shared
-subspace before placing a command and its payload there.
-cppc_set_reg_val_in_pcc() instead modifies the payload before taking
-pcc_lock.
+The CPC descriptor embeds the kobject used for its sysfs directory, but
+it has no release callback and processor exit frees the descriptor
+immediately after kobject_put(). It also unmaps register resources and
+releases PCC state before sysfs removal has drained active attribute
+callbacks.
 
-A concurrent command can consequently overwrite or consume the staged
-value, and OSPM can write the shared region while the platform still owns
-it.
+Provide a release callback which unmaps and frees the descriptor, and use
+the same cleanup helper before kobject initialization. Once initialized,
+let kobject_put() own descriptor cleanup so its error path cannot free the
+object twice.
 
-Take the PCC write lock first, wait for the previous command to complete,
-and keep the lock held while staging the value and submitting CMD_WRITE.
-This follows the ownership sequence in ACPI 6.5 Section 14.5 and the
-existing contract documented by send_pcc_cmd().
+On processor exit, first unpublish the per-CPU descriptor and remove its
+sysfs directory, then release PCC state and drop the kobject reference.
+This keeps all resources valid while sysfs callbacks are active and also
+works with delayed kobject release.
 
-If ownership acquisition or staging fails, abort any older performance
-batch before dropping the exclusive lock. This advances its generation and
-wakes cppc_set_perf() callers which otherwise wait indefinitely for a
-command this path did not submit.
-
-Fixes: e05c75072c2e ("ACPI: CPPC: Add cppc_set_reg_val()")
+Fixes: 158c998ea44b ("ACPI / CPPC: add sysfs support to compute delivered performance")
 Reported-by: Sashiko <sashiko-bot@kernel.org>
 Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
-Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
+ drivers/acpi/cppc_acpi.c | 49 ++++++++++++++++++++++++----------------
+ 1 file changed, 29 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 9ddcce7dc1a9..085e775b3637 100644
+index f9866563466b..37ff54a048c9 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -407,6 +407,17 @@ static void cppc_complete_pcc_write(struct cppc_pcc_data *pcc_ss_data,
- 	wake_up_all(&pcc_ss_data->pcc_write_wait_q);
- }
+@@ -350,7 +350,27 @@ static struct attribute *cppc_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(cppc);
  
-+/* The caller must hold pcc_lock for write. */
-+static void cppc_abort_pending_pcc_write(struct cppc_pcc_data *pcc_ss_data,
-+					 int ret)
++static void cppc_free_desc(struct cpc_desc *cpc_ptr)
 +{
-+	if (!pcc_ss_data->pending_pcc_write_cmd)
-+		return;
++	unsigned int i;
 +
-+	pcc_ss_data->pending_pcc_write_cmd = false;
-+	cppc_complete_pcc_write(pcc_ss_data, ret);
++	for (i = 2; i < cpc_ptr->num_entries; i++) {
++		void __iomem *addr = cpc_ptr->cpc_regs[i - 2].sys_mem_vaddr;
++
++		if (addr)
++			iounmap(addr);
++	}
++
++	kfree(cpc_ptr);
 +}
 +
- /*
-  * This function transfers the ownership of the PCC to the platform
-  * So it must be called while holding write_lock(pcc_lock)
-@@ -1507,7 +1518,7 @@ static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
- static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u64 val)
- {
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
--	struct cppc_pcc_data *pcc_ss_data = NULL;
-+	struct cppc_pcc_data *pcc_ss_data;
- 	int ret;
- 
- 	if (pcc_ss_id < 0) {
-@@ -1515,15 +1526,26 @@ static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u
- 		return -ENODEV;
++static void cppc_kobj_release(struct kobject *kobj)
++{
++	cppc_free_desc(to_cpc_desc(kobj));
++}
++
+ static const struct kobj_type cppc_ktype = {
++	.release = cppc_kobj_release,
+ 	.sysfs_ops = &kobj_sysfs_ops,
+ 	.default_groups = cppc_groups,
+ };
+@@ -1147,21 +1167,14 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	if (ret) {
+ 		per_cpu(cpc_desc_ptr, pr->id) = NULL;
+ 		kobject_put(&cpc_ptr->kobj);
+-		goto out_free;
++		goto out_buf_free;
  	}
  
--	ret = cpc_write(cpu, reg, val);
--	if (ret)
--		return ret;
+ 	kfree(output.pointer);
+ 	return 0;
+ 
+ out_free:
+-	/* Free all the mapped sys mem areas for this CPU */
+-	for (i = 2; i < cpc_ptr->num_entries; i++) {
+-		void __iomem *addr = cpc_ptr->cpc_regs[i-2].sys_mem_vaddr;
 -
- 	pcc_ss_data = pcc_data[pcc_ss_id];
-+	if (!pcc_ss_data)
-+		return -ENODEV;
+-		if (addr)
+-			iounmap(addr);
+-	}
+-	kfree(cpc_ptr);
++	cppc_free_desc(cpc_ptr);
  
- 	down_write(&pcc_ss_data->pcc_lock);
-+
-+	ret = check_pcc_chan(pcc_ss_id, false);
-+	if (ret)
-+		goto out;
-+
-+	ret = cpc_write(cpu, reg, val);
-+	if (ret)
-+		goto out;
-+
- 	/* after writing CPC, transfer the ownership of PCC to platform */
- 	ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
-+
-+out:
-+	if (ret)
-+		cppc_abort_pending_pcc_write(pcc_ss_data, ret);
- 	up_write(&pcc_ss_data->pcc_lock);
+ out_buf_free:
+ 	if (cpc_present)
+@@ -1180,10 +1193,14 @@ EXPORT_SYMBOL_GPL(acpi_cppc_processor_probe);
+ void acpi_cppc_processor_exit(struct acpi_processor *pr)
+ {
+ 	struct cpc_desc *cpc_ptr;
+-	unsigned int i;
+-	void __iomem *addr;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, pr->id);
  
- 	return ret;
++	cpc_ptr = per_cpu(cpc_desc_ptr, pr->id);
++	if (cpc_ptr) {
++		per_cpu(cpc_desc_ptr, pr->id) = NULL;
++		kobject_del(&cpc_ptr->kobj);
++	}
++
+ 	if (pcc_ss_id >= 0 && pcc_data[pcc_ss_id]) {
+ 		if (pcc_data[pcc_ss_id]->pcc_channel_acquired) {
+ 			pcc_data[pcc_ss_id]->refcount--;
+@@ -1194,20 +1211,12 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
+ 			}
+ 		}
+ 	}
++	per_cpu(cpu_pcc_subspace_idx, pr->id) = -1;
+ 
+-	cpc_ptr = per_cpu(cpc_desc_ptr, pr->id);
+ 	if (!cpc_ptr)
+ 		return;
+ 
+-	/* Free all the mapped sys mem areas for this CPU */
+-	for (i = 2; i < cpc_ptr->num_entries; i++) {
+-		addr = cpc_ptr->cpc_regs[i-2].sys_mem_vaddr;
+-		if (addr)
+-			iounmap(addr);
+-	}
+-
+ 	kobject_put(&cpc_ptr->kobj);
+-	kfree(cpc_ptr);
+ }
+ EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
+ 
 -- 
 2.34.1
 
