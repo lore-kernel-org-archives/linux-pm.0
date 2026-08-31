@@ -1,73 +1,73 @@
 Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 489153D34AC;
-	Mon, 31 Aug 2026 08:21:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EF483D333F;
+	Mon, 31 Aug 2026 08:21:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788164509; cv=none; b=ZKk4UOXF2UZnm5D6N1tpo3KPVAiiiFyadF7ZciK6UtYwTuvXOIt440dTQPwmc4m4KiLEPOUBqIobmUsxkkqXKhnJNz7gwSYyNRE4OfuAh92Z/DYc1/VlgHzzZQ96NkgMac90PtJVKLovM+ITtHzc9lnEVzuSplS0plXhCI4Je5Y=
+	t=1788164519; cv=none; b=dL35K2DRjFxfgesYdQtjyH5B0NV3vzLvU5epyQFjBpXU+WWO1aCM2IwUH6RITAls1g6gcWRBEphTiAA3X2NY1EtaBJjj8oTO7TJV7UgQeF5mHIwz3zNGyjPrPZGbmtlwj+CD8qleZsDzDeay0fTwKHn2/qnc+LFQ9VnmVv2UwZg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788164509; c=relaxed/simple;
-	bh=i98h2KyVaWOr/iBF7stkkIKZk/URJTaweBKbY2mKOOs=;
+	s=arc-20240116; t=1788164519; c=relaxed/simple;
+	bh=kN06lZ9HD0pj4xFD/f2Qilt0vzfMYrJJB1Lsh3PgnAY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EXcfzFON9mrUC5KR3s3QYhZzEgKlpdeGpGByAzmwrq+eu0d9pGMdsV4a91d+7xm6AQ8TZyo6/5xIqTDBauEsBHbC5KUKkA5wCZO+Ii8WgkwhsgQFC/W9G5kZwACqypu/tsyiNjbcaKjX25qwFvf6N63K/8oYmJag7P0W/5uqtIY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=qHVikLFW; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=BkzsxfYd; arc=none smtp.client-ip=103.168.172.139
+	 MIME-Version; b=kxA25duD8EMI0znkinwX6EbTYnbD/ThJr1uHDW88+UGWLCKbeoB1pQSCQqqd6Vgfr+mBdFuo5vtPjQol8KwSgmhtbZ17zoetvQ+M/J8smOBQwt1pdsqE1uKzb0Yt+vf45vMiY3iDzkbdCdmIHLxhndpsba17Kg62VASUWsQlyFA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=FSDPicFI; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=D6fgqtoB; arc=none smtp.client-ip=103.168.172.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="qHVikLFW";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="BkzsxfYd"
-Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
-	by mailflow.phl.internal (Postfix) with ESMTP id 711431380045;
-	Mon, 31 Aug 2026 04:21:47 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="FSDPicFI";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="D6fgqtoB"
+Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
+	by mailflow.phl.internal (Postfix) with ESMTP id 8A9381380045;
+	Mon, 31 Aug 2026 04:21:57 -0400 (EDT)
 Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-03.internal (MEProxy); Mon, 31 Aug 2026 04:21:47 -0400
+  by phl-compute-11.internal (MEProxy); Mon, 31 Aug 2026 04:21:57 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1788164507; x=
-	1788171707; bh=EuzlYllSmAZP6yajMRsW2NaQ/7lmKof72TRcxeRmWS4=; b=q
-	HVikLFWi/fiHRnyEhpJfLitC7oOvrcleOhyCbn1OJcHyu9NPO3ooGG/WTcy1JsCb
-	olbUAFmPsaguSETvAJLoLuImX5PChS586MYiAj3vczxsIaubCUSnkbcvcfwgj/Vj
-	1nJh3+P95+frqy67AHi7pn3BWAjLb+btqRqRPCI0Zc0Bbx8NNlI1oiNyWGmOH3DF
-	8xbd8yVoIyAYfJdXuML+o9y6c7jbZw2gm5aR2V9x4vKSAt/YBm3bFplLfQR1zYsz
-	87iqrQ1gzpfYdkRqAcYvt6CqYTqwrf8UNVMr+qR4z0xaGSmxe3AO4Td7h4xahMFh
-	z0BiOORGd9o3MHl0lQABQ==
+	:reply-to:subject:subject:to:to; s=fm2; t=1788164517; x=
+	1788171717; bh=mPwoBZVvD5IiMKU/tQGUb6tRYFOiIEKnit/tY33hzAg=; b=F
+	SDPicFI73gUkaSDJDyPP9x4ylawnqNAL6gSMzKLjgAyE6dHZ3crUZ4kBxwk5YsyJ
+	/QWe73G6Wj4pdQWZbQ9tU+9/NnxPZg/eR9LaIXbeconBwXQDYrznT3IP2ZuCumq2
+	6tTgz0BwRPqJusnpN28F6Jvv8K+tLOZc51sp4t8Y3q1Lunue+DabaZLnYSsfoqCc
+	xIgUtnPtDMwJDq+alhPlC22QF75MQZ/2vjffNZ83ektnQ9G+pegGrvtMQazFs9xD
+	tMrA419tOJoi413nEHUpfiy3BhbFoA86giaY2WJWWWUB07N6grXcnwSRhDlCRrRJ
+	/yQF6MzoPPsY5ZIxx9FcA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1788164507; x=1788171707; bh=E
-	uzlYllSmAZP6yajMRsW2NaQ/7lmKof72TRcxeRmWS4=; b=BkzsxfYdLk9VCMPCM
-	pLjQh1ftD51Sx35+o+7C5/wN7L7V+SNz+1gGxjKPAfyCjV32bkK22zQjFg1H3HR0
-	GsG7629+oe9evY4/0kjhq+GNPCfQmPx+sSWd+tG8Pu2Ay/Ztck0oPqt6MURPoxlk
-	e7ASDHTbGPG1T1ijhvPuZeptg6gRhjeKnF4ILzZpV3JlfxM54rb2+JF90pn2pMsq
-	4Q1tapk8H3DrnBNf4gVCgvLmv36/KZSu3a5DYqphPizlCzzzVAm/UFICndF5NxP4
-	UwEFFwTginyjlfJgdjwEFyAYe0RKgstmuPWQQ7BmTr/2CrGGEdx6GFZwQDCFDlBL
-	6CW2g==
-X-ME-Sender: <xms:mzmVagl3C6yUhtHJ2cqx4C8TRxDPIZefTB_TulC6LJDPvazefIp7Yw>
-    <xme:mzmVahUu8WH1N_UaUqkp64V9lEZ1g6RcKbuvSWIC0WCNy83PFR-wOaPpllak2cwxK
-    QhKEdC8dN8ex2ciLOAc2-oX1Pym6PxBGrGVkHTdf-4TE5ZbTlLh6zo>
-X-ME-Received: <xmr:mzmVajPcglgnqJ6sCORzg0425ndFqb7c-BZ4bHnMDFMO1d35TuXkmQYIF1-Uiv1xLKJdT77xxA>
-X-ME-Proxy-Cause: dmFkZTEKWQSpa8iZqUtW1ZQqP4bDvh9SK/YZ53CarhgclGKwi9pBkSeAm2pl18Ydw9NqYm
-    Zr/AB6JK94O+RJj3+nPdviPN4WL0ogDKkl2CMFV9N9D6NSBN5M/LV+S4GH+TRhS9zu3x5c
-    x2UqefLwNZ1g6jIgnHYbLgvH6Qcfxwr5ayCKwx4jXlH2P7ErMCLVryfACFcfAxxNF+zWzB
-    vhDdjBzJlYCkkDZuwtnUqHTI+YlUUPPhU6uGHE0mVT/tu7g0EvFCbzZenGG7GfkWbRsTX/
-    Fnz7vKpfqzHdp9e6NpI62zQZ3fDQSeSft9eBVteswNRFnAgakK0VawtlqkiHWFDHZGPmZ/
-    RLA6W00BnZUPO6lPqXvK27Vlt5IfgVBTlyK1yCf8jZiswalTyHVn+ITtwUR0RD0f54lamZ
-    sjkAa9RCPa7WKjY+nVcSM0dJhkMmx/0jT4JVsE+B4qygxld8PnfwgnHoi5LjDQTMoTxFwl
-    D/jKHGt/EwB9eQR7cHAj/ATpydqxeskcarggV1qP0x/4mH0YQLqo4WNHuOtO3YD4JwTenZ
-    lLTnngdjyHpXAnoSF1m7QP0Y7apOK5p6dUybBq4UPJJ5FDpvcWYzqS8RZEovNgnyYrOteX
-    BXn56WQw6ZmE7E2ZGL+ptlPXXBR9Ignbqe2LI+F/d5dnIFIhoZ18IlP6KBew
-X-ME-Proxy: <xmx:mzmVasE9gx5dFWAir_CcJvdo9d6DIbnD4p4S4dwgNeqAmzAXL11vkA>
-    <xmx:mzmVas0IQOuK4HC8bHKD6yV6Kc7SKdOeHNEd7ARvtFBG1rB3rJht5Q>
-    <xmx:mzmVasMDzB6x7SmqBTm8jjcc-MoTlawozfnJAQM9RrDiBe3zn3WgSg>
-    <xmx:mzmVasLVs0nep5Suh4KKSPlOW7JaAWfV8wm5_kMViNVEgTh5AhJr2Q>
-    <xmx:mzmVatEeXvlKIvk1dt1CT-cSmF3xvmI42Sh4oE2RGcZLGcb2VqL784fe>
+	:x-me-sender:x-sasl-enc; s=fm3; t=1788164517; x=1788171717; bh=m
+	PwoBZVvD5IiMKU/tQGUb6tRYFOiIEKnit/tY33hzAg=; b=D6fgqtoBcmH5r17lj
+	Latf/pegm9kE9CA8F0kUPe4/uP/bMiPN0l4Pvr86c2C3LI/H079qSd7oK2eqmv8J
+	iaNpZLK67cykfmEiaqKHPHP26Jdz11F2lyNINLzb1kjfRQOFo9j9WQ9qtDdJYGti
+	RzohTO07W4vZCJztXoRHSfISMNxVCIEzjvl4RPyjluUNwiD0AjmYRp6T5HzbQkew
+	OCVVK8ct+OYGSF4JJi90Y/fd7l32bAlzT0yvVxpL50Bq2RFp0Po5qTr6w1OnQckg
+	KUqSP1KS5nKl+/jJkU8HXDRHjnMh5tS6Ysz+vbP/pF8QbrNGCBITLtw9TIG5g3xW
+	SqkKA==
+X-ME-Sender: <xms:pTmVarbcWuno68GoC7okvMZFUexjHpySXcXE-MIjveijjToPj3vQmw>
+    <xme:pTmVaqT8pWphzFyaC1nflGCE39i6VxUMuHRTRrXizaI3WeQwFdPnS2VzqSKUPB8ww
+    lhRBXBDbRkbUiwc8lx-R6ivuMTKhF1daVkdh7FZkT_OEO3VPGxn-0E>
+X-ME-Received: <xmr:pTmVarTwr_9wLyLgjJnHHF4ZtFdCmQfOjIRGbzA_ddq1KXsHnLHSpEdCYpnun3NQypqZ7IVmrg>
+X-ME-Proxy-Cause: dmFkZTGIFgHn697QN77LvkxTVd0HUgqc7dtgfWAXvrJnzjyYk/1E0GgI5UhaHEirT/WT1x
+    b+qszzNdMAzVFopaNRs2dxhnDg09r1jPoC9MEUtixnInykmU3Pw0l3hwtCEJ1ad3c93Xay
+    bd+l5sHxlTS6v/5iZXzAZK/4u27Ei0nAwXdeaVFF7kRMXjXXfW3iRGTZonBhmmpTvqhV+z
+    V8Wknu+rEOyAMoGvxP8cZTL5kJKYkaLJxiSkeTXi9Trr4J2M5YjykmqP7kv72jWCs8a19h
+    BukMvHNfzyzCVsSYvDh2T5LUAPpVgmVJhTbdZLaOSzh+ILq3lNXn5p+T2rNKefe0YsrRCm
+    kp/nrGKrzUBgtGVe6D3IE8KpZxmONp46E3TI5jUlHmF3BelNeketdsJdADjX3e4DRXTUh7
+    T5VtgKTpcPlL8i8cSg8Z65UoSLxgRfdPhSJ1AqvOgJsTjR23dTtD7NWbqBh3MTz9ZhAGzk
+    tUXGA/huZ1iuy5MrCsDioQnSZAxlMupa73ixGtpiraRZ9pBvGM4sqaRvZ31JGM4PxfAHbl
+    MeaXAVU3qFl//5jtZGujsuFmKIpZORpn+AbJmclLxxUWHGqa85cJjwD70tj0zmyuc4SieE
+    s5O3WjIwaiKPsodHXzYXbUfGnvdKooLwWxYLuxFPv9+0phDzMuXeLaqPKMkQ
+X-ME-Proxy: <xmx:pTmVat3ry9Xxu5vdeeaZ3u5p8UFIZ-Xdk5I8nsjRSD49KzwVs29Szg>
+    <xmx:pTmVajzQ_4kkcV8oDh5sEVd-oJSq1miVmhxiy0abTf_k6lQCUW0irg>
+    <xmx:pTmVaovXK-k-vH7ERL2j4pveU6naYXefZt8gRf5-lOfxmI3FN-F2rw>
+    <xmx:pTmVatRjxgcejdkPXkolCl-RZtmZAqwQwL50FUfhSIvzRs-MAmnUGQ>
+    <xmx:pTmVavflr42b4DRYfGqFt5cc9TMNu6uNrqGkYIDwBjLhjGxxXAnZVqrk>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 31 Aug 2026 04:21:39 -0400 (EDT)
+ 31 Aug 2026 04:21:49 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -93,11 +93,10 @@ Cc: royalnet026@gmail.com,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Jiaxing Hu <gahing@gahingwoo.com>,
-	Abel Vesa <abel.vesa@oss.qualcomm.com>
-Subject: [PATCH v11 10/14] pmdomain/rockchip: cycle optional power-domain resets on power-on
-Date: Mon, 31 Aug 2026 20:19:52 +1200
-Message-ID: <20260831081956.84871-11-gahing@gahingwoo.com>
+	Jiaxing Hu <gahing@gahingwoo.com>
+Subject: [PATCH v11 11/14] accel/rocket: select the per-core clock and reset counts from match data
+Date: Mon, 31 Aug 2026 20:19:53 +1200
+Message-ID: <20260831081956.84871-12-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260831081956.84871-1-gahing@gahingwoo.com>
 References: <20260831081956.84871-1-gahing@gahingwoo.com>
@@ -109,86 +108,124 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Some Rockchip domains come out of power-on with their bus interface in
-an undefined state. On the RK3576 NPU this shows up as a hang on the
-first register access after the domain is switched on, and pulsing the
-domain's resets at this point clears it.
+The RK3576 carries the same RKNN block with a different set of clocks and
+resets, so the counts cannot stay compile-time constants. Add a soc_data
+struct to the of_device_id match data and take the bulk counts from it.
+RK3588 keeps four clocks and two resets, so nothing changes for it, and
+the arrays keep their present sizes: the SoC that needs a longer one
+grows it in the patch that adds the names.
 
-Take the domain node's resets if it has any, and pulse them between
-releasing idle and restoring QoS. The resets are optional, so domains
-that do not list any are unaffected.
+rocket_core_reset() is switched over as well. It is the same array, and
+leaving it on ARRAY_SIZE() would walk entries that were never acquired
+once a SoC asks for fewer.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/accel/rocket/rocket_core.c |  8 ++++----
+ drivers/accel/rocket/rocket_core.h |  7 +++++++
+ drivers/accel/rocket/rocket_drv.c  | 12 +++++++++---
+ 3 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 39988efd8..8f2fd8a83 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -19,6 +19,7 @@
- #include <linux/of_clk.h>
- #include <linux/clk.h>
- #include <linux/delay.h>
-+#include <linux/reset.h>
- #include <linux/regmap.h>
- #include <linux/regulator/consumer.h>
- #include <linux/mfd/syscon.h>
-@@ -103,6 +104,7 @@ struct rockchip_pm_domain {
- 	struct clk_bulk_data *clks;
- 	struct device_node *node;
- 	struct regulator *supply;
-+	struct reset_control *resets;
- };
+diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
+index 5dd260bac..b202d1581 100644
+--- a/drivers/accel/rocket/rocket_core.c
++++ b/drivers/accel/rocket/rocket_core.c
+@@ -23,7 +23,7 @@ int rocket_core_init(struct rocket_core *core)
  
- struct rockchip_pmu {
-@@ -692,6 +694,13 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 		if (pd->info->delay_us)
- 			udelay(pd->info->delay_us);
+ 	core->resets[0].id = "srst_a";
+ 	core->resets[1].id = "srst_h";
+-	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(core->resets),
++	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, core->soc->num_resets,
+ 						    core->resets);
+ 	if (err)
+ 		return dev_err_probe(dev, err, "failed to get resets for core %d\n", core->index);
+@@ -32,7 +32,7 @@ int rocket_core_init(struct rocket_core *core)
+ 	core->clks[1].id = "hclk";
+ 	core->clks[2].id = "npu";
+ 	core->clks[3].id = "pclk";
+-	err = devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
++	err = devm_clk_bulk_get(dev, core->soc->num_clks, core->clks);
+ 	if (err)
+ 		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
  
-+		/* Optional: some domains need their resets cycled after power-on. */
-+		if (pd->resets) {
-+			reset_control_assert(pd->resets);
-+			usleep_range(10, 20);
-+			reset_control_deassert(pd->resets);
-+		}
+@@ -109,9 +109,9 @@ void rocket_core_fini(struct rocket_core *core)
+ 
+ void rocket_core_reset(struct rocket_core *core)
+ {
+-	reset_control_bulk_assert(ARRAY_SIZE(core->resets), core->resets);
++	reset_control_bulk_assert(core->soc->num_resets, core->resets);
+ 
+ 	udelay(10);
+ 
+-	reset_control_bulk_deassert(ARRAY_SIZE(core->resets), core->resets);
++	reset_control_bulk_deassert(core->soc->num_resets, core->resets);
+ }
+diff --git a/drivers/accel/rocket/rocket_core.h b/drivers/accel/rocket/rocket_core.h
+index f6d738285..ba74c5339 100644
+--- a/drivers/accel/rocket/rocket_core.h
++++ b/drivers/accel/rocket/rocket_core.h
+@@ -27,9 +27,16 @@
+ #define rocket_core_writel(core, reg, value) \
+ 	writel(value, (core)->core_iomem + (REG_CORE_##reg) - REG_CORE_S_STATUS)
+ 
++/* Per-SoC differences, selected by the of_device_id match data. */
++struct rocket_soc_data {
++	unsigned int num_clks;		/* clk_bulk count */
++	unsigned int num_resets;	/* reset_bulk count */
++};
 +
- 		rockchip_pmu_restore_qos(pd);
+ struct rocket_core {
+ 	struct device *dev;
+ 	struct rocket_device *rdev;
++	const struct rocket_soc_data *soc;
+ 	unsigned int index;
+ 
+ 	int irq;
+diff --git a/drivers/accel/rocket/rocket_drv.c b/drivers/accel/rocket/rocket_drv.c
+index 8bbbce594..6e7dc91c5 100644
+--- a/drivers/accel/rocket/rocket_drv.c
++++ b/drivers/accel/rocket/rocket_drv.c
+@@ -176,6 +176,7 @@ static int rocket_probe(struct platform_device *pdev)
+ 
+ 	rdev->cores[core].rdev = rdev;
+ 	rdev->cores[core].dev = &pdev->dev;
++	rdev->cores[core].soc = of_device_get_match_data(&pdev->dev);
+ 	rdev->cores[core].index = core;
+ 
+ 	rdev->num_cores++;
+@@ -213,8 +214,13 @@ static void rocket_remove(struct platform_device *pdev)
  	}
- 
-@@ -861,6 +870,14 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	if (error)
- 		goto err_put_clocks;
- 
-+	pd->resets = of_reset_control_array_get_optional_exclusive(node);
-+	if (IS_ERR(pd->resets)) {
-+		error = dev_err_probe(pmu->dev, PTR_ERR(pd->resets),
-+				      "%pOFn: failed to get resets\n", node);
-+		pd->resets = NULL;
-+		goto err_unprepare_clocks;
-+	}
-+
- 	pd->num_qos = of_count_phandle_with_args(node, "pm_qos",
- 						 NULL);
- 
-@@ -931,6 +948,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	clk_bulk_unprepare(pd->num_clks, pd->clks);
- err_put_clocks:
- 	clk_bulk_put(pd->num_clks, pd->clks);
-+	reset_control_put(pd->resets);
- 	return error;
  }
  
-@@ -949,6 +967,7 @@ static void rockchip_pm_remove_one_domain(struct rockchip_pm_domain *pd)
++static const struct rocket_soc_data rk3588_soc_data = {
++	.num_clks = 4,
++	.num_resets = 2,
++};
++
+ static const struct of_device_id dt_match[] = {
+-	{ .compatible = "rockchip,rk3588-rknn-core" },
++	{ .compatible = "rockchip,rk3588-rknn-core", .data = &rk3588_soc_data },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, dt_match);
+@@ -240,7 +246,7 @@ static int rocket_device_runtime_resume(struct device *dev)
+ 	if (core < 0)
+ 		return -ENODEV;
  
- 	clk_bulk_unprepare(pd->num_clks, pd->clks);
- 	clk_bulk_put(pd->num_clks, pd->clks);
-+	reset_control_put(pd->resets);
+-	err = clk_bulk_prepare_enable(ARRAY_SIZE(rdev->cores[core].clks), rdev->cores[core].clks);
++	err = clk_bulk_prepare_enable(rdev->cores[core].soc->num_clks, rdev->cores[core].clks);
+ 	if (err) {
+ 		dev_err(dev, "failed to enable (%d) clocks for core %d\n", err, core);
+ 		return err;
+@@ -260,7 +266,7 @@ static int rocket_device_runtime_suspend(struct device *dev)
+ 	if (!rocket_job_is_idle(&rdev->cores[core]))
+ 		return -EBUSY;
  
- 	/* protect the zeroing of pm->num_clks */
- 	mutex_lock(&pd->pmu->mutex);
+-	clk_bulk_disable_unprepare(ARRAY_SIZE(rdev->cores[core].clks), rdev->cores[core].clks);
++	clk_bulk_disable_unprepare(rdev->cores[core].soc->num_clks, rdev->cores[core].clks);
+ 
+ 	return 0;
+ }
 -- 
 2.43.0
 
