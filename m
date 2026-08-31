@@ -1,73 +1,73 @@
 Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8434A2D0629;
-	Mon, 31 Aug 2026 08:21:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86A133D6682;
+	Mon, 31 Aug 2026 08:21:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788164478; cv=none; b=ra6u3hTLjhMlLFayp3/KCSmsoN+7OuNrRnVHE/zS66X4kGrbW7pZ9T4e/Zc4maGsvDjnqMqdfgLL8yJCMaIlUH6bbM/rIGf0az2e4TI34gMi6HfU/yWBBk9om01zcpZpuH9rUVRXoRyRCqXLLzFmSKqP4Uv8nNzf8SmsPHHCJjg=
+	t=1788164488; cv=none; b=kB8bnMIp0UTphKyl5hQvAJHGq3mWSKVyTsnz2LhGs1i6u3t9f2wKhNz5gX2hNcKN7Gd1WRtyDZfr7dxeQR6VbmmeEYy+tVOdzRiCyuVm9mV1B2NuZxl/qYMefa7nTQKQc/0b0vy2b1Kn7x5Fe5r1hQSFa0XTWTo+VJavkY9b9/0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788164478; c=relaxed/simple;
-	bh=ocxI92rXz6jlGIQBVHlzlo7HwU0/NSLjOc0Plg88GpU=;
+	s=arc-20240116; t=1788164488; c=relaxed/simple;
+	bh=CnWYRGn8A2CYIxAKUN6+IpvR0RZSQZ+TrHmYhGYwjSw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dlFTZ3nDEvH1Yap28RZIf9WdYrmxHmFpQvRf/Auwg71u+AHzwJrsSos5Iaekz1iTQVmZXZEeVPZTvT1b8mk/snDPa3HKN05ZtpN78yIvTBff3tjMHxFXFDsO6ht0Jpw/zmrJan2pIff68uQuCWtuiwqxKkYpzNQhBCObENksaaw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=FBA15nfl; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=M0sdoCPe; arc=none smtp.client-ip=103.168.172.139
+	 MIME-Version; b=rklQTsR5zwM+Bhl36RUMOMXKHv6jr2lDxZ+Sbr1g5ovpECk8DawSbFopJsComISQZ+dTmgYahg8y0D7ezyjAB1vCwwOp3OeXqFDm5mecR/gPCdKILSklUukjOpiBEKn5y/xiIODBitZwqhz8jrd3l8GGNDfRYm1JR8nuGkOt65Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=ibDflDyj; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=CN5zPA41; arc=none smtp.client-ip=103.168.172.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="FBA15nfl";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="M0sdoCPe"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.phl.internal (Postfix) with ESMTP id E70371380074;
-	Mon, 31 Aug 2026 04:21:16 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="ibDflDyj";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="CN5zPA41"
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailflow.phl.internal (Postfix) with ESMTP id B631E1380045;
+	Mon, 31 Aug 2026 04:21:26 -0400 (EDT)
 Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-04.internal (MEProxy); Mon, 31 Aug 2026 04:21:16 -0400
+  by phl-compute-02.internal (MEProxy); Mon, 31 Aug 2026 04:21:26 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1788164476; x=
-	1788171676; bh=W7m+cCkjA3WueMD/RPZpNcMr0lXTVLw93fSG4CHMuGk=; b=F
-	BA15nfl4XMlldY/SWRxQZKiFoS0d8nHJg25a1URC1plCcMZuJh9GyPGFY54TZRSV
-	vuATOsmXhKyNsyAATBX0iCAOphIryqSNPGavtCGc2aF8fvkqq++/u5wTsKS3L/Jg
-	rMJlK3KWL4XxHJqSC/JgXI95WjMEYQxt20qEx9T/G6A3/lgGijnhf8O4hkd5o/YD
-	oGqDj7PZcG433aX+sVqAdB78uy0W2ghQTQGjK5gp1fvlv/PiFkwmJspn8n0nXWZs
-	EQTUmnu3kxQJgGrjCPOrfpsSclRpVk3fgDKNw28SDCTUD97mOx7bg+4dDHL/N6Hc
-	qMHykoTYzjCAY0GVQ6BkA==
+	:reply-to:subject:subject:to:to; s=fm2; t=1788164486; x=
+	1788171686; bh=Bm7huY5WQXjxwqWxfiTvH04R09OwCZF8hQZPpxtRqLo=; b=i
+	bDflDyjBgQ0J+IIy4xlOXSay/81GUr8smw5IDwtIoHehw9BVCj6u44zGqvj2umV8
+	NBT98cLunQVdT5dk7z/2T8FXrfTU6k1FEkOS6GWFyD8p2tUdhtQYTd58EPUkGfOL
+	IdcYlwwAFsw7aTnZKxQZsGMBRHlBZboEFBbR6MVB+MJHoMs/+cn6OmiX9ln9AriD
+	21yZQss5nPmT/my/KwxZZrMbKbNK3Vy1xOyyHp0EVfR5ptCnimTm2Aa4v+wkfjUo
+	eRLu4EkFlq2dLblJt7+To5Pi2ynAx4QhMCKIBFrAMvmDKy/QWPMZw30KySDi8Q3A
+	nP8JnyAuJQOE7cWrm5meA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1788164476; x=1788171676; bh=W
-	7m+cCkjA3WueMD/RPZpNcMr0lXTVLw93fSG4CHMuGk=; b=M0sdoCPecJefgty0L
-	9yJtb1eecSqh4Fp1pVxJnFXDveH7QeOM8fMq7OiRrpvD9QFmwxqkNyoamEm+eIT/
-	W7gdM7i4NaJ9IC2zhQiTwPxJG6FBuagZnZtYzYib2RgfS6Ii1SJa5w3QDSZ7pGRL
-	GLGR43zFQh8s9mBlzyng+qnVkiDV81KJxUNLJh/zaY0EW7bXwyL+CiMZlmkwlU+w
-	lLacYy5gbRITMPbvgb4UZlu1JgtSsxA9HRumqzhXoou2iVYpBlPgbDtFnk+8Ga+8
-	9Fi4JDjcgufVP5CT9ip25+jnW3UNzm6724naaovZpb5dWJVsqP55q8+BESb157VZ
-	MOdpA==
-X-ME-Sender: <xms:fDmVapGn-d6ppb_ayKEXiB4Q4YqELEfhCoUsPpNxY-amFRNcTAdgDA>
-    <xme:fDmVams3yd625-46ZHuGDmvWC-GdXb3HqnZoPB5f_iE2p0CqrHCq3PxGYJsACy0B2
-    mK7-iAWfeiepHhy146uLSCKjmklFaC7GgxWwz923qa07OO6UHuQp_Y>
-X-ME-Received: <xmr:fDmVatUS367rMwoRr4JqTZDKlFWO1lp-x_KeLXLldh6CFApUy4ACDXvWCmxSE3ncRrQLO9MyHg>
-X-ME-Proxy-Cause: dmFkZTEKWQSpa8iZqUtW1ZQqP4bDvh9SK/YZ53CarhgclGKwi9pBkSeAm2pl18Ydw9NqYm
-    Zr/AB6JK94O+RJj3+nPdviPN4WL0ogDKkl2CMFV9N9D6NSBN5M/LV+S4GH+TRhS9zu3x5c
-    x2UqefLwNZ1g6jIgnHYbLgvH6Qcfxwr5ayCKwx4jXlH2P7ErMCLVryfACFcfAxxNF+zWzB
-    vhDdjBzJlYCkkDZuwtnUqHTI+YlUUPPhU6uGHE0mVT/tu7g0EvFCbzZenGG7GfkWbRsTX/
-    Fnz7vKpfqzHdp9e6NpI62zQZ3fDQSeSft9eBVteswNRFnAgakK0VawtlqkiHWFDHZGPmGy
-    ES5cI/K4VKSyJ3NT8NrFVMq3e235rxbEpOwsyuw/XGIxET5zjS9kaaOq0ERZHsHWwsL3LD
-    iCRjxH4INK6zOwqMV8vRJID7sEzY215dgJOz/LIPs7XbSoLgejsLkuf3A2xSpLC43BVJqT
-    fa81NwWad6rIk8RtsvWSRzSln02R4zJgW1Djw5ShC01BtYrWZo2zD6HQEc8Ht+kJLrWNFI
-    u8f/54JTonqlMAbDCCHB2hIYvrCNN4xWH24nUaYvQ7gc86VDxTEXdjVgPN9GPtqTic7yJG
-    k72T/Zjiji9JBSgNqLaUakxB8frfuI6xr0HNDhPryC6AOqMGwObQri7qs+ug
-X-ME-Proxy: <xmx:fDmVam6UoOPO5M_luWFbINeeExwdFBOrg0yYC9lUPbMnfMDtiDZ6nA>
-    <xmx:fDmVahZw87M-M_vlQVEkkPsO_4Nm398T01HC7kI6aPpl1weqmiHvkg>
-    <xmx:fDmVaqDcsQEVkeZ9NY47fZi6-csqJ_DhhlMF1yyZJd4K5CkzihUIHA>
-    <xmx:fDmVaipaZEzdlC2m2EQlJV3WKacnzv9NSo8LXab7m8GlnV9w9OQ7qA>
-    <xmx:fDmVavrSgQUC73R4wKI0m4kPMTwvErcdnBk9Foc2ZJSGnJ_9OsrieHbV>
+	:x-me-sender:x-sasl-enc; s=fm3; t=1788164486; x=1788171686; bh=B
+	m7huY5WQXjxwqWxfiTvH04R09OwCZF8hQZPpxtRqLo=; b=CN5zPA41V+cL4kDhz
+	cNMRI6ph8Op0KW4QcbIQLaiDSzMTPwkz1dr1+uwtm+hRqliYfWFeW50Ir6Ff4qKL
+	XSiKMkEgxTgtoz+27EQrusul5f7ZTjLOzaDCUdQPY6sJhGsFeESjsonbxgIRhENV
+	BzkeOOI0+wcp9jUQ2F7bkItncxFefJw/wN/aATCIbV7hTA2gHcRS56XNdCa7wbl+
+	qvnXLxbVUlE+ojGB7ogfjRMeicbhCmrgumWY6k7h4zW+bzeQZ9HYcbzSZfxf6C8v
+	Qb9LU0Aap1atfNNiuGXvknBklyt3LdZhz0D1fyjMn4jwKSCwaj+4W0Lq43UOpE4M
+	zdgPg==
+X-ME-Sender: <xms:hjmVajjcN_O7xuMh6oEGobVB7bSXiE_TlYgIZUFfr8-EAH32IMCCvg>
+    <xme:hjmVaoash7ycS1JuYPPW3YpxJmCS8T0yPQeOHLENXe1Vx2PLcef4OUA1KMiLwehtS
+    eHrZSfc4hfIoPuCOJCXA3ngn_x0oL5NrXN7MowQOndoE8iMjgoFccM8>
+X-ME-Received: <xmr:hjmValQxEZUMo_rZqj06LqNCj8Ix43KJRAiKJH4znKfA_1747Eha3YEqg9rNrxYchT1HmhwKtQ>
+X-ME-Proxy-Cause: dmFkZTGdGJxeVuW+Fmrt/Ef5qeMDFHGjonl8OVkqV4Q9pjx4ZDlXIa4Z3pOc6nqsAGbFM5
+    cWlbiX1SVX30CexdPBxYt3awlQb1f1VabgQ1+kwGrf/tqGBQR6d2lw5RrnEV6FL0zCLBXY
+    ybqqMjW04LTdiKVaoW/ueoWC57BUXXhq/gLbRORJuDA51/iSsme3r5tmV2YwHq2SFTmV8f
+    qmkLVMySqF/+M0VTPAV1bEl/RNXhLViTLJtdkIjM0/0F1iGTOIQFc8XdpRTpYODYq5KIVJ
+    rrfOCVoYg5oCW3a07vpVJtmuFrLRw/b3yMPQFvd+9PcwM7BPjK/SyOTGn8jtYhGarwxLdb
+    xXbl3j/fcqsE7TsqdsIqt3W5yY8+Dbkb1p0BNv6PM+egLTskWXj+912F8OUU/DaLhEfQ4X
+    lq4oRCA/JrphBVR8E/44M+b9AwF1BD6npJme38cKZEcTqrfUrgx5j/K+Dx912pDCFTwcay
+    /gErKAsoa4jXfcojxfpMMFTnsoxGNWZ6fOQf1Pn+jhMX0A9E4BdYmzPsoP2tSiYKapwCfQ
+    71iu8EIi0sZFvZ6OLtxe86qwLP1f5lLaKPo28LyU4bM1Ka+Yp44jRq6a3SNKCbw8xbczuP
+    ZP6YPztvg1WhRkz3vw8ueCsXH0ZOACh3cvdv3GU8v6DPKNZ1YlTRyNXVp48w
+X-ME-Proxy: <xmx:hjmVaoGqcS0uMWK62EKdPtjEk_aKmkJ1282vKznIMJhWd1axM8xhtA>
+    <xmx:hjmVai3oUs_J8PwbWb33k-XC9vNEAh3MYxj6XZwMLuNn-jPWz2fXPw>
+    <xmx:hjmVamuocBZGMlg9LGdBuZJLPd42CwggHTCEWxHkYluFfoeJaL0Z3Q>
+    <xmx:hjmVapmB3XVsGE8dgJMSrE-dZe95yUGPrJ8mTB2sWd2WjyGDqY-IPw>
+    <xmx:hjmVauWkD_Y38sJRc6gHrikHweBX0dehBvV0yPHC3NLQvf3EQbFVWPFV>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 31 Aug 2026 04:21:08 -0400 (EDT)
+ 31 Aug 2026 04:21:19 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -95,9 +95,9 @@ Cc: royalnet026@gmail.com,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>,
 	Conor Dooley <conor.dooley@microchip.com>
-Subject: [PATCH v11 07/14] dt-bindings: power: rockchip: allow resets in a power domain node
-Date: Mon, 31 Aug 2026 20:19:49 +1200
-Message-ID: <20260831081956.84871-8-gahing@gahingwoo.com>
+Subject: [PATCH v11 08/14] dt-bindings: iommu: rockchip: describe the RK3576 NPU MMU
+Date: Mon, 31 Aug 2026 20:19:50 +1200
+Message-ID: <20260831081956.84871-9-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260831081956.84871-1-gahing@gahingwoo.com>
 References: <20260831081956.84871-1-gahing@gahingwoo.com>
@@ -109,42 +109,83 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Some domains do not come up in a usable state on their own and need
-their resets cycled once power is on. The RK3576 NPU domains are one
-case: without it the first access after power-on takes an async SError.
+The RK3576 NPU MMUs are rk3568-iommu compatible but take five clocks
+where every other Rockchip MMU takes two, the extra three being the
+compute clock and the two convolution buffer clocks.
+
+Give them a compatible of their own and pin both sides with an allOf, so
+that an rk3568-iommu cannot carry five clocks and an NPU MMU cannot
+carry two. Describing the extra clocks as belonging to one SoC without
+saying so in the schema, which is what a comment on a description does,
+leaves both of those spellings valid.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- .../bindings/power/rockchip,power-controller.yaml         | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ .../bindings/iommu/rockchip,iommu.yaml        | 28 +++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
-index b41db576f..83741f048 100644
---- a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
-+++ b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
-@@ -136,6 +136,13 @@ $defs:
-           A number of phandles to clocks that need to be enabled
-           while power domain switches state.
+diff --git a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+index 6ce41d11f..83d7e7c8e 100644
+--- a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
++++ b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+@@ -26,6 +26,7 @@ properties:
+       - items:
+           - enum:
+               - rockchip,rk3576-iommu
++              - rockchip,rk3576-npu-iommu
+               - rockchip,rk3588-iommu
+           - const: rockchip,rk3568-iommu
  
-+      resets:
-+        maxItems: 1
-+        description:
-+          A phandle to a reset that needs to be cycled once the power domain has
-+          been switched on, for domains whose logic does not come up in a usable
-+          state by itself.
+@@ -42,14 +43,22 @@ properties:
+     minItems: 1
+ 
+   clocks:
++    minItems: 2
+     items:
+       - description: Core clock
+       - description: Interface clock
++      - description: Compute clock
++      - description: Convolution buffer core clock
++      - description: Convolution buffer interface clock
+ 
+   clock-names:
++    minItems: 2
+     items:
+       - const: aclk
+       - const: iface
++      - const: npu
++      - const: aclk_cbuf
++      - const: hclk_cbuf
+ 
+   "#iommu-cells":
+     const: 0
+@@ -72,6 +81,25 @@ required:
+   - clock-names
+   - "#iommu-cells"
+ 
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: rockchip,rk3576-npu-iommu
++    then:
++      properties:
++        clocks:
++          minItems: 5
++        clock-names:
++          minItems: 5
++    else:
++      properties:
++        clocks:
++          maxItems: 2
++        clock-names:
++          maxItems: 2
 +
-       domain-supply:
-         description: domain regulator supply.
+ additionalProperties: false
  
-@@ -216,6 +223,7 @@ examples:
-                     reg = <RK3399_PD_IEP>;
-                     clocks = <&cru ACLK_IEP>,
-                              <&cru HCLK_IEP>;
-+                    resets = <&cru SRST_A_IEP>;
-                     pm_qos = <&qos_iep>;
-                     #power-domain-cells = <0>;
-                 };
+ examples:
 -- 
 2.43.0
 
