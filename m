@@ -1,70 +1,73 @@
 Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D64A23EC699;
-	Mon, 31 Aug 2026 08:20:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FE863F39C8;
+	Mon, 31 Aug 2026 08:20:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788164410; cv=none; b=lYOGDkt7GznEfyNQXW45Oxdw+UjZUcX+r+Bof0BIvBPF6LOsmmZp2RJ3aC+lLlY25IPGDqaPQITv7msYRZlQbGa2RPuCuR64laN7EM9oG44fP1vLc/012TW9MUxJi8CJTlDBuWMy46KJ5RTcyFoh7qlNQU8fs+ijLPE1uNr535c=
+	t=1788164421; cv=none; b=q8hV0/0UiGJJ8jOYiadaBNCol1B2atAGF7sl72BOB77SKLvAVYiWtdlMoPNnRslFBoR0bAwn+pdlOktUN+BSvjRBNaXRLp8+CN6E5giKy2Ya2Bst0DQBWUUrTbfyq0Ccg5nFKN+ZlNIWjQP04YwXRt5sXIATQLnyaJkNZp8R2jY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788164410; c=relaxed/simple;
-	bh=t5nx7pp2VPjPwEp3ENSo/R0UwXNPXmjxfYj7Bb8fIuI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MRNmLvaMUSANhwJ8uQQ1XMapehy0dzzDuVPZXBdoA5poxLMGoZJIdqabsdGAbyLeX/QScj8WrqbcYFKkvXvELNyHsj1IYn0e03Hceasi0AHxf37ZgMd7hkY9GOsn9rlnj59oKZAokY4bWRKPRfBX9rXbrD46EFByZdkJTXqfK7M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=bOszMsm8; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=FdFcf4Q6; arc=none smtp.client-ip=103.168.172.139
+	s=arc-20240116; t=1788164421; c=relaxed/simple;
+	bh=Ya4pJnpX5WisDeNUR/GYAcZlBrgSDyfWCdda9z8QRxY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=tCHkji71KIepkHFWyGdQbWUxZ7VO09vVp1PWSPwVUxWdYbAp89O7rnvnshgIHlsQoIIIdwDAbNYAVVNHw49D8nvwaO/ThS3yCkK03++STfp37JuOde5+OTj2ZlM42XVZgNhRGmy0pgeD23fXCda6McB+Kl8Uwe2kQ6bmsPQdxRg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=tRQmTI60; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=exEIEtKO; arc=none smtp.client-ip=103.168.172.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="bOszMsm8";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="FdFcf4Q6"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.phl.internal (Postfix) with ESMTP id B77CB1380074;
-	Mon, 31 Aug 2026 04:20:07 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="tRQmTI60";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="exEIEtKO"
+Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
+	by mailflow.phl.internal (Postfix) with ESMTP id A27F013800E9;
+	Mon, 31 Aug 2026 04:20:18 -0400 (EDT)
 Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-04.internal (MEProxy); Mon, 31 Aug 2026 04:20:07 -0400
+  by phl-compute-06.internal (MEProxy); Mon, 31 Aug 2026 04:20:18 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
-	:from:in-reply-to:message-id:mime-version:reply-to:subject
-	:subject:to:to; s=fm2; t=1788164407; x=1788171607; bh=8m6cdT0nfN
-	PSL3LsX/H/7+7SfefK+mBsPhi1p0CIUac=; b=bOszMsm8aJhzLHmWU2Qjh1PpNq
-	9MudviXnE3OUpCGbzqMjtfLVCNc2Ale7WhWaW1DzXy1RSC4P5TOjlOJQeYypA8Hc
-	u//iIQg+1XZLDICkeR7lGA+Zy2L3WVF1Bw7ABGmMdm3SqBQtADKKrgE/fe5OVpGq
-	O6RUAiP9sh8Ey2PAStb5VofjgmLjsQvuJGVuS9E4dvKb8cTb8W4xpNBdeb+Z5p2p
-	O1hYiBOUI1TTByFukFQSjvVvhbXPieGImao0uRIS481NDjV1D52SV7D2zP1PGtQM
-	PjGayQlhmMudfPyZB4WtkTCtGp9l2kTn8B1hRWYAPevXLTRtT9V+qYsbgGow==
+	:from:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=fm2; t=1788164418; x=
+	1788171618; bh=mBpU3Op3r4JDPeCWNFWPI1BaBuK91a9+fdBYmwtcAeI=; b=t
+	RQmTI60W9XwmBoHzH5DW0CYxtcPfC6TxBa31AAWWwrub3Zv0Wb5a3KPboRgT16X3
+	EnNUadFOymS3t7xrEuzgdn2619Sp4d8WMMWKICvTWWAK0+CUdHMD46ZJ+7LMCK1A
+	licFPuo0eRVvH4gqpA0N5PZ1u+9DeCh5OeBLj/Y6fMmDWh01WqZ6sve4zThmbZJU
+	+wy+E5XdWiGWSpIpin6IXQaGrHMS/+MEXDKYm5cI6Z5Jy65lTplJq3kSdcYsbKX3
+	KOoi12Z45f52+/fB0DbLn7b0IcXSaYyrjAaqCaMv+4kbewQdFxazPpiW5b23r/eN
+	5mdIwzW7nU2oId7t680+g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-	1788164407; x=1788171607; bh=8m6cdT0nfNPSL3LsX/H/7+7SfefK+mBsPhi
-	1p0CIUac=; b=FdFcf4Q621eowKUr+Apj0pPUFXnlOE8ynI62fqt38g4pxvitLgV
-	f3AlcdcA+1Ivb8nPEMGgKlMTVCIBFYETlB/g0WkpVouYFztC00ULFfXVIc6rkn7G
-	byDfjTbFaKZ8LiI0Fk3+kpLbkI9OvFYndK/zFj57arpdkV1ZZujjpXQY5HkWaTqG
-	+9cMfZgLf65PLd5sBuP5b9kFHo8UJaleyicmmAj3+ZUqZPa8ma/c2U2+/lTFKunm
-	2AhK0XmkxlLezmyrXSaaRBUtvToohhDLM2eY2g5F0PAuw8lyleu7H7NWpzTgOhlk
-	KH8M7Rn7imU53Kxxg9WjWUYaE1sYONVDnjA==
-X-ME-Sender: <xms:NjmVauwr6kDGV7mblBdSNlJKlYm4u91ij-9XvHcHsJesJ-7-HwsjCg>
-    <xme:NjmValzCkoPoB8lTqPkxXldKMbxcaUul9CeU7qCDE2neRkq9LrhYkPl-oF2po340S
-    l6-eYOl50Ljxr1uiKRC2UbHL39etJuQHyZwW6-9Rxe-4f_kVDqbr_SQ>
-X-ME-Received: <xmr:NjmVamUgnLzkPjFPU1w5ht2naMnY8PVnGonNmtb5CQs0OFFwdkxjpcllmpg4OsETw8pF9noyXA>
-X-ME-Proxy-Cause: dmFkZTFKuUzJQp30UQpU176Yht+hTKHxtywNMDakC1Sp4pu9saEUUI8J3W49mpfnnxUkYE
-    WBtj1p6fgukYZXIxttoi236eYc3FLXPQ+OVgNPTAh9Vi53ooA0YRXtDxkT7iNRpyfxjR3d
-    P5ZbQVN929KTYDNKkCacOtRThYtOabLRUZHMiLbq/h9wg3x6AqmW8ur6SCbEua/hllvuyb
-    49Z+ADfHscFdS3EX8opOoKNo3xEiw2wsJcOc7Erh/aIs9DarDELEbw+8HtAtm+1gNQhA/O
-    OdMHTFLvj7WnVWwjKuvAUW0PqpxiUUIsrdc/xlluqsKRvibx6q5dVH4pqjyFDAiSm3oAMV
-    jU4+DzuQsVNUhIHaJmEvxUCjjqhteBNTmn/+mJt3q6gXyPYyrqgod58+yObkRp8swVqDjo
-    3J0EShQ182SKbVpnpqtOkPTUNrpZg3k8IrcLNZCPWSlKjkKD6L7IEkSElRw4NY/zoRuxBK
-    bnlOqzNacZbIXmttBxoxLgvBGlcSjfFwQIwCZ2FwN6aLZUbeLzHzGX7CZxeE5Yr3sttKzl
-    VZvOfn5oKwGG+EqacyKygU4jNKtg7jr8i7LoUOYAI8tfvICaDd+1sHBJa1bGb4WstYzPdn
-    LhBGFR57+OLnWMP8sCBwGRNFrF3KYYrsMaaFIIfAbLzEwQSgc70bGO+/uNgA
-X-ME-Proxy: <xmx:NjmVaiReOD3r3EJ_ZvTowPfdjXatWzJiZ1OUSULuG_SG4RYjzmU_Pw>
-    <xmx:NjmValOzngknHUf9enWBCCMn4Sni8NWR8JLRuSU1PvRDqcC3NaCZSw>
-    <xmx:NjmVavyngxZK4Sfgfg39N1U_l0eu0fkWTna0pC1vdkZtCZ_oTV81IQ>
-    <xmx:NjmVavqGj60Y4R2A7tjqJ-Zl6GsBLA0npJ8XPXpM1aQ6C4HbTtCYHg>
-    <xmx:NzmVan9svTyQzLE6zivmhpKrtVFlFhUDEDD2C16_sAsbLlq6I0o98hHy>
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
+	:x-me-sender:x-sasl-enc; s=fm3; t=1788164418; x=1788171618; bh=m
+	BpU3Op3r4JDPeCWNFWPI1BaBuK91a9+fdBYmwtcAeI=; b=exEIEtKO175hhr46o
+	stOgpFoP2ju2zWl3Cm938ErxptBTLcWozObm6hy2I8StS7KsdkU+mvKzxQi6b4+E
+	bayzdzcWnEHTe8mERvemzoGiAYcY8t1Ehophm2hQEB3x3LsjCiyZFn5Bi+DvJktq
+	M5nkFed/HgyosWPSPW8b08eSsSkw1tsmX+NE47JAbdnSwx2gVOun99ZReknPzuM6
+	kIbY+5RTj8JhWpGiBpO8rQzgp4Z4YFHfcAXeLNnS52FwWq05Ir9BXPHfitSfTVb9
+	Uex+0lSCP/gndl4HKLaDgymKjffVw+l9x1peAlKk14Xhvdb7lxO8ss86X5l2JTYc
+	pCTMQ==
+X-ME-Sender: <xms:QTmVajdQwR_w4oxu_2DRF-xA5FNa5DGe-RsRqt7niKgn1fAHGTG6hg>
+    <xme:QTmVagvpC5DmGwolyAVc13aofNL2uvuWeOwhnLvaOxPLgWEBSjVw4GGRDHA_HoOmc
+    95iEjv1prIH5cklHkULL-CgZsch0PK6g_GrO634VufOkEUyJIKheg>
+X-ME-Received: <xmr:QTmVaikyOvJj6To1U1RNPQty8Ei1R1zd-mcJzeY1jx7HFDhJBpHuSjW9Cktn_cmp9MTbHYeI3w>
+X-ME-Proxy-Cause: dmFkZTGGv45yNZEVAFcnckiDzpTtShgB5u7mCs5YP5orSJ890J7bGUFahPSU03RmgLiAtr
+    Jw4l31ghUGxCrG3APtLbl3i8GBubnvSq6gl6HKO8aHRUp5ikWaIvYCsJEGeV3tML7pOPXs
+    CzEWC4pDFu+WHpAxNESshJYienY6rRqnAUfknBAVdHfefUILJ2XaoNpfTOvKv++FVGciMC
+    B2ncF57mixOvt8aQehNcPNzuhLHc0b8pEmUA7/vQ2/jGpxr0FfbPNP2unmeFFHN2HVJZoV
+    SLAAmz+ZYwpapuC6rFgs88iyyqWIh5rltqj2sRnN8oNbNaCk4EkbW41/vBKDpfaD74T7Do
+    O/hEpNU8ZFEQ1F8xb5+orO0vAHY/Z7MdGJzBD9o7p9A+6bQuOPKDaMfbXREYsX9MO7W6JK
+    ofXFSeW0HvTtXSTimAxb9+UYBAubavQMZYe5tGXrvQvRoNQ1uIycyq9N6cBq8peWhO5AmH
+    ON8D9haiotqLqx3eAHHVTHQK8qjdd0a7Cqfb1V0/khWI+Cag77QcnyFriIEWDZmoLHWLKO
+    +qepF3mCvnd1RdqjANo0z1o0BAEQ0Wd0iwjy/0jAiRX9hmXhMRf6t11d9m7cWfPAeiTNBB
+    VqKv0wUaQAnNalA6H1aZg3GnKmylHU/7Qxnc91QDAlhNw7SI9rp4RKuDRB6w
+X-ME-Proxy: <xmx:QTmVajA7VYedTH_XjIv8F-2hID_2bh2C0cEohR-fH3gApZNUkALTAA>
+    <xmx:QTmVaqw0ZWDI-xZfU435OfjTx5kxRFvw2Tbi2QXE_LPyhJblc5lClQ>
+    <xmx:QTmVandIHey5I0q7DZtun35Fz3Iu1-OwMxJSE9KTQV5isqL-65sGSw>
+    <xmx:QTmVasyuAbxc9FtNgCXkb19WOhPd7MGFPFRhPvnJ2ZOBj7jpGfxHbA>
+    <xmx:QjmVahKdlki_dRXT6iWjpdC_UJIJKVbOM3cbpaSQqqE95O_8CoPBncOl>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 31 Aug 2026 04:19:59 -0400 (EDT)
+ 31 Aug 2026 04:20:09 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -90,11 +93,15 @@ Cc: royalnet026@gmail.com,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
+	Sidong Yang <sidong.yang@furiosa.ai>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v11 00/14] accel/rocket: RK3576 NPU (RKNN) enablement
-Date: Mon, 31 Aug 2026 20:19:42 +1200
-Message-ID: <20260831081956.84871-1-gahing@gahingwoo.com>
+Subject: [PATCH v11 01/14] accel/rocket: request the core clocks by name
+Date: Mon, 31 Aug 2026 20:19:43 +1200
+Message-ID: <20260831081956.84871-2-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260831081956.84871-1-gahing@gahingwoo.com>
+References: <20260831081956.84871-1-gahing@gahingwoo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -103,96 +110,83 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-1/14 is Igor Paunovic's "[PATCH v2] accel/rocket: request the core clocks
-by name", unchanged and carried inside the series rather than named as a
-prerequisite outside it. It keeps his authorship and its four tags.
-Tomeu asked for it on v10:
+From: Igor Paunovic <royalnet026@gmail.com>
 
-  "Sashiko is not reviewing this series because it doesn't not understand
-   yet prerequisite-patch-id. Can you please resubmit the series with
-   Igor's (presumably) patches bundled in it?"
+rocket_core_init() hands core->clks to devm_clk_bulk_get() without ever
+setting the .id members. The rocket_core array is allocated with
+devm_kcalloc() in rocket_device_init(), and rocket_probe() only fills in
+.rdev, .dev and .index, so all four clk_bulk_data entries are requested
+with a NULL con_id (unlike core->resets, whose ids are set a few lines
+above).
 
-So it applies to a plain next-20260814, with no prerequisite-patch-id
-left to follow. Tested on a Radxa ROCK 4D.
+clk_get(dev, NULL) ends up in of_clk_get_hw(np, 0, NULL), and
+of_parse_clkspec() only consults "clock-names" when a name was passed,
+so the index stays 0 for all four entries. Every entry therefore ends up
+holding a handle to the *first* clock of the DT "clocks" property, i.e.
+ACLK_NPUn. Nothing fails: probe succeeds and the driver believes it owns
+four different clocks.
 
-This adds the RK3576 NPU to accel/rocket, which today supports RK3588
-only. The RK3576 carries two cores of the same RKNN block, wired up
-differently. Two extra convolution buffer clocks, two power domains per
-core, one reset rather than two, no NPU SRAM rail, and a PC_TASK_CON
-that packs the task number into sixteen bits rather than twelve.
+The consequence is that rocket_device_runtime_resume() prepares and
+enables the AXI clock four times, while hclk, pclk and - most
+importantly - the NPU compute clock ("npu", SCMI_CLK_NPU on RK3588) are
+never prepared or enabled by this driver at all. The NPU still works
+only because the Rockchip power-domain driver sets GENPD_FLAG_PM_CLK and
+its attach_dev() callback walks the device node with of_clk_get() and
+adds every clock to the pm_clk list, so genpd happens to keep the
+remaining clocks running. The bug is therefore latent today, but it
+means the driver holds no reference to the clock that actually feeds the
+NPU, which stands in the way of any future frequency scaling
+(OPP/devfreq) work.
 
-What changed since v10
+Found on an Orange Pi 5 Plus (RK3588) by reading the live clock tree:
+/sys/kernel/debug/clk/clk_summary shows four "fdab0000.npu" consumer
+handles on aclk_npu0 (and likewise on aclk_npu1/aclk_npu2 for the other
+two cores), while hclk_npu0, pclk_npu_root and scmi_clk_npu have no
+"fdab0000.npu" consumer at all - their only consumers are the
+"npu@fdab0000" handles created by the power-domain driver via
+of_clk_get().
 
-No code, again. Igor's patch joins the series as 1/14 and everything that
-was 1/13 through 13/13 in v10 is now 2/14 through 14/14, same diffs.
+Set the ids explicitly, in the order mandated by the binding
+(Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml):
+aclk, hclk, npu, pclk. After the change the driver holds one handle per
+distinct clock and clk_bulk_prepare_enable() covers all four.
 
-The git note that was on 5/13 is gone rather than renumbered: it recorded
-a dependency outside the series, and there is not one now.
+Note that this is a user-visible tightening for out-of-tree DTs: the
+old NULL-id requests resolved by index and succeeded no matter what
+"clock-names" contained, while the named requests fail probe with
+-ENOENT when one of the four names is missing. That is the right
+outcome for in-tree users - the binding requires exactly these four
+clock-names and rk3588-base.dtsi carries them on all three cores - but
+a DT that relied on the permissive lookup goes from silently running on
+the wrong clock handles to not probing at all, so record the change
+here where git log will find it.
 
-The tags:
+Fixes: ed98261b4168 ("accel/rocket: Add a new driver for Rockchip's NPU")
+Signed-off-by: Igor Paunovic <royalnet026@gmail.com>
+Tested-by: Sidong Yang <sidong.yang@furiosa.ai>
+Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, NanoPC-T6 Plus
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Reviewed-by: Jiaxing Hu <gahing@gahingwoo.com>
+Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+---
+ drivers/accel/rocket/rocket_core.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-  3/14  Tested-by: Igor Paunovic   # RK3588, three cores, induced
-                                    # reset, differential base,
-                                    # JOB_TIMEOUT_MS=2
-  4/14  Tested-by: Igor Paunovic   # RK3588, three cores, induced
-                                    # reset, JOB_TIMEOUT_MS=2
-  7/14  Acked-by: Conor Dooley
-  8/14  Acked-by: Conor Dooley
-  9/14  Reviewed-by: Abel Vesa
-  10/14  Reviewed-by: Abel Vesa
-
-The bindings are unchanged since v9, where dt_binding_check was clean on
-all three with dtschema 2026.6 and yamllint 1.38.0, and CHECK_DTBS was
-clean on all 13 rk3576 and all 48 rk3588 dtbs.
-
-Two things I raised in v9 and would still rather hear about than guess
-at. 9/14 does three things: it adds the settle delay, renames a macro,
-and gives RK3576_PD_NPU a regulator, which also makes every RK3576 board
-force that domain off at probe. I asked whether it wants splitting;
-Abel Vesa's Reviewed-by may be the answer, but nobody has said so, and I
-would rather split it than have it merged on my silence. And 13/14 gives
-each core both NPU domains, which is the description that has been
-tested here rather than the topology; if it should be one domain per
-core, 6/14's minItems has to change with it. That one has had no reply
-at all.
-
-Nothing else moved.
-
-Igor Paunovic (1):
-  accel/rocket: request the core clocks by name
-
-Jiaxing Hu (13):
-  accel/rocket: take the completion register writes under job_lock
-  accel/rocket: wait for a running IRQ handler before resetting a core
-  accel/rocket: let the core suspend after a reset
-  accel/rocket: factor the completion tail out of the IRQ handler
-  dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
-  dt-bindings: power: rockchip: allow resets in a power domain node
-  dt-bindings: iommu: rockchip: describe the RK3576 NPU MMU
-  pmdomain/rockchip: add optional per-domain power-on settle delay
-  pmdomain/rockchip: cycle optional power-domain resets on power-on
-  accel/rocket: select the per-core clock and reset counts from match
-    data
-  accel/rocket: add RK3576 NPU (RKNN) support
-  arm64: dts: rockchip: rk3576: add NPU (RKNN) nodes
-  arm64: dts: rockchip: rk3576-rock-4d: enable NPU
-
- .../bindings/iommu/rockchip,iommu.yaml        |  28 +++++
- .../npu/rockchip,rk3588-rknn-core.yaml        |  47 ++++++-
- .../power/rockchip,power-controller.yaml      |   8 ++
- .../boot/dts/rockchip/rk3576-rock-4d.dts      |  13 ++
- arch/arm64/boot/dts/rockchip/rk3576.dtsi      |  82 +++++++++++-
- drivers/accel/rocket/rocket_core.c            |  32 ++++-
- drivers/accel/rocket/rocket_core.h            |  11 +-
- drivers/accel/rocket/rocket_device.c          |   7 +-
- drivers/accel/rocket/rocket_drv.c             |  28 ++++-
- drivers/accel/rocket/rocket_drv.h             |   2 +
- drivers/accel/rocket/rocket_job.c             | 119 ++++++++++++++----
- drivers/pmdomain/rockchip/pm-domains.c        |  75 +++++++----
- 12 files changed, 389 insertions(+), 63 deletions(-)
-
-
-base-commit: 4477a78374a57c3809b172ad30cceabda48c47c6
+diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
+index b3b2fa9ba..5dd260bac 100644
+--- a/drivers/accel/rocket/rocket_core.c
++++ b/drivers/accel/rocket/rocket_core.c
+@@ -28,6 +28,10 @@ int rocket_core_init(struct rocket_core *core)
+ 	if (err)
+ 		return dev_err_probe(dev, err, "failed to get resets for core %d\n", core->index);
+ 
++	core->clks[0].id = "aclk";
++	core->clks[1].id = "hclk";
++	core->clks[2].id = "npu";
++	core->clks[3].id = "pclk";
+ 	err = devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
+ 	if (err)
+ 		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
 -- 
 2.43.0
 
