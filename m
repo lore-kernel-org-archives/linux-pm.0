@@ -1,143 +1,143 @@
-Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [81.169.146.170])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B09BE3195FD;
-	Mon, 31 Aug 2026 13:02:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.170
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788181323; cv=pass; b=O5GRvrmiyFf/AVwKj27K4s5JofGrJFjuJJdcwjrbkK53R9TtmnmCKIMOcQiPto1VgBqL/VVSKNo6ktYNts7RHU75UNeKGi7KNKD0d9dodu/Ka7Le2JWR6s3um2dFBznXWsd/ChQ3rme5e0DxlMmPOfWhOMb3WdmslY0LvG3/QoE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788181323; c=relaxed/simple;
-	bh=7K2++2lVCH/mhMxQmGo9pjPt8HQrezFr/5LDlPaqLm8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BkBrS93M+k5mo2DhqR/BN6Pj2CqWI7I0aVgyVPgB7SGnfbZn2UjSlZHOuMrzaLfwDGa+YCUqyvxrNfmCWhxuxHC/Q+GLLX/CbkktUw4okNWLy602bHOEjOA7O6+PCkI930TOewB5c8u+k7Y0HxZCdJYefzFmNQVNzGsme5VRVB4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de; spf=none smtp.mailfrom=iokpp.de; dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=rLltL18x; dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=J5qUM+A2; arc=pass smtp.client-ip=81.169.146.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=iokpp.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B219A1A3160;
+	Mon, 31 Aug 2026 13:02:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788181375; cv=none; b=roO945B8KuWAl6RaSweciDI/Zn8dbxHFQ6R04pfLp8ZWD92U6d4/a2DY6z2O15L2lg2ZfAxGIpg9p7SWkiGANrdf+tRouiceJVABc2Ko5VLioXcRhDXuOXLd4u19yLdXs8TPi0pCKC8qLxIInSMWs/JidE38CGI2Lo0wwZDKDaU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788181375; c=relaxed/simple;
+	bh=DgUGDzDsFcaHkO/kfFjyblEG2ccdokJ8aFjLP+oZEss=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=D2kD7ZJXZItgnzoNEVKZzFl4LXicGkLYwVqwlLMkZtX2B/JdlTUPfYmCvzDN9xmv/3wZC60vuGnhuyPAHU+I4cI5/B9yFXL/0+pqTt0mrBA9b3sZf3Fru8EVY0qdKonnM24REHyHzvOnPpzVBk5vbnOksUZOibXrQE3coiisYcg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=W95mgbnZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="rLltL18x";
-	dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="J5qUM+A2"
-ARC-Seal: i=1; a=rsa-sha256; t=1788181299; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=ta8OmsDsot2gg4c9trXmg4QkvqmuOrx40FzhaoAGT5umHLXFTfv+Ir+m1iSgIyD2ba
-    L3D28kixnFWf3XrbhXAiu8WRw/gK32xwcAYwI8Elkm4zNjLnXYKeB0WC+ouMzNp8cdj/
-    WGzP3RNNk7qLOyUXNNG2lycAzLRRpnH78FZUteBoJWaCxhy1U9Pz4kPQY5IrkALR1eVp
-    QnxWxvXCpE7YaaaYZP6lR45BsqjBaIw7YgmHOQIcTpJyAfEuRjCU8BjnrbisPZAkY09d
-    vbyh/jgQLpKdgGzUyp65toRV722x9fJh74bJKAdUnMLv1Fh4gMtJQpndWjCxKmx283Ev
-    ZQDg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1788181299;
-    s=strato-dkim-0002; d=strato.com;
-    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
-    From:Subject:Sender;
-    bh=DQNekzi3HMaJqX2BC7HG+aXLO4uXJg8AL/wH7W8AuKg=;
-    b=BITry1WPy2PjcTRJVr6l0khh0FcTMKANTZuCXPGt6qaUo+PgciMeH/SZ71c99zS773
-    Gu2IGNBWyulhIi/3xD8CxRffCQceMXCMcAQv2ycSXaqhmje4ui/m4Uk/rtzWwwPhqDFC
-    Oz3gpIXnDzyDsN+rUPIXp0D4smO2AeRV46il7lYJw9SxAcVywYnpgumw4xOpxkVEPr4N
-    1MThmsoQaq2jJ6d7u1O5jORUotJ3s9OnUPaTGRnFL6P32A3mlc1WjyRgo5iUXEbPCNxl
-    uyfKuGd+Xye9uHhuPwXJ8/UxWH1Woi0x4vQ53I78PG6lANiRQCMLn+TYqyqiPJe1+WT6
-    fmIQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo02
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1788181299;
-    s=strato-dkim-0002; d=iokpp.de;
-    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
-    From:Subject:Sender;
-    bh=DQNekzi3HMaJqX2BC7HG+aXLO4uXJg8AL/wH7W8AuKg=;
-    b=rLltL18xdIS/o0eI7KyFlcs9Ce/BwJGrrlv3HrtmTilGqTC3P8p4dgK6cbo2pKgyNM
-    tW4KCarWbwvy3LaVesOrP9KotR3wgqQRNZalAJ2jNYeQ9hSgT/waprmNzU104Q0Xn/7q
-    y+J19SyCyWpaME+aN8Ot4FcDgkz8zrvFToEwyvaMC24WNB0LH1gzI2FnuP9+bWkc/P3y
-    KOtbNixw24I6rjTYJ58EfFLUJnYGRdjBUrXZioH8cxIr0G5udrEecuzFMOumY4qOZXa6
-    QwRJl3UaHn44gVvW0KXBMWeJbbneTLe2mq30HVFMlpCRYfruLChnz9n/AUSVN9APkeDj
-    q9ng==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1788181299;
-    s=strato-dkim-0003; d=iokpp.de;
-    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
-    From:Subject:Sender;
-    bh=DQNekzi3HMaJqX2BC7HG+aXLO4uXJg8AL/wH7W8AuKg=;
-    b=J5qUM+A2EJfVAtX12oCv6pGPuLWK5fxnb328CkGOVzOzRPPIdeRaB8PTCMfOTsyV6+
-    buTtRZiIP9J4ykk2fvDw==
-X-RZG-AUTH: ":LmkFe0i9dN8c2t4QQyGBB/NDXvjDB6pBSfNuhhDSDt3O2J2YOom0XQaPis+nU/xK"
-Received: from Munilab01-lab.micron.com
-    by smtp.strato.de (RZmta 55.6.2 AUTH)
-    with ESMTPSA id ze37e127VD1ckHk
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Mon, 31 Aug 2026 15:01:38 +0200 (CEST)
-From: Bean Huo <beanhuo@iokpp.de>
-To: MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	"Martin K . Petersen" <mkp@kernel.org>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>,
-	Avri Altman <avri.altman@sandisk.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Bean Huo <beanhuo@micron.com>
-Subject: [PATCH 1/3] PM / devfreq: Fall back to previous_freq when get_cur_freq() fails
-Date: Mon, 31 Aug 2026 15:01:27 +0200
-Message-Id: <20260831130129.3979454-2-beanhuo@iokpp.de>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260831130129.3979454-1-beanhuo@iokpp.de>
-References: <20260831130129.3979454-1-beanhuo@iokpp.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="W95mgbnZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F37371F000E9;
+	Mon, 31 Aug 2026 13:02:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788181374;
+	bh=Vh+bXtqB0JrmOUc7Cfb62eydik9BcrlwIErB4WGzYVY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=W95mgbnZSp3BKeR7gGy563E1S8nGYEOO9jEEqz96V9WeLaRNbpV394kayreuxjKfO
+	 ucfpy3x7RxAUezg6X9VoVkKpUSmQIRwz/iuFDRfJn6q4nKl0+Yo4Mf13WJcluJwKmZ
+	 cYTWrSHszAGqUVQtdChncE2y29CuqlSqoGhMHtTzdnvIojdK/dxMpxaGKNrZrutfPy
+	 0+osd4l8GKdnaU+l2Nsgy8ZfLgcDAVVvpWFHak3w4H9iij3MFGPKosrd7+ReK0hg+7
+	 Te1kuVXW6ni0cgIcHVdT2LJ0Wvn1jq1zBsJ9xg+FWrFPIY04pM1MCVRRVHhvkg8G59
+	 FXLsUTQYOiZ9w==
+Date: Mon, 31 Aug 2026 15:02:29 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
+	Hans de Goede <hansg@kernel.org>, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+	Conor Dooley <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, 
+	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, 
+	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Stephan Gerhold <stephan.gerhold@linaro.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	linux-acpi@vger.kernel.org, Sui Jingfeng <sui.jingfeng@linux.dev>
+Subject: Re: [PATCH v3 03/14] software node: Implement device_get_match_data
+ fwnode callback
+Message-ID: <vawuqud4z54ucbj4j4sbu5de3vh7fz6q7kvlluaw36vko443ki@7qdmd3trra2n>
+References: <20260110-pci-m2-e-v3-0-4faee7d0d5ae@oss.qualcomm.com>
+ <20260110-pci-m2-e-v3-3-4faee7d0d5ae@oss.qualcomm.com>
+ <aWSpFk9z0zpyKjr6@smile.fi.intel.com>
+ <6l3rs5pv6xnrbygpvqrdxqoqtybjyefsltk5bl4336q56rfoza@ejo3sxuufghe>
+ <aWSwgRiEkT9unYw9@smile.fi.intel.com>
+ <6peb6afhpm4l7opxbdt3b5sx32longevwds5c3dlqji2hr5dlh@kxuvj55jkqgi>
+ <ljqd5ovcsg7t62tdzd77w5mv5buawm3x7xyapy7n7l7azcaorh@tytj46t2lxyb>
+ <ks2nm67zp5i2grzomu7mjb7uhkuwtd7w5stoqp5kri2clpxpsp@ayn42h7meh5l>
+ <aoKrmZzmYsyvRJ-5@ashevche-desk.local>
+ <aoMGJqwcEAHWmZX9@black.igk.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <aoMGJqwcEAHWmZX9@black.igk.intel.com>
 
-From: Bean Huo <beanhuo@micron.com>
+On Mon, Aug 17, 2026 at 03:01:26PM +0200, Andy Shevchenko wrote:
+> On Mon, Aug 17, 2026 at 09:35:05AM +0300, Andy Shevchenko wrote:
+> > On Fri, Aug 14, 2026 at 02:49:31PM +0200, Manivannan Sadhasivam wrote:
+> > > On Mon, Jan 12, 2026 at 10:01:23PM +0530, Manivannan Sadhasivam wrote:
+> > > > On Mon, Jan 12, 2026 at 02:32:21PM +0530, Manivannan Sadhasivam wrote:
+> > > > > On Mon, Jan 12, 2026 at 10:27:45AM +0200, Andy Shevchenko wrote:
+> > > > > > On Mon, Jan 12, 2026 at 01:49:54PM +0530, Manivannan Sadhasivam wrote:
+> > > > > > > + Dmitry Torokhov (who was against this patch previously)
+> > > > > > > 
+> > > > > > > On Mon, Jan 12, 2026 at 09:56:06AM +0200, Andy Shevchenko wrote:
+> > > > > > > > On Sat, Jan 10, 2026 at 12:26:21PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
+> > > > > > > > 
+> > > > > > > > > Because the software node backend of the fwnode API framework lacks an
+> > > > > > > > > implementation for the .device_get_match_data function callback.
+> > > > > > > > 
+> > > > > > > > Maybe this is done on purpose. Have you thought about this aspect?
+> > > > > > > 
+> > > > > > > IMO, software nodes were introduced to add sub-properties to the existing
+> > > > > > > firmware nodes, but it has usecase/potential to go beyond that. More below.
+> > > > > > 
+> > > > > > Potential doesn't mean the necessity.
+> > > > > > 
+> > > > > > > > > This makes it difficult to use(and/or test) a few drivers that originates
+> > > > > > > > > from DT world on the non-DT platform.
+> > > > > > > > 
+> > > > > > > > How difficult? DSA implementation went to the way of taking DT overlay
+> > > > > > > > approach. Why that one can't be applied here?
+> > > > > > > 
+> > > > > > > Sometimes you do not have any DT node at all.
+> > > > > > 
+> > > > > > Yes, that is exactly the case I have referred to. The PCI core (in Linux)
+> > > > > > is able to create DT subtree on non-OF based platforms.
+> > > > > 
+> > > > > Maybe I should look into creating dynamic DT node for the device and insert it
+> > > > > to the uart node. Theoretically it should work.
+> > > > 
+> > > > It worked flawlessly. So I sent v4 incorporating this design:
+> > > > https://lore.kernel.org/linux-pci/20260112-pci-m2-e-v4-0-eff84d2c6d26@oss.qualcomm.com/
+> > > 
+> > > Andy, I had to revive this old thread of a merged series as Krzk is not in
+> > > favour of adding DT overlay or dynamic OF nodes for these BT devices [1]. His
+> > > objections are due to the fact that we are just adding BT nodes of a
+> > > discoverable device (M.2 PCIe device) without any resources. So the node just
+> > > contains the compatible to match with the serdev driver and nothing else.
+> > > 
+> > > And he suggested to use swnodes or other similar mechanisms to plug with the
+> > > serdev driver as that's the only thing we want here, not a true hardware
+> > > description.
+> > 
+> > SW nodes are not for describing HW from scratch. They are for fixing missing
+> > pieces. If you can justify your case as a missing piece for the *existing*
+> > device (which is enumerated using standard mechanisms), you can add a property
+> > that fills the gap.
+> > 
+> > Unfortunately I see that there are `PROPERTY_ENTRY_STRING("compatible", ...)`
+> > cases in the kernel (only 9 drivers so far), and I can't say if they describing
+> > missing pieces or a SW-made descriptions of the hardware. For the latter the
+> > DT/ACPI/other means but swnodes should be used.
+> 
+> I have read all replies by @krzk and the question here, why don't you use
+> auxiliary bus? It seems the best suit for the case.
+> 
 
-devfreq_set_target() calls the optional ->get_cur_freq() callback to get
-the frequency that is passed as freqs.old to the DEVFREQ_PRECHANGE and
-DEVFREQ_POSTCHANGE notifiers, but it does not check the return value. If
-the callback fails without setting @freq, cur_freq is never assigned, and
-an uninitialized stack value is passed to the notifiers.
+I agree and I realised it very late. I've prototyped aux device locally and it
+works.
 
-hisi_uncore_get_cur_freq() can hit this. It returns -ENODEV without
-setting @freq when its PCC channel is missing. On the mailbox error path
-it sets @freq to 0 instead, so that the core does not read a random
-value.
+Will submit the rework after some more testing, thanks!
 
-The other two callers, cur_freq_show() and devfreq_monitor_resume(),
-already check the return value and use devfreq->previous_freq when the
-callback fails. Do the same in devfreq_set_target().
+- Mani
 
-This does not seem to cause a visible problem today. The passive governor
-is the only DEVFREQ_TRANSITION_NOTIFIER user in the tree, and it only
-reads freqs.new. So this patch is not marked for stable.
-
-Fixes: 0fe3a66410a3 ("PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER notifier")
-Signed-off-by: Bean Huo <beanhuo@micron.com>
----
- drivers/devfreq/devfreq.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index f08fc6966eae..f20d9a660779 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -348,9 +348,8 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
- 	unsigned long cur_freq;
- 	int err = 0;
- 
--	if (devfreq->profile->get_cur_freq)
--		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
--	else
-+	if (!devfreq->profile->get_cur_freq ||
-+	    devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq))
- 		cur_freq = devfreq->previous_freq;
- 
- 	freqs.old = cur_freq;
 -- 
-2.34.1
-
+மணிவண்ணன் சதாசிவம்
