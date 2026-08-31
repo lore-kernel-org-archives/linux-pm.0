@@ -1,44 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A97B490C04;
-	Mon, 31 Aug 2026 13:38:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B7124F755A;
+	Mon, 31 Aug 2026 13:41:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788183512; cv=none; b=coHY3mmQ7sxJroFOoGHbsfB+FFwTfM/e5//2aAtfoT1l3nroBl3+ewEQ6c9EewzYfCgZnDp5syRltmV+omuaG1IdLut8mYPdTH6imPgvmgkx9nThwInDkN2CKRBWyZYw9nIOSgjLamam77a5zAXLhlmVZkIkL4ZlScnqK6GIcLY=
+	t=1788183677; cv=none; b=tbFOW2c99xhVlgvEUQchYnisGaqeMtqouBzh3X7B+0m13ZDjsu8D7FAdCZqZRi7GKcoLA+q60zusuRZox6lipY8ikrmTrKeTRLUCqV/llaq3cg8pgj3pCkrVk19Xqoy44npFEKOBenuNCSVkh0R4wEAQTNmd7KBSKytm9CFtoLg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788183512; c=relaxed/simple;
-	bh=D4jnDp8i2sObWxNYPHVxmKCsB2PC/u4qutfWV8zfqFM=;
+	s=arc-20240116; t=1788183677; c=relaxed/simple;
+	bh=NiOOIRe+RazP0jkQ8XhFlBUaPxVGUpjBuJ+/Z/UDFIc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hAQIorGXLoVs2mcYdvVABYT8o8w2aTiMZwFO4xVMWj4+0Uh1hVJH0HSwAuffofbpm54+he/+1yTJyu4gn3Imk6S2MJ6W82VsWwlGB4GewQ7EsCCsRaXhDGEvTpU5SALphdDvEYXXJyK/Mwu80Vfwn8XJuR/fz6q3aUOjoyIy+NI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hmtaWE07; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=dHhoVtiMLk9WUxksGJrSEwfCIgrSeAm/qru6pvqYUMRRvt0mvCOg1XHay266Sael+/M/RMMqby/xw2erHG50S2DP8q37JmZLqXgQFTIxsMLtlsjX+Di4bk5y150O9JkM3StHt8hxfNykIZR9mI9DO7Nj6hoPWyPfE8OL/2rKKTI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T2iMtuTz; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hmtaWE07"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0360C1F00A3E;
-	Mon, 31 Aug 2026 13:38:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T2iMtuTz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 426461F00ACA;
+	Mon, 31 Aug 2026 13:41:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788183510;
-	bh=FwwPdvzqevX4qbZSbYXl0H1ZvCRmyAEVhmV3o6B+U7Q=;
+	s=k20260515; t=1788183675;
+	bh=/SouyGdEaHqB03m2lFAd2TnOK5ycVJFukmm9BxVy3sY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=hmtaWE07lGGuhJnEVPgf3PEm3DbBNy15kBTIlHK8YrRITFckppe9rbzyJHoqov6uZ
-	 cj+U/YeUiTJ3u4R35YRNms9ceGjs/iO2FcWt0sXGjeXnmkHiQkEhS04Tt5UJiryByw
-	 i1h/z8d6aL3A3kCpxq4eWgHn7uGdcjNypZX4djj6LLWSWI+JVMGYrXJusmuJ9HJmlg
-	 sjqRUvvDCvYaqMsYxUy945S2mMzClDfquTx+Ci4QyaBcBseoz/Yf/B4u4phTuNLm2/
-	 FbV2mHP+iyIRH6rh+KXCGSbzs9vH2+8L8Mlti/5eYCb1dVg3M8jJuxDt2mtauTOc7E
-	 OAqG0fucYHSCQ==
+	b=T2iMtuTzcee6cRfou3VWuJAxGKT++aVNnT9uf2PpFEH57zsnV4h7IXkF8bvjRO9Y9
+	 kMcX04jN4ttcVa3K7AkQxHVoAxinoZ1xyOEFBZ/v5Jk3VDsEfslNaIYlfmZnZEc6t8
+	 5onRHvmB+KISXoV8E1LIGTNvhsPhTgSw7hvv36ZFPPEJ/amNCol9m86iObtaaeXRtL
+	 TfsMxb10hpzHw/FIsJaP5+uVUsLrpiAgZdB/pFOwKqZErVGDlEsY2ukelMlvMQ+OlO
+	 tsWhCsCpeXOc0hR63OdfBNcPXp8dgS8XXhbS8qmIsXZz5FvjwYx9NiUYLtGB6UzkMC
+	 4ZkFyX4hea3Vg==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Matthew Leach <matthew.leach@collabora.com>,
-	"Mario Limonciello (AMD)" <superm1@kernel.org>,
+Cc: Sumeet Pawnikar <sumeet4linux@gmail.com>,
 	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	Sasha Levin <sashal@kernel.org>,
 	rafael@kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18] PM: hibernate: call preallocate_image() after freeze prepare
-Date: Mon, 31 Aug 2026 09:22:47 -0400
-Message-ID: <20260831133314.4125787-139-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-6.12] powercap: intel_rapl: Fix memory leak in rapl_add_package_cpuslocked()
+Date: Mon, 31 Aug 2026 09:24:25 -0400
+Message-ID: <20260831133314.4125787-237-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
 References: <20260831133314.4125787-1-sashal@kernel.org>
@@ -54,493 +53,358 @@ X-stable-base: Linux 6.18.48
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Matthew Leach <matthew.leach@collabora.com>
+From: Sumeet Pawnikar <sumeet4linux@gmail.com>
 
-[ Upstream commit 783c8109844503bd1c35dab41b6d5fd074a9f131 ]
+[ Upstream commit bfc7d93bc5e12288e5dc6bb54260f68cdf5a5c47 ]
 
-Certain drivers release resources (pinned pages, etc.) into system
-memory during the prepare freeze PM op, making them swappable.
-Currently, hibernate_preallocate_memory() is called before prepare
-freeze, so those drivers have no opportunity to release resources
-first. If a driver is holding a large amount of unswappable system
-RAM, this can cause hibernate_preallocate_memory() to fail.
+When topology_physical_package_id()/topology_logical_die_id() returns
+a negative value, rapl_add_package_cpuslocked() returns ERR_PTR(-EINVAL)
+directly without freeing the rapl_package structure that was just
+allocated by kzalloc_obj(), leaking memory on every failed package
+addition.
 
-Move the call to hibernate_preallocate_memory() after prepare freeze.
+Use the existing err_free_package label so that the allocation is
+released on the error path.
 
-According to the documentation for the prepare callback, devices should
-be left in a usable state, so storage drivers should still be able to
-service I/O requests. This allows drivers to release unswappable
-resources prior to preallocation, so they can be swapped out through
-hibernate_preallocate_memory()'s reclaim path.
-
-Also remove shrink_shmem_memory() since hibernate_preallocate_memory()
-will have reclaimed enough memory for the hibernation image.
-
-Signed-off-by: Matthew Leach <matthew.leach@collabora.com>
-Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
-[ rjw: Subject and changelog tweaks ]
-Link: https://patch.msgid.link/20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com
+Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+Link: https://patch.msgid.link/20260515182616.227707-1-sumeet4linux@gmail.com
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-# Stable Backport Analysis: PM: hibernate: call preallocate_image()
-after freeze prepare
-
-**Local tree:** `v6.18.44` (stable/linux-6.18.y)
-**Upstream commit:** `783c8109844503bd1c35dab41b6d5fd074a9f131` (not
-present in this tree; cherry-picks cleanly)
-
----
-
-## PHASE 1: COMMIT MESSAGE FORENSICS
+## Phase 1: Commit Message Forensics
 
 ### Step 1.1: Subject line
-**Record:** `[PM: hibernate]` `[call/move]` — Reorder
-`hibernate_preallocate_memory()` to run after `dpm_prepare(PMSG_FREEZE)`
-instead of before it.
+**Record:** `[powercap: intel_rapl]` `[Fix]` — memory leak in
+`rapl_add_package_cpuslocked()` on topology error path.
 
 ### Step 1.2: Tags
 **Record:**
-- **Signed-off-by:** Matthew Leach (author), Rafael J. Wysocki
-  (committer)
-- **Reviewed-by:** Mario Limonciello (AMD) `<superm1@kernel.org>`
-- **Link:** https://patch.msgid.link/20260403-hibernation-
-  fixes-v3-1-31bc9fa3ba2d@collabora.com
-- No Fixes:, Reported-by:, Tested-by:, or Cc: stable tags
-- Pipeline-added Signed-off-by: Sasha Levin — ignored per instructions
+- **Signed-off-by:** Sumeet Pawnikar `<sumeet4linux@gmail.com>` (author)
+- **Link:** https://patch.msgid.link/20260515182616.227707-1-
+  sumeet4linux@gmail.com
+- **Signed-off-by:** Rafael J. Wysocki `<rafael.j.wysocki@intel.com>`
+  (powercap/ACPI maintainer)
+- No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Cc:
+  stable@vger.kernel.org`
 
-**Notable:** Reviewed by the AMD maintainer who also committed the
-existing `shrink_shmem_memory()` workaround in this tree.
+Notable: maintainer sign-off; no syzbot/fuzzer report.
 
 ### Step 1.3: Body analysis
 **Record:**
-- **Bug:** `hibernate_preallocate_memory()` runs before
-  `dpm_prepare(PMSG_FREEZE)`. Drivers release pinned/unswappable pages
-  during `prepare`, but preallocation has already counted available
-  memory, so preallocation can fail.
-- **Symptom:** Hibernation fails with insufficient memory for the
-  snapshot image.
-- **Root cause:** Wrong ordering — resource release in `prepare` happens
-  too late.
-- **Fix approach:** Move preallocation after `dpm_prepare`; remove
-  `shrink_shmem_memory()` as redundant (preallocate's reclaim path
-  handles it).
+- **Bug:** After `kzalloc`/`kzalloc_obj` allocates `struct
+  rapl_package`, if `topology_physical_package_id()` or
+  `topology_logical_die_id()` yields a negative value, the function
+  returns `ERR_PTR(-EINVAL)` without freeing `rp`.
+- **Symptom:** Kernel memory leak on each failed package addition.
+- **Root cause:** Missing jump to existing `err_free_package` cleanup
+  label on this error path.
+- **Fix:** Set `ret = -EINVAL` and `goto err_free_package`.
 
 ### Step 1.4: Hidden bug fix?
-**Record:** Yes — described as reordering, but it fixes a real
-functional bug (hibernation failure) and replaces an incomplete
-workaround (`shrink_shmem_memory()`).
+**Record:** No — explicitly labeled and described as a memory leak fix.
 
 ---
 
-## PHASE 2: DIFF ANALYSIS
+## Phase 2: Diff Analysis
 
 ### Step 2.1: Inventory
 **Record:**
-- **File:** `kernel/power/hibernate.c` only (+9 / -37 lines)
-- **Functions modified:** removes `shrink_shmem_memory()`; reorders
-  logic in `hibernation_snapshot()`
-- **Scope:** Single-file, surgical reorder + cleanup
+- **File:** `drivers/powercap/intel_rapl_common.c` (+2 / -1 lines in
+  hunk)
+- **Function:** `rapl_add_package_cpuslocked()`
+- **Scope:** Single-file, surgical error-path fix
 
-### Step 2.2: Code flow changes
+Note: upstream diff uses `kzalloc_obj()`; this tree uses
+`kzalloc(sizeof(struct rapl_package), GFP_KERNEL)` at line 2210 —
+allocation line unchanged by the fix.
+
+### Step 2.2: Code flow change
 **Record:**
-
-| Hunk | Before | After |
-|------|--------|-------|
-| `shrink_shmem_memory()` | Called after `dpm_prepare()` | Function
-removed entirely |
-| Preallocation | Before `freeze_kernel_threads()` | After
-`dpm_prepare(PMSG_FREEZE)` |
-| `freeze_kernel_threads()` error | `goto Cleanup` → `swsusp_free()` |
-`goto Close` (nothing to free yet) |
-| `dpm_prepare()` error | inline `dpm_complete` + `goto Thaw` | `goto
-Complete` |
-| Preallocate error (new position) | N/A | `goto Complete` →
-`dpm_complete(PMSG_RECOVER)` + thaw |
-| `Cleanup:` label | `swsusp_free()` on early errors | Removed
-(preallocate not yet run) |
+- **Before:** On negative topology ID → immediate `return
+  ERR_PTR(-EINVAL)` with `rp` leaked.
+- **After:** On negative topology ID → `ret = -EINVAL; goto
+  err_free_package;` → `kfree(rp->domains); kfree(rp); return
+  ERR_PTR(ret);`
+- **Path:** Error path in CPU-hotplug-driven package registration,
+  before `rapl_config()`.
 
 ### Step 2.3: Bug mechanism
-**Record:** **Logic / ordering bug** in the hibernation snapshot
-sequence.
-- Drivers like AMDGPU call `amdgpu_device_prepare()` →
-  `amdgpu_device_evict_resources()` during `dpm_prepare()`, releasing
-  pinned BO memory.
-- Preallocation before `prepare` cannot see that memory; reclaim during
-  preallocate cannot swap it out.
-- The existing `shrink_shmem_memory()` workaround only partially
-  addresses a related symptom (VRAM moved to shmem during prepare) and
-  only reclaims ~50% of shmem.
+**Record:** **Category:** Error-path resource leak (missing `kfree`).
+- `rp->domains` is not yet allocated at this point; `kfree(NULL)` in
+  `err_free_package` is safe.
+- Other error paths (`rapl_config`, `rapl_detect_domains`,
+  `rapl_package_register_powercap`) already use `err_free_package`.
 
 ### Step 2.4: Fix quality
-**Record:** Obviously correct ordering fix. Error paths are simplified
-and consistent with the new call order. `hibernate_preallocate_memory()`
-already calls `shrink_all_memory()` internally (verified in
-`snapshot.c:1918`), making the separate `shrink_shmem_memory()`
-redundant. Low regression risk — reclaim-after-freeze was already done
-at this point via `shrink_shmem_memory()`.
+**Record:** Obviously correct; reuses existing cleanup. Minimal
+regression risk — no new APIs, locks, or behavior changes on success
+paths.
 
 ---
 
-## PHASE 3: GIT HISTORY INVESTIGATION
+## Phase 3: Git History Investigation
 
 ### Step 3.1: Blame
-**Record:**
-- Preallocate-before-prepare ordering: Rafael Wysocki, 2009
-  (`64a473cb74a88`) — long-standing.
-- `shrink_shmem_memory()`: Samuel Zhang, Jul 2025 (`2640e819474f4`) —
-  workaround for AMDGPU dGPU hibernation failures, **present in this
-  tree**.
+**Record:** Lines 2210–2219 blame to `7e22de67e545d` in this checkout
+(shallow/stable history). Buggy early-return pattern is present in
+current tree at lines 2217–2219.
 
 ### Step 3.2: Fixes: tag
-**Record:** N/A — no Fixes: tag.
+**Record:** N/A — no `Fixes:` tag.
 
 ### Step 3.3: Related file history
-**Record:** Recent related commits in this tree:
-- `2640e819474f4` — add `shrink_shmem_memory()` workaround (this commit
-  removes it)
-- `449c9c02537a1` — restore `pm_restrict_gfp_mask()` in
-  `hibernation_snapshot()`, needed because `shrink_shmem_memory()`
-  exposed swap/GFP issues (bugzilla #220555, Cc: stable 6.16+)
-- `12ffc3b1513eb` — restrict swap use later in suspend sequence
+**Record:** `git log --oneline -- drivers/powercap/intel_rapl_common.c`
+shows only one commit in this checkout’s history. Negative-topology
+guard and `err_free_package` label are both present; only the EINVAL
+path omits cleanup.
 
 ### Step 3.4: Author context
-**Record:** Matthew Leach (Collabora). Rafael Wysocki (PM maintainer)
-committed upstream. Mario Limonciello (AMD, drm/PM) reviewed with LGTM
-and previously committed the `shrink_shmem` workaround.
+**Record:** Sumeet Pawnikar; Rafael Wysocki (subsystem maintainer)
+committed/acked. No other author commits visible in this shallow tree.
 
 ### Step 3.5: Dependencies
-**Record:** Standalone single-patch series (`hibernation-fixes` v1→v3,
-only this patch). No prerequisites beyond code already in 6.18.y.
-Cherry-pick of `783c81098445` applies cleanly.
+**Record:** Standalone; no series or prerequisite commits.
+`err_free_package` already exists in this tree.
 
 ---
 
-## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
+## Phase 4: Mailing List and External Research
 
 ### Step 4.1: Original discussion
-**Record:**
-- **URL:** https://patch.msgid.link/20260403-hibernation-
-  fixes-v3-1-31bc9fa3ba2d@collabora.com
-- **Series:** v1 (Mar 21) → v2 (Mar 26) → v3 (Apr 3, committed version)
-- v2 added removal of `shrink_shmem_memory()` and fixed error path; v3
-  renamed error labels
+**Record:** `b4 dig -c HEAD` found no match. `b4 dig` with message-id
+argument failed (wrong syntax). Lore and patch.msgid.link fetches
+returned no usable review content (bot protection / thread not indexed).
+**Series revisions, reviewer feedback, stable nominations: UNVERIFIED.**
 
 ### Step 4.2: Reviewers
-**Record:** CC'd Rafael Wysocki, Pavel Machek, Len Brown, Mario
-Limonciello, linux-pm@, linux-kernel@. Mario Limonciello: "LGTM" +
-Reviewed-by.
+**Record:** UNVERIFIED from lore. Maintainer SOB from Rafael Wysocki is
+present in commit message.
 
-### Step 4.3: Bug reports
-**Record:** No direct Reported-by. Related bugzilla #220555 (from
-`449c9c02537a1`) documents breakage from `shrink_shmem_memory()`
-interaction with GFP restrictions — this commit removes that workaround.
+### Step 4.3: Bug report
+**Record:** No external bug report or syzbot link. Issue identified by
+code inspection per commit message.
 
-### Step 4.4: Series context
-**Record:** Single-patch series. Rafael raised deadlock/reclaim concerns
-(frozen kthreads, OOM killer disabled); Matthew responded that reclaim
-after freeze was already done via `shrink_shmem_memory()` at the same
-position — not a new pattern.
+### Step 4.4: Related patches
+**Record:** None found in local `.mbx` files.
 
-### Step 4.5: Stable list history
-**Record:** No stable-list discussion found for this specific patch.
-Related `449c9c02537a1` was explicitly nominated `Cc: stable 6.16+`.
+### Step 4.5: Stable list
+**Record:** UNVERIFIED — no stable-list discussion found.
 
 ---
 
-## PHASE 5: CODE SEMANTIC ANALYSIS
+## Phase 5: Code Semantic Analysis
 
 ### Step 5.1: Key functions
-**Record:** `hibernation_snapshot()`, `hibernate_preallocate_memory()`,
-`shrink_shmem_memory()` (removed), `dpm_prepare()`.
+**Record:** `rapl_add_package_cpuslocked()`,
+`rapl_find_package_domain_cpuslocked()`, `rapl_cpu_online()`.
 
 ### Step 5.2: Callers
-**Record:** `hibernation_snapshot()` called from:
-- `hibernate()` in `hibernate.c:836` — main hibernation entry via
-  `/sys/power/disk`
-- `snapshot_write()` in `user.c:311` — `/dev/snapshot` interface
-
-Both are userspace-triggered hibernation paths (root/capability
-required).
+**Record:**
+- `drivers/powercap/intel_rapl_msr.c:79` — `rapl_cpu_online()` CPU
+  hotplug callback (`id_is_cpu=true`)
+- `rapl_add_package()` wrapper at `intel_rapl_common.c:2258–2261`
+- `drivers/powercap/intel_rapl_tpmi.c:309` — `rapl_add_package(...,
+  false)` (non-CPU ID path; bug path only when `id_is_cpu=true`)
+- `drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c:84` —
+  `rapl_add_package(0, ..., false)` (not affected)
 
 ### Step 5.3: Callees
-**Record:** `hibernate_preallocate_memory()` → `shrink_all_memory()` →
-direct reclaim via `do_try_to_free_pages()`. `dpm_prepare()` → driver
-`.prepare` callbacks (e.g. `amdgpu_pmops_prepare()` →
-`amdgpu_device_prepare()` → `amdgpu_device_evict_resources()`).
+**Record:** `kzalloc`, `topology_physical_package_id`,
+`topology_logical_die_id`, `rapl_config`, `err_free_package` cleanup
+(`kfree`).
 
 ### Step 5.4: Reachability
-**Record:** Triggered by any hibernation attempt (`echo disk >
-/sys/power/state`, etc.). Requires `CONFIG_HIBERNATION`. Common on
-laptops and some servers.
+**Record:** Reachable from CPU hotplug on Intel/AMD/HYGON systems with
+`CONFIG_INTEL_RAPL` MSR driver.
+
+Trigger chain verified in code:
+1. `rapl_cpu_online()` calls `rapl_find_package_domain_cpuslocked()` —
+   if topology ID is negative, returns `NULL` (no leak).
+2. Because `!rp`, calls `rapl_add_package_cpuslocked()` — allocates
+   `rp`, hits same negative check, leaks on current code.
+
+On x86, `topology_get_logical_id()` can return `-ENODEV` or `-ERANGE`;
+stored in `u32 logical_die_id`, then `(int)rp->id < 0` detects the
+wrapped negative value.
 
 ### Step 5.5: Similar patterns
-**Record:** `shrink_shmem_memory()` was the prior partial fix for the
-same class of problem. This commit is the architecturally correct
-replacement.
+**Record:** `rapl_find_package_domain_cpuslocked()` at lines 2177–2181
+handles the same negative-topology case without allocation —
+`rapl_add_package_cpuslocked()` is inconsistent.
 
 ---
 
-## PHASE 6: CROSS-REFERENCING AGAINST LOCAL TREE
+## Phase 6: Cross-Reference Against Local Tree (6.18.44)
 
-### Step 6.1: Buggy code exists?
-**Record:** **Yes.** Current `v6.18.44` tree has preallocate before
-`dpm_prepare` and the `shrink_shmem_memory()` workaround at lines
-428-460 of `kernel/power/hibernate.c`. Bug present since 2009;
-workaround added Jul 2025.
+### Step 6.1: Buggy code present?
+**Record:** **YES.** Tree is `v6.18.44` (`VERSION=6 PATCHLEVEL=18
+SUBLEVEL=44`). Bug at:
+
+```2217:2219:drivers/powercap/intel_rapl_common.c
+                if ((int)(rp->id) < 0) {
+                        pr_err("topology_logical_(package/die)_id()
+returned a negative value");
+                        return ERR_PTR(-EINVAL);
+```
+
+`err_free_package` exists at lines 2251–2254.
 
 ### Step 6.2: Backport complications
-**Record:** **Clean apply.** `git cherry-pick --no-commit 783c81098445`
-succeeds with auto-merge; `1 file changed, 9 insertions(+), 37
-deletions(-)`.
+**Record:** Clean apply expected — only change `return ERR_PTR(-EINVAL)`
+to `ret = -EINVAL; goto err_free_package`. No conflict with `kzalloc` vs
+upstream `kzalloc_obj`.
 
 ### Step 6.3: Related fixes already present?
-**Record:** `shrink_shmem_memory()` workaround (`2640e819474f4`) and GFP
-mask fix (`449c9c02537a1`) are already in 6.18.y. This commit supersedes
-the workaround with the proper fix. No duplicate fix present.
+**Record:** No — `git log --grep` found no matching fix; leaky path
+still present.
 
 ---
 
-## PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
+## Phase 7: Subsystem Context
 
 ### Step 7.1: Subsystem criticality
-**Record:** **kernel/power** — CORE subsystem for system
-suspend/hibernate. Affects all hibernation users.
+**Record:** `drivers/powercap/intel_rapl` — **IMPORTANT** (Intel/AMD
+power monitoring; widely enabled on x86 servers/laptops with
+`CONFIG_INTEL_RAPL`).
 
 ### Step 7.2: Activity
-**Record:** Actively maintained; multiple hibernation fixes landed in
-6.18.y cycle (GFP mask, hybrid-sleep, efivarfs freeze).
+**Record:** Shallow history in this checkout; driver and CPU hotplug
+integration are mature and active in mainline.
 
 ---
 
-## PHASE 8: IMPACT AND RISK ASSESSMENT
+## Phase 8: Impact and Risk Assessment
 
 ### Step 8.1: Who is affected
-**Record:** Users who hibernate (`CONFIG_HIBERNATION=y`), especially
-systems with AMDGPU/dGPUs or other drivers that release pinned memory
-during `prepare`. The 6.18.y tree already carries the `shrink_shmem`
-workaround, confirming real-world impact on this branch.
+**Record:** x86 systems with Intel RAPL MSR driver
+(`CONFIG_INTEL_RAPL=m/y`), during CPU online/hotplug when topology IDs
+are invalid.
 
 ### Step 8.2: Trigger conditions
-**Record:** Every hibernation attempt on affected hardware. Not timing-
-dependent. Requires privilege to initiate hibernation (not unprivileged
-attack vector).
+**Record:** `topology_physical_package_id()` or
+`topology_logical_die_id()` returns a value that is negative when cast
+to `int` (e.g. `topology_get_logical_id()` error stored in `u32`).
+Uncommon but realistic during hotplug races or topology registration
+failures. Not userspace-triggerable directly; kernel-initiated on CPU
+online.
 
 ### Step 8.3: Failure mode severity
-**Record:** Hibernation fails — user cannot suspend-to-disk. **Severity:
-MEDIUM-HIGH** for hibernation users (functional failure, no
-crash/corruption, but complete feature breakage).
+**Record:** **MEDIUM** — kmem leak (~one `struct rapl_package` per
+failed attempt). No crash, corruption, or deadlock. Repeated hotplug
+retries could accumulate leaked memory.
 
 ### Step 8.4: Risk-benefit
 **Record:**
-- **Benefit: HIGH** for hibernation users — fixes root cause, improves
-  on partial workaround, removes problematic `shrink_shmem_memory()`
-  that required a separate GFP fix.
-- **Risk: LOW** — net code reduction, reclaim-after-freeze already
-  exercised in this tree, reviewed by subsystem experts, error paths
-  simplified.
-- **Ratio:** Strong benefit, low risk.
+- **Benefit:** Eliminates leak on an error path that is explicitly
+  exercised when `rapl_find_package_domain_cpuslocked()` already
+  returned `NULL` for the same reason.
+- **Risk:** Very low — 2-line logic change using existing cleanup.
+- **Ratio:** Favorable for stable.
 
 ---
 
-## PHASE 9: FINAL SYNTHESIS
+## Phase 9: Final Synthesis
 
 ### Step 9.1: Evidence summary
 
 **FOR backport:**
-- Fixes real hibernation failures on driver-heavy systems (AMD GPU evict
-  during prepare verified in tree)
-- 6.18.y already has the `shrink_shmem` workaround this commit properly
-  replaces
-- Small, surgical, net -28 lines
-- Reviewed by Mario Limonciello (AMD) and committed by Rafael Wysocki
-  (PM maintainer)
-- Applies cleanly to v6.18.44
-- Reclaim-after-freeze pattern already proven safe in this tree (via
-  existing `shrink_shmem_memory()`)
-- Removes code that previously caused GFP/swap issues (bugzilla #220555)
+- Real, verified memory leak on error path
+- Buggy code confirmed present in Linux 6.18.44 tree
+- Fix is minimal, obviously correct, uses existing `err_free_package`
+- Reachable from CPU hotplug (common on servers)
+- Maintainer sign-off
+- Matches stable pattern for error-path resource leaks
 
 **AGAINST backport:**
-- Not a crash, security, or data-corruption bug
-- Partial workaround already in tree may mitigate the shmem-related case
-- No explicit Cc: stable or user bug report on this specific patch
+- Failure mode is leak, not crash/corruption/security
+- Trigger is relatively rare (invalid topology during hotplug)
+- No fuzzer report or user bug report
 
-**Unresolved:** No end-user bugzilla for the pinned-pages case
-specifically; impact inferred from commit message, AMDGPU code path, and
-existing workaround history.
+**UNVERIFIED:**
+- Lore review discussion and stable nominations
+- Exact mainline commit SHA in this autosel checkout
+- When the negative-topology guard was first introduced (shallow git
+  history)
 
 ### Step 9.2: Stable rules checklist
-1. Obviously correct and tested? **PASS** — logical ordering fix;
-   reviewed by AMD + PM maintainer; v1→v3 review addressed deadlock
-   concerns.
-2. Fixes real bug affecting users? **PASS** — hibernation failure on
-   systems with drivers releasing pinned memory during prepare.
-3. Important issue? **PASS** — hibernation completely fails (MEDIUM-HIGH
-   for affected users).
-4. Small and contained? **PASS** — 1 file, 46 lines changed.
-5. No new features/APIs? **PASS** — reordering only.
-6. Can apply to local tree? **PASS** — cherry-picks cleanly.
+1. Obviously correct and tested? **PASS** — standard `goto` cleanup;
+   maintainer SOB; no Tested-by.
+2. Fixes a real bug? **PASS** — kmem leak on EINVAL path.
+3. Important issue? **PASS (moderate)** — resource leak on hotplug path,
+   not critical crash.
+4. Small and contained? **PASS** — 2-line functional change.
+5. No new features/APIs? **PASS**.
+6. Can apply to local tree? **PASS** — code exists; clean apply
+   expected.
 
 ### Step 9.3: Exception categories
-**Record:** N/A — standard bug fix, not a quirk/DT/build/doc exception.
+**Record:** None (not device ID, quirk, DT, build, or docs).
 
-### Step 9.4: Problem and why it matters
+### Step 9.4: Decision rationale
 
-The hibernation snapshot path preallocates memory for the image before
-calling `dpm_prepare(PMSG_FREEZE)`. GPU and other drivers release large
-amounts of pinned memory during `prepare`, but that happens too late —
-preallocation has already failed or over-committed. The 6.18.y tree
-currently papers over a related symptom with `shrink_shmem_memory()`,
-which only partially reclaims shmem and required a separate GFP-mask
-fix. This commit fixes the root ordering problem and removes the
-workaround, making hibernation more reliable on affected hardware.
+For **this** tree (Linux 6.18.44), the bug exists, the fix is trivial
+and correct, and the leak is on a reachable CPU-hotplug error path.
+While not as severe as a crash or UAF, error-path kmem leaks in core
+infrastructure drivers are routinely backported when the fix is this
+small and low-risk. The inconsistency with
+`rapl_find_package_domain_cpuslocked()` (which handles the same
+condition without leaking) further supports inclusion.
 
 ---
 
 ## Verification
 
-- [Phase 1] `git describe HEAD` → v6.18.44; parsed subject, tags, body
-  from provided commit message
-- [Phase 1] Tags: Reviewed-by Mario Limonciello; Link to lore; no
-  Fixes/Reported-by/Cc:stable
-- [Phase 2] Read `kernel/power/hibernate.c:395-500` — confirmed current
-  buggy ordering and `shrink_shmem_memory()` present
-- [Phase 2] Read `kernel/power/snapshot.c:1918` —
-  `hibernate_preallocate_memory()` calls `shrink_all_memory()`
-- [Phase 3] `git blame -L 428,460 kernel/power/hibernate.c` —
-  preallocate ordering from 2009; shrink_shmem from 2640e819 (Jul 2025)
-- [Phase 3] `git show 2640e819474f4` — workaround for dGPU VRAM→shmem
-  hibernation failure
-- [Phase 3] `git show 449c9c02537a1` — GFP fix needed because of
-  shrink_shmem; bugzilla #220555; Cc: stable 6.16+
-- [Phase 3] `git merge-base --is-ancestor 783c81098445 HEAD` →
-  NOT_IN_CURRENT_TREE
-- [Phase 3] `git log --oneline -20 -- kernel/power/hibernate.c` — recent
-  PM hibernation activity
-- [Phase 4] `b4 dig -c 1d74e7f09f725` → lore URL found
-- [Phase 4] `b4 dig -c 1d74e7f09f725 -a` → v1/v2/v3 series; v3 is
-  committed version
-- [Phase 4] `b4 dig -c 1d74e7f09f725 -w` → CC'd Rafael, Pavel, Len,
-  Mario, linux-pm@
-- [Phase 4] `b4 dig -m /tmp/hibernate-fix.mbox` — Mario LGTM + Reviewed-
-  by; Rafael deadlock questions answered
-- [Phase 5] `grep hibernation_snapshot(` — callers in `hibernate.c:836`,
-  `user.c:311`
-- [Phase 5] Read `amdgpu_device.c:5174-5200` — `amdgpu_device_prepare()`
-  evicts resources during prepare
-- [Phase 6] Buggy code confirmed present in v6.18.44 at lines 428-460
-- [Phase 6] `git cherry-pick --no-commit 783c81098445` → clean apply,
-  9+/37-
-- [Phase 6] `git diff HEAD..1d74e7f09f725 -- kernel/power/hibernate.c` —
-  identical changes needed
-- [Phase 7] Subsystem: kernel/power (CORE)
-- [Phase 8] Failure mode: hibernation failure; severity MEDIUM-HIGH for
-  hibernation users
+- **[Phase 1]** Parsed subject, tags, body from user-provided commit
+  message
+- **[Phase 1]** Confirmed no syzbot/Fixes:/Cc: stable tags
+- **[Phase 2]** Read `drivers/powercap/intel_rapl_common.c:2205–2254` —
+  confirmed leak and `err_free_package` cleanup
+- **[Phase 2]** Verified `kfree(rp->domains)` safe before
+  `rapl_config()` on early error path
+- **[Phase 3]** `git describe HEAD` → `v6.18.44`; Makefile → 6.18.44
+- **[Phase 3]** `git blame -L 2210,2220` — buggy return at line 2219
+- **[Phase 3]** `git log --grep` — no fix commit already in tree
+- **[Phase 4]** `b4 dig -c HEAD` — no match
+- **[Phase 4]** Lore/patch.msgid.link fetch — no usable review content
+  (UNVERIFIED review discussion)
+- **[Phase 5]** `grep rapl_add_package` — callers in `intel_rapl_msr.c`,
+  `intel_rapl_tpmi.c`, `processor_thermal_rapl.c`
+- **[Phase 5]** Read `intel_rapl_msr.c:73–84` — hotplug call chain
+  confirmed
+- **[Phase 5]** Read `topology.c:311–321` — `topology_get_logical_id()`
+  returns negative errors
+- **[Phase 5]** Read `processor.h:95` — `logical_die_id` is `u32`;
+  negative errors wrap and are caught by `(int)rp->id < 0`
+- **[Phase 5]** Read `rapl_find_package_domain_cpuslocked:2176–2181` —
+  same check without allocation
+- **[Phase 6]** Confirmed buggy code at lines 2217–2219 in local tree
+- **[Phase 6]** Confirmed fix not yet applied
+- **[Phase 7]** `drivers/powercap/Kconfig` — `CONFIG_INTEL_RAPL` exists
+- **[Phase 8]** Assessed severity as MEDIUM kmem leak on hotplug error
+  path
 
-**YES**The background searches finished and matched what the main
-analysis already used:
+**YES**
 
-- **Current tree (`v6.18.44`):** no match for this commit by
-  subject/grep — it isn’t in `stable/linux-6.18.y` yet.
-- **`autosel` branch:** found upstream commit `783c81098445` / stable-
-  prepared `1d74e7f09f725` — *PM: hibernate: call preallocate_image()
-  after freeze prepare*.
-- **Hibernation-fixes series:** single-patch series (v1→v3); nothing
-  else required for backport.
+ drivers/powercap/intel_rapl_common.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-**Verdict for 6.18.y: YES** — real hibernation failure on driver
-`prepare` paths, replaces the partial `shrink_shmem_memory()` workaround
-already in this tree, cherry-picks cleanly.
-
- kernel/power/hibernate.c | 46 ++++++++--------------------------------
- 1 file changed, 9 insertions(+), 37 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 26e45f86b9554..26289e3c28ae7 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -392,23 +392,6 @@ static int create_image(int platform_mode)
- 	return error;
- }
- 
--static void shrink_shmem_memory(void)
--{
--	struct sysinfo info;
--	unsigned long nr_shmem_pages, nr_freed_pages;
--
--	si_meminfo(&info);
--	nr_shmem_pages = info.sharedram; /* current page count used for shmem */
--	/*
--	 * The intent is to reclaim all shmem pages. Though shrink_all_memory() can
--	 * only reclaim about half of them, it's enough for creating the hibernation
--	 * image.
--	 */
--	nr_freed_pages = shrink_all_memory(nr_shmem_pages);
--	pr_debug("requested to reclaim %lu shmem pages, actually freed %lu pages\n",
--			nr_shmem_pages, nr_freed_pages);
--}
--
- /**
-  * hibernation_snapshot - Quiesce devices and create a hibernation image.
-  * @platform_mode: If set, use platform driver to prepare for the transition.
-@@ -425,14 +408,9 @@ int hibernation_snapshot(int platform_mode)
- 	if (error)
- 		goto Close;
- 
--	/* Preallocate image memory before shutting down devices. */
--	error = hibernate_preallocate_memory();
--	if (error)
--		goto Close;
--
- 	error = freeze_kernel_threads();
- 	if (error)
--		goto Cleanup;
-+		goto Close;
- 
- 	if (hibernation_test(TEST_FREEZER)) {
- 
-@@ -445,19 +423,13 @@ int hibernation_snapshot(int platform_mode)
- 	}
- 
- 	error = dpm_prepare(PMSG_FREEZE);
--	if (error) {
--		dpm_complete(PMSG_RECOVER);
--		goto Thaw;
--	}
-+	if (error)
-+		goto Complete;
- 
--	/*
--	 * Device drivers may move lots of data to shmem in dpm_prepare(). The shmem
--	 * pages will use lots of system memory, causing hibernation image creation
--	 * fail due to insufficient free memory.
--	 * This call is to force flush the shmem pages to swap disk and reclaim
--	 * the system memory so that image creation can succeed.
--	 */
--	shrink_shmem_memory();
-+	/* Preallocate image memory before shutting down devices. */
-+	error = hibernate_preallocate_memory();
-+	if (error)
-+		goto Complete;
- 
- 	console_suspend_all();
- 	pm_restrict_gfp_mask();
-@@ -492,10 +464,10 @@ int hibernation_snapshot(int platform_mode)
- 	platform_end(platform_mode);
- 	return error;
- 
-+ Complete:
-+	dpm_complete(PMSG_RECOVER);
-  Thaw:
- 	thaw_kernel_threads();
-- Cleanup:
--	swsusp_free();
- 	goto Close;
- }
- 
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index 57bebd07c7d0d..f08ac99f5e55e 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -2216,7 +2216,8 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
+ 			 topology_physical_package_id(id) : topology_logical_die_id(id);
+ 		if ((int)(rp->id) < 0) {
+ 			pr_err("topology_logical_(package/die)_id() returned a negative value");
+-			return ERR_PTR(-EINVAL);
++			ret = -EINVAL;
++			goto err_free_package;
+ 		}
+ 		rp->lead_cpu = id;
+ 		if (!rapl_msrs_are_pkg_scope() && topology_max_dies_per_package() > 1)
 -- 
 2.53.0
 
