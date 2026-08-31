@@ -1,128 +1,95 @@
-Received: from mail-ua1-f50.google.com (mail-ua1-f50.google.com [209.85.222.50])
+Received: from mail-pj2-f11.google.com (mail-pj2-f11.google.com [74.125.227.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BCA73B4E8B
-	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 07:27:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA5A32DF137
+	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 07:30:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788161224; cv=none; b=cxxKTRnzO4cC6hI4xNQWUrmyZaY7saCNiZoUKkiRfUheoKGJjzU9qYReIS1A9S4cvFpqNmKnnbs9utDRLutxKVyZZSekbwLPgfZWEKnn3/MYi6IFDVNe8bdWWvftH/HDRKn30Gwl/pDsqpcnC4v4QcT/N/FHUXnnJDpHsfHzRfw=
+	t=1788161438; cv=none; b=hkeFGMOJnzUc5umjUxuPLkaL5SRpv26+2qTnqOii00T8Yb/td3Yzgz8Wzwc1pUmcYkLz5IIOpmRUipQ1UURDej4QbXM5zb78DyctICe7Qr5zKpyVAQMP/pX3jooB+0fmCwioB3pfoXH4+mJyjFgU45krJF2x6IriDniI9Bv8W5g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788161224; c=relaxed/simple;
-	bh=NJSjNKxk7UVV5IkXZUW1icC4wugzqjTWkRjzeCpiY/g=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=s7A6L1A24P4CKjTdr2IEUA0V4sdA/rB/AG94RFeeeAdbaAsYG8j1Dx4Su8aMK/6ip53thn4BqJDrA306tfjU2Vjmf2kdOwzZXTfgeoBW14uQVnIx6tWYfpsvd7Dk+KnbHWnwobhxFuwfZIr44MEQQsZTJGMtj+PKW5crIZ7Uahg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	s=arc-20240116; t=1788161438; c=relaxed/simple;
+	bh=2B1kl82sYmAxF1gcvXNtWp/v9p548DwYxTPqP/ibams=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EZforVG6nn2GFkCmrxwRDTU+0KsZLRIhal5xbTuE2a5SyvHOLZHlemYBtuHEYpp+3MRr4mgB7d27c09TD0wfD7QNd818vQ7SQi8/Imgie1SVMHOFEYdFFlI5RnLRxMnJoZbSJ7Q1wp3DRQtTbhN33VERIYVANhrFkHoXq0IUGlg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua1-f50.google.com with SMTP id a1e0cc1a2514c-966e7380109so2275802241.3
-        for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 00:27:01 -0700 (PDT)
+Received: by mail-pj2-f11.google.com with SMTP id d9443c01a7336-2ceb5a39c48so11209675ad.1
+        for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 00:30:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788161221; x=1788766021;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=pcgoboI+Bb0AHIqjcsWKmhJCOrwEFYSWyvEil53/SRU=;
-        b=Y4ZpJUecXfGbMYYHmQaCd5FdSOIbd8Z5SvRerzwEStJqyk1JtInZBSwXrqu/Z9nVUL
-         xR/seu+1jzn8pRXTY6DLUSsbCumYeXeVuGSoGe4EV1g5xNFU93xkr0zBjIEZWgvfbLaF
-         LN9tW4IOMkVk33uip/z46zlBEVZxBMmcY87S2DmSgXNRDbRRl03XPO+E4xD8Qud9bXcp
-         keviSRRbP7av/NFgXpLT2cuwO/Ctt7R5BDXTDcZgTQgOP47rjPfU4n8YIUhUh3JAM3Vv
-         kBdgvtCoLZpKJ3sfPvEQm22/Rzak2Syp7p+hayMs/zHorStovkrducgEJIEvEDNYH9Gz
-         Vwhw==
-X-Forwarded-Encrypted: i=1; AHgh+Rpmsh1+Lm8YdfCDXWqmgOjmP+kBevyBV1quQIhYBGaChxKCrMoWEt7bTYbHbRyCG3ZX47IUCQXpDA==@vger.kernel.org
-X-Gm-Message-State: AFuF++lukFC2UkeFhDVmoqGr8eE+q9Z7OEh5HHEyK8Fd4qFj9PYyRCsv
-	KueUxaLdkyieWqejSi18JjlY6dJ/CjkZz/VgRxMaxDH+iZWsPX08phMq4CL+vTAh
-X-Gm-Gg: AR+sD11o7/cTwVobOZbaYW1kZlmKUcIWIlkgLJFr6oPh2HVZRw/0P2mi8ZknUaY05ux
-	lsqmRG8HYSNzjb2hI3rvrztpeHYgetQ0m68C7eMs6+lfwQhXAmqLvmB37N+besRO9Q9CiqpkMtc
-	NtB4rqYE5MVYK+0mUDC38mOj7o/FqhdL4n/Fvztw0h8DTdmF+w2d4u75c8riJEksWJqLrDt2ZnV
-	jczCvldlgZdxoXDbz2c9C4heyuup6l3h70d204wkuwbbEHKwjUH+HxWx9PyuEqIqQdzA/WqD2xT
-	0DOiyZy7LtYgWYobf4XbTC31pHPIyvh7iGL48e//rIO4j4WnOM5wO8c4LZ6VuDFz6+aJYS6/Vge
-	0DXK/W0wo4hJ38Qsp8tkPCNkXMyFx/qsZy72gx49G5FqKw4ekO+cGs6wERgGBYxUcjscVJfyYCe
-	86dBF+55c9uwbWP2aa90mBmejUpG740beP7echTkcPFUNLNLAHeFXCHVT+GWrIzWRzfBGmG6s9b
-	pXGvbZXExILCYtpb/W/hyymUouVDtzr6QfO
-X-Received: by 2002:a05:6102:2acf:b0:778:f972:32eb with SMTP id ada2fe7eead31-7859996dba0mr9501339137.12.1788161220795;
-        Mon, 31 Aug 2026 00:27:00 -0700 (PDT)
-Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com. [209.85.222.42])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-97e84a55284sm7366286241.4.2026.08.31.00.27.00
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 31 Aug 2026 00:27:00 -0700 (PDT)
-Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-966e7380109so2275790241.3
-        for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 00:27:00 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rr+wODAIKko1XA7tQEJ8NZR40TguikmchMn/g2kkIB3Mb38lqm66o79y+GHFv2YZDo2UY6EUfg41Q==@vger.kernel.org
-X-Received: by 2002:a05:6102:f9b:b0:77f:7df:ddd2 with SMTP id
- ada2fe7eead31-785972e710emr9393256137.1.1788161220080; Mon, 31 Aug 2026
- 00:27:00 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1788161434; x=1788766234;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=cm/3LxFAE23VmmspdwwF2dVngvqHxTwL+4Y3pEVCqwE=;
+        b=P9c/X/B89cJtGibxFLBj5ex7/awfEj68WYrUV04IcaI2bVKihedvVq6W8AZzSQKoRq
+         TmocCliAAyfmPepamTfiZPron19Qheli4oZsDmx+MWSgaCVq7SrjQW2f9C47dFugS3rM
+         RT87cimlkw6efj8W8+euh+IBSuC44cuqvfRixObDiWDS+fLF9ADtGazwrr7QcjKCxyMT
+         B+SI+BLz45NhkjAgbqFNs9LIxIeeA3moZyXceJmsXJphIYZP63Xe1PmqOEwC9tiLOnej
+         cugaEHovP2a3TCy73vQcL1+lS7u+wS0FJY6d27ltYO9vAdDheqI+ARJY6L0RtkdbxpSJ
+         dFXw==
+X-Forwarded-Encrypted: i=1; AKwUvBwY7oIfda2B5M1OlHEuj/JfNcvd81aFeWkzxhx9lpysbuDI6jmS9WVSE3nDaCAPWXzRQKAz+f72zA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nWqNZFm/Y8kXeIIkHr6+UDpzQMhILAwOiOMc2HMhBDHNj6g4ES
+	qDU5NE/nGB8gfJUsdl+e4SI9GjfSeuM4h1ab69OoDVdKJiJN3VKn3wIE
+X-Gm-Gg: AR+sD12X4SN9yS+5hDd/qVmEub/XFF8C8GRQdnK+XN3N0lp/O1eqSihGxMh45HCXGrS
+	U5+4k2ohLMU6V9WDrLaBGAv1OBw7+QOIc6qOO53kHw3fcaSEZwln4c3BiQ5Dhz/IGYjGmjTZJzo
+	/rFduA5QcC27J6qCYIoVVfrErhShZAGDAvYaa55EMNvZP8JrXxIu+HPLuqSmvLkIWlsBKos26Ci
+	DDR5ZnWvB15mO3S3s4CDsmlrSzde0lfjxZHt8BB7aq5HAQmNG2XcJapAsR0V8rb67vpHgOoqHqm
+	Gfcgv6zNj5UQs6Y2rtkhXLFfZtiu9yVlyrdQrY8AFDOL3uP/tuPk0zVyOVSAPeuxyi+ffJ8lSpx
+	M1VkiR+L3//NbCsPcMHyCRF3GPs+WTGV3Qx8nVRG49eX/iRRaGle6XP0FSwdpjwjjmI96AKE9Bn
+	a6AiBPJ+lpmkF3rI6a/ZiYX4zO+CtmosYGj6xK/9Czw++3RGzZnE6sXi/5TrHGnROya8ysB9HuO
+	R+WChSHHUIZNqoEEydQ8A==
+X-Received: by 2002:a17:903:3244:b0:2d8:d4cd:dc90 with SMTP id d9443c01a7336-2d8d4cddf8bmr245815485ad.19.1788161433689;
+        Mon, 31 Aug 2026 00:30:33 -0700 (PDT)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.169])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d75988d184sm30107865ad.62.2026.08.31.00.30.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Aug 2026 00:30:33 -0700 (PDT)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	thierry.reding@kernel.org,
+	jonathanh@nvidia.com
+Cc: sumitg@nvidia.com,
+	linux-pm@vger.kernel.org,
+	linux-tegra@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [PATCH] cpufreq: tegra194: fix double-pointer error in get_cpu_ndiv
+Date: Mon, 31 Aug 2026 15:30:08 +0800
+Message-ID: <20260831073009.3772408-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260829195105.4173953-1-joshua.yeong@starfivetech.com>
-In-Reply-To: <20260829195105.4173953-1-joshua.yeong@starfivetech.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 31 Aug 2026 09:26:49 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU_3WoqOv_gsFnTpC61A48bQsmO_9FMT6PVAZ4bduedtg@mail.gmail.com>
-X-Gm-Features: AcwNN1VNpwApm_cNNaV5_gp-0ahi5LN4GtBUOfohdJ4zOMTErKzIMnHRgt2jJ5w
-Message-ID: <CAMuHMdU_3WoqOv_gsFnTpC61A48bQsmO_9FMT6PVAZ4bduedtg@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: core: Honour pd_ignore_unused in the sync_state power-off
-To: Joshua Yeong <joshua.yeong@starfivetech.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
-	Heiko Stuebner <heiko@sntech.de>, Hiago De Franco <hiago.franco@toradex.com>, 
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Joshua,
+ndiv is already a u64 pointer, passing &ndiv to smp_call_function_single()
+results in a u64** being written to instead of the caller's u64 variable,
+so the caller always reads back an uninitialized ndiv.  Drop the spurious
+'&'.
 
-On Sat, 29 Aug 2026 at 21:51, Joshua Yeong
-<joshua.yeong@starfivetech.com> wrote:
-> The pd_ignore_unused command line option is documented to "keep all
-> power-domains already enabled by bootloader on, even if no driver has
-> claimed them". On an OF platform it no longer does.
->
-> Powering off unclaimed PM domains used to be the job of
-> genpd_power_off_unused(), which bails out on the option.
-> Commit 002ebddd695a ("pmdomain: core: Restore behaviour for disabling
-> unused PM domains") stopped that late_initcall_sync from clearing
-> stay_on, so it can no longer power off a PM domain that was found
-> powered-on at initialization. The only remaining path that clears
-> stay_on is ->sync_state(), and it never looked at the option, so an
-> unclaimed PM domain that the bootloader left on is powered off there
-> regardless.
->
-> Honour the option in the sync_state paths, for the PM domains that have
-> no consumer attached. Those are the ones the option describes, and once
-> genpd_power_off_unused() has bailed out they have no other power-off
-> trigger, so they stay on as documented.
->
-> The stay_on constraint is dropped either way, leaving the lifetime of
-> the constraint unchanged. The PM domains that do have a consumer
-> attached therefore stay under the control of runtime PM, which the
-> option has never covered, and a PM domain that gains a consumer after
-> ->sync_state() is not left pinned.
->
-> Fixes: 0e789b491ba0 ("pmdomain: core: Leave powered-on genpds on until sync_state")
-> Signed-off-by: Joshua Yeong <joshua.yeong@starfivetech.com>
+Fixes: 0839ed1fd7ac ("cpufreq: tegra194: add soc data to support multiple soc")
+Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
+---
+ drivers/cpufreq/tegra194-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks for your patch!
-
-I did something similar in "[PATCH/RFC] pmdomain: core: Support
-pd_ignore_unused with sync_state"[1], and Ulf responded[2]:
-
-   "Right, I think it's time to consider removing it, unless people still
-    find it useful ofcourse."
-
-[1] https://lore.kernel.org/1cfa86b72b2a5aa2ade92f247dd318c9cb6ef2a1.1771267504.git.geert+renesas@glider.be
-[2] https://lore.kernel.org/CAPDyKFq2it5TAEBBKBh+q+UiRsGYaORar0Q_42LCuxyKRLYj0A@mail.gmail.com
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
+index c6375e14d445..1eb96e9f3310 100644
+--- a/drivers/cpufreq/tegra194-cpufreq.c
++++ b/drivers/cpufreq/tegra194-cpufreq.c
+@@ -367,7 +367,7 @@ static void tegra194_get_cpu_ndiv_sysreg(void *ndiv)
+ 
+ static int tegra194_get_cpu_ndiv(u32 cpu, u32 cpuid, u32 clusterid, u64 *ndiv)
+ {
+-	return smp_call_function_single(cpu, tegra194_get_cpu_ndiv_sysreg, &ndiv, true);
++	return smp_call_function_single(cpu, tegra194_get_cpu_ndiv_sysreg, ndiv, true);
+ }
+ 
+ static void tegra194_set_cpu_ndiv_sysreg(void *data)
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.43.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
