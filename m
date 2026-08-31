@@ -1,73 +1,73 @@
 Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86A133D6682;
-	Mon, 31 Aug 2026 08:21:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E524E3DD86B;
+	Mon, 31 Aug 2026 08:21:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788164488; cv=none; b=kB8bnMIp0UTphKyl5hQvAJHGq3mWSKVyTsnz2LhGs1i6u3t9f2wKhNz5gX2hNcKN7Gd1WRtyDZfr7dxeQR6VbmmeEYy+tVOdzRiCyuVm9mV1B2NuZxl/qYMefa7nTQKQc/0b0vy2b1Kn7x5Fe5r1hQSFa0XTWTo+VJavkY9b9/0=
+	t=1788164499; cv=none; b=Jp+ac89GArxN26X7elXFFz57HpgEXGeVapUWOoUF2MNsO76+FqfGHmjS1xMQA0MKJZkskBSyJKtsQY9U4bQXej8fM8JCLrV7tpXd2HeDxnwvSES/zPvPdR8zbsTmn/QWdkufNHvWfHiSaiCmvDXZsTMKQz6RVcAVIjhwkf2z7vA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788164488; c=relaxed/simple;
-	bh=CnWYRGn8A2CYIxAKUN6+IpvR0RZSQZ+TrHmYhGYwjSw=;
+	s=arc-20240116; t=1788164499; c=relaxed/simple;
+	bh=SRhhWMlozuwNggx+S4JqVHrnjVkGIzrN0X/1ZjwOLlo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=rklQTsR5zwM+Bhl36RUMOMXKHv6jr2lDxZ+Sbr1g5ovpECk8DawSbFopJsComISQZ+dTmgYahg8y0D7ezyjAB1vCwwOp3OeXqFDm5mecR/gPCdKILSklUukjOpiBEKn5y/xiIODBitZwqhz8jrd3l8GGNDfRYm1JR8nuGkOt65Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=ibDflDyj; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=CN5zPA41; arc=none smtp.client-ip=103.168.172.139
+	 MIME-Version; b=f3YkzsNxMrr8mL1GhOWMD5J7xPbTpRJkHcMkLKMqrE6uSE5WrgmQHNSGHZZaVSv2QMdcUMFOIHeOUJ6K2IY4Zmt5yv/5rrIApukIXGMYxGpkIKU4GWbS/h/53njHAym9Zr8adXGZ26TQ/jStOB99oygv+/7k7u1Y88n4GJYd0qQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=ovE718xW; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=WpB1qFCI; arc=none smtp.client-ip=103.168.172.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="ibDflDyj";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="CN5zPA41"
-Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
-	by mailflow.phl.internal (Postfix) with ESMTP id B631E1380045;
-	Mon, 31 Aug 2026 04:21:26 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="ovE718xW";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="WpB1qFCI"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.phl.internal (Postfix) with ESMTP id EC7531380045;
+	Mon, 31 Aug 2026 04:21:36 -0400 (EDT)
 Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-02.internal (MEProxy); Mon, 31 Aug 2026 04:21:26 -0400
+  by phl-compute-04.internal (MEProxy); Mon, 31 Aug 2026 04:21:36 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1788164486; x=
-	1788171686; bh=Bm7huY5WQXjxwqWxfiTvH04R09OwCZF8hQZPpxtRqLo=; b=i
-	bDflDyjBgQ0J+IIy4xlOXSay/81GUr8smw5IDwtIoHehw9BVCj6u44zGqvj2umV8
-	NBT98cLunQVdT5dk7z/2T8FXrfTU6k1FEkOS6GWFyD8p2tUdhtQYTd58EPUkGfOL
-	IdcYlwwAFsw7aTnZKxQZsGMBRHlBZboEFBbR6MVB+MJHoMs/+cn6OmiX9ln9AriD
-	21yZQss5nPmT/my/KwxZZrMbKbNK3Vy1xOyyHp0EVfR5ptCnimTm2Aa4v+wkfjUo
-	eRLu4EkFlq2dLblJt7+To5Pi2ynAx4QhMCKIBFrAMvmDKy/QWPMZw30KySDi8Q3A
-	nP8JnyAuJQOE7cWrm5meA==
+	:reply-to:subject:subject:to:to; s=fm2; t=1788164496; x=
+	1788171696; bh=RQ6rBrSJe6hrXKU3Mfyt8fg+HplP4vBGkXqKwlm5QaQ=; b=o
+	vE718xWn7mabuGt9w8tUv08ZpyTcL2I2mD7awbjzRbQhdaxgK7QEohD8/gt56dck
+	98TX3DjnGwULc0YmkLGXVMvtxF5sKDrdvPiqNU8UCKJxLOse2Ec/B3sV6HmXlLKB
+	n8GtxuJ4ZfC+9bJPT2m5UagM8LZoQax9IzzkZLyN1vmjlOAn9xnC/qwIgM9Mlv2I
+	4VtavGwFQ0KlsXWS6OcY8FqyPO0SOxDJlr7INwfXCd6yglDlmVcOtahJUjTphC2u
+	oCIBm1Ny+ExX1+3dyJOucHny9hzLvAPukldP7F+3kEwAjNxtVXwzUo0TLQ9Kgfa8
+	b4tyop1DQi+45r622yHmg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1788164486; x=1788171686; bh=B
-	m7huY5WQXjxwqWxfiTvH04R09OwCZF8hQZPpxtRqLo=; b=CN5zPA41V+cL4kDhz
-	cNMRI6ph8Op0KW4QcbIQLaiDSzMTPwkz1dr1+uwtm+hRqliYfWFeW50Ir6Ff4qKL
-	XSiKMkEgxTgtoz+27EQrusul5f7ZTjLOzaDCUdQPY6sJhGsFeESjsonbxgIRhENV
-	BzkeOOI0+wcp9jUQ2F7bkItncxFefJw/wN/aATCIbV7hTA2gHcRS56XNdCa7wbl+
-	qvnXLxbVUlE+ojGB7ogfjRMeicbhCmrgumWY6k7h4zW+bzeQZ9HYcbzSZfxf6C8v
-	Qb9LU0Aap1atfNNiuGXvknBklyt3LdZhz0D1fyjMn4jwKSCwaj+4W0Lq43UOpE4M
-	zdgPg==
-X-ME-Sender: <xms:hjmVajjcN_O7xuMh6oEGobVB7bSXiE_TlYgIZUFfr8-EAH32IMCCvg>
-    <xme:hjmVaoash7ycS1JuYPPW3YpxJmCS8T0yPQeOHLENXe1Vx2PLcef4OUA1KMiLwehtS
-    eHrZSfc4hfIoPuCOJCXA3ngn_x0oL5NrXN7MowQOndoE8iMjgoFccM8>
-X-ME-Received: <xmr:hjmValQxEZUMo_rZqj06LqNCj8Ix43KJRAiKJH4znKfA_1747Eha3YEqg9rNrxYchT1HmhwKtQ>
-X-ME-Proxy-Cause: dmFkZTGdGJxeVuW+Fmrt/Ef5qeMDFHGjonl8OVkqV4Q9pjx4ZDlXIa4Z3pOc6nqsAGbFM5
-    cWlbiX1SVX30CexdPBxYt3awlQb1f1VabgQ1+kwGrf/tqGBQR6d2lw5RrnEV6FL0zCLBXY
-    ybqqMjW04LTdiKVaoW/ueoWC57BUXXhq/gLbRORJuDA51/iSsme3r5tmV2YwHq2SFTmV8f
-    qmkLVMySqF/+M0VTPAV1bEl/RNXhLViTLJtdkIjM0/0F1iGTOIQFc8XdpRTpYODYq5KIVJ
-    rrfOCVoYg5oCW3a07vpVJtmuFrLRw/b3yMPQFvd+9PcwM7BPjK/SyOTGn8jtYhGarwxLdb
-    xXbl3j/fcqsE7TsqdsIqt3W5yY8+Dbkb1p0BNv6PM+egLTskWXj+912F8OUU/DaLhEfQ4X
-    lq4oRCA/JrphBVR8E/44M+b9AwF1BD6npJme38cKZEcTqrfUrgx5j/K+Dx912pDCFTwcay
-    /gErKAsoa4jXfcojxfpMMFTnsoxGNWZ6fOQf1Pn+jhMX0A9E4BdYmzPsoP2tSiYKapwCfQ
-    71iu8EIi0sZFvZ6OLtxe86qwLP1f5lLaKPo28LyU4bM1Ka+Yp44jRq6a3SNKCbw8xbczuP
-    ZP6YPztvg1WhRkz3vw8ueCsXH0ZOACh3cvdv3GU8v6DPKNZ1YlTRyNXVp48w
-X-ME-Proxy: <xmx:hjmVaoGqcS0uMWK62EKdPtjEk_aKmkJ1282vKznIMJhWd1axM8xhtA>
-    <xmx:hjmVai3oUs_J8PwbWb33k-XC9vNEAh3MYxj6XZwMLuNn-jPWz2fXPw>
-    <xmx:hjmVamuocBZGMlg9LGdBuZJLPd42CwggHTCEWxHkYluFfoeJaL0Z3Q>
-    <xmx:hjmVapmB3XVsGE8dgJMSrE-dZe95yUGPrJ8mTB2sWd2WjyGDqY-IPw>
-    <xmx:hjmVauWkD_Y38sJRc6gHrikHweBX0dehBvV0yPHC3NLQvf3EQbFVWPFV>
+	:x-me-sender:x-sasl-enc; s=fm3; t=1788164496; x=1788171696; bh=R
+	Q6rBrSJe6hrXKU3Mfyt8fg+HplP4vBGkXqKwlm5QaQ=; b=WpB1qFCIylWx0BC0w
+	BBx6zU2SsdabK8dPfT/xTIF2hwRTRbx8r1Mo4xEu93XpcAawr86rSvntanZVrDHp
+	INRT+PZlevXiBvAtO6+fkEuKnkFcbjIkl4HsCB7b77/kWH35KrGtQOinvGJ2Mb7I
+	Jibkgdz0orceA+AC5SNh6gk0fMgzG9oyOKOKhlFXquhYVCM6lfnhM4vrG031LfhH
+	ehkVH5nhRQ4V19swUx30oUVzH6ZedtD5SHN2OV81plZWSHfxkMV0YgDFIQeFAxix
+	XZ34VcPpcopElHYHV0YL/3K2HScHSSXgnEYAZUZMUh5ByZ0DqvIx+dHmhj4Kpcrk
+	PBK9g==
+X-ME-Sender: <xms:kDmVajxAIYLUKwQZnXJIaWnGEDE98Bi4cyJ16EWs_DVGacQ055Zydw>
+    <xme:kDmVasyq_9Aq2a6Tb8h5evl5dNENJ5oSfhA2PQ3VgLeGMlPlgDi83FMzNiXlciwVS
+    6IaM0m2m8EXFe2qDnzAxbgt-5JGJ5rF2qmqiJrPkt3oekvPkWcAQ-t3>
+X-ME-Received: <xmr:kDmVah5gblAeFk3DEeVbGZeGXIPlPZYamUpK-qYrrxr7Fb81zLViDu0GSci_7QCOHO8AF_3GOg>
+X-ME-Proxy-Cause: dmFkZTEKWQSpa8iZqUtW1ZQqP4bDvh9SK/YZ53CarhgclGKwi9pBkSeAm2pl18Ydw9NqYm
+    Zr/AB6JK94O+RJj3+nPdviPN4WL0ogDKkl2CMFV9N9D6NSBN5M/LV+S4GH+TRhS9zu3x5c
+    x2UqefLwNZ1g6jIgnHYbLgvH6Qcfxwr5ayCKwx4jXlH2P7ErMCLVryfACFcfAxxNF+zWzB
+    vhDdjBzJlYCkkDZuwtnUqHTI+YlUUPPhU6uGHE0mVT/tu7g0EvFCbzZenGG7GfkWbRsTX/
+    Fnz7vKpfqzHdp9e6NpI62zQZ3fDQSeSft9eBVteswNRFnAgakK0VawtlqkiHWFDHZGPmGj
+    cWZGrc1W4131dd/QJGTSTo0YtgxXW88jNcw5ijVRGejVF+DcynmD5wU2k8W2BvDD2uQEjx
+    2HtddvRiCoYOZpZrRKSXNpzjCLpzx34OOhQNWX1F0+YNbgP0FiNe2w8nT0N5sPuFBX1j1J
+    qrSt292yNXClnmtjIEn3q8HzQ8ujEaAEalvKhVmIEKp6EkAuhW5rzIaYuZakSC7B/86r2A
+    xjbNiZiq8SchXNRSi8qlS5ZUo88Ci/8xSMFEyZfHcsq85KSpCgwXLCLQuVIrFryJSwDPdC
+    wFL/cZgZZwgfmDb+WzsjSgug21gogalzjnJ/8riG50jWjyJ5pM3Mn6AX9ZMg
+X-ME-Proxy: <xmx:kDmVatCK86xnN5GGfk49lphNu3En8pX1ne56TTLYkFXENBR6C13YTg>
+    <xmx:kDmVajBSIIJQFSXfsXl_T1L7T9OYEwMCwNs8Ry8pbl88SGNARVKkkg>
+    <xmx:kDmVauo0fl-EZu98ZQIoKpu5GvQdM6PEJ4ToQN_EIMYluDDgSHnzQw>
+    <xmx:kDmVal3Nrw-fLo8tbKXPOGvpMIPmjC3sENKa_k1BqEn-JiAp6BgkWw>
+    <xmx:kDmVarRBLKTcosQ3tXw9p9lL52MtfMxsZKt14JXZWG11pTtDT69G39-m>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 31 Aug 2026 04:21:19 -0400 (EDT)
+ 31 Aug 2026 04:21:29 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -94,10 +94,10 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>,
-	Conor Dooley <conor.dooley@microchip.com>
-Subject: [PATCH v11 08/14] dt-bindings: iommu: rockchip: describe the RK3576 NPU MMU
-Date: Mon, 31 Aug 2026 20:19:50 +1200
-Message-ID: <20260831081956.84871-9-gahing@gahingwoo.com>
+	Abel Vesa <abel.vesa@oss.qualcomm.com>
+Subject: [PATCH v11 09/14] pmdomain/rockchip: add optional per-domain power-on settle delay
+Date: Mon, 31 Aug 2026 20:19:51 +1200
+Message-ID: <20260831081956.84871-10-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260831081956.84871-1-gahing@gahingwoo.com>
 References: <20260831081956.84871-1-gahing@gahingwoo.com>
@@ -109,83 +109,143 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The RK3576 NPU MMUs are rk3568-iommu compatible but take five clocks
-where every other Rockchip MMU takes two, the extra three being the
-compute clock and the two convolution buffer clocks.
+The RK3576 NPU domains need a short settle time after the idle request
+is released before the registers behind the domain answer. Without it
+the QoS writes that rockchip_pmu_restore_qos() issues land while the
+domain is still coming up, and the NPU throws an async SError on the
+first cold power-on.
 
-Give them a compatible of their own and pin both sides with an allOf, so
-that an rk3568-iommu cannot carry five clocks and an NPU MMU cannot
-carry two. Describing the extra clocks as belonging to one SoC without
-saying so in the schema, which is what a comment on a description does,
-leaves both of those spellings valid.
+Give rockchip_domain_info an optional delay_us and wait for it between
+releasing idle and restoring QoS. Rename DOMAIN_M_O_R_G to
+DOMAIN_M_O_R_G_W, since the suffixes name the fields the macro sets and
+this one now also carries a wakeup delay; RK3576 is its only user, so
+the old spelling is not kept around.
+
+While the macro is being rewritten, give it the regulator argument that
+DOMAIN_M_O_R and DOMAIN_M_R already take. Without .need_regulator set,
+rockchip_pd_regulator_enable() returns early for every RK3576 domain, so
+a domain-supply in the device tree is never looked up and never enabled.
+Add a DOMAIN_RK3576_R spelling that passes true and use it for
+RK3576_PD_NPU, which is the one RK3576 domain with a rail of its own;
+every other domain passes false and is unchanged.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 ---
- .../bindings/iommu/rockchip,iommu.yaml        | 28 +++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/pmdomain/rockchip/pm-domains.c | 56 ++++++++++++++++----------
+ 1 file changed, 34 insertions(+), 22 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
-index 6ce41d11f..83d7e7c8e 100644
---- a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
-+++ b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
-@@ -26,6 +26,7 @@ properties:
-       - items:
-           - enum:
-               - rockchip,rk3576-iommu
-+              - rockchip,rk3576-npu-iommu
-               - rockchip,rk3588-iommu
-           - const: rockchip,rk3568-iommu
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index ba66ae719..39988efd8 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -18,6 +18,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_clk.h>
+ #include <linux/clk.h>
++#include <linux/delay.h>
+ #include <linux/regmap.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/mfd/syscon.h>
+@@ -59,6 +60,7 @@ struct rockchip_domain_info {
+ 	u32 pwr_offset;
+ 	u32 mem_offset;
+ 	u32 req_offset;
++	u32 delay_us;
+ };
  
-@@ -42,14 +43,22 @@ properties:
-     minItems: 1
+ struct rockchip_pmu_info {
+@@ -185,7 +187,7 @@ struct rockchip_pmu {
+ 	.need_regulator = regulator,			\
+ }
  
-   clocks:
-+    minItems: 2
-     items:
-       - description: Core clock
-       - description: Interface clock
-+      - description: Compute clock
-+      - description: Convolution buffer core clock
-+      - description: Convolution buffer interface clock
+-#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
++#define DOMAIN_M_O_R_G_W(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, delay, wakeup, regulator)	\
+ {							\
+ 	.name = _name,					\
+ 	.pwr_offset = p_offset,				\
+@@ -200,8 +202,10 @@ struct rockchip_pmu {
+ 	.req_mask = (req),				\
+ 	.idle_mask = (idle),				\
+ 	.clk_ungate_mask = (g_mask),			\
++	.delay_us = (delay),				\
+ 	.ack_mask = (ack),				\
+ 	.active_wakeup = wakeup,			\
++	.need_regulator = regulator,			\
+ }
  
-   clock-names:
-+    minItems: 2
-     items:
-       - const: aclk
-       - const: iface
-+      - const: npu
-+      - const: aclk_cbuf
-+      - const: hclk_cbuf
+ #define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
+@@ -258,8 +262,11 @@ struct rockchip_pmu {
+ #define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
+ 	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
  
-   "#iommu-cells":
-     const: 0
-@@ -72,6 +81,25 @@ required:
-   - clock-names
-   - "#iommu-cells"
- 
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: rockchip,rk3576-npu-iommu
-+    then:
-+      properties:
-+        clocks:
-+          minItems: 5
-+        clock-names:
-+          minItems: 5
-+    else:
-+      properties:
-+        clocks:
-+          maxItems: 2
-+        clock-names:
-+          maxItems: 2
+-#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
+-	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
++#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, delay, wakeup)	\
++	DOMAIN_M_O_R_G_W(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, delay, wakeup, false)
 +
- additionalProperties: false
++#define DOMAIN_RK3576_R(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, delay, wakeup)	\
++	DOMAIN_M_O_R_G_W(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, delay, wakeup, true)
  
- examples:
+ /*
+  * Dynamic Memory Controller may need to coordinate with us -- see
+@@ -681,6 +688,10 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+ 		if (ret < 0)
+ 			goto out;
+ 
++		/* Some domains need to settle before the QoS registers answer. */
++		if (pd->info->delay_us)
++			udelay(pd->info->delay_us);
++
+ 		rockchip_pmu_restore_qos(pd);
+ 	}
+ 
+@@ -1300,25 +1311,26 @@ static const struct rockchip_domain_info rk3568_pm_domains[] = {
+ };
+ 
+ static const struct rockchip_domain_info rk3576_pm_domains[] = {
+-	[RK3576_PD_NPU]		= DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       false),
+-	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
+-	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     false),
+-	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  false),
+-	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), false),
+-	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       false),
+-	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  false),
+-	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  false),
+-	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  false),
+-	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  true),
+-	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  false),
+-	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   false),
+-	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  false),
+-	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  false),
+-	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  false),
+-	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    false),
+-	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    false),
+-	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    false),
+-	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
++	/*                                            name    p_offset pwr      status  r_status r_offset req      idle     g_mask   delay wakeup */
++	[RK3576_PD_NPU]		= DOMAIN_RK3576_R("npu",  0x0, BIT(0),  BIT(0), 0,       0x0, 0,       0,       0,       0,    false),
++	[RK3576_PD_NVM]		= DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(6),  0x4, BIT(2),  BIT(18), BIT(2),  0,    false),
++	[RK3576_PD_SDGMAC]	= DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BIT(7),  0x4, BIT(1),  BIT(17), 0x6,     0,    false),
++	[RK3576_PD_AUDIO]	= DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT(8),  0x4, BIT(0),  BIT(16), BIT(0),  0,    false),
++	[RK3576_PD_PHP]		= DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(9),  0x0, BIT(15), BIT(15), BIT(15), 0,    false),
++	[RK3576_PD_SUBPHP]	= DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BIT(10), 0x0, 0,       0,       0,       0,    false),
++	[RK3576_PD_VOP]		= DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(11), 0x0, 0x6000,  0x6000,  0x6000,  0,    false),
++	[RK3576_PD_VO1]		= DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(14), 0x0, BIT(12), BIT(12), 0x7000,  0,    false),
++	[RK3576_PD_VO0]		= DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(15), 0x0, BIT(11), BIT(11), 0x6800,  0,    false),
++	[RK3576_PD_USB]		= DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(16), 0x0, BIT(10), BIT(10), 0x6400,  0,    true),
++	[RK3576_PD_VI]		= DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(17), 0x0, BIT(9),  BIT(9),  BIT(9),  0,    false),
++	[RK3576_PD_VEPU0]	= DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT(18), 0x0, BIT(7),  BIT(7),  0x280,   0,    false),
++	[RK3576_PD_VEPU1]	= DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT(19), 0x0, BIT(8),  BIT(8),  BIT(8),  0,    false),
++	[RK3576_PD_VDEC]	= DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(20), 0x0, BIT(6),  BIT(6),  BIT(6),  0,    false),
++	[RK3576_PD_VPU]		= DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(21), 0x0, BIT(5),  BIT(5),  BIT(5),  0,    false),
++	[RK3576_PD_NPUTOP]	= DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BIT(22), 0x0, 0x18,    0x18,    0x18,    15,   false),
++	[RK3576_PD_NPU0]	= DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(23), 0x0, BIT(1),  BIT(1),  0x1a,    15,   false),
++	[RK3576_PD_NPU1]	= DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(24), 0x0, BIT(2),  BIT(2),  0x1c,    15,   false),
++	[RK3576_PD_GPU]		= DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(25), 0x0, BIT(0),  BIT(0),  BIT(0),  0,    false),
+ };
+ 
+ static const struct rockchip_domain_info rk3588_pm_domains[] = {
 -- 
 2.43.0
 
