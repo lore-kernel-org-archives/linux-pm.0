@@ -1,105 +1,105 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E18B3546D9;
-	Mon, 31 Aug 2026 05:51:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 920D3313293
+	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 06:04:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788155464; cv=none; b=MGiDRxsDdj7lstBXdyInS15C5qMgyJhoCs5td0k8LmotS6RcYID05eaVEYK4NgpO6vuzwVPo/jQ6Z4yyeFHZB9/j7hjfesrQ9FtACNQhUX/u92lUJL9GzA9sSrhQzYixB7T6itIC/Ybfmu+anpaOAN5XdvG/cKml7M0nu3jUQIE=
+	t=1788156296; cv=none; b=bVzOrsufGf0bbEBhCjtodeVIEoXe4diPlx1CWBmNWJmMzOMAfx5nSmveZtT8LAMjmrpf916u+Ultj2JmxW6rj1YRNBQcA22OFqPFXB8URXyxz9ta/KcMl5MtKTBmLX6W/KHE06Xa+RGMBXxnuIVCVxqhkJ847aN47xAtFPGIhEU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788155464; c=relaxed/simple;
-	bh=6lw7yIXjEB9XMLRYymToL0vUPMVyoLOpiDilOKGmuC8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=U0VXd2qGY7OD5wa8nczE2oijYZvPgZNbFyieZ1swdUwkq+RgQZ0A7bzthImU2dm5oZPvq/9tkuGO0MoQv/i7svRSVDJBYwtTJcmZ8P6BPJyAfS1F9Pw2jqZ/SycZ+N/9bW/VcUz3/wG/wZKob1EbN48rS3NZzkV21YhjXanDd2o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=HrMn4tgG; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1788156296; c=relaxed/simple;
+	bh=5cyvu/196NUJ+2V0psX9wZ9QOGyNYgCM/yD+0cVP05U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Y1cnZv7OPkVVx29FvGs64xeqhXQfzawOn/szF8tCTyg9qhukTPvbxhVSgAFdzx/J5ifBWxBzMJkUvGv/wRaeZnsYQjRy/mu2YhLT+NIMkKFyh7aMGqi24RzUGLKWd7ngABe1qjpOmK8CWF0RkhPK/k9oEsbeeKbAIUQkT4k05lY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=LXsqiBii; arc=none smtp.client-ip=209.85.216.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HrMn4tgG"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=+s8UFFEI4k+j2W+RjU9k7t6zkvbjof8FApxrtWjoX68=; b=HrMn4tgGIkmoiWQ+VOkK6RHbzk
-	MDLyXca03FpNMPc5Ee05QluS5J43BfzGBtWGsqrUZcs3/4FjnT0ukI8SNHUAvHK3SHSLsgaG3WZz0
-	y9Q5l7e2s0e/RDfx3tMUX6SeZ6yih/mhaqn7pukPBF3oaozFOYStBwSz0CJFW3UyiAILNlrpRI46q
-	WorghxLxL8kIu0ERsD13ixX4iH/R9D/srhpMnWLmz+dDSYsQzJxg7fHiqy+/pTyW8dY4KFDA9KxF6
-	NF1XFZCepal3GGb78b/uAe1WAbTBAxY8We4I7A1/82+PIGHeM675btYQVf52Tzt78cOKoLDxoMjx7
-	XUbc2jzA==;
-Received: from [50.53.43.113] (helo=bombadil.infradead.org)
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x0uv6-00000008Zdh-1Wom;
-	Mon, 31 Aug 2026 05:51:00 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>,
-	Nishanth Menon <nm@ti.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v2] PM: SmartReflex: fix kernel-doc warnings in smartreflex.h
-Date: Sun, 30 Aug 2026 22:50:59 -0700
-Message-ID: <20260831055059.3456532-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LXsqiBii"
+Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-3964e76d0f4so3193565a91.3
+        for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2026 23:04:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1788156294; x=1788761094; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=0PJ2y/FfJS/eSstN+8fj99mvu+UkmdEPeEPTUdQQoxo=;
+        b=LXsqiBiisdP49HQeTm2gbM6aguyg860Y1iH+4pxr1vNtsYgocw+MTOZbinR7Fq9wxg
+         hcuSsCwFTpNaVk+iXobSpUlwPi96FMpqrd8BLTmJ/kWfH47XK6O4rASIjcFdnkkO/xww
+         UzQO7jU3TC6c2fw7TPKIFbx5PqJ1ZQxc96uWpSBYSz6E4JV6kxtk2Rynms/AUpR99Xa7
+         NRa5wTcFef2me4bIUG/pa9QZKvqqHi4b7Xsbz1hwV2Jyrmh3QTLYPBo2IQuT2BKuHlQN
+         2ac93bs+66AjNkRHsJg6ozEaajNlib6QZ58+g65XbnXFKOdapZOeLm85RI4Ntf+QVSMo
+         ui5w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788156294; x=1788761094;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=0PJ2y/FfJS/eSstN+8fj99mvu+UkmdEPeEPTUdQQoxo=;
+        b=BI4v8Mum0Hxcy/3+XobMpZxu+v/Y+U7IU6ZoNsEFRs/79SeXDRJZMeh4Aqg99S41xD
+         DG2VpWA3k40AxYnPGAkSegpF+aXYZJQUppsFIKDr/I3/1hk0GB9Bav+q3rou5MH80dZj
+         W5NoqbrQRUNRIh0B2LKzgiOzM3G54ohrFIaQS8iMP7oBFN+U+JT2afz74wUMh7oFOmGr
+         Yzhr5mhVdn1JIxGp6BIPoMZwNtzFYHT8iTQsJNvdnFa+hzGmCEPaAQJreiAfMmB0kgzF
+         o8FGNaCQwS1UwJgEgMwztKVAtsvEuIsleczEjC4hYrcKCcc1FHzCKrLhIkc9D9eLxizB
+         dJOg==
+X-Forwarded-Encrypted: i=1; AKwUvBz/dEps6LlNYBXsvwHzsU9t8yxdg13BeSyzkvjsdSCwvMjf9lzGUmqdGD3FQhRkDrf09nBOFwJB9A==@vger.kernel.org
+X-Gm-Message-State: AFuF++lUOeC4O0YEdbOF5MdcbFq/teVAwL3NLA+6XJMReRWegn4cD4Jp
+	OEnxemrXs/zleempG0RMuiFJG2/jbCpDddPeqyv7sIw9z495qMmfrBS8iqhzvQToOTg=
+X-Gm-Gg: AYBFou3BcvIg1+KcCMrkQiirJfd4XB73+aVN2tNvUwwWthrWlQtn/pj18+/XvNprsYy
+	RqCn6n5f0e7SRioGqCfPTvROmmZmOmnQxDbEstzGHYQU1pu7gErDDTnjJml6tep+ygMbIIKk5wn
+	Oyu7ojINGpP0yt7k1bHoG2OZnME6BURWIE+VXYYTbc/Bp5C2+d7DgI3rwtXn0n3u9H51Ps71ylf
+	e3h88clephkdoeWOs+C3xQg3gkYahq0CLT7fA6MD4ERJ/AKaMpmL8s67Mnb1UfNzEjx6tS6S4jR
+	fTjcqL9mm+UTXlwkTZSxVAqwt7cLVyNUvSuwBzPr59ewh57cqUeiJMQkuLzaZuFY93zckNSgJFc
+	X/tE5uv2YqNKS523v7Rsky5fgMp0nt6RvPfBp8i9zXSliMdOrxktA/hcsHEuZxoYKYdzeNZ909G
+	mvAtBGfOnwe5g2dfLkUcOoJ0zWpSXGheasweWCX8VUh+tMqcKq6GdveGsScpy/eYE=
+X-Received: by 2002:a17:90b:1d05:b0:396:65dd:4093 with SMTP id 98e67ed59e1d1-396d0ff519cmr37395830a91.14.1788156293562;
+        Sun, 30 Aug 2026 23:04:53 -0700 (PDT)
+Received: from localhost ([122.172.87.224])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-142e41837c6sm22805738c88.11.2026.08.30.23.04.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 30 Aug 2026 23:04:52 -0700 (PDT)
+Date: Mon, 31 Aug 2026 11:34:50 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Colin Ian King <colin.i.king@gmail.com>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Rob Herring <rob.herring@calxeda.com>,
+	Shawn Guo <shawn.guo@linaro.org>,
+	"Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Eli Gurvitz <egurvitz@nvidia.com>
+Subject: Re: [PATCH] OPP: of: Fix potential multiplication overflow when
+ calculating freq
+Message-ID: <apUZgrCjLxN-T031@vireshk-B250M-D3H>
+References: <20260826131957.1063765-1-colin.i.king@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260826131957.1063765-1-colin.i.king@gmail.com>
 
-Use the correct function name in a kernel-doc comment and
-use the correct kernel-doc format for struct members to avoid
-kernel-doc warnings:
+On 26-08-26, 14:19, Colin Ian King wrote:
+> The multiplication be32_to_cpup(val++) * 1000 is performed using 32 bit
+> unsigned integers and hence uses a 32 bit multiplication; this will
+> overflow if be32_to_cpup(val++) is greater than 4294967 (which is
+> very unlikely at present). The result is assigned to an unsigned long
+> (which is a 64 bit value on 64 bit systems), so fix this potential
+> overflow by casting the first operand of the multiplication to
+> an unsigned int.
+> 
+> Fixes: b496dfbc94ab ("PM / OPP: Initialize OPP table from device tree")
+> 
+> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+> ---
+>  drivers/opp/of.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Warning: include/linux/power/smartreflex.h:187 expecting prototype for
- test_cond_timeout(). Prototype was for sr_test_cond_timeout() instead
-Warning: include/linux/power/smartreflex.h:292 struct member 'err_weight'
- not described in 'omap_sr_data'
-Warning: include/linux/power/smartreflex.h:292 struct member
- 'err_maxlimit' not described in 'omap_sr_data'
-Warning: include/linux/power/smartreflex.h:292 struct member 'accum_data'
- not described in 'omap_sr_data'
-Warning: include/linux/power/smartreflex.h:292 struct member
- 'senn_avgweight' not described in 'omap_sr_data'
-Warning: include/linux/power/smartreflex.h:292 struct member
- 'senp_avgweight' not described in 'omap_sr_data'
+Applied. Thanks.
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
----
-v2: rebase & resend
-
-Cc: Nishanth Menon <nm@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-
- include/linux/power/smartreflex.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
---- linux-next-20260828.orig/include/linux/power/smartreflex.h
-+++ linux-next-20260828/include/linux/power/smartreflex.h
-@@ -174,7 +174,7 @@ struct omap_sr {
- };
- 
- /**
-- * test_cond_timeout - busy-loop, testing a condition
-+ * sr_test_cond_timeout - busy-loop, testing a condition
-  * @cond: condition to test until it evaluates to true
-  * @timeout: maximum number of microseconds in the timeout
-  * @index: loop index (integer)
-@@ -267,11 +267,11 @@ struct omap_sr_nvalue_table {
-  * @ip_type:		Smartreflex IP type.
-  * @senp_mod:		SENPENABLE value of the sr CONFIG register
-  * @senn_mod:		SENNENABLE value for sr CONFIG register
-- * @err_weight		ERRWEIGHT value of the sr ERRCONFIG register
-- * @err_maxlimit	ERRMAXLIMIT value of the sr ERRCONFIG register
-- * @accum_data		ACCUMDATA value of the sr CONFIG register
-- * @senn_avgweight	SENNAVGWEIGHT value of the sr AVGWEIGHT register
-- * @senp_avgweight	SENPAVGWEIGHT value of the sr AVGWEIGHT register
-+ * @err_weight:		ERRWEIGHT value of the sr ERRCONFIG register
-+ * @err_maxlimit:	ERRMAXLIMIT value of the sr ERRCONFIG register
-+ * @accum_data:		ACCUMDATA value of the sr CONFIG register
-+ * @senn_avgweight:	SENNAVGWEIGHT value of the sr AVGWEIGHT register
-+ * @senp_avgweight:	SENPAVGWEIGHT value of the sr AVGWEIGHT register
-  * @nvalue_count:	Number of distinct nvalues in the nvalue table
-  * @nvalue_table:	table containing the  efuse offsets and nvalues
-  *			corresponding to them.
+-- 
+viresh
