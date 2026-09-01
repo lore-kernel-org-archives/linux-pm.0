@@ -1,194 +1,250 @@
-Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE3824734C6
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 08:57:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.41
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788253041; cv=pass; b=XUdI/I2+O8IvfW+vzuw3OogScgVhCgpBjWQ4ITGHZk9ascDozE3OAm1FvTtDmKdX2/Qi4GHDpHnqrke1raNu4PRq63GbnjLJ7j+4rLZDXciXzzTgAVJDzb60lXzNUd/+/XGBGokTJYKBWZzjfOra9CEk3/7zudl7NEeNEZajmlU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788253041; c=relaxed/simple;
-	bh=Pbz07IOx7uWzunVKVHlwzF5t9F6b7iAgHltccdPflGw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=b/SHZQNEXgLnVqN5ZM9pToMyZMz6zP6gtVb2oqUc3MsLHgtF+izenSZvnVtj7pbl6CZQN3jI4RwSnHB5fdk4QWhMxziu3h+cSpLC8WPpyW8CBC9NktlYH/7iLzR4ByYaCjoTcPoDw+Rbwt1fNLGo5yiIETMLu0Pcle21PcNEyNE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hrGMohtJ; arc=pass smtp.client-ip=209.85.208.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D1DF930F924;
+	Tue,  1 Sep 2026 09:17:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788254278; cv=none; b=H36bsUhvPtYi0Ejg8yLOHEmmbobKD0ToarlNXWYibOWxe6kgxSpbzwKY74QU52fkBmqVnCekOZCU+SESQUdQLY6ifrpPJfwbJIIytnzrb4HE46RUoI9MaIKf8SSZKHuRW7fBIjn0ZKeI16NMeIaxsVAQZCvsg+0OneqaT4jmcls=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788254278; c=relaxed/simple;
+	bh=ks9WM3PRQRqUGON47//b1Pmkqw5lx8iK3dx6XqExqyM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Oeql6AB5d+qJEvqwjOpdNaPpiZhCMvkJKT6HhZaGZfVSd2USQIDYUb5tAqmZelyIF6QzszvFk5L9oCpOnKOP7zBPPb9kqEsHIPYRd3KrNODcr8xHPx+8oIrzHGxzQHqDKAlfgHKBzb5miioyR/OKN60iYW1XRcHIzl7K9uTpFhw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=nMv/UW7j; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hrGMohtJ"
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-6a082b3671fso5629941a12.3
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 01:57:19 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788253038; cv=none;
-        d=google.com; s=arc-20260327;
-        b=cn81ahvyl62csbXScOqzecEC1BNxlKoyFTF01TkA5ffvjm/llEaTxmDJzh06f7NTnU
-         X/5ORgykAYKHwCDyaypOy0eouFX/C5bbQBqLSuwKf7xh15tH3u/BLtlXylslZ+qf3Duj
-         AvJgv2Fpv60c36PVOR1V5peFGSYXRsWtn2rlf2tXRUzYQ149m5KASWQgVtUDOFbPlO86
-         OHJvLK+r+0Kj2xJq7bYsABlTWUSybvqH6pQ09KzOuzW8bWQ5QQbNQAxPCwWWgtz4K2bw
-         XdaxGzugndKbQg2vFxh8P9g/plCKIzCXkcdIj7gmP0Qaod4hnoXZ3QEZsV0ar9jbZhuO
-         xGLg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=bPhwsI1urk840eFQFOhdbzxIWtm9TMM1qXVbyg+SFZE=;
-        fh=BUfnVkcn6QseezD8Ib8qb0L74m751MWmJeB/n2ygXwo=;
-        b=DAuSptOwNrhTMG/Ykf2LcITYwCYexp+DJSczPW82/C7w6lejMv4e0/ZO+h8iJIFgg+
-         Io0o7mM8PVDxJToHpJsffGHzkS0k0qlVpv8F/Nny29cXjXwiYlvsW9VkEx/T2jHfLc1V
-         yp6VFAAW8QyXKg0gxr3cX202tMYax5O6ulrh0D4wBOcqo4O4uVXyee4aC70XtahEEE5S
-         tNVPDB1cf8IYNHsHwGvOs4KxJennAhH25f/3+v2/nmuL4obPo+gLy2tQ11qPEKQBcGkT
-         P9XksGbm1fPZS6cHpdIlpZb8yKrKSzKyBLNxap1AI5QEs2qDS1CAKRjo3jnIo9OTnhdg
-         CUCA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788253038; x=1788857838; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=bPhwsI1urk840eFQFOhdbzxIWtm9TMM1qXVbyg+SFZE=;
-        b=hrGMohtJ+5Mbb6KN9lsAGC4MBEth86CGQhNW6qnIu2z3Zcf1iMFQaDusVtu0Dnjwoi
-         sMv15QY31d9w9B3kY1Z07kGX82ajGGzRXTr1EVhnALzLmldnybzD2idTPPRaldfldA6L
-         GC384aMxypXyMAWBWMYvI2rc+14mY78pFwPnUUH41XRYhIz4kSpt1tsutqf/hjG5YfCa
-         sH+z7xRINBHzdokYS5mbePOEU9gaDlDn9SvPF1HTKMMFDh2ynzKVLYYMoc2uycgj7sFL
-         S0CST3iTiuCAC4WUmq8OvxrSVATlG3u24B/CxuhnGcMZc7LY+xeKVDia5bf3AkahM0jc
-         GnDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788253038; x=1788857838;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=bPhwsI1urk840eFQFOhdbzxIWtm9TMM1qXVbyg+SFZE=;
-        b=Noj02WHzTSa17f/sKr77UOpO2n4K7LfuqRdhfndV15JiMPqQ8ukg6OBv1+XFUbeEr9
-         ReZH1Wjp80ureoicmy8FR/oMVoYrcscs5oNMpl3UYdioj/RztqCkABKrv0DCtEzw48Sg
-         vUwnK1L+tqPcaicqxiHmGZvPkM5uZHBcWtUesejp4G3xBTwtYxiMsRZyg7Q9ReN9gXyA
-         VuGleBXUBFHNwnYKFNU5iBg+YnF542VT4HrqDJvmPV36FWE+qUQ46tD/aU8t2DRF7AAl
-         MNzR/8Xx5TDVeTM5uFJKP9Pn99rZdtuK/IzDy7h7Q+0EL63CIFmgO+rz+QmchrZ6NKdj
-         +9lA==
-X-Forwarded-Encrypted: i=1; AHgh+Rr8b6TJ2SvyYM4LNhbDWJcp2fLcLb4fw6E9bAYxEmXBerCZNGFvKy5V9S1eZQuPltcjt1lCVeDpUg==@vger.kernel.org
-X-Gm-Message-State: AFuF++msWT9GTsggGZTaAAYmb2DIpq1QymHXJ6Z6E4ttqhDYwjmuo/gE
-	WvVw4lESOIVljgetzbypcfw0CukYqkpeWWZnhjG8672gdasFjuACL+g/3jC4LER9MjWWinFn2/F
-	pKEJJsUW9xyMZ4xuKBmVEpjPNIkqzWWA=
-X-Gm-Gg: AR+sD13pDxoPJrCbn2ByyLOqKVX0/4z2OtHMkFi0O6ihXJtUElPRO/gOSR3Rb5zKMbY
-	n/NNqwe9rUsRsDufFyW0mPgyH8CA34OHHO7MjxK+BByhWDGvHbTklZduLi9cfQ05OI7QZsxwnPT
-	9LESh8hnlTVQmEVQWzfd7BqXltOxToHmPSp791SdgRhlAwMT0ngx6FmV3IkBlzhSVx1O571x6ma
-	RnNbOco1qKYmGcwGnKTZyBPWEdH+5v/kKLtCovbTAKzG5L8hc8tUHnL+43oS+MXF5x3rgwmpB6A
-	N4ZH0bC4Df7IEQOOT8Sy4fd9ZazVVSaCFToWcJNE7jPao/KEB0WhWrxC6vb2tQk0Gi+vzgbwL5O
-	mXMU=
-X-Received: by 2002:a17:906:6a17:b0:c25:c67d:53cc with SMTP id
- a640c23a62f3a-c25c67d5cd2mr18684866b.8.1788253037879; Tue, 01 Sep 2026
- 01:57:17 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="nMv/UW7j"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2267F1692;
+	Tue,  1 Sep 2026 02:17:51 -0700 (PDT)
+Received: from arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5FC703F882;
+	Tue,  1 Sep 2026 02:17:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1788254274; bh=ks9WM3PRQRqUGON47//b1Pmkqw5lx8iK3dx6XqExqyM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nMv/UW7jL/CfUFZIEOAX4wlPj4g0NKuCatmZAvfp2d6bdCOlYsCtkffE4uiDCzs2l
+	 /naRgpKXeGcCK3cvxTyNVtdYyomrbKmz1fjilV0kkhrtAWHOGasOngKobacWxAZ0yp
+	 QFD+shJ6Kb3ze8xiBhYbpRbur/Mj0g9wlCEU4Xdo=
+Date: Tue, 1 Sep 2026 11:17:42 +0200
+From: Beata Michalska <beata.michalska@arm.com>
+To: Sami Tolvanen <samitolvanen@google.com>
+Cc: ojeda@kernel.org, dakr@kernel.org, gregkh@linuxfoundation.org,
+	rafael@kernel.org, boqun@kernel.org, gary@garyguo.net,
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+	aliceryhl@google.com, tmgross@umich.edu,
+	daniel.almeida@collabora.com, boris.brezillon@collabora.com,
+	work@onurozkan.dev, acourbot@nvidia.com,
+	rust-for-linux@vger.kernel.org, driver-core@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] rust: add runtime PM support
+Message-ID: <apaYNvQSSUCkMTjn@arm.com>
+References: <20260826131213.1820408-1-beata.michalska@arm.com>
+ <20260826131213.1820408-2-beata.michalska@arm.com>
+ <20260829003719.GA552219@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260901070717.20513-1-sreeshankar0910@gmail.com>
- <20260901070717.20513-5-sreeshankar0910@gmail.com> <fyzo7furxfsreajgefuimfdpkkulxvwxf76plc5o6kjv7bgdym@2pah3t7yfiw7>
-In-Reply-To: <fyzo7furxfsreajgefuimfdpkkulxvwxf76plc5o6kjv7bgdym@2pah3t7yfiw7>
-From: Sreeshankar K <sreeshankar0910@gmail.com>
-Date: Tue, 1 Sep 2026 14:27:10 +0530
-X-Gm-Features: AcwNN1XGMvHREpeWhXMnhL-AR_TL9aR4BW-G9PMQ7EyQU1HF166WiwXPkNVsQPA
-Message-ID: <CAA-+ukJOPKGL3iS15uWAc7iXviRe-xgVf61dcd_gP6p9zLrByw@mail.gmail.com>
-Subject: Re: [PATCH v8 04/12] clk: qcom: Add Global Clock Controller (GCC)
- driver for SM7250
-To: Abel Vesa <abel.vesa@oss.qualcomm.com>
-Cc: andersson@kernel.org, sboyd@kernel.org, bmasney+clk@redhat.com, 
-	jbrunet+clk@baylibre.com, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org, 
-	konradybcio@kernel.org, tglx@kernel.org, ulfh@kernel.org, radu@rendec.net, 
-	taniya.das@oss.qualcomm.com, danila@mainlining.org, davidwronek@gmail.com, 
-	mani@kernel.org, robimarko@gmail.com, linux@gurudas.dev, 
-	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260829003719.GA552219@google.com>
 
-On Tue, 1 Sept 2026 at 12:51, Abel Vesa <abel.vesa@oss.qualcomm.com> wrote:
->
-> On 26-09-01 07:07:09, Sreeshankar K wrote:
-> > Add support for the global clock controller found on SM7250
-> > based devices.
-> >
-> > Signed-off-by: Sreeshankar K <sreeshankar0910@gmail.com>
-> > ---
-> >  drivers/clk/qcom/Kconfig      |    9 +
-> >  drivers/clk/qcom/Makefile     |    1 +
-> >  drivers/clk/qcom/gcc-sm7250.c | 2275 +++++++++++++++++++++++++++++++++
-> >  3 files changed, 2285 insertions(+)
-> >  create mode 100644 drivers/clk/qcom/gcc-sm7250.c
-> >
->
-> [...]
->
-> > diff --git a/drivers/clk/qcom/gcc-sm7250.c b/drivers/clk/qcom/gcc-sm7250.c
-> > new file mode 100644
-> > index 000000000..0d548fe4a
-> > --- /dev/null
-> > +++ b/drivers/clk/qcom/gcc-sm7250.c
-> > @@ -0,0 +1,2275 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
-> > + * Copyright (c) 2026, Sreeshankar K <sreeshankar0910@gmail.com>
-> > + */
->
-> [...]
->
-> > +
-> > +static struct clk_alpha_pll gpll0 = {
-> > +     .offset = 0x0,
-> > +     .regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_LUCID],
-> > +     .clkr = {
-> > +             .enable_reg = 0x52010,
-> > +             .enable_mask = BIT(0),
-> > +             .hw.init = &(struct clk_init_data){
->
-> const
->
-> I think I already mentioned this for v4.
->
-> > +                     .name = "gpll0",
-> > +                     .parent_data = &(const struct clk_parent_data){
-> > +                             .index = DT_BI_TCXO,
-> > +                     },
-> > +                     .num_parents = 1,
-> > +                     .ops = &clk_alpha_pll_fixed_lucid_ops,
-> > +             },
-> > +     },
-> > +};
-> > +
-> > +static const struct clk_div_table post_div_table_gpll0_out_even[] = {
-> > +     { 0x1, 2 },
-> > +     { }
-> > +};
-> > +
-> > +static struct clk_alpha_pll_postdiv gpll0_out_even = {
-> > +     .offset = 0x0,
-> > +     .post_div_shift = 8,
-> > +     .post_div_table = post_div_table_gpll0_out_even,
-> > +     .num_post_div = ARRAY_SIZE(post_div_table_gpll0_out_even),
-> > +     .width = 4,
-> > +     .regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_LUCID],
-> > +     .clkr.hw.init = &(struct clk_init_data){
->
-> Same here and everywhere else.
->
-> > +             .name = "gpll0_out_even",
-> > +             .parent_hws = (const struct clk_hw*[]){
-> > +                     &gpll0.clkr.hw,
-> > +             },
-> > +             .num_parents = 1,
-> > +             .ops = &clk_alpha_pll_postdiv_lucid_ops,
-> > +     },
-> > +};
->
-> [...]
+Hi Sami,
 
-I apologize for my carelessness. I edited the source as per the
-instruction and sent the patch in v6 patchset.
-Link: https://lore.kernel.org/linux-arm-msm/20260824150156.1310-5-sreeshankar0910@gmail.com
-I accidently applied the old patch from v5 patchset to v8 patchset. I
-will send a completely fixed patchset as v9.
+On Sat, Aug 29, 2026 at 12:37:19AM +0000, Sami Tolvanen wrote:
+> Hi Beata,
+> 
+> On Wed, Aug 26, 2026 at 03:10:55PM +0200, Beata Michalska wrote:
+> > diff --git a/rust/kernel/error.rs b/rust/kernel/error.rs
+> > index a56ba6309594..43bbf4bce993 100644
+> > --- a/rust/kernel/error.rs
+> > +++ b/rust/kernel/error.rs
+> > @@ -67,6 +67,7 @@ macro_rules! declare_err {
+> >      declare_err!(EOVERFLOW, "Value too large for defined data type.");
+> >      declare_err!(EMSGSIZE, "Message too long.");
+> >      declare_err!(ETIMEDOUT, "Connection timed out.");
+> > +    declare_err!(EINPROGRESS, "Operation now in progress.");
+> 
+> Looks like this is already upstream since commit b93fb6e76ec1.
+Missed that.
+> 
+> > +/// Device's runtime power management status
+> > +#[repr(i32)]
+> > +pub enum RuntimePMState {
+> > +    /// Runtime PM has not been initialized for this device yet.
+> > +    UNKNOWN = bindings::rpm_status_RPM_INVALID,
+> > +    /// The device is expected to be runtime active and in it's normal operating state
+> 
+> Nit: it's -> its.
+Fixed for v4 (across all style-related comments: spelling, documentation
+formatting, naming/CamelCase, etc.).
+> 
+> > +    RESUMED = bindings::rpm_status_RPM_ACTIVE,
+> > +    /// The device is expected to be suspended, unavailable for normal operations
+> > +    SUSPENDED = bindings::rpm_status_RPM_SUSPENDED,
+> 
+> Should the enum variant names use CamelCase?
+> 
+> > +impl<'a> ResumeScope<'a> {
+> > +    fn new(dev: &'a device::Device<device::Bound>, mode: Mode) -> Result<Self> {
+> > +        if mode.contains(ModeFlag::Acquire) {
+> > +            // ModeFlag::Acquire is intended to be used with Awake scope
+> > +            // Avoid mixing the modes.
+> > +            return Err(EINVAL);
+> > +        }
+> > +
+> > +        // ModeFlag::Idle is internal so strip it of before passing further
+> 
+> Nit: of -> off. Also in the identical comment below.
+> 
+> > +impl<'a> AwakeScope<'a> {
+> > +    fn new(dev: &'a device::Device<device::Bound>, mode: Mode) -> Result<Self> {
+> > +        if !mode.contains(ModeFlag::Acquire) {
+> > +            return Err(EINVAL);
+> > +        }
+> > +        // ModeFlag::Idle is internal so strip it of before passing further
+> > +        match Request::resume(dev, mode & !ModeFlag::Idle) {
+> > +            Ok(()) => {}
+> > +            // For async/nowait requests, `EINPROGRESS` means the resume is in
+> > +            // flight and the usage reference already keeps the device active.
+> > +            Err(e) if e == EINPROGRESS && mode.contains_any(ModeFlag::Async | ModeFlag::Nowait) => {
+> > +            }
+> > +            Err(e) => {
+> > +                Request::put_noidle(dev);
+> > +                return Err(e);
+> > +            }
+> > +        }
+> > +
+> > +        Ok(Self(Scope::<Awake> {
+> > +            dev,
+> > +            mode,
+> > +            _tag: PhantomData,
+> > +        }))
+> > +    }
+> > +
+> > +    fn release_inner(&self) -> Result {
+> > +        let scope_mode = self.0.mode & !ModeFlag::Idle;
+> > +        match self.0.mode {
+> > +            mode if mode.contains(ModeFlag::Idle) => Request::idle(self.0.dev, scope_mode),
+> > +            mode if mode.contains(ModeFlag::Auto) => {
+> > +                Request::mark_last_busy(self.0.dev);
+> > +                Request::suspend(self.0.dev, scope_mode)
+> > +            }
+> > +            _ => Request::suspend(self.0.dev, scope_mode),
+> 
+> In v2 you had Request::idle in the default arm. I didn't see a note
+> about this in the changelog. Was the change in behavior intentional?
+This is intentional to match the resume request. Idle has a separate case.
+Missed that from the changelog.
+> 
+> > +impl<'a> RetainScope<'a> {
+> > +    fn new(dev: &'a device::Device<device::Bound>) -> Result<Self> {
+> > +        Request::get_noresume(dev);
+> > +        Ok(Self(Scope::<Retain> {
+> > +            dev,
+> > +            mode: Mode(ModeFlag::Sync as u32),
+> > +            _tag: PhantomData,
+> > +        }))
+> > +    }
+> > +
+> > +    fn try_new(dev: &'a device::Device<device::Bound>) -> Result<Self> {
+> > +        Request::get_if_active(dev)?;
+> > +        Ok(Self(Scope::<Retain> {
+> > +            dev,
+> > +            mode: Mode(ModeFlag::Sync as u32),
+> > +            _tag: PhantomData,
+> > +        }))
+> > +    }
+> > +
+> > +    fn release_inner(&self) {
+> > +        Request::put_noidle(self.0.dev);
+> 
+> What's the reason for using put_noidle here? It doesn't queue
+> autosuspend, so wouldn't the try_hold_active pattern (i.e. grab if
+> active, do something, drop) leave the device active until something
+> else triggers a suspend?
+You are right. This should call put.
+> 
+> > +/// SAFETY:
+> > +/// bindings::dev_pm_ops is #[repr(C)], implements Default
+> > +/// and the struct itself is all nullable function pointers.
+> > +/// There is no padding and all zero bit-pattern is valid
+> > +///
+> > +pub const PMOPS_NONE: bindings::dev_pm_ops =
+> > +    unsafe { core::mem::MaybeUninit::<bindings::dev_pm_ops>::zeroed().assume_init() };
+> 
+> The safety comment shouldn't be a doc comment.
+> 
+> > +/// Runtime PM context tied to a device.
+> > +pub struct PMContext<'a, D: driver::DriverLayout, T: PMOps<D>> {
+> > +    // Preferably, PMContext could be shared via borrowed reference over
+> > +    // a pm Registration's lifetime but that bares complications on its own
+> > +    // when the context needs to be shared across different Registration types.
+> 
+> Nit: bares -> bears. Also in the identical comment below.
+> 
+> > +impl<'a, D: driver::DriverLayout, T: PMOps<D>> PMContext<'a, D, T> {
+> > +    /// Driver-provided runtime PM operations.
+> > +    ///
+> > +    /// A driver implements this trait to handle runtime PM
+> > +    /// transitions for its device type.
+> > +    ///
+> > +    /// Each callback receives the device and the current payload.
+> > +    /// On success, it returns the payload to keep for the next
+> > +    /// transition. On failure, it returns the payload together
+> > +    /// with the error so the previous, or otherwise sane state
+> > +    /// can be preserved.
+> > +    pub const PM_OPS: bindings::dev_pm_ops = bindings::dev_pm_ops {
+> > +        runtime_resume: if T::HAS_RUNTIME_RESUME {
+> > +            Some(runtime_resume_callback::<D, T>)
+> > +        } else {
+> > +            None
+> > +        },
+> > +        runtime_suspend: if T::HAS_RUNTIME_SUSPEND {
+> > +            Some(runtime_suspend_callback::<D, T>)
+> > +        } else {
+> > +            None
+> > +        },
+> > +        ..PMOPS_NONE
+> > +    };
+> > +
+> > +    /// Enable runtime PM
+> > +    pub fn enable(&self, state: RuntimePMState) -> Result {
+> > +        if self.inner.enabled.cmpxchg(false, true, ordering::Full).is_err() {
+> > +            return Err(EBUSY);
+> > +        }
+> > +        Self::apply_config(self.inner.dev, &self.inner.configs);
+> > +        match state {
+> > +            RuntimePMState::RESUMED => Request::mark_active(self.inner.dev),
+> > +            RuntimePMState::SUSPENDED => Request::mark_suspended(self.inner.dev),
+> > +            _ => Err(EINVAL),
+> > +        }.inspect_err(|_| self.inner.enabled.store(false, ordering::Release))?;
+> 
+> This always applies the config even if state is invalid. Should we
+> validate the state before making changes?
+We could but that should not be strictly necessary.
+Those should not have any effect when rpm is not enabled.
+> 
+> > +    /// Runs a closure while holding an `AwakeScope`.
+> > +    pub fn with_get<R>(&self, profile: PMProfile, f: impl FnOnce() -> Result<R>) -> Result<R> {
+> > +        if profile.0.contains(ModeFlag::Async) {
+> > +            return Err(EINVAL);
+> > +        }
+> > +        let _scope = self.get(profile)?;
+> > +        f()
+> > +    }
+> 
+> Shouldn't this reject NoWait too to make sure the device will actually
+> be powered when the closure is executed?
+We should. Thanks for catching this.
 
-Regards,
-Sreeshankar K
+Thank you for your feedback.\
+
+---
+BR
+Beata
+> 
+> Sami
