@@ -1,46 +1,46 @@
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013003.outbound.protection.outlook.com [40.107.162.3])
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011045.outbound.protection.outlook.com [52.101.65.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7F7E3B14C3;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B7B13AFD16;
 	Tue,  1 Sep 2026 19:35:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.162.3
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.45
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788291321; cv=fail; b=tpqBODoz05PmXD10ApXzbp1ZDiHLtYZeO5Xm7a7pXwPRHsGilgNmKoWgffvyykhtZ7OZNJxW19sFYbUKxWE88qbCddovq6mTYnZ7zF402try1NrFckxLih3lipL+IgwVKdwVkZQ0Dc9NqKX4naJDfiTQ9XUmNQuZWKt7pc6g6bE=
+	t=1788291321; cv=fail; b=A+aXXxxERO9AcnfCRDAOH8lwwog1dDfSXZphyqrR4F30km1z88Dmko1Zqrmk6BXq9bmgB/I7ahaK9dwTx9F/5tv7Fv4Mltr173O24h4dEwCEDvfegWy+tzR884CCbI/9nU9oNgAhgi9vmnwMtix7D8g5IH/s/6ard3fu54b949w=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1788291321; c=relaxed/simple;
-	bh=d8UtFGhCKlrndjnEqLVIopAvyFoYXujS3Zju61xMwbY=;
+	bh=LFEcsVevcumHWk22N8Qyb0dvidpuh4hJZ5ITKK0ahPM=;
 	h=From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
-	 MIME-Version:Content-Type; b=N/2aYoO5vXfM4VJnV65Wu7y56lK/W3CSlwuy5wzx0F8nedz8Fx75kLE1YKZ4/QgknHE8LPl1zNDSVNaGhh65S/IggorIVSzMGXFJzI1WhKZEPbrRcSFOUrNBnKA/8/nOtQLVOVYAJEV3E/RitXJ//rwJb/9IrpYSAO3AVsznu9c=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=lndLRqb6; arc=fail smtp.client-ip=40.107.162.3
+	 MIME-Version:Content-Type; b=ikbp1fte5mBSuZRzvclxsdVQVjgbbQ0QeKCacsm/v8wjPxSFjZb+2aiDhX0mzzLkvNKGrLIjC2pqle5CWGguq8ldjmE8jTYuxzGeecaUrtpVxXfy5FRA6ZtUdAL5AA0hx7yVzd3uUfri5NxH023HMA0zx4xDshXbLCEMLRah7O8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=XMvQpM7K; arc=fail smtp.client-ip=52.101.65.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="lndLRqb6"
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="XMvQpM7K"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Z26xtEUpyzWT1Rhrpl8UsJBQ5BXawOqU0rHchpwAeAfE9+mKEpIX7XfrE/5RD3PCNaL1budEz5B5RZbpORys0jbPw7XYrGMtYXys+DXx3nqHoNlm8kfAFO57ZcECFJdjw66ksAmLwvjzTBw23zly2/Qtih5Mi/JoBEp5vbekoAdKubPxATZ3cPtRR9hLz2UJG6eMpB7gGhxAAIkEiHuhnpPs0kgWEaaZB1UYny117olLe2PQrQbhJEgR0Fd0OMTUjJcE9DkV5J72lgbqtVGxCRow7QDdd0dyxWx4dBe9e7KtQlX+VG90G5eR+E8GC8WvB4Dpl2Z8S7UnK4mTKA+TAw==
+ b=uRZ2D+fk04LprlcuqtQTEod81ANGbXbroBKZfLaEPi3ZplomD6sPtQnumWkApjziP90urq+ENEVxWa+1FLZBhCuuMLekbZ/E77Hus0M6QJg6Q/P0yPZs+uggJWjHNPPDn76+cPTzdlKo8Un6AC77KmzhNovyd0Onrmq/GTWE4FtZMCVOOX3/BiVzR9x5iwWTaOSHTfFE4O7M2Ud8ZS/GxjeYcJ3UaJC4DYRCfxZsMh9B/ypTenC2KSsgVmYWxR1Y+g9SFhexOI93inBvZSh/Q6UR+vovFiL/nqkQatnK93mckEE6WF9kXOe0wogopGU2DufMrMjM6C46uccELklXdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=jzTUb9p1hZCrUESSAaiQiN8kC9H0miHDys9hPRIFl18=;
- b=dWsW4jxOSrjuHn94iLkWftJLn3KTc5NIk9zHoIMem7c57WDcCu2gIYKQwCVoWhpH45mtfADN97PmLN4kCGe+lBN5HHySD9c5tQid3CefFbt1FAB6562/wJuI3E8CcxQZKAwajqZ0IKncTYGn3MEQ+Scc0RsZXmJZTrZ3LpoTTfq36Awb59SF7tsrIbmIo9GxIo8AWxEqko2QkkvR6jCMCJE9w/SwPsSW9VR8AM6vCVxgjbsWywErZbtZXGUWbJai4n9H76m7NL63Bc1GQYZtPtwbvf1NKkLqqVqllcJBJujmpKO5LHTzvwIapV9uvb2Xw6fEcq+GQ2k9uTk1En3RSg==
+ bh=b/JfYOisfFptAVgcujF7dTg3r84jl/fiddgslNwhY0Q=;
+ b=vHSoCC1jeYLNOuEfbhF+bzIpgyA/66e6n1eyB02D5ISPU4ikNIC6xEgjSeB1WGuQeWzACsgqofzB8yRQ6wn2qoNZWV+DCbBBysBD0fS2AuHK8mBlLKOgfp+irEVYIvcm5TWqbyXMPWPBXR13uuytuWHXEPeOd1FnthMGj2ue36q2DamT5HTYMXiRIW8kB07HHssCHrXhTO34y4mjUn0OQSxG0/cDm7UE3GwwCDnwTlrxetpiAmbKeXTrZcoXdrldFE+dvPObkBZE3BhJa3kwYsxm7O0qJtlRFtu+nNv+IVwVLnYXteqiK6Ct8dE1pBtku1Sqkv+f2eFtm1IH36A1ow==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=jzTUb9p1hZCrUESSAaiQiN8kC9H0miHDys9hPRIFl18=;
- b=lndLRqb6bj83LaLjVN1wPejxygfg9ONVbtbUhD+USWG8X2mMFgWOCj6Hlwbc4UuSNfMJGFgzEFmDJBYEVZXRQ3jahdqQ0biaQjtCSRM6pX3+Uj3mfEy0+b5wL37UI5KhV8M+xlcoeUsZ5k4Zma2MU+WbdM55Yckq/BymXN1Pyx0=
-Received: from AM0P309CA0010.EURP309.PROD.OUTLOOK.COM (2603:10a6:20b:28f::17)
- by VI2PR02MB10950.eurprd02.prod.outlook.com (2603:10a6:800:27d::5) with
+ bh=b/JfYOisfFptAVgcujF7dTg3r84jl/fiddgslNwhY0Q=;
+ b=XMvQpM7K++1Hdc654BWXvZjDm8c/b+1bXJorG5bg/sgW1P0ADTZjYfXnGV2Irb7CA1iM8166V3wAQJkf7zk8cYDM6zkQ/BneH/cexEZn3qO36OaELhHIixDaT+R/naAuhzO4GYfEMVRtVTpJArT0TR43ytj0GeRO30EOl8zaSjM=
+Received: from AM0P309CA0027.EURP309.PROD.OUTLOOK.COM (2603:10a6:20b:28f::16)
+ by AMBPR02MB11561.eurprd02.prod.outlook.com (2603:10a6:20b:736::15) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Tue, 1 Sep
- 2026 19:35:13 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.11; Tue, 1 Sep
+ 2026 19:35:14 +0000
 Received: from AMS0EPF00000198.eurprd05.prod.outlook.com
- (2603:10a6:20b:28f:cafe::81) by AM0P309CA0010.outlook.office365.com
- (2603:10a6:20b:28f::17) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10a6:20b:28f:cafe::78) by AM0P309CA0027.outlook.office365.com
+ (2603:10a6:20b:28f::16) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.10 via Frontend Transport; Tue, 1
- Sep 2026 19:35:13 +0000
+ Sep 2026 19:35:14 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
  smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -50,7 +50,7 @@ Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
 Received: from mail.axis.com (195.60.68.100) by
  AMS0EPF00000198.mail.protection.outlook.com (10.167.16.244) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.382.8 via Frontend Transport; Tue, 1 Sep 2026 19:35:13 +0000
+ 15.21.382.8 via Frontend Transport; Tue, 1 Sep 2026 19:35:14 +0000
 Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Tue, 1 Sep
@@ -59,12 +59,12 @@ From: Waqar Hameed <waqar.hameed@axis.com>
 To: Sebastian Reichel <sre@kernel.org>
 CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 5/8] power: supply: rt9467: Use
+Subject: [PATCH v2 6/8] power: supply: bq24257: Use
  POWER_SUPPLY_PROP_LOAD_SWITCH
 In-Reply-To: <cover.1788290289.git.waqar.hameed@axis.com>
 References: <cover.1788290289.git.waqar.hameed@axis.com>
 User-Agent: a.out
-Message-ID: <11d5d3f03f34cdc47a9ec9f1ebec9e1d9457414f.1788290289.git.waqar.hameed@axis.com>
+Message-ID: <d5b2615e549725a9294f9dd51787692591743cce.1788290289.git.waqar.hameed@axis.com>
 Date: Tue, 1 Sep 2026 21:35:09 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -73,73 +73,73 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail10w.axis.com
+X-ClientProxiedBy: se-mail10w.axis.com (10.20.40.10) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AMS0EPF00000198:EE_|VI2PR02MB10950:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7d8fd11d-fa45-4077-9684-08df086024df
+X-MS-TrafficTypeDiagnostic: AMS0EPF00000198:EE_|AMBPR02MB11561:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7c00fe8d-cadc-42d6-efa7-08df0860253f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|23010399003|82310400026|376014|1800799024|6133799003|18002099003|22082099003|56012099006|11063799006|10067099003;
+	BCL:0;ARA:13230040|376014|82310400026|36860700016|23010399003|1800799024|10067099003|11063799006|56012099006|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	P6N8HnjZWRoej5PcpUHmpo5uD5ymDlYyVbEL6IuVkXlBhUjBvmhXdoGHrhDooHAmHmYhwqGLkEqlfFjS0eS/wt36cGy3fvhQ6a1MKuNzhRWc3dggxjfPzQKft0/xHbgkB5w37GKQfhHFENktF6f81uZoxX55MN3GSJCf18DvWEGmOkcd3ZAIGNnX1GO5Of40+kcRNAu5wejeVp1yMjyqR8sWYPmN3LFvb/hrG9vLWxJAE55oUa1l4bE8Op0U6QUnIstbv47eAerlB1Md2sbDv6TjpgyV2IPMywYoWH9r58RJ1sRfo8oDqmKAmNrquON+FfSCaNdF8wdj7Mwn/B6sA3qhlvLJGgWZFhqfK9g81ZomYl070RLQJpThGM0g1irQBocN3Vv2xlPkmfR03Xic+50cVvwdcBm+kSGi56LFlWt7a96oqfgQ4hrkayAHDhYt19WOeX0AAiS3XO+lBrHZvq6EvalZ4yx40njAV8QXARFaXRUP3T0EgYDQ5r0mPESOlp0R0jHgOch2QZG/V4B8T1BSdX/YfGl0h3edRND4Q3AUjKnZCniUiInNrETsbqTR6kYbnlUptdfBdZb8pOSCxPJS/gBjGlXZP5HiJVBG7YVfC960lnMpYqyg7mM5RXfGcx2EtOi302vXkkANTb79M/AUL7oqLAXM5yU+HFJjH0qSmR+iTys4nBzXnQEMeAau
+	6msvd986vxIRMVINVUilY01aEFl+42LIqmGR0SE3Gslpmft0loShwcU/D3NYOrRNLiaY2T/PlxtX4TiRz8+FdFSdv3fJk3v4xlGfjNJEyaZRHf92WSugG6G2yl46roNdJ9vbIClpcPdiYd+MYE1y3MrNaZe8+229VFv4VEfjehqsZqLiR8dxQ+zNZUO1AiLu2HBAwekzqOyeOePyR2DI3c/YPCf8AN6r9I1VUqsc1pKQoNGyzOAnGOazWGv6jzM7SqOyZvnfANUcn6dTr79NTh2RP/Mag30E8YnjBn3cbsVxQbkINJiz4g1ALWe0+KsCs1DmAxiK0NCZWSxsoEajpWpuo37X8aMN4PyiMmMIOQ0G2/yjLA1wyVUvq2r7NsoUqqSpa8ln6k0004igUsqctBRe75E1FQ77tulJzOiTvdic6qrUfnRWLy98SPYd+GpYYZIwbB5pmH3KbMob7hlf/t9O3e+zco0KNErui/zz0mmHwkyrfciBE+OpytUhLXb2fRlfQteVSrk6/Z2ckWNEHNiLXLzPHpYFt0G6BkZtz4FMNmL3KHvJtpaGKmRraxpINP/D3gUiL0219cXGru6XL7GtTZrBqM3hk+KOlOddvLfywIubxoIKz0WQSD+RnKtTY/eaBrTPktAtyl9oRc5udfrZnLz5BUZGvcV0JaW9eBUHjjBn100Ecr5+wDz8ob1BcPMXrtUIt0ZDhsGvqdvZGQ==
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(23010399003)(82310400026)(376014)(1800799024)(6133799003)(18002099003)(22082099003)(56012099006)(11063799006)(10067099003);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(82310400026)(36860700016)(23010399003)(1800799024)(10067099003)(11063799006)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	gqCHwcGYpkKhqxbOTyO2G6xWCB2YGL+E56IloqrMz1iW15hxfGvgSydUplm4zYeezC+Kg5LPGFnUc8t+kjaf150/zroK6q2qV6q5ylL3MQzyx0USLQ3L64oriv3CCEwa1O7bQfqC4te21mnxjSRClg2MNmHp9PsA3bdgf8dCj5WE1v6NRis2wfWBZ6E4r7oNbCRKVQcJtnvU+PU/zIrEJBtFzMS2vJqyHolAip+UBai6tUHeeII/+J1haWoaMKQUqZf8wDkxY2byjX7kpQ9oBJM9XBjzBOgehSOHvS/IKb+V2USELoMVaqD0nu1XrJiuk3klGNhNisEMxKQ6ziQ0Zlqep7NhyeNTrFn2EoCRWz2uNWELTdcXtag01cAorDGV74LU0b/VyOxwOhr2Mp6w/wiJ0hzAHdfDW8uyFpfoIcPVL0IYTM9bY1s0ttK/oYfZ
+	IHMpr06H1WXJAHy7DBLjyRaxxYTCdoDRpg/DtJ6FG/huIxT6sxS2mKqr9rW1iXiaVQwnalQgYGYCjCtG3I4qz8gnQfIa/qrs+cA8hqDv4wQJU/ca1UqnGXQpDGXZZcTfRvGZyRcAGWUMfemscW0KVO55G02j3cpE+ZcZ88EM74EtNlXreR1CuZZ/wWIRstlfCjBW9NfqUq5hgOMMwc0243++Ynfar8QtDmdWZeY1bgDH0TmS3lwQg+kOdshNhLFdzGSDF/O7bohL05fBpFTDmrnJQmECk6/lWdQdhp+kToG9o2lpOBUsgVSQhREONPsPVCYazpz/TBuCQzBeVz8OYoVT/aVLsKwDC9T/cIrChRVIYEl69pG7HvPH9Nua6f6WODgL+jiHwNMV4p14JLKhSmcKWeQiLSNmDp6p+M68+yN3fFfOwrT5PpD0BR+xVX4k
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Sep 2026 19:35:13.8034
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Sep 2026 19:35:14.4352
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7d8fd11d-fa45-4077-9684-08df086024df
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7c00fe8d-cadc-42d6-efa7-08df0860253f
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	AMS0EPF00000198.eurprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR02MB10950
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMBPR02MB11561
 
 The framework supports controlling system load with
-`POWER_SUPPLY_PROP_LOAD_SWITCH`. Use this to control the BATFET, but
-keep old custom `sysfs` ABI for backward compatibility. However, add a
-note in ABI documentation that one should prefer the property
-`load_switch` instead.
+`POWER_SUPPLY_PROP_LOAD_SWITCH`. Use this to control `SYSOFF`, but keep
+old custom `sysfs` ABI for backward compatibility.
 
 Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 ---
- .../ABI/testing/sysfs-class-power-rt9467      |  2 +
- drivers/power/supply/rt9467-charger.c         | 54 ++++++++++++++++---
- 2 files changed, 50 insertions(+), 6 deletions(-)
+ drivers/power/supply/bq24257_charger.c | 43 +++++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9467 b/Documentation/ABI/testing/sysfs-class-power-rt9467
-index 619b7c45d145d..bfbfd78ec1c19 100644
---- a/Documentation/ABI/testing/sysfs-class-power-rt9467
-+++ b/Documentation/ABI/testing/sysfs-class-power-rt9467
-@@ -13,6 +13,8 @@ Description:
- 		'Disable' also can help to leave it, but it's more like to
- 		abort the action before the device really enter shipping mode.
- 
-+		Note: use /sys/class/power_supply/rt9467-*/load_switch instead.
-+
- 		Access: Read, Write
- 		Valid values:
- 		- 1: enabled
-diff --git a/drivers/power/supply/rt9467-charger.c b/drivers/power/supply/rt9467-charger.c
-index a9a83b263e187..f0d10f44b1090 100644
---- a/drivers/power/supply/rt9467-charger.c
-+++ b/drivers/power/supply/rt9467-charger.c
-@@ -633,6 +633,39 @@ static int rt9467_psy_set_ieoc(struct rt9467_chg_data *data, int microamp)
- 	return ret;
+diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/supply/bq24257_charger.c
+index 944a7aa6f187d..8eea7d0395ce0 100644
+--- a/drivers/power/supply/bq24257_charger.c
++++ b/drivers/power/supply/bq24257_charger.c
+@@ -295,6 +295,40 @@ static int bq24257_set_input_current_limit(struct bq24257_device *bq,
+ 						    BQ24257_IILIMIT_MAP_SIZE));
  }
  
-+static int rt9467_set_batfet(struct rt9467_chg_data *data, int val)
++static int bq24257_get_sys_switch(struct bq24257_device *bq,
++				  union power_supply_propval *val)
 +{
-+	unsigned int regval;
++	int ret;
 +
-+	switch (val) {
++	ret = bq24257_field_read(bq, F_SYSOFF);
++	if (ret < 0)
++		return ret;
++
++	val->intval = ret ? POWER_SUPPLY_LOAD_SWITCH_OFF :
++			    POWER_SUPPLY_LOAD_SWITCH_ON;
++
++	return 0;
++}
++
++static int bq24257_set_sys_switch(struct bq24257_device *bq,
++				  const union power_supply_propval *val)
++{
++	u8 regval;
++
++	switch (val->intval) {
 +	case POWER_SUPPLY_LOAD_SWITCH_ON:
 +		regval = 0;
 +		break;
@@ -150,101 +150,56 @@ index a9a83b263e187..f0d10f44b1090 100644
 +		return -EINVAL;
 +	}
 +
-+	return regmap_field_write(data->rm_field[F_SHIP_MODE], regval);
++	return bq24257_field_write(bq, F_SYSOFF, regval);
 +}
 +
-+static int rt9467_get_batfet(struct rt9467_chg_data *data, int *val)
-+{
-+	unsigned int regval;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_field[F_SHIP_MODE], &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	*val = regval ? POWER_SUPPLY_LOAD_SWITCH_OFF :
-+			POWER_SUPPLY_LOAD_SWITCH_ON;
-+
-+	return 0;
-+}
-+
- static const enum power_supply_property rt9467_chg_properties[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_ONLINE,
-@@ -648,6 +681,7 @@ static const enum power_supply_property rt9467_chg_properties[] = {
- 	POWER_SUPPLY_PROP_USB_TYPE,
- 	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-+	POWER_SUPPLY_PROP_LOAD_SWITCH,
- };
+ static int bq24257_power_supply_get_property(struct power_supply *psy,
+ 					     enum power_supply_property psp,
+ 					     union power_supply_propval *val)
+@@ -381,7 +415,8 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
  
- static int rt9467_psy_get_property(struct power_supply *psy,
-@@ -711,6 +745,8 @@ static int rt9467_psy_get_property(struct power_supply *psy,
- 		val->intval = data->ieoc_ua;
- 		mutex_unlock(&data->ichg_ieoc_lock);
- 		return 0;
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+ 		return bq24257_get_input_current_limit(bq, val);
+-
 +	case POWER_SUPPLY_PROP_LOAD_SWITCH:
-+		return rt9467_get_batfet(data, &val->intval);
- 	default:
- 		return -ENODATA;
- 	}
-@@ -747,6 +783,8 @@ static int rt9467_psy_set_property(struct power_supply *psy,
- 						    RT9467_RANGE_IPREC, val->intval);
- 	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
- 		return rt9467_psy_set_ieoc(data, val->intval);
-+	case POWER_SUPPLY_PROP_LOAD_SWITCH:
-+		return rt9467_set_batfet(data, val->intval);
++		return bq24257_get_sys_switch(bq, val);
  	default:
  		return -EINVAL;
  	}
-@@ -764,6 +802,7 @@ static int rt9467_chg_prop_is_writeable(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
- 	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
- 	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
+@@ -398,6 +433,8 @@ static int bq24257_power_supply_set_property(struct power_supply *psy,
+ 	switch (prop) {
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+ 		return bq24257_set_input_current_limit(bq, val);
 +	case POWER_SUPPLY_PROP_LOAD_SWITCH:
- 		return 1;
++		return bq24257_set_sys_switch(bq, val);
  	default:
- 		return 0;
-@@ -777,6 +816,8 @@ static const struct power_supply_desc rt9467_chg_psy_desc = {
- 		     BIT(POWER_SUPPLY_USB_TYPE_CDP) |
- 		     BIT(POWER_SUPPLY_USB_TYPE_DCP) |
- 		     BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN),
+ 		return -EINVAL;
+ 	}
+@@ -408,6 +445,7 @@ static int bq24257_power_supply_property_is_writeable(struct power_supply *psy,
+ {
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++	case POWER_SUPPLY_PROP_LOAD_SWITCH:
+ 		return true;
+ 	default:
+ 		return false;
+@@ -740,6 +778,7 @@ static enum power_supply_property bq24257_power_supply_props[] = {
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+ 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
++	POWER_SUPPLY_PROP_LOAD_SWITCH,
+ };
+ 
+ static char *bq24257_charger_supplied_to[] = {
+@@ -749,6 +788,8 @@ static char *bq24257_charger_supplied_to[] = {
+ static const struct power_supply_desc bq24257_power_supply_desc = {
+ 	.name = "bq24257-charger",
+ 	.type = POWER_SUPPLY_TYPE_USB,
 +	.load_switches = BIT(POWER_SUPPLY_LOAD_SWITCH_ON) |
 +			 BIT(POWER_SUPPLY_LOAD_SWITCH_OFF),
- 	.properties = rt9467_chg_properties,
- 	.num_properties = ARRAY_SIZE(rt9467_chg_properties),
- 	.property_is_writeable = rt9467_chg_prop_is_writeable,
-@@ -793,14 +834,14 @@ static ssize_t sysoff_enable_show(struct device *dev,
- 				  struct device_attribute *attr, char *buf)
- {
- 	struct rt9467_chg_data *data = psy_device_to_chip(dev);
--	unsigned int sysoff_enable;
-+	int val;
- 	int ret;
- 
--	ret = regmap_field_read(data->rm_field[F_SHIP_MODE], &sysoff_enable);
--	if (ret)
-+	ret = rt9467_get_batfet(data, &val);
-+	if (ret < 0)
- 		return ret;
- 
--	return sysfs_emit(buf, "%d\n", sysoff_enable);
-+	return sysfs_emit(buf, "%d\n", val == POWER_SUPPLY_LOAD_SWITCH_OFF);
- }
- 
- static ssize_t sysoff_enable_store(struct device *dev,
-@@ -815,8 +856,9 @@ static ssize_t sysoff_enable_store(struct device *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = regmap_field_write(data->rm_field[F_SHIP_MODE], !!tmp);
--	if (ret)
-+	ret = rt9467_set_batfet(data, tmp ? POWER_SUPPLY_LOAD_SWITCH_OFF :
-+					    POWER_SUPPLY_LOAD_SWITCH_ON);
-+	if (ret < 0)
- 		return ret;
- 
- 	return count;
+ 	.properties = bq24257_power_supply_props,
+ 	.num_properties = ARRAY_SIZE(bq24257_power_supply_props),
+ 	.get_property = bq24257_power_supply_get_property,
 -- 
 2.43.0
 
