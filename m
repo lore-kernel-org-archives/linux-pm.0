@@ -1,259 +1,190 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazon11011040.outbound.protection.outlook.com [40.107.74.40])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 962D6409277
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 14:52:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 922B34266B8;
+	Tue,  1 Sep 2026 15:03:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.74.40
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788274360; cv=pass; b=aybUvgQxvqnZ1yA7Sy9hoEqx/PwfeSTPonlHlPZFDq1eohp3M2Lb6VfRlC19woNUWdd0+YOazs6O9bOnGAVb7hnGw8NP654Pum3bzTM5zp9SRFi85veRlT2nxrM0p1KcT+/3cUgmhkDF1nRL2CKI/YRD3rur/GaImCRAKb/ug6w=
+	t=1788275034; cv=fail; b=LUS42FOVwcrJhZNEVeKNXNNg6wdstjaH/lxaaLKux9KpjqyoC8R8VZ55lO1ylOErl6AgdcYsXxmzVXuEX9fKqdZWelPjT2ZP8kTNG6rI+BXNfnOD6CqPdA0zPfV2amqfkOlmh1EtCGmoAb9Yc5yBqgvTj+8bWZF1sLGRYUGCRmQ=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788274360; c=relaxed/simple;
-	bh=qozaO2bHyNLi2Ew+/sQ5VkqX8j+gIZZl+6ZwDMrfD1U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HFPjvTl+taochfB9CB8g00gu2rAcdJu7k35QkihKKOzvL0YAOyksL7aXcwwVoiBUEj4OLeT3vJw6XKbN8Za4O9KMx8cfIdJgFikj9VG5r/gjDHAMJmI3RM+jGaxU4h+6Sun5SmYadD4dtIact59ntIkEuOYe/uSlZVprbq3MNe0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=pkC/omtm; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OHhJNwEs; arc=pass smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1788275034; c=relaxed/simple;
+	bh=PtezxTE9OkfLliuhREJq++3FCjXtBdvTsxQsHBK/8PQ=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=H3azO+UW0UxQE1T6nnpcA6gxxSRSBZwRJ7W5xal+hyqR86tT4nvF3POZOH+2USE+No6sv0Ip50JcjJNf8rn/OAyZkO+jzkV1GJefYpME3a/I9hV9+oQAZZoiYvHhi6qKVDcoQCcKeeV8gZcHxuGgVun0a9BzTvr4vtv0opeeJeo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=HSAC5yeQ; arc=fail smtp.client-ip=40.107.74.40
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="pkC/omtm";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OHhJNwEs"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 681E8qHJ3496036
-	for <linux-pm@vger.kernel.org>; Tue, 1 Sep 2026 14:52:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	1vfuwHFmujlvznbArz1IOwxTplKAy4SM93AJJ89i1FI=; b=pkC/omtmbkdNhGX/
-	azz1NEHTywdet0R76I0A4S4i1q0AkyhpzV+ZbYugZ6NJE7lZhpxZ7zXdo2MeZb5y
-	MurBZT9c1/N1cNJUc8I1hAIwXSfAgwgDd5+L0mENzZnGgB0JxxYZpwnekCzl0fdl
-	veQv70YvjRATek+eowD7FJIrNeDF3aTkW+TLWrbsmi6FHkhQDKy2jY6LaN1Z9f3B
-	Lyuo5VvsBL/lXHU3QI1+5OrN1zfdsSoi5yDAmPQ3Fz9hSW1xH6D8+6V85sS2cGRD
-	NrB0R7c1uer9jG5XT3aqwAgcb1Jl8ulNqw03QJbbDTt060JK+XIwso5IpIvGdRQL
-	S4RmhA==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gdy9nggy7-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 14:52:37 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-398e1f7d1a5so3789808a91.0
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 07:52:37 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788274357; cv=none;
-        d=google.com; s=arc-20260327;
-        b=CC/WoqwSU/cZQ97kcQ8h3rcOzWWzicCog2UsS0vVDws6Xi9HlDqtedM6DTI6W10D1e
-         B+QYtMNlSCkHBxA/EjFyDLl6gW7365Gx1vHPiLWzhtowpgCTp0DF4vpu5ZvAPb3ANJll
-         cJPv2ggfYxirRnhwyOw1hTgIDGqux6sSSUEP/mBv0/dUYhTO0n29GBAcZq5p3c8CVjpR
-         k0QrrZGmxhNOQfqH0RfakDck5pAxHuqQkDapFSgFZkhMCi1xDMoUDdE5/u7GitrcLrpB
-         +JzcFlAUmLlwk/hoRZ5RDF17x4P3tEY+Pzg34crTbIIeh28j3o1rBWuxb34S7P67Dv58
-         0fLw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=1vfuwHFmujlvznbArz1IOwxTplKAy4SM93AJJ89i1FI=;
-        fh=WH2fmVddkfUzNrNdNMG3ZHXRvBucRdc9r9MXwxAyzKs=;
-        b=NdLLQ0GWY5jucmazqbn8p9vq+caVDkIRISsMPJz0MG/ME7dBqR+WLgPGiA/q/lNvPJ
-         rLKOy3zuHPezUl7007oTxU5NTXf52KffuRUX9l6n/xCttw7rSxWiMPCx4QzAab552QBc
-         wAZMgrCKFXRVoeL4Uc5MQUI96BSPZL6ex3lNtCIZGnmkTVgiQWJ3d5rbIJeTExpq9YbN
-         zunKoBmtZCztcBTM8Q+MhOCAo2cX1USaVd45QfGigAXnDvFwKlp+F/kkzb/8KaWfwYUL
-         rKeVaRqu/FVrvJpUgkVDV8NtnsO7MOTWhgDCmm3ejUgfHV7jG5bTXfEqbq3aPa606v/0
-         pCZg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788274357; x=1788879157; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=1vfuwHFmujlvznbArz1IOwxTplKAy4SM93AJJ89i1FI=;
-        b=OHhJNwEsXzBZ/PqltH+NYcAl0XcE5CvRjlXViT1zDBjP6Q5+7CXo94cnf2ITr/VKUa
-         gr2gwsDkGWeOHgMvxwBuL+dxYJapOtdT0r+z64hMC3vMFJbfQUHMy/gJAnvqWZ0wMID7
-         uBDjB/U1DbTIjRvwGzHSghZL1n0ZYfCz4g0CyrpnjyiIqIW7ZyBbpLAJFGW8owbfVlIO
-         IxkXskMq4GqpHSfwgkE5L39jxsvFcCe4rZP7MLzgMSO0HTxh/romMTD9SjqHRv+ZDGWX
-         bbDk8zcvSubYq1vUeqDO0kPSxHHXTaEg+zET+StDYoyoxbWT9/eEYxVBrwmt3coR58AV
-         lWew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788274357; x=1788879157;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1vfuwHFmujlvznbArz1IOwxTplKAy4SM93AJJ89i1FI=;
-        b=B3RGl4qozP66J6oWenzA8O3fLV5Bo0pbRPRY0oo6Daluy8L2yTX3UjZpRiqNAmRk0t
-         DYCAKcQUx67rm19hEvmMpRylaTT1y8v5pWchA6ICEuq2JnrbFkcAsTCdlWXRjIUcD9PN
-         hc/e/MbhwOQS/hB4J1+4onSAeEtu7YU1I/X2Og8azaxpg0zlcEhWuuvBdm5jmSRfxR4K
-         Ul/LbqfU4T3TZVCyF/gT2oLQQ5LsF43HPvmNStz4D09zJd2OKtVuhJspFwyIMDBuLDuX
-         9yBP8tdMg7v5BgLQO2GXtraDMEEI28tREXMkcmVp8kWICu/KD9ce3MoRglq0qcajE6uh
-         amxg==
-X-Forwarded-Encrypted: i=1; AKwUvBzNH/XiGpSrkOBHfy2xTMQ4+N4jJoCksUxeNjRlEx/Cnv804+DgkC8OXgPU5QTcPfazWDkyAhHpMg==@vger.kernel.org
-X-Gm-Message-State: AFuF++krp/3dATw13cuXVyQHjzHudW3I6gpAeNqRVasBknxxB4wcQS1v
-	xkwDDgG9VevqPCrSLv1XTvFbbSsO2zZsimZ+em4yBTLQykMbBYKs8hJRbIaiVh3ud0wNnvulVCi
-	34f1pXo3y8X+QdBOqHVKbiXER671RdR2Sl/yRxfInnHRlNQ9ikRdCU2bAdjgSJVmk3PLJdpOPO5
-	kEF6SQa45pz83BswYKYI/Ci+Dns9rZu3Uo6jez
-X-Gm-Gg: AYBFou039IGkxOZuzI7LgD1TdSzhjjGqW8zvb+wNOVYdcW56e4a1usU2a8LVc6MT9NX
-	WofJvlVQS1xaB68v6o9EKyogB2ce/wkqacQ7ns9+MGfm3PFLU9nT0cJXEp/6LlYqfQ+xxlaDgdU
-	lsEchxMHvGDBU7ia2zZuF3VIQVvqgbgqZpk9ZHKUVEKwAmMulYn3uCdLanaA==
-X-Received: by 2002:a17:90b:5284:b0:396:4dfb:5890 with SMTP id 98e67ed59e1d1-396d0e5bbc0mr57212367a91.2.1788274356785;
-        Tue, 01 Sep 2026 07:52:36 -0700 (PDT)
-X-Received: by 2002:a17:90b:5284:b0:396:4dfb:5890 with SMTP id
- 98e67ed59e1d1-396d0e5bbc0mr57212254a91.2.1788274356218; Tue, 01 Sep 2026
- 07:52:36 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="HSAC5yeQ"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=NohyxBxlHtvlq7brfTkYdx2hUVKX9wEgTQrdy99GM8lyer6bW98cBFwJpO7j/lZLOw6kFOTyrwl3qsHahDNjsLiMbEMES0c6lg8NoNWbwTdtrUN5M02z/dxI743hXTFRXr/avXI0T3Xhm/wuSvk3CQoUDYPHSaF/C57PMmeM7TBqZQE55wdrIsOkPchBjfgWfuU0YwbmSvejBmGX1dYqDaSKAT0ra5s4IOV9635x5zsxe5o2q7lsO6hMOdnQ5EVgltZ3IlCJzNLfMzCTOcPBKOeWDMq92yUYAIu14JcG1AIZZukx5K43Fx5eWmI++Sz9TQv6wtbkhlNgGklg3zlxIg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=qtEhAjBpu1nGqq0uYx7xu1U6cAQMY2qOn0gSTIM3feY=;
+ b=V3G5WGAFS5pAV3hVKEYOKIJyMDBL4JSQs7LKIpkMQCfrU35MaHDiGEgftmmscmE/BbEyqkSVCC+01bc+GpMkhuKXMyL+4eP/bP3xmhCr4ptIdArXDJ3804NSver/DqtP06hQjZIzs2bC/8MhftRVnWfGhIbAMf0qLT1iteprJe1LcNtaluYkEVO9CYDWewxsOP611hbWreDdiJHZTONzGK5Qm7VTGCnItI9ispe8OMjE/e3At6M5cjqsLK4hbIx5zybSpjIQHkjDbCeEMQeR85zZxkkPSOnT1BlIxvpyX4vj6vbJNNWgRuK2/uKyjF+3Sacox/PUwW02I5mOm9CBQA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qtEhAjBpu1nGqq0uYx7xu1U6cAQMY2qOn0gSTIM3feY=;
+ b=HSAC5yeQJedNcOQOpJ3iUXENihOgKtBjpkG78bI4Ag/7Yh9NWja6A2pgXEn0joZq0RpoxEVgmUirwQSh3rQ/zhrLqM/toMrYiDHrIAMhwy0odV1vUTG/7fTiPUOVhPhdZzJ0HY/KSF04RLPM98BviPUp8VM0Z/F3qURCeWmrB8o=
+Received: from TYCPR01MB11865.jpnprd01.prod.outlook.com (2603:1096:400:38c::6)
+ by TYCPR01MB11887.jpnprd01.prod.outlook.com (2603:1096:400:3e3::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Tue, 1 Sep
+ 2026 15:03:48 +0000
+Received: from TYCPR01MB11865.jpnprd01.prod.outlook.com
+ ([fe80::981:1b9:f809:a0c3]) by TYCPR01MB11865.jpnprd01.prod.outlook.com
+ ([fe80::981:1b9:f809:a0c3%5]) with mapi id 15.21.0360.008; Tue, 1 Sep 2026
+ 15:03:48 +0000
+From: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Geert Uytterhoeven
+	<geert+renesas@glider.be>, "magnus.damm" <magnus.damm@gmail.com>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Brian Masney
+	<bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf
+ Hansson <ulfh@kernel.org>
+CC: "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chris Paterson
+	<Chris.Paterson2@renesas.com>, Biju Das <biju.das.jz@bp.renesas.com>,
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, Prabhakar Mahadev Lad
+	<prabhakar.mahadev-lad.rj@bp.renesas.com>
+Subject: RE: [PATCH 06/10] dt-bindings: clock: Add r8a774a3 CPG Core Clock
+ definitions
+Thread-Topic: [PATCH 06/10] dt-bindings: clock: Add r8a774a3 CPG Core Clock
+ definitions
+Thread-Index: AQHdMX6JOUF0xlBbdUCrikilGbQwXbaprWuAgBA0xrA=
+Date: Tue, 1 Sep 2026 15:03:48 +0000
+Message-ID:
+ <TYCPR01MB11865F6778D781EFF2F0B779AA2A82@TYCPR01MB11865.jpnprd01.prod.outlook.com>
+References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
+ <20260821150408.73829-7-ayman.chaudhry.kc@renesas.com>
+ <74e1a947-39ea-4451-bb4c-178a56b6b4ad@kernel.org>
+In-Reply-To: <74e1a947-39ea-4451-bb4c-178a56b6b4ad@kernel.org>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TYCPR01MB11865:EE_|TYCPR01MB11887:EE_
+x-ms-office365-filtering-correlation-id: 4c73f7d8-29ec-4a94-a94c-08df083a39f4
+x-ld-processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|23010399003|7416014|1800799024|366016|38070700021|921020|4143699003|10067099003|11063799006|5023799004|22082099003|18002099003|3023799007|56012099006;
+x-microsoft-antispam-message-info:
+ VFsebQKkYzT32Jg9OPNe1TVzBAQRhsHpC/QR0v/ANwDGSEMuv8WhVr7cRx6VBGRBL9s8F5sXLQcdmL9xPC/9X0HPREzTb5ZZ71C3mYnES7BOwKxg8UtPvpqwl3Xm60RIZXfCCOjK2HVjvq2/qxebNKiTR0keNCZcodoFhlZOCqYUK+ZfCLXH/c8ub1WMVbQaJTDHfXqlMArfVB90FrRmGta1RNBIHXrcjtbWY2P/E9Q2JvQQBYqrNuPa4hnDq2ASgfhcoZUUt2MJ2KuoCsr5VpNsvaMWj/T9iz3XwLEHl61X3c2I7LytCrzu3k3QvaECHouFWbb92mfHslNODLcM9uynrKArC5dFvsnHONSHInlWTIshJMZDBY5+RTvsQwSxNcxSRanakecCSeRoyaOcBbCZATIKg5riL8cphNZETNUk6F9A/I8YCEW0WnUxJCawPpnPy+Jw1sV0XSQMMLjOOTVIHIpia/x/p1yH/D3Nj8ptkcIOzhV/B53/w6TUF4cR6QZwtgdeOiqMxZQnPHsilvJADgNiQgMMrXqKbCwaMcICbav3712nt9WL0MV+FUpd7q/2ZYD14gAnofXvJt1pXcU8pnIMrkMsOEQB7f/VXPv8tfRg7sHJeWHLkRiyQu4nDY3t0wlDcSJByB5kptxSMyiJtVAJ76USByi9iyapGCiA4QZQzvbowMo9t3oAMx3UZX2F1ebuDyZPTo1rC6OcvJZllaLN3NPaiCNRixa+YpTlApjo7Pt6xxmKbMnupyYE
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB11865.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(7416014)(1800799024)(366016)(38070700021)(921020)(4143699003)(10067099003)(11063799006)(5023799004)(22082099003)(18002099003)(3023799007)(56012099006);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?q7iKgT3zgzHi/UTaR3iahZbtVzEyCU4pvkIDhq7e+HNKrv03YdMDSoxHOVSD?=
+ =?us-ascii?Q?oAlBLUgMR+oClEEW2SAbQErzFQvluDj9FAsIKLB+UhQTgu2QzV76HGTMCAop?=
+ =?us-ascii?Q?ODzFpTUDSSFaz/7VfFSpAtUj9nww+OuYXpIyXvOlRA45s+IpqHgSn22otuX8?=
+ =?us-ascii?Q?pBvFBZiMJ/IWMcVyCf3xBlqe0d+stCgmvsNQtDRuMLqm3jpNuS3LpqCp6jgo?=
+ =?us-ascii?Q?BbGjm3sH83J0t2+5r+1WnUmfU9I6pc+Mva1jWVYlOGSBhPp+vD9nRPf1p4ER?=
+ =?us-ascii?Q?X6q7HgiPXQId/Limdgx0i49c9PwqEAdF/p2tx6bTs3g6UcsLBQL8RgkN1CW3?=
+ =?us-ascii?Q?HMaVkPpQoXLdQ3qPqn2aku9ZPYCd3TivsNy16Lp6n8uHPLMG4K3NHksONt8U?=
+ =?us-ascii?Q?5auE2y3S3XOmMLqeWq8CKHPBHrhrON8O/kQz5YTl13hhYuRYWy6y+N7Ip81/?=
+ =?us-ascii?Q?MKihfrprA4tatdGehGqplYeqvHd/Goa8djjPHnnpaaHfiOhYK8wl3J/9jajG?=
+ =?us-ascii?Q?6NjIZPDwvfcxNGFb1/uEQgIs0dWVTJy70C3/u/msq7rT9wsE1jnN+oPVrlfA?=
+ =?us-ascii?Q?btwQXip1LlPAvAF+Zt8o88hvRJUqe4tergz+WxeovMPmzOjwF0GMkvadw68u?=
+ =?us-ascii?Q?7vpPIEtnkOXftxvL+Hg63SfjBERkWiTg9H0HSigN060zKxMDtaRdB31hcPm3?=
+ =?us-ascii?Q?ncPFkvzDH13Xs6pn/s9prm19FLm6zKCQlMmY522KgN9tQLvYOtufKu/vL2TY?=
+ =?us-ascii?Q?Dec4zF/dxWEiUduo9iaZj8/Ks9l4uMrTB+sCBsrHPLF7kv6P6dt9EQtOZvm3?=
+ =?us-ascii?Q?ydoo9+wOhchiCLbWye8afe51g+kc18Hyjm3EsMsr+d0k9Xp/yqIzUlyOV7RB?=
+ =?us-ascii?Q?az2LssW62eRkJR5YOc8rDp8nH5Pm6sUmCIDJTWLNQQd2bmWO1HqNAiGUJ0tX?=
+ =?us-ascii?Q?rvRHpTjAefM1d0vKbmZo6jhkgpP0+WRjrKdW4i+pVZLI82lhxrsiSmWDZnUd?=
+ =?us-ascii?Q?/AQs8biqgFgeaS+52WyNpSN1d8AJt/lPKPjVizK4o+y2hH+uSMXZRFnLC/18?=
+ =?us-ascii?Q?9tWUAannLoarFnEDm5bjI9TiMveO5SvMdO6C5akML4QbFg2U1KAeQ58tpDtC?=
+ =?us-ascii?Q?lDoDgwqDhw7xlD/ePzre+nVueirXnVo4/Umni4Q/3GnjlRbpQGFbOCv01YHn?=
+ =?us-ascii?Q?NiNgIdEKy1dUWirOW3CB+nTyuKnj03ApB3YszyvdnOmYRNDasrQvDt43uEcu?=
+ =?us-ascii?Q?98yV1pRcCQEXbFh3MP6mFO5yHwALDtvq30pAz1vzSbO7P4LWJ6MwzlJ1uolg?=
+ =?us-ascii?Q?D88Y84E/IIMNCR0NxVeY55m2pFtmVGbSuVNgg5Zc1Bu9zyMeaDZ+a/b6+tkL?=
+ =?us-ascii?Q?GRGBG/dJWpWvfGBVYzG2f3F00sVLWuFwWJlJ0okpQdgdypevQf4BGkknzJi5?=
+ =?us-ascii?Q?v230Zj56M0UItg/+a/G9K7AQ5klz3HWTZivvQOw7YblAb7lWMbCUsV7tv6Eu?=
+ =?us-ascii?Q?ibWUcXj12h6t09WCwp/xhQwZWraacTXST1txlB7fOIyhvCQM/LiXNRhaHg0Q?=
+ =?us-ascii?Q?SmtmmklSig7k9WAU1xSjF0M74sVfsKsfz0IFffsxGX06b2soI0wnNevfoVDY?=
+ =?us-ascii?Q?l7dM16wuybkmABLPTRblsVIWnjXpfUEimq9SH4HV+nEgq4H6kWPurObzzPk+?=
+ =?us-ascii?Q?2yJzPsMKgVEmJpTSEUVqj3coGzjt8Nk1p01SXFmkVayth5L0jkzVa2D3cpCN?=
+ =?us-ascii?Q?WQX+amSCz3v6yAlpHzaAElsHD8FmaAA=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260827-derive_clk_perf_tbl_from_perf_domain_opp_table-v2-0-091697dbeb02@oss.qualcomm.com>
-In-Reply-To: <20260827-derive_clk_perf_tbl_from_perf_domain_opp_table-v2-0-091697dbeb02@oss.qualcomm.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Tue, 1 Sep 2026 16:52:25 +0200
-X-Gm-Features: AcwNN1UC04dwwquCOb-ua7jDN7d85m-55EBER85AH0RMtxh0hIHGSX1Ky0hJw5M
-Message-ID: <CAPx+jO9fcvBsxe9yx9oK=0EXmpNwub5ba0a-TGk1WRFaRGsqpA@mail.gmail.com>
-Subject: Re: [PATCH v2 0/9] soc: qcom: geni: Derive SE clock configuration
- from OPP table on SA8255P
-To: Praveen Talari <praveen.talari@oss.qualcomm.com>
-Cc: konrad.dybcio@oss.qualcomm.com, Sudeep Holla <sudeep.holla@kernel.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Viken Dadhaniya <viken.dadhaniya@oss.qualcomm.com>,
-        Andi Shyti <andi.shyti@kernel.org>, mukesh.savaliya@oss.qualcomm.com,
-        chandana.chiluveru@oss.qualcomm.com, arm-scmi@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-i2c@vger.kernel.org, Abel Vesa <abel.vesa@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDEzMiBTYWx0ZWRfX+9ylsbcRG2vm
- HYtQ1Xh3HUbWjUgkDHq9AZnqBd7E0WenfKMvrzacIZko7lGkx5QUu/mP2vzducCUqcNJ3ULvenX
- 7eiWThYgzbxjW/6I2aevnylk/dIvgT0=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDEzMiBTYWx0ZWRfXzWtuWncFsn13
- vy7X2QeBzohnYDfBuQr/x+2mz9SVWjNetKpGS6vWBq57jccAKJ0q+rCI0CDOjm2SHqL4fpBMQvR
- Ylq1Z4J5gY2ddSL7fVsNhtVXFgeQjwItUKDouai1wmjTvB5abn2x36fUW2YfPI6iiHbpikCbcJo
- S4G0x6yh0j1DH/X7zLEWXVhUIdJ1m9CRQ5pQR++A6cANwZpEfKN9y1qo8njXT5OCc3Xw1zq86vf
- iIxNRMPlschlKfylE6yTCd+v72IeMrxHnbWoeUOr1LRgLhAaFN6WHHUASUd+43rRo+mfnSgu3dW
- DglxIhhAKDn0+HSrUjVLWE67aR2zOeQqRpT+WpwgIlE/jOL00uOpoqUvEc7V+UO40N/nPBBUEJ6
- ecpkyioK6seQ4b1+X/x/gTku48z5Dz1+BQWuArJOYA0SPE1X2nhdWlOPF/WW+8J8cGQdy/eZnEA
- YVX/ISsLejLrrzRi8Rg==
-X-Authority-Analysis: v=2.4 cv=e/02j6p/ c=1 sm=1 tr=0 ts=6a96e6b5 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=Um2Pa8k9VHT-vaBCBUpS:22 a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8
- a=jU46xtICLe5dyPpNWKMA:9 a=QEXdDO2ut3YA:10 a=rl5im9kqc5Lf4LNbBjHf:22
- a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-ORIG-GUID: x060SplMnxikUHR7COpMkbKfcAur7r4-
-X-Proofpoint-GUID: x060SplMnxikUHR7COpMkbKfcAur7r4-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-01_04,2026-09-01_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 suspectscore=0 priorityscore=1501
- impostorscore=0 malwarescore=0 spamscore=0 adultscore=0 bulkscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609010132
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB11865.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4c73f7d8-29ec-4a94-a94c-08df083a39f4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Sep 2026 15:03:48.3250
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: eA2pBvFVEN//ERUWhpUZ6PqWwk99Qgxp66YOR/i9xHGfB45f/Mh7TAJkVMPHY7Zh+vPFXAqIb032LKUnNnIhgRjcH1KlnuwEh5mxSkICIXg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYCPR01MB11887
 
-On Thu, Aug 27, 2026 at 7:59=E2=80=AFPM Praveen Talari
-<praveen.talari@oss.qualcomm.com> wrote:
->
-> On firmware-managed platforms such as SA8255P, there is no Linux clock
-> handler available to determine the appropriate SE source clock, source
-> clock index, and divider values for a requested protocol frequency.
-> However, these parameters are required when programming GSI TREs, where
-> the hardware expects an explicit clock source selection and divider
-> configuration for the serial engine.
->
-> In contrast, platforms using Linux-managed clocks derive these
-> parameters through geni_se_clk_freq_match() using the source clock
-> information stored in clk_perf_tbl. Since the firmware-managed path
-> lacks equivalent clock information, protocol drivers cannot reuse the
-> existing frequency matching logic and instead rely on a direct mapping
-> between protocol-requested frequencies and performance levels. This
-> creates a separate clock configuration flow and prevents
-> firmware-managed platforms from deriving the actual SE clock parameters
-> required for GSI TRE programming.
+Hi Krzysztof,
 
-Hmm, this sounds like moving backwards when it comes to keeping
-drivers as portable as possible.
+Thanks for your review.
 
-I understand geni_se_clk_freq_match() has been around for a while, but
-fortunately its use seems limited to only a few qcom specific drivers.
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzk@kernel.org>
+> Sent: Saturday, August 22, 2026 8:31 AM
+> To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>; Geert
+> Uytterhoeven <geert+renesas@glider.be>; magnus.damm
+> <magnus.damm@gmail.com>; Rob Herring <robh@kernel.org>; Krzysztof
+> Kozlowski <krzk+dt@kernel.org>; Conor Dooley <conor+dt@kernel.org>;
+> Stephen Boyd <sboyd@kernel.org>; Brian Masney
+> <bmasney+clk@redhat.com>; Jerome Brunet <jbrunet+clk@baylibre.com>;
+> Ulf Hansson <ulfh@kernel.org>
+> Cc: linux-renesas-soc@vger.kernel.org; devicetree@vger.kernel.org; linux-
+> kernel@vger.kernel.org; linux-clk@vger.kernel.org; linux-pm@vger.kernel.o=
+rg;
+> Chris Paterson <Chris.Paterson2@renesas.com>; Biju Das
+> <biju.das.jz@bp.renesas.com>; Fabrizio Castro
+> <fabrizio.castro.jz@renesas.com>; Prabhakar Mahadev Lad
+> <prabhakar.mahadev-lad.rj@bp.renesas.com>
+> Subject: Re: [PATCH 06/10] dt-bindings: clock: Add r8a774a3 CPG Core Cloc=
+k
+> definitions
+>=20
+> On 21/08/2026 17:03, Ayman Chaudhry wrote:
+> > Add all the Renesas RZ/G2M v3.0 (a.k.a. R8A774A3) SoC Clock Pulse
+> > Generator Core Clock Outputs, as listed in Table 11.3 ("List of Clocks
+> > [RZ/G2M V1.3, RZ/G2M V3.0]") of the RZ/G2 Hardware User's Manual.
+> >
+> > Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+> > ---
+> >  include/dt-bindings/clock/r8a774a3-cpg-mssr.h | 59
+> > +++++++++++++++++++
+>=20
+> Same comments. Why are you using discouraged naming and why are you
+> sending it SEPARATELY from the binding?
+>=20
 
-Rather than continue down this path, would it not be possible to find
-a more generic solution for "geni_se_clk_freq_match()"? Can we replace
-it with a common clock/OPP API? In this way, we would not need to
-sprinkle drivers with calls to platform specific  code.
+Agreed, I will update the naming in v2.
 
->
-> To address this limitation, the performance-domain OPP table is treated
-> as the representation of SE-supported source clock frequencies. During
-> geni_se_domain_attach(), the OPP entries are used to populate
-> clk_perf_tbl and related clock performance data, allowing
-> firmware-managed platforms to leverage the same clock frequency matching
-> infrastructure used by Linux-managed platforms.
->
-> With this change, protocol drivers can use geni_se_clk_freq_match() to
-> select the closest supported source clock frequency for a requested
-> protocol rate, derive the corresponding source clock index and divider
-> values required for GSI TRE programming, and apply the matched clock
-> through the OPP framework. This removes the dependency on direct
-> protocol-frequency-to-performance-level mappings and provides a common
-> clock selection and configuration mechanism across both firmware-managed
-> and Linux-managed GENI deployments.
+Similarly to the SYSC binding, this is already present in the kernel:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?=
+id=3D4b3b9cdb7db191ba262256972d08802b7bd8c7d4
 
-Rather than adding yet another platform specific method, would it be
-possible to extend the generic OPP library with the pieces that are
-missing to make this work in a generic way?
+Kind Regards,
+Ayman
 
->
-> Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
-
-Kind regards
-Uffe
-
-> ---
-> Changes in v2:
-> - Add new patch to remove OPP rate reset from resource deactivation
-> - Add new patch to vote source frequency via OPP for I2C
-> - Compress the SPI, I2C and serial commit messages per review feedback
-> - Drop a stray blank line before trace_geni_i2c_bus_setup() in the
->   I2C resource-initialization helper commit.
-> - Link to v1: https://patch.msgid.link/20260805-derive_clk_perf_tbl_from_=
-perf_domain_opp_table-v1-0-61171ab1cdce@oss.qualcomm.com
->
-> ---
-> Praveen Talari (9):
->       pmdomain: arm: Fix -EINVAL from scmi_pd_set_perf_state() on state 0
->       soc: qcom: geni-se: Populate clk_perf_tbl with SE source clock freq=
-uencies from perf OPP table
->       soc: qcom: geni-se: Add helper to set SE clock rate via OPP
->       soc: qcom: geni-se: Remove OPP rate reset from resource deactivatio=
-n
->       serial: qcom-geni: Use geni_se_set_rate() for source clock configur=
-ation
->       spi: qcom-geni: Use geni_se_set_rate() for setting source clock fre=
-quency
->       i2c: qcom-geni: Vote for SE clock rate using OPP
->       i2c: qcom-geni: Use common GENI resource initialization helper
->       i2c: qcom-geni: Use geni_se_set_rate() for setting source clock fre=
-quency
->
->  drivers/i2c/busses/i2c-qcom-geni.c      | 72 +++++++++++++++++----------=
-------
->  drivers/pmdomain/arm/scmi_perf_domain.c |  2 +-
->  drivers/soc/qcom/qcom-geni-se.c         | 62 +++++++++++++++++++++++++--=
--
->  drivers/spi/spi-geni-qcom.c             | 24 +++++------
->  drivers/tty/serial/qcom_geni_serial.c   | 26 ++++++------
->  include/linux/soc/qcom/geni-se.h        |  2 +
->  6 files changed, 122 insertions(+), 66 deletions(-)
-> ---
-> base-commit: 0f6da28aab51b16762ed82e8fdeaa5042da45b08
-> change-id: 20260805-derive_clk_perf_tbl_from_perf_domain_opp_table-2f29ad=
-32226a
->
+>=20
 > Best regards,
-> --
-> Praveen Talari <praveen.talari@oss.qualcomm.com>
->
+> Krzysztof
