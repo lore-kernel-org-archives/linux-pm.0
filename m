@@ -1,102 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B01F38A70A
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 08:40:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 926DA376A0C;
+	Tue,  1 Sep 2026 08:40:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788252014; cv=none; b=NRFf/GDcqV2D56+RZZ1C/35+3Xnuwoxqzn+TARm0cGN4NP+T2XSLVnh5HETo0UZQ1f30wrqBDRrWU/sBvI4Um5QvPCP1w9qqtWZc8GDFHNGfTJyJjMyc+T/kjFw7r2Oj1FyrjRvxIc58WUqm2ZUcQ9RTTty6nH89XCvuntkQ1qk=
+	t=1788252052; cv=none; b=Fe+IJKnKA9eedsw3iWLI2d+9MhztDUeNfu13eXFPQaRKtYu6NyBqGLt5Y+HF+Q0COJKPHZM4MCvws7o1WaEEmrVxcpppLr7o8vfNBp/03R+6wGjWQCSgH7NbU7+Z+JYTLYySMzXmCE188JN6LJfzT/Th8MQFDVh687QvTcFPFwo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788252014; c=relaxed/simple;
-	bh=LmtwnVM9wvRfR0wHIHOhtdLvcOyfBAHXYxI+v0qt2Ds=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=qtRrpZfzeZ5g08NB02MERMgVya7T4pn/KCs3nc8O6ZI8Edbb2OEh6aoDfBjoUGB+EC1g8vzavVnKlzIsbU/UP4q9g9EFIwDublvpFj4qZSe7ZSl4QsEJyC/8SoPuLYgk72s8a7q7EHnVN+wc0IhpssW+vaqOW1TrHqWeaYyaIEA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FYbfFpMs; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788252052; c=relaxed/simple;
+	bh=5XiakXpplk8GoOLAS7psNyW3QXrUDVAxVTxHN8ADh68=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ovlmcsyLABjxcFzMXTyzlBE92fKtxHPaAo06OaM0Kam4YB++F07AFeUJRieI4UmjYohzlSEKmR6V8O62VrwFhC5KxC3EMKuCzfxXWMbSeLLTaIDqLa1zuzEd2X7VPWl+2r1wu1h0N7OHpWoKgRnu86H8DulO7vODw1do2OZgdMQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=e6nbN+pZ; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FYbfFpMs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15AA71F0155D
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 08:40:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788252013;
-	bh=r7xYjB1JLDV+AUhQJIpnIb/S9CVT5PFO2ocKRTTD4yg=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=FYbfFpMsAs2NeGWjECcwblMlB7PpVYIjIEKAS/Xs++CdZ7bFotMyY7Gs3wDNcllWd
-	 RtwBNNbuFRsTRSx1BE/fGNsLUPjrgyG7RrMx9Wm27qOR59UbBdoaEbjo2sWszXGcaK
-	 ngsia/Ckx//R+msxvwUB1FhJVOScCrHscVF0ggarUREDX8+G7fhSWGTw6w1YHtqctP
-	 XEvoiasO1IzZVK2wDq7OAYe3zrgPJv2bltVHxE54a9pxsowKkHqDxkhT1akXc4kiOj
-	 lRxjhs29hjknU+Sp9wezzSOa3pG8648PXzaSGKLPDF1YLikWrpdZQyWW8IGkSLzM3/
-	 y7XH2cZjXG2Hg==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5b4ae3e201cso4160172e87.2
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 01:40:12 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByiw7Msm4WG6z34mr2jb9ZZb1qrPaxKg8VSTdADgDYlLIWj/ydnWu6PHnfiIBVUZ79s3GcWhdHwSQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mhpvizFtkBQyVafsaSYsSWV6A5XTH1d/QxX6hmo0aQBMOFLslM
-	ALKvN55uxzbbyr//GSRIUlnbhtNqRw+P2gwlN2UZWjrPVSxSSLVQS6zMSGNM+l4z8VYR/ujgXcg
-	TE+hOhuqnGGfT15ZqmqNnW9HBgRkJfPvcoHD5qyR8og==
-X-Received: by 2002:a05:6512:2345:b0:5b0:cd1:1f84 with SMTP id
- 2adb3069b0e04-5b5e68ed01bmr10096072e87.18.1788252011671; Tue, 01 Sep 2026
- 01:40:11 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 1 Sep 2026 01:40:09 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 1 Sep 2026 01:40:09 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260830101025.191697-1-shengchao.guo@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="e6nbN+pZ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1788252050; x=1819788050;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=5XiakXpplk8GoOLAS7psNyW3QXrUDVAxVTxHN8ADh68=;
+  b=e6nbN+pZsqA0XrH/zZN87vdIHyrM/pBpxzVAmfr0mqeWBUpSWYPRoYwr
+   tweoSyTSdIJErvpS+2nDadGluAukEAZKNWBtlO9rvlX1Xw+XsFzt+AiWm
+   u1xr057sOiyanJi6JxNWQq8ne3qF1ujim9QAdjcjAP+6TLE6topQf2t4m
+   2Qq75Fmzl7IpIjpf+3ufBcWwXcADlMszFycyHxDg7uzqG2ti2IWXqwf28
+   8pZnDiroLc20bvm3VXFkIiaRqPjSRw9e69jso19Tyx9KRgzI0ds9ZhTr9
+   NH5QgvWqbb24z6PAHXjXgzYjlkDqJ8i72BP2z3gL/Cf2cC/kIRPqXScha
+   w==;
+X-CSE-ConnectionGUID: 5tOAbxlHQwWpizDjNdHu8g==
+X-CSE-MsgGUID: D9kYKiyPTiC4yM3kbACeJQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11892"; a="88722537"
+X-IronPort-AV: E=Sophos;i="6.25,255,1779174000"; 
+   d="scan'208";a="88722537"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2026 01:40:50 -0700
+X-CSE-ConnectionGUID: EmnUlq1cQOCiv+mWZezLaw==
+X-CSE-MsgGUID: DCs01bhUQT+6MvJqY4kkqw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,255,1779174000"; 
+   d="scan'208";a="307247761"
+Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.222])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2026 01:40:48 -0700
+Date: Tue, 1 Sep 2026 11:40:45 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Peixin Xie <peixin.xie@linux.spacemit.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Linux PCI <linux-pci@vger.kernel.org>,
+	Bjorn Helgaas <helgaas@kernel.org>,
+	Hans de Goede <hansg@kernel.org>
+Subject: Re: [PATCH v1 4/7] ACPI: scan: Combine two conditionals in
+ acpi_bus_attach()
+Message-ID: <apaPjaBH48O4V03m@ashevche-desk.local>
+References: <3435655.aeNJFYEL58@rafael.j.wysocki>
+ <2021470.taCxCBeP46@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260830101025.191697-1-shengchao.guo@oss.qualcomm.com>
-Date: Tue, 1 Sep 2026 01:40:09 -0700
-X-Gmail-Original-Message-ID: <CAMRc=McYnNi0kUirdRS5EaEcOM_O04LssnK=NHQe3qG3wXcv2g@mail.gmail.com>
-X-Gm-Features: AcwNN1WyA6ox9fd2cV9CQbuAHwr9OEp2ZgxoMmSV5lsmeHSqgbZVMDKzLA9rank
-Message-ID: <CAMRc=McYnNi0kUirdRS5EaEcOM_O04LssnK=NHQe3qG3wXcv2g@mail.gmail.com>
-Subject: Re: [PATCH] dt-bindings: thermal: qcom,pm8775-mbg-tm: Document PMAU0102
-To: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
-	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>, Manivannan Sadhasivam <mani@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Dhruvin Rajpura <drajpura@qti.qualcomm.com>, Daniel Lezcano <daniel.lezcano@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2021470.taCxCBeP46@rafael.j.wysocki>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Sun, 30 Aug 2026 12:10:25 +0200, Shawn Guo
-<shengchao.guo@oss.qualcomm.com> said:
-> From: Dhruvin Rajpura <drajpura@qti.qualcomm.com>
->
-> Document MBG temperature monitor on PMAU0102 which is programming-model
-> compatible with the one on PM8775.
->
-> Signed-off-by: Dhruvin Rajpura <drajpura@qti.qualcomm.com>
-> Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-> ---
->  .../devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml    | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml b/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
-> index 2e084d040625..ef8361a55389 100644
-> --- a/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
-> @@ -21,7 +21,12 @@ description:
->
->  properties:
->    compatible:
-> -    const: qcom,pm8775-mbg-tm
-> +    oneOf:
-> +      - const: qcom,pm8775-mbg-tm
-> +      - items:
-> +          - enum:
-> +              - qcom,pmau0102-mbg-tm
-> +          - const: qcom,pm8775-mbg-tm
->
->    reg:
->      maxItems: 1
-> --
-> 2.43.0
->
->
+On Mon, Aug 31, 2026 at 07:59:32PM +0200, Rafael J. Wysocki wrote:
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> There are two conditionals in acpi_bus_attach() that can be combined,
+> which slightly reduces the overhead and makes the code a bit easier
+> to follow, so do that.
+> 
+> No intentional functional impact.
+
+...
+
+> -	if (ret > 0 && !device->flags.enumeration_by_parent) {
+> +	if (!device->flags.enumeration_by_parent && (ret > 0 ||
+> +	    (!device->pnp.type.platform_id && !device->pnp.type.backlight)))
+>  		acpi_device_set_enumerated(device);
+> -		goto ok;
+> -	}
+> -
+> -	if (device->pnp.type.platform_id || device->pnp.type.backlight ||
+> -	    device->flags.enumeration_by_parent)
+> -		acpi_default_enumeration(device);
+>  	else
+> -		acpi_device_set_enumerated(device);
+> +		acpi_default_enumeration(device);
+
+I would leave a longer line (having logical split)
+
+	if (!device->flags.enumeration_by_parent &&
+	    (ret > 0 || (!device->pnp.type.platform_id && !device->pnp.type.backlight)))
+		acpi_device_set_enumerated(device);
+	else
+		acpi_default_enumeration(device);
+
+Or even going further and cleaning too many negations (if I'm not mistaken in
+the logic)
+
+	if (device->flags.enumeration_by_parent ||
+// not sure what the expected ret values here, maybe < 0 or == 0 part is not needed
+	    (ret <= 0 && (device->pnp.type.platform_id || device->pnp.type.backlight)))
+		acpi_default_enumeration(device);
+	else
+		acpi_device_set_enumerated(device);
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
