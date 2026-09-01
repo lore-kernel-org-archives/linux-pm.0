@@ -1,91 +1,156 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013030.outbound.protection.outlook.com [52.101.72.30])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CEB34A2045
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 19:15:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788290125; cv=none; b=dzpXwcNsOwXkFXRPQgyQbhUdrG3YQsxUkl74tUNTVx4l32AinKjR01z8QR65TE1dWioO1+nzOGGbQdz7zpBI+JVf4S9uTQ/8tPl0u1D32TgKeZ51erIiLGxxeRh26kw0gicbumG4lk1acMxD2gXtj3isS41tjJIQnI3i4B91nhI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788290125; c=relaxed/simple;
-	bh=zFgPNUcADR/j94/tcNEBzI9E7MRbrav5+S3mPcZYaCo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=cZEnN3WQxgGBPm8OpnwS5DJbppA4h45EIVI+DWZDqKiDi5VvCTDC9sptHBI9VXbnKxacOlPWXh/IojYw32EPPk4n+IPTRmpQu2d2isZBen/OMsQAG3JO0yaaFsnfBm6OzXVE+gJda26H9GoXQRMh/6hS/hwlBU8LdZkAkdhzJIo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lXDvCl9j; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB67D3A453F;
+	Tue,  1 Sep 2026 19:35:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.72.30
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788291316; cv=fail; b=j/jgwqp7NcFX6XiWJHKaIo815KfTGjmJDjlJtKBNgRHm4hF2Zl3NrPqIsvkWAd8IflH+NNxoM9LSiLH5nAm4N76iYAQAAg9dmuPWjzu4zvpSLJuKJSvB31BsVQXrxszKYfnZn9ZCwdr/m+HetjGivZ9hu/GHjCYn4XeREk0L7+k=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788291316; c=relaxed/simple;
+	bh=WoATPQlmRCmtWClOaQXIiQ5ozXcarQqg5FqxJU1dtbY=;
+	h=From:To:CC:Subject:Message-ID:Date:MIME-Version:Content-Type; b=q6CTw+3KYGQkqCIUr03VHIDMZjsYlkklebbLjrWhZgCLiLd9idBboxB2fZwFrWmqOMSZchUjAJZJas7gr+0TY3q7U7FWqzLtSyKx3mxDshXlsNPuFaD4SW8ufjhuZ4tL0nqSg/FQJkLOCDR82Dlu2tmC4HzNSnsVfD3DUjdI/yo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=FK2GMAv/; arc=fail smtp.client-ip=52.101.72.30
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lXDvCl9j"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 175641F01558
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 19:15:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788290124;
-	bh=WGHZuGxkBMEGcBScQhd+KOYO8aGNNbmgGdXxIib6dAg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=lXDvCl9j8wTk7PGbeP5MFub94EwfxHnwUmEn9Lacv6ocTmJNbab/BpYMfOLo7yYpk
-	 apwS4jpRfXmg4BqaIZFRSD6DKIi7OofrORRwIlYfGMPmSOv0zcZ6jymuKXuunvCy48
-	 6wv795n1x1tge/vTmvh9i8YqgLFFtzPC3rCLjjGYjEOcqol7WVAbrI7J+dkhvwgf7/
-	 CWrTXd1bnRVXGWI7BH+d/tRxXmA/0VqYX8pAssv4Jnib7ImZOwQD9xFKPMrItqnt9I
-	 jMfLvTwX4jeYh0CthdOAKqbiN3AEtezueClffX8Xr8gk3I+ghFIuAcruXL8SahMpWp
-	 NJboT2vkEktfQ==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5aec6360133so95169e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 12:15:23 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzS71GtbSTA188M5ggZrz8hu0S3b4/cnAcbiPAmqNE0ibH/2Whub54DtR2c6oouLRnCBkdkPxEdQA==@vger.kernel.org
-X-Gm-Message-State: AFuF++l6J27dOuNB0o9QX/dMmzT4YQue/tmCLnREXd+xoCwVnAi2/VWS
-	t6fRZfyxzy+gwmjRcuE5EZeo8g6QfhkA5AFmhvGrK8G7AQO4LrkBDCZsSmtyl/ErPtpz9xXVus9
-	p60vbONxmU9IlG3RdsCH6DXtuxaTWVqQ=
-X-Received: by 2002:a05:6512:2311:b0:5b0:113d:8ae5 with SMTP id
- 2adb3069b0e04-5b60853aefdmr5483e87.10.1788290122246; Tue, 01 Sep 2026
- 12:15:22 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="FK2GMAv/"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=SVhmwdijZA2yt+Zf7ikPcrDzB61vHq/V3EUuNySfdbY7HmvmR5i8OXc/e5qzYbXS3qLp+F7ycDYOtCDzQ7Ai9t2bR5+7Cx7lI0UcRVF+zkaMqPMOM4zmrDqQCHTsBs/hCdLWv4lkcXUlL3zCL2M9/GRtkYu9aCkAOJ/CjXycbxxiNOgMwghDI8CBts9K7ivrEMbVtf8lLOZB6943OTQvQDBoVnFB3wtAPncHC0A4fLw8O+VpCRfBMKvSaj2FNxHc/5Nnl3zytkHz6SAKVPtEqEs9DoJjaJPPDRUL0J7zFiidO/6ic8iyMqB9tKvvz6lrXJWDa+FgwshT5H1OtFaeuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=pnYjDxigcEXKr2fxOLa6bqtky2yaW6U3xZ5vg+MBibA=;
+ b=OAQJ6A5I1p29bwF/gmIdNS74HkXkjOlwSm2KLUJbKM7Zk11Er27CrqmpyEWX/TF0GZKYQiWAYcTsHmC+bY82jDTeVEpTOuDnif/78WIbxaRQLeCBj+UrydmlAEkWM/NywY46MfzLVoUBlRbmVY9GBjC34t/CMYjUyrKy4Z8gSZTS1siXUISjkzk9k7AbiUqVXWj5Y2+P2+TIkTk3fZjxhrFssQZCU9h5CD3+2loAeCtafqy4W72L67FUUvsbwqv49AXy1VgWt1ZPPG6vtnGOS2P79nBk6iZ1tgKERlOZAN/VOFxSboPOkEP75xiXKQE961x0rBeYcYXHkCLH5Fojrw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=pnYjDxigcEXKr2fxOLa6bqtky2yaW6U3xZ5vg+MBibA=;
+ b=FK2GMAv/7/fKw9Ht+w17AE2GVPWvKfk7Jb2SU7E6ZiilrDV/VSgpAlb6HRJ9MoNEJb5lt7UtUv4+3O0v66P0F12zx2O6qLwNah/Zo4cQ9EatlZN6oNHbDYW0nXdqK3wXvpOqlphJB+RQV/No5xU+F2tAjuPvjd07juPopW7F4zw=
+Received: from AM0P309CA0018.EURP309.PROD.OUTLOOK.COM (2603:10a6:20b:28f::11)
+ by AS8PR02MB7801.eurprd02.prod.outlook.com (2603:10a6:20b:441::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Tue, 1 Sep
+ 2026 19:35:08 +0000
+Received: from AMS0EPF00000198.eurprd05.prod.outlook.com
+ (2603:10a6:20b:28f:cafe::51) by AM0P309CA0018.outlook.office365.com
+ (2603:10a6:20b:28f::11) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.10 via Frontend Transport; Tue, 1
+ Sep 2026 19:35:08 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
+ smtp.mailfrom=axis.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=axis.com;
+Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
+ 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
+ client-ip=195.60.68.100; helo=mail.axis.com; pr=C
+Received: from mail.axis.com (195.60.68.100) by
+ AMS0EPF00000198.mail.protection.outlook.com (10.167.16.244) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.382.8 via Frontend Transport; Tue, 1 Sep 2026 19:35:08 +0000
+Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Tue, 1 Sep
+ 2026 21:35:07 +0200
+From: Waqar Hameed <waqar.hameed@axis.com>
+To: Sebastian Reichel <sre@kernel.org>
+CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 0/8] Add sysfs entry for system load control
+User-Agent: a.out
+Message-ID: <cover.1788290289.git.waqar.hameed@axis.com>
+Date: Tue, 1 Sep 2026 21:35:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <3435655.aeNJFYEL58@rafael.j.wysocki> <2497062.NG923GbCHz@rafael.j.wysocki>
- <apaQZr71mBe0_3fU@ashevche-desk.local>
-In-Reply-To: <apaQZr71mBe0_3fU@ashevche-desk.local>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 1 Sep 2026 21:14:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g+N--XQFuD=ZD9tmevU6dQ32-VHJhbVVsDwqR9wM5BkA@mail.gmail.com>
-X-Gm-Features: AcwNN1XyDF_pJJDrGrFfnXssS0wiNeSsDyVEpRrO1PBBZ79tCWrSAeBzZgk0EBA
-Message-ID: <CAJZ5v0g+N--XQFuD=ZD9tmevU6dQ32-VHJhbVVsDwqR9wM5BkA@mail.gmail.com>
-Subject: Re: [PATCH v1 7/7] ACPI: scan: Take PCI device enumeration into
- account directly
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
-	Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Mika Westerberg <mika.westerberg@linux.intel.com>, 
-	Peixin Xie <peixin.xie@linux.spacemit.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, 
-	Lukas Wunner <lukas@wunner.de>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, 
-	Hans de Goede <hansg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-ClientProxiedBy: se-mail10w.axis.com (10.20.40.10) To se-mail10w.axis.com
+ (10.20.40.10)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMS0EPF00000198:EE_|AS8PR02MB7801:EE_
+X-MS-Office365-Filtering-Correlation-Id: 08a2ffc2-4e10-446b-b68b-08df086021d7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|376014|36860700016|82310400026|10067099003|6133799003|18002099003|56012099006|11063799006|13003099007;
+X-Microsoft-Antispam-Message-Info:
+	KX7or+iql2ZkPd4Y0k3aul4RUanxSU++Wc7Er9BDsUJdIZWfO+Xatvf2G8U3ukc1dRxSDxPIJByKmFmK8rHyH9GMxPEiYWcJPO5FolH4h65gAgfjs1artP6U5T1ylZLBCaPHJGW+/wiW9P8Asty9KluEIMjHwmxvwGpmLxvZ2RTgDpzpaauKjZwHPoSGZ7kABLF/A3oSXPd7lS2J/ymlTYfYmjuOpDMRKnLt3ePmLhzxeUrTqA6ttpTADI+THsS6Vvr8NMLJGelH9Z/7v9Zq2+CVOKaRlbTDZWlPh3K7iO9eBUKn12gC/pux0IQb2caKWEPMX6aC3YstrvpZSrxgytYn9H/F8Vgt9qhWerv++SdPjhkjfilx6KkVjrkMuasrzpzpxyOgavswP3UauwGy/QdmnTgjZJi6MW2ykBgpchpfe7/Y8FZWoncMLugaCPcBbl3LbCLw5G+ALg6DJ1gmDZNdqtD4K0libipqceVy2e9okByi2b2iY2wqEz4bxB9HRDCUZgZap6zn1Xm8IUk9dPBKfJgFksJvf36YPZunNsjRdYa79UtKa8IzYvjqtIYTZelj0ojJDonIudhx/dGwOwfxx3QaoceK8BAmw4d0qY3BSG3FCi0qqZtIcrJI40oiFyjuKsEXWKIac7RvOkoUB7DqyhWWtWYOfyFgwG/xN4QLXaZgguC6AxGV6j0Cr0Nhg2E1vJG7Njl15kEda6vf3A==
+X-Forefront-Antispam-Report:
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(36860700016)(82310400026)(10067099003)(6133799003)(18002099003)(56012099006)(11063799006)(13003099007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	EAgyraVj+RSrHJ2GCAkMpUCcH/KD4GaGBYSjesW7razo0RL1N1WLpNt627Loxu/mwSn59vxzYUOxUwiF/anqsX3bPm9CJUHjIfPu/NVI/ahImtVy+/8MjNZYa9BmJ9Y2Btcwu32XwzEOvCI4zEthkcZXzji/F/rEwWhiA8sjcRItkgMMmFR/DcoZVlLXsWmUMQ2Hw0H9xezEct8gfAmLqFJgsc0CvprQrwMS5RTiD/bovCAN/ArQ92wEMaX4CIpxpIvHbExajz9ROXeoTvu7RcQUCJNi8/N4F3XNEZmukgWVx7tmuYlnhI9GlA3POzmZnsEId8yESeeLyRAu/oMtkky06hdeBnsWkuUEC0t5w5NFYmGAtIp6TeLRpHnkDC6QWKkfbJaI8kh4ew5FfyX/wXl7zMwiGajCNSxTOrUA2klbd/kbrj4a7nQO3GTOvSmj
+X-OriginatorOrg: axis.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Sep 2026 19:35:08.7192
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 08a2ffc2-4e10-446b-b68b-08df086021d7
+X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AMS0EPF00000198.eurprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR02MB7801
 
-On Tue, Sep 1, 2026 at 10:44=E2=80=AFAM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Mon, Aug 31, 2026 at 07:59:48PM +0200, Rafael J. Wysocki wrote:
->
-> > The ACPI companions of PCI devices are associated with the correspondin=
-g
-> > PCI devices before being processed by acpi_scan_attach() and by the tim=
-e
-> > they are passed to attach_subtree(), the PCI devices associated with
-> > them have been already enumerated and initialized (including power
-> > management initialization).
-> >
-> > Accordingly, it is not necessary or even useful to check their status i=
-n
-> > attach_subtree(), so do not do that.
->
-> ...
->
-> > +     if (pci) {
-> > +             acpi_handle_debug(device->handle, "PCI companion %s found=
-\n",
-> > +                               dev_name(&pci->dev));
->
-> We have pci_name().
+During discussions of the development of a new driver [1], it was
+concluded that a new `sysfs` ABI for controlling the connection from
+power to system load is wanted. This patchset introduces this.
 
-Ah, OK
+There are already several drivers that are controlling this, but with
+their own custom `sysfs` entries. The drivers in this patchset were find
+with a simple `grep` for `bat\s?fet` (there might be more?), and then
+converted to use this new `sysfs` ABI. The old custom ABIs are left
+untouched of course, for backward compatibility.
+
+[1] https://lore.kernel.org/lkml/cover.1772201049.git.waqar.hameed@axis.com/
+
+Changes in v2:
+
+* Drop already merged patches (picked up by Sebastian in v1).
+* Pack `struct power_supply_desc` so that an extra member doesn't
+  increase the size unnecessarily too much.
+* Use `power_supply_show_enum_with_available()` for
+  `POWER_SUPPLY_LOAD_SWITCH`.
+* Drop commit for selftest since properties using
+  `power_supply_show_enum_with_available()` don't have any helper test
+  functions. Should we add this (in a separate patch set)? I'll others
+  decide if it's worth the churn...
+* Add implementation for bq25630.
+
+Link to v1: https://lore.kernel.org/lkml/cover.1782683551.git.waqar.hameed@axis.com/
+
+Waqar Hameed (8):
+  power: supply: Pack power_supply_desc to eliminate holes
+  power: supply: Add sysfs entry for system load control
+  power: supply: ltc4162-l: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+  power: supply: rt9471: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+  power: supply: rt9467: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+  power: supply: bq24257: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+  power: supply: bq24190: Use POWER_SUPPLY_PROP_LOAD_SWITCH
+  power: supply: bq25630: Add support for BATFET control
+
+ Documentation/ABI/testing/sysfs-class-power   | 25 ++++++
+ .../ABI/testing/sysfs-class-power-ltc4162l    |  2 +
+ .../ABI/testing/sysfs-class-power-rt9467      |  2 +
+ .../ABI/testing/sysfs-class-power-rt9471      |  2 +
+ drivers/power/supply/bq24190_charger.c        | 62 ++++++++++++++
+ drivers/power/supply/bq24257_charger.c        | 43 +++++++++-
+ drivers/power/supply/bq25630_charger.c        | 84 +++++++++++++++++++
+ drivers/power/supply/ltc4162-l-charger.c      | 56 +++++++++++--
+ drivers/power/supply/power_supply_sysfs.c     | 17 ++++
+ drivers/power/supply/rt9467-charger.c         | 54 ++++++++++--
+ drivers/power/supply/rt9471.c                 | 54 ++++++++++--
+ include/linux/power_supply.h                  | 18 +++-
+ 12 files changed, 397 insertions(+), 22 deletions(-)
+
+
+base-commit: 73e3f0710014fe6d4ed98cfc02292f6121db7558
+-- 
+2.43.0
+
