@@ -1,199 +1,211 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 763CD3E0220
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 15:46:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5878643149D
+	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 15:46:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788277573; cv=pass; b=ft9UlJFTrHpO6pdMxOL8VawTYFoVVbiYy1TbuaW8lbJ2H4IMd2LPthy3FmoudvIJ8GZHK6EHf6Jl3TervaLHJcEHzD2gEYVgv/j6pZHGjMC50rQL0468SDxOj8CZEpUrnPHwIyRJTAxGB0inr/spXNkLUMFxNbJ80sPz7h0kIj4=
+	t=1788277579; cv=pass; b=G73oEYAe1qiynRcq6w8pcZiCR373iH7z3msvS3FUeRYX2Vy3o6llrF4aZEta/SuUDo5Vel/yp3YWeOLfVHZRWsbUFPkSNXQPM3kcOBR5aEvqzXZpa2PDfB/AAIz/q1KSvWSqXDccYnPbkY2hJMEHrd4Jqar3gXc4RNxY+C6YQ4A=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788277573; c=relaxed/simple;
-	bh=XLo1O6Y/6Eo3OAdKCdgs0D45eVegKXe63+OLb+kXWng=;
+	s=arc-20240116; t=1788277579; c=relaxed/simple;
+	bh=kBO/AzoZx1ofZasrbnMAMlpidRtyOjDHcD5P0zRr+dQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LpZGw3Xcd5FdjBINcwdh1FfB0pBad7aElrLUqt3FpA+xW56jF2u2w6BvUz3WQeB8+2aAe8Mwx39ZAbDPztLRT9VvKtOQ/HsNZj5DzM6I5uqEFl055QE7rVnQS000B84bbhPNIIi0dBLcYTNpBJfuiRsk2O3fCAn6hvX3eBzc18w=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=feYTI9+A; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Zmalf/Cp; arc=pass smtp.client-ip=205.220.168.131
+	 To:Cc:Content-Type; b=ePWcHx0YVrcZCR92GUx/JUo9q+UFI6bC1/xz46A3Mrn+90q0OmL0n8BplBdEyeI292kp8i6V668ucR0ksomZkfSBxrt5UL1iuHcyy0H2L0Z7leg8lK/aebS/pS5HLp/w83y1LpEaMb7DzzuLPBhFU3Dx+IIXk+uRPyfNjIBIj7I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=n8d7mRg2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aXz/ab7L; arc=pass smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="feYTI9+A";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Zmalf/Cp"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 681E8iDU2825141
-	for <linux-pm@vger.kernel.org>; Tue, 1 Sep 2026 15:46:10 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="n8d7mRg2";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aXz/ab7L"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 681E8XHW2145824
+	for <linux-pm@vger.kernel.org>; Tue, 1 Sep 2026 15:46:17 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	ZesAiea/HD1vlRsrFj0Au2AyHXRN8QeZN3AWkJ1tr+4=; b=feYTI9+AXed/U2aQ
-	urR4ihwgtlD6ItpFSuAQtQEVdpvW/fhqqnRBzvM8xzz9hcvZK3m3gA19/Y8/s6co
-	STQk+LdhxM8bCRTz5CeG1xf4+1Bd0Osr3fH50gOkQlcSbZpzi/0FVSDyG9RFqoRU
-	QUw1PuLsqUbMfpGZeJk/ZLXRdguuyBWlBZBv8zcKoazxEe8k7zD58ccU4eAl7dWl
-	yHxtugvSRYVgOOAe2HecNQDneJIXfyWjML+QoJCW7tqM4OGxoiPEg5KoeZnhHu4Q
-	/6rGV/R30g4y9ExEGzEwmxUS+9DNxqYesPbcPBJmpIFk1ud+YEDSKJQqXAG4FDsl
-	Lp1Bzw==
-Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gdp7cbc0v-1
+	DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=; b=n8d7mRg28ll7i78w
+	GqCzjFy0bizbLYoxqeGEpp6HFGBcrpvYeGy0TgT44jO0MzXaTLOz5lSZQRx/cifK
+	Qp53mkNeloVnt9XCz8Wkl2Z2UjvxruvtLNSWce8M5UCfS2XYre+q28svzAdUAN1a
+	oO0WPu+sbLecb5I3Yl/150I4ELsWPMH2+2EEJF9sywBuK4Le/v37rX2UlYJrXRFV
+	whYQjE1yZFKS/Lona50Jy1d5URXP5IqnzVgObOGpy6OmC5WelxY9gdSww8RbVmeJ
+	mko9TaWKwNKqgfguXDScgTLVfJUpaSjTAq5CaDMajq5yWdPM1KFYXyfoaMDJAld6
+	XRrawg==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gdnk8uh4j-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 15:46:10 +0000 (GMT)
-Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cc1cdfb337eso25579a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 08:46:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788277570; cv=none;
+	for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 15:46:16 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-84a251c2e3eso1527063b3a.1
+        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 08:46:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788277576; cv=none;
         d=google.com; s=arc-20260327;
-        b=YnW4FCbvZa5bHq1Bzs7GXb/WIkWPlzGx2Lh36p1p8Y0rWRG1lUVgg328VJh4kwNIz0
-         TmCfdWn2SWYGzVKnsIW3gurP2oNYooumic/pcD+92umOuokxn2beCZR8G1FmdV7vt/ou
-         5SOOpueCdFHR9q9mrHtPa0HqhSlKLm1njXZVvuqC4GziCXX8IO3YSdFjnXU+36UtzuzG
-         2HPNeQ/SMiDIAVwbppncTsyecFj9Qrt7b8qnqveNtvUzmtuQueoNSfMKQFTbbS/6f+Tp
-         Mrn/qoyd3K2SZ9HeV+9VHUBlEvDBPk4gGzyUycLFwBG9rit2cDG8HYCJUc3FqkLQGVqe
-         IBhg==
+        b=VTr6ygGnIWc9QNqIpvYk9pjkLahjS9q2Zka+Eqwk0ry7X2TBXzIaVAkVmnBbbLWPCf
+         57L9Ng+sy/POlTJUDT7l1ytlF4RQHSLCJPoOk3XKDpnxEJIpKfXA+xVyo0wMw4CJKidy
+         MWGQrk7XP2+YdAfXMmjs1ZeDBAiFVsUffrzDLb1LD96cW8ii4BVS9gSebgEPJ4cugLOR
+         KoaaaKsVwXJh7oiDCRZwUes1WGEpOTPQ/IEktJ6fZ9GOag87HFj92XsP9G5DjGWd6BjC
+         Km6h5QGBA0w+8DIRb7xz0eP48jIj2ue9uLj2NZ8nSSm/pJ4nNH4W5eFPIH3KQZ3HaCHd
+         3+dA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=ZesAiea/HD1vlRsrFj0Au2AyHXRN8QeZN3AWkJ1tr+4=;
-        fh=GwCcwF67WaIJsUDatCX6eeXH6rIVRo7N8kfWv75WgC0=;
-        b=i+naQoHPAD6Wn82C/SE8PwkXEH8ROjZWk9fZizOD7/oKIh+9USHBlSC1cH9uqobdhN
-         h1A8/5WpXsLiHYgTLgkGzu7dZIAFO2ThT32tTKhXpbUgG/ZYvFTT2JzS1YtsdlJrSvUq
-         swviac5og2C0Imd/AbYTq1Dx2hdyvwM9de+7+zIYxcBlEnB+RDJveZJYsJDaR8psM/wE
-         Rahr0ir9XcXdqmDGsGmtmgxJhCB6N/5mlrSVOmKjj16eUD0JpJDYczqknTZr8pZqggXN
-         cDcDOygdx/lkkAUT0RhpnaoIv28gMJd5gAm8FkUvUTQZVJ7FZ4cZmfaj+EIPZ+I48e+C
-         QNAw==;
+        bh=DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=;
+        fh=6RnPSUbRZoBSmqAAFYA5vx/nNtiz9vwhDqYTVCKc9ww=;
+        b=o30IgeD5HbrO8NJD5+ss23WUh1kv931udy9ntP+kEXcpmYsujlH28xlH9/QHB88IKX
+         adcqLcBBzRTUt7A+7SThvmaNe4GVbtSfmUsBhGvMrWVyvas1ajuH9/qlWcGaxyXlaRET
+         L+gEDvoXNe9OpwTz106F8rIckTepcz5E2rmdUZB6HzBuO5kUUn+SgweYVFuiUvYl8A3G
+         OH7+TAlkipgmRsJolTfC2HJS1iO+5JosrEsl9lQdngFULGLgsrW96KaKQWWGPMQqj5MH
+         Oe2/91wkZEbyODevOeevb16IYIi86ZKncd9fGH3Y28vwe5KM393KH7WPGvkMxZ2KqqZx
+         ycvw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788277570; x=1788882370; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1788277576; x=1788882376; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ZesAiea/HD1vlRsrFj0Au2AyHXRN8QeZN3AWkJ1tr+4=;
-        b=Zmalf/CpZqZ90n6GiN/drfFuPtW6C3zLI7PxjwV4tjDMIUGqe7t9NmsU1JSUwGkXLB
-         CJEwDCKywBSB3VH0MVY92OhMmezz98siPKY6Kngj5fL6ORV/Mfq5QzuvBrbcQYeT+cgI
-         pngsqpQGD5dz4+FMovzbP9SqJTdY3YdkrOShCgYpQ6UB8gEDFCgr4IfFBJJPAIgjBLWc
-         JWEojhrB5WIbLIAO2uVklaSufuBNPst28xSBCeOnpSKZUd9NKYIeIz0fqLJCk5u3cJ0C
-         VqFJOYuRRzFTPF1F5DN2DEQNVmp77HTDDvgAL1MJBeXvCdjGOnWLtj6N95aezmmJXVIA
-         0WLw==
+        bh=DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=;
+        b=aXz/ab7LQl9y63RellizNIOD0WjddTGovZcxQhYNNMJ95HWsOXIgbbHfla3sHhexE9
+         BLTIvmt6tIh4Jem5KJ7xQ7hypnZbtlssFTgdX/2xLLaZl0nWd8nJNQz79dRaQLXnnfZA
+         CQU38jXVEx3x3fPC5f99WHkR9iHdyZTpBwSwwl9JuGCncNYZa9AIVwWwjQNHPLGLi/xU
+         pHuCNWHDL3xPEkMek7cGnnJzHfRNTLAMmvXB/TSb212/h6Dm+zbm87X0uDoz/yMy7fVa
+         8Dx8MigqsAp0nG8S1DIxeTeVbm0OcTJde7IY82jXeykkf2l8+rsGMQQM4gso5ISsQkyH
+         Yfug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788277570; x=1788882370;
+        d=1e100.net; s=20251104; t=1788277576; x=1788882376;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=ZesAiea/HD1vlRsrFj0Au2AyHXRN8QeZN3AWkJ1tr+4=;
-        b=bxW8D72wKsVao2pIAc1PIZ8kOPBhG/rU7MW84jAd0D5ShssAeW8r9stku74gCNlD7X
-         v1enmrYfBrmmzWD4NdFjh8X1BIECbJBRuupU3CUin238EwLPvFP6bAiwP+ioatKJuFUD
-         Zf14YKX9P/AV39VofiJMyOwcClKW6zOboNhIervaiBklAxu/7g++7K0U6JdO/u/28CVY
-         37Fzdytp6lpTP5DeTyq2lR829i+8Z8xVN3eSYIyIJcQYG2rquG0r+6mEI55DBl5v7yzh
-         RmYxiULqjQBg4xhvKyBSspOrUDXX6HXF3ifbYB1BG6DCQcNk2gbYrowj5VhWrneqWzg+
-         G56g==
-X-Forwarded-Encrypted: i=1; AHgh+RqbOiJ6G604Yujs/M3zKWisxp4cbn2+RCQ+O0l9/eEN8rFwFQyP/rmYiVfRj1LF9y4H2YwQyPn1xA==@vger.kernel.org
-X-Gm-Message-State: AFuF++kq2OqhnuG9TOKAdADeByRjbDi4uzVfQkZ54ULyb5gQ+Y7YgddC
-	n04m7wJZa5AJ/7ddDP9bqFCLbGtdilpTX8JLvJzvRq5TEsa6oW4knWexsPJ34eEqjSwm8oN0RzC
-	vvw+e+SGI2qOuxIIJI0RT/Gb9+7iPN94P0VIaf+87SBmZybePx0X1Xw0Ifr9QiAPrGlkbZWN6H0
-	pR5qRFKRPWoHXWjNXjoo5jDkQa3bR48t2xKUPE
-X-Gm-Gg: AR+sD135RZHcCFYAyagbjLbJUCgKLGeEDkXx9jfQKUuMAlZdP2O8sJ7b17bBxaSMknE
-	8TWSfbZde+nCvKo3Y+sma0mW06g4bfDeZZ+NT4aVQsSONTRJX2+0pxFYIL5YOO38NitG47YTNve
-	bghv5zTz1XiFCHwMYhoilin7UyMhjnnA7+kuL1w6k3gUelZDE4paGfMe8CpA==
-X-Received: by 2002:a05:6a20:2d24:b0:3d3:af66:9f61 with SMTP id adf61e73a8af0-3d7b0858c0dmr13796015637.27.1788277569839;
-        Tue, 01 Sep 2026 08:46:09 -0700 (PDT)
-X-Received: by 2002:a05:6a20:2d24:b0:3d3:af66:9f61 with SMTP id
- adf61e73a8af0-3d7b0858c0dmr13795922637.27.1788277569390; Tue, 01 Sep 2026
- 08:46:09 -0700 (PDT)
+        bh=DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=;
+        b=fpduYLV2coCj6FyLlJpk3QNaiEHs3rpKwYQmAvA7kjweAPxlA4eQd61/bJArGHqSOw
+         XPFQ/5KT2kG8iZGyT3mueh3jUbh6PLIP1zma4L6u6wqb6en/0AShM4d7+499aOrwmr8W
+         NaFBxYcurDKiV+MVZG6w6cGk4EoNjXj6xgOPIYscaEFWvWSX9pRHE0A/Dw7J8hzgLjqg
+         PaNv5SlCPI+lRCBSMRq01IdgizCdAAE+wlpJ71E6RbTtuKlpVuHVhsu3sYfB9s9Xcv56
+         dJfCOdAHp9o4sV/SYauTFKM+G/C+srVmJm8ze0A5Xn4+fgJ0Kh5jcHvmlYlYwlUsipYJ
+         NrEw==
+X-Forwarded-Encrypted: i=1; AHgh+Ro7VvWuFWiJKHmx7QuNDobTbj+AKMb6nDW3N0G4XvPMb1MG9cHP07I4/KWlX87dqCC439G3Fn2A2w==@vger.kernel.org
+X-Gm-Message-State: AFuF++k8tKCWrjmbwEGksmzzjT9FOD/ay1ZyIP84zaIl+o4mGf5OdYgx
+	hJwUINCueVUZa057POTj7NuVg2k10CRRn4c5PuVhTXhyhBuVqyn1cTJUIvCTx/Fs37DG2boQwc7
+	8f4ZmymRCOeNv5uQb74sSxeWSKN0JpPZ/3IpCVAkCjGYr6V66efWNIb5QxReplwz1UTX8tdiIO2
+	T+jP9figGi2U1dfiXbv/V3q1VvZd/csm1LoYRE
+X-Gm-Gg: AR+sD10W61MZbPPRmQ8XQXbiiZ+1Gu5LHdW3mK8M+AVOxchG4M4oqaeMlhuVEem063o
+	aF5VDT61NtmIv21mIXe3mvpWODeOODkKC2K2JW2nusLmm/ze06NddSD87FOCdBGSDboe/PSXVBT
+	gtlcJcK1j5fPwhd53wRbUNWhOyJ1rxxnGijigzulmfDnTaro9GP1hLTmbM9A==
+X-Received: by 2002:a05:6a00:4191:b0:853:430e:6b60 with SMTP id d2e1a72fcca58-85bcbd8ad6fmr5717506b3a.14.1788277576168;
+        Tue, 01 Sep 2026 08:46:16 -0700 (PDT)
+X-Received: by 2002:a05:6a00:4191:b0:853:430e:6b60 with SMTP id
+ d2e1a72fcca58-85bcbd8ad6fmr5717449b3a.14.1788277575650; Tue, 01 Sep 2026
+ 08:46:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260821085222.140633-1-ansuelsmth@gmail.com>
-In-Reply-To: <20260821085222.140633-1-ansuelsmth@gmail.com>
+References: <20260826101316.22193-1-ayman.chaudhry.kc@renesas.com>
+In-Reply-To: <20260826101316.22193-1-ayman.chaudhry.kc@renesas.com>
 From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Tue, 1 Sep 2026 17:45:57 +0200
-X-Gm-Features: AcwNN1X-ZkG58Ju7YGsTebESlLv7OBivRQr4LICy-o3mSGUv_1-w5G-mpWoo6R8
-Message-ID: <CAPx+jO_T3qLTYh3VORuPB7_caWXXOXy4XYfwXhT4THEjTghj4g@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: airoha: fix unselectable AIROHA_CPU_PM_DOMAIN kconfig
-To: Christian Marangi <ansuelsmth@gmail.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-        Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, stable@vger.kernel.org
+Date: Tue, 1 Sep 2026 17:46:01 +0200
+X-Gm-Features: AcwNN1Wk6oa8z3X-T1jHCneIimH6M9AciAx9hJy1lSv_z1qxgSpmHgEf1Fp22kk
+Message-ID: <CAPx+jO8eNBgcWf8d8xUhS6n=a4ztLV1ZSytTyMMqj79f0SFLeA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] pmdomain: renesas: rcar-sysc: Update description
+ of chan_offs, chan_bit, isr_bit
+To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+Cc: Ulf Hansson <ulfh@kernel.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Chris Paterson <Chris.Paterson2@renesas.com>,
+        Biju Das <biju.das.jz@bp.renesas.com>,
+        Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
+        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=OcyoyBTY c=1 sm=1 tr=0 ts=6a96f342 cx=c_pps
- a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
+X-Authority-Analysis: v=2.4 cv=f6p4wuyM c=1 sm=1 tr=0 ts=6a96f348 cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yOCtJkima9RkubShWh1s:22 a=pGLkceISAAAA:8 a=VwQbUJbxAAAA:8
- a=95gA0qMHRU8tCJvgjbwA:9 a=QEXdDO2ut3YA:10 a=x9snwWr2DeNwDh03kgHS:22
-X-Proofpoint-ORIG-GUID: QyS5NLQGtTZSs0gfpA6aBezs4cIvv-uV
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDEzOSBTYWx0ZWRfX1R2YNNVk6bZM
- 7nEDKTkuUudOs2caFT/6qsxFmwUJvD4tttgvu4rFJwtWM3g4Mto/1vfwVrka8wdszHNapYsVLV4
- IMhPevrwA0WVhnUMO8/QPSfASb8jxZQ=
-X-Proofpoint-GUID: QyS5NLQGtTZSs0gfpA6aBezs4cIvv-uV
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDEzOSBTYWx0ZWRfXzixJ19RpOs2U
- fyqMsLR666phx42cd5NXg11qgio3Sy3zgSBklwF2z3AOQgxIPDpt46WxDIOLAekYZgdOhNd4S90
- IWkjqWlMcdYEPVzD/EGU1rommpo3wTylpjf5iHGc/Wz9JvIyiRrJWZi/wMgaKp5uaPO3+Xm1zTh
- xzvK8mBzuqnZ7n3MQmc7FYplgu+dws43dbsehkZr3h5J0Db7Ab+0EoOuxyzHu+vfliCCppHeeR/
- HXAVsBEd6nDmmWbeePP5FFTvR6nJ+8GAI3FrGGAGWzSd9Z9Lu7x4Oq7z2BkCPz6owVcQBcmtqvv
- HGLN9f36EINq/Xtv8OOwEkAhNd0jKbZ0Bn3OH5wQ0pFgsWlCJAjsExP7K9/JzIE/muP4HaBe4vB
- kfswakBdhNsTxVPxhs+qm5XI/G0/kAZ+ky5GNzle0gEJtK/DgsIM+ml2JgKOKuJu+s74Bhj+vLN
- OEzyQJ+A95dLC69IbqA==
+ a=YMgV9FUhrdKAYTUUvYB2:22 a=yC-0_ovQAAAA:8 a=ftZ7uTllurLVGgvAASsA:9
+ a=QEXdDO2ut3YA:10 a=IoOABgeZipijB_acs4fv:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDEzOSBTYWx0ZWRfX1UsvInPqlaVE
+ T5LwzVfy6IenfvjX5E//K/H9FrLUknq8dAkoR2SgtBBuloGqL1oVRWmsoHYvYtlg8w9YEyWcBTT
+ RMdjM3BRJTYZwe7s13jhPay14SnuUvDDArML36zaeXxPkuOGceWMkY+0wDwah4tk5teQ+Y9a9gh
+ T+CUb4cKR5Nw4ketsl8EZl3n34Dlf/BBOidld/kndrzjFL4vhCz8S70azhOBwmtVcL0vfk+YXUW
+ P+xFmQOlLcssS/J3FUldRtXUgLfRtZOwojCfH39WoPgYi3DoCivTSSFOlntWy1NHsjFMN5aNh4F
+ can9Je6wjISAJzIyT0JDhtOB6oYrZeSPpSly0yttoEm1gNFTnevNEjgDNC4w0WGWou/MD+fh+iU
+ I+tYfBW1d4PfZZMmwcIdDqSyy3RTmuUlnTFxjLTGDy/iyiP/36KxpBY8lFOS43d9oPK0niRgl1p
+ y+fYMYjZi9nV4qQczxA==
+X-Proofpoint-ORIG-GUID: xuMoa242yjgklgh2QpxikyTjE54oFAUr
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDEzOSBTYWx0ZWRfX7GuEV4+AHZeb
+ Rqa4Oe6Toqwoew6+APA1wsSVa7seJKtJrYg9/W1xigq14Of/27NSrBMoICiJuJkZn7u0Nc3QLWD
+ mhxz2vEAIGwq22Fsq8IQxM5elK/GnFY=
+X-Proofpoint-GUID: xuMoa242yjgklgh2QpxikyTjE54oFAUr
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-01_04,2026-09-01_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 malwarescore=0 spamscore=0 priorityscore=1501
- impostorscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609010139
+ clxscore=1015 malwarescore=0 priorityscore=1501 suspectscore=0
+ impostorscore=0 spamscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2609010139
 
-On Fri, Aug 21, 2026 at 10:52=E2=80=AFAM Christian Marangi <ansuelsmth@gmai=
-l.com> wrote:
+On Wed, Aug 26, 2026 at 12:13=E2=80=AFPM Ayman Chaudhry
+<ayman.chaudhry.kc@renesas.com> wrote:
 >
-> The AIROHA_CPU_PM_DOMAIN config was wrongly guarded under the Mediatek PM
-> Domains menu and was unselectable.
+> The descriptions of `rcar_sysc_area.chan_offs`,
+> `rcar_sysc_area.chan_bits`, and `rcar_sysc_area.isr_bit` do not clearly
+> document how these fields are used.
 >
-> Move it outside the menu so it's now visible and correctly selectable by
-> default on Airoha SoC.
+> When `rcar_sysc_area.flags` is set to `PD_ALWAYS_ON` (i.e. `PD_NO_CR`),
+> these fields are ignored, therefore improve the description of
+> `rcar_sysc_area.chan_offs`, `rcar_sysc_area.chan_bit`, and
+> `rcar_sysc_area.isr_bit` to make it clear that the field is set to 0 if
+> power is always on.
 >
-> Cc: stable@vger.kernel.org
-> Fixes: 82e703dd438b ("pmdomain: airoha: Add Airoha CPU PM Domain support"=
-)
-> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
 
-Applied for fixes, thanks!
+Applied for next, thanks!
 
 Kind regards
 Uffe
 
 
 > ---
->  drivers/pmdomain/mediatek/Kconfig | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+> v1->v2:
+> - Updated commit title and message
+> - Changed the description of `rcar_sysc_area.chan_bit` and
+>   `rcar_sysc_area.isr_bit`
 >
-> diff --git a/drivers/pmdomain/mediatek/Kconfig b/drivers/pmdomain/mediate=
-k/Kconfig
-> index 8923e6516441..a2eb704a773c 100644
-> --- a/drivers/pmdomain/mediatek/Kconfig
-> +++ b/drivers/pmdomain/mediatek/Kconfig
-> @@ -43,9 +43,12 @@ config MTK_MFG_PM_DOMAIN
->           This driver is required for the Mali GPU to work at all on MT81=
-96 and
->           MT6991.
+>  drivers/pmdomain/renesas/rcar-sysc.h | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
 >
-> +endmenu
-> +
->  config AIROHA_CPU_PM_DOMAIN
->         tristate "Airoha CPU power domain"
->         default ARCH_AIROHA
-> +       depends on ARCH_AIROHA || COMPILE_TEST
->         depends on HAVE_ARM_SMCCC
->         depends on PM
->         select PM_GENERIC_DOMAINS
-> @@ -54,5 +57,3 @@ config AIROHA_CPU_PM_DOMAIN
+> diff --git a/drivers/pmdomain/renesas/rcar-sysc.h b/drivers/pmdomain/rene=
+sas/rcar-sysc.h
+> index 9e93a1f98f68..b264e727883b 100644
+> --- a/drivers/pmdomain/renesas/rcar-sysc.h
+> +++ b/drivers/pmdomain/renesas/rcar-sysc.h
+> @@ -29,9 +29,15 @@
 >
->           CPU frequency and power is controlled by ATF with SMC command t=
-o
->           set performance states.
-> -
-> -endmenu
+>  struct rcar_sysc_area {
+>         const char *name;
+> -       u16 chan_offs;          /* Offset of PWRSR register for this area=
+ */
+> -       u8 chan_bit;            /* Bit in PWR* (except for PWRUP in PWRSR=
+) */
+> -       u8 isr_bit;             /* Bit in SYSCI*R */
+> +       u16 chan_offs;          /*
+> +                                * PWRSR register offset; or 0 if area is
+> +                                * always on
+> +                                */
+> +       u8 chan_bit;            /*
+> +                                * Bit in PWR* (except for PWRUP in PWRSR=
+);
+> +                                * 0 if area is always on
+> +                                */
+> +       u8 isr_bit;             /* Bit in SYSCI*R; 0 if area is always on=
+ */
+>         s8 parent;              /* -1 if none */
+>         u8 flags;               /* See PD_* */
+>  };
 > --
-> 2.53.0
+> 2.34.1
 >
