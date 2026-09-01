@@ -1,118 +1,82 @@
-Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com [209.85.167.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14AB543A80A
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 17:04:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.177
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788282282; cv=pass; b=t6l7mHJuQo+pAFjT1rhIF8nS2FOuVHlPVUkbmJ5uIfrWnmg0rtLYaNH4Mn4CGWIHZ8dE0vV+fi7RI2tKwiK5Si0aV5jqvxxIUk6s0xyA7klERwXi0M1oeV45xK8rSLG3vleN1uMTpzr+5W6qedhGg5AhRT9GJadUfmR2pOn2ZLA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788282282; c=relaxed/simple;
-	bh=d0cdEJI9/RswzkjbxjykcepGXr1VSGWZgZWnK4lfHUw=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57519488762
+	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 17:22:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788283378; cv=none; b=j3OUpNtRYzEzKXcl9mtOGRPddKKfX10yM8Lep0XI8UAfsBMLqR+qoX9n/ZLvieTucK397WuCyfo8KpcJxJ1UpNcFNsdoCt/5rE9TuEIYYuJgw9ClbtWXF8wwfRWzMfYjPRTZsiDvV4tIhqF3h2AsudAgqGynggSWj3mFUhGpLMU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788283378; c=relaxed/simple;
+	bh=Ad1DukBGwLi6ArucFKVFRHpCwR2Weby1EPL9ATOHJ1c=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=qY87Tb+83byVBJxZhDRdj49sjfEVxnpljC0KoWteSSLaR2pF5lxvGYxUiSwqhlc6C/1eV6dvVUhUST3CyaT4KKevSiBmeELv1zgUzbpGl8Cfx3HVmcYM64YzNSYycmMieOlDUOCTjTYbudbYkfK/eFL39R1s8T1BhDVZPs0Xx/A=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rwvv/oiq; arc=pass smtp.client-ip=209.85.167.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=T0eg6Xl/BhWKcR8scKvsnvgU2pzk2/U/L6/KoEjxslJAZGHE/jsvkJcM8xJohT5Itz4Evkp15rapH6VPk8h7R5JnpCiWI33WptaeAW74wB2WJ90EHuOlHaFreogUXUTsaMuDoc/VnuT4uagG7DTH+7rib48sGnuX+Td1dKLhAZE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hLT6pqk/; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rwvv/oiq"
-Received: by mail-oi1-f177.google.com with SMTP id 5614622812f47-4b383347fa6so855389b6e.0
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 10:04:40 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788282280; cv=none;
-        d=google.com; s=arc-20260327;
-        b=QKe7FoieaGMQNMbq8aMX35s9lLdmDjd7tLGLj+rNrevIdoVLNQVelURMNUg089BSnJ
-         drp2FdzslhO8iOwRT/OQbiD8tK93PngsAWeabQCRkwuxTRu2p8RQnDzCVH0sBu+uN1FG
-         DDJGo/8i4wBWCc0B0t9HsS+C0B8Zyf1j8K/TiXOfob86wD4ILjVkESjs6BT8hEb/1Ug8
-         trbYMUGeavSe7Q8+MnC2Vr2vYY/fo0gMflahyU3OlHfESmnLHKEQR2vg3uyB6ZgPOCUe
-         PS9rsX0XXUYz3DvV4H3oOU5MpgEadfVYDavMdoNpUYEcP3cKXzb0Fgty6iY5O34F+BZP
-         7H+A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=u0pyQF2KkMAZd1qn6FHRAPnrJYWT7vVvWkqtFaYE7kI=;
-        fh=lBNnKOb80Q1E0R0MR9J6kfTP0vYnTfRUZs7KiO7Wx0c=;
-        b=UeFxzKUPb9nBxFWyTcruBBn5h/TYMvBEaxGOkGzZR2j8QC6KWYBV8Hotzy3tCgl9+x
-         8U2AFpWFN0ez8NK8Kc2V10EUi0lDg4df2xmf6gTV3bXL0VI9iXvG5D2zzhArsTPjNZQR
-         XATt5uEGpxfgiUS9TeIBFf/RwuLyQf0SmHLwZT7n1zc1xQgGxyLSZdl1uMZ3valmkh1A
-         xywI7eEs9oU91cSo4qLX3y3q/wL6iYxIaMqv3xWGriqmBumCJNjDxOKwhxxPwQz1t2cP
-         H44lOiwKR8Xk81NGASXdrAIfn3n+toaP82kQ/wmFAhNKPenDe0VsYprRi61IUlMcWMhg
-         SGtA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788282280; x=1788887080; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=u0pyQF2KkMAZd1qn6FHRAPnrJYWT7vVvWkqtFaYE7kI=;
-        b=rwvv/oiqIjRz/IrkMYP+qzY/NjYS3kl/D9JfYWAkCE1dkt5ZlrdU9bRCP/vdOQWF9D
-         sYbzaUuccnh9PYLKRF1JPp5qWKrWkmN6AccAZ83Q1z6nZJVoXp4lBov6GSiiuf8XkZX1
-         n6kl6WFxNQDFd8/vB10l8y3pMk3UMeTdKSbhT2zZK9yOSxGsbfi061r7fZGEBe3cSsbr
-         z/r/GyXokbhlcKXS7UdSQ7gdJiJr11b2mxF5jxW36gm7kpUIfB9NTcSlOLT+UKr3qXmS
-         ROcwaMnOPRn/TuYEzk7GakKLLUuoCSCOnEoP+XKwre+gSoKbHekXT1kqLPgvEqo/QjvV
-         +ToQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788282280; x=1788887080;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=u0pyQF2KkMAZd1qn6FHRAPnrJYWT7vVvWkqtFaYE7kI=;
-        b=BNk2dtq4Q/4cnUkxX1Y36ZcuOkYGEzhhq7qGkmsw6drqtccAkTiRH4f9xacsw76iyW
-         eE+BXkR59nGQR69AA2wcRkX86vCJYHlvoG5gZI4AB5v1HkmYfab9CnzuETCca9fjZNAB
-         V33f3CwkLOrSpu+XYpV7X7bvpHFPMHSXzDBjTdlQH9N357O39H0vQ6MzX0EQymFVbz7K
-         PBPfulCjt1B8f1Slo/LUDkvZmyLMLw6h/Ev0OCdGBgzYMt8GPUYyjCpGvDdwPeNlDr04
-         bMTq26MlAF+yRKH/c6Es9TcTAakm4g3pnpWU0akMOxmp1yqX7t2N8KLx15kea8TCUcvp
-         5RdQ==
-X-Gm-Message-State: AFuF++niXjENT0brRz3X3uKhHFnP2+e/8CThuUTguOQRWrR66dt/p+KX
-	6suXixpTf6TviCY3OvCy3TS9p9Qvru77Impr+XfzmUs682rxkI5B3xNN9JayVMdBnUbsXLyNmfO
-	X87PWxXcvCDkidWgp9+P1+hH8jqaqOdU=
-X-Gm-Gg: AR+sD10ZZK8VNkzXEHuLn3C5pQb9L4SOeWE7z5RbC9a2Jigft1wPhhY15WGa4hZhCfJ
-	PxxkG397lWZHIzCY01yqoMjoYpbQwYCKuBzpBQNXCid3ezEu0HhM6J3Bl2yV9k6xp5YfRexnH+Y
-	HS4ONSIqKqDAMPnHBb+2ly+SjzavURtm+e29yEA5cGkSkQhXzDM9nQfaXH0tj0es2EXPYpT0prZ
-	hI6+JMocKgz9Ma4+l8i3GxsZalfyzJW1dArZUD492NEnx73t43Oi7BKMxW3NG1sSqz3EgZWwrq8
-	gH5uzMWpjc9jgn9aiJK9W7V1auJrRuChXcd5MfoIz+s19zEcXhZSYa2sUlaBlIA6TiJcJ8jIf0N
-	hYlFEILdV/lN/MKq1wWZSajQvsFDBY6wsNw==
-X-Received: by 2002:a05:6808:4f08:b0:4a3:cea7:4ab6 with SMTP id
- 5614622812f47-4b5befda1b3mr4924582b6e.10.1788282279853; Tue, 01 Sep 2026
- 10:04:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hLT6pqk/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17F381F00A3D
+	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 17:22:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788283377;
+	bh=Ad1DukBGwLi6ArucFKVFRHpCwR2Weby1EPL9ATOHJ1c=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=hLT6pqk/N3t4GsJHKh6IsbFpP3/hTTyorJFTxXTtgNJXA6dBXcp/OsAr/8n8udXL2
+	 yPmUjPQnbS7tthwscVDgkBq0SpjosQzqiNizqvhoNY9oQT6oPiGLUAcgp7cbmnMb3Q
+	 FzZjM3JzC2jleBf4G97WdhXulwnZuZrKjMpUOQMSv3N39ayy9KVor+RQs1iQnnZkF8
+	 A2NkG8MKPzXB6EiPADiumEzl35X73acZNA96sFjXu35zszn+mHIm/2C9zB1BIGnDfN
+	 YrQ1HzKChXi0MGA2X3ERbmr4r2zuBI2tFkW6LwhYtie1Ygd6J8oea2NX2at8grVpE8
+	 bZuBEPcgIAgnw==
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5b5e1340faeso1070144e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 10:22:57 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBy3S3/LcnoeRxaVTg5K+KkqAvXOcnhCCimrQr3PA7m+KiHXZQ1YnzcLjGQ2JlUln38EtvFTIprINg==@vger.kernel.org
+X-Gm-Message-State: AFuF++l72SL/0r7Nq/CRadg6ar3pXfOn30ax/BNcHN08nB7KLUpNxSE0
+	yOny04K7eAe/OiKB2i4XVlHd2Jkm3lcx7TaYLijfuzqLPJJy6bcum/U5OZMGzFJQ986hcBXsRuP
+	jsVwIkS3kvH9uhJCFzNH1zMujE7sRDis=
+X-Received: by 2002:a05:6512:ac7:b0:5ae:b998:9134 with SMTP id
+ 2adb3069b0e04-5b5e68a7adfmr11827743e87.1.1788283375630; Tue, 01 Sep 2026
+ 10:22:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260901145156.3177187-1-mauriziocasciano7@gmail.com> <c9cf1a69-9136-4f64-b223-aa038520a0a9@kernel.org>
-In-Reply-To: <c9cf1a69-9136-4f64-b223-aa038520a0a9@kernel.org>
-From: Maurizio Casciano <mauriziocasciano7@gmail.com>
-Date: Tue, 1 Sep 2026 19:04:28 +0200
-X-Gm-Features: AcwNN1UE6ze19kP9LilT_aCzQNaCwiaSO9Pp-1Fdq20zkQWrRN7Eq-cc3-82AVo
-Message-ID: <CAO7O_xi-BYfGb428q1TO4ERp059-BOq78PZR5Ad-bs1ikVkmZQ@mail.gmail.com>
-Subject: Re: [PATCH] power: supply: core: Honor supplied-from with CONFIG_OF=y
-To: Hans de Goede <hansg@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org
+References: <20260827-kuno-soc-support-v5-0-6d47636a8f09@oss.qualcomm.com> <20260827-kuno-soc-support-v5-9-6d47636a8f09@oss.qualcomm.com>
+In-Reply-To: <20260827-kuno-soc-support-v5-9-6d47636a8f09@oss.qualcomm.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Tue, 1 Sep 2026 19:22:42 +0200
+X-Gmail-Original-Message-ID: <CAD++jLnHCrhvdVCzbU5JA1qVOQ7hh7B=gwPr9QPtZdqh9ZxADw@mail.gmail.com>
+X-Gm-Features: AcwNN1V_scX2qdh9lKw1huy2nxRfP13bn5JqOZZxyJX3f5glJ69SIw1ECTFLPMk
+Message-ID: <CAD++jLnHCrhvdVCzbU5JA1qVOQ7hh7B=gwPr9QPtZdqh9ZxADw@mail.gmail.com>
+Subject: Re: [PATCH v5 09/15] pinctrl: qcom: Add Kuno pinctrl driver
+To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>, Bartosz Golaszewski <brgl@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney@redhat.com>, Georgi Djakov <djakov@kernel.org>, 
+	Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>, Robert Marko <robimarko@gmail.com>, 
+	Guru Das Srinagesh <linux@gurudas.dev>, Taniya Das <taniya.das@oss.qualcomm.com>, 
+	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-gpio@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Hans,
+On Thu, Aug 27, 2026 at 7:52=E2=80=AFPM Hardeep Sharma
+<hardeep.sharma@oss.qualcomm.com> wrote:
 
-Thank you for the review.
+> Add the TLMM pinctrl driver for the Qualcomm Kuno platform, supporting
+> 110 GPIOs and their pin multiplexing, pin configuration and gpiolib
+> interface through the common pinctrl-msm driver.
+>
+> Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
 
-I agree that firmware-node references should retain priority over the
-legacy name-based mechanism. The "supplied-from" property should only be
-used as a fallback when no "power-supplies" references are present,
-including the case where the consumer has no firmware node.
+FWIW LGTM
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
-For v2 I will preserve the existing order as follows:
+Bartosz will decide and merge when it is ready.
 
-1. honor an explicitly pre-populated supplied_from list;
-2. resolve "power-supplies" firmware-node references when present;
-3. fall back to the name-based "supplied-from" property only when no
-   references were specified.
-
-Errors while resolving specified references, including -EPROBE_DEFER,
-will still be propagated rather than triggering the fallback.
-
-I will wait for Sebastian's opinion before posting v2.
-
-Regards,
-Maurizio
+Yours,
+Linus Walleij
