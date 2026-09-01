@@ -1,183 +1,143 @@
-Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazon11012023.outbound.protection.outlook.com [40.93.195.23])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 858D13655C7
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 02:34:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788230099; cv=none; b=a2xQEeXy8osBGFH2uwOSD6DdOGWzOQ1QZyxg3iBk7i0PEcAy9eJBu/Xtz2BoTZIa8LNpaAJnHCTZV5XEJsuewifxD6Ye060NPGbvJUGXBchPNhZZcZpbAV6osc2IZAjnT4trtvei6UUIUO+84H+GppmOMOpGprnXOgYdPeio0QI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788230099; c=relaxed/simple;
-	bh=WSuygwuenKYyDNYkB3/gILx/6xVlqM45WcQUtu7W8Xc=;
-	h=Mime-Version:Content-Type:Date:Message-Id:From:To:Cc:Subject; b=temErbokIVCFIePs9Eg64sf4J+xk1JSWUtUjxfGfZ6SXeeTU/5uDV4iJmwjixNGaboFkKhGBUFRrU5JyJ6gqh5KUbyr31MNVAj/UX/y1v6Q1o9jSIf91iJoByicf/F78KAKUcROlqvoJNfHFkMAP5eIpNYIfAg0LxJN/aPOewuk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HapO5ZnE; arc=none smtp.client-ip=209.85.216.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18FED378D87;
+	Tue,  1 Sep 2026 04:41:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.195.23
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788237677; cv=fail; b=mzBSJoN2Xupsp6vvJmBJlKW7YY2a0q01C9iuGFH0esBgyhCqsdZUnj/8j57hwdmdHcCdxTB9Pc1wYqGmZebHS6J2ysnExAhVkA/LCpf9+OefsjMLCWyb8wk/kze54PRrrIj0jPHAuauQBVijM2ThShiQGARHYZlh00XS01oaNqk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788237677; c=relaxed/simple;
+	bh=OR/pfQFo4kKaEizooS9Kz45HilRKpIrAuqLOSZ7ZIRM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=nYm6Zxzz6Z8XuvDy2gasKN0A41kw9RSOvMbyydvPiv82+mraEauKWMrHh3nOxzHywhsL0T4QgK+paTal5SUugisjnsZKdmtr68n+5fscExI7CfQ0BjqcmPlD1tgfGlB9cYq/Y+i9D65NUul2cnFuNAotuet4E6vtMyiEJabqBgw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=CTmmARRS; arc=fail smtp.client-ip=40.93.195.23
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HapO5ZnE"
-Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-398b1e63c49so538095a91.0
-        for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2026 19:34:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788230097; x=1788834897; darn=vger.kernel.org;
-        h=subject:cc:to:from:message-id:date:content-type
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=QUkCmam3KYaf5BWg4fF5DYvGM2RIW9lYFsGi+vWehOk=;
-        b=HapO5ZnEmdA+4OcbINZyizLeJWh//jHLNhbjb9IdtEYT+doF8A+FM2F8NsvLJC0753
-         q4eeTXJwmCs3tGaW2dHDzarz5q0/AvRqhdRdQHAwxztMLhwOJUvfx1ts3ihmc/B8cszX
-         oMXWQiUb16n2lNjbMTFThoiAVRcuKokr92TtcBaLZKX3v6462qvPBT7HYsODKM2MBVjz
-         tDHoUbvU+uEKJLX2/KNTYIvI+bKdsommh2jkfWvrjJowK/kKaSWwGPo+e/r3rFNgTmc4
-         woVc7U/M0QtK9GoIL11y3upi4YU6TAp6l0Rcg3jTfOPM039jeIByIQORbhgsEnbg2znc
-         DWSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788230097; x=1788834897;
-        h=subject:cc:to:from:message-id:date:content-type
-         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=QUkCmam3KYaf5BWg4fF5DYvGM2RIW9lYFsGi+vWehOk=;
-        b=cMAoozqvAdVIvYEcrZV/gMpHvB/7k0e8XzbOR3bSpGAFWJ44eF2G3sSeh8lhQXjQHO
-         3RzHC0gCU7Y6+k/QRyIl1xhf+kfJk/0iNoEif6X20d1ljPTEoaLQdnwsXjZFIPlskCPw
-         M3IXlCtTmm68XtNNfpjvTjiCLQKWK2HajdXkhGjh6T4oeSbiW0+vl/Jhm2jEx0rG2ZTn
-         sQ85sLd1am4GBh76HswWiMefNKa8c8CzbHkpKqAPVq3vdDo9WiIwGuKm5IxO2APVFv45
-         nF018efLSrIQxM1ML7aJHjBTomSVvDmQbkfe7ICDW/YYk/diDH4zhfmhvdeR6THOENDu
-         Ygrw==
-X-Forwarded-Encrypted: i=1; AKwUvBwDmo6h2YmWvoCvygG8hwIGSE5g99h5TFC9ypErvTJBOl7z7b+8OrGhneMNebRwuJucMBv0Qr8BLQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mhElvFf7VfTq6tGQW7v165vt7nk57M36zuF8gEpLP5xxbSjSbw
-	+pQAXuyfd5CrSRoKNPMD5ZVCyJolD/VyRzuFjP+ANn13yF/dgstu7RoR
-X-Gm-Gg: AYBFou0PT5/NAAfyl8eZSIM7Nzx0TMkr/dZGc/4o6FvbUIzqCkwV0LcGL0QAye9OWTx
-	TKlyR9d8c+6g+fRylayjVpJMRP7tGbwrF5kqjpJarjMzDDjFPzHFUXQNCkEwv4+kCGqH+NYCn10
-	DdDn1/LRzbuyOf/9afQWsRGOzvSpA/kdqtoML69tvnyXmxC9MnN9JN9n8h8bMIC3YlLs22O+P5T
-	R9GFMZir8Jwl7JYPtMbtGywVXY9EpoyX97KXBA7exf+vycyMsByXXayl69AEH9GufaM1LeT6yDX
-	/TTg/twJ8Lopafhd6INwLH9cA7/xdVP2gzGE/Y8cmoNs3ANmCLOwMnkGlOtO8aKwuZbc5t5OGO8
-	Q/2am34+Y3ELXMRBKdf7nUQn+SpEYzvjCmux/SY2txHYJoh0+YiHAs23gW6jPf3HMhMUlZJobN5
-	JnJzfTKhRq7/jbJoT/1eSbdWBE/he2PWDIJChiXxMRvE7ym1nEYJoj4YWbuLWLQAFV
-X-Received: by 2002:a17:90b:2247:b0:37f:a913:1554 with SMTP id 98e67ed59e1d1-3990f890861mr2217999a91.16.1788230096670;
-        Mon, 31 Aug 2026 19:34:56 -0700 (PDT)
-Received: from localhost ([69.196.42.8])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-142e0bf8a13sm47875463c88.0.2026.08.31.19.34.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 31 Aug 2026 19:34:56 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="CTmmARRS"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=k4hzcalI49Pr1KajlXdrBJt3hoSsloY4GXl/Y+4baeXjbznfIjCuEPOIplVhz9LHkqqtjO6MMXvxV2EtnXhJuv5JCoN4MTuk8Sl3gZyO3mzEhQ5wMIRR8EDaZL1mij5FnF4qLLQkXfVORFimDrhc5y+wwchr0x2euWaj1smsW0UEbnlRY2wEUehn1V9b3Zzuf3HW7n4wa14upUeo6Ua7yEp3oA2GOMiXhrpH58Qgsi61VhUtK6bcl7+48/zYq6KUfOBQyZfYHZOmKZQrzF7SdAjJdiDvjy4vwgmoaXdnJNXShneEA89OEp7bG0TE/XlpfeM/Od3pxcUY5JHedInJfQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=PF0uJzn0QgaFnynz7C/bn4oK2YlTIulIpGgODEYphQw=;
+ b=JkGL4KulOfoQuPCO5yo0zxws5Db/tv1uC1ZZ2Jd7UoxxOk6hGYHxRemaiGlLqZqESmmhX2vMjkAZ8EgA8tMliTvIjM7yPHuiIIBWrjjTrEUt1cbQxtrzpMKy8v9TWKRnQYLldLPnAt8yxbl7BJABHc//y4fll0SIMbiTMuOSF/ged71cBxq14GjOHTg61HmyLtrGJREnnmJ820+wyYLWXhHGMPWGsYmnWAZnJZwgZmX/62qN7wA27AGdOfUZFWR/6rde/1Vj4UUoof9lw7DhiUzYg6LQ7pNFDfgZt1Ke12i/nRzBrohjheG2naU0p2Clbx8v9zTx6WvAKpJDxwNM/w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PF0uJzn0QgaFnynz7C/bn4oK2YlTIulIpGgODEYphQw=;
+ b=CTmmARRSUahz7219TxucKZ9dr80PwePXa58zavrJfSCAOWscI1fA+HwGcTLG2uB4FQioVfbPj3Cy8GnRBGIHovWyqAQHM4hOmwlK4v3uEwwEesDwnq1ZuOW6cY8zAWbLivDC2i3tVBvTEsSjSB5rkGTDJfPKW+MqW5bJPmtT5Fo=
+Received: from MW4PR04CA0155.namprd04.prod.outlook.com (2603:10b6:303:85::10)
+ by DM4PR12MB6376.namprd12.prod.outlook.com (2603:10b6:8:a0::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Tue, 1 Sep
+ 2026 04:41:12 +0000
+Received: from MWH0EPF000C6187.namprd02.prod.outlook.com
+ (2603:10b6:303:85:cafe::54) by MW4PR04CA0155.outlook.office365.com
+ (2603:10b6:303:85::10) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.360.13 via Frontend Transport; Tue, 1
+ Sep 2026 04:41:12 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ MWH0EPF000C6187.mail.protection.outlook.com (10.167.249.119) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.382.8 via Frontend Transport; Tue, 1 Sep 2026 04:41:12 +0000
+Received: from Satlexmb09.amd.com (10.181.42.218) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Mon, 31 Aug
+ 2026 23:41:11 -0500
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb09.amd.com
+ (10.181.42.218) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Mon, 31 Aug
+ 2026 23:41:12 -0500
+Received: from [10.136.35.162] (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
+ Transport; Mon, 31 Aug 2026 23:41:09 -0500
+Message-ID: <1aab438e-9841-4def-8982-1433f38c0e96@amd.com>
+Date: Tue, 1 Sep 2026 10:11:09 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 31 Aug 2026 19:34:55 -0700
-Message-Id: <DL3MNWW4VEBR.K3K6A92WMHUY@gmail.com>
-From: "Jasmeet (Jazz) Bhatia" <jasmeet.bhatia.us@gmail.com>
-To: <ardb@kernel.org>, <rafael@kernel.org>
-Cc: <ilias.apalodimas@linaro.org>, <pavel@kernel.org>,
- <linux-efi@vger.kernel.org>, <linux-pm@vger.kernel.org>, <x86@kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [RFC] efi/tpm: ACPI reclaim event log allocation breaks x86
- hibernation
-X-Mailer: aerc 0.21.0-0-g5549850facc2
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] ACPI: CPPC: Refactor boost ratio handling
+To: Mario Limonciello <mario.limonciello@amd.com>, "Rafael J . Wysocki"
+	<rafael@kernel.org>
+CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, <x86@kernel.org>, Vishal Badole
+	<Vishal.Badole@amd.com>
+References: <20260831194428.2287055-1-mario.limonciello@amd.com>
+ <20260831194428.2287055-2-mario.limonciello@amd.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <20260831194428.2287055-2-mario.limonciello@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MWH0EPF000C6187:EE_|DM4PR12MB6376:EE_
+X-MS-Office365-Filtering-Correlation-Id: 42512e90-a036-48a8-754c-08df07e3402e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|376014|23010399003|36860700016|82310400026|10067099003|4143699003|56012099006|11063799006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	vZYBkkAoqdvp6afLYLpVN8C31AL/rCdwompEJc9vkwj000hUDhVFZnyZwQ0x1WA85HM0nK2QglrWkc4p6OVMQaNQNzp8pgtDbNFxPo3jR1TIyN13h2f54FVld4b8f9+MAg4feRRsj3pNv/U2/0Smu8OsvGWBX5VwAotoCEvJSQFW6iy4u7reZR3O1mgwItuxgatxh/xUtXKdJpa29d6U387dnO+5RghFLJqQIpBPMq8TnxTuEq7i0TS0mZJYZXhzUK3KZKuLtnZ1rtqfVTwv6M8aKYkkYz8uq3n3gW28h50LE1rm+uvR8lyHebOkv3iKCLhPvDhoGmmbY284tRnYQS5ZgkhJGCv8CekcgsGF9gwpYORamHzwJrsYa7lZ2WHQFTs9+gu95UgcozqKfXzvIVw6FiCrrBxOG/+NfyAPvU5EQy6945CweMnZMlnJY3cnfj0KvEsFyMj72Lr0hX2uQOnff9qkOfFvLiFcZwTEdLwkGPvmrwkCNU7h/UzJHIgtrGRnc+0McmgWnxxH8LOgaWE/v2rY4RQpNypcsXh9Pv1n2y6v/z2SaPJA6b8i0KWSqZRzkUaQLQdjs8Bc/9LYJ+oUVY5EMNCHCgUCPeMGK9v0SGQKo5cw0+I7Yw8+QGiSJ8bjHC5TeRR8KkQ5dDewrGorsaUyBeovYpKcfcykKx/zyuBWsD9lhkG9V6bD77zIHSVInvZjHwnSQRAB1a/hWA==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(376014)(23010399003)(36860700016)(82310400026)(10067099003)(4143699003)(56012099006)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	eKBZc4YHr9ryukRV1pW/7XfQggp2jwJNXD2qOx6tcxeHXduf3DFj+JvMndJUCu35eD143mMoLClt57D83D12I4J4wDAVRp5A4JRlQYmjHgCYFCLWU1n4pHg3Y9hXPMOfC9AOAtdW7o6aTw0QaJs4QOUYtvP+64lrZq9aW4krgN9w/3oLKoqn7pLWn1JWkyo+aAbQc3PwHCcUsZnnrKIc+R3iPY07NnsJb8pFsmwtqyyVJevgB0tPm8yplWGu1tWk0C8eDO5fdG08I8+5IGGcpjmfjnTKyqkfrI1r47PPW9OvBYvoFP6/tU0X3jqanIpk+LbiUsLwUJZulSNnwhaxO+I994jjaJaB/3i8mZoeud1R4r+dRpjebz2e6fBasU56zHTnWt7ZBZJ4wQQ2rskZz6q4z7+4r1CJOjk0F442SBGw0vqfmIzWwRdzX05AZZ1b
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Sep 2026 04:41:12.4312
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 42512e90-a036-48a8-754c-08df07e3402e
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MWH0EPF000C6187.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6376
 
-Hello,
+Hello Mario,
 
-This is my first mail to the Linux mailing lists, so apologies
-if I've missed any conventions.
+On 9/1/2026 1:14 AM, Mario Limonciello wrote:
+> +static const struct amd_max_freq max_freq_zen6_client __initconst = {
+> +	.performance = 5025,
+> +	.efficiency = 3524,
+> +	.low_power = 2399,
+> +};
+> +
+> +static const struct x86_cpu_id amd_zen6_client_ids[] __initconst = {
+> +	X86_MATCH_VENDOR_FAM_MODEL(AMD, 0x1A, 0x80, &max_freq_zen6_client),
+> +	X86_MATCH_VENDOR_FAM_MODEL(AMD, 0x1A, 0x81, &max_freq_zen6_client),
+> +	X86_MATCH_VENDOR_FAM_MODEL(AMD, 0x1A, 0x84, &max_freq_zen6_client),
+> +	X86_MATCH_VENDOR_FAM_MODEL(AMD, 0x1A, 0x85, &max_freq_zen6_client),
+> +	X86_MATCH_VENDOR_FAM_MODEL(AMD, 0x1A, 0xe0, &max_freq_zen6_client),
+> +	{}
+> +};
 
-I have been investigating a reproducible x86 hibernation resume
-failure and have traced it to the EFI stub's TPM event log allocation.
+So I see:
 
-The system is a Framework Laptop 16 (AMD Ryzen AI 300 Series), using
-Insyde UEFI 2.9 / Framework BIOS 04.01.
+  WARNING: modpost: vmlinux: section mismatch in reference: amd_get_max_frequency+0x27 (section: .text) -> amd_zen6_client_ids (section: .init.rodata)
 
-On resume, the hibernation image is found, but x86 eventually rejects
-it because the firmware E820 map does not match:
+Since amd_get_boost_ratio() can be called post init too, I think
+dropping the __initconst annotation makes sense for these constants
+otherwise we may have issues after initmem is freed.
 
-    PM: Image signature found, resuming
-    PM: hibernation: resume from hibernation
-    ...
-    PM: Loading and decompressing image data (4198398 pages)...
-    Hibernate inconsistent memory map detected!
-    PM: hibernation: Image mismatch: architecture specific data
-    PM: Error -1 resuming
-    PM: hibernation: Failed to load image, recovering.
-    PM: hibernation: resume failed (-1)
+-- 
+Thanks and Regards,
+Prateek
 
-I compared the E820 map across repeated ordinary boots and found a
-48 KiB ACPI data region whose address changes from boot to boot. Its
-base always corresponds to the TPMEventLog EFI configuration table
-address (the table pointer is base + 0x18).
-
-For example, across five ordinary boots:
-
-    E820 ACPI data region          TPMEventLog
-    678da000-678e5fff              678da018
-    678db000-678e6fff              678db018
-    678d1000-678dcfff              678d1018
-    678d6000-678e1fff              678d6018
-    678d8000-678e3fff              678d8018
-
-This occurs on normal reboots as well, so it doesn't seem to be
-specific to an S4 firmware path.
-
-drivers/firmware/efi/libstub/tpm.c currently allocates the copied TPM
-event log using EFI_ACPI_RECLAIM_MEMORY:
-
-    status =3D efi_bs_call(allocate_pool, EFI_ACPI_RECLAIM_MEMORY,
-                         sizeof(*log_tbl) + log_size,
-                         (void **)&log_tbl);
-
-As a diagnostic experiment, I changed only the memory type back to
-EFI_LOADER_DATA:
-
--   status =3D efi_bs_call(allocate_pool, EFI_ACPI_RECLAIM_MEMORY,
-+   status =3D efi_bs_call(allocate_pool, EFI_LOADER_DATA,
-                         sizeof(*log_tbl) + log_size,
-                         (void **)&log_tbl);
-
-With that change, TPMEventLog continues to move between boots, e.g.
-
-    boot 1: TPMEventLog=3D0x678d8018
-    boot 2: TPMEventLog=3D0x678d5018
-
-but the BIOS-e820 entries are identical across those boots. The
-48 KiB ACPI data island around TPMEventLog is no longer present.
-
-Most importantly, Linux 7.2.0 with only this one-line diagnostic
-change successfully hibernates and resumes, whereas the unmodified
-7.2.0 kernel fails to resume.
-
-Despite that, I don't think simply reverting to EFI_LOADER_DATA is a
-good fix. Looking back, I noticed commit 77d48d39e991
-("efistub/tpm: Use ACPI reclaim memory for event log to avoid
-corruption") intentionally moved away from this allocation to prevent
-the TPM event log from appearing as unreserved RAM to an incoming
-kexec kernel.
-
-I tried retaining EFI_LOADER_DATA while registering the TPM log with
-efi_mem_reserve_persistent(). The ordinary memblock reservation
-protects it in the running kernel, and I hoped the persistent EFI
-reservation could provide the kexec protection without changing E820.
-
-On x86, however, efi_mem_reserve_persistent() returned -ENODEV:
-
-    Failed to persistently reserve TPM Event Log: -19
-
-Looking at current mainline, the Linux EFI MEMRESERVE root is installed
-by install_memreserve_table() via efi_stub_common(), while x86 uses its
-own stub path. Current master (abdf623dd) also still allocates the TPM
-event log as EFI_ACPI_RECLAIM_MEMORY.
-
-At this point I'm a little unsure what the correct approach to fixing
-this is, so I would appreciate guidance on where the fix should live.
-
-Should the TPM event log remain EFI_ACPI_RECLAIM_MEMORY and x86
-hibernation account for this Linux-created, boot-dependent E820 entry?
-
-Or is there an existing/preferred x86 mechanism for preserving an
-EFI_LOADER_DATA TPM event log across kexec without making the transient
-allocation part of the firmware E820 topology?
-
-I have the full failed-resume dmesg, before/after E820 maps, five
-ordinary-boot maps, and the successful diagnostic hibernation logs,
-and I can provide any additional testing that would be useful.
-
-Thanks,
-Jasmeet Bhatia
