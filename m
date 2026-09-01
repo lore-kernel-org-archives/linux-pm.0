@@ -1,177 +1,143 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5CEC471245
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 08:01:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9984842DA36
+	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 08:12:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788249684; cv=none; b=tPNVkxB1459M6IhmP3mvvcei6wB0zkeRqwpnXRGOZ9QbiKMx2EVcIydWsGnbSrzjNy67DUmFrDEzvoLVNc6guLfyRukQnLeXcYOutTlbe4F+0n381dAKcPRpGLOpVZGKvxmOPwIPsbVucUnljW5AVZM4VaachvWL0x7d1wngm6Y=
+	t=1788250376; cv=none; b=K6SWDM0h16fkW7YsvtU6JJckL3zL80Qkgtgd0VewO08Ee3aReSpRavYj/y9uI8dHrHJVo92SY0JxO/kY6QBrxKlwrhcklg1580TAK+WwZitj9G7vibZTp/MYY0WwBB3tL/ZU4lVivOW4G4MpHH9aW1WX05Boq3M/yo5j3RyTBM0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788249684; c=relaxed/simple;
-	bh=M+2oV4T/QFC+qsE8RIB5fpV4NNChtc2m5Fpd4TUP2F0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KL4qozib5VVs4oAGeVoKigJs1q6m+VA9/L/gA6jLIFLKGdUQpwdDvjYT044Xq60v0C7rkDlaglRHoTKhqioQM4uSDdOU3bMqt6YvtkUHP7WNgTPL1eSeDdBCVE1bVOvqpi8CKmbCV9SorUkhu0H36nNyZXC5Viw1VUYsQXpWaQs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kGMAljy7; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OmBPDHb+; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1788250376; c=relaxed/simple;
+	bh=UKXw3nlhzFxoxJKUzXxgUkHYXWhUvYau+KO/Tskao8Q=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=kJoUYrndGtsZWpiXRojHVbe9rgDj7IBmbmnAmQgY0wbPbcozvhyLINQ2Ys/hwhchHS+UNhZ0W2djeyPa3ybvyFRZf9fRqm7zmVH6K/A3tYPxk1cRtaguVGZZDhZxnV7wKn5AfRV32xYH113GnJX08c0US2JcbE2mD5rGDu01QCs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DGSR4wr7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kGMAljy7";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OmBPDHb+"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68179FkV1892445
-	for <linux-pm@vger.kernel.org>; Tue, 1 Sep 2026 08:01:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	lp12tstqgfKi05BKhpwsu3Up0U+NU0gCKl7bp55AqZ8=; b=kGMAljy7C2zdsObZ
-	iLyGfRf+pkVnlSHRJn7BLfLTcOKGRo3tS2iDFDbe3YrSJtSaDaYP1/yQgmgpa2u+
-	s+NGN12ckCafS6mEBcEBLMaAsKScq3Ym5tJNkCGAbK28ONnKjmDN+2d0SK7C1zGq
-	NKP77QJtjlr//AHh42XeERcA/NRENMwnZp8ARSNAtmTdiu/pSuNB4FTyD7kZaWtj
-	YFg7spjNXvk91gCD1WQlgS57ifocanY9FUawwBAeroTVkRhad1IZFUhB/+6KcfXM
-	sdjkZ1bnO+uxOisvrybzD2BB/f6m8SRbS1OHrkOLSHBhgfEeEXpHH+vRfp1oUu/n
-	A4nKyA==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gdp7c97ju-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 08:01:19 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-38e1118e4abso8079755a91.0
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 01:01:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788249678; x=1788854478; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lp12tstqgfKi05BKhpwsu3Up0U+NU0gCKl7bp55AqZ8=;
-        b=OmBPDHb+lI5u4eWUgKPwEpCDpv+V0adfhkpV2+rJkPBsq/hPOqg8e01iZgLDfaSrhF
-         D1wCS9jC6PF/tzp5x0HBql7fCD9Rc3PVkP0TxSyhKrq80tJ7egNkIXAmh6LxujL1fLqT
-         6C0xdqjq+7c6yDwTt87jKih0EEyyxpfjA6dUVKCph6FcjU88Wg3zaEuuUCcXX39aEg2a
-         i+k9TBXrsjIacX5UJL+Gv0lq91m6geDTgEMqbC3d2av0oeyq/VKS/Hf1FMZ8bGnR4fgn
-         Wfq5vEt9tPFAqppwJN7bM5vcUWIZRXJJ171rm/vrjBZ0gIVKZGjFJPKpQR6sZf06FAR6
-         YLIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788249678; x=1788854478;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=lp12tstqgfKi05BKhpwsu3Up0U+NU0gCKl7bp55AqZ8=;
-        b=ejCOLYT89I29BbJdy4RerjxtDjnyAaqe6cOIc2PRFY+M2xpy/GUDE3MwrHoMazGJid
-         vgpj+IifogoCrm90JsebqXk2LmodB51sIqYXgrlQ/1Ix1BWeBqZbAZAOJndhrlkaovmc
-         QjnlI1F9vdwVYdvCGvAyCik2jqUcUBMtwfAmbBrXXKVyZX2ki/KjgKSz1orFINcVELq8
-         hxcVpaAe2GOvhIkLqLT+L0SCxbfvhGs2WGgYFGj/51n/mRB/0yYU517IcKUxuf25cii1
-         lIQqrVDMls9aEsO6eOnyglA0LSxniWgBAbqi0CITY9f2EFUb9t7rmLyzPdo623a8BOhK
-         jN/g==
-X-Forwarded-Encrypted: i=1; AKwUvBwc7KMjbLF93z1jykWS/VKSgbTt2qWyEXqftnxGOA7a7AWNh5lgNMpBhz+pOXSezjyZOATAyqNMRw==@vger.kernel.org
-X-Gm-Message-State: AFuF++mp2VrSjoRlm3xJnw3+UXFXJrbuKFOXga7EncFJzu+UXmLZ4w1P
-	aUICeRa47ptJcQu932TpmkQfKuDl3LXTyONOv5ZI1UHpYamqsHxrHiaZyLypD01xfq4sXMj1GBo
-	DdInNgsBfYkRWnBqRdPktnTfzHxMpf/Y7fhjwDkFR51hN0tqkqjlTbh3g6l+Tog==
-X-Gm-Gg: AYBFou0BjRZQtfo1FhBIEVMzheEt7ArB7Yv2+nhYyjuBU6Wsym1/vpz31jDMRvvuVDV
-	TFHQHP9pbj4dOuiCaMON+DkLJKFoRc5MVxGgU/LBVw6ClOrd37KYIP8Nmz/CwVTzhe1U1EXb4y9
-	BH8McBe19uNjF+EfSysJVXv4u3VvjB2FqLpw78l0bVXsEXwsaIB083w4KQirZrHCN50v9OjcVwh
-	eWZr5S4h2O6eLo4/qJ38ZFq+jhwlQVGOZFiojiJl4zgfUbncX4BoCUvNA+OIiZqrNERjMbOxkIh
-	lNFV7c2LgB9Bf25Oawr0XTUZtvZQhGEBO3bjrHdeEPmfANuKXQ9d5p93YcI/PDyUDYpqOKlLP/a
-	IJgCeSdJfrwdO/ji1VhLlSHbEHg0Al8YeUk/1i0N2dQFbv0+battWWztqxN6qXWAr/f4IZBwQ
-X-Received: by 2002:a17:90b:1d05:b0:396:65dd:4093 with SMTP id 98e67ed59e1d1-396d0ff519cmr49442378a91.14.1788249678087;
-        Tue, 01 Sep 2026 01:01:18 -0700 (PDT)
-X-Received: by 2002:a17:90b:1d05:b0:396:65dd:4093 with SMTP id 98e67ed59e1d1-396d0ff519cmr49442130a91.14.1788249677126;
-        Tue, 01 Sep 2026 01:01:17 -0700 (PDT)
-Received: from [10.133.33.141] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3990d75b540sm4550049a91.10.2026.09.01.01.01.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Sep 2026 01:01:15 -0700 (PDT)
-Message-ID: <4db03770-b410-4298-9e32-d497278e9cfa@oss.qualcomm.com>
-Date: Tue, 1 Sep 2026 16:01:11 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DGSR4wr7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60F331F000E9
+	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 08:12:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788250375;
+	bh=HBmpv/kkFlJED2xyi2We3aIip3PLbNhKdHR6adYaq6w=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=DGSR4wr7vG4DOE5LQp5fXQLm22woEM2CJP7IqR5xydptbatSxoFgcA5Oj+mgGQXkE
+	 0rkMOshXkyt81tVbP8LnOobbQrV00XivAOst3JT66iN0rgiSAYSJ1AfNb4IWnpTf8t
+	 zwZ1F76sH2qxug++ZQSfAPNNEz1xuFsbQwiB0sTmfuRbzD/P4g1ySp7oNaQbdagWXK
+	 l+UEuKr7/avi6Eid6+VbdhZ0Fg+XRzaTCSovd67CWvHWjWyy4uGzWn0YIcIIgtbLw+
+	 WLv/v7b9nwcdctPj+0Yo2yyxIzNnPlPJrYI1Met9lPR6UV9fVYAz1T9CJ2MA4V7lFF
+	 h6lGYmG8CEVgg==
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5b4ac3ba821so3691794e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 01:12:55 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByj7tipMV6YMJMqDK4oblQMSf4g1FEArhZsd5o6GJa/F9p1hdL7gEucRZBJebupwikicpJ+sk5LeA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nr1rr/lCpI679K7DCXoYAi2yaI3+DNXHDtCi/p4QOrufkh/5kh
+	UJbKLPsEWM9Z/eeXC5A/9qeq+3Rn8RPOdircNv2emw1jZH9zPfUsCysIkDjs29f1zKkw2S+NwOq
+	ApVkrm9gddS5S49OgmuQfVtCFZOgDkfmqLcMWnMrt5Q==
+X-Received: by 2002:a05:6512:234b:b0:5b4:adb1:b25b with SMTP id
+ 2adb3069b0e04-5b5fe0d8420mr2844144e87.14.1788250373694; Tue, 01 Sep 2026
+ 01:12:53 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 1 Sep 2026 01:12:52 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 1 Sep 2026 01:12:52 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260827125906.GJ770273@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2 0/5] cpufreq: loongson3: Fix wrong behaviors on
- multi-node servers
-To: Huacai Chen <chenhuacai@loongson.cn>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Huacai Chen <chenhuacai@kernel.org>
-Cc: loongarch@lists.linux.dev, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Xuerui Wang <kernel@xen0n.name>,
-        Jiaxun Yang <jiaxun.yang@flygoat.com>,
-        Hongliang Wang <wanghongliang@loongson.cn>,
-        zhongqiu.han@oss.qualcomm.com
-References: <20260828031201.1500767-1-chenhuacai@loongson.cn>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260828031201.1500767-1-chenhuacai@loongson.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=OcyoyBTY c=1 sm=1 tr=0 ts=6a96864f cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=EUspDBNiAAAA:8 a=mbPrJoAuDWtQQzFn8WUA:9 a=QEXdDO2ut3YA:10
- a=iS9zxrgQBfv6-_F4QbHw:22
-X-Proofpoint-ORIG-GUID: LfURc4Y1W5aBRW8rUJN7IkPxS2SuWtkd
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDA3MCBTYWx0ZWRfX4+IzIOdnuiEx
- EUV44wBib5+SGHfTEeb9NygctXu0W1QbD676RSAYxcl24a02ub8J3FpFBeegtiZS5NZbWroh7b6
- eW7rJF6ioTvPAAyOQVZ0FerZrCK372U=
-X-Proofpoint-GUID: LfURc4Y1W5aBRW8rUJN7IkPxS2SuWtkd
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDA3MCBTYWx0ZWRfXxuYMzC3tDvHh
- d7iCI1flb5Rh7FY8php5Is4XuC3vU1FhuBnBxjkNn/ma+mUOw+kvdobRDmnXt7YAQuQBiP8s1uD
- /94T7BuqT8+37ecm/7lkSRgcrQPoBhj5xe2PoZwt2kePCcL4mIW/epufcWceFCy7ivqifotXtC7
- cE9EpLydVoM2uEuH7+syyBffIrz0F89WK8y7bPiuexWAjv/YV9DZAeG5ztFpCszSkpEGc1DUdDY
- DuvZAhITg1O6Z0PBjze6V/KHbD05dJpCcc8FB2JG3AdqVnMZMAQ/zmZalVAG947sN0wfXbWMetH
- dhn/JX8Hp5FuKWXbEG9cdPosmoBkGCVcnkbRXzvFt37dIV9iK8B7tCRk9Mv8cpjR9pzjkmv0zsM
- Mv9txXJZ1RVS53U3ElHAxkrMQkaIgpTECfp226nDPUcbi+MVPm5hwnCpoMQCMdwk1lvnyIrhCHU
- XoV7BD6gJKIL30M618Q==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-01_02,2026-08-31_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 malwarescore=0 spamscore=0 priorityscore=1501
- impostorscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609010070
+References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
+ <20260803-arm-psci-system_reset2-vendor-reboots-v24-4-889281373870@oss.qualcomm.com>
+ <CAPx+jO9QE_KG8BbfnMLTebDpGDj7OSpPDtgc9uTBGZCDJeLu_w@mail.gmail.com>
+ <CAMRc=Mezpj4A7o00C9hhs97kdA5Q+FZKTLRbDM+fR8qr0xCCqw@mail.gmail.com> <20260827125906.GJ770273@google.com>
+Date: Tue, 1 Sep 2026 01:12:52 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MduBgkP4K3yabbDbZicWyb9WWqmF=yUqo+WHocE6hpiLQ@mail.gmail.com>
+X-Gm-Features: AcwNN1URolqPxNp7OBkDyFKCbmiVpB4IqtdYvYItWVcsvGzePxbvMEDVrJj876Q
+Message-ID: <CAMRc=MduBgkP4K3yabbDbZicWyb9WWqmF=yUqo+WHocE6hpiLQ@mail.gmail.com>
+Subject: Re: [PATCH v24 04/12] mfd: psci-mfd: Add PSCI MFD driver for
+ cpuidle-psci-domain cell
+To: Lee Jones <lee@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@oss.qualcomm.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Andy Yan <andy.yan@rock-chips.com>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, 
+	Conor Dooley <conor+dt@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Christian Loehle <christian.loehle@arm.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	mfd@lists.linux.dev, Srinivas Kandagatla <srini@kernel.org>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>, Bartosz Golaszewski <brgl@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 8/28/2026 11:11 AM, Huacai Chen wrote:
-> Our server productions (e.g. Loongson-3D6000/3E6000) can have multiple
-> nodes in one package and SMC mailboxes are also per-node. However, the
-> current driver has wrong behaviors on multi-node servers, including: id
-> field in smc_message is too narrow, mutex is not per-node, IOCSR read/
-> write can only perform on the current node, etc. This series fix all the
-> above problems.
-> 
-> V1 -> V2:
-> 1. Fix typos and add Fixes tags.
-> 2. Fix loongson3_cpufreq_get() return values.
-> 3. Use nid_to_addrbase() rather than hard code.
-> 4. Guard some code with CONFIG_SMP to avoid build errors.
-> 
-> Hongliang Wang & Huacai Chen (5):
->    cpufreq: loongson3: Make this drvier depend on MACH_LOONGSON64
->    cpufreq: loongson3: Adjust the width of id and val in smc_message
->    cpufreq: loongson3: Replace per-package mutex with per-node
->    cpufreq: loongson3: Use global physical CPU ID in get/target callbacks
->    cpufreq: loongson3: Replace IOCSR read/write with MMIO ones
-> 
-> Signed-off-by: Hongliang Wang <wanghongliang@loongson.cn>
-> Signed-off-by: Huacai Chen <chenhuacai@loongson.cn>
-> ---
->   drivers/cpufreq/Kconfig             |  1 +
->   drivers/cpufreq/loongson3_cpufreq.c | 72 ++++++++++++++++++++++++-------------
->   2 files changed, 48 insertions(+), 25 deletions(-)
+On Thu, 27 Aug 2026 14:59:06 +0200, Lee Jones <lee@kernel.org> said:
+> On Wed, 26 Aug 2026, Bartosz Golaszewski wrote:
+>
+>> On Fri, 21 Aug 2026 14:59:49 +0200, Ulf Hansson
+>> <ulf.hansson@oss.qualcomm.com> said:
+>> > On Mon, Aug 3, 2026 at 11:45=E2=80=AFAM Shivendra Pratap
+>> > <shivendra.pratap@oss.qualcomm.com> wrote:
+>> >>
+>> >> PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
+>> >> Currently, both the PSCI core driver and cpuidle-psci-domain bind
+>> >> directly to the same PSCI node "arm,psci-1.0". Additional consumers, =
+if
+>> >> introduced, would also need to bind in the same way, leading to sever=
+al
+>> >> drivers attached to a single device node.
+>> >>
+>> >> Introduce a PSCI MFD driver that binds to "arm,psci-1.0" and register=
+s
+>> >> PSCI child cells. As the first user, register cpuidle-psci-domain as =
+a
+>> >> child cell.
+>> >
+>> > I don't think PSCI should be modeled as an MFD device with childrens.
+>> >
+>> > Instead, this looks rather like a better fit for the auxiliary
+>> > bus/driver. Please consider using that instead.
+>> >
+>>
+>> Hi Uffe!
+>>
+>> Since I was the one to suggest MFD - would you mind providing more argum=
+ents
+>> in favor of your preferred option?
+>>
+>> My reasoning for MFD was that it is indeed a device that provides multip=
+le
+>> functionalities, of which cpuidle is not really he main one even though =
+it's
+>> currently the only driver binding to this node.
+>>
+>> In any case, we'd need a "core" driver binding to the psci node and with
+>> multiple auxiliary devices with their own drivers, we'd end up reimpleme=
+nting
+>> MFD.
+>
+> Ulf could be correct.
+>
+> MFD is usually reserved for real devices, whereas the aux is a little
+> more loose.  Please consider it as an option.
+>
 
-The whole series looks good to me.
+My point is: if you start registering auxiliary devices from a "core" platf=
+orm
+driver based on real child OF nodes then you're basically re-implementing M=
+FD.
 
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+At that point you're better off just using the existing MFD infrastructure.
 
-> ---
-> 2.27.0
-> 
-> 
-
-
--- 
-Thx and BRs,
-Zhongqiu Han
+Thanks,
+Bartosz
