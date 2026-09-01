@@ -1,114 +1,108 @@
 Received: from mx.nabladev.com (mx.nabladev.com [178.251.229.89])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98C3248EBF1;
-	Tue,  1 Sep 2026 17:49:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01176490BF4;
+	Tue,  1 Sep 2026 17:58:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.251.229.89
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788284942; cv=none; b=ILw9rWCIWMho+pqr5TaefrICg7kxPFN7a+lvw54n/0QEiQol7KKlEnuao44mq6TIb/ahdw7D6/1r2+EA2dYN2SLTcoWCMLoAh2yl5hPRSahmloiCFDngol1+2eOtp1jUEEQT5j9DKCCPZQhPShya5yLnhC3pnO4SIt2pSJviyn0=
+	t=1788285540; cv=none; b=uOsuwpWGEXFzmNGXEPfGHHpAHzvtq2bfWwrieHVOy+7WgcJ2tX4Jh42GHibKlICeogkBsN8XIeGXtVeJXArZ2AJ/6CCN0nF8y5Xe0QforZ6eJSEpbZe2e04iWshXYaEt9k8tWp9gr3XrjpOm2RJmxVMWZkbYy0riA4CKVLs7iso=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788284942; c=relaxed/simple;
-	bh=PHoy9DBUjt+sql2oZyedXEDDK1/+8UUfq8ZZII/K0y8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QivCtOJqZMvyj+h2tJi5AYKO97tkW3eVpc6dzWHzPWarGz01BzFjpTOxu73olCbfpOQplbNk6j8qKJgw72ldgaso9jOQwNmYJIQee2tptNSbCR+NhiZPAO5Xz3lHtbb7GO1wSHQPHvEbl9dW8PdhFMjmd02T2UQea2ukRn/rL3M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; spf=pass smtp.mailfrom=nabladev.com; dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b=g9DxJ5DN; arc=none smtp.client-ip=178.251.229.89
+	s=arc-20240116; t=1788285540; c=relaxed/simple;
+	bh=SFftTY28xng0TqAs0+/d6fgvhXTiZq29gcPBy5wVyio=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=t3njhnQCI4HWgo5p9021s4Ra4/V0/85xDzzT95/NPZrdHDDNkJ9HULdztMWlwlloyB2bESWrgHb4Q0oe3MP2AObUb4FHLptQ1aDJNMd5yrC0jyWeoWkMzVKMroSaH8MGsjHubl07Dp5Ilby94kPc6WkXvDcYcqiCER+mzptNvFs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; spf=pass smtp.mailfrom=nabladev.com; dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b=M4vOQmDP; arc=none smtp.client-ip=178.251.229.89
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nabladev.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b="g9DxJ5DN"
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 2FE6E11D490;
-	Tue, 01 Sep 2026 19:48:54 +0200 (CEST)
+	dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b="M4vOQmDP"
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 35BEB11D4BB;
+	Tue, 01 Sep 2026 19:58:52 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nabladev.com;
-	s=dkim; t=1788284934; h=from:subject:date:message-id:to:cc:mime-version:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=ZnjhyMpDCLEt3ReNz5uWtZLidaGrMvkbYQHHrznNMNk=;
-	b=g9DxJ5DNBBFjoFOQufvzYaKweR+3aP3bzbrwDRJPARiQKAQOt9jPF2O4FYEnBJdiX8D4ha
-	yvQl6KdxLqcCxV1CbVJh0E4J1CorImL68v64XhNsws7Cb9O5qwR3QcN05POeLa5aCoaQ3g
-	JvzxPni1N1YLpbkD+yGM9HA6hXeY64Gr820Vt0KhRT3mYJcZARnGOx6n1fGZkANTDVHDFb
-	9vlXA+efDzquQlnBrKZEh/4cZqD7nHE7uVUs54z9aPN/5rB48WaQlVyo9/tmsmpHnYwheF
-	yKHLw5Xn0b+Lhkp2fMMH++X/rglCr4TaGs8dLfBtztvm+08dEn7joQ1ujmdGOQ==
-From: Marek Vasut <marex@nabladev.com>
-To: linux-pm@vger.kernel.org
-Cc: Marek Vasut <marex@nabladev.com>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Flaviu Nistor <flaviu.nistor@gmail.com>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	devicetree@vger.kernel.org,
-	linux-hwmon@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/2] dt-bindings: hwmon: tmp102: Document TMP113
-Date: Tue,  1 Sep 2026 19:47:55 +0200
-Message-ID: <20260901174847.97261-2-marex@nabladev.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260901174847.97261-1-marex@nabladev.com>
-References: <20260901174847.97261-1-marex@nabladev.com>
+	s=dkim; t=1788285532;
+	h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:content-language:in-reply-to:references;
+	bh=n/7cN7BJcI04hefEhKdm0Ws+9Mi+O5JMycLuLM+ZCnE=;
+	b=M4vOQmDPH3Mv+k6rRUIyqM/Je75b3M8F3pesqvgcdcIzTYEgQBCGBjOfCnrU8M/HXRiLGV
+	UqEKKL4R0LxDisIe0HJMtpisz0nwbRbm8hp/l4yIrXSevO/Gj6k7EMpJQy1cb3hAL7SDc1
+	enEePUWr6Ezj1EvOGWpJxSDF5/iRlVawgeBRMm1lYLN0owaPwxPUw5vm8Gx12ZLSf72y+k
+	yoIpwk5TvO494f8tsJAjXCn6ngwVFjQjCpusSuq2N2DVVXrKPWyuxOrVJiIha6qwVOoVmI
+	AQFEzVCSxix0Fwx+lO1+SxzgCmrwYDGydMVJwI8W3EKGW4jF3ZdxnV81Atj4YA==
+Message-ID: <2e3f7dab-5f64-4dcf-b995-82fcc3a5e780@nabladev.com>
+Date: Tue, 1 Sep 2026 19:58:51 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] dt-bindings: hwmon: tmp102: Document TMP113
+To: Guenter Roeck <linux@roeck-us.net>, Conor Dooley <conor@kernel.org>
+Cc: linux-pm@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>,
+ Flaviu Nistor <flaviu.nistor@gmail.com>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Rob Herring <robh@kernel.org>,
+ devicetree@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260901161008.46948-1-marex@nabladev.com>
+ <20260901-untimely-wake-578b1a86b9fe@spud>
+ <4bbcc5fe-86a1-4299-a0df-e9f44d5c237f@roeck-us.net>
+Content-Language: en-US
+From: Marek Vasut <marex@nabladev.com>
+In-Reply-To: <4bbcc5fe-86a1-4299-a0df-e9f44d5c237f@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Last-TLS-Session-Version: TLSv1.3
 
-The TMP113 temperature sensor part is register compatible with TMP102,
-document it using a fallback compatible. Unlike TMP102 and TMP110, the
-TMP113 does have additional unique ID registers, it is up to the driver
-to handle those.
+On 9/1/26 7:48 PM, Guenter Roeck wrote:
 
-Signed-off-by: Marek Vasut <marex@nabladev.com>
----
-Cc: Conor Dooley <conor+dt@kernel.org>
-Cc: Flaviu Nistor <flaviu.nistor@gmail.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
-Cc: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org
-Cc: linux-hwmon@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
-V2: Rebase on current next and resend, resolve a conflict with commit
-    d67ec24d3f07 ("dt-bindings: hwmon: tmp102: move ti,tmp103 out of trivial-devices.yaml")
-    Note that the TMP102,110,113 are backward compatible, therefore the
-    valid compatible strings are:
-    - "ti,tmp110", "ti,tmp102"
-    - "ti,tmp113", "ti,tmp102"
-    - "ti,tmp102"
-    The TMP103 is not backward compatible, it only shares bindings now,
-    therefore the only valid compatible string for the TMP103 should be:
-    - "ti,tmp103"
-    And that is all, no other compatible strings are acceptable here.
-V3: Rebase on top of 1/2 dt-bindings: hwmon: tmp102: Fix up TMP103 bindings
----
- Documentation/devicetree/bindings/hwmon/ti,tmp102.yaml | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Hello Guenter,
 
-diff --git a/Documentation/devicetree/bindings/hwmon/ti,tmp102.yaml b/Documentation/devicetree/bindings/hwmon/ti,tmp102.yaml
-index 477f478b9dd0f..c0b747a9ce0de 100644
---- a/Documentation/devicetree/bindings/hwmon/ti,tmp102.yaml
-+++ b/Documentation/devicetree/bindings/hwmon/ti,tmp102.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/hwmon/ti,tmp102.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: TMP102/TMP103/TMP110 temperature sensor
-+title: TMP102/TMP103/TMP110/TMP113 temperature sensor
- 
- maintainers:
-   - Krzysztof Kozlowski <krzk@kernel.org>
-@@ -13,7 +13,9 @@ properties:
-   compatible:
-     oneOf:
-       - items:
--          - const: ti,tmp110
-+          - enum:
-+              - ti,tmp110
-+              - ti,tmp113
-           - const: ti,tmp102
-       - const: ti,tmp102
-       - const: ti,tmp103
--- 
-2.53.0
+>>> @@ -13,11 +13,12 @@ properties:
+>>>     compatible:
+>>>       oneOf:
+>>>         - items:
+>>> +          - enum:
+>>> +              - ti,tmp110
+>>> +              - ti,tmp113
+>>>             - const: ti,tmp102
+>>> -          - const: ti,tmp103
+>>> -          - const: ti,tmp110
+>>> -      - enum:
+>>> -          - ti,tmp102
+>>> +      - const: ti,tmp102
+>>> +      - const: ti,tmp103
+>>
+>> Should this not be two patches, one fixing the existing stuff and one
+>> adding the 113?
+>>
+> 
+> It is all in -next. Looks like I resolved the conflict when combining
+> "dt-bindings: hwmon: tmp102: move ti,tmp103 out of trivial-devices.yaml"
+> and "dt-bindings: hwmon: tmp102: Document TMP110" the wrong way.
+> Sorry for that.
 
+No worries, I hope V3 I just sent fixes it up.
+
+> Instead of adding more patches on top of it, how about providing a
+> single patch moving tmp103 and adding tmp110 as well as tmp113
+> together ? Alternatively, I could drop "dt-bindings: hwmon: tmp102:
+> Document TMP110", apply the original (non-conflicting version) of
+> "dt-bindings: hwmon: tmp102: move ti,tmp103 out of trivial-devices.yaml",
+> and then tmp110 and tmp113 could be added in a single patch.
+> 
+> Please let me know.
+I think the broken commit is d67ec24d3f07 ("dt-bindings: hwmon: tmp102: 
+move ti,tmp103 out of trivial-devices.yaml") and v3 1/2 is the fix for 
+that broken commit. V3 2/2 only adds the missing TMP113 .
+
+So I think there are two options:
+- The complicated one -- squash d67ec24d3f07 ("dt-bindings: hwmon: 
+tmp102: move ti,tmp103 out of trivial-devices.yaml") and V3 1/2 (and 
+either do it in tree, or drop d67ec24d3f07 ("dt-bindings: hwmon: tmp102: 
+move ti,tmp103 out of trivial-devices.yaml") and ask for it to be 
+updated and resent), then apply that, and apply V3 2/2 (or newer) .
+- The simple one -- apply both V3 patches (or whatever newer version is 
+good enough) and move on.
+
+Just let me know what you like better.
