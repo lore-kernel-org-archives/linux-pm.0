@@ -1,60 +1,60 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5878643149D
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 15:46:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84E343E0220
+	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2026 15:46:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788277579; cv=pass; b=G73oEYAe1qiynRcq6w8pcZiCR373iH7z3msvS3FUeRYX2Vy3o6llrF4aZEta/SuUDo5Vel/yp3YWeOLfVHZRWsbUFPkSNXQPM3kcOBR5aEvqzXZpa2PDfB/AAIz/q1KSvWSqXDccYnPbkY2hJMEHrd4Jqar3gXc4RNxY+C6YQ4A=
+	t=1788277579; cv=pass; b=uM5sEoGBuCtEpaMjjugXCdI0I7f3qDXkMClwUbML8o0U53n22JphaRO+uuwwpJMuu6pT6FRNdQMylxypNoJNmUsARz+ECF4laseH+EPzcG5719YFAfrXnQzUpPVNMgJ9gzTykGMRkHeaMdfSZ703l5iC/PxE7zZPDXQ84ETDqQ4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1788277579; c=relaxed/simple;
-	bh=kBO/AzoZx1ofZasrbnMAMlpidRtyOjDHcD5P0zRr+dQ=;
+	bh=bvjz9RXhe/Z+ZfaOA8mxJN7jP5/j+wC1mkikCF15B5o=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ePWcHx0YVrcZCR92GUx/JUo9q+UFI6bC1/xz46A3Mrn+90q0OmL0n8BplBdEyeI292kp8i6V668ucR0ksomZkfSBxrt5UL1iuHcyy0H2L0Z7leg8lK/aebS/pS5HLp/w83y1LpEaMb7DzzuLPBhFU3Dx+IIXk+uRPyfNjIBIj7I=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=n8d7mRg2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aXz/ab7L; arc=pass smtp.client-ip=205.220.168.131
+	 To:Cc:Content-Type; b=B4eqxIw2EHX7DY77gR6ZlXh/aygT9ZJ75yP+yH8zZVJinoBu62HMdOpPY6ixI2VWqSvUUm+O0yPX4JLEPM19Lawj7b0QEmD+TJpjRfULmimxroBJz8rsKMJ6sxWcyWWNDLL3lg2NUYdYkgJoyytt3yjSE0u415443sKLaMRpWoY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=QdgIMwqe; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=c/xwsA4X; arc=pass smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="n8d7mRg2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aXz/ab7L"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 681E8XHW2145824
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="QdgIMwqe";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="c/xwsA4X"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 681E8dFR3913700
 	for <linux-pm@vger.kernel.org>; Tue, 1 Sep 2026 15:46:17 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=; b=n8d7mRg28ll7i78w
-	GqCzjFy0bizbLYoxqeGEpp6HFGBcrpvYeGy0TgT44jO0MzXaTLOz5lSZQRx/cifK
-	Qp53mkNeloVnt9XCz8Wkl2Z2UjvxruvtLNSWce8M5UCfS2XYre+q28svzAdUAN1a
-	oO0WPu+sbLecb5I3Yl/150I4ELsWPMH2+2EEJF9sywBuK4Le/v37rX2UlYJrXRFV
-	whYQjE1yZFKS/Lona50Jy1d5URXP5IqnzVgObOGpy6OmC5WelxY9gdSww8RbVmeJ
-	mko9TaWKwNKqgfguXDScgTLVfJUpaSjTAq5CaDMajq5yWdPM1KFYXyfoaMDJAld6
-	XRrawg==
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gdnk8uh4j-1
+	SPr0GkIr+y44pxZZibhR/VHICVWXw4xIXLCVK5Fed5c=; b=QdgIMwqeylIzo8F9
+	YCDovoAwRUT/5BZwQAbiO0c3d50Ttm3DNJPYmgxgGeWxNtNnCs25OmsQP35+sIUa
+	Nw9w2I/fOCKO772sIgiPk/wJK/hNFnuzRGq9O6bGm3PH93CmPUcgOlNiRwG+aA1c
+	S++3vqErDSEFJBdFBbU/Y8cNWBo6gLsePzCn39QhMrg0tTPkDM132SZ9V8KKsv+C
+	mMGS/Dwaw8ROa3oQdbyDjd0AMfqnkLSqRTwTguHT/5Hic4QTzik6mfKp/rZosgKY
+	n5u6b4SieyWmnf/jCOEDjGQpUO7Khbz9xWNHCHmFkq0ic0aIkv66qen4rMFqalk+
+	pPNrxg==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gdsnu2f7d-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
 	for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 15:46:16 +0000 (GMT)
-Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-84a251c2e3eso1527063b3a.1
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-38e7ff7b375so1593815a91.1
         for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2026 08:46:16 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; t=1788277576; cv=none;
         d=google.com; s=arc-20260327;
-        b=VTr6ygGnIWc9QNqIpvYk9pjkLahjS9q2Zka+Eqwk0ry7X2TBXzIaVAkVmnBbbLWPCf
-         57L9Ng+sy/POlTJUDT7l1ytlF4RQHSLCJPoOk3XKDpnxEJIpKfXA+xVyo0wMw4CJKidy
-         MWGQrk7XP2+YdAfXMmjs1ZeDBAiFVsUffrzDLb1LD96cW8ii4BVS9gSebgEPJ4cugLOR
-         KoaaaKsVwXJh7oiDCRZwUes1WGEpOTPQ/IEktJ6fZ9GOag87HFj92XsP9G5DjGWd6BjC
-         Km6h5QGBA0w+8DIRb7xz0eP48jIj2ue9uLj2NZ8nSSm/pJ4nNH4W5eFPIH3KQZ3HaCHd
-         3+dA==
+        b=MgjenUK3yWGQfNfZ4u2UyLFqkyVqW26DPIWb6+nHpWnIe8CAc8qYaUA0Vzk2sbcLqR
+         zzQXkJdgOFFhcIIFCQv5e0UfcwjE9ZuO04lbwnOlB4nTyg4hDypU2yYEMQVTAOtEhuxd
+         c+B3BBzIGZfuRmO17zPpaNDsNGu67fj86RFFReQ+88+26cxz8jIsgudX3NP5+f0M/0SR
+         z1124HP4inyKFZ4ZSqhxIpk3vv2xHccMtkknfVGtbILkNWi/aK646bDIZbOC491depnI
+         rvZZ85IWCyT2W1v9B3WkItMZth1zEFji21FcrIqqmfXLzTgWt0o259xrbMxPBTMZC+0g
+         kNfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=;
-        fh=6RnPSUbRZoBSmqAAFYA5vx/nNtiz9vwhDqYTVCKc9ww=;
-        b=o30IgeD5HbrO8NJD5+ss23WUh1kv931udy9ntP+kEXcpmYsujlH28xlH9/QHB88IKX
-         adcqLcBBzRTUt7A+7SThvmaNe4GVbtSfmUsBhGvMrWVyvas1ajuH9/qlWcGaxyXlaRET
-         L+gEDvoXNe9OpwTz106F8rIckTepcz5E2rmdUZB6HzBuO5kUUn+SgweYVFuiUvYl8A3G
-         OH7+TAlkipgmRsJolTfC2HJS1iO+5JosrEsl9lQdngFULGLgsrW96KaKQWWGPMQqj5MH
-         Oe2/91wkZEbyODevOeevb16IYIi86ZKncd9fGH3Y28vwe5KM393KH7WPGvkMxZ2KqqZx
-         ycvw==;
+        bh=SPr0GkIr+y44pxZZibhR/VHICVWXw4xIXLCVK5Fed5c=;
+        fh=i1juShLMWwn71tKH0f/UtxNrLgH2o6MoSuU8qJVyS9Y=;
+        b=Nlj1anM89LFjAcDnvt38ZvoMLjN9o3aEoeBv1sh+BQ0t1pNjMobAHXYD8F+TMi9ciS
+         FmB4Qqm1gNzpM/erujINQg/o0u9lyVyEXT0sVvNXtJXjOShVz0/IRUDhilL7dOEBrP8g
+         KMi4kJPXJEJQmjSRvwhUSrMn0qFDHOwaf1L13yQuPdqYdVGnCNdF06J3CTafTJkXkZkZ
+         Gc+RJTRWA8th0enFpaYRiNOz7IvT9Yz6nuFu2u/3R7J5lpBQtVlA6U1MmAmZVObY0LNK
+         QJo9+LR2I1s2VnEydK9LFKlA4BBAZnF9vCOFtcYkEYhHmBDsQ4rOHy7JeyzZJFcOnu17
+         Q25w==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
@@ -62,38 +62,38 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=;
-        b=aXz/ab7LQl9y63RellizNIOD0WjddTGovZcxQhYNNMJ95HWsOXIgbbHfla3sHhexE9
-         BLTIvmt6tIh4Jem5KJ7xQ7hypnZbtlssFTgdX/2xLLaZl0nWd8nJNQz79dRaQLXnnfZA
-         CQU38jXVEx3x3fPC5f99WHkR9iHdyZTpBwSwwl9JuGCncNYZa9AIVwWwjQNHPLGLi/xU
-         pHuCNWHDL3xPEkMek7cGnnJzHfRNTLAMmvXB/TSb212/h6Dm+zbm87X0uDoz/yMy7fVa
-         8Dx8MigqsAp0nG8S1DIxeTeVbm0OcTJde7IY82jXeykkf2l8+rsGMQQM4gso5ISsQkyH
-         Yfug==
+        bh=SPr0GkIr+y44pxZZibhR/VHICVWXw4xIXLCVK5Fed5c=;
+        b=c/xwsA4XlLFd+k0qNTN0A2H6QOzDwd0j/xTbX207hJvsvQsRd57Ap813D+fTAzNtu9
+         SdJHhoxTTjS/ziQqu3J77EZUfHi29SuqjHo9l/sv8YZCIKfR0dyrE/DGJCNdku2x+aYK
+         PISBCptZhcPBCWwxI/CyPjrC11OQmFP6PCtMAGMDBT+doSOpcHox38vHl5rCfJgMJj9H
+         dXydJ53sgOd+Gu4WYBf2sFzskxMdk6Dbp6Ah9PSf8ha7fNfRvtG2CR63nSp9uqjJrQre
+         0XnxXX6noqWjZF772VXeEX9RYWm4usZl9wn7RrR4lXZxzWtNlb+3fivMYxW5FocJgM95
+         +AHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20251104; t=1788277576; x=1788882376;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=DXMurLz1uw6v5dbnfD45z53kR9FFKD293CZNB/HTMoE=;
-        b=fpduYLV2coCj6FyLlJpk3QNaiEHs3rpKwYQmAvA7kjweAPxlA4eQd61/bJArGHqSOw
-         XPFQ/5KT2kG8iZGyT3mueh3jUbh6PLIP1zma4L6u6wqb6en/0AShM4d7+499aOrwmr8W
-         NaFBxYcurDKiV+MVZG6w6cGk4EoNjXj6xgOPIYscaEFWvWSX9pRHE0A/Dw7J8hzgLjqg
-         PaNv5SlCPI+lRCBSMRq01IdgizCdAAE+wlpJ71E6RbTtuKlpVuHVhsu3sYfB9s9Xcv56
-         dJfCOdAHp9o4sV/SYauTFKM+G/C+srVmJm8ze0A5Xn4+fgJ0Kh5jcHvmlYlYwlUsipYJ
-         NrEw==
-X-Forwarded-Encrypted: i=1; AHgh+Ro7VvWuFWiJKHmx7QuNDobTbj+AKMb6nDW3N0G4XvPMb1MG9cHP07I4/KWlX87dqCC439G3Fn2A2w==@vger.kernel.org
-X-Gm-Message-State: AFuF++k8tKCWrjmbwEGksmzzjT9FOD/ay1ZyIP84zaIl+o4mGf5OdYgx
-	hJwUINCueVUZa057POTj7NuVg2k10CRRn4c5PuVhTXhyhBuVqyn1cTJUIvCTx/Fs37DG2boQwc7
-	8f4ZmymRCOeNv5uQb74sSxeWSKN0JpPZ/3IpCVAkCjGYr6V66efWNIb5QxReplwz1UTX8tdiIO2
-	T+jP9figGi2U1dfiXbv/V3q1VvZd/csm1LoYRE
-X-Gm-Gg: AR+sD10W61MZbPPRmQ8XQXbiiZ+1Gu5LHdW3mK8M+AVOxchG4M4oqaeMlhuVEem063o
-	aF5VDT61NtmIv21mIXe3mvpWODeOODkKC2K2JW2nusLmm/ze06NddSD87FOCdBGSDboe/PSXVBT
-	gtlcJcK1j5fPwhd53wRbUNWhOyJ1rxxnGijigzulmfDnTaro9GP1hLTmbM9A==
-X-Received: by 2002:a05:6a00:4191:b0:853:430e:6b60 with SMTP id d2e1a72fcca58-85bcbd8ad6fmr5717506b3a.14.1788277576168;
-        Tue, 01 Sep 2026 08:46:16 -0700 (PDT)
-X-Received: by 2002:a05:6a00:4191:b0:853:430e:6b60 with SMTP id
- d2e1a72fcca58-85bcbd8ad6fmr5717449b3a.14.1788277575650; Tue, 01 Sep 2026
+        bh=SPr0GkIr+y44pxZZibhR/VHICVWXw4xIXLCVK5Fed5c=;
+        b=Wq2RnIGrJoi1TmUaGOeE9FbuhDT131Qm5gmPikJMoV4zIiCoSRVP3AaCErWJDkrXVy
+         1AkKC9v6gR3+LJG5znVLQkjFoAGjzI+JhNgOP1/fA3Qw8fQ7NOPzC3lXsT7lLLtEXtlS
+         WGuKqQOGb4zYVai/j/XKJvb0iWNUeqickKfGf1mQOXa/lIMDMSqrxeOwgiH8XbInRo+0
+         7GMKESUSJ2WvbmRidmYCm0z9nHJt8eBWjjNeVTHOrrMlOxd8x2SAa41RsV5xFwedx2Dt
+         TLI+XxUuZhonncfqbk768cLansgAENHY4byhYG2XQT/WX1CFuI5moQvE2TYnRN5si6qm
+         BA4g==
+X-Forwarded-Encrypted: i=1; AKwUvBxezccWZfaItB1WqPLajTRvSamHSl8Vm+wkkUE3y+qvBPQtjIRRPok6Wqz2RpWCO2OpVsLrYwhSMA==@vger.kernel.org
+X-Gm-Message-State: AFuF++lo+abSxFHHMdh6mubTRzQtOONCNlD/lOV88gkavYAeb4bhpMa1
+	uk1dQPujs0wElxlxlXIl6a/bkRIS4+6fxCQV/JjDq5wQL7SceWhe7TbGRcmxdo6RWBGHjP2WtJz
+	wkoXN6Ojqbf0x/43rxXpgT1fceKzvlUYNR6Cy7thk1QmQ2av6pl8M4fwNddJkMRB8i5Gt4S1IOM
+	zPLjowLqp7hoTOMSsPx81VqcVYArBg8TcncwdU
+X-Gm-Gg: AYBFou2lQPd47kpWNzkGlyPJ+2bjb0bxa6ouNccJvEfNEKvijSO6H9wVltfvo3/TFWB
+	nP7FBc5CRkK+/5D2ako9dQd0LHMGAWoupKsiwNKotloiP3Dl+HRpaMBkfDsI0gjD2rGuoL3bsTF
+	nWtnW0WWJXK5bbDeMVHoRpse1Uq1fkomz3RjYhkuYM2MxyFVjxU4YtLEpvlw==
+X-Received: by 2002:a17:90b:17cd:b0:398:ba9e:75ff with SMTP id 98e67ed59e1d1-398ba9e7753mr29078677a91.21.1788277575973;
+        Tue, 01 Sep 2026 08:46:15 -0700 (PDT)
+X-Received: by 2002:a17:90b:17cd:b0:398:ba9e:75ff with SMTP id
+ 98e67ed59e1d1-398ba9e7753mr29078607a91.21.1788277575470; Tue, 01 Sep 2026
  08:46:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -101,111 +101,96 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260826101316.22193-1-ayman.chaudhry.kc@renesas.com>
-In-Reply-To: <20260826101316.22193-1-ayman.chaudhry.kc@renesas.com>
+References: <20260821075728.273004-1-gonglinkai@kylinos.cn>
+In-Reply-To: <20260821075728.273004-1-gonglinkai@kylinos.cn>
 From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Tue, 1 Sep 2026 17:46:01 +0200
-X-Gm-Features: AcwNN1Wk6oa8z3X-T1jHCneIimH6M9AciAx9hJy1lSv_z1qxgSpmHgEf1Fp22kk
-Message-ID: <CAPx+jO8eNBgcWf8d8xUhS6n=a4ztLV1ZSytTyMMqj79f0SFLeA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] pmdomain: renesas: rcar-sysc: Update description
- of chan_offs, chan_bit, isr_bit
-To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
-Cc: Ulf Hansson <ulfh@kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org,
-        linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Chris Paterson <Chris.Paterson2@renesas.com>,
-        Biju Das <biju.das.jz@bp.renesas.com>,
-        Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
-        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Date: Tue, 1 Sep 2026 17:46:04 +0200
+X-Gm-Features: AcwNN1VX_i35MYWk1BRKRMPd_ejniyU3wi6Q06RCOJsNKrSWKss17q7PohQ4c-Y
+Message-ID: <CAPx+jO8kfpBTYw7TCM=+2ebN_i_adYM5dUVPf2NRR8QBFKdXkQ@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: dt_idle_genpd: kfree() the original name allocation
+To: Linkai Gong <gonglinkai@kylinos.cn>
+Cc: Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Anup Patel <anup@brainfault.org>, Palmer Dabbelt <palmer@rivosinc.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=f6p4wuyM c=1 sm=1 tr=0 ts=6a96f348 cx=c_pps
- a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDE0MCBTYWx0ZWRfX+0Xa5ZweEzwn
+ bR/IBsWT3uKZIXf6diuI1W7UWwgl/8w9gLtFCzbv0VcmDC/gfhI+JmCtQpLt3b0mI/QNbMxJP5g
+ 1lp3z/oULNvrjqxrgnSfPM3f30Jbl0ExbFHPDRkc3N28xeB5lYqW52nOpADcWHeGoAze9/uEfP/
+ Y/9itcTK0srMxcsxwitP88yR/p6vvZbqRGXa2P+0o3v2t/i6pvBZG3GqpQ+86ykO0oPFbqmKRNE
+ PZXKAqGuCXtYfSSthnUs6p/9/Fglt3en/EaOCcC2p3gccE03Xv06oRkpw3qsl9ZXBtZ2xW96Usz
+ OkC2aHQzZyaA6jZh4Ga8jBp6T6Lo6a/LoAT/3++ZC9z0M2GydPlSE/yKFxWisaf+La8q9nz7Llz
+ fLIjBjJL8UaI4/6ACoFMdeyQTRoUpqUFzVH41mmHIyjMAeEFbpMwBDv+ydYkprx4+Zd+3h3oxDR
+ vEZ2gd6B9E1nPFtb2lA==
+X-Authority-Analysis: v=2.4 cv=L6ItheT8 c=1 sm=1 tr=0 ts=6a96f348 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=YMgV9FUhrdKAYTUUvYB2:22 a=yC-0_ovQAAAA:8 a=ftZ7uTllurLVGgvAASsA:9
- a=QEXdDO2ut3YA:10 a=IoOABgeZipijB_acs4fv:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDEzOSBTYWx0ZWRfX1UsvInPqlaVE
- T5LwzVfy6IenfvjX5E//K/H9FrLUknq8dAkoR2SgtBBuloGqL1oVRWmsoHYvYtlg8w9YEyWcBTT
- RMdjM3BRJTYZwe7s13jhPay14SnuUvDDArML36zaeXxPkuOGceWMkY+0wDwah4tk5teQ+Y9a9gh
- T+CUb4cKR5Nw4ketsl8EZl3n34Dlf/BBOidld/kndrzjFL4vhCz8S70azhOBwmtVcL0vfk+YXUW
- P+xFmQOlLcssS/J3FUldRtXUgLfRtZOwojCfH39WoPgYi3DoCivTSSFOlntWy1NHsjFMN5aNh4F
- can9Je6wjISAJzIyT0JDhtOB6oYrZeSPpSly0yttoEm1gNFTnevNEjgDNC4w0WGWou/MD+fh+iU
- I+tYfBW1d4PfZZMmwcIdDqSyy3RTmuUlnTFxjLTGDy/iyiP/36KxpBY8lFOS43d9oPK0niRgl1p
- y+fYMYjZi9nV4qQczxA==
-X-Proofpoint-ORIG-GUID: xuMoa242yjgklgh2QpxikyTjE54oFAUr
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDEzOSBTYWx0ZWRfX7GuEV4+AHZeb
- Rqa4Oe6Toqwoew6+APA1wsSVa7seJKtJrYg9/W1xigq14Of/27NSrBMoICiJuJkZn7u0Nc3QLWD
- mhxz2vEAIGwq22Fsq8IQxM5elK/GnFY=
-X-Proofpoint-GUID: xuMoa242yjgklgh2QpxikyTjE54oFAUr
+ a=eoimf2acIAo5FJnRuUoq:22 a=JdndqbUKdSgka_8NYHQA:9 a=QEXdDO2ut3YA:10
+ a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDE0MCBTYWx0ZWRfX0mX40z/tUAlX
+ bTgRr2SCpgWF8/zesCordKLT4Dwg0cTwFqc3X4ZtLBhyVdsPe35C+6UJUDcpIfsWuUzMuf6W/8L
+ 5qhyUehTVJ2XglN9mpsDoHhXwtXbKbE=
+X-Proofpoint-ORIG-GUID: 3PSj3MeiPq62kxFP9iAx-7nFVeGezlcv
+X-Proofpoint-GUID: 3PSj3MeiPq62kxFP9iAx-7nFVeGezlcv
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-01_04,2026-09-01_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 priorityscore=1501 suspectscore=0
- impostorscore=0 spamscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609010139
+ clxscore=1015 spamscore=0 phishscore=0 suspectscore=0 priorityscore=1501
+ lowpriorityscore=0 impostorscore=0 malwarescore=0 bulkscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609010140
 
-On Wed, Aug 26, 2026 at 12:13=E2=80=AFPM Ayman Chaudhry
-<ayman.chaudhry.kc@renesas.com> wrote:
+On Fri, Aug 21, 2026 at 9:57=E2=80=AFAM Linkai Gong <gonglinkai@kylinos.cn>=
+ wrote:
 >
-> The descriptions of `rcar_sysc_area.chan_offs`,
-> `rcar_sysc_area.chan_bits`, and `rcar_sysc_area.isr_bit` do not clearly
-> document how these fields are used.
+> dt_idle_pd_alloc() kasprintf()s the full node path, then points
+> pd->name at kbasename() of that string. dt_idle_pd_free() kfree()s
+> pd->name, which is no longer the start of the allocation.
 >
-> When `rcar_sysc_area.flags` is set to `PD_ALWAYS_ON` (i.e. `PD_NO_CR`),
-> these fields are ignored, therefore improve the description of
-> `rcar_sysc_area.chan_offs`, `rcar_sysc_area.chan_bit`, and
-> `rcar_sysc_area.isr_bit` to make it clear that the field is set to 0 if
-> power is always on.
+> Copy the basename instead.
 >
-> Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+> Fixes: 9d976d6721df ("cpuidle: Factor-out power domain related code from =
+PSCI domain driver")
+> Signed-off-by: Linkai Gong <gonglinkai@kylinos.cn>
 
-Applied for next, thanks!
+Applied for fixes and by adding a stable tag, thanks!
 
 Kind regards
 Uffe
 
 
 > ---
-> v1->v2:
-> - Updated commit title and message
-> - Changed the description of `rcar_sysc_area.chan_bit` and
->   `rcar_sysc_area.isr_bit`
+>  drivers/cpuidle/dt_idle_genpd.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 >
->  drivers/pmdomain/renesas/rcar-sysc.h | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
+> diff --git a/drivers/cpuidle/dt_idle_genpd.c b/drivers/cpuidle/dt_idle_ge=
+npd.c
+> index d292975cc468..ed41a90eeeb7 100644
+> --- a/drivers/cpuidle/dt_idle_genpd.c
+> +++ b/drivers/cpuidle/dt_idle_genpd.c
+> @@ -99,7 +99,7 @@ struct generic_pm_domain *dt_idle_pd_alloc(struct devic=
+e_node *np,
+>         if (!pd)
+>                 goto out;
 >
-> diff --git a/drivers/pmdomain/renesas/rcar-sysc.h b/drivers/pmdomain/rene=
-sas/rcar-sysc.h
-> index 9e93a1f98f68..b264e727883b 100644
-> --- a/drivers/pmdomain/renesas/rcar-sysc.h
-> +++ b/drivers/pmdomain/renesas/rcar-sysc.h
-> @@ -29,9 +29,15 @@
->
->  struct rcar_sysc_area {
->         const char *name;
-> -       u16 chan_offs;          /* Offset of PWRSR register for this area=
- */
-> -       u8 chan_bit;            /* Bit in PWR* (except for PWRUP in PWRSR=
-) */
-> -       u8 isr_bit;             /* Bit in SYSCI*R */
-> +       u16 chan_offs;          /*
-> +                                * PWRSR register offset; or 0 if area is
-> +                                * always on
-> +                                */
-> +       u8 chan_bit;            /*
-> +                                * Bit in PWR* (except for PWRUP in PWRSR=
+> -       pd->name =3D kasprintf(GFP_KERNEL, "%pOF", np);
+> +       pd->name =3D kstrdup(kbasename(of_node_full_name(np)), GFP_KERNEL=
 );
-> +                                * 0 if area is always on
-> +                                */
-> +       u8 isr_bit;             /* Bit in SYSCI*R; 0 if area is always on=
- */
->         s8 parent;              /* -1 if none */
->         u8 flags;               /* See PD_* */
->  };
+>         if (!pd->name)
+>                 goto free_pd;
+>
+> @@ -112,7 +112,6 @@ struct generic_pm_domain *dt_idle_pd_alloc(struct dev=
+ice_node *np,
+>                 goto free_name;
+>
+>         pd->free_states =3D pd_free_states;
+> -       pd->name =3D kbasename(pd->name);
+>         pd->states =3D states;
+>         pd->state_count =3D state_count;
+>
 > --
-> 2.34.1
+> 2.25.1
 >
