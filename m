@@ -1,112 +1,61 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E396472530;
-	Tue,  1 Sep 2026 08:44:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 454203128B6;
+	Tue,  1 Sep 2026 08:45:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788252284; cv=none; b=PNWqwftbk5omNXVoinviAQoziN100WZfBOZd9xkdwncOkvpdG985DrRy1mCO1h25h1FQCkhfGecMS+qiMOTl1A5eFkzwewPud2xYuX1itwzJ/NgWocZwLD3fNBEnsLfJseQx4hUnQSJjAwfTXUYuJurAg4LgF/k3QG57Yt3Ei/g=
+	t=1788252322; cv=none; b=HJ7t3sQ8H+E2NtdZMexRdLXVgDOaHTQuFKXhzdB5QipG5FPaq/unb8Nv0FEze6LUezeQZFTlgrAc1ECQUNkatPaSeLFu7DvRx1XM5UnQsp9j/LprTwqoJ0hMo8PMxvgBeBOX0UXMH8Mhf8BDtkJIiId2yYDpH8Z+z2+45Of5Uf8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788252284; c=relaxed/simple;
-	bh=2cHSBW63AdgeodvD37ubEWti0aeNOHuF9v35mxr2pUE=;
+	s=arc-20240116; t=1788252322; c=relaxed/simple;
+	bh=uQSoVjcK+lMlmoA/C9r/QFPG5Au4WnyAPBA+MTeASWA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BTffg9vOL5P+uT67ytqndcgt4Kf9gx0yh1krXoWdI3XkceOYV2VYi0tRka7Z3btAPDi/cAyUq987vrHhQfVZASElep9puv9QgilzIg4qi1Scvg2k74M5Bp/+O05FftZkGPsuDbxS4HoELmRWr2HNi5xcds3Rw9CU+sZ1MwUxIhQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fuwuPSqF; arc=none smtp.client-ip=198.175.65.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ukj0HcI5ceJUnvKCpKPFxKljPEPl2k0ln+ptJH83vd0LgqoaMkUnxa2b2hM9fRiLejfY43YUJxeOGYU8L3xz6FhVD9sW+XZCsy2TljcChc9+HTWMHjjIcKs5BCp8xwfUZyt2JAppyYac75RXb5R7FOEbqmfnvG/xgwr3PDiEoRg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NqC/HOVX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fuwuPSqF"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788252279; x=1819788279;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2cHSBW63AdgeodvD37ubEWti0aeNOHuF9v35mxr2pUE=;
-  b=fuwuPSqFmzI3hDIarCAxNrT84VQe8HV74TH2r/BN43XRjy1DUqKWCOrN
-   4EQMDH+QLCcEvBjJ6AcGtZ+qdyT4MNXRv/bhFOLu0qT/dK/gwqCCUu4gh
-   OjcX6TxCeSwspaQtyOPt2liilpqVrFx+VvakbKcIdosYAF1TT4pDqEHpx
-   Swp+amKvMvAvDD+q2F5xIy/mb8cMJuzxjLuEpHgzODOCaCzEY4YVakth+
-   dXhwcqWuRbRpvp7cWALSpAkXaYMbolQyUieuZWK5t6LXC4A1VYDZSsChv
-   nHGJXhU/CFVZeXbz9Ba9SYY1ESrIkzmxf3n2kNXwXAxpfuqNUOoaYOUk/
-   Q==;
-X-CSE-ConnectionGUID: avdOkTK2QX2soF8d37hFLw==
-X-CSE-MsgGUID: hj+92kFsSAqXrYMFzSChFg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11892"; a="92541326"
-X-IronPort-AV: E=Sophos;i="6.25,255,1779174000"; 
-   d="scan'208";a="92541326"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2026 01:44:33 -0700
-X-CSE-ConnectionGUID: KOe+vt0tRKKd2Zb6OdHn5w==
-X-CSE-MsgGUID: DzjV9TXDShasA+l7KOJpwQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,255,1779174000"; 
-   d="scan'208";a="265314817"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.222])
-  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2026 01:44:28 -0700
-Date: Tue, 1 Sep 2026 11:44:22 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
-	Linux PM <linux-pm@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	Peixin Xie <peixin.xie@linux.spacemit.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Linux PCI <linux-pci@vger.kernel.org>,
-	Bjorn Helgaas <helgaas@kernel.org>,
-	Hans de Goede <hansg@kernel.org>
-Subject: Re: [PATCH v1 7/7] ACPI: scan: Take PCI device enumeration into
- account directly
-Message-ID: <apaQZr71mBe0_3fU@ashevche-desk.local>
-References: <3435655.aeNJFYEL58@rafael.j.wysocki>
- <2497062.NG923GbCHz@rafael.j.wysocki>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NqC/HOVX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 079141F000E9;
+	Tue,  1 Sep 2026 08:45:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788252318;
+	bh=ZI6RhrNjelrLJnYNZnIRhgWOUWb2weSr68SncbR1Pzg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=NqC/HOVXbR1yJWMxBgaowTRTVlFL+X2Dhgb6FWn2wedonvxshcgL1w2DikA3S1DWe
+	 59aScJCTYoxx9CAwZ1UaD3jWunwDo9wyt+squEc1HW9s1nwLf3uBFzq7v97XvQUsHw
+	 VH/Bvu5yg1Ia0tB5D6+3x9QGgH1zxRrvhmKpMFD7jwFIeA6KwFVQ+y8nrW/c/OlRT4
+	 CzXdc7ZvmhTfiBPt5gR2iNHIor/Sc07A5KdAL6ZyOJ/aohfu+mVu0v1pu1ZvRP4qUV
+	 P9a/MKwSon924J/nZZaa+FRUMlNlTLPrRt6bazqZikRYnlWvb7AbsRDq4GTVf/oIRW
+	 Kowe33XfVkMSg==
+Date: Tue, 1 Sep 2026 10:45:14 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Zhangfei Gao <zhangfei.gao@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, shengchao.guo@oss.qualcomm.com, 
+	bartosz.golaszewski@oss.qualcomm.com, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: interconnect: qcom-bwmon: add nord
+ cpu-bwmon compatible
+Message-ID: <20260901-skilled-frisky-serval-1cadf5@quoll>
+References: <20260831090134.585588-1-zhangfei.gao@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <2497062.NG923GbCHz@rafael.j.wysocki>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+In-Reply-To: <20260831090134.585588-1-zhangfei.gao@oss.qualcomm.com>
 
-On Mon, Aug 31, 2026 at 07:59:48PM +0200, Rafael J. Wysocki wrote:
-
-> The ACPI companions of PCI devices are associated with the corresponding
-> PCI devices before being processed by acpi_scan_attach() and by the time
-> they are passed to attach_subtree(), the PCI devices associated with
-> them have been already enumerated and initialized (including power
-> management initialization).
+On Mon, Aug 31, 2026 at 05:01:34PM +0800, Zhangfei Gao wrote:
+> Document the qcom,nord-cpu-bwmon fallback compatible used by the
+> CPU bandwidth monitors on Nord.
 > 
-> Accordingly, it is not necessary or even useful to check their status in
-> attach_subtree(), so do not do that.
+> Signed-off-by: Zhangfei Gao <zhangfei.gao@oss.qualcomm.com>
+> ---
 
-...
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-> +	if (pci) {
-> +		acpi_handle_debug(device->handle, "PCI companion %s found\n",
-> +				  dev_name(&pci->dev));
-
-We have pci_name().
-
-> +
-> +		pci_dev_put(pci);
-> +	} else {
-> +		acpi_bus_get_status(device);
-> +		/*
-> +		 * Skip devices that are not ready for enumeration (e.g. not
-> +		 * present).
-> +		 */
-> +		if (!acpi_dev_ready_for_enumeration(device))
-> +			return 0;
-> +	}
-
--- 
-With Best Regards,
-Andy Shevchenko
-
+Best regards,
+Krzysztof
 
