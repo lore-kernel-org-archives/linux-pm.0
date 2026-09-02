@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C449D47DD7F;
-	Wed,  2 Sep 2026 11:30:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBD4047CC78;
+	Wed,  2 Sep 2026 11:30:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788348655; cv=none; b=XxfwM+MTf7CPVmOfXLlH94YdbkDAf1Q0YgsqFO4K4yRKNm5XDe/U/DH9U5j9aaJHQHDm85m6N0P7kAZCqgFUPjUP9+AfXBfJV130GYfbSXHGAnutDwSacOeA4P9hfAvQVGYivITLLklmpSeTm+eeVEXz8dGPehYhS2Mje11gWJc=
+	t=1788348661; cv=none; b=PN59yvfB6p7UF1fOVouMP/gfH46VBpOG7P6W8CG4dYoBOvLMoV33Q0WbqzS9YLjvgFPaxUPgEaqFJfVAWhcY70cWTU6jtk9GThj8LIj3hRb1kqj4tpGzBTm47ortN8ttfaInXwZhBMLPJuyvF3sIahM/8s/OtcJL7MRQ7iZyfGY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788348655; c=relaxed/simple;
-	bh=BK4Lwnotp1+0ZziCjvnAsq7LNiBOVfZQ7PK96/fRU+Y=;
+	s=arc-20240116; t=1788348661; c=relaxed/simple;
+	bh=qSUGGCiyT2Hcvo0aCnkiMLLTcEWs3wCY//Dr6hwM1b4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qD1N8b/AyGmm56SUN9iSfM0o9Ih+/S3KLTAynetqctdZFhUalU/gIxZv8akEhZMAawPuXOOriPv83W7DUvFCqNiX7kK/crO+1PJ4ggtzdbm375c6gon85REybJ4A4nZPEKc7LintwlwlW3+cI9VAyIlIXXEm/qeywpl7QsVV+XU=
+	 MIME-Version; b=hOJSyjRsembPA++bQKb/vSe5wdDDsTggIRXFRFP6kOFRVJ2ObX8NTXkGWnpc75kIQAgnPuqHRCI87iJAzpgmZOM0qJ6rkSylyI00BatUPOqCnQlaeu92dOeV1LDtiOAk2EzzQEbsliX0d5ITqdXj2dGDthuNfUCnkbSZudw1oFU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 735A21F000E9;
-	Wed,  2 Sep 2026 11:30:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DE291F00A3A;
+	Wed,  2 Sep 2026 11:30:46 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -43,9 +43,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 11/12] arm64: dts: renesas: ironhide: Enable SCMI devpd, sys, clock, and reset
-Date: Wed,  2 Sep 2026 13:29:27 +0200
-Message-ID: <d7eef4afd68a3229c3120fbc7bc79b730a17a4cf.1788338320.git.geert+renesas@glider.be>
+Subject: [PATCH v3 12/12] arm64: dts: renesas: ironhide: Add CPG/MDLC renesas,scmi-firmware properties
+Date: Wed,  2 Sep 2026 13:29:28 +0200
+Message-ID: <da82ca150ef0bae62ba61b60376103c262f60ebc.1788338320.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1788338320.git.geert+renesas@glider.be>
 References: <cover.1788338320.git.geert+renesas@glider.be>
@@ -57,55 +57,154 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-SCP FW SDKv4.28.0 and later for Renesas R-Car X5H Ironhide not only
-implement the SCMI base protocol, but also the SCMI power domain, system
-power, clock, and reset domain management protocols.
-
-Enable support for the latter by adding the corresponding SCMI protocol
-subnodes.
+Link the various Clock Pulse Generator (CPG) and Module Controller
+(MDLC) device nodes to their SCMI provider.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - No changes,
+  - s/firmware/renesas,scmi-firmware/,
 
 v2:
-  - Fix misindentations,
-  - Add scmi_clk node, as it is no longer added in earlier commits.
+  - No changes.
 ---
- .../boot/dts/renesas/r8a78000-ironhide.dts    | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ .../boot/dts/renesas/r8a78000-ironhide.dts    | 116 ++++++++++++++++++
+ 1 file changed, 116 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts b/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
-index 0ab303863155e1ca..04291f04da2b7fb5 100644
+index 04291f04da2b7fb5..a6f055a1f38a8449 100644
 --- a/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
 +++ b/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
-@@ -31,6 +31,25 @@ scmi: scmi {
- 			arm,no-completion-irq;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-+
-+			scmi_devpd: protocol@11 {
-+				reg = <0x11>;
-+				#power-domain-cells = <1>;
-+			};
-+
-+			scmi_sys: protocol@12 {
-+				reg = <0x12>;
-+			};
-+
-+			scmi_clk: protocol@14 {
-+				reg = <0x14>;
-+				#clock-cells = <1>;
-+			};
-+
-+			scmi_reset: protocol@16 {
-+				reg = <0x16>;
-+				#reset-cells = <1>;
-+			};
- 		};
+@@ -170,6 +170,10 @@ ecc@1e66660000 {
  	};
+ };
  
++&cpg {
++	renesas,scmi-firmware = <&scmi>;
++};
++
+ &extal_clk {
+ 	clock-frequency = <16666600>;
+ };
+@@ -183,6 +187,118 @@ &hscif0 {
+ 	status = "okay";
+ };
+ 
++&mdlc_aon {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_cmnn {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_cmns {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr0 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr1 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr2 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr3 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr4 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr5 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr6 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ddr7 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_dsp {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_gpc {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_hscn {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_hscs {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_imn {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_ims {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_mm {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_npu0 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_npu1 {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_pere {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_perw {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_rt {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_scp {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_top {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_vio {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_vipn {
++	renesas,scmi-firmware = <&scmi>;
++};
++
++&mdlc_vips {
++	renesas,scmi-firmware = <&scmi>;
++};
++
+ &mfis_scp {
+ 	status = "okay";
+ };
 -- 
 2.43.0
 
