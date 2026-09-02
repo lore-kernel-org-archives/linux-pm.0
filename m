@@ -1,99 +1,145 @@
-Received: from smtp.smtpout.orange.fr (smtp-17.smtpout.orange.fr [80.12.242.17])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3704C377A95
-	for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2026 17:18:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6D5C381EB5;
+	Wed,  2 Sep 2026 17:47:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788369539; cv=none; b=SFdtEnSSWXBVJQzTdrE0q3+nN5a+d4m/xs4SZQxZZGGO94xW29IclLXYx5xI+6EQ0jP4UuZ3kqVi/do5Ljw3UxFc8BE5A43dZJ+LMPREIEPEhn3ZXInQnxgGCaDLt+//qmk/FkgGJSlSUADZ6WrlOpnkDyKdzR8nU6Wf6xwj90s=
+	t=1788371265; cv=none; b=ddwYzpIdd0tPXXiRzHiqzWUE9zNMulUFJOqT+kaACahEGVMeyGFb2l6nlZkmp4FXEGYjww3vIZ/oXK9/37DGrtSaV4X53UfkC+nM63h4C0h/CTI/qrfu8mHm7A7eN6EDpUJeBn1TiXKZRUZJ54622rZT+h9IMN3hxENy4fK1sIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788369539; c=relaxed/simple;
-	bh=HY2s9iDSTOoVQgMBRKERQOvMKTBuDzzCZ0AA4lzBuLs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=r7fDlpjxFnDQVhDUY9ZDK2W1/uTzRTezosp85O322W9BkNIYhaCe8651THy0brvaGDW1W1IQAPur27O8eDB8PlaHxVwcAKlO2NtyqyS+5XanVxC/yXjP3WtIt34NCcsNoVMsmwkMLpbi74ofpbhR1CFowfjiZAxkbs1e3FBgxUw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=TlcwXiUO; arc=none smtp.client-ip=80.12.242.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1788371265; c=relaxed/simple;
+	bh=IWgk0hsVjRXhlLhEWIxVCWRMRpovGs474qgm8wj4So0=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=Hd4xZPLAFUCNyL0D8+f8HY4n+ww1s1hqpfQGrHewD+q+8j70lGKiDAzyVyUxuLsqdLs3Gxm2FwqZc9uTyo18JJ4PG/V6Qd1jj6GTIDcEUAkoEGHKh8TRSFF/+NPesmcqFEU00uc+aAiAhoLMNRpYeVEjF6Qd8Z/xz4tuoKRIiR0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jmlInIoA; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="TlcwXiUO"
-Received: from device-106.home ([10.64.95.115])
-	by smtp.orange.fr with ESMTP
-	id 1oaox3mQed1xd1oaox6xNI; Wed, 02 Sep 2026 19:17:46 +0200
-Received: from device-106.home ([IPv6:2a01:cb10:785:b00:26fb:aefb:6cd2:db0e])
-	by smtp.orange.fr with ESMTPSA
-	id 1oaexNFjKP8Xp1oaexvHDh; Wed, 02 Sep 2026 19:17:38 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1788369458;
-	bh=knQhvrvBb8T8P3G9UIe7lzic6iGN2FHXjgOBj/taQ4Q=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=TlcwXiUOE3ARzjDgPhtTiVPd4tIX+M7MRDLjwkkvjUKk0jx6DY0Vyati+gADFQMni
-	 6Zwk7uuYv3FDi3doxHi8TvxZcTM9s0P6r1o7C+L7fioykxrIhvd/KzF9PbRxPpTdPs
-	 yMO2pauxm+BJHaXTSrDt9KzBc0ic/ZgNPFuFyp5NqHxvop8xFYfu+TA6k4xg/laR04
-	 jlECsNkVaSuRjxiU/5bSMofGUwCHnOYcvJeABCuYi1DMxZNN7Vb+1rOtb16oTVZMvu
-	 xSvY/OIOF8rivNHNQDDhUXGUNU1UZB9ZYTd/I23/GTIU2ClPaA3+TvakJdyS+YvpWY
-	 qg99ZMOKS8jxA==
-X-ME-Helo: device-106.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Wed, 02 Sep 2026 19:17:38 +0200
-X-ME-IP: 2a01:cb10:785:b00:26fb:aefb:6cd2:db0e
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] thermal: intel: Slighly simplify duration_set()
-Date: Wed,  2 Sep 2026 19:17:30 +0200
-Message-ID: <0f12d097f5874242b8d3cc98b441c4fefd626aee.1788369428.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jmlInIoA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1788371264; x=1819907264;
+  h=date:from:to:cc:subject:message-id;
+  bh=IWgk0hsVjRXhlLhEWIxVCWRMRpovGs474qgm8wj4So0=;
+  b=jmlInIoAz2V9N8XGReCW4XJcyM+F68tH+jF4kS6R/X7AmuOjflzPy5ew
+   HsBlIpLjBw19rcR1wc4FK5TUVaiXI4tDKGVYEjMMXsXD4PUXlKFBjFdaB
+   PXN5+vRr4mDJ3Ml4p/56eWC6NpGZOoQMnAhoHNlTSrqGdJMcuVPf39ATG
+   B+xB2VNgT+D73ljSeNeXMi6CrUQb0C0EeNCbl5XNIamjgsv9ZIgco1vzZ
+   8BOYZWrmVVXruG/8Gj+cMFH+giU8d+mhY4NMwzX0Ki/gXzIPXfBQovyBx
+   iyhQ38mIZK4ldj3YeRMqMbUV8tSQlZ1nNLFr7JGjMtFbYEcT+CvQ+idTr
+   g==;
+X-CSE-ConnectionGUID: wlSQ/e0lTaSthPyas0iNdg==
+X-CSE-MsgGUID: cOW1XRjnTOeGhGkJUlkIuw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11894"; a="88873776"
+X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; 
+   d="scan'208";a="88873776"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2026 10:47:44 -0700
+X-CSE-ConnectionGUID: yYmKtuXwRa+gLyXzasgYOA==
+X-CSE-MsgGUID: a1WJh2JdRPCdEkr8txAU6Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; 
+   d="scan'208";a="273237769"
+Received: from lkp-server01.sh.intel.com (HELO bfac249b2189) ([10.239.97.150])
+  by orviesa004.jf.intel.com with ESMTP; 02 Sep 2026 10:47:43 -0700
+Received: from kbuild by bfac249b2189 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1x1p3j-0000000035W-43xd;
+	Wed, 02 Sep 2026 17:47:39 +0000
+Date: Thu, 03 Sep 2026 01:46:39 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 208027d2c8957800e199a9e0f55da5fdb9550207
+Message-ID: <202609030125.KSjl1YRt-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-there is no need to call clamp here(). The same tests have already been
-performed a few lines above, and there is a "goto exit;" if outside of the
-range.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 208027d2c8957800e199a9e0f55da5fdb9550207  Merge branch 'acpi-bus' into linux-next
 
-While at it, also remove an un-needed initialization of 'ret'.
+elapsed time: 1317m
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Based on my testing, gcc is not smart enough to get rid of the redundnat
-tests by itself.
+configs tested: 68
+configs skipped: 0
 
-This patch is compile tested only
----
- drivers/thermal/intel/intel_powerclamp.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
-index bd7fd98dc310..ba9c4a1224ca 100644
---- a/drivers/thermal/intel/intel_powerclamp.c
-+++ b/drivers/thermal/intel/intel_powerclamp.c
-@@ -80,7 +80,7 @@ static unsigned int window_size;
- 
- static int duration_set(const char *arg, const struct kernel_param *kp)
- {
--	int ret = 0;
-+	int ret;
- 	unsigned long new_duration;
- 
- 	ret = kstrtoul(arg, 10, &new_duration);
-@@ -94,7 +94,7 @@ static int duration_set(const char *arg, const struct kernel_param *kp)
- 	}
- 
- 	mutex_lock(&powerclamp_lock);
--	duration = clamp(new_duration, 6ul, 25ul) * 1000;
-+	duration = new_duration * 1000;
- 	mutex_unlock(&powerclamp_lock);
- exit:
- 
--- 
-2.55.0
+tested configs:
+alpha         allnoconfig    gcc-16.1.0
+alpha        allyesconfig    gcc-16.1.0
+arc          allmodconfig    clang-24
+arc           allnoconfig    gcc-16.1.0
+arc          allyesconfig    clang-24
+arm           allnoconfig    gcc-16.1.0
+arm          allyesconfig    clang-24
+arm64        allmodconfig    clang-24
+arm64         allnoconfig    gcc-16.1.0
+csky         allmodconfig    gcc-16.1.0
+csky          allnoconfig    gcc-16.1.0
+hexagon      allmodconfig    gcc-16.1.0
+hexagon       allnoconfig    gcc-16.1.0
+i386         allmodconfig    clang-22
+i386          allnoconfig    gcc-16.1.0
+i386         allyesconfig    clang-22
+loongarch    allmodconfig    clang-24
+loongarch     allnoconfig    gcc-16.1.0
+m68k         allmodconfig    gcc-16.1.0
+m68k          allnoconfig    gcc-16.1.0
+m68k         allyesconfig    clang-24
+microblaze    allnoconfig    gcc-16.1.0
+microblaze   allyesconfig    gcc-16.1.0
+mips         allmodconfig    gcc-16.1.0
+mips          allnoconfig    gcc-16.1.0
+mips         allyesconfig    gcc-16.1.0
+nios2        allmodconfig    clang-20
+nios2         allnoconfig    clang-24
+nios2         allnoconfig    gcc-11.5.0
+openrisc     allmodconfig    clang-20
+openrisc      allnoconfig    clang-24
+openrisc      allnoconfig    gcc-16.1.0
+parisc       allmodconfig    gcc-16.1.0
+parisc        allnoconfig    clang-24
+parisc        allnoconfig    gcc-16.1.0
+parisc       allyesconfig    clang-17
+parisc       allyesconfig    gcc-16.1.0
+powerpc      allmodconfig    gcc-16.1.0
+powerpc       allnoconfig    clang-24
+powerpc       allnoconfig    gcc-16.1.0
+riscv        allmodconfig    clang-24
+riscv         allnoconfig    clang-24
+riscv         allnoconfig    gcc-16.1.0
+riscv        allyesconfig    clang-24
+s390         allmodconfig    clang-17
+s390         allmodconfig    clang-24
+s390          allnoconfig    clang-24
+s390         allyesconfig    gcc-16.1.0
+sh           allmodconfig    gcc-16.1.0
+sh            allnoconfig    clang-24
+sh            allnoconfig    gcc-16.1.0
+sh           allyesconfig    clang-17
+sh           allyesconfig    gcc-16.1.0
+sparc         allnoconfig    clang-24
+sparc         allnoconfig    gcc-16.1.0
+sparc64      allmodconfig    clang-20
+um           allmodconfig    clang-17
+um            allnoconfig    clang-17
+um            allnoconfig    clang-24
+um           allyesconfig    gcc-16.1.0
+x86_64       allmodconfig    clang-22
+x86_64        allnoconfig    clang-22
+x86_64        allnoconfig    clang-24
+x86_64       allyesconfig    clang-22
+x86_64      rhel-9.4-rust    clang-22
+xtensa        allnoconfig    clang-24
+xtensa        allnoconfig    gcc-16.1.0
+xtensa       allyesconfig    clang-20
 
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
