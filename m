@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D675423EB9;
-	Wed,  2 Sep 2026 11:30:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F4CE477E57;
+	Wed,  2 Sep 2026 11:30:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788348629; cv=none; b=Woa/KpvhxfgrSi7c4j6T9HFc4QORq2y6ruVP0vlQD1Ib15WUEOPEg76reWdUjsS4RcHQ3lUi7CGt8t3CRLcPkYx+Jw9V7qzVLu1tEoQzWZmUYHmcOv1bSTgZepFmgDVlPzYsBqMSdxmTuBiDPTe/B8+2R3Z+RYR2GZSDbwVzWfc=
+	t=1788348637; cv=none; b=HdVGf0RCwiohvS4ibLno4XalxC6HP53fsY8gH5uZ6oj3nl7g/S1L50/RJTVKDCDuwUbw2IDK7W+keBnAkD+Oe+0kV4EU4Z+vEaPrf/wxgo76VltT6Erxi6mOAw8tWGwEO1CAezg1KBEDGwcjmR0QfLiWTt6vboCsh1NLHeYnhvM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788348629; c=relaxed/simple;
-	bh=zcVbdUoSNiQ7hM4Ue5lG4uC//foCmUswTkcwBzDtwWs=;
+	s=arc-20240116; t=1788348637; c=relaxed/simple;
+	bh=7wGSw7UiulnJEGayVKGH6MJFHsQLW3k77c5SiDFuGnk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KYjo8MQJnrh2t7rc5eaAsz8SCPT95KdMOIrIyZfxRYnmePJfATXC4rdK3uhR5NWekaz8+2tn3IMZuoegRqDq9YjREzcd7XO+TgQH8dtXGC16sKkzyy9y/xRITBi1V1tlFtZP6rsiXW6xi9oWHfxeeNXdvhISL/NPeAeVqrAQwjQ=
+	 MIME-Version; b=XR0O0YGTB3FpO6nh9Yot0cLptyx3Nc21e6s5kZ20ll8PUovp0lfsVpllFwpbnyRzsGneZDQp61Gs74UexV7ZzU0pgIh5w0yyo/wASOu0AyPQ/NfIfVLz7PALdhIHJ+gsQiY4wyzeQdGiZNE2bI6CMlFjzg6s/YgSLCXGPlh3wFk=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4953E1F00A3D;
-	Wed,  2 Sep 2026 11:30:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10B421F00A3A;
+	Wed,  2 Sep 2026 11:30:22 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -43,9 +43,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 07/12] reset: Add reset_control_get_from_provider_exclusive()
-Date: Wed,  2 Sep 2026 13:29:23 +0200
-Message-ID: <619a6e41495adfdae3e2e6c0fee97e0550a5c404.1788338320.git.geert+renesas@glider.be>
+Subject: [PATCH v3 08/12] clk: renesas: r8a78000: Add clk_hw to clk_map
+Date: Wed,  2 Sep 2026 13:29:24 +0200
+Message-ID: <fca52ec22df92bd3a88b734d3ae34e39fbbaf55f.1788338320.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1788338320.git.geert+renesas@glider.be>
 References: <cover.1788338320.git.geert+renesas@glider.be>
@@ -57,126 +57,174 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When stacking two reset controllers, the upper one should go through the
-proper channels: request exclusive reset controls and use them via the
-reset_control_*() APIs.  However, unlike the clock subsystem, which has
-of_clk_get_from_provider(), the reset subsystem does not offer a way to
-lookup and obtain a reset from a reset provider.
+Prepare for mapping to other than fixed-rate clocks by adding a clk_hw
+pointer to the clk_map structure, and populating it up-front.
 
-Hence add a public helper reset_control_get_from_provider_exclusive()
-to lookup and obtain an exclusive reference to a reset controller, based
-on the recently introduced __reset_control_get_from_provider() helper.
-This will be used by the R-Car X5H Module Controller driver.
+Move r8a78000_cpg_priv.fixed_hws into fill_clk_map(), as it is no longer
+needed afterwards, and drop NUM_FIXED_CLKS.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - Replace reset_controller_get_provider() by
-    reset_control_get_from_provider_exclusive(),
-  - Add kerneldoc,
-
-v2:
-  - No changes.
+  - New.
 ---
- drivers/reset/core.c  | 37 ++++++++++++++++++++++++++++++++-----
- include/linux/reset.h |  8 ++++++++
- 2 files changed, 40 insertions(+), 5 deletions(-)
+ drivers/clk/renesas/r8a78000-cpg.c | 78 +++++++++++++++++++++---------
+ 1 file changed, 56 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/reset/core.c b/drivers/reset/core.c
-index 8af7cd2e8a5029df..6d4c95b3edb18248 100644
---- a/drivers/reset/core.c
-+++ b/drivers/reset/core.c
-@@ -1141,6 +1141,7 @@ __reset_control_get_from_provider(const struct fwnode_reference_args *args,
- 				  bool gpio_fallback,
- 				  enum reset_control_flags flags)
- {
-+	struct fwnode_handle *fwnode = consumer ?: args->fwnode;
- 	struct reset_control *rstc = ERR_PTR(-EINVAL);
- 	struct reset_controller_dev *rcdev;
- 	int rstc_id = -EINVAL;
-@@ -1154,18 +1155,26 @@ __reset_control_get_from_provider(const struct fwnode_reference_args *args,
- 	if (WARN_ON(args->nargs != rcdev->fwnode_reset_n_cells))
- 		return ERR_PTR(-EINVAL);
+diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
+index 7946f9d0b423def1..873d521ed3d6f705 100644
+--- a/drivers/clk/renesas/r8a78000-cpg.c
++++ b/drivers/clk/renesas/r8a78000-cpg.c
+@@ -16,18 +16,23 @@
  
--	if (rcdev->of_xlate && is_of_node(consumer)) {
--		struct device_node *np = to_of_node(consumer);
-+	if (rcdev->of_xlate && is_of_node(fwnode)) {
-+		struct device_node *np = to_of_node(fwnode);
- 		struct of_phandle_args of_args;
- 		int ret;
+ #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
  
--		ret = of_parse_phandle_with_args(np,
-+		if (consumer) {
-+			ret = of_parse_phandle_with_args(np,
- 					 gpio_fallback ? "reset-gpios" : "resets",
- 					 gpio_fallback ? "#gpio-cells" : "#reset-cells",
- 					 gpio_fallback ? 0 : index,
- 					 &of_args);
--		if (ret)
--			return ERR_PTR(ret);
-+			if (ret)
-+				return ERR_PTR(ret);
-+		} else {
-+			of_args.np = of_node_get(np);
-+			of_args.args_count = args->nargs;
++struct clk_map_in {
++	int dt_id;		/* DT binding clock ID or -1 sentinel */
++	u32 fw_id;		/* FIXED_CLK() ID */
++};
 +
-+			for (unsigned int i = 0; i < args->nargs; i++)
-+				of_args.args[i] = args->args[i];
-+		}
+ struct clk_map {
+ 	int dt_id;		/* DT binding clock ID or -1 sentinel */
+ 	u32 fw_id;		/* FIXED_CLK() ID */
++	struct clk_hw *hw;
+ };
  
- 		rstc_id = rcdev->of_xlate(rcdev, &of_args);
- 		of_node_put(of_args.np);
-@@ -1257,6 +1266,24 @@ struct reset_control *__reset_control_get(struct device *dev, const char *id,
- }
- EXPORT_SYMBOL_GPL(__reset_control_get);
+ enum fixed_clk {
+ 	FIXED_CLK_66M,
+ 	FIXED_CLK_266M,
+-	NUM_FIXED_CLKS
+ };
  
-+/**
-+ * reset_control_get_from_provider_exclusive - Lookup and obtain an exclusive
-+ *					       reference to a reset controller.
-+ * @args: Reference to the reset controller provider with all the args like
-+ *	  reset number
-+ *
-+ * Returns a struct reset_control or IS_ERR() condition containing errno.
-+ * If this function is called more than once for the same reset control it will
-+ * return -EBUSY.
-+ */
-+struct reset_control *
-+reset_control_get_from_provider_exclusive(const struct fwnode_reference_args *args)
-+{
-+	return __reset_control_get_from_provider(args, NULL, 0, false,
-+						 RESET_CONTROL_EXCLUSIVE);
-+}
-+EXPORT_SYMBOL_GPL(reset_control_get_from_provider_exclusive);
-+
- int __reset_control_bulk_get(struct device *dev, int num_rstcs,
- 			     struct reset_control_bulk_data *rstcs,
- 			     enum reset_control_flags flags)
-diff --git a/include/linux/reset.h b/include/linux/reset.h
-index 9c391cf0c82298a0..09ee47b27f88d3b1 100644
---- a/include/linux/reset.h
-+++ b/include/linux/reset.h
-@@ -90,6 +90,8 @@ struct reset_control *__fwnode_reset_control_get(struct fwnode_handle *fwnode,
- 				     const char *id, int index, enum reset_control_flags flags);
- struct reset_control *__reset_control_get(struct device *dev, const char *id,
- 					  int index, enum reset_control_flags flags);
-+struct reset_control *reset_control_get_from_provider_exclusive(
-+				const struct fwnode_reference_args *args);
- void reset_control_put(struct reset_control *rstc);
- int __reset_control_bulk_get(struct device *dev, int num_rstcs,
- 			     struct reset_control_bulk_data *rstcs,
-@@ -173,6 +175,12 @@ static inline struct reset_control *__reset_control_get(
- 	return optional ? NULL : ERR_PTR(-ENOTSUPP);
+-static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
++static const unsigned long fixed_clk_rates[] = {
+ 	[FIXED_CLK_66M] = 66666000,
+ 	[FIXED_CLK_266M] = 266660000,
+ };
+@@ -39,12 +44,10 @@ static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
+  *
+  * @dev: CPG device
+  * @map: Mapping from DT clock IDs to fixed-rate clocks
+- * @fixed_hws: Fixed rate clocks
+  */
+ struct r8a78000_cpg_priv {
+ 	struct device *dev;
+ 	const struct clk_map *map;
+-	struct clk_hw *fixed_hws[NUM_FIXED_CLKS];
+ };
+ 
+ static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
+@@ -81,8 +84,7 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
+ 	}
+ 
+ 	dev_dbg(dev, "Mapping DT clock %u to fixed clock %u\n", id, map->fw_id);
+-
+-	hw = priv->fixed_hws[map->fw_id];
++	hw = map->hw;
+ 
+ 	dev_dbg(dev, "clock %u is %s at %lu Hz\n", id, clk_hw_get_name(hw),
+ 		clk_hw_get_rate(hw));
+@@ -90,35 +92,69 @@ static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
+ 	return hw;
  }
  
-+static inline struct reset_control *reset_control_get_from_provider_exclusive(
-+				const struct fwnode_reference_args *args)
-+{
-+	return NULL;
+-static int register_fixed_clks(struct r8a78000_cpg_priv *priv)
++static struct clk_hw **register_fixed_clks(struct device *dev)
+ {
+-	struct device *dev = priv->dev;
++	unsigned int n = ARRAY_SIZE(fixed_clk_rates);
++	struct clk_hw **hws, *hw;
+ 	unsigned long rate;
+-	struct clk_hw *hw;
+ 	const char *name;
+ 
+-	for (unsigned int i = 0; i < ARRAY_SIZE(fixed_clk_rates); i++) {
++	hws = devm_kcalloc(dev, n, sizeof(*hws), GFP_KERNEL);
++	if (!hws)
++		return ERR_PTR(-ENOMEM);
++
++	for (unsigned int i = 0; i < n; i++) {
+ 		rate = fixed_clk_rates[i];
+ 		name = devm_kasprintf(dev, GFP_KERNEL, "cpg-%lu", rate);
+ 		if (!name)
+-			return -ENOMEM;
++			return ERR_PTR(-ENOMEM);
+ 
+ 		hw = devm_clk_hw_register_fixed_rate(dev, name, NULL, 0, rate);
+ 		if (IS_ERR(hw))
+-			return PTR_ERR(hw);
++			return ERR_CAST(hw);
+ 
+-		priv->fixed_hws[i] = hw;
++		hws[i] = hw;
+ 	}
+ 
+-	return 0;
++	return hws;
 +}
 +
- static inline int
- reset_control_bulk_reset(int num_rstcs, struct reset_control_bulk_data *rstcs)
++static const struct clk_map *fill_clk_map(struct r8a78000_cpg_priv *priv,
++					  const struct clk_map_in *map_in)
++{
++	struct device *dev = priv->dev;
++	struct clk_hw **fixed_hws;
++	struct clk_map *map;
++	unsigned int i;
++
++	fixed_hws = register_fixed_clks(dev);
++	if (IS_ERR(fixed_hws))
++		return ERR_CAST(fixed_hws);
++
++	for (i = 0; map_in[i].dt_id >= 0; i++) { }
++
++	map = devm_kcalloc(dev, i + 1, sizeof(*map), GFP_KERNEL);
++	if (!map)
++		return ERR_PTR(-ENOMEM);
++
++	for (i = 0; ; i++) {
++		map[i].dt_id = map_in[i].dt_id;
++		if (map[i].dt_id < 0)
++			break;
++
++		map[i].fw_id = map_in[i].fw_id;
++		map[i].hw = fixed_hws[map[i].fw_id];
++	}
++
++	devm_kfree(dev, fixed_hws);
++	return map;
+ }
+ 
+ static int r8a78000_cpg_probe(struct platform_device *pdev)
  {
+ 	struct device *dev = &pdev->dev;
+ 	struct r8a78000_cpg_priv *priv;
+-	const struct clk_map *map;
+-	int ret;
++	const struct clk_map_in *map;
+ 
+ 	map = of_device_get_match_data(dev);
+ 	if (!map)
+@@ -129,16 +165,14 @@ static int r8a78000_cpg_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	priv->dev = dev;
+-	priv->map = map;
+-
+-	ret = register_fixed_clks(priv);
+-	if (ret)
+-		return ret;
++	priv->map = fill_clk_map(priv, map);
++	if (IS_ERR(priv->map))
++		return PTR_ERR(priv->map);
+ 
+ 	return devm_of_clk_add_hw_provider(dev, r8a78000_clk_get, priv);
+ }
+ 
+-static const struct clk_map r8a78000_cpg_default[] = {
++static const struct clk_map_in r8a78000_cpg_default[] = {
+ 	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	FIXED_CLK(266M) },
+ 	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	FIXED_CLK(66M) },
+ 	{ -1 }
 -- 
 2.43.0
 
