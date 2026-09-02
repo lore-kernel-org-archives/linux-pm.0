@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0FE7473C93;
-	Wed,  2 Sep 2026 11:29:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA6DE43CE42;
+	Wed,  2 Sep 2026 11:29:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788348589; cv=none; b=FOkxevYuPUHSdnJu0VFTUF6hZTnY6QtOtgSIWXpFATAsoUPpEJ2hTSlY+1IWqwTVBF95ANG1CEAOKXoD5JXLr4ujTOMFjjNC7t8YqBZUQVPRin4xzveYEQPHwuNVr3EOIlZ2DmrUcc92/Z63Pzne2ZSEfYkhCWpIjNB4Bw7EunQ=
+	t=1788348594; cv=none; b=gWiFJcVSs/Bk94NDnM8lTZS09kxn/JmwkowLHRzxnklui1S9Cp1ShJEY57gq4bOB08hbOppJpHCe9NI5lHe/lWD//J1knGV5oVgIRCjE3+XdsoZ5/iCMs35eoPYEVoHguJMQ+zjE5G394SCoqej2suh/xx6NrtSIJBPWvp9MuO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788348589; c=relaxed/simple;
-	bh=KTuC1vhsPzJF0Hhes+ZFU0fLx7PtNCTVzxJU43emmDM=;
+	s=arc-20240116; t=1788348594; c=relaxed/simple;
+	bh=IgtgdDt6OCi3Gt/CasZpVP0tIww1DJE6xBwsdJPD7qQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oB5hgt5IVQbeQf+S6HYAKuZ0MBMEX4go/gDj2ngCIy/L3sluVqGlB0UKA9mo3qJG0jlRHHmNS5SWH/ZYCmvZY7JaEOoy/chH6jGGJMYeWs8UHjDxloEAmfrp2TzgXTgVVpzEQSJASJSf5rumJOFo02enVFldBUyqgKTtkrUc47Y=
+	 MIME-Version; b=Bi2zMdD7Iwn84UJyNvzdNaFv+GXEU5pPw40T5mkIaGe1dMA32qA4so5s+tEdg46rhkSFYS3GI/XedOUKJ9WPE2uEeuybO/MIXPdjaOhtfipYQogJDWEPst8IWVDSNSNShHrj4+FD3rIHCow9DDBfuYVIm8Ywi5HhOuULiygzlVI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38FAD1F00A3A;
-	Wed,  2 Sep 2026 11:29:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06B731F000E9;
+	Wed,  2 Sep 2026 11:29:47 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -43,9 +43,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 01/12] dt-bindings: clock: renesas,r8a78000-cpg: Add renesas,scmi-firmware property
-Date: Wed,  2 Sep 2026 13:29:17 +0200
-Message-ID: <2cf42d7ef9b452efbab3007ec2c2340cf87adbbf.1788338320.git.geert+renesas@glider.be>
+Subject: [PATCH v3 02/12] dt-bindings: power: renesas,r8a78000-mdlc: Add firmware property
+Date: Wed,  2 Sep 2026 13:29:18 +0200
+Message-ID: <f1bb6566f00a06df7c01f43e5329b754a32620e9.1788338320.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1788338320.git.geert+renesas@glider.be>
 References: <cover.1788338320.git.geert+renesas@glider.be>
@@ -58,9 +58,9 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
 On systems using the ARM System Control and Management Interface (SCMI),
-the Clock Pulse Generator hardware registers must not be accessed
-directly.  Instead, the SCMI message protocol must be used for inquiry,
-configuration, and control of clocks.
+Module Controller hardware registers must not be accessed directly.
+Instead, the SCMI message protocol must be used for inquiry,
+configuration, and control of power domains, clocks, and resets.
 
 Add a "renesas,scmi-firmware" property to distinguish between systems
 with and without SCMI, and to indicate which SCMI firmware interface
@@ -76,24 +76,24 @@ v3:
   - Move forward in series,
 
 v2:
-  - Spin off from "dt-bindings: clock: Document Renesas R-Car X5H Clock
-    Pulse Generator".
+  - Spin off from "dt-bindings: power: Document Renesas R-Car X5H Module
+    Controller".
 ---
- .../devicetree/bindings/clock/renesas,r8a78000-cpg.yaml  | 9 +++++++++
+ .../devicetree/bindings/power/renesas,r8a78000-mdlc.yaml | 9 +++++++++
  1 file changed, 9 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-index 4e23bba334382346..d4123b1d1890c624 100644
---- a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-+++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-@@ -35,6 +35,14 @@ properties:
-       <dt-bindings/clock/renesas,r8a78000-cpg.h>.
+diff --git a/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+index 1dba1e1b1c5b52d0..27d85dd49f954623 100644
+--- a/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
++++ b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+@@ -43,6 +43,14 @@ properties:
+       and thus identical to the second power domain specifier cell.
      const: 1
  
 +  renesas,scmi-firmware:
 +    $ref: /schemas/types.yaml#/definitions/phandle
 +    description:
-+      On systems where the CPG must not be accessed directly, but only through
++      On systems where the MDLC must not be accessed directly, but only through
 +      an SCMI firmware interface provider, this property must be present and
 +      reference the device node that describes the SCMI compliant firmware
 +      interface provider to use instead.
@@ -101,10 +101,10 @@ index 4e23bba334382346..d4123b1d1890c624 100644
  required:
    - compatible
    - reg
-@@ -52,4 +60,5 @@ examples:
-             clocks = <&extal_clk>, <&extalr_clk>;
-             clock-names = "extal", "extalr";
-             #clock-cells = <1>;
+@@ -58,4 +66,5 @@ examples:
+             reg = <0xc3060000 0x1000>;
+             #power-domain-cells = <2>;
+             #reset-cells = <1>;
 +            renesas,scmi-firmware = <&scmi>;
      };
 -- 
