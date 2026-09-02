@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B74A477981;
-	Wed,  2 Sep 2026 11:29:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EE8747B43E;
+	Wed,  2 Sep 2026 11:30:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788348600; cv=none; b=jFo0qZpeJ8r76yLSWZ/lPs/whwblAWgYji2AZ/dDkBtwuy5KjRhS4ZMIcx9MaFVioPpXxcqYaKE7HOnPX3Qh2xEsIudYIQA3OJgas6nDbGdrRT5NP1cwD0lPCkW+nWW/fKKdkxZ83+lb7t0JqqaMqAl+94dqO8ZL/fM0IRTtknQ=
+	t=1788348609; cv=none; b=AymGjhVqTbmbN9EHEzde4AIt36d1CHIWGNdP9Vcqyu+vCG0LfSDwhaqOvMXc4NfI7Ef0LpRKACNAReXpGihXMgIntFTwZHgkgypNeWV/vtbV4Mj4qwuHfaVawIQwam8HYXAvQBWhIbDtIkHPzShXd8WZ1B4zzcCi/wkkwN7FKlM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788348600; c=relaxed/simple;
-	bh=MVNxeUA/K/DCY2zlhmYRlV9lm44y77mqd+8ryUCS4vg=;
+	s=arc-20240116; t=1788348609; c=relaxed/simple;
+	bh=9YsujQnpLKBd9iylXRIYgUWGHFw2cNgDVBGpcd+eiLE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=avZsI6b6UrCtByvD1ykcvc8cwkut5OFhFjV6fadwnCb58uxrr7rWNXtC1EUgpSiaEWCf2sp6Ql8vK39QBU4rpCnym+u5AY2OJ88Npb2El+cj3jrzu8vRDLH9noeCXLqv2oIxn7nTpZGTF5DCB6DzPk7yTwb6joLDtxbyrWJo6oo=
+	 MIME-Version; b=Xx3itJKpV+J+TUU0MCsBXLa6MIXbXktxKQoa2risJ4aj1oRiUZzN+D4YaFhnbzQAje1DR6CnPK9B3e8vbNj6BV3FT9TNfqHlE3XcPN6HlW0312r0QePNNciCFS2i+RD+Ycp+0h1IgFX5wQxlGRezt4nLeY1uVJt8ADB41smZy/c=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C357D1F00A3A;
-	Wed,  2 Sep 2026 11:29:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98EE11F000E9;
+	Wed,  2 Sep 2026 11:29:59 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -43,9 +43,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 03/12] firmware: arm_scmi: Add scmi_get_base_info()
-Date: Wed,  2 Sep 2026 13:29:19 +0200
-Message-ID: <59241a6714353aa7ff180368b5a733b3db00012f.1788338320.git.geert+renesas@glider.be>
+Subject: [PATCH v3 04/12] of: property: fw_devlink: Add support for renesas,scmi-firmware
+Date: Wed,  2 Sep 2026 13:29:20 +0200
+Message-ID: <1d5c56c80291e447208ac8777aaf90ad6f0a4f4d.1788338320.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1788338320.git.geert+renesas@glider.be>
 References: <cover.1788338320.git.geert+renesas@glider.be>
@@ -57,103 +57,43 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently non-SCMI drivers cannot find out what the specific versions of
-each SCMI provider implementation on the running system are.
+Let fw_devlink create device links between consumers and suppliers of
+SCMI firmware on Renesas platforms, and enforce these dependencies.
 
-However, different versions may use different ABIs (e.g. different clock
-IDs), provide different abstractions, or behave different, requiring
-remapping or workarounds in other drivers.
-
-Add a public function to obtain base protocol information for the
-selected SCMI provider.  This will be used by the R-Car X5H Clock Pulse
-Generator and Module Controller drivers, to map hardware descriptions in
-DT to SCMI abstractions offered by the SCMI firmware implementation
-present.
+This prevents probing of drivers before the firmware they depend on
+becomes available, thus avoiding unneeded probe deferrals.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - No changes,
+  - s/firmware/renesas,scmi-firmware/,
 
 v2:
-  - Add that SCMI may provide different abstractions,
-  - Add missing asterisk to blank kerneldoc line,
-  - Return -EPROBE_DEFER or -EOPNOTSUPP instead of -ENOENT.
+  - No changes.
 ---
- drivers/firmware/arm_scmi/driver.c | 33 ++++++++++++++++++++++++++++++
- include/linux/scmi_protocol.h      |  8 ++++++++
- 2 files changed, 41 insertions(+)
+ drivers/of/property.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-index ef29fd223287dd58..478f25ae0587e422 100644
---- a/drivers/firmware/arm_scmi/driver.c
-+++ b/drivers/firmware/arm_scmi/driver.c
-@@ -3525,6 +3525,39 @@ int scmi_inflight_count(const struct scmi_handle *handle)
- 	}
- }
+diff --git a/drivers/of/property.c b/drivers/of/property.c
+index 72cf12907de034e9..e79cd3cce4e2e41a 100644
+--- a/drivers/of/property.c
++++ b/drivers/of/property.c
+@@ -1417,6 +1417,7 @@ DEFINE_SIMPLE_PROP(power_supplies, "power-supplies", NULL)
+ DEFINE_SIMPLE_PROP(mmc_pwrseq, "mmc-pwrseq", NULL)
+ DEFINE_SUFFIX_PROP(regulators, "-supply", NULL)
+ DEFINE_SUFFIX_PROP(gpio, "-gpio", "#gpio-cells")
++DEFINE_SIMPLE_PROP(renesas_scmi_firmware, "renesas,scmi-firmware", NULL)
  
-+/**
-+ * scmi_get_base_info() - Get SCMI base protocol information
-+ *
-+ * @of_node: pointer to a device node for an SCMI provider
-+ * @version: pointer to write base protocol information
-+ *
-+ * Check if an SCMI device has been instantiated for the passed device node
-+ * pointer, and, if found, return its base info.
-+ *
-+ * Return: 0 on Success,
-+ *         -EPROBE_DEFER if the SCMI provider is not ready yet,
-+ *         -EOPNOTSUPP if SCMI support is disabled.
-+ */
-+int scmi_get_base_info(struct device_node *of_node,
-+		       struct scmi_base_info *version)
-+{
-+	int ret = -EPROBE_DEFER;
-+	struct scmi_info *info;
-+
-+	mutex_lock(&scmi_list_mutex);
-+	list_for_each_entry(info, &scmi_list, node) {
-+		if (info->dev->of_node == of_node) {
-+			*version = info->version;
-+			ret = 0;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&scmi_list_mutex);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(scmi_get_base_info);
-+
- static int __init scmi_driver_init(void)
- {
- 	scmi_quirks_initialize();
-diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index 5ab73b1ab9aa4fa8..fd2d648964f68f53 100644
---- a/include/linux/scmi_protocol.h
-+++ b/include/linux/scmi_protocol.h
-@@ -971,6 +971,8 @@ struct scmi_driver {
- int scmi_driver_register(struct scmi_driver *driver,
- 			 struct module *owner, const char *mod_name);
- void scmi_driver_unregister(struct scmi_driver *driver);
-+int scmi_get_base_info(struct device_node *of_node,
-+		       struct scmi_base_info *version);
- #else
- static inline int
- scmi_driver_register(struct scmi_driver *driver, struct module *owner,
-@@ -980,6 +982,12 @@ scmi_driver_register(struct scmi_driver *driver, struct module *owner,
- }
- 
- static inline void scmi_driver_unregister(struct scmi_driver *driver) {}
-+
-+static inline int scmi_get_base_info(struct device_node *of_node,
-+				     struct scmi_base_info *version)
-+{
-+	return -EOPNOTSUPP;
-+}
- #endif /* CONFIG_ARM_SCMI_PROTOCOL */
- 
- #define scmi_register(driver) \
+ static struct device_node *parse_pinctrl_n(struct device_node *np,
+ 					   const char *prop_name, int index)
+@@ -1574,6 +1575,7 @@ static const struct supplier_bindings of_supplier_bindings[] = {
+ 	{ .parse_prop = parse_regulators, },
+ 	{ .parse_prop = parse_gpio, },
+ 	{ .parse_prop = parse_gpios, },
++	{ .parse_prop = parse_renesas_scmi_firmware, },
+ 	{
+ 		.parse_prop = parse_post_init_providers,
+ 		.fwlink_flags = FWLINK_FLAG_IGNORE,
 -- 
 2.43.0
 
