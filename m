@@ -1,315 +1,283 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from CHN02-BJS-obe.outbound.protection.partner.outlook.cn (mail-bjschn02on2138.outbound.protection.partner.outlook.cn [139.219.17.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3C19406834;
-	Thu,  3 Sep 2026 09:29:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788427779; cv=none; b=J7TM2d75PSYupNFL/QgdklOuiDUyucW1MMOTwtAQ7PgmiQ4mknqhEoLjayERmOSoLrnXaY8dmb5i/+WbEsxfWEG5so/L2Swo+vWEdbUgjPjpcBiXNry5318W9N6JvfBaAPs6FslzKosv4e5gc97ClPh2Pfg/Bu2mmq9v8vTpJ+w=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788427779; c=relaxed/simple;
-	bh=E9xi17nHRKtYL8cl0hwCAzXyUdTOBvV6c9ZffPhxeW4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=V3fk/z3ohS6kGeGhfzqJN1Zb/c666ub5LyGddm1JaxtwHS9iWL2RABIKwskq5WFIKJkDMa1So9oh9snCuwnBBoxw6sZRaib/+yMI11jaDnLUrknXiGUlJG7ZhVmYyOWSPLAIzEHNkZ1rV0ekBUUWrWfpURqC+ujm2dlUzox0oOg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iyx41bCy; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iyx41bCy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E3211F000E9;
-	Thu,  3 Sep 2026 09:29:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788427777;
-	bh=hVNYAsUg3Uzsw7ua/7010sgVgW9MJba5r2WRrq69ciI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=iyx41bCy5dQ4LSeFNP+EncH+yzkWTUkTPAroL8i6hF89wyjNLH51ihhyLVZSqDdkt
-	 IvNX4CGSXdgjtpkQiSWLRlFJKOfY6uPhBeRWjJLNTQxv7Vy9DliMl6L4G+gSO/8bZ0
-	 HYXjTfiU6oR9z5tq8Bkb/5fLlnOy+m5f+w8cxUaX77eCl5KTmBDUxrp1iIrF57H2RB
-	 KrAunxsylBBDWR/0sAstDnjzER1/D9UVeck2aFe0q0+3LEQOqXrZHNJ0OiA+N3nFoc
-	 aF+fGkstZDs2r+rErVCTiyRFIURVeeDuyFNAhuJsx5j+QEyxRwOUPNR7hxg8BL1mI/
-	 dXgYLX3nmANDw==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 03 Sep 2026 12:28:32 +0300
-Subject: [PATCH v3 6/6] Revert "arch: introduce
- set_direct_map_valid_noflush()"
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C21544065E;
+	Thu,  3 Sep 2026 09:57:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=139.219.17.138
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788429453; cv=fail; b=rJYgaYSgqbmfMp2Q4Tu7UjHdE8uq0RTROoJe5WrzBnZHEakMm5AwZqHrklNXFV4qj8WF++NBJagxvEi4W8DwbEgQGzdJ5531bW8U3vuEqf+2RAufyIx75eNcDoQ03D4sx4diBiKYP6lO0Ll2jw21sjDAbgxxg83ljOuxXRY/IGU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788429453; c=relaxed/simple;
+	bh=fPfnfa+udoGcmHROCDGZqA+KR9fMa7LarKi+L4yqbWM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=qdQXupSZz1B7RmfKMfJmxuRHO8NAdBiBQtSWQgycoxw89PBELG9PT8B/o8b8zTDvGtMw8l7jc+2BeOs4Hu8wzECaoK2r28D3TOXe0jhGcV97Hjxm38qkHEzwlARCE94MIBg2IHq2zr8sfw22P0TGPv9UjfzmSuUBE1qrB+fPaRs=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=starfivetech.com; spf=pass smtp.mailfrom=starfivetech.com; arc=fail smtp.client-ip=139.219.17.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=starfivetech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starfivetech.com
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=fVWGM01EJ0fvvRJXQAFCa8iB9gDi9iwpT1LVjbot8f5oGa64Ugr+5XNJQIs58003mFoGlMElpd0YmQpLVDS70w70TS3rFjIuejh/WNLH4ziJwTU9N4NzgD/r+/IaRTjVpL9TCnzYjPYb5ZXkFLxcJj5AdityPBKnic6SRSsMhTjzvt6yEM4U8UG9ZdZyfhyRuYC/z5qRiztsnkglrFmKTOtyt94BHRAGwj3l00SvH8/T07SwWjXlTK+rwi5HNU8o0TxfIet3Cxg4OJW6FjB1Pk0weHUlfNQMNRVSsrh3nfTmHTY+K9gscvKrmU+VDzdeiz+eo4FNL3K8Bu8cCJ0V/g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=w+qoQIZIyGZLEKbZaeCztvK/3VrELEMlKlZ6iktumko=;
+ b=lomRyr/7NmJNK5oCHjmysXgNy/iJNBxVT784FrSlZd4yandra/RddNVZ9pV/QxGK7/sCNdLONwGVgnX1XAKkbjpEUzv4NkAkN7YLoZYmAQA4r87Q8DBzJ/cLpZ3mEZnGopLKvR4Tt3VaIPp1smJulxInXayO4u2WPkQ45gHMMFDRqFxEYgE2KOrsV0CZfT11Ea3CvKA0tLHbh7ZtgVvmrn0KtM/RHNdn6FTw+9OvRyMNXn/GX1G3hwhnmQedcUMsO1pfOQ8pGs/XZEXJD2sEFl68W3MaWXn18xra6uUrXYjPUL6C7PIIL8gH+4QdtBDTxY+hcca9NqvIVFL5Pw07Rw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=starfivetech.com; dmarc=pass action=none
+ header.from=starfivetech.com; dkim=pass header.d=starfivetech.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=starfivetech.com;
+Received: from BJXPR01MB0838.CHNPR01.prod.partner.outlook.cn
+ (2406:e500:c211:1b::23) by BJXPR01MB0680.CHNPR01.prod.partner.outlook.cn
+ (2406:e500:c211:1b::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.12; Thu, 3 Sep
+ 2026 09:24:19 +0000
+Received: from BJXPR01MB0838.CHNPR01.prod.partner.outlook.cn
+ ([fe80::e644:7bf5:5a3c:e548]) by
+ BJXPR01MB0838.CHNPR01.prod.partner.outlook.cn ([fe80::e644:7bf5:5a3c:e548%3])
+ with mapi id 15.21.0315.011; Thu, 3 Sep 2026 09:24:19 +0000
+From: Joshua Yeong <joshua.yeong@starfivetech.com>
+To: rahul@summations.net,
+	anup@brainfault.org,
+	lftan.linux@gmail.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	ulfh@kernel.org,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu
+Cc: alex@ghiti.fr,
+	joshua.yeong@starfivetech.com,
+	linux-riscv@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/3] dt-bindings: power: Add RPMI device power service
+Date: Thu,  3 Sep 2026 17:23:45 +0800
+Message-ID: <20260903092347.620060-2-joshua.yeong@starfivetech.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260903092347.620060-1-joshua.yeong@starfivetech.com>
+References: <20260903092347.620060-1-joshua.yeong@starfivetech.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: ZQ0PR01CA0021.CHNPR01.prod.partner.outlook.cn
+ (2406:e500:c550:2::14) To BJXPR01MB0838.CHNPR01.prod.partner.outlook.cn
+ (2406:e500:c211:1b::23)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260903-execmem-set-vm-perms-v0-2-v3-6-949b64a9f755@kernel.org>
-References: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
-In-Reply-To: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?utf-8?q?Adrian_Barna=C5=9B?= <abarnas@google.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, Alexandre Ghiti <alex@ghiti.fr>, 
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, 
- Brendan Jackman <brendan.jackman@linux.dev>, 
- Catalin Marinas <catalin.marinas@arm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Dave Hansen <dave.hansen@linux.intel.com>, 
- David Hildenbrand <david@kernel.org>, 
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
- Heiko Carstens <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>, 
- Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Paul Walmsley <pjw@kernel.org>, Pavel Machek <pavel@kernel.org>, 
- Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Ryan Roberts <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>, 
- Thomas Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>, 
- Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, 
- Will Deacon <will@kernel.org>, x86@kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-mm@kvack.org, linux-pm@vger.kernel.org, 
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
- loongarch@lists.linux.dev
-X-Mailer: b4 0.17-dev
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BJXPR01MB0838:EE_|BJXPR01MB0680:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7549e53e-8777-453a-19b8-08df099d21e6
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam:
+ BCL:0;ARA:13230040|52116014|366016|7416014|1800799024|376014|23010399003|3023799007|921020|56012099006|6133799003|22082099003|13003099007|38350700014|10067099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+ tY7w54jMBELqW6gJTCeQM3iv3tyWcG19W+eG7v4FeOtcT3QqMnR2ehaJxlLd2Jny12E5ftrv2+Kuf1Er5l4lcSUp4eBwQXCY/Otpna8qlquBC0JA3NRIw79HKxqVUl0fy6k+GGmAcy9h/9vNHYcCaetrRLKHY88nGd1mxbBfSj6PEwxI7lC7aQjgenPr16UrDajmKWIsf9tyQf5HG73+oEFc34hocS7Om7Izf/LEIom/kMasRyliB/HBzI0u3ha6AoSPvH9pa9RQgdhp+x2MEd2ZCZcp9aUNr4V0h49BS6bSLyhtLswgobCzjv/ZJ5Z7uPyHtIOu9nuCG8cwww1u/EwrL2HOtweTHhZ0aHDX7GIBuj2hF+smPcjr401MtzjzYQlmjx1dB2DAXRaPW4ohTECGHdkmoQWDAc48A6XyCMwXIzF4akcl6iiZak4MBkDPGKiWQGWGhXCHcG77qZ2FUONow2oQ9AUiLuxtjAEzsu6q7Mh7PQDkjI9LY1xNjNyWfXv8J+UvkbHtqH1677BER+E6SMYwbeg74oxKrVsrW2QyqQ2g0dnABzBmjZgtE6UjWc4jNeJ8th0g19wKymkbZA==
+X-Forefront-Antispam-Report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BJXPR01MB0838.CHNPR01.prod.partner.outlook.cn;PTR:;CAT:NONE;SFS:(13230040)(52116014)(366016)(7416014)(1800799024)(376014)(23010399003)(3023799007)(921020)(56012099006)(6133799003)(22082099003)(13003099007)(38350700014)(10067099003)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+ =?us-ascii?Q?jTeZsg4BAtQvJnA0/aE7aoji57yFP/F1XRPKJv3vI/Au0Q+sQX0wYNjED5da?=
+ =?us-ascii?Q?/D44jflzBHbWmxaBA4RtzDR8kVqYloBKWNKFP6Zco6sOTiimL7vFh0zLfjzh?=
+ =?us-ascii?Q?kEUJpN+y7TGNm8cjMa9djoW8N7bWIwpbrruCC5c/hQ0kcnmNSqzPyJ2ox4dS?=
+ =?us-ascii?Q?fC0NUIc+yJNVUqUcJFiLs4McXGQiAkODlSvRVfa7CSVHxvXZF5L7KGzlTvMu?=
+ =?us-ascii?Q?P7i2eEwMwiEo8KrEuQtJAlUOU0S5QNw8rVhEUTJzXkTRXMdJhTUqC25RUxHq?=
+ =?us-ascii?Q?URifiTdRVvNniUGZCtDCT3Sv/LGMopnIkOBwDAN3EEHKPaH9skC7KJ5OKJEk?=
+ =?us-ascii?Q?AAoxnjcaSWLIzqWncHD8lIBnxN42gWMhifvgOPIftH8rN46WW9uellKYFNdL?=
+ =?us-ascii?Q?R7PXby3vBOw/lWJjSycPbemQnHDrN6ISjMA8lLEwF8jXXnmC+J8aL38DML+v?=
+ =?us-ascii?Q?a2iQ+ioHRPxTLMA2oYdv2jYflDMpeBUVwMYWlhVu+Htf9ADdVQj5CHVq66Qy?=
+ =?us-ascii?Q?ufWRvxizzYVnmWiwYnU9/CTCKd6vI7OdtFbUTtIkLe2/Q1KJBv/n9G3S0pD1?=
+ =?us-ascii?Q?PRCFlGCZR4RIC6WV1vl0f1SCPUrgLRRM21LxmKO0F++v0cRPk3rEtWVvyi5L?=
+ =?us-ascii?Q?NHvnOLskDDkwSDQtiDkc5Dd1s7zya07uJ4/ugUG539vGNzvXU8O1QBRGnoax?=
+ =?us-ascii?Q?7caFCq5ZFaLTp6haLsZpYiiN4OJyZykgZpQs+S4lZcT1nvC49Meqr8oxPkYn?=
+ =?us-ascii?Q?vmZMQKSA1wVPMoJFdp6sTrvGJEiWFQ3jgFuTdchrea3OK1B0Eqa5jy4g3X66?=
+ =?us-ascii?Q?pI4RMPoVKvZg29ivVOh9kjDNxFGLvDubQbWXK3zJ0tFN/mUWu7vy+iG62Eoe?=
+ =?us-ascii?Q?Cd05rNMQpoau0vPYpGMP17TSxvU12SMfu+6Vc+KKohhyL7oCMhsx61YJvohS?=
+ =?us-ascii?Q?1fLJIwX3tIj+LgQW1iMNOmrOXLNIXrk9rwmSGJNEfzls/5tDqQ/6o7y3Smdg?=
+ =?us-ascii?Q?jNeqW5xI+DuuSLGIBWWH76FiV63o0jMLxS7/7cEUoQrRQZuEDR/gj8FetJBy?=
+ =?us-ascii?Q?625ej+nHM3HixK4jYW+j24frnEwGX2uyUGT33DlMFFXdyUCUxtOjkiiyCS5q?=
+ =?us-ascii?Q?8I1oKUYE3N2qbEJtI8tvfa3ZFQG8aAVWpvKT3voXu90I94Rb57PCzm/ePXY/?=
+ =?us-ascii?Q?K5LA3zHaAr214/paumbqZwde74M57U4Mhl6ZRuXtQNuwquA9S2HP6Nje32Vk?=
+ =?us-ascii?Q?E2G5P+kMJ2Evdwd3XMRBOfLhcCCyoi6sqxoRZ+RLI/5IHhe2ksGOcr3HhwXU?=
+ =?us-ascii?Q?FO4hB+OY+VdarmJn6JuOQtqd6xswPr90HB0rzM4oIujxHydnMub8n8uwFxp1?=
+ =?us-ascii?Q?u454bbMpiGCCgeBNZzKCSVUXzjKJyykAjDZUZN7TH8GxYyb+Vc20oeLOV149?=
+ =?us-ascii?Q?b1iOKS8gtoQprms4nQptcSeVWsUl/gq7iIiVDEW6q3+bfpQ6CiPmr0WWHL3g?=
+ =?us-ascii?Q?lfp4XMsjqFC2rrhM3WaPpp25edcESq8Fl/z6vfY+xIaXEs4l4s37mjyDIxmt?=
+ =?us-ascii?Q?ReAB4Bkxw5S5TTO7QYstIKde4vGH1o+gZHvFwF6qujvkOTiws8YlU7YU+1Ru?=
+ =?us-ascii?Q?LqUa8T35lbmX7PhgScdSL88OlVJhHmAi8pbA4D6Rb14U0xemlncqNVjR4K4R?=
+ =?us-ascii?Q?lt5ZsAV5M2oPqwzIvokacVQcR4uWdx8vGNuQH3dtzhU5ZRUuQ7w3cleDEv0u?=
+ =?us-ascii?Q?OAxThs8wZ6TWN3Id81PsyEhtwYpLGBU=3D?=
+X-OriginatorOrg: starfivetech.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7549e53e-8777-453a-19b8-08df099d21e6
+X-MS-Exchange-CrossTenant-AuthSource: BJXPR01MB0838.CHNPR01.prod.partner.outlook.cn
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Sep 2026 09:24:19.5803
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 06fe3fa3-1221-43d3-861b-5a4ee687a85c
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: UJrizHD3KQJrmwOPDATjq/ddlulJ/4FlAkVmCgFRIZyc/373x1iJ7GbCvRxH6yAP3pnGwY1BdVz/5Y5rd4BNZtj5rJSbWjkJ7KBqEhs1r5c=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BJXPR01MB0680
 
-Commit 0c6378a71574 ("arch: introduce set_direct_map_valid_noflush()")
-added set_direct_map_valid_noflush() to allow updating the direct map
-for a physically contiguous range in execmem.
+Add device tree bindings for the RISC-V Platform Management Interface
+(RPMI) device power service group, both for the supervisor-facing power
+domain controller and for the SBI MPXY channel which the SBI
+implementation uses to expose the service group.
 
-As Brendan recently pointed out [1], this API is confusing because on
-arm64 it means that is sets VALID bit in ptes, while on other
-architectures it is an analog of set_direct_map_default_noflush().
-
-The only user of set_direct_map_valid_noflush() was execmem's ROX cache
-freeing path and it was switched to utilize VM_FLUSH_RESET_PERMS for
-resetting permissions of the direct map alias.
-
-With the last user gone and with set_direct_map_{invalid,default}_noflush()
-accepting number of pages as a parameter, set_direct_map_valid_noflush()
-become a copy of set_memory_valid() on arm64 and a duplicate of
-set_direct_map_{invalid,default}_noflush() on other architecture, it is
-safe to remove set_direct_map_valid_noflush().
-
-Also drop a stale comment in arm64::__kernel_map_pages() that Linus
-bothered to add when merging changes containing set_direct_map_valid_noflush()
-to his tree.
-
-This reverts commit 0c6378a71574daa6cd1534ad42a956e3262756c7.
-
-[1] https://lore.kernel.org/all/DJ69RCVRBO0Y.3JCYSW50IC4RC@linux.dev
-
-Reviewed-by: Brendan Jackman <brendan.jackman@linux.dev>
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Signed-off-by: Joshua Yeong <joshua.yeong@starfivetech.com>
 ---
- arch/arm64/include/asm/set_memory.h     |  1 -
- arch/arm64/mm/pageattr.c                | 16 ----------------
- arch/loongarch/include/asm/set_memory.h |  1 -
- arch/loongarch/mm/pageattr.c            | 19 -------------------
- arch/riscv/include/asm/set_memory.h     |  1 -
- arch/riscv/mm/pageattr.c                | 15 ---------------
- arch/s390/include/asm/set_memory.h      |  1 -
- arch/s390/mm/pageattr.c                 | 12 ------------
- arch/x86/include/asm/set_memory.h       |  1 -
- arch/x86/mm/pat/set_memory.c            |  8 --------
- include/linux/set_memory.h              |  6 ------
- 11 files changed, 81 deletions(-)
+ .../power/riscv,rpmi-device-power.yaml        | 65 +++++++++++++++++++
+ .../power/riscv,rpmi-mpxy-device-power.yaml   | 65 +++++++++++++++++++
+ 2 files changed, 130 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/riscv,rpmi-device-power.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/riscv,rpmi-mpxy-device-power.yaml
 
-diff --git a/arch/arm64/include/asm/set_memory.h b/arch/arm64/include/asm/set_memory.h
-index b07fd4e026eac..0091ba12200e6 100644
---- a/arch/arm64/include/asm/set_memory.h
-+++ b/arch/arm64/include/asm/set_memory.h
-@@ -13,7 +13,6 @@ int set_memory_valid(unsigned long addr, int numpages, int enable);
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int numpages);
- int set_direct_map_default_noflush(struct page *page, unsigned int numpages);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- int set_memory_encrypted(unsigned long addr, int numpages);
-diff --git a/arch/arm64/mm/pageattr.c b/arch/arm64/mm/pageattr.c
-index db8d60a84d144..132938b32eb16 100644
---- a/arch/arm64/mm/pageattr.c
-+++ b/arch/arm64/mm/pageattr.c
-@@ -355,23 +355,7 @@ int realm_register_memory_enc_ops(void)
- 	return arm64_mem_crypt_ops_register(&realm_crypt_ops);
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	unsigned long addr = (unsigned long)page_address(page);
--
--	if (!can_set_direct_map())
--		return 0;
--
--	return set_memory_valid(addr, nr, valid);
--}
--
- #ifdef CONFIG_DEBUG_PAGEALLOC
--/*
-- * This is - apart from the return value - doing the same
-- * thing as the new set_direct_map_valid_noflush() function.
-- *
-- * Unify? Explain the conceptual differences?
-- */
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
- 	if (!can_set_direct_map())
-diff --git a/arch/loongarch/include/asm/set_memory.h b/arch/loongarch/include/asm/set_memory.h
-index 563aab92896e9..4bb01172fbc24 100644
---- a/arch/loongarch/include/asm/set_memory.h
-+++ b/arch/loongarch/include/asm/set_memory.h
-@@ -17,6 +17,5 @@ int set_memory_rw(unsigned long addr, int numpages);
- bool kernel_page_present(struct page *page);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- 
- #endif /* _ASM_LOONGARCH_SET_MEMORY_H */
-diff --git a/arch/loongarch/mm/pageattr.c b/arch/loongarch/mm/pageattr.c
-index 43ad2a104f19d..a7dcff40f7598 100644
---- a/arch/loongarch/mm/pageattr.c
-+++ b/arch/loongarch/mm/pageattr.c
-@@ -217,22 +217,3 @@ int set_direct_map_invalid_noflush(struct page *page, unsigned int nr)
- 
- 	return __set_memory(addr, nr, __pgprot(0), __pgprot(_PAGE_PRESENT | _PAGE_VALID));
- }
--
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	unsigned long addr = (unsigned long)page_address(page);
--	pgprot_t set, clear;
--
--	if (addr < vm_map_base)
--		return 0;
--
--	if (valid) {
--		set = PAGE_KERNEL;
--		clear = __pgprot(0);
--	} else {
--		set = __pgprot(0);
--		clear = __pgprot(_PAGE_PRESENT | _PAGE_VALID);
--	}
--
--	return __set_memory(addr, nr, set, clear);
--}
-diff --git a/arch/riscv/include/asm/set_memory.h b/arch/riscv/include/asm/set_memory.h
-index db1d0ed82b696..e9f9960c19477 100644
---- a/arch/riscv/include/asm/set_memory.h
-+++ b/arch/riscv/include/asm/set_memory.h
-@@ -42,7 +42,6 @@ static inline int set_kernel_memory(char *startp, char *endp,
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- #endif /* __ASSEMBLER__ */
-diff --git a/arch/riscv/mm/pageattr.c b/arch/riscv/mm/pageattr.c
-index 20ef95b1d0c36..5b3cf326455db 100644
---- a/arch/riscv/mm/pageattr.c
-+++ b/arch/riscv/mm/pageattr.c
-@@ -386,21 +386,6 @@ int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- 			    PAGE_KERNEL, __pgprot(_PAGE_EXEC));
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	pgprot_t set, clear;
--
--	if (valid) {
--		set = PAGE_KERNEL;
--		clear = __pgprot(_PAGE_EXEC);
--	} else {
--		set = __pgprot(0);
--		clear = __pgprot(_PAGE_PRESENT);
--	}
--
--	return __set_memory((unsigned long)page_address(page), nr, set, clear);
--}
--
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static int debug_pagealloc_set_page(pte_t *pte, unsigned long addr, void *data)
- {
-diff --git a/arch/s390/include/asm/set_memory.h b/arch/s390/include/asm/set_memory.h
-index 6b0aa9147ed8e..e3562bf0c1aa5 100644
---- a/arch/s390/include/asm/set_memory.h
-+++ b/arch/s390/include/asm/set_memory.h
-@@ -62,7 +62,6 @@ __SET_MEMORY_FUNC(set_memory_4k, SET_MEMORY_4K)
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- #endif
-diff --git a/arch/s390/mm/pageattr.c b/arch/s390/mm/pageattr.c
-index 7549543d62412..80e834e8b8e1b 100644
---- a/arch/s390/mm/pageattr.c
-+++ b/arch/s390/mm/pageattr.c
-@@ -392,18 +392,6 @@ int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- 	return __set_memory((unsigned long)page_to_virt(page), nr, SET_MEMORY_DEF);
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	unsigned long flags;
--
--	if (valid)
--		flags = SET_MEMORY_DEF;
--	else
--		flags = SET_MEMORY_INV;
--
--	return __set_memory((unsigned long)page_to_virt(page), nr, flags);
--}
--
- bool kernel_page_present(struct page *page)
- {
- 	unsigned long addr;
-diff --git a/arch/x86/include/asm/set_memory.h b/arch/x86/include/asm/set_memory.h
-index 0c4235d159f48..39271a5ea9252 100644
---- a/arch/x86/include/asm/set_memory.h
-+++ b/arch/x86/include/asm/set_memory.h
-@@ -88,7 +88,6 @@ int set_pages_rw(struct page *page, int numpages);
- 
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
- int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
- 
- extern int kernel_set_to_readonly;
-diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index 4d07a9fbc43a7..a1a061d995b31 100644
---- a/arch/x86/mm/pat/set_memory.c
-+++ b/arch/x86/mm/pat/set_memory.c
-@@ -2666,14 +2666,6 @@ int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- 	return __set_pages_p(page, nr, 0);
- }
- 
--int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid)
--{
--	if (valid)
--		return __set_pages_p(page, nr, 0);
--
--	return __set_pages_np(page, nr, 0);
--}
--
- #ifdef CONFIG_DEBUG_PAGEALLOC
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
-diff --git a/include/linux/set_memory.h b/include/linux/set_memory.h
-index 0b77f1d7d8b9c..3fe293cfed8cc 100644
---- a/include/linux/set_memory.h
-+++ b/include/linux/set_memory.h
-@@ -36,12 +36,6 @@ static inline int set_direct_map_default_noflush(struct page *page,
- 	return 0;
- }
- 
--static inline int set_direct_map_valid_noflush(struct page *page,
--					       unsigned nr, bool valid)
--{
--	return 0;
--}
--
- static inline bool kernel_page_present(struct page *page)
- {
- 	return true;
-
+diff --git a/Documentation/devicetree/bindings/power/riscv,rpmi-device-power.yaml b/Documentation/devicetree/bindings/power/riscv,rpmi-device-power.yaml
+new file mode 100644
+index 000000000000..5afdc40df7e0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/riscv,rpmi-device-power.yaml
+@@ -0,0 +1,65 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/riscv,rpmi-device-power.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: RISC-V RPMI device power service group based power domain controller
++
++maintainers:
++  - Joshua Yeong <joshua.yeong@starfivetech.com>
++
++description: |
++  The RISC-V Platform Management Interface (RPMI) [1] defines a
++  messaging protocol which is modular and extensible. The supervisor
++  software can send/receive RPMI messages via SBI MPXY extension [2]
++  or some dedicated supervisor-mode RPMI transport.
++
++  The RPMI specification [1] defines device power service group for
++  accessing and controlling the power state of platform devices managed
++  by a platform microcontroller. The supervisor software can access RPMI
++  device power service group via SBI MPXY channel or some dedicated
++  supervisor-mode RPMI transport.
++
++  ===========================================
++  References
++  ===========================================
++
++  [1] RISC-V Platform Management Interface (RPMI) v1.0 (or higher)
++      https://github.com/riscv-non-isa/riscv-rpmi/releases
++
++  [2] RISC-V Supervisor Binary Interface (SBI) v3.0 (or higher)
++      https://github.com/riscv-non-isa/riscv-sbi-doc/releases
++
++properties:
++  compatible:
++    description:
++      Intended for use by the supervisor software.
++    const: riscv,rpmi-device-power
++
++  mboxes:
++    maxItems: 1
++    description:
++      Mailbox channel of the underlying RPMI transport or SBI message proxy channel.
++
++  "#power-domain-cells":
++    const: 1
++    description:
++      Platform specific DOMAIN_ID as defined by the RISC-V Platform Management
++      Interface (RPMI) specification.
++
++required:
++  - compatible
++  - mboxes
++  - "#power-domain-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    power-controller {
++        compatible = "riscv,rpmi-device-power";
++        mboxes = <&mpxy_mbox 0x1002 0x0>;
++        #power-domain-cells = <1>;
++    };
++...
+diff --git a/Documentation/devicetree/bindings/power/riscv,rpmi-mpxy-device-power.yaml b/Documentation/devicetree/bindings/power/riscv,rpmi-mpxy-device-power.yaml
+new file mode 100644
+index 000000000000..2b7df66ba172
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/riscv,rpmi-mpxy-device-power.yaml
+@@ -0,0 +1,65 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/riscv,rpmi-mpxy-device-power.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: RISC-V RPMI device power service group based message proxy
++
++maintainers:
++  - Joshua Yeong <joshua.yeong@starfivetech.com>
++
++description: |
++  The RISC-V Platform Management Interface (RPMI) [1] defines a
++  messaging protocol which is modular and extensible. The supervisor
++  software can send/receive RPMI messages via SBI MPXY extension [2]
++  or some dedicated supervisor-mode RPMI transport.
++
++  The RPMI specification [1] defines device power service group for
++  accessing and controlling the power state of platform devices managed
++  by a platform microcontroller. The SBI implementation (machine mode
++  firmware or hypervisor) can implement an SBI MPXY channel to allow RPMI
++  device power service group access to the supervisor software.
++
++  ===========================================
++  References
++  ===========================================
++
++  [1] RISC-V Platform Management Interface (RPMI) v1.0 (or higher)
++      https://github.com/riscv-non-isa/riscv-rpmi/releases
++
++  [2] RISC-V Supervisor Binary Interface (SBI) v3.0 (or higher)
++      https://github.com/riscv-non-isa/riscv-sbi-doc/releases
++
++properties:
++  compatible:
++    description:
++      Intended for use by the SBI implementation.
++    const: riscv,rpmi-mpxy-device-power
++
++  mboxes:
++    maxItems: 1
++    description:
++      Mailbox channel of the underlying RPMI transport.
++
++  riscv,sbi-mpxy-channel-id:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description:
++      The SBI MPXY channel id to be used for providing RPMI access to
++      the supervisor software.
++
++required:
++  - compatible
++  - mboxes
++  - riscv,sbi-mpxy-channel-id
++
++additionalProperties: false
++
++examples:
++  - |
++    device-power-service {
++        compatible = "riscv,rpmi-mpxy-device-power";
++        mboxes = <&rpmi_shmem_mbox 0x9>;
++        riscv,sbi-mpxy-channel-id = <0x1002>;
++    };
++...
 -- 
-2.53.0
+2.43.0
 
