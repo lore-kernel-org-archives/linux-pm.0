@@ -1,85 +1,78 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B320042589D;
-	Thu,  3 Sep 2026 08:24:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from cmccmta8.chinamobile.com (cmccmta8.chinamobile.com [111.22.67.151])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 357293F8232;
+	Thu,  3 Sep 2026 08:26:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.22.67.151
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788423894; cv=none; b=XYu8CJRRDs1k3IDwxxJZF6+mqxvxZb2opcpQn9r7yOPH45vpsojyeDWIBMlG8oJtY3S3lKkKYYQBPUPY0brrQpuXEon5M5Zdulwe6DF+G1Af/7gyAnUADrbwgqY8hma8Re4O+8pzCO6D63t7JD+LPCx+yHx+jv+7WTw+j4to9x0=
+	t=1788424011; cv=none; b=T8gPQsPSAPvYwWGvvWltEb5pDbRTmWQS0P6wQ042TYGWwLKhP6YBKQXscAKRumpFGMuPjD6LB6odr93Y1B6UlKvEznjm/iaUs+RlPprgFMeLZLdOG2ZDqiSrUsgtQ6IMfWp31DEc4YMkI1GMKDW+zeViKNfBSscutAJDEPA/9Pc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788423894; c=relaxed/simple;
-	bh=bAmuj0O7v/xqEPt/dezy6Thdr4Kyk/d8UQ+n7ukuJBU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ewFbQX752SsXMyRvzir8+rBvh5hh203BnUTvYY6v3yBo+eGr7J0FZ+8fnDexLmosQio+C4Q0s7/ycM1wKZ1S/UXms6FNk36040pcKmlna9uQxNq4qCXIB0KEyTgsj9myLUFh7ADH0tJikWSALn9l1NmdRWktD0ikW9OyIAONrZU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Zla5GHHc; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788424011; c=relaxed/simple;
+	bh=OS3XuBq6d7hro6psl39paDG/BsDcRvjQ+pPEcpeovXc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=O4Y8y2d16OQsJ7bSCrJXD9UqkfPZ+m0TmwugDFymkFplQiHcE2ZSHW5LgcIkT07AW5tCVEz5NjlHx/mbhYp4WL1nNeKRYSZQ/Mrbum7I0KLVst2ZiHtyOIco3dMpX1LEKT5lE8xse33+1PK7RioaH51DQuyH3kH6HtDC4GNCKS0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com; spf=pass smtp.mailfrom=cmss.chinamobile.com; dkim=pass (1024-bit key) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.b=PZGFQGOa; arc=none smtp.client-ip=111.22.67.151
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Zla5GHHc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 349611F000E9;
-	Thu,  3 Sep 2026 08:24:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788423893;
-	bh=fbIaSZueJ9L7aZ2SFykAsrRHq34CEJ8hDtg94f4lxLA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Zla5GHHcxSaHYLPcV7hDLgmsoz99LeWBz4LNzJGRDna/m4IQQN+EEDM1op7tVD2Lm
-	 OkYqsNGRl2ZFvclRMCzqO2geS3EHyWwFGN9eiVXLz7ibSjlrS3aG2y8AdsdVklpXql
-	 TTCs5EEVlAsYYTAW8jVLHvBJhfWPjsZlmwcw6noz/kePfzDRDtqWJLnQpu7WHT3HCw
-	 Z6S/3xlKd/iXYSekmNL+Mw3yDWCk4PYvN4YpDsoV4YwO15Enzpz5iRIl1yxaX6NG7i
-	 tFu1e6SBmaaR/dgf0DovIlUEEj4uwNpL3AD7HhyPHNg5GqLnxEXVSNkuw66CgjO+5H
-	 EgwDen6DuDT7A==
-Date: Thu, 3 Sep 2026 10:24:49 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Cc: linux-mediatek@lists.infradead.org, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>, 
-	Julien Massot <julien.massot@collabora.com>, Val Packett <val@packett.cool>, 
-	Fabien Parent <parent.f@gmail.com>, Akari Tsuyukusa <akkun11.open@gmail.com>, 
-	Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mfd@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-Subject: Re: [PATCH v10 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
-Message-ID: <20260903-normal-electronic-bonobo-3f71eb@quoll>
-References: <20260902193351.185771-1-l.scorcia@gmail.com>
- <20260902193351.185771-2-l.scorcia@gmail.com>
+	dkim=pass (1024-bit key) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.b="PZGFQGOa"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=cmss.chinamobile.com; s=default; l=0;
+	h=from:subject:message-id:to:cc:mime-version;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	b=PZGFQGOaRy6Fe+cAZsPGtljjWRtNR729gf8OiSZAxTNDhvkFLvJtYpmrPWdRvLpF54d3xxPZiTrMG
+	 zAyGNZUVxAcwtMc3QlRJ+vUe66/AI3+TVXpEVZRM5djMTQK/09V8mQoOu8d2o6YjH2CmPjbjZ5EDkE
+	 /95H1hK99wykApfs=
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
+	by rmmx-syy-dmz-app06-12006 (RichMail) with SMTP id 2ee66a992f4598f-775d5;
+	Thu, 03 Sep 2026 16:26:46 +0800 (CST)
+X-RM-TRANSID:2ee66a992f4598f-775d5
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from localhost.localdomain (unknown[223.108.79.98])
+	by rmsmtp-syy-appsvr01-12001 (RichMail) with SMTP id 2ee16a992f45c7e-1ff95;
+	Thu, 03 Sep 2026 16:26:46 +0800 (CST)
+X-RM-TRANSID:2ee16a992f45c7e-1ff95
+From: liujing <liujing@cmss.chinamobile.com>
+To: Thomas Renninger <trenn@suse.com>,
+	Shuah Khan <shuah@kernel.org>,
+	"John B . Wyatt IV" <jwyatt@redhat.com>,
+	John Kacur <jkacur@redhat.com>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Liu Jing <liujing@cmss.chinamobile.com>
+Subject: [PATCH] tools cpupower: Fix signed shift UB in amd_fam14h_idle
+Date: Thu,  3 Sep 2026 16:26:44 +0800
+Message-Id: <20260903082644.5149-1-liujing@cmss.chinamobile.com>
+X-Mailer: git-send-email 2.27.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260902193351.185771-2-l.scorcia@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 02, 2026 at 09:25:37PM +0200, Luca Leonardo Scorcia wrote:
-> Describe the MT6392 PMIC and its RTC and regulator devices. This device
-> is mostly based on MT6323 with some similarities to MT6397 and is usually
-> found on boards using the MT8516/MT8167 SoC.
-> 
-> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-> ---
-> Previous version of this patch had the PMIC device declared with a
-> fallback compatible to "mediatek,mt6323". Sashiko pointed out in [1]
-> that it would have been wrong as the fallback device is not really
-> compatible with the new PMIC.
-> 
-> Since the change is significant I have not included the Reviewed-by tag
-> that Krzysztof Kozlowski kindly provided in v9 of this patch, I hope
-> this is the right thing. I really want to get the bindings right as they
-> are harder to fix in later commits if the need arises.
-> 
-> [1] https://sashiko.dev/#/message/20260820125850.3B34D1F000E9%40smtp.kernel.org
-> 
->  .../bindings/mfd/mediatek,mt6397.yaml         | 72 +++++++++++++++++++
->  1 file changed, 72 insertions(+)
+From: Liu Jing <liujing@cmss.chinamobile.com>
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+In amd_fam14h_get_nb_power(), the expression `1 << 31` performs a
+signed integer shift, which is undefined behavior in C.
 
-Best regards,
-Krzysztof
+Fix it by using `1U << 31` to perform an unsigned shift.
+
+Signed-off-by: Liu Jing <liujing@cmss.chinamobile.com>
+---
+--- a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
++++ b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
+@@ -270,7 +270,7 @@
+ {
+ 	uint32_t val;
+ 	val = pci_read_long(amd_fam14h_pci_dev, PCI_NBP1_CAP_OFFSET);
+-	return val & (1 << 31);
++	return val & (1U << 31);
+ }
+ 
+ struct cpuidle_monitor *amd_fam14h_register(void)
+
+
+
 
