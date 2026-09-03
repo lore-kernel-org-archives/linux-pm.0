@@ -1,134 +1,128 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2391043B6F5
-	for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2026 10:42:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9009B48AE38;
+	Thu,  3 Sep 2026 10:45:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788432175; cv=none; b=PzF4mjLik33MfLCvkUBuK3XCmR1ni5roilsPk4mWn6zcTBtiqFXvXIRPvwx01PjPZ99RlAXsF+kRc2C/6cO42MZnXtLg1DjPC4V5eBopDsmSL4Bw2yAV4QJMPu9aoz2YhumTSS7KNEPYjhqAGI2Mp6AqLtHRZeXK9aWjap+y+KE=
+	t=1788432357; cv=none; b=NIfG44UuNDFPUA6ShhA2FM4jdVoyjTChWroCb8uUhrr/n+GRiJAyLoFc1nKGeN3PIsbxFPsbNYMhJhAKwjCXIco8uj9NhiH6K9BCCeIDGkkQ4O2rcLLmRDJePC+vuIFYAfIqU3JYp0aTJGVjfrmIm3BAqK2YtRLv9kb3ftmx+uk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788432175; c=relaxed/simple;
-	bh=+GX8WEIiqxcsxRx8lJOjMEWa5txU6zxSwwWpPI3e4mA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QIZeMgm/r/KuAK4g4Mrax1SNGqN8kncpt04ULuTEeaoRYMhLSqGtIEvIhMSuYYFBKwWSVYsg+zz7L4QiL73EmhBLKJnQ0CtrXXd9QkR7+zVQasp9xRTtTroOP0LxNMapBX13zA34R8YshbrSkikL/ovqmGjTVblxQQhoNqZ+o+w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DbrG4Dvr; arc=none smtp.client-ip=209.85.128.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788432357; c=relaxed/simple;
+	bh=B2EGgiinFjR7PIuJDjwPP8zw52e7kf6hQY7DC+ox1r0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Oq3g8JWbpK306UAligVKarH+Kkf3OueQVEOqR/fsbGdvBbKA+zygjLbYS0Vnr+0c1YjqWePSdJmjaTcVEzslYKqm+QLieHQIWQO6q0XA1LrRkNqFY5TpxGGMQZ7axGmT/yituJJkv5Tf2kd/JmqoFm3e9hV5HAACk2JxEjiCnsE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=mmq3evjb; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DbrG4Dvr"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-49cca4ffdcfso16224275e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2026 03:42:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788432171; x=1789036971; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=aaqNY17cMmjcPMSLqDr2N+tN8Vmcq3Ywr2AifLrAlrE=;
-        b=DbrG4DvrJEOiaTFF3e5+/ksSjj01VWHj5uWjijZFe0564CUW9240Y4jFfUerAJsknJ
-         T3AEfegt+LnWvUTkbvCFFGZChn1/MC6X+ZJ6ik1HLv3OkmVKiQVKn9sqquNxfPvDBmlm
-         cSvs7EwJKENtUslckdygm4NOOd5S67vqjZVzQKlju0hq6mpmzPeHAyqglM58Xl6gMNYT
-         u3R5qBkHWnKhPgVx/hpXq2/04LfuDrPH0Id+Q8UuMNnzntMZUU0Qf6DNN+MQMcYmf040
-         oZE6gaBH1EpYPoFJIoCftEbeh7zzOMkHRysN9JumJeT/R2GX4wXrcp7cSdwNxYD/WHTV
-         8MvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788432171; x=1789036971;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=aaqNY17cMmjcPMSLqDr2N+tN8Vmcq3Ywr2AifLrAlrE=;
-        b=jMkxBI+RdnSyqIs1URQoXvY5CmM5qkye37PEctIivrKc9ecrfcIJ0fvUgEluMsYuYU
-         EHwIMjcrfd6eC+OL9xZBbw4ah2TiyeG2Y5e36QZ3G47laRT9jRj8IcngY415Dt9NtZb8
-         eQziLuH5WAsPWObFTHjJ5gPTkGHnXyt8QY9YO6qvaRW4WVqghpz9OuULDmsz3Q7X2SSL
-         QHhVYim4KH9kf6SNWFLDVGkp7J0RyMdFQlIorgvOedZ24l05/XQe4MZON4p6AdMYrCkW
-         rvmUJqWbYvuJBP1KauZckx2D4FzWEcjktXAUfmKfP1/yn7Vq151YVaNwlIlrLBBq/49v
-         toEA==
-X-Forwarded-Encrypted: i=1; AKwUvByIX5jk8tdfvUyj9ULdkRzpL9iNxyKYPOdU+5AWQ55hAlJESWmn2L9OTvywM4G5kp/FDFtzmF8CmQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++m+FJ/r5MARzoCG9h6L13P6QajwmzQ0svkmXK75nYZwIuvoZhML
-	e6d2XFDMmM9np8NapWLdyqEvCWDaQkpRywhbuTRmfDdzrdbqXQz+CFW1
-X-Gm-Gg: AYBFou3ypz5BHrJLcrgcfI+Z7yICA03uItVUQB7iGrg34ku6AhzFPlBVV2ZCFI7p7Hm
-	WYSiFaJqq2b139cEO5w+JoN0j2aXXWTtvh0L+5+nwAiNSFI/yNihQxFElQQ2iX0AfHdHzv6Pzy1
-	PT066DalI51w7eYMlJztqEqAEYfLxJh3HUYEw9QzAOaiZ64AiOeAB38d09M2jmHJQTkXMi99Znm
-	RyMO0+VX9JZbMOE3EWzc8eZllwjvlwoxtfBqEiBniqMJDm8KhP+PNpr++BfDcgv+SQ0Gg/ojilo
-	EXOAlGXgyEGM3rb5FfH3FtPyooSWsJD6medmlIWdeLvaCbhIhweHPe5nskHBkU+TmqHEi/sfKid
-	/My8EGc3ePPqHAbokxl1eXvEFWnPSqopx2+96T5s7suaoRq2LCsBeJkCWlUNqOFvMmNJglo82Ux
-	dJzOMm6DenEjkRREsmK1yPyQTZjbnd8nffY4zqEoKUnKqv51Cl8viHllX8f7Nh8EFgtquoZEVRZ
-	v5AgpexJz2I8kIgrHHuNtDdcixBlbzu
-X-Received: by 2002:a05:600c:3f08:b0:49c:e1ed:26b1 with SMTP id 5b1f17b1804b1-49ce5850cefmr215418115e9.16.1788432170902;
-        Thu, 03 Sep 2026 03:42:50 -0700 (PDT)
-Received: from ubuntu-mbp.fritz.box (bzq-85-130-235-2.static.bezeqint.net. [85.130.235.2])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49cf5135353sm5090695e9.2.2026.09.03.03.42.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Sep 2026 03:42:50 -0700 (PDT)
-From: Itay Shem-tov <itayst@gmail.com>
-To: rafael@kernel.org
-Cc: lenb@kernel.org,
-	linux-acpi@vger.kernel.org,
-	sre@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Itay Shem-tov <itayst@gmail.com>
-Subject: [PATCH] ACPI: SBS: report relative state of charge as CAPACITY
-Date: Thu,  3 Sep 2026 13:42:44 +0300
-Message-ID: <20260903104244.25556-1-itayst@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="mmq3evjb"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1B2FD1596;
+	Thu,  3 Sep 2026 03:45:51 -0700 (PDT)
+Received: from [10.164.19.53] (unknown [10.164.19.53])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7B13C3F673;
+	Thu,  3 Sep 2026 03:45:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1788432354; bh=B2EGgiinFjR7PIuJDjwPP8zw52e7kf6hQY7DC+ox1r0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=mmq3evjbS8hafbKWyN6WfvB9UfVySk+qoHqsF1QzrHYtoeRp/5znyDeIxQ0XWmzpM
+	 HmppJc+wsmOrkjn5ugj5vuGdbtya+eR9c57C4aB5SNws+Twq1UmKFOoPZzxS2fmElr
+	 iaXr3Hj7l3p0cwNUfXzOQlwUrYPQgaUrPZbbaJFc=
+Message-ID: <f4de678d-de34-482e-85c6-0d168af62563@arm.com>
+Date: Thu, 3 Sep 2026 16:15:42 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/6] mm/vmalloc: constify vm parameter of
+ get_vm_area_page_order()
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: =?UTF-8?Q?Adrian_Barna=C5=9B?= <abarnas@google.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexander Gordeev
+ <agordeev@linux.ibm.com>, Alexandre Ghiti <alex@ghiti.fr>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Brendan Jackman <brendan.jackman@linux.dev>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@kernel.org>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>,
+ Thomas Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>,
+ Will Deacon <will@kernel.org>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-pm@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ loongarch@lists.linux.dev
+References: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
+ <20260903-execmem-set-vm-perms-v0-2-v3-3-949b64a9f755@kernel.org>
+Content-Language: en-US
+From: Dev Jain <dev.jain@arm.com>
+In-Reply-To: <20260903-execmem-set-vm-perms-v0-2-v3-3-949b64a9f755@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-acpi_sbs reads SBS command 0x0e (AbsoluteStateOfCharge) into
-battery->state_of_charge, which is exported unmodified as
-POWER_SUPPLY_PROP_CAPACITY.
 
-Per the Smart Battery Data Specification 1.1, 0x0e is expressed as a
-percentage of DesignCapacity and is explicitly permitted to exceed 100%.
-Documentation/ABI/testing/sysfs-class-power specifies the capacity
-attribute as "Valid values: 0 - 100 (percent)", so any pack whose
-FullChargeCapacity exceeds its DesignCapacity - the normal state of a
-new or recently replaced battery - makes the driver report out of range.
 
-The correct source is 0x0d (RelativeStateOfCharge), a percentage of
-FullChargeCapacity, which the specification bounds to 0..100.
+On 03/09/26 2:58 pm, Mike Rapoport (Microsoft) wrote:
+> get_vm_area_page_order() and vm_area_page_order() do not need to modify
+> struct vm_struct passed to them.
+> 
+> Constify the parameter.
+> 
+> Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
 
-This is the same defect that was fixed in the i2c SBS driver by commit
-b1f092f6480e ("sbs-battery.c: Capacity attr = remaining relative
-capacity"), whose reasoning applies verbatim here; drivers/acpi/sbs.c was
-not updated at the time. drivers/power/supply/sbs-battery.c has used 0x0d
-since, so the two SBS drivers currently disagree about what CAPACITY
-means.
+Reviewed-by: Dev Jain <dev.jain@arm.com>
 
-Observed on a MacBookPro11,1 with an SMP/bq20z451 pack
-(FullChargeCapacity 6775 mAh, DesignCapacity 6400 mAh). Both registers
-read back-to-back from the pack at a full charge:
 
-  0x0d RelativeStateOfCharge = 100 %
-  0x0e AbsoluteStateOfCharge = 106 %
+>  mm/vmalloc.c | 4 ++--
+>  mm/vmalloc.h | 2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 22aa554d123f5..5506b180f5c27 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -3130,7 +3130,7 @@ EXPORT_SYMBOL(vm_map_ram);
+>  
+>  static struct vm_struct *vmlist __initdata;
+>  
+> -static inline unsigned int vm_area_page_order(struct vm_struct *vm)
+> +static inline unsigned int vm_area_page_order(const struct vm_struct *vm)
+>  {
+>  #ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
+>  	return vm->page_order;
+> @@ -3139,7 +3139,7 @@ static inline unsigned int vm_area_page_order(struct vm_struct *vm)
+>  #endif
+>  }
+>  
+> -unsigned int get_vm_area_page_order(struct vm_struct *vm)
+> +unsigned int get_vm_area_page_order(const struct vm_struct *vm)
+>  {
+>  	return vm_area_page_order(vm);
+>  }
+> diff --git a/mm/vmalloc.h b/mm/vmalloc.h
+> index 8866ddcff6681..211869f365095 100644
+> --- a/mm/vmalloc.h
+> +++ b/mm/vmalloc.h
+> @@ -12,7 +12,7 @@ void __init vmalloc_init(void);
+>  int __must_check vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>  		pgprot_t prot, struct page **pages,
+>  		unsigned int page_shift, gfp_t gfp_mask);
+> -unsigned int get_vm_area_page_order(struct vm_struct *vm);
+> +unsigned int get_vm_area_page_order(const struct vm_struct *vm);
+>  #else
+>  static inline void vmalloc_init(void) {}
+>  
+> 
 
-/sys/class/power_supply/BAT0/capacity reported 106 while upower, which
-computes charge_now/charge_full itself rather than trusting the driver,
-reported 100.
-
-battery->state_of_charge has no other consumer, so no other property
-changes behaviour.
-
-Signed-off-by: Itay Shem-tov <itayst@gmail.com>
----
- drivers/acpi/sbs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
-index 86b7c79..862cb94 100644
---- a/drivers/acpi/sbs.c
-+++ b/drivers/acpi/sbs.c
-@@ -318,7 +318,7 @@ static struct acpi_battery_reader state_readers[] = {
- 	{0x0a, SMBUS_READ_WORD, offsetof(struct acpi_battery, rate_now)},
- 	{0x0b, SMBUS_READ_WORD, offsetof(struct acpi_battery, rate_avg)},
- 	{0x0f, SMBUS_READ_WORD, offsetof(struct acpi_battery, capacity_now)},
--	{0x0e, SMBUS_READ_WORD, offsetof(struct acpi_battery, state_of_charge)},
-+	{0x0d, SMBUS_READ_WORD, offsetof(struct acpi_battery, state_of_charge)},
- 	{0x16, SMBUS_READ_WORD, offsetof(struct acpi_battery, state)},
- };
-
---
-2.51.0
