@@ -1,118 +1,128 @@
-Received: from smtpbguseast3.qq.com (smtpbguseast3.qq.com [54.243.244.52])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F25F33EAEC;
-	Thu,  3 Sep 2026 02:16:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.243.244.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 334AD305693
+	for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2026 04:15:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788401770; cv=none; b=YuSs/C6w7mPk0CgcK28X+Ox9rdT2Fft6IHzF8sOUXnmFQLpQRRGsa3aKt5+1M6WDGRadKQAVH51q878JHPUbdHVgm1A1EkOIN8pQpb0jiLN7v0T+33G3vqEO1mlSUTr5IT6XGgPugitRaKtVvCQzRBQOypV2ZTST09BFjyB/Ku0=
+	t=1788408955; cv=none; b=kmdGTFLmRLaHHh2TQ7QsWi4upfNAUr72o7Awqau2bGdEWVEn8AtNHJh6OCvmfqN3rXxyMZ4qgIRbexj+x5mpCIRBDnO46ms2lf7jQos3FX8oUO2DSlI+PGe97eRYKynrq8sRJt2Bi4UBkTwYS1EiMZ6/owCXXxk3g/27bnEudAw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788401770; c=relaxed/simple;
-	bh=ltGCsPM9g4dL27hzeJYprlsMCLIuGBzrExUAh+1/n8c=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=tig8F+TIyMuQw8NwcwwSPQVol59gtJ0GCKV3/FxrC74LpONaWuz4PO2SrHpNMW3tVTZEuASWzkaqBYlplwm+DaDrjF5VxA7+t/KRbmN7syom/f5UyXm0nL0gkihix3e5qkla39xFRodePhKr5kEhKTdpp6iCrhdZFgq4kd5UnZA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=Ru7EJkGu; arc=none smtp.client-ip=54.243.244.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1788408955; c=relaxed/simple;
+	bh=hYG6l8n+3ICOSgbIdRk6Rbfrs8W/nP66wV62G7SWYEI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hemAb/ZFht/65p2moa50CiP7LesElWYN0Nm2qX9ZCIG3A97Sz+ZoOyLxIf83FSW/OfOjTdbQ1Tv5ym8rPeyBJEHaEB+WH5B7UF8ZSZBiFrO1xiBhsFW3vgwMN0KLNvx4ze2xdVQ2VysDqXDOWSWuqHPfaLl8UMNgdtDzDDVfMoU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QCNrtTYi; arc=none smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="Ru7EJkGu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1788401730;
-	bh=NNBPer/UqmzXtzPtWUFkVQGu/BhnIGA3Q4Ww1JPF9B0=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=Ru7EJkGuPrPb2cHBDMZxwYoWhdN+k8Un0xTngdnHxsRmi7J+Db+IcIB3CeI1/BphE
-	 m8yIhS7D28qaKc0WDUMEGX4OE5+RWeT2YyhAnJI4SWCmYQClrAMUET+6E3a+J4WLKo
-	 mz0kjVo6sh73lrBBFFp7lsKUzDYcw68CUbTOCJZw=
-X-QQ-mid: esmtpgz16t1788401724t6d55b7c7
-X-QQ-Originating-IP: o1bCMaKcd5K4sGAPBG6wOUQ88v1EnArt+Z/BFPA4eFM=
-Received: from localhost.localdomain ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 03 Sep 2026 10:15:22 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 7393804203611463141
-EX-QQ-RecipientCnt: 15
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: rafael@kernel.org,
-	laurent.pinchart@ideasonboard.com
-Cc: tuhaowen@uniontech.com,
-	gregkh@linuxfoundation.org,
-	hansg@kernel.org,
-	huangbibo@uniontech.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	mchehab@kernel.org,
-	oneukum@suse.com,
-	pavel@kernel.org,
-	stern@rowland.harvard.edu
-Subject: [PATCH v5 4/4] media: uvcvideo: skip post-snapshot hibernation THAW
-Date: Thu,  3 Sep 2026 10:14:59 +0800
-Message-Id: <e72835b9abb06dd3a14728b4bb8789567ba3a747.1788399733.git.tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cover.1788399733.git.tuhaowen@uniontech.com>
-References: <20260730153817.GA1555869@killaraus.ideasonboard.com> <cover.1788399733.git.tuhaowen@uniontech.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QCNrtTYi"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1788408952; x=1819944952;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=hYG6l8n+3ICOSgbIdRk6Rbfrs8W/nP66wV62G7SWYEI=;
+  b=QCNrtTYiI1aCaGWBIrIzq91FVgxOGJXrr1BbMRX87SI1w+L8MtpZrI+M
+   AnYnPodQ2tUEf8BsglsDXO/idkqcB2uOOm3RoyjMzPsY9lpZZ5QlTA6/7
+   Y74u1fKEmQN4JKMM7SxdqX18Fr2YjMdwOsqFpVc0+yjtoe0S1zEOZki5n
+   BzIzy6qPt/xMUzCFZuZGjTvM7xffCaCTtqSYXqZxFocvQbuKtOnpHGOYH
+   DsD+45Xw+dY9V9N7nGqO/duFnYxxeoO0Bkd0RFWIykMbUUjdnyyadg92j
+   XPknq7hXufGNDgc/YznALcJ0S9+oD3xP9LcfdLQM+Zp9A5+U42RT78c6b
+   g==;
+X-CSE-ConnectionGUID: zKXjGvBIQPeq84LcYIlQhg==
+X-CSE-MsgGUID: eeYSLeXpQ+C3KI8OJeyJRQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11894"; a="100234920"
+X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; 
+   d="scan'208";a="100234920"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2026 21:15:52 -0700
+X-CSE-ConnectionGUID: OmOcC7utT6Sc/7qqkyCUug==
+X-CSE-MsgGUID: Os6zgQG3TlGsk1QvC0ANNw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; 
+   d="scan'208";a="273101325"
+Received: from lkp-server01.sh.intel.com (HELO bfac249b2189) ([10.239.97.150])
+  by orviesa003.jf.intel.com with ESMTP; 02 Sep 2026 21:15:50 -0700
+Received: from kbuild by bfac249b2189 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1x1yrb-0000000042k-2qNf;
+	Thu, 03 Sep 2026 04:15:47 +0000
+Date: Thu, 3 Sep 2026 12:15:45 +0800
+From: kernel test robot <lkp@intel.com>
+To: Todd Brandt <todd.e.brandt@linux.intel.com>, linux-pm@vger.kernel.org,
+	rafael.j.wysocki@intel.com, rjw@rjwysocki.net
+Cc: oe-kbuild-all@lists.linux.dev, todd.e.brandt@linux.intel.com,
+	todd.e.brandt@intel.com
+Subject: Re: [PATCH v2] PM: dpm_show_time changes to suspend/resume dmesg
+ prints
+Message-ID: <202609031247.SRpWbgoA-lkp@intel.com>
+References: <20260831222926.34698-1-todd.e.brandt@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: MhOKvsv6t0fkntv++Gjehay9UI4QGMfsfUEpORlKJ+nHfJUEfbzZtZpY
-	v7uqGBUg76v5tpLDRFGagIa0DtfmKDaGhM5rS5d2miW7M43calzzu2YPr1VawU1iJqwjuA+
-	rX/s4SfzZevq8TWxbh5HCXyFta+L5PtIM72z1nv4o+OGB/sPmmOX8QrygCg665uRoeM7bY4
-	bm4MHT2gJkSrk7LESEMr7bcFdJ8MWRB6g387TRgNEHkzq43b02xYPdZ+xw07gRMavQEt8Qz
-	s9tou4U5tH6E3EvqVl4bxiebO4B2rJ24d0/kbR9umVe2CsXEYeiuw9I9dhsaXvRAOqi41DK
-	PABdG0KSPW8PUP/ycBFje9AEr4FfCjL5S3giupp33DrgbkSd3B+Q2QykZ+fZyiDT5yB+XcD
-	SrnWQ3Vu5Sn8gUFxlg2YtcLab/4A/zNeEVLpPIX+tX3vQihhJx/4pImlwlZqUg2aY27O4zj
-	z5a4tUA5OBnmSZI9UhsEPejoHT6t72AgK63JqVWO8DD0D+Oax/o6PkIXyuB40VleZ+qEc0s
-	WbHvArREDoti5PcPRsOaF/K/+nZD/W348hrWVhp5n+RKik/FlwVbcZxR7mcr0U7SZUctIfG
-	xNfpg25EF8MJcaiscuDT3sNGTc2KiwB86AQWdtSU/OulAeNEBr3+eE+S/lJEZfRJQrOLEOZ
-	JcshoJpyIxmsf2p79K0pWe+D4YTGwaNXUlI4Mmw7DEQtRfK8Nm8gPIMpUDqj4pY+zdP1gXi
-	/wx+agp4d4GS1LddkYwubuPPu8wVS7WIo/TGKCyDzEqDJ2APG4fqWpmHNt27oMgSuHuwOhS
-	y8X1H+wcuApyW6iIxNu9zkZ6EFKpJ7ZuJePKxr/lvX9zZcbwVYUNDQD+WfbWcoyVAu7NA2w
-	oR2VBMz2a2YGWLN7ynI8Gfz1R2BadhrhRZRyn37XNtc3K0JTPU+G1xAPjmbGzNGWjMt6cF3
-	xODCKHV4Z4WAUQQ7yDoKJS6NPkNavvqWW9mwTzuzPUHyqANP5ioWiC8QzgSDJoCY8Cvt0+T
-	nzhtdJ2lztSTZNVuhUJHxN7aCcd5d/XEqLzeTsxrMWKYMJaeHyEEXJwPk4bF63MW40omzw9
-	l9enwR1UWMkNiuUSqot5Kg=
-X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
-X-QQ-RECHKSPAM: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260831222926.34698-1-todd.e.brandt@linux.intel.com>
 
-When a UVC camera is streaming and the system enters hibernation, the
-streaming interface is frozen before the snapshot is created.  The
-original kernel then resumes devices with PMSG_THAW so it can write the
-hibernation image.
+Hi Todd,
 
-The UVC streaming interface is not needed for image writeout.  Mark it
-with DPM_FLAG_SKIP_HIBERNATION_THAW so the PM core can leave it
-suspended during the post-snapshot THAW phase.  This avoids restarting
-the streaming hardware and turning the camera indicator LED back on while
-the image is being written.
+kernel test robot noticed the following build errors:
 
-If the original kernel continues running instead of powering down, the PM
-core resumes devices skipped this way before userspace is thawed.
+[auto build test ERROR on rafael-pm/linux-next]
+[also build test ERROR on rafael-pm/bleeding-edge amd-pstate/linux-next amd-pstate/bleeding-edge linus/master v7.3-rc1 next-20260902]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
----
- drivers/media/usb/uvc/uvc_driver.c | 1 +
- 1 file changed, 1 insertion(+)
+url:    https://github.com/intel-lab-lkp/linux/commits/Todd-Brandt/PM-dpm_show_time-changes-to-suspend-resume-dmesg-prints/20260831-152926
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/20260831222926.34698-1-todd.e.brandt%40linux.intel.com
+patch subject: [PATCH v2] PM: dpm_show_time changes to suspend/resume dmesg prints
+config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20260903/202609031247.SRpWbgoA-lkp@intel.com/config)
+compiler: mips-linux-gcc (GCC) 16.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260903/202609031247.SRpWbgoA-lkp@intel.com/reproduce)
 
-diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
-index 31b4ac3b48c1..d44c17c99daf 100644
---- a/drivers/media/usb/uvc/uvc_driver.c
-+++ b/drivers/media/usb/uvc/uvc_driver.c
-@@ -559,6 +559,7 @@ static int uvc_parse_streaming(struct uvc_device *dev,
- 			intf->altsetting[0].desc.bInterfaceNumber);
- 		return -EINVAL;
- 	}
-+	dev_pm_set_driver_flags(&intf->dev, DPM_FLAG_SKIP_HIBERNATION_THAW);
- 
- 	streaming = uvc_stream_new(dev, intf);
- 	if (streaming == NULL) {
--- 
-2.20.1
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202609031247.SRpWbgoA-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   In file included from include/uapi/linux/posix_types.h:5,
+                    from include/uapi/linux/types.h:14,
+                    from include/linux/types.h:5,
+                    from include/linux/kasan-checks.h:5,
+                    from include/asm-generic/rwonce.h:26,
+                    from ./arch/mips/include/generated/asm/rwonce.h:1,
+                    from include/linux/compiler.h:369,
+                    from include/linux/dev_printk.h:14,
+                    from include/linux/device.h:15,
+                    from drivers/base/power/main.c:21:
+   drivers/base/power/main.c: In function 'dpm_complete':
+>> include/linux/stddef.h:8:14: error: passing argument 3 of 'dpm_show_time' makes integer from pointer without a cast [-Wint-conversion]
+       8 | #define NULL ((void *)0)
+         |              ^~~~~~~~~~~
+         |              |
+         |              void *
+   drivers/base/power/main.c:1362:41: note: in expansion of macro 'NULL'
+    1362 |         dpm_show_time(starttime, state, NULL, "complete");
+         |                                         ^~~~
+   drivers/base/power/main.c:480:70: note: expected 'int' but argument is of type 'void *'
+     480 | static void dpm_show_time(ktime_t starttime, pm_message_t state, int error,
+         |                                                                  ~~~~^~~~~
+
+
+vim +/dpm_show_time +8 include/linux/stddef.h
+
+^1da177e4c3f415 Linus Torvalds   2005-04-16  6  
+^1da177e4c3f415 Linus Torvalds   2005-04-16  7  #undef NULL
+^1da177e4c3f415 Linus Torvalds   2005-04-16 @8  #define NULL ((void *)0)
+6e2182874324727 Richard Knutsson 2006-09-30  9  
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
