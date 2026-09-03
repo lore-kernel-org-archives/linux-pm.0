@@ -1,234 +1,134 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A4CB4A13AF
-	for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2026 12:10:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A5424B0C85
+	for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2026 13:28:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.175
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788437455; cv=pass; b=oWEM2HVhE0gneG9oS68sz2wthsI5yS5ZoePee6g7QgHkKtMbxbixxXCVZB0xp+9DnP4y4MEtp7geKl5T97dhHDzZfxe5XxA1PVIevZLStocjTdzEIZ62WDzwfWqOF1D1jRoLg4H0VI7beiieXc11fE/rZ+ua+vRH6kG2a0HlmDU=
+	t=1788442172; cv=pass; b=dFWgs3Iou3ASDgyYfw+zpUZ7T5sb2gKp/nY3LyY3iZNSP71BLEMYG1494UwdQr81xq/Ew7NnzYEmSGl/eyC/Ur4+BJ69BVyZaCwgNbrKUx5wHHLHvC5sFdHaBFg9Dl0eDCWCubRJu/jdCVOR9C3LMZcpZAj7VVQQQwdFSk6lJxg=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788437455; c=relaxed/simple;
-	bh=hnNXpCXji6zf15Fguebf1c9k1bZfBsYb7wHW3Egg3ZE=;
+	s=arc-20240116; t=1788442172; c=relaxed/simple;
+	bh=0lzGBDpPSFyRzORpVpv5BVqn0OH17bvA2nEL9BC2eGk=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GtSMBhEXWpNH52TY+eaXDhvGBofnnnUfIdzwnLkHEmyR0qGB9dN1Pj+FrilQWcTdoW47L/z/e4dyy3WgcxFKzDVCFGO1xGD+UT68sDwbr3SVMwg0EVQXyJaDwOTHn8jjVMWRmK2sdHBvoPnrrO2lupO9DFOCPG5e4/f+GY5GrEw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=pamFi43F; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ph+8Ufz7; arc=pass smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 To:Cc:Content-Type; b=lOTUZ7YMOfw81cwaeoQy9OCCmjp9Ojl/ts/lVD1/7jWAscO5H9B58KabqbFFmFRTt2aQVfXcaIsFhknNjplkEx6RmWAqSPdArHaXpNb0t7huO5HvhjbZVUExJ4tU4bccNKBobICrKQMEpw8P1AJ4MRtLFRHNX7K/7OGgRUl9bTM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QibOJQnk; arc=pass smtp.client-ip=209.85.214.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="pamFi43F";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ph+8Ufz7"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 683BTNVv210429
-	for <linux-pm@vger.kernel.org>; Thu, 3 Sep 2026 12:10:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	lh4fD+uWvDhMwH/ekLaZEqNCYIa99pFh7Tly04mKBEw=; b=pamFi43F4zHnQ82j
-	Q6+siTw2JB9UfBcuQ2veG1bJIBRnGC7e1ceJNC8IoU20lBNz8uYg88pSMxhVQFXF
-	2b1RxyFpyhW1imbd6i7PbQ4BVSM5ZJX72s97o7pQ+g76rZPfoAwzblyOYeHkHnIz
-	tjWD2ztCb+olcEhchgHBV9VGXyYpUZZh5BW4trpck/uqQoLSo48m8jPTdE1iGsD6
-	3mfz2u6pbJOIdSnk5BIyc8VVWKpwDSTwd/rNwqh+0pBFO+MQtHwM/Yl5z/pz4AkO
-	McssQdtjQ9aiWGsFMEHNwKKVekBLoi4BgTk3SB4li7puoN21AuePbfhQJKbRUra2
-	QdgyPQ==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gf82k854g-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2026 12:10:52 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2cec4226c70so27729555ad.1
-        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2026 05:10:52 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788437451; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QibOJQnk"
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2d6fec3c1adso3626265ad.3
+        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2026 06:28:58 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788442137; cv=none;
         d=google.com; s=arc-20260327;
-        b=repg7I0SY1akmJyzQzjTagpeTHBaikuykTNC5SzoppvIbPZFx6jc80NVV4cuqMBldj
-         0+kMplaFbavEru8VrUk7rkXeZOyvXHfYBOocRFawbgrdgekRsbW8fUQtb59aNDwkqX68
-         +DFagTTJdGDJqLrOTgm5PdQ/M/YPYZ49WlHwGjZ4sbveVoDR3QUHOsX1UCx/XXIPACMp
-         6cd2f8EzvQWHLO0PFVBhzkGBV2Q/KhmE664rpjhf7AvQbqoHiZCu8HxUUU/aKIeJoiOX
-         06bWhgbL7HEdtmFT9dsR5+FaUfFtQZtOihQtmAF3xtkOHqvL3rw6FHmdy5ySgwvzy44O
-         E6og==
+        b=CC+QE2Dd+wUN86Nf4JAcWu8Cf97EvFArxDxm7jeFrDV2BKsW2wz53vWP4FxSsfVb5g
+         fI7FuWCJ0Dbj3qh/0SM1eQ5MaAiGHSedEXOxNRXyNMj0XeSYlZStzslzj84U91trxIO0
+         GFivtbF16ZekNi2/MPgKEqt4VvZd4DT4vchGbesVYsx6VOjlg0AflWzQ0MVetFrfHuQq
+         YMocS6nLTC7cIRdMTD5V3Gzbyd52imOftoTEQmkgDwdFntCX6KA4xEbzRk3dkHx5o2+s
+         25fAcDL3CspcPyyOHY+zGo0XrQjitxAgl4bGVnXsvkXihCXzXTGYvJmFCXwl6tyt7Owh
+         m4ag==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=lh4fD+uWvDhMwH/ekLaZEqNCYIa99pFh7Tly04mKBEw=;
-        fh=yEaAUjSHwsKEZoDIv7IRClbboPKXPwFUTh5sRIngvCo=;
-        b=AtTuVOoM+RcNFERgoTe33x6qOirvGflB+8wgP4KYuJnPYssbQq/MWm/MN2DqklfPVZ
-         KsiPHmorVqDV7gbvrbNUt+iVwTI7o/7qDXzCPSC1zV1Dsva+RjXXYfubB/1gJZXWFSfu
-         9wNsBoHG5MZ+gvXK6zZusgdKB4t4vOtLTubGcLwc5AqLAQCIXrrVNaxTLl1jbEJUnHrf
-         wugG1pgpWECjpqWQDJ7qiWCF4mQ9yXF71g13IJMlPHVTPai1s4SMFZMO+lJDhGaXMUPA
-         r9MZqirVfP/igPp/yjIWzsLis9z8GkwnNCuOmMB99sNdd5BcjWInj6BpPaK8KfQ1ECAs
-         /K7Q==;
+        bh=0lzGBDpPSFyRzORpVpv5BVqn0OH17bvA2nEL9BC2eGk=;
+        fh=qM65VKTo9ykrrH7G/pcUfPSp5b88uG+b5Dl6hvLOn+A=;
+        b=pIxrKm9c07K/JkqUUesJAG4q+yA/tmFqJGZpMQljdFF6wh4zsugBdofvUhbQLnzqG2
+         ZsFoGEkVKRdjwTmYN98vr7t0HrS17RjuCQeHd0E285GHRI8061ExB5dBRpCe4VW3n7Ac
+         yMiOy2HGWeCjJ7HshmS1P7WX8TRFGX0A1CwOUnYfJyqI5PPpLd5ELcFrwqx23piCgGd+
+         Itb3h2HGnczIXsktOe30COAbFeQGAu9WmyZQi82URjQIPxca4JSzdwu2luNQ9IJYTe6k
+         m05NfDyfXq4vLYDfYpvWeae6LI7hn7Xc8Bmz2q1B5KyOmGluuGUYjD7swt/2Wpdaf2iP
+         syug==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788437451; x=1789042251; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1788442137; x=1789046937; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=lh4fD+uWvDhMwH/ekLaZEqNCYIa99pFh7Tly04mKBEw=;
-        b=Ph+8Ufz7t/M7cnAWbUIQK425wtIIKr0o4pSYKg0CqLoa/BWSbYvZqXtffLc9c/NJ0f
-         ak7yjRariCelji60koTYQYW/zNF7eoglYWxEvZpUU6Uv0K3VZ57O4rHMk5S/VQdgU8Bh
-         fnOr/YuEPlUrTgwHlWh8YRjoIDRzgTWO/uoIf+FzZY9xx89ta/sXbUfJXYh5gwC6AvJF
-         uD6CRBlWquR686KSRt2ohA5uH+MC326H7Z9cHnsDJEIKKhNFTuBTdAWzgZaT88Fglonc
-         tuvHzYED1cl4G3jGcvJc3gAP5olbtr8AdABdFTbqfdoLTRocRCXKcbt7dev5mVfvRx0o
-         V+3Q==
+        bh=0lzGBDpPSFyRzORpVpv5BVqn0OH17bvA2nEL9BC2eGk=;
+        b=QibOJQnk1IcJqAPts7niHKXB4MYd7rKKk/wudeEGKQp0iGQwDGwevv3JskZ75xdch6
+         jfqm4L1dCpknWVRfoup0pgPVeoVkxrEgPBofP5UlvVojRvaPkpNXhQFo3YOpI5eUKzJ3
+         oVIpCzNOrezqt2zVbyS0+jWle3e6IbhPsEo3ji4QqZhQGS8vqm75osJq5KNHbniSe7Cs
+         7IMjXLKRAKNvoWjZP6f0QpU7q5nxhdS5rzzAAq7Cy/eRo92sBJSuU2C/89sY38/jJfVI
+         jvANMBPDBxnLupAoA5f1OGYcmYjS1lAQ1aXvNLhVjMv0fKwt2U1nwuAN5oFlZ7SxOXAL
+         4HoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788437451; x=1789042251;
+        d=1e100.net; s=20251104; t=1788442137; x=1789046937;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=lh4fD+uWvDhMwH/ekLaZEqNCYIa99pFh7Tly04mKBEw=;
-        b=ftSLQIP6lCTi5Sm1G8NUy4y4+s7C0EyyLTZV7J2ASS1GcajkmjLCTcFsZ/ozoBe6uE
-         06BCRm2t+gxRrGGynww/yo02Q3jML8+w1C9bPZWZwqhha36AdffnIYnd0tt+MfS8fQFk
-         bHl8yQMc9neUjpElPwDFI08cifUTfWRXzWO8K19/MsNmWBmyh4v1uW+N0UvtaThlJOc3
-         YZsjZVcDKzm5gUrUtZXsVxZUVdnutjlC4JE+Ktzk+CZHEQunRJfL9yTs9oY7wOEBwSXU
-         BzIMKKEFgmn7uG6nF/2TETxpesowSxsevWyJEm0ofqBjKicbQDucmHKLmjHGuP0d7DOp
-         6F4A==
-X-Forwarded-Encrypted: i=1; AKwUvBwimGtDAPjwvrMa8PRas2I9QfPrwvkrwXJaT9qrEr3ahBLiVlcpGNj2HAE9hlIKOCPaqzvLb4Y80g==@vger.kernel.org
-X-Gm-Message-State: AFuF++kUyViLlp7//qUn106d9hqU/xyvRzPunya0i/UqWx/y1nMVHdSZ
-	NT5MZVWZGKtEalYCB1iBqzx1IeY87getHhMGgZsEmCcEuY4VAM+DC4xHCpTKLX9IhooKUdNL0zw
-	aC9m2CGAC5iBszWe9x2rGqKyfh26WF6/b4zmIppBhPZTXT1fG18XZOaH5GBhlHcn8uXAZLi2ea4
-	lGVBg9DrT5BRjL1TuVZ73gAaeTVLCkeic+gjo8
-X-Gm-Gg: AYBFou2ZaAcYInViHy2ze5YRLQk4XycOJ4XcCuGuX4A5DGO3qXBWKam+LgYTphyAZRm
-	AnDCvcfniJcJvLAW7sAD7FALgZUBkte+OYCkCW70MQ+HDdwyG4BR7qxfVUqSAcTtLuiODcBbq8E
-	JBTd2n80RvEqoAu4UDs+UHqN3dFBQ0HDrE/xFx3Zs6z2BuICPpvqsT+I8C2A==
-X-Received: by 2002:a17:902:e947:b0:2da:c09d:b5d2 with SMTP id d9443c01a7336-2daec5f4a05mr171421405ad.3.1788437450999;
-        Thu, 03 Sep 2026 05:10:50 -0700 (PDT)
-X-Received: by 2002:a17:902:e947:b0:2da:c09d:b5d2 with SMTP id
- d9443c01a7336-2daec5f4a05mr171420605ad.3.1788437450509; Thu, 03 Sep 2026
- 05:10:50 -0700 (PDT)
+        bh=0lzGBDpPSFyRzORpVpv5BVqn0OH17bvA2nEL9BC2eGk=;
+        b=CKXni+fe5kDyPUoadjMiO/kzEkpKJJ+HcPT1vF3b07o67yDcy3IPTA0PhQhBxnmQgh
+         K9j0uteyhK5KySRI5jIfJPFFJfWwzLDdIPvizHzRa1wpW7noqr015li3sF3/m3Oqes4a
+         0zEX8CjwYYLfYiUu8oWBAql6XIVrh0CgVpLXbcLej3O4etT41V7Y0P0LISdLvC03i462
+         52skGDvzFuOaOKMsV3t25FlNbpw1sd3xi4yT+6DPU9q8YBHz2mXPmGI0BaNAaH8vAnMp
+         O9peGGody9bAkas+Ik8GtMYGipowd640SUtst4bw0Oygkx+BEgza3CHq7UxZbsM4gE0o
+         NWoA==
+X-Forwarded-Encrypted: i=1; AKwUvBwdrQQeM4fGEgalqq893JGvsR3SG5rWe9viMyiMx93ILgTZB5QwsT7rL0psBEzZEfEUFy9dIv8pmg==@vger.kernel.org
+X-Gm-Message-State: AFuF++koNeSwszblNl8exjpWQYvsWAaUeIlc7ac1hXycNhrkQfeCiMqR
+	Q2Ane6DxRJTLJzh0Ayo6EP90hkYw6F0f77NCRe0nXoIJYknYhsERnzEq+SDPehQ/sTPLQLJohOB
+	73Zr7FOVnuz7Q/+rVWcQ6+dWgg9f0U0I=
+X-Gm-Gg: AYBFou0zEcCFIR3Kl4TyE9aSKpE7JC/Tn/0LnOHiv/IDvstahgmSiBGbDPGRPUDfggO
+	aGtIswAh759k5+dsu5qDsqsXvfZVKrHb7358gfFulhtoLRW52wZlOIsQb854l05LRLOxdUM18Nf
+	ALFEB98d38QFzoPJsHpGzTutRkjbi7lFvCxPs+C+t83kWuHhUjDWjf3ebp1YxjZ1sG4iR5+dRYZ
+	nWCTLzU30E4fhYLYfBbT4+aeO8tK38qLRFUBXM0TYzmXDtpbPJZT20rpdT0lVsgX5FZGdruUpk0
+	qDxXf4LUxv+VxAfrOItGk5E1/XdE1y7Dd7YSqZ14cRTe+Mauv64G7kmJGMFpcUCRwOl+IpKrlue
+	+JQ1gp3HVhOMPBJvsBLnbv4umxHbvQL4AGbJro6GM11xht+G62A1jWXWrgcF+
+X-Received: by 2002:a17:90b:1d0d:b0:38e:c140:2a0b with SMTP id
+ 98e67ed59e1d1-39aee0e6ed8mr12609481a91.3.1788442136905; Thu, 03 Sep 2026
+ 06:28:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260901111441.122436-1-ulf.hansson@oss.qualcomm.com>
- <20260901111441.122436-2-ulf.hansson@oss.qualcomm.com> <c00f266d-b6c3-4988-a2b9-72c5e0389317@gmail.com>
-In-Reply-To: <c00f266d-b6c3-4988-a2b9-72c5e0389317@gmail.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Thu, 3 Sep 2026 14:10:38 +0200
-X-Gm-Features: AcwNN1UpqhcrP8XuT2dq_C4AZNGB-kG49zty_zs5rwD8pwTsxOtau1KLx0kmPkA
-Message-ID: <CAPx+jO_jfkRyFjB35wKGs8N-hjXtq21kuOD484F8U0TL16sWqA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/5] pmdomain: core: Rename genpd_status_on()
-To: Dhruva G <goledhruva@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org,
-        Abel Vesa <abel.vesa@oss.qualcomm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Maulik Shah <maulik.shah@oss.qualcomm.com>,
-        Yuanfang Zhang <yuanfang.zhang@oss.qualcomm.com>,
-        Sneh Mankad <sneh.mankad@oss.qualcomm.com>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
+References: <20260824-unique-ref-v20-0-490735672187@kernel.org>
+ <20260824-unique-ref-v20-6-490735672187@kernel.org> <CANiq72mPLrKQMzb37ow2969m5r3Z2Kh_4LHERUun6ALw3ea6tg@mail.gmail.com>
+ <87y0dt1b8b.fsf@t14s.mail-host-address-is-not-set>
+In-Reply-To: <87y0dt1b8b.fsf@t14s.mail-host-address-is-not-set>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Thu, 3 Sep 2026 15:28:43 +0200
+X-Gm-Features: AcwNN1XsmuEPyO39jqyvRGfAMw_DGGPMkiDRHtfg1ZEoNlBhpVDCHnmjvBP_pa8
+Message-ID: <CANiq72muo8SotJHJQhEe=2kiprbrQTvrEMqd1Uw_7yNSfA3Gpw@mail.gmail.com>
+Subject: Re: [PATCH v20 6/8] rust: Add missing SAFETY documentation for `ARef` example
+To: Andreas Hindborg <a.hindborg@kernel.org>
+Cc: Danilo Krummrich <dakr@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, Vlastimil Babka <vbabka@kernel.org>, 
+	"Liam R. Howlett" <liam@infradead.org>, Uladzislau Rezki <urezki@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, 
+	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Trevor Gross <tmgross@umich.edu>, Daniel Almeida <daniel.almeida@collabora.com>, 
+	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
+	=?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+	Lyude Paul <lyude@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	=?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>, 
+	Todd Kjos <tkjos@android.com>, Christian Brauner <brauner@kernel.org>, 
+	Carlos Llamas <cmllamas@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Dave Ertman <david.m.ertman@intel.com>, Leon Romanovsky <leon@kernel.org>, 
+	Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
+	Igor Korotin <igor.korotin@linux.dev>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+	Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, Michal Wilczynski <m.wilczynski@samsung.com>, 
+	Ira Weiny <iweiny@kernel.org>, Philipp Stanner <phasta@kernel.org>, rust-for-linux@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org, driver-core@lists.linux.dev, 
+	linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-pwm@vger.kernel.org, linux-usb@vger.kernel.org, 
+	Oliver Mangold <oliver.mangold@pm.me>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-GUID: _6n8qRu3oFOiZjWGWf-pLjxKDPvriieC
-X-Proofpoint-ORIG-GUID: _6n8qRu3oFOiZjWGWf-pLjxKDPvriieC
-X-Authority-Analysis: v=2.4 cv=OuJ/DS/t c=1 sm=1 tr=0 ts=6a9963cc cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=ZpdpYltYx_vBUK5n70dp:22 a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8
- a=7CwLG3W57V6vwtOQApUA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAzMDEwNSBTYWx0ZWRfX+MA5V66q8Htt
- zeV5pxbkKhorOFCwkK/PYUejE2lci1UE11Tl35H5oWAGrbGJG7FUkQLOqZhNjH0g1SsFOE2IxCB
- pxSFj2+XlsFvb1HVtre/IwJEraavB4Mirj9+wOsF86IP0J9/ujqpBcKuE1gfwm7lBRv25g12eaw
- OpObjcJ8aN1EWTAtA9ZWOz1VKOryUXOYnZ4EZ6ifr5BTPR/AgI32iq5T5MHEubO+gum/yKDKSLl
- WJXKSZBHpj6eX57kkz7qjWEFuxb+WK+5o+hYd38tAGZu/5w0nG89mxigcn9m9mAMO3gvI3lthE1
- vXt668prAHHsvXFAHkDAPVKCwTtD9JKbF1KKTQalsMhW4ZE7NtgjiDO/Yjd0exunxbc2QqYlTef
- 7WtLtDiysgAdBLhAGcPQry/aYlTbgaXBfXdxZZWLqHUEjtb4YQwre15Tp0gW/0kTEYLrU6UD9Z4
- XwITjJdfXLKKXzpOqwQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAzMDEwNSBTYWx0ZWRfX5Bp2lojY10l+
- 6r21WQUW0mxorRbKF582pEM+3F66UDtTEYAl95g2RL9cDpT+sTMQSlIAFTJ7fElDKfv6JtVS7KX
- yba0mrSyqM9LfY0zjpY0I/TjQW5+hMg=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-03_03,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 spamscore=0 adultscore=0 bulkscore=0 malwarescore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609030105
 
-On Thu, Sep 3, 2026 at 2:00=E2=80=AFPM Dhruva G <goledhruva@gmail.com> wrot=
-e:
+On Wed, Aug 26, 2026 at 11:29=E2=80=AFAM Andreas Hindborg <a.hindborg@kerne=
+l.org> wrote:
 >
-> Hi Ulf,
->
-> On 01-09-2026 16:44, Ulf Hansson wrote:
-> > Let's rename the internal function genpd_status_on() to
-> > genpd_status_on_unlocked() to clarify its use.
-> >
-> > Suggested-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
-> > Signed-off-by: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-> > ---
->
-> Optional:
-> An additional line explaining why this otherwise unnecessary rename exist=
-s:
->
-> Rename the accessor to leave genpd_status_on() available for a lock-takin=
-g wrapper
-> introduced in a future commit.
+> Do you want a link to this issue with a regular `Link:` tag?
 
-Yeah, good point!
+Yeah, thanks!
 
->
->
-> >
-> > Changes in v2:
-> >       - New patch.
-> >
-> > ---
-> >  drivers/pmdomain/core.c | 25 +++++++++++++------------
-> >  1 file changed, 13 insertions(+), 12 deletions(-)
-> >
-> > diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-> > index 842c4169e290..6ac1ce18fda3 100644
-> > --- a/drivers/pmdomain/core.c
-> > +++ b/drivers/pmdomain/core.c
-> > @@ -173,7 +173,7 @@ static const struct genpd_lock_ops genpd_raw_spin_o=
-ps =3D {
-> >  #define genpd_lock_interruptible(p)  p->lock_ops->lock_interruptible(p=
-)
-> >  #define genpd_unlock(p)                      p->lock_ops->unlock(p)
-> >
-> > -#define genpd_status_on(genpd)               (genpd->status =3D=3D GEN=
-PD_STATE_ON)
-> > +#define genpd_status_on_unlocked(genpd)      (genpd->status =3D=3D GEN=
-PD_STATE_ON)
-> >  #define genpd_is_irq_safe(genpd)     (genpd->flags & GENPD_FLAG_IRQ_SA=
-FE)
-> >  #define genpd_is_always_on(genpd)    (genpd->flags & GENPD_FLAG_ALWAYS=
-_ON)
-> >  #define genpd_is_active_wakeup(genpd)        (genpd->flags & GENPD_FLA=
-G_ACTIVE_WAKEUP)
-> > @@ -771,7 +771,7 @@ EXPORT_SYMBOL_GPL(dev_pm_genpd_rpm_always_on);
-> >   * @dev: Device to get the current power status
-> >   *
-> >   * This function checks whether the generic power domain associated wi=
-th the
-> > - * given device is on or not by verifying if genpd_status_on equals
-> > + * given device is on or not by verifying if genpd_status_on_unlocked =
-equals
-> >   * GENPD_STATE_ON.
->
-> Since we're fixing this anyway, It should describe comparing genpd->statu=
-s with GENPD_STATE_ON, not the macro
-> which expands to that logic ;)
-
-Of course, my search/replace logic was too lazy.
-
->
-> Anyway, nits only, LGTM otherwise.
->
-> Reviewed-by: Dhruva Gole <goledhruva@gmail.com>
->
->
-
-Thanks, I will send a new version to address your comments!
-
-Kind regards
-Uffe
+Cheers,
+Miguel
