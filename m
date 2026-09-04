@@ -1,92 +1,87 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 405102F7F1C
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:28:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D7DC3806D0
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:31:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788532126; cv=none; b=rVg39zXK7grSdz54dUUtucbHbFwOzbsaw0fqKEyNwC2xppp8lxsZ4V7FqIfgTpLTri2mqCXB8ioEzWX7BKnFOwGAvXDomq7Fu+/IeMYuKN+7mjYyKqcA9m7CiKR4Lj0v7W1Q3XTMiTlc0MOkoFUf0adDmdYjSCrlis+ZIy04DiE=
+	t=1788532276; cv=none; b=o4W3KkiVlfRs33S4PhgUYghgeLOOwJO3SgvPaqOtXJPoI/6BOqJWjLpLLBh/cyZP4+qxDMFUmquuarFylY13Z0jlxV3h7KTYmjMh3rRM/2AR4gDqjPWsSB+Sk1ztQgjzsB9EafWsws2oM4lUm02RePDj7fZA6cKv+7jmdsQbaug=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788532126; c=relaxed/simple;
-	bh=TmfPz4EUMm6Z8Ox8FU0u4Az5V1Kx3kQ2bxu2Nlo/7tQ=;
+	s=arc-20240116; t=1788532276; c=relaxed/simple;
+	bh=98yf6ldz6t1YlrkmJTWOhJhENupp7cCnJ3WvpT+bHss=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mq82sxMIOHNDo3WnQJPWJ8USBT3pPIXmfLlzDYMvSeWU6d8gMceuHxx216onQ2jgCsAkuUUzvxp+7DMg7G80m7IEZVMsfsxXHfKrZb2iV1ubgIMtSKsZ6sxlIFceWFdQV0sjy56f9BxX1wmuJg4BR2yogUQsEzZN28pMp9uqsg4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BpI68N1T; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=et9vMvG1oalECOHYUkg8hLChp3mxjIAcCAvCLb8fWJBV5KP7ozdqzPRR7pA2JF9/bS/mvu6KJZ1RxcrBObxolF589whz4mifYgCs+cKNaYMqjdug4V4kVjF1rV1clLnWxJSXrdCkJpVlz9M7OAeS5IclxjPXpRlPvYSythysJcQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QizAYMuh; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BpI68N1T"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 280231F00ADF
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:28:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QizAYMuh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB9C51F00ADE
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:31:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788532125;
-	bh=0lAgpRheQnw8NXs5uZ4P7FJxzP+cbejQwwbXm7xsKXE=;
+	s=k20260515; t=1788532274;
+	bh=yNQ8sjJ0sOuntry2syhaAzX8NW9+/S8Ti0as82rapt4=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=BpI68N1Tv98731L+v/qCnHIH83REDyQx2WJaAKFdO8kml4N06XLie5XEdGPKvNDwy
-	 nVzOwDo8tDYncWKG4Nzo8syU8geRF1S0CBzkETmwFrU4TlG/MXlovoTZH2bqIBYIH+
-	 JIHnaHKQ45iLNBIpi8NWHqjVEAfYKLUPgXoxPR/8Wyn/ag+tzvteKBrmenG6Wu39OO
-	 Ay+bVN1cmSJlUbcJcg/efhbiwfjk0d9EQrQpIzm+nKS/Kh75VQRHxHwE1pykSdHODi
-	 Z/uwSiXd7AAQ+AtiMuj43z/lfGANiH5HULlYyDEfsrhfDxSWm9CQGumFA269Lcly+J
-	 KTLV1LPD0YW6g==
-Received: by mail-vk1-f171.google.com with SMTP id 71dfb90a1353d-5c664b8c3f3so975870e0c.0
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:28:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByc/TUHYmWpKrPd3SL+55qZDOL0UTkhRjW8XAactuAA1Ie0/beM8u6MbhqwkzF1y7YVd6BN9ogJeQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mwLbaGK6+v8mZb3y/uArk6/Jde4dlWObpvHzByfQq1ePuXEaT0
-	tk3MvB3AvOgIs2QHP8G2YPJ7CD6n+IY65HjpPlURxn3i3UEnF1ftvh5QHOaoCpJC5Jp5D+1uiSk
-	JGnFdV1G/vsUiONVc6AYUxOUcwRW8YZo=
-X-Received: by 2002:a05:6122:da0:b0:5bd:a5e1:c7c7 with SMTP id
- 71dfb90a1353d-5c7ed485cdemr2777069e0c.1.1788532124386; Fri, 04 Sep 2026
- 07:28:44 -0700 (PDT)
+	b=QizAYMuhQAxmVaZXR3JOi5bnYRBOiDyjQzqrzVI4W4eTWCpsvZBdPmbLdXxrGBHdZ
+	 x2BdX2ILSVlc0IR+MJOjtMP0q1JhXgDIzOOyG/+aHKNdrzCkHoePp09co3t2Mcr85g
+	 p24ahwWBDdnKwgq6NHW8QGjAnoYKK5e6SUnLnMiH1pxiZSlf8DYnb8hd3oiLXm0kVq
+	 Te/WydegN3mHjKfIQT+CU+OxeN9q8Jkut9VX4nxICcSkZp/pxhtV1Ah/8KxVddqgSG
+	 7hPs+cJwMPfbb/tJPZznsMgX9qbUTW0PbVeKemQyzwaXBRUFpFYYeFUsn5iBJnBhxF
+	 r0nRAYuQ3/sTw==
+Received: by mail-vk1-f178.google.com with SMTP id 71dfb90a1353d-5c7d1512dbfso914254e0c.1
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:31:14 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzmZK7Yd0R+1ygA2IOqxt4cvMegY4aRgTiC800QdJWB1g4Z03Js1U8uZsISUJUWm+2EoYWmZJTcMA==@vger.kernel.org
+X-Gm-Message-State: AFuF++lgaTiwFc1QOJNiZvcDSqzcFD8tyDYaXVyARizGGsKbfBYVbfPJ
+	xf1bKdifgILFjCDjc+GoDJ9RCakjjZQ75X1MvNXoOrvaqwUbxdokxmMualp66KBqZcM5dcaXrfb
+	tk7b3juui4n8cGZDB6T5xDLZ5j4MPfWQ=
+X-Received: by 2002:a05:6122:8b11:b0:5c7:a844:493 with SMTP id
+ 71dfb90a1353d-5c7ed2f89e5mr3331040e0c.0.1788532273855; Fri, 04 Sep 2026
+ 07:31:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260815092419.91246-2-thorsten.blum@linux.dev>
-In-Reply-To: <20260815092419.91246-2-thorsten.blum@linux.dev>
+References: <20260815095143.3821-2-thorsten.blum@linux.dev>
+In-Reply-To: <20260815095143.3821-2-thorsten.blum@linux.dev>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 4 Sep 2026 16:27:39 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hoJR8huKApbA5WWxqRUwra=aUis-QBOX5=feBqRzCmzw@mail.gmail.com>
-X-Gm-Features: AcwNN1WvgUsThB3vWTZ5u_V2vRbMaNsyfEtQGcYqDTkzRqFDLFNEu2y3d5xdoN0
-Message-ID: <CAJZ5v0hoJR8huKApbA5WWxqRUwra=aUis-QBOX5=feBqRzCmzw@mail.gmail.com>
-Subject: Re: [PATCH] thermal: intel: int340x: Drop redundant else in proc_thermal_add()
+Date: Fri, 4 Sep 2026 16:30:10 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hP8ZiQiNAdz2OLEHu_T=2ARiKRwEg3S+21wSAM9c2PRw@mail.gmail.com>
+X-Gm-Features: AcwNN1U0ycofXwvh9021ISYWsetE1Z-QvoegoSyN7HikiCof4XI1Hp96ylG0ga4
+Message-ID: <CAJZ5v0hP8ZiQiNAdz2OLEHu_T=2ARiKRwEg3S+21wSAM9c2PRw@mail.gmail.com>
+Subject: Re: [PATCH] thermal: intel: powerclamp: Drop redundant clamp() in duration_set()
 To: Thorsten Blum <thorsten.blum@linux.dev>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
 	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
+	Yury Norov <ynorov@nvidia.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
 	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Aug 15, 2026 at 11:24=E2=80=AFAM Thorsten Blum <thorsten.blum@linux=
+On Sat, Aug 15, 2026 at 11:51=E2=80=AFAM Thorsten Blum <thorsten.blum@linux=
 .dev> wrote:
 >
-> Drop the redundant else branch since ret is immediately overwritten.
+> duration_set() rejects any new_duration outside the valid range before
+> the assignment, making the clamp() call redundant.
 >
 > Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 > ---
->  .../thermal/intel/int340x_thermal/processor_thermal_device.c  | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  drivers/thermal/intel/intel_powerclamp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_devi=
-ce.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> index f80dbe2ca7e4..0a007a6413df 100644
-> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> @@ -291,10 +291,8 @@ int proc_thermal_add(struct device *dev, struct proc=
-_thermal_device *proc_priv)
+> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/i=
+ntel/intel_powerclamp.c
+> index bd7fd98dc310..1efdaabc4bb8 100644
+> --- a/drivers/thermal/intel/intel_powerclamp.c
+> +++ b/drivers/thermal/intel/intel_powerclamp.c
+> @@ -94,7 +94,7 @@ static int duration_set(const char *arg, const struct k=
+ernel_param *kp)
 >         }
 >
->         proc_priv->int340x_zone =3D int340x_thermal_zone_add(adev, get_te=
-mp);
-> -       if (IS_ERR(proc_priv->int340x_zone)) {
-> +       if (IS_ERR(proc_priv->int340x_zone))
->                 return PTR_ERR(proc_priv->int340x_zone);
-> -       } else
-> -               ret =3D 0;
+>         mutex_lock(&powerclamp_lock);
+> -       duration =3D clamp(new_duration, 6ul, 25ul) * 1000;
+> +       duration =3D new_duration * 1000;
+>         mutex_unlock(&powerclamp_lock);
+>  exit:
 >
->         ret =3D acpi_install_notify_handler(adev->handle, ACPI_DEVICE_NOT=
-IFY,
->                                           proc_thermal_notify,
 
 Applied as 7.4 material, thanks!
