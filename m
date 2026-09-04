@@ -1,82 +1,119 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ECFA2F8EA3;
-	Fri,  4 Sep 2026 14:03:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A750F4A4823
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:06:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788530638; cv=none; b=QdXMruvIZnohSUPyMbgOrdW2UvhoW8sXZxIH2smSHzn1pJ1UIHhJWx9dnKJD4BJBEwfoY4Py1xQu+oDJcvES3pL5CQi+vIH5KjNSdDdl8IP6Zjb5awgc0QYDivIDUMtvs6/eV1qr4GcLTOwbvV46c7Ity5l0I6xxl5Y9WnHe9JQ=
+	t=1788530815; cv=none; b=CaaKBmoW47NhsC2hNLGosdOSZsC4n/n4gKsGwGw6/LcC62kZ6RvyMOYODIpCyI0nNxbKMgyY3WFXtXeCEA0yvVoW+4kzh7Zb7MCs6JFQvN0BWHmIHa9aSnoXGV93diDLkGdhxu9mIHBmzCFbajCvKxCo3iRyrf4jaE3khdEU0fE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788530638; c=relaxed/simple;
-	bh=3D6qmYGQsezDyz+JwryK1dLuhpk82sVefdhUWAESihs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mhCOul802n9cNnXCl3RL/UNRyglxC6r6S30tHTTJvqGex+sMtOE29D5qx87tnfjRm6sSrL9K0UfvWRLXGisEj9hxF3FYX6PiTCG5MqfSLk9VozJzQCydTbVpBbSXcXwEsG9x8px9cVsNS0GbCgS0bR7wFoFdZbAivYbbXM88RXw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kXKnfzVX; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788530815; c=relaxed/simple;
+	bh=ichzwRGQuMRKN55HppDCxz8fwjm6tbc80DRWAaDoips=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XSvHG3k+l4ziFeTSQVrV3rHWFSvH9ss921FilGT5kw+wnR3ljjP2F2eQyVVyQGQdTmEJczbAyRUjvNeuvZ6qkKEIaVfLCMm8R/YC3Sf6aEi7fhDef1xuMTFpyYpvmYD0O8DFE6DMW3d4n1m3A3mPB/ikDJsbVLEYJa8OBBSmB1s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ohC590BI; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kXKnfzVX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E99171F00A3D;
-	Fri,  4 Sep 2026 14:03:52 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ohC590BI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EB901F00A3F
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:06:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788530637;
-	bh=9xRAoQ3VOKVlK28blytp6VhXdyGPJ3aJEstmecZCKm4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=kXKnfzVXW4rNnRI+vPMis1N3J4Z0DJbAzLB2Xk0YQIFhh9SbKUiWfLZb1n9N2JXy4
-	 dHkIMcObIUxZRUwbNdzkAZ59AugMx/fb1CEVDwqZJRnX09QLpn1/BpOVlrsgIi3wZN
-	 oH5cRcGMHI+iA40/PnyE6qChmDnffEfpMgxeFPQniTt/Xnu0YW/Lwa6hzH0c452ASe
-	 mtauknshUE89obVWddAWre3+3iPzcqJ1TxE4stY2QUp2EJD8MHcLeCixjx/ZiB2nE3
-	 DxsSe7CiV2CupcAhOiUkCJl2UfKKMGmdmzHoMKfqPe20686M/rUi6+gDs6kdioeo4W
-	 HRiLdLX+fSQmw==
-Date: Fri, 4 Sep 2026 15:03:51 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	=?iso-8859-1?Q?Cl=E9ment?= Le Goffic <clegoffic@baylibre.com>,
-	devicetree@vger.kernel.org, arm-scmi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 02/12] dt-bindings: power: renesas,r8a78000-mdlc: Add
- firmware property
-Message-ID: <20260904-real-owl-of-business-f4acdf@sudeepholla>
-References: <cover.1788338320.git.geert+renesas@glider.be>
- <f1bb6566f00a06df7c01f43e5329b754a32620e9.1788338320.git.geert+renesas@glider.be>
+	s=k20260515; t=1788530813;
+	bh=CYXWK9ZBlYQ1rrbxgiW2csNEJRR76+o2ywAlbXk43nU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=ohC590BIC7ov34+5Hj+5cGitlExSa2Uisv8yzDOuY1eoDZZuC8dvb73NJzRweSQHW
+	 1gqhUeROSKe7d6HiyLiLY3ruHKo7T6vrOKfJ7n/Cbna4aUIlA0ZCQQdtSJ/roMckEG
+	 WI+K1fWUdMfuDH4ogokm0L9fHBF4xRhOV06aJV62/lSEaaKDy+e6wHhTOXRewAfhQZ
+	 /QgHVq+WogbhZPUqH0Q7hFOQwcTydrYRb/846iuFb8X91S6AiQRuKbLJKiWAH4cCpE
+	 h2Ieo+q0XOXyDEHbfJMm0x2nKPzFeVqeZ7k9VAjNXDrhI9kiM53QJG+1zYOiWC3Og+
+	 JFLRqQGl6uL0A==
+Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-5c2c46a428eso883451e0c.2
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:06:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBySo5iWWEpbhd/DMP7iLxioXc84PffMRuLb+WL2dKCPbk+f+TWdpNi9o3uFflU8d0JdV4BmjVstWw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lzLTJuwP/IpZ2250HsYO3A0dJ8TObLLcbmZZlM3bF/NOr+bb4I
+	XSzs1yA3MbMzjN+prmUErqK+X5XaHG1T7gHq15aZ8aVH/sChJauOvxmVuqxby2FFHO/+qWkn7+T
+	NPn/yQHlu/iwLQ6mwxONO4B+ibPZz090=
+X-Received: by 2002:a05:6122:881:b0:5c5:db2b:5baa with SMTP id
+ 71dfb90a1353d-5c7ed7cba16mr2788761e0c.6.1788530812518; Fri, 04 Sep 2026
+ 07:06:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f1bb6566f00a06df7c01f43e5329b754a32620e9.1788338320.git.geert+renesas@glider.be>
+References: <20260813081721.2645937-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20260813081721.2645937-1-andriy.shevchenko@linux.intel.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 4 Sep 2026 16:05:49 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i0zfLa76q_6bvc01qf+z_c69P=YdPMPTWanThoVFqw6g@mail.gmail.com>
+X-Gm-Features: AcwNN1V1XWiibo4KjHzpgchDcE_kjPhfT3HjyCe1mQtdg9Z1pgsbb1NsECOPQDA
+Message-ID: <CAJZ5v0i0zfLa76q_6bvc01qf+z_c69P=YdPMPTWanThoVFqw6g@mail.gmail.com>
+Subject: Re: [PATCH v1 1/1] intel_idle: Replace min_t() with the better alternatives
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 02, 2026 at 01:29:18PM +0200, Geert Uytterhoeven wrote:
-> On systems using the ARM System Control and Management Interface (SCMI),
-> Module Controller hardware registers must not be accessed directly.
-> Instead, the SCMI message protocol must be used for inquiry,
-> configuration, and control of power domains, clocks, and resets.
-> 
-> Add a "renesas,scmi-firmware" property to distinguish between systems
-> with and without SCMI, and to indicate which SCMI firmware interface
-> provider to communicate with.
-> 
+On Thu, Aug 13, 2026 at 10:17=E2=80=AFAM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> Almost always use of min_t() is wrong. Replace it with min() and min3() a=
+s all
+> types are int and there is no point to use typed variant of it.
+>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/idle/intel_idle.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index b12b4f62752a..699665f24ecd 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -1792,9 +1792,7 @@ static bool __init intel_idle_cst_usable(void)
+>  {
+>         int cstate, limit;
+>
+> -       limit =3D min_t(int, min_t(int, CPUIDLE_STATE_MAX, max_cstate + 1=
+),
+> -                     acpi_state_table.count);
+> -
+> +       limit =3D min3(CPUIDLE_STATE_MAX, max_cstate + 1, acpi_state_tabl=
+e.count);
+>         for (cstate =3D 1; cstate < limit; cstate++) {
+>                 struct acpi_processor_cx *cx =3D &acpi_state_table.states=
+[cstate];
+>
+> @@ -1938,7 +1936,7 @@ static void __init intel_idle_init_cstates_acpi_lpi=
+(struct cpuidle_driver *drv)
+>
+>  static void __init intel_idle_init_cstates_acpi_cst(struct cpuidle_drive=
+r *drv)
+>  {
+> -       int cstate, limit =3D min_t(int, CPUIDLE_STATE_MAX, acpi_state_ta=
+ble.count);
+> +       int cstate, limit =3D min(CPUIDLE_STATE_MAX, acpi_state_table.cou=
+nt);
+>
+>         /*
+>          * If limit > 0, intel_idle_cst_usable() has returned 'true', so =
+all of
+> @@ -2018,7 +2016,7 @@ static bool __init intel_idle_off_by_default_lpi(un=
+signed int flags, u32 mwait_h
+>
+>  static bool __init intel_idle_off_by_default_cst(unsigned int flags, u32=
+ mwait_hint)
+>  {
+> -       int cstate, limit =3D min_t(int, CPUIDLE_STATE_MAX, acpi_state_ta=
+ble.count);
+> +       int cstate, limit =3D min(CPUIDLE_STATE_MAX, acpi_state_table.cou=
+nt);
+>
+>         /*
+>          * If limit > 0, intel_idle_cst_usable() has returned 'true', so =
+all of
+> --
 
-Same comment as 01/12 and the NACK.
-
--- 
-Regards,
-Sudeep
+Applied as 7.4 material, thanks!
