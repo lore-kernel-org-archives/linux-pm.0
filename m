@@ -1,77 +1,126 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C41904CA771;
-	Fri,  4 Sep 2026 14:50:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B4FE4A6CC2
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:51:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788533430; cv=none; b=OGNjUCI8cI9bkht9p1mfcVtatjlirmDmNGCd6ulmwnn4hK2yv+3yDVaQi5C+Hkkket1Quh8ELRK+oR0NmPnnXPbR3paatK8M5CjYNDj0hS/PDX6bq6TlioZs46+YynG1t+0uodEhalVbNeBjpY/PnwOYbrpgUxrTttyNEmMeLmM=
+	t=1788533477; cv=none; b=mi0X8AbUrteB+SwTcAdQLgLdJF9QVhJhQwDAo5ZBOYsuPhzrzCzxBvy6nXBvTPH/u90f/AD9jX6GNej65v1FiEAIe1HqtLQ1v4ecxMp2t86dWf0mYlUGuxPjL+8z8K9ygOBtgupr6d4g4vEzQ9YaQAud7FKrk5TosUPzbWJYiKc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788533430; c=relaxed/simple;
-	bh=8ojOrGp13esXg76h4gTL8CQTn5Ov7uDdomCjzDitXi8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MOuINSAeXasNDo5iat4fEkuS2t2pksCkwgj3U1Hp2lkhscLGaNEXn8nJ8UeFRFtziM/efZnrm18mbHnXxDU4qEIm4OQahxDJbfQuj7UPp+3wDl5Fg/PVgc2ecVPEkfKa/yYMq4xDWJ3XIlDACK6N82X9894UvXO5IXtuFQtSxm8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ERFnMCX2; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788533477; c=relaxed/simple;
+	bh=3cIr898l4+xlDFJy4acxoBlvCIAqLYxsTwS5DJAho14=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=REMgzJR59PlDGoqiLyGhac9pALRhRoddZIJ1tEFpo9HHwnOhPK5ZYfOCIAEsbOWuELendO0HqG8lMdopSuf/6qVhA0lRtxwEGdJweiR/gaV5Qlfs2V8hqekD6R/QXuHMjOZvV5ZCWdnHtutGVw/JKAftvywYbU4LpUZKPJFytfs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PvZFljBx; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ERFnMCX2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AAE01F00A3D;
-	Fri,  4 Sep 2026 14:50:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PvZFljBx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB6241F00ADE
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:51:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788533429;
-	bh=+A9vTFErWfQT0RtCnGKfq03NBjCr7KCzxcGcktHMDQI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ERFnMCX2zNVEuOaXAwLazkhogMvrT14LMjH/m83rRv88+dPJLGzjJRh9zjPS1zWXb
-	 OdU+AMylNgfqQbitJvYOm6n9G90SQ6+qXAEH2VhEKfBUP4vKCHLviHFhc+RDBTO+0p
-	 8px9SXQFFy3lvHTUTemU13jnF55xDgxYUju7NigbZPmjxWUlWlnhmJG0kvFmFqzJud
-	 OXKgTeRsIkbxRxQ9az6v163g2nk+JxX21tUsBCIoOJ1Z5jSqaGbSP20kVLo+Wu3Kfi
-	 8gnZUp3C1LG4op9el7Sjq4yvt/i2d6LyO7sa+xxzJ3rN0xI1cW5M8GwMZykaGkVo9q
-	 eEtA7hWBeLEYA==
-Date: Fri, 4 Sep 2026 09:50:27 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Robert Marko <robimarko@gmail.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	Ulf Hansson <ulfh@kernel.org>, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Taniya Das <taniya.das@oss.qualcomm.com>,
-	Radu Rendec <radu@rendec.net>, Brian Masney <bmasney@redhat.com>,
-	Guru Das Srinagesh <linux@gurudas.dev>,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	Linus Walleij <linusw@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	Georgi Djakov <djakov@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>, linux-clk@vger.kernel.org
-Subject: Re: [PATCH v5 12/15] dt-bindings: interrupt-controller: qcom,pdc:
- Add Kuno compatible string
-Message-ID: <178853342626.688235.4218772368232817802.robh@kernel.org>
-References: <20260827-kuno-soc-support-v5-0-6d47636a8f09@oss.qualcomm.com>
- <20260827-kuno-soc-support-v5-12-6d47636a8f09@oss.qualcomm.com>
+	s=k20260515; t=1788533475;
+	bh=4vkuD3na4i2ySN/2/bVtt2a87x8yRk+LYFtnbh/Z4MA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=PvZFljBx3P91vyHrS5GLB3FRvrjzRgf1KhG1fF4jC3pkyjih8zrpdi5g+oqvLvP7L
+	 oKqkdoYeC4SmHJSMjg0xn18nLtXP/uB/nuc6eilYuIyX6l3GP29x4eH2Lf+VOtqNyM
+	 ThtQkE2O1gOyZZCpz11AVY9QKO/gffc4EiI873MfuEUuef3OY+ktsMwkEp4ifIpj9J
+	 J4ZoRCTg0P5tNu03KmHxyyM0+ebPjSq2bFud0x6WwJLeOMyPq7WZ89HUJ9sY+pRDtA
+	 RQlXUVo6BIlsdRGiE1S/Bm0vjgG1DyiCxpNlnDDPQclnc/Wk3NR5eIfk9V4CTKme3J
+	 8VNBPxzkKMisQ==
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-3a20f56876eso10930491fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:51:15 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBy1BdxnuZevdN7O8uEWjl9PtaL6OyvsimokEpU5leBucZcYwn+GeknYUkO6wzcbniYSksfXnc8CIw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lidWadzK2mcGlf8rt4zR+anBFt8a6oq85hFMK8x9pzRe8JQjET
+	95bnIuZ53YrhnkTdehe9TNpVl0AulyiDC+ng9kq4s5kNemoKDs8ORo6zTLOFlJGk4SLBPwTBdkh
+	YD8KnpfdVi8/TNg74+KniP49m9Bq/gD0=
+X-Received: by 2002:a2e:ab0b:0:b0:3a3:7681:6d73 with SMTP id
+ 38308e7fff4ca-3a376817563mr4904721fa.28.1788533474198; Fri, 04 Sep 2026
+ 07:51:14 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260827-kuno-soc-support-v5-12-6d47636a8f09@oss.qualcomm.com>
+References: <20260828194530.43370-2-blum@kernel.org>
+In-Reply-To: <20260828194530.43370-2-blum@kernel.org>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 4 Sep 2026 16:50:12 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g6FGL4xO9xNEuhfLOrZ_=JjG-NFtJMc4VkYjQ5Yfeo_A@mail.gmail.com>
+X-Gm-Features: AcwNN1UZJtkUcpZeitwn44unYn6noiHoZmnVIT_VyDqYAK5ywz0YbBBypF4BPtQ
+Message-ID: <CAJZ5v0g6FGL4xO9xNEuhfLOrZ_=JjG-NFtJMc4VkYjQ5Yfeo_A@mail.gmail.com>
+Subject: Re: [PATCH v2] thermal: intel: powerclamp: Simplify idle_inject_update()
+To: Thorsten Blum <blum@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Yury Norov <ynorov@nvidia.com>, 
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On Thu, 27 Aug 2026 23:21:15 +0530, Hardeep Sharma wrote:
-> Document the Power Domain Controller found on the Qualcomm Kuno SoC.
-> 
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> Signed-off-by: Hardeep Sharma <hardeep.sharma@oss.qualcomm.com>
+On Fri, Aug 28, 2026 at 9:45=E2=80=AFPM Thorsten Blum <blum@kernel.org> wro=
+te:
+>
+> Drop the local update variable and call idle_inject_set_duration()
+> directly instead. Also return !should_skip directly.
+>
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
 > ---
->  Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
+> Changes in v2:
+> - Call get_run_time() after powerclamp_adjust_controls() as before and
+>   as suggested by Sashiko [1]
+> - v1: https://lore.kernel.org/r/20260828184354.39423-2-blum@kernel.org/
+>
+> [1] https://sashiko.dev/#/patchset/20260828184354.39423-2-blum%40kernel.o=
+rg
+> ---
+>  drivers/thermal/intel/intel_powerclamp.c | 15 +++------------
+>  1 file changed, 3 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/i=
+ntel/intel_powerclamp.c
+> index bd7fd98dc310..da10b02bc028 100644
+> --- a/drivers/thermal/intel/intel_powerclamp.c
+> +++ b/drivers/thermal/intel/intel_powerclamp.c
+> @@ -536,23 +536,17 @@ static struct idle_inject_device *ii_dev;
+>   */
+>  static bool idle_inject_update(void)
+>  {
+> -       bool update =3D false;
+> -
+>         /* We can't sleep in this callback */
+>         if (!mutex_trylock(&powerclamp_lock))
+>                 return true;
+>
+>         if (!(powerclamp_data.count % powerclamp_data.window_size_now)) {
+> +               unsigned int runtime;
+>
+>                 should_skip =3D powerclamp_adjust_controls(powerclamp_dat=
+a.target_ratio,
+>                                                          powerclamp_data.=
+guard,
+>                                                          powerclamp_data.=
+window_size_now);
+> -               update =3D true;
+> -       }
+> -
+> -       if (update) {
+> -               unsigned int runtime =3D get_run_time();
+> -
+> +               runtime =3D get_run_time();
+>                 idle_inject_set_duration(ii_dev, runtime, duration);
+>         }
+>
+> @@ -560,10 +554,7 @@ static bool idle_inject_update(void)
+>
+>         mutex_unlock(&powerclamp_lock);
+>
+> -       if (should_skip)
+> -               return false;
+> -
+> -       return true;
+> +       return !should_skip;
+>  }
+>
+>  /* This function starts idle injection by calling idle_inject_start() */
 
-Applied, thanks!
-
+Applied as 7.4 material, thanks!
