@@ -1,59 +1,61 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C23B1A6808
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 21:20:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B2153F660F
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 21:20:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788556821; cv=none; b=DhA7dXC13Tm5Bl6qC95YDnJe5uYaReJCt7Ug2WWJ7Dcl7DPJhgn4Tp3f7CMbLduBr/t9o494cpqEP5W+alBUu7GkOTmfxZQVzX8JDkXclDfcuwiPVe1gdn3bhzCJdw6twV97mtnnJuT5fyaTOyhCvedVAuNpN3k+o9UenxlfgJA=
+	t=1788556823; cv=none; b=MYLQL6mFFrrZT5gnUFBwHEmYONt5Zz5ea+ND0XYztvagIfvuzkZRQDyHpj9UbHLnNVC9152JTJKlrukev6GqdC6AOH3hfnCoqB3/WAtR948O8FF9dlVnDRNPXnaV+MSWuP92uyDgwYHiiSGbUy5LT81VWWdQ8ejRkIt5YPvf3YU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788556821; c=relaxed/simple;
-	bh=WECOXtzgmU3pytQmEyldGn4N2Qsc3l93x2GCjunkLAU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tYfGGPjYXyYOn5KtY24eKDpfdGeinnfwv4HVlDouXfzAOn24Ql9wisrRHTOPl4o87PNyuHbTIC4gPolktAte4BofNy3FHYrdCGhWdrJnC6CfDxKY3wolSe9SlSpREfzLAjWcEwxLL1j09bXAs3aJ7qu2LHUB4VkkqXtXRXQ8cTM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=eNN+XXck; arc=none smtp.client-ip=209.85.214.171
+	s=arc-20240116; t=1788556823; c=relaxed/simple;
+	bh=D2sTRkXI+U1SD3+QdSTnvj0X0Jbvf2TQ6H0iBo0j+84=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MkrtnwNm45Bpt0eRiTci2Q/Jzfc3Z8RwPXIrHNS3xGQtaZX9Zt5zTH/rTGwlIE4bU1sBcH2Rc7fE0YTLeyst09uRtz+CXMqWCRKyJuSP1/M9961uMBmh6iP6AuzOS6Qv5g6f2k2KmiDwSMrXVxEncL6fAsdPIMMgpbPQsZ7usYw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=Dprkws3O; arc=none smtp.client-ip=209.85.214.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="eNN+XXck"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2ceab75934dso13443955ad.2
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 14:20:18 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Dprkws3O"
+Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2db18e5cb56so11067625ad.0
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 14:20:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1788556818; x=1789161618; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=JOM/X+z5mBAOMP3cnh0Z9yrAw//GnO+efgsvLLHBMy8=;
-        b=eNN+XXckrIE6mef/kXyQYKl20ly0pXuLyvVBOIUR9tGFRcN3JbmrH9z/3LE4Y53Ugm
-         OKGgfXOIttncnoBhZU0TqW73w8/Sv2v0f9EshKjWLiAHMnYs7RQTuj6+du72ceJD872I
-         UQXVtmzTi5oI+vvPtIMUQ0rXNyOWji0As1R3Y=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788556818; x=1789161618;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=chromium.org; s=google; t=1788556821; x=1789161621; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=JOM/X+z5mBAOMP3cnh0Z9yrAw//GnO+efgsvLLHBMy8=;
-        b=bnHdI7uhChz3mX8IMEL8hyeOyD1YizMoGzpPCwlPugrmrSBijKL02DH+/1zAxAdQcy
-         qklm1sCmyfWGIIM67u/QuUDSXeRdq1WC1akcwyCHpZho8bcJMQJOdgEkifXkti1waKuo
-         ve2jerhMbapocrwQNyO/BNs+HkfSCRBS/1aXSDqYf0f0qpS6in/hsRHWaorU3mOD8BDj
-         b3hWpS1W/iVxyctNJuaMhAeXTP/1WsEwte0bg/nbvdppfLsOytEUVgA3GrHlEyMyK9KJ
-         apEvwKHb9+5l7BOwbHp352tEAfxBYnl1DBlyFE82lWI1BE7v53kyuY2mnbSpHdY3T6Xd
-         tiWQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxtpcn39LB2xoGprU3F7jCOR810JHMPY7KkC2i8Iw5f1TCMD1qLTe4DGSrKApmlkYmfiu7DSW/GNQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lPuTme4VQrhTKsP7kijMegcihCP4dnovlNm9OVfGzibdsnJpwj
-	UOeGhVZMRo6VRWgco7CLzUdqLaocAe4w/S6+I9VSoyzLaLysJvGJFMfkV8H+gRfKAw==
-X-Gm-Gg: AYBFou1SXtCxgdcXasa+b5vtkSEhpDWkjz3R5n715yVPgcO2/CZZush/l6AzivwPTvR
-	CLVHqE7MvPV8OtuT6PxCIh7Wm/eLDh5ukpyR31qlZMU00knvxM0QZwaZ9NEE6aVvxDfP3c7PlPy
-	X0mFa1X/mplp0cQT09iRSJ/VXjLnwE299r0UPdjN6YIE+oJdDPfwjJZ9O86LMUcLPt+Iu78V6zq
-	I2cIltsTRYlpY7OO4SaVvgw7jXUjw26u9sdluNDlPrBOBlqRIOEh7Rd8SIJEb0Oio+fS0RiqIGp
-	VVgwFVwIu82aHXJQhzHgBa66iDgefwNZ3Cbr5YbZD0zKcjX0s+KYuYtaWmU6ij7q3kT63lk1CsO
-	+I0D3J2Gh7VkZAB8G2vui3laAfz89qHBGcK6qgGPn6M57/yTyIVJmS9n5ymLuDG/r7crurOU+0G
-	ayVVAp6TFbFPwP89qNxJM3/5P8d/PlCKblzcIq53vsRvnKg7GxwEdtzI3SS3dDXSDHSUHkXAqjM
-	4CL4FY4uakhKQDd+n+Fs4I9ghg=
-X-Received: by 2002:a17:903:98d:b0:2d8:d4d0:792b with SMTP id d9443c01a7336-2db12831fddmr111315835ad.15.1788556817531;
-        Fri, 04 Sep 2026 14:20:17 -0700 (PDT)
+        bh=MrnYpRzoj88ITEj49c8hPybU6W+S4YMZn8H5haI/CBI=;
+        b=Dprkws3O6i5+KoP1ChARXUAMapbP4m142So2ZGiHCMGvAscgWmDlglsIvaDNqs5N0s
+         H84f0b4gclQNTPyj7OH+kcvl5fj3v1ZLbrYsHgDFl881/PUe0/37pNErMHCGco+V1Qju
+         6hQjkwXhS/4xEEeR+6JCmTjzXloI6QmW7Bzuk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788556821; x=1789161621;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=MrnYpRzoj88ITEj49c8hPybU6W+S4YMZn8H5haI/CBI=;
+        b=AQexMMQUeW+0ueNXdzKDD1EIta2+sv0uYz/hZu2V2BdHcm+LnZxW4aJwiEVxwXl/c1
+         TT2DMIZWPsqASVVzHgY0neOIVuc62L4KRJsQhCJrm1Qw9sVZWVZDxLQjYgAqE/ui2zJe
+         IEkRgH0D9xOggej0lf1tB+x+JPjIG2SXw6niar0ul//Gm2f+1/nufAXW/KXorOP0N4SQ
+         JeZiy7Fv7lx8q1FaEmyLc/G+OpxXTducUtut93CapvbM26jsWxF1EUvVtjBDgvg9II55
+         Cvhb1XUv7ydf+cEs5xWgKSjbDUbSfQdykti9335ACXHYStnQ2ipvzS0IzttfgkkDPJNV
+         0l5Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxzeGp8FmGItYXMuop3MhJIXwVgUIMY0sB1qI++Ps+5WcaZp9Ozq9yQ6p/VsERRfHgg3SgY0FOs1w==@vger.kernel.org
+X-Gm-Message-State: AFuF++mmFFSuiBwELTSQf3enhDbhkomFnnvGHjZKYSTJ3ZlEQet6uXcN
+	enc5waIf69eBqPmdHNBvS9M7MNt+xgIeIRuU9J0FRzOiPa0Y9q/PU5tThi2y/kIr8g==
+X-Gm-Gg: AYBFou1Euuzrmk8sQJXCILZq0zK1vhDbe/v0/NSuoIZlkP4Mf7rMXj0a9SWnYeD1YAM
+	ETi7nw7Fqiie5fEgf8G5ZrbXmMyTRGpA1RJg+8OODd7qT1OPyeL/77HkaVVXvsJswptTZabHwwy
+	rFSP3Frx8xwtl3sFNjSkc0COtuqNgQvrjOhzXw92xytChTtK51wokD0u/P6smEuedqlFcZ7CPcN
+	sJSxnjpjrZEdlRczzL4Dm41xxgHd5Txi/JgKrLI8qmJHGKRT5Zn8quIWR5w+94vGq6tc8w/kKbe
+	n3dbdUuUvks+O5lLdZYll21wqmhkJDzCFnH8wq43dfnQRfQR6tBQuefAqNKdYDCK7X59YVMnu3q
+	ynVpk1mEn6dYH52PYq/l6bFa9mhNc7D2rsKikVZU2EfDIjOVaMsyrmnZzInYsDyzq4NiyVui8z+
+	Kq8K4Xe5pGZkAsQ5AAKsmtbaP0CKkOLyXq46WsXwe7KXx8/oX2PU0r88QY6s/rxVZn6MuQuFOUx
+	MuO9sXnamy9C+wqayACgvpUe5o=
+X-Received: by 2002:a17:90b:4c41:b0:398:9bd5:490e with SMTP id 98e67ed59e1d1-39b2623ac0fmr11596376a91.21.1788556820428;
+        Fri, 04 Sep 2026 14:20:20 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:5597:62ab:c321:4a7f])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3339885ca07sm10438663eec.1.2026.09.04.14.20.16
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3339885d29esm9867791eec.2.2026.09.04.14.20.18
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Sep 2026 14:20:16 -0700 (PDT)
+        Fri, 04 Sep 2026 14:20:19 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
@@ -63,10 +65,12 @@ Cc: linux-kernel@vger.kernel.org,
 	Pavel Machek <pavel@kernel.org>,
 	Doug Anderson <dianders@chromium.org>,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 00/11] PM: runtime: Overhaul kerneldoc, runtime_pm.rst docs
-Date: Fri,  4 Sep 2026 14:12:05 -0700
-Message-ID: <20260904212000.4167880-1-briannorris@chromium.org>
+Subject: [PATCH 01/11] PM: runtime: kerneldoc fixes
+Date: Fri,  4 Sep 2026 14:12:06 -0700
+Message-ID: <20260904141215.1.Ib31d6be7e93f6c02321d03c78ea410e02d7380fc@changeid>
 X-Mailer: git-send-email 2.55.0.979.g7e5102b832-goog
+In-Reply-To: <20260904212000.4167880-1-briannorris@chromium.org>
+References: <20260904212000.4167880-1-briannorris@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,110 +79,580 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series started as a relatively small observation last year, that
-Documentation/power/runtime_pm.rst includes a number of API descriptions
-that duplicate similar docs in the source/header files, and that they
-tend to be a bit more out of date. This is a great case for pulling
-kerneldoc into the generated documents, so the docs can live closer to
-the code.
+When included into a Documentation/.../*.rst file, `make htmldocs`
+complains:
 
-Per Rafael, "that's the plan for the future":
-https://lore.kernel.org/all/CAJZ5v0jFdUDN_Z5isEpWoisxzMHSgzu460VH2LDCLQTRsUtEDA@mail.gmail.com/
+./include/linux/pm_runtime.h:359: WARNING: Bullet list ends without a blank line; unexpected unindent. [docutils]
+[... more ...]
 
-The future is now!
+We should fix up the list format here to look nicer in HTML form, and
+avoid warnings. Adjust to a few other kerneldoc-isms (formatting,
+"Return:") while we're at it too.
 
-Of course, nothing is ever that trivial. I found several other itches to
-scratch along the way:
+The result now passes 'make htmldocs' without warning, once these files
+are included in Documentation/.../*.rst.
 
- * Basic warning-free kerneldoc validation (resolved in patch 1)
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+---
 
- * Touch-ups to the existing kerneldoc (misleading descriptions,
-   borrowing valuable work from the soon-to-be-deleted runtime_pm.rst
-   portions, trying to improve ease of reading/understanding) in patch 2
-   and 3
+ drivers/base/power/runtime.c |  24 ++-
+ include/linux/pm_runtime.h   | 291 ++++++++++++++++++++---------------
+ 2 files changed, 183 insertions(+), 132 deletions(-)
 
- * Pull drivers/base/power/runtime.c and include/linux/pm_runtime.h
-   kerneldoc into generated runtime_pm html (patch 4)
-
- * Move dev_pm_info descriptions (+ more) from runtime_pm.rst into
-   include/linux/pm.h kerneldoc (patch 5)
-
- * Overall reworks, fixes, and (IMO) improvements to runtime_pm.rst, for
-   clarity, and hopefully to make an easier and more useful read to
-   driver writers and people less familiar with the subsystem (patches
-   6-11).
-
-   Highlights (IMO):
-
-   - Clarifying core concepts in the Introduction. (Pretty much all new
-     readers I encounter have a hard time with the difference between
-     "enabled", "allowed", and "active".)
-
-   - Adding Example driver patterns -- because the API is so large and
-     complicated, it can help to try to walk people through standard
-     practices, and what everything means in context.
-
-I purposely kept some of the larger changes toward the end, to hopefully
-make it easier to rework or reject them while cherry-picking some of the
-easier stuff from the first part of the series.
-
-Feel free to add suggestions! Within reason, I'm open to tackling more
-here, as I think many people have many valid perspectives on exactly why
-and how the docs do or don't serve people well today. Or I can tackle
-less, if you think some of my choices are not improvements.
-
-Some possible follow-ups I'm toying with:
-
- * Slimming down the API might be better than heavily documenting it. A
-   smaller API is a more digestible API.
-
-   My only concrete next step: drop __pm_runtime_put_autosuspend(). Its
-   last user is nearly gone:
-   https://lore.kernel.org/all/20260806-smmu-rpm-v4-1-8183d007331c@oss.qualcomm.com/
-
-   I could also see deprecating one of
-   pm_runtime_put_sync{,_suspend,_autosuspend}(). They all do slightly
-   different things, but I'm not sure every difference is actually fully
-   intentional (or at least, not necessary).
-
- * Tweaking some of the behavior on pm_runtime_barrier(). Today, it's
-   very asymmetric, as it prefers resume. But I believe there may be
-   value in making it flush (not just cancel) pending suspend too. That
-   may be in a future proposal; for now, I just try to make its
-   asymmetry more clear in the docs.
-
- * Sand down some more rough edges on return codes. For example, it's
-   very difficult to get any useful meaning out of pm_runtime_put_sync()
-   return codes. There's a high chance that anyone trying to treat
-   return codes as errors is inviting bugs. (Is -EAGAIN a failure?)
-
-   Of course, the answer there is not "document it better" -- we can
-   make it easier to use.
-
-Regards,
-Brian
-
-
-Brian Norris (11):
-  PM: runtime: kerneldoc fixes
-  PM: runtime: Improve set_{status,active,suspended} docs
-  PM: runtime: kerneldoc wording improvements
-  PM: runtime: Pull API docs from kerneldoc
-  PM: core: Document struct dev_pm_info with kerneldoc
-  PM: runtime: Expand introduction with core concepts and structure
-  PM: runtime: Clarify ->runtime_idle() callback return value handling
-  PM: runtime: Clarify driver callback expectations and structure
-    Section 2
-  PM: runtime: Misc improvements to runtime_pm.rst
-  PM: runtime: Add "Section" hyperlinks
-  PM: runtime: Add Example Driver Patterns section
-
- Documentation/power/runtime_pm.rst | 915 ++++++++++++++++-------------
- drivers/base/power/runtime.c       |  93 +--
- include/linux/pm.h                 |  93 +++
- include/linux/pm_runtime.h         | 409 +++++++------
- 4 files changed, 878 insertions(+), 632 deletions(-)
-
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index fab38bc98113..0c0931763d07 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -162,7 +162,7 @@ static void pm_runtime_cancel_pending(struct device *dev)
+ 	dev->power.request = RPM_REQ_NONE;
+ }
+ 
+-/*
++/**
+  * pm_runtime_autosuspend_expiration - Get a device's autosuspend-delay expiration time.
+  * @dev: Device to handle.
+  *
+@@ -200,7 +200,7 @@ static int dev_memalloc_noio(struct device *dev, void *data)
+ 	return dev->power.memalloc_noio;
+ }
+ 
+-/*
++/**
+  * pm_runtime_set_memalloc_noio - Set a device's memalloc_noio flag.
+  * @dev: Device to handle.
+  * @enable: True for setting the flag and False for clearing the flag.
+@@ -1043,6 +1043,11 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+  * pm_schedule_suspend - Set up a timer to submit a suspend request in future.
+  * @dev: Device to suspend.
+  * @delay: Time to wait before submitting a suspend request, in milliseconds.
++ *
++ * Return:
++ * * %1: Success; @dev is already %RPM_SUSPENDED.
++ * * %0: Success.
++ * * Error code on failure.
+  */
+ int pm_schedule_suspend(struct device *dev, unsigned int delay)
+ {
+@@ -1105,7 +1110,7 @@ static int rpm_drop_usage_count(struct device *dev)
+  * warning, increment it, and return an error).  Then carry out an idle
+  * notification, either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * This routine may be called in atomic context if the %RPM_ASYNC flag is set,
+  * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_idle(struct device *dev, int rpmflags)
+@@ -1143,7 +1148,7 @@ EXPORT_SYMBOL_GPL(__pm_runtime_idle);
+  * warning, increment it, and return an error).  Then carry out a suspend,
+  * either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * This routine may be called in atomic context if the %RPM_ASYNC flag is set,
+  * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_suspend(struct device *dev, int rpmflags)
+@@ -1179,7 +1184,7 @@ EXPORT_SYMBOL_GPL(__pm_runtime_suspend);
+  * If the RPM_GET_PUT flag is set, increment the device's usage count.  Then
+  * carry out a resume, either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * This routine may be called in atomic context if the %RPM_ASYNC flag is set,
+  * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_resume(struct device *dev, int rpmflags)
+@@ -1254,9 +1259,12 @@ static int pm_runtime_get_conditional(struct device *dev, bool ign_usage_count)
+  * @dev: Target device.
+  *
+  * Increment the runtime PM usage counter of @dev if its runtime PM status is
+- * %RPM_ACTIVE, in which case it returns 1. If the device is in a different
+- * state, 0 is returned. -EINVAL is returned if runtime PM is disabled for the
+- * device, in which case also the usage_count will remain unmodified.
++ * already %RPM_ACTIVE
++ *
++ * Return:
++ * * %-EINVAL: Runtime PM is disabled for @dev. The usage counter is not incremented.
++ * * %1: Success; usage counter is incremented.
++ * * %0: @dev was not active.
+  */
+ int pm_runtime_get_if_active(struct device *dev)
+ {
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 64921b10ac74..ab6a19a85880 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -137,13 +137,14 @@ static inline void pm_runtime_put_noidle(struct device *dev)
+  * pm_runtime_suspended - Check whether or not a device is runtime-suspended.
+  * @dev: Target device.
+  *
+- * Return %true if runtime PM is enabled for @dev and its runtime PM status is
+- * %RPM_SUSPENDED, or %false otherwise.
+- *
+  * Note that the return value of this function can only be trusted if it is
+  * called under the runtime PM lock of @dev or under conditions in which
+  * runtime PM cannot be either disabled or enabled for @dev and its runtime PM
+  * status cannot change.
++ *
++ * Return:
++ * * %true: @dev has runtime PM enabled and its status is %RPM_SUSPENDED.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_suspended(struct device *dev)
+ {
+@@ -155,13 +156,14 @@ static inline bool pm_runtime_suspended(struct device *dev)
+  * pm_runtime_active - Check whether or not a device is runtime-active.
+  * @dev: Target device.
+  *
+- * Return %true if runtime PM is disabled for @dev or its runtime PM status is
+- * %RPM_ACTIVE, or %false otherwise.
+- *
+  * Note that the return value of this function can only be trusted if it is
+  * called under the runtime PM lock of @dev or under conditions in which
+  * runtime PM cannot be either disabled or enabled for @dev and its runtime PM
+  * status cannot change.
++ *
++ * Return:
++ * * %true: Runtime PM is disabled for @dev or its status is %RPM_ACTIVE.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_active(struct device *dev)
+ {
+@@ -173,12 +175,13 @@ static inline bool pm_runtime_active(struct device *dev)
+  * pm_runtime_status_suspended - Check if runtime PM status is "suspended".
+  * @dev: Target device.
+  *
+- * Return %true if the runtime PM status of @dev is %RPM_SUSPENDED, or %false
+- * otherwise, regardless of whether or not runtime PM has been enabled for @dev.
+- *
+  * Note that the return value of this function can only be trusted if it is
+  * called under the runtime PM lock of @dev or under conditions in which the
+  * runtime PM status of @dev cannot change.
++ *
++ * Return:
++ * * %true: Runtime PM status of @dev is %RPM_SUSPENDED.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_status_suspended(struct device *dev)
+ {
+@@ -189,11 +192,13 @@ static inline bool pm_runtime_status_suspended(struct device *dev)
+  * pm_runtime_enabled - Check if runtime PM is enabled.
+  * @dev: Target device.
+  *
+- * Return %true if runtime PM is enabled for @dev or %false otherwise.
+- *
+  * Note that the return value of this function can only be trusted if it is
+  * called under the runtime PM lock of @dev or under conditions in which
+  * runtime PM cannot be either disabled or enabled for @dev.
++ *
++ * Return:
++ * * %true: Runtime PM is enabled for @dev.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_enabled(struct device *dev)
+ {
+@@ -205,6 +210,10 @@ static inline bool pm_runtime_enabled(struct device *dev)
+  * @dev: Target device.
+  *
+  * Do not call this function outside system suspend/resume code paths.
++ *
++ * Return:
++ * * %true: Runtime PM enabling is blocked for @dev.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_blocked(struct device *dev)
+ {
+@@ -215,8 +224,9 @@ static inline bool pm_runtime_blocked(struct device *dev)
+  * pm_runtime_has_no_callbacks - Check if runtime PM callbacks may be present.
+  * @dev: Target device.
+  *
+- * Return %true if @dev is a special device without runtime PM callbacks or
+- * %false otherwise.
++ * Return:
++ * * %true: @dev is marked as having no runtime PM callbacks.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_has_no_callbacks(struct device *dev)
+ {
+@@ -239,9 +249,11 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
+  * pm_runtime_is_irq_safe - Check if runtime PM can work in interrupt context.
+  * @dev: Target device.
+  *
+- * Return %true if @dev has been marked as an "IRQ-safe" device (with respect
+- * to runtime PM), in which case its runtime PM callabcks can be expected to
+- * work correctly when invoked from interrupt handlers.
++ * Return:
++ * * %true: @dev has been marked as an "IRQ-safe" device, in which case its
++ *   runtime PM callbacks can be expected to work correctly from interrupt
++ *   handlers.
++ * * %false: Otherwise.
+  */
+ static inline bool pm_runtime_is_irq_safe(struct device *dev)
+ {
+@@ -348,17 +360,17 @@ static inline int pm_runtime_force_resume(struct device *dev) { return -ENXIO; }
+  * autosuspend has been enabled for it).
+  *
+  * Return:
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter non-zero, Runtime PM status change
+- *            ongoing or device not in %RPM_ACTIVE state.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
+- * Other values and conditions for the above values are possible as returned by
+- * Runtime PM idle and suspend callbacks.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter non-zero, Runtime PM status change
++ *   ongoing or device not in %RPM_ACTIVE state.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-EINPROGRESS: Suspend already in progress.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
++ * * Other values and conditions for the above values are possible as returned
++ *   by Runtime PM idle and suspend callbacks.
+  */
+ static inline int pm_runtime_idle(struct device *dev)
+ {
+@@ -370,17 +382,17 @@ static inline int pm_runtime_idle(struct device *dev)
+  * @dev: Target device.
+  *
+  * Return:
+- * * 1: Success; device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
+- *            ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -ENOSYS: CONFIG_PM not enabled.
+- * Other values and conditions for the above values are possible as returned by
+- * Runtime PM suspend callbacks.
++ * * %1: Success; device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
++ *   ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
++ * * Other values and conditions for the above values are possible as returned
++ *   by Runtime PM suspend callbacks.
+  */
+ static inline int pm_runtime_suspend(struct device *dev)
+ {
+@@ -397,17 +409,17 @@ static inline int pm_runtime_suspend(struct device *dev)
+  * engaging its "idle check" callback.
+  *
+  * Return:
+- * * 1: Success; device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
+- *            ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -ENOSYS: CONFIG_PM not enabled.
+- * Other values and conditions for the above values are possible as returned by
+- * Runtime PM suspend callbacks.
++ * * %1: Success; device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
++ *   ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
++ * * Other values and conditions for the above values are possible as returned
++ *   by Runtime PM suspend callbacks.
+  */
+ static inline int pm_runtime_autosuspend(struct device *dev)
+ {
+@@ -418,6 +430,11 @@ static inline int pm_runtime_autosuspend(struct device *dev)
+ /**
+  * pm_runtime_resume - Resume a device synchronously.
+  * @dev: Target device.
++ *
++ * Return:
++ * * %1: Success; @dev is already %RPM_ACTIVE.
++ * * %0: Success.
++ * * Error code on failure.
+  */
+ static inline int pm_runtime_resume(struct device *dev)
+ {
+@@ -432,15 +449,15 @@ static inline int pm_runtime_resume(struct device *dev)
+  * asynchronously.
+  *
+  * Return:
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter non-zero, Runtime PM status change
+- *            ongoing or device not in %RPM_ACTIVE state.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter non-zero, Runtime PM status change
++ *   ongoing or device not in %RPM_ACTIVE state.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-EINPROGRESS: Suspend already in progress.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
+  */
+ static inline int pm_request_idle(struct device *dev)
+ {
+@@ -450,6 +467,11 @@ static inline int pm_request_idle(struct device *dev)
+ /**
+  * pm_request_resume - Queue up runtime-resume of a device.
+  * @dev: Target device.
++ *
++ * Return:
++ * * %1: Success; @dev is already %RPM_ACTIVE.
++ * * %0: Success.
++ * * Error code on failure.
+  */
+ static inline int pm_request_resume(struct device *dev)
+ {
+@@ -465,16 +487,16 @@ static inline int pm_request_resume(struct device *dev)
+  * equivalent pm_runtime_autosuspend() for @dev asynchronously.
+  *
+  * Return:
+- * * 1: Success; device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
+- *            ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
++ * * %1: Success; device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
++ *   ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-EINPROGRESS: Suspend already in progress.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
+  */
+ static inline int pm_request_autosuspend(struct device *dev)
+ {
+@@ -488,6 +510,11 @@ static inline int pm_request_autosuspend(struct device *dev)
+  *
+  * Bump up the runtime PM usage counter of @dev and queue up a work item to
+  * carry out runtime-resume of it.
++ *
++ * Return:
++ * * %1: Success; @dev is already %RPM_ACTIVE.
++ * * %0: Success; runtime-resume was queued.
++ * * Error code on failure.
+  */
+ static inline int pm_runtime_get(struct device *dev)
+ {
+@@ -507,6 +534,11 @@ static inline int pm_runtime_get(struct device *dev)
+  * Consider using pm_runtime_resume_and_get() instead of it, especially
+  * if its return value is checked by the caller, as this is likely to result
+  * in cleaner code.
++ *
++ * Return:
++ * * %1: Success; @dev is already %RPM_ACTIVE.
++ * * %0: Success.
++ * * Error code on failure.
+  */
+ static inline int pm_runtime_get_sync(struct device *dev)
+ {
+@@ -531,8 +563,11 @@ static inline int pm_runtime_get_active(struct device *dev, int rpmflags)
+  * @dev: Target device.
+  *
+  * Resume @dev synchronously and if that is successful, increment its runtime
+- * PM usage counter. Return 0 if the runtime PM usage counter of @dev has been
+- * incremented or a negative error code otherwise.
++ * PM usage counter.
++ *
++ * Return:
++ * * %0: Success; @dev is active and its usage counter has been incremented.
++ * * Negative error code on failure; usage counter is unchanged.
+  */
+ static inline int pm_runtime_resume_and_get(struct device *dev)
+ {
+@@ -559,16 +594,16 @@ static inline void pm_runtime_put(struct device *dev)
+  * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
+  *
+  * Return:
+- * * 1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *            change ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
++ * * %1: Success. Usage counter dropped to zero, but device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
++ *   change ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-EINPROGRESS: Suspend already in progress.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
+  */
+ static inline int __pm_runtime_put_autosuspend(struct device *dev)
+ {
+@@ -585,16 +620,16 @@ static inline int __pm_runtime_put_autosuspend(struct device *dev)
+  * in pm_request_autosuspend().
+  *
+  * Return:
+- * * 1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *            change ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
++ * * %1: Success. Usage counter dropped to zero, but device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
++ *   change ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-EINPROGRESS: Suspend already in progress.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
+  */
+ static inline int pm_runtime_put_autosuspend(struct device *dev)
+ {
+@@ -662,17 +697,17 @@ DEFINE_GUARD_COND(pm_runtime_active_auto, _try_enabled,
+  * if it returns an error code.
+  *
+  * Return:
+- * * 1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *            change ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -ENOSYS: CONFIG_PM not enabled.
+- * Other values and conditions for the above values are possible as returned by
+- * Runtime PM suspend callbacks.
++ * * %1: Success. Usage counter dropped to zero, but device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
++ *   change ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
++ * * Other values and conditions for the above values are possible as returned
++ *   by Runtime PM suspend callbacks.
+  */
+ static inline int pm_runtime_put_sync(struct device *dev)
+ {
+@@ -690,17 +725,17 @@ static inline int pm_runtime_put_sync(struct device *dev)
+  * if it returns an error code.
+  *
+  * Return:
+- * * 1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *            change ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -ENOSYS: CONFIG_PM not enabled.
+- * Other values and conditions for the above values are possible as returned by
+- * Runtime PM suspend callbacks.
++ * * %1: Success. Usage counter dropped to zero, but device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
++ *   change ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
++ * * Other values and conditions for the above values are possible as returned
++ *   by Runtime PM suspend callbacks.
+  */
+ static inline int pm_runtime_put_sync_suspend(struct device *dev)
+ {
+@@ -721,18 +756,18 @@ static inline int pm_runtime_put_sync_suspend(struct device *dev)
+  * if it returns an error code.
+  *
+  * Return:
+- * * 1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *            change ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
+- * Other values and conditions for the above values are possible as returned by
+- * Runtime PM suspend callbacks.
++ * * %1: Success. Usage counter dropped to zero, but device was already suspended.
++ * * %0: Success.
++ * * %-EINVAL: Runtime PM error.
++ * * %-EACCES: Runtime PM disabled.
++ * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
++ *   change ongoing.
++ * * %-EBUSY: Runtime PM child_count non-zero.
++ * * %-EPERM: Device PM QoS resume latency 0.
++ * * %-EINPROGRESS: Suspend already in progress.
++ * * %-ENOSYS: %CONFIG_PM not enabled.
++ * * Other values and conditions for the above values are possible as returned
++ *   by Runtime PM suspend callbacks.
+  */
+ static inline int pm_runtime_put_sync_autosuspend(struct device *dev)
+ {
+@@ -748,6 +783,10 @@ static inline int pm_runtime_put_sync_autosuspend(struct device *dev)
+  * of it will be taken into account.
+  *
+  * It is not valid to call this function for devices with runtime PM enabled.
++ *
++ * Return:
++ * * %0: Success.
++ * * Error code on failure.
+  */
+ static inline int pm_runtime_set_active(struct device *dev)
+ {
+@@ -762,6 +801,10 @@ static inline int pm_runtime_set_active(struct device *dev)
+  * dependencies of it will be taken into account.
+  *
+  * It is not valid to call this function for devices with runtime PM enabled.
++ *
++ * Return:
++ * * %0: Success.
++ * * Error code on failure.
+  */
+ static inline int pm_runtime_set_suspended(struct device *dev)
+ {
 -- 
 2.55.0.979.g7e5102b832-goog
 
