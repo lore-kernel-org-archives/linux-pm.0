@@ -1,61 +1,61 @@
-Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D5153F7A9B
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 08:42:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CF883F660F
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 08:42:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788511339; cv=none; b=V/Ii/2KhLEoyKZsrELo4TCGtHM6KnCSCIwv2XuDfJqvqTNlAlXD6IxD9mzmV4VqM37oAee12llPjQoJTNkPK4jWb7ja0KuiFc/diDCof67tcQgT12p79AXu9xNNI1R4Tzes2jKTKU0DRGom8oE8mQfmJtwgU/roa3xwdDF0O79w=
+	t=1788511344; cv=none; b=DlXv6X3jdtWFrEG5k/KPyRKEK+7aoQf8ZLcalLC4C1Hln/155o+jcbW4Bw5OAi0khQfhO+smUu2O/Yvdpjsqylwe1n/zd3nRRE9gXa7CnmPCZt8lzfVJb4iwzgoL2tokvMbqIkDRj6PQl3Qph4FiSexsxQMUmiBEXvLjqxSMicc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788511339; c=relaxed/simple;
-	bh=RGLL0tPfDP6uNlWVczfepdqpvZGR4BjUGaRZ583Zkzc=;
+	s=arc-20240116; t=1788511344; c=relaxed/simple;
+	bh=GQw0KwPblzk4iaOngMKEkViVUNWR4x75q4Pko/xlHfI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WbIZl8gRrGfzhnb2bu70H9MpoCkJS3DjMBwKWQaaLtnShwzHuBDCu15OBlPbfOWVUP518L0E66sbfw5naRGxI2Wlw3BCShMLXKYV6evYQDQ8fDAUX1QWZXzLDibsbK8Fxgtfp1dI2BeDlJ914uHMgOCd5+KNRZ7S3khC/M2mNtk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=SdoxKF/l; arc=none smtp.client-ip=209.85.214.180
+	 MIME-Version; b=iJB+UL4uMRK1d7cZMhDDDLhTzoV/Qs2a0759o7XXHkIfOAA6GIC8g7vI/KVOq+hVza7Lmnjxdb0SN8TFQisBtV6Sq1BrZRw7ec1xB8YFGX3GcfwsZQLUPRfKDSrAqRTIt/qBSHlgJsXLMARQjEMUOP2wkbgFv4Cg9twGNfE0+MY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=YzzQLh/R; arc=none smtp.client-ip=209.85.216.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="SdoxKF/l"
-Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2d91ded8174so6493675ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 01:42:17 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="YzzQLh/R"
+Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-39675172593so611115a91.2
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 01:42:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1788511337; x=1789116137; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1788511341; x=1789116141; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=WRetEA2OXFI4SKJH2CBFzorRJvZCDQyI99zumpuCSb8=;
-        b=SdoxKF/l8oxoFHgKxIo2orVm21tVNJeFZDYAAxz/og1s6K6/DLU1+vy+GxEnQ+d0O0
-         fH3coiOH9Oliz/lEqLyhSc1d8a8rS/4hCT7ewMQ+3J5qSbEMzkxbHxURGEcATdhgisYI
-         P4/Zw0UjWnATRqqNQXFB8t1U7BgppgBSCHS9Y=
+        bh=3pQBHHD4SDVq3Y8lclcFUxJTow0FC5oCzcVfD5O1aqE=;
+        b=YzzQLh/R6tpmsB/n+660LvxPg1f9O+pN6SBHytYsV+b0XYOLbwCxFOEA1bPDhvXcnb
+         E3kJZL6kO2gUbjqUxXOuvUXY6xvGiz5hoExGxv9HqTrIFXzT+lVqh7ifU/D16j/+K27+
+         r4wWFrtoiQq0Yzel2h+NHf35/kJ4gXqPeBaRY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788511337; x=1789116137;
+        d=1e100.net; s=20251104; t=1788511341; x=1789116141;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=WRetEA2OXFI4SKJH2CBFzorRJvZCDQyI99zumpuCSb8=;
-        b=Q5pMAGHQqvGhwWuTDO+zB1FxVQq4GcAcpvN5GDjyhVK/PsklGgtVKKAGcfG5ZsKqhs
-         xqrIMrt91ul5tsbKFHEPeR9fI0jxrVwCV77gTAisR4xZdqR57a9N0fbHQVEMjJCkcdfr
-         UBopDuqgP0b2PmTfNZyLL2KxGGHt3aXFx3IdDT19KJrI/bihVzz43xNeBd9/J6hkU0YQ
-         fApqrzaSFLw8gEcNEDBNsQ8uuM9qwFewhq275oMoJ9vYn6/SZMvFRZXoZvZHwWQ2l5gl
-         GHRx2BSk5xYFrDV8CeKQ1UGPHaUnq/mQbrX7TvrjZee6RwUDBdji6upyPl/tUu65HRWC
-         AnCw==
-X-Forwarded-Encrypted: i=1; AKwUvByaWWhYQ8tGJKYNptUvNyxSE7f7kF9yoLs6LuEywrAdtB7yYrk22ATGuMFsSBNTgkEnloL57l725g==@vger.kernel.org
-X-Gm-Message-State: AFuF++l22cgi+q07Xro3waxwAd2bn7XLUeqdAXH0Pd7YxuHSLPmxPIYV
-	y3JmZZhe9AgNKighlak7Vw72ppESdB7o14KtHpen+80iAfFNeNKtKA1iVILvm6SAKg==
-X-Gm-Gg: AYBFou1Ce+Q4IMs/kHc+/4VNA4MfVN8iJCIkfwoJMW9oy2rWKi4u76IqlETOucReqz7
-	mSVQq7uGbcMwQ26aInQHrCvy76AMmhr/GEI74YQyYJQHVqbF8qrg1qCJsSl8qPAlFHage+OLuf1
-	m+yZWkbmbVMjUW4f6H9RV5XNrSeOu3qZAmUDtrcece0LWriwwvduLrcnCWrBtCaUizlO3TdAK1M
-	INVudeyjZubsyqv0GF5PI6DY4ICRvumKkR2d3rgOrt9EikxL1OH9bBmpvAlywTWmR+c0F4ZZ4TE
-	Bqnp7zd+NCNy70FInPZHXzAWEQ+Jr9hOtltdQXlSzG/uoJjQnrbE98BwcW38E8sYS/jd242dhLQ
-	r6yYp3x8ip47zJ6b0Uz5S2VlnrV60MpQYp36Yx90mCWBNYbHKmwGPfKK+awvi0206RohuZU5I07
-	VNj0pn5rlRRlcCGzes8l9SZQj1Wko2s39O6oh0PxD+A0jVuFq4+GEedookEK1fgPaZjQQp5m3x4
-	oXX/jYHj/Q8NhXBaRuUfXqsKWcLxYgR6s5FjJpEfcso
-X-Received: by 2002:a17:90b:314e:b0:38f:efed:5445 with SMTP id 98e67ed59e1d1-39b261500fdmr6024537a91.4.1788511335746;
-        Fri, 04 Sep 2026 01:42:15 -0700 (PDT)
+        bh=3pQBHHD4SDVq3Y8lclcFUxJTow0FC5oCzcVfD5O1aqE=;
+        b=CNzbizM0smzDEm6qrzoojO+GjVpBG3LCurl5DK93VAt9+MKO8pWbs6bBKa64+4MMPl
+         M4FKqlBSFLPHXfKmRQJJ2AR2BZGJt0bUVb83I/SLdtZY/DAZP1g5pOCtB9SSo6Ds/YRG
+         SKAZLbmenhytphfpMzUP253JeSKFD+l21RoCVmg4riFBCy1LAzd3e2G9eJA2PAkJNN4k
+         Yw6TgosHMgD5+WrDorg4rNF09dhUV9VCB4gSDQcZzEtqYz20LWAeJ5/lWKR7HPBrlaS0
+         yjTavYCE6gSrCEQmk5Uc99flVUBx9csQBh4eLCdI18obFlyCcDTX3882y/x7IWr8bCjB
+         9ZFQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzWzO5mZT+7xOkI1PuQGWU6Epk/60f2/qeG2dJt5CNy1D469JfuxUEo/LDUhiSUiGrCtPjnLPw6QQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++n0aQJWanxBlIfS+R+603V/lidtR2y9qSIgcbhlxeTbaoO+/WI7
+	7PTEGhNEBSWNDCjCbkB3pec0zOc66TZ+0ze/pFcpuxjRT5L98we2P0kF1NZ2gA8Ttg==
+X-Gm-Gg: AYBFou2cVphIckyzS3aXOShg/S5pE5jHLUzeTJffW70FPWrvKG4aPYThtJ8RWV4tnRH
+	EfpbA8zq3b8f/0Lw/IcfOGE5sW99ViNe4mtlM/TzS2LButGfFzur06/nECRMTpJSvo3a3jzXtai
+	yp72zyZdWKiytBLXtLdxXZYmi1NhDVZOUHX+dWbfVpMU4lqTH8OpxOMwqoH/RqI+h20f2OOgZQ3
+	Qtd+M86gY7USYhnR6euuyLNABGWVHtvy4jPAPXtyPwKglkYcU+vInNqfVOxFkxs2K+WRsFzzYmy
+	wTAcLas5epmqklxw/6eXH1e+mckWMbwpuzGAH51sQ+TmW6m1qRYzy7V+JGXbBzgkyh6vvib7Dvu
+	fQastWtrNOPKgTNjii07WE8P5r6fIFTY5XzJfEfgxmsE7GuMYp+HV29+icEZ+X5tu+SIfWy7EEZ
+	vF777Twb18QcGeImKz+eT/8qXyYoPJBNMC4kEV4GPwbMtpVWU1uQwfqjy9QyiIDgL35a83JE6v3
+	aoeWpIUDFHYah5NsvylAXWupVBXAJ6bciaUfvNGNmYl
+X-Received: by 2002:a17:90b:5343:b0:398:e46e:ade3 with SMTP id 98e67ed59e1d1-39b2628fc1amr8001002a91.23.1788511341225;
+        Fri, 04 Sep 2026 01:42:21 -0700 (PDT)
 Received: from wenst-7875.tpe.corp.google.com ([2a00:79e0:201d:8:343:bf21:3095:9c5])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39b260fdf9asm3343538a91.9.2026.09.04.01.42.10
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39b260fdf9asm3343538a91.9.2026.09.04.01.42.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 01:42:15 -0700 (PDT)
+        Fri, 04 Sep 2026 01:42:20 -0700 (PDT)
 From: Chen-Yu Tsai <wenst@chromium.org>
 To: Bartosz Golaszewski <brgl@kernel.org>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -84,9 +84,9 @@ Cc: Wei Deng <wei.deng@oss.qualcomm.com>,
 	Manivannan Sadhasivam <mani@kernel.org>,
 	Alan Stern <stern@rowland.harvard.edu>,
 	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: [PATCH v8 01/16] device property: Add fwnode_graph_get_port_by_id()
-Date: Fri,  4 Sep 2026 16:41:40 +0800
-Message-ID: <20260904084158.1341550-2-wenst@chromium.org>
+Subject: [PATCH v8 02/16] device property: Add fwnode_graph_get_next_port_endpoint()
+Date: Fri,  4 Sep 2026 16:41:41 +0800
+Message-ID: <20260904084158.1341550-3-wenst@chromium.org>
 X-Mailer: git-send-email 2.55.0.979.g7e5102b832-goog
 In-Reply-To: <20260904084158.1341550-1-wenst@chromium.org>
 References: <20260904084158.1341550-1-wenst@chromium.org>
@@ -98,90 +98,82 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In some cases the driver needs a reference to the port firmware node.
-Once such case is the upcoming USB power sequencing integration. The
-USB hub port is tied to the corresponding port firmware node if it
-exists.
+Due to design constraints of the power sequencing API, the consumer
+must first be sure that the other side is actually a provider, or it
+will continually get -EPROBE_DEFER when requesting the power
+sequencing descriptor.
 
-Provide a helper for this.
+In the upcoming USB power sequencing integration, the USB hub driver
+first needs to check whether a graph connection exists, and whether
+the other side of the connection is a supported connector type. The
+USB port is tied to a "port" firmware node, and this new helper will
+be used to get the endpoint under the known "port" firmware node.
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Sashiko points out that the |prev| reference put is not done if |port|
+is NULL. However it seems that the fwnode_*() and of_*() API design
+implicitly makes the functions no-ops if the passed in node is NULL.
+So this new addition follows the same pattern.
+
+Cc: Sakari Ailus <sakari.ailus@linux.intel.com>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
 ---
-Changes since v7:
-- Mention in kernel-doc that the function does not return ports that
-  have no endpoints (Sakari)
-
-Changes since v5:
-- Dropped left-over declaration in header (Sashiko)
-
-Changes since v4:
-- Added flags parameter so users can specify whether incomplete ports
-  are returned or not (Sashiko)
-
 Changes since v2:
-- Moved "Return:" kernel-doc section to the end. (Andy)
-
-Changes since v1:
-- New patch
+- Dropped unused |ep| variable
+- Rewrote as do {} while()
+- Dropped WARN() use
 ---
- drivers/base/property.c  | 31 +++++++++++++++++++++++++++++++
+ drivers/base/property.c  | 25 +++++++++++++++++++++++++
  include/linux/property.h |  2 ++
- 2 files changed, 33 insertions(+)
+ 2 files changed, 27 insertions(+)
 
 diff --git a/drivers/base/property.c b/drivers/base/property.c
-index b136c339ddae..68108805482d 100644
+index 68108805482d..fe7c403e3fa9 100644
 --- a/drivers/base/property.c
 +++ b/drivers/base/property.c
-@@ -1353,6 +1353,37 @@ int fwnode_graph_parse_endpoint(const struct fwnode_handle *fwnode,
+@@ -1109,6 +1109,31 @@ int fwnode_irq_get_byname(const struct fwnode_handle *fwnode, const char *name)
  }
- EXPORT_SYMBOL(fwnode_graph_parse_endpoint);
+ EXPORT_SYMBOL(fwnode_irq_get_byname);
  
 +/**
-+ * fwnode_graph_get_port_by_id - get the port matching a given id
-+ * @fwnode: parent fwnode_handle containing the graph
-+ * @id: id of the port
-+ * @flags: fwnode lookup flags
++ * fwnode_graph_get_next_port_endpoint - Get next endpoint firmware node in port
++ * @port: Pointer to the target port firmware node
++ * @prev: Previous endpoint node or %NULL to get the first
 + *
 + * The caller is responsible for calling fwnode_handle_put() on the returned
-+ * fwnode pointer.
++ * fwnode pointer. Note that this function also puts a reference to @prev
++ * unconditionally.
 + *
-+ * Does not return ports that belong to disabled devices or endpoints that
-+ * are unconnected, unless FWNODE_GRAPH_DEVICE_DISABLED is passed in @flags.
-+ *
-+ * Does not return ports that have no endpoints.
-+ *
-+ * Return: A 'port' firmware node pointer with refcount incremented.
++ * Return: an endpoint firmware node pointer or %NULL if no more endpoints
++ * are available.
 + */
-+struct fwnode_handle *fwnode_graph_get_port_by_id(struct fwnode_handle *fwnode,
-+						  u32 id,
-+						  unsigned long flags)
++struct fwnode_handle *fwnode_graph_get_next_port_endpoint(const struct fwnode_handle *port,
++							  struct fwnode_handle *prev)
 +{
-+	struct fwnode_handle *ep;
++	do {
++		prev = fwnode_get_next_child_node(port, prev);
++		if (fwnode_name_eq(prev, "endpoint"))
++			break;
++	} while (prev);
 +
-+	ep = fwnode_graph_get_endpoint_by_id(fwnode, id, 0,
-+					     flags | FWNODE_GRAPH_ENDPOINT_NEXT);
-+	if (!ep)
-+		return NULL;
-+
-+	return fwnode_get_next_parent(ep);
++	return prev;
 +}
-+EXPORT_SYMBOL_GPL(fwnode_graph_get_port_by_id);
++EXPORT_SYMBOL_GPL(fwnode_graph_get_next_port_endpoint);
 +
- const void *device_get_match_data(const struct device *dev)
- {
- 	return fwnode_call_ptr_op(dev_fwnode(dev), device_get_match_data, dev);
+ /**
+  * fwnode_graph_get_next_endpoint - Get next endpoint firmware node
+  * @fwnode: Pointer to the parent firmware node
 diff --git a/include/linux/property.h b/include/linux/property.h
-index 907c790a3f01..3dbbd01a52d0 100644
+index 3dbbd01a52d0..691e792775d5 100644
 --- a/include/linux/property.h
 +++ b/include/linux/property.h
-@@ -507,6 +507,8 @@ int fwnode_get_phy_mode(const struct fwnode_handle *fwnode);
+@@ -509,6 +509,8 @@ void __iomem *fwnode_iomap(struct fwnode_handle *fwnode, int index);
  
- void __iomem *fwnode_iomap(struct fwnode_handle *fwnode, int index);
- 
-+struct fwnode_handle *fwnode_graph_get_port_by_id(struct fwnode_handle *fwnode, u32 id,
-+						  unsigned long flags);
+ struct fwnode_handle *fwnode_graph_get_port_by_id(struct fwnode_handle *fwnode, u32 id,
+ 						  unsigned long flags);
++struct fwnode_handle *fwnode_graph_get_next_port_endpoint(
++	const struct fwnode_handle *port, struct fwnode_handle *prev);
  struct fwnode_handle *fwnode_graph_get_next_endpoint(
  	const struct fwnode_handle *fwnode, struct fwnode_handle *prev);
  struct fwnode_handle *
