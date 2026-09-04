@@ -1,136 +1,101 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABE3F433E9D;
-	Fri,  4 Sep 2026 11:55:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 490953769FC
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 12:30:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788522946; cv=none; b=e4sO3Qvh4DzZpExFlF0CE8mJUJ1Rb4v4IVXePnWcQ1RXMJjnLpGOI8rMeqDRhd8lPNwRq8Pqbw83HffddqoHJlPOpMeSWqSgXh74BTdrqx9c6WMAp/p6KoEcj7e3NTYnQfJ+gPyk+RPaCAAAMkr2QyDoPTNvmux7pMzqZgPFNPM=
+	t=1788525026; cv=none; b=ZAXJTFCYijrgq316NaCIhsbw2erLl9fYpZgC5SWpkg2GBUkP1Z6UJEQq6xMYGldCPjCxTIb4ts4Q7CVH/owZowViBZmK0Hnzc8ncbSN0i8DtOhHLEMd+VYoXadyiTWYnc+zbsmYnEvR0Uc2hcP2hnI9jefWHgmNYGZPjWSVnWqo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788522946; c=relaxed/simple;
-	bh=78sqk5H7Lxmz4BUyx1zh85KTEGpS399Pnj9Wdvf2OjI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=tD7frjCfjQgmvHvsyQDm4AbkZ5hH104YgY1KMTgW2un+BQvPIlBr/K90PDQTaWdpdSd1btdxMLJMIv9MMaQEUax+Jyth5bfgp2lhNde7Koc2xYvSMTJcm9/Oj+fzfzvxNQt/EjSLj8APbdDPczgkqI8NasJ1PC4cLD8Yih/T1L8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YPDfrjd6; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788525026; c=relaxed/simple;
+	bh=Fxorm3DS2+Aysgdl5P3byLfJY54JArob01AMvSl6ArI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PXNY+OtJuAK6NluIK2N3UrdxuUqcbQh8Y9rtfgq88c8fh2SmxyoaaP/Ur4+2idJ69gxpZAjiyMVs79saDVI/i40TIaMqCAkuVX0ExzB7JmYXTOrdDcAy8IMuGwYg+Cy4cwQ7SORM8ytBaN8/oy2fQWl6K0js2JykSuPS23CZ8AU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=R/ShqAT/; arc=none smtp.client-ip=209.85.215.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YPDfrjd6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCAB21F00A3E;
-	Fri,  4 Sep 2026 11:55:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788522945;
-	bh=i1e+iVX92LAvk1+uOyCaklFwP113Nslf61WHHfDzMFI=;
-	h=From:Date:Subject:To:Cc;
-	b=YPDfrjd6cCvKL4bZ8j7f6ofqLLZIp8sjSygASv7D7g0fK1z8nLZSXzcGU7TnC8ffo
-	 SpfV73WEmOB32l1OF40iSQFLx4+uLTJDeyv4CTVnjoAewMlfdbUUNjVtT+U/nrlPgi
-	 lWW+7BRdczIhFRhHgl4kNoO7vJNn8K9/aFtJ2xiXuB2ih92tmrkskOb+iLRNdjtwZY
-	 IKDzMVPrT64A6bypGUmDKX3GLdNAEzFGt96nPS7na2VIL4rOyrGiEwjKDzXOueY3Lt
-	 YEMBOBtFTF4XIS/g5DNkjc8dcpToOHqY+OAOUwF5eYonQFe6FXSIEBGmYxUEOhArxY
-	 jOy3WVag8LILg==
-From: Konrad Dybcio <konradybcio@kernel.org>
-Date: Fri, 04 Sep 2026 13:55:37 +0200
-Subject: [PATCH] interconnect: qcom: use 64-bit SMD RPM bus votes
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="R/ShqAT/"
+Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-cc147d86bebso975520a12.0
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 05:30:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788525023; x=1789129823; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=vFvOCesDJE1WQsfXuAeNAFRnkI1SonLn2LJfZ1tDqrY=;
+        b=R/ShqAT/Hwejo4/Xio59QH/jnRTWr5my0G/DUGgdXD2JyeiHO8Nbi9aoHZabTCWX4w
+         88pPwiugFJFIkXfmUml3DLyLwxo/Td9FpziqXvVzIJHUBrEKPgwbsFVGxo+Mw2QIfGOj
+         A6y/NxbRn3LHK2+L55uXkTPMOg9Oy3Sq4w34JnT8mDtoGksv80q1oXit9Eg7//VQNtp9
+         EkEiUJLDQVZ73ptBkLnGWkFVw2XYzAAIYXmwZB9Dk4tjB0E3iuS8PEr7+jHLggtfPeGC
+         1viemVKCR9TUL+Chtqe62RKL4pHDBJs9yjl5UGo4CjS9uFDySmjrmtDVMhIelWTc6TEd
+         KElA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788525023; x=1789129823;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=vFvOCesDJE1WQsfXuAeNAFRnkI1SonLn2LJfZ1tDqrY=;
+        b=HTbThByD6aISFaQN1rg4qE5kWcMRRLUDgdhNXzyCaobkWXtg4xX10r/L7M28ebWi9V
+         9vNUiieVjU1DvXKj/vxB1h8dpp4/0sXaNOHMH4wAvpAASnaiJEehwKAxdEadFTnKzDV2
+         7Dj9bdha9bUmskiN2Eds3jdt/X1kI1pIw4hq46y2g7kLt19yMTEzdqiAHAqUKtLi1WuH
+         dGM/dAFlxJOgMZQMYCJAsBTpl9pt+jmhfz5VgBBvKP9aoil4WWH1e6kBtAVH8UkPl2Fu
+         pu09XFr8u7IOt/+oCLBQPiKBXPPXUpr8pgrofdYPQlmFo0vpPB4HklwQXKqdZqqrFR6l
+         cM+w==
+X-Forwarded-Encrypted: i=1; AKwUvBxuIM2fKYKLf1Sk1hIj7WnuguEzzcUyRQ8wxY3LQiSJB+l8YrpfhycvXMbtF3evKVC2tvmILBt5gQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++lk0TPJ1BEILCKNt3Vq2AwFwMTApTkmz80IjBwUY03Jd0pQpnGy
+	5zi3E4WwLuV84dCh0AQyKibyFP51KoroCk8SKHnCJ8njLoV+j6RZl3Kb
+X-Gm-Gg: AYBFou2Z0nYauiWz7re5CxVScn+p+3jkqz/6AHK1fIVsdNlD1LFwmjA//qWLcas7Nlq
+	SheveX9CCc7HnKr/jSIEG+ge62iNAjFX02q9jeKTQi2/QUjuZ20AYrIPdGS/urXX4DS5NtGaJoM
+	shbAL2cheLMyLr+sINXLHwB6KYlfQn6a4PtNfvcOmGMrMiOzKkEMZGESZfLSsjvJNqa1n6JSYZD
+	rvzda8PD6ry1lxh4D1l06KdVny3Bjgs2rhT96M+jT+sVbT4D4LmMxRF39rPq1/k6ma6wia+56L3
+	QnCQzzBfAmqNcheB/D+RDpGvhWx2JLVu68eXSJxjC+LyQh5sWsLTDbfUifPNoWw1VerJDnDXk+Q
+	TZt3WTUSFxxOB1SQiSno0sUmNqUB4366j8JrLnB0BMFBUKj5llvP+d+mHTzVAljkNjJDPXXNo11
+	kZ+1KPXWqkPhMJE70rtlbvKpFy81fUNOyWNDmbTQKpMJNDvizWTYcTvQECdqg/nPOxf5cdNP/Db
+	d/6XPprjWBj0oI=
+X-Received: by 2002:a17:90b:4b04:b0:396:4ce0:6400 with SMTP id 98e67ed59e1d1-39b07f33963mr15173478a91.2.1788525022476;
+        Fri, 04 Sep 2026 05:30:22 -0700 (PDT)
+Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339af25062sm9587131eec.16.2026.09.04.05.30.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Sep 2026 05:30:22 -0700 (PDT)
+From: Hemanth Selam <hemanth.selam@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH] turbostat: fix typo "intead" in comment
+Date: Fri,  4 Sep 2026 18:00:17 +0530
+Message-ID: <20260904123018.34947-1-hemanth.selam@gmail.com>
+X-Mailer: git-send-email 2.48.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260904-topic-icc_rpm_64b_req-v1-1-37e24f1991a3@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQqDMBBA0avIrBsYRSPxKqUEnY7tFNR0olIQ7
- 260y7f4f4PIKhyhyTZQXiXKNCbktwzo3Y4vNvJMhgILiw5LM09ByAiR1zB4W3Ze+Wtam2NvK4e
- VqyG1QbmX3/W9P/6OS/dhms8Z7PsB1bCR5HkAAAA=
-X-Change-ID: 20260904-topic-icc_rpm_64b_req-a610f6590597
-To: Georgi Djakov <djakov@kernel.org>, 
- Bjorn Andersson <andersson@kernel.org>
-Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788522943; l=2752;
- i=konrad.dybcio@oss.qualcomm.com; s=20230215; h=from:subject:message-id;
- bh=OkDSUi/LdA4pTBLQ7ya43ShjOBq9ARa4CWM0ri2JlmI=;
- b=HMp9bpuBIpTptLljnU3iP37MMC8bObxtvy8Dk30GhpS/Dw7FV+TxklD2g7rDixnqvl7WFkd+m
- pFM/8P5WPz3DQmnyLy7U/arRMx9H2VkfPQsQvU55WoQ0pGrOhtP6BD6
-X-Developer-Key: i=konrad.dybcio@oss.qualcomm.com; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+Content-Transfer-Encoding: 8bit
 
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Correct "intead" to "instead", reported by scripts/checkpatch.pl using the
+misspelling list in scripts/spelling.txt.  Only touches comments, no code
+changes.
 
-SMD RPM bus bandwidth requests carry a 64-bit bandwidth value.
-The interconnect proxy declared the KVP payload as u32, truncating
-votes above 4 GiB/s and advertising the wrong payload size to RPM.
-
-Use a little-endian 64-bit payload and accept a u64 value in the proxy
-API. This has always been the right behavior, even on msm-3.10 and
-32-bit SoCs.
-
-Fixes: be06f8e7425d ("interconnect: qcom: Add interconnect RPM over SMD driver")
-Assisted-by: LLM
-Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Assisted-by: Cursor:claude-opus-5
+Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- drivers/interconnect/qcom/icc-rpm.h | 4 ++--
- drivers/interconnect/qcom/smd-rpm.c | 8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index cdd5f444b152..b8fa786d3bfd 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -30,7 +30,7 @@ enum qcom_icc_type {
-  * @resource_type: RPM resource type of the clock resource
-  * @clock_id: index of the clock resource of a specific resource type
-  * @branch: whether the resource represents a branch clock
--*/
-+ */
- struct rpm_clk_resource {
- 	u32 resource_type;
- 	u32 clock_id;
-@@ -167,7 +167,7 @@ int qnoc_probe(struct platform_device *pdev);
- void qnoc_remove(struct platform_device *pdev);
- 
- bool qcom_icc_rpm_smd_available(void);
--int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
-+int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u64 val);
- int qcom_icc_rpm_set_bus_rate(const struct rpm_clk_resource *clk, int ctx, u32 rate);
- 
- #endif
-diff --git a/drivers/interconnect/qcom/smd-rpm.c b/drivers/interconnect/qcom/smd-rpm.c
-index dbc7ae50b02b..6ac9aef942ad 100644
---- a/drivers/interconnect/qcom/smd-rpm.c
-+++ b/drivers/interconnect/qcom/smd-rpm.c
-@@ -20,7 +20,7 @@ static struct qcom_smd_rpm *icc_smd_rpm;
- struct icc_rpm_smd_req {
- 	__le32 key;
- 	__le32 nbytes;
--	__le32 value;
-+	__le64 value;
- };
- 
- bool qcom_icc_rpm_smd_available(void)
-@@ -29,12 +29,12 @@ bool qcom_icc_rpm_smd_available(void)
- }
- EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_available);
- 
--int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val)
-+int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u64 val)
- {
- 	struct icc_rpm_smd_req req = {
- 		.key = cpu_to_le32(RPM_KEY_BW),
--		.nbytes = cpu_to_le32(sizeof(u32)),
--		.value = cpu_to_le32(val),
-+		.nbytes = cpu_to_le32(sizeof(u64)),
-+		.value = cpu_to_le64(val),
- 	};
- 
- 	return qcom_rpm_smd_write(icc_smd_rpm, ctx, rsc_type, id, &req,
-
----
-base-commit: 32b6ef9a5d0eca44f9cd91f52f4faa89f145a0de
-change-id: 20260904-topic-icc_rpm_64b_req-a610f6590597
-
-Best regards,
---  
-Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 920694c3c1ec..e2bb99d9b7a3 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -10448,7 +10448,7 @@ void pmt_init(void)
+ 			 * Set the scope to CPU, even though CWF report the counter per module.
+ 			 * CPUs inside the same module will read from the same location, instead of reporting zeros.
+ 			 *
+-			 * CWF with newer firmware might require a PMT_TYPE_XTAL_TIME intead of PMT_TYPE_TCORE_CLOCK.
++			 * CWF with newer firmware might require a PMT_TYPE_XTAL_TIME instead of PMT_TYPE_TCORE_CLOCK.
+ 			 */
+ 			pmt_add_counter(PMT_CWF_MC1E_GUID, seq, "CPU%c1e", PMT_TYPE_TCORE_CLOCK,
+ 					PMT_COUNTER_CWF_MC1E_LSB, PMT_COUNTER_CWF_MC1E_MSB, offset, SCOPE_CPU, FORMAT_DELTA, cpu_num, PMT_OPEN_TRY);
+-- 
+2.48.1
 
