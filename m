@@ -1,134 +1,194 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77877449B2C
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 10:05:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 391F5175A6B
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 10:31:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788516340; cv=none; b=I0MdNAVFpch83z5pqr45Er/01AwNIzKqTkFSNgSa+fO9vieiAZ3HCCrvXTLjvxUrzk61A+1H9P5XxAALzIwac82oRWah37RL06QmW1+ZlbCOnfnllDX9/rlIJRaveP+/mqrO0A+kQajiQaqeVHURSug7WoBFygmtNcY9Ef6/i6U=
+	t=1788517861; cv=none; b=gdyUZHLZQB78r4UzxVc9lXSsIin61PNXxVUAH9sgLGUuF0fey12gKFUvF5YW2mJ8TzxdSTxzqxwvNLsAWtFsyROo74u/jUaGRoTlpwS1pa88iQfHvrUuDOhsFmfxdUIpE572tJ4xBZet0ImaMI7Nq6punvwHjGH1TEZQfRrRaUg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788516340; c=relaxed/simple;
-	bh=PonluXIqpdK5YVnIwW1ZKIfyugR2p2Y9j8kib4Q/qvI=;
+	s=arc-20240116; t=1788517861; c=relaxed/simple;
+	bh=HSgeBQ0mHDQt1Sq43MY0o4wxhgcEwOVxtMn54CsehgA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=imKLhWv5lfoDJBHxH/xP8oT3784V2soY9gpoePHIl3dQDdpE3+GKtbwyhBufC0oiu9E2r/7r1VHBGBIoSkeNG4P/bjTnuy2Af/d6PIbu4QNu9WWT+GqUhssm+Km1LKfTMsZM1zPSVGubk9mOxFYfhj4A9PjUJeq3e/bj7RYIsSc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GcOWuNR6; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=sLQwrDi86FCsF0Q3jyWZKSq7fkjXxiaiG1ODmszbEV4kE2Pqzs4qJqHM9bk4fcyYP7cbYbPdP48WovJR2O8tLaMNL5QaWigIKNqznZFAymUdPzHSVXudqzUDD+YJMn1aoVJ6nRlyX+CC3o0/DU67KM/Mi8zTcrFWxJjZ87Ib/Zs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mUbo86UX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GcOWuNR6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 082651F00ACF
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 10:05:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mUbo86UX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CC791F0155F
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 10:30:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788516339;
-	bh=+MVFKDGPp4UWg5sRJHXl+lvkq3CQatW3Z5Cpu0PPOY4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=GcOWuNR6mWO4OwNSjyZuIaMXrpZHgYpy7jvYFREebQvEAPch+P+k4k7jnd19uPd21
-	 nui7x3+T1NnTHxnAtrpwpsf72a9jBdCkouTGNONYtS+KTwc2GHf4Xa99uZnD72kO82
-	 IZ5D+APRxPkKWELpLgNwAoE1oyQk83d2CRSyIjqfKAjvcYQiIT44K3bIzkzhXIt9P3
-	 LIcyBqkrzJzdWpvJB2owkFn6YMblwkiXhKNHa1fEZQF41uRPvCz1zPjWmNYO5WoJbA
-	 g5UMsdRqw9v5+j+8nZlwHoqLr4VvNjTexhVumrcH7CDxuySA2VnqQkoG0l/MBzcWV/
-	 C1LnhQLl4fuTQ==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5b6188a2c0eso452534e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 03:05:38 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwIlSgS1uoxYUouzRlMRHPpZqiOfgiHpwX2tkba8XfkASaeLV7yHMWZbZVivneRL0NqATR3hG3RMw==@vger.kernel.org
-X-Gm-Message-State: AFuF++mzELjWCe/rZaZxAEnbLfalkRiKfONAYFchP2VBZUO1IlnnxwEk
-	wGuDMa6W9BahXBZtW9gYstK0G8lMtd54r9EVfcxI3pXqigd4Hyb1VzZKckhw2ojQdFCIl+dECCI
-	4DlRzaSG0u7I8rPcjxMvbSftXH4id7+w=
-X-Received: by 2002:a05:6512:2521:b0:5b6:1a7c:fd84 with SMTP id
- 2adb3069b0e04-5b61a7cfeb4mr382887e87.42.1788516337225; Fri, 04 Sep 2026
- 03:05:37 -0700 (PDT)
+	s=k20260515; t=1788517858;
+	bh=Ak3IEV5EuNPQAh0ybs3J8IV2WjKmGgfXZ4hNk/xxyjM=;
+	h=References:In-Reply-To:Reply-To:From:Date:Subject:To:Cc;
+	b=mUbo86UXxBWE6CTcj70Nt+yzfQL8JPBmPwGRVX2JHufpjDw8QX02IMe5OhvQgptjM
+	 SwShFyYg4okprAeRMJouUbFefoRObxsWzgcKk46mZOJNjgBCYSn0Thhoyva09oRCGZ
+	 oJwnkhQ1qzXwGqTSwBzA8Zr1LzAlg3Ybw+HJcn/+FdH8RxXotFSyH3GhWmE7XVhdF3
+	 JgWIV77yI16EZy6cPlqHQauKysmSHQ1IetZ1LGwnDZT6EhBp/NMi9ozCI/ik2cD8eY
+	 o1uJOoRRgYULksn1fhY/vdzg+SEiuLW/Q8EnU9yO3lbMUIeTE9T0rZ6HCMPZFagkxR
+	 4T+Ka5P7ZGClQ==
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-3a151eda82dso8376371fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 03:30:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxWKG1aFkJv0uK/B6aNRisT+5rghgiwqI3O4jyVxnVuvH40JqVgvVfJSfgX74A1v9sMvqifpg5Jdw==@vger.kernel.org
+X-Gm-Message-State: AFuF++m/O22qydNzsCNUhvt/OCoFRQpy6Y65ECOvmBEGZty0Kk61JoY1
+	ELiXOcTV4RJ8JVzMsmdddq98B5E0OQ99z9uFqq9hYYHxcgChZEto9f3SRK94Kmski7iSDbWaZsR
+	QPLAVYpUovx2TBV58WgsmSYLBq5+wmbc=
+X-Received: by 2002:a2e:a7ca:0:b0:3a3:34:865 with SMTP id 38308e7fff4ca-3a371b6dd76mr9445761fa.5.1788517856421;
+ Fri, 04 Sep 2026 03:30:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <6044499.DvuYhMxLoT@rafael.j.wysocki> <20260904094030.2455645-1-peixin.xie@linux.spacemit.com>
-In-Reply-To: <20260904094030.2455645-1-peixin.xie@linux.spacemit.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 4 Sep 2026 12:04:36 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hLz3=RVDD3YeT0=Xk0w_fLmGTCGMuYyZhX10th3-xtSw@mail.gmail.com>
-X-Gm-Features: AcwNN1XfOQA-QVk9dEc9RzdSjjBbI02RHKxBUUUm3VlDAMgsThBFfV2VTf3DEXo
-Message-ID: <CAJZ5v0hLz3=RVDD3YeT0=Xk0w_fLmGTCGMuYyZhX10th3-xtSw@mail.gmail.com>
-Subject: Re: [PATCH v3 0/4] ACPI: scan: Adjust power management initialization
- and PCI devices handling
-To: Peixin Xie <peixin.xie@linux.spacemit.com>
-Cc: rafael@kernel.org, andriy.shevchenko@linux.intel.com, hansg@kernel.org, 
-	helgaas@kernel.org, ilpo.jarvinen@linux.intel.com, linux-acpi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, lukas@wunner.de, mika.westerberg@linux.intel.com, 
-	sakari.ailus@linux.intel.com
+References: <20260721065413.2306137-1-wenst@chromium.org> <20260721065413.2306137-7-wenst@chromium.org>
+ <c6526ba0-be08-46c6-a501-1b161939657c@oss.qualcomm.com>
+In-Reply-To: <c6526ba0-be08-46c6-a501-1b161939657c@oss.qualcomm.com>
+Reply-To: wens@kernel.org
+From: Chen-Yu Tsai <wens@kernel.org>
+Date: Fri, 4 Sep 2026 18:30:43 +0800
+X-Gmail-Original-Message-ID: <CAGb2v66c8L20yNNmvj6TaQbS7LnqAyuv0tMQfj+0PSjMUcSByA@mail.gmail.com>
+X-Gm-Features: AcwNN1Xat96btOTDTzU9PGXAhyQrjVXT5ZP9qiHi9N7dj1ScKDZ_5SK_K-nNAtc
+Message-ID: <CAGb2v66c8L20yNNmvj6TaQbS7LnqAyuv0tMQfj+0PSjMUcSByA@mail.gmail.com>
+Subject: Re: [PATCH v6 06/16] usb: hub: Associate port@ fwnode with USB port device
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Chen-Yu Tsai <wenst@chromium.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 4, 2026 at 11:41=E2=80=AFAM Peixin Xie
-<peixin.xie@linux.spacemit.com> wrote:
->
-> Hi Rafael,
->
-> On Thu, 03 Sep 2026 18:57:09 +0200, Rafael J. Wysocki wrote:
-> > Hi All,
-> >
-> > This is an update of
-> >
-> > https://lore.kernel.org/linux-acpi/5144065.31r3eYUQgx@rafael.j.wysocki/
-> >
-> > that adds 1 patch, 3 two patches, and addresses review comments in patc=
-h [2/4].
-> >
-> > The new patch drops in v3 is a cleanup relocating the acpi_bus_init_pow=
-er()
-> > declaration to an internal header file in the core ACPI support code (p=
-atch
-> > [3/4]).
-> >
-> > One of the patches dropped from the v2 has been folded into patch [2/4]
-> > and the other two have become cleanups on top of this series that can b=
-e
-> > done later.
-> >
-> > Overall, the series aims at addressing a few issues present in the core=
- ACPI
-> > device enumeration code, mostly related to the acpi_bus_attach() functi=
-on.
-> >
-> > The first one is that, on some systems, ACPI power management is initia=
-lized
-> > twice for devices that have missing dependencies to start with.  An att=
-empt
-> > to address this issue had been made during the 7.3 merge window, but it=
- had
-> > to be reverted [1].  The approach used here is roughly the same as in t=
-he
-> > reverted commit, but it takes PCI devices (which are a special case) in=
-to
-> > account.
-> >
-> > In addition to the above, ACPI power management may be initialized prem=
-aturely
-> > for device objects whose parents are not ready for enumeration.
-> >
-> > The other issues are that flags are unnecessarily cleared by acpi_bus_a=
-ttach()
-> > for devices with missing dependencies and PCI devices are handled by
-> > acpi_bus_attach() like any other devices which is a mistake.
-> >
-> > Please see the changelogs of individual patches for details.
-> >
-> > Thanks!
-> >
-> >
-> > Link: https://lore.kernel.org/linux-acpi/20260820-acpi-power-resource-r=
-ef-fix-v2-1-29818173ea13@linux.spacemit.com/ [1]
->
-> I tested the complete v3 series on the SpacemiT K3 RISC-V Pico-ITX platfo=
-rm
-> where the original duplicate ACPI PowerResource reference issue was
-> observed.
->
-> The power resource left on by firmware is now turned off as unused after
-> the namespace scan. After the device dependency is satisfied, the power
-> resource is turned on once for the device and is turned off normally
-> during runtime suspend. Runtime resume also works correctly.
->
-> Tested-by: Peixin Xie <peixin.xie@linux.spacemit.com>
+(dug this out of my kernel.org email)
 
-Thank you!
+On Fri, Jul 31, 2026 at 10:44=E2=80=AFPM Konrad Dybcio
+<konrad.dybcio@oss.qualcomm.com> wrote:
+>
+> On 7/21/26 8:54 AM, Chen-Yu Tsai wrote:
+> > When a USB hub port is connected to a connector in a firmware node
+> > graph, the port itself has a node in the graph.
+> >
+> > Associate the port's firmware node with the USB port's device,
+> > usb_port::dev. This is used in later changes for the M.2 slot power
+> > sequencing provider to match against the requesting port.
+> >
+> > To avoid potential conflicts with ACPI firmware nodes and then causing
+> > power management issues, only assign the firmware node if the hub's
+> > firmware node is not an ACPI firmware node.
+> >
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> > Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+> > ---
+>
+> [...]
+>
+> > +     /*
+> > +      * ACPI FW nodes are associated later when device_register() happ=
+ens.
+> > +      * Skip assigning one here to avoid potential conflicts.
+> > +      */
+> > +     if (!is_acpi_node(fwnode)) {
+> > +             struct fwnode_handle *port;
+> > +
+> > +             /*
+> > +              * fwnode_graph_get_port_by_id() returns either a valid f=
+wnode handle
+> > +              * or NULL. Passing NULL to device_set_node() clears any =
+associated
+> > +              * fwnode. It is effectively a no-op here, since no fwnod=
+e has been
+> > +              * assigned to the newly created device yet.
+> > +              */
+> > +             port =3D fwnode_graph_get_port_by_id(fwnode, port1, FWNOD=
+E_GRAPH_DEVICE_DISABLED);
+>
+> This works if the node at the other end of the graph is a
+> USB hub, e.g. from qcom/lemans-evk.dts:
+>
+> usb_hub_3_x: hub@2 {
+>         compatible =3D "usb5e3,625";
+>         reg =3D <2>;
+>
+>         peer-hub =3D <&usb_hub_2_x>;
+>
+>         ports {
+>                 #address-cells =3D <1>;
+>                 #size-cells =3D <0>;
+>
+>                 port@1 {
+>                         reg =3D <1>;
+>
+>                         usb_hub_3_1: endpoint {
+>                                 remote-endpoint =3D <&hd3ss3220_1_out_ep>=
+;
+>                         };
+>                 };
+>
+>                 port@4 {
+>                         reg =3D <4>;
+>
+>                         usb_hub_3_4: endpoint {
+>                         };
+>                 };
+>         };
+> };
+>
+> But something I faced when I was poking at USB4 was that dt-bindings
+> currently assume every controller is effectively single-port and the
+> of_graph ports under it represent HS/SS lanes, i.e. the entire
+> "ports" subnode represents a single USB port
+
+Which controller is this? AFAIK for xHCI hosts there currently is no
+"ports" node specified in the common usb-hcd.yaml binding. I plan to
+add this separately, as it can already be used for USB A connectors.
+
+The kernel maps every downstream port of the root hub to a separate
+node. On the XHCI it is more complicated because it has two root hubs,
+one for HS and one for SS. I'm not familiar with the hardware specifics
+but they seem to map into one common namespace, so you probably get
+ports 1~8 for HS and then 9~12 for SS. Note the number of ports is
+different. This is just an example from my x86 workstation. And on
+x86 each port is mapped to a different ACPI node.
+
+> I think the solution here would be to do ports {} under the controller
+> and have every one of them have 2 endpoints (for HS and SS
+> respectively) - then, each DT-port would correspond to a USB port
+> (sorta like in the hub case, minus the hubs are split for HS/SS so
+> they have just a single endpoint under each port)
+
+But the hardware descriptors actually give two ports, one for HS and one
+for SS. And in the case of dwc3, I suspect that they always come with
+one downstream HS port and (optionally) one downstream SS port. So the
+binding is actually correct, except for the numbering.
+
+I'm looking into the dwc3 case. Changing the numbering might actually
+not break anything. Linux seems to just need one *a* graph connection,
+but doesn't care about the number. I looked through some other projects:
+
+- FreeBSD doesn't use the OF graph for anything
+- U-boot doesn't use the OF graph for USB
+- OpenBSD doesn't support dwc3, only the XHCI in dwc3, and doesn't use the
+  OF graph for USB
+- coreboot doesn't use the OF graph for anything
+- Zephyr doesn't support dwc3
+- TF-A doesn't use the OF graph for anything
+- EDK2 doesn't support dwc3 and doesn't support OF graph
+- OP-TEE doesn't support dwc3 and doesn't support OF graph
+
+> But that comes with a big breakage, as always..
+
+As I mentioned, it probably isn't as large of a breakage.
+
+
+ChenYu
