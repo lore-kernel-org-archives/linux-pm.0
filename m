@@ -1,61 +1,61 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78CF13EDAA3
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 21:20:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33E1843303F
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 21:20:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788556828; cv=none; b=BdFpyXT380MczkHupFxW1GNpsG4o5J5YNbeE/36SgODig00a+Aklr73Uu6VK5HtfVPtbSHwA1qaWwgnJ97N/2GhjYWHEHtDzF16C5RD72/L1cjq5DNl1MI87wrIRBFNOAebdnaIfDILTo4UvIQR2tHaF/H80TdfPAGFTgSZj5ck=
+	t=1788556831; cv=none; b=pO/RcP9lwV/hQxxZKc5jNvtrK8lCPsS1FQN6LRE13ca87Rcl6xVSV4JRWYhR1PhhkdZq1961B868fGXkZl+BqREo+heRJzk7SVRp/kIQauBIbzfT6pZ9ejCVShvkbq0cHuiEc0fe2Boko4j+WrmFQe8qvTOT38byQkP5vF9BsLs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788556828; c=relaxed/simple;
-	bh=DuSGfp51Xf6/n7M7ml+kwYVXFwSh35utIU++rb689EE=;
+	s=arc-20240116; t=1788556831; c=relaxed/simple;
+	bh=wHt8CgT1P0RNc7F6QrmjRIV/zR3o86+dVdAliaBmpiU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fZoSXCRjpBWwPlRwFw36MqwFwgEr95Yz0CJYpuD5mASB8xWMBGfBo6SguNxLlV02gzNKZOZ3eTMw8K5KxroQgMQSJ0MoFQy+pR1ZvZW02RJw1IVUq+uDtou0kP5Ow7yGg8rF8poaWr4dgnCnsM+OaOQt/o4y4piThmn0516iK0w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=ERWHbeVf; arc=none smtp.client-ip=209.85.214.171
+	 MIME-Version; b=H5SvYMh8qXI6XvOMVzPyNSb/tNYH5UudQCMdtXKj/gkeZUAHuzYvL1nfbhx/IxmiAwye7W4HBggn3hKQk08ntdl3hp+CO8o/8S7R+YafpSdWIHVPoEhuN0n4RmkKpw2b6ynMadaCGnN2zj+JiXlBF8vwqrn3ZBpY8f6V+iKzJS8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=Xouz/ruK; arc=none smtp.client-ip=209.85.216.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="ERWHbeVf"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2ce98cb8165so16932025ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 14:20:26 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Xouz/ruK"
+Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-38e42560ebcso1193041a91.1
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 14:20:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1788556826; x=1789161626; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1788556828; x=1789161628; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=T6q1VnyWEoTKWyOgQ9OahNNcGYr+xXm1NffFlxt/MKM=;
-        b=ERWHbeVfePqQI3GQtqx9i0XuDwJKHyVJxWChmst4Fhajzsq+IqmOpS7+neIKdE5qNs
-         E+tDICCdI+V3xcVCsCUpwOMUC4tcncbP4b5llhUhlFD5nyJ7TagNH/WJrLOtTS3xZDrv
-         fEmBwA76fE4YqCYrdR9kjEJoQMoTACbvIHLjQ=
+        bh=hiuf8CN7cTb9FarsrDvFqalXR9R3H1JNJ1T35r1Vjm0=;
+        b=Xouz/ruK0/tbHMloxLNU0+w1MPjolYFHh0sFto40sWRvhtOUJW7Dg9aEYeszLm444G
+         zp9CYHkCMtjJ+O6ckMaKcyqlnxAzSiBeVt7zQ7vG3Vk+1ir2OvCA/mjGwepufwnFtzi2
+         DXhY58MnTg/FpSR3g/JBaJV6XTLqujEQkBSoI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788556826; x=1789161626;
+        d=1e100.net; s=20251104; t=1788556828; x=1789161628;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=T6q1VnyWEoTKWyOgQ9OahNNcGYr+xXm1NffFlxt/MKM=;
-        b=rTpaODZFAIBzB762OqGXvqrAXGzB4R/cvwMH+GZV7P+QBCun1aPt4dPd1mGKxJu81m
-         LOptAZ43SRFeUTTEWl7rQ/32JISpxGrQMb6G7vh/m7ZT40n4jmleF4GGvPLNSTJpnVph
-         rkTJS0yjylor0xMasjKV0Opd0lVfGEk5niRGYNUuXyZXiyFly2BaeqLeKFxdNjhGvvHI
-         owV1PI2Y7iBiO+D+7OFYGW6dA2l7Isp01WHd1zIl68APyzhwNhCfCRYPUxfSK9SrRWDt
-         Yfhgoh8Cz9cDmji4RtX9pksY/gEgODtbOfnsrCz3VNDrhsD2Pekrl1XQ9EfwmY7gBOu5
-         Wpmw==
-X-Forwarded-Encrypted: i=1; AKwUvBxduwhKbZx+YxNweLCFyFxWaBF9ZwY0Cgy5ujkfew+WXEPMVM3dHgXcMzsNDcPfVcbqwGw4hJmr5g==@vger.kernel.org
-X-Gm-Message-State: AFuF++kp9kKME0596Y6esgcWD1TGsfMF4Ch7uoXPSQvg+gydFBQfFLDY
-	sWgjDfmZPLCtBFyYcsOX0Rry2AKWIDodtAfYgRwftIckjYX37ImHIG2ZYHmVoROvLA==
-X-Gm-Gg: AYBFou1IC/Uz8xNZhRTQHbQPDV6BVkNtxc8/Y8stATmICF9OeHP3Lc60PUBnS+GES5x
-	lQSoa7MdCk0qYnmqeVcwujDrNRYBW67/Q1Dps0bmb/dfkCadxyRb8ZOKbGRFgMUtBVg0c3LTnqD
-	hml72279LO0wcaGjf67djwJbc0lSmuzw15Nqc6gGcAIVw/iKqKgpHv+dHsJgaNndXG1HK53OsIN
-	XlGula6A2Hafo/4cNXQNKMOyhWpjBaPglrFroQnsljvQg9LbaTy6kQFhy1bZh9OX2OGlnRVf6N/
-	vqLTE9u9Eyf5vWRNVVEqwg/z3T8L8FtPS+j0NzQvi1EMVfjEr9CEze9bVzOl+tXkcvi7/MsW+ee
-	OVSyiGCotkjoHJJIFLSmVPEkffPJPinRvc/o1uUcCRmxUZNoRH2JgVLVlkGyHjQVJ/02b2wv3tN
-	h4vjJzb2PciTRU6ZJ2MjJSXAXYQGYuglBxKCB1QaJkFoBX+hpV5l1ZNHqRXrca2MtzslbFjkZuo
-	AqNA8tCQPrWxTCrIrIiahVwlHdpZO2bBns52Gf0pyKW6DhoeQ==
-X-Received: by 2002:a17:903:2ac6:b0:2d7:1858:1d96 with SMTP id d9443c01a7336-2dafaf5f50dmr146868315ad.7.1788556825495;
-        Fri, 04 Sep 2026 14:20:25 -0700 (PDT)
+        bh=hiuf8CN7cTb9FarsrDvFqalXR9R3H1JNJ1T35r1Vjm0=;
+        b=HCAEsjTCY7YVLdwwuvY1F3LErKk2U1jhZ/LEKFFmfrVu2DBHm3HcijoNxKTsQTjHUc
+         l/rsxk5PpkGopQ1oodh+EyJh3wqs3W+yA17O0UNMQ7y2rCx0OhWdHUPCs/zGbFMneV5O
+         ZlWaQ8ew0pvRhLQ/7vPSZZMeyytxNBf7PepL8sy8k1gXoAb7P8X1ERdFVXelPDD6CSYv
+         j5RsC3rww5BhwsIx3j9PC8oxejEZmYC1ayPO1lBB84h+A85AmVostKnk+r7pVvgeprgV
+         amS/5Ek3yrSM3k5IO7jZx/XQv/Z7xDIpXHzNCE4fQPqtFZJ66TIwyeV8dgtw92z/v0vQ
+         CoHw==
+X-Forwarded-Encrypted: i=1; AKwUvBxEE4Ah1vKa0sg/2eRj+FWbRE4CpswQIviLTeUlxy3H1c99Qslxrmi7hlDGzXqz+vfSvZQYPlzW1Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++kquQ6KjS581wEzYdazRA83IvhDytM26rerQki/KVC+2ahNu2WI
+	4j/4ZvZWSgHkTCebDVK8Hi+w+Ek/l+C6ZZhVYopSnyX8nwwCpoefl5XvlU61BoEXCg==
+X-Gm-Gg: AYBFou2v3okSJ1Di1Oiipk5/TboflQAPIFBnrvBk1spim7//Kz+KoOTUnNBFqRxVpzY
+	3AfVJmiaoiY9Em4dXnEy5oq8S94J7YwBpeCE02e1JCtGrzP4YcvJ5tDu9mhTeSb5Ofsrxi1bsp2
+	DWL+VnowBjzPiYB4gmnk3+jNvnQAKbKiXQ9lUI5mW5Q9cYF4gWwvLw/HlMxgGQTnpITPSWUy6Hz
+	giaN+WPfpHh/U3+qMNiUwgFPzlyf37ipp1da0lDUeu3RS3UkwBz7mRQmUPWqJHNJhLW/wI14Jbi
+	D7xhoqgcMut+cvsnqvriajeTkjN0aFk1aYdEgigbFJs4XZwqHlKJb2QwG4ZI46lCuI4WaL8raB0
+	aFFLjkX+eda3t3BiqLfp7Ih4k6nx44yMuhowc6eB1kgvxGCdUSKR5335eH8BWiEX3tzDjL6TtcM
+	dqpV0OQiffz6x+zid7l/yrXXipTH4qTNgvUEa+bsdhFx3qUVgqLuW3yS7LsmQL/B4DqzGdtRD16
+	BCfLa+kViDJ4YJo/6qBM4/m03bZyCd1BAvds+YQYWVElGQMgg==
+X-Received: by 2002:a17:90b:39a7:b0:398:9bd1:3211 with SMTP id 98e67ed59e1d1-39b262ab182mr12456467a91.18.1788556828297;
+        Fri, 04 Sep 2026 14:20:28 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:5597:62ab:c321:4a7f])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3339885d29esm9868188eec.2.2026.09.04.14.20.24
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-143243bfbe3sm8877459c88.11.2026.09.04.14.20.26
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Sep 2026 14:20:24 -0700 (PDT)
+        Fri, 04 Sep 2026 14:20:27 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
@@ -65,9 +65,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Pavel Machek <pavel@kernel.org>,
 	Doug Anderson <dianders@chromium.org>,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 03/11] PM: runtime: kerneldoc wording improvements
-Date: Fri,  4 Sep 2026 14:12:08 -0700
-Message-ID: <20260904141215.3.I3bdec7dcda46e1bee6d4f91530518fbe9c9096fd@changeid>
+Subject: [PATCH 04/11] PM: runtime: Pull API docs from kerneldoc
+Date: Fri,  4 Sep 2026 14:12:09 -0700
+Message-ID: <20260904141215.4.I2cb2c43192ef46bd9dfad6699080d8a1d56756d5@changeid>
 X-Mailer: git-send-email 2.55.0.979.g7e5102b832-goog
 In-Reply-To: <20260904212000.4167880-1-briannorris@chromium.org>
 References: <20260904212000.4167880-1-briannorris@chromium.org>
@@ -79,372 +79,313 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In preparation for removing duplicate documentation from
-Documentation/power/runtime_pm.rst, borrow some of the useful wording
-from runtime_pm.rst, and update other language for clarity, ease of
-reading, and completeness.
-
-Other guiding principles in this change:
-
- * Try to highlight "core", as in, "functions that are not for driver
-   use but are exported because the real entrypoints are inline
-   functions"
-
- * Rework pm_runtime_barrier() docs significantly. More below.
-
- * Include some clarifying cross-references and recommendations for
-   pm_runtime_put_sync{,_suspend,_autosuspend}()
-
- * Attempt to deemphasize some of the implementation details (e.g.,
-   "asynchronous" instead of "queue")
-
- * Try for more clear user-facing language. For example, "set up
-   autosuspend" isn't quite clear whether we're configuring autosuspend,
-   or if we're initiating an attempt to autosuspend (i.e., setting a
-   timer).
-
-pm_runtime_barrier(): currently, we speak a lot about implementation
-details and sequences of events, but obscure the key point that it
-treats "pending resume" and "pending suspend" very differently -- I try
-to improve that.
+This avoids staleness and duplication, as the same APIs were previously
+documented twice.
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 
- drivers/base/power/runtime.c | 65 +++++++++++++-----------
- include/linux/pm_runtime.h   | 95 +++++++++++++++++++-----------------
- 2 files changed, 87 insertions(+), 73 deletions(-)
+ Documentation/power/runtime_pm.rst | 280 +----------------------------
+ 1 file changed, 6 insertions(+), 274 deletions(-)
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index ce7e08e628a2..f24b84757606 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1101,14 +1101,13 @@ static int rpm_drop_usage_count(struct device *dev)
- }
+diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
+index a53ab09c37d5..380dad7590a9 100644
+--- a/Documentation/power/runtime_pm.rst
++++ b/Documentation/power/runtime_pm.rst
+@@ -307,219 +307,10 @@ All of the above fields are members of the 'power' member of 'struct device'.
+ The following runtime PM helper functions are defined in
+ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
  
- /**
-- * __pm_runtime_idle - Entry point for runtime idle operations.
-+ * __pm_runtime_idle - Core entry point for runtime idle operations.
-  * @dev: Device to send idle notification for.
-  * @rpmflags: Flag bits.
-  *
-- * If the RPM_GET_PUT flag is set, decrement the device's usage count and
-- * return immediately if it is larger than zero (if it becomes negative, log a
-- * warning, increment it, and return an error).  Then carry out an idle
-- * notification, either synchronous or asynchronous.
-+ * Carry out an idle check for @dev, either synchronous or asynchronous.
-+ * If %RPM_GET_PUT is set in @rpmflags, decrement the device's usage count
-+ * first, proceeding with idle notification only if the counter drops to zero.
-  *
-  * This routine may be called in atomic context if the %RPM_ASYNC flag is set,
-  * or if pm_runtime_irq_safe() has been called.
-@@ -1139,14 +1138,13 @@ int __pm_runtime_idle(struct device *dev, int rpmflags)
- EXPORT_SYMBOL_GPL(__pm_runtime_idle);
+-  `void pm_runtime_init(struct device *dev);`
+-    - initialize the device runtime PM fields in 'struct dev_pm_info'
+-
+-  `void pm_runtime_remove(struct device *dev);`
+-    - make sure that the runtime PM of the device will be disabled after
+-      removing the device from device hierarchy
+-
+-  `int pm_runtime_idle(struct device *dev);`
+-    - execute the subsystem-level idle callback for the device; returns an
+-      error code on failure, where -EINPROGRESS means that ->runtime_idle() is
+-      already being executed; if there is no callback or the callback returns 0
+-      then run pm_runtime_autosuspend(dev) and return its result
+-
+-  `int pm_runtime_suspend(struct device *dev);`
+-    - execute the subsystem-level suspend callback for the device; returns 0 on
+-      success, 1 if the device's runtime PM status was already 'suspended', or
+-      error code on failure, where -EAGAIN or -EBUSY means it is safe to attempt
+-      to suspend the device again in future and -EACCES means that
+-      'power.disable_depth' is different from 0
+-
+-  `int pm_runtime_autosuspend(struct device *dev);`
+-    - same as pm_runtime_suspend() except that a call to
+-      pm_runtime_mark_last_busy() is made and an autosuspend is scheduled for
+-      the appropriate time and 0 is returned
+-
+-  `int pm_runtime_resume(struct device *dev);`
+-    - execute the subsystem-level resume callback for the device; returns 0 on
+-      success, 1 if the device's runtime PM status is already 'active' (also if
+-      'power.disable_depth' is nonzero, but the status was 'active' when it was
+-      changing from 0 to 1) or error code on failure, where -EAGAIN means it may
+-      be safe to attempt to resume the device again in future, but
+-      'power.runtime_error' should be checked additionally, and -EACCES means
+-      that the callback could not be run, because 'power.disable_depth' was
+-      different from 0
+-
+-  `int pm_runtime_resume_and_get(struct device *dev);`
+-    - run pm_runtime_resume(dev) and if successful, increment the device's
+-      usage counter; returns 0 on success (whether or not the device's
+-      runtime PM status was already 'active') or the error code from
+-      pm_runtime_resume() on failure.
+-
+-  `int pm_request_idle(struct device *dev);`
+-    - submit a request to execute the subsystem-level idle callback for the
+-      device (the request is represented by a work item in pm_wq); returns 0 on
+-      success or error code if the request has not been queued up
+-
+-  `int pm_request_autosuspend(struct device *dev);`
+-    - Call pm_runtime_mark_last_busy() and schedule the execution of the
+-      subsystem-level suspend callback for the device when the autosuspend delay
+-      expires
+-
+-  `int pm_schedule_suspend(struct device *dev, unsigned int delay);`
+-    - schedule the execution of the subsystem-level suspend callback for the
+-      device in future, where 'delay' is the time to wait before queuing up a
+-      suspend work item in pm_wq, in milliseconds (if 'delay' is zero, the work
+-      item is queued up immediately); returns 0 on success, 1 if the device's PM
+-      runtime status was already 'suspended', or error code if the request
+-      hasn't been scheduled (or queued up if 'delay' is 0); if the execution of
+-      ->runtime_suspend() is already scheduled and not yet expired, the new
+-      value of 'delay' will be used as the time to wait
+-
+-  `int pm_request_resume(struct device *dev);`
+-    - submit a request to execute the subsystem-level resume callback for the
+-      device (the request is represented by a work item in pm_wq); returns 0 on
+-      success, 1 if the device's runtime PM status was already 'active', or
+-      error code if the request hasn't been queued up
+-
+-  `void pm_runtime_get_noresume(struct device *dev);`
+-    - increment the device's usage counter
+-
+-  `int pm_runtime_get(struct device *dev);`
+-    - increment the device's usage counter, run pm_request_resume(dev) and
+-      return its result
+-
+-  `int pm_runtime_get_sync(struct device *dev);`
+-    - increment the device's usage counter, run pm_runtime_resume(dev) and
+-      return its result;
+-      note that it does not drop the device's usage counter on errors, so
+-      consider using pm_runtime_resume_and_get() instead of it, especially
+-      if its return value is checked by the caller, as this is likely to
+-      result in cleaner code.
+-
+-  `int pm_runtime_get_if_in_use(struct device *dev);`
+-    - return -EINVAL if 'power.disable_depth' is nonzero; otherwise, if the
+-      runtime PM status is RPM_ACTIVE and the runtime PM usage counter is
+-      nonzero, increment the counter and return 1; otherwise return 0 without
+-      changing the counter
+-
+-  `int pm_runtime_get_if_active(struct device *dev);`
+-    - return -EINVAL if 'power.disable_depth' is nonzero; otherwise, if the
+-      runtime PM status is RPM_ACTIVE, increment the counter and
+-      return 1; otherwise return 0 without changing the counter
+-
+-  `void pm_runtime_put_noidle(struct device *dev);`
+-    - decrement the device's usage counter
+-
+-  `int pm_runtime_put(struct device *dev);`
+-    - decrement the device's usage counter; if the result is 0 then run
+-      pm_request_idle(dev) and return its result
+-
+-  `int pm_runtime_put_autosuspend(struct device *dev);`
+-    - set the power.last_busy field to the current time and decrement the
+-      device's usage counter; if the result is 0 then run
+-      pm_request_autosuspend(dev) and return its result
+-
+-  `int __pm_runtime_put_autosuspend(struct device *dev);`
+-    - decrement the device's usage counter; if the result is 0 then run
+-      pm_request_autosuspend(dev) and return its result
+-
+-  `int pm_runtime_put_sync(struct device *dev);`
+-    - decrement the device's usage counter; if the result is 0 then run
+-      pm_runtime_idle(dev) and return its result
+-
+-  `int pm_runtime_put_sync_suspend(struct device *dev);`
+-    - decrement the device's usage counter; if the result is 0 then run
+-      pm_runtime_suspend(dev) and return its result
+-
+-  `int pm_runtime_put_sync_autosuspend(struct device *dev);`
+-    - set the power.last_busy field to the current time and decrement the
+-      device's usage counter; if the result is 0 then run
+-      pm_runtime_autosuspend(dev) and return its result
+-
+-  `void pm_runtime_enable(struct device *dev);`
+-    - decrement the device's 'power.disable_depth' field; if that field is equal
+-      to zero, the runtime PM helper functions can execute subsystem-level
+-      callbacks described in Section 2 for the device
+-
+-  `int pm_runtime_disable(struct device *dev);`
+-    - increment the device's 'power.disable_depth' field (if the value of that
+-      field was previously zero, this prevents subsystem-level runtime PM
+-      callbacks from being run for the device), make sure that all of the
+-      pending runtime PM operations on the device are either completed or
+-      canceled; returns 1 if there was a resume request pending and it was
+-      necessary to execute the subsystem-level resume callback for the device
+-      to satisfy that request, otherwise 0 is returned
+-
+-  `void pm_runtime_barrier(struct device *dev);`
+-    - check if there's a resume request pending for the device and resume it
+-      (synchronously) in that case, cancel any other pending runtime PM requests
+-      regarding it and wait for all runtime PM operations on it in progress to
+-      complete
+-
+-  `void pm_suspend_ignore_children(struct device *dev, bool enable);`
+-    - set/unset the power.ignore_children flag of the device
+-
+-  `int pm_runtime_set_active(struct device *dev);`
+-    - clear the device's 'power.runtime_error' flag, set the device's runtime
+-      PM status to 'active' and update its parent's counter of 'active'
+-      children as appropriate (it is only valid to use this function if
+-      'power.runtime_error' is set or 'power.disable_depth' is greater than
+-      zero); it will fail and return error code if the device has a parent
+-      which is not active and the 'power.ignore_children' flag of which is unset
+-
+-  `void pm_runtime_set_suspended(struct device *dev);`
+-    - clear the device's 'power.runtime_error' flag, set the device's runtime
+-      PM status to 'suspended' and update its parent's counter of 'active'
+-      children as appropriate (it is only valid to use this function if
+-      'power.runtime_error' is set or 'power.disable_depth' is greater than
+-      zero)
+-
+-  `bool pm_runtime_active(struct device *dev);`
+-    - return true if the device's runtime PM status is 'active' or its
+-      'power.disable_depth' field is not equal to zero, or false otherwise
+-
+-  `bool pm_runtime_suspended(struct device *dev);`
+-    - return true if the device's runtime PM status is 'suspended' and its
+-      'power.disable_depth' field is equal to zero, or false otherwise
+-
+-  `bool pm_runtime_status_suspended(struct device *dev);`
+-    - return true if the device's runtime PM status is 'suspended'
+-
+-  `void pm_runtime_no_callbacks(struct device *dev);`
+-    - set the power.no_callbacks flag for the device and remove the runtime
+-      PM attributes from /sys/devices/.../power (or prevent them from being
+-      added when the device is registered)
+-
+-  `void pm_runtime_irq_safe(struct device *dev);`
+-    - set the power.irq_safe flag for the device, causing the runtime-PM
+-      callbacks to be invoked with interrupts off
+-
+-  `bool pm_runtime_is_irq_safe(struct device *dev);`
+-    - return true if power.irq_safe flag was set for the device, causing
+-      the runtime-PM callbacks to be invoked with interrupts off
+-
+-  `void pm_runtime_mark_last_busy(struct device *dev);`
+-    - set the power.last_busy field to the current time
+-
+-  `void pm_runtime_use_autosuspend(struct device *dev);`
+-    - set the power.use_autosuspend flag, enabling autosuspend delays; call
+-      pm_runtime_get_sync if the flag was previously cleared and
+-      power.autosuspend_delay is negative
+-
+-  `void pm_runtime_dont_use_autosuspend(struct device *dev);`
+-    - clear the power.use_autosuspend flag, disabling autosuspend delays;
+-      decrement the device's usage counter if the flag was previously set and
+-      power.autosuspend_delay is negative; call pm_runtime_idle
+-
+-  `void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);`
+-    - set the power.autosuspend_delay value to 'delay' (expressed in
+-      milliseconds); if 'delay' is negative then runtime suspends are
+-      prevented; if power.use_autosuspend is set, pm_runtime_get_sync may be
+-      called or the device's usage counter may be decremented and
+-      pm_runtime_idle called depending on if power.autosuspend_delay is
+-      changed to or from a negative value; if power.use_autosuspend is clear,
+-      pm_runtime_idle is called
+-
+-  `unsigned long pm_runtime_autosuspend_expiration(struct device *dev);`
+-    - calculate the time when the current autosuspend delay period will expire,
+-      based on power.last_busy and power.autosuspend_delay; if the delay time
+-      is 1000 ms or larger then the expiration time is rounded up to the
+-      nearest second; returns 0 if the delay period has already expired or
+-      power.use_autosuspend isn't set, otherwise returns the expiration time
+-      in jiffies
++.. kernel-doc:: drivers/base/power/runtime.c
++   :export:
++
++.. kernel-doc:: include/linux/pm_runtime.h
  
- /**
-- * __pm_runtime_suspend - Entry point for runtime put/suspend operations.
-+ * __pm_runtime_suspend - Core entry point for runtime put/suspend operations.
-  * @dev: Device to suspend.
-  * @rpmflags: Flag bits.
-  *
-- * If the RPM_GET_PUT flag is set, decrement the device's usage count and
-- * return immediately if it is larger than zero (if it becomes negative, log a
-- * warning, increment it, and return an error).  Then carry out a suspend,
-- * either synchronous or asynchronous.
-+ * Carry out a suspend operation for @dev, either synchronous or asynchronous.
-+ * If %RPM_GET_PUT is set in @rpmflags, decrement the device's usage count
-+ * first, proceeding with suspend only if the counter drops to zero.
-  *
-  * This routine may be called in atomic context if the %RPM_ASYNC flag is set,
-  * or if pm_runtime_irq_safe() has been called.
-@@ -1177,12 +1175,13 @@ int __pm_runtime_suspend(struct device *dev, int rpmflags)
- EXPORT_SYMBOL_GPL(__pm_runtime_suspend);
+ It is safe to execute the following helper functions from interrupt context:
  
- /**
-- * __pm_runtime_resume - Entry point for runtime resume operations.
-+ * __pm_runtime_resume - Core entry point for runtime resume operations.
-  * @dev: Device to resume.
-  * @rpmflags: Flag bits.
-  *
-- * If the RPM_GET_PUT flag is set, increment the device's usage count.  Then
-- * carry out a resume, either synchronous or asynchronous.
-+ * Carry out a runtime resume operation for @dev, either synchronous or
-+ * asynchronous. If %RPM_GET_PUT is set in @rpmflags, increment the device's
-+ * usage count first, then bring the device to %RPM_ACTIVE state.
-  *
-  * This routine may be called in atomic context if the %RPM_ASYNC flag is set,
-  * or if pm_runtime_irq_safe() has been called.
-@@ -1276,17 +1275,15 @@ EXPORT_SYMBOL_GPL(pm_runtime_get_if_active);
-  * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
-  * @dev: Target device.
-  *
-- * Increment the runtime PM usage counter of @dev if its runtime PM status is
-- * %RPM_ACTIVE and its runtime PM usage counter is greater than 0 or it is not
-- * ignoring children and its active child count is nonzero.  1 is returned in
-- * this case.
-- *
-- * If @dev is in a different state or it is not in use (that is, its usage
-- * counter is 0, or it is ignoring children, or its active child count is 0),
-- * 0 is returned.
-+ * Increment the runtime PM usage counter of @dev if it is "in use." A device
-+ * is considered in use if its runtime PM status is %RPM_ACTIVE and its runtime
-+ * PM usage counter is greater than 0, or if it is not ignoring children and
-+ * its active child count is nonzero.
-  *
-- * -EINVAL is returned if runtime PM is disabled for the device, in which case
-- * also the usage counter of @dev is not updated.
-+ * Return:
-+ * * %-EINVAL: Runtime PM is disabled for @dev. The usage counter is not incremented.
-+ * * %1: Success; usage counter is incremented.
-+ * * %0: @dev was not in use; usage counter is not incremented.
-  */
- int pm_runtime_get_if_in_use(struct device *dev)
- {
-@@ -1470,11 +1467,13 @@ static void __pm_runtime_barrier(struct device *dev)
-  * pm_runtime_barrier - Flush pending requests and wait for completions.
-  * @dev: Device to handle.
-  *
-- * Prevent the device from being suspended by incrementing its usage counter and
-- * if there's a pending resume request for the device, wake the device up.
-- * Next, make sure that all pending requests for the device have been flushed
-- * from pm_wq and wait for all runtime PM operations involving the device in
-- * progress to complete.
-+ * If the device has a pending resume request, resume it synchronously. For all
-+ * other request types, cancel any queued request, and wait for running
-+ * operations to complete.
-+ *
-+ * Note that this is intentionally asymmetric, as it guarantees any queued
-+ * asynchronous resume request will complete, but it may cancel asynchronous
-+ * suspend requests.
-  */
- void pm_runtime_barrier(struct device *dev)
- {
-@@ -1558,8 +1557,16 @@ void __pm_runtime_disable(struct device *dev, bool check_resume)
- EXPORT_SYMBOL_GPL(__pm_runtime_disable);
+@@ -728,67 +519,8 @@ Subsystems may wish to conserve code space by using the set of generic power
+ management callbacks provided by the PM core, defined in
+ driver/base/power/generic_ops.c:
  
- /**
-- * pm_runtime_enable - Enable runtime PM of a device.
-+ * pm_runtime_enable - Enable runtime PM for a device.
-  * @dev: Device to handle.
-+ *
-+ * Enable runtime PM transitions for @dev by decrementing its disable counter.
-+ * Once the counter reaches zero, the PM core is permitted to execute runtime
-+ * PM callbacks for @dev as power conditions change.
-+ *
-+ * Callers should ensure that the device's runtime PM status accurately reflects
-+ * its physical hardware state (via pm_runtime_set_active() or
-+ * pm_runtime_set_suspended()) before enabling runtime PM.
-  */
- void pm_runtime_enable(struct device *dev)
- {
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 1ffd9d5c3010..322e3b17f987 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -352,11 +352,11 @@ static inline int pm_runtime_force_resume(struct device *dev) { return -ENXIO; }
- #endif /* CONFIG_PM_SLEEP */
+-  `int pm_generic_runtime_suspend(struct device *dev);`
+-    - invoke the ->runtime_suspend() callback provided by the driver of this
+-      device and return its result, or return 0 if not defined
+-
+-  `int pm_generic_runtime_resume(struct device *dev);`
+-    - invoke the ->runtime_resume() callback provided by the driver of this
+-      device and return its result, or return 0 if not defined
+-
+-  `int pm_generic_suspend(struct device *dev);`
+-    - if the device has not been suspended at run time, invoke the ->suspend()
+-      callback provided by its driver and return its result, or return 0 if not
+-      defined
+-
+-  `int pm_generic_suspend_noirq(struct device *dev);`
+-    - if pm_runtime_suspended(dev) returns "false", invoke the ->suspend_noirq()
+-      callback provided by the device's driver and return its result, or return
+-      0 if not defined
+-
+-  `int pm_generic_resume(struct device *dev);`
+-    - invoke the ->resume() callback provided by the driver of this device and,
+-      if successful, change the device's runtime PM status to 'active'
+-
+-  `int pm_generic_resume_noirq(struct device *dev);`
+-    - invoke the ->resume_noirq() callback provided by the driver of this device
+-
+-  `int pm_generic_freeze(struct device *dev);`
+-    - if the device has not been suspended at run time, invoke the ->freeze()
+-      callback provided by its driver and return its result, or return 0 if not
+-      defined
+-
+-  `int pm_generic_freeze_noirq(struct device *dev);`
+-    - if pm_runtime_suspended(dev) returns "false", invoke the ->freeze_noirq()
+-      callback provided by the device's driver and return its result, or return
+-      0 if not defined
+-
+-  `int pm_generic_thaw(struct device *dev);`
+-    - if the device has not been suspended at run time, invoke the ->thaw()
+-      callback provided by its driver and return its result, or return 0 if not
+-      defined
+-
+-  `int pm_generic_thaw_noirq(struct device *dev);`
+-    - if pm_runtime_suspended(dev) returns "false", invoke the ->thaw_noirq()
+-      callback provided by the device's driver and return its result, or return
+-      0 if not defined
+-
+-  `int pm_generic_poweroff(struct device *dev);`
+-    - if the device has not been suspended at run time, invoke the ->poweroff()
+-      callback provided by its driver and return its result, or return 0 if not
+-      defined
+-
+-  `int pm_generic_poweroff_noirq(struct device *dev);`
+-    - if pm_runtime_suspended(dev) returns "false", run the ->poweroff_noirq()
+-      callback provided by the device's driver and return its result, or return
+-      0 if not defined
+-
+-  `int pm_generic_restore(struct device *dev);`
+-    - invoke the ->restore() callback provided by the driver of this device and,
+-      if successful, change the device's runtime PM status to 'active'
+-
+-  `int pm_generic_restore_noirq(struct device *dev);`
+-    - invoke the ->restore_noirq() callback provided by the device's driver
++.. kernel-doc:: drivers/base/power/generic_ops.c
++   :export:
  
- /**
-- * pm_runtime_idle - Conditionally set up autosuspend of a device or suspend it.
-+ * pm_runtime_idle - Conditionally initiate autosuspend of a device or suspend it.
-  * @dev: Target device.
-  *
-  * Invoke the "idle check" callback of @dev and, depending on its return value,
-- * set up autosuspend of @dev or suspend it (depending on whether or not
-+ * initiate autosuspend of @dev or suspend it (depending on whether or not
-  * autosuspend has been enabled for it).
-  *
-  * Return:
-@@ -400,13 +400,13 @@ static inline int pm_runtime_suspend(struct device *dev)
- }
- 
- /**
-- * pm_runtime_autosuspend - Update the last access time and set up autosuspend
-+ * pm_runtime_autosuspend - Update the last access time and initiate autosuspend
-  * of a device.
-  * @dev: Target device.
-  *
-- * First update the last access time, then set up autosuspend of @dev or suspend
-- * it (depending on whether or not autosuspend is enabled for it) without
-- * engaging its "idle check" callback.
-+ * First update the last access time, then initiate autosuspend of @dev or
-+ * suspend it (depending on whether or not autosuspend is enabled for it)
-+ * without engaging its "idle check" callback.
-  *
-  * Return:
-  * * %1: Success; device was already suspended.
-@@ -442,11 +442,11 @@ static inline int pm_runtime_resume(struct device *dev)
- }
- 
- /**
-- * pm_request_idle - Queue up "idle check" execution for a device.
-+ * pm_request_idle - Request an asynchronous idle check for a device.
-  * @dev: Target device.
-  *
-- * Queue up a work item to run an equivalent of pm_runtime_idle() for @dev
-- * asynchronously.
-+ * Asynchronously request the PM core to evaluate whether @dev can be idled
-+ * or suspended, invoking its ->runtime_idle() callback if provided.
-  *
-  * Return:
-  * * %0: Success.
-@@ -465,9 +465,12 @@ static inline int pm_request_idle(struct device *dev)
- }
- 
- /**
-- * pm_request_resume - Queue up runtime-resume of a device.
-+ * pm_request_resume - Request an asynchronous runtime resume for a device.
-  * @dev: Target device.
-  *
-+ * Asynchronously request the PM core to resume @dev to %RPM_ACTIVE state
-+ * without modifying its usage counter.
-+ *
-  * Return:
-  * * %1: Success; @dev is already %RPM_ACTIVE.
-  * * %0: Success.
-@@ -479,12 +482,11 @@ static inline int pm_request_resume(struct device *dev)
- }
- 
- /**
-- * pm_request_autosuspend - Update the last access time and queue up autosuspend
-- * of a device.
-+ * pm_request_autosuspend - Update access time and request delayed suspension.
-  * @dev: Target device.
-  *
-- * Update the last access time of a device and queue up a work item to run an
-- * equivalent pm_runtime_autosuspend() for @dev asynchronously.
-+ * Update the last access time of @dev and asynchronously request the PM core
-+ * to suspend it after the autosuspend delay has elapsed.
-  *
-  * Return:
-  * * %1: Success; device was already suspended.
-@@ -505,11 +507,11 @@ static inline int pm_request_autosuspend(struct device *dev)
- }
- 
- /**
-- * pm_runtime_get - Bump up usage counter and queue up resume of a device.
-+ * pm_runtime_get - Increment usage counter and request asynchronous resume.
-  * @dev: Target device.
-  *
-- * Bump up the runtime PM usage counter of @dev and queue up a work item to
-- * carry out runtime-resume of it.
-+ * Increment the runtime PM usage counter of @dev and, if the device is
-+ * currently suspended, asynchronously request the PM core to resume it.
-  *
-  * Return:
-  * * %1: Success; @dev is already %RPM_ACTIVE.
-@@ -528,12 +530,10 @@ static inline int pm_runtime_get(struct device *dev)
-  * Bump up the runtime PM usage counter of @dev and carry out runtime-resume of
-  * it synchronously.
-  *
-- * The possible return values of this function are the same as for
-- * pm_runtime_resume() and the runtime PM usage counter of @dev remains
-- * incremented in all cases, even if it returns an error code.
-- * Consider using pm_runtime_resume_and_get() instead of it, especially
-- * if its return value is checked by the caller, as this is likely to result
-- * in cleaner code.
-+ * Note that the runtime PM usage counter of @dev remains incremented in all
-+ * cases, even if it returns an error code. Consider using
-+ * pm_runtime_resume_and_get() instead, especially if the return value is
-+ * checked by the caller, as this is likely to result in cleaner code.
-  *
-  * Return:
-  * * %1: Success; @dev is already %RPM_ACTIVE.
-@@ -575,11 +575,12 @@ static inline int pm_runtime_resume_and_get(struct device *dev)
- }
- 
- /**
-- * pm_runtime_put - Drop device usage counter and queue up "idle check" if 0.
-+ * pm_runtime_put - Drop device usage counter and request asynchronous idle check.
-  * @dev: Target device.
-  *
-- * Decrement the runtime PM usage counter of @dev and if it turns out to be
-- * equal to 0, queue up a work item for @dev like in pm_request_idle().
-+ * Decrement the runtime PM usage counter of @dev. If the counter reaches zero
-+ * and the device has no active child dependencies, asynchronously request the
-+ * PM core to idle or suspend the device.
-  */
- static inline void pm_runtime_put(struct device *dev)
- {
-@@ -611,13 +612,13 @@ static inline int __pm_runtime_put_autosuspend(struct device *dev)
- }
- 
- /**
-- * pm_runtime_put_autosuspend - Update the last access time of a device, drop
-- * its usage counter and queue autosuspend if the usage counter becomes 0.
-+ * pm_runtime_put_autosuspend - Update the last access time, drop usage counter
-+ * and request autosuspend.
-  * @dev: Target device.
-  *
-- * Update the last access time of @dev, decrement runtime PM usage counter of
-- * @dev and if it turns out to be equal to 0, queue up a work item for @dev like
-- * in pm_request_autosuspend().
-+ * Update the last access time of @dev and decrement its runtime PM usage
-+ * counter. If the counter drops to zero, asynchronously request the PM core to
-+ * suspend the device once its autosuspend delay has elapsed.
-  *
-  * Return:
-  * * %1: Success. Usage counter dropped to zero, but device was already suspended.
-@@ -688,10 +689,12 @@ DEFINE_GUARD_COND(pm_runtime_active_auto, _try_enabled,
-  * pm_runtime_put_sync - Drop device usage counter and run "idle check" if 0.
-  * @dev: Target device.
-  *
-- * Decrement the runtime PM usage counter of @dev and if it turns out to be
-- * equal to 0, invoke the "idle check" callback of @dev and, depending on its
-- * return value, set up autosuspend of @dev or suspend it (depending on whether
-- * or not autosuspend has been enabled for it).
-+ * Decrement the runtime PM usage counter of @dev. If the counter drops to zero,
-+ * synchronously evaluate and trigger idle/suspend handling.
-+ *
-+ * Note that this does not update the last access time, but it does respect
-+ * existing autosuspend timers. If @dev uses autosuspend, consider using
-+ * pm_runtime_put_sync_autosuspend() or pm_runtime_put_sync_suspend() instead.
-  *
-  * The runtime PM usage counter of @dev remains decremented in all cases, even
-  * if it returns an error code.
-@@ -718,8 +721,12 @@ static inline int pm_runtime_put_sync(struct device *dev)
-  * pm_runtime_put_sync_suspend - Drop device usage counter and suspend if 0.
-  * @dev: Target device.
-  *
-- * Decrement the runtime PM usage counter of @dev and if it turns out to be
-- * equal to 0, carry out runtime-suspend of @dev synchronously.
-+ * Decrement the runtime PM usage counter of @dev. If the counter drops to zero,
-+ * suspend the device synchronously.
-+ *
-+ * This API differs from pm_runtime_put_sync() and
-+ * pm_runtime_put_sync_autosuspend() in that it ignores any outstanding
-+ * autosuspend delays.
-  *
-  * The runtime PM usage counter of @dev remains decremented in all cases, even
-  * if it returns an error code.
-@@ -747,10 +754,11 @@ static inline int pm_runtime_put_sync_suspend(struct device *dev)
-  * drop device usage counter and autosuspend if 0.
-  * @dev: Target device.
-  *
-- * Update the last access time of @dev, decrement the runtime PM usage counter
-- * of @dev and if it turns out to be equal to 0, set up autosuspend of @dev or
-- * suspend it synchronously (depending on whether or not autosuspend has been
-- * enabled for it).
-+ * Update the last access time of @dev and decrement its runtime PM usage
-+ * counter. If the counter drops to zero, synchronously suspend the device (or
-+ * schedule autosuspend if the delay has not elapsed).
-+ *
-+ * Prefer this API over pm_runtime_put_sync() for devices that use autosuspend.
-  *
-  * The runtime PM usage counter of @dev remains decremented in all cases, even
-  * if it returns an error code.
-@@ -827,9 +835,8 @@ static inline int pm_runtime_set_suspended(struct device *dev)
-  *
-  * If the counter is zero when this function runs and there is a pending runtime
-  * resume request for @dev, it will be resumed.  If the counter is still zero at
-- * that point, all of the pending runtime PM requests for @dev will be canceled
-- * and all runtime PM operations in progress involving it will be waited for to
-- * complete.
-+ * that point, this function cancels all pending runtime PM requests for @dev
-+ * and waits for its runtime PM operations to complete (if any).
-  *
-  * For each invocation of this function for @dev, there must be a matching
-  * pm_runtime_enable() call, so that runtime PM is eventually enabled for it
+ These functions are the defaults used by the PM core if a subsystem doesn't
+ provide its own callbacks for ->runtime_idle(), ->runtime_suspend(),
 -- 
 2.55.0.979.g7e5102b832-goog
 
