@@ -1,95 +1,130 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f177.google.com (mail-vk1-f177.google.com [209.85.221.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E57043D1A98
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:41:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 452403F3273
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:42:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788532875; cv=none; b=gY6SXBdWTWX5bpllLo9ifRHk7IGGUVU7bmOLrQf0iwQj1BOLxGyUPZpbKUlAm9F9oogEf4Tx60ez+2vKKiG6LmJdYNohM3fP7K8Zd759Lusfj+PQgOMKjeMMTscoHKGQRVRIFypRN9lnHqL2kB04tnQ2LucMJoA7WFnJ5mqt7GA=
+	t=1788532969; cv=none; b=tUC/PVm3apFEAVq8KdhfVRg53pdSfaKeyMgSfBwFur57jnk65h1JtiboBuUEevzVRho79nqZuuXf3/X6WmpPDnBx7HRDxeE47egzh9Vj7jmAQ0rbBNFtx8zugvNDoxH6b/b0vuFNFU4pQLjwrYPrJu5A3TNcybj67uTD5+D0Sb0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788532875; c=relaxed/simple;
-	bh=IthVxADGk6umLAnprPcr4e4rdF3DRQRSwjOy0AJBzuo=;
+	s=arc-20240116; t=1788532969; c=relaxed/simple;
+	bh=TcGIo92RiATa8vkGJVdjHgxt9WlzbewL1KtAW6cGFCg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=r2gn7jGVXkuglfXJLX6TkovBY3tTZ9SpV+7Z6angHu0DvKXLY1oUP28Cwd7iYDXjxYYVbsRrb7f5d/HSxFOLVQOckNBj30JF0lUH44fvDYy6LcCrOEzEeFLAA9W0lSINxojv4c85oKXX8syJkBU8gqPE2uSMfd/1PzJuW9HpoWM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lQ8lXlr+; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lQ8lXlr+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7B721F00ADE
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 14:41:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788532873;
-	bh=PytMsbFIV1veAD1P9COFSFKR+Qrmya7fjbIpJ63x/Gs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=lQ8lXlr+Uk22qH9QdG0mfxlw8SIi0eGFRAznoeQlm/AHCpN3Xuwh9lH3bDO5HSPBg
-	 eqDWigsl2OswnK7WDBCVrj6+i0+otqyQMmrJ3LYzddjiEYScASq8pbdvdGFDZCorWb
-	 CrKtHSXqbnWpCU9S1iB0hLyqkFZXiuaRuy0PkRBgwYa/wSOxwbNvt/vwwE+A91YebV
-	 dhg5ohu2H4lKjGtzEHGQNh/RcMFSsTq02+jBIUqTVDJ3i33tSLYEJf2uMJWkkop3e2
-	 dF81mvEEksXkdawP1LaN/ZzLKi9rrXGt01AwoHCt02D7fc27rehYgH9mhF8mKYXOCS
-	 eQ+s2pfD0SKIA==
-Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-59b074ec7ceso500779e0c.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:41:13 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByzhGT+38PX5hI0RvBBfjV9Xljv0lMPlKLhG5sLqnHRbNDCNsjfYahn3LX0yq0uApRpYghI3hsQ9w==@vger.kernel.org
-X-Gm-Message-State: AFuF++kTBDt+pC7x8MxGxXjeR9xb/Uv4NjGnhso/8MIRPg3IcZvzfROg
-	CcGGL23FtWThFBny2rmanKDobdtXmkTTOgX+OZS2FhCxeeg9KYRPu16ncJ3xRPkJun489ylTp/M
-	Ilgna7dhzJ1/ahNn4i76ZwYXkr49aNXk=
-X-Received: by 2002:a05:6122:2890:b0:56f:6cc0:681e with SMTP id
- 71dfb90a1353d-5c7ed2baa42mr2863764e0c.1.1788532873004; Fri, 04 Sep 2026
- 07:41:13 -0700 (PDT)
+	 To:Cc:Content-Type; b=Jz5dIpPEdKTyrGu++49874nPAUZVso7Mdg7l7CeacW+wPt0xzV3Zk+tr5fiNsT/bn8Mvy3hVv/gPZ+J/y0YuIhHHLpiW9VjUWOkMcxvCpUUTZN1OmxQtG+D4kgfM8rnNPL3TA03X57+zt4cgiHPG+9Rg/c9CaHRiEFYE0Nv+md0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f177.google.com with SMTP id 71dfb90a1353d-5c56dbc3a51so402334e0c.0
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:42:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788532967; x=1789137767;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=iy22q1YzKGiQPGN9B1bpmbrGTjC/sYmYXe5uXN4aXJo=;
+        b=kXwexDKRkzvp7mlV4+AA1bprDLM4EIYDNwoud7LBEFgFj4CLMXsmxoFgwZstJbGzAW
+         Yo151KNtg9prDW/05ftWqkxE30SEHWMQaXx/nxDOq9yS27wyf+/bN8vr11cmHhaDntJz
+         ZpuJJfy45/wX0NZX9exileGfTDpIrTwCKrg78J7OQqQl7Vo0PwBIaNkC4fRw8BOGTARi
+         MdqYo9HV/3VisoVnsxf/Wtvvw5NUTJ+zTthLw0o20hf5JsnmN7UIDJ3tYZF90bwBZDG1
+         VCyqLvmmDD7ajfT02cRj9wPvyg86EGUoSx/QwLj7SM1JVpOFYJzpbzi+oWjpNhCzmpl/
+         O0kA==
+X-Forwarded-Encrypted: i=1; AKwUvBwS/3aItfW3t5W3uHgZooA2ZXNpjmiNFq4c5QUJMaxrsLkIwT2jfZTu4JbkgX2YXzmGIL8rQM3yhg==@vger.kernel.org
+X-Gm-Message-State: AFuF++kku+WM6CHpMrF94Ghclih/LC9PNszhHKuZ1pdcI80jodcAAiHw
+	A3Us3LTn83QP0nUU/jyqeT6oa1Eho8trARFS+EkKnkB6crXkWYAWn1wWO25D8b914L4=
+X-Gm-Gg: AYBFou3wdTqF3+0/dyzYKJaGMAFSwjLO8SV/XryeMK0Dd+GuHsnoK6wvUrL668v3mwZ
+	qNAHqBNMdrk5HzImDM9rcR3KZlD7XKAIyDIgArlrPJTI3ZE/TtQ80m3SQanEdNz1areUUAyUbyt
+	tg8KjPGhhElID77j4EJU5v/7oHlyWwWVkyOXFB5nH/W+2pZqBoZyBdv32qtve8FbT7j/nAkAagP
+	6oboHxx5nwItmAe4+QLbJ9oEn6PRaGD+SLZDNsSxMRy2V38X95DzPPkE6z9Pn48kZJRm3T02RPD
+	I/08MVUFOCgHEI1sDmAGLQ2VgIDogLY775i5Z71sbMRRddYJ08PKPiykPHie11a8czQTYeCcT7O
+	VDI/opio3hoA+O1y6GPC8IYjiqG6FUX6OYZhMjhxAzOxEYS7cX3BPyKQz4cBvNk9kbWq/0Vb+Ol
+	mMXrH6vrYPmOgA7EDwQ6zTJlTRkCEA3E7E4CpVjwXwmFH0G12mLegup6flYyCRPOqWqqizCAAQa
+	Fn5x3gB8qZBPfFmcNIb1Svm0A==
+X-Received: by 2002:a05:6122:338b:b0:5c6:5fff:f2c9 with SMTP id 71dfb90a1353d-5c7ed41c953mr2825346e0c.4.1788532966904;
+        Fri, 04 Sep 2026 07:42:46 -0700 (PDT)
+Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com. [209.85.217.52])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c7ec25b9casm2186485e0c.11.2026.09.04.07.42.46
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 04 Sep 2026 07:42:46 -0700 (PDT)
+Received: by mail-vs1-f52.google.com with SMTP id ada2fe7eead31-765c077b5c1so370693137.3
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 07:42:46 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxFvqug+7j2GFpGFnzRbDJ4heXCG/mTPY1ZB2SH65dlmVeiMdhEC9WPxV3bctx1VPcfw3EF0fVV3g==@vger.kernel.org
+X-Received: by 2002:a05:6102:2d04:b0:785:eb33:87a8 with SMTP id
+ ada2fe7eead31-78a4a883885mr1900429137.4.1788532960799; Fri, 04 Sep 2026
+ 07:42:40 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260820154339.47737-2-blum@kernel.org>
-In-Reply-To: <20260820154339.47737-2-blum@kernel.org>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 4 Sep 2026 16:40:10 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hNF=ayNEi84ev6BJwBgeGhtPfHcW7CBci96DuWyAm9VA@mail.gmail.com>
-X-Gm-Features: AcwNN1V23JJCTAse3auywQg5RByWcURQH47266Ihuxi2T0GoVZAfhBtPgvwvCL0
-Message-ID: <CAJZ5v0hNF=ayNEi84ev6BJwBgeGhtPfHcW7CBci96DuWyAm9VA@mail.gmail.com>
-Subject: Re: [PATCH] thermal: intel: powerclamp: Simplify check_invalid()
-To: Thorsten Blum <blum@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Yury Norov <ynorov@nvidia.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
+References: <cover.1788338320.git.geert+renesas@glider.be> <2cf42d7ef9b452efbab3007ec2c2340cf87adbbf.1788338320.git.geert+renesas@glider.be>
+ <20260904-fabulous-lionfish-of-cookies-0d614c@sudeepholla>
+In-Reply-To: <20260904-fabulous-lionfish-of-cookies-0d614c@sudeepholla>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 4 Sep 2026 16:42:29 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU_u1ticUomZffY8iU2GoWgyTNDPaL2O6KB7yucr47dDA@mail.gmail.com>
+X-Gm-Features: AcwNN1WAkp69Or55f6uh4v6WhdtMEG7Qz9QclhM1mQOZ0FBl4cYNnC9KwnYi2zM
+Message-ID: <CAMuHMdU_u1ticUomZffY8iU2GoWgyTNDPaL2O6KB7yucr47dDA@mail.gmail.com>
+Subject: Re: [PATCH v3 01/12] dt-bindings: clock: renesas,r8a78000-cpg: Add
+ renesas,scmi-firmware property
+To: Sudeep Holla <sudeep.holla@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
+	Cristian Marussi <cristian.marussi@arm.com>, Saravana Kannan <saravanak@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
+	Vinod Koul <vkoul@kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+	=?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>, 
+	devicetree@vger.kernel.org, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
 	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 20, 2026 at 5:44=E2=80=AFPM Thorsten Blum <blum@kernel.org> wro=
-te:
->
-> Return the boolean expression directly and use const for the read-only
-> mask parameter.
->
-> Signed-off-by: Thorsten Blum <blum@kernel.org>
-> ---
->  drivers/thermal/intel/intel_powerclamp.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/i=
-ntel/intel_powerclamp.c
-> index bd7fd98dc310..f54cc6a29d16 100644
-> --- a/drivers/thermal/intel/intel_powerclamp.c
-> +++ b/drivers/thermal/intel/intel_powerclamp.c
-> @@ -143,12 +143,9 @@ static int allocate_copy_idle_injection_mask(const s=
-truct cpumask *copy_mask)
->  }
->
->  /* Return true if the cpumask and idle percent combination is invalid */
-> -static bool check_invalid(cpumask_var_t mask, u8 idle)
-> +static bool check_invalid(const struct cpumask *mask, u8 idle)
->  {
-> -       if (cpumask_equal(cpu_present_mask, mask) && idle > MAX_ALL_CPU_I=
-DLE)
-> -               return true;
-> -
-> -       return false;
-> +       return cpumask_equal(cpu_present_mask, mask) && idle > MAX_ALL_CP=
-U_IDLE;
->  }
->
->  static int cpumask_set(const char *arg, const struct kernel_param *kp)
+Hi Sudeep,
 
-Applied as 7.4 material, thanks!
+On Fri, 4 Sept 2026 at 16:03, Sudeep Holla <sudeep.holla@kernel.org> wrote:
+> On Wed, Sep 02, 2026 at 01:29:17PM +0200, Geert Uytterhoeven wrote:
+> > On systems using the ARM System Control and Management Interface (SCMI),
+> > the Clock Pulse Generator hardware registers must not be accessed
+> > directly.  Instead, the SCMI message protocol must be used for inquiry,
+> > configuration, and control of clocks.
+>
+> Why is this node needed in the devicetree at all or why is it not disabled
+> so that any driver in the OSPM is not probed at all.
+
+The node is needed so the corresponding driver can bind against it.
+The driver takes care of remapping DT hardware descriptions to the
+abstractions offered by the SCMI firmware when SCMI must be used.
+
+> > Add a "renesas,scmi-firmware" property to distinguish between systems
+> > with and without SCMI, and to indicate which SCMI firmware interface
+> > provider to communicate with.
+> >
+>
+> I still don't see the need for this if you disable the node, so still
+
+The node is not disabled.
+
+> NACK. Sorry if I have missed some discussions, please present the information
+> as part of this patch in the commit log if not the actual binding itself.
+
+That's why we have cover letter, with links to previous versions and
+discussions.
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
