@@ -1,132 +1,134 @@
-Received: from mail-oa1-f47.google.com (mail-oa1-f47.google.com [209.85.160.47])
+Received: from mail-ot1-f46.google.com (mail-ot1-f46.google.com [209.85.210.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9674D50EC03
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 15:43:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5353C381EA0
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 15:45:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788536589; cv=none; b=Gdp+sXdCh0KtDogYX6kcjKAmm73+Ic10+lqiuezl/VU/bgA54mI7S+SWDqag0oR4+SCtE7ktPHdhmXLBkNsAWthxbHbddgGK2CPhA6Av71IeIGN/YLARm8vOXzhrbZL0p/kD0XPYL9cZYqfHkwDNN8rLHg2A1ilM4KHRV+VjPQ0=
+	t=1788536736; cv=none; b=ZojzzH7+83CfCAkrFWc+oQpT5zn9jmCKr3WD9qAIPpLys7S9bl10ibcKOzDKyQUJ2hCT+tnvr83Dffr/vU7LJWuOG+VamXRHjhISBepNqNCHUUEsO8Jom45keV5LgI9B9DB7dnkjzLbQyLtLSYxSeZTXKJQ8nPKAtc2/BXS9ERk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788536589; c=relaxed/simple;
-	bh=4bEAll6bJapZukrKkjXZtk1Cgl7yrbg5PsFtTRWvy8U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bsbc47GEja6RACVMgtz9kDXVX0qLtdaEnVfy+vnn7tWQpbbrSEQIlWn0fqwzxawKGK9I3gHQ6VVKaYNbEDKKcQVJ0ENyWPRL9Q0+fx2eUfrWtuuYehszw29k0Q/ERYQo+ISH4AVkxyxFWkAVJkSpKKpspJDtgTgmfA6HEc9uTcI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.160.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	s=arc-20240116; t=1788536736; c=relaxed/simple;
+	bh=0i2ur6bxtGesXmSKwhHP+Be/MOfypFS0q4OAYvJgvzc=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:From:To:
+	 References:In-Reply-To; b=ttEc7Tn5SO7HWzrd1ozkK1fdIfDFx2pzjOO0yxtvzajgGUerdoDvk1l6MfvIC0q94bEdM7WqadVeAofoJF44Uu/cZRSyS40BwkUpwX4CLQQel3faMVZX4PQ2p/VVQzIgb+6ifXvYtruYEWSYcycBoBoJpjvG0NBpEImEusRqY2o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mdiRSc6r; arc=none smtp.client-ip=209.85.210.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-46ad7304688so2134324fac.0
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 08:43:06 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788536585; x=1789141385;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mdiRSc6r"
+Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-7e9ecd7216cso1075735a34.3
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 08:45:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788536733; x=1789141533; darn=vger.kernel.org;
+        h=in-reply-to:references:to:from:cc:subject:message-id:date
+         :content-type:content-transfer-encoding:mime-version:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=hzE9a7y7ZZDe66bPxoXer0uMhuOeucoXHc9TRbP+CZA=;
-        b=QyZ8wqCgugo2Q09XadrDmiOaJFsoncIki3qrTY9k/mg5jkoL47+uRbhFNb5ctdbbmA
-         +lwToCWJGe5R1zyime4q8hKA5ZWHHuMRuvpKF2eoFwLAZt8FAijwkGxZV5JyuhoROnlc
-         uLPIEjlGdaz2bE6VDaRk+AnAKkxGlGTFcBNqyE/cgEKC4Qjj6gYd+3+ryqwnFBpqWH1Q
-         oANMjcVyX3hE7B4+pRU79kfBLsJSrolkmVh7LG8aITHmwQFem4XxqjIuj40X7FvYPYw8
-         aG/wjJcDzMf/L4JBzpiAx8eP282PYcZ5/3O+Na6DXCrU6iRI6tYTvdoCTluV5M6Tcj14
-         YzPA==
-X-Forwarded-Encrypted: i=1; AKwUvBwTBT3kODIIt8+vULuXNnXxsYm9xZJSjp+5FkVJ0pgV+TPAdaHpygp/WlvSkFxzwXPIM60X0SH1Ww==@vger.kernel.org
-X-Gm-Message-State: AFuF++kbnurK54ETubbmkEO9US69Vrg4eKz3j3AZqJ+fd8RWhV3/jTbi
-	pT4Umh5/ci/Lm/4InOqthbaYbMEiEqKLczGsZlH6lGvAoWCCW3TDH5Fk9PofYZ1d
-X-Gm-Gg: AYBFou1bX7oIToHuXgAwg3vROVFpjRCB1b3tOmwxAWBR9uMNE6ulQodsfSP/7EAnuyU
-	soqavg6hASTEWfjD+1067ZB0G9zh+jVckXvDsTr60oKwCp4EpciqCFKF6Pz+zJdLDyzERZvBAWv
-	VWm3WZqf5xuJBVxUy890/B+gP75rGU1ymAMJ5n6sTUDFZ+7OEZ7WTCgqMZZz5/dCUazqPOEfjV5
-	Cd3aIaiKgUt4N0kn8iUa7jE4AzLvATUe4B+Fbw2XsA6urHfzozP5c/y3WGtV2to8PCGjEBduU+x
-	O5QOsYaKFHDtzjgAxlmkP98qKMusHBErJAiMVp76bYBaO/CK4wR8MJ/SvH/ARFYx4fEdayUwRvi
-	mgdvsQ/lS4Em9odcbaJM/WWFLJDlUeuhn0m0DpRQeBdEt43eTPYbbMeyMJ2cR5a+D9n0HfE+dJ3
-	X9VIcX+2hDcSfFTg6cSZnKlvGltSdcXPRcX9agKNtIr3FoPM8LLrNEhBksuU19urT97EHB7DPX+
-	R3YWipIQ4WoGt08sNc5EJ8nBw==
-X-Received: by 2002:a05:6870:5e48:b0:470:e96b:43e5 with SMTP id 586e51a60fabf-4757d59548fmr2358080fac.17.1788536585062;
-        Fri, 04 Sep 2026 08:43:05 -0700 (PDT)
-Received: from mail-oa1-f50.google.com (mail-oa1-f50.google.com. [209.85.160.50])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-47554d7d787sm2298822fac.17.2026.09.04.08.43.03
-        for <linux-pm@vger.kernel.org>
+        bh=BdtITZOav3pjxc4SwRDxA49yanevszl3jiRD/k4W2wY=;
+        b=mdiRSc6r5WoW+yNAAv7KediiqRmlIppeS3eaO94ejHpsjvSAW2yR0Zc1wR79aVRtut
+         VKgTA8RAM5mDy1KoCU92lEH7lz64uT3Ad5/BeCTbKAyTLRFhoo6qLFep8YsUk7hxAnLt
+         SGp7UDRIdptJoEj1NkKVBnkqHss2bFkm07n7+72xeXcOnkpFMjKqLKmpM/nzAlY6tWWB
+         cHq2nr9Iwlx2jEZOJ7iJ77GxHL8HQZwVKXbIK9qp3VcrFutLNDtXcG01Zm81CKqAeelq
+         vVfrCeMKlpmD1plMZecK6c35rQVh3TzzOP4N7bk3eIATJMz5qkzny9VEMxXvYQ/aGK6i
+         2zjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788536733; x=1789141533;
+        h=in-reply-to:references:to:from:cc:subject:message-id:date
+         :content-type:content-transfer-encoding:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BdtITZOav3pjxc4SwRDxA49yanevszl3jiRD/k4W2wY=;
+        b=En1whBK8KyoJ/HZBDxCZdzY+aioM1wZtGqoMiQjCo6dR60uTwOe+tybbyLzRKZvwKu
+         wHu9F5wAAcgs2ZcIC6bNbVDD/0fZ6F0NgbO1NSPeNfGJnx8oHupU7u+In5wMnBT/pI2s
+         p6piTUAWhe4HqAprp38KyudIa/LlgL4oG8/i83WEOd7texnKfhXbJTEwQn8vGMnJrMS7
+         waUzp4s0rMo/dhC0vleg9LREHkxMDYi5NWymjqRII53IuZpuVWe1hJ6Yau8XSmrtY/GV
+         9d+XNiYAQYbE1K3yTrvr5Mcov7Xqslgn9UvPrcpLHPx2JQ69aP8xkysDXI6NVQ8yGdjN
+         REUA==
+X-Forwarded-Encrypted: i=1; AKwUvByqvPZJS89B+9SkUNZmryShmLc4Cqxsn6Iomr+NH1bEIH1eFBwMb1pbHVIAb4mf4ypigRP2Z1xqtg==@vger.kernel.org
+X-Gm-Message-State: AFuF++kSopZkbOsAWhXbMYAQQpUVpbwDIS8ZSnn4zZRi6npGzCobuu/V
+	QTbKMZaRKIi5H4L8N6+T5v/rGhmavw0dooupsoAn7A9NQlcOeVBSX1ZQE9lG8J9pt7Y=
+X-Gm-Gg: AYBFou34pMKq16NPftSLc4jVMoscy5JL2cFOFMYnnmrxw8nXOOUiw6FH+uK30Lc77p3
+	cKg6q3eIfgZj1YKYxpVCGdtNCy/8NyEWiE4i9tONZDNv8QW/wB7+MAkZXRWFB9CFafH9x6iG7VM
+	AtgtOyeM8vvbn14nY29WLv5rs0WFxrOqYpxwlOAVvbRWkb8C6vdf+rSWs27UXs+ABB+XcxSM0lA
+	T1SQ3PWjuTYEkldSgjiqK1r3wRwHsNQMQTrWK2LvXPOb5z2dOGkJWRa/hVCOHYS1rDjocml8iiT
+	qymdxAY5uT6bKpO8uM650FEcoENpcR7Bx++/cKGmJ+G4iDqvDUwNEWrGfWOkT+e4AGc1vwynPKq
+	FS7J5rJrru5KBumHKsvaWU5cy59SnfG8Yg8tYzZX1ARV4SaJFepRQrHWai4OzSkV8JHTnOQIPWU
+	mR7+zLN/D5sVw+fsAnxD85gla0C97+3R4ysFRI4Dys0PgMaq75RqFA8ZOGjtnlKGqu/61kfuw4Y
+	V+roINAliQUySevTWTc8SM=
+X-Received: by 2002:a05:6820:179b:b0:6ae:774d:45ab with SMTP id 006d021491bc7-6b6fd8cdab9mr5371183eaf.27.1788536733038;
+        Fri, 04 Sep 2026 08:45:33 -0700 (PDT)
+Received: from localhost (ip68-107-67-45.sd.sd.cox.net. [68.107.67.45])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-143243bfbe3sm7513320c88.11.2026.09.04.08.45.31
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Sep 2026 08:43:03 -0700 (PDT)
-Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-46556b9e02cso895509fac.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 08:43:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxkycmGdHB/Y1amKWFgzPl0UTc9zzSoniO9P64IJnipgKF5KE7eegF4I4n7J2dLsabstMy0yviT7A==@vger.kernel.org
-X-Received: by 2002:a05:6102:1676:b0:785:6719:abb1 with SMTP id
- ada2fe7eead31-78a2ef7b044mr2760248137.11.1788536188830; Fri, 04 Sep 2026
- 08:36:28 -0700 (PDT)
+        Fri, 04 Sep 2026 08:45:31 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com> <20260821150408.73829-11-ayman.chaudhry.kc@renesas.com>
-In-Reply-To: <20260821150408.73829-11-ayman.chaudhry.kc@renesas.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 4 Sep 2026 17:36:17 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdV3uLdyr+VOW-_eN3QMFpq9KV-O3HQsKY6GPpixeQhcKA@mail.gmail.com>
-X-Gm-Features: AcwNN1Um6XH5hlFEECJFpWec4doGqp3W45Z0eEeDzho30JjiEWI3GGf_1U5A2yE
-Message-ID: <CAMuHMdV3uLdyr+VOW-_eN3QMFpq9KV-O3HQsKY6GPpixeQhcKA@mail.gmail.com>
-Subject: Re: [PATCH 10/10] arm64: dts: renesas: Add HiHope RZ/G2M v3.0 SoC sub
- board support
-To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>, 
-	linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Chris Paterson <Chris.Paterson2@renesas.com>, 
-	Biju Das <biju.das.jz@bp.renesas.com>, 
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 04 Sep 2026 08:45:30 -0700
+Message-Id: <DL6NCV1KQ9F9.6K6XZQCS4AF3@gmail.com>
+Subject: Re: [PATCH v1 0/2] efi/tpm: Preserve event log without changing x86
+ E820
+Cc: "Ilias Apalodimas" <ilias.apalodimas@linaro.org>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
+ <linux-efi@vger.kernel.org>, <linux-pm@vger.kernel.org>, <x86@kernel.org>,
+ <linux-kernel@vger.kernel.org>
+From: "Jasmeet (Jazz) Bhatia" <jasmeet.bhatia.us@gmail.com>
+To: "Ard Biesheuvel" <ardb@kernel.org>, "Jasmeet (Jazz) Bhatia"
+ <jasmeet.bhatia.us@gmail.com>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <cover.1788259938.git.jasmeet.bhatia.us@gmail.com>
+ <a9e23066-aa75-44be-ac3b-9a15f4cf6047@app.fastmail.com>
+In-Reply-To: <a9e23066-aa75-44be-ac3b-9a15f4cf6047@app.fastmail.com>
 
-Hi Ayman,
-
-On Fri, 21 Aug 2026 at 17:06, Ayman Chaudhry
-<ayman.chaudhry.kc@renesas.com> wrote:
-> The HiHope RZ/G2M sub board sits below the HiHope RZ/G2M v3.0
-> (a.k.a. R8A774A3) SoC main board.
+On Thu Sep 3, 2026 at 7:18 AM PDT, Ard Biesheuvel wrote:
+> Hi Jazz,
 >
-> The RZ/G2M v3.0 SoC sub board is similar to the RZ/G2M v1.3 SoC sub
-> board, so there are already DTSI files available in the kernel. These
-> DTSI files will be included once additional support (e.g. CAN, PCIe
-> and ethernet) is added for the RZ/G2M v3.0 SoC.
+> On Tue, 1 Sep 2026, at 13:34, Jasmeet (Jazz) Bhatia wrote:
+>> The EFI stub currently allocates the TPM event log as
+>> EFI_ACPI_RECLAIM_MEMORY. On x86, this becomes an ACPI data entry
+>> in the E820 map.
+>>
+>> On a Framework Laptop 16 (AMD Ryzen AI 300 Series), the EFI allocator
+>> can place this allocation at different physical addresses across boots.
+>> Since x86 hibernation validates architecture-specific data from
+>> the firmware E820 map, this causes an otherwise valid hibernation image
+>> to be rejected on resume with the following error:
+>>
+>>   Hibernate inconsistent memory map detected!
+>>   PM: hibernation: Image mismatch: architecture specific data
+>>
+>> Allocating the event log as EFI_LOADER_DATA avoids changing the E820
+>> map, but doing that alone would regress the kexec corruption issue fixed
+>> by commit 77d48d39e991 ("efistub/tpm: Use ACPI reclaim memory for event
+>> log to avoid corruption").
+>>
 >
-> Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+> As I replied in the other thread, I am not convinced preserving the TPM
+> event log across a kexec makes sense to begin with. This is the firmware'=
+s
+> view of the state of the TPM PCRs when it handed over the system to the
+> first OS.
+>
+> If the first OS boots, loads a kexec kernel and then boots it without
+> measuring any of that into the TPM, the TPM event log will match the
+> TPM state, but this is meaningless because of the missing measurements,
+> and the attestation chain is broken.
+>
+> If the first OS does perform TPM measurements, it would need to record
+> them into a log and pass that on to the kexec'ed in some implementation
+> specific way - it cannot use the existing TPM event log for that.
+>
+> TL;DR perhaps we should just discard the TPM event log reference from
+> the EFI config tables after consuming it. Or add a special case to the
+> kexec code to disregard it.
+Ok, honestly that makes a lot of sense I see what you are saying and I
+tend to agree. I'm treating the copied event log at something that
+survives kexec in this patch because of the corruption fix so I'll look
+at dropping that LINUX_EFI_TPM_EVENT_LOG_GUID reference and rewrite this
+patch. Hopefully, that will avoid that x86 E820 instability as well.
 
-Thanks for your patch!
-
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts
-> @@ -0,0 +1,14 @@
-> +// SPDX-License-Identifier: GPL-2.0
-
-GPL-2.0-only OR BSD-2-Clause?
-
-> +/*
-> + * Device Tree Source for the HiHope RZ/G2M v3.0 SoC sub board
-> + *
-> + * Copyright (C) 2026 Renesas Electronics Corp.
-> + */
-> +
-> +#include "r8a774a3-hihope-rzg2m.dts"
-> +
-> +/ {
-> +       model = "HopeRun HiHope RZ/G2M v3.0 with sub board";
-> +       compatible = "hoperun,hihope-rzg2-ex", "hoperun,hihope-rzg2m",
-> +                    "renesas,r8a774a3";
-
-Please replace each group of 8 spaces by a TAB.
-
-> +};
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Appreciate the guidance!
