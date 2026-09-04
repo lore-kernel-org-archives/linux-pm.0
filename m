@@ -1,125 +1,136 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f176.google.com (mail-oi1-f176.google.com [209.85.167.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 728F851992A;
-	Fri,  4 Sep 2026 17:30:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69833481673
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 17:31:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788543003; cv=none; b=Nj9RJG1HZ7BTmoqcWaEDab9gyEaCV0AgKvNlh1dmE83k6nSPE7/KfpQrUjxTuuSB4oMOl0m0FT0PZ3GqkGSUxu8sfSndJQlhWWqR+S5u1vqZs2NgMsA8MzzjYvAhoBwNzt1EjbTPqT0b46LkxWxiMvpE6DcJfo7a/n1XhM2xmgM=
+	t=1788543080; cv=none; b=O+Pmr+Fbfc1jVqhZsskC1BzHIwOVheTFhKuuLFHTsNcYX8JIWAUD/ILOTAJW0xzDoxy9yOA/hqUQE0X7/tN3R2yBK8xJZBjCf4qmOg6Hdgz7JS70d1E47/1uo9ZC72wmrHM4NHoqNNknnpIwV/OjmvFSQtOoSa/CVeXY5bsN3A0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788543003; c=relaxed/simple;
-	bh=AKAk3zbuNYnhlpklfK3dhSjhJiB4p3CTOx+Aaa3ijps=;
-	h=Date:From:To:CC:Subject:In-Reply-To:Message-ID:MIME-Version:
-	 Content-Type; b=kT5rti5ztiQ3PXibu5I4ixl4PFf0pmsQDKcXmBqa3HxOJo5uViz79JGv4y3VK/OctdT61VaK3Vszrm9YVCtGZwmUbOJ3H5fB2LLrjzrI289MbHdoJ4nSmvLW7NR2NhD6xH6dLxzMDpuxrRHYoE2rqhK0vj5MX0U3yx9xZ84IOTQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=fnFJJCkN; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=d5W1yLWe; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	s=arc-20240116; t=1788543080; c=relaxed/simple;
+	bh=1o6KRoN44DSCBsEysacGHYHuD0OPx3QcKtHFyX8sd4w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ITUpNADRdTxXVNlDd+YfXTeunPs9c1EpaNua6UMcJG0lvBHoTRBAMOnagJTA1kHcGL4tEoYf+Tt3vaiB5OLtsIpSFSZdHNYC0K2S/5zzIS8dW5x00KSKEX8pjLoqCwX9PIQu/qG7ki4B6lGIFREa9PnN+Bp8lN6wtVXj1MTH7Hc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=DxxcnajC; arc=none smtp.client-ip=209.85.167.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="fnFJJCkN";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="d5W1yLWe"
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1788542993; bh=r+8mzCVOFq1SAA8CgGmGBKY
-	IYp12JiOrneuQSUh4QZ4=; b=fnFJJCkNF5NL/kNjE8JHydEYSHU1s5s9vswJTurhZ7UOZid/fp
-	SP3nV3resmdS+EL0zpIqdGUb0vHa/i1970+B1mxYtgTD2hx8vhSXtMZ5iTz2zesRe1pz27YUo5E
-	HaHsHNM1p1sWiPEFtVa7sxmi5k0Nx399QQBApqzVdTpUZivf5tT6c7V72djv/7D6rlp/bckOoCk
-	zL9FEjSIy2CC+oiTybcsYo3TXSiKJycHq2UMoFpe0v4LDD0rb+52x6htalFFBt3huccpq3RrebP
-	Lo8yks+a9FCj7WWEeUXRowV98khsKB85xtWMWNnhAXZ6HZbCYNMukAu/HOIKn6LkVwg==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1788542993; bh=r+8mzCVOFq1SAA8CgGmGBKY
-	IYp12JiOrneuQSUh4QZ4=; b=d5W1yLWe3N3QDimA/Ha0IYQVDiyfpqtCdTm6cEmVwC6J6rxjNI
-	SLul/fSXTxaiHrUKWrYQUPYOp3QwyTfC0zAQ==;
-Date: Fri, 04 Sep 2026 18:29:52 +0100
-From: Bradley Morgan <brads@mainlining.org>
-To: rafael@kernel.org
-CC: daniel.lezcano@kernel.org, include@grrlz.net, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, rosenp@gmail.com, tglx@kernel.org,
- treding@nvidia.com, vschneid@redhat.com
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_1/2=5D_clocksource/drivers/timer-ti-dm=3A_U?=
- =?US-ASCII?Q?nregister_CPU_PM_notifier_outside_of_the_timer_lock?=
-In-Reply-To: <CAJZ5v0iLnyRzM2g-k5ky0ofgVOttYU5w5Agb0EE21ejS_vWJ0g@mail.gmail.com>
-Message-ID: <AA645B1E-9F44-4326-A6D0-FCEB408D0562@mainlining.org>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="DxxcnajC"
+Received: by mail-oi1-f176.google.com with SMTP id 5614622812f47-495b27007d0so1117614b6e.1
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 10:31:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1788543077; x=1789147877; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=6ZOIo2HEBu3h7pqrMStXOScgEdgGJQw6u08wXyRcXzU=;
+        b=DxxcnajC0he1SOcAFrrSuAfXyZv4oOA8yvbURCKp8Vvku4CTKqu3dG+FomGWlcBBYN
+         vle9M6Vy+Dr8D7iE4yic42ZcoRy61lbZJFVlpKvSxrX7/xAg/S827ZfADe3G0okllIOx
+         fNY+OYkw17dUULwPOW7GZY84Idw3NTdY73Iqk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788543077; x=1789147877;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=6ZOIo2HEBu3h7pqrMStXOScgEdgGJQw6u08wXyRcXzU=;
+        b=LuFWN72/a6D/3tfuQIR7jgslbpbAwa5MRrhv5aqrIBh4FQN8vclD6xc+2nUpBIgnN8
+         oNfJqHQG4Rww3EYxLTcbC1bPqO6RfzerQs+CyEELN+uydvZ0uq9DTP2VaHD49WP0nWbN
+         QapJCkpbarXNspYXOgH6T0351uGjyogiCRXWUesUPqmR0NjFGpnZDyYJYmZmxoe0px6F
+         Ke4zKy0+b1vvjkhy6GxUTKx5s5ZTvEwZTM4dOyHzSbQLwO3qL+o4o4EaI7rwSIcq83YZ
+         UQMEEoAa4gGaHVEVAXteSZXRF5y1jmR0FAn0VNY+2DhcYjsGP6YBP5zVA7vLUFMpK0lb
+         c4Xw==
+X-Forwarded-Encrypted: i=1; AKwUvByPDUE5jFkyLsa7Jj4Sc3yTILVQCcssk0eT7fAYgRo+G3+2sOQ4ngm5aLodhqDAwBs/7jSHdLRkUQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++kRuBqBRoFpBoLJMtVEjAESTvJTzE9EO15wQrqNeSXEaIcPe8Z5
+	20KD3tf7rQBkELk/LyxnhC0lY4tEioKaLS7QCh7nl1UpQpZJAVdks3bP5g/cKv1R2x8=
+X-Gm-Gg: AYBFou2COKmF62yHMxZkqleofuwQLekKZLbSIsV0zQkXUSbs+rkySCaaqWJSDw9s0Rt
+	HLS1le3SaIwsdlN4kavYeE+y69LimBbVsRfW4SygVun4MirkB6CMMacMVeVYf79IPkv9QdVskMJ
+	3G4Nq5arjktaYESs+D1PtZwjqLSrC8HruwGktOJiTU+dDX0tmLZbWnWG7Q1TxXXdqV6vbt/YbnA
+	gGHD8qbrC+1kasF6QxzmXV4z58pO0wmllz5prA8WkKihk9PnxXmRuDuujuNAtcBAcPQH4N2WodW
+	os/ZAkHoU4FkcBiien5PmwEqhL7LIl0hK49JeZ1D6zyBzbzj1EsU/nfC7q+Yoje1hLPidzcWuHv
+	HdkoLRB9inCjrlDE8lzv/KcNTdjs26n41PLMzxtBwvLU6AxsQxAlfH6ROS+YRCyFpxBwsN7W/Do
+	pEYH17QX/Z3EK2KLAmtpJCKflLaSbv5bFXsaZxik4R99PBGdJBasWERQHfmwClBkDGrrhY
+X-Received: by 2002:a05:6808:67c6:b0:4b3:880a:f08d with SMTP id 5614622812f47-4b9622c002amr5220754b6e.11.1788543077130;
+        Fri, 04 Sep 2026 10:31:17 -0700 (PDT)
+Received: from [192.168.1.128] ([38.15.57.99])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-4b970d23c8dsm2733250b6e.5.2026.09.04.10.31.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 04 Sep 2026 10:31:15 -0700 (PDT)
+Message-ID: <f1b5ae1c-f6cd-4f9f-9143-4bdd3b8c2b46@linuxfoundation.org>
+Date: Fri, 4 Sep 2026 11:31:13 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpupower: fix typos in comments
+To: Hemanth Selam <hemanth.selam@gmail.com>, Thomas Renninger
+ <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+ "John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ Shuah Khan <skhan@linuxfoundation.org>
+References: <20260904124005.3270-1-hemanth.selam@gmail.com>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20260904124005.3270-1-hemanth.selam@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 4 September 2026 15:17:54 BST, "Rafael J. Wysocki (Intel)"
-<rafael@kernel.org> wrote:
->On Thu, Aug 13, 2026 at 9:43 AM Bradley Morgan <include@grrlz.net> wrote:
->>
->> omap_dm_timer_remove() calls cpu_pm_unregister_notifier() with
->> dm_timer_lock held and interrupts disabled. Nothing sleeps in there
->> today, but it pins the helper into a context where it can never be
->> allowed to sleep, which is in the way of restoring the RCU grace
->> period on the cpu_pm notifier chain.
->>
->> Do the list lookup under the lock and move the unregister after the
->> unlock. Nothing can race it at that point: remove() owns the device,
->> and once the timer is off the list nobody can reach it anymore.
->>
->> Signed-off-by: Bradley Morgan <include@grrlz.net>
->> ---
->>  drivers/clocksource/timer-ti-dm.c | 9 ++++++---
->>  1 file changed, 6 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/clocksource/timer-ti-dm.c
->b/drivers/clocksource/timer-ti-dm.c
->> index bd06afb7d522..032e102bdd0a 100644
->> --- a/drivers/clocksource/timer-ti-dm.c
->> +++ b/drivers/clocksource/timer-ti-dm.c
->> @@ -1530,7 +1530,7 @@ static int omap_dm_timer_probe(struct
->platform_device *pdev)
->>   */
->>  static void omap_dm_timer_remove(struct platform_device *pdev)
->>  {
->> -       struct dmtimer *timer;
->> +       struct dmtimer *timer, *found = NULL;
->>         unsigned long flags;
->>         int ret = -EINVAL;
->>
->> @@ -1538,14 +1538,17 @@ static void omap_dm_timer_remove(struct
->platform_device *pdev)
->>         list_for_each_entry(timer, &omap_timer_list, node)
->>                 if (!strcmp(dev_name(&timer->pdev->dev),
->>                             dev_name(&pdev->dev))) {
->> -                       if (!(timer->capability & OMAP_TIMER_ALWON))
->> -                               cpu_pm_unregister_notifier(&timer->nb);
->>                         list_del(&timer->node);
->> +                       found = timer;
->>                         ret = 0;
->>                         break;
->>                 }
->>         spin_unlock_irqrestore(&dm_timer_lock, flags);
->>
->> +       /* Unregister outside the lock: cpu_pm_unregister_notifier() may
->sleep. */
->> +       if (found && !(found->capability & OMAP_TIMER_ALWON))
->> +               cpu_pm_unregister_notifier(&found->nb);
->> +
->>         pm_runtime_disable(&pdev->dev);
->>
->>         if (ret)
->> --
->
->Nobody seems to be interested in this patch, but Sashiko only sees
->pre-existing issues related to it:
->
->https://sashiko.dev/#/patchset/20260813074343.26460-1-include%40grrlz.net
->
->and the second patch in the series depends on it, so in the absence of
->any objections or concerns, I'm going to apply them both.
->
->Thanks!
->
->
-Ugh, I'll check / fix the pre existing issues now
+On 9/4/26 06:40, Hemanth Selam wrote:
+> Fix typos in comments, reported by scripts/checkpatch.pl using the
+> misspelling list in scripts/spelling.txt.  Only touches comments, no code
+> changes.
 
-Id like to wonder why Google didn't use their 3.8 flash, considering it's
-like 10x more capable
---- Thanks!
-https://lore.kernel.org/all/EE579805-42F2-4C58-B752-F28779EEB717@grrlz.net/
+> 
+> Assisted-by: Cursor:claude-opus-5
+
+Why do you need AI assistance to fix typos found by checkpatch.pl?
+How did Cursor:claude-opus-5 assist you?
+
+> Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
+> ---
+>   tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c | 4 ++--
+>   tools/power/cpupower/utils/idle_monitor/mperf_monitor.c    | 2 +-
+>   2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> index e8b3841d5c0f..b15371e3e6bd 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> @@ -72,7 +72,7 @@ void print_n_spaces(int n)
+>   }
+>   
+>   /*s is filled with left and right spaces
+> - *to make its length atleast n+1
+> + *to make its length at least n+1
+>    */
+>   int fill_string_with_spaces(char *s, int n)
+>   {
+> @@ -263,7 +263,7 @@ static void parse_monitor_param(char *param)
+>   			 "try -l option\n"), param);
+>   		exit(EXIT_FAILURE);
+>   	}
+> -	/* Override detected/registerd monitors array with requested one */
+> +	/* Override detected/registered monitors array with requested one */
+>   	memcpy(monitors, tmp_mons,
+>   		sizeof(struct cpuidle_monitor *) * MONITORS_MAX);
+>   	avail_monitors = hits;
+> diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> index 5ae02c3d5b64..62b8cfb02040 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> @@ -276,7 +276,7 @@ static int init_maxfreq_mode(void)
+>   	    cpupower_cpu_info.vendor == X86_VENDOR_HYGON) {
+>   		/* MSR_AMD_HWCR tells us whether TSC runs at P0/mperf
+>   		 * freq.
+> -		 * A test whether hwcr is accessable/available would be:
+> +		 * A test whether hwcr is accessible/available would be:
+>   		 * (cpupower_cpu_info.family > 0x10 ||
+>   		 *   cpupower_cpu_info.family == 0x10 &&
+>   		 *   cpupower_cpu_info.model >= 0x2))
+
+thanks,
+-- Shuah
