@@ -1,101 +1,136 @@
-Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E946448094F
-	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 11:53:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABE3F433E9D;
+	Fri,  4 Sep 2026 11:55:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788522838; cv=none; b=F+X9iAbU8/CN3Sqp67ipugNQXmhSNuZmBBaFNeuxmQPL8Dpl+skXGmRRwEU2g5Hpn9xrwMVSs2YQ2GNk9ljw2eib7eaWq7z4oynJJRErDurjAF9tBUg+TU92Mz0FjwH8w81QEbe2C0AB1QG5trBkIQZAO9FeE/7bg2ZZhMZMLVk=
+	t=1788522946; cv=none; b=e4sO3Qvh4DzZpExFlF0CE8mJUJ1Rb4v4IVXePnWcQ1RXMJjnLpGOI8rMeqDRhd8lPNwRq8Pqbw83HffddqoHJlPOpMeSWqSgXh74BTdrqx9c6WMAp/p6KoEcj7e3NTYnQfJ+gPyk+RPaCAAAMkr2QyDoPTNvmux7pMzqZgPFNPM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788522838; c=relaxed/simple;
-	bh=B8weSQZXFI1SXArqtq91dceSlCZW7rBY3R9q56K9R+0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=sjwhLTgfJONkfPH5V/S1ZRuvYfldurPs5pC42dvc2VZozYN6C+Hy9g60mpyNQo/hsvL6P0XVIKIHl0IJ0Roaj/blY2iWY+JtiAq8tYu4dEm28PnBm4zqKvAGRnzyL6lWQ28Z1RaEVoOVNYzMGvkQHBRegYfYhyEyUQ/86X7kVV8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=feTVP6eq; arc=none smtp.client-ip=209.85.216.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788522946; c=relaxed/simple;
+	bh=78sqk5H7Lxmz4BUyx1zh85KTEGpS399Pnj9Wdvf2OjI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=tD7frjCfjQgmvHvsyQDm4AbkZ5hH104YgY1KMTgW2un+BQvPIlBr/K90PDQTaWdpdSd1btdxMLJMIv9MMaQEUax+Jyth5bfgp2lhNde7Koc2xYvSMTJcm9/Oj+fzfzvxNQt/EjSLj8APbdDPczgkqI8NasJ1PC4cLD8Yih/T1L8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YPDfrjd6; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="feTVP6eq"
-Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-381b831d535so1364609a91.0
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 04:53:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788522836; x=1789127636; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qpAekeUtl0JKcos5XOlJTRxZ+xfHaB32i1F/UjgyqXs=;
-        b=feTVP6eqlvQHZTjvQu/XZ4baaPig7jvzphMPxbC1dEBsdpAVVek8d0k+vJYFacoA3m
-         CMQwO3jS6auFxqd67VvqZHKxc1O+3D2ruUT8mKsWvoUvOeZOHyCuJdZwfqPmUzER4L1D
-         PXlb4/xsSomJCLWu85v3KcFzi7yU0dSECP9SArigyWt08cOwTVzdpcmA+NsKatb9SIPG
-         2P9KNYdrFMx5//IAVtLN/OZ2xWDmBxVq64Tg/ycPIqsEiK/IOjAAx+JHiaUSYpG+LHmA
-         tjfwdu4FhwLWaqHQtH+QQH+YNp8qm5h55Lt2WVpDjmj602Y2Ze2ggiSGdFEhVw4xdV6H
-         PcPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788522836; x=1789127636;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=qpAekeUtl0JKcos5XOlJTRxZ+xfHaB32i1F/UjgyqXs=;
-        b=TDf2UwcZB7TzCQn6rC9XS/YwVrm4I44WMfdniOP/oO8n3+cSrcTvmwMCzK3xg+EYGk
-         7Y6/My8IzN1i+aUFIdkCopNl9pguTpFk5rqjaF2eQTYUdrGhBfNQapptnrLDkqeZMfs/
-         E2G4YrO0Ka0G2zSz7+KwLPWawnsmG1CmfA0DHG+44FkEZhBA7e6YY6qrEcCNgZufCD2l
-         uVo1akCaeqUI7++lG/iQsbOAe46AlU6bC5zzp/UrQ9pDtvxXoD3bbB6c/QU4cxT5XCZw
-         wGQA99Wx6ZqWmvTQ7hIoxgtAUpulHj8swspH2NqsXO3Kgg6U8q7IOg3YmzmUUm9Q2qLs
-         zElg==
-X-Forwarded-Encrypted: i=1; AKwUvBx7xOjet5roU3tZN4iBwsQDVvAHKAcnuEgypuOKdesgT4g5+KUkoAqinCSDyvhSrGPSi1loMcYX+w==@vger.kernel.org
-X-Gm-Message-State: AFuF++niRhZQeNIRnlXxqpDu3QUC1zd0pQl1zgI11CMdmEMRMSyAcKXi
-	p9MA0tthndC38XnuK9aOtz27S0BgDPaqdMld9cNb5/dSMGm3pzQha6yk0X1n1cQAr6Q=
-X-Gm-Gg: AYBFou3t4CPu6F0TQmpbQv9+D1KEa7XbRDt2OtbETdZwn4pA1UbEmMtisgRBNhJzn1m
-	NmbDABTuDzYKYIcgPdYAX3m+/61L1bgwlh7vCwzWuss5NMnGsZKXAgBy8q1xPu5augx8zCpKR0c
-	JguDbDI2V29TcEKVrAFzaGfwmzJFOnZw5PngFVeG2O/e/AWxm6fFO0Faut1PR/IzTOKlEr42MiU
-	G3DJE2jLo+B/gMscteI1wpyBmHmM270IcYcVoc1v1Bvx4NueL5O5LYVhB4jDKqsFkLv2iJ6IjhB
-	C3FmNPGYCw3uHUKtfxrN5dUQOkBapmyBcTwn8cqM4xvHF4pBLuKZLm6kYKTI2VxDaPEHnwK4IcL
-	ljwZhij1ml/jV44zDIYWLSCaPSgHZS7M45m/+Ck9o75uRd+6vRGRzJWd0DOYD0MQV8nToaRQXwT
-	IGY3DPebPHi0zjNNFEqqOkE4EMnXRocHpruRQUTqKvOlJvXmGY+PpY2C2EJHT4n54sZl3xlLa/A
-	396xfMSEvVxCYQtQv9CA2xrVO0=
-X-Received: by 2002:a17:90b:274e:b0:398:b1eb:136c with SMTP id 98e67ed59e1d1-39b2610fe62mr8818654a91.9.1788522836060;
-        Fri, 04 Sep 2026 04:53:56 -0700 (PDT)
-Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339befdefcsm5380310eec.29.2026.09.04.04.53.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 04:53:55 -0700 (PDT)
-From: Hemanth Selam <hemanth.selam@gmail.com>
-To: Todd E Brandt <todd.e.brandt@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] pm-graph: fix typo "hierachy" in comment
-Date: Fri,  4 Sep 2026 17:23:50 +0530
-Message-ID: <20260904115351.9356-1-hemanth.selam@gmail.com>
-X-Mailer: git-send-email 2.48.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YPDfrjd6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCAB21F00A3E;
+	Fri,  4 Sep 2026 11:55:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788522945;
+	bh=i1e+iVX92LAvk1+uOyCaklFwP113Nslf61WHHfDzMFI=;
+	h=From:Date:Subject:To:Cc;
+	b=YPDfrjd6cCvKL4bZ8j7f6ofqLLZIp8sjSygASv7D7g0fK1z8nLZSXzcGU7TnC8ffo
+	 SpfV73WEmOB32l1OF40iSQFLx4+uLTJDeyv4CTVnjoAewMlfdbUUNjVtT+U/nrlPgi
+	 lWW+7BRdczIhFRhHgl4kNoO7vJNn8K9/aFtJ2xiXuB2ih92tmrkskOb+iLRNdjtwZY
+	 IKDzMVPrT64A6bypGUmDKX3GLdNAEzFGt96nPS7na2VIL4rOyrGiEwjKDzXOueY3Lt
+	 YEMBOBtFTF4XIS/g5DNkjc8dcpToOHqY+OAOUwF5eYonQFe6FXSIEBGmYxUEOhArxY
+	 jOy3WVag8LILg==
+From: Konrad Dybcio <konradybcio@kernel.org>
+Date: Fri, 04 Sep 2026 13:55:37 +0200
+Subject: [PATCH] interconnect: qcom: use 64-bit SMD RPM bus votes
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260904-topic-icc_rpm_64b_req-v1-1-37e24f1991a3@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQqDMBBA0avIrBsYRSPxKqUEnY7tFNR0olIQ7
+ 260y7f4f4PIKhyhyTZQXiXKNCbktwzo3Y4vNvJMhgILiw5LM09ByAiR1zB4W3Ze+Wtam2NvK4e
+ VqyG1QbmX3/W9P/6OS/dhms8Z7PsB1bCR5HkAAAA=
+X-Change-ID: 20260904-topic-icc_rpm_64b_req-a610f6590597
+To: Georgi Djakov <djakov@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788522943; l=2752;
+ i=konrad.dybcio@oss.qualcomm.com; s=20230215; h=from:subject:message-id;
+ bh=OkDSUi/LdA4pTBLQ7ya43ShjOBq9ARa4CWM0ri2JlmI=;
+ b=HMp9bpuBIpTptLljnU3iP37MMC8bObxtvy8Dk30GhpS/Dw7FV+TxklD2g7rDixnqvl7WFkd+m
+ pFM/8P5WPz3DQmnyLy7U/arRMx9H2VkfPQsQvU55WoQ0pGrOhtP6BD6
+X-Developer-Key: i=konrad.dybcio@oss.qualcomm.com; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 
-Correct "hierachy" to "hierarchy", reported by scripts/checkpatch.pl using
-the misspelling list in scripts/spelling.txt.  Only touches comments, no
-code changes.
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-Assisted-by: Cursor:claude-opus-5
-Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
+SMD RPM bus bandwidth requests carry a 64-bit bandwidth value.
+The interconnect proxy declared the KVP payload as u32, truncating
+votes above 4 GiB/s and advertising the wrong payload size to RPM.
+
+Use a little-endian 64-bit payload and accept a u64 value in the proxy
+API. This has always been the right behavior, even on msm-3.10 and
+32-bit SoCs.
+
+Fixes: be06f8e7425d ("interconnect: qcom: Add interconnect RPM over SMD driver")
+Assisted-by: LLM
+Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 ---
- tools/power/pm-graph/sleepgraph.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/interconnect/qcom/icc-rpm.h | 4 ++--
+ drivers/interconnect/qcom/smd-rpm.c | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/tools/power/pm-graph/sleepgraph.py b/tools/power/pm-graph/sleepgraph.py
-index f6d172254829..c8bc3bed3f5a 100755
---- a/tools/power/pm-graph/sleepgraph.py
-+++ b/tools/power/pm-graph/sleepgraph.py
-@@ -1448,7 +1448,7 @@ class DevProps:
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index cdd5f444b152..b8fa786d3bfd 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -30,7 +30,7 @@ enum qcom_icc_type {
+  * @resource_type: RPM resource type of the clock resource
+  * @clock_id: index of the clock resource of a specific resource type
+  * @branch: whether the resource represents a branch clock
+-*/
++ */
+ struct rpm_clk_resource {
+ 	u32 resource_type;
+ 	u32 clock_id;
+@@ -167,7 +167,7 @@ int qnoc_probe(struct platform_device *pdev);
+ void qnoc_remove(struct platform_device *pdev);
  
- # Class: DeviceNode
- # Description:
--#	 A container used to create a device hierachy, with a single root node
-+#	 A container used to create a device hierarchy, with a single root node
- #	 and a tree of child nodes. Used by Data.deviceTopology()
- class DeviceNode:
- 	def __init__(self, nodename, nodedepth):
--- 
-2.48.1
+ bool qcom_icc_rpm_smd_available(void);
+-int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
++int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u64 val);
+ int qcom_icc_rpm_set_bus_rate(const struct rpm_clk_resource *clk, int ctx, u32 rate);
+ 
+ #endif
+diff --git a/drivers/interconnect/qcom/smd-rpm.c b/drivers/interconnect/qcom/smd-rpm.c
+index dbc7ae50b02b..6ac9aef942ad 100644
+--- a/drivers/interconnect/qcom/smd-rpm.c
++++ b/drivers/interconnect/qcom/smd-rpm.c
+@@ -20,7 +20,7 @@ static struct qcom_smd_rpm *icc_smd_rpm;
+ struct icc_rpm_smd_req {
+ 	__le32 key;
+ 	__le32 nbytes;
+-	__le32 value;
++	__le64 value;
+ };
+ 
+ bool qcom_icc_rpm_smd_available(void)
+@@ -29,12 +29,12 @@ bool qcom_icc_rpm_smd_available(void)
+ }
+ EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_available);
+ 
+-int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val)
++int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u64 val)
+ {
+ 	struct icc_rpm_smd_req req = {
+ 		.key = cpu_to_le32(RPM_KEY_BW),
+-		.nbytes = cpu_to_le32(sizeof(u32)),
+-		.value = cpu_to_le32(val),
++		.nbytes = cpu_to_le32(sizeof(u64)),
++		.value = cpu_to_le64(val),
+ 	};
+ 
+ 	return qcom_rpm_smd_write(icc_smd_rpm, ctx, rsc_type, id, &req,
+
+---
+base-commit: 32b6ef9a5d0eca44f9cd91f52f4faa89f145a0de
+change-id: 20260904-topic-icc_rpm_64b_req-a610f6590597
+
+Best regards,
+--  
+Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
