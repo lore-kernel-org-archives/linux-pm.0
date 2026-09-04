@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FC854A5EB7;
-	Fri,  4 Sep 2026 14:03:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ECFA2F8EA3;
+	Fri,  4 Sep 2026 14:03:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788530593; cv=none; b=Op8bkAN6Qk1IuXhoJUBeVJhHG7R0b4a6q26j9YZw2349/LCdRcWC4ECK+oTbkVkKhE3DiybTW4ufbJD+MD8gFeT+T6Dfa2f6226wSyNFKe9DNXbr6O2c8FlyPIlunpvvR6gG9eKEabHnY1xcAhldLR2ug4HuKFabDADJnb/T8Wk=
+	t=1788530638; cv=none; b=QdXMruvIZnohSUPyMbgOrdW2UvhoW8sXZxIH2smSHzn1pJ1UIHhJWx9dnKJD4BJBEwfoY4Py1xQu+oDJcvES3pL5CQi+vIH5KjNSdDdl8IP6Zjb5awgc0QYDivIDUMtvs6/eV1qr4GcLTOwbvV46c7Ity5l0I6xxl5Y9WnHe9JQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788530593; c=relaxed/simple;
-	bh=6Kyi3VbYTBSqgP3NOm8++qUjk634PYSgsFaDAflKNCg=;
+	s=arc-20240116; t=1788530638; c=relaxed/simple;
+	bh=3D6qmYGQsezDyz+JwryK1dLuhpk82sVefdhUWAESihs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Va7qjhUlwpaM8nnC98my9FMwACDcdaBc26tAQqWUquEcdPIuJVrqsy7g5l98Ahjp0Dr3E9TTsIG6zLvmP5oGUNJLyJT/v9DI9M98kpyXXn6uQc5OIOoHhsnKbO7dKyZz8ecmC6PVwG+SYsCAyJtD7ncFHwxRVGfFt0e2sqDY3jk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JhBqUvTK; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=mhCOul802n9cNnXCl3RL/UNRyglxC6r6S30tHTTJvqGex+sMtOE29D5qx87tnfjRm6sSrL9K0UfvWRLXGisEj9hxF3FYX6PiTCG5MqfSLk9VozJzQCydTbVpBbSXcXwEsG9x8px9cVsNS0GbCgS0bR7wFoFdZbAivYbbXM88RXw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kXKnfzVX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JhBqUvTK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E454A1F00A3D;
-	Fri,  4 Sep 2026 14:03:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kXKnfzVX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E99171F00A3D;
+	Fri,  4 Sep 2026 14:03:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788530592;
-	bh=hgBXpaDcb4NRs9eQ/sGIF909WzqG0ZZiLKbm/sLhDrY=;
+	s=k20260515; t=1788530637;
+	bh=9xRAoQ3VOKVlK28blytp6VhXdyGPJ3aJEstmecZCKm4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=JhBqUvTKrUX0YB65XZJglD4qAlprXVCT2lGsM4vm+2Vwj6+H1V6CeCT3AfdAuPdwf
-	 R/xPV+l2CBFljA/jzPS5YRKf/Myf/ZqLw21IGhVqMo7CpFurChwCw3lj0+2Ow42FoW
-	 lRtFGOWktFHcgcXb773ITYcHXULWpxDdyBv08JWp9nB5zb6slzQyoK7LnCbgLDq+b5
-	 n973iaTa3okQU3IlC26xsG5vGv5hf222M+Hv1VTiLALgmYLVpxUsll+3CiL1sAsatL
-	 MjtjpE3waWKsLax//JR2ab22qYzeYXPe7+03Z+1s/yxMPyAsDLVu/bJNCop45R7RCZ
-	 Au6lcQ8cNZGKQ==
-Date: Fri, 4 Sep 2026 15:03:05 +0100
+	b=kXKnfzVXW4rNnRI+vPMis1N3J4Z0DJbAzLB2Xk0YQIFhh9SbKUiWfLZb1n9N2JXy4
+	 dHkIMcObIUxZRUwbNdzkAZ59AugMx/fb1CEVDwqZJRnX09QLpn1/BpOVlrsgIi3wZN
+	 oH5cRcGMHI+iA40/PnyE6qChmDnffEfpMgxeFPQniTt/Xnu0YW/Lwa6hzH0c452ASe
+	 mtauknshUE89obVWddAWre3+3iPzcqJ1TxE4stY2QUp2EJD8MHcLeCixjx/ZiB2nE3
+	 DxsSe7CiV2CupcAhOiUkCJl2UfKKMGmdmzHoMKfqPe20686M/rUi6+gDs6kdioeo4W
+	 HRiLdLX+fSQmw==
+Date: Fri, 4 Sep 2026 15:03:51 +0100
 From: Sudeep Holla <sudeep.holla@kernel.org>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -49,11 +49,11 @@ Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 01/12] dt-bindings: clock: renesas,r8a78000-cpg: Add
- renesas,scmi-firmware property
-Message-ID: <20260904-fabulous-lionfish-of-cookies-0d614c@sudeepholla>
+Subject: Re: [PATCH v3 02/12] dt-bindings: power: renesas,r8a78000-mdlc: Add
+ firmware property
+Message-ID: <20260904-real-owl-of-business-f4acdf@sudeepholla>
 References: <cover.1788338320.git.geert+renesas@glider.be>
- <2cf42d7ef9b452efbab3007ec2c2340cf87adbbf.1788338320.git.geert+renesas@glider.be>
+ <f1bb6566f00a06df7c01f43e5329b754a32620e9.1788338320.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -62,26 +62,20 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2cf42d7ef9b452efbab3007ec2c2340cf87adbbf.1788338320.git.geert+renesas@glider.be>
+In-Reply-To: <f1bb6566f00a06df7c01f43e5329b754a32620e9.1788338320.git.geert+renesas@glider.be>
 
-On Wed, Sep 02, 2026 at 01:29:17PM +0200, Geert Uytterhoeven wrote:
+On Wed, Sep 02, 2026 at 01:29:18PM +0200, Geert Uytterhoeven wrote:
 > On systems using the ARM System Control and Management Interface (SCMI),
-> the Clock Pulse Generator hardware registers must not be accessed
-> directly.  Instead, the SCMI message protocol must be used for inquiry,
-> configuration, and control of clocks.
->
-
-Why is this node needed in the devicetree at all or why is it not disabled
-so that any driver in the OSPM is not probed at all.
-
+> Module Controller hardware registers must not be accessed directly.
+> Instead, the SCMI message protocol must be used for inquiry,
+> configuration, and control of power domains, clocks, and resets.
+> 
 > Add a "renesas,scmi-firmware" property to distinguish between systems
 > with and without SCMI, and to indicate which SCMI firmware interface
 > provider to communicate with.
 > 
 
-I still don't see the need for this if you disable the node, so still
-NACK. Sorry if I have missed some discussions, please present the information
-as part of this patch in the commit log if not the actual binding itself.
+Same comment as 01/12 and the NACK.
 
 -- 
 Regards,
