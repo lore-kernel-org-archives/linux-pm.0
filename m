@@ -1,143 +1,113 @@
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed2-f12.google.com (mail-ed2-f12.google.com [74.125.228.76])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE95B175A7B;
-	Thu,  3 Sep 2026 21:33:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=85.215.255.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 780C435E93B
+	for <linux-pm@vger.kernel.org>; Fri,  4 Sep 2026 01:30:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.76
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788471240; cv=pass; b=LylFYxNaNpvdMUt4PFjq0VU9mrK+GX3z54l8eJQWH+fGBWsu4CVav/asvcltND5iN6xt+anlffZ9XNfW/09Jo8tAgPeHHklHnaiDpz5vTrDWqG5upACk0PWKd+s8QVmevn7Crxmpkmerg07gSTndzbY1QmnzsyqV6Xb6SBSjqaY=
+	t=1788485430; cv=pass; b=pHw4/xtBCIfKZBDvTRabm4VcnyFcIavFtBiMcNGTSFgiR8RXS92UXHYesUXbftRKJLrrBw2aBR+Hf1+RBRw7/7jr09/ASFvZLfhE68VFWFAbYCK4ztnC84Zk9yWWh5enKvmT0WuAezRWS7ViLCwjoT8X7EUedP2OV84Sx5KZBX4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788471240; c=relaxed/simple;
-	bh=Ba1g9Enw/pSe3C3idkub28I3EbLdqVQfhCWFTdvDvZs=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Y2JANl6H/JtbtcA3ldxbwoKq/82Jr5vha3oMpg5ZCMyram4jBUt91ozk4WYQydoJRqGWOEZFNyxxFNfrUgwo3MDHOT8GMca167b/l4KdnNkuvsiSv/W3LpHRdXP+sU3f1se6utrj3aLy7xaJxDhBX47IVl3jiyaDUFKciLtBh4o=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de; spf=none smtp.mailfrom=iokpp.de; dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=kNqVLXvt; dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=Vla6+HXv; arc=pass smtp.client-ip=85.215.255.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=iokpp.de
+	s=arc-20240116; t=1788485430; c=relaxed/simple;
+	bh=SYDvkh8Gqu4VGwUGF72ItVZ97u41+W0b2kbxS8TvHkA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IgHsSh4uLA9QU1yCmdEJT9TJchghDAegF+MA3aJRoUAHxU7jxVyezEDAyc9NyhIjwimjGzGlFUaHOq0gdQSx1SX+nPIZUDs4vu7aJIaDX6qT7GVZJyRQmuKYER/orH+HlxbURxRagJTGF8AIswFyZQ8GO/REo3BArIseKZnPaPw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=MtfhBwNw; arc=pass smtp.client-ip=74.125.228.76
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="kNqVLXvt";
-	dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="Vla6+HXv"
-ARC-Seal: i=1; a=rsa-sha256; t=1788471224; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=BJtVQFabtLdT7rxKEurlJ9UuTDWEo3rNQHGZM1KK76kARWszuXNMyubRtDI2gRlgWl
-    8uKxDdf5Zzg6Ebwm+wXzLM2yXi+3Fa8hP8j8uolWbAM719iFAluzuunIbvPwx/c20yMh
-    px6oPwRYjkDsvn8E6gw+Jk4rRspBrcm5mYpSqhfeNJ6zhCw8X0WJ3GUSPuhuW0CHIG2r
-    6zxr+DuI+pL4dWXA03tVMANU/n5xWvVRZkUd52oJMAgIMSg3IWGpTIw5icAJpcXjt/le
-    S7HSwhdJWAUj0C3nOZ+A1RmU7selNd4y+O1yCJWYrdlKV1JdgndpuDVAQOufYPWVfCCn
-    ivgg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1788471224;
-    s=strato-dkim-0002; d=strato.com;
-    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=Ba1g9Enw/pSe3C3idkub28I3EbLdqVQfhCWFTdvDvZs=;
-    b=K+gTdEBgnrVPltb61O/EKE9MyEzmHIPuFqB5O2HsUhYrybnpQ6e/KEYiz0cQ9JZrFu
-    deQxYARe1RMiq3H6ar16o8Kp3xyRMPSKVOfA9RCcBCwBWF9uOg8k6+pvD9+kIjaWNvN6
-    iS0AOoZELDieRagbeev+vIxSzN9T4Tm3LSTjGUylWWC03mP56Ru9ubVoj4FxMjNEyyft
-    2aaxp6+5EVFU1mHIlN4UcFx21oyR17zNxF3GvXw1bCDJovOq88nDhcMa4yCm1SjjQTUU
-    1sTskU1JMFj6DBwcFh9Df3CKP6hoawEacUWz7sLK2iZvBaxlnHaE4SM5tMYpbsUwNmuh
-    Px1A==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1788471224;
-    s=strato-dkim-0002; d=iokpp.de;
-    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=Ba1g9Enw/pSe3C3idkub28I3EbLdqVQfhCWFTdvDvZs=;
-    b=kNqVLXvt2pXbRysADHBXkXPeRwdMUk4mYXGHF7lzqOK+KKhskIfABd7kB+8dBVogwa
-    HSjGbKHBc4zlGebjuB14JMMk4eoKFJXHOpAQqIjqxehDKV61pU4LPaF9FSCg/4YCBWsn
-    KkAwvyP6hWCyfWeDcXEMj7Bvrso3qbBydwRbRRr5APEbxP43lehzS4C2cQ2ZkhI8AmHa
-    xXDNdLcl5NAmkhrK86akK5wYOchjKf1RneV9rHW7BCApbtf8+CsAD9nFk6AjB7ldnAnF
-    I8y+gUdYWOCbBxVGV4u8WDOdxeWL7IAkyOzKQa1vV7YbIytfkrqY+p5TDMb5HftXAbyq
-    lyFg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1788471224;
-    s=strato-dkim-0003; d=iokpp.de;
-    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=Ba1g9Enw/pSe3C3idkub28I3EbLdqVQfhCWFTdvDvZs=;
-    b=Vla6+HXv3bgmPIbVJCnswgALzZeJH3m4GGsuipsGlPmO2GfWPVOIkh+mxP3S9XYL9X
-    hBiivxLJPOq9XRIj4ACQ==
-X-RZG-AUTH: ":LmkFe0i9dN8c2t4QQyGBB/NDXvjDB6pBSe9tgBDSDt0V0zNriHg+YfT0rGaZpI+/vCOxdmmyL+9XI5wV29xH6dGGQb9FUYY="
-Received: from p200300c5872968f7abfc5aba940d79be.dip0.t-ipconnect.de
-    by smtp.strato.de (RZmta 55.6.2 AUTH)
-    with ESMTPSA id ze37e1283LXhzqa
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Thu, 3 Sep 2026 23:33:43 +0200 (CEST)
-Message-ID: <f1e59607ab2f5554993dacf21947024e41278058.camel@iokpp.de>
-Subject: Re: [PATCH 3/3] scsi: ufs: core: Report the current clock frequency
- to devfreq
-From: Bean Huo <beanhuo@iokpp.de>
-To: Stanley Jhu <stanleyjhu@google.com>, MyungJoo Ham
- <myungjoo.ham@samsung.com>,  Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>, "Martin K . Petersen"
- <mkp@kernel.org>, "James E . J . Bottomley"
- <James.Bottomley@hansenpartnership.com>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>, Avri Altman
- <avri.altman@sandisk.com>,  Bart Van Assche <bvanassche@acm.org>, Jie Zhan
- <zhanjie9@hisilicon.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
- linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Bean Huo <beanhuo@micron.com>
-Date: Thu, 03 Sep 2026 23:33:43 +0200
-In-Reply-To: <CAE14pddCf1VhLVC_H-Nv30C4BzK_UO4Eknd27g72d1nAjdBdpA@mail.gmail.com>
-References: <20260831130129.3979454-1-beanhuo@iokpp.de>
-	 <20260831130129.3979454-4-beanhuo@iokpp.de>
-	 <CAE14pddCf1VhLVC_H-Nv30C4BzK_UO4Eknd27g72d1nAjdBdpA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.44.4-0ubuntu2.1 
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="MtfhBwNw"
+Received: by mail-ed2-f12.google.com with SMTP id 4fb4d7f45d1cf-6a613a6bcd8so3054a12.0
+        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2026 18:30:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788485427; cv=none;
+        d=google.com; s=arc-20260327;
+        b=bBz8dDp6I8mMGNztiuJvr21Oryn2Q2j1Uqf9bZIxbEbIloCftfneOWeWFXKxhNoUN0
+         fVOblX2X7GG1JIXfYFiu5rCd2lv2NIUHulgtVbLSdTxK5mJFnAcecPdRQAYB3qNQSxX5
+         Qt5aaDhKhn1UD7J7OrIL8evmZeI0WZCWjuqcOch6HlRETdWvStFsjOXsQtY2wfM961/M
+         6wYJb5hJeoGHXdsQ//O2T3TyoqfRQRgKB2olMf9js+DXJKEzCLciuIGy57wCPr5OYw7/
+         NcwIPyV1B2jyoa0Zm1zNszNhXvMq0fH16Ic+4aUAulG0YiLJZ1RNpOLqpUwY2Q+nPkst
+         FqPg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=SYDvkh8Gqu4VGwUGF72ItVZ97u41+W0b2kbxS8TvHkA=;
+        fh=QFNk7tw89Gan6eF+e/OaA7xOydL7VL2/GMamQd2SnGI=;
+        b=aFSC4bG/zCQDPamTIibmSv3XcBy6o4/6GfmTujyZBhNywspVpd+LYXmLTDGgn87xnL
+         D5G2JAcnJS7lVF1L1ILg3xthLErgNU4w99lKdmWxERC3kUM43aZPVjPSFMdYgABav+UE
+         mpSMBw21ljGtLXprdk/YttdrvlB3mf6kT1WTdg1sgG4wc/sn7Vylr0r2mH45bo/4znuU
+         8lkDgd4n9NE/JCsMP+CquLUnw1mswgs46Mctr0gezTl6fbyG4LQz3hTAGcH8eMTQkCrU
+         PDQSAWhfPw22ndD4ngQJNdBlFLQ7QtKf0zuxQQk28UqtYg2wSLj8SU0Sh79D/9YVa51V
+         JqVw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1788485427; x=1789090227; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SYDvkh8Gqu4VGwUGF72ItVZ97u41+W0b2kbxS8TvHkA=;
+        b=MtfhBwNwaCmP8XDB4GsmJPDTGt9G4tUlQYhGcCZ1xj8Htm7Y2ex6sp+ShcjBHwfaIi
+         16Mrrxej+thURnxSf6CeOXVqSeWXGJo4TAjsC1SKZLZVMFfipRIpk+mXWdy0Ro3530bS
+         JoNHGrirrSwrGReEJIlcjOz20N3o7V+BNPoVDlv8SSq88DoAM7lytMYwJ4PQ7aC1z3I/
+         AvKMJ1426IXCK+o3+PV0GZYB5E0+lxiYRicRzt5VgzNAXpwGsgWQQ1EdScUu94LD7vbp
+         boUbC0tRfKtiN+Nj1qahH90k3t1pr9VcPNqKzOMKigGjjiqObbN0qQD7cVIa113N3AcC
+         SYiA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788485427; x=1789090227;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=SYDvkh8Gqu4VGwUGF72ItVZ97u41+W0b2kbxS8TvHkA=;
+        b=aSDlq//mjCFBlu2hKnEk+83MHRAasYjInovtTY4Vk8wDm25lOMLIqfrqNxdx5/EUSX
+         Srbi5uuTDTFrlhQ9LXnfFDHgQ85I58qgd0hYYik8eBDJmsjtzo+jrME+bWPuflsV7eG2
+         zw9nLYorrK2wnwVp+sTCMRP84xaZGWUG9bT8w7Oy3neQ2MXnnunGVV1878IKj+9ye+Oh
+         f/WNFVXE0SSxFIzvumrvGVkp36Q9H5wf+0XsDzSEHTu6LoKRisR1rR3hT9uG42aYWSZb
+         cEGhnxuLiuspx8sMy1GIByoUg88PcIjeUyeFsGRu+/tHpDIyW+og02c2OLIYxglCkUoD
+         jEYA==
+X-Forwarded-Encrypted: i=1; AKwUvBzGnnKSlS/vBcxEhFghVwDarZAKqLIU6VoAq+Qq9DDYZH4HG3vcOZyw3HuTZhoG/vyprDEEY543Mg==@vger.kernel.org
+X-Gm-Message-State: AFuF++mz5lc22Ig2MKU8xwkaMY94OC9+fS7/NcJoRMpPWtyw//rK6aHB
+	tpsigyugg2GRSGfARnClOTMeDjtTob+6Tn/3QYl5d+gmxP96SKqiKhKNYumlBU/7pwEXsf2k2uo
+	aYSGWF9dGCc67JkgrTEbD8AtaNGpiFKUnXl/cHik0
+X-Gm-Gg: AYBFou2lHwyurHZ7T9fJVM0YmjU+8S2AUCi27ovVB9lkDkeM6tdFsQ65MGWlk+BQP0Z
+	SWj2sw+izIGKEBqgus8lPHr1/b5JR/zeqnLNKEcyIq7jI/uymcQs7UA4uIJS4QL3jcvMRMwv3a6
+	OaWXTqffp9jYhqKScSvensxeY5PppGPtW7cYev0jB62b7hBtalLN7V2vL6xDU5uo6OZkGXSl4qL
+	ltkSMvEb/1tMSpxoDWSJjUAURVRStJfCN07gYsvBeZaQU+eZNsO8+HITvpDF8hKJbpqitUUd+/2
+	14EIYvwJfuxEZW4SfLdGtDeSg2Zjen1YLoU846QIKGs=
+X-Received: by 2002:a05:6402:1154:b0:6a6:76c7:65d0 with SMTP id
+ 4fb4d7f45d1cf-6a7e9dc0cedmr7971a12.5.1788485426203; Thu, 03 Sep 2026 18:30:26
+ -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20260831130129.3979454-1-beanhuo@iokpp.de> <20260831130129.3979454-4-beanhuo@iokpp.de>
+ <CAE14pddCf1VhLVC_H-Nv30C4BzK_UO4Eknd27g72d1nAjdBdpA@mail.gmail.com> <f1e59607ab2f5554993dacf21947024e41278058.camel@iokpp.de>
+In-Reply-To: <f1e59607ab2f5554993dacf21947024e41278058.camel@iokpp.de>
+From: Stanley Jhu <stanleyjhu@google.com>
+Date: Fri, 4 Sep 2026 09:29:46 +0800
+X-Gm-Features: AcwNN1WqpKQ9dvQE183nH8HsNdiEUkNRgZ_8L4LRNHHVTD2yt5OLSz9J4XIN8jY
+Message-ID: <CAE14pdffhBju7fdez5Aewzz-rBCoRWDuCZJrOej9iJrFCR5+HA@mail.gmail.com>
+Subject: Re: [PATCH 3/3] scsi: ufs: core: Report the current clock frequency
+ to devfreq
+To: Bean Huo <beanhuo@iokpp.de>, Stanley Jhu <stanleyjhu@google.com>, 
+	MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, "Martin K . Petersen" <mkp@kernel.org>, 
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>, Avri Altman <avri.altman@sandisk.com>, 
+	Bart Van Assche <bvanassche@acm.org>, Jie Zhan <zhanjie9@hisilicon.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Bean Huo <beanhuo@micron.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 2026-09-01 at 09:33 +0800, Stanley Jhu wrote:
-> On Mon, 31 Aug 2026 15:01:29 +0200, Bean Huo wrote:
-> > +=C2=A0=C2=A0=C2=A0=C2=A0 /*
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * target_freq stays 0 until something s=
-cales the controller for the
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * first time. Report nothing rather tha=
-n 0 so devfreq falls back to
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * the frequency it last set.
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 */
-> > +=C2=A0=C2=A0=C2=A0=C2=A0 if (!cur_freq)
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 return -EINVAL;
->=20
-> If ufshcd_devfreq_get_cur_freq() returns -EINVAL here, devfreq falls back
-> to devfreq->previous_freq. However, because UFS does not set
-> devfreq_profile.initial_freq, previous_freq is also 0 at boot. On platfor=
-ms
-> with use_pm_opp=3Dtrue, the initial sysfs read or the first transition be=
-fore
-> scaling still ends up seeing 0 Hz.
->=20
-> Would it be cleaner to initialize hba->clk_scaling.target_freq and
-> devfreq_profile.initial_freq to the max frequency in ufshcd_devfreq_init(=
-)?
-> That way, cur_freq is valid from the start and we wouldn't need to handle
-> the !cur_freq case here.
->=20
-> Thanks,
-> Stanley Jhu
+Thanks for digging into this, Bean.
 
-yes, thanks, that is better. I will do it in v2.
-digging deeper, the problem is a bit wider than the sysfs read. with use_pm=
-_opp,
-ufshcd_init_clocks() already puts the controller at the highest OPP, but no=
-thing
-records that, so target_freq stays 0. Then ufshcd_devfreq_get_dev_status()
-reports 0 Hz, the ondemand governor asks for the maximum frequency, and
-ufshcd_devfreq_target() sees 0 !=3D max and runs a full ufshcd_devfreq_scal=
-e().
-That holds up the queue for up to a second only to set the same OPP and the=
- same
-gear again. This happens today, without my patch.
+> That holds up the queue for up to a second only to set the same OPP and the same
+> gear again. This happens today, without my patch.
 
-Patches 1 and 2 are not affected.
+In Non-OPP mode (!use_pm_opp), devfreq_profile.initial_freq also needs to be
+initialized to clki->max_freq. Otherwise, devfreq->previous_freq remains 0 and
+devfreq_update_status() drops the initial time_in_state accounting.
 
-Kind regards,
-Bean
+Thanks,
+Stanley Jhu
