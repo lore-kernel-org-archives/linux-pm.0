@@ -1,142 +1,161 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1652B4E66A3;
-	Sat,  5 Sep 2026 17:12:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788628364; cv=none; b=mCs3e2moi0uHIOiDNEYcj22WlsqtP/rKQoRtAyaPIcNpTuCEfADyAB4WM0vuk5bb4PQWvyxhec7Ln2JAa3vCl1y9/CjjUJutkePUKQqmwtyM2rUBD5x7HAxHeQYK3GYNy7EDE2VJgItP4fp0/3Eqp4n/jlMAFbP7PE2yvSJ60C8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788628364; c=relaxed/simple;
-	bh=0WlEQ9NTGdKsJKuEva5krlDpHGDjDnq6UoWcffek8f0=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE8CF36A35C;
+	Sat,  5 Sep 2026 17:46:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788630373; cv=pass; b=ODd0V3N0m1gGp2grFEqRkLUvHZeyzu+/Q+vDWsqezSzXYXGLlTZCvGZF/Be2PB6VS+l4hxARdqS1YOaLSUV9opFiNUgX8ty9OH2P7lM2c9ItkcwGnEy8Qq0FWzpmwOog+BnWMBCTqJynpWvLsZWUINZZ1bNhGLu+lF5lhSlzjp0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788630373; c=relaxed/simple;
+	bh=5uhz3zPKmg7MeOTZph5AS8lS+MnWzydKmQm8fqk+qSI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=q7MNNDufF2d+Kd/3g5h4UNOZt6kaWobCC1ZBJXJwq5pGCSQr+LAUf35yVAM7mu61vszAWau+6/9Pmvdqb6t8PKdpOww/CdQRTPUH7SXrAIxxZFNDwTor6Hr0UX9MwmKc9VC36EtLF5tAfOXBxjHF8ZYKwngjaWGLO7Bx1wB6dHw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=vu5jVN6t; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=OOrMb3AdOi9CztAYg9Xg6Se6GgS22FMToLCRcDZias0VLEzLotMgKfdiUpCAtTqDzYv3ye9BJURAj54G+hgC0D/i6fJuX+dkyrfXWa+Hani8js5xsqk+7mC0QOQRgBtwK81qHufXVMP1XvChzPduYJVbSc/Hn4ahybHDaLuQtmk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Hi6nG0S9; arc=pass smtp.client-ip=165.173.182.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="vu5jVN6t"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD0D31F00A3A;
-	Sat,  5 Sep 2026 17:12:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1788628362;
-	bh=nGLgAQNoLfaFQJxAXDIrwWwGfi/EusKEG+W7YzFtytE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=vu5jVN6t+KEiza92TxzuY2GyQ5v5znR6Jd+89lg+bcwlBXTbHyicxN8ZgLsx8+BHw
-	 NjYX6BC0hSTjYnz9yCUp6CTmtPj7qgsOs1SLQf60rFVEXAM3RJJO7GrXLvnSZnaek7
-	 arfWIizLy9CZtYncZSyePjJ45ny4BaC6XhEfygZU=
-Date: Sat, 5 Sep 2026 19:10:56 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Bradley Morgan <brads@mainlining.org>
-Cc: Jakub Kicinski <kuba@kernel.org>, linux-kernel@vger.kernel.org,
-	Tejun Heo <tj@kernel.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Waiman Long <longman@redhat.com>,
-	Christian Brauner <brauner@kernel.org>, Kees Cook <kees@kernel.org>,
-	Andy Walls <awalls@md.metrocast.net>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S . Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linux-media@vger.kernel.org,
-	netdev@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-pm@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH v2 0/5] kthread: convert remaining users to
- kthread_create_worker
-Message-ID: <2026090500-seventh-come-270c@gregkh>
-References: <cover.1788513591.git.brads@mainlining.org>
- <20260904085418.50d66b34@kernel.org>
- <84548BCE-377E-4900-A2EF-177B0CC1B0D0@mainlining.org>
- <20260904141032.34f7ed1b@kernel.org>
- <2AE8656F-326C-40B5-BA11-EB9CD72D2AF7@mainlining.org>
- <2026090514-smuggler-elixir-8888@gregkh>
- <6F579B00-7B91-49F4-99FF-5F31E844355C@mainlining.org>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Hi6nG0S9"
+ARC-Seal: i=1; a=rsa-sha256; t=1788630367; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=GrOk6ZfbYtAj7/EB6W+Y75LBRByVBwxzY8RgWZ753Amu9RA0jdMEleofY9feLBPjDMatWLwszPvvFUy+waheNdwhThE00G7RyT5PkKEKAUHfKtbtZKi0sj8z/4ERIiKyMgpZp2yIva/zxp2DWh8f5kAnzkJJBeqCY5mZPgqaV8o=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1788630367; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=QE5R5fAoLrk8JJJFLNeZLS3DgtOBX690cH1EOVQ1MMU=; 
+	b=XIvBt20He3faBzh8TpNlH0MDB19H/fq+n2rU2sg+jOAGCRKIuGu3R0cu43/drh0E5ZQO+0E+HeL6AWd1pfCQ7MNIXsO2OWqe7HVv7km48OUWGFyqni8kKPUX8T9WLzcO35hYf+4+DIgcmQVCFx+z+UMM80fn40QqBjPS71sRfzg=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1788630367;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=QE5R5fAoLrk8JJJFLNeZLS3DgtOBX690cH1EOVQ1MMU=;
+	b=Hi6nG0S9X91BVYe/auAvwBAKnB6XWOJ80yeYuFrFxidBvuo7OORNLAgq0o9MQSzd
+	TXv+Bhd3pGZoGAf3coO54ilrFT9Wxj3ppY2X4UTwOQkfayqt+5SE2Pxx70vZ9M8jgbe
+	tZ9spmiaDcsvnMxEpMqvrSCUw4SR3iqxg9+5ABbI=
+Received: by mx.zohomail.com with SMTPS id 17886303659001018.1388607569507;
+	Sat, 5 Sep 2026 10:46:05 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id 768E3180921; Sat, 05 Sep 2026 19:46:01 +0200 (CEST)
+Date: Sat, 5 Sep 2026 19:46:01 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Itay Shem-tov <itayst@gmail.com>
+Cc: rafael@kernel.org, lenb@kernel.org, linux-acpi@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: SBS: report relative state of charge as CAPACITY
+Message-ID: <apxVEvGoao0iVGlh@venus>
+References: <20260903104244.25556-1-itayst@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="lrvelqnztqiomtnt"
 Content-Disposition: inline
-In-Reply-To: <6F579B00-7B91-49F4-99FF-5F31E844355C@mainlining.org>
+In-Reply-To: <20260903104244.25556-1-itayst@gmail.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/288.604.18
+X-ZohoMailClient: External
 
-On Sat, Sep 05, 2026 at 01:55:35PM +0100, Bradley Morgan wrote:
-> On 5 September 2026 12:19:54 BST, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >On Fri, Sep 04, 2026 at 10:13:32PM +0100, Bradley Morgan wrote:
-> >> On 4 September 2026 22:10:32 BST, Jakub Kicinski <kuba@kernel.org>
-> >wrote:
-> >> >On Fri, 04 Sep 2026 16:56:30 +0100 Bradley Morgan wrote:
-> >> >> On 4 September 2026 16:54:18 BST, Jakub Kicinski <kuba@kernel.org>
-> >> >wrote:
-> >> >> >On Fri,  4 Sep 2026 09:37:21 +0000 Bradley Morgan wrote:  
-> >> >> >>   media: ivtv: convert to kthread_run_worker
-> >> >> >>   net: encx24j600: convert to kthread_run_worker
-> >> >> >>   tty: sc16is7xx: convert to kthread_run_worker
-> >> >> >>   cpufreq: schedutil: convert to kthread_create_worker  
-> >> >> >
-> >> >> >Please send these 4 to appropriate subsystems
-> >> >> >  
-> >> >> >>   kthread: remove worker->task self assignment  
-> >> >> >
-> >> >> >Then after the next merge window when trees converge send this one
-> >out 
-> >> >> 
-> >> >> hi, I was hoping one person could merge it with acks from all
-> >subsystems
-> >> >
-> >> >Not how this works.
-> >> Ugh, I've seen it before happen.
-> >> 
-> >> Look, fine, I'll do a V3 soon, WITH ONLY the subsystem changes, all
-> >> separate, all sent over to their respective maintainers, then when all
-> >> thathas been merged and there's the next merge window, then whatever,
-> >I'll
-> >> send then the kthread removal
-> >> 
-> >> IMHO this is a massive annoyance though.. because what if one of the
-> >> driverfolks doesn't wanna respond to me!?!
-> >
-> >Then, after trying for the normal way, you can make the driver change at
-> >the same time.  But to circumvent the "normal way" thinking it might not
-> >work, is not the best thing to do.
-> >
-> 
-> Greg!
-> 
-> Right, okay, Ill tell you more.
-> 
-> For features being added, where many drivers from different subsystems get
-> covered at once, what they tend to do is:
-> 
-> A: send all patches, rely on all maintainers to merge their own crap, which is a mess
-> 
-> B: Have a designated merger, who merges all the changes at once, no chance of regression because it's all bundled up.
-> 
-> 
-> C: send drivers first, then send the feature. So then driver maintainers can merge their crap, then the main feature gets merged in merge window 
-> 
-> I prefer B, because it's easier that way, akpm is usually des merger hence
-> I CCed him.
-> 
-> Or tip tree?
-> 
-> Honestly, if I had to be honest, C is a very annoying way, because of what
-> I said above, if driver maintainer thinks I'm some newbie idiot or
-> something, then what will I do? He won't merge it!
 
-To quote a longtime kernel developer years ago, "Kernel development is
-hard, let's go shopping."
+--lrvelqnztqiomtnt
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] ACPI: SBS: report relative state of charge as CAPACITY
+MIME-Version: 1.0
 
-Sorry, but yes, it can be difficult to touch cross-subsystem stuff like
-this, always has been.  Just be patient.
+Hi,
 
-good luck!
+On Thu, Sep 03, 2026 at 01:42:44PM +0300, Itay Shem-tov wrote:
+> acpi_sbs reads SBS command 0x0e (AbsoluteStateOfCharge) into
+> battery->state_of_charge, which is exported unmodified as
+> POWER_SUPPLY_PROP_CAPACITY.
+>=20
+> Per the Smart Battery Data Specification 1.1, 0x0e is expressed as a
+> percentage of DesignCapacity and is explicitly permitted to exceed 100%.
+> Documentation/ABI/testing/sysfs-class-power specifies the capacity
+> attribute as "Valid values: 0 - 100 (percent)", so any pack whose
+> FullChargeCapacity exceeds its DesignCapacity - the normal state of a
+> new or recently replaced battery - makes the driver report out of range.
+>=20
+> The correct source is 0x0d (RelativeStateOfCharge), a percentage of
+> FullChargeCapacity, which the specification bounds to 0..100.
+>=20
+> This is the same defect that was fixed in the i2c SBS driver by commit
+> b1f092f6480e ("sbs-battery.c: Capacity attr =3D remaining relative
+> capacity"), whose reasoning applies verbatim here; drivers/acpi/sbs.c was
+> not updated at the time. drivers/power/supply/sbs-battery.c has used 0x0d
+> since, so the two SBS drivers currently disagree about what CAPACITY
+> means.
+>=20
+> Observed on a MacBookPro11,1 with an SMP/bq20z451 pack
+> (FullChargeCapacity 6775 mAh, DesignCapacity 6400 mAh). Both registers
+> read back-to-back from the pack at a full charge:
+>=20
+>   0x0d RelativeStateOfCharge =3D 100 %
+>   0x0e AbsoluteStateOfCharge =3D 106 %
+>=20
+> /sys/class/power_supply/BAT0/capacity reported 106 while upower, which
+> computes charge_now/charge_full itself rather than trusting the driver,
+> reported 100.
+>=20
+> battery->state_of_charge has no other consumer, so no other property
+> changes behaviour.
+>=20
+> Signed-off-by: Itay Shem-tov <itayst@gmail.com>
+> ---
 
-greg k-h
+That also matches the sbs-battery driver (drivers/power/supply/sbs-battery.=
+c):
+
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+Greetings,
+
+-- Sebastian
+
+>  drivers/acpi/sbs.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
+> index 86b7c79..862cb94 100644
+> --- a/drivers/acpi/sbs.c
+> +++ b/drivers/acpi/sbs.c
+> @@ -318,7 +318,7 @@ static struct acpi_battery_reader state_readers[] =3D=
+ {
+>  	{0x0a, SMBUS_READ_WORD, offsetof(struct acpi_battery, rate_now)},
+>  	{0x0b, SMBUS_READ_WORD, offsetof(struct acpi_battery, rate_avg)},
+>  	{0x0f, SMBUS_READ_WORD, offsetof(struct acpi_battery, capacity_now)},
+> -	{0x0e, SMBUS_READ_WORD, offsetof(struct acpi_battery, state_of_charge)},
+> +	{0x0d, SMBUS_READ_WORD, offsetof(struct acpi_battery, state_of_charge)},
+>  	{0x16, SMBUS_READ_WORD, offsetof(struct acpi_battery, state)},
+>  };
+>=20
+> --
+> 2.51.0
+
+--lrvelqnztqiomtnt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmqcVVYACgkQ2O7X88g7
++po7RhAAoruDVvUNPtdJ8J6J7bWwFbFbrg4zuKPkMAvO/XjqaoQmP6pvdMA9dq4p
+Bfdj2b+sjjAlr+Htezih6bIJ9+M4BTk20ZXoKeslqoFgmwAMqPJbSRsbV+mHE/Tg
+E4HSeLlsgTmaA5d4rZ6+3B94c6As78+vpuR2a3VC2ZO9cVjknV/20DX+ebqZgEpe
+QDI1acFzap6OIt0TIMs7T2VbAcdja307jZWYqZV4gkpnnVnFV1qDqHkAJsqdoeXr
++pVwhLFJlTGIZvE5YycsLDyrdilN9dvwlkensP5hp5i/zMvnMM+tbpVMyYndi6Ge
+krCh5jZQLm0H4dUGDBMk5f399N8zQgLMqvgjineH+CYWELrzpJYRTf5HYx3JySEg
+b7xp4iX4lXETbWQyru4yrXA2+9pl6BCLXtT5aqr1KyW632B5YFVnph5sEvzlJ00a
+KhpoRtLNqR8Nsu4yAfe+n2c0/XNkBcxlzJbQ+agdh8FAgsemhGDRcNoY1jog9zAb
+W2Lfh6pTFjVBK797DPgC9qVWu8yWXDkqfV8XJoD1qFSKV/p0/ya2Via8LG/IK5c+
+7SUagftME2jOY7ZAxiqiRpWHYb9nxNrxRFKuCtjHOqV8ZWAcA/6TodGYBjjphmvm
+3KGqMP/fbHBx318n9vudHN0H4hnAixPHe8Tpuw9EeHCDf4EzYO0=
+=amjn
+-----END PGP SIGNATURE-----
+
+--lrvelqnztqiomtnt--
