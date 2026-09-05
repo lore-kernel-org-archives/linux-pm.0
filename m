@@ -1,135 +1,114 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AFE536494B
-	for <linux-pm@vger.kernel.org>; Sat,  5 Sep 2026 01:07:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7CA5E555;
+	Sat,  5 Sep 2026 02:43:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788570440; cv=none; b=WrooF/jg706X9SjANB95Fjqzy8eK2334rr5jTREquPI0dAcG1xgiwI8Njgpo4wPXruuLu6VrRgRiB4G90FjKfKyKtfQyrXRGGYlnoyCJZtAEioCzaNqizD9Yncrj5gE06x4a04Sk/jBKqeXWKA7kZiZmSotbonJ8EvlrKmv891w=
+	t=1788576194; cv=none; b=nFZdrgH+qZKqqGo0mmF1ee3jN0MzzaCVQTdWLIkaz3uz4YiObrQD7ddENMY9vLvmSrVFXMiW84TCpoDAYBtCif5KxAn6w0eHsHAzIPLZhd5FTu0a725+vSOTdZ8yLP/Oulk4/jJ3dsFSRfltnyMlzLZanBIr4zcEb1vT+eNrQ4A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788570440; c=relaxed/simple;
-	bh=EglbqXi5LkNp5XA0SdAdE1SDNtn/R/F03DiG2hMoAMc=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=HqsMWVBqdbxPQh/UploAg5GVJX9HiB6mP/yfHG3m4wl3pXGK07jJ1c93RBsLZmm6baNsBcbSdyAPwNUMPk+BjpEQD1qStU86Cg7EIpdcRrGwk/5guEriCAHw18GuZyA9O2iCz0vqrDGiLHDGJ+5Eq1wvyq16TqblqgV1zl+yma4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WRdmouKW; arc=none smtp.client-ip=209.85.128.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788576194; c=relaxed/simple;
+	bh=NL8wV8udqlC0jqepGrOVGRPBMbJC+8YDHNSdM38TSag=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uNWnR19a71uVlBjIlGLRtrwVgJpscAdAd4PQf9jAguzZfskPGeEqITn9b6U8L8DerwWkHEYJKs7Cclt22r2E837XsdyRCUutt2wFSpFs/k0id8i1mySEXiIWAcS4Poe5DwBjdcpxgIARVpVaMhoLeuJeQTQxNmOxAklz2it/oVo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=BKm5LAr8; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WRdmouKW"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4921eed3fa2so21019555e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2026 18:07:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788570437; x=1789175237; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zr9fpDIO6FHp21CzkCP2RgEnzt+svRUnC4ckIWi1ofg=;
-        b=WRdmouKWyohjJTz2OkrmjAfof7MvG1MiMudP8rxj7YDvbvkYXI3RaOIJMDmph4+x8M
-         /yQuItbIWe0u3jmCbL9L5eSwvXuPyPtEQjTz95GJNHpFUKp4XKjlZvjSui3wLliC8+iE
-         HrkBfwN0MmE80ETdBRFAXF75wd07RJVq6KcQErNdWu8zP/IdSl/i72CB8NyAtNqCw058
-         Nx4xBoY2Eb9nJww34YlB/WNBk4tphDALAJDSeFYZFepZ4b1vRS8z27uLpFtbNPy3FFHi
-         Wjjy5VtbJOEPkC5q9Q8Hu7rf/vQPzjqROvzxp3wZMHBHPOtjpdSxONWG6M098umufEoh
-         PN/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788570437; x=1789175237;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=zr9fpDIO6FHp21CzkCP2RgEnzt+svRUnC4ckIWi1ofg=;
-        b=D2/pp6M95sqJ9nI0EYj5S2nCNdwOTCxeKunznQZvd1puiBb0LJcnNyliceN00Om1Kb
-         NeyPHLYdttymGUsWlu0cHY7JG/EmqwZ1Qw6KscEJ7ZBEmyGilmay2JX3Cj3PAhTUWh94
-         Qw2gHFI/5/bt2I/NsaAMnRkMD74haq7kdUno68eIfjIkGfpjbWmdLZRapK5UAR1qaHld
-         j6CivZkaCYTqKy7XyxL+eTr3bYicUHrNu2fRTigdA9rHawQtVtYfpG1jlG7VOG8PfPS3
-         fvNJso2sN7RdD8QjkC0QM32Yft6aVvRPQrknihVeNgoJ4/FSh29a5JPzzqNvwYaK+BF3
-         Hvpg==
-X-Forwarded-Encrypted: i=1; AKwUvBz2uoRhQoR9ckvC6oWdnauH+HBYs0a9a1ZWEPaA21gSDBrMMGnKh02pftHYQ/6hyq69ebDobKbkYQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mNK9tU/WAU+SBi57vTTTlLElmK6Nrbt4broyF/HX/w5dL9Eotj
-	kRosSqLmOLxmjAjHbxbKdxjusr9r19jCUf/ab0NeFTB9fN0mVh2dg2fu
-X-Gm-Gg: AYBFou361msPiWsnqEkPFTGzfyWUcCvbvzBdinIgtmyfI1ltonVTh52wFKT1AkoKL7a
-	c7JEDIoALJk3pXzh1mTzbVtEMov3kb8aF2xcP0eYJYcenON4UsTFUA/B28FeyAYU7oZtsRW+w1h
-	hAw9D0J8u327O0PSBV6Hwn1X5MvzgXVY9l4lrbCHK+xVp/ZIhGGBxh/cDvziMT+W6NmqkfJHohZ
-	Yh8KVVXvm4rVL8iiBLTbx9uwUMFk15gGy2PY47m8xBYvmRgguH/kmCDVSpJh8KGWXSq6ueAGcdS
-	33g8ZjAxRDgmZjJlUDvey5sYvzKQnxGthWW6hX/8R2WYKrLrPK/ZfaVKkHaVG4hkuyYjyxn1Nl8
-	Mhh34+1xAqwLsp2zH3A+ml++UTOqEMtz91/OWCJIQIT9k1oX8TaGVWUIfVMFRD+qD1aPngCw9Yh
-	HZTYTt2bKt5u/sTypsTqiNIEVKY0dSOWLiuth7ozFXL0BBKLqIOwu2Aac/YmDxC4/SXkQrqXuOV
-	gJ/PFBI5pBwfIpx76j8TvtNFOjQ+J1ZuZahZxXGB+2u8uNNI36xB5AwuPkA+UcLrt8NAfx+QVqQ
-	pnoJYiGOCNXABCpBcKAoFzD/dgzsY/Ych312jC3s32I5u5ynXmNDXk8OjsTzra7dxmU=
-X-Received: by 2002:a05:600c:628b:b0:49c:fa21:e742 with SMTP id 5b1f17b1804b1-49cfa21e956mr66582325e9.24.1788570436399;
-        Fri, 04 Sep 2026 18:07:16 -0700 (PDT)
-Received: from localhost.localdomain (dynamic-2a02-3100-a4f2-6901-14a0-23ad-a35e-aa8c.310.pool.telefonica.de. [2a02:3100:a4f2:6901:14a0:23ad:a35e:aa8c])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49cee5f912esm195777265e9.4.2026.09.04.18.07.15
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Fri, 04 Sep 2026 18:07:16 -0700 (PDT)
-From: Karl Mehltretter <kmehltretter@gmail.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Karl Mehltretter <kmehltretter@gmail.com>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	"Mario Limonciello (AMD)" <superm1@kernel.org>,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp documentation
-Date: Sat,  5 Sep 2026 03:07:06 +0200
-Message-Id: <20260905010706.57380-1-kmehltretter@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="BKm5LAr8"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=uMhkbPNUPP0/5xSmauZOIhML0VJtIhTIbKixDca73dM=; b=BKm5LAr80SqIJKWhCgnKyS9q0Q
+	iW+jnoG1mNz6HNDv7+OHwKG+/VNU49s+8NcgEwQ0DuRZoqLokxC6IqmK+PDc68xAuMxUPk5NXYX0G
+	/0pccZp4eAGEl8BQVoYvv5023ZWsxSoeab/sdsl+DWR9yhQ9iEWMb1A+mTGnibpM5jLS5z+869sJd
+	Z5OyOyZeLb/gNMoWO/FoEMULdFAlAtpUcP12aKYsznf9IcPa2+pyxKtM60oNdrq/G8hZws838lzHJ
+	Q3xjGU7V/mUObOQFBk3q6PJf3w7f7IwbWX6HoZfpPL3DsApvmWRMdbaxk14awIQITXrb14PtxQsVy
+	bp5vpUPQ==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x2gN4-00000003buX-2FGw;
+	Sat, 05 Sep 2026 02:43:10 +0000
+Message-ID: <5b107a2b-743d-43af-9fbe-32e2d0cc4301@infradead.org>
+Date: Fri, 4 Sep 2026 19:43:09 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp
+ documentation
+To: Karl Mehltretter <kmehltretter@gmail.com>,
+ Jonathan Corbet <corbet@lwn.net>
+Cc: Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+ "Mario Limonciello (AMD)" <superm1@kernel.org>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260905010706.57380-1-kmehltretter@gmail.com>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260905010706.57380-1-kmehltretter@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The amd_dynamic_epp command-line parameter was removed. Dynamic EPP
-is now selected through the per-policy energy_performance_preference
-attribute, which is already documented.
 
-Fixes: 32692fcf61ed ("cpufreq/amd-pstate: Remove "amd_dynamic_epp" cmdline and "dynamic_epp" sysfs")
-Assisted-by: LLM
-Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
----
- Documentation/admin-guide/kernel-parameters.txt | 7 -------
- Documentation/admin-guide/pm/amd-pstate.rst     | 6 ------
- 2 files changed, 13 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 4a12805a50ba5..1fa37bce5bb3a 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -499,13 +499,6 @@ Kernel parameters
- 			disable
- 			  Disable amd-pstate preferred core.
- 
--	amd_dynamic_epp=
--			[X86]
--			disable
--			  Disable amd-pstate dynamic EPP.
--			enable
--			  Enable amd-pstate dynamic EPP.
--
- 	amijoy.map=	[HW,JOY] Amiga joystick support
- 			Map of devices attached to JOY0DAT and JOY1DAT
- 			Format: <a>,<b>
-diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index 6fd72ba52df20..4c5d3d8acf645 100644
---- a/Documentation/admin-guide/pm/amd-pstate.rst
-+++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -481,12 +481,6 @@ For systems that support ``amd-pstate`` preferred core, the core rankings will
- always be advertised by the platform. But OS can choose to ignore that via the
- kernel parameter ``amd_prefcore=disable``.
- 
--``amd_dynamic_epp``
--
--When AMD pstate is in auto mode, dynamic EPP will control whether the kernel
--autonomously changes the EPP mode. The default is disabled. It can be enabled
--with the kernel parameter ``amd_dynamic_epp=enable``.
--
- User Space Interface in ``sysfs`` - General
- ===========================================
- 
+On 9/4/26 6:07 PM, Karl Mehltretter wrote:
+> The amd_dynamic_epp command-line parameter was removed. Dynamic EPP
+> is now selected through the per-policy energy_performance_preference
+> attribute, which is already documented.
+> 
+> Fixes: 32692fcf61ed ("cpufreq/amd-pstate: Remove "amd_dynamic_epp" cmdline and "dynamic_epp" sysfs")
+> Assisted-by: LLM
+> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+
+Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+Thanks.
+
+> ---
+>  Documentation/admin-guide/kernel-parameters.txt | 7 -------
+>  Documentation/admin-guide/pm/amd-pstate.rst     | 6 ------
+>  2 files changed, 13 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 4a12805a50ba5..1fa37bce5bb3a 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -499,13 +499,6 @@ Kernel parameters
+>  			disable
+>  			  Disable amd-pstate preferred core.
+>  
+> -	amd_dynamic_epp=
+> -			[X86]
+> -			disable
+> -			  Disable amd-pstate dynamic EPP.
+> -			enable
+> -			  Enable amd-pstate dynamic EPP.
+> -
+>  	amijoy.map=	[HW,JOY] Amiga joystick support
+>  			Map of devices attached to JOY0DAT and JOY1DAT
+>  			Format: <a>,<b>
+> diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
+> index 6fd72ba52df20..4c5d3d8acf645 100644
+> --- a/Documentation/admin-guide/pm/amd-pstate.rst
+> +++ b/Documentation/admin-guide/pm/amd-pstate.rst
+> @@ -481,12 +481,6 @@ For systems that support ``amd-pstate`` preferred core, the core rankings will
+>  always be advertised by the platform. But OS can choose to ignore that via the
+>  kernel parameter ``amd_prefcore=disable``.
+>  
+> -``amd_dynamic_epp``
+> -
+> -When AMD pstate is in auto mode, dynamic EPP will control whether the kernel
+> -autonomously changes the EPP mode. The default is disabled. It can be enabled
+> -with the kernel parameter ``amd_dynamic_epp=enable``.
+> -
+>  User Space Interface in ``sysfs`` - General
+>  ===========================================
+>  
+
 -- 
-2.53.0
-
+~Randy
