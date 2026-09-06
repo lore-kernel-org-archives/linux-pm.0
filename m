@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9BB530EF91;
-	Sun,  6 Sep 2026 06:28:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBBDD4315F;
+	Sun,  6 Sep 2026 06:29:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788676105; cv=none; b=TEZHEAkI5FkrrGpxQNAtbJ3I1nA1in5u8ktTyA0mA55TTRJPaccpuQAlMx3sfi0sXDEStca7u56/pZj+6/8J0Ygih8TAOOTNc6b0fFoKF0+mzxIAV3Uuk4L8JGfxD2cT7ft1MeoQ8TMgUQLywfqEQZTNs/nu7HQLdOqcXCVJFBs=
+	t=1788676166; cv=none; b=mKhr4KgsWYCCvZwfgE5/hLNpUy9mEruOqWnGAOZZs5wKRzKlCIJWvz3oX12kvXYMu41m4HfmNnMhXr9KOTB0CBpzbREiTBdAqBpolyTftsbTnjpWZUOrCbJZ1XlIXYzWMX60Iec6BcX3loTBGtnpvl6kLXDWnhdoJwqt7tfAWNs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788676105; c=relaxed/simple;
-	bh=SI1DbhfW6wgg8N0EO+LRAXtEuq+QyxChY2pvVEzfc40=;
+	s=arc-20240116; t=1788676166; c=relaxed/simple;
+	bh=BHip4l1py4NaFPNqUac+6+uaYJyNt6+wwIiVSA+QeKg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OlvtLwmAzvDOMgx2QLERXrTYZyZeCNimueSejFvgZL0/6Qh6Z1agEVmqT03pTeq9ejZIc7tOvwEP70EISs3pTLbjNGvhljpujLUzMr5BZFKGWpRtHaEeSLrTB9ZIcE3s5YCU8wI81j3QCJHTDDrgMnWpqhq5+KULlJlqBwII9LM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gzfB8gTV; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=tjRwrUYCzqLAar7/NjcwCvo/8Hm+PNGyyYKXSdcaHMoZdEDyDxcAm8QBnxTtHy/9RKbzu9ntVGttSytdcLri7Ry2JuoTMQNwADnUPJlvmw1IsTbK4mii1I8ACdrq8wuRZRvif0aHSu0Tko2oLre2E4aHODIJ0oWqiWLZQCL5TZk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lOzjWQD4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gzfB8gTV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0DE01F00A3A;
-	Sun,  6 Sep 2026 06:28:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lOzjWQD4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA63B1F00A3A;
+	Sun,  6 Sep 2026 06:29:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788676104;
-	bh=cDeuKp5WsdI0dDzfnIPbj0wB79lzDGMn/xQx1duKG/o=;
+	s=k20260515; t=1788676164;
+	bh=VKVjfeyjSEphdS/S7H4LmR3lrklRud9v5DENy/GPjzc=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=gzfB8gTVhGtKWpkJn8A+QuhUVmXiDk6fguQf8cN7pf5JcE6UwgadZUyM/kzqwSIeE
-	 gXyjE17glwAhcYJ46amDOoy0fbIkQPcbiAbzFsBFPvSYIG2BX+BThyTux7QznLNOKG
-	 VJS0+G9TXXrEHM4ncIxUMrXQfOqrMYy1KMIWVcf74vWeBR+c/dTQ6c1msQIlPc41GP
-	 2XgacG6Ta1yemBKGgf4Zpu/nc2E/xKvIXEAHNRCmytRp4sKidI+Xr9EcHg726GGJsN
-	 ++2RMlVe2NC34lOm/BVV6CSXWQjf+x9Cf4PGuW/1xzmm+hzR89B3YILOhMGJ2xShyN
-	 uKofVOe+N80Yg==
-Message-ID: <224d01a0-805b-41c8-bc90-435024706dc3@kernel.org>
-Date: Sun, 6 Sep 2026 08:28:10 +0200
+	b=lOzjWQD4YvHEue3+AWmlk5phwixkAb6LaEfcuWqqqZ7z771GfN4sS76t3zqKhCUW4
+	 MusPAJN7asMtIVi7xT/1u+64wlP1w0X3YUio/P+zpeG+N9v5OwaZGk+wpPDLNk1cXg
+	 JtvfDjCEhOl7Z2qare5KKLwo6VPrqruPkRyAgwLdslW1v02l5ClWw1zos+an9So5dy
+	 8u3pmYdW6UG7/WIDqYDFtB3SoYdzKtIDMDLKFQ9SfkbKlgLnlc6RFl0EKbskWGixOf
+	 W/H5JcJuctLHDb/gXheDDMGIJDUs2DosYXuyTBy30LA83vf2WEsPc3U47vswYk06d3
+	 Uo5tx0ypPE54w==
+Message-ID: <738c61f1-3075-405f-9c52-56ad5496d7f7@kernel.org>
+Date: Sun, 6 Sep 2026 08:29:11 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/5] powercap: intel_rapl: Use %pe to print error pointers
- symbolically
+Subject: Re: [PATCH 2/5] thermal: Use %pe to print error pointers symbolically
 To: Sumeet Pawnikar <sumeet4linux@gmail.com>, rafael@kernel.org,
  amit.kachhap@gmail.com, daniel.lezcano@kernel.org, thara.gopinath@gmail.com,
  talel@amazon.com, hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
@@ -53,7 +52,7 @@ Cc: bcm-kernel-feedback-list@broadcom.com, linux-samsung-soc@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260906061755.5103-1-sumeet4linux@gmail.com>
- <20260906061755.5103-2-sumeet4linux@gmail.com>
+ <20260906061755.5103-3-sumeet4linux@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -99,19 +98,25 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260906061755.5103-2-sumeet4linux@gmail.com>
+In-Reply-To: <20260906061755.5103-3-sumeet4linux@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 06/09/2026 08:17, Sumeet Pawnikar wrote:
->  	trp->rp = rapl_add_package(info->package_id, &trp->priv, false);
->  	if (IS_ERR(trp->rp)) {
-> -		dev_err(&auxdev->dev, "Failed to add RAPL Domain for Package%d, %ld\n",
-> -			info->package_id, PTR_ERR(trp->rp));
-> +		dev_err(&auxdev->dev, "Failed to add RAPL Domain for Package%d, %pe\n",
-> +			info->package_id, trp->rp);
+> +++ b/drivers/thermal/thermal_mmio.c
+> @@ -71,8 +71,7 @@ static int thermal_mmio_probe(struct platform_device *pdev)
+>  						     &thermal_mmio_ops);
+>  	if (IS_ERR(thermal_zone)) {
+>  		dev_err(&pdev->dev,
+> -			"failed to register sensor (%ld)\n",
+> -			PTR_ERR(thermal_zone));
+> +			"failed to register sensor (%pe)\n", thermal_zone);
+>  		return PTR_ERR(thermal_zone);
 
-Instead you should use dev_err_probe and drop the last argument.
+
+Same comments. Syntax is just return dev_err_probe. When making such
+changes, you should not do them blindly, but replace the code into
+really the correct one.
 
 Best regards,
 Krzysztof
