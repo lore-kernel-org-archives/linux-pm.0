@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F03273B8120;
-	Sun,  6 Sep 2026 06:30:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D3232E736A;
+	Sun,  6 Sep 2026 06:30:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788676226; cv=none; b=OE4drVq4Sv7JaJxF0rfPLsHCQXsSA/8jF9QfWemcLd23H/KtFQ8YpjUglGtPmmbAQzr5xdpb0/r+fd1V6ijlXQkxkmBoll0del/aBBiaXHrkO+zHK147OU8uN7ifjJXMQYMt6n4SDV8FhhxyOSjY50DC6ROcNaXY9DfXtkW2MQM=
+	t=1788676257; cv=none; b=cVuAfxpHhTtQAb8urxU1FBlTmIP//qLIwten1BirZaaUkdaRRcjFFrybZDRl+tuNttOLChLNzEyjkEIgb9n0ekC8In2saVPfWpZPXTL9b4lozjawu3Ecoqm2x0wOYbYlyHKvAYdz76Icx4RMF7U306Y04HfdhDLbKLBP/z+uckg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788676226; c=relaxed/simple;
-	bh=GikvqJoXeOmfh3N40A+nbYHyOt494CYcle6RAQPUSXM=;
+	s=arc-20240116; t=1788676257; c=relaxed/simple;
+	bh=hbzwNcpfQfN4daYc0QId4ZnnAn3mQFO5P8kFKdmo+Dk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FACaduNlVAewSEBThITlgIiUeFdA3ge3+eNVEpWx9k667/uLbj6pneYkxcd+eyBqwmz5Hmq5ACF5Kb0aDNPBS0XDEvrwolDTUfYcoFf4j4ocuWjFa3/uPLDl+BoFNSmWKxrT8mpkmb9XFT79oquBqEPmzf4lInkib9mGRQDwELc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=n0U3qbG+; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=A+u1Dzcq/8rMa5QbhFceNCdXUDRA6WyqKa1UzgdbLWIPmvG79C2s38WBje70y32yzkfA3tXlOyY44zj9vHaetZnu2E3nsmhRtwRXWRabBalAoJ0rHIYldVJsRKNFlmS/NaWGuyBe/vldHfMS19twEd+B8Dzypamds4yPiq+dROs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kSW5enXL; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n0U3qbG+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7DD01F00A3A;
-	Sun,  6 Sep 2026 06:30:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kSW5enXL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EE6D1F00A3A;
+	Sun,  6 Sep 2026 06:30:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788676223;
-	bh=VuX1GRUEgGjtN5YWB8TzrOnwdSd1o6ffi/4kYrdL20w=;
+	s=k20260515; t=1788676256;
+	bh=yUYGWPU/6GKQdrK+wAxb4AJFZFkx+FBp894k/+lmTWk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=n0U3qbG+7oTuJOiiFwzmEkne0fUxiaBBuEp2GJZT7klt9NtqRlHjtrhVp7L7eS7JA
-	 8Qmzz4KDv6DKhYRy81fML452jr9LmbVXGeyW/cMi6qLhAuKCxkHMZ79Nw9ZaqxTEIG
-	 WQ5sDHvgY/PRD0Ojn3f5Pwmt5YmeT9ELf8IcIU/Q5ExWaWvnrjKxcHlTOVaKYHXPqg
-	 cKoLEcEe5jr6dgXa4oQu3vpAPxUHJTUQeJ+p+nvSeEngwjYO6HdUpurmAcPbJ5uwgW
-	 M9t07BZbufSGhpQ6S8y9znXnk+gonfpcO8tiM1dmH7ea20G6h/Hykbb2nSnWTd73ke
-	 OLDTBrKdcIL6Q==
-Message-ID: <1a5fb9bb-d057-4579-8b2c-b81aa16a61cb@kernel.org>
-Date: Sun, 6 Sep 2026 08:30:07 +0200
+	b=kSW5enXLFA0L/l737Smugwl7bKjjXQBIXhIbdL+WpVyCmtpftbInh3sfv3KG4alqM
+	 qiOT5N4/btZ3ELKI43Exf0FSXZiLRvwq5r47fNt+rfFvAyNwQLc/RM5GPFCmPs2pXB
+	 ByqqpqqyrH2hOY92+cXDYijy4I0N0kSwN/PBsPli6gEYlOdPAU3hvzUp0EVPx+5td5
+	 9FjYpp11OQsQUry0HAV/ddJkWo+MfvfY1GSQv9/gVBN+Bh6XwtvefAFSX9nBAQRx5a
+	 5GEDlMECHGWSWiJKEDHtmvIOcDnkhdJojshmEV1jE2qoQ7bCpZpAata55TuPXjAzus
+	 V4l030gUg2ndw==
+Message-ID: <98a0dbf7-9724-4ccc-8810-645dfe715656@kernel.org>
+Date: Sun, 6 Sep 2026 08:30:40 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] power: Use %pe to print error pointers symbolically
+Subject: Re: [PATCH 4/5] devfreq: Use %pe to print error pointers symbolically
 To: Sumeet Pawnikar <sumeet4linux@gmail.com>, rafael@kernel.org,
  amit.kachhap@gmail.com, daniel.lezcano@kernel.org, thara.gopinath@gmail.com,
  talel@amazon.com, hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
@@ -52,7 +52,7 @@ Cc: bcm-kernel-feedback-list@broadcom.com, linux-samsung-soc@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260906061755.5103-1-sumeet4linux@gmail.com>
- <20260906061755.5103-6-sumeet4linux@gmail.com>
+ <20260906061755.5103-5-sumeet4linux@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -98,29 +98,19 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260906061755.5103-6-sumeet4linux@gmail.com>
+In-Reply-To: <20260906061755.5103-5-sumeet4linux@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 06/09/2026 08:17, Sumeet Pawnikar wrote:
->  	}
-> diff --git a/drivers/power/supply/cw2015_battery.c b/drivers/power/supply/cw2015_battery.c
-> index 1bcb60cf763d..48643f7bf503 100644
-> --- a/drivers/power/supply/cw2015_battery.c
-> +++ b/drivers/power/supply/cw2015_battery.c
-> @@ -658,8 +658,8 @@ static int cw_bat_probe(struct i2c_client *client)
->  
->  	cw_bat->regmap = devm_regmap_init_i2c(client, &cw2015_regmap_config);
->  	if (IS_ERR(cw_bat->regmap)) {
-> -		dev_err(cw_bat->dev, "Failed to allocate regmap: %ld\n",
-> -			PTR_ERR(cw_bat->regmap));
-> +		dev_err(cw_bat->dev, "Failed to allocate regmap: %pe\n",
-> +			cw_bat->regmap);
->  		return PTR_ERR(cw_bat->regmap);
-
-return dev_err_probe
+>  		ret = -EPROBE_DEFER;
+> -		dev_err(dev, "failed to add devfreq device: %ld\n",
+> -			PTR_ERR(drv->devfreq));
+> +		dev_err(dev, "failed to add devfreq device: %pe\n",
+> +			drv->devfreq);
 
 Instead you should use dev_err_probe and drop the last argument.
+
 
 Best regards,
 Krzysztof
