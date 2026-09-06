@@ -1,354 +1,187 @@
-Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CWXP265CU008.outbound.protection.outlook.com (mail-ukwestazon11020078.outbound.protection.outlook.com [52.101.195.78])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 840503E1D13
-	for <linux-pm@vger.kernel.org>; Sun,  6 Sep 2026 08:57:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.173
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788685064; cv=none; b=OebKVRrafTU3AnKTlvgo8Knbi5HImlicMm4bS86mxrriOqIeQJNQm1siL+n0myiWd/necvm+X0ID82N2OFoEoIf6tGQ9DLpaATEvwcZYrdRLTfK6Y30bJO1FM0Ovd5OriKPNT5PQqf6UL1yxcFnRiCBEoDyTeXNbHh860WCvokA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788685064; c=relaxed/simple;
-	bh=69nh8IaOIKzC26cw1mZ4EAY2yfa9A/nvDeJqDe2J3iM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PpctbUul3uSL0sIFY+5wR2GFJqmPrejcSqoghxEbev93owgi2eSVIegYfBDm6j1IZ96+SZUlAJAnLnykTFSjrJ/eed8NCEJj6QbOzHefoxJl3NDWzLJtLMCHJPmom+YsC+Tai6hRNfr9QVnb2c/Tl5odQ7Xa76g7QAVuzO8KZIE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KXgzcXNT; arc=none smtp.client-ip=209.85.215.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9F0B1D6DA9;
+	Sun,  6 Sep 2026 13:02:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.195.78
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788699731; cv=fail; b=tjIS+P1O8aPM8DoVwoimV0xPnnE8Dtqg78TwKmYuOWi+TewHkIlzmpdzhLZ2MPE/uVh+MqDDVJlp9T675jzGVq7L7BtP2RddcW7SatZBvp+a8/ilClFVpWIfumE/kyEBL1gCIdt3WsHsf4KypnEhZEuu9RQbjocSba9WDPHphc0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788699731; c=relaxed/simple;
+	bh=NxRsnhzxJWN2qjAlaz63JgBPlPN0uGq2YYM2kzQ6reM=;
+	h=Content-Type:Date:Message-Id:Subject:From:To:Cc:References:
+	 In-Reply-To:MIME-Version; b=CEaoRpUsu78zrwtxO0AGm+mAHDIreuMzOkmFWNTlaE9NtsywpioNMaIObhVZ6pg6N+UwrWE/CZ+/f7TuUPNJjq6m0TXq3OKWaBq1cANHMrlXFLxHpAQHG8zcfp8rKj2Moq9Ic+T/Wys2cHvQoRb6kpjRZGqza+TGP8sMJ7Df8FY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=xKYOvs7g; arc=fail smtp.client-ip=52.101.195.78
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KXgzcXNT"
-Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-cc1b838f9b6so2803206a12.3
-        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 01:57:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788685062; x=1789289862; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=eINHlrHkYMRasqID9eglHfotXq/uGSEFKbI4CEPXV5Y=;
-        b=KXgzcXNTH6M0tMf7qXuf1uyRr+TRmYbk2W0Z7g6u/jM/QcDKqwpAubwKJBsWGL1Wtc
-         Hmd8uNFUeS0WO/kDfdwYEGq/Hs4IdzssWygW5hkudyHbSaLGUXALcOjOSJJtjbe7NKH/
-         KH7Fdq54zzL+19SSXfHji5V4dpk3VTseG0bfe3cCeQVhU5VLiJfevqd4DQT1Zmp7eGUc
-         ml0n42pbYWgLJnBjHSQSbbNvMzzFxfUPEiuoKekKZpsyt33d1ijL0ZQqVfs8Y74jKIl6
-         yH/r/KJ4+J6zAvWOgy39SnfNsvE1a7946Z5uFbZqP93I6vGSBNsOawKGYo0ObNHN8THo
-         Lrng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788685062; x=1789289862;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=eINHlrHkYMRasqID9eglHfotXq/uGSEFKbI4CEPXV5Y=;
-        b=gt8drsmJrn1n9MN4foUMjPE8Gn+1lMeFqo1uyHd3XNU4EnII3msHx/3ls/bEu851Jj
-         mofDjwlrncDqZVJIAT//TW1Rf8MRRmKI3DJV2C8J6d5qGHAzAyxUkmXKdvwEQhqM1ahj
-         61ThI8MzEmn0oxoLVRR5f25OAL18KcCaiLYHGB1lRdQ+eXJVhFHScRBYvf4vrbsTDaX+
-         Pdb4gxZYtKOg3nEXkAUF6htsOb9VMVm96wTn1YBHVM/A0IWRHBuQWErENKpi8I8CLAYr
-         VuFPiUlp2CbdWYa1sacdYonFvX5FuH3gvNVEOPzlaIwuK0lWVOqXZITBPvzqtuKtTtdP
-         l6mg==
-X-Forwarded-Encrypted: i=1; AKwUvByFdPLJMwk0bObz90pQi516/wBCunUWWrkBRuEJRQzFYInadZt8JqzgXZu8UElc6yOsbUgBAoEmKw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lpy0H1rkj4UJj3EIxT1HPrOYsuz7TwFcmBrqjjbSrl069cHZm8
-	B24yNw2TKUwbniNnhXYbi8zYiO218McJwF98GcUOus0R+8Sr9MCWr3j1
-X-Gm-Gg: AYBFou3VGX/cINzXmAUi5hv40QR6MPgzTpaJPqJ0DnUHJcZZ7OdFDGK1snSqgzqpOpo
-	bG31CUd7wvyqibApFZDMo90V3hkvM+bXIUp/91M0MlLdt/j+54EwnYsXF8enF5W3Vlj6022/qu7
-	pLL3hsr5EJdQ5HW6CRF1aIg+6G7rUw1w8T/aToWfUtDv+BKUPBiiUdeGCF4s7VlLMs0uQEXaPNQ
-	jAzUAyVrrEfGttBap+JQXe7MUJaCm+uiexGWtw8Znf4cPSCdzrEYgm2UFQb/BZQFATDtDNWpbFX
-	zWMHTiirWTSF8ZigRPafW83wsG1CJAelre2vo1n0U42vxzB2vIWKHqNS0HvapZAWefFdJOS/tLV
-	EH/MtpyhlHNqLehJqh2ytW+oAYZGpSqKgw/VMDJJ0OseFC6tJoRvz2NxKea1AfIwfKyt/4LfLUD
-	BrbwcPOGnzCKaJ5ImOYIW8avV/ynQ9zN2b50T6a9s+XRZBwgcqlQTYCVl+U0S227YM
-X-Received: by 2002:a05:6a20:1609:b0:3c3:b57b:6291 with SMTP id adf61e73a8af0-3da39fef371mr30083031637.18.1788685061709;
-        Sun, 06 Sep 2026 01:57:41 -0700 (PDT)
-Received: from [192.168.101.188] ([207.90.239.231])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33450e140d3sm14968056eec.4.2026.09.06.01.57.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 06 Sep 2026 01:57:41 -0700 (PDT)
-Message-ID: <f3b6c6f4-2be9-4eab-b4ba-970cae865753@gmail.com>
-Date: Sun, 6 Sep 2026 16:57:28 +0800
+	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="xKYOvs7g"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=uQVqy+M0uVhT5ynteeiQ3lKchUaXYVU3FPnJjiXMv5SvUtDXi8jTtGJf4bgToXeLRJ/4eESX72gh/TqLEQMXwEDyOe3Cc12uJFERefYa75enkgchOW78IlXHgGM2XjzcBL+5tfcO/N3gmRS/qtT2LLIzBoLHvk+6oFRosd90XnI0oZdeMDZIpu3rMNVZ8ODPqE6XREzxRMcgY6njDu3R/1HbmFYv1EopTapUixOOMZz4gkMobyn1ZRd0zrQan015+4uOwfk9wVZzz73sfIeTDytE+WaQvVfhYjlT+9xxgaaRRilXd2kmlSuZTcpn8gsIikkdSW4P8rlGCS0pBX5Ruw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Z5sHOADaRnb4q6ggfAZo5w0PFsTjdXn0aCEfA1hegTU=;
+ b=R7T5ugPbZo1qJP9fGmNOolgyjtZ2N6P8/JmGS9AJ0pTmVX8mEMU7I0ltKIkGpOowH0GHnLsdHnp2ggFPAm4KmMuOx3f2aQEXayDJmgTOd3KahN/yH/8gwdR1Nd4+gHioDZ+FtfC90jfDAzVuft6DBI99JGJw0vGXoP+SK5nVeDxtf9TJ8+BV+5/sotyiWzO4NCu42fYEQt+yhR+uWLFR7Ed5BM+RSEp3Jcckp5gZ/TaR3cPbmLNBmMXK3ya2Vl9p/qgQw4BrNnN+W1hsyawRO3ymkw5Rdkxvn3BAL37AFs0qa+3igvivc+WZVPizqrMp+2SJBUHLAowbWceaM1ag7Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Z5sHOADaRnb4q6ggfAZo5w0PFsTjdXn0aCEfA1hegTU=;
+ b=xKYOvs7g6y5D5MZ5R27QLvf29Ko54FtUx+Dzkp25bgN08q4GgbU3LRJLmoJRdI8UySTHimMB7ODvY32GJHKRZxhXHw71GsrbSayQh/WbQkhJYYmtRmgIKuT7OUD+1Odb8Lzo1x6FWoBoix+V/lryYRHdPiR8smWrUyIYvqIu2u0=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:4ab::19)
+ by LO0P265MB2635.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:14c::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.382.15; Sun, 6 Sep
+ 2026 13:02:05 +0000
+Received: from LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::f60b:1537:68d7:4fc1]) by LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::f60b:1537:68d7:4fc1%4]) with mapi id 15.21.0382.014; Sun, 6 Sep 2026
+ 13:02:05 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 06 Sep 2026 14:02:04 +0100
+Message-Id: <DL894TFXM5AT.2QOXN683UKXIF@garyguo.net>
+Subject: Re: [PATCH v20 4/8] rust: page: convert to `Ownable`'
+From: "Gary Guo" <gary@garyguo.net>
+To: "Alice Ryhl" <aliceryhl@google.com>, "Andreas Hindborg"
+ <a.hindborg@kernel.org>
+Cc: "Danilo Krummrich" <dakr@kernel.org>, "Lorenzo Stoakes"
+ <ljs@kernel.org>, "Vlastimil Babka" <vbabka@kernel.org>, "Liam R. Howlett"
+ <liam@infradead.org>, "Uladzislau Rezki" <urezki@gmail.com>, "Miguel Ojeda"
+ <ojeda@kernel.org>, "Boqun Feng" <boqun@kernel.org>, "Gary Guo"
+ <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Trevor
+ Gross" <tmgross@umich.edu>, "Daniel Almeida"
+ <daniel.almeida@collabora.com>, "Tamir Duberstein" <tamird@kernel.org>,
+ "Alexandre Courbot" <acourbot@nvidia.com>, =?utf-8?q?Onur_=C3=96zkan?=
+ <work@onurozkan.dev>, "Lyude Paul" <lyude@redhat.com>, "Greg Kroah-Hartman"
+ <gregkh@linuxfoundation.org>, =?utf-8?q?Arve_Hj=C3=B8nnev=C3=A5g?=
+ <arve@android.com>, "Todd Kjos" <tkjos@android.com>, "Christian Brauner"
+ <brauner@kernel.org>, "Carlos Llamas" <cmllamas@google.com>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, "Dave Ertman" <david.m.ertman@intel.com>,
+ "Leon Romanovsky" <leon@kernel.org>, "Paul Moore" <paul@paul-moore.com>,
+ "Serge Hallyn" <sergeh@kernel.org>, "David Airlie" <airlied@gmail.com>,
+ "Simona Vetter" <simona@ffwll.ch>, "Alexander Viro"
+ <viro@zeniv.linux.org.uk>, "Jan Kara" <jack@suse.cz>, "Igor Korotin"
+ <igor.korotin@linux.dev>, "Viresh Kumar" <vireshk@kernel.org>, "Nishanth
+ Menon" <nm@ti.com>, "Stephen Boyd" <sboyd@kernel.org>, "Bjorn Helgaas"
+ <bhelgaas@google.com>, =?utf-8?q?Krzysztof_Wilczy=C5=84ski?=
+ <kwilczynski@kernel.org>, "Pavel Tikhomirov" <ptikhomirov@virtuozzo.com>,
+ "Michal Wilczynski" <m.wilczynski@samsung.com>, "Ira Weiny"
+ <iweiny@kernel.org>, "Philipp Stanner" <phasta@kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-mm@kvack.org>, <driver-core@lists.linux.dev>,
+ <linux-block@vger.kernel.org>, <linux-security-module@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-fsdevel@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-pwm@vger.kernel.org>, <linux-usb@vger.kernel.org>, "Asahi Lina"
+ <lina+kernel@asahilina.net>
+X-Mailer: aerc 0.22.0
+References: <20260824-unique-ref-v20-0-490735672187@kernel.org>
+ <20260824-unique-ref-v20-4-490735672187@kernel.org>
+ <ao2WubjLtDuHvRzx@google.com>
+In-Reply-To: <ao2WubjLtDuHvRzx@google.com>
+X-ClientProxiedBy: LO4P123CA0491.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:1ab::10) To LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:4ab::19)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 4/5] thermal/drivers/sun8i: Add support for A523 THS0/1
- controllers
-To: wens@kernel.org
-Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li
- <tiny.windzz@gmail.com>, "Rafael J . Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Samuel Holland <samuel@sholland.org>, Philipp Zabel
- <p.zabel@pengutronix.de>, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org
-References: <20260704171411.1413349-1-iuncuim@gmail.com>
- <20260704171411.1413349-5-iuncuim@gmail.com>
- <CAGb2v67Z0g37Wyvd=xaMGkLHt09qqqJnufsxKdG0nO_C2QmOGA@mail.gmail.com>
-Content-Language: en-US
-From: Mikhail Kalashnikov <iuncuim@gmail.com>
-In-Reply-To: <CAGb2v67Z0g37Wyvd=xaMGkLHt09qqqJnufsxKdG0nO_C2QmOGA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOAP265MB8560:EE_|LO0P265MB2635:EE_
+X-MS-Office365-Filtering-Correlation-Id: c199a891-13f7-4282-70cc-08df0c170d38
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|10070799003|366016|23010399003|1800799024|6133799003|10067099003|56012099006|4143699003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	oHZczSBmuvigdmwE0JkKMQ5z49WRn/lY+qSO0sohdjYq3x2ORIlQGt1RQ9jW6fRR+wWBtpgFwNEdbPuMLgE/NUNZRJeZILiYO1W0JwdrP8o465ggDu52dcmrEbnqv70SE1F2XJmVnoOhjSpMC62OA807bkYachAhXHzprZoLG4I3yhS62gX+IrgoydfAWWXXH/aBzAzdKITRUU+TOAzNZd8mQzR6Q1LP86+vFCsOdxAStDYCCwq43GCKxb+eoU2T/N4dFPTE1o1b5vOYr1ISv7ZUJJn7Y1EkY7c6+MDPLqtWKyJxyu6ocKB5CWiOyqBv1puQlt1c980QfgaTuAv9NhgtTT+RjUHuvAFYS8jTcUhxQwjMVFqkszUY/ujBBBYJaFoY4nTMb4P0j+zO+afd/iQm7H0sf+rI9SmpIWs6z7D5Jaz8js2HcqDDcDqFmjYF4pFyxy33dA8RO1WJ1xbn8JLMgeWt9KUdZ+MAwV8qy2YkH3CZNTzr5JCfzqC6BZxEG6W/7iQrHcoAvMjkkgNg8JwpBs7jUzaiuuNudacWfVtbXZBbWBFIHau3esnsnCBz9at/JziMPjCDu1Arn+EySzIkfwYwscrSwUsSP6rZHDGdgip/fNzKpaRa99S2D7DeeRPAGi3HU7zFZZPM+neP7aT+ImZrgmsBDvWcaDFosaY=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(10070799003)(366016)(23010399003)(1800799024)(6133799003)(10067099003)(56012099006)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?OFlaNEZsc2cxUml4ZC8zOThBVnEzUElqNzFSZTkwR3FPL0NiSm1wSHJENEh0?=
+ =?utf-8?B?NzgwNGhyd2c4N1VCS2hvU0l2cjRwVlhPSFY3b21iUjV2dUlaRURpdGg4SDJx?=
+ =?utf-8?B?cTBOYlIzRmlRMUFLNkFlbmFuUldxUHhMVUVXeUlXUjdVUUcyR1AxNk5nNGNX?=
+ =?utf-8?B?aXc5akdrV3lFczQyenNjVHdwZm16NzFKWE8rUFF4VVpjdVNyekJaeDlSOGFX?=
+ =?utf-8?B?bDNMNkhpRTdwbTdWR0plVDlPZ3hpV2F6S3ZkOHRsZmdpMDdXTkRhS2RoWS8y?=
+ =?utf-8?B?WG50bDlzVkNaSGdCSTJGVHYzZEVYR0R3QVZmQ04rTTEzVGlZSisxQ2hOeVIy?=
+ =?utf-8?B?R3lCQlFwdVpKbFN3b244RW81ZEhodUl0QStBVWRWdHJNbWlmL2Z6Y291RDhT?=
+ =?utf-8?B?SVFqdFg0R0tmUnZGeW9QNDJ4QVhuN1F0bFVYVWZUQ0FSRG5rNXZJTG9ndmhs?=
+ =?utf-8?B?d2pLK09MaXFsRnRPcnRMSWZQUWppN0w3RFI4L2hzTGp6dDRJeFFxNkxYbktq?=
+ =?utf-8?B?bTVWZ3hmQTZDSVpoV0M4b1lDY3R4enl1VDVZNlgwZHNyL1g0OXprUUVPYXNR?=
+ =?utf-8?B?RWVuNDJVZHk0THdMOXBKTEFvT3AvL1ZjTWtha2loUDNoY29rckx5a3RSVUVD?=
+ =?utf-8?B?TU5HNll5b0o4a04xV2c1ak9TQjUxVGxyN3Fvd1FuZ3FHOEFUdTJQekFNSE8x?=
+ =?utf-8?B?RFlTanBBZTljdThGNUhiM0htSHllNlpORm1jUVZLZjJpanhUaFd2QjRaa3J5?=
+ =?utf-8?B?cndqdWRVSFMvQmxlb0UyNG5MLzlTLzdSeUNDQ0pWM0FWdVZCNy9ySjU2MHdV?=
+ =?utf-8?B?dVV1cWVYUnFROWpSUys4dWZUcEV2SGdsZzJWcnA4dmFyOFlJeVhMYjJUZ3RI?=
+ =?utf-8?B?TjZuekdaTkJoNkZuM0plMUhZTmFKYTBKRzBxQml6dkhrZm56YURHTittWlpu?=
+ =?utf-8?B?VWVrUWhPODlLbkxWQnlCTm9ZTmxhRzN1eVc1ejAyVUc0ZDI4aFdUamo5d2NW?=
+ =?utf-8?B?cjZ6TVc1a3RZUndoVXFveEdMNEsvWjlpSTJzTGR2SUZoeSt4bVA1Q1VPN2I4?=
+ =?utf-8?B?bVl2cFVIU1FXOXNQL0RIUXBINlpZR3dsWldsNnAzdTF6N2NLeVV5S1QrdDV6?=
+ =?utf-8?B?cVFNSXpRUXc5Y0MrTnNsd2k1QXdvMkkxOS8xZGNLaktHNWNrM2hmN0tScTZG?=
+ =?utf-8?B?bGp0WlpMN3NyT1cvYW8xVlR5d0tleHJTZ0xjSmx0RlBsMjE5YTUwTTQ2eHht?=
+ =?utf-8?B?NWhsQndUWUVZczJ2R2R5RFdtYWtFbG1JRU0vV25iL05WeHJINkZZVDZKRFRw?=
+ =?utf-8?B?cWUvRDY5RCtOcERTNHRLdWJVb0xvb0R5TEphc2poSEM3UHM5Q1A1eXNycXdD?=
+ =?utf-8?B?SmZ4bzdXTkh1VzFTV29NTlEvcjlNcUJjdEVqSGlhMnp3TGhCb2hiSU1HS3dR?=
+ =?utf-8?B?VXFPK296RDVqVFRhMGNJKzFCckVQQ0w2a1k3Z1F0dUhnUkRrRnZxMXNkQk5m?=
+ =?utf-8?B?ZHp2ZyttaThsZjIvRHJtVDZ2VHRRdjFWNWFXK3NkY09kTENicFZxN1Jkc1hL?=
+ =?utf-8?B?TlVMRDY5aU9SQWVNMThuNGJLYUZ5TjJRSHJrUjErQ3JSbjAwbVdQNjFtQ3pS?=
+ =?utf-8?B?UzRTc0VVbUJRZHhPSnhJZkdBUWpCVlVXMkZ1MnFhcm9mQjVRQ0NhbGpET3VN?=
+ =?utf-8?B?NGhrZU5YSWpISitzUXl1U2xXOWFLdVoyc1RVdzZCNzRXdmhIVHRWU1NYTU93?=
+ =?utf-8?B?cTdaYksyRzhmMDk4UTFWSmpLRTRHcWlIU0d0TzlnTzExckpodVJ5bnA4enhh?=
+ =?utf-8?B?OUwwK3pmUGd1SjJFU28xN3RWc3FFaXBoQVRRcGNCN0V1aGZNck8zTHFVakF3?=
+ =?utf-8?B?c250OEpOUEhhVmRRR2xKVlIvK0RWWVdtdC8yNE1oeVZranE2RmNiOG0vRndS?=
+ =?utf-8?B?RkdXdU9Zb1I0L1FQcUtxNk15NlV2bjVzU2YvUmd5aXlvTms1VmpxQ01hQmdS?=
+ =?utf-8?B?KzZxM0VvTXVZRFkvSjZHWVdVK05mQ21naldmUlI5d0QvN2Fzb2FOYnE1Rkhy?=
+ =?utf-8?B?Z3NOMVNoYmZ3MUNFMk5QaTNCVnZhcG96TlFlQUdHK2lOTERWZTRZbXJIOWEw?=
+ =?utf-8?B?MG4rTWdWeTRJRWEzTDUzZmdkN3BHaVF0WTQyTWRBNlFndEVhQnljeWd2cTVq?=
+ =?utf-8?B?WktMQklOMGNKMENwWC9pMS8xU29HUEp0RWZLbS9yVWRQOThFM0NXa1VTanZU?=
+ =?utf-8?B?VFFyMzM2cEw4MG1uaHRpd1hCM21ENTE0cGUxWDM4SHJhL3JwRFppSVViNzFM?=
+ =?utf-8?B?V002d0x6aXNZTDdNOWpnc3ZjZTZvcEtURzV0OWphbWE2dGNVaklFZz09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: c199a891-13f7-4282-70cc-08df0c170d38
+X-MS-Exchange-CrossTenant-AuthSource: LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Sep 2026 13:02:05.6269
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: AkauLTZx4X5Dz4gvyJANoeWosPMdYVkCsolGiDnoKV15dWosTp0jrJx8X0MuQySK6grKcr5AhOiWH/U23Qp8JA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P265MB2635
 
-On 7/21/26 23:23, Chen-Yu Tsai wrote:
-> On Sun, Jul 5, 2026 at 1:15 AM Mikhail Kalashnikov <iuncuim@gmail.com> wrote:
->>
->> The A523 processor has two temperature controllers, THS0 and THS1.
->> THS0 has only one temperature sensor, which is located in the DRAM
->> controller. THS1 does have 3 sensors:
->> ths1_0 - "big" cores
->> ths1_1 - "little" cores
->> ths1_2 - gpu
->>
->> The datasheet mentions a fourth sensor in the NPU, but lacks any registers
->> for operation other than calibration registers. The vendor code reads the
->> value from ths1_2, but uses separate calibration data, so we get two
->> different values from real one.
-> 
-> Are you sure? The calibration data is written to the sensor register.
-> 
-> The BSP simply reads the sensor data from the GPU sensor, and passes it
-> off as the value for the NPU sensor. No extra calculation involving the
-> calibration data is done.
-> 
-Yes, I think you're right. And as Juan pointed out, my current
-implementation doesn't match the BSP, since:
+On Tue Aug 25, 2026 at 2:20 PM BST, Alice Ryhl wrote:
+> On Mon, Aug 24, 2026 at 01:17:56PM +0200, Andreas Hindborg wrote:
+>> +        // SAFETY: We just successfully allocated a page, so we now hav=
+e ownership of the newly
+>> +        // allocated page. We transfer that ownership to the new `Owned=
+<Page>` object.
+>> +        // Since `Page` is transparent, we can cast the pointer directl=
+y.
+>> +        Ok(unsafe { Owned::from_raw(page.cast()) })
+>
+> This doesn't satisfy the safety requirements of Owned::from_raw()
+> because the page may be used with vm_insert_page(), which increments its
+> refcount and causes it to be shared the vma system, and this occurs
+> before Page::release() is called.
 
-#define SUN55IW3_GPU_SENSOR_ID (2)
-#define SUN55IW3_NPU_SENSOR_ID (3)
-...
-/* use NPU sensor data instead of GPU */
-if (id == SUN55IW3_GPU_SENSOR_ID) {
-     id = SUN55IW3_NPU_SENSOR_ID;
-     ...
-}
+I suppose the existing vm_insert_page() abstraction we have is already
+problematic, because it uses `&Page`?
 
-In other words, in the BSP driver, the NPU sensor is used for the GPU. 
-However, based on the A523 user manual—which describes registers for
-only three sensors, I had argued the opposite. The user manual for the
-T527 includes a description of a fourth sensor.
+Maybe we want to change the API to use `ARef<Page>` so it already has to be
+shared? Conceptually it takes a reference count from a `&Page`, which isn't
+possible because `Page` is not `AlwaysRefCounted`, so it needs a `&ARef<Pag=
+e>`
+to be able to do that op.
 
-Thus, it seems that all four sensors are working, but the purpose of
-this workaround in the BSP remains unclear to me.
-
->>
->> Signed-off-by: Mikhail Kalashnikov <iuncuim@gmail.com>
->> Reviewed-by: Chen-Yu Tsai <wens@kernel.org>
->> ---
->>   drivers/thermal/sun8i_thermal.c | 133 ++++++++++++++++++++++++++++++++
->>   1 file changed, 133 insertions(+)
->>
->> diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
->> index 3bdd62aa8..f48ed9eae 100644
->> --- a/drivers/thermal/sun8i_thermal.c
->> +++ b/drivers/thermal/sun8i_thermal.c
->> @@ -59,6 +59,12 @@
->>   #define SUN50I_H6_THS_PC_TEMP_PERIOD(x)                ((GENMASK(19, 0) & (x)) << 12)
->>   #define SUN50I_H6_THS_DATA_IRQ_STS(x)          BIT(x)
->>
->> +#define SUN55I_A523_DELIMITER                  0x7c8
->> +#define SUN55I_A523_OFFSET_ABOVE               2736
->> +#define SUN55I_A523_OFFSET_BELOW               2825
->> +#define SUN55I_A523_SCALE_ABOVE                        74
->> +#define SUN55I_A523_SCALE_BELOW                        65
->> +
->>   struct tsensor {
->>          struct ths_device               *tmdev;
->>          struct thermal_zone_device      *tzd;
->> @@ -114,6 +120,15 @@ static int sun50i_h5_calc_temp(struct ths_device *tmdev,
->>                  return -1590 * reg / 10 + 276000;
->>   }
->>
->> +static int sun55i_a523_calc_temp(struct ths_device *tmdev,
->> +                                int id, int reg)
->> +{
->> +       if (reg >= SUN55I_A523_DELIMITER)
->> +               return SUN55I_A523_SCALE_ABOVE * (SUN55I_A523_OFFSET_ABOVE - reg);
->> +       else
->> +               return SUN55I_A523_SCALE_BELOW * (SUN55I_A523_OFFSET_BELOW - reg);
->> +}
->> +
->>   static int sun8i_ths_get_temp(struct thermal_zone_device *tz, int *temp)
->>   {
->>          struct tsensor *s = thermal_zone_device_priv(tz);
->> @@ -299,6 +314,97 @@ static int sun50i_h6_ths_calibrate(struct ths_device *tmdev,
->>          return 0;
->>   }
->>
->> +/*
->> + * The A523 nvmem calibration values. The ths1_3 is not used as it
->> + * doesn't have its own sensor and doesn't have any internal switch.
->> + * Instead, the value from the ths1_2 sensor is used, which gives the
->> + * illusion of an independent sensor for NPU and GPU when using
->> + * different calibration values.
->> + *
->> + * efuse layout 0x38-0x3F (caldata[0..3]):
->> + *     caldata[0]      caldata[1]      caldata[2]      caldata[3]
->> + * 0               16      24      32  36          48          60 64
->> + * +---------------+---------------+---------------+---------------+
->> + * |               |       |   temp    |  ths1_0   |  ths1_1   |   +
->> + * +---------------+---------------+---------------+---------------+
->> + *
->> + * efuse layout 0x44-0x4B (caldata[4..7]):
->> + *     caldata[4]      caldata[5]      caldata[6]      caldata[7]
->> + * 0           12  16      24      32  36          48             64
->> + * +---------------+---------------+---------------+---------------+
->> + * |  ths1_2   |  ths1_3   |    ths0   |           |               +
->> + * +---------------+---------------+---------------+---------------+
->> + */
->> +static int sun55i_a523_ths_calibrate(struct ths_device *tmdev,
->> +                                    u16 *caldata, int callen)
->> +{
->> +       struct device *dev = tmdev->dev;
->> +       int i, ft_temp;
->> +
->> +       if (!caldata[0])
->> +               return -EINVAL;
->> +
->> +       ft_temp = (((caldata[2] << 8) | (caldata[1] >> 8)) & FT_TEMP_MASK) * 100;
->> +
->> +       for (i = 0; i < tmdev->chip->sensor_num; i++) {
->> +               int sensor_reg, sensor_temp, cdata, offset;
->> +               /*
->> +                * Chips ths0 and ths1 have common parameters for value
->> +                * calibration. To separate them we can use the number of
->> +                * temperature sensors on each chip.
->> +                * For ths0 this value is 1.
->> +                */
->> +               if (tmdev->chip->sensor_num == 1) {
->> +                       sensor_reg = ((caldata[5] >> 8) | (caldata[6] << 8)) & TEMP_CALIB_MASK;
->> +               } else {
->> +                       switch (i) {
->> +                       case 0:
->> +                               sensor_reg = (caldata[2] >> 4) & TEMP_CALIB_MASK;
->> +                               break;
->> +                       case 1:
->> +                               sensor_reg = caldata[3] & TEMP_CALIB_MASK;
->> +                               break;
->> +                       case 2:
->> +                               sensor_reg = caldata[4] & TEMP_CALIB_MASK;
->> +                               break;
->> +                       default:
->> +                               sensor_reg = 0;
->> +                               break;
->> +                       }
->> +               }
->> +
->> +               sensor_temp = tmdev->chip->calc_temp(tmdev, i, sensor_reg);
->> +
->> +               /*
->> +                * Calibration data is CALIBRATE_DEFAULT - (calculated
->> +                * temperature from sensor reading at factory temperature
->> +                * minus actual factory temperature) * X (scale from
->> +                * temperature to register values)
->> +                */
->> +               cdata = CALIBRATE_DEFAULT -
->> +                       ((sensor_temp - ft_temp) / SUN55I_A523_SCALE_ABOVE);
-> 
-> The BSP version works out to:
-> 
->      cdata = CALIBRATE_DEFAULT -
->              (sensor_temp - ft_temp - 5000) / SU55I_A523_SCALE_BELOW
-> 
-> Any particular reason why it's different?
-
-In the early versions, I didn't use 'define' for constants, but later
-added them based on the logic of the value read from the register: a
-value below the threshold is 'BELOW', and a value above is 'ABOVE'. The
-BSP driver uses a name for the temperature, but the temperature
-decreases as the value read from the register increases; therefore, the
-formula uses SCALE constants with different names but identical values.
-
-In the next version, I’ll align them with the BSP values and add a 
-comment explaining that the constants refer to the final temperature 
-value, not the value read from the register.
-
-Regarding SUN55IW3_CAL_COM 5000 — when I first looked at the driver
-code, it seemed to me that this was the value intended for ft_deviation,
-but now that I’ve double-checked, the version of the calibration formula
-with SUN55IW3_CAL_COM and without ft_deviation gives the same result as
-the version without SUN55IW3_CAL_COM but with ft_deviation=5000.
-
-But if you'd rather I match BSP literally (5000 in the calibration
-numerator, ft_deviation = 0), I can do that instead.
-> 
->> +               if (cdata & ~TEMP_CALIB_MASK) {
->> +                       /*
->> +                        * Calibration value more than 12-bit, but calibration
->> +                        * register is 12-bit. In this case, ths hardware can
->> +                        * still work without calibration, although the data
->> +                        * won't be so accurate.
->> +                        */
->> +                       dev_warn(dev, "sensor%d is not calibrated.\n", i);
->> +                       continue;
->> +               }
->> +
->> +               offset = (i % 2) * 16;
->> +               regmap_update_bits(tmdev->regmap,
->> +                                  SUN50I_H6_THS_TEMP_CALIB + (i / 2 * 4),
->> +                                  TEMP_CALIB_MASK << offset,
->> +                                  cdata << offset);
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->>   static int sun8i_ths_calibrate(struct ths_device *tmdev)
->>   {
->>          struct nvmem_cell *calcell = NULL;
->> @@ -717,6 +823,31 @@ static const struct ths_thermal_chip sun50i_h616_ths = {
->>          .calc_temp = sun8i_ths_calc_temp,
->>   };
->>
->> +/* The A523 has a shared reset line for both chips */
->> +static const struct ths_thermal_chip sun55i_a523_ths0 = {
->> +       .sensor_num = 1,
->> +       .has_bus_clk_reset = true,
->> +       .has_mod_clk = true,
->> +       .ft_deviation = 5000,
-> 
-> In the BSP this is 0.
-
-> 
->> +       .temp_data_base = SUN50I_H6_THS_TEMP_DATA,
->> +       .calibrate = sun55i_a523_ths_calibrate,
->> +       .init = sun50i_h6_thermal_init,
->> +       .irq_ack = sun50i_h6_irq_ack,
->> +       .calc_temp = sun55i_a523_calc_temp,
->> +};
->> +
->> +static const struct ths_thermal_chip sun55i_a523_ths1 = {
->> +       .sensor_num = 3,
->> +       .has_bus_clk_reset = true,
->> +       .has_mod_clk = true,
->> +       .ft_deviation = 5000,
-> 
-> In the BSP this is 0.
-> 
-> 
-> ChenYu
-> 
->> +       .temp_data_base = SUN50I_H6_THS_TEMP_DATA,
->> +       .calibrate = sun55i_a523_ths_calibrate,
->> +       .init = sun50i_h6_thermal_init,
->> +       .irq_ack = sun50i_h6_irq_ack,
->> +       .calc_temp = sun55i_a523_calc_temp,
->> +};
->> +
->>   static const struct of_device_id of_ths_match[] = {
->>          { .compatible = "allwinner,sun8i-a83t-ths", .data = &sun8i_a83t_ths },
->>          { .compatible = "allwinner,sun8i-h3-ths", .data = &sun8i_h3_ths },
->> @@ -727,6 +858,8 @@ static const struct of_device_id of_ths_match[] = {
->>          { .compatible = "allwinner,sun50i-h6-ths", .data = &sun50i_h6_ths },
->>          { .compatible = "allwinner,sun20i-d1-ths", .data = &sun20i_d1_ths },
->>          { .compatible = "allwinner,sun50i-h616-ths", .data = &sun50i_h616_ths },
->> +       { .compatible = "allwinner,sun55i-a523-ths0", .data = &sun55i_a523_ths0 },
->> +       { .compatible = "allwinner,sun55i-a523-ths1", .data = &sun55i_a523_ths1 },
->>          { /* sentinel */ },
->>   };
->>   MODULE_DEVICE_TABLE(of, of_ths_match);
->> --
->> 2.55.0
->>
-
+Best,
+Gary
