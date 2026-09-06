@@ -1,127 +1,104 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B12B8165F1A;
-	Sun,  6 Sep 2026 02:00:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 009C037DEA8;
+	Sun,  6 Sep 2026 03:38:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788660033; cv=none; b=HjL7mxXnnuwyUkXAMu+eB2ycOJLDlqNFq7cBTNtaKK1fAMgG8zvIwNylHC3ZryLGVDrepkpFkNYk2MtSeY+yCZE8tcMUvCqeLfjf9MdmOh9b41ywDjlHqejyt2gnvN3EWoPFyAkhI/PWv2wwkZiBQlHvwnEMu+N0u4kVK9d3tuA=
+	t=1788665928; cv=none; b=ZziZqVJPZIRWHlKq89MO2rhY03g4JGrZDH6oRVNnczsi47sNUfOo46bQIZUaPQM6LPpaZ7TEfIa896LVv0eVLE87qFkmEwlkqgTmtlgQ2EdMKagO9JYDCDCgDRg7CXP0tQjk9e9G+PxTWX7mlVyhKJDUwbSSDsY3qnconVUtEfk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788660033; c=relaxed/simple;
-	bh=4OCA7cZQxsiy+4IQEWSullQEGcLugcqxv9G1On3+2dI=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=YlqYghYX1hsuR1cjTIkn+ey5Kfcn1v6Wv3i4kmwpeUTloo0WviWVVFLb/DXycmQh0ooWeWTeypmhkpx/CiISfRf0u2pKCaaPYFJorwMdVQmd2oVWtiKA4w2JykncZgo6vaDmFZYD6d2N+FcVybVdJ//9/Z+uRm/HjKbgfmjsaN8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=onvqGLmc; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788665928; c=relaxed/simple;
+	bh=kcfGz+D/RqtJqDOXx88LoPOrMhM4P5mZj435dno+u1Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EGkA9r2ZWYiLqlsOVO5xBp+Yrk1keueL+W9aKRTKVcAZG7kueoi2PjMpbJ4PtuzBqXz0uq3Md66sZ61Wgso1+mucrM0XkO/NdMu2WJn0My1ruXoOEPMH4GlqbPxgp5eibTRTA2405Ll8HzBVIsk9SunnnD9q0GKThp3HOUiqSgM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=igWyWEeG; arc=none smtp.client-ip=220.197.31.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="onvqGLmc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 131AD1F00A3A;
-	Sun,  6 Sep 2026 02:00:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1788660032;
-	bh=ohXcpCjF3E8Su2iGbnUTFcKH4Q5PX6bz9vn2jqgCP+c=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=onvqGLmcP1GLOxpEKfzU67JdQE7IDZGMsPO64h/0NSOK+RvFXdBCqD8+ofD1WBq2g
-	 i6cYyIHzjygejYh8PKFLzFY7Ac5zL8dW6mlFYoHExtDtLuDxudvpRUkwCZVnaHxKoG
-	 FWNotUDCuJBgzmpoHcxnORH4VODmerRMAERbMW3I=
-Date: Sat, 5 Sep 2026 19:00:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Adrian =?UTF-8?Q?Barna=C5=9B?= <abarnas@google.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Alexandre Ghiti <alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Brendan Jackman
- <brendan.jackman@linux.dev>, Catalin Marinas <catalin.marinas@arm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>, Dave Hansen
- <dave.hansen@linux.intel.com>, David Hildenbrand <david@kernel.org>, Gerald
- Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens
- <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Len Brown <lenb@kernel.org>, Palmer Dabbelt
- <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, Pavel Machek
- <pavel@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin"
- <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ryan Roberts
- <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>, Thomas
- Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>, Vasily
- Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon
- <will@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- loongarch@lists.linux.dev
-Subject: Re: [PATCH v3 0/6] arch, mm/execmem: resolve confusion about
- set_direct_map_valid_noflush()
-Message-Id: <20260905190030.adf2740822e211ddc028a24a@linux-foundation.org>
-In-Reply-To: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
-References: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="igWyWEeG"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=Bn
+	7FZwwf19c3h9u4aABxH+CJMemOfFxO0YWc91hO9HA=; b=igWyWEeG3ZP1kr3m3c
+	HBFlmj5kRfWW8+D43PbIkRWsXc+8yFyi5I4GNSAMb2I0vqpZ6DgpYH9owzRWgqL/
+	FWASWjIGYbV24glq9IqasWm60fSYoVIY3+MdDR8pnC8DaJ1NEtmt/gt8Q0JJcGmI
+	+84xv2O1uMYbF33glmYlMLnQE=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wD3T5Yg4Jxql1DaAw--.30101S2;
+	Sun, 06 Sep 2026 11:38:09 +0800 (CST)
+From: Pengpeng Hou <hppiscas@163.com>
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: Pengpeng Hou <hppiscas@163.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Shawn Guo <shawnguo@kernel.org>,
+	"A.s. Dong" <aisheng.dong@nxp.com>,
+	linux-pm@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] pmdomain: imx: Propagate SCU provider registration failures
+Date: Sun,  6 Sep 2026 11:38:06 +0800
+Message-ID: <20260906033806.84671-1-hppiscas@163.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wD3T5Yg4Jxql1DaAw--.30101S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7WryftF4rKF47Kr4kuFy8Krg_yoW8XF45pF
+	Wktayavrs7Jr4fG3WUGF1DZryay34Fyry7Kay5Ga4xZF45JFnxWa4Fqa4jkFnFyry8tF42
+	yr429FW5CF1FyFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zRNeOZUUUUU=
+X-CM-SenderInfo: 5kssx2xfdvqiywtou0bp/xtbC7QECymqc4CGhRwAA31
 
-On Thu, 03 Sep 2026 12:28:26 +0300 "Mike Rapoport (Microsoft)" <rppt@kernel.org> wrote:
+imx_scu_init_pm_domains() ignores of_genpd_add_provider_onecell() and
+returns success even when none of the initialized domains are published to
+DT consumers.
 
-> Recent discussion about implementation of execmem's ROX caches on arm64
-> revealed a confusion about how set_direct_map_valid_noflush()
-> implemented on different architectures.
-> 
-> ...
-> 
-> Implement these adjustments, make execmem always use VM_FLUSH_RESET_PERMS
-> and revert set_direct_map_valid_noflush() changes.
-> 
+Return the provider error and remove the initialized domains in reverse
+order before devm releases their backing storage on probe failure.
 
-Thanks, I updated mm-unstable to this version.
+The issue was found by our static-analysis tool and manually reviewed.
 
-> 
-> v3 changes:
-> * set VM_FLUSH_RESET_PERMS to allocated area just before flipping the
->   permissions rather than at allocation time
-> 
+Fixes: c800cd7824bd ("firmware: imx: add SCU power domain driver")
+Assisted-by: gpt 5
+Signed-off-by: Pengpeng Hou <hppiscas@163.com>
+---
+ drivers/pmdomain/imx/scu-pd.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-Here's how v3 altered mm.git:
-
-
- mm/execmem.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
---- a/mm/execmem.c~b
-+++ a/mm/execmem.c
-@@ -36,7 +36,6 @@ static void *execmem_vmalloc(struct exec
- 	unsigned long end = range->end;
- 	void *p;
+diff --git a/drivers/pmdomain/imx/scu-pd.c b/drivers/pmdomain/imx/scu-pd.c
+index e3f9e741daf7..05d4364f34be 100644
+--- a/drivers/pmdomain/imx/scu-pd.c
++++ b/drivers/pmdomain/imx/scu-pd.c
+@@ -474,7 +474,7 @@ static int imx_scu_init_pm_domains(struct device *dev,
+ 	struct genpd_onecell_data *pd_data;
+ 	struct imx_sc_pm_domain *sc_pd;
+ 	u32 count = 0;
+-	int i, j;
++	int i, j, ret;
  
--	vm_flags |= VM_FLUSH_RESET_PERMS;
- 	if (kasan)
- 		vm_flags |= VM_DEFER_KMEMLEAK;
+ 	for (i = 0; i < pd_soc->num_ranges; i++)
+ 		count += pd_ranges[i].num;
+@@ -503,7 +503,13 @@ static int imx_scu_init_pm_domains(struct device *dev,
+ 	pd_data->num_domains = count;
+ 	pd_data->xlate = imx_scu_pd_xlate;
  
-@@ -277,6 +276,8 @@ static void *execmem_cache_populate_allo
- 	/* fill memory with instructions that will trap */
- 	execmem_fill_trapping_insns(p, alloc_size);
- 
-+	set_vm_flush_reset_perms(p);
+-	of_genpd_add_provider_onecell(dev->of_node, pd_data);
++	ret = of_genpd_add_provider_onecell(dev->of_node, pd_data);
++	if (ret) {
++		while (count)
++			pm_genpd_remove(domains[--count]);
 +
- 	err = set_memory_rox((unsigned long)p, vm->nr_pages);
- 	if (err)
- 		goto err_free_mem;
-@@ -439,6 +440,7 @@ void *execmem_alloc(enum execmem_type ty
- {
- 	struct execmem_range *range = &execmem_info->ranges[type];
- 	bool use_cache = range->flags & EXECMEM_ROX_CACHE;
-+	unsigned long vm_flags = VM_FLUSH_RESET_PERMS;
- 	pgprot_t pgprot = range->pgprot;
- 	void *p = NULL;
++		return ret;
++	}
  
-@@ -447,7 +449,7 @@ void *execmem_alloc(enum execmem_type ty
- 	if (use_cache)
- 		p = execmem_cache_alloc(range, size);
- 	else
--		p = execmem_vmalloc(range, size, pgprot, 0);
-+		p = execmem_vmalloc(range, size, pgprot, vm_flags);
- 
- 	return kasan_reset_tag(p);
+ 	return 0;
  }
-_
+-- 
+2.50.1 (Apple Git-155)
 
