@@ -1,133 +1,135 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B51D470445;
-	Mon,  7 Sep 2026 13:34:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788788083; cv=none; b=JxXWJbyK3DbtnyDclSvRSE+illt0cXB6mmD5N90Fnwm7nGkEuOI+lEdyh209ewO2g9EG/hTbpU5JlTlzqnHD6QAfk/B7HqdENKZq2FtYmQMpUT61CGoqBUaeQZp4a9nd+MkePja6zXJTT4nRFikHht8G4R26LOTF5LDc7AybIBA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788788083; c=relaxed/simple;
-	bh=j+nWfkflMFoZZjBZ7bYbywi8eZcMGCjP1glo1FGrhQk=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hSfb1XB+o03UiiVhyfaTZVKhi9ZTJ91NWY1xLMTwswLsGMKygR8azEyaSju3o6y2tqvofrzSncwIZwBrLQ3MQ6V2fG86j1xjyE2hzPyU8PkpsQ/YnEGFdgyqgiyKLOyjnInFxWBvvykoU2MnIeS07BZJCYUQC8tAEzVkORXOopc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MKjxQwlt; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D09047885C
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 13:50:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788789011; cv=pass; b=aPTkEew0zyCd5xOtGCcRpdRMKzQKYvOMuJ5tilM5CJIKU8N/kVLANDXN34iNCq58EDJzJdG4D6YeHf4ZTn4F30ozLSfr4aC8RYvC0ygkI7e6lvB8kUm95hr5zAtuZ5WeY8G1IuuJVDEAGWyS5Qr9xlCNFyYssmG6LdmVonXJI0E=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788789011; c=relaxed/simple;
+	bh=jNZHF0WExlWBrCI69A25zEKjol7bW38px42D/CWs3WQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oggTRwPkP+D5DIxpq2TitcE2v/h5WYfbRLZ1AFjw0rWQ8NqVmyhPQdzd0xvVRmfsXZWYGD0wC/cvwtwDDUsSggQjOGTNc/XQIRMvEMGDoC96wyAzxPjssboPMN9ojUe9770sqB606wIDqIOf7PFMocEsFdQtWApN5a/wJpnjmys=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=BzDMlpEE; arc=pass smtp.client-ip=209.85.218.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MKjxQwlt"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 99FC71F00A3A;
-	Mon,  7 Sep 2026 13:34:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788788081;
-	bh=2iF1GCgL64lrVgTO7oZJH53BcV3ZvYVCBWhjX55qtDA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=MKjxQwlts+YwAk2Jwq7SHDDg9jnbEBYeTgwaFbrzt6h7KZHd78ingFAfCqb/cgdsS
-	 z2BacHZnzFByZZfrRswm8ZimjR5qp6qqhb9COXNbsdH8hg7ONHH0GEhMCiItMwhhFI
-	 LLjTYK/v6yzZ+2CwOdCVRiIiumlQvNxMRcr1Uolmlkgntm44DGE2m/cplY626B13hK
-	 QnNtfcuMbgMnmYHeOeLJ2vcKNgZMXnQMpjkgMcylg/+rxoAKIl2rHsPir69KW1Z33m
-	 /GiSzQozatfvf0RssQdeKLkT0AlJhOqA3IFzDTk97oBtpQe/p/Gw1LETiRco37dycs
-	 +GKk15WBac45g==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <maz@kernel.org>)
-	id 1x3ZUd-00000005nIW-2K7R;
-	Mon, 07 Sep 2026 13:34:39 +0000
-Date: Mon, 07 Sep 2026 14:34:39 +0100
-Message-ID: <86bja94234.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
-	Mostafa Saleh <smostafa@google.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Rajendra Nayak
- <quic_rjendra@quicinc.com>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-Subject: Re: [PATCH v2 2/3] interconnect: qcom: x1e80100: enable QoS configuration
-In-Reply-To: <ca962589-3b6c-4e5d-a11e-b49cf20dc262@oss.qualcomm.com>
-References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
-	<20260527-x1e80100_qos-v2-2-305c6539e6d2@oss.qualcomm.com>
-	<apgeBNSiP01YfNcs@google.com>
-	<86ld9d4h4n.wl-maz@kernel.org>
-	<f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
-	<86jyox4fas.wl-maz@kernel.org>
-	<ca962589-3b6c-4e5d-a11e-b49cf20dc262@oss.qualcomm.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="BzDMlpEE"
+Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c2544ff970dso480886466b.2
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 06:50:07 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788789006; cv=none;
+        d=google.com; s=arc-20260327;
+        b=qmMTZ/aoM4lliZtnIGUw80UOIlnfFEKgV34Xyd5Vzi7GGk0onwrHj21O+ycz0MIAt+
+         lkAs5cDicG9xMxPuthAL9eKvb4UJ8v9SS6Hr1MBO+OW3AqBt6+oOdIyZ0pPbXHm4EGD5
+         WqnTe8F0zs8ihP9jdQTa3mbhewCLH3/RK8eE5l1ZQ+T933tdmO5EgJSwKhYMJUM1nUwK
+         s3oR69wwquH12MJhOMo4GNNLlSDoWZeXLi31GPDhhf0BZ6YuyJ2gcSQ0m4Gqll2cosF3
+         I/Osyt8lYw2UmvEtsNjRcBUqyx+kfC83s65fUlsmZx4oBqxrO8UbA7yIJHtQntsuxmnD
+         1KIA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=jNZHF0WExlWBrCI69A25zEKjol7bW38px42D/CWs3WQ=;
+        fh=SozgZcjrPkXUGIE84Vq1mG00qnEJp1QFPuP3lGXDe7k=;
+        b=BbHfWCR7HuVcCEMDlGMFE87fzLu4SUGiP9NKaajv5ZlRh0VRMjNsgBSvIr9KSE4GxK
+         ckbssYncessPoOuWSkxP0njzQJSzZHJCxMhgyQrpqTEl5UEycahSwOGWb/4iaSvDNEwg
+         iKMFHJxrxpVW/nbX/BeT0buSDy38FgawOrpJPH7UuV9FLwN6AlXw3h+izFi7VpI+4o3/
+         590QKJLCPI0AOkqlH8YggLsEBkApfkG3z68eRMQeQTteih4K3hZj0DYxr//UmRFgqxG7
+         MWp3I4c0RF0C08Mq7EfPpDRFjjk4NTKWR0BkroZlzD2n8u8Gv1fIz/Utw882P8aICsUa
+         XYXg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1788789006; x=1789393806; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=jNZHF0WExlWBrCI69A25zEKjol7bW38px42D/CWs3WQ=;
+        b=BzDMlpEEyDA68Vcdw424iusj1WGxx07AJcywrv5qJa+33uA6SNCUcmToGcpF3yU1j2
+         pW4Ja45T/BvSLfRepA/6VxLSA7oQsip2A2pzTXorfCNabQsvbOx3/UWrZNlz42cVqF79
+         9kzeowKN0hQOEv5t6q6gVkccEuErarH8MFYGgCltvJ1lbz5/BQxvI/AwevM9Ko4KbAKI
+         uOEPR6KmeS3hl6OKa2USNQUzhnAW2IQ2tbne0V3oX9gLUKh8ZLBLkagNiDlhBNgmL+zW
+         k9gyTYnCPlnxhmja9fm6Xq2EUCcVYy+UABJ4WNiYGZLWml89VTP1RBM/GwutCRAZzpsO
+         7gSg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788789006; x=1789393806;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=jNZHF0WExlWBrCI69A25zEKjol7bW38px42D/CWs3WQ=;
+        b=puVzUUAsFj0wPrjQ74yCMcCVGp3+xJj4+8Tqrit2S3vnbP7gCVyOP5kBDa5p17UZ5p
+         uJzmTdxe7+IBUuTzDutlAekIlhYVCfuAjr/nrQUElvrivrQ/2WZOwOmEypVakhWjOGUG
+         2b6CJQI64hOJy3BRGWPYnV2dmu1vPZNudJ0wwepvkHW9fQOC8X7/qdn4XjbCxsRkUgId
+         XLoGbJwe74CJAZ8gvY4uiMEmtZiHTMuEaZeMTwNbgmHSHpUcjhq9i/72nE04brlW2huc
+         65bo7Y1IIYikTnWDdj3Imw2TexEJ4/Ey5nYCM5NMInMSZ9XEyhPksAbUoEUYeYK3ukFY
+         HINA==
+X-Forwarded-Encrypted: i=1; AKwUvByzTkd55F7B0nWgxCHEM5YZ4yEPSjaeFegapR4MDRaiTC/WYEBgjD6wJhEjRVvB6ZPVbfbir2n76w==@vger.kernel.org
+X-Gm-Message-State: AFuF++nr40mU0gQtO+NYumK+7WOTHdXGLOAxIu9BcIoUIICZRteYEHi/
+	yVG+sZOPZksib/yBz730nfy/HAPzCayPM43ejPylnro8jvpSfzq8E3UZdSWsVr2sFeaw6TzLii8
+	C0cy/Z6NLBGMSjKSetxHnMVQQL9OMvzVYVKrtHTfq9w==
+X-Gm-Gg: AYBFou1V9rgd7DTa/i/v6eiUDdgGOlQ3eIV5US9yQs42mg7wqTKK7tlhw7gW+d+GUPW
+	dPHNfIlPxebswIKwifTwSAN9M3txhzm1z7uq97Oi8CD71UvVO4C4rj2l8AMp/2ci/yYT9WbfFWX
+	3eAiqzaXuSTCBWuaZL9S34O3NTxu2As4HAuo/9Jor2IpqdxbAGoz9HjhPjHLkNIiRbVv/0j6rT0
+	zKWNCTC/nQtrzXPSfqfKyecIDuc1aPIoSyoQBK28oqqzFEPiA1CXBEeAoa8pEmSa0q5FZO/wlPJ
+	+lV0BnigGVij6OHq9GQtNQf5tPDryJ01LBdS3DoryCtuCKW4xYfhpz1x8gBGJ5YUo+gsTatXqSP
+	et5PJZMoYzSLQ
+X-Received: by 2002:a17:906:c14a:b0:c26:2151:180a with SMTP id
+ a640c23a62f3a-c26215134f7mr635825666b.3.1788789006351; Mon, 07 Sep 2026
+ 06:50:06 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: konrad.dybcio@oss.qualcomm.com, raviteja.laggyshetty@oss.qualcomm.com, smostafa@google.com, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, quic_rjendra@quicinc.com, abelvesa@kernel.org, andersson@kernel.org, konradybcio@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, dmitry.baryshkov@oss.qualcomm.com, odelu.kukatla@oss.qualcomm.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+MIME-Version: 1.0
+References: <20260727-bq25792-v8-0-c1c70473bbe7@flipper.net> <CAKTNdwF5yW4YFFmsvDFVY+Q+89Uo=YS79nb4qYrT4WyKOszyvw@mail.gmail.com>
+In-Reply-To: <CAKTNdwF5yW4YFFmsvDFVY+Q+89Uo=YS79nb4qYrT4WyKOszyvw@mail.gmail.com>
+From: Alexey Charkov <alchark@flipper.net>
+Date: Mon, 7 Sep 2026 17:49:55 +0400
+X-Gm-Features: AcwNN1ViiR2Nln6q6EquDYeq682N7lzMxojPLLDRGB5jwNk6LcMvHbqWFR0a-zQ
+Message-ID: <CAKTNdwGC=AZ9jmD71tz6JqCWk-00QLWCYb9wiG6RRQ0bO=mC4Q@mail.gmail.com>
+Subject: Re: [PATCH v8 0/2] Add support for the TI BQ25792 battery charger
+ (regulator part)
+To: Chris Morgan <macromorgan@hotmail.com>, Mark Brown <broonie@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Lee Jones <lee@kernel.org>
+Cc: linux-kernel@vger.kernel.org, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 07 Sep 2026 14:20:26 +0100,
-Konrad Dybcio <konrad.dybcio@oss.qualcomm.com> wrote:
-> 
-> On 9/7/26 10:49 AM, Marc Zyngier wrote:
-> > On Mon, 07 Sep 2026 09:18:38 +0100,
-> > Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com> wrote:
-> >>
-> >>
-> >>
-> >> On 9/7/2026 1:39 PM, Marc Zyngier wrote:
-> >>> On Wed, 02 Sep 2026 14:00:52 +0100,
-> >>> Mostafa Saleh <smostafa@google.com> wrote:
-> >>>>
-> >>>> On Wed, May 27, 2026 at 05:37:10AM +0000, Raviteja Laggyshetty wrote:
-> >>>>> Enable QoS configuration for master ports with predefined priority
-> >>>>> and urgency forwarding.
-> 
-> [...]
-> 
-> >>> I'm also seeing spurious resets on my "X1E001DE Snapdragon Devkit for
-> >>> Windows" when doing large file transfers over the network (30GB+).
-> >>> With this patch reverted on top of 7.3-rc1, both machines are as solid
-> >>> as they were before it.
-> >>>
-> >> The current patch enable QoS for Hamoa SoC, which get programmed only during
-> >> driver probe. This shouldn't impact or cause any spurious resets once the 
-> >> device is booted up and probe is successful.
-> > 
-> > And yet it absolutely does break things.
-> > 
-> > With this patch applied, the box resets within 5GB of heavy network
-> > traffic, probably because some transaction get delayed, and a watchdog
-> > fires. With the patch reverted, the box keeps receiving packets, and
-> > everything is hunky dory (100GB+ so far).
-> > 
-> > Which makes me think that the set of hardcoded parameters in this
-> > patch is not universal at all.
-> 
-> They are, provided the configuration is for the right SoC..
+On Wed, Aug 5, 2026 at 6:21=E2=80=AFPM Alexey Charkov <alchark@flipper.net>=
+ wrote:
+>
+> On Mon, Jul 27, 2026 at 11:52=E2=80=AFAM Alexey Charkov <alchark@flipper.=
+net> wrote:
+> >
+> > This adds support for the TI BQ25792 battery charger, which is similar =
+in
+> > overall logic to the BQ25703A, but has a different register layout and
+> > slightly different lower-level programming logic.
+> >
+> > Mark, would you mind applying the regulator part, which already carries
+> > your Ack, and which is the only part outstanding from this series?
+> >
+> > No cross-tree dependencies here, as the MFD part is already in master.
+> >
+> > Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> > ---
+> > Changes in v8:
+> > - Rebased onto recent -next and dropped patches already applied by Seba=
+stian (thanks!)
+> > - Link to v7: https://patch.msgid.link/20260603-bq25792-v7-0-d487bed276=
+d0@flipper.net
+>
+> Hi Mark,
+>
+> Gentle ping. Any chance for this to go into 7.3?
 
-Is x1e001de different from x1e80100? AFAIK, it is only a binned
-version of the same SoC. How do you explain the above regression?
+Gentle ping :) This still applies cleanly to -next, so I'd appreciate
+it if this could be applied.
 
-> Turns out Purwa has a slightly different topology and that went
-> unnoticed as the platform was brought up upstream.
-> 
-> I'll send a fix.
+Thanks a lot!
 
-That'd be good.
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
+Best regards,
+Alexey
