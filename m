@@ -1,182 +1,118 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77BCC33262A;
-	Mon,  7 Sep 2026 08:49:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BB8B1D7E5C;
+	Mon,  7 Sep 2026 08:49:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788770959; cv=none; b=NzXoISFJx1eBkmhHHFwgWFV71lv49aoTCg9jbZkpZULIu1s9oe6/eEm5sLqjOjRgw4OBbHBNAlHN5YFrwGRrCOtZNHcHf7neLs9QkRJg1jy2XECy5LRWlpGZMiY5dG/wRQKJz7NwDz7xWsyDWFOs/ZaRpec+jQunKhaIq4DIk1A=
+	t=1788770999; cv=none; b=RF8dA23+6UJgbpYPQwHC5YnhWuZUbACTGRsG0j6yV/Ha6BKp/JdpPsHKw+gsoCyBXgd0XVChDBZ7AxVswoCJa9NU8MSiX/SxS6IATBYKXj0Y/UjYPNzzFgCaIqNlBwDH0SrjyYGpKqlHK5suhWzX1iujAiiWJlmAAcJGSZ89Klo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788770959; c=relaxed/simple;
-	bh=ftfDffwrgtPDQEpFXbH7UbYOc+SPqwxGnUvnr/hgSew=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AcMpy61TSs9k4lpBrBYS/3G6Hld+4rxX65rN9HVwY6z/+mVJdbP0gTxGyfDrrUylYjIoNdflD/QcJ7QcbwVKv8IEkXBB7Q1kfvjdY1YV+p2m+raXC14/EBhaEtMFsBA4S+2vWcioZ3BEx1MJx2SqG8O9pd7qlVmWZ1qRJjvMd8g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kDnxOiS0; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kDnxOiS0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 075411F00A3A;
-	Mon,  7 Sep 2026 08:49:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788770958;
-	bh=RvFN7usOxne2FeOsw/QK8eU4IeWXfySDfmX/m8AFoFw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=kDnxOiS01hMx0VLlxLXiHYC62wTl7Ke5PvrUiR1Vfj8SOoEuUrCT0TMeIPlnbE2Kj
-	 PRfc1qeyM62M8l008Fgl37/M0BS7aNsawfw3ayV3hNkg12Yn9AwUB7Qt+3K1jplyUL
-	 j0vdbk4o2Dio2r+KpJL3aTUh3HcU7Gg8bkSXoY2oU7VmmbEeArDRFf3goPJkwgrOFa
-	 tXoHHOSjk14qcMtEJtHEgsIXW6RGlpHGbivn91/Wkr+TZz7aM2HXG5QYR85cL/5KpK
-	 ns8TiMP5Plmgom5Is8gIwW26xKzD4vKYvcASTLml6xlee3UCIyVZPy0IWl9NJ1pa/s
-	 RXo0vAjeVqS7w==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <maz@kernel.org>)
-	id 1x3V2S-00000005f2L-0Au8;
-	Mon, 07 Sep 2026 08:49:16 +0000
-Date: Mon, 07 Sep 2026 09:49:15 +0100
-Message-ID: <86jyox4fas.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-Cc: Mostafa Saleh <smostafa@google.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley
- <conor+dt@kernel.org>,
-	Rajendra Nayak <quic_rjendra@quicinc.com>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Konrad Dybcio
- <konrad.dybcio@oss.qualcomm.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-Subject: Re: [PATCH v2 2/3] interconnect: qcom: x1e80100: enable QoS configuration
-In-Reply-To: <f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
-References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
-	<20260527-x1e80100_qos-v2-2-305c6539e6d2@oss.qualcomm.com>
-	<apgeBNSiP01YfNcs@google.com>
-	<86ld9d4h4n.wl-maz@kernel.org>
-	<f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+	s=arc-20240116; t=1788770999; c=relaxed/simple;
+	bh=pH3II/1kOttsrioQX5Aapg02bskPjjORNKfZhPNOfa4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=rCQDhX7PWA0Jf9gknSvUAgT9LkK+wBLfMqFgX/IVCy/Pf21xAyUmyZr/ZR6A5h9GUjnvH2f5/mM7tG5uTNB6cF+IDaQG3RitYX80sua1kHeT0ccj5of84sY7ZAyisMZBTGvdS+hbaLFLUKbYbt5sSGnxofm3OqVxQwdUlu176OA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.227
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4hdgTJ67xSznTVn;
+	Mon,  7 Sep 2026 16:38:44 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 2DAE140565;
+	Mon,  7 Sep 2026 16:49:55 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
+ (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 7 Sep
+ 2026 16:49:54 +0800
+Message-ID: <d02f335a-c97d-49ad-85c0-2eacd744eb0c@hisilicon.com>
+Date: Mon, 7 Sep 2026 16:49:53 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: raviteja.laggyshetty@oss.qualcomm.com, smostafa@google.com, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, quic_rjendra@quicinc.com, abelvesa@kernel.org, andersson@kernel.org, konradybcio@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, konrad.dybcio@oss.qualcomm.com, dmitry.baryshkov@oss.qualcomm.com, odelu.kukatla@oss.qualcomm.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 0/3] cpufreq: cppc: Handle Highest Performance changes
+ at runtime
+To: Xueqin Luo <luoxueqin@kylinos.cn>, Sudeep Holla <sudeep.holla@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>
+CC: Lifeng Zheng <zhenglifeng1@huawei.com>, Pierre Gondois
+	<pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+	<linux-kernel@vger.kernel.org>, <driver-core@lists.linux.dev>,
+	<linux-pm@vger.kernel.org>
+References: <20260807060848.832929-1-luoxueqin@kylinos.cn>
+Content-Language: en-US
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <20260807060848.832929-1-luoxueqin@kylinos.cn>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-On Mon, 07 Sep 2026 09:18:38 +0100,
-Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com> wrote:
+
+
+On 8/7/2026 2:08 PM, Xueqin Luo wrote:
+> Hi Rafael, Pierre,
 > 
+> This series adds support for handling ACPI CPPC Highest Performance
+> register changes at runtime, triggered by Notify(0x85) on a processor
+> device.
 > 
+> When the platform changes the Highest Performance value (e.g. due to
+> thermal or power budget adjustments), the OSPM must re-evaluate the
+> cached capability and propagate the change to the cpufreq policy,
+> the scheduler's CPU capacity model, and the frequency invariance
+> engine.
+Any real use case of this on platforms that run cppc_cpufreq drivers?
+Some addtional motivation may help.
+
+For example, a processor can age over time and its core frequency degrades.
+It's good if platforms can make OSPM and userspace aware of this.
 > 
-> On 9/7/2026 1:39 PM, Marc Zyngier wrote:
-> > On Wed, 02 Sep 2026 14:00:52 +0100,
-> > Mostafa Saleh <smostafa@google.com> wrote:
-> >>
-> >> On Wed, May 27, 2026 at 05:37:10AM +0000, Raviteja Laggyshetty wrote:
-> >>> Enable QoS configuration for master ports with predefined priority
-> >>> and urgency forwarding.
-> >>>
-> >>> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> >>> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> >>> Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-> >>
-> >> Testing with Linus's tree, this patch broke my Lenovo IdeaCenter Mini X
-> >> booting, the board resets very early during boot.
-> >> I see that the last patch (device tree) is missing from the tree, I
-> >> included it, but that doesn't fix it, disabling the driver also
-> >> doesn't help. I can boot again by reverting this patch.
-> >>
-> >> I have my own device tree as my device is Purwa based [1]
-> >>
-> >> [1] https://lore.kernel.org/all/20260429141815.827157-1-smostafa@google.com/
-> > 
-> > Same here. My Mini-X hard reboots after 2.45s in the kernel. Example
-> > from the serial console:
+> The series is split into three patches:
+>   Patch 1: Core update_limits callback with boost QoS handling.
+>   Patch 2: Refactor autonomous perf bounds into a reusable helper
+>            and wire it into update_limits with error logging.
+>   Patch 3: Topology subsystem runtime capacity updates with
+>            validation, early-return optimization, and concurrent-safe
+>            normalization.
 > 
-> Is the Mini-X based on Purwa ?
-
-Yes. At least the one I have in the rack.
-
+> v4 -> v5:
+>   - Move cpu_data and caps pointer assignments after
+>     guard(cpufreq_policy_write) in cppc_cpufreq_update_limits() to
+>     avoid potential use-after-free if concurrent CPU offline frees
+>     driver_data before the lock is acquired (Sashiko)
+>   - Extract cppc_cpufreq_sync_boost_limits() from update_limits to
+>     handle boost_supported re-evaluation, cpuinfo.max_freq tracking,
+>     and boost_freq_req QoS update in a dedicated helper. The helper
+>     always updates the QoS request (even when boost becomes
+>     unsupported) to clear stale constraint values, and forcibly
+>     disables boost_enabled when boost disappears at runtime
+>   - Add highest_perf validation in topology_update_cpu_capacity():
+>     reject values below lowest_perf to prevent corrupted register
+>     reads from propagating into the scheduler capacity model
+>   - Add early-return in topology_update_cpu_capacity() when
+>     raw_capacity[cpu] is unchanged, avoiding redundant normalization
+>     and schedule_work() calls
+>   - Add zero capacity_scale guard in topology_update_cpu_capacity()
+>     to prevent division by zero in the normalization loop
+>   - Move guard(mutex) before the raw_capacity NULL check so that
+>     the pointer read is protected by the lock
+>   - Add CONFIG_GENERIC_ARCH_TOPOLOGY guard with no-op stub in
+>     arch_topology.h for configs where the topology subsystem is
+>     disabled
 > 
-> > 
-> > <quote>
-> > [    2.280289] VFIO - User Level meta-driver version: 0.3
-> > [    2.286872] usbcore: registered new interface driver usb-storage
-> > [    2.307218] i2c_dev: i2c /dev entries driver
-> > [    2.316386] efifb: probing for efifb
-> > [    2.320065] efifb: framebuffer at 0xe4800000, using 8100k, total 8100k
-> > [    2.326768] efifb: mode is 1920x1080x32, linelength=7680, pages=1
-> > [    2.333026] efifb: scrolling: redraw
-> > [    2.336704] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
-> > [    2.346518] Console: switching to colour frame buffer device 240x67
-> > [    2.356787] fb0: EFI VGA frame buffer device
-> > [    2.361793] clocksource: arch_mmio_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
-> > [    2.372947] arch-timer-mmio 17800000.timer: mmio timer running at 19.20MHz (virt)
-> > [    2.380860] usbcore: registered new interface driver usbhid
-> > [    2.386577] usbhid: USB HID core driver
-> > [    2.391899] hw perfevents: enabled with armv8_pmuv3 PMU driver, 13 (0,80000fff) counters available
-> > [    2.403182] NET: Registered PF_INET6 protocol family
-> > [    2.408516] Segment Routing with IPv6
-> > [    2.412289] In-situ OAM (IOAM) with IPv6
-> > [    2.416326] NET: Registered PF_PACKET protocol family
-> > [    2.421533] 9pnet: Installing 9P2000 support
-> > [    2.425923] Key type dns_resolver registered
-> > [    2.430357] NET: Registered PF_VSOCK protocol family
-> > [    2.440369] registered taskstats version 1
-> > [    2.444633] Loading compiled-in X.509 certificates
-> > [    2.451480] Demotion targets for Node 0: null
-> > Format: Log Type - Time(microsec) - Message - Optional Info
-> > Log Type: B - Since Boot(Power On Reset),  D - Delta,  S - Statistic
-> > S - QC_IMAGE_VERSION_STRING=BOOT.MXF.2.4-00541-HAMOA-1
-> > S - IMAGE_VARIANT_STRING=SocHamoaWP
-> > S - OEM_IMAGE_VERSION_STRING=ip-10-195-202-30
-> > S - Boot Interface: SPI
-> > S - Secure Boot: On
-> > S - Boot Config @ 0x221c8600 = 0x00000001
-> > S - JTAG ID @ 0x221c8744 = 0x002ad0e1
-> > S - OEM ID @ 0x221c8700 = 0x00000040
-> > S - Serial Number @ 0x221c8610 = 0x00000460d5171bbb
-> > S - Feature Config Row 0 @ 0x221c21e0 = 0x0000000000000000
-> > S - Feature Config Row 1 @ 0x221c21e8 = 0x0000000000000000
-> > S - Core 0 Frequency, 1363 MHz
-> > S - PBL Patch Ver: 0
-> > S - PBL freq: 600 MHZ
-> > S - Cluster: 0, Core: 0
-> > </quote>
-> > 
-> > I'm also seeing spurious resets on my "X1E001DE Snapdragon Devkit for
-> > Windows" when doing large file transfers over the network (30GB+).
-> > With this patch reverted on top of 7.3-rc1, both machines are as solid
-> > as they were before it.
-> >
-> The current patch enable QoS for Hamoa SoC, which get programmed only during
-> driver probe. This shouldn't impact or cause any spurious resets once the 
-> device is booted up and probe is successful.
-
-And yet it absolutely does break things.
-
-With this patch applied, the box resets within 5GB of heavy network
-traffic, probably because some transaction get delayed, and a watchdog
-fires. With the patch reverted, the box keeps receiving packets, and
-everything is hunky dory (100GB+ so far).
-
-Which makes me think that the set of hardcoded parameters in this
-patch is not universal at all.
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
+> Xueqin Luo (3):
+>   cpufreq: cppc: Add update_limits support for Highest Performance
+>     changes
+>   cpufreq: cppc: Refactor autonomous perf bounds into helper
+>   arch_topology: Add topology_update_cpu_capacity() for runtime updates
+> 
+>  drivers/base/arch_topology.c   |  76 ++++++++++++++++
+>  drivers/cpufreq/cppc_cpufreq.c | 157 ++++++++++++++++++++++++++++++---
+>  include/linux/arch_topology.h  |  13 +++
+>  3 files changed, 233 insertions(+), 13 deletions(-)
+> 
