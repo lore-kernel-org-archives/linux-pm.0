@@ -1,95 +1,175 @@
-Received: from mail-106120.protonmail.ch (mail-106120.protonmail.ch [79.135.106.120])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50784514762
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 16:44:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.120
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD98D38228A;
+	Mon,  7 Sep 2026 16:50:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788799478; cv=none; b=rNKWIfrZ69EsQ5WT5HMsY8h2glfuxRFg4iwhrIh9Yp8OznjsKDsHM1r15Hc6wI5A4UTODTpluRMpqIxJLNJbctoTrrPi52x+x2HyXZkr7M4bbAn+4z96BpCMLnOQoqDOx/hQC19yQcx7ykN7VD5mjYWVfUAp2Ub2Xz6ITZ2mzDc=
+	t=1788799818; cv=none; b=I8zBmP6B/401/BS1ZvS6cQwd+RBj7KdvPMt0rmaS7NQo/0BZbad0u68XoqO7IpYEcyEqF7NaKj+f3j3VUgRB9tTxNiRJed1ZSa6Arbch0nJ32pNGTZ1Wg/78SQTaDgeYkghx/2Wgd+jE8aEK23cmXgw/61NByCRtdqVXuTcOqlA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788799478; c=relaxed/simple;
-	bh=UG+NTlO6bUfJVab3dSfPJecAZRaEA6aV3rDDEgv9yOs=;
-	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=GQhrOFCsGKOqhMybR++DDhZpweUp0nF6LbHz8H2uaRD9cMPLNeMwKzF9TAbdz1gRAwjBN1ntQbCz6dqFwLJbgDdvIt7AYa5YU9QVbTqgnAbh/gGEl0fja/DIniUO821sF3dciAPwbVHB4MBGXyupmyHsvKPu/OUNNQaT/qt/Wdw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=CbqGtB1f; arc=none smtp.client-ip=79.135.106.120
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
+	s=arc-20240116; t=1788799818; c=relaxed/simple;
+	bh=pus3OIMvtAdqCN5lzcybKiNDZT2pHkfTRO5wGwjEElE=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=KiOfQcFOREPILec14BmPpTeajzd0Q07kX44SBf6fPSh1gJgf090oySRHaJ6OK2QS0DaTMV4jRxb+tdTt05/w8Ia6Lq7ECtJCNkJEuhe8I7LaYMNi2Vt2LeCyNPhvbpTQPLbYCPNSpiWO399la08hhlxLwDhVI2nL0SXpuwBpmPk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XLRazJML; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="CbqGtB1f"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1788799474; x=1789058674;
-	bh=UG+NTlO6bUfJVab3dSfPJecAZRaEA6aV3rDDEgv9yOs=;
-	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
-	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=CbqGtB1fS+Fz6xQFhTkDeXE8iaOTSwPZe6XDPzqe0PLQM9FxD63F6lpBlEDg6NPJi
-	 d70QfWhe4bbspB0jnSdOMdBm+7blEx4gXtM1x44HAk3qZr/zEtrPM4VS7RPmUzZAdA
-	 pjNsqqoSB9jGaeaCV3RlGxlrSZw+8ur89fxSoLZZhSRKq0zt9MbEk3w7ZKG55hchfG
-	 RykqJNxOsbkRJpWZQB5rc4LUfhZRfmUTQ+8KM9BA0e7SqzOerIam1Rj6fV7ViLx1iz
-	 9/nT2/uClaNWUO3ErZvhVtZOa75E/6bhSxT9Eudsyi7p7ZIBlF4BIJweClOxCzj/Xo
-	 /0i8UPVAcTAkw==
-Date: Mon, 07 Sep 2026 16:44:29 +0000
-To: Sebastian Reichel <sre@kernel.org>
-From: Alexander Koskovich <akoskovich@pm.me>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alexander Koskovich <akoskovich@pm.me>
-Subject: [PATCH RFC] power: reset: qcom-pon: Drop reason shift for PMK8350
-Message-ID: <20260907-pon-pbs-v1-1-cff2f5810769@pm.me>
-Feedback-ID: 37836894:user:proton
-X-Pm-Message-ID: 3422ff4c0557efb5834518b60b9bf6e8dc934dcf
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XLRazJML"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EBC31F00A3D;
+	Mon,  7 Sep 2026 16:50:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788799817;
+	bh=QTFb/7AYKIYAJJpoTYlFHRzy0v+TkzM5XPwWHm7OcRE=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=XLRazJML7yVxacnO8lm1nOLPHjZv0NzBkvPqtmJ1Y/Q+4X/8vj37vxTjKeAanUhz6
+	 EPbeM2qkidzho26HsF/jPGwkzGKkN7ieKunIc8UZthcMgsKVfz3mSdiNDLjq0Bglb5
+	 su1cZzxyXM9iepayC8dD6d4U0bwjPtIpJDgxi6EzMvTx/2UNzMhCUXjBXMQVZX0YMo
+	 RU+49T+a4+2AowZJDQrk0Hjj8mKeIZ+fOX81erLawEMwIAkFG6JtnQHh5VwPDamb+U
+	 iaYz94lrWtDIx6/0/ItrbZfLo5jT7Gbgzg+t5p/vtovWCQp0Oyu1u10rNtnfpd7YLJ
+	 uPILftTgUhQhA==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1x3cXv-00000005sFE-1cop;
+	Mon, 07 Sep 2026 16:50:15 +0000
+Date: Mon, 07 Sep 2026 17:50:14 +0100
+Message-ID: <86a4pt3t15.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+	Mostafa Saleh <smostafa@google.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Rajendra Nayak
+ <quic_rjendra@quicinc.com>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
+Subject: Re: [PATCH v2 2/3] interconnect: qcom: x1e80100: enable QoS configuration
+In-Reply-To: <0916741e-442e-431a-9831-9457e3af1cf0@oss.qualcomm.com>
+References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
+	<20260527-x1e80100_qos-v2-2-305c6539e6d2@oss.qualcomm.com>
+	<apgeBNSiP01YfNcs@google.com>
+	<86ld9d4h4n.wl-maz@kernel.org>
+	<f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
+	<86jyox4fas.wl-maz@kernel.org>
+	<ca962589-3b6c-4e5d-a11e-b49cf20dc262@oss.qualcomm.com>
+	<86bja94234.wl-maz@kernel.org>
+	<0916741e-442e-431a-9831-9457e3af1cf0@oss.qualcomm.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: konrad.dybcio@oss.qualcomm.com, raviteja.laggyshetty@oss.qualcomm.com, smostafa@google.com, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, quic_rjendra@quicinc.com, abelvesa@kernel.org, andersson@kernel.org, konradybcio@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, dmitry.baryshkov@oss.qualcomm.com, odelu.kukatla@oss.qualcomm.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
-On the PMK8350 the SOFT_RB_SPARE register does not exist, the reset
-reason is instead kept in SDAM and written through the reboot-reason
-nvmem cell.
+On Mon, 07 Sep 2026 15:34:35 +0100,
+Konrad Dybcio <konrad.dybcio@oss.qualcomm.com> wrote:
+> 
+> On 9/7/26 3:34 PM, Marc Zyngier wrote:
+> > On Mon, 07 Sep 2026 14:20:26 +0100,
+> > Konrad Dybcio <konrad.dybcio@oss.qualcomm.com> wrote:
+> >>
+> >> On 9/7/26 10:49 AM, Marc Zyngier wrote:
+> >>> On Mon, 07 Sep 2026 09:18:38 +0100,
+> >>> Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com> wrote:
+> 
+> [...]
+> 
+> >>>> The current patch enable QoS for Hamoa SoC, which get programmed only during
+> >>>> driver probe. This shouldn't impact or cause any spurious resets once the 
+> >>>> device is booted up and probe is successful.
+> >>>
+> >>> And yet it absolutely does break things.
+> >>>
+> >>> With this patch applied, the box resets within 5GB of heavy network
+> >>> traffic, probably because some transaction get delayed, and a watchdog
+> >>> fires. With the patch reverted, the box keeps receiving packets, and
+> >>> everything is hunky dory (100GB+ so far).
+> >>>
+> >>> Which makes me think that the set of hardcoded parameters in this
+> >>> patch is not universal at all.
+> >>
+> >> They are, provided the configuration is for the right SoC..
+> > 
+> > Is x1e001de different from x1e80100? AFAIK, it is only a binned
+> > version of the same SoC. How do you explain the above regression?
+> 
+> I somehow skimmed over the fact you said it's on the devkit and not
+> on the mini-x mentioned before.
+> 
+> I pulled the Hamoa settings I could find, there are some updates but
+> none seem particularly related (maybe the PCIe one? I don't know how
+> the network card is connected), please give the attached patch a try.
 
-Signed-off-by: Alexander Koskovich <akoskovich@pm.me>
----
-Would like some feedback on this as I'm seeing conflicting results,
-SOFT_RB_SPARE does not exist on HLOS but it looks like the downstream
-qpnp-power-on driver writes to XVDD_RB_SPARE2 for GEN3, which is on PBS.
+I cherry-picked the Hamoa-specific patch, and gave it a go. Same
+result (hard reset while synchronising a bunch of files), but this
+time with a nice little message:
 
-Though, targets like waipio don't seem to have access to write to PBS
-from HLOS? Get SPMI errors when I try. Didn't have an issue doing so on
-milos though.
+[  272.468031] nvme nvme0: controller is down; will reset: CSTS=0xffffffff, PCI_STATUS=0xffff
+[  272.468039] nvme nvme0: Does your device have a faulty power saving mode enabled?
+[  272.468039] nvme nvme0: Try "nvme_core.default_ps_max_latency_us=0 pcie_aspm=off pcie_port_pm=off" and report a bug
 
-Besides, the bindings doesn't allow reboot modes on PMK8350 so maybe
-setting no reason shift is correct regardless so it gets skipped?
----
- drivers/power/reset/qcom-pon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+indicating that PCIe has died.
 
-diff --git a/drivers/power/reset/qcom-pon.c b/drivers/power/reset/qcom-pon.=
-c
-index 7e108982a582..9cd55f5536b4 100644
---- a/drivers/power/reset/qcom-pon.c
-+++ b/drivers/power/reset/qcom-pon.c
-@@ -90,7 +90,7 @@ static const struct of_device_id qcom_pon_id_table[] =3D =
-{
- =09{ .compatible =3D "qcom,pm8941-pon", .data =3D (void *)NO_REASON_SHIFT =
-},
- =09{ .compatible =3D "qcom,pms405-pon", .data =3D (void *)GEN1_REASON_SHIF=
-T },
- =09{ .compatible =3D "qcom,pm8998-pon", .data =3D (void *)GEN2_REASON_SHIF=
-T },
--=09{ .compatible =3D "qcom,pmk8350-pon", .data =3D (void *)GEN2_REASON_SHI=
-FT },
-+=09{ .compatible =3D "qcom,pmk8350-pon", .data =3D (void *)NO_REASON_SHIFT=
- },
- =09{ }
- };
- MODULE_DEVICE_TABLE(of, qcom_pon_id_table);
+None of that happens without the QoS stuff.
 
----
-base-commit: 944a035ecca915ae947905dcfb03f2b9dc6d032c
-change-id: 20260907-pon-pbs-76b7ecaafe33
+> If nothing else, please "bisect" the QoS additions until it stops
+> crashing. Although perhaps applying only some of the settings may
+> have its own set of dragons..
 
-Best regards,
---=20
-Alexander Koskovich <akoskovich@pm.me>
+That's not exactly encouraging, is it? And if the "recommended" set of
+tunables is not up to scratch, surely there should be a way to opt-out
+until someone figures out what's wrong. Something like this:
+
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index 3b445acefece7..3a4743c364dac 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -224,6 +224,9 @@ static int qcom_icc_rpmh_configure_qos(struct qcom_icc_provider *qp)
+ 	return ret;
+ }
+ 
++static bool enable_qos = true;
++module_param(enable_qos, bool, 0660);
++
+ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ {
+ 	const struct qcom_icc_desc *desc;
+@@ -308,6 +311,11 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 		struct resource *res;
+ 		void __iomem *base;
+ 
++		if (!enable_qos) {
++			dev_info(dev, "Skipping QoS (command line)\n");
++			goto skip_qos_config;
++		}
++
+ 		/* Try parent's regmap first */
+ 		qp->regmap = dev_get_regmap(dev->parent, NULL);
+ 		if (!qp->regmap) {
+
+At least people stuck with Purwa or other abandonware (such as the
+devkit) would still have a usable machine.
+
+	M.
 
 
+-- 
+Without deviation from the norm, progress is not possible.
