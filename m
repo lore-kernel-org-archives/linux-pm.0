@@ -1,153 +1,176 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta1.migadu.com (out-94.mta1.migadu.com [95.215.58.94])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19EC5439F83;
-	Mon,  7 Sep 2026 08:09:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA563340401
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 08:13:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.94
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788768589; cv=none; b=UT3S9nmKSu6X3eiFr1+7Rh7WCbNswnOHXRsvwfx9pNYu4UhUf1HCtXLLQ/NwxkTeDVTxTAxnTSJG6MyvD4U+k5jtxsU3YkfQhKHspuyZg2oqMKSj4fN0PbC1OAHNszNKb0GgA/IaMkhCy5HY7pLk7/gR26/oGjHnr54njB3pCgU=
+	t=1788768832; cv=none; b=EfPyVb0NRUdDOaddufpGzSGfVVunZS00iHXnqtX4hm8MyiuT2htf2vtmG0vMNj9k5pJjNbyBLxqAdBZ+n5dHjNujFTSpeHSab2TQz/0xHdv4VDgDwtsKldlF4/vAqUAvP8EZ+y9w9DUm4dokQOG68MbbJVNJUwVfrhhP5RLGg6M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788768589; c=relaxed/simple;
-	bh=wF6+qymTwJPnewxUAEEFkDt478Use89DXuefrbu8SL8=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=e8mP/X4faOY3EGN7X6WtFzXia05WFxWtAxeZkyvenflLY+Tze2bNzRjtjTjNVS4fXj08tAUv64LlTqX7wMFva2ug8XHw4QKeyGn+U/CXkS9D6ZTt34pKNn37XcKG1NIFBVY1AYEF1XhMd6MUOPLL0KjAM3o2kWjQC/+aGje/+lk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mo/LQXNz; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788768832; c=relaxed/simple;
+	bh=WPjsFkKr6FEYMnlHhMl1nDBxkpUdBFsa1ndkFSmZ/0Q=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=DbYL5KQ1wCH34ZynYQr1QN70vQnz7RQatbLu1SV/olfCbTaM3BtS0vfZ7mv8293/ERwrr2oN9BBR/QAGSN0wEQAQokITgox/iwJVUAgkhrz94YemkrteJTTfgV5SF6rqEUTfT/HScIB3vj5gAT5w3l6B0R7zzLSU8Q5/9Sts1C0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=crrNKirS; arc=none smtp.client-ip=95.215.58.94
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mo/LQXNz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88DFE1F00A3A;
-	Mon,  7 Sep 2026 08:09:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788768587;
-	bh=NnpuXAf41UshN+6j3AcVOLHgH7t17OZW010hfqbrXvg=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=mo/LQXNz89AwDUSTQ5BIC55Kat5eZVjHsvlWNvaFiZQ0ALYRa2KVGCiJoNlFR+ZEy
-	 1oZzAAkQ4W7j2+V3ExTroqzQUM2w5RC/UEdYUO7ROozhAPw/ZXstatZI125U0KeqKw
-	 OMJT+hiwfBcOyNuYlwgBGZFxd28KYBC1og9xJiuBsvdXs7yjXuOle8PyRoSV2LI57F
-	 nyKJTpGSct2pBIcOlzM66cLdrin1I1g03NWZELNm5cpuUu6uamCLGpa3x6RHbHoHXv
-	 XD2aK1NloOD7OH9gryp3sraU9Qb76INI0qJqLOaewHMtgmRfNK1AjD+bxfodnZ25IH
-	 oVI++h9i2J0VQ==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <maz@kernel.org>)
-	id 1x3UQD-00000005dyn-1Jw7;
-	Mon, 07 Sep 2026 08:09:45 +0000
-Date: Mon, 07 Sep 2026 09:09:44 +0100
-Message-ID: <86ld9d4h4n.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>, Mostafa Saleh <smostafa@google.com>
-Cc: 	Georgi Djakov <djakov@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Rajendra Nayak <quic_rjendra@quicinc.com>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="crrNKirS"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=WPjsFkKr6FEYMnlHhMl1nDBxkpUdBFsa1ndkFSmZ/0Q=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1788768828; v=1; x=1789373628;
+ b=crrNKirSqCWRXtMKzcMLrd5Pr+KEL469evIyIDu0TuNSSltuuZgJPHpt1rJogB6oRN0/99hM
+ nQnFgQYvjoiAgHCnf1L6IQynfj3mqIKlj4TLcxUCRfXwXHPGzd8tS0xRmj5V3wnp1uj3vngbMc2
+ wo/yPRoS2cZswZPb4rm8udr0=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 2103926bec6903fd;
+	Mon, 07 Sep 2026 08:13:48 +0000
+X-Mizu-Trace-ID: 2103926bec6903fd
+X-Migadu-Flow: FLOW_OUT
+From: Ye Liu <ye.liu@linux.dev>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Michal Hocko <mhocko@suse.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	"Paul E. McKenney" <paulmck@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	=?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
+	Oleg Nesterov <oleg@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>
+Cc: Ye Liu <liuye@kylinos.cn>,
+	David Hildenbrand <david@kernel.org>,
+	Miaohe Lin <linmiaohe@huawei.com>,
+	Naoya Horiguchi <nao.horiguchi@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	=?UTF-8?q?G=C3=BCnther=20Noack?= <gnoack3000@gmail.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	SJ Park <sj@kernel.org>,
+	linux-mm@kvack.org,
 	linux-kernel@vger.kernel.org,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Subject: Re: [PATCH v2 2/3] interconnect: qcom: x1e80100: enable QoS configuration
-In-Reply-To: <apgeBNSiP01YfNcs@google.com>
-References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
-	<20260527-x1e80100_qos-v2-2-305c6539e6d2@oss.qualcomm.com>
-	<apgeBNSiP01YfNcs@google.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+	linux-pm@vger.kernel.org,
+	rcu@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	rientjes@google.com,
+	shakeel.butt@linux.dev,
+	xu.xin16@zte.com.cn,
+	chengming.zhou@linux.dev,
+	will@kernel.org,
+	boqun@kernel.org,
+	frederic@kernel.org,
+	neeraj.upadhyay@kernel.org,
+	joelagnelf@nvidia.com,
+	josh@joshtriplett.org,
+	urezki@gmail.com,
+	juri.lelli@redhat.com,
+	vincent.guittot@linaro.org,
+	tony.luck@intel.com,
+	reinette.chatre@intel.com,
+	x86@kernel.org,
+	paul@paul-moore.com,
+	jmorris@namei.org,
+	serge@hallyn.com,
+	pavel@kernel.org,
+	lance.yang@linux.dev,
+	mhiramat@kernel.org,
+	pmladek@suse.com,
+	longman@redhat.com,
+	mathieu.desnoyers@efficios.com,
+	jiangshanlai@gmail.com,
+	qiang.zhang@linux.dev,
+	dietmar.eggemann@arm.com,
+	bsegall@google.com,
+	mgorman@suse.de,
+	vschneid@redhat.com,
+	kprateek.nayak@amd.com,
+	mark.rutland@arm.com,
+	Dave.Martin@arm.com,
+	james.morse@arm.com,
+	babu.moger@amd.com
+Subject: [PATCH v2 0/8] sched: introduce for_each_process_rculock and for_each_thread_rculock
+Date: Mon,  7 Sep 2026 16:13:26 +0800
+Message-Id: <20260907081334.1152889-1-ye.liu@linux.dev>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: raviteja.laggyshetty@oss.qualcomm.com, smostafa@google.com, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, quic_rjendra@quicinc.com, abelvesa@kernel.org, andersson@kernel.org, konradybcio@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, konrad.dybcio@oss.qualcomm.com, dmitry.baryshkov@oss.qualcomm.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Wed, 02 Sep 2026 14:00:52 +0100,
-Mostafa Saleh <smostafa@google.com> wrote:
-> 
-> On Wed, May 27, 2026 at 05:37:10AM +0000, Raviteja Laggyshetty wrote:
-> > Enable QoS configuration for master ports with predefined priority
-> > and urgency forwarding.
-> > 
-> > Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> > Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> > Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-> 
-> Testing with Linus's tree, this patch broke my Lenovo IdeaCenter Mini X
-> booting, the board resets very early during boot.
-> I see that the last patch (device tree) is missing from the tree, I
-> included it, but that doesn't fix it, disabling the driver also
-> doesn't help. I can boot again by reverting this patch.
-> 
-> I have my own device tree as my device is Purwa based [1]
-> 
-> [1] https://lore.kernel.org/all/20260429141815.827157-1-smostafa@google.com/
+From: Ye Liu <liuye@kylinos.cn>
 
-Same here. My Mini-X hard reboots after 2.45s in the kernel. Example
-from the serial console:
+Introduce for_each_process_rculock(), for_each_thread_rculock() and
+for_each_process_thread_rculock() macros that combine the existing
+iteration macros with scoped_guard(rcu), so that the RCU read lock
+is automatically acquired before iteration and released when the
+loop exits — including via break, goto, or return.
 
-<quote>
-[    2.280289] VFIO - User Level meta-driver version: 0.3
-[    2.286872] usbcore: registered new interface driver usb-storage
-[    2.307218] i2c_dev: i2c /dev entries driver
-[    2.316386] efifb: probing for efifb
-[    2.320065] efifb: framebuffer at 0xe4800000, using 8100k, total 8100k
-[    2.326768] efifb: mode is 1920x1080x32, linelength=7680, pages=1
-[    2.333026] efifb: scrolling: redraw
-[    2.336704] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
-[    2.346518] Console: switching to colour frame buffer device 240x67
-[    2.356787] fb0: EFI VGA frame buffer device
-[    2.361793] clocksource: arch_mmio_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
-[    2.372947] arch-timer-mmio 17800000.timer: mmio timer running at 19.20MHz (virt)
-[    2.380860] usbcore: registered new interface driver usbhid
-[    2.386577] usbhid: USB HID core driver
-[    2.391899] hw perfevents: enabled with armv8_pmuv3 PMU driver, 13 (0,80000fff) counters available
-[    2.403182] NET: Registered PF_INET6 protocol family
-[    2.408516] Segment Routing with IPv6
-[    2.412289] In-situ OAM (IOAM) with IPv6
-[    2.416326] NET: Registered PF_PACKET protocol family
-[    2.421533] 9pnet: Installing 9P2000 support
-[    2.425923] Key type dns_resolver registered
-[    2.430357] NET: Registered PF_VSOCK protocol family
-[    2.440369] registered taskstats version 1
-[    2.444633] Loading compiled-in X.509 certificates
-[    2.451480] Demotion targets for Node 0: null
-Format: Log Type - Time(microsec) - Message - Optional Info
-Log Type: B - Since Boot(Power On Reset),  D - Delta,  S - Statistic
-S - QC_IMAGE_VERSION_STRING=BOOT.MXF.2.4-00541-HAMOA-1
-S - IMAGE_VARIANT_STRING=SocHamoaWP
-S - OEM_IMAGE_VERSION_STRING=ip-10-195-202-30
-S - Boot Interface: SPI
-S - Secure Boot: On
-S - Boot Config @ 0x221c8600 = 0x00000001
-S - JTAG ID @ 0x221c8744 = 0x002ad0e1
-S - OEM ID @ 0x221c8700 = 0x00000040
-S - Serial Number @ 0x221c8610 = 0x00000460d5171bbb
-S - Feature Config Row 0 @ 0x221c21e0 = 0x0000000000000000
-S - Feature Config Row 1 @ 0x221c21e8 = 0x0000000000000000
-S - Core 0 Frequency, 1363 MHz
-S - PBL Patch Ver: 0
-S - PBL freq: 600 MHZ
-S - Cluster: 0, Core: 0
-</quote>
+The rest of the series converts manual rcu_read_lock()/
+rcu_read_unlock() and guard(rcu)() pairs across mm/, kernel/, fs/,
+lib/ and security/ to use the new macros.
 
-I'm also seeing spurious resets on my "X1E001DE Snapdragon Devkit for
-Windows" when doing large file transfers over the network (30GB+).
-With this patch reverted on top of 7.3-rc1, both machines are as solid
-as they were before it.
+Changes since v1 [1]:
+  - Rename macros from *_rcu to *_rculock, as suggested by Steven
+    Rostedt and acked by Thomas Gleixner, to avoid confusion with
+    existing *_rcu() list iterators that expect the caller to hold
+    the RCU read lock.
+  - Improve the comment on for_each_process_thread_rculock() to
+    document that 'break' only exits the inner loop and 'goto' is
+    needed to exit both loops (Thomas Gleixner).
+  - Rename the stale 'unlock:' label to 'out:' in hung_task.c, as
+    noted by Günther Noack.
+  - Clarify in patch 4 that page_pgoff() is safe outside the RCU
+    read-side critical section (SJ Park).
+  - CC all relevant maintainers on every patch (Lorenzo Stoakes).
+  - Drop the mm: prefix from patch 1, as the macros are in
+    include/linux/sched/signal.h (Michal Hocko).
 
-It appears that the Surface Pro 12" is equally affected (IRC reports),
-so something is amiss with this particular patch.
+Patch 1 may trigger checkpatch "Macros with complex values should be
+enclosed in parentheses" errors.  These are false positives — the
+scoped_guard() pattern is a control-flow construct, not a multi-
+statement macro, and the same idiom is used elsewhere in the kernel.
 
-	M.
+Suggested by Michal Hocko for the oom_kill path [2].
 
--- 
-Without deviation from the norm, progress is not possible.
+[1] https://lore.kernel.org/all/20260904083001.553587-1-ye.liu@linux.dev/
+[2] https://lore.kernel.org/all/20260813092933.562028-1-ye.liu@linux.dev/
+
+Ye Liu (8):
+  sched: introduce for_each_process_rculock and for_each_thread_rculock
+  mm/oom_kill: convert process/thread iterators to for_each_*_rculock
+  mm/ksm: convert process iterator to for_each_process_rculock
+  mm/memory-failure: convert process iterator to for_each_process_rculock
+  kernel: convert process/thread iterators to for_each_*_rculock
+  fs: convert process/thread iterators to for_each_*_rculock
+  lib: convert process iterator to for_each_process_rculock
+  security/landlock: convert thread iterator to for_each_thread_rculock
+
+ fs/proc/base.c               |  4 +---
+ fs/resctrl/rdtgroup.c        |  8 ++------
+ include/linux/sched/signal.h | 25 +++++++++++++++++++++++++
+ kernel/cpu.c                 |  4 +---
+ kernel/freezer.c             |  4 +---
+ kernel/hung_task.c           | 11 ++++-------
+ kernel/locking/lockdep.c     |  4 +---
+ kernel/rcu/update.c          |  4 +---
+ kernel/sched/core.c          |  3 +--
+ kernel/sched/debug.c         |  4 +---
+ kernel/trace/fgraph.c        |  8 ++------
+ kernel/unwind/deferred.c     |  3 +--
+ lib/is_single_threaded.c     |  5 +----
+ mm/ksm.c                     |  4 +---
+ mm/memory-failure.c          | 16 ++++------------
+ mm/oom_kill.c                | 20 +++++---------------
+ security/landlock/tsync.c    |  8 ++------
+ 17 files changed, 54 insertions(+), 81 deletions(-)
+
+Signed-off-by: Ye Liu <liuye@kylinos.cn>
+
+--
+2.25.1
