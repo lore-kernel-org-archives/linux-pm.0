@@ -1,205 +1,178 @@
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011019.outbound.protection.outlook.com [52.101.62.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3A1B37E5DE;
-	Mon,  7 Sep 2026 08:37:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.19
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788770249; cv=fail; b=VnMSCq+XUAMXrOfZSyu2Cm3n0MAX+RS+Sn48YK/Qj3c12KQAHJRn6c8HYBEsHkLzpsv5VtIkXnyMfCmTEkoyz/Ytn+PMZigW1c1WBRkcJxGsqWlxaurrApYubuf4D8QkebzHLpV/cg8QuGM/Rwnqc8OdV0wbfmL4ffMntSYvgO8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788770249; c=relaxed/simple;
-	bh=6g3evBy3rRDDDfC9qCQ4SN9sF033FzxqaH5X1ybBdos=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:CC:References:
-	 In-Reply-To:Content-Type; b=QZHXKff/WfRBaB3KRXDJ9sXA13DLaaGcRzEp1LC/V/7r0XMCPJLlO7zvmmcsHzBA0jAKf54u1Gklzf6EwL1Njliup+zy8wJJ2wqSx5P0PyOT5iI0xvHrQWNV/SEpIPPMg3p9Jje180Qyi8AcZOeKvRXKol7gkTr/89HoUUlKvbU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=0EzZ+6r0; arc=fail smtp.client-ip=52.101.62.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5978A44063E
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 08:41:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788770491; cv=none; b=dJte28QQbJJJTrBQLyvTe22oogBU+Nx+fjm1XJlHuxuLYDfCgxWpiXirSbIMTjbSpkHUJdYWrdhEM3JOhcPA/66Ss/w7/wMWkUuDOjMaAvkf4/DzYNHc+kLnaBTwA8pSshWIfr/JTuTTIGAyhxhZHHfaZwdeIwJM+oV3bHTuDwY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788770491; c=relaxed/simple;
+	bh=A6UKEG9tjljy5BO29IM2NVDCr1jF0sWllS0wIOUNkIE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BZ2IofeNz3BTvJdayuaiY/xs0gv07JwLHI+BbK+t6BqkRBGf38mdSRIQInF7tSReRX9YL1q0IR/CuDU5XRCZGKH2rOL/Kd3hrKvEc2JGpSu5RD/5qecReDAfWYpUBg2mo5nCam3ZoNqfFOR41OXuYa+5SANzVijDAZbeAoK8zTA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MSb8yF1c; arc=none smtp.client-ip=209.85.215.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="0EzZ+6r0"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xaD5qOhEQ/CQpQAF8OWOpy9M0sQod0NBoRCAjTTu41fbWan+by+0FqhAIh2+g4mkRMSjXVbfcvHpR1eAKclPHYRQ6im2dFHuIKbJjqBLJ0QgB64Ik7p9ZBCuPwWx1XYGPDKEc/FzDq2Pj754OkJF4Jx6K/rhcaTeht9gKud3w/C5SweNqpDNyRcvH9R7QKD00CWKagX48TZZj64d5ihTv6ihMGEUNyZGpeGDLQAGFohNui5xeNnnSUtxITDqSTUNZ45SC9D3CGsJ0M167K47/VXymaRPJBEnnaFJAjKOul+NHQTcfm244+JINrAOvGkkZmHG10P/r3TTIyvAIideow==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=F6nN0PyL9NoU9V3LirbHzgkSfqx9WymYmFTS3mgrM+o=;
- b=YrMuvWfokqDOVOjNvMN4qTfg2+1k2TnjHwA6tiWIrh+1buq0r1agfgwqkZ5Tu9oknfftsMAdW2XMVBESuN1GOSJIGAYga5fNiHajN3Ol8q4+Wz0ojiMFiUxqPmndIdVCqn22vpa4q24XZOYGDGh46HBPQ7vmOitNaF4yrJs4MXUOJUUMlHwNUgiAD7aZhqDovdPgpcMB2YCHRZUW9slh4Z/5RrwWjnbQOkxWW1LU8I3z1li5VEgZfowiDsXYQg8hE7CRuUPw1VzFcTIfIqpe1XqEuD3/jkctrC+eSevE9PS8j4Zu/kYTdaynpGvCNQvFppriXuRNPab8rgMGu2TZ6g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=transsion.com smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=F6nN0PyL9NoU9V3LirbHzgkSfqx9WymYmFTS3mgrM+o=;
- b=0EzZ+6r0ZyKfyE6NHvKGmVyL19k1x2oOAksZQOEI+YDO/xXapTCWqkObmMQxg4BNAISsL1l++eyDTFOLgHd2Owdxd8DO8Q6MrlSN4kZXGvLw9iHcQJyfI+AKpxJffNrdCzXC4Kpj8F066GnANa36YOcTeaHXgbYdqBg8Ge2Yl8E=
-Received: from BLAPR03CA0116.namprd03.prod.outlook.com (2603:10b6:208:32a::31)
- by LV8PR12MB9271.namprd12.prod.outlook.com (2603:10b6:408:1ff::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.382.15; Mon, 7 Sep
- 2026 08:37:24 +0000
-Received: from MN1PEPF0000F0E4.namprd04.prod.outlook.com
- (2603:10b6:208:32a:cafe::6d) by BLAPR03CA0116.outlook.office365.com
- (2603:10b6:208:32a::31) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.15 via Frontend Transport; Mon, 7
- Sep 2026 08:37:23 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- MN1PEPF0000F0E4.mail.protection.outlook.com (10.167.242.42) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.406.5 via Frontend Transport; Mon, 7 Sep 2026 08:37:23 +0000
-Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Mon, 7 Sep
- 2026 03:37:22 -0500
-Received: from [10.136.42.177] (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
- Transport; Mon, 7 Sep 2026 03:37:19 -0500
-Message-ID: <4e39e935-2339-442b-8b14-a688b605c35e@amd.com>
-Date: Mon, 7 Sep 2026 14:07:18 +0530
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MSb8yF1c"
+Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-cc1bcdb3c4cso2168981a12.2
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 01:41:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788770488; x=1789375288; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=gD95xacnSwO5QNP7UhKSOo6QX3f1oTJ0b9N0SjSezHA=;
+        b=MSb8yF1cqkrIM/JKPG4bMygRmz7myz0SeiknyjQ6IllPJXpYyVDCxrp9sM6XI39yFN
+         VbNmEm1Kd5kWHIs4dJy1UIaOKtdoM9X6DPnUfdyYGpisjwqYStXVkx9+/NYM5il5nEMX
+         DUoYDtU1E5k/GWEadmtd84BT995w821gEkLX1BJYr1FM4sJMDAVz8AJfXX+8fIe2nl4g
+         Ny9OIgkVAnNT+/s7iZrOdHlX/p84Zto8+/7T0sTvuOBLm3BevWKlXfiN5fPRUdvnyoYM
+         FwORJ2hncBcOzyeaPekAKIOGBu2C4j50O+3vKi4aZqb5YTVtcbPf8yc55YAXXrXS1b1O
+         Ni9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788770488; x=1789375288;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=gD95xacnSwO5QNP7UhKSOo6QX3f1oTJ0b9N0SjSezHA=;
+        b=dXqmUWZ3lnViM5+XBzB5pyzS3/LRIBNPx4vJq1Db7sOX5wH6PSzYJbd195xHOfmpow
+         aA3WL4Kt5uYZwWgVkYIrO8kcN7RqlbVRUeDLWeLhkElCvU3uaIGrpyGiSPe9CU91IJzA
+         /1fqk2fY2A1Qn7p5uhZl7HGAqcdVEdRWnK0cJW0vYy4bU2FYtVgmQSZIf8Z5cVVMO7X+
+         KWllkw3hNxIqRLbRvPWAC/JYUWBhRm07KbQuQ/sr/cI6h5w+Rv3GC8SWhNni0nQ/Go1a
+         +2tzEAcLQMeQTTG/sILxgeCdrOX7sHh9OrB5oItM1FUmOrtuIX+cxq+6HtOAqze+xRNT
+         /j4w==
+X-Forwarded-Encrypted: i=1; AKwUvBwcebCcPlOZvRjjawLAsMBKzyvpxEwEtj4ury5hM4gnYij6Ei0SWLuHwjFe2EwxPtjP8ppPwbMEbw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lkQcBp5jFBnuG3IAUe6FqrIHlllWM+CdoXW1f1vxhykH3SUoHH
+	LfvA035Q1oaoIx2C6Bi5pLHRQJ5JW1uPJ6TVWH6vdTZHEkiTFa+M1hwE
+X-Gm-Gg: AYBFou0OejoHAys9vwCBdmd0b3NwdzOHPFdtt/9ezqDS/DcWaYvHxKB1vEaCxYJOx13
+	GIwFWhMpEhuGD3vTZ6uzD5BOhkrcENkroVmHcGMBMWvXfw6FqFQY5HP8QzP66RBMOOPOmZ2m+Wb
+	zgH3FlR8mHH2oZAYnNYjPbrcgKhCOiNvnvsWPT6YchPyUFBVRZRx9IrnAKKLTCJHOlLXD/wcSyE
+	Z7NZP1grpD53CGmCl80cqOwVxVBfFnHc/57Xu/qbpGEBHcrdJzVU8fsuwugtwBzWm6xAv8H/R2t
+	Age+QI/UXOSlQr0nkymsX/XTkVM8Uq2lrhVvj/orSlZQiFAPxSYO28ABUTGqjSC37ofMLDwZ5an
+	KxX90yFOeHsWg2ODbqqhMB/lgHI0eJjX3+nJtvk8BESQsRO++O/8l2vcExagzbHzg+jfKvWQUQq
+	lRaSyY/iBNRG9pVQH7p+8PnDhFiArSsRneiziJv9rgyrByIB9QNmEOb49gA/BfMPV/uho8y18+M
+	OE+BWcktEhmeP9koGNhJ1aA
+X-Received: by 2002:a17:90b:510c:b0:398:9be6:f999 with SMTP id 98e67ed59e1d1-39b262e27a9mr35876536a91.24.1788770488465;
+        Mon, 07 Sep 2026 01:41:28 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2039:4:e8d1:b40d:5214:17c0])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39b08c39227sm25947600a91.9.2026.09.07.01.41.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Sep 2026 01:41:28 -0700 (PDT)
+Date: Mon, 7 Sep 2026 16:41:25 +0800
+From: Kuan-Wei Chiu <visitorckw@gmail.com>
+To: Karl Mehltretter <kmehltretter@gmail.com>
+Cc: Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] interconnect: Add kernel-doc for devm_of_icc_get(),
+ icc_enable() and icc_disable()
+Message-ID: <ap54tQSLFZs4N_KU@google.com>
+References: <20260907020504.24783-1-kmehltretter@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sched/fair: Only apply cpufreq pressure where frequency
- is invariant
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-To: Hongyan Xia <hongyan.xia@transsion.com>, jong wu <jianyong.wu@outlook.com>
-CC: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-	Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>,
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Dietmar Eggemann
-	<dietmar.eggemann@arm.com>, "linux-pm@vger.kernel.org"
-	<linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "zhongyuan@hygon.cn" <zhongyuan@hygon.cn>,
-	"huangsj@hygon.cn" <huangsj@hygon.cn>, Vincent Guittot
-	<vincent.guittot@linaro.org>, "Rafael J . Wysocki" <rafael@kernel.org>
-References: <20260821073927.455475-1-wujianyong@hygon.cn>
- <fea033f4-a680-445f-b231-2a0cc1dded8b@transsion.com>
- <F16AADE6-B6B7-4997-9CC1-A2E323498B7F@outlook.com>
- <CAKfTPtCxMA-7BX20LNhdOT+BQysdnOxOALrLvhTFNYJLbdsoCA@mail.gmail.com>
- <SI2PR04MB4931F65C44962845CE345B79E3B72@SI2PR04MB4931.apcprd04.prod.outlook.com>
- <44993024-f1bb-4b4f-802b-a22f95101171@transsion.com>
- <SI2PR04MB49315D05AB89CFA3B0E41BF3E3B62@SI2PR04MB4931.apcprd04.prod.outlook.com>
- <f38d55b1-68f8-4cfa-8b97-47fe58bd9ed7@transsion.com>
- <d709498b-9572-44bd-a93e-bbed23fd7372@amd.com>
-Content-Language: en-US
-In-Reply-To: <d709498b-9572-44bd-a93e-bbed23fd7372@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN1PEPF0000F0E4:EE_|LV8PR12MB9271:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2debe487-8c15-4f99-34ec-08df0cbb3d32
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|23010399003|376014|32650700020|1800799024|7416014|36860700016|10067099003|56012099006|18002099003|22082099003|4143699003|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	s/urOLSGP+MHooDEqXHXINoIebXqz/CzhzguCtYU1O7ELTgJ+QDskGc8LbhdgQVxcuSbetdZU10lapMzfLYI/sCdNEDtHJiJ83aWUVYqeQ5IG+4Lbi/AhJuXU8sENAT2ApMyfxl0jjk7BXuZVg988FmHgCNvWLTfEtm+hpkOe85W1cBYPqFHmNxou4wS9TPs6E9xCe9tocqdmRaJXX74pnA3DqrmHhSGf64QjWoXc/tMGpNZoAh3hrh+U/6vwclYbypKJ8zX7qbtvMo1fPwK8AzBAXAHenx6NtuWum929cIzMEK6dQ+k8bLO31FYJeh8cJy7cNfCS1IsWzRE3xexr5d6dl8BIyf3Lc9h9gYgNwFwmohNEdOoE3OQH7qPtrGDbTXoJ/ScHbd+c6NSoRMM0teSkosGS3U2gI7ROdZwWYvPoi7ki6ofjphJixR96p1CGejtDt6T1fdaY91tphawdITdisivzAxZXcLKO7LTyuXbS36s2/CoxvVdak01mjBqZVRpPTpOCpYv8PRSfybaLbc1fH/J2XKf3mZXs8gOobFEkMA2k2JudbCJQAsk5rxBOm8RAquBGJ03+8danJmlS2lGdsJfrYeAIWp/chDqSTtlOmDJkdPwxEn/LyrSMvHVaU8nOAjr+ZLuP2HIiV8QsB98ndvrcoUBlcDppZb8m82flFn+4FdSYRw6HdQPoS9H27sX/6CTfggG6ZhMQJXIjQ==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(23010399003)(376014)(32650700020)(1800799024)(7416014)(36860700016)(10067099003)(56012099006)(18002099003)(22082099003)(4143699003)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	MiT9yKyI5qjVQyWV80MbuUZdC1Yb7CkTSZrG3YyP3T+uKCUc+tzjobIuaq5ECnptmgZGe8YN7FQINq2LTPGLBVlsNY87FKhyoKgKVhNoXXYoZO9jejPbGLUFFwNKPEPabmm9/NVyXKs+hN5iOgtjgt4fhsHchjdH7ZGMyB/hIdy3O4qfH2bdKUFNzyey/0UR9u9g1UZOCg3oqCic12N7gPHDSrIjhccYIC/+WWivTs2rXXNrsWuj1jGY6ulhCpvO5+Be8PBFF1gmrlEcPW0LoqayK9Y8LdWU1VRLcNNxoTqiwmxCBhgqWWZozbnKzzbMb4riFDzbffwKkDs89y/KYMxvTraMtGpX6kYjDSzvdOYuLJ7d4yzlOdHl6R7ZejU8XG3W3edrFetAlHUDnldN4DiE6P+uuU/YVNC3NNDgjumjAFJ2oyYOUbkzNes4Ihi1
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Sep 2026 08:37:23.4581
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2debe487-8c15-4f99-34ec-08df0cbb3d32
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: MN1PEPF0000F0E4.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR12MB9271
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260907020504.24783-1-kmehltretter@gmail.com>
 
-On 9/7/2026 1:37 PM, K Prateek Nayak wrote:
-> So, I've been trying to understand these bits and looking at
-> cpufreq_policy_init_qos(), the "policy->cpuinfo.max_freq" should be the
-> frequency including the boost range but I see cpufreq_update_pressure()
-> and it says:
-> 
->     max_freq = arch_scale_freq_ref(cpu);
->     if (!max_freq)
->         max_freq = policy->cpuinfo.max_freq;
-> 
->     capped_freq = policy->max;
-> 
->     /*
->      * Handle properly the boost frequencies, which should simply clean
->      * the cpufreq pressure value.
->      */
->     if (max_freq <= capped_freq) {
->         ...
->     }
-> 
-> 
-> Looking at this, I feel "policy->cpuinfo.max_freq" should not include
-> the boost frequency, or x86 should implement a arch_scale_freq_ref()
-> to know when boost is enabled vs disabled.
-> 
-> If cpufreq_update_pressure() indeed has to disregard boost frequency,
-> and anything above P0 is not considered as pressure, we can simply
-> do:
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index b898b6544069..068e6d6e15a1 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2586,8 +2586,11 @@ static void cpufreq_update_pressure(struct cpufreq_policy *policy)
->  
->  	cpu = cpumask_first(policy->related_cpus);
->  	max_freq = arch_scale_freq_ref(cpu);
-> -	if (!max_freq)
-> -		max_freq = policy->cpuinfo.max_freq;
-> +	if (!max_freq) {
-> +		max_freq = __resolve_freq(policy, policy->cpuinfo.max_freq,
-> +					  policy->max, policy->min,
+Hi Karl,
 
-My bad, that should have been other way around and use the cpuinfo
-fields to prevent capping based on policy limits. Updated diff:
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b898b6544069..97f4a3ba5107 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2586,8 +2586,11 @@ static void cpufreq_update_pressure(struct cpufreq_policy *policy)
- 
- 	cpu = cpumask_first(policy->related_cpus);
- 	max_freq = arch_scale_freq_ref(cpu);
--	if (!max_freq)
--		max_freq = policy->cpuinfo.max_freq;
-+	if (!max_freq) {
-+		max_freq = __resolve_freq(policy, policy->cpuinfo.max_freq,
-+					  policy->cpuinfo.min_freq, policy->cpuinfo.max_freq,
-+					  CPUFREQ_RELATION_H);
-+	}
- 
- 	capped_freq = policy->max;
- 
----
-
-> +					  CPUFREQ_RELATION_H);
-> +	}
->  
->  	capped_freq = policy->max;
->  
+On Mon, Sep 07, 2026 at 04:05:04AM +0200, Karl Mehltretter wrote:
+> Documentation/driver-api/interconnect.rst lists devm_of_icc_get(),
+> icc_enable() and icc_disable() in its kernel-doc directive for
+> drivers/interconnect/core.c, but none of the three functions has a
+> kernel-doc comment. The directive silently produces nothing for them, so
+> the consumer API section of the rendered documentation never shows
+> them.
+> 
+> Add kernel-doc comments in the style of the neighbouring functions.
+> 
+> Assisted-by: LLM
+> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
 > ---
+>  drivers/interconnect/core.c | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
 > 
-> __resolve_freq() will cap "policy->cpuinfo.max_freq" based on the freq_table
-> entries if it exists (acpi-cpufreq), or otherwise return
-> "policy->cpuinfo.max_freq" as is for drivers that uses CPPC based scaling
-> (amd-pstate, intel_pstate).
-> 
-> Thoughts? 
-> 
+> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+> index 4aa991a54101..6f854375201d 100644
+> --- a/drivers/interconnect/core.c
+> +++ b/drivers/interconnect/core.c
+> @@ -423,6 +423,17 @@ static void devm_icc_release(struct device *dev, void *res)
+>  	icc_put(*(struct icc_path **)res);
+>  }
+>  
+> +/**
+> + * devm_of_icc_get() - get a path handle from a DT node based on name
+> + * @dev: device pointer for the consumer device
+> + * @name: interconnect path name
+> + *
+> + * This function is the resource managed version of of_icc_get(). The path
+> + * is released with icc_put() automatically when @dev is unbound.
+> + *
+> + * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
+> + * when the API is disabled or the "interconnects" DT property is missing.
+> + */
+>  struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
+>  {
+>  	struct icc_path **ptr, *path;
+> @@ -786,12 +797,32 @@ static int __icc_enable(struct icc_path *path, bool enable)
+>  			  path->reqs[0].peak_bw);
+>  }
+>  
+> +/**
+> + * icc_enable() - enable a path
+> + * @path: reference to the path returned by icc_get()
 
--- 
-Thanks and Regards,
-Prateek
+Since a path can also be obtained from other functions like
+of_icc_get() or of_icc_get_by_index(), maybe it would be better to
+describe it simply as:
 
+* @path: interconnect path
+
+This would also keep it consistent with neighboring functions such as
+icc_set_bw() and icc_get_name().
+
+
+> + *
+> + * Mark all requests on the path as enabled and reapply the bandwidth that
+> + * was last set with icc_set_bw(). A NULL @path is ignored.
+
+Since __icc_enable() explicitly returns 0 when path is NULL, it might
+be a bit clearer to mention the return value explicitly, e.g.:
+
+Passing a NULL @path is a no-op and returns 0.
+
+Regards,
+Kuan-Wei
+
+> + *
+> + * Return: 0 on success, or an appropriate error code otherwise.
+> + */
+>  int icc_enable(struct icc_path *path)
+>  {
+>  	return __icc_enable(path, true);
+>  }
+>  EXPORT_SYMBOL_GPL(icc_enable);
+>  
+> +/**
+> + * icc_disable() - disable a path
+> + * @path: reference to the path returned by icc_get()
+> + *
+> + * Mark all requests on the path as disabled, so that they no longer count
+> + * towards the aggregated bandwidth, and reapply the constraints. The
+> + * requested bandwidth is kept and restored by icc_enable(). A NULL @path is
+> + * ignored.
+> + *
+> + * Return: 0 on success, or an appropriate error code otherwise.
+> + */
+>  int icc_disable(struct icc_path *path)
+>  {
+>  	return __icc_enable(path, false);
+> -- 
+> 2.53.0
+> 
+> 
