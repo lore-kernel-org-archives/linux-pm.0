@@ -1,142 +1,162 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90DB251E450;
-	Mon,  7 Sep 2026 19:00:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788807643; cv=none; b=XerstbX/ZF8cWlJCPi8XnqSmgVLPK4Kwrvy82DGpqL44fOKkvLuaB7CKQhR4G4FM37yIMeCXAiPP0E/pd2Mc4a+82P4lu+PfGpBz7V6PaaSdxLKA4Chyn5N1UXAC8izNYPyfU3TWpLPR3Gh2FCjW0PNS29K4u4JOhPnqM6cqdUI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788807643; c=relaxed/simple;
-	bh=Q0WbFUvcYNqMyiLR/YrlQb4tSgmvMOnWLHBuOFEd/4o=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=fZyOY2wovoACr/nvSJFzDl2pC9LXFMYQSktQBJmdv5g8jVpTIWbgM5q69vit/YZS1V5NLWF8WRoGfPEHJogdaprjYUUHLIfbmzQq3A5b/CotgBhshrfXrpg486V9ugaSQ6VMhuN/KZHF2swCexcZ8YhNYIj1we31zuIZJxv2GmY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=iJLIWS/q; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B50F393DD3;
+	Mon,  7 Sep 2026 19:22:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.165
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788808948; cv=pass; b=U1Alp9TQVq1omqja2i3EPfliis8iLY8EvUCV3zhHk4rDoRBx9YUqf0SZzfIcnkEAIzAp8XRU90vrKV104bWSlFvmfHYLd6uBectC0HxHbJFfjN0wkUXx/EY9zXjUZtfSCNLGHxRy5tpsCuFlYebIEljlLTLPhm3v79uWrESczRU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788808948; c=relaxed/simple;
+	bh=HhrAm9DJpRZhOpSMo0i3+dJ3oAcWSDgw4nmsP0UB8ng=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=JMLENVNVcud6v5mz9jYNyz8UuYwWGMADk7uto0VifYa632aSAQAOtOul7Bgt3yNtr5YiBz5Nas31C6GV52szyWfkJQ65JZp6KeI2yH8PXXjeKde1HNlkcWcqhBuO5t7KF3tEqn/Oa5spkUhJo/cK/dx+c/ZW0sYbWWNQ6Xi0MX0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de; spf=none smtp.mailfrom=iokpp.de; dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=VHHUKBF9; dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=/rn8fzBk; arc=pass smtp.client-ip=81.169.146.165
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=iokpp.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="iJLIWS/q"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788807641; x=1820343641;
-  h=date:from:to:cc:subject:message-id;
-  bh=Q0WbFUvcYNqMyiLR/YrlQb4tSgmvMOnWLHBuOFEd/4o=;
-  b=iJLIWS/qqMD+Y/Y4L+N6ojw6A9+OnDgaNQWRHWobO/aJgiM0br0zLoqD
-   Vd1ocSfCrwnO4vP4R652CaoCyft0Poj/vfR2CtR+WZpphjyqDJbCv6xIs
-   nxbwdL/F+4IyUgBhv+EteDDepWeTGq1mQ0edYHY9ckozWconHCnPzBAqV
-   twzZmIpQrlr5Kp8sL8ACNgatJKGI5GtzdROuv9P6fzZrRR3jOQwlS506p
-   mCd1jStuyP+UTY4RQxoe9BenuS79ekHMLNWNur+DVub/tcA0emTXwFcZm
-   GbEXvRhJ6LrC3v+oxJ6hT3UGrwsDjjXqdterlGT7yZ3GnXsrHbf2K1qfO
-   Q==;
-X-CSE-ConnectionGUID: nu0P8nxgSyCmdT/jcwmneA==
-X-CSE-MsgGUID: SCuErXngSoyNlI3zsBSa0g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11899"; a="99805006"
-X-IronPort-AV: E=Sophos;i="6.25,267,1779174000"; 
-   d="scan'208";a="99805006"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2026 12:00:21 -0700
-X-CSE-ConnectionGUID: B0jGQLK0RPepGAhtd5mIjA==
-X-CSE-MsgGUID: MO8VA/52T8i0YWwPgYcdvg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,267,1779174000"; 
-   d="scan'208";a="270263844"
-Received: from lkp-server01.sh.intel.com (HELO dff15f1b2031) ([10.239.97.150])
-  by orviesa008.jf.intel.com with ESMTP; 07 Sep 2026 12:00:20 -0700
-Received: from kbuild by dff15f1b2031 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x3eZl-000000001G9-41Wm;
-	Mon, 07 Sep 2026 19:00:17 +0000
-Date: Tue, 08 Sep 2026 02:59:25 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:fixes] BUILD SUCCESS
- 2ee5b4937c4dac356997169f3b49566fad45491e
-Message-ID: <202609080220.FQ9eY0y9-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="VHHUKBF9";
+	dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="/rn8fzBk"
+ARC-Seal: i=1; a=rsa-sha256; t=1788808909; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=Z9yDJYfI0KrsO901DO0m4O75ss+U66DqChvVcs9euTXIA5QBm67e67Eiywq5LzBHHv
+    5J+pqnl39Yns7A850r9AQfA90PEIhU0NRFHXF03raFmkOMc8IQ9XehEtuv0XJssWbspG
+    KOGxY1gkBXx0c3r8Norq0JHt3ujkywmugs8qFmhU6cmCm7PPOKszozwxEIDGLhTDcKZU
+    bJH4fBHx2KJp6UMQB5Ug1nVgFlbW9VhpW3eBimsapXcMAe74bcwLLcFSS1GlWOMmeGLc
+    WGh74S96UJoR6vzlRv7mQzFeRi91CfrwxoC2e6xnPIyPkzE3c5UMEx/Ay428VnrHAsP/
+    EyDg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1788808909;
+    s=strato-dkim-0002; d=strato.com;
+    h=Message-Id:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
+    bh=rTSqjvK3EbaHc/ippsBe5x4pRfP03d4sXgnLJ5qsaeE=;
+    b=RTuFZjnpxpXIayRupjyNuTf0kpccJsSjm0anhwSNFWCY+gcmN2c+Iccb2btRWQTCIq
+    Ape8aYDCoIibEcEWNUFcGGWkzpqDnmVSu9k1XWuczWD64vDdC6d1RXgxe3FAEOf7Fd9N
+    lPJ85sfnZ6WBvr9SCKXAnh2IuWNSzPnmlaJiEoQ/DqqS/9Bsd1eAwWnkmjlnFnuwofPR
+    LUSNiodoqDfH5kdtI/avwbVJxOTclWJIpvGKNySURFrbVVLaBYnJfZGQXh0aMFSTQxRb
+    J5a3W/gl7h6oZuuRd6TmgkhXuLm4yHl2W7/+f3aAAymV9kfsPiwQA5hiQrtRwEIhD6DX
+    EUmg==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1788808909;
+    s=strato-dkim-0002; d=iokpp.de;
+    h=Message-Id:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
+    bh=rTSqjvK3EbaHc/ippsBe5x4pRfP03d4sXgnLJ5qsaeE=;
+    b=VHHUKBF90upQzptUmbI+BgdnVGn6/pB2h08VnGPVtgHFa0TdQjBjpPqvEdPvkH6zK+
+    rXakp4Tic2QYCwEIsBV5J+Yz9NPt3eIa0PnJmzQ9vy/+MwNNeo2Ouk/PAlq5+oggBbZE
+    tR490GTwQqk6c55M/pi+T6+A/6gZlJsEXm1BZZbG/wDwaMznL2YyieypdpAhh47qbX4k
+    0F18McXiyoGCz3F7vL4G5PmuEtL1DpXswkxV0hAvKua1IvHQz+s+fylMcXbcz/PpL/XE
+    TsLn7O46yM1wzWUvhDWfRBRUQVHt9V/Vkzv819lyAnSvqJI3f1NkibcxhTXpgzsocsM7
+    TfMg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1788808909;
+    s=strato-dkim-0003; d=iokpp.de;
+    h=Message-Id:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
+    bh=rTSqjvK3EbaHc/ippsBe5x4pRfP03d4sXgnLJ5qsaeE=;
+    b=/rn8fzBkyjL4ng4VKxZwLkO+gX1BKXaJz0f+f8B7i5O4pAimbpurX29PKnmrmFjGlI
+    tT4j8pYGCPtc0Epvl1Cw==
+X-RZG-AUTH: ":LmkFe0i9dN8c2t4QQyGBB/NDXvjDB6pBSfNuhhDSDt3O0JuBIIyqXfWze4EsqKg="
+Received: from Munilab01-lab..
+    by smtp.strato.de (RZmta 55.6.2 AUTH)
+    with ESMTPSA id ze37e1287JLmCsI
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Mon, 7 Sep 2026 21:21:48 +0200 (CEST)
+From: Bean Huo <beanhuo@iokpp.de>
+To: linux-pm@vger.kernel.org,
+	linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	"Martin K . Petersen" <mkp@kernel.org>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Avri Altman <avri.altman@sandisk.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Stanley Jhu <stanleyjhu@google.com>,
+	Bean Huo <beanhuo@iokpp.de>
+Subject: [PATCH v2 0/4] devfreq: check the get_cur_freq() return value and use it in ufshcd
+Date: Mon,  7 Sep 2026 21:21:36 +0200
+Message-Id: <20260907192140.2701755-1-beanhuo@iokpp.de>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
-branch HEAD: 2ee5b4937c4dac356997169f3b49566fad45491e  Merge branch 'pm-cpufreq' into fixes
+The devfreq core has three users of the optional ->get_cur_freq()
+callback. Two of them check the return value, the third one does not and
+passes an uninitialized frequency to the transition notifiers when the
+callback fails. Patch 1 fixes that.
 
-elapsed time: 4477m
+Patch 2 writes down what a driver is expected to return from the
+callback. Today this has to be found by reading the devfreq core.
 
-configs tested: 65
-configs skipped: 0
+Patch 3 records the frequency the controller starts at.
+ufshcd_init_clocks() puts the controller at its highest frequency, but
+nothing writes that down, so clk_scaling.target_freq stays 0 and devfreq
+starts with previous_freq at 0 as well. With use_pm_opp this makes
+ufshcd_devfreq_get_dev_status() report 0 Hz, the ondemand governor then
+asks for the maximum frequency, and ufshcd_devfreq_target() runs a full
+ufshcd_devfreq_scale() that holds up the queue for up to a second only to
+set the same OPP and the same gear again.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Patch 4 adds the ->get_cur_freq() callback to ufshcd. Without it the
+cur_freq attribute shows the last frequency the governor selected, which
+is wrong whenever the controller is scaled outside the governor, for
+example after writing 0 to clkscale_enable.
 
-tested configs:
-alpha         allnoconfig    gcc-16.1.0
-alpha        allyesconfig    gcc-16.1.0
-arc          allmodconfig    clang-24
-arc           allnoconfig    gcc-16.1.0
-arc          allyesconfig    clang-24
-arm           allnoconfig    gcc-16.1.0
-arm          allyesconfig    clang-24
-arm64        allmodconfig    clang-24
-arm64         allnoconfig    gcc-16.1.0
-csky         allmodconfig    gcc-16.1.0
-csky          allnoconfig    gcc-16.1.0
-hexagon      allmodconfig    gcc-16.1.0
-hexagon       allnoconfig    gcc-16.1.0
-i386         allmodconfig    clang-22
-i386          allnoconfig    gcc-16.1.0
-i386         allyesconfig    clang-22
-loongarch    allmodconfig    clang-24
-loongarch     allnoconfig    gcc-16.1.0
-m68k         allmodconfig    gcc-16.1.0
-m68k          allnoconfig    gcc-16.1.0
-m68k         allyesconfig    clang-24
-microblaze    allnoconfig    gcc-16.1.0
-microblaze   allyesconfig    gcc-16.1.0
-mips         allmodconfig    gcc-16.1.0
-mips          allnoconfig    gcc-16.1.0
-mips         allyesconfig    gcc-16.1.0
-nios2        allmodconfig    clang-20
-nios2         allnoconfig    clang-24
-nios2         allnoconfig    gcc-11.5.0
-openrisc     allmodconfig    clang-20
-openrisc      allnoconfig    clang-24
-openrisc      allnoconfig    gcc-16.1.0
-parisc       allmodconfig    gcc-16.1.0
-parisc        allnoconfig    clang-24
-parisc        allnoconfig    gcc-16.1.0
-parisc       allyesconfig    clang-17
-powerpc      allmodconfig    gcc-16.1.0
-powerpc       allnoconfig    clang-24
-powerpc       allnoconfig    gcc-16.1.0
-riscv        allmodconfig    clang-24
-riscv         allnoconfig    clang-24
-riscv         allnoconfig    gcc-16.1.0
-riscv        allyesconfig    clang-24
-s390         allmodconfig    clang-17
-s390          allnoconfig    clang-24
-s390         allyesconfig    gcc-16.1.0
-sh           allmodconfig    gcc-16.1.0
-sh            allnoconfig    clang-24
-sh            allnoconfig    gcc-16.1.0
-sh           allyesconfig    clang-17
-sparc         allnoconfig    clang-24
-sparc         allnoconfig    gcc-16.1.0
-sparc64      allmodconfig    clang-20
-um           allmodconfig    clang-17
-um            allnoconfig    clang-17
-um            allnoconfig    clang-24
-um           allyesconfig    gcc-16.1.0
-x86_64       allmodconfig    clang-22
-x86_64        allnoconfig    clang-22
-x86_64        allnoconfig    clang-24
-x86_64       allyesconfig    clang-22
-x86_64      rhel-9.4-rust    clang-22
-xtensa        allnoconfig    clang-24
-xtensa        allnoconfig    gcc-16.1.0
-xtensa       allyesconfig    clang-20
+The patches touch two subsystems. Patches 1 and 2 are for the devfreq
+tree, patches 3 and 4 are for the SCSI tree. The two halves are
+independent, at build time and at run time, and can be applied in either
+order.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Patch was tested on a Radxa Dragon Q6A (1d84000.ufshc):
+
+  before "echo 0 > clkscale_enable":  cur_freq 75000000, target_freq 75000000
+  after  "echo 0 > clkscale_enable":  cur_freq 300000000, target_freq 75000000
+
+Without it both files report 75000000 and keep doing so for as long as
+clock scaling stays disabled. A 4 GiB direct read after enabling clock
+scaling again counted the transitions in trans_stat and attributed time
+to the 300000000 state, so the frequency the callback returns is one that
+devfreq recognises.
+
+One thing to be aware of: devfreq_monitor_resume() copies previous_freq
+from the callback, but it does not call devfreq_update_status(). A
+frequency change made while the governor was suspended therefore does not
+show up as a transition. That is how devfreq behaves today and this
+series does not change it.
+
+Changes since v1:
+- New patch 3, so that target_freq and devfreq's previous_freq are not 0
+  at boot (suggested by Stanley Jhu).
+- Patch 4: drop the !cur_freq check, it cannot happen any more.
+- Drop the now stale comment in ufshcd_devfreq_get_dev_status().
+- Patches 1 and 2 are unchanged.
+- The devfreq and the ufshcd patches no longer depend on each other.
+- Avri's Reviewed-by is on patches 1, 2 and 4. Patch 3 is new, so it does
+  not carry it. Avri, please note that patch 4 changed since you reviewed
+  it, the !cur_freq check is gone. Tell me if you want the tag dropped.
+
+
+Bean Huo (4):
+  PM / devfreq: Fall back to previous_freq when get_cur_freq() fails
+  PM / devfreq: Add more details to the get_cur_freq() comment
+  scsi: ufs: core: Record the frequency the controller starts at
+  scsi: ufs: core: Report the current clock frequency to devfreq
+
+ drivers/devfreq/devfreq.c |  5 ++---
+ drivers/ufs/core/ufshcd.c | 37 +++++++++++++++++++++++++++++++------
+ include/linux/devfreq.h   |  7 +++++--
+ 3 files changed, 38 insertions(+), 11 deletions(-)
+
+
+base-commit: e30626823a406725ce29bc75cb8ec467d3e1e326
+-- 
+2.34.1
+
