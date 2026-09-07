@@ -1,182 +1,244 @@
-Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from outbound.st.icloud.com (st-2002k-snip4-5.eps.apple.com [57.103.78.88])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C05B94F649A
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 15:58:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.170
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788796692; cv=pass; b=hCZJw0X6lMBNnzqYxQwWhYTkYq43bxSWGJHIZ6yNdKpVLUuBKB+YyjPB0SS2c58SOT1iC1iEiFCJQ9HHymxr+ZHvj0IGXIWSbJw75S+cbG2skZttxyScSfSdG+CgkYE0T/aqoOiqs3YmfwKwUC4NmUg7lvYl03PlJpMaFXymubQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788796692; c=relaxed/simple;
-	bh=Rs8D6euDZzTcW61TMY/tcjJU4GeLI7rZpkYbKx565Qo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=P1ovnPDTn/GLYNQQgG1AglhK7uL+zP51NvedPTW3ECCmJsjdap1isjqHcFXEC1ryVWNLjxpejp3ZcGcp7/fqOaa29XcrSu770STJYfGl1lJE9canjmMUx1L6tfdE6sDLUYrF1hywJ/+qn07wDh4JFV2D06Hk8dbPMQJozq4yOnU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=BE7wg4P6; arc=pass smtp.client-ip=209.85.128.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D82E330D23
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 16:00:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.78.88
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788796847; cv=none; b=LdRQetPLrS6/y+D6oCNcdmU/TJx6o1pdUyVyyfr6cLkpP2u92GyDQtNzTYTWCxbVgfWxq/93gxlMGzDbUpapi16aJlDdF1PN+0MgUk6I6z/clJ1ldTHFUg1Rx2yDzoFkZFm5ad6+WO+v97E2hHg53ZZEvRb+PcCoy1KssD7D4aU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788796847; c=relaxed/simple;
+	bh=br2hmQZRkNwBbB2q7HS/COPZ3Snd9jCDeCk57A1JAGc=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=kRz/3jQh+FzIZhLCerIJuuEQwGsUBoPSss74cjHJIGv2Cfn/VoznQaQUjVL0BJokK3v1vr0LphK9pbZo74wrJJyU9sTxf+j3GkrqoNTy20c9ODiIJdr86f52tYjrD7WlkO93X47hpxSDvTtU51WjHfF5pT/M0yRwHuWyoGcanVw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=Jf148OiD; arc=none smtp.client-ip=57.103.78.88
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BE7wg4P6"
-Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-861145fc841so29964517b3.3
-        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 08:58:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788796689; cv=none;
-        d=google.com; s=arc-20260327;
-        b=iGWJAaC8U4QDXgsZWBPGkhQUAJb2CRd7b0MVA6H/D71+H4oyKxfVibZFP58AqdVRSV
-         MxFm/3EijwOYt0sPst+ie5PYM4eXP8I5AoKhK6pQUd744Qk6ACfGRZqJxgId3YqV7F6S
-         LmyZTlnUHIPJ77Qz0XDd3NpJyEUx9hL/TJEu9AXmZV4CVQS0ElSS8fk5q6G0b9BClETq
-         J3fytn1jBryRmzvxSNQRbqMrg742DEmA+Nq1Se+0pYEMmfkMiD0ycx+Rjz+NYcgxmCnS
-         5dUqbKp876UiRt7NZRzAzBIF4pzsI6w7OS1ytcpNioBlt2bjim2r2GrB9oqkjj42+EqF
-         O0qQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=nopJoLIJVNXWQLeDX2Hcvbg342jeNYWKWWtajWtfO0w=;
-        fh=gTh1WUsJaEiSORJH02DYB+O9OEqQ/2M2C28uGy0azsI=;
-        b=Ly+J0HB8lFXROtmGUQzyuLG7sv7lJs6STmikES7RF2cHZjUgVkQh8pcldId4JVHzQv
-         Dz4N9aRQcg1jqgfvA21CJEe9LkB/cyy4bMHXrj2LxIVb5ydpKBExx3Kk6KJAqqbgVOa1
-         AoSZHVWGJgbWgr9qNzc2cL5bE1pRLUmDOkp05jetJrzE7fgPYcmWdG018SkQbbul6XRn
-         e2sASGRlGtv10Wx4EX4pIzm1wMpco8pN8DEHZhMZ+3xIgGT3F3GXBAqt7CltP59JOWcQ
-         891uw7RsqmnPEIIWHULbq2OnlpXRWsNRbXVmIv6U8myKlc3JWrunMoakiNd7eO2z5KGH
-         kIig==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1788796689; x=1789401489; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=nopJoLIJVNXWQLeDX2Hcvbg342jeNYWKWWtajWtfO0w=;
-        b=BE7wg4P61rtRrpCjhDri5gKeyy1+PPBfaD/r5HnTWSDgOOk0DN4wYIoUD5kKYJ/hk4
-         Xfi5FP4m4hZ2AYI951XlqruwSGLAGanWCzEA2J3mGutidrhKUh4SQNqybOY667ZbepVh
-         sv9RaVlDLBm1mu/M6lfoEl0Uo41D97cqSGkPkrBo7ynSK20jcFT9W1cmvjy/57UzdKmM
-         thAlOiEBseHUUcH35thUKacDDqv102mZUvOajUbx/K4H2UM3JFgRHGETOaXU43mbLONV
-         2g5Li4Rb8bqwGK+lrmfio6QbJeZP6I8RYBT7KFYztAMgE7q/MOpvtmOUtrDjWezSDXUz
-         Ue0A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788796689; x=1789401489;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=nopJoLIJVNXWQLeDX2Hcvbg342jeNYWKWWtajWtfO0w=;
-        b=G+CGL5UfU+DNkBY0VfYVzoqzbwF/HJcYO6Gr/dImP7qVJpExulLlhOdm7YPM/GsAd0
-         XPtgjLeV3mMoykM9guC1RFB2pvLzX9EMm6RrVe3c+IRXZcWbkW0fWBl35NrM3Z1rrBRW
-         EASb8/IZEWrUW29+wvZRKDHe4C5PHqqSVHIMycNf82p1Ci+BvCYup1UFEWBH60R2bJr3
-         sMNet//zgmJJFiBsbG3KOQ7RvkGIzMzeMBZrjALwvX0PRobMl8YrSaZHftenJA0ZgJhL
-         4mQSximM3N8evlmnD3Z0c53d8joEDK871Tqr7tKR6V8ZCovDVmED0mTSXSLdzLWTN6tG
-         c/Tw==
-X-Forwarded-Encrypted: i=1; AKwUvByiExhpyXVELkZ0xOCmpxcUfyJDklZPlr3RPEf1xUONETaB/RBSe/C+S3bJFgJHcb5F4+S5MKf7uQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++k2vsSnor4myClFBDjNZkwjC0XFMtYge8SPxc7gcK7GpWuvknpI
-	L55UVFIICAXJNuOUURJ0hTZ3lPi2VqksMxiwOk2TVA4bDJHhO343PBAnDSDCCntnhETvoAmj59m
-	BMFuk/52sJyq5QxoNqkIwctAfTgwDZOLXrYe91F3cSg==
-X-Gm-Gg: AYBFou3hEFA1CgnR0NqRvGgyh2/o3yhSevZsYfa9x0wfTvHfvCFAnqlsqTOUmc0X0LI
-	E6frZ/cgoM6Na4E/PZZrJvHfantjTiC1Cv3RBIpwF//9WDHPjfzP90Yrb3R60qcm5zTXMGesadZ
-	7A85SdcOgSH2TPZV4UUsJ7grcvg6fsN9ZdZSXZSxCO0N4rscRNCyKq5WqaTUOSkDDUDEAXj+vza
-	2nW8LJjFGNupnBLVySJmyjiacRcr+IriricAWmO/Y98Ojrr0+k+3g9DAst2BhpdLErFAfBuIq4A
-	NmK2D+aObsw6+2G8PiIDfDztOLuDofx6TWiK1i1rPXK4dP9RQw2sUuzOuRgiBHnDvQ6UT/Zhyqd
-	Q4TF/xf41AUHqBLK1SKdi0Xyzwi6d8PGA9mrqf7Dv8ZZvkpIfnlA6GZxUWed7SGqF7srm/4AoK+
-	YTS3tP++M95M7MjBHTi4JrRqDp3r6i27TFXKqXGP5RkHfQIm+os5B6UtOyY1YMgXgWEqc1P83OI
-	hmxh9OtrDfQm+fvxSvYnbnls+e3YMXsbN2Ldwk9cV2KwT0jJlLYZR61nEgVCXUIH9/XWwprqAno
-	keci1MG0L04YBoO0a+t7OK3FaC/S3tjoDg0fkI7OivvY2bPP9B+FV2DoGiQHAX9LskZKg7HBrYI
-	jHJB3lgco4LjFfVbhxhcMpv+H/czqA/Ih1lKItwqgje4=
-X-Received: by 2002:a05:690c:f06:b0:81f:e7c5:f420 with SMTP id
- 00721157ae682-87128eb5216mr102573537b3.20.1788796689408; Mon, 07 Sep 2026
- 08:58:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="Jf148OiD"
+Received: from outbound.st.icloud.com (unknown [127.0.0.2])
+	by p00-icloudmta-asmtp-us-east-1a-100-percent-2 (Postfix) with ESMTPS id DB39B1800281;
+	Mon, 07 Sep 2026 16:00:41 +0000 (UTC)
+X-ICL-RepId: 01a07c99-af66-7f95-89cc-60047f7381e1
+X-ICL-Out-Info: HUtFAUMEWwJACUgATUQeDx5WFlZNRAJCTQhIC0MCRQNDCVYBXxcOVk1KGV0DWQpVCXkRUAFYHlZeWhdeTVEPDxlaFFwYU0VRH1RYQQ4KWBIYXBRcUFgeRhJWDV0JGRhGXlAbXwJCDxwTVhUTHUMZDysISgRDB0UCXgslEwlTVlsTVRdGCRkIXR0ZFVoJCldRQF1OAV0ACR8WDhlSQAMJVkIUGVVdAEYKElpPBAgDDwNECEpzBFQHXQVdVlACWlUSBEAIVlBeCF4fTBw=
+Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1788796844; x=1791388844; bh=l2EAFQ5baqL8h49z6YZjQbaX6bImsKCuVJ95ybo9FZs=; h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type:x-icloud-hme; b=Jf148OiDfOgo1Aw9HB8G49fgGMMBgkw/6BTfHLkHACWpdpZDm9bsNOJzAL/OaMtXK0uH9JJMGr5QV/JuhlKQFO790aRMavdTM8S6fB2vY8fJSMJ2wC+dG/WdFZOHm2ifzaEhfIk5j49CqTKT+gOpBDhU6s22t9Dfek1KS37d/2cM6ffbTXMVfnQI54r9BrlF4oxLmyXnzQFmTBZuoszMproF6ts2vCqZ/eBKAKH8+X64ZeiGM16rjrKun+a93m7j/wDNx8QnWipGjg33taYkgVnaljSf0F+4CPKC5Yg1AzQd6Fn7vPh7ZFWPvApe9CIhWDStrIruKMIP/PiIoH6rYQ==
+Received: from [192.168.1.190] (unknown [17.156.216.30])
+	by p00-icloudmta-asmtp-us-east-1a-100-percent-2 (Postfix) with ESMTPSA id 5EC6F18002B9;
+	Mon, 07 Sep 2026 16:00:38 +0000 (UTC)
+Message-ID: <c0d6207b-f7aa-4bd2-af07-8bc77e4d1412@icloud.com>
+Date: Mon, 7 Sep 2026 12:00:37 -0400
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1788259938.git.jasmeet.bhatia.us@gmail.com>
- <a9e23066-aa75-44be-ac3b-9a15f4cf6047@app.fastmail.com> <DL6NCV1KQ9F9.6K6XZQCS4AF3@gmail.com>
- <c3ca811b-a6eb-4f4d-bbb2-4feef02e3db2@app.fastmail.com>
-In-Reply-To: <c3ca811b-a6eb-4f4d-bbb2-4feef02e3db2@app.fastmail.com>
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Date: Mon, 7 Sep 2026 18:57:33 +0300
-X-Gm-Features: AcwNN1X5lVzY-VVghdr231z6GdYRJyb_3-BGRdPWok47tN8y6tOFHleN_U7rMRw
-Message-ID: <CAC_iWjL9jDsRaU7kEemYfwk292Nxa49cK0Rq=81pC=FWNRDhvg@mail.gmail.com>
-Subject: Re: [PATCH v1 0/2] efi/tpm: Preserve event log without changing x86 E820
-To: Ard Biesheuvel <ardb@kernel.org>
-Cc: "Jasmeet (Jazz) Bhatia" <jasmeet.bhatia.us@gmail.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Pavel Machek <pavel@ucw.cz>, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, 
-	x86@kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: linux-pm@vger.kernel.org
+Cc: rafael@kernel.org, platform-driver-x86@vger.kernel.org
+From: Sandor Nagy <sannnagy@icloud.com>
+Subject: [BUG] Lunar Lake: 400 MHz after s2idle; PL1 Tau affects reproduction
+ and recovery
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Authority-Info-Out: v=2.4 cv=TdWbdBQh c=1 sm=1 tr=0 ts=6a9edfaa
+ cx=c_apl:c_pps:t_out a=oyWFxbOnq+dmhQrAPgaJYA==:117
+ a=oyWFxbOnq+dmhQrAPgaJYA==:17 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
+ a=x7bEGLp0ZPQA:10 a=7VO5mNthaX4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=NEAV23lmAAAA:8 a=6Vj588pRnnhkDWG5z4wA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: Pl_-z2dvTONE12QsGOFs2kma8rKGVqf3
+X-Proofpoint-ORIG-GUID: Pl_-z2dvTONE12QsGOFs2kma8rKGVqf3
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDE3OCBTYWx0ZWRfX6dRlN81Wko+N
+ JU1a4tL76WVOaXOm+insjOgTSoYnh922ha6CEKPGAZ7alFL18VEQCw8B441B1peWoY0AGS9HIx5
+ zNXvw+oM/tHYvCvsp3j8iYiQDeBGk4SEwJw7rnKot3QGcWakOeCTi5nXwUO/dkhnJPJHSOon6H9
+ ifGytnoLfgBbaWzTJ0Thb6izLvidiY2525qdofTPOVckhW7OZCWtS8ldz3QKmkWV0Nnawogt4fd
+ HGCEqOoWGg3xp9squ7k1cwuA4ZrVohokzWBSxIc1tS9v3yKBKHm0YhC+NC/t0amfyeCko1lXp2m
+ YoEfx0HHuxSbQF8HExKsRYtn7J6fsHkMsayhmQr0F4ceTzG9mdHaYllP3Imh3g=
+X-JNJ: AAAAAAABI85zyNTr5QZjbG6nVihdvAMTJy/pGgg1GbPe/jgGcz5HtSEsQVHOrAyCLFoo2K9WWOELVFR9BeupzTmO04zjE4X/8Cm+vIRaGOMAFLi5chLnXI3uMLlkqboC9Jb4D7LOhLsX18KJ9OTy94KglBbtqneyanjwzWAYTYMEa/Hthll+Rsk3ya0YDTo9YskSFFL/t9aRO6+afxBImA3aPiWI3a8wkf1CVmY2wFpsHmvSj9AgFOO32oYv6Y8qeMg4zIfqkSYVoUeZm8egpFqj9BYVQfSfIJYoiewK28R4Tcml24iFVq9N0tfEEUdPU8+xVOkdLgEX2mJhMSjopTTemUxgf3YkBydbXtST9xQwaeyUHOTOFHh23ym/M3BucTGUX67LgRxBASr/Myg0gNniSQHukTMX5kVIowi9IQT/ePlO1wGL88NzP9oS1myREmlEfdTJmGNKQtiW8Mnsm1BaWSHV3S/WAxoVjJoYhqWp2NeYk2mTqcPaxFoE0b4egBv+Z4iwBs6c6YQwCOEkae9JLprrwJK2jRKIV0ZXyd+rFVyvgvJ9BS1CCsLQOG96i3yBDBwGCTlkRlYTMP1A9kJWUj2l4qJrGqXNUHE1/qeKCZlQcsnYV6apQiE/bwompHnqn5qEdzQF9Dq5l80HZ00aa14xsV8+4lkqdhP3HtWBZEZfXmFX03MuWZ8U+HF21oRoL3gdZRhzpipIjAPzyXzT23YezgG9ToFjj+UbA16BrtVdtgnTnOaV69acISVkUCBgR8cLN4hpW3I6YLv1QqvGBJtWp4HAM/cL/4B6EqDDnGBn972B0tu0jxvJuvNZLQ/XdqRVpKqh0jVBXmkm/EC20G5UfcLSAbCfdPBpSGvlTWLwbuyXe12DfQBjyy+7cSC3TfkQ4l0j2QefiGZjeiHs1lHm0ZILgaQ/w3xNh+61ocVb2BeZwzyXApKhRRE5K1L6tCqhiQpNJjsOWOdxnD3/2SV3OBo
+ G9wvtjPmrGfEDPayCXoSUzXWjrTGWMBEXsi1K1xYQuk9FhcslBfovlwbgR3UDmC6KvErJN7FWq7sOz7Wf6nyqMv1Bp2rt3NVcJOuFolAwKZGz70J1SN6b6ePq2BqTw5zNVs4b7CERqDKmhaDeH9eiAfY1CWDIGOpAWBxuVt0YcLAuDwCOIlbg0kDQgxac5f6S59XeYLdG8XKne7VnB31ymWigP2kX3Q4lk27C5j2J0FyxP+DXr2K4+J7/82JuSO80K8EcobBOKvRZKjBcsTu12eBTE/eLMOOugzTyFHeqlu6O
 
-Hi Ard,
+Hello,
 
-On Fri, 4 Sept 2026 at 19:39, Ard Biesheuvel <ardb@kernel.org> wrote:
->
->
->
-> On Fri, 4 Sep 2026, at 17:45, Jasmeet (Jazz) Bhatia wrote:
-> > On Thu Sep 3, 2026 at 7:18 AM PDT, Ard Biesheuvel wrote:
-> >> Hi Jazz,
-> >>
-> >> On Tue, 1 Sep 2026, at 13:34, Jasmeet (Jazz) Bhatia wrote:
-> >>> The EFI stub currently allocates the TPM event log as
-> >>> EFI_ACPI_RECLAIM_MEMORY. On x86, this becomes an ACPI data entry
-> >>> in the E820 map.
-> >>>
-> >>> On a Framework Laptop 16 (AMD Ryzen AI 300 Series), the EFI allocator
-> >>> can place this allocation at different physical addresses across boots.
-> >>> Since x86 hibernation validates architecture-specific data from
-> >>> the firmware E820 map, this causes an otherwise valid hibernation image
-> >>> to be rejected on resume with the following error:
-> >>>
-> >>>   Hibernate inconsistent memory map detected!
-> >>>   PM: hibernation: Image mismatch: architecture specific data
-> >>>
-> >>> Allocating the event log as EFI_LOADER_DATA avoids changing the E820
-> >>> map, but doing that alone would regress the kexec corruption issue fixed
-> >>> by commit 77d48d39e991 ("efistub/tpm: Use ACPI reclaim memory for event
-> >>> log to avoid corruption").
-> >>>
-> >>
-> >> As I replied in the other thread, I am not convinced preserving the TPM
-> >> event log across a kexec makes sense to begin with. This is the firmware's
-> >> view of the state of the TPM PCRs when it handed over the system to the
-> >> first OS.
+My ThinkPad X1 Carbon Gen 13 intermittently resumes from long s2idle 
+suspends with all eight CPUs stuck around 400 MHz. The issue also occurs 
+with
+Fedora’s standard packaged kernel.
 
-It doesn't make sense imho. The only thing you prove is that you
-kexeced from a 'previous good OS', but without knowledge of what that
-OS did before kexecing.
+I have collected hardware telemetry, shortened reproduction of the 
+power-limiting behavior by changing the MMIO PL1 averaging window (Tau), 
+and observed
+promising recovery with an early post-resume Tau pulse.
 
-> >>
-> >> If the first OS boots, loads a kexec kernel and then boots it without
-> >> measuring any of that into the TPM, the TPM event log will match the
-> >> TPM state, but this is meaningless because of the missing measurements,
-> >> and the attestation chain is broken.
-> >>
-> >> If the first OS does perform TPM measurements, it would need to record
-> >> them into a log and pass that on to the kexec'ed in some implementation
-> >> specific way - it cannot use the existing TPM event log for that.
+Could you help investigate this or direct the report to the appropriate 
+Intel power-management engineers?
 
-Hrmm, that might be problematic. The EventLog needs to illustrate the
-state of the TPM PCRs. IOW replaying the EventLog in memory should
-match the current TPM PCRs. But that also means we'll have to teach
-kexec how to properly extend the PCRs and update the EventLog.
+System:
 
-> >>
-> >> TL;DR perhaps we should just discard the TPM event log reference from
-> >> the EFI config tables after consuming it. Or add a special case to the
-> >> kexec code to disregard it.
+- ThinkPad X1 Carbon Gen 13, model 21NSCTO1WW
+- Intel Core Ultra 7 258V, family 6, model 189, stepping 1
+- BIOS N4BET77W 1.47, EC 1.41, microcode 0x128
+- Fedora 44 Workstation
+- intel_pstate active, HWP enabled, s2idle
+- Capture kernel: 7.1.13-200.btf.fc44.x86_64; recorded kernel taint: 0
 
-I can't decide what's best here. IIRC we don't expose the final event
-log config table in systab right? So we won't break any user-space app
-that depends on it.  We just copy it in
-/sys/kernel/security/tpm0/binary_bios_measurements. In that case
-getting rid of it would work.
+The capture kernel is a local rebuild of Fedora’s kernel-7.1.13-200.fc44 
+source RPM, with no additional kernel source patches, using 
+dwarves/pahole 1.31
+instead of 1.30 to correct BTF generation for sched_ext. The .btf suffix 
+identifies this rebuild. The suspend issue occurs on standard Fedora 
+kernels too
+and predates the rebuild.
 
-Cheers
-/Ilias
+I have experienced it across multiple kernel versions but have no 
+known-good version or bisected regression. I have not yet verified 
+reproduction on
+current vanilla mainline.
 
-> > Ok, honestly that makes a lot of sense I see what you are saying and I
-> > tend to agree. I'm treating the copied event log at something that
-> > survives kexec in this patch because of the corruption fix so I'll look
-> > at dropping that LINUX_EFI_TPM_EVENT_LOG_GUID reference and rewrite this
-> > patch. Hopefully, that will avoid that x86 E820 instability as well.
-> >
-> > Appreciate the guidance!
->
-> Please don't send any patches yet - I'd like to get some input from other
-> folks as well.
->
+Normal reproduction and symptoms:
+
+The issue occurs after long s2idle suspends. Short sleeps resume 
+normally; longer sleeps produce the 400 MHz episode, and the lag 
+generally lasts longer
+after longer suspends. This matches my experience before instrumentation 
+as well as the recorded experiments. Under the sleep-power conditions 
+measured in
+several captures, our energy-based model predicts onset at roughly three 
+hours. The exact duration threshold can vary with energy consumption during
+suspend. To reproduce at the normal Tau setting, leave the laptop 
+suspended for several hours, preferably overnight, then resume.
+
+During an episode, all eight CPUs can remain around 400 MHz despite 
+active work. Package power is approximately 2–5 W and temperatures are low.
+Performance recovers spontaneously after several seconds to tens of 
+seconds. Shorter sleeps often resume normally.
+
+Instrumentation:
+
+I used custom diagnostic scripts to record a baseline before suspend and 
+repeated snapshots after resume. They read CPU MSRs, powercap sysfs 
+attributes,
+and Intel PMT telemetry.
+
+CPU frequency estimates use APERF/MPERF deltas over awake sampling 
+intervals; they are not calculated across suspend. PMT fields are 
+decoded using Intel’s
+published Lunar Lake XML mappings, checking the product and 
+crystal-frequency fields before converting residency counters. Residency 
+figures below are
+differences between counter readings.
+
+The recorder is read-only. Separate intervention code performs and logs 
+setting changes.
+
+During captured 400 MHz episodes:
+
+- PMT PL1_LIMITED_RESIDENCY advances at approximately one second per second.
+- Power-limiting residency advances on the core groups, ring, and graphics.
+- PROCHOT, VRHOT, thermal-limiting, and PSYS PL1 residency show no 
+corresponding increases.
+- MSR package PL1 remains 37 W; MMIO package PL1 remains 17 W.
+- The normal MMIO PL1 time window remains 27,983,872 us.
+- HWP requests remain unchanged.
+
+A verified MSR PL1 write from 37 W to 36 W and back did not promptly 
+release the fault. Cycling power profiles has also not helped.
+
+Shortened reproduction:
+
+The most informative experiments changed this setting before suspend:
+
+/sys/class/powercap/intel-rapl-mmio:0/constraint_0_time_window_us
+
+These trials used battery power, the balanced profile, and comparable 
+wake procedures:
+
+- Approximately 900 seconds suspended, Tau 27.984 seconds: no PL1 
+residency increase.
+- Approximately 900 seconds suspended, Tau 0.999 seconds: 1.316 seconds 
+of PL1 residency, with corresponding core/ring/graphics power limiting.
+- Approximately 60 seconds suspended, Tau 0.999 seconds: no PL1 
+residency increase.
+
+Shortening Tau therefore allowed reproduction of the limiter signature 
+after 15 minutes. The short-Tau event ended before the first valid frequency
+interval captured a 400 MHz lock, so this reproduced the power-limiting 
+behavior rather than the complete user-visible symptom.
+
+A separate experiment set Tau to approximately 2 seconds before a 
+45-minute suspend, then restored approximately 28 seconds immediately 
+after resume. It
+captured all eight CPUs around 400 MHz for roughly 18 seconds and 20.118 
+seconds of total PL1 residency. There is no matching untreated 
+2-second-Tau/45-
+minute control, so this does not establish how much the restore write 
+prolonged the episode.
+
+Automatic workaround experiment:
+
+The workaround is launched asynchronously from a systemd post-resume 
+hook. A small native helper saves the original MMIO Tau, writes 125,000 
+us, and
+verifies the readback, which is 124,928 us on this machine. It acts 
+before starting the more expensive Python sampler, without waiting for fault
+detection. The power-limit values themselves are unchanged.
+
+The monitor restores the original Tau after two consecutive intervals 
+with little PL1 limiting, or after an eight-second maximum hold. A 
+recovery journal
+and service cleanup path also attempt restoration after failure. 
+Busy-clock recovery is assessed separately from PL1 residency.
+
+In the latest natural suspend of 2 h 59 min:
+
+- CPU0’s power-limit status was active before the write, and PL1 
+residency had already advanced by 1.228 seconds since the pre-suspend 
+baseline.
+- The write landed approximately 0.254 seconds after the kernel’s 
+journalled suspend-exit message.
+- Total PL1 residency across the capture was 1.775 seconds.
+- The first valid clock interval after the write measured 1.89–3.05 GHz; 
+its sample completed 1.16 seconds after the write.
+- Restoration of the original Tau was verified, with no additional PL1 
+residency through approximately 12.8 seconds of subsequent recording.
+- I noticed no resume lag.
+
+Working hypothesis:
+
+The observations suggest that package energy accumulated during sleep is 
+mishandled in the PL1 averaging state or its timebase on resume. Historical
+clean/fault captures are consistent with an energy threshold related to 
+PL1 × Tau, and changing Tau changes the reproduction conditions.
+
+However, the energy measurements span before-suspend and after-resume 
+snapshots and include some awake activity. They do not expose the 
+controller’s
+internal state or establish whether the defect belongs to firmware, 
+hardware, or Linux resume initialization.
+
+A matching symptom has been reported on a ThinkPad X9-15 with the same 
+processor:
+
+
+https://github.com/intel/linux-intel-lts/issues/84
+
+I can provide timestamped raw captures, kernel logs, diagnostic scripts, 
+and intervention code with the corresponding revisions and command 
+sequences.
+
+LLM assistants helped develop the diagnostic and workaround code, 
+analyze the captures, and draft this report. I ran the experiments on 
+the affected
+machine. The underlying code and raw data are available so the decoding 
+and conclusions can be checked independently.
+
+Is this a known Lunar Lake issue? What additional instrumentation would 
+help distinguish incorrect energy-delta accounting from stale averaging 
+state
+across s2idle? Is there a supported way to resynchronize that state on 
+resume?
+
+Thanks,
+Sandor
+
+
+
