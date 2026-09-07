@@ -1,51 +1,55 @@
-Received: from mta1.migadu.com (out-31.mta1.migadu.com [95.215.58.31])
+Received: from mta1.migadu.com (out-55.mta1.migadu.com [95.215.58.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DE3743B6DE
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 08:15:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.31
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75F8B43E06B
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 08:15:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788768935; cv=none; b=VCeSIW4AsueJdecT1JrgtLkwm2xoc+IMPfeaxQCqAZZCVutHfl9wvYashXS0F+ZZRNPXhp6lz7oHcwQA1tM+2LHuMWgjtuttDR4qC85spffWFvaPRXFF71Y2Xwyl+uHWIjLt7Bd1Xnb0BE5eYP+enks/LX7uI1CdSsXsXeFyuTA=
+	t=1788768946; cv=none; b=g8TQRBQp3wEURfCAosLEB/prdt0AgSZIFLxqp1lMHq2YjFuATKKiybTnwLsH2CYzOKIEpOdc8rnl/i+5UYrXaaux6sE45T7haGVgZ8ibl32suGO78bWwcpPZj5EdAbJXTFr7VBa2qgDNyyrTl9My1p7SbPLZQsKQEMQklU/N688=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788768935; c=relaxed/simple;
-	bh=4aeyyo7NniAcYqllECrNMdgEOmExFee2/DggJvrhUqI=;
+	s=arc-20240116; t=1788768946; c=relaxed/simple;
+	bh=QPbA87RHE+w44sKh8YFv32hrfoolvz7WuKZeL9giD2c=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=bGITqvMZaDqVqnbf01b3wEbL1enTBWewiXVRCYVxNfgxB0uzIX0/Mdk/x8UPdKFO/rNZQ//5U6GhDq8Ojs2EGahLjy0dwg/G6w7v5vashweYaNOm9y1VhRFCzCAMQwC/NlfBCoEPM8pZ7LnVh6MFcdnmzsk2ig4DAWwSR+/2PVg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=WpbZB8vM; arc=none smtp.client-ip=95.215.58.31
+	 MIME-Version:Content-Type; b=KFUhLc3YaOn57yMVfk59d7iaVzXFu+iYoOpMt1FliB+z6KDwACdUlXOwbuCA5ALkwJudxRTlxZrPGWkQaJ6nFxs/i8oThsSWhEc9qfbSHykWFcCEGGcr03o/pNgvEaHFC3e6CSGZAzKOxwiaFF2HERLtTJiBSP1HTg79APKqC3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=Mr/dbA1s; arc=none smtp.client-ip=95.215.58.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="WpbZB8vM"
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="Mr/dbA1s"
 X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=4aeyyo7NniAcYqllECrNMdgEOmExFee2/DggJvrhUqI=;
+DKIM-Signature: a=rsa-sha256; bh=QPbA87RHE+w44sKh8YFv32hrfoolvz7WuKZeL9giD2c=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1788768930; v=1; x=1789373730;
- b=WpbZB8vMV1atTAj+eChqlE5a8sbZp8ATsL8FJlR45iT1eCqql9Z7vil52XF+a6WIzfcKn4gf
- R66TMNwf5wR7Ca9JpMJXHwOg5FmkuAqRSpAm1ZfBi61Xs31woef6EOwGW7XUH1M0pBBZKnneL8C
- 654rUfJqyBaPq+fNHnFytbHg=
+ t=1788768942; v=1; x=1789373742;
+ b=Mr/dbA1ssVgGNGSkx9NfcW/TeNr3X7ajPN5WChcRkivApREW2EP1xWiVFInVPhm1sPWsjB3w
+ SxfFgpedO4Vr5GcEhpleqAbVMPYg4DPql6i5nm/5ONajnHrM7ZQZwILXWB5BliGboSUnHA1OFdC
+ Jb0/0QoO2QZhUW+sgHTDxF68=
 X-Envelope-To: linux-pm@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id a35385b3d24bba3f;
-	Mon, 07 Sep 2026 08:15:28 +0000
-X-Mizu-Trace-ID: a35385b3d24bba3f
+Received: by smtp.migadu.com with ESMTPS id 6d517d0bf0f3bdbe;
+	Mon, 07 Sep 2026 08:15:41 +0000
+X-Mizu-Trace-ID: 6d517d0bf0f3bdbe
 X-Migadu-Flow: FLOW_OUT
 From: Ye Liu <ye.liu@linux.dev>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>
 Cc: Ye Liu <liuye@kylinos.cn>,
-	Michal Hocko <mhocko@suse.com>,
+	Justin Suess <utilityemal77@gmail.com>,
+	=?UTF-8?q?G=C3=BCnther=20Noack?= <gnoack3000@gmail.com>,
+	mhocko@suse.com,
 	peterz@infradead.org,
 	paulmck@kernel.org,
 	mingo@redhat.com,
 	rostedt@goodmis.org,
 	jpoimboe@kernel.org,
-	mic@digikod.net,
 	oleg@redhat.com,
 	tglx@kernel.org,
+	akpm@linux-foundation.org,
 	david@kernel.org,
 	linmiaohe@huawei.com,
 	nao.horiguchi@gmail.com,
 	rafael@kernel.org,
-	gnoack3000@gmail.com,
 	ljs@kernel.org,
 	sj@kernel.org,
 	rientjes@google.com,
@@ -64,9 +68,6 @@ Cc: Ye Liu <liuye@kylinos.cn>,
 	tony.luck@intel.com,
 	reinette.chatre@intel.com,
 	x86@kernel.org,
-	paul@paul-moore.com,
-	jmorris@namei.org,
-	serge@hallyn.com,
 	pavel@kernel.org,
 	lance.yang@linux.dev,
 	mhiramat@kernel.org,
@@ -91,9 +92,9 @@ Cc: Ye Liu <liuye@kylinos.cn>,
 	linux-trace-kernel@vger.kernel.org,
 	linux-fsdevel@vger.kernel.org,
 	linux-security-module@vger.kernel.org
-Subject: [PATCH v2 7/8] lib: convert process iterator to for_each_process_rculock
-Date: Mon,  7 Sep 2026 16:13:33 +0800
-Message-Id: <20260907081334.1152889-8-ye.liu@linux.dev>
+Subject: [PATCH v2 8/8] security/landlock: convert thread iterator to for_each_thread_rculock
+Date: Mon,  7 Sep 2026 16:13:34 +0800
+Message-Id: <20260907081334.1152889-9-ye.liu@linux.dev>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20260907081334.1152889-1-ye.liu@linux.dev>
 References: <20260907081334.1152889-1-ye.liu@linux.dev>
@@ -103,46 +104,51 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: Ye Liu <liuye@kylinos.cn>
 
-Replace the manual rcu_read_lock()/rcu_read_unlock() pair combined
-with for_each_process() loop in lib/ with for_each_process_rculock(),
+Replace guard(rcu)() + for_each_thread() with for_each_thread_rculock(),
 which scopes the RCU read lock to the loop body via scoped_guard(rcu).
 
 No functional change.
 
 Signed-off-by: Ye Liu <liuye@kylinos.cn>
-Acked-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Justin Suess <utilityemal77@gmail.com>
+Reviewed-by: Günther Noack <gnoack3000@gmail.com>
 ---
 Changes in v2:
   - Rename *_rcu to *_rculock
- lib/is_single_threaded.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ security/landlock/tsync.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/lib/is_single_threaded.c b/lib/is_single_threaded.c
-index 8c98b20bfc41..4e7fe85454ab 100644
---- a/lib/is_single_threaded.c
-+++ b/lib/is_single_threaded.c
-@@ -26,8 +26,7 @@ bool current_is_single_threaded(void)
- 		return true;
+diff --git a/security/landlock/tsync.c b/security/landlock/tsync.c
+index 0b71e158c3f5..a578af640aad 100644
+--- a/security/landlock/tsync.c
++++ b/security/landlock/tsync.c
+@@ -335,9 +335,7 @@ static size_t count_additional_threads(const struct tsync_works *works)
  
- 	ret = false;
--	rcu_read_lock();
--	for_each_process(p) {
-+	for_each_process_rculock(p) {
- 		if (unlikely(p->flags & PF_KTHREAD))
- 			continue;
- 		if (unlikely(p == task->group_leader))
-@@ -48,7 +47,5 @@ bool current_is_single_threaded(void)
- 	}
- 	ret = true;
- found:
--	rcu_read_unlock();
+ 	caller = current;
+ 
+-	guard(rcu)();
 -
- 	return ret;
- }
+-	for_each_thread(caller, thread) {
++	for_each_thread_rculock(caller, thread) {
+ 		/* Skip current, since it is initiating the sync. */
+ 		if (thread == caller)
+ 			continue;
+@@ -376,9 +374,7 @@ static bool schedule_task_work(struct tsync_works *works,
+ 
+ 	caller = current;
+ 
+-	guard(rcu)();
+-
+-	for_each_thread(caller, thread) {
++	for_each_thread_rculock(caller, thread) {
+ 		/* Skip current, since it is initiating the sync. */
+ 		if (thread == caller)
+ 			continue;
 -- 
 2.25.1
 
