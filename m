@@ -1,146 +1,86 @@
-Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF51148B38F
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 17:24:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.42
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788801900; cv=pass; b=BwSCu2zSj1/yk9QZp1L/9KS8axL71kRKYXRReV5P8s8xGafOn7jhjmbDBnvSm9J9i2omYyFdNWSAF2sHTeFTDZ7imJHT4foElVsBgDKOPLf4gSM086mquOcd7Y1a60EKthVmkp4vP1MpdyQL2U7lJOG2Z94NE6Ir1TsSkpsYnzM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788801900; c=relaxed/simple;
-	bh=oSNTQCPnILUw/68+gMk9HV9c3gowZFlOqukTFVtyVLQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DBAH5V+FJGsRfv6+ZLrKB5iCN/mnEigirS3OBgdUXypujoXueydrB7o/KCjoES+8rIggnh46NjHHwSU8teM+DhQ+ehxt22XLNVGjDevpkQGw+0+MM5cPt7FD0rJ3OvFRNf7oKyYmEAiXFWmuuISpuEwf7z2JcWuUBdOsVPL4WgM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=A1QG/Nev; arc=pass smtp.client-ip=209.85.218.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E83DC3A5459;
+	Mon,  7 Sep 2026 17:37:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788802644; cv=none; b=La2kEXukmOqG58r0yxSuskxdWc7Dph0Z2xPx9w2gS57/uHgDO42TfL9AYzTg7TwD2WAKoWCVSBLnlDhvLBbWR1Eczqks7KyDJOA3RzvBAB4Vm9iSP39f/lp/31bYGfSV1gAPjxQLK9O20pYsGpQeS9zffmJle9WaBhMiF+Z6afE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788802644; c=relaxed/simple;
+	bh=cKGfZi/d/BvYweEPxQ98m1jdb4NZizKQN3d0517GUvQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cPXR0cDeGrc9ltDzMfyNmEamoOP0zM6ot4sokr1o+LsXZb0tvi2pmEBauQWE/gmBC+Wet+G0hUugCKSBbZd8a+glMYuN4VbG65AD9+zCIYM8R+egsNBZUGhYLbbFpEOY9rtiUUv5lyOempUG6M7V8LKpaGQhDtMFpOGItxCuAd0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=ziBVjdDG; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="A1QG/Nev"
-Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-c250c6a6a6eso490956866b.0
-        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 10:24:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788801897; cv=none;
-        d=google.com; s=arc-20260327;
-        b=DqgHeATIcopA32l0vKGvkRUWnRTucv7TX7r81j7TwaS3Dj1qaI/bksjDOqZyVNKH4x
-         2pBzk0cmKfdg7Rk3KgXggHBjl0suo09okhZhwqCqKlCPTKvJkq24otXS/4SlPMs3Rebv
-         NN51dqqG+A6VHPT8VBoUAmc1TTNghWVZUf1iy9uxgEFh+wZ1SxDei1TioRL9TWQk94SO
-         KcwTRZdmYkra6X4k78Px5/kz4enCgGxUkgPVk7/sxZd0OKauCb2IzmpUnRKVNAWpQH1V
-         yYO380GSvBrR9gQzKPuoD2+MilJ8yddXvRxpjCSEDrA9md9GaYrp50fQlOs0Gw4U7+Ez
-         l29A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=3tIvk9tN/HCp65ng31snFe+b+/Er/ZIovEHg1XgPvOI=;
-        fh=BO7eUINeRuy9oGJzl/nBQzcMWNi/0STTY2M66plqFHI=;
-        b=TglzUljcZuvzDu8Ds3a4XuYygsBU/qpd6/CV9BgDKqdE+hOjvEnpDVkzDe01OuU1if
-         8QYD3FlqXBny8fELehw7hBVH59ccKl/++qAwbC9dVeyJUUcvo/5M90GdfMfy1vEpNT9l
-         k1bYCaJ2fPdwBwqZpB7jJMmMh+vxuJa6tcWrTeKYPGdKxnvPvbn2ncFMmB5IZrIG7RWu
-         gaqqiYLY1e2Rrbi4fQj0Gu3gGWFN1K7hy0gc+natxzXxCGXqFNEu3377mFVyjcqqs1dn
-         Pp9wGcKCgAlYd+cXIutWkzm7EpWXah9mMqwpyVMMdk1+gl8P1HyrzHtQe/vBEvgrejmT
-         +Sjg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1788801897; x=1789406697; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=3tIvk9tN/HCp65ng31snFe+b+/Er/ZIovEHg1XgPvOI=;
-        b=A1QG/NevHCnH6e8hv793ehDowSCePrIRi3pjhZy2atwXMBTcADEZ3uSHItpYb+9orn
-         xKuhuM62b6QlFRVNBYG6cMzxgF3Ye71Jqg7LuuRBVrBSeo4KCUnHTVUnPeAFY7On2EZ3
-         NtsdRatMjjtTAfDBxrS2J8qQaCFIXFNflIYfKYmx1MmJpy3u8EuRHE9lamcO7NlqDxFp
-         7J2lXJ4H8hJVSmyUYc0BH6hNp7dsq1HypmhqWB++UHF3dfDngR+qUm/XOivo54dXzUPq
-         64Rmp6fAt0ATMidt6eGn04xef5x/CTwlooJVW4vFfqVwBoJiqxgXHFHjNOX/C71yXNbF
-         ZKnw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788801897; x=1789406697;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3tIvk9tN/HCp65ng31snFe+b+/Er/ZIovEHg1XgPvOI=;
-        b=PynYzZ6a3oFopyzJR/1BeyM1LphdgNLVs09jIeroejJ9iSXTEqqWgZDWV5nBUF91+S
-         WPV0CN1zCooG+6YnjLp4klVWU5HMV92EQWmSczyZaFfqW/Hr6V/AXwGHFRC5HulOX0bt
-         HJfAFe/rRbWr9aaIYVNPAX7y5uu9dTzRiCqEDrf9FksnA+F+I+QZ9um1mAQM6gEXF00X
-         Df3mBmluyelMJcn9UsMEc6S/g1HjyL+XQe2Uo7O/7cTulUwJmxXuacZGfMEmBOMnYxRk
-         0/EHB4C7FF+OkOdvDbUPbBAHgKz0NJdU9VGfys+DACsNDH0qxoxsjAPRYRfajohqbWw1
-         RiQA==
-X-Forwarded-Encrypted: i=1; AKwUvBxEIYRYGJNs6CarvBcnMVniblBiFoRhCepf5vbLoArDju2ueBYy6af9+hlzAfcb7FX6k1gXQlL97w==@vger.kernel.org
-X-Gm-Message-State: AFuF++k3je2I5mGHnkqTQvQnRIJUIAnTH5wfzB71yZE6Szo+xUyuD6Ax
-	QKQ606uZ8kj1JdWjxCDh4nQ4pHBMfCN5gJA30UJhy7D0PxP9Ru50VQzohIMDNgmsEt6KqKa8Qov
-	IVz7xVyf4ZcmIezq8pd+SWEU8QC+wby65guzmonbCiA==
-X-Gm-Gg: AYBFou0DCA7wjfSXhv1bmMw6TF28oZrTugrQAVR8YoAah/WNQDn+f8Kgs6pLXcuvAUw
-	RUz7MPk8wteQakXTOe7LBS3Xy76TvbPPmN2YA4ZgWqGFkdWGT4d9AXD6EZBVKnsF3ULaDTyJSYD
-	zw/l5pjfRnRl7qnL/lp5dVS0c0041jHuE1A/aWOJpPRhdfARpSe712DSELLVUXaEFaqkBnNBBE2
-	2ZiZm7CufCDs7Gx8mKAS87x4thYrv7nHHRANqwUzcDnYQM3h5UGDV6HzBVt18RZBC1Gjh5gRLw2
-	UDH5oA3cIuYhgATTLoZrgCO8OYm8sROZQfeOcLHqxR+f4dw8Ql71c5ZemgduQ/r3/FGNQqFR68Y
-	pdA==
-X-Received: by 2002:a17:907:1c17:b0:c26:19de:9ae4 with SMTP id
- a640c23a62f3a-c2619dea7ddmr757639966b.35.1788801896232; Mon, 07 Sep 2026
- 10:24:56 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ziBVjdDG"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=ACGhNatmfvP3k7lNT7yDJdLpYx1Fv4gEWAi6RsdoK9w=; b=ziBVjdDGuaRXNMCiP0JWDieadF
+	RdcDhnP6Emiy0n9Wz+YMUAYiP5LKkWoLuu3dvZeOcAKYVkaH2S/GFBA04+suXu11v6EL5L6JuC6H/
+	+y/nE/Fo3cRzkuNDBrybChEE8iiiEALVdefXTa66BZb32BfAGQBnfwZqly8zktipXSEJ/pXDotSw9
+	C6uAmY0hS02ekZRXP1IkX1SvewPgvNorHXn84GEpxgrVb3MVA6okYznp1Tp0iI/nlq0yKqrmhuzxZ
+	ZmgFLOCD5KdQpfZYwjnPXd6g2ELgcoLukqyMXdubCIvRbi6E165m2FaBvn1qo8DLXJDbb/W/ru/1m
+	xhra7iUQ==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x3dHT-00000007VVA-0es4;
+	Mon, 07 Sep 2026 17:37:19 +0000
+Message-ID: <b5f26c3d-daeb-4a71-bd88-85a75f5ac8f1@infradead.org>
+Date: Mon, 7 Sep 2026 10:37:18 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260907-bq257xx-init-v1-0-1a08b29e1a68@flipper.net>
-In-Reply-To: <20260907-bq257xx-init-v1-0-1a08b29e1a68@flipper.net>
-From: Alexey Charkov <alchark@flipper.net>
-Date: Mon, 7 Sep 2026 21:24:45 +0400
-X-Gm-Features: AcwNN1VZBW-1Mt7kTfGFh2RSUKZM_MHn3RKjTl1xYyYe5M3UAavFebV38etJD5c
-Message-ID: <CAKTNdwH47P9K935fGgnq0qaaNTbCuBNo+-ibVf-=vRcA01GJMw@mail.gmail.com>
-Subject: Re: [PATCH 0/5] power: supply: Fix probe time race against driver
- teardown and battery parsing
-To: Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Chris Morgan <macromorgan@hotmail.com>, Pavel Machek <pavel@ucw.cz>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/5] tools/thermal: fix typo "binded" in comments
+To: Hemanth Selam <hemanth.selam@gmail.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Danilo Krummrich <dakr@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Eduardo Valentin <edubezval@gmail.com>,
+ Keerthy <j-keerthy@ti.com>, Christian Loehle <christian.loehle@arm.com>,
+ Thierry Reding <thierry.reding@kernel.org>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Cc: linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+ linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20260907064725.10686-1-hemanth.selam@gmail.com>
+ <20260907064725.10686-4-hemanth.selam@gmail.com>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260907064725.10686-4-hemanth.selam@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 7, 2026 at 7:01=E2=80=AFPM Alexey Charkov <alchark@flipper.net>=
- wrote:
->
-> If a bus holding the battery-equipped power supply goes down right after
-> it registered, it leads to massive fireworks as the driver starts to tear
-> down its resources while callers from other contexts are already eager to
-> process events using this driver's callbacks (and their private data).
->
-> In current power supply core it's further aggravated by the fact that the
-> battery parsing code expects a psy struct from the caller, which is only
-> available once the device has been registered, so the device gets
-> registered with its hardware constraints (e.g. charging current) not yet
-> fully filled in.
->
-> Fix the former by preventing the unregistration of the psy device before
-> its callbacks complete, and the latter by providing a battery parsing
-> helper which doesn't require a psy struct from the caller (as it doesn't
-> strictly need one).
->
-> While here, fix up these and other adjacent issues in bq257xx where all o=
-f
-> it was discovered.
->
-> Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> ---
-> Alexey Charkov (5):
->       power: supply: core: prevent unregistering a power supply while a c=
-allback runs
->       power: supply: core: Allow getting battery info before psy is regis=
-tered
->       power: supply: bq257xx: Don't ignore errors from bq257xx_get_state(=
-)
->       power: supply: bq257xx: Use psy directly instead of driver data
->       power: supply: bq257xx: Parse battery info before registering power=
- supply
 
-Sashiko gave valuable feedback on this series [1], which I'll address
-in v2 - except for the part where it thought up a non-USB supply for
-bq257xx, which the driver explicitly doesn't support.
 
-[1] https://sashiko.dev/#/patchset/20260907-bq257xx-init-v1-0-1a08b29e1a68%=
-40flipper.net
+On 9/6/26 11:47 PM, Hemanth Selam wrote:
+> diff --git a/tools/thermal/tmon/tmon.h b/tools/thermal/tmon/tmon.h
+> index 44d16d778f04..f347efb47c96 100644
+> --- a/tools/thermal/tmon/tmon.h
+> +++ b/tools/thermal/tmon/tmon.h
+> @@ -77,7 +77,7 @@ struct tz_info {
+>  	char type[256]; /* e.g. acpitz */
+>  	int instance;
+>  	int passive; /* active zone has passive node to force passive mode */
+> -	int nr_cdev; /* number of cooling device binded */
+> +	int nr_cdev; /* number of cooling device bound */
 
-Best regards,
-Alexey
+	                                  devices
+
+>  	int nr_trip_pts;
+>  	struct trip_point tp[MAX_NR_TRIP];
+>  	unsigned long cdev_binding; /* bitmap for attached cdevs */
+
+-- 
+~Randy
+
