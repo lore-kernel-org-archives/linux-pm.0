@@ -1,114 +1,134 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 707752F1FDF;
-	Mon,  7 Sep 2026 17:38:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6BCE2475CB
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 17:57:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788802733; cv=none; b=d40AqgAK2KxU7ndnMnJsBR4RtrtHpn7dbYZlbUQau4UfM57PXLdmV1rh29RMy59N/IoqC4NVkzxd7GaktJtp+keiza3HJdUrxgnVthVvHM1JOlPXTfRTo40ckDEkdbsOSEIDPI6zDvj9wmVncvT8iwKJAeZfoMV+bHQCMS3Fm3o=
+	t=1788803860; cv=none; b=oCf/UqL7MQJIan4omCoY94KnGumWO14LZcXx5j/JlfPIv82hbvheVz41mG++JVgGckjZmmD1cvzW2jqB6zm8TQ61viH0Ge4B8PDP8QhRuK9MzETaOBmN6qo1c+nbwXxIQNXk+G7NQPLEeWzzqP+USEBJ4Fi11SqtaMeVRa4VP0E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788802733; c=relaxed/simple;
-	bh=cwMC9G7gnwaXq64yEud4524UTE6Mb6KcXo34iuocqkc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Vnyd4A9oTVd3HrgNBUf7Z2BE4RFjJLznK7nEpQpoic1vZYtvTyKBcL59jQON9fN3GjcMA76VS7/hZIsN92KsPFaIL98Xgg08LqXVTJgxKy52f5tp06x4B8ymOwxB8iys/8DDXPvxZJGGTYVFScb53DPY72gyMHyc2MrzfAtF9ZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=E79BYnA4; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1788803860; c=relaxed/simple;
+	bh=7j1GuZlr4DkZd3tFGTmsdUmo9C7PnISCitw4kPz9VIU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lWvYCYgMXnrWGkuvJCwCocYi8KMb4OF37IXVVinjFmJtzusMme2HDvlVmCVD3ewm/lF+G526uvm+yao42IWxuP8lJwAaAmpyYYXVfBhlOswkjPUAN54LH0iC29O0oBIIEu4nyG73igK0ZCpTiv1b84krROI09ArkYJ1CSeuILJ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=eA9SIVvc; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="E79BYnA4"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=TOFA0MqUebHWi232H8eweG4EROiQZqrSU1VKpFmiZyk=; b=E79BYnA4tnCNFSPtUys8222Hrm
-	j9DIHfNJqdB/f0sQdEpO2ACeMgcO0/lAIqB8tFzwXBiEbJbDSXnzrOiJTrooZ2OCTqfyY/S+RilOI
-	67d/WqSBMcGXMHzjggvPbi6q/vZe09e0JSuLQ7uWMW4943q6dP8tzqb78Nz6dr7yXj+dTOKS2dQon
-	pBeDcj0nxgZK7Wqe/WsHc0cmFBEW7YJM2VBykHCwRD5yT+Kn19w3MdRgHpnCQXChxmQ+yRfT5wmb0
-	F3lNjwMpDx38pzQM3QxTmW382yL6oS+0SRkZYl/fcXEscFEuw93+SzZLDGJGKoCNV9WoYtRAVd+Ab
-	gUtsrSMg==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x3dIu-00000007Vak-1Fe5;
-	Mon, 07 Sep 2026 17:38:48 +0000
-Message-ID: <0cc406f6-10b9-431b-a958-9b3713cf8acd@infradead.org>
-Date: Mon, 7 Sep 2026 10:38:47 -0700
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="eA9SIVvc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1788803857;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=PBB+Ha5hfEwnTM3XMtEUMJZL5woFR7RP7WxRg6VNgHk=;
+	b=eA9SIVvcwUwN/IMgAUfAn6PPs8HXxhKrC7EDc1fOYTQKZaUmTILFb23gJWK9jG0eVkovhG
+	MTXCteAfw1nrdwgiYf/fPdjG7uv2GKS5UjV5iYQtY2jOG2BxhAcMdO2v+5ExaViXSfoL9M
+	VD3E35Ymvrhb8p9EQg0ayz6NFAia86g=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-599-LOu-IESzNa-TentWVwO3qQ-1; Mon,
+ 07 Sep 2026 13:57:34 -0400
+X-MC-Unique: LOu-IESzNa-TentWVwO3qQ-1
+X-Mimecast-MFC-AGG-ID: LOu-IESzNa-TentWVwO3qQ_1788803853
+Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id EC8E71954B12;
+	Mon,  7 Sep 2026 17:57:32 +0000 (UTC)
+Received: from fedora (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id 779F3180059E;
+	Mon,  7 Sep 2026 17:57:16 +0000 (UTC)
+Received: by fedora (nbSMTP-1.00) for uid 1000
+	oleg@redhat.com; Mon,  7 Sep 2026 19:57:32 +0200 (CEST)
+Date: Mon, 7 Sep 2026 19:57:15 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Gregory Price <gourry@gourry.net>
+Cc: Ye Liu <ye.liu@linux.dev>, Thomas Gleixner <tglx@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
+	Boqun Feng <boqun@kernel.org>,
+	"Paul E. McKenney" <paulmck@kernel.org>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Josh Triplett <josh@joshtriplett.org>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Josh Poimboeuf <jpoimboe@kernel.org>, Ye Liu <liuye@kylinos.cn>,
+	Michal Hocko <mhocko@suse.com>, mic@digikod.net, david@kernel.org,
+	linmiaohe@huawei.com, nao.horiguchi@gmail.com, gnoack3000@gmail.com,
+	ljs@kernel.org, sj@kernel.org, rientjes@google.com,
+	shakeel.butt@linux.dev, xu.xin16@zte.com.cn,
+	chengming.zhou@linux.dev, tony.luck@intel.com,
+	reinette.chatre@intel.com, x86@kernel.org, paul@paul-moore.com,
+	jmorris@namei.org, serge@hallyn.com, pavel@kernel.org,
+	lance.yang@linux.dev, pmladek@suse.com, longman@redhat.com,
+	mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com,
+	qiang.zhang@linux.dev, dietmar.eggemann@arm.com, bsegall@google.com,
+	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
+	mark.rutland@arm.com, Dave.Martin@arm.com, james.morse@arm.com,
+	babu.moger@amd.com, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	rcu@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-security-module@vger.kernel.org
+Subject: Re: [PATCH v2 5/8] kernel: convert process/thread iterators to
+ for_each_*_rculock
+Message-ID: <ap76-0-hN6CAcYXX@redhat.com>
+References: <20260907081334.1152889-1-ye.liu@linux.dev>
+ <20260907081334.1152889-6-ye.liu@linux.dev>
+ <ap7dC-LWNaoPYJvv@gourry-fedora-PF4VCD3F>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/5] driver core: fix typos and repeated words in comments
-To: Hemanth Selam <hemanth.selam@gmail.com>,
- "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- Pavel Machek <pavel@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Eduardo Valentin <edubezval@gmail.com>,
- Keerthy <j-keerthy@ti.com>, Christian Loehle <christian.loehle@arm.com>,
- Thierry Reding <thierry.reding@kernel.org>,
- Jonathan Hunter <jonathanh@nvidia.com>
-Cc: linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20260907064725.10686-1-hemanth.selam@gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260907064725.10686-1-hemanth.selam@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ap7dC-LWNaoPYJvv@gourry-fedora-PF4VCD3F>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
 
+On 09/07, Gregory Price wrote:
+>
+> On Mon, Sep 07, 2026 at 04:13:31PM +0800, Ye Liu wrote:
+> > --- a/kernel/hung_task.c
+> > +++ b/kernel/hung_task.c
+> > @@ -315,13 +315,12 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+> >  		return;
+> >
+> >  	this_round_count = 0;
+> > -	rcu_read_lock();
+> > -	for_each_process_thread(g, t) {
+> > +	for_each_process_thread_rculock(g, t) {
+> >  		if (!max_count--)
+> > -			goto unlock;
+> > +			goto out;
+> ... snip ...
+> > - unlock:
+> > -	rcu_read_unlock();
+> > -
+> > +out:
+> >  	if (!this_round_count)
+> >  		return;
+> >
+>
+> The sunken rcu_read_lock()/unlock() + scoped_guard usage makes this goto
+> at a minimum very confusing, if not actually broken.
 
+I am afraid I misunderstood you concerns...
 
-On 9/6/26 11:47 PM, Hemanth Selam wrote:
-> This corrects 5 misspellings and repeated words in comments.  Each is a
-> separate patch so that any one of them can be dropped without touching
-> the rest.
-> 
-> Nothing outside comments changes.  Every touched C file was checked by
-> dropping its comments, replacing each string literal with a placeholder
-> and collapsing whitespace; what remained was identical before and after,
-> so the compiled code cannot differ.
-> 
-> The mistakes were found with scripts/checkpatch.pl against the list in
-> scripts/spelling.txt.  The scanning, the edits and the changelogs were
-> produced with Cursor running the claude-opus-5 model, from a request to
-> find and fix spelling mistakes across the tree, and every correction was
-> then re-checked by the comparison described above.  Words that name an
-> identifier were left alone deliberately, even when they read as typos,
-> because correcting the prose would make the comment disagree with the
-> code it describes.
-> 
-> Tested by building x86_64 defconfig at v7.3-rc1-269-gbc35965f6940, which
-> is clean.  Nothing else was built, so any patch touching code that
-> x86_64 defconfig does not compile has been read but not compiled.
-> 
-> Hemanth Selam (5):
->   driver core: fix typo "sucessfully" in comment
->   thermal: fix typos in comments
->   tools/thermal: fix typo "binded" in comments
->   cpuidle: fix repeated word 'that' in comment
->   ACPI: NUMA: fix typo in log message
-> 
->  drivers/acpi/numa/srat.c                    |  2 +-
->  drivers/base/power/clock_ops.c              |  2 +-
->  drivers/cpuidle/cpuidle-tegra.c             |  2 +-
->  drivers/thermal/thermal_core.c              |  2 +-
->  drivers/thermal/thermal_of.c                |  4 ++--
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 12 ++++++------
->  include/uapi/linux/thermal.h                |  8 ++++----
->  tools/thermal/tmon/sysfs.c                  |  2 +-
->  tools/thermal/tmon/tmon.h                   |  2 +-
->  tools/thermal/tmon/tui.c                    |  2 +-
->  10 files changed, 19 insertions(+), 19 deletions(-)
-> 
+This patch renames the "unlock:" label to "out:", and to me this makes sense.
 
-For the series:
+Unfortunately for_each_process_thread() and the new helper can't use "break".
 
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+Oleg.
 
-thanks.
--- 
-~Randy
