@@ -1,60 +1,86 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 945E43659FB;
-	Mon,  7 Sep 2026 04:21:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABF043546DE
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 04:39:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788754897; cv=none; b=Hq5K+M8LXlz1exw4dm35zfReAVQkMQIqgzhrg2Lql4n/25PZQlW6KTjbSaWLIsa2nrNTqqd8kzJWhXS4OKPbgr1ksJ5wk2IfWZQm/eRuNRxnfGx+tAz3WmvBc1+v8ksX0IbF5adz2uMKif/zVTv/Tlo6uX4aPIBSxyXaQqJSsrI=
+	t=1788755969; cv=none; b=ncj+1jirXx3//k4U7I5CBznFiz9sJI9j7LQPZZWhcsb7J/mdaymnNQmG2MSJ2//wiNmxyUlhUnEr6ygDtuTuDRxYVZ63vJMqbqgku5e34wgXrMK3x8HuhZMf50yTf7vjqm1o32G+KsfBaVHjofoL3KrY6CrKzdf/IDPdg4ssuIo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788754897; c=relaxed/simple;
-	bh=L0YjNRXW5u+LOiSK0GSPT/EXE8d9hdXqOqNLLt+/bi4=;
+	s=arc-20240116; t=1788755969; c=relaxed/simple;
+	bh=SHkFjsUEK8BRAqvmfnv5vItChhZEKbXF3e++QGo0kBQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=l15s3gr5aBB2YZg2rK1eRcVoecalw19QDXAw6wt39bFM9z15ERwNW+WHnJQ+wr7Zth7UBaWAI6A50opKeYa3nrkHFSGrlszXd+k/J1PdAI4BiLDpJmz1cUesOkeZBOlG8kMUhqejzULSW8p1Mlrsh/kHfB9QFSimz36Vh2L1gNM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lMDVX5VX; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Vk8sbWk0JNZ/echlPDiLXt+H1AaDArOJ6Ls1D0/j3DgrNi86crHOVNLwBiZkkGb/zFVKG9CQ9EEFj2ujroqpx2FZ6/Lr6UZZ/IhyjwD27CBgeV8cfwGlAP9PGHqa4ehyQHrrBu6nAt5MM3QL1SZWhfmBRhrjG9I+ChhIqqyWAGA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=PIANc05N; arc=none smtp.client-ip=209.85.214.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lMDVX5VX"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788754895; x=1820290895;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=L0YjNRXW5u+LOiSK0GSPT/EXE8d9hdXqOqNLLt+/bi4=;
-  b=lMDVX5VXb23mUXOSBsz6tgYGW7eMQAonmQmyVmauhr/WUZ/ZXf+LjEEd
-   PFqaYdCiLFHQrgaBugKLCH6IfYlnwls7kvQVetLvwS0GbzFM5sCgrb8sm
-   6Rz/irumGV09iys57jRzJVpRoNapnbGwkYnYp5wLnuqA89tBZBmFZUuZg
-   i0HyHIVrzPqloolpJbnWONSgaSaCZcGugGyxOlwTjpoGXenk1JpOsvoNg
-   0vuAldOsfiIcNT7U8+yfWoCSsbr1oMFCydp/oSTwIJu2KZi/xkKu76YvX
-   GOaBkbGAtaBArQpSOaMw4BoRyt2EOIBugxqj4DgGgx4dGfL4ZhgCxH7AT
-   w==;
-X-CSE-ConnectionGUID: xeEWFWvwTTOmY/RcmKOayw==
-X-CSE-MsgGUID: QyFoL/oeTNmbypQ4n1Cv7A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11898"; a="89027440"
-X-IronPort-AV: E=Sophos;i="6.25,266,1779174000"; 
-   d="scan'208";a="89027440"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2026 21:21:34 -0700
-X-CSE-ConnectionGUID: bWbZ6HVGS9WDb2a37thpAw==
-X-CSE-MsgGUID: KMlHkFpITr2VCK9sb8wC8A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,266,1779174000"; 
-   d="scan'208";a="271122153"
-Received: from smoticic-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.182])
-  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2026 21:21:33 -0700
-Date: Mon, 7 Sep 2026 07:21:30 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [PATCH v1 1/1] thermal: sysfs: switch to use scnprintf() to
- suppress truncation warning
-Message-ID: <ap47yiUB6oBihXiv@ashevche-desk.local>
-References: <20260817103324.1020212-1-andriy.shevchenko@linux.intel.com>
- <20260905105832.12192997@pumpkin>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PIANc05N"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2d91ded8174so23586675ad.1
+        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 21:39:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1788755967; x=1789360767; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=OZVd8AEPtHxGrM09Xmw7u8IpkGldFD91EALn5nG1tdA=;
+        b=PIANc05N512QUTF5TjEtlbM4w7en9fL8O6BhtCA83roQ0jfUKukb//ho+6RXKySd9G
+         FUTw3G0FVSbMNUtMYku3cZHHlvlWyfjjJU1OVIXHzVBQnjMwT2JBWDeHUDO1DzVMkcrq
+         AxN6vpFP78ujLulq5uM1dTmRzi+LtC7nNUXT18TUw3Ahk1SOaot5RiQPSLJ/2M8AjXDY
+         c4jOM5KGpPU8aUg5vTo0VaGJqfiJ5RwIZVKupuv/lHnbq48TMS7H+gvkXalZhIqrdyU4
+         pndd0TNeuW9n0qkAm6pPJvKjOv5aq07RoZ4kaYjA9B1Lf1FeGycUCndnf8+V8OGsGPYn
+         uAiA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788755967; x=1789360767;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=OZVd8AEPtHxGrM09Xmw7u8IpkGldFD91EALn5nG1tdA=;
+        b=ZksTC7mQ3K2ubJ3oLc0+hNIyNvQE3vu40CVr+ravZgG8928kVR7ycgSVgLuXTFLj1u
+         DiDE1cdNMsl8FqLM3w4K36Ig8YavM6dRvwMnN6qZM73nTkekeBxMuglEmsQrOlBQ1GMu
+         gM/aA4QE+j3Qg40Uh+BU9zd8GNaTiZBUKh1pihwZVIloWX0tiQi9DYB6/IkaXlcLeUrQ
+         VW4roVSboxlbj8E6C2oHpZdCsbGWp1L6lHLYKf1XanHcBclOj+5QSABKQVtHfe8MqL07
+         dwY8Zzv1Nplkp+DgKRGROKo78g8jlCC54vxxgD45/Xqm+L5KU29A2iYdAMBeN+Pr/zsF
+         8rxg==
+X-Forwarded-Encrypted: i=1; AKwUvBzgC0ZBtlxIOyAzyc1p3x7SfUbYV1HGMu1GSvDb80fZhJic028dQjd1pBcXLxYwH8KOPqfmwtp8Sg==@vger.kernel.org
+X-Gm-Message-State: AFuF++nX2zHBo6eAhOeu9EB2O6KRS0NSpiZ7WNpDOreY5yV9EKJPshsR
+	uzGZhhczbZUCEK+fGvEv4RnDfqMhzCLGJBtuU47vuIAtkqLh3OWGkeiq+9KIuK+uc80=
+X-Gm-Gg: AYBFou3hKqAouL4gJaDyAXUixdGEJZvC6NbUBMvUdTOrlSfW1ib2sbciiAxjwHB7Eo+
+	HB/Ojym+00aPKmkG8HPRlotBpNstl/6bySQ8sx+W+Cfbw8iWFI2wL30d3XZze6HPG/J54fGH/+B
+	2yudCo7kUccUe1/FgKb7/wpha9+XUfAJxEgsF4D/W6uRogDRnsGfHBQBEo63ju2L/FEY6TkwW8j
+	q6mFVOe33Ms4G8uFaceW3OytoPAcbCOvgOGdmXIWO+X+dTiz/l1iB/8/BQkAyJaHKTYqpS2+8Vw
+	Mct27Tfq/N6b40ih9g89f4qSwnAuxtyHQKAeviE+UMqfRP4PT5Aynq/r/Z/xI/9q9+gWw02W5uK
+	n9eHj1wg820g/BPzzXNO9+Bm1XEas5Mimld/iljhJ8CEWBYCeSFcvx4gbocSEU34hVPrbEUlUIf
+	AZRMrcwLVYvvm4EhBFI2OrR0pKwVx4y6IjMbd9K7r+V5bofjXpY9LqU/QcKtPYVIY=
+X-Received: by 2002:a17:903:37c8:b0:2d9:50:a91b with SMTP id d9443c01a7336-2db12667eeemr299920485ad.16.1788755966732;
+        Sun, 06 Sep 2026 21:39:26 -0700 (PDT)
+Received: from localhost ([122.172.87.224])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339885d29esm26643998eec.2.2026.09.06.21.39.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 06 Sep 2026 21:39:25 -0700 (PDT)
+Date: Mon, 7 Sep 2026 10:09:23 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Sumeet Pawnikar <sumeet4linux@gmail.com>
+Cc: rafael@kernel.org, amit.kachhap@gmail.com, daniel.lezcano@kernel.org,
+	thara.gopinath@gmail.com, talel@amazon.com,
+	hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
+	mmayer@broadcom.com, sumitg@nvidia.com, krzk@kernel.org,
+	peter.griffin@linaro.org, myungjoo.ham@samsung.com,
+	kyungmin.park@samsung.com, cw00.choi@samsung.com, Frank.Li@nxp.com,
+	s.hauer@pengutronix.de, matthias.bgg@gmail.com,
+	angelogioacchino.delregno@collabora.com, sven@kernel.org,
+	j@jannau.net, marcan@marcan.st, casey.connolly@linaro.org,
+	sre@kernel.org, wens@kernel.org, t.schramm@manjaro.org,
+	bcm-kernel-feedback-list@broadcom.com,
+	linux-samsung-soc@vger.kernel.org, kernel@pengutronix.de,
+	imx@lists.linux.dev, linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] cpufreq: Use %pe to print error pointers symbolically
+Message-ID: <ap4_-12ta7ThxEjc@vireshk-B250M-D3H>
+References: <20260906061755.5103-1-sumeet4linux@gmail.com>
+ <20260906061755.5103-4-sumeet4linux@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,35 +89,24 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260905105832.12192997@pumpkin>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+In-Reply-To: <20260906061755.5103-4-sumeet4linux@gmail.com>
 
-On Sat, Sep 05, 2026 at 10:58:32AM +0100, David Laight wrote:
-> On Mon, 17 Aug 2026 12:33:24 +0200
-> Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+On 06-09-26, 11:47, Sumeet Pawnikar wrote:
+> Replace PTR_ERR() and %ld with %pe and pass the original pointer directly
+> to pr_err() and pr_warn(). The %pe format specifier prints a symbolic error
+> name (e.g. -ENOMEM) when CONFIG_SYMBOLIC_ERRNAME is enabled, otherwise it
+> falls back gracefully and prints the raw integer value. This makes messages
+> more readable without any functional change.
 > 
-> > Switch the sysfs code to use scnprintf() to avoid warnings about potential
-> > truncation of the names of the sysfs attributes.
-> 
-> It has to be a 'bug' that 'format overflow' warnings are generated for
-> snprintf() but not for scnprintf().
-> They really shouldn't behave differently.
-> 
-> I did some tests a while back and the warning goes away if you do
-> 'some things' with the result (like comparing against the buffer size),
-> but even explicitly ignoring it with a (void) cast isn't enough.
-> 
-> Using OPTIMIZER_HIDE_VAR() (or an _VAL variant) on the buffer size does
-> stop the error, but I expect gcc to start checking sizeof(buf) as well.
-> So both arguments might need hiding to get the warning ignored.
+> Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+> ---
+>  drivers/cpufreq/bmips-cpufreq.c   | 4 ++--
+>  drivers/cpufreq/cppc_cpufreq.c    | 4 ++--
+>  drivers/cpufreq/qoriq-cpufreq.c   | 4 ++--
+>  drivers/cpufreq/s3c64xx-cpufreq.c | 5 ++---
+>  4 files changed, 8 insertions(+), 9 deletions(-)
 
-Yeah, but in a few subsystems (mostly visible in 'input') the technique of
-using scnprintf() is used when either it's and ABI or we don't care about
-possible truncation.
+Applied. Thanks.
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
-
+viresh
