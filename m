@@ -1,206 +1,182 @@
-Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8826F448B8A;
-	Mon,  7 Sep 2026 08:43:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.225
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77BCC33262A;
+	Mon,  7 Sep 2026 08:49:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788770621; cv=none; b=h5j888dNQeFqTvJ8iWLRCwPLC1o06edgGNp4S0yCjjBNFP2DQar5AlL+dxiiqgvTJ7F538ZLRp4q+5mitns5oQ63P5xNRvKdriX3JlNkz63mVHbgHEf93XWv6k+FcL0cYQXHokwJnOwg7j4ZS3sNLsNsPFLg9K8iK1rNuN4HZEY=
+	t=1788770959; cv=none; b=NzXoISFJx1eBkmhHHFwgWFV71lv49aoTCg9jbZkpZULIu1s9oe6/eEm5sLqjOjRgw4OBbHBNAlHN5YFrwGRrCOtZNHcHf7neLs9QkRJg1jy2XECy5LRWlpGZMiY5dG/wRQKJz7NwDz7xWsyDWFOs/ZaRpec+jQunKhaIq4DIk1A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788770621; c=relaxed/simple;
-	bh=qlsiU5m0Vd7b370vVIEaEUez+m5Jb2nv6IPuPBiL5TI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=A5bFhWivi77yyynLNJUzpGf2XrGIjDjPFq16guhyQrnYsIMZau3DpmaYQubBNMA/JxL0T/UHDiaznsiz6gwCQvX+5iKMMIRrDB9ZjWXGKPzridClELvZWjmboDWYAsyGbyPMpkwu5zefr8lUOtsl/2wqHjbQYyYWvKOXVjHxi5c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.225
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4hdgLK1gYfz1K96b;
-	Mon,  7 Sep 2026 16:32:41 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 7606F40565;
-	Mon,  7 Sep 2026 16:43:34 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 7 Sep
- 2026 16:43:33 +0800
-Message-ID: <0e7f0226-7e57-414c-8815-9f02d7165e26@hisilicon.com>
-Date: Mon, 7 Sep 2026 16:43:33 +0800
+	s=arc-20240116; t=1788770959; c=relaxed/simple;
+	bh=ftfDffwrgtPDQEpFXbH7UbYOc+SPqwxGnUvnr/hgSew=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=AcMpy61TSs9k4lpBrBYS/3G6Hld+4rxX65rN9HVwY6z/+mVJdbP0gTxGyfDrrUylYjIoNdflD/QcJ7QcbwVKv8IEkXBB7Q1kfvjdY1YV+p2m+raXC14/EBhaEtMFsBA4S+2vWcioZ3BEx1MJx2SqG8O9pd7qlVmWZ1qRJjvMd8g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kDnxOiS0; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kDnxOiS0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 075411F00A3A;
+	Mon,  7 Sep 2026 08:49:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788770958;
+	bh=RvFN7usOxne2FeOsw/QK8eU4IeWXfySDfmX/m8AFoFw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=kDnxOiS01hMx0VLlxLXiHYC62wTl7Ke5PvrUiR1Vfj8SOoEuUrCT0TMeIPlnbE2Kj
+	 PRfc1qeyM62M8l008Fgl37/M0BS7aNsawfw3ayV3hNkg12Yn9AwUB7Qt+3K1jplyUL
+	 j0vdbk4o2Dio2r+KpJL3aTUh3HcU7Gg8bkSXoY2oU7VmmbEeArDRFf3goPJkwgrOFa
+	 tXoHHOSjk14qcMtEJtHEgsIXW6RGlpHGbivn91/Wkr+TZz7aM2HXG5QYR85cL/5KpK
+	 ns8TiMP5Plmgom5Is8gIwW26xKzD4vKYvcASTLml6xlee3UCIyVZPy0IWl9NJ1pa/s
+	 RXo0vAjeVqS7w==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1x3V2S-00000005f2L-0Au8;
+	Mon, 07 Sep 2026 08:49:16 +0000
+Date: Mon, 07 Sep 2026 09:49:15 +0100
+Message-ID: <86jyox4fas.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+Cc: Mostafa Saleh <smostafa@google.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley
+ <conor+dt@kernel.org>,
+	Rajendra Nayak <quic_rjendra@quicinc.com>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Konrad Dybcio
+ <konrad.dybcio@oss.qualcomm.com>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
+Subject: Re: [PATCH v2 2/3] interconnect: qcom: x1e80100: enable QoS configuration
+In-Reply-To: <f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
+References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
+	<20260527-x1e80100_qos-v2-2-305c6539e6d2@oss.qualcomm.com>
+	<apgeBNSiP01YfNcs@google.com>
+	<86ld9d4h4n.wl-maz@kernel.org>
+	<f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 1/3] cpufreq: cppc: Add update_limits support for
- Highest Performance changes
-To: Xueqin Luo <luoxueqin@kylinos.cn>, Sudeep Holla <sudeep.holla@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki"
-	<rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, Viresh Kumar
-	<viresh.kumar@linaro.org>
-CC: Lifeng Zheng <zhenglifeng1@huawei.com>, Pierre Gondois
-	<pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
-	<linux-kernel@vger.kernel.org>, <driver-core@lists.linux.dev>,
-	<linux-pm@vger.kernel.org>
-References: <20260807060848.832929-1-luoxueqin@kylinos.cn>
- <20260807060848.832929-2-luoxueqin@kylinos.cn>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <20260807060848.832929-2-luoxueqin@kylinos.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: raviteja.laggyshetty@oss.qualcomm.com, smostafa@google.com, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, quic_rjendra@quicinc.com, abelvesa@kernel.org, andersson@kernel.org, konradybcio@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, konrad.dybcio@oss.qualcomm.com, dmitry.baryshkov@oss.qualcomm.com, odelu.kukatla@oss.qualcomm.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
+On Mon, 07 Sep 2026 09:18:38 +0100,
+Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com> wrote:
+> 
+> 
+> 
+> On 9/7/2026 1:39 PM, Marc Zyngier wrote:
+> > On Wed, 02 Sep 2026 14:00:52 +0100,
+> > Mostafa Saleh <smostafa@google.com> wrote:
+> >>
+> >> On Wed, May 27, 2026 at 05:37:10AM +0000, Raviteja Laggyshetty wrote:
+> >>> Enable QoS configuration for master ports with predefined priority
+> >>> and urgency forwarding.
+> >>>
+> >>> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> >>> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> >>> Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+> >>
+> >> Testing with Linus's tree, this patch broke my Lenovo IdeaCenter Mini X
+> >> booting, the board resets very early during boot.
+> >> I see that the last patch (device tree) is missing from the tree, I
+> >> included it, but that doesn't fix it, disabling the driver also
+> >> doesn't help. I can boot again by reverting this patch.
+> >>
+> >> I have my own device tree as my device is Purwa based [1]
+> >>
+> >> [1] https://lore.kernel.org/all/20260429141815.827157-1-smostafa@google.com/
+> > 
+> > Same here. My Mini-X hard reboots after 2.45s in the kernel. Example
+> > from the serial console:
+> 
+> Is the Mini-X based on Purwa ?
 
+Yes. At least the one I have in the rack.
 
-On 8/7/2026 2:08 PM, Xueqin Luo wrote:
-> ACPI CPPC specification requires OSPM to re-evaluate the Highest
-> Performance register when Notify(0x85) is received for a processor
-> device.
 > 
-> Implement cppc_cpufreq_update_limits() to refresh the cached
-> highest_perf capability through cppc_get_highest_perf() and update
-> policy->cpuinfo.max_freq from Highest Performance. Use
-> refresh_frequency_limits() so policy->max follows the standard
-> cpufreq_set_policy() path.
-> 
-> cpuinfo.max_freq always tracks Highest Performance. When boost is
-> disabled but still supported, constrain policy->max by updating the
-> existing boost_freq_req (created in cpufreq_policy_init_qos) to
-> nominal, instead of hiding the hardware maximum in cpuinfo.
-> 
-> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 98 ++++++++++++++++++++++++++++++++++
->  1 file changed, 98 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 6fe0e972952a..089f734f851b 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -855,6 +855,103 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
->  	return 0;
->  }
->  
-> +/**
-> + * cppc_cpufreq_sync_boost_limits - Sync boost flag, cpuinfo max and boost QoS
-> + * @policy: cpufreq policy
-> + * @boost_supported: whether highest_perf currently exceeds nominal_perf
-> + *
-> + * Highest Performance can appear or disappear at runtime via Notify(0x85).
-> + *
-> + * cpuinfo.max_freq always tracks the hardware maximum derived from Highest
-> + * Performance so that sysfs reflects Notify(0x85) updates. Boost being off
-> + * is enforced by updating the existing boost_freq_req to nominal (capping
-> + * policy->max) rather than by hiding the hardware max in cpuinfo.
-> + * boost_freq_req itself is only created at policy init, not here.
-> + */
-This comment seems excessive or redundant for an internal function.
-> +static void cppc_cpufreq_sync_boost_limits(struct cpufreq_policy *policy,
-> +					   bool boost_supported)
-> +{
-> +	struct cppc_cpudata *cpu_data = policy->driver_data;
-> +	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
-> +	unsigned int highest_freq, nominal_freq, qos_freq;
-> +	int ret;
-> +
-> +	if (!boost_supported && policy->boost_enabled)
-> +		policy->boost_enabled = false;
-> +
-> +	policy->boost_supported = boost_supported;
-> +
-> +	highest_freq = cppc_perf_to_khz(caps, caps->highest_perf);
-> +	nominal_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
-> +
-> +	/*
-> +	 * Report the current hardware maximum. If Highest dropped below
-> +	 * Nominal (unusual, but possible with test overrides), never
-> +	 * advertise more than Highest allows.
-> +	 */
-That's a weird error case.  Highest should never be less than Nominal.
-Do we really need to handle that?
+> > 
+> > <quote>
+> > [    2.280289] VFIO - User Level meta-driver version: 0.3
+> > [    2.286872] usbcore: registered new interface driver usb-storage
+> > [    2.307218] i2c_dev: i2c /dev entries driver
+> > [    2.316386] efifb: probing for efifb
+> > [    2.320065] efifb: framebuffer at 0xe4800000, using 8100k, total 8100k
+> > [    2.326768] efifb: mode is 1920x1080x32, linelength=7680, pages=1
+> > [    2.333026] efifb: scrolling: redraw
+> > [    2.336704] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
+> > [    2.346518] Console: switching to colour frame buffer device 240x67
+> > [    2.356787] fb0: EFI VGA frame buffer device
+> > [    2.361793] clocksource: arch_mmio_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
+> > [    2.372947] arch-timer-mmio 17800000.timer: mmio timer running at 19.20MHz (virt)
+> > [    2.380860] usbcore: registered new interface driver usbhid
+> > [    2.386577] usbhid: USB HID core driver
+> > [    2.391899] hw perfevents: enabled with armv8_pmuv3 PMU driver, 13 (0,80000fff) counters available
+> > [    2.403182] NET: Registered PF_INET6 protocol family
+> > [    2.408516] Segment Routing with IPv6
+> > [    2.412289] In-situ OAM (IOAM) with IPv6
+> > [    2.416326] NET: Registered PF_PACKET protocol family
+> > [    2.421533] 9pnet: Installing 9P2000 support
+> > [    2.425923] Key type dns_resolver registered
+> > [    2.430357] NET: Registered PF_VSOCK protocol family
+> > [    2.440369] registered taskstats version 1
+> > [    2.444633] Loading compiled-in X.509 certificates
+> > [    2.451480] Demotion targets for Node 0: null
+> > Format: Log Type - Time(microsec) - Message - Optional Info
+> > Log Type: B - Since Boot(Power On Reset),  D - Delta,  S - Statistic
+> > S - QC_IMAGE_VERSION_STRING=BOOT.MXF.2.4-00541-HAMOA-1
+> > S - IMAGE_VARIANT_STRING=SocHamoaWP
+> > S - OEM_IMAGE_VERSION_STRING=ip-10-195-202-30
+> > S - Boot Interface: SPI
+> > S - Secure Boot: On
+> > S - Boot Config @ 0x221c8600 = 0x00000001
+> > S - JTAG ID @ 0x221c8744 = 0x002ad0e1
+> > S - OEM ID @ 0x221c8700 = 0x00000040
+> > S - Serial Number @ 0x221c8610 = 0x00000460d5171bbb
+> > S - Feature Config Row 0 @ 0x221c21e0 = 0x0000000000000000
+> > S - Feature Config Row 1 @ 0x221c21e8 = 0x0000000000000000
+> > S - Core 0 Frequency, 1363 MHz
+> > S - PBL Patch Ver: 0
+> > S - PBL freq: 600 MHZ
+> > S - Cluster: 0, Core: 0
+> > </quote>
+> > 
+> > I'm also seeing spurious resets on my "X1E001DE Snapdragon Devkit for
+> > Windows" when doing large file transfers over the network (30GB+).
+> > With this patch reverted on top of 7.3-rc1, both machines are as solid
+> > as they were before it.
+> >
+> The current patch enable QoS for Hamoa SoC, which get programmed only during
+> driver probe. This shouldn't impact or cause any spurious resets once the 
+> device is booted up and probe is successful.
 
-What I'm worried about are:
-1. We can't handle that cleanly because that violates the basic assumption
-of CPPC and things may go wrong everywhere.
-2. That creates dead code that may never run.
-> +	policy->cpuinfo.max_freq = highest_freq;
-> +
-> +	if (boost_supported && !policy->boost_enabled)
-> +		qos_freq = min(nominal_freq, highest_freq);
-> +	else
-> +		qos_freq = highest_freq;
-> +
-> +	/*
-> +	 * boost_freq_req is created in cpufreq_policy_init_qos() when
-> +	 * boost_supported is true at policy init. Runtime Highest changes
-> +	 * only update that existing request; they do not add or remove it.
-> +	 */
-Redundant comment, I think.
-> +	if (freq_qos_request_active(&policy->boost_freq_req)) {
-> +		ret = freq_qos_update_request(&policy->boost_freq_req,
-> +					      qos_freq);
-> +		if (ret < 0)
-> +			pr_debug("CPU%d: failed to sync boost QoS: %d\n",
-> +				 policy->cpu, ret);
-pr_err?
-> +	}
-> +
-> +	pr_debug("CPU%d: highest_perf=%u boost_en=%d cpuinfo_max=%u qos_max=%u\n",
-> +		 policy->cpu, caps->highest_perf, policy->boost_enabled,
-> +		 policy->cpuinfo.max_freq, qos_freq);
-This looks like a test print rather than a useful debug print that we may
-need to enable sometimes.
-> +}
-> +
-> +static void cppc_cpufreq_update_limits(struct cpufreq_policy *policy)
-> +{
-> +	struct cppc_cpudata *cpu_data;
-> +	struct cppc_perf_caps *caps;
-> +	u64 prev_highest_perf;
-> +	u64 highest_perf;
-> +	int ret;
-> +
-> +	guard(cpufreq_policy_write)(policy);
-> +
-> +	cpu_data = policy->driver_data;
-> +	caps = &cpu_data->perf_caps;
-> +
-> +	prev_highest_perf = caps->highest_perf;
-> +
-> +	ret = cppc_get_highest_perf(policy->cpu, &highest_perf);
-> +	if (ret)
-> +		return;
-> +
-> +	if (highest_perf == prev_highest_perf)
-> +		return;
-> +
-> +	caps->highest_perf = highest_perf;
-> +
-> +	/*
-> +	 * Re-evaluate boost capability/status based on the updated Highest
-> +	 * Performance. Boost is supported when highest_perf exceeds
-> +	 * nominal_perf.
-> +	 */
-> +	cppc_cpufreq_sync_boost_limits(policy,
-> +				       highest_perf > caps->nominal_perf);
-> +
-> +	refresh_frequency_limits(policy);
-> +
-> +	pr_debug("CPU%d: highest_perf updated %llu -> %llu\n",
-> +		 policy->cpu, prev_highest_perf, highest_perf);
-> +}
-> +
->  static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
->  {
->  	struct cppc_cpudata *cpu_data = policy->driver_data;
-> @@ -1048,6 +1145,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
->  	.init = cppc_cpufreq_cpu_init,
->  	.exit = cppc_cpufreq_cpu_exit,
->  	.set_boost = cppc_cpufreq_set_boost,
-> +	.update_limits = cppc_cpufreq_update_limits,
->  	.attr = cppc_cpufreq_attr,
->  	.name = "cppc_cpufreq",
->  };
+And yet it absolutely does break things.
+
+With this patch applied, the box resets within 5GB of heavy network
+traffic, probably because some transaction get delayed, and a watchdog
+fires. With the patch reverted, the box keeps receiving packets, and
+everything is hunky dory (100GB+ so far).
+
+Which makes me think that the set of hardcoded parameters in this
+patch is not universal at all.
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
