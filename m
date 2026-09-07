@@ -1,297 +1,192 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C08C4477F3;
-	Mon,  7 Sep 2026 12:21:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FAA848823A
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 12:21:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788783669; cv=none; b=fdBtlXL6K0oOGJvN/nGWT9mpwlGuPIWoH/xwKp9mIKPsiGz28iNryviY0KfchF3prxW7LUzrC7piP4rZPEvk1nenCfVGQ9Bs8aAIKXJ0iI/X1BrnfPl/t84v3iW6x5FPTtFt2LkLi2r1xxLcYM3CyW8VQsvN/l9qhfuJGXbG4KY=
+	t=1788783699; cv=none; b=aHXw0Dbl6RvoR1eH6fF7skkA+tss09Oa3JI/B+OISnNRRheoX6nPyKu17E0PDxTVdqPqoZz8638GcIYHKbWZ6oXkauxDfF88IfX3uk8GyajYtIVFTNKZ5s1SBmjBC334VBXRyn4TwsljePYEZsPZLdJqA/p5FurZdUxvpOmMjJY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788783669; c=relaxed/simple;
-	bh=gYA6TYCQy+IowALVVWgfWYeHy3EWwDv6JbVI6FqxPc4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JiJ+NN4aQKwEb3USR5e2tQdqUnWe2S+T6yNEzQIWI1iCz4nEarblNfYOdRSAiaTDj4SGY6ONcckJqD545ULnb73K8xpsB3LukxnRvhKBikg39sT6TRa5aIrewI4j4yqna+z8m6iIBNkcTBtVw27wMaHgFdubc5gsEpCsJah/kV4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bHCkg4gb; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788783699; c=relaxed/simple;
+	bh=tsCUG4G2vHEO1kJZHh9TbKKbwT4PYNLjAyL1j5WYM7c=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Qw6gC7lcbkD9RyGGEhAfYdYWjo+yZEmWXwVAQV3qnQiDqn0edsOS9WZfCmVwo4vmVklD91ce3qlze2rtfJH30R5D0SAiHhHFhQ7VqwlRSoAB6TKER7GT68DZEJNGdGhxkHUpgqI3UXBNnALLf4gtMqO02edLkipr+4EXrcBe1EI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=EPad6QGD; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=G4R5Achr; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bHCkg4gb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A71C81F00A3A;
-	Mon,  7 Sep 2026 12:20:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788783667;
-	bh=6RafqFe1zOQfVX4I3+CvQ7y72wqiedDGCRPziRNypvU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=bHCkg4gbtV4fR2YXJbmLmuc4792CiiwMkkiRBQHsBe3wK55pXp+8DhreyLDcaIbMw
-	 +XMz1qywEjymPY3Ej4XpuBzolt+eJO+nukbZ7CXCsQNU26wwPA1iXIhTSrRLpbGDix
-	 fwWR2FArhe/UEy7m95AYiCBVgXqtLK4g9V7jnUSj20xaBegsmmoK4Eg5QF6p25qKod
-	 FvDJ/mDhse/p+LJ4rbaxHYb1QC5RLLos4JcnAt7VH2IvwsAiCyGi4lzj9mRyvxW/JA
-	 h+bvh9R1HO3HUjIq8DKQveOiIQHs0vc3Dpq6Hwle2VPzfsPQD/3qCXSkt6Tz4Wm3Zg
-	 Y31OxqU9Ezkow==
-Date: Mon, 7 Sep 2026 13:20:51 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Ye Liu <ye.liu@linux.dev>
-Cc: Thomas Gleixner <tglx@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>, 
-	Boqun Feng <boqun@kernel.org>, "Paul E. McKenney" <paulmck@kernel.org>, 
-	Frederic Weisbecker <frederic@kernel.org>, Neeraj Upadhyay <neeraj.upadhyay@kernel.org>, 
-	Joel Fernandes <joelagnelf@nvidia.com>, Josh Triplett <josh@joshtriplett.org>, 
-	Uladzislau Rezki <urezki@gmail.com>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Josh Poimboeuf <jpoimboe@kernel.org>, Ye Liu <liuye@kylinos.cn>, 
-	Michal Hocko <mhocko@suse.com>, mic@digikod.net, oleg@redhat.com, david@kernel.org, 
-	linmiaohe@huawei.com, nao.horiguchi@gmail.com, gnoack3000@gmail.com, sj@kernel.org, 
-	rientjes@google.com, shakeel.butt@linux.dev, xu.xin16@zte.com.cn, 
-	chengming.zhou@linux.dev, tony.luck@intel.com, reinette.chatre@intel.com, x86@kernel.org, 
-	paul@paul-moore.com, jmorris@namei.org, serge@hallyn.com, pavel@kernel.org, 
-	lance.yang@linux.dev, pmladek@suse.com, longman@redhat.com, 
-	mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com, qiang.zhang@linux.dev, 
-	dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de, vschneid@redhat.com, 
-	kprateek.nayak@amd.com, mark.rutland@arm.com, Dave.Martin@arm.com, james.morse@arm.com, 
-	babu.moger@amd.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, rcu@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH v2 5/8] kernel: convert process/thread iterators to
- for_each_*_rculock
-Message-ID: <ap6d3zuVsJiLkrpr@gremlin>
-References: <20260907081334.1152889-1-ye.liu@linux.dev>
- <20260907081334.1152889-6-ye.liu@linux.dev>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="EPad6QGD";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="G4R5Achr"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 687AnXtk217830
+	for <linux-pm@vger.kernel.org>; Mon, 7 Sep 2026 12:21:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=yJmvlvbp2vZGV7FOACp8bDhpFD+SbgijnhC
+	XGHXuwAs=; b=EPad6QGD/mSn02QO/q/SGLV55MT1LQRwhTWXEFyMi5C+8WvsCIY
+	HeB72Z6J19O/AIz9vs0rKcksIFd91X02aJRTHn1h7UZt3GcsGJDEJjZ85jGB04nq
+	wHBrlXUkvFrTxD6QdQqyJ6DSsmU5LmNozdYtaM2K/FhYTZiwkzks8IClosSLuX6t
+	rTRrC3KAerOkClDaPfJ34RszQvlhiljwBtiUH++KTjov5Bi1l2mZdP25//xl9qR1
+	+ydV+aFcqZmUWNrtbKgrAA6WghVvHMEWWnm9KzbI3p9LxjFvjk0gVYuFmaVd0WXb
+	hweNpUDKwq+2H3RvPQPRuuhY2HWplbqlCPQ==
+Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ghtdqgrvc-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 12:21:36 +0000 (GMT)
+Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-39af306c795so657515a91.3
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 05:21:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1788783695; x=1789388495; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=yJmvlvbp2vZGV7FOACp8bDhpFD+SbgijnhCXGHXuwAs=;
+        b=G4R5Achr4FWLF4To8daX+z4BE8Ulf/cSaRUHmhblrK2cvpcYsd3pE4CTLaH8yluObA
+         mIjcJ7ot2FNvi60UYZzTgBL1S2asISyY1PUrv/OE64+eg73BvOgNG7/Boor0MSzuThj6
+         sK4qk0e/g+kQUW4B8sdCjD1qXEzLJabwqjIyBzwiY61t3giDo0OcAlDW61BLT0y7CxBh
+         3ifoOypsLaZFjmnmMuVJ5hrtbpnHMdmVLdw40VLY4Mvnh/TidsKKT54Y90uzuNRWQx9G
+         8nJ+3QsVf/OddGSHBGOc0V/ciac/t3tj96Y0aw5yPiLoqq7JglRRRhUeBhbzx85be0zO
+         JhyQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788783695; x=1789388495;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=yJmvlvbp2vZGV7FOACp8bDhpFD+SbgijnhCXGHXuwAs=;
+        b=UNxOSzF2JZ9IY9XLgD9PdNjPzt0PRmHubnwCzsk1IgKydMn4WI/L5qiAJLvHuN1tXZ
+         zNsvM0dtPgVMlJQTY4drV93wUy7ekyFtb4/5vVS9gw4Vjyreklooelrb99mGWdizNIos
+         ho2uR/EF4Kr64w5HgkoFYtoZIjlUJ1JPcRGQ/M4DTBvvydJClr8jCWsEL4yrxT3bNO7i
+         dbLZSQt1Hp4Lv7rU1K9vick9DcHQ0JINPzctq8XAYDcN7iKFEFnTn5vwwUyvB5t8KKZB
+         gvZkQavs9TRn0UWgy9T7GXlif7dncIJvN6Sejb9XVoAjwSqaHs+iWIJ4NEMASV2Lnh8s
+         iZOg==
+X-Forwarded-Encrypted: i=1; AKwUvBzmyl/HOCfQ4WNx+JJnfcnzrl0Ohc12nsEPVjGcVDesS2ExkUsBHJh2bU+4bddxLI809FbAe6fMEw==@vger.kernel.org
+X-Gm-Message-State: AFuF++nHicLfN0OtyEp7D4gzKQ0QHTXevL+OFhYO8FUXoeQdqtrZyVXV
+	zdXuoi4BkXChEFTmcHYQXnYPVdNy08I7nPuibUWBi+IP4c9fepDnBxZI/gx4LdrxOTQUv9uytcS
+	Kx+Z+CMT6IR8GyA4wfjz4ow5N73RwFqyaMpiOT6U71uugHyBbfp5QXoAtxEVXdQ==
+X-Gm-Gg: AYBFou0283zBQE066RJ1XIP87LE+5f6rndcXz7cwCiSz8rmRkGyFASzi8G6fMzxrpta
+	elrmllfNSKK8gdF0qyFgDq1s9vOJZNtdsUiRbMPzoThfE+KN3iPodmXwlm1wkY1txpA26IqTOhi
+	B08odIzs0wuKE2ozluHP8fZ73Xjiq05cKqbcqFI4shq8mLIt3OWeFHbzw9krC+AjA5BdiaScauW
+	PjvjUa7+k6s0E2tfYsgKBxvMGMfDM9gRRaWpisKYU//MvuCpXNsCE4V1NIHRzzzBHLXTmWaqQ2C
+	K4nolqX8gmpYBJXDEOI9qY0iD7nIU79JxDaayruJ4w8iB3OVPMmP2W14jwGGapJqDOJFuvLoiSv
+	muCLeK77WW83LIG7MNLCMfZJeY7qEaTo9oXs/yDqX5F9JyryeRaw=
+X-Received: by 2002:a17:90b:498c:b0:398:a2e4:c784 with SMTP id 98e67ed59e1d1-39b3d5c4449mr13430041a91.1.1788783695148;
+        Mon, 07 Sep 2026 05:21:35 -0700 (PDT)
+X-Received: by 2002:a17:90b:498c:b0:398:a2e4:c784 with SMTP id 98e67ed59e1d1-39b3d5c4449mr13429996a91.1.1788783694640;
+        Mon, 07 Sep 2026 05:21:34 -0700 (PDT)
+Received: from hu-weiden-sha.qualcomm.com (i-global052.qualcomm.com. [199.106.103.52])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339aa37dbdsm23747143eec.11.2026.09.07.05.21.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Sep 2026 05:21:34 -0700 (PDT)
+From: Wei Deng <wei.deng@oss.qualcomm.com>
+To: Manivannan Sadhasivam <mani@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, quic_chezhou@quicinc.com,
+        cheng.jiang@oss.qualcomm.com, shuai.zhang@oss.qualcomm.com,
+        jinwang.li@oss.qualcomm.com, xiuzhuo.shang@oss.qualcomm.com,
+        mengshi.wu@oss.qualcomm.com
+Subject: [PATCH] power: sequencing: pwrseq-pcie-m2: Support PCIe switch topologies
+Date: Mon,  7 Sep 2026 17:51:29 +0530
+Message-Id: <20260907122129.1577279-1-wei.deng@oss.qualcomm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260907081334.1152889-6-ye.liu@linux.dev>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDEzNyBTYWx0ZWRfX8boXoFCRzSeJ
+ u+wf1hSRRMDJvtJCAYwC/GlQGfcSmRY8/MHSDr1+7YPgjy4SIZlu1kTl40c/aPC+XKCbBwChp8I
+ p5z6OP3oKFVkS8i1+binM5NRCP1DBmuYCA0RSkS5ro8zDAa0dEq9TwULwqp8ReMMJcCkX1ooZid
+ NJljg1EZ19fe/fp1MjahePRxZ/rfFk8g9ZJ0EUJUkheo1OCQSyI+CGAZu0xYbVZRFlCVrskufXm
+ AP5U7GlPswJ/QOs1TDF5UdLRB/XyqDmqUlXoSzJxCMJCdbT/ft/itKDxHrBv48RoAG46jN2rhK9
+ VMkZ4IA5gslL427VicbQ6T5aX6NU3FX+M0f3Na80z3sZJNUTubPq1ISOJY6YqhLdD2wP5hmNRMD
+ GjhJ9XERl7X2aTjrHRjNUBJhCMghf3wDo9jAyEj52vMuS8dVl53L6zP0E7I4PP2n9jFnzlH9gEg
+ 1aVhTvXbknl3qJk3Tkg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA3MDEzNyBTYWx0ZWRfX62VvQAne68PG
+ iEoOk4iupe7SAxvfI1HxTcwBLdLjpzrOD0YtJaI6696fAOZV3ZcNvxu+YYfaDpDxXk9aOWy/5Ma
+ RKDTXANOey9miTU9hiYnvZ7iflNcvs4=
+X-Proofpoint-ORIG-GUID: QQtUy45tu3CIRrGXZaUdMQp1DJGQXJCr
+X-Authority-Analysis: v=2.4 cv=U6aiy+ru c=1 sm=1 tr=0 ts=6a9eac50 cx=c_pps
+ a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=b9+bayejhc3NMeqCNyeLQQ==:17
+ a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=EUspDBNiAAAA:8
+ a=RVAIDergrmqZ-0WmEXkA:9 a=uKXjsCUrEbL0IQVhDsJ9:22
+X-Proofpoint-GUID: QQtUy45tu3CIRrGXZaUdMQp1DJGQXJCr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-07_03,2026-09-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 impostorscore=0 phishscore=0 clxscore=1015
+ lowpriorityscore=0 malwarescore=0 priorityscore=1501 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2609070137
 
-On Mon, Sep 07, 2026 at 04:13:31PM +0800, Ye Liu wrote:
-> From: Ye Liu <liuye@kylinos.cn>
->
-> Replace the manual rcu_read_lock()/rcu_read_unlock() and guard(rcu)
-> pairs combined with for_each_process(), for_each_thread() and
-> for_each_process_thread() loops across kernel/ with the
-> for_each_*_rculock() macros, which scope the RCU read lock to the
-> loop body via scoped_guard(rcu).
->
-> No functional change.
->
-> Signed-off-by: Ye Liu <liuye@kylinos.cn>
-> Acked-by: Michal Hocko <mhocko@suse.com>
+The PCI parent OF node check in pwrseq_pcie_m2_notify() and
+pwrseq_pcie_m2_create_serdev() only looks at the immediate parent of the
+PCI endpoint device. This fails when a PCIe switch inserts one or more
+intermediate bridges between the root port and the endpoint.
 
-LGTM so:
+For example, on lemans-evk with IFP Mezzanine board, the Toshiba TC9562
+PCIe switch creates two bridge devices (upstream and downstream ports)
+without OF nodes, so the WCN6855 BT device appears at depth 3 and its
+immediate parent has of_node=NULL.
 
-Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Add a helper pwrseq_pcie_m2_pci_parent_matches() that walks the PCI
+parent chain upward until it finds a device whose OF node matches the
+expected connector port node, or reaches a non-PCI device. Replace both
+single-level checks with this helper to handle arbitrary PCIe switch
+depths.
 
-> ---
-> Changes in v2:
->   - Rename *_rcu to *_rculock
->   - Rename stale 'unlock:' label to 'out:' in hung_task.c (Günther Noack)
->  kernel/cpu.c             |  4 +---
->  kernel/freezer.c         |  4 +---
->  kernel/hung_task.c       | 11 ++++-------
->  kernel/locking/lockdep.c |  4 +---
->  kernel/rcu/update.c      |  4 +---
->  kernel/sched/core.c      |  3 +--
->  kernel/sched/debug.c     |  4 +---
->  kernel/trace/fgraph.c    |  8 ++------
->  kernel/unwind/deferred.c |  3 +--
->  9 files changed, 13 insertions(+), 32 deletions(-)
->
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index b3c8553d7bd6..00638d2abc0f 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -1254,8 +1254,7 @@ void clear_tasks_mm_cpumask(int cpu)
->  	 * full-fledged tasklist_lock.
->  	 */
->  	WARN_ON(cpu_online(cpu));
-> -	rcu_read_lock();
-> -	for_each_process(p) {
-> +	for_each_process_rculock(p) {
->  		struct task_struct *t;
->
->  		/*
-> @@ -1268,7 +1267,6 @@ void clear_tasks_mm_cpumask(int cpu)
->  		arch_clear_mm_cpumask_cpu(cpu, t->mm);
->  		task_unlock(t);
->  	}
-> -	rcu_read_unlock();
->  }
->
->  /* Take this CPU down. */
-> diff --git a/kernel/freezer.c b/kernel/freezer.c
-> index a76bf957fb32..7a870f71dcf6 100644
-> --- a/kernel/freezer.c
-> +++ b/kernel/freezer.c
-> @@ -217,11 +217,9 @@ void thaw_process(struct task_struct *p)
->  {
->  	struct task_struct *t;
->
-> -	rcu_read_lock();
-> -	for_each_thread(p, t) {
-> +	for_each_thread_rculock(p, t) {
->  		__thaw_task(t);
->  	}
-> -	rcu_read_unlock();
->  }
->
->  /**
-> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> index 6fcc94ce4ca9..73a5ad3be9a8 100644
-> --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -315,13 +315,12 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
->  		return;
->
->  	this_round_count = 0;
-> -	rcu_read_lock();
-> -	for_each_process_thread(g, t) {
-> +	for_each_process_thread_rculock(g, t) {
->  		if (!max_count--)
-> -			goto unlock;
-> +			goto out;
->  		if (time_after(jiffies, last_break + HUNG_TASK_LOCK_BREAK)) {
->  			if (!rcu_lock_break(g, t))
-> -				goto unlock;
-> +				goto out;
->  			last_break = jiffies;
->  		}
->
-> @@ -337,9 +336,7 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
->  			hung_task_info(t, timeout, this_round_count);
->  		}
->  	}
-> - unlock:
-> -	rcu_read_unlock();
-> -
-> +out:
->  	if (!this_round_count)
->  		return;
->
-> diff --git a/kernel/locking/lockdep.c b/kernel/locking/lockdep.c
-> index c56a7f91d72e..ea218dc75ad5 100644
-> --- a/kernel/locking/lockdep.c
-> +++ b/kernel/locking/lockdep.c
-> @@ -6834,15 +6834,13 @@ void debug_show_all_locks(void)
->  	}
->  	pr_warn("\nShowing all locks held in the system:\n");
->
-> -	rcu_read_lock();
-> -	for_each_process_thread(g, p) {
-> +	for_each_process_thread_rculock(g, p) {
->  		if (!p->lockdep_depth)
->  			continue;
->  		lockdep_print_held_locks(p);
->  		touch_nmi_watchdog();
->  		touch_all_softlockup_watchdogs();
->  	}
-> -	rcu_read_unlock();
->
->  	pr_warn("\n");
->  	pr_warn("=============================================\n\n");
-> diff --git a/kernel/rcu/update.c b/kernel/rcu/update.c
-> index 2a778b8ab4ad..d8e0b5896db9 100644
-> --- a/kernel/rcu/update.c
-> +++ b/kernel/rcu/update.c
-> @@ -548,15 +548,13 @@ void synchronize_rcu_trivial_preempt(void)
->  	struct task_struct *t;
->
->  	smp_mb(); // Order prior accesses before grace-period start.
-> -	rcu_read_lock(); // Protect task list.
-> -	for_each_process_thread(g, t) {
-> +	for_each_process_thread_rculock(g, t) {
->  		if (t == current)
->  			continue;  // Don't deadlock on ourselves!
->  		// Order later rcu_read_lock() on other tasks after QS.
->  		while (smp_load_acquire(&t->rcu_trivial_preempt_nesting))
->  			continue;
->  	}
-> -	rcu_read_unlock();
->  }
->  EXPORT_SYMBOL_GPL(synchronize_rcu_trivial_preempt);
->  #endif // #if IS_ENABLED(CONFIG_TRIVIAL_PREEMPT_RCU)
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 0697ed0f1c3d..fd5bdd2cb798 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -2005,8 +2005,7 @@ static void uclamp_sync_util_min_rt_default(void)
->  	smp_mb__after_spinlock();
->  	read_unlock(&tasklist_lock);
->
-> -	guard(rcu)();
-> -	for_each_process_thread(g, p)
-> +	for_each_process_thread_rculock(g, p)
->  		uclamp_update_util_min_rt_default(p);
->  }
->
-> diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-> index 72236db67983..cdae165b98f7 100644
-> --- a/kernel/sched/debug.c
-> +++ b/kernel/sched/debug.c
-> @@ -1029,14 +1029,12 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
->  #endif
->  		   "\n");
->
-> -	rcu_read_lock();
-> -	for_each_process_thread(g, p) {
-> +	for_each_process_thread_rculock(g, p) {
->  		if (task_cpu(p) != rq_cpu)
->  			continue;
->
->  		print_task(m, rq, p);
->  	}
-> -	rcu_read_unlock();
->  }
->
->  void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
-> diff --git a/kernel/trace/fgraph.c b/kernel/trace/fgraph.c
-> index 40d373d65f9b..f797ce119223 100644
-> --- a/kernel/trace/fgraph.c
-> +++ b/kernel/trace/fgraph.c
-> @@ -1057,11 +1057,10 @@ static int alloc_retstack_tasklist(unsigned long **ret_stack_list)
->  		}
->  	}
->
-> -	rcu_read_lock();
-> -	for_each_process_thread(g, t) {
-> +	for_each_process_thread_rculock(g, t) {
->  		if (start == end) {
->  			ret = -EAGAIN;
-> -			goto unlock;
-> +			goto free;
->  		}
->
->  		if (t->ret_stack == NULL) {
-> @@ -1074,9 +1073,6 @@ static int alloc_retstack_tasklist(unsigned long **ret_stack_list)
->  			t->ret_stack = ret_stack_list[start++];
->  		}
->  	}
-> -
-> -unlock:
-> -	rcu_read_unlock();
->  free:
->  	for (i = start; i < end; i++)
->  		kmem_cache_free(fgraph_stack_cachep, ret_stack_list[i]);
-> diff --git a/kernel/unwind/deferred.c b/kernel/unwind/deferred.c
-> index 5bea47314254..ecfe1336095e 100644
-> --- a/kernel/unwind/deferred.c
-> +++ b/kernel/unwind/deferred.c
-> @@ -319,9 +319,8 @@ void unwind_deferred_cancel(struct unwind_work *work)
->
->  	synchronize_srcu(&unwind_srcu);
->
-> -	guard(rcu)();
->  	/* Clear this bit from all threads */
-> -	for_each_process_thread(g, t) {
-> +	for_each_process_thread_rculock(g, t) {
->  		atomic_long_andnot(BIT(bit),
->  				   &t->unwind_info.unwind_mask);
->  		if (t->unwind_info.cache)
-> --
-> 2.25.1
->
+Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
+---
+ drivers/power/sequencing/pwrseq-pcie-m2.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
---
-Cheers, Lorenzo
+diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
+index de9848a9a9f1..82ba309ba5f3 100644
+--- a/drivers/power/sequencing/pwrseq-pcie-m2.c
++++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+@@ -376,6 +376,21 @@ static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx,
+ 	mutex_unlock(&ctx->list_lock);
+ }
+ 
++static bool pwrseq_pcie_m2_pci_parent_matches(struct pci_dev *pdev,
++					       struct device_node *pci_parent)
++{
++	struct device *dev = pdev->dev.parent;
++
++	while (dev) {
++		if (dev->of_node == pci_parent)
++			return true;
++		if (!dev_is_pci(dev))
++			break;
++		dev = dev->parent;
++	}
++	return false;
++}
++
+ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action,
+ 			      void *data)
+ {
+@@ -390,7 +405,7 @@ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action
+ 	 */
+ 	struct device_node *pci_parent __free(device_node) =
+ 			of_graph_get_remote_node(dev_of_node(ctx->dev), 0, 0);
+-	if (!pci_parent || (pci_parent != pdev->dev.parent->of_node))
++	if (!pci_parent || !pwrseq_pcie_m2_pci_parent_matches(pdev, pci_parent))
+ 		return NOTIFY_DONE;
+ 
+ 	switch (action) {
+@@ -464,7 +479,7 @@ static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx)
+ 
+ 	/* Create serdev for existing PCI devices if required */
+ 	for_each_pci_dev(pdev) {
+-		if (!pdev->dev.parent || pci_parent != pdev->dev.parent->of_node)
++		if (!pwrseq_pcie_m2_pci_parent_matches(pdev, pci_parent))
+ 			continue;
+ 
+ 		if (!pci_match_id(pwrseq_m2_pci_ids, pdev))
+-- 
+2.34.1
+
