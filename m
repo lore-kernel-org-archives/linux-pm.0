@@ -1,63 +1,63 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-pg1-f180.google.com (mail-pg1-f180.google.com [209.85.215.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CC8E411A12
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 06:47:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A561A416875
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 06:47:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788763668; cv=none; b=BpqI+rjoYrhDbEH8m9wM+niiDInw0Edubwy2VMJAp8f2mfOEfBWt+O9RtcONcGbuZjn4qUQubAWnCAcj9E6L8B+lD4F45efFKl/3tOU5WcKkULD76eIo4ZO/KSbbM8GTOU7O5p0fYsGlhs9yzQCh/IOSvYk4z5+kOx/s/NHyUWM=
+	t=1788763675; cv=none; b=u854plzy/R4PFMQzI+j/QAU89grvLmf2CS/Om34ayTb+1uiWETGSU45ImveSIGtK6RrpRk/eT50yaChgoUQ0hf6+PIPtVXJnVShWBKY5jY80qFhMnlB47OW5+W/gf9+N2Hmb+m4qGaNr+mZdpN3F9+mxrnaf6UlbskTAnQFHI0U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788763668; c=relaxed/simple;
-	bh=x+n4CsDHf+Aujek4+a1pPXZx82JkPYNueFhs42Dc/2I=;
+	s=arc-20240116; t=1788763675; c=relaxed/simple;
+	bh=p91ao2AKO1u40gx02a/XDSpFyO2CsKWUxeRtlMlap68=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=X5FZrx68bEv4zW0XACpAzBpPhHz41dUEabRTnEhvvOkol+R/b+fmq5Of2bmjPVR0eSBXMF77EyUW8j3wNSdGbHaXyuDjziwKQLQA6hEk3ucBBTCXM1CZoGrYEJrvDKTHKnkMgs7KRz/N/3Ug23MQRlkMYB56kGDqobTTRfyfohY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oA4a7c+w; arc=none smtp.client-ip=209.85.216.51
+	 MIME-Version; b=UrfHvGziQ16bHqsPi5htpZz1plpx8Cv/egV4c/VBnGUYoOZ5e9LefsRCCUOtP4KI5DFySMcmiBpptiF231ZD8S5y2ePKkFjTcP6Z/P3BQJiFuMGDu4WysSQksZDWeM9ec/Ruumb4/quCQWLN/AxE1Ax7KTFMyfr3SdBogVmIWUc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kEjHzrbw; arc=none smtp.client-ip=209.85.215.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oA4a7c+w"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-3964e480f76so3835411a91.1
-        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 23:47:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kEjHzrbw"
+Received: by mail-pg1-f180.google.com with SMTP id 41be03b00d2f7-cc1a4c62804so2443059a12.3
+        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 23:47:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788763666; x=1789368466; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1788763672; x=1789368472; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=6JqmZnYM/OOyRwgWKJJuvp7/Dkkhk+cDvs6k7nFOO2I=;
-        b=oA4a7c+wtGt9Tf9+CBXzXN2NbS74KmXZwdllGkfnzo3ZN5Jobqj8hLF6ITGHbvWzMS
-         DKQDcLA/Q876KwNoXj49XSpe19fufYCIf+Eki9lrp+uYuPIAQ2CA2U2qocINC6QPr2Tq
-         ejz1VNebgzL+/dINYAb1m4eyIvgWU76cFcBz3DwoWAMM4LXZHZKEI0+Y/CcUysP00WdS
-         DvK0huntqFjqz7MOlhli/MzeE+U84z9yUKpadYbuOeV4zO+k4E9Joyd+r7dNTAwXhWYI
-         MSCq00DDjaeCgkzyhjv8AXOsMYGdc5e/SVdrxHoh0f9UAMuikkf2kcmpaHs0RoLx7IEZ
-         C92Q==
+        bh=SIBBvWrmpup+w6AcHGzaJw3qF8lt2RTeR72Ssm270eo=;
+        b=kEjHzrbwtRg1hg4bzJm7knqJe2KFnNf1OSbeA8WSAnrjQM2zPStzHl92eMayZ67S2f
+         Rh3Qb/Cwmct/oY3uD10q1HnmJ4CIXqOTZqyf4nuPfpS0AL4ozel78IbL0krJo4eFKhGR
+         QT5VibDE5/FrGVkkHOgobYfuNQ4R8+vk5F+HNgP8mvDBg880XowBvwtu7uzvGzP188qn
+         zNCTOT2hqZSE2Lftix4aIHtVV+WxDT9oI1uKe9T7x54funPrKbh+50+pMZD8SnvUo/i3
+         dbCR//vBRDmMpMSaPvaWvkCTWpkaJxCqhJDUqjOOE7c69mjWG1kIqATi6JwhadcZ9OUA
+         xMIg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788763666; x=1789368466;
+        d=1e100.net; s=20251104; t=1788763672; x=1789368472;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6JqmZnYM/OOyRwgWKJJuvp7/Dkkhk+cDvs6k7nFOO2I=;
-        b=FBjz9PncYAYsnbzQV8BicNbss93ZalHBTf+vcR6CMtX1BY3/gnkCRAQE8QtDGdWO2A
-         o8eLjyH4ZfxzHxqJ3zqLdE/A+UZnZEiG+EkEywo+KnY5f/SrQ7s8Gz75N//vsFa9SvBH
-         puvGqzS0XqPH0ugp9w4MK+lH0rzFJhMrfkGX2EQSVeVF2y2BdtTwjFYgTqeALdPbgNgO
-         OcbgzjqFrY415x1CXPMSPsDdnsM6p/5Z5I3JXcQ1Ci4p9CQ3yphRR7gFnhCQeebcxX7A
-         vbEjNyP7zy5C75mSR3RqBKiwN2a4QFtegWKTHmeMCT4n21NUiOMnGQVwqd0OWQiw//Zk
-         8dMQ==
-X-Gm-Message-State: AFuF++lmMaRkln5M/iI+rhZh6AP/Jcug5KJKgtv/VUviq6axRaSz31vK
-	sZiYFk5CMAPX3LG7LBzMeoGWvWzN1GCnxK10imQsESl51VD685FFd2Jz
-X-Gm-Gg: AYBFou38IaOZholYaHzJuteVWQTWDc8o9Zaxn2T2f1TrMF0Askkoxrxm+SWHDKbTzme
-	RlOrqx2hzDABjalNrg3VnTfRuKkqhb/yp50VlL/EQ/igPRTRfu9o3MXFxAD26KpSR5XTxWdSFhG
-	K+ObDjx0VGhu1fd13JzcfGg3OPbMJc8VNPnXSlwjqB5xkd2RMSIC2RlIty33LzfUTLITbHodn2r
-	0V1KKvNpWO1ieEvtMMnmd/M5tYNVmFrpROvlY2S6y/WZHVZ/vfAlY12mMMKA7hV4kWzAnNY/5pK
-	KnsdIxGDlxC7bf5tLDlNNHymgjYByMLaGUnBld4QnbkWCgBgqdWbruaFHxCu6qmXZp5eWuF7LLO
-	XWxovsMmrIFfKWPP9o/PHus/YpCVnuyAFWX8Z+xSD1yg7C1XLbIcmWJvt2j27tdTzVHp7DH+S3s
-	Ua8uTwQ/H3rq+0exQQGeRUvbPZPuhskIZQYYZogbtDU+vZa4AozPgCX/dcp2YmQwJU6DAB5132X
-	+JF57LjMkkiBVAthLNwMr2c
-X-Received: by 2002:a17:90b:268d:b0:398:bdb0:adb7 with SMTP id 98e67ed59e1d1-39b261e1beemr34790323a91.16.1788763665963;
-        Sun, 06 Sep 2026 23:47:45 -0700 (PDT)
+        bh=SIBBvWrmpup+w6AcHGzaJw3qF8lt2RTeR72Ssm270eo=;
+        b=i/BrJF0/b+QAj6WisXV8Wz6Xi7RziTUs16eiIg3D6Iaj9qs2TnuPwDtpzmx7ZX9pxf
+         Me42b4lBC8Jup0UzP7xbwhzTRlUbe/LAPF3btk520tvEVmLd4+fkhVG9DE8k5TuAShwg
+         V9prrIi6+ZqP25urWL4S8DoPoHxbFsL4/dWYaHyeKCyT4g70SvoSgFY7ey8vv8NZUiGW
+         W4mLikdJO89vosIZd+DXNug8rbcaXu6RyqyH4f/Ceazns9s3CMCdceJ70dyUllQrNRyh
+         4QrrRcnMr4KkSs6oszttI9fCjqYKYT1ASm33YILrJA7A3/I2AUWhEEIP5pC2PZyoMoSX
+         iiog==
+X-Gm-Message-State: AFuF++kwB4+9GMd10/u1Z+D58dgPfR4JfKPXwDe1TyWV6eI1UMMVhFb2
+	0H2pHou0cSSItqusF98waCxUzHtguEtAwlen+bsHl5UMg+/NVp3zkW2w
+X-Gm-Gg: AYBFou3vNL0SVMdmdwb8UaL2L722E6qEdbHNP4XbkWkilWLt7WvjWIXLOqVxIJZR1uT
+	2Hf8DM8N/D0phE9FYV0hYrXeA3ZO8GBvM9iIEfwUD9AmsoSxvihe7GcsBhcRWY1joy28T1oasTS
+	QkXrGXanCfj/wt2hoK777c6ArNxeBIdi6m44niDNBixTxCSqiphbuw2KfRSctwEqF0emJpKBDzj
+	JqYSd6YEvgWmU1HiDaJhI63WvWzZejOkg2/f9sZ1XkPdBkE065A6ib8NBbbwsq++XY5MQfk+FWh
+	dvgc9gQ2vVsA8vnvS30nHHBq5uBmQBxQLJpUIFYQiBQ0wB1EgV/XXwWxtX5z8Am3T9hYFKeitSU
+	3XE11HehMltFamzyAnwMXLroK/NKm0cDVZMqQE+Kx14vhNSlvKN0c5G5eM90Cd1Mgu4N3ctJYjJ
+	2FN/tPzZC+2oIP/V7TmAPESAbcCMk6J7RU9Vyps2jFT1NE7HIgoiOYbvuF0Sf71GMWB5Tm1xHGA
+	GYUgfwx7HZjVQ==
+X-Received: by 2002:a17:90a:d2c6:b0:395:4de4:92c7 with SMTP id 98e67ed59e1d1-39b260d2f07mr32517136a91.3.1788763672025;
+        Sun, 06 Sep 2026 23:47:52 -0700 (PDT)
 Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-333c9db92b1sm24811158eec.9.2026.09.06.23.47.40
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-333c9db92b1sm24811158eec.9.2026.09.06.23.47.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Sep 2026 23:47:45 -0700 (PDT)
+        Sun, 06 Sep 2026 23:47:51 -0700 (PDT)
 From: Hemanth Selam <hemanth.selam@gmail.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Len Brown <lenb@kernel.org>,
@@ -78,9 +78,9 @@ Cc: linux-pm@vger.kernel.org,
 	linux-omap@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-acpi@vger.kernel.org
-Subject: [PATCH 2/5] thermal: fix typos in comments
-Date: Mon,  7 Sep 2026 12:17:22 +0530
-Message-ID: <20260907064725.10686-3-hemanth.selam@gmail.com>
+Subject: [PATCH 3/5] tools/thermal: fix typo "binded" in comments
+Date: Mon,  7 Sep 2026 12:17:23 +0530
+Message-ID: <20260907064725.10686-4-hemanth.selam@gmail.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20260907064725.10686-1-hemanth.selam@gmail.com>
 References: <20260907064725.10686-1-hemanth.selam@gmail.com>
@@ -92,127 +92,57 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Fix typos in comments, reported by scripts/checkpatch.pl using the
+Correct "binded" to "bound", reported by scripts/checkpatch.pl using the
 misspelling list in scripts/spelling.txt.  Only touches comments, no code
 changes.
 
 Assisted-by: Cursor:claude-opus-5
 Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- drivers/thermal/thermal_core.c              |  2 +-
- drivers/thermal/thermal_of.c                |  4 ++--
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 12 ++++++------
- include/uapi/linux/thermal.h                |  8 ++++----
- 4 files changed, 13 insertions(+), 13 deletions(-)
+ tools/thermal/tmon/sysfs.c | 2 +-
+ tools/thermal/tmon/tmon.h  | 2 +-
+ tools/thermal/tmon/tui.c   | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 82e2f0d8a26d..5db52de33398 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1662,7 +1662,7 @@ EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
-  *
-  * Return: On success returns a reference to an unique thermal zone with
-  * matching name equals to @name, an ERR_PTR otherwise (-EINVAL for invalid
-- * paramenters, -ENODEV for not found and -EEXIST for multiple matches).
-+ * parameters, -ENODEV for not found and -EEXIST for multiple matches).
-  */
- struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name)
- {
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 0217a49b08ae..f6566b5b916c 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -349,10 +349,10 @@ static bool thermal_of_should_bind(struct thermal_zone_device *tz,
- }
+diff --git a/tools/thermal/tmon/sysfs.c b/tools/thermal/tmon/sysfs.c
+index cb1108bc9249..5d64aff12a86 100644
+--- a/tools/thermal/tmon/sysfs.c
++++ b/tools/thermal/tmon/sysfs.c
+@@ -225,7 +225,7 @@ static int find_tzone_cdev(struct dirent *nl, char *tz_name,
+ 				cdev_name, cdev_name_linked, cdev_id);
+ 			tzi->cdev_binding |= (1 << cdev_id);
  
- /**
-- * thermal_of_zone_unregister - Cleanup the specific allocated ressources
-+ * thermal_of_zone_unregister - Cleanup the specific allocated resources
-  *
-  * This function disables the thermal zone and frees the different
-- * ressources allocated specific to the thermal OF.
-+ * resources allocated specific to the thermal OF.
-  *
-  * @tz: a pointer to the thermal zone structure
-  */
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index ba43399d0b38..5c028d25a565 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -332,7 +332,7 @@ static inline int ti_bandgap_validate(struct ti_bandgap *bgp, int id)
-  * ti_bandgap_read_counter() - read the sensor counter
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
-- * @interval: resulting update interval in miliseconds
-+ * @interval: resulting update interval in milliseconds
-  */
- static void ti_bandgap_read_counter(struct ti_bandgap *bgp, int id,
- 				    int *interval)
-@@ -352,7 +352,7 @@ static void ti_bandgap_read_counter(struct ti_bandgap *bgp, int id,
-  * ti_bandgap_read_counter_delay() - read the sensor counter delay
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
-- * @interval: resulting update interval in miliseconds
-+ * @interval: resulting update interval in milliseconds
-  */
- static void ti_bandgap_read_counter_delay(struct ti_bandgap *bgp, int id,
- 					  int *interval)
-@@ -394,7 +394,7 @@ static void ti_bandgap_read_counter_delay(struct ti_bandgap *bgp, int id,
-  * ti_bandgap_read_update_interval() - read the sensor update interval
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
-- * @interval: resulting update interval in miliseconds
-+ * @interval: resulting update interval in milliseconds
-  *
-  * Return: 0 on success or the proper error code
-  */
-@@ -427,7 +427,7 @@ int ti_bandgap_read_update_interval(struct ti_bandgap *bgp, int id,
-  * ti_bandgap_write_counter_delay() - set the counter_delay
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
-- * @interval: desired update interval in miliseconds
-+ * @interval: desired update interval in milliseconds
-  *
-  * Return: 0 on success or the proper error code
-  */
-@@ -471,7 +471,7 @@ static int ti_bandgap_write_counter_delay(struct ti_bandgap *bgp, int id,
-  * ti_bandgap_write_counter() - set the bandgap sensor counter
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
-- * @interval: desired update interval in miliseconds
-+ * @interval: desired update interval in milliseconds
-  */
- static void ti_bandgap_write_counter(struct ti_bandgap *bgp, int id,
- 				     u32 interval)
-@@ -486,7 +486,7 @@ static void ti_bandgap_write_counter(struct ti_bandgap *bgp, int id,
-  * ti_bandgap_write_update_interval() - set the update interval
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
-- * @interval: desired update interval in miliseconds
-+ * @interval: desired update interval in milliseconds
-  *
-  * Return: 0 on success or the proper error code
-  */
-diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
-index 46a2633d33aa..36f3da2d6a7c 100644
---- a/include/uapi/linux/thermal.h
-+++ b/include/uapi/linux/thermal.h
-@@ -81,11 +81,11 @@ enum thermal_genl_event {
- 	THERMAL_GENL_EVENT_CDEV_STATE_UPDATE,	/* Cdev state updated */
- 	THERMAL_GENL_EVENT_TZ_GOV_CHANGE,	/* Governor policy changed  */
- 	THERMAL_GENL_EVENT_CPU_CAPABILITY_CHANGE,	/* CPU capability changed */
--	THERMAL_GENL_EVENT_THRESHOLD_ADD,	/* A thresold has been added */
--	THERMAL_GENL_EVENT_THRESHOLD_DELETE,	/* A thresold has been deleted */
-+	THERMAL_GENL_EVENT_THRESHOLD_ADD,	/* A threshold has been added */
-+	THERMAL_GENL_EVENT_THRESHOLD_DELETE,	/* A threshold has been deleted */
- 	THERMAL_GENL_EVENT_THRESHOLD_FLUSH,	/* All thresolds have been deleted */
--	THERMAL_GENL_EVENT_THRESHOLD_UP,	/* A thresold has been crossed the way up */
--	THERMAL_GENL_EVENT_THRESHOLD_DOWN,	/* A thresold has been crossed the way down */
-+	THERMAL_GENL_EVENT_THRESHOLD_UP,	/* A threshold has been crossed the way up */
-+	THERMAL_GENL_EVENT_THRESHOLD_DOWN,	/* A threshold has been crossed the way down */
- 	__THERMAL_GENL_EVENT_MAX,
- };
- #define THERMAL_GENL_EVENT_MAX (__THERMAL_GENL_EVENT_MAX - 1)
+-			/* find the trip point in which the cdev is binded to
++			/* find the trip point in which the cdev is bound to
+ 			 * in this tzone
+ 			 */
+ 			snprintf(cdev_trip_name, sizeof(cdev_trip_name) - 1,
+diff --git a/tools/thermal/tmon/tmon.h b/tools/thermal/tmon/tmon.h
+index 44d16d778f04..f347efb47c96 100644
+--- a/tools/thermal/tmon/tmon.h
++++ b/tools/thermal/tmon/tmon.h
+@@ -77,7 +77,7 @@ struct tz_info {
+ 	char type[256]; /* e.g. acpitz */
+ 	int instance;
+ 	int passive; /* active zone has passive node to force passive mode */
+-	int nr_cdev; /* number of cooling device binded */
++	int nr_cdev; /* number of cooling device bound */
+ 	int nr_trip_pts;
+ 	struct trip_point tp[MAX_NR_TRIP];
+ 	unsigned long cdev_binding; /* bitmap for attached cdevs */
+diff --git a/tools/thermal/tmon/tui.c b/tools/thermal/tmon/tui.c
+index 7f5dd2b87f15..b982c1d77402 100644
+--- a/tools/thermal/tmon/tui.c
++++ b/tools/thermal/tmon/tui.c
+@@ -238,7 +238,7 @@ void show_cooling_device(void)
+ 				unsigned long trip_binding =
+ 					ptdata.tzi[i].trip_binding[cdev_inst];
+ 				int k = 0; /* per zone trip point id that
+-					    * binded to this cdev, one to
++					    * bound to this cdev, one to
+ 					    * many possible based on the
+ 					    * binding bitmask.
+ 					    */
 -- 
 2.48.1
 
