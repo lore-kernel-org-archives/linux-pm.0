@@ -1,142 +1,151 @@
-Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03E2F31DDBF
-	for <linux-pm@vger.kernel.org>; Sun,  6 Sep 2026 17:22:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.177
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788715358; cv=pass; b=PDRc+Pifiw8jtCqZn0MWEIHO7xnZWv15vfOAXhPtq2+6OhPADTiB53/Z9csE9M80l88fWllSN8pnwrl8OyB7r0FX6Q/1bb0ieLLHzJaEPF4c7anp1xhcBnWeIeip5siNM2YTG04MPhQYtdnz4rhCwSpqcfpHer7Vei9+LLmIS8k=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788715358; c=relaxed/simple;
-	bh=xlfHTmswkSpLXO/4f4jYBhuVejOLiGyJyM/ej83cLuk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BElwTHOwxssmgY8w6tixMZzIC7RG4sj+pSILJn8Hb9WTadPdz9ZShPpjE7ctSSpAM0d0yeSOeVIJoNar4NsQ2zIl7jxzRQFh/vjXe3Q+UXJ6PAO7Pd3fwCAb1hdeqdMmoE8Om8loZ0BZ/Z9nNvRGc19gVOmla33LcbWndF0tc0s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DTvN/LN1; arc=pass smtp.client-ip=209.85.215.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C8EE38886B
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 02:05:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788746713; cv=none; b=pAHNUW3zeA/FhFJM/axFdSCrDUxsclqgMFfdCAagKII5V+FDrrewn0YpHON1kSATcKSZJ0d2qeg9Zz4ONRjnFyJigCGU4Woigq4y2/Az8ACyywMD5aaHaDJrENnaE+s8iJx5ozeV253MPt8qtStHit0O/Hy88dr7HLSbc55ozZ0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788746713; c=relaxed/simple;
+	bh=/3drJTkAoSyT9HMCopKOWwzCA4DDLk9nvpn/kWsBuo4=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jRHRkgg672ImcxLQuJTUcL6Wiw284JIp3EayhmQqVzA+3j9GAhcpNd/p9z+2Psr1AsRCIG7hWymWJ9wQmtWu35udp2qNO6BkjhbZATXEtbKe9N9rK6EI3zY20uPS85ZtSuXl6t1wC1bi4imblISwkKAZqVNFjAAZMHTiVFYLjxQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pIOY0oST; arc=none smtp.client-ip=209.85.128.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DTvN/LN1"
-Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-c9e7391839cso2906650a12.0
-        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 10:22:35 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788715355; cv=none;
-        d=google.com; s=arc-20260327;
-        b=TLDyBqyOpRH4w3sZsteAhuDzrFEcLP+igBING+s1SeqQsxzJDM98032Qs1ic8bNeV6
-         bFDetK2hGIwpBRgo2RvEmqKRiHI31gcTjAgqAEO2efM0Z9Bk1lROkj18ipHiCpoWgV44
-         27+BK1M3Kf9rTQok2ZVuyM2tyJc5vw8iBEwl5OshoX1/sJauplM2T9ApE/Dha810q8Nu
-         RsP2AiWNMY2Wz6zttH7tGlAlPJzLzFDgK+AgIW+ae+oS3urVp5e8vRgNQtMxuLGbM6H2
-         9QTTHkGY8Ao1VpVccHn+Nb8oGAgN2tYVOxx/9A5IizDupz1GLne+0WvThjrWroNIH8rJ
-         K98w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=F+vIa+Qy5L/8ukG4yH01NZv4BrUlQHr2FP5xxn3kwXw=;
-        fh=OhIHx7IRao+34N2sot/scr6n0hPjictnKuNySPwY4Mk=;
-        b=BbncQ3x9IyIEDRdiIJvKAUVWmf59a3jhKJbpNsG2U3ViJsbqTvAo4vG2cCV46w7PW0
-         ueF3pTScjfdA/P0qAWY9JUVAkcty5mSc1BNybQC/rjooRBkSpX/Xx/GWqm333OPXRYFL
-         Bii8BG108cKxpUrN51N7foGdEAsk3N/shVNWcbpWP0DGXt/xbA6jHJ/xxTBgYIll5HVo
-         921evRVsEcj8zlnHE+j6Z2txwytbMPc+JgWnbgqcQUAtvcDxFC6STSTFXvS+WgbC2dOQ
-         oal6gTFO6Ed8F7xWcCgbJr7B2mFlHNTcBDZJcucqyh7BTUWDL2SMy952TYHkySIo5iST
-         05VA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pIOY0oST"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-49954b88fffso21845455e9.0
+        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 19:05:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788715355; x=1789320155; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=F+vIa+Qy5L/8ukG4yH01NZv4BrUlQHr2FP5xxn3kwXw=;
-        b=DTvN/LN1EdaERFqCd/Pf18xk3C2W9zOejXGnr4Zon7F3zor5rZQ344+GQ1BawH8Yia
-         oxrLD6jEEaJ3VX4H9A0LkI7AjDZUBT/QzS5oBGB1SLqzR9dFcpoQQwfqMFrTwPEZaB1P
-         0m3rvOHTFdLh9lLU4yfbJxyweFX42h5JIcRnl9ozmPY9sAFcxuGYjAFBsARs2CATPDls
-         EhZJEkWhdvjriIJ3fwyBDu21MkwGTZDYmGjDktjCV4tKkevbckt6Pii2RruUjekLWGsV
-         lYM1DxyvWC7EKZK+Cm7hvHm3hx8cVCRAWMfHElaWUrYSGogaVhj9sxCmEemyKJdrhxYS
-         hjwQ==
+        d=gmail.com; s=20251104; t=1788746708; x=1789351508; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=vLyGYK1rjMxKKIttwl0OglpXzNnjGoM3s6w9NqjDkM0=;
+        b=pIOY0oSTJAOCwRFpMUWIE2fTuzioDnfELySWj5olnNd/lOSEaJiUZHWWviW8RNJIi1
+         b2EA79AquwQT0J6s2v+5JFyUNGFi2k1nLa7260rb6yCnFyoJsDyMEpvyD8ScF6SXuJ7U
+         V+7xYBzDB9ANqaJ14RiTLT3AWiS94vQpDP0vXAgqf7uk0AXzGj97xbijr9lMY3sP72hm
+         EiOfOP976ofU0uG8WV3UovPUlWpoc9mf/3mpJMEZffjDOmcYV+WzQcwqn8uunRlgqTbB
+         e8xveXw3DUQNtMuHf86RVe5m+bLW7okpi2wG3DsL8wLXFzhUVm9YGDCY726b/tdYU6BC
+         IXAA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788715355; x=1789320155;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=F+vIa+Qy5L/8ukG4yH01NZv4BrUlQHr2FP5xxn3kwXw=;
-        b=F69KHwhxHCa98seHbk1iyEWTkjjy2JSV4zXYa/SHSF1h+tuhQfhqNp+3Gxcm5TRewV
-         ezGHVI26qqWR+mmhpVRtF2byVAYJiY3W72NqtCIhsHCu+0PdnkJ11eIGPtjcr/mHK46n
-         mY/nyBjL45czh48N/1jbUEl2LYwgw9yNJ7hvBusu8ocAwPNUlYPLehVMetm40QTnmnv6
-         ekjnB4gAVJmpgWF7UP2p9Q2+kN8IMf8xmTFwas04QvgAGhj++GPzIRWUVi6KuFZbscsA
-         FLgyn07GTgCDSPtf96xcsO6YD0M8ScIT0z6mMjaJw/car9FbE1xCyBChG8lnU0GK/H4R
-         voQA==
-X-Forwarded-Encrypted: i=1; AKwUvBzKSnllbYqtUVUPS5N4WBnr7R3oWKG6UHXdVMCRSvJh75pyA5iJk9h6TR352OL7O0XjbvWnxCkD2g==@vger.kernel.org
-X-Gm-Message-State: AFuF++kIBIAADIj3D9U/IqvqFyguur43EM55O2kqsvN2VJgGPKQwX5B9
-	e/nwOajasEjL0V2DIgVJdrKJmIqZujYdacJi2BgdCJ2/pDXU6kxvqGTEIV8V/vEsmCzmKbtQhYG
-	S5wd5ggCXknmBaAKlLyLjEEK8Q1SxBv4=
-X-Gm-Gg: AYBFou0OLuXoCZHGc8lHgcwDufR3jn78ZCwttx4c2kEX7Ql1uCeKsgYwSzBFaj3pVJD
-	nOTRvKAXi5FxLqUMRc4bBSAPihoQv+jwgCE03VULGKOuf7UmyCGYsrDfbNlDcFDbdShcU61stJM
-	LwkBp9fB28xqGx5rzjgzdTcCKOPJl1fW3+mzzU7KFzNr3gdJC8TxPKKIcGbXskfHqzv7P177GMb
-	QaRmOjG0PvBIhHGRMIZ12KQZeJejNX0ZHsEbtzfUexCUh40orrn2qj7U7lr9wTfePis1/cWIMIc
-	Ufc/pnYW29/1qC2NXDn7JK5tJkjCZ0IzNNt6CXWt4CvkAg+rOlKPyqhUcQIoeIPedUKhDX7zs3d
-	5LQ==
-X-Received: by 2002:a05:6a20:e607:b0:3d3:ae50:97c6 with SMTP id
- adf61e73a8af0-3da3a154de6mr29258954637.19.1788715355297; Sun, 06 Sep 2026
- 10:22:35 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1788746708; x=1789351508;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=vLyGYK1rjMxKKIttwl0OglpXzNnjGoM3s6w9NqjDkM0=;
+        b=HpmOsL+VKrp8EjQZGTRVmvYjyZxmunexxWA9RSoIrFKjgfPHcEmyMWX4LGPL4ePO+g
+         MFTtZ1XKgsJTwn9IfRaoJQZ7i0Znwqkaz6SgITcDt4nsZVjrCnubXvW8FxsgEtRRSjaP
+         r4qAiW23wfHqIT10iXoDxCgojWapBCARn8byqnrUQVlw8BAMBsovGLK88EV3dPHyVKhx
+         D8cvjD+K0NmPPKcy0Mc225oM9WwGfSnQ3ecux9y16JeK3zsVqfnjfoQupzdATeKDust3
+         7p2RItBBXNbYgsYewVeQIutj84nJy0OvMHtj+Ri8z9+PUFIfGTJRQfYcXro/vPzwX09J
+         DZjA==
+X-Forwarded-Encrypted: i=1; AKwUvByMuKki8F5ZRb38UGCYAVQjnObRm4P8s6g9/geUhvDpX+VeomOw3AhL196dR6bmmmGZy1mbr3ScBg==@vger.kernel.org
+X-Gm-Message-State: AFuF++k4ScGhoYokvHa4axOzIiUiziEr8tGBQgzLKqnjcKgwTmVbzd3k
+	Vvb6ULSZOcHEIHqwvRMa+ui01b/3J/iv/ZsYJWfxO0QWFTvVp8Ibtmhi
+X-Gm-Gg: AYBFou0Wql4LV+57XKN4Zmxhuoki+tmqXUa+crmVwFpbZdukz8N/iEheAJ0911Tkrjq
+	KfaAoXIp98aeO3xJpcEP3EKP3D/HNWN6U4h8TqtwLJec5V8182+BWQUOjDoXGXS6fdS6FoeNfDJ
+	5PtBO0wiYcuN4BjbE4qqjtE+oyBEA8KuiEuptqXmqB5geMkZKMGHr7L12Wk8qlWYGeUqTOzYJvZ
+	iZZku+KuOOxB5pYd7Jc7UiyzxsthWB8uvJocEZuzwULiZWwvQwMdMzI3p1W+J8P4FleVhbANhH2
+	nYIL/GRyPeDrYr+Uaa5F+G2LqVRvSKwY2cP1COHZAz9fnwotqjW6hLOkqngBXPLXGPUHl8+08mq
+	PN/54ut9UjRsNxJYft6EFcaNnrw2WEpA+FBFH5kss1Ta4R2zkTSqtK6khLSF6wbtjcJ9IqQgVOm
+	VB30mnclDqQX24acdI4mJJoQv+KNxyvnKX30z7kdFIQUFeIMPxr/NjJ/bkKrEjCRrWBtroDNXUs
+	zOylKAwpEEsR1N0UWyXLit2xlYU3gTawBxEqOS3lA5ASrz/Kp5lmD4ysdghWdMmYhg28TPIHN+O
+	QZ7g44sTUWFpgVt/ZfpM+Nljhshx+a4BMc4Gk7ATr5DANqpJD2UaukDheB+d9O/DH1pkr6TWxIP
+	ul3JiwjzTQTk=
+X-Received: by 2002:a05:600d:4449:20b0:49d:3a:e576 with SMTP id 5b1f17b1804b1-49d003ae639mr93352765e9.5.1788746707963;
+        Sun, 06 Sep 2026 19:05:07 -0700 (PDT)
+Received: from MacBook-Pro-von-Karl.localdomain (dynamic-2a02-3100-b0c9-3601-9daa-d59e-970b-f46c.310.pool.telefonica.de. [2a02:3100:b0c9:3601:9daa:d59e:970b:f46c])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49d07a23e85sm152337165e9.5.2026.09.06.19.05.07
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sun, 06 Sep 2026 19:05:07 -0700 (PDT)
+From: Karl Mehltretter <kmehltretter@gmail.com>
+To: Georgi Djakov <djakov@kernel.org>
+Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] interconnect: Add kernel-doc for devm_of_icc_get(), icc_enable() and icc_disable()
+Date: Mon,  7 Sep 2026 04:05:04 +0200
+Message-Id: <20260907020504.24783-1-kmehltretter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260721095233.420823-1-clamor95@gmail.com> <20260721095233.420823-5-clamor95@gmail.com>
- <CAPVz0n2rhZk0fjM06u=C5H4LgVOsN6ACriO1o+byx0dyqTwGzQ@mail.gmail.com>
-In-Reply-To: <CAPVz0n2rhZk0fjM06u=C5H4LgVOsN6ACriO1o+byx0dyqTwGzQ@mail.gmail.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Sun, 6 Sep 2026 20:22:23 +0300
-X-Gm-Features: AcwNN1XDTtBNxGlzLOpLQ3w1y2Et6HgHVsvlBacLuEsWHZNblAyHEWGt7R_cBqA
-Message-ID: <CAPVz0n2mzwp-ffUu7tw5ojXgM=+G-PT3V9pHN--dT=dnYw5hHw@mail.gmail.com>
-Subject: Re: [PATCH v10 4/7] input: keyboard: Add driver for ASUS Transformer
- dock multimedia keys
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
-	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-=D1=81=D1=80, 19 =D1=81=D0=B5=D1=80=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 12:2=
-0 Svyatoslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> =D0=B2=D1=82, 21 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 12:53 Sv=
-yatoslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
-> >
-> > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> >
-> > Add support for multimedia top button row of ASUS Transformer's Mobile
-> > Dock keyboard. Driver is made that function keys (F1-F12) are used by
-> > default which suits average Linux use better and with pressing
-> > ScreenLock + AltGr function keys layout is switched to multimedia keys.
-> > Only Dock keyboard input events are tracked for AltGr pressing.
-> >
-> > Co-developed-by: Ion Agorria <ion@agorria.com>
-> > Signed-off-by: Ion Agorria <ion@agorria.com>
-> > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > ---
-> >  drivers/input/keyboard/Kconfig                |  10 +
-> >  drivers/input/keyboard/Makefile               |   1 +
-> >  .../input/keyboard/asus-transformer-ec-keys.c | 310 ++++++++++++++++++
-> >  3 files changed, 321 insertions(+)
-> >  create mode 100644 drivers/input/keyboard/asus-transformer-ec-keys.c
-> >
->
-> Hello Dmitry!
->
-> May you please take a look? ATM only ACK on input patches left.
->
-> Thank you!
+Documentation/driver-api/interconnect.rst lists devm_of_icc_get(),
+icc_enable() and icc_disable() in its kernel-doc directive for
+drivers/interconnect/core.c, but none of the three functions has a
+kernel-doc comment. The directive silently produces nothing for them, so
+the consumer API section of the rendered documentation never shows
+them.
 
-Hello Dmitry!
+Add kernel-doc comments in the style of the neighbouring functions.
 
-May you please take a look? ATM only ACK on input patches left. I
-would like this patch set to move forward.
+Assisted-by: LLM
+Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+---
+ drivers/interconnect/core.c | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
-Thank you!
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 4aa991a54101..6f854375201d 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -423,6 +423,17 @@ static void devm_icc_release(struct device *dev, void *res)
+ 	icc_put(*(struct icc_path **)res);
+ }
+ 
++/**
++ * devm_of_icc_get() - get a path handle from a DT node based on name
++ * @dev: device pointer for the consumer device
++ * @name: interconnect path name
++ *
++ * This function is the resource managed version of of_icc_get(). The path
++ * is released with icc_put() automatically when @dev is unbound.
++ *
++ * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
++ * when the API is disabled or the "interconnects" DT property is missing.
++ */
+ struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
+ {
+ 	struct icc_path **ptr, *path;
+@@ -786,12 +797,32 @@ static int __icc_enable(struct icc_path *path, bool enable)
+ 			  path->reqs[0].peak_bw);
+ }
+ 
++/**
++ * icc_enable() - enable a path
++ * @path: reference to the path returned by icc_get()
++ *
++ * Mark all requests on the path as enabled and reapply the bandwidth that
++ * was last set with icc_set_bw(). A NULL @path is ignored.
++ *
++ * Return: 0 on success, or an appropriate error code otherwise.
++ */
+ int icc_enable(struct icc_path *path)
+ {
+ 	return __icc_enable(path, true);
+ }
+ EXPORT_SYMBOL_GPL(icc_enable);
+ 
++/**
++ * icc_disable() - disable a path
++ * @path: reference to the path returned by icc_get()
++ *
++ * Mark all requests on the path as disabled, so that they no longer count
++ * towards the aggregated bandwidth, and reapply the constraints. The
++ * requested bandwidth is kept and restored by icc_enable(). A NULL @path is
++ * ignored.
++ *
++ * Return: 0 on success, or an appropriate error code otherwise.
++ */
+ int icc_disable(struct icc_path *path)
+ {
+ 	return __icc_enable(path, false);
+-- 
+2.53.0
+
