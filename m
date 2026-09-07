@@ -1,175 +1,146 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD98D38228A;
-	Mon,  7 Sep 2026 16:50:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788799818; cv=none; b=I8zBmP6B/401/BS1ZvS6cQwd+RBj7KdvPMt0rmaS7NQo/0BZbad0u68XoqO7IpYEcyEqF7NaKj+f3j3VUgRB9tTxNiRJed1ZSa6Arbch0nJ32pNGTZ1Wg/78SQTaDgeYkghx/2Wgd+jE8aEK23cmXgw/61NByCRtdqVXuTcOqlA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788799818; c=relaxed/simple;
-	bh=pus3OIMvtAdqCN5lzcybKiNDZT2pHkfTRO5wGwjEElE=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KiOfQcFOREPILec14BmPpTeajzd0Q07kX44SBf6fPSh1gJgf090oySRHaJ6OK2QS0DaTMV4jRxb+tdTt05/w8Ia6Lq7ECtJCNkJEuhe8I7LaYMNi2Vt2LeCyNPhvbpTQPLbYCPNSpiWO399la08hhlxLwDhVI2nL0SXpuwBpmPk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XLRazJML; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF51148B38F
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 17:24:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788801900; cv=pass; b=BwSCu2zSj1/yk9QZp1L/9KS8axL71kRKYXRReV5P8s8xGafOn7jhjmbDBnvSm9J9i2omYyFdNWSAF2sHTeFTDZ7imJHT4foElVsBgDKOPLf4gSM086mquOcd7Y1a60EKthVmkp4vP1MpdyQL2U7lJOG2Z94NE6Ir1TsSkpsYnzM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788801900; c=relaxed/simple;
+	bh=oSNTQCPnILUw/68+gMk9HV9c3gowZFlOqukTFVtyVLQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DBAH5V+FJGsRfv6+ZLrKB5iCN/mnEigirS3OBgdUXypujoXueydrB7o/KCjoES+8rIggnh46NjHHwSU8teM+DhQ+ehxt22XLNVGjDevpkQGw+0+MM5cPt7FD0rJ3OvFRNf7oKyYmEAiXFWmuuISpuEwf7z2JcWuUBdOsVPL4WgM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=A1QG/Nev; arc=pass smtp.client-ip=209.85.218.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XLRazJML"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EBC31F00A3D;
-	Mon,  7 Sep 2026 16:50:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788799817;
-	bh=QTFb/7AYKIYAJJpoTYlFHRzy0v+TkzM5XPwWHm7OcRE=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=XLRazJML7yVxacnO8lm1nOLPHjZv0NzBkvPqtmJ1Y/Q+4X/8vj37vxTjKeAanUhz6
-	 EPbeM2qkidzho26HsF/jPGwkzGKkN7ieKunIc8UZthcMgsKVfz3mSdiNDLjq0Bglb5
-	 su1cZzxyXM9iepayC8dD6d4U0bwjPtIpJDgxi6EzMvTx/2UNzMhCUXjBXMQVZX0YMo
-	 RU+49T+a4+2AowZJDQrk0Hjj8mKeIZ+fOX81erLawEMwIAkFG6JtnQHh5VwPDamb+U
-	 iaYz94lrWtDIx6/0/ItrbZfLo5jT7Gbgzg+t5p/vtovWCQp0Oyu1u10rNtnfpd7YLJ
-	 uPILftTgUhQhA==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <maz@kernel.org>)
-	id 1x3cXv-00000005sFE-1cop;
-	Mon, 07 Sep 2026 16:50:15 +0000
-Date: Mon, 07 Sep 2026 17:50:14 +0100
-Message-ID: <86a4pt3t15.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
-	Mostafa Saleh <smostafa@google.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Rajendra Nayak
- <quic_rjendra@quicinc.com>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-Subject: Re: [PATCH v2 2/3] interconnect: qcom: x1e80100: enable QoS configuration
-In-Reply-To: <0916741e-442e-431a-9831-9457e3af1cf0@oss.qualcomm.com>
-References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
-	<20260527-x1e80100_qos-v2-2-305c6539e6d2@oss.qualcomm.com>
-	<apgeBNSiP01YfNcs@google.com>
-	<86ld9d4h4n.wl-maz@kernel.org>
-	<f58bd978-ca45-48b9-a928-45a2878fb54a@oss.qualcomm.com>
-	<86jyox4fas.wl-maz@kernel.org>
-	<ca962589-3b6c-4e5d-a11e-b49cf20dc262@oss.qualcomm.com>
-	<86bja94234.wl-maz@kernel.org>
-	<0916741e-442e-431a-9831-9457e3af1cf0@oss.qualcomm.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="A1QG/Nev"
+Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-c250c6a6a6eso490956866b.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 10:24:58 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788801897; cv=none;
+        d=google.com; s=arc-20260327;
+        b=DqgHeATIcopA32l0vKGvkRUWnRTucv7TX7r81j7TwaS3Dj1qaI/bksjDOqZyVNKH4x
+         2pBzk0cmKfdg7Rk3KgXggHBjl0suo09okhZhwqCqKlCPTKvJkq24otXS/4SlPMs3Rebv
+         NN51dqqG+A6VHPT8VBoUAmc1TTNghWVZUf1iy9uxgEFh+wZ1SxDei1TioRL9TWQk94SO
+         KcwTRZdmYkra6X4k78Px5/kz4enCgGxUkgPVk7/sxZd0OKauCb2IzmpUnRKVNAWpQH1V
+         yYO380GSvBrR9gQzKPuoD2+MilJ8yddXvRxpjCSEDrA9md9GaYrp50fQlOs0Gw4U7+Ez
+         l29A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=3tIvk9tN/HCp65ng31snFe+b+/Er/ZIovEHg1XgPvOI=;
+        fh=BO7eUINeRuy9oGJzl/nBQzcMWNi/0STTY2M66plqFHI=;
+        b=TglzUljcZuvzDu8Ds3a4XuYygsBU/qpd6/CV9BgDKqdE+hOjvEnpDVkzDe01OuU1if
+         8QYD3FlqXBny8fELehw7hBVH59ccKl/++qAwbC9dVeyJUUcvo/5M90GdfMfy1vEpNT9l
+         k1bYCaJ2fPdwBwqZpB7jJMmMh+vxuJa6tcWrTeKYPGdKxnvPvbn2ncFMmB5IZrIG7RWu
+         gaqqiYLY1e2Rrbi4fQj0Gu3gGWFN1K7hy0gc+natxzXxCGXqFNEu3377mFVyjcqqs1dn
+         Pp9wGcKCgAlYd+cXIutWkzm7EpWXah9mMqwpyVMMdk1+gl8P1HyrzHtQe/vBEvgrejmT
+         +Sjg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1788801897; x=1789406697; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=3tIvk9tN/HCp65ng31snFe+b+/Er/ZIovEHg1XgPvOI=;
+        b=A1QG/NevHCnH6e8hv793ehDowSCePrIRi3pjhZy2atwXMBTcADEZ3uSHItpYb+9orn
+         xKuhuM62b6QlFRVNBYG6cMzxgF3Ye71Jqg7LuuRBVrBSeo4KCUnHTVUnPeAFY7On2EZ3
+         NtsdRatMjjtTAfDBxrS2J8qQaCFIXFNflIYfKYmx1MmJpy3u8EuRHE9lamcO7NlqDxFp
+         7J2lXJ4H8hJVSmyUYc0BH6hNp7dsq1HypmhqWB++UHF3dfDngR+qUm/XOivo54dXzUPq
+         64Rmp6fAt0ATMidt6eGn04xef5x/CTwlooJVW4vFfqVwBoJiqxgXHFHjNOX/C71yXNbF
+         ZKnw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788801897; x=1789406697;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=3tIvk9tN/HCp65ng31snFe+b+/Er/ZIovEHg1XgPvOI=;
+        b=PynYzZ6a3oFopyzJR/1BeyM1LphdgNLVs09jIeroejJ9iSXTEqqWgZDWV5nBUF91+S
+         WPV0CN1zCooG+6YnjLp4klVWU5HMV92EQWmSczyZaFfqW/Hr6V/AXwGHFRC5HulOX0bt
+         HJfAFe/rRbWr9aaIYVNPAX7y5uu9dTzRiCqEDrf9FksnA+F+I+QZ9um1mAQM6gEXF00X
+         Df3mBmluyelMJcn9UsMEc6S/g1HjyL+XQe2Uo7O/7cTulUwJmxXuacZGfMEmBOMnYxRk
+         0/EHB4C7FF+OkOdvDbUPbBAHgKz0NJdU9VGfys+DACsNDH0qxoxsjAPRYRfajohqbWw1
+         RiQA==
+X-Forwarded-Encrypted: i=1; AKwUvBxEIYRYGJNs6CarvBcnMVniblBiFoRhCepf5vbLoArDju2ueBYy6af9+hlzAfcb7FX6k1gXQlL97w==@vger.kernel.org
+X-Gm-Message-State: AFuF++k3je2I5mGHnkqTQvQnRIJUIAnTH5wfzB71yZE6Szo+xUyuD6Ax
+	QKQ606uZ8kj1JdWjxCDh4nQ4pHBMfCN5gJA30UJhy7D0PxP9Ru50VQzohIMDNgmsEt6KqKa8Qov
+	IVz7xVyf4ZcmIezq8pd+SWEU8QC+wby65guzmonbCiA==
+X-Gm-Gg: AYBFou0DCA7wjfSXhv1bmMw6TF28oZrTugrQAVR8YoAah/WNQDn+f8Kgs6pLXcuvAUw
+	RUz7MPk8wteQakXTOe7LBS3Xy76TvbPPmN2YA4ZgWqGFkdWGT4d9AXD6EZBVKnsF3ULaDTyJSYD
+	zw/l5pjfRnRl7qnL/lp5dVS0c0041jHuE1A/aWOJpPRhdfARpSe712DSELLVUXaEFaqkBnNBBE2
+	2ZiZm7CufCDs7Gx8mKAS87x4thYrv7nHHRANqwUzcDnYQM3h5UGDV6HzBVt18RZBC1Gjh5gRLw2
+	UDH5oA3cIuYhgATTLoZrgCO8OYm8sROZQfeOcLHqxR+f4dw8Ql71c5ZemgduQ/r3/FGNQqFR68Y
+	pdA==
+X-Received: by 2002:a17:907:1c17:b0:c26:19de:9ae4 with SMTP id
+ a640c23a62f3a-c2619dea7ddmr757639966b.35.1788801896232; Mon, 07 Sep 2026
+ 10:24:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: konrad.dybcio@oss.qualcomm.com, raviteja.laggyshetty@oss.qualcomm.com, smostafa@google.com, djakov@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, quic_rjendra@quicinc.com, abelvesa@kernel.org, andersson@kernel.org, konradybcio@kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, dmitry.baryshkov@oss.qualcomm.com, odelu.kukatla@oss.qualcomm.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+MIME-Version: 1.0
+References: <20260907-bq257xx-init-v1-0-1a08b29e1a68@flipper.net>
+In-Reply-To: <20260907-bq257xx-init-v1-0-1a08b29e1a68@flipper.net>
+From: Alexey Charkov <alchark@flipper.net>
+Date: Mon, 7 Sep 2026 21:24:45 +0400
+X-Gm-Features: AcwNN1VZBW-1Mt7kTfGFh2RSUKZM_MHn3RKjTl1xYyYe5M3UAavFebV38etJD5c
+Message-ID: <CAKTNdwH47P9K935fGgnq0qaaNTbCuBNo+-ibVf-=vRcA01GJMw@mail.gmail.com>
+Subject: Re: [PATCH 0/5] power: supply: Fix probe time race against driver
+ teardown and battery parsing
+To: Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Chris Morgan <macromorgan@hotmail.com>, Pavel Machek <pavel@ucw.cz>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 07 Sep 2026 15:34:35 +0100,
-Konrad Dybcio <konrad.dybcio@oss.qualcomm.com> wrote:
-> 
-> On 9/7/26 3:34 PM, Marc Zyngier wrote:
-> > On Mon, 07 Sep 2026 14:20:26 +0100,
-> > Konrad Dybcio <konrad.dybcio@oss.qualcomm.com> wrote:
-> >>
-> >> On 9/7/26 10:49 AM, Marc Zyngier wrote:
-> >>> On Mon, 07 Sep 2026 09:18:38 +0100,
-> >>> Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com> wrote:
-> 
-> [...]
-> 
-> >>>> The current patch enable QoS for Hamoa SoC, which get programmed only during
-> >>>> driver probe. This shouldn't impact or cause any spurious resets once the 
-> >>>> device is booted up and probe is successful.
-> >>>
-> >>> And yet it absolutely does break things.
-> >>>
-> >>> With this patch applied, the box resets within 5GB of heavy network
-> >>> traffic, probably because some transaction get delayed, and a watchdog
-> >>> fires. With the patch reverted, the box keeps receiving packets, and
-> >>> everything is hunky dory (100GB+ so far).
-> >>>
-> >>> Which makes me think that the set of hardcoded parameters in this
-> >>> patch is not universal at all.
-> >>
-> >> They are, provided the configuration is for the right SoC..
-> > 
-> > Is x1e001de different from x1e80100? AFAIK, it is only a binned
-> > version of the same SoC. How do you explain the above regression?
-> 
-> I somehow skimmed over the fact you said it's on the devkit and not
-> on the mini-x mentioned before.
-> 
-> I pulled the Hamoa settings I could find, there are some updates but
-> none seem particularly related (maybe the PCIe one? I don't know how
-> the network card is connected), please give the attached patch a try.
+On Mon, Sep 7, 2026 at 7:01=E2=80=AFPM Alexey Charkov <alchark@flipper.net>=
+ wrote:
+>
+> If a bus holding the battery-equipped power supply goes down right after
+> it registered, it leads to massive fireworks as the driver starts to tear
+> down its resources while callers from other contexts are already eager to
+> process events using this driver's callbacks (and their private data).
+>
+> In current power supply core it's further aggravated by the fact that the
+> battery parsing code expects a psy struct from the caller, which is only
+> available once the device has been registered, so the device gets
+> registered with its hardware constraints (e.g. charging current) not yet
+> fully filled in.
+>
+> Fix the former by preventing the unregistration of the psy device before
+> its callbacks complete, and the latter by providing a battery parsing
+> helper which doesn't require a psy struct from the caller (as it doesn't
+> strictly need one).
+>
+> While here, fix up these and other adjacent issues in bq257xx where all o=
+f
+> it was discovered.
+>
+> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> ---
+> Alexey Charkov (5):
+>       power: supply: core: prevent unregistering a power supply while a c=
+allback runs
+>       power: supply: core: Allow getting battery info before psy is regis=
+tered
+>       power: supply: bq257xx: Don't ignore errors from bq257xx_get_state(=
+)
+>       power: supply: bq257xx: Use psy directly instead of driver data
+>       power: supply: bq257xx: Parse battery info before registering power=
+ supply
 
-I cherry-picked the Hamoa-specific patch, and gave it a go. Same
-result (hard reset while synchronising a bunch of files), but this
-time with a nice little message:
+Sashiko gave valuable feedback on this series [1], which I'll address
+in v2 - except for the part where it thought up a non-USB supply for
+bq257xx, which the driver explicitly doesn't support.
 
-[  272.468031] nvme nvme0: controller is down; will reset: CSTS=0xffffffff, PCI_STATUS=0xffff
-[  272.468039] nvme nvme0: Does your device have a faulty power saving mode enabled?
-[  272.468039] nvme nvme0: Try "nvme_core.default_ps_max_latency_us=0 pcie_aspm=off pcie_port_pm=off" and report a bug
+[1] https://sashiko.dev/#/patchset/20260907-bq257xx-init-v1-0-1a08b29e1a68%=
+40flipper.net
 
-indicating that PCIe has died.
-
-None of that happens without the QoS stuff.
-
-> If nothing else, please "bisect" the QoS additions until it stops
-> crashing. Although perhaps applying only some of the settings may
-> have its own set of dragons..
-
-That's not exactly encouraging, is it? And if the "recommended" set of
-tunables is not up to scratch, surely there should be a way to opt-out
-until someone figures out what's wrong. Something like this:
-
-diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
-index 3b445acefece7..3a4743c364dac 100644
---- a/drivers/interconnect/qcom/icc-rpmh.c
-+++ b/drivers/interconnect/qcom/icc-rpmh.c
-@@ -224,6 +224,9 @@ static int qcom_icc_rpmh_configure_qos(struct qcom_icc_provider *qp)
- 	return ret;
- }
- 
-+static bool enable_qos = true;
-+module_param(enable_qos, bool, 0660);
-+
- int qcom_icc_rpmh_probe(struct platform_device *pdev)
- {
- 	const struct qcom_icc_desc *desc;
-@@ -308,6 +311,11 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
- 		struct resource *res;
- 		void __iomem *base;
- 
-+		if (!enable_qos) {
-+			dev_info(dev, "Skipping QoS (command line)\n");
-+			goto skip_qos_config;
-+		}
-+
- 		/* Try parent's regmap first */
- 		qp->regmap = dev_get_regmap(dev->parent, NULL);
- 		if (!qp->regmap) {
-
-At least people stuck with Purwa or other abandonware (such as the
-devkit) would still have a usable machine.
-
-	M.
-
-
--- 
-Without deviation from the norm, progress is not possible.
+Best regards,
+Alexey
