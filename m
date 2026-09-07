@@ -1,82 +1,82 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AF0346C84A
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 11:17:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 369BC46AF2C
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 11:17:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788779840; cv=none; b=OODjsvQekZfB8pA/+5l0k5ul8KFrjPffGXP6EBJfBrW9d5BBhHlNknt53fixUL8nSgSVle9ErIBJAKU0K1uKBigAdyU8pO04wJvRm19AKIAFc0CtKBe9ijpXOZoHLQs7BKql54ix8xb08XakPAw2vE7xO7JYtYOOTseRp67zTCU=
+	t=1788779843; cv=none; b=kMJSe+aWkr7r+tD4W2KtIFAZeAiUXlgoxabmEhZzVaHPsGwzSZru22jW75m0i0bv5lVdEnZMTfKj6qT5/qYWndXa6UqyncqV1o3iWBtgCbshKELMaWtOJ5iRuGqbsIj9H+OeZvrMuzdEbzUx5fGPQEVPoPpnMKhEVUCbDNAnNAM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788779840; c=relaxed/simple;
-	bh=HksTSH5nZIdSJicXwafbbfriQ2xJFLxE5NRRSdeL95I=;
+	s=arc-20240116; t=1788779843; c=relaxed/simple;
+	bh=hqlT9anTRmD3gqufcOooFJjBVMwFzMEzazIesH8QlhU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CchzgF6QliZMh+4VUYoucoSbDQgWS12vCHr594IikaxoA61kZPOfAzf/viE7tmDtWqWoHE5l2WtVopu28ZqkanUO0GCGH0lUw2Lf/IWLBEaAp2E56Ad9CLeTWAblk5b67easWZNMjxfwktk2FVmiWie6/L6E8etoE2f4jcVkQrE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=KM9RgnRB; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=NoRH3mH1; arc=none smtp.client-ip=205.220.180.131
+	 MIME-Version; b=OQbzn+NRrwP8U0yLlm4mjUgi4Vsx4SvqLErSW8mZRGIoYaHn9KxYTm1t5zhT0Noff0y0zCj90RNFieMLVOW9sFB4bmHyII3mzo4I0ahZiFsECPXn30t9t6nIU3BXs5yizjs86fsLw65xHC0Heqwasgm0upjl8BK8j1xHQ2Z7wmU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=BzwKXE1r; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=gvtNgbs5; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="KM9RgnRB";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="NoRH3mH1"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 687An1cu3230465
-	for <linux-pm@vger.kernel.org>; Mon, 7 Sep 2026 11:17:16 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="BzwKXE1r";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="gvtNgbs5"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 687AmscB3180789
+	for <linux-pm@vger.kernel.org>; Mon, 7 Sep 2026 11:17:19 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=qc3aItDznK9
-	eNLgbGrQcjkgrtgUZI6baFp+cJdIi190=; b=KM9RgnRBoCz1wPP+BQZ1Q5Oq01+
-	RazZJXqBUbpn5yUGvYC9zTiaV4Ln2eMHYutAomBj2tloDuWuxISBPUV3Ls+Nq3br
-	GbRtdq36E7Pb9RDcD55E4DHZyDyn34bSkKRA0zaJk0o7lcdU003o+ao3yuQSPKlY
-	RBdDij03LCuY5qN2arSlWCu94glqp7clD8AX3H5fvientMxrpUlNAu7XQUiHVJbX
-	LSy7GZ0uJEoT17p+hDR7s1ZxpVlSk10N2ELjx+d5YnPJl/Da/XEydLDF4usR0nUw
-	PktKGkG2CAQpREwx8hqshIxxG5c+lNT7wEybQOOGsNppayk6r4XLGHyU9zA==
-Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ghfxkteck-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=V/gIsitsveU
+	0a1AR6GJ+0ZzNVuCwkMUNDvqqmLHk98k=; b=BzwKXE1rj6fatD+luaFzb1NGkJC
+	rUjn1tioQPU4HRl8eyhJhqXWXcsAFvfq+1VG3hbGpaABhG+NaGqvStlNhkgOdstm
+	OvMUTIQJSZM0p1Dk29+xBEITPnsN5ebGi4oyT/cWJWDiYJMU6/7djULGMbfijDar
+	ALdH2muZyC9JvdoBClIH6vqOs0KAR6o65YWuq/xPlBU3GvLFQF0uoel3cLSxA6XR
+	t2nXGGVm+sMEKnHBZj0DAK5pt00eioc0Xuh406B2aFvyzHqdrIXhvVz/hHFiF/Bp
+	eurgZu+sH/MQeTpaVUnlvpazenRNchNj/RyhHL85uGaZzWDoKiNCWK2lhoA==
+Received: from mail-vk1-f197.google.com (mail-vk1-f197.google.com [209.85.221.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ghsw20ny6-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 11:17:16 +0000 (GMT)
-Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-73850dfc198so310669137.2
-        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 04:17:16 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 11:17:18 +0000 (GMT)
+Received: by mail-vk1-f197.google.com with SMTP id 71dfb90a1353d-5c405d3e18eso4609675e0c.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 04:17:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788779835; x=1789384635; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1788779838; x=1789384638; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=qc3aItDznK9eNLgbGrQcjkgrtgUZI6baFp+cJdIi190=;
-        b=NoRH3mH1IyzyiS13+PhH4bml004n+lExFwGWrTTEb6336ZLwt9AlJHbQGh0CICMlVZ
-         ws/4VnPDM3oQ/iuffIPTXUQE1Mt9+2QKcFkDCfqsdtWqKlDHOSRVBGJ9fLButRFtLVs7
-         ZVUp2M67iDz7NTRdW3l4ddcsguKm2tRcBuv3oHgSwaO4BYgKWjfuGn/9QPMrLRntETNR
-         p1MkL1htkrc/evNyY9ECJm0bpO0suZQTphOy1Jj/DjVJF9a/vHZgUU4PoRInkdAWx32I
-         V/TlqA52olSotB5sbcytZvunjYL3linTWQtdAuQqjL+OVOtiE+X0dJ08gbYhkNOFILVz
-         e4cg==
+        bh=V/gIsitsveU0a1AR6GJ+0ZzNVuCwkMUNDvqqmLHk98k=;
+        b=gvtNgbs5BkNefs3rMRKX/V3QWvy8T0CAGYrGG+5Mj+z3rLHnWzLA1f5wz4gsMmekWB
+         DUpcnZQKVazSm2ADuCxDLllyP4SNxFw0ZH9H7DVkwVr/V10dZEYjDD2s7MLf+wqvCkbm
+         2QWVN63qJnnke1WgIHoGkG/C9oQZLQU/gQ0ErW8Jnwsa8teB+i+6mNqpKtSq0j329K8V
+         aqU4qki8tQN0UEqGBB/IngHdwQg4GxGK3Xb3zRxUV1ZLnzFObo8B7dKvSnhn4i8gLMAJ
+         eQzwD5cUS+xBcgqcl2IzIbk0GjktESdmE/WZr4S0xDJwpqZhEm5SpdGFDIRRHXFmJ2Ma
+         Yi9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788779835; x=1789384635;
+        d=1e100.net; s=20251104; t=1788779838; x=1789384638;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qc3aItDznK9eNLgbGrQcjkgrtgUZI6baFp+cJdIi190=;
-        b=sgepYA7DJX7m+k+3qo3EorjWCmijmNjYd5aYyNW41xpq90OYPZO0ctvqe/CEN1HlQV
-         LQSRZXxsLO1IL/90uNaTI3Ykz7SeWeMZsjbI+Wh0VgZ9XxI0e1W6c2s2pHURs9+fjTvV
-         WEpAPPWLExLBPvz+vapdoyqKqiEvQ5gkwHhtmpnAh9oSz3d3eCwe5LZC5ZT4oRtuGakP
-         ICExz1w0GTIHmbfxBvakVxgKmPOFs7X7bzxtdLqh4if1fdEnnClxNV4S+ZwBC8FHS3Mp
-         e4ge5YrqsW8LJMDCPR68zE4M5UetPdh3jMVABEafS7Tpa1a2jSkPbPuBPUiLU9UYhKoU
-         nmAQ==
-X-Forwarded-Encrypted: i=1; AKwUvBztthhk/Ow+3dLDcF2nPW3VrXFwTMEVAXGi5un+YEDatnB9KlV5OVbbjM1WxcvaFCUBuQ/beLr4SQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lmwBij0zs6UQvkSSTB2JXIJ4Yu/jPMrPEN0rr5VNagPRcp+BNg
-	mMCg9eVde1kb6XdJEgmrWRIO/xm2qrsJpm6wqkZvqs/4zUN1tAZ6+9/mR+YKTPxzHVjO8o6+QIx
-	6n2ITE7IvuvEypfqLYWhczzYlpq+Jlw2Up5M1gaBOkje0OfohB3pfjYGHOn+jHA==
-X-Gm-Gg: AYBFou3bSJ+AtJOdSxhdHCzU+SWLRxM3z7QZrtSfnlv7dlDjViRqX9/pxzLfOXaUOTs
-	tvSjOERukXAMtnWsYa6wdZ6M/rD7nb5a66LSf6a4Sa80Hb86G0ydEjLp1N7eQksAYvj+0WuwscS
-	I1EiWrMEFfh9/7/kp8bn2QidXbcef5y19+zAGskD9dzbqy1VjssJo1HRfsQQAxzAwYMZTQLUtG7
-	XI3ddEa6gWzE4KEZ5blt8YqR6sHvep44Gp9WvKc5mXV0BtT5B+tUQwz0GfUvBz7z8zic37CRn0t
-	bTSkwUVBnhcvsoijUP+NbK9RCUM7gY8hHd1n+t5AFRTcFT2Ysuw3/YvcgsddbeBZXssTSDxA5zr
-	RWYA3wMEg5m8Rjv+CoStPKTu2HfJzAQXAKZ2eYenA3zbHQesdWTFAbrwe6Q==
-X-Received: by 2002:a05:6102:5814:b0:786:b28e:f980 with SMTP id ada2fe7eead31-78a4a99f7c6mr7574456137.10.1788779835469;
-        Mon, 07 Sep 2026 04:17:15 -0700 (PDT)
-X-Received: by 2002:a05:6102:5814:b0:786:b28e:f980 with SMTP id ada2fe7eead31-78a4a99f7c6mr7574414137.10.1788779834862;
-        Mon, 07 Sep 2026 04:17:14 -0700 (PDT)
+        bh=V/gIsitsveU0a1AR6GJ+0ZzNVuCwkMUNDvqqmLHk98k=;
+        b=ozH6CFncHGiQ4iT9rxgrt4lABe9Vt2DIgEgIUj7RAWBJ6XltDHa2ugIwovs6Af6f5e
+         Ojsell2KekiMbom7yImt6XmVUeVzRbhGgTJ5T4P1OmqPO4y4y8c9W7WJEj34z+rIFAeX
+         OVWG2sjLtzUj7oz9X1TUHfb0kDI05ucHNn7tiZGjxt76fxgduZfQItcRMQBQ7cY09XTC
+         IJy6ng78WmnrKtfJ4XG5bkJ2iJ/J8+pLMStz+t30VvSVNoPuhNV+9T4S7YuaX5Oq94Ja
+         e1ZsFkHn9VCZGfno7odknO9PjILALY2r+w23hq8u0Tddk6U2km2SixVcqxG+IJZtncnN
+         AwtQ==
+X-Forwarded-Encrypted: i=1; AKwUvByh3wOGaVYPhKkosli58XRk3XC02nNCt3lt7XzwMy+GBUvFzRuxDo0dh8VNYGnWCOu4zZ0FpVVq5Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++lv9p77BJ3S37cALm6SQO7ByDtv/A2q2I/JQEab+ZeHIgdJb7a/
+	7EE5SLIru6GLvZnJFl9dTdIw7k4RZxJb28hl13z0WNpyjBCt1jh1dn/FwFh9JDNoLf+8oEMCIuS
+	vB5fcLXpulXoAYHlVdVoGnqLE2Z2IXj7ZafLrdK4NRupbqs7hc9xdaGnkTy7Fgg==
+X-Gm-Gg: AYBFou1J7I2Eyq9emuvNMUNh/CIflMFa7qzAge5sXxOlq2urqXXZsi1i8L6Jh4GKrvA
+	uj4B+o9j1h6rJtnWFodIxSgiRSBfB8Lp61E6zr54+8Sr1iR8loSq5ADgY2PtpGHQ1YeCMuZzt4h
+	Vm8fNu758Xv2NuV9ZnhV+3FjTEe19KyuPe0zAtj5pyjFIsAMfcT0sHRx+p/eM36r+vxKV6OKAv1
+	YxV8w+2fSYvMvrud/EmnDButW3tGqw0XeALSeKeSRbqhaB6Q5chA2SGYaaEPuDKdhwt1R+9yf+v
+	4HHcOcpz06q6A+iKo4CFxt4g4NLKAIEU44mKBRbeZTRCwF4YKJQE1KhIt8PcM20lMeGhBwCe9RM
+	tsPro4PoEPIh3RrlQr+LHNra+Or1a63AAfemVWNTsJUl/dsmcYQlrA5vGhg==
+X-Received: by 2002:a05:6102:509f:b0:785:e444:15e4 with SMTP id ada2fe7eead31-78a4a87d391mr9129623137.6.1788779837801;
+        Mon, 07 Sep 2026 04:17:17 -0700 (PDT)
+X-Received: by 2002:a05:6102:509f:b0:785:e444:15e4 with SMTP id ada2fe7eead31-78a4a87d391mr9129592137.6.1788779837379;
+        Mon, 07 Sep 2026 04:17:17 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c260d5cfaa2sm456120066b.59.2026.09.07.04.17.12
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c260d5cfaa2sm456120066b.59.2026.09.07.04.17.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Sep 2026 04:17:13 -0700 (PDT)
+        Mon, 07 Sep 2026 04:17:16 -0700 (PDT)
 From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
 To: Sudeep Holla <sudeep.holla@kernel.org>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -91,9 +91,9 @@ Cc: Dhruva Gole <goledhruva@gmail.com>, Abel Vesa <abel.vesa@oss.qualcomm.com>,
         Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
         linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/5] pmdomain: core: Allow a non-CPU device in a CPU PM domain to do power on
-Date: Mon,  7 Sep 2026 13:16:52 +0200
-Message-ID: <20260907111659.263324-3-ulf.hansson@oss.qualcomm.com>
+Subject: [PATCH v3 3/5] pmdomain: core: Add a genpd config to support unknown initial status
+Date: Mon,  7 Sep 2026 13:16:53 +0200
+Message-ID: <20260907111659.263324-4-ulf.hansson@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260907111659.263324-1-ulf.hansson@oss.qualcomm.com>
 References: <20260907111659.263324-1-ulf.hansson@oss.qualcomm.com>
@@ -104,219 +104,117 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDEyNCBTYWx0ZWRfX8XvVqyPtkObq
- 4FbWy8l6gwmto90urgfqDheOpX6bf44OYucXuPgdKCnMT9pfTd/HBkUbwpSamAFg4lS6+B0LOje
- YPOX4m0aTLwebR4QhYgofmhYghETBTCTvCGKZU+olMNMytVkXitOPhf2kQbYe71+JU0Ehm+3H7P
- c790kMEvRvhoBrwPIesTVpK3FLNRAUBpV+feQHhS9q2TssA+ENOehz4gy0fjp4fhnwHGXInUwZ+
- +S9ZW9e8r4duxHNMQi41jZ8Esr/ysTU9BrYoe81+4KqwTDQSxRNYReWEAs1aDKQpel34gXS45F0
- xICananAr5OF0Z/XWvBNmbNz1k8gQjuZOMIH4OArUnx13YEiZ7wVM3pZuwKkzf14yMcE869+wSn
- RFK5/bK3V6drV8A2Y2IczSkghPvMeBd7HwoECITz/ZmWxKcVxhYW5r+MkyT+xO4M0aO2Y6E46+u
- VHlHgjx5IgRHQjKjkRA==
-X-Proofpoint-GUID: NPrTjDTSBH-XAyQBu7APCFgEjvEFhxPl
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA3MDEyNCBTYWx0ZWRfXwMN1DA4fY0Us
- UVsE7zqLd3EXyNd9ezr2U7ezEsk4JOtasPrxEriQhtoULi7jrlHnIgPuwTETy9s7l41IawiO0o+
- ctR63pWDbpD1EVIQvkgPD71sxVLUT7Y=
-X-Authority-Analysis: v=2.4 cv=daOwG3Xe c=1 sm=1 tr=0 ts=6a9e9d3c cx=c_pps
- a=P2rfLEam3zuxRRdjJWA2cw==:117 a=h7aNHqOhPKB91FvYUefsSA==:17
- a=u8BtVuMVLpZXKRMe:21 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=VqZmVlX21PZHT1he1CgA:9
- a=ODZdjJIeia2B_SHc_B0f:22
-X-Proofpoint-ORIG-GUID: NPrTjDTSBH-XAyQBu7APCFgEjvEFhxPl
+X-Proofpoint-ORIG-GUID: oa1eL-fDgHrfO-9lBMcV_g_WXchGzO1x
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA3MDEyNCBTYWx0ZWRfX9/WlL+siv8gC
+ IY/lDA6YZIKluYZZBYHswyXmQsrObrY3jmZFuIwBYFOev/YVu+rKv/guqUDKvbq81AUzqrKOPSs
+ XJB5ZrICSY5Lliw7wAG3ul3+n6Pgru0=
+X-Authority-Analysis: v=2.4 cv=eKwjSnp1 c=1 sm=1 tr=0 ts=6a9e9d3e cx=c_pps
+ a=JIY1xp/sjQ9K5JH4t62bdg==:117 a=h7aNHqOhPKB91FvYUefsSA==:17
+ a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=EPyTabgPSFAr6pNicGcA:9 a=tNoRWFLymzeba-QzToBc:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDEyNCBTYWx0ZWRfX8zzEz9MyzzA2
+ wEuwGpnY2xGP2u47wFwG8cgR3hVNkayUWNi6SCHiHN82BaOP0pwzdwRmnXTaAcSYrzilQtwNGNr
+ HW8UAP0OTWtV0vQiIavWB/fuUxc7nMePkdnjhrEIrtdvCDraAGjCFMUguCmEoeoqLovvwF5ZFip
+ kLc01u1UkINIf1ldNvjmbOZknQHAZmm++69H4mRnPhxi4BoWej51u/GWU/4fDoGZEeMb/EZc4gX
+ vQkzT9vxu4N6/vro2NrVcZ7aWoIGxhR5p40Ne55uN2AwVVy9XsYJxD7bkU++BZZCdflEBsOZi+P
+ MnZBe/2Q8PttfRE14N2hMl6HbZpRUG8S5yZBbvmYW9sZN6IHY8OGd95wfRxV/3kOKsIr6Y62OW+
+ w1xAqlPqudOZM9gEtN0AuWIoU5cFh4uz4Kyd6VR/q2/wVKFowmMd9YMG1D0M5P7RaAI17EHXY//
+ JZMv7BkQ0cPHLkwdMCA==
+X-Proofpoint-GUID: oa1eL-fDgHrfO-9lBMcV_g_WXchGzO1x
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-07_03,2026-09-07_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 priorityscore=1501 bulkscore=0 spamscore=0 phishscore=0
- lowpriorityscore=0 adultscore=0 malwarescore=0 impostorscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609070124
+ bulkscore=0 lowpriorityscore=0 malwarescore=0 priorityscore=1501
+ suspectscore=0 clxscore=1015 adultscore=0 spamscore=0 phishscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2609070124
 
-A driver for a non-CPU device that is attached to a CPU PM domain (the
-genpd has the GENPD_FLAG_CPU_DOMAIN configuration set), is currently not
-able to power on the PM domain. More precisely, to power on a CPU PM domain
-one of its corresponding CPUs needs to be woken up if they are idle.
+It's not always possible for a genpd provider to know the initial status
+for its corresponding PM domain(s). To register the PM domain in a safe
+state, the genpd provider driver may therefore have to initialize the
+genpd's status to be powered off, as a way to prevent the PM domain from
+being used when it actually could be powered off.
 
-The current support for a non-CPU device is that its driver can only
-prevent an already powered on CPU PM domain from being powered off. This
-leads to problems for a driver while probing its device or when it needs to
-call pm_runtime_get_sync() to turn on the power for it. From the driver
-point of view it looks like it all works fine, but when accessing the
-device it may end up with various errors as the device may not be fully
-powered on.
+In these cases we may end up to power on a PM domain through the genpd
+subsystem, while from the HW point of view it may already be powered on.
+Under these circumstances, it may also be required to keep the PM domain
+powered on until all the consumer devices have been probed. In other words,
+until the ->sync_state() callback for the genpd provider in question have
+been called.
 
-To fix the behavior for these types of devices, let's adjust the behaviour
-in genpd_power_on() to wake up an idle CPU that belongs to it, in cases
-when it's needed.
+To support this behaviour for a genpd provider, let's introduce a new genpd
+configuration, GENPD_FLAG_POWER_UNKNOWN.
 
-Link: https://lore.kernel.org/all/CAPx+jO-sCierYj8jnoKQHckJG16dOBxnNrsZVYO=38R2cLV8nw@mail.gmail.com/
+Reported-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+Link: https://lore.kernel.org/all/20260811-domain_off_ss3-v1-0-6a0a0fc023f5@oss.qualcomm.com/
 Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 Tested-by: Yuanfang Zhang <yuanfang.zhang@oss.qualcomm.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
 ---
 
 Changes in v3:
-	- Moved to atomic polling, pointed out by Dhruva.
-
+	- None.
 Changes in v2:
-	- Rename a function according to Abel's suggestion.
+	- Rename the config to GENPD_FLAG_POWER_UNKNOWN.
 ---
- drivers/pmdomain/core.c | 80 ++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 75 insertions(+), 5 deletions(-)
+ drivers/pmdomain/core.c   | 6 +++++-
+ include/linux/pm_domain.h | 9 +++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 6abe8b198949..b62d4e544bc5 100644
+index b62d4e544bc5..5b31ed47d3f1 100644
 --- a/drivers/pmdomain/core.c
 +++ b/drivers/pmdomain/core.c
-@@ -10,6 +10,7 @@
- #include <linux/idr.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
-+#include <linux/iopoll.h>
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/pm_runtime.h>
-@@ -19,11 +20,14 @@
- #include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/sched.h>
-+#include <linux/smp.h>
- #include <linux/suspend.h>
- #include <linux/export.h>
- #include <linux/cpu.h>
- #include <linux/debugfs.h>
+@@ -189,6 +189,7 @@ static const struct genpd_lock_ops genpd_raw_spin_ops = {
+ #define genpd_is_dev_name_fw(genpd)	(genpd->flags & GENPD_FLAG_DEV_NAME_FW)
+ #define genpd_is_no_sync_state(genpd)	(genpd->flags & GENPD_FLAG_NO_SYNC_STATE)
+ #define genpd_is_no_stay_on(genpd)	(genpd->flags & GENPD_FLAG_NO_STAY_ON)
++#define genpd_is_power_unknown(genpd)	(genpd->flags & GENPD_FLAG_POWER_UNKNOWN)
  
-+#include <trace/events/ipi.h>
-+
- /* Provides a unique ID for each genpd device */
- static DEFINE_IDA(genpd_ida);
- 
-@@ -32,7 +36,9 @@ static const struct bus_type genpd_provider_bus_type = {
- 	.name		= "genpd_provider",
- };
- 
--#define GENPD_RETRY_MAX_MS	250		/* Approximate */
-+#define GENPD_RETRY_MAX_MS		250		/* Approximate */
-+#define GENPD_CPU_ON_POLL_PERIOD_US	100		/* 100us */
-+#define GENPD_CPU_ON_TIMEOUT_US		5000000		/* 5s */
- 
- #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
- ({								\
-@@ -1026,15 +1032,75 @@ static void genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 	}
- }
- 
-+static bool genpd_status_on(struct generic_pm_domain *genpd)
-+{
-+	bool is_on;
-+
-+	genpd_lock(genpd);
-+	is_on = genpd_status_on_unlocked(genpd);
-+	genpd_unlock(genpd);
-+
-+	return is_on;
-+}
-+
-+static int genpd_wakeup_cpu(struct generic_pm_domain *genpd)
-+{
-+	unsigned int cpu;
-+	bool is_on;
-+	int ret;
-+
-+	/* Find the first online CPU in the genpd's cpumask. */
-+	cpu = cpumask_first_and(genpd->cpus, cpu_online_mask);
-+	if (cpu >= nr_cpu_ids)
-+		return -EAGAIN;
-+
-+	genpd_unlock(genpd);
-+
-+	/* Send a IPI to wakeup the selected CPU. */
-+	smp_send_reschedule(cpu);
-+
-+	/* Poll to wait for it to complete the power on sequence. */
-+	ret = readx_poll_timeout_atomic(genpd_status_on, genpd, is_on, is_on,
-+					GENPD_CPU_ON_POLL_PERIOD_US,
-+					GENPD_CPU_ON_TIMEOUT_US);
-+
-+	genpd_lock(genpd);
-+
-+	/* Re-check the status as we have released the lock in between. */
-+	if (ret || !genpd_status_on_unlocked(genpd))
-+		return -EAGAIN;
-+
-+	return 0;
-+}
-+
-+static bool genpd_need_alive_cpu(struct generic_pm_domain *genpd,
-+				 struct device *dev)
-+{
-+	if (!genpd_is_cpu_domain(genpd))
-+		return false;
-+
-+	/* This is not for CPU devices as those are managed differently. */
-+	if (to_gpd_data(dev->power.subsys_data->domain_data)->cpu >= 0)
-+		return false;
-+
-+	/*
-+	 * If the current CPU doesn't belong to the genpd's cpumask, we need to
-+	 * wake up one of those idle CPUs to power on the CPU domain correctly.
-+	 */
-+	return !cpumask_test_cpu(smp_processor_id(), genpd->cpus);
-+}
-+
- /**
-  * genpd_power_on - Restore power to a given PM domain and its parents.
-  * @genpd: PM domain to power up.
-+ * @dev: The device that needs the PM domain to power on.
-  * @depth: nesting count for lockdep.
-  *
-  * Restore power to @genpd and all of its parents so that it is possible to
-  * resume a device belonging to it.
-  */
--static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
-+static int genpd_power_on(struct generic_pm_domain *genpd, struct device *dev,
-+			  unsigned int depth)
+ static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+@@ -2445,7 +2446,10 @@ static void genpd_lock_init(struct generic_pm_domain *genpd)
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+ static void genpd_set_stay_on(struct generic_pm_domain *genpd, bool is_off)
  {
- 	struct gpd_link *link;
- 	int ret = 0;
-@@ -1042,6 +1108,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 	if (genpd_status_on_unlocked(genpd))
- 		return 0;
+-	genpd->stay_on = !genpd_is_no_stay_on(genpd) && !is_off;
++	if (genpd_is_power_unknown(genpd))
++		genpd->stay_on = is_off;
++	else
++		genpd->stay_on = !genpd_is_no_stay_on(genpd) && !is_off;
+ }
+ #else
+ static void genpd_set_stay_on(struct generic_pm_domain *genpd, bool is_off)
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index f925614aebdb..14e0e346c610 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -121,6 +121,14 @@ struct dev_pm_domain_list {
+  *				powered-off until the ->sync_state() callback is
+  *				invoked. This flag informs genpd to allow a
+  *				power-off without waiting for ->sync_state().
++ *
++ * GENPD_FLAG_POWER_UNKNOWN:	Use this flag to inform	genpd that its initial
++ *				status for the PM domain is set to powered off,
++ *				which may not correctly reflect the state of the
++ *				HW, as it's unknown. If the PM domain becomes
++ *				powered on during boot, genpd will prevent it
++ *				from being powered off until the ->sync_state
++ *				callback is invoked for it.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+@@ -133,6 +141,7 @@ struct dev_pm_domain_list {
+ #define GENPD_FLAG_DEV_NAME_FW	 (1U << 8)
+ #define GENPD_FLAG_NO_SYNC_STATE (1U << 9)
+ #define GENPD_FLAG_NO_STAY_ON	 (1U << 10)
++#define GENPD_FLAG_POWER_UNKNOWN (1U << 11)
  
-+	/* Special case for a device attached to a CPU domain. */
-+	if (genpd_need_alive_cpu(genpd, dev))
-+		return genpd_wakeup_cpu(genpd);
-+
- 	/* Reflect over the entered idle-states residency for debugfs. */
- 	genpd_reflect_residency(genpd);
- 
-@@ -1056,7 +1126,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 		genpd_sd_counter_inc(parent);
- 
- 		genpd_lock_nested(parent, depth + 1);
--		ret = genpd_power_on(parent, depth + 1);
-+		ret = genpd_power_on(parent, dev, depth + 1);
- 		genpd_unlock(parent);
- 
- 		if (ret) {
-@@ -1306,7 +1376,7 @@ static int genpd_runtime_resume(struct device *dev)
- 
- 	genpd_lock(genpd);
- 	genpd_restore_performance_state(dev, gpd_data->rpm_pstate);
--	ret = genpd_power_on(genpd, 0);
-+	ret = genpd_power_on(genpd, dev, 0);
- 	genpd_unlock(genpd);
- 
- 	if (ret)
-@@ -3410,7 +3480,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
- 
- 	if (power_on) {
- 		genpd_lock(pd);
--		ret = genpd_power_on(pd, 0);
-+		ret = genpd_power_on(pd, dev, 0);
- 		genpd_unlock(pd);
- 	}
- 
+ enum gpd_status {
+ 	GENPD_STATE_ON = 0,	/* PM domain is on */
 -- 
 2.43.0
 
