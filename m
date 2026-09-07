@@ -1,152 +1,135 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E239643B6CB;
-	Mon,  7 Sep 2026 08:26:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39C2B38E5FE
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 08:28:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788769582; cv=none; b=j+q+ZC2WFBN7pRVRbIm5ByyJec80qZd+HZrtmXHZIVwBUhwNPCaAGlJeIsuWsni2WuVfLCEISsns1hLnZQQd38H3l0aW5nTjnLTJ+zwAD87jrvxDf+oXiIfB0dqE5G6RaF2lmH/JTQmLNP7jibt7K5xWawGZ3Wi6ZUbrdIp5qy4=
+	t=1788769698; cv=none; b=LBEjQvAjbltzQUuF+xQYa0/3s9wbaH2h4O+HIcrOAATxwgiHH/RWaO/l97Nm4zEkS35+HW5lMcEC9t0YmfIvCqPi5aH32Z7x3mU6cu2CagEoJwACrYQjUD36IqnHm9CMWu+aUCnT1RxbAW2B0F5aS/5Pykc4G7ce1QSJEq+4E5E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788769582; c=relaxed/simple;
-	bh=IHCWs2FUWv6nktxmFOR7SAAPl1K6uOgWaXIqrlKgYWA=;
+	s=arc-20240116; t=1788769698; c=relaxed/simple;
+	bh=huFQlCxAjSKXrnS0hP6aD8uVwJipgrrBkGwCQxbjol4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VYS62WdGHqV6WI6PX0K0qT23WzLNgRSZNTpA/XoVHgG0iIYMe/rtMco0fTBoUk8se4VDQAOEdNAUw8ESJllblBJCY32aOAUWqAAEfDVBUkgro2MsLlkZLLqIpGr4CqyjYkR2VBOV0nCGBKg04O2Ylh0bKu6rApvN4916j80vtW4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ICur1IhM; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=nMA9atYaLoPshwunhLTWM/3Tv5I7Kz2TcnVnQtM+Trhj40ERnzm8TJUZhf5ZXlTVSK8qPav2GP7408rBWW7WeMfgzptFtCjl6nCWUSKDB5gK4nY476iL1cmlujUWsLOyWc/5TY4gnrMHpJwmXvQthVb+Pfxm5SvORGp3oE20LMc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=CcvQogcS; arc=none smtp.client-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ICur1IhM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B1701F00A3D;
-	Mon,  7 Sep 2026 08:26:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788769580;
-	bh=aO6wg0mymQg3x/3sbOQTgRafHt9X06kvzyNxg3k6Uj4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ICur1IhMUSpSE6fcJQklY1JjVK0yR4xNQ89iJLicxz+OgQqZ/38m/VMenPeE9Fgjh
-	 3zZp4CFJQSZEmg7Cbb3c8Gmr4KKJmPxbjlJ6S91dcleSo3lhxvHVr2q/52m4SVe1hN
-	 V0YoGoCpoceNgZJ2iM4e1quy1vUZ3U9jOJIeZ7ws+u8AoiCy33KtG7j7l7erQjRCGh
-	 XK/Y37JnMPpsax/4NRvrf6fB7S0+P8MMYA913T2RiBV2xDxmXPXAT24GsFvLbVTay+
-	 XQn4yY4wu+PpYTh+CR6uz+68WNVDgYiBNWJ9aW3Mw0l0R7jcdt6C+0lvjItoYHKsB2
-	 CXBW4FIWwsdSw==
-Date: Mon, 7 Sep 2026 09:26:05 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Ye Liu <ye.liu@linux.dev>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	Michal Hocko <mhocko@suse.com>, Peter Zijlstra <peterz@infradead.org>, 
-	"Paul E. McKenney" <paulmck@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Steven Rostedt <rostedt@goodmis.org>, Josh Poimboeuf <jpoimboe@kernel.org>, 
-	=?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Oleg Nesterov <oleg@redhat.com>, 
-	Thomas Gleixner <tglx@kernel.org>, Ye Liu <liuye@kylinos.cn>, David Hildenbrand <david@kernel.org>, 
-	Miaohe Lin <linmiaohe@huawei.com>, Naoya Horiguchi <nao.horiguchi@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, =?utf-8?Q?G=C3=BCnther?= Noack <gnoack3000@gmail.com>, 
-	SJ Park <sj@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, rcu@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org, rientjes@google.com, 
-	shakeel.butt@linux.dev, xu.xin16@zte.com.cn, chengming.zhou@linux.dev, will@kernel.org, 
-	boqun@kernel.org, frederic@kernel.org, neeraj.upadhyay@kernel.org, 
-	joelagnelf@nvidia.com, josh@joshtriplett.org, urezki@gmail.com, juri.lelli@redhat.com, 
-	vincent.guittot@linaro.org, tony.luck@intel.com, reinette.chatre@intel.com, x86@kernel.org, 
-	paul@paul-moore.com, jmorris@namei.org, serge@hallyn.com, pavel@kernel.org, 
-	lance.yang@linux.dev, mhiramat@kernel.org, pmladek@suse.com, longman@redhat.com, 
-	mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com, qiang.zhang@linux.dev, 
-	dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de, vschneid@redhat.com, 
-	kprateek.nayak@amd.com, mark.rutland@arm.com, Dave.Martin@arm.com, james.morse@arm.com, 
-	babu.moger@amd.com
-Subject: Re: [PATCH v2 0/8] sched: introduce for_each_process_rculock and
- for_each_thread_rculock
-Message-ID: <ap5yw-Cwb41FymNd@gremlin>
-References: <20260907081334.1152889-1-ye.liu@linux.dev>
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="CcvQogcS"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-49557167508so39755415e9.1
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 01:28:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1788769694; x=1789374494; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=BVJJYbJWb+cBOU7Yim8Nj+TVsMe2MibjBMdU5cRQacc=;
+        b=CcvQogcSuce4cB8ZNWEOQq8LN0+Eo9KvYFLDuY3fM6GB+zdGMQP7s2oos2ZX+OipLd
+         aLqHzmN4PmyuZzLBemu4DSB/sZrs1DYfZUtI2O7Hi8WyutkhUvSeDKaSv4Yr7lPZ+IjH
+         LpqlD5KmElqnTum7ohW7NvjuBwahiMxJwMh2BNFKsUcZqsoCX4A9B9A6/x2Ko+fnBDBh
+         +hgfUBg2yTQ5uORA7nrB+tuIhCt6cflGnjgzUy34h8PZS8M3o5bEElHjk82ea6n8Q3et
+         nRin8ay2//iZAzZV+0/FfTgx9Z2YPJCI/66KhhBUyx/DVaPGYxenEsQgogQ5MafBEUOT
+         OE5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788769694; x=1789374494;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BVJJYbJWb+cBOU7Yim8Nj+TVsMe2MibjBMdU5cRQacc=;
+        b=Y9oGtNu/sCmQh+1aK/20MO1jjs3Hqz3wu1Khc5Hd1G/a36Kbk2XqpOO5t7B9E0Ms1j
+         GoCPmqZhR9dUrODsg6NANcarowQNl0e+AYJqEB3zt7w2rhdOFwziD2W+11Fi+msHZzdy
+         QWC5W11SPcs1Gg875X9rGkUjbluEbp8aXR25cV/o7MZEfxU4atdtm85b9ZGYe/1zXeno
+         7IzVE8Ti7++as4zPmW3mWLvrQWcxcnOL5g5TKcu7QWjJvjx5PhPOUzLtypM2QbnjroW6
+         UKPtV/Zc/QDUyti35r65wqSEfb/OxXmuX9InvsmwcLSYfzunxlHdtdMnC1OHOTKGb6/t
+         68gQ==
+X-Gm-Message-State: AFuF++mFXkrJwa4pLgljpBye+nM4LUxGt4w4oJM6BNVaA6rrdGaicRHt
+	4gt+vKyGRKGl3bTuKDhdAgBasK+tNPmVtL8qJ/UXdvPMONe9T/ly1tHAPMD+r/AVH1sn4yLZBE+
+	JmmQpQSU=
+X-Gm-Gg: AYBFou05CWaMkUbjWG6VBXtDuueIpw60vnsCIBh2qnf+rcol9KEJgcyb2yrSt5x3qSg
+	2Ug5le/qNLtO1OmzBKHp5qauR+JIAFY6186kGvem10FwnXhCICYEhHx88U1fe3GOc9xT1Mq7ai7
+	xS4k2MsEIx5YBGqGAAHLU27w30LnuNYN3ctfYk8Oqpoxwnvbn9qn4h/LilShT1LqxQ2RXFKE5li
+	D6jA+EKbiMquWplYa3ApXtDe8M9r+L4/mVmozVC2O302hMwdNvefcUojGJONP7KuyQGpnxfLfG2
+	dfJ/13XuY2KI6JgW6x4ePPT9hZv0M9ylxCtlgRSYvAzA3hbzKPldXiiXjlL8PqgxeC2nH+XQZFt
+	Kn2QLRpugHXg9nYTzIg+O8oOPSDwrD7L+NPiJH0kRwxZYFqu51l+AADWocxRx6el2pTQScbttTf
+	2C/mrmGWbdMaOvaxSat6Gecod7q8Nydao2JpdC4aWbcyABFx1DYF6Xw39B3tcXAmgnxa4EjVEQ8
+	MfqlY4ZaI2qOgOI+N+FH4R1KIkg9WLmyF357F9fM4coadaFHb/5W6J/11DBlw==
+X-Received: by 2002:a05:600c:8b09:b0:499:b65e:49c9 with SMTP id 5b1f17b1804b1-49cf823f57fmr438673975e9.10.1788769694367;
+        Mon, 07 Sep 2026 01:28:14 -0700 (PDT)
+Received: from localhost (p200300f65f19a9047ae53bb37ada872a.dip0.t-ipconnect.de. [2003:f6:5f19:a904:7ae5:3bb3:7ada:872a])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-49cfd3f8192sm253287995e9.3.2026.09.07.01.28.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Sep 2026 01:28:13 -0700 (PDT)
+Date: Mon, 7 Sep 2026 10:28:12 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: John Erasmus Mari Geronimo <johnerasmusmari.geronimo@analog.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robh@kernel.org, 
+	sre@kernel.org
+Subject: Re: [PATCH v2 2/2] power: supply: add LT8491 battery charger driver
+Message-ID: <ap501OIVvkOg_sAI@monoceros>
+References: <20250110080235.54808-1-johnerasmusmari.geronimo@analog.com>
+ <cover.1788432152.git.johnerasmusmari.geronimo@analog.com>
+ <9c260e1c2056c69be1cb7a05abcd10ba657c1548.1788432152.git.johnerasmusmari.geronimo@analog.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="izx6zmq4uugxibrs"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260907081334.1152889-1-ye.liu@linux.dev>
+In-Reply-To: <9c260e1c2056c69be1cb7a05abcd10ba657c1548.1788432152.git.johnerasmusmari.geronimo@analog.com>
 
-On Mon, Sep 07, 2026 at 04:13:26PM +0800, Ye Liu wrote:
-> From: Ye Liu <liuye@kylinos.cn>
->
-> Introduce for_each_process_rculock(), for_each_thread_rculock() and
-> for_each_process_thread_rculock() macros that combine the existing
-> iteration macros with scoped_guard(rcu), so that the RCU read lock
-> is automatically acquired before iteration and released when the
-> loop exits — including via break, goto, or return.
->
-> The rest of the series converts manual rcu_read_lock()/
-> rcu_read_unlock() and guard(rcu)() pairs across mm/, kernel/, fs/,
-> lib/ and security/ to use the new macros.
->
 
-Andrew - just a note (assuming Ye Liu is in agreement) I think all of the
-below should be excluded from the cover letter that goes into the commit
-message, including the checkpatch thing.
+--izx6zmq4uugxibrs
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Subject: Re: [PATCH v2 2/2] power: supply: add LT8491 battery charger driver
+MIME-Version: 1.0
 
-> Changes since v1 [1]:
->   - Rename macros from *_rcu to *_rculock, as suggested by Steven
->     Rostedt and acked by Thomas Gleixner, to avoid confusion with
->     existing *_rcu() list iterators that expect the caller to hold
->     the RCU read lock.
->   - Improve the comment on for_each_process_thread_rculock() to
->     document that 'break' only exits the inner loop and 'goto' is
->     needed to exit both loops (Thomas Gleixner).
->   - Rename the stale 'unlock:' label to 'out:' in hung_task.c, as
->     noted by Günther Noack.
->   - Clarify in patch 4 that page_pgoff() is safe outside the RCU
->     read-side critical section (SJ Park).
->   - CC all relevant maintainers on every patch (Lorenzo Stoakes).
->   - Drop the mm: prefix from patch 1, as the macros are in
->     include/linux/sched/signal.h (Michal Hocko).
->
-> Patch 1 may trigger checkpatch "Macros with complex values should be
-> enclosed in parentheses" errors.  These are false positives — the
-> scoped_guard() pattern is a control-flow construct, not a multi-
-> statement macro, and the same idiom is used elsewhere in the kernel.
+Hello,
 
-While it's useful as a note to reviewers, in general checkpatch is taken
-with a pinch of salt - it's a master of false positives so usually no need
-to say this :)
+On Thu, Sep 03, 2026 at 06:46:37PM +0800, John Erasmus Mari Geronimo wrote:
+> +#include <linux/i2c.h>
+> +#include <linux/mod_devicetable.h>
 
->
-> Suggested by Michal Hocko for the oom_kill path [2].
->
-> [1] https://lore.kernel.org/all/20260904083001.553587-1-ye.liu@linux.dev/
-> [2] https://lore.kernel.org/all/20260813092933.562028-1-ye.liu@linux.dev/
->
-> Ye Liu (8):
->   sched: introduce for_each_process_rculock and for_each_thread_rculock
->   mm/oom_kill: convert process/thread iterators to for_each_*_rculock
->   mm/ksm: convert process iterator to for_each_process_rculock
->   mm/memory-failure: convert process iterator to for_each_process_rculock
->   kernel: convert process/thread iterators to for_each_*_rculock
->   fs: convert process/thread iterators to for_each_*_rculock
->   lib: convert process iterator to for_each_process_rculock
->   security/landlock: convert thread iterator to for_each_thread_rculock
->
->  fs/proc/base.c               |  4 +---
->  fs/resctrl/rdtgroup.c        |  8 ++------
->  include/linux/sched/signal.h | 25 +++++++++++++++++++++++++
->  kernel/cpu.c                 |  4 +---
->  kernel/freezer.c             |  4 +---
->  kernel/hung_task.c           | 11 ++++-------
->  kernel/locking/lockdep.c     |  4 +---
->  kernel/rcu/update.c          |  4 +---
->  kernel/sched/core.c          |  3 +--
->  kernel/sched/debug.c         |  4 +---
->  kernel/trace/fgraph.c        |  8 ++------
->  kernel/unwind/deferred.c     |  3 +--
->  lib/is_single_threaded.c     |  5 +----
->  mm/ksm.c                     |  4 +---
->  mm/memory-failure.c          | 16 ++++------------
->  mm/oom_kill.c                | 20 +++++---------------
->  security/landlock/tsync.c    |  8 ++------
->  17 files changed, 54 insertions(+), 81 deletions(-)
->
-> Signed-off-by: Ye Liu <liuye@kylinos.cn>
->
-> --
-> 2.25.1
+Please don't use <linux/mod_devicetable.h>. You can rely on
+<linux/i2c.h> to provide i2c_device_id and of_device_id. Alternatively
+include <linux/device-id/i2c.h> and <linux/device-id/of.h>.
 
---
-Cheers, Lorenzo
+> +static const struct i2c_device_id lt8491_id[] = {
+> +	{ "lt8491", 0 },
+> +	{ }
+> +};
+
+Please make this:
+
+	static const struct i2c_device_id lt8491_id[] = {
+		{ .name = "lt8491" },
+		{ }
+	};
+
+(i.e. use a named initializer and don't explicitly initialize the unused
+driver_data member.)
+
+Best regards
+Uwe
+
+--izx6zmq4uugxibrs
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmqedZkACgkQj4D7WH0S
+/k6enQf/cfgn/jeJDnqupXKlB2/USBaFWX79CznAQSEq9RD8PL62FsicUxR2+EYM
+YxFRNZ6DQgf/g393cau19HSDv00Z0cL636rC6Dv3LlWCLCYNq7Jplo4SI5+whggQ
+HwgKNmEJh//evjDVWxGJSGTB1PyukASl4x4PmfHQ7P2YU6TKez4yfp8/iQq5sJwM
+mBX4qJgmb0Rm7VPBFkt2zWyE/CG72+k5IhRVbGlsQX22XXEisJQkz9xahR36JKbG
+jMzjw1loaw6AqTayi6V6fXvYzSBNisqYPgi72x9tqS51QIMINZ50AbTnWudfcoGx
+krCzDhwGe3oLzrceCDGLiBcmTu8pJg==
+=anpd
+-----END PGP SIGNATURE-----
+
+--izx6zmq4uugxibrs--
