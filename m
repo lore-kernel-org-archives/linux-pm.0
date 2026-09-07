@@ -1,63 +1,63 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A236041A4F9
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 06:47:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33ED3415F2B
+	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 06:48:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788763682; cv=none; b=m9wVu028m2wku8cqoE8qorUo2j8GWcg/LNJEf1lPQEVzweLmHjd6oMB2K7jZtIYtifvRE67K+Y3U2ERZ7xg8Ywuvyn+/PvOzm8NXnDghIeBRkMJXqU4+ezPNW5UbHuaFFNK02L4sco0MXBK9zBPNFPttruk6Peng2Fefyx4Yv20=
+	t=1788763688; cv=none; b=gDhwnNuqwN91bcjVz6q1NHpwoQKfHufRRbTw+SDGabLBPQQ89+jfOktllbfYYFNf3hj131bpc2jA8cMf3KcTThRUn94v/JG+Thz8oQm+iK9KahRgNzcCsXLMdO0v+RZ05Dm1Oohg7xu2qvPNoHSLO6wDJr1RmBXRi7bBucgbpfw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788763682; c=relaxed/simple;
-	bh=yXnUcv5qVGtYzgWj9FiGbfPJUzxRYD9YlLEosr6E6dM=;
+	s=arc-20240116; t=1788763688; c=relaxed/simple;
+	bh=NySkzWKGvAVQrs22Wj3YGugY/Vl4ZuUmyHXC/e0Qdz8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uJ0L1ourN7WSjfzar9/ruMZL5T8gBMZ2WqInwi0Dj5C3fYqd0R3fpwqSYmgn48REnq/wNo25PXYvKUnqfQm6OweXlGDBVI0FzkHv0c4RkZe1X8V3S8VFTteCJD3JQUxAN1gPuvrILl2TUQ19sUYQK1QSzUbEO32HaH+QOAzoKfk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TEkA2AXz; arc=none smtp.client-ip=209.85.216.51
+	 MIME-Version; b=d4pSKpGxEG/J3K+ATjSST2y3KfV317j7lwgf4TGh+sS1quOSnGlF1xZy71xOnSLHwAXGGgjYzY9KUyzMwA3qucDUnqtZKjj/JR9CsjBJr0Y2mgjcl0/SjCqR04iHl/oJxjXlM3q00jCBZUwI3LwqS6pGV8eo+D8EJJNURg22glE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pcmxg0Qd; arc=none smtp.client-ip=209.85.216.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TEkA2AXz"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-38e58034d05so2529837a91.2
-        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 23:47:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pcmxg0Qd"
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-38e041ea211so2392604a91.0
+        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2026 23:48:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788763678; x=1789368478; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1788763684; x=1789368484; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=HpKYH0amj/dwSRkLCI992Ocp0fThRc8J4K3VwmqlP48=;
-        b=TEkA2AXzP1ykjfqACx/jwed0U0LNdDZW6cGOrZ5RQo//9jTV+EFTNwnnmVzXjhb2op
-         6BPX5Ow09lMovUQMg3a5IJ+aIFH0adXTPVdP0+KC5v45Q5TFr0f11AG/7dNn7t5RbItV
-         c/FOxNxh3mUnUZ2+Z5UAmFDnsEqqDhQAaznTL5N3yyR4KmX3CkHPYapRil6wIcYCS1+B
-         6X0ch2njIoFDNS7TwVF+yChN9zUPBvQ3zn8HogDmLXr+Jpyh2s+XiGYvjuK/a5zqhILT
-         J+innFog8GVkrLiD5DdP+1vhX0F+laIpVd0uaIFiMElXfHI3JY7CLHyK4iKOUZITTDw1
-         P+kQ==
+        bh=sp3Y74c4rqp4LQw7mbFodFzkhcskiP8CvJ8q4Odm34Y=;
+        b=pcmxg0QdhaGNJULz7S3WvjNFTMfgKEnfQ1lTzIJKt7RAkiFS2bIbnccWhd7edV+msg
+         eZW1TE/UXd3aAnYa/UbJ/Vh/YnJGXPkczE/i+KPtxwS9xsYnDMNyY3aRoWwpt5AbZOYF
+         U/T14xjPplnfMUBMcMmR2EJZizqH2g3dNQ+2nh9Pfz2nZ+NVypi8s/7kPnQLeLS+588U
+         ineD/9arkUWnWG+W6H9J35qKfU1zihcCS4IAqodFNKl7dpagHbzrjd53C0/z+zAnieK2
+         0VLOTRj1DFtJ7T3Hy7nQEJlsOF2C8RQYtrRwVhtGqnmHgHRAYUuBv1hNhIlmk3eLpQdN
+         dbKQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788763678; x=1789368478;
+        d=1e100.net; s=20251104; t=1788763684; x=1789368484;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HpKYH0amj/dwSRkLCI992Ocp0fThRc8J4K3VwmqlP48=;
-        b=KE8EnxHBh4M68nmGtyhIyRmvgst3omE2C4accTYLGoSBPAEusKATw6Aj2zFjcSUVzZ
-         mf6tXQEwW00cvsMIyplbzQzlmUImWzw7NWhFXMa0K4VfPHMtQ6MiH8al/uNYQ+Qrit9E
-         52zJXo5hgiFSqkG6flr2BomrV7dQON7p96kVLlTqydFVnZFoUVv7buMZvoRy9pNAaPMA
-         teqUPPdciLvTNyFTchTVw250a1Er0Q8hd9YSnx16Zf/zA2zhzpI91bs2JrdcQzvQJaWu
-         2GkEO8C/+gPmur7FnQgng1+8c0NqoVY32f+OZFqUkN7bPNvNowQZUc3RPZEeN+g0ZDU8
-         oSHw==
-X-Gm-Message-State: AFuF++k81d4ZBt1MD2FS0kBx87V+Z9tP98qT2EB+hzB2aa1AHiDG8EJu
-	XRQkHOxFt3q8I7h0Xc3htsmmHo8mUjQjz18TxGo/j8d3AWi1knSr96oj
-X-Gm-Gg: AYBFou3fhKvk5rJGazKEjalJoC8O9kdp3PxXJawTuNRlmvtkjE/F5NXSjzkIevoWvkc
-	aYgyUZeShD7k9dgNpWIWgOjBrwKs8/eH457Cs7a8JQCNfooB5zQyCqArVb7NyUM2meUtYdUxUI0
-	pmaR542hN2AO2qQNSG//wy7GoUoBxkUMkn4ysDuWKBVdDe5lMUyNxi+e8tjAdmfYIv5t48tBwaj
-	/pU6oDiaPfguepzRrvuOHSTgD32UCj/JW7eVzzvO3JCRa2ZlCzIDaW4mK1TZpuCLTp1LU2PmRll
-	6V1+vvtUcWkYl+LyiNAGuTp6f7a1aHbQX0jw9LLEVU2tB8kcbLwbeMfowI12jZBrz4jnIEt/htz
-	GmHowUm+QyiUvVcQLyfRlAqHNQG0szLnfpDU9vBBqenzURlaLmA0ySeXcmM1OfjMb7X226Hkb9N
-	c3/RoOogsKTaKI/eL/OOMq04OM7MKW84om/U0E8k9ejoUVnnxWAbhoxa8Gp//ng4s8mGe3tlqFl
-	wKgANTciaC0sw==
-X-Received: by 2002:a17:90b:35cb:b0:398:a486:81ec with SMTP id 98e67ed59e1d1-39b261ae617mr36625720a91.11.1788763678086;
-        Sun, 06 Sep 2026 23:47:58 -0700 (PDT)
+        bh=sp3Y74c4rqp4LQw7mbFodFzkhcskiP8CvJ8q4Odm34Y=;
+        b=KfFgKuCppxu0F0Jh8Mbv9f5TzMfxmhbVqXmcuy3UdCjvKY0tuE0P6vNZaHNiKG5CXA
+         jMSiQlmSDyefAv5HdslTRlcHVyfNwS/xT0RmcB8+Ux2Z3xN1fgGKQu/pjS6b579KTOHr
+         ZsWJ9UTsz0qA4i1BZC6eTG0kJ4veiMb4AiFQfIyQOxiSMBF1fOzQGVpc38Zif5004rAn
+         aGxaYot5ujITwyGTQODEGq20ejOOWVXrdNMvg6+SfQ+NXGuHl3Vf+iben65OmwkMgbYN
+         1RmgkFm6j34XlkntpXlpM7LWfteiiwVrI0JrmSajkvbOUG5Cxowt+4moOuUJrt6+xdkY
+         La5A==
+X-Gm-Message-State: AFuF++mVDqZ8fgz6sWwXQHUjVmVn4Bcxwkmaq3js56g4dU7C62TO8d5z
+	CoLGIc6zRRU18RkfoCHqpL+TnVGrkCcgWEzRcswxH/2SG07rR4zReS68
+X-Gm-Gg: AYBFou1YmvAvEeozW5HkTz5rLhMpjw+C3fCwA464LbOEKrx0Xt3kXro88VnR2oVhkMQ
+	NZK0pkGWDvLkh9ZF3iYuLaEMo4KQpfu2Wj+EYeX36jfSrdTvgiZR7yTUyRaNE+ljRT3EIAfy/TJ
+	yvkJB0J8nrdg7gf9UPdkGGA7xYWR2GUWZaY8TN9cMON5xf7Tun/2vnE9RxtySnUAbBXMgRFQkKT
+	4MsLLmx8R0Jmqag+o6Bwx38oOLCpaOgPnUb1lcGhC0xQfrse/2AMfGqua2DkzNQygKw5Q1vxu/Q
+	s96cunimLH9A7ks4PLuNxdTULxVnZJNiZKzg9h9RmjE44G+A3FASCL4rSUAb4yv7t20KdqsljDD
+	q91VcU1YH0NZTNHHDtMrdTHOYIWalGJB50pEawm9YTI+IYTjJKAdOeJ8bDGiZlE+ytuIhL+Mxfb
+	ku4wqBBs5tzDExD5nxQe4iJCHN2Z3+PjBMykz59J9POniiBuufCY8DIL4Md2U9RnDIQmawJVs6H
+	ivnTh1jJ1U2gdjgvhdtzBAQ
+X-Received: by 2002:a17:90b:3804:b0:366:3517:1aa2 with SMTP id 98e67ed59e1d1-39b25f4397emr32259222a91.0.1788763684190;
+        Sun, 06 Sep 2026 23:48:04 -0700 (PDT)
 Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-333c9db92b1sm24811158eec.9.2026.09.06.23.47.52
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-333c9db92b1sm24811158eec.9.2026.09.06.23.47.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Sep 2026 23:47:57 -0700 (PDT)
+        Sun, 06 Sep 2026 23:48:03 -0700 (PDT)
 From: Hemanth Selam <hemanth.selam@gmail.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Len Brown <lenb@kernel.org>,
@@ -78,9 +78,9 @@ Cc: linux-pm@vger.kernel.org,
 	linux-omap@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-acpi@vger.kernel.org
-Subject: [PATCH 4/5] cpuidle: fix repeated word 'that' in comment
-Date: Mon,  7 Sep 2026 12:17:24 +0530
-Message-ID: <20260907064725.10686-5-hemanth.selam@gmail.com>
+Subject: [PATCH 5/5] ACPI: NUMA: fix typo in log message
+Date: Mon,  7 Sep 2026 12:17:25 +0530
+Message-ID: <20260907064725.10686-6-hemanth.selam@gmail.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20260907064725.10686-1-hemanth.selam@gmail.com>
 References: <20260907064725.10686-1-hemanth.selam@gmail.com>
@@ -92,28 +92,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drop the second 'that', reported by checkpatch.pl as a possible repeated
-word.  Only touches a comment, no code changes.
+Correct the misspelling in a message the user sees, reported by
+scripts/checkpatch.pl using the list in scripts/spelling.txt.
+
+Only the message text changes, no code changes.
 
 Assisted-by: Cursor:claude-opus-5
 Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- drivers/cpuidle/cpuidle-tegra.c | 2 +-
+ drivers/acpi/numa/srat.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
-index aca907a62bb5..d2fc216c38fc 100644
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -281,7 +281,7 @@ static int tegra114_enter_s2idle(struct cpuidle_device *dev,
-  * LP2 | C7	(CPU core power gating)
-  * LP2 | CC6	(CPU cluster power gating)
-  *
-- * Note that that the older CPUIDLE driver versions didn't explicitly
-+ * Note that the older CPUIDLE driver versions didn't explicitly
-  * differentiate the LP2 states because these states either used the same
-  * code path or because CC6 wasn't supported.
-  */
+diff --git a/drivers/acpi/numa/srat.c b/drivers/acpi/numa/srat.c
+index 5c407dc6401e..f5616830f5a9 100644
+--- a/drivers/acpi/numa/srat.c
++++ b/drivers/acpi/numa/srat.c
+@@ -111,7 +111,7 @@ int __init fix_pxm_node_maps(int max_nid)
+ 			for (j = 0; j <= max_nid; j++) {
+ 				if ((emu_nid_to_phys[j] == i) &&
+ 				    WARN(node_to_pxm_map_copy[j] != PXM_INVAL,
+-					 "Node %d is already binded to PXM %d\n",
++					 "Node %d is already bound to PXM %d\n",
+ 					 j, node_to_pxm_map_copy[j]))
+ 					return -1;
+ 				if (emu_nid_to_phys[j] == i) {
 -- 
 2.48.1
 
