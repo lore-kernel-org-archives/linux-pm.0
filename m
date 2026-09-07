@@ -1,130 +1,92 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E51B13546C1;
-	Mon,  7 Sep 2026 21:29:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90B711A681B;
+	Mon,  7 Sep 2026 21:34:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788816551; cv=none; b=doJ85ZrDpX2hU6KzKuxm3wTnBD1IOLcAGloQlttz3cIYP8ND4WUx+znuZyxwuUDrNbeQSC2hwpV0yNON/iNnObw0a+3pwgT37Z5Jz78p8AaT9gxymFkcylDRk/SyOyqg7IqI4ZcC7jacl5xlJVCMxhR8P1g21fa/TBmAHGwjZc4=
+	t=1788816875; cv=none; b=tbNsSkPJT+6BOqcpfKPcP5JzzYi5WPDi+nNKPZfSXvRlbYMY3/VnftbNGCu7uQ36r2WJ/i3yrDJMyUJeu/sY4sIdoTZiAOqUcJ/AbfT7ZWRhFnAFLWki5D1YhTuk+cVYAPBFKrNKOitOBan4iaqWjl4c1XDDVIDKDBKS0k15MwI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788816551; c=relaxed/simple;
-	bh=yAs96O0yppt/Yb0wr2Shwx2NF5vjnpTEq92J5LGfixE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=FVwVqGjeSazyargHq9IDGjXCA/5a6ORHM0h5+5PawsinInfNzi9KnNdwb+rYDzuYlkGdr+dwHWqk0iOXLZeAd5MJ6bDbu6rP2V9sje164xB+V/yJXyH8OW4rN4QYSQ0RFy7ovh8h/XksyTZ5dCQlJdtpHodWzJE8RHcCMkNX7Sk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mEkeflrW; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788816875; c=relaxed/simple;
+	bh=vm2McZkHqaANVqUSfuCQ1ACPPaLD7b8TIB/iVn8Q+Ls=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DM2lR6Q4EP6UCRYiYEqHNYQNKMJYtSJPEqrkij75g6V/9JK2vKjtdGR8IOErUR5pPcu4UXGcoU6FXdS5ylB3f1RCskJYTUE9+sO4A6N+ycdMdKzFCg50WSptZr+ySdzdOiL7PvFXjKDIGXQOzlm8fgC0k/9WNFwdA7v1mOpfoZw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kAtD7Ww7; arc=none smtp.client-ip=192.198.163.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mEkeflrW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65E0E1F00A3A;
-	Mon,  7 Sep 2026 21:29:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788816549;
-	bh=SCl+jEvdrjqF72ntttZG2eEJe2zsb8hqXfy1vCrvzWU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=mEkeflrWN0r6Z+I8Juu6xf4YbiwhChACWok2YclBi8b5nJBlIpqf1i1momt9AzMLn
-	 HI1QtdkqTbNw4Jerj49Q9WTpWX98qUbvbygdjgic02n/DaTSMEahTmlv1lPyfkNLUM
-	 WYq/jtyC+ORcrpiixiCUqCGT3HhBkClPjn+0e1dhgw14q14WbqLaTNBJ1+rTTBFm0z
-	 Wo+OnNoio7rYWCJuwuHi8LhB5Cz3YZD+JVd+OY+K/vMlx6/4gF71U4NBaqZ8jahuv/
-	 zpeq5EIJQp6qYxFG4w7AcQ9aa36+t+qChh4tHUDjmdDzzGm6jRaybZIc0+0lUtQj6p
-	 kQif/l2wruLaA==
-From: SJ Park <sj@kernel.org>
-To: Ye Liu <ye.liu@linux.dev>
-Cc: SJ Park <sj@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Will Deacon <will@kernel.org>,
-	Boqun Feng <boqun@kernel.org>,
-	"Paul E. McKenney" <paulmck@kernel.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	Josh Triplett <josh@joshtriplett.org>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Josh Poimboeuf <jpoimboe@kernel.org>,
-	Ye Liu <liuye@kylinos.cn>,
-	Michal Hocko <mhocko@suse.com>,
-	mic@digikod.net,
-	oleg@redhat.com,
-	david@kernel.org,
-	linmiaohe@huawei.com,
-	nao.horiguchi@gmail.com,
-	gnoack3000@gmail.com,
-	ljs@kernel.org,
-	rientjes@google.com,
-	shakeel.butt@linux.dev,
-	xu.xin16@zte.com.cn,
-	chengming.zhou@linux.dev,
-	tony.luck@intel.com,
-	reinette.chatre@intel.com,
-	x86@kernel.org,
-	paul@paul-moore.com,
-	jmorris@namei.org,
-	serge@hallyn.com,
-	pavel@kernel.org,
-	lance.yang@linux.dev,
-	pmladek@suse.com,
-	longman@redhat.com,
-	mathieu.desnoyers@efficios.com,
-	jiangshanlai@gmail.com,
-	qiang.zhang@linux.dev,
-	dietmar.eggemann@arm.com,
-	bsegall@google.com,
-	mgorman@suse.de,
-	vschneid@redhat.com,
-	kprateek.nayak@amd.com,
-	mark.rutland@arm.com,
-	Dave.Martin@arm.com,
-	james.morse@arm.com,
-	babu.moger@amd.com,
-	linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	rcu@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-security-module@vger.kernel.org
-Subject: Re: [PATCH v2 5/8] kernel: convert process/thread iterators to for_each_*_rculock
-Date: Mon,  7 Sep 2026 14:28:59 -0700
-Message-ID: <20260907212900.88422-1-sj@kernel.org>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260907081334.1152889-6-ye.liu@linux.dev>
-References: 
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kAtD7Ww7"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1788816873; x=1820352873;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=vm2McZkHqaANVqUSfuCQ1ACPPaLD7b8TIB/iVn8Q+Ls=;
+  b=kAtD7Ww7zzrI1eWEzWDNN+0l3mQQVfDX1dfHoW/Zkj84zTkjdFXOqNmb
+   gvNMwNZp2ON+M7jvVjvhP/D/uUR7vnZWPoCpBoAeTrts2MWnTnilz+JNP
+   hKD50UlJLnh9MOvxQoOXWWiTKwMHAPE1tqYdgBIAyYe52euN3CYMiSEvK
+   Sje++/G2dNxfnfmKGM3LBPzsnOWu6LfkTibrzVJ1eMJuD8tou3BN2b3WB
+   EnxGuiz02qOvJ2WCo76DWnfuhQYgcdOWuTtdmoP6v00bwk7pvIjoxP6YI
+   lTWykfraV8kugz+yL52ofL6OVl9OGdcnJAWDuspXIThAi1dz2t6XFrWOV
+   g==;
+X-CSE-ConnectionGUID: exKeijBKSSW2zqSRQ80sBw==
+X-CSE-MsgGUID: wFTv1MR8TjGvTEbA1tNPjA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11899"; a="106732943"
+X-IronPort-AV: E=Sophos;i="6.25,268,1779174000"; 
+   d="scan'208";a="106732943"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2026 14:34:32 -0700
+X-CSE-ConnectionGUID: gXsGUaejTeiVdLQQWiFsfQ==
+X-CSE-MsgGUID: rQR0vMokQgKZrvUuLshzwQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,268,1779174000"; 
+   d="scan'208";a="271326046"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO kekkonen.fi.intel.com) ([10.245.244.80])
+  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2026 14:34:29 -0700
+Received: from kekkonen.localdomain (localhost [IPv6:::1])
+	by kekkonen.fi.intel.com (Postfix) with SMTP id 90A7611FA3A;
+	Tue, 08 Sep 2026 00:34:30 +0300 (EEST)
+Date: Tue, 8 Sep 2026 00:34:30 +0300
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Peixin Xie <peixin.xie@linux.spacemit.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Linux PCI <linux-pci@vger.kernel.org>,
+	Bjorn Helgaas <helgaas@kernel.org>,
+	Hans de Goede <hansg@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v3 0/4] ACPI: scan: Adjust power management
+ initialization and PCI devices handling
+Message-ID: <ap8t5qhuEll-Xx4N@kekkonen.localdomain>
+References: <6044499.DvuYhMxLoT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6044499.DvuYhMxLoT@rafael.j.wysocki>
 
-On Mon,  7 Sep 2026 16:13:31 +0800 Ye Liu <ye.liu@linux.dev> wrote:
+Hi Rafael,
 
-> From: Ye Liu <liuye@kylinos.cn>
+Thanks for the set.
+
+On Thu, Sep 03, 2026 at 06:57:09PM +0200, Rafael J. Wysocki wrote:
+> Hi All,
 > 
-> Replace the manual rcu_read_lock()/rcu_read_unlock() and guard(rcu)
-> pairs combined with for_each_process(), for_each_thread() and
-> for_each_process_thread() loops across kernel/ with the
-> for_each_*_rculock() macros, which scope the RCU read lock to the
-> loop body via scoped_guard(rcu).
+> This is an update of
 > 
-> No functional change.
+> https://lore.kernel.org/linux-acpi/5144065.31r3eYUQgx@rafael.j.wysocki/
 
-Looks good and correct to me.
+Tested-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 
-> 
-> Signed-off-by: Ye Liu <liuye@kylinos.cn>
-> Acked-by: Michal Hocko <mhocko@suse.com>
-
-Reviewed-by: SJ Park <sj@kernel.org>
-
-
-Thanks,
-SJ
-
-[...]
+-- 
+Sakari Ailus
