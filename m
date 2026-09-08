@@ -1,143 +1,111 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk2-f12.google.com (mail-qk2-f12.google.com [74.125.230.204])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A36641B8ED
-	for <linux-pm@vger.kernel.org>; Mon,  7 Sep 2026 22:44:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788821086; cv=none; b=Raz5lKlc9+p3T3UpEGy52JLM9DUPMjMn5seGvmrry+wSvKoj40mcplLyPs6wj0LSRHItNNuQM25XBSKrWLnYn62r0DWn8wjcDtf2FmPEGwrBstpuuRS1yNsaaOSAqfNTtyVZrJqgfNHhC+3rXlkdX06LM2cT1JSS6FlxxNWz6pc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788821086; c=relaxed/simple;
-	bh=J8kU2kAxNOmmnwSc84F95Ok5dyfh/t/PEHhe+MDnpN8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=m9vDGXokX3qSvwF57SQ7tjV9TaGnTTj2Joybu4A2885aUAkpQXOwcpfimVAUn9qWWqtAcENMKY3N8p/PnMKp+g4Sbytsp5l2w1KxxnKERF42x8ZdCiClN80REC+94rLG3OpPsUuHdpzmfqHoQ5yqR8wWE+X/3uWXO7TjT74WlHw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=OQtJsV9Z; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80BC81F192E
+	for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2026 01:34:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.230.204
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788831294; cv=pass; b=CDEuuCJeMpNVImCG7odcwvrDLwpuiC+TOU/bTM+x3C5/YdWmKWTK693QGAfWAspOKL/IeIB/NtCbeHde3u9Uc4d8ijTYmin+2pw1kH8+jeigkCAouMx8aqhUglxyxRbITaahf+DLYUuQEKvwDD+AgYlmGy/CniOgdmEYJuSZ020=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788831294; c=relaxed/simple;
+	bh=C8sk1qEEBHqvgTdmahyfxl6izzwTI6I+XEK6unrL7yQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZhOWyW104TlKJcDdrR71l5ZO2+jBvCtWVBNz161J4QwNdXDI+f/BW8HdwzUPHIWkGpcnOl1rqyMhIonyUDuJd6hQSMPfIiZvwqExyn+DECJ7zV54lXgs8zT5L9tugtt92FoBD7xNWudl6B42zbOEMlP56rHhja95X2MWdaTXfWI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=DymFgwAO; arc=pass smtp.client-ip=74.125.230.204
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="OQtJsV9Z"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1788821084;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=b1TxJUQX49cLbWEB/ivNKBx96Wq16OEvm5/00tKxapE=;
-	b=OQtJsV9ZCkCoZP9XQnYDN/iUIypGuEPsfGa4Msvod9AzoBdtyL6ONkFwKpzbaGlOXayWaD
-	aAiZdd+36/4ERX+LApCEYEg/nXD0gBesO0Ruo52vhi6aUTXVDXOPV+CS7JHIHwZgRIMJgB
-	eAFucM7l8XxXisqzP3qeGqy0pzfoTJ0=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-639-rhwnyy5rO7WukC_7-0AUog-1; Mon,
- 07 Sep 2026 18:44:39 -0400
-X-MC-Unique: rhwnyy5rO7WukC_7-0AUog-1
-X-Mimecast-MFC-AGG-ID: rhwnyy5rO7WukC_7-0AUog_1788821078
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 4E1A21800656;
-	Mon,  7 Sep 2026 22:44:38 +0000 (UTC)
-Received: from fedora (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id D48F11956042;
-	Mon,  7 Sep 2026 22:44:20 +0000 (UTC)
-Received: by fedora (nbSMTP-1.00) for uid 1000
-	oleg@redhat.com; Tue,  8 Sep 2026 00:44:37 +0200 (CEST)
-Date: Tue, 8 Sep 2026 00:44:19 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Gregory Price <gourry@gourry.net>
-Cc: Ye Liu <ye.liu@linux.dev>, Thomas Gleixner <tglx@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-	Boqun Feng <boqun@kernel.org>,
-	"Paul E. McKenney" <paulmck@kernel.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	Josh Triplett <josh@joshtriplett.org>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Josh Poimboeuf <jpoimboe@kernel.org>, Ye Liu <liuye@kylinos.cn>,
-	Michal Hocko <mhocko@suse.com>, mic@digikod.net, david@kernel.org,
-	linmiaohe@huawei.com, nao.horiguchi@gmail.com, gnoack3000@gmail.com,
-	ljs@kernel.org, sj@kernel.org, rientjes@google.com,
-	shakeel.butt@linux.dev, xu.xin16@zte.com.cn,
-	chengming.zhou@linux.dev, tony.luck@intel.com,
-	reinette.chatre@intel.com, x86@kernel.org, paul@paul-moore.com,
-	jmorris@namei.org, serge@hallyn.com, pavel@kernel.org,
-	lance.yang@linux.dev, pmladek@suse.com, longman@redhat.com,
-	mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com,
-	qiang.zhang@linux.dev, dietmar.eggemann@arm.com, bsegall@google.com,
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
-	mark.rutland@arm.com, Dave.Martin@arm.com, james.morse@arm.com,
-	babu.moger@amd.com, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	rcu@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-security-module@vger.kernel.org
-Subject: Re: [PATCH v2 5/8] kernel: convert process/thread iterators to
- for_each_*_rculock
-Message-ID: <ap8-QwC3JLDCQdcL@redhat.com>
-References: <20260907081334.1152889-1-ye.liu@linux.dev>
- <20260907081334.1152889-6-ye.liu@linux.dev>
- <ap7dC-LWNaoPYJvv@gourry-fedora-PF4VCD3F>
- <ap76-0-hN6CAcYXX@redhat.com>
- <ap8mgnpE7D4TTrno@gourry-fedora-PF4VCD3F>
- <ap8yoW37GY17pHYS@redhat.com>
- <ap83lNf0bUXX4ZS8@gourry-fedora-PF4VCD3F>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="DymFgwAO"
+Received: by mail-qk2-f12.google.com with SMTP id d75a77b69052e-530411c7ee1so422751cf.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 18:34:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788831290; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Yo68bqqFPri2Bd1nkRQrYrnOEm+/9ZAEE+d7ziVRTI63XLKEo3PZWfjbc67LvCSOg5
+         kJIWfZNe3hDcrsr/H/bwK7r7RNecM6vs7GHfdoQ+XhkgYTEfKAewGdcAluA3OSzDpiBg
+         zvMGQTB/l2nVkPDL97rBuVzCyqMVfwPUP0xqlIkffRH5osG1CVQgYcrrHB8DZUG8QVQB
+         08sgLvHtyWwed5PfTXcRm4K2z35JTBE3iV1g+M3QbkprORF3vW7LBSxDPvdSVFrRuE3h
+         qy/vVyVc77BLvwbotVqdP3bW/Ep47g22OmKDxoZy0PLjx+Ou3R49xkk23BGIkZbrLrcp
+         gCkA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=YQzs+TvnkG8jX4qlU9/TEe5EeymKa8IftTGzTEUV4Yk=;
+        fh=Xn0sgGT6BSlYLgDdgoUCPoWzwK4IaeC3IKdjtDjdmW8=;
+        b=iodNb6/e+3ydttMWxMCyqOtkIzd7Wv068sh+RJ4DFXiY1apsBS5TJ+eMOVrzC6TZVX
+         QJDvAsh0EGNUrQcP+nXXZOPbYMTNoaZ0pDzFe8fDxowEVOyTQMwRoMJ7yJA7mOmdvmLi
+         6YPOM7FjXQc5d0ypd81uIVKCK1oEoN0zXWKgqxBXqpDPfZH7RR6EQdgTOEU9RStr9y/g
+         ACaRK2iwBvWDD/joKQZNL1hw1ykmIy4nXN+ssOewQwSP98WE8SbfQ3efa4jH0EZvAAwj
+         2M5S4ez+jh3lKQIlqNVwC2P6M+GxB1OP9NT/QwVUKE3owHRFL89K9GjGLzvdNqQTbdTy
+         crXg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1788831290; x=1789436090; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YQzs+TvnkG8jX4qlU9/TEe5EeymKa8IftTGzTEUV4Yk=;
+        b=DymFgwAOtJUFGZt5lu1Tshdi/d8zDIHmuinpeTQTNgWV0ex6voSVJR9OID1gJb8Y7m
+         pcMFQ2d6JRyJJ/jIKuxmiT6A5x4sJpz0/1DDroDqCROFVYLApkyutPOJzm0AbECRKQ3e
+         TgSdtFxORfU3kSpIn7tMFqtP4puzKQUM3Mk8cCYHa9dhvQ8FTKbyo9q1euOqd3UFlfL6
+         83F3tGuaE/trAXkb5dSe7fQySehyEFGoTgFJD6V9sSTQZf9+yDuR3pGjbIOxf9Js87K/
+         lP3NpB1LimQgUQBFafZSEOky2bs67jzN9b/dSlChv/3QLQJo4rf4/CW/b4tkg2V9uscP
+         rVkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788831290; x=1789436090;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=YQzs+TvnkG8jX4qlU9/TEe5EeymKa8IftTGzTEUV4Yk=;
+        b=EKiSuN6a5CdxRBuczRKTG48+F8K6EX2bjTHactiycsQ/FyuY1NcyfXI/duR0a+hmp1
+         bkXzAgEOujGxIAJK4a/QBkPWSU1shpREMDhUOV7r1/QoZcKV6RDOUcr0CZ0U2mygifYY
+         xZWCSIShbtKCHQwCFY5YxyGfujcKjlRleAJDGqE/day+OBCduZYUIPEg1xo8KurF5lI8
+         g+WFW2Einft/zGLsFdSlE6szqj2wZsKi7orblQdHyxGPqFpQWZTR3wbw3TGo6PKbvMMx
+         iKqZSjGtqWAd3tJaTiBWvuKk9Iq5sk0OlPx7Vkjh7+3i4ZJiPHsfbvNfNUbOZ+EbbNkN
+         4S3w==
+X-Forwarded-Encrypted: i=1; AKwUvBxBPifc01ezQ8QvvHiY4I1r0azK5n+uLKkxFoqdbZOFexG2YyqfkTXEr11e+7WoolGT+8LxmBhtgw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lI4aFGm5FmX7hvRKrPudMafz62cB8OieYDwgkzzAset4uhTTMT
+	xoH7G7SnntVw4tfejX+6N0C4qMuu1p8vPbCEWhfJpdJC0fEcjRPPPO73+U3UnmdO3H5DVA2IQZB
+	x3yrsMR771w8hUFQYLqR0OzyVIyLejlTq/VTezbJQ
+X-Gm-Gg: AYBFou2Fm28bbo9Y6Jjhq+TIWjyGR/TJoI6z/C3bMxS9CFLynLveM2n5/v3eeFt856O
+	bK8BxPRHdaMLz1Hb071ioYPtHfAB36Um2rAI64t5rTlnJ/0u/Ndd6IxM2OdpM7GpgcXMWrnyzPi
+	is4YGWGXERoGy6uyBLgamVvbjKacbaUO1ERhdOWOH0rutbgKF68c8mhVHeEAUx16b13gXTPkfGB
+	2DzZpoa+3HNCkEue6xCUmrI0Mn2bQS3Os3PNDdSG8zyVqloWnn9Ey7wBHqC3P85kCUB0wT2oqBR
+	VUNCqpRYwOjpAvZB3BWRrZB1Xlo4lUR29lxG9rKMq8uOvfP6pdl2PhHfTKwnkiOT+36sOsvR2/4
+	=
+X-Received: by 2002:ac8:5752:0:b0:530:5120:19da with SMTP id
+ d75a77b69052e-53065d62b52mr36529551cf.2.1788831289919; Mon, 07 Sep 2026
+ 18:34:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ap83lNf0bUXX4ZS8@gourry-fedora-PF4VCD3F>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+References: <20260907192140.2701755-1-beanhuo@iokpp.de>
+In-Reply-To: <20260907192140.2701755-1-beanhuo@iokpp.de>
+From: Stanley Jhu <stanleyjhu@google.com>
+Date: Tue, 8 Sep 2026 09:34:12 +0800
+X-Gm-Features: AcwNN1Xobqe2_angS2HD3JLnQDpNBy1jGEuPGetaKk41wua1zBXLIX34Pe_T310
+Message-ID: <CAE14pddo4ecRZLZs7XmuHtUhhcPnPphbn_AgJ-yZyzMGq=QjRQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/4] devfreq: check the get_cur_freq() return value and
+ use it in ufshcd
+To: Bean Huo <beanhuo@iokpp.de>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
+	"Martin K . Petersen" <mkp@kernel.org>, 
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Avri Altman <avri.altman@sandisk.com>, Bart Van Assche <bvanassche@acm.org>, 
+	Alim Akhtar <alim.akhtar@samsung.com>, Stanley Jhu <stanleyjhu@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 09/07, Gregory Price wrote:
->
-> On Mon, Sep 07, 2026 at 11:54:41PM +0200, Oleg Nesterov wrote:
-> > >
-> > > This might be my - admittedly shallow - understanding of scoped_guard,
-> > > but does scoped guard handle goto correctly?
-> >
-> > Yes, it does,
-> >
-> > > and why it's generally discouraged to mix cleanup.h and goto.
-> >
-> > Hmm, why? I didn't know...
-> >
->
-> one of the reasons to use cleanup.h it is to eliminate the "goto
-> for exit cleanup" mechanism in the first place (says so in the first
-> paragraph of cleanup.h).
->
-> Later in the header is explicit says don't mix:
->
->  * Lastly, given that the benefit of cleanup helpers is removal of
->  * "goto", and that the "goto" statement can jump between scopes, the
->  * expectation is that usage of "goto" and cleanup helpers is never
->  * mixed in the same function. I.e. for a given routine, convert all
->  * resources that need a "goto" cleanup to scope-based cleanup, or
->  * convert none of them.
->
-> This particular patch only does a partial conversion - so it's a
-> bit of an anti-pattern.
+On Mon, 7 Sep 2026 21:21:36 +0200, Bean Huo wrote:
+> Changes since v1:
+> - New patch 3, so that target_freq and devfreq's previous_freq are not 0
+>   at boot (suggested by Stanley Jhu).
+> - Patch 4: drop the !cur_freq check, it cannot happen any more.
 
-Ah, thanks, now I see what you meant.
+Thanks for addressing the initial frequency desync in v2.
 
-Perhaps in this sense this particular change is "anti-pattern", even
-if "goto out" jumps out of the scope...
-
-To me the code looks better with this change, but of course this is
-subjective.
-
-Oleg.
-
+For the series:
+Reviewed-by: Stanley Jhu <stanleyjhu@google.com>
