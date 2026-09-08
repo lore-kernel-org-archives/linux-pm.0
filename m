@@ -1,239 +1,230 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 477B24746B4
-	for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2026 08:31:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC13A47ACD2;
+	Tue,  8 Sep 2026 09:00:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788856282; cv=none; b=YcB+pkQHgZHYXEkU+cOf5JJgQML/73ZTpwZOYun2jH9/UC+wU/xzih+ayUPtcaEpHUi1FMSaw5mBSkbycA8ZEQ1zR9ti0mOgpQNAUcJa6Fap4rNt96x3m5WSANEpKZ5X2cNZvwF6rENj+Gj/WUlxKFDJs+p/8tqAhzmu4Gl/mGo=
+	t=1788858022; cv=none; b=J/RnIdKAtYYPuYiVhvrdFWFQM9a5HD6ZtuBgO2ITqZhL4kFHQvdqSie/CF+yFas0VZBRMUNqxlRfxLWIuKxd0lzbTW1xvRupj++uWip75sBg6sUbFneS90ptIuhLX/HZwgc4PGXn6Hh2/Y5SHT4ekmS8vMEHJzskf+wFKKMuslc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788856282; c=relaxed/simple;
-	bh=VOWmJwlWc7SYqz6NviqAALXf0GiO7jEmiavJ00IcvEA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ArAyaGysFYrKa0klk9g8Xe4EDjRFvKrPn7HyGHCaHdVV23LmMXj+COxxrRhw3X4l1oVG9eTWStF9evkNc/CoUt5l6PLbrbl5W8QYQkoE+zTNqSt6Hl3B6cD66HY1D9lX1L9DR7tDuCHHmQbwsnAkwiHm2olpQErUUhVO6z+73/E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=AfNqrdGk; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=NfZBovMN; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1788858022; c=relaxed/simple;
+	bh=YYVCLGQsSvQJt3nb/b4xL/eSyVOtSimyA8sGNb0KLEs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=UxVoR1LLbgEwoqlqpgRKIgGR3ASTcxzRXz7HN4d7uWpPZqx2jgUdj1jJbnOIdK42AOXivTXRsTG8WJ6ozSWxwWKi9qn9owDIVUNwz57WUQMxbWUkeUe5kJpAL7saDGXYLb8RZ7I0QsBKwpM/GDMAeeVzR61U8NMrFKbmDx2a2/Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VuBC24f9; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="AfNqrdGk";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="NfZBovMN"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6886LcGd3299120
-	for <linux-pm@vger.kernel.org>; Tue, 8 Sep 2026 08:31:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	2qyfnFZk0oGAhMugpkxnEz1t5sj5W+rRALTd9m5wJm4=; b=AfNqrdGkz0PqCk+j
-	kqzsG7hn/DvYX+a4Uhfnm9TAB2xGQftUNVupUuoZCWdEAWlW+YvEYKjEk1al4HQU
-	QXLCF8vdI+uEWo3a6ya77ksCLb/Vl8EQgg7VACRyf1mpOBHcTxUUzchBHPNK9OlW
-	u5bS6lzoznHYgdhg54XN5s58RZNu1xwO4i+kX67Y+FFXtrwrOTCgRrRes3KO1atw
-	tN3vwPZ9+tqDITYequj4rynVrIzEb9rAJldP9lnJpbKaK9p9W2MF7RDyf2nuwxgC
-	41uafjaMwi+iAgv24pwGE6SJB2JTWxPXAq6GiG3LY1PSqGVYk3HNydHTUT7Fw8v7
-	nDWPvg==
-Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com [209.85.210.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gjb0p8ymx-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2026 08:31:19 +0000 (GMT)
-Received: by mail-ot1-f70.google.com with SMTP id 46e09a7af769-7eb650e79adso4419577a34.3
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2026 01:31:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788856278; x=1789461078; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=2qyfnFZk0oGAhMugpkxnEz1t5sj5W+rRALTd9m5wJm4=;
-        b=NfZBovMNpUcInnAIsSjNO29mZfpL5/jFjncc+iECkJobQNO4mIrwpYgFXZGuRiR4QD
-         qYsGRv3kVRgDeOv0rnwGCj2EZaSuF0F5Pfetwsh5u8VxYBBAQpzaeR7tc+g1pHhVgGgi
-         0pkArFyr5Idh1Z+Gn+BhHUesdWP7Q/VfMj9p37iPMVukzZ5ctz3hztOrHP9uBE4RavC6
-         JJiwwyAcAcqW8IwllUv/sB1Lpzu7FutjlCXBHFuCwGpRvA9afRG1KtqvPZPULcWZHefJ
-         y/wY25MWsugnQoTMCIBzGuMYx+VaTHaypll7+C+EFBk90pEOSD4IyiA3UIaWikMkHyEG
-         25/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788856278; x=1789461078;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=2qyfnFZk0oGAhMugpkxnEz1t5sj5W+rRALTd9m5wJm4=;
-        b=cVZf+DYII7m7T1/ULKG+wQnnfV4hEQF3LvGDSsbb7dbfAEPnXXiVRyhShlwv4HE8+f
-         dn1PFo3Cc25+xP59UJyM0GHkAJ5le60++HOvrub+qFc55+kcYoKEAgcCq3Y0uodQ+960
-         EDtVfplCIE4Hba/hWh2VcDLCF0Q/lPoQk3Z8lhQc0VrIhKxBbA3t41Ld4Ew2B5eTiIM2
-         qwentZJQkBRMjhdie9j21GT4wK65jZzlZT7EeYTuAxOuPpShqgYcKWethU0uGvMGX+YJ
-         zfl2KpdCPBkiPGz37bVV4bA4AgCCfORF1EKq+n1IKg+mfbBr098e69zvth38Bibadmvi
-         YQ8g==
-X-Forwarded-Encrypted: i=1; AKwUvBwSOZ/0UV6o3ITlStm17kIJYFAKw60l6aY1pjq9Rw+QaCkeHNjiCyv1L6HYGXvZTXS7NIQh0a1wXg==@vger.kernel.org
-X-Gm-Message-State: AFuF++nhEhvnSC/Rk5yj41M9W0XC6GGXscFh1QudB4g/2Tj0p7kUulYo
-	qW6RnasxiNCW3JnCXeSrwO56C17hxl9E97ioXcp3LdNpnwH7F0cTtWfHZ07kQGjY0kbNdKVIEoy
-	YPGU/0xxZ8KD0Q61cubxddw3InHm627hVr6biMwx4+nxkBi3XtzzhIJerqVQ6QQ==
-X-Gm-Gg: AYBFou1a4bxp5vMzVp928K1dJqinOGasi0idOKnDmUvO8bs1KTiA8tpZHCJTNrjrfQ6
-	1KzuS+qn6x4hmEVRWjKyH4vF1pjeVVJcN/rc3BSybDnTV7ajlirodYggGP4dY00e9VQzdcobp2U
-	HMOxJfSoytYriKxNH2RhzfEp1n2jhb44xJe61ToAYd46o/mTQFLGhea5Wzi1tkBZDtTAEbSAcrV
-	GKIFWhnRwt4HiGk/RzNhIfO4g1bMTu1zVVFshhGsUxsR4tYrEsvWML3YKnbM4I5NGnW4hy3byIH
-	56Yzg5neWrFCk+Vbg5ttBI8uRcekaL+hkF/0orUuzifjnj/ev7zCbTdYNNKEXr3Kv28B7cgxAe0
-	49DJ1G/oHXoFTJJDeIXxs/qqYtpZDqmOM6YY88ZXq7N3oCKeNHhlAQVn/fLR6LPfffimMKJ9NWj
-	RcZQur18o3TheDcfM=
-X-Received: by 2002:a05:6830:3509:b0:7dc:c749:ade3 with SMTP id 46e09a7af769-7fa1deab695mr17694344a34.3.1788856278468;
-        Tue, 08 Sep 2026 01:31:18 -0700 (PDT)
-X-Received: by 2002:a05:6830:3509:b0:7dc:c749:ade3 with SMTP id 46e09a7af769-7fa1deab695mr17694327a34.3.1788856278032;
-        Tue, 08 Sep 2026 01:31:18 -0700 (PDT)
-Received: from hu-anancv-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339bdf26c5sm34458641eec.27.2026.09.08.01.31.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Sep 2026 01:31:17 -0700 (PDT)
-From: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-Date: Tue, 08 Sep 2026 14:00:29 +0530
-Subject: [PATCH v2 2/2] cpufreq: fix schedutil not returning to non-boost
- freq when boost is disabled
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VuBC24f9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D18731F00A3A;
+	Tue,  8 Sep 2026 08:59:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788858006;
+	bh=untjC3R5unkqrbBKG3Kk2zewkBrUw7LG0Av0ChJGZUc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=VuBC24f9OPpyU6RZ5YcWsuOQIHiBXVzStsfZ6KLHWxnkDUu5F4/T4CCCr6aQxJ03C
+	 RnShT64miQYk2T8sGQ7OnVpHe1UrnYJy04QxoSPBUJ4An6P3/IId7LZOAPRMlBF8HW
+	 pfge9RAFb0FsUOT8fWsQ6zKyvgAnLeFA0vbHur9FacGxYKtW+seyToAdha6igfwH3I
+	 mJ9b6O2jStQyCUGLeCaIppQpryp2gbZ7yFkJYGiIMir7EsT+7m2CJIyAihBWfSKp+I
+	 P01YzMOThfDS8cnMqwyWzGMlXvEvln2gBFgI9hil0Ywd51oUYQAwHpmouq0x9t+Hw6
+	 dwshvv+wKxNeQ==
+From: Andreas Hindborg <a.hindborg@kernel.org>
+To: Alice Ryhl <aliceryhl@google.com>
+Cc: Gary Guo <gary@garyguo.net>, Danilo Krummrich <dakr@kernel.org>, Lorenzo
+ Stoakes <ljs@kernel.org>, Vlastimil Babka <vbabka@kernel.org>, "Liam R.
+ Howlett" <liam@infradead.org>, Uladzislau Rezki <urezki@gmail.com>, Miguel
+ Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, =?utf-8?Q?Bj?=
+ =?utf-8?Q?=C3=B6rn?= Roy Baron
+ <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, Trevor Gross
+ <tmgross@umich.edu>, Daniel Almeida <daniel.almeida@collabora.com>, Tamir
+ Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>,
+ Onur =?utf-8?Q?=C3=96zkan?= <work@onurozkan.dev>, Lyude Paul
+ <lyude@redhat.com>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Arve =?utf-8?B?SGrDuG5uZXY=?=
+ =?utf-8?B?w6Vn?=
+ <arve@android.com>, Todd Kjos <tkjos@android.com>, Christian Brauner
+ <brauner@kernel.org>, Carlos Llamas <cmllamas@google.com>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, Dave Ertman <david.m.ertman@intel.com>, Leon
+ Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Serge
+ Hallyn <sergeh@kernel.org>, David Airlie <airlied@gmail.com>, Simona
+ Vetter <simona@ffwll.ch>, Alexander Viro <viro@zeniv.linux.org.uk>, Jan
+ Kara <jack@suse.cz>, Igor Korotin <igor.korotin@linux.dev>, Viresh Kumar
+ <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd
+ <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Krzysztof
+ =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Pavel Tikhomirov
+ <ptikhomirov@virtuozzo.com>, Michal Wilczynski <m.wilczynski@samsung.com>,
+ Ira Weiny <iweiny@kernel.org>, Philipp Stanner <phasta@kernel.org>,
+ rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, driver-core@lists.linux.dev,
+ linux-block@vger.kernel.org, linux-security-module@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-pwm@vger.kernel.org, linux-usb@vger.kernel.org, Asahi Lina
+ <lina+kernel@asahilina.net>
+Subject: Re: [PATCH v20 4/8] rust: page: convert to `Ownable`'
+In-Reply-To: <CAH5fLgjYmvp1Ph3dYXnTKkAvWgNpgCAPeq_7PZhRai6pCNmVmw@mail.gmail.com>
+References: <20260824-unique-ref-v20-0-490735672187@kernel.org>
+ <20260824-unique-ref-v20-4-490735672187@kernel.org>
+ <ao2WubjLtDuHvRzx@google.com> <DL894TFXM5AT.2QOXN683UKXIF@garyguo.net>
+ <CAH5fLggAMfBcxprKJxs4JbieKadC_mKg4B0xNETOH1QUi72UGQ@mail.gmail.com>
+ <8733vlxmm8.fsf@t14s.mail-host-address-is-not-set>
+ <2dpwVpJS3VbfQ7CmE3HeY4IJSSMXTP_O9sSP3HHHUD7Z29RNEG4Hc0m8f94jKWjFlekcTXvIBA-QdGYrf8w1sw==@protonmail.internalid>
+ <CAH5fLgjEfZO9DwcUxaKCWd_hFUrXU+cxiwmRg1UnM2pKD6gPvg@mail.gmail.com>
+ <87zextw4c4.fsf@t14s.mail-host-address-is-not-set>
+ <CAH5fLgjYmvp1Ph3dYXnTKkAvWgNpgCAPeq_7PZhRai6pCNmVmw@mail.gmail.com>
+Date: Tue, 08 Sep 2026 10:46:59 +0200
+Message-ID: <87qzj4w2nw.fsf@t14s.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260908-schedutil-boost-frequency-handling-v2-2-25312a713699@oss.qualcomm.com>
-References: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
-In-Reply-To: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
-        linux-pm@vger.kernel.org, Ananthu C V <ananthu.cv@oss.qualcomm.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788856266; l=3709;
- i=ananthu.cv@oss.qualcomm.com; s=20260903; h=from:subject:message-id;
- bh=VOWmJwlWc7SYqz6NviqAALXf0GiO7jEmiavJ00IcvEA=;
- b=QoFQI5h8STWQnYAFONEZGcYGQQhEdPSUuU+INfo1+hC7d3erZB+BtVGKXmjIdQ77emFJ59KNZ
- dKQfvNUOhxbBqufd6L3zsmP5d8xQmc2GdS5ufRnw7cHyrazL0/LwrGN
-X-Developer-Key: i=ananthu.cv@oss.qualcomm.com; a=ed25519;
- pk=gutNfLSMVTRkB+MxVviMFq9I07C5qPe9xHY2J5XCMpo=
-X-Proofpoint-ORIG-GUID: -8Z0dtHibABZdETIGyDlLbPOu7bubyu7
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDA4OSBTYWx0ZWRfX+++fAhvssQ6Z
- fo6UIMAXeObeR9JEEjaxn31hSphGsGhWp7u3MFe1giw8EmWqzABAcDRn3LHsdH8CdmtkcllGhDm
- V37SIJ9xl8HTWYLTZv/JqrQi+i+f50o=
-X-Authority-Analysis: v=2.4 cv=HL3z0Itv c=1 sm=1 tr=0 ts=6a9fc7d7 cx=c_pps
- a=7uPEO8VhqeOX8vTJ3z8K6Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=EUspDBNiAAAA:8 a=fUeqwVvmJro1Iw4YaasA:9 a=QEXdDO2ut3YA:10
- a=EXS-LbY8YePsIyqnH6vw:22
-X-Proofpoint-GUID: -8Z0dtHibABZdETIGyDlLbPOu7bubyu7
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDA4OSBTYWx0ZWRfX0FanNp+F6gqT
- 4rLyHI5ou4CbHAVcPboj1dHo1csFfxh4h/WK7FSMlOwFx6MA8bQHG11IyAn/ivIm9AIV/z/oYLV
- T7JjWqBxrZhSIl/2J7L00kZjLWqB94VLwCnp7602oavzPRufPNzHB9kQdfJFIRkppLzu1J1RRhw
- nCMt1lW1uzbnwUcCTARKnpR3d0Oi9xTKKhQxlZqV/21IaBJ1J24/e2stFazK6CZXJtLdgtmsRUg
- pnM404dxeE3vWvaLrjv18slYFZHznziUcbW0JnJcOXkZW5xQTLzmjdix44TFxgcH7p43yc4IYU2
- i6zWXHqy6Ct/q9GOEHgt69ODdYSvovVjiS/iOXLnlvAa5jGxGyjE2Z+v1kmpQUSC1c9VW7PjBlA
- h79GOHtiPEmvl6hiGwUDBSmfhji6jDfoCnBwG4ShzynHSiJVQrxbVKC1ofSFT3y9E+N54X3PUOg
- 7rF7wHd1EgihtfghFUA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_01,2026-09-07_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 suspectscore=0
- impostorscore=0 spamscore=0 phishscore=0 malwarescore=0 bulkscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609080089
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Commit 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if
-max boost is known") introduced a guard for cpuinfo max updates to only
-increase, to preserve driver-set values above the freq table maximum,
-causing cpuinfo max to be stuck at boost frequency even when boost is
-disabled.
+Alice Ryhl <aliceryhl@google.com> writes:
 
-Unconditionally track the highest non-boost frequency (max_base_freq)
-in the freq table. When a freq table is available, use max_table_freq/
-max_base_freq instead of cpuinfo->max_freq to control boost values, so
-the value can decrease again when boost is disabled.
+> On Mon, Sep 7, 2026 at 3:58=E2=80=AFPM Andreas Hindborg <a.hindborg@kerne=
+l.org> wrote:
+>>
+>> "Alice Ryhl" <aliceryhl@google.com> writes:
+>>
+>> > On Mon, Sep 7, 2026 at 2:38=E2=80=AFPM Andreas Hindborg <a.hindborg@ke=
+rnel.org> wrote:
+>> >>
+>> >> Alice Ryhl <aliceryhl@google.com> writes:
+>> >>
+>> >> > On Sun, Sep 6, 2026 at 3:02=E2=80=AFPM Gary Guo <gary@garyguo.net> =
+wrote:
+>> >> >>
+>> >> >> On Tue Aug 25, 2026 at 2:20 PM BST, Alice Ryhl wrote:
+>> >> >> > On Mon, Aug 24, 2026 at 01:17:56PM +0200, Andreas Hindborg wrote:
+>> >> >> >> +        // SAFETY: We just successfully allocated a page, so w=
+e now have ownership of the newly
+>> >> >> >> +        // allocated page. We transfer that ownership to the n=
+ew `Owned<Page>` object.
+>> >> >> >> +        // Since `Page` is transparent, we can cast the pointe=
+r directly.
+>> >> >> >> +        Ok(unsafe { Owned::from_raw(page.cast()) })
+>> >> >> >
+>> >> >> > This doesn't satisfy the safety requirements of Owned::from_raw()
+>> >> >> > because the page may be used with vm_insert_page(), which increm=
+ents its
+>> >> >> > refcount and causes it to be shared the vma system, and this occ=
+urs
+>> >> >> > before Page::release() is called.
+>> >> >>
+>> >> >> I suppose the existing vm_insert_page() abstraction we have is alr=
+eady
+>> >> >> problematic, because it uses `&Page`?
+>> >> >>
+>> >> >> Maybe we want to change the API to use `ARef<Page>` so it already =
+has to be
+>> >> >> shared? Conceptually it takes a reference count from a `&Page`, wh=
+ich isn't
+>> >> >> possible because `Page` is not `AlwaysRefCounted`, so it needs a `=
+&ARef<Page>`
+>> >> >> to be able to do that op.
+>> >> >
+>> >> > Honestly, the problem is the safety requirements of Owned::from_raw=
+().
+>> >> > Pages have a "special" main reference, and free_page() does more th=
+an
+>> >> > put_page(). It even does something when the refcount does not hit
+>> >> > zero.
+>> >> >
+>> >> > The correct behavior for Page is to allow the user to hold one
+>> >> > Owned<Page> whose drop calls free_page(), *plus* any number of
+>> >> > ARef<Page> references that invoke put_page() on drop. This way, the
+>> >> > owned page controls the special drop codepath.
+>> >>
+>> >> This does not mesh well with the model of `Owned` behaving like
+>> >> `UniqueArc` to `ARef` behaving like an `Arc`.
+>> >
+>> > It's a different case, I agree.
+>> >
+>> >> Please help me understand; with page having a main ref and an auxilia=
+ry
+>> >> refcount, if we model that with a single `Owned<Page>` and a number of
+>> >> `ARef<Page>`, what would happen in the case where the main ref (`Owne=
+d`)
+>> >> is dropped first? Is this legal?
+>> >
+>> > Yes, it's legal.
+>> >
+>> >> My intuition here would be to follow Garry's suggestion and have
+>> >> `vm_insert_page` take an `ARef<Page>`. Can you elaborate why this is =
+not
+>> >> an option?
+>> >
+>> > That would be the wrong ownership semantics. The C side increments the
+>> > refcount rather than take ownership of a passed-in refcount, so the
+>> > correct argument type is &Page.
+>>
+>> Or `&ARef<Page>`? Because with `Page` being `Ownable` it would not be
+>> OK to increment the refcount from just a `&Page`.
+>
+> That's just a limitation in your traits. There is no problem with
+> creating a refcount from just a &Page.
 
-Fixes: 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if max boost is known")
-Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
----
- drivers/cpufreq/cpufreq.c    | 14 +++++++++++++-
- drivers/cpufreq/freq_table.c |  5 +++++
- include/linux/cpufreq.h      |  1 +
- 3 files changed, 19 insertions(+), 1 deletion(-)
+Yes, I agree. The limitation is by design. My point is, `vm_insert_page`
+can work fine with the `&ARef<Page>` type. So if that would be OK with
+you, I would patch that as part of this patch.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0d0df986fa3d..a13e72711597 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -574,6 +574,7 @@ static ssize_t show_local_boost(struct cpufreq_policy *policy, char *buf)
- 
- static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- {
-+	unsigned int max_freq;
- 	int ret;
- 
- 	if (policy->boost_enabled == enable)
-@@ -587,7 +588,18 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- 		return ret;
- 	}
- 
--	ret = freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
-+	if (policy->freq_table) {
-+		max_freq = enable ? policy->cpuinfo.max_table_freq :
-+				    policy->cpuinfo.max_base_freq;
-+
-+		if (!max_freq)
-+			/* when the freq table contains only boost frequencies */
-+			max_freq = policy->cpuinfo.max_table_freq;
-+	} else {
-+		max_freq = policy->cpuinfo.max_freq;
-+	}
-+
-+	ret = freq_qos_update_request(&policy->boost_freq_req, max_freq);
- 	if (ret < 0) {
- 		policy->boost_enabled = !policy->boost_enabled;
- 		cpufreq_driver->set_boost(policy, policy->boost_enabled);
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 4984142dc08a..7e183e16162d 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -34,6 +34,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
- 	unsigned int min_freq = ~0;
- 	unsigned int max_freq = 0;
- 	unsigned int max_table_freq = 0;
-+	unsigned int max_base_freq = 0;
- 	unsigned int freq, i;
- 
- 	cpufreq_for_each_valid_entry_idx(pos, table, i) {
-@@ -42,6 +43,9 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
- 		if (freq > max_table_freq)
- 			max_table_freq = freq;
- 
-+		if (!(pos->flags & CPUFREQ_BOOST_FREQ) && freq > max_base_freq)
-+			max_base_freq = freq;
-+
- 		if ((!cpufreq_boost_enabled() || !policy->boost_enabled)
- 		    && (pos->flags & CPUFREQ_BOOST_FREQ))
- 			continue;
-@@ -62,6 +66,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
- 		policy->cpuinfo.max_freq = max_freq;
- 
- 	policy->cpuinfo.max_table_freq = max_table_freq;
-+	policy->cpuinfo.max_base_freq = max_base_freq;
- 
- 	if (min_freq == ~0)
- 		return -EINVAL;
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 3f3b1380251a..419c71ccff7c 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -46,6 +46,7 @@ struct cpufreq_cpuinfo {
- 	unsigned int		max_freq;
- 	unsigned int		min_freq;
- 	unsigned int		max_table_freq; /* Highest valid frequency in the table */
-+	unsigned int		max_base_freq; /* Highest non-boost frequency in the table */
- 
- 	/* in 10^(-9) s = nanoseconds */
- 	unsigned int		transition_latency;
+>
+>> > Now, for the use-case in Binder I believe we could switch to
+>> > put_page(), as we don't need the extra stuff from free_page(), in
+>> > which case we only want ARef<Page> and do not require Owned support.
+>> > But as long as we are calling free_page(), it needs to not be
+>> > clonable.
+>>
+>> You are calling `__free_page` directly in binder? I could not find this
+>> with grep except in the C binder. Is this code you are calling into from
+>> Rust binder?
+>
+> Via the Drop of Page, not directly of course.
+>
+>> From `__free_pages()` kernel-doc (`mm/page_alloc.c`):
+>>
+>> > If the last reference to this page is speculative, it will be
+>> > released by put_page() which only frees the first page of a
+>> > non-compound allocation. [...] **If you want to use the page's
+>> > reference count to decide when to free the allocation, you should
+>> > allocate a compound page, and use put_page() instead of
+>> > __free_pages().**
+>>
+>> I guess this is what you are referring to? We could change `Page` to
+>> this style as well and all would be fine I think?
+>>
+>> At any rate, today I learned about Pfn walkers, compaction,
+>> memory-failure, etc. that take transient refcounts
+>> pages. With that in mind we need to reformulate the invariant of
+>> `Ownable` to exclude optimistic transient references.
+>
+> Yes we can switch Rust Binder to use put_page() and have Page not
+> implement Ownable at all. That would be okay, because Binder's pages
+> are not higher order.
 
--- 
-2.43.0
+As far as I can tell, we can also switch `Owned<Page>` to allocate the
+page with `__GFP_COMP` and use `put_page` in drop.
+
+> But this case still does highlight that
+> Ownable<_> currently does not address the use-case where the
+> Ownable<T> is a special reference there can only be one of, rather
+> than a completely unique reference.
+
+This is not the use case `Ownable` aims to solve.
+
+> For instance, the GPUVM abstraction would be another case where
+> Ownable<_> could be used if we have this other model where Ownable<_>
+> and ARef<_> are legal at the same time. Currently GPUVM uses a special
+> UniqueRefGpuVm type to solve this problem.
+
+I am wondering if we can make case I intend to solve (Ownable is a
+unique reference) coexist with the "at most one of this ref can exist".
+The "at most one of this kind" sounds similar to the `ListArc` use case
+to me, which is a different problem.
+
+Best regards,
+Andreas Hindborg
+
 
