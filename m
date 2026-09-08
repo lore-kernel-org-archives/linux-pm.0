@@ -1,294 +1,89 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A9A44FC8E4
-	for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2026 09:18:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.42
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788859138; cv=pass; b=AAijt5/QX4NMop6ScbgJN6b9MDHsgk0jnQMycA29j9KuT7fH8bV6dYWrPRvcSkYnSIR1bWgHOvWTyDUBU6JPxgv/JIELaXmRzB6j5ERTy5QzWugR88wsiz9ysB019YVfdn5VJVDmEOdMQWVE8pFqh8fVveaRqRgI6qkPtxDJS0U=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788859138; c=relaxed/simple;
-	bh=eXO7Dx+pbjhDr44qla+xgyZaF085tCxcRrffYGenIAk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bkAPDPLHliIeHaITDjW72sldjF+9/Xg1Yjrx7eOlXhGv8FgA4zkhiXFTa8L308tMcjVl05JOHqAVM3tCSV2VWN9Fdtk6+YaU+QBU92Fkb9vDN+g+6f/mOIFQlSSQ2cZwsksOfZs5MRGwnVMn7FqIfFDQ+76IKL5rY/NVGjar76I=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=aF2kvHoX; arc=pass smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD7994CA78D
+	for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2026 09:51:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788861091; cv=none; b=L1rHUvMKM5Aa0SNdx5zX7DH3AJW3biGRvlVUunq2dM4UWk3hHXS/OR3ckDHcYTRXDJyE98UvlSrnkM2mOQ/9BBCAncjHsqPKWrVwdl+6XfNwMklHo+t45YWNd+hY97j2I8HNStCuZooDqjLziRX6g5Aj3p9ME0X/1ADr5G1QxuI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788861091; c=relaxed/simple;
+	bh=5CWTOwOGmV0tbIBmvdnUvKYui1xJoatPFsL+LsX19RE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SdnQ5ikyUtrvqAUmfakKCJS/st//nBvDMSlDLx6tbZU6NpWNNuH8TmKx92vUCnPu0aExVxbsKlZmdYQubAsR4+02gbNLH57LxOIp15kxvgK3qR2YwENpaOSdgoO7+RL+cowSbGdRI6iGZq5E7LnsfPfWEzRh40FW0krOMkKeuJ4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CQRKJ3xX; arc=none smtp.client-ip=74.125.227.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="aF2kvHoX"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-4843e9c5960so4287935f8f.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2026 02:18:55 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788859134; cv=none;
-        d=google.com; s=arc-20260327;
-        b=c/S6XFPlpNAptgcOPaJSozM0vo8mp0q8m4fNZhkN8/sY79aoicworvXSoSM6F09sFV
-         6RkckV3isJHqqjKyMC0Q6w3ldzcFAxV3Wk3LKrSVzRzzhtYeo7XV6uPloLUTfyTkhSgP
-         Sldr51zg5kl8rJTeWg+dXfj9OXbbrUjKD84e4/yZ6GkdmajkI4vZeTt72UzNWxjrtqCI
-         Rw+PNprb6ZizASCNoQMyiKOfuDMXZKMd3UdMWef2L7/DYxBgIayRbnov5kEYCC/PmqPV
-         Qm/sVbigsIefgO2h2cSa4toM39Hty1O+bSrn/XIvKWnX0e9x3UnPsxzf+Jh8Ak4Qu3rb
-         KTbA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=VIgSHXB8I26MCbzgx5LIxLwOOEsEsffKtC5qMFw/5wM=;
-        fh=FS53ndfu9TjtQsRrlpC6m3oVrqqCbdO7x+thC2RxKOA=;
-        b=STSa7pOag222q69S+Dvybu3yFmTwWLU+habNRrvFJgnAwyA3qxG1o1j8KtKJxZ7dZN
-         HcMvXPT4Lq9FYmzDpD/ortUdRskbV2r/bH9xubCt6HcAG5NXW2DL5zQmuDCQy6FSboaG
-         5oWNmLA+Zv5j1+1F+DeqQVETu7Rwo6zVZyTrps2z+f7nePhuJNzjLA4gBKsWuCtZ6xN8
-         3DI9yFo1dve71ec3PrB/SY0qVEYqpyt0OAL2bgaO8IO8HW929dwrpMpIvAuAJo1oT1w6
-         15FtbjuYi4Ngy1B9RZ/ySMNVOw0fYt87C/mWDhxZrW1cdL7/NalkSJt/RJpQEoqW8weU
-         q98Q==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CQRKJ3xX"
+Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-396673bd281so753206a91.1
+        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2026 02:51:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1788859134; x=1789463934; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=VIgSHXB8I26MCbzgx5LIxLwOOEsEsffKtC5qMFw/5wM=;
-        b=aF2kvHoXQnc3y94j3MpvsaBZICi9rb7EgUVMffOdRTqJRP1zI0ZUrzpkHxbK7TKccP
-         URA7NthNEhjbDpvO5E5SfFkXe8lRprntfGsj6nc9Uj0+yhenHtGbPammp2p5QTTPzonM
-         NNXnjqAp3WJwS07aLIioGpVpAn58cCI7zU4VyygV6BZ/hZx4mJ9gQmVOOut0nIWBt2Wb
-         xPcr2pjuNWPhs94sKnzi7SboLd4mcQyEJwLgimh4PhCdgs+NIu36N1d6RQWevSO1lHXY
-         3YOUzr+4enTI/l8GgUzMWZ467P2mHTPQIQA+3WkuXjBaAoWvG8ewZrnjIWRpQ1ssUF0h
-         B94A==
+        d=gmail.com; s=20251104; t=1788861089; x=1789465889; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=5CWTOwOGmV0tbIBmvdnUvKYui1xJoatPFsL+LsX19RE=;
+        b=CQRKJ3xXgW74OfBTd/g6J7KyL4zGi32EJIk2VBzvm3Uxh97turAx1KhRC1nNklLW7M
+         UVho9kJ/5EnV2TEdq9i+J/pF2mDIYgvIHGux1aXTM2tzTZDFEeMNE7CdF7+ROA0aYIza
+         ZDHg9ozE2Hay70DEoE2nyjTHPeaUVRcLO2qtPZ3p2n0qhuSo4JfeHwJ8qzmAZumtYGep
+         NUEqnWF5GZ+Neeos/yH9fRHj0kSztsFJEYN+iv/EF5RvFZbyDJj/50MoPrMg3Yz06BUP
+         p332zIRrqNbcifLslKO+0aacvpKUJn7aFG3RgOaMkRJV6GJ8WiQ56Uk7fB08E26Vg92C
+         yuew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788859134; x=1789463934;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=VIgSHXB8I26MCbzgx5LIxLwOOEsEsffKtC5qMFw/5wM=;
-        b=ZAijonNB2TO/vn4r7G1+T2ZFTyltGVIORyPnyacuc6oYy3sTHvnKdmyCPhheggGA1B
-         MeBdAvHAT4zsnSMrD2/oVQ7i7iu/GF6P+dQrII7wrbPKiTjhSWGR97J49Ix1uXGyDQ5f
-         QFH541DNKEcBRh6SwNsN9XC9t0UIkQc/Xt2yuyA0uTxYFxh97Q37mfr19Cj5j41PenJ2
-         sRZGjufzDtNW81ZfjvC7Pflt8ijeSdrg0/Heps9YJFbTrWHGZm864RVGFIMTLZsPvgeO
-         uYCJpPo4DVvY2xfR7VFuLGfZCVh6Ef0xs9IxFG2F7ucgZBIcehXpZ56yO5WB27K6go71
-         TlFA==
-X-Forwarded-Encrypted: i=1; AKwUvBzgUHY1ROYdjlIx18qBKget32Sa7w6H08Y/FwFichla2Ljja03kV7LeuPPhe1/NvWp/dUoHh8Hpkw==@vger.kernel.org
-X-Gm-Message-State: AFuF++moyQYI0FweVTDXRytsBZKSqyifYoWRy/Oi76LZTlGSiWMkXwaK
-	1ZQDVM+yAABRGzgJRgx4TIc5QR7pVwAN0KLImnCfIft50x5hHnUmrX0uhyDUPPkFff7MCD/gjI8
-	FK8GW3UT3IcGJLFKrA4/Hfm8gS/g6iG1yA4+rQi/Q
-X-Gm-Gg: AYBFou0+9bSK3fX4oMsOBs3+Mf7r9ilPYkdo5YcZL0JMJB+mTSt1t5Tou3r5SK+efUY
-	UN2cou7NTSW15OEOo9hjO2Wr7oq6BpwVNYxMwvR4WgpMtlNWKFf4gr5TtMale+XxB4nf3KDDQwR
-	Ipod6jFFr1RTt3CSFqvIj6XMRQ1f0LWVRR6P7KHGYv/DTM/ZgjChVxC2gUDR3W/s4te0Kjnw1Sw
-	SGW6DdKN+BsL+7IrBUXH4cWY+8TJqUAqJbmnWeRZiqCeIHOgSmGwaXGRzZPwk7ti3J+XnCbKupr
-	tbgvKCMwRJtPNVTijEtjHQ4s/F0GOexAxyulUMMtjBuapB63VNorttgC5rxtyqE+VbLlG+x54w9
-	wlFlugabAwRlDO2ZFUlf7f939zO25pw==
-X-Received: by 2002:a05:6000:2584:b0:485:8c16:5efa with SMTP id
- ffacd0b85a97d-4858c16617emr27731999f8f.52.1788859132844; Tue, 08 Sep 2026
- 02:18:52 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1788861089; x=1789465889;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=5CWTOwOGmV0tbIBmvdnUvKYui1xJoatPFsL+LsX19RE=;
+        b=WL0JfpaPPL7ZPFlHqz4jIqxpEcZp63CbXWWA6T9KQPESGVgiYn0IKO0BNF+miTJH9G
+         WD2bl29sZagFEKlpanrmOi8bQeximpLoIRn0CCPJlV9pHh9nI094NyZ8QiOSGwQbL2ki
+         DbCQMvY/4WeeMwiGycqMDZomyL/jMLJGvzH7o2gXaneZC/CTE2haee27Idu1E6jy8d3L
+         ABvBfGlVb01NCAAef8R0iPhaL4ENIaPigDF+YrXKEi/z0xi43NPHLlYGyxyx4ul6aR5F
+         6H0dlDjvpXB+gsmaX4YvKBYBJrQRsej5nwj1GlOjntTvZUvAimcDIAP3i+iKJEbfRAoF
+         6OKA==
+X-Gm-Message-State: AFuF++ko78OzS7uM3X+68NZdNaZ1KQzdcYXycLDI2/VIp6ZHaHnBDg8s
+	NT6K8G08sNXTfPcBiKppVwsvF1RbZd89O14IdMKwWxInLGUm5WSHl+yG
+X-Gm-Gg: AYBFou2MWIruuoQYdF1wfbBpHXELJ7Zqfvu8htAiOHV2YhxCj/PJIx+QOZIoNXGy2xW
+	K/UHbhrILYvt7ZrFH0UXtbJQyIovrydxnYPByPlf15RFI0EI1No71ytPkBv5I78maV5v3N+mCY3
+	WysC3h/CekNQyFoWeLOmKrJCW2+11sOAMzKSL8mZ3uW/oLRasVAc7U+YNQ2rmAxSb1TZV3gaGWC
+	9h/xux6M1EN+GKDxPKU1KsOl3CLWxRpVtQXSk6IWEbSHWMA83Q8dBh0XQwR62DGf1MynKcX98V3
+	xaQ7d/YiWUQTvvvoyr4RK9WF6hejHYO0Ep9IkN2rVYScA7hLy5LjYGTg/+7ZGBnj1kMLtH5MXSL
+	+bvqtaxXwuyRTBE+HEEVfFk7Lm7+GzrLWc4FDvduphssf84u/waV5Fc0NT8JeduAt4xzQCLugGZ
+	U6as8U6C20ecquv6HqKHx75NaBunsMxdHZNtr30MZZL5sAmuttDWdczWMu0CX5IMkhqI9PkFV2+
+	mWXKgBMtLX6mpnjhIGKIiD98VggHg==
+X-Received: by 2002:a17:90b:3ccf:b0:39b:34ef:3b24 with SMTP id 98e67ed59e1d1-39b3d5aaa70mr19661739a91.1.1788861089072;
+        Tue, 08 Sep 2026 02:51:29 -0700 (PDT)
+Received: from cachyos-aura ([45.112.148.105])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339885ca07sm39414604eec.1.2026.09.08.02.51.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Sep 2026 02:51:28 -0700 (PDT)
+From: Navon John Lukose <navonjohnlukose@gmail.com>
+To: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	platform-driver-x86@vger.kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2] platform/x86: hp-wmi: Add charge behaviour support
+Date: Tue,  8 Sep 2026 15:21:22 +0530
+Message-ID: <20260908095122.442670-1-navonjohnlukose@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <edbe584a-c241-c3e6-9993-2783934885d9@linux.intel.com>
+References: <20260531181326.1000801-1-navonjohnlukose@gmail.com> <edbe584a-c241-c3e6-9993-2783934885d9@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260824-unique-ref-v20-0-490735672187@kernel.org>
- <20260824-unique-ref-v20-4-490735672187@kernel.org> <ao2WubjLtDuHvRzx@google.com>
- <DL894TFXM5AT.2QOXN683UKXIF@garyguo.net> <CAH5fLggAMfBcxprKJxs4JbieKadC_mKg4B0xNETOH1QUi72UGQ@mail.gmail.com>
- <8733vlxmm8.fsf@t14s.mail-host-address-is-not-set> <2dpwVpJS3VbfQ7CmE3HeY4IJSSMXTP_O9sSP3HHHUD7Z29RNEG4Hc0m8f94jKWjFlekcTXvIBA-QdGYrf8w1sw==@protonmail.internalid>
- <CAH5fLgjEfZO9DwcUxaKCWd_hFUrXU+cxiwmRg1UnM2pKD6gPvg@mail.gmail.com>
- <87zextw4c4.fsf@t14s.mail-host-address-is-not-set> <CAH5fLgjYmvp1Ph3dYXnTKkAvWgNpgCAPeq_7PZhRai6pCNmVmw@mail.gmail.com>
- <87qzj4w2nw.fsf@t14s.mail-host-address-is-not-set>
-In-Reply-To: <87qzj4w2nw.fsf@t14s.mail-host-address-is-not-set>
-From: Alice Ryhl <aliceryhl@google.com>
-Date: Tue, 8 Sep 2026 11:18:40 +0200
-X-Gm-Features: AcwNN1VPjOtQdlrm_QvCyA8uta8erft96HkhfUzl1dJDcrSqVwPtKidMELQvEqo
-Message-ID: <CAH5fLgjrQDWSPX-81TNdnc=AU3Jge57vUJ_SHCn8=uUyGfRq=g@mail.gmail.com>
-Subject: Re: [PATCH v20 4/8] rust: page: convert to `Ownable`'
-To: Andreas Hindborg <a.hindborg@kernel.org>
-Cc: Gary Guo <gary@garyguo.net>, Danilo Krummrich <dakr@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, 
-	Vlastimil Babka <vbabka@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, 
-	Uladzislau Rezki <urezki@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
-	Daniel Almeida <daniel.almeida@collabora.com>, Tamir Duberstein <tamird@kernel.org>, 
-	Alexandre Courbot <acourbot@nvidia.com>, =?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
-	Lyude Paul <lyude@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	=?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>, 
-	Todd Kjos <tkjos@android.com>, Christian Brauner <brauner@kernel.org>, 
-	Carlos Llamas <cmllamas@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Dave Ertman <david.m.ertman@intel.com>, Leon Romanovsky <leon@kernel.org>, 
-	Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
-	Igor Korotin <igor.korotin@linux.dev>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
-	Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, Michal Wilczynski <m.wilczynski@samsung.com>, 
-	Ira Weiny <iweiny@kernel.org>, Philipp Stanner <phasta@kernel.org>, rust-for-linux@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, driver-core@lists.linux.dev, 
-	linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pwm@vger.kernel.org, linux-usb@vger.kernel.org, 
-	Asahi Lina <lina+kernel@asahilina.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 8, 2026 at 11:00=E2=80=AFAM Andreas Hindborg <a.hindborg@kernel=
-.org> wrote:
->
-> Alice Ryhl <aliceryhl@google.com> writes:
->
-> > On Mon, Sep 7, 2026 at 3:58=E2=80=AFPM Andreas Hindborg <a.hindborg@ker=
-nel.org> wrote:
-> >>
-> >> "Alice Ryhl" <aliceryhl@google.com> writes:
-> >>
-> >> > On Mon, Sep 7, 2026 at 2:38=E2=80=AFPM Andreas Hindborg <a.hindborg@=
-kernel.org> wrote:
-> >> >>
-> >> >> Alice Ryhl <aliceryhl@google.com> writes:
-> >> >>
-> >> >> > On Sun, Sep 6, 2026 at 3:02=E2=80=AFPM Gary Guo <gary@garyguo.net=
-> wrote:
-> >> >> >>
-> >> >> >> On Tue Aug 25, 2026 at 2:20 PM BST, Alice Ryhl wrote:
-> >> >> >> > On Mon, Aug 24, 2026 at 01:17:56PM +0200, Andreas Hindborg wro=
-te:
-> >> >> >> >> +        // SAFETY: We just successfully allocated a page, so=
- we now have ownership of the newly
-> >> >> >> >> +        // allocated page. We transfer that ownership to the=
- new `Owned<Page>` object.
-> >> >> >> >> +        // Since `Page` is transparent, we can cast the poin=
-ter directly.
-> >> >> >> >> +        Ok(unsafe { Owned::from_raw(page.cast()) })
-> >> >> >> >
-> >> >> >> > This doesn't satisfy the safety requirements of Owned::from_ra=
-w()
-> >> >> >> > because the page may be used with vm_insert_page(), which incr=
-ements its
-> >> >> >> > refcount and causes it to be shared the vma system, and this o=
-ccurs
-> >> >> >> > before Page::release() is called.
-> >> >> >>
-> >> >> >> I suppose the existing vm_insert_page() abstraction we have is a=
-lready
-> >> >> >> problematic, because it uses `&Page`?
-> >> >> >>
-> >> >> >> Maybe we want to change the API to use `ARef<Page>` so it alread=
-y has to be
-> >> >> >> shared? Conceptually it takes a reference count from a `&Page`, =
-which isn't
-> >> >> >> possible because `Page` is not `AlwaysRefCounted`, so it needs a=
- `&ARef<Page>`
-> >> >> >> to be able to do that op.
-> >> >> >
-> >> >> > Honestly, the problem is the safety requirements of Owned::from_r=
-aw().
-> >> >> > Pages have a "special" main reference, and free_page() does more =
-than
-> >> >> > put_page(). It even does something when the refcount does not hit
-> >> >> > zero.
-> >> >> >
-> >> >> > The correct behavior for Page is to allow the user to hold one
-> >> >> > Owned<Page> whose drop calls free_page(), *plus* any number of
-> >> >> > ARef<Page> references that invoke put_page() on drop. This way, t=
-he
-> >> >> > owned page controls the special drop codepath.
-> >> >>
-> >> >> This does not mesh well with the model of `Owned` behaving like
-> >> >> `UniqueArc` to `ARef` behaving like an `Arc`.
-> >> >
-> >> > It's a different case, I agree.
-> >> >
-> >> >> Please help me understand; with page having a main ref and an auxil=
-iary
-> >> >> refcount, if we model that with a single `Owned<Page>` and a number=
- of
-> >> >> `ARef<Page>`, what would happen in the case where the main ref (`Ow=
-ned`)
-> >> >> is dropped first? Is this legal?
-> >> >
-> >> > Yes, it's legal.
-> >> >
-> >> >> My intuition here would be to follow Garry's suggestion and have
-> >> >> `vm_insert_page` take an `ARef<Page>`. Can you elaborate why this i=
-s not
-> >> >> an option?
-> >> >
-> >> > That would be the wrong ownership semantics. The C side increments t=
-he
-> >> > refcount rather than take ownership of a passed-in refcount, so the
-> >> > correct argument type is &Page.
-> >>
-> >> Or `&ARef<Page>`? Because with `Page` being `Ownable` it would not be
-> >> OK to increment the refcount from just a `&Page`.
-> >
-> > That's just a limitation in your traits. There is no problem with
-> > creating a refcount from just a &Page.
->
-> Yes, I agree. The limitation is by design. My point is, `vm_insert_page`
-> can work fine with the `&ARef<Page>` type. So if that would be OK with
-> you, I would patch that as part of this patch.
+Sorry for the slow reply.
 
-IMO, Page should implement AlwaysRefcounted and this method should
-take &Page. Anything else just adds limitations that are not needed.
-But I'm ok not implementing Ownable for it.
+It was RFC because I wasn't sure the WMI interface was right for other HP
+models. But I've since changed laptops and no longer have the HP, so I
+can't test a v3 or anything on top of it.
 
-> >> > Now, for the use-case in Binder I believe we could switch to
-> >> > put_page(), as we don't need the extra stuff from free_page(), in
-> >> > which case we only want ARef<Page> and do not require Owned support.
-> >> > But as long as we are calling free_page(), it needs to not be
-> >> > clonable.
-> >>
-> >> You are calling `__free_page` directly in binder? I could not find thi=
-s
-> >> with grep except in the C binder. Is this code you are calling into fr=
-om
-> >> Rust binder?
-> >
-> > Via the Drop of Page, not directly of course.
-> >
-> >> From `__free_pages()` kernel-doc (`mm/page_alloc.c`):
-> >>
-> >> > If the last reference to this page is speculative, it will be
-> >> > released by put_page() which only frees the first page of a
-> >> > non-compound allocation. [...] **If you want to use the page's
-> >> > reference count to decide when to free the allocation, you should
-> >> > allocate a compound page, and use put_page() instead of
-> >> > __free_pages().**
-> >>
-> >> I guess this is what you are referring to? We could change `Page` to
-> >> this style as well and all would be fine I think?
-> >>
-> >> At any rate, today I learned about Pfn walkers, compaction,
-> >> memory-failure, etc. that take transient refcounts
-> >> pages. With that in mind we need to reformulate the invariant of
-> >> `Ownable` to exclude optimistic transient references.
-> >
-> > Yes we can switch Rust Binder to use put_page() and have Page not
-> > implement Ownable at all. That would be okay, because Binder's pages
-> > are not higher order.
->
-> As far as I can tell, we can also switch `Owned<Page>` to allocate the
-> page with `__GFP_COMP` and use `put_page` in drop.
+Dropping it. Best of luck to anyone with the hardware who wants to pick
+it up.
 
-I'm not entirely sure if __GFP_COMP is needed, since the page is order
-zero to begin with, so I don't think it makes a difference.
-
-> > But this case still does highlight that
-> > Ownable<_> currently does not address the use-case where the
-> > Ownable<T> is a special reference there can only be one of, rather
-> > than a completely unique reference.
->
-> This is not the use case `Ownable` aims to solve.
-
-Maybe not, but then it doesn't apply to Page.
-
-> > For instance, the GPUVM abstraction would be another case where
-> > Ownable<_> could be used if we have this other model where Ownable<_>
-> > and ARef<_> are legal at the same time. Currently GPUVM uses a special
-> > UniqueRefGpuVm type to solve this problem.
->
-> I am wondering if we can make case I intend to solve (Ownable is a
-> unique reference) coexist with the "at most one of this ref can exist".
-> The "at most one of this kind" sounds similar to the `ListArc` use case
-> to me, which is a different problem.
-
-I think they can co-exist. If AlwaysRefcounted is implemented, it is
-the ListArc use-case. If Refcounted but not AlwaysRefcounted is
-implemented, it is UniqueArc use-case.
-
-Alice
+Navon
