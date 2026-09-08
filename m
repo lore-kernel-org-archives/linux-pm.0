@@ -1,267 +1,211 @@
-Received: from mail-oo2-f11.google.com (mail-oo2-f11.google.com [74.125.231.139])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010044.outbound.protection.outlook.com [52.101.56.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D8C935DA78
-	for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2026 06:14:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.139
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788848097; cv=none; b=SZrmqcyUVK07hBE3+bllDIbYdsOpTqF0jn906bA01IHItJ3uv8Dit+911wMaSkM3QA9rI6SaisHPKLXrY3w7+353LUCfZ1WqAlFZ9fzPVSA2KSOrI2hhnBs+yOR7ZHAoGZ8fv2gJ6uFikE1mqj1Sal79H35Xoq5YZgSxqHsqb3Y=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788848097; c=relaxed/simple;
-	bh=7v//YBccA+Wta/WJmdeX/TznEKFSuxoImEEytIwQxeg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=PVyKXJXmj0WVgY4DiCvc0Siew7wtepT3aw2KxQdAT6/TMTeELFpr+Fqwlt++ugQlUINW5LLV7u/Xw4O5aczRn2SS5BStbapYEYc7oRb220dybKRvOcgmsfj6z8md7zbwjCAv2SJyV8MqN1VXD0lI+ILtMz3DXSfkeLnNclO1pig=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iH65YUce; arc=none smtp.client-ip=74.125.231.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 058B637FF68;
+	Tue,  8 Sep 2026 06:20:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.56.44
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788848408; cv=fail; b=jvdHyaFzBTWxRmtAuyy8vuGwzdAjzZkiurNndAFQr2EaMNRldZEurZpWzlDKb6GWn+G9DQ7oQb6+LZx0N5gcH30/AiYTv1R67EolbHAMw0uoLWsEDEmuZUVNKxAyQT6R6v9xjiduUGKYVKLV4mqGL2A/jR7+Y58WEoKvqoD+hE8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788848408; c=relaxed/simple;
+	bh=FT2cK2vKmUVJ+qG0hPH2vnI/qKQ/3gxBv58QrcuYl8g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Pn5eEu5A2308RFRaDk8K2hVes6CEn7HNKtIfTYpzV7i3n5Bj+PmY0O8/sEdxv1dG1KuHNTwxdE/PGZM/VlAKRfZyM29vz2E3Vsnz9ca2KiRnHsaakxF/DlHbSpKSqQZ/Ty7zx3hA6B93po6KL0cOXIfTGtlRzZSEEfpDiUG8gFA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=eM2DFUbT; arc=fail smtp.client-ip=52.101.56.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iH65YUce"
-Received: by mail-oo2-f11.google.com with SMTP id 46e09a7af769-7edccf768b0so1181106a34.0
-        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2026 23:14:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788848095; x=1789452895; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=TuA/xmu86f2+uzRrjt1sV1QoY+5IdkmNTkwkB6MMzEY=;
-        b=iH65YUcef1DKqbf/QEK1m1KOlygSHejiTqO/AgNIb/3M/bkbANS5lPqo4ewCw7PDCI
-         OY+4h0o/ZQ2sCwwQBDe6/qDqElH9iSHk/enhulQwcDcX4gw4+HEphmI1L/Z5hkQ5ePCR
-         k+X9qw9yFXQ37AkCHx6ld1+MtrgnxejGLyslhMpVd3eOSMmqU0nBV5xRkWzYOujKVEvx
-         rWkirAvQJBUdYmwKumexAOY2R30hb3xh9LKuQCPEvEhG7xzgkim7yl/WEJnQZ3rMhAEs
-         cY6u2UMAkR1ijkV98B1yMvLwxapf9ip/xj6MrdAaPz5Dym5uzOXUVv2GrrTalwP61a3B
-         f9+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788848095; x=1789452895;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=TuA/xmu86f2+uzRrjt1sV1QoY+5IdkmNTkwkB6MMzEY=;
-        b=RzVFiOPlNF5uEdY/LpO+oAUMttxg5bg1y6XVVWIzqAVmOHROyKyFS2iD96c11PLgNP
-         xBkQFIIawPw+zZsCjKz/QnCPGif1Srh8X4tJj7afk/R0YQIaLIyRt5lJfd5hz1JfsnTP
-         Hx2h651cLWsxokRFU1IRGH3Z6nl0hSGby9BgorhKCprRjhqbqo9RslJvw+90uneNxW+4
-         6CQMJ0ffUgPoy+odbILX/UgCKaD9KP89ZKChlWozEEJtiERrOMbl1sBozrnmhNSX3R4H
-         TleA2zW+uhAzL457x+SUHlt8dU45DXq4L92IA88WTeCtPgBoOT5714BIUZLrnsY+F1l5
-         gTbg==
-X-Forwarded-Encrypted: i=1; AKwUvBzrz/4iv+qXBGSm9DzmJqCLpgXVn8GKINEYNP+pFnWshY6zn2J1CZtCs30DldWG84TDrffMyWAKvw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lV+vU6uEHWFsMYYMzGQX4aJsB2+6GKMW6HBaecOaI7cuis5Uk/
-	zt4Ny8yua9Odpl75sQZ6whmFf9nXhTlSE4rWg5gZa5WLxEtKfkabv+N0
-X-Gm-Gg: AYBFou01UgL5VyToBuVd3hDH7CQIFo/qecXS+AjsTTudS5DRM/aj0fb/qM8fVKuN4Tr
-	EjzMYn1L0Xc3AzT1nvVlMwVs2eonu98rvVh14U00WK+HHIZDf/Y5DBGuPMZ6RuGW5WySxHoREGB
-	60bqlkbT05a2Yv7HameUSFcFYFaqk39gWYkK7ST/NdaWH5SwrKv+3S/5sSqjCKvK146v4PYu8ad
-	mo0Rc/6szme7EC6HxbQ+0EGIKbXewz5SR6byNUwfA9dXQmFNL0EBfUrZp3BB3PNKUQXb3jMunSo
-	mvazN+7pWVcoBsY8LkUI4uycgRf8hIhEOoDqGBRf/S7jiRdR76Gy8z0nqLEkSXylbU0JRtzbJkW
-	UT2RlzKKLF2bHXp8DPyNS7T9pzjHkkrtR317ZKPisbZKRgXbLf0zwmPDG2xw49MAqo2D7oxdG6o
-	CHYQhsunnow2KImQA9J8sBvU0MHwFJ5fX9s1hBrSVkYhut1lq8yMwDbluM
-X-Received: by 2002:a05:6820:1890:b0:6b1:b31f:132e with SMTP id 006d021491bc7-6b6fabd2e99mr16401107eaf.6.1788848094953;
-        Mon, 07 Sep 2026 23:14:54 -0700 (PDT)
-Received: from [192.168.18.164] ([2600:8804:5716:d800::b712])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7fde1b9a9c5sm5038843a34.17.2026.09.07.23.14.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Sep 2026 23:14:53 -0700 (PDT)
-From: Ryan Brue <ryanbrue.dev@gmail.com>
-Date: Tue, 08 Sep 2026 01:14:46 -0500
-Subject: [PATCH] power: supply: bq24190_charger: don't reset registers
- across system suspend
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="eM2DFUbT"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GqE1ebDJjICY+QCE3gGJ6jbFDOvmNwIsHmCWaSEp6FcXbhYguBPqIzKfqyrbd64/Zjaz41QqkmSN3VQl64Nu3nJGQquaaWQIl9tVUhpQHJGe9NJ4BW+4Pwmntk1+yvve6FM2mDz4GIARmX2G54XL7fTof83HIH02ZOfhLZ7G+sH6Px/eSBprdy/lGLqZ0k2GZ1EYWRffG7n0WleH5VS6DhSLrYzxjVFi87iJmSEhGUMkS1N3rl2irN7oEoxlYXjvfp6q6MUp8anBAwRMPZirXCvHzXD5n0FOKMkIEDQ+8iwPE5VTBJLwIlcbKQmREtC25ihHVXYHIWMBItYLCclA3A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=u4Lz4kenstitT7lFNG6kIP8YMnSl4DPYDJjEKe4R8oo=;
+ b=fiMguyq2omo2ONGLeT6GFeDoEaIhdgriUAq8eqP3TJKGf0m7hDsXpxpSx1cvaCeyA5/Dr2yXQ0bakSw1rauosW9qguuQoThQb7RtAe7gMv7WfY8uMEIaPIV+VtZZT86extWNav0I6yH7SISPt1CO9HijPQ7zjcMEUk/uP1UE98OshRwBHRl/9tLKuxOqGI1JIincPpctI5B+wByn4QRu1feLnspFSSOP1rvnt/Jn/OJ2QqYMTXnkTyh14RUKolAXd/fVNlYhiT2hjU6XC7iYpiN8DAzUy954Is4JSrey7BqwLY9K77YvFQo582YekeUunpysRbppFRGtYOlX7McRAg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=u4Lz4kenstitT7lFNG6kIP8YMnSl4DPYDJjEKe4R8oo=;
+ b=eM2DFUbTWoONjTqkZzoCy/Kmd6nZGLhU4IJUTjQ8QglkweAjPXfyJbsLpGR1uyKs7YAQIegCzW5nr2nFeJEdfgdMOxFsIayOcSszGvDkpaEomF9PA5AmA/R1tLVCu2pol/DlFOVH+aXdoOG5+wg1MoFxtAaS56bV7SL/y4PzwWQ=
+Received: from BL1P223CA0020.NAMP223.PROD.OUTLOOK.COM (2603:10b6:208:2c4::25)
+ by SJ0PR12MB6989.namprd12.prod.outlook.com (2603:10b6:a03:448::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.382.14; Tue, 8 Sep
+ 2026 06:20:01 +0000
+Received: from BN1PEPF00005FFC.namprd05.prod.outlook.com
+ (2603:10b6:208:2c4::4) by BL1P223CA0020.outlook.office365.com
+ (2603:10b6:208:2c4::25) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.406.7 via Frontend Transport; Tue, 8
+ Sep 2026 06:19:57 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ BN1PEPF00005FFC.mail.protection.outlook.com (10.167.243.228) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.406.5 via Frontend Transport; Tue, 8 Sep 2026 06:19:57 +0000
+Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Tue, 8 Sep
+ 2026 01:19:57 -0500
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb10.amd.com
+ (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Tue, 8 Sep
+ 2026 01:19:57 -0500
+Received: from [10.136.42.177] (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
+ Transport; Tue, 8 Sep 2026 01:19:55 -0500
+Message-ID: <eadc9b88-534c-4a49-b2a5-c2d9ffcf569a@amd.com>
+Date: Tue, 8 Sep 2026 11:49:48 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] cpufreq/amd-pstate: Add per SoC and per core type
+ EPP tuning values
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>
+CC: Perry Yuan <perry.yuan@amd.com>, "open list:X86 ARCHITECTURE (32-BIT AND
+ 64-BIT)" <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY SCALING
+ FRAMEWORK" <linux-pm@vger.kernel.org>, Vishal Badole <Vishal.Badole@amd.com>,
+	Richard Gong <Richard.Gong@amd.com>
+References: <20260908041935.402116-1-superm1@kernel.org>
+ <20260908041935.402116-2-superm1@kernel.org>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <20260908041935.402116-2-superm1@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260908-rbrue-suez-upstreaming-bq24190_charger-no-reset-regs-sys-suspend-v1-1-b7f7c784959c@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWOwQrCMBBEf6Xs2YW0lNb6KyKSNtMYwbTuNqKW/
- rtRDzPwDsOblRQSoHQoVhI8goYpZih3BQ0XGz04uMxUmaoxndmz9JLAmvDmNOsisLcQPff3qi4
- 7c84j8RCOEwsUS26vrK+cpDOiY+va2rbD6JrRUNbMgjE8fxeOpz9r6q8Ylq+Xtu0DNQu646QAA
- AA=
-X-Change-ID: 20260908-rbrue-suez-upstreaming-bq24190_charger-no-reset-regs-sys-suspend-ad74a7cfd6f0
-To: Sebastian Reichel <sre@kernel.org>, 
- "Mark A. Greer" <mgreer@animalcreek.com>, 
- Anton Vorontsov <anton@enomsg.org>
-Cc: Hans de Goede <hansg@kernel.org>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Ryan Brue <ryanbrue.dev@gmail.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788848093; l=8369;
- i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
- bh=7v//YBccA+Wta/WJmdeX/TznEKFSuxoImEEytIwQxeg=;
- b=0BK1BbsepJFy53AzEMU6iHDU88RdgpU2hcN9U8wLb2JXc9+xpxNXwgb0SV/0iTig/bY/dJtti
- BEgqNm+uMDfDqqBnhtU6C309scMI1boFqqADaox5ESJ61ONUZFPSJhB
-X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
- pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN1PEPF00005FFC:EE_|SJ0PR12MB6989:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6eb2f5e3-7b7e-4756-4b22-08df0d7134a2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|23010399003|376014|1800799024|36860700016|10067099003|3023799007|18002099003|22082099003|11063799006|56012099006|4143699003;
+X-Microsoft-Antispam-Message-Info:
+	CW+ddDG2htBhrXUJEEjXQn8Hri4RO5Oa22OmrL60XRTw4vxsaGthXOry7mQUeiOUNjUSGa6DKPVAj0cXuUoFa0NYmMI0iiPfp4iip2/Y6PZH7w5UsYcE4a+Agfsa7KalDF6uPv5a/OiY6qXQl76AZGE5in+qtwwjwpWgKFXYM05Mq+UOpTkU37WZBUxX34buSp0qhLfja7Lrm6W6TsBA0Wukzgj2amWxa/8BXp9jKpkVnZ1R0LWOQ+CLSKqzmN0AkjYR6sUvt4QleWkOE99TH3UBA4fx41bNoZiKZWFMQjb4IDbAk/fo1knLgSj4phE2EccC4h9txo0nN3JVYFklPhlECnSOgZMQxGW8nsqOKYBEcYFrBJsrrTuJ4zOpX4zQOgpl8PrAbzC2eAEKS4wgsLcA7bg7sh2YdiixV73ncpbxcMeIEGi1UcEWd+vg71PqY8UHV3x6MqxdwQL2WyNlCyZZEWim82itE73XCEfGtOIz6C2h9ktE4f1BSaO/wg5Yqai1sKsen16aVqu2q1LIZwxcKAG3T1odcthYyWJcbEVVth2hnTZ0o4Ll5t+Z3e2nOc7X3RfdmhehkWzcG5fxqWuE2ehGevv36Oi4Kmm6ZaD2ye5lSjUdmW/vETgDZT7fCNViyy/JlIrwcKihLXCB4L+EZvSdrQnc7LDT2Biw0U4uHwBF1Rl2WxkdHX2mmqsCOykNtMG4OxYqvHzP5vSkaw==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(23010399003)(376014)(1800799024)(36860700016)(10067099003)(3023799007)(18002099003)(22082099003)(11063799006)(56012099006)(4143699003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	SpfTwNtgS3QNEJwVpcCninDSXshXur2LhADBqYRrIHWoX9b7xOyXAtAc6AY3/pfOlmlapF9fBjMgztu9ejd2q6EIjMne1UxQ+SrGSLxkocRx7s3h5J8l0oeYN8e+tlcw2AgItrY1A8qNhD8ucI8pcM+ZbHOnb/oiCGCmGM1GEXYaDwWzRpb0Fvj6v0yUupIVS41q/0TUj3tJXpqrKTTi32SWDKEbB74IqO2CslNJ/rp/JlJtovIKdORnRY2tlUeX3GWHtBIgS0L6WMWsWAOIT5JXfEuS+1NflLMtobk1JG1KLVNYcSydMCHu2B5J5YmcrZFeX7UyeuYkh8Kkm9XSghXmnLnq8JE6pFAVfBIoK89MEiOSFEs/jgS+Q+YYbQl6eTVyG0WKSdfb720IpDXjuYmMIdDbvA9gcCt+VLkMmDDDegOkjkWKqzqSYYbn42qw
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Sep 2026 06:19:57.5008
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6eb2f5e3-7b7e-4756-4b22-08df0d7134a2
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN1PEPF00005FFC.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB6989
 
-bq24190_pm_suspend() calls bq24190_register_reset(), which returns every
-register to its power-on default, and bq24190_pm_resume() does it again
-before re-applying the probe-time configuration. On any board that wires
-the charger's interrupt this makes system suspend unusable.
+Hello Mario,
 
-The reset re-arms the chip's 40 s i2c watchdog. bq24190_set_config() turns
-that watchdog off at probe, deliberately: as the comment there explains,
-the same write also takes the part out of default mode into host mode.
-Nothing pets it while the system is asleep, so it expires, resets the
-registers again and pulses INT. The charger interrupt is a system wake
-source -- armed unconditionally in probe since commit f385e6e2a153 ("power:
-bq24190_charger: Use PM runtime autosuspend"), and still enabled by default
-after the conversion to the wake irq API [1] -- so the pulse wakes the
-machine.
+On 9/8/2026 9:49 AM, Mario Limonciello (AMD) wrote:
+> +/*
+> + * The numeric EPP value programmed for each named preference. First dimension
+> + * is CPU type (TOPO_CPU_TYPE_ANY for non-hybrid, TOPO_CPU_TYPE_PERFORMANCE/
+> + * EFFICIENCY/LOW_POWER for hybrid). The initializer holds the legacy values
+> + * used as the fallback on any platform not listed in amd_pstate_epp_soc_ids[];
+> + * amd_pstate_init_epp_values() overwrites slots at boot when the running SoC
+> + * has a per-SoC (and potentially per-CPU-type) override.
+> + */
+> +static u8 epp_values[][EPP_INDEX_MAX] = {
+> +	[TOPO_CPU_TYPE_ANY] = {
+> +		[EPP_INDEX_DEFAULT] = 0,
+> +		[EPP_INDEX_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_BALANCE_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_POWERSAVE] = AMD_CPPC_EPP_LEGACY_BALANCE_POWERSAVE,
+> +		[EPP_INDEX_POWERSAVE] = AMD_CPPC_EPP_LEGACY_POWERSAVE,
+> +	},
+> +	[TOPO_CPU_TYPE_PERFORMANCE] = {
+> +		[EPP_INDEX_DEFAULT] = 0,
+> +		[EPP_INDEX_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_BALANCE_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_POWERSAVE] = AMD_CPPC_EPP_LEGACY_BALANCE_POWERSAVE,
+> +		[EPP_INDEX_POWERSAVE] = AMD_CPPC_EPP_LEGACY_POWERSAVE,
+> +	},
+> +	[TOPO_CPU_TYPE_EFFICIENCY] = {
+> +		[EPP_INDEX_DEFAULT] = 0,
+> +		[EPP_INDEX_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_BALANCE_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_POWERSAVE] = AMD_CPPC_EPP_LEGACY_BALANCE_POWERSAVE,
+> +		[EPP_INDEX_POWERSAVE] = AMD_CPPC_EPP_LEGACY_POWERSAVE,
+> +	},
+> +	[TOPO_CPU_TYPE_LOW_POWER] = {
+> +		[EPP_INDEX_DEFAULT] = 0,
+> +		[EPP_INDEX_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_BALANCE_PERFORMANCE,
+> +		[EPP_INDEX_BALANCE_POWERSAVE] = AMD_CPPC_EPP_LEGACY_BALANCE_POWERSAVE,
+> +		[EPP_INDEX_POWERSAVE] = AMD_CPPC_EPP_LEGACY_POWERSAVE,
+> +	},
+> +};
 
-Measured on an MT8173 board (Amazon Fire HD 10 2017, BQ24297) by swapping
-only this driver between builds with and without this change, asking for
-a 150 s suspend each time:
+If my eyes aren't decieveing me, all the indices are initialized to same
+value so we can perhaps do:
 
-  on charger, with the reset:     41-43 s, 7 runs of 7
-  on charger, without the reset:  150 s,   3 runs of 3
-  on battery, with the reset:     40-41 s, 3 runs of 3
-  on battery, without the reset:  150 s,   3 runs of 3
+    static u8 epp_values[][EPP_INDEX_MAX] = {
+        /*
+         * Initialize all CPU types to legacy defaults.
+         * amd_pstate_init_epp_values() will fix these up
+         * based on the platform during boot.
+	 */
+        [TOPO_CPU_TYPE_ANY ... TOPO_CPU_TYPE_LOW_POWER] = {
+            [EPP_INDEX_DEFAULT] = 0,
+            [EPP_INDEX_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_PERFORMANCE,
+            [EPP_INDEX_BALANCE_PERFORMANCE] = AMD_CPPC_EPP_LEGACY_BALANCE_PERFORMANCE,
+            [EPP_INDEX_BALANCE_POWERSAVE] = AMD_CPPC_EPP_LEGACY_BALANCE_POWERSAVE,
+            [EPP_INDEX_POWERSAVE] = AMD_CPPC_EPP_LEGACY_POWERSAVE,
+        },
+    };
 
-It is not a charging-only problem. The watchdog runs from VBUS or from
-the battery, so an unplugged tablet loses suspend in the same way.
+> +static_assert(ARRAY_SIZE(epp_values) == TOPO_CPU_TYPE_LOW_POWER + 1,
+> +	      "epp_values must have entries for all CPU types up to TOPO_CPU_TYPE_LOW_POWER");
+> +
+> +/*
+> + * Get the EPP value row for a given CPU, accounting for hybrid CPU types.
+> + * Non-hybrid systems use TOPO_CPU_TYPE_ANY; hybrid systems use the CPU's
+> + * actual type (PERFORMANCE/EFFICIENCY/LOW_POWER).
+> + */
+> +static inline u8 *amd_pstate_cpu_epp_values(int cpu)
+> +{
+> +	enum x86_topology_cpu_type type = cpu_data(cpu).topo.cpu_type;
 
-ftrace names the wake source. Across the resume, the first device
-interrupt after the machine comes back is the charger:
+Can we cache this in cpudata to avoid an additional dereference?
 
-  1270.760799: suspend_resume: machine_suspend[3] end
-  1270.775683: irq_handler_entry: irq=25 name=bq24190-charger
-  1270.776156: irq_handler_entry: irq=250 name=11010000.i2c
+> +
 
-Everything between is IPI and arch_timer from bringing the secondary CPUs
-back up, and no RTC interrupt appears anywhere in the trace -- the 150 s
-wake alarm never fired. The cause leaves nothing behind for userspace to
-find, because WATCHDOG_FAULT is in the latch-on-read fault register and
-the driver's own interrupt handler has already consumed it.
+I would prefer a:
 
-The reset also discards host configuration that nothing restores. Resume
-calls bq24190_set_config(), which writes only the watchdog, SYS_MIN,
-IPRECHG, ITERM, ICHG and VREG, so:
+    if (!cpu_feature_enabled(X86_FEATURE_AMD_HTR_CORES))
+        return epp_values[TOPO_CPU_TYPE_ANY];
 
- - IINLIM returns to its power-on default. Boards without a charger-type
-   detector set the input limit from userspace; measured here, one ordinary
-   suspend/resume silently took input_current_limit from 1500 mA to 500 mA,
-   and to 100 mA when running from the battery, where the default differs.
+here to avoid the branches for non-heterogenoeus platforms.
 
- - EN_HIZ is cleared, so a charger the host put into high-impedance mode
-   starts drawing from VBUS again the moment the system sleeps.
+> +	if (type == TOPO_CPU_TYPE_PERFORMANCE ||
+> +	    type == TOPO_CPU_TYPE_EFFICIENCY ||
+> +	    type == TOPO_CPU_TYPE_LOW_POWER)
+> +		return epp_values[type];
+> +
+> +	return epp_values[TOPO_CPU_TYPE_ANY];
 
-There is no way to have both. Default mode is what the reset is for, and on
-this part default mode and a disarmed watchdog are mutually exclusive: a
-write to any register moves the chip into host mode, and it only returns to
-default mode when the watchdog times out. Parking it in default mode for
-the sleep therefore always leaves a timer armed that will fire, and on any
-board that wires INT that firing is a wake. A per-board opt-out would not
-be choosing between two workable configurations, only between a working
-suspend and a broken one.
+A switch case might look prettier ;-)
 
-Resetting in suspend buys nothing worth this. The part is in host mode with
-its watchdog off; it charges on its own, switching from constant current to
-constant voltage and terminating when the battery is full, and nothing in
-it can expire or change while the host sleeps. Resetting on resume is
-weaker
-still: the host is awake and about to reconfigure the chip, so the reset
-only guarantees the loss.
-
-The one thing the reset does guard against is a host that never comes back:
-a chip in host mode keeps whatever it was last told, where default mode
-would revert to the power-on values. But that is the state the driver
-leaves it in for all of normal runtime operation already, so sleep is not
-special, and the part still makes its own constant-current to
-constant-voltage transition and terminates when the battery is full.
-
-So drop it in both directions. The suspend callback has nothing left to do
-and goes away. Resume re-applies the probe-time configuration, which is
-idempotent and also recovers a part that did somehow fall back to default
-mode, since bq24190_set_config() starts by turning the watchdog off.
-
-This has been proposed before. Hans de Goede sent the same change in 2017
-[2] and Sebastian Reichel agreed with the reasoning [3], but v6 kept the
-reset on by default and added the "disable-reset" device property instead
-[4]. That property cannot answer this: it is set only from x86 platform
-code -- i2c-cht-wc and x86-android-tablets -- and is not in bq24190.yaml,
-so no DT board can reach it. Every in-tree DT user of this driver
-(tegra124-xiaomi-mocha, qcom-msm8974-lge-nexus5-hammerhead,
-qcom-msm8974pro-oneplus-bacon, rk3188-bqedison2qc) wires the charger
-interrupt and so has the same wake armed, with no way to opt out. If some
-board does want the reset, it would be better expressed the other way
-round.
-
-The vendor kernel for this board does not reset across suspend either: its
-driver, drivers/power/mt81xx/bq24297.c, only masks the charger interrupt on
-suspend and unmasks it on resume.
-
-Reproduced on a BQ24297. The reasoning applies to the family, but the other
-parts were not available to test.
-
-[1] https://lore.kernel.org/all/20260908-rbrue-suez-upstreaming-bq24190_charger-use-wake-irq-api-v1-1-c3f10ae2a34a@gmail.com/
-[2] https://lore.kernel.org/all/20170322145536.30570-5-hdegoede@redhat.com/
-[3] https://lore.kernel.org/all/20170323112052.ukyazi4pnji7n6st@earth/
-[4] https://lore.kernel.org/all/20170414165233.4532-1-hdegoede@redhat.com/
-
-Fixes: d7bf353fd0aa ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
-Assisted-by: LLM
-Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
----
- drivers/power/supply/bq24190_charger.c | 30 +++++++++---------------------
- 1 file changed, 9 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 4bea6fd83c36..fef277bb18d3 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -2242,25 +2242,6 @@ static __maybe_unused int bq24190_runtime_resume(struct device *dev)
- 	return 0;
- }
- 
--static __maybe_unused int bq24190_pm_suspend(struct device *dev)
--{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
--	int error;
--
--	error = pm_runtime_resume_and_get(bdi->dev);
--	if (error < 0)
--		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
--
--	bq24190_register_reset(bdi);
--
--	if (error >= 0) {
--		pm_runtime_put_autosuspend(bdi->dev);
--	}
--
--	return 0;
--}
--
- static __maybe_unused int bq24190_pm_resume(struct device *dev)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
-@@ -2274,7 +2255,14 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
- 	if (error < 0)
- 		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
- 
--	bq24190_register_reset(bdi);
-+	/*
-+	 * The chip kept its configuration through the sleep: it is in host
-+	 * mode with the i2c watchdog off, so nothing expired and nothing was
-+	 * reset. Do not reset it here either -- a userspace setting such as
-+	 * EN_HIZ or IINLIM would otherwise be silently lost on every resume.
-+	 * Re-applying the probe-time configuration is idempotent and cheap,
-+	 * and covers a part that did somehow fall back to default mode.
-+	 */
- 	bq24190_set_config(bdi);
- 	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
- 
-@@ -2293,7 +2281,7 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
- static const struct dev_pm_ops bq24190_pm_ops = {
- 	SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
- 			   NULL)
--	SET_SYSTEM_SLEEP_PM_OPS(bq24190_pm_suspend, bq24190_pm_resume)
-+	SET_SYSTEM_SLEEP_PM_OPS(NULL, bq24190_pm_resume)
- };
- 
- static const struct i2c_device_id bq24190_i2c_ids[] = {
-
----
-base-commit: df2908090cda368b01ff43709f51890076c56157
-change-id: 20260908-rbrue-suez-upstreaming-bq24190_charger-no-reset-regs-sys-suspend-ad74a7cfd6f0
-
-Best regards,
---  
-Ryan Brue <ryanbrue.dev@gmail.com>
+> +}
+-- 
+Thanks and Regards,
+Prateek
 
