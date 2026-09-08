@@ -1,286 +1,132 @@
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 934FE54CF43;
-	Tue,  8 Sep 2026 15:30:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=183.62.165.209
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9635548552;
+	Tue,  8 Sep 2026 15:34:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788881449; cv=none; b=FPoDf8M5e7Y6qvMQtBNNOFDWraFMKWdBvKgz3pPWNugFO5Y1QwsoPs4g+pALpR8n3u+jYGq2idSUHnEaaf+OQ0YY2tjwHsj2Zsy3RaqJAlBhbdobQSSXwLqehL2p+wavY83CrARmJxi+wJ3wUnJ0nKz+qq1ynYuCqI3vNwW02/4=
+	t=1788881688; cv=none; b=BiHv4jP8tqQqeWluC3FVIS5wdSnEiDMas2rV9C+QFVXLHHs6ODKAlvNmypDgzf8m1+ggGIDNtFZ20ZJOfi8j9LzFehM4ZtAk+K/emXk1bWxGq5L5ES1FS2TTqBg7KB2RR+su9AZEHdlJ0s45R1dTWEzYaDTVtQ2whqRSlUr0ph0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788881449; c=relaxed/simple;
-	bh=rbLJmXuhNDPwiK5It1ASD+gABoJg5ZfvY+8fhWBFbjE=;
-	h=Message-ID:In-Reply-To:References:Date:Mime-Version:From:To:Cc:
-	 Subject:Content-Type; b=g4BGIK7z4jB5fqdN9bundTxuzSuaEw/0L2JGtPJCrku9nbBo1u8ewXiiH4M639vj5zQkCOIF7gpFgs2DAL/gdMzEaSwmlds11E1Q37pzsq6nj/yJWAemyzd4fiBvmOswUuwq0tIjZkcpGiaDDV7kLaeTrm65O2r805rM8yXFm3w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn; spf=pass smtp.mailfrom=zte.com.cn; arc=none smtp.client-ip=183.62.165.209
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zte.com.cn
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4hfSYq3RZRz4xPRy;
-	Tue, 08 Sep 2026 23:30:23 +0800 (CST)
-Received: from xaxapp05.zte.com.cn ([10.99.98.109])
-	by mse-fl1.zte.com.cn with SMTP id 688FUK75046606;
-	Tue, 8 Sep 2026 23:30:20 +0800 (+08)
-	(envelope-from hu.shengming@zte.com.cn)
-Received: from mapi (xaxapp01[null])
-	by mapi (Zmail) with MAPI id mid32;
-	Tue, 8 Sep 2026 23:30:24 +0800 (CST)
-X-Zmail-TransId: 2af96aa02a10d4b-9004f
-X-Mailer: Zmail v1.0
-Message-ID: <20260908233024442fFZQVoW9iOSFVh0a4lezw@zte.com.cn>
-In-Reply-To: <3c7be2f1-b1be-4f6e-948d-e1991d8afa6b@oss.qualcomm.com>
-References: 20260907185517424rOcCTgNPmgf1i0mLqlxWN@zte.com.cn,3c7be2f1-b1be-4f6e-948d-e1991d8afa6b@oss.qualcomm.com
-Date: Tue, 8 Sep 2026 23:30:24 +0800 (CST)
+	s=arc-20240116; t=1788881688; c=relaxed/simple;
+	bh=2xdZ+I35O5wMzCJuFztU21SdXhO0KTe6CqKTPCSHmFo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=J/9AVwprOejM4oE3Ve1X+534Z+PfR9S8Kwjs1ikES1eC86BJnfA5sprLc50XJZt1yMVNjRZB0xQ/Nylj/q2XgU7UCRanA1N0VJlPV0kBMJmXZ6ZGjeLvr2YlQHXjZiIjfp1V2kf6JRpLr5KTMu64wgMY8sHY9L7ej/641J7/dfU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OBCoJrEg; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OBCoJrEg"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 654811F00A3A;
+	Tue,  8 Sep 2026 15:34:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788881679;
+	bh=2xdZ+I35O5wMzCJuFztU21SdXhO0KTe6CqKTPCSHmFo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=OBCoJrEgKyTIogjTC/andPa6J0fJ1vFRHhoBRsIEo6UKgKKpa/UE9KjPF+prT18B6
+	 +WU/mwHOifa5Vb3wnHcP1QKhgfPzJTG3QFZn3oU1n8nTn09O4NY9KcMRLwd72CLBOq
+	 WcC+5KRMiI+BLF0jeV0TNM6ukmdxL1YkiDt0ykTh4FzcPaBpInMJuRzL56Y7YyPrBk
+	 9CjpQGx2c0/yHP+IEP+94P46/Og36DHw9BvOpAcA40cfSStyY3HAwEDtUGKRnsduzU
+	 tSv50jVo+Ac7sXDU/zwy9lKX1QZUxOczMJvb42m3GZ1+Ja6tAkwTz9Q3vkVDJsWNyx
+	 1PBqPdZbzC2gg==
+Date: Tue, 8 Sep 2026 16:34:24 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Drew Fustini <fustini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Liviu Dudau <liviu.dudau@arm.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Vladimir Zapolskiy <vz@mleia.com>, Stefan Agner <stefan@agner.ch>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Andreas Kemnade <andreas@kemnade.info>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Gregory Clement <gregory.clement@bootlin.com>,
+	Robert Jarzmik <robert.jarzmik@free.fr>,
+	Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Alexander Sverdlin <alexander.sverdlin@siemens.com>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Karl Mehltretter <kmehltretter@gmail.com>,
+	"David Hildenbrand (Arm)" <david@kernel.org>,
+	Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org, imx@lists.linux.dev,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-omap@vger.kernel.org, Alexander Clouter <alex@digriz.org.uk>,
+	"Jeremy J. Peper" <jeremy@jeremypeper.com>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>, Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Thomas Weissschuh <thomas.weissschuh@linutronix.de>,
+	linux-ide@vger.kernel.org, linux-mmc@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-phy@lists.infradead.org,
+	linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-sound@vger.kernel.org,
+	linux-gpio@vger.kernel.org
+Subject: Re: [PATCH 05/13] ARM: orion/dove/mv78xx0: remove all board files
+Message-ID: <c38b1d3e-fcb7-419d-b62d-200eb552df52@sirena.org.uk>
+References: <20260908152808.3928630-1-arnd@kernel.org>
+ <20260908152808.3928630-6-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-From: <hu.shengming@zte.com.cn>
-To: <zhongqiu.han@oss.qualcomm.com>
-Cc: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <luo.haiyang@zte.com.cn>,
-        <zhang.run@zte.com.cn>, <zhongqiu.han@oss.qualcomm.com>
-Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gY3B1ZnJlcTogY29uc2VydmF0aXZlOiBJZ25vcmUgaWRsZSBwZXJpb2RzIHdoZW4gYSBwb2xpY3kgQ1BVIGlzIGJ1c3k=?=
-Content-Type: text/plain;
-	charset="UTF-8"
-X-MAIL:mse-fl1.zte.com.cn 688FUK75046606
-X-TLS: YES
-X-ENVELOPE-SENDER: hu.shengming@zte.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Tue, 08 Sep 2026 23:30:23 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AA02A0F.000/4hfSYq3RZRz4xPRy
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="Io5kq1JWW/hrTr1x"
+Content-Disposition: inline
+In-Reply-To: <20260908152808.3928630-6-arnd@kernel.org>
+X-Cookie: The world is not octal despite DEC.
 
-Zhongqiu wrote:
 
-> On 9/7/2026 6:55 PM, hu.shengming@zte.com.cn wrote:
-> > Zhongqiu wrote:
-> >> Hi Shengming,
-> >> Thanks for the patch.
-> > 
-> > Hi Zhongqiu,
-> > Thanks for the review!
-> > 
-> >> On 9/2/2026 3:47 PM, hu.shengming@zte.com.cn wrote:
-> >>> From: Shengming Hu <hu.shengming@zte.com.cn>
-> >>>
-> >>> For a shared cpufreq policy, dbs_update() derives the load from the
-> >>> highest utilization among its CPUs, but it also records deferred idle
-> >>> periods from any CPU whose idle time exceeds two sampling intervals.
-> >>>
-> >>> This lets a single update report both a high load (from a busy CPU)
-> >>> and several deferred idle periods (from an idle sibling). Since
-> >>> conservative applies the deferred down steps before the up step
-> >>> triggered by the high load, the down steps can outweigh the single
-> >>> up step.
-> >>>
-> >>> The issue reproduces on a policy shared by CPUs 2 and 3: a CPU-bound
-> >>> SCHED_EXT task keeps CPU 2 at 100% utilization while CPU 3 stays
-> >>> idle. On this system SCHED_EXT generates update-util callbacks less
-> >>> frequently than CFS, so DBS updates are sparse, tracing shows:
-> >>>
-> >>>    load=100 idle_periods=7 interval=59 ms
-> >>>    load=100 idle_periods=4 interval=39 ms
-> >>>    load=100 idle_periods=2 interval=19 ms
-> >>>    load=100 idle_periods=7 interval=59 ms
-> >>>
-> >>> With the default 5% step and a 2.6 GHz ceiling, conservative first
-> >>> removes seven 130 MHz steps and then adds only one. Repeating this
-> >>> sequence keeps the policy near 530 MHz despite CPU 2 being fully busy.
-> >>>
-> >>> Only retain deferred idle periods when every CPU in the policy meets
-> >>> the long-idle condition. This keeps the existing behavior for
-> >>> single-CPU and fully idle shared policies, while preventing an idle
-> >>> sibling from downscaling a policy that contains a busy CPU.
-> >>>
-> >>> Cc: stable@vger.kernel.org
-> >>> Fixes: 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster for deferred updates")
-> >>> Reviewed-by: Luo Haiyang <luo.haiyang@zte.com.cn>
-> >>> Reviewed-by: Run Zhang <zhang.run@zte.com.cn>
-> >>> Signed-off-by: Shengming Hu <hu.shengming@zte.com.cn>
-> >>> ---
-> >>>    drivers/cpufreq/cpufreq_governor.c | 5 ++++-
-> >>>    1 file changed, 4 insertions(+), 1 deletion(-)
-> >>>
-> >>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> >>> index 710d93ec89b5..64eb6b5f08a4 100644
-> >>> --- a/drivers/cpufreq/cpufreq_governor.c
-> >>> +++ b/drivers/cpufreq/cpufreq_governor.c
-> >>> @@ -126,6 +126,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
-> >>>        unsigned int ignore_nice = dbs_data->ignore_nice_load;
-> >>>        unsigned int max_load = 0, idle_periods = UINT_MAX;
-> >>>        unsigned int sampling_rate, io_busy, j;
-> >>> +    bool all_cpus_idle = true;
-> >>>        u64 cur_nice;
-> >>>
-> >>>        /*
-> >>> @@ -233,13 +234,15 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
-> >>>
-> >>>                if (periods < idle_periods)
-> >>>                    idle_periods = periods;
-> >>> +        } else {
-> >>> +            all_cpus_idle = false;
-> >>
-> >> The problem is real, but I don't think this condition is the right one.
-> >> idle_time > 2 * sampling_rate tells us how many sampling periods were
-> >> deferred for that CPU, so its negation means "this CPU was sampled on
-> >> time", not "this CPU is busy".
-> >>
-> >> Since all_cpus_idle is per-policy, one such CPU is enough to discard the
-> >> deferred periods for the whole policy, and in a shared policy it is
-> >> possible. That effectively disables the optimization from 00bfe05889e9
-> >> for shared policies, which is the opposite of what we want for power.
-> > 
-> > Agreed that not meeting the long-idle condition does not necessarily
-> > mean that the CPU was busy. The condition is based on accumulated idle
-> > time, so it is not a reliable indication of whether that CPU should
-> > prevent deferred downscaling.
-> > 
-> >> What matters is whether the CPU was busy over the sample, that is,
-> >> whether the skipped sampling periods would have led to a frequency
-> >> reduction at all. It seems more appropriate to key that off the load
-> >> measured over the sample (kept separate from the possibly inherited one)
-> >> against up_threshold, so an idle-but-punctually-sampled sibling does not
-> > 
-> > Thanks for the suggestion. I agree that the load actually measured over
-> > the current sample should be kept separate from the load that may inherit
-> > prev_load. However, I don't think up_threshold is the appropriate
-> > boundary for deciding whether deferred down steps should be applied.
-> > 
-> > For example, suppose CPU A has been idle for several sampling periods
-> > while CPU B has a sustained load of 75%, with up_threshold at 80 and
-> > down_threshold at 20. The policy is then in conservative's hold region,
-> > so the load itself would trigger neither an increase nor a decrease.
-> > If deferred downscaling is gated only by up_threshold, CPU B would
-> > not block it, so CPU A's deferred idle periods could still reduce
-> > the policy frequency.
-> 
-> It seems not, in func cs_dbs_update(), idle_periods only affects the
-> local variable requested_freq, and that variable is never actually
-> applied to change the CPU frequency while the policy remains in the hold
-> region.
+--Io5kq1JWW/hrTr1x
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You are right if both the measured load and the load returned by
-dbs_update() remain at 75%. In that case neither frequency branch is
-entered, so the idle-adjusted local requested_freq is not passed to
-__cpufreq_driver_target().
+On Tue, Sep 08, 2026 at 05:27:55PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> The 'orion' platform is the predecessor to what linux now calls the
+> 'mvebu' line of Marvell SoCs, and originally covered orion5x,
+> mv78xx0, kirkwood, dove and a few others that do not have any
+> upstream support at the moment.
 
-My example was incomplete. I was referring to a case where the measured
-policy load is 75%, but the load returned by dbs_update() is above
-up_threshold because another CPU reuses a high prev_load.
+Acked-by: Mark Brown <broonie@kernel.org>
 
-For example, consider a policy shared by CPUs A and B, with
-up_threshold=80 and down_threshold=20:
+--Io5kq1JWW/hrTr1x
+Content-Type: application/pgp-signature; name="signature.asc"
 
-CPU A:
-        current sample load = 0
-        prev_load           = 100
-        idle_periods        = 7
+-----BEGIN PGP SIGNATURE-----
 
-CPU B:
-        current sample load = 75
-        no prev_load reuse
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmqgKwAACgkQJNaLcl1U
+h9DsUAgAhTBN3De8z6XWQRAaxTKXnxOI2ZAZ09YuAC1G51g140wYOj1XcTcrgluM
+7wjICW1rmG/S2w60M9udCHUfMPlo9rW6GIGO2B1qfb0m4qgWkKLQATvB5YsJ2zfW
+L99pWEuasrdzP7KGhnrxKZNOdQCFpTgvdUjqnrbSnWylQvyy6wvJ0mk9b3x8Cg60
+MEJcm4MwHcaLV1P15o/WmXRf66ZBs3I0qbjeg/jQFAAqYtR525BYiKvMuPc/ASW/
+/wP2S0zxYLYrFdPFpCGcfbozjD/XENGuCLe3va+eSiqYc2zPA7sSRG5+j5CJNRV+
+v0dE8G7KZ/6VC0eWNsgkbHlxV41eIg==
+=fCpR
+-----END PGP SIGNATURE-----
 
-For CPU A, the long-idle branch uses:
-
-load = j_cdbs->prev_load;
-j_cdbs->prev_load = 0;
-
-If the load calculated from the current counters is retained separately
-before that substitution, the policy-level values are:
-
-max_sample_load = max(0, 75)   = 75
-returned load   = max(100, 75) = 100
-idle_periods                   = 7
-
-With an up_threshold gate, max_sample_load=75 does not suppress the
-deferred adjustment. cs_dbs_update() therefore first subtracts seven
-steps and then, because the returned load is 100, enters the increase
-branch, adds one step, and passes the result to
-__cpufreq_driver_target().
-
-With a down_threshold gate, max_sample_load=75 is not in the decrease
-region, so the seven deferred steps are skipped. The returned load of
-100 then executes only the normal increase step, subject to policy->max,
-so it cannot lower the previous request.
-
-> > I think deferred down steps should instead be applied only when the
-> > maximum load actually measured across the policy is below
-> > down_threshold. To keep this independent of the load returned by
-> 
-> The two gates only differ when the measured load lands between
-> down_threshold and up_threshold and the load used for the decision (the
-> inherited prev_load in that case) triggers one of the branches - if no
-> CPU took the reuse path the two values are equal and the outcome is the
-> same.
-
-Agreed that the gates can differ when the measured and returned loads diverge.
-The example above illustrates the high-prev_load reuse case I am concerned about.
-
-> If we use up_threshold --> the deferred downscale is only given up when
-> the CPU is genuinely busy enough to warrant a frequency increase; in all
-> other cases it still scales down as much as possible. This stays closer
-> to the design of 00bfe05889e9 ("cpufreq: conservative: Decrease
-> frequency faster for deferred updates"). When the measured load is above
-> up_threshold, we skip the deferred downscaling; when it falls between
-> down_threshold and up_threshold and the load used for the decision is in
-> that band as well, the frequency is left unchanged either way. This
-> fixes the bug you described while avoiding any significant power
-> regression.
-
-In the scenario above, the difference between the two choices is how the
-deferred down steps are handled when the measured policy load is in the
-hold region but the load returned by dbs_update() exceeds up_threshold
-due to prev_load reuse. With an up_threshold gate, the deferred down
-steps are still applied before the increase step, which may result in
-a net frequency reduction. With a down_threshold gate, those deferred
-down steps are skipped because the measured load is not in the governor's
-downscaling region.
-
-Although an up_threshold gate preserves more of the existing behavior,
-00bfe05889e9 addressed the case where the workload had finished and the
-CPU was idle. In that case max_sample_load is below down_threshold, so
-both gates preserve the original deferred-downscale optimization.
-
-> If we use down_threshold --> the deferred downscale is skipped whenever
-> the load is not in the lowest (downscale) region. it can cause power
-> regression.
-
-I agree that using down_threshold can result in a higher requested frequency
-in this case, so I cannot rule out a power regression without measurements.
-My concern is whether deferred idle periods from one CPU should reduce the
-shared policy frequency when another CPU's measured load is in the hold region.
-Do you consider that reduction intentional?
-
-> > dbs_update(), which may inherit prev_load, we could record the maximum
-> > measured load separately in struct policy_dbs_info, for example as
-> > max_sample_load.
-> > 
-> > The conservative governor could then gate the deferred reductions with
-> > something like:
-> > 
-> >      if (policy_dbs->max_sample_load < cs_tuners->down_threshold &&
-> >          policy_dbs->idle_periods < UINT_MAX) {
-> >          ...
-> >      }
-> > 
-> > This preserves deferred downscaling when the measured policy load is
-> > below down_threshold, while avoiding deferred reductions when any CPU
-> > is in either the hold or upscale region.
-> > 
-> >> May I know could you comment and try this patch on your scenario?  Once
-> >> everyone agrees I can send this formally:
-> > 
-> > I'll rework the patch along these lines, keeping the measured load
-> > separate from the inherited load and using down_threshold for the
-> > deferred-downscale condition.
-> > 
-> > I'll send a v2, with a Suggested-by tag for your suggestion.
-
---
-With Best Regards,
-Shengming
+--Io5kq1JWW/hrTr1x--
