@@ -1,155 +1,83 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9FCE346769;
-	Tue,  8 Sep 2026 19:42:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE5755A987A;
+	Tue,  8 Sep 2026 20:07:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788896550; cv=none; b=exOnQANLcfCc14u3+7zhD9ZhmpOSK/+0IJiHo2dAFKkyggV9yRh1iZzTNQazkJYDuGVlpR/jPMgb06EI+8nXUEry0hZ97qQdqo2ju03Rl5AQHBlIlS3JvE4fu/xboWl6Ka/jkE6CMctPKF1SbRWXSvXQQoR6505w4aB8oWT9iCc=
+	t=1788898052; cv=none; b=ok5GYNy44kCuPcmTDZlH1M9cM4Elk9LD+VabmJgZoJevsMIgPUN4e1gjQW2Z7zinqgmZFRHKmstktTRrel/wuIWAbGJeIAxLeGVoc5kRlloEc+COvKltFelDr3EHSHSixyMJnNIKKwT7GgUJrMJOA4XQgsnqNv8uOlI8cy5PYUI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788896550; c=relaxed/simple;
-	bh=Suh8lsb5p4CCHH8X7qEY3ul4i+oN69EyqTzHAbKtRBE=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=UC8XOSUtQRwYt9Io/TO+YEjNrfx5oRP3MiZTzLe3mIbtpBJIs308s9mM5wlghhPVUxZIbJJ+wTXOVWCFNEalFkKLz27Ql6rXB66ckmYUVULlb3wTvgnKGhffbrOGe+guNXVcOmOfkZQRuGPsgDHqfT6eek/b/jFgEHFJjcGXAT4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=IMB8W3U+; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1788898052; c=relaxed/simple;
+	bh=+58J6D3CE4XJKlOjtrnHo4Q/C2s+g1wtC9m2MXhx4vs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=TbjNH00AxIpZ4OE2wrUlvIJQPAhSeYHKZNwFIoo4KwnX7rKm8979gsh6upAZmg97xTkHzXDRXg3ELZzd4d/gEQMXpcwilVEauxn1MssysD01ZmDkx39dF1O7m7XQVPWoGfOzT/0cKe1Mfj/jGQ2H0jbh2z9TgfWXck2RSy6fbTE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EGTJ7QR7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="IMB8W3U+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788896549; x=1820432549;
-  h=date:from:to:cc:subject:message-id;
-  bh=Suh8lsb5p4CCHH8X7qEY3ul4i+oN69EyqTzHAbKtRBE=;
-  b=IMB8W3U+8D+YiU+666qaz6gvWOLBagTwG2iqCv2lUkDa8wduNyADwy4n
-   Z4d7F8dBQNaEEeKPfAsa9LIctWzdqLFHuEVF7mQZVacvb88D1dZdcl3/M
-   cnEwbYcKymTBH063y9bRXULurP0lmQFTUb1T+OiG860Gt3UdVN0zCbxdE
-   uKvDEhIigPic5KMmfnZ3SJ/X6I+1ezcOXXswjXIgUu3i0r9J3aS1EURpm
-   OWldkrLAbJbUXiuvZfH1Hd47wPd106JuKpqbm5yllOVmmTxrSSedH7sdU
-   5bylpvCADvCpi3FTpKVcKT7zEYmaxQWHfUci0HNB6rw9bvIvPM18w9a0Y
-   g==;
-X-CSE-ConnectionGUID: yc3eF24iQaCKNompoFLm5w==
-X-CSE-MsgGUID: uqL/h1sHTtSLuzOytDgryQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11900"; a="89183842"
-X-IronPort-AV: E=Sophos;i="6.25,269,1779174000"; 
-   d="scan'208";a="89183842"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2026 12:42:28 -0700
-X-CSE-ConnectionGUID: w/PfxS+dTYaOJvRcZWMT9A==
-X-CSE-MsgGUID: CYhoqffBR8GOQpMlhjiXnA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,269,1779174000"; 
-   d="scan'208";a="294606661"
-Received: from lkp-server01.sh.intel.com (HELO dc5b8f51e05b) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 08 Sep 2026 12:42:27 -0700
-Received: from kbuild by dc5b8f51e05b with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x41i4-000000000m3-1nbm;
-	Tue, 08 Sep 2026 19:42:24 +0000
-Date: Wed, 09 Sep 2026 03:41:47 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 3083a286e913923a341abaddb80a9c9284ef4f24
-Message-ID: <202609090342.FpTORqaX-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EGTJ7QR7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 340F11F00A3D;
+	Tue,  8 Sep 2026 20:07:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788898049;
+	bh=iJOWJWZvof6Aiu8tr3s25l3nk9WBufyE2g4zQc4CtfM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=EGTJ7QR7Lt3NiLz+E6t3GFiwCY6WeF0N11n7PdlGiOiLrHZX4r4GptoeRIddmZ5ba
+	 a6blWerESKctCBmyVJ5tMc6GzZdW1+FEk+3SCFjPruF8n1+bicbrOdbdOVNSf8wxOH
+	 z160qZ1Ep/t9PsutCIQxDQMrY19tWAkzMVJH1hbXzDArdjSG/Xn8kkunk0sEIDy/+j
+	 bikHWmyYmGvzzlub4kNyvR7T/3xdLbvCgWSUfWDAFqLnUlQhFGGDGiCgv/duU+doRn
+	 bAoYE1++RXmodzQxuvH2Pq3+Vf2xVA1nuyWb9ucleVLCeCt2Fd5pOPfEuedQwP8MgW
+	 d9f/kiDOTZnnQ==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Zhu Ling <zhuling0805@qq.com>
+Cc: Zhu Ling <zhuling0805@qq.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Radu Rendec <radu@rendec.net>, Pavel Machek <pavel@kernel.org>, Len Brown
+ <lenb@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo
+ Krummrich <dakr@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, driver-core@lists.linux.dev
+Subject: Re: [PATCH] genirq/PM: Re-enable chained interrupts after hibernation
+In-Reply-To: <tencent_EB4BC71944911E53F173CF6B5D92EB1AA908@qq.com>
+References: <tencent_EB4BC71944911E53F173CF6B5D92EB1AA908@qq.com>
+Date: Tue, 08 Sep 2026 22:07:25 +0200
+Message-ID: <87mrtr1p8i.ffs@fw13>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 3083a286e913923a341abaddb80a9c9284ef4f24  Merge branch 'acpi-apei' into linux-next
+On Sat, Sep 05 2026 at 23:27, Zhu Ling wrote:
+> Chained interrupts remain enabled across suspend because they can be part
+> of a wakeup path. Consequently, suspend_device_irq() does not set
+> IRQS_SUSPENDED for them, and they do not have IRQF_FORCE_RESUME accounting.
+>
+> After restoring a hibernation image, the interrupt controller can have a
+> chained parent interrupt masked while the restored descriptor still marks
+> it started and enabled. For example, the restore kernel may initialize the
+> controller without probing the driver that installs the chained handler.
+> resume_irq() skips the parent in this state, leaving interrupts from the
+> devices below it blocked.
+>
+> Pass the hibernation restore context from dpm_resume_noirq() to the IRQ PM
+> code and force active chained interrupts through the existing force-resume
+> path. Set the disabled and masked state before enabling the interrupt so
+> that cached descriptor state cannot suppress the irqchip callback. Calling
+> irq_startup() alone on an already started and enabled interrupt can skip
+> the hardware access when the descriptor also records it as unmasked.
+>
+> Leave disabled and unstarted chained interrupts alone. Keep the existing
+> behavior for ordinary resume, hibernation thaw and recovery, and the early
+> syscore resume pass.
+>
+> Fixes: 0a0c5168df27 ("PM: Introduce functions for suspending and resuming device interrupts")
 
-elapsed time: 1491m
+This fixes nothing than a theoretical problem hallucinated by a LLM and
+we don't fix hallucinations.
 
-configs tested: 78
-configs skipped: 0
+If that would be a real world problem then this change would cure the
+symptom and not the root cause.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks,
 
-tested configs:
-alpha         allnoconfig    gcc-16.1.0
-alpha        allyesconfig    gcc-16.1.0
-arc          allmodconfig    clang-24
-arc          allmodconfig    gcc-16.1.0
-arc           allnoconfig    gcc-16.1.0
-arm           allnoconfig    clang-17
-arm           allnoconfig    gcc-16.1.0
-arm          allyesconfig    clang-24
-arm          allyesconfig    gcc-16.1.0
-arm64         allnoconfig    gcc-16.1.0
-csky         allmodconfig    gcc-16.1.0
-csky          allnoconfig    gcc-16.1.0
-hexagon      allmodconfig    clang-24
-hexagon      allmodconfig    gcc-16.1.0
-hexagon       allnoconfig    clang-24
-hexagon       allnoconfig    gcc-16.1.0
-i386         allmodconfig    clang-22
-i386         allmodconfig    gcc-14
-i386          allnoconfig    gcc-14
-i386          allnoconfig    gcc-16.1.0
-i386         allyesconfig    clang-22
-i386         allyesconfig    gcc-14
-loongarch     allnoconfig    clang-20
-loongarch     allnoconfig    gcc-16.1.0
-m68k         allmodconfig    gcc-16.1.0
-m68k          allnoconfig    gcc-16.1.0
-m68k         allyesconfig    clang-24
-m68k         allyesconfig    gcc-16.1.0
-microblaze    allnoconfig    gcc-16.1.0
-microblaze   allyesconfig    gcc-16.1.0
-mips         allmodconfig    gcc-16.1.0
-mips          allnoconfig    gcc-16.1.0
-mips         allyesconfig    gcc-16.1.0
-nios2        allmodconfig    clang-20
-nios2        allmodconfig    gcc-11.5.0
-nios2         allnoconfig    clang-24
-nios2         allnoconfig    gcc-11.5.0
-openrisc     allmodconfig    clang-20
-openrisc     allmodconfig    gcc-16.1.0
-openrisc      allnoconfig    clang-24
-openrisc      allnoconfig    gcc-16.1.0
-parisc       allmodconfig    gcc-16.1.0
-parisc        allnoconfig    clang-24
-parisc        allnoconfig    gcc-16.1.0
-parisc       allyesconfig    clang-17
-parisc       allyesconfig    gcc-16.1.0
-powerpc      allmodconfig    gcc-16.1.0
-powerpc       allnoconfig    clang-24
-powerpc       allnoconfig    gcc-16.1.0
-riscv         allnoconfig    clang-24
-riscv         allnoconfig    gcc-16.1.0
-riscv        allyesconfig    clang-24
-s390         allmodconfig    clang-17
-s390         allmodconfig    clang-24
-s390          allnoconfig    clang-24
-s390         allyesconfig    gcc-16.1.0
-sh           allmodconfig    gcc-16.1.0
-sh            allnoconfig    clang-24
-sh            allnoconfig    gcc-16.1.0
-sh           allyesconfig    clang-17
-sh           allyesconfig    gcc-16.1.0
-sparc         allnoconfig    clang-24
-sparc         allnoconfig    gcc-16.1.0
-sparc64      allmodconfig    clang-20
-um           allmodconfig    clang-17
-um            allnoconfig    clang-17
-um            allnoconfig    clang-24
-um           allyesconfig    gcc-14
-um           allyesconfig    gcc-16.1.0
-x86_64       allmodconfig    clang-22
-x86_64        allnoconfig    clang-22
-x86_64        allnoconfig    clang-24
-x86_64       allyesconfig    clang-22
-x86_64      rhel-9.4-rust    clang-22
-xtensa        allnoconfig    clang-24
-xtensa        allnoconfig    gcc-16.1.0
-xtensa       allyesconfig    clang-20
-xtensa       allyesconfig    gcc-16.1.0
+        tglx
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
