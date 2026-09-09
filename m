@@ -1,31 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2CA63E410C
-	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 20:49:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3901453A28;
+	Wed,  9 Sep 2026 20:49:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788986987; cv=none; b=WetCSbDPDWIP+Sns0I5as4e35DP24V7NeRubjuQtLG6avmXk72nezDzz+zpm3r9d5XHqTvf6khGFCF/L8EEwDYeBQ3OZ7fFw2sBtc+aMmmqFb1PvpcZUuSRekRvg2XGv+4WxzQ92pc6h5CJqjeqjnZEuX5dJMs7whM6FCwN3qlo=
+	t=1788986990; cv=none; b=P6mV+LRSwx0n5FjOd+p1OxhfzfiMTTqZDNDbYOZIIYrsQVBOXqMWnyy3bui4WSAQppbOxjbFQJjW7ssZOv6SRA8FFaoOSWDhlgCRpu4m3gwOjiRaGQeMosUvNH4bYv12Y5JccOfxaKrycIjoUhhIpPvdFX5XtE8DKe0n/XWGjB8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788986987; c=relaxed/simple;
-	bh=cGardJIS+1IsLMrmU0rJR+9cpyjnWiDO/eEfPgrk6dY=;
+	s=arc-20240116; t=1788986990; c=relaxed/simple;
+	bh=SOSKQ6DMWsIzF51ySe3ch/gTAqxI796K8SC3BfvFJxk=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=r94zN8yVHkeC8iBpIEMHy/EWuKtpUNq3kgcLlk/90zbLKEMe90Mqj8l+5nZt8PPhN4ILYEpGGv22vyT+NpgBxjv4g+6JSh2tP7K0KBaoPKqUwAV8oolAqgH7IuieY4agKX1F0YUkDvmB+azgmeBwVtT4BDByOQp7swMGnWwa7kw=
+	 MIME-Version:Content-Type; b=SdyqRCBv/qNIp/hfYLSPPrsWJ/O4fFpramlgIKyWKaepP6vLJoCt9w6smgiQpH3Lx0POidU5ybLM23ux42b6xmjdhaEeGZ0VbxcHPJ6Qzq+X0e/cXDQewj/K39s/Mmb6UVPWIrM5NpdmGAE/XSsTLWi6WrMLdT/8FftCJjWwwYo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E3341F0089B;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 770531F0089D;
 	Wed,  9 Sep 2026 20:49:33 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 0842D18337D; Wed, 09 Sep 2026 22:49:32 +0200 (CEST)
+	id EEBD518337B; Wed, 09 Sep 2026 22:49:31 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Karl Mehltretter <kmehltretter@gmail.com>
-Cc: linux-pm@vger.kernel.org, Saravanan Sekar <sravanhome@gmail.com>
-In-Reply-To: <20260905101849.42830-1-kmehltretter@gmail.com>
-References: <20260905101849.42830-1-kmehltretter@gmail.com>
-Subject: Re: [PATCH] power: supply: mp2629: Use the full
- batt_impedance_compensation name in the ABI document
-Message-Id: <178898697202.883277.8707302698183273713.b4-ty@b4>
-Date: Wed, 09 Sep 2026 22:49:32 +0200
+To: =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>, Hans de Goede <hansg@kernel.org>, 
+ Marek Vasut <marex@denx.de>, Shengzhuo Wei <me@cherr.cc>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org
+In-Reply-To: <20260827-bq27xxx-suspend-cancel-sync-v1-1-77a67711cbc3@cherr.cc>
+References: <20260827-bq27xxx-suspend-cancel-sync-v1-1-77a67711cbc3@cherr.cc>
+Subject: Re: [PATCH] power: supply: bq27xxx: synchronize work cancellation
+ on suspend
+Message-Id: <178898697196.883277.12662329036916141963.b4-ty@b4>
+Date: Wed, 09 Sep 2026 22:49:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,20 +39,22 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.16.0
 
 
-On Sat, 05 Sep 2026 12:18:49 +0200, Karl Mehltretter wrote:
-> drivers/power/supply/mp2629_charger.c creates the attribute with
-> DEVICE_ATTR_RW(batt_impedance_compensation). The ABI file documents it
-> under the truncated name batt_impedance_compen, which does not exist in
-> sysfs.
+On Thu, 27 Aug 2026 05:22:29 +0800, Shengzhuo Wei wrote:
+> The poll work requeues itself via mod_delayed_work() while the device
+> is not removed. cancel_delayed_work() does not wait for a callback
+> that is already running, so a poll racing with suspend can keep
+> issuing I2C transfers after suspend returns and requeue itself into
+> early resume.
 > 
-> Use the full name.
+> Use cancel_delayed_work_sync() to quiesce polling before suspend
+> completes, as the teardown path already does.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: mp2629: Use the full batt_impedance_compensation name in the ABI document
-      commit: 3da2ab1e3b8b1544b1a57612bfc1343f396e83e9
+[1/1] power: supply: bq27xxx: synchronize work cancellation on suspend
+      commit: 5fa10f61bbe255011ca9368b8bd6352b7d724bd3
 
 Best regards,
 -- 
