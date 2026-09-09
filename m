@@ -1,116 +1,130 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D367328B62
-	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 17:05:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 542ED37B030
+	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 17:27:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788973531; cv=none; b=imckVvehKgsrBZ7sQxNPevkGOEWkZAQ6t8G1JbFywfHTpfflMYrbBgTlgAlrQVI1Lvg95ag1uBgisfSfQnGnek0z3Hhl8w3XqTZur/T1xNp8x4TDzjxROcUYJQ8aYoNq3J3yIJ4/owW19iwZUU1gtQNUaN2BKaIoXwzenSc/2w4=
+	t=1788974823; cv=none; b=ZYHN8UHxcFWlfnPSouwV53cpZffwKnw0MOFs8nDrsZNcBHIT6oNXsID4lK2rjIyYcKVj2oqhGbKnW2hnNWg8ADYVSwy7xt/Srzm8wihcJ5nI6PZnD06ccN2XlF29IX5ttCDxNTM+bekHoGCSJNy+B6SXV4acsM8x+/x/k0tSOt4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788973531; c=relaxed/simple;
-	bh=lW2baFvdOp8T8qIYmYG510KFhnL7nWjspdl9Q2bQKTo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MiSErjwzsnkOQq+HiBLObmTEVDlIawyQWQPulUvzN+WUL/LyOYK3ZeMI2BIPNAorQM2jO6M61vLANXwwviJIAgzZRTpopmxKDJDZszRTYw/rrRrKCKSchlaYUaqKD80SPXUoi4Ohu2DawPc0IlGlFTvmnV2klTGzWIXVrjZRS1Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=niwGUIYc; arc=none smtp.client-ip=209.85.128.49
+	s=arc-20240116; t=1788974823; c=relaxed/simple;
+	bh=SUxP5gT1ZaOy4mmgP6chw0Cr8VRY83cgnbGtN/GeIrM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Juba0PEXZLUnv5bkxUONe2kx0MkAELpdJM4IJ6oA4Ev5GeJdzMl39vhC5tJ7Qktne4uw8wdBnNE+rZObQrIfWrZFZW+kMl9M27PAV8HW66VIDTA4EGjuCpuEssc4D2Wb+anS8tHuazrpTkfGsKMWUSd+azwpmLFh2ynnACbgodo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jI6Ly9NO; arc=none smtp.client-ip=209.85.210.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="niwGUIYc"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4957eefd361so48148475e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 10:05:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jI6Ly9NO"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-86265451beeso3290148b3a.0
+        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 10:27:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788973527; x=1789578327; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=VxdZRvXz8X1My70IJ3RwMner0dA2d2QTLo+O2qcpmmE=;
-        b=niwGUIYc7zRKRwOCFQViPVK/AaddsSLpmoQQIIJojBI0R59va5aaoXZq6FHAFoWY+o
-         Ro6XD2OhjQKrFUkoTjE2OjvAk7SWP3WBGcWnIvbB05sMTSpKrXL+iqU+C14CgE1KKW/a
-         5sz/XF3H8kDYW7UrtPKjNbbUfCN3iHNxDS24fBvzCR48T3GPYICNXAp2w4B7aB2DggOJ
-         urB2tJRybQyZ6YijKWLfSGN3mvCA+6WiKnXvIUOEjIsSnIyYz82gQYp4wbQUORGET/pm
-         Q1KA9m/0KuaBfqvBAUcypW+8z2ljzAe9tjULHDMSVYybcc7fi46ayhbLAEsGsBIz1vTp
-         zqZQ==
+        d=gmail.com; s=20251104; t=1788974821; x=1789579621; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=BxkJmMQiuFGLIVhYvP7iekSRoJyyqxrT2LFSLJP0a4Q=;
+        b=jI6Ly9NOhS1CJVDcDoKjwgjST/iQVlVpolh/hifxBJGV2nz6t+8GlFWLZ4bzANtEHt
+         /Gubm7aHSBwsXnEHDwS28/J38FGObVki5RAT4+MKtWxDxCzdeulLhOlDre6S80gl/1TC
+         7EygHVvY8rB9EzbY4vuEGBvLIXgnThM7ofFVrmOOyUnxK3+Cw8/lUB1Qrw2zcQyD28sq
+         aOwfF4Jak4nLrwlBRcrBmxMV3zq77fRSSDlQwIxXNAn/g3MvLudGjEbIzxRGELLjSs75
+         zSMaaTiP34sWBjEuq0+gSjLhjHao2DyO1AI08J/NXT1fTMGf7TSzj1Dp3m+TJmQDgi3k
+         TF6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788973527; x=1789578327;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=VxdZRvXz8X1My70IJ3RwMner0dA2d2QTLo+O2qcpmmE=;
-        b=Ff6+cIkiGNZvuMExL2hM8JmIeJZgrvgNy4DhKiNannjMxpqu2Sf4Q8qWpZOP5lbUsz
-         4SbSYY42njvo3qNkbwjkqzKsxXASqdNrg5VxeG2H9ZaHv1z5TfYIio6tN6HB8FM37Nxg
-         aCbqKHKFO+iyktLJZWwrbeUS9eSsGdwMICoP/dp9Sg9q4rcqFEUsHRHMnyO1z7XnXhGr
-         uuIe6q0xXIEO+6JWAMo6VevY1n8bJekqf36UbIaKwMnU/NqR0FlaiXltbGdb76Po+M0E
-         uGSoubzUFZWyqZQ1WtEyTW4d1cOpbJboxFYa7uR4E+J5U3M/eDX6np1NjusuNoH6Cpa/
-         y5pQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzuspY7QQ7/aYqb+iEizhLjXagf0B5neHU/YzoQf9RxxDGinGWJSI1v+esLyLwQBZzFB0ssgaI3zw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kq7vcaPi0lCEKMoknVKDZEmBC/N3cFhJnKRZmvzuQdiGLAg1tP
-	uPw0liJ4v6c7U+0yt89ZQ6ql+5BKKcBa7MhkQDfJWnP0AcdwqZD+Fh2H
-X-Gm-Gg: AYBFou0FduvGzt6+MmonX6ARCjJjQxFDbc9WNMZwkT+AWnEUaXxVx8AHNFX86qTIUkX
-	BNkCrDmnSd5vmEfN/zTJqE1tsngwHATxGA/qTnl2Jy0+hwqQfDOIfkC4LH7iQoiDXAwqhhpnENL
-	GT/YZpha3rwTYqogFNzpHRUTuPGyGh2wxULtoSD5vl9IYZtDMuSETuxtXyZJK0bLW14Ry805PFN
-	pv+erZ9DG9eYxhVwfyO9ggdsqquj9zfY0TKJ3JJHVXPYIdch12/uh+fagkVYuGVSGHStCtYb/Xm
-	Je+Imddj5TSWpBj3ai9panWcYs3zPH/uU+CIm3CQBquANkKuXdsF9rWJ4msj1zuNIJm9j0VqFwZ
-	hJhGVR2jyOTwB9rWmnnwKuYYqcyXQQt/zLbizCIx9WD/U9YMGlCx6S1sTcKv8/r/Qkno0YD4CMn
-	8HcQpFQtYHoOO4Yzs1n8f0UyypPaV4USwHZhjbzO8/JRgrGEJlIudsO/5eH0gRX00JcCJpXVHqu
-	LWfwsjmV1+NLJ1t43XSWRedSK/ecP5lRu42DBcD8xKEPIcjhZ3fF8ER3dpqlMKJWqnUmypgTA==
-X-Received: by 2002:a05:600c:3ba3:b0:49d:e79:612f with SMTP id 5b1f17b1804b1-49d0e79635amr218836585e9.26.1788973526639;
-        Wed, 09 Sep 2026 10:05:26 -0700 (PDT)
-Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49d26c1bfb5sm4719445e9.5.2026.09.09.10.05.24
+        d=1e100.net; s=20251104; t=1788974821; x=1789579621;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BxkJmMQiuFGLIVhYvP7iekSRoJyyqxrT2LFSLJP0a4Q=;
+        b=Hdn6cFx9d/vUUOdNwwIuQtxQAoBIRrlzmN1trKlwIqNpyvPHR5ZFcOKuBYkZXgotAR
+         On1MUAB14HNFvGmRkGe8X+frdLSl9Eha/h2ffFxEFCdkP3B33txRjWAxLJrkkvemPqlG
+         tZXRqQl4DPoVFGJxRePZFoPSoPXVDTkH3DQ9aVtTIbWEsLgp3mszAYxMEvdeELcOda6b
+         2fPXT+2fDpb/QxCDcEwVO39FYlx+1s/hF0guGxXoGa9e1k2znTDN2J6xtGesE2Dssqab
+         fv2l9GfjZ9UVEqzNR9uDah33Vvo09XdDRpJ91k/mtMJjChtidaNT9muLcnTVj2j+0tiA
+         z32A==
+X-Forwarded-Encrypted: i=1; AKwUvBwebedqGYjnltALatgihuhQaLGrYTUe9Y8rjbfDq+yCakdtQ2Yi4WAcipPjyNeTwIaXpuPpcHG1Ow==@vger.kernel.org
+X-Gm-Message-State: AFuF++n09o5SJQToDceKEOcQeMPbqQV1qnvNZygqzBROrhXKMwGQl4Wo
+	7sZwtXEJatwT9A1N/A+OyAIoHcMRUyrNB9cjROYm7SCUVlLROYrXHsbR
+X-Gm-Gg: AYBFou38oIUMM6QwyFcazSNlNNi/crlSlT64K3idj/F0k9TEQpLFzkDVCkKdhGgg/wL
+	X6Qtef5Mx++yfk9eggnFk7pIPY5TQD34F6mHQvkNTU4ywzEEgadtbrmfHKlsppysMaVfSyzQroj
+	AADNk8wCpj3qxq1y6P1+F6g+PVPBRFwNSHJ0z+2mGWL3R70rrEmbqcpGTl6iyCXpxHvpAxy330P
+	yQMuv7ffcTHKsnxsgRE0lHwI3D9tUksf46iWe3qH43g2s/il8gMUbyGNkTUOvCI93rY1W59Zk6g
+	sIP+k1kp67d5B6spn8rJS01TOA4yBfuLKhdbCidb5a+dTDS50ajS+mW4kSYYpexHeqqtdMbjrTV
+	xNRqhsqmnkMx82mWOtecja0f7RoMlyejvr1tVh6YKb/D9lnJUnuxeiHkhjVwvnAmVJ9w6s19ie5
+	d0J+W/xzGNzQk7q3VW+wtiUVNHCvbUZFzk5SMdmset61IvMx8gKmVj2Wt/47A5O7caqDTqwdx4x
+	oETyYKTSsArVmIGdVL+rv+d040es/fcYe4ItcxH+dK1Qv0gU4e1
+X-Received: by 2002:a05:6a21:9d84:b0:3d3:af85:eb98 with SMTP id adf61e73a8af0-3da3a16a579mr57975715637.26.1788974820346;
+        Wed, 09 Sep 2026 10:27:00 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2ebe:8:2d43:5153:5c50:643e])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339a534df1sm52422943eec.7.2026.09.09.10.26.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 10:05:25 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-From: Julian Braha <julianbraha@gmail.com>
-To: rafael@kernel.org
-Cc: lenb@kernel.org,
-	pavel@kernel.org,
-	akpm@linux-foundation.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Julian Braha <julianbraha@gmail.com>
-Subject: [PATCH] PM: sleep: only allow relevant powerpc platforms to enable PM_SLEEP_SMP
-Date: Wed,  9 Sep 2026 18:05:20 +0100
-Message-ID: <20260909170520.553867-1-julianbraha@gmail.com>
-X-Mailer: git-send-email 2.55.0
+        Wed, 09 Sep 2026 10:26:59 -0700 (PDT)
+Date: Wed, 9 Sep 2026 10:26:55 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, 
+	Support Opensource <support.opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
+	linux-doc@vger.kernel.org, linux-media@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org, 
+	linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	llvm@lists.linux.dev
+Subject: Re: [PATCH 00/14] mfd: unused driver purge
+Message-ID: <aqGWjAuGXq_JHvxk@google.com>
+References: <20260909132153.1596191-1-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 
-PM_SLEEP_SMP selects HOTPLUG_CPU, but on some powerpc platforms, this
-creates an unmet dependency such as:
+On Wed, Sep 09, 2026 at 03:21:37PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> As part of my cleanup of old platforms, I had a look at all drivers that
+> may have become unused because the last platform_data or DT definition
+> was removed, or because of unmet Kconfig dependencies.
+> 
+> These are all the mfd drivers I found. The first ten in the list
+> actually turned out to have been unusable long before my series, and
+> I have added explanations on how I determined this in each patch. The
+> last four patches are still in use in linux-7.3 but become unused after
+> my series [1] that I hope to get merged for 7.4.
+> 
+> Somewhat unorthodox, I took a shortcut here and remove both the mfd drivers
+> and the corresponding subsystem drivers (gpio, hwmon, iio, input, led,
+> media, power, regulator, rtc, video, watchdog, asoc) in a combined patch,
+> to simplify the interdependencies: removing just the mfd driver would
+> leave unselectable or broken drivers in other subsystems.  I also have
+> additional patches for each of the other subsystems, currently a total
+> of 300 patches, many of which still need better testing or proper
+> changelog texts.
+> 
+> Please let me know if you all think this approach is ok, or if I should
+> explode this further and turn these 14 patches into 70 individual ones
+> by splitting them per subsystem.
 
-WARNING: unmet direct dependencies detected for HOTPLUG_CPU
-  Depends on [n]: SMP [=y] && (PPC_PSERIES [=n] || PPC_PMAC [=n] || PPC_POWERNV [=n] || FSL_SOC_BOOKE [=n])
-  Selected by [y]:
-  - PM_SLEEP_SMP [=y] && SMP [=y] && (ARCH_SUSPEND_POSSIBLE [=y] || ARCH_HIBERNATION_POSSIBLE [=y]) && PM_SLEEP [=y]
+Sounds good to me, especially if Lee makes an immutable branch from this
+pull so we can all pull it in...
 
-because HOTPLUG_CPU is only available on powerpc platforms IBM pSeries and
-PowerNV, Apple PowerMac, and Freescale Book-E.
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com> # for input
 
-For powerpc, let's ensure that PM_SLEEP_SMP can only be enabled on those
-systems that support HOTPLUG_CPU.
+Thanks.
 
-Fixes: f3de4be9d5f8 ("PM: Fix dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION")
-Signed-off-by: Julian Braha <julianbraha@gmail.com>
----
- kernel/power/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 71165e7f04f4..7cb6495ffaa0 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -146,6 +146,7 @@ config PM_SLEEP_SMP
- 	def_bool y
- 	depends on SMP
- 	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-+	depends on PPC_PSERIES || PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE if PPC
- 	depends on PM_SLEEP
- 	select HOTPLUG_CPU
- 
 -- 
-2.55.0
-
+Dmitry
