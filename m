@@ -1,204 +1,416 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF169559C97
-	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 12:58:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F3645111B9;
+	Wed,  9 Sep 2026 13:22:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788958708; cv=none; b=BmmSlmbHVkdg3vm5RR16t86Il2IDsfNfqEy63REHJyRVCaocutY6eoNeJXnXPP/dc0wlT7NhGBpl7St0chts0W+x5htX74JnhWAJYQSi/h9NbjqkDkhc3U33bn6m8p53JoD0+UkkGOdzFqttndnAhOZlol/g4kwyWaiHcbX+K8s=
+	t=1788960144; cv=none; b=Zype3knDfCyi3px1QMN+gSevKq+jNYHCiYiE1HdeJrm3ZsnWMYW4B3gQmF9PfTAXszHJ1PElSLGsxY6q8Ncf42njpANbxcGUE6pVJYYUj7sNRCMIyf0bj0V8d78N0B18U1Vxhwrk3KKiTmm6XkbTMPDogx5HV6RA7nas0xzSJm4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788958708; c=relaxed/simple;
-	bh=drlZOgaf/s4JnYJ/P33EvkbPmT2Fg9i5bejMLDDy4H8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kk0AWO4OWJyFr+LRBUDxN0vOljX0x9kXlIlPlsDjOqgljTwg2GIeB0y1C4IQLsL0yNngpj4PPTScfx8zSHhfGWNZ7XPRPDRikom3vRyqk4bgE5BLQb+gsZz7e9IYRSUlk8hI2RAZcdpDE+btMKdZAQshxiRMmyOewkzYK1qFllI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=NVRpu5kP; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=KLMCLZRa; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1788960144; c=relaxed/simple;
+	bh=PrteS72yNgktbe39YmQRKSC9N066XD45r/fsyYMoPoo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fPtj//dDnXPj2sCgnSJYuekplRUEvSnG/WrQGSm/nKAy0wfXTYe5+g4NrobYIYrAjoWVKxEhkZc+tUUUJWI9kkFTawcAApmr33qktDxHJDpBceIXzbNKrkb3OPrvPoCmV9xg+dp2Kt/MtlfzxpfJOw1pX0bMRHulJluj6Hl2qqA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EBnFHO96; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="NVRpu5kP";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="KLMCLZRa"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 689CChVP1400887
-	for <linux-pm@vger.kernel.org>; Wed, 9 Sep 2026 12:58:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	XnfEq2UMaHI7YzG5KxBMTz8Xtbdeg2N6rtzficXw0dE=; b=NVRpu5kP/GQrgANS
-	MankYWxrO5ByDETSlEWyipdTPz7tMTY2YEaNWNCmSrk2PbgltVvZOJeDpZHN2FKL
-	/GXi6oIZCWm+rqQlMnIAQeRKYVNdYrLrNNS+WqvYUx3JHAURgO5aFTLyyPU2ur/H
-	Mmst+n9IC8Dm/QbcJ8XA3gZ+ptJUmI2UA2CGDEjxVGE4ylmO8nUflVK35wPi39EP
-	GowUlHmRnt4WcTJ3zTv5uElMxySs8qsBEziH+13Rwsgcd/idfASHCuUBZpYN4m6M
-	HYVRjMoPEh2SaWF2qPE3p9FiJJpgjI0cP9jOmuxNb88+ULoHSEgBX34vK8tRSbOw
-	Mm3Xvw==
-Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gk78x04vk-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 12:58:25 +0000 (GMT)
-Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-73858d44c8aso1282652137.0
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 05:58:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788958705; x=1789563505; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XnfEq2UMaHI7YzG5KxBMTz8Xtbdeg2N6rtzficXw0dE=;
-        b=KLMCLZRaSpredxLrqBHqmi307Fvo/I37CBXZAJydCr8nuYid9QDbCxH4ELkhKG37yd
-         rmUuKBuz2D9vB4u/HcytSEUJBasCaoABSaLSdAMrazrgHovmme9lPbXyH1TGXMKkdIiG
-         0w8A4RkbW5vZlL5gZScM28WCmF27norfYA3l6YbqRzOzfpfDtTWE2VsA8LqhQ6XJrbay
-         gtIucelB1Xg2UrIsKEx5QSTXde/nsCLgzY0y4eCagfMn4RcI//fZU6yHJ3g7A2PLBhlv
-         j9smpzn7QvHHTN94GaDpMZjD8+EaPAyo5pxjNVmM3/PK2GLTURfjINK3TmQc95Idb/Sx
-         UBvg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788958705; x=1789563505;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=XnfEq2UMaHI7YzG5KxBMTz8Xtbdeg2N6rtzficXw0dE=;
-        b=jg0avVSqydPcQSCDeNb9uiOiUz+aCkPSzA1L6lr/pbHNmhkhwGzIFTjGbPSfFi3YnO
-         7aKFYvmf4Iv6MFhlH/fJt7FzRlMLP+iEFPEkZ+0wjwqGSKUKXcvZdHBwMKLUb0r3MKa1
-         Dx5dQdN+FmVdK4JQ7QnnhnjJMt2G5leunvzs8TbzOFeAWcuaHcRC/V8Unym09IhndFPB
-         7iO3s9kYvC7qtByHmo+9Y2al4MbHOm5wz3nSAbOfnRVJ3WSymN5xXrIF0pmN+VneQQJv
-         6meEn76/2Y50HwfVYatFpmT9ExVZ+3l9WBaZZJtKj0HEB5HIk7H10RjLJX7I5WuBjK3I
-         kinw==
-X-Forwarded-Encrypted: i=1; AKwUvBww4dCTN1dsG6jKl37YdQ0CN7GjXApG/kSrFDy1z/6GUooUK8Vsa291GfgTNIl3W+Fga0f+OxM8uQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lPKWu1qpKhReMKqjUERdDi4nVQPCRCbBl/g0dMthn2k4fbVOfK
-	P4XH7B4BMWizVbiwW45wCfsLE1fkeNosucwpym5vgAl1e7pX4KKP4Mh1TdMQ0t9HgyfLVejANVM
-	hpWtGvjUTi+h7xWBDEE0D4/O5YQDfAJ8aS7qR89SqpPyIaF7zG3v6Rohxreo29w==
-X-Gm-Gg: AYBFou0LvD+RwzFCNm8WxnOd8X8dZgJlUDHhSEOcslkIM7/snQl1rkX591qrLSphzy1
-	6WfDWp+vcnOP+maQrO1YtFM4T/sJgob2fHXCicBIHw7VamGrKsC2F38MN6kyM9mRKedSpqOoi/E
-	b/W9mNrZJTBK0I9CzvZ6sLnHZUFZF4j/CjjyoNKctIIt7PC5aDKAdSMXyt0LWHUaLA/whOYu/tG
-	IPofnjmhx8stbA9sx4f0cJH4lCsAiNsoH2SysrSL8/8L1uiCGung4NyHM9lwOaZVxepQ42441Vl
-	/cqQUduoWrLT65iQZMFb0YXlGncADpLmalwHXxoIeMf5gKyDfcIsPJEcIGXks+eapr4pjc2qQ7P
-	cNCrURaLffCqPTLeXY2+SmJEnBhUl2p5R7O4qM1Mn4Q==
-X-Received: by 2002:a05:6102:8093:b0:779:5049:87b2 with SMTP id ada2fe7eead31-78a4a42c1a5mr13384647137.0.1788958704698;
-        Wed, 09 Sep 2026 05:58:24 -0700 (PDT)
-X-Received: by 2002:a05:6102:8093:b0:779:5049:87b2 with SMTP id ada2fe7eead31-78a4a42c1a5mr13384606137.0.1788958704184;
-        Wed, 09 Sep 2026 05:58:24 -0700 (PDT)
-Received: from [192.168.25.64] ([94.155.124.210])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4858d2693e8sm43058540f8f.3.2026.09.09.05.58.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Sep 2026 05:58:23 -0700 (PDT)
-Message-ID: <4fc98d9e-5013-45b4-8fea-d0d6a8feea45@oss.qualcomm.com>
-Date: Wed, 9 Sep 2026 15:58:21 +0300
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EBnFHO96"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7D871F00A3D;
+	Wed,  9 Sep 2026 13:22:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788960141;
+	bh=qCe2RO6qTVcChylmS63aNkzITaRtgFf2KHRZcB9dyNM=;
+	h=From:To:Cc:Subject:Date;
+	b=EBnFHO96jEjY9r9nl+2huXxzbReGZqLOuT4SSQ+W2f4sPLefJKCcPU3aqswpBVkDZ
+	 6r1oEvVHRbhW66AdrTxJfQxrpQ84qQPUMDrstxN6iWFqpiIyeUyw3boALLiLYaBs5B
+	 O9olTOgI8Wv8Z7xSOpKyCqLdRehwEwDhUCU+NqbwxklnhGhTuAQyNlGgWfEqGA7+m/
+	 DkDwJkt078AvqT1+LHpICaaBnQpMjriEhYhcvkxsSFlYzsuSHfoT6xiR0jN/tDZAdT
+	 0UhP9n10qjnJbot9xoUEfv+t6bWIW0OAiL+gCtJaXR2+LtOSqH4dsEyKRpDfPZ1Hyl
+	 9jMcZB2yjavtA==
+From: Arnd Bergmann <arnd@kernel.org>
+To: Lee Jones <lee@kernel.org>,
+	mfd@lists.linux.dev
+Cc: linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	Arnd Bergmann <arnd@arndb.de>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Michael Hennerich <michael.hennerich@analog.com>,
+	Support Opensource <support.opensource@diasemi.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Helge Deller <deller@gmx.de>,
+	dri-devel@lists.freedesktop.org,
+	linux-doc@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-hwmon@vger.kernel.org,
+	patches@opensource.cirrus.com,
+	linux-watchdog@vger.kernel.org,
+	linux-gpio@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-input@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-rtc@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	llvm@lists.linux.dev
+Subject: [PATCH 00/14] mfd: unused driver purge
+Date: Wed,  9 Sep 2026 15:21:37 +0200
+Message-ID: <20260909132153.1596191-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] interconnect: qcom: Add CAMNOC interconnect
- provider driver
-To: Krzysztof Kozlowski <krzk@kernel.org>,
-        Atanas Filipov <atanas.filipov@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-References: <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
- <20260819093211.1436275-3-atanas.filipov@oss.qualcomm.com>
- <20260827-adept-traditional-earwig-e2c8c6@quoll>
-Content-Language: en-US
-From: "Gjorgji Rosikopulos (Consultant)"
- <gjorgji.rosikopulos@oss.qualcomm.com>
-In-Reply-To: <20260827-adept-traditional-earwig-e2c8c6@quoll>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: tWzmOxq0rDVZew807BMNe4I5zSI-pIx-
-X-Proofpoint-GUID: tWzmOxq0rDVZew807BMNe4I5zSI-pIx-
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA5MDE0NSBTYWx0ZWRfX/medTIJZW0ib
- 2asj3jSbXuvdo+tQcRHFVyPkJ3SF4EneCeUajX+PgBsnqgov2sEpA2TMBqBoP4hEZVAJmKhp3q/
- 95OibQOf/yujukSMIUFeLMT6L7aPQWI=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA5MDE0NSBTYWx0ZWRfX/Vk/enmc8yDN
- zf1zABmV+TosYo4cGuEWFgQXJ8/Ddp32iE0Ec/eoHIGUqOh8fhGty072HGpGRh0a6md0vc+YTtp
- wdD1v9G+ZvlsrGgCvJzSQGcaIjKSte8GkagP0J7xyXBSfwGNhjvaL3sCJtXL/XGZOZVMnvhgIE6
- TRsaDW9HPP85V8DcRR64ulaceN1hXkwsg5kRxmhaEIaIaDqDeKWM3DheQIqGQqXr7i3rJsP7jSR
- mHArTsHWVuEOnYdhTR+T5pu0rKYcO4PVS5z+H9c9qlVCUDe1hwn7Rc8dVqj05yGFJoztnNTbK0A
- qDXk7i46c/p0PmYD7roVLHNdu0+KA5he2izMFpqjt4gTzfoOW58FavKswlArYWP6iG9pz/6lYtC
- JCXY57IaJthZ7jox6rzVDP5dmNuuWcW8Z4OvpsO+IVlF+La7cpHHmasqzidqMKgz9nn3yPfgjfx
- av/DAiOrFOf6BoYqEFg==
-X-Authority-Analysis: v=2.4 cv=SvWgLvO0 c=1 sm=1 tr=0 ts=6aa157f1 cx=c_pps
- a=P2rfLEam3zuxRRdjJWA2cw==:117 a=eGCDHFSXubCXFTSSGhjuOA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8 a=H0k3xGeVXtyUzq8jG-sA:9
- a=QEXdDO2ut3YA:10 a=ODZdjJIeia2B_SHc_B0f:22 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_03,2026-09-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 spamscore=0 phishscore=0 bulkscore=0 malwarescore=0
- adultscore=0 priorityscore=1501 lowpriorityscore=0 suspectscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609090145
+Content-Transfer-Encoding: 8bit
 
-Hi Krzysztof,
+From: Arnd Bergmann <arnd@arndb.de>
 
-Thanks for the review.
+As part of my cleanup of old platforms, I had a look at all drivers that
+may have become unused because the last platform_data or DT definition
+was removed, or because of unmet Kconfig dependencies.
 
-On 8/27/2026 12:25 PM, Krzysztof Kozlowski wrote:
-> On Wed, Aug 19, 2026 at 12:32:10PM +0300, Atanas Filipov wrote:
->> Add an ICC provider for the Qualcomm Camera NOC (CAMNOC). Multiple
->> camera sub-devices share CAM_CC_CAMNOC_AXI_CLK; direct clk_set_rate()
->> calls from each consumer cause a last-writer-wins race.
->>
->> Each consumer obtains an ICC path to SLAVE_CAMNOC_AXI and votes via
->> icc_set_bw(). The ICC core aggregates votes (max peak_bw) and the
->> set() callback converts the result to clk_set_rate(). Consumers
->> encode the required frequency as peak_bw in kBps.
->>
->> Signed-off-by: Atanas Filipov <atanas.filipov@oss.qualcomm.com>
->> ---
+These are all the mfd drivers I found. The first ten in the list
+actually turned out to have been unusable long before my series, and
+I have added explanations on how I determined this in each patch. The
+last four patches are still in use in linux-7.3 but become unused after
+my series [1] that I hope to get merged for 7.4.
 
-<snip>
+Somewhat unorthodox, I took a shortcut here and remove both the mfd drivers
+and the corresponding subsystem drivers (gpio, hwmon, iio, input, led,
+media, power, regulator, rtc, video, watchdog, asoc) in a combined patch,
+to simplify the interdependencies: removing just the mfd driver would
+leave unselectable or broken drivers in other subsystems.  I also have
+additional patches for each of the other subsystems, currently a total
+of 300 patches, many of which still need better testing or proper
+changelog texts.
 
->> +static int qcom_camnoc_get_bw(struct icc_node *node, u32 *avg, u32 *peak)
->> +{
->> +	*avg = 0;
->> +	*peak = 0;
->> +
->> +	return 0;
->> +}
->> +
->> +static int qcom_camnoc_set(struct icc_node *src, struct icc_node *dst)
->> +{
->> +	struct qcom_camnoc_icc_provider *cp =
->> +		to_camnoc_provider(src->provider);
->> +	unsigned long rate;
->> +
->> +	/*
->> +	 * peak_bw is the aggregated max across all consumers (kBps).
->> +	 * Consumers encode the required clock frequency directly as kBps,
->> +	 * so the conversion is simply: rate_hz = peak_bw * 1000.
->> +	 * A vote of 0 means no requirement; leave the clock at its minimum.
->> +	 */
->> +	rate = icc_units_to_bps(dst->peak_bw);
->> +
->> +	return clk_set_rate(cp->clk, rate);
-> 
-> This driver does nothing to the ICC hardware, no votes. It only
-> translates kbps to Hz. This is not the purpose of ICC drivers.
-> 
-> Looks heavily incomplete.
+Please let me know if you all think this approach is ok, or if I should
+explode this further and turn these 14 patches into 70 individual ones
+by splitting them per subsystem.
 
-Maybe those series should be marked as RFC. The basic idea is to manage clocks as interconnect providers,
-similar to this change: https://lore.kernel.org/all/20230512001334.2983048-3-dmitry.baryshkov@linaro.org/
+See [2] for the current state of the overall series.
 
-There is requirement to maintain higher clock rate on source clocks and some place to aggregate them.
-One example is camnoc axi clock which is used by jpeg, camss, ope and maybe other drivers.
-The interconnect has already functionality inplace to maintain higher
-bw per request which can be used for maintaining higher clock frequency from requested drivers.
+     Arnd
 
-One option is to use already available icc-clk provider, but we have to add many icc providers
-instead one provider with many ports.
-If you have an idea or other way of maintaining higher clock freq we can explore that as well.
+[1] https://lore.kernel.org/lkml/20260908152808.3928630-1-arnd@kernel.org/
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=board-remove-7.3
 
-Thanks,
-~Gjorgji
+Arnd Bergmann (14):
+  mfd: remove unused 88pm80x driver
+  mfd: remove unused rdc321x southbridge support
+  mfd: remove unused si476x driver
+  mfd: remove unused wm8400 driver
+  mfd: remove unused adp5520 driver
+  mfd: remove unused da903x driver
+  mfd: remove unused lp8788 driver
+  mfd: remove unused aat2870 driver
+  mfd: remove unused lm3533 driver
+  mfd: remove unused rc5t583 driver
+  mfd: remove unused wm8350 driver
+  mfd: remove unused mcp-sa11x0/ucb1x00 driver
+  mfd: remove unused menelaus driver
+  mfd: remove unused iPaq micro driver
+
+ .../ABI/testing/sysfs-class-backlight         |   11 -
+ Documentation/admin-guide/devices.txt         |    1 -
+ .../admin-guide/media/radio-cardlist.rst      |    1 -
+ Documentation/admin-guide/media/si476x.rst    |  160 --
+ .../admin-guide/media/v4l-drivers.rst         |    1 -
+ .../devicetree/bindings/regulator/88pm800.txt |   38 -
+ Documentation/hwmon/index.rst                 |    1 -
+ Documentation/hwmon/wm8350.rst                |   30 -
+ .../watchdog/watchdog-parameters.rst          |    7 -
+ MAINTAINERS                                   |   14 -
+ drivers/gpio/Kconfig                          |   22 -
+ drivers/gpio/Makefile                         |    3 -
+ drivers/gpio/gpio-adp5520.c                   |  169 --
+ drivers/gpio/gpio-rdc321x.c                   |  199 --
+ drivers/gpio/gpio-wm8350.c                    |  144 --
+ drivers/hwmon/Kconfig                         |   10 -
+ drivers/hwmon/Makefile                        |    1 -
+ drivers/hwmon/wm8350-hwmon.c                  |   92 -
+ drivers/iio/adc/Kconfig                       |    9 -
+ drivers/iio/adc/Makefile                      |    1 -
+ drivers/iio/adc/lp8788_adc.c                  |  219 ---
+ drivers/iio/light/Kconfig                     |   17 -
+ drivers/iio/light/Makefile                    |    1 -
+ drivers/iio/light/lm3533-als.c                |  922 ----------
+ drivers/input/keyboard/Kconfig                |   10 -
+ drivers/input/keyboard/Makefile               |    1 -
+ drivers/input/keyboard/adp5520-keys.c         |  191 --
+ drivers/input/misc/88pm80x_onkey.c            |  152 --
+ drivers/input/misc/Kconfig                    |   10 -
+ drivers/input/misc/Makefile                   |    1 -
+ drivers/input/touchscreen/Kconfig             |   13 -
+ drivers/input/touchscreen/Makefile            |    1 -
+ drivers/input/touchscreen/da9034-ts.c         |  365 ----
+ drivers/leds/Kconfig                          |   47 -
+ drivers/leds/Makefile                         |    5 -
+ drivers/leds/leds-adp5520.c                   |  195 --
+ drivers/leds/leds-da903x.c                    |  145 --
+ drivers/leds/leds-lm3533.c                    |  755 --------
+ drivers/leds/leds-lp8788.c                    |  171 --
+ drivers/leds/leds-wm8350.c                    |  267 ---
+ drivers/media/radio/Kconfig                   |   17 -
+ drivers/media/radio/Makefile                  |    1 -
+ drivers/media/radio/radio-si476x.c            | 1523 ---------------
+ drivers/mfd/88pm800.c                         |  619 -------
+ drivers/mfd/88pm805.c                         |  275 ---
+ drivers/mfd/88pm80x.c                         |  159 --
+ drivers/mfd/Kconfig                           |  186 --
+ drivers/mfd/Makefile                          |   28 -
+ drivers/mfd/aat2870-core.c                    |  458 -----
+ drivers/mfd/adp5520.c                         |  346 ----
+ drivers/mfd/da903x.c                          |  565 ------
+ drivers/mfd/ipaq-micro.c                      |  442 -----
+ drivers/mfd/lm3533-core.c                     |  635 -------
+ drivers/mfd/lm3533-ctrlbank.c                 |  162 --
+ drivers/mfd/lp8788-irq.c                      |  194 --
+ drivers/mfd/lp8788.c                          |  246 ---
+ drivers/mfd/mcp-core.c                        |  235 ---
+ drivers/mfd/mcp-sa11x0.c                      |  304 ---
+ drivers/mfd/menelaus.c                        | 1251 -------------
+ drivers/mfd/rc5t583-irq.c                     |  383 ----
+ drivers/mfd/rc5t583.c                         |  299 ---
+ drivers/mfd/rdc321x-southbridge.c             |   96 -
+ drivers/mfd/si476x-cmd.c                      | 1543 ----------------
+ drivers/mfd/si476x-i2c.c                      |  861 ---------
+ drivers/mfd/si476x-prop.c                     |  233 ---
+ drivers/mfd/ucb1x00-assabet.c                 |  175 --
+ drivers/mfd/ucb1x00-core.c                    |  795 --------
+ drivers/mfd/ucb1x00-ts.c                      |  445 -----
+ drivers/mfd/wm8350-core.c                     |  444 -----
+ drivers/mfd/wm8350-gpio.c                     |  217 ---
+ drivers/mfd/wm8350-i2c.c                      |   64 -
+ drivers/mfd/wm8350-irq.c                      |  542 ------
+ drivers/mfd/wm8350-regmap.c                   |  335 ----
+ drivers/mfd/wm8400-core.c                     |  163 --
+ drivers/power/supply/Kconfig                  |   22 -
+ drivers/power/supply/Makefile                 |    3 -
+ drivers/power/supply/da9030_battery.c         |  581 ------
+ drivers/power/supply/lp8788-charger.c         |  730 --------
+ drivers/power/supply/wm8350_power.c           |  590 ------
+ drivers/regulator/88pm800-regulator.c         |  287 ---
+ drivers/regulator/Kconfig                     |   55 -
+ drivers/regulator/Makefile                    |    8 -
+ drivers/regulator/aat2870-regulator.c         |  201 --
+ drivers/regulator/da903x-regulator.c          |  495 -----
+ drivers/regulator/lp8788-buck.c               |  541 ------
+ drivers/regulator/lp8788-ldo.c                |  640 -------
+ drivers/regulator/rc5t583-regulator.c         |  171 --
+ drivers/regulator/wm8350-regulator.c          | 1330 -------------
+ drivers/regulator/wm8400-regulator.c          |  276 ---
+ drivers/rtc/Kconfig                           |   45 -
+ drivers/rtc/Makefile                          |    3 -
+ drivers/rtc/rtc-88pm80x.c                     |  340 ----
+ drivers/rtc/rtc-lp8788.c                      |  322 ----
+ drivers/rtc/rtc-rc5t583.c                     |  312 ----
+ drivers/rtc/rtc-wm8350.c                      |  474 -----
+ drivers/video/backlight/Kconfig               |   41 -
+ drivers/video/backlight/Makefile              |    5 -
+ drivers/video/backlight/aat2870_bl.c          |  206 ---
+ drivers/video/backlight/adp5520_bl.c          |  385 ----
+ drivers/video/backlight/da903x_bl.c           |  160 --
+ drivers/video/backlight/lm3533_bl.c           |  398 ----
+ drivers/video/backlight/lp8788_bl.c           |  190 --
+ drivers/watchdog/Kconfig                      |   19 -
+ drivers/watchdog/Makefile                     |    2 -
+ drivers/watchdog/rdc321x_wdt.c                |  281 ---
+ drivers/watchdog/wm8350_wdt.c                 |  171 --
+ include/linux/mfd/88pm80x.h                   |  370 ----
+ include/linux/mfd/aat2870.h                   |  164 --
+ include/linux/mfd/adp5520.h                   |  298 ---
+ include/linux/mfd/lm3533.h                    |   99 -
+ include/linux/mfd/lp8788-isink.h              |   48 -
+ include/linux/mfd/lp8788.h                    |  289 ---
+ include/linux/mfd/mcp.h                       |   63 -
+ include/linux/mfd/menelaus.h                  |   41 -
+ include/linux/mfd/rc5t583.h                   |  369 ----
+ include/linux/mfd/rdc321x.h                   |   27 -
+ include/linux/mfd/si476x-core.h               |  532 ------
+ include/linux/mfd/si476x-platform.h           |  256 ---
+ include/linux/mfd/si476x-reports.h            |  154 --
+ include/linux/mfd/ucb1x00.h                   |  261 ---
+ include/linux/mfd/wm8350/audio.h              |  620 -------
+ include/linux/mfd/wm8350/comparator.h         |  171 --
+ include/linux/mfd/wm8350/core.h               |  692 -------
+ include/linux/mfd/wm8350/gpio.h               |  356 ----
+ include/linux/mfd/wm8350/pmic.h               |  775 --------
+ include/linux/mfd/wm8350/rtc.h                |  265 ---
+ include/linux/mfd/wm8350/supply.h             |  129 --
+ include/linux/mfd/wm8350/wdt.h                |   24 -
+ include/linux/mfd/wm8400-audio.h              | 1174 ------------
+ include/linux/mfd/wm8400-private.h            |  913 ---------
+ include/linux/mfd/wm8400.h                    |   27 -
+ include/linux/platform_data/mfd-mcp-sa11x0.h  |   17 -
+ include/media/drv-intf/si476x.h               |   28 -
+ include/uapi/linux/v4l2-controls.h            |    4 +-
+ sound/soc/codecs/Kconfig                      |   16 -
+ sound/soc/codecs/Makefile                     |    6 -
+ sound/soc/codecs/si476x.c                     |  263 ---
+ sound/soc/codecs/wm8350.c                     | 1638 -----------------
+ sound/soc/codecs/wm8350.h                     |   25 -
+ sound/soc/codecs/wm8400.c                     | 1348 --------------
+ sound/soc/codecs/wm8400.h                     |   54 -
+ sound/soc/fsl/fsl-asoc-card.c                 |    8 -
+ 142 files changed, 2 insertions(+), 39449 deletions(-)
+ delete mode 100644 Documentation/admin-guide/media/si476x.rst
+ delete mode 100644 Documentation/devicetree/bindings/regulator/88pm800.txt
+ delete mode 100644 Documentation/hwmon/wm8350.rst
+ delete mode 100644 drivers/gpio/gpio-adp5520.c
+ delete mode 100644 drivers/gpio/gpio-rdc321x.c
+ delete mode 100644 drivers/gpio/gpio-wm8350.c
+ delete mode 100644 drivers/hwmon/wm8350-hwmon.c
+ delete mode 100644 drivers/iio/adc/lp8788_adc.c
+ delete mode 100644 drivers/iio/light/lm3533-als.c
+ delete mode 100644 drivers/input/keyboard/adp5520-keys.c
+ delete mode 100644 drivers/input/misc/88pm80x_onkey.c
+ delete mode 100644 drivers/input/touchscreen/da9034-ts.c
+ delete mode 100644 drivers/leds/leds-adp5520.c
+ delete mode 100644 drivers/leds/leds-da903x.c
+ delete mode 100644 drivers/leds/leds-lm3533.c
+ delete mode 100644 drivers/leds/leds-lp8788.c
+ delete mode 100644 drivers/leds/leds-wm8350.c
+ delete mode 100644 drivers/media/radio/radio-si476x.c
+ delete mode 100644 drivers/mfd/88pm800.c
+ delete mode 100644 drivers/mfd/88pm805.c
+ delete mode 100644 drivers/mfd/88pm80x.c
+ delete mode 100644 drivers/mfd/aat2870-core.c
+ delete mode 100644 drivers/mfd/adp5520.c
+ delete mode 100644 drivers/mfd/da903x.c
+ delete mode 100644 drivers/mfd/ipaq-micro.c
+ delete mode 100644 drivers/mfd/lm3533-core.c
+ delete mode 100644 drivers/mfd/lm3533-ctrlbank.c
+ delete mode 100644 drivers/mfd/lp8788-irq.c
+ delete mode 100644 drivers/mfd/lp8788.c
+ delete mode 100644 drivers/mfd/mcp-core.c
+ delete mode 100644 drivers/mfd/mcp-sa11x0.c
+ delete mode 100644 drivers/mfd/menelaus.c
+ delete mode 100644 drivers/mfd/rc5t583-irq.c
+ delete mode 100644 drivers/mfd/rc5t583.c
+ delete mode 100644 drivers/mfd/rdc321x-southbridge.c
+ delete mode 100644 drivers/mfd/si476x-cmd.c
+ delete mode 100644 drivers/mfd/si476x-i2c.c
+ delete mode 100644 drivers/mfd/si476x-prop.c
+ delete mode 100644 drivers/mfd/ucb1x00-assabet.c
+ delete mode 100644 drivers/mfd/ucb1x00-core.c
+ delete mode 100644 drivers/mfd/ucb1x00-ts.c
+ delete mode 100644 drivers/mfd/wm8350-core.c
+ delete mode 100644 drivers/mfd/wm8350-gpio.c
+ delete mode 100644 drivers/mfd/wm8350-i2c.c
+ delete mode 100644 drivers/mfd/wm8350-irq.c
+ delete mode 100644 drivers/mfd/wm8350-regmap.c
+ delete mode 100644 drivers/mfd/wm8400-core.c
+ delete mode 100644 drivers/power/supply/da9030_battery.c
+ delete mode 100644 drivers/power/supply/lp8788-charger.c
+ delete mode 100644 drivers/power/supply/wm8350_power.c
+ delete mode 100644 drivers/regulator/88pm800-regulator.c
+ delete mode 100644 drivers/regulator/aat2870-regulator.c
+ delete mode 100644 drivers/regulator/da903x-regulator.c
+ delete mode 100644 drivers/regulator/lp8788-buck.c
+ delete mode 100644 drivers/regulator/lp8788-ldo.c
+ delete mode 100644 drivers/regulator/rc5t583-regulator.c
+ delete mode 100644 drivers/regulator/wm8350-regulator.c
+ delete mode 100644 drivers/regulator/wm8400-regulator.c
+ delete mode 100644 drivers/rtc/rtc-88pm80x.c
+ delete mode 100644 drivers/rtc/rtc-lp8788.c
+ delete mode 100644 drivers/rtc/rtc-rc5t583.c
+ delete mode 100644 drivers/rtc/rtc-wm8350.c
+ delete mode 100644 drivers/video/backlight/aat2870_bl.c
+ delete mode 100644 drivers/video/backlight/adp5520_bl.c
+ delete mode 100644 drivers/video/backlight/da903x_bl.c
+ delete mode 100644 drivers/video/backlight/lm3533_bl.c
+ delete mode 100644 drivers/video/backlight/lp8788_bl.c
+ delete mode 100644 drivers/watchdog/rdc321x_wdt.c
+ delete mode 100644 drivers/watchdog/wm8350_wdt.c
+ delete mode 100644 include/linux/mfd/88pm80x.h
+ delete mode 100644 include/linux/mfd/aat2870.h
+ delete mode 100644 include/linux/mfd/adp5520.h
+ delete mode 100644 include/linux/mfd/lm3533.h
+ delete mode 100644 include/linux/mfd/lp8788-isink.h
+ delete mode 100644 include/linux/mfd/lp8788.h
+ delete mode 100644 include/linux/mfd/mcp.h
+ delete mode 100644 include/linux/mfd/menelaus.h
+ delete mode 100644 include/linux/mfd/rc5t583.h
+ delete mode 100644 include/linux/mfd/rdc321x.h
+ delete mode 100644 include/linux/mfd/si476x-core.h
+ delete mode 100644 include/linux/mfd/si476x-platform.h
+ delete mode 100644 include/linux/mfd/si476x-reports.h
+ delete mode 100644 include/linux/mfd/ucb1x00.h
+ delete mode 100644 include/linux/mfd/wm8350/audio.h
+ delete mode 100644 include/linux/mfd/wm8350/comparator.h
+ delete mode 100644 include/linux/mfd/wm8350/core.h
+ delete mode 100644 include/linux/mfd/wm8350/gpio.h
+ delete mode 100644 include/linux/mfd/wm8350/pmic.h
+ delete mode 100644 include/linux/mfd/wm8350/rtc.h
+ delete mode 100644 include/linux/mfd/wm8350/supply.h
+ delete mode 100644 include/linux/mfd/wm8350/wdt.h
+ delete mode 100644 include/linux/mfd/wm8400-audio.h
+ delete mode 100644 include/linux/mfd/wm8400-private.h
+ delete mode 100644 include/linux/mfd/wm8400.h
+ delete mode 100644 include/linux/platform_data/mfd-mcp-sa11x0.h
+ delete mode 100644 include/media/drv-intf/si476x.h
+ delete mode 100644 sound/soc/codecs/si476x.c
+ delete mode 100644 sound/soc/codecs/wm8350.c
+ delete mode 100644 sound/soc/codecs/wm8350.h
+ delete mode 100644 sound/soc/codecs/wm8400.c
+ delete mode 100644 sound/soc/codecs/wm8400.h
+
+-- 
+2.53.0
+
+Cc: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <danielt@kernel.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
+Cc: Conor Dooley <conor+dt@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Linus Walleij <linusw@kernel.org>
+Cc: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Jonathan Cameron <jic23@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Pavel Machek <pavel@kernel.org>
+Cc: Michael Hennerich <michael.hennerich@analog.com>
+Cc: Support Opensource <support.opensource@diasemi.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-doc@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: linux-hwmon@vger.kernel.org
+Cc: patches@opensource.cirrus.com
+Cc: linux-watchdog@vger.kernel.org
+Cc: linux-gpio@vger.kernel.org
+Cc: linux-iio@vger.kernel.org
+Cc: linux-input@vger.kernel.org
+Cc: linux-leds@vger.kernel.org
+Cc: mfd@lists.linux.dev
+Cc: linux-pm@vger.kernel.org
+Cc: linux-rtc@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-sound@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: llvm@lists.linux.dev
