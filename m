@@ -1,72 +1,68 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3DDA3B83E1
-	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 19:18:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B328E3C4B83
+	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 19:24:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788981515; cv=none; b=pxS7op/9jkb5KiGTWRxkhNf1IOZwvomk7afB0/bbysaPM5B3mRFMRuO7dJjyP5+Mu7UmIp907YMN/ddxwlmj5M4XsVGS1hSqF8InudbSs+PKo9QHght0GNFb45jP2MuOuUhNI9T2Yr5dseipGa5qeASQWfbrC1Xp9C/ZJijL03Y=
+	t=1788981849; cv=none; b=d4EyHi0tdqEmoUZCxVcLpeTqT9d+fNlAgSufl1ntuwyMh+tbpvse2ZFd72Bj0e7spHzkeqsa/qgSEu/p1frPBlK96GHC2Qr7SWO3nIx7IdGuFOrGT99jiuuIlLCsD78gkfWBiqkQBTMNXWFG3m6xRUGl5e+T3mw038y8A/tijB4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788981515; c=relaxed/simple;
-	bh=ZBF06lf9l3jjaPsie+l2gDKg30y0nMjdFIJaDuIFA3E=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=DGSrftaBOfD1xCHZLtN1xacIJnk/igzPXR0DoYeJFOhQzxtIpPUnrFF5NhpWYZ2eQNuvVZJp0hIT8fF4NLc9oYwNa5plMh5OAIJfDRRMexO6P7wgADuTwINB13lnd230d9dIus+iJJDBvy77gtyOB20DxzT5o7xmZXCONkvuSig=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=etu+CXdX; arc=none smtp.client-ip=209.85.128.42
+	s=arc-20240116; t=1788981849; c=relaxed/simple;
+	bh=z+PwFWisLAZ8WrSIU6Nq7JGZqrrzKxVDpeLvGJYlMhU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=s7A4DMUyAunGkvo3jmgVy9baTRoyyhnyDdkED620PhsoXO1GrIKlQM+i2arPGBLQ/jtBGaPEQb9pPS26vcB4rz1/TJD4C+seUggJSve5yIxvV5MpYLY2k+xnIMxVcTtoWIzJzYIHzUbg9/EXYoR/4zn0/Ok515OpDtri7MrWj4I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ezXVmacU; arc=none smtp.client-ip=209.85.128.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="etu+CXdX"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-49b392ccaacso90658605e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 12:18:33 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ezXVmacU"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-49b392ccaacso90735505e9.2
+        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 12:24:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788981512; x=1789586312; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=cQp1h+Nea1dCnGwxCQ5G9ZglVlG59gCPu/u14By/urM=;
-        b=etu+CXdXiqG7CMxMVMZ0Ib1Uts6d+uEBVjXSAIeyebuRFFsfxM0kdpymrvRHCIddqo
-         9LGAupoOy+rieiQghyfIu/IBd1wvHySJLSVdAl8RIwVgF/QcD5x6AdHkNZU3NmienuRd
-         lbN3GQu+trQcLeOGnvAjV6oRRK32l53/tWRHhgaJp+aoRnRRECc6QEEijH9DzxgwIVOT
-         MQa00FPsEuOyTnLLYpm1LcRfRGe8Fh1HnbhdIrR3bXNPunzbJ4jLRN2U/qdBQvYsUEUd
-         M7DLUdsHNq139a10aVAj+QqxuT95oVYUwqr/cKU8uAwqf32QhfYkrbRYLBAwUGrBwRxW
-         pJQQ==
+        d=gmail.com; s=20251104; t=1788981845; x=1789586645; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=juSntAU8rs/3fLNwoSR5HtlpUx6UI0vk4BclFthIHvc=;
+        b=ezXVmacUjkLLyIiCq2WYtuGfljXUhZURv4ak6qez1q7Ybl2ClVHFd6pVvSgGcE8sWE
+         4AXa3Zzc/bjENAiaGPuSS7S5Ykn2Uy0fcgMy3KeECUHfHHGga+zAQSK9xbLgZAx6Cncv
+         BQoj116nt7YRUz+GBIW1x0dp9DxNJjcxzl36BV91yLeoIp+8iPKRmP3w7/2kA8iF424+
+         ucGh0O5AH0hv/sUHEjKqJIm3iDsyw2TnvLuvNWBQOLe7SHaNl2qnpYeuwyMO8ZnXL23d
+         dRuPkoq5+MZOqhGuJEE4Cjqiw6VGqxRwi+2yhtOXsRnu/ZbufEgwiF8+HwIb2ve7qWpT
+         DIug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788981512; x=1789586312;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=cQp1h+Nea1dCnGwxCQ5G9ZglVlG59gCPu/u14By/urM=;
-        b=G1LonFmUnymHNTftp2qMLYbebJS8vjDLa42n00IGvbr0kxpI/a9PHmkF5G7jK14uri
-         1gmz6dvhuym+dihOPAghY1RSig13oa8OJdy4wDw1PufLDCKzQFYp8SmTZoKsvUJWgpwe
-         tX67jG6g40iOoqvHAXA3qUI6FqtZoS9OHtiq8oA/BqDP0+0nkVGTqdulw6rL5cq0Ftwa
-         O0xKdO7bmJVaCrk13HLyJVfZF3a0clyQ/LqfG4H1gdBHDkIPZvsoZL68wn8+/DCTJJv+
-         ghz00ar/PtNenzSswX5MqHeT+FPUL6SqjMdIMKQnPHJsEeR9xlCULZhp2sQc1XtIPh5E
-         CG5Q==
-X-Forwarded-Encrypted: i=1; AKwUvBwx3AQxKUW4fCJNqZRPjlKqJdK/vSxHoRzCNt/0mOVyMIWza7elr8Mo8ubselzEECqVM7FN+wHdBw==@vger.kernel.org
-X-Gm-Message-State: AFuF++nuE+dtua6gFUdlnpuoHf5r0nti5CfW+ATEGlB+Ex54mSM3KA85
-	YZ1ESVsmPO6V+nM0ycktJkGcKcmPYVaaSLNFnQb2ZnACNNo7aZYBWLPw
-X-Gm-Gg: AYBFou0ugkdP+X1Rq2w5BugdkhMW6quSO0uNxYUAeMvpnIGChSx3jLWDkk33rOFelIw
-	VrV8Bh4wdcOY4RtBG8W5xvJ/A3BzlhScA9vJVQj9heZ+VJf6K4088xNrkCTAaub1KsVh8ZMdtID
-	d05kmw+/ym6MK6/n1MTTHxmfYVIzUF4kPA+2SRT5c34+Me1emnZEM0vjjjDf345B9iVC7IYd33y
-	QEeKQHhbZ3/ZB9KXX/eGfglJ+Sdf5GEOPjwLN17ivRUfo19ZBnx8m4vfHx3dwkxBT2bFtra0r1p
-	ePjQN+m0swG1tCiQYf5XhKIAz3mf8uqUop4P6wnhB+OvJEjsRBxYw4VFNx6pI5MPjmINDe/eehv
-	6ezalgUKpcJTZelN9tn7nPJop/mOAibCHhwffbr8nsGDa2k34MFhMQT63Q/BW6Xs2TXuAQkHiRY
-	D8nZ0k9+3DPaydh4YtQTQU8DuRVhwpK02wzIpICKggzDFYOt0K2VnKxNDn2KgzmqaA4eukr1yTD
-	77xAe3fsePnbEuhLjtioIv36Na5m4UCsplpWSBnhco=
-X-Received: by 2002:a05:600c:628c:b0:49c:e1cd:536 with SMTP id 5b1f17b1804b1-49d17a8745bmr144560705e9.12.1788981511672;
-        Wed, 09 Sep 2026 12:18:31 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1788981845; x=1789586645;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=juSntAU8rs/3fLNwoSR5HtlpUx6UI0vk4BclFthIHvc=;
+        b=PGys6a5/d/hf1eE+vLnWE3bmnuamA6sSw84pdpqTRXZnGo/YjLxPry2p4MKnNwQMaB
+         ALWS4RQggu9rAJTnTxDreSSAubXiaooUtJFzuiZB0K7UHF9HFVpMtNax2F8Ee5fBQg2O
+         pCCbAot9BXN3oPvM66Jg7a8fPXcVqC1ym5/iDg3PjQXFtHpR6kvkWd4w8S/BS4p0xoGJ
+         cEMq522o2VAcaQZ9H+EizUBMJ8b/EJDhWPbevtCjek5v5D8F3jviTYtrLtSBmQp5OiMd
+         qqTRNdWc8n5RSif39qBSXubH9UXsVCkUxX+4xmRaZTJr0AWwEKTI1MI2fY4asr2l8Ylr
+         ReDA==
+X-Forwarded-Encrypted: i=1; AKwUvBxhn54l1B4wIsAf+oFD8vjpgsQ0YsMJJpqCx074RoB0/l80YTaCCBspFm9GvaodUSRV/mUSQ/TFkg==@vger.kernel.org
+X-Gm-Message-State: AFuF++m7HZmU1wz3AXgweyc+5G5dIjjH4q4KS4CTrR1M0s/KauZhXGWm
+	RMj/DUJILbrX3A7vnQ2Ze5lYdrvST/CCX6w/Ew0no1jfKTTskv6uUXg2
+X-Gm-Gg: AYBFou2KIpok2gDpEtlg3msvWn2eYk1i86vJwMwhJjDvvUPNEVLeYcx/OZNwkJuwRId
+	y7zWLqgiUgAxs/QP8wqxz0r4rDmGJR5lg/guLFHXJ+aLARxZ9knyo60Tg6zEq70/MqRbPtPn+Dq
+	ZL3OoO26nU17ycSNWKU5/9ZRzPXck8m+RNuz6Yx0vH9Cl0I+nBkA5VJAbqrUv2CbUcyJ7TA1AZU
+	bWUwReXwMzkU2KF9yUaiJjJlwaEgGQXYkdcGWOOLud3QGd+SGaBd2l0Dt0/RaQlcVcyozFr1rR0
+	vInp/3pk99GbE7Xbpt8loMy6XyJ9eyaSe2DdOxW8DIz1jft4xmrGwMi31rD5yEzsBQt7RA7fyn3
+	3OO7rPD6K5DwGM2yzLQaP2Bxvwk6zbMGkf/bAnJuJ2eaWPnHAyuzhr1FaQYF9ieUBpwm+gEAmAI
+	P2Xy8rqpNAA1Z7ElCwF7j1PXZua9rIP24bhpp7O8OdDhm1liUiRD1rhI92XfkvQ5DjKuqSYAmQh
+	lGiHnVt8XYJJIdDvceYsxALxX1Eig2u/n3EloBiN6c=
+X-Received: by 2002:a05:600c:3b18:b0:49c:fa21:1c8a with SMTP id 5b1f17b1804b1-49cfa211d97mr316363405e9.31.1788981845342;
+        Wed, 09 Sep 2026 12:24:05 -0700 (PDT)
 Received: from localhost.localdomain (mob-31-26-103-238.net.vodafone.it. [31.26.103.238])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49d20fce7a7sm164538455e9.4.2026.09.09.12.18.26
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49d26bf9490sm10925625e9.9.2026.09.09.12.24.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 12:18:29 -0700 (PDT)
+        Wed, 09 Sep 2026 12:24:03 -0700 (PDT)
 From: Oleg Keri <okerixx@gmail.com>
-To: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
+To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
 	Mark Rutland <mark.rutland@arm.com>,
-	Beata Michalska <beata.michalska@arm.com>,
 	Sumit Gupta <sumitg@nvidia.com>,
+	Beata Michalska <beata.michalska@arm.com>,
 	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
 	Russell King <linux@armlinux.org.uk>,
 	Paul Walmsley <pjw@kernel.org>,
@@ -82,35 +78,87 @@ Cc: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v1 1/2] arm64: topology: fix arch_freq_get_on_cpu() overflow above 4.19 GHz
-Date: Wed,  9 Sep 2026 21:18:16 +0200
-Message-ID: <178898149654.33757.7826789084252321894@gmail.com>
+	linux-pm@vger.kernel.org,
+	Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
+Subject: [PATCH v2 0/2] arm64/cpufreq: report and track frequencies above 4.19 GHz
+Date: Wed,  9 Sep 2026 21:23:49 +0200
+Message-ID: <20260909192351.33910-1-okerixx@gmail.com>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260909113625.000063be@oss.qualcomm.com>
-References: <20260909113625.000063be@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Good point - that reads much better than reusing scale as scratch.  Taken
-for v2:
+The Snapdragon X2 Elite (Glymur) is the first arm64 laptop part I have
+seen whose boost OPP, 4723200 kHz, sits above 4194304 kHz.  Two
+independent problems become visible there, both of which make the
+kernel believe a boosted CPU is running slower than it is.
 
-	scale = arch_scale_freq_capacity(cpu);
-	freq = (scale * arch_scale_freq_ref(cpu)) >> SCHED_CAPACITY_SHIFT;
+Patch 1 fixes an overflow in arch_freq_get_on_cpu(): the u64 product of
+the frequency scale and the reference frequency is truncated to
+unsigned int before being shifted back down, which wraps for any
+reference frequency above 2^32 / SCHED_CAPACITY_SCALE = 4194304 kHz.
 
-Same semantics, and it makes it obvious that both the multiply and the
-shift stay in 64 bits and only the final value is narrowed - which is the
-whole point of the fix.
+Patch 2 makes capacity_freq_ref follow the boost state.  It is latched
+once on CPUFREQ_CREATE_POLICY, and boost frequencies are excluded from
+policy->cpuinfo.max_freq while boost is off, so on a machine that boots
+with boost disabled it keeps the sustained maximum forever.  On arm64
+that saturates the AMU frequency scale at SCHED_CAPACITY_SCALE, so the
+scheduler cannot distinguish a boosted CPU from one at the sustained
+maximum, and arch_freq_get_on_cpu() cannot report above it.
 
-Agreed on leaving arch_scale_freq_capacity() out of the expression too.
-This file is arm64 only, so unsigned long is 64 bits and it would be safe
-here, but it stops being self-evident to the reader and the cast that
-would make it evident is worse than keeping the temporary.
+The order matters: patch 2 is what raises capacity_freq_ref past
+4194304 kHz on this machine, so patch 1 has to land with or before it.
 
-Thanks for the review.
+Measured on a Lenovo Yoga Slim 7x Gen 11 (Glymur, 4032000 kHz
+sustained, 4723200 kHz boost), pinning a policy to a single OPP and
+timing a fixed workload on one of its CPUs:
+
+  requested OPP    time     cpuinfo_avg_freq
+  ---------------------------------------------------------
+  4032000 kHz      2.011s   4031325   (0.02% low)
+  4723200 kHz      1.726s    524283   before
+  4723200 kHz      1.726s   4032000   with patch 1 only
+  4723200 kHz      1.726s   4718587   with both  (0.10% low)
+
+The timings never change: 2.011 / 1.726 = 1.165 against a frequency
+ratio of 4723200 / 4032000 = 1.171, so the hardware was running at the
+requested frequency throughout.  Only the kernel's view of it was wrong.
+
+Note that cpuinfo_cur_freq still reports 4032000 kHz at the boost OPP
+on this machine.  That is a separate path -- scmi_dvfs_freq_get()
+asking firmware for the current performance level -- with no clamp in
+the kernel, and it is not addressed here.
+
+Changes in v2:
+- Patch 1: fold the multiply and the shift into a single expression, as
+  suggested, instead of reusing the u64 scale variable as scratch.  Same
+  semantics - the multiply and the shift both stay in u64 and only the
+  final value is narrowed to the unsigned int - but it reads better.
+  Suggested-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
+- Patch 2: unchanged.
+- Link to v1: https://lore.kernel.org/all/cover.1788712186.git.okerixx@gmail.com/
+
+
+Oleg Keri (2):
+  arm64: topology: fix arch_freq_get_on_cpu() overflow above 4.19 GHz
+  cpufreq: update capacity_freq_ref when the boost state changes
+
+ arch/arm/include/asm/topology.h   |  1 +
+ arch/arm64/include/asm/topology.h |  1 +
+ arch/arm64/kernel/topology.c      |  3 +--
+ arch/riscv/include/asm/topology.h |  1 +
+ drivers/base/arch_topology.c      | 19 +++++++++++++------
+ drivers/cpufreq/cpufreq.c         |  2 ++
+ include/linux/arch_topology.h     |  1 +
+ include/linux/cpufreq.h           |  7 +++++++
+ 8 files changed, 27 insertions(+), 8 deletions(-)
+
+-- 
+2.55.0
+
+
+base-commit: df2908090cda368b01ff43709f51890076c56157
