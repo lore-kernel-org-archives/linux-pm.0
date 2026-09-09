@@ -1,113 +1,188 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FAC9348C76
-	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 06:47:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 646CD403B0E
+	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 07:16:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788936468; cv=none; b=WoMc3N+Si1ybszfHGvQ4l5/SXIXKxlMbv9UY3VZCsrSXCXEEpGJqBWFHZ8ZtBf6JwWpFBtakl1ZZZmYxPxtCskTFBWedMg++a/sVai0KLtSTqH+k8z6IEdfTqfgAqAoZOiX9pJZ+tQ8q0niN0zC0wRupQmOVu+xNLoJU5VEWQ2U=
+	t=1788938194; cv=none; b=GgH8pvlZ4G0KrqIpVpWDrRLrXYmnrb+E+T6/7qIp1AtZQMYHRuU17zQQDNIPDU4V3lAmrovLT1A5ZMb9nGorWlgBh1pXaG5C2icLAULhlrKm5zRLvnXCcdjsB2KBIBOvSFRPpHlRML5ubEEITjDol036gcEQ+3jYOfYdnq0heeA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788936468; c=relaxed/simple;
-	bh=o8E3Y97/uq7/nE5aPAcgxU0XNcCxSrIZSYmd9j2OSmQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=aqEAyFyfaPWeVmO170kibBxNckG65N+I7gpxYkvkiklpFDu4ti8HWRhlruxd4w9L36dgK7uGP76XozbpndV+/P9Li+33nlnBHfzMKrSr3A3d6aybYs9ZWdykD6r4o2UdPylkyxpd/lylb0sQJ+ZU2yTOKtEeWQrle0FH5DnGpyQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AFSSmdnH; arc=none smtp.client-ip=209.85.221.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788938194; c=relaxed/simple;
+	bh=p7ULQTwvLEY4mzWiAczUTaKtFQR3U8NJFvhHihr+q4M=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=AegFrGpG3VbnuEALoXisKT7Zc2E81rBaOrs4RamwzmBz/x1x5h2NKP8LR1DM0GDiYHIIzMiSCSK38VH8LJSYTMQ491gqw2zlsXrrGaOeeKkxPOAXnGxs10VoUcpnRI9bMipFPKumyBKX067liG6VRp2rtjezi+Wp9JBuRVxpQhE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=gOf7E206; arc=none smtp.client-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AFSSmdnH"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-48589798dbbso4522073f8f.3
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2026 23:47:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gOf7E206"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-482f2ee53e7so4057376f8f.1
+        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 00:16:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788936462; x=1789541262; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=mOCQAP6K7d2SeDC/l7CuDRVi41UuAMHdzhXPewwMtn8=;
-        b=AFSSmdnH0UpLuRXjKo5pt/BrgFkLnAavG+8qLhQEMwimICRqkWiszP/TdB9up1v9Ma
-         K0+Y7V1e/CivaW5OJN6FkhBSmD+7a0ojGTHX//KLnLOayU3g0Urkbzpksu8XCOWsDZot
-         6BOffL1QqV3562xDjrGGeepc6lqVAb4XkbGzB/M26XFDAlqzi1mWX57hlpEmqwQmPG1j
-         hYqjjE3oIQnCn18QrzPol2kqxry7KPg9eddz8mttnb8ihRHqVwbGytMfBu9f0nDVLIEk
-         nVC3IhPGbOy3Smdyy6X2sB9nSu231I5PWaa9zKjTpIFdjPuh2t7kcMdKEQc+9FJ5uFug
-         yXGA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788936462; x=1789541262;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1788938190; x=1789542990; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :autocrypt:content-language:references:cc:to:subject:reply-to:from
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=mOCQAP6K7d2SeDC/l7CuDRVi41UuAMHdzhXPewwMtn8=;
-        b=qisE3L73Q0uMbDMvHcggcvJG2dPLBnqgMdzjja/dbrxJIaJNs1Qg5+RLlOPQ30yIaj
-         RKBzU3QWwrYDhKRyKnUt9Q/pX4SwMPHH0Cu3itjHBB5KaWt7aLumDkZVTOU2R3nGujiP
-         rCTPeGpAmdU0hSxdMtR/h1BA/WGrPFPA2Vbi9vzEIxeDhwBLsjjugtVgHJJHNEXryXxL
-         UZVDdkpXzDei921XRZMwC8N1Wqr9EedV1dIAVdYcuRl9AEBJpYcc1ULMgDDN4+ZOlp7+
-         igMd5DENAjFJvqN/KhGhEeoWOWWB4rPox5LpRw2r5/TJtvgCscz5n0ix6Akjq3rg+fiO
-         E7AQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxWb5S5eOI2WUtcnVWmdsyANFe5AxYy2vvrnNHagyEN9HPBYQp7Gq5fTvcAuK1LqhlWg1v35RZi5w==@vger.kernel.org
-X-Gm-Message-State: AFuF++k3X5p0n2qRCGkX/ohb/m22MNVaqj5tWm/aNbCVMf31tVmcCdRf
-	CdeZw1qM71UMmKy5UlbTFmm6A0Egb2hbKAVjpWzJ5/93oFkUNIhx/otAvNdAxS6F
-X-Gm-Gg: AYBFou1g6/VKKmRIUgyQKPOZaObXquyq6ddSStgNPuN67QU1yjWCSmGg+mZPsYTkPCm
-	1y9TkpLDeG3Idw/rP90i8o+2C2H/0JnawXeYLaeBEPEOfKxALxaF+SyBj8W87uWok6GFwkYOehB
-	G7lz4EhUgOFksq0wkOboQLF0g+26tv3UGEEV7SuSzNCxN1lOD9BQh+aot+c+bD3ybZenyTNjv3m
-	CMW78XeR1v+wQA1csOWvBwNxtcYQRIBO/7y+whkiNjGNG9ANZEgfw+Q0inVaQW9xmvd1RGAB7Nl
-	MRhowuxQRb49yIhf+4uOygfSkA3rYlLL704w27hmn064U3k+ow+wsvFjZywpi7WumG5fu7yiSQg
-	tLlrM40zNslvB0wvdUBfiTevFdI2xwyxLIypF9Yz9oZTWcWET5nVRu7dAL5Iid0EOGIn85bQsT3
-	BssFbNTVgMJdMo/ZpU3qO5h5swzgPPx1SMW26l4PSXo6vaeSudkeN96jPidy55uyteVyNagT7jY
-	16+cyCHz8wQ7JBjCCDwhQC30VP+VYPtWO1e7bim+Mssb6OfmUImzYYI13R3VzuToVccdtY/ZyN9
-	3svtlHcFs7EFfJw4+SYxEtHbmofQo/NMFLCthDDolW/xIOtS4qEp
-X-Received: by 2002:a5d:5f51:0:b0:485:8a46:704b with SMTP id ffacd0b85a97d-4858a467215mr30855337f8f.29.1788936461723;
-        Tue, 08 Sep 2026 23:47:41 -0700 (PDT)
-Received: from MacBook-Pro-von-Karl.localdomain (dynamic-095-114-212-219.95.114.pool.telefonica.de. [95.114.212.219])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-485885b7bfasm42216264f8f.29.2026.09.08.23.47.40
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 08 Sep 2026 23:47:41 -0700 (PDT)
-From: Karl Mehltretter <kmehltretter@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Karl Mehltretter <kmehltretter@gmail.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] power: supply: Fix maintenance charge table kernel-doc
-Date: Wed,  9 Sep 2026 08:46:23 +0200
-Message-Id: <20260909064623.90737-1-kmehltretter@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+        bh=GN8ZAvEDJoptyik8cMBJpX0S8SH4Ew7cdo5nMOI+S14=;
+        b=gOf7E2060QteZd5OhAI/0iJYqaObx4YFMowTiQwvlV0buCA89kHkhe/nA/jvEz8PhC
+         5kIZY/hAXw7d3XLKMcLGGWpqVFOdLhsX/gaC/NskPOSFUaeX9qnjZhpdbqM/OIU18gPo
+         XVLpw56nxR8/M6uo817Y12JIffQ4/GSPONskgtwNZZ4fP13+Wz/gY5I93RQ1Mqzfg2b6
+         8ILezbF6+1WZEcdlvpA5eA4r2EShgNA/fNcfdvgBN8vY88ZVF1c9E8GeW2mFRCK7SUUd
+         30BMjJMH3GLS1ECCXCSMMLqaTzDauiixOKz84+LsbGe7/8P4fUx09Fgz6qISZwTKlihv
+         5lwA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788938190; x=1789542990;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :autocrypt:content-language:references:cc:to:subject:reply-to:from
+         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=GN8ZAvEDJoptyik8cMBJpX0S8SH4Ew7cdo5nMOI+S14=;
+        b=k/llbvDWLctI2IAjFxdQfjb7LZo3UP+gzZpivmGi2xTAclU98CACwphDs5jDjZbXIZ
+         bRhI8hdIEegerULLmTJ0UADvlPeaeqqc2v7lx0wCShB3JIpyBJMG2Ty8RhmKen29eyzT
+         BAtw01bkNeWHasFgGZMCrGKql39HEp/IjC2XLemhkERbi2i4uXtLeWf1eowBV2nKzmn4
+         y46svxFuWPhNhr1dH2i7NDQgeh4sbFVqicrZNnfHIxokfqBNfY8RQBv8nwfaXhRnPJe2
+         Z3TCwjmz+dCE9pZVmxrZxmgPdRnFvgdbsKmANAJmAJC/thyRk2jFrB51qWdQCZuLn+Bi
+         hOJA==
+X-Forwarded-Encrypted: i=1; AKwUvBxznVhs2rNNKlw04XAonaDQ1wG0lfEGCRhVsvEWuDtSYRQnU9mwTYBA1vSDKdeO5Ny2ayGEXmPk7g==@vger.kernel.org
+X-Gm-Message-State: AFuF++kPEm/vIdm1q2uCYnSST0ivL0zs0I1Jgl3osVq4cTrbhZ2rlKzl
+	49ekzG1lObO9ayd4k+wwy/J3IiKd2+e2fjz5Dil/S8rHwLS5p3Hl5GXaVf/rLHiZmFE=
+X-Gm-Gg: AYBFou1X5EJZklDnGZouOOjmNjwwrHGzcL6Btx3jOXxB2hf/ERRPgaqq67wFt/R3ZOF
+	tI4g7DeiNGKqHHrJnl34sty2U7xRcuyorKAxCo9dOZfmvxNcIHCcq+uTgjvA7TStqormisvy50X
+	U9Yjrsp2nXgoeZN1ERVzTpmlswgaYLn5HhrUsOhPceuKvydVPW/1/4KrAkoIELSUmc00JV2zriT
+	hRADjE8sZxIkKNwUM/I7z0mBiLThIbdQanGdMgpQv/XdSNZSDtDW9zGh2yF6bX/G4sa31bIHw0v
+	cyQ9UBRaVcBZSphzGgy0LQTA6+idTsD1vvWItFiL4RVSaMnYXVQaNDYRF91cPHSFqShK+FY2ku3
+	TCiLNdp5vkUhEaCtp1yEVM0ftv9uLZz/5imnVXpzBK8yza2dLkea3QZK5y473EW1NxSebfM+UJN
+	nHZ6XasP/3L1bwkLNS6h+z7yHiLGRzgXI3qVrzaZPrWnYsU8/Gk6K68f3mePIjXVm+0gFx+68F7
+	8mfsXY31S4bDTJuhxrb7p9agu3N8NIBpBwcawIAUWUoYSzQeBUiYNqr86t45BfDHg==
+X-Received: by 2002:a05:600c:c8c:b0:49d:1d7e:4085 with SMTP id 5b1f17b1804b1-49d1d7e4131mr67217785e9.22.1788938189965;
+        Wed, 09 Sep 2026 00:16:29 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:106d:1080:14f1:e0b5:e1a0:a97c? ([2a01:e0a:106d:1080:14f1:e0b5:e1a0:a97c])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49d057f4778sm349470395e9.8.2026.09.09.00.16.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 09 Sep 2026 00:16:29 -0700 (PDT)
+Message-ID: <987c56f5-7828-44b7-ae6b-eb79b15b64ab@linaro.org>
+Date: Wed, 9 Sep 2026 09:16:28 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
+Subject: Re: [PATCH v2] interconnect: qcom: implement get_bw with rpmh_read
+To: Maulik Shah <maulik.shah@oss.qualcomm.com>,
+ Georgi Djakov <djakov@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260908-topic-sm8x50-icc-read-rpmh-v2-1-b6f1c4205450@linaro.org>
+ <9303e64b-00e2-4b8a-b92f-b96c0a3a5546@oss.qualcomm.com>
+Content-Language: en-US, fr
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro
+In-Reply-To: <9303e64b-00e2-4b8a-b92f-b96c0a3a5546@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-struct power_supply_maintenance_charge_table contains
-charge_safety_timer_minutes, but its kernel-doc describes
-safety_timer_minutes. This leaves the real member undescribed and adds a
-nonexistent member to the generated documentation.
+On 9/8/26 16:39, Maulik Shah wrote:
+> 
+> On 08-09-2026 13:39, Neil Armstrong wrote:
+>> Since we can actually read back the APPS rpmh interconnect
+>> BCM votes we can actually implement the get_bw() callback
+>> and provide a coherent average and peak bandwidth at probe time.
+>>
+>> The benefits of that are:
+>> - keep disabled BCMs disabled
+>> - avoid voting unused BCMs to INT_MAX
+>>
+>> If the interconnects are correctly described for a platform,
+>> all the required BCMs would be voted to the maximum bandwidth
+>> until sync_state is reached.
+>>
+>> Since we only get the BCM vote, we need to redistribute
+>> the vote values to the associated nodes. The initial BCM
+>> votes are read back at probe time in order to be ready when
+>> the get_bw() is called when a node is added.
+>>
+>> Tested-by: Georgi Djakov <djakov@kernel.org> #db845c
+>> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+>> ---
+>> Changes in v2:
+>> - Added tested-by
+>> - Rebased on v7.3-rc1 now the rpmh_read() is merged
+>> - Link to v1: https://patch.msgid.link/20251106-topic-sm8x50-icc-read-rpmh-v1-1-d03a2e5ca5f7@linaro.org
+>> ---
+>>   drivers/interconnect/qcom/bcm-voter.c | 36 +++++++++++++++++++++
+>>   drivers/interconnect/qcom/bcm-voter.h |  1 +
+>>   drivers/interconnect/qcom/icc-rpmh.c  | 60 ++++++++++++++++++++++++++++++++++-
+>>   3 files changed, 96 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
+>> index a2d437a05a11..9014bf20adad 100644
+>> --- a/drivers/interconnect/qcom/bcm-voter.c
+>> +++ b/drivers/interconnect/qcom/bcm-voter.c
+>> @@ -261,6 +261,42 @@ void qcom_icc_bcm_voter_add(struct bcm_voter *voter, struct qcom_icc_bcm *bcm)
+>>   }
+>>   EXPORT_SYMBOL_GPL(qcom_icc_bcm_voter_add);
+>>   
+>> +/**
+>> + * qcom_icc_bcm_get_bw - get current bcm vote
+>> + * @voter: voter used to query bcm
+>> + * @bcm: bcm to get current vote from
+>> + */
+>> +void qcom_icc_bcm_get_bw(struct bcm_voter *voter,
+>> +			 struct qcom_icc_bcm *bcm)
+>> +{
+>> +	struct tcs_cmd cmd = { .addr = bcm->addr };
+>> +	int ret, i;
+>> +	u64 x, y;
+>> +
+>> +	mutex_lock(&voter->lock);
+>> +
+>> +	rpmh_invalidate(voter->dev);
+> 
+> Don't see why rpmh_invalidate() is needed before a read request.
 
-Use the member's actual name.
+You're right, will drop.
 
-Fixes: d72ce7d32478 ("power: supply: ab8500: Standardize maintenance charging")
-Assisted-by: LLM
-Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
----
- include/linux/power_supply.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Thanks,
+Neil
 
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index e749d2189335..95d3bc42ea17 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -414,9 +414,9 @@ struct power_supply_vbat_ri_table {
-  * @charge_voltage_max_uv: maintenance charging voltage that is usually a bit
-  *   lower than the constant_charge_voltage_max_uv. We can apply this settings
-  *   charge_current_max_ua until we get back up to this voltage.
-- * @safety_timer_minutes: maintenance charging safety timer, with an expiry
-- *   time in minutes. We will only use maintenance charging in this setting
-- *   for a certain amount of time, then we will first move to the next
-+ * @charge_safety_timer_minutes: maintenance charging safety timer, with an
-+ *   expiry time in minutes. We will only use maintenance charging in this
-+ *   setting for a certain amount of time, then we will first move to the next
-  *   maintenance charge current and voltage pair in respective array and wait
-  *   for the next safety timer timeout, or, if we reached the last maintencance
-  *   charging setting, disable charging until we reach
+> 
+> Thanks,
+> Maulik
+> 
+>> +
+>> +	ret = rpmh_read(voter->dev, &cmd);
+>> +	if (ret) {
+>> +		pr_err("Error sending AMC RPMH requests (%d)\n", ret);
+>> +		goto out;
+>> +	}
+>> +
+>>
 
-base-commit: 893e11787f78e43b534e252249ac3fff4d1333f8
--- 
-2.53.0
