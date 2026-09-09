@@ -1,125 +1,61 @@
-Received: from sender6-op-o11.zoho.com (sender6-op-o11.zoho.com [165.173.180.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B685455168;
-	Wed,  9 Sep 2026 20:47:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.180.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788986890; cv=pass; b=AAHMDv1sixzzzFQKCe5zeDhJgyYi0uXuLVpwzrnzqL8zKRiUsKSb/cQQdvgyjgl8oWH2fc1XtSSCU+S5owqkvicilhRpxJajvxs+wIm50cdKkyI7L1SwF1aio7u8qIFbEwe6AcqTmuytvJggCNb0vDZS/5hrViQXVxJTPDwgb0o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788986890; c=relaxed/simple;
-	bh=pHtG0m8Je8BRoRwqJyRinhzByYeDiQyntG8bh5dq2Q0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y6NiaewGDjJsW6ETV8VGLlXlEXVBdNxwjZk2Xx0kr4+mDJPxQxQ1mNLhzurmMPwNG7SNU4RKCUKG1qPqXpPZxNsNT8ik4qOjuMXWwN4qcipOeX2FR9kHMP2dVu1IMO6QR/2+Lngv/BfxUZrEYL1WGJYbenOa2JlA1c7igskcGF0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=ICk7Z8SM; arc=pass smtp.client-ip=165.173.180.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="ICk7Z8SM"
-ARC-Seal: i=1; a=rsa-sha256; t=1788986871; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=drae9vsfOfgkeLGIQ7LpxvdwOxbXFRRAdfXrK4Xvsfb7nuBLTWKEXp/NVQB0Mf7sVVVbc1kJiEUpHWbr1fXnxwIugfYGxM5fi5N5GRno+9yFzgdZGePKgVN6ShhF4PjE2ZFIo2jWQwVdRMX9lXH27RkJIaybNZVbk1fa7v5Ljf8=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1788986871; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=Ihk8jq0E6v1GzqxnoCZD7Cb65oa33zaHTJ4K81BNNBk=; 
-	b=EW1mghZ/811Oe2FgtTr35iKdBzx4M440ZLH/i3QcFE7Af733YRQgX1x0dJoOYmOwJ/jAd63IQW5xLApIdoUMtuw2Wo2VCkKZ/0a8GjbntlTW0QNeLW0qUiKVuGnFFkCFFBk1r3rk6zvetcDXzCKacmjZsQoVcLQociyjkMVud6k=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1788986871;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=Ihk8jq0E6v1GzqxnoCZD7Cb65oa33zaHTJ4K81BNNBk=;
-	b=ICk7Z8SM8ezCStVpMLuJX9cuqt1TSAiB9stwOsm/zls8pSc25OyBgoPHP2Nkni9m
-	jSVmkOyyWukbtHbqKMsSo8IacbwBPo4+DpqU4KEFskjCZKLeAt3TACq4aGqw3WM2fQ8
-	aYdMY3w1ZbWjJ9Ksh8Sba5AFFXiKfJ7ReGPsLNqs=
-Received: by mx.zohomail.com with SMTPS id 1788986869418187.2155406658627;
-	Wed, 9 Sep 2026 13:47:49 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB29646984F;
+	Wed,  9 Sep 2026 20:49:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788986979; cv=none; b=e2lYnmdZF9VRVMMs02nlbx7+iTftwjQy2SP17S1sojv7f0Hj8aEuxHySjJehU3myxCrIZKUUFz555q6r0spSYddq67GAw7uBcThmjvSTVW3v+5CvsBUBETauKcCjIndwsdlRjRlTvRmzrWFIf4E/kYYYy7Y32tFWTetOStwju/k=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788986979; c=relaxed/simple;
+	bh=UMTBtnzkNQT1wZyPO0HRJxNMgW77946w7bUUMIDruII=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=JzmmPpVYWOQGSwWccbmIb4PbaPNmsntMwGdZMXK7c3vv8T71MgpD6Oew4kE9ENf6elS7CcZagKKpRaXZlnxrHWDi+NKNQOOkUrJTPZC7SxER5GfmJZp1o2FFpeAq058sn/hczsvoS1uRw3pctfDmfw0fiqE9YQ2Q0aRnvB5jaZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C0041F00898;
+	Wed,  9 Sep 2026 20:49:33 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id A790C183377; Wed, 09 Sep 2026 22:47:46 +0200 (CEST)
-Date: Wed, 9 Sep 2026 22:47:46 +0200
+	id 023BD18337C; Wed, 09 Sep 2026 22:49:32 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Maurizio Casciano <mauriziocasciano7@gmail.com>
-Cc: Hans de Goede <hansg@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] power: supply: core: Honor supplied-from with CONFIG_OF=y
-Message-ID: <aqHFUSdrYUR1DJ6L@venus>
-References: <20260901145156.3177187-1-mauriziocasciano7@gmail.com>
- <c9cf1a69-9136-4f64-b223-aa038520a0a9@kernel.org>
- <CAO7O_xi-BYfGb428q1TO4ERp059-BOq78PZR5Ad-bs1ikVkmZQ@mail.gmail.com>
+To: sre@kernel.org, kauschluss@disroot.org, y.oudjana@protonmail.com, 
+ Zongmin Zhou <min_halo@163.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Zongmin Zhou <zhouzongmin@kylinos.cn>
+In-Reply-To: <20260827020539.22837-1-min_halo@163.com>
+References: <20260827020539.22837-1-min_halo@163.com>
+Subject: Re: [PATCH] power: supply: s2mu005-battery: return errors from
+ dev_err_probe() in probe
+Message-Id: <178898697199.883277.15114408407827172199.b4-ty@b4>
+Date: Wed, 09 Sep 2026 22:49:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="eym42znvk5xrfmaw"
-Content-Disposition: inline
-In-Reply-To: <CAO7O_xi-BYfGb428q1TO4ERp059-BOq78PZR5Ad-bs1ikVkmZQ@mail.gmail.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/288.982.46
-X-ZohoMailClient: External
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.16.0
 
 
---eym42znvk5xrfmaw
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] power: supply: core: Honor supplied-from with CONFIG_OF=y
-MIME-Version: 1.0
+On Thu, 27 Aug 2026 10:05:39 +0800, Zongmin Zhou wrote:
+> s2mu005_fg_i2c_probe() calls dev_err_probe() when devm_mutex_init() or
+> devm_request_threaded_irq() fails, but drops the return value and
+> carries on, finally returning 0. A failed probe is then reported as a
+> success: the device stays registered with an uninitialized mutex and
+> without its IRQ handler installed.
+> 
+> Return the error from dev_err_probe() in both places so that the probe
+> fails and the driver core logs the error state properly.
+> 
+> [...]
 
-Hi,
+Applied, thanks!
 
-On Tue, Sep 01, 2026 at 07:04:28PM +0200, Maurizio Casciano wrote:
-> Thank you for the review.
->=20
-> I agree that firmware-node references should retain priority over the
-> legacy name-based mechanism. The "supplied-from" property should only be
-> used as a fallback when no "power-supplies" references are present,
-> including the case where the consumer has no firmware node.
->=20
-> For v2 I will preserve the existing order as follows:
->=20
-> 1. honor an explicitly pre-populated supplied_from list;
-> 2. resolve "power-supplies" firmware-node references when present;
-> 3. fall back to the name-based "supplied-from" property only when no
->    references were specified.
->=20
-> Errors while resolving specified references, including -EPROBE_DEFER,
-> will still be propagated rather than triggering the fallback.
->=20
-> I will wait for Sebastian's opinion before posting v2.
+[1/1] power: supply: s2mu005-battery: return errors from dev_err_probe() in probe
+      commit: d5146fe3468703d82087270eb18bac81c15c10a6
 
-Ack.
+Best regards,
+-- 
+Sebastian Reichel <sebastian.reichel@collabora.com>
 
-Also FWIW the power-supply core has been migrated to be fully fwnode
-based, so the CONFIG_OF is not really correct anymore anyways. Let's
-have a single implementation for power_supply_check_supplies().
-
-Greetings,
-
--- Sebastian
-
---eym42znvk5xrfmaw
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmqhxecACgkQ2O7X88g7
-+prbzg/+PXQ8TLG3HiJHwMJe0m4xar9ZomTdZsXalWCRJH1Nq+A4AYxa91+tBh0a
-vT9lPkpfRojtlxggiKnew7FjD84aPr9/PwYPCybfWzAuzgy+eF/ukHKKLQHqYejT
-b7z/TTp5ImIS/8HB1PBds5Xp8h1qr3hi40puJvjdF4eqfMVHMqCPpSECMDpWkAdL
-c7LSz+8Rw4u/GiXhaE1WSXxD7pQRwvy6sRYkMNo5i9y/cZry96ZVYZomp5BdHr6L
-psyLyhVA30yhCFFeE/skyxiW6YMOZn/oVxMviATpTTVHQMIyiL4VI0GmlbXDj6gm
-W+v5cqAPi+0ug8oOTXFknQ2zhqKCdCJLHphxkY+gDJZsKQCeJNDjzINSVay7LI/J
-GUl+t3t/8TlITvu8UIC1bLtKHVk+5otWc7dwvdJiZQClPZFcmK5EP8WEWFFshcya
-UztPc8Pke5I5eACKacsYaRbK/NZzkoKj3SdYW7DHtNzDefmYCjDk781UeCcYYr5J
-Xh2vQRZ158CD4IhlRYMzaaRCZKP0BKyywG5Nkweb962xjxTsrZNMMrHVVWVAJ22d
-ePrLA5NWv/KmvjB7h/WqcEQ0KWXDCXCPE79rIa+ES6a/MITSHSjQXXGmrQLrqWbc
-l1gGyDpX8cfl+wXHuglrzQtyenl+STakzYUJialH9oZJREU8/PI=
-=ojYG
------END PGP SIGNATURE-----
-
---eym42znvk5xrfmaw--
