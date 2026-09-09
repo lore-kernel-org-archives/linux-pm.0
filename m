@@ -1,32 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C8415678CA;
-	Wed,  9 Sep 2026 20:49:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5081239A056;
+	Wed,  9 Sep 2026 20:49:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788986997; cv=none; b=t16DJxnoM6LmH3k5KvR0kP+DhbzTjKFlRRTTmsTWhe8wnrcD+nL6YwO7II0aBIm6KRAQxWwkfQN65hq/Q4LXSSY0JFNcKHlLgSY0nDicLgdlcbBvAKIhqQgniP6cXpka0hONmqt+hCivei1kwDKcwEWRuWcKCEXNNf2MqchhZH0=
+	t=1788986997; cv=none; b=GEiijRGgUtvCgyLbYv/zjbW8Su4btavXvMuDxnAzEtzKe1JWoc2Fjsa44ZAVjTHuXak/xXKzMQf4baFdPU+4AbzTavPbGTN3VOG96N1lv7wuzkGERLs6LXqegLUjoXm4qFPo0s52crOZ/zMbdtA5nYjSihj/vHTxo7vbA3Lq9d8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1788986997; c=relaxed/simple;
-	bh=yiA2wFjuymTXui3ZDBJp7bpFchdTnQXhxtcstkg7Qhg=;
+	bh=lTTeB6gDl5wxcNDxDYFMd4Wyyctv08r0NG5RJtRrmgc=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=LjapcZm+3tX7uJe7nGYYXcUe7kuRjScE6mDgFRvBt25HDBXS26SOSG9dzsSYCmTZY4W+xoSVsrzFogOkm2UgkMcdnI50lnayodcsJAe56q90xRxAfM/E/BZeUsVCsZkifwf5KFaet8qEeDeLlX69ghjknX+v+TiHmW0F1Fr26fE=
+	 MIME-Version:Content-Type; b=ZsWjydSFFN4LJ/lD01SdNcJuCdR8nFjddfGapFTVVWhp2d3ACW0So3S4Wrz/siKdxwx+kC2TeArlSnOKDhDyiYZi+bEMomzHpozmaAWqSdVLCiBPUVp4sK1sfUdVOhE1yMYPLwugOFWxPXxHjcSQJILmhIvAO3IIxVjbCdWukqg=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 258351F0089F;
-	Wed,  9 Sep 2026 20:49:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AE2E1F0089E;
+	Wed,  9 Sep 2026 20:49:33 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 26924183382; Wed, 09 Sep 2026 22:49:32 +0200 (CEST)
+	id E325F183378; Wed, 09 Sep 2026 22:49:31 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Santosh Shilimkar <ssantosh@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>, Hemanth Selam <hemanth.selam@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- Krzysztof Kozlowski <krzk@kernel.org>
-In-Reply-To: <20260907091212.28352-1-hemanth.selam@gmail.com>
-References: <20260907091212.28352-1-hemanth.selam@gmail.com>
-Subject: Re: [PATCH v2] power: reset: keystone: fix missing space in error
- message
-Message-Id: <178898697214.883277.5680260868662724018.b4-ty@b4>
-Date: Wed, 09 Sep 2026 22:49:32 +0200
+To: Sebastian Reichel <sre@kernel.org>, 
+ "Derek J. Clark" <derekjohn.clark@gmail.com>
+Cc: Hans de Goede <hansg@kernel.org>, 
+ "Pierre-Loup A . Griffais" <pgriffais@valvesoftware.com>, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-api@vger.kernel.org
+In-Reply-To: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+References: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+Subject: Re: [PATCH] Documentation: sysfs-class-power: Update Long_Life
+ description
+Message-Id: <178898697191.883277.11193044392222700510.b4-ty@b4>
+Date: Wed, 09 Sep 2026 22:49:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,23 +40,23 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.16.0
 
 
-On Mon, 07 Sep 2026 14:42:12 +0530, Hemanth Selam wrote:
-> The two string literals are concatenated, so the message prints
-> "has to contain atleast one entry".
-> 
-> v1 added the missing space but kept the string split across two lines.
-> Krzysztof Kozlowski pointed out the string should not be wrapped at all,
-> which also matches coding-style.rst: never break user-visible strings,
-> because that breaks the ability to grep for them.  Join it into one
-> line instead; the result exceeds 80 columns, which is expected for a
-> user-visible string.
+On Mon, 03 Aug 2026 14:07:20 -0700, Derek J. Clark wrote:
+> While adding charge limiting support to the Lenovo WMI drivers, there
+> was some back and forth about whether charge_types or
+> charge_control_end_threshold was the appropriate attribute to expose a
+> battery charge limiting toggle that is fixed in the BIOS. The confusion
+> arose because the charge_control_end_threshold description closely
+> matches the functional change the hardware is making, while the
+> charge_types functionality better suits the actual an on/off toggle that
+> occurs in the BIOS. This specific scenario is not explicitly enumerated
+> in the documentation, though it is fairly common.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: reset: keystone: fix missing space in error message
-      commit: 49ee04619f820ac0e5ca618dfc0657229eadeddc
+[1/1] Documentation: sysfs-class-power: Update Long_Life description
+      commit: 801471494b95bb4aa405ec7a6e318a7ca4cbb086
 
 Best regards,
 -- 
