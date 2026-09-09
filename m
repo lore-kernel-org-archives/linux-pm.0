@@ -1,213 +1,149 @@
-Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B2BA576EBA
-	for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2026 15:42:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788968538; cv=none; b=cQI2tjo8oi076nRwR66JHGElsaDzD99ywuf3RRcH5gdhkbTz0mlqjAfabcyDJn74H0FO3v5fSq2+0s6DFSTV61Z0LoCYx/DX4keEW63qT+sOsmBNWJ6dl9wKlY44SgGhJKrgL91efYU5hFOGk++ewckcNttMinA8L7xGnh2Yaes=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788968538; c=relaxed/simple;
-	bh=hq4YQs4noVM+rPsJgnR/8SpC8jKglHwZ0DNfFfqjORo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SOKMUd2I5HOvp95tJTJ+bBwuIKFZmmIy33ArawE0/GLn2wVSWW1C1xRgBpVKBtZQmlaUJL8O4Y5IF4A3IxOyD+KlGAvLuESeYkvFZ2dH8psGQSQFunrsbsb9WYM6USsN314+vctgFaoNuXTIy74QR9g7SrX7SzB12p7ecO8mCW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=aoNn0W62; arc=none smtp.client-ip=74.125.225.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 758A9333730;
+	Wed,  9 Sep 2026 15:47:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788968851; cv=pass; b=Wfx8N+nS2N19V1fYofWlVzKdk/jN9XPIc9fMOQgSWD8PbO43y/L1A61VwKB2jUiyPwuGlUZz+sCs+eun3CttPPlB5xZlVyU5EWH1xjildFWcUtQRSEggTBl4X1z0e1Z3ceeMOVGFD2m9qmcRKdi1C+gea0rKFlDxv+3jC7K1BKw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788968851; c=relaxed/simple;
+	bh=6yQif5n5XRyay83f1ZHCtKwqfS7yhNH4nuo418vK98k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VjV/pIYMb28Jc2hJkMaVGwkE8kI2vv5fZFGMSUMGEWnPEily9XNg7pmp49+C9gmA/+We3SusQ3mcnHN9wKtvJVxx0zggwuZDius99Pz+YWCtA2PFyvBDbAOppIiV6hNoD2+JYL+BABs1YoXQSCE4t+By7N9FqUQCl+OtZ3m8Kys=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=RrRxL6K+; arc=pass smtp.client-ip=165.173.182.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="aoNn0W62"
-Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49cd38e0e5dso4733345e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 08:42:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1788968535; x=1789573335; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=F0u+L+nVL9C1tUREs61N7WVbEpyXchQ6479yncGceLg=;
-        b=aoNn0W62kDQ3Oe+94dtP0gJWE5L0PQ+s7Bk0hXHjxUCJ8ULldYsFsucghSkdO1H//F
-         UHAOUP7Ez7NBkcLmfHXOV24YIwNWsbrs4dyFb5+XvDabeNC4N2sOzciH70Pt9uXGPHul
-         slnMmVoqh/N8/WaM5ILcUlzFJShvCNhJ3PC2B/uVVozCwPRvVFurkEwPaCdrHhc69stZ
-         zVzn5SUbPipMssXlZ/HLOJFxkeTetU9tiMyfk4+FasYQRutHBo6P1ZFAY2tmLSikqda+
-         C9BXYE4tCn0WWpTfoOTt3xIf9DEzPDmJo2NaIi9kFkR7tTO52XI/JWCClesppj/mlyAI
-         qQ/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788968535; x=1789573335;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=F0u+L+nVL9C1tUREs61N7WVbEpyXchQ6479yncGceLg=;
-        b=ilkQWL6z0en9gkoLDot22Xn/4avRYE25Tjo0n03+v/aUwEyRo7o3Gee5OnOWWrW9Hc
-         x3bQ5Z2Qa44wT8o6NPw3MsDCmncIeRfIQUX8MHPvrea0L/E6sEAe94fdAE+t4pLsb12Z
-         WM9XJ9QWmsYdK6BKMNwqY8/DLDjVcCVOf6HySpXvgr83Z+7JcgNbYhvyaH65e9KUWrAY
-         msQrPTQ8B/R0aTRR5xJeVeC3cywLwozzvVHcllMZlHcBMnag4GwhMlTF/eSdSyXONh3K
-         OXXtr31emGLXL4H/qdXAlr+1q+01PehZ612NE8KTDrN9kXIvkLBgWqKkZUNtsJCEheu5
-         Ss6g==
-X-Forwarded-Encrypted: i=1; AKwUvBw9BUZy0TnWyp4p/6EjOtCoIIsIcr84ewzLdPSfgI4AHbNROIVAveC67z9ZC9BC8u3969UiNV3+Pw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lXADASTJGOp6Be13NNFCpZfy40RCAEPfZ6ExOIoPREakNmicKB
-	SMqD69JLanFHHcWbuZ8VHej1lEhQKM2PM+1vzSYT+xyQz4vrbvu1dL2P3bs3wGHYyv0=
-X-Gm-Gg: AYBFou35Om3guN+c9lfabwBuavixaw3Eze6rlsNEv+qG7NhIpp9GH75/6T+tHzE6DhH
-	xTY+0ooLE09/GWbFe+/kxmC80C53QnLzgHZXIKBOQaFwLHoFE9C/Ee9ouIluQK++9xwin9FITDs
-	vZX+sBWjRajSwEaUC4OIf+VZyzGUDYTDZEjOiGCAgFa2D8MD7v2Ot57wNLMla05GnbFZXc8s35T
-	XQ+oKhGUHV+DULrHxvKG3F7LXFtziESVVSkbVYkZInsyFpEXpZJqh4dv1xiG9koPMNipO+RJzZE
-	U5YWCcZpyKg1PIrWtAIF8jOAhm4+M5FU5pTuyKb6uU82hCJBM4vyugVjs+yFbCAsYv0ZxMRnrM2
-	w9nxy+H1632AlZ46ETWvak+2oKRpsNWl6x8Ixmd9n7qUOfhUlZFuJcpgopd8q+S/BtsNCgeEca4
-	ztGK64+zr8py6IkUc+dc8+uU1AGmIxispAPEO6tD4mOCe0akkQEtG3RtxYLe97671HF/0NWZRkB
-	lPhAiCk/uFjo53e2DDUfn3GZ+3uuS9EmB1ieQwpzuP2+d+4zoc=
-X-Received: by 2002:a05:600c:1d9a:b0:498:943:ccc0 with SMTP id 5b1f17b1804b1-49d258ef83amr41366425e9.6.1788968534764;
-        Wed, 09 Sep 2026 08:42:14 -0700 (PDT)
-Received: from alchark-surface.localdomain (bba-2-51-220-108.alshamil.net.ae. [2.51.220.108])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49cf7740d44sm1042068015e9.15.2026.09.09.08.42.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 08:42:14 -0700 (PDT)
-From: Alexey Charkov <alchark@flipper.net>
-Date: Wed, 09 Sep 2026 19:41:47 +0400
-Subject: [PATCH v2 4/4] power: supply: bq257xx: Parse battery info before
- registering power supply
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="RrRxL6K+"
+ARC-Seal: i=1; a=rsa-sha256; t=1788968791; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=bIP7FxCUP7PHjxh/nM4jKTnSi4O3I6PRlfBOfFxAVACnPdkG1o4ROdKc9mHAKRk9dawZAajHbag1i0Dtm5oZk73POFNeyTsIoMQdqnIex15/DdocxTTJLcvNzHv+8W2Brfrmzqd5aG+ycRGI3Kd6X4Q83AZV8i/HAccJDK0A7uQ=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1788968791; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=+2jg2ESPMMGY2dLnVmlBMJSk4zf6hyXqLuJROhsLZFs=; 
+	b=fHK0xZYkJa0EQ8iscGhXs3nCz+azjAIWs6h68cT2ql692DXJDd4uXiAI5yoxp5+3TWpg0puF6aimsbN7lur+FafMxu8awciKl9BP+tkdlvpc/mFm22kHkLG3ENAuLoHnilj1qqzm/Fi5AAKKvOLxax8bDHgaJF7386Ys1Wsq9ck=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1788968791;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=+2jg2ESPMMGY2dLnVmlBMJSk4zf6hyXqLuJROhsLZFs=;
+	b=RrRxL6K+fJgetX/zevzIf8shNUQZ64sHRap9E0npkCTqOSQIKdGw7QGQsmmT/nEh
+	MDEWBwP3A3JSNrYY6AU5UVrxINL1kX0CeJRhDr083WK6iOkhdTlz+KNgeB67XQeShiX
+	D9sDnGwGS2S6atyJx9cWGAcEY8UQgBcy05nf5uW0=
+Received: by mx.zohomail.com with SMTPS id 1788968790593167.81978655910598;
+	Wed, 9 Sep 2026 08:46:30 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id 24C93183377; Wed, 09 Sep 2026 17:46:21 +0200 (CEST)
+Date: Wed, 9 Sep 2026 17:46:21 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+	Michael Hennerich <michael.hennerich@analog.com>, Support Opensource <support.opensource@diasemi.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
+	linux-doc@vger.kernel.org, linux-media@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org, 
+	linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	llvm@lists.linux.dev
+Subject: Re: [PATCH 06/14] mfd: remove unused da903x driver
+Message-ID: <aqF_GZq1C4Tv1JB9@venus>
+References: <20260909132153.1596191-1-arnd@kernel.org>
+ <20260909132153.1596191-7-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260909-bq257xx-init-v2-4-deb4076b1f02@flipper.net>
-References: <20260909-bq257xx-init-v2-0-deb4076b1f02@flipper.net>
-In-Reply-To: <20260909-bq257xx-init-v2-0-deb4076b1f02@flipper.net>
-To: Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>, 
- Chris Morgan <macromorgan@hotmail.com>, Pavel Machek <pavel@ucw.cz>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Alexey Charkov <alchark@flipper.net>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4653; i=alchark@flipper.net;
- h=from:subject:message-id; bh=hq4YQs4noVM+rPsJgnR/8SpC8jKglHwZ0DNfFfqjORo=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWQtrHOz+rDvXhzv1arCxV0XFa5tYXQqZOt78n2u0Ib8Z
- PVNl7iWd0xkYRDjYrAUU2SZ+22J7VQjvlm7PDy+wsxhZQIZIi3SwAAELAx8uYl5pUY6Rnqm2oZ6
- hkY6xjpGDFycAjDV6yUZGZ5/7D/apLJm1x1H72xWjzC2uh0prbvPHg8LOhbot2eehzTDH26WJ+Z
- 8BtMEBJTKljQc973nIGu18uBhw++XEv58mvqxhwMA
-X-Developer-Key: i=alchark@flipper.net; a=openpgp;
- fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="jrej5ylckfdda26t"
+Content-Disposition: inline
+In-Reply-To: <20260909132153.1596191-7-arnd@kernel.org>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/288.959.6
+X-ZohoMailClient: External
 
-Switch to a dev-based battery get/put interface to parse battery info
-before registering the power supply, so that nobody tries to access the
-power supply until we finish programming the device parameters.
 
-Signed-off-by: Alexey Charkov <alchark@flipper.net>
----
- drivers/power/supply/bq257xx_charger.c | 50 ++++++++++++++++++++--------------
- 1 file changed, 29 insertions(+), 21 deletions(-)
+--jrej5ylckfdda26t
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 06/14] mfd: remove unused da903x driver
+MIME-Version: 1.0
 
-diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/supply/bq257xx_charger.c
-index ab3519454193..a02d293c7395 100644
---- a/drivers/power/supply/bq257xx_charger.c
-+++ b/drivers/power/supply/bq257xx_charger.c
-@@ -1163,38 +1163,38 @@ static const struct bq257xx_chip_info bq25792_chip_info = {
- /**
-  * bq257xx_parse_dt() - Parse the device tree for required properties
-  * @pdata: driver platform data
-- * @psy_cfg: power supply config data
-  * @dev: device struct
-  *
-  * Read the device tree to identify the minimum system voltage, the
-  * maximum charge current, the maximum charge voltage, and the maximum
-- * input current.
-+ * input current. Deliberately keyed off @dev rather than the charger power
-+ * supply, so that it can run before the supply is registered.
-  *
-  * Return: Returns 0 on success or error code on error.
-  */
--static int bq257xx_parse_dt(struct bq257xx_chg *pdata,
--		struct power_supply_config *psy_cfg, struct device *dev)
-+static int bq257xx_parse_dt(struct bq257xx_chg *pdata, struct device *dev)
- {
- 	struct power_supply_battery_info *bat_info;
- 	int ret;
- 
--	ret = power_supply_get_battery_info(pdata->charger,
--					    &bat_info);
-+	ret = power_supply_get_battery_info_from_dev(dev, &bat_info);
- 	if (ret)
- 		return dev_err_probe(dev, ret,
- 				     "Unable to get battery info\n");
- 
- 	if ((bat_info->voltage_min_design_uv <= 0) ||
- 	    (bat_info->constant_charge_voltage_max_uv <= 0) ||
--	    (bat_info->constant_charge_current_max_ua <= 0))
-+	    (bat_info->constant_charge_current_max_ua <= 0)) {
-+		power_supply_put_battery_info_from_dev(dev, bat_info);
- 		return dev_err_probe(dev, -EINVAL,
- 				     "Required bat info missing or invalid\n");
-+	}
- 
- 	pdata->vsys_min = bat_info->voltage_min_design_uv;
- 	pdata->vbat_max = bat_info->constant_charge_voltage_max_uv;
- 	pdata->ichg_max = bat_info->constant_charge_current_max_ua;
- 
--	power_supply_put_battery_info(pdata->charger, bat_info);
-+	power_supply_put_battery_info_from_dev(dev, bat_info);
- 
- 	ret = device_property_read_u32(dev,
- 				       "input-current-limit-microamp",
-@@ -1210,9 +1210,14 @@ static int bq257xx_parse_dt(struct bq257xx_chg *pdata,
-  * @pdev: platform device
-  *
-  * Probe the charger device, allocate driver data structure, select the
-- * appropriate chip-specific function pointers, register the power supply,
-- * parse device tree properties for battery limits, initialize hardware,
-- * and set up the interrupt handler if available.
-+ * appropriate chip-specific function pointers, parse device tree properties
-+ * for battery limits, initialize hardware, register the power supply, and set
-+ * up the interrupt handler if available.
-+ *
-+ * The power supply is registered only once the hardware is up, because
-+ * registering it lets the core call ->external_power_changed() at any time. A
-+ * probe failure after that point would have devres free @pdata while such a
-+ * callback is still running on it.
-  *
-  * Return: Returns 0 on success or error code on failure.
-  */
-@@ -1245,6 +1250,14 @@ static int bq257xx_charger_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, pdata);
- 
-+	ret = bq257xx_parse_dt(pdata, dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = pdata->chip->bq257xx_hw_init(pdata);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Cannot initialize the charger\n");
-+
- 	psy_cfg.drv_data = pdata;
- 	psy_cfg.fwnode = dev_fwnode(dev);
- 
-@@ -1255,16 +1268,11 @@ static int bq257xx_charger_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(pdata->charger),
- 				     "Power supply register charger failed\n");
- 
--	ret = bq257xx_parse_dt(pdata, &psy_cfg, dev);
--	if (ret)
--		return ret;
--
--	ret = pdata->chip->bq257xx_hw_init(pdata);
--	if (ret)
--		return dev_err_probe(dev, ret, "Cannot initialize the charger\n");
--
--	platform_set_drvdata(pdev, pdata);
--
-+	/*
-+	 * Requested after the supply is registered so that devres tears it down
-+	 * first, quiescing the interrupt before the supply it reports on goes
-+	 * away.
-+	 */
- 	if (bq->client->irq) {
- 		ret = devm_request_threaded_irq(dev, bq->client->irq, NULL,
- 						bq257xx_irq_handler_thread,
+Hi,
 
--- 
-2.55.0
+On Wed, Sep 09, 2026 at 03:21:43PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> This driver was used on a handful of ARM/PXA boards until those
+> got removed a few years ago. Without devicetree support, there is
+> no way to use them upstream.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  MAINTAINERS                           |   1 -
+>  drivers/input/touchscreen/Kconfig     |  13 -
+>  drivers/input/touchscreen/Makefile    |   1 -
+>  drivers/input/touchscreen/da9034-ts.c | 365 ----------------
+>  drivers/leds/Kconfig                  |   8 -
+>  drivers/leds/Makefile                 |   1 -
+>  drivers/leds/leds-da903x.c            | 145 -------
+>  drivers/mfd/Kconfig                   |  11 -
+>  drivers/mfd/Makefile                  |   2 -
+>  drivers/mfd/da903x.c                  | 565 -------------------------
+>  drivers/power/supply/Kconfig          |   7 -
+>  drivers/power/supply/Makefile         |   1 -
+>  drivers/power/supply/da9030_battery.c | 581 --------------------------
+>  drivers/regulator/Kconfig             |   8 -
+>  drivers/regulator/Makefile            |   1 -
+>  drivers/regulator/da903x-regulator.c  | 495 ----------------------
+>  drivers/video/backlight/Kconfig       |   7 -
+>  drivers/video/backlight/Makefile      |   1 -
+>  drivers/video/backlight/da903x_bl.c   | 160 -------
+>  19 files changed, 2373 deletions(-)
+>  delete mode 100644 drivers/input/touchscreen/da9034-ts.c
+>  delete mode 100644 drivers/leds/leds-da903x.c
+>  delete mode 100644 drivers/mfd/da903x.c
+>  delete mode 100644 drivers/power/supply/da9030_battery.c
+>  delete mode 100644 drivers/regulator/da903x-regulator.c
+>  delete mode 100644 drivers/video/backlight/da903x_bl.c
 
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+-- Sebastian
+
+--jrej5ylckfdda26t
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmqhf0gACgkQ2O7X88g7
++ppaAhAAjamgA9v7fn8KcrThl75UZh6bOUT/5XiVqaq9zEwVJoY2fygDVmYao95K
+QhI39+RMyWRuGdnDCBrpw0eVA53PbFPc1VTm+Iw4FWehLC1skbbSwDpPLFSIZaLe
+DJlLr11UbevMyqcmNKw8yeRolbQfUbAA4leflpjAbhhEvAzotNSeIxLY3yFHNXoV
+hJsWKIRE4cFFb5bsx3qTlJFQMop9WidRYq3vdPeoGVCUW2zjROm5drG9e8Hb2dvd
+I1KgIIFgyn2WJYDlD3u0eLwYZk/YabwYv3PUfxRXIXRS3+JMzwA3ubQyoMit/SHv
+MMH4/sJdjtgUjUcnWKA9Ktle3BQgYFr80H6HHHaBoFQveCC2B/98B85Ev0wwi9Xa
+60t+RHmELFKX9TnD6o797ZxnsXxErlDhjl+UZhEKQpsQjKwBQHnV1RzX3QLFWYkv
+i16c5MyNzgDusXB4zpTBiAy/kVNKUysPwY13R8BBvr2NsQcBf9uYDTRHr/g+3Xd4
+wquTx7yb8tYLUn6cJr9jXHrSseS5TpMUu+8scdSVZBC9KSuaeRYigm5dLM0X6Zj5
+vmXaD9vlAGtPL7fv+zomhwt4Ufe51v2YGxWa8IQSEsyOG1eUO6zdfFIiajXpgBTR
+mZ6OWJdhnZ9sRSQVANNafU85fqkka6x1/ZAQvqaKPBGVE7bXzhc=
+=3btz
+-----END PGP SIGNATURE-----
+
+--jrej5ylckfdda26t--
