@@ -1,140 +1,131 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com [209.85.208.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB223385D6A;
-	Thu, 10 Sep 2026 15:20:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A080851E452
+	for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 17:02:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789053664; cv=none; b=JSZBXQKM/47AP6CA9DZoO8piK7YxIhTu3XuZHYHjcEP6gAmYjKeP7SDnSGiuzkSJdLNrN9oatnlFdIdeR0zkWjdHjH5Md7XmQU4PpRW1r5gj/wetom4I0zH1X2sTNiJyqYbjjThNMumlgJohSXqGQSXzBPVC6O3sb2QgmBOw274=
+	t=1789059748; cv=none; b=SWDAMYnPe32NPQLaEg0k7qsWPWZnJcmS4aCTG0ZL8RrKojLgRqdNurjMbhMew99LmAtj7uogPkhmblsg1Mj0JJQBtZQYXfF8g53WH784+FrruPEiEl2pRBgt7X5u0JDhRdDOOEoGk8LFDHp9Zy3uqDaklNNLoMas7yAiJXbROZY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789053664; c=relaxed/simple;
-	bh=rxLjR7TqBBK7IbwLSXQhqpihy8bN+l65yZrGiqQRGQI=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=WdG0lrvpayMlOybsA1Xd0MX4QNlSrjoeShBwoiVtkzH7nXIA15HzK4UbbBfLb4MiFCxb7b8SU42WkSQ9zVvrG7akXO5zWowvsLK/hygTqhWDJALVYt04UzvUS/mCNLmDYs/eGUvN2kk0CQws6zDVrip8vPcq76E3LO8XEAwUOzQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BkSayVsn; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1789059748; c=relaxed/simple;
+	bh=Sq+3ZPDvtDiwDZEiPtzE5bg4NQcIOhzYCUKUumcK7+g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KO+2PFefLHnsnkAv7vudan3Zgv/4NFy1nR4ytT1X/M0tcVQ8sJWQQFEA3wVvgGU0X45KkgQHgHbTLAkzMM8WgShl/8oRko05C9GVepGPzOM1D9KrwqUbInb55CBHxeI5bsTaoBuAkhmaTJJmMZ9hOQW3esWEDogtqgpHPqwwT0w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=bQFvE7Uz; arc=none smtp.client-ip=209.85.208.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BkSayVsn"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789053659; x=1820589659;
-  h=date:from:to:cc:subject:message-id;
-  bh=rxLjR7TqBBK7IbwLSXQhqpihy8bN+l65yZrGiqQRGQI=;
-  b=BkSayVsnf0Ruupy/hVzT4zCJ/U7AlW0rZUQbK+Z7l6f41TUKZ/VaPTDD
-   gNulb7p0hoBS8I9GGNNZyy+bVFqrCx5942aKDCH3B1A6HuXxpS4bBImsc
-   n2btYWQh70zBmIvI5uDRguoHU4gru4ZS4jRoBrLXm5oocv29GfZtcw2h+
-   nsQil/qaWuakVDVLy/Cg5Et6f4A2qKG6K7hT5uHSyijfORReKf2pzHtd4
-   DblzGyHUZNudsIaM7zFefD6MMK6w9l10D594jEZf4FNAo66Zp7JAyQVP8
-   8lV+DaCO/+TTwfHnIwQ4gTL2ZwKccE7SOBAHqs60/GmA3spGIApP0oZy2
-   Q==;
-X-CSE-ConnectionGUID: Fam8KVXKQGCvMHPxIW4O+w==
-X-CSE-MsgGUID: kKMJ4KNbTYSM7V0b2F2neQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="89350000"
-X-IronPort-AV: E=Sophos;i="6.27,95,1787036400"; 
-   d="scan'208";a="89350000"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2026 08:20:54 -0700
-X-CSE-ConnectionGUID: oxpjUNTXQs+WpxcZ5mYb3A==
-X-CSE-MsgGUID: 1Uky8/i7RQe3n6VeZm+r/g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,95,1787036400"; 
-   d="scan'208";a="296650522"
-Received: from lkp-server02.sh.intel.com (HELO 0a3643a6ed9d) ([10.239.97.151])
-  by fmviesa001.fm.intel.com with ESMTP; 10 Sep 2026 08:20:53 -0700
-Received: from kbuild by 0a3643a6ed9d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x4ga2-000000000Cw-26m4;
-	Thu, 10 Sep 2026 15:20:50 +0000
-Date: Thu, 10 Sep 2026 23:05:01 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:fixes] BUILD SUCCESS
- 52f7a75969b0f4c42746d9a563f4f83429738d42
-Message-ID: <202609102358.EZiDL9yv-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="bQFvE7Uz"
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3a309f92daaso59935911fa.3
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 10:02:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1789059727; x=1789664527; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=u+7YvFjPPo9k/FqxxQZH7F6PYUlcKWqkhxEgYotuD+A=;
+        b=bQFvE7UzvMwuB1I/cVlI9zCVrj1IiEkIEUyEUbXQStrMFw4o5G6LL5M3K+b3450w3Y
+         qyEbVBepqrtfXT1rvTq1yddI6QtJ1en0tIiTdVk7Jzuf/KY5Spgipzp7azQPX7ltl0sx
+         bWgGvkPLaOQmju7PFTQo5tquqycUPUj5w+pPg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789059727; x=1789664527;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=u+7YvFjPPo9k/FqxxQZH7F6PYUlcKWqkhxEgYotuD+A=;
+        b=Qynxk2/CxrJcY7eYcFGaj1jfDDz3x564NeGDNwVVcDNdnAfNXFvCzu58/FM+PcVbzr
+         eXWrnEQDxiMQR88aGf6oluNTI9QWBVcvfQT+sJFQpSCnV0esNhaXGSbtsMgpVOHVevST
+         fSAhgRMzumjANhj7oHwFltqZ7rLypmBkrKslzlnzl9v431LFZdZmN72RAle3hCa/CWxR
+         USZrd//Xv80tvLz4sUZHx+K6cYWK+i+++AUbu3D/nqWgCDufbvUSGDbPFzjSYp/h17UG
+         CewbYQkv3c8tk6qG8WbkIbNrzb0Cdn4eM9dGHDzvlgOPkupKy4bCCcnMRXrnWPuu73NL
+         1LWg==
+X-Forwarded-Encrypted: i=1; AKwUvBwDeMVi2v/meptZt720O+idD1xkdwDeKQyhikHsEviZ6MHh9rkFgd0UMvgLCqvBkBSqizXJB84Rfg==@vger.kernel.org
+X-Gm-Message-State: AFuF++kWEBo6tGdDp5W2n7b5YWjbRL4UwSmhpg7+BbG+J6gTkp28+CQZ
+	0ooWDVnk4C2FXquQ0GySSXZrNKrnFQS734JUc78cPH1H8dTxMaZ2LCrdL7gq0DGT2iklKJsdvD4
+	FvxkQng==
+X-Gm-Gg: AYBFou1IWaj24++hS0vOmHCgMjPy20jgMZvYt4h4sIb9Go7PHrEmgzaZQGCtTxo5NEY
+	SeOprJrgHIUKTh5oGzE7cwMgJEyTgcjK6xWnKsLHnX0hYxB6yW+FE5LM5Mc915hZz3t33fNva1q
+	zP1+GQ5FSiO4ORugkq2ATm2QjQYOiJIO8I+PWQXIy+7xCbcbKPkYEmKIabVHvo+C7OWqDzNn5af
+	s+yTo+C+Lb7HxBFdZAWHRS4SMdy/v9rDYxvcHODFyh9h80N0/801/66JZv548HXUKz6C+dfltBh
+	qRznIDzDOoUC3qLfJzdtyc1tQAJfeBTYtGLuKQBf99oAFfCdBXgShuOxvgARkhok+lEsz+ueevM
+	FoMmTkKDE/ruTZGkfoKGxcHUQkIDEa3vT5auzb0G8Th35gAJ3auSzh3CatVBAbncUj+B+eG0eZn
+	W3J5uXAiQTjxzXCxFuQ0UR/5lWHh4rTwFrK9AhNWths/djroI4D0VnLjb/OE5M5a9C0dxOdRcoR
+	2wH9ym7rLo9dO4BpNff4iJoP4v3yJptw0C2mjm6hsiqh6EN
+X-Received: by 2002:a05:6512:108b:b0:5b6:bea:f097 with SMTP id 2adb3069b0e04-5b8a02838c2mr88237e87.14.1789059727275;
+        Thu, 10 Sep 2026 10:02:07 -0700 (PDT)
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com. [209.85.221.46])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b8a047aa1dsm14426e87.75.2026.09.10.10.01.54
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 10 Sep 2026 10:01:59 -0700 (PDT)
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-486e835acacso267750f8f.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 10:01:54 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBx9D7zVJo/thHs26i2iLkhVRuoMxP6/ApvbwySyh7EpwIC+V/ZDxFmOdv9YvlmFbWpo9kG+GDy4BA==@vger.kernel.org
+X-Received: by 2002:a05:6000:658:b0:484:4817:85db with SMTP id
+ ffacd0b85a97d-485872b5c09mr38411439f8f.14.1789059713626; Thu, 10 Sep 2026
+ 10:01:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+References: <20260909224818.2177311-1-mrungta@google.com>
+In-Reply-To: <20260909224818.2177311-1-mrungta@google.com>
+From: Doug Anderson <dianders@chromium.org>
+Date: Thu, 10 Sep 2026 10:01:40 -0700
+X-Gmail-Original-Message-ID: <CAD=FV=WFBmq3kniULxcXNsKgY-Zrb82JfaX5uRWVewQi_tJyJw@mail.gmail.com>
+X-Gm-Features: AcwNN1Xl_nzhNtJWsI6953UZiPelgeSEkWzryufpn6N_ETw7Yj-N-KcRVJNqhak
+Message-ID: <CAD=FV=WFBmq3kniULxcXNsKgY-Zrb82JfaX5uRWVewQi_tJyJw@mail.gmail.com>
+Subject: Re: [PATCH v2] PM: sleep: Add DPM watchdog to prepare/late/early/noirq/complete
+ phases
+To: Mayank Rungta <mrungta@google.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Tzung-Bi Shih <tzungbi@kernel.org>, linux-pm@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
-branch HEAD: 52f7a75969b0f4c42746d9a563f4f83429738d42  Merge branches 'pm-cpufreq' and 'pm-opp' into fixes
+Hi,
 
-elapsed time: 1312m
+On Wed, Sep 9, 2026 at 3:48=E2=80=AFPM Mayank Rungta <mrungta@google.com> w=
+rote:
+>
+> Extend the DPM watchdog to wrap device_prepare, device_suspend_late,
+> device_suspend_noirq, device_resume_noirq, device_resume_early, and
+> device_complete callbacks. If a driver hangs during these transitions,
+> the watchdog will fire and dump a stack trace to help identify the
+> offending driver.
+>
+> To prevent false-positive timeouts, the watchdog is set only after
+> waiting for subordinate (during suspend) and superior (during resume)
+> devices. With this change, DPM watchdog coverage is extended across all
+> phases of system sleep transitions.
+>
+> Signed-off-by: Mayank Rungta <mrungta@google.com>
+> ---
+> v2:
+>  - Extend DPM watchdog to device_prepare and device_complete callbacks.
+>  - Update commit subject and description to reflect coverage across all
+>    system sleep phases.
+> v1:
+>  - Initial version adding DPM watchdog to late/early/noirq phases.
+>
+> Testing:
+>  - Tested on an ARM64 SoC (Pixel platform running a 6.18-based kernel wit=
+h
+>    DPM watchdog enabled; Android 6.18 kernel has latest DPM changes
+>    backported).
+>  - Verified hang simulation in device_prepare and device_complete
+>    triggers DPM watchdog panic and stack trace as expected.
+>
+>  drivers/base/power/main.c | 31 ++++++++++++++++++++++++++++---
+>  1 file changed, 28 insertions(+), 3 deletions(-)
 
-configs tested: 63
-configs skipped: 0
+Thanks! I guess you dropped my (and Tzung-Bi's) Reviewed-by tags
+because of the minor changes between v1 and v2? They look right to me,
+so:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha          allnoconfig    gcc-16.1.0
-alpha         allyesconfig    gcc-16.1.0
-arc           allmodconfig    clang-24
-arc            allnoconfig    gcc-16.1.0
-arc           allyesconfig    clang-24
-arm            allnoconfig    gcc-16.1.0
-arm           allyesconfig    clang-24
-arm64         allmodconfig    clang-24
-arm64          allnoconfig    gcc-16.1.0
-csky          allmodconfig    gcc-16.1.0
-csky           allnoconfig    gcc-16.1.0
-hexagon       allmodconfig    clang-24
-hexagon       allmodconfig    gcc-16.1.0
-hexagon        allnoconfig    gcc-16.1.0
-i386          allmodconfig    clang-22
-i386           allnoconfig    gcc-16.1.0
-i386          allyesconfig    clang-22
-loongarch     allmodconfig    clang-24
-loongarch      allnoconfig    gcc-16.1.0
-m68k          allmodconfig    gcc-16.1.0
-m68k           allnoconfig    gcc-16.1.0
-m68k          allyesconfig    clang-24
-microblaze     allnoconfig    gcc-16.1.0
-microblaze    allyesconfig    gcc-16.1.0
-mips          allmodconfig    gcc-16.1.0
-mips           allnoconfig    gcc-16.1.0
-mips          allyesconfig    gcc-16.1.0
-nios2         allmodconfig    clang-20
-nios2          allnoconfig    clang-24
-openrisc      allmodconfig    clang-20
-openrisc       allnoconfig    clang-24
-parisc        allmodconfig    gcc-16.1.0
-parisc         allnoconfig    clang-24
-parisc        allyesconfig    clang-17
-parisc        allyesconfig    gcc-16.1.0
-powerpc       allmodconfig    gcc-16.1.0
-powerpc        allnoconfig    clang-24
-riscv         allmodconfig    clang-24
-riscv          allnoconfig    clang-24
-riscv         allyesconfig    clang-24
-s390          allmodconfig    clang-17
-s390          allmodconfig    clang-24
-s390           allnoconfig    clang-24
-s390          allyesconfig    gcc-16.1.0
-sh            allmodconfig    gcc-16.1.0
-sh             allnoconfig    clang-24
-sh            allyesconfig    clang-17
-sh            allyesconfig    gcc-16.1.0
-sparc          allnoconfig    clang-24
-sparc64       allmodconfig    clang-20
-um            allmodconfig    clang-17
-um             allnoconfig    clang-24
-um            allyesconfig    gcc-14
-um            allyesconfig    gcc-16.1.0
-x86_64        allmodconfig    clang-22
-x86_64         allnoconfig    clang-24
-x86_64        allyesconfig    clang-22
-x86_64        rhel-9.4-bpf    gcc-14
-x86_64      rhel-9.4-kunit    gcc-14
-x86_64        rhel-9.4-ltp    gcc-14
-x86_64       rhel-9.4-rust    clang-22
-xtensa         allnoconfig    clang-24
-xtensa        allyesconfig    clang-20
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
