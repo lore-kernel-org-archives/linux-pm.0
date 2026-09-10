@@ -1,346 +1,481 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from flow-b3-smtp.messagingengine.com (flow-b3-smtp.messagingengine.com [202.12.124.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7838E53ECEF
-	for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 17:15:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDC8572602;
+	Thu, 10 Sep 2026 18:15:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789060517; cv=none; b=UEtdP4+9fuxFe8brNjyvrhNlB0VGUJXunixI8/4mswwobjkWiYXMu7xqX3LzDL5f8q/8Yh+BiQbMddBIYRh0iG5+gp5EZRuEWKoD3PcrZhPuK7PGh8yqUTS4OJ9D6hd60d1ytAN1MrMANOuOBaRiXDCLN+yhqLX2r9cIhl5XicQ=
+	t=1789064154; cv=none; b=Tgql8rdM9c7qULav0ZjowGDScZN5XBD+QmZUKyH1bP+Kgh9REnhQL6yJ1RHWNG0R46YdM/PaaD1/YBJ+8A8vPcdaGn203hPFPqRaQYLmQJbQAS1ybxhG2iqF/hmlNdccu4+poZgDtEnzFQ8Q+ksFNhpMcm6mfsTyHQx2EAC5cMI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789060517; c=relaxed/simple;
-	bh=b+wcPJVDHniWrIIhs4dW6jTFcSBmZlFb6YpMZ3jWNAw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=N7X6tOSIQDgl0uModlk0tpRNLsHpQWabsLpZ0rmJcpw7vyYfcCpV98xpUPqREc+56j8SDGO7l5CMd81ZBlXr8MlQgIGASTrhaHHsPaerp3V4rye3uCQr0vLvwKPj5vx6XwMaCyg3orgwyVlvn0XAm8TYOFowvcYD6g8J2vmuSjk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AI9IBGOe; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789064154; c=relaxed/simple;
+	bh=lT86y8eYD42UWCQykU9l8k3TRTmz09BEhcZq790S+yU=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=oCXq/HFbeT3dApjncZZg4C+vZ6S26rwWTroAeBaorAISH9rXJdokawrJFJYexjyePcGlcH8KweKcbQ3d8SgAcG5QgHCCcZp/hMEjdTCejvG3hosNC7CMym3SVJhl2CWhyTT2Z6SKe6Dfv7YQIk3rCDlbvp51+09aTRF4tWmgPE4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=ijVxd0jv; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=CdXwC7Fv; arc=none smtp.client-ip=202.12.124.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AI9IBGOe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97BA01F008A1
-	for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 17:14:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789060496;
-	bh=4D0v1faP0HLzJ6MUBUx3J5vRSxmxBKBAtPUFBXzifTs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=AI9IBGOetvGCdQxLZbyOc0IGyAzaQH6iofPllKV9lZ16dkQOhyZE7VUmUshwX6kuK
-	 6nRciRMMqeBug6mdXe45dAyPurrc7wbPhSZYJz6cOsZHcp/7LqLpDSFcUUav23LcIL
-	 byK8BKnmiDtiMtHSITnScTqnfwdzg6Ep6qAn/VxsZkrZ4BopqoeYbUP+lakr4fVbx0
-	 paOqOGCbaQDhN6wlyfARrlsSu4js6BuLfcn2O592h4e6FUTRmV8rMR+h6ImYsTJkoe
-	 3xxuaJdfgS3zNp7s1UBZOc5H6vnkGoKRMEijit2yPDo54JyDJnx/Q2u388vyRx5BOD
-	 2lxPBX5s0jNyw==
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-3a5a0703ae7so240981fa.0
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 10:14:56 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzUDSwCz95L3YvSZItpXsNbXM+hKronjlw6xFfU4BQqi1v/k+eeUrBGbiPfG8wyMmLyThRtVb08IA==@vger.kernel.org
-X-Gm-Message-State: AFuF++nicj5pPSHEuWtGWKbfoNG7Kg2p4F1Sdae86wNpDiU5Qti3O7CZ
-	0KgVpqSQ414WLUCtLXNHZWTYznYFfP1nAVygPG0r09xmA6N4Oxtb2x/u04uhxHAyCCpJSwSlGNI
-	tAkqMjpmI77HOeUc52y0XZgRr7NFC/+0=
-X-Received: by 2002:a05:651c:513:b0:3a3:29d8:8b00 with SMTP id
- 38308e7fff4ca-3a5910a8b1dmr5948481fa.10.1789060494759; Thu, 10 Sep 2026
- 10:14:54 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="ijVxd0jv";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="CdXwC7Fv"
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.stl.internal (Postfix) with ESMTP id 90062130016B;
+	Thu, 10 Sep 2026 14:15:45 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Thu, 10 Sep 2026 14:15:49 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1789064144;
+	 x=1789071344; bh=VtH5i260XLRsxy4HROM4Zf+emhgdsSBynbPgRNN9ky8=; b=
+	ijVxd0jvXkU6jHQGr5fM6K6ZY5mG4P1W/ROxqWDRxQKmS7rDY2TzR/Z9bwY1LnG4
+	qhxnwwW+p7mr5baW9Pijze8t8yetIb0/SyG82k6avP6YdqPRurILIhZOvJZ0jVS7
+	yuZzjczGOmYe0TdR5am6uZPHFVhqzlIhndDLY5yOGCTat8lCdJWga95rLTXAcD7Y
+	y2BP65oml+M4FSZGVvSVZvVc6G6xDLFdHriq9fjtNWufrpAu1Pt1pmK3n0kZsAEH
+	o84Z+NQp4QEp1YixNZ9GTVri9wBYq2b5VYYrrcVt1y3W8+i2RmywBqNyjIJkXjNU
+	5Dh3FQeLYs5lgwxjxgIwig==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789064144; x=
+	1789071344; bh=VtH5i260XLRsxy4HROM4Zf+emhgdsSBynbPgRNN9ky8=; b=C
+	dXwC7FvnpzHQOwXZAZv8vR74hPfItTYyxz5967sqrsM/xTHSSi0kGNo+lFmwq+7S
+	W845DpcmpYxxETQOFBsKvu0uW4SkumfFaBZJH4ObFBSVJZCx0uNpU+AB782OiT3l
+	WE73oVpFO+Sd8+Xf8GF916mYCBmrtJnLUUeqLnqA3BHL1hOzrk4a4ZH3/SGiFE+E
+	S/BDhjG2cwYNEXo7GP40HV9R9vY3p4B8Sb0vAYorN+uOW+5dC8M0X5XjWb7OTm9I
+	tGfg2g6FnLkrLZ185tkn0yt7cX1DUB9f9VfRuTbNNSfIIqGxrGt34StI5NOSBkVH
+	zSnSNYF9VkOVIcPxte8Tw==
+X-ME-Sender: <xms:x_OiavVvbr2xnD9wDDhPiFU-KeJWaEabWJ3dElLfZaFitBOJpwaEBw>
+    <xme:x_OiaiadBmhSw9JyA5Rfb18thN8_V3LDyZq4rXuV1Fs7T6DPuZ43-BbwDFHXBHFcN
+    VaQdnxfmj_y2U34ME3lhf0xITinNd6xSzg5la84VMY9-tKZtbYANDAr>
+X-ME-Proxy-Cause: dmFkZTG2zztKY4aY0N6GYcaHAoENgkA+3D96x+eHqiTNn9gGT9TiczF7nfZBC70+NZGtjG
+    gOWis8vMPs43LIeXkE/30hpkkXxPPbvx8y0eJJlkwZzwpaCPsz8tw1dAuT1QWG/qmoESU9
+    RSye3dODySNw+rAC8PMd3UB4nTQbLiKjSR1Xmrfl2Nk22KezpXEvPy+iofUb4YwImdfpcF
+    X4lReQPYtR0S4wkI8Ox8Cju7zDDn9p7XY2AIVvARmOOleGHx265Ru16ZJD/nokaGsgDFdH
+    Ej0wlnjScirCb92k5MIvpT+EIHPs5u8nWum9d/ff9WO+VYt2XYdqpD8kw7yl6DEnvCVBPC
+    62fzoJfrs+rnLhl6F707QA3hIC92X/DpSQF42LmUnR/YwkQQs2yyF6tvs4ph/PyjBW9QQD
+    SJcfJfvnk4TPiBJMIadgpVacsEeumhVQFh0uBN8pTzJNZY6tCkxMUyCGTVbE0wpi841Own
+    QFamreyp+xUwfuIXrHssyjIQQjMU6phEtEN9eTAe9h3CF8YCpg1YJbdfSGOZR8H5CUZZwf
+    HA1Eq907uoR9mlUBcEFTE9z6OB8eh9OQXEDpz0zBjk7v93TjidKKdVBlo1+n6gpZakl9lz
+    IACe3ohu5UE6o48Y5bLcXtfTLRwqaRevknsM/XKoJezWWoAdutP9pLq3uecw
+X-ME-Proxy: <xmx:zfOiamBNqfysXndRRgMiCY7NBQ43FZSbFLDO5__pMi3DVjuH4RJEAg>
+    <xmx:zfOianeBZmje1IXxldxRji_qyPUrW_hrUuiBzdPBxrH-PduRBPfQ6w>
+    <xmx:zfOiauslcdlMubignkweR-Oig-HcA94Is7ov3vgNbVXHT0vzPqCfDg>
+    <xmx:zfOiapLV-rCRVSNrKaXhOzFg-AGXz8zlLD1yFZCUJp2vjVjwbS-r_A>
+    <xmx:0POiarGOLRgBpdCk7akkQdCfV8pfABe6Zb6bnwPbJu0wyJHblTYq1PZn>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id B0D6332A007B; Thu, 10 Sep 2026 14:15:35 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260830115644.2056983-1-christian.loehle@arm.com>
- <20260830115644.2056983-3-christian.loehle@arm.com> <e363804d-78d7-4f09-8d49-f70a4dfc6f71@arm.com>
- <CAJZ5v0j=n4uf=GFVDumb2v1sqcS_f293BG2iCD-Vmp2vpLC=xg@mail.gmail.com>
- <CAJZ5v0igEL-WvvCSadRkGDdZaXRJM0kPAH8i918T+FaDg9oZ5A@mail.gmail.com>
- <7985c629-8d36-4562-a789-074d35e9f260@arm.com> <CAJZ5v0jp9q-ZzOKXsOVpvF0ABytHXU9qeSdGyHdhLUL-cLX4sA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jp9q-ZzOKXsOVpvF0ABytHXU9qeSdGyHdhLUL-cLX4sA@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 10 Sep 2026 19:13:42 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0ieZt_FSM4e=F_UjvN_oZbbiU_aHQgfFk2jifqW2Un5rw@mail.gmail.com>
-X-Gm-Features: AcwNN1UwmvWaURtLTfRGsNi2UQjSLEFvMpiv6wanCX_9loXfeyZne266g8BR468
-Message-ID: <CAJZ5v0ieZt_FSM4e=F_UjvN_oZbbiU_aHQgfFk2jifqW2Un5rw@mail.gmail.com>
-Subject: Re: [PATCH v6 02/15] ACPI: CPPC: Validate _CPC entry and control semantics
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
-	Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>, 
-	Sudeep Holla <sudeep.holla@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, 
-	zhongqiu.han@oss.qualcomm.com, Sashiko <sashiko-bot@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-ThreadId: AK-jVwBtQCQR
+Date: Thu, 10 Sep 2026 20:14:15 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Svyatoslav Ryhel" <clamor95@gmail.com>, "Arnd Bergmann" <arnd@kernel.org>
+Cc: "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
+ "Bartosz Golaszewski" <brgl@kernel.org>,
+ "Mark Brown" <broonie@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
+ "Daniel Thompson" <danielt@kernel.org>, "Helge Deller" <deller@gmx.de>,
+ devicetree@vger.kernel.org,
+ "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+ dri-devel@lists.freedesktop.org, "Jonathan Cameron" <jic23@kernel.org>,
+ "Jingoo Han" <jingoohan1@gmail.com>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Lee Jones" <lee@kernel.org>,
+ "Liam Girdwood" <lgirdwood@gmail.com>,
+ "Linus Walleij" <linusw@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-fbdev@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ "Guenter Roeck" <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
+ llvm@lists.linux.dev, "Mauro Carvalho Chehab" <mchehab@kernel.org>,
+ mfd@lists.linux.dev, "Michael Hennerich" <michael.hennerich@analog.com>,
+ patches@opensource.cirrus.com, "Pavel Machek" <pavel@kernel.org>,
+ "Rob Herring" <robh@kernel.org>, "Sebastian Reichel" <sre@kernel.org>,
+ "Support Opensource" <support.opensource@diasemi.com>
+Message-Id: <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
+In-Reply-To: 
+ <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
+References: 
+ <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
+Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 4, 2026 at 6:57=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
->
-> On Thu, Sep 3, 2026 at 10:02=E2=80=AFPM Christian Loehle
-> <christian.loehle@arm.com> wrote:
-> >
-> > On 9/3/26 20:44, Rafael J. Wysocki (Intel) wrote:
-> > > On Thu, Sep 3, 2026 at 9:27=E2=80=AFPM Rafael J. Wysocki (Intel)
-> > > <rafael@kernel.org> wrote:
-> > >>
-> > >> On Sun, Aug 30, 2026 at 3:32=E2=80=AFPM Christian Loehle
-> > >> <christian.loehle@arm.com> wrote:
-> > >>>
-> > >>> On 8/30/26 12:56, Christian Loehle wrote:
-> > >>>> Writable _CPC controls are Register descriptors encoded as Buffer =
-objects.
-> > >>>> Integer entries represent fixed values or unsupported optional reg=
-isters;
-> > >>>> Autonomous Selection Integer 1 is the special immutable form which=
- enables
-> > >>>> operation without Desired Performance.
-> > >>>>
-> > >>>> The parser accepts arbitrary object types and cpc_write() assumes =
-that its
-> > >>>> argument contains a GAS. Malformed firmware can therefore make it =
-interpret
-> > >>>> an Integer union member as a register.
-> > >>>>
-> > >>>> Validate the portion of each encoding consumed by the driver: boun=
-d Integer
-> > >>>> DWORD forms to 32 bits, and require Buffer entries to start with a=
- complete
-> > >>>> Generic Register descriptor with the expected header. Continue tol=
-erating
-> > >>>> Integer 0 for an absent optional register and retain type checks i=
-n
-> > >>>> cpc_write() as defense in depth. Reject an attempt to disable immu=
-table
-> > >>>> Autonomous Selection instead of silently applying only the EPP par=
-t of the
-> > >>>> request.
-> > >>>>
-> > >>>> Capability registers are read into u64 temporaries but exposed thr=
-ough u32
-> > >>>> fields. Reject values above U32_MAX instead of allowing them to be
-> > >>>> truncated. In particular, a truncated Highest Performance value ca=
-n become
-> > >>>> a zero divisor in the performance-to-frequency conversion. Enforce=
- the
-> > >>>> required ordering from Highest through Nominal, Lowest Nonlinear, =
-and
-> > >>>> Lowest Performance, and constrain a present Guaranteed Performance=
- to the
-> > >>>> inclusive Lowest-to-Nominal range. Also reject reversed frequency =
-anchors
-> > >>>> and unequal frequency anchors with identical performance anchors. =
-Those
-> > >>>> invalid tuples otherwise make affine-conversion differences wrap o=
-r divide
-> > >>>> by zero.
-> > >>>>
-> > >>>> Check mandatory object presence separately from the Integer-zero c=
-onvention
-> > >>>> for absent optional fields. ACPI does not reserve zero in the abst=
-ract
-> > >>>> Lowest Performance scale, so accept a present Lowest Performance D=
-WORD of
-> > >>>> zero when distinct frequency anchors provide a usable nonzero phys=
-ical
-> > >>>> minimum. Retain the old rejection when that mapping is unavailable=
- and the
-> > >>>> fallback conversion would expose a 0 kHz cpufreq endpoint.
-> > >>>>
-> > >>>> Minimum Performance also defines zero as a real no-limit value, bu=
-t the
-> > >>>> exported cppc_set_perf() interface historically used zero to omit =
-a bound.
-> > >>>> Add explicit validity flags so callers can request zero without ch=
-anging
-> > >>>> that legacy convention. Populate the flags when reading the contro=
-ls and
-> > >>>> mark the bounds supplied by amd-pstate explicitly.
-> > >>>>
-> > >>>> Performance Limited is listed as a required Buffer, but the interf=
-ace does
-> > >>>> not depend on it to control performance and the specification perm=
-its a
-> > >>>> platform with no limiting indication to always report zero. Preser=
-ve
-> > >>>> the compatibility with firmware that represents that case using a =
-NULL
-> > >>>> register descriptor instead of disabling CPPC entirely.
-> > >>>>
-> > >>>> Emit an error when a present _CPC package fails parsing or initial=
-ization
-> > >>>> so such firmware and resource failures no longer silently suppress=
- cpufreq.
-> > >>>> Initialize malformed-package failures to -EINVAL and preserve spec=
-ific
-> > >>>> allocation, mapping, and unsupported-access errors in that diagnos=
-tic.
-> > >>>>
-> > >>>> Fixes: 337aadff8e45 ("ACPI: Introduce CPU performance controls usi=
-ng CPPC")
-> > >>>> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> > >>>> Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-chri=
-stian.loehle%40arm.com
-> > >>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> > >>>> ---
-> > >>>>  drivers/acpi/cppc_acpi.c     | 172 ++++++++++++++++++++++++++++++=
------
-> > >>>>  drivers/cpufreq/amd-pstate.c |  12 ++-
-> > >>>>  include/acpi/cppc_acpi.h     |   2 +
-> > >>>>  3 files changed, 159 insertions(+), 27 deletions(-)
-> > >>>>
-> > >>>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> > >>>> index 3b8cdf88e31d..6f3ffa4a1845 100644
-> > >>>> --- a/drivers/acpi/cppc_acpi.c
-> > >>>> +++ b/drivers/acpi/cppc_acpi.c
-> > >>>> @@ -129,6 +129,21 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_=
-desc_ptr);
-> > >>>>                               !!(cpc)->cpc_entry.int_value :      =
-    \
-> > >>>>                               !IS_NULL_REG(&(cpc)->cpc_entry.reg))
-> > >>>>
-> > >>>> +static bool cpc_is_writable(const struct cpc_register_resource *c=
-pc)
-> > >>>> +{
-> > >>>> +     return cpc->type =3D=3D ACPI_TYPE_BUFFER &&
-> > >>>> +            !IS_NULL_REG(&cpc->cpc_entry.reg);
-> > >>>> +}
-> > >>>> +
-> > >>>> +static bool cpc_entry_present(const struct cpc_register_resource =
-*cpc)
-> > >>>> +{
-> > >>>> +     if (cpc->type =3D=3D ACPI_TYPE_INTEGER)
-> > >>>> +             return true;
-> > >>>> +
-> > >>>> +     return cpc->type =3D=3D ACPI_TYPE_BUFFER &&
-> > >>>> +            !IS_NULL_REG(&cpc->cpc_entry.reg);
-> > >>>> +}
-> > >>>> +
-> > >>>>  /*
-> > >>>>   * Each bit indicates the optionality of the register in per-cpu
-> > >>>>   * cpc_regs[] with the corresponding index. 0 means mandatory and=
- 1
-> > >>>> @@ -142,6 +157,29 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_=
-desc_ptr);
-> > >>>>   */
-> > >>>>  #define IS_OPTIONAL_CPC_REG(reg_idx) (REG_OPTIONAL & (1U << (reg_=
-idx)))
-> > >>>>
-> > >>>> +static bool cpc_integer_entry_valid(unsigned int reg_idx, u64 val=
-ue)
-> > >>>> +{
-> > >>>> +     switch (reg_idx) {
-> > >>>> +     case HIGHEST_PERF:
-> > >>>> +     case NOMINAL_PERF:
-> > >>>> +     case LOW_NON_LINEAR_PERF:
-> > >>>> +     case LOWEST_PERF:
-> > >>>> +     case CTR_WRAP_TIME:
-> > >>>> +     case REFERENCE_PERF:
-> > >>>> +     case LOWEST_FREQ:
-> > >>>> +     case NOMINAL_FREQ:
-> > >>>> +             return value <=3D U32_MAX;
-> > >>>
-> > >>>
-> > >>> Sashiko:
-> > >>> "Does this incorrectly restrict the counter wraparound time to 32 b=
-its?
-> > >>> The ACPI specification allows firmware to provide a 64-bit QWord in=
-teger
-> > >>> for the Counter Wraparound Time. The cppc_perf_fb_ctrs structure al=
-ready
-> > >>> models this as a 64-bit value internally
-> > >>> If firmware provides a valid 64-bit integer exceeding U32_MAX for t=
-his
-> > >>> register, cpc_integer_entry_valid() will return false and completel=
-y abort
-> > >>> CPPC initialization for the CPU. Can we remove this restriction for
-> > >>> CTR_WRAP_TIME?"
-> > >>
-> > >>> This is true. ACPI spec 6.6 and 6.5 (Table 8.23) describe it as
-> > >>> Integer (DWORD) or Buffer
-> > >>> The 64-bit internal representation is only for the case of firmware
-> > >>> providing it as Buffer.
-> > >
-> > > Sashiko is right, the table in the spec is wrong.  If it is Integer,
-> > > it is 64-bit.
-> > >
-> > > The size of an Integer in ASL cannot be restricted.
-> >
-> > Duh, thanks!
-> >
-> > >
-> > >>>
-> > >>>> +     case AUTO_SEL_ENABLE:
-> > >>>> +             return value <=3D 1;
-> > >>>> +     case DESIRED_PERF:
-> > >>>> +             /* Validated against Autonomous Selection after pars=
-ing. */
-> > >>>> +             return value =3D=3D 0;
-> > >>>> +     default:
-> > >>>> +             /* Tolerate the customary Integer 0 for an absent op=
-tion. */
-> > >>>> +             return value =3D=3D 0 && IS_OPTIONAL_CPC_REG(reg_idx=
-);
-> > >>>> +     }
-> > >>>> +}
-> > >>>> +
-> > >>> Sashiko:
-> > >>> "Does this incorrectly restrict the counter wraparound time to 32 b=
-its?
-> > >>> The ACPI specification allows firmware to provide a 64-bit QWord in=
-teger
-> > >>> for the Counter Wraparound Time. The cppc_perf_fb_ctrs structure al=
-ready
-> > >>> models this as a 64-bit value internally.
-> > >>> If firmware provides a valid 64-bit integer exceeding U32_MAX for t=
-his
-> > >>> register, cpc_integer_entry_valid() will return false and completel=
-y abort
-> > >>> CPPC initialization for the CPU. Can we remove this restriction for
-> > >>> CTR_WRAP_TIME?"
-> > >>
-> > >> It looks like you pasted the same comment twice.  Or did Sashiko hal=
-lucinate?
-> > >
-> > > Well, its other comment is actually different from the first one.  Le=
-t
-> > > me paste it:
-> >
-> > Apparently I hallucinated :)
-> >
-> > >
-> > > Will this strict rejection break CPPC initialization on compliant fir=
-mware
-> > > that provides non-zero integers for other optional capabilities?
-> > > For capability registers not explicitly listed in the switch statemen=
-t
-> > > above, such as GUARANTEED_PERF or TIME_WINDOW, the ACPI 6.5 specifica=
-tion
-> > > explicitly allows platforms to provide fixed non-zero values encoded =
-as
-> > > Integer objects.
-> > >
-> > > When firmware provides a valid non-zero integer for these optional
-> > > registers, this default case enforces that the value must be zero. Si=
-nce
-> > > acpi_cppc_processor_probe() fails and returns -EINVAL when this retur=
-ns
-> > > false, it will completely disable cpufreq and CPPC support for the CP=
-U.
-> > > Should we allow non-zero integer values for these other optional regi=
-sters?
-> > >
-> > >>> GUARANTEED_PERF and TIME_WINDOW: both are Buffer-only Register desc=
-riptors.
-> > >>> Nonzero Integer encodings are invalid and Integer 0 is tolerated be=
-cause
-> > >>> the previous parser allowed it too. I don't know of any platform de=
-scribing
-> > >>> this myself.
-> > >
-> > > Strictly speaking Integer 0 is not allowed, see
-> > >
-> > > https://uefi.org/specs/ACPI/6.6/08_Processor_Configuration_and_Contro=
-l.html#cpc-continuous-performance-control
-> >
-> > I'm happy to reject it too, I was just being careful here because I onl=
-y have
-> > a tiny subset of ACPI platforms to test this on with and it's for -fixe=
-s
->
-> Instead of rejecting it entirely, you may log an FW_BUG message when
-> it is used, to avoid breaking legacy platforms that possibly used it.
+On Thu, Sep 10, 2026, at 18:40, Svyatoslav Ryhel wrote:
+> __ 
+> Hello Arnd! May you please spare AAT2870 from being removed? I have a 
+> device which uses aat2870 (LG Optimus 2X P990 Tegra 2, not upstreamed 
+> yet, but in process as well) and atm I am working on converting this 
+> driver to use OF. Thank you!
 
-Still waiting for an update here and reviews from folks.
+Sure, I have removed this patch from my series now.
 
-If this is the only patch that needs to be updated, please just send
-an update of it alone.
+> P. S. If you are planning to remove more old drivers, please CC me in 
+> since I may be interested in some additional driver upgrades for 
+> devices I own.
+
+Please have a look at
+
+https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=board-remove-7.3
+
+I tried to be careful about figuring out exactly which drivers are
+unused, but I'm sure there are still a few false positive and false
+negative ones in there. I've added the current list of driver files below,
+let me know if you see something that shouldn't be there.
+
+     Arnd
+
+drivers/ata/pata_icside.c
+drivers/ata/pata_pxa.c
+drivers/char/ds1620.c
+drivers/char/hw_random/mxc-rnga.c
+drivers/char/nwbutton.c
+drivers/char/nwbutton.h
+drivers/char/nwflash.c
+drivers/clk/clk-axm5516.c
+drivers/clk/clk-stm32f4.c
+drivers/clk/clk-stm32h7.c
+drivers/clk/imx/clk-imx31.c
+drivers/clk/imx/clk-imxrt1050.c
+drivers/clk/nxp/clk-lpc18xx-ccu.c
+drivers/clk/nxp/clk-lpc18xx-cgu.c
+drivers/clk/nxp/clk-lpc18xx-creg.c
+drivers/clk/ti/clk-2xxx.c
+drivers/clocksource/armv7m_systick.c
+drivers/clocksource/mps2-timer.c
+drivers/cpufreq/sa1110-cpufreq.c
+drivers/dma/lpc18xx-dmamux.c
+drivers/dma/sa11x0-dma.c
+drivers/gpio/gpio-adp5520.c
+drivers/gpio/gpio-htc-egpio.c
+drivers/gpio/gpio-lpc18xx.c
+drivers/gpio/gpio-rc5t583.c
+drivers/gpio/gpio-rdc321x.c
+drivers/gpio/gpio-reg.c
+drivers/gpio/gpio-sa1100.c
+drivers/gpio/gpio-wm8350.c
+drivers/hwmon/ds620.c
+drivers/hwmon/f75375s.c
+drivers/hwmon/max1111.c
+drivers/hwmon/max197.c
+drivers/hwmon/wm8350-hwmon.c
+drivers/i2c/busses/i2c-acorn.c
+drivers/i2c/busses/i2c-axxia.c
+drivers/i2c/busses/i2c-lpc2k.c
+drivers/i2c/busses/i2c-stm32f4.c
+drivers/iio/adc/ad7266.c
+drivers/iio/adc/ad7791.c
+drivers/iio/adc/ad7793.c
+drivers/iio/adc/ad7887.c
+drivers/iio/adc/lp8788_adc.c
+drivers/iio/adc/lpc18xx_adc.c
+drivers/iio/dac/lpc18xx_dac.c
+drivers/iio/frequency/ad9523.c
+drivers/input/joystick/as5011.c
+drivers/input/keyboard/adp5520-keys.c
+drivers/input/keyboard/ipaq-micro-keys.c
+drivers/input/keyboard/jornada720_kbd.c
+drivers/input/keyboard/lm8323.c
+drivers/input/keyboard/lm8333.c
+drivers/input/keyboard/locomokbd.c
+drivers/input/misc/88pm80x_onkey.c
+drivers/input/misc/ad714x-i2c.c
+drivers/input/misc/ad714x-spi.c
+drivers/input/misc/ad714x.c
+drivers/input/misc/ad714x.h
+drivers/input/misc/adxl34x-i2c.c
+drivers/input/misc/adxl34x-spi.c
+drivers/input/misc/adxl34x.c
+drivers/input/misc/adxl34x.h
+drivers/input/misc/bma150.c
+drivers/input/misc/cma3000_d0x.c
+drivers/input/misc/cma3000_d0x.h
+drivers/input/misc/cma3000_d0x_i2c.c
+drivers/input/misc/kxtj9.c
+drivers/input/misc/max8997_haptic.c
+drivers/input/misc/mc13783-pwrbutton.c
+drivers/input/mouse/rpcmouse.c
+drivers/input/serio/rpckbd.c
+drivers/input/serio/sa1111ps2.c
+drivers/input/touchscreen/ad7877.c
+drivers/input/touchscreen/da9034-ts.c
+drivers/input/touchscreen/ipaq-micro-ts.c
+drivers/input/touchscreen/jornada720_ts.c
+drivers/input/touchscreen/mc13783_ts.c
+drivers/input/touchscreen/tps6507x-ts.c
+drivers/irqchip/irq-nvic.c
+drivers/irqchip/irq-sa11x0.c
+drivers/irqchip/irq-stm32-exti.c
+drivers/leds/leds-adp5520.c
+drivers/leds/leds-bd2802.c
+drivers/leds/leds-da903x.c
+drivers/leds/leds-ipaq-micro.c
+drivers/leds/leds-lm3530.c
+drivers/leds/leds-lm3532.c
+drivers/leds/leds-lm355x.c
+drivers/leds/leds-lm3642.c
+drivers/leds/leds-locomo.c
+drivers/leds/leds-lp3944.c
+drivers/leds/leds-lp8788.c
+drivers/leds/leds-wm8350.c
+drivers/media/i2c/ths7303.c
+drivers/media/platform/samsung/s3c-camif/Kconfig
+drivers/media/platform/samsung/s3c-camif/Makefile
+drivers/media/platform/samsung/s3c-camif/camif-capture.c
+drivers/media/platform/samsung/s3c-camif/camif-core.c
+drivers/media/platform/samsung/s3c-camif/camif-core.h
+drivers/media/platform/samsung/s3c-camif/camif-regs.c
+drivers/media/platform/samsung/s3c-camif/camif-regs.h
+drivers/media/platform/st/stm32/dma2d/dma2d-hw.c
+drivers/media/platform/st/stm32/dma2d/dma2d-regs.h
+drivers/media/platform/st/stm32/dma2d/dma2d.c
+drivers/media/platform/st/stm32/dma2d/dma2d.h
+drivers/media/radio/radio-si476x.c
+drivers/mfd/88pm800.c
+drivers/mfd/88pm805.c
+drivers/mfd/88pm80x.c
+drivers/mfd/adp5520.c
+drivers/mfd/da903x.c
+drivers/mfd/ipaq-micro.c
+drivers/mfd/lp8788-irq.c
+drivers/mfd/lp8788.c
+drivers/mfd/mcp-core.c
+drivers/mfd/mcp-sa11x0.c
+drivers/mfd/menelaus.c
+drivers/mfd/rc5t583-irq.c
+drivers/mfd/rc5t583.c
+drivers/mfd/rdc321x-southbridge.c
+drivers/mfd/si476x-cmd.c
+drivers/mfd/si476x-i2c.c
+drivers/mfd/si476x-prop.c
+drivers/mfd/ucb1x00-assabet.c
+drivers/mfd/ucb1x00-core.c
+drivers/mfd/ucb1x00-ts.c
+drivers/mfd/wm8350-core.c
+drivers/mfd/wm8350-gpio.c
+drivers/mfd/wm8350-i2c.c
+drivers/mfd/wm8350-irq.c
+drivers/mfd/wm8350-regmap.c
+drivers/mfd/wm8400-core.c
+drivers/misc/bh1770glc.c
+drivers/mtd/maps/dc21285.c
+drivers/mtd/maps/pxa2xx-flash.c
+drivers/mtd/maps/sa1100-flash.c
+drivers/mtd/nand/raw/sharpsl.c
+drivers/mtd/parsers/sharpslpart.c
+drivers/mtd/spi-nor/controllers/Kconfig
+drivers/mtd/spi-nor/controllers/Makefile
+drivers/mtd/spi-nor/controllers/hisi-sfc.c
+drivers/mtd/spi-nor/controllers/nxp-spifi.c
+drivers/net/can/bxcan.c
+drivers/net/ethernet/8390/etherh.c
+drivers/net/ethernet/i825xx/ether1.c
+drivers/net/ethernet/i825xx/ether1.h
+drivers/net/ethernet/lantiq_etop.c
+drivers/net/ethernet/samsung/Kconfig
+drivers/net/ethernet/samsung/Makefile
+drivers/net/ethernet/samsung/sxgbe/Makefile
+drivers/net/ethernet/samsung/sxgbe/sxgbe_common.h
+drivers/net/ethernet/samsung/sxgbe/sxgbe_core.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_desc.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_desc.h
+drivers/net/ethernet/samsung/sxgbe/sxgbe_dma.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_dma.h
+drivers/net/ethernet/samsung/sxgbe/sxgbe_ethtool.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_main.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_mdio.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_mtl.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_mtl.h
+drivers/net/ethernet/samsung/sxgbe/sxgbe_platform.c
+drivers/net/ethernet/samsung/sxgbe/sxgbe_reg.h
+drivers/net/ethernet/seeq/ether3.c
+drivers/net/ethernet/seeq/ether3.h
+drivers/net/ethernet/stmicro/stmmac/dwmac-lpc18xx.c
+drivers/net/wireless/marvell/libertas/if_spi.c
+drivers/net/wireless/marvell/libertas/if_spi.h
+drivers/net/wireless/st/Kconfig
+drivers/net/wireless/st/Makefile
+drivers/net/wireless/st/cw1200/Kconfig
+drivers/net/wireless/st/cw1200/Makefile
+drivers/net/wireless/st/cw1200/bh.c
+drivers/net/wireless/st/cw1200/bh.h
+drivers/net/wireless/st/cw1200/cw1200.h
+drivers/net/wireless/st/cw1200/cw1200_sdio.c
+drivers/net/wireless/st/cw1200/cw1200_spi.c
+drivers/net/wireless/st/cw1200/debug.c
+drivers/net/wireless/st/cw1200/debug.h
+drivers/net/wireless/st/cw1200/fwio.c
+drivers/net/wireless/st/cw1200/fwio.h
+drivers/net/wireless/st/cw1200/hwbus.h
+drivers/net/wireless/st/cw1200/hwio.c
+drivers/net/wireless/st/cw1200/hwio.h
+drivers/net/wireless/st/cw1200/main.c
+drivers/net/wireless/st/cw1200/pm.c
+drivers/net/wireless/st/cw1200/pm.h
+drivers/net/wireless/st/cw1200/queue.c
+drivers/net/wireless/st/cw1200/queue.h
+drivers/net/wireless/st/cw1200/scan.c
+drivers/net/wireless/st/cw1200/scan.h
+drivers/net/wireless/st/cw1200/sta.c
+drivers/net/wireless/st/cw1200/sta.h
+drivers/net/wireless/st/cw1200/txrx.c
+drivers/net/wireless/st/cw1200/txrx.h
+drivers/net/wireless/st/cw1200/wsm.c
+drivers/net/wireless/st/cw1200/wsm.h
+drivers/nvmem/lpc18xx_eeprom.c
+drivers/nvmem/lpc18xx_otp.c
+drivers/pcmcia/max1600.c
+drivers/pcmcia/max1600.h
+drivers/pcmcia/pxa2xx_base.c
+drivers/pcmcia/pxa2xx_base.h
+drivers/pcmcia/pxa2xx_sharpsl.c
+drivers/pcmcia/sa1100_generic.c
+drivers/pcmcia/sa1100_generic.h
+drivers/pcmcia/sa1100_h3600.c
+drivers/pcmcia/sa1111_generic.c
+drivers/pcmcia/sa1111_generic.h
+drivers/pcmcia/sa1111_jornada720.c
+drivers/pcmcia/sa1111_neponset.c
+drivers/pcmcia/sa11xx_base.c
+drivers/pcmcia/sa11xx_base.h
+drivers/pcmcia/soc_common.c
+drivers/pcmcia/soc_common.h
+drivers/phy/phy-lpc18xx-usb-otg.c
+drivers/pinctrl/freescale/pinctrl-imxrt1050.c
+drivers/pinctrl/freescale/pinctrl-imxrt1170.c
+drivers/pinctrl/pinctrl-lpc18xx.c
+drivers/pinctrl/stm32/pinctrl-stm32f429.c
+drivers/pinctrl/stm32/pinctrl-stm32f469.c
+drivers/pinctrl/stm32/pinctrl-stm32f746.c
+drivers/pinctrl/stm32/pinctrl-stm32f769.c
+drivers/pinctrl/stm32/pinctrl-stm32h743.c
+drivers/power/reset/axxia-reset.c
+drivers/power/supply/collie_battery.c
+drivers/power/supply/da9030_battery.c
+drivers/power/supply/ipaq_micro_battery.c
+drivers/power/supply/lp8788-charger.c
+drivers/power/supply/twl4030_madc_battery.c
+drivers/power/supply/wm8350_power.c
+drivers/pwm/pwm-lpc18xx-sct.c
+drivers/regulator/88pm800-regulator.c
+drivers/regulator/da903x-regulator.c
+drivers/regulator/lp3971.c
+drivers/regulator/lp3972.c
+drivers/regulator/lp8788-buck.c
+drivers/regulator/lp8788-ldo.c
+drivers/regulator/max8649.c
+drivers/regulator/rc5t583-regulator.c
+drivers/regulator/wm8350-regulator.c
+drivers/regulator/wm8400-regulator.c
+drivers/reset/reset-lpc18xx.c
+drivers/rtc/rtc-88pm80x.c
+drivers/rtc/rtc-lp8788.c
+drivers/rtc/rtc-lpc24xx.c
+drivers/rtc/rtc-rc5t583.c
+drivers/rtc/rtc-wm8350.c
+drivers/scsi/arm/Kconfig
+drivers/scsi/arm/Makefile
+drivers/scsi/arm/acornscsi-io.S
+drivers/scsi/arm/acornscsi.c
+drivers/scsi/arm/acornscsi.h
+drivers/scsi/arm/arm_scsi.h
+drivers/scsi/arm/arxescsi.c
+drivers/scsi/arm/cumana_1.c
+drivers/scsi/arm/cumana_2.c
+drivers/scsi/arm/eesox.c
+drivers/scsi/arm/fas216.c
+drivers/scsi/arm/fas216.h
+drivers/scsi/arm/msgqueue.c
+drivers/scsi/arm/msgqueue.h
+drivers/scsi/arm/oak.c
+drivers/scsi/arm/powertec.c
+drivers/scsi/arm/queue.c
+drivers/scsi/arm/queue.h
+drivers/spi/spi-tle62x0.c
+drivers/tty/serial/21285.c
+drivers/tty/serial/8250/8250_acorn.c
+drivers/tty/serial/8250/8250_lpc18xx.c
+drivers/tty/serial/mps2-uart.c
+drivers/tty/serial/sa1100.c
+drivers/usb/host/ohci-sa1111.c
+drivers/usb/host/sl811-hcd.c
+drivers/usb/host/sl811.h
+drivers/usb/host/sl811_cs.c
+drivers/usb/musb/tusb6010.c
+drivers/usb/musb/tusb6010.h
+drivers/usb/musb/tusb6010_omap.c
+drivers/usb/phy/phy-mv-usb.h
+drivers/video/backlight/adp5520_bl.c
+drivers/video/backlight/adp8860_bl.c
+drivers/video/backlight/adp8870_bl.c
+drivers/video/backlight/ams369fg06.c
+drivers/video/backlight/bd6107.c
+drivers/video/backlight/corgi_lcd.c
+drivers/video/backlight/da903x_bl.c
+drivers/video/backlight/ep93xx_bl.c
+drivers/video/backlight/ipaq_micro_bl.c
+drivers/video/backlight/jornada720_bl.c
+drivers/video/backlight/jornada720_lcd.c
+drivers/video/backlight/lm3639_bl.c
+drivers/video/backlight/lms501kf03.c
+drivers/video/backlight/locomolcd.c
+drivers/video/backlight/lp8788_bl.c
+drivers/video/backlight/tdo24m.c
+drivers/video/fbdev/acornfb.c
+drivers/video/fbdev/acornfb.h
+drivers/video/fbdev/arcfb.c
+drivers/video/fbdev/broadsheetfb.c
+drivers/video/fbdev/core/fb_notify.c
+drivers/video/fbdev/ep93xx-fb.c
+drivers/video/fbdev/hecubafb.c
+drivers/video/fbdev/metronomefb.c
+drivers/video/fbdev/mmp/Kconfig
+drivers/video/fbdev/mmp/Makefile
+drivers/video/fbdev/mmp/core.c
+drivers/video/fbdev/mmp/fb/Kconfig
+drivers/video/fbdev/mmp/fb/Makefile
+drivers/video/fbdev/mmp/fb/mmpfb.c
+drivers/video/fbdev/mmp/fb/mmpfb.h
+drivers/video/fbdev/mmp/hw/Kconfig
+drivers/video/fbdev/mmp/hw/Makefile
+drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+drivers/video/fbdev/mmp/hw/mmp_ctrl.h
+drivers/video/fbdev/mmp/hw/mmp_spi.c
+drivers/video/fbdev/mmp/panel/Kconfig
+drivers/video/fbdev/mmp/panel/Makefile
+drivers/video/fbdev/mmp/panel/tpo_tj032md01bw.c
+drivers/video/fbdev/n411.c
+drivers/video/fbdev/pxa168fb.c
+drivers/video/fbdev/pxa168fb.h
+drivers/video/fbdev/s1d13xxxfb.c
+drivers/video/fbdev/sa1100fb.c
+drivers/video/fbdev/sa1100fb.h
+drivers/watchdog/lpc18xx_wdt.c
+drivers/watchdog/rdc321x_wdt.c
+drivers/watchdog/wdt285.c
+drivers/watchdog/wdt977.c
+drivers/watchdog/wm8350_wdt.c
+sound/soc/codecs/si476x.c
+sound/soc/codecs/wm8350.c
+sound/soc/codecs/wm8350.h
+sound/soc/codecs/wm8400.c
+sound/soc/codecs/wm8400.h
+sound/soc/pxa/pxa2xx-i2s.c
+sound/soc/pxa/pxa2xx-i2s.h
+sound/soc/pxa/spitz.c
+sound/soc/ti/n810.c
+sound/spi/Kconfig
+sound/spi/Makefile
+sound/spi/at73c213.c
+sound/spi/at73c213.h
