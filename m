@@ -1,39 +1,39 @@
 Received: from ixit.cz (ixit.cz [84.42.129.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABC57188596;
-	Thu, 10 Sep 2026 00:08:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDAF2196C7C;
+	Thu, 10 Sep 2026 00:09:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788998899; cv=none; b=dMBQwCy98VyYVwaRQR7ru7J4jnQ9RtKyCidiuL+1/0h5DkLH8nvyqC33q9IRF9o6+eHUUdNGo95Rt6qRmQT8jP5A8+2G2N5FpBSnUbMdFQu2nCFyy3yxMzBhbzSf3Dk9N2rfz5dsrX3wz6sR7UlUgpBJ9DlBBXQFn+MW7JvFwHM=
+	t=1788998973; cv=none; b=n+kut3/SHM4Wiw1A6HD0viUK2eaBKjaaheVwZHMKhJ0efr87LVCWiSWQ0JI2cSwnyVtyBcMHTydEM7wHC3pwxvh+QaRhrc2DfkZ6B6cjnVuIqBD8y5mg0SI+rB187Gr7EpsbmENaBT9r3PYo478tRuM8EVfUlEcY6qO7CKzOOc8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788998899; c=relaxed/simple;
-	bh=VKHfl7s8/Cox3DT4BMgmSIEDDvLeE1jFuJEKP/DaXLs=;
+	s=arc-20240116; t=1788998973; c=relaxed/simple;
+	bh=MJ8O/8mlEo1PcRXQ9dntuNgNgI7uKtXeWtpIBTBoGgI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VA5hhe4OMjeSgWRyTGvYHHImiDymt/eXb/dBkYUGH+NuB13EWOB+EstUsDx2Wr0w9B1VEx1mk3ySOJ+g7fbyVRx8Bb9Yuot/zcCRZf+jmFn2DaBqINmtooJBiqjm+Xov+paaB4hTHGFVxO/cvMV5pZGUMgCqZQNxbmWa4oKROGc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=v/QIkzgR; arc=none smtp.client-ip=84.42.129.46
+	 In-Reply-To:Content-Type; b=N0kMtpqwCtpLZ7YrW+W/laxCOt9xOqdqdYjlR7mhWvlZAOqXD5Zpd+y/w7mbS2r4FTlbSdtL3fpgIo6yPvCzNlDGrFO01DZKi1vImN5i2agf+ZFdoWrDii64jPzjyMEfLg7x93Ifvcymepm4n38/swl+mS0E1cT7L2aaZiho5fA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=EGYIRpdx; arc=none smtp.client-ip=84.42.129.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="v/QIkzgR"
+	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="EGYIRpdx"
 Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by ixit.cz (Postfix) with ESMTPSA id 49304534027F;
-	Thu, 10 Sep 2026 02:08:09 +0200 (CEST)
+	by ixit.cz (Postfix) with ESMTPSA id C46A553400B2;
+	Thu, 10 Sep 2026 02:09:27 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
-	t=1788998889;
+	t=1788998967;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=NH0b+Egwzh/o9kmbIvhwo/o0FNy6nLtziohl7w27gtU=;
-	b=v/QIkzgRgBYR7f8UdAuRyBHRShvKhrzRVZlJBZwu3lcz2kmLElutx1onSproVxzO48cgVQ
-	BM7mv+YsBVcZzzC3IzC9Ix1mL+8Sy6p7Yj25dEXtqk2948oLUze0GO9qdZnuOAnUAuKKK+
-	oos4AU/px+IXqGYuT6aL4ofahogcjZ4=
-Message-ID: <195dd34f-63dc-4453-b158-487a408b711e@ixit.cz>
-Date: Thu, 10 Sep 2026 02:08:08 +0200
+	bh=OPN1TafMfqYaUTzDsU5JbwTLbIBgnQViJQ/wMQ6fh0s=;
+	b=EGYIRpdxcnZAqdMTh1T3Jew8CbZfsvqCxBbnEjq/EL5BZ3LibcQW0pZ2hrVD895hL0pvXh
+	4xRk7jRw9/9l+XvhU+RKLLa8CkYMjAIH2YsZSI5VU4Fgqi2jzEmnmiBzFMiDzvwt8sLIN2
+	908C6K8+44W8j6NRQ1MVP2o8jRuUrSg=
+Message-ID: <c29fdce5-0710-430a-90b9-e08d5b6c6780@ixit.cz>
+Date: Thu, 10 Sep 2026 02:09:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,8 +41,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/3] bq27xxx: support interchangeable OnePlus 6/6T fuel
- gauges
+Subject: Re: [PATCH v3 2/3] power: supply: bq27xxx: autodetect bq27411 and
+ bq27541
 To: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>,
  Bjorn Andersson <andersson@kernel.org>,
  Konrad Dybcio <konradybcio@kernel.org>, Sebastian Reichel <sre@kernel.org>
@@ -53,6 +53,7 @@ Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20260829205258.26955-1-rinat.muhamedgaliev@gmail.com>
  <20260909234744.1177153-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-3-rinat.muhamedgaliev@gmail.com>
 Content-Language: en-US, cs-CZ
 From: David Heidelberg <david@ixit.cz>
 Autocrypt: addr=david@ixit.cz; keydata=
@@ -98,52 +99,105 @@ Autocrypt: addr=david@ixit.cz; keydata=
  zRKcgRumz2Tc1ouHj6qINlzEe3a5ldctIn/dvR1l2Ko7GBTG+VGp9U5NOAEkGpxHG9yg6eeY
  fFYnMme51H/HKiyUlFiE3yd5LSmv8Dhbf+vsI4x6BOOOq4Iyop/Exavj1owGxW0hpdUGcCl1
  ovlwVPO/6l/XLAmSGwdnGqok5eGZQzSst0tj9RC9O0dXO1TZocOsf0tJ8dR2egX4kxM=
-In-Reply-To: <20260909234744.1177153-1-rinat.muhamedgaliev@gmail.com>
+In-Reply-To: <20260909234744.1177153-3-rinat.muhamedgaliev@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 On 10/09/2026 01:47, Rinat Muhamedgaliev wrote:
-> OnePlus 6 and OnePlus 6T battery packs may contain either a TI bq27411
-> or bq27541 fuel gauge. The DTS compatible used until now selects only
-> the bq27411 register map, while v2 proposed selecting bq27541 for every
-> device. Neither static choice supports both original and replacement
-> battery packs.
+> Some replaceable battery packs used by OnePlus 6 and OnePlus 6T
+> phones contain a bq27411, while others contain a bq27541. These
+> devices require different register maps.
 > 
-> Add a generic ti,bq27xxx compatible and have the I2C driver issue the
-> DeviceType control command at probe time. It selects bq27411 for
-> DeviceType 0x0421 and bq27541 for 0x0541.
+> Add support for the generic ti,bq27xxx compatible. At probe time,
+> issue the DeviceType control command and select the bq27411 or bq27541
+> register map from the returned value.
 > 
-> Tested on OnePlus 6T (fajita) with DeviceType 0x0541. After installing
-> the kernel and rebooting, the fuel gauge reported 4.360 V, 100% state
-> of charge, 27.8 C, and Full status.
+> Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+> ---
+>   drivers/power/supply/bq27xxx_battery_i2c.c | 39 ++++++++++++++++++++++
+>   1 file changed, 39 insertions(+)
 > 
-> Changes in v3:
-> - Replace the static bq27541 DTS change from v2 with runtime detection
->    for both bq27411 and bq27541.
-> - Add the generic compatible to the binding and I2C driver.
-> - Split the change into binding, driver, and DTS patches.
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index 868e95f..718f8e8 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -16,6 +16,11 @@
+>   
+>   static DEFINE_IDA(battery_id);
+>   
+> +#define BQ27XXX_REG_CTRL		0x00
+> +#define BQ27XXX_DEVICE_TYPE		0x0001
+> +#define BQ27411_DEVICE_TYPE		0x0421
+> +#define BQ27541_DEVICE_TYPE		0x0541
+> +
+>   static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+>   {
+>   	struct bq27xxx_device_info *di = data;
+> @@ -153,6 +158,32 @@ static void bq27xxx_battery_i2c_devm_ida_free(void *data)
+>   	ida_free(&battery_id, num);
+>   }
+>   
+> +static int bq27xxx_battery_i2c_detect_chip(struct bq27xxx_device_info *di)
+> +{
+> +	int ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_DEVICE_TYPE,
+> +			    false);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = di->bus.read(di, BQ27XXX_REG_CTRL, false);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	switch (ret) {
+> +	case BQ27411_DEVICE_TYPE:
+> +		di->chip = BQ27411;
+> +		return 0;
+> +	case BQ27541_DEVICE_TYPE:
+> +		di->chip = BQ27541;
+> +		return 0;
+> +	default:
+> +		dev_err(di->dev, "unsupported device type 0x%04x\n", ret);
+> +		return -ENODEV;
+> +	}
+> +}
+> +
+>   static int bq27xxx_battery_i2c_probe(struct i2c_client *client)
+>   {
+>   	const struct i2c_device_id *id = i2c_client_get_device_id(client);
+> @@ -188,6 +219,12 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client)
+>   	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+>   	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+>   
+> +	if (!di->chip) {
+> +		ret = bq27xxx_battery_i2c_detect_chip(di);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+>   	ret = bq27xxx_battery_setup(di);
+>   	if (ret)
+>   		return ret;
+> @@ -225,6 +262,7 @@ static void bq27xxx_battery_i2c_remove(struct i2c_client *client)
+>   }
+>   
+>   static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+> +	{ "bq27xxx", 0 },
+>   	{ "bq27200", BQ27000 },
+>   	{ "bq27210", BQ27010 },
+>   	{ "bq27500", BQ2750X },
+> @@ -262,6 +300,7 @@ MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>   
+>   #ifdef CONFIG_OF
+>   static const struct of_device_id bq27xxx_battery_i2c_of_match_table[] = {
+> +	{ .compatible = "ti,bq27xxx" },
 
-Hello Rinat!
+Maybe some comment suggesting to use this compatible when autodetection is needed?
 
-Happy to see this series.
-
-Did you managed to get someone with the original bq27411 to test it?
-Eventually we hang at on https://matrix.to/#/#sdm845:ixit.cz
-
-Thanks
 David
 
-> 
-> Rinat Muhamedgaliev (3):
->    dt-bindings: power: supply: bq27xxx: add generic compatible
->    power: supply: bq27xxx: autodetect bq27411 and bq27541
->    arm64: dts: qcom: sdm845-oneplus: use generic fuel gauge compatible
-> 
->   .../bindings/power/supply/bq27xxx.yaml        |  1 +
->   .../boot/dts/qcom/sdm845-oneplus-common.dtsi  |  4 +-
->   .../dts/qcom/sdm845-oneplus-enchilada.dts     |  2 +-
->   .../boot/dts/qcom/sdm845-oneplus-fajita.dts   |  2 +-
->   drivers/power/supply/bq27xxx_battery_i2c.c    | 39 +++++++++++++++++++
->   5 files changed, 44 insertions(+), 4 deletions(-)
-> 
+>   	{ .compatible = "ti,bq27200" },
+>   	{ .compatible = "ti,bq27210" },
+>   	{ .compatible = "ti,bq27500" },
 
