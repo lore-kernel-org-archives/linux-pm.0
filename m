@@ -1,104 +1,139 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB32330DEDC
-	for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2026 06:35:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2176C3D3339;
+	Thu, 10 Sep 2026 06:38:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789022152; cv=none; b=Z/1XZnOFPGJcs6hcPJvd+H3+CUFsnMw21pT6tQRsTDahmCusQ+T855/cp62g2c+PLoE9s3lc1+LF78WpVpxkuczEeWbZ74WCXyueLVNf+iZtH5K2xN9jtVF+M/QEQ2vQRW9Gk6sRIbqUMDP5u8Fg/t49tpY10j3p9CQ7vfROUVE=
+	t=1789022337; cv=none; b=JrIzsxQqnXbHoP5b45yvQsrWTGOWE4prO5aKKtmSjOAulzGQmVpV5Zl5LzU2cwrWVUbdkTFHPbVBV13cfUjJ370PqliEQL9bzU2/pspzfRkKKxE5u91AZ2ftg+iZim9vXr0yc5KUhUm6IS80fbuEsi8P6j+Q+FalJwj3PYZi0j4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789022152; c=relaxed/simple;
-	bh=EV9CYgvynfqPPxDLEZ5SYU734gHfgS64XMZag01l2eM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BVkTyjxHYFn35kzfLGuAo8xmwmqat9ymEwnBS4Wgd/FxHuXK5aBlARGgSt6h7QEaMLbu/QifVnd0E86f4hyG4sCleXvirJIknBLkobcRSTk6uCjQUdAXBx0IKY0gV4VFae9d4PQGOtQ41H/LNXUfJpV3ASPPjkvE/ZK11qcVOXA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fbImkt6l; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789022337; c=relaxed/simple;
+	bh=2TU5UtSqlTK5Fx9D95GxY0TfdDPbOgZck8finK/MKtM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=kHEetB6Xz7uYV7BVKZTCJ29hoinqQrpS+g9jBSxj+u2JeArTlVyox7FqGlVM/FjYvl/ZDZrzIzKx5TowKkeT4tODPZn8j11lzOBvYGWfzaU1dpPY/DrFkqzAGpC2hJZYv9zDMTuyTiSxl6gp9nM7eLmSOK5WuwqWY56FGXzJI9Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BFsf7P2z; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fbImkt6l"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4957eefd361so52510475e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2026 23:35:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789022141; x=1789626941; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=47UBI/niL6S9mV0mk4dleceEw56xBW1KNX8OcFOEg40=;
-        b=fbImkt6lAxS4ugKTgJnYeffqnlC/tKUlYreBwIaoxBf+56sOZrFAf3ryvDO/fzTI2L
-         /f1PTqzXN57NWwMpqygqUaPi4Za0RI/IPnSpfVq7RtxYDAbVc2KRZw8QQr+4i9f4MmUy
-         XdUzkraD1GQ8O9MPQ0ENTon5wN0b9NEzUBmpmc8lXk93e0ws2+FVg6+UJrjBLuR5dTp1
-         AbnQXzJHNlhiQ1DVZGOv7jBIddPbSCzk5flsyrmBLMZSPOLp2AHehpXlc3pvoGEl7wNk
-         rgQzGu73XsY0Slp0BsfWF0ftSvPzcYWq86j5bpMO+AYy6UcOkbi9Dae2WjVY2Vv/V1+x
-         w4fA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789022141; x=1789626941;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=47UBI/niL6S9mV0mk4dleceEw56xBW1KNX8OcFOEg40=;
-        b=Oqztepy7N/K4OZ1+EDU2rO4417Ui6LWU+p0vkSGOehCUNdV7vKpxjr8lES8VswmLm0
-         JD/HZHak4YaApBVEyeUMdHnKlvA1N1ZDvantYz9/APFcOqZIQtFwiukEscioHc//pGs5
-         4rI5Z6y4OEavf+7k+DdJ8JQCEYhYpjzrgx27cwEmq0WanAv167unh0OwYhbBBxv6cCCv
-         Y0JRJIMZK0MJ/RCIBEB8ouuDnGpjh5A406vFMrP8Fg1z2mXGbnC/eYLo0/e/38q4D7Xg
-         8LuYBWf6eD2Twwrs4Yh4bxjJB8XpzUA2ms/4uKxrt2Ev6J/HWewMbIMF45kljJJOgCzP
-         R1KA==
-X-Forwarded-Encrypted: i=1; AKwUvByCfgcu51ZtlPq68q0l77AdgqTpWhayZAmfnE56uu1XRfRCsJ7pUGr+ONjDovhGTBElDCpXaaJBxw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kwUbEw9pfWXT1psmN/lMvsMdcrW6MhGz7OdVf+BOMG03VkCVuL
-	zbFcI6rwfp8hBveWA93kDbH9XoW14QOHN+u3tXn6wN+a8z1dBaIMLGyp
-X-Gm-Gg: AYBFou0RCuPCEChjn8CN6NqH/19D+ADfZFzpvN3G7SeP+lwzcjO5YU53bpAQwnxiNfs
-	IvGGNtdltk+WL3XipzIw8ed+OJrOYkUcFu++0bkpAvGj+RtWwuxcRhNCb9ksXPebmxr6OWy4pvL
-	AB8x/u/0k4NYM/wu+U5Iq0cX3wZh3NKYz5W9EAZ9UCzxN/DXy5zOQd4HKagCaASCYYkYpKZsi65
-	ixg0n0OWqgNWY7OhALM/nIq4zZDgjvWeRFhy1E9PvP0O0lcVOZixw5UBYcSQRvpWItqcW6hGhy2
-	sMDI5UPrk8G9P//Mec+QjgkP33SZ8a3jVhsUXDDHIkBStHr9VgrCNo9z3UBX8C+P5ZxeDt5JGvl
-	FPIj4dO0gjtpeIOUhy5bbfYVIy90e4on1nDIjYAXsHSf6QxCd5tlHx9HeDYDMML1cIY4mAbGceq
-	eYK1TDsGLaaPRtiGst8XtEsA1PTo3dMIMl7Khg0p5BIyNCefYnO2Un2NG3460Di7k+XragSsp27
-	uDifhrMNWIh7blAGDsS+AWzRY2xolmAXpJ3+bkYRwA9LA2Sg7PM4yk=
-X-Received: by 2002:a05:600c:81c8:b0:49d:1f10:8b9f with SMTP id 5b1f17b1804b1-49d1f109802mr89066405e9.7.1789022141345;
-        Wed, 09 Sep 2026 23:35:41 -0700 (PDT)
-Received: from localhost.localdomain (mob-31-26-103-238.net.vodafone.it. [31.26.103.238])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49d20fce7a7sm241531985e9.4.2026.09.09.23.35.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 23:35:40 -0700 (PDT)
-From: Oleg Keri <okerixx@gmail.com>
-To: jonathan.cameron@oss.qualcomm.com
-Cc: sibi.sankar@oss.qualcomm.com,
-	catalin.marinas@arm.com,
-	will@kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] arm64: topology: fix arch_freq_get_on_cpu() overflow above 4.19 GHz
-Date: Thu, 10 Sep 2026 08:35:30 +0200
-Message-ID: <178902213027.4725.14870667006708702053@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260909152014.000055d8@oss.qualcomm.com>
-References: <20260909152014.000055d8@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BFsf7P2z"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 91F01C2BCFC;
+	Thu, 10 Sep 2026 06:38:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1789022336;
+	bh=2TU5UtSqlTK5Fx9D95GxY0TfdDPbOgZck8finK/MKtM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=BFsf7P2zElLdbO5Q0ymkbWVfDBWZDNXAgIrMIRK7VgkT45En02HXgiunXNP/8/liU
+	 K0ZsJw+yQ9hTTs6Rczdyo5vBDeUfi09GJubqI89hesR7U/9nAQld+IBDuBktxlhB6f
+	 UBy82UkmbU2S+CVhQFFUpnescSUFVqvTlLhWbwTqg1UGNY7elBr6ix2V+rjiiah6Vv
+	 /5D/zXdb0ag5JEbqzW6Tmvmj7YxkHNxfxNnISxtaYwyuPfpf1swlMLlbVHaUYSttMq
+	 J6L0kHq0n5E3BcJc6pL9WSwqec+ESpyl67np9ZkcpL6j+X98YCeI3Y5JMQe3bOW6pl
+	 In3Fm/sn88A+g==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DFBAC79FB7;
+	Thu, 10 Sep 2026 06:38:56 +0000 (UTC)
+From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
+Date: Thu, 10 Sep 2026 06:38:52 +0000
+Subject: [PATCH v5 1/2] dt-bindings: thermal: amlogic: Add A9 thermal
+ bindings
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260910-a9-thermal-v5-1-892d798723e1@amlogic.com>
+References: <20260910-a9-thermal-v5-0-892d798723e1@amlogic.com>
+In-Reply-To: <20260910-a9-thermal-v5-0-892d798723e1@amlogic.com>
+To: Guillaume La Roque <glaroque@baylibre.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Xianwei Zhao <xianwei.zhao@amlogic.com>, 
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789022333; l=1701;
+ i=xianwei.zhao@amlogic.com; s=20251216; h=from:subject:message-id;
+ bh=z03XxmpaVvRhkUiS0uq3ppP3WR/hzF6qXYwRuBxcXJE=;
+ b=e5xlU76hScLnEWkvmwjg2BCWQHDq5iPnOnS9y+eaQqxdcGEpopL6reLgsKb3f/49yx6JkQyuI
+ XwTcKScieLXC6weiHMdMNl4dIEW4HOEIJMy6NPXF7rCPMdzsP7AYx+V
+X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
+ pk=dWwxtWCxC6FHRurOmxEtr34SuBYU+WJowV/ZmRJ7H+k=
+X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20251216 with
+ auth_id=578
+X-Original-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+Reply-To: xianwei.zhao@amlogic.com
 
-On Wed, 9 Sep 2026 15:20:14 -0700
-Jonathan Cameron <jonathan.cameron@oss.qualcomm.com> wrote:
+From: Xianwei Zhao <xianwei.zhao@amlogic.com>
 
-> > Suggested-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>  
-> You don't add that for a review comment unless it results in a whole new patch.
+Document the thermal controller compatibles for the Amlogic A9 SoC.
 
-Understood, and sorry for the misattribution - dropped in v3, which is
-otherwise identical to v2:
+Describe the required "core" and "pclk" clocks, and update the schema
+constraints for A9-specific thermal controllers.
 
-  https://lore.kernel.org/all/20260910063440.4677-1-okerixx@gmail.com/
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
+---
+ .../bindings/thermal/amlogic,thermal.yaml          | 27 +++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
 
-> +CC Sibi who is a whole lot more familiar with Glymur than I am!
+diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+index 8cfa44dcda58..1b02404d67d5 100644
+--- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+@@ -23,6 +23,7 @@ properties:
+           - const: amlogic,g12a-thermal
+       - enum:
+           - amlogic,a1-cpu-thermal
++          - amlogic,a9-thermal
+           - amlogic,t7-thermal
+ 
+   reg:
+@@ -32,7 +33,13 @@ properties:
+     maxItems: 1
+ 
+   clocks:
+-    maxItems: 1
++    minItems: 1
++    maxItems: 2
++
++  clock-names:
++    items:
++      - const: core
++      - const: pclk
+ 
+   power-domains:
+     maxItems: 1
+@@ -73,6 +80,24 @@ allOf:
+       required:
+         - amlogic,secure-monitor
+ 
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - amlogic,a9-thermal
++    then:
++      properties:
++        clocks:
++          minItems: 2
++      required:
++        - clock-names
++    else:
++      properties:
++        clocks:
++          maxItems: 1
++        clock-names: false
++
+ unevaluatedProperties: false
+ 
+ examples:
 
-Thanks. For the record, the numbers in the cover letter were measured on
-a Lenovo Yoga Slim 7x Gen 11 (Glymur, 4032000 kHz sustained / 4723200 kHz
-boost); I am happy to rerun anything Sibi would like to see.
+-- 
+2.52.0
 
-Thanks,
-Oleg
+
