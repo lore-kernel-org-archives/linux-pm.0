@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A611485509;
-	Fri, 11 Sep 2026 13:08:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0656147206E;
+	Fri, 11 Sep 2026 13:08:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789132122; cv=none; b=cIgy+J3EUpmzfezY2DPszPTto5+IX1vesA1BkUwwFG+ilCuUdixjJXCI8ahGZHH4+7EM5qEcy1BU2TtYLWH9r8Nwb0o65La+jLfMM3TxxVTGKxl93HdxebkbYwxASDJ9q5SxBIGey8MbX2NJcihsISTJjkCyhHjKQMrlamZiAU0=
+	t=1789132127; cv=none; b=IB9kW4u+NycsHUZg7MoE4RMidPmWvrz6j7UFFj56Myc1hyGHGEr04niQ5EGDt4jgYc8mCeki892O5uELVj9VyScxWYh4TYhIn3vt29RWqTZMczDPR7xYcdS+wPKN35cXyhsNDnNcxkpfj/yM/6zoMyMXaRJmB7ZpqKtsqDTx/ME=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789132122; c=relaxed/simple;
-	bh=LDL58B9NStBjNO6R4M6WLYK2gGCJYLfcGRYXGFFimT8=;
+	s=arc-20240116; t=1789132127; c=relaxed/simple;
+	bh=dJr1RL7oUCJfTVozFYphNU7PJ2WUfEj4pYlTRt2xqcA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Ny8rcwqzhFhWg+cJQQQTiOsH7lOU3i6poYcQErnb++Yu/YhDSAmvUar3eqqGo5VbYskr+QN7wDitjgpNKMILFV6j15Bq0q7Tv8DJLwu1X2NbrWu7tApThirsIdDrKJCYKgad7DAa8HIQhebn1Z8jbWTkDaPCQimR1Nfc/cWOCpo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DOG4Exi0; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=DgeFxXR06I9bE2VniaNxkUbTIBib40VV2NlSAhda2GAWAluIVIvhBb5Cl6+uN/Hd9KQpZ3CIMF8TZV/JVVUkcLklh4uhE4IyhgkIPO4cDiJiuDZjNTe1Y33MUBTtw5TrgjdMS5tHWyvFRBcKihp+Wzq9EuypEzWhFXxdWxqNgPI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TyqZmQkg; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DOG4Exi0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44B5B1F000FF;
-	Fri, 11 Sep 2026 13:08:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TyqZmQkg"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E8811F000FF;
+	Fri, 11 Sep 2026 13:08:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789132121;
-	bh=8ble9AsLq5bV/ZzRQf8hGkT8SzclCogx1X1Bp3471pc=;
+	s=k20260515; t=1789132125;
+	bh=przzX8XQ0Pwraq22n34EHyVoNki1kvlkkZzz/xXROKQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=DOG4Exi0hIznasKfP/KCvGSU+QPkopPXA3SgsHr9Acru1QRNGmPhuOroMoB5MtsDv
-	 75e33ySuu30bu7hFhbVl7WTXOksbEudVAemMad/l9l6KJwCOvbs0XAXvc3czsH6Jui
-	 RlCUyVnF0DzpHspoqa10cPsMeCXms2rhM2g3IxXQ5F49Rq5oNe6I9dnzdEFT6tRYqM
-	 10mzrj7QgRMFGVilOb0Ei/Svc8xoAHL9z/u7okltRa6aUOhkOIvsfi+6rJU7D1VKzJ
-	 GQ7OXvjhxHQ0VKJUt/CL9Vb0qH7KBhekfv7tQwk1zWj6J7B736M4A0YxgVCj0iK2kz
-	 Bleb0GZIALMLQ==
+	b=TyqZmQkgCI+04z6+cX4swkXsmNjdPmQCob7unQQFNUrjQCi2kTbYZQqqtAFHxkc56
+	 TH0G+gVlCfcMwKIvz4lX4OPOcD/LREa3T8xtuIfWEf7tFYo5WxqfVpnGuqMjRjawO8
+	 fXq84TredrOE280hjF803AAuHWVs2neZQdikJF7LXKon9zt3LgsP6uc2j0EWQ2t0ls
+	 1rugveHFpRlf957JDzZ+1Lj47jDE7q4lfC0kiMtMFTdhP/AerG+w3SRGXW+mSbNRW4
+	 NBO3Ld0Omk7gdHL9TlvSx5EH5mwLMX2iKD1vb2kyFFR1uw7iONCb806p1T0DY2qJX8
+	 ttC5Ia7mYS3sQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -33,10 +33,10 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <w_armin@gmx.de>
 Subject:
- [PATCH v1 08/10] ACPI: processor: thermal: Use more suitable cooling device
- data
-Date: Fri, 11 Sep 2026 15:05:50 +0200
-Message-ID: <6192780.MhkbZ0Pkbq@rafael.j.wysocki>
+ [PATCH v1 07/10] ACPI: thermal: Use cooling device parent for thermal zone
+ binding
+Date: Fri, 11 Sep 2026 15:05:07 +0200
+Message-ID: <9672996.CDJkKcVGEf@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <1965933.tdWV9SEqCh@rafael.j.wysocki>
 References: <1965933.tdWV9SEqCh@rafael.j.wysocki>
@@ -51,120 +51,58 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Instead of passing an ACPI device object pointer as devdata to
-thermal_cooling_device_create(), make acpi_processor_thermal_init()
-pass a pointer to the struct acpi_processor representing the given CPU
-to it, which allows the callback functions in processor_cooling_ops to
-be simplified and the second argument of acpi_processor_thermal_init()
-and acpi_processor_thermal_exit() to be dropped.
+The ACPI thermal zone .should_bind() callback function,
+acpi_thermal_should_bind_cdev(), expects the given cooling device's
+devdata to point to an ACPI device object whose ACPI handle should be
+compared with ACPI handles in a list associated with the given trip
+point.  That is not particularly straightforward and it effectively
+requires the drivers of ACPI cooling devices to populate the devdata
+with addresses of the ACPI companions of the devices they bind to.
+Consequently, the devdata cannot be used by the driver for its own
+needs which is its intended purpose.
 
-No intentional functional impact.
+That can be overcome with the help of the observation that the
+ACPI device objects to be matched against the lists of ACPI handles
+associated with trip points are in fact the ACPI companions of the
+parents of cooling devices.  Thus instead of using the given cooling
+device's devdata, it is sufficient to obtain the ACPI handle of its
+parent and compare that ACPI handle with the ones in the list
+associated with the given trip point.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_driver.c  |  2 +-
- drivers/acpi/processor_thermal.c | 35 +++++---------------------------
- include/acpi/processor.h         |  3 +--
- 3 files changed, 7 insertions(+), 33 deletions(-)
+ drivers/acpi/thermal.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 90c14480393d..bdd1529d79f0 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -164,7 +164,7 @@ static int __acpi_processor_start(struct acpi_device *device)
- 
- 	acpi_pss_perf_init(pr);
- 
--	result = acpi_processor_thermal_init(pr, device);
-+	result = acpi_processor_thermal_init(pr);
- 	if (result)
- 		goto err_power_exit;
- 
-diff --git a/drivers/acpi/processor_thermal.c b/drivers/acpi/processor_thermal.c
-index 6cd47551844a..11036f0d2b94 100644
---- a/drivers/acpi/processor_thermal.c
-+++ b/drivers/acpi/processor_thermal.c
-@@ -235,15 +235,7 @@ static int
- processor_get_max_state(struct thermal_cooling_device *cdev,
- 			unsigned long *state)
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index dd7666c176a0..dea28d674407 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -564,17 +564,18 @@ static bool acpi_thermal_should_bind_cdev(struct thermal_zone_device *thermal,
+ 					  struct cooling_spec *c)
  {
--	struct acpi_device *device = cdev->devdata;
--	struct acpi_processor *pr;
--
--	if (!device)
--		return -EINVAL;
--
--	pr = acpi_driver_data(device);
--	if (!pr)
--		return -EINVAL;
-+	struct acpi_processor *pr = cdev->devdata;
+ 	struct acpi_thermal_trip *acpi_trip = trip->priv;
+-	struct acpi_device *cdev_adev = cdev->devdata;
++	struct device *parent = cdev->device.parent;
++	acpi_handle parent_handle;
+ 	int i;
  
- 	*state = acpi_processor_max_state(pr);
- 	return 0;
-@@ -253,15 +245,7 @@ static int
- processor_get_cur_state(struct thermal_cooling_device *cdev,
- 			unsigned long *cur_state)
- {
--	struct acpi_device *device = cdev->devdata;
--	struct acpi_processor *pr;
--
--	if (!device)
--		return -EINVAL;
--
--	pr = acpi_driver_data(device);
--	if (!pr)
--		return -EINVAL;
-+	struct acpi_processor *pr = cdev->devdata;
+-	/* Skip critical and hot trips. */
+-	if (!acpi_trip)
++	/* Skip critical and hot trips and parentless cooling devices. */
++	if (!acpi_trip || !parent)
+ 		return false;
  
- 	*cur_state = cpufreq_get_cur_state(pr->id);
- 	if (pr->flags.throttling)
-@@ -273,18 +257,10 @@ static int
- processor_set_cur_state(struct thermal_cooling_device *cdev,
- 			unsigned long state)
- {
--	struct acpi_device *device = cdev->devdata;
--	struct acpi_processor *pr;
-+	struct acpi_processor *pr = cdev->devdata;
- 	int result = 0;
- 	int max_pstate;
+-	for (i = 0; i < acpi_trip->devices.count; i++) {
+-		acpi_handle handle = acpi_trip->devices.handles[i];
++	parent_handle = ACPI_HANDLE(parent);
  
--	if (!device)
--		return -EINVAL;
--
--	pr = acpi_driver_data(device);
--	if (!pr)
--		return -EINVAL;
--
- 	max_pstate = cpufreq_get_max_state(pr->id);
+-		if (acpi_fetch_acpi_dev(handle) == cdev_adev)
++	for (i = 0; i < acpi_trip->devices.count; i++) {
++		if (acpi_trip->devices.handles[i] == parent_handle)
+ 			return true;
+ 	}
  
- 	if (state > acpi_processor_max_state(pr))
-@@ -308,10 +284,9 @@ const struct thermal_cooling_device_ops processor_cooling_ops = {
- 	.set_cur_state = processor_set_cur_state,
- };
- 
--int acpi_processor_thermal_init(struct acpi_processor *pr,
--				struct acpi_device *device)
-+int acpi_processor_thermal_init(struct acpi_processor *pr)
- {
--	pr->cdev = thermal_cooling_device_create(pr->dev, "Processor", device,
-+	pr->cdev = thermal_cooling_device_create(pr->dev, "Processor", pr,
- 						 &processor_cooling_ops);
- 	if (IS_ERR(pr->cdev))
- 		return PTR_ERR(pr->cdev);
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index 656aaf74fb18..b5447af4d40b 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -427,8 +427,7 @@ int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi);
- #endif /* CONFIG_ACPI_PROCESSOR_IDLE */
- 
- /* in processor_thermal.c */
--int acpi_processor_thermal_init(struct acpi_processor *pr,
--				struct acpi_device *device);
-+int acpi_processor_thermal_init(struct acpi_processor *pr);
- void acpi_processor_thermal_exit(struct acpi_processor *pr);
- extern const struct thermal_cooling_device_ops processor_cooling_ops;
- #ifdef CONFIG_CPU_FREQ
 -- 
 2.51.0
 
