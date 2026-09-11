@@ -1,65 +1,65 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BAE8361970
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:47:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB2B53655CD
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:47:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789138030; cv=none; b=KNqlREfCuTTRVlk7MdSBOocE2Ym3NoXhEGqooKu9YFE/DeghA1mbtDAh6yU9lkt0jDELXZtgpxfjQoikc60GjU5j4SOeZGZmJwEE4FqlvC8EZ1rQNdn1cpEPFL505V/GULTi2DQlA48j/nvDj0ai8Cv/rxeQJYEpzMB2uuryDHg=
+	t=1789138029; cv=none; b=Nr5+hT0KL182+586kqhLHbH3ZO0pgjdP6fW2wpGQ5+8C5Xpu3lMsM2gdiiD2zWOXH9mG6l0CGsqOyAlf2xs/21yLcumpYU/rt3m1P+NYWdief2TsXBQpdtpPLkZNuA7pzHPjO56USYJp1Kc8sFKDtcREEmZJxFlI4KtMKzzNwds=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789138030; c=relaxed/simple;
-	bh=6qK7Y4OCyC5WsOE2SJMQ4fti6jzNs1Pji9/QbACrVAA=;
+	s=arc-20240116; t=1789138029; c=relaxed/simple;
+	bh=DSCMx1gAdSPCiTWrdPODvYb/Tkdl8QWx4O9zomiTJ5Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Dgy2Wd65eQX2nmoaGzARcnY/gV3s0Uh6fm+l8DJOCU/ZRdffigclvP2K7zxIjJJcUtNjCQrcLxAQF3kYgkZm9C8MrdX17rnfrviT7Ge2mW2L/SSgbwfQnm0FF+BA6hjRToyfkZUbkBaRQyxxt6DoWfHi9tojrpXwKCiscuqeJLE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=A/5m4Fh/; arc=none smtp.client-ip=209.85.221.43
+	 MIME-Version:Content-Type; b=vGgL0Cv73UrAAoCSFhTgVliGhQnIYIoSQT5NSjPpchLqSgD8PWohqVTkCiMqXIGRROqk7InlHuqCwzaEfAKD3MGoAlcqDc8SnmgNPevGIFiFXm41V2e63XKvuDXMBNtgy8ZTg/RyL1YE6qG4YxPnrGVvsgu0aWHTzsxOZ7kbPmk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=XvhWFWew; arc=none smtp.client-ip=209.85.221.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="A/5m4Fh/"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-48441a2ba1bso713073f8f.1
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:47:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="XvhWFWew"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-482ea739de2so670320f8f.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:47:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1789138023; x=1789742823; darn=vger.kernel.org;
+        d=suse.com; s=google; t=1789138020; x=1789742820; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=QuYE5JBWhvW9oHs2kdysh3HB71WxLYQMcei9gKN4bpc=;
-        b=A/5m4Fh/sngCKaEoJLtOhd0PEwql+T8zBi0qHa6cFg5H9HZAwcJa6OQkyRfUkv+4l5
-         PrwPUM2nfa2NQ5ZfES2qecayX0h9xaZPjNb5dZ+gNkld9Gq+JI7LtsTkqcJdS043KHXL
-         AYrw5uKonljqZ69+949bBF4VmJLQCR12wMLd9GTD7yU89XnGbPwo5FMSdRPi3bUSbnco
-         ibBekgmGXt2s/P3iIX1rpyu/BfwNKBORTLgqjA1B0N5VgKnIbC7oztcfa1lA32Qmm1Fp
-         rZA6+wXmHyJJXapZZo9qqcM+UPHrA+PTNhVhLBZyYMs5jY9zkFEivXrcP5idys2xQ9LL
-         Xd5w==
+        bh=8M3qUem4dgvQjoYpprAxmEKjTGHs+1/VR0EZcgFwfzA=;
+        b=XvhWFWewtB8xqqcNlWd47x2UsVlbT9lNrFRQzXz2xSZauGLcnLPvzw44cD7kzVBhbW
+         ZWG6aft7/E1OhXcW+/qk2QdQhqeG+z5st+B2I9rGxOIjQYn4V71HinTQM2lBewtD6/+9
+         fsHrEQukADG78/5VJ6rnKh8aYOxYSZRAlIItmuP4yyKWLwGPMLMnPtyCgXQBiZF8R3Mr
+         4YhwfpbAL7xH7YoK/1vuHZhIGopoZLXI4qvhuPjXbB1RYNOYH6+x9rynMuMswJKS/PgE
+         /XwrMFbwg6QpISaOb5kGO1xtdl1SSKWcnOj7O2wawlHvPKheoR3kBKcXLrL3+xcbUcTO
+         6FdA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789138023; x=1789742823;
+        d=1e100.net; s=20251104; t=1789138020; x=1789742820;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=QuYE5JBWhvW9oHs2kdysh3HB71WxLYQMcei9gKN4bpc=;
-        b=amUlB75De27nTWXH6NuMLIb6Up9OEIuKTEriPcW5e1pvdoSpf23OfXPDJL/jw5AMCR
-         kpxl3I8sALhax8gK//v/Ou24eUVYj5k6kAr4h7yxBewzB7fzo/xvrtXxBsPF9meQfJwT
-         ExHewMKQRS4s4nNVpwzmcHCC1Yw4GBpGwLkL1ldHtZjj7xtf1blHyJeNmrdChOBIGR1j
-         oBIZFXACgbNge6WsxOEBlJXZifQnXjn8cO+TMCwgbWOzaXHsvuHFXVeLWnACEZCFyROW
-         3DLyBTkR6qbcFmAaNJREZGLnliPsUqAnJ8PUHgGiUlDrIBBbhBdUkNPQthA/9hdvHzmN
-         wpUA==
-X-Forwarded-Encrypted: i=1; AKwUvByFe2oSoJ9Vs/NR2RGcF2dpBSL5T1wanr6NyPSVA0TMs1LjGLrMO3+XSjHXT+BSbXJAHIvPMa96Aw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lGPZ2fr1mKCdHwKKTv0rtfG2f15CfhD7WwUrgCq8/R62HzHSu/
-	ZP5cCKz2Jw0252eI0tIOPA/itvwGvyWsH/XgtrHgk38ewUpGj4MPwR36mqDxP83Bl6k=
-X-Gm-Gg: AYBFou20EveE0rLrJTLzRZsCGAod9HTIDUwVeDC4cqd0QYMdXX+r4naAcN9xHAINCm3
-	uINrgag3hlDp6FQfVUSe5xsTFBZOki/DwfxIv7jWwRgFI0zkUXAvoSk3L/tdLYNVei5jhsggNod
-	MROrrkQPhMdYnFUM7B8SnCiQ5XSPIbHuZ0Nv6Z5HMe6Hq/eHpgiz1/cU6imYxrM3Ml70WhW0aPD
-	s3GQGgDG09v6s76pn1ANyMkkWFAFT4Wp/G13sTOqRDe81vhVFgfpt6TPyDoGJ1dx7blyi9jF8bE
-	GLYRiQUWxqEhiXQoreWYMFR1oUM5H3WNPIRAktDNRcPAxgHAaKyorGkzlC3HLAPMulkhsHkwbpC
-	UuBUzGy0jmgChoijkoojKaAGyTBLs2bdGoSWcchY9Ixzntmq+dsCcwPjWCkdtN7vHg/hJCDCMLS
-	T2UeaTkE1JaH27s7syKAl2O1QkWqF8TrPvnRyzFphBQtMuMuiO1rcv3V9WvfWtOnnCT2VsKWrQu
-	GV+cQ==
-X-Received: by 2002:a5d:5e08:0:b0:486:e81b:842a with SMTP id ffacd0b85a97d-486eb358ab6mr5259626f8f.48.1789138022582;
-        Fri, 11 Sep 2026 07:47:02 -0700 (PDT)
+        bh=8M3qUem4dgvQjoYpprAxmEKjTGHs+1/VR0EZcgFwfzA=;
+        b=KQfo6dZtTCl9iB86No0J4S1Kd8+9Sjm7exfgLup7Y3+Etu42W0SIYe/yYBYPga2lV8
+         zjyNaql6SAsVihDBywVZXXM66xw6K1jPWZDBHvpF3PO7FECumSSm5gDPz/pTEE4x1PT5
+         0SbYhX+SgQ/rXIWpR1cWw1PtF7Ozjijz01wGpVWbaF2Bvct57uw4anJpTNAu7Cq/klOo
+         1SrgDnRYQ5E/LgQ3KDlqob4a1PO/WDk7nsHpwnFIy8rO+oB91QhNwXE01/Z+X1GzsWII
+         B4Pz9bJDVxUbeL2t8qrJGM7Cr1bsdGklxAyig8kWhCYkk+hIeWYl+bjCDjuJB8Iq8i1r
+         vttw==
+X-Forwarded-Encrypted: i=1; AKwUvBwoM4iW2a+mJtUNIlhueWDTPyKsz/EfDHBjH4OhlK8iZEVZvL2g0MZ9V3w/RmbMQgidPflkKzK+uQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++mar3bPyPJqEvub63OK0eafbRWJ5KOpj9Unr8YvWEWlSeri0s3f
+	dmI3+5YVR6owp0qfdIlpENC1AtSP5gL+WcwzL1NbDOv2DypoeT01ITEoFBGpo/IS2HU=
+X-Gm-Gg: AYBFou1ZlVnMy7GWtJd310HkRx8/QqbWdo8lY+4Rjfve/0ZlpZAfzNiN4Exmgm0/3tI
+	8dNxuWmyp12xk3UOo9C57nfnmBO4HssBDbNNQbHGkH6/moKR1HAM+Jlotkd9l+SYVvfCrD8IJzq
+	ZEGw5JS7Mz6xhYR+L4tgnxuf+AvfAuLSe2dj7U1QHiKOERsIKdt9eOD8+4OfTU1EMPM7z2JO4wa
+	/RI5euNuSaRZAVi2kenHe/1pWy4oCdlAUI9IoA//hPMA4Ag1Ya3KBK7b3fcozeYHmg6Qwf5qJS5
+	8FTfxTaRDA54Q9gmvsJO/Iaze8OrFtSBMUTnz+wvUFd1Aio+9lnrhVxusPPdN+FqaLsVwmiIuKz
+	trZPxegfoW+v3HKI9a7ruX5G+KZ/V8XYWRHLO+Zi3udiLogqTNBO0Tgm5oTUbAZ5qJURcd3Bikg
+	gCWipOTQi4XzSv1GGBw4CIhzFwINOnHn75q/NoF2GNIbF3eNPM4OLfbFnvBnBiCjeRL9A/C+VgA
+	oRiAEcE8FLIS8Ra
+X-Received: by 2002:a05:6000:1ac6:b0:486:f405:9d9 with SMTP id ffacd0b85a97d-486f4050a4fmr1699666f8f.34.1789138020208;
+        Fri, 11 Sep 2026 07:47:00 -0700 (PDT)
 Received: from localhost.localdomain ([2001:af0:8000:1409:193:86:92:181])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-486eb32e8d1sm6328068f8f.11.2026.09.11.07.47.00
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-486eb32e8d1sm6328068f8f.11.2026.09.11.07.46.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Sep 2026 07:47:02 -0700 (PDT)
+        Fri, 11 Sep 2026 07:46:59 -0700 (PDT)
 From: Petr Pavlu <petr.pavlu@suse.com>
 To: Tony Luck <tony.luck@intel.com>,
 	Borislav Petkov <bp@alien8.de>,
@@ -138,9 +138,9 @@ Cc: linux-edac@vger.kernel.org,
 	netdev@vger.kernel.org,
 	keyrings@vger.kernel.org,
 	linux-security-module@vger.kernel.org
-Subject: [PATCH v3 2/3] time/jiffies: Include linux/sysctl.h for proc_int_u2k_conv_uop(), ...
-Date: Fri, 11 Sep 2026 14:46:15 +0000
-Message-ID: <20260911-module-include-kmod-v3-2-6ebccc3e0731@suse.com>
+Subject: [PATCH v3 1/3] umh, treewide: Explicitly include linux/umh.h where needed
+Date: Fri, 11 Sep 2026 14:46:14 +0000
+Message-ID: <20260911-module-include-kmod-v3-1-6ebccc3e0731@suse.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260911-module-include-kmod-v3-0-6ebccc3e0731@suse.com>
 References: <20260911-module-include-kmod-v3-0-6ebccc3e0731@suse.com>
@@ -153,33 +153,296 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-jiffies.c uses proc_int_u2k_conv_uop(), proc_int_k2u_conv_kop(),
-proc_int_conv(), proc_dointvec_conv() and proc_doulongvec_minmax_conv(),
-which are declared in linux/sysctl.h. It currently gets that header
-indirectly through linux/module.h -> linux/kmod.h, but the latter no longer
-needs to include linux/sysctl.h.
+The usermode helper declarations were previously provided by linux/kmod.h
+but commit c1f3fa2a4fde ("kmod: split off umh headers into its own file")
+moved them to linux/umh.h in 2017.
 
-Include linux/sysctl.h directly in jiffies.c ahead of removing the
-unnecessary include from linux/kmod.h.
+Add explicit includes of linux/umh.h to files that use usermode helpers and
+remove linux/kmod.h where it is no longer needed.
 
 Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-Acked-by: Thomas Gleixner <tglx@kernel.org>
 ---
- kernel/time/jiffies.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/x86/kernel/cpu/mce/dev-mcelog.c | 2 +-
+ drivers/block/drbd/drbd_nl.c         | 1 +
+ drivers/greybus/svc_watchdog.c       | 1 +
+ drivers/macintosh/windfarm_core.c    | 1 +
+ drivers/pnp/pnpbios/core.c           | 2 +-
+ drivers/video/fbdev/uvesafb.c        | 1 +
+ fs/coredump.c                        | 2 +-
+ fs/nfs/cache_lib.c                   | 2 +-
+ fs/nfsd/nfs4layouts.c                | 2 +-
+ fs/nfsd/nfs4recover.c                | 1 +
+ fs/ocfs2/stackglue.c                 | 1 +
+ kernel/cgroup/cgroup-v1.c            | 2 +-
+ kernel/module/kmod.c                 | 1 +
+ kernel/power/process.c               | 2 +-
+ kernel/reboot.c                      | 2 +-
+ kernel/umh.c                         | 2 +-
+ lib/kobject_uevent.c                 | 2 +-
+ net/bridge/br_stp_if.c               | 2 +-
+ security/keys/request_key.c          | 2 +-
+ security/tomoyo/common.h             | 2 +-
+ 20 files changed, 20 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-index 213ae1d6a014..9231fea557ce 100644
---- a/kernel/time/jiffies.c
-+++ b/kernel/time/jiffies.c
-@@ -8,6 +8,7 @@
- #include <linux/jiffies.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/sysctl.h>
+diff --git a/arch/x86/kernel/cpu/mce/dev-mcelog.c b/arch/x86/kernel/cpu/mce/dev-mcelog.c
+index 053555206d81..af4e76babe7a 100644
+--- a/arch/x86/kernel/cpu/mce/dev-mcelog.c
++++ b/arch/x86/kernel/cpu/mce/dev-mcelog.c
+@@ -11,7 +11,7 @@
  
- #include "timekeeping.h"
- #include "tick-internal.h"
+ #include <linux/miscdevice.h>
+ #include <linux/slab.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/poll.h>
+ 
+ #include "internal.h"
+diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
+index b77f901fc3ef..6f5d059394b3 100644
+--- a/drivers/block/drbd/drbd_nl.c
++++ b/drivers/block/drbd/drbd_nl.c
+@@ -14,6 +14,7 @@
+ #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+ 
+ #include <linux/module.h>
++#include <linux/umh.h>
+ #include <linux/drbd.h>
+ #include <linux/in.h>
+ #include <linux/fs.h>
+diff --git a/drivers/greybus/svc_watchdog.c b/drivers/greybus/svc_watchdog.c
+index 16e6de5e9eff..b318eb34bcca 100644
+--- a/drivers/greybus/svc_watchdog.c
++++ b/drivers/greybus/svc_watchdog.c
+@@ -7,6 +7,7 @@
+ 
+ #include <linux/delay.h>
+ #include <linux/suspend.h>
++#include <linux/umh.h>
+ #include <linux/workqueue.h>
+ #include <linux/greybus.h>
+ 
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index 5307b1e34261..e66de11c69a3 100644
+--- a/drivers/macintosh/windfarm_core.c
++++ b/drivers/macintosh/windfarm_core.c
+@@ -34,6 +34,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/mutex.h>
+ #include <linux/freezer.h>
++#include <linux/umh.h>
+ 
+ #include "windfarm.h"
+ 
+diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
+index f7e86ae9f72f..46af1f549337 100644
+--- a/drivers/pnp/pnpbios/core.c
++++ b/drivers/pnp/pnpbios/core.c
+@@ -47,7 +47,7 @@
+ #include <linux/delay.h>
+ #include <linux/acpi.h>
+ #include <linux/freezer.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/kthread.h>
+ 
+ #include <asm/page.h>
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index ccc9dbc25813..a13dff332aef 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -23,6 +23,7 @@
+ #include <linux/io.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/umh.h>
+ #include <video/edid.h>
+ #include <video/uvesafb.h>
+ #ifdef CONFIG_X86
+diff --git a/fs/coredump.c b/fs/coredump.c
+index 6114839f5178..bdef7ec27b0e 100644
+--- a/fs/coredump.c
++++ b/fs/coredump.c
+@@ -32,7 +32,7 @@
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/fsnotify.h>
+ #include <linux/fs_struct.h>
+ #include <linux/pipe_fs_i.h>
+diff --git a/fs/nfs/cache_lib.c b/fs/nfs/cache_lib.c
+index 9738a1ae92ca..ca4e81d4e315 100644
+--- a/fs/nfs/cache_lib.c
++++ b/fs/nfs/cache_lib.c
+@@ -6,7 +6,7 @@
+  *
+  * Copyright (c) 2009 Trond Myklebust <Trond.Myklebust@netapp.com>
+  */
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/mount.h>
+diff --git a/fs/nfsd/nfs4layouts.c b/fs/nfsd/nfs4layouts.c
+index 22bcb6d09f70..5739d4d2ed3c 100644
+--- a/fs/nfsd/nfs4layouts.c
++++ b/fs/nfsd/nfs4layouts.c
+@@ -3,7 +3,7 @@
+  * Copyright (c) 2014 Christoph Hellwig.
+  */
+ #include <linux/exportfs_block.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/file.h>
+ #include <linux/jhash.h>
+ #include <linux/sched.h>
+diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+index d513971fb119..5bef3f0034d3 100644
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -41,6 +41,7 @@
+ #include <linux/fs.h>
+ #include <linux/hex.h>
+ #include <linux/module.h>
++#include <linux/umh.h>
+ #include <net/net_namespace.h>
+ #include <linux/sunrpc/rpc_pipe_fs.h>
+ #include <linux/sunrpc/clnt.h>
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 741d6191d871..0ccaab29426d 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -18,6 +18,7 @@
+ #include <linux/kobject.h>
+ #include <linux/sysfs.h>
+ #include <linux/sysctl.h>
++#include <linux/umh.h>
+ 
+ #include "ocfs2_fs.h"
+ 
+diff --git a/kernel/cgroup/cgroup-v1.c b/kernel/cgroup/cgroup-v1.c
+index a4337c9b5287..cbcde5c28b18 100644
+--- a/kernel/cgroup/cgroup-v1.c
++++ b/kernel/cgroup/cgroup-v1.c
+@@ -2,7 +2,7 @@
+ #include "cgroup-internal.h"
+ 
+ #include <linux/ctype.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/sort.h>
+ #include <linux/delay.h>
+ #include <linux/mm.h>
+diff --git a/kernel/module/kmod.c b/kernel/module/kmod.c
+index a25dccdf7aa7..dcaad5d65275 100644
+--- a/kernel/module/kmod.c
++++ b/kernel/module/kmod.c
+@@ -28,6 +28,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/async.h>
+ #include <linux/uaccess.h>
++#include <linux/umh.h>
+ 
+ #include <trace/events/module.h>
+ #include "internal.h"
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index dc0dfc349f22..295904ec9a82 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -16,7 +16,7 @@
+ #include <linux/freezer.h>
+ #include <linux/delay.h>
+ #include <linux/workqueue.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <trace/events/power.h>
+ #include <linux/cpuset.h>
+ 
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index f070c5c1103a..37818be501c0 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -11,13 +11,13 @@
+ #include <linux/ctype.h>
+ #include <linux/export.h>
+ #include <linux/kexec.h>
+-#include <linux/kmod.h>
+ #include <linux/kmsg_dump.h>
+ #include <linux/reboot.h>
+ #include <linux/suspend.h>
+ #include <linux/syscalls.h>
+ #include <linux/syscore_ops.h>
+ #include <linux/uaccess.h>
++#include <linux/umh.h>
+ 
+ /*
+  * this indicates whether you can reboot with ctrl-alt-del: the default is yes
+diff --git a/kernel/umh.c b/kernel/umh.c
+index 6e2c7bb315c6..512dc018a50b 100644
+--- a/kernel/umh.c
++++ b/kernel/umh.c
+@@ -8,7 +8,7 @@
+ #include <linux/binfmts.h>
+ #include <linux/syscalls.h>
+ #include <linux/unistd.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/slab.h>
+ #include <linux/completion.h>
+ #include <linux/cred.h>
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index ddbc4d7482d2..a67129e452a3 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -17,7 +17,7 @@
+ #include <linux/string.h>
+ #include <linux/kobject.h>
+ #include <linux/export.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/slab.h>
+ #include <linux/socket.h>
+ #include <linux/skbuff.h>
+diff --git a/net/bridge/br_stp_if.c b/net/bridge/br_stp_if.c
+index a7e5422eb5d1..89bc161a4b47 100644
+--- a/net/bridge/br_stp_if.c
++++ b/net/bridge/br_stp_if.c
+@@ -8,7 +8,7 @@
+  */
+ 
+ #include <linux/kernel.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/etherdevice.h>
+ #include <linux/rtnetlink.h>
+ #include <net/switchdev.h>
+diff --git a/security/keys/request_key.c b/security/keys/request_key.c
+index fa2bb9f2f538..e6ba2d054399 100644
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -9,7 +9,7 @@
+ 
+ #include <linux/export.h>
+ #include <linux/sched.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/err.h>
+ #include <linux/keyctl.h>
+ #include <linux/slab.h>
+diff --git a/security/tomoyo/common.h b/security/tomoyo/common.h
+index d098cf8aae61..d26034000913 100644
+--- a/security/tomoyo/common.h
++++ b/security/tomoyo/common.h
+@@ -16,7 +16,7 @@
+ #include <linux/string.h>
+ #include <linux/mm.h>
+ #include <linux/file.h>
+-#include <linux/kmod.h>
++#include <linux/umh.h>
+ #include <linux/fs.h>
+ #include <linux/sched.h>
+ #include <linux/namei.h>
 
 -- 
 2.55.0
