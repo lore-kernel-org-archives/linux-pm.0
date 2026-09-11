@@ -1,287 +1,214 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from ixit.cz (ixit.cz [84.42.129.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40E825867F8;
-	Fri, 11 Sep 2026 19:56:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 680C45867D4;
+	Fri, 11 Sep 2026 20:00:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789156585; cv=none; b=fAmP2VXQ4b3q382/cgW272yoyeF96gj7QQecZR2beK+kYGCOVaoOb6ip85bb94DCN+ismx8Znet8g9/8zFct6qC2g7ez8oVlDDMhOVuFbmqVu5k5fxCG2IK53a2JWE0vE6hvCOypZjB8snnyAQ3uHzIU5YQVB6IipE3O8LfxdHc=
+	t=1789156824; cv=none; b=k6+nZVb8zK4tgHvdHusoWyWQ7La0CDZnIwJv0Kg8H9Wg2MhAqqXFb1ohCMG6smjn9n52FGImx24ML/OUJcJctW3p90Zn4ylr6+HoiPMFEI9Y4i3mAh0rlQQSBc4NEqcPh/m4T7J8gBzAAzqpECpm8jJ88fsQ5COyfBwpOkM0NEg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789156585; c=relaxed/simple;
-	bh=muiaeZNGFqYgO/QunZ1MRXHbiS9zQP7TqkNXNFh9FCs=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=UuCRtlWqj631m2NibwMXWIqDLVmDJ5ztHnWE9vMC4fy60WILOAG7p83mGP57+XpPoNGvMrJq3MXF/Seb4l+Cmi92pdYyC6oU+sJJYau5uH3tgSpJQ7WNmKAiRP/OQG+qpqmr8tDg3uGz4mPeWVolKQuETb6FO0+/TaW0BJQpgYE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fJ2wozQA; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1789156824; c=relaxed/simple;
+	bh=rECwwr5MXHKaAAu4Xm/MT/O2bAAImWhJ2GQb9tEFs1Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=vGcCkOD7MFyT2mR0cwgNHH5w2L7A/M4MUS2SmYYZ1POsFxJFBk8hf48j2LRLuTK1XaJLDIN3whD2wo5y428VLAqlWSoTqKvijP1NCL1XZ6YdY1W/GGiqNjrh1PBLLXYUq4ux02F5/77vRm4KeixHmrNqSZayhYnndsukWvwZlUE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=yrm7Efo2; arc=none smtp.client-ip=84.42.129.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fJ2wozQA"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789156574; x=1820692574;
-  h=date:from:to:cc:subject:message-id;
-  bh=muiaeZNGFqYgO/QunZ1MRXHbiS9zQP7TqkNXNFh9FCs=;
-  b=fJ2wozQAtSdE1EEIRRi091tvgEnbdOxpFgoHU5o6ngM/5uPZWu27uJ1R
-   HdEhbcGj+cwvU4ZwAnCtmWUX5WnT11wowNiEiGuPb0bxGRBT6JyAKnl6Z
-   6j0YK9v6xJhLaXfOArdwCRzrIwn6+165soi89RFMZqG/k0vRH+Ju1Zj5J
-   K62+Y/43pcnCbmCAe2TlU6YJJiMugnWNrUN2TqNF689E77a8Rpf+CY9c+
-   6XdnzN4sfDewYGxjYEYtb/y6+TZzpeE/AURKSIornTsZmcgm4lkrBiOD+
-   43YrZF0PlWSfZRfIxzbWOkyiHeBcTaeQNvQ6YaM5lizblzQF4V+vkS8m8
-   g==;
-X-CSE-ConnectionGUID: 9NW0JNvOSq6M76H4P7gWag==
-X-CSE-MsgGUID: ThKXrZ5AQ4mJef7rLIsQ0Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11902"; a="100220407"
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="100220407"
-Received: from fmviesa011.fm.intel.com ([10.60.135.151])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 12:56:11 -0700
-X-CSE-ConnectionGUID: F3EHUVtxRuups/kAI5K3ng==
-X-CSE-MsgGUID: jOuZGPdpT5qXh6z0Y/6DVQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="257106"
-Received: from lkp-server02.sh.intel.com (HELO 0a3643a6ed9d) ([10.239.97.151])
-  by fmviesa011.fm.intel.com with ESMTP; 11 Sep 2026 12:56:09 -0700
-Received: from kbuild by 0a3643a6ed9d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x57Lv-0000000025e-1Me1;
-	Fri, 11 Sep 2026 19:56:05 +0000
-Date: Sat, 12 Sep 2026 03:52:16 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- aed0d9d9b7e41ebbc650c139aeb8c9b6de1b072e
-Message-ID: <202609120312.pdU5R9AL-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="yrm7Efo2"
+Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id A204B5341057;
+	Fri, 11 Sep 2026 22:00:12 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1789156812;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=6lIj0wihb2vxUd4EDj1/K0TDCkWxUQEoZDfJjbMQzdg=;
+	b=yrm7Efo2D2GjHRvHVmd+F0NKsJsr15M/6xv/1ztrPx9z6TOJ5Y8MNmyKlCngBtF37E5gfs
+	OpZdbpFdnLJyTZVS1MBjTeO3zykDmWmCqtPKj/bbhcbZQjZk2Jvtw5KwZjjsN5lsa0M+BU
+	9e1WOKkwlRVIvaGDwA7n8TrZP6VdzAc=
+Message-ID: <f5f6e231-ff11-45cf-af30-9db346ba5f97@ixit.cz>
+Date: Fri, 11 Sep 2026 22:00:12 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] arm64: dts: qcom: sdm845-oneplus: use generic fuel
+ gauge compatible
+To: Andrew Davis <afd@ti.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?=
+ <pali@kernel.org>, linux-arm-msm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260829205258.26955-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-4-rinat.muhamedgaliev@gmail.com>
+ <20260911-relaxed-dexterous-hummingbird-72dfbe@quoll>
+ <6c45cfd5-ac37-4f8e-bde3-0391512df982@ti.com>
+Content-Language: en-US, cs-CZ
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <6c45cfd5-ac37-4f8e-bde3-0391512df982@ti.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: aed0d9d9b7e41ebbc650c139aeb8c9b6de1b072e  Merge branch 'thermal-core-next' into bleeding-edge
 
-elapsed time: 1493m
 
-configs tested: 210
-configs skipped: 11
+On 11/09/2026 15:37, Andrew Davis wrote:
+> On 9/11/26 3:21 AM, Krzysztof Kozlowski wrote:
+>> On Thu, Sep 10, 2026 at 02:47:44AM +0300, Rinat Muhamedgaliev wrote:
+>>> OnePlus 6 and OnePlus 6T battery packs may contain either a TI
+>>> bq27411 or bq27541 fuel gauge. Use the generic ti,bq27xxx compatible
+>>> so the driver can select the register map from DeviceType at probe
+>>> time.
+>>>
+>>> Tested on OnePlus 6T (fajita) with a bq27541 (DeviceType 0x0541):
+>>> after booting the new kernel, the battery reported 4.360 V, 100% state
+>>> of charge, 27.8 C, and Full status.
+>>>
+>>> Fixes: 12dfb002ca01 ("arm64: dts: qcom: sdm845-oneplus-*: add fuel gauge")
+>>
+>> What is the bug here? Your commit msg should be specific about it.
+>>
+> 
+> Commit msg seems pretty clear about the bug (to me at least), the DT
+> says the fuel gauge is a BQ27411 but that isn't the case, some shipped
+> with a BQ27541 fuel gauge.
+> 
+> (I do agree though this shouldn't have a fixes tag as back-porting this
+> without also back-porting the driver-side change would break users)
+> 
+> Since these fuel gauges often live on the battery pack and not the
+> device itself, folks changing their batteries might end up with
+> different fuel gauges, so having some detection method is going to
+> be helpful.
+> 
+> Rinat,
+> 
+> I'm not familiar with the bootflow on these devices, but is this something
+> you could detect in the bootloader and fixup the DT before it is passed
+> to kernel? That way the kernel gets a DT with the correct and specific
+> compatible to start with?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Hello Andrew:
 
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-alpha                               defconfig    gcc-16.1.0
-arc                              allmodconfig    clang-24
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    clang-24
-arc                          axs103_defconfig    gcc-16.1.0
-arc                                 defconfig    gcc-16.1.0
-arc                   randconfig-001-20260911    clang-24
-arc                   randconfig-001-20260912    clang-17
-arc                   randconfig-002-20260911    clang-24
-arc                   randconfig-002-20260912    clang-17
-arm                               allnoconfig    gcc-16.1.0
-arm                              allyesconfig    clang-24
-arm                       aspeed_g5_defconfig    gcc-16.1.0
-arm                        clps711x_defconfig    gcc-16.1.0
-arm                                 defconfig    gcc-16.1.0
-arm                          pxa3xx_defconfig    gcc-16.1.0
-arm                   randconfig-001-20260911    clang-24
-arm                   randconfig-001-20260912    clang-17
-arm                   randconfig-002-20260911    clang-24
-arm                   randconfig-002-20260912    clang-17
-arm                   randconfig-003-20260911    clang-24
-arm                   randconfig-003-20260912    clang-17
-arm                   randconfig-004-20260911    clang-24
-arm                   randconfig-004-20260912    clang-17
-arm                           sama5_defconfig    gcc-16.1.0
-arm                           sama7_defconfig    gcc-16.1.0
-arm64                            allmodconfig    clang-24
-arm64                             allnoconfig    gcc-16.1.0
-arm64                               defconfig    gcc-16.1.0
-arm64                 randconfig-001-20260911    gcc-16.1.0
-arm64                 randconfig-002-20260911    gcc-16.1.0
-arm64                 randconfig-003-20260911    gcc-16.1.0
-arm64                 randconfig-004-20260911    gcc-16.1.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-csky                                defconfig    gcc-16.1.0
-csky                  randconfig-001-20260911    gcc-16.1.0
-csky                  randconfig-002-20260911    gcc-16.1.0
-hexagon                          allmodconfig    gcc-16.1.0
-hexagon                           allnoconfig    gcc-16.1.0
-hexagon                             defconfig    gcc-16.1.0
-hexagon               randconfig-001-20260911    gcc-12.5.0
-hexagon               randconfig-001-20260912    clang-24
-hexagon               randconfig-002-20260911    gcc-12.5.0
-hexagon               randconfig-002-20260912    clang-24
-i386                             allmodconfig    clang-22
-i386                              allnoconfig    gcc-16.1.0
-i386                             allyesconfig    clang-22
-i386        buildonly-randconfig-001-20260911    clang-22
-i386        buildonly-randconfig-002-20260911    clang-22
-i386        buildonly-randconfig-003-20260911    clang-22
-i386        buildonly-randconfig-004-20260911    clang-22
-i386        buildonly-randconfig-005-20260911    clang-22
-i386        buildonly-randconfig-006-20260911    clang-22
-i386                                defconfig    gcc-16.1.0
-i386                  randconfig-001-20260911    clang-22
-i386                  randconfig-002-20260911    clang-22
-i386                  randconfig-003-20260911    clang-22
-i386                  randconfig-004-20260911    clang-22
-i386                  randconfig-005-20260911    clang-22
-i386                  randconfig-006-20260911    clang-22
-i386                  randconfig-007-20260911    clang-22
-i386                  randconfig-011-20260911    clang-22
-i386                  randconfig-012-20260911    clang-22
-i386                  randconfig-013-20260911    clang-22
-i386                  randconfig-014-20260911    clang-22
-i386                  randconfig-015-20260911    clang-22
-i386                  randconfig-016-20260911    clang-22
-i386                  randconfig-017-20260911    clang-22
-loongarch                        allmodconfig    clang-24
-loongarch                         allnoconfig    gcc-16.1.0
-loongarch                           defconfig    clang-24
-loongarch             randconfig-001-20260911    gcc-12.5.0
-loongarch             randconfig-001-20260912    clang-24
-loongarch             randconfig-002-20260911    gcc-12.5.0
-loongarch             randconfig-002-20260912    clang-24
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    clang-24
-m68k                                defconfig    clang-24
-m68k                       m5249evb_defconfig    gcc-16.1.0
-m68k                       m5275evb_defconfig    gcc-16.1.0
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-microblaze                          defconfig    clang-24
-microblaze                      mmu_defconfig    clang-24
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-mips                     decstation_defconfig    clang-24
-mips                           gcw0_defconfig    clang-24
-mips                           jazz_defconfig    clang-24
-mips                      loongson1_defconfig    gcc-16.1.0
-mips                      loongson3_defconfig    gcc-16.1.0
-mips                       rbtx49xx_defconfig    gcc-16.1.0
-nios2                            allmodconfig    clang-20
-nios2                             allnoconfig    clang-24
-nios2                               defconfig    clang-24
-nios2                 randconfig-001-20260911    gcc-12.5.0
-nios2                 randconfig-001-20260912    clang-24
-nios2                 randconfig-002-20260911    gcc-12.5.0
-nios2                 randconfig-002-20260912    clang-24
-openrisc                         allmodconfig    clang-20
-openrisc                          allnoconfig    clang-24
-openrisc                            defconfig    gcc-16.1.0
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    clang-24
-parisc                           allyesconfig    clang-17
-parisc                           allyesconfig    gcc-16.1.0
-parisc                              defconfig    gcc-16.1.0
-parisc                randconfig-001-20260911    gcc-8.5.0
-parisc                randconfig-002-20260911    gcc-8.5.0
-parisc64                            defconfig    clang-24
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    clang-24
-powerpc                        icon_defconfig    clang-24
-powerpc                     mpc5200_defconfig    clang-24
-powerpc                     rainier_defconfig    clang-24
-powerpc               randconfig-001-20260911    gcc-8.5.0
-powerpc               randconfig-002-20260911    gcc-8.5.0
-powerpc                      tqm8xx_defconfig    gcc-16.1.0
-powerpc64             randconfig-001-20260911    gcc-8.5.0
-powerpc64             randconfig-002-20260911    gcc-8.5.0
-riscv                            allmodconfig    clang-24
-riscv                             allnoconfig    clang-24
-riscv                            allyesconfig    clang-24
-riscv                               defconfig    gcc-16.1.0
-riscv                    nommu_k210_defconfig    gcc-16.1.0
-riscv                 randconfig-001-20260911    gcc-16.1.0
-riscv                 randconfig-002-20260911    gcc-16.1.0
-s390                             allmodconfig    clang-17
-s390                              allnoconfig    clang-24
-s390                             allyesconfig    gcc-16.1.0
-s390                          debug_defconfig    gcc-16.1.0
-s390                                defconfig    gcc-16.1.0
-s390                  randconfig-001-20260911    gcc-16.1.0
-s390                  randconfig-002-20260911    gcc-16.1.0
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    clang-24
-sh                               allyesconfig    clang-17
-sh                               allyesconfig    gcc-16.1.0
-sh                        apsh4ad0a_defconfig    gcc-16.1.0
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260911    gcc-16.1.0
-sh                    randconfig-002-20260911    gcc-16.1.0
-sh                      rts7751r2d1_defconfig    gcc-16.1.0
-sh                   rts7751r2dplus_defconfig    gcc-16.1.0
-sh                           se7619_defconfig    gcc-16.1.0
-sh                           se7722_defconfig    gcc-16.1.0
-sh                   sh7770_generic_defconfig    gcc-16.1.0
-sh                             shx3_defconfig    gcc-16.1.0
-sparc                             allnoconfig    clang-24
-sparc                               defconfig    gcc-16.1.0
-sparc                 randconfig-001-20260911    gcc-13.4.0
-sparc                 randconfig-002-20260911    gcc-13.4.0
-sparc64                          allmodconfig    clang-20
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260911    gcc-13.4.0
-sparc64               randconfig-002-20260911    gcc-13.4.0
-um                               allmodconfig    clang-17
-um                                allnoconfig    clang-24
-um                               allyesconfig    gcc-16.1.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260911    gcc-13.4.0
-um                    randconfig-002-20260911    gcc-13.4.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-22
-x86_64                            allnoconfig    clang-24
-x86_64                           allyesconfig    clang-22
-x86_64      buildonly-randconfig-001-20260911    gcc-14
-x86_64      buildonly-randconfig-002-20260911    gcc-14
-x86_64      buildonly-randconfig-003-20260911    gcc-14
-x86_64      buildonly-randconfig-004-20260911    gcc-14
-x86_64      buildonly-randconfig-005-20260911    gcc-14
-x86_64      buildonly-randconfig-006-20260911    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-22
-x86_64                randconfig-001-20260911    clang-22
-x86_64                randconfig-002-20260911    clang-22
-x86_64                randconfig-003-20260911    clang-22
-x86_64                randconfig-004-20260911    clang-22
-x86_64                randconfig-005-20260911    clang-22
-x86_64                randconfig-006-20260911    clang-22
-x86_64                randconfig-011-20260911    gcc-14
-x86_64                randconfig-012-20260911    gcc-14
-x86_64                randconfig-013-20260911    gcc-14
-x86_64                randconfig-014-20260911    gcc-14
-x86_64                randconfig-015-20260911    gcc-14
-x86_64                randconfig-016-20260911    gcc-14
-x86_64                randconfig-071-20260911    gcc-14
-x86_64                randconfig-072-20260911    gcc-14
-x86_64                randconfig-073-20260911    gcc-14
-x86_64                randconfig-074-20260911    gcc-14
-x86_64                randconfig-075-20260911    gcc-14
-x86_64                randconfig-076-20260911    gcc-14
-x86_64                               rhel-9.4    clang-22
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-22
-x86_64                    rhel-9.4-kselftests    clang-22
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    clang-24
-xtensa                           allyesconfig    clang-20
-xtensa                generic_kc705_defconfig    gcc-16.1.0
-xtensa                randconfig-001-20260911    gcc-13.4.0
-xtensa                randconfig-002-20260911    gcc-13.4.0
+There are two possible bootflows:
+a) from fastboot (we can't do anything)
+b) from intermediate u-boot (we could do this)
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+While your suggestion seems to be the most correct, I'm not sure the 
+"complexity" here outweighs the pros of simply reporting
+
+deb_warn your phones has different charging chip
+
+and switching the behavior to the "replacement part" here.
+
+In the future we'll need to add u-boot logic because of camera focus, where the 
+focus in some phones is on different i2c addr + from different vendor, where we 
+cannot do it so simply as here.
+
+What do you think?
+
+David>
+> Andrew
+> 
+>>>
+>>> Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+>>> ---
+>>>   arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi   | 4 ++--
+>>>   arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts | 2 +-
+>>>   arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts    | 2 +-
+>>>   3 files changed, 4 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi b/arch/ 
+>>> arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+>>> index 948a0dd..8c5cd94 100644
+>>> --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+>>> +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+>>> @@ -790,8 +790,8 @@ &i2c10 {
+>>>       status = "okay";
+>>>       clock-frequency = <100000>;
+>>> -    bq27441_fg: bq27441-battery@55 {
+>>> -        compatible = "ti,bq27411";
+>>> +    bq27xxx_fg: fuel-gauge@55 {
+>>> +        compatible = "ti,bq27xxx";
+>>
+>> And this is just breaking all users without any explanation.
+>>
+>>
+>>
+>>>           status = "okay";
+>>>           reg = <0x55>;
+>>>       };
+>>> diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts b/arch/ 
+>>> arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+>>> index 5f01115..cf40842 100644
+>>> --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+>>> +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+>>> @@ -44,7 +44,7 @@ main_cam_ois: main-cam-ois-regulator {
+>>>       };
+>>>   };
+>>> -&bq27441_fg {
+>>> +&bq27xxx_fg {
+>>
+>> No, irrelevant to the supposed bug here.
+>>
+>> Best regards,
+>> Krzysztof
+>>
+> 
+
