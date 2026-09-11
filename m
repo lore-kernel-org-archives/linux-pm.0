@@ -1,104 +1,128 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 967A33546E1
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:22:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 357B334CFDA
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:26:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789136547; cv=none; b=bV/WpRPDgIZM7/cnato+osXfBQX7nwAqqjZHiA1KEWF8UWlkhbwvVf0J5ZhHavfzkmd1cROG7mJlRqfk0BnS0+5YEeQv9c+jAktRlReoOaqHQQwfwQQ3+lYP47qnc7seM5ROOdNAw7/cHXdNnMRgOsKG70FmsRDyLSsNoEtKqoo=
+	t=1789136776; cv=none; b=PLIY64VCefDkhBBSyzCGIjH4BT8i+j2Y1JwVUH2SJSiLXhy/+6Ek25GZf0bAo4nyJzMAxoLWMQIf4D7CYxuUokq32o8AC75MZxJtTGAdI3KRxy1A9JoNuM5PLusKmuQNJ6sBckeW7ZMAJtYn4A5xI7g0zC/JocSeMdtNX5UN3m0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789136547; c=relaxed/simple;
-	bh=CKEQ5986CV/kzwyn5wRQ5Od0ZfAMuzoy3/vGXU7ndXw=;
+	s=arc-20240116; t=1789136776; c=relaxed/simple;
+	bh=M2kqcs520GNqToI5+X0yVwnAWvYe9b9t/utrb2byT2M=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Ak7HIGhU4L8n0WPOilZQfbFhlQonx8iWflX8wwMjArpiiXUqyU21dote7Ef8e9RAC6wBAtWm8HTPUnyzjHi+yLGSxgfWZKDsh7Y/t5RP6vcucaX5F1S3gn9Rx7+HB80bbeMxmuOjelYpbUnfTHCF7FraB41fF3a7YJatPDoySvw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y7tOSJfx; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=X4M02sSr03RO4o7sfZae9IQnrFjxp/JBDiU4zbQorsxYO2IhPaCJDtJUv/rnNsdIAQ/RRJcXqM/FpkkuhNmzU/R/YkNipn5LARnGMfzidyIISC1Ekn/NmcMK6rwdyrYp6DFEcPC6jmvanuEsVfW4N4NeRsMrPksh+kivqWEmJnQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kLcD+p3V; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y7tOSJfx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55FF41F00893
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:22:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kLcD+p3V"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7E151F00893
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:26:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789136545;
-	bh=TxAn6ueekm44HEOWY30thTo349hdrLwTtPKtsmgWunA=;
+	s=k20260515; t=1789136773;
+	bh=5PhvNcmEIXM/kfPhAJlejRP4+1vKY4lWz7V2iV9DdNw=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Y7tOSJfxrk5G6npv+DhJi1lYpeo6/FikZNipxLmIw3AKHllZVyFuBr0Wm0sHPgr8+
-	 RN2ChT+R95Rs4+T6xp5dAQ4Tl2nsvfVXDKHJUqmB6GbSrV4X+oClILQXedWmwvR3PU
-	 T61+LGgkaUuj+7yBvjlYTdh4AaPu9ZoPe/c9BQwXlv5lCzRueC9j+XIjaDCnNZSIOt
-	 0iWNQwPYHkzF2XVigsesYNOl/GVeJapFpcKZFeBv9xj3r3c1rP1mO6fMAoNKTW7gVU
-	 wDGjaH79SsbFuw4vkvtXfDiUOO9qbe06gXSs2hMgxyGw0BwiP2/Ncn/FIUlbg8Bc04
-	 GZDjJdMW4AJaw==
-Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3a4fc78b556so8920761fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:22:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxKN2uflIFQhZn1vB+yF19/0q6mC4e0l4BeI0JX6x32vhncSYvy7u9LIsNxPoOP8rVkz6DbsNfKTQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++ltYNP0oqhJu5497koKNb/qM083M8oZNRLT576F/2c/P2E8gw8S
-	Bz/4E/PhxfqeOyMkG69YoH1eyAWKejqWNE3MqMCN8cqT0hDjUzWlqZA71pUR1RQah2LzXcIonXM
-	uyjweNbE7qQTeiTp/iW8tAeWdoPtVrqg=
-X-Received: by 2002:a05:651c:211c:b0:3a3:42cf:c035 with SMTP id
- 38308e7fff4ca-3a5a505d60amr4839001fa.2.1789136543723; Fri, 11 Sep 2026
- 07:22:23 -0700 (PDT)
+	b=kLcD+p3VnYeOJyq7vdt1Mrf9Aa3lwQ8eHv2Fc4K7yxXxFSYS35FOeEVD+I1XwX771
+	 MLYL5OdzK9fOnaQWSFaLF4kjbu4bwBF0uEW17NPljGSWWPx2mzRhMStlxWpPbjC0+O
+	 G1xH6tDlB0KLplG4c9iAua06eM3qkY3pkkURueO+jRHu59kfIV6KIUiPg5i6MYaKcm
+	 RuG4k0WCCJG7PX15li4Q3AxP1PXoHi1wOtyz+Xesp/96+jRcVg/plqPfIigApPWBLr
+	 uwQSPeV7fu3b01Hwhnz/ZmcrKdrizz/isBsqwqPbgzSSwNMsE7Vf6QfefFJsz2+gxa
+	 8piJmzqrtdtIw==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f1801fso1294495e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:26:13 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzRdBAwfykES0suF+rflMWbJGXZCRYJo27w28BzGsWsf5FhBJnySsWf6dXDlIyRZpjZH8V6Y8F1xg==@vger.kernel.org
+X-Gm-Message-State: AFuF++mIlNiA88mNMS6Y6y8b9XHcW2wbTdFjI/zAswtsp8VJcEOANNqG
+	euWIw3OVtsnY5Gv8OLcR+c69IkZVEgv4Sf4ZuzNOXGokXC5rZE1I+ZI9Z2IB0KxNgyf8KKOOW02
+	feQ3I3RHRNKPGCcdx1Y2LKwiPJqu/fUo=
+X-Received: by 2002:ac2:5689:0:b0:5b6:183b:d213 with SMTP id
+ 2adb3069b0e04-5b8a032c700mr990005e87.58.1789136772191; Fri, 11 Sep 2026
+ 07:26:12 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260827094820.3900062-1-luoxueqin@kylinos.cn>
-In-Reply-To: <20260827094820.3900062-1-luoxueqin@kylinos.cn>
+References: <20260828032457.2317326-1-luoxueqin@kylinos.cn> <d5f96d83-b5c4-4795-9675-7779f35be78f@arm.com>
+In-Reply-To: <d5f96d83-b5c4-4795-9675-7779f35be78f@arm.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 11 Sep 2026 16:21:10 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0ihYqbucMQeJE_ZtbUbhBERmvN=YrvqAtT_fG+9k0F5Lg@mail.gmail.com>
-X-Gm-Features: AcwNN1Wb1x4Wa89YnnzehnAvHYl21bHVksfC4doTtVVYnu6JAUsT7uHn6sZzk2I
-Message-ID: <CAJZ5v0ihYqbucMQeJE_ZtbUbhBERmvN=YrvqAtT_fG+9k0F5Lg@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: menu: Do not return a disabled idle state
-To: Xueqin Luo <luoxueqin@kylinos.cn>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, christian.loehle@arm.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 11 Sep 2026 16:24:57 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0if17M5u2FKNvnnFsonXhG2kiR6QOAw_f2xst0T=nO84A@mail.gmail.com>
+X-Gm-Features: AcwNN1WAH4pHE8Tq4UFgOh-4d0yruUjR3MtcGXwEAd9XU7bCjovKep-FmxfyAcc
+Message-ID: <CAJZ5v0if17M5u2FKNvnnFsonXhG2kiR6QOAw_f2xst0T=nO84A@mail.gmail.com>
+Subject: Re: [PATCH v2] cpuidle: teo: Do not return a disabled idle state
+To: Christian Loehle <christian.loehle@arm.com>, Xueqin Luo <luoxueqin@kylinos.cn>
+Cc: daniel.lezcano@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 27, 2026 at 11:48=E2=80=AFAM Xueqin Luo <luoxueqin@kylinos.cn> =
-wrote:
+On Fri, Aug 28, 2026 at 5:49=E2=80=AFPM Christian Loehle
+<christian.loehle@arm.com> wrote:
 >
-> When idle state 0 is disabled and the PM QoS latency constraint is
-> zero (latency_req =3D=3D 0), the first branch of the || in the early-retu=
-rn
-> condition of menu_select() is taken immediately, so state 0 is returned
-> regardless of its disable flag.
+> On 8/28/26 04:24, Xueqin Luo wrote:
+> > If idle state 0 is disabled and none of the enabled idle states satisfi=
+es
+> > the PM QoS latency constraint, constraint_idx in teo_select() stays at =
+its
+> > initial value of 0, because the loop that updates it starts at state 1,
+> > and so the candidate state index is capped at state 0, which is disable=
+d,
+> > and that state is returned to the caller.
+> >
+> > The cpuidle core does not validate the returned state index against the
+> > per-state disable flags, so the CPU ends up entering the disabled state=
+ 0.
+> >
+> > To address this, ensure that constraint_idx is at least equal to the in=
+dex
+> > of the first enabled idle state (idx0), so that the candidate state is
+> > never capped to a disabled one.
+> >
+> > Fixes: c410a9a142f1 ("cpuidle: teo: Change the main idle state selectio=
+n logic")
+> > Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
 >
-> Address this by making the !disable check a prerequisite for the entire
-> early-return condition, so that when state 0 is disabled the normal
-> state selection loop is used instead, which already skips disabled
-> states.
->
-> Fixes: 53812cdc9100 ("cpuidle: menu: Move the latency_req =3D=3D 0 specia=
-l case check")
-> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
-> ---
->  drivers/cpuidle/governors/menu.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors=
-/menu.c
-> index 544a5d593007..eb529d73d4b7 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -284,10 +284,10 @@ static int menu_select(struct cpuidle_driver *drv, =
-struct cpuidle_device *dev,
->                 data->bucket =3D BUCKETS - 1;
->         }
->
-> -       if (latency_req =3D=3D 0 ||
-> -           ((data->next_timer_ns < drv->states[1].target_residency_ns ||
-> -             latency_req < drv->states[1].exit_latency_ns) &&
-> -            !dev->states_usage[0].disable)) {
-> +       if (!dev->states_usage[0].disable &&
-> +           (latency_req =3D=3D 0 ||
-> +            data->next_timer_ns < drv->states[1].target_residency_ns ||
-> +            latency_req < drv->states[1].exit_latency_ns)) {
->                 /*
->                  * In this case state[0] will be used no matter what, so =
-return
->                  * it right away and keep the tick running if state[0] is=
- a
-> --
+> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
 
 Applied as 7.4 material, thanks!
+
+> > ---
+> > v1 -> v2:
+> >     - Instead of falling back to idx0 after the candidate index has bee=
+n
+> >       capped to a disabled state, ensure that constraint_idx is at leas=
+t
+> >       equal to idx0 before the capping check (suggested by Rafael J. Wy=
+socki).
+> >
+> >  drivers/cpuidle/governors/teo.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> >
+> > diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governor=
+s/teo.c
+> > index ac43b9b013b3..906f4f89e365 100644
+> > --- a/drivers/cpuidle/governors/teo.c
+> > +++ b/drivers/cpuidle/governors/teo.c
+> > @@ -426,6 +426,17 @@ static int teo_select(struct cpuidle_driver *drv, =
+struct cpuidle_device *dev,
+> >               }
+> >       }
+> >
+> > +     /*
+> > +      * If the latency constraint does not allow any of the enabled id=
+le
+> > +      * states to be used, the candidate state index will be capped to=
+ 0
+> > +      * by the check below, but state 0 may be disabled.  To prevent t=
+he
+> > +      * selection of a disabled state in that case, ensure that
+> > +      * constraint_idx is at least equal to the index of the first
+> > +      * enabled idle state.
+> > +      */
+> > +     if (constraint_idx < idx0)
+> > +             constraint_idx =3D idx0;
+> > +
+> >       /*
+> >        * If there is a latency constraint, it may be necessary to selec=
+t an
+> >        * idle state shallower than the current candidate one.
+>
