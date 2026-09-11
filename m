@@ -1,163 +1,137 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com [74.125.228.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC7CE39768F;
-	Fri, 11 Sep 2026 09:38:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0616439AD2A
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 09:52:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789119489; cv=none; b=Ga0b24vCLW0SAwgWQddX5y3wxwP9TGyeCbIjYYTVSM7T6orBfVE1XawxkcW85MkOGMRDX+sRaCbuux1s3Wij5zz8NQOTMitdYosOOPoy4YFfkh6Ty71EW0AzaHQYteWI8o3El+wiBMpTTdfMWM3UyL0hM49kVohQtGtURokA9n4=
+	t=1789120352; cv=none; b=pvNUnzlozq/NWt3jDkdY/8JqJiqkX8lliC1kWrY4R47AtHkJ21rbdWrIbqeywCvd44GU5yagQM/3eZO683Z0k+3NbUpUrnOTOA0vhQu1ZMqLdnxwi8SZBhxqSZH+7/BVmk+LZpuhptTYwbAJ0zxEQQoWA6aVrkbYSuo9AOQV8W4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789119489; c=relaxed/simple;
-	bh=sb6ClNqSQhPq2ZVhuU+8klKUwkLjODKU96QOOaqi6Cw=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=hAUe8WxEDOonDVIo3OzRL4HImhO1d9ZMNENjjmVvPvvBOWhgL/4+yoLeJvbuXs1Gi4mQniwFw2zCFZEKJvztZAIZGanE87Hpi/xZ+hPZHD83ANL9tfk6TIRhOrFsxBv3coqpUogi0VCHfz1Yt8OODoWE1335oAWZFtCRiXYIWHE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DM9yb6wk; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1789120352; c=relaxed/simple;
+	bh=3NmbvHcdNHb2ax4IS5MGihMyuSj7LIc21eicMTlUGtw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AAZu+JYNh/DJUOGyvEOSX2+XxGDhJOZ/zpqYOUWG5aHVG6RK7c8AyeZQmRoiVkvWhhDxvZKV/27dL0L/HAJ7/hgrrUziPKVwngNhqn/1axZyoOxl1QahhiH4FYvxCVtGR3tYI98OY6wlM5cTR+yShY4rTvvuPGME+eE7Spi20mk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cMM/dxcy; arc=none smtp.client-ip=74.125.228.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DM9yb6wk"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789119488; x=1820655488;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version:content-id;
-  bh=sb6ClNqSQhPq2ZVhuU+8klKUwkLjODKU96QOOaqi6Cw=;
-  b=DM9yb6wkIw6H/4OUaxjgfsWqnlyifFSzuJm4auThBBtBwc0mV354yWRx
-   XtVaPKQt14wWQTHxwmAuXrNtLuI74H7+XGOopmobWMGCbssTFCTgK70GN
-   xPc/0fvgWUsW06yKDHuGJmgGIjUvm1V7dS7+MPTBjbLpMhgWAOSeQFKK8
-   CXvQwBVdRUh7PB3vVnm8I4Hbb6wYWM1MRgDUtsgLsesnWkjK2NOk6/5wg
-   tMkfigA95OrdDDeQGjA0+DXpjVm+sYk7WNYD5sMczGNu5j/1W9HF8+vvK
-   A11b1psKdcGb9tZV65ASr1A+m9roMLitbGJqHxiKH0mDnGtQeJfczTkfU
-   w==;
-X-CSE-ConnectionGUID: lv8LjnQ/RM2Ip6FtGVq2QA==
-X-CSE-MsgGUID: o8V6DDF0TnKqW/TDijK+BA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="115120614"
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="115120614"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 02:38:07 -0700
-X-CSE-ConnectionGUID: SRo+o97pTgCUDHnSfx1bsQ==
-X-CSE-MsgGUID: d5IlSxrWQfGb/hpk+vV9Sw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="296857533"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.158])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 02:37:41 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 11 Sep 2026 12:37:38 +0300 (EEST)
-To: Juergen Gross <jgross@suse.com>
-cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org, 
-    linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org, 
-    kvm@vger.kernel.org, virtualization@lists.linux.dev, 
-    linux-edac@vger.kernel.org, linux-pci@vger.kernel.org, 
-    linux-pm@vger.kernel.org, linux-coco@lists.linux.dev, 
-    linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, 
-    dri-devel@lists.freedesktop.org, linux-crypto@vger.kernel.org, 
-    linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-    linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
-    linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>, 
-    Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-    Dave Hansen <dave.hansen@linux.intel.com>, 
-    "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, 
-    Arnaldo Carvalho de Melo <acme@kernel.org>, 
-    Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-    Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
-    Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
-    Adrian Hunter <adrian.hunter@intel.com>, 
-    James Clark <james.clark@linaro.org>, 
-    "K. Y. Srinivasan" <kys@microsoft.com>, 
-    Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
-    Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-    Sean Christopherson <seanjc@google.com>, 
-    Paolo Bonzini <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>, 
-    Alexey Makhalov <alexey.makhalov@broadcom.com>, 
-    Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-    Josh Poimboeuf <jpoimboe@kernel.org>, 
-    Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Pu Wen <puwen@hygon.cn>, 
-    Tony Luck <tony.luck@intel.com>, 
-    Reinette Chatre <reinette.chatre@intel.com>, 
-    Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>, 
-    Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>, 
-    Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>, 
-    Bjorn Helgaas <bhelgaas@google.com>, 
-    "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-    Kiryl Shutsemau <kas@kernel.org>, 
-    Rick Edgecombe <rick.p.edgecombe@intel.com>, 
-    Boris Ostrovsky <boris.ostrovsky@oracle.com>, Len Brown <lenb@kernel.org>, 
-    Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
-    David Airlie <airlied@redhat.com>, Olivia Mackall <olivia@selenic.com>, 
-    Herbert Xu <herbert@gondor.apana.org.au>, 
-    Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>, 
-    Mario Limonciello <mario.limonciello@amd.com>, 
-    Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>, 
-    Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-    Yazen Ghannam <yazen.ghannam@amd.com>, Linus Walleij <linusw@kernel.org>, 
-    Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
-    Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
-    Artem Bityutskiy <dedekind1@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
-    Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-    Miquel Raynal <miquel.raynal@bootlin.com>, 
-    Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
-    Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>, 
-    Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>, 
-    Xi Pardee <xi.pardee@linux.intel.com>, 
-    Daniel Lezcano <daniel.lezcano@kernel.org>, 
-    Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-    Helge Deller <deller@gmx.de>, xen-devel@lists.xenproject.org, 
-    linux-geode@lists.infradead.org, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v3 12/13] treewide: convert rdmsrq() from a macro to an
- inline function
-In-Reply-To: <20260911074530.3140830-13-jgross@suse.com>
-Message-ID: <b2baa471-0f6b-84e8-bda1-ae0964b72b04@linux.intel.com>
-References: <20260911074530.3140830-1-jgross@suse.com> <20260911074530.3140830-13-jgross@suse.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cMM/dxcy"
+Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c254f9c60b9so54324766b.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 02:52:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789120349; x=1789725149; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=WTJ3Yl3D1Apzgbf0VLfYhSFknYE/u4woMT1MsBZYWs4=;
+        b=cMM/dxcyZuYmF2kG3VuCYOFuJNyFN4D/eOCPBZpsg/xc7J7+vzUHTIDqgLHLfMIlso
+         5FFnRIbCrW+ghZT4dTUuo6PwogfYe/mSgo84GNRPD3Ng/zB0xerx6tUstpF4vfXZLf/P
+         JgSX3PMRf1X3syx17+5p7jtyWoDMuzdBZTrv4XJdEl/N7iQqkUMu1tM/xRaYEecIwlV9
+         1vHklTyja3fJJkwMmlYttU8WoT/54B93gog4Y4luqZNDE7pSy985mw+YlCndS+Az1G2c
+         avujHNL6OTxRE/OYdmrjlgbHATsA5RoQQFbNRJxhZCIsg8LyX3tnWLmKrkQCSN4MuajI
+         Si6w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789120349; x=1789725149;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=WTJ3Yl3D1Apzgbf0VLfYhSFknYE/u4woMT1MsBZYWs4=;
+        b=kmOSRwDDGFkIHyJ/YilxnOfkszPA0CeKS9YFGAk9zIN3YNhrMTFwdUtZOTdv2t3lxu
+         cKX63LedqNZ/jCfUlu5A9FmI35YCLZrIZ2MAvlFWL8AXoSm4bbQyka3hfNyw/07CLisW
+         aAhuvhrOyoTDyZFRKxIv1Sm3TXQqmy7ySUjRwsYO1CH71bvTf9NKG8nDbcTeImNG+lkG
+         yyTwFNojLL1iv2cDZB5IMtqCZmUISXt9SqUhciPoxvMRpSPxpOqO/w9D23G4wXBOCcYM
+         hHOZtKB4Pe8qFM6hODMjegoIXEEzw1n+p6deeW0dApYv39azFhEbDyxEyBaXdloEToY7
+         NkYw==
+X-Forwarded-Encrypted: i=1; AKwUvByeTkh+TVcBp33BstvQjp1/NvGIDAKIQvfMql+rB7SHF9VFLyDBhQD4D2CRojG3o8s96cs7OuRIIA==@vger.kernel.org
+X-Gm-Message-State: AFuF++kYzecXoaK7/49sUAdNNBGKC+ruv8G50H4Lizk9GyN7UlpdIit3
+	HmPUzJwjjDaW21l3lir4//2X4DfQ3l6/1QSboOXiOKKaSkYdvgpN27DUVtrJvbsT6wA=
+X-Gm-Gg: AYBFou3C0EXyNzHmMU50xqS+suhfeF310c1RpN7sSxCgVlZCo0sEq/Eg4NYsKum6VmX
+	Vzfp4+QP63STyIzpNFxn6IHuUsn73uXY71hKbzEQMDCJ6v8Zv6TIpQaT+ifThTubPyq9hDaoPNi
+	sc64v7bteCw1Rk41ujgwhBarvVjnszhGKEFvjVdENsoQV708GhoDNJ7aYLoCoQIR0VPD/AClJZQ
+	fTiPR825qzzjPVBsO60HIZWKy6h0jnaEkw/vQHu1nyJ9R91QjZMYho6W60fU0njWTWfXYwBFFHp
+	IQeIEgcdKuTsSdC80O5lwZswE6hGsW14roqJyQ3xXaojg7f4zhKR8xv7xOC9p0lJ/8KmQtR+gb9
+	RbD+UATrzvlP0DsmZjrY41J14CstODDLavh8Mz3iGF2kPO9xFsVzS8BkFYcYP6m/tMBvGhItCA0
+	FDweuuFKPGlhfCdFNLWCOpT/gZxdXie7KqU/IAoyaS00uD3+fjbEL5/zLcVxRKsH+GftbldVkbL
+	aeK24PE/64lhWIO0qRshiqDUmmOmQ3LvZj2
+X-Received: by 2002:a17:907:980a:b0:c25:f7db:4beb with SMTP id a640c23a62f3a-c2962c415bcmr196891966b.17.1789120348977;
+        Fri, 11 Sep 2026 02:52:28 -0700 (PDT)
+Received: from [192.168.1.30] (161-53-210-87.ftth.glasoperator.nl. [87.210.53.161])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2966024941sm62574066b.14.2026.09.11.02.52.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Sep 2026 02:52:28 -0700 (PDT)
+Message-ID: <930e17e8-8fdf-46c4-9e89-3eb1d7cd58aa@gmail.com>
+Date: Fri, 11 Sep 2026 11:52:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323328-1162080221-1789119116=:1171"
-Content-ID: <b9134b99-a885-4c62-2abd-7195415a52e3@linux.intel.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v3 1/3] dt-bindings: soc: qcom: add
+ xiaomi,taoyao-pmic-glink compatible
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+References: <20260821123711.1579539-1-zstaseg@gmail.com>
+ <20260821123711.1579539-2-zstaseg@gmail.com> <aqHLuHr-Vf3gtz2T@venus>
+Content-Language: en-US
+From: Stanislav Zaikin <zstaseg@gmail.com>
+In-Reply-To: <aqHLuHr-Vf3gtz2T@venus>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 9/9/26 11:16 PM, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Fri, Aug 21, 2026 at 02:37:09PM +0200, Stanislav Zaikin wrote:
+>> Add the compatible string used by Xiaomi 12 Lite 5G (taoyao) so its
+>> battery manager can be matched to a device-specific variant in
+>> qcom_battmgr.
+>>
+>> Signed-off-by: Stanislav Zaikin <zstaseg@gmail.com>
+>> ---
+>>   Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
+>> index 16ad4f5698fc..8ca057c4e3e6 100644
+>> --- a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
+>> +++ b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
+>> @@ -41,6 +41,7 @@ properties:
+>>         - items:
+>>             - enum:
+>>                 - qcom,sm7325-pmic-glink
+>> +              - xiaomi,taoyao-pmic-glink
+>>             - const: qcom,qcm6490-pmic-glink
+>>             - const: qcom,pmic-glink
+> 
+> Is the implementation compatible with qcom,qcm6490-pmic-glink? The
+> driver does not bind that compatible, so I can't tell. Maybe some
+> Qualcomm people can answer this question. Please send new version
+> without the RFC tag, so that DT binding maintainers review this
+> patch series.
+> 
+> Greetings,
+> 
+> -- Sebastian
 
---8323328-1162080221-1789119116=:1171
-Content-Type: text/plain; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <085b47bf-864b-9802-2915-a51186e45c40@linux.intel.com>
+Hi,
 
-On Fri, 11 Sep 2026, Juergen Gross wrote:
+Thank you for the review.
 
-> Today rdmsrq() is a macro using its second parameter as the target for
-> storing the read MSR value.
->=20
-> Convert rdmsrq() to an inline function returning the MSR value.
->=20
-> The users have been converted using the following semantic patch:
->=20
->   // Options: --include-headers
->=20
->   virtual patch
->   virtual report
->=20
->   @@
->   expression msr, val;
->   @@
->   (
->   - rdmsrq(msr,val)
->   + val =3D rdmsrq(msr)
->   )
->=20
-> Signed-off-by: Juergen Gross <jgross@suse.com>
-> Acked-by: Damien Le Moal <dlemoal@kernel.org>      # ATA
+Yes, we still need qcom,qcm6490-pmic-glink for usci_glink driver 
+(there's a quirk that all sm7325-based handset uses: spacewar, dubai).
 
-Acked-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>=09=09# pdx86
+Will send a new version without RFC tag.
 
-What is the plan for merging this?
+-- 
+Best regards,
+Stanislav
 
-> Reviewed-by: Michael Kelley <mhklinux@outlook.com> # Hyper-V
-
---=20
- i.
---8323328-1162080221-1789119116=:1171--
