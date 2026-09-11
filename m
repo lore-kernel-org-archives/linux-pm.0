@@ -1,111 +1,88 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30AC42E7F39;
-	Fri, 11 Sep 2026 16:36:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8E234A4828
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 16:36:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789144571; cv=none; b=HPf8O0BtqBoN6ISWRJSjfFqehUJVl9ZisfL6hvce7CaIFUdjAOb/fBg0gdEu4lyMmh5iC9wdVraQ2TWiggf040EIvtHZgxEnTxjUDISDn0j1QPTLJgR3M/kluP+D51iLuvubihDG4f5bT95HCaKdlihRqAwEDlM5I1KC+0EhX6k=
+	t=1789144602; cv=none; b=ERwPasM+KqCtZ+UzEIAqSLNEARBRnbMbZ5QKS+r0ChSMWv1aS9NIEMG9I2NRtXeIwm+jq4CdzCrtyKyShjSMzz/56rwD48e3jUKKev/sMU77o4xLnq5b5VuhS2v0g252RHFjH+zI/9/dX94pHszuv0MzzwOA47rpbOzCVJKYUZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789144571; c=relaxed/simple;
-	bh=yz7jG0GQg2lxTBzG1jVrT2PvynMTR9zaPhSYUZPrHUg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MKOW3Y5KxKsEYIFos1tUOGPv/qivIYuHbSMTUmMPhJl4Mkrlhyn15QVqFnYWEU8VDk9S70J9IVE2VY3DJSwwMnnLu4RADl9vJ2Z3pVYDuMj+XrPtKGDkBq3GnEpn30U8nOjspuneYO6QwOdFs80IBzCVahzleaeBtBUDt5R8Cdw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=eyfL15dd; arc=none smtp.client-ip=198.175.65.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1789144602; c=relaxed/simple;
+	bh=3C4s74+fiXJ/Tb6yiCf0/1iEVRfCgm/jh1W3+HtsJ3c=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Y4noh82VFowLlzthe7MoX7MZBivKS9aujnu895+S7OnM9NVGa4moujHdsn35wFQEOWPML7AAACQl3nIKFCTyIRQP0uEEZRgq5YDlYt7w9l2mjnq1jQT2F96ERYUbfi0c2QKcqIPbp+BX2qTDdQutB1bfU6b9VmNh+j0bXgjJKq0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TMZ17gME; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="eyfL15dd"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789144569; x=1820680569;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=yz7jG0GQg2lxTBzG1jVrT2PvynMTR9zaPhSYUZPrHUg=;
-  b=eyfL15dduASf6C/R3sK+xDUQA0GjVbIRcXjPpXZIIzggshc57V9IfE8o
-   80BpyWCBtluYH4fQ0+7bXDFq1Zhkx9kYRsZKHu5xG5XXVXs0qcOx9RFfK
-   cubDrGRDWlJRlR7dtX1NAHqb2q+3lUIvMeG3pet5zFf3jEL06mUIbpdSn
-   X5hISQdTCE0JGOvfxmNVU1lTQ+0L04HwcO4d7sA9pIEcq+FTPo2JVM1j6
-   VvUlYWmjndsGsK2f/+bTplCu2qHdqhsfi5rHsvT6Y6kxTShC1+tCG7+OE
-   Uet9al5NiF1/ErwvZqzG7+j9h5Z5mPDHbhYDrll5HfJpAtKi6B0Tp2NV+
-   g==;
-X-CSE-ConnectionGUID: 7JhOpUmcQJmzbXY3tYPzkw==
-X-CSE-MsgGUID: pGmimFhrRYiNGhJLMHoUDw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11902"; a="93478928"
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="93478928"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 09:36:08 -0700
-X-CSE-ConnectionGUID: NxnlvRXQT7qrMwjZhXEZRw==
-X-CSE-MsgGUID: ga2lvyo+ScyIWwNg0IeyIA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="301873179"
-Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.80])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 09:36:06 -0700
-Date: Fri, 11 Sep 2026 19:36:03 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Hans de Goede <hansg@kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux PM <linux-pm@vger.kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <w_armin@gmx.de>
-Subject: Re: [PATCH v1 07/10] ACPI: thermal: Use cooling device parent for
- thermal zone binding
-Message-ID: <aqQt8-MlG3fiFw2-@ashevche-desk.local>
-References: <1965933.tdWV9SEqCh@rafael.j.wysocki>
- <9672996.CDJkKcVGEf@rafael.j.wysocki>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TMZ17gME"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 662721F00898
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 16:36:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789144600;
+	bh=3C4s74+fiXJ/Tb6yiCf0/1iEVRfCgm/jh1W3+HtsJ3c=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=TMZ17gMEE8s5IvageHa/O+f/XtGubOVZh4MhTDYMQ+a/3DNQbk0yZDrgtrW/Nsq7/
+	 oq5gtad/xl1qUlPZLlby3ug9t48hgOs1AfKPgrkQWGVHHtCG3hmwH4RS2Uo+LjrwhW
+	 wYBCP1UrB6fxudYEnWen9J1LGSVEP8kHHUGWghLGBkA4g/2dVpkPS/HXASyHIoS/Zj
+	 8+Mg6fEbPnVgPYotu71N2HdpaDWaPvJAd6Z1UuabI0BCxS6ygryv/3VlS+67irzOHY
+	 Cp3MpuhOXfFigsyaHOD8ebihn9dwqjnGpJBBSJ17wHgLnv/nczgkE/yVkW3rbZyzzo
+	 R9VSKduIno+Hw==
+Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-3a4fc78b556so10533811fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 09:36:40 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBx8dhD2SrBthhv80fqEOQlTijwK0EUgR0Mt96mflCJ6lmQGqWvYvyRUaFNBrIi7FOAsfoGORffheA==@vger.kernel.org
+X-Gm-Message-State: AFuF++k0TzLthCC642IVUedu4aWIlyYRkB4QSrbaGQHwk0bUNx71vkQS
+	qe5JUFuVV5bmOhB9jwTFowU/MbteBk6MvbTH7LXlJewyV8c4SCe6+7k1vP/9MFiXHkDVZArqcm1
+	JBhiyoky6laAV/tTDzS2fB9JfwsQvBtE=
+X-Received: by 2002:a05:6512:1388:b0:5b4:57a9:7030 with SMTP id
+ 2adb3069b0e04-5b8a030022emr1302589e87.22.1789144598708; Fri, 11 Sep 2026
+ 09:36:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9672996.CDJkKcVGEf@rafael.j.wysocki>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+References: <1965933.tdWV9SEqCh@rafael.j.wysocki> <3429468.aeNJFYEL58@rafael.j.wysocki>
+ <aqQr6bZjZziZVPyy@ashevche-desk.local>
+In-Reply-To: <aqQr6bZjZziZVPyy@ashevche-desk.local>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 11 Sep 2026 18:35:24 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gQq9ccqAG7V9op2397DCRQNTd1czSrb+1MUH2beG3WmQ@mail.gmail.com>
+X-Gm-Features: AcwNN1V8CKzRNX33jIWysP2iCQsd1ihJfAzZkt6oiefbfFP4XVPHk9H5IiXQu9I
+Message-ID: <CAJZ5v0gQq9ccqAG7V9op2397DCRQNTd1czSrb+1MUH2beG3WmQ@mail.gmail.com>
+Subject: Re: [PATCH v1 02/10] ACPI: video: Fix backlight unregistration ordering
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Hans de Goede <hansg@kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <w_armin@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 11, 2026 at 03:05:07PM +0200, Rafael J. Wysocki wrote:
+On Fri, Sep 11, 2026 at 6:27=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Fri, Sep 11, 2026 at 03:01:30PM +0200, Rafael J. Wysocki wrote:
+>
+> > In acpi_video_dev_unregister_backlight(), the sysfs interface of the
+> > cooling class device may access the brightness object under the
+> > backlight device's ACPI companion, so that object cannot be freed
+> > before unregistering the cooling class device.
+> >
+> > Adjust the code to take that into account.
+> >
+> > Fixes:
+>
+> Fixes?
 
-> The ACPI thermal zone .should_bind() callback function,
-> acpi_thermal_should_bind_cdev(), expects the given cooling device's
-> devdata to point to an ACPI device object whose ACPI handle should be
-> compared with ACPI handles in a list associated with the given trip
-> point.  That is not particularly straightforward and it effectively
-> requires the drivers of ACPI cooling devices to populate the devdata
-> with addresses of the ACPI companions of the devices they bind to.
-> Consequently, the devdata cannot be used by the driver for its own
-> needs which is its intended purpose.
-> 
-> That can be overcome with the help of the observation that the
-> ACPI device objects to be matched against the lists of ACPI handles
-> associated with trip points are in fact the ACPI companions of the
-> parents of cooling devices.  Thus instead of using the given cooling
-> device's devdata, it is sufficient to obtain the ACPI handle of its
-> parent and compare that ACPI handle with the ones in the list
-> associated with the given trip point.
+I thought I added it, but clearly I didn't.
 
-...
+It should be
 
-> +	parent_handle = ACPI_HANDLE(parent);
->  
-> -		if (acpi_fetch_acpi_dev(handle) == cdev_adev)
-> +	for (i = 0; i < acpi_trip->devices.count; i++) {
-> +		if (acpi_trip->devices.handles[i] == parent_handle)
+Fixes: 67b662e189f4 ("ACPI / video: seperate backlight control and
+event interface")
 
-device_match_acpi_handle() ?
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-		if (device_match_acpi_handle(parent, acpi_trip->devices.handles[i]))
+Will fix when applying unless there will be a v2.
 
->  			return true;
->  	}
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Thanks!
