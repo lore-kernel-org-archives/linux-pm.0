@@ -1,142 +1,94 @@
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8EDE489877
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 13:22:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D234C3B3898;
+	Fri, 11 Sep 2026 13:24:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789132967; cv=none; b=np8Qdo1GcrewijLPzGJ7FEFtLloD/8H+UGgsVRaf57bt8Q9j0hDhyye7ANm4ji+vwviR4ZS3mEQ9lbv3kI3nEGvcnkViTmSC5ObL+e3QI5kr8kKAWKyKvp1ViPF1n0wooxcnh6/3dB5xrrjZl90zG2//0GhMLOaWETbOyuMS2Gk=
+	t=1789133085; cv=none; b=e3dmku2Eoo89SEyVtHsxWGhWB60eqbk5Fj6uLdbhC5nNra23XbbAI6C6xqFklbxl7hFduNEPhEzNnpy6Hz7emdWG+GZwjH/qFgAdtNEHjfvZ6RzUuL+wtxusnCDboDpiyosijoxUK5q/bdhI50RJJfbuZlSAgT2ODXaQqgR5po4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789132967; c=relaxed/simple;
-	bh=T/e2vgzi/yX3haBVonSYMOMOZ1YJ8sxvxQcGMOKmPKs=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=XyeoBXxInWyGc6VULiWZKZuHVDF+Jl3WJpUjWTlz9t0VGmCFrkL5RUACuAs+Se140dGYcjzMOmsn/VMnV42mojD6duVihilAlCIW79D3V4rcOaeQ+iXSBvE1n7VeyIZZ6qxRNLqKBXLO0s4WuNuVv4K8GD/bnQUtX0xi5iQWf/w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=RLwvSvK3; arc=none smtp.client-ip=209.85.216.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com
+	s=arc-20240116; t=1789133085; c=relaxed/simple;
+	bh=c1iublC0mhypbTgIMf3D4kLe/BVlyAIs8VdYDIeTNYA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=At+SOQV3Ht0c0jHQ5Mfa9jb54fDpS/Ph9jX3RlLU62NxLo3rMJxVf2P12M6TgS/0J+l9fVEvTRiIPB3le1xN1noPn+sUtVubhipGD/hqCBRbnPLV4rD6I46vavyDun6ZO+5oqjO9VBDzS2Lh0PWxgOGNhp8zzeIQmRyc7dhCMiw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c8Eful+5; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="RLwvSvK3"
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-38ecc48b3c2so1391399a91.1
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 06:22:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789132963; x=1789737763; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kqAHaS5fsv9ERkHKe2Kmet0fUHotC014bD2kFqqX4to=;
-        b=RLwvSvK31Nx6W5e5cWd1Zwn3GrqgUoi6AhS072W/uylcwVwZ3gpe+kx6GEa9rIFlk0
-         FYF4erl5BDuLlexOocQCSN41l6ccwOOPma6v34CdMIG5khIVZqkDirlCdqv964QjHzjX
-         wPzKEn407qRm3Embbs+yCBCiSEJTY3Js8tzzleFdo1mBTOxt2yTNnE2xosV20WkoMQvM
-         wIayUAwD/BVN9hgLYwfzEr+DeuhSbiV33KL8FX8Bmqy/2DX9ttcVZLG7uRr6EAwczGFk
-         ZiDQLDEUQiAQ8XVcZzOaCJECezVH/N/QfYRIjvdt+E3bJGSQdWRG09uKOPUwfNDqFGFJ
-         twjA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789132963; x=1789737763;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kqAHaS5fsv9ERkHKe2Kmet0fUHotC014bD2kFqqX4to=;
-        b=brWG4dZEjSQUixyMM5RwvcWahqDP8EppR/8JySUnn+Nvb75opVfs525+OY68SqPllt
-         pevF0hyxVj0jx0kshFoc/2pwLNcft2lekmO9RFuSzjap5cPp8PhSZ2OYfRuZiBuXNz95
-         ZWDDdSKSdTtuj3lS2hzw5rFgL7nDpv4gJET8q4JTJplRzDkBoAazkW5jgLCg7xgCBRcQ
-         //9Ih5VYXvcPeBWLYcM/vhg9w7i+qyZqUowx9OO0ZT+tE/qw+8GNGYyLU9UNdeCaLoUf
-         Uy8XsiBLPDIWb8hRH48o1UOWdZmmwXlnBKez2cy8T9912CPuQt8Y53I9YwdABPEBiVV1
-         /iwg==
-X-Forwarded-Encrypted: i=1; AKwUvBxjJtdlKbKLh0TQ0iOJo5/HSTzoG2Es1nHleAVOe0DC1MsN1rAKDiXJoqZ0H5axa+LbWlaNgEjQWA==@vger.kernel.org
-X-Gm-Message-State: AFuF++l9FsRwf82ZoB8Gf6OLinrKv1+WBaZb8BfNwzm/xWfudEsFtHQB
-	70P1/HRTLkirT8Zsr7uUG23sXd/p8wDzFWe6g1SuVs7RK3klH7h2MT7GlJH2NFHbDZOi5xbNLMb
-	G1l/XSw==
-X-Received: from pjbmv13.prod.google.com ([2002:a17:90b:198d:b0:39d:8dae:7e6d])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3c89:b0:398:e46e:ade3
- with SMTP id 98e67ed59e1d1-39d9c39625dmr7169956a91.23.1789132962606; Fri, 11
- Sep 2026 06:22:42 -0700 (PDT)
-Date: Fri, 11 Sep 2026 06:22:41 -0700
-In-Reply-To: <20260911074530.3140830-13-jgross@suse.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c8Eful+5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B64011F000FF;
+	Fri, 11 Sep 2026 13:24:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789133083;
+	bh=SMYDo0mS8IruC7pcDUtbzz482fP6SAlsS4TJFBZn9o4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=c8Eful+50kpD+eujut74fJr+fd1tzE/IjB/xjLHj0OuSNTD3jto2hhX0XLHXY7JIs
+	 q7PKnA/+V0SS2S13WXUji0pzQiuX4dD8HuaQn9RSTq7PyBfdEgr7tk9pQWrB7Os2Nr
+	 ArgmZ7vJGuJhSyh6VU8wmTtp/LpDvDNgRYj535BCwkH8KfJBxPaP9X7BUYLJEnzAkz
+	 mFXfMe4zoASCJTxu8t6tkzDCglWrqG2oEYewCG90p6Orz47EkzTLRySSBKCzoGGdZ6
+	 CSeyfKPk4PJ82IrghuqVpXGlau0QL7Hx6vbGbwSHe5a+BMf0sor6hzVMlt97arsUeE
+	 SW7lScYP6NGcw==
+Date: Fri, 11 Sep 2026 13:24:39 +0000
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Doug Anderson <dianders@chromium.org>
+Cc: Mayank Rungta <mrungta@google.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] PM: sleep: Add DPM watchdog to
+ prepare/late/early/noirq/complete phases
+Message-ID: <aqQBFxCjSdPmFJXh@google.com>
+References: <20260909224818.2177311-1-mrungta@google.com>
+ <CAD=FV=WFBmq3kniULxcXNsKgY-Zrb82JfaX5uRWVewQi_tJyJw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260911074530.3140830-1-jgross@suse.com> <20260911074530.3140830-13-jgross@suse.com>
-Message-ID: <aqQAodJCAEZyeQ1k@google.com>
-Subject: Re: [PATCH v3 12/13] treewide: convert rdmsrq() from a macro to an
- inline function
-From: Sean Christopherson <seanjc@google.com>
-To: Juergen Gross <jgross@suse.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org, 
-	kvm@vger.kernel.org, virtualization@lists.linux.dev, 
-	linux-edac@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-coco@lists.linux.dev, 
-	linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-crypto@vger.kernel.org, 
-	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
-	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
-	James Clark <james.clark@linaro.org>, "K. Y. Srinivasan" <kys@microsoft.com>, 
-	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
-	Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>, 
-	Alexey Makhalov <alexey.makhalov@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-	Josh Poimboeuf <jpoimboe@kernel.org>, Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, 
-	Pu Wen <puwen@hygon.cn>, Tony Luck <tony.luck@intel.com>, 
-	Reinette Chatre <reinette.chatre@intel.com>, Dave Martin <Dave.Martin@arm.com>, 
-	James Morse <james.morse@arm.com>, Babu Moger <babu.moger@amd.com>, 
-	Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
-	Andy Lutomirski <luto@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Kiryl Shutsemau <kas@kernel.org>, 
-	Rick Edgecombe <rick.p.edgecombe@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
-	Len Brown <lenb@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
-	David Airlie <airlied@redhat.com>, Olivia Mackall <olivia@selenic.com>, 
-	Herbert Xu <herbert@gondor.apana.org.au>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Huang Rui <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, 
-	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, Artem Bityutskiy <dedekind1@gmail.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, 
-	Vignesh Raghavendra <vigneshr@ti.com>, Ashok Raj <ashok.raj.linux@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, 
-	"Ilpo =?utf-8?B?SsOkcnZpbmVu?=" <ilpo.jarvinen@linux.intel.com>, 
-	Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>, Xi Pardee <xi.pardee@linux.intel.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Helge Deller <deller@gmx.de>, xen-devel@lists.xenproject.org, 
-	linux-geode@lists.infradead.org, Michael Kelley <mhklinux@outlook.com>
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAD=FV=WFBmq3kniULxcXNsKgY-Zrb82JfaX5uRWVewQi_tJyJw@mail.gmail.com>
 
-On Fri, Sep 11, 2026, Juergen Gross wrote:
-> Today rdmsrq() is a macro using its second parameter as the target for
-> storing the read MSR value.
+On Thu, Sep 10, 2026 at 10:01:40AM -0700, Doug Anderson wrote:
+> On Wed, Sep 9, 2026 at 3:48 PM Mayank Rungta <mrungta@google.com> wrote:
+> >
+> > Extend the DPM watchdog to wrap device_prepare, device_suspend_late,
+> > device_suspend_noirq, device_resume_noirq, device_resume_early, and
+> > device_complete callbacks. If a driver hangs during these transitions,
+> > the watchdog will fire and dump a stack trace to help identify the
+> > offending driver.
+> >
+> > To prevent false-positive timeouts, the watchdog is set only after
+> > waiting for subordinate (during suspend) and superior (during resume)
+> > devices. With this change, DPM watchdog coverage is extended across all
+> > phases of system sleep transitions.
+> >
+> > Signed-off-by: Mayank Rungta <mrungta@google.com>
+> > ---
+> > v2:
+> >  - Extend DPM watchdog to device_prepare and device_complete callbacks.
+> >  - Update commit subject and description to reflect coverage across all
+> >    system sleep phases.
+> > v1:
+> >  - Initial version adding DPM watchdog to late/early/noirq phases.
+> >
+> > Testing:
+> >  - Tested on an ARM64 SoC (Pixel platform running a 6.18-based kernel with
+> >    DPM watchdog enabled; Android 6.18 kernel has latest DPM changes
+> >    backported).
+> >  - Verified hang simulation in device_prepare and device_complete
+> >    triggers DPM watchdog panic and stack trace as expected.
+> >
+> >  drivers/base/power/main.c | 31 ++++++++++++++++++++++++++++---
+> >  1 file changed, 28 insertions(+), 3 deletions(-)
 > 
-> Convert rdmsrq() to an inline function returning the MSR value.
+> Thanks! I guess you dropped my (and Tzung-Bi's) Reviewed-by tags
+> because of the minor changes between v1 and v2? They look right to me,
+> so:
 > 
-> The users have been converted using the following semantic patch:
-> 
->   // Options: --include-headers
-> 
->   virtual patch
->   virtual report
-> 
->   @@
->   expression msr, val;
->   @@
->   (
->   - rdmsrq(msr,val)
->   + val = rdmsrq(msr)
->   )
-> 
-> Signed-off-by: Juergen Gross <jgross@suse.com>
-> Acked-by: Damien Le Moal <dlemoal@kernel.org>      # ATA
-> Reviewed-by: Michael Kelley <mhklinux@outlook.com> # Hyper-V
-> ---
+> Reviewed-by: Douglas Anderson <dianders@chromium.org>
 
-Acked-by: Sean Christopherson <seanjc@google.com>
+They look right to me too:
+Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
