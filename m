@@ -1,143 +1,104 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CFFD2DBF75
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:00:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 967A33546E1
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:22:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789135226; cv=none; b=J5e6qMebWtJhgAgVB2hnlGml0eMKZyIfoAF3PKIqadpKscVJ2Jf5DR8advRovxMWAebOHqwwp9vGWFf8nzzKZOmWKEkTd3IRxFi3W8Gi+WuADoyHfKo8QzNXx+A/XSpWk1vpihNFZR4xfQPNogcMdPUTYoOa97W5ikrpW98b8lo=
+	t=1789136547; cv=none; b=bV/WpRPDgIZM7/cnato+osXfBQX7nwAqqjZHiA1KEWF8UWlkhbwvVf0J5ZhHavfzkmd1cROG7mJlRqfk0BnS0+5YEeQv9c+jAktRlReoOaqHQQwfwQQ3+lYP47qnc7seM5ROOdNAw7/cHXdNnMRgOsKG70FmsRDyLSsNoEtKqoo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789135226; c=relaxed/simple;
-	bh=QtLZA+ULAVkVT9zCaFpxebfpTBd1fg/pQubdm+Ig1g8=;
+	s=arc-20240116; t=1789136547; c=relaxed/simple;
+	bh=CKEQ5986CV/kzwyn5wRQ5Od0ZfAMuzoy3/vGXU7ndXw=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=enWbosDAK9bS9WFm/9QbtfGxAg5PV0zxGqCHt8dScz9GJQUmwpeqqNJ5IauXIf+3G/WVISMZu+n4iKT8knHuDcWOzFa/NAztiKzzLoFaLZ2KkKvMoOD5k2UOpPzCqLR4Hre0CwdwzZpEB5W7QjEJETSWQ5seJUmD/rHFUJx/tl0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TTaKjKbh; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=Ak7HIGhU4L8n0WPOilZQfbFhlQonx8iWflX8wwMjArpiiXUqyU21dote7Ef8e9RAC6wBAtWm8HTPUnyzjHi+yLGSxgfWZKDsh7Y/t5RP6vcucaX5F1S3gn9Rx7+HB80bbeMxmuOjelYpbUnfTHCF7FraB41fF3a7YJatPDoySvw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y7tOSJfx; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TTaKjKbh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 295641F00898
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:00:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y7tOSJfx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55FF41F00893
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:22:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789135225;
-	bh=yiKj60S8DsIYKIAdieFgjY3Igb40tzRThNJqwWl5Uqg=;
+	s=k20260515; t=1789136545;
+	bh=TxAn6ueekm44HEOWY30thTo349hdrLwTtPKtsmgWunA=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=TTaKjKbhkjh3xwRi9tZsg/UrgQfPp5yRJhnraHZrBoY9xhZC46qNrPujGO9Lq64Oz
-	 fHXmdFK+ByT9QCz2/wNenMSLcsh/yyMQj13BcAjGYLBvJSyzZN/Kzn7EwCJMN4SzQm
-	 G4fIZ9MYGUd/c8vSv/d1Sqy+zObS1PVX8xiLBp6WEgZJvtWY3iO2E2xTUth9In/4DD
-	 4aiGD6ILXy9Fu9RwFa0TJtJ27+18IXpQELZlfAC8NdX4x+FITfaRCNHt2TkKo7AwCW
-	 p1e1mRQePxBSCblnVf5Yk0pbN3GHYIiK9VSIBloYjj3PBupk5qEBmFr+Ntgs4z0efD
-	 WJtAGucjyDlpw==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3a2e985245eso7768801fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:00:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByZT/ulH7f+mdWaVHZOlqUGTO2RV1R/LDYQ3hasqth+jsRCJaUR3qhyscCWQoof+kU5DsXlW9j9DA==@vger.kernel.org
-X-Gm-Message-State: AFuF++mFr1BrVg+T6vrED2dog3IKDViObvHBArfA8OtipWWwXUax8DrC
-	WvKP/ctDPQbzGJMF63sDzaDancVZxTLjEzKAVNBHOU8RetlcJi/n/kGGaZQaJfB7BhNxC9YXI32
-	lGoE+cJLSaQMCHvKrGKXikFrhxlUabG8=
-X-Received: by 2002:a05:651c:2123:b0:3a5:970b:5531 with SMTP id
- 38308e7fff4ca-3a5a51d08bbmr5001891fa.14.1789135223494; Fri, 11 Sep 2026
- 07:00:23 -0700 (PDT)
+	b=Y7tOSJfxrk5G6npv+DhJi1lYpeo6/FikZNipxLmIw3AKHllZVyFuBr0Wm0sHPgr8+
+	 RN2ChT+R95Rs4+T6xp5dAQ4Tl2nsvfVXDKHJUqmB6GbSrV4X+oClILQXedWmwvR3PU
+	 T61+LGgkaUuj+7yBvjlYTdh4AaPu9ZoPe/c9BQwXlv5lCzRueC9j+XIjaDCnNZSIOt
+	 0iWNQwPYHkzF2XVigsesYNOl/GVeJapFpcKZFeBv9xj3r3c1rP1mO6fMAoNKTW7gVU
+	 wDGjaH79SsbFuw4vkvtXfDiUOO9qbe06gXSs2hMgxyGw0BwiP2/Ncn/FIUlbg8Bc04
+	 GZDjJdMW4AJaw==
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3a4fc78b556so8920761fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:22:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxKN2uflIFQhZn1vB+yF19/0q6mC4e0l4BeI0JX6x32vhncSYvy7u9LIsNxPoOP8rVkz6DbsNfKTQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++ltYNP0oqhJu5497koKNb/qM083M8oZNRLT576F/2c/P2E8gw8S
+	Bz/4E/PhxfqeOyMkG69YoH1eyAWKejqWNE3MqMCN8cqT0hDjUzWlqZA71pUR1RQah2LzXcIonXM
+	uyjweNbE7qQTeiTp/iW8tAeWdoPtVrqg=
+X-Received: by 2002:a05:651c:211c:b0:3a3:42cf:c035 with SMTP id
+ 38308e7fff4ca-3a5a505d60amr4839001fa.2.1789136543723; Fri, 11 Sep 2026
+ 07:22:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260826-topic-lpm-pmdomain-device-constraints-v5-0-28cbf43f7e38@baylibre.com>
- <20260826-topic-lpm-pmdomain-device-constraints-v5-2-28cbf43f7e38@baylibre.com>
-In-Reply-To: <20260826-topic-lpm-pmdomain-device-constraints-v5-2-28cbf43f7e38@baylibre.com>
+References: <20260827094820.3900062-1-luoxueqin@kylinos.cn>
+In-Reply-To: <20260827094820.3900062-1-luoxueqin@kylinos.cn>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 11 Sep 2026 15:59:10 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iOaZtVym4Em=5uSNQR_3kjJTcNdStEzqp5NGLnN23VNw@mail.gmail.com>
-X-Gm-Features: AcwNN1WSBTQt8J2dSWKjJqkyi00TePx6ndOCuV4eqX4r99NCW2VlQOm6oGKZw_Y
-Message-ID: <CAJZ5v0iOaZtVym4Em=5uSNQR_3kjJTcNdStEzqp5NGLnN23VNw@mail.gmail.com>
-Subject: Re: [PATCH v5 2/4] PM / QoS: add lockless read for flags
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
-	Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org, 
-	Kendall Willis <k-willis@ti.com>
+Date: Fri, 11 Sep 2026 16:21:10 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ihYqbucMQeJE_ZtbUbhBERmvN=YrvqAtT_fG+9k0F5Lg@mail.gmail.com>
+X-Gm-Features: AcwNN1Wb1x4Wa89YnnzehnAvHYl21bHVksfC4doTtVVYnu6JAUsT7uHn6sZzk2I
+Message-ID: <CAJZ5v0ihYqbucMQeJE_ZtbUbhBERmvN=YrvqAtT_fG+9k0F5Lg@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: menu: Do not return a disabled idle state
+To: Xueqin Luo <luoxueqin@kylinos.cn>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, christian.loehle@arm.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 27, 2026 at 12:23=E2=80=AFAM Kevin Hilman (TI) <khilman@baylibr=
-e.com> wrote:
+On Thu, Aug 27, 2026 at 11:48=E2=80=AFAM Xueqin Luo <luoxueqin@kylinos.cn> =
+wrote:
 >
-> Add a lockless read for QoS flags similar to the lockless read for
-> resume latency (dev_pm_qos_raw_resume_latency) which may be called
-> from atomic context (e.g. genpd governors running under a raw spinlock
-> or in the syscore suspend path), where taking that sleeping lock would
-> be invalid on PREEMPT_RT.
+> When idle state 0 is disabled and the PM QoS latency constraint is
+> zero (latency_req =3D=3D 0), the first branch of the || in the early-retu=
+rn
+> condition of menu_select() is taken immediately, so state 0 is returned
+> regardless of its disable flag.
 >
-> dev_pm_qos_raw_flags() now reads dev->power.qos->flags.effective_flags
-> with READ_ONCE() so also add corresponding WRITE_ONCE() to the two
-> effective_flags writes, the same way pm_qos_set_value() already does
-> for target_value/pm_qos_read_value().
+> Address this by making the !disable check a prerequisite for the entire
+> early-return condition, so that when state 0 is disabled the normal
+> state selection loop is used instead, which already skips disabled
+> states.
 >
-> Reviewed-by: Kendall Willis <k-willis@ti.com>
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
-
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-
-and please route this one as suitable.
-
-And sorry for the delay.
-
+> Fixes: 53812cdc9100 ("cpuidle: menu: Move the latency_req =3D=3D 0 specia=
+l case check")
+> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
 > ---
->  include/linux/pm_qos.h | 7 +++++++
->  kernel/power/qos.c     | 4 ++--
->  2 files changed, 9 insertions(+), 2 deletions(-)
+>  drivers/cpuidle/governors/menu.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >
-> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index aededda52b6b..439a9e779d81 100644
-> --- a/include/linux/pm_qos.h
-> +++ b/include/linux/pm_qos.h
-> @@ -219,6 +219,12 @@ static inline s32 dev_pm_qos_raw_resume_latency(stru=
-ct device *dev)
->                 PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
->                 pm_qos_read_value(&dev->power.qos->resume_latency);
->  }
-> +
-> +static inline s32 dev_pm_qos_raw_flags(struct device *dev)
-> +{
-> +       return IS_ERR_OR_NULL(dev->power.qos) ?
-> +               0 : READ_ONCE(dev->power.qos->flags.effective_flags);
-> +}
->  #else
->  static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device =
-*dev,
->                                                           s32 mask)
-> @@ -300,6 +306,7 @@ static inline s32 dev_pm_qos_raw_resume_latency(struc=
-t device *dev)
->  {
->         return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
->  }
-> +static inline s32 dev_pm_qos_raw_flags(struct device *dev) { return 0; }
->  #endif
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors=
+/menu.c
+> index 544a5d593007..eb529d73d4b7 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -284,10 +284,10 @@ static int menu_select(struct cpuidle_driver *drv, =
+struct cpuidle_device *dev,
+>                 data->bucket =3D BUCKETS - 1;
+>         }
 >
->  static inline int freq_qos_request_active(struct freq_qos_request *req)
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index 1944dbeb0d4c..c241da5bccf6 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -159,7 +159,7 @@ static void pm_qos_flags_remove_req(struct pm_qos_fla=
-gs *pqf,
->         list_for_each_entry(req, &pqf->list, node)
->                 val |=3D req->flags;
->
-> -       pqf->effective_flags =3D val;
-> +       WRITE_ONCE(pqf->effective_flags, val);
->  }
->
->  /**
-> @@ -193,7 +193,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
->                 req->flags =3D val;
->                 INIT_LIST_HEAD(&req->node);
->                 list_add_tail(&req->node, &pqf->list);
-> -               pqf->effective_flags |=3D val;
-> +               WRITE_ONCE(pqf->effective_flags, pqf->effective_flags | v=
-al);
->                 break;
->         default:
->                 /* no action */
->
+> -       if (latency_req =3D=3D 0 ||
+> -           ((data->next_timer_ns < drv->states[1].target_residency_ns ||
+> -             latency_req < drv->states[1].exit_latency_ns) &&
+> -            !dev->states_usage[0].disable)) {
+> +       if (!dev->states_usage[0].disable &&
+> +           (latency_req =3D=3D 0 ||
+> +            data->next_timer_ns < drv->states[1].target_residency_ns ||
+> +            latency_req < drv->states[1].exit_latency_ns)) {
+>                 /*
+>                  * In this case state[0] will be used no matter what, so =
+return
+>                  * it right away and keep the tick running if state[0] is=
+ a
 > --
-> 2.47.3
->
+
+Applied as 7.4 material, thanks!
