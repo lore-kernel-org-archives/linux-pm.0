@@ -1,129 +1,143 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91D4A48595B
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 13:56:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CFFD2DBF75
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:00:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789135008; cv=none; b=MBkfz8tkPlmMghoakyU2U/aY62rff7SnobZbEyFn1IHwrFtCGbLqPmXECikY+dFyYu1O2SyrFE1fsfAUFOJl4KJAwZrmv1+eUlyuIANyC0ib/z/hc6ylrdR4In8fM3tFRr1+UXAdehyLO3zXgcCtXz/NctUbXoPmd3PyMwVxk6w=
+	t=1789135226; cv=none; b=J5e6qMebWtJhgAgVB2hnlGml0eMKZyIfoAF3PKIqadpKscVJ2Jf5DR8advRovxMWAebOHqwwp9vGWFf8nzzKZOmWKEkTd3IRxFi3W8Gi+WuADoyHfKo8QzNXx+A/XSpWk1vpihNFZR4xfQPNogcMdPUTYoOa97W5ikrpW98b8lo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789135008; c=relaxed/simple;
-	bh=F8YOyMdfp95sQVvBaT3u+TAiVvhaPdHZRKtdPC/Qu9Y=;
+	s=arc-20240116; t=1789135226; c=relaxed/simple;
+	bh=QtLZA+ULAVkVT9zCaFpxebfpTBd1fg/pQubdm+Ig1g8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=P5kDHQrQk3uW/+wSIOoMI/7cqwMzJBCF5N6fp+hyjPtxpxosNf8Csojxd6Do6UJ/QLkVUcDGxZbsRgz7U61jmvkPZYRwZVDLjtAIywWvKTL1giuir6/I3vmxng0+lLGoNUKLqFUwbUsvBCYjBhGGVvJDk8tcw5L6MV9cOHVn9ZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EkywjBj0; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=enWbosDAK9bS9WFm/9QbtfGxAg5PV0zxGqCHt8dScz9GJQUmwpeqqNJ5IauXIf+3G/WVISMZu+n4iKT8knHuDcWOzFa/NAztiKzzLoFaLZ2KkKvMoOD5k2UOpPzCqLR4Hre0CwdwzZpEB5W7QjEJETSWQ5seJUmD/rHFUJx/tl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TTaKjKbh; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EkywjBj0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16BC31F0089A
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 13:56:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TTaKjKbh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 295641F00898
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 14:00:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789135007;
-	bh=b36sG5el4/5Hy8E9T+/E7xqNZnVB19OuoYAC/FxjORo=;
+	s=k20260515; t=1789135225;
+	bh=yiKj60S8DsIYKIAdieFgjY3Igb40tzRThNJqwWl5Uqg=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=EkywjBj0u5q+muxzaU2rsWySGVINxEaXQCIj/BP/pzu0tW922og1viI1ROjUaFaPk
-	 BmgTYz2HPjjfbMjXiqaePOQ+ZwN+aPCfnAloZspzZKwMLC7vwdl18MRQ03xU2Np9GK
-	 Hdap62Khy6PKeqB3CE2cNCtxSFCmAOBoNauUdXVVf4vkYPXvlez1uOx5aXRUNV+fht
-	 QIT5xDzCgWx8x4D7no/1lWjRd8fK32VzUTE7Qldr62/8fqwxLU6QzFt7N5cgJ8QSTe
-	 zSHOznk+X6ks3AjwP36c6ZEo9LkrgfT3ED3NC/OKss46cHp1yf6NuMn7lLdxRVeQ2j
-	 K21LqI8/2cxkg==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16f16so1007017e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 06:56:46 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBz0cLRqaxgmgsV3kjIin0aqvNj5n0eRf2CKOdpYo+Xicl+3/aWp7jzC0MZlAGexpdBKkU2bot9bng==@vger.kernel.org
-X-Gm-Message-State: AFuF++nG/7nb14AWzSEGGTmuwrOWwbmuRStcf3whH3XbQnsJ+iw4FX3K
-	FEwRg+RRKLlUepd804/7dzdZBYG8ApSrzEBd5qY8bOW3sKWUCau01/mv488EAS9Imra1mdN60Fa
-	2ZSdNbDMunX86l9KEfRN/4A2x/etfabA=
-X-Received: by 2002:a05:6512:3f23:b0:5b6:6af:4e0e with SMTP id
- 2adb3069b0e04-5b8a02dccabmr1900750e87.3.1789135005397; Fri, 11 Sep 2026
- 06:56:45 -0700 (PDT)
+	b=TTaKjKbhkjh3xwRi9tZsg/UrgQfPp5yRJhnraHZrBoY9xhZC46qNrPujGO9Lq64Oz
+	 fHXmdFK+ByT9QCz2/wNenMSLcsh/yyMQj13BcAjGYLBvJSyzZN/Kzn7EwCJMN4SzQm
+	 G4fIZ9MYGUd/c8vSv/d1Sqy+zObS1PVX8xiLBp6WEgZJvtWY3iO2E2xTUth9In/4DD
+	 4aiGD6ILXy9Fu9RwFa0TJtJ27+18IXpQELZlfAC8NdX4x+FITfaRCNHt2TkKo7AwCW
+	 p1e1mRQePxBSCblnVf5Yk0pbN3GHYIiK9VSIBloYjj3PBupk5qEBmFr+Ntgs4z0efD
+	 WJtAGucjyDlpw==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3a2e985245eso7768801fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 07:00:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByZT/ulH7f+mdWaVHZOlqUGTO2RV1R/LDYQ3hasqth+jsRCJaUR3qhyscCWQoof+kU5DsXlW9j9DA==@vger.kernel.org
+X-Gm-Message-State: AFuF++mFr1BrVg+T6vrED2dog3IKDViObvHBArfA8OtipWWwXUax8DrC
+	WvKP/ctDPQbzGJMF63sDzaDancVZxTLjEzKAVNBHOU8RetlcJi/n/kGGaZQaJfB7BhNxC9YXI32
+	lGoE+cJLSaQMCHvKrGKXikFrhxlUabG8=
+X-Received: by 2002:a05:651c:2123:b0:3a5:970b:5531 with SMTP id
+ 38308e7fff4ca-3a5a51d08bbmr5001891fa.14.1789135223494; Fri, 11 Sep 2026
+ 07:00:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260813074343.26460-1-include@grrlz.net> <20260813074343.26460-2-include@grrlz.net>
- <CAJZ5v0iLnyRzM2g-k5ky0ofgVOttYU5w5Agb0EE21ejS_vWJ0g@mail.gmail.com>
-In-Reply-To: <CAJZ5v0iLnyRzM2g-k5ky0ofgVOttYU5w5Agb0EE21ejS_vWJ0g@mail.gmail.com>
+References: <20260826-topic-lpm-pmdomain-device-constraints-v5-0-28cbf43f7e38@baylibre.com>
+ <20260826-topic-lpm-pmdomain-device-constraints-v5-2-28cbf43f7e38@baylibre.com>
+In-Reply-To: <20260826-topic-lpm-pmdomain-device-constraints-v5-2-28cbf43f7e38@baylibre.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 11 Sep 2026 15:55:31 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0ji8c=6cOYkjfpFn67S-f1HnNrEA8BSGBy=3f_imfWY7g@mail.gmail.com>
-X-Gm-Features: AcwNN1X0G_P-S1OhMzoDuD8NpLWCDSaHmGRtMxgK0cawd9QaBz92LM5db7aWHuY
-Message-ID: <CAJZ5v0ji8c=6cOYkjfpFn67S-f1HnNrEA8BSGBy=3f_imfWY7g@mail.gmail.com>
-Subject: Re: [PATCH 1/2] clocksource/drivers/timer-ti-dm: Unregister CPU PM
- notifier outside of the timer lock
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Bradley Morgan <include@grrlz.net>
-Cc: Thierry Reding <treding@nvidia.com>, Daniel Leznan <daniel.lezcano@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Valentin Schneider <vschneid@redhat.com>, Rosen Penev <rosenp@gmail.com>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 11 Sep 2026 15:59:10 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iOaZtVym4Em=5uSNQR_3kjJTcNdStEzqp5NGLnN23VNw@mail.gmail.com>
+X-Gm-Features: AcwNN1WSBTQt8J2dSWKjJqkyi00TePx6ndOCuV4eqX4r99NCW2VlQOm6oGKZw_Y
+Message-ID: <CAJZ5v0iOaZtVym4Em=5uSNQR_3kjJTcNdStEzqp5NGLnN23VNw@mail.gmail.com>
+Subject: Re: [PATCH v5 2/4] PM / QoS: add lockless read for flags
+To: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org, 
+	Kendall Willis <k-willis@ti.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 4, 2026 at 4:17=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
+On Thu, Aug 27, 2026 at 12:23=E2=80=AFAM Kevin Hilman (TI) <khilman@baylibr=
+e.com> wrote:
 >
-> On Thu, Aug 13, 2026 at 9:43=E2=80=AFAM Bradley Morgan <include@grrlz.net=
-> wrote:
-> >
-> > omap_dm_timer_remove() calls cpu_pm_unregister_notifier() with
-> > dm_timer_lock held and interrupts disabled. Nothing sleeps in there
-> > today, but it pins the helper into a context where it can never be
-> > allowed to sleep, which is in the way of restoring the RCU grace
-> > period on the cpu_pm notifier chain.
-> >
-> > Do the list lookup under the lock and move the unregister after the
-> > unlock. Nothing can race it at that point: remove() owns the device,
-> > and once the timer is off the list nobody can reach it anymore.
-> >
-> > Signed-off-by: Bradley Morgan <include@grrlz.net>
-> > ---
-> >  drivers/clocksource/timer-ti-dm.c | 9 ++++++---
-> >  1 file changed, 6 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/clocksource/timer-ti-dm.c b/drivers/clocksource/ti=
-mer-ti-dm.c
-> > index bd06afb7d522..032e102bdd0a 100644
-> > --- a/drivers/clocksource/timer-ti-dm.c
-> > +++ b/drivers/clocksource/timer-ti-dm.c
-> > @@ -1530,7 +1530,7 @@ static int omap_dm_timer_probe(struct platform_de=
-vice *pdev)
-> >   */
-> >  static void omap_dm_timer_remove(struct platform_device *pdev)
-> >  {
-> > -       struct dmtimer *timer;
-> > +       struct dmtimer *timer, *found =3D NULL;
-> >         unsigned long flags;
-> >         int ret =3D -EINVAL;
-> >
-> > @@ -1538,14 +1538,17 @@ static void omap_dm_timer_remove(struct platfor=
-m_device *pdev)
-> >         list_for_each_entry(timer, &omap_timer_list, node)
-> >                 if (!strcmp(dev_name(&timer->pdev->dev),
-> >                             dev_name(&pdev->dev))) {
-> > -                       if (!(timer->capability & OMAP_TIMER_ALWON))
-> > -                               cpu_pm_unregister_notifier(&timer->nb);
-> >                         list_del(&timer->node);
-> > +                       found =3D timer;
-> >                         ret =3D 0;
-> >                         break;
-> >                 }
-> >         spin_unlock_irqrestore(&dm_timer_lock, flags);
-> >
-> > +       /* Unregister outside the lock: cpu_pm_unregister_notifier() ma=
-y sleep. */
-> > +       if (found && !(found->capability & OMAP_TIMER_ALWON))
-> > +               cpu_pm_unregister_notifier(&found->nb);
-> > +
-> >         pm_runtime_disable(&pdev->dev);
-> >
-> >         if (ret)
-> > --
+> Add a lockless read for QoS flags similar to the lockless read for
+> resume latency (dev_pm_qos_raw_resume_latency) which may be called
+> from atomic context (e.g. genpd governors running under a raw spinlock
+> or in the syscore suspend path), where taking that sleeping lock would
+> be invalid on PREEMPT_RT.
 >
-> Nobody seems to be interested in this patch, but Sashiko only sees
-> pre-existing issues related to it:
+> dev_pm_qos_raw_flags() now reads dev->power.qos->flags.effective_flags
+> with READ_ONCE() so also add corresponding WRITE_ONCE() to the two
+> effective_flags writes, the same way pm_qos_set_value() already does
+> for target_value/pm_qos_read_value().
 >
-> https://sashiko.dev/#/patchset/20260813074343.26460-1-include%40grrlz.net
->
-> and the second patch in the series depends on it, so in the absence of
-> any objections or concerns, I'm going to apply them both.
+> Reviewed-by: Kendall Willis <k-willis@ti.com>
+> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 
-And so applied as 7.4 material, thanks!
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+
+and please route this one as suitable.
+
+And sorry for the delay.
+
+> ---
+>  include/linux/pm_qos.h | 7 +++++++
+>  kernel/power/qos.c     | 4 ++--
+>  2 files changed, 9 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index aededda52b6b..439a9e779d81 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -219,6 +219,12 @@ static inline s32 dev_pm_qos_raw_resume_latency(stru=
+ct device *dev)
+>                 PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
+>                 pm_qos_read_value(&dev->power.qos->resume_latency);
+>  }
+> +
+> +static inline s32 dev_pm_qos_raw_flags(struct device *dev)
+> +{
+> +       return IS_ERR_OR_NULL(dev->power.qos) ?
+> +               0 : READ_ONCE(dev->power.qos->flags.effective_flags);
+> +}
+>  #else
+>  static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device =
+*dev,
+>                                                           s32 mask)
+> @@ -300,6 +306,7 @@ static inline s32 dev_pm_qos_raw_resume_latency(struc=
+t device *dev)
+>  {
+>         return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+>  }
+> +static inline s32 dev_pm_qos_raw_flags(struct device *dev) { return 0; }
+>  #endif
+>
+>  static inline int freq_qos_request_active(struct freq_qos_request *req)
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 1944dbeb0d4c..c241da5bccf6 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -159,7 +159,7 @@ static void pm_qos_flags_remove_req(struct pm_qos_fla=
+gs *pqf,
+>         list_for_each_entry(req, &pqf->list, node)
+>                 val |=3D req->flags;
+>
+> -       pqf->effective_flags =3D val;
+> +       WRITE_ONCE(pqf->effective_flags, val);
+>  }
+>
+>  /**
+> @@ -193,7 +193,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+>                 req->flags =3D val;
+>                 INIT_LIST_HEAD(&req->node);
+>                 list_add_tail(&req->node, &pqf->list);
+> -               pqf->effective_flags |=3D val;
+> +               WRITE_ONCE(pqf->effective_flags, pqf->effective_flags | v=
+al);
+>                 break;
+>         default:
+>                 /* no action */
+>
+> --
+> 2.47.3
+>
