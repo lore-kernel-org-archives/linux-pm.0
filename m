@@ -1,259 +1,194 @@
-Received: from mail-yx1-f44.google.com (mail-yx1-f44.google.com [74.125.224.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from ixit.cz (ixit.cz [84.42.129.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F11A44AA3F3
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 18:21:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.44
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789150875; cv=pass; b=rWnLJxlEuPE6Aqxu4rJfuuGYH6z5qzW5iMcXJYVlCzJDMNtN+vqPMT0N9FhfPhokHfJojDkiqLaOm3dEK1QgkLuysOVO3RqNPYoOezrwVgF7yp/VRK9OhcQASMr9IYraRmhcGPIn3Zls2kgcq3O2DSMgnMH1bdDiEv0tmEgmELo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789150875; c=relaxed/simple;
-	bh=ospiNi4mvJbHDyKvltQYpdK+X0l90zSr5sr0fKih89Q=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lvrTAoNl+YPNmD0RxBWH6V3i5dgm9JABTe6kqsI6IYg7lEWu2nZXoxkXDRtQmj39XLENoV0a31nIEjOm7gcg7XnfN4VNBqPdEZQrbBvL/NSrwCzrGF7CY8jNarKTZFcThxJB3j1QZ5gDqopt5h5GkSPvpsoGXi3BTBTykO1/5Pc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ePCVvAZO; arc=pass smtp.client-ip=74.125.224.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F07F34AF9DC;
+	Fri, 11 Sep 2026 18:42:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789152130; cv=none; b=S50kvfUKgxo7jZyZRc+ROu0LbvFsblKNMq6XUzkt9YH45+4buxbWupsgViYiC9FAfWWPXVU3gJASkQWRz1HBSq7HjEwMgt1sw/be2jY8DqJrSfuQnV8fsnVhwYJncVN5XroXpWM4crMKr/LeOmarVavkseDIkyIpNr/6OXk2OnU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789152130; c=relaxed/simple;
+	bh=UBYUwVJ+HLAWNIXYST+Re1c1Q5Ue1zkuzoGOShspLXU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oJDmd8zvpjdk8oSlUEg5lsJSXBAUlkeFn5NZBV6B6h1KlTdQ1+JHBVRoqTayxho/ewQaic8EzYkv+269/LpFBUdv1sTIIqPlXGMhvyXyztDE4pTyxo6SGScjLR9BijEKDS/GhjJwbZa6qSlVX0Eoyyhm2unGPUywVLSaX6q67iw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=BEWDvx0k; arc=none smtp.client-ip=84.42.129.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ePCVvAZO"
-Received: by mail-yx1-f44.google.com with SMTP id 956f58d0204a3-671061b015eso1382166d50.1
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 11:21:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789150869; cv=none;
-        d=google.com; s=arc-20260327;
-        b=ZxYZ60eT63YIeL8lK3jlZfUbMWAp1KClb8muxEy6D51slCNvuPD1yOlCxFZ0iRoOUz
-         imhKlP2nmobcYPsw/4NfnEBeLtTfuNhUekAKqtk8P58YBse1Zare/jOQAiRm0fm6qsIZ
-         EfZ7ILE+JKWiXxNX+Qg7zo8zcKYhz9YG30DLvrKdS9KpsyeOg6FemboHJrVydqrD6x67
-         fKR9A0n4Mc1DovgDt0mmF+u6rLtXsmug2Sg1W56j0ImfYfwz4pIk7NJSOTSBGV/kspcg
-         jXyp7Te/JTRcnYQxZNXRdU51CIATaiQd0gASjyQZTwW18liTs6dAXCyo6tceufLUj1xv
-         b1VQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=0PfkoOh/05AN64bzT3WIDHrUSVJxMax1VSqub7HGYzA=;
-        fh=5etonGnSGTqp6tSuG8PNG5KtEvCezSSYh9bJjULrqzw=;
-        b=S4TZJsz+4Zp6Qi2PJ4PDnbzqb+bjdASkotSxFW001sqHJk/gMpzhWMTQTpU9Wwczzf
-         Y9Ef0ChaikfaIJgEeLQ3QjIsne3RkPXIglDBrbDhTr7QF1tjITA+kIH/hcR8Vm44OHFa
-         Np2NdbeV4XShrWEfWJYZLDtQLsv8oX2ZnHQ/0o/2S4quIpmh9BdIkeqLs6EBZMscTyzo
-         ivIJDWQBfKo5P5TqZnDlCVLybo0n1bw/1pMwzSyw2MnN4BXAOmcjl2KnsDED3CjS2Vp+
-         ZnwY0/73I02D+KWNZNFAAXtnpB1eYUrfgjNzdNBmaIt+IUJFolaHjV4XskI7MtRl8xX0
-         PKIA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789150869; x=1789755669; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=0PfkoOh/05AN64bzT3WIDHrUSVJxMax1VSqub7HGYzA=;
-        b=ePCVvAZOucaz3Du47vnaY9QiJGuFrq1XOFX02ygIGcK1FQy5t51WCZKYoRQ/tle3Q4
-         cYiOCpZXhnTkCaKOJzRJLpR8ewpUnvkjWb1nZ2dXSELWFaNGg1qwwc/H7V2cL0wpBB/v
-         X4iG4JGUEOjjlYm03AzyX8lNEgUEHrNpVqtBg1djc7q4SBB/iPUMdrPLpM60Cbx7J8OM
-         h6MqfewHF2jo2/keKX430BMY9hcaS/brOaf2A9JxYddMp6S57AscbktbaPdXRLbTArLt
-         HZWqPl9Grw5LnoUOy1LOGjXoppBJs9gKO4DP2Hjq7ouEzagLKTZ0KDVkpxBzvrWFCzu8
-         SruA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789150869; x=1789755669;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=0PfkoOh/05AN64bzT3WIDHrUSVJxMax1VSqub7HGYzA=;
-        b=D9RYRuOrtL+dM6cJYu0uGaWqEKGFiZraVGrdyjvKT0/Cx2nglPfyKjH1VpWKEWcFX2
-         aMDbrO+HKLDpDtIs7QNEuMgPDevi0g/cTfTVxLZCA8YGWSbzbUWdC4YIpCFi5WQTSBmg
-         GkYPtcXYn2FE/t1FyvYWuoscf4bB22jW3y91HVvlwYv/xUK1+HfHRpuQSbqYSZ9D42d+
-         Cseh+dfOtO8wh6f6JO1LA19MOSieeulLF4eLuf8zkYCJlcuVYli/A1zrH/Yt6D4Io326
-         3lUhqJixaJA3Dyc6LgyCoyOCcyeJp0Inv6PiYcg9n5iqL4n9uxWLH2FhKbLvfJRizBI0
-         F1fA==
-X-Forwarded-Encrypted: i=1; AKwUvBxdjhYrSrqnRwnpKNfD89MJ82RU07DX71euyXg/xYcgvI+aKnYxnjGbXR6uQuSWTCtTgVKE9Jm0DQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++n1vvLtHkotDoRM/sI9MpG9bM7ATYplXCNaftNMMKjVcA4qdftQ
-	4MwpOiv+yelTQgQrP/iTNeXrqw14tdqGF/VtBNgjwPKuVK6mJh6eM0C1tdVbTOvfjHVeggHy8tY
-	I/cgOk/wFpb64hkxcV4/Kw+8Oz89J+is=
-X-Gm-Gg: AYBFou1n0cziPa0dBrRY/IDhn7UItQ9IuAQdFQJWxI7n/yW87iCg+B+rvNYs/GtQmxp
-	T1o0Fvs6EdPFKlnFLnF6ZoiZB/K7LdwjyMrrd2UqthMbn6tBJbRyEE9piuiG9axa5qx8MbKfrsZ
-	C5ssxvobipYCOlxpntCRRYYotZ+4bFMJMOpAeNJ+FPQe9vibejybjpHeaBXJlIsh15NFAItVXqx
-	JS4N0YGAWar+ZkY8Qc++MUy+sPavw4v2T3AZuUj8+Dctl7fJlXD0EUwMqtPg/OqMDl75h//MkS7
-	9PzEvbbBeQgcs+l0pSbMuWyaLOho2c8jLbPuT5Oz+L8uq5Fp9+v0iiFLbfEz7evluDP7/mOAkHa
-	um8HPQydiSRY89HIo6UIxUqhy2soxBwvpDw==
-X-Received: by 2002:a05:690e:450f:20b0:66f:c1bc:c072 with SMTP id
- 956f58d0204a3-671246c1531mr1637688d50.58.1789150864802; Fri, 11 Sep 2026
- 11:21:04 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="BEWDvx0k"
+Received: from [IPV6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e] (unknown [IPv6:2a02:830a:f787:8f00:d622:eaa3:3dd6:8f5e])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id D80455340298;
+	Fri, 11 Sep 2026 20:41:58 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1789152119;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=rHSjTarwBc7bg0NGFzwow8Dj+HXlOlAGtccg+T6t/AM=;
+	b=BEWDvx0kN4RjDqrMEWjh+20MLWSmMvQ6uKKSr6/qUqTKzmtQuACKe5RSYzu+kBKMbMoV1B
+	MTie3d5RK3tPbjabPI8tsfV1GPP5dYP6ClY+M0rXDpKgRjsdCvxpuyxjx5vVaiY4pz5p63
+	9Co3MpCPac6rL6xnCisipv7x2cRNkRQ=
+Message-ID: <94dcb0f5-f886-478e-be3b-722d4c808a49@ixit.cz>
+Date: Fri, 11 Sep 2026 20:41:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260908-dd-cmap-part2-clean-v9-0-3a3f621f4a10@gmail.com>
- <20260908-dd-cmap-part2-clean-v9-15-3a3f621f4a10@gmail.com> <20260909-primitive-nano-hound-8ee2aa@l-nschier-aarch64>
-In-Reply-To: <20260909-primitive-nano-hound-8ee2aa@l-nschier-aarch64>
-From: jim.cromie@gmail.com
-Date: Fri, 11 Sep 2026 12:20:38 -0600
-X-Gm-Features: AcwNN1UJu3AgSAwYav9ulJp2R_HPP-fzpsFCD13LL3sQevEBQ_irSbDy0UqSCw8
-Message-ID: <CAJfuBxx0VFCS820JLqawLdcpb49Nj-=xnSYdg6ytOub6NidM4A@mail.gmail.com>
-Subject: Re: [PATCH v9 15/39] kbuild, dyndbg: Clean up builtin module-name ambiguities
-To: Nicolas Schier <n.schier@fritz.com>
-Cc: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
-	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
-	Aaron Tomlin <atomlin@atomlin.com>, Jonathan Corbet <corbet@net.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
-	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Sep 9, 2026 at 9:50=E2=80=AFAM Nicolas Schier <n.schier@fritz.com> =
-wrote:
->
-> On Tue, Sep 08, 2026 at 06:55:11PM -0600, Jim Cromie via B4 Relay wrote:
-> [...]
->
-> > diff --git a/Documentation/admin-guide/dynamic-debug-howto.rst b/Docume=
-ntation/admin-guide/dynamic-debug-howto.rst
-> > index 9c2f096ed1d8..99bbae37d34e 100644
-> > --- a/Documentation/admin-guide/dynamic-debug-howto.rst
-> > +++ b/Documentation/admin-guide/dynamic-debug-howto.rst
-> [...]
-> > @@ -161,17 +161,21 @@ file
-> >       file kernel/freezer.c   # ie column 1 of control file
-> >       file drivers/usb/*      # all callsites under it
-> >       file inode.c:start_*    # parse :tail as a func (above)
-> > -     file inode.c:1-100      # parse :tail as a line-range (above)
-> > +     file inode.c:1-100      # parse :tail as a line-range (below)
-> >
-> >  module
-> > -    The given string is compared against the module name
-> > -    of each callsite.  The module name is the string as
-> > -    seen in ``lsmod``, i.e. without the directory or the ``.ko``
-> > -    suffix and with ``-`` changed to ``_``.  Examples::
-> > -
-> > -     module sunrpc
-> > -     module nfsd
-> > -     module drm*     # both drm, drm_kms_helper
-> > +    The query string is compared against the subsystem module name of
-> > +    each callsite, as shown in the control file, or its simple name.
-> > +    The simple module name is the string as seen in ``lsmod``,
-> > +    i.e. without the directory or the ``.ko`` suffix and with ``-``
-> > +    changed to ``_``.
-> > +    Examples::
-> > +
-> > +        module nfsd        # simple modname (as from lsmod)
-> > +     module init/main   # subsystem modname (as in control file)
-> > +     module */main      # any subsystem ending in main
-> > +        module main     # simple modname, selects same as above
-> > +     module drm*        # both drm, drm_kms_helper
->
-> The five lines above have mixed indentation, please switch them all to
-> one tab (no spaces).
->
-
-thanks, will fix.
-
->
-> [...]
-> > diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-> > index 0a4fdd8bd975..e129c4d10ed8 100644
-> > --- a/scripts/Makefile.lib
-> > +++ b/scripts/Makefile.lib
-> > @@ -23,6 +23,32 @@ modname_flags  =3D -DKBUILD_MODNAME=3D$(call name-fi=
-x,$(modname)) \
-> >                -D__KBUILD_MODNAME=3D$(call name-fix-token,$(modname))
-> >  modfile_flags  =3D -DKBUILD_MODFILE=3D$(call stringify,$(modfile))
-> >
-> > +# Dynamic debug subsystem modname with clean heuristic and override su=
-pport
-> > +dd_modname_override =3D $(strip $(firstword $(DD_MODNAME_$(target-stem=
-).o) \
-> > +                                       $(DD_MODNAME)))
-> > +dd_obj :=3D $(strip $(filter-out .,\
-> > +             $(patsubst drivers/%,%,\
-> > +             $(patsubst arch/$(SRCARCH)/%,%,\
-> > +             $(patsubst arch/%/,%,$(obj))))))
->
-> May it become problematic if there is a conflict with
->
->   arch/sh/drivers/dma/*
->   arch/sh/drivers/pci/*
->
-> vs.
->
->   drivers/dma/*
->   drivers/pci/*
->
-> ?
-
-2 questions here really -
-- what should happen ?   strip arch/sh/ and then also drivers ?
-- what will happen - I will play with the expressions to find out.
-
-
->
->
-> > +dd_modname_default =3D $(strip $(if $(filter $(notdir $(obj)),$(__modn=
-ame)),\
-> > +                      $(__modname),\
-> > +                      $(if $(filter main core common util init snapsho=
-t \
-> > +                                    process,$(__modname)),\
-> > +                          $(dd_obj),\
-> > +                          $(if $(word 2,$(__modname)),\
-> > +                              $(dd_obj),\
-> > +                              $(if $(dd_obj),$(dd_obj),$(__modname))))=
-))
->
-> This looks quite complex.  I _think_ this should be equivalent, but
-> perhaps a bit more simple to maintenance:
->
-> dd_modname_default =3D \
->     $(or \
->         $(filter $(notdir obj), $(__modname)), \
->         $(filter-out main core common util init snapshot process, $(__mod=
-name)), \
->         $(dd_obj)))
->
-> (Removed $(strip) and the last $(__modname) fallback as both are already
-> in definition of 'dd_modname'.)
->
-> What do you think?
-
-it does read better.  I will try it too.
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] arm64: dts: qcom: sdm845-oneplus: use generic fuel
+ gauge compatible
+To: Andrew Davis <afd@ti.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?=
+ <pali@kernel.org>, linux-arm-msm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260829205258.26955-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-4-rinat.muhamedgaliev@gmail.com>
+ <20260911-relaxed-dexterous-hummingbird-72dfbe@quoll>
+ <6c45cfd5-ac37-4f8e-bde3-0391512df982@ti.com>
+Content-Language: en-US, cs-CZ
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <6c45cfd5-ac37-4f8e-bde3-0391512df982@ti.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
 
+On 11/09/2026 15:37, Andrew Davis wrote:
+> On 9/11/26 3:21 AM, Krzysztof Kozlowski wrote:
+>> On Thu, Sep 10, 2026 at 02:47:44AM +0300, Rinat Muhamedgaliev wrote:
+>>> OnePlus 6 and OnePlus 6T battery packs may contain either a TI
+>>> bq27411 or bq27541 fuel gauge. Use the generic ti,bq27xxx compatible
+>>> so the driver can select the register map from DeviceType at probe
+>>> time.
+>>>
+>>> Tested on OnePlus 6T (fajita) with a bq27541 (DeviceType 0x0541):
+>>> after booting the new kernel, the battery reported 4.360 V, 100% state
+>>> of charge, 27.8 C, and Full status.
+>>>
+>>> Fixes: 12dfb002ca01 ("arm64: dts: qcom: sdm845-oneplus-*: add fuel gauge")
+>>
+>> What is the bug here? Your commit msg should be specific about it.
+>>
+> 
+> Commit msg seems pretty clear about the bug (to me at least), the DT
+> says the fuel gauge is a BQ27411 but that isn't the case, some shipped
+> with a BQ27541 fuel gauge.
+> 
+> (I do agree though this shouldn't have a fixes tag as back-porting this
+> without also back-porting the driver-side change would break users)
+> 
+> Since these fuel gauges often live on the battery pack and not the
+> device itself, folks changing their batteries might end up with
+> different fuel gauges, so having some detection method is going to
+> be helpful.
+> 
+> Rinat,
+> 
+> I'm not familiar with the bootflow on these devices, but is this something
+> you could detect in the bootloader and fixup the DT before it is passed
+> to kernel? That way the kernel gets a DT with the correct and specific
+> compatible to start with?
+> 
+> Andrew
+> 
+>>>
+>>> Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+>>> ---
+>>>   arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi   | 4 ++--
+>>>   arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts | 2 +-
+>>>   arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts    | 2 +-
+>>>   3 files changed, 4 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi b/arch/ 
+>>> arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+>>> index 948a0dd..8c5cd94 100644
+>>> --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+>>> +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+>>> @@ -790,8 +790,8 @@ &i2c10 {
+>>>       status = "okay";
+>>>       clock-frequency = <100000>;
+>>> -    bq27441_fg: bq27441-battery@55 {
+>>> -        compatible = "ti,bq27411";
+>>> +    bq27xxx_fg: fuel-gauge@55 {
+>>> +        compatible = "ti,bq27xxx";
+>>
+>> And this is just breaking all users without any explanation.
+>>
+>>
+>>
+>>>           status = "okay";
+>>>           reg = <0x55>;
+>>>       };
+>>> diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts b/arch/ 
+>>> arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+>>> index 5f01115..cf40842 100644
+>>> --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+>>> +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+>>> @@ -44,7 +44,7 @@ main_cam_ois: main-cam-ois-regulator {
+>>>       };
+>>>   };
+>>> -&bq27441_fg {
+>>> +&bq27xxx_fg {
+>>
+>> No, irrelevant to the supposed bug here.
+>>
+>> Best regards,
+>> Krzysztof
+>>
+> 
 
-
-> > +dd_modname =3D $(strip $(or $(dd_modname_override),\
-> > +                       $(dd_modname_default),\
-> > +                       $(__modname)))
-> > +dd-name-subst =3D $(subst $(comma),_,$(subst -,_,$(strip $1)))
-> > +dd-name-fix-token =3D $(subst $(space),_,$(call dd-name-subst,$1))
-> > +dd_tok =3D $(call dd-name-fix-token,$(dd_modname))
-> > +dd_modname_flags =3D $(if $(dd_modname),\
-> > +     -DKBUILD_DD_MODNAME=3D$(call stringify,$(dd_tok)))
-> > +
-> > +modfile_flags +=3D $(dd_modname_flags)
->
-> dd-name-subst and dd-name-fix-token are not needed, dd_modname_flags is
-> used only once and can be folded:
->
->
-> dd_tok =3D $(call name-fix,$(subst $(space),_,$(dd_modname)))
->
-> modfile_flags +=3D $(if (dd_modname), -DKBUILD_DD_MODNAME=3D$(dd_tok))
->
-
-yes, this all looks cleaner and more comprehensible. thanks.
-
->
-
->
->
-> --
-> Nicolas
