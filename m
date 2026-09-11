@@ -1,42 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0656147206E;
-	Fri, 11 Sep 2026 13:08:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD5AE486B8B;
+	Fri, 11 Sep 2026 13:08:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789132127; cv=none; b=IB9kW4u+NycsHUZg7MoE4RMidPmWvrz6j7UFFj56Myc1hyGHGEr04niQ5EGDt4jgYc8mCeki892O5uELVj9VyScxWYh4TYhIn3vt29RWqTZMczDPR7xYcdS+wPKN35cXyhsNDnNcxkpfj/yM/6zoMyMXaRJmB7ZpqKtsqDTx/ME=
+	t=1789132131; cv=none; b=cyk+3zTTyhlu6mj2AfdOnMGoxlAP2fbfeTlUUbbsb2kfXVbqsk5srJK5JgmsgROoIULYT5lAm0qPfF81m/XPDN+L3WwJ80LQxTX7T6VzUcsIjo6oUijGbpZ1DxJwsjmAwl8u6RUXcajKDqVcqWOK91YwPWt3KMvDXGIKsREKhd8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789132127; c=relaxed/simple;
-	bh=dJr1RL7oUCJfTVozFYphNU7PJ2WUfEj4pYlTRt2xqcA=;
+	s=arc-20240116; t=1789132131; c=relaxed/simple;
+	bh=fDSXALvvR5G9nLlxtV82I2rtk1ERcQZeIXEXw3fUNQA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=DgeFxXR06I9bE2VniaNxkUbTIBib40VV2NlSAhda2GAWAluIVIvhBb5Cl6+uN/Hd9KQpZ3CIMF8TZV/JVVUkcLklh4uhE4IyhgkIPO4cDiJiuDZjNTe1Y33MUBTtw5TrgjdMS5tHWyvFRBcKihp+Wzq9EuypEzWhFXxdWxqNgPI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TyqZmQkg; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=kMWi/hYPOuATz1rnCpptFBycgl5UPhBf2guAxvw/ahWouYRZ495DfD3ufoS4q+l88YZK1PAcnv2rCzdxkW585nLVfE5AY19OFmiftityfDn5M8McmHPjU3X0OSbXlgMcLzaef/kLaDKuPox3XZhN9rVFARuI2mqMVyLClGksoUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X6OVE3ME; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TyqZmQkg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E8811F000FF;
-	Fri, 11 Sep 2026 13:08:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X6OVE3ME"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E5291F0089A;
+	Fri, 11 Sep 2026 13:08:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789132125;
-	bh=przzX8XQ0Pwraq22n34EHyVoNki1kvlkkZzz/xXROKQ=;
+	s=k20260515; t=1789132130;
+	bh=/AkQ6jEZTrwnH31l0S6TJm8WsStWiXnxaXazMuscouA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=TyqZmQkgCI+04z6+cX4swkXsmNjdPmQCob7unQQFNUrjQCi2kTbYZQqqtAFHxkc56
-	 TH0G+gVlCfcMwKIvz4lX4OPOcD/LREa3T8xtuIfWEf7tFYo5WxqfVpnGuqMjRjawO8
-	 fXq84TredrOE280hjF803AAuHWVs2neZQdikJF7LXKon9zt3LgsP6uc2j0EWQ2t0ls
-	 1rugveHFpRlf957JDzZ+1Lj47jDE7q4lfC0kiMtMFTdhP/AerG+w3SRGXW+mSbNRW4
-	 NBO3Ld0Omk7gdHL9TlvSx5EH5mwLMX2iKD1vb2kyFFR1uw7iONCb806p1T0DY2qJX8
-	 ttC5Ia7mYS3sQ==
+	b=X6OVE3ME+hXNAEk8AoMVemZNA+3IxnUwXkl1LaQj+dOzkrAeils58SYKq2pwSclLL
+	 hMH/t+hDp1kQljo93HpSlEQ/ZcIosJUN2PrNt0xEiC+FPUHoX64WL4oUYgxC36dMh4
+	 sqQMnI2ci8oO98t1urByN/DAhjXylJ6ymh1gZtqaXZyc+5VwtmwvOlLz38VVDlzFO0
+	 cLAPeDvo0Dp1ChchNsoiF6zvc8OV+H1TWCgSYWOJUlkIGTzC9izu2jmH8+qEHixGKF
+	 WRBu5ij1qO+0fiWvPGS6Y7twLos3q/V1uf9Bsgwz3DnerbnSRjovtufBcp1GGbHk9H
+	 guXlk206yz5rw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Daniel Lezcano <daniel.lezcano@kernel.org>, Hans de Goede <hansg@kernel.org>,
  LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <w_armin@gmx.de>
-Subject:
- [PATCH v1 07/10] ACPI: thermal: Use cooling device parent for thermal zone
- binding
-Date: Fri, 11 Sep 2026 15:05:07 +0200
-Message-ID: <9672996.CDJkKcVGEf@rafael.j.wysocki>
+Subject: [PATCH v1 06/10] ACPI: fan: Use thermal_cooling_device_create()
+Date: Fri, 11 Sep 2026 15:04:11 +0200
+Message-ID: <3969045.kQq0lBPeGt@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <1965933.tdWV9SEqCh@rafael.j.wysocki>
 References: <1965933.tdWV9SEqCh@rafael.j.wysocki>
@@ -51,57 +49,79 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-The ACPI thermal zone .should_bind() callback function,
-acpi_thermal_should_bind_cdev(), expects the given cooling device's
-devdata to point to an ACPI device object whose ACPI handle should be
-compared with ACPI handles in a list associated with the given trip
-point.  That is not particularly straightforward and it effectively
-requires the drivers of ACPI cooling devices to populate the devdata
-with addresses of the ACPI companions of the devices they bind to.
-Consequently, the devdata cannot be used by the driver for its own
-needs which is its intended purpose.
+Instead of using thermal_cooling_device_register() for
+registering a cooling device in the ACPI fan driver, make it use
+thermal_cooling_device_create() and pass a pointer to the platform
+device representing the given fan to that function as the cooling
+device's parent.  That will cause the cooling device's sysfs directory
+to be created under the parent's sysfs directory (among other things).
 
-That can be overcome with the help of the observation that the
-ACPI device objects to be matched against the lists of ACPI handles
-associated with trip points are in fact the ACPI companions of the
-parents of cooling devices.  Thus instead of using the given cooling
-device's devdata, it is sufficient to obtain the ACPI handle of its
-parent and compare that ACPI handle with the ones in the list
-associated with the given trip point.
+Since creating a class device under a parent causes a "device" symbolic
+link from the sysfs directory of the class device to the sysfs directory
+of the parent to appear automatically, remove the code creating that
+symbolic link manually.
+
+Moreover, since the cooling device is now located in sysfs under its
+parent and it can be easily identified as a cooling device, there is
+no need to create a "thermal_cooling" symbolic link from its parent
+to it.  Accordingly, also remove the code creating that symbolic link.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/thermal.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/acpi/fan_core.c | 24 +-----------------------
+ 1 file changed, 1 insertion(+), 23 deletions(-)
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index dd7666c176a0..dea28d674407 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -564,17 +564,18 @@ static bool acpi_thermal_should_bind_cdev(struct thermal_zone_device *thermal,
- 					  struct cooling_spec *c)
- {
- 	struct acpi_thermal_trip *acpi_trip = trip->priv;
--	struct acpi_device *cdev_adev = cdev->devdata;
-+	struct device *parent = cdev->device.parent;
-+	acpi_handle parent_handle;
- 	int i;
+diff --git a/drivers/acpi/fan_core.c b/drivers/acpi/fan_core.c
+index a31d7beca5d0..29ca97503deb 100644
+--- a/drivers/acpi/fan_core.c
++++ b/drivers/acpi/fan_core.c
+@@ -564,8 +564,7 @@ static int acpi_fan_probe(struct platform_device *pdev)
+ 	else
+ 		name = acpi_device_bid(device);
  
--	/* Skip critical and hot trips. */
--	if (!acpi_trip)
-+	/* Skip critical and hot trips and parentless cooling devices. */
-+	if (!acpi_trip || !parent)
- 		return false;
+-	cdev = thermal_cooling_device_register(name, device,
+-						&fan_cooling_ops);
++	cdev = thermal_cooling_device_create(&pdev->dev, name, device, &fan_cooling_ops);
+ 	if (IS_ERR(cdev)) {
+ 		result = PTR_ERR(cdev);
+ 		goto err_end;
+@@ -574,28 +573,9 @@ static int acpi_fan_probe(struct platform_device *pdev)
+ 	dev_dbg(&pdev->dev, "registered as cooling_device%d\n", cdev->id);
  
--	for (i = 0; i < acpi_trip->devices.count; i++) {
--		acpi_handle handle = acpi_trip->devices.handles[i];
-+	parent_handle = ACPI_HANDLE(parent);
+ 	fan->cdev = cdev;
+-	result = sysfs_create_link(&pdev->dev.kobj,
+-				   &cdev->device.kobj,
+-				   "thermal_cooling");
+-	if (result) {
+-		dev_err(&pdev->dev, "Failed to create sysfs link 'thermal_cooling'\n");
+-		goto err_unregister;
+-	}
+-
+-	result = sysfs_create_link(&cdev->device.kobj,
+-				   &pdev->dev.kobj,
+-				   "device");
+-	if (result) {
+-		dev_err(&pdev->dev, "Failed to create sysfs link 'device'\n");
+-		goto err_remove_link;
+-	}
  
--		if (acpi_fetch_acpi_dev(handle) == cdev_adev)
-+	for (i = 0; i < acpi_trip->devices.count; i++) {
-+		if (acpi_trip->devices.handles[i] == parent_handle)
- 			return true;
+ 	return 0;
+ 
+-err_remove_link:
+-	sysfs_remove_link(&pdev->dev.kobj, "thermal_cooling");
+-err_unregister:
+-	thermal_cooling_device_unregister(cdev);
+ err_end:
+ 	if (fan->has_fst)
+ 		acpi_fan_delete_attributes(device);
+@@ -612,8 +592,6 @@ static void acpi_fan_remove(struct platform_device *pdev)
+ 
+ 		acpi_fan_delete_attributes(device);
  	}
+-	sysfs_remove_link(&pdev->dev.kobj, "thermal_cooling");
+-	sysfs_remove_link(&fan->cdev->device.kobj, "device");
+ 	thermal_cooling_device_unregister(fan->cdev);
+ }
  
 -- 
 2.51.0
