@@ -1,168 +1,111 @@
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com [209.85.128.71])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx.prosyst.ru (m2.prosoftsystems.ru [46.48.77.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 688A647209B
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 09:20:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D34D735E1CC;
+	Fri, 11 Sep 2026 09:31:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.48.77.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789118405; cv=none; b=N72Q/3uxmlBpBlYs4SgmoWuSVVpEVl8gIWOxVL1HXoO6df9/mXox9rsGMyG4hQ4oTOVJ6tW7X8m2whBbnnblJmF2feVy0maTNw7CItK7JDzsPP7ETX7HNPQ6R7ncOBSTdJbc9k21WtPZtt4wGCiXyl2S4n85N6sdFsz3L20VDRg=
+	t=1789119104; cv=none; b=EYJpwY24PqJhTPoUfuD0u45BdN1a7JfclbWv7oVEZhkZvRn3my+bHVo0Msyfrh/gQsfqKiqhDhF+WPZEoBTtiEcokWv5BGgc3FVgpYQ4iYZT3ak1FRnOCt4opei/eYZTt5GKGF1o0O97veg4CxwOzEOlzXB5arAyge25VuIdTm8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789118405; c=relaxed/simple;
-	bh=LQHKUmm2L3VPczAzSrySIOYelc6UVvj0GiEVXj92Iww=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=p7gdnNyoTIFoQA4/hAudhuffSOopHFnRLYvzN4HT0s0Y2V9l2M3OmQhHU6FratQ0NDgeXZ3hZpKBdpRxFLHk03Xc7agTf+SqQp6MZJhKF82zCB62YxwkqXKLLOQNkFDcoUu/fzEcaiTQpKIgZPieuy8PR2JTHdOZE+Re9r/dsfc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=WdF9tVpS; arc=none smtp.client-ip=209.85.128.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
+	s=arc-20240116; t=1789119104; c=relaxed/simple;
+	bh=EArwqju02I7Xzo5ITZJTsizIUFjx7Agcd6i6FF4JwD4=;
+	h=Content-Type:From:To:CC:Subject:Date:Message-ID:MIME-Version; b=cTlMLZEieoAOKS/eQoVfh55lkFLDw+iW9vNHLx4eIUtP+iUbBcDwzAVT1hdmHEPBUHFCQsWo6gWV5L9abzRAsbOsoFHDbfwzjaoSFfHerS/4yAJ8osP2+9FB4uHPvHWYAzhBux1+uz38vj1fOvvoOr7oZ+z11e2zNv5vMraQvPU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prosoftsystems.ru; spf=pass smtp.mailfrom=prosoftsystems.ru; dkim=pass (2048-bit key) header.d=prosoftsystems.ru header.i=@prosoftsystems.ru header.b=XHMOTKdI; arc=none smtp.client-ip=46.48.77.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prosoftsystems.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prosoftsystems.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="WdF9tVpS"
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-490a767b782so6132625e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 02:20:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789118400; x=1789723200; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=NZtTwWLqkTlApSCCjwtFSfuFmwluELYL36xqCuH39yY=;
-        b=WdF9tVpSSXYvnlrzGgh+P+QcLj5u0AX4p8filA66XSzd5O8vBXYmPSBizgExj6oxwL
-         +PmBeHz4t6HSK7AV7IgXCxiDARpO9PyLesXeDRV74ILIaJiw8pgjUKDWW99gqaSTg9PR
-         mypblrub7AceAOqE4EVBGXzbeqINNAIlUOhB6RTkioOFhpNWHZWVFRYw2MFH6eoBVSqn
-         omL+h/BD6+gLLshheuEdkv1T7XJHsKCulUf7JaARnJbYBE4a2oLTZas0g4C+aduyAhZd
-         u2zFNt+Tr5E5wlpz1iwT5lvMsDx57TFBz7QmSnYzDX6HPEh73EvRU/eyhaLMvqmIYSsr
-         GkDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789118400; x=1789723200;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=NZtTwWLqkTlApSCCjwtFSfuFmwluELYL36xqCuH39yY=;
-        b=EmKLRd/cG2MQcVQ4dR6nVzVTFxpW3Zd9ba+UDWGYtnmFOmTJ1iZPA3vGZOe4q0S7vd
-         zt9CYcmqqtuecK/49ctIIZfv4L5HhxHaweWka0olFngpTATJkDsRK1BsRYDgR/d4WTMU
-         E4qXSZTmhOqIZmUlG8hQ9dUAk0pTG6C227Q6iMTJJNixMOeiMo/nI6pdCfM4EdueunrJ
-         8a3SbLG8MXc8CKL3Ao7gfgW8UU75i503xEwKVrpl8xqFr9UHqdMHQpsedKF2irSN62dC
-         THA97YBfl/GaeTKRqFsZBwPOhgnM0LFUVLobd9w5YH6dUY759EnWnDPpImIph+7kgufe
-         zF0w==
-X-Forwarded-Encrypted: i=1; AKwUvBwnURfCDIV1iY5UlRRjP9Lnk58oCWbbiWj9ol7b3gJZbyavtXIVxpWayqUlhXWnLWiQ0Xs8HDeyDA==@vger.kernel.org
-X-Gm-Message-State: AFuF++maXVU8LO8FpPjbOWxuDKWt1dvxTKYkzFFp9y/ZrRh4WyF/CcKz
-	/YNPVu184NxmI/C6pLM1+WeOLotK8EIc79EvQonQNORTefyyiRi7QktOj1g++o/trJEL8+eHlWB
-	zeNKGZfVB8dFKyMRuDA==
-X-Received: from wmga6.prod.google.com ([2002:a05:600c:2d46:b0:499:b8f0:3186])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600d:8490:20b0:49d:e0c:e560 with SMTP id 5b1f17b1804b1-49e61983771mr27226365e9.4.1789118400242;
- Fri, 11 Sep 2026 02:20:00 -0700 (PDT)
-Date: Fri, 11 Sep 2026 09:19:58 +0000
-In-Reply-To: <20260910-unique-ref-v21-6-e83257373062@kernel.org>
+	dkim=pass (2048-bit key) header.d=prosoftsystems.ru header.i=@prosoftsystems.ru header.b="XHMOTKdI"
+Content-Language: ru-RU
+Content-Type: text/plain; charset="koi8-r"
+Content-Transfer-Encoding: quoted-printable
+DKIM-Signature: v=1; a=rsa-sha256; d=prosoftsystems.ru; s=ps;
+	c=relaxed/relaxed; t=1789119096; h=from:to:date:message-id:subject;
+	bh=bZV4WNmYM3+Grp//mW6iYzrxlqH3yVKntecCVlgazV0=;
+	b=XHMOTKdIIM9aniRpm4ykRlnZBh5NaA0lLWuWvMOa9lqDpxv8S+59XOLQCjN2jERsyPdDqCyhOTi
+	VrqatJib1osTq8YMrw93alkQFwydClJoMt9YMIKTHx740mlBhVChk+adGcjFfPBe1TlDjc/TaZFCl
+	mRfjxAGiNLWQ85JvAZg4nZElQIoZ/1MqqwXE/4p5I7DUKQ8FcZIE76pMKF1cZQZd/LycIhF9Dad22
+	TWl0Zsqg3sH7GfSfZnWOrlfXCn0JpPgKAVoZFpa46B0cts4wXspXJkmmlVNcw0YDSpw5Yzoo/0stw
+	oqYwFKIhFyWm60HXyKhaLGenR2xJQSuS6CcA==
+Received: from ECHO-3.prosoft.ural.ru (172.25.100.229) by mx.prosoftsystems.ru
+ (172.21.240.33) with Microsoft SMTP Server (TLS) id 15.1.396.30; Fri, 11 Sep
+ 2026 14:31:36 +0500
+Received: from echo-2.prosoft.ural.ru (172.21.245.22) by
+ ECHO-3.prosoft.ural.ru (172.25.100.229) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.39; Fri, 11 Sep 2026 14:31:36 +0500
+Received: from echo-2.prosoft.ural.ru ([::1]) by echo-2.prosoft.ural.ru
+ ([fe80::c1a2:90f7:8820:c669%17]) with mapi id 15.02.1748.039; Fri, 11 Sep
+ 2026 14:31:36 +0500
+From: =?koi8-r?B?9sHNwsHLycXXIPLBxMnKIPLJy8HSxMnOz9fJ3g==?=
+	<r.zhambakiev@prosoftsystems.ru>
+To: Eduardo Valentin <edubezval@gmail.com>
+CC: =?koi8-r?B?9sHNwsHLycXXIPLBxMnKIPLJy8HSxMnOz9fJ3g==?=
+	<r.zhambakiev@prosoftsystems.ru>, Keerthy <j-keerthy@ti.com>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org"
+	<linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org"
+	<linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "lvc-project@linuxtesting.org"
+	<lvc-project@linuxtesting.org>
+Subject: [PATCH] thermal: ti-soc-thermal: Check return value of
+ clk_prepare_enable()
+Thread-Topic: [PATCH] thermal: ti-soc-thermal: Check return value of
+ clk_prepare_enable()
+Thread-Index: AQHdQdBXybVgwHSdD06fJ70Al9uVrw==
+Date: Fri, 11 Sep 2026 09:31:36 +0000
+Message-ID: <20260911093110.105635-1-r.zhambakiev@prosoftsystems.ru>
+Accept-Language: ru-RU, en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260910-unique-ref-v21-0-e83257373062@kernel.org> <20260910-unique-ref-v21-6-e83257373062@kernel.org>
-Message-ID: <aqPHvi1xFnMXvYLW@google.com>
-Subject: Re: [PATCH v21 6/9] rust: Add `OwnableRefCounted`
-From: Alice Ryhl <aliceryhl@google.com>
-To: Andreas Hindborg <a.hindborg@kernel.org>
-Cc: Danilo Krummrich <dakr@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Uladzislau Rezki <urezki@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, 
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	"=?utf-8?B?QmrDtnJu?= Roy Baron" <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Trevor Gross <tmgross@umich.edu>, Daniel Almeida <daniel.almeida@collabora.com>, 
-	Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
-	"Onur =?utf-8?B?w5Z6a2Fu?=" <work@onurozkan.dev>, Lyude Paul <lyude@redhat.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Arve =?utf-8?B?SGrDuG5uZXbDpWc=?=" <arve@android.com>, Todd Kjos <tkjos@android.com>, 
-	Christian Brauner <brauner@kernel.org>, Carlos Llamas <cmllamas@google.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Dave Ertman <david.m.ertman@intel.com>, 
-	Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
-	Igor Korotin <igor.korotin@linux.dev>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
-	"Krzysztof =?utf-8?Q?Wilczy=C5=84ski?=" <kwilczynski@kernel.org>, Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, 
-	Michal Wilczynski <m.wilczynski@samsung.com>, Ira Weiny <iweiny@kernel.org>, 
-	Matthew Brost <matthew.brost@intel.com>, 
-	"Thomas =?utf-8?Q?Hellstr=C3=B6m?=" <thomas.hellstrom@linux.intel.com>, Philipp Stanner <phasta@kernel.org>, 
-	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-mm@kvack.org, driver-core@lists.linux.dev, linux-block@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-pwm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, Oliver Mangold <oliver.mangold@pm.me>
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 
-On Thu, Sep 10, 2026 at 11:00:10AM +0200, Andreas Hindborg wrote:
-> From: Oliver Mangold <oliver.mangold@pm.me>
-> 
-> Types implementing one of these traits can safely convert between an
-> `ARef<T>` and an `Owned<T>`.
-> 
-> This is useful for types which generally are accessed through an `ARef`
-> but have methods which can only safely be called when the reference is
-> unique, like e.g. `block::mq::Request::end_ok()`.
-> 
-> Signed-off-by: Oliver Mangold <oliver.mangold@pm.me>
-> [ Andreas: Fix formatting, update documentation, fix error handling in
->   examples. ]
-> Assisted-by: LLM
-> Co-developed-by: Andreas Hindborg <a.hindborg@kernel.org>
-> Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
+From: Radiy Zhambakiev <r.zhambakiev@prosoftsystems.ru>
 
->  /// Types that specify their own way of performing allocation and destruction. Typically, this trait
->  /// is implemented on types from the C side.
->  ///
-> -/// Implementing this trait allows types to be referenced via the [`Owned<Self>`] pointer type. This
-> -/// is useful when it is desirable to tie the lifetime of the reference to an owned object, rather
-> -/// than pass around a bare reference. [`Ownable`] types can define custom drop logic that is
-> -/// executed when the owned reference [`Owned<Self>`] pointing to the object is dropped.
-> +/// Implementing this trait allows types to be referenced via the [`Owned<Self>`] pointer type.
-> +///  - This is useful when it is desirable to tie the lifetime of an object reference to an owned
-> +///    object, rather than pass around a bare reference.
-> +///  - [`Ownable`] types can define custom drop logic that is executed when the owned reference
-> +///    of type [`Owned<_>`] pointing to the object is dropped.
+On SoCs with the CLK_CTRL feature the bandgap fclk is enabled in
+ti_bandgap_probe(), but the return value of clk_prepare_enable() is
+ignored. If the clock cannot be enabled, probe continues and all
+subsequent register accesses fail or return stale values.
 
-This diff looks like it should be in the patch introducing Ownable.
+Check the return value and abort probe with the proper error code,
+using the existing put_clks cleanup path, which releases both clocks
+and the TSHUT IRQ that have been acquired at that point.
 
-> +/// # #![expect(clippy::disallowed_names)]
-> +/// # use core::ptr::NonNull;
-> +/// # use kernel::alloc::{flags, kbox::KBox, AllocError};
-> +/// # use kernel::sync::aref::{ARef, RefCounted};
-> +/// # use kernel::sync::atomic::Acquire;
-> +/// # use kernel::sync::Refcount;
-> +/// # use kernel::types::{Owned, Ownable, OwnableRefCounted};
-> +///
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-This newline will appear weirdly in generated docs because no content is
-shown above it. Consider not hiding the imports.
+Fixes: 8feaf0ce1a04 ("staging: OMAP4+: thermal: introduce bandgap temperatu=
+re sensor")
+Signed-off-by: Radiy Zhambakiev <r.zhambakiev@prosoftsystems.ru>
+---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-> +pub trait OwnableRefCounted: RefCounted + Ownable + Sized {
-> +    /// Checks if the [`ARef`] is unique and converts it to an [`Owned`] if that is the case.
-> +    /// Otherwise it returns again an [`ARef`] to the same underlying object.
-> +    fn try_from_shared(this: ARef<Self>) -> Result<Owned<Self>, ARef<Self>>;
-> +
-> +    /// Converts the [`Owned`] into an [`ARef`].
-> +    fn into_shared(this: Owned<Self>) -> ARef<Self>;
-> +}
-
-This trait provides two methods that have very different conditions for
-existing, IMO.
-
-The into_shared() method is so likely to exist, that I would almost
-consider placing it on the Ownable trait.
-
-pub trait Ownable {
-    unsafe fn release(this: NonNull<Self>);
-
-    fn into_shared(this: Owned<Self>) -> ARef<Self>
-    where
-    	Self: Refcounted;
-}
-
-On the other hand, I think try_from_shared() is more likely to be a
-tricky operation you cannot necessarily implement, and as such it can be
-on its own separate trait like you have here.
-
-At the very least, I can easily imagine that some types can never become
-unique again after having been shared.
-
-Alice
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/=
+ti-soc-thermal/ti-bandgap.c
+index ba43399d0b38..de9ad65d854a 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -953,9 +953,13 @@ int ti_bandgap_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Cannot re-set clock rate. Continuing\n");
+=20
+ 	bgp->clk_rate =3D clk_rate;
+-	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+-		clk_prepare_enable(bgp->fclock);
+-
++	if (TI_BANDGAP_HAS(bgp, CLK_CTRL)) {
++		ret =3D clk_prepare_enable(bgp->fclock);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to enable fclock\n");
++			goto put_clks;
++		}
++	}
+=20
+ 	spin_lock_init(&bgp->lock);
+ 	bgp->dev =3D &pdev->dev;
+--=20
+2.53.0
