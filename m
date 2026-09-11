@@ -1,57 +1,57 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.5])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AFE53B71AE
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 18:47:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40E825867F8;
+	Fri, 11 Sep 2026 19:56:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789152432; cv=none; b=L07AbbLVCQa92hDfTIWnMBNVPpZSye+yOqSuK6YimN0v2FG2zlIgnJaKavvXJYdZiEBUSgsI3/TwSFrfBwCcmjqoz5Z97iXEW6lHbjCEaChACSyvhEmTQG5JTwVYmskxjrVsq/DN+YYZ3s6LbyPBJQdTU5nnzvaOvgCNjMV31O4=
+	t=1789156585; cv=none; b=fAmP2VXQ4b3q382/cgW272yoyeF96gj7QQecZR2beK+kYGCOVaoOb6ip85bb94DCN+ismx8Znet8g9/8zFct6qC2g7ez8oVlDDMhOVuFbmqVu5k5fxCG2IK53a2JWE0vE6hvCOypZjB8snnyAQ3uHzIU5YQVB6IipE3O8LfxdHc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789152432; c=relaxed/simple;
-	bh=FhTZo822c7ncDc0QmDeQH6jE2VefBZLQvidumvV/2gM=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=RhC4rcWp3zbumKtc/WuAJBQcE7IuLn2E6sRGgk+OPdcV/XQQAqNX/kTKunkKT6Be1XzGGsNXzJT4WHYgMrhGGBWUAbF+riPYg9NkxdYokj9ey5uOL5H2L8cyVJ87+AFcdLjFq+z1WOu5+qJaRWAVSTEg/wZMDDzQw7ORpNJyshg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BlxNW7yc; arc=none smtp.client-ip=192.198.163.5
+	s=arc-20240116; t=1789156585; c=relaxed/simple;
+	bh=muiaeZNGFqYgO/QunZ1MRXHbiS9zQP7TqkNXNFh9FCs=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=UuCRtlWqj631m2NibwMXWIqDLVmDJ5ztHnWE9vMC4fy60WILOAG7p83mGP57+XpPoNGvMrJq3MXF/Seb4l+Cmi92pdYyC6oU+sJJYau5uH3tgSpJQ7WNmKAiRP/OQG+qpqmr8tDg3uGz4mPeWVolKQuETb6FO0+/TaW0BJQpgYE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fJ2wozQA; arc=none smtp.client-ip=192.198.163.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BlxNW7yc"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fJ2wozQA"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789152430; x=1820688430;
+  t=1789156574; x=1820692574;
   h=date:from:to:cc:subject:message-id;
-  bh=FhTZo822c7ncDc0QmDeQH6jE2VefBZLQvidumvV/2gM=;
-  b=BlxNW7ycK6Z82Yqn+QlC7DplMXWgwj2wJWOrSQXE240HLafv0do0yaRm
-   dI38W0i/s86wkLrglElvLuIEfNQzXLp/vcbZgpIWrYs3cXDVO7rMiHLQH
-   6ECVjjP2QRvb5Eph26tdsqN0s74iQIR1scOpcrKRVOjGji1Amv9FLw5LU
-   ln9ajmpopidzBck3pZX/dwP6RAav9Kj8Z1RYvfXrh+MXDmQJDr0EBowKB
-   t1a63RAki1w/rEMPEbFE6OMrRm4vzQzj+pRzxqXgBVbWV/dfbVCTxgEsa
-   mPkZXOIqWdPHR8yVKhPcfkzva8cyzRjbBEGkqeBUMNfTds5STV3mPi1Ev
-   A==;
-X-CSE-ConnectionGUID: 5x5VU5cdSaWtvWqso1j8Kw==
-X-CSE-MsgGUID: eLo6TvdaQV2x/05C/zdnyw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11902"; a="131519"
+  bh=muiaeZNGFqYgO/QunZ1MRXHbiS9zQP7TqkNXNFh9FCs=;
+  b=fJ2wozQAtSdE1EEIRRi091tvgEnbdOxpFgoHU5o6ngM/5uPZWu27uJ1R
+   HdEhbcGj+cwvU4ZwAnCtmWUX5WnT11wowNiEiGuPb0bxGRBT6JyAKnl6Z
+   6j0YK9v6xJhLaXfOArdwCRzrIwn6+165soi89RFMZqG/k0vRH+Ju1Zj5J
+   K62+Y/43pcnCbmCAe2TlU6YJJiMugnWNrUN2TqNF689E77a8Rpf+CY9c+
+   6XdnzN4sfDewYGxjYEYtb/y6+TZzpeE/AURKSIornTsZmcgm4lkrBiOD+
+   43YrZF0PlWSfZRfIxzbWOkyiHeBcTaeQNvQ6YaM5lizblzQF4V+vkS8m8
+   g==;
+X-CSE-ConnectionGUID: 9NW0JNvOSq6M76H4P7gWag==
+X-CSE-MsgGUID: ThKXrZ5AQ4mJef7rLIsQ0Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11902"; a="100220407"
 X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="131519"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa115.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 11:47:09 -0700
-X-CSE-ConnectionGUID: 1eToJBanRS6K9Mrb5dP93A==
-X-CSE-MsgGUID: 8aY/kmfVSp+kcPfpeRyuQg==
+   d="scan'208";a="100220407"
+Received: from fmviesa011.fm.intel.com ([10.60.135.151])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 12:56:11 -0700
+X-CSE-ConnectionGUID: F3EHUVtxRuups/kAI5K3ng==
+X-CSE-MsgGUID: jOuZGPdpT5qXh6z0Y/6DVQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="295490431"
+   d="scan'208";a="257106"
 Received: from lkp-server02.sh.intel.com (HELO 0a3643a6ed9d) ([10.239.97.151])
-  by fmviesa002.fm.intel.com with ESMTP; 11 Sep 2026 11:47:07 -0700
+  by fmviesa011.fm.intel.com with ESMTP; 11 Sep 2026 12:56:09 -0700
 Received: from kbuild by 0a3643a6ed9d with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1x56Gp-000000001xR-3YgB;
-	Fri, 11 Sep 2026 18:46:49 +0000
-Date: Sat, 12 Sep 2026 02:44:28 +0800
+	id 1x57Lv-0000000025e-1Me1;
+	Fri, 11 Sep 2026 19:56:05 +0000
+Date: Sat, 12 Sep 2026 03:52:16 +0800
 From: kernel test robot <lkp@intel.com>
-To: Mario Limonciello <superm1@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Subject: [amd-pstate:bleeding-edge] BUILD SUCCESS
- c8663e0457e6e6c72006478f4b6da99060030ec1
-Message-ID: <202609120224.sSss5dGx-lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ aed0d9d9b7e41ebbc650c139aeb8c9b6de1b072e
+Message-ID: <202609120312.pdU5R9AL-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -59,12 +59,12 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
-branch HEAD: c8663e0457e6e6c72006478f4b6da99060030ec1  cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp documentation
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: aed0d9d9b7e41ebbc650c139aeb8c9b6de1b072e  Merge branch 'thermal-core-next' into bleeding-edge
 
-elapsed time: 1328m
+elapsed time: 1493m
 
-configs tested: 204
+configs tested: 210
 configs skipped: 11
 
 The following configs have been built successfully.
@@ -80,7 +80,9 @@ arc                              allyesconfig    clang-24
 arc                          axs103_defconfig    gcc-16.1.0
 arc                                 defconfig    gcc-16.1.0
 arc                   randconfig-001-20260911    clang-24
+arc                   randconfig-001-20260912    clang-17
 arc                   randconfig-002-20260911    clang-24
+arc                   randconfig-002-20260912    clang-17
 arm                               allnoconfig    gcc-16.1.0
 arm                              allyesconfig    clang-24
 arm                       aspeed_g5_defconfig    gcc-16.1.0
@@ -88,9 +90,13 @@ arm                        clps711x_defconfig    gcc-16.1.0
 arm                                 defconfig    gcc-16.1.0
 arm                          pxa3xx_defconfig    gcc-16.1.0
 arm                   randconfig-001-20260911    clang-24
+arm                   randconfig-001-20260912    clang-17
 arm                   randconfig-002-20260911    clang-24
+arm                   randconfig-002-20260912    clang-17
 arm                   randconfig-003-20260911    clang-24
+arm                   randconfig-003-20260912    clang-17
 arm                   randconfig-004-20260911    clang-24
+arm                   randconfig-004-20260912    clang-17
 arm                           sama5_defconfig    gcc-16.1.0
 arm                           sama7_defconfig    gcc-16.1.0
 arm64                            allmodconfig    clang-24
