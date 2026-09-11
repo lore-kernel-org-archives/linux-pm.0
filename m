@@ -1,55 +1,56 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87AA64A4829
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 16:37:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BE0D412276
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 16:42:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789144669; cv=none; b=EcaydxFjGrxudSha0niWxljp5Y0gxbkhPV6nsss45+anwlOZ2O76z2RrR8xJc9wetglUrsZNKCARovgs/FUGVQ1njo8z/vCg8e1QbGoZmbK9K3jp1QEHMiJbx9DX6MIjPBlQLrSMFY3PFK4rDudpyNuzxWh1TdNy2CQT6UF8EIk=
+	t=1789144946; cv=none; b=aPfaGGEVWwWgX7aDX6w1WQrVd4+SC9osLKHKvCXAc2Jnr1ivJneC06NxOxLaf2Mf4/o3KIzXfybKFgHyPsCGrvCBPurBLCDKVVJyMOPI3/5Okl/pSiggbcJZQmjvKK5Q0bkpjAcyCXRGDHeAvG86K0xChgYA8DGPAQJ2Km5C3to=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789144669; c=relaxed/simple;
-	bh=+lCReAupk64gpiSe08ls12n1ChqHpulbb8/AvO34BAM=;
+	s=arc-20240116; t=1789144946; c=relaxed/simple;
+	bh=k3Jxgs83Hig7QlE9LvZO3586kM0dwwLP9F7/r2P6Frs=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DwjLmRkHMnN756G/SUm3W+JtPhMbvgORScjTvwufxbc3Ggzh89+iNHR3y3qCefe0VrbZXm2TSuev8IiFt/RXu/2lOtOZCuKDA0I4tBSeXmVQF6ogwY1BO1pBJdTNdwduAZj3eWOoqWg1o45+MQZ5Gl67HKm6KzYKw4JMPAW9sQ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b9c8atDJ; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=nnm8rDDI42zjCl5JGCqNcJInL9VFyNt8BHzjy5uBmSAlotwYslnm/hsCCrVyOdt0MYIHT0Pia95etWw6MmbZzCwZvdJszFvZo7HQUyxgjCQHQ42XXzx7fCTmJVnQoQv9zvUAqQ2AbSAkAC8IpOcvdqaj/X908V4qO8Qs+V6LvLo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GCATDe6h; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b9c8atDJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 159CA1F00899
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 16:37:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GCATDe6h"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8479C1F0089E
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 16:42:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789144665;
-	bh=76wiPJRZNmxzN9bJyuSQ6Y894yEiZOjODjZ9CGS2wUI=;
+	s=k20260515; t=1789144942;
+	bh=qCw+Wc6VaeePIHUiOF/W/RmHHZ1/xvW5DOzr9HdXJqw=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=b9c8atDJp6WErWuAC+PPlBJdw6sozmOniQXN7wexK760S5Ogtwn+JEbjDb2HUD5F4
-	 hSccTLiLj+jX7WTHQv1cPgB28XkSGtIV7ZM2Q5nTbaFIs9nWeMmS8AFpDwn9Hit6sn
-	 TQvWGBehP/oaA7Ud3gTzfP4I7SReoQs2psgAxVGVysacqaMcXvSgFK2fdmWNALNuMm
-	 smvTxCBSeneupvIxDQS+63+01OyUIPZzTnI+CcK1+1/ZVnhJRQoXxpv5ZzQbmkAZhL
-	 920D3822cHMJmWL58Fbi6WmodneKgwk8oov6YRgXqzbROeElbDekyLcjcGKnrxIzgv
-	 WzD5FczmCY/UQ==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a2ff16c0e6so661001fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 09:37:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBz/tL95eyR6w417rvv9waKFm7Eb8030RuGhsJBddi9R4vgGPlSBJu2VxXLUPoHdsfFSklMO/+kgxQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++m4MPaISyPCrZVcNyizO8Q/oEBr+VsRKIBibN9hxImnrW2AmB+M
-	7sRbhB3xHPwbaH0JdCUr05a5c+vY0S78oy5J1gIL2RhtRaPTKFvBOZm1AsMZePJGjtTg6F6/cAJ
-	8IjuQZ7CHuv5lpi5UL3kejALLZgKdUBQ=
-X-Received: by 2002:a05:651c:31c6:b0:3a4:8913:a259 with SMTP id
- 38308e7fff4ca-3a5a52919e6mr5885751fa.29.1789144663441; Fri, 11 Sep 2026
- 09:37:43 -0700 (PDT)
+	b=GCATDe6hhPwbg8OG6qb0sKFHmHhdz2YMc6txTEV9c1ufFFK2XtJ2YeW4s4v9b1yC9
+	 bUYzk/Jxer96YhzTb5mAhyx/EiLQiwdoiaj/FlGtKvIiy8m3p4T/LOy9E+d+Av1N0n
+	 ZxUAUIXuc9oytTgc6dWGu7jtfM+GGWubw12fMq2zqpze8r8lGtklprSrw65aQudRVk
+	 iM/esHEEWTX4eu8W/KGAfmB3EG4dkxFy6oJAtQwhguNV/bKWet3aKrv4sEmpGoboJv
+	 R42N2xRNCB+iSZ9/Gx9J423uPsUKJ+VzmjTtNgF2KNVWB2u95xYQT49CnZgpgQIQ2f
+	 vdBdx/YmWNjAg==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16f13so170699e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 09:42:22 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzPye1/bO6GldGsKvtz5xztQ7qf4iPuAKULEHBLd5GgfDoh0XdYJyqIy7pg5tT984NWYrhG+5Q4DA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nFKUybbUTKRjnDEhYiEwDISUlFjqvWUFsUVEp1MuNo8ZDFOBZE
+	SE9CU7nxMvsml4HhVQxos7zDcteaCdTPhbQagvSR7MIOGsE5QB6BEh1WBPASRqppoAUkRdIxYWf
+	peAbaUtMl0GQ0NfuxtbmsY9yYX21WgOc=
+X-Received: by 2002:a05:6512:3a84:b0:5b8:998c:ea9 with SMTP id
+ 2adb3069b0e04-5b8a032edbemr2203604e87.24.1789144940839; Fri, 11 Sep 2026
+ 09:42:20 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <1965933.tdWV9SEqCh@rafael.j.wysocki> <2362345.iZASKD2KPV@rafael.j.wysocki>
- <aqQtIMm-gdJoZAsq@ashevche-desk.local>
-In-Reply-To: <aqQtIMm-gdJoZAsq@ashevche-desk.local>
+References: <1965933.tdWV9SEqCh@rafael.j.wysocki> <9672996.CDJkKcVGEf@rafael.j.wysocki>
+ <aqQt8-MlG3fiFw2-@ashevche-desk.local>
+In-Reply-To: <aqQt8-MlG3fiFw2-@ashevche-desk.local>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 11 Sep 2026 18:36:28 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0j5B4LFbrhSuw0j=fLcY+cFFTEMvyt_ED-+9j1dvQEqLw@mail.gmail.com>
-X-Gm-Features: AcwNN1XwkLeDpYq1RpMmMI8qhb_p4hoakRby90KH9iWy3HgsTfIekcu5H-JCDAI
-Message-ID: <CAJZ5v0j5B4LFbrhSuw0j=fLcY+cFFTEMvyt_ED-+9j1dvQEqLw@mail.gmail.com>
-Subject: Re: [PATCH v1 04/10] ACPI: processor: thermal: Use thermal_cooling_device_create()
+Date: Fri, 11 Sep 2026 18:41:07 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jCLq7J2X8eR_bAVmnm+4zxDnwk511F9eajZ4oyaUs-tA@mail.gmail.com>
+X-Gm-Features: AcwNN1VLIHUe7MsCAMIdQGwp_Prmmrh-ZVz-tGh7o47y0E0NLP2EJoHQOAx5cUQ
+Message-ID: <CAJZ5v0jCLq7J2X8eR_bAVmnm+4zxDnwk511F9eajZ4oyaUs-tA@mail.gmail.com>
+Subject: Re: [PATCH v1 07/10] ACPI: thermal: Use cooling device parent for
+ thermal zone binding
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
 	Daniel Lezcano <daniel.lezcano@kernel.org>, Hans de Goede <hansg@kernel.org>, 
@@ -58,44 +59,45 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 11, 2026 at 6:32=E2=80=AFPM Andy Shevchenko
+On Fri, Sep 11, 2026 at 6:36=E2=80=AFPM Andy Shevchenko
 <andriy.shevchenko@linux.intel.com> wrote:
 >
-> On Fri, Sep 11, 2026 at 03:02:53PM +0200, Rafael J. Wysocki wrote:
+> On Fri, Sep 11, 2026 at 03:05:07PM +0200, Rafael J. Wysocki wrote:
 >
-> > Instead of using thermal_cooling_device_register() for registering
-> > a cooling device in the ACPI processor driver, make it use
-> > thermal_cooling_device_create() and pass a pointer to the processor
-> > device representing the given CPU to that function as the cooling
-> > device's parent.  That will cause the cooling device's sysfs directory
-> > to be created under the parent's sysfs directory (among other things).
+> > The ACPI thermal zone .should_bind() callback function,
+> > acpi_thermal_should_bind_cdev(), expects the given cooling device's
+> > devdata to point to an ACPI device object whose ACPI handle should be
+> > compared with ACPI handles in a list associated with the given trip
+> > point.  That is not particularly straightforward and it effectively
+> > requires the drivers of ACPI cooling devices to populate the devdata
+> > with addresses of the ACPI companions of the devices they bind to.
+> > Consequently, the devdata cannot be used by the driver for its own
+> > needs which is its intended purpose.
 > >
-> > Since creating a class device under a parent causes a "device" symbolic
-> > link from the sysfs directory of the class device to the sysfs director=
-y
-> > of the parent to appear automatically, remove the code creating the
-> > "device" symbolic link from the sysfs directory of the cooling device
-> > in question to the sysfs directory of the parent's companion ACPI
-> > device.  That ACPI device is reachable through the "firmware_node"
-> > symbolic link in the parent's sysfs directory regardless.
-> >
-> > Moreover, since the cooling device is now located in sysfs under its
-> > parent and it can be easily identified as a cooling device, there is
-> > no need to create a "thermal_cooling" symbolic link from its parent's
-> > ACPI companion to it.  Accordingly, also remove the code creating that
-> > symbolic link.
-> >
-> > While at it, check for error pointer values in addition to checking
-> > for NULL in acpi_processor_thermal_exit() to avoid dereferncing them
->
-> Typo: dereferencing
-
-Noted, thanks!
-
-> > mistakenly.
+> > That can be overcome with the help of the observation that the
+> > ACPI device objects to be matched against the lists of ACPI handles
+> > associated with trip points are in fact the ACPI companions of the
+> > parents of cooling devices.  Thus instead of using the given cooling
+> > device's devdata, it is sufficient to obtain the ACPI handle of its
+> > parent and compare that ACPI handle with the ones in the list
+> > associated with the given trip point.
 >
 > ...
 >
-> Is any user space ABI breakage expected as an outcome of this change?
+> > +     parent_handle =3D ACPI_HANDLE(parent);
+> >
+> > -             if (acpi_fetch_acpi_dev(handle) =3D=3D cdev_adev)
+> > +     for (i =3D 0; i < acpi_trip->devices.count; i++) {
+> > +             if (acpi_trip->devices.handles[i] =3D=3D parent_handle)
+>
+> device_match_acpi_handle() ?
 
-Not really.
+That would cause ACPI_HANDLE() to be evaluated
+acpi_trip->devices.count times for the parent whereas only one
+evaluation is necessary, so not really.
+
+>                 if (device_match_acpi_handle(parent, acpi_trip->devices.h=
+andles[i]))
+>
+> >                       return true;
+> >       }
