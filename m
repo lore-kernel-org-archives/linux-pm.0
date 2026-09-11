@@ -1,111 +1,140 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 060E73C3F54;
-	Fri, 11 Sep 2026 08:21:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91F8546DFE7;
+	Fri, 11 Sep 2026 08:45:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789114910; cv=none; b=HiRwlyrSDXct6AKcfkJk9ucKxpwksuFBT/xMiKXMe++zjTlLV4ZYTQIMZl0DTIn8HV5UvrVYMWI1t6qOaSHOtKxeXxEKcXqg45fmIFOX5lh1JU9lwTK30bv2nqGaefLXFUaT6adDEYVR+z2ltKJ0ZndQ0yE3etchXr9hiFnjThU=
+	t=1789116306; cv=none; b=lnfgziJ9nLKCDfC2DYWivnu/7iQftVXmxVdDE1THadByW3dvmcVbWjffLIFbByxM6TR7/VFAwGPPh9Tnd+bl1cAcW42tAmXGusx5QSFNBB1TuiWZVxiGi+251T+Xrr88eh/6h4+ea+WSf9RUTbO7lva+rO79IM9gZrG2JtfOG9Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789114910; c=relaxed/simple;
-	bh=I7Wtm7R5ZGEuoDWBz+Xq9tjT9BOjSIEeGqIKgLrRXDM=;
+	s=arc-20240116; t=1789116306; c=relaxed/simple;
+	bh=JteMke0Sr8hgyKy/a2txaR62oAa054IlDk0jPobWpo0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Tg7SYVgefBjcQ8x+ozwboBFXlfLVlZ19V1uwE6nRfp4NWSDEG3wzXdHLQGiOqMFFP3FYGOMxwIZhNRBKyWDrKE9vDTNRdfOIQnG+kForEXtln33/6Ap7xQssn1+6/OUNshCtw458CvlC7FrWFacDKPXF6n8qggB8aZNzfVc+il8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OXnTtUhj; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=K4I4HXUBTAyQXXi3J0KWUThG6BD8Fh4mANoa5692Ce9rEMAL5BRm40YuJ9WgHgWIM4SDuAa2GUeQYUVU6NRsLJnggQV4O1BvLr+m94BrYIa9GYAh0hW+yybaztVwBT9k0FwU+u0IjWMvHXU4yAskWze7eS3WLJAm9rIA54nI1NM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=N6rvZRwt; arc=none smtp.client-ip=192.198.163.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OXnTtUhj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12A991F000FF;
-	Fri, 11 Sep 2026 08:21:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789114908;
-	bh=GwallcFnJu4VLydxLqAyF7G8wPgumOS0kpA5YnMvJwM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=OXnTtUhjKDCePykh8oY7m1CxTBVnclPCSRg6kz4wLV16c8IE+HdBtXBWqpMyM3r3V
-	 kDkHu+Hv5BlFdQNuFxidiCnXnVBLhEv4t/7Q6WyR34IodImJvSBIRlDgyiOiDBjl4B
-	 0jHVZQxxfF78YkQS0MN79q86hz0kAtsTictw8Yu4lDFzTUYuptWcYaNVB/Fd8cPgoL
-	 DH8PtJN522saM6q2M59a9XfJyOuHCsRNL0KhS+Shh/wwjHvocYsX4vZnYBnhnUufum
-	 AazUx22DiOvhsGKi2pMYff5o/ebHmFurppXuQtkDt65FRI8aZ85qX2pTkzIvVQpw4h
-	 XNQAQHkhrr+nw==
-Date: Fri, 11 Sep 2026 10:21:45 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
-	David Heidelberg <david@ixit.cz>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, "Andrew F . Davis" <afd@ti.com>, linux-arm-msm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 3/3] arm64: dts: qcom: sdm845-oneplus: use generic
- fuel gauge compatible
-Message-ID: <20260911-relaxed-dexterous-hummingbird-72dfbe@quoll>
-References: <20260829205258.26955-1-rinat.muhamedgaliev@gmail.com>
- <20260909234744.1177153-1-rinat.muhamedgaliev@gmail.com>
- <20260909234744.1177153-4-rinat.muhamedgaliev@gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="N6rvZRwt"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789116301; x=1820652301;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=JteMke0Sr8hgyKy/a2txaR62oAa054IlDk0jPobWpo0=;
+  b=N6rvZRwtH426TvUBm6fCzevZaGmjdXW33zDRV6SqHYEmh/vx3A8nMWfa
+   ZjOOGmk9t1WxJkLFe3n99hwsKHKsoL4BV3TqyMbjqYK+Jd2RpQteR0SHe
+   Qf6PmOaafjXmRE/61NoY+i6W3Dq1c/JGQ3AQm9TI5HC5BSW2U1zj1fRkp
+   6LvTpYNg2qe63lq9wMqRQ5s59eQhWCE2L4mr3r44SGUKDrGWYdHhsMrQa
+   18uq8uyTq0LL8xFlgZTUZwjlyA/zkLHxnjS3gTJS/6h0cYEig/XajuAdT
+   y4O7h9r72pL4EA7CQ+oE+Xmv9dWqfcnUTVLRc8/cvFISI3G8/kb7WFZOf
+   w==;
+X-CSE-ConnectionGUID: eDDwpcYdQ8qRBbys661thA==
+X-CSE-MsgGUID: tMRU9TKbSk2LH7n1uscmHw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="87800"
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
+   d="scan'208";a="87800"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by fmvoesa115.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 01:44:58 -0700
+X-CSE-ConnectionGUID: k9MFxhyNQLy3i2GG1UOXkQ==
+X-CSE-MsgGUID: E4PKgMprRjCjxs8dCAcSCA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
+   d="scan'208";a="272369570"
+Received: from lkp-server02.sh.intel.com (HELO 0a3643a6ed9d) ([10.239.97.151])
+  by orviesa009.jf.intel.com with ESMTP; 11 Sep 2026 01:44:56 -0700
+Received: from kbuild by 0a3643a6ed9d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1x4wsC-000000001JG-3XP5;
+	Fri, 11 Sep 2026 08:44:44 +0000
+Date: Fri, 11 Sep 2026 16:44:06 +0800
+From: kernel test robot <lkp@intel.com>
+To: Julian Braha <julianbraha@gmail.com>, rafael@kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, lenb@kernel.org, pavel@kernel.org,
+	akpm@linux-foundation.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Julian Braha <julianbraha@gmail.com>
+Subject: Re: [PATCH] PM: sleep: only allow relevant powerpc platforms to
+ enable PM_SLEEP_SMP
+Message-ID: <202609111618.fkJkvb2m-lkp@intel.com>
+References: <20260909170520.553867-1-julianbraha@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260909234744.1177153-4-rinat.muhamedgaliev@gmail.com>
+In-Reply-To: <20260909170520.553867-1-julianbraha@gmail.com>
 
-On Thu, Sep 10, 2026 at 02:47:44AM +0300, Rinat Muhamedgaliev wrote:
-> OnePlus 6 and OnePlus 6T battery packs may contain either a TI
-> bq27411 or bq27541 fuel gauge. Use the generic ti,bq27xxx compatible
-> so the driver can select the register map from DeviceType at probe
-> time.
-> 
-> Tested on OnePlus 6T (fajita) with a bq27541 (DeviceType 0x0541):
-> after booting the new kernel, the battery reported 4.360 V, 100% state
-> of charge, 27.8 C, and Full status.
-> 
-> Fixes: 12dfb002ca01 ("arm64: dts: qcom: sdm845-oneplus-*: add fuel gauge")
+Hi Julian,
 
-What is the bug here? Your commit msg should be specific about it.
+kernel test robot noticed the following build errors:
 
-> 
-> Signed-off-by: Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
-> ---
->  arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi   | 4 ++--
->  arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts | 2 +-
->  arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts    | 2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
-> index 948a0dd..8c5cd94 100644
-> --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
-> @@ -790,8 +790,8 @@ &i2c10 {
->  	status = "okay";
->  	clock-frequency = <100000>;
->  
-> -	bq27441_fg: bq27441-battery@55 {
-> -		compatible = "ti,bq27411";
-> +	bq27xxx_fg: fuel-gauge@55 {
-> +		compatible = "ti,bq27xxx";
+[auto build test ERROR on akpm-mm/mm-everything]
+[also build test ERROR on linus/master v7.3-rc2 next-20260909]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-And this is just breaking all users without any explanation.
+url:    https://github.com/intel-lab-lkp/linux/commits/Julian-Braha/PM-sleep-only-allow-relevant-powerpc-platforms-to-enable-PM_SLEEP_SMP/20260909-180520
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git mm-everything
+patch link:    https://lore.kernel.org/r/20260909170520.553867-1-julianbraha%40gmail.com
+patch subject: [PATCH] PM: sleep: only allow relevant powerpc platforms to enable PM_SLEEP_SMP
+config: i386-randconfig-062-20260910 (https://download.01.org/0day-ci/archive/20260911/202609111618.fkJkvb2m-lkp@intel.com/config)
+compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
+sparse: v0.6.5-rc1
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260911/202609111618.fkJkvb2m-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202609111618.fkJkvb2m-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   arch/x86/power/cpu.c: In function 'hibernate_resume_nonboot_cpu_disable':
+>> arch/x86/power/cpu.c:338:15: error: implicit declaration of function 'freeze_secondary_cpus'; did you mean 'thaw_secondary_cpus'? [-Wimplicit-function-declaration]
+     338 |         ret = freeze_secondary_cpus(0);
+         |               ^~~~~~~~~~~~~~~~~~~~~
+         |               thaw_secondary_cpus
 
 
+vim +338 arch/x86/power/cpu.c
 
->  		status = "okay";
->  		reg = <0x55>;
->  	};
-> diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts b/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
-> index 5f01115..cf40842 100644
-> --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
-> +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
-> @@ -44,7 +44,7 @@ main_cam_ois: main-cam-ois-regulator {
->  	};
->  };
->  
-> -&bq27441_fg {
-> +&bq27xxx_fg {
+406f992e4a372da Rafael J. Wysocki 2016-07-14  312  
+406f992e4a372da Rafael J. Wysocki 2016-07-14  313  int hibernate_resume_nonboot_cpu_disable(void)
+406f992e4a372da Rafael J. Wysocki 2016-07-14  314  {
+406f992e4a372da Rafael J. Wysocki 2016-07-14  315  	void (*play_dead)(void) = smp_ops.play_dead;
+406f992e4a372da Rafael J. Wysocki 2016-07-14  316  	int ret;
+406f992e4a372da Rafael J. Wysocki 2016-07-14  317  
+406f992e4a372da Rafael J. Wysocki 2016-07-14  318  	/*
+406f992e4a372da Rafael J. Wysocki 2016-07-14  319  	 * Ensure that MONITOR/MWAIT will not be used in the "play dead" loop
+406f992e4a372da Rafael J. Wysocki 2016-07-14  320  	 * during hibernate image restoration, because it is likely that the
+406f992e4a372da Rafael J. Wysocki 2016-07-14  321  	 * monitored address will be actually written to at that time and then
+406f992e4a372da Rafael J. Wysocki 2016-07-14  322  	 * the "dead" CPU will attempt to execute instructions again, but the
+406f992e4a372da Rafael J. Wysocki 2016-07-14  323  	 * address in its instruction pointer may not be possible to resolve
+406f992e4a372da Rafael J. Wysocki 2016-07-14  324  	 * any more at that point (the page tables used by it previously may
+406f992e4a372da Rafael J. Wysocki 2016-07-14  325  	 * have been overwritten by hibernate image data).
+ec527c318036a65 Jiri Kosina       2019-05-30  326  	 *
+ec527c318036a65 Jiri Kosina       2019-05-30  327  	 * First, make sure that we wake up all the potentially disabled SMT
+ec527c318036a65 Jiri Kosina       2019-05-30  328  	 * threads which have been initially brought up and then put into
+ec527c318036a65 Jiri Kosina       2019-05-30  329  	 * mwait/cpuidle sleep.
+ec527c318036a65 Jiri Kosina       2019-05-30  330  	 * Those will be put to proper (not interfering with hibernation
+ec527c318036a65 Jiri Kosina       2019-05-30  331  	 * resume) sleep afterwards, and the resumed kernel will decide itself
+ec527c318036a65 Jiri Kosina       2019-05-30  332  	 * what to do with them.
+406f992e4a372da Rafael J. Wysocki 2016-07-14  333  	 */
+ec527c318036a65 Jiri Kosina       2019-05-30  334  	ret = cpuhp_smt_enable();
+ec527c318036a65 Jiri Kosina       2019-05-30  335  	if (ret)
+ec527c318036a65 Jiri Kosina       2019-05-30  336  		return ret;
+406f992e4a372da Rafael J. Wysocki 2016-07-14  337  	smp_ops.play_dead = resume_play_dead;
+565558558985b1d Qais Yousef       2020-04-30 @338  	ret = freeze_secondary_cpus(0);
+406f992e4a372da Rafael J. Wysocki 2016-07-14  339  	smp_ops.play_dead = play_dead;
+406f992e4a372da Rafael J. Wysocki 2016-07-14  340  	return ret;
+406f992e4a372da Rafael J. Wysocki 2016-07-14  341  }
+406f992e4a372da Rafael J. Wysocki 2016-07-14  342  #endif
+406f992e4a372da Rafael J. Wysocki 2016-07-14  343  
 
-No, irrelevant to the supposed bug here.
-
-Best regards,
-Krzysztof
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
