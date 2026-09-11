@@ -1,168 +1,177 @@
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11013029.outbound.protection.outlook.com [52.101.83.29])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk2-f12.google.com (mail-qk2-f12.google.com [74.125.230.204])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA52D35E95A;
-	Fri, 11 Sep 2026 15:01:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.29
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789138879; cv=fail; b=aCFsNU1kyPQK8IvWcwsBN2ffF9zJnFgJ4wl8w+04s6C1vzdCBl6HfxD9lGvxxr6ZQQGvhJaFbdDA393KJAlVVjBzwbGszUJGikIF/cJcHaxjL9IuYEvR2pYWYiYICLOQoaCYXc4YTw/R+Zc+aKrfK9kIy7KeWDtCqhiFNKGZCzo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789138879; c=relaxed/simple;
-	bh=8fqsTq4kHV4JWrr4/IZtlKsMC1PBbfxmI9OCuJnJCb4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=duIIwZna1BsHpq83Mqd62YCNw/ObXDnvrcYrCew+pCi/M/ohGMSD2VyBYld7zMA6oHRL90HG2UPN/pLjApmgG2TMDXMytE7/exAPcmhKD4FHP2Zz9SROvfDTz3ipgcZPGMhExVUH+/GR6YlRxrTTOY5ZqqyCJpDuT9Sr5jzRA5c=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=vaWN9tmZ; arc=fail smtp.client-ip=52.101.83.29
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF97E3E1D02
+	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 15:33:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.204
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789140802; cv=none; b=qe/+zkf2RZvmVUZbFnMRpzPjW+DyjbT5PjxTveA5JnRJD4H31iwZ2tdT2IRCSVsPC6IHL6QQNHBiHInbPTs0lmmaGJQxSy+EILJtmJE4U+uzQ/GNkerQhUdwk3OQOa5lplR7v0xvMCHFVXPyH7BDsshWyf6NbqtwHuy4orvOHuQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789140802; c=relaxed/simple;
+	bh=Jxjx7/IZ/oZcJi7k9UeBKSIKhEVAXb20kNUg00lhbfk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KhUnnWtG/0wVrDNG26hsPbrQ8WTUFmDPAc4XvyWF4abZJp+6onfjo3zUWYtAPEi5JE9YfgpSqVfT0x0HZutAIkpwZ0UoNpx89WKQ73EHrsi/1/4ZyhZk2tUviZ1jXQRlOlQZUqNtkCLoR/DISPMy30uTtussv4UZMuUnx/atjIs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ctopJ+5d; arc=none smtp.client-ip=74.125.230.204
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="vaWN9tmZ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cnSG4WdEIZ2Ad8TKSbLEb1CVULtsGUd5bGn3dpOg6pn/z1+a+WPTzPrLO6vJczZdn1dLc6JLL1UhYcEr3md/vpuhauIsAPpyvcACrPCqkWh2Pp4lztAeTJjIVMq3k8FiRgcq6SKqxgMIb3ImWKLdjjcMUzF33MKGeG/tZgD7sWsmmr3lBuupuTtgvCMOimSs7PzKmVKz4MoauQxdYFpSL2v1ZJZSXpSysBtOKyYCkqKXNj+qgr+jKRZ5y+CJdZ5ybAO/vBl5MYRCEucl3PIGqDgFwxXItDs5ArcL1JkN1PjQndGbmtuzhix8ECFMZdpzl1SbxH/M4XK3rZnX+FG5Vg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Dm0ZxWVlBf00DtwLWUFPm318jdQuDR4BkBJKFUw4IUI=;
- b=uxEzESuxQLvDWo884No0SEs5fFb1R3316ZUarwxOmzXXbAd2/nt37rjrPRpeghqWyjGV27Iu4/7qC9MvOalYYcYOfqj0RIcAzyoTtFWHwQCy1mtPt+/sSWyWUpsc4r+pCm7CeavUKjFtcLW/vAg9abMCZNOIhfdqXlsYlB2/kPwamih1e+pZfabSXEpvmfqXPNIKzfHVJ6s1ualjkKrzC6EzqA7equAUwRzBbN4wXmC8ApkC+F2P7fB3QSxzp4mzpnNEDXv0G41eTKYTNM+LlXFxfaxd1RF/v+xXmJw0ecK7b7lAbsNWCtjB0PNiu8r0a8+YyNEkZRl+2ZbtBlX1gw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Dm0ZxWVlBf00DtwLWUFPm318jdQuDR4BkBJKFUw4IUI=;
- b=vaWN9tmZnygjniVWe4OLNxy9J0nUl3RbtrtLwpyyS0OySwfh8rIuIdk5Y8LjPmknC43DFiKYNI52RbDBO+/YS+HhmhRfTWTIiWIlEBn6UM8yM9goB1gIQvjRCijPw4UNmcS/dLZD/ny9D3z4Pd2FKaL90hgAh3p+TdKMjrsRp8FOxhjA6S4+R4Ar/GVTM7bdamAkkDQnT7miSa6FTf2dCuGDO85C/8rNSt2P7p5gATFCUSbsabevwtYaKUBIXy693eBl3XUlChFVXaUzEU3ryzB7fmD2jkgwNGNX0RrrGihyAvm7HqhJbojP2CYfpGKL09nQ1FAQTi9rGFoGbMbuPg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AS4PR04MB9714.eurprd04.prod.outlook.com (2603:10a6:20b:4f8::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.9; Fri, 11 Sep
- 2026 15:01:13 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0406.007; Fri, 11 Sep 2026
- 15:01:12 +0000
-Date: Fri, 11 Sep 2026 10:01:03 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Slavin Liu <bolin.liu@seu.edu.cn>
-Cc: ulfh@kernel.org, frank.li@nxp.com, s.hauer@pengutronix.de,
-	kernel@pengutronix.de, festevam@gmail.com, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] pmdomain: imx: reject a missing bus power domain
-Message-ID: <aqQXrwU3nD-uo6FT@SMW015318>
-References: <20260911060929.94481-1-bolin.liu@seu.edu.cn>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260911060929.94481-1-bolin.liu@seu.edu.cn>
-X-ClientProxiedBy: CYZPR14CA0033.namprd14.prod.outlook.com
- (2603:10b6:930:a0::20) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ctopJ+5d"
+Received: by mail-qk2-f12.google.com with SMTP id d75a77b69052e-52fb769ca02so15351641cf.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2026 08:33:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789140800; x=1789745600; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=HUm6FsdO55jOVY3JrBx1R4mKoNfkbT3ZZvod1aeZi4M=;
+        b=ctopJ+5d9pRisEbYgo7H537PqWg67RWXKzXEcxNTroMgCBIf9XnQohp66WfMCZhy/e
+         2eb+kTb5jV4plF2AG4FUxqKmq2UPWZ2HNyNiFnzTN1wwuHwHVCZ+t+FZILxPQjUiLNzm
+         gJCj323qqArKFDHiDrgUXdD7FbrfSpH/DCn6Ft9rAojRgisSZAlBG7DRcZjgeNIx8S0/
+         Xjda0NBFKfVyP5KW/aLO8Db0dleZ8Ej9onvaRyR8FRUngsgUPtGrbOKGVzNYch6hbXnN
+         51dmhvUm35WGAuxZOAx2hX+eUgvCxTyLdGz3x2Jx3jSYNL1O4mm/RD9dwLXln3rAYuBv
+         aUdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789140800; x=1789745600;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=HUm6FsdO55jOVY3JrBx1R4mKoNfkbT3ZZvod1aeZi4M=;
+        b=g0uubM7XyG8Q16bCYHJZ9vIBPmw1gJEhIuVuyV7Kt9iwrhgKcnmEaNvk8GMkLG2WZ6
+         tsUomy44tWN5MpPh0UeuRM+gSq24jMyzKLiBDfjKzZTNMfB6zodxL2EAErHBNP+U/kc4
+         2MUE9lGsfxlDGGUWamaDpGkWQ0LJ5SgXK2MaoG+7pk0kftY+X32Wz3+j9RASA8B9CQPd
+         3MdPqIV2Bt1xF6t1fZw38gfXki2yOZbipcxBSrXmmwCJPNi2W9iSkf1rRnQnvalPqFFn
+         UZucTkkxFNRGKO3fk6WLyqficdWyT8n0IRSFpM3zkBejBPJu/EOaI2atxrAx0VF94M69
+         iteg==
+X-Forwarded-Encrypted: i=1; AKwUvBx3fz9cKUs39aCT9ucsIz4e7EkE0qsK4mNI7BjLBYP0CUeONrGsBkEtyiAugcEN+tmpy9WkAhyV2Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++nNp4hvAag6o2SrCpPc/zgiZyRcP4Zs7IpZLnkVgHiK0XTfpgSj
+	A13j5a/ZqJNL+sReB99mQVAevdbLqNGWBglFUWP3xBXl6Xl4uOjStSiD
+X-Gm-Gg: AYBFou26H31hJyWaPRDrtIJXg0GK31VNpl0rSJXbQgJ/4l7rHP2Q75zo/mlDKz0hdgw
+	I5p3aDjLjV5fy4dxKHiPArRH3XD2sif78LWcW8eveB5UcMKIRiAOckhA+PsngL3v+JIZso0tEBL
+	6At17JFGMdnXi4exYR6nv/8FGw73IPF3c8KJvSC65GUwcUofjdou5+Qw1DGeCKcDZZio52WQE/b
+	bSLUUe2ugXMdrWX4RPDFIoJ5mknWIZtvkVdpHYUXZC/8W1DGobCcbc9C6eE0++DDuYvjVOnDfGY
+	WVGeKwhn9w3Y2BFnhIUVXP1bPlEhIsK1pvFRhCT9X6UiR5VT2Ty6M2T4QEnHJyGzyy7qjqUYeA3
+	GdLggGUWkekvGTPW+sngJR4J6KqrWq6pBoRhprWbIWeU3BQam6eTsU5lriraO4/dWSyLT6xDL8N
+	bJ6N4Z5TyknVDrK92uEt063NG27TS5JseRvD7ysbke+sI8ImNeZyPbVy1Qwleulg/D1th0KXLq7
+	wAK0MCwsgkvjP8hnZqLdfvxh+lwSeIdJG+ncnn8y4Ceer4bCrFSYA4nTcQU
+X-Received: by 2002:a05:622a:4019:b0:530:198c:12dc with SMTP id d75a77b69052e-530c850fdd0mr92777781cf.12.1789140798640;
+        Fri, 11 Sep 2026 08:33:18 -0700 (PDT)
+Received: from ?IPV6:2406:7400:56:e503:ad72:fda5:83e8:be95? ([2406:7400:56:e503:ad72:fda5:83e8:be95])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-530ca4b9a97sm23226571cf.18.2026.09.11.08.33.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Sep 2026 08:33:18 -0700 (PDT)
+Message-ID: <56587aea-443e-4aec-81f6-e5fde844afc4@gmail.com>
+Date: Fri, 11 Sep 2026 21:03:09 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AS4PR04MB9714:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0923ecb0-73f9-4df9-c6b7-08df101584e5
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|376014|366016|1800799024|23010399003|11063799006|10067099003|56012099006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	WOqiYbk4TRjcCn8An+3snis5yj49lun/3IbRBV1DnhsBwvIJzqg8LmPT1cQEMYf3EGVzsL9LwBuz2sHZQDWI/KtJWT7iVDNf0Q85N8om98XoK2eCu4Bh6ZldvX0qMPvRBWMSdeMD9/KnfnXqaNuKRVNnxEiycCEjN/cazJJkKrhGHoEbCwm1EsjlfBqVr4GmBDFHS2q2XSndDTuQ4bOLNgeDJ5KanRW3Vpy1VgmL0MQcd9UEJ2rKgWQdfvKHgLQNoMNDc/LKGR6mybH+t2pa9dFCU7wF9R77KInBU8NCuK8TwGbanLPJyFtZgbcEqxC8HD1j9FpsVFJezorG6IAWNYcBaHhB9ZtLc3RPsXF+rk0HiYsv74q3gY0LPZhgv0llR1guV1NPk3R1CyjbccSgK/PmL9c9rJQJBHisyWHaDi3At5sqG9FUsngjMRJ2R7R5FYqz9O8/lQxDyqv/S9x7ljeIWz1svQfzF2SoxsB3/Sw340I4NJp+xQ3MF/Nm4tFxF/ODLNjB7BdXWTIePXGhDIDcSH31a9XurYXyHxaECbXyhG++ckbKHwtn9k+vWyvOweVbZCAPDB1S8MmpdzoayS4Kun0zJW/ehdMV3pp1rizUMbGSnylAj3bTXWpQgzPOb6ZkpjlHtgZTo0++oZCq2A==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(376014)(366016)(1800799024)(23010399003)(11063799006)(10067099003)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?HpGlQTnlPYJGzWLuvCiQ+Aj/xED1GsHc75s/hMdlEXgDQIO/iUWGAz3yMgvn?=
- =?us-ascii?Q?z8x+EzaRbDz+MDuoAcE7lfRqdzmXh6Y2EdGpXeQIg649DYKTe1jVqxWIChxI?=
- =?us-ascii?Q?n/VBhzxruTKKAwnZVJa/vs5qs3IQK5/Cszpa9f/O+WK3zl+kjeeDs00SZcQL?=
- =?us-ascii?Q?gJrZUgMQdM443dhE0SM+m/pfPPNxNfP7gaBiCTVQa/QSY4vEp6VJQMzBYN2Z?=
- =?us-ascii?Q?Hyun2QBMld4oQ/TgNkHofcf3t/siz9/oA4LQHHYxuJxMAzrPJ9a2SK5wVNek?=
- =?us-ascii?Q?xXOmRd9kc2SxUR06beLcGC45hj3gW5CIapO1xdwR5YWYPWKPPGyB+zXOzm6F?=
- =?us-ascii?Q?ZPDc/GbeXADiy/mCICmzX/Nt3FExjptnSZ+74D+kBdH7AXRaZ7qoCYkZUbIP?=
- =?us-ascii?Q?u/i16uwqSE/z8ymD/1pLR7kap9EujxiG7XsNyg1WYQH+HN7itK8kDRSDxXsx?=
- =?us-ascii?Q?SC3e/3NKmDmVC6o8KpOCYEYReeZ75xp4C7FVaW4I1QRa9OQBOkt0ZZzCjVv4?=
- =?us-ascii?Q?vSIs+8bZxH7U2dmsJETjqrnvxHEOlEq1g5LE/h1xFkzpERBomu8Fg1l+I7f+?=
- =?us-ascii?Q?zn+RyGrtXe7Upe1XJ/W2+6akZQnlozKDftbvzY51GbhKeCy9oqfJUbH+mKWN?=
- =?us-ascii?Q?0cGVVrbn+9tw00cSlim0+5CcNq11Qukmfz4hm8PVRsc/sFAt7EoIw3v2Ftt8?=
- =?us-ascii?Q?5Wb3HSvNwiKuyapm40MZdxhWK6JYxU6AXaHGrRurNN5FfLnzVCknlV4PFmTs?=
- =?us-ascii?Q?b7Degl4rS0x7NQchVNKGNom/FMjhFafE8Gmd4ni9gSbw9BXh6rq54nR6QkMR?=
- =?us-ascii?Q?BOe/RcmpsP6VZuVAuoCS3dh+J8Ky8LJ/RJtzp9Q162v51nhmdsaqPfzMTECH?=
- =?us-ascii?Q?HoSxDla4E2skgJivxH21F2egE1mQAQXN0vLmVrGx8Zivw+LNB+Z5uDeCmQHN?=
- =?us-ascii?Q?Ia9tBF2VZw8xvFHjYbrKxWfbuZG1vKrpdkk/jmdx2oOb9SXhvO4Gnke1cZKt?=
- =?us-ascii?Q?eKqW99BCWVPSGxtJqEkVn4lSMceU2To2UVJazGwpJEca1KiNEIhKFxPtwisy?=
- =?us-ascii?Q?Xxg2eOjyhg9AIZ5p1QrrS+iI1AYozEXVhVo+V3x2/qdpqIX5nyppbYMQ8Aif?=
- =?us-ascii?Q?Y+tvqUcvo5z8DxOBzzB8sc4VD4C8Tsu3LKAl2ulgFVPsdIMOeiF0fybgge8A?=
- =?us-ascii?Q?l+vQMRS14K9FQogH1Vo/JYlItnKS+pmvGaGwDRmXQuDu/dAGcn0HmzuEhN+M?=
- =?us-ascii?Q?cq3YXJ56ac4cIdKPV3iPuHHid01S3J6ec5EOOqHCWR2Np5Tji4q38+HQqxZt?=
- =?us-ascii?Q?96vDibe/m6l1MI/R5UNjKlPMmvUPg72qFkII2uVgpivoPZCiADOmhMOV8m3d?=
- =?us-ascii?Q?1cwhCUDRgVQNMEPfetJaU9eJCYJInbHmt1npOB7/HJ6LZk3zqkWdPlGayqJB?=
- =?us-ascii?Q?odV3DCZnTCh07gGpvNp51CxKn5HRwzLdyP9BARNFmYHV+1Gw14Vuz7Rh0zi+?=
- =?us-ascii?Q?6tyw+HvIZGHu2Ijty/Rp0viFSJEyCnVh+7RqTSbqzsorHYunM19nOd+t4pyY?=
- =?us-ascii?Q?UfC19VwifWqE5ox4GQRiDbWmWfISGCQygTFCvu8pKdl7kTipcR41GI1mhrMZ?=
- =?us-ascii?Q?cASZZRAYfiwxX7k/Iy1WRySR9AtjxLCqrY7Ax9QnzyDTOMEnfRZHG0HjEMK+?=
- =?us-ascii?Q?1rnwOypDlU5YMY4TPgWvaEslZNYixD1TV0cn75cuyNSzH4auUJ4Kzl6fDoUe?=
- =?us-ascii?Q?K3Ju0L5D56plPzKH+CYjqXyxz/XGD7Y0s+buPvZwWDtdVmkwH9b4?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0923ecb0-73f9-4df9-c6b7-08df101584e5
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Sep 2026 15:01:12.3004
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: FV3vm63r02WtcNAZNSWwd/wOkfqH2aCP6/nbuPg6uQs01SmG2Q7YukGAWKc3rV0JGXYUxACLQvH62eAh/2yJSBvehVLCOV5ao6YgLUKCAHhIp5c0v8vezjRoWKyPFc04
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS4PR04MB9714
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/5] pmdomain: core: Allow a non-CPU device in a CPU PM
+ domain to do power on
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, linux-pm@vger.kernel.org,
+ Abel Vesa <abel.vesa@oss.qualcomm.com>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Maulik Shah <maulik.shah@oss.qualcomm.com>,
+ Yuanfang Zhang <yuanfang.zhang@oss.qualcomm.com>,
+ Sneh Mankad <sneh.mankad@oss.qualcomm.com>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260907111659.263324-1-ulf.hansson@oss.qualcomm.com>
+ <20260907111659.263324-3-ulf.hansson@oss.qualcomm.com>
+ <02b29827-3ca3-414b-9377-972f3d46eb03@gmail.com>
+ <CAPx+jO8Cf_NGJ6h30+cd-arAJGQL=V1HayRZqaTrM-xg9eUhpg@mail.gmail.com>
+ <CAPx+jO-ZP_09poe0rHm+h4QQZBbHJisCdQGa6kA67sQAkU-BfA@mail.gmail.com>
+Content-Language: en-US
+From: Dhruva G <goledhruva@gmail.com>
+In-Reply-To: <CAPx+jO-ZP_09poe0rHm+h4QQZBbHJisCdQGa6kA67sQAkU-BfA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Fri, Sep 11, 2026 at 02:09:29PM +0800, Slavin Liu wrote:
+On 11-09-2026 15:46, Ulf Hansson wrote:
+> On Fri, Sep 11, 2026 at 11:06 AM Ulf Hansson
+> <ulf.hansson@oss.qualcomm.com> wrote:
+>>
+>> On Thu, Sep 10, 2026 at 8:31 PM Dhruva G <goledhruva@gmail.com> wrote:
+>>>
+>>> On 07-09-2026 16:46, Ulf Hansson wrote:
+>>>> A driver for a non-CPU device that is attached to a CPU PM domain (the
+>>>> genpd has the GENPD_FLAG_CPU_DOMAIN configuration set), is currently not
+>>>> able to power on the PM domain. More precisely, to power on a CPU PM domain
+>>>> one of its corresponding CPUs needs to be woken up if they are idle.
+>>>>
+>>>> The current support for a non-CPU device is that its driver can only
+>>>> prevent an already powered on CPU PM domain from being powered off. This
+>>>> leads to problems for a driver while probing its device or when it needs to
+>>>> call pm_runtime_get_sync() to turn on the power for it. From the driver
+>>>> point of view it looks like it all works fine, but when accessing the
+>>>> device it may end up with various errors as the device may not be fully
+>>>> powered on.
+>>>>
+>>>> To fix the behavior for these types of devices, let's adjust the behaviour
+>>>> in genpd_power_on() to wake up an idle CPU that belongs to it, in cases
+>>>> when it's needed.
+>>>>
+>>>> Link: https://lore.kernel.org/all/CAPx+jO-sCierYj8jnoKQHckJG16dOBxnNrsZVYO=38R2cLV8nw@mail.gmail.com/
+>>>> Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+>>>> Tested-by: Yuanfang Zhang <yuanfang.zhang@oss.qualcomm.com>
+>>>> Signed-off-by: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+>>>> ---
+>>>>
+>>>> Changes in v3:
+>>>>       - Moved to atomic polling, pointed out by Dhruva.
+>>>
+>>> Thanks, but even in v3 we still have potential issues.
+>>> It does not fully address the consequences of polling for five seconds in that context,
+>>> nor the parent-lock nesting issue.
+>>
+>> Well, I assume we will not be polling for 5s, as it would be an error
+>> and it means that we fail to wake up the CPU. But, I get your point,
+>> 5s is really an unnecessary long timeout.
+>>
+>> Ideally the timeout should map towards the deepest domain idle state's
+>> entry+exit-latency-us, but rather than looking at what is actually
+>> available for the PM domain(s) in question, I think it's easier (and
+>> good enough) if we just pick a common value. Usually these values are
+>> in the range of a couple milliseconds and in some cases up to
+>> ~15-20ms. I suggest we decrease the timeout to 300ms and see how that
+>> plays out.
+>>
+>> Also note that, at this point I don't know of any use cases similar to
+>> what you describe, where the device in question is in an irqsafe child
+>> domain. Hence the polling would not be done in an atomic context at
+>> all, so we should be safe. Anyway, if this doesn't work we would
+>> simply have to limit the support to non irqsafe child domains.
+>>
+>> In regards to the parent-lock nesting issue. I don't think it's a
+>> problem as genpd_wakeup_cpu() is not being called recursively, but let
+>> me double check this to be sure.
+> 
+> Confirmed, I could not trigger any lockdep problems with my tests.
 
-Please remove RFC for this kind fix patches.
+thanks!
 
->
-> The named-domain attach API may return NULL for an absent name.
-> Treat that as -ENODEV before publishing bus_power_dev to later unwind
-> paths, without changing the handling of existing error pointers.
->
-> Detected by static analysis and reviewed with AI-assisted source auditing.
->
-> Fixes: 2684ac05a8c4 ("soc: imx: add i.MX8M blk-ctrl driver")
-> Fixes: 556f5cf9568a ("soc: imx: add i.MX8MP HSIO blk-ctrl")
-> Assisted-by: LLM
-> Signed-off-by: Slavin Liu <bolin.liu@seu.edu.cn>
-> ---
->  drivers/pmdomain/imx/imx8m-blk-ctrl.c  | 2 ++
->  drivers/pmdomain/imx/imx8mp-blk-ctrl.c | 2 ++
->  2 files changed, 4 insertions(+)
->
-> diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-> index 479789009c7f..9653a8ac9a6e 100644
-> --- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-> +++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-> @@ -228,6 +228,8 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
->                 return -ENOMEM;
->
->         bc->bus_power_dev = dev_pm_domain_attach_by_name(dev, "bus");
-> +       if (!bc->bus_power_dev)
-> +               return dev_err_probe(dev, -ENODEV, "missing bus power domain\n");
->         if (IS_ERR(bc->bus_power_dev)) {
->                 if (PTR_ERR(bc->bus_power_dev) == -ENODEV)
->                         return dev_err_probe(dev, -EPROBE_DEFER,
-> diff --git a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
-> index d255c20f58e2..e952b4ee75c0 100644
-> --- a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
-> +++ b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
-> @@ -655,6 +655,8 @@ static int imx8mp_blk_ctrl_probe(struct platform_device *pdev)
->                 return -ENOMEM;
->
->         bc->bus_power_dev = dev_pm_domain_attach_by_name(dev, "bus");
-> +       if (!bc->bus_power_dev)
-> +               return dev_err_probe(dev, -ENODEV, "missing bus power domain\n");
->         if (IS_ERR(bc->bus_power_dev))
->                 return dev_err_probe(dev, PTR_ERR(bc->bus_power_dev),
->                                      "failed to attach bus power domain\n");
->
+> 
+> If you are fine with the above suggestion for the timeout, I am
+> thinking of amending the patch when applying to avoid posting a new
+> version of the series. Please let me know.
+
+Yeah I am fine with this, will monitor in future if I suspect anything arising.
+
+Reviewed-by: Dhruva Gole <goledhruva@gmail.com>
+
+
+> 
+> [...]
+> 
+> Kind regards
+> Uffe
+
