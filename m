@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95B6F484227;
-	Fri, 11 Sep 2026 13:09:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A13B5489873;
+	Fri, 11 Sep 2026 13:09:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789132142; cv=none; b=LVK7pWp+FknP9LLdqsCRrqO330fr8xzUm8hbFrcjcC5LMFngsZg84LE16672yLty5KOcbhhWQX6oahpf79xBiiAJUkuZMUhXr3XTf1OpxF6ZKP5c0jY5vYu/Uad22WxAOMrJ7lyHTdRn9twLx132/DQvjF+x534JeOGygvWGuQQ=
+	t=1789132146; cv=none; b=qOg4PFWBvF+Kb3OXe4qRFhxTXmSj14B7F5Bj5C4mh9+aBO/uiLEVs3Q6+e1WIEw1BcWRjmeweSs4s+YluAK+aXoIn1Gsn1Lbvpk2YgedXdN23U/wlP/uBFThNI6piM12RwWsELEWVAJ6WTtOEZywgjOduTcUVU2Um8/kVnRTDsE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789132142; c=relaxed/simple;
-	bh=CsNqL0BuXS2HxAUk3Cdl0ZZH9lyeOc0+/2Zhl8odbqs=;
+	s=arc-20240116; t=1789132146; c=relaxed/simple;
+	bh=PMgGOYXgfickf/QuOMJtDkzu5/+jk/DA8jHUhYFa2vc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QrxOPE4dLg1t3BOW+4aIRTBl88M/Z4/rYXF6QM0iVQm/jDS59iW+PVVbYH7tNsmter1ndqNGmadHQ/zPhkUcMn9rLKD2xEc+f2C8U3OPqhvYyM1WAL/hIas+uloqjj1Qx+i+BG+9leAnj5Clf8Y5V+TyhFqSwwvyW84XCu5AFs0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OJWApZVf; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=HpVq6eagFgl6Ldwq7pOgnJCEudbBKSDjWxYyq+rRZFGtNq6q8nQBESkZ7yPbOTVmdb/ZvQKX7aJAjRxY78cUxxyPaVtCI1bCG9nSbehHWwWKzN3KILoKzf6utCjloYaZN3JROA+rUg+cpDVQ/tvkS+vo7QlgnTinamzN+UNQDXU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RqAf7QFa; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OJWApZVf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 055101F000FF;
-	Fri, 11 Sep 2026 13:08:57 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RqAf7QFa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 920831F000FF;
+	Fri, 11 Sep 2026 13:09:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789132140;
-	bh=YQTbKgPMhYDA9tSRj8kGXhhpYzMNoRXjZDmXBCiCu2w=;
+	s=k20260515; t=1789132144;
+	bh=43tGsppuXBql+9kbp1xCgbpgL12536uT0HveC+btTOI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=OJWApZVffGgIMwtp6NTz0djfT23rcMsKPs9MzqSUEEhWvLeSEWK/yM6bZx6jZyMVL
-	 KLyYdUB+ThwdRdomaAc1Jf8hIa21iZw7gxVIxruu2CZyYZfQs8uABXuUD3J6TJJmnh
-	 i8aA3/ut9umNL+L2sUsgB/mJpkxtjdFISPt2neccNiXiZho9mvKnaFZJjkGMvrJvIA
-	 3FdL+iA08QHV8uRrhbDf9Fbhdu8dPBndPp9XJ9LUjw9qflxPs5CzF11h3JtB+xU8Z9
-	 fLzqIGCqgSxKcH8Y+0rVHMWOPbYaVGYF8KoQj6ZD8d3bHpdT/dwlPLYiGzZAP58w4Q
-	 n7GnIucTbxUvQ==
+	b=RqAf7QFaKTsmrpEcCmy+4YPE7iZDPSx69p1no6UzD7Bz6EK43ANsILmO0zf7R4HBU
+	 F+xSJpzWC99lIiGseJ7T5J0Cf3hA42QXK2TkWfGYzov1C10A5ipLodKJXKnmpzRGE1
+	 XqZKPOG9UBmngZoyrhGtbNnwNFTxaa4gc+M4eEjJaFeKC5Y/pbl5llYaGCCuwa5rCw
+	 nZ5N9WFPbaVnw4kyou1LAySmebY41q26Gfj1+bCuQ1/D6H4qIw8nDvThrqPnQdCG6A
+	 8l1ZAWIrsVoZPR6eqLWFkL4Q0g+JqjM4AYcJsmNDB7Lc6UEnXNmRpyTJrb4Pdu6D24
+	 frKAyTW3Xb5qw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -33,10 +33,9 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
  Lukasz Luba <lukasz.luba@arm.com>, Armin Wolf <w_armin@gmx.de>
 Subject:
- [PATCH v1 04/10] ACPI: processor: thermal: Use
- thermal_cooling_device_create()
-Date: Fri, 11 Sep 2026 15:02:53 +0200
-Message-ID: <2362345.iZASKD2KPV@rafael.j.wysocki>
+ [PATCH v1 03/10] thermal: core: Introduce thermal_cooling_device_create()
+Date: Fri, 11 Sep 2026 15:02:09 +0200
+Message-ID: <8729484.T7Z3S40VBb@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <1965933.tdWV9SEqCh@rafael.j.wysocki>
 References: <1965933.tdWV9SEqCh@rafael.j.wysocki>
@@ -51,138 +50,166 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Instead of using thermal_cooling_device_register() for registering
-a cooling device in the ACPI processor driver, make it use
-thermal_cooling_device_create() and pass a pointer to the processor
-device representing the given CPU to that function as the cooling
-device's parent.  That will cause the cooling device's sysfs directory
-to be created under the parent's sysfs directory (among other things).
+Currently, thermal cooling devices have no parents, but it would be
+generally useful to be able to create them under specific parents in
+the device hierarchy (for instance, it may help to identify the device
+representing the actual cooling hardware).
 
-Since creating a class device under a parent causes a "device" symbolic
-link from the sysfs directory of the class device to the sysfs directory
-of the parent to appear automatically, remove the code creating the
-"device" symbolic link from the sysfs directory of the cooling device
-in question to the sysfs directory of the parent's companion ACPI
-device.  That ACPI device is reachable through the "firmware_node"
-symbolic link in the parent's sysfs directory regardless.
+To make that possible, add thermal_cooling_device_create() that will
+work like thermal_cooling_device_register() except that it will take
+an additional parent argument (which may be NULL).
 
-Moreover, since the cooling device is now located in sysfs under its
-parent and it can be easily identified as a cooling device, there is
-no need to create a "thermal_cooling" symbolic link from its parent's
-ACPI companion to it.  Accordingly, also remove the code creating that
-symbolic link.
-
-While at it, check for error pointer values in addition to checking
-for NULL in acpi_processor_thermal_exit() to avoid dereferncing them
-mistakenly.
+Redefine thermal_cooling_device_register() as a static inline wrapper
+around thermal_cooling_device_create().
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_driver.c  |  4 +--
- drivers/acpi/processor_thermal.c | 47 +++++---------------------------
- include/acpi/processor.h         |  3 +-
- 3 files changed, 10 insertions(+), 44 deletions(-)
+ drivers/thermal/thermal_core.c | 28 ++++++++++++++++------------
+ drivers/thermal/thermal_core.h |  3 ++-
+ drivers/thermal/thermal_of.c   |  2 +-
+ include/linux/thermal.h        | 19 ++++++++++++++-----
+ 4 files changed, 33 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index cdc2ae1632b2..90c14480393d 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -179,7 +179,7 @@ static int __acpi_processor_start(struct acpi_device *device)
- 	return 0;
- 
- err_thermal_exit:
--	acpi_processor_thermal_exit(pr, device);
-+	acpi_processor_thermal_exit(pr);
- err_power_exit:
- 	acpi_processor_power_exit(pr);
- 	return result;
-@@ -203,7 +203,7 @@ static int acpi_processor_stop(struct device *dev)
- 
- 	acpi_cppc_processor_exit(pr);
- 
--	acpi_processor_thermal_exit(pr, device);
-+	acpi_processor_thermal_exit(pr);
- 
- 	return 0;
- }
-diff --git a/drivers/acpi/processor_thermal.c b/drivers/acpi/processor_thermal.c
-index c7b1dc5687ec..6cd47551844a 100644
---- a/drivers/acpi/processor_thermal.c
-+++ b/drivers/acpi/processor_thermal.c
-@@ -311,52 +311,19 @@ const struct thermal_cooling_device_ops processor_cooling_ops = {
- int acpi_processor_thermal_init(struct acpi_processor *pr,
- 				struct acpi_device *device)
- {
--	int result = 0;
--
--	pr->cdev = thermal_cooling_device_register("Processor", device,
--						   &processor_cooling_ops);
--	if (IS_ERR(pr->cdev)) {
--		result = PTR_ERR(pr->cdev);
--		return result;
--	}
--
--	dev_dbg(&device->dev, "registered as cooling_device%d\n",
--		pr->cdev->id);
--
--	result = sysfs_create_link(&device->dev.kobj,
--				   &pr->cdev->device.kobj,
--				   "thermal_cooling");
--	if (result) {
--		dev_err(&device->dev,
--			"Failed to create sysfs link 'thermal_cooling'\n");
--		goto err_thermal_unregister;
--	}
-+	pr->cdev = thermal_cooling_device_create(pr->dev, "Processor", device,
-+						 &processor_cooling_ops);
-+	if (IS_ERR(pr->cdev))
-+		return PTR_ERR(pr->cdev);
- 
--	result = sysfs_create_link(&pr->cdev->device.kobj,
--				   &device->dev.kobj,
--				   "device");
--	if (result) {
--		dev_err(&pr->cdev->device,
--			"Failed to create sysfs link 'device'\n");
--		goto err_remove_sysfs_thermal;
--	}
-+	dev_dbg(pr->dev, "registered as cooling_device%d\n", pr->cdev->id);
- 
- 	return 0;
--
--err_remove_sysfs_thermal:
--	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
--err_thermal_unregister:
--	thermal_cooling_device_unregister(pr->cdev);
--
--	return result;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 82e2f0d8a26d..ac928c199829 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1005,7 +1005,8 @@ thermal_cooling_device_alloc(const char *type, const struct thermal_cooling_devi
+ 	return ERR_PTR(ret);
  }
  
--void acpi_processor_thermal_exit(struct acpi_processor *pr,
--				 struct acpi_device *device)
-+void acpi_processor_thermal_exit(struct acpi_processor *pr)
+-int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void *devdata)
++int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
++			       struct device *parent, void *devdata)
  {
--	if (pr->cdev) {
--		sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
--		sysfs_remove_link(&pr->cdev->device.kobj, "device");
-+	if (!IS_ERR_OR_NULL(pr->cdev)) {
- 		thermal_cooling_device_unregister(pr->cdev);
- 		pr->cdev = NULL;
- 	}
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index 554be224ce76..656aaf74fb18 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -429,8 +429,7 @@ int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi);
- /* in processor_thermal.c */
- int acpi_processor_thermal_init(struct acpi_processor *pr,
- 				struct acpi_device *device);
--void acpi_processor_thermal_exit(struct acpi_processor *pr,
--				 struct acpi_device *device);
-+void acpi_processor_thermal_exit(struct acpi_processor *pr);
- extern const struct thermal_cooling_device_ops processor_cooling_ops;
- #ifdef CONFIG_CPU_FREQ
- void acpi_thermal_cpufreq_init(struct cpufreq_policy *policy);
+ 	unsigned long current_state;
+ 	int ret;
+@@ -1013,6 +1014,7 @@ int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void *devdat
+ 	mutex_init(&cdev->lock);
+ 	INIT_LIST_HEAD(&cdev->thermal_instances);
+ 	cdev->updated = false;
++	cdev->device.parent = parent;
+ 	cdev->device.class = &thermal_class;
+ 	cdev->device.release = thermal_cdev_release;
+ 	device_initialize(&cdev->device);
+@@ -1062,21 +1064,23 @@ int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void *devdat
+ }
+ 
+ /**
+- * thermal_cooling_device_register() - register a new thermal cooling device
++ * thermal_cooling_device_create() - register a new thermal cooling device
++ * @parent:	parent device (optional).
+  * @type:	the thermal cooling device type.
+  * @devdata:	device private data.
+  * @ops:	standard thermal cooling devices callbacks.
+  *
+- * This interface function adds a new thermal cooling device (fan/processor/...)
+- * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
+- * to all the thermal zone devices registered at the same time.
++ * Allocate and register a new thermal cooling device under the given parent (if
++ * not NULL) and with the given type, device data, and operations.  During the
++ * registration, it will be matched against all of the registered thermal zones
++ * and it will be bound to the matching ones.
+  *
+- * Return: a pointer to the created struct thermal_cooling_device or an
+- * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
++ * Return: A pointer to the created struct thermal_cooling_device or an ERR_PTR.
++ * Callers must use IS_ERR*() helpers to check the return value.
+  */
+-struct thermal_cooling_device *
+-thermal_cooling_device_register(const char *type, void *devdata,
+-				const struct thermal_cooling_device_ops *ops)
++struct thermal_cooling_device *thermal_cooling_device_create(
++			struct device *parent, const char *type, void *devdata,
++			const struct thermal_cooling_device_ops *ops)
+ {
+ 	struct thermal_cooling_device *cdev;
+ 	int ret;
+@@ -1085,13 +1089,13 @@ thermal_cooling_device_register(const char *type, void *devdata,
+ 	if (IS_ERR(cdev))
+ 		return cdev;
+ 
+-	ret = thermal_cooling_device_add(cdev, devdata);
++	ret = thermal_cooling_device_add(cdev, parent, devdata);
+ 	if (ret)
+ 		return ERR_PTR(ret);
+ 
+ 	return cdev;
+ }
+-EXPORT_SYMBOL_GPL(thermal_cooling_device_register);
++EXPORT_SYMBOL_GPL(thermal_cooling_device_create);
+ 
+ static void thermal_cooling_device_release(void *data)
+ {
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index e98b0aa5aacc..7ef7c6cab437 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -270,7 +270,8 @@ void thermal_governor_update_tz(struct thermal_zone_device *tz,
+ struct thermal_cooling_device *
+ thermal_cooling_device_alloc(const char *type, const struct thermal_cooling_device_ops *ops);
+ 
+-int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void *devdata);
++int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
++			       struct device *parent, void *devdata);
+ 
+ /* Helpers */
+ #define for_each_trip_desc(__tz, __td)	\
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 0217a49b08ae..14dfac9359b8 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -561,7 +561,7 @@ thermal_of_cooling_device_register(struct device_node *np, u32 cdev_id,
+ 	cdev->np = np;
+ 	cdev->cdev_id = cdev_id;
+ 
+-	ret = thermal_cooling_device_add(cdev, devdata);
++	ret = thermal_cooling_device_add(cdev, NULL, devdata);
+ 	if (ret)
+ 		return ERR_PTR(ret);
+ 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 083b4f533933..306ad17aed89 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -293,8 +293,9 @@ struct device *thermal_zone_device(struct thermal_zone_device *tzd);
+ void thermal_zone_device_update(struct thermal_zone_device *,
+ 				enum thermal_notify_event);
+ 
+-struct thermal_cooling_device *thermal_cooling_device_register(const char *,
+-		void *, const struct thermal_cooling_device_ops *);
++struct thermal_cooling_device *thermal_cooling_device_create(
++			struct device *parent, const char *type, void *devdata,
++			const struct thermal_cooling_device_ops *ops);
+ 
+ struct thermal_cooling_device *
+ devm_thermal_cooling_device_register(struct device *dev, const char *type, void *devdata,
+@@ -340,9 +341,9 @@ static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 					      enum thermal_notify_event event)
+ { }
+ 
+-static inline struct thermal_cooling_device *
+-thermal_cooling_device_register(const char *type, void *devdata,
+-	const struct thermal_cooling_device_ops *ops)
++static inline struct thermal_cooling_device *thermal_cooling_device_create(
++			struct device *parent, const char *type, void *devdata,
++			const struct thermal_cooling_device_ops *ops)
+ { return ERR_PTR(-ENODEV); }
+ 
+ static inline struct thermal_cooling_device *
+@@ -391,4 +392,12 @@ static inline void thermal_pm_prepare(void) {}
+ static inline void thermal_pm_complete(void) {}
+ #endif /* CONFIG_THERMAL */
+ 
++static inline struct thermal_cooling_device *thermal_cooling_device_register(
++				const char *type, void *devdata,
++				const struct thermal_cooling_device_ops *ops)
++{
++	return thermal_cooling_device_create(NULL, type, devdata, ops);
++}
++
++
+ #endif /* __THERMAL_H__ */
 -- 
 2.51.0
 
