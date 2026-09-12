@@ -1,206 +1,133 @@
-Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazolkn19013084.outbound.protection.outlook.com [52.103.74.84])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2CDB346A08;
-	Sat, 12 Sep 2026 07:09:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.74.84
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789196992; cv=fail; b=l7EZu8mJ29vTndKGLArLgOpOLuOJHcGld16lgVB6DogA3z/IoKi1Ir6sSfKfcsaZFk2Wkw+OWwz4m+u5q77wl/0FDOomTdnDI96IkIeedAX/7e0LFnCKaBxYokKDurNrvIg1dTKRW+tbGJM/w70/UVVeiK5ORAUJvrmc6GDlRfE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789196992; c=relaxed/simple;
-	bh=WUAVT4TkfcjotOwos4vIKaRfgSvIaXzISFceJywsoNk=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=edQKs1STX/F6XokpMjCvqV2qQfmJKKeEUhEWnbZ3eBwsQiXZGSgSOIPnYdR18xfoFIYtNLadJOrYRCd+FruWrIhNEZHHTR24zl9dQbVuTiIeiwHz/kopmHTmNKBO1Vd1/2hWr9yTv0ZwwUMvtD6M8hVivUoCJxgD15tC3XoAA44=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=h2TEMpTt; arc=fail smtp.client-ip=52.103.74.84
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33D9537F8DD;
+	Sat, 12 Sep 2026 07:47:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789199264; cv=none; b=RziEV23Z9ucJmn+oVqvc104qyWho1m14Vm/2V15SlaFRh5cMWtCcSTUgjnR4Pj72sOL7S7j3VsNgd9yyBCifl/a8ncTqew4+7EbZQna1rlT75ZD2KZTx2R0hd9V/o0MV+NdKJ3yPJd7zXyZ5SlqDaSueLxgUIWXnrapQiFQ1z6A=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789199264; c=relaxed/simple;
+	bh=R/Wd26fZOArpDS0VCiW2VIg+U6TfjdnRy5lUqkHrXds=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WovVo9mYxiJBzjipr8aelWmajXIt6nulIgM+VAZuokirvODZHbejitYqvnwlEOJHYCI2Div7mLAy4URthlVLFfbH6wOaGoDwJQTlSI+I6Nyn2+8kLNy95pqV0ntCOdILw+EzMth4FsaYdZ63AOJOME/vGQxDdmD6GZkPrgOWXfs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j/uoTbdk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="h2TEMpTt"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rUDHXLCqYIvTHqjuCSgk1neW+rYVveseGK/8yEt83u9WSixDgRc4S6jJETaAJTU95zMWzHRHhzCgH312uMvUleD5wxdY2Hxk0zpaEC2JT+kysLZLlR4hUIrfLxvKy5wsU6clB/+4HemPaYraCZviXR0gJM+xCEAeiBEXB6k2Y0WwHcUq9Z337Mk+Hb62imfNwxrm5Uzh0bfy0PYBijC2JIOEmFY8g2e9v7N7Bdf8ZjRglsVbMK7cy/aCjY3zm4RXaWM11b39m0gfmtJU7JjJovEE6yOG8jKCWz7BIiWQwVM5C8hRz8MTEviVxQX/YrwtPuGCFnRxvsJI/LbPnJCFng==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=A7g/xeAYnHxBKdT0rhbRhgjiWwtJp4wH/pZzT2AH1DI=;
- b=TNvQpsenupbEYoJ+X7VrSQkIH0+gTCuCvWgO0YUlnvBQLMhBLkc9escH4AthId5CLv6SehgaVw5+ndOeLvboPFJ3cdv41QHVDPjBfZh1KOvTSo4GwEnHHMqgW9QSTBK3l44OhHVbS32E1pW/4rpadUoeguV982XZOlI+W1yarCVazpkmQo5+kEL9gUDFgk8VWsb9FlTRkxGGtz28Fq9GYBNNjX3jVtGgR1XqFoPz3VKxZw7kCcV4m5xyBIWX8sAn2/KWzWZ0T00aXsfFtYX7d75JsBoQZkfFfbnwoqSfAKJYIQ3xN3aFhafBLfhLwn9rIKT4yk3WqVpt3+c3xZRVuQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=A7g/xeAYnHxBKdT0rhbRhgjiWwtJp4wH/pZzT2AH1DI=;
- b=h2TEMpTtFerfQa33S2KcCnp+bDwJ5LYvCh3yync0YOo8rRApUv/Oe7g/Csc/ZRpuh1WJJsfSHfjEQjyWsnKqbZsG2LK2jjxj0Ge1rpD91sS5VpaNSl35kEdzLC/Vaz/qR/NMe/vD9A4fXs3Ts4StMzbzfSg+rSwvNvaeBZEGo8U6M0OFdVWM9REGsqRvtXwQUAN+lb+Sv/0ZgWEuIqqw84RZvm54YJVAocbpuS6lz+9/RoGIK9Kvzu6WFxWPHiE2Ib19HkBy87b7WMH9Gha7WU3vd61qcfzJWb/w8JsNn7GudCYgmevizlat1TXfL3mvFvE8O8xgW43RRdZmf8OWVg==
-Received: from SI2PR04MB4931.apcprd04.prod.outlook.com (2603:1096:4:149::12)
- by TYZPR04MB7667.apcprd04.prod.outlook.com (2603:1096:405:3e::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.11; Sat, 12 Sep
- 2026 07:09:45 +0000
-Received: from SI2PR04MB4931.apcprd04.prod.outlook.com
- ([fe80::8a7a:9439:be86:eb78]) by SI2PR04MB4931.apcprd04.prod.outlook.com
- ([fe80::8a7a:9439:be86:eb78%4]) with mapi id 15.21.0406.007; Sat, 12 Sep 2026
- 07:09:45 +0000
-Message-ID:
- <SI2PR04MB4931A8BA0EF213B0238BD9E4E3BD2@SI2PR04MB4931.apcprd04.prod.outlook.com>
-Date: Sat, 12 Sep 2026 15:11:20 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sched/fair: Only apply cpufreq pressure where frequency
- is invariant
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "zhongyuan@hygon.cn" <zhongyuan@hygon.cn>,
- "huangsj@hygon.cn" <huangsj@hygon.cn>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>
-References: <20260821073927.455475-1-wujianyong@hygon.cn>
- <fea033f4-a680-445f-b231-2a0cc1dded8b@transsion.com>
- <F16AADE6-B6B7-4997-9CC1-A2E323498B7F@outlook.com>
- <CAKfTPtCxMA-7BX20LNhdOT+BQysdnOxOALrLvhTFNYJLbdsoCA@mail.gmail.com>
- <SI2PR04MB4931F65C44962845CE345B79E3B72@SI2PR04MB4931.apcprd04.prod.outlook.com>
- <44993024-f1bb-4b4f-802b-a22f95101171@transsion.com>
- <SI2PR04MB49315D05AB89CFA3B0E41BF3E3B62@SI2PR04MB4931.apcprd04.prod.outlook.com>
- <f38d55b1-68f8-4cfa-8b97-47fe58bd9ed7@transsion.com>
- <d709498b-9572-44bd-a93e-bbed23fd7372@amd.com>
- <4e39e935-2339-442b-8b14-a688b605c35e@amd.com>
- <a9dc111b-21cb-4bcb-ac91-f6be04bc2e06@transsion.com>
- <a2466e7d-2dd7-4de9-963f-6eb8c58d4a49@amd.com>
-Content-Language: en-US
-From: Jianyong Wu <jianyong.wu@outlook.com>
-In-Reply-To: <a2466e7d-2dd7-4de9-963f-6eb8c58d4a49@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SE2P216CA0027.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:114::18) To SI2PR04MB4931.apcprd04.prod.outlook.com
- (2603:1096:4:149::12)
-X-Microsoft-Original-Message-ID:
- <e0326172-6452-4756-bc23-d0bc2bfd5445@outlook.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j/uoTbdk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2CDB1F000FF;
+	Sat, 12 Sep 2026 07:47:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789199263;
+	bh=fEk/+hjIO0JPeORZMXigoTsG7Twv5Bvnn+lcX8uIdUA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=j/uoTbdkemp1lTBkEdp7a5iePn6loWnzURddGH+pHmbp3TdI+Ht9vKB5+5HDaMkTz
+	 4XMNQMCixVIjSJgIUIpdDJkP3e+Zk7Zp6DLG8R0pbbNCMi+vNKMW8vXDXOqhrK+f5T
+	 4ubb7OTc080BSuVU8WcfJykWnX7f5Z0WoVW04LQG4n3ICAqaFQYrolJW1Id7gDkGyT
+	 9XdoNxIDMO+1FxLFBT1mCMBpRGz0RyDmtz4V9EskILs09SHmK1bOxAd64LIXEduN84
+	 G01WKPddNVoqYjlumTombMlc6OK9zmDzR1HpVKwt+t7qHgrMeljIhAzddIk6rPIX4a
+	 HVtiSFigUNPcQ==
+Message-ID: <0e917c61-8be9-4919-9173-0dd92e1c0d22@kernel.org>
+Date: Sat, 12 Sep 2026 09:47:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SI2PR04MB4931:EE_|TYZPR04MB7667:EE_
-X-MS-Office365-Filtering-Correlation-Id: 092891f2-5e26-44de-7b6b-08df109cd036
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|23021999003|15080799012|25010399006|24021099003|51005399006|6090799003|5072599009|19110799012|8060799015|40105399003|2607281247196008|3412199025|440099028;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?UnR0TDFSeklRK0FIdkVSSk9HbkNkalFPMnJBd3NPTHdIVDhLL3BES1NFZ3lQ?=
- =?utf-8?B?TFNlQlEwRWt4OGoxeTB5cW01ekpYWUVqN1Q2RzdaQ3liU2VqclhJSFpOU3hG?=
- =?utf-8?B?bjZ5NHZtdDhaNVRRMGJnVnprcXFNZHJLOFJUV1VJMzdpVHVmMXNkQ0R1Vyt5?=
- =?utf-8?B?alpXOUs0bXpoNllZR1JQb0RScmluTjB2VkdZVGFTUGxvcHVwZ29iU0tucnNP?=
- =?utf-8?B?REhNOUJZWmR4V0FVbmpSU2hldklqK1pQNnJNQXNTRVhnZ1h3RFlSQ21tR0ht?=
- =?utf-8?B?S0k3T1drd3lmdG5uQXdwK2FobXhmU21kM1Q3Ny9JN1BXaXhiYUo0UjR0dGFk?=
- =?utf-8?B?MFZHbWExTmYwZTMxdjVRK2hoUXhDamd0djd0S1NES0d3SklteGpkMVZSazdp?=
- =?utf-8?B?RkdhcUU2UkVKSjF3Nm1oZGFPZmx4TjQvRWVGRmRpaEp1cU4rdkhHQXJtWmFw?=
- =?utf-8?B?ZnhYbVNkUGt5R2p2QXYxZFVQejZtckNPSjh5bmwwZkNrazBNYzVZUGV4QkNo?=
- =?utf-8?B?M0YzOU9IaCtCZmsrUVNhUW1mRVhqZkhFWGxFRW1rY0NQUFFjajltejFWL2Y3?=
- =?utf-8?B?M2JKNGFIQTVGbFFiZ1pKK0hCVWd6NU5UTkM4OEVPYUxUUE1jQnBFald5SjZw?=
- =?utf-8?B?emJiaSsrTDVmQTQ0RWFQVDFLZFFtNTM1RVRiZ1NwUndsK0ZtRE5PVXBuWEkr?=
- =?utf-8?B?S3ZVcnFnU1ZNTWZnSDdmV3lsdjIrcnk0Y1B6L3dVcVBZTm9kOW5uTzZuZkpN?=
- =?utf-8?B?K0IyYXFoL2h2TGYra1g1RHN6WWVrK2FJdXI4dndIUG45aVE5dG8vZys0Mlhz?=
- =?utf-8?B?QTA3ajNsK3R1YnJIeGlYYTUxWnAyNFdpNk9CcmNZcnJIRmduV3lmVGFyR3JN?=
- =?utf-8?B?aXVTYmx3RU8vR2UwUzJLdXdrMVBZeVpIRWtiNEhUUld5TUNxM2MyTHJRaUVM?=
- =?utf-8?B?ZS9ncWlVdkV1ajFFS1ZacThncHozajR4UXY3bkVqcmd6c2JCRXF5bTNlbXVZ?=
- =?utf-8?B?Uzd2eWNMb3RsMkxBN3R5UER5bEt5dVE4VDJlWmpTYWMyRFZpbnd1ZFRMcjVs?=
- =?utf-8?B?MWdRUmhDWmpGN29WNGUxemdtczFiWkFkeUY2SXRxbFlXZUxEUEZZTXRDbzVU?=
- =?utf-8?B?bERJU1pvUzFOUXpmbHNzZjRCbFd0Mlh2MVltb3JNOTd0NG1LL291TG5TdHZ4?=
- =?utf-8?B?OFR4SzVTRllDMjdkNy93T3BjbFN4QkNDdk8wK2JWcERiL1R4MUNZTmpTL1NN?=
- =?utf-8?B?YnMwaHBmdVk2SU1MOHlGN1l2ejlwQWZPcVcxMUdlbWJiVE1ndz09?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?QTRDN2xRRDh2UUl0TzVwaVdXTDN6bDNrbmRtNldJaHFKbHh2SmRUYmdIM3l3?=
- =?utf-8?B?TFlhOU9IOUdTZXhkRC9wbXZESGlVbkdPRnh5a3dFazZUZ051Qml5MmpsWlFZ?=
- =?utf-8?B?YUhtYjJsNHJQbFk3ekNEQXFmZ0xqRy9wK2I2S3dnOFZOcGxHL3R1NEhkMi9r?=
- =?utf-8?B?M1NYZXNuUUhLV3pJVnNjNnNiVVc0Z1BvVG9TNGNyUVpVT1JmNkwweEdNQVFV?=
- =?utf-8?B?YmYvYmhBMWFlNklqdXlhbDNYMUg4R2QzZkpvay9BdFBIZnYwVFVwOFVtYmFv?=
- =?utf-8?B?Y1pnSTlvbzBjM3pZYWc5OFRvZFJzTi95Y1BIYStPV0FYWEMydDRaNktrVUxp?=
- =?utf-8?B?ODJFS3ZDUmdnVEZzdEQyNnQwLzJ1dWlDeThNYlhnQnRYVFNCdXBML2sxaTFO?=
- =?utf-8?B?YXhSWkZUM1NobjB5WGZyL1pkNHlldExnem1PaUdsaUpqZTlQRHkwbGxpNnpD?=
- =?utf-8?B?Q2g3eDUrcmp1bjFFNk9KNy9yanppQTVOOGJPN3NKejFDazIyektsbExwQkRy?=
- =?utf-8?B?VHNVMlpFd0pMb1RqMlpzb09USXFrMXo0S3ZscWE1QUsxeG5raUZUQTlJSGsv?=
- =?utf-8?B?aFhUOWxScXZzMzFHNWpiMmhCaHE5eGJXMnZpZVpmWlJLSmM3Vk9kRGlYck5D?=
- =?utf-8?B?TTRnWE9tbmFHZXdhZjRsTitGajY2K1UvUmNmd2lYdHNlcTVSekpBMGxaNHUz?=
- =?utf-8?B?WllWamg1M09XV25zeUgvblFnZURTWlVqV1NZVEVNcEljZC9GQkFaRjN3Umg3?=
- =?utf-8?B?aHJTQTlhbWI0RlBVNkV3TjBXMUZsUWJnQnJQSCtHMnhMWkpLdXRlcU5EZEt0?=
- =?utf-8?B?NHJKYU4wVWlKb2pBK2V2RHU2bHI4blQ0OTFWZHlsdVZKS3ZNenNiWTliSzMv?=
- =?utf-8?B?N1BUYmlyZlRUTGhuaCtzUDAyODJkZnZPSHM4bzVvdkp4UnJ6dDF3Z29qaWNF?=
- =?utf-8?B?a0lnNlNybnFsbWxsVUl4TXliSzNKd2V5aDd3R0VRdkE3QTdTd0JlYjc4TTNt?=
- =?utf-8?B?aVJiYno4czQ4aUp4VStHd1lOYWJ2R3VFWGRTQUdiWkJnWHIwTitkT25QKzcz?=
- =?utf-8?B?VXQ0U3JRWmJ3L0NmMnFZZVppTjRZamc2WXVzS1lBOVZPbXltTFYyc3hrQVE0?=
- =?utf-8?B?d1BCdnd1L0NvRGI0MFBHN0FpcEVtVzl2WkN3NDRPNTBwd3ZXZFJkcm5xR2tO?=
- =?utf-8?B?U3dZNG0zZ3lXRkQ3bGlyNUpqRitjNHNVUVYwNUdCTE1BNHAveU1VbVY2anpT?=
- =?utf-8?B?c2VubXVOMGtKaFpIb2VGbmhraFZ6dEFFSVRxN0JDVDVwT1hib0tDcHcxREpE?=
- =?utf-8?B?aWVnZ0s0d2s5NW9sOEF3VVk2OG83QmprdE1UMEttUkhhVVcxaUtLQTVyVVBO?=
- =?utf-8?B?NVErQjQ3Z1kwUnpTcUx2aVhOSGVwcVFmeE5VVXorbFBaSlVJYWQ5aGxJUUNP?=
- =?utf-8?B?cmRYRnJ5T3VHbndXSXZWWk52bTErYXZlWXdFN1NJMUlGdEZTb3lqdHRqRUpt?=
- =?utf-8?B?ZW8yWGZlOUFYTlRPT2VWSUZrSEFuRUQvVDhsTHVpL01icHFVVGcrTUJURkFT?=
- =?utf-8?B?b0djaG5YS1loZXRWUjZScnY0TnBreG1mRjdXWk9nMEVudFpXVjFicTJMeEhN?=
- =?utf-8?B?eFNjbU9Lc2FnaUdiMVBxa1lxRDJVaDhiWWE1MFdwL2hXdGtkbEQ1Z01abnlT?=
- =?utf-8?B?OXJURjdkYTZvQW1QTDFNMmE4RnhqMEt0TXVUbDJ4cjN3aE1PMk9GQktpcEpv?=
- =?utf-8?B?dkNaTXV2cUVYYnd1UVNRcUhacFQ1dG1LdGR4WkFZdmFOemcraTVML09CcXhO?=
- =?utf-8?B?ZTdhWk1iY2Q4dXJxNE1XT1B3OTlBekRYM1FMaFMxL3UwKzBrL0xDbmJTRk1k?=
- =?utf-8?Q?4L50tk5i5nv46?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 092891f2-5e26-44de-7b6b-08df109cd036
-X-MS-Exchange-CrossTenant-AuthSource: SI2PR04MB4931.apcprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Sep 2026 07:09:45.0196
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR04MB7667
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] arm64: dts: qcom: sdm845-oneplus: use generic fuel
+ gauge compatible
+To: Andrew Davis <afd@ti.com>,
+ Rinat Muhamedgaliev <rinat.muhamedgaliev@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ David Heidelberg <david@ixit.cz>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260829205258.26955-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-1-rinat.muhamedgaliev@gmail.com>
+ <20260909234744.1177153-4-rinat.muhamedgaliev@gmail.com>
+ <20260911-relaxed-dexterous-hummingbird-72dfbe@quoll>
+ <6c45cfd5-ac37-4f8e-bde3-0391512df982@ti.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <6c45cfd5-ac37-4f8e-bde3-0391512df982@ti.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-
-
-在 2026/9/9 18:04, K Prateek Nayak 写道:
-> Hello Hongyan,
-> 
-> On 9/9/2026 9:39 AM, Hongyan Xia wrote:
->>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>> index b898b6544069..97f4a3ba5107 100644
->>> --- a/drivers/cpufreq/cpufreq.c
->>> +++ b/drivers/cpufreq/cpufreq.c
->>> @@ -2586,8 +2586,11 @@ static void cpufreq_update_pressure(struct cpufreq_policy *policy)
->>>    
->>>    	cpu = cpumask_first(policy->related_cpus);
->>>    	max_freq = arch_scale_freq_ref(cpu);
->>> -	if (!max_freq)
->>> -		max_freq = policy->cpuinfo.max_freq;
->>> +	if (!max_freq) {
->>> +		max_freq = __resolve_freq(policy, policy->cpuinfo.max_freq,
->>> +					  policy->cpuinfo.min_freq, policy->cpuinfo.max_freq,
->>> +					  CPUFREQ_RELATION_H);
->>> +	}
->>>    
->>>    	capped_freq = policy->max;
->>>    
+On 11/09/2026 15:37, Andrew Davis wrote:
+> On 9/11/26 3:21 AM, Krzysztof Kozlowski wrote:
+>> On Thu, Sep 10, 2026 at 02:47:44AM +0300, Rinat Muhamedgaliev wrote:
+>>> OnePlus 6 and OnePlus 6T battery packs may contain either a TI
+>>> bq27411 or bq27541 fuel gauge. Use the generic ti,bq27xxx compatible
+>>> so the driver can select the register map from DeviceType at probe
+>>> time.
+>>>
+>>> Tested on OnePlus 6T (fajita) with a bq27541 (DeviceType 0x0541):
+>>> after booting the new kernel, the battery reported 4.360 V, 100% state
+>>> of charge, 27.8 C, and Full status.
+>>>
+>>> Fixes: 12dfb002ca01 ("arm64: dts: qcom: sdm845-oneplus-*: add fuel gauge")
 >>
->> LGTM.
-> 
-> Thanks a ton for taking a look at the suggestion.
-> 
+>> What is the bug here? Your commit msg should be specific about it.
 >>
->> NIT: I do wonder if we need a full __resolve_freq() each time. We could
->> cache the highest achievable OPP on max_freq updates, but that's future
->> optimization.
 > 
-> Sure! We can cache it in the policy object during
-> cpufreq_policy_online().
+> Commit msg seems pretty clear about the bug (to me at least), the DT
+> says the fuel gauge is a BQ27411 but that isn't the case, some shipped
+> with a BQ27541 fuel gauge.
 > 
-> Jianyong Wu would like to take a stab at it? If not, I can send it out
-> early next week.
+> (I do agree though this shouldn't have a fixes tag as back-porting this
+> without also back-porting the driver-side change would break users)
 
-Thanks for asking, I would happy to take a stab at this.
+But different model is not a bug by itself. If devices are compatible
+how would it be a bug? if everything is working fine with different
+model how would that be a bug?
 
-Based on Vincent's follow-up, I think we may need a different approach
-to keep the reference frequency fixed across boost state changes.>
 
+Best regards,
+Krzysztof
