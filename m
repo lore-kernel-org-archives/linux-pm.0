@@ -1,68 +1,67 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89CAC3264D4
-	for <linux-pm@vger.kernel.org>; Sat, 12 Sep 2026 15:18:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4EA34322FC
+	for <linux-pm@vger.kernel.org>; Sat, 12 Sep 2026 15:18:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789226328; cv=none; b=FLtIfXnrQK2rTmRiOhG3nAzQlgTiW93PXNXvUt1To6IqcbbOT3B5NADwYuLtkK9uJibSCuM2SOjqkvkQ2iW4kldlfQQNA2ct2v2JNHas6bEiXHnU7YfV69Y1KxzUZtkF7PlHnFEZOg9t09xakcdabTY4JvqVXZru5U6yfaLgLBI=
+	t=1789226333; cv=none; b=lZHudHtm8giNNnFTvJCkmlXbjv6vbmADll89NPMs4uFYfyPYj4kCXPv3xxqYM0/frlyctuY/5w0ZRtK0CxzdIVBKRDW7XkGxbzbXKOxYF3/IpR0BSNj+OOz+yLGTDzvfPf6kFR4QdywvN33daePmxtqkF+64ZAmLX30+XMVkk+M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789226328; c=relaxed/simple;
-	bh=flqS3Tdcl2f7vRCpqn4/fTp9qVQToKkRqMn3O/v38Ds=;
+	s=arc-20240116; t=1789226333; c=relaxed/simple;
+	bh=yUyedlztWXbA3lwvxrO/styw1IzAPB86ioonRT5zCKQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=k9o8I+S4QAj3B7o37Ok+1zH81a7aiEt+V98qoRpITn/XaBHyZoTlbPrvsucfxaEy1zlPIgVap/hOUK3YCAX2ZU/NvRBZ3IQzQQ/mwYemqNoHSBMQFgDdX/Z8KGGSQbg7foUoBX8x30VcNDckV21GTsKxpdh8tfZmN6jNpfOmKSA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=diNxBfVY; arc=none smtp.client-ip=209.85.216.51
+	 In-Reply-To:To:Cc; b=HVu8+tYko3/MI0pxHDnH9HFdRU77pKbo6omGxMDlay7TqAvGWxnyJs6UjD9EJtvsYA2pYSJiP5+oUK00Yhr16om0e6HTi958Z2WmEZnqCb9rIG/fazBaWAYt7hpKA4Y7WIASTAki+0Ccv5ZDDJAYe//jrYcv+58ptZehEvfI2iI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=k9xbIXe/; arc=none smtp.client-ip=209.85.215.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="diNxBfVY"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-3856d6fbcb3so1844507a91.2
-        for <linux-pm@vger.kernel.org>; Sat, 12 Sep 2026 08:18:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k9xbIXe/"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-cc4be0e5351so1404608a12.0
+        for <linux-pm@vger.kernel.org>; Sat, 12 Sep 2026 08:18:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789226326; x=1789831126; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1789226331; x=1789831131; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=3EyM6kx8U+0XexgnM8KgW7ecLCZUT/Jw74RvMw1Slwo=;
-        b=diNxBfVYpiH+I7LKkBKARfmeekpj48YsNAW25gSXjmCqjsDDACtYfVS8HbPIYHULxu
-         dk86iiTNKxbGsJqHN1qOIfcB+kg0jUOg9f9vHz/Rv4r/vCG+y6q0IPkU7j6efR4D6M/l
-         vjjRHg4cMkeTZbqHC/1QpIlMoOp9PJR/R6Kw8JjoSgfQdIOU9X0QWpi45z1+bfUFVP7H
-         bRwI9OFMupL2cB9rGh22EmqQJnezHAM5jIubtdFXKUE4wcQKfL262Rgz1RfEHZl+rA/9
-         HRCgxvzYmOddPCUyXgbCSV6Ns9P2+cVwpjR2/rrsLR5LrFpPPA4UJljflCcjVWuk+yui
-         Ua3g==
+        bh=NujR5wP2r0gRxOSsqzPbYYRli2E0gkVnbRP1/4DKQ0s=;
+        b=k9xbIXe/gflMItzRNjdnjMfzzaSi1gr/VnOsQu3Row2YcHhd9VHPEF4tMlpyM+q2pt
+         p5jvr0GapE3guWf6MzVMxI76LTS9AALHehtO2ipCrIcakY089dzPnfvjJiP71uvlA9yW
+         MUVL2t1tFoAAqHwO9YCQyxRRO7ijC4j58vPrPZNr/eaF4ADdmuFZUXftmBUZGxZ+VAbR
+         n9LMBqqtLz+2M8iObZYgob39sAwxudjvTn7MoYk3Ilco2xYA1TG3lN3rqrKA1FWBWzEy
+         Ne0jB2Muv9Sa+TEAT38Q8er5bf5XS7nzEyJx3zt2tDXAdE3nWX00L/vkdNDGG0w3QC9K
+         bJkw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789226326; x=1789831126;
+        d=1e100.net; s=20251104; t=1789226331; x=1789831131;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=3EyM6kx8U+0XexgnM8KgW7ecLCZUT/Jw74RvMw1Slwo=;
-        b=qAo3LUUup7FFOQgrBKn2yj8X6U1uNLn59pHbgoPdDWJD17GQ/tw3yUAxtW0ZvQ1CJU
-         a24bYeCZjp9ioZRMmt1oHTXcJoIeDHOleQJkdhztfZ3O3+WKWhscibgx8K6BEVpxG/8Y
-         nnOAlr5HxHIsOfVyCuKBXTTzoRSLF1yFhrJNzHLFxI4K59csMyop9A9dEkL9QpVo9wNI
-         w15CJxzU4WZMmHeA21ps+4U2eCLOhlz6G4qrtRFPFh7ZopKkoqaH1/kaCDcVNIR3Qajj
-         oNUD+zCHSn8wV8bDq79HyR9Svdc8wKdY1ATYU3IdftbGPE3nIcpCn+1jjCY7Ut1Lc6jV
-         sgWQ==
-X-Gm-Message-State: AFuF++kW7FJS0F1b2tW/AKt7Tjhx6p3nYy+393ExSdCWOU3A1VOmCaYM
-	f8vkspHuHXImIgmkE+oYynbCvPgVzsYMOrzQ/Wvoys0ZbVlBqMvczSVB
-X-Gm-Gg: AYBFou3h56+ezBVC79l5iz7zDE3w57kviiXvb8qAgYJn9jsgMhSju3WGbVNFNz916yO
-	jVhXG6ijK/krg88SewEFOcM9Z5zHPUTsgY/BGY8A1V9m/UjheW3wYqiJ6Qp4xRM66sz8Mscmmay
-	TYy4m3BpUhcjORx+f4oic+bMT3XP8avJ89Qa/67Ow7X3y+tQQFVEGBy+C7cOmMBIayQXJhDkDhv
-	clbvEq7LmniA6+lCyRqgyz+LPbu31gSH9ul8JRzDHhOxwd2xUzQMVhpBKrkx6wiy/Pv4DWgj6aW
-	ui2u0U7LdAY12r3z9hTbzQ7Jku4kZlMlaDezcpKv3e8a2732429wdyrxw39c5uEZ5SkZwH/N0zG
-	Xu/O20YW/L2vrozOdp5A7XUd65d3bAPnQLZEE6YmQmmUVmJkcmWZokR0VYHi9/cDATEh2L0Po2Q
-	965Gx2JgDEIhGc0875/UDpq/xv5AHo6gQEPS0VovfiiQpwU71JQlLXDL+h96OqnqK1VNKCAZ8ap
-	A==
-X-Received: by 2002:a17:90b:2641:b0:398:9bd1:3215 with SMTP id 98e67ed59e1d1-39d9c352a63mr15911734a91.22.1789226325707;
-        Sat, 12 Sep 2026 08:18:45 -0700 (PDT)
+        bh=NujR5wP2r0gRxOSsqzPbYYRli2E0gkVnbRP1/4DKQ0s=;
+        b=K817J8KtXk7SjhsSct5kBbYbDo5+1uDAZWTdFtlrm4bh8SnOP+uRUxsF4w73GPRx0j
+         NXXApUwh8fi+nbjg1jvuvQx5iDRcqYRjWgNYxrx6KkKKTAn6OQSq7QCZ2HhSDeSJTmX1
+         5a8f83VDXc0KmPdRbIkZdmFk8kEXhnKsAnWqgCbFjBopxHMX6serM2G5uc/rIiFQUE2F
+         Ve5Ue/Um9J+XHun0xYZ3K/ijwC1b4D/q8E+gGvfjaILO5DCgQeaG/vK/pmCri1tbLMEQ
+         xeuriFlgB8omCNuJ8cp+mObi564qjJ5q62MpjLF1pVklSHa75V18ENgcLaaACEQE3y25
+         lSGw==
+X-Gm-Message-State: AFuF++loBJuUkx3P0asQ47M2irFpoK05ry5qf3BHQNtm55g8zigvLllO
+	9uytJkU991b/gTW33osrv6qNGpak29MCCCTmkoxAc0qBidPg+3jNMswm
+X-Gm-Gg: AYBFou3k9L2vfibRTGE3SQXgRriZPn2wPKQ1KaqAA/8eYPJNDXoQMKmcFYbLP3n89Xd
+	4kG+6aCNFDQyxJviA7ECX2coBcdtIzkBcuSTQmIXlPQxB44fUk+qacum8psSrtPwnt0Dmlqcjci
+	RrF0kAczMNJelM+cGSiXFCHTvceTPnAJPRfC7iJbulls5gpuCfWEyalb4P/Nnal7QpPcgCkrMT2
+	B/3QY3KRv5mMgc4ua2T7LOxH72ozACB7+5yrviFBuJMRGozqKQKfmIJIO5H+pe0gwTYiPP1blFB
+	8ydhoXMeB2v4ywK+wIL531QCCF7SqcrtDkyYM142KOolqr/W0EPDpPfMpBrpY8XSZu/zFakvtwz
+	4RDhROnAe2KsXIQ3/GfDx9lyIJF6sSAybZYB+WT6cYjlEbwWaaYF6/2FdI/dqN/03SvngK5tK1W
+	KVx2MZQ28JgNe/q847i2EdE/aI+/FHDR1VrKNDxnlpKtM+WmaKCpycX4gd/EXpuWA=
+X-Received: by 2002:a17:90a:d2cb:b0:38f:efed:5448 with SMTP id 98e67ed59e1d1-39d9bd971fcmr15354593a91.8.1789226331249;
+        Sat, 12 Sep 2026 08:18:51 -0700 (PDT)
 Received: from [127.0.0.2] ([2404:c0:701d:4e35:f53f:aaab:9e63:54e8])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39d951d1056sm10635924a91.7.2026.09.12.08.18.40
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39d951d1056sm10635924a91.7.2026.09.12.08.18.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 12 Sep 2026 08:18:45 -0700 (PDT)
+        Sat, 12 Sep 2026 08:18:50 -0700 (PDT)
 From: Reza Kurniawan <imkyufie@gmail.com>
-Date: Sat, 12 Sep 2026 22:18:11 +0700
-Subject: [PATCH v2 1/2] power: supply: bq256xx: Expose VBUS state through
- extcon
+Date: Sat, 12 Sep 2026 22:18:12 +0700
+Subject: [PATCH v2 2/2] arm64: dts: qcom: msm8917-xiaomi-riva: Enable USB
+ support (peripheral mode)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,7 +70,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260912-riva-usb-v2-1-997fe0171ee5@gmail.com>
+Message-Id: <20260912-riva-usb-v2-2-997fe0171ee5@gmail.com>
 References: <20260912-riva-usb-v2-0-997fe0171ee5@gmail.com>
 In-Reply-To: <20260912-riva-usb-v2-0-997fe0171ee5@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>, 
@@ -84,186 +83,47 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Reza Kurniawan <imkyufie@gmail.com>
 X-Mailer: b4 0.15.2
 
-Useful for USB controllers needing to sense VBUS state changes. This is
-needed for devices like Xiaomi Redmi 5A (riva) that doesn't have its VBUS
-session comparator wired directly to the USB connector pin to automatically
-enable certain USB functions upon the presence of a USB power input.
+Enable USB node and PHY. Since VBUS is wired to the charger IC, also
+set extcon of the USB node to inform the USB driver of cable events
+emitted by the charger driver.
 
 Signed-off-by: Reza Kurniawan <imkyufie@gmail.com>
 ---
- drivers/power/supply/Kconfig           |  1 +
- drivers/power/supply/bq256xx_charger.c | 96 +++++++++++++++++++++++++++++++---
- 2 files changed, 89 insertions(+), 8 deletions(-)
+ arch/arm64/boot/dts/qcom/msm8917-xiaomi-riva.dts | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index b89ef40df..ee7dc5f26 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -850,6 +850,7 @@ config CHARGER_BQ256XX
- 	tristate "TI BQ256XX battery charger driver"
- 	depends on I2C
- 	depends on GPIOLIB || COMPILE_TEST
-+	depends on EXTCON || !EXTCON
- 	select REGMAP_I2C
- 	help
- 	  Say Y to enable support for the TI BQ256XX battery chargers. The
-diff --git a/drivers/power/supply/bq256xx_charger.c b/drivers/power/supply/bq256xx_charger.c
-index 4b1f81b1e..454bc497b 100644
---- a/drivers/power/supply/bq256xx_charger.c
-+++ b/drivers/power/supply/bq256xx_charger.c
-@@ -16,6 +16,7 @@
- #include <linux/moduleparam.h>
- #include <linux/slab.h>
- #include <linux/acpi.h>
-+#include <linux/extcon-provider.h>
+diff --git a/arch/arm64/boot/dts/qcom/msm8917-xiaomi-riva.dts b/arch/arm64/boot/dts/qcom/msm8917-xiaomi-riva.dts
+index 7c323214a..c47aad978 100644
+--- a/arch/arm64/boot/dts/qcom/msm8917-xiaomi-riva.dts
++++ b/arch/arm64/boot/dts/qcom/msm8917-xiaomi-riva.dts
+@@ -69,7 +69,7 @@ power-monitor@55 {
+ 		monitored-battery = <&battery>;
+ 	};
  
- #define BQ256XX_MANUFACTURER "Texas Instruments"
- 
-@@ -209,6 +210,7 @@ enum bq256xx_id {
-  * @client: i2c client structure
-  * @regmap: register map structure
-  * @dev: device structure
-+ * @edev: extcon device registered to report vbus state changes
-  * @charger: power supply registered for the charger
-  * @battery: power supply registered for the battery
-  * @lock: mutex lock structure
-@@ -229,6 +231,7 @@ enum bq256xx_id {
- struct bq256xx_device {
- 	struct i2c_client *client;
- 	struct device *dev;
-+	struct extcon_dev *edev;
- 	struct power_supply *charger;
- 	struct power_supply *battery;
- 	struct mutex lock;
-@@ -1164,8 +1167,14 @@ static int bq256xx_get_charger_property(struct power_supply *psy,
- 	return ret;
- }
- 
--static bool bq256xx_state_changed(struct bq256xx_device *bq,
--				  struct bq256xx_state *new_state)
-+enum bq256xx_state_change {
-+	CHANGED_NONE,
-+	CHANGED_VBUS,
-+	CHANGED_OTHER
+-	charger@6b {
++	bq25601_charger: charger@6b {
+ 		compatible = "ti,bq25601";
+ 		reg = <0x6b>;
+ 		interrupts-extended = <&tlmm 61 IRQ_TYPE_EDGE_FALLING>;
+@@ -89,3 +89,18 @@ bq25601_int_default: bq25601-int-default-state {
+ 		bias-pull-up;
+ 	};
+ };
++
++&usb {
++	dr_mode = "peripheral";
++	extcon = <&bq25601_charger>;
++
++	status = "okay";
 +};
 +
-+static enum bq256xx_state_change bq256xx_state_changed(struct bq256xx_device *bq,
-+						       struct bq256xx_state *new_state)
- {
- 	struct bq256xx_state old_state;
- 
-@@ -1173,27 +1182,92 @@ static bool bq256xx_state_changed(struct bq256xx_device *bq,
- 	old_state = bq->state;
- 	mutex_unlock(&bq->lock);
- 
--	return memcmp(&old_state, new_state, sizeof(struct bq256xx_state)) != 0;
-+	if (new_state->online != old_state.online)
-+		return CHANGED_VBUS;
++&usb_hs_phy {
++	vdd-supply = <&pm8937_l2>;
++	vdda1p8-supply = <&pm8937_l7>;
++	vdda3p3-supply = <&pm8937_l13>;
 +
-+	if (memcmp(&old_state, new_state, sizeof(struct bq256xx_state)) != 0)
-+		return CHANGED_OTHER;
-+
-+	return CHANGED_NONE;
-+}
-+
-+static const unsigned int bq256xx_usb_extcon_cable[] = {
-+	EXTCON_USB,
-+	EXTCON_NONE,
++	status = "okay";
 +};
-+
-+static void bq256xx_extcon_update(struct bq256xx_device *bq, bool online)
-+{
-+	int ret;
-+
-+	if (!bq->edev)
-+		return;
-+
-+	ret = extcon_set_state_sync(bq->edev, EXTCON_USB, online);
-+	if (ret)
-+		dev_err(bq->dev, "Failed to update extcon state: %d\n", ret);
-+}
-+
-+static int bq256xx_extcon_init(struct bq256xx_device *bq)
-+{
-+	unsigned int charger_status_0;
-+	int ret;
-+
-+	if (!IS_REACHABLE(CONFIG_EXTCON)) {
-+		dev_dbg(bq->dev, "Extcon support is disabled\n");
-+		return 0;
-+	}
-+
-+	bq->edev = devm_extcon_dev_allocate(bq->dev, bq256xx_usb_extcon_cable);
-+	if (IS_ERR(bq->edev)) {
-+		dev_err(bq->dev, "Failed to allocate extcon device\n");
-+		return PTR_ERR(bq->edev);
-+	}
-+
-+	ret = devm_extcon_dev_register(bq->dev, bq->edev);
-+	if (ret < 0) {
-+		dev_err(bq->dev, "Failed to register extcon device\n");
-+		return ret;
-+	}
-+
-+	ret = regmap_read(bq->regmap, BQ256XX_CHARGER_STATUS_0,
-+			  &charger_status_0);
-+	if (ret) {
-+		dev_err(bq->dev, "Failed to read charger status\n");
-+		return ret;
-+	}
-+
-+	bq256xx_extcon_update(bq, !!(charger_status_0 & BQ256XX_PG_STAT_MASK));
-+
-+	return 0;
- }
- 
- static irqreturn_t bq256xx_irq_handler_thread(int irq, void *private)
- {
- 	struct bq256xx_device *bq = private;
- 	struct bq256xx_state state;
-+	enum bq256xx_state_change changed;
- 	int ret;
- 
- 	ret = bq256xx_get_state(bq, &state);
- 	if (ret < 0)
- 		goto irq_out;
- 
--	if (!bq256xx_state_changed(bq, &state))
-+	changed = bq256xx_state_changed(bq, &state);
-+	switch (changed) {
-+	case CHANGED_NONE:
- 		goto irq_out;
- 
--	mutex_lock(&bq->lock);
--	bq->state = state;
--	mutex_unlock(&bq->lock);
-+	case CHANGED_VBUS:
-+		bq256xx_extcon_update(bq, state.online);
-+		fallthrough;
-+	case CHANGED_OTHER:
-+		mutex_lock(&bq->lock);
-+		bq->state = state;
-+		mutex_unlock(&bq->lock);
- 
--	power_supply_changed(bq->charger);
-+		power_supply_changed(bq->charger);
-+	}
- 
- irq_out:
- 	return IRQ_HANDLED;
-@@ -1743,6 +1817,12 @@ static int bq256xx_probe(struct i2c_client *client)
- 	if (!IS_ERR_OR_NULL(bq->usb3_phy))
- 		usb_register_notifier(bq->usb3_phy, &bq->usb_nb);
- 
-+	ret = bq256xx_extcon_init(bq);
-+	if (ret) {
-+		dev_err(dev, "Failed to register extcon device\n");
-+		return ret;
-+	}
-+
- 	if (client->irq) {
- 		ret = devm_request_threaded_irq(dev, client->irq, NULL,
- 						bq256xx_irq_handler_thread,
 
 -- 
 2.55.0
