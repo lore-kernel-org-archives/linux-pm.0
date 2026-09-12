@@ -1,73 +1,73 @@
-Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+Received: from fout-b5-smtp.messagingengine.com (fout-b5-smtp.messagingengine.com [202.12.124.148])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A218E3603EB;
-	Sat, 12 Sep 2026 06:51:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.154
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2975D2FFF8D;
+	Sat, 12 Sep 2026 06:51:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.148
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789195880; cv=none; b=scAv5z4R4Yh1p4taZOzn7HqSIRG06EQaq1XEcC8bpyteejZXdzyx13AbhFmnH0+LgZO3QFZLSZSKT/xo3RdgeWkj72a0FKC/Bi3cH9O5WPiyJqAAZYoMLushEo1ScGh24flGvc5sVgDViEQlx/YgazU9g42fw5MeYQQOQc5bvDI=
+	t=1789195891; cv=none; b=eMCKN5S+UL3ZbTvx6ImXSSpkJTH/1PIjZkmk0NlsoaqTNmaOeax+o6kA6D0eH3C5Gw+qq5iVVAc6DQA/EWuEv9QyAYLo7c6ZW6+fMej+WlcRhSkNa91febxCFCmx2utTnufLFOCPHf9AQzn2zIzZL98FZmJrF9f0OR2NU7edTDM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789195880; c=relaxed/simple;
-	bh=NzFBEuKw+edBTPRDPqk05HVymcwE1+Hsrc/T5KLMj4k=;
+	s=arc-20240116; t=1789195891; c=relaxed/simple;
+	bh=UQlOTZqVGNQ7grjM0lKayb8u7Z95Xocjl3oDH1Jwl4w=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QIPD8JAlRy+nXOtpBYaXrrU3BncjYXVqvWer/wHQXZR8x+NbNujlkcVNY5AajpemBfyn4npI7MNpyZORaDLUEwSBjnpA9WQp0D/OZi75RrwgWFZOy3HsXWsA96LQYBGbstFxBXCBQxfkaHzRAVi/JoxlnzN8Jz7+tf/S9WtvE1Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=plxZdsK2; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=C6SAYQ4G; arc=none smtp.client-ip=202.12.124.154
+	 MIME-Version; b=Ri9Et7OrfPxl4FcruC/fL3prjadsUi3fr5BVrmG92ABC9lSDJDz4KKWsW/k680A+is2RR54G11CsSucifv351I/DdAuF9tKdLxkI15Xj18/ZXaZWw61Zb20Z0ENz5qfm9wI3wCk31WYldeywwhezjkYfY5F0nN/1eZwE+gUreuA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=SS3g8BQi; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=lQVrHRKb; arc=none smtp.client-ip=202.12.124.148
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="plxZdsK2";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="C6SAYQ4G"
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 5B35E7A00D2;
-	Sat, 12 Sep 2026 02:51:17 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="SS3g8BQi";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="lQVrHRKb"
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailfout.stl.internal (Postfix) with ESMTP id A17EB1D000AB;
+	Sat, 12 Sep 2026 02:51:28 -0400 (EDT)
 Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Sat, 12 Sep 2026 02:51:18 -0400
+  by phl-compute-02.internal (MEProxy); Sat, 12 Sep 2026 02:51:29 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1789195877; x=
-	1789282277; bh=bhEwuQXKYWMYM7UfAE9zXDC7PfmHACUKFcOafx5HkO8=; b=p
-	lxZdsK2iSvV5FW1MdCY6tEokp983VtNTVCeChB06QUL7IURbDbPjIl/ACiDyyzdH
-	hEu5cy9aDujp7G5km1DNBFvlzAgpBLsP6BBcYJvYpboPZp+bzayOUbz9cqldaWDH
-	kcP63TVItmRMzorcPzd2vOBSwftv6krxdeYhY7rt6mAMMYips+IozOGhT0lFpY0A
-	j/5sYzCn1pzyRZUmmJKs+SfXMXPssTORqPc3rtYs9MiVqS02/S8vZC6c/LQjwTm8
-	NovqQgpdQLn1vx63+Cv4sU5ZZhVaJdfYxCWMNzrnEy7oKiUAy8lI1cI1/zJaHaHd
-	ormn/ieXnm1dUpl9v2tYA==
+	:reply-to:subject:subject:to:to; s=fm2; t=1789195888; x=
+	1789282288; bh=+AhFYA6kLyf5iGfmp128Qz+6Bq5cxqtA7vBGMdZdKi0=; b=S
+	S3g8BQiNN0rjjrIU54x4c/RdkvrZdaZCBjtn7FuXi9mN55OGrkmIUOG5qU8OQ84k
+	aHk/wp03TJRjlkNR0Mz00ndiYrO7qYZ2sZRcKR/CzXt5TV01VNvUwINTmpmIpDJD
+	29M/oTOgAdmposqg5pSWivjCI2RLPO3h+Ma9cDnVp+1cDka9v2rz75YQEYh83jzx
+	ZXv9Saa04DV0xK0UpCOncPUYmBwcfhN7Ua0Rn4NjBFWroMTxp2VvnN3/ouzeQiv7
+	UN0FaAm2vNwn2MX18qLvkSNKnX5ZoPPzdDSXs7p/hQ3a4SfBobR+sOfc4wVeolt3
+	B1IGMpweTDzcCxLG7wj+A==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm1; t=1789195877; x=1789282277; bh=b
-	hEwuQXKYWMYM7UfAE9zXDC7PfmHACUKFcOafx5HkO8=; b=C6SAYQ4GT8ChY1FVu
-	3xVvaqjQpCK1Iv2Jg4BG5D/d+DKnHpuDaMn9xEsCiNquww3OjaDiWYKXeOz+jLZa
-	qcWYID63FsjiN26rV6tKT8de4ssm+wbN5BcuCAQZ4gGYeJ8V7uttv5vxhk39If/6
-	ubPY6CNPM1wZHTxlvUDn0i80xZJ+XdhrJsAyoEjZIKB/VkXnBi5Gp7H+3eo2Ikxv
-	tjFe2i+YEzhuGb35kXtCgyR9rhTQCkLOZsdigicQ7GGKRQG94t6c9eZeX76zYc8V
-	j0UmoRALtZ/yy1espElBfLFO+y1PzRnHLp4l5ANoiHgdWEfrHU1CetyYao+vPrLj
-	2mzEA==
-X-ME-Sender: <xms:ZPakatkLDzEOqtFAhO3RSx9Nu4DndYre3ixIpdhj4hk8amEvf0ZB-w>
-    <xme:ZPakao_hIPBTzmf-9kXsIbnr9P93GV_dw4Y82JMQsZv7DSpMZ2zCMWjayozPns0iz
-    LnCSwSC5vI7u4_KLuQFqnuA5_Gr93ygWDCghDysIUQle8k7ZHdwwzU>
-X-ME-Received: <xmr:ZPakahfiULXKFHQ8WfKc6GWCUb9SGthORUAhfPlNNNBHSIk9NrxKwt1sLcZSVEFoNgvmK15imw>
+	:x-me-sender:x-sasl-enc; s=fm1; t=1789195888; x=1789282288; bh=+
+	AhFYA6kLyf5iGfmp128Qz+6Bq5cxqtA7vBGMdZdKi0=; b=lQVrHRKbGFVBaB6sw
+	QsSyNVsIsYzGxpKguVjNE0nfR0P/82W05fDOhvtaLOwnpwE3TfChYosR6HYsqMA9
+	10OvWJRfgDGWsX+21SUQbq+52F/Wt1FcttGZo4FSA1Xy2l3Stv7Pua3MNYNs112I
+	+ZtJSOa4NVofltkm1aIgaP6h6mNxJKskgEY7QSbB9eKQHI9hAS873c9BxkoKIikR
+	Vo2cK/SHOIa4AgIJZj6ClOrpnBK/neVeYR7dgC2LY9OpgHZaIuTXeKGcdbY0D2Oq
+	/sTNKqk2M8KSpqwvAzT8QoPtLe+Dy0/WT3+YGyHsXuejPMNu5w2U23o6penpYTPT
+	KZLLA==
+X-ME-Sender: <xms:cPakapwSlycizDvcIV4wqdqaAbJAyeBjRWo3FOwXvIsPLq75tIzXIQ>
+    <xme:cPakapb04nNp3Lwuc4M2OQBCjJhWnRDIL_o06fMlHW2MLr98GEwd0I_NP5uFFY1ze
+    1X1vyifZUWUmcPPp-2krYBTARJ5O7T5TZz-rafT0CrNPlLhL2Rrxv8>
+X-ME-Received: <xmr:cPakahJGf8gMdiM2pwIggnCfIZQGSYk1a83ChqZpgtASf79630YFFmAeVIgFvJeeeiOq9AvhIg>
 X-ME-Proxy-Cause: dmFkZTEPb8qUI/Bch63DUv9Os4CRaZnJidcR38w4lyHY6iaGmzqubjANrD0SeN/gjpgWtD
     9JpSgLNav7upxo5UY8BD+gTgneuYvtjdT7xUeoI37l3u3ANYgfWTUMIQPTBe+0FGjKZ893
     EmiED4E9ABLDGP636x+3BNPL+06gHQG63VHM2tKDilhH/OyX7+TagruxeFKd93pQCYj32B
     BeiQF2P6k05N47Few9BlXMbV3J128+kb4hnRL4hf+Yoc0wDQXXqOQeonbIg1B1tOCqO85x
-    XB7Y9LiCcE2oZkETEXdiacCDRMuKmK7OMtWiJEvsJa8P7QUcJM2B6xHrJPAU/2XBsLk7LU
-    MpW+EDDQJ2Ssp/huf9O4ilhDarGGDooD/tPvjmxA3kV4YuBLbU0NgpsKcM2c3FTAKYnEg0
-    jq5IGrTkmY47BXIoNJPhqR+oduqMGcqhz9nGiw6JhE/5cQUuLXQYPDV/lhGTFsq01TSQ0+
-    D0Rd5roncpHx5JToGc+FO/+IyrU4ThcP5qdZL0/9k0YZQesYtIDta4uUVindQa19N+8vMU
-    ghKOp7XxGNAE2QzZbXQ1G24VOw7zkmCgza6Abzr7xYJij1+jA8wedKIl3szVqlWrKvTM9O
-    LxBTeYBqYWt04zJFlH8p53hyWTHycR1oaZ9Cn2KNybLme2DHZyJfL52F+mzg
-X-ME-Proxy: <xmx:ZPakah0tutHbDPMLwPphicliFXKSa_YsuNNP7uWFogHY6SoDM25-tw>
-    <xmx:ZPakaqDxoqfmHTMMN4A_au1mYEpfBFJDicVbh3HEinj5DPRSPKoZGg>
-    <xmx:ZPakasSUfPRbPWHU0GWPX1LEhskvwO9WNjCx8HP0eUyQgs2b3cAeNA>
-    <xmx:ZPakasKV1QZc6g25RY560Pui9qvHbNmNQtWVWhGCNvQzpAUR8qFmcg>
-    <xmx:Zfakargh2M3UgUp5Rv-BhlcuPy5COn89vsG2A_eu4ssx8mmpg-59lN1p>
+    XB7Y9LiCcE2oZkETEXdiacCDRMuKmK7OMtWiJEvsJa8P7QUcJM2B6xHrJPAU/2XBsLk7Rn
+    nXZIEnpaOlhztllKAJmqmyh+1BzljzZIYJQP5kN4jjFJ3Wnbb9ZZ9+lsz43QONrs8SEMNK
+    dqquehyN6IR5n4z86mAQdmMwp3CrMNrObcmpB6CFpGoQKMrVChoD4wFm11vKu+UF3D+eSq
+    BZt1aLtJGUtzGOmm274iehc4Fq2KDfFcOfW53cYwTlzHHbyu88MzWVNr9EL8O9rKD7De8h
+    y7aiIQrqqL+9FZd32fImranh3a9ruoVVx5fkLYYuZiSDNlwQ++jk+6PYesvKTQUsfYxODc
+    wAFypyEme26SBcNkNMr5/S34wi4eYq1LHbkpMMPymMMur/0hOcyog4gQmjRw
+X-ME-Proxy: <xmx:cPakavxAsn_TVz0gHhpTAlkaB5wI1jXBGtbaq40AQkm4PnU8J5BsSA>
+    <xmx:cPakapPBsU81CVWk5AP-ajrss0OnH-NlnzsFU7sK0mLqVJerlngzAg>
+    <xmx:cPakajtxoz_FH-oXiGYvpOasUVUzYydIvao_TQahHQv6JB-TKRXfXA>
+    <xmx:cPakam1eKGAjH1YLDU6X00E1qW8UPjQPaJBP7tzLpkwbQUhWnoUV0A>
+    <xmx:cPakarZPri7rsRMxXJXqL975vYhoGpRff0PT_J4lVLlXzms-cofyt6iC>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sat,
- 12 Sep 2026 02:51:08 -0400 (EDT)
+ 12 Sep 2026 02:51:20 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -97,9 +97,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v12 01/14] accel/rocket: request the core clocks by name
-Date: Sat, 12 Sep 2026 18:50:40 +1200
-Message-ID: <20260912065053.1519165-2-gahing@gahingwoo.com>
+Subject: [PATCH v12 02/14] accel/rocket: take the completion register writes under job_lock
+Date: Sat, 12 Sep 2026 18:50:41 +1200
+Message-ID: <20260912065053.1519165-3-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260912065053.1519165-1-gahing@gahingwoo.com>
 References: <20260912065053.1519165-1-gahing@gahingwoo.com>
@@ -111,81 +111,65 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Igor Paunovic <royalnet026@gmail.com>
+rocket_job_handle_irq() writes OPERATION_ENABLE and INTERRUPT_CLEAR before
+taking job_lock, while rocket_job_hw_submit() writes OPERATION_ENABLE from
+inside it. The two can therefore race: a completion being handled on one
+core can write its zero after a submit on the same core has written its
+one, and stop a task that has only just started.
 
-rocket_core_init() hands core->clks to devm_clk_bulk_get() without ever
-setting the .id members. The rocket_core array is allocated with
-devm_kcalloc() in rocket_device_init(), and rocket_probe() only fills in
-.rdev, .dev and .index, so all four clk_bulk_data entries are requested
-with a NULL con_id (unlike core->resets, whose ids are set a few lines
-above).
+Nothing in tree hits this often, because the interrupt is the only
+completion path and it does not overlap its own submit, but the ordering is
+wrong on its own terms.
 
-clk_get(dev, NULL) ends up in of_clk_get_hw(np, 0, NULL), and
-of_parse_clkspec() only consults "clock-names" when a name was passed, so
-the index stays 0 for all four entries. Every entry therefore ends up
-holding a handle to the *first* clock of the DT "clocks" property, i.e.
-ACLK_NPUn. Nothing fails: probe succeeds and the driver believes it owns
-four different clocks.
+To be exact about what the lock does and does not buy: a mutex gives mutual
+exclusion, not ordering, so it does not by itself stop a zero from landing
+after a one. What keeps the ordinary path safe is that the handler signals
+the job's done fence before the scheduler can issue the next one. The
+reason the writes belong inside the guard is that stopping the block and
+deciding what to start next have to be one step, which they were not.
 
-The consequence is that rocket_device_runtime_resume() prepares and enables
-the AXI clock four times, while hclk, pclk and - most importantly - the NPU
-compute clock ("npu", SCMI_CLK_NPU on RK3588) are never prepared or enabled
-by this driver at all. The NPU still works only because the Rockchip
-power-domain driver sets GENPD_FLAG_PM_CLK and its attach_dev() callback
-walks the device node with of_clk_get() and adds every clock to the pm_clk
-list, so genpd happens to keep the remaining clocks running. The bug is
-therefore latent today, but it means the driver holds no reference to the
-clock that actually feeds the NPU, which stands in the way of any future
-frequency scaling (OPP/devfreq) work.
+Move both writes inside the existing scoped_guard() rather than adding a
+second critical section, so stopping the block and deciding what to start
+next are one atomic step.
 
-Found on an Orange Pi 5 Plus (RK3588) by reading the live clock tree:
-/sys/kernel/debug/clk/clk_summary shows four "fdab0000.npu" consumer
-handles on aclk_npu0 (and likewise on aclk_npu1/aclk_npu2 for the other two
-cores), while hclk_npu0, pclk_npu_root and scmi_clk_npu have no
-"fdab0000.npu" consumer at all - their only consumers are the
-"npu@fdab0000" handles created by the power-domain driver via of_clk_get().
-
-Set the ids explicitly, in the order mandated by the binding
-(Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml):
-aclk, hclk, npu, pclk. After the change the driver holds one handle per
-distinct clock and clk_bulk_prepare_enable() covers all four.
-
-Note that this is a user-visible tightening for out-of-tree DTs: the old
-NULL-id requests resolved by index and succeeded no matter what
-"clock-names" contained, while the named requests fail probe with -ENOENT
-when one of the four names is missing. That is the right outcome for
-in-tree users - the binding requires exactly these four clock-names and
-rk3588-base.dtsi carries them on all three cores - but a DT that relied on
-the permissive lookup goes from silently running on the wrong clock handles
-to not probing at all, so record the change here where git log will find
-it.
-
-Fixes: ed98261b4168 ("accel/rocket: Add a new driver for Rockchip's NPU")
-Signed-off-by: Igor Paunovic <royalnet026@gmail.com>
-Tested-by: Sidong Yang <sidong.yang@furiosa.ai>
-Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, NanoPC-T6 Plus
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Reviewed-by: Jiaxing Hu <gahing@gahingwoo.com>
+Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores
 ---
- drivers/accel/rocket/rocket_core.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/accel/rocket/rocket_job.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
-index b3b2fa9ba..5dd260bac 100644
---- a/drivers/accel/rocket/rocket_core.c
-+++ b/drivers/accel/rocket/rocket_core.c
-@@ -28,6 +28,10 @@ int rocket_core_init(struct rocket_core *core)
- 	if (err)
- 		return dev_err_probe(dev, err, "failed to get resets for core %d\n", core->index);
+diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
+index f40435505..575945015 100644
+--- a/drivers/accel/rocket/rocket_job.c
++++ b/drivers/accel/rocket/rocket_job.c
+@@ -345,10 +345,15 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ {
+ 	pm_runtime_mark_last_busy(core->dev);
  
-+	core->clks[0].id = "aclk";
-+	core->clks[1].id = "hclk";
-+	core->clks[2].id = "npu";
-+	core->clks[3].id = "pclk";
- 	err = devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
- 	if (err)
- 		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
+-	rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+-	rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
++	scoped_guard(mutex, &core->job_lock) {
++		/*
++		 * Stopping the block belongs under the lock. hw_submit() writes
++		 * OPERATION_ENABLE too, and outside the lock this zero can land
++		 * after that one and stop a task that has only just started.
++		 */
++		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
++		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+ 
+-	scoped_guard(mutex, &core->job_lock)
+ 		if (core->in_flight_job) {
+ 			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
+ 				rocket_job_hw_submit(core, core->in_flight_job);
+@@ -360,6 +365,7 @@ static void rocket_job_handle_irq(struct rocket_core *core)
+ 			pm_runtime_put_autosuspend(core->dev);
+ 			core->in_flight_job = NULL;
+ 		}
++	}
+ }
+ 
+ static void
 -- 
 2.43.0
 
