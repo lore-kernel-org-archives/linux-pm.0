@@ -1,63 +1,64 @@
-Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
+Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93AE8352019
-	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 15:00:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C7DD34D93C
+	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 15:00:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789311615; cv=none; b=XQ85+ceoB+8ds8U2C/rw31BeaWl82qgL4fLS9KP6l+9y+GBEAik/b22esOIw+kBp77rHwO6HCG3BPoa+uJF+v2qXyXGBhMQHNsQUwEKw1V+P5EtiegwVNrs8tCc29XJcXoYMdO4TZMfTRxwbo8Ptlii9UcOdg6Jcx/PNeBZO1sI=
+	t=1789311617; cv=none; b=lnlm6Vi39IxrkKUHEA1nptnn0pc2SO7H925RKrDIqXrgRUL0DVXwyyl7wxk8JJgDXmMbJ4/UWPev0fU/zbJGJ02QF7pYxxbXWTC1vhUCdAQIoGEmy/0hi+Q3lMpczgFFf+lj6pvC3hICuu1EVPy331pun3KoBzzUBaNAT3lAtfM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789311615; c=relaxed/simple;
-	bh=Fqx/Why65ntDuLsjE2Hge2Y5XJMOcjUmtfTFWTyd2qM=;
+	s=arc-20240116; t=1789311617; c=relaxed/simple;
+	bh=DwPp2HkWQO6qcGBPqXNMiD7gLL4HfMQuCnHnKBFbtEQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=RfnhXZKACr5EzSqE6ijAM/KKiVvOl8m8QEuCgIE1dNS6BwnD/5HYYQ56qx7m0jwu96LY8a4M72ympdLjtmgWO/i7o4VyR2Kl2nbyCrZvY2NkIvqt5rWlRx3IguiN64l7argUU4CQkzwC7a/b2fCuzZwEqgR5QXm7Jsk5oLTYmDI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dBDZVsF+; arc=none smtp.client-ip=209.85.216.53
+	 MIME-Version; b=ty9VBx7KPV4OhORRG+yeW2/b7WEdJmO4IgQZcrV8DFsPfO7/nQjhAjKB71CbnGz/13jnyC09fEF+dZ+hMRJYVOq/ieend+JsYDMoSue5LsqFfA8w1kSNuLMxOqHsUWgRPf4SxEbE7G2HiXlSD/Z9o3+oTVnI8tk4nCA27iMLkzw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=slmo+67r; arc=none smtp.client-ip=209.85.210.175
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dBDZVsF+"
-Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-398b1e63c49so2963657a91.0
-        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 08:00:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="slmo+67r"
+Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-86a25369f16so1870899b3a.3
+        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 08:00:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789311613; x=1789916413; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1789311615; x=1789916415; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=iWlrSuY01GdV11TIXI5P8cmkxAQSB0ZioYMZIiZx+uQ=;
-        b=dBDZVsF+/W/cpmglgHKOD96944NNMz5bR+fmoKWhn0w7tjSkJRg75Fvc0Sh74Xim8/
-         oDqv0orYGRxEiEr/9kVwGybmLcV8HT65zs3kle/L7f2WhrbpJ8L9R95e5BH9f7bwN9id
-         3puqW7MTAdXx/+A+WnAJDgx8BHEYTkI6WG20E3vNroKTo5Dzbj169G6QMXECVJi/cnuv
-         Pu6L9/VHoj+w7QaS70eWSeFpHHY1dVoIE1W3kdcWSDDULmHi+/CPIczYVRkO2UPaTlSz
-         EmGAEHVH6WgDICxpSNoI34AjmsmpRWdigPEYBSLnga20gAPWOSosupo4lYv8GWQv5G4a
-         AgmQ==
+        bh=hbLN5q31GQxj4DJ6F6WcgB1JNfvwxcLXSAMVbVPmGVE=;
+        b=slmo+67rnC60p6O8J4HY+vLW7Hzz9wwMOgxilKYZ8+u/QYZvAXLHGWvg4jEVXOSg2u
+         9x9w1qEGVtoBliyqdwZouLxM+RK6yVJ6883R7gXwLwqPpw4DGHoNMnaoZrKCSRPXwXbV
+         AyuwwFd4QDpatHSwozBYkIYOIz3SEQxDV1iwa8pXMcFcKx/DOOrea8cZ2dBKtyUQssyL
+         6imbZBDCL4mvAiLJ13AdCUulUhR3ok+yscU0FZPA0unJ97xGPerc4vd+fN8mcS+bG9H4
+         cuIYilz8VO6j/gyb5uOnExJVUgFxxSPsgyed2YvwmfWLzvHhzlQ0xCcuqLarNYsbS8Pj
+         37WA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789311613; x=1789916413;
+        d=1e100.net; s=20251104; t=1789311615; x=1789916415;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=iWlrSuY01GdV11TIXI5P8cmkxAQSB0ZioYMZIiZx+uQ=;
-        b=VuSPS0/Shg5IJozppWV8OO92KVeThaaCxkMNfjpmOLWYHgUPNXz+9MhgT2H63kM/zv
-         AzJNqUMGib6wVWNTM9zW79qmve8BlSlVvRBmgRICDJc9kf7rw1yw7fhyyzTw5/9ULzyK
-         V1BzaYFhQnk+DCOQHmxN4Sr14wghNDKriCHfqKBr9ibFjOQg6b/MW7yQSlH/QZlO/p2J
-         GNkj92ZKpxCtnMeo/GEYOC3tk30eEOH3/Hwf+/IzZMvu7/HjSyjvBBLQjU3PL5LL7EIP
-         7u3a4VaVSTwEnnMmDkoQk06g3N1CSXZIY9Q58vqkW/V0i54qJ1ADd3TeNsh2ehkmVDSW
-         ricg==
-X-Forwarded-Encrypted: i=1; AKwUvBwYrlKTAQg0IpYad9o/GOTcfbHf5RAK5E8X+bkaqCLulnam6PRD8l7PvZHt6E3Bfm12UA+5epIqSg==@vger.kernel.org
-X-Gm-Message-State: AFuF++m1QvsuSFhO5QpH5WJNaBUmPUxhRV8V85f3znRAoaaDRphCCvZY
-	SYxMyoAXS5btIKqfw133x+2q/ms9jNbC5wA41E7+yTZKYh8+/XANWj9y
-X-Gm-Gg: AYBFou3CbcNdWW+GDj0RboQHq6BRK1MifiRCr5W4W9/gwmumwktKc7ilMHY3PBtyz8R
-	dg3Cm7IdG14viS9Bixq1icwkYzUbNRnzHt6b88uiDxZ+sNZVCF1rHBlxeUG+iC+BMQOFeEj84mz
-	L07wAqzIEXJfQT2fTtud7WS6lFeUfye495zZsbb6ZCjBE7P/37dshVDMp5vERIRRmlOnR8kq5dO
-	8NfjC18O124kRgHNGSsR8J56ui9mf34LzBgHDV3Cb/OOh7mNFFN9/CNg2LxDtnqJrNdRW6mnDfv
-	+NFkGfExtpEGdfMoZTpJ41CvPkcVYmv0UYvYQglYTPUIPldM53EkWPnejGElDa4Vrmlg7IADfDv
-	ggurVYksMUFZ4mOKHiPvSKlnrDY/eYFKALTlXz3KSrV4HNHpSopA1Ebk+7cy1HN9FQTaeYHeI3S
-	MzghAPXrgJAMlvWybbgCmFHCEXXB6g9YH1JL3UYY+60sMziQV9wEs3w7WuZtugdkJEEkgREHFl
-X-Received: by 2002:a17:90b:4cc6:b0:381:10a3:8b10 with SMTP id 98e67ed59e1d1-39dd54eacd9mr3419850a91.14.1789311607909;
-        Sun, 13 Sep 2026 08:00:07 -0700 (PDT)
+        bh=hbLN5q31GQxj4DJ6F6WcgB1JNfvwxcLXSAMVbVPmGVE=;
+        b=L/UaJphuGTfMJMHgMLI02CkUXL+F9ibMIbmfr4Mj99kySWgU3bQ69VevO2gTlOsxMO
+         pAOTPuo00I8L+V/bnlFbU8u1XK5VuGL8LNoayKGewWccxWqaMS2bn3o0qESsL0r6aCO5
+         f5oz7/4BsOmK++CybzdhKKPYx+CCWwYJXv6QKKAsHeK5UmZaqvF5oR/dtvbgXa0+8/tS
+         nddctbODD4w2OyvlSd5yDbsKOMZkjDE9jsKPkS+yT1aJni3c0wuAGRLuyQXs+S50czaA
+         M1SaYxRuMhVE/QAHcTTye59eDG7B59Lt77tFEyG1qhesFzIol2jy5Tn893vErUfoOIbT
+         fHxA==
+X-Forwarded-Encrypted: i=1; AKwUvBwJEJ47o/YtIwy3HKKXZGylevnuaqfGhNDOLMSHSysI89RJi9Lt7Z3rDC1LJrGY4khOiG5alxU+yw==@vger.kernel.org
+X-Gm-Message-State: AFuF++nVHHgqkVlPmSDmk78hyazqATf/RiDsUraFnxf1nTPUV2WcOGbb
+	ct5q7+NduYrUGXGTBqa/9DdkAfJ8prt3JtknALTJR8nfxL6K5tEK6s/E
+X-Gm-Gg: AYBFou07upkX9x5Ads8UynTrL79dWUcaauyMKDiY7ldK9MJ+4u6ZnoMiJUNF/HR1vES
+	CaffMWC7YWrS+GIVNR4fCj4KN7UbASXiv4uqzFfjki4n0vpWydeChNSgiuEFa6G0juoWBvJLEeI
+	CZVXEfGbv5ljwm8rq7S4FovbFJKyB7WRx/VDzF3pH9iilci6yu/CLLHxi5BRAISCjb8R88gAVfL
+	AW4SrI3maHPevYWNSGYzuYu+z9U8kJYrX7S9mIjK1a/cAqqCxhcOColrzJomWuzyGQC+OTfKs8q
+	OphgLXnPRJBaMbZrGhMrk51ss5Jevi/jKwwr8xnKoukSsZXMqWPD0jPGu+DNhAfZ0RYbQhIV6W2
+	pDYSiCflDSWKlZzFvD3lnXZUNyxBAALUXaURK+11C551lQirogntxylnVcmVMQ1kUsMxgQ42XAf
+	OPoE4oVtaw6Zc6PTE859f2mOBrM7ZME5UO6/tbO4BlcNYndGaFp68u7wZ9l7/wx1VGt1qN3Mu1Z
+	ZCxE81+6D8=
+X-Received: by 2002:a05:6a21:140a:b0:3d1:66cb:d49 with SMTP id adf61e73a8af0-3daed46b0e3mr24749980637.4.1789311615337;
+        Sun, 13 Sep 2026 08:00:15 -0700 (PDT)
 Received: from archl-rock5b ([45.112.0.180])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b8f1f7sm17536306c88.11.2026.09.13.08.00.03
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b8f1f7sm17536306c88.11.2026.09.13.08.00.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 13 Sep 2026 08:00:07 -0700 (PDT)
+        Sun, 13 Sep 2026 08:00:14 -0700 (PDT)
 From: Anand Moon <linux.amoon@gmail.com>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
 	Krzysztof Kozlowski <krzk@kernel.org>,
@@ -72,9 +73,9 @@ To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
 	linux-kernel@vger.kernel.org (open list),
 	linux-arm-kernel@lists.infradead.org (moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES)
 Cc: Anand Moon <linux.amoon@gmail.com>
-Subject: [PATCH v9 7/9] thermal/drivers/exynos: Move thermal zone ops to variant data
-Date: Sun, 13 Sep 2026 20:28:35 +0530
-Message-ID: <20260913145905.9404-8-linux.amoon@gmail.com>
+Subject: [PATCH v9 8/9] thermal/drivers/exynos: Add missing drvdata assignment in Exynos TMU probe
+Date: Sun, 13 Sep 2026 20:28:36 +0530
+Message-ID: <20260913145905.9404-9-linux.amoon@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260913145905.9404-1-linux.amoon@gmail.com>
 References: <20260913145905.9404-1-linux.amoon@gmail.com>
@@ -86,191 +87,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Move the thermal zone device operations into the SoC-specific variant
-data and use the variant when registering the thermal zone.
-
-Store a thermal_zone_device_ops pointer in struct exynos_tmu_variant
-so that each supported SoC can provide its own thermal zone operations.
-
-This allows thermal zone registration to be selected together with the
-other SoC-specific TMU configuration through the device tree match data.
+Add dev_set_drvdata(&pdev->dev, data) early in the probe function,
+ensuring that the driver data is properly registered and accessible
+throughout the lifecycle of the device.
 
 Signed-off-by: Anand Moon <linux.amoon@gmail.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 69 ++++++++++++++++------------
- 1 file changed, 40 insertions(+), 29 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index a689c6a40b67..0e7b92035850 100644
+index 0e7b92035850..fe56a48be5fe 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -186,6 +186,7 @@ struct exynos_tmu_data {
-  * @tmu_read: SoC-specific TMU temperature read method.
-  * @tmu_set_emulation: SoC-specific TMU emulation setting method.
-  * @tmu_clear_irqs: SoC-specific TMU interrupt clearing method.
-+ * @tmu_ops: SoC-specific thermal zone device operations.
-  */
- struct exynos_tmu_variant {
- 	enum soc_type soc;
-@@ -205,6 +206,7 @@ struct exynos_tmu_variant {
- 	int (*tmu_read)(struct exynos_tmu_data *data);
- 	void (*tmu_set_emulation)(struct exynos_tmu_data *data, int temp);
- 	void (*tmu_clear_irqs)(struct exynos_tmu_data *data);
-+	const struct thermal_zone_device_ops *tmu_ops;
- };
+@@ -1125,6 +1125,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
- /*
-@@ -809,6 +811,34 @@ static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
- 	writel(val_irq, data->base + tmu_intclear);
- }
- 
-+static int exynos_set_trips(struct thermal_zone_device *tz, int low, int high)
-+{
-+	struct exynos_tmu_data *data = thermal_zone_device_priv(tz);
++	dev_set_drvdata(&pdev->dev, data);
 +
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+
-+	if (low > INT_MIN)
-+		data->variant->tmu_set_low_temp(data, low / MCELSIUS);
-+	else
-+		data->variant->tmu_disable_low(data);
-+	if (high < INT_MAX)
-+		data->variant->tmu_set_high_temp(data, high / MCELSIUS);
-+	else
-+		data->variant->tmu_disable_high(data);
-+
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_device_ops exynos_sensor_ops = {
-+	.get_temp = exynos_get_temp,
-+	.set_emul_temp = exynos_tmu_set_emulation,
-+	.set_trips = exynos_set_trips,
-+};
-+
- static const struct exynos_tmu_variant exynos3250_data = {
- 	.soc = SOC_ARCH_EXYNOS3250,
- 	.gain = 8,
-@@ -826,6 +856,7 @@ static const struct exynos_tmu_variant exynos3250_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos4210_data = {
-@@ -844,6 +875,7 @@ static const struct exynos_tmu_variant exynos4210_data = {
- 	.tmu_control = exynos4210_tmu_control,
- 	.tmu_read = exynos4210_tmu_read,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos4412_data = {
-@@ -863,6 +895,7 @@ static const struct exynos_tmu_variant exynos4412_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos5250_data = {
-@@ -882,6 +915,7 @@ static const struct exynos_tmu_variant exynos5250_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos5260_data = {
-@@ -901,6 +935,7 @@ static const struct exynos_tmu_variant exynos5260_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos5420_data = {
-@@ -920,6 +955,7 @@ static const struct exynos_tmu_variant exynos5420_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos5420_triminfo_data = {
-@@ -939,6 +975,7 @@ static const struct exynos_tmu_variant exynos5420_triminfo_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos5433_data = {
-@@ -958,6 +995,7 @@ static const struct exynos_tmu_variant exynos5433_data = {
- 	.tmu_read = exynos4412_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct exynos_tmu_variant exynos7_data = {
-@@ -977,6 +1015,7 @@ static const struct exynos_tmu_variant exynos7_data = {
- 	.tmu_read = exynos7_tmu_read,
- 	.tmu_set_emulation = exynos4412_tmu_set_emulation,
- 	.tmu_clear_irqs = exynos4210_tmu_clear_irqs,
-+	.tmu_ops = &exynos_sensor_ops,
- };
- 
- static const struct of_device_id exynos_tmu_match[] = {
-@@ -1052,34 +1091,6 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int exynos_set_trips(struct thermal_zone_device *tz, int low, int high)
--{
--	struct exynos_tmu_data *data = thermal_zone_device_priv(tz);
--
--	mutex_lock(&data->lock);
--	clk_enable(data->clk);
--
--	if (low > INT_MIN)
--		data->variant->tmu_set_low_temp(data, low / MCELSIUS);
--	else
--		data->variant->tmu_disable_low(data);
--	if (high < INT_MAX)
--		data->variant->tmu_set_high_temp(data, high / MCELSIUS);
--	else
--		data->variant->tmu_disable_high(data);
--
--	clk_disable(data->clk);
--	mutex_unlock(&data->lock);
--
--	return 0;
--}
--
--static const struct thermal_zone_device_ops exynos_sensor_ops = {
--	.get_temp = exynos_get_temp,
--	.set_emul_temp = exynos_tmu_set_emulation,
--	.set_trips = exynos_set_trips,
--};
--
- static int exynos_tmu_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -1144,7 +1155,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	}
- 
- 	data->tzd = devm_thermal_of_zone_register(dev, 0, data,
--						  &exynos_sensor_ops);
-+						  data->variant->tmu_ops);
- 	if (IS_ERR(data->tzd))
- 		ret = dev_err_probe(dev, PTR_ERR(data->tzd), "Failed to register sensor\n");
- 
+ 	data->clk = devm_clk_get_prepared(dev, "tmu_apbif");
+ 	if (IS_ERR(data->clk))
+ 		return dev_err_probe(dev, PTR_ERR(data->clk),
 -- 
 2.55.0
 
