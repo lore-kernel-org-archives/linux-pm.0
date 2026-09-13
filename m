@@ -1,222 +1,135 @@
-Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 919FF381E92;
-	Sun, 13 Sep 2026 08:34:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4315933B6E8;
+	Sun, 13 Sep 2026 09:37:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789288443; cv=none; b=oWR60WUWAMvRCRSYlm56i48yaj+Q5RxThtk1WFeNlQYBNOZQ4bmMj29fiDqgA7UD+IFdm0r9Oo0sft4SbLBv67S521fyw+FUgj/c7S85AQK4HxHznRN/R6/NmDuZp3dCpGGhtYbDgmV9gF1wu6NerUt0XXv+LDwozkHu6PoAgAo=
+	t=1789292231; cv=none; b=X80xjUhVk40TdFcvYZxtKjcPHpTRGB0aKI7c5zYWDN9xcnrfa5MMFi4NBh1BkPQgdHpLFTvk0qw4xfUc0JMXGBD7FSkFbS9LH3IPs5q8Vm4TewhC6cr+pIO03O5jX8egL7lvK/dHwlyRSU/Fersfpxh4SZFnumBqhNgfKMuiPzI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789288443; c=relaxed/simple;
-	bh=l21u1VfuTUk80ee1/KqRN/TTYww9xGQuE4vEMp/bBy0=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=amxxgufPOZT09XmoTHFO+Oy04bCak6y5OKiCcpfEI/2/ApcFMmsVDcFBVGj5dQzHbyueDBZ4VEz92MpXa28mc7JIpaBPVWhbLz3EiMZ9MfwJSLi5P21s7s7IsV5PahHXUricLe1B8be/e9R1ayy32BYyt6/+wBJG14+lvsuONac=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=hP4uSJGU; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=nvm4EGrz; arc=none smtp.client-ip=202.12.124.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
+	s=arc-20240116; t=1789292231; c=relaxed/simple;
+	bh=vdwZyUESC/usVPAkdnOVBw1iWK78gw2er94VuCtRjQg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=dWEOmPaPcNQNruS08ABBIa1Ho1l9ud5DA4uU+g4+6BtwJn5mFzYSC6qYOuBhIk6IvHxAYnVTJlaf0bzyQA+ZR8WbvL9U5Ue2ZNfNjSnFpaaH+Ch6tfVBwqdymNx0/gvIG0TviRn+0yhKoIwPHiApLs8LN6v8UjDM31qaQ6EFKlI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZXq3ebKy; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="hP4uSJGU";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="nvm4EGrz"
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailflow.stl.internal (Postfix) with ESMTP id 3F049130010C;
-	Sun, 13 Sep 2026 04:33:55 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Sun, 13 Sep 2026 04:33:59 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1789288434;
-	 x=1789295634; bh=FK/hgn5ztNrzJ8FzxNsGVH8sTakZzoGmnSB/QJ0ZjK4=; b=
-	hP4uSJGU4LPNyh7tNOFYiOwyUhoJjvn+rtx/gV1jNxsXli24Yj4H9OHWbSCUCOYp
-	1LmeKkR/FDUTxfeVUcR3PW6hzHXaeKbqkwhguEsHXcWXM+EqRDq6Mutivw7D6AP7
-	zxcO7/7iOjRUeRDtvmwTdGVJi91XV93oTtX2lrN8t5oAK8MveTvPjOJLHdwKGLDv
-	WDY18MwDH078GeQblDSx50OkW8RYXHIL1Py1DTJXQ6l5yXDv8UpvOCwggfr73muh
-	tjWCnmei/4Ederp7aq+6q9XhHyjG3orbvr7iO3P4pOWy80p3tGPWWzvPjFz6Xoj/
-	l/E+uRa80heywM28ZQPbng==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789288434; x=
-	1789295634; bh=FK/hgn5ztNrzJ8FzxNsGVH8sTakZzoGmnSB/QJ0ZjK4=; b=n
-	vm4EGrz4F6jR5JXE4wigJ8Ry7JX5M0AcC921ZlsuVqc/YpoeL8SAT+tKWa33nB0T
-	ZjwnZB7JaKQBbZtda19Ii6izZqboxNE1agBJILSQAvcaL8wIdNQhGx6H6fTk7CiJ
-	9DNwc7XlhvV+mMoGxebUGze3s1kX5uyoEPunC4jlIgaJyiyTX4Sbb7UtBOpcgTkm
-	GA9daUeYKwy5LcIt5VDo8mzbeUuePrI+JBZLjzF/J2KeYkeu+nmvT4YELvXjrCdX
-	MgxF8P55rsqI0lTOj9w6JBgCin8AMz9HlCAbF/Hl/i9h5rN/siDdaojxzhTnkeU0
-	a5HBpRoQJPWwTY7SPsEjQ==
-X-ME-Sender: <xms:6V-mapGAWvvTCYmPsF0gHXxbEy2q1VIUbPN28RqMGUUZtzTOrnEvuA>
-    <xme:6V-mapLXRXStV_91mp4cNlBE7UDv4i1YnLRZiVf3ZoCTB1V3wH1kzPlEqS463DWcH
-    jBKPFdmoJWdTPPrTaq2cSmCN-or1svTLHlOTE8BeqZQDBbr6-RKxf_M>
-X-ME-Proxy-Cause: dmFkZTFlVhM1xA9XUYL3SefhQrC0hRhFkTaBBJIQ3su2kNz4MfZ3F028vj/UpSaZ9vtqdo
-    wovmypaSI/+/Azrkn02Yb8tOmVCj78ufH0HthXhTBRf6WeFoUXig393+d5/MfEq2pSRnyw
-    LvkfDeXAZA0b/j/z/1yiQhabfROQmtQB7KcVHYhL5U/1ONNfzRfrULV/TAUFjNOKXvZqHU
-    1d3D75czeqAluQHI4FwbSCqywRuOSl2dbfCEwiQwzFVuJIGYTmYp+6BhJS/cWlHc13mRMu
-    JCF4bc/fUM2PhFgmF6DfLis1vMU0ddqwu1kq89fIC1RtR0wlPT1taz0+6qP2fokAV623EC
-    7WvNLhWl3kVw2NxV4IcXin9Y98/yDUmwATW+ikygGBZJ6YYQmvcBkxJjwY6s1s0lBnkurW
-    dgFHyjPldyFsZBx8c3uSdH5l15d1REZen5gyrGPU1HE169zMMgo3KEmBEUmtacwkM75/YY
-    grwFCl6KM0Bz9faJrynux+UReF8cohlyDGeVV9rTC5y20vL4mU3p+bx1hfEaXHZ84F3XO2
-    v2UOS2mSdQ64QMhfWRfWITFHODS475vwD85qi+Wj3j/4MpFov5LCO3ZCpCX0NoG23iGgHA
-    cDtOhMrnZ/x93jpFr/xtrmhKYEtASmslgyDXrwp3akV21xiDzYSAeZt4Xing
-X-ME-Proxy: <xmx:7l-marCsxWSQh7GyHEJQeExs04vUHwGvSpX6l3ZVDsiTwMGzIFCPpg>
-    <xmx:7l-mamy6bQq8k5lrbzz61NVzb-U8lzuLCWChRPmqZFuL-W1-V1RBnA>
-    <xmx:7l-mapO3Ea7pdRgQSbEG743m78cgcMsUglEvHhQP6eVdBbbYwVXaDw>
-    <xmx:7l-matdXxH-1ltZbtCG0gBd_mR1zKSCO473ThhfLCbYY-V19IRKADw>
-    <xmx:8l-maj_96L_YD-vKCf9QRDIxzcji6jyg1fRDZfFt7ZuAErCOtrULUMr4>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id DB07132A007E; Sun, 13 Sep 2026 04:33:44 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZXq3ebKy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46B941F000FF;
+	Sun, 13 Sep 2026 09:36:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789292229;
+	bh=TeKLAo2lyBFX9D/j+t1NddJvYANiKwcO6O8pNn5tCYg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=ZXq3ebKyzE91YMdk8KbwizzTYuRfKiJOjlC7hKcGtHQQZJ5nCJUfiu07FF3uqPR7f
+	 o6PqZ16b+Hzz787iWq7uAC2vR9/5i/IcYkPHKcuLhWMNuP85R6uSJM7F8FyrlWBS1Q
+	 KGIHV9T/yk+v10sUF/WNyxF8c8Po1Eo24e9YNLKt1UalWmzbnS3U12EvMGLOio9tEM
+	 ODMte60um3jwtWBD0ubXBYEB7KUwVDXh6qnHC7TqbJBMW531TTW44iAHQTQrd9L9Ll
+	 YCzgkk7cH0cJu67QwfwU4dQxrTMaBkv9vzAy6OxG6D2amnqezq/M6SGoPo0FCl+y/h
+	 jcgRapmP3RlUQ==
+From: Andreas Hindborg <a.hindborg@kernel.org>
+To: Matthew Wilcox <willy@infradead.org>
+Cc: Danilo Krummrich <dakr@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ Vlastimil Babka <vbabka@kernel.org>, "Liam R. Howlett"
+ <liam@infradead.org>, Uladzislau Rezki <urezki@gmail.com>, Miguel Ojeda
+ <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, Gary Guo
+ <gary@garyguo.net>, =?utf-8?Q?Bj=C3=B6rn?= Roy Baron
+ <bjorn3_gh@protonmail.com>, Benno
+ Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, Trevor
+ Gross <tmgross@umich.edu>, Daniel Almeida <daniel.almeida@collabora.com>,
+ Tamir Duberstein <tamird@kernel.org>, Alexandre Courbot
+ <acourbot@nvidia.com>, Onur =?utf-8?Q?=C3=96zkan?= <work@onurozkan.dev>,
+ Lyude Paul
+ <lyude@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arve
+ =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>, Todd Kjos
+ <tkjos@android.com>, Christian
+ Brauner <brauner@kernel.org>, Carlos Llamas <cmllamas@google.com>, "Rafael
+ J. Wysocki" <rafael@kernel.org>, Dave Ertman <david.m.ertman@intel.com>,
+ Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Serge
+ Hallyn <sergeh@kernel.org>, David Airlie <airlied@gmail.com>, Simona
+ Vetter <simona@ffwll.ch>, Alexander Viro <viro@zeniv.linux.org.uk>, Jan
+ Kara <jack@suse.cz>, Igor Korotin <igor.korotin@linux.dev>, Viresh Kumar
+ <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd
+ <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Krzysztof
+ =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Pavel Tikhomirov
+ <ptikhomirov@virtuozzo.com>, Michal Wilczynski <m.wilczynski@samsung.com>,
+ Ira Weiny <iweiny@kernel.org>, Matthew Brost <matthew.brost@intel.com>,
+ Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+ Philipp Stanner
+ <phasta@kernel.org>, rust-for-linux@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ driver-core@lists.linux.dev, linux-block@vger.kernel.org,
+ linux-security-module@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-pwm@vger.kernel.org,
+ linux-usb@vger.kernel.org
+Subject: Re: [PATCH v21 9/9] rust: page: add `ExclusivePage` for race-free
+ page access
+In-Reply-To: <aqYUWzRSade_Ww67@casper.infradead.org>
+References: <20260910-unique-ref-v21-0-e83257373062@kernel.org>
+ <20260910-unique-ref-v21-9-e83257373062@kernel.org>
+ <aqYUWzRSade_Ww67@casper.infradead.org>
+Date: Sun, 13 Sep 2026 11:36:53 +0200
+Message-ID: <878q55v6fe.fsf@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: AK-jVwBtQCQR
-Date: Sun, 13 Sep 2026 10:33:04 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Jonathan Cameron" <jic23@kernel.org>
-Cc: "Svyatoslav Ryhel" <clamor95@gmail.com>,
- "Arnd Bergmann" <arnd@kernel.org>,
- "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
- "Bartosz Golaszewski" <brgl@kernel.org>,
- "Mark Brown" <broonie@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
- "Daniel Thompson" <danielt@kernel.org>, "Helge Deller" <deller@gmx.de>,
- devicetree@vger.kernel.org,
- "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
- dri-devel@lists.freedesktop.org, "Jingoo Han" <jingoohan1@gmail.com>,
- "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Lee Jones" <lee@kernel.org>,
- "Liam Girdwood" <lgirdwood@gmail.com>,
- "Linus Walleij" <linusw@kernel.org>,
- linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
- linux-fbdev@vger.kernel.org,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
- "Guenter Roeck" <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
- llvm@lists.linux.dev, "Mauro Carvalho Chehab" <mchehab@kernel.org>,
- mfd@lists.linux.dev, "Michael Hennerich" <michael.hennerich@analog.com>,
- patches@opensource.cirrus.com, "Pavel Machek" <pavel@kernel.org>,
- "Rob Herring" <robh@kernel.org>, "Sebastian Reichel" <sre@kernel.org>,
- "Support Opensource" <support.opensource@diasemi.com>
-Message-Id: <e53ae695-99ed-4f14-855b-b922a938438c@app.fastmail.com>
-In-Reply-To: <20260912232047.19c4cb10@jic23-hlaptop>
-References: 
- <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
- <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
- <20260912232047.19c4cb10@jic23-hlaptop>
-Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
 
-On Sun, Sep 13, 2026, at 00:20, Jonathan Cameron wrote:
-> On Thu, 10 Sep 2026 20:14:15 +0200 "Arnd Bergmann" <arnd@arndb.de> wrote:
+Matthew Wilcox <willy@infradead.org> writes:
+
+> On Thu, Sep 10, 2026 at 11:00:13AM +0200, Andreas Hindborg wrote:
+>> `ExclusivePage` wraps a regular page but adds an invariant that the
+>> page data area does not incur data races. This means `ExclusivePage`
+>> cannot be mapped to user space or shared with devices, and it
+>> becomes simpler to directly reference the contents of the page.
 >> 
->> I tried to be careful about figuring out exactly which drivers are
->> unused, but I'm sure there are still a few false positive and false
->> negative ones in there. I've added the current list of driver files below,
->> let me know if you see something that shouldn't be there.
-> Hi Arnd
+>> Since `Page` implements `AlwaysRefCounted`, handing out a `&Page`
+>> from an `ExclusivePage` would allow safe code to obtain an
+>> `ARef<Page>` to the page and break the aliasing invariant of
+>> `ExclusivePage`. Thus, do not implement `Deref<Target = Page>` for
+>> `ExclusivePage`.
 >
-> For I2C and SPI at least, there doesn't need to be explicit
-> device tree support as long as they have defaults when platform
-> data isn't there. Those two buses will happily bind based on
-> a dt-compatible and their i2c_device_id or spi_device_id tables
-> for example.
+> Given this description, I wonder if this shouldn't be implemented by
+> alloc_frozen_pages() / free_frozen_pages().  We'ree certainly trying
+> to move the C parts of the kernel away from thinking that pages have a
+> refcount (folios have a refcount; otheer memdescs may or may not have
+> a refcount).  Do your intended users of this actually have a need for a
+> refcount?
+
+I'm not familiar with that API, but I will take a look. The
+`ExclusivePage` would not need a refcount. The reference is intended to
+be exclusive, giving mutable access to the page contents.
+
+I could imagine a situation where someone might want to transition a
+page reference from exclusive to shared, but I do not have a user for
+that at the moment.
+
 >
-> So unless they fail to probe (some might?) we don't have
-> a clear signal on whether they are in use via DT or not.
+>> +++ b/rust/kernel/page.rs
+>> @@ -17,7 +17,11 @@
+>>          AlwaysRefCounted,
+>>          RefCounted, //
+>>      },
+>> -    types::Opaque,
+>> +    types::{
+>> +        Opaque,
+>> +        Ownable,
+>> +        Owned, //
+>> +    },
 >
-> For vast majority of IIO drivers we don't have an upstream
-> DTS as there is no clear motivation for anyone to upstream
-> the dts for a random industrial control board or similar.
+> While I'm asking stupid questions, what's the significance of the //
+> after Owned?  I see it after RefCounted too.
 
-Right, that was my general rule, if I had tried to remove
-all drivers that could plausibly probe with an external dtb
-but have no internal users, that would have easily doubled
-the 300 patches I already did.
+It is a hack to get rustfmt to format the import statements in a Linus
+compatible manner [1]. As far as I know, it will go away once rustfmt
+learns to do this by itself.
 
->> drivers/iio/adc/ad7266.c
-> No to dropping this.
->
->
->> drivers/iio/adc/ad7791.c
-> No to dropping this one.
->
->> drivers/iio/adc/ad7793.c
-> Maybe. Analog devices ack needed.
->
-> Production part but this one indeed fails to probe.  Analog
-> folk, do you want to fix this one up?
->
->> drivers/iio/adc/ad7887.c
-> No to dropping this.
->
-> Production part - should work fine with defaults in driver.
-> Could like the others drop the platform data handling.
+Best regards,
+Andreas Hindborg
 
-This was one patch that I wasn't sure about myself (all four
-drivers together) since it looks like even when they do probe
-from dtb, the feature set would be limited without a DT
-binding, and they have been in the tree for a rather long time
-without users.
 
-I've dropped the patch now. I looked at dropping the platform_data
-handling, but I think that only makes sense if we get a
-proper DT binding first.
+[1] https://docs.kernel.org/rust/coding-guidelines.html#imports
 
->> drivers/iio/adc/lp8788_adc.c
-> Probably
->
-> Sub driver of an MFD.  I'm fine with that going if we know
-> the mfd is no longer in use.
-
-Ok, I posted that one as
-https://lore.kernel.org/all/20260909132153.1596191-8-arnd@kernel.org/
-
-and so far, everyone agreed on removing it.
-
->> drivers/iio/adc/lpc18xx_adc.c
->> drivers/iio/dac/lpc18xx_dac.c
-> Probably
->
-> Likewise these two.
-
-Right, this one of course should follow the removal of
-CONFIG_ARCH_LPC18XX in arch/arm/
-
->> drivers/iio/frequency/ad9523.c
-> Maybe. Analog Devices ack needed.
->
-> Fails to probe without platform data and marked not recomended
-> for new designs. If we get an Ack from Analog devices folk
-> I'm fine with this one going away.
-
-This matches what I wrote in 
-https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/commit/?id=20c1515b0caec2769c0916d087326f640bfb8aab
-
-I'll keep the patch in the series and we'll see what the
-maintainers think when I post it.
-
-Thanks a lot for taking a look!
-
-I wonder if some of the older Analog drivers were only ever used
-on Blackfin. My series still removes a few more drivers outside
-of iio list that had platform_data in arch/blackfin/ until we
-removed that in 2018. These all fail to probe without
-platform_data, which means they also wouldn't work with the
-downstream adsp-sc5xx/sc8xx port or any other upstream Arm
-platform:
-
-a4bdf847e0e1 backlight: remove unused adp8860/8870 drivers
-c71829e110e9 Input: touchscreen: remove unused ad7877 driver
-b4d4ca64500b Input: misc: remove unused ad714x driver
-978426a3fe1a usb: remove unused sl811 driver
-0860c9f297c3 mfd: remove unused adp5520 driver
-
-       Arnd
