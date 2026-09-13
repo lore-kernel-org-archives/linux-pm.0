@@ -1,63 +1,64 @@
 Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAF7933FE33
-	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 14:59:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31DF633D6FA
+	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 14:59:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789311575; cv=none; b=Lv0tv8JjMN6isS0nnaW3/MlAD9YainM2p9DqPwg0K5CsU/UmgaSQF7kRc352CP3bm5i0iBA/WrLUgx/+EbHzaCJvVotj8RZQrFK7yhT/E7Q87s8x3SUYH2uGBoRhaoYNz+ZLqaW0tqvQzLOQAEMAsXD5M4/NFED0BpT4nK1f/c4=
+	t=1789311582; cv=none; b=f+tjsfPalk+eJvMBjCme9Io/K4hiInbYRWPSPYGisZ13FD5RJBBJ4JA1phSQQQqSXEB3bP1EaF+K3xXSH6FlhoFl3gupP5H1RWUi84UrVcu034Ku7zAQHPJglFSRZPO/g5wJdxrY8MEjEwtTxSLyMukS3ZujaNkMNIPmE1ARdt8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789311575; c=relaxed/simple;
-	bh=mLKbgQtKfNZH/MukbGyy0RqhzRY81GCD/PEfQFLWI3E=;
+	s=arc-20240116; t=1789311582; c=relaxed/simple;
+	bh=ak4tshfNok3X2hRPXd4e8Yziszvu7kRWCnmlNF5Pb5g=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WMR39u3cjR7aj++EdmUGVzE0pTkDVC0nA8dWCVwlJSrNIpBjf388W5M17L3kTRFsWpXxUJXtKmptDGNC7yqtu5/HvPkEz6C2qWwqKnvxgLrhg19ja1g2JfCMkPPTKxNA9lL/ttdrReJg4jNdm3Y3a2owELv9LJUvOeqifEUYZuQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jb2L7w0M; arc=none smtp.client-ip=74.125.227.141
+	 MIME-Version; b=NvNPOndpxZrOhnLdbzEn9HwLfg03UmokDEHz1/X9tc049Ijy74Org9Jnph/zsCuQOkf1p7C02oTvkFc6D7VI4jjsMgF/BTFy8tcowlCQyTwlOYrE5rU42py1TKFfXAWlw3DRSkN3Rgau+R6dM/XVoHsx+W5hNar4vKSV7qBcGC0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=e9CvGy1c; arc=none smtp.client-ip=74.125.227.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jb2L7w0M"
-Received: by mail-pj2-f13.google.com with SMTP id 98e67ed59e1d1-39dbdfaef3cso1156305a91.1
-        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 07:59:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e9CvGy1c"
+Received: by mail-pj2-f13.google.com with SMTP id 98e67ed59e1d1-39dbdfaef3cso1156346a91.1
+        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 07:59:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789311571; x=1789916371; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1789311578; x=1789916378; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=IlgimeCT04wK/VVZmKrnlafua+eQjTo1OlyMX75Ktyg=;
-        b=jb2L7w0MsQKMULUFtG2bA5zGtQbb96dngYd7gZ7psaP5sEg4Y5BU10g4wTit2RCLU7
-         jp2LrG6aP2BsxoDgpegEXHUOz6sAGOn7BO7iZurAyiB8bTJGIqwWN16ZmG/74Uu947Y4
-         r32S3AskI8PkejxoMsO5IwCvPw3LW3nDOnyQG2RLeL6PjNnbg2x3uP+1A3NazCiteLEZ
-         sUp0SsG16YW1nWKZkFyTeOg3LOupF3Gs5jzGCDHbFYLzA9kC6Fq9HtwOD8nJNDRQ2b+/
-         RIWh7vJpK3D7xRGILCf0MjsqUTVCfOsravRKduG1IjzR8qAnF5aBpQxWVPVrvcVMdIO1
-         IdjA==
+        bh=6v0v0q/G/gLroOU57+Sotz0AlKiMNuB5Ilcu2TBSVco=;
+        b=e9CvGy1c+H+BeyV7ALbK9LsNAjPvaScD1wtUjj65xclOGPIqxi5MX1qvtMQLaULH5z
+         IMbdyDHPNnubyE/OJ6Px4rT2YyyMe1IRwWyqraSqrEu/IZTacmBDlrv5h+FieCwOmVqi
+         /jsMiw3V8Fhtfbg3aspPQlAD8ijYPWAK04loewTreBEexpenkLa7YOpUXH7M0qpvJVcD
+         Po5U7/SptpOb5M8nvU1/tokwZ5KLm0Ucxutc5LjYdlpdfu1tAx4bbzxwthFqWiIBF4la
+         NdkVYJXZHLoVB9IYzGTNM6F7ZxG9PKuP5wMnKjlaM3qO/9bO6ZvUvwzp4VwCdxvuCqHv
+         gKBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789311571; x=1789916371;
+        d=1e100.net; s=20251104; t=1789311578; x=1789916378;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=IlgimeCT04wK/VVZmKrnlafua+eQjTo1OlyMX75Ktyg=;
-        b=cLWnxhQXu0dh7XXZLiXJumV7ASsUjQqChfq/geS+V64LYWvlYWgAV7lXFXymRlgOBp
-         F3gJxyegY65Y6URgrJh4FTro8IjAgMM0g8yPUeVXOLNOk5e/1QQupbjxZw8pVngQuEyR
-         tM8EQW8j/3cFChBwZ2CyQ5m2NAk8wIKYsPQmnBQzq9PkMLTDmU3g88CVBJDv11ij1VUz
-         08FjW6um4Ql4+ztbMLxaT7ChSv3aBsr76jnm8N0gv7tS/NyC8gK9XqwfOw/XgitMW8FT
-         1xIuSJ3aGcNxdXXKm/n53361Jj+Zog/03/YrQo0MQO3TV0RUPVltHIfsn1QTadDBRhOa
-         zngw==
-X-Forwarded-Encrypted: i=1; AKwUvBymBYfTjYhAzVt4uvi6Mr3mWcfgpTcDfPBg5lG1OlGySV2ncpqy4WSJUBrZHLHffaJ2nvYooG/vCg==@vger.kernel.org
-X-Gm-Message-State: AFuF++nW1IOj3+JaQmeUVa3ygkLmkxqQWJTrakx1Y+VyEPium/gT7Eu0
-	j4sEkItIMShr7O2ilDWLtqgwX962tQdLoUCOkzOXyX3DE/BNaHpcQ/TK
-X-Gm-Gg: AYBFou1heD07sJzksZUHq0qz7xig+E608FLCb8VfAn+3TlBRGUOnYLDEazfAxRZIv0X
-	XSqtMKI3vcrsJrldRau0+mVg0pMwXiEhiXaUqRZfF4pLCOsqCzu/uwzwUkgIoKIrWXXyCLJ+uCi
-	lVAsWO4MhmiAOxozgSxbBUHLNwTcaK49hKrzXCbTzP14MHu3WGq4KXoKyyH4yLDKGje9HebeQ8D
-	3cgxWqS3Y5dUXwutFp++IU1NkKOfY8MCwDCzF5y9g78CFJQT8kJAqh5NdD/khfPe1ciYJxGn5MR
-	Fog8CPMKw26OocNw0eLo0Pauex7/UBArIkAuZOlUSt5OSqNATsIkWx/6dnVi6e/q7fBUV96BVIn
-	Xl+AxDw+y5Wp4DJXvOWtd93WIQpz696qXnFUXkxyac4ZORV16DAlqSAgjmFxHr35B41PzgJ73xF
-	zPj456TvdNTxSSl2TQQ6dUG1HbMSxreUrckt5ll/UtBLdbKvUrw7skcRSXEnRaAuV4P+wiewnC
-X-Received: by 2002:a17:90b:3c03:b0:398:de23:9af6 with SMTP id 98e67ed59e1d1-39d9c1db154mr25881100a91.15.1789311570670;
-        Sun, 13 Sep 2026 07:59:30 -0700 (PDT)
+        bh=6v0v0q/G/gLroOU57+Sotz0AlKiMNuB5Ilcu2TBSVco=;
+        b=QTIWoxMIADgLAzmGuXV3kTg3z3HQ9VK+gOdAHuTr1ioJfb/52FfO1hDU68dckEGK7g
+         9qkBFX/d6RAyzhDwFALVAvKPdMkwuEup/blzNK8Kd3kheOpoMEUpJe5XIRE3tJN5plq7
+         zQP6UCKlrVmnvjOkgNBVrG81wrkoLdzfVW00n4PaBQTJmYGbY5nuSRzVzFiRd5w+Bo6k
+         PviU1SAwm0Ib3Tj4oSo62cbPcp6arps5pxsHSQHw+wwcK7PVKnkUjUBFz5ZieqYshn1L
+         gVO/CU5e7gsqelnzVMU6t4GcT7g9qjf6+Vt/EbdXzk21cMPo7IAm84iI6TxdaEVPSuo7
+         xsJg==
+X-Forwarded-Encrypted: i=1; AKwUvBxSXtcQuLtVWm7ZI+6yOsJVlfhFk3//ZjFZslBH/vnbXStkn+BaBNnj72juqfss3hbukpkPrBQ8Pg==@vger.kernel.org
+X-Gm-Message-State: AFuF++nKgzgccSfZVioNLbMemoyNw0D9VBh6jbQCB7ndy0iFShbbYjxC
+	T2ZcXUIW6Lsks8CA+hhbnggWbBOJrvLQwy3s/uUBUiE0nDO3v3colet6
+X-Gm-Gg: AYBFou1xFMiyglgj9oYssLXsGMN0yTWdD9viJL3WQtK9Gr+8enVEAe6hpHPBPGJhGOg
+	cN8DA+7dV1uGPAskfOsdph5olhlBjnnJtNbOVMrOkbf+qvo/s2+osg+Er/+Wpsj+84SD8mNQorY
+	ElfIna3k4lJ0+e0xpZajeRFazbQl77PIEBZcoxq+G++2IcehiF0EwQvVs7J/OIegXTQChGB74Jj
+	G7zTMzaAzpMQjF+QxUP3WI2R6zvUz2dwClX2D5c+AI62fBPC8EmyyENx6Hv6s+swI0HWbJLG6i7
+	D2QFxUk8Z+hnQuklciqUEKZdPYnH8LCyukv7zS15uKsjMrH9lcA7TMybRVrbcnfSKahW/B58Bxr
+	SRcwajBHwTik41KuPKZ2lqxeQgRIXrXMTlCtsl6T9z/9U5QAHRU7X5uA+7ATJhkZSeVCeLUO4b1
+	nb8H5lE8UfWMmuOQBhhlg/DbbIQKBW4BJ9KHDmPPlmbbkRs+gU1PxiQfAKieEFZpbO9mqp8pQhz
+	w==
+X-Received: by 2002:a17:90b:2588:b0:38d:fda6:4873 with SMTP id 98e67ed59e1d1-39d9bd99cc7mr24628579a91.10.1789311577951;
+        Sun, 13 Sep 2026 07:59:37 -0700 (PDT)
 Received: from archl-rock5b ([45.112.0.180])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b8f1f7sm17536306c88.11.2026.09.13.07.59.26
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b8f1f7sm17536306c88.11.2026.09.13.07.59.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 13 Sep 2026 07:59:30 -0700 (PDT)
+        Sun, 13 Sep 2026 07:59:37 -0700 (PDT)
 From: Anand Moon <linux.amoon@gmail.com>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
 	Krzysztof Kozlowski <krzk@kernel.org>,
@@ -72,9 +73,9 @@ To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
 	linux-kernel@vger.kernel.org (open list),
 	linux-arm-kernel@lists.infradead.org (moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES)
 Cc: Anand Moon <linux.amoon@gmail.com>
-Subject: [PATCH v9 2/9] thermal/drivers/exynos: Drop invalid IRQF_SHARED flag from TMU interrupts
-Date: Sun, 13 Sep 2026 20:28:30 +0530
-Message-ID: <20260913145905.9404-3-linux.amoon@gmail.com>
+Subject: [PATCH v9 3/9] thermal/drivers/exynos: Handle optional triminfo clock correctly
+Date: Sun, 13 Sep 2026 20:28:31 +0530
+Message-ID: <20260913145905.9404-4-linux.amoon@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260913145905.9404-1-linux.amoon@gmail.com>
 References: <20260913145905.9404-1-linux.amoon@gmail.com>
@@ -86,39 +87,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove the IRQF_SHARED flag from devm_request_threaded_irq().
+The triminfo clock is obtained using devm_clk_get_optional_prepared(),
+which returns NULL when the optional clock is not present.
 
-The driver requests a threaded interrupt with a NULL primary handler,
-which requires IRQF_ONESHOT to keep the interrupt line masked until
-the threaded handler completes.
-
-The TMU interrupts are dedicated GIC SPIs in the Exynos device tree
-configurations, so there is no need to request them as shared
-interrupts.
-
-Requesting the interrupt without IRQF_SHARED avoids unnecessary
-interrupt sharing and matches the dedicated nature of the TMU
-interrupt lines.
+Update the clock checks in exynos_tmu_initialize() to test for NULL
+instead of using IS_ERR(), allowing TMU instances without a triminfo
+clock to initialize correctly.
 
 Signed-off-by: Anand Moon <linux.amoon@gmail.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index e75040222ccf..825dbdef0b9a 100644
+index 825dbdef0b9a..a64b11e6acdc 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -1078,8 +1078,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+@@ -258,7 +258,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
  
- 	ret = devm_request_threaded_irq(dev, data->irq, NULL,
- 					exynos_tmu_threaded_irq,
--					IRQF_TRIGGER_RISING
--						| IRQF_SHARED | IRQF_ONESHOT,
-+					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
- 					dev_name(dev), data);
- 	if (ret)
- 		return dev_err_probe(dev, ret, "Failed to request irq\n");
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+-	if (!IS_ERR(data->clk_sec))
++	if (data->clk_sec)
+ 		clk_enable(data->clk_sec);
+ 
+ 	status = readb(data->base + EXYNOS_TMU_REG_STATUS);
+@@ -269,7 +269,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 		data->tmu_clear_irqs(data);
+ 	}
+ 
+-	if (!IS_ERR(data->clk_sec))
++	if (data->clk_sec)
+ 		clk_disable(data->clk_sec);
+ 	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
 -- 
 2.55.0
 
