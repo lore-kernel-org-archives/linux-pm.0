@@ -1,115 +1,115 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf2-f12.google.com (mail-lf2-f12.google.com [74.125.229.204])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59F723C65E0
-	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 10:29:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36BB03E7BD5
+	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 12:52:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.204
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789295370; cv=none; b=P6nm64GclUPIhGbOQJhGEc9qmxB5GCDDgDGKwm01sgfLR887lQoK+lTaQSN7pj3Vul/AUbk2hzLuFM283YWLxopKqWcEw0TdR7wzP7NlOIHnUTgY5OcwURzRBcuym6FeQVjkSFoW8L0pVfUGmelKg2Qk5cW9FW+CeRxL8w6fEKY=
+	t=1789303981; cv=none; b=uqbghUegj/P3TUwzUlWLbgRmQBUzE6TUKRSQoHkI0GIAY/uv1nQq/5NkorWPYk+YpA9FOn/p2S+J2x3TPXtjZ2m8zSL259akmNrP9VETteaFeKqL19ESQzwNqqU21VwMyNagxnd0zOmvlqoyqMYZEFVgkHGLNWdlHQcLVEY59Ew=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789295370; c=relaxed/simple;
-	bh=NPQejoZxH6U4uow34Q9YSOqspglC0wK8sk9mkHf8cHs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=f0MAtGBjwYtdSVgIbIGcQVTaylagX2tA4Ml/fEwgAQ3B9Q972pN09Ml7BVnOaNPS0LLdiHWmcw7C+FYNiJ2TXIdOD5LkP/uoftxbSdd/H5EaNWaFKkqdwZQVx4hX1SPhSJQSC6aBC8DIZ6QRhnmRokfWdTJzba3FkytT/STCbuU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ke4g7lVI; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789303981; c=relaxed/simple;
+	bh=YbaVITUhkeDqVIioLFWBfDjSJAJ93O9p9DZUGxcH+fI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hZVe4P0IVHchDMql6FeQc761oYzQ5ue1oor1q+g+3WOI4HZUs4/4wtddGdRDBEtMVu3mxXt69svPR26ZLqgk2SubkhpxpprfPjmjDoCMJlu7t+/Ic0MpMwNLoh5sN1Tz+o914UyVQYdr/ZQKpU27eefpp/HG1aDXdxp4N2ZSr1o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r0nUGQqQ; arc=none smtp.client-ip=74.125.229.204
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ke4g7lVI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B01E1F000FF
-	for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 10:29:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789295363;
-	bh=NPQejoZxH6U4uow34Q9YSOqspglC0wK8sk9mkHf8cHs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ke4g7lVIYdPyccr90XDXtKVM9RnVSaeipOGatYapTyfSb7aKPB4wGy5ePTtT7a5Sy
-	 EEr8MnGWEZJCFO5pUe8AhmZf+sZtcTx4sPj4wvbtAb3iv+XcHTwJ0AaWugJXjtWDDi
-	 MqYvlJeKddIgSVrRKXNxJvmAYJnHaWPjChMewwwY4zkkxRK9UqVBhnD/LXDVUStNzG
-	 81csUhQ+VSoZq6juKPPR9NI2hCabPmKn0JTVtZUNHh/it4uaSFwrsV8nmHaNDaMB0Q
-	 nlnU9L6pIzNR0zA4rNPIcKie4XO2jqKFAZouGOl8dhTXFFBnzoAi4VV+A8ct97uYBK
-	 OB8Zbcpkef3bQ==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f13d76so1171069e87.3
-        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 03:29:23 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBx3sjn3TFO4bPL5Gs7seUlDZj9NbHfPVn1XnpLP5eQKtaYW0JpEPgdiDqIbbHuO8aEsAxEL+SXQ/w==@vger.kernel.org
-X-Gm-Message-State: AFuF++kHQOvjxaJhyLXpdbrm3qRIhydPhv/RUyVAJp/i63gU22wdxj6t
-	EydujvGSC813S9v0ptvEzLblQ2pNj1DVJJym3npk96XUvrUkVrXxwk+xGYVAcSKHRGJDiadG8fV
-	rjwLdgO9GVPCnqGBG/5+pQ2tWQ4e9c9s=
-X-Received: by 2002:a05:6512:3f26:b0:5b6:1a7c:3b with SMTP id
- 2adb3069b0e04-5b8a8ed9e1amr1101836e87.62.1789295361526; Sun, 13 Sep 2026
- 03:29:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r0nUGQqQ"
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f1651cso808939e87.0
+        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 05:52:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789303976; x=1789908776; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ZSiQ4yRWCAeWevHuomAHZI5T/21V8Jw+Qsr3Wu9T7ZY=;
+        b=r0nUGQqQpzaxS0W+eDSPFL2q1dco1pvvrQOOoMCl7hl6ITQu1IeY5dmAZLwFiyJEPV
+         mKg35vsLls276+W/Uugi0dRl7pF1fIOgrXu7OF0PWutGtYvnBE6K70WmHSybWEnzgDS5
+         NcfmRbF/j+O0gdHDvAaRc8RIZT/NERmgr4w7SGEqaPm1FuKB9ZplqkpESWkU+IbIL5zJ
+         BSJdGYo5kpMJQfDglosh6Sq+6NLBe10bCNr2GWwkqkmqG9+hqZyJt0uEsA90W8FcmTAm
+         BSwx3L/cw93YEtx8LOlQv10UYtproufmBk7c7tKrZ/hxDLC3KDw08QwvJUmOnnlwy1HR
+         Wamw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789303976; x=1789908776;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ZSiQ4yRWCAeWevHuomAHZI5T/21V8Jw+Qsr3Wu9T7ZY=;
+        b=BflZoriMLFSEHi9BguutvBhjtscnJlGu8H+A7egD+pNplrVFeg9v9+Md/bJ5B0muEL
+         SEmQe26rJh+Y9J7Of9SqiktmQuugX6A3Mw2ge5pZxLJkcfi4kUWzy/Th6RVaN6QXo2JD
+         pNCjrrs+EUd9odQUMwairx8IvFDIuLVcmidA8wgJK6X2u6lXDNBv0epvB2KifPJvxoRV
+         WIFeHIjWVyHTl/K25rT2N4Dyj6RBND9NiGMQxI2AfsQ3vSdtsADbC/5XmGfzv7nlgQ7y
+         IoGozdCXwEiL+5wyEjwighs7XM+naKynzrJRmNLj9IfaKMMQg2Bk3cqXLNWxtdBlaNqQ
+         zovw==
+X-Forwarded-Encrypted: i=1; AKwUvBw19dhbkLh7ejmfRGF85xsldMyCj+EMrXf2rZsDRXe9YZFpnOVM9WeBAYqJRaiaOwLU+oYWPuvydg==@vger.kernel.org
+X-Gm-Message-State: AFuF++lGtN6Hm6RgDFQRn2D7jA8EYZYxhXKKVlBDAVIIpI1bidXqdlzl
+	BM7RC3lfqQY8pFlt4JGdbaA4Jb+uV2KxJv40upVrwObxE6legLrCIB8=
+X-Gm-Gg: AYBFou3hh7b4AKA+LrqHgQv9pKCRCI/T1+Fngiuj5eKykxn2lS0fRpBcwaXWgKmTjIz
+	zVt9e4OeinICVQJhmHzC17fL8YcDap+rLh1DyUcKo7CQ+LwRbiyUgSL6bnQHGb18R6/puNak2z4
+	kFEHD0s714d9VU6RTUqYepyHZcuMpsgRMwMMyx4CLVMbRIaHa7j//mP+lEhXFU0oA+TlVWNXIqS
+	MTuzZXyVJPvRA32WBlR8hXqy2eyrP+3yJuzyp65hg4g8RkHpyCLgYTLphZSWVXehuz8rN9arXUY
+	ckPnxAhHLEYL5iAD3Fif/NmIQlkjHO29klOl/tgzHx0iz/2/0vj37wNw9sUXUX4wMnyXRZru+XB
+	pGOTJvY4qYBldFm0EGjkP6PcQJLQw82ZQt1/WXb/sJTp63Fswjrjb7BLnyXvxeBsItYeHSO/12d
+	1QmWeHZAyQCZuO+B+JKSMWNIYFkUDsfutKEZgQy4LkWKmwpzf0DDotbxPm+/NIKg==
+X-Received: by 2002:a05:6512:3a96:b0:5b7:a987:d03d with SMTP id 2adb3069b0e04-5b8a8ed15damr1361837e87.21.1789303975926;
+        Sun, 13 Sep 2026 05:52:55 -0700 (PDT)
+Received: from fedora ([46.8.219.5])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b8a0469a8esm1762844e87.50.2026.09.13.05.52.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 13 Sep 2026 05:52:55 -0700 (PDT)
+From: Vitaliy Sochnev <sochnev.v.74@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Christian Marangi <ansuelsmth@gmail.com>,
+	Lorenzo Bianconi <lorenzo@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Vitaliy Sochnev <sochnev.v.74@gmail.com>
+Subject: [PATCH 0/4] thermal/drivers/airoha: Fix AN7583 mux mapping and expose all sensors
+Date: Sun, 13 Sep 2026 15:52:22 +0100
+Message-ID: <20260913145226.34643-1-sochnev.v.74@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <1965933.tdWV9SEqCh@rafael.j.wysocki> <2362345.iZASKD2KPV@rafael.j.wysocki>
- <aqQtIMm-gdJoZAsq@ashevche-desk.local> <CAJZ5v0j5B4LFbrhSuw0j=fLcY+cFFTEMvyt_ED-+9j1dvQEqLw@mail.gmail.com>
- <aqQwf3y66lPhTTyf@ashevche-desk.local> <CAJZ5v0jV-cMDt0Hhhw8Nnea1jhXfGVUajaomAmSUcmx2sZLb6Q@mail.gmail.com>
- <aqRDC2LZ7m3caTSn@ashevche-desk.local> <5b54b08a-4dfd-4efe-b646-821adcd235b2@gmx.de>
- <aqZbqbSsRlsjjRPB@ashevche-desk.local>
-In-Reply-To: <aqZbqbSsRlsjjRPB@ashevche-desk.local>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Sun, 13 Sep 2026 12:28:05 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0j9g9Vyam7PnrGikYyyrUwSFghPk6ecXVEm9PN8z8tOHg@mail.gmail.com>
-X-Gm-Features: AcwNN1U63AvT86RmZWiCAlpoR6cXXuhqPacNHrPEzHXrxMST4SeSvhw9HP-yqrY
-Message-ID: <CAJZ5v0j9g9Vyam7PnrGikYyyrUwSFghPk6ecXVEm9PN8z8tOHg@mail.gmail.com>
-Subject: Re: [PATCH v1 04/10] ACPI: processor: thermal: Use thermal_cooling_device_create()
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Armin Wolf <W_Armin@gmx.de>, "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, 
-	Linux ACPI <linux-acpi@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Hans de Goede <hansg@kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Linux PM <linux-pm@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sun, Sep 13, 2026 at 10:15=E2=80=AFAM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Fri, Sep 11, 2026 at 11:14:09PM +0200, Armin Wolf wrote:
-> > Am 11.09.26 um 20:06 schrieb Andy Shevchenko:
-> > > On Fri, Sep 11, 2026 at 07:01:23PM +0200, Rafael J. Wysocki (Intel) w=
-rote:
-> > > > On Fri, Sep 11, 2026 at 6:47=E2=80=AFPM Andy Shevchenko
-> > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > > On Fri, Sep 11, 2026 at 06:36:28PM +0200, Rafael J. Wysocki (Inte=
-l) wrote:
-> > > > > > On Fri, Sep 11, 2026 at 6:32=E2=80=AFPM Andy Shevchenko
-> > > > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > > > > On Fri, Sep 11, 2026 at 03:02:53PM +0200, Rafael J. Wysocki w=
-rote:
->
-> ...
->
-> > > > > > > Is any user space ABI breakage expected as an outcome of this=
- change?
-> > > > > > Not really.
-> > > > > Maybe makes sense to state this clearly in the cover letter?
-> > > > I guess you specifically mean the manually created symbolic links i=
-n
-> > > > sysfs that get removed.
-> > > >
-> > > > If so, I'm not aware of anyone using them for anything, but the lac=
-k
-> > > > of observation is not proof of nonexistence.
-> > > Yes, I refer to the changes in the sysfs layout / presence / absence.
-> >
-> > AFAIK those custom sysfs attributes are not even documented under Docum=
-entation/ABI, and
-> > thermald also does not seem to use them. I thus think we can safely rem=
-ove them.
->
-> There is Debian source code browser (that covers hundreds of OSS projects=
-) [1],
-> have you tried to seek any matches there? Otherwise the assumption that n=
-obody
-> uses them might be wrong even if they were never documented.
->
-> [1]: https://codesearch.debian.net/
+The AN7583 support merged for 7.3-rc1 reads the wrong mux positions: the
+mux field names are swapped, and v5 of the series swapped the call
+arguments to match them. Patch 1 fixes the field definitions.
 
-It is mostly relevant whether or not they are used by someone today
-and not whether or not they have ever been used at all.
+Patch 2 serialises mux selection and ADC sampling.
 
-We'll find out.
+Patches 3 and 4 add one thermal sensor cell for AN7583 and a zone per
+sensor. Device trees without cells keep reading the bandgap sensor.
 
-If anyone complains and they are unable to cope with that, adding
-"thermal_cooling" back should not be a problem (although I'd rather
-not do it unless absolutely necessary).
+Tested on a Nokia XG-040G-MF (AN7583) with this driver on a 6.18 kernel
+in OpenWrt. Without the series the board powers off 2.6 s into boot.
+With it the three zones match direct ADC reads, and concurrent readers
+during CPU frequency changes gave no failed read and no shutdown. EN7581
+was tested with equivalent changes on a Nokia XG-040G-MD. Build-tested
+on arm64 with W=1; the binding passes dt_binding_check.
+
+Vitaliy Sochnev (4):
+  thermal/drivers/airoha: Fix AN7583 ADC mux field mapping
+  thermal/drivers/airoha: Serialise access to the shared ADC
+  dt-bindings: arm: airoha: Allow one thermal sensor cell for AN7583
+  thermal/drivers/airoha: Register a thermal zone per AN7583 sensor
+
+ .../bindings/arm/airoha,en7581-chip-scu.yaml  |   5 +-
+ drivers/thermal/airoha_thermal.c              | 159 ++++++++++++++----
+ 2 files changed, 128 insertions(+), 36 deletions(-)
+
+
+base-commit: 5ad0af4f4367202b1bc71813052fe39b5116cdb9
+-- 
+2.55.0
+
