@@ -1,275 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx2-f13.google.com (mail-yx2-f13.google.com [74.125.224.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79A443659FD
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 10:20:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789381203; cv=none; b=McekKCVS5xthIyExhx7RuP4xpUlqZ48NFOovi5aIMyRrgqh7eZF924qSnJJIHYe/4lcMUH8zeI53vTDOHMfSOb3mmbf0I0PYvf9m53oSOZTdmFbBBHRTnyOgwLSoUffrvMGQbe50kMlznCz0YgNtbR7bIpYra4mVFSPJSRbvaaQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789381203; c=relaxed/simple;
-	bh=s1e/ociTMdVHbodmHGbhf8inhat519yZqvJY0OKPe8I=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D5AB43CE45
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 10:40:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.141
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789382443; cv=pass; b=LS8JEKHyEQHwqzEFVNosb8eNZc143LOoKnOv4LmP2oKTlbcI7NXJzYOXUKbb4bH6XtWg6UDyVwwoPNkYain1AiRjQNv4YZaTvb9YbSXuYBHvUUPI8s4tHAriSIHHfom+q7taT4A/K2b25hBPmVVgnpkjrjDbrIpEf/nLL+yrMTo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789382443; c=relaxed/simple;
+	bh=CZXlPdTEAeBHj839T4HU9cpkm6eNyjon46e+njHBZo4=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Oh3Eogqpd9PA/gb+Y6D5F/DVcfdbnexgt9R/I/0MqkclBjo5RdsiHcABEzbO7mSP9IQKXeSTJGQPfEA2EiRgtS3Q5T4+u1dIzwznGUWRUcSZ6RbDru1APe/Fn751rC6pU5KiwjQQQGqr/IBjTghl6gE4YtGSODIgUJUJr4d/r78=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lvuH/rMn; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=HJg1sDAEapxDeLeuIkKaPlQR8H5Ylj+yds7vCjaD2YOq1cL6DCvrfqassFDzrL8IBCnShWgI54otExMWS7Z1ZkLeyWCrG+OAK+zn4fedwUgwlfZSVhSVhaKRwdgF53cEXioG1lACji+o6K1yBh+FPt5nOVjyNsjIVcUJ/lKqkP4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=googlemail.com; spf=pass smtp.mailfrom=googlemail.com; dkim=pass (2048-bit key) header.d=googlemail.com header.i=@googlemail.com header.b=e1tsi/ah; arc=pass smtp.client-ip=74.125.224.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=googlemail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=googlemail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lvuH/rMn"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C9211F000FF
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 10:20:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789381200;
-	bh=w4e/SHlDd98D9BE8dWRPoAwVK/lCQ3ruuHyE9FBfpjE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=lvuH/rMnftdqPCCblgZ9w8GJvrhbvk3kRlhXnAXrc+KA8P57DmNuTKK/AC9+yNKBn
-	 n7oWGpoEWJsnxJ2WnC/RP99X6QntnnoFQvC9Q511d8OWFuTkc+a3mlUf5qLh2SIlVC
-	 G/bdMtmtbuHB5MCxGXzVZDQOK0kjTYRZGlh7tPvb69a/odAC3WClrgnnPVQM4jX4uE
-	 7FTgGd9RwWoL2T2zCZVcQkemtDKarGXlouJazGmipLrRMzrD9LC3GTvFz3HgEyUu8L
-	 4YyN8aW3wi2KnB3rrvmGyX2yo/AJDm2TmEE3+Fx3FDN+L1vI8+NA5F0SGRB61VriZ5
-	 dIOekFh8v5VCQ==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16f16so1927076e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 03:19:59 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBy4nsSMKnBrWapgZTXtmIBq9JOR/EhwXu36a7rFjDq2l91/123HNXqlhhPTAgUHlO5vwb/PHLVuhA==@vger.kernel.org
-X-Gm-Message-State: AFuF++le9OUnXS6d0Bcv501IOdDY9KR6NeKs8HOOg6YbTeA6HORVhCAF
-	UsNnArsG9MIiVW56m0ySHfU5FGXcKSVG/ocuWPDmb/Nh2BHspvKfhqR/6nkkbE2I7GIdEy/1oQC
-	XMGWP1fQB95LOWB/DFVAJTrbAYYRZ2Q0=
-X-Received: by 2002:a05:6512:1153:b0:5b8:9ee1:10fd with SMTP id
- 2adb3069b0e04-5b8ae8a9343mr1043238e87.32.1789381198380; Mon, 14 Sep 2026
- 03:19:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=googlemail.com header.i=@googlemail.com header.b="e1tsi/ah"
+Received: by mail-yx2-f13.google.com with SMTP id 956f58d0204a3-66e4ab2029eso1592365d50.1
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 03:40:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789382441; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Ua6WAPoxIAjGogWzAYy89pHMFFH2cIIdSgWROl2Ryq4k+QkuolbiSmmY1/nE03wYBv
+         aW25YP1b3LijaIIaq/XDxxpWuw3zzRnzOnDDSP7JcfQSFkYwKBNZV6H0wuAV6Qt1+zrW
+         hXMRY/Mlew8ngOB/2WHcYKmh2qP+0ZRsERn1NOwIOVuDAIu4PqTLXKBMzW4GCuWFNhie
+         DyC+8xZPKxp1tXV8C0CGRhFq3BPRSNCGGVAo8vlCF/aLlsUyiLAqf8kY2WN1XIrL0CDA
+         aDUbxCGg4FPlDWplobMMq+d0JCCKGMNivBLgwU0Zti0qRaUm8/nfTs9EMAcQyKwW6aM0
+         8zyA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=CZXlPdTEAeBHj839T4HU9cpkm6eNyjon46e+njHBZo4=;
+        fh=JiEKhthA7zjAnlaWwuStk4rQ22DfqSqJ+tVo/cUErG0=;
+        b=oN7nQ2h7oRNoGCRueAnQBMvLyanQv5mHv0lPEsPbPwfLsZ1KHQ5a/MahdNPGH8UvEe
+         IsbTpB/eR2u4Y+XnP3dsxOIhTjwovIH0UVvwpzLFPt9RO0chVuLkey11Os+UjPjVp1lK
+         pqKluonsLoS+nU2Ta+P3fkJXTYZAZM1mLLcM6+HwKtDGoTgvZTG4K+GUeeg+E9TbvSZQ
+         dcopmVKVpIentp0+/Hsy1pObqRDraUKJnAsrsQ2IztrTG4fR+sgisVXRyxYXYr9USo3O
+         px0HoD1ajfbfYlLZnAh392DPLrWqVO3ieojNSETR+hO4FMoz2bphwllXXDPz7847buR4
+         fB+A==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=googlemail.com; s=20251104; t=1789382441; x=1789987241; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=CZXlPdTEAeBHj839T4HU9cpkm6eNyjon46e+njHBZo4=;
+        b=e1tsi/ah4235p451Eyger3ojtmEj/bcXqVdT40mibRJK5AcoqilOqakPl0B+bROf/j
+         O1z0NrlB6ocOniBPPZbHxk/+vVtDIL41S2hF89+z9i1Dhgq//EB89Q/wn2dkf+IubXOe
+         LXxJOrAtoLmslpWhldoPU25R4MDjJGMUoOcHPrjKes7jSXZCLeLQWwrQNhHghpJiv3gM
+         6mCtFghKXPgmreIHQjvojoxs85YpJl9iHTGhH7MSFbn4Kj2Roi2EXvmfylYND6HuCBa/
+         63hs/Lv1DomWkWeer9xmJgEKIwN/WvTvXM2BsES07hKwOlX6BtErUnmpxhTUO5AwuYpE
+         6drw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789382441; x=1789987241;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=CZXlPdTEAeBHj839T4HU9cpkm6eNyjon46e+njHBZo4=;
+        b=Kt262p6iYP+BWV83QuU3Zy3GqBspO6hxWmSrQuDGiwNm51YjQb6h0yek62Mj3ldT5f
+         FY/4S/uCayEkLOXD33A7HDAexcJm0HNGwNWb/nYtYPq1E4+pM0FKPbn+GgHPeXfTW16J
+         Cj8leFfv6T5rZriHZ90eTZac/znjhmzx/LeVNCEh+yz640TCTCsm0kcHl7ZpPdQEtae3
+         0J4NLyXsRVt2GuEiSMg5EXWaI0faY5izEjP02m0G0tDN0N6zrVTJBkewBfueeJFbhzG7
+         7UwnqCYADlY4yX8PWiSMjVTy8LHqwTF9CsuHuu8l2A712cyG7+0IxVkD3Xe/rbw2PCN/
+         fJug==
+X-Forwarded-Encrypted: i=1; AKwUvBwCEtctR24ACCsANkFW7UOANY2TfhehjcARg4RIziH94gFxoKc4WNYvEvrAUqE4gkjLDa7eL49M5A==@vger.kernel.org
+X-Gm-Message-State: AFuF++mTrWldTuXQ+kXpNDQGPzaNvXObc1Op/TJOgge3ZAbA/xi/4new
+	91p6JrIhnXv9oMFP1YyJ87nl+EWFRs3YyS6sTrOy7p9bmdfTOGG47HHrsjyrvLRSMmSmHvi4EU8
+	vgppHGtYAVZZoikU3apdiS22ObR/5sLA=
+X-Gm-Gg: AYBFou3BlW6HP4UAh9yciKWReFBdvcZ20Je8I4Rvg3izZWNOJwVDWVwVnb+H31ofViv
+	G/ob5BtgCRCkQOfXlun8R/w0BCtA/I3jDy7bkawoB50LHQdwxGWY1+JnFd+L0Frg03ST80FkeLA
+	TaHx4gqIaMYiNQ827NofmjhgaJexWalNmiE9IE4PwPbGVYyCi3oeg3rZ9/g8U5+ziwZA7pwuDEz
+	b8oCvFB8UApbuE9C1ZvJL1jFd5ls8qOoxbsaWP60v0Yuit0G1W4jY0gG+noIUc5V2+9YObK2qTn
+	I+6lIozBwJWyX6VetVJ6MP3dc1xnYh9Rt2oosP7Mlu/4C9tpHTF+uD4XVDIXYeTdUyoFfITc5C1
+	8fM128v+di5iVm3NoMIiC0dju
+X-Received: by 2002:a05:690e:144f:b0:671:1bc2:7f83 with SMTP id
+ 956f58d0204a3-6714e19664emr414645d50.75.1789382441505; Mon, 14 Sep 2026
+ 03:40:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <1965933.tdWV9SEqCh@rafael.j.wysocki> <8729484.T7Z3S40VBb@rafael.j.wysocki>
- <7ef819c3-5155-48fb-828a-48d9bd72e54b@gmx.de>
-In-Reply-To: <7ef819c3-5155-48fb-828a-48d9bd72e54b@gmx.de>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 14 Sep 2026 12:18:38 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0icBLqUiU4ZF=iY6TB92syM_c7xGBJ7Ag7DGt+f7THHRA@mail.gmail.com>
-X-Gm-Features: AcwNN1XkyKQvZYUoFYUG8vIqH7KV6lfSfcLng61fglctFWAGn98xXh1evhvoXMY
-Message-ID: <CAJZ5v0icBLqUiU4ZF=iY6TB92syM_c7xGBJ7Ag7DGt+f7THHRA@mail.gmail.com>
-Subject: Re: [PATCH v1 03/10] thermal: core: Introduce thermal_cooling_device_create()
-To: Armin Wolf <W_Armin@gmx.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Hans de Goede <hansg@kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Lukasz Luba <lukasz.luba@arm.com>
+References: <20260914-a9-pwr-eth-v1-1-752005131135@amlogic.com>
+In-Reply-To: <20260914-a9-pwr-eth-v1-1-752005131135@amlogic.com>
+From: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Date: Mon, 14 Sep 2026 12:40:30 +0200
+X-Gm-Features: AcwNN1WaZUZ01X5-U4jB8BOoolJJHZrM3FcxWuEUtBzFbxVHcUoB7XaLZqR-tLg
+Message-ID: <CAFBinCCgvMbM5zf8OXFhjNRWjDMTjAVPu_BBJf1GRKp7JPqk=A@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: amlogic: Keep Amlogic A9 ETH domain always on
+To: xianwei.zhao@amlogic.com
+Cc: Ulf Hansson <ulfh@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Qingpeng Yang <qingpeng.yang@amlogic.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 11, 2026 at 11:04=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> wrote:
+On Mon, Sep 14, 2026 at 10:56=E2=80=AFAM Xianwei Zhao via B4 Relay
+<devnull+xianwei.zhao.amlogic.com@kernel.org> wrote:
 >
-> Am 11.09.26 um 15:02 schrieb Rafael J. Wysocki:
+> From: Qingpeng Yang <qingpeng.yang@amlogic.com>
 >
-> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> >
-> > Currently, thermal cooling devices have no parents, but it would be
-> > generally useful to be able to create them under specific parents in
-> > the device hierarchy (for instance, it may help to identify the device
-> > representing the actual cooling hardware).
-> >
-> > To make that possible, add thermal_cooling_device_create() that will
-> > work like thermal_cooling_device_register() except that it will take
-> > an additional parent argument (which may be NULL).
-> >
-> > Redefine thermal_cooling_device_register() as a static inline wrapper
-> > around thermal_cooling_device_create().
->
-> Hi,
->
-> i like your idea with the new registration function, this gives us more t=
-ime
-> for migrating the other drivers. Should we mark the original function as
-> deprecated?
+> Mark the A9 ethernet power domain as always-on since it is required
+> for ethernet online wakeup and must not be powered down.
+Is "online wakeup" a wake up from suspend?
+If so: is the Ethernet controller listed with the "wakeup-source" flag
+in .dts{,i}?
+I'm wondering if the pmdomain and/or power (wakeup) frameworks in
+Linux have other ways of managing this case (e.g. only keeping the
+power domain active if needed).
 
-Well, it's not a big deal if somebody uses it in new code IMV.
 
-> For the patch itself:
->
-> Reviewed-by: Armin Wolf <W_Armin@gmx.de>
-
-Thank you (and thanks for all the reviews)!
-
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   drivers/thermal/thermal_core.c | 28 ++++++++++++++++------------
-> >   drivers/thermal/thermal_core.h |  3 ++-
-> >   drivers/thermal/thermal_of.c   |  2 +-
-> >   include/linux/thermal.h        | 19 ++++++++++++++-----
-> >   4 files changed, 33 insertions(+), 19 deletions(-)
-> >
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_c=
-ore.c
-> > index 82e2f0d8a26d..ac928c199829 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -1005,7 +1005,8 @@ thermal_cooling_device_alloc(const char *type, co=
-nst struct thermal_cooling_devi
-> >       return ERR_PTR(ret);
-> >   }
-> >
-> > -int thermal_cooling_device_add(struct thermal_cooling_device *cdev, vo=
-id *devdata)
-> > +int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
-> > +                            struct device *parent, void *devdata)
-> >   {
-> >       unsigned long current_state;
-> >       int ret;
-> > @@ -1013,6 +1014,7 @@ int thermal_cooling_device_add(struct thermal_coo=
-ling_device *cdev, void *devdat
-> >       mutex_init(&cdev->lock);
-> >       INIT_LIST_HEAD(&cdev->thermal_instances);
-> >       cdev->updated =3D false;
-> > +     cdev->device.parent =3D parent;
-> >       cdev->device.class =3D &thermal_class;
-> >       cdev->device.release =3D thermal_cdev_release;
-> >       device_initialize(&cdev->device);
-> > @@ -1062,21 +1064,23 @@ int thermal_cooling_device_add(struct thermal_c=
-ooling_device *cdev, void *devdat
-> >   }
-> >
-> >   /**
-> > - * thermal_cooling_device_register() - register a new thermal cooling =
-device
-> > + * thermal_cooling_device_create() - register a new thermal cooling de=
-vice
-> > + * @parent:  parent device (optional).
-> >    * @type:   the thermal cooling device type.
-> >    * @devdata:        device private data.
-> >    * @ops:    standard thermal cooling devices callbacks.
-> >    *
-> > - * This interface function adds a new thermal cooling device (fan/proc=
-essor/...)
-> > - * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to b=
-ind itself
-> > - * to all the thermal zone devices registered at the same time.
-> > + * Allocate and register a new thermal cooling device under the given =
-parent (if
-> > + * not NULL) and with the given type, device data, and operations.  Du=
-ring the
-> > + * registration, it will be matched against all of the registered ther=
-mal zones
-> > + * and it will be bound to the matching ones.
-> >    *
-> > - * Return: a pointer to the created struct thermal_cooling_device or a=
-n
-> > - * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
-> > + * Return: A pointer to the created struct thermal_cooling_device or a=
-n ERR_PTR.
-> > + * Callers must use IS_ERR*() helpers to check the return value.
-> >    */
-> > -struct thermal_cooling_device *
-> > -thermal_cooling_device_register(const char *type, void *devdata,
-> > -                             const struct thermal_cooling_device_ops *=
-ops)
-> > +struct thermal_cooling_device *thermal_cooling_device_create(
-> > +                     struct device *parent, const char *type, void *de=
-vdata,
-> > +                     const struct thermal_cooling_device_ops *ops)
-> >   {
-> >       struct thermal_cooling_device *cdev;
-> >       int ret;
-> > @@ -1085,13 +1089,13 @@ thermal_cooling_device_register(const char *typ=
-e, void *devdata,
-> >       if (IS_ERR(cdev))
-> >               return cdev;
-> >
-> > -     ret =3D thermal_cooling_device_add(cdev, devdata);
-> > +     ret =3D thermal_cooling_device_add(cdev, parent, devdata);
-> >       if (ret)
-> >               return ERR_PTR(ret);
-> >
-> >       return cdev;
-> >   }
-> > -EXPORT_SYMBOL_GPL(thermal_cooling_device_register);
-> > +EXPORT_SYMBOL_GPL(thermal_cooling_device_create);
-> >
-> >   static void thermal_cooling_device_release(void *data)
-> >   {
-> > diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_c=
-ore.h
-> > index e98b0aa5aacc..7ef7c6cab437 100644
-> > --- a/drivers/thermal/thermal_core.h
-> > +++ b/drivers/thermal/thermal_core.h
-> > @@ -270,7 +270,8 @@ void thermal_governor_update_tz(struct thermal_zone=
-_device *tz,
-> >   struct thermal_cooling_device *
-> >   thermal_cooling_device_alloc(const char *type, const struct thermal_c=
-ooling_device_ops *ops);
-> >
-> > -int thermal_cooling_device_add(struct thermal_cooling_device *cdev, vo=
-id *devdata);
-> > +int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
-> > +                            struct device *parent, void *devdata);
-> >
-> >   /* Helpers */
-> >   #define for_each_trip_desc(__tz, __td)      \
-> > diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.=
-c
-> > index 0217a49b08ae..14dfac9359b8 100644
-> > --- a/drivers/thermal/thermal_of.c
-> > +++ b/drivers/thermal/thermal_of.c
-> > @@ -561,7 +561,7 @@ thermal_of_cooling_device_register(struct device_no=
-de *np, u32 cdev_id,
-> >       cdev->np =3D np;
-> >       cdev->cdev_id =3D cdev_id;
-> >
-> > -     ret =3D thermal_cooling_device_add(cdev, devdata);
-> > +     ret =3D thermal_cooling_device_add(cdev, NULL, devdata);
-> >       if (ret)
-> >               return ERR_PTR(ret);
-> >
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index 083b4f533933..306ad17aed89 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -293,8 +293,9 @@ struct device *thermal_zone_device(struct thermal_z=
-one_device *tzd);
-> >   void thermal_zone_device_update(struct thermal_zone_device *,
-> >                               enum thermal_notify_event);
-> >
-> > -struct thermal_cooling_device *thermal_cooling_device_register(const c=
-har *,
-> > -             void *, const struct thermal_cooling_device_ops *);
-> > +struct thermal_cooling_device *thermal_cooling_device_create(
-> > +                     struct device *parent, const char *type, void *de=
-vdata,
-> > +                     const struct thermal_cooling_device_ops *ops);
-> >
-> >   struct thermal_cooling_device *
-> >   devm_thermal_cooling_device_register(struct device *dev, const char *=
-type, void *devdata,
-> > @@ -340,9 +341,9 @@ static inline void thermal_zone_device_update(struc=
-t thermal_zone_device *tz,
-> >                                             enum thermal_notify_event e=
-vent)
-> >   { }
-> >
-> > -static inline struct thermal_cooling_device *
-> > -thermal_cooling_device_register(const char *type, void *devdata,
-> > -     const struct thermal_cooling_device_ops *ops)
-> > +static inline struct thermal_cooling_device *thermal_cooling_device_cr=
-eate(
-> > +                     struct device *parent, const char *type, void *de=
-vdata,
-> > +                     const struct thermal_cooling_device_ops *ops)
-> >   { return ERR_PTR(-ENODEV); }
-> >
-> >   static inline struct thermal_cooling_device *
-> > @@ -391,4 +392,12 @@ static inline void thermal_pm_prepare(void) {}
-> >   static inline void thermal_pm_complete(void) {}
-> >   #endif /* CONFIG_THERMAL */
-> >
-> > +static inline struct thermal_cooling_device *thermal_cooling_device_re=
-gister(
-> > +                             const char *type, void *devdata,
-> > +                             const struct thermal_cooling_device_ops *=
-ops)
-> > +{
-> > +     return thermal_cooling_device_create(NULL, type, devdata, ops);
-> > +}
-> > +
-> > +
-> >   #endif /* __THERMAL_H__ */
+Best regards,
+Martin
