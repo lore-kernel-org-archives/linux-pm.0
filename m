@@ -1,143 +1,275 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28D75422541
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 09:46:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79A443659FD
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 10:20:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789379220; cv=none; b=uh3orUzqCF+vnRNF3oebxEt2txqPDoUIVKV01OY9OQyyPK5iM/R1DtQH78mN6ybbsLX5HkZFT+LIyiMmEX+546TEKsnicOIEg0gSItsGs9CU+r9x2RhkbM8EtPVK/sobUqyHPwRgH5m6butzofl6pml8WrLpLCSkPkbtspLCECo=
+	t=1789381203; cv=none; b=McekKCVS5xthIyExhx7RuP4xpUlqZ48NFOovi5aIMyRrgqh7eZF924qSnJJIHYe/4lcMUH8zeI53vTDOHMfSOb3mmbf0I0PYvf9m53oSOZTdmFbBBHRTnyOgwLSoUffrvMGQbe50kMlznCz0YgNtbR7bIpYra4mVFSPJSRbvaaQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789379220; c=relaxed/simple;
-	bh=DzgWUJuiNQ6WuYHH3oo31SmlYZ7/cR4pcxcWhooAFj8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nf0Yvrg6t1xqxwmWVFPBK1Ncvf8PeU+gTIwxbOD7qWPbyFLNv0t2ktTcyZuAcveYYVpJuzlH3b+OJWp2xyyPIzqd4rpD9e5qWRqJR6PljN3dAkK0qCkfh33rB4nqB8BvOqTyRxInilu7FlYFqMhkCQiYsCa2ay0Wfb/SETfp9ts=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MhsQIvhf; arc=none smtp.client-ip=74.125.225.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789381203; c=relaxed/simple;
+	bh=s1e/ociTMdVHbodmHGbhf8inhat519yZqvJY0OKPe8I=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Oh3Eogqpd9PA/gb+Y6D5F/DVcfdbnexgt9R/I/0MqkclBjo5RdsiHcABEzbO7mSP9IQKXeSTJGQPfEA2EiRgtS3Q5T4+u1dIzwznGUWRUcSZ6RbDru1APe/Fn751rC6pU5KiwjQQQGqr/IBjTghl6gE4YtGSODIgUJUJr4d/r78=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lvuH/rMn; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MhsQIvhf"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49ccf3ca94bso8293055e9.3
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 02:46:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789379217; x=1789984017; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Vkw7JGyPZhE+fsyhZVYt1uhb9l0aiaOQEEvbh4klHbs=;
-        b=MhsQIvhfd6YobZCbGa07QSbRUaE85/92WJ/T35bUh9LfZXyXGDl0+g1SHoWyfji52E
-         5Gp5jn8aaG373HpigteInFPEtVZFYdoayFN3dGdT/3SFqz4XWGUGL9MkQCPEh1qJN+N+
-         BhyCLMPbCQswUlwWQj4LCYkhSB5KJPQ+eBh/dKmTdPZ38AffFYaB1hvEHX4p1sIvcLjr
-         zXw+Fa5IXtKFbfUbKDEzYT0xNEKkJTitLSc+zcnDd7qUVp303KW/o3uVAE84CTfjMU3o
-         Cozc4Pm6RRdOaJNuxT6gu27SUhxWnOGZWdoITBm3Mpicc1n8e/daXi9ncni1ZhbhdGZ/
-         4Www==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789379217; x=1789984017;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Vkw7JGyPZhE+fsyhZVYt1uhb9l0aiaOQEEvbh4klHbs=;
-        b=iNSyTaVNmGXZQFLWwIbL0MdMFDwYyS66dUNbcgyWsNFLy2XpJxTwkh4EWU0Kgjxj5F
-         0FLZNNPKahZ8ev6VGIdd/GgRkX8CPr0mwpZcK2JjOtxHntpSMsmvn8sUCSNTRNG1v15w
-         eeoFGenlw1h9d2icfdlB3bp3g3u0fkyQzXdvqLyYntmLRJchDJpk0oIyincytRidE3Vx
-         22TVdTIYy76zyPg8MWwOurwhWU7ZClZyf9nTlpg4+EcrSqCYqNYyTrDNhAVy4dSDmXmM
-         3NnfGj/8LSlhrMRClUy5aDCrq/U9JEcXeNxz+71g4CP46rWe3i75aQ6ZgyTVkxH8hS+f
-         7uJA==
-X-Forwarded-Encrypted: i=1; AKwUvBzZKJ2R8m5aMR6gy1kxtLlD4fPqNuZrY/9ZPd3DgY6scmUkGgqGEeu8sjGyrzGJbL/x0Fitg1RZiA==@vger.kernel.org
-X-Gm-Message-State: AFuF++l3C4aox6/+lhh+MtFY4XhuS8YiRTznTM1C2mB9iksy6dnt3vwS
-	ndo/krFsagafOknVuhy9ruD34cCqHj8h1JhONnXwrWMn7QzgxmGH9TWz
-X-Gm-Gg: AYBFou0Tfay3jJtvL3xGjRtD33xr6Stt04GojHLuYob4Ta2/43mvgdDfzGWweKpQDCx
-	a1PTnFYjO3Gn4BZUXBDgfjrUcLgxJE9R4JmHle4t4uBtLEdLUPL6z+so/Q0Y+js9GwypT28pPCg
-	AyP8fxHSlFxLTkt1QGbKX8wV9sAlN+JdFnVTEj1lbrNWDpgM4OsGvUoZfaw8k/fmf8WqWm65e0i
-	wemuFyumkNDPhEnamAq2BW0IHzE0vIbzBUtiCI9RK9YyeApgUIFh0Oc9aUZ0h9SqUAkLDVN3Fn5
-	vfxMegAUXa5DpYGjzzOb0hNLqftSfECodKAKERE3sMdi5kPoVFozXay8VB6CJ+2dvwj/w6i9VL6
-	k/iMYY0s9Ym5aoIT6Ivt286ejjivZSRhb1iAxDY4llFY7dsZQ8/G8zYBJmUY9FZ606oAkXVI/vC
-	apTFCQpYESt+ivJDnrXXVRzHuN//LaGdDKE3xOGnJItzecZwpXuHU/tgcZpk5bnayr63VZPs2lC
-	GyhBl9o
-X-Received: by 2002:a05:600c:1547:b0:49c:fc6c:be09 with SMTP id 5b1f17b1804b1-49e7a67cae4mr20839695e9.32.1789379217223;
-        Mon, 14 Sep 2026 02:46:57 -0700 (PDT)
-Received: from localhost.localdomain ([94.252.75.25])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49d26be3e35sm378964285e9.2.2026.09.14.02.46.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 02:46:56 -0700 (PDT)
-From: Oleg Keri <okerixx@gmail.com>
-To: Konrad Dybcio <konradybcio@kernel.org>,
-	Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Bjorn Andersson <andersson@kernel.org>
-Cc: Ulf Hansson <ulfh@kernel.org>,
-	ds.heine@posteo.de,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: glymur: hard reset on the first system-domain idle entry (SS3, 0x0200c354) after a heavy load - Lenovo Yoga Slim 7x Gen 11
-Date: Mon, 14 Sep 2026 11:46:47 +0200
-Message-ID: <20260914094648.14502-1-okerixx@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lvuH/rMn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C9211F000FF
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 10:20:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789381200;
+	bh=w4e/SHlDd98D9BE8dWRPoAwVK/lCQ3ruuHyE9FBfpjE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=lvuH/rMnftdqPCCblgZ9w8GJvrhbvk3kRlhXnAXrc+KA8P57DmNuTKK/AC9+yNKBn
+	 n7oWGpoEWJsnxJ2WnC/RP99X6QntnnoFQvC9Q511d8OWFuTkc+a3mlUf5qLh2SIlVC
+	 G/bdMtmtbuHB5MCxGXzVZDQOK0kjTYRZGlh7tPvb69a/odAC3WClrgnnPVQM4jX4uE
+	 7FTgGd9RwWoL2T2zCZVcQkemtDKarGXlouJazGmipLrRMzrD9LC3GTvFz3HgEyUu8L
+	 4YyN8aW3wi2KnB3rrvmGyX2yo/AJDm2TmEE3+Fx3FDN+L1vI8+NA5F0SGRB61VriZ5
+	 dIOekFh8v5VCQ==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16f16so1927076e87.0
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 03:19:59 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBy4nsSMKnBrWapgZTXtmIBq9JOR/EhwXu36a7rFjDq2l91/123HNXqlhhPTAgUHlO5vwb/PHLVuhA==@vger.kernel.org
+X-Gm-Message-State: AFuF++le9OUnXS6d0Bcv501IOdDY9KR6NeKs8HOOg6YbTeA6HORVhCAF
+	UsNnArsG9MIiVW56m0ySHfU5FGXcKSVG/ocuWPDmb/Nh2BHspvKfhqR/6nkkbE2I7GIdEy/1oQC
+	XMGWP1fQB95LOWB/DFVAJTrbAYYRZ2Q0=
+X-Received: by 2002:a05:6512:1153:b0:5b8:9ee1:10fd with SMTP id
+ 2adb3069b0e04-5b8ae8a9343mr1043238e87.32.1789381198380; Mon, 14 Sep 2026
+ 03:19:58 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1965933.tdWV9SEqCh@rafael.j.wysocki> <8729484.T7Z3S40VBb@rafael.j.wysocki>
+ <7ef819c3-5155-48fb-828a-48d9bd72e54b@gmx.de>
+In-Reply-To: <7ef819c3-5155-48fb-828a-48d9bd72e54b@gmx.de>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 14 Sep 2026 12:18:38 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0icBLqUiU4ZF=iY6TB92syM_c7xGBJ7Ag7DGt+f7THHRA@mail.gmail.com>
+X-Gm-Features: AcwNN1XkyKQvZYUoFYUG8vIqH7KV6lfSfcLng61fglctFWAGn98xXh1evhvoXMY
+Message-ID: <CAJZ5v0icBLqUiU4ZF=iY6TB92syM_c7xGBJ7Ag7DGt+f7THHRA@mail.gmail.com>
+Subject: Re: [PATCH v1 03/10] thermal: core: Introduce thermal_cooling_device_create()
+To: Armin Wolf <W_Armin@gmx.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Hans de Goede <hansg@kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Lukasz Luba <lukasz.luba@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Fri, Sep 11, 2026 at 11:04=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> wrote:
+>
+> Am 11.09.26 um 15:02 schrieb Rafael J. Wysocki:
+>
+> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> >
+> > Currently, thermal cooling devices have no parents, but it would be
+> > generally useful to be able to create them under specific parents in
+> > the device hierarchy (for instance, it may help to identify the device
+> > representing the actual cooling hardware).
+> >
+> > To make that possible, add thermal_cooling_device_create() that will
+> > work like thermal_cooling_device_register() except that it will take
+> > an additional parent argument (which may be NULL).
+> >
+> > Redefine thermal_cooling_device_register() as a static inline wrapper
+> > around thermal_cooling_device_create().
+>
+> Hi,
+>
+> i like your idea with the new registration function, this gives us more t=
+ime
+> for migrating the other drivers. Should we mark the original function as
+> deprecated?
 
-Lenovo Yoga Slim 7x Gen 11 (Glymur / Snapdragon X2 Elite), linux-next
-next-20260908 with Konrad's board DTS (now in next) [1], OSI mode ("Initialized CPU
-PM domain topology using OSI mode"), Ulf's "pmdomain/cpuidle-psci: Fix
-behaviours for CPU PM domains" v3 applied.
+Well, it's not a big deal if somebody uses it in new code IMV.
 
-Symptom: after any full-speed all-core load - a kernel build (~85 s
-here), `stress --cpu 18 --timeout 90`, rust-analyzer indexing - the
-machine hard-resets once it goes idle: about one second of freeze, then
-the firmware splash.  Nothing is logged, the APSS watchdog's bootstatus
-reads 0 afterwards, no pstore.  5 out of 5 attempts, 15 s to 3 min after
-the load ends.  Steady idle without a preceding load never resets, for
-hours.
+> For the patch itself:
+>
+> Reviewed-by: Armin Wolf <W_Armin@gmx.de>
 
-What isolates it to SS3:
+Thank you (and thanks for all the reviews)!
 
-- Deleting domain-idle-states from power-domain-system in the board DTS
-  (so 0x0200c354 is never requested; CL5 untouched) survives the same
-  trigger 3 out of 3, through tens of thousands of cluster collapses.
-- On a quiet machine SS3 is entered hundreds of times right after boot
-  and survives every time.  Only the first SS3 entry after a load kills.
-  psci_domain_idle_enter filtered on state==0x200c354 shows no earlier
-  request in the post-load window; the fatal one is the first.
-- The state's latencies are not the variable: it resets with
-  glymur.dtsi's entry 2800 / exit 4400 / residency 10150, with the vendor
-  DSDT _LPI figures (entry 0 / exit 5000 / residency 9000, a local
-  change I carry), and with entry 5000 / exit 5000 / residency 9000.
-
-Ruled out by direct test, each with the same trigger:
-
-- NoC QoS programming (reg removed from all 19 interconnect providers so
-  icc-rpmh skips it): still resets.
-- cpufreq transitions (all policies pinned with the performance
-  governor): still resets.
-- NVMe/PCIe I/O: `stress --cpu 18` with no I/O resets too.
-- PDC secondary mode: the PDC config register named in the vendor DSDT
-  (\_SB_.GIO0.PDCC = 0x0b220110, mask PDCM = 0x35430) reads 0x4, i.e. 0
-  under the mask.
-
-So the question: is SS3/CxPC expected to be usable as a runtime idle
-state on Glymur?  x1e80100 only got domain_ss3 in DT once the PDC
-pass-through configuration landed (95f827ceb21e), while glymur.dtsi has
-carried it since the base dtsi.  Is there a firmware or PDC prerequisite
-this board does not meet, or should glymur drop domain_ss3 from
-power-domain-system the way x1e did until then?
-
-What I run meanwhile: min-residency-us = <4000000000> on domain_ss3.
-cpu_power_down_ok() then never admits SS3 at runtime, while the s2idle
-path (cpu_system_power_down_ok() checks latency only) still takes it.
-Three hours, a rebuild, three suspends and a stress cycle: zero runtime SS3
-entries, s2idle entered SS3 every time, no reset, and s2idle draw is
-unchanged at ~300 mW.  I am not proposing
-that as a patch - a residency value is a hint, not a switch - but it
-does say SS3 is fine as a suspend state here and only fatal at runtime.
-
-Happy to test patches or collect anything else; the reproducer takes
-three minutes.
-
-Thanks,
-Oleg
-
-[1] https://lore.kernel.org/all/20260731-topic-yoga_submission-v2-0-f1887031da4f@oss.qualcomm.com/
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >   drivers/thermal/thermal_core.c | 28 ++++++++++++++++------------
+> >   drivers/thermal/thermal_core.h |  3 ++-
+> >   drivers/thermal/thermal_of.c   |  2 +-
+> >   include/linux/thermal.h        | 19 ++++++++++++++-----
+> >   4 files changed, 33 insertions(+), 19 deletions(-)
+> >
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_c=
+ore.c
+> > index 82e2f0d8a26d..ac928c199829 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -1005,7 +1005,8 @@ thermal_cooling_device_alloc(const char *type, co=
+nst struct thermal_cooling_devi
+> >       return ERR_PTR(ret);
+> >   }
+> >
+> > -int thermal_cooling_device_add(struct thermal_cooling_device *cdev, vo=
+id *devdata)
+> > +int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
+> > +                            struct device *parent, void *devdata)
+> >   {
+> >       unsigned long current_state;
+> >       int ret;
+> > @@ -1013,6 +1014,7 @@ int thermal_cooling_device_add(struct thermal_coo=
+ling_device *cdev, void *devdat
+> >       mutex_init(&cdev->lock);
+> >       INIT_LIST_HEAD(&cdev->thermal_instances);
+> >       cdev->updated =3D false;
+> > +     cdev->device.parent =3D parent;
+> >       cdev->device.class =3D &thermal_class;
+> >       cdev->device.release =3D thermal_cdev_release;
+> >       device_initialize(&cdev->device);
+> > @@ -1062,21 +1064,23 @@ int thermal_cooling_device_add(struct thermal_c=
+ooling_device *cdev, void *devdat
+> >   }
+> >
+> >   /**
+> > - * thermal_cooling_device_register() - register a new thermal cooling =
+device
+> > + * thermal_cooling_device_create() - register a new thermal cooling de=
+vice
+> > + * @parent:  parent device (optional).
+> >    * @type:   the thermal cooling device type.
+> >    * @devdata:        device private data.
+> >    * @ops:    standard thermal cooling devices callbacks.
+> >    *
+> > - * This interface function adds a new thermal cooling device (fan/proc=
+essor/...)
+> > - * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to b=
+ind itself
+> > - * to all the thermal zone devices registered at the same time.
+> > + * Allocate and register a new thermal cooling device under the given =
+parent (if
+> > + * not NULL) and with the given type, device data, and operations.  Du=
+ring the
+> > + * registration, it will be matched against all of the registered ther=
+mal zones
+> > + * and it will be bound to the matching ones.
+> >    *
+> > - * Return: a pointer to the created struct thermal_cooling_device or a=
+n
+> > - * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+> > + * Return: A pointer to the created struct thermal_cooling_device or a=
+n ERR_PTR.
+> > + * Callers must use IS_ERR*() helpers to check the return value.
+> >    */
+> > -struct thermal_cooling_device *
+> > -thermal_cooling_device_register(const char *type, void *devdata,
+> > -                             const struct thermal_cooling_device_ops *=
+ops)
+> > +struct thermal_cooling_device *thermal_cooling_device_create(
+> > +                     struct device *parent, const char *type, void *de=
+vdata,
+> > +                     const struct thermal_cooling_device_ops *ops)
+> >   {
+> >       struct thermal_cooling_device *cdev;
+> >       int ret;
+> > @@ -1085,13 +1089,13 @@ thermal_cooling_device_register(const char *typ=
+e, void *devdata,
+> >       if (IS_ERR(cdev))
+> >               return cdev;
+> >
+> > -     ret =3D thermal_cooling_device_add(cdev, devdata);
+> > +     ret =3D thermal_cooling_device_add(cdev, parent, devdata);
+> >       if (ret)
+> >               return ERR_PTR(ret);
+> >
+> >       return cdev;
+> >   }
+> > -EXPORT_SYMBOL_GPL(thermal_cooling_device_register);
+> > +EXPORT_SYMBOL_GPL(thermal_cooling_device_create);
+> >
+> >   static void thermal_cooling_device_release(void *data)
+> >   {
+> > diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_c=
+ore.h
+> > index e98b0aa5aacc..7ef7c6cab437 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -270,7 +270,8 @@ void thermal_governor_update_tz(struct thermal_zone=
+_device *tz,
+> >   struct thermal_cooling_device *
+> >   thermal_cooling_device_alloc(const char *type, const struct thermal_c=
+ooling_device_ops *ops);
+> >
+> > -int thermal_cooling_device_add(struct thermal_cooling_device *cdev, vo=
+id *devdata);
+> > +int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
+> > +                            struct device *parent, void *devdata);
+> >
+> >   /* Helpers */
+> >   #define for_each_trip_desc(__tz, __td)      \
+> > diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.=
+c
+> > index 0217a49b08ae..14dfac9359b8 100644
+> > --- a/drivers/thermal/thermal_of.c
+> > +++ b/drivers/thermal/thermal_of.c
+> > @@ -561,7 +561,7 @@ thermal_of_cooling_device_register(struct device_no=
+de *np, u32 cdev_id,
+> >       cdev->np =3D np;
+> >       cdev->cdev_id =3D cdev_id;
+> >
+> > -     ret =3D thermal_cooling_device_add(cdev, devdata);
+> > +     ret =3D thermal_cooling_device_add(cdev, NULL, devdata);
+> >       if (ret)
+> >               return ERR_PTR(ret);
+> >
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > index 083b4f533933..306ad17aed89 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -293,8 +293,9 @@ struct device *thermal_zone_device(struct thermal_z=
+one_device *tzd);
+> >   void thermal_zone_device_update(struct thermal_zone_device *,
+> >                               enum thermal_notify_event);
+> >
+> > -struct thermal_cooling_device *thermal_cooling_device_register(const c=
+har *,
+> > -             void *, const struct thermal_cooling_device_ops *);
+> > +struct thermal_cooling_device *thermal_cooling_device_create(
+> > +                     struct device *parent, const char *type, void *de=
+vdata,
+> > +                     const struct thermal_cooling_device_ops *ops);
+> >
+> >   struct thermal_cooling_device *
+> >   devm_thermal_cooling_device_register(struct device *dev, const char *=
+type, void *devdata,
+> > @@ -340,9 +341,9 @@ static inline void thermal_zone_device_update(struc=
+t thermal_zone_device *tz,
+> >                                             enum thermal_notify_event e=
+vent)
+> >   { }
+> >
+> > -static inline struct thermal_cooling_device *
+> > -thermal_cooling_device_register(const char *type, void *devdata,
+> > -     const struct thermal_cooling_device_ops *ops)
+> > +static inline struct thermal_cooling_device *thermal_cooling_device_cr=
+eate(
+> > +                     struct device *parent, const char *type, void *de=
+vdata,
+> > +                     const struct thermal_cooling_device_ops *ops)
+> >   { return ERR_PTR(-ENODEV); }
+> >
+> >   static inline struct thermal_cooling_device *
+> > @@ -391,4 +392,12 @@ static inline void thermal_pm_prepare(void) {}
+> >   static inline void thermal_pm_complete(void) {}
+> >   #endif /* CONFIG_THERMAL */
+> >
+> > +static inline struct thermal_cooling_device *thermal_cooling_device_re=
+gister(
+> > +                             const char *type, void *devdata,
+> > +                             const struct thermal_cooling_device_ops *=
+ops)
+> > +{
+> > +     return thermal_cooling_device_create(NULL, type, devdata, ops);
+> > +}
+> > +
+> > +
+> >   #endif /* __THERMAL_H__ */
