@@ -1,178 +1,130 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC8C13749F4
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 06:54:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCB3736B937;
+	Mon, 14 Sep 2026 07:00:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789368886; cv=none; b=SGEfp+bgPk/ve4UPoPEsTECW1l2ZroeAiutmI9NlcVf6FhcbTwEtdeHvy5bKPuwE1vcAKbdnOtZP8dmnqyDfrgAEaumTeqbpCnSjhSilp/qpu1XEyc6wHGBUNoTCxW4M8QyeeVChR12bhzW555NhypIEmo2527oGL8qqBfk2s8Y=
+	t=1789369254; cv=none; b=PjNmqVu1U3PluHYx7l3CzCQlBYepapY79XbX5ggVNhlQ4X/SY0jWfG29KhC13BpXrWiXcQMDJnmVcNMwb/t4V736pEB9STZs05PVRbagsEXpZXW2fEx27ZAXGtaI/rNkrFPM3DcK2ChnWYJi4nwAfD9TSY8aljk6GeB2AMCzmEs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789368886; c=relaxed/simple;
-	bh=xQq8hwX4I7JTKYeeMwejfl+3CQIzYaWEKGcqVIK6CgM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=g5nUc5tln2FmwuS8czQVZY08VRcFayyMySAYbq9IhHIOBDZ1aJvvOaStCvd/fVTtX5wiSxwI/HFqTJh95n2Grz3BrOSk3f8SpSGDF/qiW+pGh3sPdJ7xOKRbKLviT54/U1b3Cn1jcU5w0Z8vzgRRCDwIxej5Wh7tmG0AVWibjHs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=FYy+MaCJ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=C+EUhLXg; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1789369254; c=relaxed/simple;
+	bh=Km9wCl1LRUOOJWenL3LmW0yXOIZXqMp5p+VcqZDY+qA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=jLbFQE6rspR+lgNPKe2w81EnVcE4mh4xLHtCHiUwTbgeJvOKkBQg5k3wIVUrRih3qwwaawVGqC2J6L6ZyXkzOL2owOlXCgpawSUmP8TfxuIBeYd9+DRSvnJTdMWlKQWxWBaz5xCTLy6XRzHYghEpz0RbPHmyvj3oMEx2HKKrLvE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b9kHbsaS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="FYy+MaCJ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="C+EUhLXg"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68E5jZN8237716
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 06:54:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=LQF8a6T9OCyRSQ3DJ2Asg+
-	h5w79nawgu7eXhWJOPE8A=; b=FYy+MaCJq2IxmTP/QT0kTZlMu71SiHgq4cKu2u
-	c4Z1oUpFPyG8Xzw8inJmXNChqb/84eOxRk5MDgzSjWyJOARqmbFVGX7BKSzs3sSB
-	Zg8///bWjcEpDfPEdZQf27z7w+MRbU5N0igBkiAr/5pnwldIA2PyfyStxk7cU38B
-	VQSZtsZUd6XIrRs8kxVw/3GaqgsMrJ8bBo8fd22/R/DST/v0VhWo2Rpoo2r13h8l
-	8+AJ3KBt6ftq8wFgCBD08HTIYGlT8HhqFQwVxuk7rIL+F9PWBQMCX8JTBNeco8xn
-	aVH0PO0a0Le7zk872UM6yXBtN04TosV5EWVOdDDQMOxPFNZg==
-Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gmy9dne25-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 06:54:42 +0000 (GMT)
-Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-cc489e7a701so4263690a12.2
-        for <linux-pm@vger.kernel.org>; Sun, 13 Sep 2026 23:54:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789368882; x=1789973682; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=LQF8a6T9OCyRSQ3DJ2Asg+h5w79nawgu7eXhWJOPE8A=;
-        b=C+EUhLXg5yOqx99hEdWKLqu43WiDu1b7mJuDsTWgU9/TqIRtgvmdAZ+9UztWgWAv1P
-         bCIkfGUgPuYWfDqwqgMv4Oaj1e+T3Ba0d2oSMoM/+baWP7xC7E2rPE2DLoBPH1rCvY70
-         wQXe1GqHpGxNYf9SoI4Yud74WE1+ZcC4lC3t5/t89N5xyqi9T8aLg+vfB3z/RO8HG0SQ
-         OnOsgPZtwD143XhQ7MeoILJs41MWNaIFR2VmR7BVy8Cmy6uxoWp3BLr+kskiXOtUjCT6
-         9V6VSw6eYp0PWHdixN9yeb9b+SzlybqQ4wDZyLx/IjT7lIIGUgZlVIzz8EATHKjIi4D3
-         oJgQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789368882; x=1789973682;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=LQF8a6T9OCyRSQ3DJ2Asg+h5w79nawgu7eXhWJOPE8A=;
-        b=YGohJB3OYKe3RqoBNekYANiuAVm0GBkH3RJbKOkA7WtvYS5HT+TkTUFajehN/icmCC
-         MxklGaC6YRILfO/6TiA26nNKTqWtFlGY8jXEmWNtRkw3xKOhxB9nFdqx5F7FHBgpkgDp
-         h9KTDqMEMdt6+uT8oE/Kho7bBspzd/Pnd0NnYocE7euFQsZzT/fH0GKHgtrerNbg653c
-         Rp6Q6v3r702Iyke+xiHiob2GYnJv2Uc9PackpEfwMNDUkMnQ9BEuS2f7OL/coUQX+HXs
-         sbQ+ATE85iY/GbWfRL7Yh1PlV5t2bdWhtGcHU4pDftqh8LOWfl7lcJPWEwdcMWiPIJzT
-         zB7A==
-X-Gm-Message-State: AFuF++mzlT97f51sqc2RrwEz2Qo57zbBjIinym2YzxS+2WoeU9d8IaYj
-	GmHpvvDe92arSdI2GRZjkB6IksfnFJTTMRbY9x1Zz3ACbyRz22ja/P4L58OxPnBmIlw8CWKA8PB
-	f1hSUo7QJSMWQj2nwTafp61Y31/PsAoQtl/pRBRexuB6EC1R6UE7j4G1v8oDZwQ==
-X-Gm-Gg: AYBFou1zzYiY1xLBRVQlC0kUgnufSmujxTrcjdoc1IcjmNrN1UmqJ1mVM0USetR7Z/s
-	vMaonNqV3GMjtfrLud3H+CIiOeO7Zl5w3K9+hrZS1Za9wWgZfXnXfYN+aWnnhs2cd1qlymiHx2d
-	p9icP19Ei8v7k26Qnnq4j5H1Zj3npFnTSmRLvDZkuHC84cSMH321dGBn6hDelsMD9KAvstRgsn+
-	SiA2HgWq2SLQZlSHFFyEGPHF7nuilHS4bNvSbSOxCPZibFFBtbvhqOEar6PqFhZVPQ58unX1wl/
-	uq8/l/P2acwfTdf0meCMayX3P9bJGnlhfbS/fPTBGH06FRhjMt42vKX/WFen1yBIgR47Ux/GNmI
-	mRjdb/QM/wUNSWdAvig2EKyIM9e0D
-X-Received: by 2002:a05:6a21:b93:b0:3d3:aec2:4dcc with SMTP id adf61e73a8af0-3db40611b7dmr2766871637.24.1789368881773;
-        Sun, 13 Sep 2026 23:54:41 -0700 (PDT)
-X-Received: by 2002:a05:6a21:b93:b0:3d3:aec2:4dcc with SMTP id adf61e73a8af0-3db40611b7dmr2766823637.24.1789368881332;
-        Sun, 13 Sep 2026 23:54:41 -0700 (PDT)
-Received: from hu-mkshah-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33ba4f55735sm25924720eec.24.2026.09.13.23.54.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 13 Sep 2026 23:54:40 -0700 (PDT)
-From: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Date: Mon, 14 Sep 2026 12:24:25 +0530
-Subject: [PATCH] pmdomain: core: Fall back to node name for idle states
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b9kHbsaS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79E081F00893;
+	Mon, 14 Sep 2026 07:00:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789369252;
+	bh=AbNnIwmHaUs7SVGz+r7tTOaVi+BDWIHeKqLH2fFbBLc=;
+	h=Date:Subject:To:References:From:In-Reply-To;
+	b=b9kHbsaSx+4fDiPXHPZq/JC4QU1WbwCKynoQwAm98nJpokfSLZUxoNwXt0azPyWWg
+	 MEtfJuTT4RnMeXzf6MLYG+Qx5KWUE6CrHntuJ1ylmXmYyx7uAvdpc4n9q0jKo6Qq7i
+	 8mCOa5IrNpgQddzytM71vrsZeMJB7AsFN5EWElf4drYcm+6jMA3Kl7UhScBD6sM2FI
+	 zHK8CXzZpx3y/fFkSrMFuz2bLr9hRFBsnSQknABJtGvxdKIK42jnRrRD28bRGZFT1y
+	 X8fPBBRljmP3bgQ3GTdNO6v0NF1fjjf6jdAD77ZutSHCZuHx+4BwgRi2Vl2h3JfcGD
+	 lZnG0FxkEhFKQ==
+Message-ID: <d4174f6c-2ced-4827-b579-c54b37619023@kernel.org>
+Date: Mon, 14 Sep 2026 09:00:46 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v9 9/9] thermal/drivers/exynos: Select thermal emulation
+ support
+To: Anand Moon <linux.amoon@gmail.com>,
+ Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Peter Griffin <peter.griffin@linaro.org>,
+ Alim Akhtar <alim.akhtar@samsung.com>,
+ "open list:SAMSUNG THERMAL DRIVER" <linux-samsung-soc@vger.kernel.org>,
+ "open list:THERMAL" <linux-pm@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES"
+ <linux-arm-kernel@lists.infradead.org>
+References: <20260913145905.9404-1-linux.amoon@gmail.com>
+ <20260913145905.9404-10-linux.amoon@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260913145905.9404-10-linux.amoon@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260914-pmdomain-idle-state-name-fallback-v1-1-e4242c409a0b@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIACCap2oC/yXNQQrCMBCF4auUWTuQplbQq4iLSTLV0SQtmShC6
- d2Nuvze4n8rKBdhhVO3QuGXqMy5od914G+Ur4wSmsEaezDHfo9LCnMiyW2PjFqpMmZKjBPF6Mg
- /cHBuDG60hgYDrbMUnuT9+zhf/tanu7Ov3zBs2wc3tCFDhQAAAA==
-X-Change-ID: 20260914-pmdomain-idle-state-name-fallback-3bb5db520a30
-To: Ulf Hansson <ulfh@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Maulik Shah <maulik.shah@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789368879; l=1596;
- i=maulik.shah@oss.qualcomm.com; s=20240109; h=from:subject:message-id;
- bh=xQq8hwX4I7JTKYeeMwejfl+3CQIzYaWEKGcqVIK6CgM=;
- b=rlyiMCXvAMF56w7WTSZ8W3wD6nkU55XUyOrQ7XQIYXofe0n4LBkkDMuPTfj4ZNQqcm0ZUwEx8
- X8+6dC2RJL3Bf/agapF5SkdrL9atcXZ08jHATEsi9NYw76/G4xuiT8c
-X-Developer-Key: i=maulik.shah@oss.qualcomm.com; a=ed25519;
- pk=bd9h5FIIliUddIk8p3BlQWBlzKEQ/YW5V+fe759hTWQ=
-X-Proofpoint-GUID: Mc-QD6PAtrdirNYHUMIgUjZKx5NKmXqB
-X-Proofpoint-ORIG-GUID: Mc-QD6PAtrdirNYHUMIgUjZKx5NKmXqB
-X-Authority-Analysis: v=2.4 cv=NelzRGD4 c=1 sm=1 tr=0 ts=6aa79a32 cx=c_pps
- a=rz3CxIlbcmazkYymdCej/Q==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=EUspDBNiAAAA:8 a=XBISo84U3woaGXxjM1MA:9 a=QEXdDO2ut3YA:10
- a=bFCP_H2QrGi7Okbo017w:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDA5NiBTYWx0ZWRfXxQmiIKGpWnwU
- 5zMjQN90r49SOrMKb9ISlMYx6xpM36U+kHv7nRoX4CuSC6znB2fhCd+ajz6g0zT7iHKER6eK3Df
- YznTaV+L6HSx2g+SV/PwUV2zDYsfnQY=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDA5NiBTYWx0ZWRfX3UzCg465viXV
- 8EESrCMJEpzYOed/s6wfkEXq8fjnPzZw78fN6JGft0Uxmv6C8cIB+ggMof5x5vSGBimgKL3BzOA
- sdGva8wPLqlV7LYShA46+YRczbksmqWkmAc6Nv4qAhOnN7tvl3UIW6/K/fDyvVDutCUIQjgTrVz
- Br5bdTIWy6FEDXtDPhnax5MWUB54KxEp2rvym/I0NXPEzpXaiCuAIBBsNEoTMgzZIavN6mrGKh+
- fYsy4sTM3O5clYUrkFR4gXEejaf/oJkR6Q/wB73tY/pb4lFhNYh5uoCLZ1ebdXWQi956xGPp+Ke
- 93RB79Z8hsMtY9R9F7NZ+twH+vKCP1z5Rw8KvNlLrARXFFOUH4kw4bquCqFvqV0qji0VWf1ZEJd
- 7+Mf7OX3wWUd79q/11D331m+65ZmlaRsl9D7kJK/yME5B/rwNQjGB6Wq6sRrc9LCneZiSsR6h4K
- 6ceYVpq0pACT/UUX4xg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-14_02,2026-09-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501 clxscore=1015
- spamscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609140096
 
-The dt_idle_states uses idle-state-name when available and when missing
-falls back to the node name. Do the same for domain-idle-states.
+On 13/09/2026 16:58, Anand Moon wrote:
+> Select THERMAL_EMULATION when EXYNOS_THERMAL is enabled, as the Exynos
+> TMU driver provides thermal emulation support.
+> 
+> This ensures the thermal emulation framework is enabled whenever the
+> Exynos TMU driver is built.
+> 
+> Signed-off-by: Anand Moon <linux.amoon@gmail.com>
+> ---
+>  drivers/thermal/samsung/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
+> index e1e8035d24fb..7d5590f78185 100644
+> --- a/drivers/thermal/samsung/Kconfig
+> +++ b/drivers/thermal/samsung/Kconfig
+> @@ -4,6 +4,7 @@ config EXYNOS_THERMAL
+>  	depends on THERMAL_OF
+>  	depends on HAS_IOMEM
+>  	default ARCH_EXYNOS
+> +	select THERMAL_EMULATION
 
-This lets pmdomain idle_states_desc debugfs show a name even when
-idle-state-name is omitted.
+No, drivers should not select user visible symbols and also this has
+absolutely nothing to do with Exynos.
 
-Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
----
- drivers/pmdomain/core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 052ec478dfcc..d0bcb4897477 100644
---- a/drivers/pmdomain/core.c
-+++ b/drivers/pmdomain/core.c
-@@ -3583,7 +3583,10 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
- 	if (!err)
- 		genpd_state->residency_ns = 1000LL * residency;
- 
--	of_property_read_string(state_node, "idle-state-name", &genpd_state->name);
-+	err = of_property_read_string(state_node, "idle-state-name",
-+				      &genpd_state->name);
-+	if (err)
-+		genpd_state->name = state_node->name;
- 
- 	genpd_state->power_on_latency_ns = 1000LL * exit_latency;
- 	genpd_state->power_off_latency_ns = 1000LL * entry_latency;
-@@ -4006,7 +4009,7 @@ static int idle_states_desc_show(struct seq_file *s, void *data)
- 		snprintf(state_name, ARRAY_SIZE(state_name), "S%-5d", i);
- 		seq_printf(s, "%-6s %-12llu %-14llu %s\n",
- 			   state_name, latency, residency,
--			   state->name ?: "N/A");
-+			   state->name);
- 	}
- 
- 	genpd_unlock(genpd);
-
----
-base-commit: 68142f986ff04b2b70b31db00f719bf690f64a9a
-change-id: 20260914-pmdomain-idle-state-name-fallback-3bb5db520a30
+NAK
 
 Best regards,
---  
-Maulik Shah <maulik.shah@oss.qualcomm.com>
-
+Krzysztof
