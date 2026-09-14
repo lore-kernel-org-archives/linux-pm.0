@@ -1,35 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E278442B1F;
-	Mon, 14 Sep 2026 11:54:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E3EB446050;
+	Mon, 14 Sep 2026 11:55:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789386900; cv=none; b=bHkbO/PyiVnQZbzFaRExj2F32/HpPPDMRExGoAOAW88qv/dyiNFPtPN8WH6Qvdfl/WmQSlhbzxyTbFSasizCnzx82qXzNFcJ+uG/5p+zbEyZSroort2abta4+2BWHk7zLPuZRvSA5qLboLTu1+GAPiBqvDJ0oN7eZGSOT/tbbxU=
+	t=1789386903; cv=none; b=jgNjdj7fwrsF9hS/Zb3GvKp3YVwG8auN9r48jz1PQDjiOqOo8IGLsZH3cS+XaP+ybZvFqSxsAxMDpjMC3RO2asOpTa8V0mEpv7JModc2JUV2hNpiGEOfdz9Gz2OiHq0n6Awt5s2DmgVLtU3qxuLTes94vgzSrmSdNFO8P1rO5gQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789386900; c=relaxed/simple;
-	bh=+WLANnhbZRF09QmnM7cGWwtap5g3250lJMcWgIb0Kkk=;
+	s=arc-20240116; t=1789386903; c=relaxed/simple;
+	bh=ra2Xjv9FB+pwRKwo00/VH5AuwOZN23i7XKknwJzyJkY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=tBR8WNzr5rMxQaQ49t9ILCBfJ5uKX+vtrBMgJ+tBoaphTAwGB9mY1p5ORsiaM5ZmZDUF9yO0zryMyAUlWk2J6VhbdGPnBvlGNmlmt6bCAfZf+yOO5EWyqunU1PaXU+4PXWR57LjOh2bqNkmKBhzQElai8Q+h5XDRHfuhPsNAHbg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P/qe+7Tq; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=Eff+2KUt+nEredSNpUJ3pvHOFW5vl5sHjlHhpT0/xcR766bfPsyh1iQcgXmSnOZEXHogthY3DvpPahtP9rxE7yzDusl7qSPisOzm9H5B2IlWxjhAbR2pQekmLs9BipQbfDeew4iNuidz7dgZ4Qwoi7lQwU0Ht54SOuuqHBs4pOg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nGbcJ1j4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P/qe+7Tq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2ECDB1F00893;
-	Mon, 14 Sep 2026 11:54:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nGbcJ1j4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CB091F000FF;
+	Mon, 14 Sep 2026 11:54:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789386897;
-	bh=5PXwVT3mCA+YpecjXQdVelOjDLl8aO5/fm2KL71yj98=;
+	s=k20260515; t=1789386902;
+	bh=m2m/eww0NJBC9VjmSRylYPL3dP0broMZbNA/WY8kWFs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=P/qe+7Tq2Hg4z53wJUgNPPO9MrD+DLgbMFeAgEttz/tgjQwLtxoIE9zggyjrMrTWC
-	 oG7682yvcChjBk/+45vxhaDqIcjtClRMvawrxXQfIfkywgd1ys///PKH9IWL7iC5kY
-	 V2NMvOYmD/Ykri6bT7a5M2+SbszcgEwQDEbHhPJronq/iGWWznOYnSYNqLb4AgRjJQ
-	 9UGG8QXc+3G45kk969wD7hnxoXaxL+4m2212ulAvDR2GtBTkMe0wNC1OjU8s2fkrcp
-	 ude/XidK5ZqKV46r4EpCxCUc4vKYEu5Is7CQdTYxJVlBLhRJ2pF0G37G9AY8hiUgGQ
-	 DF1LIVH2wcL/A==
+	b=nGbcJ1j4EOJuRIkbxuB3mDA0dTmkkAXnQxHmWnakRY1YnumkcGj822vnhnvtRz0Vj
+	 vtEIystmvUblY5e06AOur/qzpeutEgeu5eA5sukgP9LRpQFLqkHSUR2Zxs57cB9Yht
+	 4HP4fD0NjSPKuM4yg5kWoWL9YoL025PAiNi+Rq702P9FQS52wL+Pw0a7Nq0Ny4Itof
+	 HeKpEXanxyokMCUy6A9ZAGa2S3hJyHm3hypwMuyFb692Vqj2Qyk+QGdS3IH0/lCcOE
+	 MVzxL7owvIqSqewh8gdGKZHqsTm7ob5ZS2YDEvtEMn5nusxV0EKBEz6YfsM4tjmvEA
+	 aYMnrEPbCqmxw==
 From: Linus Walleij <linusw@kernel.org>
-Date: Mon, 14 Sep 2026 13:54:33 +0200
-Subject: [PATCH v2 05/20] dt-bindings: display: ste,mcde: Allow power
- domains
+Date: Mon, 14 Sep 2026 13:54:34 +0200
+Subject: [PATCH v2 06/20] pmdomain: st: ux500: Implement more power domains
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,7 +37,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260914-ux500-power-domains-v7-1-v2-5-9d0c17e1f816@kernel.org>
+Message-Id: <20260914-ux500-power-domains-v7-1-v2-6-9d0c17e1f816@kernel.org>
 References: <20260914-ux500-power-domains-v7-1-v2-0-9d0c17e1f816@kernel.org>
 In-Reply-To: <20260914-ux500-power-domains-v7-1-v2-0-9d0c17e1f816@kernel.org>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -54,46 +53,166 @@ Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
  dmaengine@vger.kernel.org, Linus Walleij <linusw@kernel.org>
 X-Mailer: b4 0.14.3
 
-Document the MCDE power domain.
+This starts to implement the power domains that are just skeleton
+implementations right now.
 
-Keep the legacy EPOD regulator binding unchanged for now.
-
-Assisted-by: LLM
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
- Documentation/devicetree/bindings/display/ste,mcde.yaml | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/pmdomain/st/ste-ux500-pm-domain.c | 127 +++++++++++++++++++++++++++++-
+ 1 file changed, 125 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/display/ste,mcde.yaml b/Documentation/devicetree/bindings/display/ste,mcde.yaml
-index 7a12d0b817e6..05e7e4ebc882 100644
---- a/Documentation/devicetree/bindings/display/ste,mcde.yaml
-+++ b/Documentation/devicetree/bindings/display/ste,mcde.yaml
-@@ -35,6 +35,9 @@ properties:
-   resets:
-     maxItems: 1
+diff --git a/drivers/pmdomain/st/ste-ux500-pm-domain.c b/drivers/pmdomain/st/ste-ux500-pm-domain.c
+index c9129a3b1805..d90a563cd6f3 100644
+--- a/drivers/pmdomain/st/ste-ux500-pm-domain.c
++++ b/drivers/pmdomain/st/ste-ux500-pm-domain.c
+@@ -17,7 +17,7 @@
  
-+  power-domains:
-+    maxItems: 1
+ #include <dt-bindings/arm/ux500_pm_domains.h>
+ 
+-#define NR_DOMAINS		(DOMAIN_VAPE + 1)
++#define NR_DOMAINS		(DOMAIN_ESRAM_34 + 1)
+ 
+ static int pd_power_off(struct generic_pm_domain *domain)
+ {
+@@ -43,14 +43,137 @@ static int pd_power_on(struct generic_pm_domain *domain)
+ 	return 0;
+ }
+ 
++/*
++ * Apart from these voltage domains there is also VSAFE which is always
++ * on. Vape_esram0_pwr for eSRAM0 is connected to VSAFE.
++ */
+ static struct generic_pm_domain ux500_pm_domain_vape = {
+-	.name = "VAPE",
++	/* Vape_pwr */
++	.name = "VAPE",  /* 0.95 .. 1.20 V */
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
 +
-   epod-supply:
-     description: a phandle to the EPOD regulator
++static struct generic_pm_domain ux500_pm_domain_varm = {
++	.name = "VARM",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_vmodem = {
++	.name = "VMODEM",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_vpll = {
++	.name = "VPLL", /* 1.8 V */
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++/*
++ * CHECKME: as these are used directly by peripherals as regulators,
++ * perhaps they should stay in the regulator subsystem?
++ */
++static struct generic_pm_domain ux500_pm_domain_vsmps1 = {
++	.name = "VSMPS1", /* Also called VIO (1.2V) */
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_vsmps2 = {
++	.name = "VSMPS2", /* Also called VIO (1.8V) */
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_vsmps3 = {
++	.name = "VSMPS3",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_vrf1 = {
++	.name = "VRF1",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++/* The following are technically children of VAPE */
++static struct generic_pm_domain ux500_pm_domain_sva_mmdsp = {
++	/* Vape_SVA_MMDSP_pwr */
++	.name = "SVA_MMDSP",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_sva_pipe = {
++	/* Vape_SVA_pwr */
++	.name = "SVA_PIPE",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_sia_mmdsp = {
++	/* Vape_SIA_MMDSP_pwr */
++	.name = "SIA_MMDSP",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_sia_pipe = {
++	/* Vape_SIA_pwr */
++	.name = "SIA_PIPE",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_sga = {
++	/* Vape_SGA_pwr */
++	.name = "SGA",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_b2r2_mcde = {
++	/* Vape_DSS_pwr DSS (display subsystem) */
++	.name = "B2R2_MCDE",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_esram_12 = {
++	/* Vape_esram1_pwr, Vape_esram2_pwr */
++	.name = "ESRAM_12",
++	.power_off = pd_power_off,
++	.power_on = pd_power_on,
++};
++
++static struct generic_pm_domain ux500_pm_domain_esram_34 = {
++	/* Vape_esram3_pwr, Vape_esram4_pwr */
++	.name = "ESRAM_34",
+ 	.power_off = pd_power_off,
+ 	.power_on = pd_power_on,
+ };
  
-@@ -109,6 +112,7 @@ examples:
-   - |
-     #include <dt-bindings/interrupt-controller/irq.h>
-     #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/arm/ux500_pm_domains.h>
-     #include <dt-bindings/mfd/dbx500-prcmu.h>
-     #include <dt-bindings/gpio/gpio.h>
+ static struct generic_pm_domain *ux500_pm_domains[NR_DOMAINS] = {
+ 	[DOMAIN_VAPE] = &ux500_pm_domain_vape,
++	[DOMAIN_VARM] = &ux500_pm_domain_varm,
++	[DOMAIN_VMODEM] = &ux500_pm_domain_vmodem,
++	[DOMAIN_VPLL] = &ux500_pm_domain_vpll,
++	[DOMAIN_VSMPS1] = &ux500_pm_domain_vsmps1,
++	[DOMAIN_VSMPS2] = &ux500_pm_domain_vsmps2,
++	[DOMAIN_VSMPS3] = &ux500_pm_domain_vsmps3,
++	[DOMAIN_VRF1] = &ux500_pm_domain_vrf1,
++	[DOMAIN_SVA_MMDSP] = &ux500_pm_domain_sva_mmdsp,
++	[DOMAIN_SVA_PIPE] = &ux500_pm_domain_sva_pipe,
++	[DOMAIN_SIA_MMDSP] = &ux500_pm_domain_sia_mmdsp,
++	[DOMAIN_SIA_PIPE] = &ux500_pm_domain_sia_pipe,
++	[DOMAIN_SGA] = &ux500_pm_domain_sga,
++	[DOMAIN_B2R2_MCDE] = &ux500_pm_domain_b2r2_mcde,
++	[DOMAIN_ESRAM_12] = &ux500_pm_domain_esram_12,
++	[DOMAIN_ESRAM_34] = &ux500_pm_domain_esram_34,
+ };
  
-@@ -116,6 +120,7 @@ examples:
-       compatible = "ste,mcde";
-       reg = <0xa0350000 0x1000>;
-       interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
-+      power-domains = <&pm_domains DOMAIN_B2R2_MCDE>;
-       epod-supply = <&db8500_b2r2_mcde_reg>;
-       vana-supply = <&ab8500_ldo_ana_reg>;
-       clocks = <&prcmu_clk PRCMU_MCDECLK>,
+ static const struct of_device_id ux500_pm_domain_matches[] = {
 
 -- 
 2.55.0
