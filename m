@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCB3736B937;
-	Mon, 14 Sep 2026 07:00:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5268D3DDAE1;
+	Mon, 14 Sep 2026 07:01:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789369254; cv=none; b=PjNmqVu1U3PluHYx7l3CzCQlBYepapY79XbX5ggVNhlQ4X/SY0jWfG29KhC13BpXrWiXcQMDJnmVcNMwb/t4V736pEB9STZs05PVRbagsEXpZXW2fEx27ZAXGtaI/rNkrFPM3DcK2ChnWYJi4nwAfD9TSY8aljk6GeB2AMCzmEs=
+	t=1789369309; cv=none; b=l5F4sdmVsFT3wI49vvvjoY3G88K0iMjrV29w737EKZMRe3VmTZ9bCrw0Q3m5kh7a4RdfL3ph4MCciACQSXV61+WXtcNayNzwT1cV3ZF6f3sa9hoYSnfrrRiLVxRhawiE4EDuq0TC8qBp04Zw/Eks+w5lOh9REPF3LpxRPl2Fe7U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789369254; c=relaxed/simple;
-	bh=Km9wCl1LRUOOJWenL3LmW0yXOIZXqMp5p+VcqZDY+qA=;
+	s=arc-20240116; t=1789369309; c=relaxed/simple;
+	bh=ODJiUHV1T1dz7dtKwr+xv5Gou5maMd+aqNZ4jkonLj8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=jLbFQE6rspR+lgNPKe2w81EnVcE4mh4xLHtCHiUwTbgeJvOKkBQg5k3wIVUrRih3qwwaawVGqC2J6L6ZyXkzOL2owOlXCgpawSUmP8TfxuIBeYd9+DRSvnJTdMWlKQWxWBaz5xCTLy6XRzHYghEpz0RbPHmyvj3oMEx2HKKrLvE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b9kHbsaS; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=XTNdlBgAG6mu4B0gMIAwIPp6KLSkgjW13qm/4lAqRTUFKGljFvnDTY/6UWmawasJSz5KkRkByJ/mcKeg5uOiw1OrQl4V4TcVZMbayg5cJlGWd0BZq+oGsOmUWXxcULY+DJjX21+22IUw7LDIqbtpiAx/UvmDGCeHqyUCJKgiKLM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=krYkFliL; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b9kHbsaS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79E081F00893;
-	Mon, 14 Sep 2026 07:00:48 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="krYkFliL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B9401F00893;
+	Mon, 14 Sep 2026 07:01:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789369252;
-	bh=AbNnIwmHaUs7SVGz+r7tTOaVi+BDWIHeKqLH2fFbBLc=;
+	s=k20260515; t=1789369308;
+	bh=GaE85tA+adRoAMcgb1cERLo8/ir7H9D/C8OWWR1KpXg=;
 	h=Date:Subject:To:References:From:In-Reply-To;
-	b=b9kHbsaSx+4fDiPXHPZq/JC4QU1WbwCKynoQwAm98nJpokfSLZUxoNwXt0azPyWWg
-	 MEtfJuTT4RnMeXzf6MLYG+Qx5KWUE6CrHntuJ1ylmXmYyx7uAvdpc4n9q0jKo6Qq7i
-	 8mCOa5IrNpgQddzytM71vrsZeMJB7AsFN5EWElf4drYcm+6jMA3Kl7UhScBD6sM2FI
-	 zHK8CXzZpx3y/fFkSrMFuz2bLr9hRFBsnSQknABJtGvxdKIK42jnRrRD28bRGZFT1y
-	 X8fPBBRljmP3bgQ3GTdNO6v0NF1fjjf6jdAD77ZutSHCZuHx+4BwgRi2Vl2h3JfcGD
-	 lZnG0FxkEhFKQ==
-Message-ID: <d4174f6c-2ced-4827-b579-c54b37619023@kernel.org>
-Date: Mon, 14 Sep 2026 09:00:46 +0200
+	b=krYkFliLk89rcHNsKM/Cb7fqnrFSi56j3IED+3jxwMjHFJTF7wBvAO/iJxdNvHyGJ
+	 Y0u5FS2QnSeLE0wZGt14q7cCv4QjmQY+zRrfVZWBAHr30KKIDT8TWT+3j+lsUScilS
+	 LlNSnGRpFsB1MoooYt4RzYSo0IyQyfmeAjNdrtcnAKYgyC3c55F+zBBvfbl8INvZBs
+	 26LWk1wKCrc5lmBa5DlKkIxjMyiLYAi5RfrVcSyIelzgbK/ABsxoHtn28ciP2UOzJ6
+	 i1WZqcDFMMdunvx27eD6bAXeIbIN7u90i7nQ4P61k210S5Hk6PO8uesyeb1re/zrIz
+	 Ukts/WGrdDt1g==
+Message-ID: <8d547f65-a260-4b8b-80e4-4695d4422497@kernel.org>
+Date: Mon, 14 Sep 2026 09:01:42 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v9 9/9] thermal/drivers/exynos: Select thermal emulation
- support
+Subject: Re: [PATCH v9 8/9] thermal/drivers/exynos: Add missing drvdata
+ assignment in Exynos TMU probe
 To: Anand Moon <linux.amoon@gmail.com>,
  Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -49,7 +49,7 @@ To: Anand Moon <linux.amoon@gmail.com>,
  "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES"
  <linux-arm-kernel@lists.infradead.org>
 References: <20260913145905.9404-1-linux.amoon@gmail.com>
- <20260913145905.9404-10-linux.amoon@gmail.com>
+ <20260913145905.9404-9-linux.amoon@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -95,36 +95,24 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260913145905.9404-10-linux.amoon@gmail.com>
+In-Reply-To: <20260913145905.9404-9-linux.amoon@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 13/09/2026 16:58, Anand Moon wrote:
-> Select THERMAL_EMULATION when EXYNOS_THERMAL is enabled, as the Exynos
-> TMU driver provides thermal emulation support.
-> 
-> This ensures the thermal emulation framework is enabled whenever the
-> Exynos TMU driver is built.
+> Add dev_set_drvdata(&pdev->dev, data) early in the probe function,
+> ensuring that the driver data is properly registered and accessible
+> throughout the lifecycle of the device.
 > 
 > Signed-off-by: Anand Moon <linux.amoon@gmail.com>
-> ---
->  drivers/thermal/samsung/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-> index e1e8035d24fb..7d5590f78185 100644
-> --- a/drivers/thermal/samsung/Kconfig
-> +++ b/drivers/thermal/samsung/Kconfig
-> @@ -4,6 +4,7 @@ config EXYNOS_THERMAL
->  	depends on THERMAL_OF
->  	depends on HAS_IOMEM
->  	default ARCH_EXYNOS
-> +	select THERMAL_EMULATION
 
-No, drivers should not select user visible symbols and also this has
-absolutely nothing to do with Exynos.
+This is somehow confusing or completely incorrect code.
 
-NAK
+Either this was needed by the driver or not. If it was, then why no bug
+is being described? If this was not needed, then you are doing no-op
+changes.
+
+
 
 Best regards,
 Krzysztof
