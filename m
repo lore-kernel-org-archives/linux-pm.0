@@ -1,198 +1,146 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 963FC47D464;
-	Mon, 14 Sep 2026 16:27:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A225385D68
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 18:25:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789403279; cv=none; b=KkQH2ZAWEHFQiyFdaElhKR4Hht5CWVss6Pyk4oXZ49xwSrIHPsk/62fWwhEw9j6tats5jCo87hIo8sIGmeddQecKURcgolMBQrU9M4n8aSZJwluIAGmRWt1ts5fuEVI3MU9qgw6cV/fRVAft2XUde+A7B5tNK16Qoh+jGTZNOWI=
+	t=1789410304; cv=none; b=ZQWGMyYHN1MlTsCSjVFkWWltcb1XUcsHgVK+X31z3yzTRFey6qIC/KnIrmlhXUxkN1VyoptdV4M+tcrnPwuHb5EB9D6N2C5c9ZUjBEpW0o4xRBv8Ku9g2fsRWZXXIMbFVTDPonin8M4eU2F4GUYmmFHV0R2lx0+LhqXmmo8lpAs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789403279; c=relaxed/simple;
-	bh=sQY0TThHghxIfp8KboBCBc75srHSsUEv16U815Yfydc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=L0dHnZE2AQ9PUdYoqu3YLcFuX2k5Sys/l204V1EqVL2sIpv+k83TcI4tSDTahvANHTWnA4NXYGHiqsSimDMST/KbWgZQtx8D7mMJtGteJZz0nTvftjR8g61yRe/L2A5Dz8leDJwTP8lKTRpPCmcS9BeVKFyUkrQ4CDFk7lH1+Ls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=cirAC4FG; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1789410304; c=relaxed/simple;
+	bh=E7HvEMEH3x9f0jAa3bC0loHO1RMGNOPokzzj9zsJJJY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DsVlUjM5rqtjeAQNGdyrAMS7WrlKF20QpqOYwMQRiNCvBWqMZaxeOciCb1RgS6KdpUJrAczwhyVMiJrqrAL4G6/EZNe1wL6uD9FK8UQhL7uTRhuSBikkxnu+99Sx60pn3Hxvo5+AvR/dwnoIuubQdVd5RId5eD1k784cRSIq4Ik=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I2hYOyCB; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="cirAC4FG"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 702B8152B;
-	Mon, 14 Sep 2026 09:27:53 -0700 (PDT)
-Received: from [192.168.178.6] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9D0413F86F;
-	Mon, 14 Sep 2026 09:27:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789403277; bh=sQY0TThHghxIfp8KboBCBc75srHSsUEv16U815Yfydc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=cirAC4FGrhJGYPUG7XRJUMiRncb9Y005W8jPcrGLfGenZTt1KgfL+E8HJKSuuju9E
-	 nIPVRvh0KVqF82Dw4FPp8YPTT9z8V5Web9prKX60NeRf0sQQ4BnFcXKidrufjeoMoT
-	 JVLNjGEK3cV0C//IxzagPJYj+bf+79c0SJzSt1Kc=
-Message-ID: <2f7f671e-eace-4a6b-8a0b-20151f81d34d@arm.com>
-Date: Mon, 14 Sep 2026 18:27:54 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I2hYOyCB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD9921F00893
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 18:25:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789410302;
+	bh=VkPKODouaWQz277H6RYko4h8DGXFuHfYweq4HcITfeg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=I2hYOyCBl2pSXtgz11KfgeXNh8uATx3DiNNlT9BP7M06XdgWcl+YmXR0zPABP4ZGq
+	 yu8+huIlvDKirnz8D18T1+xlmHL9DU6QGB7PrZ9a/cQBTXVU6QGau0dQ10kwnpzzD7
+	 YYuj4ugVcwV5gfVvuLh6COLMdcjJVwSM+9XWl/USSVn/ue5o1LvePIi5hPVC2O1brK
+	 uWF4fzxp3//GxluiJNXyY1n5DpMpomuW/JD+C1Dg2B6D1Ji1BzipnXmXpI1bB7hChY
+	 EbbAowg7X9euZhTEjqQOOP/Lk7D940i166U0Pel76/zdr5/c+oL+RKHAevA9/JcswM
+	 xcmS7mBhQ17Wg==
+Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a5d00bbb1bso4117421fa.2
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 11:25:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBy636EUUzojO9+CP1Thx6bZA2m4dr6i+oFjS8EZEAMTlpdJBGwCh+Gxnci5bJ35TlX+h1adNTwXtQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nCYjF2E9H4qKs7AL1bE9edO7K8NAnv9MsEJyaYVKM1H51ry8Td
+	OaD7McmR8NiMrb+a+MpP1PwmnsTfYmg2mAAkOFFj8sA27UodKONcFEtVzXdm4H63wYO3v2ywQuA
+	0DfFyImkVxqME5G32fQ1hQl2g/hzIbFM=
+X-Received: by 2002:a05:651c:1986:b0:3a5:af50:bc99 with SMTP id
+ 38308e7fff4ca-3a5c89b02bcmr10886751fa.13.1789410301161; Mon, 14 Sep 2026
+ 11:25:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] sched/cpufreq: fix schedutil's boost frequency
- handling
-To: Ananthu C V <ananthu.cv@oss.qualcomm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
- linux-pm@vger.kernel.org
-References: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
-Content-Language: en-GB
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260910111329.2220-1-lirongqing@baidu.com> <20260910111329.2220-3-lirongqing@baidu.com>
+In-Reply-To: <20260910111329.2220-3-lirongqing@baidu.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 14 Sep 2026 20:23:43 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iPPmrTtLRG23UYJ_ibn7VUceuN2qFXpjCsBYnBzDMzYA@mail.gmail.com>
+X-Gm-Features: AcwNN1XrpECCpH-qeMvLzTLEkaV7aS72AoP0mk-c4jR0zH9fPAyVKLDsSnm7T6c
+Message-ID: <CAJZ5v0iPPmrTtLRG23UYJ_ibn7VUceuN2qFXpjCsBYnBzDMzYA@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
+ in get_cur_freq_on_cpu()
+To: lirongqing <lirongqing@baidu.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 08.09.26 10:30, Ananthu C V wrote:
-> Schedutil's ability to reach boost frequencies depends on two values
-> being correct: policy max, which caps the resolved target frequency,
-> and the per-CPU capacity frequency reference, which anchors the
-> utilization-to-frequency mapping.
-> 
-> This series fixes a few gaps in how these values are maintained across
-> boost transitions:
-> 
-> The per-CPU capacity frequency reference is set once at policy
-> creation and never updated when boost is enabled afterwards, leaving
-> schedutil unable to target boost frequencies even at full utilization.
-> Track the max available (boost inclusive) frequency before policy
-> comes online and use it to seed the capacity_freq_ref value, allowing
-> schedutil to utilize the boost frequency values when boost is enabled
-> later.
-> 
-> The generic boost callback only raises cpuinfo max, never lowers it.
-> Once boost is enabled, disabling it leaves cpuinfo max pinned at the
-> boost ceiling, keeping policy max stuck there too. Also track the max
-> available non-boost frequency and use the newly tracked max values to
-> control boost frequencies when a frequency table is available, allowing
-> the frequency to drop back to non boost values on boost disable. In
-> the absense of a frequency table, the handling will fall back to using
-> cpuinfo->max_freq, preserving the current behaviour.
-> 
-> Logs below for clear context:
-> Intermediate values from the time_in_state output and logs from bench
-> runs are truncated for brevity.
-> 
-> Before fix
-> ----------
-> 
-> boost  policy0  policy12  policy6
-> 
-> 0
-> 
-> 4454400
-> 
-> 4723200
-> 
-> 4723200
-> 
-> 355200 36958
-> 4454400 650
-> 4588800 0
-> 4723200 0
-> 
-> After fix
-> ---------
-> 
-> boost  policy0  policy12  policy6
-> 
-> 0
-> 
-> 4454400
-> 
-> 4723200
-> 
-> 4454400
-> 
-> 0
-> 
-> 355200 40147
-> 4454400 79
-> 4588800 0
-> 4723200 0
-> 
-> 355200 44834
-> 4454400 93
-> 4588800 25
-> 4723200 569
-> 
-> Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+On Thu, Sep 10, 2026 at 1:13=E2=80=AFPM lirongqing <lirongqing@baidu.com> w=
+rote:
+>
+> From: Li RongQing <lirongqing@baidu.com>
+>
+> get_cur_freq_on_cpu() uses perf->state, which is an index into
+> perf->states[], to index policy->freq_table[]. However, freq_table[]
+> is built by filtering _PSS entries that are not lower in frequency
+> than the previous one, so its index space no longer matches
+> perf->states[]. The original P-state index for each remaining
+> freq_table entry is stored in driver_data.
+>
+> Once an entry has been skipped, using perf->state as an index into
+> freq_table[] can therefore select the frequency of a different
+> P-state.
+>
+> The reported current frequency itself remains correct because it is
+> obtained from extract_freq(). The mismatch only affects the cached
+> frequency used by get_cur_freq_on_cpu() to detect a firmware frequency
+> change behind our back.
+>
+> If the wrong table entry contains a frequency different from the one
+> the CPU is actually running at, the check falsely detects a frequency
+> change and sets data->resume. The next ->target() call then performs a
+> redundant control-register write even if the requested P-state is
+> already the current P-state.
+>
+> Conversely, if the wrong table entry happens to contain the frequency
+> to which firmware has changed the CPU, the frequency change is missed
+> and data->resume remains clear. A subsequent ->target() call for the
+> P-state that the cpufreq core believes to be current can then
+> short-circuit without rewriting the control register, leaving the CPU
+> at the firmware-selected frequency until a different P-state is
+> requested.
+>
+> Fix this by taking the cached frequency directly from
+> perf->states[perf->state].core_frequency. perf->state and
+> perf->states[] use the same P-state index space, and converting
+> core_frequency to kHz yields the same value stored in the corresponding
+> freq_table entry during initialization.
+
+Sashiko has comments on this patch and it has a point IMV:
+
+https://sashiko.dev/#/patchset/20260910111329.2220-1-lirongqing%40baidu.com
+
+Can you please tell me what you think?
+
+> Fixes: e56a727b023d ("[CPUFREQ] Make acpi-cpufreq more robust against BIO=
+S freq changes behind our back.")
+> Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Signed-off-by: Li RongQing <lirongqing@baidu.com>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 > ---
-> Ananthu C V (2):
->       arch_topology: seed capacity_freq_ref with boost-aware max freq
->       cpufreq: fix schedutil not returning to non-boost freq when boost is disabled
-> 
->  drivers/base/arch_topology.c |  3 ++-
->  drivers/cpufreq/cpufreq.c    | 14 +++++++++++++-
->  drivers/cpufreq/freq_table.c | 11 +++++++++++
->  include/linux/cpufreq.h      |  2 ++
->  4 files changed, 28 insertions(+), 2 deletions(-)
-> ---
-> base-commit: 32b6ef9a5d0eca44f9cd91f52f4faa89f145a0de
-> change-id: 20260804-schedutil-boost-frequency-handling-8e6bf2387a4a
-IMHO, this makes sense, also the coordination via cpufreq_pressure
-(policy->max).
-
-On ARM64 Juno R0:
-
-# cat /sys/devices/system/cpu/cpu*/cpu_capacity
-446
-1024
-1024
-446
-446
-446
-
-# cat /sys/devices/system/cpu/cpufreq/boost
-0
-
-cat
-/sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_{available,boost}_frequencies
-450000 575000 700000
-775000 850000
-450000 625000 800000
-950000 1100000
-
-# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_{min,max}_freq
-450000
-700000
-450000
-800000
-
-# dmsg | grep policy
-
-[3.323564] cpufreq_update_pressure(): policy->related_cpus=[0,3-5]
-policy->max=700000 pressure=102                                      (*)
-[3.333206] cpufreq_update_pressure(): policy->related_cpus=[1-2]
-policy->max=800000 pressure=280
-
-
-# echo 1 > /sys/devices/system/cpu/cpufreq/boost
-
-# dmsg | grep policy
-
-[ 1511.188932] policy->related_cpus=[1-2] pressure=0
-[ 1511.189050] policy->related_cpus=[0,3-5] pressure=0
-
-# echo 0 > /sys/devices/system/cpu/cpufreq/boost
-
-# dmsg | grep policy
-
-[  204.951039] cpufreq_update_pressure(): policy->related_cpus=[1-2]
-policy->max=800000 pressure=280
-[  204.951223] cpufreq_update_pressure(): policy->related_cpus=[0,3-5]
-policy->max=700000 pressure=79                                       (*)
-
-(*) This is the only small issue I see. The pressure=102 is pressure
-based on purely uarch differences (max_capacity(0,3-5)=578) whereas
-pressure=79 later is based on uarch + max frequency differences
-(max_capacity(0,3-5)=446).
+>  drivers/cpufreq/acpi-cpufreq.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufre=
+q.c
+> index a797bb2..3313c74 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -353,6 +353,7 @@ static u32 get_cur_val(const struct cpumask *mask, st=
+ruct acpi_cpufreq_data *dat
+>
+>  static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+>  {
+> +       struct acpi_processor_performance *perf;
+>         struct acpi_cpufreq_data *data;
+>         struct cpufreq_policy *policy;
+>         unsigned int freq;
+> @@ -368,7 +369,9 @@ static unsigned int get_cur_freq_on_cpu(unsigned int =
+cpu)
+>         if (unlikely(!data || !policy->freq_table))
+>                 return 0;
+>
+> -       cached_freq =3D policy->freq_table[to_perf_data(data)->state].fre=
+quency;
+> +       perf =3D to_perf_data(data);
+> +       cached_freq =3D perf->states[perf->state].core_frequency * 1000;
+> +
+>         freq =3D extract_freq(policy, get_cur_val(cpumask_of(cpu), data))=
+;
+>         if (freq !=3D cached_freq) {
+>                 /*
+> --
+> 2.9.4
+>
