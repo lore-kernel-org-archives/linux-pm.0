@@ -1,135 +1,203 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59D54360ED1
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 07:49:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E5F13EF0C2;
+	Mon, 14 Sep 2026 08:07:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789372153; cv=none; b=GtgYK+u+Q8IfUQzXuBI6YIxKH9+HiihUfMSZ3cIPxINlHbiuP/v821FC3aOEuFiwCEg7zMILM9xYMl7HKGfj2wzz922pyyJ+YLBG5W7Fh8PYKrxot5N4XnAGT4Rr0DkxawAKa/jtmzCUxgfNvmYoOmjkhfPZ8zs6iQPP2Ma43dc=
+	t=1789373245; cv=none; b=oebA0kex1Y/1rLlz62dsR+SIR9PCSh1/8WZVAEQiKeN05bYbgqY90OH/ie4RuFyyGs38rT3aEqgZd8J5aVcp0Mksu/xb1cBAa6viwK/vVjFKHqFSAS+xfs4DCettos1rDr7uenBEmUFF/L/XPCA/KpF+EIQm4RQ9sHZExbzv93U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789372153; c=relaxed/simple;
-	bh=F1VjdFSl9/atwZ3hE3R7ac4wdUgSa2oHodjWqqw69dI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ULaGmDCfP67UzhKKrVhS6AY6K5JqGQ2QYscbZvC0CHh2Q+OY9aew2UdBB/SYl+rgU7q5tEnzciawe9ETcMv8TxZEiK0parPW3IhDSNLxDYN+KkcDN8q5gd0pXxLAFJtyu7Tnk/3zTU1BJYUzV1FUYCn8bXqoyAAx0kolH8XXnpM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=j4dK/xei; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=FgHtqNjb; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1789373245; c=relaxed/simple;
+	bh=d964lmMynRY6TF37LTrBUpGzjhBpSiFKZ/HJl725XKw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=TNhG9GqUOjAxm02qGXiYju45qHWvh18YNb8418XWsZE4sLimUQqriiTFoXBlEd83q/6T+NtU2yPjKR7cSXEdxjRwSniPWczt51BaCGIBW0zGxPlJSnBCGUeRWQeoGAw6CNLoDJnqq3b8N1ReXUFymLRoF+/DqJ9SUxvJ1nfm3/Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SBZsREzV; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="j4dK/xei";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="FgHtqNjb"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68E5jEbP3842265
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 07:49:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=ZjLBQtd7svl9wuiVQ5/yYYCt
-	Te6o0rbws3eQ4NEqK+4=; b=j4dK/xeiOzAb+5QAa/E2Fq28tsoKLnCeLalYD6L6
-	mSfppLO0hQVNqP7uOVQAZkeco4fdb+9zcxJ5B1RBzuCLsLqI9nPyBawp8OCIiTjQ
-	reBwH8gh4WztHsfYWPxzHUvpD4SBtzzjaEzzoZASCz8FmSHeDJgXjIrzxBR02fqF
-	LSQ8rJjrRD08Ejq0xnWdEzrr0WqHpbQXkOjekPzOA7eWqgtNo7FlR7tl1BG7bLsj
-	fyi9vcDalCg3FHsQ/aUnrmeoHkFsm1cq/wNYxq/z4zbM14NB9RHPSatq7IgmECrz
-	Ur4LZ38JD7GNQfMERrGTglVNT1p7d483x0ryEeVhd81XMw==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gmy9c5knw-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 07:49:11 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-93a05d645acso390995785a.2
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 00:49:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789372150; x=1789976950; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ZjLBQtd7svl9wuiVQ5/yYYCtTe6o0rbws3eQ4NEqK+4=;
-        b=FgHtqNjboUmmP75ipeYWdXrj/HrISfMk899Rw8FWVfb6s/wtk9g3lZMjJ/18F7fmxh
-         J6MUmNUzPhdAhbMXcyCjPSDDfx8O/L3M00xq56t5Zv3n5MigvA3DGNxgJ/+UdY/btaaR
-         CLn/5ysJ6HJJRa+ZE/tS0Yc92MlE4eDChmWkH6OifDlQC5//sheFOa8tDQQ3Y3RxI8ZR
-         KvkRamPlp7mVLINLuT2oyMnrdnbNBjJ+1cS0icUb7CFwiYmZ3n0YbI/jyqKRopGu3d8U
-         SQf1hVWnf6GbsOZJIwwy/+TlsGcI5PYnbrdB4g1zTnVdFmKIk39SwCTuvdbCcVsMmmnd
-         rwAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789372150; x=1789976950;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ZjLBQtd7svl9wuiVQ5/yYYCtTe6o0rbws3eQ4NEqK+4=;
-        b=P/N6CjBeAY6mAd2qNcPnaxdzXl4JDCSmStPdHr6m0yiBGj4dXibh4opw5EveLLqO1t
-         VS4yq9b60KvOdPW+J/KqQUg/aqVwYkxWNvBCFO/MussgpL5DEWRDedbPmGGkOCI84CEd
-         JuzfiqZDchXFt6OvgqoFfOLHQB5q4G04VSOBxs64KIPWw9ju5lG4K0u6RKCcItTl4Ogv
-         zFO2vAbNZISfay98oSWNfzw6ZAdKvGp7DQq2L+Q7fHVp/pH7V+2fbGXYP4Wpzozn5X83
-         9wWqPCp30BuArWpI537PdPHEaI8Wwgug563GrH6M8Iz5jj5iCkue4d7AiPK4qqZLtHSi
-         pqjQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzTr7fgN5labIl4c94gtnco77YdxdhBkdGbWZHSahudq9FuKegejYXBFZJ5KrS0bzyIvjtEPoRRkA==@vger.kernel.org
-X-Gm-Message-State: AFuF++mt7eNRdVdxnS81X8sCPMieDjh32E/1xev/KawW2oJ0/tOyUtWf
-	ovM43CXN8e1bBPnnf8tK6BFCeSQch8GkdxNCHjd6BHxnD5au/pLE1E3ZX323QqzKq+XW3DW1xdw
-	xCzgowIdxRxD4K6YtOyCiZ02kfJWTCeOfht++z0TpQrKTT1ugFoRZbTLByRTXZQ==
-X-Gm-Gg: AYBFou1vUhU4Os+djqaXuDFxl+wK62v5Q9OEMbkk19P8XC5GIjtga2dQH3i4vSW3xk8
-	jpM1dmnhTbiTEa43Icc+LObMLDK/TjKhTo3aTpBiWCo52JkN2ju4L9yJYRGp72wOQMIlhkn0xpR
-	SnyarmQFDGrKfXCK57U5e5uglGwuzYuv0hyNAwCteN/CV3nX84mhHDp3C+7WqOvXDYBDAuG0Q9f
-	wlhlbETCPlGQ8YE04KhcXcVM5WqCGy93kP97R2WUc0zDzGCypiUkGZXHFQAYUQZlGSDFuono4YZ
-	fPRMfCMilbk7T0xGyp+FRChC4hefqNey83QwAP7rmZT2OGbt+2P7eBbLKy0jrgooue4OwgpiXo5
-	7JbaDNIMvGKSdpA==
-X-Received: by 2002:a05:620a:6886:b0:939:9b1c:ea4c with SMTP id af79cd13be357-93a29975ae2mr193490485a.28.1789372150506;
-        Mon, 14 Sep 2026 00:49:10 -0700 (PDT)
-X-Received: by 2002:a05:620a:6886:b0:939:9b1c:ea4c with SMTP id af79cd13be357-93a29975ae2mr193487585a.28.1789372150065;
-        Mon, 14 Sep 2026 00:49:10 -0700 (PDT)
-Received: from oss.qualcomm.com ([86.121.170.232])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-486eb2ecfc3sm24108231f8f.4.2026.09.14.00.49.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 00:49:09 -0700 (PDT)
-Date: Mon, 14 Sep 2026 10:49:07 +0300
-From: Abel Vesa <abel.vesa@oss.qualcomm.com>
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pmdomain: core: Fall back to node name for idle states
-Message-ID: <algsevh27dlkxbqfwxogx4irhkxs5ps2itl22t2idupk4b34d3@zdh3kibxt22p>
-References: <20260914-pmdomain-idle-state-name-fallback-v1-1-e4242c409a0b@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SBZsREzV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D8601F000FF;
+	Mon, 14 Sep 2026 08:07:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789373243;
+	bh=e4MDPnk0sVi6M/ZwVTwBYhAjHK5Lznz8GI867hQNhLo=;
+	h=From:Subject:Date:To:Cc;
+	b=SBZsREzVD5PbeSyJiFSNramm0bMw6+ATY8CHNACOpPnhhOEZptV/wPpDGFT0lMTaO
+	 Zp+geWUBm871wAPMgjrc/TwEgzjtRPOo2gjVircSDe9/OCR+DJrEzxQrhsFqesbv7R
+	 lW9C+YMVU4fNsCvi49aE28NGGvXO/DynmZBWtIfKOXlcXtsMz/QoLvh2AtWI1hVDtX
+	 KpxM6vw61RM4Nlaa4jYCuhjHRcs24+cACFBbwQr9NBtFhKLvs5OGZC5bu4WQrfXFj4
+	 nI9YI4Vcor7crMZ3HPXFPJLcPvLzdlu6NZyBqgXM7kg/3xAuxOUSR2YVrf1BV9oKlp
+	 HrBonrTvUeSlw==
+From: Linus Walleij <linusw@kernel.org>
+Subject: [PATCH v2 00/20] pmdomain: st: ux500: Implement ux500 power
+ domains
+Date: Mon, 14 Sep 2026 10:06:51 +0200
+Message-Id: <20260914-ux500-power-domains-v7-1-v2-0-256967abde51@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260914-pmdomain-idle-state-name-fallback-v1-1-e4242c409a0b@oss.qualcomm.com>
-X-Proofpoint-ORIG-GUID: roZa2N4NQO28oiNXf7GZxqhEQgcU93PQ
-X-Proofpoint-GUID: roZa2N4NQO28oiNXf7GZxqhEQgcU93PQ
-X-Authority-Analysis: v=2.4 cv=c5Y+0h9l c=1 sm=1 tr=0 ts=6aa7a6f7 cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=po8fGBi+ks8MzcVQGuqtFQ==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=EUspDBNiAAAA:8 a=5kt61lt8hwMnmxBZRvwA:9 a=CjuIK1q_8ugA:10
- a=PEH46H7Ffwr30OY-TuGO:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDExMCBTYWx0ZWRfX73UL1X72guRm
- CX1PCXLEf/T9LWoTzeP/G7+5yxE7EePAvTatA3cq2j/VxC/tGMByNd9ZfY6fXWXfuq+OERyVo26
- v2H6yx/5qFNC4TfR3tiN469aVlLf6aFb9ojyHaZnor+zwRVLAQej4UksKWZGIqBjTCOMEx8ZvO0
- 3/WoJfGCjrWA7tZe5L8bNRJVX8QrFyFsxdifp/bDo3jlQW/4CK16Xf2Y5NrayL7T03Oumw8xjUR
- e00V+h41ig8B8K3wvhs6u8T4hb8mEHmqsd51Givx3dJrhbDxk7w6m+mHlmqTYA7itUVICbALNQa
- 10aE1t0zQ2urF0OxGCfUaRlg3pj31xcvKRGd4I+aQS5SMwr8HOTQ1I3gEdoQOVAXMH5pxpmkXxH
- VGx6lO60EremD2CPCbYBfp26zJDevkGRaZtV5lJm1T10OTSixhiF+Y6MN6Qphj0//SAiOkDIgLN
- TMEZWwSUbAepxi2TcrA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDExMCBTYWx0ZWRfX7NSLDZ47xUiv
- MQ4SxsIuxPQuhk+7wi5zUSFkNSqefkZc5RAWWt7ZqtfELMaWJX7taoQ5LNYDOPluw9STpSWFxuh
- QkRzBnqwm07z/qMjUEEEoxgK0wPZslE=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-14_02,2026-09-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0 bulkscore=0
- impostorscore=0 suspectscore=0 malwarescore=0 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609140110
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAByrp2oC/42NTQ6CMBBGr0K6dsy0plhceQ/Dgp8RJmpLploxh
+ LtbOYHL95LvfYuKJExRnYpFCSWOHHwGsytUNzZ+IOA+szJoSiy1g9dsEWEKbxLow6NhHyEdQcO
+ hq3qsrDOuMyrPJ6Erz1v6UmceOT6DfLanpH/2j2jSgECtJYutbqxz5xuJp/s+yKDqdV2/51lS3
+ MEAAAA=
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+ Mark Brown <broonie@kernel.org>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
+ Lee Jones <lee@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+ linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ dmaengine@vger.kernel.org, Linus Walleij <linusw@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Frank Li <Frank.li@oss.nxp.com>
+X-Mailer: b4 0.13.0
 
-On 26-09-14 12:24:25, Maulik Shah wrote:
-> The dt_idle_states uses idle-state-name when available and when missing
-> falls back to the node name. Do the same for domain-idle-states.
-> 
-> This lets pmdomain idle_states_desc debugfs show a name even when
-> idle-state-name is omitted.
-> 
-> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+This series pays off technical debt from the beginning of the device
+tree for ARM initiative in the early 2010s.
 
-Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+Today the Ux500 SoC specifically DB8500 is using what is called "EPOD
+regulators" (EPOD = Electric POwer Domain) to control its power domains.
+This was done like this because at the time, power domains did not exist
+as a concept in the Linux kernel.
+
+This patch series completes the ambitious work started in commit
+cd931dcfda5e ("ARM: ux500: Initial support for PM domains") which added
+a dummy domain driver for Ux500 in the following steps:
+
+- Convert the old Ux500 power domain text DT bindings to YAML schema.
+
+- Extend the bindings with all the 16 power domains actually existing in
+  the hardware.
+
+- Add these domains to the existing ux500 power domain driver (still as
+  dummy domains).
+
+- Add the power domains to the DB8500 SoC DTSI file.
+
+- Move code over from the EPOD regulators to the actual power domain
+  driver. Since the two drivers now control the same hardware, make the
+  drivers mutually exclusive.
+
+- Modify the MCDE display driver to use the power domain instead of the
+  EPOD regulators.
+
+- Modify the DMA40 DMA controller to use the power domain instead of the
+  EPOD regulators.
+
+- Delete the old EPOD regulators.
+
+- Delete the references to the unused EPOD regulators from the device
+  tree.
+
+The series is ordered so binding updates and compatibility glue precede
+the DTS and driver changes that depend on them.
+
+MERGE STRATEGY:
+
+1. Device tree bindings need review, before that the series is a
+   no-go.
+
+2. For simplicity, the series can be merged in separate paths and
+   subsystems as there are no build-time dependencies, as long as the
+   result ends up in kernel v7.4.
+
+   Once the concept and patches are ACKed by the power domain folks, I
+   will send the patches that can be split out individually to each
+   maintainer and it can all be merged in parallel. I will send a
+   pull request to the SoC tree with bindings and DTS changes.
+
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+Changes in v3:
+- Went on a detour clean-up job relating to buck regulators.
+  Rebased on kernel v7.3-rc1 and the regulator re-works in this
+  mail thread:
+  https://lore.kernel.org/mfd/20260901-ux500-dts-snowball-regulator-v2-0-fe88b01829bf@kernel.org/
+- Drop the PM domain "regulators" entirely, the external components
+  now use their actual buck regulators.
+- Fix the DB8500 pin controller power domain to use VAPE.
+- Allow power-domain references in the l2c2x0, arm,pmu,
+  stericsson,u8500-clks, arm,twd-timer, arm,twd-wdt and ste,mcde
+  schemas used by the DB8500 DTS additions.
+- Treat only negative pm_runtime_put_sync_suspend() returns as errors.
+- Fix the MCDE probe error path to disable the main clock after reset.
+- Fix Ux500 PM-domain probe error cleanup for domains and provider data.
+- Drop the unused Ux500 power-state activity counter.
+- Describe Ux500 subdomains in DT and use OF child ID helpers.
+- Move DMA40 LCLA power-domain get out of atomic transfer paths.
+- Enable runtime PM in the generic SRAM driver so SRAM power domains
+  are managed by their owner before DMA40 takes LCLA references.
+- Add a DMA40 device link so system PM orders the LCLA SRAM supplier.
+
+Changes in v2:
+- Merge the dbx500 PRCMU header into the DB8500 PRCMU header.
+- Add binding fixes for the DB8500 PRCMU regulator child nodes.
+- Add an MCDE binding update for the new power-domain reference.
+- Fix up the DB8500 DTS changes for the remaining VAPE and VSMPS2
+  compatibility regulators.
+- Link to v1: https://lore.kernel.org/r/20260618-ux500-power-domains-v7-1-v1-0-eb5e50b1a588@kernel.org
+
+---
+Linus Walleij (20):
+      dt-bindings: power: Convert Ux500 PM domains to schema
+      dt-bindings: arm: ux500: Drop NR_DOMAINS
+      dt-bindings: arm: Add the actual power domains on U8500
+      dt-bindings: mfd: db8500-prcmu: Relax EPOD regulators
+      dt-bindings: display: ste,mcde: Allow power domains
+      pmdomain: st: ux500: Implement more power domains
+      ARM: dts: ux500: Rename power domains node
+      dt-bindings: cache: l2c2x0: Document power domain
+      dt-bindings: arm: pmu: Allow power domains
+      dt-bindings: clock: stericsson,u8500-clks: Allow power domains
+      dt-bindings: timer: arm,twd-timer: Allow power domains
+      dt-bindings: watchdog: arm,twd-wdt: Allow power domains
+      ARM: dts: ux500: Add power domains
+      pmdomain: st: ux500: Control DB8500 EPODs
+      drm/mcde: Use power domain for display power
+      misc: sram: Enable runtime PM
+      dmaengine: ste_dma40: Use power domain for LCLA SRAM
+      mfd/regulator: db8500-prcmu: Remove EPOD regulators
+      dt-bindings: display: ste,mcde: Deprecate EPOD supply
+      ARM: dts: ux500: Remove DB8500 EPOD regulators
+
+ Documentation/devicetree/bindings/arm/pmu.yaml     |   3 +
+ .../devicetree/bindings/arm/ux500/power_domain.txt |  35 --
+ .../devicetree/bindings/cache/l2c2x0.yaml          |   2 +
+ .../bindings/clock/stericsson,u8500-clks.yaml      |   3 +
+ .../devicetree/bindings/display/ste,mcde.yaml      |  10 +-
+ .../bindings/mfd/stericsson,db8500-prcmu.yaml      |  24 +-
+ .../power/stericsson,ux500-pm-domains.yaml         |  46 ++
+ .../devicetree/bindings/timer/arm,twd-timer.yaml   |   3 +
+ .../devicetree/bindings/watchdog/arm,twd-wdt.yaml  |   3 +
+ MAINTAINERS                                        |   1 +
+ arch/arm/boot/dts/st/ste-dbx5x0.dtsi               | 144 +++---
+ arch/arm/mach-ux500/Kconfig                        |   2 +-
+ drivers/dma/ste_dma40.c                            | 130 ++++--
+ drivers/gpu/drm/mcde/mcde_clk_div.c                |   4 +-
+ drivers/gpu/drm/mcde/mcde_display.c                |  11 +-
+ drivers/gpu/drm/mcde/mcde_drm.h                    |   2 -
+ drivers/gpu/drm/mcde/mcde_drv.c                    |  68 +--
+ drivers/gpu/drm/mcde/mcde_dsi.c                    |   1 -
+ drivers/mfd/db8500-prcmu.c                         | 239 ----------
+ drivers/misc/sram.c                                |   5 +
+ drivers/pmdomain/st/ste-ux500-pm-domain.c          | 330 ++++++++++++--
+ drivers/regulator/Kconfig                          |  11 -
+ drivers/regulator/Makefile                         |   2 -
+ drivers/regulator/db8500-prcmu.c                   | 501 ---------------------
+ drivers/regulator/dbx500-prcmu.c                   | 155 -------
+ drivers/regulator/dbx500-prcmu.h                   |  55 ---
+ include/dt-bindings/arm/ux500_pm_domains.h         |  17 +-
+ include/linux/regulator/db8500-prcmu.h             |  38 --
+ 28 files changed, 566 insertions(+), 1279 deletions(-)
+---
+base-commit: 67aa45aae7efe0162f198f26714f668b759468c4
+change-id: 20260618-ux500-power-domains-v7-1-3c9d095828c2
+
+Best regards,
+-- 
+Linus Walleij <linusw@kernel.org>
+
