@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1CF0361976;
-	Mon, 14 Sep 2026 07:06:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8106D29ACC5;
+	Mon, 14 Sep 2026 07:07:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789369563; cv=none; b=dXh1m1WLeKsRnyuHs5HmRqmdeSSBD4mMGJaetbG/hbB/5Mmjp6jhpxTBj606NIMDTzpD3sd0+ls3F65NpzySpAEQRo5//ydXTXqAM9iJv5/sxEfA45IQ6iknvDQADPpp9y/tGIDoLx7q5VXhL25GMNIg4hIEHGRBkXgxQTaK1cY=
+	t=1789369645; cv=none; b=KU7/dzbGLVtwjq8dXPStoBAjOZK6dnF7kVe3B2067fhs9IQRzxjAR8dKev1Oa2WM8qbm8I1LU2GAz2hFr7mPCEIZ2PIo5LLUfbwvnmIniwQq3lOtHXjRb0lD1/vhsqq9PHa3pJFChoO5PN22GTk9ksbaL0diLVHZ9otX64viNOg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789369563; c=relaxed/simple;
-	bh=j2sbgabFzSCRNwpAQXS91d5cLhlNykbsimA9YyMeT8w=;
+	s=arc-20240116; t=1789369645; c=relaxed/simple;
+	bh=4lZluCaNK5SmvFvnfdCBbVIrOJ4jQJIucrsKa0WX+Po=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=M6Dn7jSef8Opq13KuxYgVai6q42Ym8p77T0J5SgFWl5OeDZ2F9pUMJSL4QE7HxCeEfI608m0e8yoftjkDBfe+lsQzS3E+DlHkdNYfU2hT3v/a+CJ1KUihtbfqO/VXVvPzRVFIhpdiIZrmoP/5C2R3WSIQYkLTvecRvB5XEE82/o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Pc0zjsVp; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=IybMhn7iYHqsX9xSTWlSN6jCGVZC6n6pteA0rsA667jWz4S+BdFm1YE4p6UgiKPBBK8cDhGW8tHu/O4jLIDJ0+jR/UX3LxE1UKf7Zo0a2fnQRbT3K73NGMM4iRH0nvoEvhPEnV9CF1z2fJ9Hdl/b98S48igzFf8p1P4RJRVWXyE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Eihl/hAt; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Pc0zjsVp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04B7D1F000FF;
-	Mon, 14 Sep 2026 07:05:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Eihl/hAt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA2BE1F00893;
+	Mon, 14 Sep 2026 07:07:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789369561;
-	bh=j2sbgabFzSCRNwpAQXS91d5cLhlNykbsimA9YyMeT8w=;
+	s=k20260515; t=1789369644;
+	bh=4lZluCaNK5SmvFvnfdCBbVIrOJ4jQJIucrsKa0WX+Po=;
 	h=Date:Subject:To:References:From:In-Reply-To;
-	b=Pc0zjsVpRx04sxzBjo/e36jVzsWrEDNtP0E33rDGiVGnBZ5YldGwTIPB/ze2M1J3h
-	 Lgpt7Nt8XWDYmFt3Fqt2zyOAb0CZAj1Dlf0dt/SOUeRJNi7ieMAybd7uIKDOGBCrlQ
-	 rmF6DY1jjRVwKzT6BUmZ6JCgMOfFOFYL4P2+P120TZPq7ptUVOZiMwasSpp9Ko4lzw
-	 RP4t41rF8fa57ClIwkgXPa1mLiL623lwpndvA/mprAHuAo2S0xlq01L7GAXV0VozRM
-	 a/C9Su8/3l0BAiA8ruU8+FN4HFxEOUXKMYD10fzqMKE4scakqHjEorTqm77bvH2yP6
-	 1W56QiQFu7oHA==
-Message-ID: <5c24248e-bee2-4256-af8f-a80be6744431@kernel.org>
-Date: Mon, 14 Sep 2026 09:05:54 +0200
+	b=Eihl/hAtxpruxY4fVEz0mNnPYfKSdC4ZbJHbjEJ18N1SnS6oMhHaQYt+dTYSvpvOc
+	 2i8IAZ9+T4h6hl6qRVyPHatzX7pO8FmA4j4XQ3cub4KoNn/ZEsJZD3w8EQ9Qq04S1k
+	 LpGb4nLYi0TF8e0c9AVevOOaLXkPiCL0Do1tH7d3ED1Wa5SbX25mOZZB0oXryAt1dn
+	 /N/snaFSGT2S6+zg84DQBNOoVPUowp6T9bZYK9mKsQW0GS64yP2iBdK/BuMZ6bfttQ
+	 1MZSmMNDWVPZqQJnxY6X6EARd7mFIRf3SmYSGrjvThB0GHISJb9hAXB3Wf13WJHF32
+	 AeOchHYZ+MYVQ==
+Message-ID: <a835cdf1-b0b5-4719-8b5e-226fee78b856@kernel.org>
+Date: Mon, 14 Sep 2026 09:07:17 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v9 5/9] thermal/drivers/exynos: Remove redundant
- base_second register resource
+Subject: Re: [PATCH v9 3/9] thermal/drivers/exynos: Handle optional triminfo
+ clock correctly
 To: Anand Moon <linux.amoon@gmail.com>,
  Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -49,7 +49,7 @@ To: Anand Moon <linux.amoon@gmail.com>,
  "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES"
  <linux-arm-kernel@lists.infradead.org>
 References: <20260913145905.9404-1-linux.amoon@gmail.com>
- <20260913145905.9404-6-linux.amoon@gmail.com>
+ <20260913145905.9404-4-linux.amoon@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -95,19 +95,18 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260913145905.9404-6-linux.amoon@gmail.com>
+In-Reply-To: <20260913145905.9404-4-linux.amoon@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 13/09/2026 16:58, Anand Moon wrote:
-> The Exynos5420 TRIMINFO register can be accessed through the main TMU
-> register space, so a separate register mapping is not required.
+> The triminfo clock is obtained using devm_clk_get_optional_prepared(),
 
-No, the address is misplaced. You completely ignored entire point for
-second base, without any arguments, any data, anything, and just drop it
-completely.
+No, it is not. It is devm_clk_get().
 
-NAK
+Order your patches correctly or do not introduce bugs in patch #1 which
+you then fixup in next patch.
+
 
 Best regards,
 Krzysztof
