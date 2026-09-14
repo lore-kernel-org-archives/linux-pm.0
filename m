@@ -1,138 +1,203 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACC0B44F540
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 12:37:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D62D6266581
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 12:42:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789389459; cv=none; b=kubRWi2Il3gKzDAgjw+XfhiNT072QSWoeZCxe43P6QlQ94mUA7rl7jTenUbofy50FsEj5RgW2tDbRBD//ZbfL8p64PvO3U7E0jbsuEM9sab8JFflE0GNcqNFYPmMq2Cgpv9hyzFIkvyH4lKfqCYGLBbEjhMQkc4gK8N5FtdxAXY=
+	t=1789389755; cv=none; b=jXXmTu+tYraSaPHNo0RZCXdrphGn6UPAzMg08X8cjQBnpHY5FIDP3BBlnasQsJYKRUges+ZQ19EPB8GHVI4pUUihRKzU7H1vC/wVhLBiom4WvZrjjYJdfk9gU8bwR4ScVMK/kQts8rfdXiR+FZd5UakwLuTOSH4mmOoAQsJxiIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789389459; c=relaxed/simple;
-	bh=K05PmFF6pkqk7FVBk07pIjMzhL0tcbul2tO9kilU8bA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OooJ4gjDFx4ANG3JbQh/RG4C7UFxfl8pB7hy1rpeqEQn8uaopV8vJjdrWM9vXF55HnA6WXpY+0FbEC3twpRZClrHJ/AlkGMiWK6bxaoBJXqKHkZcXPri0LHvvuTAI4euac88Fnoj8nBJn9PH0KCTSZmvMnlTb4jL+as5T7tmoTs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=owD5IByI; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=bJgyHJqz; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1789389755; c=relaxed/simple;
+	bh=kKUjFxTDzaIvfCLVxP1OmjKiQRgwNhTIUBFn6PNx22w=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=teYmkQrjzI/pfB04/ooioCGrjH5bjum6+fPBDEldiXkSuuZOamxhwba9hufL2rUQ7lLReBZTDEfLoF8oMrDAlqaRD+fwkoDPA4pqrtphkW2V2fWQ6cenwQa4/ti3EY0sdx50/o1FfLUL4mmUEwW11WLX15P9/lYcb/c8zrFF36w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=MskDCXtV; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="owD5IByI";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="bJgyHJqz"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68EAm6tu3793283
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 12:37:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IElVkIsCBxgJuoSMibKS1eyihRvOBQooxAqxg9nq+9I=; b=owD5IByIMKLXs8Wq
-	/uCIiPxjgkzEWVjVmzjM+v1Hs6Dgs3J1+S4S9vigdaDAGt9QZIFwhRFRaYej1WjR
-	sKNWNjTQ7VlPZVpno9G/g+Eekoe1o5IQEwKgeU9GBbtKWJjZarFCFTBotWsjT9c3
-	WhNdoMk7/8HlAwcV0ahqJmVePRQPzTY9NFDY59kAw/viw7F0q+sn7AZ687C/rQM4
-	Z2jbSKPqOh2tgmnU4smJICqbbv2beQm6AeCoZi4+fx2zW9qMzYZUF5ojgf7dLIhi
-	CEAEPAB50xYzRtKUzu3LneBTLhtz7u1xwKFHlEhX2ry3TzCP8hPIivbMJ724f6UR
-	UTLvgA==
-Received: from mail-vk1-f197.google.com (mail-vk1-f197.google.com [209.85.221.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gpcjg14h8-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 12:37:36 +0000 (GMT)
-Received: by mail-vk1-f197.google.com with SMTP id 71dfb90a1353d-5c84b0a43efso105694e0c.3
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 05:37:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789389454; x=1789994254; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=IElVkIsCBxgJuoSMibKS1eyihRvOBQooxAqxg9nq+9I=;
-        b=bJgyHJqzAKdDwx6Jmk4J4gs1IP+4+duTPK6PccUCr2IejTBbSkMlp5+/LSrkto7rzk
-         orgidVmEIEsz9Qc3/eygXASzFGIgTJYAx6OlJW/km1cjC3d9VfYv8KKotDHUg7xaiWo0
-         fOjI0TwpkX4lh98Rw7hYky8ASqdkwRiIRUMBFAIOW2xt0I6zMvheF8X/47oUdNfZRSdo
-         gBFwq7OIMfWEPIH6gsI9PhXQ/OtxZ8u+lCmaJRgg4vGOCKNOGcsS7mwoXad+zfADTaNn
-         YvSAKikucLJmWz/0aBE1DwdYXBXHd81RRm+k85MWdE9UYe6kmuH0NgVt9Dz/lKlJRj8Y
-         OERw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789389454; x=1789994254;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IElVkIsCBxgJuoSMibKS1eyihRvOBQooxAqxg9nq+9I=;
-        b=V9ZgMPdvqPbnsSn4fC1efC/MJtDBuBRlOtMXgNwoDtQJp5VmAqaacuaVavTe8OOS0/
-         qrsCI5+2sAZn6jlYLsIKne+dLrWAs+yCnvO7IWF6JvZg1w7GaffP0hvJmmqEkqWVOpO2
-         bDAjdeDUWtpLv2CRtVYExkcx1jXK7vnLlyR1vrBbEGW4wEM/3p54DMay2jhMVRufgT9c
-         iZXDxd4SwWCzOt4KdWMg0fqV0CoSyDAJPKlU6DdxuAQYQ/+I9joVJaFk2ggaD+653k5x
-         Mnc88QGuXren2lwTcAdSzpTqZw8j17zJXUkJMCAoVCTaybK7/2jgGoxAqBqY1ngEurDM
-         sdcQ==
-X-Gm-Message-State: AFuF++nurqKvzzWbkzqDQ304jFlXorX13+woWVOexlndwVxpy8j4C091
-	N5/6mveBo0P6Dt6xEIUq9UxCI3fZdbvtEBbOl/1Xy4tPN7OKpp8ZUWiht6E+uPpbn7vv++J/XNG
-	EfNjP461975pUt2NagFwOwLhjOeFItyHgk/0l8Zb4P1KfhP7xhX9bCopc3F1oOJ7J9+0cvA==
-X-Gm-Gg: AYBFou0UKnueFa/MgCoyA1Vt/y/oDN0KHLNVbDC0L0MK+DalR7Ua1yBISnu3wcHcPfG
-	/fJk1Ac0oLK52FWW4nMoa17vpTIwItHVtEOmg3XAc8kceUi6pz3/zeck7AV2L9k39tBab8Q2ZpF
-	pPdSimuzRMsAXfFyEUcV0PbAySRCBnOffb8w33VB8xOx2A50jxhWK5XVRjpqf8aRAgtCdxJIn3/
-	x63DqQmzBDuJ9uPoRrexFpIOFS7N/QxMdixy//H2N8HGheoqFzLtnEsziNlyFMx3a182pnra67R
-	6SAqX1cqhNw7j3GNM4+cH+n0erCOTH/TBSGn5FaZfHcUJySHBkFwY2jyL9FXGoZBLXDUWlxUbFN
-	qrmLW7MmMENM4XK4kULkTjw==
-X-Received: by 2002:a05:6102:54aa:b0:795:41a8:ff58 with SMTP id ada2fe7eead31-79b53156063mr371811137.0.1789389454092;
-        Mon, 14 Sep 2026 05:37:34 -0700 (PDT)
-X-Received: by 2002:a05:6102:54aa:b0:795:41a8:ff58 with SMTP id ada2fe7eead31-79b53156063mr371803137.0.1789389453626;
-        Mon, 14 Sep 2026 05:37:33 -0700 (PDT)
-Received: from [192.168.202.12] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b8a046d243sm2407027e87.53.2026.09.14.05.37.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Sep 2026 05:37:32 -0700 (PDT)
-Message-ID: <e54cc308-7be7-406f-be05-c38a759e5b3c@oss.qualcomm.com>
-Date: Mon, 14 Sep 2026 14:37:30 +0200
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MskDCXtV"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789389752;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=gS0PasUdCVmtQZHlDSGBeMxyLgFshGbkXoV5dyvEzpg=;
+	b=MskDCXtV7wSzoZq5YmUqR4unjZQDSfAthU+Ro/gdZyQRJRvsHB+hQr5UerINqVh3EO8h1y
+	l7+ve99j45/oG4WXWyvTUnBNovSvsdvxrfC5g2HxaA5rB/pXezhhW46t9tk5JgHWPvmUJv
+	sTMhMHWEq3Z/RuVX0p4awyIxZ8U1IVs=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-546-ud337pCmNmmsQShMmbfDjA-1; Mon,
+ 14 Sep 2026 08:42:31 -0400
+X-MC-Unique: ud337pCmNmmsQShMmbfDjA-1
+X-Mimecast-MFC-AGG-ID: ud337pCmNmmsQShMmbfDjA_1789389749
+Received: from mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.95])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 01899180ABEA;
+	Mon, 14 Sep 2026 12:42:28 +0000 (UTC)
+Received: from aesteve-thinkpadp1gen8.rmtes.csb (headnet05.pony-001.prod.iad2.dc.redhat.com [10.2.32.117])
+	by mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id B83C341D;
+	Mon, 14 Sep 2026 12:42:13 +0000 (UTC)
+From: Albert Esteve <aesteve@redhat.com>
+Subject: [PATCH 0/3] firmware: qcom: scm: pass struct qcom_scm through the
+ API
+Date: Mon, 14 Sep 2026 14:41:53 +0200
+Message-Id: <20260914-scm-device-api-v1-0-3573e2596c51@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: core: Fall back to node name for idle states
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>, Ulf Hansson <ulfh@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20260914-pmdomain-idle-state-name-fallback-v1-1-e4242c409a0b@oss.qualcomm.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260914-pmdomain-idle-state-name-fallback-v1-1-e4242c409a0b@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=CKa/zhrD c=1 sm=1 tr=0 ts=6aa7ea90 cx=c_pps
- a=JIY1xp/sjQ9K5JH4t62bdg==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=5kt61lt8hwMnmxBZRvwA:9 a=QEXdDO2ut3YA:10 a=tNoRWFLymzeba-QzToBc:22
-X-Proofpoint-ORIG-GUID: TjM1WVhrxuRL9m60t7-GKgJocN71GYFv
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDE3OSBTYWx0ZWRfX4R0knK0dbWSA
- uFOg8CGy7xzDWiqaNC4YQjuqlWhze84tduj52Cs3dutiXzoi9LOun/Jd/jzgUyXr1yKAa9kMNCr
- UxWIJjhiP7Q7EXnxH2om0hoq5a/nPQ4=
-X-Proofpoint-GUID: TjM1WVhrxuRL9m60t7-GKgJocN71GYFv
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDE3OSBTYWx0ZWRfXyKbTK26gowXi
- u5PdMeS23HnJalpS8A5aq6usnAsvuwiG72bgLzMUtai1ZCKueK+uDHGBdmu2J3a86YFPGuwoXYJ
- BOe7Ug4s/RdBXnuq/pwrvGPLWP8XeRZGty1j7Vm5kRyBxtHjbCsS1snl3nhmHGpOmFkTVUZXvEe
- HYENzCzQ6Db2GafG1VEMEjfoae4NPR+FGcnRQQaQ6dLqi6zxzsdbq3fHcrGkjbB4inBbWCctsdd
- QutoVzuVCoEIlIv9locWRT2gQn4tTFsM1ly5XnHLa0WC5R4kNYGhwqwB2793cYMrGoIo+pCw/Mu
- 6urbSg1FmPM1nRjXsJYEZJjr2f7OREYFm2BH6DuhQtDmdqUPcLk18nTcwkziZs96J+kwdbItJ9m
- XO811q58h/su4sk5jyOTW4yshBhIqeoCMKs5EyYdkBCy35MTNtRKqBwLaW9q/26I1ptUaRnB4ck
- lCBBN1jkeDPOyBlM6jA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-14_03,2026-09-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0
- spamscore=0 lowpriorityscore=0 phishscore=0 bulkscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609140179
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2MQQqAIBAAvyJ7bsE0tPpKdBBdaw+VKEQQ/j3pO
+ DAzLxTKTAVm8UKmmwtfZ4O+E+B3d26EHBqDksrISY5Y/IGhiZ7QJUajB+ets1FbCy1KmSI//3B
+ Za/0AntZYi2AAAAA=
+X-Change-ID: 20260908-scm-device-api-634ac7a7f377
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Philipp Zabel <p.zabel@pengutronix.de>, 
+ Russell King <linux@armlinux.org.uk>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, 
+ Christian Loehle <christian.loehle@arm.com>, 
+ Maximilian Luz <luzmaximilian@gmail.com>, 
+ Bartosz Golaszewski <brgl@kernel.org>, 
+ Rob Clark <robin.clark@oss.qualcomm.com>, Sean Paul <sean@poorly.run>, 
+ Akhil P Oommen <akhilpo@oss.qualcomm.com>, 
+ Dmitry Baryshkov <lumag@kernel.org>, 
+ Abhinav Kumar <abhinav.kumar@linux.dev>, 
+ Jessica Zhang <jesszhan0024@gmail.com>, 
+ Marijn Suijten <marijn.suijten@somainline.org>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+ "Joerg Roedel (AMD)" <joro@8bytes.org>, Thomas Gleixner <tglx@kernel.org>, 
+ Radu Rendec <radu@rendec.net>, 
+ Vikash Garodia <vikash.garodia@oss.qualcomm.com>, 
+ Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>, 
+ Bryan O'Donoghue <bod@kernel.org>, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>, 
+ Srinivas Kandagatla <srini@kernel.org>, 
+ Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jeff Johnson <jjohnson@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+ Mathieu Poirier <mathieu.poirier@linaro.org>, 
+ Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, 
+ Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, 
+ Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+ Brian Norris <briannorris@chromium.org>, 
+ Govind Singh <govinds@codeaurora.org>, 
+ Niklas Cassel <niklas.cassel@linaro.org>, Kalle Valo <kvalo@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, 
+ iommu@lists.linux.dev, linux-media@vger.kernel.org, 
+ linux-wireless@vger.kernel.org, ath10k@lists.infradead.org, 
+ linux-gpio@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
+ op-tee@lists.trustedfirmware.org, Maxime Ripard <mripard@kernel.org>, 
+ Albert Esteve <aesteve@redhat.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789389733; l=4126;
+ i=aesteve@redhat.com; s=20260827; h=from:subject:message-id;
+ bh=kKUjFxTDzaIvfCLVxP1OmjKiQRgwNhTIUBFn6PNx22w=;
+ b=ptN78nZt4fGWWnpdDZyVENIgI04y8a4PWpV9Q7ESU1lJXI6I5/2224GMHxqfT8NR3RqXorNth
+ jHJX4SMRZ0tCfmG8DtbgRZpcTf2pE4dns304nz4VWJerDfTGzhcT+6A
+X-Developer-Key: i=aesteve@redhat.com; a=ed25519;
+ pk=zI2RBeZgocwYm3AkJW4CtjoJnKoDZrfBl1xe5Ed6h+U=
+X-Scanned-By: MIMEDefang 3.6 on 10.30.177.95
 
-On 9/14/26 8:54 AM, Maulik Shah wrote:
-> The dt_idle_states uses idle-state-name when available and when missing
-> falls back to the node name. Do the same for domain-idle-states.
-> 
-> This lets pmdomain idle_states_desc debugfs show a name even when
-> idle-state-name is omitted.
+The SCM driver still funnels every call through a process-wide
+__scm singleton.
 
-These are often 'idle-state-N', so I'm not sure there's much value
-(but certainly don't treat that as a nack)
+This series threads struct qcom_scm through the driver and the
+exported API, then drops the global.
 
-Konrad
+Series summary
+--------------
+Patch 1: Internal helpers take the instance. Callbacks that only
+have a struct device or reset_controller_dev recover it
+with drvdata / container_of. Exported signatures stay
+unchanged so this patch is bisectable on its own.
+
+Patch 2: Exported calls take struct qcom_scm * as the first
+argument. The type stays opaque in qcom_scm.h.
+
+    Children of the SCM device (qseecom, tzmem, qcomtee)
+    use dev_get_drvdata() on the parent. Other consumers
+    call qcom_scm_get(), which finds the bound platform
+    device and returns NULL until probe has marked the
+    instance ready. Callers that need SCM return
+    -EPROBE_DEFER; callers that only use it for an optional
+    path (rmtfs VMIDs, fastrpc vmids, PAS region assign,
+    Venus CP, HDMI HDCP, Adreno fuse poke) skip the lookup
+    or tolerate NULL. qcom_pas_* is unchanged: PAS has a
+    TEE backend, so those ops keep struct device * and the
+    SCM backend uses drvdata.
+
+Patch 3: Drop __scm. Readiness is scm->available with the same
+release/acquire pairing as today. Module-parameter
+stores reuse qcom_scm_get(); shutdown uses
+platform_get_drvdata().
+
+No intended change in SCM calling convention or wait-queue
+behaviour.
+
+Testing
+-------
+
+Booted to a shell on Qualcomm SA8775P Ride4 with current series.
+qcom_scm bound as firmware:qcom_scm; probe logged SMC ARM 64 and
+the tz-ffi reserved-memory assignment. Consumers were not exercised.
+
+Suggested-by: Maxime Ripard <mripard@kernel.org>
+Signed-off-by: Albert Esteve <aesteve@redhat.com>
+---
+Albert Esteve (3):
+      firmware: qcom: scm: pass qcom_scm to internal helpers
+      firmware: qcom: scm: pass qcom_scm through the exported API
+      firmware: qcom: scm: drop the __scm global
+
+ arch/arm/mach-qcom/platsmp.c                     |   3 +-
+ drivers/cpuidle/cpuidle-qcom-spm.c               |  28 +-
+ drivers/firmware/qcom/qcom_qseecom.c             |   3 +-
+ drivers/firmware/qcom/qcom_scm-smc.c             |   2 +-
+ drivers/firmware/qcom/qcom_scm.c                 | 518 +++++++++++++----------
+ drivers/firmware/qcom/qcom_scm.h                 |   2 +-
+ drivers/firmware/qcom/qcom_tzmem.c               |   6 +-
+ drivers/gpu/drm/msm/adreno/a6xx_gmu.c            |   6 +-
+ drivers/gpu/drm/msm/adreno/adreno_gpu.c          |   8 +-
+ drivers/gpu/drm/msm/hdmi/hdmi_hdcp.c             |   6 +-
+ drivers/iommu/arm/arm-smmu/arm-smmu-qcom-debug.c |   9 +-
+ drivers/iommu/arm/arm-smmu/arm-smmu-qcom.c       |   8 +-
+ drivers/iommu/arm/arm-smmu/arm-smmu-qcom.h       |   3 +
+ drivers/iommu/arm/arm-smmu/qcom_iommu.c          |  18 +-
+ drivers/irqchip/qcom-pdc.c                       |   6 +-
+ drivers/media/platform/qcom/venus/firmware.c     |  10 +-
+ drivers/misc/fastrpc.c                           |  31 +-
+ drivers/net/wireless/ath/ath10k/qmi.c            |  12 +-
+ drivers/net/wireless/ath/ath10k/qmi.h            |   3 +
+ drivers/nvmem/sec-qfprom.c                       |   6 +-
+ drivers/pinctrl/qcom/pinctrl-msm.c               |  11 +-
+ drivers/remoteproc/qcom_q6v5_mss.c               |   6 +-
+ drivers/remoteproc/qcom_q6v5_pas.c               |  12 +-
+ drivers/soc/qcom/ice.c                           |  23 +-
+ drivers/soc/qcom/ocmem.c                         |  22 +-
+ drivers/soc/qcom/rmtfs_mem.c                     |   8 +-
+ drivers/tee/qcomtee/call.c                       |   7 +
+ drivers/tee/qcomtee/core.c                       |   6 +-
+ drivers/tee/qcomtee/qcomtee.h                    |   2 +
+ drivers/thermal/qcom/lmh.c                       |  22 +-
+ include/linux/firmware/qcom/qcom_qseecom.h       |   5 +-
+ include/linux/firmware/qcom/qcom_scm.h           | 117 ++---
+ 32 files changed, 566 insertions(+), 363 deletions(-)
+---
+base-commit: bc35965f6940a9bf834d54187b6088b8eb09206d
+change-id: 20260908-scm-device-api-634ac7a7f377
+
+Best regards,
+-- 
+Albert Esteve <aesteve@redhat.com>
+
