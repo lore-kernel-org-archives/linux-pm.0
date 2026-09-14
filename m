@@ -1,204 +1,178 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76A35457E5C
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 12:43:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789389796; cv=none; b=hJu52ka+Z++a1TdHCrKMva0dKtKOn9r62T1ONbkhOwqRcZ/pymDToy8buFPnvg4+WkcdQu5w1wmFOHaY7k4IOMRIuLsao6fW0kiyUQq5ePNgqw5HJg3Ui+5IyLEC0nAECBomK0lOnQOdkAmA+9wuT9JWUHtXg6J9yimdf3NN8Ic=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789389796; c=relaxed/simple;
-	bh=DyJgJINGrj/Oi16BQyI0xHNXSqfTphHOzT8kolkMIn4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=UUmNuvQK41FwlBe1tnzc9hHnDm2sPVmkL65t7dodcV05LQ9l2MhBCQHjzLnoF7ybsN16yUqpVppMkIRr/Iops0J7+dZlMdCcX3eR0x0cTE0lhrp8TcXlEJdw4qAGBZ4D2xiC8N92PRzaXJPVlLK2Y7myZrCtbK2U4X1YWUib2bI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Tdu2/zV9; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94F1345D5FF;
+	Mon, 14 Sep 2026 13:13:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=85.215.255.50
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789391610; cv=pass; b=TUF7VgF2nAVs3CpLOHyuwAwezlPGZ3ZkQ49ZsbvAYKZYniuFAYMCjM/cYLN37GhWb2Pk/0lca2//UYOMrmge2OXJrTbbYGL1FqSJrzlmVlRp1BGsldXqYPSkIQ6MJUpXg8V1CxT6fVyhScf3BXmXzygkILoQXAYfgqcNrl8Vul0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789391610; c=relaxed/simple;
+	bh=od3Rz2anfBK/DA4lGHcgQTN2Nu4yCe+GYpDnZioFKl0=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=lk98BBMbuFiToxXpTJfxSR9uCLfHLe5fqAXTkpAXF1lM1t+n6RybStOe5ChJySW5MoQCTpHcxFwUOFj3T1azfhrFWPqCJaOc9pQr0G/zLDYrjHuUgllxMtOoCJGFyD5rSnybWhHff3wk7w1TiFxnlzGY01W0zxzbyWD3Np4RGGY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de; spf=none smtp.mailfrom=iokpp.de; dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=P1lRGzaH; dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b=Knqjdevs; arc=pass smtp.client-ip=85.215.255.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=iokpp.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=iokpp.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Tdu2/zV9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789389793;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Yh4LTMrVgvTWawuhXeGz+7PzkeHy1e2QB0EjAsyshR4=;
-	b=Tdu2/zV95s6JpGFlQAo/W54Vcij49D9PYrp9ldb8OJvX8NsrBxCEq9aAgbMisEf13PriV1
-	+5mzj0EO6mLpOPYitHg6i0GCoVN59UpyyjMxE3+3Mqh+mDaTg+nscUw7VgNsPpnbqFi8sk
-	26jzqeUnb/+KPfZ9Uyv4oy4JaL2Kcf4=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-269-kSfBeXNOMre5BB8CfOjCmw-1; Mon,
- 14 Sep 2026 08:43:10 -0400
-X-MC-Unique: kSfBeXNOMre5BB8CfOjCmw-1
-X-Mimecast-MFC-AGG-ID: kSfBeXNOMre5BB8CfOjCmw_1789389788
-Received: from mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.95])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 78692180062D;
-	Mon, 14 Sep 2026 12:43:08 +0000 (UTC)
-Received: from aesteve-thinkpadp1gen8.rmtes.csb (headnet05.pony-001.prod.iad2.dc.redhat.com [10.2.32.117])
-	by mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 57E2F426;
-	Mon, 14 Sep 2026 12:42:56 +0000 (UTC)
-From: Albert Esteve <aesteve@redhat.com>
-Date: Mon, 14 Sep 2026 14:41:56 +0200
-Subject: [PATCH 3/3] firmware: qcom: scm: drop the __scm global
+	dkim=pass (2048-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="P1lRGzaH";
+	dkim=permerror (0-bit key) header.d=iokpp.de header.i=@iokpp.de header.b="Knqjdevs"
+ARC-Seal: i=1; a=rsa-sha256; t=1789391573; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=TFRN07lO06EqnWJkDYmVXp10E5oqviKyBxO4bTLIhqKeqCYBOSMbbOl3nY3y8gda1G
+    f0C/TlgWVYTTL0ApK6HJzhPwX1OoudkJsQJVeodkehtXtK/W0Ms3hSgVrZKilkRb7gWF
+    8EsazZOzXP+H8kI96LMdc6T1IjCvPCyyjz9blnJinYfVFlr4d//ndSTbd4xSZlk4iJ/c
+    StcovhVG8WhrrQG08YhSioEUqarB86rkT5Qnhk3FfrH5JQKXfpGgY/iwi+7iT9sicLKq
+    wvqxdUNRU6hE5ozsg6jxnbcsuvDgad6j4GZ+zn/mQ6lz3nRAV5JkWq+lR8iURUlhGdxF
+    27NQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1789391573;
+    s=strato-dkim-0002; d=strato.com;
+    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=od3Rz2anfBK/DA4lGHcgQTN2Nu4yCe+GYpDnZioFKl0=;
+    b=a+UTVSDdMu51+KBRQ63d6PfnYXHeZ9sZ5nYWvVxiTz0CLcc9zCE+5Aa/ENu87updbT
+    GOOK4WIVQRnrRnVyJIEX1KIHutgkfH2MGtV4RD/RR4YMsaRh0a6gDlVMR9OO/H13Qzay
+    cGFlNbphDv0UQ1970CnIBF9kS9NKTv+N1PJLx3rosE8CycIwN9cOrjzBNwUNX6p8hnPM
+    RdTtwfiu5VMA//7pGZdzM0MsfLIhE+xU6/h4wpAn6DqoSBsPWNSjHuMjr5+7lkOJMvAs
+    9f+glsY7aUPeBsbdUJ7urMfoKp6I3OR8xnENRSXQlFjCQxoXKMhSDFJTJrOcpW8fbr36
+    jYRA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1789391573;
+    s=strato-dkim-0002; d=iokpp.de;
+    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=od3Rz2anfBK/DA4lGHcgQTN2Nu4yCe+GYpDnZioFKl0=;
+    b=P1lRGzaHYqmKgCWTdzqKX39Ph7oqR/MLmJ6ynN4ajS8fhCA5TgQBMZZHDarwAQ2lht
+    LeD4WsIEnwvzM+V4y5BQYKRCOdhtReZv9zzLu3tSAvinnBZru6fVQ/jPh59KawJLhqYi
+    Y8XhkKEtlT4JbiSePHRJ/JWhvzblfeTAdfkooLZDPqUMa62f8DDAo3+PWn/Xrr60M2i1
+    NldBVCMCm+/GVW31XS8s6aKexNtUPprj1qpa3MEzquCdxCSZVqqVPGwOhphp8gxeUmhE
+    7sV566kjt/ZN3f2wj2AiSXHbJEoD59CSUYzaeoz2nheq09awX4blYIrI+xjHtLw2ODfe
+    0pAg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1789391573;
+    s=strato-dkim-0003; d=iokpp.de;
+    h=References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=od3Rz2anfBK/DA4lGHcgQTN2Nu4yCe+GYpDnZioFKl0=;
+    b=KnqjdevsbCCuXM3DJj2SBHf/yvpXRA4LVQIHOyTrls06q7XhrWurRRm1ddbjPBsjzs
+    /7OEo3fAH6pXpGuqf1CQ==
+X-RZG-AUTH: ":LmkFe0i9dN8c2t4QQyGBB/NDXvjDB6pBSe9tgBDSDt0V0DBslXBtZUxPOub3IZqk"
+Received: from [10.176.237.249]
+    by smtp.strato.de (RZmta 55.6.2 AUTH)
+    with ESMTPSA id ze37e128EDCqcat
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Mon, 14 Sep 2026 15:12:52 +0200 (CEST)
+Message-ID: <48814f547eeb8a5c575cd143a2569291de890c2a.camel@iokpp.de>
+Subject: Re: [PATCH v2 0/4] devfreq: check the get_cur_freq() return value
+ and use it in ufshcd
+From: Bean Huo <beanhuo@iokpp.de>
+To: linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org,
+ cw00.choi@samsung.com
+Cc: linux-kernel@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi
+ <cw00.choi@samsung.com>, "Martin K . Petersen" <mkp@kernel.org>, "James E .
+ J . Bottomley" <James.Bottomley@HansenPartnership.com>, Avri Altman
+ <avri.altman@sandisk.com>,  Bart Van Assche <bvanassche@acm.org>, Alim
+ Akhtar <alim.akhtar@samsung.com>, Stanley Jhu <stanleyjhu@google.com>
+Date: Mon, 14 Sep 2026 15:12:51 +0200
+In-Reply-To: <20260907192140.2701755-1-beanhuo@iokpp.de>
+References: <20260907192140.2701755-1-beanhuo@iokpp.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.44.4-0ubuntu2.1 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260914-scm-device-api-v1-3-3573e2596c51@redhat.com>
-References: <20260914-scm-device-api-v1-0-3573e2596c51@redhat.com>
-In-Reply-To: <20260914-scm-device-api-v1-0-3573e2596c51@redhat.com>
-To: Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Philipp Zabel <p.zabel@pengutronix.de>, 
- Russell King <linux@armlinux.org.uk>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Christian Loehle <christian.loehle@arm.com>, 
- Maximilian Luz <luzmaximilian@gmail.com>, 
- Bartosz Golaszewski <brgl@kernel.org>, 
- Rob Clark <robin.clark@oss.qualcomm.com>, Sean Paul <sean@poorly.run>, 
- Akhil P Oommen <akhilpo@oss.qualcomm.com>, 
- Dmitry Baryshkov <lumag@kernel.org>, 
- Abhinav Kumar <abhinav.kumar@linux.dev>, 
- Jessica Zhang <jesszhan0024@gmail.com>, 
- Marijn Suijten <marijn.suijten@somainline.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
- "Joerg Roedel (AMD)" <joro@8bytes.org>, Thomas Gleixner <tglx@kernel.org>, 
- Radu Rendec <radu@rendec.net>, 
- Vikash Garodia <vikash.garodia@oss.qualcomm.com>, 
- Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>, 
- Bryan O'Donoghue <bod@kernel.org>, 
- Mauro Carvalho Chehab <mchehab@kernel.org>, 
- Srinivas Kandagatla <srini@kernel.org>, 
- Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jeff Johnson <jjohnson@kernel.org>, Linus Walleij <linusw@kernel.org>, 
- Mathieu Poirier <mathieu.poirier@linaro.org>, 
- Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, 
- Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, 
- Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Brian Norris <briannorris@chromium.org>, 
- Govind Singh <govinds@codeaurora.org>, 
- Niklas Cassel <niklas.cassel@linaro.org>, Kalle Valo <kvalo@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, 
- iommu@lists.linux.dev, linux-media@vger.kernel.org, 
- linux-wireless@vger.kernel.org, ath10k@lists.infradead.org, 
- linux-gpio@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
- op-tee@lists.trustedfirmware.org, Maxime Ripard <mripard@kernel.org>, 
- Albert Esteve <aesteve@redhat.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789389733; l=3324;
- i=aesteve@redhat.com; s=20260827; h=from:subject:message-id;
- bh=DyJgJINGrj/Oi16BQyI0xHNXSqfTphHOzT8kolkMIn4=;
- b=2E/njtRQDI7qg6KhOX02E6Kl8NSZnKke0TKHePsDGKL5/0MukpgBGJfWN70DxUsg7WRIuQpoA
- /xIDnhDFsgGDyONBfr/Sih+/SjlyEaAmyySnb2O8dlDdWfLuFgovspB
-X-Developer-Key: i=aesteve@redhat.com; a=ed25519;
- pk=zI2RBeZgocwYm3AkJW4CtjoJnKoDZrfBl1xe5Ed6h+U=
-X-Scanned-By: MIMEDefang 3.6 on 10.30.177.95
 
-Stop publishing a driver-wide singleton. Mark the instance
-ready with scm->available, look it up from the platform driver
-for module-parameter stores, and use platform_get_drvdata() on
-shutdown.
+Hi Chanwoo,
 
-Signed-off-by: Albert Esteve <aesteve@redhat.com>
----
- drivers/firmware/qcom/qcom_scm.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+A quick check. the patch 1/4, and patch 2/4 in this series would be queuein=
+g up
+for your pull requst?
 
-diff --git a/drivers/firmware/qcom/qcom_scm.c b/drivers/firmware/qcom/qcom_scm.c
-index 73e9752e3cca..68cd8dc622c6 100644
---- a/drivers/firmware/qcom/qcom_scm.c
-+++ b/drivers/firmware/qcom/qcom_scm.c
-@@ -63,6 +63,9 @@ struct qcom_scm {
- 
- 	struct qcom_tzmem_pool *mempool;
- 	unsigned int wq_cnt;
-+
-+	/* Published with smp_store_release() once the SCM API is usable. */
-+	int available;
- };
- 
- struct qcom_scm_current_perm_info {
-@@ -174,8 +177,6 @@ static const char * const download_mode_name[] = {
- 	[QCOM_DLOAD_BOTHDUMP]	= "full,mini",
- };
- 
--static struct qcom_scm *__scm;
+Regards,
+Bean
+
+
+On Mon, 2026-09-07 at 21:21 +0200, Bean Huo wrote:
+> The devfreq core has three users of the optional ->get_cur_freq()
+> callback. Two of them check the return value, the third one does not and
+> passes an uninitialized frequency to the transition notifiers when the
+> callback fails. Patch 1 fixes that.
+>=20
+> Patch 2 writes down what a driver is expected to return from the
+> callback. Today this has to be found by reading the devfreq core.
+>=20
+> Patch 3 records the frequency the controller starts at.
+> ufshcd_init_clocks() puts the controller at its highest frequency, but
+> nothing writes that down, so clk_scaling.target_freq stays 0 and devfreq
+> starts with previous_freq at 0 as well. With use_pm_opp this makes
+> ufshcd_devfreq_get_dev_status() report 0 Hz, the ondemand governor then
+> asks for the maximum frequency, and ufshcd_devfreq_target() runs a full
+> ufshcd_devfreq_scale() that holds up the queue for up to a second only to
+> set the same OPP and the same gear again.
+>=20
+> Patch 4 adds the ->get_cur_freq() callback to ufshcd. Without it the
+> cur_freq attribute shows the last frequency the governor selected, which
+> is wrong whenever the controller is scaled outside the governor, for
+> example after writing 0 to clkscale_enable.
+>=20
+> The patches touch two subsystems. Patches 1 and 2 are for the devfreq
+> tree, patches 3 and 4 are for the SCSI tree. The two halves are
+> independent, at build time and at run time, and can be applied in either
+> order.
+>=20
+> Patch was tested on a Radxa Dragon Q6A (1d84000.ufshc):
+>=20
+> =C2=A0 before "echo 0 > clkscale_enable":=C2=A0 cur_freq 75000000, target=
+_freq 75000000
+> =C2=A0 after=C2=A0 "echo 0 > clkscale_enable":=C2=A0 cur_freq 300000000, =
+target_freq 75000000
+>=20
+> Without it both files report 75000000 and keep doing so for as long as
+> clock scaling stays disabled. A 4 GiB direct read after enabling clock
+> scaling again counted the transitions in trans_stat and attributed time
+> to the 300000000 state, so the frequency the callback returns is one that
+> devfreq recognises.
+>=20
+> One thing to be aware of: devfreq_monitor_resume() copies previous_freq
+> from the callback, but it does not call devfreq_update_status(). A
+> frequency change made while the governor was suspended therefore does not
+> show up as a transition. That is how devfreq behaves today and this
+> series does not change it.
+>=20
+> Changes since v1:
+> - New patch 3, so that target_freq and devfreq's previous_freq are not 0
+> =C2=A0 at boot (suggested by Stanley Jhu).
+> - Patch 4: drop the !cur_freq check, it cannot happen any more.
+> - Drop the now stale comment in ufshcd_devfreq_get_dev_status().
+> - Patches 1 and 2 are unchanged.
+> - The devfreq and the ufshcd patches no longer depend on each other.
+> - Avri's Reviewed-by is on patches 1, 2 and 4. Patch 3 is new, so it does
+> =C2=A0 not carry it. Avri, please note that patch 4 changed since you rev=
+iewed
+> =C2=A0 it, the !cur_freq check is gone. Tell me if you want the tag dropp=
+ed.
+>=20
+>=20
+> Bean Huo (4):
+> =C2=A0 PM / devfreq: Fall back to previous_freq when get_cur_freq() fails
+> =C2=A0 PM / devfreq: Add more details to the get_cur_freq() comment
+> =C2=A0 scsi: ufs: core: Record the frequency the controller starts at
+> =C2=A0 scsi: ufs: core: Report the current clock frequency to devfreq
+>=20
+> =C2=A0drivers/devfreq/devfreq.c |=C2=A0 5 ++---
+> =C2=A0drivers/ufs/core/ufshcd.c | 37 +++++++++++++++++++++++++++++++-----=
 -
- static int qcom_scm_clk_enable(struct qcom_scm *scm)
- {
- 	int ret;
-@@ -1962,7 +1963,7 @@ EXPORT_SYMBOL_GPL(qcom_scm_lmh_dcvsh_available);
-  * This is only supposed to be called once by the TZMem module. It takes the
-  * SCM struct device as argument and uses it to pass the call as at the time
-  * the SHM Bridge is enabled, the SCM is not yet fully set up and doesn't
-- * accept global user calls. Don't try to use the __scm pointer here.
-+ * accept global user calls.
-  */
- int qcom_scm_shm_bridge_enable(struct device *scm_dev)
- {
-@@ -2657,7 +2658,7 @@ static void qcom_scm_qtee_init(struct qcom_scm *scm)
- bool qcom_scm_is_available(struct qcom_scm *scm)
- {
- 	/* Paired with smp_store_release() in qcom_scm_probe */
--	return scm && scm == smp_load_acquire(&__scm);
-+	return scm && smp_load_acquire(&scm->available);
- }
- EXPORT_SYMBOL_GPL(qcom_scm_is_available);
- 
-@@ -2817,7 +2818,7 @@ static int set_download_mode(const char *val, const struct kernel_param *kp)
- 
- 	download_mode = ret;
- 	/* Pairs with smp_store_release() in qcom_scm_probe(). */
--	scm = smp_load_acquire(&__scm);
-+	scm = qcom_scm_get();
- 	if (scm)
- 		qcom_scm_set_download_mode(scm, download_mode);
- 
-@@ -2858,7 +2859,7 @@ static int set_minidump_dest(const char *val, const struct kernel_param *kp)
- 	minidump_dest = minidump_dest_map[i].val;
- 
- 	/* Pairs with smp_store_release() in qcom_scm_probe(). */
--	scm = smp_load_acquire(&__scm);
-+	scm = qcom_scm_get();
- 	if (scm && scm->minidump_sram && (download_mode & QCOM_DLOAD_MINIDUMP))
- 		writel_relaxed(minidump_dest, scm->minidump_sram);
- 
-@@ -2983,7 +2984,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
- 	 * be called after the TrustZone memory pool is initialized and the
- 	 * waitqueue interrupt requested.
- 	 */
--	smp_store_release(&__scm, scm);
-+	smp_store_release(&scm->available, 1);
- 
- 	__get_convention(scm->dev);
- 
-@@ -3033,8 +3034,10 @@ static int qcom_scm_probe(struct platform_device *pdev)
- 
- static void qcom_scm_shutdown(struct platform_device *pdev)
- {
-+	struct qcom_scm *scm = platform_get_drvdata(pdev);
-+
- 	/* Clean shutdown, disable download mode to allow normal restart */
--	qcom_scm_set_download_mode(__scm, QCOM_DLOAD_NODUMP);
-+	qcom_scm_set_download_mode(scm, QCOM_DLOAD_NODUMP);
- 	qcom_pas_ops_unregister();
- }
- 
-
--- 
-2.55.0
+> =C2=A0include/linux/devfreq.h=C2=A0=C2=A0 |=C2=A0 7 +++++--
+> =C2=A03 files changed, 38 insertions(+), 11 deletions(-)
+>=20
+>=20
+> base-commit: e30626823a406725ce29bc75cb8ec467d3e1e326
 
