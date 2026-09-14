@@ -1,146 +1,111 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A225385D68
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 18:25:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D3B437BE6E
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 18:30:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789410304; cv=none; b=ZQWGMyYHN1MlTsCSjVFkWWltcb1XUcsHgVK+X31z3yzTRFey6qIC/KnIrmlhXUxkN1VyoptdV4M+tcrnPwuHb5EB9D6N2C5c9ZUjBEpW0o4xRBv8Ku9g2fsRWZXXIMbFVTDPonin8M4eU2F4GUYmmFHV0R2lx0+LhqXmmo8lpAs=
+	t=1789410661; cv=none; b=eYfwR3NzBOFJo0vqvaL7fgXa/PqcHjGc0GjxQUw/ka96S9W0PkaPaw6PygVvDl5zsivyGyeJQL6dyDJt6udl53kZXF8tvrBmdHKzPh6DZEbxSJ+0L/ImL5DPq5N3/CO75j6Vh8+ACJzrT8hKy3L+GfW4wfemzLnw7Hnlkz1RlsM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789410304; c=relaxed/simple;
-	bh=E7HvEMEH3x9f0jAa3bC0loHO1RMGNOPokzzj9zsJJJY=;
+	s=arc-20240116; t=1789410661; c=relaxed/simple;
+	bh=0zjsOYLhvyRJ1pTm9DIcxSxZK4nF+A+ATxSzar0smpI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DsVlUjM5rqtjeAQNGdyrAMS7WrlKF20QpqOYwMQRiNCvBWqMZaxeOciCb1RgS6KdpUJrAczwhyVMiJrqrAL4G6/EZNe1wL6uD9FK8UQhL7uTRhuSBikkxnu+99Sx60pn3Hxvo5+AvR/dwnoIuubQdVd5RId5eD1k784cRSIq4Ik=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I2hYOyCB; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=eAOeT/I1DQUbrGd8Ior9bna+0qgER47HwKsN7hreT4mqQWOd5AoHYggEMcdNW3mdHD5nkA1Av6xEIySjA+WIEcYVyPF/YKJYe5YuF+6yzhBUXoHAiga3I9Ky4WPAcJ+iEsHT1L83EiwcFd3VEAdJmBJtiloZ9vRzIV+zMbKrGzU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QOTI9oJi; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I2hYOyCB"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD9921F00893
-	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 18:25:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QOTI9oJi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 373F61F000FF
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 18:30:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789410302;
-	bh=VkPKODouaWQz277H6RYko4h8DGXFuHfYweq4HcITfeg=;
+	s=k20260515; t=1789410659;
+	bh=Fl4PcAx6FdhNuO3+JAKo0artYlMpMraDuo4cBowVrVU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=I2hYOyCBl2pSXtgz11KfgeXNh8uATx3DiNNlT9BP7M06XdgWcl+YmXR0zPABP4ZGq
-	 yu8+huIlvDKirnz8D18T1+xlmHL9DU6QGB7PrZ9a/cQBTXVU6QGau0dQ10kwnpzzD7
-	 YYuj4ugVcwV5gfVvuLh6COLMdcjJVwSM+9XWl/USSVn/ue5o1LvePIi5hPVC2O1brK
-	 uWF4fzxp3//GxluiJNXyY1n5DpMpomuW/JD+C1Dg2B6D1Ji1BzipnXmXpI1bB7hChY
-	 EbbAowg7X9euZhTEjqQOOP/Lk7D940i166U0Pel76/zdr5/c+oL+RKHAevA9/JcswM
-	 xcmS7mBhQ17Wg==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a5d00bbb1bso4117421fa.2
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 11:25:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBy636EUUzojO9+CP1Thx6bZA2m4dr6i+oFjS8EZEAMTlpdJBGwCh+Gxnci5bJ35TlX+h1adNTwXtQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++nCYjF2E9H4qKs7AL1bE9edO7K8NAnv9MsEJyaYVKM1H51ry8Td
-	OaD7McmR8NiMrb+a+MpP1PwmnsTfYmg2mAAkOFFj8sA27UodKONcFEtVzXdm4H63wYO3v2ywQuA
-	0DfFyImkVxqME5G32fQ1hQl2g/hzIbFM=
-X-Received: by 2002:a05:651c:1986:b0:3a5:af50:bc99 with SMTP id
- 38308e7fff4ca-3a5c89b02bcmr10886751fa.13.1789410301161; Mon, 14 Sep 2026
- 11:25:01 -0700 (PDT)
+	b=QOTI9oJiyHmRcM9yOB8MWgOies0hjSZtcKatCuHTQbW6b2tDu6rjhSGLuIR54Jd7Q
+	 /b5fKgZdvoluC6XApZofY9BbJuOcUGWMHY+vEvL1BV85ezz9GSNkypGAKRijNxm1Ek
+	 b81ljdMH0YVTMudURfyXvG+q6E+hkwyf8dgvRKioZxM/5+T5S9fHRPlVn83/xhpHXR
+	 4dhC4qrGduieBX/Vs5KcRUfLE7b/Nu5a2ZCgKzggXCNzF3uWrwIluCMkQfJIyzWSTG
+	 CO/FlWvcol2aqivGroTjoDmHPa+HcL6USxTrHCEE66lzHD0SwycL0btHaSfAhhLUr5
+	 DDMfaSufkB4dQ==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16f15so2674560e87.3
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 11:30:59 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzgz8sTG+gDSY2RLWp4Z5h80+LRS9yIJQNMxYBrB1frClRPk46/IpFPAl7KrVb7bxp0w72m5FA59g==@vger.kernel.org
+X-Gm-Message-State: AFuF++nYPVipxwjLZln0KgO++gDyIfl0riUGs56PPogNjtFKRZnJ/DVF
+	ghnxHScUlB38/oTiixkrUqA7zfwhSK5FW9OT3zzINQkZxWb8roUunc4y/vyLXaOPv5O8cbWxdv4
+	WZcuOmV8USC92xVmNFoswI1T6UitIZwA=
+X-Received: by 2002:a05:6512:3187:b0:5b6:423:7f0f with SMTP id
+ 2adb3069b0e04-5b8ae8a76b0mr1747521e87.29.1789410657560; Mon, 14 Sep 2026
+ 11:30:57 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260910111329.2220-1-lirongqing@baidu.com> <20260910111329.2220-3-lirongqing@baidu.com>
-In-Reply-To: <20260910111329.2220-3-lirongqing@baidu.com>
+References: <03c0a0d4-20d2-475b-ab7c-5b1a3742cf92@amd.com>
+In-Reply-To: <03c0a0d4-20d2-475b-ab7c-5b1a3742cf92@amd.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 14 Sep 2026 20:23:43 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iPPmrTtLRG23UYJ_ibn7VUceuN2qFXpjCsBYnBzDMzYA@mail.gmail.com>
-X-Gm-Features: AcwNN1XrpECCpH-qeMvLzTLEkaV7aS72AoP0mk-c4jR0zH9fPAyVKLDsSnm7T6c
-Message-ID: <CAJZ5v0iPPmrTtLRG23UYJ_ibn7VUceuN2qFXpjCsBYnBzDMzYA@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] cpufreq: acpi-cpufreq: fix P-state index mismatch
- in get_cur_freq_on_cpu()
-To: lirongqing <lirongqing@baidu.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Date: Mon, 14 Sep 2026 20:29:37 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hu0pQZVvT5GZcpWt3itV6CT+ptMZyfGms3qdPW99ba4Q@mail.gmail.com>
+X-Gm-Features: AcwNN1W4Qcp_p5NzZvoY4GbY3csw53hcDhS8mw4I86DVtk-qhPx-2Akhq2tB0rI
+Message-ID: <CAJZ5v0hu0pQZVvT5GZcpWt3itV6CT+ptMZyfGms3qdPW99ba4Q@mail.gmail.com>
+Subject: Re: [GIT PULL] amd-pstate 7.4 content (2026-09-14)
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 10, 2026 at 1:13=E2=80=AFPM lirongqing <lirongqing@baidu.com> w=
-rote:
+On Mon, Sep 14, 2026 at 5:33=E2=80=AFPM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
 >
-> From: Li RongQing <lirongqing@baidu.com>
+> The following changes since commit df2908090cda368b01ff43709f51890076c561=
+57:
 >
-> get_cur_freq_on_cpu() uses perf->state, which is an index into
-> perf->states[], to index policy->freq_table[]. However, freq_table[]
-> is built by filtering _PSS entries that are not lower in frequency
-> than the previous one, so its index space no longer matches
-> perf->states[]. The original P-state index for each remaining
-> freq_table entry is stored in driver_data.
+>    Linux 7.3-rc2 (2026-09-06 15:07:20 -0700)
 >
-> Once an entry has been skipped, using perf->state as an index into
-> freq_table[] can therefore select the frequency of a different
-> P-state.
+> are available in the Git repository at:
 >
-> The reported current frequency itself remains correct because it is
-> obtained from extract_freq(). The mismatch only affects the cached
-> frequency used by get_cur_freq_on_cpu() to detect a firmware frequency
-> change behind our back.
 >
-> If the wrong table entry contains a frequency different from the one
-> the CPU is actually running at, the check falsely detects a frequency
-> change and sets data->resume. The next ->target() call then performs a
-> redundant control-register write even if the requested P-state is
-> already the current P-state.
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
+> tags/amd-pstate-v7.4-2026-09-14
 >
-> Conversely, if the wrong table entry happens to contain the frequency
-> to which firmware has changed the CPU, the frequency change is missed
-> and data->resume remains clear. A subsequent ->target() call for the
-> P-state that the cpufreq core believes to be current can then
-> short-circuit without rewriting the control register, leaving the CPU
-> at the firmware-selected frequency until a different P-state is
-> requested.
+> for you to fetch changes up to c8663e0457e6e6c72006478f4b6da99060030ec1:
 >
-> Fix this by taking the cached frequency directly from
-> perf->states[perf->state].core_frequency. perf->state and
-> perf->states[] use the same P-state index space, and converting
-> core_frequency to kHz yields the same value stored in the corresponding
-> freq_table entry during initialization.
+>    cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp documentation
+> (2026-09-10 14:33:59 -0500)
 
-Sashiko has comments on this patch and it has a point IMV:
+Pulled and added to linux-pm.git/linux-next, thanks!
 
-https://sashiko.dev/#/patchset/20260910111329.2220-1-lirongqing%40baidu.com
-
-Can you please tell me what you think?
-
-> Fixes: e56a727b023d ("[CPUFREQ] Make acpi-cpufreq more robust against BIO=
-S freq changes behind our back.")
-> Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+> ----------------------------------------------------------------
+> amd-pstate 7.4 content (2026-09-14)
 >
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufre=
-q.c
-> index a797bb2..3313c74 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -353,6 +353,7 @@ static u32 get_cur_val(const struct cpumask *mask, st=
-ruct acpi_cpufreq_data *dat
+> * Fix for amd-pstate-ut with 'Requested CPU Min frequency' BIOS option
+> * New Zen6 tuning values for EPP
+> * Documentation fix
 >
->  static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
->  {
-> +       struct acpi_processor_performance *perf;
->         struct acpi_cpufreq_data *data;
->         struct cpufreq_policy *policy;
->         unsigned int freq;
-> @@ -368,7 +369,9 @@ static unsigned int get_cur_freq_on_cpu(unsigned int =
-cpu)
->         if (unlikely(!data || !policy->freq_table))
->                 return 0;
+> ----------------------------------------------------------------
+> K Prateek Nayak (1):
+>        cpufreq/amd-pstate-ut: Fix amd_pstate_ut_check_freq failure with
+> 'Requested CPU Min frequency' BIOS option
 >
-> -       cached_freq =3D policy->freq_table[to_perf_data(data)->state].fre=
-quency;
-> +       perf =3D to_perf_data(data);
-> +       cached_freq =3D perf->states[perf->state].core_frequency * 1000;
-> +
->         freq =3D extract_freq(policy, get_cur_val(cpumask_of(cpu), data))=
-;
->         if (freq !=3D cached_freq) {
->                 /*
-> --
-> 2.9.4
+> Karl Mehltretter (1):
+>        cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp documentation
 >
+> Mario Limonciello (1):
+>        cpufreq/amd-pstate: Show a warning if missing EPP tunings
+>
+> Mario Limonciello (AMD) (2):
+>        cpufreq/amd-pstate: Add per SoC and per core type EPP tuning value=
+s
+>        cpufreq/amd-pstate: Add EPP tunings for Zen6 client platforms
+>
+>   Documentation/admin-guide/kernel-parameters.txt |   7 ------
+>   Documentation/admin-guide/pm/amd-pstate.rst     |   6 -----
+>   drivers/cpufreq/amd-pstate-ut.c                 |  23 +++++++++++++++++=
++-
+>   drivers/cpufreq/amd-pstate.c                    | 226
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------=
+----------------------------------
+>   drivers/cpufreq/amd-pstate.h                    |  16 +++++++++++++
+>   5 files changed, 214 insertions(+), 64 deletions(-)
