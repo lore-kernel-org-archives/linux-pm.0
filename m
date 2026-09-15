@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CA1143DEA1;
-	Tue, 15 Sep 2026 19:20:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E4364CE66A;
+	Tue, 15 Sep 2026 19:25:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789500057; cv=none; b=ZT+Wm4xYXt1P3PCUnYghvHPSO2BD9cnfJHekFTI386YrWIWSfo+e/HQ+QpxyTeLiAihelcHyUPN7+0i8y4pJGqoyVduSaQZGlF3whUS8Olas8QRvotWL4IW4IhCO7O3IRUNo+ft2x0Vhhm0kt1Vncjd/sH/tkv+tpv/1p0DZ0KQ=
+	t=1789500325; cv=none; b=aPpY5iM0g3YcKadmsrIxQU4/Lmh7MsxihA6dYR+DNT59Y2ZVxpgHQ3Rq3I8g+bfr6eqXbePOT0QBL5Vqk+m1CJdIDCGG/Sz3EMWhijtwzsoDcETGzjR98X1MVRb2H1thAv3uipx+J9xamPXDUigeEgW3CTLRbWe6JPsQAK8uhTQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789500057; c=relaxed/simple;
-	bh=3dYTqMTOtv3m5K5bwYPMulkTKBm7xa4wYqkVVTqK4qQ=;
+	s=arc-20240116; t=1789500325; c=relaxed/simple;
+	bh=wSWL7biVBvzK7BJ/753cBEKcMB0azvZH12D3W7WWFCk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=a86tinHE+gvNQXQLL7kMhce2RZrLYWO33nJEEDP524gnLm9jD/qIiI3Bw8fAIEzzHwFIEUXPuBaM/nK19asRABdArbamqV2TbeYkMGg1U7LWo1YE0+gBlV6+FacTKl5FkCam7Q1uXah6RFd656HRzzEf2C8/ereaGIG4v6m+7yk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b=lbVTw9wb; arc=none smtp.client-ip=212.227.15.19
+	 In-Reply-To:Content-Type; b=Q6mx2tvqpC6C1JKL+OjzxBDEsWyH2tff4/VPdqWHQ02IJq5OiCw3ebQqLbC2E1khWPIB2nNmcBRiMzWbj9kEt2bGrDKzIIFrG8tIIKTSjidgfoesIyHryITVft3saLr5s/TRRZxc+vhuIXdkP303/A61zqkOg4n5Jhrn/VDuGDs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b=SK+iVnqL; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b="lbVTw9wb"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b="SK+iVnqL"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1789500045; x=1790104845; i=w_armin@gmx.de;
-	bh=PPuFUINuhV/rG1wnVX8mHFYWiFz98IZCHupfwMFolm8=;
+	s=s31663417; t=1789500311; x=1790105111; i=w_armin@gmx.de;
+	bh=BBkYGmi94I4D7FYZrnZnY+yxsH4qY8YyvYy557xoJr0=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=lbVTw9wbyX2NDL+nMPkPRqbIqQkdTCDsU1HF4oBQvqVU9ncdvu4QXtUzygtPVht6
-	 nnWZVQFsOSOVChsxcaRFe21yLfmcoqYHetcURbVZ3Smjye+ZWzgBj9Mxe+fTDyjBO
-	 6N3OY0bARFIE+whzSTxGksaUz6mmpdRxzRN3bSy5vRpHjej/NUHywjAb43bYaNR0O
-	 QHENFtJAsxRJO9d4hZvkp+qgfozXhq+IY1z0haPCCsVru3KTqbRR1lEQi+DXwBP6s
-	 hB3Krk8y4u8O3RwEhvAmNBRHnNXZM09JR2TBHE8DnvGS1lw+62K4HBjmC+d0ryBrI
-	 bNfm2AXiFVoIuTj7RQ==
+	b=SK+iVnqLyhnVYWWmTALCfIXOGvjeKPamEqIFd7Sh2DbsUzIknPprsZE4oWd+y0be
+	 wbfy8R8yJrNi1gpTmnT+/UNwnv75Yr6UiSZ7a0PuOfo6BCsLjhM9Qre7uSEuZ+t5q
+	 gOjR6pS1rc7puVvcqQDHB4yi8mdf8vzVRqhHjpSAk184tX45YLJkhhbLM2wL67+dE
+	 jp64gxP9cx1ZbckWJ/YOFNQpD+PKnF6dpwFMP5TNkxy4C0/3vu7aswdIH6vYckwEi
+	 CjInmWoGgxRsgc59eJCLKZEKt30wxyPXlsUjspIIUdpApB9QN2l4AENRUAwNTTt60
+	 G0BzBlHnfrQWDoa63w==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mqb1W-1wSqBZ09Ee-00oqQe; Tue, 15
- Sep 2026 21:20:45 +0200
-Message-ID: <77b1542a-5f3d-4d8f-bf97-67e2c2805927@gmx.de>
-Date: Tue, 15 Sep 2026 21:20:43 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M7K3i-1x9q1q3HGG-005ZX9; Tue, 15
+ Sep 2026 21:25:10 +0200
+Message-ID: <a3c2a1ea-7891-496d-9923-a2607afa1e2d@gmx.de>
+Date: Tue, 15 Sep 2026 21:25:09 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,8 +43,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 00/10] ACPI: thermal: Register thermal class cooling
- devices under parents
+Subject: Re: [PATCH v1 03/10] thermal: core: Introduce
+ thermal_cooling_device_create()
 To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
 Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -52,170 +52,323 @@ Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  <hansg@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
  Linux PM <linux-pm@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
 References: <1965933.tdWV9SEqCh@rafael.j.wysocki>
- <951189ad-71b6-4776-8484-a207f1efe415@gmx.de>
- <CAJZ5v0gLWT4x44Vbruaf0cKWp0jPTkLuh0pLQ29_O5vfNC4q_A@mail.gmail.com>
+ <8729484.T7Z3S40VBb@rafael.j.wysocki>
+ <7ef819c3-5155-48fb-828a-48d9bd72e54b@gmx.de>
+ <CAJZ5v0icBLqUiU4ZF=iY6TB92syM_c7xGBJ7Ag7DGt+f7THHRA@mail.gmail.com>
 Content-Language: en-US
 From: Armin Wolf <W_Armin@gmx.de>
-In-Reply-To: <CAJZ5v0gLWT4x44Vbruaf0cKWp0jPTkLuh0pLQ29_O5vfNC4q_A@mail.gmail.com>
+In-Reply-To: <CAJZ5v0icBLqUiU4ZF=iY6TB92syM_c7xGBJ7Ag7DGt+f7THHRA@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:pwNkncHwmr78olvv9wFxney+VYyEHmG2TGci576xDE5+P8w5q6z
- XzAAh23+U0sibBFUS1jqnBeL21p370IMb9RaeolQDjv9CO3wttFKhdzEyoynRvKBwE7QvqE
- 1K0Irnpv55vNk8KygnSWUrcKVv14Lj43IvGa6ie72CnfFTSG2qcxR/gfbjAhiWtd/Kja3kF
- PGvxfdLQj5Wi2WrAjM28A==
+X-Provags-ID: V03:K1:dMrPfxTcse46cCbIvTJUwOIait7UkA4stBVGO9ThVblDyA6DJvO
+ 78vBz6406xmLI0t8ANq7M/yACZQGK4F9mxmkwjktYL4H/vfmmZw74iNQupofugVuqqGqA2l
+ 193XiI45wsDl7B3x0kLUAOlpWvuQCi7fQPBgo6WKjGMvSsKWIUJLw64emd9iSB5vbrBxDiW
+ Sk9cO6WycL6bhBv3cf9AQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:ZXObKeBDjWQ=;T3kMKJYT3OZECq3G9+bBpcVKmD5
- 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
- 0n+NFYkXx2ejcWGYzDzKD+
+UI-OutboundReport: notjunk:1;M01:P0:laYf/41f5YE=;3Fwlziv54Sj+fFA1lfyYKzG20Ox
+ z/3DEq+CUZ6zwQfjJAtA4Ug/MjV4sJUQc1OjAFdMFafqd1XU6esiydfvahgudNKYrWocGHFOp
+ sswKeK1klWwwfnjjKRntXB6GAcDIPVBsoroP+3y68WnY1zLewJUwqZlq2Ony2Awj9h1ppUe0J
+ cBX7M3moePj/+DShxBrRKhpV1DiOG8KkQaYeFprqeAt9Z3A7+TXqW0anseQUaepU0Sa6iZao5
+ fC+UKCTLpPteQlCFC0LYzQUcH16IOZNqk+8gr50oVUXvDAbwBfaV5AWR0v/EDcPeXN/wRxB1I
+ b470iWc64P4s1KapIOKqcJY5m6DZIZl7PV1h2Em5EWOmX1myLCMJXw/x2YqXelCCdlBYdCdtF
+ 0FMHQQnDmA+ZkuW2DD+FDBCeQk70AeZlpJOkzmWW+expvWmrN2lNJoLlZWW3Z2ksO0pbZZYtT
+ VOVMd/raLP2m8A9gVqkMxU/MRY6QILyiCdofMOeVg5Yagl7ChaDH4ymNEOY/LisVih0FMN97P
+ 1YmkUlfC8j84Ib6H6/a65l7nLsrvFDfOinbsP/F8fyw34pNZy4Il8R7MCjPSGLIV+s4ia9Go9
+ BXsyRu3k2vtQFfBWgJYpKcI4H4+fY2s5VJ0KfecKIB7C7utNssi4nh7u3xGjC56wFybKvBdXc
+ kc73naCvO9dgZXjYA4JMGBIP/g5koRzSV/RIFBr2dcQzfu0gB2BlO0fOtTJg4zUJyknJaw/Y3
+ KImyMllIYRDhmpTSryDU/Fds/qskIOzXJ3Qn7zat2m4c/5LClB89fwmv9w88pBcVX3nukWEgV
+ 21f4YBW18eG/Ps1PFWjCq3GOBNnyquGsU8JbjYDsYAJMA3NTaI5K6fhuhOKEZY1DtnvC6FOZZ
+ /US6sR0rSTOmL2akEKdCQqZcaGiNth46ymnh8WT1iwjnuW4bPDM61bQbFe8j4MAyhxeUzQx88
+ iifsm2kMJ4qoUxr2L0e7b6zwz/nzA1jAJ0Daq8nwAkxywUJMeGCwkD8Y+YulH1PnM1iM95umV
+ uv1XHQi+OGIVWWy5hVUCnuBtefMV+HcQ/XBdsu0ih1ZvjXGjWxIrQjafeBCcEmxkZT85PWrHn
+ 3h7uDUPTfQmqt4jafmyMFBCd0d0tcQFz7OxLVZHLC+Mfme3L6i//bM21YU0Sf2qVekHZXh2UI
+ Ww0fYk++5sReKC6+JqeBBR/lCnVOz8cCmFBo823b05u4Q8bqaXpKwcHOoEKppEB/DJtsHphYv
+ hx818kEvJh90ZPz2aBSkW+ExNRX9lv1s/VGn/yYKBK87fNahINqeIu2Z8EBcb8nwbbQvavN2k
+ RjpUeQF8mPDM6ekWiEnYwhoYhDisZ3nDHQ0o/JhEQro+ekrlpH5F1PJTmfhbsSiXVBtKO1HrM
+ wx4I3QWWi3xxfSbsu8UX+AVS3UiPlwYr9JMIUOvV/NT1gKdcaWMh36xmCrNBS7d2UjDcapsef
+ espNON3VWWlAUgr3c1VZ6qj0c/GPyqqvK6pgDffNe/HhVmdxKS0IlFREt5cqG+uOM1uofMPRJ
+ 7oxAoxDeblbiiTliNhIyEj7OUM5tQ1cKNODA0zKEmAHuk5bF4siq+23UYEYzZyqgt1VYY3PoM
+ GzO39n9vevy6ttEb6A7qTyqbavQGtjZepj4tNBxJlpukZsHTyQevN417lmK6PSZvJK6DeJMRy
+ sELTxrlwIaaCKSMITPCrnMU8GfY9iPk12dKdTU3e1jmUNIyTqnfNKYdTJIziF94i66he8D8Mg
+ XXVin2sZHDHOE2oIVK7zKpIGvOyGLwks1Q1RXm4gW/+bJ/YO41whedHidtdBXxlElscnt8zzJ
+ YdAg2ZX2E0/vSZul1g3V0MVBYtsAihM119ero4JlzPGw8BHtrsBXVS+KbUvSeeNHej3zA6wdV
+ WOfPbp3tvR4EuQr6qlLMJj9stVFwiIMe5oR8Zh3rYu9HzKb5LzYbt2rU3iSlzp/EvmnRS3UWn
+ 2W4XBL7PN7xa2ngdnqKRH+wwn0GAE3VxPIGLjOB0xn9rkGgWvYNGmEoYNqWxrCcHCw4uZiKwn
+ +/sz7nERHFhpAaUPmvNztr2YevBpj0eK5Bd5ksfz/p1qnFv+x+3c4tWjsqjhLKiCQvUisTosg
+ SAX11fFAOKuYNr1OTTeqwuSrEqzfuGNk1Rk83e3jxTHPfsqomr66gI9OhF10G7KFiH8dEfw3F
+ xKngIrMHZL6suodKeyJERIqi5RhaOeZwmnyD5/Xt9eiqujpIiptchUv9rgdGSUMDgdyY1K1UC
+ KTQ+i4A6J7GpmmhaWYA0EwYm2T8hpHTfjKhMDTmIBih2my230Ld4dv2kf3pAC3p5iJuDizpMD
+ hukxXfwxUnSU9dkgHm6hQvhI+sOB7c/mAa+6ekDGtmLiPf0Rg75n21g4dQwar+rYRz4bMAAFH
+ wivbBdo1YzGFTasnjUEbervykV9H4NddyBxgql5xciwPtoJQ8rNtl1cWUakPE+qhMaI/MtMCh
+ K+UOsYVuH2udIbF8yrXmYd6yeqrTNcRRbnvO9AOSoE1IQUbbuRx3ZyDbT7brbcYMmSHXqNjHl
+ e4nwfr/je38ViJs0fhy8c1MutEzxyeCCKS+BUsPhI693Cg6wdMbl5CHojYizlJDf7jUvKmirE
+ uE5qNlj3IHPet2CU64alX/Xd4QU7a2wBSE4U1ac4bDNpqRMphvkRXVkEl7wPkrbk1CuNOIla2
+ cvkptDoZSy/B0hhY6PzojfuV5Spgys+kfvZdtL+oEdnFl35HoJfeX9cNqNQy27QzJ6zffOl3A
+ 9lx6JSquckkYA9jO4kb2cTXjAx8miYuXQ8liZR0Uz32kfs0Yl7a/elH/cAKwUCCwy2ow0OPqt
+ KVxEjOUCbvHUR/higSavw2JlITxEA0Krovw301U4WbP+Azk1uC6+xiginfsrf9JZ9PGILvz0V
+ rlqlw8+cgtPqCMBCVGivgRYk5qS9HTYSRHEUpl+SbpAPbAL2PmKELg23soC0Dh3UM0ecFaiPC
+ GxxqWSJL/CB7woGkeZGObAUa6aRKWkU5ULUa0XRW7STOtZlsj3Xrl5EMX1/hUCoxfE9ma39wm
+ q08T4eECsNyuF3c8FYxkvxH+woISL0L8Rhlu4nOOVLblyv8w+nYRql4CCyaBaGx+mNVC11ouc
+ YqlDVyokQjEMMBSCBmnqNndy8UpWg54fMDbwqRXJ0PcTbjDS612iOMiwbFPaqJnvhAg9vaZro
+ lIvn1XOS0HOQj4BBoX5tORkdVhBB53pxtYdPp9rbSKs85D8FKsBhnUyCTbYdbUW4+/GFNgK7W
+ Wz36b4r3+Hcl3HkxavxhTWnLm6nB7nwbbo7MST2UPsEFNFSzGdIPxhSBu20gjH2pgwLFKrk5Q
+ nTmOsEXVH/hb7xG9bgC2P/xZMbulivkvIWELZsoydrGlW0ISr2/LePEJhALkUkZO6q18BFO67
+ InXC5qOWvBGjCndN3fizXoN93EIFv3qLLL9jb4H9jsDGwuIpOArBnJV2LbrCw6g9J+v9aXAvr
+ Cl7XPNwcuQrpuZPb+KIgxdx0p9AB5HKLx5ZmsCSWZ9ARPedJpdJn8IQtvL+x++ELcyjp7VEj/
+ 8yl6YBNjQM1wDbCJOG4aPIvHUYqRuchyaou5pTq7vnqfF/gJDuC4Ryk3G++n5F8uEhqiDH8Un
+ t+v0cPp1ns/1zvlDhRq4OTfTGC98ILQzB+v5hakiQ1xTBezsRwXRawPlrSvWIBCxVpjWGBrwt
+ c2m1ZumBIgUJdzHGxi4VmgLTEd99ltnXQclh0iu1w/KrCV0j3fR3bL/GRjnA7jF/FUH8WNIJl
+ 6xx+nqr7/moCOIJ7yaIe6pZPzwk45DhViwaqJoLrE/dGre9mC5CAjdKV3oP1SkpcvnNYK3eyf
+ VKzLJs0tqXrDVp5pRli5f6P1nI8Tyd/i3haLHlKwCB/I+ij7ToIdZOsPRxHatwHHapC9XGM4v
+ xbmFiR3fdOeBhr6aKriovEQy9J4ZNrMQ3zSNCOYfvQjmcSXnd/w90y/8d0oABYS7M5WkTTUmg
+ gkq45sidObX82e7gmyjU7MxN15PAfF+KB23ZrcmRhF3gkhJtdmkCKhpgR6hQBuKx0VrhExlzo
+ sGXf6GB3imskoiA257uG4Sder1JVxq2ZPHzptRcPktPgAs/kWV3A+AZtLZ4ssHNBFl1xKMZ9Z
+ PfabVoJs+uGti6+FNNG7t82Ev49A9n4Ix2wxkpKa7bu9BC7ay7C6T9yaQoIoimj6aDTEro3jw
+ 9vFi8zyOjTNq4SNlCGvFXB3pbDlmxzguiJcKibC+jlgP+N+cAlJDkwx+uUztSQkyt9RacHvON
+ QrMhq+SgADTFosYrvNL7XdCmxgn5bJyNBekgz93gx/LEsNO5og6/WxgaEoUfyN9jEXkk3Kxzm
+ Mqae2+E25qCYCYIjPgrMqOSKC9QTI1lvKhR3/YzuN7YIhdXxZZj2cMBtSZclqzxV38IQqJWNm
+ jny1cYW+mcCcbgLpi4TH6h5M0k+JX1h3zV7XWKALnU+GGm1ELO54N1faQ0HG9N1U3qQWqraVq
+ VbLtoWHtOS6XtxWl97oHyS1AmubrRFOtLegOD+ZOgq53TmUvkGQozg/Vlb92AozFAmFZpUWW/
+ HyPq9Hp2wnE9U4YK5Tuwoi59aGj6L6hAdYH3/wCzJ2tLXgFAcy6o2RME+4k4Hkj2HWF1j34r2
+ EARp0jMdNUZyAdDpOKjWQ+ilmgcCSCDd8Ut/Gadbcs/jd2/9+COGoe3CDZDj++9ANs85WLsEX
+ AlCahtgr22xoRJaVg/wr+Wz+Liob2q0AnwrAC6MbMF7dKvZ/4S+K+r++RPuIQNtUlGvu2JNmK
+ bvVQg9DGuTlywB2TbANq49Jlg/V6o8Q4/YPyVQIoovPKqFZ48VWTS8bAGvg0bpwSfOj9dD9cP
+ h8nfGc56LlyUjypyMRiWqVa13mPt7pWD3NM16sxf3Qjk0a9vsjCns68aIDjucuwif/qyY45tj
+ 3eZOnrGiQvO4wuxxhq1Q7W+UDQ2Vfp0GdJfMScYkJWgCci1Rfy9vOGGZnsWOchCmaYLBG30DW
+ GiO6YX6zJALaWN/xdKGVG3PTM3CyQ9pq4hmqEjDTQRCx2+t4O0HNH7w6ZNNmSyWEIm0pPzTTG
+ 8b4Rh9778GuH5YxNrvVkRlBUKDZkA0XB08vq0b3zlQNozNFar4hUeXnTz+ORm05lceB/NEwc/
+ 00OjoajU3oC+2Kwk8gH/DjvQNXgueaW/bIT8qivjuoclt9uQ43Y4Q8mZp+SaTVNIkdCsbzyyY
+ jkA24MAj8gAywryAgqwBrMISjSCZStAO1iFAJzHQoYGoeJyO/YyYi+/MAbBszNrGlY0q8xmJY
+ aqAyHasPV0kaPExFZF4FSet/gGfedOTsaZcAikf9VVQpeEBzXm3z/OhSAt0U6+4FBtYuiYabG
+ wBxNSHJtnqAJBaXu2Yucy19QCFnihXhmKv5ShVvN0bWle9uR49rBeSFVmymwuM5zO6mSVfxKo
+ VtBxx491XY0GbSRj4hQyw5IXt9gv1tPnfcTQW4/Mm5zfva0hWl+uftCcGX2zHonEA6n0r/xuH
+ sli9ipMDlJL3wur3Y/ZWtAhsL3JGqtO0NZ84ZTEtQ0s6v2dQzlyCGCNIW2AnDxd8jjOPdINm4
+ 8x1VpZqNzUJXXOubPoqnWKL6xOSFW9oJgBrCSEQ63G661f+gAxGJwH70s33FpnyYMygVqf/Uu
+ QUpNzfoz1lPRTo1Wbj1j8cRBBHji1iHYPPci9ISkGr/ceI3OhyPskraqRklv9jf7gPVVIju5q
+ RLSwmkJ51nkZXBFxDeQQyCY/AKk091LFxabQqNOi4BkVL3zm+7ufXqOo/pAWOGOSp51XLy3rV
+ XAf2Qa1gApt+hnZK3UcP/rFozvz2QFsVmNM1jrnWj/+eDnKxIZiFPZpiRSKirGWWu3Zn/XtaX
+ nsbuls/GN27ifiePySZmu1z5R8QbMhjf2VJJ+Gys0UhFb1wqjUT5rBwLdbuvpxuWyeM31ghO3
+ mvjEuSag758lqcxv04uDiC2bXiSKxYrN4q3HwmfnQfttQ5FNSof7zdwP5DgsEMx2v8xK3eHPo
+ kKyMdYMrDpaABvzSD+tOJTUBllHXCCfuhzwA78SY1grYzSWt7WHrkmDKwmXoSlwaHOJmqENot
+ E13jkdi6RVhnrapD3rvgDhNjQHXF++oQj2UAHFVLlJG80bE0DPIyE1PKIhyVSRFAOMELHLkwD
+ BDXkh7m/tBki2NP3FBFTp4itNV9bPMA9OLkrUGDQTQTpKPCWXJSu+P3jaVPWxpBNnFa2nRpil
+ Aw67Zhav6aOyKHZ+rI/qFU7X7qsZ98kOOfXxH+c48gSZAifPfAlgo4U0ClpzjIejcivaOlVTJ
+ 7T8FNmkhnnmto9rePG8gZwVydLhv3TGvztU5VH2DpJV2twxqfFnvVv6PoZy9k5BAE3moGpCYD
+ UNZYBJJhDkZDx
 
-Am 12.09.26 um 15:34 schrieb Rafael J. Wysocki (Intel):
+Am 14.09.26 um 12:18 schrieb Rafael J. Wysocki (Intel):
 
-> On Fri, Sep 11, 2026 at 11:35=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> wro=
+> On Fri, Sep 11, 2026 at 11:04=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> wro=
 te:
->> Am 11.09.26 um 15:00 schrieb Rafael J. Wysocki:
+>> Am 11.09.26 um 15:02 schrieb Rafael J. Wysocki:
 >>
->>> Hi All,
+>>> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 >>>
->>> This series generally changes the way in which thermal class cooling d=
-evices
->>> are used by ACPI device drivers registering them (ACPI processor, ACPI=
- fan,
->>> and ACPI video) and by the ACPI thermal zone device driver.
+>>> Currently, thermal cooling devices have no parents, but it would be
+>>> generally useful to be able to create them under specific parents in
+>>> the device hierarchy (for instance, it may help to identify the device
+>>> representing the actual cooling hardware).
 >>>
->>> First, it causes the thermal class cooling devices to be registered un=
-der
->>> parents in specific locations within the device hierarchy which allows
->>> their relationships with other devices to be recognized more easily.  =
-It
->>> also drops custom sysfs attributes registered by the users of the ther=
-mal
->>> class cooling devices because they are not particularly useful any mor=
-e
->>> when those devices get proper parents.
+>>> To make that possible, add thermal_cooling_device_create() that will
+>>> work like thermal_cooling_device_register() except that it will take
+>>> an additional parent argument (which may be NULL).
 >>>
->>> Second, it modifies the ACPI thermal zone device driver to use thermal=
- class
->>> cooling device parent information for binding cooling devices to trip =
-points
->>> in thermal zones, which was previously done with the help of the devda=
-ta
->>> pointers of the cooling devices and effectively prevented drivers from=
- using
->>> the devdata pointers for their own purposes as originally intended.
->>>
->>> Finally, it updates the ACPI processor and ACPI fan drivers to use the
->>> devdata pointers of thermal class cooling devices in a bit more effici=
-ent
->>> way.
->>>
->>> The first two patches in the series are preliminary fixes preventing
->>> Sashiko from reporting "pre-existing issues" in the subsequent patches=
-.
->>>
->>> The third patch is a thermal core update allowing thermal class coolin=
-g
->>> devices to be registered under proper parents.
->>>
->>> The other patches update the ACPI processor, ACPI video, and ACPI fan
->>> drivers as per the above.
->>>
->>> The details are covered by individual patch changelogs.
->>>
->>> Thanks!
->> Nice patch series, it looks mostly good to me.
-> Thanks!
+>>> Redefine thermal_cooling_device_register() as a static inline wrapper
+>>> around thermal_cooling_device_create().
+>> Hi,
+>>
+>> i like your idea with the new registration function, this gives us more=
+ time
+>> for migrating the other drivers. Should we mark the original function a=
+s
+>> deprecated?
+> Well, it's not a big deal if somebody uses it in new code IMV.
+
+Ok.
+
+>> For the patch itself:
+>>
+>> Reviewed-by: Armin Wolf <W_Armin@gmx.de>
+> Thank you (and thanks for all the reviews)!
 >
->> Do you plan something similar for thermal zones?
-> I do overall, but that is a bit harder due to the hwmon involvement.
-
-I understand, maybe we can discuss this on the LPC.
-
-Thanks,
-Armin Wolf
-
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>    drivers/thermal/thermal_core.c | 28 ++++++++++++++++------------
+>>>    drivers/thermal/thermal_core.h |  3 ++-
+>>>    drivers/thermal/thermal_of.c   |  2 +-
+>>>    include/linux/thermal.h        | 19 ++++++++++++++-----
+>>>    4 files changed, 33 insertions(+), 19 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_=
+core.c
+>>> index 82e2f0d8a26d..ac928c199829 100644
+>>> --- a/drivers/thermal/thermal_core.c
+>>> +++ b/drivers/thermal/thermal_core.c
+>>> @@ -1005,7 +1005,8 @@ thermal_cooling_device_alloc(const char *type, c=
+onst struct thermal_cooling_devi
+>>>        return ERR_PTR(ret);
+>>>    }
+>>>
+>>> -int thermal_cooling_device_add(struct thermal_cooling_device *cdev, v=
+oid *devdata)
+>>> +int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
+>>> +                            struct device *parent, void *devdata)
+>>>    {
+>>>        unsigned long current_state;
+>>>        int ret;
+>>> @@ -1013,6 +1014,7 @@ int thermal_cooling_device_add(struct thermal_co=
+oling_device *cdev, void *devdat
+>>>        mutex_init(&cdev->lock);
+>>>        INIT_LIST_HEAD(&cdev->thermal_instances);
+>>>        cdev->updated =3D false;
+>>> +     cdev->device.parent =3D parent;
+>>>        cdev->device.class =3D &thermal_class;
+>>>        cdev->device.release =3D thermal_cdev_release;
+>>>        device_initialize(&cdev->device);
+>>> @@ -1062,21 +1064,23 @@ int thermal_cooling_device_add(struct thermal_=
+cooling_device *cdev, void *devdat
+>>>    }
+>>>
+>>>    /**
+>>> - * thermal_cooling_device_register() - register a new thermal cooling=
+ device
+>>> + * thermal_cooling_device_create() - register a new thermal cooling d=
+evice
+>>> + * @parent:  parent device (optional).
+>>>     * @type:   the thermal cooling device type.
+>>>     * @devdata:        device private data.
+>>>     * @ops:    standard thermal cooling devices callbacks.
+>>>     *
+>>> - * This interface function adds a new thermal cooling device (fan/pro=
+cessor/...)
+>>> - * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to =
+bind itself
+>>> - * to all the thermal zone devices registered at the same time.
+>>> + * Allocate and register a new thermal cooling device under the given=
+ parent (if
+>>> + * not NULL) and with the given type, device data, and operations.  D=
+uring the
+>>> + * registration, it will be matched against all of the registered the=
+rmal zones
+>>> + * and it will be bound to the matching ones.
+>>>     *
+>>> - * Return: a pointer to the created struct thermal_cooling_device or =
+an
+>>> - * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+>>> + * Return: A pointer to the created struct thermal_cooling_device or =
+an ERR_PTR.
+>>> + * Callers must use IS_ERR*() helpers to check the return value.
+>>>     */
+>>> -struct thermal_cooling_device *
+>>> -thermal_cooling_device_register(const char *type, void *devdata,
+>>> -                             const struct thermal_cooling_device_ops =
+*ops)
+>>> +struct thermal_cooling_device *thermal_cooling_device_create(
+>>> +                     struct device *parent, const char *type, void *d=
+evdata,
+>>> +                     const struct thermal_cooling_device_ops *ops)
+>>>    {
+>>>        struct thermal_cooling_device *cdev;
+>>>        int ret;
+>>> @@ -1085,13 +1089,13 @@ thermal_cooling_device_register(const char *ty=
+pe, void *devdata,
+>>>        if (IS_ERR(cdev))
+>>>                return cdev;
+>>>
+>>> -     ret =3D thermal_cooling_device_add(cdev, devdata);
+>>> +     ret =3D thermal_cooling_device_add(cdev, parent, devdata);
+>>>        if (ret)
+>>>                return ERR_PTR(ret);
+>>>
+>>>        return cdev;
+>>>    }
+>>> -EXPORT_SYMBOL_GPL(thermal_cooling_device_register);
+>>> +EXPORT_SYMBOL_GPL(thermal_cooling_device_create);
+>>>
+>>>    static void thermal_cooling_device_release(void *data)
+>>>    {
+>>> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_=
+core.h
+>>> index e98b0aa5aacc..7ef7c6cab437 100644
+>>> --- a/drivers/thermal/thermal_core.h
+>>> +++ b/drivers/thermal/thermal_core.h
+>>> @@ -270,7 +270,8 @@ void thermal_governor_update_tz(struct thermal_zon=
+e_device *tz,
+>>>    struct thermal_cooling_device *
+>>>    thermal_cooling_device_alloc(const char *type, const struct thermal=
+_cooling_device_ops *ops);
+>>>
+>>> -int thermal_cooling_device_add(struct thermal_cooling_device *cdev, v=
+oid *devdata);
+>>> +int thermal_cooling_device_add(struct thermal_cooling_device *cdev,
+>>> +                            struct device *parent, void *devdata);
+>>>
+>>>    /* Helpers */
+>>>    #define for_each_trip_desc(__tz, __td)      \
+>>> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of=
+.c
+>>> index 0217a49b08ae..14dfac9359b8 100644
+>>> --- a/drivers/thermal/thermal_of.c
+>>> +++ b/drivers/thermal/thermal_of.c
+>>> @@ -561,7 +561,7 @@ thermal_of_cooling_device_register(struct device_n=
+ode *np, u32 cdev_id,
+>>>        cdev->np =3D np;
+>>>        cdev->cdev_id =3D cdev_id;
+>>>
+>>> -     ret =3D thermal_cooling_device_add(cdev, devdata);
+>>> +     ret =3D thermal_cooling_device_add(cdev, NULL, devdata);
+>>>        if (ret)
+>>>                return ERR_PTR(ret);
+>>>
+>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>>> index 083b4f533933..306ad17aed89 100644
+>>> --- a/include/linux/thermal.h
+>>> +++ b/include/linux/thermal.h
+>>> @@ -293,8 +293,9 @@ struct device *thermal_zone_device(struct thermal_=
+zone_device *tzd);
+>>>    void thermal_zone_device_update(struct thermal_zone_device *,
+>>>                                enum thermal_notify_event);
+>>>
+>>> -struct thermal_cooling_device *thermal_cooling_device_register(const =
+char *,
+>>> -             void *, const struct thermal_cooling_device_ops *);
+>>> +struct thermal_cooling_device *thermal_cooling_device_create(
+>>> +                     struct device *parent, const char *type, void *d=
+evdata,
+>>> +                     const struct thermal_cooling_device_ops *ops);
+>>>
+>>>    struct thermal_cooling_device *
+>>>    devm_thermal_cooling_device_register(struct device *dev, const char=
+ *type, void *devdata,
+>>> @@ -340,9 +341,9 @@ static inline void thermal_zone_device_update(stru=
+ct thermal_zone_device *tz,
+>>>                                              enum thermal_notify_event=
+ event)
+>>>    { }
+>>>
+>>> -static inline struct thermal_cooling_device *
+>>> -thermal_cooling_device_register(const char *type, void *devdata,
+>>> -     const struct thermal_cooling_device_ops *ops)
+>>> +static inline struct thermal_cooling_device *thermal_cooling_device_c=
+reate(
+>>> +                     struct device *parent, const char *type, void *d=
+evdata,
+>>> +                     const struct thermal_cooling_device_ops *ops)
+>>>    { return ERR_PTR(-ENODEV); }
+>>>
+>>>    static inline struct thermal_cooling_device *
+>>> @@ -391,4 +392,12 @@ static inline void thermal_pm_prepare(void) {}
+>>>    static inline void thermal_pm_complete(void) {}
+>>>    #endif /* CONFIG_THERMAL */
+>>>
+>>> +static inline struct thermal_cooling_device *thermal_cooling_device_r=
+egister(
+>>> +                             const char *type, void *devdata,
+>>> +                             const struct thermal_cooling_device_ops =
+*ops)
+>>> +{
+>>> +     return thermal_cooling_device_create(NULL, type, devdata, ops);
+>>> +}
+>>> +
+>>> +
+>>>    #endif /* __THERMAL_H__ */
