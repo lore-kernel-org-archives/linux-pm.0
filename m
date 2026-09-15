@@ -1,135 +1,206 @@
-Received: from outbound.baidu.com (mx24.baidu.com [111.206.215.185])
-	by smtp.subspace.kernel.org (Postfix) with SMTP id 2FB763D1CB0;
-	Tue, 15 Sep 2026 05:04:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.206.215.185
+Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F39B40802B
+	for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 05:25:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789448683; cv=none; b=lJbIlkktY5AEbRCXgKvGzgASOwe1qPtlwRvzd0TG6T+gnta/FE0cM7Vb+YeSO6N49mv72oQabZkZpZfQeZPblcLKNynMJnEr+2dBpo3OJR4fSlBrpZso7NEYZpOumSk6T/s76MdAYF0SDo2fN9Dwodz9+9HHKj6M4kYlJHsSkBI=
+	t=1789449936; cv=none; b=b66g2SyPPfXuMznTzfduODQHVCNXd3WrLkKh7FO9TTR7Cfy9Na/l46alcuaFTmLCo3TseyLGXQpJ8QWw84Y7suwTU5cHWf9LOef7tmeq8DlauFqAEF5M5HqctEVberHOfpUQltkb7g8Otlt1ruCsRT9xPY0QtaYu+NTWAJ38W1Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789448683; c=relaxed/simple;
-	bh=WjC/OcwgNdegoOvhtLEk4e6gTJcQvtD0jQBy80tDsgg=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=iuhiTMWJVdgo0X5dxh6+RthC2AraySp03K9dv86vKSh5gtXt8xp5LdS9DihVpr1/KU5VCpsB9h5RZDUZGViWBqsnWapipUIlJk1vEgH3czsRT5r2DcSd3/z53jVMIXUVfgxzBTnYW4oaoyY+IMA2H5pcq8nz1OFRMFUXE/fdJVk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass smtp.mailfrom=baidu.com; dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b=M4oVRmsu; arc=none smtp.client-ip=111.206.215.185
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
+	s=arc-20240116; t=1789449936; c=relaxed/simple;
+	bh=ihhu/GEm+uqCbuT3u186bfu9O3Hq8yZsgSx6Y24WwhA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DOimkzRUQbZ5O75fa5SNY5lVvpghbw9CKmDmIDgaqazh6fjSHpOemhnG5r2DmMvso7OlvXAw5ID5avjtUsDX6YO5Wn8+VONLVYxkgKHFnIIeveDCjSCMoKgsS3OdQD/AsDrCXRZjGOKpeY7HnNrQBFvVFbfE/XNLdrm137Htasc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hdW8HILo; arc=none smtp.client-ip=74.125.227.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b="M4oVRmsu"
-X-MD-Sfrom: lirongqing@baidu.com
-X-MD-SrcIP: 172.31.3.12
-From: "Li,Rongqing" <lirongqing@baidu.com>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-CC: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org"
-	<linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "zhongqiu.han@oss.qualcomm.com"
-	<zhongqiu.han@oss.qualcomm.com>
-Subject: =?utf-8?B?562U5aSNOiBb5aSW6YOo6YKu5Lu2XSBSZTogW1BBVENIIHY0IDIvMl0gY3B1?=
- =?utf-8?B?ZnJlcTogYWNwaS1jcHVmcmVxOiBmaXggUC1zdGF0ZSBpbmRleCBtaXNtYXRj?=
- =?utf-8?B?aCBpbiBnZXRfY3VyX2ZyZXFfb25fY3B1KCk=?=
-Thread-Topic: =?utf-8?B?W+WklumDqOmCruS7tl0gUmU6IFtQQVRDSCB2NCAyLzJdIGNwdWZyZXE6IGFj?=
- =?utf-8?B?cGktY3B1ZnJlcTogZml4IFAtc3RhdGUgaW5kZXggbWlzbWF0Y2ggaW4gZ2V0?=
- =?utf-8?B?X2N1cl9mcmVxX29uX2NwdSgp?=
-Thread-Index: AQHdQRVveImKcLWuQUqOe6Z5+ITTU7bN5BGAgAE4ovA=
-Date: Tue, 15 Sep 2026 05:04:25 +0000
-Message-ID: <d39fba05f2a945008a6a83b7a3ee83c5@baidu.com>
-References: <20260910111329.2220-1-lirongqing@baidu.com>
- <20260910111329.2220-3-lirongqing@baidu.com>
- <CAJZ5v0iPPmrTtLRG23UYJ_ibn7VUceuN2qFXpjCsBYnBzDMzYA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0iPPmrTtLRG23UYJ_ibn7VUceuN2qFXpjCsBYnBzDMzYA@mail.gmail.com>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hdW8HILo"
+Received: by mail-pj2-f13.google.com with SMTP id d9443c01a7336-2d90ba1d807so38150825ad.3
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 22:25:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789449931; x=1790054731; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=yQubKTox3I80hScamzBIXxVmWMWZlyR15SjYB1u9qiM=;
+        b=hdW8HILomqXU4LWH/c2oE5xgswDPGpDcQHPEhiWWXd59Zth9M8Sgm8XBH/a4Fc1Fau
+         C27+UbuVKtuPUyaaOidrChvZRDub6vDK3/t0CuArpUtEYyuj3Mi1eL928QIFxrvnoqer
+         1gBTw5IFs+0xJP0Fquk2UdDyVKOn/Tl7s6wgJWeB1R1mzVIYdVPI6sOzINh8jxjojcdR
+         0hUxWkT9MJoYwTFkPIvmEsHJor46ssNqxVgGjb/JnqOAVNbuw5UiiRDnGJj+8xzI3qPc
+         7APmJpmX4J2ZGs9jM56JgKTkJCLeQXj25FplfghchZsoNBHzbogQRHVSmrE0syax7NE6
+         tSpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789449931; x=1790054731;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=yQubKTox3I80hScamzBIXxVmWMWZlyR15SjYB1u9qiM=;
+        b=0RUATA2bueWIEhlIdtTAC83ChVO+9lwCpL2HU6BV5wzD0/3tZOJWuN13muQawQNFmP
+         BZGy5pAAzxPLCzLsTZ04Ce1fzpBT3R0lXWb9HHKaModU4jzpZyEm9NdAybhmseE/gaVi
+         U0w4rzT9AFiyh+2A7olZjwA0JS+YVHRSJcLaa5ZjXwbobuDMXJF0N2I2fLJ9/cFkTaq+
+         vF5t86pPI5m2KZYftZZJppHIbyJAqz3kIR9M1HfP6QrceLVSEdHq9CAsBBNmtok+jsof
+         Q2GCBefrJpQsecdo53TRzGteh2j3CCzy3MDwWKargpqLh1zV1RTBlzb83Dqs/MtXkcJF
+         0wfw==
+X-Forwarded-Encrypted: i=1; AKwUvBwJeJurQ4gIdweYKChB6OURcz2BlhnB/O6xf/erNcLMhg6pBTy8GjKZw6mAOdkf4HkY3WI0iiqjAw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lRiYRwkxWMZsT55fD5oCWj3pZL9SnpIBFb37af0FYAPn8cqeOV
+	dJrXxRvPKhchKpj+he7aYgWzIdDqK7viajfaJMR+/hKoUnWKGxUcoonT
+X-Gm-Gg: AYBFou1cDynIvL2tzVtUNR9x+2MmerdRTncEaJeUxXci1vH2+JTcTlsL26Nlszmu5wH
+	s0dK3A9CKUZSK6+IG/HmK3hnK9iMhdYpxhg025wsZzeLf9fbrlvKVpQ0RxJJF39o3wYvoXZmu7v
+	KyQs4qYPAGfw3/1iMavto9uipzrhgQKT2D0owESdJ5GoODxlNIls3WbdSI2Vywq5FVqK0gDjmDa
+	3z7YhiX0QxFwHeQ6CklSIQgzXowM6eGYh4VjdRWCFehfG357mI4vTebz/w5e71ESaZjHSIKdXqL
+	ecdbG+TGsPj/LgV6Pe4AwVS4wPTpklHNcngRvXAEWfXmfZ9jxJzoFZtOi9kXZygv6QnLOyMST1o
+	vVRQbInpYHf4I8PRN76sI32lCwYnP712NezZ5meZ4W0iwFi5dKGy3yAhZBV9+MF5o82/31zAGnk
+	/+8NbjJHviOs2l227hFAyUHWREJl3WFsASCharwV5UkH4lxUsZR7R9Jp0AjsgxBNa6I6JM1B3De
+	Sbmgwjwkw==
+X-Received: by 2002:a17:903:8d0:b0:2d7:107c:917b with SMTP id d9443c01a7336-2dd6c46714bmr123949285ad.0.1789449930877;
+        Mon, 14 Sep 2026 22:25:30 -0700 (PDT)
+Received: from kdev.. ([108.180.130.139])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2dd2cff67aasm59718445ad.79.2026.09.14.22.25.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 14 Sep 2026 22:25:30 -0700 (PDT)
+From: Babanpreet Singh <bbnpreetsingh@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+	Purism Kernel Team <kernel@puri.sm>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Babanpreet Singh <bbnpreetsingh@gmail.com>,
+	kernel test robot <lkp@intel.com>,
+	Dan Carpenter <error27@gmail.com>
+Subject: [PATCH] power: supply: max17042_battery: Make the fractional LSB macros safe
+Date: Tue, 15 Sep 2026 05:25:29 +0000
+Message-ID: <20260915052529.7-1-bbnpreetsingh@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
-	s=selector1; t=1789448668;
-	bh=WjC/OcwgNdegoOvhtLEk4e6gTJcQvtD0jQBy80tDsgg=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
-	b=M4oVRmsusyHgbjQ9cGR/zjyWR3FMm1vVVEt9xEbTh0KiO4E0lh0q+rtOodLc8ZBMH
-	 RVgu9308eL/MzToTxnV0YhVdGp6QLbmmSHIyW6VqgqIr44A/fOqkDiz+juooi9RFgW
-	 wk5yhJuXYkma4aPBinH1UnysRYqSa8Er7acyvax4KlpZfpk2KDRzvl1z0pysozqpJV
-	 pDcGL9NA3miE6qR+ghYwa7rh2Kj+xDZFHSFnqsFfitxDtg/P6VFypBkE3dor2Dv0sY
-	 CAupQ+r4Clepsvan3W7N+qxANPYnrl20SP7viL+NZeOvkKLrYxUdLXzM7dty7dHdll
-	 kdLaZlsQztWlg==
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-DQoNCmVxOiBhY3BpLWNwdWZyZXE6IGZpeCBQLXN0YXRlIGluZGV4DQo+IG1pc21hdGNoIGluIGdl
-dF9jdXJfZnJlcV9vbl9jcHUoKQ0KPiANCj4gT24gVGh1LCBTZXAgMTAsIDIwMjYgYXQgMToxM+KA
-r1BNIGxpcm9uZ3FpbmcgPGxpcm9uZ3FpbmdAYmFpZHUuY29tPiB3cm90ZToNCj4gPg0KPiA+IEZy
-b206IExpIFJvbmdRaW5nIDxsaXJvbmdxaW5nQGJhaWR1LmNvbT4NCj4gPg0KPiA+IGdldF9jdXJf
-ZnJlcV9vbl9jcHUoKSB1c2VzIHBlcmYtPnN0YXRlLCB3aGljaCBpcyBhbiBpbmRleCBpbnRvDQo+
-ID4gcGVyZi0+c3RhdGVzW10sIHRvIGluZGV4IHBvbGljeS0+ZnJlcV90YWJsZVtdLiBIb3dldmVy
-LCBmcmVxX3RhYmxlW10NCj4gPiBpcyBidWlsdCBieSBmaWx0ZXJpbmcgX1BTUyBlbnRyaWVzIHRo
-YXQgYXJlIG5vdCBsb3dlciBpbiBmcmVxdWVuY3kNCj4gPiB0aGFuIHRoZSBwcmV2aW91cyBvbmUs
-IHNvIGl0cyBpbmRleCBzcGFjZSBubyBsb25nZXIgbWF0Y2hlcw0KPiA+IHBlcmYtPnN0YXRlc1td
-LiBUaGUgb3JpZ2luYWwgUC1zdGF0ZSBpbmRleCBmb3IgZWFjaCByZW1haW5pbmcNCj4gPiBmcmVx
-X3RhYmxlIGVudHJ5IGlzIHN0b3JlZCBpbiBkcml2ZXJfZGF0YS4NCj4gPg0KPiA+IE9uY2UgYW4g
-ZW50cnkgaGFzIGJlZW4gc2tpcHBlZCwgdXNpbmcgcGVyZi0+c3RhdGUgYXMgYW4gaW5kZXggaW50
-bw0KPiA+IGZyZXFfdGFibGVbXSBjYW4gdGhlcmVmb3JlIHNlbGVjdCB0aGUgZnJlcXVlbmN5IG9m
-IGEgZGlmZmVyZW50DQo+ID4gUC1zdGF0ZS4NCj4gPg0KPiA+IFRoZSByZXBvcnRlZCBjdXJyZW50
-IGZyZXF1ZW5jeSBpdHNlbGYgcmVtYWlucyBjb3JyZWN0IGJlY2F1c2UgaXQgaXMNCj4gPiBvYnRh
-aW5lZCBmcm9tIGV4dHJhY3RfZnJlcSgpLiBUaGUgbWlzbWF0Y2ggb25seSBhZmZlY3RzIHRoZSBj
-YWNoZWQNCj4gPiBmcmVxdWVuY3kgdXNlZCBieSBnZXRfY3VyX2ZyZXFfb25fY3B1KCkgdG8gZGV0
-ZWN0IGEgZmlybXdhcmUgZnJlcXVlbmN5DQo+ID4gY2hhbmdlIGJlaGluZCBvdXIgYmFjay4NCj4g
-Pg0KPiA+IElmIHRoZSB3cm9uZyB0YWJsZSBlbnRyeSBjb250YWlucyBhIGZyZXF1ZW5jeSBkaWZm
-ZXJlbnQgZnJvbSB0aGUgb25lDQo+ID4gdGhlIENQVSBpcyBhY3R1YWxseSBydW5uaW5nIGF0LCB0
-aGUgY2hlY2sgZmFsc2VseSBkZXRlY3RzIGEgZnJlcXVlbmN5DQo+ID4gY2hhbmdlIGFuZCBzZXRz
-IGRhdGEtPnJlc3VtZS4gVGhlIG5leHQgLT50YXJnZXQoKSBjYWxsIHRoZW4gcGVyZm9ybXMgYQ0K
-PiA+IHJlZHVuZGFudCBjb250cm9sLXJlZ2lzdGVyIHdyaXRlIGV2ZW4gaWYgdGhlIHJlcXVlc3Rl
-ZCBQLXN0YXRlIGlzDQo+ID4gYWxyZWFkeSB0aGUgY3VycmVudCBQLXN0YXRlLg0KPiA+DQo+ID4g
-Q29udmVyc2VseSwgaWYgdGhlIHdyb25nIHRhYmxlIGVudHJ5IGhhcHBlbnMgdG8gY29udGFpbiB0
-aGUgZnJlcXVlbmN5DQo+ID4gdG8gd2hpY2ggZmlybXdhcmUgaGFzIGNoYW5nZWQgdGhlIENQVSwg
-dGhlIGZyZXF1ZW5jeSBjaGFuZ2UgaXMgbWlzc2VkDQo+ID4gYW5kIGRhdGEtPnJlc3VtZSByZW1h
-aW5zIGNsZWFyLiBBIHN1YnNlcXVlbnQgLT50YXJnZXQoKSBjYWxsIGZvciB0aGUNCj4gPiBQLXN0
-YXRlIHRoYXQgdGhlIGNwdWZyZXEgY29yZSBiZWxpZXZlcyB0byBiZSBjdXJyZW50IGNhbiB0aGVu
-DQo+ID4gc2hvcnQtY2lyY3VpdCB3aXRob3V0IHJld3JpdGluZyB0aGUgY29udHJvbCByZWdpc3Rl
-ciwgbGVhdmluZyB0aGUgQ1BVDQo+ID4gYXQgdGhlIGZpcm13YXJlLXNlbGVjdGVkIGZyZXF1ZW5j
-eSB1bnRpbCBhIGRpZmZlcmVudCBQLXN0YXRlIGlzDQo+ID4gcmVxdWVzdGVkLg0KPiA+DQo+ID4g
-Rml4IHRoaXMgYnkgdGFraW5nIHRoZSBjYWNoZWQgZnJlcXVlbmN5IGRpcmVjdGx5IGZyb20NCj4g
-PiBwZXJmLT5zdGF0ZXNbcGVyZi0+c3RhdGVdLmNvcmVfZnJlcXVlbmN5LiBwZXJmLT5zdGF0ZSBh
-bmQgc3RhdGVzW10gdXNlDQo+ID4gcGVyZi0+dGhlIHNhbWUgUC1zdGF0ZSBpbmRleCBzcGFjZSwg
-YW5kIGNvbnZlcnRpbmcNCj4gPiBjb3JlX2ZyZXF1ZW5jeSB0byBrSHogeWllbGRzIHRoZSBzYW1l
-IHZhbHVlIHN0b3JlZCBpbiB0aGUNCj4gPiBjb3JyZXNwb25kaW5nIGZyZXFfdGFibGUgZW50cnkg
-ZHVyaW5nIGluaXRpYWxpemF0aW9uLg0KPiANCj4gU2FzaGlrbyBoYXMgY29tbWVudHMgb24gdGhp
-cyBwYXRjaCBhbmQgaXQgaGFzIGEgcG9pbnQgSU1WOg0KPiANCj4gaHR0cHM6Ly9zYXNoaWtvLmRl
-di8jL3BhdGNoc2V0LzIwMjYwOTEwMTExMzI5LjIyMjAtMS1saXJvbmdxaW5nJTQwYmFpZA0KPiB1
-LmNvbQ0KPiANCg0KVGhlIGV4dHJhY3RfbXNyKCkgZmFsbGJhY2sgaXNzdWUgc2hvdWxkIGJlIHZh
-bGlkICwgYnV0IGl0IGlzIGEgcHJlLWV4aXN0aW5nIHByb2JsZW0gdGhhdCBpcw0Kb3J0aG9nb25h
-bCB0byB0aGUgaW5kZXggbWlzbWF0Y2ggZml4ZWQgYnkgdGhpcyBzZXJpZXMuIEkgd291bGQgdGhl
-cmVmb3JlIHByZWZlciB0byBrZWVwIHRoaXMgc2VyaWVzIHNjb3BlZCB0byB0aGF0IG1pc21hdGNo
-Lg0KDQpJZiB0aGVyZSBpcyBubyBpbnRlcmVzdCBpbiBhZGRyZXNzaW5nIGl0IGhlcmUsIEkgd2ls
-bCBzZW5kIGEgc2VwYXJhdGUgcGF0Y2ggdG8gZml4IGl0Lg0KDQpUaGFua3MNCg0KW0xpLFJvbmdx
-aW5nXSANCg0KDQo+IENhbiB5b3UgcGxlYXNlIHRlbGwgbWUgd2hhdCB5b3UgdGhpbms/DQo+IA0K
-PiA+IEZpeGVzOiBlNTZhNzI3YjAyM2QgKCJbQ1BVRlJFUV0gTWFrZSBhY3BpLWNwdWZyZXEgbW9y
-ZSByb2J1c3QgYWdhaW5zdA0KPiA+IEJJT1MgZnJlcSBjaGFuZ2VzIGJlaGluZCBvdXIgYmFjay4i
-KQ0KPiA+IFJlcG9ydGVkLWJ5OiBaaG9uZ3FpdSBIYW4gPHpob25ncWl1LmhhbkBvc3MucXVhbGNv
-bW0uY29tPg0KPiA+IFN1Z2dlc3RlZC1ieTogWmhvbmdxaXUgSGFuIDx6aG9uZ3FpdS5oYW5Ab3Nz
-LnF1YWxjb21tLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMaSBSb25nUWluZyA8bGlyb25ncWlu
-Z0BiYWlkdS5jb20+DQo+ID4gUmV2aWV3ZWQtYnk6IFpob25ncWl1IEhhbiA8emhvbmdxaXUuaGFu
-QG9zcy5xdWFsY29tbS5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9hY3BpLWNw
-dWZyZXEuYyB8IDUgKysrKy0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwg
-MSBkZWxldGlvbigtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9hY3Bp
-LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5jIGluZGV4IGE3
-OTdiYjIuLjMzMTNjNzQgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1
-ZnJlcS5jDQo+ID4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5jDQo+ID4gQEAg
-LTM1Myw2ICszNTMsNyBAQCBzdGF0aWMgdTMyIGdldF9jdXJfdmFsKGNvbnN0IHN0cnVjdCBjcHVt
-YXNrICptYXNrLA0KPiA+IHN0cnVjdCBhY3BpX2NwdWZyZXFfZGF0YSAqZGF0DQo+ID4NCj4gPiAg
-c3RhdGljIHVuc2lnbmVkIGludCBnZXRfY3VyX2ZyZXFfb25fY3B1KHVuc2lnbmVkIGludCBjcHUp
-ICB7DQo+ID4gKyAgICAgICBzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UgKnBlcmY7
-DQo+ID4gICAgICAgICBzdHJ1Y3QgYWNwaV9jcHVmcmVxX2RhdGEgKmRhdGE7DQo+ID4gICAgICAg
-ICBzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeTsNCj4gPiAgICAgICAgIHVuc2lnbmVkIGlu
-dCBmcmVxOw0KPiA+IEBAIC0zNjgsNyArMzY5LDkgQEAgc3RhdGljIHVuc2lnbmVkIGludCBnZXRf
-Y3VyX2ZyZXFfb25fY3B1KHVuc2lnbmVkDQo+IGludCBjcHUpDQo+ID4gICAgICAgICBpZiAodW5s
-aWtlbHkoIWRhdGEgfHwgIXBvbGljeS0+ZnJlcV90YWJsZSkpDQo+ID4gICAgICAgICAgICAgICAg
-IHJldHVybiAwOw0KPiA+DQo+ID4gLSAgICAgICBjYWNoZWRfZnJlcSA9DQo+IHBvbGljeS0+ZnJl
-cV90YWJsZVt0b19wZXJmX2RhdGEoZGF0YSktPnN0YXRlXS5mcmVxdWVuY3k7DQo+ID4gKyAgICAg
-ICBwZXJmID0gdG9fcGVyZl9kYXRhKGRhdGEpOw0KPiA+ICsgICAgICAgY2FjaGVkX2ZyZXEgPSBw
-ZXJmLT5zdGF0ZXNbcGVyZi0+c3RhdGVdLmNvcmVfZnJlcXVlbmN5ICogMTAwMDsNCj4gPiArDQo+
-ID4gICAgICAgICBmcmVxID0gZXh0cmFjdF9mcmVxKHBvbGljeSwgZ2V0X2N1cl92YWwoY3B1bWFz
-a19vZihjcHUpLCBkYXRhKSk7DQo+ID4gICAgICAgICBpZiAoZnJlcSAhPSBjYWNoZWRfZnJlcSkg
-ew0KPiA+ICAgICAgICAgICAgICAgICAvKg0KPiA+IC0tDQo+ID4gMi45LjQNCj4gPg0K
+The fractional LSB macros expand to a plain division, so they only work
+when multiplied first and evaluate to 0 anywhere else. Take the value as
+a macro argument and apply it with mult_frac(). No functional change.
+
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <error27@gmail.com>
+Closes: https://lore.kernel.org/r/202606062322.TyvCPB3l-lkp@intel.com/
+Assisted-by: Claude:claude-opus-5
+Assisted-by: Claude:claude-fable-5
+Signed-off-by: Babanpreet Singh <bbnpreetsingh@gmail.com>
+---
+ drivers/power/supply/max17042_battery.c | 30 +++++++++++++++----------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index a53970af56cbb..861b5dbc11c1e 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -16,6 +16,7 @@
+ #include <linux/i2c.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
++#include <linux/math.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/power_supply.h>
+@@ -57,10 +58,15 @@
+ 
+ #define MAX17042_CURRENT_LSB		1562500ll /* 1.5625µV/Rsense */
+ #define MAX17042_CAPACITY_LSB		5000000ll /* 5.0µVH/Rsense */
+-#define MAX17042_TIME_LSB		5625 / 1000 /* s */
+-#define MAX17042_VOLTAGE_LSB		625 / 8 /* µV */
+-#define MAX17042_RESISTANCE_LSB		1 / 4096 /* Ω */
+-#define MAX17042_TEMPERATURE_LSB	1 / 256 /* °C */
++/*
++ * These LSBs are fractions, so they take their argument rather than
++ * expanding to a bare "n / d" token sequence, which is only correct in a
++ * "value * LSB" context.
++ */
++#define MAX17042_TIME_LSB(val)		mult_frac(val, 5625, 1000) /* s */
++#define MAX17042_VOLTAGE_LSB(val)	mult_frac(val, 625, 8) /* µV */
++#define MAX17042_RESISTANCE_LSB(val)	mult_frac(val, 1, 4096) /* Ω */
++#define MAX17042_TEMPERATURE_LSB(val)	mult_frac(val, 1, 256) /* °C */
+ 
+ #define MAX17055_DQACC_DIV		32
+ #define MAX17055_DPACC_FACTOR		44138
+@@ -138,7 +144,7 @@ static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
+ 
+ 	*temp = sign_extend32(data, 15);
+ 	/* The value is converted into deci-centigrade scale */
+-	*temp = *temp * 10 * MAX17042_TEMPERATURE_LSB;
++	*temp = MAX17042_TEMPERATURE_LSB(*temp * 10);
+ 	return 0;
+ }
+ 
+@@ -214,7 +220,7 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
+ 		goto health_error;
+ 
+ 	/* bits [0-3] unused */
+-	vavg = val * MAX17042_VOLTAGE_LSB;
++	vavg = MAX17042_VOLTAGE_LSB(val);
+ 	/* Convert to millivolts */
+ 	vavg /= 1000;
+ 
+@@ -223,7 +229,7 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
+ 		goto health_error;
+ 
+ 	/* bits [0-3] unused */
+-	vbatt = val * MAX17042_VOLTAGE_LSB;
++	vbatt = MAX17042_VOLTAGE_LSB(val);
+ 	/* Convert to millivolts */
+ 	vbatt /= 1000;
+ 
+@@ -330,21 +336,21 @@ static int max17042_get_property(struct power_supply *psy,
+ 		if (ret < 0)
+ 			return ret;
+ 
+-		val->intval = data * MAX17042_VOLTAGE_LSB;
++		val->intval = MAX17042_VOLTAGE_LSB(data);
+ 		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+ 		ret = regmap_read(map, MAX17042_AvgVCELL, &data);
+ 		if (ret < 0)
+ 			return ret;
+ 
+-		val->intval = data * MAX17042_VOLTAGE_LSB;
++		val->intval = MAX17042_VOLTAGE_LSB(data);
+ 		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+ 		ret = regmap_read(map, MAX17042_OCVInternal, &data);
+ 		if (ret < 0)
+ 			return ret;
+ 
+-		val->intval = data * MAX17042_VOLTAGE_LSB;
++		val->intval = MAX17042_VOLTAGE_LSB(data);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		if (chip->enable_current_sense)
+@@ -473,7 +479,7 @@ static int max17042_get_property(struct power_supply *psy,
+ 		if (data == U16_MAX)
+ 			return -ENODATA;
+ 
+-		val->intval = data * MAX17042_TIME_LSB;
++		val->intval = MAX17042_TIME_LSB(data);
+ 		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
+ 		if (chip->chip_type != MAXIM_DEVICE_TYPE_MAX17055 &&
+@@ -488,7 +494,7 @@ static int max17042_get_property(struct power_supply *psy,
+ 		if (data == U16_MAX)
+ 			return -ENODATA;
+ 
+-		val->intval = data * MAX17042_TIME_LSB;
++		val->intval = MAX17042_TIME_LSB(data);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+
+base-commit: 4fc88ba435dadbc05990951e3f3fbd8ccd2df140
+-- 
+2.43.0
+
