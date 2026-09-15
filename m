@@ -1,252 +1,389 @@
-Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011030.outbound.protection.outlook.com [40.107.130.30])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B65CB371877;
-	Tue, 15 Sep 2026 14:13:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.30
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789481615; cv=fail; b=B/he2iGKxZeRPBk1hGJgP+0CMfsuJsMYh2UirAgraamTRwY5w7nRgEBzjOHRgAAElNLJYQuYvc3OIlEqVnRXD6gF5CzmiA17UmupubVD4KF5LFmrTjPLyr+ftEDyhw13ijj+q5C7JXyXmwTNOeB5oJPeioVOhd9rMLiDd6Ffj8g=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789481615; c=relaxed/simple;
-	bh=s1BJdHk1dpqgV30inyC7qa9K7HDdhTXGQa7Qy9wGUIE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=DWsXBPC0oetRJnP1gZg2RBWYOa2ucdHzxUC9WYzkmLA1835aH87iCyOeq3hEDPCr3PDwxK21vyalwDHPDpojjKrDLXVUjqMiva9qbwwQnW8KjipyND9L5HKm3nwshtULIjPbv2OPTV9tspT0IX8Ikmq02WvfEqJfoByYxk4RIRM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=bJiOGE0c; arc=fail smtp.client-ip=40.107.130.30
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A97A38E5E9;
+	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789482262; cv=none; b=fD5cFez08IDIIGroQujfM7DR/+XGYPwYXtIWjEfJReAzfYfi+OiHRk1a1Zv6j1d4ZlCbxWRyfy3VPfA9OejrRMb1sZ3N1lc3z4IyqM1eFyNzEVTQ2f8ZvSwDvA8/wKev8Ac/JbHuln/vj2vbBXQBn4inZmxqYSjiSwE1oAOk5is=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789482262; c=relaxed/simple;
+	bh=5m0BATPMZrX7gMf8KfVfoRFTgv2tzwvXCXMnN+LCn84=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=dAqUGkcEDhX7nVIWJNkpfek4s4sE5HfNoo+5XfbhvjEyVdYv6N1L9pfPc980Cg5heP5BySxAP6kf7zNZWf112GZzSYYubb6tLQ/+JRXLRl48r5Fm/lODMvZhcNWpUiRb9xY0KGTWnM31cYjruh0BMrRyAks3s3V7/aPY1DoQOww=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bvQqSXrM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="bJiOGE0c"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ySx3icLcZ0Qowj9EPaPoMURdVYgT2b9wm4XfwZSmbARMndgGK1d7LcPgEtigIL8gu2h+6wjXt3sofMUTD6y4xYuFFxAIKfVRZdyb45/C39oatiZ0ox5iRgkF05ukEwxlRog7zaldMxY/tsvt01mIJdPiFVHqiernabbtty9GSgw5dGZykGkyF2Y8s7VI/k+WUH8viWRwmmf/5i6TEvvtjyz4eijvGS1gWP/eqa/7haiuo/kVbimQAiHLVaMkUw3NoW6N+wX5XBHDRZXynY8RqT7ZZeW2rb1Z66/fda6dsCA3FgRwPTIM1zyTeDySKUIYY5LxSatKioScw/3gJrD9OA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9QeewuehdhsQAtVvweUxhK1tfcyOiLgRNRgMsU/IQSI=;
- b=sWRv/ZGgVohpLhfAUxo6tdtbxWPxMKy9RhAjtwHy+VsT/k40TG0jAntxLw89w83+b/ZpKM+pggTGShoSFwCTKKLiShGzeKAZy7qjOvpIprYJX0NYwe5aKOpWEwegp0O8dC9jB3habOyNha6QlUP37pLYqWCNmWue28Bk4RhBkwbnqRYB8MYMfEvivNpyyh56HCsGrTle2tcRuTveq6Mb1ee2ABJZcj+RaxE23WTTpDXkfyq6gjdNwE4PTkvzHQENQyrqgxI8ad8XFHGCha8I6DKswTYEV2T+eTFy2sWKyY6+dXZfMrkjUUrIbtH3W+aSpE2kpsRV6p8HXtUQ/HlNHA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9QeewuehdhsQAtVvweUxhK1tfcyOiLgRNRgMsU/IQSI=;
- b=bJiOGE0cd38+JLoO1+i823usT5BAqL6v1+z7tzT4WOhGzMHxVaNm3NytZ4Dv0xbX9VwRqXaOn1vSSHUxLJkZjZyu91uiQnpacFYP/4I2vsIWtR/80u1a9i1Z9l8gPZOCz8nqZo0bWG7BneODsDl3509z3Ej6FvbyTHpeL5GEVcT5TTOMythLrUZLUP8hVTk/E6C4a+WSiT5NxyV5Fndeqqt/QGsV/eO8jwjSIVcYA7zSfIKYHM/7mH5cLJzxOebaGqbza5zzIiOfzjR//8+3/ogq55EUb083hSW/f5XDbvHHUUREoFNAsuF4gkWb1M09NmNQ+AJkF6fqs1lOQuOjOw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AM9PR04MB8178.eurprd04.prod.outlook.com (2603:10a6:20b:3e3::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Tue, 15 Sep
- 2026 14:13:25 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0406.012; Tue, 15 Sep 2026
- 14:13:25 +0000
-Date: Tue, 15 Sep 2026 09:13:14 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Ming Qian <ming.qian@oss.nxp.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, Shawn Guo <shawnguo@kernel.org>,
-	Peng Fan <peng.fan@nxp.com>, Lucas Stach <l.stach@pengutronix.de>,
-	linux-pm@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Zhou Peng <eagle.zhou@nxp.com>, Xiahong Bao <xiahong.bao@nxp.com>,
-	Ming Zhou <ming.zhou@nxp.com>
-Subject: Re: [PATCH] pmdomain: imx8m-blk-ctrl: Serialize power on/off across
- sibling domains
-Message-ID: <aqlSerHyjCB-03IR@SMW015318>
-References: <20260915-imx8mp-blk-ctrl-v1-1-b3b4e6e7e676@oss.nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260915-imx8mp-blk-ctrl-v1-1-b3b4e6e7e676@oss.nxp.com>
-X-ClientProxiedBy: CY5PR15CA0196.namprd15.prod.outlook.com
- (2603:10b6:930:82::19) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bvQqSXrM"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1FAABC4AF09;
+	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1789482262;
+	bh=5m0BATPMZrX7gMf8KfVfoRFTgv2tzwvXCXMnN+LCn84=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=bvQqSXrMiD9QvQCyuvBj377p72a3LsJE967rv3/4sjzJ9VfZGwNlfTH2vV/OAqFKb
+	 s0e6lgSfxMfFeUTVeWaVRdOkuRTSPW+LJSNWxRj/eSKnQf+g48Q0OU1Y4MaRfBrUrv
+	 3I5jei4wusekZkdQ9YBw8rALfFEWX0ikVeYgM/eHCSReEiDrm6FRaojX/4C3B1rWss
+	 ZygyNJb7sYVpB7ku64JT9BM4cPNN5r6kfBDfWhmbHNkcVDuy6nZMmRoR51eFuE4zYL
+	 RNV6RO9rw8nX2isuY4fCwy50E/fsp6iZtDWkKnM06iT4983tvdAuhozYwkbWJA4upY
+	 XGlD6xDIXWmmg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 099ECC88E7F;
+	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
+From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
+Date: Tue, 15 Sep 2026 16:24:03 +0200
+Subject: [PATCH 2/5] Bluetooth: btnxpuart: Add auxiliary driver for PCIe
+ M.2 modules
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM9PR04MB8178:EE_
-X-MS-Office365-Filtering-Correlation-Id: ada3baab-b51c-4dac-865b-08df13338166
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|23010399003|7416014|1800799024|366016|19092799006|11063799006|56012099006|10067099003|22082099003|18002099003|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	Y6cFmpiv5QOOShB3GpudBf6XL9eSFH0dJo+3NSLFrwScAOsr7uCGOFQugIjhljsi4FXXDFBcHETEwWnW+iV2xXkzdcY07Qg50eduhskh+zh7M3BkWAtx5zMgNPEOtjE32Ign6Awd+BViud/4sXsowDs/sNiZIyGn7riiPOAzgaz6a3t07ATfVjcRuEEdaVFaqjuSBT/jqw+MipMFk2yUlrtPYwsoBla/jHOqpIIZ7vDVPs6i1lTld3c/4O2AHmJZQOEJztvGoildlAbTP4YNorYH3WxgMOr0C4pJJuE76/yy+1xOpypMzGtygfvPZytQ8KNw7aCpoVdTBJ8HqB2QrIdu7q7yvx+x0qgkL4YbyKO97YyFgBKEPKeW9hV22rwEPni7e9/tq1NUcmUG/QAmUo/W3Vdu5RzW50AKFj98u1UcsD/lmzIb9u1eLAh4xrKyKh19VlRbYKg9+pSPEWmF4YR+M3i3SFbgkLniM/RuKJ1olhFByKSbb++NSgKZN7XzUYdvkoBQr8I3qXTdVkSWdRbwctUzXIl8QRcrsQRXFAfrTbdcdd1Hne/3lxsCgijmRI6VF9oBJVwO+jQg/vtcA5g2AxsRBAkvZ65KoYHDcce7KT2Yw9dosWxi4TZvPJDqthqKGOEZQsBVP64Z4w0NxiC+3DuEeavZfVIFrlv625k=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(7416014)(1800799024)(366016)(19092799006)(11063799006)(56012099006)(10067099003)(22082099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Tf4MWpaQigtj+f5LYN2vLAVA6zzlqItakUjYmzCONVXU6EOxhQQN2YefBiGu?=
- =?us-ascii?Q?SAMnETaBDo5dMEZh0uBCX5M97y/E991LsGT2cercsiun2KEJyEzC7W3e9xV0?=
- =?us-ascii?Q?IfpIcQU5rEDDB3HG1tbmj0YrYSSoOt9ESeHWV6D5hcaN4bF+yT6pIEptddBR?=
- =?us-ascii?Q?2nubSLaMGglzs9aObYCdzO05AOC0MU+7KRgEQhcl31YRroA4buiG7u6ojVYs?=
- =?us-ascii?Q?Hzapwy+OTrlvHl1EpJ2WFc6S/9ZpNWdGtIu7R/k1yeex4Nk+vMOw3NaDr2xq?=
- =?us-ascii?Q?GyrimfTLr7TyOLxwXTxWlMhC+tLhg4fK/OcXnNqrWIJ8OG1Y2AdkesOlj27S?=
- =?us-ascii?Q?4XBexbKXE5VoMwtecjVa5w5xZYDsaECR5PEf/52K48Mu+HLJ5n9PmVDxikbP?=
- =?us-ascii?Q?0XZeRyGsiNM3ytvc2QqHGdktF6/WdxjmchCeiwXZ0xX7iyMyn4UjrFpONuij?=
- =?us-ascii?Q?vtmjALF/+lh3C7QZq6aRXJmg5IufeqtaMJY+zf+jTVXzbhWV/OgGTv942C6s?=
- =?us-ascii?Q?QN3e7gUVWtZIk6E0EJPfARTwC7WnoBIJel/3RKOxg9FZz66vjPN0jFsCKJEp?=
- =?us-ascii?Q?fQVu1psnKhHRT9eyCmUuR1HLHjdd0/ljc5mefISLkuqUMi7Dw2hUi2bGAqhn?=
- =?us-ascii?Q?oIctlmiQpEgcsAg6VO/ihOowYun8iLpVWbZy1ZRRmYwDU32KRYDxgnbBM0Pw?=
- =?us-ascii?Q?RaUMiaruhakVLxkaO3ZUnlbv3oEj36TeJqt5rP/svVxbNU3jXJZeiEe/Vfdc?=
- =?us-ascii?Q?hEfEM2tnwQdDCrWzxT4HqE3/1qG4bT6NkvzsD+03WyZAXOrYLnQGS2awPg3L?=
- =?us-ascii?Q?P8QHzsbmYMlHXzHYHXk0NiGdoWztgSSG3G+CGViKklZ9aGZ0XSklxKuJdyUU?=
- =?us-ascii?Q?mPCm4c6c6mbdzkN5DEkE3s0kjeqoGY/tJFk63Auj2cROaIt9x+MJ4ulVv7PZ?=
- =?us-ascii?Q?0odnYAvY4hGqUw4KLT5fMdMz/S64UW5BG9xFRqdJYc8enSxZlnSIASjIPgGA?=
- =?us-ascii?Q?1jN1wdfn/CnEnte2VLvAvzbKOzxEelXTsnxS8e9/jJg0znLs5/NLf1KjeCrV?=
- =?us-ascii?Q?NEU/I3N2mGfj44bkp5lnDQ3U+DhXaeAk/M+T51LT2XI16snCLG3BE3w65Jr2?=
- =?us-ascii?Q?VuVKXF6jZClP9kg+uoAtNu2NNJevQnMEDsKiJDs7aIlWOTM91vLz3N0XAG47?=
- =?us-ascii?Q?8LGkLabNBG6y5SPZfHcVIZMhg2UYnXCgiDWHVuXsb03CeuxJp2J8vkoSHoih?=
- =?us-ascii?Q?1EEMr3zCf+rWq76dmX3uVfuFuZqK6MV6iQyvcCEMNNvjNL6fr3pxZ38DspmG?=
- =?us-ascii?Q?vcfIwrbIDz7612OUgjaETVX7pKO5PF3KX0y8AhNwn4xBQRTZHTFL+kclkVw2?=
- =?us-ascii?Q?2TslMOza9j0tg2fPEK68K2KkCBIYvbIepF4QrkX5j+ZQR0Ga+HcBjF5JlNn5?=
- =?us-ascii?Q?byOGPs9SjGP4YYVULDOrKCHJTg1CWWtnh6QARSvp27MZHpCuNeXLJxCk+NGg?=
- =?us-ascii?Q?+o4PLBbKSmPU8BYEL0KNplDFqDMktYqktPfFP3D9atH17bZKAX232nE9Za1d?=
- =?us-ascii?Q?58yRMZbJZ23UppTb4dEYoOa7CGLvfgFczBNxAnoc2VV+rUZuC8eYyErvLVKJ?=
- =?us-ascii?Q?MdqffgkTmBUhirH6e/tBaBhA/3n8I+uosJW+nDW/lyuq1KRv8mJo4UGhFlhx?=
- =?us-ascii?Q?veKtOeETZlzVGtZXoSU+ESNl6j7CGB+1pFzRF3s2iuAfYtexMgqrX6Z4Avfw?=
- =?us-ascii?Q?Dx1+hrQxd3FcUyZvn2rj4C2OsS/ApLhBX2YmaHDDFeg8dN1xo9me?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ada3baab-b51c-4dac-865b-08df13338166
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 14:13:25.1459
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: rbrkmEbNkPw/nRWEOrnkZvN1hEqYcpl663Mg4OqpdDAqVVC9t4kpbQAZc3OcjWKPVNe+lYH+j0FAi5N72B2zE9pEK8FWRUIpDuYPoQjIHT3+WyT3epR7UguJP/35+cLB
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8178
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260915-pci-m2-bt-rework-v1-2-3c7d9cf9c010@oss.qualcomm.com>
+References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
+In-Reply-To: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
+To: Marcel Holtmann <marcel@holtmann.org>, 
+ Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+ Bartosz Golaszewski <brgl@kernel.org>, 
+ Manivannan Sadhasivam <mani@kernel.org>, 
+ Amitkumar Karwar <amitkumar.karwar@nxp.com>, 
+ Neeraj Kale <neeraj.sanjaykale@nxp.com>, 
+ Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Rahul Samana <rahul.samana@oss.qualcomm.com>, 
+ Wei Deng <wei.deng@oss.qualcomm.com>, 
+ Loic Poulain <loic.poulain@oss.qualcomm.com>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9263;
+ i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
+ bh=7K0wcp3nNpEPO5o8mNQzwNVqWyirfaYgXDqIo4bzR5Q=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqqVUS2pxxHoNixyL/9U7DgyQwmVwge6LQUfwyC
+ LWe0AGfW42JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaqlVEgAKCRBVnxHm/pHO
+ 9bPPCACJcgH6EUBoOGFfvp+muG3R//l4bMey4PrU72tB5LlCIoXJf+YO8IpRiuuEYpxvhUSoTqT
+ 76CMvodhayYyuvym53u/5XWF3RPqhIAySPxlQWDFGrgOx8fs4Bc3HnrreFUtYCS+qlU4MnfqEkL
+ KLmVfiL0X8NfiDqRMYHRIskgmOUtuAGnOCs2Nok8B2t5TqHdDmhxxVLWsDlDXpfXuWtWDhk1U0C
+ Jccaq85Lw7YaAkWwrl740Xe6oW90s3VGexjaEqORvTpxpjNGWV8vi5jbvqdRUG0ES/12trt2Rwk
+ pw+gkBCAdNi4u0qbZfBN1rRJs2cuTlAY3SeYkkGfq40n6AhS
+X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
+ fpr=C668AEC3C3188E4C611465E7488550E901166008
+X-Endpoint-Received: by B4 Relay for
+ manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
+X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-On Tue, Sep 15, 2026 at 07:09:43PM +0900, Ming Qian wrote:
-> On i.MX8MP, running the VC8000E encoder and the G1/G2 decoders
-> concurrently rarely and non-deterministically leaves a VPU stuck in
-> reset: its block registers read back all zeros. A decoder then times out
-> (G1/G2 reset failed) or the encoder fails its format check reading a
-> read-only capability register (VC8000E reset failed). Raising the
-> runtime-PM autosuspend delay hides it, which points at the blk-ctrl
-> power on/off path.
->
-> The VPU blk-ctrl exposes G1, G2 and VC8000E as three separate genpds
-> whose power_on/power_off are serialized only by the per-genpd lock, so on
-> SMP the callbacks of different domains can run concurrently. Each domain
-> only manipulates its own bit in the shared BLK_SFT_RSTN/BLK_CLK_EN
-> registers, so this is not a matter of siblings corrupting each other's
-> register bits.
->
-> However the sibling power transitions still interact through the shared
-> VPUMIX resources: the VPUMIX bus power domain, the VPU_NOC and the ADB400
-> handshake. power_on asserts a domain's reset, enables its clock and
-> releases the reset after a short udelay, relying on the reset propagating
-> through that shared path. The GPC does not ack-verify the ADB400
-> handshake on power-up (it only delays), and per ERR050531 the VPU_NOC
-> handshake is timing sensitive during VC8000E/VPUMIX power up/down
-> cycling. So when a sibling's power_on/power_off runs while another domain
-> is inside its reset window, it disturbs the shared VPU_NOC/ADB/AXI clock
-> timing and the victim's reset fails to take effect, leaving its block in
-> reset with registers reading zero.
->
-> This is a blk-ctrl defect: the VPU power domains' power up/down sequences
-> must not interleave, yet the driver deliberately avoids a genpd
-> parent/child hierarchy (to meet its sequencing requirements) and so gets
-> no cross-sibling serialization from the genpd core.
->
-> Add a per-blk-ctrl mutex around the blk-ctrl register and reset sequence
-> and the synchronous power-up path, so a sibling domain cannot run its
-> sequence while another domain is inside its reset window. The GPC
-> power-down is queued by pm_runtime_put() and still completes outside the
-> lock; serializing the reset sequences is what fixes the observed failure.
-> The bus domain's GENPD_NOTIFY_ON notifier runs in the same call stack
-> while the lock is held and must not take it.
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-Thanks you for detail descript problem, basically it is power up/down
-reset, clock have not serialized.
+The 88W8987 combo module exposes Bluetooth over UART. Since this module is
+attached over PCIe, it is not described in firmware like devicetree. So it
+is discovered at runtime over PCIe by the power sequencing driver, which
+allocates the UART serdev and creates an auxiliary device carrying that
+transport and the power sequencing target to power up the Bluetooth
+function.
 
-Can you help summery to cut message shorter end emphase most important
-part?
+Add an auxiliary driver that binds to this device. It reuses the serdev
+provided by the producer, brings up the controller through the existing
+UART transport with nxp_register_dev() and drives power through the
+sequencer obtained with pwrseq_get().
 
-Frank
+Factor the HCI device setup and teardown shared with the serdev probe into
+helpers so both paths register the same controller.
 
->
-> Fixes: a1a5f15f7f6c ("soc: imx: imx8m-blk-ctrl: add i.MX8MP VPU blk ctrl")
-> Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
-> ---
-> Reproduced on i.MX8MP with an Android 6.18 kernel: running an H.264
-> decode and an H.264 encode concurrently hits the failure within one to
-> two hours. A VPU comes up stuck in reset, its block registers read back
-> all zeros, and the decoder times out or the encoder fails its format
-> check.
->
-> With this patch applied the same test ran overnight, over 14 hours,
-> without a single occurrence.
-> ---
->  drivers/pmdomain/imx/imx8m-blk-ctrl.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->
-> diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-> index 479789009c7f..f8105e87ea3c 100644
-> --- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-> +++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-> @@ -15,6 +15,7 @@
->  #include <linux/pm_runtime.h>
->  #include <linux/regmap.h>
->  #include <linux/clk.h>
-> +#include <linux/mutex.h>
->
->  #include <dt-bindings/power/imx8mm-power.h>
->  #include <dt-bindings/power/imx8mn-power.h>
-> @@ -34,6 +35,12 @@ struct imx8m_blk_ctrl {
->  	struct regmap *regmap;
->  	struct imx8m_blk_ctrl_domain *domains;
->  	struct genpd_onecell_data onecell_data;
-> +	/*
-> +	 * Serializes the blk-ctrl reset/clock sequence across sibling domains;
-> +	 * their transitions interact through the shared VPUMIX bus domain,
-> +	 * VPU_NOC and the not-ack-verified ADB400 handshake (ERR050531).
-> +	 */
-> +	struct mutex power_lock;
->  };
->
->  struct imx8m_blk_ctrl_domain_data {
-> @@ -98,6 +105,8 @@ static int imx8m_blk_ctrl_power_on(struct generic_pm_domain *genpd)
->  	struct imx8m_blk_ctrl *bc = domain->bc;
->  	int ret;
->
-> +	guard(mutex)(&bc->power_lock);
-> +
->  	/* make sure bus domain is awake */
->  	ret = pm_runtime_get_sync(bc->bus_power_dev);
->  	if (ret < 0) {
-> @@ -164,6 +173,8 @@ static int imx8m_blk_ctrl_power_off(struct generic_pm_domain *genpd)
->  	const struct imx8m_blk_ctrl_domain_data *data = domain->data;
->  	struct imx8m_blk_ctrl *bc = domain->bc;
->
-> +	guard(mutex)(&bc->power_lock);
-> +
->  	/* put devices into reset and disable clocks */
->  	if (data->mipi_phy_rst_mask)
->  		regmap_clear_bits(bc->regmap, BLK_MIPI_RESET_DIV, data->mipi_phy_rst_mask);
-> @@ -202,6 +213,10 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
->
->  	bc->dev = dev;
->
-> +	ret = devm_mutex_init(dev, &bc->power_lock);
-> +	if (ret)
-> +		return ret;
-> +
->  	bc_data = of_device_get_match_data(dev);
->
->  	base = devm_platform_ioremap_resource(pdev, 0);
->
-> ---
-> base-commit: 6e30287eaf3e41b86dfb86df3b811526693d74b4
-> change-id: 20260911-imx8mp-blk-ctrl-c46f26783073
->
->
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+---
+ drivers/bluetooth/Kconfig     |   1 +
+ drivers/bluetooth/btnxpuart.c | 187 +++++++++++++++++++++++++++++++++---------
+ 2 files changed, 147 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
+index 3acaec6f90ac..ce0cf50b663b 100644
+--- a/drivers/bluetooth/Kconfig
++++ b/drivers/bluetooth/Kconfig
+@@ -454,6 +454,7 @@ config BT_NXPUART
+ 	select BT_HCIUART_H4
+ 	select CRC32
+ 	select CRC8
++	select AUXILIARY_BUS
+ 	help
+ 	  NXP is serial driver required for NXP Bluetooth
+ 	  devices with UART interface.
+diff --git a/drivers/bluetooth/btnxpuart.c b/drivers/bluetooth/btnxpuart.c
+index 25e7b41b349f..2672e481ef15 100644
+--- a/drivers/bluetooth/btnxpuart.c
++++ b/drivers/bluetooth/btnxpuart.c
+@@ -7,10 +7,12 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ 
++#include <linux/auxiliary_bus.h>
+ #include <linux/serdev.h>
+ #include <linux/of.h>
+ #include <linux/of_graph.h>
+ #include <linux/pwrseq/consumer.h>
++#include <linux/pwrseq/pcie-m2-bt.h>
+ #include <linux/skbuff.h>
+ #include <linux/unaligned.h>
+ #include <linux/firmware.h>
+@@ -1840,20 +1842,13 @@ static bool nxp_m2_connector_is_available(struct device *dev)
+ 	return remote && of_device_is_available(remote);
+ }
+ 
+-static int nxp_serdev_probe(struct serdev_device *serdev)
++static int nxp_register_dev(struct btnxpuart_dev *nxpdev)
+ {
++	struct serdev_device *serdev = nxpdev->serdev;
+ 	struct hci_dev *hdev;
+-	struct btnxpuart_dev *nxpdev;
+ 	bdaddr_t ba = {0};
+ 	int err;
+ 
+-	nxpdev = devm_kzalloc(&serdev->dev, sizeof(*nxpdev), GFP_KERNEL);
+-	if (!nxpdev)
+-		return -ENOMEM;
+-
+-	nxpdev->nxp_data = (struct btnxpuart_data *)device_get_match_data(&serdev->dev);
+-
+-	nxpdev->serdev = serdev;
+ 	serdev_device_set_drvdata(serdev, nxpdev);
+ 
+ 	serdev_device_set_client_ops(serdev, &btnxpuart_client_ops);
+@@ -1864,12 +1859,12 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+ 	init_waitqueue_head(&nxpdev->fw_dnld_done_wait_q);
+ 	init_waitqueue_head(&nxpdev->check_boot_sign_wait_q);
+ 
+-	device_property_read_u32(&nxpdev->serdev->dev, "fw-init-baudrate",
++	device_property_read_u32(&serdev->dev, "fw-init-baudrate",
+ 				 &nxpdev->fw_init_baudrate);
+ 	if (!nxpdev->fw_init_baudrate)
+ 		nxpdev->fw_init_baudrate = FW_INIT_BAUDRATE;
+ 
+-	device_property_read_u32(&nxpdev->serdev->dev, "max-speed",
++	device_property_read_u32(&serdev->dev, "max-speed",
+ 				 &nxpdev->secondary_baudrate);
+ 	if (!nxpdev->secondary_baudrate ||
+ 	    (nxpdev->secondary_baudrate != HCI_NXP_SEC_BAUDRATE_3M &&
+@@ -1884,36 +1879,11 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+ 
+ 	crc8_populate_msb(crc8_table, POLYNOMIAL8);
+ 
+-	nxpdev->pdn = devm_reset_control_get_optional_shared(&serdev->dev, NULL);
+-	if (IS_ERR(nxpdev->pdn))
+-		return PTR_ERR(nxpdev->pdn);
+-
+-	err = devm_regulator_get_enable(&serdev->dev, "vcc");
+-	if (err) {
+-		dev_err(&serdev->dev, "Failed to enable vcc regulator\n");
+-		return err;
+-	}
+-
+-	if (nxp_m2_connector_is_available(&serdev->ctrl->dev)) {
+-		struct pwrseq_desc *pwrseq;
+-
+-		pwrseq = pwrseq_get(&serdev->ctrl->dev, "uart");
+-		if (IS_ERR(pwrseq))
+-			return dev_err_probe(&serdev->dev, PTR_ERR(pwrseq),
+-					     "failed to get pwrseq\n");
+-
+-		nxpdev->pwrseq = pwrseq;
+-		err = pwrseq_enable(pwrseq);
+-		if (err)
+-			goto err_pwrseq_put;
+-	}
+-
+ 	/* Initialize and register HCI device */
+ 	hdev = hci_alloc_dev();
+ 	if (!hdev) {
+ 		dev_err(&serdev->dev, "Can't allocate HCI device\n");
+-		err = -ENOMEM;
+-		goto err_pwrseq_put;
++		return -ENOMEM;
+ 	}
+ 
+ 	reset_control_deassert(nxpdev->pdn);
+@@ -1938,7 +1908,7 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+ 	hdev->set_bdaddr = nxp_set_bdaddr;
+ 	SET_HCIDEV_DEV(hdev, &serdev->dev);
+ 
+-	device_property_read_u8_array(&nxpdev->serdev->dev,
++	device_property_read_u8_array(&serdev->dev,
+ 				      "local-bd-address",
+ 				      (u8 *)&ba, sizeof(ba));
+ 	if (bacmp(&ba, BDADDR_ANY))
+@@ -1965,15 +1935,61 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+ probe_fail:
+ 	reset_control_assert(nxpdev->pdn);
+ 	hci_free_dev(hdev);
++
++	return err;
++}
++
++static int nxp_serdev_probe(struct serdev_device *serdev)
++{
++	struct btnxpuart_dev *nxpdev;
++	int err;
++
++	nxpdev = devm_kzalloc(&serdev->dev, sizeof(*nxpdev), GFP_KERNEL);
++	if (!nxpdev)
++		return -ENOMEM;
++
++	nxpdev->nxp_data = (struct btnxpuart_data *)device_get_match_data(&serdev->dev);
++
++	nxpdev->serdev = serdev;
++
++	nxpdev->pdn = devm_reset_control_get_optional_shared(&serdev->dev, NULL);
++	if (IS_ERR(nxpdev->pdn))
++		return PTR_ERR(nxpdev->pdn);
++
++	err = devm_regulator_get_enable(&serdev->dev, "vcc");
++	if (err) {
++		dev_err(&serdev->dev, "Failed to enable vcc regulator\n");
++		return err;
++	}
++
++	if (nxp_m2_connector_is_available(&serdev->ctrl->dev)) {
++		struct pwrseq_desc *pwrseq;
++
++		pwrseq = pwrseq_get(&serdev->ctrl->dev, "uart");
++		if (IS_ERR(pwrseq))
++			return dev_err_probe(&serdev->dev, PTR_ERR(pwrseq),
++					     "failed to get pwrseq\n");
++
++		nxpdev->pwrseq = pwrseq;
++		err = pwrseq_enable(pwrseq);
++		if (err)
++			goto err_pwrseq_put;
++	}
++
++	err = nxp_register_dev(nxpdev);
++	if (err)
++		goto err_pwrseq_put;
++
++	return 0;
++
+ err_pwrseq_put:
+ 	if (nxpdev->pwrseq)
+ 		pwrseq_put(nxpdev->pwrseq);
+ 	return err;
+ }
+ 
+-static void nxp_serdev_remove(struct serdev_device *serdev)
++static void __nxp_remove(struct btnxpuart_dev *nxpdev)
+ {
+-	struct btnxpuart_dev *nxpdev = serdev_device_get_drvdata(serdev);
+ 	struct hci_dev *hdev = nxpdev->hdev;
+ 
+ 	if (is_fw_downloading(nxpdev)) {
+@@ -2000,6 +2016,58 @@ static void nxp_serdev_remove(struct serdev_device *serdev)
+ 	hci_free_dev(hdev);
+ }
+ 
++static void nxp_serdev_remove(struct serdev_device *serdev)
++{
++	struct btnxpuart_dev *nxpdev = serdev_device_get_drvdata(serdev);
++
++	__nxp_remove(nxpdev);
++}
++
++static int nxp_bt_aux_probe(struct auxiliary_device *adev,
++			    const struct auxiliary_device_id *id)
++{
++	struct pcie_m2_bt_auxdev *bt_auxdev = to_pcie_m2_bt_auxdev(adev);
++	struct btnxpuart_dev *nxpdev;
++	struct pwrseq_desc *pwrseq;
++	int err;
++
++	nxpdev = devm_kzalloc(&adev->dev, sizeof(*nxpdev), GFP_KERNEL);
++	if (!nxpdev)
++		return -ENOMEM;
++
++	nxpdev->nxp_data = (struct btnxpuart_data *)id->driver_data;
++	nxpdev->serdev = bt_auxdev->serdev;
++
++	pwrseq = pwrseq_get(&adev->dev, bt_auxdev->pwrseq_target);
++	if (IS_ERR(pwrseq))
++		return dev_err_probe(&adev->dev, PTR_ERR(pwrseq),
++				     "failed to get pwrseq\n");
++
++	nxpdev->pwrseq = pwrseq;
++	err = pwrseq_enable(pwrseq);
++	if (err)
++		goto err_pwrseq_put;
++
++	err = nxp_register_dev(nxpdev);
++	if (err)
++		goto err_pwrseq_put;
++
++	auxiliary_set_drvdata(adev, nxpdev);
++
++	return 0;
++
++err_pwrseq_put:
++	pwrseq_put(nxpdev->pwrseq);
++	return err;
++}
++
++static void nxp_bt_aux_remove(struct auxiliary_device *adev)
++{
++	struct btnxpuart_dev *nxpdev = auxiliary_get_drvdata(adev);
++
++	__nxp_remove(nxpdev);
++}
++
+ static int __maybe_unused nxp_serdev_suspend(struct device *dev)
+ {
+ 	struct btnxpuart_dev *nxpdev = dev_get_drvdata(dev);
+@@ -2075,7 +2143,44 @@ static struct serdev_device_driver nxp_serdev_driver = {
+ 	},
+ };
+ 
+-module_serdev_device_driver(nxp_serdev_driver);
++static const struct auxiliary_device_id nxp_bt_aux_id_table[] = {
++	{
++		.name = "pwrseq_pcie_m2.88w8987-bt",
++		.driver_data = (kernel_ulong_t)&w8987_data,
++	},
++	{ }
++};
++MODULE_DEVICE_TABLE(auxiliary, nxp_bt_aux_id_table);
++
++static struct auxiliary_driver nxp_bt_aux_driver = {
++	.name = "nxp_bt",
++	.probe = nxp_bt_aux_probe,
++	.remove = nxp_bt_aux_remove,
++	.id_table = nxp_bt_aux_id_table,
++};
++
++static int __init nxp_bt_init(void)
++{
++	int err;
++
++	err = serdev_device_driver_register(&nxp_serdev_driver);
++	if (err)
++		return err;
++
++	err = auxiliary_driver_register(&nxp_bt_aux_driver);
++	if (err)
++		serdev_device_driver_unregister(&nxp_serdev_driver);
++
++	return err;
++}
++module_init(nxp_bt_init);
++
++static void __exit nxp_bt_exit(void)
++{
++	auxiliary_driver_unregister(&nxp_bt_aux_driver);
++	serdev_device_driver_unregister(&nxp_serdev_driver);
++}
++module_exit(nxp_bt_exit);
+ 
+ MODULE_AUTHOR("Neeraj Sanjay Kale <neeraj.sanjaykale@nxp.com>");
+ MODULE_DESCRIPTION("NXP Bluetooth Serial driver");
+
+-- 
+2.43.0
+
+
