@@ -1,21 +1,21 @@
 Received: from lgeamrelo07.lge.com (lgeamrelo07.lge.com [156.147.51.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BFF43F8ECC
-	for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 03:17:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE1623D4132
+	for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 03:17:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.103
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789442234; cv=none; b=R7gUxJpodLkEprdzgt6SrBLecHkKM3yjSXZPeySGM94zCVp+atE8UkomlgKCnG3KJjFZIh3J85IRF/allaZR5bRlaT6Jg4IEu9rOboUQ57bK6NolUzG6l3Nqi1R3rjjqFAjT0p6EcO62YBDAbF2nmI48d8r0cvNY1uU5XCMrc9o=
+	t=1789442234; cv=none; b=EGZhli8o0ii++ulPYCVFKss2qTDPZHEHYrQmHGBabKEXwWhWE5wbR7vQ3CdsVXarcc/9Pmc6VZjHqvIc1htxEprC2aRn84FYTEjoAPI6cSW6o03mndY9Pxxlxm33cxVSpXgn74ssXvbcFaSb3L+n5hAdWUvYVuCo2c7Ygbz0Fvo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1789442234; c=relaxed/simple;
-	bh=zDaO8yqKFFSXre14jnlmr/qF2KcP3mayDBhiQeDMszA=;
+	bh=5EkV6x5BykyvFt/g2bYUIcDRIwmp/MSRf0K52EQSBhw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=g0lcgk7hBthOIEphEKKixyyB9M2tpB30feXKeI1m69Py+IpBYTLniecCHgLNmU0dao3mA0Rl1AiaflESh6Ls0/GF/4MofNJ6wHDOBnQptH8kN8g9xTZ66/NF9u3X9TJxDGGsQjyNExzTj+mBoFVrQ144WEjWuzcClQ6X4QdSoYk=
+	 MIME-Version; b=JLqycWb9FBkW0Q9JBJKxj92mRy/9v7Lq7hNlvQrAeg9QraURsBar1cbi+Hxd+gW3EzHRkF+xR1z2bg31KO8riWij8v+naA2AQzfxh5wYafODq9TdpvzwqwetV97i2GCx2qO5ET09NAfokBTiuSzGwqAwCiYavZcNj9RHXnWMJOU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.103
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
 Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.103 with ESMTP; 15 Sep 2026 12:17:03 +0900
+	by 156.147.51.103 with ESMTP; 15 Sep 2026 12:17:08 +0900
 X-Original-SENDERIP: 10.177.112.156
 X-Original-MAILFROM: youngjun.park@lge.com
 From: Youngjun Park <youngjun.park@lge.com>
@@ -34,9 +34,9 @@ Cc: Kemeng Shi <shikemeng@huaweicloud.com>,
 	her0gyugyu@gmail.com,
 	youngjun.park@lge.com,
 	taejoon.song@lge.com
-Subject: [RFC PATCH 01/10] PM: hibernate: give the image's swap slots back when test_resume fails
-Date: Tue, 15 Sep 2026 12:16:49 +0900
-Message-Id: <20260915031658.1505680-2-youngjun.park@lge.com>
+Subject: [RFC PATCH 09/10] PM: hibernate: tell swap how much space an image needs
+Date: Tue, 15 Sep 2026 12:16:57 +0900
+Message-Id: <20260915031658.1505680-10-youngjun.park@lge.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260915031658.1505680-1-youngjun.park@lge.com>
 References: <20260915031658.1505680-1-youngjun.park@lge.com>
@@ -48,75 +48,113 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-test_resume writes an image and loads it straight back without powering
-off.  When the load fails nothing gives the image's swap slots back.
-They stay allocated for as long as the system runs, and swapoff on that
-device cannot finish, since the slots belong to no process.
+Swap has no way to ask how big a hibernation image gets.  Add
+hibernate=reserve[:<size>] and hibernation_reserve_pages(), which swap
+can call at swapon to learn how much space to hold back.
 
-Tested by forcing the restore to fail in test_resume mode.
+The answer is <size>, or image_size when no size is given.  It is zero
+without hibernate=reserve and for any area other than the one named by
+resume=.  The image can still outgrow it.
 
-Fixes: fe12c00d21bb ("PM / hibernate: Introduce test_resume mode for hibernation")
-Assisted-by: Claude:claude-fable-5
+Assisted-by: Claude:claude-opus-5
 Signed-off-by: Youngjun Park <youngjun.park@lge.com>
 ---
- kernel/power/hibernate.c |  6 +++++-
- kernel/power/power.h     |  1 +
- kernel/power/swap.c      | 12 ++++++++++++
- 3 files changed, 18 insertions(+), 1 deletion(-)
+ .../admin-guide/kernel-parameters.txt         |  8 ++++++
+ include/linux/suspend.h                       |  3 +++
+ kernel/power/hibernate.c                      | 26 +++++++++++++++++++
+ 3 files changed, 37 insertions(+)
 
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 68647ff4bdd2..eb2454b73f4b 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1980,6 +1980,14 @@ Kernel parameters
+ 		protect_image	Turn on image protection during restoration
+ 				(that will set all pages holding image data
+ 				during restoration read-only).
++		reserve[:<size>]
++				Hold <size> of swap back for the image when the
++				area named by resume= and resume_offset= is
++				swapped on.  Swap cannot use that space.
++				Without <size>, /sys/power/image_size is used.
++				<size> takes K, M or G.  More than half of the
++				area is refused.  Later changes take effect at
++				the next swapon.
+ 
+ 	hibernate.compressor= 	[HIBERNATION] Compression algorithm to be
+ 				used with hibernation.
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index b02876f1ae38..1fb1f5d6ce6a 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -393,6 +393,7 @@ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+ extern bool system_entering_hibernation(void);
+ extern bool hibernation_available(void);
++unsigned long hibernation_reserve_pages(dev_t dev, sector_t offset);
+ asmlinkage int swsusp_save(void);
+ extern struct pbe *restore_pblist;
+ int pfn_is_nosave(unsigned long pfn);
+@@ -412,6 +413,8 @@ static inline void hibernation_set_ops(const struct platform_hibernation_ops *op
+ static inline int hibernate(void) { return -ENOSYS; }
+ static inline bool system_entering_hibernation(void) { return false; }
+ static inline bool hibernation_available(void) { return false; }
++static inline unsigned long hibernation_reserve_pages(dev_t dev, sector_t offset)
++{ return 0; }
+ 
+ static inline int hibernate_quiet_exec(int (*func)(void *data), void *data) {
+ 	return -ENOTSUPP;
 diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index d2479c69d71a..907d791b85ad 100644
+index 907d791b85ad..225fe55ee703 100644
 --- a/kernel/power/hibernate.c
 +++ b/kernel/power/hibernate.c
-@@ -857,8 +857,12 @@ int hibernate(void)
- 	if (snapshot_test) {
- 		pm_pr_dbg("Checking hibernation image\n");
- 		error = swsusp_check(false);
--		if (!error)
-+		if (!error) {
- 			error = load_image_and_restore();
-+			/* The image was not used, so free its slots. */
-+			if (error)
-+				swsusp_free_image_slots();
-+		}
- 	}
- 	thaw_processes();
- 
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 75b63843886e..9c398cddd0c3 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -171,6 +171,7 @@ extern void hibernate_release(void);
- extern sector_t alloc_swapdev_block(int swap);
- extern void free_all_swap_pages(int swap);
- extern int swsusp_swap_in_use(void);
-+void swsusp_free_image_slots(void);
- 
- /*
-  * Flags that can be passed from the hibernatig hernel to the "boot" kernel in
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index c78f1593600b..dc65ec409207 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -1612,6 +1612,18 @@ int swsusp_check(bool exclusive)
- 	return error;
+@@ -41,6 +41,8 @@
+ static int nocompress;
+ static int noresume;
+ static int nohibernate;
++static int reserve_swap;
++static unsigned long reserve_size;
+ static int resume_wait;
+ static unsigned int resume_delay;
+ static char resume_file[256] = CONFIG_PM_STD_PARTITION;
+@@ -113,6 +115,26 @@ bool hibernation_available(void)
+ 		!secretmem_active() && !cxl_mem_active();
  }
  
 +/**
-+ * swsusp_free_image_slots - Give back the swap slots the image was written to.
++ * hibernation_reserve_pages - How much swap to hold back for an image.
++ * @dev: the block device the swap area lives on.
++ * @offset: the first block of the swap area on that device.
 + *
-+ * For a path that writes an image and then does not resume from it.  Until
-+ * the slots are given back they stay allocated, and swapoff on that device
-+ * cannot finish either.
++ * Only the area named by resume= and resume_offset= holds anything back.
++ * The image can still grow past this amount.
++ *
++ * Return: the number of pages to hold back, or zero when nothing should be.
 + */
-+void swsusp_free_image_slots(void)
++unsigned long hibernation_reserve_pages(dev_t dev, sector_t offset)
 +{
-+	free_all_swap_pages(root_swap);
++	if (!reserve_swap || !hibernation_available())
++		return 0;
++	if (!dev || dev != swsusp_resume_device || offset != swsusp_resume_block)
++		return 0;
++
++	return DIV_ROUND_UP(reserve_size ? reserve_size : image_size, PAGE_SIZE);
 +}
 +
  /**
-  * swsusp_close - close resume device.
-  */
+  * hibernation_set_ops - Set the global hibernate operations.
+  * @ops: Hibernation operations to use in subsequent hibernation transitions.
+@@ -1437,6 +1459,10 @@ static int __init hibernate_setup(char *str)
+ 	} else if (IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)
+ 		   && !strncmp(str, "protect_image", 13)) {
+ 		enable_restore_image_protection();
++	} else if (!strncmp(str, "reserve", 7)) {
++		reserve_swap = 1;
++		if (str[7] == ':')
++			reserve_size = memparse(str + 8, NULL);
+ 	}
+ 	return 1;
+ }
 -- 
 2.48.1
 
