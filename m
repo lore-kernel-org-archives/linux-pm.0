@@ -1,105 +1,79 @@
-Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C23F36AB57
-	for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 22:02:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C414623FC41;
+	Tue, 15 Sep 2026 22:16:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789509756; cv=none; b=SgEegHu5gEpCk9gcx4rxbtJHqero4LSH9E0EfunX8okYEoH9WAD017U2id8KtlRGqBCkD6DtzeFhSsEP753baBVac5YwFVd9B1HBTgzc0zQec9AKDqTEVPhWbFzUubJfVcK53+4R9PapYLlG4DBRh49FxK112IwiKM04z6+/sUo=
+	t=1789510575; cv=none; b=Fv18Iu2kn0aM8cCS30K89FB5hHG7NlC+3DgwP4q7NO9OBTckF1f//ktXp4i2kw7f6FPtgOOos0WxprqqqGEDJmuzMXXyIKwGTVTO9CapOdjbwyEe2zKrMHlnNl33yeWd0b60NfLQOPs7fuqMxq6WtVzJLjgSiua1M14as2gThY4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789509756; c=relaxed/simple;
-	bh=bA5ljx6B7ITW0N/BGPzHL/Zxz6YCyPP3gMhy0+PZ8fE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XeGlfkiEMqHU23wB4pqAXP6b7qaxCHOwUgUopD7b3B6kPteEJgHXy15T1lQJr0jeuy//4p7c0CEf6Fd2a6kcMDxYgKHWWVolDjkJEPfDJoXEsbJiAs0C7NPiU+dS4OGJTc42XZ8jkiH/NwTlnKy1zCUTxcmRIvFUXURc22O55LA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GAvwXvmB; arc=none smtp.client-ip=74.125.225.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789510575; c=relaxed/simple;
+	bh=4OcySWkVwXRzl3gLkRSH3M68XKZRjwR+q3mkHssFlEA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=k3WH3+ZiRUl5csHYA3CAVZ4WJ3Xz0nm3hHHmyaXpjmooYZINvV+1eGJPZwW9TR2KIlL4r7FHUvegiVUTq7F9Yeqoo2J/8iEz67q2lDNqFtmhvo2SE6Wqy43DU76nPhDct5Asrr5lwWxvs98xKL55e4rC52szRAM/j5FFw1eDIDY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bjg6k9RF; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GAvwXvmB"
-Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49d1ca5b0d6so2087735e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 15:02:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789509753; x=1790114553; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=G8HiHaihSRj3NAinCMOoe99n81qEN+3jpEfhb65vi+w=;
-        b=GAvwXvmBuws1EzjCKqb8vlhZdrvt6YwfW1iawqyyDcVKTS4SsCOuJKkZgphkdzLQkC
-         k/6f9O/WDTVFnjKFcHD8zNS5+ZQK8afwgo9LlmTqxnMSSuxykNUifbU5dRZSlSwsbH44
-         txN6q67bW2tOvzXX6uQZvR6E5lrxc+VwBJEOY8sWGN4CGpTyL7TDNszZ5DQIHa/R93oj
-         cuRKZ2A/Z/r9ZA2f5WK38RqqCvWyShi7g30eBiwF5LDgqWqgnbOR4XvJrrIEIP5DMfck
-         nFsvuDyz5k2LaMpL9Xha7g9eD14XmOoeTI4AnppnijIz0OdEVZds1vOchpzgLPd6m5ZC
-         pklw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789509753; x=1790114553;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=G8HiHaihSRj3NAinCMOoe99n81qEN+3jpEfhb65vi+w=;
-        b=cDCn1FyIdBNVoL2jSl58m5f33frEEX2+l537JskbQmr8DUkKotpQGu1PE5mbE6QZh/
-         66nE0S6EouMnvo5cVR73KsP00pwJKjIKy7zPAWAEnPYx91BUpMJgsgLIzuaRJBnoRdOu
-         juFBfifUBMPF9g1V9J0a4cr5HCCvxNhgzCgpQ5Zgyscmt3Vv/pBT5TbHLFlQ1TCjObLF
-         B0ioTMlKJLLG5FBQlOhZQCt8x1S4vKjhPbz4M1oXpVxVcolsgPtKOJcfCe9n4nkLegD8
-         h3QYq9apwe3ga1CEvJNN9pohCkPzJ8b6qY3BqqH6JWBkjAGviFOeP5YHxvxSyWeu+pW0
-         g22g==
-X-Forwarded-Encrypted: i=1; AKwUvBzBvPT/BwT7UOc6WmRlmSN+uxXfsNcM6hg06YBucB7CwWc23W+UBF1Ih7dISCAUfp/pifLFNpDwsg==@vger.kernel.org
-X-Gm-Message-State: AFuF++kycn+31NV3k9QfiEsTlkrHtJavnaOJCkGExnwN2+ELHvXkMh2T
-	RCe0cXn5Z4+10ntQCMjAxma9T+r3b2Brrn3gPa0o4t2CpKH1n+L7gMuR
-X-Gm-Gg: AYBFou2pNJIj1/JQIA+pMIOApuQa3Vvj/OonBL5SpM10uC/LHGWWC8zPw7cimhWa+YX
-	KsXHLsO3l/0S1F72TTczwetmm/9n1NupvPjEw54gtELmrdHdd02QxqmIXcsYCHHQfRJCNPfhjpE
-	QqxHX+nt6GtB8tBKrEVh1J+RZvBtLe/iij8RIvkQTgVym0D3G5PFdWNVupcp2L/tExiZqqbq0bf
-	ZGgvBVBbca1XtKTncpG7IauWUW0vD8tzzUBwkChbMUfCu0p3Z8Ms6ZIDr4kwInO92jt2ZLFCXWL
-	SNXp6DNTYrpHEi3MQ49RxkNX2tioPzxPL6SsQmI73L/OMMKTx9jI0YdmWefOBRxzjZk/yySA5XP
-	FdbERXT97H1IFLbynxZfoNhepq0ztlun4HV+x1HJMMHHtKecEJu2qeIjyUmlMLbGdvpzwE8fqTU
-	hJVLf67NoQ25R3YwoOjIuDS5Wn4rFMcV+vcOlrYwQAfbCECAU2fZOZ4wmO90z6Bp2qqvGWXpo6J
-	75gNg==
-X-Received: by 2002:a05:600c:1d07:b0:49c:e27c:6b10 with SMTP id 5b1f17b1804b1-49eb7314c2emr245005e9.3.1789509753103;
-        Tue, 15 Sep 2026 15:02:33 -0700 (PDT)
-Received: from epiphany ([143.58.158.93])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e83aeae01sm27747445e9.6.2026.09.15.15.02.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2026 15:02:32 -0700 (PDT)
-From: Syazwina Fazrul <norsyazwina.fazrul@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Syazwina Fazrul <norsyazwina.fazrul@gmail.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bjg6k9RF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B2691F000FF;
+	Tue, 15 Sep 2026 22:16:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789510573;
+	bh=+BkOBk1sg9gA13PbWkh0DsNS8VZNZHt0LnWD0AIK+vI=;
+	h=From:To:Cc:Subject:Date;
+	b=bjg6k9RF6NSkushGvbiA9fIScvJrqo+ZFLr1ugIwaUnC8otcP89pLcmrF8eDjhz05
+	 Bh6oST5+j9ZgIwVz7dSh2E4+VFawHo6FHQqKzpt6WrmT4mdgMUquD5Bw5cglAdnS+5
+	 1yDwoV7+B3fX6YTkOkIFR9XeL7fJ0nFWWJWXxzrUsBisyYDGp76qz9XSjqwvRfV6KL
+	 z+TkyTVDnCbUV8c0juhQ+VIyn7vipB7eJYSnXoMLaa+0mQtaUkpRDm4a2p4KT7GTOW
+	 9YLYa2hXdZVwi70DKOfLjsN6SKWMguUn2vCmjQKgVl764R6RHqJeva9IwPLlOBLaMe
+	 1s4bU1Ws9RlZg==
+From: Thorsten Blum <blum@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Yury Norov <ynorov@nvidia.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	linux-pm@vger.kernel.org,
-	linux-doc@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation: power/cpuidle: Fix repeating phrase
-Date: Tue, 15 Sep 2026 23:00:55 +0100
-Message-ID: <20260915220105.14655-1-norsyazwina.fazrul@gmail.com>
-X-Mailer: git-send-email 2.52.0
+Subject: [PATCH 1/2] thermal: intel: powerclamp: Simplify duration_get()
+Date: Wed, 16 Sep 2026 00:15:48 +0200
+Message-ID: <20260915221548.104852-3-blum@kernel.org>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1002; i=blum@kernel.org; h=from:subject; bh=4OcySWkVwXRzl3gLkRSH3M68XKZRjwR+q3mkHssFlEA=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkrD0+tPOoh52Nst7BtwrQli99aLqs173ZttX11qllDN t9PaMX1jlIWBjEuBlkxRZYHs37M8C2tqdxkErETZg4rE8gQBi5OAZhI8j6GP1yF/z/WHdq287gn Q+cuzwDJ5TYHt8U5layPYz6Sl2/bosnI8FB7+eIJkm0CFxZvED0eufXVBsHnYVHpv/QCgzcsEZi +iAEA
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
 
-remove repeating 'with the' phrase
+Use guard(mutex) and return the result of sysfs_emit() directly to
+simplify the code. Also use %u to format the unsigned duration.
 
-Signed-off-by: Syazwina Fazrul <norsyazwina.fazrul@gmail.com>
+Signed-off-by: Thorsten Blum <blum@kernel.org>
 ---
- Documentation/admin-guide/pm/cpuidle.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/intel/intel_powerclamp.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/admin-guide/pm/cpuidle.rst b/Documentation/admin-guide/pm/cpuidle.rst
-index be4c1120e3f0..e91ebd432f6f 100644
---- a/Documentation/admin-guide/pm/cpuidle.rst
-+++ b/Documentation/admin-guide/pm/cpuidle.rst
-@@ -316,7 +316,7 @@ interval" value.
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index bd7fd98dc310..8ceb1270646c 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -103,13 +103,9 @@ static int duration_set(const char *arg, const struct kernel_param *kp)
  
- Now, the governor is ready to walk the list of idle states and choose one of
- them.  For this purpose, it compares the target residency of each state with
--the predicted idle duration and the exit latency of it with the with the latency
-+the predicted idle duration and the exit latency of it with the latency
- limit coming from the power management quality of service, or `PM QoS <cpu-pm-qos_>`_,
- framework.  It selects the state with the target residency closest to the predicted
- idle duration, but still below it, and exit latency that does not exceed the
--- 
-2.52.0
-
+ static int duration_get(char *buf, const struct kernel_param *kp)
+ {
+-	int ret;
++	guard(mutex)(&powerclamp_lock);
+ 
+-	mutex_lock(&powerclamp_lock);
+-	ret = sysfs_emit(buf, "%d\n", duration / 1000);
+-	mutex_unlock(&powerclamp_lock);
+-
+-	return ret;
++	return sysfs_emit(buf, "%u\n", duration / 1000);
+ }
+ 
+ static const struct kernel_param_ops duration_ops = {
