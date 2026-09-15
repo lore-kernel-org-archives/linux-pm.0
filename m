@@ -1,73 +1,73 @@
 Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6E69488232;
-	Tue, 15 Sep 2026 10:46:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD9F9492E35;
+	Tue, 15 Sep 2026 10:46:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789469166; cv=none; b=gZT0wwphSasLXZS47R473gCkBRfXekLJD6jaRBEnAG7SjwifBbqM2Jdk2i//NQhwID3a+PAd9H1dopy3WG6z87n0n5Hz8/kk+r+QFaEY9bfeKa1flWPcL1rfJHQ92eM+MA1Iwm97knU3k32/50R8rCZSvBZ/4e+jEHE+0zWnmuM=
+	t=1789469181; cv=none; b=rLKIXBqQ5rA7o5Xr1IssuiJeMpYmZGaSo5Ro49M7CJeGIC8k3AQB4rVCT6yVFQZ/cq5WQBNgodk7/YynJqJroe5IefSqeiPCODDEYamwi3a9gJKxgb0p/XTZ5VmsKa1yFyKxwE15AfjpB03l9AOaivrFEX4M0pQrDUhJF92suZk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789469166; c=relaxed/simple;
-	bh=ZUgjix6KuhmcgRLEHDMNrkOpuWTJXcIFB15xJ/dQR5c=;
+	s=arc-20240116; t=1789469181; c=relaxed/simple;
+	bh=bTZi84lqnDkfZfad7zQtc84YDTWWzuRD19OT0NO3jp0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uDmYXsa0K1zAFezJ/5lM9YTdY4URnXbhf321Lb1Ej4Q/VVKbusUn/lrCon8ItaVt/nZ1q1/5eg82uCag8WStskgJqyn1gwKzpt2qQgGt6qc1g3S9+C33vzXI8YqCSR1vECy6qFWvEBYAzBE64LsKFPb44vImX8DApZwmRRx5pC8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=FK7zKJSA; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=F1GfD4dG; arc=none smtp.client-ip=202.12.124.141
+	 MIME-Version; b=Z+19eUUaBRDtwg2/9xvTCpDNlDioSIaBQqpY7a9Xkhw5646LZL3dTPMe2tfvUQiO0X+JYJO1xGAOGSmPUcPFyMQKGndNJip5dW5O66qizKkihnxGJ77UY6xqdFfJN6kuPdX3IBzrkEqBAsKDOpYGsgk2k4j/7f0ny3CoKXS4I4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=E2aVIb+d; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=GO9XxQj/; arc=none smtp.client-ip=202.12.124.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="FK7zKJSA";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="F1GfD4dG"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.stl.internal (Postfix) with ESMTP id 49AB3130050E;
-	Tue, 15 Sep 2026 06:46:02 -0400 (EDT)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-04.internal (MEProxy); Tue, 15 Sep 2026 06:46:03 -0400
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="E2aVIb+d";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="GO9XxQj/"
+Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
+	by mailflow.stl.internal (Postfix) with ESMTP id 68573130050E;
+	Tue, 15 Sep 2026 06:46:14 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-03.internal (MEProxy); Tue, 15 Sep 2026 06:46:15 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1789469162; x=
-	1789476362; bh=Xf0AIYtJ/K+4XytoHu51Tg+JXdKoXOAcW1Dw8eFawmY=; b=F
-	K7zKJSAiRWZGOrxhRnrUIigJhtKny+A8RNuj1pCuOiM4f+6Mqt2rvHIq7MeHk6TE
-	KRY0FQb8ZPbpHahFh28Mx1QEbQcaRztFy7KFcfL6F+XXSVpmgXuLNAbWH73xplQn
-	p+0R9PP7ukG5Pn3LAQ8NNsyhy86RPn2+gw3q5MrtBaFP2k77aj0D/CVQmCXGqBNZ
-	EIa2qlYvib9KVEdh9LLYkKCL2QyiSmBBiJDAMovMNgQC51ipSUM60dQ+qrCmg/94
-	Xq4+HvaW8UIvaEjx3NFZAFL6dASVrx6V7xWnysEoiIKpo4enEGaBjWmQ9Nrpd2rJ
-	7ZllBxnPHGdZEHYiwuV2g==
+	:reply-to:subject:subject:to:to; s=fm2; t=1789469174; x=
+	1789476374; bh=6ZH2yhhWclrOGlZcOwgI16yHIaMMZoDMxlrEMqFGo8Y=; b=E
+	2aVIb+dee4JLFHHK4W56LhBnLykb1jzc6oy3EdSGUkXxqGCf5So/fjIgADrlpvaE
+	LCjfIbwhVxg3+ekNra22jby3DX3rcXAgp+sg8Fu7CmBdFGrrnYv1kouupcOcJjH3
+	p7bWn+w9mrz4rPlZsAce1Vi6+fT/Tjo44JnpXlIcqB+bNbdaJE6lpvaDKg8AawFQ
+	lgwlzWtr3xYOcPZQTiHEp/n4DckOAIXXF2cGZOUWNEU1M5vO5IOnubyiFPOA9S3O
+	64dYqluqCILKegXw3apYHIrTsRadFIrAgomGx8xsQ67nCqNBqDI3lVe0vINHvCVZ
+	gFYXXWwRzByaUZCHteaXg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm1; t=1789469162; x=1789476362; bh=X
-	f0AIYtJ/K+4XytoHu51Tg+JXdKoXOAcW1Dw8eFawmY=; b=F1GfD4dG8LW1btkcf
-	IKqwPAzPDvbs9vn9APljTXY3kwIMBsdbnIh0GvhhhfsbIZtEyhBw2Xz4sN210r8x
-	s68Au3RKrkEEYj4ma+cdhlL0r46Iy78iVfrqap60PRQXf3pv3E9KVuZ1Kdsc9XZi
-	JnCCQ+ky8tKv1Y413kZDHmfcKHEDftm0WYeHV74AqKMwUaAfnQg+8p7jAED0wH58
-	421BJcG4PMjJUY9XOO7yC8Pm33x6sf7XFXtR3smWqMyA9Lga9LM2Rt0kvLDMBWNW
-	T2cs1S6CBoYgvDyv+JDffT6BIZnwSW8+OdudJ6s8g3g9hVhFt6DTu+LuRRO3Nij1
-	H+LbA==
-X-ME-Sender: <xms:6iGpajzAOZSZWO6iDrxk4V13zr4gqB_OcqL4xe4Pv9I-b8rfO8r43A>
-    <xme:6iGpasAfczlaaUBZRX1PS526tBLpScORHUm83XWpGNj8TNZ_ZUwyTS9KNkOneeDsg
-    mojNxIcTMkZFzEJAlDC5fb5oBNoK9BmNLbYMECkExQIXB1W97Q5i5w>
-X-ME-Received: <xmr:6iGpahJEgD3Eq5T8EG3JlEPQb9V9jZLumb_rCu4DNOAJFWdsmXEzD5vytlpyVj7VC-heIvPgHg>
-X-ME-Proxy-Cause: dmFkZTFc/f+iTQ6Xfq8OwsHzZalkNFS5P1a6mZ7+SKzJ+aIlWQZ9LIu8SZaXig2kry8E4l
-    fqsKlj3MQKO04+Ry1s2dzksMu8//PfpznkMcS7S0FTNR02UB+H90E0R50vg1i9QArKyNlm
-    gX8Ab8omn0B6sAhsguvaDuBppxzYAQwY06yjONgTFYdDGGfRGS/a9g4hE7Ar4SFi/MRz61
-    2uJP5RE1b7aIo73DUWiBj4be9ejQ2H5+el8KS4AzHHeG1WdfgJuy1tS41N487ll4GlcDe5
-    ou0gTnVo40xv1I79htHXpLrcsmhzpMHZEV2IyCxqzqtgB8RdVggG44bhnSZOFuyLoMpNWW
-    dP7hbzFa4tVYG9RSdC6OS+8nsNt7SsBKsUuikCv1pGIYBr0cotRMh/ZtFxLeFUihTNL8U8
-    mDPRA4rgIn2aNkqyygtrFXOg1hhCf3gPY37A7R4YxLucVh7qZeMsZH05asCMOVar4kKiZ/
-    QD6fWwST2GE757bACSNj/nlS1v+Wc/Q1alo4Sm9QtkFqCS34p9Zc5NqaViT16f6MezT23k
-    YVpK7cIQ5xBGf+dL+ucm4BCPRzH00voqKa7nNKvKBVNzSOZT35RbrYbrEDkZFN6PvpLgg/
-    0FF7yK+bNauUUWSOMpdZP2RXXE9SG7DU8FB38qVPtovZ5/T1TgMnHGAOl8vQ
-X-ME-Proxy: <xmx:6iGpavHVdiMhQ0YzVruj00Xj43k1lIVpnjprulNQ8-VrMNT_MBv87Q>
-    <xmx:6iGpakGRgcVb1PFyVrCIlA1yeX0-bq_uckAU96rqdTwFiIAc5jVgDQ>
-    <xmx:6iGpavtkCaoeyscvl6rgSrw6a3UekIOrnv5ii3N4o_-SSpKloaVgLg>
-    <xmx:6iGpanaCsJFooP5kwiRuYLISUqemKPq6yjKJogPx3iNMAmn5MNhRNw>
-    <xmx:6iGparlW1S1jTQ7t76nEh_oqKCLNkeVOUJuqnuHVz8ZXMIIvboU3Xdlj>
+	:x-me-sender:x-sasl-enc; s=fm1; t=1789469174; x=1789476374; bh=6
+	ZH2yhhWclrOGlZcOwgI16yHIaMMZoDMxlrEMqFGo8Y=; b=GO9XxQj/khu5BUHFm
+	aJdUcFoSRxN9VIif0Hr9+H2N764CGXXTB/HUyEieFQ9WE6ztopOqewWw08agr4UL
+	qNlH+KTYopTSIcZ4Y90U82RA7fjfx7tsZIFYYi+SlTA4R4k4UfkQItCJECR2X5kx
+	pmLfldHpl7JPwabQGAlFb9c+UYF9ihMvgSrJCMODi0+sEBib3J3QXvho46rLDuY0
+	yAfOpGsOh9uFFNUxIpX26zR/JoSFZ+HsQYJEJRwu1NM6Buz8RqJrVciZbH0HmkAK
+	n43tO/pODy1UQ1ztyyGVPlE6GIPbSgoIBi738D4+ADFh/Cg4V4l/BjMSaa5MoxNU
+	Ot42Q==
+X-ME-Sender: <xms:9SGpam_Mc0gYBYU3rKU9IoSfgVxZo4ClJouCecrg5eyfSqxQMjzDaA>
+    <xme:9SGpam2lVQkgX8uV_Ap7AryYJx15LefS7f7TBdZwRLgYZlv68fGYU-sNvDQKNcDPM
+    JCQ98-s8ZOBczzmmmlR35i-hzkeoST_HdrnArA2Fa9JlUfWAyh9wB-C>
+X-ME-Received: <xmr:9SGpap27ae34kgt32fZHksJAJs0h5OqVlHjcaPQGOnsGSEVPo5J0g2yl33U4XnnRlE-K22Zv6A>
+X-ME-Proxy-Cause: dmFkZTGC7j62tXMGgajHCaYl9LRDhSVXli2vpHPtOTENmffy8Ld5NQ16KawirlQvrTExft
+    1qKI73d8VGGBe6ldYvpEYhDk7nGJB2x3hhHvQe7KrdNdaOsKt8QX2IJy8nOwVc7OoBQxdr
+    GjY1+iqmQdvn8Zk7yLBMwDU1Aj/or9TQqkmYa9aHQ5qlx1Ur4fYJSE8D+QtjgctyBzJQ4d
+    KMzItB7ejokhvHcWczLqIjmuYQb4vNsIbJpZUHTUB8BcUIME9ULFzDYFecEiEp06cqAF8J
+    w4TbrI7BG0D0BtAgtD5VP12d9ktSc8KO1eudi2Uy03TledXfu8K25SPKpiCb757wIcntfB
+    TgG6P4mz6NTX8B3cNRCYMlnyFvD8nZhopJva9eJ8EpQvP88Yqys1GRT3pq3Ya6jdL/WWDc
+    y10LXBdlWPdbqKMiWys8KZdrtTmH9esAwM5eHlR/3hiWT2wH33JrEVLwIZyecpSqpgA9As
+    IlqQOxy1AQSqz5Lfd5bI8sZ0wnaa2J3kbCuI+K8WB7iee1MsDefiJaXZ2wRcXsqCq2R/Et
+    Og/tuNNnSKwyb+uiLxHvVdDTpiFBz0H7/rD4rY6rCEzY3O6bTGWHSSMmYRlQhHTgxbMMmZ
+    zuUTyYNJ1wT+O3tn/fvRgmneV4e0Jdzpj8cFbsj910CO4WzxMRbXSPO6Ge8A
+X-ME-Proxy: <xmx:9SGpaisvRcOL_ddSdo2GPe3c2I8ryViaKNqgS1r2x2Y2ckFBAoGROA>
+    <xmx:9SGpapZlk2xYTWOAPnMhC1ofHsheqX7kcE0SVfF9qo1PfXTC2c-Fgg>
+    <xmx:9SGpaoL41BFeKnhopEx3Q2yR2WCGsGPM6ER10yGE3zww5yXF0HRm7Q>
+    <xmx:9SGpaqjBPKbQJqyunGePgXFV0F4re69Z-Jlms6Qe9haqkSwQZLaVMg>
+    <xmx:9iGpauTTLvgD9-vq-14Ytwqx1LJ_ST7Yx5-qXFhO2Wez7VEU2aNbXjvo>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 15 Sep 2026 06:45:53 -0400 (EDT)
+ 15 Sep 2026 06:46:05 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -97,9 +97,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v13 12/14] accel/rocket: add RK3576 NPU (RKNN) support
-Date: Tue, 15 Sep 2026 22:43:26 +1200
-Message-ID: <20260915104328.45901-13-gahing@gahingwoo.com>
+Subject: [PATCH v13 13/14] arm64: dts: rockchip: add NPU (RKNN) nodes to rk3576
+Date: Tue, 15 Sep 2026 22:43:27 +1200
+Message-ID: <20260915104328.45901-14-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260915104328.45901-1-gahing@gahingwoo.com>
 References: <20260915104328.45901-1-gahing@gahingwoo.com>
@@ -111,281 +111,202 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The RK3576 has two cores of the same RKNN block and a few platform
-differences:
+Add the two RKNN cores and their IOMMUs. Both cores are disabled by
+default; boards enable what they wire up.
 
- - the CBUF (convolution buffer) has its own clock domain, so the core
-   needs six clocks rather than four;
- - there is no per-core hclk reset. The CRU has SRST_A_RKNN0 and
-   SRST_A_RKNN1 but no SRST_H_RKNN0 or SRST_H_RKNN1, so a core takes one
-   reset where RK3588 takes two;
- - the NPU spans two power domains, and a device with more than one is
-   skipped by the driver-core single-domain auto-attach, so the list has
-   to be attached explicitly;
- - PC_TASK_CON packs the task number with sixteen bits rather than
-   twelve, moving the two controls above it up by four and adding a third.
+PD_NPU0 and PD_NPU1 are siblings under PD_NPUTOP and hold one core each,
+but the convolution buffer and the DSU sit above them: ACLK_RKNN_CBUF,
+HCLK_RKNN_CBUF and CLK_RKNN_DSU0 belong to the block rather than to either
+core, and PD_NPUTOP already lists all three. Add them to both core domains
+as well, so a core domain switching state has the clocks of the path it
+shares running, and give each core domain the BIU reset that the pmdomain
+driver now cycles once power is on.
 
-That last one is the reason this series has been reporting, since v3, that
-the block accepts exactly one task per reset. rocket_registers.h is
-generated from the RK3588 description, so writing it unchanged to an RK3576
-asks for task_number 0x7001, which is 28673 tasks, and puts
-TASK_COUNT_CLEAR inside the sixteen-bit task number, where it inflates the
-count rather than clearing it. The counter is then only ever cleared by a
-reset.
+Each core lists both core domains, its own first, so that a core in use has
+the whole block powered. Whether a single core can reach the shared path
+with the sibling domain off is not something this series establishes;
+listing both is the description that has been tested here. The IOMMU in
+front of each core lists that core's domain only.
 
-The layout was confirmed by Chaoyi Chen of Rockchip, including the third
-control at BIT(18), task_last_layer_clear, which belongs on every submit
-alongside the count clear:
+Label the outer PD_NPU node so a board can attach the NPU rail to the
+domain that gates the block.
 
-  https://lore.kernel.org/all/4f300b78-d96d-4d98-8819-dc292b0c9b97@rock-chips.com/
+Clock the NPU inside the voltage its rail is given. CLK_RKNN_DSU0 clocks
+both cores and the CBUF they share, nothing in mainline sets its rate, and
+the block comes up at 786.432 MHz. Rockchip's OPP table for this NPU asks
+800 mV of its 800 MHz step at the worst leakage bins, and nothing in
+mainline sets the rail either, so a board that follows this DTS runs the
+NPU above the step whose voltage it happens to boot with.
 
-With that written correctly a job of several tasks runs to completion, the
-completion interrupt arrives, and /proc/interrupts counts up. A convolution
-submitted three times with three different inputs is byte exact against the
-CPU reference each time, with no reset in between and with nothing retiring
-the job but the interrupt.
+On a ROCK 4D with both cores enabled and vdd_npu_s0 at the 750 mV its PMIC
+comes up with, two jobs in flight at once make the second core write single
+words of its output wrong: the right value with a bit of the accumulator
+set, always the same position in the array. Either core alone is exact.
+Four device trees, same board, kernel and userspace, four passes of 5400
+rows each, every row compared with the same multiply done one row at a
+time:
 
-Counting the cores now walks the driver's own match table instead of a
-second, hand-kept list of compatibles. The array sized from that count is
-indexed by every core that goes on to probe, so the two lists cannot be
-allowed to disagree.
+  786 MHz, 750 mV    13 to 20 wrong rows a pass
+  594 MHz, 750 mV    0, 0, 0, 0
+  786 MHz, 800 mV    0, 0, 0, 0
+  786 MHz, 850 mV    0, 0, 0, 0
 
-All of it hangs off the soc_data added earlier, so the RK3588 path keeps
-its existing counts and behaviour.
+594 MHz is a divider off GPLL and sits between that table's 500 and 600 MHz
+steps, both of which ask 725 mV at every leakage bin, so it is inside the
+voltage a board that describes no NPU rail already provides.
 
-The match table moves to rocket_drv.h so rocket_device.c can walk it with
-for_each_matching_node() rather than repeating a for_each_compatible_node()
-loop per SoC, which also keeps num_cores in step with the table that sizes
-the array it counts into. The declaration needs struct of_device_id, taken
-from <linux/device-id/of.h> rather than <linux/mod_devicetable.h>, which
-carries every subsystem's tables with it.
+The trade it buys is a core against a clock, and both halves are measured.
+The rate lives in the device tree, so the two clocks cannot share a boot,
+which means this comparison is across boots and has to clear the noise of
+one. Twenty readings of a single arm inside one boot, nothing changed
+between them, span 2.5%; across boots it can only be worse. So the 4.0 to
+4.2% below clears that floor by under a factor of two, and the 26 to 37%
+clears it by ten. Five runs an arm, the arms alternating inside a boot,
+one warm-up a model discarded, medians of five:
+
+  decode tok/s      594 MHz   786 MHz
+  Llama-3.2-1B        17.85     18.60   two cores
+                      11.17     13.77   one core
+  SmolLM2-135M        41.46     43.12   two cores
+                      38.26     41.90   one core
+
+Losing 192 MHz costs 4.0 to 4.2% of decode with both cores running. Losing
+a core costs 26 to 37% on the 1B model, at either clock. The rate is the
+cheaper of the two by six to nine times.
+
+The two arms cross-check each other: the clock is worth 23% on ONE core
+against 4% on two. With both cores running the bottleneck is no longer the
+clock, which is why this configuration can afford to give up 192 MHz.
+
+A core is worth much less on a small model, 2.8 to 7.7% on 135M, where the
+second core's dispatch overhead is not repaid. TTFT moves by under 2%
+either way, so none of this says anything about prefill.
+
+An OPP table with the rail attached is the proper answer, and it wants
+driver support this series does not have.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 ---
- drivers/accel/rocket/rocket_core.c   | 20 ++++++++++++++
- drivers/accel/rocket/rocket_core.h   |  8 +++---
- drivers/accel/rocket/rocket_device.c |  7 ++++-
- drivers/accel/rocket/rocket_drv.c    | 16 +++++++++---
- drivers/accel/rocket/rocket_drv.h    |  2 ++
- drivers/accel/rocket/rocket_job.c    | 39 +++++++++++++++++++++++++---
- 6 files changed, 81 insertions(+), 11 deletions(-)
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi | 86 +++++++++++++++++++++++-
+ 1 file changed, 83 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
-index b202d1581..91f690176 100644
---- a/drivers/accel/rocket/rocket_core.c
-+++ b/drivers/accel/rocket/rocket_core.c
-@@ -8,6 +8,7 @@
- #include <linux/err.h>
- #include <linux/iommu.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
- #include <linux/pm_runtime.h>
- #include <linux/reset.h>
+diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+index d418bfc04..e9cd11b58 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+@@ -1042,7 +1042,7 @@ power: power-controller {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
  
-@@ -21,6 +22,7 @@ int rocket_core_init(struct rocket_core *core)
- 	u32 version;
- 	int err = 0;
+-				power-domain@RK3576_PD_NPU {
++				pd_npu: power-domain@RK3576_PD_NPU {
+ 					reg = <RK3576_PD_NPU>;
+ 					#power-domain-cells = <1>;
+ 					#address-cells = <1>;
+@@ -1070,14 +1070,22 @@ power-domain@RK3576_PD_NPUTOP {
+ 						power-domain@RK3576_PD_NPU0 {
+ 							reg = <RK3576_PD_NPU0>;
+ 							clocks = <&cru HCLK_RKNN_ROOT>,
+-								 <&cru ACLK_RKNN0>;
++								 <&cru ACLK_RKNN0>,
++								 <&cru CLK_RKNN_DSU0>,
++								 <&cru ACLK_RKNN_CBUF>,
++								 <&cru HCLK_RKNN_CBUF>;
++							resets = <&cru SRST_A_RKNN0_BIU>;
+ 							pm_qos = <&qos_npu_m0>;
+ 							#power-domain-cells = <0>;
+ 						};
+ 						power-domain@RK3576_PD_NPU1 {
+ 							reg = <RK3576_PD_NPU1>;
+ 							clocks = <&cru HCLK_RKNN_ROOT>,
+-								 <&cru ACLK_RKNN1>;
++								 <&cru ACLK_RKNN1>,
++								 <&cru CLK_RKNN_DSU0>,
++								 <&cru ACLK_RKNN_CBUF>,
++								 <&cru HCLK_RKNN_CBUF>;
++							resets = <&cru SRST_A_RKNN1_BIU>;
+ 							pm_qos = <&qos_npu_m1>;
+ 							#power-domain-cells = <0>;
+ 						};
+@@ -1261,6 +1269,78 @@ power-domain@RK3576_PD_VO1 {
+ 			};
+ 		};
  
-+	/* RK3576 has no per-core hclk reset, so it takes srst_a alone. */
- 	core->resets[0].id = "srst_a";
- 	core->resets[1].id = "srst_h";
- 	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, core->soc->num_resets,
-@@ -32,6 +34,9 @@ int rocket_core_init(struct rocket_core *core)
- 	core->clks[1].id = "hclk";
- 	core->clks[2].id = "npu";
- 	core->clks[3].id = "pclk";
-+	/* RK3576 clocks the CBUF separately; the compute path stalls without these. */
-+	core->clks[4].id = "aclk_cbuf";
-+	core->clks[5].id = "hclk_cbuf";
- 	err = devm_clk_bulk_get(dev, core->soc->num_clks, core->clks);
- 	if (err)
- 		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
-@@ -60,6 +65,21 @@ int rocket_core_init(struct rocket_core *core)
- 	if (err)
- 		return err;
- 
-+	/*
-+	 * RK3576 spans two power domains, and a multi-domain device is skipped
-+	 * by the driver-core single-domain auto-attach, so attach the list here.
-+	 * This goes before the first thing that would have to be unwound, so a
-+	 * failure can simply return.
-+	 */
-+	if (core->soc->multi_power_domain) {
-+		struct dev_pm_domain_list *pd_list;
++		rknn_core_0: npu@27700000 {
++			compatible = "rockchip,rk3576-rknn-core";
++			reg = <0x0 0x27700000 0x0 0x1000>,
++			      <0x0 0x27701000 0x0 0x1000>,
++			      <0x0 0x27703000 0x0 0x1000>;
++			reg-names = "pc", "cna", "core";
++			interrupts = <GIC_SPI 247 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cru ACLK_RKNN0>, <&cru HCLK_RKNN_ROOT>,
++				 <&cru CLK_RKNN_DSU0>, <&cru PCLK_NPUTOP_ROOT>,
++				 <&cru ACLK_RKNN_CBUF>, <&cru HCLK_RKNN_CBUF>;
++			clock-names = "aclk", "hclk", "npu", "pclk",
++				      "aclk_cbuf", "hclk_cbuf";
++			assigned-clocks = <&cru CLK_RKNN_DSU0>;
++			assigned-clock-rates = <594000000>;
++			resets = <&cru SRST_A_RKNN0>;
++			reset-names = "srst_a";
++			power-domains = <&power RK3576_PD_NPU0>, <&power RK3576_PD_NPU1>;
++			iommus = <&rknn_mmu_0>;
++			status = "disabled";
++		};
 +
-+		err = devm_pm_domain_attach_list(dev, NULL, &pd_list);
-+		if (err < 0)
-+			return dev_err_probe(dev, err,
-+					     "failed to attach NPU power domains\n");
-+	}
++		rknn_mmu_0: iommu@27702000 {
++			compatible = "rockchip,rk3576-npu-iommu", "rockchip,rk3568-iommu";
++			reg = <0x0 0x27702000 0x0 0x100>,
++			      <0x0 0x27702100 0x0 0x100>;
++			interrupts = <GIC_SPI 247 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cru ACLK_RKNN0>, <&cru HCLK_RKNN_ROOT>,
++				 <&cru CLK_RKNN_DSU0>, <&cru ACLK_RKNN_CBUF>,
++				 <&cru HCLK_RKNN_CBUF>;
++			clock-names = "aclk", "iface", "npu",
++				      "aclk_cbuf", "hclk_cbuf";
++			#iommu-cells = <0>;
++			power-domains = <&power RK3576_PD_NPU0>;
++			status = "disabled";
++		};
 +
- 	core->iommu_group = iommu_group_get(dev);
- 
- 	err = rocket_job_init(core);
-diff --git a/drivers/accel/rocket/rocket_core.h b/drivers/accel/rocket/rocket_core.h
-index ba74c5339..8c8d1f453 100644
---- a/drivers/accel/rocket/rocket_core.h
-+++ b/drivers/accel/rocket/rocket_core.h
-@@ -29,8 +29,10 @@
- 
- /* Per-SoC differences, selected by the of_device_id match data. */
- struct rocket_soc_data {
--	unsigned int num_clks;		/* clk_bulk count */
--	unsigned int num_resets;	/* reset_bulk count */
-+	unsigned int num_clks;		/* clk_bulk count: 4 base, 6 with CBUF */
-+	unsigned int num_resets;	/* reset_bulk count: 2 base, 1 on RK3576 */
-+	bool multi_power_domain;	/* device spans more than one PM domain */
-+	bool task_con_16bit;		/* PC_TASK_CON uses the 16-bit task number */
- };
- 
- struct rocket_core {
-@@ -43,7 +45,7 @@ struct rocket_core {
- 	void __iomem *pc_iomem;
- 	void __iomem *cna_iomem;
- 	void __iomem *core_iomem;
--	struct clk_bulk_data clks[4];
-+	struct clk_bulk_data clks[6];
- 	struct reset_control_bulk_data resets[2];
- 
- 	struct iommu_group *iommu_group;
-diff --git a/drivers/accel/rocket/rocket_device.c b/drivers/accel/rocket/rocket_device.c
-index 46e6ee1e7..923add5bd 100644
---- a/drivers/accel/rocket/rocket_device.c
-+++ b/drivers/accel/rocket/rocket_device.c
-@@ -9,6 +9,7 @@
- #include <linux/of.h>
- 
- #include "rocket_device.h"
-+#include "rocket_drv.h"
- 
- struct rocket_device *rocket_device_init(struct platform_device *pdev,
- 					 const struct drm_driver *rocket_drm_driver)
-@@ -27,7 +28,11 @@ struct rocket_device *rocket_device_init(struct platform_device *pdev,
- 	ddev = &rdev->ddev;
- 	dev_set_drvdata(dev, rdev);
- 
--	for_each_compatible_node(core_node, NULL, "rockchip,rk3588-rknn-core")
-+	/*
-+	 * Count over the same match table the platform driver binds with, so
-+	 * that a core added there is counted here without a second edit.
-+	 */
-+	for_each_matching_node(core_node, rocket_dt_match)
- 		if (of_device_is_available(core_node))
- 			num_cores++;
- 
-diff --git a/drivers/accel/rocket/rocket_drv.c b/drivers/accel/rocket/rocket_drv.c
-index 7ed64c131..f387b4656 100644
---- a/drivers/accel/rocket/rocket_drv.c
-+++ b/drivers/accel/rocket/rocket_drv.c
-@@ -231,13 +231,23 @@ static void rocket_remove(struct platform_device *pdev)
- static const struct rocket_soc_data rk3588_soc_data = {
- 	.num_clks = 4,
- 	.num_resets = 2,
-+	.multi_power_domain = false,
-+	.task_con_16bit = false,
- };
- 
--static const struct of_device_id dt_match[] = {
-+static const struct rocket_soc_data rk3576_soc_data = {
-+	.num_clks = 6,
-+	.num_resets = 1,
-+	.multi_power_domain = true,
-+	.task_con_16bit = true,
-+};
++		rknn_core_1: npu@27708000 {
++			compatible = "rockchip,rk3576-rknn-core";
++			reg = <0x0 0x27708000 0x0 0x1000>,
++			      <0x0 0x27709000 0x0 0x1000>,
++			      <0x0 0x2770b000 0x0 0x1000>;
++			reg-names = "pc", "cna", "core";
++			interrupts = <GIC_SPI 248 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cru ACLK_RKNN1>, <&cru HCLK_RKNN_ROOT>,
++				 <&cru CLK_RKNN_DSU0>, <&cru PCLK_NPUTOP_ROOT>,
++				 <&cru ACLK_RKNN_CBUF>, <&cru HCLK_RKNN_CBUF>;
++			clock-names = "aclk", "hclk", "npu", "pclk",
++				      "aclk_cbuf", "hclk_cbuf";
++			assigned-clocks = <&cru CLK_RKNN_DSU0>;
++			assigned-clock-rates = <594000000>;
++			resets = <&cru SRST_A_RKNN1>;
++			reset-names = "srst_a";
++			power-domains = <&power RK3576_PD_NPU1>, <&power RK3576_PD_NPU0>;
++			iommus = <&rknn_mmu_1>;
++			status = "disabled";
++		};
 +
-+const struct of_device_id rocket_dt_match[] = {
- 	{ .compatible = "rockchip,rk3588-rknn-core", .data = &rk3588_soc_data },
-+	{ .compatible = "rockchip,rk3576-rknn-core", .data = &rk3576_soc_data },
- 	{}
- };
--MODULE_DEVICE_TABLE(of, dt_match);
-+MODULE_DEVICE_TABLE(of, rocket_dt_match);
- 
- static int find_core_for_dev(struct device *dev)
- {
-@@ -296,7 +306,7 @@ static struct platform_driver rocket_driver = {
- 	.driver	 = {
- 		.name = "rocket",
- 		.pm = pm_ptr(&rocket_pm_ops),
--		.of_match_table = dt_match,
-+		.of_match_table = rocket_dt_match,
- 	},
- };
- 
-diff --git a/drivers/accel/rocket/rocket_drv.h b/drivers/accel/rocket/rocket_drv.h
-index 2c673bb99..0cd692a66 100644
---- a/drivers/accel/rocket/rocket_drv.h
-+++ b/drivers/accel/rocket/rocket_drv.h
-@@ -6,10 +6,12 @@
- 
- #include <drm/drm_mm.h>
- #include <drm/gpu_scheduler.h>
-+#include <linux/device-id/of.h>
- 
- #include "rocket_device.h"
- 
- extern const struct dev_pm_ops rocket_pm_ops;
-+extern const struct of_device_id rocket_dt_match[];
- 
- struct rocket_iommu_domain {
- 	struct iommu_domain *domain;
-diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
-index 54f9c299d..c862f8bc7 100644
---- a/drivers/accel/rocket/rocket_job.c
-+++ b/drivers/accel/rocket/rocket_job.c
-@@ -21,6 +21,30 @@
- 
- #define JOB_TIMEOUT_MS 500
- 
-+/*
-+ * PC_TASK_CON packs the task number with control bits above it, and neither
-+ * the width of the number nor the count of the controls is the same on every
-+ * SoC. rocket_registers.h is generated from the RK3588 description, where the
-+ * task number is twelve bits and there are two:
-+ *
-+ *   RK3588   BIT[11:0] task_number, BIT[12] pp_en, BIT[13] count_clear
-+ *   RK3576   BIT[15:0] task_number, BIT[16] pp_en, BIT[17] count_clear,
-+ *            BIT[18] last_layer_clear
-+ *
-+ * The RK3576 layout was confirmed by Chaoyi Chen of Rockchip:
-+ * https://lore.kernel.org/all/4f300b78-d96d-4d98-8819-dc292b0c9b97@rock-chips.com/
-+ *
-+ * Writing the RK3588 layout to an RK3576 therefore asks for task_number
-+ * 0x7001, that is 28673 tasks, and lands the count clear on a bit that does
-+ * nothing. The task counter is then only ever cleared by a reset, which is
-+ * exactly the "one task per reset" behaviour this series has been reporting
-+ * since v3.
-+ */
-+#define RK3576_PC_TASK_CON_TASK_NUMBER(n)	((n) & 0xffff)
-+#define RK3576_PC_TASK_CON_PP_EN		BIT(16)
-+#define RK3576_PC_TASK_CON_COUNT_CLEAR		BIT(17)
-+#define RK3576_PC_TASK_CON_LAST_LAYER_CLEAR	BIT(18)
++		rknn_mmu_1: iommu@2770a000 {
++			compatible = "rockchip,rk3576-npu-iommu", "rockchip,rk3568-iommu";
++			reg = <0x0 0x2770a000 0x0 0x100>,
++			      <0x0 0x2770a100 0x0 0x100>;
++			interrupts = <GIC_SPI 248 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cru ACLK_RKNN1>, <&cru HCLK_RKNN_ROOT>,
++				 <&cru CLK_RKNN_DSU0>, <&cru ACLK_RKNN_CBUF>,
++				 <&cru HCLK_RKNN_CBUF>;
++			clock-names = "aclk", "iface", "npu",
++				      "aclk_cbuf", "hclk_cbuf";
++			#iommu-cells = <0>;
++			power-domains = <&power RK3576_PD_NPU1>;
++			status = "disabled";
++		};
 +
- static struct rocket_job *
- to_rocket_job(struct drm_sched_job *sched_job)
- {
-@@ -142,10 +166,17 @@ static void rocket_job_hw_submit(struct rocket_core *core, struct rocket_job *jo
- 	rocket_pc_writel(core, INTERRUPT_MASK, PC_INTERRUPT_MASK_DPU_0 | PC_INTERRUPT_MASK_DPU_1);
- 	rocket_pc_writel(core, INTERRUPT_CLEAR, PC_INTERRUPT_CLEAR_DPU_0 | PC_INTERRUPT_CLEAR_DPU_1);
- 
--	rocket_pc_writel(core, TASK_CON, PC_TASK_CON_RESERVED_0(1) |
--					 PC_TASK_CON_TASK_COUNT_CLEAR(1) |
--					 PC_TASK_CON_TASK_NUMBER(1) |
--					 PC_TASK_CON_TASK_PP_EN(1));
-+	if (core->soc->task_con_16bit)
-+		rocket_pc_writel(core, TASK_CON,
-+				 RK3576_PC_TASK_CON_LAST_LAYER_CLEAR |
-+				 RK3576_PC_TASK_CON_COUNT_CLEAR |
-+				 RK3576_PC_TASK_CON_PP_EN |
-+				 RK3576_PC_TASK_CON_TASK_NUMBER(1));
-+	else
-+		rocket_pc_writel(core, TASK_CON, PC_TASK_CON_RESERVED_0(1) |
-+						 PC_TASK_CON_TASK_COUNT_CLEAR(1) |
-+						 PC_TASK_CON_TASK_NUMBER(1) |
-+						 PC_TASK_CON_TASK_PP_EN(1));
- 
- 	rocket_pc_writel(core, TASK_DMA_BASE_ADDR, PC_TASK_DMA_BASE_ADDR_DMA_BASE_ADDR(0x0));
- 
+ 		gpu: gpu@27800000 {
+ 			compatible = "rockchip,rk3576-mali", "arm,mali-bifrost";
+ 			reg = <0x0 0x27800000 0x0 0x20000>;
 -- 
 2.43.0
 
