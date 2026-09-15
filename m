@@ -1,73 +1,73 @@
 Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 668EC48CD60;
-	Tue, 15 Sep 2026 10:44:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 953D9481AA5;
+	Tue, 15 Sep 2026 10:44:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789469061; cv=none; b=eHRwyFPMQLhtcZdFUh4UeMcEnkQZLmNrlCwwZgiI2hxoWR/7smV+BQeNdFK0IQaNumvgyvUvCGags2qtW8Mxgl/clehayyLiaTq7dWHHXbiYlzn9Hfu5WQYCtNbOq7gYzuSCXDTBUTgmrUGeqM+weMhUtuneOSN9a8+u2VPq7OQ=
+	t=1789469072; cv=none; b=BadHIOGDMvWQ4DSnFkjlJwa85Akbs5AKv/qvWpIbFEouUn/+5zG0POdH96lrQuRed1m0Zq5gokGjghxek0QKEb+0U4tn3QT+G1mrsIi11rpYqSlxVUY95iJaZAm7NIFRFZGLMbspl+NsjwgNvBW6iqX2Nphxh47rfN9SWPPhGgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789469061; c=relaxed/simple;
-	bh=oxhxGUx2HMNqsz0n/0zSX+4g/cPJMS8th5puphONEyA=;
+	s=arc-20240116; t=1789469072; c=relaxed/simple;
+	bh=cB5+xlk7Wtmzfy3gi8s7D5t8vMIc/4/cKVl3DgU5ABE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=c16TxrtKgD15Z8C+DtHeHIyr4L+RD4kPJe1UIQ0Vl9Km8JAF9YjSyGs3TPJ5ksLI4AgnB+6kAN899LzNQ+v42x2WTKxPuH7ha9LOj64iAq0XSJh/SiMb9twkkwRxY/N0yreuqwB0TsSAyz5CpTZ2oQ36pCDfyJIroaZuAro/9Ck=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=reF3IplS; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=VuQio1mk; arc=none smtp.client-ip=202.12.124.141
+	 MIME-Version; b=YXoF1esXOiQtKYm+SMJuJohf6bVa9h/NYPyAM9EWlSm4GT14QXJcJb6hKAddru4fTMIiwEOUtamlC/wF1xbUl0kI3thlVtj7EU8hONQyEp2QWgpX/uGVs5bj/jNSK9lS91MxLodG0/yAvdCsfPAT1LqwfOhRIEts4WvoQ1GSAMQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=s+msqHx8; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=WjnHBMwd; arc=none smtp.client-ip=202.12.124.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="reF3IplS";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="VuQio1mk"
-Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
-	by mailflow.stl.internal (Postfix) with ESMTP id 11558130050A;
-	Tue, 15 Sep 2026 06:44:18 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-05.internal (MEProxy); Tue, 15 Sep 2026 06:44:18 -0400
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="s+msqHx8";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="WjnHBMwd"
+Received: from phl-compute-07.internal (phl-compute-07.internal [10.202.2.47])
+	by mailflow.stl.internal (Postfix) with ESMTP id 39E6B130050A;
+	Tue, 15 Sep 2026 06:44:29 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-07.internal (MEProxy); Tue, 15 Sep 2026 06:44:29 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1789469057; x=
-	1789476257; bh=I6ioBW7ScYUdG/oTToYCNPrLN7Q7315lvgvDhvoEbok=; b=r
-	eF3IplSZl/1fOwjtHMfcDCZFXsMAAmY328L9vvhLZjQktqT3A+pmPl6AW7GSCEdh
-	Jup0Nm7mI5YSbwwBhAdxXn+5HfQqkl047nX6bHvwOp69IOCP5em8k9SO3d3t8sAB
-	ThQzQjb0sMybLTpiH8esM8UzLnj5XGW9fpphVJJv1vEfRNJaKTYe6Tzp+hDfo1wD
-	mhfu/FoKMJp3EfvMigkI/bno5T/Xx3LfuDile4/0+67t9nAQWxIHYl8QVeexcBRt
-	+L0f1NW2eGZp5UZuggcg0bKFAoRu+ufkldQnpZ/ScpUA2TBmZQ+zSh5WE5ZhvL1X
-	umy15VeNIQ+Run/Wt+EVg==
+	:reply-to:subject:subject:to:to; s=fm2; t=1789469069; x=
+	1789476269; bh=ogiWiCQ3bNIbKL3gCXgpDZdn7OpFJCd90E8FcpUzIl4=; b=s
+	+msqHx8wYt7BuCOFl3j9MsX9w5GJ8YE6oc4CkgbByOEn3NOMqoBjIiawV+IulPFL
+	9AwkeEoZGKzkdkerOj5nHQoZLp+mYaw8d7zEuSrN+boTRolFsnQqAqSn1L1m74tc
+	1aP3xbI1s96UbU3b9VKj8uDgq2C1nPSXcpZgQw7dMB6wZSwXkfYNqISMSEJaDa9E
+	lE7qZbMNZ17/L/eyVyqR/tRbDsdaTmV9va9m/8B6OUdQYKXoJbM9yHvIYeh7kkDn
+	G3v7iHZDDMA1MYSw5rvDL+dVN9ON+bp0r0lYSpOkTNhLC1SLIgl3xiwjnMo/ieAq
+	hJLOPpSBPCkmTeeL2wtcA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm1; t=1789469057; x=1789476257; bh=I
-	6ioBW7ScYUdG/oTToYCNPrLN7Q7315lvgvDhvoEbok=; b=VuQio1mkFpj6GJwvF
-	AQZb96Jc733eoM3pOP1rFTkc+iEYVmR0QvQ76GiWSwANnbvwY1FNFtDdGBrxEMVF
-	oygKw9Emoo2EGbTepEMIn95grJoY39DK4t1GkdX49aUVsSIak2lXjDxNTpBv8ggH
-	dRVBeMMQoO5GqR53uunIa1A3xwnQFEhPb/A2UaoZOHUpSWdlIPSIOnN0jWuqqOQe
-	KDuyKJlTzDGcSwqlCj+rlAm5mFUK3CFEZkzumz42bKHNKx/O9wMLaRIhDPWJMxuT
-	gjIGd6noT7LQre7xzhe+pjKXhWliING5h3aNgeQHuCdMDs4ZtNIqxLwcS4JjAIyt
-	2qzNg==
-X-ME-Sender: <xms:gSGpat5go6NmcVXIKYvp1jo6E1G_4RdvcsNmnBSWWa7Cili5G57X-A>
-    <xme:gSGparoQFkGAoLJ04EW_uXBe0DaFLqNOb-l2O8tF2fMNzCPB7F4RylViT1GPQ6C02
-    Hwo0-wgfGRz_F3oipX_8eoCGr0dcEET6XKOhi1q_8fU8bQY1msJ6a5b>
-X-ME-Received: <xmr:gSGpaoR62dTCI5jibtGcCFGtop1htP_jiwmxECbEZyGGEKtFOpPVz5tF65p-d8RT9Ilm--yVdA>
+	:x-me-sender:x-sasl-enc; s=fm1; t=1789469069; x=1789476269; bh=o
+	giWiCQ3bNIbKL3gCXgpDZdn7OpFJCd90E8FcpUzIl4=; b=WjnHBMwdVgj4BAee9
+	m/OgXvi+1kHFNoqgxNDz5qtHh2Q6iKnukLSZugVEwP4ARgDqBjjL52fM3RJCJLvs
+	AIWtIp7Mv8TZ3JlAQaJjAlifBWSmrE3hdDfZLQZG3TejVjh5pFg6fhmDg1opvX2H
+	TtwXoN23Vvp72wrI19uXcNXY8q+BxBGYIgV9ItX4VtoVuux++RNjjUuohNTGv8vn
+	hwu5lB289sy8ikWyDgnxg4asa2/6/nnB80K5x7d7VpQllED2rwH+UpMeU8gKAS9r
+	dTEkt+PGCkhYN7Ee3W7DYs8rM7KwoAhHQ53ERW9q2I5lF13cq52f5ZbJYOFxhim4
+	0zshA==
+X-ME-Sender: <xms:jCGpaqoVmFGDTOC5qaEmAH6V7NsjhF1GKP0AQTS-Q81WWEyDfvW-GQ>
+    <xme:jCGpaozV9zNQwn1qABCtp3Y5ojQvDXyjXvIvakdmYpuG1yX3QCJs5fpSuVxXqzcCK
+    E1X_kab3-yt8SAeO_PlZ1871ocNdSM7WHXTomwIO3XqBb27LDi9FAZj>
+X-ME-Received: <xmr:jCGpatASSAozexkJ7pFWahd05CWLLiPLSM0v2oZoOTEFxUFqtRKMEyOtcZzSwMZ5IjeufI9SFg>
 X-ME-Proxy-Cause: dmFkZTE+OOtKqCgoTSrVlWQquKDyDOihaRAkbxrETzU46WPYI4xRZhEiyJhifUIK7wOXWw
     wVB9SQ/RAi7MrJDFDtBnx7Pb+n0YwQkRdmArbygP/oxZoxHW8LIKLQIL2L7jzJ+dDFOc0i
     zgJzZNFATjdf2+j0asWJSTUnqqtG7PFp8Vs3eFHmviT3HEJrjWQLemcS9TcZGgU54P+FV5
     4Pm9j2o7pLtOaGphBt5Uxmdvehz8zGy65174LdzdOvWQ05shZHdK5O0prBfSV/v5pCB4Ev
-    utsMlLRk0S0Gt2QFQEaEqPdSBGLc8kXC99b8ea4ToJp+YO5u/c8PUKkTZ3pOeCnaAxuGfw
-    HX+v75BTfd2sEB2EeANuHPDGM9vTWcdK4k/4guAv2h1+Sb8iwf86wlb7GGDMvZonjflT/6
-    QScWCcnQqRWBApSuoYoKU4tojI75MAb8Hcwevrh+u+i+fUJxRGW4+rTAaSQqVOtkVUfVu6
-    ju6c9PmbLB5pCYUzbWRTqHz4Tll/QWYUDqEIvk3yep9rYumZ0MUi9CoztUZoRhtpQE2jjp
-    J12frvnHksQ1TRyyxB/jf5e5KWaTQLwEbaLGjj4eFnRycXK7vvVpg5Dx+gsHJQVurR4szb
-    bF3lnsV6ZjfjnaqSRR6Ikwjddz9sDZKnH5RgOdufgDEdiXaWfKPCp4/AQdAA
-X-ME-Proxy: <xmx:gSGpantwdchz0zWfy41AeZd6eBcikaYcaJ16_m1D92gnUEUu8sEESw>
-    <xmx:gSGpagNa-efwWscT-oV2BDpGDDZswW6YsVMhmKDu4F8u5a6oJF9ttQ>
-    <xmx:gSGpapUrQES6x9ZtSSYmIHg5aoUD-6Mk36jpiNqMewDGW5ucJA5R6g>
-    <xmx:gSGpaghuaRP1RJgf9GAeYMXU0rJaNHRSgUacyog10AoMJO7G6NAYKg>
-    <xmx:gSGpamNzQTwNxsaEgjrSIpZOqAUnUZ-x6tscfuilNiONbcHQ9NcawuwI>
+    utsMlLRk0S0Gt2QFQEaEqPdSBGLc8kXC99b8ea4ToJp+YO5u/c8PUKkTZ3pOeCnaAxuGdJ
+    /BT8K/nh0P2FrQdFEYE10UTIUcJu1LBR0D58cwa6sA7yRrw8n3uAEOF9WPqwtcDwa042iz
+    mhczxIDOr1uQ4NzgmUNuf7i05ePBq49Vg54C/SPO7k7KbGPcvm6e3rQTKt4k5jlFlVIX9e
+    wBFEYsWLJpoqkNgf6E+q6bXxB3tH/w09nozAW55tQU40NUhjLbj3etpz4hy/OzwnbNWZK1
+    bXAj4gQwE6OfDnkkv1yfUSmhhdvWNDGhi66omzFpzZkhm9Hjd+xxjJKmjo8eczfSA6tPeL
+    B/iZ54o49qMTeRC3U05fb0n3Pg1n8Cgw4GricS8ygP1+0Y1iEQFNmKcZi3ig
+X-ME-Proxy: <xmx:jCGpauIhTG36Kp2V-obtlQSpqdHi-H9xP_-4IBOrznHVyM7xBCUufw>
+    <xmx:jCGpaoEnTYIq2e-X814_FvcLEASVzZG_gPZtkQaSINKJORBD-Jr6pg>
+    <xmx:jCGpapGrycSu2DFz6QVxyQQ-qVHz6FJN4yc3giSTeRR6n6V2PiwOAA>
+    <xmx:jCGpagt5IMWVnNcX2ARVIRybhgbA2lCYz7MWYpFUSpGlqPUdjChS2g>
+    <xmx:jSGpascosawkquzodOiMEvFO_cgJHLhL3eHT9rwMBX_PwJ3J5Y5UM3iU>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 15 Sep 2026 06:44:09 -0400 (EDT)
+ 15 Sep 2026 06:44:20 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -97,9 +97,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v13 03/14] accel/rocket: wait for a running IRQ handler before resetting a core
-Date: Tue, 15 Sep 2026 22:43:17 +1200
-Message-ID: <20260915104328.45901-4-gahing@gahingwoo.com>
+Subject: [PATCH v13 04/14] accel/rocket: let the core suspend after a reset
+Date: Tue, 15 Sep 2026 22:43:18 +1200
+Message-ID: <20260915104328.45901-5-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260915104328.45901-1-gahing@gahingwoo.com>
 References: <20260915104328.45901-1-gahing@gahingwoo.com>
@@ -111,187 +111,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-rocket_reset() calls drm_sched_stop(), which stops the scheduler and
-returns. It does not wait for a threaded handler that is already running,
-so the comment that follows, "Remaining interrupts have been handled",
-states an assumption rather than something the code arranges.
+rocket_reset() drops the in-flight job's runtime PM reference with
+pm_runtime_put_noidle(), a bare decrement that requests nothing. The core
+is left at usage_count 0 but still runtime-active with no idle request
+pending, so it does not suspend until something else asks, and on a
+platform whose power domain does work on power-on that work never happens.
 
-Call synchronize_irq(core->irq) after drm_sched_stop() and reword the
-comment to say what holds afterwards.
+On RK3576 that work is a bus interface reset the domain cycles when it
+comes up. Without it the NPU's IOMMU stops answering, and the job after a
+timeout returns a surface of the output zero point with rk_iommu reporting
+that MMU_DTE_ADDR is not functioning.
 
-It has to go before the scoped_guard(mutex, &core->job_lock) rather than
-inside it. rocket_job_handle_irq() takes job_lock, so waiting for the
-handler while holding that lock would be waiting for a handler that is
-waiting for us. Nothing is held at that point: drm_sched_job_timedout()
-drops job_list_lock before calling ->timedout_job(), and the only live
-caller, rocket_job_timedout(), runs in process context, so sleeping there
-is allowed.
+Measured on a ROCK 4D in one boot, three runs, one variable between them.
+With the bare put the core reads runtime-active with its rail still up
+after the reset, the IOMMU reports the failure on the next attach and the
+inference returns 0 of 128 channels. With the reference put back through
+pm_runtime_put_autosuspend() the core reads suspended with the rail down,
+there is no IOMMU message, and the same inference returns 128 of 128. A
+third run repeating the first failed the same way.
 
-This does not stop a handler that has already read in_flight_job from
-finishing its work on the job the reset is about to drop. That window needs
-the check and the register writes to be one step under the lock, which is
-what the previous patch does; the two are complementary.
+It also matches the put in the completion path a few lines away, so the
+reset path no longer leaves the device in a state the rest of the driver
+never produces. The remaining put, on the error path in rocket_job_run(),
+is a plain pm_runtime_put() and is left alone here: it unwinds a
+pm_runtime_resume_and_get() that never reached the hardware, and changing
+it belongs in its own patch.
 
-Mask the block before the sync as well. INTERRUPT_MASK is armed by
-hw_submit() on every submit and cleared only by the hardirq, so on an
-ordinary timeout it is still live and a completion can arrive after
-synchronize_irq() returns. Nothing is lost by clearing it, since the next
-submit arms it again.
-
-That mask write goes UNDER job_lock, though the sync does not.
-rocket_job_hw_submit() arms the same register and always runs under that
-lock, while reset.pending is set here without it and read there with it, so
-a submit that has already passed its check can re-arm the mask after this
-clears it. The block is then left running a task with its interrupt live
-while synchronize_irq() fences a handler that has already finished, which
-is the same shape of race the previous patch closes for OPERATION_ENABLE.
-pm_runtime_get_if_active() takes a reference on an already-active device
-without invoking a callback, and pm_runtime_put_autosuspend() is
-asynchronous, so holding job_lock across them cannot re-enter this driver's
-runtime PM callbacks.
-
-That write is the first register access this function has ever made, and it
-is guarded, because the function holds no runtime PM reference of its own.
-The only reference in the window belongs to in_flight_job, and the
-completion path can have put it and cleared the pointer before the timeout
-worker arrives: drm_sched_stop() sits in between and can block on
-cancel_work_sync() and on a dma_fence_wait(), and it subtracts every
-pending job's credits, so rocket_job_is_idle() is true and
-rocket_device_runtime_suspend() will not refuse. With the autosuspend delay
-elapsed the clocks are off and both NPU domains are down. A register access
-in that state takes an async SError on this hardware, which is the failure
-two later patches in this series describe from the power-on side.
-
-pm_runtime_get_if_active() resumes nothing and allocates nothing; if the
-core is already down there is no live interrupt to mask and the following
-synchronize_irq() is all that is needed. Only a POSITIVE answer says the
-device is active, and that distinction is not cosmetic: the helper tests
-power.disable_depth before power.runtime_status, so -EINVAL masks a
-suspended device rather than excluding one. pm_runtime_force_suspend(),
-which is this driver's own system sleep callback, disables runtime PM first
-and turns the clocks off second; rocket_core_fini() suspends the core and
-disables before cancelling the timeout worker. Both offer -EINVAL with the
-domain down, which is the SError this patch exists to avoid causing.
-
-The mask is written with a clear of the raw status, paired the way the
-completion path writes them. Masking alone leaves the DPU bit latched until
-rocket_core_reset(), and the hardirq decides on raw status alone, so a
-fault from the IOMMU sharing this core's line would wake the thread again
-and the guarantee this patch is about would stop holding partway through
-the function. Igor Paunovic asked the general form of this on v8 -- whether
-rocket_reset() should hold a reference -- and it was deferred then because
-nothing in the path touched a register. This patch is what makes it matter.
-
-The deadlock this placement avoids would not have been reported. The wait
-is on desc->wait_for_threads rather than on a lock, so lockdep does not
-model it and it would have hung silently.
-
-Igor Paunovic ran an induced-reset protocol on RK3588. On 19 and 25 August he
-ran it with this patch and the previous one removed as well as applied, so what
-those sessions show bounds the pair rather than either one of them; the
-12 September session ran two patched arms and no unpatched one, so it re-tests
-nothing differential. His own summary, which aggregates all three after he
-re-ran the protocol on v12 as posted and corrected his earlier reports:
-
-  45 induced resets on 19 August, 102 on 25 August and 74 on 12 September,
-  every reset recovered, no MMU faults, no lockdep report from rocket or the
-  scheduler in the runs where lockdep was still armed, and of the 420
-  inferences scored, 384 matched the CPU reference within 1 on all 48 output
-  channels while 36 returned the all-0x80 buffer of a job the reset had
-  cancelled. The protocol bounds; it does not prove.
-
-The all-0x80 buffer is not a differential signal. rocket_reset() calls
-drm_sched_stop(), drm_sched_start() then completes the detached jobs with
--ECANCELED, and PREP_BO drops the fence error, so that buffer is what a
-cancelled job looks like from userspace whatever made it miss its deadline.
+Igor Paunovic ran the differential on RK3588: 45 induced resets, all of
+them on core 0 with the other two cores bound but idle in his single
+client protocol, with and without the two preceding patches, and the
+domain dropped every single time with no MMU message on either kernel. So
+this is not rocket-wide. His conditions cross a healthy block with a lowered
+timeout rather than a hung one, which he was careful to say his protocol
+cannot settle, but it is what scopes the change to RK3576.
 
 Link: https://lore.kernel.org/all/20260819073530.6087-1-royalnet026@gmail.com/
-Link: https://lore.kernel.org/all/CAEWPSH5mxTbUkNouxm6yecMZYvDowquhvYvhaXQ8HoMtHD5U1g@mail.gmail.com/
-Link: https://lore.kernel.org/all/20260912113717.6819-1-royalnet026@gmail.com/
-
-Suggested-by: Igor Paunovic <royalnet026@gmail.com>
+Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, induced reset, JOB_TIMEOUT_MS=2
 ---
- drivers/accel/rocket/rocket_job.c | 65 +++++++++++++++++++++++++++++--
- 1 file changed, 62 insertions(+), 3 deletions(-)
+ drivers/accel/rocket/rocket_job.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
-index 575945015..dfe9135d8 100644
+index dfe9135d8..2a0b8af6f 100644
 --- a/drivers/accel/rocket/rocket_job.c
 +++ b/drivers/accel/rocket/rocket_job.c
-@@ -377,9 +377,68 @@ rocket_reset(struct rocket_core *core, struct drm_sched_job *bad)
- 	drm_sched_stop(&core->sched, bad);
+@@ -437,12 +437,12 @@ rocket_reset(struct rocket_core *core, struct drm_sched_job *bad)
  
  	/*
--	 * Remaining interrupts have been handled, but we might still have
--	 * stuck jobs. Let's make sure the PM counters stay balanced by
--	 * manually calling pm_runtime_put_noidle().
-+	 * Mask the block before waiting. hw_submit() arms INTERRUPT_MASK on
-+	 * every submit and only the hardirq clears it, so on an ordinary
-+	 * timeout it is still live and a completion can arrive after the sync
-+	 * returns. The next submit re-arms it, so nothing is lost here.
-+	 *
-+	 * Only when the device is already awake, though. This function holds no
-+	 * runtime PM reference of its own: the only one in the window belongs to
-+	 * in_flight_job, and the completion path may have put it and cleared the
-+	 * pointer before the timeout worker got here. drm_sched_stop() above can
-+	 * block for a long time, and it drops every pending job's credits, so
-+	 * rocket_job_is_idle() is true and nothing keeps the core resumed. On
-+	 * this hardware a register access with the domain down takes an async
-+	 * SError, so a reset must not be the thing that causes one.
-+	 *
-+	 * Only a positive answer will do. pm_runtime_get_if_active() tests
-+	 * power.disable_depth before power.runtime_status, so -EINVAL MASKS a
-+	 * suspended device rather than excluding one: pm_runtime_force_suspend(),
-+	 * which is this driver's own system suspend callback, disables runtime PM
-+	 * first and turns the clocks off second, and rocket_core_fini() suspends
-+	 * the core and disables before it cancels the timeout worker. Both leave
-+	 * the domain down with -EINVAL on offer.
-+	 *
-+	 * Clear the raw status along with the mask, the way the completion path
-+	 * does. Masking alone leaves the DPU bit latched until
-+	 * rocket_core_reset(), and the hardirq decides on raw status alone, so a
-+	 * fault from the IOMMU that shares this line would wake the thread again
-+	 * and what the comment below asserts would stop being true.
-+	 *
-+	 * UNDER job_lock, because rocket_job_hw_submit() arms this same
-+	 * register and always runs under that lock. reset.pending is set here
-+	 * without the lock and read there with it, so a submit that has already
-+	 * passed its check can re-arm the mask after this clears it, and then
-+	 * the synchronize_irq() below fences a handler that is no longer the
-+	 * one that matters: the block is left running a task with its
-+	 * interrupt live. That is the same race the previous patch took the
-+	 * completion writes under this lock to close, on the other register.
-+	 *
-+	 * pm_runtime_get_if_active() does not invoke a callback -- it only
-+	 * takes a reference on an already-active device -- and
-+	 * pm_runtime_put_autosuspend() is asynchronous, so neither can re-enter
-+	 * this driver's runtime PM callbacks while the lock is held.
-+	 */
-+	scoped_guard(mutex, &core->job_lock) {
-+		if (pm_runtime_get_if_active(core->dev) > 0) {
-+			rocket_pc_writel(core, INTERRUPT_MASK, 0x0);
-+			rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
-+			pm_runtime_put_autosuspend(core->dev);
-+		}
-+	}
-+
-+	/*
-+	 * drm_sched_stop() returns without waiting for a threaded handler that
-+	 * is already running, so wait for one here. This has to stay outside
-+	 * job_lock: the handler takes that lock, so waiting for it while
-+	 * holding it would deadlock instead of fencing anything.
-+	 */
-+	synchronize_irq(core->irq);
-+
-+	/*
-+	 * No handler is running now, but we might still have stuck jobs. Let's
-+	 * make sure the PM counters stay balanced by manually calling
-+	 * pm_runtime_put_noidle().
+ 	 * No handler is running now, but we might still have stuck jobs. Let's
+-	 * make sure the PM counters stay balanced by manually calling
+-	 * pm_runtime_put_noidle().
++	 * make sure the PM counters stay balanced by putting the reference the
++	 * job took, and request idle while doing it so the core can suspend.
  	 */
  	scoped_guard(mutex, &core->job_lock) {
  		if (core->in_flight_job)
+-			pm_runtime_put_noidle(core->dev);
++			pm_runtime_put_autosuspend(core->dev);
+ 
+ 		iommu_detach_group(NULL, core->iommu_group);
+ 
 -- 
 2.43.0
 
