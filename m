@@ -1,206 +1,198 @@
-Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F39B40802B
-	for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 05:25:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.141
+Received: from mailgw1.hygon.cn (unknown [101.204.27.37])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1DC80448B96;
+	Tue, 15 Sep 2026 07:03:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.204.27.37
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789449936; cv=none; b=b66g2SyPPfXuMznTzfduODQHVCNXd3WrLkKh7FO9TTR7Cfy9Na/l46alcuaFTmLCo3TseyLGXQpJ8QWw84Y7suwTU5cHWf9LOef7tmeq8DlauFqAEF5M5HqctEVberHOfpUQltkb7g8Otlt1ruCsRT9xPY0QtaYu+NTWAJ38W1Q=
+	t=1789455807; cv=none; b=i1RGKuZQs3hi+9Dd87CSshhagsHSfXF15mrIqTsxWceK2U/jkaqvMfw0Gm9APA0JrRBNeNiGYzzYIznuRnXb9uPN4f3YXM1PsGJ9lhl1o2/IJbrXLfTNWz7DnZoh948cl+f6Puh755r+l6+VPE75dLE6/T6JMkWg7GWZ964OkCE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789449936; c=relaxed/simple;
-	bh=ihhu/GEm+uqCbuT3u186bfu9O3Hq8yZsgSx6Y24WwhA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DOimkzRUQbZ5O75fa5SNY5lVvpghbw9CKmDmIDgaqazh6fjSHpOemhnG5r2DmMvso7OlvXAw5ID5avjtUsDX6YO5Wn8+VONLVYxkgKHFnIIeveDCjSCMoKgsS3OdQD/AsDrCXRZjGOKpeY7HnNrQBFvVFbfE/XNLdrm137Htasc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hdW8HILo; arc=none smtp.client-ip=74.125.227.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hdW8HILo"
-Received: by mail-pj2-f13.google.com with SMTP id d9443c01a7336-2d90ba1d807so38150825ad.3
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2026 22:25:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789449931; x=1790054731; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=yQubKTox3I80hScamzBIXxVmWMWZlyR15SjYB1u9qiM=;
-        b=hdW8HILomqXU4LWH/c2oE5xgswDPGpDcQHPEhiWWXd59Zth9M8Sgm8XBH/a4Fc1Fau
-         C27+UbuVKtuPUyaaOidrChvZRDub6vDK3/t0CuArpUtEYyuj3Mi1eL928QIFxrvnoqer
-         1gBTw5IFs+0xJP0Fquk2UdDyVKOn/Tl7s6wgJWeB1R1mzVIYdVPI6sOzINh8jxjojcdR
-         0hUxWkT9MJoYwTFkPIvmEsHJor46ssNqxVgGjb/JnqOAVNbuw5UiiRDnGJj+8xzI3qPc
-         7APmJpmX4J2ZGs9jM56JgKTkJCLeQXj25FplfghchZsoNBHzbogQRHVSmrE0syax7NE6
-         tSpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789449931; x=1790054731;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=yQubKTox3I80hScamzBIXxVmWMWZlyR15SjYB1u9qiM=;
-        b=0RUATA2bueWIEhlIdtTAC83ChVO+9lwCpL2HU6BV5wzD0/3tZOJWuN13muQawQNFmP
-         BZGy5pAAzxPLCzLsTZ04Ce1fzpBT3R0lXWb9HHKaModU4jzpZyEm9NdAybhmseE/gaVi
-         U0w4rzT9AFiyh+2A7olZjwA0JS+YVHRSJcLaa5ZjXwbobuDMXJF0N2I2fLJ9/cFkTaq+
-         vF5t86pPI5m2KZYftZZJppHIbyJAqz3kIR9M1HfP6QrceLVSEdHq9CAsBBNmtok+jsof
-         Q2GCBefrJpQsecdo53TRzGteh2j3CCzy3MDwWKargpqLh1zV1RTBlzb83Dqs/MtXkcJF
-         0wfw==
-X-Forwarded-Encrypted: i=1; AKwUvBwJeJurQ4gIdweYKChB6OURcz2BlhnB/O6xf/erNcLMhg6pBTy8GjKZw6mAOdkf4HkY3WI0iiqjAw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lRiYRwkxWMZsT55fD5oCWj3pZL9SnpIBFb37af0FYAPn8cqeOV
-	dJrXxRvPKhchKpj+he7aYgWzIdDqK7viajfaJMR+/hKoUnWKGxUcoonT
-X-Gm-Gg: AYBFou1cDynIvL2tzVtUNR9x+2MmerdRTncEaJeUxXci1vH2+JTcTlsL26Nlszmu5wH
-	s0dK3A9CKUZSK6+IG/HmK3hnK9iMhdYpxhg025wsZzeLf9fbrlvKVpQ0RxJJF39o3wYvoXZmu7v
-	KyQs4qYPAGfw3/1iMavto9uipzrhgQKT2D0owESdJ5GoODxlNIls3WbdSI2Vywq5FVqK0gDjmDa
-	3z7YhiX0QxFwHeQ6CklSIQgzXowM6eGYh4VjdRWCFehfG357mI4vTebz/w5e71ESaZjHSIKdXqL
-	ecdbG+TGsPj/LgV6Pe4AwVS4wPTpklHNcngRvXAEWfXmfZ9jxJzoFZtOi9kXZygv6QnLOyMST1o
-	vVRQbInpYHf4I8PRN76sI32lCwYnP712NezZ5meZ4W0iwFi5dKGy3yAhZBV9+MF5o82/31zAGnk
-	/+8NbjJHviOs2l227hFAyUHWREJl3WFsASCharwV5UkH4lxUsZR7R9Jp0AjsgxBNa6I6JM1B3De
-	Sbmgwjwkw==
-X-Received: by 2002:a17:903:8d0:b0:2d7:107c:917b with SMTP id d9443c01a7336-2dd6c46714bmr123949285ad.0.1789449930877;
-        Mon, 14 Sep 2026 22:25:30 -0700 (PDT)
-Received: from kdev.. ([108.180.130.139])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2dd2cff67aasm59718445ad.79.2026.09.14.22.25.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 22:25:30 -0700 (PDT)
-From: Babanpreet Singh <bbnpreetsingh@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Babanpreet Singh <bbnpreetsingh@gmail.com>,
-	kernel test robot <lkp@intel.com>,
-	Dan Carpenter <error27@gmail.com>
-Subject: [PATCH] power: supply: max17042_battery: Make the fractional LSB macros safe
-Date: Tue, 15 Sep 2026 05:25:29 +0000
-Message-ID: <20260915052529.7-1-bbnpreetsingh@gmail.com>
-X-Mailer: git-send-email 2.47.3
+	s=arc-20240116; t=1789455807; c=relaxed/simple;
+	bh=F/2LWRZ+8JwZK8jwN6/Q6olYJoMUVmkHIy78bcstgKo=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=coDEHJ/GBwCdtMRe0285BwhLWrYmF6/bk/3wsuXNjh0x43LHowGHm+kOe/6NLnrrgn7v8w1y1t/fmHpPOZ2wagd3taLCvSg4B6/QsO4+s88Sn3pdq1PnMwUC4mCam2L5g5Yui4H73ON41UOrEzKgweWrOCzS2Hn9cJDtgoJnbT4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hygon.cn; spf=pass smtp.mailfrom=hygon.cn; arc=none smtp.client-ip=101.204.27.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hygon.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hygon.cn
+Received: from maildlp2.hygon.cn (unknown [127.0.0.1])
+	by mailgw1.hygon.cn (Postfix) with ESMTP id 4hkXz45fpFz1mw6v;
+	Tue, 15 Sep 2026 15:02:56 +0800 (CST)
+Received: from maildlp2.hygon.cn (unknown [172.23.18.61])
+	by mailgw1.hygon.cn (Postfix) with ESMTP id 4hkXz44Kl9z1mw6v;
+	Tue, 15 Sep 2026 15:02:56 +0800 (CST)
+Received: from cncheex04.Hygon.cn (unknown [172.23.18.114])
+	by maildlp2.hygon.cn (Postfix) with ESMTPS id C15E93027FCF;
+	Tue, 15 Sep 2026 14:58:39 +0800 (CST)
+Received: from jianyong.hygon.cn (172.19.20.52) by cncheex04.Hygon.cn
+ (172.23.18.114) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Tue, 15 Sep
+ 2026 15:02:54 +0800
+From: Jianyong Wu <wujianyong@hygon.cn>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <kprateek.nayak@amd.com>,
+	<vincent.guittot@linaro.org>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<ray.huang@amd.com>, <mario.limonciello@amd.com>, <perry.yuan@amd.com>,
+	<zhanjie9@hisilicon.com>, <zhenglifeng1@huawei.com>,
+	<pierre.gondois@arm.com>, <sumitg@nvidia.com>,
+	<srinivas.pandruvada@linux.intel.com>, <lenb@kernel.org>,
+	<hongyan.xia@transsion.com>, <zhongqiu.han@oss.qualcomm.com>,
+	<wujianyong@hygon.cn>, <jianyong.wu@outlook.com>, <wangfengyu@hygon.cn>,
+	<zhongyuan@hygon.cn>, <huangsj@hygon.cn>
+Subject: [PATCH] cpufreq: Use a non-boost reference frequency for pressure calculation
+Date: Tue, 15 Sep 2026 14:57:47 +0800
+Message-ID: <20260915065747.1671965-1-wujianyong@hygon.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: cncheex06.Hygon.cn (172.23.18.116) To cncheex04.Hygon.cn
+ (172.23.18.114)
 
-The fractional LSB macros expand to a plain division, so they only work
-when multiplied first and evaluate to 0 anywhere else. Take the value as
-a macro argument and apply it with mult_frac(). No functional change.
+Commit d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall
+back to cpuinfo.max_freq") introduced cpuinfo.max_freq as the reference
+frequency for cpufreq pressure when arch_scale_freq_ref() returns zero.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Reported-by: Dan Carpenter <error27@gmail.com>
-Closes: https://lore.kernel.org/r/202606062322.TyvCPB3l-lkp@intel.com/
-Assisted-by: Claude:claude-opus-5
-Assisted-by: Claude:claude-fable-5
-Signed-off-by: Babanpreet Singh <bbnpreetsingh@gmail.com>
+However, cpuinfo.max_freq may include boost frequencies and therefore
+does not necessarily represent the maximum sustainable frequency. On
+some systems using acpi-cpufreq, cpuinfo.max_freq includes boost while
+the frequency table only contains non-boost frequencies. Consequently,
+cpufreq pressure remains nonzero even without an additional frequency
+limit.
+
+Furthermore, drivers may update cpuinfo.max_freq when boost is enabled
+or disabled. With a fixed policy limit below the maximum non-boost
+frequency, this changes the pressure reference and hence the reported
+pressure, although the non-boost frequency limit remains unchanged.
+
+Add max_sustainable_freq to struct cpufreq_cpuinfo to provide a reference
+frequency excluding boost. Populate it from the nominal frequency in
+amd-pstate and cppc_cpufreq, the maximum non-turbo frequency in
+intel_pstate, and the highest frequency-table entry in acpi-cpufreq.
+
+Use this value when arch_scale_freq_ref() returns zero. Preserve the
+existing cpuinfo.max_freq fallback for drivers that leave the new field
+at zero.
+
+Tested with acpi-cpufreq, intel_pstate, and amd-pstate in active and
+passive modes. With no additional frequency limit, pressure is zero.
+With a fixed limit below the non-boost reference frequency, pressure
+remains unchanged across boost transitions.
+
+Fixes: d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq")
+Signed-off-by: Jianyong Wu <wujianyong@hygon.cn>
 ---
- drivers/power/supply/max17042_battery.c | 30 +++++++++++++++----------
- 1 file changed, 18 insertions(+), 12 deletions(-)
+The earlier fix was incorrect and has been abandoned. This patch takes
+a different approach.
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index a53970af56cbb..861b5dbc11c1e 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -16,6 +16,7 @@
- #include <linux/i2c.h>
- #include <linux/delay.h>
- #include <linux/interrupt.h>
-+#include <linux/math.h>
- #include <linux/platform_device.h>
- #include <linux/pm.h>
- #include <linux/power_supply.h>
-@@ -57,10 +58,15 @@
+Previous discussion: https://lore.kernel.org/all/SI2PR04MB4931A8BA0EF213B0238BD9E4E3BD2@SI2PR04MB4931.apcprd04.prod.outlook.com/
+
+ drivers/cpufreq/acpi-cpufreq.c | 3 +++
+ drivers/cpufreq/amd-pstate.c   | 2 ++
+ drivers/cpufreq/cppc_cpufreq.c | 3 ++-
+ drivers/cpufreq/cpufreq.c      | 4 +++-
+ drivers/cpufreq/intel_pstate.c | 2 ++
+ include/linux/cpufreq.h        | 2 ++
+ 6 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 21639d9ac753..e7b22456ebb8 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -856,6 +856,9 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	}
+ 	freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
  
- #define MAX17042_CURRENT_LSB		1562500ll /* 1.5625µV/Rsense */
- #define MAX17042_CAPACITY_LSB		5000000ll /* 5.0µVH/Rsense */
--#define MAX17042_TIME_LSB		5625 / 1000 /* s */
--#define MAX17042_VOLTAGE_LSB		625 / 8 /* µV */
--#define MAX17042_RESISTANCE_LSB		1 / 4096 /* Ω */
--#define MAX17042_TEMPERATURE_LSB	1 / 256 /* °C */
-+/*
-+ * These LSBs are fractions, so they take their argument rather than
-+ * expanding to a bare "n / d" token sequence, which is only correct in a
-+ * "value * LSB" context.
-+ */
-+#define MAX17042_TIME_LSB(val)		mult_frac(val, 5625, 1000) /* s */
-+#define MAX17042_VOLTAGE_LSB(val)	mult_frac(val, 625, 8) /* µV */
-+#define MAX17042_RESISTANCE_LSB(val)	mult_frac(val, 1, 4096) /* Ω */
-+#define MAX17042_TEMPERATURE_LSB(val)	mult_frac(val, 1, 256) /* °C */
++	/* Init max sustainable cpu frequency */
++	policy->cpuinfo.max_sustainable_freq = freq_table[0].frequency;
++
+ 	max_boost_ratio = get_max_boost_ratio(cpu, &nominal_freq);
+ 	if (max_boost_ratio) {
+ 		unsigned int freq = nominal_freq;
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 3a6b4b224a66..6fc28bb1499b 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -1085,6 +1085,7 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
+ 						perf.lowest_perf);
+ 	policy->cpuinfo.max_freq = cpudata->max_freq;
  
- #define MAX17055_DQACC_DIV		32
- #define MAX17055_DPACC_FACTOR		44138
-@@ -138,7 +144,7 @@ static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
++	policy->cpuinfo.max_sustainable_freq = cpudata->nominal_freq;
+ 	policy->driver_data = cpudata;
+ 	ret = amd_pstate_cppc_enable(policy);
+ 	if (ret)
+@@ -1912,6 +1913,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = perf_to_freq(perf, cpudata->nominal_freq,
+ 						perf.lowest_perf);
+ 	policy->cpuinfo.max_freq = cpudata->max_freq;
++	policy->cpuinfo.max_sustainable_freq = cpudata->nominal_freq;
+ 	policy->driver_data = cpudata;
  
- 	*temp = sign_extend32(data, 15);
- 	/* The value is converted into deci-centigrade scale */
--	*temp = *temp * 10 * MAX17042_TEMPERATURE_LSB;
-+	*temp = MAX17042_TEMPERATURE_LSB(*temp * 10);
- 	return 0;
+ 	ret = amd_pstate_cppc_enable(policy);
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 6fe0e972952a..f803fcdca483 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -682,7 +682,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, caps->lowest_perf);
+ 	policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, policy->boost_enabled ?
+ 						    caps->highest_perf : caps->nominal_perf);
+-
++	policy->cpuinfo.max_sustainable_freq =
++		cppc_perf_to_khz(caps, caps->nominal_perf);
+ 	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu);
+ 	policy->shared_type = cpu_data->shared_type;
+ 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b898b6544069..c1d54a22265d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2587,7 +2587,9 @@ static void cpufreq_update_pressure(struct cpufreq_policy *policy)
+ 	cpu = cpumask_first(policy->related_cpus);
+ 	max_freq = arch_scale_freq_ref(cpu);
+ 	if (!max_freq)
+-		max_freq = policy->cpuinfo.max_freq;
++		max_freq = policy->cpuinfo.max_sustainable_freq ?
++				 policy->cpuinfo.max_sustainable_freq :
++				 policy->cpuinfo.max_freq;
+ 
+ 	capped_freq = policy->max;
+ 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 6e984c114d96..daef7e99fead 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1474,6 +1474,7 @@ static void __intel_pstate_update_max_freq(struct cpufreq_policy *policy,
+ 
+ 	policy->cpuinfo.max_freq = READ_ONCE(global.no_turbo) ?
+ 			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
++	policy->cpuinfo.max_sustainable_freq = cpudata->pstate.max_freq;
+ 
+ 	refresh_frequency_limits(policy);
  }
+@@ -3052,6 +3053,7 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = cpu->pstate.min_freq;
+ 	policy->cpuinfo.max_freq = READ_ONCE(global.no_turbo) ?
+ 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
++	policy->cpuinfo.max_sustainable_freq = cpu->pstate.max_freq;
  
-@@ -214,7 +220,7 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
- 		goto health_error;
+ 	intel_pstate_init_acpi_perf_limits(policy);
  
- 	/* bits [0-3] unused */
--	vavg = val * MAX17042_VOLTAGE_LSB;
-+	vavg = MAX17042_VOLTAGE_LSB(val);
- 	/* Convert to millivolts */
- 	vavg /= 1000;
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index ae9d1ce4f49c..aa3f60a167be 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -45,6 +45,8 @@ enum cpufreq_table_sorting {
+ struct cpufreq_cpuinfo {
+ 	unsigned int		max_freq;
+ 	unsigned int		min_freq;
++	/* Maximum sustainable frequency excluding boost, or 0 if unknown. */
++	unsigned int		max_sustainable_freq;
  
-@@ -223,7 +229,7 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
- 		goto health_error;
- 
- 	/* bits [0-3] unused */
--	vbatt = val * MAX17042_VOLTAGE_LSB;
-+	vbatt = MAX17042_VOLTAGE_LSB(val);
- 	/* Convert to millivolts */
- 	vbatt /= 1000;
- 
-@@ -330,21 +336,21 @@ static int max17042_get_property(struct power_supply *psy,
- 		if (ret < 0)
- 			return ret;
- 
--		val->intval = data * MAX17042_VOLTAGE_LSB;
-+		val->intval = MAX17042_VOLTAGE_LSB(data);
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
- 		ret = regmap_read(map, MAX17042_AvgVCELL, &data);
- 		if (ret < 0)
- 			return ret;
- 
--		val->intval = data * MAX17042_VOLTAGE_LSB;
-+		val->intval = MAX17042_VOLTAGE_LSB(data);
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
- 		ret = regmap_read(map, MAX17042_OCVInternal, &data);
- 		if (ret < 0)
- 			return ret;
- 
--		val->intval = data * MAX17042_VOLTAGE_LSB;
-+		val->intval = MAX17042_VOLTAGE_LSB(data);
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		if (chip->enable_current_sense)
-@@ -473,7 +479,7 @@ static int max17042_get_property(struct power_supply *psy,
- 		if (data == U16_MAX)
- 			return -ENODATA;
- 
--		val->intval = data * MAX17042_TIME_LSB;
-+		val->intval = MAX17042_TIME_LSB(data);
- 		break;
- 	case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
- 		if (chip->chip_type != MAXIM_DEVICE_TYPE_MAX17055 &&
-@@ -488,7 +494,7 @@ static int max17042_get_property(struct power_supply *psy,
- 		if (data == U16_MAX)
- 			return -ENODATA;
- 
--		val->intval = data * MAX17042_TIME_LSB;
-+		val->intval = MAX17042_TIME_LSB(data);
- 		break;
- 	default:
- 		return -EINVAL;
-
-base-commit: 4fc88ba435dadbc05990951e3f3fbd8ccd2df140
+ 	/* in 10^(-9) s = nanoseconds */
+ 	unsigned int		transition_latency;
 -- 
-2.43.0
+2.34.1
+
 
