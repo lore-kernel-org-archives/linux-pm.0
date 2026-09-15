@@ -1,177 +1,195 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D53F3B5314;
-	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAD5A4A5C33;
+	Tue, 15 Sep 2026 14:51:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789482262; cv=none; b=tg4+ofXhF6mzMYAkNx2tmwSukk0OlOF0zW9y17dFwu+/2e4BNDbca+pDQrf9tNgW0JQqvfcYWHS9bx3Y6zgsuBTqIcuKnxrsfc3eX9+fTkURosFqCGq1qckWHVArsXPxLyMJanQlpeiX6wafm6sG72MWzokXQsrgKbcY1Xep8jg=
+	t=1789483869; cv=none; b=DpgqEIPpKzqZ7cDovdlO2wx4y0taRnZPORaMUbUbietddv+OPEp4egJnOonrpstv0Exr1f6HR15zdyNL9xfBMzpb0LWYZiW7jtjBNIndwofDZqzs6L4rkpRfguiRZy59BHNXj0r+sO4vVMovbxyWArGVOMhv4Fr4m3buGDdXtNc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789482262; c=relaxed/simple;
-	bh=ebDqYY4U9FVWlZxckUTVJvTup8qiCi+YooN49jm+VUQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VcvfryLtSKKI8EuQ44Rg3l6X3mkCHmlj5sHkHXgaFMjHjaw5hT6gvQVkj7fKhIvuz5fRoSF+DtuiGn4OVrhJRI2xnamljT8IvNGs6c8fkxRA4R9FQJYdw9j53Ms+FHBwQPI1lJ6ar7GNPmUX9DViZwMLTEQg5c5zUv0Dn3CxArc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LoSxpRDj; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1789483869; c=relaxed/simple;
+	bh=P5iYy/QSYWpIBpgNKRP7nBK+8mbBN5jaovZEL295pX4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=tcDTKq5C+SElw+y117NQAMCCxOkhlmBkBZ6vHXC+uabRJ94ttiXLNgZ8jpWV/27xtqMlboT3HB7Bpb8hRmcUxlKsQB5K9GSgtJua/gIZes7eO1WMkzXElMbCyPf+zmbxMg5+l03CKElgNwCvhvWYG9iFTSL09x3EpoVJTwwMLqU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NKG4ADbx; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LoSxpRDj"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4C6E5C2BD05;
-	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1789482262;
-	bh=ebDqYY4U9FVWlZxckUTVJvTup8qiCi+YooN49jm+VUQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=LoSxpRDjYddJV0ZD7sucgELhV123tPEU5jN9AkoLM2hnytdslTz0U6V5UiPyzzWMF
-	 4HJz7ZEfPdJaQblN97CgRlzwz/S11BsK4lISXrGSl0tPDvKQOHkE28tcJtaUHRhr/0
-	 mSMHOkud4EW/BncTi19wmxFx9MUn1S99OEsSD+sLFpDSH4nFqeu73lJsk6aFhLxBCg
-	 2zFR+GebFLUcMWjHfT9Nh05kFyNQjdwrk/1z+VIVLQhufXREqMkNEkeboHNldxCGoc
-	 j4mQIejUOF8P3vyeYJVJRqgW1bROvFbd1+40MEu0TvFtz6jW+3oVAf8BU9aeaI5NNd
-	 pnlQudZX3XEJA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A4A9C982C4;
-	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 15 Sep 2026 16:24:06 +0200
-Subject: [PATCH 5/5] Bluetooth: btnxpuart: Drop serdev based M.2 power
- sequencing code
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NKG4ADbx"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789483867; x=1821019867;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=P5iYy/QSYWpIBpgNKRP7nBK+8mbBN5jaovZEL295pX4=;
+  b=NKG4ADbxya7fF+3RfHk4VPEfYgWX/pUpuTei1Hy7txdRNgw2/iPFsYav
+   9EYSA0vCB/8OWxKWp8d1BrbaUCWyHOFS5EgVXAJo9SguigIpdXRfizein
+   PintOYQILj4MkzkfFJtoAspoY1P0VJN1jhMfRVrYvsOUn/A9qk05haUTO
+   xS3ns3rwJQWqdB2fvRPch9FWcYpU9jf7qIdAE9rjwkgXs6+1vTO5lMv1W
+   o63z5cZsrfBDFYk1Nx2EfyZNt6EZ7oOymeev3WH3qg7v6i7NDbS9F/oki
+   q+C5bb1TlYe9pdCHIf2KFc+9ZUghm6hO3pY6TenCMfITRCKOY4nOcif8A
+   Q==;
+X-CSE-ConnectionGUID: RZPmtIYbQJeJT5VDdVQQ7g==
+X-CSE-MsgGUID: wmGuwELvRPS4bdQQxLnCOg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="88983364"
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="88983364"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2026 07:51:06 -0700
+X-CSE-ConnectionGUID: Ol/cDn8bTau4gdkva6ZjQQ==
+X-CSE-MsgGUID: Vlsrmi9NRxeS/5OiZL/mRw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="269352551"
+Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.244.57])
+  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2026 07:51:02 -0700
+Date: Tue, 15 Sep 2026 17:51:00 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: manivannan.sadhasivam@oss.qualcomm.com
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Amitkumar Karwar <amitkumar.karwar@nxp.com>,
+	Neeraj Kale <neeraj.sanjaykale@nxp.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Rahul Samana <rahul.samana@oss.qualcomm.com>,
+	Wei Deng <wei.deng@oss.qualcomm.com>,
+	Loic Poulain <loic.poulain@oss.qualcomm.com>
+Subject: Re: [PATCH 2/5] Bluetooth: btnxpuart: Add auxiliary driver for PCIe
+ M.2 modules
+Message-ID: <aqlbVNjTUHXlObgy@ashevche-desk.local>
+References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
+ <20260915-pci-m2-bt-rework-v1-2-3c7d9cf9c010@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-pci-m2-bt-rework-v1-5-3c7d9cf9c010@oss.qualcomm.com>
-References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
-In-Reply-To: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
-To: Marcel Holtmann <marcel@holtmann.org>, 
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
- Bartosz Golaszewski <brgl@kernel.org>, 
- Manivannan Sadhasivam <mani@kernel.org>, 
- Amitkumar Karwar <amitkumar.karwar@nxp.com>, 
- Neeraj Kale <neeraj.sanjaykale@nxp.com>, 
- Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org, 
- linux-pm@vger.kernel.org, Rahul Samana <rahul.samana@oss.qualcomm.com>, 
- Wei Deng <wei.deng@oss.qualcomm.com>, 
- Loic Poulain <loic.poulain@oss.qualcomm.com>, 
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3237;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=+YzVex5t/UFDNNH6FtEmazomhrj+PormXoK6KhBhZYo=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqqVUTH7YYitnfHOUyQSnpkRPlZLBO68tqUNH23
- AuTotDAoamJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaqlVEwAKCRBVnxHm/pHO
- 9QuzCACee6+MFgwP7AqcyjVGPJ49iNhWnNA/QQBP5XWHvZIRUwkSM9nGmJOKCNtA6/Rt5EbBtJS
- QjXcjGxZZGH+a/wVnKK3hj/HYljm3l32CScy14+i8qa6htukWCXBA/F215lEJ/IjrTYEp7X7+RJ
- TJGqOFj1oDtT44KMkBhXxcnxlucOpaXC/9rg9pvFIpaehY6LwshJdkFRHd1wHMXl1vzjtQ6hcj8
- 6NxYgrSMZFhX+cIkd5tusO4VcLBJsyZrxLuiY5Q+8oievV4bU5OzMSLOiZbt/gaOrxxT9TA6IQZ
- 5KoARp+qth/nE6Gd3c4jr4S9I6cYoIa5UIJKbm3A4dnTKq7v
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260915-pci-m2-bt-rework-v1-2-3c7d9cf9c010@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+On Tue, Sep 15, 2026 at 04:24:03PM +0200, Manivannan Sadhasivam via B4 Relay wrote:
 
-Bluetooth interface in M.2 modules is now enumerated using an auxiliary
-device instead of serdev. The power sequencing driver now allocates an
-auxiliary device for the Bluetooth interface whenever a compatible
-M.2 module shows up over PCIe. And the auxiliary device gets bind to this
-btnxpuart driver using the existing auxiliary driver matching logic.
+> The 88W8987 combo module exposes Bluetooth over UART. Since this module is
+> attached over PCIe, it is not described in firmware like devicetree. So it
+> is discovered at runtime over PCIe by the power sequencing driver, which
+> allocates the UART serdev and creates an auxiliary device carrying that
+> transport and the power sequencing target to power up the Bluetooth
+> function.
+> 
+> Add an auxiliary driver that binds to this device. It reuses the serdev
+> provided by the producer, brings up the controller through the existing
+> UART transport with nxp_register_dev() and drives power through the
+> sequencer obtained with pwrseq_get().
+> 
+> Factor the HCI device setup and teardown shared with the serdev probe into
+> helpers so both paths register the same controller.
 
-Earlier the same modules were brought up by fabricating a bluetooth
-node under the UART controller, so that the serdev bus matched this
-driver, and nxp_serdev_probe grabbed the "uart" sequencer when the M.2
-connector was reachable over the OF graph. That node is no longer
-created, so the serdev driver never binds for an M.2 module.
+...
 
-Hence, remove the connector helper and the serdev power sequencing code.
+> -static int nxp_serdev_probe(struct serdev_device *serdev)
+> +static int nxp_register_dev(struct btnxpuart_dev *nxpdev)
+>  {
+> +	struct serdev_device *serdev = nxpdev->serdev;
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
----
- drivers/bluetooth/btnxpuart.c | 48 +------------------------------------------
- 1 file changed, 1 insertion(+), 47 deletions(-)
+Why not also
 
-diff --git a/drivers/bluetooth/btnxpuart.c b/drivers/bluetooth/btnxpuart.c
-index 2672e481ef15..eaa82cc6444f 100644
---- a/drivers/bluetooth/btnxpuart.c
-+++ b/drivers/bluetooth/btnxpuart.c
-@@ -10,7 +10,6 @@
- #include <linux/auxiliary_bus.h>
- #include <linux/serdev.h>
- #include <linux/of.h>
--#include <linux/of_graph.h>
- #include <linux/pwrseq/consumer.h>
- #include <linux/pwrseq/pcie-m2-bt.h>
- #include <linux/skbuff.h>
-@@ -1820,28 +1819,6 @@ static void nxp_coredump_notify(struct hci_dev *hdev, int state)
- 	kobject_uevent_env(&serdev->dev.kobj, KOBJ_CHANGE, envp);
- }
- 
--/*
-- * Check if the remote M.2 connector device linked via OF graph is present
-- * and available. This is used to determine whether the pwrseq path should
-- * be taken. When the remote connector node is disabled (e.g., by a DT
-- * overlay switching from PCIe WiFi to SDIO WiFi), the pwrseq path is
-- * skipped, allowing the BT driver to use a direct bluetooth child node
-- * instead.
-- */
--static bool nxp_m2_connector_is_available(struct device *dev)
--{
--	struct device_node *ep __free(device_node) =
--		of_graph_get_next_endpoint(dev_of_node(dev), NULL);
--
--	if (!ep)
--		return false;
--
--	struct device_node *remote __free(device_node) =
--		of_graph_get_remote_port_parent(ep);
--
--	return remote && of_device_is_available(remote);
--}
--
- static int nxp_register_dev(struct btnxpuart_dev *nxpdev)
- {
- 	struct serdev_device *serdev = nxpdev->serdev;
-@@ -1962,30 +1939,7 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
- 		return err;
- 	}
- 
--	if (nxp_m2_connector_is_available(&serdev->ctrl->dev)) {
--		struct pwrseq_desc *pwrseq;
--
--		pwrseq = pwrseq_get(&serdev->ctrl->dev, "uart");
--		if (IS_ERR(pwrseq))
--			return dev_err_probe(&serdev->dev, PTR_ERR(pwrseq),
--					     "failed to get pwrseq\n");
--
--		nxpdev->pwrseq = pwrseq;
--		err = pwrseq_enable(pwrseq);
--		if (err)
--			goto err_pwrseq_put;
--	}
--
--	err = nxp_register_dev(nxpdev);
--	if (err)
--		goto err_pwrseq_put;
--
--	return 0;
--
--err_pwrseq_put:
--	if (nxpdev->pwrseq)
--		pwrseq_put(nxpdev->pwrseq);
--	return err;
-+	return nxp_register_dev(nxpdev);
- }
- 
- static void __nxp_remove(struct btnxpuart_dev *nxpdev)
+	struct device *dev = &serdev->dev;
+
+and use it to make lines even shorter?
+
+...
+
+> -	device_property_read_u32(&nxpdev->serdev->dev, "max-speed",
+> +	device_property_read_u32(&serdev->dev, "max-speed",
+>  				 &nxpdev->secondary_baudrate);
+
+	device_property_read_u32(dev, "max-speed", &nxpdev->secondary_baudrate);
+
+Now exactly a single line (out of 80 characters).
+
+...
+
+> -	device_property_read_u8_array(&nxpdev->serdev->dev,
+> +	device_property_read_u8_array(&serdev->dev,
+>  				      "local-bd-address",
+>  				      (u8 *)&ba, sizeof(ba));
+
+	device_property_read_u8_array(dev, "local-bd-address",
+				      (u8 *)&ba, sizeof(ba));
+
+Now two lines instead of three. But ideally this casting should gone and
+instead something like ether_addr_copy() to be used. (The latter is out
+of scope here, of course.)
+
+...
+
+> +static int nxp_serdev_probe(struct serdev_device *serdev)
+> +{
+> +	struct btnxpuart_dev *nxpdev;
+> +	int err;
+> +
+> +	nxpdev = devm_kzalloc(&serdev->dev, sizeof(*nxpdev), GFP_KERNEL);
+> +	if (!nxpdev)
+> +		return -ENOMEM;
+
+> +	nxpdev->nxp_data = (struct btnxpuart_data *)device_get_match_data(&serdev->dev);
+
+This is bad. The const qualifier is for a reason. Make sure it's kept.
+On top the same suggestion as per above, use local 'dev' pointer.
+
+Also Sashiko found a nice issue with the driver data, id est driver_override
+mechanism that in some cases may lead to NULL dereferencing. Please, double
+check if it's not the case, otherwise check for NULL and return -ENODATA.
+
+> +	nxpdev->serdev = serdev;
+> +
+> +	nxpdev->pdn = devm_reset_control_get_optional_shared(&serdev->dev, NULL);
+> +	if (IS_ERR(nxpdev->pdn))
+> +		return PTR_ERR(nxpdev->pdn);
+> +
+> +	err = devm_regulator_get_enable(&serdev->dev, "vcc");
+> +	if (err) {
+> +		dev_err(&serdev->dev, "Failed to enable vcc regulator\n");
+> +		return err;
+> +	}
+> +
+> +	if (nxp_m2_connector_is_available(&serdev->ctrl->dev)) {
+> +		struct pwrseq_desc *pwrseq;
+> +
+> +		pwrseq = pwrseq_get(&serdev->ctrl->dev, "uart");
+> +		if (IS_ERR(pwrseq))
+> +			return dev_err_probe(&serdev->dev, PTR_ERR(pwrseq),
+> +					     "failed to get pwrseq\n");
+> +
+> +		nxpdev->pwrseq = pwrseq;
+> +		err = pwrseq_enable(pwrseq);
+> +		if (err)
+> +			goto err_pwrseq_put;
+> +	}
+> +
+> +	err = nxp_register_dev(nxpdev);
+> +	if (err)
+> +		goto err_pwrseq_put;
+> +
+> +	return 0;
+> +
+>  err_pwrseq_put:
+>  	if (nxpdev->pwrseq)
+>  		pwrseq_put(nxpdev->pwrseq);
+>  	return err;
+>  }
 
 -- 
-2.43.0
+With Best Regards,
+Andy Shevchenko
 
 
