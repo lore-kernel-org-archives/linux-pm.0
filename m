@@ -1,1090 +1,252 @@
-Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011030.outbound.protection.outlook.com [40.107.130.30])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CB573C09E7
-	for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 13:16:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789478188; cv=none; b=aGdJosdUbpwTlvoWy/qDM0uv3HoiCR6dm6DDcCjam/0r0Af80YwoDPLqS5PUF614sEiMUk1ESAxw1O6CtJWYRr6Qwi5qlGBiE5LKRWkjTmxYlGgEIQ8E1+wLJvAgs4SqJRz2Ms93r7Yy9XKCILk39nvREloPYhrWK3Pyzr1S6fQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789478188; c=relaxed/simple;
-	bh=TDbi+eQSPxQfInviqjdEtMTEnkh143SASpRMRYO3etw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=imYwOzAaJoaveci6UT2XO6/vZORXGUUlbf01v1JbzCydmVeSnj7770b7cEsxmFJEx2omMKM4lx0g+e4B5y5ikFKKA0MlmT5+dmD7K96ExN3NwcUzmi1sqRYooVdmecM3ULs86PusMD/GTRnWfFsnKfF8XznnM0A0cvw3uNqTYJk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=sBIfyQ6m; arc=none smtp.client-ip=74.125.225.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B65CB371877;
+	Tue, 15 Sep 2026 14:13:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.30
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789481615; cv=fail; b=B/he2iGKxZeRPBk1hGJgP+0CMfsuJsMYh2UirAgraamTRwY5w7nRgEBzjOHRgAAElNLJYQuYvc3OIlEqVnRXD6gF5CzmiA17UmupubVD4KF5LFmrTjPLyr+ftEDyhw13ijj+q5C7JXyXmwTNOeB5oJPeioVOhd9rMLiDd6Ffj8g=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789481615; c=relaxed/simple;
+	bh=s1BJdHk1dpqgV30inyC7qa9K7HDdhTXGQa7Qy9wGUIE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=DWsXBPC0oetRJnP1gZg2RBWYOa2ucdHzxUC9WYzkmLA1835aH87iCyOeq3hEDPCr3PDwxK21vyalwDHPDpojjKrDLXVUjqMiva9qbwwQnW8KjipyND9L5HKm3nwshtULIjPbv2OPTV9tspT0IX8Ikmq02WvfEqJfoByYxk4RIRM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=bJiOGE0c; arc=fail smtp.client-ip=40.107.130.30
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="sBIfyQ6m"
-Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49cda5e048fso85e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2026 06:16:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789478176; x=1790082976; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=gGOEMpPqgl5W4XQHaGU7nBryE/T/6438wA69yzqvb0w=;
-        b=sBIfyQ6mQk0F6uavRUJJODWSsLepL7yhBB6gkaUChm7jAb9F542zYPO4SGCB0nn6bM
-         FqAz7WFIvkODqDAKhl9yJXcBS2btudT87LWbnk7aBYmN4DUyovCil9qsquVs8bP4D+6H
-         rVfIdLy419xcWLUUun+6M+iFKnA4JnrAjj92zJbtO2VeiRXOXGrcXxrNJSrOEerPTMMJ
-         FyLogj4z2UVkW8a9Iovk+qBP6kdft44HtSSQJTRwl0F+26ue2DnsSbU+yUECOyA/o15A
-         UUnGmPih8uE28HuPvw0uNd8er0SoUhytGaPQET7t3hehVrgF6ufDLyyva7nDsV8Gpjji
-         paLg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789478176; x=1790082976;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gGOEMpPqgl5W4XQHaGU7nBryE/T/6438wA69yzqvb0w=;
-        b=MF9avo5AG8KdHsw7qbAdwU8eJjnxTI2cDfh9UHXvD2VWFUAStIhXAUxiJnLRm29KL4
-         Rnd8vP3vteYGBi4Vtm1bbnfKfCXxPVQaqioLZLjy8PIloaIWjtxAmBNWuY6eXQ46HzPX
-         MlMgXuTrYN36m3q8BpokQijOkaIM4m1K7l7jZlcEop3jfh2pfX5rynRjorndEBu61INx
-         jJYs5Pq5hyQdaOsoh+4ekPH4gdqLHZdojPGJiNoL5JyyZzQnujV1st4HyE3kUoNNQc9D
-         aZu940e+qOfYNZD+sGVGD6+1Ax2SnIDaZTvex0jPBo5SPrPCQ+p5JNMme6y55LieiYgY
-         isGw==
-X-Forwarded-Encrypted: i=1; AKwUvBweKtxVA/+RufMZZYLB50MB58y8XfF3KY7MSp+C4I4SF/BFDsRTf1s8VKADvFrGE0nxYJU+7QQ/Sw==@vger.kernel.org
-X-Gm-Message-State: AFuF++n5hYBPkGXplijKeva+HHs3p25KuI2RNbbqjRVoNqpAmseB4IkI
-	TGMFlmmhwFbqRV9Fj9LcQM5knG1uV2OOB/CUSJzVQ4ueCCuPpHf0KIImHJ97jo+DSg==
-X-Gm-Gg: AYBFou1pj3YXSrO44MQr948lXaBTN5TRb6xuFsnXf5HFRKegD7WtOIEYa/c+eli2WYb
-	POK8XU10DK0DO2X9M6xKVh6Cwek04EjTsCsp05TdOpMqkxRuXy+tsUEs5RyGdOaJRnkzCa7Bdz9
-	SjuQxQz27k4T6gML8me1PgguB8vrFyoPli/5nNDBKkqRt815WimqArUW/3805sE37ukWyS+xq30
-	woliVcfOL0yGLy7zrmETdcSUEt+TQycOMxUYG7UTYl1L3ZZlRM5ZszOyKNxmGEPpE2YJOgAHL7x
-	+gKWDy+6FaAmyxN8Qr2CLmnNxblnFn3tZSYvWu0RMAAW+JjN+fHNR2d2FT9pDgIwDcJg4EelcMr
-	3yUGL1bIhqdVOfPA+72UtBfnqcoUoIo5+T4zEhE9awzuouGBnww0NA/EyxmqK1dk3Huw+91eUvB
-	jG8hsPosr9v0X5yJuzhPfd71cFB9nRbPQ+yxVkjoMI7jMxnK6jHvvIeSofgYZkJI4YOwa1Pxd2p
-	SXJdatQ/OWLEof5YyvczNM4xysx8h9tXoeKZc5b
-X-Received: by 2002:a7b:cb4a:0:b0:499:fa56:f542 with SMTP id 5b1f17b1804b1-49e7dc07dc3mr695835e9.8.1789478175834;
-        Tue, 15 Sep 2026 06:16:15 -0700 (PDT)
-Received: from google.com (250.192.189.35.bc.googleusercontent.com. [35.189.192.250])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-486eb34e74esm34322499f8f.25.2026.09.15.06.16.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2026 06:16:14 -0700 (PDT)
-Date: Tue, 15 Sep 2026 13:16:10 +0000
-From: Mostafa Saleh <smostafa@google.com>
-To: Marc Zyngier <maz@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, Georgi Djakov <djakov@kernel.org>,
-	Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Re: [PATCH] Revert "interconnect: qcom: x1e80100: enable QoS
- configuration"
-Message-ID: <aqlFGhBOF9UYK-bc@google.com>
-References: <20260915123703.3228329-1-maz@kernel.org>
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="bJiOGE0c"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ySx3icLcZ0Qowj9EPaPoMURdVYgT2b9wm4XfwZSmbARMndgGK1d7LcPgEtigIL8gu2h+6wjXt3sofMUTD6y4xYuFFxAIKfVRZdyb45/C39oatiZ0ox5iRgkF05ukEwxlRog7zaldMxY/tsvt01mIJdPiFVHqiernabbtty9GSgw5dGZykGkyF2Y8s7VI/k+WUH8viWRwmmf/5i6TEvvtjyz4eijvGS1gWP/eqa/7haiuo/kVbimQAiHLVaMkUw3NoW6N+wX5XBHDRZXynY8RqT7ZZeW2rb1Z66/fda6dsCA3FgRwPTIM1zyTeDySKUIYY5LxSatKioScw/3gJrD9OA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9QeewuehdhsQAtVvweUxhK1tfcyOiLgRNRgMsU/IQSI=;
+ b=sWRv/ZGgVohpLhfAUxo6tdtbxWPxMKy9RhAjtwHy+VsT/k40TG0jAntxLw89w83+b/ZpKM+pggTGShoSFwCTKKLiShGzeKAZy7qjOvpIprYJX0NYwe5aKOpWEwegp0O8dC9jB3habOyNha6QlUP37pLYqWCNmWue28Bk4RhBkwbnqRYB8MYMfEvivNpyyh56HCsGrTle2tcRuTveq6Mb1ee2ABJZcj+RaxE23WTTpDXkfyq6gjdNwE4PTkvzHQENQyrqgxI8ad8XFHGCha8I6DKswTYEV2T+eTFy2sWKyY6+dXZfMrkjUUrIbtH3W+aSpE2kpsRV6p8HXtUQ/HlNHA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9QeewuehdhsQAtVvweUxhK1tfcyOiLgRNRgMsU/IQSI=;
+ b=bJiOGE0cd38+JLoO1+i823usT5BAqL6v1+z7tzT4WOhGzMHxVaNm3NytZ4Dv0xbX9VwRqXaOn1vSSHUxLJkZjZyu91uiQnpacFYP/4I2vsIWtR/80u1a9i1Z9l8gPZOCz8nqZo0bWG7BneODsDl3509z3Ej6FvbyTHpeL5GEVcT5TTOMythLrUZLUP8hVTk/E6C4a+WSiT5NxyV5Fndeqqt/QGsV/eO8jwjSIVcYA7zSfIKYHM/7mH5cLJzxOebaGqbza5zzIiOfzjR//8+3/ogq55EUb083hSW/f5XDbvHHUUREoFNAsuF4gkWb1M09NmNQ+AJkF6fqs1lOQuOjOw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by AM9PR04MB8178.eurprd04.prod.outlook.com (2603:10a6:20b:3e3::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Tue, 15 Sep
+ 2026 14:13:25 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0406.012; Tue, 15 Sep 2026
+ 14:13:25 +0000
+Date: Tue, 15 Sep 2026 09:13:14 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Ming Qian <ming.qian@oss.nxp.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, Shawn Guo <shawnguo@kernel.org>,
+	Peng Fan <peng.fan@nxp.com>, Lucas Stach <l.stach@pengutronix.de>,
+	linux-pm@vger.kernel.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Zhou Peng <eagle.zhou@nxp.com>, Xiahong Bao <xiahong.bao@nxp.com>,
+	Ming Zhou <ming.zhou@nxp.com>
+Subject: Re: [PATCH] pmdomain: imx8m-blk-ctrl: Serialize power on/off across
+ sibling domains
+Message-ID: <aqlSerHyjCB-03IR@SMW015318>
+References: <20260915-imx8mp-blk-ctrl-v1-1-b3b4e6e7e676@oss.nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260915-imx8mp-blk-ctrl-v1-1-b3b4e6e7e676@oss.nxp.com>
+X-ClientProxiedBy: CY5PR15CA0196.namprd15.prod.outlook.com
+ (2603:10b6:930:82::19) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260915123703.3228329-1-maz@kernel.org>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM9PR04MB8178:EE_
+X-MS-Office365-Filtering-Correlation-Id: ada3baab-b51c-4dac-865b-08df13338166
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|23010399003|7416014|1800799024|366016|19092799006|11063799006|56012099006|10067099003|22082099003|18002099003|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	Y6cFmpiv5QOOShB3GpudBf6XL9eSFH0dJo+3NSLFrwScAOsr7uCGOFQugIjhljsi4FXXDFBcHETEwWnW+iV2xXkzdcY07Qg50eduhskh+zh7M3BkWAtx5zMgNPEOtjE32Ign6Awd+BViud/4sXsowDs/sNiZIyGn7riiPOAzgaz6a3t07ATfVjcRuEEdaVFaqjuSBT/jqw+MipMFk2yUlrtPYwsoBla/jHOqpIIZ7vDVPs6i1lTld3c/4O2AHmJZQOEJztvGoildlAbTP4YNorYH3WxgMOr0C4pJJuE76/yy+1xOpypMzGtygfvPZytQ8KNw7aCpoVdTBJ8HqB2QrIdu7q7yvx+x0qgkL4YbyKO97YyFgBKEPKeW9hV22rwEPni7e9/tq1NUcmUG/QAmUo/W3Vdu5RzW50AKFj98u1UcsD/lmzIb9u1eLAh4xrKyKh19VlRbYKg9+pSPEWmF4YR+M3i3SFbgkLniM/RuKJ1olhFByKSbb++NSgKZN7XzUYdvkoBQr8I3qXTdVkSWdRbwctUzXIl8QRcrsQRXFAfrTbdcdd1Hne/3lxsCgijmRI6VF9oBJVwO+jQg/vtcA5g2AxsRBAkvZ65KoYHDcce7KT2Yw9dosWxi4TZvPJDqthqKGOEZQsBVP64Z4w0NxiC+3DuEeavZfVIFrlv625k=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(7416014)(1800799024)(366016)(19092799006)(11063799006)(56012099006)(10067099003)(22082099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?Tf4MWpaQigtj+f5LYN2vLAVA6zzlqItakUjYmzCONVXU6EOxhQQN2YefBiGu?=
+ =?us-ascii?Q?SAMnETaBDo5dMEZh0uBCX5M97y/E991LsGT2cercsiun2KEJyEzC7W3e9xV0?=
+ =?us-ascii?Q?IfpIcQU5rEDDB3HG1tbmj0YrYSSoOt9ESeHWV6D5hcaN4bF+yT6pIEptddBR?=
+ =?us-ascii?Q?2nubSLaMGglzs9aObYCdzO05AOC0MU+7KRgEQhcl31YRroA4buiG7u6ojVYs?=
+ =?us-ascii?Q?Hzapwy+OTrlvHl1EpJ2WFc6S/9ZpNWdGtIu7R/k1yeex4Nk+vMOw3NaDr2xq?=
+ =?us-ascii?Q?GyrimfTLr7TyOLxwXTxWlMhC+tLhg4fK/OcXnNqrWIJ8OG1Y2AdkesOlj27S?=
+ =?us-ascii?Q?4XBexbKXE5VoMwtecjVa5w5xZYDsaECR5PEf/52K48Mu+HLJ5n9PmVDxikbP?=
+ =?us-ascii?Q?0XZeRyGsiNM3ytvc2QqHGdktF6/WdxjmchCeiwXZ0xX7iyMyn4UjrFpONuij?=
+ =?us-ascii?Q?vtmjALF/+lh3C7QZq6aRXJmg5IufeqtaMJY+zf+jTVXzbhWV/OgGTv942C6s?=
+ =?us-ascii?Q?QN3e7gUVWtZIk6E0EJPfARTwC7WnoBIJel/3RKOxg9FZz66vjPN0jFsCKJEp?=
+ =?us-ascii?Q?fQVu1psnKhHRT9eyCmUuR1HLHjdd0/ljc5mefISLkuqUMi7Dw2hUi2bGAqhn?=
+ =?us-ascii?Q?oIctlmiQpEgcsAg6VO/ihOowYun8iLpVWbZy1ZRRmYwDU32KRYDxgnbBM0Pw?=
+ =?us-ascii?Q?RaUMiaruhakVLxkaO3ZUnlbv3oEj36TeJqt5rP/svVxbNU3jXJZeiEe/Vfdc?=
+ =?us-ascii?Q?hEfEM2tnwQdDCrWzxT4HqE3/1qG4bT6NkvzsD+03WyZAXOrYLnQGS2awPg3L?=
+ =?us-ascii?Q?P8QHzsbmYMlHXzHYHXk0NiGdoWztgSSG3G+CGViKklZ9aGZ0XSklxKuJdyUU?=
+ =?us-ascii?Q?mPCm4c6c6mbdzkN5DEkE3s0kjeqoGY/tJFk63Auj2cROaIt9x+MJ4ulVv7PZ?=
+ =?us-ascii?Q?0odnYAvY4hGqUw4KLT5fMdMz/S64UW5BG9xFRqdJYc8enSxZlnSIASjIPgGA?=
+ =?us-ascii?Q?1jN1wdfn/CnEnte2VLvAvzbKOzxEelXTsnxS8e9/jJg0znLs5/NLf1KjeCrV?=
+ =?us-ascii?Q?NEU/I3N2mGfj44bkp5lnDQ3U+DhXaeAk/M+T51LT2XI16snCLG3BE3w65Jr2?=
+ =?us-ascii?Q?VuVKXF6jZClP9kg+uoAtNu2NNJevQnMEDsKiJDs7aIlWOTM91vLz3N0XAG47?=
+ =?us-ascii?Q?8LGkLabNBG6y5SPZfHcVIZMhg2UYnXCgiDWHVuXsb03CeuxJp2J8vkoSHoih?=
+ =?us-ascii?Q?1EEMr3zCf+rWq76dmX3uVfuFuZqK6MV6iQyvcCEMNNvjNL6fr3pxZ38DspmG?=
+ =?us-ascii?Q?vcfIwrbIDz7612OUgjaETVX7pKO5PF3KX0y8AhNwn4xBQRTZHTFL+kclkVw2?=
+ =?us-ascii?Q?2TslMOza9j0tg2fPEK68K2KkCBIYvbIepF4QrkX5j+ZQR0Ga+HcBjF5JlNn5?=
+ =?us-ascii?Q?byOGPs9SjGP4YYVULDOrKCHJTg1CWWtnh6QARSvp27MZHpCuNeXLJxCk+NGg?=
+ =?us-ascii?Q?+o4PLBbKSmPU8BYEL0KNplDFqDMktYqktPfFP3D9atH17bZKAX232nE9Za1d?=
+ =?us-ascii?Q?58yRMZbJZ23UppTb4dEYoOa7CGLvfgFczBNxAnoc2VV+rUZuC8eYyErvLVKJ?=
+ =?us-ascii?Q?MdqffgkTmBUhirH6e/tBaBhA/3n8I+uosJW+nDW/lyuq1KRv8mJo4UGhFlhx?=
+ =?us-ascii?Q?veKtOeETZlzVGtZXoSU+ESNl6j7CGB+1pFzRF3s2iuAfYtexMgqrX6Z4Avfw?=
+ =?us-ascii?Q?Dx1+hrQxd3FcUyZvn2rj4C2OsS/ApLhBX2YmaHDDFeg8dN1xo9me?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ada3baab-b51c-4dac-865b-08df13338166
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 14:13:25.1459
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rbrkmEbNkPw/nRWEOrnkZvN1hEqYcpl663Mg4OqpdDAqVVC9t4kpbQAZc3OcjWKPVNe+lYH+j0FAi5N72B2zE9pEK8FWRUIpDuYPoQjIHT3+WyT3epR7UguJP/35+cLB
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8178
 
-On Tue, Sep 15, 2026 at 01:37:03PM +0100, Marc Zyngier wrote:
-> This reverts commit 5a8b2cc36e796d595c9d97eab23c2be22805cc1c.
-> 
-> Since the introduction of this QoS change, X1 machines based on the
-> Purwa SoC (such as the Lenovo Mini X) take a hard reset at boot time.
-> 
-> Other machines based on Hamoa (such as the X1E001DE Snapdragon Devkit)
-> end-up with a similar hard reset while under load, most likely due to
-> the PCIe ports being starved of traffic.
-> 
-> Revert the whole thing until someone figures out what magic parameters
-> allow QoS to work in a sensible manner, as a usable machine is somehow
-> preferable to one that crashes efficiently.
-> 
-> Link: https://lore.kernel.org/all/apgeBNSiP01YfNcs@google.com
-> Link: https://lore.kernel.org/all/86ld9d4h4n.wl-maz@kernel.org
-> Signed-off-by: Marc Zyngier <maz@kernel.org>
+On Tue, Sep 15, 2026 at 07:09:43PM +0900, Ming Qian wrote:
+> On i.MX8MP, running the VC8000E encoder and the G1/G2 decoders
+> concurrently rarely and non-deterministically leaves a VPU stuck in
+> reset: its block registers read back all zeros. A decoder then times out
+> (G1/G2 reset failed) or the encoder fails its format check reading a
+> read-only capability register (VC8000E reset failed). Raising the
+> runtime-PM autosuspend delay hides it, which points at the blk-ctrl
+> power on/off path.
+>
+> The VPU blk-ctrl exposes G1, G2 and VC8000E as three separate genpds
+> whose power_on/power_off are serialized only by the per-genpd lock, so on
+> SMP the callbacks of different domains can run concurrently. Each domain
+> only manipulates its own bit in the shared BLK_SFT_RSTN/BLK_CLK_EN
+> registers, so this is not a matter of siblings corrupting each other's
+> register bits.
+>
+> However the sibling power transitions still interact through the shared
+> VPUMIX resources: the VPUMIX bus power domain, the VPU_NOC and the ADB400
+> handshake. power_on asserts a domain's reset, enables its clock and
+> releases the reset after a short udelay, relying on the reset propagating
+> through that shared path. The GPC does not ack-verify the ADB400
+> handshake on power-up (it only delays), and per ERR050531 the VPU_NOC
+> handshake is timing sensitive during VC8000E/VPUMIX power up/down
+> cycling. So when a sibling's power_on/power_off runs while another domain
+> is inside its reset window, it disturbs the shared VPU_NOC/ADB/AXI clock
+> timing and the victim's reset fails to take effect, leaving its block in
+> reset with registers reading zero.
+>
+> This is a blk-ctrl defect: the VPU power domains' power up/down sequences
+> must not interleave, yet the driver deliberately avoids a genpd
+> parent/child hierarchy (to meet its sequencing requirements) and so gets
+> no cross-sibling serialization from the genpd core.
+>
+> Add a per-blk-ctrl mutex around the blk-ctrl register and reset sequence
+> and the synchronous power-up path, so a sibling domain cannot run its
+> sequence while another domain is inside its reset window. The GPC
+> power-down is queued by pm_runtime_put() and still completes outside the
+> lock; serializing the reset sequences is what fixes the observed failure.
+> The bus domain's GENPD_NOTIFY_ON notifier runs in the same call stack
+> while the lock is held and must not take it.
 
-Reviewed-by: Mostafa Saleh <smostafa@google.com>
-Tested-by: Mostafa Saleh <smostafa@google.com>
+Thanks you for detail descript problem, basically it is power up/down
+reset, clock have not serialized.
 
-Thanks,
-Mostafa
+Can you help summery to cut message shorter end emphase most important
+part?
 
-> Cc: Georgi Djakov <djakov@kernel.org>
-> Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-> Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> Cc: Abel Vesa <abelvesa@kernel.org>
-> Cc: Bjorn Andersson <andersson@kernel.org>
-> Cc: Mostafa Saleh <smostafa@google.com>
-> Cc: Thorsten Leemhuis <regressions@leemhuis.info>
+Frank
+
+>
+> Fixes: a1a5f15f7f6c ("soc: imx: imx8m-blk-ctrl: add i.MX8MP VPU blk ctrl")
+> Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
 > ---
->  drivers/interconnect/qcom/x1e80100.c | 485 ---------------------------
->  1 file changed, 485 deletions(-)
-> 
-> diff --git a/drivers/interconnect/qcom/x1e80100.c b/drivers/interconnect/qcom/x1e80100.c
-> index 8075e0ff20597..2ba2823c7860e 100644
-> --- a/drivers/interconnect/qcom/x1e80100.c
-> +++ b/drivers/interconnect/qcom/x1e80100.c
-> @@ -173,13 +173,6 @@ static struct qcom_icc_node qhm_qspi = {
->  	.name = "qhm_qspi",
->  	.channels = 1,
->  	.buswidth = 4,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xb000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a1noc_snoc },
->  };
-> @@ -188,13 +181,6 @@ static struct qcom_icc_node qhm_qup1 = {
->  	.name = "qhm_qup1",
->  	.channels = 1,
->  	.buswidth = 4,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xc000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a1noc_snoc },
->  };
-> @@ -203,13 +189,6 @@ static struct qcom_icc_node xm_sdc4 = {
->  	.name = "xm_sdc4",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xd000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a1noc_snoc },
->  };
-> @@ -218,13 +197,6 @@ static struct qcom_icc_node xm_ufs_mem = {
->  	.name = "xm_ufs_mem",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xe000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a1noc_snoc },
->  };
-> @@ -233,13 +205,6 @@ static struct qcom_icc_node qhm_qup0 = {
->  	.name = "qhm_qup0",
->  	.channels = 1,
->  	.buswidth = 4,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x16000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a2noc_snoc },
->  };
-> @@ -248,13 +213,6 @@ static struct qcom_icc_node qhm_qup2 = {
->  	.name = "qhm_qup2",
->  	.channels = 1,
->  	.buswidth = 4,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x11000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a2noc_snoc },
->  };
-> @@ -263,13 +221,6 @@ static struct qcom_icc_node qxm_crypto = {
->  	.name = "qxm_crypto",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x12000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a2noc_snoc },
->  };
-> @@ -286,13 +237,6 @@ static struct qcom_icc_node xm_qdss_etr_0 = {
->  	.name = "xm_qdss_etr_0",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x13000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a2noc_snoc },
->  };
-> @@ -301,13 +245,6 @@ static struct qcom_icc_node xm_qdss_etr_1 = {
->  	.name = "xm_qdss_etr_1",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x14000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a2noc_snoc },
->  };
-> @@ -316,13 +253,6 @@ static struct qcom_icc_node xm_sdc2 = {
->  	.name = "xm_sdc2",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x15000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_a2noc_snoc },
->  };
-> @@ -407,13 +337,6 @@ static struct qcom_icc_node alm_gpu_tcu = {
->  	.name = "alm_gpu_tcu",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x271000 },
-> -		.prio = 1,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -422,13 +345,6 @@ static struct qcom_icc_node alm_pcie_tcu = {
->  	.name = "alm_pcie_tcu",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x27d000 },
-> -		.prio = 3,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -437,13 +353,6 @@ static struct qcom_icc_node alm_sys_tcu = {
->  	.name = "alm_sys_tcu",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x273000 },
-> -		.prio = 6,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -461,13 +370,6 @@ static struct qcom_icc_node qnm_gpu = {
->  	.name = "qnm_gpu",
->  	.channels = 4,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 4,
-> -		.port_offsets = { 0x51000, 0x58000, 0xd1000, 0xd8000 },
-> -		.prio = 0,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -476,13 +378,6 @@ static struct qcom_icc_node qnm_lpass = {
->  	.name = "qnm_lpass",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x275000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 3,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc,
->  			&qns_pcie },
-> @@ -492,13 +387,6 @@ static struct qcom_icc_node qnm_mnoc_hf = {
->  	.name = "qnm_mnoc_hf",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x53000, 0xd3000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -507,13 +395,6 @@ static struct qcom_icc_node qnm_mnoc_sf = {
->  	.name = "qnm_mnoc_sf",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x55000, 0xd5000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -522,13 +403,6 @@ static struct qcom_icc_node qnm_nsp_noc = {
->  	.name = "qnm_nsp_noc",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x57000, 0xd7000 },
-> -		.prio = 0,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 3,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc,
->  			&qns_pcie },
-> @@ -538,13 +412,6 @@ static struct qcom_icc_node qnm_pcie = {
->  	.name = "qnm_pcie",
->  	.channels = 1,
->  	.buswidth = 64,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x277000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 2,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
->  };
-> @@ -553,13 +420,6 @@ static struct qcom_icc_node qnm_snoc_sf = {
->  	.name = "qnm_snoc_sf",
->  	.channels = 1,
->  	.buswidth = 64,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x27b000 },
-> -		.prio = 2,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 3,
->  	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc,
->  			&qns_pcie },
-> @@ -569,13 +429,6 @@ static struct qcom_icc_node xm_gic = {
->  	.name = "xm_gic",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x27f000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_llcc },
->  };
-> @@ -616,13 +469,6 @@ static struct qcom_icc_node qnm_av1_enc = {
->  	.name = "qnm_av1_enc",
->  	.channels = 1,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x2f000 },
-> -		.prio = 4,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -631,13 +477,6 @@ static struct qcom_icc_node qnm_camnoc_hf = {
->  	.name = "qnm_camnoc_hf",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x28000, 0x29000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_hf },
->  };
-> @@ -646,13 +485,6 @@ static struct qcom_icc_node qnm_camnoc_icp = {
->  	.name = "qnm_camnoc_icp",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x2a000 },
-> -		.prio = 4,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -661,13 +493,6 @@ static struct qcom_icc_node qnm_camnoc_sf = {
->  	.name = "qnm_camnoc_sf",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x2b000, 0x2c000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -676,13 +501,6 @@ static struct qcom_icc_node qnm_eva = {
->  	.name = "qnm_eva",
->  	.channels = 1,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x33000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -691,13 +509,6 @@ static struct qcom_icc_node qnm_mdp = {
->  	.name = "qnm_mdp",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x2d000, 0x2e000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_hf },
->  };
-> @@ -706,13 +517,6 @@ static struct qcom_icc_node qnm_video = {
->  	.name = "qnm_video",
->  	.channels = 2,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 2,
-> -		.port_offsets = { 0x30000, 0x31000 },
-> -		.prio = 0,
-> -		.urg_fwd = 1,
-> -		.prio_fwd_disable = 0,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -721,13 +525,6 @@ static struct qcom_icc_node qnm_video_cv_cpu = {
->  	.name = "qnm_video_cv_cpu",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x32000 },
-> -		.prio = 4,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -736,13 +533,6 @@ static struct qcom_icc_node qnm_video_v_cpu = {
->  	.name = "qnm_video_v_cpu",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x34000 },
-> -		.prio = 4,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_mem_noc_sf },
->  };
-> @@ -783,13 +573,6 @@ static struct qcom_icc_node xm_pcie_3 = {
->  	.name = "xm_pcie_3",
->  	.channels = 1,
->  	.buswidth = 64,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x7000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_north_gem_noc },
->  };
-> @@ -798,13 +581,6 @@ static struct qcom_icc_node xm_pcie_4 = {
->  	.name = "xm_pcie_4",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x8000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_north_gem_noc },
->  };
-> @@ -813,13 +589,6 @@ static struct qcom_icc_node xm_pcie_5 = {
->  	.name = "xm_pcie_5",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x9000 },
-> -		.prio = 3,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_north_gem_noc },
->  };
-> @@ -828,13 +597,6 @@ static struct qcom_icc_node xm_pcie_0 = {
->  	.name = "xm_pcie_0",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x9000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_south_gem_noc },
->  };
-> @@ -843,13 +605,6 @@ static struct qcom_icc_node xm_pcie_1 = {
->  	.name = "xm_pcie_1",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xa000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_south_gem_noc },
->  };
-> @@ -858,13 +613,6 @@ static struct qcom_icc_node xm_pcie_2 = {
->  	.name = "xm_pcie_2",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xb000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_south_gem_noc },
->  };
-> @@ -873,13 +621,6 @@ static struct qcom_icc_node xm_pcie_6a = {
->  	.name = "xm_pcie_6a",
->  	.channels = 1,
->  	.buswidth = 32,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xc000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_south_gem_noc },
->  };
-> @@ -888,13 +629,6 @@ static struct qcom_icc_node xm_pcie_6b = {
->  	.name = "xm_pcie_6b",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xd000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_pcie_south_gem_noc },
->  };
-> @@ -919,13 +653,6 @@ static struct qcom_icc_node qnm_gic = {
->  	.name = "qnm_gic",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x1c000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_gemnoc_sf },
->  };
-> @@ -958,13 +685,6 @@ static struct qcom_icc_node xm_usb2_0 = {
->  	.name = "xm_usb2_0",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x6000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_north_snoc },
->  };
-> @@ -973,13 +693,6 @@ static struct qcom_icc_node xm_usb3_mp = {
->  	.name = "xm_usb3_mp",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0x7000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_north_snoc },
->  };
-> @@ -988,13 +701,6 @@ static struct qcom_icc_node xm_usb3_0 = {
->  	.name = "xm_usb3_0",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xa000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_south_snoc },
->  };
-> @@ -1003,13 +709,6 @@ static struct qcom_icc_node xm_usb3_1 = {
->  	.name = "xm_usb3_1",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xb000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_south_snoc },
->  };
-> @@ -1018,13 +717,6 @@ static struct qcom_icc_node xm_usb3_2 = {
->  	.name = "xm_usb3_2",
->  	.channels = 1,
->  	.buswidth = 8,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xc000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_south_snoc },
->  };
-> @@ -1033,13 +725,6 @@ static struct qcom_icc_node xm_usb4_0 = {
->  	.name = "xm_usb4_0",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xd000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_south_snoc },
->  };
-> @@ -1048,13 +733,6 @@ static struct qcom_icc_node xm_usb4_1 = {
->  	.name = "xm_usb4_1",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xe000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_south_snoc },
->  };
-> @@ -1063,13 +741,6 @@ static struct qcom_icc_node xm_usb4_2 = {
->  	.name = "xm_usb4_2",
->  	.channels = 1,
->  	.buswidth = 16,
-> -	.qosbox = &(const struct qcom_icc_qosbox) {
-> -		.num_ports = 1,
-> -		.port_offsets = { 0xf000 },
-> -		.prio = 2,
-> -		.urg_fwd = 0,
-> -		.prio_fwd_disable = 1,
-> -	},
->  	.num_links = 1,
->  	.link_nodes = { &qns_aggre_usb_south_snoc },
->  };
-> @@ -1795,21 +1466,11 @@ static struct qcom_icc_node * const aggre1_noc_nodes[] = {
->  	[SLAVE_A1NOC_SNOC] = &qns_a1noc_snoc,
->  };
->  
-> -static const struct regmap_config x1e80100_aggre1_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x14400,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_aggre1_noc = {
-> -	.config = &x1e80100_aggre1_noc_regmap_config,
->  	.nodes = aggre1_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(aggre1_noc_nodes),
->  	.bcms = aggre1_noc_bcms,
->  	.num_bcms = ARRAY_SIZE(aggre1_noc_bcms),
-> -	.qos_requires_clocks = true,
->  };
->  
->  static struct qcom_icc_bcm * const aggre2_noc_bcms[] = {
-> @@ -1827,16 +1488,7 @@ static struct qcom_icc_node * const aggre2_noc_nodes[] = {
->  	[SLAVE_A2NOC_SNOC] = &qns_a2noc_snoc,
->  };
->  
-> -static const struct regmap_config x1e80100_aggre2_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x1c400,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_aggre2_noc = {
-> -	.config = &x1e80100_aggre2_noc_regmap_config,
->  	.nodes = aggre2_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(aggre2_noc_nodes),
->  	.bcms = aggre2_noc_bcms,
-> @@ -1921,16 +1573,7 @@ static struct qcom_icc_node * const cnoc_cfg_nodes[] = {
->  	[SLAVE_TCU] = &xs_sys_tcu_cfg,
->  };
->  
-> -static const struct regmap_config x1e80100_cnoc_cfg_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x6600,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_cnoc_cfg = {
-> -	.config = &x1e80100_cnoc_cfg_regmap_config,
->  	.nodes = cnoc_cfg_nodes,
->  	.num_nodes = ARRAY_SIZE(cnoc_cfg_nodes),
->  	.bcms = cnoc_cfg_bcms,
-> @@ -1960,16 +1603,7 @@ static struct qcom_icc_node * const cnoc_main_nodes[] = {
->  	[SLAVE_PCIE_6B] = &xs_pcie_6b,
->  };
->  
-> -static const struct regmap_config x1e80100_cnoc_main_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x14400,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_cnoc_main = {
-> -	.config = &x1e80100_cnoc_main_regmap_config,
->  	.nodes = cnoc_main_nodes,
->  	.num_nodes = ARRAY_SIZE(cnoc_main_nodes),
->  	.bcms = cnoc_main_bcms,
-> @@ -1999,16 +1633,7 @@ static struct qcom_icc_node * const gem_noc_nodes[] = {
->  	[SLAVE_MEM_NOC_PCIE_SNOC] = &qns_pcie,
->  };
->  
-> -static const struct regmap_config x1e80100_gem_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x311200,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_gem_noc = {
-> -	.config = &x1e80100_gem_noc_regmap_config,
->  	.nodes = gem_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(gem_noc_nodes),
->  	.bcms = gem_noc_bcms,
-> @@ -2023,16 +1648,7 @@ static struct qcom_icc_node * const lpass_ag_noc_nodes[] = {
->  	[SLAVE_LPASS_GEM_NOC] = &qns_lpass_ag_noc_gemnoc,
->  };
->  
-> -static const struct regmap_config x1e80100_lpass_ag_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0xe080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_lpass_ag_noc = {
-> -	.config = &x1e80100_lpass_ag_noc_regmap_config,
->  	.nodes = lpass_ag_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(lpass_ag_noc_nodes),
->  	.bcms = lpass_ag_noc_bcms,
-> @@ -2048,16 +1664,7 @@ static struct qcom_icc_node * const lpass_lpiaon_noc_nodes[] = {
->  	[SLAVE_LPIAON_NOC_LPASS_AG_NOC] = &qns_lpass_aggnoc,
->  };
->  
-> -static const struct regmap_config x1e80100_lpass_lpiaon_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x19080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_lpass_lpiaon_noc = {
-> -	.config = &x1e80100_lpass_lpiaon_noc_regmap_config,
->  	.nodes = lpass_lpiaon_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(lpass_lpiaon_noc_nodes),
->  	.bcms = lpass_lpiaon_noc_bcms,
-> @@ -2072,16 +1679,7 @@ static struct qcom_icc_node * const lpass_lpicx_noc_nodes[] = {
->  	[SLAVE_LPICX_NOC_LPIAON_NOC] = &qns_lpi_aon_noc,
->  };
->  
-> -static const struct regmap_config x1e80100_lpass_lpicx_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x3a200,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_lpass_lpicx_noc = {
-> -	.config = &x1e80100_lpass_lpicx_noc_regmap_config,
->  	.nodes = lpass_lpicx_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(lpass_lpicx_noc_nodes),
->  	.bcms = lpass_lpicx_noc_bcms,
-> @@ -2126,16 +1724,7 @@ static struct qcom_icc_node * const mmss_noc_nodes[] = {
->  	[SLAVE_SERVICE_MNOC] = &srvc_mnoc,
->  };
->  
-> -static const struct regmap_config x1e80100_mmss_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x5b800,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_mmss_noc = {
-> -	.config = &x1e80100_mmss_noc_regmap_config,
->  	.nodes = mmss_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(mmss_noc_nodes),
->  	.bcms = mmss_noc_bcms,
-> @@ -2151,16 +1740,7 @@ static struct qcom_icc_node * const nsp_noc_nodes[] = {
->  	[SLAVE_CDSP_MEM_NOC] = &qns_nsp_gemnoc,
->  };
->  
-> -static const struct regmap_config x1e80100_nsp_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0xe080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_nsp_noc = {
-> -	.config = &x1e80100_nsp_noc_regmap_config,
->  	.nodes = nsp_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(nsp_noc_nodes),
->  	.bcms = nsp_noc_bcms,
-> @@ -2177,16 +1757,7 @@ static struct qcom_icc_node * const pcie_center_anoc_nodes[] = {
->  	[SLAVE_ANOC_PCIE_GEM_NOC] = &qns_pcie_mem_noc,
->  };
->  
-> -static const struct regmap_config x1e80100_pcie_center_anoc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x7000,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_pcie_center_anoc = {
-> -	.config = &x1e80100_pcie_center_anoc_regmap_config,
->  	.nodes = pcie_center_anoc_nodes,
->  	.num_nodes = ARRAY_SIZE(pcie_center_anoc_nodes),
->  	.bcms = pcie_center_anoc_bcms,
-> @@ -2203,16 +1774,7 @@ static struct qcom_icc_node * const pcie_north_anoc_nodes[] = {
->  	[SLAVE_PCIE_NORTH] = &qns_pcie_north_gem_noc,
->  };
->  
-> -static const struct regmap_config x1e80100_pcie_north_anoc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x9080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_pcie_north_anoc = {
-> -	.config = &x1e80100_pcie_north_anoc_regmap_config,
->  	.nodes = pcie_north_anoc_nodes,
->  	.num_nodes = ARRAY_SIZE(pcie_north_anoc_nodes),
->  	.bcms = pcie_north_anoc_bcms,
-> @@ -2231,16 +1793,7 @@ static struct qcom_icc_node * const pcie_south_anoc_nodes[] = {
->  	[SLAVE_PCIE_SOUTH] = &qns_pcie_south_gem_noc,
->  };
->  
-> -static const struct regmap_config x1e80100_pcie_south_anoc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0xd080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_pcie_south_anoc = {
-> -	.config = &x1e80100_pcie_south_anoc_regmap_config,
->  	.nodes = pcie_south_anoc_nodes,
->  	.num_nodes = ARRAY_SIZE(pcie_south_anoc_nodes),
->  	.bcms = pcie_south_anoc_bcms,
-> @@ -2262,16 +1815,7 @@ static struct qcom_icc_node * const system_noc_nodes[] = {
->  	[SLAVE_SNOC_GEM_NOC_SF] = &qns_gemnoc_sf,
->  };
->  
-> -static const struct regmap_config x1e80100_system_noc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x1c080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_system_noc = {
-> -	.config = &x1e80100_system_noc_regmap_config,
->  	.nodes = system_noc_nodes,
->  	.num_nodes = ARRAY_SIZE(system_noc_nodes),
->  	.bcms = system_noc_bcms,
-> @@ -2287,16 +1831,7 @@ static struct qcom_icc_node * const usb_center_anoc_nodes[] = {
->  	[SLAVE_USB_NOC_SNOC] = &qns_aggre_usb_snoc,
->  };
->  
-> -static const struct regmap_config x1e80100_usb_center_anoc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x8800,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_usb_center_anoc = {
-> -	.config = &x1e80100_usb_center_anoc_regmap_config,
->  	.nodes = usb_center_anoc_nodes,
->  	.num_nodes = ARRAY_SIZE(usb_center_anoc_nodes),
->  	.bcms = usb_center_anoc_bcms,
-> @@ -2312,21 +1847,11 @@ static struct qcom_icc_node * const usb_north_anoc_nodes[] = {
->  	[SLAVE_AGGRE_USB_NORTH] = &qns_aggre_usb_north_snoc,
->  };
->  
-> -static const struct regmap_config x1e80100_usb_north_anoc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0x7080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_usb_north_anoc = {
-> -	.config = &x1e80100_usb_north_anoc_regmap_config,
->  	.nodes = usb_north_anoc_nodes,
->  	.num_nodes = ARRAY_SIZE(usb_north_anoc_nodes),
->  	.bcms = usb_north_anoc_bcms,
->  	.num_bcms = ARRAY_SIZE(usb_north_anoc_bcms),
-> -	.qos_requires_clocks = true,
->  };
->  
->  static struct qcom_icc_bcm * const usb_south_anoc_bcms[] = {
-> @@ -2342,21 +1867,11 @@ static struct qcom_icc_node * const usb_south_anoc_nodes[] = {
->  	[SLAVE_AGGRE_USB_SOUTH] = &qns_aggre_usb_south_snoc,
->  };
->  
-> -static const struct regmap_config x1e80100_usb_south_anoc_regmap_config = {
-> -	.reg_bits = 32,
-> -	.reg_stride = 4,
-> -	.val_bits = 32,
-> -	.max_register = 0xf080,
-> -	.fast_io = true,
-> -};
-> -
->  static const struct qcom_icc_desc x1e80100_usb_south_anoc = {
-> -	.config = &x1e80100_usb_south_anoc_regmap_config,
->  	.nodes = usb_south_anoc_nodes,
->  	.num_nodes = ARRAY_SIZE(usb_south_anoc_nodes),
->  	.bcms = usb_south_anoc_bcms,
->  	.num_bcms = ARRAY_SIZE(usb_south_anoc_bcms),
-> -	.qos_requires_clocks = true,
->  };
->  
->  static const struct of_device_id qnoc_of_match[] = {
-> -- 
-> 2.47.3
-> 
+> Reproduced on i.MX8MP with an Android 6.18 kernel: running an H.264
+> decode and an H.264 encode concurrently hits the failure within one to
+> two hours. A VPU comes up stuck in reset, its block registers read back
+> all zeros, and the decoder times out or the encoder fails its format
+> check.
+>
+> With this patch applied the same test ran overnight, over 14 hours,
+> without a single occurrence.
+> ---
+>  drivers/pmdomain/imx/imx8m-blk-ctrl.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
+> index 479789009c7f..f8105e87ea3c 100644
+> --- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
+> +++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/pm_runtime.h>
+>  #include <linux/regmap.h>
+>  #include <linux/clk.h>
+> +#include <linux/mutex.h>
+>
+>  #include <dt-bindings/power/imx8mm-power.h>
+>  #include <dt-bindings/power/imx8mn-power.h>
+> @@ -34,6 +35,12 @@ struct imx8m_blk_ctrl {
+>  	struct regmap *regmap;
+>  	struct imx8m_blk_ctrl_domain *domains;
+>  	struct genpd_onecell_data onecell_data;
+> +	/*
+> +	 * Serializes the blk-ctrl reset/clock sequence across sibling domains;
+> +	 * their transitions interact through the shared VPUMIX bus domain,
+> +	 * VPU_NOC and the not-ack-verified ADB400 handshake (ERR050531).
+> +	 */
+> +	struct mutex power_lock;
+>  };
+>
+>  struct imx8m_blk_ctrl_domain_data {
+> @@ -98,6 +105,8 @@ static int imx8m_blk_ctrl_power_on(struct generic_pm_domain *genpd)
+>  	struct imx8m_blk_ctrl *bc = domain->bc;
+>  	int ret;
+>
+> +	guard(mutex)(&bc->power_lock);
+> +
+>  	/* make sure bus domain is awake */
+>  	ret = pm_runtime_get_sync(bc->bus_power_dev);
+>  	if (ret < 0) {
+> @@ -164,6 +173,8 @@ static int imx8m_blk_ctrl_power_off(struct generic_pm_domain *genpd)
+>  	const struct imx8m_blk_ctrl_domain_data *data = domain->data;
+>  	struct imx8m_blk_ctrl *bc = domain->bc;
+>
+> +	guard(mutex)(&bc->power_lock);
+> +
+>  	/* put devices into reset and disable clocks */
+>  	if (data->mipi_phy_rst_mask)
+>  		regmap_clear_bits(bc->regmap, BLK_MIPI_RESET_DIV, data->mipi_phy_rst_mask);
+> @@ -202,6 +213,10 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
+>
+>  	bc->dev = dev;
+>
+> +	ret = devm_mutex_init(dev, &bc->power_lock);
+> +	if (ret)
+> +		return ret;
+> +
+>  	bc_data = of_device_get_match_data(dev);
+>
+>  	base = devm_platform_ioremap_resource(pdev, 0);
+>
+> ---
+> base-commit: 6e30287eaf3e41b86dfb86df3b811526693d74b4
+> change-id: 20260911-imx8mp-blk-ctrl-c46f26783073
+>
+>
