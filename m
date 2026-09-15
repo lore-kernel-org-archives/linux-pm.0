@@ -1,73 +1,73 @@
 Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8A1347F3A0;
-	Tue, 15 Sep 2026 10:45:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6E69488232;
+	Tue, 15 Sep 2026 10:46:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789469153; cv=none; b=h0P9E7sx9+ak88bprmX2RF+Uo5/1FySQlyKJBbQvcVURB6/WJvhgFMwrJruGGShU1I1R2YGQtKL7FkD45Og8zOySGp6cE2j+bP2VlqZ9FGjHa154cCJvi/65OV9owoM0m1WXlromUxhe1ZlNNY3dXOjpFYAKVd8abPKHBsKdYow=
+	t=1789469166; cv=none; b=gZT0wwphSasLXZS47R473gCkBRfXekLJD6jaRBEnAG7SjwifBbqM2Jdk2i//NQhwID3a+PAd9H1dopy3WG6z87n0n5Hz8/kk+r+QFaEY9bfeKa1flWPcL1rfJHQ92eM+MA1Iwm97knU3k32/50R8rCZSvBZ/4e+jEHE+0zWnmuM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789469153; c=relaxed/simple;
-	bh=IE3xWBXDo6VtwItgviJPad/JRbM0VHzIDuwI7KgwfBc=;
+	s=arc-20240116; t=1789469166; c=relaxed/simple;
+	bh=ZUgjix6KuhmcgRLEHDMNrkOpuWTJXcIFB15xJ/dQR5c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fz/Qee2Ua9RB1xWCTSPNT/jeTAPZxjO+2+xq85T4DFHPgd/zpMrr7SVeJYG8NpOTvC6csPzAlHmdkiwWLY3U7gqoFkkkrsEspMDCbYA90d9xyGVFT3BZlKXVMyuCfcu/REWAjLa9i84Cv1KPFV+Tl9EloEHg/asXBRzY8IaJe94=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=aOe9tJc/; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=ZEtvQCXW; arc=none smtp.client-ip=202.12.124.141
+	 MIME-Version; b=uDmYXsa0K1zAFezJ/5lM9YTdY4URnXbhf321Lb1Ej4Q/VVKbusUn/lrCon8ItaVt/nZ1q1/5eg82uCag8WStskgJqyn1gwKzpt2qQgGt6qc1g3S9+C33vzXI8YqCSR1vECy6qFWvEBYAzBE64LsKFPb44vImX8DApZwmRRx5pC8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=FK7zKJSA; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=F1GfD4dG; arc=none smtp.client-ip=202.12.124.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="aOe9tJc/";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="ZEtvQCXW"
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailflow.stl.internal (Postfix) with ESMTP id A228E130050E;
-	Tue, 15 Sep 2026 06:45:50 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="FK7zKJSA";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="F1GfD4dG"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.stl.internal (Postfix) with ESMTP id 49AB3130050E;
+	Tue, 15 Sep 2026 06:46:02 -0400 (EDT)
 Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-06.internal (MEProxy); Tue, 15 Sep 2026 06:45:51 -0400
+  by phl-compute-04.internal (MEProxy); Tue, 15 Sep 2026 06:46:03 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1789469150; x=
-	1789476350; bh=eIbu+FRnuIaeFrU8yxIF1UYO5RWNoHkH+v38kjzzSXI=; b=a
-	Oe9tJc/KbSPm6LnSS0W12ygsu/gOyiXfDmTbaLCRRPdRXTmbsCm6PD0/UPF+CnLU
-	A21GDL+L5wchSKXPquENUGYGvK+qt4wb6pOr/f+W3R1rJuuAg1Ay8JvvRlAinSRb
-	DfkluYUaG3AF3zfDLFeVcsQ0ozCom/e4YYbcUowRQmpRXYuini9pSLDqsvKQiSJP
-	uXa4xL6vudnALo9WXSldUkMZn78ALH0U+W8J30uuy6SfONq0OgdWYBn7CliDNEBM
-	dTqro4+Zas5EsiCAviCUD3lK+fFu/GRribdi3bOOOyNSWuxDQeyhUEKC9+fd7Mip
-	kEazL0lM9SoE82n97YYnA==
+	:reply-to:subject:subject:to:to; s=fm2; t=1789469162; x=
+	1789476362; bh=Xf0AIYtJ/K+4XytoHu51Tg+JXdKoXOAcW1Dw8eFawmY=; b=F
+	K7zKJSAiRWZGOrxhRnrUIigJhtKny+A8RNuj1pCuOiM4f+6Mqt2rvHIq7MeHk6TE
+	KRY0FQb8ZPbpHahFh28Mx1QEbQcaRztFy7KFcfL6F+XXSVpmgXuLNAbWH73xplQn
+	p+0R9PP7ukG5Pn3LAQ8NNsyhy86RPn2+gw3q5MrtBaFP2k77aj0D/CVQmCXGqBNZ
+	EIa2qlYvib9KVEdh9LLYkKCL2QyiSmBBiJDAMovMNgQC51ipSUM60dQ+qrCmg/94
+	Xq4+HvaW8UIvaEjx3NFZAFL6dASVrx6V7xWnysEoiIKpo4enEGaBjWmQ9Nrpd2rJ
+	7ZllBxnPHGdZEHYiwuV2g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm1; t=1789469150; x=1789476350; bh=e
-	Ibu+FRnuIaeFrU8yxIF1UYO5RWNoHkH+v38kjzzSXI=; b=ZEtvQCXWbG1zhneiL
-	F6wLta87fZXvyI5HZedfG+4Ml9SoBwWV3u455yXpjoLv+GaN1IdvHXDcmA6g4OIk
-	s1TG3D2elRJ7IzPxugBTNHYQL15/naka1eg87nxpSIrxj+oL6Pp6q3rX5s6rPVNX
-	jXRk4qHgvVg3c1Nu0mEDIg1URo+TS9G0LN5L4ewrsmO/amS0sawkEupT/B//I4zk
-	tA5jCuyWoEiFm3tqL9DVLC7min53CxFUqqeFq869PhuLELlrlm5HuWcbm5Pt9Ya4
-	QR6O5fc8rLV/jn7lxz1igAuo56dVeWjrDGF0/6UPBzNVKfBT4YB0ouDPE9dda3RY
-	M+hZQ==
-X-ME-Sender: <xms:3iGpaqv0GXweuwS5SgiB7QJPFE6r3Bzv1SDX4qDWeXU6dA2IM_4sfw>
-    <xme:3iGpavmuim7q-1lUUpRe2LPnSkiSPbed0_LDX-AtZI_GPAvTRFOAeH-gseFGNOfzN
-    ewovpn3U0x_q_fnk2E8gA_CBovUZSSm8-IX8QfLPOHrHQggVDVV_Hb_>
-X-ME-Received: <xmr:3iGpajmUouBlCtABrC2JkhG3ET-BD9NZYFX6WsleLeQmokEO_uWZcRoHiyCSGCUcoH3IKqXYmg>
-X-ME-Proxy-Cause: dmFkZTEvgn30TE/Bhy7j+lDgP7gXmnxf1yEA4+9JDGkkLDKOX+PjWS6C4wfYB6bRewT1h4
-    g+oMcdzBaiIBs5c+Pz0dQXZKfUwZnHiQVlJVJDqMWGJD2749OJ0l99nR2edJCf/ZcGPYLu
-    30RXGTuoiFK6E8ovSjrRraOKQw1/yZ9qQ/P4z8BMLsmS14llkOiSgUnfVjorc51oae8LTo
-    anVnmEPQ5HlX5K1+WHVdnXvbEVz7yNCh4wXVnb5mrixp2KjAAisQetPkg2Ry4FRfbKhSiZ
-    90+dZVL2qmx3uYvp96MNB3kt9H9Tf++stO3hlho9KW9Zr3E3C1i+M3opDz8IhDGp0X2eHi
-    fM6eIWurbrqHYUdEAqZyIBGPJyjfsgnsEWYhWmUYhRbgy4VD0rHKaB7ZnAGRG+/MsvY6NO
-    S+r9ZhbQ1otdM7Ol1ucyRq4VXv0s5TUXXHcQwQsI5mZ02nENOvZVUGsCpN9JpkbB4YYUcz
-    RTAAoj143E677ktRlQg9bhB6TcCDFblU5e7CZoYoHac1JjLDQ11yw3XTAT0kil5BJXIK7W
-    c8LX/GvSNYmfL2HuNK7ywErbjPKrUj9ERcRxrNU0c42kY7+uWK146/uWIvgekCF19wUmfW
-    nJUKhxHkiGVHZ+WfCvBh7vbopaHA74c0qMQ2tn5xpMhJM8LY5k1jKjxd1MdQ
-X-ME-Proxy: <xmx:3iGpapeR5VysNVF88vNMcf5rz41adtAQL-wA2GLMdLe87jm7mAMXKw>
-    <xmx:3iGpapJV2lFNFwL5XkFLZL6HNt_8xoC39bawmzRE4zb2hUzZfV33kw>
-    <xmx:3iGpas6O9TA4ge4biRGOQHPGcz-XeuZ61sr6tMaGYv7mp8lTUR0JQQ>
-    <xmx:3iGpagQINaQo98fdGBX6Re-IRynPtXjEqdFAmpcT-xh_8MWFDI4JmQ>
-    <xmx:3iGpaoyEJwybJ-owMxxh0ZuEs2xiNvHEkW1MFcO2-wwh2CPjYA_pyUBT>
+	:x-me-sender:x-sasl-enc; s=fm1; t=1789469162; x=1789476362; bh=X
+	f0AIYtJ/K+4XytoHu51Tg+JXdKoXOAcW1Dw8eFawmY=; b=F1GfD4dG8LW1btkcf
+	IKqwPAzPDvbs9vn9APljTXY3kwIMBsdbnIh0GvhhhfsbIZtEyhBw2Xz4sN210r8x
+	s68Au3RKrkEEYj4ma+cdhlL0r46Iy78iVfrqap60PRQXf3pv3E9KVuZ1Kdsc9XZi
+	JnCCQ+ky8tKv1Y413kZDHmfcKHEDftm0WYeHV74AqKMwUaAfnQg+8p7jAED0wH58
+	421BJcG4PMjJUY9XOO7yC8Pm33x6sf7XFXtR3smWqMyA9Lga9LM2Rt0kvLDMBWNW
+	T2cs1S6CBoYgvDyv+JDffT6BIZnwSW8+OdudJ6s8g3g9hVhFt6DTu+LuRRO3Nij1
+	H+LbA==
+X-ME-Sender: <xms:6iGpajzAOZSZWO6iDrxk4V13zr4gqB_OcqL4xe4Pv9I-b8rfO8r43A>
+    <xme:6iGpasAfczlaaUBZRX1PS526tBLpScORHUm83XWpGNj8TNZ_ZUwyTS9KNkOneeDsg
+    mojNxIcTMkZFzEJAlDC5fb5oBNoK9BmNLbYMECkExQIXB1W97Q5i5w>
+X-ME-Received: <xmr:6iGpahJEgD3Eq5T8EG3JlEPQb9V9jZLumb_rCu4DNOAJFWdsmXEzD5vytlpyVj7VC-heIvPgHg>
+X-ME-Proxy-Cause: dmFkZTFc/f+iTQ6Xfq8OwsHzZalkNFS5P1a6mZ7+SKzJ+aIlWQZ9LIu8SZaXig2kry8E4l
+    fqsKlj3MQKO04+Ry1s2dzksMu8//PfpznkMcS7S0FTNR02UB+H90E0R50vg1i9QArKyNlm
+    gX8Ab8omn0B6sAhsguvaDuBppxzYAQwY06yjONgTFYdDGGfRGS/a9g4hE7Ar4SFi/MRz61
+    2uJP5RE1b7aIo73DUWiBj4be9ejQ2H5+el8KS4AzHHeG1WdfgJuy1tS41N487ll4GlcDe5
+    ou0gTnVo40xv1I79htHXpLrcsmhzpMHZEV2IyCxqzqtgB8RdVggG44bhnSZOFuyLoMpNWW
+    dP7hbzFa4tVYG9RSdC6OS+8nsNt7SsBKsUuikCv1pGIYBr0cotRMh/ZtFxLeFUihTNL8U8
+    mDPRA4rgIn2aNkqyygtrFXOg1hhCf3gPY37A7R4YxLucVh7qZeMsZH05asCMOVar4kKiZ/
+    QD6fWwST2GE757bACSNj/nlS1v+Wc/Q1alo4Sm9QtkFqCS34p9Zc5NqaViT16f6MezT23k
+    YVpK7cIQ5xBGf+dL+ucm4BCPRzH00voqKa7nNKvKBVNzSOZT35RbrYbrEDkZFN6PvpLgg/
+    0FF7yK+bNauUUWSOMpdZP2RXXE9SG7DU8FB38qVPtovZ5/T1TgMnHGAOl8vQ
+X-ME-Proxy: <xmx:6iGpavHVdiMhQ0YzVruj00Xj43k1lIVpnjprulNQ8-VrMNT_MBv87Q>
+    <xmx:6iGpakGRgcVb1PFyVrCIlA1yeX0-bq_uckAU96rqdTwFiIAc5jVgDQ>
+    <xmx:6iGpavtkCaoeyscvl6rgSrw6a3UekIOrnv5ii3N4o_-SSpKloaVgLg>
+    <xmx:6iGpanaCsJFooP5kwiRuYLISUqemKPq6yjKJogPx3iNMAmn5MNhRNw>
+    <xmx:6iGparlW1S1jTQ7t76nEh_oqKCLNkeVOUJuqnuHVz8ZXMIIvboU3Xdlj>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 15 Sep 2026 06:45:42 -0400 (EDT)
+ 15 Sep 2026 06:45:53 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -97,9 +97,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v13 11/14] accel/rocket: select the per-core clock and reset counts from match data
-Date: Tue, 15 Sep 2026 22:43:25 +1200
-Message-ID: <20260915104328.45901-12-gahing@gahingwoo.com>
+Subject: [PATCH v13 12/14] accel/rocket: add RK3576 NPU (RKNN) support
+Date: Tue, 15 Sep 2026 22:43:26 +1200
+Message-ID: <20260915104328.45901-13-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260915104328.45901-1-gahing@gahingwoo.com>
 References: <20260915104328.45901-1-gahing@gahingwoo.com>
@@ -111,156 +111,281 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The RK3576 carries the same RKNN block with a different set of clocks and
-resets, so the counts cannot stay compile-time constants. Add a soc_data
-struct to the of_device_id match data and take the bulk counts from it.
-RK3588 keeps four clocks and two resets, so nothing changes for it, and the
-arrays keep their present sizes: the SoC that needs a longer one grows it
-in the patch that adds the names.
+The RK3576 has two cores of the same RKNN block and a few platform
+differences:
 
-rocket_core_reset() is switched over as well. It is the same array, and
-leaving it on ARRAY_SIZE() would walk entries that were never acquired once
-a SoC asks for fewer.
+ - the CBUF (convolution buffer) has its own clock domain, so the core
+   needs six clocks rather than four;
+ - there is no per-core hclk reset. The CRU has SRST_A_RKNN0 and
+   SRST_A_RKNN1 but no SRST_H_RKNN0 or SRST_H_RKNN1, so a core takes one
+   reset where RK3588 takes two;
+ - the NPU spans two power domains, and a device with more than one is
+   skipped by the driver-core single-domain auto-attach, so the list has
+   to be attached explicitly;
+ - PC_TASK_CON packs the task number with sixteen bits rather than
+   twelve, moving the two controls above it up by four and adding a third.
 
-soc is checked at the top of rocket_probe(), before anything is allocated
-and before the per-core fields are stored. of_device_get_match_data()
-returns NULL for a device that bound by name rather than by compatible, and
-such a device has no of_node, so it was never counted by the walk of
-matching nodes that sizes rdev->cores[]. Storing into that array first and
-checking afterwards would be writing past the end under the check's own
-premise, and returning from there is the one error path in this function
-that would skip the unwind the path below it does.
+That last one is the reason this series has been reporting, since v3, that
+the block accepts exactly one task per reset. rocket_registers.h is
+generated from the RK3588 description, so writing it unchanged to an RK3576
+asks for task_number 0x7001, which is 28673 tasks, and puts
+TASK_COUNT_CLEAR inside the sixteen-bit task number, where it inflates the
+count rather than clearing it. The counter is then only ever cleared by a
+reset.
+
+The layout was confirmed by Chaoyi Chen of Rockchip, including the third
+control at BIT(18), task_last_layer_clear, which belongs on every submit
+alongside the count clear:
+
+  https://lore.kernel.org/all/4f300b78-d96d-4d98-8819-dc292b0c9b97@rock-chips.com/
+
+With that written correctly a job of several tasks runs to completion, the
+completion interrupt arrives, and /proc/interrupts counts up. A convolution
+submitted three times with three different inputs is byte exact against the
+CPU reference each time, with no reset in between and with nothing retiring
+the job but the interrupt.
+
+Counting the cores now walks the driver's own match table instead of a
+second, hand-kept list of compatibles. The array sized from that count is
+indexed by every core that goes on to probe, so the two lists cannot be
+allowed to disagree.
+
+All of it hangs off the soc_data added earlier, so the RK3588 path keeps
+its existing counts and behaviour.
+
+The match table moves to rocket_drv.h so rocket_device.c can walk it with
+for_each_matching_node() rather than repeating a for_each_compatible_node()
+loop per SoC, which also keeps num_cores in step with the table that sizes
+the array it counts into. The declaration needs struct of_device_id, taken
+from <linux/device-id/of.h> rather than <linux/mod_devicetable.h>, which
+carries every subsystem's tables with it.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 ---
- drivers/accel/rocket/rocket_core.c |  8 ++++----
- drivers/accel/rocket/rocket_core.h |  7 +++++++
- drivers/accel/rocket/rocket_drv.c  | 26 +++++++++++++++++++++++---
- 3 files changed, 34 insertions(+), 7 deletions(-)
+ drivers/accel/rocket/rocket_core.c   | 20 ++++++++++++++
+ drivers/accel/rocket/rocket_core.h   |  8 +++---
+ drivers/accel/rocket/rocket_device.c |  7 ++++-
+ drivers/accel/rocket/rocket_drv.c    | 16 +++++++++---
+ drivers/accel/rocket/rocket_drv.h    |  2 ++
+ drivers/accel/rocket/rocket_job.c    | 39 +++++++++++++++++++++++++---
+ 6 files changed, 81 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
-index 5dd260bac..b202d1581 100644
+index b202d1581..91f690176 100644
 --- a/drivers/accel/rocket/rocket_core.c
 +++ b/drivers/accel/rocket/rocket_core.c
-@@ -23,7 +23,7 @@ int rocket_core_init(struct rocket_core *core)
+@@ -8,6 +8,7 @@
+ #include <linux/err.h>
+ #include <linux/iommu.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_domain.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/reset.h>
  
+@@ -21,6 +22,7 @@ int rocket_core_init(struct rocket_core *core)
+ 	u32 version;
+ 	int err = 0;
+ 
++	/* RK3576 has no per-core hclk reset, so it takes srst_a alone. */
  	core->resets[0].id = "srst_a";
  	core->resets[1].id = "srst_h";
--	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(core->resets),
-+	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, core->soc->num_resets,
- 						    core->resets);
- 	if (err)
- 		return dev_err_probe(dev, err, "failed to get resets for core %d\n", core->index);
-@@ -32,7 +32,7 @@ int rocket_core_init(struct rocket_core *core)
+ 	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, core->soc->num_resets,
+@@ -32,6 +34,9 @@ int rocket_core_init(struct rocket_core *core)
  	core->clks[1].id = "hclk";
  	core->clks[2].id = "npu";
  	core->clks[3].id = "pclk";
--	err = devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
-+	err = devm_clk_bulk_get(dev, core->soc->num_clks, core->clks);
++	/* RK3576 clocks the CBUF separately; the compute path stalls without these. */
++	core->clks[4].id = "aclk_cbuf";
++	core->clks[5].id = "hclk_cbuf";
+ 	err = devm_clk_bulk_get(dev, core->soc->num_clks, core->clks);
  	if (err)
  		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
- 
-@@ -109,9 +109,9 @@ void rocket_core_fini(struct rocket_core *core)
- 
- void rocket_core_reset(struct rocket_core *core)
- {
--	reset_control_bulk_assert(ARRAY_SIZE(core->resets), core->resets);
-+	reset_control_bulk_assert(core->soc->num_resets, core->resets);
- 
- 	udelay(10);
- 
--	reset_control_bulk_deassert(ARRAY_SIZE(core->resets), core->resets);
-+	reset_control_bulk_deassert(core->soc->num_resets, core->resets);
- }
-diff --git a/drivers/accel/rocket/rocket_core.h b/drivers/accel/rocket/rocket_core.h
-index f6d738285..ba74c5339 100644
---- a/drivers/accel/rocket/rocket_core.h
-+++ b/drivers/accel/rocket/rocket_core.h
-@@ -27,9 +27,16 @@
- #define rocket_core_writel(core, reg, value) \
- 	writel(value, (core)->core_iomem + (REG_CORE_##reg) - REG_CORE_S_STATUS)
- 
-+/* Per-SoC differences, selected by the of_device_id match data. */
-+struct rocket_soc_data {
-+	unsigned int num_clks;		/* clk_bulk count */
-+	unsigned int num_resets;	/* reset_bulk count */
-+};
-+
- struct rocket_core {
- 	struct device *dev;
- 	struct rocket_device *rdev;
-+	const struct rocket_soc_data *soc;
- 	unsigned int index;
- 
- 	int irq;
-diff --git a/drivers/accel/rocket/rocket_drv.c b/drivers/accel/rocket/rocket_drv.c
-index 8bbbce594..7ed64c131 100644
---- a/drivers/accel/rocket/rocket_drv.c
-+++ b/drivers/accel/rocket/rocket_drv.c
-@@ -159,8 +159,22 @@ static const struct drm_driver rocket_drm_driver = {
- 
- static int rocket_probe(struct platform_device *pdev)
- {
-+	const struct rocket_soc_data *soc = of_device_get_match_data(&pdev->dev);
- 	int ret;
+@@ -60,6 +65,21 @@ int rocket_core_init(struct rocket_core *core)
+ 	if (err)
+ 		return err;
  
 +	/*
-+	 * soc is dereferenced without a check by every one of its users, and
-+	 * rocket_core_init() below is the first of them. A device that bound
-+	 * by name rather than by compatible has no match data, so fail before
-+	 * anything is allocated rather than at the first dereference: the
-+	 * number of cores comes from a walk of matching DT nodes, and a device
-+	 * with no of_node was never counted by it.
++	 * RK3576 spans two power domains, and a multi-domain device is skipped
++	 * by the driver-core single-domain auto-attach, so attach the list here.
++	 * This goes before the first thing that would have to be unwound, so a
++	 * failure can simply return.
 +	 */
-+	if (!soc) {
-+		dev_err(&pdev->dev, "no match data for this device\n");
-+		return -ENODEV;
++	if (core->soc->multi_power_domain) {
++		struct dev_pm_domain_list *pd_list;
++
++		err = devm_pm_domain_attach_list(dev, NULL, &pd_list);
++		if (err < 0)
++			return dev_err_probe(dev, err,
++					     "failed to attach NPU power domains\n");
 +	}
 +
- 	if (rdev == NULL) {
- 		/* First core probing, initialize DRM device. */
- 		rdev = rocket_device_init(drm_dev, &rocket_drm_driver);
-@@ -176,6 +190,7 @@ static int rocket_probe(struct platform_device *pdev)
+ 	core->iommu_group = iommu_group_get(dev);
  
- 	rdev->cores[core].rdev = rdev;
- 	rdev->cores[core].dev = &pdev->dev;
-+	rdev->cores[core].soc = soc;
- 	rdev->cores[core].index = core;
+ 	err = rocket_job_init(core);
+diff --git a/drivers/accel/rocket/rocket_core.h b/drivers/accel/rocket/rocket_core.h
+index ba74c5339..8c8d1f453 100644
+--- a/drivers/accel/rocket/rocket_core.h
++++ b/drivers/accel/rocket/rocket_core.h
+@@ -29,8 +29,10 @@
  
- 	rdev->num_cores++;
-@@ -213,8 +228,13 @@ static void rocket_remove(struct platform_device *pdev)
- 	}
- }
+ /* Per-SoC differences, selected by the of_device_id match data. */
+ struct rocket_soc_data {
+-	unsigned int num_clks;		/* clk_bulk count */
+-	unsigned int num_resets;	/* reset_bulk count */
++	unsigned int num_clks;		/* clk_bulk count: 4 base, 6 with CBUF */
++	unsigned int num_resets;	/* reset_bulk count: 2 base, 1 on RK3576 */
++	bool multi_power_domain;	/* device spans more than one PM domain */
++	bool task_con_16bit;		/* PC_TASK_CON uses the 16-bit task number */
+ };
  
-+static const struct rocket_soc_data rk3588_soc_data = {
-+	.num_clks = 4,
-+	.num_resets = 2,
+ struct rocket_core {
+@@ -43,7 +45,7 @@ struct rocket_core {
+ 	void __iomem *pc_iomem;
+ 	void __iomem *cna_iomem;
+ 	void __iomem *core_iomem;
+-	struct clk_bulk_data clks[4];
++	struct clk_bulk_data clks[6];
+ 	struct reset_control_bulk_data resets[2];
+ 
+ 	struct iommu_group *iommu_group;
+diff --git a/drivers/accel/rocket/rocket_device.c b/drivers/accel/rocket/rocket_device.c
+index 46e6ee1e7..923add5bd 100644
+--- a/drivers/accel/rocket/rocket_device.c
++++ b/drivers/accel/rocket/rocket_device.c
+@@ -9,6 +9,7 @@
+ #include <linux/of.h>
+ 
+ #include "rocket_device.h"
++#include "rocket_drv.h"
+ 
+ struct rocket_device *rocket_device_init(struct platform_device *pdev,
+ 					 const struct drm_driver *rocket_drm_driver)
+@@ -27,7 +28,11 @@ struct rocket_device *rocket_device_init(struct platform_device *pdev,
+ 	ddev = &rdev->ddev;
+ 	dev_set_drvdata(dev, rdev);
+ 
+-	for_each_compatible_node(core_node, NULL, "rockchip,rk3588-rknn-core")
++	/*
++	 * Count over the same match table the platform driver binds with, so
++	 * that a core added there is counted here without a second edit.
++	 */
++	for_each_matching_node(core_node, rocket_dt_match)
+ 		if (of_device_is_available(core_node))
+ 			num_cores++;
+ 
+diff --git a/drivers/accel/rocket/rocket_drv.c b/drivers/accel/rocket/rocket_drv.c
+index 7ed64c131..f387b4656 100644
+--- a/drivers/accel/rocket/rocket_drv.c
++++ b/drivers/accel/rocket/rocket_drv.c
+@@ -231,13 +231,23 @@ static void rocket_remove(struct platform_device *pdev)
+ static const struct rocket_soc_data rk3588_soc_data = {
+ 	.num_clks = 4,
+ 	.num_resets = 2,
++	.multi_power_domain = false,
++	.task_con_16bit = false,
+ };
+ 
+-static const struct of_device_id dt_match[] = {
++static const struct rocket_soc_data rk3576_soc_data = {
++	.num_clks = 6,
++	.num_resets = 1,
++	.multi_power_domain = true,
++	.task_con_16bit = true,
 +};
 +
- static const struct of_device_id dt_match[] = {
--	{ .compatible = "rockchip,rk3588-rknn-core" },
-+	{ .compatible = "rockchip,rk3588-rknn-core", .data = &rk3588_soc_data },
++const struct of_device_id rocket_dt_match[] = {
+ 	{ .compatible = "rockchip,rk3588-rknn-core", .data = &rk3588_soc_data },
++	{ .compatible = "rockchip,rk3576-rknn-core", .data = &rk3576_soc_data },
  	{}
  };
- MODULE_DEVICE_TABLE(of, dt_match);
-@@ -240,7 +260,7 @@ static int rocket_device_runtime_resume(struct device *dev)
- 	if (core < 0)
- 		return -ENODEV;
+-MODULE_DEVICE_TABLE(of, dt_match);
++MODULE_DEVICE_TABLE(of, rocket_dt_match);
  
--	err = clk_bulk_prepare_enable(ARRAY_SIZE(rdev->cores[core].clks), rdev->cores[core].clks);
-+	err = clk_bulk_prepare_enable(rdev->cores[core].soc->num_clks, rdev->cores[core].clks);
- 	if (err) {
- 		dev_err(dev, "failed to enable (%d) clocks for core %d\n", err, core);
- 		return err;
-@@ -260,7 +280,7 @@ static int rocket_device_runtime_suspend(struct device *dev)
- 	if (!rocket_job_is_idle(&rdev->cores[core]))
- 		return -EBUSY;
+ static int find_core_for_dev(struct device *dev)
+ {
+@@ -296,7 +306,7 @@ static struct platform_driver rocket_driver = {
+ 	.driver	 = {
+ 		.name = "rocket",
+ 		.pm = pm_ptr(&rocket_pm_ops),
+-		.of_match_table = dt_match,
++		.of_match_table = rocket_dt_match,
+ 	},
+ };
  
--	clk_bulk_disable_unprepare(ARRAY_SIZE(rdev->cores[core].clks), rdev->cores[core].clks);
-+	clk_bulk_disable_unprepare(rdev->cores[core].soc->num_clks, rdev->cores[core].clks);
+diff --git a/drivers/accel/rocket/rocket_drv.h b/drivers/accel/rocket/rocket_drv.h
+index 2c673bb99..0cd692a66 100644
+--- a/drivers/accel/rocket/rocket_drv.h
++++ b/drivers/accel/rocket/rocket_drv.h
+@@ -6,10 +6,12 @@
  
- 	return 0;
- }
+ #include <drm/drm_mm.h>
+ #include <drm/gpu_scheduler.h>
++#include <linux/device-id/of.h>
+ 
+ #include "rocket_device.h"
+ 
+ extern const struct dev_pm_ops rocket_pm_ops;
++extern const struct of_device_id rocket_dt_match[];
+ 
+ struct rocket_iommu_domain {
+ 	struct iommu_domain *domain;
+diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
+index 54f9c299d..c862f8bc7 100644
+--- a/drivers/accel/rocket/rocket_job.c
++++ b/drivers/accel/rocket/rocket_job.c
+@@ -21,6 +21,30 @@
+ 
+ #define JOB_TIMEOUT_MS 500
+ 
++/*
++ * PC_TASK_CON packs the task number with control bits above it, and neither
++ * the width of the number nor the count of the controls is the same on every
++ * SoC. rocket_registers.h is generated from the RK3588 description, where the
++ * task number is twelve bits and there are two:
++ *
++ *   RK3588   BIT[11:0] task_number, BIT[12] pp_en, BIT[13] count_clear
++ *   RK3576   BIT[15:0] task_number, BIT[16] pp_en, BIT[17] count_clear,
++ *            BIT[18] last_layer_clear
++ *
++ * The RK3576 layout was confirmed by Chaoyi Chen of Rockchip:
++ * https://lore.kernel.org/all/4f300b78-d96d-4d98-8819-dc292b0c9b97@rock-chips.com/
++ *
++ * Writing the RK3588 layout to an RK3576 therefore asks for task_number
++ * 0x7001, that is 28673 tasks, and lands the count clear on a bit that does
++ * nothing. The task counter is then only ever cleared by a reset, which is
++ * exactly the "one task per reset" behaviour this series has been reporting
++ * since v3.
++ */
++#define RK3576_PC_TASK_CON_TASK_NUMBER(n)	((n) & 0xffff)
++#define RK3576_PC_TASK_CON_PP_EN		BIT(16)
++#define RK3576_PC_TASK_CON_COUNT_CLEAR		BIT(17)
++#define RK3576_PC_TASK_CON_LAST_LAYER_CLEAR	BIT(18)
++
+ static struct rocket_job *
+ to_rocket_job(struct drm_sched_job *sched_job)
+ {
+@@ -142,10 +166,17 @@ static void rocket_job_hw_submit(struct rocket_core *core, struct rocket_job *jo
+ 	rocket_pc_writel(core, INTERRUPT_MASK, PC_INTERRUPT_MASK_DPU_0 | PC_INTERRUPT_MASK_DPU_1);
+ 	rocket_pc_writel(core, INTERRUPT_CLEAR, PC_INTERRUPT_CLEAR_DPU_0 | PC_INTERRUPT_CLEAR_DPU_1);
+ 
+-	rocket_pc_writel(core, TASK_CON, PC_TASK_CON_RESERVED_0(1) |
+-					 PC_TASK_CON_TASK_COUNT_CLEAR(1) |
+-					 PC_TASK_CON_TASK_NUMBER(1) |
+-					 PC_TASK_CON_TASK_PP_EN(1));
++	if (core->soc->task_con_16bit)
++		rocket_pc_writel(core, TASK_CON,
++				 RK3576_PC_TASK_CON_LAST_LAYER_CLEAR |
++				 RK3576_PC_TASK_CON_COUNT_CLEAR |
++				 RK3576_PC_TASK_CON_PP_EN |
++				 RK3576_PC_TASK_CON_TASK_NUMBER(1));
++	else
++		rocket_pc_writel(core, TASK_CON, PC_TASK_CON_RESERVED_0(1) |
++						 PC_TASK_CON_TASK_COUNT_CLEAR(1) |
++						 PC_TASK_CON_TASK_NUMBER(1) |
++						 PC_TASK_CON_TASK_PP_EN(1));
+ 
+ 	rocket_pc_writel(core, TASK_DMA_BASE_ADDR, PC_TASK_DMA_BASE_ADDR_DMA_BASE_ADDR(0x0));
+ 
 -- 
 2.43.0
 
