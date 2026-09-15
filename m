@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CB7E3B38B1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AAAF3B2FE7;
 	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789482262; cv=none; b=fCJmp3q+8yIr4XQS3BmmK406Gz/USic5pJt8Ueh8XCHORg2GaVv3FfR3b0eez2Jsad3tEhip7PRod4dVRJRW1RFQwWvEXnZj6kR35AR73//4cpzEK942bbX1wBXCEGMRyrtf4tKMFHs9XnVH/Lw/4z3ggPNCkDHlqT0RLnXu3iA=
+	t=1789482262; cv=none; b=ZSsBhjY7Hw3L3OarnETWkeNwcwtAtN9THyzcJEfdN8Cx2ga6tFoCi0U5DJQiH7ka78+81Y7uOqxG3GQgGCYyyyImuidyxnWuWVIfh7tuQttDrj68KyHqxYEGLrAbzFIIT7GfvR6sHEhlmoL6CNA6vx/HupyRo/29tQCYSg6XibU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1789482262; c=relaxed/simple;
-	bh=Hnopdr7WA9U8EE7N/nJoCFi8vbeDzNHxhN6zZO8yiBg=;
+	bh=QJutd9AAev9I1G0SJJsB4M4M+253o3CNxmEwUMtsGnw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ohBGSDpkOIs7akGLHBRgqUJHlr+5Uu1cZwhJ9aP41D8c8FXMBT4UgRc3ujDjGuSkbfTaPMXuVVGfKrWGfa7D9htF5S/fPidhks3TYhnnqK29WXTsMKOtGGLJ8yWPzvpg6abspEWss3RS7HlebYklDAvI3AQU6Y2Yi+HmhLWLWxc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y/8ta70r; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=qKOzB6yYZtdffIOyJIqmyEnbjDyRy//XBdXFK8+tKTAw+9m/RkYPZyZjIQOcraKh4iZqXl08jZy2lPJ0d7iG4v6WsnijqMQsWABDvitSpCqU+sX2CU5H8ltgGlk+hXFm4kHMtCDUKmZQdfI0XTeq0Z2e2ImE6M07dKExNuTaZlk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=si7i2Nr/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y/8ta70r"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2D946C2BCFC;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="si7i2Nr/"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0F543C2BCB8;
 	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1789482262;
-	bh=Hnopdr7WA9U8EE7N/nJoCFi8vbeDzNHxhN6zZO8yiBg=;
+	bh=QJutd9AAev9I1G0SJJsB4M4M+253o3CNxmEwUMtsGnw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Y/8ta70rcaO6avZlbT9MuJYT5Ejjg0NwfsrKXOB7zZQud8lBvoEHKyj5PdhD+nVHb
-	 wklF9T+4rpiezAC5m8mVbCm+Wxmdv6jzYkK2cvPcCQfBZSCBgDC71CjAG3IFUIBgQC
-	 B9QgIlr0D/o7QVIkWGCt09AwHTXG2Z3PBlDnQHhJgY9xF0NsymcQbwg/d8z51GPcw7
-	 WsMA3oW8/wTDPKkMZBmGs9x7jG/upNnVZJjP1K2NWWnI99q2PXNFrYha1JRU/amRQk
-	 3v9dq7oXCOxUGBdJ+ISpbj76SgvK3VCrgcB2qqK11b/MWwHGCLLtrs0A2rfwlieCgh
-	 mCQk9fLM1wPVg==
+	b=si7i2Nr/Yam+UpqppnIB+Sydm5mrdonbip1gC1AFmQawmtRs2Vy5PTkcFygrxleDO
+	 S+jgG7e9PaLkbQZtNyiIiwujcj6LrIgR+CzSFvOwbGYL/93vH20Dabi9HDRc3Fs+of
+	 n74RbN1RDBRFNUq9Ct1iDaixc5FJErJTiskY8IybdYHlCQsClOeHFRFt13O37FzJoR
+	 1gFcShg8qHRrIPTO3Vajjzqd8o3GmMnTRzzMjoTfCvudoItWAMGgFEsepc1qWZeu5D
+	 H2w0xUY5RMZ9+2qDYAe0ePBB+H/B8wCi7T3cJAHAnhLtfr5jCYfGFbyiTSsuhDAY0D
+	 dfBjakQndYXeA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B527C88E53;
-	Tue, 15 Sep 2026 14:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECF1DC88E75;
+	Tue, 15 Sep 2026 14:24:21 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 15 Sep 2026 16:24:04 +0200
-Subject: [PATCH 3/5] power: sequencing: pcie-m2: Create auxiliary device
- for the M.2 BT interface
+Date: Tue, 15 Sep 2026 16:24:02 +0200
+Subject: [PATCH 1/5] Bluetooth: hci_qca: Add auxiliary driver for PCIe M.2
+ modules
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-pci-m2-bt-rework-v1-3-3c7d9cf9c010@oss.qualcomm.com>
+Message-Id: <20260915-pci-m2-bt-rework-v1-1-3c7d9cf9c010@oss.qualcomm.com>
 References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
 In-Reply-To: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
 To: Marcel Holtmann <marcel@holtmann.org>, 
@@ -59,16 +59,16 @@ Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
  Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9879;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7624;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=ysdYQzQTS6vV5RimaY4+yjdKUGeSc5gOn2WXxQ/9ltg=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqqVUSc4FVnWW9dvtIIVeOclToM1k8bzAypjESU
- i2EyBGGkQ6JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaqlVEgAKCRBVnxHm/pHO
- 9Q5GB/wNCfs5K5guix1U95aAVoWht4Lu1gHZBDY3WjE5+zxFf9nOqf578hPwLgJtKGy0BjYTi3b
- Jmfg8Kcx8nzV7E0GZdbTvynVtw/PQtv9lTyzWYNBT0zPtg3+SDRYmy6GgPn/Zee90SX04SaJYRr
- MGrEtN1q7oYKLQ8O7nW5mphnUcyEet5/KXygAQYVOQUtJukxtIw9bYpoq+P/WUnXmoCp9FHe2yf
- SPI16DfUgHVosjZeF6OVH8sZoYpBKvrJxB6Zd/VAdM1mrbVqAqZt1S/Sv4jpgsgnBpX13nDXWTT
- MubVjkOVSatWDHA8Fi3wLNPn8wUI59WH36EQy5BPgS8x0tej
+ bh=RMNCxswJp2WMqpIWCHfQMEALDdHbbIwauyM6oCpia9Q=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqqVUSgiOVkUYUycnwFsQ0RDjbkuR3M10PNZJ5Q
+ VoUo7dYsH+JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaqlVEgAKCRBVnxHm/pHO
+ 9T0YB/9WMjOjLkW2yfbn8QC3FaGPBFsKWeYd7evMln8bkscPdLhaBFKe8KVkC1heBCbXJsVuxYN
+ Wsfh02l+Ck1Xi9NTA6MHckPK1AXKNY6bVq2NJVc8f93gSURmSkoEcmhR2+Df4/mn+vIYaZjkDPj
+ bkDcLW1j4YHKMGjJVe4lADtFMSKjQLQWT9IvT/6/Up7M1nGZJbwdEeHuSScQfqvG2bD4wXkqOZN
+ 67W2Ic8OOvx65b1dwKX8r+I0UWP9nN/AJ3eNYgRZuKLK+/W1GkOWO/VxJ8zn+OwbhjhABf6Tl5U
+ xPp8ojRto4RatUQasU20PDEY9+/Kqm7FDx2LMOa4Asjlq778
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -78,296 +78,232 @@ Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
 From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-Currently, the driver instantiates the BT interface of the WCN6855 and
-WCN7850 combo modules by creating a devicetree node at runtime using an
-of_changeset, with the compatible passed through the PCI ID table. But this
-method of creating a devicetree node just for matching with the driver is
-not recommended.
+The QCA2066, WCN6855 and WCN7850 combo modules expose Bluetooth over
+UART. Since these modules are attached over PCIe, these are not described
+in firmware like devicetree. So these modules are discovered at runtime
+over PCIe by the power sequencing driver, which allocates the UART serdev
+and creates an auxiliary device carrying that transport and the power
+sequencing target to power up the Bluetooth function.
 
-So create an auxiliary device for the BT interface instead. The serdev
-transport is still allocated here and handed over to the Bluetooth driver
-through the auxiliary device, along with the power sequencing target used
-to power up the controller. Also extend the provider match so that the
-auxiliary device created for this connector is matched as its power
-sequencing consumer.
+Add an auxiliary driver that binds to this device. It reuses the serdev
+provided by the producer, brings up the controller through the existing
+UART transport with hci_uart_register_device() and drives power through
+the sequencer obtained with devm_pwrseq_get().
 
-Since the runtime node creation is now gone, select AUXILIARY_BUS in
-place of OF_DYNAMIC.
+Add a shared header describing the auxiliary device so that the power
+sequencing driver and hci_qca agree on its layout.
 
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- drivers/power/sequencing/Kconfig          |   2 +-
- drivers/power/sequencing/pwrseq-pcie-m2.c | 137 ++++++++++++++++--------------
- 2 files changed, 75 insertions(+), 64 deletions(-)
+ MAINTAINERS                       |   1 +
+ drivers/bluetooth/Kconfig         |   1 +
+ drivers/bluetooth/hci_qca.c       | 101 ++++++++++++++++++++++++++++++++++++++
+ include/linux/pwrseq/pcie-m2-bt.h |  38 ++++++++++++++
+ 4 files changed, 141 insertions(+)
 
-diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/Kconfig
-index 1c5f5820f5b7..2943af5db135 100644
---- a/drivers/power/sequencing/Kconfig
-+++ b/drivers/power/sequencing/Kconfig
-@@ -40,7 +40,7 @@ config POWER_SEQUENCING_PCIE_M2
- 	depends on OF
- 	depends on PCI
- 	depends on SERIAL_DEV_BUS
--	select OF_DYNAMIC
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3a19da74d00c..ed0c622fa83f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -21750,6 +21750,7 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+ F:	Documentation/devicetree/bindings/connector/pcie-m2-m-connector.yaml
+ F:	drivers/power/sequencing/pwrseq-pcie-m2.c
++F:	include/linux/pwrseq/pcie-m2-bt.h
+ 
+ POWER STATE COORDINATION INTERFACE (PSCI)
+ M:	Mark Rutland <mark.rutland@arm.com>
+diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
+index 4e8c24d757e9..3acaec6f90ac 100644
+--- a/drivers/bluetooth/Kconfig
++++ b/drivers/bluetooth/Kconfig
+@@ -244,6 +244,7 @@ config BT_HCIUART_QCA
+ 	depends on BT_HCIUART_SERDEV
+ 	select BT_HCIUART_H4
+ 	select BT_QCA
 +	select AUXILIARY_BUS
  	help
- 	  Say Y here to enable the power sequencing driver for PCIe M.2
- 	  connectors. This driver handles the power sequencing for the M.2
-diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index bee1aa0e077d..9e485641695c 100644
---- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-+++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -4,16 +4,18 @@
-  * Author: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+ 	  The Qualcomm Atheros protocol supports HCI In-Band Sleep feature
+ 	  over serial port interface(H4) between controller and host.
+diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+index cfefa8b72e25..15cc6cca9057 100644
+--- a/drivers/bluetooth/hci_qca.c
++++ b/drivers/bluetooth/hci_qca.c
+@@ -15,6 +15,7 @@
+  *  by Maxim Krasnyansky and Marcel Holtmann.
   */
  
 +#include <linux/auxiliary_bus.h>
- #include <linux/device.h>
- #include <linux/delay.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/idr.h>
- #include <linux/list.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_graph.h>
--#include <linux/of_platform.h>
- #include <linux/pci.h>
+ #include <linux/kernel.h>
+ #include <linux/clk.h>
+ #include <linux/completion.h>
+@@ -29,6 +30,7 @@
+ #include <linux/acpi.h>
  #include <linux/platform_device.h>
+ #include <linux/pwrseq/consumer.h>
 +#include <linux/pwrseq/pcie-m2-bt.h>
- #include <linux/pwrseq/provider.h>
  #include <linux/regulator/consumer.h>
  #include <linux/serdev.h>
-@@ -21,7 +23,7 @@
- 
- struct pwrseq_pci_dev {
- 	struct serdev_device *serdev;
--	struct of_changeset *ocs;
-+	struct pcie_m2_bt_auxdev *bt;
- 	struct pci_dev *pdev;
- 	struct list_head list;
- };
-@@ -196,6 +198,14 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
- 	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
- 	struct device_node *endpoint __free(device_node) = NULL;
- 
-+	/*
-+	 * The Bluetooth function is represented by an auxiliary device created
-+	 * by this driver. It has no OF node, so match it by verifying that it
-+	 * is a child of this connector.
-+	 */
-+	if (dev_is_auxiliary(dev) && dev->parent == ctx->dev)
-+		return PWRSEQ_MATCH_OK;
-+
- 	/*
- 	 * Traverse the 'remote-endpoint' nodes and check if the remote node's
- 	 * parent matches the OF node of 'dev'.
-@@ -210,78 +220,86 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
- 	return PWRSEQ_NO_MATCH;
- }
- 
-+/*
-+ * The Bluetooth interface of a supported module is exposed as an auxiliary
-+ * device. Its name (combined with this driver's module name) is matched by
-+ * the Bluetooth driver. Store that name as the PCI ID driver data.
-+ */
- static const struct pci_device_id pwrseq_m2_pci_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL_EXT, 0x2b43),
--	  .driver_data = (kernel_ulong_t)"nxp,88w8987-bt" },
-+	  .driver_data = (kernel_ulong_t)"88w8987-bt" },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_PHILIPS, 0x3003),
--	  .driver_data = (kernel_ulong_t)"nxp,88w8987-bt" },
-+	  .driver_data = (kernel_ulong_t)"88w8987-bt" },
- 	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1103, PCI_VENDOR_ID_QCOM, 0x0108),
--	  .driver_data = (kernel_ulong_t)"qcom,qca2066-bt" },
-+	  .driver_data = (kernel_ulong_t)"qca2066-bt" },
- 	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1103, PCI_VENDOR_ID_FOXCONN, 0xe105),
--	  .driver_data = (kernel_ulong_t)"qcom,wcn6855-bt" },
-+	  .driver_data = (kernel_ulong_t)"wcn6855-bt" },
- 	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1103, PCI_VENDOR_ID_QCOM, 0x337e),
--	  .driver_data = (kernel_ulong_t)"qcom,wcn6855-bt" },
-+	  .driver_data = (kernel_ulong_t)"wcn6855-bt" },
- 	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1107, PCI_VENDOR_ID_QCOM, 0x337c),
--	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
-+	  .driver_data = (kernel_ulong_t)"wcn7850-bt" },
- 	{ } /* Sentinel */
+ #include <linux/string_choices.h>
+@@ -2850,15 +2852,114 @@ static struct serdev_device_driver qca_serdev_driver = {
+ 	},
  };
  
--static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
-+static DEFINE_IDA(pwrseq_pcie_m2_bt_ida);
-+
-+static void pwrseq_pcie_m2_bt_release(struct device *dev)
++static int qca_bt_aux_probe(struct auxiliary_device *adev,
++			    const struct auxiliary_device_id *id)
 +{
-+	struct pcie_m2_bt_auxdev *bt =
-+		to_pcie_m2_bt_auxdev(to_auxiliary_dev(dev));
++	struct pcie_m2_bt_auxdev *bt_auxdev = to_pcie_m2_bt_auxdev(adev);
++	struct serdev_device *serdev = bt_auxdev->serdev;
++	const struct qca_device_data *data;
++	struct qca_serdev *qcadev;
++	struct hci_dev *hdev;
++	bool controllable;
++	int err;
 +
-+	ida_free(&pwrseq_pcie_m2_bt_ida, bt->adev.id);
-+	kfree(bt);
++	data = (const struct qca_device_data *)id->driver_data;
++	if (!data)
++		return -ENODEV;
++
++	qcadev = devm_kzalloc(&adev->dev, sizeof(*qcadev), GFP_KERNEL);
++	if (!qcadev)
++		return -ENOMEM;
++
++	qcadev->serdev_hu.serdev = serdev;
++	qcadev->btsoc_type = data->soc_type;
++	serdev_device_set_drvdata(serdev, qcadev);
++
++	qcadev->pwrseq = devm_pwrseq_get(&adev->dev, bt_auxdev->pwrseq_target);
++	if (IS_ERR(qcadev->pwrseq))
++		return dev_err_probe(&adev->dev, PTR_ERR(qcadev->pwrseq),
++				     "failed to acquire power sequencer\n");
++
++	/*
++	 * When the host cannot gate the BT power individually, treat it as
++	 * always-on.
++	 */
++	controllable = pwrseq_is_controllable(qcadev->pwrseq);
++	if (!controllable) {
++		pwrseq_enable(qcadev->pwrseq);
++		qcadev->pwrseq = NULL;
++	}
++
++	err = hci_uart_register_device(&qcadev->serdev_hu, &qca_proto);
++	if (err)
++		return dev_err_probe(&adev->dev, err,
++				     "failed to register hci_uart device\n");
++
++	hdev = qcadev->serdev_hu.hdev;
++
++	if (controllable) {
++		hci_set_quirk(hdev, HCI_QUIRK_NON_PERSISTENT_SETUP);
++		hdev->shutdown = qca_hci_shutdown;
++	}
++
++	if (data->capabilities & QCA_CAP_WIDEBAND_SPEECH)
++		hci_set_quirk(hdev, HCI_QUIRK_WIDEBAND_SPEECH_SUPPORTED);
++
++	if (!(data->capabilities & QCA_CAP_VALID_LE_STATES))
++		hci_set_quirk(hdev, HCI_QUIRK_BROKEN_LE_STATES);
++
++	if (data->capabilities & QCA_CAP_HFP_HW_OFFLOAD)
++		qcadev->support_hfp_hw_offload = true;
++
++	auxiliary_set_drvdata(adev, qcadev);
++
++	return 0;
 +}
 +
-+static int pwrseq_pcie_m2_create_bt_aux(struct pwrseq_pcie_m2_ctx *ctx,
- 					struct pwrseq_pci_dev *pci_dev,
--					struct device_node *parent,
- 					struct pci_dev *pdev)
- {
- 	const struct pci_device_id *id;
- 	struct device *dev = ctx->dev;
--	const char *compatible;
--	struct device_node *np;
-+	struct pcie_m2_bt_auxdev *bt;
- 	int ret;
- 
- 	id = pci_match_id(pwrseq_m2_pci_ids, pdev);
- 	if (WARN_ON_ONCE(!id)) /* Shouldn't happen */
- 		return -ENODEV;
- 
--	compatible = (const char *)id->driver_data;
--
--	pci_dev->ocs = kzalloc_obj(*pci_dev->ocs);
--	if (!pci_dev->ocs)
-+	bt = kzalloc_obj(*bt);
-+	if (!bt)
- 		return -ENOMEM;
- 
--	of_changeset_init(pci_dev->ocs);
-+	ret = ida_alloc(&pwrseq_pcie_m2_bt_ida, GFP_KERNEL);
-+	if (ret < 0)
-+		goto err_free_bt;
- 
--	np = of_changeset_create_node(pci_dev->ocs, parent, "bluetooth");
--	if (!np) {
--		dev_err(dev, "Failed to create bluetooth node\n");
--		ret = -ENODEV;
--		goto err_destroy_changeset;
--	}
-+	bt->serdev = pci_dev->serdev;
-+	bt->pwrseq_target = "uart";
-+	bt->adev.id = ret;
-+	bt->adev.name = (const char *)id->driver_data;
-+	bt->adev.dev.parent = dev;
-+	bt->adev.dev.release = pwrseq_pcie_m2_bt_release;
- 
--	ret = of_changeset_add_prop_string(pci_dev->ocs, np, "compatible", compatible);
--	if (ret) {
--		dev_err(dev, "Failed to add bluetooth compatible: %d\n", ret);
--		goto err_destroy_changeset;
--	}
-+	ret = auxiliary_device_init(&bt->adev);
-+	if (ret)
-+		goto err_free_ida;
- 
--	ret = of_changeset_apply(pci_dev->ocs);
-+	ret = auxiliary_device_add(&bt->adev);
- 	if (ret) {
--		dev_err(dev, "Failed to apply changeset: %d\n", ret);
--		goto err_destroy_changeset;
-+		dev_err(dev, "Failed to add bluetooth auxiliary device: %d\n",
-+			ret);
-+		auxiliary_device_uninit(&bt->adev);
-+		return ret;
- 	}
- 
--	ret = device_add_of_node(&pci_dev->serdev->dev, np);
--	if (ret) {
--		dev_err(dev, "Failed to add OF node: %d\n", ret);
--		goto err_revert_changeset;
--	}
-+	pci_dev->bt = bt;
- 
- 	return 0;
- 
--err_revert_changeset:
--	of_changeset_revert(pci_dev->ocs);
--err_destroy_changeset:
--	of_changeset_destroy(pci_dev->ocs);
--	kfree(pci_dev->ocs);
--	pci_dev->ocs = NULL;
-+err_free_ida:
-+	ida_free(&pwrseq_pcie_m2_bt_ida, bt->adev.id);
-+err_free_bt:
-+	kfree(bt);
- 
- 	return ret;
- }
-@@ -329,17 +347,17 @@ static int pwrseq_pcie_m2_create_serdev_one(struct pwrseq_pcie_m2_ctx *ctx,
- 		goto err_free_pci_dev;
- 	}
- 
--	ret = pwrseq_pcie_m2_create_bt_node(ctx, pci_dev, serdev_parent, pdev);
--	if (ret)
--		goto err_free_serdev;
--
- 	ret = serdev_device_add(pci_dev->serdev);
- 	if (ret) {
- 		dev_err(dev, "Failed to add serdev for PCI device (%s): %d\n",
- 			pci_name(pdev), ret);
--		goto err_free_dt_node;
-+		goto err_free_serdev;
- 	}
- 
-+	ret = pwrseq_pcie_m2_create_bt_aux(ctx, pci_dev, pdev);
-+	if (ret)
-+		goto err_remove_serdev;
++static void qca_bt_aux_remove(struct auxiliary_device *adev)
++{
++	struct qca_serdev *qcadev = auxiliary_get_drvdata(adev);
 +
- 	serdev_controller_put(serdev_ctrl);
- 
- 	pci_dev->pdev = pci_dev_get(pdev);
-@@ -350,15 +368,11 @@ static int pwrseq_pcie_m2_create_serdev_one(struct pwrseq_pcie_m2_ctx *ctx,
- 
- 	return 0;
- 
--err_free_dt_node:
--	device_remove_of_node(&pci_dev->serdev->dev);
--	of_changeset_revert(pci_dev->ocs);
--	of_changeset_destroy(pci_dev->ocs);
--	kfree(pci_dev->ocs);
--	pci_dev->ocs = NULL;
-+err_remove_serdev:
-+	serdev_device_remove(pci_dev->serdev);
-+	goto err_free_pci_dev;
- err_free_serdev:
- 	serdev_device_put(pci_dev->serdev);
--	pci_dev->serdev = NULL;
- err_free_pci_dev:
- 	kfree(pci_dev);
- err_put_ctrl:
-@@ -370,16 +384,13 @@ static int pwrseq_pcie_m2_create_serdev_one(struct pwrseq_pcie_m2_ctx *ctx,
- static void __pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx,
- 					   struct pwrseq_pci_dev *pci_dev)
++	hci_uart_unregister_device(&qcadev->serdev_hu);
++}
++
++static const struct auxiliary_device_id qca_bt_aux_id_table[] = {
++	{
++		.name = "pwrseq_pcie_m2.qca2066-bt",
++		.driver_data = (kernel_ulong_t)&qca_soc_data_qca2066,
++	},
++	{
++		.name = "pwrseq_pcie_m2.wcn6855-bt",
++		.driver_data = (kernel_ulong_t)&qca_soc_data_wcn6855,
++	},
++	{
++		.name = "pwrseq_pcie_m2.wcn7850-bt",
++		.driver_data = (kernel_ulong_t)&qca_soc_data_wcn7850,
++	},
++	{ }
++};
++MODULE_DEVICE_TABLE(auxiliary, qca_bt_aux_id_table);
++
++static struct auxiliary_driver qca_bt_aux_driver = {
++	.name = "qca_bt",
++	.probe = qca_bt_aux_probe,
++	.remove = qca_bt_aux_remove,
++	.id_table = qca_bt_aux_id_table,
++};
++
+ int __init qca_init(void)
  {
--	if (pci_dev->serdev) {
--		device_remove_of_node(&pci_dev->serdev->dev);
--		serdev_device_remove(pci_dev->serdev);
-+	if (pci_dev->bt) {
-+		auxiliary_device_delete(&pci_dev->bt->adev);
-+		auxiliary_device_uninit(&pci_dev->bt->adev);
- 	}
+ 	serdev_device_driver_register(&qca_serdev_driver);
  
--	if (pci_dev->ocs) {
--		of_changeset_revert(pci_dev->ocs);
--		of_changeset_destroy(pci_dev->ocs);
--		kfree(pci_dev->ocs);
--	}
-+	if (pci_dev->serdev)
-+		serdev_device_remove(pci_dev->serdev);
++	auxiliary_driver_register(&qca_bt_aux_driver);
++
+ 	return hci_uart_register_proto(&qca_proto);
+ }
  
- 	pci_dev_put(pci_dev->pdev);
- 	list_del(&pci_dev->list);
-@@ -526,6 +537,7 @@ static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
- 		return -ENOMEM;
+ int __exit qca_deinit(void)
+ {
++	auxiliary_driver_unregister(&qca_bt_aux_driver);
++
+ 	serdev_device_driver_unregister(&qca_serdev_driver);
  
- 	platform_set_drvdata(pdev, ctx);
-+	ctx->dev = dev;
- 	ctx->of_node = dev_of_node(dev);
- 	ctx->pdata = device_get_match_data(dev);
- 	if (!ctx->pdata)
-@@ -573,7 +585,6 @@ static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
- 
- 	mutex_init(&ctx->list_lock);
- 	INIT_LIST_HEAD(&ctx->pci_devices);
--	ctx->dev = dev;
- 
- 	/* Create serdev for available PCI devices (if required) */
- 	ret = pwrseq_pcie_m2_create_serdev(ctx);
+ 	return hci_uart_unregister_proto(&qca_proto);
+diff --git a/include/linux/pwrseq/pcie-m2-bt.h b/include/linux/pwrseq/pcie-m2-bt.h
+new file mode 100644
+index 000000000000..39e7475d7962
+--- /dev/null
++++ b/include/linux/pwrseq/pcie-m2-bt.h
+@@ -0,0 +1,38 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ * Author: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
++ */
++
++#ifndef __POWER_SEQUENCING_PCIE_M2_BT_H__
++#define __POWER_SEQUENCING_PCIE_M2_BT_H__
++
++#include <linux/auxiliary_bus.h>
++#include <linux/container_of.h>
++
++struct serdev_device;
++
++/**
++ * struct pcie_m2_bt_auxdev - Auxiliary device for the Bluetooth function of a
++ *                            PCIe M.2 module.
++ * @adev: Auxiliary device.
++ * @serdev: Serdev device representing the UART transport. Allocated and owned
++ *          by the producer (power sequencing driver).
++ * @pwrseq_target: Power sequencing target the consumer requests to power up the
++ *                 Bluetooth function.
++ *
++ * On M.2 modules exposing Bluetooth over UART, the controller is not described
++ * in firmware. The power sequencing driver detects the module over PCIe and
++ * publishes this auxiliary device so that the Bluetooth driver can bind to the
++ * pre-allocated serdev transport and drive power sequencing.
++ */
++struct pcie_m2_bt_auxdev {
++	struct auxiliary_device adev;
++	struct serdev_device *serdev;
++	const char *pwrseq_target;
++};
++
++#define to_pcie_m2_bt_auxdev(_adev) \
++	container_of(_adev, struct pcie_m2_bt_auxdev, adev)
++
++#endif /* __POWER_SEQUENCING_PCIE_M2_BT_H__ */
 
 -- 
 2.43.0
