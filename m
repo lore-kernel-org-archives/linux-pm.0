@@ -1,427 +1,276 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2453635AC05;
-	Wed, 16 Sep 2026 12:20:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F6583E8660;
+	Wed, 16 Sep 2026 13:01:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789561234; cv=none; b=aNgC+AExmSAosuaz/boRDbQ/UxMznrUBxqCspRX2EiCey9EfLR89D6S9ygX3YRZX5ivtbKGI5ZrJowNCuHTTWbYFpZ/l6XAqgGRVSZr0ZeDh623AMESAVmYCgy+PLBfa6yyZGOCLMc9SQexxHWXgYisF4LENGvFgkjk/Gy3uMjM=
+	t=1789563717; cv=none; b=sPVQN5M3sTxFt1etFp/cajaf1FZ7v1pxkjtfTwLjpZ+PvtvP2GIrtp3rZriOxC57vd74EqnykyLLNwV8Wn+m3Cl9liQ7jMRRwTq7r4TXqkoCYSA1RXoecttt8i5qlL44IZhF7YJIb2D/DcLOiQG7n693aGjPNIxGlU2D2F5H9OI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789561234; c=relaxed/simple;
-	bh=0OgQU2jHRRT1xL5IV57LG2VHT69lgAMQSJtJadVUyKY=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=ueVugugD4wqJ94WPW/iQqIJwC+JVLq657N1tuQepDmOtbCq5UKr59pDRyfcXOQvvyRFklUya9p5v6EoSDc8Yo4GNvRkqIRozhH1sWF49n/h6m9Zl9uw5H5Lx9kTGoe8a+kx7UqvOknozj4AlmRgzpcvgk9MIVxZwTiE/Y8apiaM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=du7UTTsj; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1789563717; c=relaxed/simple;
+	bh=rrewkVtepVS6AYm0+2LOcrtcOwzSIbzO1eGTDAZuq8A=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=iFBoMo7NEOQMixZfm61zPedAw+otH2ueoz/+csflNGAr74lgcsyQuzVNY2Zp2+G0ABYuxNpIRlrQWzu8YHuc7zmF5m0T8I6CZGzvBQmXpT06hbf7irNK0QVLGqWDeLFnC+yljHHcQDqBmnY5fDzrWCJhd5ZTX7PPIiuOFtj01Z8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=WoidFiOn; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="du7UTTsj"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789561232; x=1821097232;
-  h=date:from:to:cc:subject:message-id;
-  bh=0OgQU2jHRRT1xL5IV57LG2VHT69lgAMQSJtJadVUyKY=;
-  b=du7UTTsj/vJ5IQv+OMz/hURyj7Pj6oyXlipqAr9Vw0Dx7949CBkNTJnw
-   L5e4jivy99OEH7/VYGUASpbqrm8pScOMzkic3Jg/uDbUKDrT7dq1EzArf
-   06bc2vigPg0eBUzO8sEN6sm0F6EtBWImxipvns0+7xzqMO0QGIVfQ+VCO
-   AW4THS3IjfL9Wfq1cgBkkoz5to/1DcNTNUtFOtbgxB6Gq7lRthLIN81l8
-   YaYeq/13UAGVlCsDmV4en32W0gSbCpcXHqEjq1/VyQcZIz/jReZZYawLT
-   LerRAVG9jMzcOUySav1cj2KSprxHgD6jXya3Op+R0XGrSJUAutTe00dJj
-   A==;
-X-CSE-ConnectionGUID: 1o9bSnP0SLOKJWusFr+JcA==
-X-CSE-MsgGUID: Pvcs1x6IRRmCaP+BlzNUwQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="93761822"
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
-   d="scan'208";a="93761822"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Sep 2026 05:20:31 -0700
-X-CSE-ConnectionGUID: PwfSNSeASGW9bwrvB9xYJw==
-X-CSE-MsgGUID: IhNZVQczQhicLYGDrzmhWg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
-   d="scan'208";a="277451403"
-Received: from lkp-server01.sh.intel.com (HELO 462990a40a85) ([10.239.97.150])
-  by orviesa005.jf.intel.com with ESMTP; 16 Sep 2026 05:20:29 -0700
-Received: from kbuild by 462990a40a85 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x6ocl-0000000063l-2oYP;
-	Wed, 16 Sep 2026 12:20:27 +0000
-Date: Wed, 16 Sep 2026 20:20:05 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD REGRESSION
- c4effca721d9748be701b3c3b8a666b380b2a4e5
-Message-ID: <202609162001.DINb6CUz-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="WoidFiOn"
+Message-ID: <b391c2d1-4a76-4419-b76b-4246f1363bc7@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1789563712;
+	bh=rrewkVtepVS6AYm0+2LOcrtcOwzSIbzO1eGTDAZuq8A=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To;
+	b=WoidFiOnKLfiITb4eYcrjoEaeAziA7/vtvJDXzP3+ZiDXkdbBHeqRx2yfBRYtS43y
+	 J6PiUTC/baX6P9S9pyNcIKFLEIgD82S9StKPdifg1FSZ3WvIJtadT/xnEGYVvTY4n8
+	 bDAwA+56/f7JZgXmvr3AZ55QEMVv1XKudZQPEaD0=
+Date: Wed, 16 Sep 2026 15:01:42 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird Beta
+From: linux-kernel-dev@aliel.fr
+Subject: Re: [PATCH v11 3/6] mfd: khadas-mcu: Add support for VIM4 MCU variant
+To: Lee Jones <lee@kernel.org>
+Cc: Neil Armstrong <neil.armstrong@linaro.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Beniamino Galvani <b.galvani@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, linux-amlogic@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-pm@vger.kernel.org, mfd@lists.linux.dev
+References: <20260902-add-mcu-fan-khadas-vim4-v11-0-5f1610d83bf0@aliel.fr>
+ <20260902-add-mcu-fan-khadas-vim4-v11-3-5f1610d83bf0@aliel.fr>
+ <20260910142153.GF1051768@google.com>
+Content-Language: en-US
+In-Reply-To: <20260910142153.GF1051768@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: c4effca721d9748be701b3c3b8a666b380b2a4e5  Merge branch 'acpi-pri-dev' into bleeding-edge
+On 9/10/26 4:21 PM, Lee Jones wrote:
+> On Wed, 02 Sep 2026, Ronald Claveau via B4 Relay wrote:
+> 
+>> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>>
+>> Refactor probe() to use per-variant values
+>> instead of hardcoded globals.
+>>
+>> Add dedicated regmap configuration for the VIM4 MCU,
+>> with its own volatile/writeable registers.
+>>
+>> Introduce struct khadas_mcu_fan_pdata to pass the fan
+>> control register and duty-cycle levels per variant.
+>> VIM4 uses a different register and level set (0-100)
+>>  declared as a list (0, 30, 40, 55, 75, 100) compared
+>>  to previous boards (0-3).
+>>
+>> Add a new compatible string "khadas,vim4-mcu".
+>>
+>> Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
+>> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> 
+> Generally fine.
+> 
+>> ---
+>>  drivers/mfd/khadas-mcu.c | 120 +++++++++++++++++++++++++++++++++++++++++------
+>>  1 file changed, 106 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/drivers/mfd/khadas-mcu.c b/drivers/mfd/khadas-mcu.c
+>> index 0e74efe14f367..4cb305ac915e1 100644
+>> --- a/drivers/mfd/khadas-mcu.c
+>> +++ b/drivers/mfd/khadas-mcu.c
+>> @@ -75,47 +75,138 @@ static const struct regmap_config khadas_mcu_regmap_config = {
+>>  	.cache_type	= REGCACHE_MAPLE,
+>>  };
+>>  
+>> +static const unsigned int khadas_mcu_fan_levels[] = {
+>> +	0, 1, 2, 3,
+>> +};
+>> +
+>> +static const struct khadas_mcu_fan_pdata khadas_mcu_fan_pdata = {
+>> +	.fan_reg	= KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
+>> +	.levels		= khadas_mcu_fan_levels,
+>> +	.nlevels	= ARRAY_SIZE(khadas_mcu_fan_levels),
+>> +};
+> 
+> I still don't think these belong in here.
+> 
 
-Error/Warning (recently discovered and may have been fixed):
+I will move it to the fan driver.
 
-    https://lore.kernel.org/oe-kbuild-all/202609150550.ZyqBeGWm-lkp@intel.com
-    https://lore.kernel.org/oe-kbuild-all/202609160705.vk4ADT7O-lkp@intel.com
-    https://lore.kernel.org/oe-kbuild-all/202609160802.42lSCDhD-lkp@intel.com
+>>  static const struct mfd_cell khadas_mcu_fan_cells[] = {
+>>  	/* VIM1/2 Rev13+ and VIM3 only */
+>> -	MFD_CELL_NAME("khadas-mcu-fan-ctrl"),
+>> +	MFD_CELL_BASIC("khadas-mcu-fan-ctrl", NULL, &khadas_mcu_fan_pdata,
+>> +		       sizeof(khadas_mcu_fan_pdata), 0),
+>>  };
+>>  
+>>  static const struct mfd_cell khadas_mcu_cells[] = {
+>>  	MFD_CELL_NAME("khadas-mcu-user-mem"),
+>>  };
+>>  
+>> +static bool khadas_mcu_vim4_reg_volatile(struct device *dev, unsigned int reg)
+>> +{
+>> +	switch (reg) {
+>> +	case KHADAS_MCU_PWR_OFF_CMD_REG:
+>> +	case KHADAS_MCU_VIM4_REST_CONF_REG:
+>> +	case KHADAS_MCU_WOL_INIT_START_REG:
+>> +	case KHADAS_MCU_VIM4_LED_ON_RAM_REG:
+>> +	case KHADAS_MCU_VIM4_FAN_CTRL_REG:
+>> +	case KHADAS_MCU_VIM4_WDT_EN_REG:
+>> +	case KHADAS_MCU_VIM4_SYS_RST_REG:
+>> +		return true;
+>> +	default:
+>> +		return false;
+>> +	}
+>> +}
+>> +
+>> +static bool khadas_mcu_vim4_reg_writeable(struct device *dev, unsigned int reg)
+>> +{
+>> +	switch (reg) {
+>> +	case KHADAS_MCU_VERSION_0_REG:
+>> +	case KHADAS_MCU_VERSION_1_REG:
+>> +	case KHADAS_MCU_SHUTDOWN_NORMAL_STATUS_REG:
+>> +		return false;
+>> +	default:
+>> +		return true;
+>> +	}
+>> +}
+>> +
+>> +static const struct regmap_config khadas_mcu_vim4_regmap_config = {
+>> +	.reg_bits	= 8,
+>> +	.reg_stride	= 1,
+>> +	.val_bits	= 8,
+>> +	.max_register	= KHADAS_MCU_VIM4_SYS_RST_REG,
+>> +	.volatile_reg	= khadas_mcu_vim4_reg_volatile,
+>> +	.writeable_reg	= khadas_mcu_vim4_reg_writeable,
+>> +	.cache_type	= REGCACHE_MAPLE,
+>> +};
+>> +
+>> +static const unsigned int khadas_mcu_vim4_fan_levels[] = {
+>> +	0, 30, 40, 55, 75, 100,
+>> +};
+>> +
+>> +static const struct khadas_mcu_fan_pdata khadas_mcu_vim4_fan_pdata = {
+>> +	.fan_reg	= KHADAS_MCU_VIM4_FAN_CTRL_REG,
+>> +	.levels		= khadas_mcu_vim4_fan_levels,
+>> +	.nlevels	= ARRAY_SIZE(khadas_mcu_vim4_fan_levels),
+>> +};
+>> +
+>> +static const struct mfd_cell khadas_mcu_vim4_fan_cells[] = {
+>> +	MFD_CELL_BASIC("khadas-mcu-fan-ctrl", NULL, &khadas_mcu_vim4_fan_pdata,
+>> +		       sizeof(khadas_mcu_vim4_fan_pdata), 0),
+>> +};
+>> +
+>>  static int khadas_mcu_probe(struct i2c_client *client)
+>>  {
+>> +	const struct mfd_cell *cells, *fan_cells;
+>> +	const struct regmap_config *regmap_cfg;
+>>  	struct device *dev = &client->dev;
+>> +	int ncells, nfan_cells, ret;
+>>  	struct khadas_mcu *ddata;
+>> -	int ret;
+>> +	const void *match;
+>>  
+>>  	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+>>  	if (!ddata)
+>>  		return -ENOMEM;
+>>  
+>> +	match = i2c_get_match_data(client);
+> 
+> The nomenclature can be improved here.
+> 
+> What are these?  Device ID?  Chip ID?  Revision?
+> 
 
-    drivers/thunderbolt/acpi.c:31:6: warning: variable 'dev' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
-    sound/soc/loongson/loongson_card.c:206:17: error: incompatible integer to pointer conversion initializing 'struct device *' with an expression of type 'int' [-Wint-conversion]
-    sound/soc/loongson/loongson_card.c:206:46: error: call to undeclared function 'acpi_bus_get_primary_device'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    sound/soc/loongson/loongson_card.c:206:46: error: implicit declaration of function 'acpi_bus_get_primary_device'; did you mean 'acpi_get_gpe_device'? [-Werror=implicit-function-declaration]
-    sound/soc/loongson/loongson_card.c:206:46: warning: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
-    sound/soc/loongson/loongson_card.c:206:53: error: implicit declaration of function 'acpi_bus_get_primary_device' [-Werror=implicit-function-declaration]
-    sound/soc/loongson/loongson_card.c:206:53: error: implicit declaration of function 'acpi_bus_get_primary_device' [-Wimplicit-function-declaration]
-    sound/soc/loongson/loongson_card.c:206:53: error: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
-    sound/soc/loongson/loongson_card.c:206:53: warning: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+I will change this to 'mcu_variant'
 
-Error/Warning ids grouped by kconfigs:
+>> +	if (!match)
+>> +		return -ENODEV;
+>> +
+>> +	switch ((uintptr_t)match) {
+>> +	case KHADAS_MCU_GENERIC:
+>> +		regmap_cfg	= &khadas_mcu_regmap_config;
+>> +		cells		= khadas_mcu_cells;
+>> +		ncells		= ARRAY_SIZE(khadas_mcu_cells);
+>> +		fan_cells	= khadas_mcu_fan_cells;
+>> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_fan_cells);
+>> +		break;
+>> +	case KHADAS_MCU_VIM4:
+>> +		regmap_cfg	= &khadas_mcu_vim4_regmap_config;
+>> +		cells		= NULL;
+>> +		ncells		= 0;
+>> +		fan_cells	= khadas_mcu_vim4_fan_cells;
+>> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_vim4_fan_cells);
+>> +		break;
+>> +	default:
+>> +		return -ENODEV;
+>> +	}
+>> +
+>>  	i2c_set_clientdata(client, ddata);
+>>  
+>>  	ddata->dev = dev;
+>>  
+>> -	ddata->regmap = devm_regmap_init_i2c(client, &khadas_mcu_regmap_config);
+>> +	ddata->regmap = devm_regmap_init_i2c(client, regmap_cfg);
+>>  	if (IS_ERR(ddata->regmap)) {
+>>  		ret = PTR_ERR(ddata->regmap);
+>> -		dev_err(dev, "Failed to allocate register map: %d\n", ret);
+>> -		return ret;
+>> +		return dev_err_probe(dev, ret, "Failed to allocate register map\n");
+>>  	}
+>>  
+>> -	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+>> -				   khadas_mcu_cells,
+>> -				   ARRAY_SIZE(khadas_mcu_cells),
+>> -				   NULL, 0, NULL);
+>> -	if (ret)
+>> -		return ret;
+>> +	if (cells && ncells) {
+>> +		ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+>> +					   cells,
+>> +					   ncells,
+>> +					   NULL, 0, NULL);
+>> +		if (ret)
+>> +			return ret;
+>> +	}
+>>  
+>>  	if (of_property_present(dev->of_node, "#cooling-cells"))
+>>  		return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+>> -					    khadas_mcu_fan_cells,
+>> -					    ARRAY_SIZE(khadas_mcu_fan_cells),
+>> +					    fan_cells,
+>> +					    nfan_cells,
+>>  					    NULL, 0, NULL);
+>>  
+>>  	return 0;
+>> @@ -123,7 +214,8 @@ static int khadas_mcu_probe(struct i2c_client *client)
+>>  
+>>  #ifdef CONFIG_OF
+>>  static const struct of_device_id khadas_mcu_of_match[] = {
+>> -	{ .compatible = "khadas,mcu", },
+>> +	{ .compatible = "khadas,mcu", .data = (void *)KHADAS_MCU_GENERIC },
+>> +	{ .compatible = "khadas,vim4-mcu", .data = (void *)KHADAS_MCU_VIM4 },
+>>  	{},
+>>  };
+>>  MODULE_DEVICE_TABLE(of, khadas_mcu_of_match);
+>>
+>> -- 
+>> 2.49.0
+>>
+>>
+> 
 
-recent_errors
-|-- alpha-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- arc-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- arc-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- arc-randconfig-001-20260916
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:warning:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- arm-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- csky-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- i386-randconfig-051-20260915
-|   `-- drivers-thunderbolt-acpi.c:warning:variable-dev-is-used-uninitialized-whenever-if-condition-is-true
-|-- i386-randconfig-053-20260915
-|   `-- drivers-thunderbolt-acpi.c:warning:variable-dev-is-used-uninitialized-whenever-if-condition-is-true
-|-- i386-randconfig-r051-20260915
-|   `-- drivers-thunderbolt-acpi.c:warning:variable-dev-is-used-uninitialized-whenever-if-condition-is-true
-|-- m68k-allmodconfig
-|   `-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|-- m68k-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- microblaze-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- nios2-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:warning:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- openrisc-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- parisc-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- parisc-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- parisc-randconfig-r122-20260916
-|   `-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|-- powerpc-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- powerpc64-randconfig-002-20260916
-|   |-- sound-soc-loongson-loongson_card.c:error:call-to-undeclared-function-acpi_bus_get_primary_device-ISO-C99-and-later-do-not-support-implicit-function-declarations
-|   `-- sound-soc-loongson-loongson_card.c:error:incompatible-integer-to-pointer-conversion-initializing-struct-device-with-an-expression-of-type-int
-|-- powerpc64-randconfig-r112-20260916
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:warning:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- s390-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:call-to-undeclared-function-acpi_bus_get_primary_device-ISO-C99-and-later-do-not-support-implicit-function-declarations
-|   `-- sound-soc-loongson-loongson_card.c:error:incompatible-integer-to-pointer-conversion-initializing-struct-device-with-an-expression-of-type-int
-|-- s390-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- sh-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- sh-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- sparc64-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:call-to-undeclared-function-acpi_bus_get_primary_device-ISO-C99-and-later-do-not-support-implicit-function-declarations
-|   `-- sound-soc-loongson-loongson_card.c:error:incompatible-integer-to-pointer-conversion-initializing-struct-device-with-an-expression-of-type-int
-|-- um-allmodconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:call-to-undeclared-function-acpi_bus_get_primary_device-ISO-C99-and-later-do-not-support-implicit-function-declarations
-|   `-- sound-soc-loongson-loongson_card.c:error:incompatible-integer-to-pointer-conversion-initializing-struct-device-with-an-expression-of-type-int
-|-- um-allyesconfig
-|   |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-|   `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
-|-- x86_64-rhel-9.4-rust
-|   `-- drivers-thunderbolt-acpi.c:warning:variable-dev-is-used-uninitialized-whenever-if-condition-is-true
-`-- xtensa-allyesconfig
-    |-- sound-soc-loongson-loongson_card.c:error:implicit-declaration-of-function-acpi_bus_get_primary_device
-    `-- sound-soc-loongson-loongson_card.c:error:initialization-of-struct-device-from-int-makes-pointer-from-integer-without-a-cast
 
-elapsed time: 2485m
-
-configs tested: 252
-configs skipped: 4
-
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-alpha                               defconfig    gcc-16.1.0
-alpha                randconfig-r073-20260915    gcc-14.3.0
-arc                              allmodconfig    clang-24
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    clang-24
-arc                                 defconfig    gcc-16.1.0
-arc                 nsimosci_hs_smp_defconfig    clang-20
-arc                   randconfig-001-20260916    clang-24
-arc                   randconfig-002-20260916    clang-24
-arc                  randconfig-r071-20260915    gcc-14.3.0
-arm                               allnoconfig    gcc-16.1.0
-arm                              allyesconfig    clang-24
-arm                                 defconfig    gcc-16.1.0
-arm                           h3600_defconfig    gcc-16.1.0
-arm                   randconfig-001-20260916    clang-24
-arm                   randconfig-002-20260916    clang-24
-arm                   randconfig-003-20260916    clang-24
-arm                   randconfig-004-20260916    clang-24
-arm                  randconfig-r051-20260915    clang-19
-arm                  randconfig-r052-20260915    gcc-9.5.0
-arm                  randconfig-r062-20260915    clang-24
-arm                  randconfig-r133-20260916    gcc-16.1.0 sparse
-arm                           tegra_defconfig    clang-20
-arm64                            allmodconfig    clang-24
-arm64                             allnoconfig    gcc-16.1.0
-arm64                               defconfig    gcc-16.1.0
-arm64                 randconfig-001-20260916    gcc-16.1.0
-arm64                 randconfig-002-20260916    gcc-16.1.0
-arm64                 randconfig-003-20260916    gcc-16.1.0
-arm64                 randconfig-004-20260916    gcc-16.1.0
-arm64                randconfig-r062-20260915    gcc-8.5.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-csky                                defconfig    gcc-16.1.0
-csky                  randconfig-001-20260916    gcc-16.1.0
-csky                  randconfig-002-20260916    gcc-16.1.0
-csky                 randconfig-r054-20260915    gcc-15.2.0
-csky                 randconfig-r111-20260916    clang-24 sparse
-hexagon                          allmodconfig    gcc-16.1.0
-hexagon                           allnoconfig    gcc-16.1.0
-hexagon                             defconfig    gcc-16.1.0
-hexagon               randconfig-001-20260916    gcc-16.1.0
-hexagon               randconfig-002-20260916    gcc-16.1.0
-i386                             allmodconfig    clang-22
-i386                              allnoconfig    gcc-16.1.0
-i386                             allyesconfig    clang-22
-i386        buildonly-randconfig-001-20260916    clang-22
-i386        buildonly-randconfig-002-20260916    clang-22
-i386        buildonly-randconfig-003-20260916    clang-22
-i386        buildonly-randconfig-004-20260916    clang-22
-i386        buildonly-randconfig-005-20260916    clang-22
-i386        buildonly-randconfig-006-20260916    clang-22
-i386                                defconfig    gcc-16.1.0
-i386                  randconfig-001-20260916    gcc-14
-i386                  randconfig-002-20260916    gcc-14
-i386                  randconfig-003-20260916    gcc-14
-i386                  randconfig-004-20260916    gcc-14
-i386                  randconfig-005-20260916    gcc-14
-i386                  randconfig-006-20260916    gcc-14
-i386                  randconfig-007-20260916    gcc-14
-i386                  randconfig-011-20260916    clang-22
-i386                  randconfig-012-20260916    clang-22
-i386                  randconfig-013-20260916    clang-22
-i386                  randconfig-014-20260916    clang-22
-i386                  randconfig-015-20260916    clang-22
-i386                  randconfig-016-20260916    clang-22
-i386                  randconfig-017-20260916    clang-22
-i386                  randconfig-051-20260915    clang-22
-i386                  randconfig-052-20260915    clang-22
-i386                  randconfig-053-20260915    clang-22
-i386                  randconfig-054-20260915    clang-22
-i386                  randconfig-141-20260915    clang-22
-i386                 randconfig-r051-20260915    gcc-9.5.0
-i386                 randconfig-r131-20260916    gcc-16.1.0 sparse
-loongarch                        allmodconfig    clang-24
-loongarch                         allnoconfig    gcc-16.1.0
-loongarch                           defconfig    clang-24
-loongarch             randconfig-001-20260916    gcc-16.1.0
-loongarch             randconfig-002-20260916    gcc-16.1.0
-loongarch            randconfig-r052-20260915    gcc-15.2.0
-loongarch            randconfig-r053-20260915    clang-19
-loongarch            randconfig-r062-20260915    gcc-13
-loongarch            randconfig-r111-20260916    gcc-12.5.0 sparse
-loongarch            randconfig-r121-20260916    gcc-12.5.0 sparse
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    clang-24
-m68k                                defconfig    clang-24
-m68k                       m5329evb_defconfig    clang-20
-m68k                 randconfig-r061-20260915    clang-24
-m68k                 randconfig-r064-20260915    gcc-13
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-microblaze                          defconfig    clang-24
-microblaze           randconfig-r053-20260915    gcc-9.5.0
-microblaze           randconfig-r073-20260915    gcc-8.5.0
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-mips                           ip22_defconfig    gcc-16.1.0
-mips                 randconfig-r054-20260915    gcc-9.5.0
-mips                 randconfig-r064-20260915    gcc-8.5.0
-mips                 randconfig-r113-20260916    clang-24 sparse
-mips                 randconfig-r123-20260916    gcc-12.5.0 sparse
-mips                           rs90_defconfig    gcc-16.1.0
-mips                        vocore2_defconfig    clang-20
-nios2                            allmodconfig    clang-20
-nios2                             allnoconfig    clang-24
-nios2                               defconfig    clang-24
-nios2                 randconfig-001-20260916    gcc-16.1.0
-nios2                 randconfig-002-20260916    gcc-16.1.0
-nios2                randconfig-r063-20260915    gcc-13
-openrisc                         allmodconfig    clang-20
-openrisc                          allnoconfig    clang-24
-openrisc                            defconfig    gcc-16.1.0
-openrisc             randconfig-r071-20260915    gcc-14.3.0
-openrisc             randconfig-r134-20260916    gcc-16.1.0 sparse
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    clang-24
-parisc                           allyesconfig    clang-17
-parisc                              defconfig    gcc-16.1.0
-parisc                randconfig-001-20260916    clang-24
-parisc                randconfig-002-20260916    clang-24
-parisc               randconfig-r052-20260915    clang-19
-parisc               randconfig-r122-20260916    gcc-12.5.0 sparse
-parisc               randconfig-r132-20260916    gcc-11.5.0 sparse
-parisc64                         alldefconfig    clang-20
-parisc64                            defconfig    clang-24
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    clang-24
-powerpc                        cell_defconfig    gcc-16.1.0
-powerpc                   currituck_defconfig    clang-20
-powerpc                 linkstation_defconfig    gcc-16.1.0
-powerpc                     mpc512x_defconfig    clang-20
-powerpc               randconfig-001-20260916    clang-24
-powerpc               randconfig-002-20260916    clang-24
-powerpc              randconfig-r053-20260915    gcc-15.2.0
-powerpc              randconfig-r063-20260915    clang-24
-powerpc              randconfig-r064-20260915    clang-24
-powerpc              randconfig-r071-20260915    clang-24
-powerpc              randconfig-r072-20260915    gcc-9.5.0
-powerpc              randconfig-r113-20260916    gcc-12.5.0 sparse
-powerpc              randconfig-r122-20260916    clang-24 sparse
-powerpc                         wii_defconfig    gcc-16.1.0
-powerpc64             randconfig-001-20260916    clang-24
-powerpc64             randconfig-002-20260916    clang-24
-powerpc64            randconfig-r054-20260915    clang-19
-powerpc64            randconfig-r071-20260915    gcc-10.5.0
-powerpc64            randconfig-r112-20260916    gcc-12.5.0 sparse
-riscv                            allmodconfig    clang-24
-riscv                             allnoconfig    clang-24
-riscv                            allyesconfig    clang-24
-riscv                               defconfig    gcc-16.1.0
-riscv                 randconfig-001-20260916    gcc-16.1.0
-riscv                 randconfig-002-20260916    gcc-16.1.0
-riscv                randconfig-r053-20260915    clang-24
-riscv                randconfig-r072-20260915    clang-19
-s390                             allmodconfig    clang-17
-s390                              allnoconfig    clang-24
-s390                             allyesconfig    gcc-16.1.0
-s390                                defconfig    gcc-16.1.0
-s390                  randconfig-001-20260916    gcc-16.1.0
-s390                  randconfig-002-20260916    gcc-16.1.0
-s390                 randconfig-r051-20260915    gcc-15.2.0
-s390                 randconfig-r064-20260915    gcc-13
-s390                 randconfig-r072-20260915    gcc-9.5.0
-s390                 randconfig-r073-20260915    clang-19
-s390                 randconfig-r133-20260916    gcc-11.5.0 sparse
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    clang-24
-sh                               allyesconfig    clang-17
-sh                                  defconfig    gcc-14
-sh                          lboxre2_defconfig    gcc-16.1.0
-sh                    randconfig-001-20260916    gcc-16.1.0
-sh                    randconfig-002-20260916    gcc-16.1.0
-sh                   randconfig-r054-20260915    clang-24
-sh                   randconfig-r123-20260916    clang-24 sparse
-sh                          sdk7786_defconfig    clang-20
-sh                           se7751_defconfig    gcc-16.1.0
-sparc                             allnoconfig    clang-24
-sparc                               defconfig    gcc-16.1.0
-sparc                 randconfig-001-20260916    gcc-14.3.0
-sparc                 randconfig-002-20260916    gcc-14.3.0
-sparc                randconfig-r063-20260915    gcc-13
-sparc64                          allmodconfig    clang-20
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260916    gcc-14.3.0
-sparc64               randconfig-002-20260916    gcc-14.3.0
-sparc64              randconfig-r112-20260916    clang-24 sparse
-sparc64              randconfig-r134-20260916    gcc-11.5.0 sparse
-um                               allmodconfig    clang-17
-um                                allnoconfig    clang-24
-um                               allyesconfig    gcc-16.1.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260916    gcc-14.3.0
-um                    randconfig-002-20260916    gcc-14.3.0
-um                   randconfig-r052-20260915    clang-24
-um                   randconfig-r072-20260915    clang-17
-um                   randconfig-r121-20260916    clang-24 sparse
-um                   randconfig-r132-20260916    gcc-16.1.0 sparse
-um                           x86_64_defconfig    gcc-14
-x86_64                            allnoconfig    clang-24
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-22
-x86_64                randconfig-001-20260916    clang-22
-x86_64                randconfig-002-20260916    clang-22
-x86_64                randconfig-003-20260916    clang-22
-x86_64                randconfig-004-20260916    clang-22
-x86_64                randconfig-005-20260916    clang-22
-x86_64                randconfig-006-20260916    clang-22
-x86_64                randconfig-011-20260916    gcc-14
-x86_64                randconfig-012-20260916    gcc-14
-x86_64                randconfig-013-20260916    gcc-14
-x86_64                randconfig-014-20260916    gcc-14
-x86_64                randconfig-015-20260916    gcc-14
-x86_64                randconfig-016-20260916    gcc-14
-x86_64                randconfig-071-20260916    gcc-14
-x86_64                randconfig-072-20260916    gcc-14
-x86_64                randconfig-073-20260916    gcc-14
-x86_64                randconfig-074-20260916    gcc-14
-x86_64                randconfig-075-20260916    gcc-14
-x86_64                randconfig-076-20260916    gcc-14
-x86_64                randconfig-101-20260915    clang-22
-x86_64                randconfig-102-20260915    clang-22
-x86_64                randconfig-103-20260915    clang-22
-x86_64                randconfig-104-20260915    clang-22
-x86_64                randconfig-161-20260915    clang-22
-x86_64               randconfig-r061-20260915    gcc-13
-x86_64               randconfig-r063-20260915    gcc-8.5.0
-x86_64               randconfig-r073-20260915    gcc-14
-x86_64                               rhel-9.4    clang-22
-x86_64                           rhel-9.4-bpf    clang-22
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-22
-x86_64                    rhel-9.4-kselftests    clang-22
-x86_64                         rhel-9.4-kunit    clang-22
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    clang-22
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-22
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    clang-24
-xtensa                           allyesconfig    clang-20
-xtensa                randconfig-001-20260916    gcc-14.3.0
-xtensa                randconfig-002-20260916    gcc-14.3.0
-xtensa               randconfig-r051-20260915    clang-24
-xtensa               randconfig-r061-20260915    gcc-8.5.0
-xtensa               randconfig-r062-20260915    gcc-13
-xtensa               randconfig-r131-20260916    gcc-11.5.0 sparse
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+-- 
+Best regards,
+Ronald
