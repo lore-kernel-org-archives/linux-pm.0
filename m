@@ -1,35 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 187463ED3CC;
-	Wed, 16 Sep 2026 06:49:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BC253EDE59
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 06:49:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789541370; cv=none; b=CKs8sMBmYHeyjuC4bx5rzZZ0rDn4w14tspMPJOUujmOF5oKd6u1xfBY39tPeWsIxrhu0OY0OMIw2jyqRwa8kyOWfR1IFljFW4aIjAQMtkhZzmadTjM2Akz3vn2mKEYTDUelRDcZWYcJNBjJxxqS2JfegGh1em2pMhSbb6114cbM=
+	t=1789541372; cv=none; b=GuXFOMepTVeoBioQfh8I/QjmO8sBgbgvOSrofumFIcN6lwS5WzOvvvS3H7KjE81RMcFYZXe7iP2JwCpbJU06J83DcIHo04AiLYSXeYSuh5+w3aS/ZwFs3AF9e5i8UE0+xboaHj/z7eAb7Cg+L7VaE/81EmNvSKUXYxcWuOA35v4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789541370; c=relaxed/simple;
-	bh=qOIPWsp13X9r7EYozdgCKL/qzN2Wk7DhYqV7rf8ImIA=;
+	s=arc-20240116; t=1789541372; c=relaxed/simple;
+	bh=U/qdmq8vraaCB8EaXhDYkYE1UhlMJaPO1o8EatB08hU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=agKZugw7fYuzxEtmmTN5SZqTwINu3AHZoghx+t4VrA/HtzYc52tyeA4SHYKrjJzJmXmuU/3gjs6FPPNF05HKhh6RH0/U3rVBxauPn2EeOk9H71rY4KxoWt8SaQXKerSGpWiC8Cbo8YyjgoQo61emKRaVW5m7D9/rx50vHAuQxA4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y8lDpki2; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=b5JJ0TiyVCkXiD9EwHO3ZAUqNDkzjj8uc8mq8Mtft0gqQrHMJ2P8sDP3kxhCrds0VD4dkmNhC7ZczSUQ/psrAz/sHmIZDmFX6mLeo5DvT1ngpEwty0mhElSgieyaYEeN6AsfoImFups1xR5+I/bMp/pbfO5KeSJaMvK7IG9COyQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cIYaIwSk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y8lDpki2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9BB71F000FF;
-	Wed, 16 Sep 2026 06:49:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cIYaIwSk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DE981F00893;
+	Wed, 16 Sep 2026 06:49:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789541368;
-	bh=vXEBdpOLFPBPlqKg/6+KeMflN5If6mNqz+3rPjfZq58=;
+	s=k20260515; t=1789541369;
+	bh=G6UyRvKusxgQJ/AmYBQxawCtg4kDeSSpXBweN3QNKkA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Y8lDpki2YN8MHxOx5LdvKA1IC5TJXRg7uuMdLL6rfHaK3qVTZZ2qRNkj7Wy+ansIw
-	 eHjukKJVvrXA8+6JfiHdOg1cYM8TCpVCTV5lOs/edC/v5FyaEwBtxiE8V0N0a1CrBG
-	 OrxacniJ9TM/Zo3xSkSG3e+KiASBLToKHiObUJLhfi2XWWn7BF0iYDCVaIUfeRR2cO
-	 v9W3sz85zlHP3t+8LLFn7HOezi95msqflC7Nu0yn6vQxV0JIyJNmdmlM/VFOCTSnP7
-	 9xXg/oX/Y1MvRrD3K2lixy8BliOmIU4L2aGY3EQCx1fS5iyYhT/6fTbj4XsfcrRK0I
-	 OxmbR/g+WS1Yg==
+	b=cIYaIwSkCwFDYNHQJAtOPAN1yGealifTpvaDqfPZEpUy6A9kAFp2ALS+UFoZW2nCl
+	 ETcIvrVUnehYj3ihmLVpMLbzJy2ogmc63gzHngzXGFpy5wayIHtFO0ut6xr86pAqkM
+	 gClLCBCNsKtndNpr89o8g86KDJ9lVXVqVb7ytXTV8tbXK+mOsTxNAZZLeTnUP/rbET
+	 UUSOOst0qK0DAaJmu+9haKWnP+kC4aVKt0HSvlJzUI0GfP/GM88hfZHHQxc5w9kqWV
+	 0VNZab1QVX7TIU55mnTIO4SRfs6Gg6lMyRO9uCbs0LtquZh+dAiHrmPG4rYk7KJ8uO
+	 Q4E/xEaUCNS9w==
 From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 16 Sep 2026 08:49:24 +0200
-Subject: [PATCH 02/15] power: supply: ab8500_fg: Report sub-percent charge
- changes
+Date: Wed, 16 Sep 2026 08:49:25 +0200
+Subject: [PATCH 03/15] power: supply: ab8500: Correct register definitions
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,56 +37,86 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260916-ab8500-charging-v1-2-e986ed321cc6@kernel.org>
+Message-Id: <20260916-ab8500-charging-v1-3-e986ed321cc6@kernel.org>
 References: <20260916-ab8500-charging-v1-0-e986ed321cc6@kernel.org>
 In-Reply-To: <20260916-ab8500-charging-v1-0-e986ed321cc6@kernel.org>
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Linus Walleij <linusw@kernel.org>, 
- stable@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Linus Walleij <linusw@kernel.org>
 X-Mailer: b4 0.14.3
 
-The fuel gauge updates bat_cap.mah from the coulomb counter but exposes
-bat_cap.prev_mah through CHARGE_NOW and ENERGY_NOW. It only refreshes
-prev_mah when the rounded integer capacity percentage changes, making the
-momentary properties appear frozen between percentage steps.
+The charger LED PWM register encodes its duty cycle as
+(N + 1) / 256. The value for 252/256 is therefore 0xfb, not 0xbf.
 
-Refresh prev_mah and notify userspace whenever the new charge remains
-within the currently accepted percentage. If a discharge estimate tries
-to cross upward into a higher percentage, the existing rejection still
-leaves both the reported percentage and charge unchanged.
+Both output-current codes 0xe and 0xf select 1.5 A, while 0x3f
+cannot fit in the four-bit field. Also correct the AB8505 BatCtrl
+bit 0 current source from 18 uA to 8 uA.
 
-The AB8500 fuel-gauge implementations in the Samsung-GT-I8160-Codina,
-Samsung-GT-I8160_HD-Codina, Samsung-GT-I8530-Gavini,
-Samsung-GT-S7710-Skomer, Samsung-SGH-I407-Kyle and
-Samsung-SGH-T599-Codina-TMO product trees retain the same percentage-gated
-prev_mah update and contain no finer-grained reporting workaround.
-
-Fixes: 13151631b5bd ("ab8500-fg: A8500 fuel gauge driver")
-Cc: stable@vger.kernel.org
 Assisted-by: LLM
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
- drivers/power/supply/ab8500_fg.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/power/supply/ab8500-bm.h      | 5 ++---
+ drivers/power/supply/ab8500_btemp.c   | 2 +-
+ drivers/power/supply/ab8500_charger.c | 4 ++--
+ 3 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index 016ed35e90f9..c5eaa32c4a2d 100644
---- a/drivers/power/supply/ab8500_fg.c
-+++ b/drivers/power/supply/ab8500_fg.c
-@@ -1387,6 +1387,13 @@ static void ab8500_fg_check_capacity_limits(struct ab8500_fg *di, bool init)
- 		}
- 	}
+diff --git a/drivers/power/supply/ab8500-bm.h b/drivers/power/supply/ab8500-bm.h
+index 180a016b3662..b73fccdc76d2 100644
+--- a/drivers/power/supply/ab8500-bm.h
++++ b/drivers/power/supply/ab8500-bm.h
+@@ -151,8 +151,7 @@
+ #define CH_OP_CUR_LVL_0P9		0x08
+ #define CH_OP_CUR_LVL_1P4		0x0D
+ #define CH_OP_CUR_LVL_1P5		0x0E
+-#define CH_OP_CUR_LVL_1P6		0x0F
+-#define CH_OP_CUR_LVL_2P		0x3F
++#define CH_OP_CUR_LVL_1P5_MAX		0x0F
  
-+	/* Keep the charge properties current between percentage changes. */
-+	if (di->bat_cap.prev_percent == percent &&
-+	    di->bat_cap.prev_mah != di->bat_cap.mah) {
-+		di->bat_cap.prev_mah = di->bat_cap.mah;
-+		changed = true;
-+	}
-+
- 	if (changed) {
- 		if (di->bm->capacity_scaling) {
- 			di->bat_cap.cap_scale.scaled_cap =
+ /* BTEMP High thermal limits */
+ #define BTEMP_HIGH_TH_57_0		0x00
+@@ -233,7 +232,7 @@ enum bup_vch_sel {
+ /* BatCtrl Current Source Constants */
+ #define BAT_CTRL_7U_ENA			0x01
+ #define BAT_CTRL_20U_ENA		0x02
+-#define BAT_CTRL_18U_ENA		0x01
++#define BAT_CTRL_8U_ENA			0x01
+ #define BAT_CTRL_16U_ENA		0x02
+ #define BAT_CTRL_CMP_ENA		0x04
+ #define FORCE_BAT_CTRL_CMP_HIGH		0x08
+diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
+index 90a61d9db72c..d5c955176dd0 100644
+--- a/drivers/power/supply/ab8500_btemp.c
++++ b/drivers/power/supply/ab8500_btemp.c
+@@ -42,7 +42,7 @@
+ #define BTEMP_BATCTRL_CURR_SRC_20UA	20
+ 
+ #define BTEMP_BATCTRL_CURR_SRC_16UA	16
+-#define BTEMP_BATCTRL_CURR_SRC_18UA	18
++#define BTEMP_BATCTRL_CURR_SRC_8UA	8
+ 
+ #define BTEMP_BATCTRL_CURR_SRC_60UA	60
+ #define BTEMP_BATCTRL_CURR_SRC_120UA	120
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index ff38254d06ef..7e6afcf0ac7d 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -66,7 +66,7 @@
+ #define LED_INDICATOR_PWM_ENA		0x01
+ #define LED_INDICATOR_PWM_DIS		0x00
+ #define LED_IND_CUR_5MA			0x04
+-#define LED_INDICATOR_PWM_DUTY_252_256	0xBF
++#define LED_INDICATOR_PWM_DUTY_252_256	0xFB
+ 
+ /* HW failure constants */
+ #define MAIN_CH_TH_PROT			0x02
+@@ -3063,7 +3063,7 @@ static int ab8500_charger_init_hw_registers(struct ab8500_charger *di)
+ 
+ 		ret = abx500_set_register_interruptible(di->dev,
+ 			AB8500_CHARGER, AB8500_CH_OPT_CRNTLVL_MAX_REG,
+-			CH_OP_CUR_LVL_1P6);
++			CH_OP_CUR_LVL_1P5_MAX);
+ 		if (ret) {
+ 			dev_err(di->dev,
+ 				"failed to set CH_OPT_CRNTLVL_MAX_REG\n");
 
 -- 
 2.55.0
