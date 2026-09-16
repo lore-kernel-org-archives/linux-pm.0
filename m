@@ -1,264 +1,102 @@
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D5523CA4AF;
-	Wed, 16 Sep 2026 06:09:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=183.62.165.209
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 630F7345731;
+	Wed, 16 Sep 2026 06:49:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789538981; cv=none; b=Ur8Sf7RdGbfA3lPusA8cTkwYYhv+MlccN1x5hDQ4GytRYKWRoRUVxZbly3a3N11eK8GcB/2biI5+BMuaVF51/f4BMqytCgjhTg1c11rqxzFLuxx6Vk57NZCHOpB/IYC+RrIwgr4Sf0+v4pd6zt7Y9Qqf8+GZLYIC0ogyO7of/90=
+	t=1789541367; cv=none; b=Bq0PSoUsoLoBG0kfCs1c/g373+q2623yWl/n+IWP3zh/hkY7uN97DVVUubf55Ir049Kqq9uqOBQP772b/lL9mcFYJEEVh1ej/YjjjcVIKxeI+VDz67buuKrD7CNNpr1DFjvabKx0ELQSqDCRt+1h+Qoxwcre0Po4s6xYgA3LbnE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789538981; c=relaxed/simple;
-	bh=vDErkoi7e/5qWch4mGVd8lRjKHPnQXY4oat/gseFrM8=;
-	h=Message-ID:Date:Mime-Version:From:To:Cc:Subject:Content-Type; b=DaOj29pV3QJ1yLc6NJZqlk0vUHTebdcu12bos5XLmkte4oCmWYExMXy5+8m2Mz+JSeif1lpsr9i+9Jtzzi31EjeLvR+R673NEEFvJaaYKbnYuSHL+lyqyZ99WmB6pGC21nt8jUuHj/Ofk8z8luY0aeutXkd8bR2+qSyHq9DRFRU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn; spf=pass smtp.mailfrom=zte.com.cn; arc=none smtp.client-ip=183.62.165.209
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zte.com.cn
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4hl7l049Gmz4xPSq;
-	Wed, 16 Sep 2026 14:09:32 +0800 (CST)
-Received: from xaxapp01.zte.com.cn ([10.88.99.176])
-	by mse-fl1.zte.com.cn with SMTP id 68G69ONI001113;
-	Wed, 16 Sep 2026 14:09:25 +0800 (+08)
-	(envelope-from hu.shengming@zte.com.cn)
-Received: from mapi (xaxapp02[null])
-	by mapi (Zmail) with MAPI id mid32;
-	Wed, 16 Sep 2026 14:09:26 +0800 (CST)
-X-Zmail-TransId: 2afa6aaa329631a-a143b
-X-Mailer: Zmail v1.0
-Message-ID: <20260916140926740-DCokXh6dAgtqDn1EWdCh@zte.com.cn>
-Date: Wed, 16 Sep 2026 14:09:26 +0800 (CST)
+	s=arc-20240116; t=1789541367; c=relaxed/simple;
+	bh=mCF4fxxxOnevSk0YHRVmuEF4GA8MIJgi/Rk6gjZClX4=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=obqdSjfwPlQvr+teW1Qe6BuQhhdc0BPlxkBYW42HZAi2Er79ECWzx+xlV8+hPqGN+0PmbYMkilsnPBgrwVV/bvsiVzV4+qZm0R3jdjOmz5msbJI1Au7/fChb25qUR5Fq3e+/d1S/wdWoGfoo0yk4suKjJjMVrFolQhHzDin02Fc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FYtkLmea; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FYtkLmea"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E6FC1F000FF;
+	Wed, 16 Sep 2026 06:49:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789541366;
+	bh=1+3AKlVt0GCOCVPUz0KKtTk0th0aRBbvGV1wqK97g2E=;
+	h=From:Subject:Date:To:Cc;
+	b=FYtkLmeacaFUGcXTONhYaZUWMraGw1MgdON4pVosIazEFlOPsEkWTT/4fmwVSDptw
+	 7r9OLzXBiRffKtR6Qv1S35YIpkUCmF30qYBL/Jb8NEAYwV11qGwuF/m2Qz7dH+7nGX
+	 xzcjFjMnllxxEQykZJCjTrHT86kRu+hR2xE264Y1xQmIVJdSkHb+pLZrSKN+xWOlQX
+	 0l0stJCo28Bwn82THZE90DXKXuACeEkZuj2VQZ+m7oXLadGafml86AlcyFkoD4rVgE
+	 034KXfF0NkFxOz0z337+bLBb+w2GNDWxn3t/sdvmqzc+MsgOava6zjUjr6t4Ilv1pA
+	 E5JnylI7USBNw==
+From: Linus Walleij <linusw@kernel.org>
+Subject: [PATCH 00/15] power: supply: Fix AB8500 and AB8505 charging
+Date: Wed, 16 Sep 2026 08:49:22 +0200
+Message-Id: <20260916-ab8500-charging-v1-0-e986ed321cc6@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-From: <hu.shengming@zte.com.cn>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>,
-        <zhongqiu.han@oss.qualcomm.com>
-Cc: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <luo.haiyang@zte.com.cn>, <zhang.run@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIHYyXSBjcHVmcmVxOiBjb25zZXJ2YXRpdmU6IFJlc3RyaWN0IGRlZmVycmVkIGRvd25zY2FsaW5nIHRvIGxvdyBsb2Fk?=
-Content-Type: text/plain;
-	charset="UTF-8"
-X-MAIL:mse-fl1.zte.com.cn 68G69ONI001113
-X-TLS: YES
-X-ENVELOPE-SENDER: hu.shengming@zte.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Wed, 16 Sep 2026 14:09:32 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AAA329C.001/4hl7l049Gmz4xPSq
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2MQQqAIBAAvyJ7TlgNI/tKdNDabC8WChFIf2/pO
+ AwzDSoVpgqTalDo5spnFjCdgvUIOZHmTRgs2gG9cTrE0SFqkSVxTnpFu/fO+NCHCFJdhXZ+/uO
+ 8vO8HZrmRZ2EAAAA=
+X-Change-ID: 20260915-ab8500-charging-c02f3519a3ab
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Linus Walleij <linusw@kernel.org>, 
+ stable@vger.kernel.org
+X-Mailer: b4 0.14.3
 
-From: Shengming Hu <hu.shengming@zte.com.cn>
+This series first fix two serious bugs in the AB8500/AB8505 charging
+code making the charging report bad figures. (It only affects the
+human-visible status, the charging itself is safe.) These two patches
+are tagged for stable.
 
-For a shared cpufreq policy, dbs_update() derives the load used for the
-frequency decision from the maximum load among its CPUs, but it may
-also record deferred idle periods accumulated by an idle CPU in the
-policy.
+The series then audits the AB8500 and AB8505 battery-charging stack
+against the revision 3 hardware manuals.
 
-Consequently, a single update can contain both a high decision load
-from one CPU and multiple deferred idle periods from another CPU. The
-conservative governor applies the deferred down steps before evaluating
-the decision load. If that load subsequently triggers an up step, the
-deferred down steps can outweigh the single up step and produce a net
-frequency reduction.
+The audit found incorrect register constants and several independent
+logic bugs in the common code. It also found that AB8505 needs dedicated
+handling for its five-bit USB link-status table, OTP-programmed VBUS
+overvoltage limit, longer VBUS debounce, reserved autopower field, and
+lack of an integrated main charger. The final binding and DTS patches
+remove the five nonexistent main-charger interrupts from AB8505.
 
-This was observed on a policy shared by CPUs 2 and 3. A CPU-bound
-SCHED_EXT task kept CPU 2 fully utilized while CPU 3 remained idle.
-On this system, SCHED_EXT generated update-util callbacks less
-frequently than CFS, resulting in sparse DBS updates such as:
+Some further fixes come from auditing the Samsung product trees.
 
- load=100 idle_periods=7 interval=59 ms
- load=100 idle_periods=4 interval=39 ms
- load=100 idle_periods=2 interval=19 ms
- load=100 idle_periods=7 interval=59 ms
+After these long due fixes the AB8500/AB8505 charging is smooth sailing.
 
-With the default 5% frequency step and a 2.6 GHz policy maximum, seven
-deferred periods reduce the requested frequency by seven 130 MHz steps
-before the high decision load adds only one step. Repeated updates
-therefore keep the policy near 530 MHz even though CPU 2 is fully
-utilized.
-
-There are two load values relevant to this behavior:
-
-  * sample_load is calculated from the busy and elapsed time of the
-    current sample.
-
-  * decision_load is returned by dbs_update() for the governor's
-    frequency decision. After a long idle interval, it may reuse
-    prev_load to improve the response to a waking task and can therefore
-    differ from sample_load.
-
-The problem is that idle_periods is derived from accumulated idle time
-and is applied independently of whether the current sample load is in
-the conservative governor's downscaling region. A high sample load and
-multiple deferred idle periods can therefore coexist, particularly
-when updates are sparse.
-
-As suggested by Zhongqiu Han, calculate the sample load separately from
-the decision load. If no time has elapsed, use prev_load for the sample
-load as the existing load calculation does, since no load can be
-calculated for that interval.
-
-Record the maximum sample load for the policy and apply deferred down
-steps only when it is below down_threshold. This makes deferred
-downscaling follow the same threshold that the conservative governor
-normally uses to determine whether the policy load is low enough to
-reduce the frequency.
-
-The existing code applies deferred down steps whenever idle_periods is
-valid, regardless of the sample load. When the decision load is in the
-hold region, the locally adjusted frequency is not submitted unless
-another frequency-update branch is taken. Thus, when the sample and
-decision loads are the same and both are in the hold region, this
-change does not alter the requested frequency.
-
-The difference becomes visible when the decision load causes a
-frequency update. In particular, if it exceeds up_threshold, the
-governor applies a single up step after the deferred down steps and
-submits the resulting request. Multiple deferred down steps can then
-outweigh that up step and cause a frequency reduction even when the
-sample load is above down_threshold.
-
-With this change, deferred down steps are skipped whenever the maximum
-sample load is at or above down_threshold, keeping deferred downscaling
-consistent with the conservative governor's threshold semantics. The
-requested frequency may therefore be higher than with the existing
-behavior when deferred idle periods are present and the decision load
-causes a frequency update. This is intentional, because the lower
-request previously resulted from applying deferred downscaling while
-the sampled policy load was outside the governor's downscaling region.
-Accelerated deferred downscaling remains available when the policy
-sample load is below down_threshold, including after a workload has
-completed and the policy has become idle.
-
-Cc: stable@vger.kernel.org
-Fixes: 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster for deferred updates")
-Reviewed-by: Luo Haiyang <luo.haiyang@zte.com.cn>
-Reviewed-by: Run Zhang <zhang.run@zte.com.cn>
-Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Signed-off-by: Shengming Hu <hu.shengming@zte.com.cn>
+Assisted-by: LLM
+Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
-Changes in v2:
+Linus Walleij (15):
+      power: supply: ab8500_fg: Accept status from supplied power
+      power: supply: ab8500_fg: Report sub-percent charge changes
+      power: supply: ab8500: Correct register definitions
+      power: supply: ab8500_fg: Drop nonexistent AB8505 controls
+      power: supply: ab8500_btemp: Fix event temperature reporting
+      power: supply: ab8500: Preserve battery termination current
+      power: supply: ab8500_charger: Fix AC charger re-enable
+      power: supply: ab8500_charger: Decode AB8505 USB status
+      power: supply: ab8500_charger: Respect AB8505 register layout
+      power: supply: ab8500_charger: Handle detection errors
+      power: supply: ab8500_charger: Skip absent AB8505 main charger
+      power: supply: ab8500_charger: Retry AB8505 USB detection
+      power: supply: ab8500_charger: Recover inactive AB8505 charger
+      power: supply: ab8500_fg: Finalize current measurements
+      power: supply: ab8500_fg: Avoid reserved AB8505 CCConf bit
 
-- Calculate the sample load separately from the decision load that may
-  reuse prev_load after a long idle interval, as suggested by Zhongqiu Han.
-- Preserve the existing prev_load fallback when time_elapsed is zero.
-- Gate deferred down steps on down_threshold.
-- Link to v1: https://lore.kernel.org/all/2026090215474182681fN7LLOSpqIc3s3OqJaW@zte.com.cn/
-
+ drivers/power/supply/ab8500-bm.h       |   8 +-
+ drivers/power/supply/ab8500_bmdata.c   |   3 +-
+ drivers/power/supply/ab8500_btemp.c    |  30 +--
+ drivers/power/supply/ab8500_chargalg.c |   9 +-
+ drivers/power/supply/ab8500_charger.c  | 404 ++++++++++++++++++++++++++++-----
+ drivers/power/supply/ab8500_fg.c       | 179 +++++----------
+ 6 files changed, 421 insertions(+), 212 deletions(-)
 ---
- drivers/cpufreq/cpufreq_conservative.c |  8 ++++---
- drivers/cpufreq/cpufreq_governor.c     | 29 +++++++++++++++++++-------
- drivers/cpufreq/cpufreq_governor.h     |  2 ++
- 3 files changed, 29 insertions(+), 10 deletions(-)
+base-commit: 803733e3585d6fd2d43c452c502173fa153b683d
+change-id: 20260915-ab8500-charging-c02f3519a3ab
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 0b32ae28ec85..02bfd46543e9 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -85,10 +85,12 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
- 	freq_step = get_freq_step(cs_tuners, policy);
-
- 	/*
--	 * Decrease requested_freq one freq_step for each idle period that
--	 * we didn't update the frequency.
-+	 * Apply deferred down steps only when the policy sample load is
-+	 * below down_threshold. Otherwise, multiple deferred down steps may
-+	 * cause a net frequency decrease outside the downscaling region.
- 	 */
--	if (policy_dbs->idle_periods < UINT_MAX) {
-+	if (policy_dbs->max_sample_load < cs_tuners->down_threshold &&
-+	    policy_dbs->idle_periods < UINT_MAX) {
- 		unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
-
- 		if (requested_freq > policy->min + freq_steps)
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 710d93ec89b5..f3bd3dbe7c41 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -124,7 +124,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
- 	unsigned int ignore_nice = dbs_data->ignore_nice_load;
--	unsigned int max_load = 0, idle_periods = UINT_MAX;
-+	unsigned int max_load = 0, max_sample_load = 0;
-+	unsigned int idle_periods = UINT_MAX;
- 	unsigned int sampling_rate, io_busy, j;
- 	u64 cur_nice;
-
-@@ -147,7 +148,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 		u64 update_time, cur_idle_time;
- 		unsigned int idle_time, time_elapsed;
--		unsigned int load;
-+		unsigned int load, sample_load;
-
- 		cur_idle_time = get_cpu_idle_time(j, &update_time, io_busy);
-
-@@ -186,6 +187,20 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
-
- 		j_cdbs->prev_cpu_nice = cur_nice;
-
-+		/*
-+		 * Compute the sample load separately from the prev_load value
-+		 * that may be reused after a long idle interval. The conservative
-+		 * governor uses it to decide whether to apply deferred down steps.
-+		 * If no time has elapsed, retain the existing behavior and use
-+		 * prev_load.
-+		 */
-+		if (unlikely(!time_elapsed))
-+			sample_load = j_cdbs->prev_load;
-+		else if (time_elapsed > idle_time)
-+			sample_load = 100 * (time_elapsed - idle_time) / time_elapsed;
-+		else
-+			sample_load = 0;
-+
- 		if (unlikely(!time_elapsed)) {
- 			/*
- 			 * That can only happen when this function is called
-@@ -220,11 +235,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			load = j_cdbs->prev_load;
- 			j_cdbs->prev_load = 0;
- 		} else {
--			if (time_elapsed > idle_time)
--				load = 100 * (time_elapsed - idle_time) / time_elapsed;
--			else
--				load = 0;
--
-+			load = sample_load;
- 			j_cdbs->prev_load = load;
- 		}
-
-@@ -237,9 +248,13 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
-
- 		if (load > max_load)
- 			max_load = load;
-+
-+		if (sample_load > max_sample_load)
-+			max_sample_load = sample_load;
- 	}
-
- 	policy_dbs->idle_periods = idle_periods;
-+	policy_dbs->max_sample_load = max_sample_load;
-
- 	return max_load;
- }
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 73b8ed7cfaae..806d8fb4dff1 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -95,6 +95,8 @@ struct policy_dbs_info {
- 	/* Multiplier for increasing sample delay temporarily. */
- 	unsigned int rate_mult;
- 	unsigned int idle_periods;	/* For conservative */
-+	/* Maximum load from the current policy sample. */
-+	unsigned int max_sample_load;
- 	/* Status indicators */
- 	bool is_shared;		/* This object is used by multiple CPUs */
- 	bool work_in_progress;	/* Work is being queued up or in progress */
+Best regards,
 -- 
-2.25.1
+Linus Walleij <linusw@kernel.org>
+
