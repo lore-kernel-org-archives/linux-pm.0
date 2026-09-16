@@ -1,31 +1,30 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3ED37476CDA;
-	Wed, 16 Sep 2026 10:01:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id EEDD04BA9F2;
+	Wed, 16 Sep 2026 10:01:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789552912; cv=none; b=XtY8xzH1QflwryLuD9IRVZyKQDO0ow1JUfoh+uL2cxMX+x54H8Ghx9gjJfehEOEiOFmcIMVm6pEHaQC358v63jFodfOmTNvCkWlZJ/bWd9MIxbtEHSU5fM9XVLscvwih3h3dzN/zRUxCPU5zaOjsyigNLlDt+6+XcxTibyY4D8U=
+	t=1789552917; cv=none; b=VYA0GQNnx99cGXg9UqR0RZKm4i5pOA78gwi9g4IZZsA6eI8y9Wm2QaFckA9r6XokUGlzOWpE/ISsG8gkCTEz4CnakSzNqdkmSU/8tKa1N3ct9vgEecTTdX8IShPO+fRr7Fn6tG/S4YZlSnhGJLFjfn8JG/38fykuDk39i2ZBid8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789552912; c=relaxed/simple;
-	bh=+U4NUhzKtF3iaqxkjxI+IFGed8Vvw8nCA5q4a9gp7Sw=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=koUKPdBbACf4BPC7cyz+xzfe/qvDyPCVx4EnE4UX8paC3ywuPAUzIErdr7AlYA13gvqH0ubCZbEmNZoANGUPKN0I005ZlyJJl8oYQRcaN07UEXZ1+bOFj9xO5JDmTs6j/Wx7QqmX0ovPZ6SosHA4up/fjFgzW/sV0+B0+zNN0wU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Q4VMMO6a; arc=none smtp.client-ip=217.140.110.172
+	s=arc-20240116; t=1789552917; c=relaxed/simple;
+	bh=7jLZ2XhJiOEZYmvQi/rWbrYMbAlJyFj+KfTLwKY+2KU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=SQG9Lua7YVOHUaAp0aSiXpDQaGFvJQfnBC5WOQG3RlVIG+2Y/b+5OKOs8i0vNhp49dHpqIMY/gb18HrYeNXe+Aqlcco1MabN1YtEYTFu2+g55kpu0X2v+bE5GlTK4SKRBolxChVjVHGuAgAib6x7cQq3fphyGvieGuLzqU6r8y8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=l2M/L4l0; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Q4VMMO6a"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="l2M/L4l0"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC7D219F0;
-	Wed, 16 Sep 2026 03:01:29 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BDE9A152B;
+	Wed, 16 Sep 2026 03:01:23 -0700 (PDT)
 Received: from e127648.carmbridge.arm.com (unknown [10.0.129.72])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A253C3F86F;
-	Wed, 16 Sep 2026 03:01:30 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 086183F86F;
+	Wed, 16 Sep 2026 03:01:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789552893; bh=+U4NUhzKtF3iaqxkjxI+IFGed8Vvw8nCA5q4a9gp7Sw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Q4VMMO6anAb22G15ijiEgbyXYFZ1L1UIkumiSX+dZ6JZKz5QmxwE2I1xqbxGvlqjk
-	 kSKs19t85UI03ZLWHuIjta321yW42GC4oS2tb5zFcOYgmhxaateCZ7BMvX5W+X5deE
-	 3b2/crnShg87pxtwuKizbGf85SQXSalcAbnL9mvE=
+	t=1789552887; bh=7jLZ2XhJiOEZYmvQi/rWbrYMbAlJyFj+KfTLwKY+2KU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=l2M/L4l0zAw3abeg/4TOau953HS5vrQamXD5Ch4xxQj6do6uWlALCFl7yLWq0VMq+
+	 hrf6JuzuegaICWRB0WNFWUvTvn83WebiRXEQ1FPHtGg1SkmGPjbZOYnJ+1MQe2Ltsz
+	 WkBKWzXvAbLdIOuzxPRmTWTrexgA3kD9Cfw4PAwo=
 From: Christian Loehle <christian.loehle@arm.com>
 To: Ingo Molnar <mingo@redhat.com>,
 	Peter Zijlstra <peterz@infradead.org>,
@@ -44,12 +43,10 @@ Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path candidates
-Date: Wed, 16 Sep 2026 11:01:16 +0100
-Message-Id: <20260916100116.701206-3-christian.loehle@arm.com>
+Subject: [PATCH 0/2] sched/fair: Randomize equally shallow idle CPU picks
+Date: Wed, 16 Sep 2026 11:01:14 +0100
+Message-Id: <20260916100116.701206-1-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260916100116.701206-1-christian.loehle@arm.com>
-References: <20260916100116.701206-1-christian.loehle@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -58,55 +55,41 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
-slow-path selectors can choose the same CPU before either task is enqueued.
+Concurrent slow-path selectors can converge on the same idle CPU before
+either task is enqueued. Remove the idle-recency preference and randomize
+equal-latency choices in a single scan.
 
-Use reservoir sampling in the tie branch, resetting the candidate count
-when a lower advertised exit latency is found. Use the per-CPU scheduler
-PRNG and reciprocal_scale() to avoid variable division or a second scan.
+The testing platform 160-CPU, dual-socket Altra has unusually large 80-CPU
+candidate groups at NUMA level, making this particularly prone to stale
+idle picks.
 
-This reduces deterministic convergence without reserving the chosen CPU.
+Median stress-ng throughput (bogo ops/s):
 
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- kernel/sched/fair.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+  --fork  --fork-max      Baseline       Patched    Change
+  ------------------------------------------------------
+       1           1        779.19        811.38    +4.13%
+       8           1       2958.32       2960.18    +0.06%
+      16           1       5070.95       5247.63    +3.48%
+      16           4       7692.64       7831.60    +1.81%
+      32           1       8662.82       8643.39    -0.22%
+      64           1      11880.47      12096.69    +1.82%
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ff5793bddc35..6836a8364440 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -24,6 +24,7 @@
- #include <linux/mmap_lock.h>
- #include <linux/hugetlb_inline.h>
- #include <linux/jiffies.h>
-+#include <linux/math.h>
- #include <linux/mm_api.h>
- #include <linux/highmem.h>
- #include <linux/hrtimer.h>
-@@ -8459,6 +8460,7 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
- {
- 	unsigned long load, min_load = ULONG_MAX;
- 	unsigned int min_exit_latency = UINT_MAX;
-+	unsigned int nr_candidates = 0;
- 	int least_loaded_cpu = this_cpu;
- 	int shallowest_idle_cpu = -1;
- 	int i;
-@@ -8482,9 +8484,12 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
- 			if (idle && idle->exit_latency < min_exit_latency) {
- 				min_exit_latency = idle->exit_latency;
- 				shallowest_idle_cpu = i;
-+				nr_candidates = 1;
--			} else if ((!idle || idle->exit_latency == min_exit_latency) &&
--				   shallowest_idle_cpu == -1) {
--				shallowest_idle_cpu = i;
-+			} else if (!idle || idle->exit_latency == min_exit_latency) {
-+				nr_candidates++;
-+				if (nr_candidates == 1 ||
-+				    !reciprocal_scale(sched_rng(), nr_candidates))
-+					shallowest_idle_cpu = i;
- 			}
- 		} else if (shallowest_idle_cpu == -1) {
- 			load = cpu_load(cpu_rq(i));
+Separate instrumented runs observed lower conditional stale-pick rates,
+i.e. a busy candidate at final return:
+
+Workload                Baseline       Patched
+----------------------------------------------
+fork, 32 creators          0.771%       0.407%
+fork, 64 creators          1.242%       0.672%
+
+Christian Loehle (2):
+  sched/fair: Drop idle recency from slow-path CPU selection
+  sched/fair: Randomize equally shallow slow-path candidates
+
+ kernel/sched/fair.c | 24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
+
+
+base-commit: fd73f4a6659897191fa0d40695fe370925dd3780
 -- 
 2.34.1
