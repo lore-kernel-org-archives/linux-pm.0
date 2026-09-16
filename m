@@ -1,127 +1,102 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15E094E234A
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 11:06:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 450394A1E12;
+	Wed, 16 Sep 2026 11:10:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789556786; cv=none; b=gaIBiZDuNQXhfkX0orLQzHGdFFussGlVbqBGttBqTO3p2xHGt7QJdyqWJIg9/tjqoqg8dUZfFFkJZJeQGXBEWGlINTDqUmquLOaCxTohtOHV8eAOwvVrmmUd1S6xvcfy66lm3nDxAt7f4FCDNLX92QRX7THxWYGdmAbewZpjOv8=
+	t=1789557050; cv=none; b=awiD77BLDnvhi2vsEF1mx5aHkyQXAKiuRwyxwc6m9DsYMARx1yg9S/y4+GBDX/kfS9d1Qnnb5rTae2msrlIXdfKrMHoE8HzuxViwFC9mpjx6v0bHsoNh4wDpWtxlcHYNo/IBZwaOZNK/H0ZIraqa+HG9aWf+5UFzEeQgAAmFD84=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789556786; c=relaxed/simple;
-	bh=KvGxbBIIZYJxbA/goM5wib5m0sHgZa7QQZXkuKeLEYc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LweXhZQXF2vu/CSISq3sYc2SOkZIx3dWbK8WWLu8ySyGjWMug1EKPxiez1tm7tnZIRu3xMweIiq/6OIi+nRgOsdm9VCYfP4uEJHTXSy2AwLazRweVnEXVaHENi9pvrq8bXUpaaHlF6M7OMX+qH1TtfIG3jz2y7WRQyY+MyBgIlM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eZJWZyHA; arc=none smtp.client-ip=74.125.225.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789557050; c=relaxed/simple;
+	bh=mathEgzzR7eRS3urb+X7mzdUfdtyv9AcODkNHtsKJc8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=j1fOEDpeC5zjT0U817Nwm58PJJLbRMU9Gr/hwYMRRfR/rXhaY7PvHR1YPn6wRoyizmmMVp/tjpKmTvHxlxgBvAIy5fCzj0tbU9jJBILVp9r/4sunBIAhZZwP1rUptzFPBvvBnrCnqOjGTMMCQYtqyjZcaC6dG3n3yFfXVezTdV8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=sWBr/t7V; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eZJWZyHA"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e7c6dbc60so300185e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 04:06:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789556767; x=1790161567; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=z2mTRCT19PSs98SBRuFAUCXLrvDpRI5nVmcGar4PNf4=;
-        b=eZJWZyHAqYXeVTNchjC9I9QwFJoLYPtSyZtlG6pGc3rWiipTdZHhkzH2ccNwbFFbJY
-         AfOThFsFxM9iqFAUNFjo+a6/Nkx4tvgr4m6GIC8nLIXkz7wYs+H/yCRzxXk4IKw0F5HP
-         RHKFY9R+VKZbqqncFb7w0E4P92Us+U6JTK3uydVF8IWCdboZDKoh2/uYjgehalpAffZ5
-         vvJXlRkR4BtSB1OHdHzhn7BVOFkqUeMUZ553vbYI7XGEEkv5U7kH5mTwllavBWrVlr8g
-         q7IgUmRFCDe5CbAGO57T/gxfS8t+IoFAG65ETzLvZp7tCU+YABc6QiI7OqXmPlQRJoFJ
-         2EhQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789556767; x=1790161567;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=z2mTRCT19PSs98SBRuFAUCXLrvDpRI5nVmcGar4PNf4=;
-        b=DWBwNOpSQZtLsKTXhq0k7KXW0B+KBDfPhD2UKiUS4jGLOE4z9wWhMYqK4oLBpeGfWh
-         bOwQa+6FLWhp20dDsWJrmQHWJk5tfmThM2X3X7+t7ZD1IV6lVvX7aMKI1SJ3DWn6Sr1B
-         v9C5AdFnNQZWekMfJpWmRnNGnI5WaeNFqmKAk6dKHt9z7+Ft2nqvbVvnW+ajLV5o/10G
-         VeGQBu//khOxQ3/jTEub8Rhbxn+hoTHa1wRrkQk8T/zm+A3AEqacwR+90S+n7U7P6/xH
-         /tABD+KaVg7e9RcShFUr6V4MlJH0qpUQTo4YrMjiODwzNBjIFnaSRAmXbdWbqttvmcdt
-         Ez/Q==
-X-Forwarded-Encrypted: i=1; AKwUvBx2LzeyjifyFLAehi8uWE6+8drRTeK/OOdKEke9xd8n19WxGEqiZ98KazfhLY6/x002kX4oXEN/4g==@vger.kernel.org
-X-Gm-Message-State: AFuF++mWvLMb4sqkZR5oUJumG85aJtHlj4MAPJbC15C60lTvQJ10mggb
-	qBeEBxrZ1youmdr5OGHP+mJq5dGbiy3B0xZD4faDV19Bw7X1YfI84Ddg
-X-Gm-Gg: AYBFou1QLISVwiBTRaajMps3r1ERK//8hc3dxylSFJP6rhxzI9wKr++v/D5yrKgTg7b
-	7Aaf+noHyH9WnBm2rojB/1PMhTXawUvcl3cI0PKiZgwGp2DL3e28Q6h2o0i6ScuGssGI2gmnd3a
-	MZzmvgl5PwidRPstYQBkrhcM/kEj6y3s3gb9ibqIM4ZwwfnW2v/MIn/EQj6uBCOdWgG9N5sz1p2
-	iKiW3kq2zq/B2s+ChFb3Ha6MTVOlKllqfbs7pzUuJmepjEMuZrARGSO2wU1VDF7UFsXdrrlZV/d
-	WeO4SUhFL3JMV1s58bjbRZm9lIYS8jSEPte1QPjW5tHSAkBbMCTzGQGZc9BRv0PzmlKiudH+vZZ
-	yr1YR5aCVie3gLtQ1mXvnOp6l2p5pnbl7/cC7i46QHsXbto2WY6u6+Anm3RmmhuK2rWruYQfOhR
-	9NRMaGz+CL6Eq1Qf/eqaWdGA8iRp9OQhdouO/AuHwMn1ZEHm/N910GU4ic+6utZelR2r80WMm6H
-	jyiBeH68+NYWLbyOj4L4O8=
-X-Received: by 2002:a05:600c:6995:b0:49c:ff81:e062 with SMTP id 5b1f17b1804b1-49eb7328137mr21808175e9.2.1789556767374;
-        Wed, 16 Sep 2026 04:06:07 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e83d9057dsm79447295e9.3.2026.09.16.04.06.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Sep 2026 04:06:06 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: christian.loehle@arm.com
-Cc: beata.michalska@arm.com,
-	cl@gentwo.org,
-	daniel.lezcano@kernel.org,
-	dietmar.eggemann@arm.com,
-	elif.topuz@arm.com,
-	juri.lelli@redhat.com,
-	kprateek.nayak@amd.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sh@gentwo.org,
-	vincent.guittot@linaro.org,
-	vschneid@redhat.com
-Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path candidates
-Date: Wed, 16 Sep 2026 14:06:03 +0300
-Message-ID: <20260916110603.24230-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260916100116.701206-3-christian.loehle@arm.com>
-References: <20260916100116.701206-3-christian.loehle@arm.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="sWBr/t7V"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 38D88152B;
+	Wed, 16 Sep 2026 04:10:28 -0700 (PDT)
+Received: from [10.0.129.72] (unknown [10.0.129.72])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 70EFE3F86F;
+	Wed, 16 Sep 2026 04:10:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1789557031; bh=mathEgzzR7eRS3urb+X7mzdUfdtyv9AcODkNHtsKJc8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=sWBr/t7VKdjdq8qAIPLclh8TaoWmDEoLi3E9DDqVh9kl57R2IO3PedvWGLti7Tl9n
+	 mUP6orlwtNKgRaoIyOBuikBdOGNBqRma5JvImffHXqTdswPOM4UAwfaBN7AaPzxkIb
+	 OHoqX6H6bAoOKsmF5MOQaiy6OBkg5da7Hn2Q8h00=
+Message-ID: <0b986953-acaf-4204-814a-77116e0db6dc@arm.com>
+Date: Wed, 16 Sep 2026 12:10:26 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path
+ candidates
+To: Kayra Cizmeci <kayracizmeci@gmail.com>
+Cc: beata.michalska@arm.com, cl@gentwo.org, daniel.lezcano@kernel.org,
+ dietmar.eggemann@arm.com, elif.topuz@arm.com, juri.lelli@redhat.com,
+ kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org,
+ rafael@kernel.org, rostedt@goodmis.org, sh@gentwo.org,
+ vincent.guittot@linaro.org, vschneid@redhat.com
+References: <20260916100116.701206-3-christian.loehle@arm.com>
+ <20260916110603.24230-1-kayracizmeci@gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260916110603.24230-1-kayracizmeci@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hello Christian :>
+On 9/16/26 12:06, Kayra Cizmeci wrote:
+> Hello Christian :>
+> 
+>> Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
+>> slow-path selectors can choose the same CPU before either task is enqueued.
+> 
+>> Use reservoir sampling in the tie branch, resetting the candidate count
+>> when a lower advertised exit latency is found. Use the per-CPU scheduler
+>> PRNG and reciprocal_scale() to avoid variable division or a second scan.
+> 
+>> This reduces deterministic convergence without reserving the chosen CPU.
+> 
+> OK. 
+> 
+> But, your test platform was 160 Cores too. I don't think randomization has the same effect on lower
+> CPU systems.
+> 
+> Let's create a scenario:
+> 
+> On a 80 Core System, that %50 of it's CPU's are idle the randomization's chance of choosing the same CPU
+> is low. Since there are 40 CPU's to choose from.
+> 
+> But on a 8 Core System in the same idle conditions, randomization's chance of choosing the same CPU
+> is really higher. Since there are only 4 CPU's to choose from.
+> 
+> I think this solution works better on higher CPU counted systems. 
 
-> Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
-> slow-path selectors can choose the same CPU before either task is enqueued.
+Yes, this mostly works for higher CPU count domains, but the
+issue I'm trying to fix basically doesn't exist in the 8 CPU domain
+in the first place (first of all fewer chances of having simultaneous
+slow paths running that can race and also the slow path is much faster,
+i.e. the race window much smaller).
 
-> Use reservoir sampling in the tie branch, resetting the candidate count
-> when a lower advertised exit latency is found. Use the per-CPU scheduler
-> PRNG and reciprocal_scale() to avoid variable division or a second scan.
+> 
+> And I don't think it fully removes the issue. Just better than the original tho.
+> Thinks can still go bad on this one too, just harder.
 
-> This reduces deterministic convergence without reserving the chosen CPU.
+Fully removing the issue would require some synchronisation which the
+numbers (which admittedly are pretty modest already) just don't justify.
 
-OK. 
+> 
+> Maybe we could add a fallback. Because the real concern is the selected CPU's state
+> changes when we come to enqueue. If possible tho, I did not really test anything.
 
-But, your test platform was 160 Cores too. I don't think randomization has the same effect on lower
-CPU systems.
-
-Let's create a scenario:
-
-On a 80 Core System, that %50 of it's CPU's are idle the randomization's chance of choosing the same CPU
-is low. Since there are 40 CPU's to choose from.
-
-But on a 8 Core System in the same idle conditions, randomization's chance of choosing the same CPU
-is really higher. Since there are only 4 CPU's to choose from.
-
-I think this solution works better on higher CPU counted systems. 
-
-And I don't think it fully removes the issue. Just better than the original tho.
-Thinks can still go bad on this one too, just harder.
-
-Maybe we could add a fallback. Because the real concern is the selected CPU's state
-changes when we come to enqueue. If possible tho, I did not really test anything.
-
-Thanks,
-Kayra :>>>
+And then do what? rescan?
+I don't think increasing the slow path is justified at all, when this relatively
+straightforward randomization already significantly reduces the chance
+for the 'pathological' test platform.
