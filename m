@@ -1,183 +1,94 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1AEDA4B0E31;
-	Wed, 16 Sep 2026 16:29:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CAE8521203
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:49:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789576196; cv=none; b=VovMw8Jz+pL6h4ZnLuxUDYlilRtYd4Z6Qzx1F4FyS+TqXJpUG/Flg7gvOZb67jD14nWWtaHngfA/Tv2WFY0hoMBgMdkjC30jsAS92Qt8kmGjSdky3BWhjf41M0x1jYj55xTvD7in+9lBi9pBn6WJl3K+tXs8TFay+upB3hycnJg=
+	t=1789577405; cv=none; b=Vo4AnGELtvqt3zvOYHSZaof4//Xxxpgm4fQ0HRe1mPRMphnV6hCjkFzRO2NiUEQOgoSl8os05S56DpU82t43RVnxFpzY1PwOOr4vucsDz94LmBRmDAb9dawh9q0prh+jX5zBzFNMApUGs9IzZ/sbmtPBsaj/pcqjIj+fdZBoa00=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789576196; c=relaxed/simple;
-	bh=OZWfpTyT7uZEWROIRYQLwAcWJTQahP/VB7g7gAmdjO4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=VL/vCoAnijReE4I88VkPh+1dkX40mqusTctPINe9DC0lfrxRnb3tciP1+gEcmgQvOtsudUwf5ffDLh3YXAbcdcuHgOYZGbA/OnCw3ESQsLcFGVR+4FMitx6hD5X61U/RFoapBfJmj+thCcEXX7KiL30xCwT7McG0FWrFykEBIXk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=p/jASRT2; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1789577405; c=relaxed/simple;
+	bh=Ggb+PcHRJDo/Cz5nvBOFJMC2dQF5gLYbmIeM6Iqn8Mw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=keMyLtD3ZhjKUuDUn9QwnAKtM+ZBkrNezO8bK3ssdCLCIqyq7XP0j3HXINJ1CKHBsOy2LL4QPPHkUZ8jwKWEQAqMH+Iislru1fmP/g0OQIud/1gQCSlnKlv8/c7L39T3kdw+8oGvFSCqczDvi15134lnw9jSltc7zS1jjMFq6K0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HHEKiZSq; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="p/jASRT2"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 847B81F02;
-	Wed, 16 Sep 2026 09:29:47 -0700 (PDT)
-Received: from e127648.carmbridge.arm.com (unknown [10.0.129.72])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 738823F7B4;
-	Wed, 16 Sep 2026 09:29:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789576191; bh=OZWfpTyT7uZEWROIRYQLwAcWJTQahP/VB7g7gAmdjO4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=p/jASRT2PbYFAZYxX+09BPsxSYYt2bE3KBXUk1PPQqpWbdn7T3Iy2jul0ie2vhWSQ
-	 UqCM1NKIR9rqXGX5IImzZJxc3i406ZyAbEJH40alJZgEZsgcgHBq9VuhjWSHxRWoh0
-	 ZRdrvPvo0Vy/pI8MQKQxWZ6Q4a/Gx+cnvDNMgjH0=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Len Brown <lenb@kernel.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>,
-	stable@vger.kernel.org
-Subject: [PATCH v7 20/20] cpufreq: CPPC: Create the FIE worker before enabling PCC callbacks
-Date: Wed, 16 Sep 2026 17:28:05 +0100
-Message-Id: <20260916162805.1039247-21-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260916162805.1039247-1-christian.loehle@arm.com>
-References: <20260916162805.1039247-1-christian.loehle@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HHEKiZSq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B847A1F0089A
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:49:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789577391;
+	bh=Ggb+PcHRJDo/Cz5nvBOFJMC2dQF5gLYbmIeM6Iqn8Mw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=HHEKiZSqg7+GyH1kW7u2Hjh6n954PQBWjugWOQSucOvoJpAfVng+ngPvsQ9NcH4mi
+	 xtk7OuOd/JleKPjNisP2KjwOjHIlYAmHsKORnWbSLqnopk/P8kruswK9aha5jKrh2h
+	 T5+u99gibJ/LLILgQgGSpKR/8Olwo6hpZbKotqNrJYNTrMVnF8YOJ9y+Y6i4ALwW4H
+	 C6w1r6Db2dXNgKyLToIc40EzB8gYnT8NftrmIEs6OAPDomnrsefuQKe0nCSYGQfS55
+	 ndgO1nZRsZEjKDvPuli5DD2CV2kvHzdB3pu0VtMl2TRvS1qfTm7mjpI/uYPSwFuoyo
+	 g+RkIzLA2y8Fg==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8b402f4e3so1099484e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:49:51 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByXXMTLs5H+XQq8bROWcGB35as4LF9xHNgR4AB60s0YbNypGMCZ9Yer3Pu4QR/n5ZupoL1+A8zaBg==@vger.kernel.org
+X-Gm-Message-State: AFuF++kvdPVVHAa/TgUA6VTBgZKMqLqPQbQCtFkfY/tUM5vd0kwjs51K
+	kaoysRbk75Y24HKz8C+hmEJZW9vxNLxqY8+zgGBUy3dNQTcsQLDyUgBmjku+cW26MAOK+5wDTL/
+	xB0FM0jcwdsH2s47Gg0r6zkRIzLPxXos=
+X-Received: by 2002:a05:6512:1595:b0:5b6:422:a61c with SMTP id
+ 2adb3069b0e04-5b8b666eb43mr1907989e87.28.1789577390371; Wed, 16 Sep 2026
+ 09:49:50 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-3-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-3-arnd@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Wed, 16 Sep 2026 18:49:37 +0200
+X-Gmail-Original-Message-ID: <CAD++jLnHa+1e0N8V0znwzeTZSX1Y5YDAa=cVKSYjeFpZM0o_OQ@mail.gmail.com>
+X-Gm-Features: AcwNN1Whb6PQ06lQN_GxsWNtotsS8LqxjoSrqgaYpOWlLWlGsW2D5EFYiCtujyY
+Message-ID: <CAD++jLnHa+1e0N8V0znwzeTZSX1Y5YDAa=cVKSYjeFpZM0o_OQ@mail.gmail.com>
+Subject: Re: [PATCH 02/14] mfd: remove unused rdc321x southbridge support
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
+	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Jonathan Cameron <jic23@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+	Pavel Machek <pavel@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, 
+	Support Opensource <support.opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org, 
+	linux-media@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, 
+	linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	llvm@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-cppc_freq_invariance_init() creates the PCC worker only if an online CPU
-currently has PCC counters. A shared policy can also initialize an offline
-PCC member. When that CPU comes online, its callback queues work through
-the missing kworker_fie and dereferences NULL. A later hot-added PCC policy
-can encounter the same missing worker.
+On Wed, Sep 9, 2026 at 3:22=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
+e:
 
-Create the worker when policy initialization encounters PCC counters,
-before initializing their work and publishing any callbacks. Serialize
-creation and reuse the worker until driver teardown. This covers offline
-policy members and later PCC policies without creating an unused deadline
-worker on direct-counter-only systems.
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The rdc321x was a 486-class SoC developed by RDC. While RDC's later
+> products closely resemble the DM&P Vortex86 product line and are still
+> sold under both names, I checked the datasheets for those and found that
+> the GPIO and WDT blocks on them are incompatible with the rtc321x.
+>
+> Remove this driver, as there is no way to run Linux any more on the
+> older chips after i486 support has been removed.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-If worker allocation or scheduling setup fails, leave FIE unregistered for
-that policy. Keep the global FIE setting unchanged so direct-counter
-policies remain independent of worker setup and existing policies still
-drain their initialized work during teardown. Publish kworker_fie only
-after successful setup, allowing a later policy initialization to retry.
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
-Fixes: 997c021abc6e ("cpufreq: CPPC: Update FIE arch_freq_scale in ticks for non-PCC regs")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 39 ++++++++++++++++++++--------------
- 1 file changed, 23 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index c0fa9073e4d3..09e55bfdca88 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -18,6 +18,7 @@
- #include <linux/cpufreq.h>
- #include <linux/irq_work.h>
- #include <linux/kthread.h>
-+#include <linux/mutex.h>
- #include <linux/time.h>
- #include <linux/vmalloc.h>
- #include <uapi/linux/sched/types.h>
-@@ -50,10 +51,12 @@ struct cppc_freq_invariance {
- 
- static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
- static struct kthread_worker *kworker_fie;
-+static DEFINE_MUTEX(cppc_fie_lock);
- 
- static int cppc_perf_from_fbctrs(u64 reference_perf,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
-+static int cppc_fie_kworker_init(void);
- 
- /**
-  * __cppc_scale_freq_tick - CPPC arch_freq_scale updater for frequency invariance
-@@ -162,6 +165,9 @@ static void cppc_cpufreq_cpu_fie_init(struct cpufreq_policy *policy)
- 		cppc_fi->cpu = cpu;
- 		cppc_fi->cpu_data = policy->driver_data;
- 		if (cppc_perf_ctrs_in_pcc_cpu(cpu)) {
-+			if (cppc_fie_kworker_init())
-+				return;
-+
- 			kthread_init_work(&cppc_fi->work, cppc_scale_freq_workfn);
- 			init_irq_work(&cppc_fi->irq_work, cppc_irq_work);
- 			cppc_fi->pcc_work_initialized = true;
-@@ -216,8 +222,9 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
- 	}
- }
- 
--static void cppc_fie_kworker_init(void)
-+static int cppc_fie_kworker_init(void)
- {
-+	struct kthread_worker *worker;
- 	struct sched_attr attr = {
- 		.size		= sizeof(struct sched_attr),
- 		.sched_policy	= SCHED_DEADLINE,
-@@ -233,23 +240,28 @@ static void cppc_fie_kworker_init(void)
- 	};
- 	int ret;
- 
--	kworker_fie = kthread_run_worker(0, "cppc_fie");
--	if (IS_ERR(kworker_fie)) {
-+	guard(mutex)(&cppc_fie_lock);
-+
-+	if (kworker_fie)
-+		return 0;
-+
-+	worker = kthread_run_worker(0, "cppc_fie");
-+	if (IS_ERR(worker)) {
- 		pr_warn("%s: failed to create kworker_fie: %ld\n", __func__,
--			PTR_ERR(kworker_fie));
--		fie_disabled = FIE_DISABLED;
--		kworker_fie = NULL;
--		return;
-+			PTR_ERR(worker));
-+		return PTR_ERR(worker);
- 	}
- 
--	ret = sched_setattr_nocheck(kworker_fie->task, &attr);
-+	ret = sched_setattr_nocheck(worker->task, &attr);
- 	if (ret) {
- 		pr_warn("%s: failed to set SCHED_DEADLINE: %d\n", __func__,
- 			ret);
--		kthread_destroy_worker(kworker_fie);
--		fie_disabled = FIE_DISABLED;
--		kworker_fie = NULL;
-+		kthread_destroy_worker(worker);
-+		return ret;
- 	}
-+
-+	kworker_fie = worker;
-+	return 0;
- }
- 
- static void __init cppc_freq_invariance_init(void)
-@@ -264,11 +276,6 @@ static void __init cppc_freq_invariance_init(void)
- 			fie_disabled = FIE_ENABLED;
- 		}
- 	}
--
--	if (fie_disabled || !perf_ctrs_in_pcc)
--		return;
--
--	cppc_fie_kworker_init();
- }
- 
- static void cppc_freq_invariance_exit(void)
--- 
-2.34.1
-
+Yours,
+Linus Walleij
