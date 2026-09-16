@@ -1,90 +1,112 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DD2E4A68A1
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:39:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3ED37476CDA;
+	Wed, 16 Sep 2026 10:01:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789551611; cv=none; b=B4ZCGqwSPxFuhgjz5WEL+9Gsm+h6AU5CmQRw/RcWpBZf7Ku1TWIbxhfOxQgIMK4ehaxfxtOgPNMJDSpM/vGRnfGoEqMcMTNPhmu/nb2iXO2mF9bRKV72k6xGc2bfOdmo7pH5d2fClMwBHClVF3ynq55iHKvXyN7cobWMlg0sLuQ=
+	t=1789552912; cv=none; b=XtY8xzH1QflwryLuD9IRVZyKQDO0ow1JUfoh+uL2cxMX+x54H8Ghx9gjJfehEOEiOFmcIMVm6pEHaQC358v63jFodfOmTNvCkWlZJ/bWd9MIxbtEHSU5fM9XVLscvwih3h3dzN/zRUxCPU5zaOjsyigNLlDt+6+XcxTibyY4D8U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789551611; c=relaxed/simple;
-	bh=2yuKCjIDyK/x4MOE4g5o5qI7ddhrFfbRopnIqh1iLi0=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eWvvffF/2mYgQu2+3pxNBD5cTGLDwlA6SE2tt29vAqRwUsMAix+Ay8VidP3Q/XAAjQMXvNUb0GrBi9kiCQAGOMuV1k/ehktBJqlMsQvQRVotWJBCNRoIoD6QJ3+o+ewnZ7XifnxilzbFNqO8EbKCNCTwZoXtbdCVU7orK1AtyZs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kEa7+TAC; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789552912; c=relaxed/simple;
+	bh=+U4NUhzKtF3iaqxkjxI+IFGed8Vvw8nCA5q4a9gp7Sw=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=koUKPdBbACf4BPC7cyz+xzfe/qvDyPCVx4EnE4UX8paC3ywuPAUzIErdr7AlYA13gvqH0ubCZbEmNZoANGUPKN0I005ZlyJJl8oYQRcaN07UEXZ1+bOFj9xO5JDmTs6j/Wx7QqmX0ovPZ6SosHA4up/fjFgzW/sV0+B0+zNN0wU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Q4VMMO6a; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kEa7+TAC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69B8B1F0089A
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:39:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789551595;
-	bh=2yuKCjIDyK/x4MOE4g5o5qI7ddhrFfbRopnIqh1iLi0=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=kEa7+TACmQw9LLtOKBXcr9+yyNyOsC76QAKqMJLa5QYBQgs1P38YkG2xbJwqH0Z0v
-	 F/biy0p2Go6mXtf9m9RtdBuyc4v6VevPJqTGYqMxZzcZ2GHQsphNwBJHzxbjU2o0I1
-	 cs1uaMTRAqTSs0X1LckGEtVGXBMo2OaDflQ0RLRiVAe2Lih6/A+DaM07Xxb117pcUU
-	 gZrV0rZ1TjCEh1Nmp2U7L0+X6JkNN5hLxa05isdVkvKBIoBhWbGayHExVo7TjfSzzm
-	 QEY0PmQ2SKX0GkatvrL89n3HvaTRnRB8yGSneD01ZhNdTPRPzoY3cGfc1FGKs88Tz6
-	 vmSepgBDmXi+A==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a47f740839so5721631fa.2
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 02:39:55 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBw85V7IraleNCODf8jDveRfa21uz7HfURGXLt/3lEoTggsnIio74/hSPl/jm4OjF+nFTD4lhn2uVg==@vger.kernel.org
-X-Gm-Message-State: AFuF++lxoRk6O1VBsqrwWjYbUl5NUD62Cc2roIaHJW2t2LR+0SJorh42
-	ZR0Gu3DgQD48dQ0+JkPIRSt2G46dtZPqbCafo8NkqJTHm9aDpSuDAi8Kmaik16bmy2vB0BFeRu3
-	O7AKo75AMl0jfd0u8Bof8WpXGPA+0otCsBJuL3U/vvQ==
-X-Received: by 2002:a05:6512:1107:b0:5b7:de2d:191a with SMTP id
- 2adb3069b0e04-5b8b6616213mr571469e87.23.1789551594053; Wed, 16 Sep 2026
- 02:39:54 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 16 Sep 2026 04:39:51 -0500
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 16 Sep 2026 04:39:51 -0500
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260915-pci-m2-bt-rework-v1-1-3c7d9cf9c010@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Q4VMMO6a"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC7D219F0;
+	Wed, 16 Sep 2026 03:01:29 -0700 (PDT)
+Received: from e127648.carmbridge.arm.com (unknown [10.0.129.72])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A253C3F86F;
+	Wed, 16 Sep 2026 03:01:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1789552893; bh=+U4NUhzKtF3iaqxkjxI+IFGed8Vvw8nCA5q4a9gp7Sw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Q4VMMO6anAb22G15ijiEgbyXYFZ1L1UIkumiSX+dZ6JZKz5QmxwE2I1xqbxGvlqjk
+	 kSKs19t85UI03ZLWHuIjta321yW42GC4oS2tb5zFcOYgmhxaateCZ7BMvX5W+X5deE
+	 3b2/crnShg87pxtwuKizbGf85SQXSalcAbnL9mvE=
+From: Christian Loehle <christian.loehle@arm.com>
+To: Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Beata Michalska <beata.michalska@arm.com>,
+	Elif Topuz <elif.topuz@arm.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Shubhang Kaushik <sh@gentwo.org>,
+	Christoph Lameter <cl@gentwo.org>,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path candidates
+Date: Wed, 16 Sep 2026 11:01:16 +0100
+Message-Id: <20260916100116.701206-3-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260916100116.701206-1-christian.loehle@arm.com>
+References: <20260916100116.701206-1-christian.loehle@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com> <20260915-pci-m2-bt-rework-v1-1-3c7d9cf9c010@oss.qualcomm.com>
-Date: Wed, 16 Sep 2026 04:39:51 -0500
-X-Gmail-Original-Message-ID: <CAMRc=Mdt7+xYGJTDpYfLf+aKT1-h05qznuuz5eCwLQUa3WU1ug@mail.gmail.com>
-X-Gm-Features: AcwNN1UHyIe_E1G_6fwzRWv11gNibMjjztMru9LJ8H2caU7qReugLOq9coLS8D8
-Message-ID: <CAMRc=Mdt7+xYGJTDpYfLf+aKT1-h05qznuuz5eCwLQUa3WU1ug@mail.gmail.com>
-Subject: Re: [PATCH 1/5] Bluetooth: hci_qca: Add auxiliary driver for PCIe M.2 modules
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Rahul Samana <rahul.samana@oss.qualcomm.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>, Loic Poulain <loic.poulain@oss.qualcomm.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Amitkumar Karwar <amitkumar.karwar@nxp.com>, 
-	Neeraj Kale <neeraj.sanjaykale@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Tue, 15 Sep 2026 16:24:02 +0200, Manivannan Sadhasivam via B4 Relay
-<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
-> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->
-> The QCA2066, WCN6855 and WCN7850 combo modules expose Bluetooth over
-> UART. Since these modules are attached over PCIe, these are not described
-> in firmware like devicetree. So these modules are discovered at runtime
-> over PCIe by the power sequencing driver, which allocates the UART serdev
-> and creates an auxiliary device carrying that transport and the power
-> sequencing target to power up the Bluetooth function.
->
-> Add an auxiliary driver that binds to this device. It reuses the serdev
-> provided by the producer, brings up the controller through the existing
-> UART transport with hci_uart_register_device() and drives power through
-> the sequencer obtained with devm_pwrseq_get().
->
-> Add a shared header describing the auxiliary device so that the power
-> sequencing driver and hci_qca agree on its layout.
->
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> ---
+Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
+slow-path selectors can choose the same CPU before either task is enqueued.
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Use reservoir sampling in the tie branch, resetting the candidate count
+when a lower advertised exit latency is found. Use the per-CPU scheduler
+PRNG and reciprocal_scale() to avoid variable division or a second scan.
+
+This reduces deterministic convergence without reserving the chosen CPU.
+
+Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+---
+ kernel/sched/fair.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index ff5793bddc35..6836a8364440 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -24,6 +24,7 @@
+ #include <linux/mmap_lock.h>
+ #include <linux/hugetlb_inline.h>
+ #include <linux/jiffies.h>
++#include <linux/math.h>
+ #include <linux/mm_api.h>
+ #include <linux/highmem.h>
+ #include <linux/hrtimer.h>
+@@ -8459,6 +8460,7 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+ {
+ 	unsigned long load, min_load = ULONG_MAX;
+ 	unsigned int min_exit_latency = UINT_MAX;
++	unsigned int nr_candidates = 0;
+ 	int least_loaded_cpu = this_cpu;
+ 	int shallowest_idle_cpu = -1;
+ 	int i;
+@@ -8482,9 +8484,12 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+ 			if (idle && idle->exit_latency < min_exit_latency) {
+ 				min_exit_latency = idle->exit_latency;
+ 				shallowest_idle_cpu = i;
++				nr_candidates = 1;
+-			} else if ((!idle || idle->exit_latency == min_exit_latency) &&
+-				   shallowest_idle_cpu == -1) {
+-				shallowest_idle_cpu = i;
++			} else if (!idle || idle->exit_latency == min_exit_latency) {
++				nr_candidates++;
++				if (nr_candidates == 1 ||
++				    !reciprocal_scale(sched_rng(), nr_candidates))
++					shallowest_idle_cpu = i;
+ 			}
+ 		} else if (shallowest_idle_cpu == -1) {
+ 			load = cpu_load(cpu_rq(i));
+-- 
+2.34.1
