@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD2A553444B;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E55B1534461;
 	Wed, 16 Sep 2026 15:33:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789572784; cv=none; b=m4Lualw2hiA1zb370r89Tz0K6yY2O535N7Ub/nz9sDskK5vMrglEMStonARnyvEF1so1JOCnAPUveC8pIEKwXt8Dt3gnMQ+1nDLwZLBrkn1rB/DC+R/tA3Z+9JcmdScVPCs/now4IwTd2NxRd5rNbWytJdZGDsfaXywX+NV+GGY=
+	t=1789572784; cv=none; b=Td/VUESLwIWmY9m6KD2n8aYycuPFB3EgaD7uIO5G1Fjrajkn0iTT1LXYUgEJSzAnxhJW43Mn4WWPTIIOMlUfDgY3GKj+GFK8Z9opgcE7N2pS3oEbw8Dsy0MARqxqp9NHwJn7Awrn0IkJvE8HPMjrMqtrrOTH9YNGsIXFTCS3gMw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1789572784; c=relaxed/simple;
-	bh=9rDKS7sHJtsb0Bx6Y5Jcawy/ppk1uKvlwlGnLM9zpRk=;
+	bh=4+MZkT8C5be39u5Rz56Zi5vIinvJowiSV+zTxXMoXlE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=IcuoXNQAhP1F7l2+BHb6LCAvVBhbCDrOyEvTTKPjOULkug254CH/EhgBgEr96qEGyGnPx0PlxYKVu2W9D8wG/o9siQe5uLJMhzX54PJHCblVx6QdFK9hqRdk3pJUM0blF7OdUssm4LtfKsZ/U9Vtmo8VqsKJCWPT3ZuOH2c6M1M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mErAqwQ9; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=t58VFGkt9jccTLPWJyI9OJmyTYfoksaf0V4Aakjh8Rd50XMCG9jKZM8Nxsi1776of3eXztUsygqGsI4KxwPA8s70FDrbBkhJSI1bM6cNjw3zbZqjp93+5Xtn/AGfs3iQwjRGgsNh2KSSLSwOx+IHgOj1Taikvok/gR6XwHwxo+Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ECjDinyz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mErAqwQ9"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BBF7FC2BCC7;
-	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ECjDinyz"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3AA68C4AF15;
+	Wed, 16 Sep 2026 15:33:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1789572782;
-	bh=9rDKS7sHJtsb0Bx6Y5Jcawy/ppk1uKvlwlGnLM9zpRk=;
+	s=k20201202; t=1789572783;
+	bh=4+MZkT8C5be39u5Rz56Zi5vIinvJowiSV+zTxXMoXlE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=mErAqwQ9xGkbfa+0iu8Ncu3x5XA4/bZCC9flFu1ekP5T2Xygqcrzy5oGQa498xqSo
-	 6/MjlwG5DhycvydpApm4oPYAPnI8SKGsr5iNOH5BwDRo7y43x+9sqY3Kgk27GDj+vN
-	 j8xsMJUH6U4+5ACNP381qRoIPAx3proPY785jcKpPzrTmty1+S+I9qDBi8KhPH+vWl
-	 iieaqVxqwNQH7f3NIa5TwjNRO0cYJPwUJxbJGbsFEvKy1UwnpfdceCNzMNZbX11oXV
-	 eVWEIea8wK2nii4FBQAw7glrIPZ9DJk8RyyWulWJDhrEkT9mMY+zYU9CYPxamQSpur
-	 X864+QKwjQKAg==
+	b=ECjDinyzBIBB2xu3M2o0oGxADQc8PcMZAorFruiKzkyqvZ4fXM6oQB5itQse2Cyz1
+	 pYZLRUyl3b2/YK3S0DzgedhdUG3rxU1xEeLHuPahnWzxWFSelUPP56QKMHioGK2lH3
+	 h/iI9EJ6QSBvaW3JAhTblGFo7QTFcx/ZLRhrOI2vsmKucNM14Q+jY/j7CSB/wY5Tee
+	 x/EB8qNKHdOmuFrXqsnnaDC+E09CpTWNmpBlsULBP4qPNxUplpK1D7y+IHnd8AI88Y
+	 CJzE/G5iXn8TaMhs4N6a4M7Gx9MfCfES6x5FI+AzIuNku5anOfoIz5R8g4oyXE55sV
+	 wJRDVasDnx+Bw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A92F8C982C3;
-	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27B8DC982CF;
+	Wed, 16 Sep 2026 15:33:03 +0000 (UTC)
 From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Wed, 16 Sep 2026 09:33:21 -0600
-Subject: [PATCH v10 29/38] dyndbg: control-parser: treat comma as a token
- separator
+Date: Wed, 16 Sep 2026 09:33:26 -0600
+Subject: [PATCH v10 34/38] docs/dyndbg: add classmap info to howto
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260916-dd-cmap-part2-clean-v10-29-af4cf4767707@gmail.com>
+Message-Id: <20260916-dd-cmap-part2-clean-v10-34-af4cf4767707@gmail.com>
 References: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
 In-Reply-To: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
 To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
@@ -63,13 +62,14 @@ Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
  linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
  linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
- Jim Cromie <jim.cromie@gmail.com>
+ Jim Cromie <jim.cromie@gmail.com>, 
+ Louis Chauvet <louis.chauvet@bootlin.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=4314;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=7938;
  i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=ZrDeIcpsLRk/IxP797PogO5syy10nLdePZS+aXPsHJY=;
- b=GB4bsD2HatYcvN0T3z+I9+kLJpIBpn05xlf9MnaBSAgf6+dfC1nEFUw6wpW8Aa3GIrOiPOFgT
- MCJY5DQZWhjDM33VBjQGivsYj/HMtGw2qeA2DJJ2B8Zg9q0svgRKM7P
+ bh=bDBlM3OKBf1bitIDxea2Srxslww3od17iV3usIW+vIY=;
+ b=2ht0QItFlKCvvNP0VfIsa6vhiFSYkTOXmJHT6fGWxDEPRGN+BObHbdwVvpet2i/N/+mhAW82L
+ vHyGe80g+LoBs4zTVIneBLbnTjQjZq+GUyCMmjTClasQy82KUpdzmNS
 X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
  pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
 X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
@@ -79,112 +79,209 @@ Reply-To: jim.cromie@gmail.com
 
 From: Jim Cromie <jim.cromie@gmail.com>
 
-Treat comma as a token terminator, just like a space. This allows a
-user to avoid quoting hassles when spaces are otherwise needed:
+Describe the 3 API macros providing dynamic_debug's classmaps
 
- :#> modprobe drm dyndbg=class,DRM_UT_CORE,+p\;class,DRM_UT_KMS,+p
+DYNAMIC_DEBUG_CLASSMAP_DEFINE - create & export a classmap
+DYNAMIC_DEBUG_CLASSMAP_USE    - refer to exported map
+DYNAMIC_DEBUG_CLASSMAP_PARAM  - bind control param to the classmap
+DYNAMIC_DEBUG_CLASSMAP_PARAM_REF + use module's storage - __drm_debug
 
-Add corresponding Strategy 2 control-file fingerprinting checks to
-verify the exact control-file state of kernel/params callsites after
-commas-as-spaces, ignored-commas, and quoted-commas queries.
+NB: The _DEFINE & _USE model makes the user dependent on the definer,
+just like EXPORT_SYMBOL(__drm_debug) already does.
 
+cc: linux-doc@vger.kernel.org
 Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
+Reviewed-by: Louis Chauvet <louis.chauvet@bootlin.com>
 ---
- Documentation/admin-guide/dynamic-debug-howto.rst       |  4 +++-
- lib/dynamic_debug.c                                     | 17 +++++++++++++----
- .../testing/selftests/dynamic_debug/dyndbg_selftest.sh  |  4 ++--
- 3 files changed, 18 insertions(+), 7 deletions(-)
+v9:
+. fix typo in class keyword documentation.
+. document DYNAMIC_DEBUG_CLASSMAP_PARAM_REF.
+v2: RvB after SoB
+---
+ Documentation/admin-guide/dynamic-debug-howto.rst | 145 ++++++++++++++++++++--
+ 1 file changed, 135 insertions(+), 10 deletions(-)
 
 diff --git a/Documentation/admin-guide/dynamic-debug-howto.rst b/Documentation/admin-guide/dynamic-debug-howto.rst
-index 9c2f096ed1d8..b9fbb2a12955 100644
+index a8962ab22aaf..f5b1470a4b88 100644
 --- a/Documentation/admin-guide/dynamic-debug-howto.rst
 +++ b/Documentation/admin-guide/dynamic-debug-howto.rst
-@@ -78,11 +78,12 @@ Command Language Reference
- ==========================
+@@ -146,6 +146,9 @@ keywords are::
+   "1-30" is valid range but "1 - 30" is not.
  
- At the basic lexical level, a command is a sequence of words separated
--by spaces or tabs.  So these are all equivalent::
-+by spaces, tabs, or commas.  So these are all equivalent::
  
-   :#> ddcmd file svcsock.c line 1603 +p
-   :#> ddcmd "file svcsock.c line 1603 +p"
-   :#> ddcmd '  file   svcsock.c     line  1603 +p  '
-+  :#> ddcmd file,svcsock.c,line,1603,+p
- 
- Command submissions are bounded by a write() system call.
- Multiple commands can be written together, separated by ``;`` or ``\n``::
-@@ -172,6 +173,7 @@ module
- 	module sunrpc
- 	module nfsd
- 	module drm*	# both drm, drm_kms_helper
-+	module,sunrpc	# with ',' as token separator
- 
- format
-     The given string is searched for in the dynamic debug format
-diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
-index 2347d13e1d30..0720fc4f7a90 100644
---- a/lib/dynamic_debug.c
-+++ b/lib/dynamic_debug.c
-@@ -322,6 +322,14 @@ static int ddebug_change(const struct ddebug_query *query, struct flag_settings
- 	return nfound;
- }
- 
-+static char *skip_spaces_and_commas(const char *str)
-+{
-+	str = skip_spaces(str);
-+	while (*str == ',')
-+		str = skip_spaces(++str);
-+	return (char *)str;
-+}
++Keywords
++--------
 +
- /*
-  * Split the buffer `buf' into space-separated words.
-  * Handles simple " and ' quoting, i.e. without nested,
-@@ -335,8 +343,8 @@ static int ddebug_tokenize(char *buf, char *words[], int maxwords)
- 	while (*buf) {
- 		char *end;
+ The meanings of each keyword are:
  
--		/* Skip leading whitespace */
--		buf = skip_spaces(buf);
-+		/* Skip leading whitespace and comma */
-+		buf = skip_spaces_and_commas(buf);
- 		if (!*buf)
- 			break;	/* oh, it was trailing whitespace */
- 		if (*buf == '#')
-@@ -352,7 +360,7 @@ static int ddebug_tokenize(char *buf, char *words[], int maxwords)
- 				return -EINVAL;	/* unclosed quote */
- 			}
- 		} else {
--			for (end = buf; *end && !isspace(*end); end++)
-+			for (end = buf; *end && !isspace(*end) && *end != ','; end++)
- 				;
- 			if (end == buf) {
- 				pr_err("parse err after word:%d=%s\n", nwords,
-@@ -627,7 +635,8 @@ static int ddebug_exec_queries(char *query, const char *modname)
- 		if (split)
- 			*split++ = '\0';
+ func
+@@ -193,16 +196,6 @@ format
+ 	format "nfsd: SETATTR"  // a neater way to match a format with whitespace
+ 	format 'nfsd: SETATTR'  // yet another way to match a format with whitespace
  
--		query = skip_spaces(query);
-+		query = skip_spaces_and_commas(query);
+-class
+-    The given class_name is validated against each module, which may
+-    have declared a list of known class_names.  If the class_name is
+-    found for a module, callsite & class matching and adjustment
+-    proceeds.  Examples::
+-
+-	class DRM_UT_KMS	# a DRM.debug category
+-	class JUNK		# silent non-match
+-	// class TLD_*		# NOTICE: no wildcard in class names
+-
+ line
+     The given line number or range of line numbers is compared
+     against the line number of each ``pr_debug()`` callsite.  A single
+@@ -217,6 +210,25 @@ line
+ 	line -1605          // the 1605 lines from line 1 to line 1605
+ 	line 1600-          // all lines from line 1600 to the end of the file
+ 
++class
 +
- 		if (!query || !*query || *query == '#')
- 			continue;
++    The given class_name is validated against each module, which may
++    have declared a list of class_names it accepts.  If the class_name
++    is accepted by a module, callsite & class matching and adjustment
++    proceeds.  Examples::
++
++	class DRM_UT_KMS	# a drm.debug category
++	class JUNK		# silent non-match
++	// class TLD_*		# NOTICE: no wildcard in class names
++
++.. note::
++
++    Unlike other keywords, classes are "name-to-change", not
++    "omitting-constraint-allows-change".  See Dynamic Debug Classmaps
++
++Flags
++-----
++
+ The flags specification comprises a change operation followed
+ by one or more flag characters.  The change operation is one
+ of the characters::
+@@ -238,6 +250,11 @@ The flags are::
+   l    Include line number
+   d    Include call trace
  
-diff --git a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-index 8d3f1e49e9e1..d485b9245164 100755
---- a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-+++ b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-@@ -544,8 +544,8 @@ function GOLDEN_RECORDS {
- #K= 02e4fd94602e108cb89bfc70d47a5dad FT_basic_queries.5
- #K= f03a7ca7316e8db4c0e16523dc41e75d FT_basic_queries.6
- #K= c518a50ba30ba8099d0dc874a27ecf16 FT_basic_queries.7
--#K= 69f1958beef98211d4181f9ded9787c4 FT_test_classes.1
--#K= 5516e3d13cba7ea4197a7fb6c033887a FT_test_classes.2
-+#K= 8f18ea82c09460434b6e9e4cd12543e8 FT_test_classes.1
-+#K= a15ec4843acd721fbdfddc0b512c8032 FT_test_classes.2
- #K= 20d4545f9753e677e72e3adf52527fd3 FT_test_classes.3
- #K= 934d8677872fe26bd636a6c3d6416aa2 FT_classmap_inheritance.1
- #K= cd1389958807063baa1ea4b06c61fa02 FT_classmap_inheritance.2
++.. note::
++
++   * To query without changing	``+_`` or ``-_``.
++   * To clear all flags		``=_`` or ``-fslmpt``.
++
+ For ``print_hex_dump_debug()`` and ``print_hex_dump_bytes()``, only
+ the ``p`` flag has meaning, other flags are ignored.
+ 
+@@ -394,3 +411,111 @@ just a shortcut for ``print_hex_dump(KERN_DEBUG)``.
+ For ``print_hex_dump_debug()``/``print_hex_dump_bytes()``, format string is
+ its ``prefix_str`` argument, if it is constant string; or ``hexdump``
+ in case ``prefix_str`` is built dynamically.
++
++.. _dyndbg-classmaps:
++
++Dynamic Debug Classmaps
++=======================
++
++The "class" keyword selects prdbgs based on author supplied,
++domain-oriented names.  This complements the nested-scope keywords:
++module, file, function, line.
++
++The main difference from the others: classes must be named to be
++changed.  This protects them from unintended overwrite::
++
++  # IOW this cannot undo any drm.debug settings
++  :#> ddcmd -p
++
++This protection is needed; /sys/module/drm/parameters/debug is ABI.
++drm.debug is authoritative when dyndbg is not used, dyndbg-under-DRM
++is an implementation detail, and must not behave erratically, just
++because another admin fed >control something unrelated.
++
++So each class must be enabled individually (no wildcards)::
++
++  :#> ddcmd class DRM_UT_CORE +p
++  :#> ddcmd class DRM_UT_KMS +p
++  # or more selectively
++  :#> ddcmd class DRM_UT_CORE module drm +p
++
++That makes direct >control wordy and annoying, but it is a secondary
++interface; it is not intended to replace the ABI, just slide in
++underneath and reimplement the guaranteed behavior.  So DRM would keep
++using the convenient way, and be able to trust it::
++
++  :#> echo 0x1ff > /sys/module/drm/parameters/debug
++
++That said, since the sysfs/kparam is the ABI, if the author omits the
++CLASSMAP_PARAM, theres no ABI to guard, and he probably wants a less
++pedantic >control interface.  In this case, protection is dropped.
++
++Dynamic Debug Classmap API
++==========================
++
++DYNAMIC_DEBUG_CLASSMAP_DEFINE(clname,type,_base,classnames) - this maps
++classnames (a list of strings) onto class-ids consecutively, starting
++at _base.
++
++DYNAMIC_DEBUG_CLASSMAP_USE(clname) & _USE_(clname,_base) - modules
++call this to refer to the var _DEFINEd elsewhere (and exported).
++
++DYNAMIC_DEBUG_CLASSMAP_PARAM(clname) - creates the sysfs/kparam,
++maps/exposes bits 0..N as class-names.
++
++DYNAMIC_DEBUG_CLASSMAP_PARAM_REF(name,bits,var,flags) - connects an
++existing module parameter variable (e.g. __drm_debug) to a classmap.
++
++Classmaps are opt-in: modules invoke _DEFINE or _USE to authorize
++dyndbg to update those named classes.  "class FOO" queries are
++validated against the classes defined or used by the module, this
++finds the classid to alter; classes are not directly selectable by
++their classid.
++
++Classnames are global in scope, so subsystems (module-groups) should
++prepend a subsystem name; unqualified names like "CORE" are discouraged.
++
++NB: It is an inherent API limitation (due to class_id's int type) that
++the following are possible:
++
++  // these errors should be caught in review
++  __pr_debug_cls(0, "fake DRM_UT_CORE msg");  // this works
++  __pr_debug_cls(62, "un-known classid msg"); // this compiles, does nothing
++
++There are 2 types of classmaps:
++
++* DD_CLASS_TYPE_DISJOINT_BITS: classes are independent, like drm.debug
++* DD_CLASS_TYPE_LEVEL_NUM: classes are relative, ordered (V3 > V2)
++
++DYNAMIC_DEBUG_CLASSMAP_PARAM - modelled after module_param_cb, it
++refers to a DEFINEd classmap, and associates it to the param's
++data-store.  This state is then applied to DEFINEr and USEr modules
++when they're modprobed.
++
++The PARAM interface also enforces the DD_CLASS_TYPE_LEVEL_NUM relation
++amongst the contained classnames; all classes are independent in the
++control parser itself.  There is no implied meaning in names like "V4"
++or "PL_ERROR" vs "PL_WARNING".
++
++Modules or subsystems (drm & drivers) can define multiple classmaps,
++as long as they (all the classmaps) share the limited 0..62
++per-module-group _class_id range, without overlap.
++
++If a module encounters a conflict between 2 classmaps it is _USEing or
++_DEFINEing, it can invoke the extended _USE_(name,_base) macro to
++de-conflict the respective ranges.
++
++``#define DEBUG`` will enable all pr_debugs in scope, including any
++class'd ones.  This won't be reflected in the PARAM readback value,
++but the class'd pr_debug callsites can be forced off by toggling the
++classmap-kparam all-on then all-off.
++
++Self-Testing and Validation
++===========================
++
++Dynamic debug includes a regression test script in kselftest::
++
++  :#> make -C tools/testing/selftests TARGETS=dynamic_debug run_tests
++  # Or run directly on a running kernel:
++  :#> ./tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
++
 
 -- 
 2.55.0
