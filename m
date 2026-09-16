@@ -1,54 +1,54 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA962582B9D
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:55:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 831244D7976
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:56:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789577761; cv=none; b=mj4ya/FhTZaUZb8YcJvxecQWfqqxTBNt6nPvY8diftIFcdI1/fqZjATj5nRlS+ak7QBcAKvrHLUJsERRi9EcZcIp5Co4Y3F614Uc47DGB7OsJvnZuTWnpGrEfgQmQ4aV/3DIL9z80cnqHWBB7On9Tf+mVpC1LHJRb2EjSPGAQ9U=
+	t=1789577776; cv=none; b=cNf9YlDHhgAy51JLybvVd72g1TfAlTRyy1uQ8qO+wWYiRphi7kJsomrN9XIM82C1pNvY/4X7lU9Ir9QCWjES9WbwyWrlKwheSfEEYe9Cr9+C94Mhbl2k+SnKsS/QTqRUrmtU+Tav+8hRkJUrUl1g8VJZoX7ksROj6TN5JJKgChA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789577761; c=relaxed/simple;
-	bh=3Rl9kH69FoIDw7gGLNXjdv5fuBqhGXd9XmucXEFUoPA=;
+	s=arc-20240116; t=1789577776; c=relaxed/simple;
+	bh=FsAF5t94/E+0eDbBJV3FrxLYtGfzl97iFt4l9Z2gsvc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PRBnYPRvHXH2WE63WFLlczNqJ0vxZRboMywj1oRlIIAy/ewwY0hMDR4e6LjXsMLuECQcLSIwylDSTjy0SVmie7Ff79rf8xdiNPM9GcB8TM2KSkSUO44l1U8GG473FkuqAtCUcmcyxtsgqXLhDnzH1WTPj4wHZIeFoGq3n4p+O0Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jgG2fcgm; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=SDXug2pxW7hg/pjI+Y70Xv4Uxp6r16x7s8w/93pSw7S9uhb6ov7HVPwfkVxb51h+rXWqfhvvY5g0gexqJIrCQNFPBaCSMlhsI10/Zuhzow0H3OjI8gomWGIdu6oit0FN97JV4COs8oxOGAF9snXridZ/tbnUc+Ht1Zq6by80Fbc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=K7+gfNmD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jgG2fcgm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE71E1F00A05
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:55:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="K7+gfNmD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9CF11F0089B
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:56:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789577738;
-	bh=3Rl9kH69FoIDw7gGLNXjdv5fuBqhGXd9XmucXEFUoPA=;
+	s=k20260515; t=1789577762;
+	bh=FsAF5t94/E+0eDbBJV3FrxLYtGfzl97iFt4l9Z2gsvc=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=jgG2fcgm04XQ1sjv96yZWoL9W/lNflacZnI7oSFM1D9ZHGfNQQoEWWSMuQG/IC2/T
-	 2VuhpPXP8oBGkHZtPfmlzEoCglvXu8AYWKJ6X2RLLUZ5sChU4Uhy7YW6OUHmroACcr
-	 AjGBRjESalVhyQaIXKoxQj/+xiefBFKY77Vyt8vXOTqRH2tTrsPkfVkbJWnysisBe4
-	 ZLlwQY3EjrTvAb8MZuXdCJf47zm/QDAlH8wgNCWJRVgHxqLSx/j1A0MBJDPgaNwxBz
-	 ZxK2KUNJH//fwQQp9knX4O8sha16fCgt/rNFFXZAkNG2+va1/xHBuVoEU+PGVQYV26
-	 M6VHoCiEiQlEQ==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a2ff176d7eso11036861fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:55:37 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxNLeaTppbHB9cJ+E7VUiySgrmX8taD2k45ASxfc/w9YnTs+p4I1y4NPDarQeSmxeg3QSdLYzx6eA==@vger.kernel.org
-X-Gm-Message-State: AFuF++keUSUkfcBX56xzGbLIvKXfGL+q/aA4anx+wt2ErFsiLqskG58x
-	YOqOUnijutzTRTMHZIjGnZClWCQTkRQ8H+NIfxDt/4FY9lnC6SXU4imu07MQ4fxTb88dgaw6lAq
-	RRIjtGisR+Pof1ZnGN+gp2fvKVlHA+Fc=
-X-Received: by 2002:a05:6512:2c97:b0:5b4:ac27:6bb0 with SMTP id
- 2adb3069b0e04-5b8b666abe2mr2187526e87.25.1789577736627; Wed, 16 Sep 2026
- 09:55:36 -0700 (PDT)
+	b=K7+gfNmDOPpIoKxCMKTMh/JgNBNkuQ/A4EezTw8pu9Q7ieNsQFkcIj8gELDjvz+u7
+	 G/DON3bdCDZ62f9zI0NGfWcHBs+xoNCjvia+WQ0X5Qr6g+RPKH2nvXvTIY4HdMMGul
+	 D/44Wv+Z9y4jlEkuXD9A99zVkynPi5060sCu9OwV5vZm/yxxS/r/mjs1PhAruYDw+N
+	 bfvrCv5RqLlNtd/INVIwPdW5h9DUZl0QaUfrED6fBiXx8JXYzIrj1MWpSGnbWC8gLx
+	 6XOubQVNghPf83YvgfkM9qMYD+f7fWXTEKmRPAMgRhJgHU47TZQJHC4eqSCL9Q6oVV
+	 5fo2W6vDFkd6w==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b88dc3bc02so1254688e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:56:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByvLYosEeJsFnKDVDs2CJXJos7/6F4MH2SvCpXuH4yCNMFom9OcUd/XLQgDtJs/uCvhwxHVqjtHJw==@vger.kernel.org
+X-Gm-Message-State: AFuF++ko5ESc4VfgwWgsPdoFb/GzYnd69ZCyHZLej2kB0JNtqEdtHoFt
+	vEgOAVtPPsPnaK/LGgi2oaGiavimuOw+f9cn34xbrAtJfFnQE9e1Y6+ex3xb81lQeca9LhFe8yy
+	VnMVWmRG6/zDXsbbqRie9gEoZm8BKMqM=
+X-Received: by 2002:a05:6512:3e1b:b0:5b6:1a7c:fd7f with SMTP id
+ 2adb3069b0e04-5b8b6652b42mr975442e87.37.1789577761635; Wed, 16 Sep 2026
+ 09:56:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-7-arnd@kernel.org>
-In-Reply-To: <20260909132153.1596191-7-arnd@kernel.org>
+References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-8-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-8-arnd@kernel.org>
 From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 16 Sep 2026 18:55:24 +0200
-X-Gmail-Original-Message-ID: <CAD++jL=7tuZWkXqn0gj14JDbsxkT=cU_1aFOXMRc=PmE-3X-eg@mail.gmail.com>
-X-Gm-Features: AcwNN1XvcQ2YIjfo5CFBtXX11PIudi6lRGCv7LMnZ1tHaTMlEuKLFH_DVwfW2u8
-Message-ID: <CAD++jL=7tuZWkXqn0gj14JDbsxkT=cU_1aFOXMRc=PmE-3X-eg@mail.gmail.com>
-Subject: Re: [PATCH 06/14] mfd: remove unused da903x driver
+Date: Wed, 16 Sep 2026 18:55:49 +0200
+X-Gmail-Original-Message-ID: <CAD++jLmJ4tbJuwuQtAx6UCxWU4XghXwp=saMqy5SRsASqe-=Hg@mail.gmail.com>
+X-Gm-Features: AcwNN1X4XEEO3B_3JMl6a8g-CgUfyegbwNLsrb9Ef6iUWMuuaWJ5SqyyXzqaDA0
+Message-ID: <CAD++jLmJ4tbJuwuQtAx6UCxWU4XghXwp=saMqy5SRsASqe-=Hg@mail.gmail.com>
+Subject: Re: [PATCH 07/14] mfd: remove unused lp8788 driver
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
 	linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
@@ -78,9 +78,11 @@ e:
 
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> This driver was used on a handful of ARM/PXA boards until those
-> got removed a few years ago. Without devicetree support, there is
-> no way to use them upstream.
+> This driver was apparently never used upstream, and without devicetree
+> support cannot be used by external board support.
+>
+> The MAINTAINER entry was already removed in 2021 as the email address
+> bounced.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
