@@ -1,191 +1,392 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0F41379C23
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 13:57:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8566050C29E;
+	Wed, 16 Sep 2026 14:23:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789567067; cv=none; b=jrCg+JgQt7I4BB2hhXhu4F9cZvWAH5fNx9dl4UXBhID1GVOQouTQfuJiSuQwhBxhAaWYOcGYCI6YL62HWmq8TT0785ZCLenb2SLsV0qi6/hQIXS1WXMSb8c01YdEatiSLHkGvdTyzep1uNO72kZwuf/4FmCqLvE4zwIx9ouVJL8=
+	t=1789568582; cv=none; b=IoFe39ZuZWAFkIJy8H9auERVzWm8boVMzv1CjAHhvOUptkGfhW56GIjv83HoLCHJw5fIU1RSCdpzKDI7E7oN63Cgkyck1pe4Fncl5bNRfXvBVbUoj+sVTkxE9O0KIoKIPFfM4afVtsG5BVrpkrGKUMV0CjU7+D1hhp/WaQgG+yU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789567067; c=relaxed/simple;
-	bh=hk4+HMQnsllYIyOf3j57LkJbNZU74QO2e4hXgGvM1F4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XkO1PHfG8lp0RE9QbtWHb5sRivh89199Lw1NbDIDdGrhnyFkw3oFDrvVG1dr+SAzkk+ORuc/CVp6pFKDqmYEtL4QZjPyVXeiK1sGO4ViUj1iM4VPkGBc70cE1FqGAewmjmTHKGw15I9l+AIeFMnVQzBLTB9qIlhtx7JBy4srrz0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TqpSxXjU; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789568582; c=relaxed/simple;
+	bh=lLOwADckT4HRkCNEFypEGoduXnEFTxA1o9kfE8PKOJg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=XB8zbZec9ms3EqYavL0aOv5o6vsc3EC7qE7C51hn5Wn9aaItY1OrQlDqEGobMzvvQzvVtW49yd0jtP9G9dC5igAGLNOC26WI4pq+E9rtEuLy/uYVAyDysLWDzUiDzb6MKtn7S9rTLomT+uyoquEfStG4Q43ZuCwx1tMGg9X68KA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jsi+PY4v; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TqpSxXjU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3ABA1F00893
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 13:57:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789567060;
-	bh=uKnJW8f/FSk1pppP1uAfhlE6zh8Ga0yCHU2CLx9f9Xw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=TqpSxXjU8XlX0VMxfJb32ADGVHsrKy+hl9kM3ptEqaqiS5rndUE8bU2j5hm2Aag8q
-	 mlYtPYEvr+KAWkpQrZVCSANexOjGMG2fdHnGwe9U14Xk1v91rrkXygu529xXI3YQNt
-	 /9LBIsp4HXDpzbDxQIHI1ymQ+WlqUm+kkdiM+d6MsJuKS3Wl6V4BDEXLz9S+FII9/n
-	 kLChUFdSlSysYMrDgy9xoHMxMnYEh+IgqQwWTnJgmiFN7Ng0YhWuDAL4V207lK6pZs
-	 63RUYoIxj21ZSo6lxf2VurtMRjfjyeJA+9S+XoxHK4xSM8zcl7WMLH2IIky3xni6pB
-	 TE+J9SPC9WnsQ==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a59fa3112cso9221431fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 06:57:40 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByy1CCvZoqS+kQ7YO9gny6lKPHIm/pAUDmSDgB2YD7iay2N/KHq4vR3lJ9Qgg4hGdeESWKo3A3F5A==@vger.kernel.org
-X-Gm-Message-State: AFuF++n2iKXyGUrYZ16wc2DOk2MUbYV4emgAowGFON6eHVivBLixTS26
-	CvBmadLLuKAk8gd2m7O7Uj0TtHMdmuW7rlTgqECT/PNqzdXAHvMI30mxkSeCC/vxLo5w9aoNVcf
-	gSr5KFVQGVSUd4uOsXVgBZ2oVTsosaUo=
-X-Received: by 2002:a2e:a596:0:b0:3a1:30c4:d95 with SMTP id
- 38308e7fff4ca-3a5dc9722b4mr5269891fa.5.1789567059264; Wed, 16 Sep 2026
- 06:57:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jsi+PY4v"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3017AC2BCFA;
+	Wed, 16 Sep 2026 14:23:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1789568582;
+	bh=lLOwADckT4HRkCNEFypEGoduXnEFTxA1o9kfE8PKOJg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Jsi+PY4vgSKtULyzzVhYss5GjsEY8mzH7QwlJi9IpYYDq3+QAeFSJDPG+0Tp3nQ4V
+	 kC9Bu7cKtz/jV/l8OFeA0DBW3sqQixJLIqMCOPNBG4z3YPNEHQk12VEY5qr2EqM5sr
+	 /qDaq0MVvCkhTGCQb8GawB5WLPI5ymEfcTqBnEOESkIj7ex7oY2ojo4c0DB/W6Ik2+
+	 M5Xo5uS+usSOp3r20Kn4vHdghe6sBvOziBb0SuQpiUoifKxGD+49UGi2QSTke5J56o
+	 N4PFpji4QLS3fC0ReU85Qw2dB+51sJQaCXfRDB9aoHmfByihiMBL3EkAkNokLeOJIF
+	 mJ00LD/0Ivjpg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08CF2C982C3;
+	Wed, 16 Sep 2026 14:23:02 +0000 (UTC)
+From: Muzaffer Kadir via B4 Relay <devnull+muzafferkadir.mainlining.org@kernel.org>
+Date: Wed, 16 Sep 2026 17:22:06 +0300
+Subject: [PATCH v2 01/19] dt-bindings: clock: qcom: Add MSM8952 global
+ clock controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260916051034.180226-1-mario.limonciello@amd.com> <20260916051034.180226-3-mario.limonciello@amd.com>
-In-Reply-To: <20260916051034.180226-3-mario.limonciello@amd.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 16 Sep 2026 15:56:18 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gZ11m=CYQXp6S_PL81JZCx4sQCgh-qa+_2sm7nSTe1SQ@mail.gmail.com>
-X-Gm-Features: AcwNN1U4NVC2eEoFtln5IEyBPEY_uTbbCovKTLH5yK8bF8iUAlcHlT1zrpYWbl0
-Message-ID: <CAJZ5v0gZ11m=CYQXp6S_PL81JZCx4sQCgh-qa+_2sm7nSTe1SQ@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] PCI: Put PCIe bridges with downstream devices into
- D3 at hibernate
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, 
-	"open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, linux-pm@vger.kernel.org, 
-	"Mario Limonciello (AMD)" <superm1@kernel.org>, AceLan Kao <acelan.kao@canonical.com>, 
-	Kai-Heng Feng <kaihengf@nvidia.com>, Mark Pearson <mpearson-lenovo@squebb.ca>, 
-	Denis Benato <benato.denis96@gmail.com>, =?UTF-8?Q?Merthan_Karaka=C5=9F?= <m3rthn.k@gmail.com>, 
-	Eric Naim <dnaim@cachyos.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260916-msm8952-initial-support-v2-1-798c2602dde1@mainlining.org>
+References: <20260916-msm8952-initial-support-v2-0-798c2602dde1@mainlining.org>
+In-Reply-To: <20260916-msm8952-initial-support-v2-0-798c2602dde1@mainlining.org>
+To: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
+ Ulf Hansson <ulfh@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+ "Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
+ Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>, 
+ Rob Clark <robin.clark@oss.qualcomm.com>, 
+ Dmitry Baryshkov <lumag@kernel.org>, 
+ Abhinav Kumar <abhinav.kumar@linux.dev>, 
+ Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>, 
+ Marijn Suijten <marijn.suijten@somainline.org>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Robert Marko <robimarko@gmail.com>, Guru Das Srinagesh <linux@gurudas.dev>, 
+ Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Kees Cook <kees@kernel.org>, 
+ Tony Luck <tony.luck@intel.com>, 
+ "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: David Heidelberg <david@ixit.cz>, Dang Huynh <danct12@riseup.net>, 
+ phone-devel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, 
+ iommu@lists.linux.dev, mfd@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ freedreno@lists.freedesktop.org, Krzysztof Kozlowski <krzk@kernel.org>, 
+ linux-pm@vger.kernel.org, linux-input@vger.kernel.org, 
+ Muzaffer Kadir <muzafferkadir@mainlining.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789568578; l=9825;
+ i=muzafferkadir@mainlining.org; s=20260816; h=from:subject:message-id;
+ bh=qlwLi8BQ1JRKl7cUmSOPyYwtwWj/q779GnrL9Yd3Pc4=;
+ b=SMfvAMWd451aPzv7lThIxnQ19x0ofg0KrOZ+A7Mjune+Qs9swLWi4o+4iJGqzeW/5hNyVkjzV
+ AZLHgxHLgL7Cq8mKicFKG87qcRzw8GEGPI/H9WRTEqKPb0BHM208vlU
+X-Developer-Key: i=muzafferkadir@mainlining.org; a=ed25519;
+ pk=4zkv4suQ3cYcO4Z7CrV8JSSjEGLBGepUtvQCFjgnYIU=
+X-Endpoint-Received: by B4 Relay for muzafferkadir@mainlining.org/20260816
+ with auth_id=954
+X-Original-From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+Reply-To: muzafferkadir@mainlining.org
 
-On Wed, Sep 16, 2026 at 7:10=E2=80=AFAM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
-> From: "Mario Limonciello (AMD)" <superm1@kernel.org>
->
-> During S3 suspend, pci_pm_suspend_noirq() puts PCIe bridges with
-> downstream devices into a low-power state (D3hot or D3cold) when the
-> platform allows it.  The hibernate poweroff_noirq path never did this:
-> it only called pci_prepare_to_sleep() for devices with no subordinate,
-> so bridges with active children were left in D0.
->
-> The platform firmware leaves bridges alone when the system enters S4.
+From: Muzaffer Kadir <muzafferkadir@mainlining.org>
 
-Well, that depends.  IIRC there were platforms on which it actually
-removed power from them unless wakeup was enabled in the past.
+Add a device tree binding to describe clocks, resets and power domains
+provided by the global clock controller on MSM8952 SoC.
 
-> This prevents being able to meet various energy certification criteria
-> for different parts of the world, particularly in designs with a dGPU.
+Signed-off-by: Muzaffer Kadir <muzafferkadir@mainlining.org>
+---
+ .../bindings/clock/qcom,gcc-msm8952.yaml           |  56 ++++++
+ include/dt-bindings/clock/qcom,gcc-msm8952.h       | 217 +++++++++++++++++++++
+ 2 files changed, 273 insertions(+)
 
-Fair enough.
+diff --git a/Documentation/devicetree/bindings/clock/qcom,gcc-msm8952.yaml b/Documentation/devicetree/bindings/clock/qcom,gcc-msm8952.yaml
+new file mode 100644
+index 000000000000..274dde633e17
+--- /dev/null
++++ b/Documentation/devicetree/bindings/clock/qcom,gcc-msm8952.yaml
+@@ -0,0 +1,56 @@
++# SPDX-License-Identifier: GPL-2.0-only
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/clock/qcom,gcc-msm8952.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm Global Clock & Reset Controller on MSM8952
++
++maintainers:
++  - Muzaffer Kadir <muzafferkadir@mainlining.org>
++
++description: |
++  Qualcomm global clock control module provides the clocks, resets and power
++  domains on MSM8952.
++
++  See also::
++    include/dt-bindings/clock/qcom,gcc-msm8952.h
++
++properties:
++  compatible:
++    enum:
++      - qcom,gcc-msm8952
++
++  clocks:
++    items:
++      - description: XO source
++      - description: Always-on XO source
++      - description: DSI phy instance 0 dsi clock
++      - description: DSI phy instance 0 byte clock
++
++  clock-names:
++    items:
++      - const: xo
++      - const: xo_a
++      - const: dsi0pll
++      - const: dsi0pllbyte
++
++required:
++  - compatible
++  - '#power-domain-cells'
++
++allOf:
++  - $ref: qcom,gcc.yaml#
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    clock-controller@1800000 {
++      compatible = "qcom,gcc-msm8952";
++      #clock-cells = <1>;
++      #reset-cells = <1>;
++      #power-domain-cells = <1>;
++      reg = <0x01800000 0x80000>;
++    };
++...
+diff --git a/include/dt-bindings/clock/qcom,gcc-msm8952.h b/include/dt-bindings/clock/qcom,gcc-msm8952.h
+new file mode 100644
+index 000000000000..fc592228675d
+--- /dev/null
++++ b/include/dt-bindings/clock/qcom,gcc-msm8952.h
+@@ -0,0 +1,217 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright 2020 Linaro Limited
++ * Copyright 2026 Muzaffer Kadir <muzafferkadir@mainlining.org>
++ */
++
++#ifndef _DT_BINDINGS_CLK_MSM_GCC_8952_H
++#define _DT_BINDINGS_CLK_MSM_GCC_8952_H
++
++#define GPLL0						0
++#define GPLL0_VOTE					1
++#define GPLL3						2
++#define GPLL3_EARLY					3
++#define GPLL4						4
++#define GPLL4_VOTE					5
++#define GPLL6						6
++#define GPLL6_VOTE					7
++#define CAMSS_TOP_AHB_CLK_SRC				8
++#define APSS_AHB_CLK_SRC				9
++#define CSI0_CLK_SRC					10
++#define CSI1_CLK_SRC					11
++#define GFX3D_CLK_SRC					12
++#define VFE0_CLK_SRC					13
++#define BLSP1_QUP1_I2C_APPS_CLK_SRC			14
++#define BLSP1_QUP1_SPI_APPS_CLK_SRC			15
++#define BLSP1_QUP2_I2C_APPS_CLK_SRC			16
++#define BLSP1_QUP2_SPI_APPS_CLK_SRC			17
++#define BLSP1_QUP3_I2C_APPS_CLK_SRC			18
++#define BLSP1_QUP3_SPI_APPS_CLK_SRC			19
++#define BLSP1_QUP4_I2C_APPS_CLK_SRC			20
++#define BLSP1_QUP4_SPI_APPS_CLK_SRC			21
++#define BLSP1_UART1_APPS_CLK_SRC			22
++#define BLSP1_UART2_APPS_CLK_SRC			23
++#define CCI_CLK_SRC					24
++#define CAMSS_GP0_CLK_SRC				25
++#define CAMSS_GP1_CLK_SRC				26
++#define JPEG0_CLK_SRC					27
++#define MCLK0_CLK_SRC					28
++#define MCLK1_CLK_SRC					29
++#define CSI0PHYTIMER_CLK_SRC				30
++#define CSI1PHYTIMER_CLK_SRC				31
++#define CPP_CLK_SRC					32
++#define CRYPTO_CLK_SRC					33
++#define GP1_CLK_SRC					34
++#define GP2_CLK_SRC					35
++#define GP3_CLK_SRC					36
++#define BYTE0_CLK_SRC					37
++#define ESC0_CLK_SRC					38
++#define MDP_CLK_SRC					39
++#define PCLK0_CLK_SRC					40
++#define VSYNC_CLK_SRC					41
++#define PDM2_CLK_SRC					42
++#define SDCC1_APPS_CLK_SRC				43
++#define SDCC2_APPS_CLK_SRC				44
++#define USB_HS_SYSTEM_CLK_SRC				45
++#define VCODEC0_CLK_SRC					46
++#define GCC_BLSP1_AHB_CLK				47
++#define GCC_BLSP1_QUP1_I2C_APPS_CLK			48
++#define GCC_BLSP1_QUP1_SPI_APPS_CLK			49
++#define GCC_BLSP1_QUP2_I2C_APPS_CLK			50
++#define GCC_BLSP1_QUP2_SPI_APPS_CLK			51
++#define GCC_BLSP1_QUP3_I2C_APPS_CLK			52
++#define GCC_BLSP1_QUP3_SPI_APPS_CLK			53
++#define GCC_BLSP1_QUP4_I2C_APPS_CLK			54
++#define GCC_BLSP1_QUP4_SPI_APPS_CLK			55
++#define GCC_BLSP1_UART1_APPS_CLK			56
++#define GCC_BLSP1_UART2_APPS_CLK			57
++#define GCC_BOOT_ROM_AHB_CLK				58
++#define GCC_CAMSS_CCI_AHB_CLK				59
++#define GCC_CAMSS_CCI_CLK				60
++#define GCC_CAMSS_CSI0_AHB_CLK				61
++#define GCC_CAMSS_CSI0_CLK				62
++#define GCC_CAMSS_CSI0PHY_CLK				63
++#define GCC_CAMSS_CSI0PIX_CLK				64
++#define GCC_CAMSS_CSI0RDI_CLK				65
++#define GCC_CAMSS_CSI1_AHB_CLK				66
++#define GCC_CAMSS_CSI1_CLK				67
++#define GCC_CAMSS_CSI1PHY_CLK				68
++#define GCC_CAMSS_CSI1PIX_CLK				69
++#define GCC_CAMSS_CSI1RDI_CLK				70
++#define GCC_CAMSS_CSI_VFE0_CLK				71
++#define GCC_CAMSS_GP0_CLK				72
++#define GCC_CAMSS_GP1_CLK				73
++#define GCC_CAMSS_ISPIF_AHB_CLK				74
++#define GCC_CAMSS_JPEG0_CLK				75
++#define GCC_CAMSS_JPEG_AHB_CLK				76
++#define GCC_CAMSS_JPEG_AXI_CLK				77
++#define GCC_CAMSS_MCLK0_CLK				78
++#define GCC_CAMSS_MCLK1_CLK				79
++#define GCC_CAMSS_MICRO_AHB_CLK				80
++#define GCC_CAMSS_CSI0PHYTIMER_CLK			81
++#define GCC_CAMSS_CSI1PHYTIMER_CLK			82
++#define GCC_CAMSS_AHB_CLK				83
++#define GCC_CAMSS_TOP_AHB_CLK				84
++#define GCC_CAMSS_CPP_AHB_CLK				85
++#define GCC_CAMSS_CPP_CLK				86
++#define GCC_CAMSS_VFE0_CLK				87
++#define GCC_CAMSS_VFE0_AHB_CLK				88
++#define GCC_CAMSS_VFE0_AXI_CLK				89
++#define GCC_CRYPTO_AHB_CLK				90
++#define GCC_CRYPTO_AXI_CLK				91
++#define GCC_CRYPTO_CLK					92
++#define GCC_OXILI_GMEM_CLK				93
++#define GCC_GP1_CLK					94
++#define GCC_GP2_CLK					95
++#define GCC_GP3_CLK					96
++#define GCC_MDSS_AHB_CLK				97
++#define GCC_MDSS_AXI_CLK				98
++#define GCC_MDSS_BYTE0_CLK				99
++#define GCC_MDSS_ESC0_CLK				100
++#define GCC_MDSS_MDP_CLK				101
++#define GCC_MDSS_PCLK0_CLK				102
++#define GCC_MDSS_VSYNC_CLK				103
++#define GCC_MSS_CFG_AHB_CLK				104
++#define GCC_OXILI_AHB_CLK				105
++#define GCC_OXILI_GFX3D_CLK				106
++#define GCC_PDM2_CLK					107
++#define GCC_PDM_AHB_CLK					108
++#define GCC_PRNG_AHB_CLK				109
++#define GCC_SDCC1_AHB_CLK				110
++#define GCC_SDCC1_APPS_CLK				111
++#define GCC_SDCC2_AHB_CLK				112
++#define GCC_SDCC2_APPS_CLK				113
++#define GCC_GTCU_AHB_CLK				114
++#define GCC_JPEG_TBU_CLK				115
++#define GCC_MDP_TBU_CLK					116
++#define GCC_SMMU_CFG_CLK				117
++#define GCC_VENUS_TBU_CLK				118
++#define GCC_VFE_TBU_CLK					119
++#define GCC_USB2A_PHY_SLEEP_CLK				120
++#define GCC_USB_HS_AHB_CLK				121
++#define GCC_USB_HS_SYSTEM_CLK				122
++#define GCC_VENUS0_AHB_CLK				123
++#define GCC_VENUS0_AXI_CLK				124
++#define GCC_VENUS0_VCODEC0_CLK				125
++#define GCC_APSS_TCU_CLK				126
++#define GCC_GFX_TCU_CLK					127
++#define GCC_BIMC_GFX_CLK				128
++#define GCC_BIMC_GPU_CLK				129
++#define GCC_MSS_Q6_BIMC_AXI_CLK				130
++#define GCC_GFX_TBU_CLK					131
++#define GCC_CPP_TBU_CLK					132
++#define USB_FS_SYSTEM_CLK_SRC				133
++#define USB_FS_IC_CLK_SRC				134
++#define GCC_USB_FS_AHB_CLK				135
++#define GCC_USB_FS_IC_CLK				136
++#define GCC_USB_FS_SYSTEM_CLK				137
++#define GCC_VENUS0_CORE0_VCODEC0_CLK			138
++#define GCC_VENUS0_CORE1_VCODEC0_CLK			139
++#define GCC_OXILI_TIMER_CLK				140
++#define GCC_USB_HS_PHY_CFG_AHB_CLK			141
++#define CSI2_CLK_SRC					142
++#define GCC_CAMSS_CSI2_AHB_CLK				143
++#define GCC_CAMSS_CSI2_CLK				144
++#define GCC_CAMSS_CSI2PHY_CLK				145
++#define GCC_CAMSS_CSI2PIX_CLK				146
++#define GCC_CAMSS_CSI2RDI_CLK				147
++#define SDCC1_ICE_CORE_CLK_SRC				148
++#define GCC_SDCC1_ICE_CORE_CLK				149
++#define BLSP2_QUP1_I2C_APPS_CLK_SRC			150
++#define BLSP2_QUP1_SPI_APPS_CLK_SRC			151
++#define BLSP2_QUP2_I2C_APPS_CLK_SRC			152
++#define BLSP2_QUP2_SPI_APPS_CLK_SRC			153
++#define BLSP2_QUP3_I2C_APPS_CLK_SRC			154
++#define BLSP2_QUP3_SPI_APPS_CLK_SRC			155
++#define BLSP2_QUP4_I2C_APPS_CLK_SRC			156
++#define BLSP2_QUP4_SPI_APPS_CLK_SRC			157
++#define BLSP2_UART1_APPS_CLK_SRC			158
++#define BLSP2_UART2_APPS_CLK_SRC			159
++#define GCC_BLSP2_AHB_CLK				160
++#define GCC_BLSP2_QUP1_I2C_APPS_CLK			161
++#define GCC_BLSP2_QUP1_SPI_APPS_CLK			162
++#define GCC_BLSP2_QUP2_I2C_APPS_CLK			163
++#define GCC_BLSP2_QUP2_SPI_APPS_CLK			164
++#define GCC_BLSP2_QUP3_I2C_APPS_CLK			165
++#define GCC_BLSP2_QUP3_SPI_APPS_CLK			166
++#define GCC_BLSP2_QUP4_I2C_APPS_CLK			167
++#define GCC_BLSP2_QUP4_SPI_APPS_CLK			168
++#define GCC_BLSP2_UART1_APPS_CLK			169
++#define GCC_BLSP2_UART2_APPS_CLK			170
++#define VFE1_CLK_SRC					171
++#define GCC_CAMSS_VFE1_CLK				172
++#define GCC_CAMSS_VFE1_AHB_CLK				173
++#define GCC_CAMSS_VFE1_AXI_CLK				174
++#define GCC_CAMSS_CSI_VFE1_CLK				175
++#define MCLK2_CLK_SRC					176
++#define GCC_CAMSS_MCLK2_CLK				177
++#define GCC_VFE1_TBU_CLK				178
++#define GCC_IPA_TBU_CLK					179
++#define GCC_CAMSS_CPP_AXI_CLK				180
++
++/* Indexes for GDSCs */
++#define VENUS_GDSC				0
++#define MDSS_GDSC				1
++#define JPEG_GDSC				2
++#define VFE0_GDSC				3
++#define VFE1_GDSC				4
++#define OXILI_GX_GDSC				5
++#define VENUS_CORE0_GDSC			6
++#define VENUS_CORE1_GDSC			7
++#define CPP_GDSC				8
++
++/* Indexes for Resets */
++#define RST_CAMSS_MICRO_BCR			0
++#define RST_USB_HS_BCR				1
++#define RST_QUSB2_PHY_BCR			2
++#define RST_USB2_HS_PHY_ONLY_BCR		3
++#define RST_USB_HS_PHY_CFG_AHB_CBCR		4
++#define RST_USB_FS_BCR				5
++#define RST_CAMSS_CSI1PIX_CBCR			6
++#define RST_CAMSS_CSI_VFE1_CBCR			7
++#define RST_CAMSS_VFE1_CBCR			8
++#define RST_CAMSS_CPP_CBCR			9
++#define RST_MSS_BCR				10
++#define RST_MDSS_BCR				11
++
++#endif
 
-> Align the hibernate flow with suspend by making pci_pm_poweroff_noirq()
-> use pci_pm_suspend_noirq_common() instead of the open-coded
-> pci_prepare_to_sleep() call.  This reuses exactly the logic the S3
-> suspend path uses, including the skip_bus_pm handling that keeps a
-> bridge in D0 when a downstream device must stay in D0 (e.g. a
-> configured wakeup source) and the pm_suspend_no_platform() bus-PM skip.
+-- 
+2.55.0
 
-And that's key here, so the patch subject should be something like
-"PCI: Align hibernate poweroff flow with suspend flow for bridges".
 
-> No restore-side change is needed: the hibernation image is snapshotted
-> during the freeze phase, before poweroff_noirq runs, so the powered-down
-> bridge state is never part of the image, and resuming from it goes
-> through a full boot that re-enumerates and retrains the PCIe links.
->
-> Because the poweroff_noirq path now mirrors the already-shipping
-> suspend_noirq path and is guarded identically, bridges that must remain
-> in D0 are unaffected; only bridges that S3 suspend would have powered
-> down are now also powered down at hibernate.
->
-> Cc: AceLan Kao <acelan.kao@canonical.com>
-> Cc: Kai-Heng Feng <kaihengf@nvidia.com>
-> Cc: Mark Pearson <mpearson-lenovo@squebb.ca>
-> Cc: Denis Benato <benato.denis96@gmail.com>
-> Cc: Merthan Karaka=C5=9F <m3rthn.k@gmail.com>
-> Tested-by: Eric Naim <dnaim@cachyos.org>
-> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
-
-With the above addressed
-
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-
-> ---
->  drivers/pci/pci-driver.c | 13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 8334214f8c1ed..3f80c8e6e0e52 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -818,7 +818,7 @@ static void pci_pm_complete(struct device *dev)
->
->  #endif /* !CONFIG_PM_SLEEP */
->
-> -#if defined(CONFIG_SUSPEND)
-> +#if defined(CONFIG_SUSPEND) || defined(CONFIG_HIBERNATE_CALLBACKS)
->  /**
->   * pci_pm_suspend_noirq_common - prepare a device to enter a low-power s=
-tate
->   * @pci_dev: pci device
-> @@ -862,7 +862,7 @@ static bool pci_pm_suspend_noirq_common(struct pci_de=
-v *pci_dev)
->
->         return false;
->  }
-> -#endif /* CONFIG_SUSPEND */
-> +#endif /* CONFIG_SUSPEND || CONFIG_HIBERNATE_CALLBACKS */
->
->  #ifdef CONFIG_SUSPEND
->  static void pcie_pme_root_status_cleanup(struct pci_dev *pci_dev)
-> @@ -1217,6 +1217,8 @@ static int pci_pm_poweroff(struct device *dev)
->         struct pci_dev *pci_dev =3D to_pci_dev(dev);
->         const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->pm : N=
-ULL;
->
-> +       pci_dev->skip_bus_pm =3D false;
-> +
->         if (pci_has_legacy_pm_support(pci_dev))
->                 return pci_legacy_suspend(dev, PMSG_HIBERNATE);
->
-> @@ -1259,6 +1261,7 @@ static int pci_pm_poweroff_noirq(struct device *dev=
-)
->  {
->         struct pci_dev *pci_dev =3D to_pci_dev(dev);
->         const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->pm : N=
-ULL;
-> +       bool skip_bus_pm;
->
->         if (dev_pm_skip_suspend(dev))
->                 return 0;
-> @@ -1280,8 +1283,9 @@ static int pci_pm_poweroff_noirq(struct device *dev=
-)
->                         return error;
->         }
->
-> -       if (!pci_dev->state_saved && !pci_has_subordinate(pci_dev))
-> -               pci_prepare_to_sleep(pci_dev);
-> +       skip_bus_pm =3D pci_pm_suspend_noirq_common(pci_dev);
-> +       if (skip_bus_pm)
-> +               goto Fixup;
->
->         /*
->          * The reason for doing this here is the same as for the analogou=
-s code
-> @@ -1290,6 +1294,7 @@ static int pci_pm_poweroff_noirq(struct device *dev=
-)
->         if (pci_dev->class =3D=3D PCI_CLASS_SERIAL_USB_EHCI)
->                 pci_write_config_word(pci_dev, PCI_COMMAND, 0);
->
-> +Fixup:
->         pci_fixup_device(pci_fixup_suspend_late, pci_dev);
->
->         return 0;
-> --
-> 2.43.0
->
->
