@@ -1,276 +1,136 @@
-Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F6583E8660;
-	Wed, 16 Sep 2026 13:01:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73B0540B11B
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 13:28:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789563717; cv=none; b=sPVQN5M3sTxFt1etFp/cajaf1FZ7v1pxkjtfTwLjpZ+PvtvP2GIrtp3rZriOxC57vd74EqnykyLLNwV8Wn+m3Cl9liQ7jMRRwTq7r4TXqkoCYSA1RXoecttt8i5qlL44IZhF7YJIb2D/DcLOiQG7n693aGjPNIxGlU2D2F5H9OI=
+	t=1789565336; cv=none; b=E7rWLwe3e9ux5jDlTH+uO2WNlkew5MVmXJyGcOJGJMTQ4ZatIBkVD1XgyoA0i81/6nE9v8RX7owss31RlGfnuNOOdChwuLLrKWZrK1uGE3M80x2ap/+dydeAf6cclNNFqOIMSyJKayyM1N5WEdkoiaablCE+DNINykzLZ3QWmqY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789563717; c=relaxed/simple;
-	bh=rrewkVtepVS6AYm0+2LOcrtcOwzSIbzO1eGTDAZuq8A=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=iFBoMo7NEOQMixZfm61zPedAw+otH2ueoz/+csflNGAr74lgcsyQuzVNY2Zp2+G0ABYuxNpIRlrQWzu8YHuc7zmF5m0T8I6CZGzvBQmXpT06hbf7irNK0QVLGqWDeLFnC+yljHHcQDqBmnY5fDzrWCJhd5ZTX7PPIiuOFtj01Z8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=WoidFiOn; arc=none smtp.client-ip=65.21.61.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
+	s=arc-20240116; t=1789565336; c=relaxed/simple;
+	bh=TqbeODdYQEEftgsPxXsYkF97yhYGAJosPirzjv//pFQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Oot4QvJbTs/n7vv2RBQwGMxxNg9BejyMjwCG5egZAlIGIcTc0CPs83Ox/ZCyMHE84SEVAD4rhQc5fSyHFJ73PpTsJUOwq3Unt8e/sxhHedMV70zHOzgF/qPsBsBdyzB4zFohKQUcYWosx0OyLYGiIiHZhZhiMAySVbicKVSD5L8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SriF5u9c; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="WoidFiOn"
-Message-ID: <b391c2d1-4a76-4419-b76b-4246f1363bc7@aliel.fr>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1789563712;
-	bh=rrewkVtepVS6AYm0+2LOcrtcOwzSIbzO1eGTDAZuq8A=;
-	h=Date:From:Subject:To:Cc:References:In-Reply-To;
-	b=WoidFiOnKLfiITb4eYcrjoEaeAziA7/vtvJDXzP3+ZiDXkdbBHeqRx2yfBRYtS43y
-	 J6PiUTC/baX6P9S9pyNcIKFLEIgD82S9StKPdifg1FSZ3WvIJtadT/xnEGYVvTY4n8
-	 bDAwA+56/f7JZgXmvr3AZ55QEMVv1XKudZQPEaD0=
-Date: Wed, 16 Sep 2026 15:01:42 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SriF5u9c"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49fbb11aea4so456665e9.0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 06:28:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789565333; x=1790170133; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=TqbeODdYQEEftgsPxXsYkF97yhYGAJosPirzjv//pFQ=;
+        b=SriF5u9c3M1yb4t2l0x9yA3RoFsu3Vst90q9fR5CzgrcSm+f6B4+JUdAqc7x96bTgL
+         CyO8ie0Zzaizi1UAoyc7uo20C8BjH7pQS/5JkPsZdFmmtT77upCXbaWFeNGDWR3/B1jQ
+         rMT6g9DXhRShNlVFmSOK6+TgqeMYJF+7dvaGDX57R/xL2Z009KCxCGyTtn57/0XKDN3g
+         qbD3dulK479ejAT1VxqfFvLpmzb4EI8jnkFCKAmI207Zke2+/3NR1vR1I6+a9senxIHG
+         jAotvyloepLXY2BOs+4qAW0EDVxRkGfYX9sL/GfcidJ1YcMN+sFw3p3JBj0apE3M+B2p
+         ykZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789565333; x=1790170133;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=TqbeODdYQEEftgsPxXsYkF97yhYGAJosPirzjv//pFQ=;
+        b=WZL/mognHGiRK29kAOPRL2mowCELeQIcHs1fHwfaMhygD6z4ibfYVWTxPFf8ubRI/q
+         9P1fKkRlnTD2J9iDQ/ltSaPDwEdBtDVsrTRJcrJgA4GRtqv47xAANX96jOawbWLpjGZ7
+         mxJIR5ShULQvJ6LznQ5XoRS8cCAvnTSNlLTKmWbKVUPJNz43mmSRlaW3gIIXaFSNob3P
+         gl55GFht3Ot68Il0cguZP+X9cQQ3Lrl+PrTAjcRBkb27/5zWGoAP8IlCCcuZz07zXQTP
+         u+kQq4bbk19+wzemH+Czk9pE5rUntMXHGn2JXDyRDkggM5wwM3DC+bfRcfoJeiAUZIGG
+         l2Uw==
+X-Forwarded-Encrypted: i=1; AKwUvBzGjDO3Jq2P3trEdqlcMC/NqoMX/M4rUuBDUE77m3lL8EoXh3tQeMS+PTNHd7RLvgL1fccW8IfmJg==@vger.kernel.org
+X-Gm-Message-State: AFuF++njjtVm0wcQWa+9iw7SgpyaF1EbZxLZjbol1MVgAKKLT+97zv4g
+	+sH+2oUYkRE5/ND2GyS4fOFthplQU4nHdIUu7MnV3QQBrI63yxwTzhtQ
+X-Gm-Gg: AYBFou1Ff76/7uZogznbAh9JxLotNgCJXXhCdAYmK6zjFCZBS7cNq3KKy7pd3EtB662
+	2PL+1T2c/I3jlEwQ+A8FrFYSdEe3cMoviDdLdV5qrHSW5FO3d3Q7Mk7icce7kqD42b1eEQT7HoA
+	x2k+bD3l/Kb5DLm2edzferDImLeV5aluysGdo4OEwWadZex3m/IAD82/2bPqexB+KP2iRUSohUQ
+	r1+LFlDGh263qaql//OFQZBn/skypyh4sS1DTqNKQ/+HE6qKbMGargD5NC0nEC/kCqnqdiXuJx/
+	FEIq1AAP/5reuYnJqwDbYj2qy2A6+4ElZt+wcYr4KfAcWS62MekprQEWE+F6PDSOwfWTxJsEmZ+
+	JlV7qfdPvBR69tkTOblVL5/nAHLM1xFiGL/vBlTmd5JxnPRk4Y63HuraENd3d9TpD9TuEV9d85w
+	e9vw+Q6LUpsRYwXdK8ZC2ltV05+vwVX3bdWFVhRLe69X1mspJO3v7V/XeCBBKiuScdwDIUepDFh
+	GF74IIsquSckQnuRHgqugMaKh0sc9272ghQy4Mkosp3bwI6CMpeercqpjblIzykMuKTlml46hxZ
+	sMc=
+X-Received: by 2002:a05:600c:4e89:b0:49e:745d:5768 with SMTP id 5b1f17b1804b1-49eac4112e9mr27160505e9.0.1789565332521;
+        Wed, 16 Sep 2026 06:28:52 -0700 (PDT)
+Received: from OrangePi5-Plus.BB-HOME (20014C4E1B8E02001A623C292D45A2B3.dsl.pool.telekom.hu. [2001:4c4e:1b8e:200:1a62:3c29:2d45:a2b3])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e847da0cdsm594135e9.2.2026.09.16.06.28.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Sep 2026 06:28:52 -0700 (PDT)
+From: Igor Paunovic <royalnet026@gmail.com>
+To: Jiaxing Hu <gahing@gahingwoo.com>
+Cc: Tomeu Vizoso <tomeu@tomeuvizoso.net>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Oded Gabbay <ogabbay@kernel.org>,
+	Elaine Zhang <zhangqing@rock-chips.com>,
+	Abel Vesa <abel.vesa@oss.qualcomm.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	Sidong Yang <sidong.yang@furiosa.ai>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	Chaoyi Chen <chaoyi.chen@rock-chips.com>,
+	Diederik de Haas <diederik@cknow-tech.com>,
+	Alexey Charkov <alchark@flipper.net>,
+	dri-devel@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	iommu@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Igor Paunovic <royalnet026@gmail.com>
+Subject: Re: [PATCH v13 03/14] accel/rocket: wait for a running IRQ handler before resetting a core
+Date: Wed, 16 Sep 2026 15:28:24 +0200
+Message-ID: <20260916132824.13527-1-royalnet026@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260915104328.45901-4-gahing@gahingwoo.com>
+References: <20260915104328.45901-1-gahing@gahingwoo.com> <20260915104328.45901-4-gahing@gahingwoo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird Beta
-From: linux-kernel-dev@aliel.fr
-Subject: Re: [PATCH v11 3/6] mfd: khadas-mcu: Add support for VIM4 MCU variant
-To: Lee Jones <lee@kernel.org>
-Cc: Neil Armstrong <neil.armstrong@linaro.org>, Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Beniamino Galvani <b.galvani@gmail.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, linux-amlogic@lists.infradead.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-pm@vger.kernel.org, mfd@lists.linux.dev
-References: <20260902-add-mcu-fan-khadas-vim4-v11-0-5f1610d83bf0@aliel.fr>
- <20260902-add-mcu-fan-khadas-vim4-v11-3-5f1610d83bf0@aliel.fr>
- <20260910142153.GF1051768@google.com>
-Content-Language: en-US
-In-Reply-To: <20260910142153.GF1051768@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 9/10/26 4:21 PM, Lee Jones wrote:
-> On Wed, 02 Sep 2026, Ronald Claveau via B4 Relay wrote:
-> 
->> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
->>
->> Refactor probe() to use per-variant values
->> instead of hardcoded globals.
->>
->> Add dedicated regmap configuration for the VIM4 MCU,
->> with its own volatile/writeable registers.
->>
->> Introduce struct khadas_mcu_fan_pdata to pass the fan
->> control register and duty-cycle levels per variant.
->> VIM4 uses a different register and level set (0-100)
->>  declared as a list (0, 30, 40, 55, 75, 100) compared
->>  to previous boards (0-3).
->>
->> Add a new compatible string "khadas,vim4-mcu".
->>
->> Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
->> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
-> 
-> Generally fine.
-> 
->> ---
->>  drivers/mfd/khadas-mcu.c | 120 +++++++++++++++++++++++++++++++++++++++++------
->>  1 file changed, 106 insertions(+), 14 deletions(-)
->>
->> diff --git a/drivers/mfd/khadas-mcu.c b/drivers/mfd/khadas-mcu.c
->> index 0e74efe14f367..4cb305ac915e1 100644
->> --- a/drivers/mfd/khadas-mcu.c
->> +++ b/drivers/mfd/khadas-mcu.c
->> @@ -75,47 +75,138 @@ static const struct regmap_config khadas_mcu_regmap_config = {
->>  	.cache_type	= REGCACHE_MAPLE,
->>  };
->>  
->> +static const unsigned int khadas_mcu_fan_levels[] = {
->> +	0, 1, 2, 3,
->> +};
->> +
->> +static const struct khadas_mcu_fan_pdata khadas_mcu_fan_pdata = {
->> +	.fan_reg	= KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
->> +	.levels		= khadas_mcu_fan_levels,
->> +	.nlevels	= ARRAY_SIZE(khadas_mcu_fan_levels),
->> +};
-> 
-> I still don't think these belong in here.
-> 
+Hi Jiaxing,
 
-I will move it to the fan driver.
+Thanks for flagging the job_lock change in the cover. I re-ran the
+same protocol today on v13 as posted, 2+3 and 2+3+4, three runs each,
+same board, base and config as on 12 September (JOB_TIMEOUT_MS=2,
+PROVE_LOCKING, DEBUG_ATOMIC_SLEEP): 73 induced resets with nothing
+from the driver beyond the timeout message itself, no MMU faults, no
+lockdep report or warning, and lockdep still armed at the end on both
+kernels. Of the 126 inferences scored, 118 matched the CPU reference
+within 1 on all 48 channels, and 8 missed on all 48 with the channels
+the scorer prints reading 0x80; in the two runs traced with the
+kprobe, those 5 results sit exactly where the 5 -ECANCELED completions
+do.
 
->>  static const struct mfd_cell khadas_mcu_fan_cells[] = {
->>  	/* VIM1/2 Rev13+ and VIM3 only */
->> -	MFD_CELL_NAME("khadas-mcu-fan-ctrl"),
->> +	MFD_CELL_BASIC("khadas-mcu-fan-ctrl", NULL, &khadas_mcu_fan_pdata,
->> +		       sizeof(khadas_mcu_fan_pdata), 0),
->>  };
->>  
->>  static const struct mfd_cell khadas_mcu_cells[] = {
->>  	MFD_CELL_NAME("khadas-mcu-user-mem"),
->>  };
->>  
->> +static bool khadas_mcu_vim4_reg_volatile(struct device *dev, unsigned int reg)
->> +{
->> +	switch (reg) {
->> +	case KHADAS_MCU_PWR_OFF_CMD_REG:
->> +	case KHADAS_MCU_VIM4_REST_CONF_REG:
->> +	case KHADAS_MCU_WOL_INIT_START_REG:
->> +	case KHADAS_MCU_VIM4_LED_ON_RAM_REG:
->> +	case KHADAS_MCU_VIM4_FAN_CTRL_REG:
->> +	case KHADAS_MCU_VIM4_WDT_EN_REG:
->> +	case KHADAS_MCU_VIM4_SYS_RST_REG:
->> +		return true;
->> +	default:
->> +		return false;
->> +	}
->> +}
->> +
->> +static bool khadas_mcu_vim4_reg_writeable(struct device *dev, unsigned int reg)
->> +{
->> +	switch (reg) {
->> +	case KHADAS_MCU_VERSION_0_REG:
->> +	case KHADAS_MCU_VERSION_1_REG:
->> +	case KHADAS_MCU_SHUTDOWN_NORMAL_STATUS_REG:
->> +		return false;
->> +	default:
->> +		return true;
->> +	}
->> +}
->> +
->> +static const struct regmap_config khadas_mcu_vim4_regmap_config = {
->> +	.reg_bits	= 8,
->> +	.reg_stride	= 1,
->> +	.val_bits	= 8,
->> +	.max_register	= KHADAS_MCU_VIM4_SYS_RST_REG,
->> +	.volatile_reg	= khadas_mcu_vim4_reg_volatile,
->> +	.writeable_reg	= khadas_mcu_vim4_reg_writeable,
->> +	.cache_type	= REGCACHE_MAPLE,
->> +};
->> +
->> +static const unsigned int khadas_mcu_vim4_fan_levels[] = {
->> +	0, 30, 40, 55, 75, 100,
->> +};
->> +
->> +static const struct khadas_mcu_fan_pdata khadas_mcu_vim4_fan_pdata = {
->> +	.fan_reg	= KHADAS_MCU_VIM4_FAN_CTRL_REG,
->> +	.levels		= khadas_mcu_vim4_fan_levels,
->> +	.nlevels	= ARRAY_SIZE(khadas_mcu_vim4_fan_levels),
->> +};
->> +
->> +static const struct mfd_cell khadas_mcu_vim4_fan_cells[] = {
->> +	MFD_CELL_BASIC("khadas-mcu-fan-ctrl", NULL, &khadas_mcu_vim4_fan_pdata,
->> +		       sizeof(khadas_mcu_vim4_fan_pdata), 0),
->> +};
->> +
->>  static int khadas_mcu_probe(struct i2c_client *client)
->>  {
->> +	const struct mfd_cell *cells, *fan_cells;
->> +	const struct regmap_config *regmap_cfg;
->>  	struct device *dev = &client->dev;
->> +	int ncells, nfan_cells, ret;
->>  	struct khadas_mcu *ddata;
->> -	int ret;
->> +	const void *match;
->>  
->>  	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
->>  	if (!ddata)
->>  		return -ENOMEM;
->>  
->> +	match = i2c_get_match_data(client);
-> 
-> The nomenclature can be improved here.
-> 
-> What are these?  Device ID?  Chip ID?  Revision?
-> 
+The limits are those of my 12 September mail (all resets on core 0,
+one client), plus one more: the model is a single 1x1 convolution,
+which Mesa submits as a one-task job (one completion interrupt per
+good inference), so hw_submit() never ran from the IRQ thread, which
+the race you describe needs. So this shows the lock adds no lockdep
+report or hang on this path, not that it closes the race. On that
+basis the tag stands for the v13 form of 3/14, with the same comment:
 
-I will change this to 'mcu_variant'
+Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, induced reset, JOB_TIMEOUT_MS=2
 
->> +	if (!match)
->> +		return -ENODEV;
->> +
->> +	switch ((uintptr_t)match) {
->> +	case KHADAS_MCU_GENERIC:
->> +		regmap_cfg	= &khadas_mcu_regmap_config;
->> +		cells		= khadas_mcu_cells;
->> +		ncells		= ARRAY_SIZE(khadas_mcu_cells);
->> +		fan_cells	= khadas_mcu_fan_cells;
->> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_fan_cells);
->> +		break;
->> +	case KHADAS_MCU_VIM4:
->> +		regmap_cfg	= &khadas_mcu_vim4_regmap_config;
->> +		cells		= NULL;
->> +		ncells		= 0;
->> +		fan_cells	= khadas_mcu_vim4_fan_cells;
->> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_vim4_fan_cells);
->> +		break;
->> +	default:
->> +		return -ENODEV;
->> +	}
->> +
->>  	i2c_set_clientdata(client, ddata);
->>  
->>  	ddata->dev = dev;
->>  
->> -	ddata->regmap = devm_regmap_init_i2c(client, &khadas_mcu_regmap_config);
->> +	ddata->regmap = devm_regmap_init_i2c(client, regmap_cfg);
->>  	if (IS_ERR(ddata->regmap)) {
->>  		ret = PTR_ERR(ddata->regmap);
->> -		dev_err(dev, "Failed to allocate register map: %d\n", ret);
->> -		return ret;
->> +		return dev_err_probe(dev, ret, "Failed to allocate register map\n");
->>  	}
->>  
->> -	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
->> -				   khadas_mcu_cells,
->> -				   ARRAY_SIZE(khadas_mcu_cells),
->> -				   NULL, 0, NULL);
->> -	if (ret)
->> -		return ret;
->> +	if (cells && ncells) {
->> +		ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
->> +					   cells,
->> +					   ncells,
->> +					   NULL, 0, NULL);
->> +		if (ret)
->> +			return ret;
->> +	}
->>  
->>  	if (of_property_present(dev->of_node, "#cooling-cells"))
->>  		return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
->> -					    khadas_mcu_fan_cells,
->> -					    ARRAY_SIZE(khadas_mcu_fan_cells),
->> +					    fan_cells,
->> +					    nfan_cells,
->>  					    NULL, 0, NULL);
->>  
->>  	return 0;
->> @@ -123,7 +214,8 @@ static int khadas_mcu_probe(struct i2c_client *client)
->>  
->>  #ifdef CONFIG_OF
->>  static const struct of_device_id khadas_mcu_of_match[] = {
->> -	{ .compatible = "khadas,mcu", },
->> +	{ .compatible = "khadas,mcu", .data = (void *)KHADAS_MCU_GENERIC },
->> +	{ .compatible = "khadas,vim4-mcu", .data = (void *)KHADAS_MCU_VIM4 },
->>  	{},
->>  };
->>  MODULE_DEVICE_TABLE(of, khadas_mcu_of_match);
->>
->> -- 
->> 2.49.0
->>
->>
-> 
+If 4/14 changes shape in v14, I will re-run that arm. The scripts and
+the tallies were prepared with an LLM assistant; every number above
+was counted from the raw files of each run (scorer output, kernel and
+serial logs, kprobe trace), not from the scripts' summaries.
 
-
--- 
-Best regards,
-Ronald
+Regards,
+Igor
