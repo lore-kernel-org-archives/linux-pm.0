@@ -1,304 +1,374 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BE7E5427E8;
-	Wed, 16 Sep 2026 15:33:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id C7ED45293EE;
+	Wed, 16 Sep 2026 16:28:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789572785; cv=none; b=sdaNHF4Cd8slFwkW32aYE8RED98OuxR0HiybgFhN0Z9i0mcF9/afbIbGmKIR6rFheksVakTr7AjISlGNEHj+MqkuRIkLOGhJZY0DcfHKgN6QWy412DYoow1zoBceQbV76Q1zsEaS5hz06ep5tp8T7ZQR4hLqLulqr1fSpmekWZg=
+	t=1789576139; cv=none; b=Goof2l8tK1RP2CZIZc9sHN0RSmf0D0zBQVVw5I00dslVPepB/VonEEfq9FJYP/mCk0Jc19OsekuAscfqR7uVGHqbmL1jaLOGvx1YecefSQ5/vwGvRELGnVskrSX9pQzEIxuDYKPh+DMTkERk21+sLFlVo/Sww3BaClwhpr2AsS8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789572785; c=relaxed/simple;
-	bh=o+LEUrChLQumXTQ8gVDWro0LRX/RycvDIOK1D/yCvU8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=QrJxsp3EMakZehsb77VBjPr3KPLehYxDwBH0eH6lyybuJunqoTad2e8mwY/Lg41N7qGicZpv2LnldqxVeIB2DPx0Vt5A6qtrUh6f9x1um6srE+Yx6D79f1Ab0s2wEN2lKdzfiOYd2u2Asmx80glrMyCpA2xY6SPS+NLM+/7C3wo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mef6Zo3H; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1789576139; c=relaxed/simple;
+	bh=+GWH8lgLg4HvnyhSrckaExsJdcchJNKi750cectG9qY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ggrotbu4hvc5rJnMHnR7xMjOLIyTWDbspQyBmiZxblK+lkkeorZA2g5NggrNNrEOD9aE8hFgeUH9+k9LnfSd1iqcfQBFbUS/fTt7OMsbxkaOxT8DCv+Gx/hatjJ/boEw7t4D7SvXXAy4Pzr3VYQlW4t9U2nivi57QptwBf+IX98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=KnMHbsTe; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mef6Zo3H"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ECC12C2BCFF;
-	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1789572783;
-	bh=o+LEUrChLQumXTQ8gVDWro0LRX/RycvDIOK1D/yCvU8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=mef6Zo3Hlb142JUkAotqQXrKYCXOdxCtbTtvPeVSkb5HVU0tcC5ibrJdKu5WWehVZ
-	 yKyjlvD2wrVTc5Kiu0fwXme0G2ihCzgnEEwhH9X6/h+XE9bi8E4GoknvVR42ZoF+QD
-	 ask8nUvZ+ChnafW/ixCsR6fxxKWtHzOKw6T9kny7u/Ib+d+463gse4yzb+fEAtQWUg
-	 jWfk3ewm5aa096igsy53VZivwOuWDJ8CGA4p0TXkH6eJoDcOY5HhF+q4tiw9gAweH2
-	 6aEh2pvXZLqZEWlPJAU6AVVm3g37RMwFsPIw8n0TJW42rbxrF97LqRDMUtMLFZYAtx
-	 p+aDUlakHxC3w==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8455C982C3;
-	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
-From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Wed, 16 Sep 2026 09:33:23 -0600
-Subject: [PATCH v10 31/38] dyndbg: split multi-query strings with @
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="KnMHbsTe"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D30EA1516;
+	Wed, 16 Sep 2026 09:28:48 -0700 (PDT)
+Received: from e127648.carmbridge.arm.com (unknown [10.0.129.72])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A57C63F7B4;
+	Wed, 16 Sep 2026 09:28:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1789576132; bh=+GWH8lgLg4HvnyhSrckaExsJdcchJNKi750cectG9qY=;
+	h=From:To:Cc:Subject:Date:From;
+	b=KnMHbsTeixKTJ4Hz2jnO8sfzb1bklqkG8CLGKKLhUeoJdqXj28tQh6LyAnvuYO0sT
+	 gTfuBBoZnljKD3iIRDESgKSPLQHpLm/KizLjArd5v1gIktYRTeIj9KpAW3i9aNtK4N
+	 CzzN+EJdVlAHsx4BPBuBc1i/icYx4AsMFghZX6Ak=
+From: Christian Loehle <christian.loehle@arm.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Len Brown <lenb@kernel.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Sudeep Holla <sudeep.holla@arm.com>,
+	Ionela Voinescu <ionela.voinescu@arm.com>,
+	zhongqiu.han@oss.qualcomm.com,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH v7 0/20] ACPI: CPPC: Fix register access and lifetime bugs
+Date: Wed, 16 Sep 2026 17:27:45 +0100
+Message-Id: <20260916162805.1039247-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260916-dd-cmap-part2-clean-v10-31-af4cf4767707@gmail.com>
-References: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
-In-Reply-To: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
-To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, 
- Petr Pavlu <petr.pavlu@suse.com>, Daniel Gomez <da.gomez@kernel.org>, 
- Sami Tolvanen <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>, 
- Jonathan Corbet <corbet@net.net>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
- Shuah Khan <skhan@linuxfoundation.org>, 
- Randy Dunlap <rdunlap@infradead.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, 
- Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
- linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
- linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
- Jim Cromie <jim.cromie@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=9157;
- i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=vqt+R6qwfeUJ05tDSEl0oRSLpZTTeZrmflDKRmmc8bE=;
- b=kESQeGZJy5KrAduY0wOdkBWwUqjh0nGxIoifFGgnK0iNnbi6yYCpxYY7DsF1Lu3EJu4WspirE
- wVda4UUIOzvCEY4Fsl66uvbhA6MmsTH+ZvTtBuydQ5t5IkcNgRkiczx
-X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
- pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
-X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
- auth_id=958
-X-Original-From: Jim Cromie <jim.cromie@gmail.com>
-Reply-To: jim.cromie@gmail.com
+Content-Transfer-Encoding: 8bit
 
-From: Jim Cromie <jim.cromie@gmail.com>
+This series fixes malformed _CPC handling, control-write error propagation,
+PCC ownership and cleanup, CPC sysfs lifetime, register-field access,
+cross-processor aliases, and Performance Limited clearing.
 
-Since
-commit 85f7f6c0edb8 ("dynamic_debug: process multiple debug-queries on a line")
+Series structure
+================
 
-Multi-query commands have been allowed:
+Patches 1-7 cover parsing and control semantics, error propagation,
+PCC update serialization, and descriptor/PCC cleanup. Patches 8-15
+validate the register layouts and aliases which the existing accessors and
+locking can safely support, and correct Performance Limited clearing.
+Patch 16 bounds x86 and arm64 FFH fields before accessing hardware, checks
+x86 MSR numbers, and dispatches FFH before generic Access Size decoding.
+Patch 17 propagates failed cross-CPU FFH calls on arm64 and RISC-V before
+using callback output, including counter reads for an offline CPU.
+Patch 18 accepts a request to retain immutable Autonomous Selection as a
+no-op, rejects unsupported amd-pstate transitions to passive mode before
+changing state or removing the driver, and restores cppc-cpufreq's previous
+mode if a later bounds update fails. The immutable-capability query is
+serialized with descriptor publication and removal.
+Patch 19 selects the frequency-invariance callback per CPU, avoiding
+uninitialized deferred work in policies mixing PCC and direct counters.
+Patch 20 creates the FIE worker when policy initialization encounters PCC
+counters, before publishing callbacks. This covers offline and later-added
+PCC members without making direct-counter FIE depend on worker setup.
 
-  modprobe drm dyndbg="class DRM_UT_CORE +p; class DRM_UT_KMS +p"
-  modprobe drm dyndbg=<<EOX
-     class DRM_UT_CORE +p
-     class DRM_UT_KMS +p
-  EOX
+The layout fixes are more substantial: a physical access unit can contain
+several fields or be shared across processors and _PSD domains. Probe-time
+interval registries enforce the assumptions of the existing
+descriptor-local locking model. They add no lookup to the scheduler path;
+standalone full-width SystemMemory writes remain lockless. Disjoint fields
+within one descriptor retain their shared lock when their access units
+overlap, including a full-width byte beside a wider partial-field access.
 
-More recently, the need for quoting was avoided by treating a comma
-like a space/token-terminator:
+Behavior description
+==================
 
-  modprobe drm dyndbg=class,DRM_UT_CORE,+p\;class,DRM_UT_KMS,+p
+The parser validates the package before indexing its entries and the
+Generic Register descriptor consumed by the driver. It tolerates trailing
+package/ResourceTemplate data and legacy Integer-zero absent controls.
+Buffer-backed capabilities and bound readbacks are checked before narrowing
+to u32. Minimum and Maximum Performance must form a usable pair, and
+an explicit minimum-valid flag preserves a zero Minimum Performance
+readback across cpufreq initialization and exit. Maximum Performance and
+amd-pstate's unsaved firmware-minimum restore requests retain their existing
+zero-means-omitted convention.
 
-That works, but it needs the escaped semicolon, which is a shell
-special-char (one of the bash control operators), so it is brittle
-when passed in/down/around scripts.
+Lowest Performance must remain nonzero, as before the series. Accepting zero
+needs separate changes to consumers which assume a zero frequency origin
+or use a zero capability as an absence sentinel. This does not change the
+explicit zero Minimum Performance update used to remove a lower bound.
+Invalid firmware-provided Lowest/Nominal Frequency values remain an error.
 
-So this patch adds '@' to the existing ';' and '\n' multi-command
-separators, which is more shell-friendly, so you can more fully avoid
-quoting and escaping hassles.
+PCC ownership is acquired before staging payload updates. Direct-only,
+batched PCC, and mixed-address-space performance updates retain their
+separate ordering requirements. PCC lifecycle locking and payload-copy
+serialization protect different state.
 
-Update selftests script, adding a multi-query split on @
+Frequency-invariance policy teardown remembers which PCC work was
+initialized, so it can drain that work after processor removal unpublishes
+the CPC descriptor. Callback selection uses that same per-CPU initialization
+state rather than looking up the potentially removed descriptor again.
+Worker creation is serialized and occurs only when initializing PCC
+counters, before that policy publishes callbacks. Setup failure leaves
+that policy without FIE, but does not disable direct-counter or already
+active policies. Direct-only systems create no worker or deadline
+reservation. Direct-counter CPUs continue updating in the tick.
+This does not solve the separate runtime-accessor lifetime races with
+processor removal (which I will post in a later series).
 
-Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
----
-v10:
-. replace strpbrk() with quote-aware ddebug_find_delimiter() to ignore '@' inside quotes.
+SystemMemory permits read-only overlaps, supported exact writable aliases,
+and safe descriptor-local partial writes. A full-width writer may share a
+larger read access unit across descriptors when their logical fields are
+disjoint. Only controls written by the CPPC library count as competing
+writers (i.e. OSPM Nominal Performance is not written). Its write-only
+readback protections still apply. The validation rejects cross-descriptor
+partial writers which its locks cannot serialize and accesses which replay
+a write-only neighbour's undefined readback. SystemIO permits read-only
+aliases with write-only controls, but not with readable controls whose
+readback would select the wrong register. Unsupported optional controls are
+disabled only where doing so cannot silently change the operating mode.
+Present but inaccessible Enable or Autonomous Selection controls fail
+probe, including sub-byte PCC forms which the existing writer cannot
+program. This may reject firmware-enabled configurations that previously
+worked until the driver attempted an unsupported control access.
+Optional-writer fallback only changes unpublished descriptors. A conflict
+with an already-published writer can still fail probe; making recovery
+independent of CPU discovery order requires runtime quiescence support.
 
-v9:
-. update FT_multi_query command in dyndbg_selftest.sh to actively test @ delimiter.
-v5: avoid +t flag in content tests - pid is not predictable.
-    remove Reviewed-by: <louis.chauvet@bootlin.com> - too many changes
+Performance Limited is sticky, but ACPI does not define the effect of
+writing one. A selective clear can either replay stale status or set a bit
+on a plain read/write implementation. Write 0x3 to the perf_limited
+attribute to clear both bits with one literal-zero register write;
+selective clears return -EOPNOTSUPP. Partial SystemMemory/SystemIO status
+fields remain readable but cannot be cleared generically. This is a status
+acknowledgement, not a lossless event log.
 
-v2:
+Inaccessible status ranges remain visible to overlap validation without
+being accessed. Sumit Gupta's NVIDIA T41 quirk widens only the verified
+two-bit, offset-zero DWord descriptor whose remaining bits are unimplemented,
+allowing that platform to use the safe clear-all operation.
 
-replace '%' with '@' as multi-query splitter, as it is:
- - not a sshell special cahr
- - allows matching on format strings with format specifiers
----
- Documentation/admin-guide/dynamic-debug-howto.rst  |  8 +++--
- lib/dynamic_debug.c                                | 26 ++++++++++++++++-
- .../selftests/dynamic_debug/dyndbg_selftest.sh     | 34 +++++++++++++++-------
- 3 files changed, 53 insertions(+), 15 deletions(-)
+The general SystemMemory/SystemIO alignment checks retain the x86 exception
+for unaligned accesses. Performance Limited currently inherits that policy.
+This is not a guarantee of an indivisible device transaction at an unaligned
+address; the stricter status-atomicity question remains separate work. No
+torn access or affected platform has been demonstrated by the reviews.
 
-diff --git a/Documentation/admin-guide/dynamic-debug-howto.rst b/Documentation/admin-guide/dynamic-debug-howto.rst
-index b9fbb2a12955..a8962ab22aaf 100644
---- a/Documentation/admin-guide/dynamic-debug-howto.rst
-+++ b/Documentation/admin-guide/dynamic-debug-howto.rst
-@@ -85,10 +85,12 @@ by spaces, tabs, or commas.  So these are all equivalent::
-   :#> ddcmd '  file   svcsock.c     line  1603 +p  '
-   :#> ddcmd file,svcsock.c,line,1603,+p
- 
--Command submissions are bounded by a write() system call.
--Multiple commands can be written together, separated by ``;`` or ``\n``::
-+Command submissions are bounded by a write() system call.  Multiple
-+commands can be written together, separated by ``@``, ``;`` or ``\n``::
- 
--  :#> ddcmd "func pnpacpi_get_resources +p; func pnp_assign_mem +p"
-+  :#> ddcmd func foo +p @ func bar +p
-+  :#> ddcmd func foo +p \; func bar +p
-+  :#> ddcmd "func foo +p ; func bar +p"
-   :#> ddcmd <<"EOC"
-   func pnpacpi_get_resources +p
-   func pnp_assign_mem +p
-diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
-index 0720fc4f7a90..c023d07623f2 100644
---- a/lib/dynamic_debug.c
-+++ b/lib/dynamic_debug.c
-@@ -621,6 +621,30 @@ static int ddebug_exec_query(char *query_string, const char *modname)
- 	return nfound;
- }
- 
-+/*
-+ * Split multi-query string on delimiters (@, ;, \n), ignoring delimiters
-+ * that appear inside single or double quoted strings.
-+ */
-+static char *ddebug_find_delimiter(char *str, const char *delims)
-+{
-+	bool in_quote = false;
-+	char quote_char = 0;
-+
-+	for (; *str; str++) {
-+		if (*str == '"' || *str == '\'') {
-+			if (!in_quote) {
-+				in_quote = true;
-+				quote_char = *str;
-+			} else if (*str == quote_char) {
-+				in_quote = false;
-+			}
-+		} else if (!in_quote && strchr(delims, *str)) {
-+			return str;
-+		}
-+	}
-+	return NULL;
-+}
-+
- /* handle multiple queries in query string, continue on error, return
-    last error or number of matching callsites.  Module name is either
-    in the modname arg (for boot args) or perhaps in query string.
-@@ -631,7 +655,7 @@ static int ddebug_exec_queries(char *query, const char *modname)
- 	int i, errs = 0, exitcode = 0, rc, nfound = 0;
- 
- 	for (i = 0; query; query = split) {
--		split = strpbrk(query, ";\n");
-+		split = ddebug_find_delimiter(query, "@;\n");
- 		if (split)
- 			*split++ = '\0';
- 
-diff --git a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-index bd72a718406c..a91a0ffa92d4 100755
---- a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-+++ b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-@@ -138,7 +138,6 @@ function ddcmd_load () {
-     local val="$4"
- 
-     # 1. Setup the control filters (using positional ddcmd range-check)
--    echo  "$query" "$range"
-     ddcmd "$query" "$range"
- 
-     # 2. Execute the workload and capture syslog prints
-@@ -332,9 +331,20 @@ function FT_basic_queries {
-     ddcmd "file $f +l"  "$f"
-     ddcmd "file $f -m"  "$f"
-     ddcmd "file $f =_"  "$f"
-+}
-+
-+function FT_multi_query {
-+    v_echo "${GREEN}# MULTI_QUERY_TESTS ${NC}"
-+    if [ $LACK_DD_BUILTIN -eq 1 ]; then
-+	echo "SKIP - test requires dynamic_debug built into kernel"
-+	return
-+    fi
-+    local f='kernel/params.c'
-+    ddcmd =_ # zero everything
- 
--    # multi-query commands split on ; on a single line
-+    # multi-query commands on a single line, split on ;/@ respectively
-     ddcmd "file $f +mf ; file $f func parse_args +sl" "$f"
-+    ddcmd "file $f -f @ file $f func parse_args -l"   "$f"
- 
-     # verify multi-cmd input, newline separated, with embedded comments
-     ddcmd =_ # reset before multiline query to capture full transition
-@@ -380,7 +390,7 @@ function FT_test_classes {
-     verify_control_slice '\[test_dynamic_debug\]'
- 
-     # 2. Verify state transition and live-printing end-to-end via ddcmd_load!
--    ddcmd_load "class D2_CORE +pmf;class D2_KMS +pls;class D2_ATOMIC +pml" \
-+    ddcmd_load "class,D2_CORE,+pmf;class,D2_KMS,+pls;class,D2_ATOMIC,+pml" \
-         '\[test_dynamic_debug\]' \
-         "/sys/module/test_dynamic_debug/parameters/do_classes" "1"
- 
-@@ -474,6 +484,7 @@ builtin_tests=(
-     FT_grammar_errs
-     FT_basic_queries
-     FT_comma_terminators
-+    FT_multi_query
- )
- 
- # Modular Feature Tests (Require CONFIG_MODULES=y and test_dynamic_debug*.ko available)
-@@ -496,8 +507,8 @@ modular_tests=(
- #
- # ==============================================================================
- function GOLDEN_RECORDS {
--    cat << 'EOF' | {
--#K= 26fd1565f209b383d9f2fbf0b54cd5fc FT_grammar_errs.1
-+    cat << 'EO_DYNDBG_GOLDEN_REFS' | {
-+#K= 95b249c7ec2cbd5a436f96060b2bee37 FT_grammar_errs.1
- #K= 200c01632c52a63f6d186da1c6460740 FT_grammar_errs.2
- #K= 7d7141900ce6e32f15c99202309c63a4 FT_grammar_errs.3
- #K= 1bb798a5831d0119789d424ef6cb55c4 FT_grammar_errs.4
-@@ -517,7 +528,7 @@ function GOLDEN_RECORDS {
- #K= cb8288d607b0c5282125852f3ab05107 FT_grammar_errs.18
- #K= b371c6ba52503d037dbc43da788af8be FT_grammar_errs.19
- #K= 98e2bd3e4f3da58536496a38ec3e6238 FT_grammar_errs.20
--#K= 02b210b2646aceb68f3d6d2876a3d57a FT_grammar_errs.21
-+#K= c4e8b7261811e9fdf0c80fa9e374a29e FT_grammar_errs.21
- #K= 51030cd01ed601a68dd48356902954b1 FT_grammar_errs.22
- #K= af8818de076407d4e7f4e384ba110ac5 FT_grammar_errs.23
- #K= 023ba04ffced833b4776fb4fcaae7755 FT_grammar_errs.24
-@@ -537,7 +548,7 @@ function GOLDEN_RECORDS {
- #K= 130bf64b92a5e34d1c4cce98899084e1 FT_grammar_errs.38
- #K= 9681a05658f1a50e3434aa991b5ce992 FT_grammar_errs.39
- #K= 38506317363a188fbb7a417ff50457a9 FT_grammar_errs.40
--#K= 02b210b2646aceb68f3d6d2876a3d57a FT_grammar_errs.41
-+#K= c4e8b7261811e9fdf0c80fa9e374a29e FT_grammar_errs.41
- #K= 8c08a8b5cacbf885d022360ed856e7a1 FT_grammar_errs.42
- #K= f0f4d894a49bd2c1856cf4f013f83e54 FT_grammar_errs.43
- #K= 25b92d52cb299fa8d84c5584e490bd97 FT_grammar_errs.44
-@@ -561,14 +572,15 @@ function GOLDEN_RECORDS {
- #K= db17180b59444e5e34a8fc20c40e4530 FT_basic_queries.2
- #K= f7bd56bd407ff255ef2e3b5fb093ae6a FT_basic_queries.3
- #K= 4ce44468b3b5f80ae42ade1f261b952f FT_basic_queries.4
--#K= 02e4fd94602e108cb89bfc70d47a5dad FT_basic_queries.5
--#K= f03a7ca7316e8db4c0e16523dc41e75d FT_basic_queries.6
--#K= c518a50ba30ba8099d0dc874a27ecf16 FT_basic_queries.7
- #K= c8bbbac639f244ed9088208ebb7d83a6 FT_comma_terminators.1
- #K= bed6350f058f600910837dae83a12f56 FT_comma_terminators.2
- #K= 6e8599556a312200fb6d484565b6c52f FT_comma_terminators.3
- #K= 68b329da9893e34099c7d8ad5cb9c940 FT_comma_terminators.4
- #K= adc1ef04304c861c87fe294a8ba4e402 FT_comma_terminators.5
-+#K= 02e4fd94602e108cb89bfc70d47a5dad FT_multi_query.1
-+#K= c0fc482bbf18b9d5ffd6743b18bc34f7 FT_multi_query.2
-+#K= f03a7ca7316e8db4c0e16523dc41e75d FT_multi_query.3
-+#K= c518a50ba30ba8099d0dc874a27ecf16 FT_multi_query.4
- #K= 8f18ea82c09460434b6e9e4cd12543e8 FT_test_classes.1
- #K= a15ec4843acd721fbdfddc0b512c8032 FT_test_classes.2
- #K= 20d4545f9753e677e72e3adf52527fd3 FT_test_classes.3
-@@ -613,7 +625,7 @@ function GOLDEN_RECORDS {
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.34
- #K= 7f961a7d3facd89bdd4b9d8e7b5541e9 FT_modprobe_w_param.35
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.36
--EOF
-+EO_DYNDBG_GOLDEN_REFS
-         # Read the K-recs and skip those for tests that can't run
-         while read -r line; do
-             # Filter built-in if needed
+Testing
+=======
 
--- 
-2.55.0
+An earlier iteration was built and booted on Orion O6-01, with CPPC sysfs,
+frequency changes, advancing counters and module reloads checked. The
+subsequent AMD transition guard and FIE fixes have passed source/model
+checks and checkpatch, but this tip has not yet been built or booted.
+Those checks are not AMD hardware, mixed-PCC hotplug or concurrency tests.
 
+Changes since v6
+================
 
+Patch 1: Validate the _CPC package header
+  Unchanged from v6.
+
+Patch 2: Validate _CPC entry and control semantics
+  Allow the full 64-bit Integer Counter Wraparound Time and emit FW_BUG
+  once for tolerated legacy Integer-zero Buffer placeholders. (Rafael)
+  Drop v6's zero Lowest Performance support: nonzero frequency anchors do
+  not make it safe for all consumers. Retain the pre-series nonzero check.
+  Reject Minimum/Maximum readbacks above U32_MAX before narrowing them.
+  Keep only min_perf_valid: an explicit zero minimum removes a lower bound,
+  whereas zero Maximum Performance retains its legacy omitted-update
+  meaning. Document the flag and leave it clear for amd-pstate's unsaved
+  firmware-minimum restore requests.
+
+Patch 3: Propagate performance-control write errors
+  Adjust for patch 2's minimum-only validity flag; a zero maximum remains
+  an omitted update.
+
+Patch 4: Serialize PCC single-register payload updates (v6 patch 5)
+  Reject unsupported PCC widths before taking the exclusive lock, so a
+  malformed request cannot abort an older valid performance batch.
+  Match both subspace and generation when completing failed PCC writes;
+  equal generation numbers in another subspace must not receive the error.
+
+Patch 5: Serialize PCC EPP payload updates (v6 patch 6)
+  Preflight PCC widths and SystemIO writer geometry before changing any
+  direct control. This keeps the patch independently safe before the later
+  probe-time layout validation. Pass the subspace to error completion.
+  Patches 10 and 11 remove these preflights once probe guarantees them.
+
+Patch 6: Release CPC descriptors through kobject (v6 patch 7)
+  Track initialized PCC frequency-invariance work independently of the CPC
+  descriptor, so policy exit still drains it after descriptor unpublication.
+  Make the counter-transport query tolerate a missing descriptor. Broader
+  runtime-accessor lifetime protection remains deferred.
+
+Patch 7: Release PCC data after probe failures (v6 patch 8)
+  No functional changes from v6. Only clarify the channel-reuse comment.
+
+Patch 8: Reject unsafe cross-CPU SystemMemory RMW (v6 patch 9)
+  Mark successful relaxed MMIO writes pending for lock-handoff ordering.
+  Use the interval walk to lock both same-descriptor overlapping accesses,
+  including mixed-width full/partial fields, without another overlap pass.
+  Permit a full-width writer beside a disjoint logical read-only field,
+  including across descriptors when the reader uses a larger access unit.
+  Do not count OSPM Nominal Performance as a competing writer: Linux does
+  not write it. Its write-only readback protections remain in patch 9.
+  Exact-alias coalescing and representative promotion were already in v6
+  and remain present; they are not additions in this version.
+
+Patch 9: Reject direct reads of write-only controls (v6 patch 10)
+  Also reject readable SystemMemory fields whose logical bits overlap a
+  write-only control, including retained inaccessible fields. Treat a
+  retained zero-width field conservatively before the no-writer shortcut.
+  Reuse the logical-field overlap check instead of a separate full-width
+  ownership helper. Remove the duplicate Desired Performance getter check;
+  the common getter already enforces write-only semantics.
+
+Patch 10: Validate and access PCC register layouts (v6 patch 11)
+  Fail probe for a present inaccessible Autonomous Selection control,
+  instead of hiding it without establishing the hardware's operating mode.
+  Separate the final bound-pair check from mandatory-control validation.
+  Remove setter PCC-width preflights once probe validates every published
+  writer, and remove unreachable PCC branches in the memory accessors.
+  Keep actual access-error handling and ownership serialization.
+
+Patch 11: Validate SystemIO register layouts (v6 patch 12)
+  Allow a read-only port alias with a write-only control, but reject aliases
+  with readable controls whose readback would select the wrong register.
+  Remove the EPP setter's duplicate SystemIO geometry preflight once probe
+  enforces it. Read-only partial-field support and the x86 exception to
+  natural alignment were already in v6 and remain unchanged.
+
+Patch 12: Validate PCC overlaps across processors (v6 patch 13)
+  Replace the separate same-descriptor overlap pass with registry checks.
+  Drop v6's expansion to additional byte-multiple PCC writer widths; retain
+  the existing 8/16/32/64-bit widths, subject to control-specific limits.
+  Keep one interval record per descriptor entry; PCC alias coalescing is
+  deferred. Correct Fixes to 80b8286aeec0 (CPPC request batching).
+
+Patch 13: Validate SystemIO overlaps across processors (v6 patch 14)
+  Apply patch 11's direction-aware alias policy across processors and
+  remove the now-redundant same-descriptor overlap pass. Retain per-entry
+  interval records; SystemIO alias coalescing remains deferred.
+
+Patch 14: Clear Performance Limited without a stale read (v6 patch 15)
+  Stop assuming write-zero-to-clear semantics for written ones. Reject
+  selective clears and implement clear-all (sysfs 0x3) with one literal-zero
+  register write, avoiding both stale readback and fabricated status. (Sumit)
+  Extend the readable-but-not-clearable fallback to partial SystemIO fields.
+  Extend inaccessible-range retention to PCC and SystemIO, including status
+  crossing the PCC payload end or port 0xffff. PCC claims retain their own
+  subspace without selecting or retaining an unnecessary access channel.
+  Permit disabling only unpublished, disjoint optional SystemMemory writers
+  which share a status access unit; never hide a required or Autonomous
+  Selection control. Published writers are not changed during another probe.
+  Compare bit geometry as well as byte ranges for exact PCC/SystemIO aliases,
+  and count only accessible controls as writers in those registries.
+  Make status fallback warnings once-only and document the clear-all and
+  unsupported-access behavior in the sysfs ABI.
+
+Patch 15: Keep Performance Limited clearable on NVIDIA T41 (new)
+  Add Sumit's quirk for the verified two-bit, offset-zero DWord layout.
+  Use a cached DSDT match and quirk flags, applying the fixup to the private
+  GAS copy before validation and mapping. Distinguish lookup failures from
+  non-matches and leave failures retryable. Keep all quirk plumbing here,
+  so patch 14 remains independently buildable without unused declarations.
+
+Patch 16: Validate FFH register fields before hardware access (new)
+  Reject invalid x86 field geometry and GAS addresses that would truncate
+  to another 32-bit MSR number. Bound arm64 AMU fields in both single and
+  paired readers. Dispatch FFH before generic Access Size decoding can
+  shift by an invalid amount using an architecture-specific field.
+
+Patch 17: Propagate errors from cross-CPU FFH calls (new)
+  Return failed SMP-call errors on arm64 and RISC-V before consuming
+  uninitialized callback output. Also check RISC-V callback errors before
+  copying a read value. Keep this as a separate backportable error-path fix.
+
+Patch 18: Accept requests to retain immutable autonomous selection (new)
+  Treat setting immutable Autonomous Selection Integer 1 to one as a
+  successful no-op; disabling it still fails. Distinguish immutable-one
+  descriptors from writable controls currently reading one. Reject an
+  unsupported amd-pstate transition to passive before changing the mode or
+  unregistering the working driver, checking known offline CPUs too.
+  Serialize the immutable query with descriptor publication/removal,
+  including probe failure, since CPU-hotplug locking does not pin it.
+  On a later bounds-update failure, restore cppc-cpufreq's previous mode
+  rather than always disabling selection.
+
+Patch 19: Select the frequency-invariance callback per CPU (new)
+  Register the PCC callback only on CPUs with PCC counters. A shared policy
+  can also contain direct-counter CPUs, whose irq_work is not initialized.
+  Select from the recorded work-initialization state, so descriptor removal
+  between initialization and publication cannot change the callback choice.
+  Keep callback registration after the complete counter-initialization
+  pass, so an online CPU's failed initial read publishes no CPPC callbacks.
+
+Patch 20: Create the FIE worker before enabling PCC callbacks (new)
+  Create the worker when initializing PCC counters, rather than relying
+  on an online-only startup scan. Serialize creation and reuse it until
+  driver teardown. Offline members and later PCC policies are covered.
+  On setup failure, skip FIE for that policy without changing the global
+  setting or affecting existing policies. Direct-only systems do not
+  allocate an unused worker or consume deadline admission bandwidth.
+
+Dropped v6 patch 4: Use 64-bit masks for register fields
+  All supported CPPC configurations are already 64-bit, so this is only
+  a cleanup I'll submit later on.
+
+Separate lifetime work
+======================
+
+The PCC mailbox teardown fixes are posted separately: [1] is their cover,
+[2] frees the channel before unmapping its shared memory, and [3] serializes
+channel updates with shared-memory teardown. They are not included here;
+this series alone does not close the mailbox IRQ-teardown races.
+
+[1] https://lore.kernel.org/all/20260903111328.805352-1-christian.loehle@arm.com/
+[2] https://lore.kernel.org/all/20260903111328.805352-2-christian.loehle@arm.com/
+[3] https://lore.kernel.org/all/20260903111328.805352-3-christian.loehle@arm.com/
+
+Christian Loehle (19):
+  ACPI: CPPC: Validate the _CPC package header
+  ACPI: CPPC: Validate _CPC entry and control semantics
+  ACPI: CPPC: Propagate performance-control write errors
+  ACPI: CPPC: Serialize PCC single-register payload updates
+  ACPI: CPPC: Serialize PCC EPP payload updates
+  ACPI: CPPC: Release CPC descriptors through kobject
+  ACPI: CPPC: Release PCC data after probe failures
+  ACPI: CPPC: Reject unsafe cross-CPU SystemMemory RMW
+  ACPI: CPPC: Reject direct reads of write-only controls
+  ACPI: CPPC: Validate and access PCC register layouts
+  ACPI: CPPC: Validate SystemIO register layouts
+  ACPI: CPPC: Validate PCC overlaps across processors
+  ACPI: CPPC: Validate SystemIO overlaps across processors
+  ACPI: CPPC: Clear Performance Limited without a stale read
+  ACPI: CPPC: Validate FFH register fields before hardware access
+  ACPI: CPPC: Propagate errors from cross-CPU FFH calls
+  ACPI: CPPC: Accept requests to retain immutable autonomous selection
+  cpufreq: CPPC: Select the frequency-invariance callback per CPU
+  cpufreq: CPPC: Create the FIE worker before enabling PCC callbacks
+
+Sumit Gupta (1):
+  ACPI: CPPC: Keep Performance Limited clearable on NVIDIA T41
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   16 +-
+ arch/arm64/kernel/topology.c                       |   14 +-
+ arch/x86/kernel/acpi/cppc.c                        |   14 +
+ drivers/acpi/cppc_acpi.c                           | 2209 +++++++++++++++++---
+ drivers/acpi/riscv/cppc.c                          |   26 +-
+ drivers/acpi/utils.c                               |   13 +-
+ drivers/cpufreq/amd-pstate.c                       |   31 +-
+ drivers/cpufreq/cppc_cpufreq.c                     |   73 +-
+ include/acpi/cppc_acpi.h                           |   18 +-
+ 9 files changed, 2024 insertions(+), 390 deletions(-)
+
+base-commit: fd73f4a6659897191fa0d40695fe370925dd3780
+--
+2.34.1
