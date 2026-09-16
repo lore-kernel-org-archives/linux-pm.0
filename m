@@ -1,67 +1,68 @@
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazon11012038.outbound.protection.outlook.com [40.93.195.38])
+Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013070.outbound.protection.outlook.com [40.107.201.70])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C6014D0A1C;
-	Wed, 16 Sep 2026 10:38:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.195.38
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 904614FECC1;
+	Wed, 16 Sep 2026 10:39:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.70
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789555158; cv=fail; b=sxkqNQbpyLgf/qY4s1kJ6aFJoI93m2dLpa8sfzzKmZsLneffd1Iesbv6U1btEtG7lQaWr9WpstidzERPp2wVTtUUhhKdG7BgKaEBgTSQjEOG8cyhjeIyWSHDygGiTlyhluC/fIjbFzU5R51tOkNW1wkDBsLMGqVAMTc9jVGTPgc=
+	t=1789555165; cv=fail; b=eCj9Y2KhfhrejdraOGRpZEdZECIhqaDyBUXR9YsLiu7yG5qV/E9+EIRqEdtE3CdWoh/PsQB/mQHMrHyE/ZzHCHZE6zoGqrX27OvGlq9nS8anuDPMXfhTBih02qvQ8JnnDbTGQbDGlli+o9h1ELza41eUVmRDXehGK4adv6pF+4c=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789555158; c=relaxed/simple;
-	bh=JwVRPJhh0PZYPCy8j56bjc9hENFxPtD7QGy1AlU+MP4=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RxYTFw5ISGmApdepu1toThMhW/por9s+tg8hhetF72YeqIo8tIUQ0jJslZ9F0u0JW9zlfNlZTRrsUfYanhDTpxbD2EXESiNA8kK0e5+p1gRUdKPpWp2dBYcxlXoLIKainqysEoNCry3xOMUGBMx39ju5Xtp8kOuVQDw2bPngGgs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=XavbEm0J; arc=fail smtp.client-ip=40.93.195.38
+	s=arc-20240116; t=1789555165; c=relaxed/simple;
+	bh=nYz8R7vXFLhK3Wh1A8vGvJDs2yiL9SC2pfoQoN8+Apk=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=i6tTajqYYHo7kFU3/D5Pm3AuQlwf8cpKT37mi/PTGG7W8TLYeZuCZ+nkciJa/LNHBqiUWhUed07MFwYLRghQPEvctqMbiWdgzi9qtTaGCL8g/RUU/RRs5WBGAoMnd4br0lvTgyEUM90xmd7LyuGnPiso4HHhMHrUYhuybYsFbYg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=VPWFVy2y; arc=fail smtp.client-ip=40.107.201.70
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="XavbEm0J"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="VPWFVy2y"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=IUDApUm8CdLkbX66+jvuspTmo/VRy8FlhsIMCvAE7y+qU1He4ozXk1vbnJeS04gOSlhoUL3qn385/gYX+Lh+wpVRMRZWL9MklIV70xksGBFPB8Lnq8Ik32z9qCyvZ0wM8Tp9K3vDvE/S4HDacyFN7uHP/63OSeyC4L2PKUY4sTJSmakg78zjxaSW50TWdsXeT0NaW0nT9/eDg/U/2Qf3g8Dksdr5PibK7598RCQmnsXqRKFD1dc7toz1U9DGOwxlsZYe7/JQxMviaiIBOY0mG18qZMwKAP2NXC5xNK0ZaZf7AuhjbtqjQICotRuEKmMtb1OD8+87dQ8l5j7lk9uSMQ==
+ b=sCYBGccUs9O9KBa0cuvN7fMyZ+vfFX+yAYQH4c7ZTgvJl9fa2ZF+wuPWCHct52ER9d/49GJCyjw9WZKp0iTyOmcPon3UylXJxXny9Mz8XgkU/xS3StWx57f7BqL62AhnEVkQEa1aHBBDFzoxWJvNtBfGSViTOpiA+HtL0gLxiKI5Bw2/pC8ZL5himwWhk4vy9u5XEIQZPWfZI847U3jJMBiQTOmcL2sVaPhoUnA7ZoIHX+me9lKR1bO4mXI7focIeqfStnh69YhhjAgl/mNk3VScnNMqgjbAdZk33YTb1OPVzgdrVOLceY9D4RIDgYWNerj5QWImcXcWl3ip1b80/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8y3yUNUqla45/a5+5F505QtsFee8olmyJa14mnO7m4s=;
- b=iEAOqA7O3CV6Znm58VJPU8n+bBE5ZUiMU6sL8Ytd73Zv7EV5w+ovUj5CTvBcSShaQt5gvBg5mA7U6JSVPqjjU6eTkK9UcroNJnp9ml9IF8faqAAmYSFK5oZrQCXVJLknPIIPrLeL+QKtr9ru7tAnUrQbtmJGPw6KyS2eQDKkPar4+y/erf6zwRth6GYw5icDgCYJ0OHMVHQ/NRLFFdpRI43POtC0jZaTHJ7vOLPkzZIaTKNwtXf8DFqJokMO90fe9HZ7LR39knrvVTi43ZUuzisAAHHsxEXCcUKjLY7YMEAHGPzeX7o1WMIftqrdLO7ESC26MlSi4iVNp+Jo+4xh7Q==
+ bh=VB9X7TuPdcla+XhemCJdJPG4Vxnl1kOuRCW4uXtaiU0=;
+ b=oSVDzxCHB5xzzu3HbgvpXYR0PVh6nJFossUgaj4Ie0jptkTb8kTNy9Jj2RwIQpd1Ovc/HiI8sRV96tJ8d1kWH0BI9r+FlxNDOqJuLx8LDvQDixXuMz6+GpbgcXv7AOS/a+Iv6VgHamEs9hZ2IRcP2NKNiImFKuT8TB8Z/qA89vDbEeUNIl/C55v1+bBNOsKQZ2l+Bjy8B5d+Uj97dSRXT278vALvocT8kb1IQfFSvqUjPuEVcngji637mI1RsgkV31g16VJR9Q1jX0G6Rekn+v80DdoFGSy3n7vqMKl2rNI1d1CxlDHYG7KyABQTd3fEDCLtwgdGRMeWEwJ3dzExSQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
  dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8y3yUNUqla45/a5+5F505QtsFee8olmyJa14mnO7m4s=;
- b=XavbEm0Jj5hgk2BP6R3VJqrskjPQwcbyLhodG4ntxz1zG6QL9lF83QdxcmURIyk0/Ga05FVsCSjzn8Kdqh3AHcwSjJ2VEYzSD3SrURuN++K7ZEy84UUx+eXaR/zjHorPOUEsnYnFpMJuDA4PYCISeIPL6WNNlVJWqPqi6aTK4XaiUYbZmDMVxQD0x5MitG63AOS1R4ZD0WQY9f/AqbpsPQf9HXcJpp/jdM587ciZtBGy7iGASaW6ac7URUYHB3DW4TkTZCHZuDYs3FQksrMSJ2E74OgRQEa0r/rEdlrSAaa17EbpfPc8Q2wB3m1GY7B/kMGgFEarQhM8oH/HZbPU+Q==
-Received: from SJ0PR03CA0356.namprd03.prod.outlook.com (2603:10b6:a03:39c::31)
- by DM4PR12MB6279.namprd12.prod.outlook.com (2603:10b6:8:a3::11) with
+ bh=VB9X7TuPdcla+XhemCJdJPG4Vxnl1kOuRCW4uXtaiU0=;
+ b=VPWFVy2yeMeqfpyNCM3vGGjaC3dIztUJg/redYyQT2s+fzFQOmEXFLo5j7SXPuoY6S6E5mw2qzzAgZnO0uOQ0jtIa0pbY88uEwL/MwrTnwqxOEOAY7Yvh/gizTk4tt5sfAFuG6bIt33iq24tARMLjwACOO4u41YuQMNQMUgkohTU1P5bqi3oPsEL3UvPCaa+9kAafaC6mIbdDbTMsEgm3sw8APImjuRDSQIh2tDkgoDhJphhUdmTUrQ9p95xmjbYi6GM2tuTiBN7YQv3xPTiuqA0bmMM4+1D5sKdxef2EcX8KOnIIexVnNm6y6gmY1pVwi34QivYwHHlaO29bynJEg==
+Received: from SJ2PR07CA0005.namprd07.prod.outlook.com (2603:10b6:a03:505::29)
+ by DS7PR12MB6286.namprd12.prod.outlook.com (2603:10b6:8:95::11) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Wed, 16 Sep
- 2026 10:38:51 +0000
-Received: from SJ1PEPF000026C5.namprd04.prod.outlook.com
- (2603:10b6:a03:39c:cafe::58) by SJ0PR03CA0356.outlook.office365.com
- (2603:10b6:a03:39c::31) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.11 via Frontend Transport; Wed,
- 16 Sep 2026 10:38:51 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.9; Wed, 16 Sep
+ 2026 10:39:06 +0000
+Received: from BY1PEPF00026966.namprd05.prod.outlook.com
+ (2603:10b6:a03:505:cafe::6f) by SJ2PR07CA0005.outlook.office365.com
+ (2603:10b6:a03:505::29) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.406.12 via Frontend Transport; Wed,
+ 16 Sep 2026 10:39:03 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
  smtp.mailfrom=nvidia.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=nvidia.com;
 Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- SJ1PEPF000026C5.mail.protection.outlook.com (10.167.244.102) with Microsoft
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ BY1PEPF00026966.mail.protection.outlook.com (10.167.244.150) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.428.7 via Frontend Transport; Wed, 16 Sep 2026 10:38:50 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
+ 15.21.428.7 via Frontend Transport; Wed, 16 Sep 2026 10:39:03 +0000
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Wed, 16 Sep
- 2026 03:38:31 -0700
-Received: from rnnvmail204.nvidia.com (10.129.68.6) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 16 Sep
- 2026 03:38:31 -0700
+ 2026 03:38:41 -0700
+Received: from rnnvmail204.nvidia.com (10.129.68.6) by rnnvmail203.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Wed, 16 Sep
+ 2026 03:38:40 -0700
 Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
  (10.129.68.6) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
- Transport; Wed, 16 Sep 2026 03:38:24 -0700
+ Transport; Wed, 16 Sep 2026 03:38:33 -0700
 From: Sumit Gupta <sumitg@nvidia.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
 	<christian.loehle@arm.com>, <ionela.voinescu@arm.com>,
@@ -73,10 +74,12 @@ To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
 CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <vsethi@nvidia.com>,
 	<ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <mochs@nvidia.com>,
 	<bbasu@nvidia.com>, <sumitg@nvidia.com>
-Subject: [PATCH v5 0/4] cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload
-Date: Wed, 16 Sep 2026 16:08:16 +0530
-Message-ID: <20260916103820.1760297-1-sumitg@nvidia.com>
+Subject: [PATCH v5 1/4] cpufreq: CPPC: Keep the policy across CPU hotplug
+Date: Wed, 16 Sep 2026 16:08:17 +0530
+Message-ID: <20260916103820.1760297-2-sumitg@nvidia.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260916103820.1760297-1-sumitg@nvidia.com>
+References: <20260916103820.1760297-1-sumitg@nvidia.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,84 +92,230 @@ Content-Type: text/plain
 X-NV-OnPremToCloud: ExternallySecured
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF000026C5:EE_|DM4PR12MB6279:EE_
-X-MS-Office365-Filtering-Correlation-Id: 52f9773c-bea2-47a0-bc1a-08df13deb29f
+X-MS-TrafficTypeDiagnostic: BY1PEPF00026966:EE_|DS7PR12MB6286:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6138d4c7-3c30-44c6-fe0b-08df13deb9f3
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|82310400026|1800799024|36860700016|7416014|376014|6133799003|18002099003|13003099007|10067099003|921020|56012099006|11063799006;
+	BCL:0;ARA:13230040|23010399003|36860700016|376014|7416014|82310400026|1800799024|921020|10067099003|56012099006|11063799006|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	pJtVTidvZSt7IZzouh27off7ft8Hw6e+GfvMd9rKf3FZr1OFf3j0NUiXrkJg8SFeoA831daPPu6hnDQ2wCfwqlde2wm8TLaCnRsYSZsThtD5WAEvxveNVVSFY5vmrXW7VastKmy4ahBSnbRuC2RmORRmsc9FpTTo9JaS9vfj2Uqlock0w+3SenwqMvy/X7HdUR6ANCbxB3nZRQxYTM1jV0R3z6I8/yBxvpPSnKS82zLR6bNl7/YgP03qqpCpgHSFVqO+afsWM6gleIMDHNkDkZfXhsfr23DMFbx5VTqKuBOgY+eMKFfujh5YLu8HObzSdAO4GqITideUOtMJhWu+GyUdVh/idXcbyTBwiYiTjoaeZaRpme8dwEdG6rpoFlvMeRHVu9py9hhYrxRDXRhofw/dqcsVHaAzXINkCW7GQD+P7F4fMNhnYBAC9SYCCIMi2vEqt10oD1zrq4I/Z6CcOGRAt5vyCZoRIsxnLOTkvMDMcQwuQ4/gbndHZSXAwc/QT+LnSNtFe2sOfhYABiicpcTVJC963LmnUycdEhEHaMekvjLlS+DQrvvmvxbLKTek1evA2LreuUKNgU75ryfU2MZPM2X6UzyrwKeG1g9hIHlHBQ9DTWW36S2mYWylpcAzMnwvV893CkNje8+0ZU+jwvEuuJ85ha/fBWGKBJr6ACCNSQi2CoYcYqMy/DpQdoxdZblhPDezKbAW3GNo6xYF65Kv7BCprzy2IaJSyZETMabDMXhaMVq3HvyKVkl+q/cc
+	njf+LMBPPGBRGcHSPvkhXwxeD7Nq9OmmgXT7YwCkDumrE8VkDPaPFRW8PQRfV+QDAV1Aw/5879d2DSVVp48Oyngzi/GnmQtGP5BWZEKbySAG+S08OW49dCtIxQV5djd3Go4vYvJjS6dmht5i7q74mt/jX2LVrBXac31sXf9VrRwgGYbMuC2gcHoGUdcTEyewUcAimBun1VqpQBfdod5dP4AsVRn6xMHg3kssGo8WL88WR90G3v5nqYuaqZZlNQ1AhguqBoTeMO2h3KdGGIpYMFqwr9et4LDS8TmJxJsrGAQQ6yFP+thA8El3cR3fLFYZmcya2McrhH5fGVz+kXOVQ1BN1+xWhqxZ9wPXBc+bERQHgeMIBskfcoSvQnShBt20w2uoPfeuV297HOgJJenKVEZNiwM7fPfngUFCHnvZFzQ9bXUNBCiizRrVIg48lXy0bPBPMtP/eqZNPbfUXGiR6IewaWj2IULYhZLni7VtErcnyBsizcIp0UY5hPzAQF2YSHSkJ1anc71Dyu5u9AU6AUpWIzIrx/JM6ENm8Y0flr2uhr9PLJn0iifhyrvVqLzwMBi+tNLzbf4BQU1vKw4GfuR3bavupxuPhBhfwJc7dGqHPSjXfiF1t1MRLzlsBtwU4Tmz5/E9inKiCh6x30/Qg4LyWG+9vYk6xyRLHFXPv9YrczXkmtFuURauDXWTKNxonAJBeYLblGVb8w2f4QH424Uni9ZOlcPUtYHdspg2edKB2BSadxpBlf1B6tSlbh5z
 X-Forefront-Antispam-Report:
-	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(23010399003)(82310400026)(1800799024)(36860700016)(7416014)(376014)(6133799003)(18002099003)(13003099007)(10067099003)(921020)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(23010399003)(36860700016)(376014)(7416014)(82310400026)(1800799024)(921020)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	aO/Qq/KWB+RiIHuIqmiK+qEv/VvMa6MmytgkIMiGZAcT1yyvs3VvUVXYmQJDAkILg/i13WZMrhKl4P/gFSOm7oxvkoRh1PZA1RMzKJQAlDH2Mpe2kskblOCY6qX8DVaTPNc4tMAB/PL+5TCLKsiypEQiJMmt2iL0HWgNooraCEUUCuUiednlmKxdYQwzZ9ivUkA/Ed38yghSY5W8lp8utEloCnfZbwskEFJ4abNzYBW342LFO9U2f0vyKolsQFQxPMb8wEZ7MhZ0f4QnGSjsi7+6Rz8bbBV2tJsTkC9excqBqwkjM8ECJntlRVmF/V1QYgVXbkWMzHJRqDGgfq/g4Wc++BblVCgKCp0rDOZgSrhvQZeaUi+JqU5BiQr/Z4JGMOJIFAslUN7WKZ5AaJVuylM7naIaF9yi+bnMUuH8X+Fd475GTHbJNOMzmhYM0Zko
+	FlEjx1boELIXzzfctl+tDeIu8ovmwB1+HefQsdIjXrwF1/ch/9IQ8RFaVBl4B8ZhxUSAnLuGSw7Da2YWz4QfT6HOmiFYB81Wis5Ie5mzhdMpE9l0T+6PU0oM7cpP0HjABfe9ICsYmTFVrxUGo/zPuyZ93CL4f/NU5ZulUsxZ3UhQpqwS+cAUUTgJPPVZXzk52zBBY8nIZRNqngOnvKBIJvExNwpT9Coyxe6t1josAPoyGUQaN6qJI0eOSgW07bAgwYQxHELqLXg2iTRZfGAmVi0F3NL3uADkUvliRpraIG2dK8soSJWOWyP2iAK+0ubXNgj6zHbB57th7ZMPiG68caqGRJSDUXnuNhlSRSkh/6LBTlDRrSA1JPdMQW1agkr9aFuR0n7oQFNwuK5swiThkrEFqaIkkePuoNgoWvPWWJ1zUSV8yQgRWORxaGvegXW+
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Sep 2026 10:38:50.9062
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Sep 2026 10:39:03.3014
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 52f9773c-bea2-47a0-bc1a-08df13deb29f
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6138d4c7-3c30-44c6-fe0b-08df13deb9f3
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF000026C5.namprd04.prod.outlook.com
+	BY1PEPF00026966.namprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6279
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6286
 
-This series keeps the CPPC cpufreq policy alive across CPU hotplug and
-preserves the OSPM-set CPPC registers (Energy Performance Preference,
-Autonomous Activity Window, Autonomous Selection - set via sysfs).
+Without online()/offline() callbacks, the cpufreq core calls exit() when
+a policy's last online CPU goes down. That drops the driver's per-policy
+data, which init() rebuilds when a CPU comes back.
 
-Without online()/offline() callbacks, the core tears a policy down when
-its last CPU goes offline and rebuilds it on the way back, re-reading the
-CPPC capabilities each time. The values written to these registers can
-be lost:
+Add lightweight online()/offline() callbacks so the core instead keeps
+the policy live and reuses the driver's cpu_data across CPU hotplug.
+init() then runs once instead of on every hotplug, making CPU hotplug
+faster.
 
- - Across CPU hotplug or suspend/resume: the platform may reset them
-   while the CPU is offline.
- - On driver unload: the driver-written value is left in the register
-   instead of returning to its pre-driver state.
+The driver can now save what the OS set in offline() and put it back in
+online(). A later patch in this series uses this to preserve the OSPM-set
+registers.
 
-Handle these with:
+Move what init() and exit() did on hotplug into the new callbacks:
 
- - Patch 1: adds online()/offline() callbacks so the core keeps policy
-   alive across CPU hotplug instead of tearing it down and rebuilding it.
- - Patch 2: makes the autonomous selection register helpers take a u64.
- - Patch 3: adds a table-driven mechanism that captures each register's
-   firmware value at init(), restores it from offline(), and reapplies
-   the OSPM-set value from online().
- - Patch 4: extends the same save/restore to system suspend/resume.
+  - offline() requests the lowest desired performance and stops the
+    frequency invariance updates, as exit() did.
+  - online() re-enables CPPC and restores the performance controls, as
+    the platform may have reset them. Failures are logged, not returned,
+    as the core would free the policy. It also restarts the frequency
+    invariance updates with a new counter snapshot, as init() did, so
+    that no sample spans the offline window.
 
-v4[4] -> v5:
- - Patch 1:
-   - offline() stops the frequency invariance updates and online()
-     restarts them, replacing the resync that raced with tick. (Sashiko)
-   - reorder the functions to match cppc_cpufreq_driver. (Jie Zhan)
- - Patch 3:
-   - reapply the OSPM-set registers even when the performance control
-     write fails. (Sashiko)
- - Patch 4:
-   - suspend() stops the frequency invariance updates too, completing the
-     patch 1 change for a policy whose CPUs stay online.
+The restore in online() uses cppc_set_perf(), which writes MIN before
+MAX. Each write takes effect on its own unless the registers are accessed
+through PCC. If the saved MIN is above the MAX the platform currently has,
+restoring it would leave MIN above MAX until the MAX write lands, so raise
+MAX first.
 
-Sumit Gupta (4):
-  cpufreq: CPPC: Keep the policy across CPU hotplug
-  ACPI: CPPC: Make autonomous selection helpers take a u64
-  cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload
-  cpufreq: CPPC: Preserve OSPM-set registers across suspend/resume
+Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 130 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 126 insertions(+), 4 deletions(-)
 
- drivers/acpi/cppc_acpi.c       |  20 +-
- drivers/cpufreq/amd-pstate.c   |   2 +-
- drivers/cpufreq/cppc_cpufreq.c | 378 ++++++++++++++++++++++++++++++++-
- include/acpi/cppc_acpi.h       |   8 +-
- 4 files changed, 381 insertions(+), 27 deletions(-)
-
-[1] v1: https://lore.kernel.org/lkml/20260623095403.3407436-1-sumitg@nvidia.com/
-[2] v2: https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
-[3] v3: https://lore.kernel.org/lkml/20260724215937.3368276-1-sumitg@nvidia.com/
-[4] v4: https://lore.kernel.org/lkml/20260806200857.601152-1-sumitg@nvidia.com/
-
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index f767898ebfb5..37ead7f6c179 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -184,12 +184,10 @@ static void cppc_cpufreq_cpu_fie_init(struct cpufreq_policy *policy)
+ }
+ 
+ /*
+- * We free all the resources on policy's removal and not on CPU removal as the
++ * We free the resources for the whole policy and not per CPU as the
+  * irq-work are per-cpu and the hotplug core takes care of flushing the pending
+  * irq-works (hint: smpcfd_dying_cpu()) on CPU hotplug. Even if the kthread-work
+  * fires on another CPU after the concerned CPU is removed, it won't harm.
+- *
+- * We just need to make sure to remove them all on policy->exit().
+  */
+ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+ {
+@@ -199,7 +197,7 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+ 	if (fie_disabled)
+ 		return;
+ 
+-	/* policy->cpus will be empty here, use related_cpus instead */
++	/* policy->cpus excludes the offline CPUs, use related_cpus */
+ 	topology_clear_scale_freq_source(SCALE_FREQ_SOURCE_CPPC, policy->related_cpus);
+ 
+ 	for_each_cpu(cpu, policy->related_cpus) {
+@@ -754,6 +752,128 @@ static void cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 	cppc_cpufreq_put_cpu_data(policy);
+ }
+ 
++/*
++ * Prepare the restore in online() so that the platform never sees MIN above
++ * MAX.
++ *
++ * cppc_set_perf() writes MIN before MAX, and each write takes effect on its
++ * own unless the registers are accessed through PCC, which delivers them in
++ * one transaction. If the MIN being restored is above the MAX currently
++ * programmed, the CPU sits with MIN above MAX until the MAX write lands, so
++ * raise MAX first. Restoring a lower MAX needs no preparation. Both values
++ * come from the policy limits, which keep MIN below MAX, so the MIN written
++ * first is never above the MAX that follows it.
++ */
++static int
++cppc_cpufreq_prepare_perf_restore(unsigned int cpu,
++				  const struct cppc_perf_ctrls *target)
++{
++	struct cppc_perf_ctrls cur = {}, prep = {};
++	int ret;
++
++	ret = cppc_get_perf(cpu, &cur);
++	if (ret)
++		return ret;
++
++	if (!cur.max_perf || target->min_perf <= cur.max_perf)
++		return 0;
++
++	prep.desired_perf = target->desired_perf;
++	prep.min_perf = 0;	/* Zero leaves MIN unchanged. */
++	prep.max_perf = target->max_perf;
++
++	return cppc_set_perf(cpu, &prep);
++}
++
++/*
++ * Run when the policy's first CPU comes back online, the counterpart of
++ * offline().
++ *
++ * The platform may have disabled CPPC and reset the performance controls
++ * (desired, min and max performance) while the CPU was offline, so re-enable
++ * CPPC and reprogram them.
++ *
++ * Report failures without returning them, or the core would free the policy and
++ * leave the CPU without cpufreq. A failed write to the performance controls is
++ * not fatal, as the governor's next request programs them again. A failed CPPC
++ * enable stops the restore, as the writes that follow may not reach the
++ * platform.
++ */
++static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
++{
++	struct cppc_cpudata *cpu_data = policy->driver_data;
++	unsigned int cpu = policy->cpu;
++	int ret;
++
++	ret = cppc_set_enable(cpu, true);
++	if (ret && ret != -EOPNOTSUPP) {
++		pr_warn("Failed to re-enable CPPC for CPU%u (%d)\n", cpu, ret);
++		goto out_fie;
++	}
++
++	/*
++	 * Recompute min/max from the policy, clamp desired_perf into range, and
++	 * reprogram the performance controls.
++	 */
++	cppc_cpufreq_update_perf_limits(cpu_data, policy);
++
++	cpu_data->perf_ctrls.desired_perf =
++		clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
++			cpu_data->perf_ctrls.min_perf,
++			cpu_data->perf_ctrls.max_perf);
++
++	ret = cppc_cpufreq_prepare_perf_restore(cpu, &cpu_data->perf_ctrls);
++	if (ret)
++		pr_debug("Failed to prepare perf restore on CPU%u (%d)\n",
++			 cpu, ret);
++
++	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
++	if (ret)
++		pr_debug("Failed to restore perf controls on CPU%u (%d)\n",
++			 cpu, ret);
++
++out_fie:
++	/* Restart what offline() stopped, with a new counter snapshot. */
++	cppc_cpufreq_cpu_fie_init(policy);
++
++	return 0;
++}
++
++/*
++ * Run when the policy's last online CPU goes down, undoing what online() did.
++ * Defining offline() is what makes the core keep the policy alive instead of
++ * tearing it down.
++ */
++static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
++{
++	struct cppc_cpudata *cpu_data = policy->driver_data;
++	struct cppc_perf_ctrls perf_ctrls = cpu_data->perf_ctrls;
++	unsigned int cpu = policy->cpu;
++	int ret;
++
++	/*
++	 * Stop the frequency invariance updates and cancel the pending work, so
++	 * that no sample spans the offline window. online() restarts them with
++	 * a new counter snapshot.
++	 */
++	cppc_cpufreq_cpu_fie_exit(policy);
++
++	/*
++	 * Request the lowest desired performance while the policy has no online
++	 * CPU. Zeroing MIN and MAX makes cppc_set_perf() leave them unchanged.
++	 */
++	perf_ctrls.desired_perf = cpu_data->perf_caps.lowest_perf;
++	perf_ctrls.min_perf = 0;
++	perf_ctrls.max_perf = 0;
++
++	ret = cppc_set_perf(cpu, &perf_ctrls);
++	if (ret)
++		pr_debug("Err setting perf value:%u on CPU:%u. ret:%d\n",
++			 cpu_data->perf_caps.lowest_perf, cpu, ret);
++
++	return 0;
++}
++
+ static inline u64 get_delta(u64 t1, u64 t0)
+ {
+ 	if (t1 > t0 || t0 > ~(u32)0)
+@@ -1047,6 +1167,8 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
+ 	.fast_switch = cppc_cpufreq_fast_switch,
+ 	.init = cppc_cpufreq_cpu_init,
+ 	.exit = cppc_cpufreq_cpu_exit,
++	.online = cppc_cpufreq_cpu_online,
++	.offline = cppc_cpufreq_cpu_offline,
+ 	.set_boost = cppc_cpufreq_set_boost,
+ 	.attr = cppc_cpufreq_attr,
+ 	.name = "cppc_cpufreq",
 -- 
 2.34.1
 
