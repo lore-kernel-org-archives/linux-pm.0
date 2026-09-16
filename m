@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13A61538D68;
-	Wed, 16 Sep 2026 15:33:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F89A525A78;
+	Wed, 16 Sep 2026 15:33:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789572784; cv=none; b=ss/m6ZXiz6F1f6fVVv8iPJ7FDern06ugmx1jHmyD7FF7BMPC92qHL03WCOauytgcCMpvUym6vRaM2xaPxaZMmZ5kPewMBNoX1H8vIjx6ix/yXli4Ed4DVGbbilGyBbf36yvK7s7CYRGywO5WgFP8wHGU7VKmDhZkiV25ajVsCdo=
+	t=1789572785; cv=none; b=i7EcV/Nu+gVq4A+tUNBsqXmvxtNmHmZHr9cM9wddXxNx9Yq2nYJOEAJSTsi4gQbzAHsrLnCLElljBvYtXud/s3QhMsSdPRxvzjCVDXWEA4JMHaFjFKk/pW2ciiUiI7SHIkZlwGUMmASBccTErtfbFx3k5lSnf2PIrM40UGHabWE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789572784; c=relaxed/simple;
-	bh=J2wtgx08J+zXoVVYsLkh+9kBTJrKAzmGOYGyO9x2vtg=;
+	s=arc-20240116; t=1789572785; c=relaxed/simple;
+	bh=4tBoL20Lq4iw5ATrhUM/tahGCAQuI1T++gRkOEKTNiw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qMZVJGDzR0/V6u5XvGWwKAFuL2g7aU+DI7XHNvJ4eckAqVsU4oMmvWfI9o+p1Vkavnb7+2F1bSKoUKGDcXo/cbCzGHcR9zyuiM7X52gItionLaEUJj0NlYEF1Z65tkiWWmIN1gn8cJcQq8KOgCL8wSFjHlXrLa8v7fKfAANNtZU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bfD492ly; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=nztnU9qXfJXtcBKC2hMq/0e3owBAFLQVUrGdCH9yoF1pPdWlg+Sltecs2ekI3RZTgPy3h0vLtuR/6/3jf1HbdmE29Yo3TTggRcO5aFZqS4yj9J//ZxQWXhyBdzyG3pc/Wm6BK9iI7RSiaN67XkKOuvlFuWEPNWNtbFGj4gmY0Po=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=u3x5V4yv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bfD492ly"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4E32CC4AF19;
-	Wed, 16 Sep 2026 15:33:03 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="u3x5V4yv"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D5896C2BCB3;
+	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1789572783;
-	bh=J2wtgx08J+zXoVVYsLkh+9kBTJrKAzmGOYGyO9x2vtg=;
+	s=k20201202; t=1789572782;
+	bh=4tBoL20Lq4iw5ATrhUM/tahGCAQuI1T++gRkOEKTNiw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=bfD492lyQUsxNpkz4ZB6Tdv1B2+imAm6I5c/AtrJxGr92ivi83qaf98/dH+k3B9F5
-	 qP/2PKSrGnEyUxqihgBEHBbAue1J+0790BO+GfbEz6l9oxJLuJ6nYpt5sB8ki7oIMm
-	 kpjdPXEpghzvw8z1ZzcCbDS7f4XjXT4tXl1AR7PJdfNCliJrdUvCXTkSY4uD5rV2QN
-	 EdKqwnD8IS+oJ3Zxbtd51dRM+uBdRrfeuNuo+dFU8zTh64KU5OscnY+JlCwZrVLjEJ
-	 M/iWfytW/YnrCBrek+xd0m5uPD8EQId19eaW/xGV/ON9+mtrgbSE6uAJ35zR/qfH0n
-	 NOqtu8yYACLCQ==
+	b=u3x5V4yvXbRR0I395sTK/gZwbT6ujbPJbHQ1EXs4buecFimpKK4FExOXciIKVCxwa
+	 pCYA4c305rIwZDwb2vN1Ndn0vwFO3bonoBHRomzayuYHvg0vplIjdqgeTX9CmkQSQ7
+	 sUqHR5b8zSXv6+4NNC0+rrCQKpUMWkAFIdREDOSimJBPA6jkyvqoluYcjpTyxZg4vN
+	 ABYUTwdCFdagDexebpylR3Q+gW/tKOKJr/zzj944e0U89Afwfc/920fpTRurb4BNwt
+	 H+vuio/x63LdtEnU95UgQr9m9YsDQ1s+cwk65rWNKZRqM9Nu3jrQI1/J0r9Nu682uv
+	 SWfxgh445SAVA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD01C982C3;
-	Wed, 16 Sep 2026 15:33:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF672C982CF;
+	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
 From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Wed, 16 Sep 2026 09:33:27 -0600
-Subject: [PATCH v10 35/38] dyndbg: Ignore additional arguments from pr_fmt
+Date: Wed, 16 Sep 2026 09:33:22 -0600
+Subject: [PATCH v10 30/38] selftests: enable comma-terminator tests
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,8 +39,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260916-dd-cmap-part2-clean-v10-35-af4cf4767707@gmail.com>
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260916-dd-cmap-part2-clean-v10-30-af4cf4767707@gmail.com>
 References: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
 In-Reply-To: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
 To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
@@ -62,13 +62,13 @@ Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
  linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
  linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
- Jim Cromie <jim.cromie@gmail.com>, Philipp Hahn <phahn-oss@avm.de>
+ Jim Cromie <jim.cromie@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=7234;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=2396;
  i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=fSTkq3e+fagqoGSvxLT4HO/f6Eg0KGNZD7VBMflSa78=;
- b=YHRlv0h8KOwHcw0A6fQsfKidK8rYUsNmqIr+JVedrugUbIhnqA85LdxgVj9cKZT5HlkJUTXRI
- mlD6p6YNfMCA0fowmCUdrJmoGFieL4uRKiNKSwrh5PT1OI5VsxKX0Fo
+ bh=ZtnNYHB84SuIr5SgDiLk/1HZgha9qoZYGJ306frMt90=;
+ b=Y+7qsD4xlGsL3watov/5txzm2zCl99Q0mJu8KCdFHuF2l+0Tgn8iYUF29ShrccOjq4Eu9dy+6
+ ONI2Nzw7zn9CfAfDMLmuaDk/vDSAGZlzdZ9CCLDaqP4ZtX9M7qX6dRs
 X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
  pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
 X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
@@ -76,150 +76,66 @@ X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
 X-Original-From: Jim Cromie <jim.cromie@gmail.com>
 Reply-To: jim.cromie@gmail.com
 
-From: Philipp Hahn <phahn-oss@avm.de>
+From: Jim Cromie <jim.cromie@gmail.com>
 
-pr_fmt can be used to add a common prefix to any output from a module:
-	#define pr_fmt(fmt) KBUILD_MODNAME ".%s " fmt, __func__
+Enable the FT_comma_terminators test block in dyndbg_selftest.sh to
+verify control query parsing when queries are terminated by commas.
 
-But adding additional arguments breaks dynamic debug:
-> error: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" passed 4 arguments, but takes just 3
-> |         pr_debug_ratelimited("%s", "Hello world!");
-> |                                                  ^
-> note: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" defined here
-> | #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)       \
-> |
-> error: ‘DEFINE_DYNAMIC_DEBUG_METADATA_CLS’ undeclared (first use in this function)
-> |         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
-> |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> note: in expansion of macro ‘DEFINE_DYNAMIC_DEBUG_METADATA’
-> |         DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));         \
-> |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> note: in expansion of macro ‘pr_debug_ratelimited’
-> |         pr_debug_ratelimited("%s", "Hello world!");
-> |         ^~~~~~~~~~~~~~~~~~~~
-
-Add an additional ', ...' to DEFINE_DYNAMIC_DEBUG_METADATA_CLS to slurp
-any additional argument, which `pr_fmt` might add.
-
-Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
-[pr_fmt change on test_dynamic_debug_submod instead of parent]
-Reviewed-by: Jim Cromie <jim.cromie@gmail.com>
+Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
 ---
-v10:
-. pass raw fmt to DEFINE_DYNAMIC_DEBUG_METADATA in pr_debug_ratelimited().
----
- include/linux/dynamic_debug.h                      |  2 +-
- include/linux/printk.h                             |  2 +-
- lib/test_dynamic_debug.c                           |  4 ++--
- .../selftests/dynamic_debug/dyndbg_selftest.sh     | 26 +++++++++++-----------
- 4 files changed, 17 insertions(+), 17 deletions(-)
+ .../selftests/dynamic_debug/dyndbg_selftest.sh     | 25 ++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/include/linux/dynamic_debug.h b/include/linux/dynamic_debug.h
-index 2542d7c41b3e..d94ad3a2018a 100644
---- a/include/linux/dynamic_debug.h
-+++ b/include/linux/dynamic_debug.h
-@@ -359,7 +359,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
- 		dump_stack();					\
- }
- 
--#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)	\
-+#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)	\
- 	static struct _ddebug  __aligned(8)			\
- 	__section("__dyndbg_descs") name = {			\
- 		.modname = DDEBUG_MODNAME,			\
-diff --git a/include/linux/printk.h b/include/linux/printk.h
-index f594c1266bfd..5d701952e739 100644
---- a/include/linux/printk.h
-+++ b/include/linux/printk.h
-@@ -742,7 +742,7 @@ do {									\
- 	static DEFINE_RATELIMIT_STATE(_rs,				\
- 				      DEFAULT_RATELIMIT_INTERVAL,	\
- 				      DEFAULT_RATELIMIT_BURST);		\
--	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));		\
-+	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, fmt);		\
- 	if (DYNAMIC_DEBUG_BRANCH(descriptor) &&				\
- 	    __ratelimit(&_rs))						\
- 		__dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS__);	\
-diff --git a/lib/test_dynamic_debug.c b/lib/test_dynamic_debug.c
-index fe5b885398f3..2710c4ea39a0 100644
---- a/lib/test_dynamic_debug.c
-+++ b/lib/test_dynamic_debug.c
-@@ -23,7 +23,7 @@
-  * the usage clearer.
-  */
- #if defined(TEST_DYNAMIC_DEBUG_SUBMOD)
--  #define pr_fmt(fmt) "test_dd_submod: " fmt
-+  #define pr_fmt(fmt) "test_dd_submod: %s " fmt, __func__
- #else
-   #define pr_fmt(fmt) "test_dd: " fmt
- #endif
-@@ -272,7 +272,7 @@ static int __init test_dynamic_debug_init(void)
- 
- static void __exit test_dynamic_debug_exit(void)
- {
--	pr_debug("exited\n");
-+	pr_debug_ratelimited("exited\n");
- }
- 
- module_init(test_dynamic_debug_init);
 diff --git a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-index ef5f41ca7f7d..5eae762d6f78 100755
+index d485b9245164..bd72a718406c 100755
 --- a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
 +++ b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-@@ -588,40 +588,40 @@ function GOLDEN_RECORDS {
- #K= 1d43471dca765597d88a1be25d776c92 FT_classmap_inheritance.2
- #K= 0708a283f0f1959135c797e36119e4af FT_classmap_inheritance.3
- #K= a0b9a8a9530706b85c4f8bf911607db0 FT_classmap_inheritance.4
--#K= f43e0aff8a4b38435b73d90ed8100d1b FT_classmap_inheritance.5
-+#K= 62b6803edf43519186d6185bebf34352 FT_classmap_inheritance.5
- #K= 53d1b6875b65c79cfd759e209ae50b11 FT_modprobe_w_param.1
- #K= 53d1b6875b65c79cfd759e209ae50b11 FT_modprobe_w_param.2
--#K= 79d912e2aeb04dea70f9c7e701333f0a FT_modprobe_w_param.3
-+#K= 117ebf415c886c14b22e473d9b49886b FT_modprobe_w_param.3
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.4
--#K= 7cd75277388a6e7cf9c849442388f4af FT_modprobe_w_param.5
-+#K= 23bf93d8d91b2e033f91caf2e5d2df2c FT_modprobe_w_param.5
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.6
--#K= 9196c43693f5e6059f3512e4d87e7347 FT_modprobe_w_param.7
-+#K= 7090bc68365ad55564c54b1ba7355c73 FT_modprobe_w_param.7
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.8
- #K= f9cee4512e5604603e0262fba4bea223 FT_modprobe_w_param.9
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.10
--#K= 7c645692e3e3796d4d3b8604c49583f7 FT_modprobe_w_param.11
-+#K= 076874eb43826e97586f034f4d2786e6 FT_modprobe_w_param.11
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.12
--#K= e995f70c0509334a33aec40ada9e6e6c FT_modprobe_w_param.13
-+#K= 872dbd5d067953e34cd5a88db3a3b5e4 FT_modprobe_w_param.13
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.14
--#K= 72f97ca3e8f4c3e7f34fbe91de62e223 FT_modprobe_w_param.15
-+#K= dce720419939a1baadaae27e98ceabea FT_modprobe_w_param.15
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.16
- #K= 1aacb7c196a8354c46c60c73d78c6bf2 FT_modprobe_w_param.17
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.18
- #K= e62014acf5ab6a76dfbfbcf67b2ca0e8 FT_modprobe_w_param.19
- #K= e62014acf5ab6a76dfbfbcf67b2ca0e8 FT_modprobe_w_param.20
--#K= 58c009cb287fa5df3f8c1c72c832cb42 FT_modprobe_w_param.21
-+#K= 4bfcf87a67b1a5a5a56212deac36c20a FT_modprobe_w_param.21
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.22
--#K= e7831be2aac4a82daba43966b9d31e19 FT_modprobe_w_param.23
-+#K= f0d3016e22d88ee9f810b81235c6acdc FT_modprobe_w_param.23
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.24
--#K= 4df2fbc0cae329debb14bedb5e7d86c0 FT_modprobe_w_param.25
-+#K= da3e0531675fc96503a7077ef8fa5eeb FT_modprobe_w_param.25
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.26
- #K= 7fa4c84490c42c750986614c3539d56a FT_modprobe_w_param.27
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.28
--#K= fc098897aa3e1472a536e7ae8069c84f FT_modprobe_w_param.29
-+#K= 923ca0e8a24d3e365b9dc89624062708 FT_modprobe_w_param.29
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.30
--#K= 38ea63fed62a0308241325e57020b28e FT_modprobe_w_param.31
-+#K= 7eb76bdeb6e42f46e9c16b5932db79e1 FT_modprobe_w_param.31
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.32
--#K= 4b896adb5e7cfcc79f9ffa879d791f37 FT_modprobe_w_param.33
-+#K= 5aaa5a8e367ec2871785f0c64853e243 FT_modprobe_w_param.33
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.34
- #K= 7f961a7d3facd89bdd4b9d8e7b5541e9 FT_modprobe_w_param.35
- #K= 6a320774e2b535ceb89d6cdde6f5d0fb FT_modprobe_w_param.36
+@@ -347,6 +347,25 @@ function FT_basic_queries {
+     ddcmd "file $f =_" "$f"
+ }
+ 
++# test parsing on spaces, commas. testing against builtin file kernel/params.c
++function FT_comma_terminators {
++    v_echo "${GREEN}# COMMA_TERMINATOR_TESTS ${NC}"
++    if [ $LACK_DD_BUILTIN -eq 1 ]; then
++	echo "SKIP - test requires dynamic_debug built into kernel"
++	return
++    fi
++    local f='kernel/params.c'
++    ddcmd =_
++    ddcmd "file $f +p" "$f"
++
++    ddcmd "file,$f,=_" "$f"
++    ddcmd "file,$f,+mf" "$f"
++    # ignore empty tokens
++    ddcmd ",file ,, ,  $f, -p" "$f"
++    ddcmd " , file ,,, ,  $f, -m" "$f"
++
++    ddcmd =_
++}
+ # testing classmap-based query enablers and class configurations
+ function FT_test_classes {
+     v_echo "${GREEN}# TEST_CLASSES - classmap-based query enablers and class configs ${NC}"
+@@ -454,6 +473,7 @@ builtin_tests=(
+     FT_grammar_ok
+     FT_grammar_errs
+     FT_basic_queries
++    FT_comma_terminators
+ )
+ 
+ # Modular Feature Tests (Require CONFIG_MODULES=y and test_dynamic_debug*.ko available)
+@@ -544,6 +564,11 @@ function GOLDEN_RECORDS {
+ #K= 02e4fd94602e108cb89bfc70d47a5dad FT_basic_queries.5
+ #K= f03a7ca7316e8db4c0e16523dc41e75d FT_basic_queries.6
+ #K= c518a50ba30ba8099d0dc874a27ecf16 FT_basic_queries.7
++#K= c8bbbac639f244ed9088208ebb7d83a6 FT_comma_terminators.1
++#K= bed6350f058f600910837dae83a12f56 FT_comma_terminators.2
++#K= 6e8599556a312200fb6d484565b6c52f FT_comma_terminators.3
++#K= 68b329da9893e34099c7d8ad5cb9c940 FT_comma_terminators.4
++#K= adc1ef04304c861c87fe294a8ba4e402 FT_comma_terminators.5
+ #K= 8f18ea82c09460434b6e9e4cd12543e8 FT_test_classes.1
+ #K= a15ec4843acd721fbdfddc0b512c8032 FT_test_classes.2
+ #K= 20d4545f9753e677e72e3adf52527fd3 FT_test_classes.3
 
 -- 
 2.55.0
