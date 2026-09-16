@@ -1,147 +1,145 @@
-Received: from mail-lr2-f7.google.com (mail-lr2-f7.google.com [74.125.230.71])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011047.outbound.protection.outlook.com [52.101.52.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ADC64457B4
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 07:23:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.71
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789543452; cv=none; b=Et9oQ8EYRhQL8NpXibl5tepT3OnsK1NvmppWeG3B8vUQ0Gc0QKRTAVWvrgZKpWo1PiC4IrZjAcaCiD67zRjkLLQdvGmDWNu4WrayoYfXTsLsdyuiflP6god4nxqFlaOOVqeUrWcFtRUC6bWxVS61r6/2eA/9e+8AJcghV9hWNII=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789543452; c=relaxed/simple;
-	bh=26ZyPfXDr0ydxB/B4Ow6i8CWMvrXaZY6rIcQsB2FM8M=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=pWXpcqziLstl4RX6Glx89Eav4d1Jss3fwI4oSA162sENtOLTAUaclMRannFYrsZlzKaVNXU0L9qYyIyrI+xrQ7LVSOENwF7bT9I5pexOGR4mI45z41dEJEqm0GzcMbIDxBBpQ3iorEi2T1eelmMZlEhHCA93lx+J4LUHxSR04Wo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mswin.me; spf=none smtp.mailfrom=mswin.me; dkim=pass (2048-bit key) header.d=mswin-me.20251104.gappssmtp.com header.i=@mswin-me.20251104.gappssmtp.com header.b=TUquNnAG; arc=none smtp.client-ip=74.125.230.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mswin.me
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=mswin.me
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82FC63A901D
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 07:38:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.47
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789544296; cv=fail; b=MEXT/0murePzu1C3Kx/LwbUv+Mn0+NG9nDdYBKHry+VF6ClI4er3wX4EIe4uWlwKh6e1Xpw+vE5YRpt5I1neCNvLfpbTbleV0crxXtAR6L80CoTYz3mG3WsHDnuWVaNZiEuFk5KfMT9zGn7MGEGyhd3m9GOWLwLnJY1FyJAeS+Y=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789544296; c=relaxed/simple;
+	bh=g+7+mVGC3HN+hh/BvP57E2+HvqgHyV/HsVo9xPTRaOo=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=IrVIAyJybVuXBYR/V/OJRsXND2JtH6RNlMIlxyQ+4eYSotWevEvacLou+j3zq+J55qIQCbaoK/673sg/T//M+XKN7uZJkJ5GcZaxUZLrzbfeLCEL8+ZuMeLUiABh95exvoSMYII9ncl405BXWiOeFQKCwm/RJosUAG0whxbGYRU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=pxPzWz+O; arc=fail smtp.client-ip=52.101.52.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mswin-me.20251104.gappssmtp.com header.i=@mswin-me.20251104.gappssmtp.com header.b="TUquNnAG"
-Received: by mail-lr2-f7.google.com with SMTP id 38308e7fff4ca-3a5acb204daso23297761fa.0
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 00:23:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=mswin-me.20251104.gappssmtp.com; s=20251104; t=1789543412; x=1790148212; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hX02l29xxBPtjZbljOPENMYFyeAk17j1fAbszM+KifY=;
-        b=TUquNnAGugpC+DKatQgMiNQvBpB42oF6T7vmDUjYwBxeNMnFyiHraffkivZ/8/maJA
-         e51B0ypt5P7bCJ8s6jufVmnBNNwJ46yStJqCljcnr6NrqJ2IVuppgnfzSUqVpknGBXUY
-         0ZdbD2jdyw/uGlbMh52LbmV+WiEo7g7xTBYnwGvHqQpyyGsI1HOgr14JPLpPOHhhvcLV
-         rCTQmM7cuZo9xLJ33Q9RERdl8PtpW5jM3Qm3sUhEBxjBRdEFFb819pvfefdvR/n61EWk
-         Rv90XkfTLdKd7TTq9BAgNLCf01U0Z98PL3ogcolrmEuqvHxk7yQZ0Ad2MK4OQ/ojh3FU
-         3CXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789543412; x=1790148212;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=hX02l29xxBPtjZbljOPENMYFyeAk17j1fAbszM+KifY=;
-        b=ODQALwFhBENfjVm+nfoAT35IfjHs2A62BuXL1K5vnkhyxuKcHK+Bkl6IAOogvDW15u
-         nz2i+98fFXHXCWGyJ5pfpSvSsiwWCZmV2wG4d9oEWMCJ1GhkYZSbqvEHPJvb9lZpCFTF
-         dfzWJAQLPrWIkya2TrG/jSqj2iSkbvyuVMW6EwKyWS4RecHv+MG2ItzVsOhpq7ONHuCI
-         +WW2z8ZU5Fcv6GMWV/6bFlAFA7qlqOt8boMEqaJPZ7KgqlvtPglv0zz37qoXEddzmNKf
-         jPrt3Ji7nFWaMpWTT+FdjlFTlKPBc+E0gGF836ped0X2aX4FlLTddonOAz9KH/JIRSCp
-         KiWA==
-X-Forwarded-Encrypted: i=1; AKwUvBz2hnxN9dvco8mPgLaD66I3gk23x9tNhJUyJZ0EIoV2U5RlbSTQgaOPZcSCLUWYJH7yfMrhHchPJg==@vger.kernel.org
-X-Gm-Message-State: AFuF++nZESI6gASsl9caXsWR2yuHu7lOFqtidlBPh03eqeiNFpePvn/w
-	61dAettSn/17oe8VkHgK1b1yXHM956xEYj9V/CmARaHB9/nwepjzqkw3Y6n0KRUCu7k=
-X-Gm-Gg: AYBFou1oeHTWgEfNSG+o5xBIkNgGL3hcBzUU0Gxa3hGpcje8I56Y6wMSc70CVq+Db+i
-	YZtvhFhHFHH1MItWr3jnPt1mLR4K1A+O2qvU3jz/bhkVazuPGBLLKyfgU+XBU7ByuI2FqATWquh
-	R5CsnU1a14ATgbIoGusEASpMbdC6SUclrPC+8ywpMTAyJNSdD4pbnP1kkD4OjYBggtUZZV+UatN
-	CWGWr18fpYzfYHcgJMklh1poWnx77QGnSHgJLXZ8RTBIdIXjqBJ8yFm2ZBt/HII0H4+HJ/0WATI
-	6bo18bdTudAgreIkkN61aq6ZxL7ZEE5oDJv7EEr8TjT3Tfu5KBMEavdnk9D2wO5yBjfJ47/K3bN
-	C3agZ2KsQoAs14OamE67uQ7oahqy4Z//so2m2u5+Ll/bN7H4zhje9jclv1TBw7akSV2FVK9RRLD
-	3/uzED9mXu46XDNjXUcOV12Cs+tN25xJ6tZ/CuBWQovjU0xIsstY/bhF/KyAxYOZU3tKilhQ==
-X-Received: by 2002:a05:651c:19a5:b0:3a5:b187:c7a3 with SMTP id 38308e7fff4ca-3a5dc9b622emr3320141fa.2.1789543412297;
-        Wed, 16 Sep 2026 00:23:32 -0700 (PDT)
-Received: from [10.122.136.195] ([84.47.187.188])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a5dafa9510sm3846611fa.24.2026.09.16.00.23.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Sep 2026 00:23:31 -0700 (PDT)
-Message-ID: <c34bdfb6-1aab-4af6-8e1c-e5855081d36b@mswin.me>
-Date: Wed, 16 Sep 2026 10:23:31 +0300
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="pxPzWz+O"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wmg4AYV9lno20k+bptO98eqYLS3GNOho/nnTIP/5GM31mU99zZvzdYQR5LH4lA9UCvUc+UsGUIkvzl63IfV3iNgx0D6PXGDUzAiSsdKZ0L6C8WTyOmmFN5lUmrChfPVh7Impq5xN7MaAgIW/ZmtkntUxJXEIgZc/bujGOvq37DSVkI7xkMegNaAmPRdhenj4XOLlqwcjjXQNO1kwdWQUIT4KiWhrLu6Q0FhZ8iFxX43wgH9+3k5MRFb3njA2/gIeX5CPjuzuvAS+8Pemn/pcX4i9SOb6s1umB2pG9o7Yblm9FNZvcJdHDbkfUUoP6mbjuBfYoILz7PW5lrA0FUMNAw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7j9K8SSzIhTfGyYpe9lfcbr5Nmyl70U43TPRsBLHMRI=;
+ b=HZEKndMHb2kvMdtgnrq4plFE9ORBmA3ffTj90nV/tDFdRsubCjzjyJxMpsOD8MBlG1p65eF/XfAowcLNB8Ti8KAtjFYKhnmattzzp1H/lcKCFwwPBWLeuNpAwTvJm3JmQovXYTCTCXaqK8UH9M0shAQHW9/M/KIAavmnKhQbuZGKecNiiVD6szJBFdW7+wbXxatV2gPHt4pqgt6s2JaRFIlX3XVGzbpLOq4W1BYrSwIKHqY0fqH/ngSgRidPu+oDOg4bA/4G9ZHai4tr6VdYzWlL30/JlaEv5vai5XxKpN2xIqZrFu+fvi0oypi68KeHJWQI6RlJGRKoGljGl2lirg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7j9K8SSzIhTfGyYpe9lfcbr5Nmyl70U43TPRsBLHMRI=;
+ b=pxPzWz+OFu9D2w8DrSXGGP4HK0sP/JRhmNdxOg9cHzfcGPmXTPcZZds+imhywOkTqlC6rV9R/WY9A0BwwYLsD1/GhefMggdAyGOoZR9bcflYsqdgCJBaZDHMFwfiraWew4bgxrXNPqtS3VnnMeITeCuya0MYdVYny5YqdMgkj/I=
+Received: from BN9PR03CA0481.namprd03.prod.outlook.com (2603:10b6:408:130::6)
+ by BL3PR12MB6596.namprd12.prod.outlook.com (2603:10b6:208:38f::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.9; Wed, 16 Sep
+ 2026 07:38:04 +0000
+Received: from BN1PEPF00005FFE.namprd05.prod.outlook.com
+ (2603:10b6:408:130:cafe::77) by BN9PR03CA0481.outlook.office365.com
+ (2603:10b6:408:130::6) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.406.12 via Frontend Transport; Wed,
+ 16 Sep 2026 07:38:04 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ BN1PEPF00005FFE.mail.protection.outlook.com (10.167.243.230) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.428.7 via Frontend Transport; Wed, 16 Sep 2026 07:38:04 +0000
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Wed, 16 Sep
+ 2026 02:38:01 -0500
+Received: from localhost.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49 via Frontend
+ Transport; Wed, 16 Sep 2026 02:37:59 -0500
+From: Baorui.Liu <baorliu@amd.com>
+To: <linux-pm@vger.kernel.org>
+CC: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saravanak@kernel.org>,
+	<mst@redhat.com>, <jasowangio@gmail.com>, <eperezma@redhat.com>,
+	<xuanzhuo@linux.alibaba.com>, <virtualization@lists.linux.dev>, Baorui.Liu
+	<baorliu@amd.com>
+Subject: [RFC PATCH 0/1] cpufreq: virtio frontend to report host CPU frequency
+Date: Wed, 16 Sep 2026 15:37:34 +0800
+Message-ID: <20260916073735.541-1-baorliu@amd.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/2] arm64: dts: qcom: sm6125: add TSENS die temperature
- sensing
-From: Roman Linev <admin@mswin.me>
-To: Amit Kucheria <amitk@kernel.org>,
- Thara Gopinath <thara.gopinath@gmail.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260821030325.1823829-1-admin@mswin.me>
- <a3f071d3-6082-47a1-bb00-9d8e72fa3cdd@mswin.me>
-Content-Language: en-US, ru-RU
-In-Reply-To: <a3f071d3-6082-47a1-bb00-9d8e72fa3cdd@mswin.me>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN1PEPF00005FFE:EE_|BL3PR12MB6596:EE_
+X-MS-Office365-Filtering-Correlation-Id: c52856dd-2826-4bf4-bb0d-08df13c5718d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|23010399003|1800799024|82310400026|36860700016|18002099003|3023799007|10067099003|56012099006|11063799006;
+X-Microsoft-Antispam-Message-Info:
+	hAclxjzJyn/XTM1PlDixBN6OsiHELGjc903zv9+/XC9aJTTw2EOaoUp5DkJxMjZJEvK5Mj8lIDN65WleVTW16I5hgcbAsH2Z4u6DQpnPABSlFpsp7cztHx/g6O2x1Ohtyo6FzHCKEFFaiiBwoaB0gaSwOk3Gs5MJkjKGOzneO0CVbjiL7x8rYsUx5Hh1xU2MdaGqjYpccnw7puFHh3bdsavNP+9l7tPddlM4FhWlH7qjACzwMnihxyupNRUEIhp44sE97YTqVAbYeRvwH4moP+zvbKTa4abUb7B2xvmWiDMP/SLLWscjImMl+28zD5gO4fM5ppd22nnCOvb+5SMwbeDODumr94AF7Vubw4h9IZscqi5FFsyzAURc/A/md7FyKSw+AUnT9ZZBPHlI7qLOFEUv40YBWo6UXZwv1KvDLCYbFermn/f9XX1WGzL5o8ohfx+lwwefip7MjMQWGcBDYnvxEmyuZHimKpQEfDECcRzEvC+DQtrhfTuAg2zr9gUUBTccl/v54ZlStjdzWSx7CCSrJIB8THfSGExhEUbVW5aapxae1D2c6h1sJkZ/z7Z52jf3IyMIxkqdJT9XhhZ809EOiY9u0oFMxDi085YFePZTKZuENmirSkdEMzJnddc0cxeQyAuWl5bPtO3FPUiTGDukVqdBa3A9T0Iz+/wByNDy9XL5Lrrn1a4h6IQvCocQUdiGKVbzkdbCjqyjdWthvQ==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(23010399003)(1800799024)(82310400026)(36860700016)(18002099003)(3023799007)(10067099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	UUcSEaeUd/X5NZbcGSJb/kvVNL2lxHB8K+oGvD9oZKVWPRz8Vz09fBwb/re2SYd2PFS9g4Bj313W3zhBlzFIWtHkNLiQ+d81sjdeJCyr6/Q/G7kVi7USk7H8bLAUJ5WgjSSTxvUWOw9akqY5qyc0r+uEb4/Cicwve/eoXjzxxo5opa4Js4d0FuOnevOvHTlctwz0CcDsjcMO4VY416iCgXMWSRJecayUAaDHtB0q5X8wqQchdaZnbHm4WPwv3ARlRJEVBGiQBs/nFhz8M3eu2FrCOIkwN4cbI2fzAgZf3oH6vrKUUsPceu8N9YzeZVaAGfQd9AKYC44uA/0mZY/A5kWsn5tGdtUd/eDeu+sWVgHus1ZKRcYpZhoqi4eATKPzxAdzVebrud5pLPEqHYHAGQChjoXnlEyaZj23TMtLmE0YA0bbpSE87rJTWTOE2nJi
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Sep 2026 07:38:04.4113
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: c52856dd-2826-4bf4-bb0d-08df13c5718d
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN1PEPF00005FFE.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR12MB6596
 
-Apologies for the noise — three copies of this v2 went out by accident
-(only the last one, with the full patches inline, is operative; the two
-earlier posts are incomplete drafts). Please disregard those and reply to
-this thread.
+This RFC adds a guest virtio-cpufreq frontend so a VM can read the
+host frequency of the pCPU that currently runs a given vCPU.
 
-Konrad: v2 addresses your 2026-08-25 review asks (0x1000 TM/SROT regions,
-CPU cooling wired, comments moved to the commit message, no sm6115
-cross-check reliance).
+Context
+=======
+Android batterystats needs cpufreq together with power_profile.xml.
+A Xen Android guest cannot read host sysfs, so QEMU already has a
+backend (virtio device id 42) that returns xc_get_cpufreq_avgfreq()
+for the pinned pCPU. This patch is the Linux frontend.
 
-On 16.09.2026 10:16, Roman Linev wrote:
-> Arm64 DT patches, against torvalds/master.
-> 
-> Changes in v2:
->  - wire CPU cooling: #cooling-cells on all eight CPUs and per-CPU
->    passive cooling maps for the cluster-1 CPUs, cpu4..cpu7 [Konrad]
->  - make the TM/SROT register regions 0x1000 long and drop the inline
->    comments [Konrad]
->  - drop the sensor-mapping comment from the DTS; the provenance now
->    lives in the commit message [Konrad]
-> 
-> Patch 1/2 is unchanged and carries Krzysztof's Acked-by. Abel's
-> Reviewed-by was given on the v1 content of 2/2; it is not carried onto
-> the reworked patch.
-> 
-> v1: https://lore.kernel.org/r/20260821030325.1823829-1-admin@mswin.me/
-> 
-> Patches inlined below (also against torvalds/master).
-> 
-> 
-> [PATCH v2 1/2] dt-bindings: thermal: qcom-tsens: add qcom,sm6125-tsens
-> 
-> SM6125 has a TSENS v2 block with 16 sensors. Its register and interrupt
-> layout is identical to SM6115's, and it needs no calibration cells
-> because v2 self-calibrates, so it is generic apart from the SoC-specific
-> compatible.
-> 
-> Document it in the v2 list, bound by the qcom,tsens-v2 fallback.
-> 
-> Signed-off-by: Roman Linev <admin@mswin.me>
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> ---
->  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> index 5a8f767..0ac3fdf 100644
-> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> @@ -79,6 +79,7 @@ properties:
->                - qcom,sdm845-tsens
->                - qcom,shikra-tsens
->                - qcom,sm6115-tsens
-> +              - qcom,sm6125-tsens
->                - qcom,sm6350-tsens
->                - qcom,sm6375-tsens
->                - qcom,sm8150-tsens
+Why not virtual-cpufreq.c
+=========================
+drivers/cpufreq/virtual-cpufreq.c is an MMIO guest driver. This
+stack is virtio + Xen/QEMU, so a separate frontend is used. Feedback
+on folding into or sharing infrastructure with virtual-cpufreq is
+welcome.
+
+Known RFC issues
+================
+- Virtio device id 42 is not allocated by the OASIS virtio spec.
+- The OPP table is hardcoded (1400/1700/3000 kHz) for bring-up.
+- The QEMU backend is a separate series (not this patch).
+- .get() waits on a virtqueue and may sleep.
+
+Please comment on the id allocation, protocol, and whether this
+belongs in linux-pm as RFC before a formal PATCH.
+
+Baorui.Liu (1):
+  cpufreq: virtio: add driver to report host frequency to guests
+
+ drivers/cpufreq/Kconfig          |  14 ++
+ drivers/cpufreq/Makefile         |   1 +
+ drivers/cpufreq/virtio-cpufreq.c | 235 +++++++++++++++++++++++++++++++
+ include/uapi/linux/virtio_ids.h  |   1 +
+ 4 files changed, 251 insertions(+)
+ create mode 100644 drivers/cpufreq/virtio-cpufreq.c
+
+-- 
+2.34.1
 
