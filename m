@@ -1,246 +1,201 @@
-Received: from ixit.cz (ixit.cz [84.42.129.46])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 796362D8385;
-	Wed, 16 Sep 2026 13:37:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=84.42.129.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0332368D5F
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 13:51:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789565842; cv=none; b=uYJrmW8z62brWlk/KvhcvfqdM6Wc4FvAtg+4gCU4u/d2ts/km/JMoFfRiEDNrWDVR039kRSdJUNjMv9LXAgXDrktL+1Rx/unZ/UA0k2MU5XzG7vy/FJCcoQscqJnMzZD8iL81WBh4Vohqboe3aI85kT2hN/LYwJ0yJX6+FMdsf4=
+	t=1789566674; cv=none; b=UCg1o20zSFYmnPPCCA54/yNjnRagSKBTe+DvuHLhpovgB7GkXtt5rqEFvZ138rhh7cdgwqfe5yJ5MwblpHGfudhAQ0l9XHbEq+U+nce8CTSnEK46NPCehn25+LeAMDIlN3ZAXfTE4ClZI7lI5iqawpxyIvCSaodq2tp+PziiFQg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789565842; c=relaxed/simple;
-	bh=T4yi1zdtH5wQhou0VkyVCZDmH8fNbML25GwWlwpzo9I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=czL+RhOsgkZAhADuwBqYKbLA7dp7415T1NxT4S2BXPWz251Im6ddhXqMxzZC0QETG60Y6v9Pv69OshNE9aR2jR52T5Dv0K4c590QKR5ps8h6EusNzlRPF/vRWVDhpgBB9eYW03Vn5lbFDIActkxWwevi1YUP315OvHUVzI3jFJc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=1uylmH4t; arc=none smtp.client-ip=84.42.129.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
+	s=arc-20240116; t=1789566674; c=relaxed/simple;
+	bh=d0fNw7I7yFDopuJWtzYWjixrWoj6HGW9S6RdWVGAagM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nOe2U71kG1xaNQcjOjYR4b7T4VnMQmlBBW5pAG0h0usc+1YgPI1A8CGbH//uXORUMqmH3SdCrgO3BOToXqSyM/yXoqQwoGYHSGeYybvKuNmLIPtOXthwXZSMA2rcOYDQ5vEZu7Xaph7aeAS31uuP2Bss/APZI7UIaeYgegSUj4o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iGrFBkee; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="1uylmH4t"
-Received: from [10.250.4.187] (unknown [185.153.195.203])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by ixit.cz (Postfix) with ESMTPSA id 772025340619;
-	Wed, 16 Sep 2026 15:37:16 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
-	t=1789565836;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=S6ReNIvSA0S/P1pGDYqpvJ1IETrElri+UcvFiWhfx/c=;
-	b=1uylmH4txcofBEd+SAbSnGotxvD7SmHidgL6H0l9auejD82za5BwsF1WDhOUtls1MM7lQc
-	HvOm+THZjyD15GvFp33aSneD/Csbjh1rwuFGPvAwO+Ig+A9TyMDj484UqOf7vmXomJhvsh
-	MDRc/fCVWKTSldZ4/CtwoygmPY2UMV8=
-Message-ID: <92883780-b753-427c-96ff-91c33a874607@ixit.cz>
-Date: Wed, 16 Sep 2026 15:37:15 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iGrFBkee"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6910B1F00898
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 13:51:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789566669;
+	bh=EcwfPW4QP5Xml74DanZs2iwT1Yn8MF2fALNKcDOscV8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=iGrFBkeeNA4UPiv5QNna8P4/oEhNLw43BKpT+7hH+Nz3uL0K/tJ2kElyiz/dYRfte
+	 qaSHOLD2cSUQoh7SOxOlUMjQ8xhoSaqR0SqzPTwiW2T4FqrMXd1Rg47BQEMwGgepC+
+	 Po4cJ5lzyV/Y0JtUmYh/runOnv9koMKz7KqOVFJDQ/wofHZ+ows9O6u5Gw9uRzOJpv
+	 jo0bg3v73nwlk0t0l5P6fipJu/kaAVDd0eorUm8drgiCO6BGEW4PomXd37WUCHuaPy
+	 kIrBQlzZCdI5wmunsG8dApzXwgpRZqza2RLlQprL6yhVp8ONtN/55wlVX832ZYFHmc
+	 8xDpi5Im3A/5Q==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b5e4f1e419so310704e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 06:51:09 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwid3u0r10VNuZXshpMjuObWdr3guw9nplD2EYUi3ysPkA34z4CMevFXglEhX2OkftZBehKlfVstw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lbFuxoXiu0Y8RWBHhFTd+xOxqGXz9JTirsNKON+B29EXbxu1U3
+	Ma8SzKe24BJ2vMr364tdudNm1aQXYbabTIj8UyR8aZWYRC1mG3GTQTQM3Cy016Zw0GfBJn0P+Nh
+	MUnxwvzpxUDvCz8/hTFPyXht2/d3HJBU=
+X-Received: by 2002:a05:6512:3da1:b0:5b4:ab3a:8305 with SMTP id
+ 2adb3069b0e04-5b8b63de08cmr671011e87.11.1789566667769; Wed, 16 Sep 2026
+ 06:51:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 0/2] power: supply: qcom_smbx: add SMB5 support
-To: robin@snyders.xyz, Casey Connolly <casey.connolly@linaro.org>,
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
- Joel Selvaraj <foss@joelselvaraj.com>
-References: <20260820-submit-qcom-smbx-send-v1-v4-0-818dabb2771e@snyders.xyz>
-Content-Language: en-US, cs-CZ
-From: David Heidelberg <david@ixit.cz>
-Autocrypt: addr=david@ixit.cz; keydata=
- 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
-In-Reply-To: <20260820-submit-qcom-smbx-send-v1-v4-0-818dabb2771e@snyders.xyz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260916051034.180226-1-mario.limonciello@amd.com> <20260916051034.180226-2-mario.limonciello@amd.com>
+In-Reply-To: <20260916051034.180226-2-mario.limonciello@amd.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 16 Sep 2026 15:49:46 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g4sBVBOnJJV3tnq_z8P8QEzwTCL+3gmws2uoRhy_gFVg@mail.gmail.com>
+X-Gm-Features: AcwNN1UfjPKEn2vX1e_V6wm29RAqdEFLzqinUNOeIY2SM4G4LjkXRrSYKHB4KQI
+Message-ID: <CAJZ5v0g4sBVBOnJJV3tnq_z8P8QEzwTCL+3gmws2uoRhy_gFVg@mail.gmail.com>
+Subject: Re: [PATCH v4 1/2] PCI/PM: Split out code from pci_pm_suspend_noirq()
+ into helper
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, 
+	"open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, linux-pm@vger.kernel.org, 
+	"Mario Limonciello (AMD)" <superm1@kernel.org>, Eric Naim <dnaim@cachyos.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 20/08/2026 12:03, Robin Snyders via B4 Relay wrote:
-> Add support for the SMB5 charger generation found in PM7250B and
-> PM8150B to the existing qcom_smbx driver.
-> 
-> The series extends the binding and selects register layouts, charger
-> status encodings and electrical limits from per-PMIC match data. Encode
-> PM7250B as PM8150B-compatible in the binding and let the compatible
-> fallback select the shared charge-parameter block, including the +0x08
-> effective input-current status register. Convert the SMB5 0.2 V/A USB
-> current-sense voltage measurement to microamps while leaving the SMB2
-> current reading unchanged.
-> 
-> SMB5 setup suspends USB input and disables charging before configuration.
-> The power-supply registration init callback programs battery limits and
-> completes final input and charging setup before device_add publishes the
-> properties, so public callbacks cannot observe partially initialized
-> hardware. Managed rollback restores the charging state before the USB input
-> state; if charging cannot be restored, USB input remains suspended. Managed
-> teardown cancels status work before unregistering the power supply.
-> 
-> Enable periodic hardware AICL with the downstream twelve-second rerun
-> interval while leaving ADC-based AICL disabled by default. Clear the
-> unsupported HVDCP modes so firmware state cannot raise VBUS, and do not
-> override the firmware recharge policy without a binding input. The
-> dedicated TCPM and VBUS regulator drivers retain ownership of Type-C
-> power-role and VBUS control.
-> 
-> On PM8150B, the SMB5 charger and VBUS regulator use the same DCDC
-> peripheral but do not write the same registers. qcom_smbx only reads
-> 0x1108 and 0x110b there; qcom_usb_vbus-regulator writes 0x1140, 0x1152
-> and 0x1153. The qcom_smbx write to 0x1153 belongs only to the SMB2
-> initialization sequence and is not executed for SMB5. The TCPM port and PD
-> PHY use the separate 0x15xx and 0x17xx peripherals. Patch 2 names the
-> USBIN BC1.2 integration register and SMB2-only OTG definitions explicitly
-> to document this boundary.
-> 
-> Apply the five-patch qcom_smbx Fixes series before this one. This series is
-> based on power-supply for-next (99b38cda3f4c). The b4 dependency metadata
-> records all five prerequisite patch IDs. This ordering preserves the SMB2
-> watchdog, health, overvoltage and float-voltage fixes across the SMB5
-> driver refactoring. The prerequisite series is public at:
-> https://lore.kernel.org/r/20260812-qcom-smbx-fixes-v1-0-eb48246be599@snyders.xyz/
-> 
-> The v3 implementation was tested on a OnePlus 7T Pro (HD1913) with
-> PM8150B. Register reads confirmed 4.40 V, 1.50 A and 500 mA limits. A
-> 180-second guarded charging trace and a subsequent 600-second runtime
-> trace completed with health Good and the input current below its 500 mA
-> limit. After a physical USB-C disconnect and reconnect, USB networking and
-> the charger recovered automatically; a further 60-second trace remained
-> Good and below the input-current limit. The final kernel log had no SMB5
-> warning, error, oops or lockdep report.
-> 
-> The v4 driver was rebuilt and retested on the same device. A 180-second
-> trace and a 600-second, 121-sample guarded trace completed with the charger
-> online, health Good and no guard failure. With a powered USB-C dock, the
-> phone remained the data host and PD power sink; with the dock unpowered, it
-> remained the data host and enabled the VBUS regulator as the power source.
-> The USB 2 and USB 3 hubs, storage and RTL8153 interface enumerated in both
-> connector orientations, and 64 MiB read-only storage reads produced the
-> same hash in all four dock configurations. Reconnecting the phone directly
-> to the PC restored the power-sink/device roles, charging, NCM and SSH
-> without a reboot. Ethernet traffic and visual DisplayPort output were not
-> tested in this run because no Ethernet carrier or display was available.
-> The final kernel log had no SMB5, Type-C or VBUS warning, error, oops or
-> lockdep report.
-> 
-> The driver builds with LLVM W=1 and passes Sparse. The binding passes
-> dt_binding_check, and both patches pass checkpatch --strict. A full LLVM
-> Image, modules and DTBs integration build completed and booted on the test
-> device.
-> 
-> Signed-off-by: Robin Snyders <robin@snyders.xyz>
-> ---
-> Changes in v4:
-> - Make the PM8150B charger, VBUS regulator and TCPM register ownership
->    explicit, including the shared DCDC peripheral's disjoint accesses.
-> - Rename the USBIN BC1.2 integration register and SMB2-only OTG definitions
->    to prevent them from being mistaken for SMB5 TCPM/VBUS controls.
-> - Test powered sink/host and unpowered source/host USB-C dock operation in
->    both connector orientations, including storage I/O and gadget recovery.
-> - Link to v3: https://lore.kernel.org/r/20260813-submit-qcom-smbx-send-v1-v3-0-27be0091d7c7@snyders.xyz
-> 
-> Changes in v3:
-> - Complete SMB5 input and charging setup in the pre-device_add power-supply
->    registration init callback instead of gating setters on a driver-specific
->    probe flag.
-> - Register the power supply and initialize managed status work before
->    requesting IRQs so handlers cannot observe an unassigned power supply.
-> - Let PM7250B match the required PM8150B compatible fallback and remove its
->    duplicate match-data entry.
-> - Collect the binding Reviewed-by tag.
-> - Link to v2: https://lore.kernel.org/r/20260812-submit-qcom-smbx-send-v1-v2-0-f504b8f9bfad@snyders.xyz
-> 
-> Changes in v2:
-> - Rebase onto power-supply for-next 99b38cda3f4c.
-> - Encode PM7250B with the required PM8150B compatible fallback.
-> - Leave SMB5 Type-C power-role and VBUS control to the TCPM and regulator
->    drivers.
-> - Preserve the SMB2 3-second AICL interval and use the SMB5 downstream
->    12-second interval; leave ADC-based AICL disabled by default.
-> - Disable unsupported HVDCP negotiation deterministically.
-> - Do not override the firmware recharge policy without a binding input.
-> - Model PM7250B with PM8150B electrical limits and the +0x08 AICL ICL
->    status register.
-> - Convert the SMB5 0.2 V/A USB current-sense reading to microamps while
->    leaving the SMB2 current reading unscaled.
-> - Program battery limits in the pre-device_add registration init callback
->    and gate setters until probe completes.
-> - Order managed teardown so status work is cancelled before the power
->    supply is unregistered.
-> - Restore charging before USB input on probe failure, and leave input
->    suspended if charging restoration fails.
-> - Correct the SMB5 overvoltage register and charger-state decoding.
-> - Avoid repeated error logs when polling a persistent overvoltage state.
-> - Use battery-info property presence when selecting charge targets.
-> - Remove duplicate scaling from the already-prescaled USB voltage reading
->    and clarify the binding IIO channel descriptions.
-> - Update the binding title, Kconfig prompt and module description for both
->    charger generations.
-> - Move the five pre-existing SMB2 fixes to a prerequisite Fixes series.
-> - Link to v1: https://lore.kernel.org/r/20260811-submit-qcom-smbx-send-v1-v1-0-feec6cfa123a@snyders.xyz
-> 
-> ---
-> Casey Connolly (2):
->        dt-bindings: power: supply: qcom,pmi8998-charger: add SMB5 PMICs
->        power: supply: qcom_smbx: add SMB5 support
-> 
->   .../power/supply/qcom,pmi8998-charger.yaml         |  17 +-
->   drivers/power/supply/Kconfig                       |   8 +-
->   drivers/power/supply/qcom_smbx.c                   | 757 ++++++++++++++++-----
->   3 files changed, 609 insertions(+), 173 deletions(-)
-> ---
-> base-commit: 99b38cda3f4c486cfbc40f3c8ede1703594e9f13
-> change-id: 20260811-submit-qcom-smbx-send-v1-69acefa61977
-> prerequisite-patch-id: 3d8a9cf43b5e5eac64a60aeec5e9c90880bcf792
-> prerequisite-patch-id: de3e3b494f9644596cfa4cafc362ca0b48288c45
-> prerequisite-patch-id: d5e22a0fe7cd55374f60d7c2cb14ed3df8f94e0b
-> prerequisite-patch-id: 9eafa41402e97d6a3e5369bec46df4e9db3d2af6
-> prerequisite-patch-id: 5638b901cd10773fa9485605f84b25a1dd826a84
-> 
-> Best regards,
+On Wed, Sep 16, 2026 at 7:10=E2=80=AFAM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
+>
+> From: "Mario Limonciello (AMD)" <superm1@kernel.org>
+>
+> In order to unify suspend and hibernate codepaths without code duplicatio=
+n
+> the common code should be in common helpers.  Move it from
+> pci_pm_suspend_noirq() into a helper.  No intended functional changes.
+>
+> Tested-by: Eric Naim <dnaim@cachyos.org>
+> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
 
-Tested-by: David Heidelberg <david@ixit.cz>  # SMB2 (Pixel 3, Mi 8, OP 6 / 6T)
+Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+
+> ---
+> v4:
+>  * Make pci_pm_suspend_noirq_common() bool instead (Rafael)
+> ---
+>  drivers/pci/pci-driver.c | 77 +++++++++++++++++++++++++---------------
+>  1 file changed, 49 insertions(+), 28 deletions(-)
+>
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index e16aa59dd7ac8..8334214f8c1ed 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -818,6 +818,52 @@ static void pci_pm_complete(struct device *dev)
+>
+>  #endif /* !CONFIG_PM_SLEEP */
+>
+> +#if defined(CONFIG_SUSPEND)
+> +/**
+> + * pci_pm_suspend_noirq_common - prepare a device to enter a low-power s=
+tate
+> + * @pci_dev: pci device
+> + *
+> + * Save the device state and decide whether bus-level power management s=
+hould
+> + * skipped. Returns true if bus-level power management should be skipped=
+,
+> + * false otherwise.
+> + */
+> +static bool pci_pm_suspend_noirq_common(struct pci_dev *pci_dev)
+> +{
+> +       if (!pci_dev->state_saved) {
+> +               pci_save_state(pci_dev);
+> +
+> +               /*
+> +                * If the device is a bridge with a child in D0 below it,
+> +                * it needs to stay in D0, so check skip_bus_pm to avoid
+> +                * putting it into a low-power state in that case.
+> +                */
+> +               if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev=
+))
+> +                       pci_prepare_to_sleep(pci_dev);
+> +       }
+> +
+> +       pci_dbg(pci_dev, "PCI PM: Sleep power state: %s\n",
+> +               pci_power_name(pci_dev->current_state));
+> +
+> +       if (pci_dev->current_state =3D=3D PCI_D0) {
+> +               pci_dev->skip_bus_pm =3D true;
+> +               /*
+> +                * Per PCI PM r1.2, table 6-1, a bridge must be in D0 if =
+any
+> +                * downstream device is in D0, so avoid changing the powe=
+r state
+> +                * of the parent bridge by setting the skip_bus_pm flag f=
+or it.
+> +                */
+> +               if (pci_dev->bus->self)
+> +                       pci_dev->bus->self->skip_bus_pm =3D true;
+> +       }
+> +
+> +       if (pci_dev->skip_bus_pm && pm_suspend_no_platform()) {
+> +               pci_dbg(pci_dev, "PCI PM: Skipped\n");
+> +               return true;
+> +       }
+> +
+> +       return false;
+> +}
+> +#endif /* CONFIG_SUSPEND */
+> +
+>  #ifdef CONFIG_SUSPEND
+>  static void pcie_pme_root_status_cleanup(struct pci_dev *pci_dev)
+>  {
+> @@ -907,6 +953,7 @@ static int pci_pm_suspend_noirq(struct device *dev)
+>  {
+>         struct pci_dev *pci_dev =3D to_pci_dev(dev);
+>         const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->pm : N=
+ULL;
+> +       bool skip_bus_pm;
+>
+>         if (dev_pm_skip_suspend(dev))
+>                 return 0;
+> @@ -937,36 +984,10 @@ static int pci_pm_suspend_noirq(struct device *dev)
+>                 }
+>         }
+>
+> -       if (!pci_dev->state_saved) {
+> -               pci_save_state(pci_dev);
+> -
+> -               /*
+> -                * If the device is a bridge with a child in D0 below it,
+> -                * it needs to stay in D0, so check skip_bus_pm to avoid
+> -                * putting it into a low-power state in that case.
+> -                */
+> -               if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev=
+))
+> -                       pci_prepare_to_sleep(pci_dev);
+> -       }
+> +       skip_bus_pm =3D pci_pm_suspend_noirq_common(pci_dev);
+>
+> -       pci_dbg(pci_dev, "PCI PM: Suspend power state: %s\n",
+> -               pci_power_name(pci_dev->current_state));
+> -
+> -       if (pci_dev->current_state =3D=3D PCI_D0) {
+> -               pci_dev->skip_bus_pm =3D true;
+> -               /*
+> -                * Per PCI PM r1.2, table 6-1, a bridge must be in D0 if =
+any
+> -                * downstream device is in D0, so avoid changing the powe=
+r state
+> -                * of the parent bridge by setting the skip_bus_pm flag f=
+or it.
+> -                */
+> -               if (pci_dev->bus->self)
+> -                       pci_dev->bus->self->skip_bus_pm =3D true;
+> -       }
+> -
+> -       if (pci_dev->skip_bus_pm && pm_suspend_no_platform()) {
+> -               pci_dbg(pci_dev, "PCI PM: Skipped\n");
+> +       if (skip_bus_pm)
+>                 goto Fixup;
+> -       }
+>
+>  set_unknown:
+>         pci_pm_set_unknown_state(pci_dev);
+> --
+> 2.43.0
+>
