@@ -1,88 +1,72 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from TY3P286CU002.outbound.protection.outlook.com (mail-japaneastazon11010024.outbound.protection.outlook.com [52.101.229.24])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30AD53EB802
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 11:46:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789559219; cv=none; b=NCEIeDSABlZpgCD+Fwu4+0G1uyyv8RJVyib2VNVIS66avyjgH/7QaPHqpJYqQnALGUUIxBKF74/kcnNqcVgSlDHOiYBeEyEBr0KTJ+iQn7pJaPNF5kDDuMM6zlwP1prnKhz3DQWAs5MYacBlyJEq2TsBWfzFfDlhNtjM+fQF+lc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789559219; c=relaxed/simple;
-	bh=41/H3+wV+C3ujyoz9pIl1FvptpMMe2jRK1WK+9Zs6CU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CgwnvxWWJSn99Sx3PGt2+/46eS/95W9S4eDb7Batm0ysnT8FYjOaF0BjXyhaXAuL/cebDKQh/dFasaeknLe8v4Wa0gnBtJy867LtqemmwzMm09lOT5zsAIKb2bn48l+HiWXPe6zoLso5Bc5Io6AMnJQYn940zio5TBhbJIWAyVQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OLzZqs6t; arc=none smtp.client-ip=74.125.225.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 210424EE859;
+	Wed, 16 Sep 2026 12:00:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.229.24
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789560040; cv=fail; b=Ri5ahV7ffDCH/DeN1jaHWY1rXmNEnU9Hrf6LRW6Tt9d9X3DBwn075l0nMJOR4IWf/uu5uCuZjHEmsGmc0SIWYI87cMpfi0wVxYhM7oI7JIsTZci8oFvG+b8+rEOt+MLyjDzgaHGoemFxvHzzFQIb36KOF6NCAI41elSKOAZmKM4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789560040; c=relaxed/simple;
+	bh=CAxiBQxK2jvg8SSafbloXfGCNNebQRNw4fZPHyvaqK8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Pk0GFX2aFMMMTaM8K+EGVPsT8jh+LgQimmsenUw4Ygj/T2gg6tPiBikkc1+JCVyhqOw2DEHj0YEqEAgFgHuhIigD7vv4WDsPos9RxEkJLmo7evP6slHm6U7jYnCABxB/qrXda4odn5eM1ZX+xhh8vdeKDquiv6gEWubIe8h6LJg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=RXPAHCdu; arc=fail smtp.client-ip=52.101.229.24
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OLzZqs6t"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e82ea30faso1256985e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 04:46:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789559213; x=1790164013; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=YbkqAaL5SGcaxI6pARTdx7iSpDgbeB9gXVgD+3Jn6FQ=;
-        b=OLzZqs6tsqcFeJChFXqBt33mFcrUQadko/AR+6SrEGPJmXRbSZtteGBX8BLw3u9FvH
-         Pkaixygcbr569PD8aqZZjF2kNLVaSDS5Xv1ysjYO/9YMPu/Ye5Zr5i6i5GnzRiIrJYOY
-         74quZqzqPN1h6Rfdj8x6C4I+p4gmWIkvTOeDVr4ycTmpSwhAr227Bs+eTLfwwkdUEvTV
-         LRV5/ZAD+MkoRIVf6oNLuAtkQPf3I9+DGX3WIJMZG8BTvPpn03iy1z2mcFMzJLcT+cWL
-         HgFyeRoJyzP9vG0be+xN4P7uNC5oI8KXgiejFOLrGPbN1McWGuV5MuRqN+ZKerHud8cc
-         YeCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789559213; x=1790164013;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=YbkqAaL5SGcaxI6pARTdx7iSpDgbeB9gXVgD+3Jn6FQ=;
-        b=Yo2khnscqEXkrsCSa31qZcxGj2Uty8lkmry7byrJ8dZV9m4J3/PVzEEFbt+vjKAj7N
-         zhRWq3ytSyc2yB/Om9jN725wNTUqOnWOmAZ5QL46Q2btN3dF0yGTW80ikRti6yp/n+mc
-         KbKYBeFbi3wSb9D37VULjrGcZnqcrhUAgEna5OBOV0Lsxb8fVVMBTyhgMDe6GsTsMiRo
-         Zp9LhdQZujzAkWcjLHVspcpyfFFQfDGsT6x9jqAM2ZLHq+5sE7kEWUg5juVTndPHvLbL
-         gZEmE7uaFmSMGw9YzMxHGDMnWbmwpWsXjEaMUOs1gj6ywmpf06H/i65u/9zI++HlTNwJ
-         Xp0A==
-X-Forwarded-Encrypted: i=1; AKwUvBzPKQGRZrPH56V1WEkxWglEw97SM/mzUXrGNSRltYauRNHcC33oYt1ihDzoL1pTjs3t2ZiSOwJLeQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lSYntN7LLpWWHmGDHxN04lqLOrDdApm++B9uIERUzGTqUjs3s/
-	85RU9gxw8qYM2YkBYogSkAiZ73nDhJAECRcnoWskY3g/UBJ+e+iNirf3
-X-Gm-Gg: AYBFou37unylreCh5xxBQj2o+uFPLM1imX/Op/YkMF+4ckbC3HV6TcpO3I5BQQYxQAd
-	F1WQtHiqQbndl3CXs+5Nw6k96b4t6dPfoX/np2/0NcsqjjEhVBirkEdB7Kseb9DcHw0g9D0jhsZ
-	LlXNZ8jnzKUrK15HgavYiKxV6YXsKSxnq80y4+NNmsjLG+ZjcQBo7iWG/WSO3WHTYyvpeBiyZDE
-	BN7zXU58ok4Zi7WF/OWhnkNrlLoCKmthLzKKfJwRrQQ4DDr6Q3UjTaly5aSCylEy51PEL+N5i2x
-	D52rl/cCWYxv+idgLTUsbtnFXPA1Py6hVdIYl9NWSFpKs5m2Hrpsa/XA3vVoA96jCJ06eMkgeWB
-	SJ7WFYVoh8Tt/44vvE1VKUe9q4SKCYllnOaeXZTzB4e9KXg8q0om81DwwfxwktYwNR41ddaimZJ
-	sTjrHxVpUFQCRExI1uapN3cZRcz+HkHaGPakolPIkYwBqI+VjOaD3TCrAqdqfWyldh8RFLjVRH6
-	SiArLWfjPAiEPwvfizwBw==
-X-Received: by 2002:a05:600c:4e0a:b0:49e:479b:c13b with SMTP id 5b1f17b1804b1-49eb732056fmr20743095e9.1.1789559212997;
-        Wed, 16 Sep 2026 04:46:52 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e847f176asm44406885e9.3.2026.09.16.04.46.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Sep 2026 04:46:52 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: christian.loehle@arm.com
-Cc: beata.michalska@arm.com,
-	cl@gentwo.org,
-	daniel.lezcano@kernel.org,
-	dietmar.eggemann@arm.com,
-	elif.topuz@arm.com,
-	juri.lelli@redhat.com,
-	kprateek.nayak@amd.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mingo@redhat.com,
-	peterz@infradead.org,
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="RXPAHCdu"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=jT3KxsoqVxkfCH0lrM0u1wzCkwKvwq5mUPOeMXBWGcQGHCrJH1r4YbO0OuyaLfmzVQL3xnFLjaZ8It1Gx6RNkiIoQ/YVjMQPAqLFCXMeApfyg88GwWj6r96Ek1zqqaesJOSpNnGD7NPU/C6QEj6QA7zBiZ9VjJgfjw+lALsoBuuUk500zf8Y+vMFsgJpz+yfeBOf9GgAr96eZz1feOyI0mAEYv0CLPB6KBxCVAqW5zYP7S2n6U1bXnrOOdeJ6NO218FHTGW/RsWxFbqYymc7we5iMvpAsXwzTtTp8/NN2o0zZxZHIPYvJ86wuhtgTR43qdaZtoew5CG0YWAcItAQuA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9k8bM4wvylMOjdZ4OcJyaDnzalIYhohN2NZ+ebbbLFg=;
+ b=JLTfYUN0Kce70aHVf2IiyNXMb2x3eY3L4CT0YqDTUihxgldEkFCoiwzD8mkJjCbuJA0Vcgcmuc2nqIJxhAlNhy6HFM6o1luwwHRmretl1P/g6nU9J8m4yjOyNzfzGunWxmME3Yy6c6lr9cqLZE5Cy7Z44rTPpDkZQ5FKNRIJxvlEcvGbkRj0gAoHO0OJNLcJG+XyH3ERF0dMZy3WXvqAm158tGLqAch9NjmJoUGmDszIq0h6YIMGn2Tdyu/6BKywPwaMBelRDPJWUp5yhitDi4XxJ1V1fTdGxEyYYvowCZm7dX3C/hwnYlYCyG/Cucnv4lreD6HfvwQX4OMYW+x2YQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 8.62.32.50) smtp.rcpttodomain=arm.com smtp.mailfrom=renesas.com; dmarc=pass
+ (p=none sp=none pct=100) action=none header.from=renesas.com; dkim=none
+ (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9k8bM4wvylMOjdZ4OcJyaDnzalIYhohN2NZ+ebbbLFg=;
+ b=RXPAHCdu9Xw7POl5vSExYhN/mPqLqkOntH+mZBLRwSHuxQjXc7JKl0KtVryH/qGCx1tgkDUzfox026kA4yE9qRwz7BA9Us++DSf8CF0YEos7kbxB8cxgPMEeSldmtP0yDznAbf+7fHJh0CrL2CKxGjuP6iIVwotOWKxQcNhgezI=
+Received: from TY6PR01CA0018.jpnprd01.prod.outlook.com (2603:1096:405:3bb::16)
+ by OS7PR01MB14893.jpnprd01.prod.outlook.com (2603:1096:604:39a::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.9; Wed, 16 Sep
+ 2026 12:00:26 +0000
+Received: from TY1PEPF0000BAD7.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:405:3bb:cafe::81) by TY6PR01CA0018.outlook.office365.com
+ (2603:1096:405:3bb::16) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.11 via Frontend Transport; Wed,
+ 16 Sep 2026 12:00:26 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 8.62.32.50)
+ smtp.mailfrom=renesas.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=renesas.com;
+Received-SPF: Pass (protection.outlook.com: domain of renesas.com designates
+ 8.62.32.50 as permitted sender) receiver=protection.outlook.com;
+ client-ip=8.62.32.50; helo=ejcrelay005p.adwin.renesas.com; pr=E
+Received: from ejcrelay005p.adwin.renesas.com (8.62.32.50) by
+ TY1PEPF0000BAD7.mail.protection.outlook.com (10.167.240.36) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.7
+ via Frontend Transport; Wed, 16 Sep 2026 12:00:26 +0000
+Received: from vm01.adwin.renesas.com (DEU-5CG20946WF.adwin.renesas.com [10.226.92.205])
+	by ejcrelay005p.adwin.renesas.com (Postfix) with ESMTP id C71843000441;
+	Wed, 16 Sep 2026 21:00:23 +0900 (JST)
+From: Ovidiu Panait <ovidiu.panait.rb@renesas.com>
+To: john.madieu.xa@bp.renesas.com,
 	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sh@gentwo.org,
-	vincent.guittot@linaro.org,
-	vschneid@redhat.com
-Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path candidates
-Date: Wed, 16 Sep 2026 14:46:49 +0300
-Message-ID: <20260916114650.2627-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <ea2c4680-ccee-4ad5-978c-95dade454091@arm.com>
-References: <ea2c4680-ccee-4ad5-978c-95dade454091@arm.com>
+	daniel.lezcano@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org,
+	Ovidiu Panait <ovidiu.panait.rb@renesas.com>
+Subject: [PATCH 0/5] thermal: renesas: rzg3e: TSU driver fixes and cleanups
+Date: Wed, 16 Sep 2026 11:59:58 +0000
+Message-ID: <20260916120003.87018-1-ovidiu.panait.rb@renesas.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -90,60 +74,53 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TY1PEPF0000BAD7:EE_|OS7PR01MB14893:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 54b6de65-c842-4c0e-a333-08df13ea1896
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|23010399003|82310400026|36860700016|1800799024|56012099006|10067099003|11063799006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	32/rKG4DM42OyTeYTyUXZ23ioIVTTToUdGb6byRAZD127nB/ZRxKECFqU6/UwEtM5qkdxPZNl8G4U79aK6Q6rgf0tiQiqMmLD910gqm1HmP8GqKVxbNskoBqFFkWf2IMOrIfE0TD+blh6LsJi+ZayhLbMVeGaDyFd8srfQcd9If7fRFfhXJAbgGS3v67IxpVMNwPvPc+pyMqoWxiwfxF6uyjyuIDRAGjBep7ct0spLbSFGWrRLPeWtruA1Atv5QtToIJf7Y2K7qC8InryMlA2dgrU+V22AVbqmM6S5Zpmh3mmj0+PtLqfmKeCU/8b9lapP6SVjon7yyws4Y1bqFr9SM6pmx/NClezS0pwHgmnNqTkNuynzLDQGMh50aFvwTWx17e6Gyf+zq26f+XAMnezyQy/QdxmgBuF0mVOnr/gIEHvDoW7En6OJ0XHvdq5TNUtqM0IOscnrvNxgKNgguWex1mv5vd79DPJl0l4YIU1f3UIxSCAyxrYj/wEg+BN+LNE/QV9HH2KNz2dyeSH8TI+0p+1fKY0Pe/ZerqJARzkBOGLILY/aEj2v3hcsIc0OHwV/mNa9x8xFU74bvCXdsWHE4aiS9EXiXcchUJpf8Rj7ORNVN/9zVm7GZnUPfV/bD1ukr3dK/lBY39CT3t7qztZCz+FtVe2F3YzebePj2PuJ0zNVq2TIkhBshyEev5Gi3CnboG/3ytln6p9oDFKPNQKA==
+X-Forefront-Antispam-Report:
+	CIP:8.62.32.50;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ejcrelay005p.adwin.renesas.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(23010399003)(82310400026)(36860700016)(1800799024)(56012099006)(10067099003)(11063799006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	LW3Ebry9ZnQsJxoH+dlbk32WtVOT3/3sCpWHG1qIsXcyG5k2X+JbABPowWYqmY0HFxx5UwtETQ1lcM/uJ7/4VXRnnrTYcQtB5MgBOQPGdP0k9Hc/d++KpPtcuf1D029jubuJfsG9HVhq6VDhq+Pl0iyiGjzpGMknVTmDYaC1E3EJkiio78KSVTjxSjqAULoTSbxwofhhLNQihvFV3E0r4PQD/r/j5QMVwx4Q5GhOsxaWZJ0Ovh+Utmh4jBE0K1daG7oOwMamhjWA6mtd+8hXj59OxSdcsg4XE9NgGpMUH3Afjd4xf5vNRFCtf1hLlcqy+El/N8xGVBAJnH+rTQniM20vhlgYbiX+yi/idohBXM+Ljj0CYa0WoT5z8Bi1ROSIMCyJF4j1Nz5UZjbpt54Tx5aLxfpQmPV3xy6DC8dUuuXr0YC6dOFjEtjndZ3k35rc
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Sep 2026 12:00:26.5200
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 54b6de65-c842-4c0e-a333-08df13ea1896
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=53d82571-da19-47e4-9cb4-625a166a4a2a;Ip=[8.62.32.50];Helo=[ejcrelay005p.adwin.renesas.com]
+X-MS-Exchange-CrossTenant-AuthSource: TY1PEPF0000BAD7.JPNP286.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS7PR01MB14893
 
-> > Hello Christian :>
-> > 
-> >> Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
-> >> slow-path selectors can choose the same CPU before either task is enqueued.
-> > 
-> >> Use reservoir sampling in the tie branch, resetting the candidate count
-> >> when a lower advertised exit latency is found. Use the per-CPU scheduler
-> >> PRNG and reciprocal_scale() to avoid variable division or a second scan.
-> > 
-> >> This reduces deterministic convergence without reserving the chosen CPU.
-> > 
-> > OK. 
-> > 
-> > But, your test platform was 160 Cores too. I don't think randomization has the same effect on lower
-> > CPU systems.
-> > 
-> > Let's create a scenario:
-> > 
-> > On a 80 Core System, that %50 of it's CPU's are idle the randomization's chance of choosing the same CPU
-> > is low. Since there are 40 CPU's to choose from.
-> > 
-> > But on a 8 Core System in the same idle conditions, randomization's chance of choosing the same CPU
-> > is really higher. Since there are only 4 CPU's to choose from.
-> > 
-> > I think this solution works better on higher CPU counted systems. 
+Hi,
 
-> Yes, this mostly works for higher CPU count domains, but the
-> issue I'm trying to fix basically doesn't exist in the 8 CPU domain
-> in the first place (first of all fewer chances of having simultaneous
-> slow paths running that can race and also the slow path is much faster,
-> i.e. the race window much smaller).
+This series contains a few fixes for the Renesas RZ/G3E TSU thermal
+driver, found while reviewing the driver against the hardware manual,
+along with some small cleanups.
 
-> > 
-> > And I don't think it fully removes the issue. Just better than the original tho.
-> > Thinks can still go bad on this one too, just harder.
+Thanks,
+Ovidiu
 
-> Fully removing the issue would require some synchronisation which the
-> numbers (which admittedly are pretty modest already) just don't justify.
+Ovidiu Panait (5):
+  thermal: renesas: rzg3e: Fix signed integer overflow in temp_to_code()
+  thermal: renesas: rzg3e: Fix runtime PM handling of compare irq
+  thermal: renesas: rzg3e: Fix race between set_trips() and get_temp()
+  thermal: renesas: rzg3e: Remove unneeded low/high check in set_trips()
+  thermal: renesas: rzg3e: Remove redundant pm_runtime_mark_last_busy()
+    calls
 
-> > 
-> > Maybe we could add a fallback. Because the real concern is the selected CPU's state
-> > changes when we come to enqueue. If possible tho, I did not really test anything.
+ drivers/thermal/renesas/rzg3e_thermal.c | 35 +++++++++++++++++--------
+ 1 file changed, 24 insertions(+), 11 deletions(-)
 
-> And then do what? rescan?
-> I don't think increasing the slow path is justified at all, when this relatively
-> straightforward randomization already significantly reduces the chance
-> for the 'pathological' test platform.
-
-Fair. 
-
-My real concern is that randomization is not predictable while the other solutions are.
-I don't really care about their speed when it comes to that.
-
-That's just a concern tho. I think this version is better than just placing the task
-to the CPU anyways. (in terms of approach)
+-- 
+2.34.1
 
