@@ -1,46 +1,46 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F5B33DDB0E
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:23:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA34A455633
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:29:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789550617; cv=none; b=I7Oz8u5+p4lwdl5I1M2SZKwhOwMinuWzmq2fMLGf9Px3pPBwbvODNNr60LjER1xTzDz39QuYk5qIvJ8Hn9fBP1u62Xv7ikhAputSA/cCAJuet80BKzbpRC7s4nPmg8UfUkAa7nj3NhjoD816+/tmVdNhUMYyZkkejtaA9eAEPmc=
+	t=1789551006; cv=none; b=RDYjS1+WmZ4YVGbkTHi7DLDlUFef7T5E+3SO6JvtY6mEYXbSAlijG+nVLXdKjhuEZLd7tW2t/kI1ddxk9bg6yRe1d+JJrtOvn6By4yn88zb/dEuT1BY1w2lrl7Sin2jMBvNLyGsbWFyfHtIjoAkhrBEjMxwIJHdcJxykTEGVrqs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789550617; c=relaxed/simple;
-	bh=iaLKXS4GLLt0zuJVNlPY5s2ZWcrrZ/oNlHsKvhP4+cA=;
+	s=arc-20240116; t=1789551006; c=relaxed/simple;
+	bh=KcHEfI9rixpKBPc2Zf2uhft6io/djkgQNFyeA0Lvo8Q=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=X7yO3cu5Y025v9EnfRA0+bih4ep/TRW8G1yrglr0nWGXxNppzr04BdWIa0P31rK/L5lfVrJQTYUmYYaNFqmLJ+1xQ/vmGQ54qdzTTiu1h1PUARqHli8xDiWz3r9lKK6jjqo+Tw0DOnmAAOIjCwzyH/qx91ak7+qMjnxW8PrOzkY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B72l6WtU; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=T5EZoeiCSAlPp584Q/IjGeQ9vYx51v6SrwDulhJGc2A9DoqWQIOKvRLAINicGmPic1OQSr6z3Mi/9xw7wu+lU3gPZlSyCUl1vbKM+ATiVjziGM0udu4eqeD7ESJb1pu8xWWrDZTTI5W3m8ZskbXSVv/UlvLal5oauF2PPWTAFWo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RXGN6Q6O; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B72l6WtU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 935BC1F00898
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:23:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RXGN6Q6O"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB6FB1F00921
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:29:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789550609;
-	bh=8y1oxDA3Zy9NWOoBvZCFqDaZfIYjK92V//s3NXF9nW8=;
+	s=k20260515; t=1789550993;
+	bh=HbNOQo+fITL/YezhDRnlIYKOUp70KJL8OxpPSgtnAR4=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=B72l6WtUyZlmC55w0Cn4FiftTPNmuFNftMahr1iTQQBG4ZVsbSn0gAJNgiTuSQ+LL
-	 s8iSQoFDJrPerRuoITrYSEw5/F4kI8eWfSUtx/N0lhsvuCXAuTBv8dPvsSZHG+E/yj
-	 CXcYrpf2of49P+clI/5/0doxNKm13SRLmF/RPfAg0LDNGqkyorjBFDAThmIC5Mr68u
-	 Kc52OpQzbVKhtWMys5E0Oilcb/8UQienLFHaVvFMO7GIvy2vyq9GdB3nmzcr7YlarR
-	 7KkfKw9o12b7n5hNbcahM/++69+gwUZduQlFLedBB8X9ZtR8gONAaoH2Q1oQSnOgJt
-	 iF9v0mj4TPlKQ==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b5e4f15b78so710181e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 02:23:29 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwmSWVAe6QhB2MKAfjdgHQ+liqV/b9LFlGbozxgqxPIZaHoFYKhZ1tzJKWe9HVOteg86ViC6vhyAw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lyiCk0wMcVxxXkP6/O+yrBmuq478iGqXU34W9ByHBTr0M8iS0y
-	saY6kNhLGmPNhH230GjVBmURfOEs32/+nWeoew5dHudH1Er+mLTzSci0fn3LdlnlN0QYZ/Hsl2x
-	xm+WnhDpIchCqtSFQvgLxDpHde9EhfOaN3g7zA4d/qQ==
-X-Received: by 2002:a05:6512:1151:b0:5ae:bd5e:95f7 with SMTP id
- 2adb3069b0e04-5b8b660ab6bmr1012067e87.4.1789550608110; Wed, 16 Sep 2026
- 02:23:28 -0700 (PDT)
+	b=RXGN6Q6OG3ZqmOA+EqOmYMjzyXsouT9/duqse6VVDy6txHKqr4rsi+IwqT7Nbrz47
+	 k8Z51jWHxL/XUhmUR7t+S3foO9mlS/tSggJOpQVFfcHqXbWS8CpBwCWxmcACeDF2aj
+	 BxpkRO7bmpj1nhb4WegvhExiNrSZqAnhu0H3xjIBcZ2dzHV6+ceLNSmsoGa/aEjwKD
+	 OgoAUxAUzLHvJjUOF9Tbh1Ox/3/knMWDyVQT600LmsSKHRFcZZFAgL1BSh+RJrSl7I
+	 om2+u+TJVVTY7GeNqPDsgFptzqcmTTynlhkkxA1JfsslXkuVOGr50PDDnKikS1vCh1
+	 Dazs1KLksmMIA==
+Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a30521ef15so5273581fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 02:29:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwe3JUFup8TfKecLppOSkJa9Cnx7w8sEplF0ZGPGzO4QcAoNujDQNiykg/wsmrGVHsBJJUe0bVl4Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++kpb8LV12XMo0KE/IuNzNWRL2Z6J3/DMxJjXvZLGJZY65FSmnoi
+	HXFAMroGjZV2feQBYP2E8oMqVSCYVrBXQpFf5cGobwPGnARS5bj/AIgEtbcu+s//aDq+xPaqBs9
+	O6j0egW3Nq0gD2QqUU7b9VxtSKrIV4pk5jAHG9lY3TQ==
+X-Received: by 2002:a05:651c:2107:b0:3a5:a106:ee0 with SMTP id
+ 38308e7fff4ca-3a5dca17909mr3885151fa.24.1789550992173; Wed, 16 Sep 2026
+ 02:29:52 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 16 Sep 2026 04:23:26 -0500
+ HTTPREST; Wed, 16 Sep 2026 04:29:50 -0500
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 16 Sep 2026 04:23:26 -0500
+ HTTPREST; Wed, 16 Sep 2026 04:29:50 -0500
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260914-arm-psci-system_reset2-vendor-reboots-v25-6-4aaf5c09b5c2@oss.qualcomm.com>
+In-Reply-To: <20260914-arm-psci-system_reset2-vendor-reboots-v25-4-4aaf5c09b5c2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,12 +48,12 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20260914-arm-psci-system_reset2-vendor-reboots-v25-0-4aaf5c09b5c2@oss.qualcomm.com>
- <20260914-arm-psci-system_reset2-vendor-reboots-v25-6-4aaf5c09b5c2@oss.qualcomm.com>
-Date: Wed, 16 Sep 2026 04:23:26 -0500
-X-Gmail-Original-Message-ID: <CAMRc=MdpuRhbCXZd1xkRH4Rs4g=iGRa1oaeN6vcmP3CjcJpydA@mail.gmail.com>
-X-Gm-Features: AcwNN1UsWFiQdwj37p9YrE8LwqI5EWZQm-VOsqh34gtu3xJhOe-g-SrOqENvLgQ
-Message-ID: <CAMRc=MdpuRhbCXZd1xkRH4Rs4g=iGRa1oaeN6vcmP3CjcJpydA@mail.gmail.com>
-Subject: Re: [PATCH v25 06/10] power: reset: Add psci-reboot-mode driver
+ <20260914-arm-psci-system_reset2-vendor-reboots-v25-4-4aaf5c09b5c2@oss.qualcomm.com>
+Date: Wed, 16 Sep 2026 04:29:50 -0500
+X-Gmail-Original-Message-ID: <CAMRc=MdCWHQZ+CgW05jYA1GGJdMUwKJEBAiAvRCvx=UqvjLiUg@mail.gmail.com>
+X-Gm-Features: AcwNN1XQMfOQSPN80c7M_tcu2-hP7ZzKFwZrSM1EUb4ujYz2zvehzw9bQteJEXc
+Message-ID: <CAMRc=MdCWHQZ+CgW05jYA1GGJdMUwKJEBAiAvRCvx=UqvjLiUg@mail.gmail.com>
+Subject: Re: [PATCH v25 04/10] firmware: psci: Add support for PSCI auxiliary devices
 To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
 	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
@@ -78,203 +78,222 @@ Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@
 	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-On Mon, 14 Sep 2026 16:59:10 +0200, Shivendra Pratap
+On Mon, 14 Sep 2026 16:59:08 +0200, Shivendra Pratap
 <shivendra.pratap@oss.qualcomm.com> said:
-> PSCI supports different types of resets like SYSTEM_RESET, SYSTEM_RESET2
-> ARCH WARM reset and SYSTEM_RESET2 vendor-specific resets. Currently
-> there is no common driver that handles all supported psci resets at one
-> place. Additionally, there is no common mechanism to issue the supported
-> psci resets from userspace.
+> PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
+> Currently, both the PSCI core driver and cpuidle-psci-domain bind
+> directly to the same PSCI node "arm,psci-1.0". Additional consumers, if
+> introduced, would also need to bind in the same way, leading to multiple
+> drivers attached to a single device node.
 >
-> Add psci-reboot-mode as an auxiliary device created by the psci-devices
-> driver. Define two types of PSCI resets, predefined-resets and
-> vendor-specific resets.  Predefined-resets are defined by psci driver
-> and vendor-specific resets are defined by SoC vendors, under the
-> psci:reboot-mode node of SoC device tree.
+> Introduce a PSCI auxiliary-device provider that binds to "arm,psci-1.0"
+> and registers PSCI child devices on the auxiliary bus. As the first
+> user, register cpuidle-psci-domain as an auxiliary device.
 >
-> Register the driver with the reboot-mode framework to interface these
-> resets to userspace. When userspace initiates a supported command, pass
-> the reset arguments to the PSCI driver to enable command-based reset.
->
-> This change allows userspace to issue supported PSCI reset commands
-> using the standard reboot system calls while enabling SoC vendors to
-> define their specific resets for PSCI.
+> Update cpuidle-psci-domain to probe as an auxiliary driver and use
+> the PSCI device node for power-domain traversal.
 >
 > Suggested-by: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
 > Suggested-by: Lee Jones <lee@kernel.org>
 > Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 > Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 > ---
->  MAINTAINERS                            |   1 +
->  drivers/firmware/psci/psci-devices.c   |  71 +++++++++++++++++++++-
->  drivers/power/reset/Kconfig            |  10 ++++
->  drivers/power/reset/Makefile           |   1 +
->  drivers/power/reset/psci-reboot-mode.c | 104 +++++++++++++++++++++++++++++++++
->  5 files changed, 185 insertions(+), 2 deletions(-)
+>  MAINTAINERS                           |  1 +
+>  drivers/cpuidle/Kconfig.arm           |  1 +
+>  drivers/cpuidle/cpuidle-psci-domain.c | 31 +++++++++++++++-----------
+>  drivers/firmware/psci/Kconfig         | 14 ++++++++++++
+>  drivers/firmware/psci/Makefile        |  1 +
+>  drivers/firmware/psci/psci-devices.c  | 41 +++++++++++++++++++++++++++++++++++
+>  6 files changed, 76 insertions(+), 13 deletions(-)
 >
 > diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9c0334ee2ed2..1c0f111ba197 100644
+> index 207a6e2db70c..9c0334ee2ed2 100644
 > --- a/MAINTAINERS
 > +++ b/MAINTAINERS
-> @@ -21933,6 +21933,7 @@ S:	Maintained
+> @@ -21932,6 +21932,7 @@ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+>  S:	Maintained
 >  F:	Documentation/devicetree/bindings/arm/psci.yaml
 >  F:	drivers/firmware/psci/
->  F:	drivers/firmware/psci/psci-devices.c
-> +F:	drivers/power/reset/psci-reboot-mode.c
+> +F:	drivers/firmware/psci/psci-devices.c
 >  F:	include/linux/psci.h
 >  F:	include/uapi/linux/psci.h
 >
-> diff --git a/drivers/firmware/psci/psci-devices.c b/drivers/firmware/psci/psci-devices.c
-> index f1eca61e3269..43e6743202f9 100644
-> --- a/drivers/firmware/psci/psci-devices.c
-> +++ b/drivers/firmware/psci/psci-devices.c
-> @@ -4,19 +4,86 @@
->   */
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> index b88b01aa5829..f22e18b05053 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -36,6 +36,7 @@ config ARM_PSCI_CPUIDLE_DOMAIN
+>  	bool "PSCI CPU idle Domain"
+>  	depends on ARM_PSCI_CPUIDLE
+>  	depends on PM_GENERIC_DOMAINS_OF
+> +	depends on ARM_PSCI_DEVICES
+>  	select DT_IDLE_GENPD
+>  	default y
+>  	help
+> diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+> index b9e4ad7d43a3..0ce6a83f6588 100644
+> --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> @@ -9,10 +9,11 @@
 >
->  #include <linux/auxiliary_bus.h>
-> +#include <linux/device.h>
->  #include <linux/init.h>
->  #include <linux/of.h>
->  #include <linux/platform_device.h>
-> +#include <linux/psci.h>
-> +#include <linux/slab.h>
-> +
-> +static void arm_psci_auxiliary_device_release(struct device *dev)
-> +{
-> +	struct auxiliary_device *auxdev = to_auxiliary_dev(dev);
-> +
-> +	of_node_put(dev->of_node);
-> +	kfree(auxdev);
-> +}
-> +
-> +static struct auxiliary_device *
-> +arm_psci_auxiliary_device_create(struct device *dev, const char *devname,
-> +				 struct device_node *np)
-> +{
-> +	struct auxiliary_device *auxdev;
-> +	int ret;
-> +
-> +	auxdev = kzalloc_obj(*auxdev);
-> +	if (!auxdev)
-> +		return NULL;
-> +
-> +	auxdev->id = 0;
-> +	auxdev->name = devname;
-> +	auxdev->dev.parent = dev;
-> +	auxdev->dev.release = arm_psci_auxiliary_device_release;
-> +
-> +	if (np)
-> +		device_set_node(&auxdev->dev, of_fwnode_handle(of_node_get(np)));
-> +
-> +	ret = auxiliary_device_init(auxdev);
-> +	if (ret) {
-> +		of_node_put(auxdev->dev.of_node);
-> +		kfree(auxdev);
-> +		return NULL;
-> +	}
-> +
-> +	ret = __auxiliary_device_add(auxdev, "arm-psci");
-> +	if (ret) {
-> +		auxiliary_device_uninit(auxdev);
-> +		return NULL;
-> +	}
-> +
-> +	ret = devm_add_action_or_reset(dev, auxiliary_device_destroy, auxdev);
-> +	if (ret)
-> +		return NULL;
-> +
-> +	return auxdev;
-> +}
+>  #define pr_fmt(fmt) "CPUidle PSCI: " fmt
 >
->  static int arm_psci_probe(struct platform_device *pdev)
->  {
->  	struct auxiliary_device *auxdev;
-> +#ifdef CONFIG_PSCI_REBOOT_MODE
-> +	struct device_node *reboot_mode_np = NULL;
-> +#endif
->
-> -	auxdev = __devm_auxiliary_device_create(&pdev->dev, "arm-psci",
-> -						"psci-cpuidle-domain", NULL, 0);
-> +	auxdev = arm_psci_auxiliary_device_create(&pdev->dev,
-> +						  "psci-cpuidle-domain",
-> +						  pdev->dev.of_node);
->  	if (!auxdev)
->  		return -ENOMEM;
->
-> +#ifdef CONFIG_PSCI_REBOOT_MODE
-> +	if (psci_has_system_reset2_support())
-> +		reboot_mode_np = of_get_child_by_name(pdev->dev.of_node,
-> +						      "reboot-mode");
-> +
-> +	auxdev = arm_psci_auxiliary_device_create(&pdev->dev,
-> +						  "psci-reboot-mode",
-> +						  reboot_mode_np);
-> +	of_node_put(reboot_mode_np);
-> +	if (!auxdev)
-> +		dev_warn(&pdev->dev, "failed to create PSCI reboot mode device\n");
-> +#endif
-> +
->  	return 0;
+> +#include <linux/auxiliary_bus.h>
+>  #include <linux/cpu.h>
+>  #include <linux/device.h>
+>  #include <linux/kernel.h>
+> -#include <linux/platform_device.h>
+> +#include <linux/module.h>
+>  #include <linux/pm_domain.h>
+>  #include <linux/pm_runtime.h>
+>  #include <linux/psci.h>
+> @@ -122,14 +123,10 @@ static void psci_pd_remove(void)
+>  	}
 >  }
 >
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index bce996bbef28..5c349f41e097 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -360,6 +360,16 @@ config NVMEM_REBOOT_MODE
->  	  then the bootloader can read it and take different
->  	  action according to the mode.
+> -static const struct of_device_id psci_of_match[] = {
+> -	{ .compatible = "arm,psci-1.0" },
+> -	{}
+> -};
+> -
+> -static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+> +static int psci_cpuidle_domain_probe(struct auxiliary_device *auxdev,
+> +				     const struct auxiliary_device_id *id)
+>  {
+> -	struct device_node *np = pdev->dev.of_node;
+> +	struct device_node *np = auxdev->dev.of_node;
+>  	bool use_osi = psci_has_osi_support();
+>  	int ret = 0, pd_count = 0;
 >
-> +config PSCI_REBOOT_MODE
-> +	bool "PSCI reboot mode driver"
-> +	depends on ARM_PSCI_DEVICES
-> +	select REBOOT_MODE
-
-Needs: select AUXILIARY_BUS
-
-> +	help
-> +	  Say y here to enable the PSCI reboot mode driver. The driver
-> +	  registers with the reboot-mode framework to configure PSCI
-> +	  reset commands, which are executed by the PSCI driver during
-> +	  psci_sys_reset().
+> @@ -177,16 +174,24 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+>  	return ret;
+>  }
+>
+> -static struct platform_driver psci_cpuidle_domain_driver = {
+> -	.probe  = psci_cpuidle_domain_probe,
+> +static const struct auxiliary_device_id psci_cpuidle_domain_id_table[] = {
+> +	{ .name = "arm-psci.psci-cpuidle-domain" },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(auxiliary, psci_cpuidle_domain_id_table);
 > +
->  config POWER_MLXBF
->  	tristate "Mellanox BlueField power handling driver"
->  	depends on (GPIO_MLXBF2 || GPIO_MLXBF3) && ACPI
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index e31cab4ba78e..45d8aaaffaa1 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -41,5 +41,6 @@ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
->  obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
->  obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
->  obj-$(CONFIG_NVMEM_REBOOT_MODE) += nvmem-reboot-mode.o
-> +obj-$(CONFIG_PSCI_REBOOT_MODE) += psci-reboot-mode.o
->  obj-$(CONFIG_POWER_MLXBF) += pwr-mlxbf.o
->  obj-$(CONFIG_POWER_RESET_QEMU_VIRT_CTRL) += qemu-virt-ctrl.o
-> diff --git a/drivers/power/reset/psci-reboot-mode.c b/drivers/power/reset/psci-reboot-mode.c
+> +static struct auxiliary_driver psci_cpuidle_domain_driver = {
+> +	.probe = psci_cpuidle_domain_probe,
+>  	.driver = {
+> -		.name = "psci-cpuidle-domain",
+> -		.of_match_table = psci_of_match,
+> +		.suppress_bind_attrs = true,
+>  	},
+> +	.id_table = psci_cpuidle_domain_id_table,
+>  };
+>
+>  static int __init psci_idle_init_domains(void)
+>  {
+> -	return platform_driver_register(&psci_cpuidle_domain_driver);
+> +	return __auxiliary_driver_register(&psci_cpuidle_domain_driver,
+> +					   THIS_MODULE,
+> +					   "psci-cpuidle-domain");
+>  }
+>  core_initcall(psci_idle_init_domains);
+> diff --git a/drivers/firmware/psci/Kconfig b/drivers/firmware/psci/Kconfig
+> index 97944168b5e6..68e381f1a618 100644
+> --- a/drivers/firmware/psci/Kconfig
+> +++ b/drivers/firmware/psci/Kconfig
+> @@ -2,6 +2,20 @@
+>  config ARM_PSCI_FW
+>  	bool
+>
+> +config ARM_PSCI_DEVICES
+> +	bool "PSCI auxiliary device support"
+> +	depends on ARM_PSCI_FW
+> +	depends on OF
+> +	select AUXILIARY_BUS
+> +	default y
+> +	help
+> +	  Say Y here to enable auxiliary device support for PSCI.
+> +
+> +	  This creates auxiliary devices for PSCI functionality implemented
+> +	  outside the core PSCI firmware driver. These devices allow PSCI
+> +	  child drivers to bind through the auxiliary bus while sharing the
+> +	  PSCI firmware device as their parent.
+> +
+>  config ARM_PSCI_CHECKER
+>  	bool "ARM PSCI checker"
+>  	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
+> diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
+> index 1956b882470f..8e75a0ed6f74 100644
+> --- a/drivers/firmware/psci/Makefile
+> +++ b/drivers/firmware/psci/Makefile
+> @@ -1,4 +1,5 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  #
+>  obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
+> +obj-$(CONFIG_ARM_PSCI_DEVICES)	+= psci-devices.o
+>  obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+> diff --git a/drivers/firmware/psci/psci-devices.c b/drivers/firmware/psci/psci-devices.c
 > new file mode 100644
-> index 000000000000..bf2dd6626feb
+> index 000000000000..f1eca61e3269
 > --- /dev/null
-> +++ b/drivers/power/reset/psci-reboot-mode.c
-> @@ -0,0 +1,104 @@
+> +++ b/drivers/firmware/psci/psci-devices.c
+> @@ -0,0 +1,41 @@
 > +// SPDX-License-Identifier: GPL-2.0-only
 > +/*
 > + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 > + */
 > +
-> +#include <linux/array_size.h>
 > +#include <linux/auxiliary_bus.h>
-> +#include <linux/device.h>
-
-[
-
-> +#include <linux/errno.h>
 > +#include <linux/init.h>
-> +#include <linux/kconfig.h>
 
-]
+I think you need module.h not init.h.
 
-Why are you including these?
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +
+> +static int arm_psci_probe(struct platform_device *pdev)
+> +{
+> +	struct auxiliary_device *auxdev;
+> +
+> +	auxdev = __devm_auxiliary_device_create(&pdev->dev, "arm-psci",
+> +						"psci-cpuidle-domain", NULL, 0);
+> +	if (!auxdev)
+> +		return -ENOMEM;
+> +
+> +	return 0;
+> +}
+
+I would prefer you to move the code between the patches a bit. This patch
+should already be introducing the full, future-proof infrastructure for
+registering multiple auxiliary devices, so maybe add a static table with device
+info? Then in patch 10/10 you'd just extend it for reboot modes.
+
+I'd also not add any ifdef guards here and lesses the build-time dependencies.
+You can register the device alright, it just won't get probed if the reboot-mode
+support is not there.
 
 Bart
+
+> +
+> +static const struct of_device_id arm_psci_of_match[] = {
+> +	{ .compatible = "arm,psci-1.0" },
+> +	{ }
+> +};
+> +
+> +static struct platform_driver arm_psci_driver = {
+> +	.probe = arm_psci_probe,
+> +	.driver = {
+> +		.name = "arm-psci",
+> +		.of_match_table = arm_psci_of_match,
+> +		.suppress_bind_attrs = true,
+> +	},
+> +};
+> +
+> +static int __init arm_psci_init(void)
+> +{
+> +	return platform_driver_register(&arm_psci_driver);
+> +}
+> +core_initcall(arm_psci_init);
+>
+> --
+> 2.34.1
+>
+>
