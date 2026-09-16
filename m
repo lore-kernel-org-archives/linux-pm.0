@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C4E6355409C;
-	Wed, 16 Sep 2026 16:29:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9F1712BE7BE;
+	Wed, 16 Sep 2026 16:29:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789576148; cv=none; b=gYad0PbecttsZXEYmtR3//oC1bLG0vNyFRpb5h5PuDJE9S8uZLJ0PRbARL+Iqrm77vkpkDr8yWUtqtOLQHKoWRBPf7MDKMq4+yoUXwcJXGnQf2uSIDG2ynGXJ+D+JQrYSe0IqJ08MTrfdpNkKm+EwRVy2IkLCNTzC9I0O0qePvk=
+	t=1789576152; cv=none; b=niDk3BHNVXEqQhFNfK+h/zkNQ8e+r6TZ5mFpuv18P5pG6/Y26TsBkW8tSAe44WSnuJ0khukeB+CzG5Mx7D5r5YZZkUShYIpzu6IvdMhN7lDYPyTpK3vZuUsvHos/I4y3mjJtH3JJqjE/AiBBKtcPn/zfEeUVjhCgzXeQXY+2xg8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789576148; c=relaxed/simple;
-	bh=8AGL9/8w9SfNCG3nPwO72xL4568r2ovdUwU0tjRTjnc=;
+	s=arc-20240116; t=1789576152; c=relaxed/simple;
+	bh=/e5Z8aI31z80xKFP4cAevE4AlRybGvo1FEUp5cMcUNE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=gHA6wYgpWQo+Puke5pUrC/KMb+n7sImzGrrgfhagOxrWHp4Mp0qROMGWh5ER3BvS2+WRZwJ/6OmZa+oBnzadezWz0nVp76Uk9/yRoeFb0/GatmFmJxXmSQBS/FPcg3lpfbppeMLTtslZAbQV/EM0DqyYG+kXMs+S6AofntVSUkA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=QvlTzdan; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=oVPB5bdaUSyNKpYZug10KHlIbpSxYEGi7ImlBa+ZOURy7BbnSGqRWl3pgBTtY3t7TxRetBZr9M8XRMmfP430b7TzM1yt5m9KiPch9lmWFiNiTRqZhf9E1SR/0G7sWiSCnZXDJV9vUva2ox95+jcsolbfvtaTfvkwc7k/5mNMJdc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=V4Iq631C; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="QvlTzdan"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="V4Iq631C"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 31643176A;
-	Wed, 16 Sep 2026 09:29:01 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 00CA31516;
+	Wed, 16 Sep 2026 09:29:04 -0700 (PDT)
 Received: from e127648.carmbridge.arm.com (unknown [10.0.129.72])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5B8BA3F7B4;
-	Wed, 16 Sep 2026 09:29:02 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 217B63F7B4;
+	Wed, 16 Sep 2026 09:29:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789576144; bh=8AGL9/8w9SfNCG3nPwO72xL4568r2ovdUwU0tjRTjnc=;
+	t=1789576147; bh=/e5Z8aI31z80xKFP4cAevE4AlRybGvo1FEUp5cMcUNE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QvlTzdane2tXPdiget7KtokpQpdh1318K8ioI/Qhf9YvfUX4Iz2pT2djQz/zBpDLN
-	 rTw0EnObt4fIlHNWJ9mw3cnUH4lUBQSgedQiq61PK7Q0m0teyc1nAzEScF8N4QHW03
-	 9G+MJPEbu1s6GYfk6PlUpe7FIrYfW05wt/ETWKGc=
+	b=V4Iq631CfUBwMw0siJG3brCAbDm/GgHxCw0vRQPa7lDtWJtr7wm5SLcWAfRUwjpFa
+	 1ieQjmHonVc/EEReQ7ZOl/PJvw41UFSIOu/TJNg5svH49lM6gqRtDDrPgrji2xaVVf
+	 tNUyQc8YBur3WSc1ynXmvekTVZ1SG0SMicOgMAAk=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -42,9 +42,9 @@ Cc: linux-pm@vger.kernel.org,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>,
 	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v7 04/20] ACPI: CPPC: Serialize PCC single-register payload updates
-Date: Wed, 16 Sep 2026 17:27:49 +0100
-Message-Id: <20260916162805.1039247-5-christian.loehle@arm.com>
+Subject: [PATCH v7 05/20] ACPI: CPPC: Serialize PCC EPP payload updates
+Date: Wed, 16 Sep 2026 17:27:50 +0100
+Message-Id: <20260916162805.1039247-6-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260916162805.1039247-1-christian.loehle@arm.com>
 References: <20260916162805.1039247-1-christian.loehle@arm.com>
@@ -56,136 +56,185 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The PCC doorbell protocol requires OSPM to confirm ownership of the shared
-subspace before placing a command and its payload there.
-cppc_set_reg_val_in_pcc() instead modifies the payload before taking
-pcc_lock.
+cppc_set_epp_perf() stages Autonomous Selection and Energy Performance
+Preference in the PCC shared region before taking pcc_lock. The platform
+may still own the subspace, or a concurrent command may consume or
+overwrite only part of the new payload.
 
-A concurrent command can consequently overwrite or consume the staged
-value, and OSPM can write the shared region while the platform still owns
-it.
+Take the PCC write lock and wait for OSPM ownership before staging either
+control. Keep the lock held until the complete payload has been submitted
+with CMD_WRITE, so firmware cannot observe a mixed transaction.
 
-Reject a register width which cpc_write() cannot stage before taking the
-exclusive lock. Otherwise that operation can steal Phase II from an older
-valid performance batch and then abort it for an unrelated error.
+For a mixed PCC/non-PCC description, complete every fallible non-PCC write
+before staging PCC data. Cross-address-space updates cannot be atomic, but
+a non-PCC failure can no longer leave an unsent value in shared memory for
+a later PCC command to consume. Reject an unsupported PCC width before any
+non-PCC control is changed.
 
-Take the PCC write lock first, wait for the previous command to complete,
-and keep the lock held while staging the value and submitting CMD_WRITE.
-This follows the ownership sequence in ACPI 6.5 Section 14.5 and the
-existing contract documented by send_pcc_cmd().
+Classify every writable control as either PCC or non-PCC. For SystemIO,
+require port-I/O support and an access within the port range. Require
+natural alignment on non-x86 platforms, whose port-I/O accessors use MMIO;
+x86 port instructions support unaligned addresses. Also require a field
+covering the complete access unit. cpc_write() performs a raw whole-port
+write, so any other geometry could update the wrong bits or corrupt an
+adjacent field.
 
-If ownership acquisition or staging fails, abort any older performance
-batch before dropping the exclusive lock. This advances its generation and
-wakes cppc_set_perf() callers which otherwise wait indefinitely for a
-command this path did not submit.
+If ownership acquisition or PCC staging fails, abort any older pending
+performance batch before releasing the exclusive lock so its Phase-II
+waiters receive the error instead of sleeping indefinitely.
 
-The generation counter is local to each PCC subspace, while error
-completion scans the descriptors of every CPU. Match both the subspace and
-generation so failure in one subspace cannot poison a request using the
-same generation in another.
+This follows the PCC ownership sequence in ACPI 6.5 Section 14.5.
 
-Fixes: e05c75072c2e ("ACPI: CPPC: Add cppc_set_reg_val()")
+Fixes: 7bc1fcd39901 ("ACPI: CPPC: Add AMD pstate energy performance preference cppc control")
 Reported-by: Sashiko <sashiko-bot@kernel.org>
 Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
 Link: https://sashiko.dev/#/patchset/20260807111303.1062391-1-christian.loehle%40arm.com
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 44 ++++++++++++++++++++++++++++++++--------
- 1 file changed, 35 insertions(+), 9 deletions(-)
+ drivers/acpi/cppc_acpi.c | 100 +++++++++++++++++++++++++++------------
+ 1 file changed, 70 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 74feb05195a1..42f3714f82ab 100644
+index 42f3714f82ab..2198376a6a9c 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -393,8 +393,8 @@ static int check_pcc_chan(int pcc_ss_id, bool chk_err_bit)
- 	return ret;
- }
+@@ -260,6 +260,22 @@ static bool cpc_pcc_write_supported(const struct cpc_register_resource *reg)
+ 	((((val) & GENMASK(((reg)->bit_width) - 1, 0)) << (reg)->bit_offset) |		\
+ 	((prev_val) & ~(GENMASK(((reg)->bit_width) - 1, 0) << (reg)->bit_offset)))	\
  
--static void cppc_complete_pcc_write(struct cppc_pcc_data *pcc_ss_data,
--				    int ret)
-+static void cppc_complete_pcc_write(int pcc_ss_id,
-+				    struct cppc_pcc_data *pcc_ss_data, int ret)
- {
- 	int i;
- 
-@@ -402,7 +402,8 @@ static void cppc_complete_pcc_write(struct cppc_pcc_data *pcc_ss_data,
- 		for_each_possible_cpu(i) {
- 			struct cpc_desc *desc = per_cpu(cpc_desc_ptr, i);
- 
--			if (!desc)
-+			if (!desc ||
-+			    per_cpu(cpu_pcc_subspace_idx, i) != pcc_ss_id)
- 				continue;
- 
- 			if (desc->write_cmd_id == pcc_ss_data->pcc_write_cnt)
-@@ -414,6 +415,18 @@ static void cppc_complete_pcc_write(struct cppc_pcc_data *pcc_ss_data,
- 	wake_up_all(&pcc_ss_data->pcc_write_wait_q);
- }
- 
-+/* The caller must hold pcc_lock for write. */
-+static void cppc_abort_pending_pcc_write(int pcc_ss_id,
-+					 struct cppc_pcc_data *pcc_ss_data,
-+					 int ret)
++static bool
++cpc_system_io_write_supported(const struct cpc_register_resource *reg)
 +{
-+	if (!pcc_ss_data->pending_pcc_write_cmd)
-+		return;
++	const struct cpc_reg *gas = &reg->cpc_entry.reg;
++	unsigned int access_width = GET_BIT_WIDTH(gas);
++	u64 access_size;
 +
-+	pcc_ss_data->pending_pcc_write_cmd = false;
-+	cppc_complete_pcc_write(pcc_ss_id, pcc_ss_data, ret);
++	if (!IS_ENABLED(CONFIG_HAS_IOPORT) || !CPC_IN_SYSTEM_IO(reg) ||
++	    (access_width != 8 && access_width != 16 && access_width != 32))
++		return false;
++
++	access_size = access_width / 8;
++	return !gas->bit_offset && gas->bit_width == access_width &&
++	       gas->address <= U16_MAX - (access_size - 1) &&
++	       (IS_ENABLED(CONFIG_X86) || IS_ALIGNED(gas->address, access_size));
 +}
-+
- /*
-  * This function transfers the ownership of the PCC to the platform
-  * So it must be called while holding write_lock(pcc_lock)
-@@ -513,7 +526,7 @@ static int send_pcc_cmd(int pcc_ss_id, u16 cmd)
- 
- end:
- 	if (cmd == CMD_WRITE)
--		cppc_complete_pcc_write(pcc_ss_data, ret);
-+		cppc_complete_pcc_write(pcc_ss_id, pcc_ss_data, ret);
- 
- 	return ret;
- }
-@@ -1520,23 +1533,36 @@ static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
- static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u64 val)
+ static u64 cpc_sysmem_access_size(const struct cpc_register_resource *reg)
  {
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
--	struct cppc_pcc_data *pcc_ss_data = NULL;
-+	struct cppc_pcc_data *pcc_ss_data;
+ 	const struct cpc_reg *gas = &reg->cpc_entry.reg;
+@@ -1947,8 +1963,10 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
+ 	struct cpc_register_resource *auto_sel_reg;
+ 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
+ 	struct cppc_pcc_data *pcc_ss_data = NULL;
+-	bool autosel_ffh_sysmem;
+-	bool epp_ffh_sysmem;
++	bool auto_sel_pcc;
++	bool auto_sel_non_pcc;
++	bool epp_pcc;
++	bool epp_non_pcc;
  	int ret;
  
- 	if (pcc_ss_id < 0) {
- 		pr_debug("Invalid pcc_ss_id\n");
- 		return -ENODEV;
- 	}
--
--	ret = cpc_write(cpu, reg, val);
--	if (ret)
--		return ret;
-+	if (!cpc_pcc_write_supported(reg))
+ 	if (!cpc_desc) {
+@@ -1962,52 +1980,74 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
+ 	    auto_sel_reg->cpc_entry.int_value == 1)
+ 		return -EOPNOTSUPP;
+ 
+-	epp_ffh_sysmem = CPC_SUPPORTED(epp_set_reg) &&
+-		(CPC_IN_FFH(epp_set_reg) || CPC_IN_SYSTEM_MEMORY(epp_set_reg));
+-	autosel_ffh_sysmem = CPC_SUPPORTED(auto_sel_reg) &&
+-		(CPC_IN_FFH(auto_sel_reg) || CPC_IN_SYSTEM_MEMORY(auto_sel_reg));
++	auto_sel_pcc = cpc_is_writable(auto_sel_reg) &&
++		CPC_IN_PCC(auto_sel_reg);
++	epp_pcc = cpc_is_writable(epp_set_reg) && CPC_IN_PCC(epp_set_reg);
++	if ((auto_sel_pcc && !cpc_pcc_write_supported(auto_sel_reg)) ||
++	    (epp_pcc && !cpc_pcc_write_supported(epp_set_reg)))
 +		return -EFAULT;
++	if ((cpc_is_writable(auto_sel_reg) &&
++	     CPC_IN_SYSTEM_IO(auto_sel_reg) &&
++	     !cpc_system_io_write_supported(auto_sel_reg)) ||
++	    (cpc_is_writable(epp_set_reg) && CPC_IN_SYSTEM_IO(epp_set_reg) &&
++	     !cpc_system_io_write_supported(epp_set_reg)))
++		return -EOPNOTSUPP;
++
++	auto_sel_non_pcc = cpc_is_writable(auto_sel_reg) && !auto_sel_pcc;
++	epp_non_pcc = cpc_is_writable(epp_set_reg) && !epp_pcc;
++
++	/* Complete fallible non-PCC writes before staging PCC data. */
++	if (auto_sel_non_pcc) {
++		ret = cpc_write(cpu, auto_sel_reg, enable);
++		if (ret)
++			return ret;
++	}
++	if (epp_non_pcc) {
++		ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
++		if (ret)
++			return ret;
++	}
  
- 	pcc_ss_data = pcc_data[pcc_ss_id];
-+	if (!pcc_ss_data)
-+		return -ENODEV;
+-	if (CPC_IN_PCC(epp_set_reg) || CPC_IN_PCC(auto_sel_reg)) {
++	if (epp_pcc || auto_sel_pcc) {
+ 		if (pcc_ss_id < 0) {
+ 			pr_debug("Invalid pcc_ss_id for CPU:%d\n", cpu);
+ 			return -ENODEV;
+ 		}
  
- 	down_write(&pcc_ss_data->pcc_lock);
+-		if (cpc_is_writable(auto_sel_reg)) {
++		pcc_ss_data = pcc_data[pcc_ss_id];
++		if (!pcc_ss_data)
++			return -ENODEV;
 +
-+	ret = check_pcc_chan(pcc_ss_id, false);
-+	if (ret)
-+		goto out;
++		down_write(&pcc_ss_data->pcc_lock);
 +
-+	ret = cpc_write(cpu, reg, val);
-+	if (ret)
-+		goto out;
++		ret = check_pcc_chan(pcc_ss_id, false);
++		if (ret)
++			goto out_unlock;
 +
- 	/* after writing CPC, transfer the ownership of PCC to platform */
- 	ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
-+
-+out:
-+	if (ret)
-+		cppc_abort_pending_pcc_write(pcc_ss_id, pcc_ss_data, ret);
- 	up_write(&pcc_ss_data->pcc_lock);
++		if (auto_sel_pcc) {
+ 			ret = cpc_write(cpu, auto_sel_reg, enable);
+ 			if (ret)
+-				return ret;
++				goto out_unlock;
+ 		}
+ 
+-		if (cpc_is_writable(epp_set_reg)) {
++		if (epp_pcc) {
+ 			ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
+ 			if (ret)
+-				return ret;
++				goto out_unlock;
+ 		}
+ 
+-		pcc_ss_data = pcc_data[pcc_ss_id];
+-
+-		down_write(&pcc_ss_data->pcc_lock);
+ 		/* after writing CPC, transfer the ownership of PCC to platform */
+ 		ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
+-		up_write(&pcc_ss_data->pcc_lock);
+-	} else if (osc_cpc_flexible_adr_space_confirmed &&
+-		   (epp_ffh_sysmem || autosel_ffh_sysmem)) {
+-		if (autosel_ffh_sysmem) {
+-			ret = cpc_write(cpu, auto_sel_reg, enable);
+-			if (ret)
+-				return ret;
+-		}
+ 
+-		if (epp_ffh_sysmem) {
+-			ret = cpc_write(cpu, epp_set_reg,
+-					perf_ctrls->energy_perf);
+-			if (ret)
+-				return ret;
+-		}
++out_unlock:
++		if (ret)
++			cppc_abort_pending_pcc_write(pcc_ss_id, pcc_ss_data, ret);
++		up_write(&pcc_ss_data->pcc_lock);
++	} else if (epp_non_pcc || auto_sel_non_pcc) {
++		ret = 0;
+ 	} else {
+-		ret = -ENOTSUPP;
+-		pr_debug("_CPC in PCC/FFH/SystemMemory are not supported\n");
++		ret = -EOPNOTSUPP;
++		pr_debug("No writable EPP controls for CPU:%d\n", cpu);
+ 	}
  
  	return ret;
 -- 
