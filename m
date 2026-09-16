@@ -1,140 +1,127 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3CF1F4DA535;
-	Wed, 16 Sep 2026 10:52:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15E094E234A
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 11:06:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789555987; cv=none; b=EE4yAF5aQyn6IcTBKp2vKE5cwNg5AxcdYBTo0WKsBXWgZbNVUF/5G3ml3ca5GOrO/pS5dYZMkC5LIC5waNu6WrV8uxYF9EWtAc1xV1i8WRqkmYlJyea/qomav6xfwrx0ZlopOLum+wPpPPj2OvetYqR+OGuZVt70uAL3aP71NSI=
+	t=1789556786; cv=none; b=gaIBiZDuNQXhfkX0orLQzHGdFFussGlVbqBGttBqTO3p2xHGt7QJdyqWJIg9/tjqoqg8dUZfFFkJZJeQGXBEWGlINTDqUmquLOaCxTohtOHV8eAOwvVrmmUd1S6xvcfy66lm3nDxAt7f4FCDNLX92QRX7THxWYGdmAbewZpjOv8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789555987; c=relaxed/simple;
-	bh=RhduKqcItE584Gog2HHjq9v4nZ1t5cRd+2u1AHvp/Pk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rKozzlqqHXwjVwzrgvZG7bzLAT6Qg3178HVeMzFUzmPxznXgho6U9rkIHrFXxN+VqONwtrNn4RZQ+7ygyZNkbU4FIZsTvbCHNaYFStxWUxIcZ+EOESCJQzbGXpWprhm7nO8CECOCS1Svb15BTY3dymTlJGod7uB9vvNNFwtKf6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=k+QPQZ+7; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1789556786; c=relaxed/simple;
+	bh=KvGxbBIIZYJxbA/goM5wib5m0sHgZa7QQZXkuKeLEYc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=LweXhZQXF2vu/CSISq3sYc2SOkZIx3dWbK8WWLu8ySyGjWMug1EKPxiez1tm7tnZIRu3xMweIiq/6OIi+nRgOsdm9VCYfP4uEJHTXSy2AwLazRweVnEXVaHENi9pvrq8bXUpaaHlF6M7OMX+qH1TtfIG3jz2y7WRQyY+MyBgIlM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eZJWZyHA; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="k+QPQZ+7"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 21DB1152B;
-	Wed, 16 Sep 2026 03:52:34 -0700 (PDT)
-Received: from [192.168.178.100] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 862EB3F882;
-	Wed, 16 Sep 2026 03:52:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789555957; bh=RhduKqcItE584Gog2HHjq9v4nZ1t5cRd+2u1AHvp/Pk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=k+QPQZ+7lFhCUxzwB5qWc/aVin1L+Ty0HMKoeDTdKQNkahM0tK+cYSMFOw9EPXdAo
-	 tX5VERC5gj1tGwCTKOJI9xmdx7BHPsNI6W1G5AhCwLINtZMxU0+AaaM9dXBVOgrIGo
-	 o1IbXWjEdyKMbcLMH+LPLmm7NStwCDN4mFkR0t0o=
-Message-ID: <55538466-2203-42ec-a0bd-b743c04a3b38@arm.com>
-Date: Wed, 16 Sep 2026 12:52:33 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eZJWZyHA"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e7c6dbc60so300185e9.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 04:06:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789556767; x=1790161567; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=z2mTRCT19PSs98SBRuFAUCXLrvDpRI5nVmcGar4PNf4=;
+        b=eZJWZyHAqYXeVTNchjC9I9QwFJoLYPtSyZtlG6pGc3rWiipTdZHhkzH2ccNwbFFbJY
+         AfOThFsFxM9iqFAUNFjo+a6/Nkx4tvgr4m6GIC8nLIXkz7wYs+H/yCRzxXk4IKw0F5HP
+         RHKFY9R+VKZbqqncFb7w0E4P92Us+U6JTK3uydVF8IWCdboZDKoh2/uYjgehalpAffZ5
+         vvJXlRkR4BtSB1OHdHzhn7BVOFkqUeMUZ553vbYI7XGEEkv5U7kH5mTwllavBWrVlr8g
+         q7IgUmRFCDe5CbAGO57T/gxfS8t+IoFAG65ETzLvZp7tCU+YABc6QiI7OqXmPlQRJoFJ
+         2EhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789556767; x=1790161567;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=z2mTRCT19PSs98SBRuFAUCXLrvDpRI5nVmcGar4PNf4=;
+        b=DWBwNOpSQZtLsKTXhq0k7KXW0B+KBDfPhD2UKiUS4jGLOE4z9wWhMYqK4oLBpeGfWh
+         bOwQa+6FLWhp20dDsWJrmQHWJk5tfmThM2X3X7+t7ZD1IV6lVvX7aMKI1SJ3DWn6Sr1B
+         v9C5AdFnNQZWekMfJpWmRnNGnI5WaeNFqmKAk6dKHt9z7+Ft2nqvbVvnW+ajLV5o/10G
+         VeGQBu//khOxQ3/jTEub8Rhbxn+hoTHa1wRrkQk8T/zm+A3AEqacwR+90S+n7U7P6/xH
+         /tABD+KaVg7e9RcShFUr6V4MlJH0qpUQTo4YrMjiODwzNBjIFnaSRAmXbdWbqttvmcdt
+         Ez/Q==
+X-Forwarded-Encrypted: i=1; AKwUvBx2LzeyjifyFLAehi8uWE6+8drRTeK/OOdKEke9xd8n19WxGEqiZ98KazfhLY6/x002kX4oXEN/4g==@vger.kernel.org
+X-Gm-Message-State: AFuF++mWvLMb4sqkZR5oUJumG85aJtHlj4MAPJbC15C60lTvQJ10mggb
+	qBeEBxrZ1youmdr5OGHP+mJq5dGbiy3B0xZD4faDV19Bw7X1YfI84Ddg
+X-Gm-Gg: AYBFou1QLISVwiBTRaajMps3r1ERK//8hc3dxylSFJP6rhxzI9wKr++v/D5yrKgTg7b
+	7Aaf+noHyH9WnBm2rojB/1PMhTXawUvcl3cI0PKiZgwGp2DL3e28Q6h2o0i6ScuGssGI2gmnd3a
+	MZzmvgl5PwidRPstYQBkrhcM/kEj6y3s3gb9ibqIM4ZwwfnW2v/MIn/EQj6uBCOdWgG9N5sz1p2
+	iKiW3kq2zq/B2s+ChFb3Ha6MTVOlKllqfbs7pzUuJmepjEMuZrARGSO2wU1VDF7UFsXdrrlZV/d
+	WeO4SUhFL3JMV1s58bjbRZm9lIYS8jSEPte1QPjW5tHSAkBbMCTzGQGZc9BRv0PzmlKiudH+vZZ
+	yr1YR5aCVie3gLtQ1mXvnOp6l2p5pnbl7/cC7i46QHsXbto2WY6u6+Anm3RmmhuK2rWruYQfOhR
+	9NRMaGz+CL6Eq1Qf/eqaWdGA8iRp9OQhdouO/AuHwMn1ZEHm/N910GU4ic+6utZelR2r80WMm6H
+	jyiBeH68+NYWLbyOj4L4O8=
+X-Received: by 2002:a05:600c:6995:b0:49c:ff81:e062 with SMTP id 5b1f17b1804b1-49eb7328137mr21808175e9.2.1789556767374;
+        Wed, 16 Sep 2026 04:06:07 -0700 (PDT)
+Received: from lima-kdev.local ([85.100.66.184])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e83d9057dsm79447295e9.3.2026.09.16.04.06.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Sep 2026 04:06:06 -0700 (PDT)
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: christian.loehle@arm.com
+Cc: beata.michalska@arm.com,
+	cl@gentwo.org,
+	daniel.lezcano@kernel.org,
+	dietmar.eggemann@arm.com,
+	elif.topuz@arm.com,
+	juri.lelli@redhat.com,
+	kprateek.nayak@amd.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	mingo@redhat.com,
+	peterz@infradead.org,
+	rafael@kernel.org,
+	rostedt@goodmis.org,
+	sh@gentwo.org,
+	vincent.guittot@linaro.org,
+	vschneid@redhat.com
+Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path candidates
+Date: Wed, 16 Sep 2026 14:06:03 +0300
+Message-ID: <20260916110603.24230-1-kayracizmeci@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260916100116.701206-3-christian.loehle@arm.com>
+References: <20260916100116.701206-3-christian.loehle@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/2] arm64: topology: fix arch_freq_get_on_cpu()
- overflow above 4.19 GHz
-To: Oleg Keri <okerixx@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Sumit Gupta <sumitg@nvidia.com>,
- Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
- Beata Michalska <beata.michalska@arm.com>,
- Russell King <linux@armlinux.org.uk>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Sudeep Holla <sudeep.holla@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org, driver-core@lists.linux.dev,
- linux-pm@vger.kernel.org, jonathan.cameron@oss.qualcomm.com,
- sibi.sankar@oss.qualcomm.com
-References: <20260910063440.4677-1-okerixx@gmail.com>
- <20260910063440.4677-2-okerixx@gmail.com>
-Content-Language: en-GB
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20260910063440.4677-2-okerixx@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 10.09.26 08:34, Oleg Keri wrote:
+Hello Christian :>
 
-[...]
+> Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
+> slow-path selectors can choose the same CPU before either task is enqueued.
 
-> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-> index d28438f8b83f..0eca321ff113 100644
-> --- a/arch/arm64/kernel/topology.c
-> +++ b/arch/arm64/kernel/topology.c
-> @@ -245,8 +245,7 @@ int arch_freq_get_on_cpu(int cpu)
->  	 * (see amu_scale_freq_tick for details)
->  	 */
->  	scale = arch_scale_freq_capacity(cpu);
-> -	freq = scale * arch_scale_freq_ref(cpu);
-> -	freq >>= SCHED_CAPACITY_SHIFT;
-> +	freq = (scale * arch_scale_freq_ref(cpu)) >> SCHED_CAPACITY_SHIFT;
->  	return freq;
->  }
+> Use reservoir sampling in the tie branch, resetting the candidate count
+> when a lower advertised exit latency is found. Use the per-CPU scheduler
+> PRNG and reciprocal_scale() to avoid variable division or a second scan.
 
-In task scheduler code we use cap_scale(v, s) for CPU capacity related
-scaling.
+> This reduces deterministic convergence without reserving the chosen CPU.
 
-We could move its definition from private task scheduler include file
-kernel/sched/sched.h to include/linux/topology.h to be able to use it
-also outside the task scheduler?
+OK. 
 
-Only compile tested on arm64 and x86.
+But, your test platform was 160 Cores too. I don't think randomization has the same effect on lower
+CPU systems.
 
--->8--
+Let's create a scenario:
 
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 0eca321ff113..180a7aa97752 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -186,7 +186,6 @@ int arch_freq_get_on_cpu(int cpu)
-      struct amu_cntr_sample *amu_sample;
-      unsigned int start_cpu = cpu;
-      unsigned long last_update;
--     unsigned int freq = 0;
-      u64 scale;
+On a 80 Core System, that %50 of it's CPU's are idle the randomization's chance of choosing the same CPU
+is low. Since there are 40 CPU's to choose from.
 
-      if (!amu_fie_cpu_supported(cpu) || !arch_scale_freq_ref(cpu))
-@@ -245,8 +244,7 @@ int arch_freq_get_on_cpu(int cpu)
-      * (see amu_scale_freq_tick for details)
-      */
-      scale = arch_scale_freq_capacity(cpu);
--     freq = (scale * arch_scale_freq_ref(cpu)) >> SCHED_CAPACITY_SHIFT;
--     return freq;
-+     return cap_scale(arch_scale_freq_ref(cpu), scale);
- }
+But on a 8 Core System in the same idle conditions, randomization's chance of choosing the same CPU
+is really higher. Since there are only 4 CPU's to choose from.
 
- static void amu_fie_setup(const struct cpumask *cpus)
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 709a2dcf4c73..0a4ee12a98d5 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -351,4 +351,6 @@ static inline unsigned long
-topology_get_cpu_scale(int cpu)
+I think this solution works better on higher CPU counted systems. 
 
- void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+And I don't think it fully removes the issue. Just better than the original tho.
+Thinks can still go bad on this one too, just harder.
 
-+#define cap_scale(v, s)               ((v)*(s) >> SCHED_CAPACITY_SHIFT)
-+
- #endif /* _LINUX_TOPOLOGY_H */
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 6c3ad70e58b8..45796fccdc84 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -236,8 +236,6 @@ static inline int task_has_dl_policy(struct
-task_struct *p)
-        return dl_policy(p->policy);
- }
+Maybe we could add a fallback. Because the real concern is the selected CPU's state
+changes when we come to enqueue. If possible tho, I did not really test anything.
 
--#define cap_scale(v, s)               ((v)*(s) >> SCHED_CAPACITY_SHIFT)
--
- static inline void update_avg(u64 *avg, u64 sample)
- {
-        s64 diff = sample - *avg;
-
+Thanks,
+Kayra :>>>
