@@ -1,90 +1,89 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F7B755295D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32FE6534448
 	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:52:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789577531; cv=none; b=sMBkDG2QvKHKStks7FaCDErZFBg7UqWh5r9z+5XymCDG3ihLBndDkVmlREh5tjMp4iJqq50toRD4sYh063pNYTIvVb1+9wu4Numj5h2GRJOUgB5qqMCctv0BpGIkg0oqZqvQoUgUHELAb0Mg7Tt5gewTXAvi1Z56RxFeHcSW3rg=
+	t=1789577545; cv=none; b=G+TGEO09RNANprWA6L+x4OB8IUbsRKmZHlcJdWo/5xR875KYvsHRcB1U9kJ4KiD+SPV1EIi3ZbvgvNszgmYR6VkDCWY7AQSOdoyzT2Vau0drszNlfyT0gYQJUrAMN9DJxmGJEXnK9DdTyCnL01Hy9+PfSq7Az0Et+AiHz4j30zc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789577531; c=relaxed/simple;
-	bh=bFgK3ukjmtJNuGbfpgqx1xv8jQHyyObbaZVEZ2zRtq4=;
+	s=arc-20240116; t=1789577545; c=relaxed/simple;
+	bh=jlDHHiMVqeXgdpn1Zj7e0N2hLgqwzeWFJxceKYb+YHU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jurs1dnbBwutclkAHIxncvgEE8Pc3fxj/f9aN1nWDUAoRS3KzlFHjM8VMr02AHX6cTDjo/TDPNnSZNEEahlCIYOl/6G9fGzLKZq10kNgc+5+uZJyOKlMwnzv5mJe5LL0IJ+EoSY+ZUVDHutpHOAO1rShAr+9iICh3WkvdV3ux5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HgKHQg4X; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=VuCMQpkVuQmkjOAwenzLu58PuBlNHxOSyIWqywhA15Fw0VFbRq96r57JqZ07Dws4VUKvoLeiG0wiHlvIoxJK68y4Y+SKyEJHtNtjnqZVluTr8y9IIYl0gtOL22dMVqXkhOvQf6bpyOpnqPuddadgLtCt1oR5hP3HJUD/i+ghB4E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JcbHzxFv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HgKHQg4X"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB64F1F0089A
-	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:51:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JcbHzxFv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D01111F00A02
+	for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 16:51:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789577518;
-	bh=NUj0wKrqK9oBgtu2eiEakvgyfAimvxz1YG58g1rjVXs=;
+	s=k20260515; t=1789577509;
+	bh=jlDHHiMVqeXgdpn1Zj7e0N2hLgqwzeWFJxceKYb+YHU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=HgKHQg4XyoiOOq9VdXr0qbE6bjRbKV+vK7DjNai6xHkt0pxWHqwluksFyN2/n+A/B
-	 jgns7/Z3gl+R/zHxv7apxZAHwoSgoE2HaT8EiCArttge2B4fLo6arM2AEhYRbf8MHP
-	 kIXmEBRw5pXf8x3oO5BmbkU4SOFGnUjnQYpvguRHI0PfljXQPciZ8Ud9r6namrBc2K
-	 e2dXLgVN51X4zaDr3zMSqGUafvKK6HJH0Y98esiiE2MpCZw8ULFUB8Mho2YNJN3m6e
-	 L4bOSSgWlzUM8wh3E0jKfAgzwnr41rblWY3042CLw+YFR2iI7U12AzEvUaaBl413nl
-	 E6iTba2S9hIkg==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b899413537so1648388e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:51:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzslWoh/xzLs6Ezqas/BVbtWoZNcPdnhALMsYSZSz1NFK0+GZqbqYzI/bokvyGn7jAjvUzQTKoTEA==@vger.kernel.org
-X-Gm-Message-State: AFuF++kcQMp7gATUL7M5zb6luto/aLU4l/gp2wwh7VVo/wGZ7t7eAXR7
-	Wq258T6fqv5O8ZKSzM1BB+Q6tNhE2gLf2TYPg0R8eHqFxaxOZi17FgH9or0ZQ15aHYsEdtqfWCu
-	cL0huPrwcSNzHImkKQm0KgE/JwBTfGRo=
-X-Received: by 2002:a05:6512:1150:b0:5b6:183b:d204 with SMTP id
- 2adb3069b0e04-5b8b664dc85mr801099e87.43.1789577517184; Wed, 16 Sep 2026
- 09:51:57 -0700 (PDT)
+	b=JcbHzxFvgLrpPJkR5R3XBY3y2SfCcwhDFnSiLhJ1B+/JTtnxdxndb4zLLznpRuxMr
+	 zDUB6DlQP+4KRhUFQ8qZIwmbtMSg4Sa213btbd920xJW3yvf/Rn4Qzedge0V2JpjlX
+	 DSseYM02zkMboFVManwZ9pkz7gBcwpL3z/fAJjcC2l/MJBjBv12ZukFan7Y5adtLR5
+	 PKISREbVUR980BR6UCPR2TSmSQ7nhb1eCTbfCo2hB8HPqtX95CCZxk0cjc1OeNxXHC
+	 wHby+UM/xrpkpvxH7mvJSJwmMZRLimAjK/eOXdvW4CtjMIwx6V8jFLqWrsv0qByTdb
+	 TzMjmwn1jm1BA==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f15b78so1204099e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2026 09:51:49 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwNhoJYG2j5LSDU17LzwZ4FUHCQLPySeIlOKacSOTwOp5VmTJjkgih8ByG1oAukraovi2NUcrXy3Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++keVPWLujREi/qM+ULaZxT8GOXQsp39QhWWMnnxZ2aSscmo6a7T
+	8y5SF3+OKHH4lxcOvCh7Kp/kWoP51t8Lchk4OEuTVrNKP65gWg5saFsPBbJz4QtUNmvYk76raT/
+	wEC09DzKdgSJ2JqgQ/RqTUUhtwZCUkSI=
+X-Received: by 2002:a05:6512:3d10:b0:5b6:17b6:2224 with SMTP id
+ 2adb3069b0e04-5b8b665478emr1974764e87.23.1789577508492; Wed, 16 Sep 2026
+ 09:51:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260904115351.9356-1-hemanth.selam@gmail.com>
-In-Reply-To: <20260904115351.9356-1-hemanth.selam@gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 16 Sep 2026 18:50:36 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h6+uXD-qLAOA42Q6kqLhQ-Xc_a8iwA=nkGS1sfTdFPLw@mail.gmail.com>
-X-Gm-Features: AcwNN1X9_1qiQR8q_uoWcDj5LDai1SfsgUl76MJJL45-9NjAZsj2t15REp1Lq5w
-Message-ID: <CAJZ5v0h6+uXD-qLAOA42Q6kqLhQ-Xc_a8iwA=nkGS1sfTdFPLw@mail.gmail.com>
-Subject: Re: [PATCH] pm-graph: fix typo "hierachy" in comment
-To: Hemanth Selam <hemanth.selam@gmail.com>
-Cc: Todd E Brandt <todd.e.brandt@linux.intel.com>, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org
+References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-13-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-13-arnd@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Wed, 16 Sep 2026 18:51:35 +0200
+X-Gmail-Original-Message-ID: <CAD++jLm253spmn1Tq2Jekiw2Q9xD_HDQ+AFRgWovLyE=veAfhA@mail.gmail.com>
+X-Gm-Features: AcwNN1Xrn_ibUNrql-q0n8N3iTosx-ZSLrxjHuJr9HzfGfgIlGS2dfpxQ3q588w
+Message-ID: <CAD++jLm253spmn1Tq2Jekiw2Q9xD_HDQ+AFRgWovLyE=veAfhA@mail.gmail.com>
+Subject: Re: [PATCH 12/14] mfd: remove unused mcp-sa11x0/ucb1x00 driver
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
+	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Jonathan Cameron <jic23@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+	Pavel Machek <pavel@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, 
+	Support Opensource <support.opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org, 
+	linux-media@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, 
+	linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	llvm@lists.linux.dev
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 4, 2026 at 1:53=E2=80=AFPM Hemanth Selam <hemanth.selam@gmail.c=
-om> wrote:
->
-> Correct "hierachy" to "hierarchy", reported by scripts/checkpatch.pl usin=
-g
-> the misspelling list in scripts/spelling.txt.  Only touches comments, no
-> code changes.
->
-> Assisted-by: Cursor:claude-opus-5
-> Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
-> ---
->  tools/power/pm-graph/sleepgraph.py | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/tools/power/pm-graph/sleepgraph.py b/tools/power/pm-graph/sl=
-eepgraph.py
-> index f6d172254829..c8bc3bed3f5a 100755
-> --- a/tools/power/pm-graph/sleepgraph.py
-> +++ b/tools/power/pm-graph/sleepgraph.py
-> @@ -1448,7 +1448,7 @@ class DevProps:
->
->  # Class: DeviceNode
->  # Description:
-> -#       A container used to create a device hierachy, with a single root=
- node
-> +#       A container used to create a device hierarchy, with a single roo=
-t node
->  #       and a tree of child nodes. Used by Data.deviceTopology()
->  class DeviceNode:
->         def __init__(self, nodename, nodedepth):
-> --
+On Wed, Sep 9, 2026 at 3:24=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
+e:
 
-Applied as 7.4 material, thanks!
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The sa1100 platform has been removed, so these drivers are no longer
+> used anywhere.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+Reviewed-by: Linus Walleij <linusw@kernel.org>
+
+Yours,
+Linus Walleij
