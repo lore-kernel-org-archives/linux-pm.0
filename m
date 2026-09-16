@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25AE950EBEA;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75375511E9D;
 	Wed, 16 Sep 2026 14:23:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789568583; cv=none; b=gpaxfBV97c+sSTyqwg+5uz8cwBPzkU0Ja8g9TfkGHIOCV3G2URcgiJE58J3/hRsUOTVEdEir50ZNgT33Ob6E6tH8ojX2WDMymczDMFCCJAudrhzk49REEITPYvzgOmAhRtpKCEcIJ7wA31CyBL7YunBNezgmKMVE/SbrRj92u0E=
+	t=1789568583; cv=none; b=OSehsOyrfLN/U7jrLgFN9zmWBY3VvNsifxQhxTJrp8bYqBUh/ZFDSUywY8W0Yq4b/AOqPWd4ia79SzxZii495y1KkD5cNFg6NNiWD1eN3BbwKDz40JRaTe3YBQGxXXNDB/2P3TnKZyP+MUf6kjHF87hC5bCJh1j8e0aK8UaXd48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1789568583; c=relaxed/simple;
-	bh=hMjOLXi4WnOlJoO4+au9mXBLP0X78laGn5iNJX8n4Zo=;
+	bh=X7DSqOwmAcxIiCt2+nXcHu33pKG6YdQi8ZCCjwBSaI4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=RMjOiCaqfPS4tqpzfTKigmkXWCJ8fn5OWmzbyz4ycsZhGk2BPBLKmpW8wJJqzBkYMBPIgLQXaAGcqnDAgyDufYUQOiOhHgGjN015N8STJVgaaNrMnEz8jCjY3RsxB816p5xqZcCln09IIzueHeZyB06pbRSZ0IKnTcsSIUPLSH8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=exh7L9Zb; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=smampHzopXrkLgeaYcDFW9Q59TublNL6bO8iUM7moZ5hICphbFvaB4eOZKz4CKfy+C1jRckJ+Km5gDavAIwYLa6tDXyrwhiUkcnu2wQw/6D84+6ZSGLXamwGqJQ/vw00dsMt0LpfXDEUDf0PeQ4J95sN6+Jl5oSMAVZ1pik7HD8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c/svvv31; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="exh7L9Zb"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id F104CC2BCF7;
-	Wed, 16 Sep 2026 14:23:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c/svvv31"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 459F4C2BCB3;
+	Wed, 16 Sep 2026 14:23:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1789568583;
-	bh=hMjOLXi4WnOlJoO4+au9mXBLP0X78laGn5iNJX8n4Zo=;
+	bh=X7DSqOwmAcxIiCt2+nXcHu33pKG6YdQi8ZCCjwBSaI4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=exh7L9Zb79dR9rrCg7hb1NWT4eyNbFr9vvcvSbU0r3m4d+qVJQtQBwRW6CG0MwpMM
-	 t4aIPSsob8Fj9Ih3bsH5f3OurO+06DUSolAY/EkeROZ9Y8PqLFdP5/nBlG49Z0McjB
-	 16KmSZ8wZL+T8/3oIfZD0aMlLvml1MZSckHuupl4v9B5G54SsbkY4JmNolfxnK0gwF
-	 wC/7iyvtpdlT81j/obmGycEBE1Pk3VVnlEW6SIRAoZelHdtvb/0EEla1jWVE2wQTyP
-	 hgWuA8J9T693+CtWUH9OBOWIq0VHGK5DM6asmQ2YHUWer3M3rc7DKMBJT0c7zNMAbL
-	 KhvQ82Q//jG8A==
+	b=c/svvv31/3dySZzoA4DrnVbp+z/jBTQoUUeLDBF/WFqokVCT8GDLHO3kFB8ltC9w4
+	 G3wUf9M+3gV2fiuRQZcZUPuGu2I+ZmYzu0AJrykDg0PNg67RP7Z6MJ5uAgCU0EXv7R
+	 CqIFv/HUMMRtI8Md+yy2geZ8NHtRbXtDSoEgeOXcYyRMwtwYYVy8g9Ru11fkwI+B19
+	 aCy1I03xWTAehMf/vjxr/qL9eHUfia2CAlr4LD0Cx4q1gLLVPp91jKOP8mDlQk7hZV
+	 v7cs4GcNFrYtqAzJSb4/MrRat6qXgxDvBVjzuo5HbSCegk47PR9/fdbvr6OMq1T3nn
+	 jHEJtbHiMvoqg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA9BAC982C5;
-	Wed, 16 Sep 2026 14:23:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 314D1C982C4;
+	Wed, 16 Sep 2026 14:23:03 +0000 (UTC)
 From: Muzaffer Kadir via B4 Relay <devnull+muzafferkadir.mainlining.org@kernel.org>
-Date: Wed, 16 Sep 2026 17:22:13 +0300
-Subject: [PATCH v2 08/19] dt-bindings: iommu: qcom,iommu: Add MSM8952 IOMMU
- to SMMUv2 compatibles
+Date: Wed, 16 Sep 2026 17:22:16 +0300
+Subject: [PATCH v2 11/19] dt-bindings: firmware: qcom,scm: Document MSM8952
+ SCM
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260916-msm8952-initial-support-v2-8-798c2602dde1@mainlining.org>
+Message-Id: <20260916-msm8952-initial-support-v2-11-798c2602dde1@mainlining.org>
 References: <20260916-msm8952-initial-support-v2-0-798c2602dde1@mainlining.org>
 In-Reply-To: <20260916-msm8952-initial-support-v2-0-798c2602dde1@mainlining.org>
 To: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
@@ -77,11 +77,11 @@ Cc: David Heidelberg <david@ixit.cz>, Dang Huynh <danct12@riseup.net>,
  linux-pm@vger.kernel.org, linux-input@vger.kernel.org, 
  Muzaffer Kadir <muzafferkadir@mainlining.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789568579; l=899;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789568579; l=1326;
  i=muzafferkadir@mainlining.org; s=20260816; h=from:subject:message-id;
- bh=0sCdnuV2zL4qFCD91/lsOBAdGEuX14F5OA12mUrh81M=;
- b=oFxl89oUNz8qaoWEgvuoc6laenhDGi6BKA8lf1a2aze3zbyapLqXz+jbo40QKIBhptgFNp883
- e7RORtmNyBkC05K1uBQvZhlT9PwYQfH2lfijh7nMEKUGHWdeCCGD8ap
+ bh=OEY+8HQ+THyf1oFhHKgv6oxkhWtr6anAPLLMMsQ2ZwA=;
+ b=JFQmYzTMCmZs6MQrVAm2QJblVknQeWsTRHYbbIIBess8d9dffHU8hRrAwir0ji9NCJDNFQprD
+ BQXfCW7XdNzA88oF0kIkGQJ4o5fvzpGFyIjDhbJf72+S1VJhdlr2jDZ
 X-Developer-Key: i=muzafferkadir@mainlining.org; a=ed25519;
  pk=4zkv4suQ3cYcO4Z7CrV8JSSjEGLBGepUtvQCFjgnYIU=
 X-Endpoint-Received: by B4 Relay for muzafferkadir@mainlining.org/20260816
@@ -91,27 +91,41 @@ Reply-To: muzafferkadir@mainlining.org
 
 From: Muzaffer Kadir <muzafferkadir@mainlining.org>
 
-Add MSM8952 compatible string with "qcom,msm-iommu-v2" as fallback
-for the MSM8952 IOMMU which is compatible with Qualcomm's secure
-fw "SMMU v2" implementation.
+Document the scm compatible for msm8952 SoC.
 
 Signed-off-by: Muzaffer Kadir <muzafferkadir@mainlining.org>
 ---
- Documentation/devicetree/bindings/iommu/qcom,iommu.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/devicetree/bindings/firmware/qcom,scm.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml b/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-index 93a489025317..9952b9da9a6a 100644
---- a/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-+++ b/Documentation/devicetree/bindings/iommu/qcom,iommu.yaml
-@@ -27,6 +27,7 @@ properties:
-           - const: qcom,msm-iommu-v1
-       - items:
-           - enum:
-+              - qcom,msm8952-iommu
-               - qcom,msm8953-iommu
-               - qcom,msm8976-iommu
-           - const: qcom,msm-iommu-v2
+diff --git a/Documentation/devicetree/bindings/firmware/qcom,scm.yaml b/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
+index ecee5aef65a7..40a267c54b00 100644
+--- a/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
++++ b/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
+@@ -45,6 +45,7 @@ properties:
+           - qcom,scm-msm8660
+           - qcom,scm-msm8916
+           - qcom,scm-msm8937
++          - qcom,scm-msm8952
+           - qcom,scm-msm8953
+           - qcom,scm-msm8960
+           - qcom,scm-msm8974
+@@ -153,6 +154,7 @@ allOf:
+               - qcom,scm-msm8660
+               - qcom,scm-msm8916
+               - qcom,scm-msm8937
++              - qcom,scm-msm8952
+               - qcom,scm-msm8953
+               - qcom,scm-msm8960
+               - qcom,scm-msm8974
+@@ -199,6 +201,7 @@ allOf:
+               - qcom,scm-msm8226
+               - qcom,scm-msm8916
+               - qcom,scm-msm8937
++              - qcom,scm-msm8952
+               - qcom,scm-msm8953
+               - qcom,scm-msm8974
+               - qcom,scm-msm8976
 
 -- 
 2.55.0
