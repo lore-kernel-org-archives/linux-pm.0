@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id A475959C97E;
-	Wed, 16 Sep 2026 16:29:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CBC9959E351;
+	Wed, 16 Sep 2026 16:29:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789576181; cv=none; b=gb8UBR2kH6tyeT4E5W60X9VX44VgxWuXX6jpiIjpkO8tu0Tzr1nYVfTz6nblOt6Bw6Y3tNSJE0l+YjCjEzJFrDSSCEbs2agQYiOtmHYFt1cGrTZq0PnQbOrHY29WNh6aq0+xOzXLTU2x+7+feK0B/ugCR8j+gATMWQIYlHaM91E=
+	t=1789576184; cv=none; b=gk5YxF14YLCWPGNQm/fgil7TrJC5pBj3XaON6UCOYvklvArAO9X8JJP4ZeYQ1Mw+Pmtiiu46at6UvSSOeQ3sp3FwFrg93k30zadgTNfBgLJeESxBSGVoYqbRrCvLJuOdHXdMazioo62gA9CI3M6vD0ZLqUvtSX7V/qa+cnMmiPU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789576181; c=relaxed/simple;
-	bh=bmIyXRoJ+BQKAfKqFENYCPIr6JaM1S10ifAUu5Tu/L8=;
+	s=arc-20240116; t=1789576184; c=relaxed/simple;
+	bh=C5r7UerLoZLkSo0vz+Z/cEVRNM86eJxO5WWuwqyTrGs=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=OyUQtsts2+1souPmI3Yuxwh+hVB9zfNtW4OlmVE9KIJejavV0AQ09huItqkV4qDdq78wEMTLAB6D8xuCDBjwPpXw+hDdBXNKMvAA2tVwjdsaUm2GngcPAEDMvP80lK6xU+0wvgVvK8pnokhDiFBgsLgY5fJjGXGOsbW4gkOJLfI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=CAN3RRzg; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=p7+n+Rwks362rBrCEQCpM8j7yNQylHsVKohMgR0L1lTSfDW0tU3vYw+N8ONEXab7L8GWvp6yFr+QJxay0wGl6DF9QhTi7b2gyv1qgRXFIU93qlcfrxMiI69E5VsAW11pSg4hAADQGQeOSJ1GrXKP/oR2m5GglHWT22yrFe9ULWE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=euaOYSI9; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="CAN3RRzg"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="euaOYSI9"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2EF0E1EDB;
-	Wed, 16 Sep 2026 09:29:27 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8B2131E32;
+	Wed, 16 Sep 2026 09:29:35 -0700 (PDT)
 Received: from e127648.carmbridge.arm.com (unknown [10.0.129.72])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DC0D73F7B4;
-	Wed, 16 Sep 2026 09:29:27 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 878463F7B4;
+	Wed, 16 Sep 2026 09:29:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789576170; bh=bmIyXRoJ+BQKAfKqFENYCPIr6JaM1S10ifAUu5Tu/L8=;
+	t=1789576179; bh=C5r7UerLoZLkSo0vz+Z/cEVRNM86eJxO5WWuwqyTrGs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=CAN3RRzgQbI/o4r/Ml+5eksBCE8BPYZKf4XHhsSIwi0lVBVKCdmacdLCt3fLQUIlN
-	 nnuvg72xiVZIJSF3cLvt11wTEn7DF0pMkvF8nZRUHzfI2idZCT4FHQnNKV6ieOykq3
-	 +xt3hY0naQrCio0nv94OYj53qssFBNJlriDGpsHc=
+	b=euaOYSI9oeG8JPNvzeOyyNBjb5lhfezk77Mz9WCbuSEhbTITdJyyaZ0kwJiGS7CQE
+	 QkniTdtiSCKvteE59ROSTykSRnENWR35I6yU5XZ8b4KFL5tRjE8kDzUMZO6c5zpx8T
+	 cDBoy7K6ISje4oXAIOeRjSaSUCWE4Dh0EIRWNh+Q=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -40,10 +40,11 @@ Cc: linux-pm@vger.kernel.org,
 	Sudeep Holla <sudeep.holla@arm.com>,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH v7 13/20] ACPI: CPPC: Validate SystemIO overlaps across processors
-Date: Wed, 16 Sep 2026 17:27:58 +0100
-Message-Id: <20260916162805.1039247-14-christian.loehle@arm.com>
+	Christian Loehle <christian.loehle@arm.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v7 16/20] ACPI: CPPC: Validate FFH register fields before hardware access
+Date: Wed, 16 Sep 2026 17:28:01 +0100
+Message-Id: <20260916162805.1039247-17-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260916162805.1039247-1-christian.loehle@arm.com>
 References: <20260916162805.1039247-1-christian.loehle@arm.com>
@@ -55,167 +56,162 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-System I/O port space is global, but the overlap check only compares
-registers within one _CPC package. Whole-width accesses from different
-processors can therefore target partially overlapping port ranges and
-clobber each other.
+The x86 CPPC FFH accessors construct masks and shift values using the
+firmware's Bit Width and Bit Offset without checking that the field fits
+in an MSR. A zero-width field or a field extending beyond bit 63 can
+therefore cause an invalid shift. The safe MSR accessors only handle an
+access fault, not invalid field arithmetic after a successful read.
 
-Extend the physical interval registry to SystemIO and remove the
-redundant same-descriptor overlap pass, now covered by the registry.
-Retain the direction-aware policy from the SystemIO layout check: a
-read-only entry may alias a write-only control, but not a readable control
-whose readback would then select the wrong register. Also permit read-only
-overlaps and exact full-width aliases of the same logical writable CPPC
-entry. Reject other overlaps involving a writable entry.
+Also, the 64-bit GAS address is implicitly narrowed to the 32-bit MSR
+number. A descriptor with nonzero upper address bits can access a different
+MSR from the one described by firmware.
 
-Fixes: a2c8f92bea5f ("ACPI: CPPC: Implement support for SystemIO registers")
+The arm64 AMU counter readers have the same unchecked field arithmetic.
+Validate the field bounds before reading a counter, including both
+descriptors in the paired counter path.
+
+Dispatch FFH accesses before decoding the GAS Access Size in the common
+read and write paths. Otherwise, a large access_width can trigger an
+invalid shift in GET_BIT_WIDTH() before the architecture validates its
+register. That field has architecture-specific FFH semantics and is not
+needed by the generic memory/port accessor on this path.
+
+Validate x86 MSR addresses and share the field-bounds checks between
+related accessors within each architecture.
+
+Fixes: a6cbcdd5ab5f ("ACPI / CPPC: Add support for functional fixed hardware address")
+Fixes: 68c5debcc06d ("arm64: implement CPPC FFH support using AMUs")
+Fixes: f489c948028b ("ACPI: CPPC: Fix access width used for PCC registers")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 77 +++++++++-------------------------------
- 1 file changed, 16 insertions(+), 61 deletions(-)
+ arch/arm64/kernel/topology.c | 12 +++++++++++-
+ arch/x86/kernel/acpi/cppc.c  | 14 ++++++++++++++
+ drivers/acpi/cppc_acpi.c     | 10 ++++++----
+ 3 files changed, 31 insertions(+), 5 deletions(-)
 
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index d28438f8b83f..2c030e78d5e4 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -470,6 +470,12 @@ static void amu_read_core_const_ctrs(void *val)
+ 	cpu_read_corecnt(&ctrs->corecnt);
+ }
+ 
++static bool cpc_ffh_reg_valid(const struct cpc_reg *reg)
++{
++	return reg->bit_width && reg->bit_width <= 64 &&
++	       reg->bit_offset <= 64 - reg->bit_width;
++}
++
+ static u64 cpc_ffh_extract_bits(const struct cpc_reg *reg, u64 val)
+ {
+ 	val &= GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
+@@ -506,7 +512,8 @@ int cpc_read_ffh_fb_ctrs(int cpu, struct cpc_reg *reg1, u64 *val1,
+ 	struct amu_ffh_ctrs ctrs;
+ 	int ret;
+ 
+-	if (!is_amu_ctr_reg(reg1) || !is_amu_ctr_reg(reg2))
++	if (!is_amu_ctr_reg(reg1) || !is_amu_ctr_reg(reg2) ||
++	    !cpc_ffh_reg_valid(reg1) || !cpc_ffh_reg_valid(reg2))
+ 		return -EINVAL;
+ 
+ 	ret = counters_read_on_cpu(cpu, amu_read_core_const_ctrs, &ctrs);
+@@ -530,6 +537,9 @@ int cpc_read_ffh(int cpu, struct cpc_reg *reg, u64 *val)
+ {
+ 	int ret = -EOPNOTSUPP;
+ 
++	if (!cpc_ffh_reg_valid(reg))
++		return -EINVAL;
++
+ 	switch ((u64)reg->address) {
+ 	case CPC_FFH_CTR_CORE:
+ 		ret = counters_read_on_cpu(cpu, cpu_read_corecnt, val);
+diff --git a/arch/x86/kernel/acpi/cppc.c b/arch/x86/kernel/acpi/cppc.c
+index bbade0da5130..d2185b7a2030 100644
+--- a/arch/x86/kernel/acpi/cppc.c
++++ b/arch/x86/kernel/acpi/cppc.c
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <linux/bitfield.h>
++#include <linux/limits.h>
+ 
+ #include <acpi/cppc_acpi.h>
+ #include <asm/msr.h>
+@@ -45,10 +46,20 @@ bool cpc_ffh_supported(void)
+ 	return true;
+ }
+ 
++static bool cpc_ffh_reg_valid(const struct cpc_reg *reg)
++{
++	return reg->address <= U32_MAX && reg->bit_width &&
++	       reg->bit_width <= 64 &&
++	       reg->bit_offset <= 64 - reg->bit_width;
++}
++
+ int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
+ {
+ 	int err;
+ 
++	if (!cpc_ffh_reg_valid(reg))
++		return -EINVAL;
++
+ 	err = rdmsrq_safe_on_cpu(cpunum, reg->address, val);
+ 	if (!err) {
+ 		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
+@@ -65,6 +76,9 @@ int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
+ 	u64 rd_val;
+ 	int err;
+ 
++	if (!cpc_ffh_reg_valid(reg))
++		return -EINVAL;
++
+ 	err = rdmsrq_safe_on_cpu(cpunum, reg->address, &rd_val);
+ 	if (!err) {
+ 		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index fb9766f2cdd8..b1c29a4e5d8e 100644
+index 0e218f2be0fe..96a94df24231 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -143,6 +143,7 @@ INTERVAL_TREE_DEFINE(struct cpc_non_mmio_node, rb, u64, subtree_last,
- 		     cpc_non_mmio_itree)
- 
- static struct rb_root_cached cpc_pcc_trees[MAX_PCC_SUBSPACES];
-+static struct rb_root_cached cpc_sysio_tree = RB_ROOT_CACHED;
- static DEFINE_MUTEX(cpc_non_mmio_lock);
- 
- static struct cpc_sysmem_node *cpc_sysmem_first(u64 start, u64 last)
-@@ -625,59 +626,12 @@ static bool cpc_non_mmio_overlap_conflicts(u8 space_id, bool a_writable,
- 	return a_writable || b_writable;
- }
- 
--static int cpc_validate_non_mmio_overlaps(struct cpc_desc *cpc_desc,
--					  u8 space_id, const char *name)
--{
--	unsigned int i, j;
--
--	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
--		struct cpc_register_resource *a = &cpc_desc->cpc_regs[i];
--		const struct cpc_reg *a_gas;
--		u64 a_size;
--
--		if (!CPC_SUPPORTED(a) || a->type != ACPI_TYPE_BUFFER ||
--		    a->cpc_entry.reg.space_id != space_id)
--			continue;
--
--		a_gas = &a->cpc_entry.reg;
--		a_size = cpc_non_mmio_access_size(a);
--		for (j = i + 1; j < cpc_desc->num_entries - 2; j++) {
--			struct cpc_register_resource *b = &cpc_desc->cpc_regs[j];
--			const struct cpc_reg *b_gas;
--			bool a_writable, b_writable;
--			u64 b_size;
--
--			if (!CPC_SUPPORTED(b) || b->type != ACPI_TYPE_BUFFER ||
--			    b->cpc_entry.reg.space_id != space_id)
--				continue;
--
--			b_gas = &b->cpc_entry.reg;
--			b_size = cpc_non_mmio_access_size(b);
--			a_writable = cpc_reg_is_writable(i);
--			b_writable = cpc_reg_is_writable(j);
--			if (!cpc_non_mmio_overlap_conflicts(space_id,
--							    a_writable, b_writable,
--							    cpc_reg_is_write_only(cpc_desc, i),
--							    cpc_reg_is_write_only(cpc_desc, j)))
--				continue;
--			if (a_gas->address < b_gas->address ?
--			    b_gas->address - a_gas->address >= a_size :
--			    a_gas->address - b_gas->address >= b_size)
--				continue;
--
--			pr_err("CPU%d: overlapping writable %s _CPC registers %u and %u\n",
--			       cpc_desc->cpu_id, name, i, j);
--			return -EINVAL;
--		}
--	}
--
--	return 0;
--}
--
- static struct rb_root_cached *cpc_non_mmio_tree(u8 space_id, u8 pcc_ss_id)
- {
- 	if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM)
- 		return &cpc_pcc_trees[pcc_ss_id];
-+	if (space_id == ACPI_ADR_SPACE_SYSTEM_IO)
-+		return &cpc_sysio_tree;
- 	return NULL;
- }
- 
-@@ -688,14 +642,18 @@ static int cpc_validate_non_mmio_pair(const struct cpc_non_mmio_node *a,
- 	bool b_writable = cpc_reg_is_writable(b->reg_idx);
- 	const char *name;
- 
--	if (!a_writable && !b_writable)
-+	if (!cpc_non_mmio_overlap_conflicts(a->space_id, a_writable,
-+					    b_writable,
-+					    cpc_reg_is_write_only(a->desc, a->reg_idx),
-+					    cpc_reg_is_write_only(b->desc, b->reg_idx)))
- 		return 0;
- 
- 	if (a->reg_idx == b->reg_idx && a->start == b->start &&
- 	    a->last == b->last)
- 		return 0;
- 
--	name = "PCC";
-+	name = a->space_id == ACPI_ADR_SPACE_PLATFORM_COMM ?
-+	       "PCC" : "SystemIO";
- 	pr_err("CPU%d: %s _CPC register %u conflicts with CPU%d register %u\n",
- 	       a->desc->cpu_id, name, a->reg_idx, b->desc->cpu_id,
- 	       b->reg_idx);
-@@ -739,7 +697,8 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
- 		if (!CPC_SUPPORTED(reg) || reg->type != ACPI_TYPE_BUFFER)
- 			continue;
- 		space_id = reg->cpc_entry.reg.space_id;
--		if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
-+		if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM ||
-+		    space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
- 			found = true;
- 			break;
- 		}
-@@ -766,10 +725,11 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
- 			continue;
- 
- 		space_id = reg->cpc_entry.reg.space_id;
--		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM)
-+		if (space_id != ACPI_ADR_SPACE_PLATFORM_COMM &&
-+		    space_id != ACPI_ADR_SPACE_SYSTEM_IO)
- 			continue;
- 
--		if (pcc_ss_id < 0) {
-+		if (space_id == ACPI_ADR_SPACE_PLATFORM_COMM && pcc_ss_id < 0) {
- 			ret = -EINVAL;
- 			goto out_unregister;
- 		}
-@@ -781,7 +741,8 @@ static int cpc_register_non_mmio_desc(struct cpc_desc *cpc_desc,
- 		node->desc = cpc_desc;
- 		node->reg_idx = i;
- 		node->space_id = space_id;
--		node->pcc_ss_id = pcc_ss_id;
-+		node->pcc_ss_id = space_id == ACPI_ADR_SPACE_PLATFORM_COMM ?
-+				      pcc_ss_id : 0;
- 		tree = cpc_non_mmio_tree(space_id, node->pcc_ss_id);
- 
- 		match = cpc_non_mmio_itree_iter_first(tree, node->start,
-@@ -2052,12 +2013,6 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 			goto out_free;
+@@ -2446,6 +2446,9 @@ static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
  	}
  
--	ret = cpc_validate_non_mmio_overlaps(cpc_ptr,
--					     ACPI_ADR_SPACE_SYSTEM_IO,
--					     "SystemIO");
--	if (ret)
--		goto out_free;
--
- 	ret = cpc_validate_bound_controls(cpc_ptr);
- 	if (ret)
- 		goto out_free;
+ 	*val = 0;
++	if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
++		return cpc_read_ffh(cpu, reg, val);
++
+ 	size = GET_BIT_WIDTH(reg);
+ 
+ 	if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
+@@ -2490,8 +2493,6 @@ static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
+ 		return 0;
+ 	} else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
+ 		vaddr = reg_res->sys_mem_vaddr;
+-	else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
+-		return cpc_read_ffh(cpu, reg, val);
+ 	else
+ 		return acpi_os_read_memory((acpi_physical_address)reg->address,
+ 				val, size);
+@@ -2538,6 +2539,9 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+ 		return -EOPNOTSUPP;
+ 
+ 	reg = &reg_res->cpc_entry.reg;
++	if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
++		return cpc_write_ffh(cpu, reg, val);
++
+ 	size = GET_BIT_WIDTH(reg);
+ 
+ 	if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
+@@ -2581,8 +2585,6 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+ 		return 0;
+ 	} else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
+ 		vaddr = reg_res->sys_mem_vaddr;
+-	else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
+-		return cpc_write_ffh(cpu, reg, val);
+ 	else
+ 		return acpi_os_write_memory((acpi_physical_address)reg->address,
+ 				val, size);
 -- 
 2.34.1
 
