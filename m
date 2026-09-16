@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0496534451;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D249F5335B1;
 	Wed, 16 Sep 2026 15:33:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789572784; cv=none; b=eBJCbkAnF6NbYGz3n+65RjSToWwT4Gq1FE8fGiMEA+OVcbLyTbdIutpUWjOcJUjL9TQAotd4wZ9twPoNkBi5jFNjpSZqsu3lw+FJnQmB2EGkDf6X0GJUcqO6tYyJtMw/NWMR5VOhI6ixWkD18UxlXoggdWqkNC+ESI83Ggm9TGI=
+	t=1789572783; cv=none; b=XH0xvcN347eq4lAgo0H8AtJNlapxJLPKdkV1O2AYN8DvaRvGOXetOp6+zd8Wg5U4P7P/OBbtLFY4hyQEdT+r/fVUspmlUND892lX+9ATE/CUdx/NdQuqHh2IlQtN09i4GEIr8smlBK5tVXvqPdD0giW6YKIbcgtgsTwz7RpFLYw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789572784; c=relaxed/simple;
-	bh=771JC9SaugQiOViBqH/Lc/59cdvMbbALFxi9YUaZ6CY=;
+	s=arc-20240116; t=1789572783; c=relaxed/simple;
+	bh=oOYWMk2LVEaQRtvan2JCNsaxoT2Nouke3BGkUNIP4+8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TJf7XsWAXfUdVIOv5Ktiv5f+EgwuwGoWA3GpO9li1OUf127f82pKW9iW4LHhjXtySzoe7E96gBzxRXcDaPYRwbAVlzjGgIQdcScxKlmfYC/9H/EZoCPWxhxiH3lOK0dcE+JgXx7tB6Ho546VIAB8pMH+mALbTv+99Fu9jp5e2Qs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rlfQKsjE; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=THo7UMbteoALLhNZUEiFQukGibMafHLcqBiDslqHdpt/5pbPST4SPg6MeVGdiEuZB2VNhOBUfeKA/Lw1p4oH/WMqejPedI4kieKnN8qc3OFXcwIzKVVFbNiqM3SeO3Df46L9peLYct+kqAk8SDI7If+EZnWOm/g3V/2nUMiWfi0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VWNvqKkU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rlfQKsjE"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 27BD2C4AF11;
-	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VWNvqKkU"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 18E22C32782;
+	Wed, 16 Sep 2026 15:33:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1789572782;
-	bh=771JC9SaugQiOViBqH/Lc/59cdvMbbALFxi9YUaZ6CY=;
+	s=k20201202; t=1789572781;
+	bh=oOYWMk2LVEaQRtvan2JCNsaxoT2Nouke3BGkUNIP4+8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=rlfQKsjE+9FxfiI9+L/6Rp9mAh/TnfckzZRDZ/zJ7Ab0MlQVnZeBDA11XGmoB6SMn
-	 ddvdWjMHWl/PazJP58XunuxnxnwRIC7U5RbmIRW4slh1y/8viK9wP30Pr90lMndfOM
-	 nSJRd2HvPE5A4qroQasnn3ryUKk5ekxsLLiNeZ5O9gMQZYQwx4QHhZuj2YF5K6yRl9
-	 50TGtQGI9IwzC3BbOQu5qdN8z/f7Ir1We+wX1sIsXgbaa9O5BHOaZUm1H3ISkNxBlR
-	 +BCQphcbaPTEmEH1pXeesCFSNYFVuEJow7A3HkZZYGns66ztUkf6nUfKZX0zQDDM2O
-	 Nqsgqhc40B4vQ==
+	b=VWNvqKkUSj2TPWtIQWHubh2d831P98yK/aoPD0IW1KJLc6dLCJjKr3Njmjxl37Rsg
+	 OtvlSgcrxcl0JoUVrMkhMr77ORbx9scXzGQScNN8PYrOxJD+tCIegmS3K8gQ9h9Rht
+	 XSp9V724qfOyyhOUxj2GM8PsjvLnSC0co9QuCVEx3Alp+17fkiZPAhHY6s/YcWFce4
+	 TSWBMtpwZ4pEXW+eoDR1LSUoYTtBeJT8V6L0JVILRRpB1xJPe4xAIVSMP2Kgmr75P8
+	 6iETRvT4f/b1OsixMOHlIC0YZ8eAjLSq+0Z/b+BeglXfjTnoc2rqLclMcwleENA3aP
+	 Bx8Gr6ZHe682Q==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09EEEC982CD;
-	Wed, 16 Sep 2026 15:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0254FC982C4;
+	Wed, 16 Sep 2026 15:33:01 +0000 (UTC)
 From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Wed, 16 Sep 2026 09:33:17 -0600
-Subject: [PATCH v10 25/38] dyndbg: detect class_id reservation conflicts
+Date: Wed, 16 Sep 2026 09:33:08 -0600
+Subject: [PATCH v10 16/38] dyndbg: tighten fn-sig of
+ ddebug_apply_class_bitmap
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260916-dd-cmap-part2-clean-v10-25-af4cf4767707@gmail.com>
+Message-Id: <20260916-dd-cmap-part2-clean-v10-16-af4cf4767707@gmail.com>
 References: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
 In-Reply-To: <20260916-dd-cmap-part2-clean-v10-0-af4cf4767707@gmail.com>
 To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
@@ -65,11 +66,11 @@ Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
  Jim Cromie <jim.cromie@gmail.com>, 
  Louis Chauvet <louis.chauvet@bootlin.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=7209;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789572777; l=2921;
  i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=xxABDWJkgFABEIsF2TNys/tSi7oHKA9H1Gdoz5kwLhQ=;
- b=wEv99KyebWPbXPtoKYkvDQRhuVj7Mt81+U6MteOlt7sHUF/VtvIq5aiQyQcflmm4sYIie+gWS
- xgA+6iDy1G6ARtZLgUx6SiBx4+hJUUUTnXqys6kFicc59gpWuPIymy0
+ bh=41pLOEJPgdOE2+A/PK3jUZtX6lSeZIg8aahqJw9n64I=;
+ b=Jw+nePT5RjSUaMe74vByImx17OJdtKDtFVMlC9PV7h71yIBbxPKZniSzJyF7LV4ZIU2IgLBch
+ wh+PMWgD+jbArWApRs+32jAxYL/Z4LN+muCPmh4HO8tF8iGd25JleXi
 X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
  pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
 X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
@@ -79,221 +80,78 @@ Reply-To: jim.cromie@gmail.com
 
 From: Jim Cromie <jim.cromie@gmail.com>
 
-If a module _DEFINEs 2 or more classmaps, it must devise them to share
-the per-module 0..62 class-id space; ie their respective base,+length
-reservations cannot overlap.
-
-To detect conflicts at modprobe, add ddebug_class_range_overlap(),
-call it from ddebug_add_module(), and WARN and return -EINVAL when
-they're detected.
-
-This insures that class_id -> classname lookup has just 1 answer, so
-the 1st-found search in find-class-name works properly.
-
-test_dynamic_debug.c:
-
-If built with -DFORCE_CLASSID_CONFLICT, the test-modules invoke 2
-conflicting DYNAMIC_DEBUG_CLASSMAP_DEFINE() declarations, into parent
-and the _submod.  These conflict with one of the good ones in the
-parent (D2_CORE..etc), causing the modprobe(s) to WARN and fail.
+old_bits arg is currently a pointer to the input bits, but this could
+allow inadvertent changes to the input by the fn.  Disallow this.
+And constify new_bits while here.
 
 Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
 Reviewed-by: Louis Chauvet <louis.chauvet@bootlin.com>
 ---
-v9:
-. make ddebug_add_module() failure non-fatal during dynamic_debug_init(),
-  logging warning and continuing instead of tearing down all tables kernel-wide.
-v2: RvB after SoB
-
-old-v9 - fix WARN() by adding new 1st arg 1.
-old-v12 - drop maybe_unused on range-overlap fn
+v2: move RvB after SoB
 ---
- lib/dynamic_debug.c      | 64 +++++++++++++++++++++++++++---------------------
- lib/test_dynamic_debug.c |  8 ++++++
- 2 files changed, 44 insertions(+), 28 deletions(-)
+ lib/dynamic_debug.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
-index 566c3860d7bf..7736fb3d3b79 100644
+index 2b755f18344b..9d3e3cad8056 100644
 --- a/lib/dynamic_debug.c
 +++ b/lib/dynamic_debug.c
-@@ -1101,18 +1101,19 @@ static void *ddebug_proc_next(struct seq_file *m, void *p, loff_t *pos)
- 	return dp;
- }
+@@ -620,7 +620,8 @@ static int ddebug_exec_queries(char *query, const char *modname)
  
--static bool ddebug_class_in_range(const int class_id, const struct ddebug_class_map *map)
-+static bool ddebug_class_map_in_range(const int class_id, const struct ddebug_class_map *map)
+ /* apply a new class-param setting */
+ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+-				     unsigned long *new_bits, unsigned long *old_bits,
++				     const unsigned long *new_bits,
++				     const unsigned long old_bits,
+ 				     const char *query_modname)
  {
-+	if (!map)
-+		return false;
- 	return (class_id >= map->base &&
- 		class_id < map->base + map->length);
+ #define QUERY_SIZE 128
+@@ -629,12 +630,12 @@ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+ 	int matches = 0;
+ 	int bi, ct;
+ 
+-	if (*new_bits != *old_bits)
++	if (*new_bits != old_bits)
+ 		v2pr_info("apply bitmap: 0x%lx to: 0x%lx for %s\n", *new_bits,
+-			  *old_bits, query_modname ?: "'*'");
++			  old_bits, query_modname ?: "'*'");
+ 
+ 	for (bi = 0; bi < map->length; bi++) {
+-		if (test_bit(bi, new_bits) == test_bit(bi, old_bits))
++		if (test_bit(bi, new_bits) == test_bit(bi, &old_bits))
+ 			continue;
+ 
+ 		snprintf(query, QUERY_SIZE, "class %s %c%s", map->class_names[bi],
+@@ -646,9 +647,9 @@ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+ 		v2pr_info("bit_%d: %d matches on class: %s -> 0x%lx\n", bi,
+ 			  ct, map->class_names[bi], *new_bits);
+ 	}
+-	if (*new_bits != *old_bits)
++	if (*new_bits != old_bits)
+ 		v2pr_info("applied bitmap: 0x%lx to: 0x%lx for %s\n", *new_bits,
+-			  *old_bits, query_modname ?: "'*'");
++			  old_bits, query_modname ?: "'*'");
+ 
+ 	return matches;
  }
- 
--static bool ddebug_user_class_in_range(const int class_id, const struct ddebug_class_user *cli)
-+static bool ddebug_class_user_in_range(const int class_id, const struct ddebug_class_user *user)
- {
--	if (!cli || !cli->map)
-+	if (!user)
- 		return false;
--	int base = cli->map->base + cli->offset;
--	return (class_id >= base && class_id < base + cli->map->length);
-+	return ddebug_class_map_in_range(class_id - user->offset, user->map);
- }
- 
- static const char *ddebug_class_name(struct _ddebug_info *di, struct _ddebug *dp)
-@@ -1122,11 +1123,11 @@ static const char *ddebug_class_name(struct _ddebug_info *di, struct _ddebug *dp
- 	int i;
- 
- 	for_subvec(i, map, di, maps)
--		if (ddebug_class_in_range(dp->class_id, map))
-+		if (ddebug_class_map_in_range(dp->class_id, map))
- 			return map->class_names[dp->class_id - map->base];
- 
- 	for_subvec(i, cli, di, users)
--		if (ddebug_user_class_in_range(dp->class_id, cli))
-+		if (ddebug_class_user_in_range(dp->class_id, cli))
- 			return cli->map->class_names[dp->class_id - cli->map->base - cli->offset];
- 
- 	return NULL;
-@@ -1372,6 +1373,20 @@ static void ddebug_apply_class_users(const struct _ddebug_info *di)
- 		__di->_vec.start = __start;				\
- })
- 
-+static int ddebug_class_range_overlap(struct ddebug_class_map *cm, u64 *reserved_ids)
-+{
-+	u64 range = (((1ULL << cm->length) - 1) << cm->base);
-+
-+	if (range & *reserved_ids) {
-+		pr_err("[%d..%d] on %s conflicts with %llx\n", cm->base,
-+		       cm->base + cm->length - 1, cm->class_names[0],
-+		       *reserved_ids);
-+		return -EINVAL;
-+	}
-+	*reserved_ids |= range;
-+	return 0;
-+}
-+
- /*
-  * Allocate a new ddebug_table for the given module
-  * and add it to the global list.
-@@ -1381,6 +1396,7 @@ static int ddebug_add_module(struct _ddebug_info *di)
- 	struct ddebug_table *dt;
- 	struct ddebug_class_map *cm;
- 	struct ddebug_class_user *cli;
-+	u64 reserved_ids = 0;
- 	int i;
- 
- 	if (!di->descs.len)
-@@ -1412,16 +1428,24 @@ static int ddebug_add_module(struct _ddebug_info *di)
- 	dd_set_module_subrange(i, cm, &dt->info, maps);
- 	dd_set_module_subrange(i, cli, &dt->info, users);
- 
-+	/* insure 2+ classmaps share the per-module 0..62 class_id space */
-+	for_subvec(i, cm, &dt->info, maps)
-+		if (ddebug_class_range_overlap(cm, &reserved_ids))
-+			goto cleanup;
-+
- 	mutex_lock(&ddebug_lock);
- 	list_add_tail(&dt->link, &ddebug_tables);
- 	mutex_unlock(&ddebug_lock);
--
- 	if (dt->info.users.len)
- 		ddebug_apply_class_users(&dt->info);
- 
- 	vpr_info("%3u debug prints in module %s\n",
- 		 dt->info.descs.len, dt->info.mod_name);
- 	return 0;
-+cleanup:
-+	WARN_ONCE(1, "dyndbg multi-classmap conflict in %s\n", di->mod_name);
-+	kfree(dt);
-+	return -EINVAL;
- }
- 
- /* helper for ddebug_dyndbg_(boot|module)_param_cb */
-@@ -1464,14 +1488,14 @@ int ddebug_dyndbg_module_param_cb(char *param, char *val, const char *module)
- 	return ddebug_dyndbg_param_cb(param, val, module, -ENOENT);
- }
- 
-+#ifdef CONFIG_MODULES
-+
- static void ddebug_table_free(struct ddebug_table *dt)
- {
- 	list_del_init(&dt->link);
- 	kfree(dt);
- }
- 
--#ifdef CONFIG_MODULES
--
- /*
-  * Called in response to a module being unloaded.  Removes
-  * any ddebug_table's which point at the module.
-@@ -1523,18 +1547,6 @@ static struct notifier_block ddebug_module_nb = {
- 
- #endif /* CONFIG_MODULES */
- 
--static void ddebug_remove_all_tables(void)
--{
--	mutex_lock(&ddebug_lock);
--	while (!list_empty(&ddebug_tables)) {
--		struct ddebug_table *dt = list_entry(ddebug_tables.next,
--						     struct ddebug_table,
--						     link);
--		ddebug_table_free(dt);
--	}
--	mutex_unlock(&ddebug_lock);
--}
--
- static __initdata int ddebug_init_success;
- 
- static int __init dynamic_debug_init_control(void)
-@@ -1605,7 +1617,7 @@ static int __init dynamic_debug_init(void)
- 			di.mod_name = modname;
- 			ret = ddebug_add_module(&di);
- 			if (ret)
--				goto out_err;
-+				pr_warn("failed to add built-in module %s: %d\n", modname, ret);
- 
- 			mod_ct++;
- 
-@@ -1620,7 +1632,7 @@ static int __init dynamic_debug_init(void)
- 	di.mod_name = modname;
- 	ret = ddebug_add_module(&di);
- 	if (ret)
--		goto out_err;
-+		pr_warn("failed to add built-in module %s: %d\n", modname, ret);
- 
- 	mod_ct++;
- 
-@@ -1645,10 +1657,6 @@ static int __init dynamic_debug_init(void)
- 		   0, 0, 0, NULL, &ddebug_dyndbg_boot_param_cb);
- 	kfree(cmdline);
- 	return 0;
--
--out_err:
--	ddebug_remove_all_tables();
--	return 0;
- }
- /* Allow early initialization for boot messages via boot param */
- early_initcall(dynamic_debug_init);
-diff --git a/lib/test_dynamic_debug.c b/lib/test_dynamic_debug.c
-index 34e51996aa20..3a69cc3cae6d 100644
---- a/lib/test_dynamic_debug.c
-+++ b/lib/test_dynamic_debug.c
-@@ -128,6 +128,14 @@ DYNAMIC_DEBUG_CLASSMAP_DEFINE(map_disjoint_bits, DD_CLASS_TYPE_DISJOINT_BITS,
- DYNAMIC_DEBUG_CLASSMAP_DEFINE(map_level_num, DD_CLASS_TYPE_LEVEL_NUM,
- 			      V1, "V1", "V2", "V3", "V4", "V5", "V6", "V7");
- 
-+#ifdef FORCE_CLASSID_CONFLICT
-+/*
-+ * Enable with -Dflag on compile to test overlapping class-id range
-+ * detection.  This should warn on modprobes.
-+ */
-+DYNAMIC_DEBUG_CLASSMAP_DEFINE(classid_range_conflict, 0, D2_CORE + 1, "D3_CORE");
-+#endif
-+
- #else /* TEST_DYNAMIC_DEBUG_SUBMOD */
- 
- /*
+@@ -690,7 +691,7 @@ static int param_set_dyndbg_module_classes(const char *instr,
+ 		}
+ 		old_val = READ_ONCE(*dcp->bits);
+ 		v2pr_info("bits:0x%lx > %s.%s\n", inrep, mod_name ?: "*", KP_NAME(kp));
+-		totct += ddebug_apply_class_bitmap(dcp, &inrep, &old_val, mod_name);
++		totct += ddebug_apply_class_bitmap(dcp, &inrep, old_val, mod_name);
+ 		WRITE_ONCE(*dcp->bits, inrep);
+ 		break;
+ 	case DD_CLASS_TYPE_LEVEL_NUM:
+@@ -704,7 +705,7 @@ static int param_set_dyndbg_module_classes(const char *instr,
+ 		old_bits = CLASSMAP_BITMASK(old_val);
+ 		new_bits = CLASSMAP_BITMASK(inrep);
+ 		v2pr_info("lvl:%ld bits:0x%lx > %s\n", inrep, new_bits, KP_NAME(kp));
+-		totct += ddebug_apply_class_bitmap(dcp, &new_bits, &old_bits, mod_name);
++		totct += ddebug_apply_class_bitmap(dcp, &new_bits, old_bits, mod_name);
+ 		WRITE_ONCE(*dcp->lvl, inrep);
+ 		break;
+ 	default:
 
 -- 
 2.55.0
