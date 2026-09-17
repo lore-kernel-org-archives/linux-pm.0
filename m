@@ -1,111 +1,161 @@
-Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 801F259B679
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 15:39:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.76
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10172358D27
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 15:39:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789659550; cv=none; b=tJ+8MfCF+EeGFnS42vT8h3gn9ICKfAE45bUME1Q29kEsZPW5BQbhiHd2RMP7QbX9lDseXk+ip6+BVsDej8N7Z+m5fmtKRSZBmJafXC1DdboyHtG57ej8moze+jkE2mKMVoX2wK/I+2AfwNAaAgNf83Z2KPKqLCVeAe3UFIK5Aro=
+	t=1789659604; cv=none; b=Gt6KKAn3SwFGN01Rg4dj+i6d7xPBqAmaInMdDD1LeCZjChDakyljm7zF6pxgUKz3K+2z8wWiZ9Yay+Ac5RiqOTDrnsQ7Z7ImPzpWpxQIYXFFPF74avlikecw7QM84EuIDj/c7ChWP56jnzuttdhdGUcx18viclpYS9IcAo6WF5w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789659550; c=relaxed/simple;
-	bh=tL1lU3S6y66CYudldJj/uj6mbDDp8Lup5C09IlTTtlc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=b3QL7DMTJIyXCFdM8d9aR/GqA5AcbAmGLNioDxQ8TATtGplqate9xGu9rWDfPr36dM9mAFUVb1QwWTHT1Hvmu9owE5jZOYiYcoWiiWzF1Ds1XiWvOtjPg6rMbKm7GN7ZOaCRCPh0QF/KeBr5heTy/gcgATlqq3rHS8Wx2swPzqw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dITHWZII; arc=none smtp.client-ip=74.125.225.76
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789659604; c=relaxed/simple;
+	bh=9Ndxc1tBAF8mY91U3vV5DmTzD+UiZfbWF3i7EviwBno=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NUzXJhsIKqlN4plnG1RaevW/XKn60Z33aUp0eDA/G66Tcf5xGmWG+8nteJXRxTQqRzF51/KS5RRcXaJkaAbP8OQnoYMSdtkiuujClqqMVcdpkXtm4vTw0dTuNwi9+HyBoHJ82XCme3TOTGvAtkuKjr2EZDzLprJzyvZVn9vZFZ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=KF1YJoNl; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Bv5C7xkm; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dITHWZII"
-Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-485933b24c3so612356f8f.0
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 08:39:02 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="KF1YJoNl";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Bv5C7xkm"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68HDiWHf2265091
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 15:39:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=+VM4DE4C72pbzaP9G45mgFYM
+	QivvqHf7bmdDimV4fuw=; b=KF1YJoNlSqs6+b171E4rtkq3IQDMjSKvd8JXOO0A
+	moQIU0hjbwBAcLfsBRMDP5bjN3WvcmliaoUE4Vt/4WCi9O7q8HPoP6yNdSCDtgVX
+	5KOPP2cRZEE08pCzv6Qgj/OOPBKmTgctcKzpvXtVX4xkh8FiK8PnGpFK17Y0QV9J
+	sgEyZ0PZUOcbKSLSURYmK8lDrJ5UVptKEARcBDgh+AVO0YpArXf+t9ZPOhdsXPmb
+	YozoPS2vBxxYtSQijKwLsVpBy6VO6Q5oJGu9ECw9jm+qRFw+bzko8vDThVwcwnnb
+	WhN+LR+F470P2QV/YsxYFcu41jtMpuWDi4A2pJ9USjyLmQ==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4grfpph2ub-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 15:39:49 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93ae8e7e546so184913685a.1
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 08:39:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789659537; x=1790264337; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+        d=oss.qualcomm.com; s=google; t=1789659589; x=1790264389; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=tL1lU3S6y66CYudldJj/uj6mbDDp8Lup5C09IlTTtlc=;
-        b=dITHWZIIOXYOGvtQ7uv4SXeffJmzqUnQPhv2Uj+bOODsz72IkLCgMU7zwkN7FeI+dO
-         hfU99AIIAaXivM9mjUCJpGL1hY+8u3VKWgMJLdpxjZ3xQb8E1+3IESxigo/YKKeVFQ7r
-         TOnFk47UzukMreeoY2IKO7Vp4WtqB8Ri3iuILcTW+IXzLWTs+LrPGnKuAO1KjlB/A3r4
-         QbiZ/EiP7ncRnU/4WRO/IBG+Sed+rTmZxdVv1ZeZULsN47NUANA0gkrFQfDCcB2chWJQ
-         OoVjyCOOO5+pA5Fr6VC/loA5fevaJJgAcbmYPXb7Kks6UsRKrsT3oUSYsrO6OBkMaJUh
-         RMwQ==
+        bh=+VM4DE4C72pbzaP9G45mgFYMQivvqHf7bmdDimV4fuw=;
+        b=Bv5C7xkmSDxq/vx4QSeR4QMbR0sgMQ39AvlJ+n2DHibRyLBJMrY6/hYkjTlR2jmmjN
+         U5Qf8GkhJPse/6i6IAIIifjqDil3aZsbapcvGc7q6DihMXC7Ba2cyuYZeCuERxIZgvKf
+         lqUJVDZPBrvveQhvmR4NpChNve+AbKJrJ3VgewX4mPwC2NWeHviNVzIpwGPNK+qTP6ID
+         23G7WFm8rFVI/I6y0xVeXgJgSj00gKnb2gM7BO2ovGvIXTJHhsDXhd8VeMRsv6ZG+mOC
+         BJjOg9kNFRhvRWdnhI4gOwswYU3bZQchtWOSie7Jxd9GaJCRQ0kdqVk54xSc/mcaRimd
+         netA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789659537; x=1790264337;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1789659589; x=1790264389;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=tL1lU3S6y66CYudldJj/uj6mbDDp8Lup5C09IlTTtlc=;
-        b=jJBIo7bLC5trrKDKHq4iLTO7SP0cbZbsL8JcHUne3Kialigq0cbbTWpcesBBDDJQBc
-         r9sR8pFe0AHxqDrq/p1Y7Z1EBlbJha65Sfz7+xxe3RGTljP5+BW8BxdRvy0Ocrl4xAUQ
-         4w3eed9tQtxY2LtmiegWMA5uHEy9Epv+lHLv3ZS5i+1c+UmK42QZzK/OHBN97e3fQ2Qv
-         QuXPJ31w8dEWGziHaVGjA1JCO4zO4BwXiVaAjf2ZA83/jGwhabiD/eWQaV76eJtN5vSO
-         sdtnOj8plpkxIFTPTJtjHdDhGxr9JbyvhBn8IMi48ZYkgB4yjTN2imP9TZhMzpV5u3nX
-         fRqA==
-X-Forwarded-Encrypted: i=1; AKwUvBzGWp8tQSLiCTsBnGO5hms3nz5jA5GSpP4kF3aV/Na56mYU37QH2MNhiLoYfURd3Bw+sXk2ueqfbw==@vger.kernel.org
-X-Gm-Message-State: AFuF++niQ8+GJgPfoJzHjtAJ6Ia+bQSLtSy/3KGnvqQRitle6/rNJRJq
-	cwRyDFv3FPucVrKNNafD1o6hq4Sjp6EvpswZ5LOVkuBmYsT3yJD7wDuM
-X-Gm-Gg: AYBFou1+19rrJ1U5sy+YYLQ2KbOSitCDtQI4MvOZjXgfjW1xZan8of2ckL2dNL24zve
-	GF/9e3SAwApzhjV/QZBp5b5bBtKgU1dLEC5yFSXBNkEOeMlMWWGJoxzZFKla7FwILOjUKveDGbl
-	LBewDD+XDTOVQN4a/0jq3CE0buB9B9B+pXS9aWTXcqNydLX2IMQjpOYyVDstVcMSh6xlAUwkXv4
-	qsZLyM0KP/GbIMQFferKKD6hNz1TcF+kobd4WQxnVfVq5lNdEFzvq9VCLs03pKGTHfqG1cm2Pgs
-	Tawij3ABQjFsZBqrHryCZMMwGhOoaqIEk/WP7s2Civ/bU3u2R5rj5y6cwVr1qmUPNzVuo5kKDO+
-	0mZxvfNoBLQSPEzxzE0TYlS3t6q6W6QmUTcsQ96zUFfcneZsuQFboblibqqMCB9WiVer4e97dns
-	VXZJ+qgQvghqnYOqG4sa3D46qKtTuZAm20EoINB8FSmM/J/+ri/aNkPd3mufifcuVhIYDZG5EBH
-	SMKLdTLa3GH3h20q9U=
-X-Received: by 2002:a05:6000:644:b0:487:4ba:97f2 with SMTP id ffacd0b85a97d-4870cf27ad0mr9119569f8f.3.1789659537241;
-        Thu, 17 Sep 2026 08:38:57 -0700 (PDT)
-Received: from localhost.localdomain ([94.252.75.113])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-4870bf462cesm15872185f8f.37.2026.09.17.08.38.56
+        bh=+VM4DE4C72pbzaP9G45mgFYMQivvqHf7bmdDimV4fuw=;
+        b=aXWcKA5/PzC4HQNpKQdWkE4tlOfgdfG1pI9aq68do6l16UfAZdGM44+NzKvcYU0AeX
+         FBccv+cM5364P+3yIoMqktiw0m7vl1obkwnKoWHBcMDJDi9KPGRqBx4ONBx32q8v2ji+
+         Lz6vMHIxS7G9/E5oVbeialqJZcRHJSAb+3NBN4pTx7znJP+YRrQJe586AIQTHi3DTNVd
+         i+f5JrrAD6tBvzq0vNbuoLSHw0GDQpQMqZ9ZUE3zXireBvWZNa8ThT0Ee76BqCoJKmxf
+         8O0wz07n6nrD0tl4fZ2yJcbvRyL6SGaKIR+Z9OVELAnUcNvvAq2sHVwaibEqGzb4FbpY
+         SwpQ==
+X-Forwarded-Encrypted: i=1; AKwUvByf4/m/2B/Cgs2WqthUuCLSeFUx0Do2QniRIH3GsuJj91dJDBmBcvEMA6dVNLdT0ntBO5xFt9YD3g==@vger.kernel.org
+X-Gm-Message-State: AFuF++llVVXlYqJdJBIQ1W3+SxIFEw/p/nd/9+tAcL0XYpaz2u0pRtNo
+	DJ7DrkxU9lPXN/6Q5N5vubv2v/D7NVe4eTbNvtHRROK+5W+i3LeTsuzXvRxxoPiSMuYgvYKprFA
+	Y47SxXkDsDyLhnDSYYYWdSrRDtNjic3upM58BCSPrN/KfwitW6ZknKM4r4RkGDw==
+X-Gm-Gg: AYBFou2yzE7qFMq4STg0RjK1jaZkWJBpcK0SSij0YPHw566yp4YQJkO/Q89jFHBxKq8
+	c+fXAhkjQHxxBnLrGTb1RFFXdCeAQp822wbTyI2HvUmsuMP5QB0EE6PPxDm8k/CWfNCplV/YjjR
+	v6UD5f9AJLUfvnddl4KZxDIZ/Zcg/4ZRt0tZda5GhUbojQoYLb+PAJAUainvqBN/S3Sf5rT9CQd
+	Pt4YqcGmiktGsL9vvh/OOfwv8rgHoZavKCSF8uHrDVzh1J0fSUpI8rt42sLCtGmLf5U840D9ROs
+	cswBWBOHnBNDfkhYB1vqqkk9+ZRafhIhIGwi05GROHSzPkHjk0MqW1BUA7bPgQoLRBY1kbBO2zQ
+	jeE2724PQzxyH5g==
+X-Received: by 2002:a05:620a:4049:b0:93b:d79b:9a59 with SMTP id af79cd13be357-93bd79b9ff0mr126533985a.58.1789659589111;
+        Thu, 17 Sep 2026 08:39:49 -0700 (PDT)
+X-Received: by 2002:a05:620a:4049:b0:93b:d79b:9a59 with SMTP id af79cd13be357-93bd79b9ff0mr126527985a.58.1789659588511;
+        Thu, 17 Sep 2026 08:39:48 -0700 (PDT)
+Received: from oss.qualcomm.com ([86.121.170.232])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fbd204d89sm98570575e9.3.2026.09.17.08.39.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Sep 2026 08:38:56 -0700 (PDT)
-From: Oleg Keri <okerixx@gmail.com>
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Ananthu C V <ananthu.cv@oss.qualcomm.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Beata Michalska <beata.michalska@arm.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 2/2] arch_topology: use the boost frequencies for capacity_freq_ref
-Date: Thu, 17 Sep 2026 17:38:47 +0200
-Message-ID: <178965952769.2757.5034972953349001664@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <bddc9273-fe02-4984-bfe9-5078e9e6e111@arm.com>
-References: <bddc9273-fe02-4984-bfe9-5078e9e6e111@arm.com>
+        Thu, 17 Sep 2026 08:39:47 -0700 (PDT)
+Date: Thu, 17 Sep 2026 18:39:44 +0300
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: jic23@kernel.org, sboyd@kernel.org, dlechner@baylibre.com,
+        nuno.sa@analog.com, andy@kernel.org, arnd@arndb.de,
+        gregkh@linuxfoundation.org, srini@kernel.org, vkoul@kernel.org,
+        neil.armstrong@linaro.org, sre@kernel.org, krzk@kernel.org,
+        dmitry.baryshkov@oss.qualcomm.com, quic_wcheng@quicinc.com,
+        melody.olvera@oss.qualcomm.com, quic_nsekar@quicinc.com,
+        ivo.ivanov.ivanov1@gmail.com, abelvesa@kernel.org,
+        luca.weiss@fairphone.com, konrad.dybcio@oss.qualcomm.com,
+        mitltlatltl@gmail.com, krishna.kurapati@oss.qualcomm.com,
+        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+        linux-pm@vger.kernel.org, kernel@collabora.com, stable@vger.kernel.org,
+        Sashiko Bot <sashiko-bot@kernel.org>
+Subject: Re: [PATCH v13 01/12] spmi: Fix potential use-after-free by grabbing
+ of_node reference
+Message-ID: <le6lnvwdpwdvfcnjupxalgpehqbuwerhvg35inzr43hie5mfvg@743uv5ppkpg4>
+References: <20260721093626.96264-1-angelogioacchino.delregno@collabora.com>
+ <20260721093626.96264-2-angelogioacchino.delregno@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260721093626.96264-2-angelogioacchino.delregno@collabora.com>
+X-Proofpoint-GUID: 7Se7m4e8BA83andL7OVgGvqsJs2WAByY
+X-Authority-Analysis: v=2.4 cv=YcYodARf c=1 sm=1 tr=0 ts=6aac09c5 cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=po8fGBi+ks8MzcVQGuqtFQ==:17
+ a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=c92rfblmAAAA:8 a=QX4gbG5DAAAA:8 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
+ a=lMp64ggZct2OJqWbRbcA:9 a=CjuIK1q_8ugA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
+ a=GvGzcOZaWPEFPQC_NcjD:22 a=AbAUZ8qAyYyZVLSsDulk:22
+X-Proofpoint-ORIG-GUID: 7Se7m4e8BA83andL7OVgGvqsJs2WAByY
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE3MDIyMiBTYWx0ZWRfX6HzamUdhhxNc
+ gl1NlbJkeYbMrBY+h3L/r/h/24y88lSxQ+TkfhzBpmk6tq3lAGfYGZLgdP3Zs5WJjLDoUsxMb5s
+ tloYOuoRGtTkksqmh1OzS11ojMH44YtZ4se3QGI5mnEPBsWC4bVVB3YvRlIhJsybES555E8SygD
+ Ab2NG4NwxRNLIb2vpo1dFtAfayU73lqn++kb9EU3FqZ3MJlibx3QfLuBnqUxH1XJvUADfXRbzL0
+ UV/otr+gE37Q0M+y1eTGHpjbWmqIWlKxCeUFEF3r9ny7V02cvW1aXVNdCK23ZAFTUXjtgvByaKA
+ PSZPT1fBDRT2H0HEQLy0HzDBCaIaARYIH4px47Z+FBZNuj46gSpaHt+awF0+/qVMKNJMySD5GU9
+ Xt2HouWK0miKweszYCHv+8ASRWHXWmYyyQy83hyU7rB31lUfyP/ZCTQ02zqqtq7KYCQAKjxbkVZ
+ 0Rq1i49HpQdvCT3iXhg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE3MDIyMiBTYWx0ZWRfX5EjgZChembzQ
+ 921UDQrVjUxSBc9CLOcADrO3FQ3cpZhTCWwg3remruaFRJ806Y6QvFUy6Ys2CEzrYAV7KjPCr22
+ TrSE1NFZpY4Dqxz2SW6KVTclWx0KFbI=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-17_03,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 impostorscore=0 spamscore=0 suspectscore=0 phishscore=0
+ clxscore=1015 bulkscore=0 priorityscore=1501 lowpriorityscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609170222
 
-Hi Dietmar,
+On 26-07-21 11:36:15, AngeloGioacchino Del Regno wrote:
+> As noticed by Sashiko during a review run of an unrelated patch,
+> in of_spmi_register_devices(), for_each_available_child_of_node()
+> is used to loop through children, and to also assign a node to a
+> newly created SPMI child device.
+> 
+> Problem is that the refcount is dropped at every iteration so, in
+> the specific case of DT overlays, a use-after-free may occur when
+> an overlay is dynamically unloaded!
+> 
+> To resolve this, increase the of_node refcount when assigning (in
+> function of_spmi_register_devices) and release the reference in
+> spmi_device_remove().
+> 
+> Fixes: bc32bbd04011 ("spmi: Set fwnode for spmi devices")
+> Cc: stable@vger.kernel.org
+> Reported-by: Sashiko Bot <sashiko-bot@kernel.org>
+> Closes: https://sashiko.dev/#/patchset/20260608100949.36309-1-angelogioacchino.delregno@collabora.com?part=2
+> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
-On Thu, Sep 17, 2026, Dietmar Eggemann wrote:
-> Ah, you want to fix this for 'frequency table' drivers.
->
-> IMHO,
-> https://lore.kernel.org/r/20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com
-> is trying the same at the moment.
-
-Thanks, I had missed that series. Please drop my 2/2 in favour of it.
-
-Patch 1/2 here is still needed, and becomes a prerequisite for his series
-on this SoC: with the reference at 4723200 kHz from boot,
-arch_freq_get_on_cpu() wraps and cpuinfo_avg_freq reads about 524283 kHz
-unless the multiply stays in 64 bits.
-
-I will test his series on the Yoga Slim 7x Gen 11 and reply there.
-
-Thanks,
-Oleg
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
