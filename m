@@ -1,99 +1,113 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BFFC455633;
-	Thu, 17 Sep 2026 14:21:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D3D8D51474F;
+	Thu, 17 Sep 2026 14:22:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789654892; cv=none; b=JcniWCbeSZXt1+Sm+irv/9Sw+r1IeWGnoPYaoay96RbReB5qf9qHdVbFihMO+yfKshT2y+idLWkUdvq+uXHJnW+tRO4lIWCfvkTC4p1g929oNGIMW9ZSgp3fdirGo1zru4tECUYwSpqk8GnlafedCaVIFs8DNEn0iiivhalsGw8=
+	t=1789654944; cv=none; b=tBMqaFwe6nd/iQe4aNsd0Y0QYYNDAR8SmZ7862SBLPGirNC+jEr5Ok6kokvpLaM60VqwUEnZrCGhJVpxmRkJrdeWi318kANYiEtrHF0qaRaPajBbk5Hu79LZHVodx5E6cZtN2FOJQjYtVCrq1s5LUk6tWj4xfIVS3QafBfFGZlo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789654892; c=relaxed/simple;
-	bh=3fBpd0e6y6DTTmL2ORjhRIfxlCsibK2j4Huiq4VjuKg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=H/iskBfDyBtTGWMpRCkqhVNJqL3FORBll0FQozjBnNt5b8gYdul6du5B4ag3srIl0MyT+ZFgPUG9LfxSjIeB6g2LGiDiBK3emHfYmTQvhGZ4ujNiLNJygAorQ7EJUHbIJGP/aeU1mhVAo1egR9uE72f0XfPr+g9254MXPpXpztk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
-	by APP-05 (Coremail) with SMTP id zQCowAAXgDpn96tq+1OCCA--.2271S2;
-	Thu, 17 Sep 2026 22:21:27 +0800 (CST)
-From: Wentao Liang <vulab@iscas.ac.cn>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org,
-	mike.looijmans@topic.nl,
-	sre@kernel.org,
-	Wentao Liang <vulab@iscas.ac.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] power: supply: ltc2941: Fix of_node reference leak in ltc294x_i2c_probe()
-Date: Thu, 17 Sep 2026 14:21:27 +0000
-Message-Id: <20260917142127.2156568-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1789654944; c=relaxed/simple;
+	bh=qv7Bv+oiJEWlaONHpF0qrpPt4OsKdrgQ3MC2MRmkXR0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UbrU3zNcMT+xsSw3WK/A0b2BejtOYiaRfpJJfkbjJ5M6ST1suR2n143NN9ecaM7/J4odvm5tGU9abQ9uOpkTgn/o6dbud7yliW5VmBDSIty9nROSO0+eRsoPgjakWOM5prmDUN0lopE9SETq1jZRIEgNVL0ipv/fUltzAEe101A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ESiJw4AY; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ESiJw4AY"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E11B21476;
+	Thu, 17 Sep 2026 07:22:16 -0700 (PDT)
+Received: from [10.57.50.144] (unknown [10.57.50.144])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3DD843F86F;
+	Thu, 17 Sep 2026 07:22:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1789654940; bh=qv7Bv+oiJEWlaONHpF0qrpPt4OsKdrgQ3MC2MRmkXR0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ESiJw4AYG+m6Zm4w2RZsLcRgZ4tpG50tgdXQ+DowmSth8SEI2OC+uVfyd3ZFWXAVC
+	 m7Dd509835LDdg2Q0KBtXbUC511CVqyNgoPCkvNyerLvPP6ZcGQqrQMNFR8gzhdmGc
+	 500fXWGNkwGbOYA4GR7wP6yN1N/WjEaQ36VR7q9c=
+Message-ID: <f3912746-90f8-46de-a690-a840afa4a1d1@arm.com>
+Date: Thu, 17 Sep 2026 15:22:15 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowAAXgDpn96tq+1OCCA--.2271S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7ZF1DZFy3KFWrWw1Duw17ZFb_yoW8AryfpF
-	45CFWayFy5W3WxC3y5AF1UXa4fKa1FyryYyrZrt3s09F1YqFZ8trykXFZ09FWDGrWrCayY
-	qa1Dtay7Xr45urDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUB0b7Iv0xC_KF4lb4IE77IF4wAFc2x0x2IEx4CE42xK8VAvwI8I
-	cIk0rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2
-	AK021l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v2
-	6r4j6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26r
-	xl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
-	6xIIjxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVWxJr0_GcWlOx8S6xCaFVCjc4AY6r
-	1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq62Iq12xI8VA0II8E6IAqYI8I648v4I1lc7Cj
-	xVAaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vIr41l42xK82IY6x8ErcxFaVAv8VW8GFyrJr
-	1UJwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480
-	Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7
-	IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k2
-	6cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4UJVWxJr1lIxAIcVC2z280aVCY1x
-	0267AKxVW0oVCq3bIYCTnIWIevJa73UjIFyTuYvjxUwwIDUUUUU
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCRQNA2qr9LYGlQAAsD
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path
+ candidates
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Valentin Schneider <vschneid@redhat.com>,
+ K Prateek Nayak <kprateek.nayak@amd.com>,
+ Beata Michalska <beata.michalska@arm.com>, Elif Topuz <elif.topuz@arm.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Shubhang Kaushik
+ <sh@gentwo.org>, Christoph Lameter <cl@gentwo.org>,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260916100116.701206-1-christian.loehle@arm.com>
+ <20260916100116.701206-3-christian.loehle@arm.com>
+ <CAKfTPtCAaACP8A=AKGO3PdhZtA9SRM6e3ym+5d=Qfp-VpDa38g@mail.gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAKfTPtCAaACP8A=AKGO3PdhZtA9SRM6e3ym+5d=Qfp-VpDa38g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-ltc294x_i2c_probe() takes a reference on the device node with
-of_node_get(), but never drops it, so the reference leaks on every
-return path, including the success path.
-
-The node is only used to read the battery properties and to set
-info->supply_desc.name, so release it after its last use and also on
-the lltc,resistor-sense error path.
-
-Fixes: 085bc24d1553 ("Add LTC2941/LTC2943 Battery Gauge Driver")
-Cc: stable@vger.kernel.org
-Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
----
- drivers/power/supply/ltc2941-battery-gauge.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
-index a1ddc4b060ce..bf0b268b10bf 100644
---- a/drivers/power/supply/ltc2941-battery-gauge.c
-+++ b/drivers/power/supply/ltc2941-battery-gauge.c
-@@ -464,9 +464,11 @@ static int ltc294x_i2c_probe(struct i2c_client *client)
- 	/* r_sense can be negative, when sense+ is connected to the battery
- 	 * instead of the sense-. This results in reversed measurements. */
- 	ret = of_property_read_u32(np, "lltc,resistor-sense", &r_sense);
--	if (ret < 0)
-+	if (ret < 0) {
-+		of_node_put(np);
- 		return dev_err_probe(&client->dev, ret,
- 			"Could not find lltc,resistor-sense in devicetree\n");
-+	}
- 	info->r_sense = r_sense;
- 
- 	ret = of_property_read_u32(np, "lltc,prescaler-exponent",
-@@ -477,6 +479,8 @@ static int ltc294x_i2c_probe(struct i2c_client *client)
- 		prescaler_exp = LTC2941_MAX_PRESCALER_EXP;
- 	}
- 
-+	of_node_put(np);
-+
- 	if (info->id == LTC2943_ID) {
- 		if (prescaler_exp > LTC2943_MAX_PRESCALER_EXP)
- 			prescaler_exp = LTC2943_MAX_PRESCALER_EXP;
--- 
-2.34.1
-
+On 9/17/26 15:08, Vincent Guittot wrote:
+> On Wed, 16 Sept 2026 at 12:01, Christian Loehle
+> <christian.loehle@arm.com> wrote:
+>>
+>> Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
+>> slow-path selectors can choose the same CPU before either task is enqueued.
+>>
+>> Use reservoir sampling in the tie branch, resetting the candidate count
+>> when a lower advertised exit latency is found. Use the per-CPU scheduler
+>> PRNG and reciprocal_scale() to avoid variable division or a second scan.
+>>
+>> This reduces deterministic convergence without reserving the chosen CPU.
+>>
+>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+>> ---
+>>  kernel/sched/fair.c | 11 ++++++++---
+>>  1 file changed, 8 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+>> index ff5793bddc35..6836a8364440 100644
+>> --- a/kernel/sched/fair.c
+>> +++ b/kernel/sched/fair.c
+>> @@ -24,6 +24,7 @@
+>>  #include <linux/mmap_lock.h>
+>>  #include <linux/hugetlb_inline.h>
+>>  #include <linux/jiffies.h>
+>> +#include <linux/math.h>
+>>  #include <linux/mm_api.h>
+>>  #include <linux/highmem.h>
+>>  #include <linux/hrtimer.h>
+>> @@ -8459,6 +8460,7 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+>>  {
+>>         unsigned long load, min_load = ULONG_MAX;
+>>         unsigned int min_exit_latency = UINT_MAX;
+>> +       unsigned int nr_candidates = 0;
+>>         int least_loaded_cpu = this_cpu;
+>>         int shallowest_idle_cpu = -1;
+>>         int i;
+>> @@ -8482,9 +8484,12 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+>>                         if (idle && idle->exit_latency < min_exit_latency) {
+>>                                 min_exit_latency = idle->exit_latency;
+>>                                 shallowest_idle_cpu = i;
+>> +                               nr_candidates = 1;
+> 
+> You clear the number of candidate when you find a lower exit_latency
+> but !idle CPUs that have already been checked will be cleared whereas
+> they still get a chance if they are checked later.
+That is correct. Is this a problem?
+(Again, mirroring what upstream currently does, let's say exit_latency(CPU0)=100, exit_latency(CPU2)=1
+!idle at CPU3 trumps CPU2 (assuming recent idle_stamp), !idle at CPU1 doesn't trump CPU2, i.e.
+the inconsistency around !idle is already there?)
+And I'm assuming we really don't wanna keep a cpumask of !idle CPUs, if anything we may just ignore
+them completely, given how unlikely it they are to be observed.
