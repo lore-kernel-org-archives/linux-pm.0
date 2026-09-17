@@ -1,311 +1,249 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5FC4A50EBFC;
-	Thu, 17 Sep 2026 13:08:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789650517; cv=none; b=Tienzz4/R9MJHIacmbE2kgvFUpZNl8ZWX4Bn0DJ3ivEDWRCRKv0lW6mR7+NT4ODL4pUGIW3ymlYUPKSjL0fubAxBHpY/LlywAS1pkKIdPfrYh83FvzNhxK5to4t9fx2wzjj2HA9rBgoQ9nGiAvnNY3JjNJ1YxSrnxS5PcVlPr+Q=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789650517; c=relaxed/simple;
-	bh=9REa1BqtKSFgluXgKPoygS+XYoOTO30AwYYhsGDwDAg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=r71xNK0cAWZEaSPlxqifuKeIgJJxe+yWk6LlFgd+SoQDbr4wUUvHkLH6HUoPLxMaVvNr13Pjj4E1ds7cOCrTPBL+UUu7SJijyVvmuFUz+OpKnyF5O9B4rfmpdrNvWGxo5hiUOohEuiZ5VM27WLCh4x7H3jpN3yHssNfK5aZufRw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=vI1jHPXG; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazon11011065.outbound.protection.outlook.com [40.107.74.65])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5BED4D597B;
+	Thu, 17 Sep 2026 13:08:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.74.65
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789650547; cv=fail; b=YrfpuE63ty8lU6Uf6qs9awiueZWFFdp4piRYN7ApKa88BRwKsxTNoExsQHvBm2aMmaOeqt9L3XdoHuEUoSkp6iN67Owfr02sMz28r0sXSfOeWmcoeu2hMNi4J0g8CtAjQPzRSNNuqeQ9PFbtc6dgOiz3i9g1BBlqMSuOaYKeZxA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789650547; c=relaxed/simple;
+	bh=BknMmSeaKkZVbPQeiE8N5YcAhRMc0qlzeIGvD1EdCKs=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=bdrlJvfhy6AlfnWlaI1sd4uWOzOgJgDjSk6VkPmT7HYLECsHo+wSlBzTowqNAp8JoVUpUZFXCKPnYY9kiT1geURK7PL3FqW19E2k9eVZnDspOenf8lIfe3Q/yhZB4aXI0g22veVgqt1t4/Y0LGegNq61pXrJDlzC+Y+hd+ihuPA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=B6iY9uLg; arc=fail smtp.client-ip=40.107.74.65
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="vI1jHPXG"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B2218143D;
-	Thu, 17 Sep 2026 06:08:24 -0700 (PDT)
-Received: from [10.57.50.144] (unknown [10.57.50.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C04463F7B4;
-	Thu, 17 Sep 2026 06:08:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789650508; bh=9REa1BqtKSFgluXgKPoygS+XYoOTO30AwYYhsGDwDAg=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=vI1jHPXGGMXM3N56LDwLWlHxAN9Fp05hnhLX1buiwVc85YChKSUhVjr+BxQkMCi0z
-	 VJUN24ppqk8Gkzu/ZzJsNR8Yc1rp2iDwWrrF61VTkZTVgqZv+r95qyS3a5XVZbjWFI
-	 7OXDHevAgxyHo3Sfx2hGbfenz4jTVxRX8aLqmJjI=
-Message-ID: <7d250745-bed7-4e75-a3b5-17565d8ff662@arm.com>
-Date: Thu, 17 Sep 2026 14:08:21 +0100
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="B6iY9uLg"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=lWWQ1gCRoo4HX1JuyBSQdMRy5oRAL5T1lxx45UUCGUJpPKIQQ/o5yjA63xziUnMxDIH5R/TktjCF5RgQCla8xbHsYY2eiryilIsmv0qwwcun7NlxRL4PjgGipw4TqeMb5ePESA5m0FnJude4osWxiZ/MOYQth9LVV+RqH9m9Vs5AjXVjpkTmmmmJJB+KJ4g3Y7QpCppMQBT1IgdHmbsNvDhMxx6XSHb16WSdqYHW3eNHguIJEU5CCfSrDHuJUwBLub9xq5AbMROG0bDMM3WfCCvRn6l1FZLsXE4w6SOisOhNTMnDLV/7aNPajhfJxujjqGw1HYav/ITIp1FwZ9K2gA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=BsUO9tpIKJzSnzK0wJPJXu22C0qJLFYe0hFX4nOmFmk=;
+ b=D/1y3N75zkXjGYQGo9IaBJ4Oh1fqcBm0/NWHnAUnwR90zs+IYz3bvBzGiJj1wSCyn4XVnziDpNdi4UXZ+WiqCppwvT2XbyYCKBQhAZzP8QbcG0qoqOd9mnI4FPNppGbdGlyRAXAePk4fTMJXFrJ6CxNcFvIEusRXYfD5tP1aNnMOJKbXO0oozDRQrFnXgUJa656zO6n55MCG1FtXo3kk7M6LMh8GsGcAJ8sQKddFdEOEqYF8qIC9s6MADASfkag1yv26UaAN7z5ghYGkr+L70pdAcrtHcuTPnQ19DqCIr1XD0p6ydaQ1zYsoPjfWUPZR6oEMvIjS8XrRKNKssO6wTg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BsUO9tpIKJzSnzK0wJPJXu22C0qJLFYe0hFX4nOmFmk=;
+ b=B6iY9uLgJROqFNPgVxQ3Lm9TrWVIvGWqoULyBA4d5oYoSC5rRKYfhGErvyn12ACR8HuKZS9KaxtStz87/TviqDStRAVmebGbQShj8gY3BHkSKaFkJCYH7J9BWJCOhDm5LmmIYoSaAY214hoz6o3YMmiNEsJXByI8j1PYfkmverc=
+Received: from TYCPR01MB11865.jpnprd01.prod.outlook.com (2603:1096:400:38c::6)
+ by TY3PR01MB11073.jpnprd01.prod.outlook.com (2603:1096:400:3b5::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.12; Thu, 17 Sep
+ 2026 13:08:52 +0000
+Received: from TYCPR01MB11865.jpnprd01.prod.outlook.com
+ ([fe80::981:1b9:f809:a0c3]) by TYCPR01MB11865.jpnprd01.prod.outlook.com
+ ([fe80::981:1b9:f809:a0c3%5]) with mapi id 15.21.0428.011; Thu, 17 Sep 2026
+ 13:08:52 +0000
+From: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+To: geert <geert@linux-m68k.org>
+CC: "magnus.damm" <magnus.damm@gmail.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Ulf Hansson <ulfh@kernel.org>,
+	"linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chris Paterson
+	<Chris.Paterson2@renesas.com>, Biju Das <biju.das.jz@bp.renesas.com>,
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, Prabhakar Mahadev Lad
+	<prabhakar.mahadev-lad.rj@bp.renesas.com>
+Subject: RE: [PATCH 03/10] pmdomain: renesas: rcar-sys: Add r8a774a3 support
+Thread-Topic: [PATCH 03/10] pmdomain: renesas: rcar-sys: Add r8a774a3 support
+Thread-Index: AQHdMX5/dPjx0ySNWUKgGyqdvbBHELa+mdoAgBRMZ8A=
+Date: Thu, 17 Sep 2026 13:08:51 +0000
+Message-ID:
+ <TYCPR01MB118651BE60ED87BA4CE9D38BFA2B82@TYCPR01MB11865.jpnprd01.prod.outlook.com>
+References: <20260821150408.73829-1-ayman.chaudhry.kc@renesas.com>
+ <20260821150408.73829-4-ayman.chaudhry.kc@renesas.com>
+ <CAMuHMdWH2ojjcpKK4vDWQWw7buj67H4y9=Mpf9L-xn-qD_4U6Q@mail.gmail.com>
+In-Reply-To:
+ <CAMuHMdWH2ojjcpKK4vDWQWw7buj67H4y9=Mpf9L-xn-qD_4U6Q@mail.gmail.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TYCPR01MB11865:EE_|TY3PR01MB11073:EE_
+x-ms-office365-filtering-correlation-id: 78ec62ee-e25f-4325-853a-08df14bcd207
+x-ld-processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|23010399003|366016|7416014|376014|1800799024|38070700021|10067099003|4143699003|11063799006|56012099006|22082099003|18002099003;
+x-microsoft-antispam-message-info:
+ RoShSXAL3bFG4D0GzmFAUjxhfK0emMjhaKilRt8bXN9pIcNOwB/fGpy1oHVb+H4KTq8hrVi5dgBHfE7on7hA0SEV/KWy87j2TkqaNI2Y7r7LZ98pdBitGagdZY0RWJzLebYRt7/useP+ixYy2TZgT9j2o+ZLqfFfPRLXqM34oaXHojppP5UDTXsNn5Rmj3nDz5nN6N7nyUXo+crof2rOPWnJ0MQS8R9waQNaKlKDVpB/bvif9BeLobqyraJZwpsSDtBK1BFkuv0C9MFCOJlTCgP+YZ87UgPftfr58xQsU2EaXu3RzkOVS7iEoAA8Y0qZoYS9qATvnj2M/IAiIXLG1YbLFKZyipQ84NFQHFlKo182OYT8w47GNrA5UU0cWkXL1ydchBPwPXD5tZxWl5daqBVM6Vm1oTHynWgFxat2cGKOo5ofE/8CsKXLFhgxGiaSqF4tbomEt/FrYQIMmrnP+gr2bEFzfNZ/l9T95CKx4Xb8j/fAt7BSTu1zJRzx2gYpTIMIp8DuoAzVPooVSUb27uYfArEv0IiaU9auELUm108DzpMzQshrDTdVRDGd7u9AV9XhZ6ifvHW3rztah4UkQAe+OgpHr2e9qom92FGQySpE0/4EHV2rjBHzVaFNgEKIP5yU9ac/jyWV8tT+DVP3uo0VBnO5Sy2ytJgYcAg5bojaHEcv2+dJSWZFzVVOEBJk02LS1AW7LTG7OHROeBfFpFUaFOXA9meXYoKbEJj/9vw=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYCPR01MB11865.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(7416014)(376014)(1800799024)(38070700021)(10067099003)(4143699003)(11063799006)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?a5yiHrbBBFCfKMo4aeT0jXpqz8ACML/Uxmwz2uY5FgP1eQA6yZzv1bNHAawQ?=
+ =?us-ascii?Q?0Tff3oWxdz41QsHJlTAbKrndb9mmT5XA1wyECj1XKKe1027OQe4GypbE8Wa8?=
+ =?us-ascii?Q?2Z6/bpKgHutHFbuZUQ75d4K5znWWsg2hZa4gnjDMSr741wAkIKpf/RV6a0qD?=
+ =?us-ascii?Q?OJB2o9HLkBUCcVyDvN8ie/RYtEM6yZH80WIU1HbF7MGW/bJ+iOQtDPmOgwdv?=
+ =?us-ascii?Q?c24I/UwWsQYmVJLaPP4ZjQPTsbM+A3FDsdWW1oGE4u8P+Pgi2kIGJuxu4KNS?=
+ =?us-ascii?Q?PA9aFVWrktZriOhUlD6Qkpg2c2miafgKOKMVrT+1oJXOOGmfHRsWomgb0IcY?=
+ =?us-ascii?Q?tO1B6NritSBiSXkxDqhy4PbmWPYiswGQou7zVy/lIUJl3xX4MXx2p8yFoy9i?=
+ =?us-ascii?Q?z4lNK2hZ7/p0MWZygmV2eccQNIcIQaoRybaMKscXpOZO83vB74cwjqXQ3JkE?=
+ =?us-ascii?Q?yqLdSewB3+HsPRjoePnkmUIa12z2Ow7XB0WFXPhk6adXoIOjnaYtivpuIj+T?=
+ =?us-ascii?Q?4rEPYbHa9fbAuht25/mm9p3kqIkM7BRsGRwzmIBUAyV5zEkrQ1Pgi0EfHOR5?=
+ =?us-ascii?Q?krb0l3TObwS+kmaVwl31Un01LjSxCIn0s6pAqIXzqGYbAt8ZDA9aW4BTEMO1?=
+ =?us-ascii?Q?MbPf4QDJqJt3ArpujnnodQbxzp6VjXnbTdjCBf3Lkn8Xd7RvOoFKIa/di/I9?=
+ =?us-ascii?Q?BpmSsV10dY/zEaVD60HRKOBHVCboZhbRGkr7QRu0c+jMyHHQ8Q85Qv1QGyMy?=
+ =?us-ascii?Q?6NdZ++1Hd95Ov0VBcpbm2RXdMKk9lR1x75NkCmm4pe+bMFTXwlKF3kJRxPdu?=
+ =?us-ascii?Q?XoYyYITJa7HBPEmPsnCx3lUKC4QcCANICVUNJzxM2gZ0yf5Yn7C095bJaqbj?=
+ =?us-ascii?Q?cHD0RmJUjM5Fr8/SoY0Nj4gl8Q324WAaW+8hyalFQd3Rbs2lDkeASTw7Gc19?=
+ =?us-ascii?Q?3SjxA0qBfZDabKulMGBOSBkun82S2xISJ5A4Su2wU22L8AoGKpqYqik3cO7M?=
+ =?us-ascii?Q?muZezoKgS/pnkUSY9eLNrXVqkUEcVb9xrx7Uy+E/qxidKprlZZPw19LZ2ZD3?=
+ =?us-ascii?Q?JM6RIRS+WuKOjYIjITSFZXH4K0cpfqwRfdGfoFLgm5PsC7wgh4qGdtyywTaF?=
+ =?us-ascii?Q?Rs2Ghfd+Ds0D9CM0MWpi5+aovw/QYXFw0HyQL/qf5OL+Nx5TU0YyBNjCBrjD?=
+ =?us-ascii?Q?GyEX2TPrLORqTxMvaCpgV5dJBtD+HLSrQPwR3C/cgBNiVuO2OUoCwVM5/sOk?=
+ =?us-ascii?Q?Vmwb3QG6AJdStes1zjjJwPa1m80ajAerGEyLXebr5xLZ9Cjw9OuivVQtloiJ?=
+ =?us-ascii?Q?Dbj4zLH+jj7VMdJEl6kVK17wmiXo82KCQFyy4SvMNG/YPBkREf+EuNt5giTC?=
+ =?us-ascii?Q?uQHSeE+mvSAEdug8eT/8/VMJjnW5TWPGAhLYjg0MpNHBqfIo56f74zYC6mFi?=
+ =?us-ascii?Q?/W3elHyHzQmFNtRuTT3O+aepBogh0FR4s63fGIPUG3zp6JOnrQCrBTU04DUr?=
+ =?us-ascii?Q?rkJ083umiNWDL6JGFJlGciLwjusxVaWtv8VrN2ZObuLmLj6oWWjIwfGZRfUA?=
+ =?us-ascii?Q?0vbWvZjjIavKnOpLUHngH2B+tj0I9zI4HJUrqbXiTpSFjGxT5P0Y3Jq7HP1j?=
+ =?us-ascii?Q?iXFNkGw417mu8L5lDFuYm7wfsHGvJVcIZwWrKPlyoWREYl9zKl5NTGpInntR?=
+ =?us-ascii?Q?uRUif74//LiSIAgt6dNK/2X/9nXHcU9RRobfrpfmB2haRSCwv0M59RY1v+9K?=
+ =?us-ascii?Q?BvnM1CKSiq7vMMMlGtJ5Ltlryu8PY2Y=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/4] cpufreq: CPPC: Keep the policy across CPU hotplug
-To: Sumit Gupta <sumitg@nvidia.com>, Jie Zhan <zhanjie9@hisilicon.com>,
- rafael@kernel.org, viresh.kumar@linaro.org, pierre.gondois@arm.com,
- ionela.voinescu@arm.com, zhenglifeng1@huawei.com, lenb@kernel.org,
- saket.dumbre@intel.com, ray.huang@amd.com, mario.limonciello@amd.com,
- perry.yuan@amd.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-References: <20260806200857.601152-1-sumitg@nvidia.com>
- <20260806200857.601152-2-sumitg@nvidia.com>
- <c30ddb21-2c97-4b9f-bae6-b29e30aa5e5e@hisilicon.com>
- <753b98a6-b3f7-431b-a867-eccbfd15d357@nvidia.com>
- <26439302-6759-446b-a498-310c218e4102@hisilicon.com>
- <404f0fea-4980-4e7f-ae05-eadcc2b13d7d@nvidia.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <404f0fea-4980-4e7f-ae05-eadcc2b13d7d@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TYCPR01MB11865.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 78ec62ee-e25f-4325-853a-08df14bcd207
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Sep 2026 13:08:51.9748
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: vrGBVjPv+U2H59prCAeGnVjd3PVszqrEr3AzsX/4fwucUynYRp9Mp9aqhYuqLl2x/47fdGF8gAfrpG4onMs2S8CuauoMhwnd3zh8cE38LH4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY3PR01MB11073
 
-On 9/17/26 12:01, Sumit Gupta wrote:
-> 
-> 
->>>>
->>>> On 8/7/2026 4:08 AM, Sumit Gupta wrote:
->>>>> Without online()/offline() callbacks, the cpufreq core fully tears
->>>>> down a policy during exit() when its last online CPU is offlined, and
->>>>> rebuilds it during init() when it comes back.
->>>>>
->>>>> Add lightweight online()/offline() callbacks so the core instead keeps
->>>>> the policy live and reuses the driver's cpu_data across CPU hotplug.
->>>>> This avoids re-reading the CPPC capabilities on every offline/online,
->>>>> making CPU hotplug faster.
->>>>>
->>>>> Move what init() and exit() did on hotplug into the new callbacks:
->>>>>
->>>>>     - offline() requests the lowest desired performance, as exit() did.
->>>>>     - online() re-enables CPPC and restores the performance controls, as
->>>>>       the platform may have reset them. Failures are logged, not returned,
->>>>>       as the core would free the policy.
->>>>>     - online() also resyncs the frequency invariance counters, so that the
->>>>>       first tick does not measure across the offline window.
->>>>>
->>>>> The restore in online() uses cppc_set_perf(), which writes MIN before
->>>>> MAX. If the platform lowered MAX while the CPU was offline, writing the
->>>>> saved MIN could briefly leave MIN above MAX on registers not accessed
->>>>> through PCC, as PCC delivers the writes in one transaction. Raise MAX
->>>>> ahead of the restore when the saved MIN is above it.
->>>>>
->>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>>>> ---
->>>>>    drivers/cpufreq/cppc_cpufreq.c | 128 +++++++++++++++++++++++++++++++++
->>>>>    1 file changed, 128 insertions(+)
->>>>>
->>>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->>>>> index 80893844353c..4b3da9a3e122 100644
->>>>> --- a/drivers/cpufreq/cppc_cpufreq.c
->>>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
->>>>> @@ -211,6 +211,29 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
->>>>>         }
->>>>>    }
->>>>>
->>>>> +/*
->>>>> + * Resync the counter snapshot, as the policy is kept across CPU hotplug and
->>>>> + * the first tick after online would otherwise span the offline window.
->>>>> + */
->>>>> +static void cppc_cpufreq_cpu_fie_resync(struct cpufreq_policy *policy)
->>>>> +{
->>>>> +     struct cppc_freq_invariance *cppc_fi;
->>>>> +     int cpu, ret;
->>>>> +
->>>>> +     if (fie_disabled)
->>>>> +             return;
->>>>> +
->>>>> +     /* policy->cpus still holds related_cpus here, so skip offline CPUs. */
->>>>> +     for_each_cpu_and(cpu, policy->cpus, cpu_online_mask) {
->>>>> +             cppc_fi = &per_cpu(cppc_freq_inv, cpu);
->>>>> +
->>>>> +             ret = cppc_get_perf_ctrs(cpu, &cppc_fi->prev_perf_fb_ctrs);
->>>>> +             if (ret)
->>>>> +                     pr_debug("%s: failed to read perf counters for cpu:%d: %d\n",
->>>>> +                              __func__, cpu, ret);
->>>>> +     }
->>>>> +}
->>>>> +
->>>>>    static void cppc_fie_kworker_init(void)
->>>>>    {
->>>>>         struct sched_attr attr = {
->>>>> @@ -281,6 +304,10 @@ static inline void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
->>>>>    {
->>>>>    }
->>>>>
->>>>> +static inline void cppc_cpufreq_cpu_fie_resync(struct cpufreq_policy *policy)
->>>>> +{
->>>>> +}
->>>>> +
->>>>>    static inline void cppc_freq_invariance_init(void)
->>>>>    {
->>>>>    }
->>>>> @@ -735,6 +762,105 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>>>>         return ret;
->>>>>    }
->>>>>
->>>>> +/*
->>>>> + * With offline() defined, the cpufreq core keeps the policy alive when
->>>>> + * a CPU is hotplugged out.
->>>>> + */
->>>>> +static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
->>>>> +{
->>>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
->>>>> +     struct cppc_perf_ctrls perf_ctrls = cpu_data->perf_ctrls;
->>>>> +     unsigned int cpu = policy->cpu;
->>>>> +     int ret;
->>>>> +
->>>>> +     /*
->>>>> +      * Request the lowest desired performance while the policy has no online
->>>>> +      * CPU. Zeroing MIN and MAX makes cppc_set_perf() leave them unchanged.
->>>>> +      */
->>>>> +     perf_ctrls.desired_perf = cpu_data->perf_caps.lowest_perf;
->>>>> +     perf_ctrls.min_perf = 0;
->>>>> +     perf_ctrls.max_perf = 0;
->>>>> +
->>>>> +     ret = cppc_set_perf(cpu, &perf_ctrls);
->>>>> +     if (ret)
->>>>> +             pr_debug("Err setting perf value:%u on CPU:%u. ret:%d\n",
->>>>> +                      cpu_data->perf_caps.lowest_perf, cpu, ret);
->>>>> +
->>>>> +     return 0;
->>>>> +}
->>>>> +
->>>>> +/*
->>>>> + * Raise MAX ahead of the full restore when the requested MIN is above the
->>>>> + * current MAX. cppc_set_perf() writes MIN before MAX, so the platform would
->>>>> + * otherwise briefly see MIN above MAX on registers not accessed through PCC.
->>>>> + * Lowering MAX is safe, as the MIN written first is never above it.
->>>>> + */
->>>>> +static int
->>>>> +cppc_cpufreq_prepare_perf_restore(unsigned int cpu,
->>>>> +                               const struct cppc_perf_ctrls *target)
->>>>> +{
->>>>> +     struct cppc_perf_ctrls cur = {}, prep = {};
->>>>> +     int ret;
->>>>> +
->>>>> +     ret = cppc_get_perf(cpu, &cur);
->>>>> +     if (ret)
->>>>> +             return ret;
->>>>> +
->>>>> +     if (!cur.max_perf || target->min_perf <= cur.max_perf)
->>>>> +             return 0;
->>>>> +
->>>>> +     prep.desired_perf = target->desired_perf;
->>>>> +     prep.min_perf = 0;      /* Zero leaves MIN unchanged. */
->>>>> +     prep.max_perf = target->max_perf;
->>>>> +
->>>>> +     return cppc_set_perf(cpu, &prep);
->>>>> +}
->>>>> +
->>>>> +/*
->>>>> + * Restore what the CPU may have lost while offline, as the platform may have
->>>>> + * disabled CPPC and reset the performance controls. Never fail the callback,
->>>>> + * or the core would free the policy and leave the CPU without cpufreq. The
->>>>> + * governor redoes the control writes, so they are best effort, unlike the
->>>>> + * enable, which only a later online() can retry.
->>>> Sorry, I don't quite understand the last sentence.
->>>
->>>
->>> Will rewrite in v5 as below:
->>>
->>>   Report failures without returning them, or the core would free the
->>>   policy and leave the CPU without cpufreq. A failed write to the
->>>   performance controls is not fatal, as the governor's next request
->>>   programs them again. A failed CPPC enable stops the restore, as the
->>>   writes that follow may not reach the platform.
->>>
->>>>> + */
->>>>> +static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
->>>>> +{
->>>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
->>>>> +     unsigned int cpu = policy->cpu;
->>>>> +     int ret;
->>>>> +
->>>>> +     cppc_cpufreq_cpu_fie_resync(policy);
->>>>> +
->>>>> +     ret = cppc_set_enable(cpu, true);
->>>>> +     if (ret && ret != -EOPNOTSUPP) {
->>>>> +             pr_warn("Failed to re-enable CPPC for CPU%u (%d)\n", cpu, ret);
->>>>> +             return 0;
->>>>> +     }
->>>>> +
->>>>> +     /*
->>>>> +      * The platform may reset the controls while the CPU is offline, so
->>>>> +      * recompute min/max, clamp desired_perf into range, and reprogram them.
->>>>> +      */
->>>>> +     cppc_cpufreq_update_perf_limits(cpu_data, policy);
->>>>> +
->>>>> +     cpu_data->perf_ctrls.desired_perf =
->>>>> +             clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
->>>>> +                     cpu_data->perf_ctrls.min_perf,
->>>>> +                     cpu_data->perf_ctrls.max_perf);
->>>>> +
->>>>> +     ret = cppc_cpufreq_prepare_perf_restore(cpu, &cpu_data->perf_ctrls);
->>>> Actually, I don't quite think this is necessary?
->>>>
->>>> The motivation of doing this is fair (as mentioned in v3), but what's the
->>>> real consequence of transiently setting min_perf larger than max_perf?
->>>> Platforms should be able to handle this.
->>>>
->>>> Even if we have to fix it, it's supposed to be done in cppc_acpi.c.  The
->>>> current ABI wraps many things up.  cppc_get_perf() reads 4 values -
->>>> min_perf, max_perf, energy_perf, auto_sel.  cppc_set_perf writes 3
->>>> values - desired_perf, min_perf, max_perf.  The cppc_cpufreq driver would
->>>> be able to handle performance setting cleaner if those are separated.
->>>>
->>>> I don't suggest we complicate the driver for now?
->>>
->>> Agreed that it is not hotplug specific and can be done in the
->>> generic API.
->>>
->>> cppc_set_perf() would have to know the programmed MIN and MAX to pick
->>> the write order. Separate accessors would let it read only those two,
->>> but that would add a read before every write, including fast_switch().
->> fast_switch() doesn't have to touch min/max_perf, but it did at the moment.
->>> Caching what was last written would avoid that, but the platform can
->>> reset the registers while the CPU is offline or suspended.
->> Yeah, understood.  My question is still whether it's practically useful and
->> we're complicating this.
->>
->> Two reasons.
->>
->> 1. Platform should be able to handle min_perf being trasiently larger than
->> max_perf, otherwise it would be fragile.
->>
->> 2. It depends on the reset values of the two registers.
->>
->> I went over the ACPI Spec and didn't manage to find a descprition on what
->> the default/reset values of min/max perf registers should be.
->>
->> For a sensisble design, min_perf defaults to be 0 or lowest perf, and
->> max_perf defaults to be all 1s or highest perf.  In those cases, we are
->> safe to directly restore the saved values.
-> 
-> Hi Jie,
+Hi Geert,
 
-Hi Sumit, Jie
+Thanks for the review!
 
-> 
-> Agreed, those values would be safe, although they are not required
-> reset defaults. A platform could reset MAX to a lower value, such as
-> lowest_perf, while the saved policy MIN is higher.
-> Restoring MIN first would then temporarily result in MIN greater than
-> MAX on non-PCC systems.
-> 
-> This preparation was added in response to Christian’s v3 comment [1].
-> I had already posted v5 [2] before receiving this reply, and it retains
-> the preparation.
+> From: Geert Uytterhoeven <geert@linux-m68k.org>
+> Sent: Friday, September 4, 2026 4:03 PM
+> To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+> Cc: magnus.damm <magnus.damm@gmail.com>; Rob Herring
+> <robh@kernel.org>; Krzysztof Kozlowski <krzk+dt@kernel.org>; Conor Dooley
+> <conor+dt@kernel.org>; Stephen Boyd <sboyd@kernel.org>; Brian Masney
+> <bmasney+clk@redhat.com>; Jerome Brunet <jbrunet+clk@baylibre.com>;
+> Ulf Hansson <ulfh@kernel.org>; linux-renesas-soc@vger.kernel.org;
+> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
+> clk@vger.kernel.org; linux-pm@vger.kernel.org; Chris Paterson
+> <Chris.Paterson2@renesas.com>; Biju Das <biju.das.jz@bp.renesas.com>;
+> Fabrizio Castro <fabrizio.castro.jz@renesas.com>; Prabhakar Mahadev Lad
+> <prabhakar.mahadev-lad.rj@bp.renesas.com>
+> Subject: Re: [PATCH 03/10] pmdomain: renesas: rcar-sys: Add r8a774a3
+> support
+>=20
+> Hi Ayman,
+>=20
+> On Fri, 21 Aug 2026 at 17:05, Ayman Chaudhry
+> <ayman.chaudhry.kc@renesas.com> wrote:
+> > Add support for Renesas RZ/G2M v3.0 (a.k.a. R8A774A3) SoC power areas
+> > to the R-Car SYSC driver. The RZ/G2M v3.0 SYSC is similar to the
+> > RZ/G2M
+> > v1.3 SYSC, however it lacks the A2VC0 power area.
+> >
+> > Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+>=20
+> Thanks for your patch!
+>=20
+> > --- /dev/null
+> > +++ b/drivers/pmdomain/renesas/r8a774a3-sysc.c
+> > @@ -0,0 +1,45 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Renesas RZ/G2M v3.0 System Controller
+> > + * Copyright (C) 2026 Renesas Electronics Corp.
+> > + *
+> > + * Based on Renesas R-Car M3-W System Controller
+> > + * Copyright (C) 2016 Glider bvba
+> > + */
+> > +
+> > +#include <linux/kernel.h>
+> > +
+> > +#include <dt-bindings/power/r8a774a3-sysc.h>
+> > +
+> > +#include "rcar-sysc.h"
+> > +
+> > +static const struct rcar_sysc_area r8a774a3_areas[] __initconst =3D {
+> > +       { "always-on",     0, 0, R8A774A3_PD_ALWAYS_ON, -1,
+> PD_ALWAYS_ON },
+> > +       { "ca57-scu",  0x1c0, 0, R8A774A3_PD_CA57_SCU,
+> R8A774A3_PD_ALWAYS_ON,
+> > +         PD_SCU },
+> > +       { "ca57-cpu0",  0x80, 0, R8A774A3_PD_CA57_CPU0,
+> R8A774A3_PD_CA57_SCU,
+> > +         PD_CPU_NOCR },
+> > +       { "ca57-cpu1",  0x80, 1, R8A774A3_PD_CA57_CPU1,
+> R8A774A3_PD_CA57_SCU,
+> > +         PD_CPU_NOCR},
+>=20
+> Please add a space before the closing curly brace.
 
-I basically agree(d) with Jie here when I commented on v3:
-"I think cppc_set_perf() needs some prep first before using it on reset values.
-We assume that reset value may be Autonomous Mode on, right? So we must never
-write MIN>MAX and vice versa. I think we may just have to read and write
-the 'otherwise-offending' value first on reset."
-So I wanted to have this (as prep work) within cppc_set_perf() not in cppc-cpufreq,
+Thanks for catching this, I will fix it in v2.
 
-> 
-> Christian, are you okay with dropping it and restoring the controls
-> directly with cppc_set_perf(), as in v3?
-> Any general requirement for ordered MIN/MAX updates can then be handled
-> in a separate CPPC core series.
-> 
-> [1] https://lore.kernel.org/lkml/40d72385-0b3f-46e5-9f32-a27be3842d7c@arm.com/
-> [2] https://lore.kernel.org/lkml/20260916103820.1760297-1-sumitg@nvidia.com/
+Kind Regards,
+Ayman
 
+>=20
+> > +       { "ca53-scu",  0x140, 0, R8A774A3_PD_CA53_SCU,
+> R8A774A3_PD_ALWAYS_ON,
+> > +         PD_SCU },
+> > +       { "ca53-cpu0", 0x200, 0, R8A774A3_PD_CA53_CPU0,
+> R8A774A3_PD_CA53_SCU,
+> > +         PD_CPU_NOCR },
+> > +       { "ca53-cpu1", 0x200, 1, R8A774A3_PD_CA53_CPU1,
+> R8A774A3_PD_CA53_SCU,
+> > +         PD_CPU_NOCR },
+> > +       { "ca53-cpu2", 0x200, 2, R8A774A3_PD_CA53_CPU2,
+> R8A774A3_PD_CA53_SCU,
+> > +         PD_CPU_NOCR },
+> > +       { "ca53-cpu3", 0x200, 3, R8A774A3_PD_CA53_CPU3,
+> R8A774A3_PD_CA53_SCU,
+> > +         PD_CPU_NOCR },
+> > +       { "a3vc",      0x380, 0, R8A774A3_PD_A3VC,
+> R8A774A3_PD_ALWAYS_ON },
+> > +       { "a2vc1",     0x3c0, 1, R8A774A3_PD_A2VC1, R8A774A3_PD_A3VC },
+> > +       { "3dg-a",     0x100, 0, R8A774A3_PD_3DG_A,
+> R8A774A3_PD_ALWAYS_ON },
+> > +       { "3dg-b",     0x100, 1, R8A774A3_PD_3DG_B, R8A774A3_PD_3DG_A }=
+,
+> > +};
+>=20
+> For the content:
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>=20
+> Gr{oetje,eeting}s,
+>=20
+>                         Geert
+>=20
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-
+> m68k.org
+>=20
+> In personal conversations with technical people, I call myself a hacker. =
+But
+> when I'm talking to journalists I just say "programmer" or something like=
+ that.
+>                                 -- Linus Torvalds
