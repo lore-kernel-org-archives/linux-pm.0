@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AF3AD4BD7BD;
-	Thu, 17 Sep 2026 09:58:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 80F834BA1D1;
+	Thu, 17 Sep 2026 09:58:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789639091; cv=none; b=fiwNQEolMe694V6UgTAJQt+fF0Ad3fwSVxchrO9IDWv2jqi2OxgBkOrvswbedeuDoYswY++d980HEsUOneO+MCrIvP1GrxxokqRTGxPKTRBNgDcklW5E0qxjXEErXblk+IXzCuHNoKpjaol5K9aLUb5KdtAiZ2u6GZ3CWIPqfXc=
+	t=1789639105; cv=none; b=W9g9YjoFnTWV/I3SydA/8KmCV21/xfLqQbNywpdPhO8bye970ZaupPqBe3QuxXoR2l7ExG8nwqKVXMBYUKn6VsYflB9Ab6oFAAtqhIYO+5Yo6KhHCkq6Mxug8YVzh9HhKtoVluN3iMZ3jYTy+bZhGvwjz0YvTtWC1WL6OybjGeE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789639091; c=relaxed/simple;
-	bh=VXqLon1IWeQzTI8dDj4hKxc7saHoW6A0Hg3046jh/QI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aX0Hulh9cBnqhj/pkmqtyjNaC9FK8gwPNv2MPWllPbZ3WcWL+0oK3pSWQs45Nd4MLzIAy60TUfGkPVKqaB1sL0PKY1zz4u6kCJFj7vQQPLUHJhSJ6IXftz3DjoEOUAuzD9vPkrYEEoqEE3K1iK5wk1LZ1qeCQqjRkUbqdc52wpI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=vja3M8VA; arc=none smtp.client-ip=217.140.110.172
+	s=arc-20240116; t=1789639105; c=relaxed/simple;
+	bh=SAbrL6Yo4aTznG6Nf+upN9iXj0sj5B+8T0tuPN0Buzo=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=ofpxTEiQD5q23i3Cvm8QPkcKSZOwXa/RGB5PBpgVmAlC5SBRpi/HBCrHpJoUackmYvqpvHOtXMGbW/Lei5w5J+FZEQqO6l4fdpLZ2Uewz/348cR4/RYs+Bbm4pgzkbu9/hnL4j4KQvWySKORyAuDVp33MyOLsmbZzdVxfdKBstM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=HdUtlPf+; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="vja3M8VA"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="HdUtlPf+"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E7CA91476;
-	Thu, 17 Sep 2026 02:57:58 -0700 (PDT)
-Received: from [10.57.74.102] (unknown [10.57.74.102])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DD88E3F7B4;
-	Thu, 17 Sep 2026 02:57:58 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2241C1A9A;
+	Thu, 17 Sep 2026 02:58:06 -0700 (PDT)
+Received: from [10.57.50.144] (unknown [10.57.50.144])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CC53D3F7B4;
+	Thu, 17 Sep 2026 02:58:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789639082; bh=VXqLon1IWeQzTI8dDj4hKxc7saHoW6A0Hg3046jh/QI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=vja3M8VABVOrmZ2ChYzc/upsrhetTGKhEnf/pEqYK+HiSbSu/clHPeW+o3eKoIK4Z
-	 0+Wx3stikCeAmbXeqVmEvNHb/v78HBmo4ovtzTcV7kdJ1PuFCDwMqvcvyMeHDTyFTu
-	 Uj8E/utZDL2YEdMx2GCJKyelvgXqlKah9PS1wewY=
-Message-ID: <f8b0745c-d265-4112-90fe-79a08ad01553@arm.com>
-Date: Thu, 17 Sep 2026 11:57:57 +0200
+	t=1789639089; bh=SAbrL6Yo4aTznG6Nf+upN9iXj0sj5B+8T0tuPN0Buzo=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
+	b=HdUtlPf+UtGCtFhRNC8lxU52elkz5qFJooks2Adyr+lOQH/trlYVfeOSNxbWIt8SX
+	 Z5KGVUWdu2Wkj4ERzVo1Chff2RkkbiEZkaLKnP1IHDlUjaAgZ1iymoqlm98qC6GVRf
+	 f4nbnmz2B5O0sHtnwfTdkpYsiopdvu4OILU5iyEw=
+Message-ID: <b129997a-8d49-41be-a93a-7e0343c952e3@arm.com>
+Date: Thu, 17 Sep 2026 10:58:04 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,103 +35,66 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] cpufreq: update capacity_freq_ref when the boost
- state changes
-To: Oleg Keri <okerixx@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Sumit Gupta <sumitg@nvidia.com>,
- Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
- Beata Michalska <beata.michalska@arm.com>,
- Russell King <linux@armlinux.org.uk>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Sudeep Holla <sudeep.holla@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org, driver-core@lists.linux.dev,
- linux-pm@vger.kernel.org, jonathan.cameron@oss.qualcomm.com,
- sibi.sankar@oss.qualcomm.com
-References: <20260910063440.4677-1-okerixx@gmail.com>
- <20260910063440.4677-3-okerixx@gmail.com>
-Content-Language: en-GB
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20260910063440.4677-3-okerixx@gmail.com>
+Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path
+ candidates
+From: Christian Loehle <christian.loehle@arm.com>
+To: Shubhang <sh@gentwo.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Valentin Schneider <vschneid@redhat.com>,
+ K Prateek Nayak <kprateek.nayak@amd.com>,
+ Beata Michalska <beata.michalska@arm.com>, Elif Topuz <elif.topuz@arm.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Christoph Lameter
+ <cl@gentwo.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260916100116.701206-1-christian.loehle@arm.com>
+ <20260916100116.701206-3-christian.loehle@arm.com>
+ <08339e62-1787-e203-569c-a7fd3026395f@gentwo.org>
+ <e11d588b-e597-4210-baa3-278eaeb0cf52@arm.com>
+Content-Language: en-US
+In-Reply-To: <e11d588b-e597-4210-baa3-278eaeb0cf52@arm.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 10.09.26 08:34, Oleg Keri wrote:
-> capacity_freq_ref is latched from policy->cpuinfo.max_freq by
-> init_cpu_capacity_callback() on CPUFREQ_CREATE_POLICY, and never
-> updated afterwards.
+On 9/17/26 08:47, Christian Loehle wrote:
+> On 9/16/26 20:43, Shubhang wrote:
+>> Hi Christian,
+>>
+>> On Wed, 16 Sep 2026, Christian Loehle wrote:
+>>
+>>> +            } else if (!idle || idle->exit_latency == min_exit_latency) {
+>>> +                nr_candidates++;
+>>> +                if (nr_candidates == 1 ||
+>>> +                    !reciprocal_scale(sched_rng(), nr_candidates))
+>>> +                    shallowest_idle_cpu = i;
+>>
+>> available_idle_cpu(i) ensures that this is an idle CPU, but !idle means that no active cpuidle state, meaning no exit latency is available for comparison.
+>>
+>> [PATCH 1/2] treats such a CPU as a fallback i.e. it is selected only when no idle candidate has been found yet. Here it becomes an equal reservoir candidate, even after selecting a CPU with the minimum known exit latency. That is, it is added to the random selection pool and can replace shallowest_idle_cpu.
+>>
+>> Is that intentional ? If not, should reservoir sampling be limited to
+>> candidates with `idle->exit_latency == min_exit_latency`, while retaining the first !idle CPU only as the fallback?
 > 
-> cpufreq_frequency_table_cpuinfo() excludes CPUFREQ_BOOST_FREQ entries
-> while boost is disabled, so on a system that boots with boost off the
-> latched value is the non-boost maximum.  Enabling boost later raises
-> policy->cpuinfo.max_freq but leaves capacity_freq_ref behind.
+> Hi Shubhang,
 > 
-> Two things then go wrong on arm64, where the AMU drives frequency
-> invariance.  amu_scale_freq_tick() caps the computed scale at
-> SCHED_CAPACITY_SCALE, so a CPU running above capacity_freq_ref
-> saturates at 1024: the scheduler cannot tell a boosted CPU from one at
-> the sustained maximum, and utilisation is underestimated.  And
-
-IMHO, this is where the concept of 'cpufreq pressure' on CPU capacity
-comes in.
-
-The cpu_capacity value is calculated based on highest_perf.	(1)
-
-In case you start with 'boost == 0' nominal_perf might might be lower
-than highest_perf.
-
-cpufreq_update_pressure() calculates this value:
-
-cpufreq_pressure = Cmax * (1 - fcapped - fmax)			(2)
-
-[ fcapped = policy->max, fmax = capacity_freq_ref ]
-
-Example on RADXA Orion 06 CPU10:
-
-$ grep . /sys/devices/system/cpu/cpu10/acpi_cppc/*
-...
-/sys/devices/system/cpu/cpu10/acpi_cppc/highest_perf:7876
-/sys/devices/system/cpu/cpu10/acpi_cppc/lowest_freq:800
-/sys/devices/system/cpu/cpu10/acpi_cppc/lowest_nonlinear_perf:2520
-/sys/devices/system/cpu/cpu10/acpi_cppc/lowest_perf:2520
-/sys/devices/system/cpu/cpu10/acpi_cppc/nominal_freq:2500
-/sys/devices/system/cpu/cpu10/acpi_cppc/nominal_perf:6600   <-- hacked
-/sys/devices/system/cpu/cpu10/acpi_cppc/reference_perf:1000
-...
-
-# cat /sys/devices/system/cpu/cpu10/cpu_capacity	<-- (1)
-984
-
-# cat /sys/devices/system/cpu/cpu10/cpufreq/boost
-0
-
-dmesg (added log)
-
-[    8.065337] cpufreq_update_pressure(): policy->related_cpus=[10-11]
-policy->max=2500000 pressure=173			<-- (2)
-
-# echo 1 > /sys/devices/system/cpu/cpufreq/boost
-
-# cat /sys/devices/system/cpu/cpu10/cpufreq/boost
-1
-
-dmesg (added log)
-
-[38137.194134] cpufreq_update_pressure(): policy->related_cpus=[10-11]
-policy->max=3031666 pressure=0				<-- (2)
-
-The task scheduler gets informed via:
-
-get_actual_cpu_capacity(int cpu)
-
-  capacity = arch_scale_cpu_capacity(cpu);
-
-  capacity -= max(hw_load_avg(cpu_rq(cpu)), cpufreq_get_pressure(cpu));
-                                            ^^^^^^^^^^^^^^^^^^^^
-  return capacity;
-
-[...]
+> Thanks for taking a look. Including !idle candidates was intentional,
+> although you're right that this changes their treatment.
+> 
+> I think there's a case for giving NULL a zero ranking. With a working
+> cpuidle driver, NULL can mean the CPU is preparing for entry or finishing
+> after exit, making it a good low-latency candidate.
+> Architecture fallbacks are also reasonable candidates AFAICS.
+> In any case, I'd prefer to address that separately (perhaps through a
+> helper in the idle/cpuidle code rather than embedding those assumptions
+> in fair.c and will drop !idle CPUs competing with min_exit_latency CPUs,
+> the patch doesn't need it.
+Actually about the last part, I'm leaning towards sticking with v1, because
+that is actually the current upstream behaviour. !idle CPUs currently trump
+any CPU seen so far, but preserve min_exit_latency, therefore sticking it
+into the shallowest seen reservoir is consistent IMO (although we can
+certainly debate if that should be the case).
+I'd prefer sending a follow-up with an idle helper and making a properly
+defined policy there, but that's adjacent to this patch.
