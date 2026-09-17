@@ -1,88 +1,78 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 962174E1C96;
-	Wed, 16 Sep 2026 21:13:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B67F0390CB8;
+	Thu, 17 Sep 2026 02:29:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789593226; cv=none; b=FNLy5Vwou/zt0GpphBMPv4umfnXP0sGGlNnDa/2v8W1gxhVSKzKmNXAc7J+QvTr+l6rXYG+sD8VBoZ5eQIJxxtFLYBj5Mz856zJd8AHP7+ULOFhQqSoSvdU7BWpiJGQ8w+4bKTSUBhVugNLiWd9Gf366KXS64f9wLS0kmkSpVic=
+	t=1789612163; cv=none; b=eN1DmX6XD97yXl4dtv9YDau3kkilEhwaODUYJeW9wGioIPeTNMC55J60QiN6e5XDc21ypN3FbtSIr9Dc9OSacaSibg7z8wTCTaxti9+80isP+L5mwuPnSfFthiPepcSCNC6oJMbMS6q22ww1poEXjGAjDAqzd7Bj2e7x788SrYc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789593226; c=relaxed/simple;
-	bh=qJUrC8VXySjaMw0QEUwRXNx6Xoy5CnlVQPrOEXS6f28=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ALbXpdkwFRuDp9VMixRQcM3UmLQVklBQag2JVRRuSAyWPN/t/1rBWWSZg3QfpdJ9hsAqd2b+BCJGReogERk+DIBgUzz+KRb4FVhO9mcXleVavdQe1EuhQln47SNX6vDJZ8KpdfONII1cPxxwZtsSXTMFWp19MUdxFVkzvKpxvMY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dohLMzS0; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789612163; c=relaxed/simple;
+	bh=X4zoU829ML15fsnGN9PrrVuRJuQuaB17AxJeEgGT2lo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Q7hz6OpnJ2J9wdzOvcGUFJk2kmh5aFis9a5YMRuyKjbxO+GjMil0m7+nlG6mtvqlzr7qtXkhe0ZFYVsE+knm4/Jlh+0t3OvhKp5r2gptpaWhDJBjAOh+u/ZzsjbyTK0l4xkuC8gLsUEyerBEXKyMBWyNl9SEizzmcL5RfGd3c/g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WDkzTBSw; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dohLMzS0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 716DD1F000FF;
-	Wed, 16 Sep 2026 21:13:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WDkzTBSw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AACDC1F000FF;
+	Thu, 17 Sep 2026 02:29:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789593203;
-	bh=Qr8LnhYJFUtSA5D8VtGo9iYQs19fU+oWP9yAzZMiHDc=;
-	h=From:To:Cc:Subject:Date;
-	b=dohLMzS0oBlFlbPqKRH2k0zP73ekX1/LbWxmIocHkCKKeuXv6I2zM5Y54kShNFXLn
-	 Na93qi8Mv5z/FwQ5Ku7aBpAgWmdEy/8SrnnQR1s9T43rswVRGNpebBGlHY7EmUoaIw
-	 4UHK5RIUoEBHAMsgzzmIi9s+YTcXO/iZ7P8rOBHmjf5E02acAy/pcsJF882+pPGCr6
-	 VVorAHCNO0TtY6ufcysAwQibwhFe/HnP7AMgqywm2Amc0zcBy4Q3dQAUinUuQm6ZaU
-	 qolCviFL0cGeBGwwMrBQRKlnzUu1lkNN30g6f2YLDMfBaHjgqPzPbBy0I4cFwbpddh
-	 Dv1lNbBHUO1+w==
-From: "Mario Limonciello (AMD)" <superm1@kernel.org>
-To: mario.limonciello@amd.com,
-	rafael@kernel.org,
-	lenb@kernel.org,
-	pavel@kernel.org,
-	gregkh@linuxfoundation.org,
-	dakr@kernel.org
-Cc: "Mario Limonciello (AMD)" <superm1@kernel.org>,
-	Eric Naim <dnaim@cachyos.org>,
-	linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev
-Subject: [PATCH] PM: Add resume event mapping for PMSG_POWEROFF
-Date: Wed, 16 Sep 2026 16:13:14 -0500
-Message-ID: <20260916211317.433349-1-superm1@kernel.org>
-X-Mailer: git-send-email 2.53.0
+	s=k20260515; t=1789612148;
+	bh=etZWzf+rdXXaZHJJC+yfMjc9Q4+L0ijxEbKQ8xbrFqI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=WDkzTBSwybzXtwo7r4D3Kc4ha+PA0dbS+ZKOZleJO5fGtTzQ1uzQtRSqD5FG14Fwd
+	 1NB0NQdIhpvWOb1mbWtXYLWTHiQbFWHBBMKRGsAydb8sOMGTg3UCFRSm4TVHkIAvqh
+	 0dRGPUrhJYKmUnFr11uc+s7pEqFMFvfA5LFzEpEb0n31xEqtjxMjVYSsgfnsDuf3ng
+	 L2sfQgMtzANSESzhS0Vk+imqtMffVhTHwruu9nX0ZzAvPk4NP/C8wgFmOWg3EQS0ET
+	 GHlrr3WIuJ4aaYJFwLmmRiVL4VLyjx2P10+0S/phcsF83ClvQqxfQ6FW55Dk6IzPeh
+	 5cYPrDvZLyeHQ==
+From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
+To: linux-pm@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	Bean Huo <beanhuo@iokpp.de>
+Cc: "Martin K . Petersen" <mkp@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Avri Altman <avri.altman@sandisk.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Stanley Jhu <stanleyjhu@google.com>
+Subject: Re: [PATCH v2 0/4] devfreq: check the get_cur_freq() return value and use it in ufshcd
+Date: Wed, 16 Sep 2026 22:28:57 -0400
+Message-ID: <178952247942.2757716.2234123805266440818.b4-ty@b4>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260907192140.2701755-1-beanhuo@iokpp.de>
+References: <20260907192140.2701755-1-beanhuo@iokpp.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-PM_EVENT_POWEROFF (0x0800) and PMSG_POWEROFF were already defined in
-include/linux/pm.h. Add the resume_event() which is used when a shutdown
-sequence needs to be aborted and the system should return to normal
-operation.
+On Mon, 07 Sep 2026 21:21:36 +0200, Bean Huo wrote:
 
-This completes the PMSG_POWEROFF infrastructure needed to support
-differentiating between hibernation and shutdown sequences when
-re-using callbacks for common code.
+> The devfreq core has three users of the optional ->get_cur_freq()
+> callback. Two of them check the return value, the third one does not and
+> passes an uninitialized frequency to the transition notifiers when the
+> callback fails. Patch 1 fixes that.
+> 
+> Patch 2 writes down what a driver is expected to return from the
+> callback. Today this has to be found by reading the devfreq core.
+> 
+> [...]
 
-Hibernation is started by writing a hibernation method (such as 'platform'
-'shutdown', or 'reboot') to use into /sys/power/disk and writing 'disk' to
-/sys/power/state.
+Applied to 7.4/scsi-queue, thanks!
 
-Later shutdown will be initiated with the reboot() syscall with arguments
-on whether to halt the system or power it off.
+[3/4] scsi: ufs: core: Record the frequency the controller starts at
+      https://git.kernel.org/mkp/scsi/c/20ae446921e7
+[4/4] scsi: ufs: core: Report the current clock frequency to devfreq
+      https://git.kernel.org/mkp/scsi/c/55ad5deeea92
 
-Tested-by: Eric Naim <dnaim@cachyos.org>
-Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
----
- drivers/base/power/main.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e130da4281410..7265553ba24ca 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1472,6 +1472,8 @@ static pm_message_t resume_event(pm_message_t sleep_state)
- 		return PMSG_RECOVER;
- 	case PM_EVENT_HIBERNATE:
- 		return PMSG_RESTORE;
-+	case PM_EVENT_POWEROFF:
-+		return PMSG_ON;
- 	}
- 	return PMSG_ON;
- }
 -- 
-2.53.0
-
+Martin K. Petersen
