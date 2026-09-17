@@ -1,71 +1,76 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010028.outbound.protection.outlook.com [40.93.198.28])
+Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012049.outbound.protection.outlook.com [52.101.53.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 940FA3D16EF;
-	Thu, 17 Sep 2026 18:36:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.28
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47A583B71AE;
+	Thu, 17 Sep 2026 18:59:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.49
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789670203; cv=fail; b=QhzfNvTPfHEDgUnqRB+OltcrjAVWngdSnNvzWHERB+X7MwCcome6RwR3oDlp5iUP149gAfYiUIFxXJR4oBjCVuFpw7pC5S2O/CSTBrVZQhdnDo2HTwv7xvSUHjzdWKYo+cbKnAORlNpSP+wu5LA7ATeVL8xh4VQ/v2oq9RvIGw8=
+	t=1789671571; cv=fail; b=KxsDsaIZAULD8cATqGrWgaezHAAgxqzQE6779OH/DPTMr1jXT7oJjNgx7GTu8Zz0UUWnv6Pb1nDLUqYoJ2Vfp4JsLhcAfdrmP0aBMTxrUwpUr/054Ls8dbNJZkV/7dr3up5YbrVpcIW1QDRCXp07qPdwYpCk1iHvAu/IQbYv7RU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789670203; c=relaxed/simple;
-	bh=dIJmHClj2tlCcSYfxhoc3Cj6vBXW8dQnoWoY8bs/NUc=;
+	s=arc-20240116; t=1789671571; c=relaxed/simple;
+	bh=tg29YTX42MazPYzzrCdPj03Yln3W+7CPv8fS6FYIWAM=;
 	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=c3FCV3yL0XYdrZyvzYMPlVaBogClQaI9JEMkZPG/GGrjceK43poqaW2qMoKG+/p/+zO8zDXjyx9DtvqqwOUDaDh6MeoCWD4LPh4lfh4XNHoIiBoM4FW+mxWvbGyxv62zWTVjLT4mgzjMOTF8XWw8YDfcnWot99cnVZit/BLwRQc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=wXIsff5e; arc=fail smtp.client-ip=40.93.198.28
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	 Content-Type:MIME-Version; b=uw4nAFudl1ZNZZwaalzek2b2x3eo3lMsNuMrn2ClccN22MSRAGenY44wFOx/0GP7SQ/Ekwyrij7q6uW9cwUD45EXUXFUYwCrrjDic8hAN/KFjBcBYbrWo/OzSt/QbeNWguNh/OwUND5C2yaESsrn0MgXL3jm20o4zkJ2WK3uoE0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=KE4Di7Wk; arc=fail smtp.client-ip=52.101.53.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="wXIsff5e"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="KE4Di7Wk"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=RraxD2OWjdLYhbQ6xQ1IBVz5XLWL4AOqtqFOdOMxoGf9+ARGh5Z9Jmh4kBxwz3K3kEsfoQ6Woqo4NOKRjT5ZssFRS5RfGYSAUOOZRdZ6AZLuWsE6IKcIHK7yMlFTQRg45umZVOXhDglioBtpg3z16FNpNJmtdABVc+IrllHmaLRTHg9qPajHMJD3p5Jn6hlCirp50wpxNSECmZBhVfe9uQA9aclJ9I+gG4+URq3XKTKQUIzQxlav+CaWqUkX9a9rISe+mo4AfNH1zi+N+8euz9sN6Q0HhPCgB0nI/RdJQltxAnM/zjtxxrqMJgZJH6II5VuVRK4+6+ml849AQfkb4w==
+ b=sdZDiVMwdI/jdwU7oDCGzBnRcKNw1SjbdV7J8yc+BJShrrbTlh5EJoNcPPOnqI+TNCdM6Co3/h4Atvqh7AsO+zjdNvTx54WiuTvMUl2TS2WNVQQ8vYnWr7AB4K8B4Auf8BgK05OIQ0d6XnqBhWM1s1v+RTYHWbbhnhOyz8M7Ze9PTm66DPQulNNFRxTW+DuEzheFbLjNc5/a0kt7WHbLg7rWStjvWzQjvpAzpvOOyZRXB1focR5NDYOu5aNuqajb2Gz0aVLgHlBwRjmxP6ae+MvOoYLjXoVqwjQr9rF7qavWM2LyUm27V+ATPR7ykskyEJJbnUEFh4fljqCMb9pf9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=WIAWWVrE+swqtpKZ4RNQhgSZoHKpl+s3k7MwZ4bhQIE=;
- b=N91GakH2HHqyPIdohpGf0pSd0o3egLGOelb+ZCVRFh2DtzvCmKuqK7hxliWNn4/u8+BhNPyvV8meqFwkb4+pMM79mQVqbNrrLWQS0ngmIW7fggnYJMC58Oirgxl06yioczqyRgaziyaf2BT9c6RymFFMG88ftckYOVs47dK683mO2YIJlY3Yk0bCh1c6E5XOhjkq6mfvGweUoEsgyuJhhokPydKZ3XYzQDaluC3OKNR9L0Eoj/m12ShkZI+958/OWFEBHaKTE0fvuyPdHuNPH3JbbFcdxh35/IjSOBKsomQlV+s1ZvWUcNHphPA1EjVA1nwe+lku5vGhDuCOS5Xoyg==
+ bh=82cQHuh5Qgo+fp1DcF6QU/KB+k+4HBH3Pkr1/vm+scA=;
+ b=YFAwxFcp7t3ph+tK7tMAmBCVeD6Tw0OYYr0rZnfGDPxWNYn4vcVqXPbEN04OOMIrVN1QNH2IVaFV384IqxExAjIiZEqa2TWkDb1vUPL6XVIWkNJT+0tHmaYLerrqi5SJK86eBBmRODqx3gNVs3tiqqqbLG9ibX1E9erg8n6UJgYunJhK0H6NFN3VeqH5GiwLZXEMS/UrDU5dY33cEHkcV3DlkdAthUGQChtzXgqtkr3atd7sruPPe1AJ4g/B6S0fktY3TyDqS5Q2yiPZI3PLszD+y8gsQo3XaQntygIkaAez5/vH8Q777dNSAqQUCufA6kEFX0O72EglfPpawLDGJQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=WIAWWVrE+swqtpKZ4RNQhgSZoHKpl+s3k7MwZ4bhQIE=;
- b=wXIsff5eKJ2eYRroFAYcb2Ur1ib/5cbVn1Ynp1XAg9HDsubXfr1u61V8ta8gxlH0WteTVVtjkZoJnuYMkFB6t4b4yx7ZvVgikHp7JkYDrDsVW/iqaADsczmgWbHrj3iQ0H1xTtF7TxKmZkQbvJgW69Qt254DqclmGh0LR8psyUo=
+ bh=82cQHuh5Qgo+fp1DcF6QU/KB+k+4HBH3Pkr1/vm+scA=;
+ b=KE4Di7Wkc7H1zTYhvPftYECHNOzmK81Pz/yJlhu+JH0rfbRy/CcetOlO3J+INHlBh16BIULFDtvGJvFO3BJYM0zyryMZ00XfVjQ8Wli4EP6Wj2PAp4LXtZ/n9iWFfKX3/B6/pwIrAxVAtGuqZRfZxDe/I7BBFPbD2kRozZCBXFqmB2ncbhxIDctq2xzZnjKA/J2f+4V0j5XNxrQHzh27bqqHkd26vnLaVOkD/H2bu1oqdRH+C5klOs02ExULMxyLUDfUFx5hSaijxBYXjf0Z+RfFdrm6ZdAiozcnky7arBPgvgwQdZ380tLI8sGLaLJDdnKGuP89w3XareyPuiDS9g==
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by SJ2PR12MB8944.namprd12.prod.outlook.com (2603:10b6:a03:53e::5) with
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DM4PR12MB5246.namprd12.prod.outlook.com (2603:10b6:5:399::17)
+ by CY5PR12MB6108.namprd12.prod.outlook.com (2603:10b6:930:27::15) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.13; Thu, 17 Sep
- 2026 18:34:26 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%7]) with mapi id 15.21.0428.011; Thu, 17 Sep 2026
- 18:34:26 +0000
-Message-ID: <a92b1050-5f67-463c-977a-87af9682656d@amd.com>
-Date: Thu, 17 Sep 2026 13:34:22 -0500
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Thu, 17 Sep
+ 2026 18:59:19 +0000
+Received: from DM4PR12MB5246.namprd12.prod.outlook.com
+ ([fe80::9c9e:30a1:5456:c485]) by DM4PR12MB5246.namprd12.prod.outlook.com
+ ([fe80::9c9e:30a1:5456:c485%4]) with mapi id 15.21.0428.011; Thu, 17 Sep 2026
+ 18:59:19 +0000
+Message-ID: <19b236de-ec1d-4abd-a78e-17e4faa3b75a@nvidia.com>
+Date: Fri, 18 Sep 2026 00:29:07 +0530
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: Use a non-boost reference frequency for pressure
- calculation
+Subject: Re: [PATCH v4 1/4] cpufreq: CPPC: Keep the policy across CPU hotplug
+To: Christian Loehle <christian.loehle@arm.com>,
+ Jie Zhan <zhanjie9@hisilicon.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
+ zhenglifeng1@huawei.com, lenb@kernel.org, saket.dumbre@intel.com,
+ ray.huang@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com,
+ kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
+Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
+ ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
+References: <20260806200857.601152-1-sumitg@nvidia.com>
+ <20260806200857.601152-2-sumitg@nvidia.com>
+ <c30ddb21-2c97-4b9f-bae6-b29e30aa5e5e@hisilicon.com>
+ <753b98a6-b3f7-431b-a867-eccbfd15d357@nvidia.com>
+ <26439302-6759-446b-a498-310c218e4102@hisilicon.com>
+ <404f0fea-4980-4e7f-ae05-eadcc2b13d7d@nvidia.com>
+ <7d250745-bed7-4e75-a3b5-17565d8ff662@arm.com>
 Content-Language: en-US
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
- Jianyong Wu <wujianyong@hygon.cn>
-Cc: viresh.kumar@linaro.org, kprateek.nayak@amd.com,
- vincent.guittot@linaro.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, ray.huang@amd.com, perry.yuan@amd.com,
- zhanjie9@hisilicon.com, zhenglifeng1@huawei.com, pierre.gondois@arm.com,
- sumitg@nvidia.com, srinivas.pandruvada@linux.intel.com,
- hongyan.xia@transsion.com, zhongqiu.han@oss.qualcomm.com,
- jianyong.wu@outlook.com, wangfengyu@hygon.cn, zhongyuan@hygon.cn,
- huangsj@hygon.cn, Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-References: <20260915065747.1671965-1-wujianyong@hygon.cn>
- <CAJZ5v0g2d6fY8hM0FVH8tiOUhXm0PZM+Qn7OxM9YNXm8i0pYmg@mail.gmail.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <CAJZ5v0g2d6fY8hM0FVH8tiOUhXm0PZM+Qn7OxM9YNXm8i0pYmg@mail.gmail.com>
+From: Sumit Gupta <sumitg@nvidia.com>
+In-Reply-To: <7d250745-bed7-4e75-a3b5-17565d8ff662@arm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: CH5P223CA0009.NAMP223.PROD.OUTLOOK.COM
- (2603:10b6:610:1f3::7) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+X-ClientProxiedBy: PNYPR01CA0044.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:25b::6) To DM4PR12MB5246.namprd12.prod.outlook.com
+ (2603:10b6:5:399::17)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -73,241 +78,336 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|SJ2PR12MB8944:EE_
-X-MS-Office365-Filtering-Correlation-Id: 556fa067-c664-4bdf-df1c-08df14ea4d6a
+X-MS-TrafficTypeDiagnostic: DM4PR12MB5246:EE_|CY5PR12MB6108:EE_
+X-MS-Office365-Filtering-Correlation-Id: 21f17392-50c8-4beb-5ade-08df14edc6dc
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|366016|376014|7416014|1800799024|56012099006|4143699003|10067099003|11063799006|22082099003|18002099003;
+	BCL:0;ARA:13230040|7416014|23010399003|376014|366016|1800799024|6133799003|18002099003|22082099003|921020|4143699003|10067099003|11063799006|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	4lW2ADQ4eP/R4Uy6Q9RCklVXcsKEyC5Oja+zO7Sg7RySSS8ElAQDzqztEV+AFrDqeZE9PcPQ/EZI9RORhcSi8b46AcHWd95HJ65m1v0a6S4Htsux0ZMexYreeMvc3wPpxG3dF56NhISIqCTz/rRmZMZwLg15KrOlEtu+JxFbA1VM46/DUkfJ/n9VTJ07FtPsR7cRA2IX99PlW51skin9RFRkuzfOLfGy97rNYmEBN/aIvZPYgrOnxxQTOgCDpXui+b1uNme8d23Zk+VW3CrFdcI3KqK0Wu9e1qgijSIT01Ba87rj6vA7QdyypkPYFF0yGVF7ePBuDkJFcRrl9j9Hg3T7JbSUGch38gn9G47qFl1lnqKLT2M+zM9voLaaPO9wHMLKlZP97ggJYQF71/IcM2b1iUz6FV+U7eJdLKlEuYEcSr4LbYEKPchMVRyKyhJGoCJmQSjtlUt1YZaKxThAjE2ZAj34XVxdu+RcIkTv4AMTRNWl6rFBrJSmSurjEbLQXHE/VUtja8S/QO6J9i3/ClfIeWapKEniucKSwrAL0ssxWm7QwmjYbjTIjE8pvJo46zxcaoGq+L6du7h/Gr/hDUP8EMGAKiC43sMDzbHU1Tw3GcERdwcpodgvkwHRrUOcTNhl6wolFCqg3htomWwyFLKSsMotYmNt7MoRegB7RWI=
+	KV2vYPmYv6WyeTtBrhoCjEmbJkcusmYqd+OWV4dZkcYuxt/vYI8L4CuPEJfNPr6uyi2AjtsGgA+ZYmCA+VaeYdrFji1oKOxPph/TnAoMrZ+OXayFW8fWobMkLkmyzKICWyyk1T2xv91J1jYfVL1yGB2uJFJc3G1/Df0jT7E3e/yE32fmfyUdlXqrBcxqDAyH8N+ZIZB1wbyMDaHkwxp1qED+UT2XaewKnfCy+fqTQLWXZSqLQYcntTVr1VutEMWSuxWO8c1nMVR92xQwleYjcExpQ+PFOZ3G2DwQrQLnYnf77zGb/IeruURA3VBBffM89edZLYhJHO6wy0GuaLqM4saTiaDWGWI/bJfTNmjgQ9Wze4LOF4vzm922Ur2yqxqDoFXbDIn1WG79e1xrXX5U1NzW5bHZB7f78oc9ilR/MUcQCNQ4sWw+M66YI8HAsKucHDxKRaIYx2THarHk0krZdQqni31lAfPYWRs/ADWSpb/kHZ4U4TDDxj3CdtJLacKz6D2LhAJjR3sctzt0g6G1seSF7f90dOYS8hfPPPyBO6xsyX7qekTkSm7NgNDGEQoO6Yrhmy1VZfimebP9oSy7xBDY+cg4Nklz1X6YyHHAPo3SHlrQfZJ97u31lT1JfxypIM2OcFp5BsqAF5mWk0VXFBTIUUVW3aq8qXCwTIHbrqMjYUhtWIqJWjjgC220QdexkNp2mxUvirlvvqWsGmwR5w==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(376014)(7416014)(1800799024)(56012099006)(4143699003)(10067099003)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB5246.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(376014)(366016)(1800799024)(6133799003)(18002099003)(22082099003)(921020)(4143699003)(10067099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?M1poa051ZkY4QUYrVHhmZUNqMjJsTHAxMXN5WVcrMWdoVXkzV1VKejBZTmpC?=
- =?utf-8?B?bER3dkdyNmxwbjM2VkJYTzBnWkJUcDdHcVdQNWJPM1lkNklRVCtXKzkyS2VH?=
- =?utf-8?B?dlFSRDQ1Q3o0TU54Q2F3d0hLSmpOemE3czZIQXZtMVF1M0NIc2srM2d0SnNW?=
- =?utf-8?B?czlmb1IwRVk2ejBBcVlJWEFJa01wVzhsdjUyaTlTeWRObGVPWHdEd2NxZzRp?=
- =?utf-8?B?TmZ5bnc1MjVrZ3ZtbmQvVjgyOTlsYXZHVzV5Zk5tS3FPNFl3dDhKeU5tbmVH?=
- =?utf-8?B?bkdtZnBJY0VkZTAxSDVpY0EwZWY2eHJ6cWdPRnJVUEZVUVVvaXppV05ZbXFY?=
- =?utf-8?B?enpteEhsbG9mdVRLdXVWdlQrR3ZHUVQ1Nm13eWJEV0N1U2ZnRXlFU3N5ZHJ0?=
- =?utf-8?B?MU9haEtQY2FVbk8vWlhYSGV1cjhrV3JPS2x3S1VLSEs4ZXl5dnpES053dVQ4?=
- =?utf-8?B?cDUzNnZVRXZ5Z3dOYlRKNEU1RnV5QzVkcjlnMHhzc0RzYUxJSHVUZkNlZHZH?=
- =?utf-8?B?cDIzZFl4dFQvTGJXalM2UVQxbTl6V0Rpc3ZheE5ESjNURkg2WEVsSUQ1N0VW?=
- =?utf-8?B?N1J4Y1Z6TUwrdVlOd09aZFlsNUtPME4xQndDY1Z1U0JkV01QOXdGOEFxclJS?=
- =?utf-8?B?K1RhUGZ6RzU4cXk4Mjg4OEtvVWJPRlpTQ0FNWU1BTHFlb2Z6ekQ4NjBhbDNW?=
- =?utf-8?B?T05INzVnMWFFNTNVREw3WUxxSUs2UnpFOUNKeFcxYytuYjNlZ24rS1hjaWpu?=
- =?utf-8?B?azd0NzFLK29kL3E2YjkvalM0SW5DRU9TZHF0bG5PdVB4VEsvTGtxRzczdzVh?=
- =?utf-8?B?VGYvRVJ0Z0dROEd5RjcrMkZQeHlOV3hneFhFVjJzTlhMUWVNNk14WkMwWXZQ?=
- =?utf-8?B?WUFLWkJTUWV6QXhpcEFVbzlHSTc3RDNIdUxZdExxQlM5NitjTFBabktPOGIw?=
- =?utf-8?B?ekVQRHdBbzdncjZiS1cwNEJGSVlad0FZTzgzc0NhY0ZacmZPcmFVaWM1Y0lt?=
- =?utf-8?B?bXgxTDBpWElMdTZmUnZUb3dEMjNySjR5ZmV3Si8zMjdyRzE0c3NGVU5aUzE4?=
- =?utf-8?B?MWRXZmpRUm9lWkRoeHNESDBaWXprYzVFSmlJc2RSdHhaZTJzelRhRnlVY0xM?=
- =?utf-8?B?RXFiMlluY0ZmcFg3bjgyUWpKZk8rMWljbmJOd2pIWEw2eEF6RXRBZUhNWDlw?=
- =?utf-8?B?cVBuR29VVUFKQmJ2aEdaQVpCVlprMDRZSzQ5NWVFRmtBQVd6R1BlQXM5eVRQ?=
- =?utf-8?B?UjQ3WGpDc3RLWm5GWTJZTFJyeUZsUm95djhVVXk0TEpZbEFna1duV2tvczdF?=
- =?utf-8?B?OWNOeGpCSVp2NG1aVnNPQTBSVDNnQngyTThmdjdIWDJJdldNYUV4S2V3aXZ5?=
- =?utf-8?B?bFdiRkZ2NDBhZzllRFduNjBnT3kyZ1k2YW9CODk1RVJ3OW1ySklicHRrUDkx?=
- =?utf-8?B?REhxc2NERGtXUDlrSzdHcFBRdWtIK0hXVUZKWXo2WXlzRGYxTm1XSjZ3WGVV?=
- =?utf-8?B?TVBEVkJYK3VpSXlTMWp2aVNvZFdncHl0YjN1ZkJqQk1pSGpkOFd0S3pTTHVh?=
- =?utf-8?B?SDU0eGVralBYR1BxWTI3Ri9BQ2JEakZJcTk1dXYwNkZaeDgraFRrczgxVGVi?=
- =?utf-8?B?dnUvTzk1RktKM2RtWFJtRFNMQVo5SlUzTm5hbkR1cmxiK1Y1R012dkRJb1Jw?=
- =?utf-8?B?NXlCcHVKQ21MT1p6S1RxOFUrWndjM0FjamdHdHdPcDB4d2RBbEV5RUszKzRN?=
- =?utf-8?B?Tm83bURGRWtvNEJYcHlWS3V1MlJ1N080MjBrbk5qelZWVlhUeFFrdjJyNzQ4?=
- =?utf-8?B?cDJneEtRTURJZ3VHRmhqQ2wwV3JsSnlUaUxXRERvRUVWcHB0WmxLdHI0THhK?=
- =?utf-8?B?ZzNHQXpodmFySzRwbHBBK0c5UEpHM3ZxaGdHOXhMckFPZUIzMW9yY0hGd3lo?=
- =?utf-8?B?aGYyQWRaZkM4WFVRL3dEQ2RhTTBYeDBpK3hhRU9JU3hpRkZMaWRGRVpOTzg4?=
- =?utf-8?B?RWlaZUlDQW80eHNpVDVGK1BhcDlzY1hHU0lhNGV3alNGWEw2cFBhMGJnTmE5?=
- =?utf-8?B?aGdYZHkwT3dpdjBtbWlwQ0dzcHRkZERxTjNOdHQva3RKZmtJQ2tqM3lLa3Ix?=
- =?utf-8?B?MzROSDhKc1JWa0RKazEyNzBUcFlsb2d3MlFocXd1OHE4cW1mS1VpOE5MTW9l?=
- =?utf-8?B?KzZXSDBVT2xQdGVwYVUxUVlIRGN5dkxLcXBtWW56dktnSS8xUlp5dm15SFZM?=
- =?utf-8?B?eGFuZ2d3RHZMM1IxQnVKTXlodmd2b1lGOHBXU0V4VTNyRWxiNnZ1UUY4dTRo?=
- =?utf-8?Q?77+Us6jq8PURYhSrJU?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 556fa067-c664-4bdf-df1c-08df14ea4d6a
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
+	=?utf-8?B?c0xTaml4alV5cjlEeXpOMytkOEx5NXhtODI5QThyUkMwaXFsSE9nZXhLVEFz?=
+ =?utf-8?B?T1UxVnVPUWxab2tuN1ZGSUc1ZnVYUmc5QWdaNHBVdHQ3R05VZXJxZ3MxSUJs?=
+ =?utf-8?B?SWNncytVbDhnUm5ZTXRobHYxMWtscnBiMzFmYWxlaXgyMDBzU2Z1cmVNYXUx?=
+ =?utf-8?B?STdyUXg3SVRNTndLY1UwTjFqbmJaTTRMaFA0L1RxWTFZU1ZaMVlLUlgzZHAx?=
+ =?utf-8?B?OTcwelhPeDlhbk9ZbUlsRGVUQXhXUFhEaGJvU2hCMk5DVGt2WFM3bVczRmFQ?=
+ =?utf-8?B?aFhXaFlPRWc2ckplUjdpbTh1RHRGbWsrTXM3djM0NDU1SHAzNTkzZW5NRVBW?=
+ =?utf-8?B?dGtCTzkwUjdPaS9DTHRYSGRlUXhUaDhWRUJvYUVsUjhrVkNYUkoyMzlrL3Nu?=
+ =?utf-8?B?R2o3R1ZFR3I2cmNKRU9oY1h0Wlk5NTBCNmRQK2RmOVZ1eDFjUUxDQTdvU0hp?=
+ =?utf-8?B?T3BQRWp4QUQwRlZxL3FzV1Y0cW1tc1RlRkJEcThzbVJyUVIxazMzUExBZGpl?=
+ =?utf-8?B?YzFoekxBVWxMRUxqbjFEbGUzeUQ2MFY4QmJWWVRka1BCZHNmdUtaTU5OK0M5?=
+ =?utf-8?B?TVNBQkRvK0dWdG5BNGhiTCtQN014SHVZcjhQZ2xXYTBoRm9XdkZ4UFFScVdp?=
+ =?utf-8?B?MGxMMDRWQ1N4SU5ObDVneUJBb3ZtQ3dFc0l5cFFoWEZJUFFCU1BJMkI5Qy92?=
+ =?utf-8?B?SFF5T3EzZXBGTjhZSElkK2pXSkExNEcveUUxMUd0K3hDblpabUtSOEF0dGRB?=
+ =?utf-8?B?N2xCS2hZczBheUxLdnQ5VEJBYTE4ZTE3S0xqSmtJanpoWnFhWmFIeExkSnRJ?=
+ =?utf-8?B?VGRxNnFpVzR2eExJNko1dVBXYkVJRVlTaHFmeUZtZVg3WEY5N0luYjNWNCtv?=
+ =?utf-8?B?V3ljYWlOWHdvb0Y1RHpnaVBWbkV4a2txMkJXTUh6ejVmZkdLUUJ4ODJnUVU3?=
+ =?utf-8?B?ZERnOGJ1RWhXY00yNDdnQUdyVEdGbFVUSVZTSUxqNnlwN3ZoNzNyYW1rSTZt?=
+ =?utf-8?B?dXFkd3BCUWFLdGVZSUZaby9uUHM4N1dXT3hLOGxNZjJwS2xkU2M0QVdya24z?=
+ =?utf-8?B?anJtN3RYOUViWVdSb1hSRG9ycXg1enVJTk1rYUM0T1YrNjA4NUsxTDFjd2RQ?=
+ =?utf-8?B?STdoQWNtYjdoR1pCVStGT1lRWDNadHVISVRnb0hjdks5QkNIVlQ1NFhuUjRE?=
+ =?utf-8?B?cHZwYWtESVBWanM4cjUrUzJHSkVxNEZ1Qy9iMklZZS9QVTRqeGV5TXdkSEF5?=
+ =?utf-8?B?cEhwcm9Va2dxSGJSNFNhMFB5SDVxb2xmRStwMGdZM2dpYnRpTGV1UDlTRWha?=
+ =?utf-8?B?b3hyakprdGRoZ3dlQi9QNy8wZ0VldFpOYUZkRTFxcXUzck1xVkJ6VndJQTVM?=
+ =?utf-8?B?ZE1tczJQVHAraXpMV3VKaFA5NWQ0OUY2cjNPRXFpMCtDNHh3d1JROGdjdS9v?=
+ =?utf-8?B?SWFRYWMvclZlNjZWYUh5S09uNmt5dXFGUTlReC9XeFBFNlFQYUw5TkN5MmtC?=
+ =?utf-8?B?RWZLSkQydzU0Vk04dU9USnhiSURyMUpVZy9lWW5ic1lzWjgzemgzL0d0bDRw?=
+ =?utf-8?B?L2NvNDBJeHFMeWRCZzUwMUlScHM2REJ4RDc0R2VhUEw2K2pEMEIyU1dldHBU?=
+ =?utf-8?B?M0dGbFV6OUxZdStkV1BsdnJ1aWhpZXIrLzhHVHNTaHdXK2lVdkJGT1lBV3VM?=
+ =?utf-8?B?WEFIOHJGLzlRTWJtaXdDeWdHdlJ2N1RGUnhHL2pOTVVhN0V0Tld4R3M2UXht?=
+ =?utf-8?B?eEZXKzg0eW5zQzlrZHl6cEEwMUpOaHlSaW9VblZQTHNtMlNrRW1JQU0vYnJq?=
+ =?utf-8?B?a213UFo5LzgxaEpENlZJTHRLRyszNnArUGJtdGxKVkZEQit5Z3RIU2N2VEpR?=
+ =?utf-8?B?bmoxVFdES2VobzY0TVQ5OEI2dHAxbWdqaTM2bWNINDYyUllTWU9mM0dTLzZI?=
+ =?utf-8?B?ZEZPWU9ObUJLUGsySDg5bXkzY215WWJjUVl0K1ViWk5DeWZlMjY5QmN4eWFH?=
+ =?utf-8?B?dVE1TVZFZHhsbXk3QVJuNmdYTklvM1FOVWJLbXhCTWxqdUliYWJpK1RkTlBN?=
+ =?utf-8?B?T2RERWw2N0FHT0E1U3lWKzJkOWM0OTBIM0ZFVDFsSExCaHFYbGZrbFdlNTV1?=
+ =?utf-8?B?enBDcVd1ZnZvVTNqNndiNDYyQkFCWVlrV0h2QlpsUU1WcitMSkhZMENaQnpP?=
+ =?utf-8?B?MDZ2V1ErMUE3NGlsQjZWcDZadlJOU25INFJTbzVwcmM4eERPSkgxNGltakJF?=
+ =?utf-8?B?czErWDZDMjI0ZEhpK211dnpqS3RKT0lDNEo2Q2pFVHJQWEs5NkVvQ08yMUE4?=
+ =?utf-8?Q?pUhVlcHsF28Lt14hCh?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 21f17392-50c8-4beb-5ade-08df14edc6dc
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB5246.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Sep 2026 18:34:26.5818
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Sep 2026 18:59:19.0537
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: DKtPalklJeWL3qz3g8mBfc6DsemMTEzxd5eFvE/6EHsxydtvE0omRZEhLxYl8JVN4WODi3C8v/C1Ft8wWXSsZA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB8944
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5UQ+LJyVMHttkqoE7tNA3Oq91m4opQ1qQYb+qSn1nbgaDvHAaga07KB8WtbIKTQvLPJXERftz0ZRqrbfpyBobA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR12MB6108
 
 
 
-On 9/17/26 12:38, Rafael J. Wysocki (Intel) wrote:
-> On Tue, Sep 15, 2026 at 9:03 AM Jianyong Wu <wujianyong@hygon.cn> wrote:
+On 17/09/26 18:38, Christian Loehle wrote:
+> External email: Use caution opening links or attachments
+> 
+> 
+> On 9/17/26 12:01, Sumit Gupta wrote:
 >>
->> Commit d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall
->> back to cpuinfo.max_freq") introduced cpuinfo.max_freq as the reference
->> frequency for cpufreq pressure when arch_scale_freq_ref() returns zero.
 >>
->> However, cpuinfo.max_freq may include boost frequencies and therefore
->> does not necessarily represent the maximum sustainable frequency.
-> 
-> And then it really matters what is sustainable and for how long.
-> 
->> On some systems using acpi-cpufreq, cpuinfo.max_freq includes boost while
->> the frequency table only contains non-boost frequencies.
-> 
-> In which case selecting freq_table[0] may give the processor a license
-> to go to the turbo (or boost) frequency range.
-> 
->> Consequently, cpufreq pressure remains nonzero even without an additional
->> frequency limit.
-> 
-> So when and where does this matter?
-> 
->> Furthermore, drivers may update cpuinfo.max_freq when boost is enabled
->> or disabled. With a fixed policy limit below the maximum non-boost
->> frequency, this changes the pressure reference and hence the reported
->> pressure, although the non-boost frequency limit remains unchanged.
-> 
-> If the capacity is updated though along with the cpuinfo.max_freq
-> change, then this is all fine because the pressure is then computed
-> relative to the new capacity.  intel_pstate does that.
-> 
->> Add max_sustainable_freq to struct cpufreq_cpuinfo to provide a reference
->> frequency excluding boost. Populate it from the nominal frequency in
->> amd-pstate and cppc_cpufreq, the maximum non-turbo frequency in
->> intel_pstate, and the highest frequency-table entry in acpi-cpufreq.
+>>>>>
+>>>>> On 8/7/2026 4:08 AM, Sumit Gupta wrote:
+>>>>>> Without online()/offline() callbacks, the cpufreq core fully tears
+>>>>>> down a policy during exit() when its last online CPU is offlined, and
+>>>>>> rebuilds it during init() when it comes back.
+>>>>>>
+>>>>>> Add lightweight online()/offline() callbacks so the core instead keeps
+>>>>>> the policy live and reuses the driver's cpu_data across CPU hotplug.
+>>>>>> This avoids re-reading the CPPC capabilities on every offline/online,
+>>>>>> making CPU hotplug faster.
+>>>>>>
+>>>>>> Move what init() and exit() did on hotplug into the new callbacks:
+>>>>>>
+>>>>>>      - offline() requests the lowest desired performance, as exit() did.
+>>>>>>      - online() re-enables CPPC and restores the performance controls, as
+>>>>>>        the platform may have reset them. Failures are logged, not returned,
+>>>>>>        as the core would free the policy.
+>>>>>>      - online() also resyncs the frequency invariance counters, so that the
+>>>>>>        first tick does not measure across the offline window.
+>>>>>>
+>>>>>> The restore in online() uses cppc_set_perf(), which writes MIN before
+>>>>>> MAX. If the platform lowered MAX while the CPU was offline, writing the
+>>>>>> saved MIN could briefly leave MIN above MAX on registers not accessed
+>>>>>> through PCC, as PCC delivers the writes in one transaction. Raise MAX
+>>>>>> ahead of the restore when the saved MIN is above it.
+>>>>>>
+>>>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>>>>> ---
+>>>>>>     drivers/cpufreq/cppc_cpufreq.c | 128 +++++++++++++++++++++++++++++++++
+>>>>>>     1 file changed, 128 insertions(+)
+>>>>>>
+>>>>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>>>>>> index 80893844353c..4b3da9a3e122 100644
+>>>>>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>>>>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>>>>>> @@ -211,6 +211,29 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+>>>>>>          }
+>>>>>>     }
+>>>>>>
+>>>>>> +/*
+>>>>>> + * Resync the counter snapshot, as the policy is kept across CPU hotplug and
+>>>>>> + * the first tick after online would otherwise span the offline window.
+>>>>>> + */
+>>>>>> +static void cppc_cpufreq_cpu_fie_resync(struct cpufreq_policy *policy)
+>>>>>> +{
+>>>>>> +     struct cppc_freq_invariance *cppc_fi;
+>>>>>> +     int cpu, ret;
+>>>>>> +
+>>>>>> +     if (fie_disabled)
+>>>>>> +             return;
+>>>>>> +
+>>>>>> +     /* policy->cpus still holds related_cpus here, so skip offline CPUs. */
+>>>>>> +     for_each_cpu_and(cpu, policy->cpus, cpu_online_mask) {
+>>>>>> +             cppc_fi = &per_cpu(cppc_freq_inv, cpu);
+>>>>>> +
+>>>>>> +             ret = cppc_get_perf_ctrs(cpu, &cppc_fi->prev_perf_fb_ctrs);
+>>>>>> +             if (ret)
+>>>>>> +                     pr_debug("%s: failed to read perf counters for cpu:%d: %d\n",
+>>>>>> +                              __func__, cpu, ret);
+>>>>>> +     }
+>>>>>> +}
+>>>>>> +
+>>>>>>     static void cppc_fie_kworker_init(void)
+>>>>>>     {
+>>>>>>          struct sched_attr attr = {
+>>>>>> @@ -281,6 +304,10 @@ static inline void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+>>>>>>     {
+>>>>>>     }
+>>>>>>
+>>>>>> +static inline void cppc_cpufreq_cpu_fie_resync(struct cpufreq_policy *policy)
+>>>>>> +{
+>>>>>> +}
+>>>>>> +
+>>>>>>     static inline void cppc_freq_invariance_init(void)
+>>>>>>     {
+>>>>>>     }
+>>>>>> @@ -735,6 +762,105 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>>>>          return ret;
+>>>>>>     }
+>>>>>>
+>>>>>> +/*
+>>>>>> + * With offline() defined, the cpufreq core keeps the policy alive when
+>>>>>> + * a CPU is hotplugged out.
+>>>>>> + */
+>>>>>> +static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
+>>>>>> +{
+>>>>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
+>>>>>> +     struct cppc_perf_ctrls perf_ctrls = cpu_data->perf_ctrls;
+>>>>>> +     unsigned int cpu = policy->cpu;
+>>>>>> +     int ret;
+>>>>>> +
+>>>>>> +     /*
+>>>>>> +      * Request the lowest desired performance while the policy has no online
+>>>>>> +      * CPU. Zeroing MIN and MAX makes cppc_set_perf() leave them unchanged.
+>>>>>> +      */
+>>>>>> +     perf_ctrls.desired_perf = cpu_data->perf_caps.lowest_perf;
+>>>>>> +     perf_ctrls.min_perf = 0;
+>>>>>> +     perf_ctrls.max_perf = 0;
+>>>>>> +
+>>>>>> +     ret = cppc_set_perf(cpu, &perf_ctrls);
+>>>>>> +     if (ret)
+>>>>>> +             pr_debug("Err setting perf value:%u on CPU:%u. ret:%d\n",
+>>>>>> +                      cpu_data->perf_caps.lowest_perf, cpu, ret);
+>>>>>> +
+>>>>>> +     return 0;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/*
+>>>>>> + * Raise MAX ahead of the full restore when the requested MIN is above the
+>>>>>> + * current MAX. cppc_set_perf() writes MIN before MAX, so the platform would
+>>>>>> + * otherwise briefly see MIN above MAX on registers not accessed through PCC.
+>>>>>> + * Lowering MAX is safe, as the MIN written first is never above it.
+>>>>>> + */
+>>>>>> +static int
+>>>>>> +cppc_cpufreq_prepare_perf_restore(unsigned int cpu,
+>>>>>> +                               const struct cppc_perf_ctrls *target)
+>>>>>> +{
+>>>>>> +     struct cppc_perf_ctrls cur = {}, prep = {};
+>>>>>> +     int ret;
+>>>>>> +
+>>>>>> +     ret = cppc_get_perf(cpu, &cur);
+>>>>>> +     if (ret)
+>>>>>> +             return ret;
+>>>>>> +
+>>>>>> +     if (!cur.max_perf || target->min_perf <= cur.max_perf)
+>>>>>> +             return 0;
+>>>>>> +
+>>>>>> +     prep.desired_perf = target->desired_perf;
+>>>>>> +     prep.min_perf = 0;      /* Zero leaves MIN unchanged. */
+>>>>>> +     prep.max_perf = target->max_perf;
+>>>>>> +
+>>>>>> +     return cppc_set_perf(cpu, &prep);
+>>>>>> +}
+>>>>>> +
+>>>>>> +/*
+>>>>>> + * Restore what the CPU may have lost while offline, as the platform may have
+>>>>>> + * disabled CPPC and reset the performance controls. Never fail the callback,
+>>>>>> + * or the core would free the policy and leave the CPU without cpufreq. The
+>>>>>> + * governor redoes the control writes, so they are best effort, unlike the
+>>>>>> + * enable, which only a later online() can retry.
+>>>>> Sorry, I don't quite understand the last sentence.
+>>>>
+>>>>
+>>>> Will rewrite in v5 as below:
+>>>>
+>>>>    Report failures without returning them, or the core would free the
+>>>>    policy and leave the CPU without cpufreq. A failed write to the
+>>>>    performance controls is not fatal, as the governor's next request
+>>>>    programs them again. A failed CPPC enable stops the restore, as the
+>>>>    writes that follow may not reach the platform.
+>>>>
+>>>>>> + */
+>>>>>> +static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
+>>>>>> +{
+>>>>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
+>>>>>> +     unsigned int cpu = policy->cpu;
+>>>>>> +     int ret;
+>>>>>> +
+>>>>>> +     cppc_cpufreq_cpu_fie_resync(policy);
+>>>>>> +
+>>>>>> +     ret = cppc_set_enable(cpu, true);
+>>>>>> +     if (ret && ret != -EOPNOTSUPP) {
+>>>>>> +             pr_warn("Failed to re-enable CPPC for CPU%u (%d)\n", cpu, ret);
+>>>>>> +             return 0;
+>>>>>> +     }
+>>>>>> +
+>>>>>> +     /*
+>>>>>> +      * The platform may reset the controls while the CPU is offline, so
+>>>>>> +      * recompute min/max, clamp desired_perf into range, and reprogram them.
+>>>>>> +      */
+>>>>>> +     cppc_cpufreq_update_perf_limits(cpu_data, policy);
+>>>>>> +
+>>>>>> +     cpu_data->perf_ctrls.desired_perf =
+>>>>>> +             clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
+>>>>>> +                     cpu_data->perf_ctrls.min_perf,
+>>>>>> +                     cpu_data->perf_ctrls.max_perf);
+>>>>>> +
+>>>>>> +     ret = cppc_cpufreq_prepare_perf_restore(cpu, &cpu_data->perf_ctrls);
+>>>>> Actually, I don't quite think this is necessary?
+>>>>>
+>>>>> The motivation of doing this is fair (as mentioned in v3), but what's the
+>>>>> real consequence of transiently setting min_perf larger than max_perf?
+>>>>> Platforms should be able to handle this.
+>>>>>
+>>>>> Even if we have to fix it, it's supposed to be done in cppc_acpi.c.  The
+>>>>> current ABI wraps many things up.  cppc_get_perf() reads 4 values -
+>>>>> min_perf, max_perf, energy_perf, auto_sel.  cppc_set_perf writes 3
+>>>>> values - desired_perf, min_perf, max_perf.  The cppc_cpufreq driver would
+>>>>> be able to handle performance setting cleaner if those are separated.
+>>>>>
+>>>>> I don't suggest we complicate the driver for now?
+>>>>
+>>>> Agreed that it is not hotplug specific and can be done in the
+>>>> generic API.
+>>>>
+>>>> cppc_set_perf() would have to know the programmed MIN and MAX to pick
+>>>> the write order. Separate accessors would let it read only those two,
+>>>> but that would add a read before every write, including fast_switch().
+>>> fast_switch() doesn't have to touch min/max_perf, but it did at the moment.
+>>>> Caching what was last written would avoid that, but the platform can
+>>>> reset the registers while the CPU is offline or suspended.
+>>> Yeah, understood.  My question is still whether it's practically useful and
+>>> we're complicating this.
+>>>
+>>> Two reasons.
+>>>
+>>> 1. Platform should be able to handle min_perf being trasiently larger than
+>>> max_perf, otherwise it would be fragile.
+>>>
+>>> 2. It depends on the reset values of the two registers.
+>>>
+>>> I went over the ACPI Spec and didn't manage to find a descprition on what
+>>> the default/reset values of min/max perf registers should be.
+>>>
+>>> For a sensisble design, min_perf defaults to be 0 or lowest perf, and
+>>> max_perf defaults to be all 1s or highest perf.  In those cases, we are
+>>> safe to directly restore the saved values.
 >>
->> Use this value when arch_scale_freq_ref() returns zero. Preserve the
->> existing cpuinfo.max_freq fallback for drivers that leave the new field
->> at zero.
->>
->> Tested with acpi-cpufreq, intel_pstate, and amd-pstate in active and
->> passive modes. With no additional frequency limit, pressure is zero.
->> With a fixed limit below the non-boost reference frequency, pressure
->> remains unchanged across boost transitions.
+>> Hi Jie,
 > 
-> Which may not be what is intended.
+> Hi Sumit, Jie
 > 
->> Fixes: d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq")
->> Signed-off-by: Jianyong Wu <wujianyong@hygon.cn>
->> ---
->> The earlier fix was incorrect and has been abandoned. This patch takes
->> a different approach.
 >>
->> Previous discussion: https://lore.kernel.org/all/SI2PR04MB4931A8BA0EF213B0238BD9E4E3BD2@SI2PR04MB4931.apcprd04.prod.outlook.com/
+>> Agreed, those values would be safe, although they are not required
+>> reset defaults. A platform could reset MAX to a lower value, such as
+>> lowest_perf, while the saved policy MIN is higher.
+>> Restoring MIN first would then temporarily result in MIN greater than
+>> MAX on non-PCC systems.
 >>
->>   drivers/cpufreq/acpi-cpufreq.c | 3 +++
->>   drivers/cpufreq/amd-pstate.c   | 2 ++
->>   drivers/cpufreq/cppc_cpufreq.c | 3 ++-
->>   drivers/cpufreq/cpufreq.c      | 4 +++-
->>   drivers/cpufreq/intel_pstate.c | 2 ++
->>   include/linux/cpufreq.h        | 2 ++
->>   6 files changed, 14 insertions(+), 2 deletions(-)
+>> This preparation was added in response to Christian’s v3 comment [1].
+>> I had already posted v5 [2] before receiving this reply, and it retains
+>> the preparation.
+> 
+> I basically agree(d) with Jie here when I commented on v3:
+> "I think cppc_set_perf() needs some prep first before using it on reset values.
+> We assume that reset value may be Autonomous Mode on, right? So we must never
+> write MIN>MAX and vice versa. I think we may just have to read and write
+> the 'otherwise-offending' value first on reset."
+> So I wanted to have this (as prep work) within cppc_set_perf() not in cppc-cpufreq,
+> 
 >>
->> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
->> index 21639d9ac753..e7b22456ebb8 100644
->> --- a/drivers/cpufreq/acpi-cpufreq.c
->> +++ b/drivers/cpufreq/acpi-cpufreq.c
->> @@ -856,6 +856,9 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>          }
->>          freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
+>> Christian, are you okay with dropping it and restoring the controls
+>> directly with cppc_set_perf(), as in v3?
+>> Any general requirement for ordered MIN/MAX updates can then be handled
+>> in a separate CPPC core series.
 >>
->> +       /* Init max sustainable cpu frequency */
->> +       policy->cpuinfo.max_sustainable_freq = freq_table[0].frequency;
->> +
+>> [1] https://lore.kernel.org/lkml/40d72385-0b3f-46e5-9f32-a27be3842d7c@arm.com/
+>> [2] https://lore.kernel.org/lkml/20260916103820.1760297-1-sumitg@nvidia.com/
+> 
 
-Maybe I'm missing something, but it sounds to me like it would make 
-sense to just:
+Hi Christian, Jie,
 
-policy->cpuinfo.nominal_freq = freq_table[0].frequency
+Thanks for the clarification. I will drop the preparation from
+cppc_cpufreq in v6 and restore the controls directly using
+cppc_set_perf(). I will address the MIN/MAX write ordering in
+cppc_set_perf() in a separate series soon.
 
-and then use cpuinfo.nominal_freq everywhere, no?
+Thanks,
+Sumit
 
->>          max_boost_ratio = get_max_boost_ratio(cpu, &nominal_freq);
->>          if (max_boost_ratio) {
->>                  unsigned int freq = nominal_freq;
->> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
->> index 3a6b4b224a66..6fc28bb1499b 100644
->> --- a/drivers/cpufreq/amd-pstate.c
->> +++ b/drivers/cpufreq/amd-pstate.c
->> @@ -1085,6 +1085,7 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
->>                                                  perf.lowest_perf);
->>          policy->cpuinfo.max_freq = cpudata->max_freq;
->>
->> +       policy->cpuinfo.max_sustainable_freq = cpudata->nominal_freq;
->>          policy->driver_data = cpudata;
->>          ret = amd_pstate_cppc_enable(policy);
->>          if (ret)
->> @@ -1912,6 +1913,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
->>          policy->cpuinfo.min_freq = perf_to_freq(perf, cpudata->nominal_freq,
->>                                                  perf.lowest_perf);
->>          policy->cpuinfo.max_freq = cpudata->max_freq;
->> +       policy->cpuinfo.max_sustainable_freq = cpudata->nominal_freq;
->>          policy->driver_data = cpudata;
->>
->>          ret = amd_pstate_cppc_enable(policy);
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 6fe0e972952a..f803fcdca483 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -682,7 +682,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>          policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, caps->lowest_perf);
->>          policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, policy->boost_enabled ?
->>                                                      caps->highest_perf : caps->nominal_perf);
->> -
->> +       policy->cpuinfo.max_sustainable_freq =
->> +               cppc_perf_to_khz(caps, caps->nominal_perf);
->>          policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu);
->>          policy->shared_type = cpu_data->shared_type;
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index b898b6544069..c1d54a22265d 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -2587,7 +2587,9 @@ static void cpufreq_update_pressure(struct cpufreq_policy *policy)
->>          cpu = cpumask_first(policy->related_cpus);
->>          max_freq = arch_scale_freq_ref(cpu);
->>          if (!max_freq)
->> -               max_freq = policy->cpuinfo.max_freq;
->> +               max_freq = policy->cpuinfo.max_sustainable_freq ?
->> +                                policy->cpuinfo.max_sustainable_freq :
->> +                                policy->cpuinfo.max_freq;
->>
->>          capped_freq = policy->max;
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index 6e984c114d96..daef7e99fead 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -1474,6 +1474,7 @@ static void __intel_pstate_update_max_freq(struct cpufreq_policy *policy,
->>
->>          policy->cpuinfo.max_freq = READ_ONCE(global.no_turbo) ?
->>                          cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
->> +       policy->cpuinfo.max_sustainable_freq = cpudata->pstate.max_freq;
->>
->>          refresh_frequency_limits(policy);
->>   }
->> @@ -3052,6 +3053,7 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
->>          policy->cpuinfo.min_freq = cpu->pstate.min_freq;
->>          policy->cpuinfo.max_freq = READ_ONCE(global.no_turbo) ?
->>                          cpu->pstate.max_freq : cpu->pstate.turbo_freq;
->> +       policy->cpuinfo.max_sustainable_freq = cpu->pstate.max_freq;
->>
->>          intel_pstate_init_acpi_perf_limits(policy);
->>
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> index ae9d1ce4f49c..aa3f60a167be 100644
->> --- a/include/linux/cpufreq.h
->> +++ b/include/linux/cpufreq.h
->> @@ -45,6 +45,8 @@ enum cpufreq_table_sorting {
->>   struct cpufreq_cpuinfo {
->>          unsigned int            max_freq;
->>          unsigned int            min_freq;
->> +       /* Maximum sustainable frequency excluding boost, or 0 if unknown. */
->> +       unsigned int            max_sustainable_freq;
->>
->>          /* in 10^(-9) s = nanoseconds */
->>          unsigned int            transition_latency;
->> --
->> 2.34.1
->>
->>
 
