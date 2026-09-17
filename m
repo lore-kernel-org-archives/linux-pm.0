@@ -1,134 +1,138 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id DE6C14C10E7;
-	Thu, 17 Sep 2026 15:18:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7772F4EB845;
+	Thu, 17 Sep 2026 15:32:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789658305; cv=none; b=N5ESj1fcuAVp0AfAxpfZzfyiEulPLUp9fg33xE2iaoOGKpvf+1w6g007R6a/t76OEAzStkCLu9me4YA4dPQwzAEUiHX0Z6sqJxiLYmPajY+1qJhVtjOE9DxuEDOVvHnl/n79OWz9snAGEJ2zHFVTPag6F5lqUTiqpIPPJ2n5b4U=
+	t=1789659169; cv=none; b=co3n/JxXcx/N2m9bxKZPAQrp4/wFhnjs4o2zwwOcOdd8aubKq4JEBZHLi57Bvzp0OG8qWgJXk74GYROewWsKM4XdiP/cc+snzn6qj4SmbLIA8xvIyYPK94VMCsf733FWl0dzaHDr8A9noMu+ENHtXaNbVJYL0FmZl0uKYacjwEc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789658305; c=relaxed/simple;
-	bh=c/AXftsjss0w3yM4Zoj6PPd6JQEbidt0kM4DrRd7sYE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TTb/n15umR3BqK9bNNONAS7mpXj27PA+NbfP2H4GB0Kqn9efinM4HeROsaOiIjTm7FkXdPwmFbndFMrCgDlo+ncG/T8idXLt0i2rtTyOsX/Hp3f4NW6buj3qdTze/rkchiN4syRiYJyS2E34LTXoIN07Bja3T0zC9O/gaLdpahg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=gMw7K2Ln; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1789659169; c=relaxed/simple;
+	bh=/lyaH32OKU1SOpf305vXqxTeH/xsqm0UyZY95qb+8Xo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mCPIrrfhuxQtktZ5QmM23BuGzOw8S3Rzr8kJQV9edmsp6HGAdJ/r1nFWEVbUAAJ+HSsY4lyNXY4z3/tK3XHzL+h+mOnWRZwuyq8LqWfstrmwLHESHPXQK92ryHyVA1F65ycqZjK8iWmxeorqjwUDHJNkH9NaHxWGChhl6nKmMAM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=VBBCKWga; arc=none smtp.client-ip=90.155.92.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="gMw7K2Ln"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3C7371476;
-	Thu, 17 Sep 2026 08:18:07 -0700 (PDT)
-Received: from [10.57.50.144] (unknown [10.57.50.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 159663F7B4;
-	Thu, 17 Sep 2026 08:18:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789658290; bh=c/AXftsjss0w3yM4Zoj6PPd6JQEbidt0kM4DrRd7sYE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=gMw7K2LnYKoavTPB1GdM8GXs0BMxoaDKhCKTabpRqd6kATKABAs3c3Zg7K3dRAE1W
-	 GUqnUWwtBzKuEwGJDGlYGJRn83g7FXlY4x6A2aoCKixUAMqzn1SlX1lq3gv0C1fjJh
-	 RZ3xTMDTqX8XBSmkwf+OUiPD/SqqdHc6upY5gN+c=
-Message-ID: <cd1a09fb-17e0-4d3b-9720-cdc28e90c030@arm.com>
-Date: Thu, 17 Sep 2026 16:17:58 +0100
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VBBCKWga"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=Rg9kwtzkNVr89LUjHsPnBl0WVsm7riweLfXAeDfqeLM=; b=VBBCKWgaLxuV+mxuEtZNKirWZ3
+	LEMS1qKp9j1ZAAyPKxgP9pNR/dipTRFAOv9+OjiZtbcZrwy84AdQk14tp5G8TONAfaYQJeh9fbqH3
+	eb366isBMGLYXfbe94a10RysXpw4Nd7vwDNUt3ZK/WD56Zo6BEJbSytnvqrAoFAMTd793OnoCyBU/
+	dTSFSwRPNHcx7Jh/7Dzpxc62rkNvpMEG1MpK8QCT6kXJOtSZ8O/w6+HbCrE2CFhgm+DZTMdnGWdZt
+	b50RLyMlBKKaT8KfuVaNqA5+jM2GDc/o+BdDIgx2PAtzlWPUAsYXfd0mw+F5sjW3UMU+kqmkcjHvr
+	LNnqynOg==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1x7E66-00000008zmQ-0Q6p;
+	Thu, 17 Sep 2026 15:32:26 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 489B1301BD5; Thu, 17 Sep 2026 17:32:24 +0200 (CEST)
+Date: Thu, 17 Sep 2026 17:32:24 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Keri <okerixx@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+	Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Beata Michalska <beata.michalska@arm.com>,
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	driver-core@lists.linux.dev, Viresh Kumar <viresh.kumar@linaro.org>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] arm64: topology: fix arch_freq_get_on_cpu()
+ overflow above 4.19 GHz
+Message-ID: <20260917153224.GJ4121339@noisy.programming.kicks-ass.net>
+References: <20260917125112.2283-1-okerixx@gmail.com>
+ <20260917125112.2283-2-okerixx@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path
- candidates
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Valentin Schneider <vschneid@redhat.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>,
- Beata Michalska <beata.michalska@arm.com>, Elif Topuz <elif.topuz@arm.com>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Shubhang Kaushik
- <sh@gentwo.org>, Christoph Lameter <cl@gentwo.org>,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260916100116.701206-1-christian.loehle@arm.com>
- <20260916100116.701206-3-christian.loehle@arm.com>
- <CAKfTPtCAaACP8A=AKGO3PdhZtA9SRM6e3ym+5d=Qfp-VpDa38g@mail.gmail.com>
- <f3912746-90f8-46de-a690-a840afa4a1d1@arm.com>
- <CAKfTPtAexsLhEb3hEnWvhFo3Z0+CsN41WQ8gfW+waLvxJQrb+A@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAKfTPtAexsLhEb3hEnWvhFo3Z0+CsN41WQ8gfW+waLvxJQrb+A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260917125112.2283-2-okerixx@gmail.com>
 
-On 9/17/26 16:08, Vincent Guittot wrote:
-> On Thu, 17 Sept 2026 at 16:22, Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 9/17/26 15:08, Vincent Guittot wrote:
->>> On Wed, 16 Sept 2026 at 12:01, Christian Loehle
->>> <christian.loehle@arm.com> wrote:
->>>>
->>>> Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
->>>> slow-path selectors can choose the same CPU before either task is enqueued.
->>>>
->>>> Use reservoir sampling in the tie branch, resetting the candidate count
->>>> when a lower advertised exit latency is found. Use the per-CPU scheduler
->>>> PRNG and reciprocal_scale() to avoid variable division or a second scan.
->>>>
->>>> This reduces deterministic convergence without reserving the chosen CPU.
->>>>
->>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
->>>> ---
->>>>  kernel/sched/fair.c | 11 ++++++++---
->>>>  1 file changed, 8 insertions(+), 3 deletions(-)
->>>>
->>>> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->>>> index ff5793bddc35..6836a8364440 100644
->>>> --- a/kernel/sched/fair.c
->>>> +++ b/kernel/sched/fair.c
->>>> @@ -24,6 +24,7 @@
->>>>  #include <linux/mmap_lock.h>
->>>>  #include <linux/hugetlb_inline.h>
->>>>  #include <linux/jiffies.h>
->>>> +#include <linux/math.h>
->>>>  #include <linux/mm_api.h>
->>>>  #include <linux/highmem.h>
->>>>  #include <linux/hrtimer.h>
->>>> @@ -8459,6 +8460,7 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
->>>>  {
->>>>         unsigned long load, min_load = ULONG_MAX;
->>>>         unsigned int min_exit_latency = UINT_MAX;
->>>> +       unsigned int nr_candidates = 0;
->>>>         int least_loaded_cpu = this_cpu;
->>>>         int shallowest_idle_cpu = -1;
->>>>         int i;
->>>> @@ -8482,9 +8484,12 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
->>>>                         if (idle && idle->exit_latency < min_exit_latency) {
->>>>                                 min_exit_latency = idle->exit_latency;
->>>>                                 shallowest_idle_cpu = i;
->>>> +                               nr_candidates = 1;
->>>
->>> You clear the number of candidate when you find a lower exit_latency
->>> but !idle CPUs that have already been checked will be cleared whereas
->>> they still get a chance if they are checked later.
->> That is correct. Is this a problem?
+On Thu, Sep 17, 2026 at 02:51:11PM +0200, Oleg Keri wrote:
+> arch_freq_get_on_cpu() computes the product of the frequency scale and
+> the reference frequency as a u64, but assigns it to an unsigned int
+> before shifting it back down:
 > 
-> I would say we should try to be consistent
+> 	freq = scale * arch_scale_freq_ref(cpu);
+> 	freq >>= SCHED_CAPACITY_SHIFT;
+> 
+> The product is truncated to 32 bits before the shift, so the result
+> wraps once arch_scale_freq_ref() exceeds 2^32 / SCHED_CAPACITY_SCALE,
+> i.e. 4194304 kHz.
+> 
+> On a Snapdragon X2 Elite (Glymur) laptop, whose boost OPP is 4723200
+> kHz, cpuinfo_avg_freq reports 524283 kHz instead of ~4723200 kHz while
+> the CPU demonstrably runs at the boost frequency: a fixed workload
+> completes in 1.72 s at the 4723200 kHz OPP versus 2.01 s at 4032000
+> kHz, matching the 1.171 frequency ratio.
+> 
+> Use cap_scale(), which the scheduler already has for exactly this
+> capacity scaling, so the multiply and the shift stay in 64 bits and
+> only the final value is narrowed by the return type. Move the macro
+> from the scheduler's private header to <linux/topology.h> so it can be
+> used outside kernel/sched.
+> 
+> Fixes: 16d1e27475f6 ("arm64: Provide an AMU-based version of arch_freq_get_on_cpu")
+> Signed-off-by: Oleg Keri <okerixx@gmail.com>
+> ---
+>  arch/arm64/kernel/topology.c | 5 +----
+>  include/linux/topology.h     | 2 ++
+>  kernel/sched/sched.h         | 2 --
+>  3 files changed, 3 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+> index d28438f8b83f..07b8c497c9e6 100644
+> --- a/arch/arm64/kernel/topology.c
+> +++ b/arch/arm64/kernel/topology.c
+> @@ -186,7 +186,6 @@ int arch_freq_get_on_cpu(int cpu)
+>  	struct amu_cntr_sample *amu_sample;
+>  	unsigned int start_cpu = cpu;
+>  	unsigned long last_update;
+> -	unsigned int freq = 0;
+>  	u64 scale;
+>  
+>  	if (!amu_fie_cpu_supported(cpu) || !arch_scale_freq_ref(cpu))
+> @@ -245,9 +244,7 @@ int arch_freq_get_on_cpu(int cpu)
+>  	 * (see amu_scale_freq_tick for details)
+>  	 */
+>  	scale = arch_scale_freq_capacity(cpu);
+> -	freq = scale * arch_scale_freq_ref(cpu);
+> -	freq >>= SCHED_CAPACITY_SHIFT;
+> -	return freq;
+> +	return cap_scale(arch_scale_freq_ref(cpu), scale);
+>  }
+>  
+>  static void amu_fie_setup(const struct cpumask *cpus)
+> diff --git a/include/linux/topology.h b/include/linux/topology.h
+> index 709a2dcf4c73..0a4ee12a98d5 100644
+> --- a/include/linux/topology.h
+> +++ b/include/linux/topology.h
+> @@ -351,4 +351,6 @@ static inline unsigned long topology_get_cpu_scale(int cpu)
+>  
+>  void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+>  
+> +#define cap_scale(v, s)		((v)*(s) >> SCHED_CAPACITY_SHIFT)
 
-Ack
-
-> 
->> (Again, mirroring what upstream currently does, let's say exit_latency(CPU0)=100, exit_latency(CPU2)=1
->> !idle at CPU3 trumps CPU2 (assuming recent idle_stamp), !idle at CPU1 doesn't trump CPU2, i.e.
->> the inconsistency around !idle is already there?)
-> 
-> Fair enough but the idle_stamp was also in the party
-> 
->> And I'm assuming we really don't wanna keep a cpumask of !idle CPUs, if anything we may just ignore
->> them completely, given how unlikely it they are to be observed.
-> 
-> We must keep them when there is no cpuidle driver, i.e. until we find
-> a CPU with an idle state
-
-Alright let me make a it a U64_MAX reservoir.
-Thanks for reviewing Vincent!
+This might not be a very good generic helper, since it relies on either
+of the variables to be u64 for correctness.
