@@ -1,168 +1,255 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF6DA59C995;
-	Thu, 17 Sep 2026 14:44:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BEC051D51A;
+	Thu, 17 Sep 2026 14:45:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789656261; cv=none; b=mWWVllJlGUXp+Y40aa83pijdBa2EP/at/jaUrPZhmMuClgIXvzOOwC3tgSIxRtKd6eiu20mICDpy1GTZ9qwikJS+kC0mRBdO9JbE8rrpKGA2EkNENfwDIYNzI2UbwQZ1Los4n59GUqWXp5cn7FUeKgeta0zhawB6qsuNi/8S0eY=
+	t=1789656322; cv=none; b=LfGIbXph3CIz+aLwllJEsmRfTvYs2+ejB/PyTE3IysgyB9Rka5+hIO0j9yrcl5FLWoOZEEYmXX9Ns0VelgrHqtMKO2NckxLe5LqqVjsfue2KRd5+V9HsipGaEO126dhaka0RrILITCSbKPnIcMFUVA29lU6lLQmlDCkbp44g53g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789656261; c=relaxed/simple;
-	bh=fgOcdHPD2TZKgufAHTVhqcVWGrvfpBid9Xt/WoiDt64=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=u5fOnbbK+TT14JMQ/PIgDug21dWRch41cxeOcyMPxO9j8Zcy0LSnRmvTOpAsCW0FkM2MsF9/XOmnX65NiSm41BxA68xr+Lx0pxp4xPOke5ISXGorePsIvnqBRUIHEO6FvdNJcZrjH9cst6YSLQL6z3BdXOkx1Y5zBw1Eg+qWqqU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XFgoLF5c; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1789656322; c=relaxed/simple;
+	bh=tNMI+unbbhAk3m2HZHleqT/GIgLAApbvWU8iG4tFJpI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Hl2hIkCwmj11qw7ZG6rd0cdbo8Q8oGRbNByZmNQDSi6IDiNUsDBjQKY8vksPLkdRwHXQiKbtLQl73jQQw5rio/drare0ivg6G08gJt4Pao4UIJSq6h0T9GgOe1N9gJBrcsmnce2ArnyYn6Vad28autdqUHkurRQ8YoxhNdjvE8w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=gtzfmaWi; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XFgoLF5c"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789656255; x=1821192255;
-  h=date:from:to:cc:subject:message-id;
-  bh=fgOcdHPD2TZKgufAHTVhqcVWGrvfpBid9Xt/WoiDt64=;
-  b=XFgoLF5cu6qP0rxTJFnpzblQRuDJ8IDhzeRdxUTeYFzrLNCOuk9YaRaV
-   9mWXd5acIq/Ui4yocl+yuvxoMu6VXB/ulbVrcfq412E1qq0BX8TxoxJex
-   2EHFlSyg94xIsARi585MBluHMfxfX3x8vSsoStz980e+vbyL9yQQdd/Qe
-   0FGJVwJAMKXf3/leHk0wOYD5XLx30mRYodUEgurWEM+yF88gqr/55Dn4j
-   Tgx4Q8Yg1UwSPd7xtKgbmzdOfEo3jEpG/fQf8SdO992+RuYSvLNNOYdjB
-   ORs+yf3T3tdbx1krCMhBC0Hg+y6d3VyKq4pbu+F9Q9KCAjMNaWMxIgKMg
-   w==;
-X-CSE-ConnectionGUID: zLlKGjqdQ3Cf4U265JfJBA==
-X-CSE-MsgGUID: zhYBbcVSRpWh9+PxUBhoAA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="90102624"
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
-   d="scan'208";a="90102624"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2026 07:44:07 -0700
-X-CSE-ConnectionGUID: 7aedmUayT/i13+JrZkoftA==
-X-CSE-MsgGUID: mlCPDRp6QO2CB7ncgRjX8w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
-   d="scan'208";a="269567570"
-Received: from lkp-server01.sh.intel.com (HELO 462990a40a85) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 17 Sep 2026 07:44:05 -0700
-Received: from kbuild by 462990a40a85 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x7DLH-0000000080V-1V71;
-	Thu, 17 Sep 2026 14:44:03 +0000
-Date: Thu, 17 Sep 2026 22:43:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge 84/106]
- drivers/bluetooth/btintel.c:2725:7: error: implicit declaration of function
- 'acpi_has_method'; did you mean 'acpi_has_watchdog'?
-Message-ID: <202609172243.uPgiesDR-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="gtzfmaWi"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1789656307;
+	bh=tNMI+unbbhAk3m2HZHleqT/GIgLAApbvWU8iG4tFJpI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gtzfmaWivaS2wKXOsIPaL2GU/aRv5pmTRdiBnPFRjuLWYAEa2xZkoeJoAzF/6nlgp
+	 LkmyHBeuIBdbxHF5tF2BC6ER4nkfsc0SfYj/wDhB4m66YkFxj+ekatZMbEDe4It/rn
+	 OW1DmKkrHOC53nUT2jDo+ViVoOHRdN50yDYOJxCza7c5LEcDtlXbrXIu0pZNxZ05rs
+	 QLuZen+V+R39g2Lu03qAuvLG2q7ZseQOhua1Vc5n1Fw44vlr/HUT4HdGwy+lxu2lup
+	 /ncmzFw7mytCIY5pLOKhzFh57sZYFy/ohKjlsWvPiH34DkdzxB/Uerjta8TYyDOzGF
+	 fWvHUus9JF4Cg==
+Received: from [100.64.1.21] (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id BE73417E01C5;
+	Thu, 17 Sep 2026 16:45:06 +0200 (CEST)
+Message-ID: <231214ab-9ae9-4e3f-a75b-d65a597e9956@collabora.com>
+Date: Thu, 17 Sep 2026 16:45:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v13 00/12] SPMI: Implement sub-devices and migrate drivers
+To: jic23@kernel.org, sboyd@kernel.org
+Cc: dlechner@baylibre.com, nuno.sa@analog.com, andy@kernel.org,
+ arnd@arndb.de, gregkh@linuxfoundation.org, srini@kernel.org,
+ vkoul@kernel.org, neil.armstrong@linaro.org, sre@kernel.org,
+ krzk@kernel.org, dmitry.baryshkov@oss.qualcomm.com, quic_wcheng@quicinc.com,
+ melody.olvera@oss.qualcomm.com, quic_nsekar@quicinc.com,
+ ivo.ivanov.ivanov1@gmail.com, abelvesa@kernel.org, luca.weiss@fairphone.com,
+ konrad.dybcio@oss.qualcomm.com, mitltlatltl@gmail.com,
+ krishna.kurapati@oss.qualcomm.com, linux-arm-msm@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-phy@lists.infradead.org, linux-pm@vger.kernel.org, kernel@collabora.com
+References: <20260721093626.96264-1-angelogioacchino.delregno@collabora.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <20260721093626.96264-1-angelogioacchino.delregno@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   7d81fd7f1644e8172350caa5b32aa00e57050ec0
-commit: b732fbc37b8eaacdb07b9463a45728b5152e1028 [84/106] ACPI: bus: Use acpi/acpi_bus.h without CONFIG_ACPI
-config: sparc-randconfig-1000-20260917 (https://download.01.org/0day-ci/archive/20260917/202609172243.uPgiesDR-lkp@intel.com/config)
-compiler: sparc64-linux-gcc (GCC) 8.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260917/202609172243.uPgiesDR-lkp@intel.com/reproduce)
+On 7/21/26 11:36, AngeloGioacchino Del Regno wrote:
+> Changes in v13:
+>   - Removed `if (IS_ENABLED(CONFIG_OF))` check in spmi_dev_release (Andy)
+>   - Rebased (though still applies cleanly) over next-20260720
+> 
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202609172243.uPgiesDR-lkp@intel.com/
+Is there any further comment on this series?
 
-All errors (new ones prefixed by >>):
+Cheers,
+Angelo
 
-   drivers/bluetooth/btintel.c: In function 'btintel_set_dsm_reset_method':
->> drivers/bluetooth/btintel.c:2725:7: error: implicit declaration of function 'acpi_has_method'; did you mean 'acpi_has_watchdog'? [-Werror=implicit-function-declaration]
-     if (!acpi_has_method(handle, "_PRR")) {
-          ^~~~~~~~~~~~~~~
-          acpi_has_watchdog
-   cc1: some warnings being treated as errors
-
-
-vim +2725 drivers/bluetooth/btintel.c
-
-8f0a3786f56d9fa Kiran K 2023-06-11  2705  
-8f0a3786f56d9fa Kiran K 2023-06-11  2706  static void btintel_set_dsm_reset_method(struct hci_dev *hdev,
-8f0a3786f56d9fa Kiran K 2023-06-11  2707  					 struct intel_version_tlv *ver_tlv)
-8f0a3786f56d9fa Kiran K 2023-06-11  2708  {
-8f0a3786f56d9fa Kiran K 2023-06-11  2709  	struct btintel_data *data = hci_get_priv(hdev);
-8f0a3786f56d9fa Kiran K 2023-06-11  2710  	acpi_handle handle = ACPI_HANDLE(GET_HCIDEV_DEV(hdev));
-8f0a3786f56d9fa Kiran K 2023-06-11  2711  	u8 reset_payload[4] = {0x01, 0x00, 0x01, 0x00};
-8f0a3786f56d9fa Kiran K 2023-06-11  2712  	union acpi_object *obj, argv4;
-8f0a3786f56d9fa Kiran K 2023-06-11  2713  	enum {
-8f0a3786f56d9fa Kiran K 2023-06-11  2714  		RESET_TYPE_WDISABLE2,
-8f0a3786f56d9fa Kiran K 2023-06-11  2715  		RESET_TYPE_VSEC
-8f0a3786f56d9fa Kiran K 2023-06-11  2716  	};
-8f0a3786f56d9fa Kiran K 2023-06-11  2717  
-8f0a3786f56d9fa Kiran K 2023-06-11  2718  	handle = ACPI_HANDLE(GET_HCIDEV_DEV(hdev));
-8f0a3786f56d9fa Kiran K 2023-06-11  2719  
-8f0a3786f56d9fa Kiran K 2023-06-11  2720  	if (!handle) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2721  		bt_dev_dbg(hdev, "No support for bluetooth device in ACPI firmware");
-8f0a3786f56d9fa Kiran K 2023-06-11  2722  		return;
-8f0a3786f56d9fa Kiran K 2023-06-11  2723  	}
-8f0a3786f56d9fa Kiran K 2023-06-11  2724  
-8f0a3786f56d9fa Kiran K 2023-06-11 @2725  	if (!acpi_has_method(handle, "_PRR")) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2726  		bt_dev_err(hdev, "No support for _PRR ACPI method");
-8f0a3786f56d9fa Kiran K 2023-06-11  2727  		return;
-8f0a3786f56d9fa Kiran K 2023-06-11  2728  	}
-8f0a3786f56d9fa Kiran K 2023-06-11  2729  
-8f0a3786f56d9fa Kiran K 2023-06-11  2730  	switch (ver_tlv->cnvi_top & 0xfff) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2731  	case 0x910: /* GalePeak2 */
-8f0a3786f56d9fa Kiran K 2023-06-11  2732  		reset_payload[2] = RESET_TYPE_VSEC;
-8f0a3786f56d9fa Kiran K 2023-06-11  2733  		break;
-8f0a3786f56d9fa Kiran K 2023-06-11  2734  	default:
-8f0a3786f56d9fa Kiran K 2023-06-11  2735  		/* WDISABLE2 is the default reset method */
-8f0a3786f56d9fa Kiran K 2023-06-11  2736  		reset_payload[2] = RESET_TYPE_WDISABLE2;
-8f0a3786f56d9fa Kiran K 2023-06-11  2737  
-8f0a3786f56d9fa Kiran K 2023-06-11  2738  		if (!acpi_check_dsm(handle, &btintel_guid_dsm, 0,
-8f0a3786f56d9fa Kiran K 2023-06-11  2739  				    BIT(DSM_SET_WDISABLE2_DELAY))) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2740  			bt_dev_err(hdev, "No dsm support to set reset delay");
-8f0a3786f56d9fa Kiran K 2023-06-11  2741  			return;
-8f0a3786f56d9fa Kiran K 2023-06-11  2742  		}
-8f0a3786f56d9fa Kiran K 2023-06-11  2743  		argv4.integer.type = ACPI_TYPE_INTEGER;
-8f0a3786f56d9fa Kiran K 2023-06-11  2744  		/* delay required to toggle BT power */
-8f0a3786f56d9fa Kiran K 2023-06-11  2745  		argv4.integer.value = 160;
-8f0a3786f56d9fa Kiran K 2023-06-11  2746  		obj = acpi_evaluate_dsm(handle, &btintel_guid_dsm, 0,
-8f0a3786f56d9fa Kiran K 2023-06-11  2747  					DSM_SET_WDISABLE2_DELAY, &argv4);
-8f0a3786f56d9fa Kiran K 2023-06-11  2748  		if (!obj) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2749  			bt_dev_err(hdev, "Failed to call dsm to set reset delay");
-8f0a3786f56d9fa Kiran K 2023-06-11  2750  			return;
-8f0a3786f56d9fa Kiran K 2023-06-11  2751  		}
-8f0a3786f56d9fa Kiran K 2023-06-11  2752  		ACPI_FREE(obj);
-8f0a3786f56d9fa Kiran K 2023-06-11  2753  	}
-8f0a3786f56d9fa Kiran K 2023-06-11  2754  
-8f0a3786f56d9fa Kiran K 2023-06-11  2755  	bt_dev_info(hdev, "DSM reset method type: 0x%02x", reset_payload[2]);
-8f0a3786f56d9fa Kiran K 2023-06-11  2756  
-8f0a3786f56d9fa Kiran K 2023-06-11  2757  	if (!acpi_check_dsm(handle, &btintel_guid_dsm, 0,
-8f0a3786f56d9fa Kiran K 2023-06-11  2758  			    DSM_SET_RESET_METHOD)) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2759  		bt_dev_warn(hdev, "No support for dsm to set reset method");
-8f0a3786f56d9fa Kiran K 2023-06-11  2760  		return;
-8f0a3786f56d9fa Kiran K 2023-06-11  2761  	}
-8f0a3786f56d9fa Kiran K 2023-06-11  2762  	argv4.buffer.type = ACPI_TYPE_BUFFER;
-8f0a3786f56d9fa Kiran K 2023-06-11  2763  	argv4.buffer.length = sizeof(reset_payload);
-8f0a3786f56d9fa Kiran K 2023-06-11  2764  	argv4.buffer.pointer = reset_payload;
-8f0a3786f56d9fa Kiran K 2023-06-11  2765  
-8f0a3786f56d9fa Kiran K 2023-06-11  2766  	obj = acpi_evaluate_dsm(handle, &btintel_guid_dsm, 0,
-8f0a3786f56d9fa Kiran K 2023-06-11  2767  				DSM_SET_RESET_METHOD, &argv4);
-8f0a3786f56d9fa Kiran K 2023-06-11  2768  	if (!obj) {
-8f0a3786f56d9fa Kiran K 2023-06-11  2769  		bt_dev_err(hdev, "Failed to call dsm to set reset method");
-8f0a3786f56d9fa Kiran K 2023-06-11  2770  		return;
-8f0a3786f56d9fa Kiran K 2023-06-11  2771  	}
-8f0a3786f56d9fa Kiran K 2023-06-11  2772  	ACPI_FREE(obj);
-8f0a3786f56d9fa Kiran K 2023-06-11  2773  	data->acpi_reset_method = btintel_acpi_reset_method;
-8f0a3786f56d9fa Kiran K 2023-06-11  2774  }
-8f0a3786f56d9fa Kiran K 2023-06-11  2775  
-
-:::::: The code at line 2725 was first introduced by commit
-:::::: 8f0a3786f56d9fa4b308bdbd54757a51145dbb7a Bluetooth: btintel: Add support to reset bluetooth via ACPI DSM
-
-:::::: TO: Kiran K <kiran.k@intel.com>
-:::::: CC: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> Changes in v12:
+>   - Removed call to of_node_put() for failure as it's being already
+>     done in spmi_dev_release(), as pointed out by Sashiko
+>   - Fixed usage of the new helper in all users (it's too hot today, sorry)
+> 
+> Changes in v11:
+>   - Use kzalloc_obj() in spmi_subdevice_alloc_and_add()
+>   - Introduced new helper to get a parent SPMI device which verifies
+>     both if the device has parent and if that parent is effectively
+>     a SPMI device type
+>   - Removed dev->parent NULL checks in all migration code, as that
+>     is now being checked in the new helper instead, reducing the
+>     amount of required lines of code to instantiate a SPMI subdevice
+>   - Moved of_node reference dropping to dev release callback (Sashiko)
+>   - Rebased over next-20260706
+> 
+> Changes in v10:
+>   - Add use-after-free fix rebased to before this series, as the v1 of
+>     that did not apply cleanly on a tree without this series applied
+>   - Replace unsafe to_spmi_device() with spmi_find_device_by_of_node() (Sashiko)
+>   - Fix -Wformat warning in dev_set_name call (Sashiko)
+> 
+> Changes in v9:
+>   - Added check for dev->parent where missing (Sashiko)
+>   - Changed %d to %u in dev_set_name() call as arg is unsigned (Sashiko)
+>   - Propagating error code from devm_regmap_init_spmi_ext() instead of
+>     returning -ENODEV in phy-qcom-eusb2-repeater.c (Sashiko)
+>   - Rebased over next-20260605 (no conflicts anyway)
+> 
+> Changes in v8:
+>   - Renamed *res to *sub_sdev in devm_spmi_subdevice_remove() (Andy)
+>   - Changed kerneldoc wording to "error pointer" for function
+>     spmi_subdevice_alloc_and_add() (Andy)
+>   - Shuffled around some assignments in spmi_subdevice_alloc_and_add() (Andy)
+>   - Used device_property_read_u32() instead of of_property_read_u32()
+>     in all of the migrated drivers (Andy)
+>   - Changed .max_register field in all of the migrated drivers from
+>     0x100 to 0xff (Andy)
+>   - Kept `sta1` declaration in reversed xmas tree order in function
+>     iadc_poll_wait_eoc() of qcom-spmi-iadc.c (Andy)
+> 
+> Changes in v7:
+>   - Added commit to cleanup redundant dev_name() in the pre-existing
+>     spmi_device_add() function
+>   - Added commit removing unneeded goto and improving spmi_device_add()
+>     readability by returning error in error path, and explicitly zero
+>     for success at the end.
+> 
+> Changes in v6:
+>   - Added commit to convert spmi.c to %pe error format and used
+>     %pe error format in spmi_subdevice code as wanted by Uwe Kleine-Konig
+> 
+> Changes in v5:
+>   - Changed dev_err to dev_err_probe in qcom-spmi-sdam (and done
+>     that even though I disagree - because I wanted this series to
+>     *exclusively* introduce the minimum required changes to
+>     migrate to the new API, but okay, whatever....!);
+>   - Added missing REGMAP dependency in Kconfig for qcom-spmi-sdam,
+>     phy-qcom-eusb2-repeater and qcom-coincell to resolve build
+>     issues when the already allowed COMPILE_TEST is enabled
+>     as pointed out by the test robot's randconfig builds.
+> 
+> Changes in v4:
+>   - Added selection of REGMAP_SPMI in Kconfig for qcom-coincell and
+>     for phy-qcom-eusb2-repeater to resolve undefined references when
+>     compiled with some randconfig
+> 
+> Changes in v3:
+>   - Fixed importing "SPMI" namespace in spmi-devres.c
+>   - Removed all instances of defensive programming, as pointed out by
+>     jic23 and Sebastian
+>   - Removed explicit casting as pointed out by jic23
+>   - Moved ida_free call to spmi_subdev_release() and simplified error
+>     handling in spmi_subdevice_alloc_and_add() as pointed out by jic23
+> 
+> Changes in v2:
+>   - Fixed missing `sparent` initialization in phy-qcom-eusb2-repeater
+>   - Changed val_bits to 8 in all Qualcomm drivers to ensure
+>     compatibility as suggested by Casey
+>   - Added struct device pointer in all conversion commits as suggested
+>     by Andy
+>   - Exported newly introduced functions with a new "SPMI" namespace
+>     and imported the same in all converted drivers as suggested by Andy
+>   - Added missing error checking for dev_set_name() call in spmi.c
+>     as suggested by Andy
+>   - Added comma to last entry of regmap_config as suggested by Andy
+> 
+> While adding support for newer MediaTek platforms, featuring complex
+> SPMI PMICs, I've seen that those SPMI-connected chips are internally
+> divided in various IP blocks, reachable in specific contiguous address
+> ranges... more or less like a MMIO, but over a slow SPMI bus instead.
+> 
+> I recalled that Qualcomm had something similar... and upon checking a
+> couple of devicetrees, yeah - indeed it's the same over there.
+> 
+> What I've seen then is a common pattern of reading the "reg" property
+> from devicetree in a struct member and then either
+>   A. Wrapping regmap_{read/write/etc}() calls in a function that adds
+>      the register base with "base + ..register", like it's done with
+>      writel()/readl() calls; or
+>   B. Doing the same as A. but without wrapper functions.
+> 
+> Even though that works just fine, in my opinion it's wrong.
+> 
+> The regmap API is way more complex than MMIO-only readl()/writel()
+> functions for multiple reasons (including supporting multiple busses
+> like SPMI, of course) - but everyone seemed to forget that regmap
+> can manage register base offsets transparently and automatically in
+> its API functions by simply adding a `reg_base` to the regmap_config
+> structure, which is used for initializing a `struct regmap`.
+> 
+> So, here we go: this series implements the software concept of an SPMI
+> Sub-Device (which, well, also reflects how Qualcomm and MediaTek's
+> actual hardware is laid out anyway).
+> 
+>                 SPMI Controller
+>                       |                ______
+>                       |               /       Sub-Device 1
+>                       V              /
+>                SPMI Device (PMIC) ----------- Sub-Device 2
+>                                      \
+>                                       \______ Sub-Device 3
+> 
+> As per this implementation, an SPMI Sub-Device can be allocated/created
+> and added in any driver that implements a... well.. subdevice (!) with
+> an SPMI "main" device as its parent: this allows to create and finally
+> to correctly configure a regmap that is specific to the sub-device,
+> operating on its specific address range and reading, and writing, to
+> its registers with the regmap API taking care of adding the base address
+> of a sub-device's registers as per regmap API design.
+> 
+> All of the SPMI Sub-Devices are therefore added as children of the SPMI
+> Device (usually a PMIC), as communication depends on the PMIC's SPMI bus
+> to be available (and the PMIC to be up and running, of course).
+> 
+> Summarizing the dependency chain (which is obvious to whoever knows what
+> is going on with Qualcomm and/or MediaTek SPMI PMICs):
+>      "SPMI Sub-Device x...N" are children "SPMI Device"
+>      "SPMI Device" is a child of "SPMI Controller"
+> 
+> (that was just another way to say the same thing as the graph above anyway).
+> 
+> Along with the new SPMI Sub-Device registration functions, I have also
+> performed a conversion of some Qualcomm SPMI drivers and only where the
+> actual conversion was trivial.
+> 
+> I haven't included any conversion of more complex Qualcomm SPMI drivers
+> because I don't have the required bandwidth to do so (and besides, I think,
+> but haven't exactly verified, that some of those require SoCs that I don't
+> have for testing anyway).
+> 
+> 
+> AngeloGioacchino Del Regno (12):
+>    spmi: Fix potential use-after-free by grabbing of_node reference
+>    spmi: Remove redundant dev_name() print in spmi_device_add()
+>    spmi: Print error status with %pe format
+>    spmi: Remove unneeded goto in spmi_device_add() error path
+>    spmi: Implement spmi_subdevice_alloc_and_add() and devm variant
+>    spmi: Add helper to get a parent SPMI device
+>    nvmem: qcom-spmi-sdam: Migrate to devm_spmi_subdevice_alloc_and_add()
+>    power: reset: qcom-pon: Migrate to devm_spmi_subdevice_alloc_and_add()
+>    phy: qualcomm: eusb2-repeater: Migrate to
+>      devm_spmi_subdevice_alloc_and_add()
+>    misc: qcom-coincell: Migrate to devm_spmi_subdevice_alloc_and_add()
+>    iio: adc: qcom-spmi-iadc: Migrate to
+>      devm_spmi_subdevice_alloc_and_add()
+>    iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
+> 
+>   drivers/iio/adc/qcom-spmi-iadc.c              | 116 ++++++++---------
+>   drivers/misc/Kconfig                          |   2 +
+>   drivers/misc/qcom-coincell.c                  |  45 +++++--
+>   drivers/nvmem/Kconfig                         |   1 +
+>   drivers/nvmem/qcom-spmi-sdam.c                |  41 ++++--
+>   drivers/phy/qualcomm/Kconfig                  |   2 +
+>   .../phy/qualcomm/phy-qcom-eusb2-repeater.c    |  52 +++++---
+>   drivers/power/reset/qcom-pon.c                |  31 +++--
+>   drivers/spmi/spmi-devres.c                    |  24 ++++
+>   drivers/spmi/spmi.c                           | 121 ++++++++++++++++--
+>   include/linux/spmi.h                          |  17 +++
+>   11 files changed, 325 insertions(+), 127 deletions(-)
+> 
