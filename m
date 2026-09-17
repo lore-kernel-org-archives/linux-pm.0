@@ -1,169 +1,166 @@
-Received: from mail-ej2-f23.google.com (mail-ej2-f23.google.com [74.125.228.151])
+Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82E4C5221CD
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 13:28:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.151
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789651706; cv=pass; b=fE40phG92J6POztGQ9PR33V/1agerP+r37Y/9yl4XYBJLvcPSQLziqLB6OC/47oBmZAe9yT1CaLk6Amr4QYAgmmFgKjIP8U9Vq6hdgA5qFV6E4WrMDrOosyAtDhv8HiVxac4B2pKkHUJJK0i1Dmj8V465mU8XyA6SKh7igVQcy0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789651706; c=relaxed/simple;
-	bh=0WJXIdLQe4ElSlYT4i0l99nxpQnfGCMgUfJt7LZpHAw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Om8YCyE29l1PTiy9Y9ObMd1E2fXFTwwLvw3FdPdKuwE3OTQuvBe3tZZZC0Yo8eZo+dK7DsYdWUBdhvJO2DTNYQDSfiM9FPPDLfuu9XcZbD1WgOU3r/5xvnbfQ5yzNnaxJmradHTuMWhLeItQwW9fcPX3dHlsFVyZj6tf3WdF5Ao=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rXkPQMb0; arc=pass smtp.client-ip=74.125.228.151
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B621351FCD5
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 13:29:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789651801; cv=none; b=gkFeTrhIpdpOQA75HAh55ecUacTw/sPElz+kQA1WV70DppIZVHGe9uxvSXE9xyZufIolhpLm386xzBagiPTQMSFRL6wbrjNQuMhTEhSBr8UtVtnyikMXmG5vBALAS9OWzfL8tGCIgp1BXIw23bTbxxeJMTvZS6Vs6lB21dJsLsk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789651801; c=relaxed/simple;
+	bh=dXnLeOc9+ZJIVZID1P8Qpbq024iE85sRajVA+G6bckA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dxaCGg+DYUj/oU5yr51UTQqlxw+9AMJdti+I9eCWI0Sa3g5WFHrkPsI40Y/EPA/RpEtXRmj0K9p0+OczBhB4OOrcsjemsPNiiDn21ZZ8uz68hdjATJGwZLeorba0K5arzJO1r34ICAUgjP+V/DY4WhG7uxa3Vetv8ZU2TYPrfs4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems; spf=pass smtp.mailfrom=starlabs.systems; dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b=0GpUkFTJ; arc=none smtp.client-ip=74.125.225.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starlabs.systems
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rXkPQMb0"
-Received: by mail-ej2-f23.google.com with SMTP id a640c23a62f3a-c25ef7a3ce9so119898666b.3
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 06:28:24 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789651702; cv=none;
-        d=google.com; s=arc-20260327;
-        b=qvk4+ce/4KdVlc2CfhIDlYSDyP+ZOjEPFyOCef7FxBo+R/xudDEd+nOhoLqDrgmJXc
-         qxYyHFt2LwkGOtiKsUT3MzC5hM8XSixVr5OsjuJgC/9ohH4Wku+vrB8FK+PnD2/Gu0ML
-         lufC7175dWTQwtBgWzf9UoGuViLkBfsRCTBBoHOUEw/Yry02lE73ynsJCSnWHsRrmIA8
-         efnGAwkorJ1E3pzKlzgBF0kK2i4mVGHOhJjWjhEd+f/3paW8M2sbKoACx3+ckF6fo23l
-         H1Gf9+nhqTI+1KvKl6ukCh556M4372OmdOomMgsAnJPQB8GTJ4A37HZJbnGaSSmUqsVj
-         sgoQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=LiiEkFORC49HDxXLzDmb4xC1eRwsEsw+cw7nlo0p/HM=;
-        fh=dMUAgFujnN+mwzsmjUQWzbWimhrdF8RRzsWitE4pSoI=;
-        b=mxxGNTj7DdhINWwYNZJNcaEkElRtffS0yl9QokgSYieZOHYRXHJyMdbcSciF/RDzEe
-         T3wA+VUIBTGl/Acgi92mPlj1Ew+/ZQxvTV2CTqoDcONaycUejJpoIfxk+TLYMdjd3qdh
-         cfNALCoqB6H/J7eVKykHfP9CmRiXkcfkXysoES8RvHzafZYFwfgoF7RtXTl8m9lkXcl3
-         S/el4P734IrM/3pzAkbKBTgirKWloA0LmPdVupz1ttrYHbbsD9CBtRpWcAY7xqqauG+O
-         Ywl408H4X0Ku5BTRf4XmUFBT88o78l09XdFLqTgO0LlvXOVXH5yXxh92tUOaTQKYgL/J
-         IKmw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b="0GpUkFTJ"
+Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49cd5462b69so5111925e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 06:29:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1789651702; x=1790256502; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=LiiEkFORC49HDxXLzDmb4xC1eRwsEsw+cw7nlo0p/HM=;
-        b=rXkPQMb0WW/RNOg6SNxG6XjlI3wt1sebSjrFuQc+I7o8qmHKzwzSNnYXeqMn99PzQH
-         YViEUhnfxvg3VYlzaB+h5gu1428hntn7O9x/BWRN5Wfw8Jjvy/HpMfIfR5ATVI37YpgE
-         9BIuhcu4HXmqhb2Ubtq9dEExv9J1RPeq0IDp9zphN83mjS7hZT7MosZrgdpq2+ztnk+t
-         BkH2Cy+DaVEuuG77vUd+hOgLSW/uyCZwrGOmC+gtTRY4BXOgshZodfNjbU8fK+90I5X3
-         BT3IgusQ8DXWHgwQNmXEI6oif2lTYjFlbM9pwWgK6qLTn6nXaa0OXHHUG/8prdBMrFP3
-         g+TA==
+        d=starlabs-systems.20251104.gappssmtp.com; s=20251104; t=1789651793; x=1790256593; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=kc8SSZKaYeSDYTduIzKtgY7SY2vSIslvd8ziXmdFBEs=;
+        b=0GpUkFTJ1DzSFvpaCcNcrf1B3dKDAuuztdNJ0x80FEwlnEsOeALHBcMKTM+KKK93ys
+         96iFRHCFoy9slyl5POGPVU5f+kITrRrEVO0QKFfJqiJKt008upMW52trd7nGn9B9h45L
+         VonzcCpLLCKrFMeZUVxCRs11Nx/If2g4BRfnpBd25SmJIn6RQgHbFdwskvINnJ43aW0S
+         p5L5E2S+UtpEZBdB6Cgm0ORNTIE+H6ZfggBHrpye41dB1SKU//9fZBY7Tr/svCJ1LiMh
+         jg5VKHjbNh+k7V58asMTv1FqkLJyYF7AR2UBkrSVLyK7wZXMuvZQOLUnNk73ogHxlz82
+         V7Rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789651702; x=1790256502;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=LiiEkFORC49HDxXLzDmb4xC1eRwsEsw+cw7nlo0p/HM=;
-        b=ExM5XkO8gfWVMJfeuPe8d6vScRvFXQ8ftvOz1XPOL/Qut+xA1iUhlR1xZERCK+7wQ9
-         l9rVHCftVMJzd8jyB89IqhOjyMGmXgOsD08glhvGua8nxAUZLHYK3qYw2HRlMzypWdgj
-         +wcfcgPwFV5A6o5ftXsQCLYR1yasvKI2ZVkHiQd4+qY0fqfMudhoJg9wR3h4GAyORVTi
-         Y69Y4SNyiOosD0lS7Pm5wiGG1Yil3nSs+OB/p5wCal3AvB32BhT8YvErkqQdB9flrPzW
-         ovSGY05VjVNywe5o2U5uPm8vCjj/I1s+kZjEgq1avLRgX3QV6qfRaaARTT/EFfXlNcwy
-         3Lwg==
-X-Forwarded-Encrypted: i=1; AKwUvBzRkQLLvtD5F4PrxhpkUtX5S/55dbOvASbfOB/gtgAEi76wZ04xEI9KLCjFTBHwhoq4K7futSwduA==@vger.kernel.org
-X-Gm-Message-State: AFuF++l0PZO9ceZd4wD1Zqst0ZX6RXtc4uJ+9gg+OmWGlIfUrNMWDFl4
-	1BwBFTHL1oDVNQIh0oDBhtFbicAN4INZHthOiA89GavP9QMIO5QEBV7iyCTqOTQjS8dFaJSoXjc
-	KYBWGqEMOEkSZ7LnEi9+HPbLsFYgjQcIK5qUWZcIALA==
-X-Gm-Gg: AYBFou0pwHQrQ905GRRvyHYrgZYcoMAjhLvWo7tu250i8bdPo4wBPqmzx2fZjyyCW7Y
-	e/JfQPxWIk4H9tcSDUCYmuhf7ompNiZ65OEnDo3IUvcOU0aTPfpCgJbYKcgMo6ds5PDI/qoGdG2
-	YxvOlgM3QZiYB5URomP3/hrB5i4sgT0wgvBrEON8RTQ2fQNF2pw28/bxYTNRPhkT5UeyG2tmNH5
-	6xLpMn4Y708ut//uAF5oR1Nt6kksQ1YbzK6y5pYTLiJ1QUPnxCmRpD57TiubI24yKyZioSmvgqn
-	xthIWMhfvqGs6eqTjVX2Asfy2XsCP3GhjEd2Fm48sO/yFjSgeZhW4A/Uixz3hAE8E9gQPWY3mSZ
-	Eczp51+sXQH+f
-X-Received: by 2002:a17:907:3d05:b0:c29:6cb1:bc56 with SMTP id
- a640c23a62f3a-c29e532bea8mr511794166b.46.1789651701772; Thu, 17 Sep 2026
- 06:28:21 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1789651793; x=1790256593;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=kc8SSZKaYeSDYTduIzKtgY7SY2vSIslvd8ziXmdFBEs=;
+        b=e8hOPSWgTpJlDmPgOI+ElhctjGyqTzc/qx6V8+NBubjUr5hQFGO9hg8420h4f84SZd
+         L2WB+UjhLpz4FkbvYYSOnXOsRj6AGkH6UDSa4ehu8tjenAKl6hrE+Em05BR+YelooF4d
+         2vboudOLud+ig7rOrUImwH7AZIIq5R3aH5Qk44Xu63f812lBqPSvRRvWjiB/vbN2MUBF
+         kZuOGcxK4b+DPMXYB1eECZZ41X+VOx//yDKBuJeAyn/U6IMrWHbvX8tAmrKWNesx3q6A
+         14qJ1vCu+nCADDESQFZiOwNdm05/G3MDdIi48JUCdRKe6N0mqPhe6qgRGbacfKA11MtX
+         V1HA==
+X-Gm-Message-State: AFuF++lrmZmn/kF2pS1BZ0o+Qo6rh/toAp8ReEb2kJMCJUEj3pW2KCBM
+	pSAX+PwwCDYZa4hyOpokZvpbB42x9FIU6F9foOy+racJoyjgBWynfXRDC7Lo5hZsRgHy3eNuuCx
+	B5G8FcYbC
+X-Gm-Gg: AYBFou0My4ASE/c6p097iMIeXbmr7MKnjPlhXYwglbL9ZcMOccbWr58kWMzIm6SN3hb
+	m6jpVJwS0JyPN8CqKjCsQvM6xTvHxMxHKSfCxni0WWK2+8aZyMrm1wwEi0NQP/fsAe/WP90rzwu
+	HGr4yWHMqCFcGez5Sw8dlTX7McYqLnegU6hatJ+ulxvFaomWDALro6l2ganeUDpNyfFKaeS5CFM
+	P+FMJ7XAGVkfjmJEl7WjEfvEjKrAwmZkT7YPgtiewwDxEy/Lvi4dEvR7zfB08fI4yLRM2j2foTq
+	bvvXU3EZdYHq/EO4r/PKL+ZBafsKyBQse07szUT6YCIwQ16ueVVbjHAB/2tnqimqwP3QhU5muja
+	6vLo6es3rc+lJ8O22eupZNcEMmwL6hydvn4Y8bDA10wzYDOzc3ERRCi3sYANgjO4lDHKxAsPeWP
+	wVn/gz0HHsU5potw6kPKzJ86aKOpP4kYYSBBa/orbX3fOrwn4GrKrTOQk8yM/9N56ZBGIG/jGpo
+	ClAQdGydesS+uLjG9n5rvA6FJs=
+X-Received: by 2002:a05:600c:46ce:b0:49c:dca4:94c with SMTP id 5b1f17b1804b1-49eb7339895mr154172245e9.13.1789651793298;
+        Thu, 17 Sep 2026 06:29:53 -0700 (PDT)
+Received: from fighter ([216.128.28.240])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fbd2356d1sm97548275e9.6.2026.09.17.06.29.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Sep 2026 06:29:52 -0700 (PDT)
+From: Sean Rhodes <sean@starlabs.systems>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Evan Green <evgreen@chromium.org>,
+	Sean Rhodes <sean@starlabs.systems>,
+	linux-kernel@vger.kernel.org,
+	Jens Axboe <axboe@kernel.dk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Barry Song <baohua@kernel.org>,
+	Youngjun Park <youngjun.park@lge.com>,
+	linux-block@vger.kernel.org,
+	linux-mm@kvack.org,
+	Xueqin Luo <luoxueqin@kylinos.cn>,
+	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>
+Subject: [PATCH v3 RESEND 0/4] PM: hibernate: encrypted snapshots under lockdown
+Date: Thu, 17 Sep 2026 14:29:46 +0100
+Message-ID: <cover.1789651778.git.sean@starlabs.systems>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260916100116.701206-1-christian.loehle@arm.com> <20260916100116.701206-2-christian.loehle@arm.com>
-In-Reply-To: <20260916100116.701206-2-christian.loehle@arm.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 17 Sep 2026 15:28:10 +0200
-X-Gm-Features: AcwNN1UwSb7UKw5POOwin-HQQq1l6kQgh3OhpbZxQbQppke2fZwr_hYswOySiB8
-Message-ID: <CAKfTPtCvfMEY__n58hGpbbEK88p82jT1kNTQF7tJfMFjBo9msw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] sched/fair: Drop idle recency from slow-path CPU selection
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
-	Juri Lelli <juri.lelli@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-	Steven Rostedt <rostedt@goodmis.org>, Valentin Schneider <vschneid@redhat.com>, 
-	K Prateek Nayak <kprateek.nayak@amd.com>, Beata Michalska <beata.michalska@arm.com>, 
-	Elif Topuz <elif.topuz@arm.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Shubhang Kaushik <sh@gentwo.org>, 
-	Christoph Lameter <cl@gentwo.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Wed, 16 Sept 2026 at 12:01, Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> The slow-path CPU picker favours the most recently idle CPU as a proxy
-> for cache warmth.
->
-> A more recent idle stamp may make ongoing entry more likely. Among CPUs
-> with equal advertised exit latency, this may favour the one with the
-> highest wakeup cost: if entry cannot be aborted, it must finish entry and
-> then exit, while an already-resident CPU only needs to exit. The same
-> advertised worst-case latency covers both cases.
->
-> idle_stamp does not track the current CPUIdle entry, so an older
-> scheduler-idle CPU may also be re-entering.
->
-> A recent scheduler-idle transition may also mark a short gap in recurring
-> task activity, so the CPU may soon be busy again.
->
-> Drop the timestamp tie-break, retaining the first idle candidate unless
-> a lower advertised exit latency is found.
+Lockdown disables hibernation because resume restores kernel memory from an
+image userspace can modify. This also prevents a TPM-backed uswsusp
+implementation from using /dev/snapshot under lockdown.
 
-Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
+This series encrypts and authenticates the snapshot in the kernel. The kernel
+generates the image key and wraps it with a seed supplied by trusted early
+userspace. TPM policy and unsealing remain outside the PM code.
 
->
-> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> ---
->  kernel/sched/fair.c | 15 +--------------
->  1 file changed, 1 insertion(+), 14 deletions(-)
->
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 7455a83a6a99..ff5793bddc35 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -8459,7 +8459,6 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
->  {
->         unsigned long load, min_load = ULONG_MAX;
->         unsigned int min_exit_latency = UINT_MAX;
-> -       u64 latest_idle_timestamp = 0;
->         int least_loaded_cpu = this_cpu;
->         int shallowest_idle_cpu = -1;
->         int i;
-> @@ -8480,23 +8479,11 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
->
->                 if (available_idle_cpu(i)) {
->                         struct cpuidle_state *idle = idle_get_state(rq);
->                         if (idle && idle->exit_latency < min_exit_latency) {
-> -                               /*
-> -                                * We give priority to a CPU whose idle state
-> -                                * has the smallest exit latency irrespective
-> -                                * of any idle timestamp.
-> -                                */
->                                 min_exit_latency = idle->exit_latency;
-> -                               latest_idle_timestamp = rq->idle_stamp;
->                                 shallowest_idle_cpu = i;
->                         } else if ((!idle || idle->exit_latency == min_exit_latency) &&
-> -                                  rq->idle_stamp > latest_idle_timestamp) {
-> -                               /*
-> -                                * If equal or no active idle state, then
-> -                                * the most recently idled CPU might have
-> -                                * a warmer cache.
-> -                                */
-> -                               latest_idle_timestamp = rq->idle_stamp;
-> +                                  shallowest_idle_cpu == -1) {
->                                 shallowest_idle_cpu = i;
->                         }
->                 } else if (shallowest_idle_cpu == -1) {
-> --
-> 2.34.1
+The seed interface is first-writer-wins and does not provide freshness.
+Trusted early userspace must provision it before untrusted privileged code
+runs and enforce the required TPM policy, rollback protection and recovery
+handling.
+
+Tested on StarFighter MTL with Secure Boot disabled, integrity lockdown
+selected manually and a TPM-sealed seed. Keyless and user-key S4 cycles
+resumed the same process and boot ID with the swap header restored. Corrupted
+wrapped data, invalid magic, a corrupted complete-chunk tag and a wrong user
+key were rejected. On exact v3, the user-key cycle and the allocation, free
+and reallocation path used by swap-write confinement also passed.
+
+Previous version as it was updated whist waiting review:
+https://lore.kernel.org/all/cover.1785838445.git.sean@starlabs.systems/
+
+Changes in v3:
+- Rebase on current upstream master.
+- Preserve and validate the saved encrypted metadata boundary on resume.
+- Drain buffered metadata before a late user-key transition.
+- Reserve enough encrypted image space if userspace adds a user key after
+  querying the image size.
+- Apply swap-write confinement before enabling the lockdown exception, while
+  preserving the ordinary availability check which routes lockdown writes to
+  the confined path.
+- Account the pages actually allocated through the snapshot API instead of
+  assuming a userspace swap-map format.
+- Document the first-writer, anti-replay and userspace I/O requirements.
+- Remove an unused swap reverse-mapping helper and tighten local naming.
+
+Changes in v2:
+- Keep raw writes to active swap blocked under lockdown.
+- Track encrypted snapshot bytes and header writes before allowing
+  lockdown-time image writes.
+- Split the encrypted stream at the metadata boundary only when a user-key
+  transition is used.
+- Return -EFAULT for userspace copy failures.
+- Document resume meta_size handling.
+
+Evan Green (1):
+  PM: hibernate: add seed-wrapped encrypted snapshots
+
+Sean Rhodes (3):
+  PM: hibernate: confine encrypted snapshot writes
+  PM: hibernate: permit encrypted snapshot device under lockdown
+  PM: hibernate: document encrypted snapshot seed ABI
+
+ Documentation/ABI/testing/sysfs-power   |  18 +
+ Documentation/power/userland-swsusp.rst |  33 +
+ block/fops.c                            |  58 +-
+ include/linux/suspend.h                 |  24 +
+ include/linux/swap.h                    |   9 +
+ include/uapi/linux/suspend_ioctls.h     |  31 +-
+ kernel/power/Kconfig                    |  15 +
+ kernel/power/Makefile                   |   1 +
+ kernel/power/hibernate.c                |  32 +
+ kernel/power/power.h                    |   3 +
+ kernel/power/snapenc.c                  | 952 ++++++++++++++++++++++++
+ kernel/power/snapshot.c                 |   5 +
+ kernel/power/swap.c                     |  87 +++
+ kernel/power/user.c                     | 272 ++++++-
+ kernel/power/user.h                     | 150 ++++
+ mm/swapfile.c                           |  25 +
+ 16 files changed, 1683 insertions(+), 32 deletions(-)
+ create mode 100644 kernel/power/snapenc.c
+ create mode 100644 kernel/power/user.h
+
