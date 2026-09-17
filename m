@@ -1,88 +1,33 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1A085437E7
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 14:17:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA05354B1A0;
+	Thu, 17 Sep 2026 14:17:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789654626; cv=none; b=H1gOQBnkMb9CcEXOHYvBYzPB7ihysSvGhritVhtSd+RP3reOiho6ScK/8kHRGrfKt1ybVyMKvrag7o6ias/OLwQZIKt5XzvB9EUsu9iuhMIUk8iKiX5XTrk9HkUU7NveA01h+70VAl2zLrOBiyFxH8FzC2MuT8mnEeXhd9M0gzo=
+	t=1789654633; cv=none; b=owX/tQ3dYKrasOraARZoi0wPcvCzDF0vZd3SQYReITfe5sJsWTMh1qqW7bkNqQpv3OVW4/I+Liw1GWmEN/7oPREFCKUIzDE1+cIAu6hjtqZ/Q25+PH2iZVU5jALtN+funYYQJSQyl1MKR0s41H43V6FwadrbZNjGKuMuwQJB9KI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789654626; c=relaxed/simple;
-	bh=wiqEuG8/cSEg7rIA1EdKPkNp8t3X+jIVQg7jtFMc8mo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VNosk5Oc9BlAy86ApuCUSV/1lwiuJw/0d5MMNIDQMuylnF854GlCCssJGLSnqWWF5CoQ/4nmR7dQqVUIsZbHHeMsaSgakWSgL0O/BC+Qpbf4yh6O8j/vdq87KFhdbFT/GlKxxg2/PfQBIDuwd2s5nRH23YqnZCUKBnoAI2FvYh4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RbGKCVue; arc=none smtp.client-ip=74.125.225.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RbGKCVue"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49fbca514f8so1666415e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 07:17:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789654621; x=1790259421; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=wiqEuG8/cSEg7rIA1EdKPkNp8t3X+jIVQg7jtFMc8mo=;
-        b=RbGKCVuedKx3vs+ffEOxw+sZWVVvWTA7OP75LquQFFL+FEBiifD9GNUIId0gSfsk9R
-         JISEhGH1wDGCQiZrpfhRwL6Ipw7EUa0bP6rSrtiIrKIiKTGc+dkDmdH2/dRwdbCouWRJ
-         9S4taRq3bMobOw3+PM2YAvW9G+R+A2Dwux9Ikis1PQELHiVz+vsZx1tbAy15G4iBEZ18
-         xM3fyxcY6UysQRImFLIcCY/ocYwBxDhdgKFYSSKOEiz+Cu41DpsY+pZB2DwjQM1B+l+Y
-         MAH1BLJdDnlvwlzL26yOIOvJwBbndubT+m4jWGDw1A8HBmemUAGwTn55lApvzfVqzDLh
-         Xnng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789654621; x=1790259421;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wiqEuG8/cSEg7rIA1EdKPkNp8t3X+jIVQg7jtFMc8mo=;
-        b=BdMyy+5W1Eq/5/TBxAwxo5cz9PSe5fNB2aZ+KlnumHtveYIcm5o6vdpSt8cxsIrR7o
-         Kyit8XmEdG8K7V0TUCZw0rcZatBOAC7vMui3TaoK4r6TAlHY/4339f3qEjUI1yfW9uvU
-         BGhMfRw1dnt+uZ4EcN3zicxZXCE72mvvcRpZ6Exmrp1gtPr69sbWtrL4ADIAjuON0OJD
-         CqgHqsqMVQoCwgHJ6rlBKbYt/EvbgugvbyXVCZNdcf6ZgeCyiz5fwq8HJATH+dX9F4y8
-         kbWOYGmaHqNtCRCn+sz8KTZe5stwtoe8BUI3G7bC1VdBPmb2hj2K/ojFJRsYN55eBwXK
-         4AgQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxTAFyJo70IyTWyNfD4TMjLOyBe5wwvLc6+dg/NXbvi2g8oP2wHsqIJO7Ouv/iiid0za2fUFjMaLQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++k4hlvuakhavjpkGu2l/ZYF0BYxMDLmotchq8d6R4KpNWFKROnn
-	FyCNksxVdlt0GNswPTF2JWrtqfddezIGSSh4NXEqCBytB/5O0isIb/hR
-X-Gm-Gg: AYBFou3m+mF4cuV4r3PaZeT2HQuICEJ54n3r4F1GHQoo4hq+41M/oxyrr7Ye6kFPoF3
-	hZPQVFjyq/gB9qOeSNalRkdCd5yA9coO5IrM81KBsk6ZJtbbP63RNy2/dzUmkb5ykDde4dtjb24
-	/2rwSZc9/6JWA9Bikk8HjLGN545ef3HmQfLYGYN4tUb6w0IBIeXIqjESgKYYZOrRBqZG6K3ZUnb
-	zpnU0eDPK9cZCjZPStpGXKe8AiqXoXm5SdOGc9CzrAQo/C0Mxe7GGXElmNTnIYjkrdV8NWgDGvh
-	sWBBxtzjT+eRPIO1PPtkIhq3kkTZWUfMurlaivoIfc6p5byATAEDBFGMDKD73/JribhoPwxR5Q/
-	goB4NQctzJ0o503N99UZDdfCaTf9oQnEigCf/RNfEPYYG/WYHf8efUTDca7ECdkhSMqDhKf6YZw
-	yTujo+OpudGk2YnLROLenNT3+skGvbFIH3D47fbxr6F/Tu7JO2Ka8E+Z4tAAij5E7T27hIJIo4V
-	Faq0mBUCRFb7VLuWizm6XQ=
-X-Received: by 2002:a05:600c:3492:b0:49e:7c8b:fdef with SMTP id 5b1f17b1804b1-49eb7329b2emr73332995e9.2.1789654621094;
-        Thu, 17 Sep 2026 07:17:01 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fbd247809sm134648665e9.11.2026.09.17.07.16.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Sep 2026 07:17:00 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: christian.loehle@arm.com
-Cc: beata.michalska@arm.com,
-	cl@gentwo.org,
-	daniel.lezcano@kernel.org,
-	dietmar.eggemann@arm.com,
-	elif.topuz@arm.com,
-	juri.lelli@redhat.com,
-	kprateek.nayak@amd.com,
-	linux-kernel@vger.kernel.org,
+	s=arc-20240116; t=1789654633; c=relaxed/simple;
+	bh=2WnnEmewoLe5dI3cEg6bhhhxIK6FnYemkKTPRE0ZUOo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=MD22imN7xXDxyonIq+mzD/o1mrZzJ/uRo+M1Gh2N0EGt8QAeOI0aGS4/C3c5uu14Klw3LL95BCgGVweMgN13PDof/iAmr+MweZCQcSErMIEveP815/yyQ56yspaBEvZCn2viO5aiVaZbuMMl8H3Jnsrz9YoViFy/AccqPpUSbXE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
+	by APP-05 (Coremail) with SMTP id zQCowAC3Hzpj9qtqyj+CCA--.4599S2;
+	Thu, 17 Sep 2026 22:17:07 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: hansg@kernel.org
+Cc: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sh@gentwo.org,
-	vincent.guittot@linaro.org,
-	vschneid@redhat.com
-Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path candidates
-Date: Thu, 17 Sep 2026 17:16:57 +0300
-Message-ID: <20260917141658.14490-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <b129997a-8d49-41be-a93a-7e0343c952e3@arm.com>
-References: <b129997a-8d49-41be-a93a-7e0343c952e3@arm.com>
+	marex@denx.de,
+	sre@kernel.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] power: supply: bq25890: Fix secondary_chrg leak in bq25890_fw_probe()
+Date: Thu, 17 Sep 2026 14:17:06 +0000
+Message-Id: <20260917141706.2156408-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -90,24 +35,62 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowAC3Hzpj9qtqyj+CCA--.4599S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Kw18Aryxuw45ArW5Cr47CFg_yoW8XF43pF
+	ZYkF9Ikr48XFWUA3WDtr1vgry3Ca4UCry3Ar1xG3s7Xw13J3WDXFyrJrWfXry8Cr9aka10
+	qa9Iyrn7ArnxGaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUB0b7Iv0xC_KF4lb4IE77IF4wAFc2x0x2IEx4CE42xK8VAvwI8I
+	cIk0rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2
+	AK021l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v2
+	6r4j6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26r
+	xl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
+	6xIIjxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVWxJr0_GcWlOx8S6xCaFVCjc4AY6r
+	1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq62Iq12xI8VA0II8E6IAqYI8I648v4I1lc7Cj
+	xVAaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vIr41l42xK82IY6x8ErcxFaVAv8VW8GFyrJr
+	1UJwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480
+	Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7
+	IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k2
+	6cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4UJVWxJr1lIxAIcVC2z280aVCY1x
+	0267AKxVW0oVCq3bIYCTnIWIevJa73UjIFyTuYvjxUwwIDUUUUU
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwMNA2qrrRneCgAAsr
 
-> Actually about the last part, I'm leaning towards sticking with v1, because
-> that is actually the current upstream behaviour. !idle CPUs currently trump
-> any CPU seen so far, but preserve min_exit_latency, therefore sticking it
-> into the shallowest seen reservoir is consistent IMO (although we can
-> certainly debate if that should be the case).
-> I'd prefer sending a follow-up with an idle helper and making a properly
-> defined policy there, but that's adjacent to this patch.
+bq25890_fw_probe() takes a reference on the secondary charger power
+supply with power_supply_get_by_name(), but returns without releasing
+it when linux,iinlim-percentage is out of range or when
+bq25890_fw_read_u32_props() fails. Drop the reference on both error
+paths to avoid leaking it.
 
-Hello Christian,
+Fixes: d54bf877fd87 ("power: supply: bq25890: Add support for having a secondary charger IC")
+Cc: stable@vger.kernel.org
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+---
+ drivers/power/supply/bq25890_charger.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-I could send a patch about this if you want, after making sure about
-everything, obviously.
-
-I'm a bit sick, so if you say yes, I could be slow. But I don't think
-it will take more than 3 days after your answer.
-
-Thanks,
-Kayra :>
-
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index 868e86e1749b..0e8ebab1723e 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -1411,6 +1411,7 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
+ 	if (ret == 0) {
+ 		if (val > 100) {
+ 			dev_err(bq->dev, "Error linux,iinlim-percentage %u > 100\n", val);
++			power_supply_put(bq->secondary_chrg);
+ 			return -EINVAL;
+ 		}
+ 		bq->iinlim_percentage = val;
+@@ -1425,8 +1426,10 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
+ 		return 0;
+ 
+ 	ret = bq25890_fw_read_u32_props(bq);
+-	if (ret < 0)
++	if (ret < 0) {
++		power_supply_put(bq->secondary_chrg);
+ 		return ret;
++	}
+ 
+ 	init->ilim_en = device_property_read_bool(bq->dev, "ti,use-ilim-pin");
+ 	init->boostf = device_property_read_bool(bq->dev, "ti,boost-low-freq");
+-- 
+2.34.1
 
