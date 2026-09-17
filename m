@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 80F834BA1D1;
-	Thu, 17 Sep 2026 09:58:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 84827420476;
+	Thu, 17 Sep 2026 10:01:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789639105; cv=none; b=W9g9YjoFnTWV/I3SydA/8KmCV21/xfLqQbNywpdPhO8bye970ZaupPqBe3QuxXoR2l7ExG8nwqKVXMBYUKn6VsYflB9Ab6oFAAtqhIYO+5Yo6KhHCkq6Mxug8YVzh9HhKtoVluN3iMZ3jYTy+bZhGvwjz0YvTtWC1WL6OybjGeE=
+	t=1789639308; cv=none; b=BvXeGDK0YUhA+5gmZpEBshc4KMmH7ahjfqAJ6kJa7VxUP87AIHANPm30ui0V84YsS5Z5Lo5RmXW6HbKmnciqAF5XYeV7YETjUKTEhEeu414uQCd5Mtge/eFdQH3rrwi0oUe+Cb0uPG6X5kFaK9RuJWLWk7lDewOft5wNKVH1WUI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789639105; c=relaxed/simple;
-	bh=SAbrL6Yo4aTznG6Nf+upN9iXj0sj5B+8T0tuPN0Buzo=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=ofpxTEiQD5q23i3Cvm8QPkcKSZOwXa/RGB5PBpgVmAlC5SBRpi/HBCrHpJoUackmYvqpvHOtXMGbW/Lei5w5J+FZEQqO6l4fdpLZ2Uewz/348cR4/RYs+Bbm4pgzkbu9/hnL4j4KQvWySKORyAuDVp33MyOLsmbZzdVxfdKBstM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=HdUtlPf+; arc=none smtp.client-ip=217.140.110.172
+	s=arc-20240116; t=1789639308; c=relaxed/simple;
+	bh=1pwwAA8ZeOmKPOIlnHk+XRlZJTnA6zBlBTY2TxR85cU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=j1SykDim4Zj9miPb7KF0ttVnpON7WlrVZR0oZmWRbPTRAvZzwu/sZhGWDDHAFpE9PWhZgrzEnWuXZMRWzP3Tyc/q7ceoHqXWe6UteMHj9W9T9n5NQqR/0ocvT+DYlKaAi7nysGhi06XAES3AqnUEFU3IMw8mKftRW66NF7DC6Hw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=SvAAG4W6; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="HdUtlPf+"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="SvAAG4W6"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2241C1A9A;
-	Thu, 17 Sep 2026 02:58:06 -0700 (PDT)
-Received: from [10.57.50.144] (unknown [10.57.50.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CC53D3F7B4;
-	Thu, 17 Sep 2026 02:58:06 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5102E1476;
+	Thu, 17 Sep 2026 03:01:32 -0700 (PDT)
+Received: from [10.57.74.102] (unknown [10.57.74.102])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0CE963F7B4;
+	Thu, 17 Sep 2026 03:01:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789639089; bh=SAbrL6Yo4aTznG6Nf+upN9iXj0sj5B+8T0tuPN0Buzo=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
-	b=HdUtlPf+UtGCtFhRNC8lxU52elkz5qFJooks2Adyr+lOQH/trlYVfeOSNxbWIt8SX
-	 Z5KGVUWdu2Wkj4ERzVo1Chff2RkkbiEZkaLKnP1IHDlUjaAgZ1iymoqlm98qC6GVRf
-	 f4nbnmz2B5O0sHtnwfTdkpYsiopdvu4OILU5iyEw=
-Message-ID: <b129997a-8d49-41be-a93a-7e0343c952e3@arm.com>
-Date: Thu, 17 Sep 2026 10:58:04 +0100
+	t=1789639295; bh=1pwwAA8ZeOmKPOIlnHk+XRlZJTnA6zBlBTY2TxR85cU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=SvAAG4W6pCrBYl8UpXFPHTB71j6RSyCdPuWmd6UkpE0cOM3aNKMGhTZAlgIGEB7fV
+	 Cd4IX/FcwNi0bAPpT+dbXe03++P3TJBX21zD+nSnKRWo8w05d+mhGf6NjzzytfXlME
+	 YQWqbo5gb1j49X8rnLzxfNNa3piSKywqbAZlc1EM=
+Message-ID: <6f2907ec-848e-4e60-98b2-a3b7a905b880@arm.com>
+Date: Thu, 17 Sep 2026 12:01:31 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,66 +35,43 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] sched/fair: Randomize equally shallow slow-path
- candidates
-From: Christian Loehle <christian.loehle@arm.com>
-To: Shubhang <sh@gentwo.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Valentin Schneider <vschneid@redhat.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>,
- Beata Michalska <beata.michalska@arm.com>, Elif Topuz <elif.topuz@arm.com>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Christoph Lameter
- <cl@gentwo.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260916100116.701206-1-christian.loehle@arm.com>
- <20260916100116.701206-3-christian.loehle@arm.com>
- <08339e62-1787-e203-569c-a7fd3026395f@gentwo.org>
- <e11d588b-e597-4210-baa3-278eaeb0cf52@arm.com>
-Content-Language: en-US
-In-Reply-To: <e11d588b-e597-4210-baa3-278eaeb0cf52@arm.com>
+Subject: Re: [PATCH v3 1/2] arm64: topology: fix arch_freq_get_on_cpu()
+ overflow above 4.19 GHz
+To: Oleg Keri <okerixx@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+ Beata Michalska <beata.michalska@arm.com>,
+ Russell King <linux@armlinux.org.uk>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Sudeep Holla <sudeep.holla@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <55538466-2203-42ec-a0bd-b743c04a3b38@arm.com>
+ <178955779940.30466.10860982419496123467@gmail.com>
+Content-Language: en-GB
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <178955779940.30466.10860982419496123467@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 9/17/26 08:47, Christian Loehle wrote:
-> On 9/16/26 20:43, Shubhang wrote:
->> Hi Christian,
->>
->> On Wed, 16 Sep 2026, Christian Loehle wrote:
->>
->>> +            } else if (!idle || idle->exit_latency == min_exit_latency) {
->>> +                nr_candidates++;
->>> +                if (nr_candidates == 1 ||
->>> +                    !reciprocal_scale(sched_rng(), nr_candidates))
->>> +                    shallowest_idle_cpu = i;
->>
->> available_idle_cpu(i) ensures that this is an idle CPU, but !idle means that no active cpuidle state, meaning no exit latency is available for comparison.
->>
->> [PATCH 1/2] treats such a CPU as a fallback i.e. it is selected only when no idle candidate has been found yet. Here it becomes an equal reservoir candidate, even after selecting a CPU with the minimum known exit latency. That is, it is added to the random selection pool and can replace shallowest_idle_cpu.
->>
->> Is that intentional ? If not, should reservoir sampling be limited to
->> candidates with `idle->exit_latency == min_exit_latency`, while retaining the first !idle CPU only as the fallback?
+Hi Oleg,
+
+On 16.09.26 13:23, Oleg Keri wrote:
+> Hi Dietmar,
 > 
-> Hi Shubhang,
+> On Wed, Sep 16, 2026, Dietmar Eggemann wrote:
+
+[...]
+
+> Fine by me, that reads better than open-coding the shift. Your diff
+> builds here on arm64 (topology.o and kernel/sched/), so I will fold it
+> into v4 and add the scheduler maintainers to Cc for the header move.
 > 
-> Thanks for taking a look. Including !idle candidates was intentional,
-> although you're right that this changes their treatment.
-> 
-> I think there's a case for giving NULL a zero ranking. With a working
-> cpuidle driver, NULL can mean the CPU is preparing for entry or finishing
-> after exit, making it a good low-latency candidate.
-> Architecture fallbacks are also reasonable candidates AFAICS.
-> In any case, I'd prefer to address that separately (perhaps through a
-> helper in the idle/cpuidle code rather than embedding those assumptions
-> in fair.c and will drop !idle CPUs competing with min_exit_latency CPUs,
-> the patch doesn't need it.
-Actually about the last part, I'm leaning towards sticking with v1, because
-that is actually the current upstream behaviour. !idle CPUs currently trump
-any CPU seen so far, but preserve min_exit_latency, therefore sticking it
-into the shallowest seen reservoir is consistent IMO (although we can
-certainly debate if that should be the case).
-I'd prefer sending a follow-up with an idle helper and making a properly
-defined policy there, but that's adjacent to this patch.
+> Since the diff is yours: is a Suggested-by enough, or would you rather
+> have Co-developed-by and your Signed-off-by on the patch?
+
+Don't worry, I will give my 'Reviewed-By' for the final version.
