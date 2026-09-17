@@ -1,162 +1,191 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DB934E2F0B
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 13:24:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D11D6524AED
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 13:26:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.76
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789651478; cv=none; b=QLbEws/ll7Qe2uiqXgwdeY4m6b17F9SEN7CEI/IyaqUvV5EVcS+H9FueHf97FPpnAVR5Oy0NZ4P1HfT5+XWsxU6og0jC915j0u/DrSDCM6qNOuAcceKLPTsyGefz45dodU7hUdQDwMzTAN/57GI2PUuSQJrL8Mp7oU6rJt+yI48=
+	t=1789651599; cv=none; b=sc0HAZ5PvGOboowLeooVWznR2tUavkw/x/4iiBE/J6FW/2j9CX1uDhAOkxy+A+h7ehTJfO+V9bNWff3GvtQI+4CSQKUUAWHgQaXq61ckcxQfAQZ9bUMe2v/czJ5jWyFdFJwlOfYwrRQ8nHDYHg2mdEBDedfZIj7+jBwK0VxE5p4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789651478; c=relaxed/simple;
-	bh=t+JmjmcRSlOntlooAu2xF3fVYDdxdalwBT2FzsXWbLc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=F3Lek+lLhBW2IgMlonGQ4Z5osdZjVZSZGUrpxJmtH38DMc0fYBspJ3aIO+RqghRe33M+SBuYpEy/97iMXUdcKAOGqu9X/1uCSrMZto4nTnK9WtSSYb0uPSqiVXptJ65JT5L9H8SGbPi5afXbSKa83+Z2TbKMynCv8odpc9yYvZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NI2zAy/Y; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789651599; c=relaxed/simple;
+	bh=j9N1F68A+nbLgU/fzy1bw73Kajt5DcRURg/vv1A5UtQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qRs+v+m2HqU8+QGu3dkKehYPRJWzMF22hZft1oEIXMTP7UfywtbGI7mWs1EPCc4YqGW4QCdKqNEA6YFVJjPPBZ/55QVRH0O9QMjXe3FikzfKiu8pyvf8J7592XLH5F38YIhim53mqtTdZsy0Cscrlqq2AOqITzzbbmQnf2AMVp8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems; spf=pass smtp.mailfrom=starlabs.systems; dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b=ot84PXGb; arc=none smtp.client-ip=74.125.225.76
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starlabs.systems
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NI2zAy/Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FC3E1F008A0
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 13:24:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789651477;
-	bh=6SeqJEIe9Fm2oOEGFW+bxBc41FkEo4gd4KA7U0Eh6Hk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=NI2zAy/YlEDD93EY2pQjXL8pxHEZ/VOsjNFmChNO40AU4PIh+uuKk3dvjJGl4wIbi
-	 q0cUyTe6eE/iRuwdZlBmEkl3bqZvia64cG46ou1oijLRC9NsjnJ0BpjrhGh+gq3WnH
-	 Af4wWjUsgWqC9VpJgxpFeCKDCvrkC2fjJ9KyVAtjiz3PaqtjYcJNQK+JZSLNvS0TZw
-	 0YclxUq6Rk3mvLp7Cfg0OWDH4spY+kHTGN5BjOLiZvzsB2XpTQWLHb5zh3KhnKaWcx
-	 WQXrZIgjCIXvyQHswkP0xkXLcuVNYenrxQNi/AuusfSeBk1lXR0Z9KecCU/WXpFMny
-	 Zh+KkyrUYsyKQ==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a36de66c0dso8313841fa.0
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 06:24:36 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByDU+ey2ZpX+Qe7t2hjQz0KFzzqshxjKEiOTE6tZC8t3liLIxQMOkj+W7zFK290x+j/ztJfrq0Dbw==@vger.kernel.org
-X-Gm-Message-State: AFuF++ld4pT916ztLBfQva4CdIPn4mp7Ikg7AY5pgoIHJrFVP9e+ChV7
-	jmcqt5Tivr2NcYSJpZ/7zUZMvrd072uODl/tpSR2XeIy2zuqlfhdV7FuQAlz4c1FJaxjQVauYhg
-	SvSbhX6+2zcR8+BYADIcLIkwGiKt20f8=
-X-Received: by 2002:a05:651c:a106:10b0:3a5:b524:e28c with SMTP id
- 38308e7fff4ca-3a5dc9a0e95mr9152881fa.11.1789651475241; Thu, 17 Sep 2026
- 06:24:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b="ot84PXGb"
+Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-48439feca17so709885f8f.1
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 06:26:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=starlabs-systems.20251104.gappssmtp.com; s=20251104; t=1789651595; x=1790256395; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FTWU3z7oT+AmhRKIBpIuUxW3EDym90iXyKLvYlGNFT4=;
+        b=ot84PXGbGERRNYmGqx8gP9RP9W94E9HW7SL5axmELPDA/r/NaR6tHWfdg/I1Hfj746
+         T5dhFmF8pLP0tKQERVtuDVAaS1fQUpDYzGc06AcCb7yZ8BTXxXGjjAxrJD01Gmy/Q3fZ
+         BqKpAOS2QZLnBkVoeZtrsVRdoEsDliTdLtc4QralDY9YYDuxV+euPG8L0pCVfaO48rUj
+         VM/sO2BHO6n2oBnWDSDFjo8mlDddfRTiVBCMRrAiNHQKjd+dl+SCz5JgEahz10vchm3y
+         rdbMvMUlJ4atgMUhv6P0X9BZu88AsnYzvSDkkNO2VpmBeCnnEPNz2KA/ftN5Ybzlw8Qd
+         Zliw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789651595; x=1790256395;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FTWU3z7oT+AmhRKIBpIuUxW3EDym90iXyKLvYlGNFT4=;
+        b=F3L5ETCZjakRteFrNPjSd1IfVLXtE7GKh2+Bm+t2CoWAPgiq0xkgrBTjsn69G40lod
+         QWSUiGlZhl/f02HDTyU7kpOGTtkGgT8OBSZ72Dxtt9fKeYCcf0fs94MFKYEdoV1s0mhL
+         uu+BmpxgvVohRErUTCbIlbKUxrB2wRYE5uNl0fL4H1QY4C+OHbKtmpTjjpfykUhz9k7d
+         h9P6E7TG4SZojp/fjexB9tpqlvc6Ho5WVSEJ/yGTAF63sRgAdLQz8zTKoKs9k2kyUv4L
+         X/8TYSbmceW+IeuZo5C71xyxyA+nUq3SzzuvKIouszKcuRYZvzjDBuippcznH9PfDNiJ
+         n4RA==
+X-Gm-Message-State: AFuF++m/5LbG+sIKMsJ9jkFd8JSWxT/ScYf/t+8oMyOHXr+PrQ8aPxpX
+	y4ujuo/D0S/X7vCkMrqUFGirOjuqnGoQV/E7oVgnkTyLjrj3YQrHru32jiVY4B6nG+0tEegAu8y
+	CoEKGHyvR
+X-Gm-Gg: AYBFou0UaEMNWSo+dVPL2i7hE2vGFSPNquTOv1eUPH1qKXM98pcyupjq93es7FeL01C
+	voVI4yYwP/IQMC45MVasxc7UWQ+dWSZX7O8xPF9Lk3kbIlBbhYOEHfwKNLSLlg80+VjzHALBIFP
+	HSlvev6cAZ3Ri0+wwJ/rECQEPYtp67TcHV+TVmhN8l2XJ8mKoMWJ+qPEhPdHrnfRar6UPZlx2jU
+	/VMvqT5DLlTxDqmhsueg5PqteciFMD2jrw41sf5GvHPtBHmyM9wVCtjnNiZi8u3uGEW/pI+J4DS
+	dFSf1WjorPRZR7JjTWgzFU4SKKIf3o0Q02wJhWI1sNvuZIYxryF7xcI8IVPlYiI4YBJTvkKwRob
+	rE4tLFrBpwHzJj4TyjDmwrLNUqqWe5yfgW0BnNqT6F1ezXFUdVb7FdgS3BpCr3VoPe6G6wO5mYN
+	XANO5HPuT+LmpXCSNB4SarhZA2eBtr+H8kO2SxMqfhyoMcxDabQnhrSPGwkpIdiUDmX8xfznOGL
+	tXn6G4rD7Ze5V9/5KJB2aDlH+E=
+X-Received: by 2002:a05:6000:4697:b0:486:e6cf:96e7 with SMTP id ffacd0b85a97d-4870d067865mr6063193f8f.37.1789651594673;
+        Thu, 17 Sep 2026 06:26:34 -0700 (PDT)
+Received: from fighter ([216.128.28.240])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4870bf1f6cfsm15879947f8f.13.2026.09.17.06.26.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Sep 2026 06:26:34 -0700 (PDT)
+From: Sean Rhodes <sean@starlabs.systems>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Sean Rhodes <sean@starlabs.systems>,
+	Evan Green <evgreen@chromium.org>,
+	linux-kernel@vger.kernel.org,
+	Jens Axboe <axboe@kernel.dk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Barry Song <baohua@kernel.org>,
+	Youngjun Park <youngjun.park@lge.com>,
+	linux-block@vger.kernel.org,
+	linux-mm@kvack.org,
+	Xueqin Luo <luoxueqin@kylinos.cn>,
+	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>
+Subject: [PATCH v3 0/4] PM: hibernate: encrypted snapshots under lockdown
+Date: Thu, 17 Sep 2026 14:26:27 +0100
+Message-ID: <cover.1789651581.git.sean@starlabs.systems>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260916162805.1039247-1-christian.loehle@arm.com>
- <20260916162805.1039247-16-christian.loehle@arm.com> <9ad67536-7b6e-4633-8cc7-52b0d68196fc@arm.com>
-In-Reply-To: <9ad67536-7b6e-4633-8cc7-52b0d68196fc@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 17 Sep 2026 15:23:12 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g-ipGKWyEUKrBGTo+B6RYqWxba4KhK9RaCJmh2MRLtLA@mail.gmail.com>
-X-Gm-Features: AcwNN1XEckqo7NyF_Ayra709vjWlptmt-m3ipAFC5B-aGNCY8woxr8jYX1vmHEA
-Message-ID: <CAJZ5v0g-ipGKWyEUKrBGTo+B6RYqWxba4KhK9RaCJmh2MRLtLA@mail.gmail.com>
-Subject: Re: [PATCH v7 15/20] ACPI: CPPC: Keep Performance Limited clearable
- on NVIDIA T41
-To: Christian Loehle <christian.loehle@arm.com>, Sumit Gupta <sumitg@nvidia.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
-	Pierre Gondois <pierre.gondois@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, 
-	Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Thu, Sep 17, 2026 at 2:59=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 9/16/26 17:28, Christian Loehle wrote:
-> > From: Sumit Gupta <sumitg@nvidia.com>
-> >
-> > NVIDIA T41 firmware describes Performance Limited as a two-bit field at
-> > offset zero in a DWord SystemMemory access unit. Generic CPPC code must
-> > keep such a field read-only because preserving the remainder when clear=
-ing
-> > it requires a read-modify-write which cannot be interlocked with platfo=
-rm
-> > updates.
-> >
-> > The remaining bits of this access unit are unimplemented on T41: they r=
-ead
-> > as zero, writes have no side effects, and no other register uses them. =
-The
-> > Performance Limited register therefore owns the complete access unit, b=
-ut
-> > shipped firmware does not describe that property accurately.
-> >
-> > Add a CPPC platform-quirk table keyed by the DSDT header and carry quir=
-k
-> > behavior through explicit flags. Cache a successful table lookup, copy =
-each
-> > GAS into the driver's private descriptor, and apply fixups before layou=
-t
-> > validation, mapping and overlap registration.
-> >
-> > Distinguish a genuine non-match from a table-header lookup failure in
-> > acpi_match_platform_list(). Propagate lookup errors from CPPC probe wit=
-hout
-> > caching them, so a transient mapping failure cannot disable the workaro=
-und
-> > for every later processor. Existing matcher callers still treat all
-> > negative results as no match.
-> >
-> > For the known T41 layout only, widen a two-bit Performance Limited fiel=
-d at
-> > offset zero to its 32-bit access width. Clearing both status bits can t=
-hen
-> > be issued as one DWord write of zero without a stale read. Corrected
-> > firmware which reports the full width is unchanged. The workaround
-> > therefore lapses automatically when corrected firmware ships.
-> >
-> > Link: https://lore.kernel.org/lkml/d5f1ea9b-53b7-4db2-983a-b5be8e71a371=
-@arm.com/
-> > Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> > [ Rework quirk matching and fixup placement; propagate lookup failures
-> >   without caching them. ]
-> > Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> > ---
-> >  drivers/acpi/cppc_acpi.c | 72 ++++++++++++++++++++++++++++++++++++++++
-> >  drivers/acpi/utils.c     | 13 ++++++--
-> >  2 files changed, 82 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> > index 6d130381245e..0e218f2be0fe 100644
-> > --- a/drivers/acpi/cppc_acpi.c
-> > +++ b/drivers/acpi/cppc_acpi.c
-> > @@ -330,6 +330,68 @@ static unsigned int cpc_reg_access_width(const str=
-uct cpc_reg *reg)
-> >       return reg->bit_width;
-> >  }
-> >
-> > +enum cpc_platform_quirk {
-> > +     CPC_QUIRK_PERF_LIMITED_OWNS_UNIT =3D BIT(0),
-> > +};
-> > +
-> > +static const struct acpi_platform_list cpc_platform_quirk_list[] =3D {
-> > +     {
-> > +             .oem_id =3D "NVIDIA",
-> > +             .oem_table_id =3D "T41",
->
-> Sashiko:
-> "Will this quirk successfully match a standard ACPI table header?
-> The ACPI specification requires the OEM Table ID to be exactly 8 bytes lo=
-ng,
-> typically padded with trailing spaces by compliant firmware (e.g.,
-> "T41     ").
-> Looking at acpi_match_platform_list(), it compares the IDs using:
-> strncmp(plat->oem_table_id, hdr.oem_table_id, ACPI_OEM_TABLE_ID_SIZE)
-> Because "T41" is a null-terminated 3-character string, strncmp() will
-> compare the 4th character ('\0' from the quirk definition vs ' ' from the
-> ACPI table header) and immediately report a mismatch, causing the quirk t=
-o
-> silently fail on compliant firmware.
-> Should this be padded with spaces (e.g., "T41     ") to ensure it matches
-> the firmware's table correctly?"
->
-> non-padded "T41" matches exactly what Sumit proposed and was discussed in=
- v6:
-> https://lore.kernel.org/lkml/55a5c9fa-cfd3-4000-b3cc-52c343841c9f@nvidia.=
-com/
-> So once Sumit adds Tested-by: this should be fine.
+PM: hibernate: encrypted snapshots under lockdown
 
-Sure, thanks!
+This is v3 of the encrypted userspace hibernation series. It protects
+userspace-driven hibernation images against modification before resume,
+including when the kernel is locked down.
 
-Sumit, any concerns?
+The kernel encrypts and authenticates snapshot data and wraps the randomly
+generated image key using a seed supplied by trusted early userspace. TPM
+policy remains outside the kernel PM code: early userspace is responsible for
+unsealing the seed under the intended PCR policy and writing it to the
+write-only snapshot_seed interface. The series therefore provides the kernel
+mechanism needed by a TPM-backed design; it does not itself configure or
+enforce TPM policy.
+
+The kernel accepts the first valid seed written after boot and does not
+authenticate its writer or enforce image freshness. Trusted early userspace
+must provision the seed before untrusted privileged code can run and must
+provide the required TPM policy, rollback protection and recovery handling.
+
+Patch 2 confines direct block-device write() calls to the active swap backend
+to the process which owns the encrypted snapshot, its allocated swap extents,
+the recorded swap-header page and the number of pages allocated through the
+snapshot API. The userspace writer must use synchronous buffered I/O.
+
+On a StarFighter MTL with Secure Boot disabled and integrity lockdown selected
+manually, the encrypted userspace snapshot path completed full S4 and resume
+cycles both without and with an additional user key. In each case the original
+process and boot ID resumed and the swap header was restored. Corrupted wrapped
+data, invalid wrapped-data magic, a corrupted complete-chunk authentication
+tag and an incorrect user key were rejected.
+
+The late user-key transition exercised by those tests is retained. This
+revision also validates that a userspace-supplied encrypted metadata boundary
+matches the authenticated image header; that mismatch rejection has not been
+exercised on hardware. The encrypted S4 paths were tested on the prior
+candidate; the revised allocated-page accounting and active-backend handling
+have not been rerun on hardware.
+
+The deliberately corrupted complete on-disk image case was not run because
+the test system did not have a reviewed pre-root recovery mechanism for
+restoring its swap header.
+
+Previous version:
+https://lore.kernel.org/all/cover.1785838445.git.sean@starlabs.systems/
+
+Changes in v3:
+- Rebase on current upstream master.
+- Complete both keyless and user-key hardware S4/resume cycles.
+- Exercise rejection of corrupted wrapped data, invalid blob magic, a
+  corrupted complete-chunk tag and an incorrect user key.
+- Preserve and validate the saved encrypted metadata boundary on resume.
+- Drain buffered metadata before a late user-key transition.
+- Reserve enough encrypted image space if userspace adds a user key after
+  querying the image size.
+- Apply swap-write confinement before enabling the lockdown exception, while
+  preserving the ordinary availability check which routes lockdown writes to
+  the confined path.
+- Account the pages actually allocated through the snapshot API instead of
+  assuming a userspace swap-map format.
+- Document the first-writer, anti-replay and userspace I/O requirements.
+- Remove an unused swap reverse-mapping helper and tighten local naming.
+
+Changes in v2:
+- Keep raw writes to active swap blocked under lockdown.
+- Track encrypted snapshot bytes and header writes before allowing
+  lockdown-time image writes.
+- Split the encrypted stream at the metadata boundary only when a user-key
+  transition is used.
+- Return -EFAULT for userspace copy failures.
+- Document resume meta_size handling.
+
+Evan Green (1):
+  PM: hibernate: add seed-wrapped encrypted snapshots
+
+Sean Rhodes (3):
+  PM: hibernate: confine encrypted snapshot writes
+  PM: hibernate: permit encrypted snapshot device under lockdown
+  PM: hibernate: document encrypted snapshot seed ABI
+
+ Documentation/ABI/testing/sysfs-power   |  18 +
+ Documentation/power/userland-swsusp.rst |  33 +
+ block/fops.c                            |  58 +-
+ include/linux/suspend.h                 |  24 +
+ include/linux/swap.h                    |   9 +
+ include/uapi/linux/suspend_ioctls.h     |  31 +-
+ kernel/power/Kconfig                    |  15 +
+ kernel/power/Makefile                   |   1 +
+ kernel/power/hibernate.c                |  32 +
+ kernel/power/power.h                    |   3 +
+ kernel/power/snapenc.c                  | 952 ++++++++++++++++++++++++
+ kernel/power/snapshot.c                 |   5 +
+ kernel/power/swap.c                     |  87 +++
+ kernel/power/user.c                     | 272 ++++++-
+ kernel/power/user.h                     | 150 ++++
+ mm/swapfile.c                           |  25 +
+ 16 files changed, 1683 insertions(+), 32 deletions(-)
+ create mode 100644 kernel/power/snapenc.c
+ create mode 100644 kernel/power/user.h
+
