@@ -1,246 +1,198 @@
-Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013016.outbound.protection.outlook.com [40.93.201.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 169213B7771;
-	Thu, 17 Sep 2026 18:20:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.201.16
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789669244; cv=fail; b=J49aUelDz7NNjIlNodEnBnOljewIhJ1dSLu1ZMstbPDMUKu1QLZMHTcM8y8cXO2hgs6Dl2DPQy1hJcvq0iu62XzDmY20trEwGEcJMSKwaKiMlV9W1Sabgd3HqqzBqYBYSvmZt24tIyVvx6VSVrSAV7yG7zwlLyYYmTFBKZbSGo0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789669244; c=relaxed/simple;
-	bh=2BlUbLVYqdLzKw1VFDrt8hsGM+kDUpGbXnZYXMPNiKA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=FH2Khn68lSVdP2wHAKHa8VHbVjk0o5tI+nA/49v/9spXuH1fqFe/aWVeXRVLt/aPW3ywydq4cLl24u6omKVytNW6qXvkxVneIUWF5GLihUdGM6SzhOEoqjcSJpjBa/rLQYy+UamhsKZb1gCN7Z/J+qNOoyOhm1j/DTLZkqot9kk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=izoRzZMY; arc=fail smtp.client-ip=40.93.201.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C81C4E0B67
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 18:21:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789669273; cv=none; b=eTmz1GgzlhE6aNCbk2HlCDpJXPlcGEFrbPahRFr5ilM2bHAQYtjFEswsPcpqjVDdw+uSOnlz69pMsKWbA81aPOGEijpKXMJsohDm8SgG9PTaXqC5WUoY4lseiySMuKurf5gcz3QubI8n4VxlJjSe7GusTHyUnVA6+8QbdevGGhM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789669273; c=relaxed/simple;
+	bh=fD/FBkx1Ez1YZo9i+o4hAzLDSVkeRh7196qjRUTI+mo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Siy7/fYkP/d43Zhh3O5i8gtZdjq2DIdH7mb4JXTxHa2qOBl+YMDo/eNnSM1wYxoS7/rgMpofGSbZPG2hVWtfexUTDoOGnZqms1M/Pxyq5N5qncLVPTBM4peMQg6CB4IiOtSEagA38kilaJIpoYbDXZo/RnF1P+2jQwFQGbI93pE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DbqcmGif; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="izoRzZMY"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BRoyI00M2SRZkaPwMBQs80shXHwbitnPLPrfGe3QrqMAXilvscOBN/7jMF6RYNycFdUR807G3BX8Rw1TABA8RFNc/FsYdAeCT+Bck7HVN1X9yGyOab1J9yder8soSGonteICbgDAhnxOvnr/HLkOtik831SpYOU3FglJX1N8O5O4y3fzBvzlJ0amwF6S9PwXF0t46NdQwu3l8Nda/oKu53tNdFNvcf47tbVCWyHuEiWFxsSu0FLNQxnc+XF4cQ1zVn/OHtQtUcNudES2uCAk0yItNg9BCs9e0Uvixxt5kQ4Ys4SAaclZOu34ckyjlL7rpc/cYhGOhL9rN3VLgdv9eQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NpVIDpOdZPuuqdD6DG+RTMkOUULTVaBl9gCt1p1Qr/A=;
- b=PRDwCu3PWn8g8EkAI6gPogdKOQHEEgfglYyo0goS9xKZjP6DIVC5zALB5PuJLNQFqNFPplwMPtp4D3iG237ssIPtTkiYZZtIlPfY1RSAXkhHvqYYYbqmtXvkYb8IxnaOlJTY+/J1mXLsv173snyD7zLbK9f84RpfbO869jNkW9DDKQkkv/ipkNJ1OIhx/FDE1lZxC0w94sMfHFd00ncBRGoMqdxi5ryCaVWX6e5vX9v8hcphDp7+BDMjez+ZvdN5oud7KEBYNMJUwIzbBWXPkLEZVanbvGneV0Bv5vnHBUKKfKaZz0TLyGvqENr6s+cS14hUUUU+MAIl5q48fxO7cw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NpVIDpOdZPuuqdD6DG+RTMkOUULTVaBl9gCt1p1Qr/A=;
- b=izoRzZMYVkrEd8i3caOJtm5NfZGuwbUJoZbfhs5uhRq1JrMripFM2VXAUlaFPP5NgGB3Qt5aJoN019s2GXlaBll0KNqa1Io8ubQ3m4s9gIIdRU8Lb0mpTB6jdLHPh4aiQ7Cd40fwc3K2qqkxg3E1OQBGcOiX2Mqc0o2i4qbO7z3UHMwas6J1iPs/7+G0RnTarhDAi8+fiDYpQ35WRMyNKYkS4WSnHqHAk3qa+WUBJFzLnJizORz7+eiDNGhP66eRLnBdksXHA1CuL2tNsYOzX34jXFecUdqvS6VcyHEokqusxxwaHr/WkGtX61jUsnM654hBcCaQfIAo3ybeAI5tYg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DM4PR12MB5246.namprd12.prod.outlook.com (2603:10b6:5:399::17)
- by MW4PR12MB6873.namprd12.prod.outlook.com (2603:10b6:303:20c::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Thu, 17 Sep
- 2026 18:20:27 +0000
-Received: from DM4PR12MB5246.namprd12.prod.outlook.com
- ([fe80::9c9e:30a1:5456:c485]) by DM4PR12MB5246.namprd12.prod.outlook.com
- ([fe80::9c9e:30a1:5456:c485%4]) with mapi id 15.21.0428.011; Thu, 17 Sep 2026
- 18:20:27 +0000
-Message-ID: <74592f6d-92b6-4cb3-86cf-ddc3a4ce6b09@nvidia.com>
-Date: Thu, 17 Sep 2026 23:50:18 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 15/20] ACPI: CPPC: Keep Performance Limited clearable
- on NVIDIA T41
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
- Christian Loehle <christian.loehle@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
- Pierre Gondois <pierre.gondois@arm.com>, Sudeep Holla
- <sudeep.holla@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
- zhongqiu.han@oss.qualcomm.com,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-References: <20260916162805.1039247-1-christian.loehle@arm.com>
- <20260916162805.1039247-16-christian.loehle@arm.com>
- <9ad67536-7b6e-4633-8cc7-52b0d68196fc@arm.com>
- <CAJZ5v0g-ipGKWyEUKrBGTo+B6RYqWxba4KhK9RaCJmh2MRLtLA@mail.gmail.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <CAJZ5v0g-ipGKWyEUKrBGTo+B6RYqWxba4KhK9RaCJmh2MRLtLA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: PN3PEPF00000184.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:c04::4a) To DM4PR12MB5246.namprd12.prod.outlook.com
- (2603:10b6:5:399::17)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DbqcmGif"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49b912d822dso8670625e9.2
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 11:21:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789669270; x=1790274070; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=4gUHCOX6sUXg0tUw+Jt5/2DPSL1IAFpd2jKjnoUpgn0=;
+        b=DbqcmGif+2SbTCzdifVphuO+ybxkBr4cjWfzndIxbG030JhtSTzvicatomOWjlTPvh
+         S+u/u5sIrRGXnyu14Ls7Px+cUnYl+tXwpgwzJeEE6FmO0mS3l14bxCTVDtZPviNSjyhZ
+         0cmRVpBkFqBPU8cx+wPMlIZ/1Tc0LSI7Kua+92VJrYYlPkWUxQ7kyrrdf/uihV+Ed6GP
+         MW4Kob9GEBd6LSa5BaT/VNNZdAlsz9nDQ3wd5IjY3veOAC0jOxrH4WSh+LGLJXqeGXSj
+         d9oqJC/CgQB8MMUWVuEivuLfHkP9TfQ1sYTigYzftiJZu4BxCMYZfVZQirY9nOItmmru
+         WdOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789669270; x=1790274070;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=4gUHCOX6sUXg0tUw+Jt5/2DPSL1IAFpd2jKjnoUpgn0=;
+        b=eTEnQ+qM32+yOW6yh+muqYByUd3+Oc0Mm7o02QLVj1I+5RYl9zpG3Yi56cbPPmHe0C
+         Ym2oLuL3Tql9O1cQmW0mLWL5NtMhcTRHqcfEQrkVXur5Ek2Ngkk+6zUx/8+CHxP2HlJ9
+         aJuhGiDFeDoTp9l71ww883a2WQNF77fiMPgvE8AU6YZONbWF7yCx0Jrf0D+6hM8oYha7
+         bU8UUyHkmzfgUqRpeC9xAjT6bD3EK80C8BXsFwpxL0ualmDrQUQ8bTbJQIYakUnpne4l
+         QMx8A6NaUFoweGrqGMjyjyj6hVa8LyciiMy4iK267BO4bFq9E1ej2+PjjWSBcMKyQyot
+         djVw==
+X-Forwarded-Encrypted: i=1; AKwUvBwE9MplmDPgt4pTV2NMurt+bEwT2KrNtLxlj2WUQcJbJlY/gti76n+oOv9FD3WBDsafcUJ2au+fCA==@vger.kernel.org
+X-Gm-Message-State: AFuF++mbJ3xqQXrlsIlcnkiBjT/ftVPqE1GHdu0CEHzznUueknVek1DK
+	csj46W8ZBS8KaznjnqDw0iF/1r4CMawjxj2NplF3jefvXWaE97234xh0
+X-Gm-Gg: AYBFou0QkJ5TtFKCz1Wj5F+gzxFjR6UfltP1X+TDvYk+JQVed2s3UThv22EiZ6HVZzf
+	t9SAFFth6FVw+s/nnLTiT9jpDQJ5yh4d0TctR6pztW2Htzd0lwmXNXt9BnietTy0761tHfgYORd
+	8+LMX7Br0zwdW1UquRfXzB0dTLRFtcAv6Wlh5djgpkUPkv7T7/bjO2yOY5RzX+jLKYxdZM2u76e
+	DvGwYtDBPvcH11Dt7x6yk7C9E+pNGCJHKke60R8vYfOFnYJQSuvRs3trxxw/VVjw3T2wRrUECG2
+	2XZmzzcwOYwPBvgoOyFay47nj6qN93tzxD9WMdaFK6uwl6DXUtOz1AS0xi5zZjjqauocO3csitR
+	H+9i3cltzewBaEzt+SvBPH9vUadNMn/ot7ElftrKZ9vKDfirvPTnFeIAE7iUnTjYEgR/0HeeRsz
+	WZqiROqyXd/78A1Klovd3AfVAOqCtfOAz667Qeu7J6CGoG5YLEy8nhA+YeIpg8n/FKZN7LzI61K
+	ejK3TAa
+X-Received: by 2002:a05:600c:1f87:b0:49c:d818:8764 with SMTP id 5b1f17b1804b1-49ead86eb54mr92023815e9.11.1789669269234;
+        Thu, 17 Sep 2026 11:21:09 -0700 (PDT)
+Received: from localhost.localdomain ([94.252.75.113])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49fbd225898sm101433835e9.9.2026.09.17.11.21.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Sep 2026 11:21:08 -0700 (PDT)
+From: Oleg Keri <okerixx@gmail.com>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>,
+	Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Beata Michalska <beata.michalska@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Ananthu C V <ananthu.cv@oss.qualcomm.com>,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v5] arm64: topology: fix arch_freq_get_on_cpu() overflow above 4.19 GHz
+Date: Thu, 17 Sep 2026 20:20:59 +0200
+Message-ID: <20260917182059.2851-1-okerixx@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM4PR12MB5246:EE_|MW4PR12MB6873:EE_
-X-MS-Office365-Filtering-Correlation-Id: bdac6b2f-ac99-47a5-2d5d-08df14e85923
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|7416014|366016|18002099003|4143699003|10067099003|22082099003|56012099006|5023799004|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	Tkyrqod0Ec8OEEeqzJK0sMYRFJiIBiW9St/v/R0dhCelrmG63C6ZRIPjttT5pM0Cfoqk1b35Z5YgIhDOOLriGy6wYJmrEqt5SSyRIqzDfVh/z3+/SecGxEl18qpYok0BZTin2QYVo74+j4mZQOalfWadalnRsKlR/OStcdTcTk+75bZ9/CJwyJIyFJZneZ1HZ24jvhXiarRHJSg9y+ul7a49QxmWn+YM1t+1pSDSPUYNrTMZU88F9THmn+9EzpZlJK9Avbateox6zZWxqQAviMkHUfZqs7G1lwHhiU1wQnNQvsMgdy3+1AMwP7zkZw+yXXPMyqCPBQdVCFqKkZBt+t3XZNR6NzxIaAs6Z91O4scXLxpGd9ulE3G58G3P7q2bVt8SHO993gh+wiyO3nJALuHgzW3E16hEPHIOTy2Ny0eYNWWC+igOZZtqZ6Q3nlIk0CtzPHcKasvAMgCugpnFli2q8zC00iJgi7AIir4kiNxk7I7c9l3Bw+VzNPUEXZEdhkrIIWj81MfOZYNiP/2H+ZnCkzW6Z0wWpwKslYt6gdD7ebZOJSyCSaldaSPbPKysPyXxE2UCKwDsk0tNmoVmfwSstRxofYshs4jDMFcDpunsecZdiFt/4v6ZKkOYFH3/ymitgaSrWeRp41G2ddK0ZXmWKKqBFAaP1WDbCkLg7Pw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB5246.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(7416014)(366016)(18002099003)(4143699003)(10067099003)(22082099003)(56012099006)(5023799004)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?OUFIbnBhR2xtcjB1cTRRU2VZRGFnRi85Q3JrSFB3a3JPakx1bmNLNlcxVHZL?=
- =?utf-8?B?YUpveVlBaDhiY3plWHNEcDhHUjVyTkJ6NHFQYVRYS0s1QTM2MjB0bXNBU0JH?=
- =?utf-8?B?NWZGSUNMNmtrTmFodEk5UjczTmMwTG5xOFZMNksvTWF6anNzenJidGtUczRv?=
- =?utf-8?B?SkdiSkZIZlVHMnhUVUR1NHZwNHhrTnNsNXY5eWQ5N1BTMVdVRmxQWDRIOHVq?=
- =?utf-8?B?RkJXS2Z6TzNTM2dvVWV1RWJEWmt5TzZPV3hHZEgwcTI3bnhTamNvQ0JsNm9V?=
- =?utf-8?B?Mm5TMzdXWE1qczZGQWZHZVBKTVpLTVJxOCtSU1BVVTJQR3cwSktYMXluSTFV?=
- =?utf-8?B?N3dMVFJQT1pxZjQwdXRkWTN0SFBnSlYwbE9NWlBkbUVtcTI3QzNiaEkwWGZY?=
- =?utf-8?B?ZVhzL2FETDV5TDdvR2RlZjVuVk4yZGUyb3ZoQ3hZcWcxTm1nSGhXNjJIdG5K?=
- =?utf-8?B?N25lK3BINGdZcytHMHR2RXJLRVFoZVBiTjhtUTFnZjdNMnFRSE5PMVJVY2Vz?=
- =?utf-8?B?SDBvdGJ6Q3hYZ0tWQkhSamIxNGhObWg4bUN5ZXI3QTJ2S0cyMWNFUEgreGZJ?=
- =?utf-8?B?YzFPeWR1NTRXZ25Jc3RWNGdlVURoQkxKVnhyT0xqRjZaVkxXWGVaalk5TUtR?=
- =?utf-8?B?eGY5YWJwS3hkcGphblZ3ZWgrd1Z5STVXSjd0d1MxOElUWldWZi9EOU5tQWhC?=
- =?utf-8?B?aDNac0FqejVaS2pEa0FkSTZrUnZaRDlhY3k3UUNFK3dzME5TWTU3V1V1TjFH?=
- =?utf-8?B?dm9nNjZRSFJIbVY3a0VOZ1BPalBFejRHbWpQMk9uUUk0U0k1RXlaK2lKOEJZ?=
- =?utf-8?B?K3p2bmI2MTZtaW9PUTlHU0RwRUpxK2tHdzE0ZUJ4ditFUHNVM0pJUkg1bmIx?=
- =?utf-8?B?UDF6RVRKbklQNFdWMzM3UWFNMW83Zk05Q0xhd3hxWDQ5ZjhRcEVTM2k2S29B?=
- =?utf-8?B?WTJpNWh4Y2daVkYzbXB6Yjc2VUhUQ2hONGxmcHc1bGlsQjB5eVVVODZSNHpD?=
- =?utf-8?B?TjRwRWhZenByWWt1RXY4dlhoU0FOZjVLMm5iUDhZMEwxZGRVaVhyQ0NTTXR4?=
- =?utf-8?B?SXJzOFdiR1Iwb1FyaTZDSkp3azZqVFg3MUI0QUF2OVM4ekNZWFgwQ1hDaWtO?=
- =?utf-8?B?THlqU1F1QnBKdy9LNFdCUDRMVmJyZXJCWXBobStUb2ZydGlEbC8zMjcwejR4?=
- =?utf-8?B?Q2tuQ05rbzBGcjRGQnd1RzdQR2JTVk90MXJnV1lGNUlSYUNQY08rTEE5ai90?=
- =?utf-8?B?aGYxQndEb0k2ZE9nK1NIYTk3SzZFUk1MRlhZK2hlOEJmczBnQy92U3ZqV0cv?=
- =?utf-8?B?L0pvOUpiNStmNkVmS3N6dXlkcnVUQjNQMGNIRVNBZWNrK1BOK3E3VjZxV1hQ?=
- =?utf-8?B?ZGxmeVJ2L09aR2szUlJ5R1VpQ0ZvUS9SeUp6dnUybFE2bDEzbHlRaWtEUDVM?=
- =?utf-8?B?KzFHUHpkbzZoc3pNODc2TjQrdjBTTXh4Zld1UTd3Z3J3cmJYN25uUE4vNE1U?=
- =?utf-8?B?UVp4NzZjSWViOFhCUjhVQk5qb1RVbTA3YVFXNmNKRGpLaTVWMUh0Zk1DQnNH?=
- =?utf-8?B?TkxTMlM3OU5BMmNqT3BZMzVHV29NemJFc1ZaemFPQ1BWUHU0S2Q5VWw2bjY1?=
- =?utf-8?B?UXIvdzYwRE9TYVVkdjhWZU9jKzJZWm9xNENlN2NsWFQ2cmg2NHJpMWk4YVlh?=
- =?utf-8?B?NllEMklpc2dTOUF0eklkekhON1ZRc3BvZFpWVzJ4OE9Rc0swYlpEMjR6VHBj?=
- =?utf-8?B?Qmh4U0htZm8wNzk4Z0xYNFM4eDlsVldESmZyOEZubklVcjVBRUh6bVBUVlZH?=
- =?utf-8?B?blZoN0orUFRwanRDY0xqcmhvV3kyU1BpTXZXc0NFb3dLWGZJRGt4cnVsaXdV?=
- =?utf-8?B?ckU0RjRuSDdnMThVR1doVFIzYThIdlRrdk8vSTJiWllDNFFveEQ3dXVrWDVr?=
- =?utf-8?B?R2daZHpzV0x0aTNYUDZ1WWx1aWNPbzRDZ3RyVCtPZ2NUTnlFU3c1cFdWZEkz?=
- =?utf-8?B?ejZHVW5xdFQ5UkdCK2ZsemRaNHdVL2lTc2puYi9TYzdsMG56azIrOUpwZE9D?=
- =?utf-8?B?a3lVeVEzb3B6MHlqM1JnTkxDcUNHYVlLVWUweGhGTEs5dWVhZGJVRHVQR3Bq?=
- =?utf-8?B?b1lwcmhRenJiWHV6ZnJCREYyaTV4ak9ZZEpXVFpwS0JqSUh5eVFQVEZxZzc2?=
- =?utf-8?B?RDBWS1c0MU1rc25wT2pQRFBOaUpBeUd2QlhydE1NeUNyd3RDaXF2N2VaTHlH?=
- =?utf-8?B?QUt5OTVrZGVSQmZ0TVlzOWx5blRzcVZXQnRDRTBXMllYbFBYYU1tNVFUaVU2?=
- =?utf-8?Q?r9A051geILJZMvf9aK?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bdac6b2f-ac99-47a5-2d5d-08df14e85923
-X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB5246.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Sep 2026 18:20:27.4575
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: CUf0UN4KFMaZ721wpyNRPoeme2fSXmXEu6WxD08EviVKk/CV6tbP0bUIb81EvnI2GPFZ5nj7qCRVAS2rGv8xhQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB6873
+Content-Transfer-Encoding: 8bit
 
+arch_freq_get_on_cpu() computes the product of the frequency scale and
+the reference frequency as a u64, but assigns it to an unsigned int
+before shifting it back down:
 
+	freq = scale * arch_scale_freq_ref(cpu);
+	freq >>= SCHED_CAPACITY_SHIFT;
 
-On 17/09/26 18:53, Rafael J. Wysocki (Intel) wrote:
-> External email: Use caution opening links or attachments
-> 
-> 
-> On Thu, Sep 17, 2026 at 2:59 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 9/16/26 17:28, Christian Loehle wrote:
->>> From: Sumit Gupta <sumitg@nvidia.com>
->>>
->>> NVIDIA T41 firmware describes Performance Limited as a two-bit field at
->>> offset zero in a DWord SystemMemory access unit. Generic CPPC code must
->>> keep such a field read-only because preserving the remainder when clearing
->>> it requires a read-modify-write which cannot be interlocked with platform
->>> updates.
->>>
->>> The remaining bits of this access unit are unimplemented on T41: they read
->>> as zero, writes have no side effects, and no other register uses them. The
->>> Performance Limited register therefore owns the complete access unit, but
->>> shipped firmware does not describe that property accurately.
->>>
->>> Add a CPPC platform-quirk table keyed by the DSDT header and carry quirk
->>> behavior through explicit flags. Cache a successful table lookup, copy each
->>> GAS into the driver's private descriptor, and apply fixups before layout
->>> validation, mapping and overlap registration.
->>>
->>> Distinguish a genuine non-match from a table-header lookup failure in
->>> acpi_match_platform_list(). Propagate lookup errors from CPPC probe without
->>> caching them, so a transient mapping failure cannot disable the workaround
->>> for every later processor. Existing matcher callers still treat all
->>> negative results as no match.
->>>
->>> For the known T41 layout only, widen a two-bit Performance Limited field at
->>> offset zero to its 32-bit access width. Clearing both status bits can then
->>> be issued as one DWord write of zero without a stale read. Corrected
->>> firmware which reports the full width is unchanged. The workaround
->>> therefore lapses automatically when corrected firmware ships.
->>>
->>> Link: https://lore.kernel.org/lkml/d5f1ea9b-53b7-4db2-983a-b5be8e71a371@arm.com/
->>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>> [ Rework quirk matching and fixup placement; propagate lookup failures
->>>    without caching them. ]
->>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
->>> ---
->>>   drivers/acpi/cppc_acpi.c | 72 ++++++++++++++++++++++++++++++++++++++++
->>>   drivers/acpi/utils.c     | 13 ++++++--
->>>   2 files changed, 82 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->>> index 6d130381245e..0e218f2be0fe 100644
->>> --- a/drivers/acpi/cppc_acpi.c
->>> +++ b/drivers/acpi/cppc_acpi.c
->>> @@ -330,6 +330,68 @@ static unsigned int cpc_reg_access_width(const struct cpc_reg *reg)
->>>        return reg->bit_width;
->>>   }
->>>
->>> +enum cpc_platform_quirk {
->>> +     CPC_QUIRK_PERF_LIMITED_OWNS_UNIT = BIT(0),
->>> +};
->>> +
->>> +static const struct acpi_platform_list cpc_platform_quirk_list[] = {
->>> +     {
->>> +             .oem_id = "NVIDIA",
->>> +             .oem_table_id = "T41",
->>
->> Sashiko:
->> "Will this quirk successfully match a standard ACPI table header?
->> The ACPI specification requires the OEM Table ID to be exactly 8 bytes long,
->> typically padded with trailing spaces by compliant firmware (e.g.,
->> "T41     ").
->> Looking at acpi_match_platform_list(), it compares the IDs using:
->> strncmp(plat->oem_table_id, hdr.oem_table_id, ACPI_OEM_TABLE_ID_SIZE)
->> Because "T41" is a null-terminated 3-character string, strncmp() will
->> compare the 4th character ('\0' from the quirk definition vs ' ' from the
->> ACPI table header) and immediately report a mismatch, causing the quirk to
->> silently fail on compliant firmware.
->> Should this be padded with spaces (e.g., "T41     ") to ensure it matches
->> the firmware's table correctly?"
->>
->> non-padded "T41" matches exactly what Sumit proposed and was discussed in v6:
->> https://lore.kernel.org/lkml/55a5c9fa-cfd3-4000-b3cc-52c343841c9f@nvidia.com/
->> So once Sumit adds Tested-by: this should be fine.
-> 
-> Sure, thanks!
-> 
-> Sumit, any concerns?
+The product is truncated to 32 bits before the shift, so the result
+wraps once arch_scale_freq_ref() exceeds 2^32 / SCHED_CAPACITY_SCALE,
+i.e. 4194304 kHz.
 
-Hi Rafael,
+On a Snapdragon X2 Elite (Glymur) laptop, whose boost OPP is 4723200
+kHz, cpuinfo_avg_freq reports 524283 kHz instead of ~4723200 kHz while
+the CPU demonstrably runs at the boost frequency: a fixed workload
+completes in 1.72 s at the 4723200 kHz OPP versus 2.01 s at 4032000
+kHz, matching the 1.171 frequency ratio.
 
-No concerns.
-"T41" without space padding is correct because this firmware NUL pads
-the eight-byte field:
+Compute it with cap_scale(), turned into a static inline taking u64 and
+moved to <linux/sched/topology.h> so it is usable outside kernel/sched.
 
-  # od -An -tc -j 16 -N 8 /sys/firmware/acpi/tables/DSDT
-    T   4   1  \0  \0  \0  \0  \0
+Fixes: 16d1e27475f6 ("arm64: Provide an AMU-based version of arch_freq_get_on_cpu")
+Signed-off-by: Oleg Keri <okerixx@gmail.com>
+---
+Changes in v5:
+- cap_scale() becomes a static inline taking u64 arguments instead of
+  a macro, as Dietmar proposed and Peter agreed, after Peter pointed out
+  that the macro relies on one operand being u64.  It now lives in
+  <linux/sched/topology.h>, where SCHED_CAPACITY_SHIFT is visible,
+  rather than <linux/topology.h>.
+- Patch 2/2 of v4 is dropped: it duplicated Ananthu C V's series [1],
+  which I tested instead.  This fix is needed with that series, since
+  it puts the reference above 4194304 kHz from boot.
+- v4: https://lore.kernel.org/all/20260917125112.2283-1-okerixx@gmail.com/
 
-The quirk matched, producing the following message during boot:
+[1] https://lore.kernel.org/all/20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com/
 
-  ] ACPI CPPC: firmware quirk: Performance Limited owns its access unit, 
-using Bit Width 32
+ arch/arm64/kernel/topology.c   | 6 ++----
+ include/linux/sched/topology.h | 5 +++++
+ kernel/sched/sched.h           | 2 --
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-Thanks,
-Sumit
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index d28438f8b83f..39dd7f8575cd 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/percpu.h>
+ #include <linux/sched/isolation.h>
++#include <linux/sched/topology.h>
+ #include <linux/xarray.h>
+ 
+ #include <asm/cpu.h>
+@@ -186,7 +187,6 @@ int arch_freq_get_on_cpu(int cpu)
+ 	struct amu_cntr_sample *amu_sample;
+ 	unsigned int start_cpu = cpu;
+ 	unsigned long last_update;
+-	unsigned int freq = 0;
+ 	u64 scale;
+ 
+ 	if (!amu_fie_cpu_supported(cpu) || !arch_scale_freq_ref(cpu))
+@@ -245,9 +245,7 @@ int arch_freq_get_on_cpu(int cpu)
+ 	 * (see amu_scale_freq_tick for details)
+ 	 */
+ 	scale = arch_scale_freq_capacity(cpu);
+-	freq = scale * arch_scale_freq_ref(cpu);
+-	freq >>= SCHED_CAPACITY_SHIFT;
+-	return freq;
++	return cap_scale(arch_scale_freq_ref(cpu), scale);
+ }
+ 
+ static void amu_fie_setup(const struct cpumask *cpus)
+diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+index b5d9d7c2b8ad..922b2f015e89 100644
+--- a/include/linux/sched/topology.h
++++ b/include/linux/sched/topology.h
+@@ -234,6 +234,11 @@ static inline void rebuild_sched_domains_energy(void)
+ }
+ #endif
+ 
++static inline u64 cap_scale(u64 value, u64 scale)
++{
++	return value * scale >> SCHED_CAPACITY_SHIFT;
++}
++
+ #ifndef arch_scale_cpu_capacity
+ /**
+  * arch_scale_cpu_capacity - get the capacity scale factor of a given CPU.
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 6c3ad70e58b8..45796fccdc84 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -236,8 +236,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
+ 	return dl_policy(p->policy);
+ }
+ 
+-#define cap_scale(v, s)		((v)*(s) >> SCHED_CAPACITY_SHIFT)
+-
+ static inline void update_avg(u64 *avg, u64 sample)
+ {
+ 	s64 diff = sample - *avg;
+
+base-commit: 0d9d0dbf2fddcff5859d623e90ca73c4054276e1
+-- 
+2.55.0
 
