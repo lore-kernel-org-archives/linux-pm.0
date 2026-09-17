@@ -1,160 +1,239 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FB6249D5AB
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 19:07:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83C7E54707C
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 19:35:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789672023; cv=none; b=HZL6FniFByiHAfWjlOBgFCGjPKgw5bM9FEhe5d7maC26TvpxbkaR+VR5LDhJZs473BN/pIjTJUCIF2s/DQezBYpaLCYDVRLU44djiPaDREofBPMoB8DI0K44kquOQ0ElvWNri0b9hydON5k/zjg7hTazc0tIXxaYchou9U2RbCE=
+	t=1789673745; cv=none; b=ZFNIIchGejivTh5k2+bQWHJ3br9dKsj+kG6eCwBhr5h9OlRVvuDAmu46xBxgZQ4rgZwEI83cKyraka/FYE6rIjKlZj4HMh2zDgNplqMttyR8LgkGNF4W3JTweLWQHJE5l3TocaBL274aqMgyZ98sFPnBl6xDa4ugUc35PEWm54c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789672023; c=relaxed/simple;
-	bh=3MNB59KuRrONZ1G4/oINcksRsjMdTDrarM9Aa+nyIaY=;
+	s=arc-20240116; t=1789673745; c=relaxed/simple;
+	bh=CFbJiR+V6GoupLt9b/9ikjwGkfcFR3qlMuOgtlHDU6g=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tuleCaxBQsD0vYDfFYuCMYfiqsQSfyy80RjWKKp2X+uCBK1boRBg+r3vR3OevaYhzpFsewUGbxXHPJOo3merdb3gy1GuCNBn9zAF2UiccpFCDZv4xGJudYTJPJMzs3nTnDdEElP8C9k8EFZBUDyI0kzdU8hhQcvj4AZFUo9vABE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KSwDAPK3; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=QU2Dx6GxB9rsR4mKqOxU9i5QqdMqlCrjC194DRH/qoHyf80vpulSZdhnsw+EU3fRMEuMVaplPltXpgSJXwQYLdCPmoeOSDwxbaT0d6YK7tRoiR+2n90iWWy0H34Byd0YHeCkIluOBDwdHlqy2ZEQXCi0uFOGK+eACd7v4gbf2WQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NVL6Vt27; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KSwDAPK3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF1D11F00893
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 19:07:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NVL6Vt27"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 042971F0089D
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 19:35:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789672021;
-	bh=Bm3bnAq+YUUR/05QEONsbFO18RrWasKhSRqIzvk/6E4=;
+	s=k20260515; t=1789673744;
+	bh=3a9FjfFkPEGSCX372g1imqPw8idUvhGgu5KPAwR8rKE=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=KSwDAPK3JMAyE7T3tN1ElaJAZu+35WJEs3GNisrTnhqIIgham/GjyPVadpJ/lpf1G
-	 LY/Gce6awif0Yz0lgAfEd/uHnNJ4N3nXGozLh470yrK1UHNMs18Yx3Gt4lbLtJXcag
-	 m/5wUROx2UrH6DRpNEECU7iIXksqIg5uOw1K0bF/C/nCETIRiL4P4oJ7fa2nOg3oc7
-	 qeXCDXfPdKcp8ZV9MxvEFZUgYNx7rmEVgjCkfc9WGdOpeFvwZxt7N3OZiTt4pWld6y
-	 ZJXDf/jzmFfY7bm4EeYTOvttBtDzHNJkMWeMqXnxfTg3kpbUTqLEPGSRgwDs52CQAL
-	 I8t3hRgcu8zPg==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8b402f4e3so1198785e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 12:07:01 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxFZ7mwMSeKCyMO48ZW8otIOxq8ssfgH3keUl3ug90HRLfK4Ujyd8YKDgQV790hPC+osYi5gaAQcQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++ngbKyvDPIhu6brFZDJxQ1XY9v99bviLFDH6G2UAqncVGgPwreg
-	pA88kbSbA09JOrGDQ4tO3FEizTZe/hjfOUxnpStuZecKfd+SEHTI0+e0pIpoiIefxRLWrdwaFSr
-	VKnK3Xei98PuaKkHqYJnYQluK3me7UmQ=
-X-Received: by 2002:a05:6512:640b:b0:5b6:1603:7c8b with SMTP id
- 2adb3069b0e04-5b8b6655c9cmr3287892e87.18.1789672020252; Thu, 17 Sep 2026
- 12:07:00 -0700 (PDT)
+	b=NVL6Vt27Edo/gnQShR2JzSRyrdEffclsbWg48H2x33Sk9wV1iaLfZRJ1MFsD8gtug
+	 I9o2MtLeiPJ3QUQPkZqwwdz9tfqDdHRVh6z/qJUTLqWpTcxAIbI/u4I4bjR7NmsfWR
+	 Ui30j3BAEYmPVhSbA6oSRgsIo5WtUEYXJ3+tJUbJ3aKq6fgo6HlYG1UjEgyTrFg5rJ
+	 Is01Rxk5yMOCOIMwrcnx8MAHPi4xOVszR7x1BmzAVBIRRxg7vuiFAhUYub9Dq6jcg9
+	 5ebeggvj+W+56sLcILaeLZMxwSYkrN1MVZnMZiiXbwiKooq9FL8axCtnUjLRCOm1VK
+	 T6c28dxUsoajQ==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b5e4f18010so1031865e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 12:35:43 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwO2zxJ7UNJSxpjM8iKP+oTm9xo+QdHFhY3tT5jowgQ1PmxNuwgRjR//bUOGMtbJXDir3umdJmMvw==@vger.kernel.org
+X-Gm-Message-State: AFuF++mnS7Zi65O98WrXMIF41ikrLpp97cZXFTLcCnedZZztbbOQ7hky
+	4DeKADtgRsqk1QufyrrK1PeJzfbVwwu1FBbF1+3J9MYatIV0lvUCifoc1ovhjqVdduKGm1PpDv5
+	/87fuIUDnXpT4hTpax+4SmMfrFaOIPbo=
+X-Received: by 2002:a05:6512:3b90:b0:5b8:b428:4abb with SMTP id
+ 2adb3069b0e04-5b8b6612144mr2409946e87.9.1789673742273; Thu, 17 Sep 2026
+ 12:35:42 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
- <20260908-schedutil-boost-frequency-handling-v2-1-25312a713699@oss.qualcomm.com>
-In-Reply-To: <20260908-schedutil-boost-frequency-handling-v2-1-25312a713699@oss.qualcomm.com>
+References: <20260729061549.13419-1-tianyaxiong@kylinos.cn>
+In-Reply-To: <20260729061549.13419-1-tianyaxiong@kylinos.cn>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 17 Sep 2026 21:05:37 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jbYHcEWqqO3YSbwyeHBLkYCFn+_nQ9Ktt3yYPPcNH6LQ@mail.gmail.com>
-X-Gm-Features: AcwNN1VasRWS8HiJHGDy74pWeVE-itua9NNF64RwExFD0rkuQM7IztWuAAwbQd8
-Message-ID: <CAJZ5v0jbYHcEWqqO3YSbwyeHBLkYCFn+_nQ9Ktt3yYPPcNH6LQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] arch_topology: seed capacity_freq_ref with
- boost-aware max freq
-To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org
+Date: Thu, 17 Sep 2026 21:34:19 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jbOz=vdxrLQTOrM=iTL-+n0KioCvN0Y9XNoFcnj5ETZQ@mail.gmail.com>
+X-Gm-Features: AcwNN1XWajak3BVQusHHcAXgW7Pb_sHWQ7is5G5UHOuR4DJVyjca-MmiBMcS2q8
+Message-ID: <CAJZ5v0jbOz=vdxrLQTOrM=iTL-+n0KioCvN0Y9XNoFcnj5ETZQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/6] cpuidle: speed up do_idle() by caching the
+ governor latency QoS constraint
+To: Yaxiong Tian <tianyaxiong@kylinos.cn>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, christian.loehle@arm.com, 
+	lenb@kernel.org, pavel@kernel.org, shuah@kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Sep 8, 2026 at 10:31=E2=80=AFAM Ananthu C V <ananthu.cv@oss.qualcom=
-m.com> wrote:
+On Wed, Jul 29, 2026 at 8:16=E2=80=AFAM Yaxiong Tian <tianyaxiong@kylinos.c=
+n> wrote:
 >
-> capacity_freq_ref, the per-CPU frequency-invariance reference used by
-> schedutil, is seeded from policy->cpuinfo.max_freq at policy creation.
-> If boost frequencies are filtered out of the frequency table because
-> boost isn't yet enabled at boot, max_freq only reflects the non-boost
-> ceiling, so capacity_freq_ref never learns about boost frequencies for
-> the policy's lifetime. Enabling boost later raises policy->max, but
-> capacity_freq_ref stays stale, leaving schedutil unable to scale
-> utilization or target a frequency above the non-boost maximum.
->
-> Track the highest frequency in the table regardless of boost state
-> (max_table_freq) and seed capacity_freq_ref with max(cpuinfo.max_freq,
-> max_table_freq), so the invariance reference is boost-aware from boot
-> regardless of whether boost is currently enabled. Runtime enforcement,
-> still handled by policy->max, is unaffected.
->
-> Suggested-by: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-> ---
->  drivers/base/arch_topology.c | 3 ++-
->  drivers/cpufreq/freq_table.c | 6 ++++++
->  include/linux/cpufreq.h      | 1 +
->  3 files changed, 9 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> index 8c5e47c28d9a..da94f77441da 100644
-> --- a/drivers/base/arch_topology.c
-> +++ b/drivers/base/arch_topology.c
-> @@ -404,7 +404,8 @@ init_cpu_capacity_callback(struct notifier_block *nb,
->         cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cpus=
-);
->
->         for_each_cpu(cpu, policy->related_cpus) {
-> -               per_cpu(capacity_freq_ref, cpu) =3D policy->cpuinfo.max_f=
-req;
-> +               per_cpu(capacity_freq_ref, cpu) =3D max(policy->cpuinfo.m=
-ax_freq,
-> +                                                     policy->cpuinfo.max=
-_table_freq);
+> cpuidle_governor_latency_req() is evaluated on every idle-state
+> selection.  It aggregates the per-CPU resume latency with the global
+> CPU latency and wakeup latency QoS limits
 
-So isn't capacity_freq_ref supposed to correspond to the CPU capacity
-returned by arch_scale_cpu_capacity()?
+True.
 
-If that's the case and boost was disabled when the CPU capacity was
-computed, how can cpuinfo.max_table_freq correspond to that capacity?
+> by repeatedly calling
+> get_cpu_device() and pm_qos_read_value() cpu_latency_qos_limit()
+> cpu_wakeup_latency_qos_limit().
 
->                 freq_inv_set_max_ratio(cpu,
->                                        per_cpu(capacity_freq_ref, cpu) * =
-HZ_PER_KHZ);
->         }
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index ea994647abc8..4984142dc08a 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -33,11 +33,15 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_po=
-licy *policy)
->         struct cpufreq_frequency_table *pos, *table =3D policy->freq_tabl=
-e;
->         unsigned int min_freq =3D ~0;
->         unsigned int max_freq =3D 0;
-> +       unsigned int max_table_freq =3D 0;
->         unsigned int freq, i;
+I would say "every time" rather than "repeatedly", but fair enough.
+
+However, those functions don't do anything expensive except for
+defensive checks that can be omitted.  Have you tried to omit them?
+
 >
->         cpufreq_for_each_valid_entry_idx(pos, table, i) {
->                 freq =3D pos->frequency;
+> Use ftrace's function_graph, we can see:
+> parent:          do_idle
+> parent_total_ns: 36671010505
+> parent_count:    5994
 >
-> +               if (freq > max_table_freq)
-> +                       max_table_freq =3D freq;
-> +
->                 if ((!cpufreq_boost_enabled() || !policy->boost_enabled)
->                     && (pos->flags & CPUFREQ_BOOST_FREQ))
->                         continue;
-> @@ -57,6 +61,8 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_poli=
-cy *policy)
->         if (policy->cpuinfo.max_freq < max_freq)
->                 policy->cpuinfo.max_freq =3D max_freq;
+> SYMBOL                                                      TIME_NS    %R=
+OOT  %PARENT      COUNT
+> -------------------------------------------------------------------------=
+-------------------------
+> do_idle                                                 36671010505  100.=
+00%  100.00%       5994
+>   cpuidle_idle_call                                     35566528731   96.=
+99%   96.99%       8570
+>     call_cpuidle                                        35476606844   96.=
+74%   99.75%       8561
+>       cpuidle_enter                                     35472932468   96.=
+73%   99.99%       8526
+>     cpuidle_select                                         52097031    0.=
+14%    0.15%       8580
+>       menu_select                                          49555181    0.=
+14%   95.12%       8580
+>         tick_nohz_get_sleep_length                         28843887    0.=
+08%   58.21%       8570
+>         cpuidle_governor_latency_req                        9567488    0.=
+03%   19.31%       8580
+>         tick_nohz_tick_stopped                              2057031    0.=
+01%    4.15%      15695
+>     cpuidle_reflect                                        11427201    0.=
+03%    0.03%       8561
+>       menu_reflect                                          6579506    0.=
+02%   57.58%       8526
+>         tick_nohz_idle_got_tick                             2231559    0.=
+01%   33.92%       8526
+>       __sysvec_apic_timer_interrupt                          105520    0.=
+00%    0.92%          3
+>     tick_nohz_idle_stop_tick                                8279641    0.=
+02%    0.02%       1475
+>     ---- skip
 >
-> +       policy->cpuinfo.max_table_freq =3D max_table_freq;
-> +
->         if (min_freq =3D=3D ~0)
->                 return -EINVAL;
->         else
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 35ce665edfd8..3f3b1380251a 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -45,6 +45,7 @@ enum cpufreq_table_sorting {
->  struct cpufreq_cpuinfo {
->         unsigned int            max_freq;
->         unsigned int            min_freq;
-> +       unsigned int            max_table_freq; /* Highest valid frequenc=
-y in the table */
+> The majority of the time spent in cpuidle_enter for CPUs entering
+> idle state has already been charged to the idle path. Among the
+> remaining contributors, cpuidle_governor_latency_req() accounts
+> for a non-negligible portion of the overall latency.
 >
->         /* in 10^(-9) s =3D nanoseconds */
->         unsigned int            transition_latency;
+> Under the menu governor this shows up hot: ftrace data shows,
+>  cpuidle_governor_latency_req() accounts for about 19.9% of
+> menu_select() time (~1.9 us/call).  After caching the aggregated
+> value per CPU and invalidating via QoS notifiers, that share drops to
+> about 4.2% (~0.3 us/call), roughly a 6x reduction on this path.
+
+Is there any real-world workload in which that difference is actually visib=
+le?
+
+> The ftrace data before and after the optimization is shown below:
+> 1) original
+> parent:          menu_select
+> parent_total_ns: 160492937
+> parent_count:    16718
 >
-> --
+> SYMBOL                                                      TIME_NS    %R=
+OOT  %PARENT      COUNT
+> -------------------------------------------------------------------------=
+-------------------------
+> menu_select                                               160492937  100.=
+00%  100.00%      16718
+
+Where did you lose menu_update()?
+
+>   tick_nohz_get_sleep_length                              100262940   62.=
+47%   62.47%      16698
+>     tick_nohz_next_event                                   67891299   42.=
+30%   67.71%      16689
+>       rcu_needs_cpu                                         2825649    1.=
+76%    4.16%      16689
+>       timekeeping_max_deferment                             2380377    1.=
+48%    3.51%      15296
+>     hrtimer_next_event_without                             17865162   11.=
+13%   17.82%      15296
+>       hrtimer_bases_next_event_without                      2707631    1.=
+69%   15.16%      15296
+>       _raw_spin_lock_irqsave                                2461132    1.=
+53%   13.78%      15296
+>         native_queued_spin_lock_slowpath                        177    0.=
+00%    0.01%          1
+>       _raw_spin_unlock_irqrestore                           2364647    1.=
+47%   13.24%      15296
+>     can_stop_idle_tick                                      2906072    1.=
+81%    2.90%      16698
+>   cpuidle_governor_latency_req                             31988150   19.=
+93%   19.93%      16718
+>     get_cpu_device                                          4122502    2.=
+57%   12.89%      16718
+>     pm_qos_read_value                                       3427318    2.=
+14%   10.71%      16718
+>     cpu_latency_qos_limit                                   3005804    1.=
+87%    9.40%      16718
+>     cpu_wakeup_latency_qos_limit                            3005475    1.=
+87%    9.40%      16718
+>   tick_nohz_tick_stopped                                    4551981    2.=
+84%    2.84%      29496
+>
+> %ROOT =3D share of menu_select; %PARENT =3D share of immediate caller (in=
+clusive)
+>
+> 2) post-optimized
+> parent:          menu_select
+> parent_total_ns: 55428604
+> parent_count:    7626
+>
+> SYMBOL                                                      TIME_NS    %R=
+OOT  %PARENT      COUNT
+> -------------------------------------------------------------------------=
+-------------------------
+> menu_select                                                55428604  100.=
+00%  100.00%       7626
+
+And here?
+
+>   tick_nohz_get_sleep_length                               37464607   67.=
+59%   67.59%       7544
+>     tick_nohz_next_event                                   24076913   43.=
+44%   64.27%       7522
+>       get_next_timer_interrupt                             16332381   29.=
+47%   67.83%       5854
+>       rcu_needs_cpu                                         1489633    2.=
+69%    6.19%       7522
+>       timekeeping_max_deferment                              870851    1.=
+57%    3.62%       5586
+>     hrtimer_next_event_without                              6140153   11.=
+08%   16.39%       5586
+>       hrtimer_bases_next_event_without                       979000    1.=
+77%   15.94%       5586
+>       _raw_spin_lock_irqsave                                 808786    1.=
+46%   13.17%       5586
+>       _raw_spin_unlock_irqrestore                            785518    1.=
+42%   12.79%       5586
+>     can_stop_idle_tick                                      1583137    2.=
+86%    4.23%       7544
+>   cpuidle_governor_latency_req                              2321119    4.=
+19%    4.19%       7626
+>   tick_nohz_tick_stopped                                    1863015    3.=
+36%    3.36%      12751
+>
+> %ROOT =3D share of menu_select; %PARENT =3D share of immediate caller (in=
+clusive)
+>
+> This series:
+> - patch1~pathc3: Add QoS notifiers-related infrastructure and updates to
+> latency_req_gen.
+> - patch4: Implement QoS constraint for cache-aggregated governor latency
+> - patch5: add latency_req QoS idle-state selection test
+> - patch6: add idle-state disable selftest
+
+So this adds two per-CPU variables and a ton of extra complexity to
+optimize the case in which the majority of the governor computations
+aren't actually done.
+
+I'm totally unconvinced.
+
+Thanks!
