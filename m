@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id ACB874D4879;
-	Thu, 17 Sep 2026 15:41:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8C0784CDDD7;
+	Thu, 17 Sep 2026 15:41:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789659694; cv=none; b=X3w9VMH7XHg5FInlptfTOesweMdZpzDfsAjXMeWvId6Ojpsd5ebcue/is4ljNspdHZMvFcSZ8aQRNZ+t+NVxRp7OHTAhrTwAkDyiBc/FYEAgM67/BBbHRmx8mQhDlvipDW5OG3l4r/FoWdcC4DEC1wSde6lTAR58pbykYZ6mMXk=
+	t=1789659695; cv=none; b=NclJFUTtyzJUVoY88UpYCd2yNVSghDk+blGDGvCG1it7AJLePp2M/rpLvG7J1dlu183/CC9AKfbhcxLrQodaj6MpmMU3E+Nyn2DRW6PXMt1cXjsQrPiiAYkLslDuAPSOi81kRdE9RCRzt/C/Mpgr4wuj6Ew9fQh0wVtiZPWk3Hw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789659694; c=relaxed/simple;
-	bh=ulDHPGJnezoxQS1STH+QyuV1/zf3Ld6oZMvKyAKAl+0=;
+	s=arc-20240116; t=1789659695; c=relaxed/simple;
+	bh=n5xnCq7ZNMxidPIgupP4wmabPhpKy7d+Hd+5dKBA3NA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=bKYtN+96qot3AbmNpn7X/zwq7L9MxBNhUYsVPfs1O4AQAhEh4kvK/ci6LjkWzO9PSOrM/94db19L4TCLhUsOJ2qe1ShpVbJAI9H2MRRAiuuHLBY0aG1QyZ/nVLSb91CRhC1sZyPuwJh2wBGef59CyVMSK5DE3/8xg88EzGb+3yA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=bJVhIIEL; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=aK/hN+PWtErs3uPbq6ZMKxhP2imxAiPw+K3uK2P09CkuJ9kVFB7SusP4WzLweXExTiyt5u08H/eX93AnYSTvuJPQnPSzOd4+eV5K/K4GR2bZ/ZYBWCNiKOUcXgI/gVzn9I6BWflCX272pjsNNXA8dWki5weLjgFrJtQYlEW3R6w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=MIHKFz6Y; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="bJVhIIEL"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="MIHKFz6Y"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 607B81596;
-	Thu, 17 Sep 2026 08:41:18 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B844A1AED;
+	Thu, 17 Sep 2026 08:41:22 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.50.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D5CF73F7B4;
-	Thu, 17 Sep 2026 08:41:17 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 61AB73F7B4;
+	Thu, 17 Sep 2026 08:41:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789659681; bh=ulDHPGJnezoxQS1STH+QyuV1/zf3Ld6oZMvKyAKAl+0=;
+	t=1789659686; bh=n5xnCq7ZNMxidPIgupP4wmabPhpKy7d+Hd+5dKBA3NA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bJVhIIELC7dSKDJ7SkfDJ7OVUSpcVL3pcvqal3AlWe60wJt3vNGd0NMv5GoIaurXr
-	 USD3Hyruf6cnLbmgXNRjMx/0K5vyQBwpugdqlZMuSk6fBFJUiGg5lMKTXDYVAeL6o9
-	 55lPO0aggEDTxLeje87EKw2BNW8ZNONuESXrrCDY=
+	b=MIHKFz6Y5OhrW4pAPau+BL4ZHg1YCaSE0lqSC1NaZz/lcQjaRLIBq4PgD9fk5W5IJ
+	 rxJHkNUNca4mpBlvDWaH7NYCtCRboWZKHtH+W92sViHFDZ6qcYrVFgY2iakdwViIVo
+	 nMF8W/B3yuN6GfX9UI2W6Ha1orERvVhzOBW3LaJs=
 From: Christian Loehle <christian.loehle@arm.com>
 To: Ingo Molnar <mingo@redhat.com>,
 	Peter Zijlstra <peterz@infradead.org>,
@@ -47,9 +47,9 @@ Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH v2 1/2] sched/fair: Drop idle recency from slow-path CPU selection
-Date: Thu, 17 Sep 2026 16:39:14 +0100
-Message-Id: <20260917153915.1563875-2-christian.loehle@arm.com>
+Subject: [PATCH v2 2/2] sched/fair: Randomize equally shallow slow-path candidates
+Date: Thu, 17 Sep 2026 16:39:15 +0100
+Message-Id: <20260917153915.1563875-3-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260917153915.1563875-1-christian.loehle@arm.com>
 References: <20260917153915.1563875-1-christian.loehle@arm.com>
@@ -61,63 +61,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The slow-path CPU picker favours the most recently idle CPU as a proxy
-for cache warmth.
+Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
+slow-path selectors can choose the same CPU before either task is enqueued.
 
-A more recent idle stamp may make ongoing entry more likely. If entry
-cannot be aborted, that CPU must finish entry and then exit, potentially
-paying more than an already-resident CPU with the same advertised exit
-latency. The advertised worst-case latency covers both cases. idle_stamp
-does not timestamp the current CPUIdle entry, so this is only a heuristic.
+Use reservoir sampling for equal exit latencies, resetting the candidate
+count when a shallower candidate appears. Use the per-CPU scheduler PRNG
+and reciprocal_scale() to avoid variable division or a second scan.
 
-A recent scheduler-idle transition may also mark a short gap in recurring
-task activity, making the CPU likely to be busy again soon.
-
-Drop the timestamp tie-break and retain the first candidate unless a
-lower advertised exit latency is found.
+Use a u64 latency key with U64_MAX for unpublished states. Published
+states take precedence; when none are found, sample among the idle CPUs
+without a published state.
 
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- kernel/sched/fair.c | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+ kernel/sched/fair.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 7455a83a6a99..ff5793bddc35 100644
+index ff5793bddc35..810343f40316 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -8459,7 +8459,6 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+@@ -24,6 +24,7 @@
+ #include <linux/mmap_lock.h>
+ #include <linux/hugetlb_inline.h>
+ #include <linux/jiffies.h>
++#include <linux/math.h>
+ #include <linux/mm_api.h>
+ #include <linux/highmem.h>
+ #include <linux/hrtimer.h>
+@@ -8458,7 +8459,8 @@ static int
+ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
  {
  	unsigned long load, min_load = ULONG_MAX;
- 	unsigned int min_exit_latency = UINT_MAX;
--	u64 latest_idle_timestamp = 0;
+-	unsigned int min_exit_latency = UINT_MAX;
++	u64 min_exit_latency = U64_MAX;
++	unsigned int nr_candidates = 0;
  	int least_loaded_cpu = this_cpu;
  	int shallowest_idle_cpu = -1;
  	int i;
-@@ -8481,22 +8480,10 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+@@ -8479,12 +8481,16 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
+ 
  		if (available_idle_cpu(i)) {
  			struct cpuidle_state *idle = idle_get_state(rq);
- 			if (idle && idle->exit_latency < min_exit_latency) {
--				/*
--				 * We give priority to a CPU whose idle state
--				 * has the smallest exit latency irrespective
--				 * of any idle timestamp.
--				 */
- 				min_exit_latency = idle->exit_latency;
--				latest_idle_timestamp = rq->idle_stamp;
+-			if (idle && idle->exit_latency < min_exit_latency) {
+-				min_exit_latency = idle->exit_latency;
+-				shallowest_idle_cpu = i;
+-			} else if ((!idle || idle->exit_latency == min_exit_latency) &&
+-				   shallowest_idle_cpu == -1) {
++			u64 exit_latency = idle ? idle->exit_latency : U64_MAX;
++
++			if (shallowest_idle_cpu == -1 || exit_latency < min_exit_latency) {
++				min_exit_latency = exit_latency;
  				shallowest_idle_cpu = i;
- 			} else if ((!idle || idle->exit_latency == min_exit_latency) &&
--				   rq->idle_stamp > latest_idle_timestamp) {
--				/*
--				 * If equal or no active idle state, then
--				 * the most recently idled CPU might have
--				 * a warmer cache.
--				 */
--				latest_idle_timestamp = rq->idle_stamp;
-+				   shallowest_idle_cpu == -1) {
- 				shallowest_idle_cpu = i;
++				nr_candidates = 1;
++			} else if (exit_latency == min_exit_latency) {
++				nr_candidates++;
++				if (!reciprocal_scale(sched_rng(), nr_candidates))
++					shallowest_idle_cpu = i;
  			}
  		} else if (shallowest_idle_cpu == -1) {
+ 			load = cpu_load(cpu_rq(i));
 -- 
 2.34.1
 
