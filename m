@@ -1,476 +1,385 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 343CB4A4842;
-	Thu, 17 Sep 2026 10:26:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789640810; cv=none; b=cnvJq6WpYOaaIHa9TbIdbpK+fKmkxqpMIf8rctWlsoc6Mf1UbS0Hel6JQjecbDq/RpTUSioJCZEr/71JfODid+gP32AcHfwf4uqkI7IITujTWSUQn+ZB5tfGMfLBNF4e/KBEc/ZOmXs22U/x3KW2dOBaAKfDCEue4hEH+RZ1QJE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789640810; c=relaxed/simple;
-	bh=uqYX6zvZNL5fA6XNusYbIz02xhoytzKBM/nOCfSErak=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Xc3KVTGoxQezqnVwRwfCw563PPQPSiWt6/k1b+TCgQG9H5Sq9319xUzO1+UbvxkMQNzQX2fi/IKcX2gd1cGb11yqp3UJvPPyVZyAjh5ApSWl3jP+p3L3FLZu7Ft1hOYaaeUI9sj4RY0165ek7xG5M0IKEZ+d2gbAq+5xOY+N0aM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=PVmp1wTl; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013028.outbound.protection.outlook.com [40.107.201.28])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57DD04C0436;
+	Thu, 17 Sep 2026 11:01:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.28
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789642920; cv=fail; b=cze9of27EqKg8B2KQaeJU9D+lt7TtTk5kzZRyrYeaXnmmBd9mLyD0ErS1Z/e3BKyz/lKjXKK47lyCQeVz35mZTGrO6ADj3wpbe1+YWBGYa9rYJTyGem7/uxJOCbwPIVi7tGLSVUh73LWakdnDtr52EKHyAfdyIoCxsysPqYWPtA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789642920; c=relaxed/simple;
+	bh=YRqMmRdWYi8JsaS+O//UGJXv13MjTUqP0PeNVl+M94Y=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=H5nIvi2DEyz8YZ5+oL4840SdzQ0zLFWhyx1/QHXpnVLP52g1M4gCAsLV46JPTagNgGHL6nIKu7dhe4e7ClirvMel99/vVfMW3mksddqNIajYU+2UEOsAYAKxAie9hy/3Ysv2mq5ZqazXCP/Nuxx0XYKPHVpRoEwmFlKKWDkGMjw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=UWCDY7rg; arc=fail smtp.client-ip=40.107.201.28
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="PVmp1wTl"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8CBAD1A9A;
-	Thu, 17 Sep 2026 03:26:42 -0700 (PDT)
-Received: from [10.57.50.144] (unknown [10.57.50.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 57E773F882;
-	Thu, 17 Sep 2026 03:26:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789640806; bh=uqYX6zvZNL5fA6XNusYbIz02xhoytzKBM/nOCfSErak=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=PVmp1wTlmIrm2MUposaA1SHThULWIW5DGWcIv3a1262IAyFWEiLfEN8gGYQ9KYiRh
-	 6vJdqKyYij0CNtNfePoDfFSoH74eR2qYu7QtBDLEDJz8q3PRkSewp5bdIj6AEHfMRt
-	 0nE7UKSP/kgVaQ6bltGUfs7USOmc+KHWyc3roD6k=
-Message-ID: <feacb7a1-1d40-4798-9b41-ae8cba62ccd3@arm.com>
-Date: Thu, 17 Sep 2026 11:26:41 +0100
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="UWCDY7rg"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=CgSsiqv+S43RVA25AtzqxF3Hn+fhcoHsxN7+X/Ft2qJTouoU+sNIw6ihyQwpn4WF3Ym3uYrgFmU4qsaN1Q+L3B1JpiUS4L9xb/CWQ4j3+LBFLe4fjPAc5Wctsf+Y93WmzxIDR4sci2i/y39/iYZCmR5kbRsZzO52NqHcE3ZA7kE/90qtA1u/T7s/vyymqrxcJ7hwyCBNwRMeIDh/BsqprTvFf2zPY7ntMfbtGtp0/h5IVP0kDIe6LAVPHvsDyY2OV5HgV/zWBJbQYpk0/Ga/iMc/f5CYf0ahAS3f992BkNzbu0eK/lDfKENYJY935msYd5fIeZl2ju2wnKh7NhtHFg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2soHO5pqVhPKU0ZvTfbVCSI26pWUOxaocuEWCEw3AiU=;
+ b=wCz+66CvwKibNxKcQ4T46Bic5fnHzbOPPSYTXMxozv2gdd5uSc3rpTgYJqlUNzs0+MWJf9sgQsc6gECimhj3o+TLDE2qG2Lb4K+Rl7jLo5jri9Bt9puYH6GhWR9kml3aXp1BJNZw0KJy/UAcHLkQJ5g2tKffNhsnOOkO+hjkE6oK/uIvR7WYP70JkRRh+jqX6CNyUEtb9VByMpZTsuKoW8GAwsDdg/J6Rk9eqwe3Kq3CmIFP+2BEzhmR5PfPF2o14GXMyTXaRJZtPmOMcdF0Nf3T+rZBl6y2ZXCnQb/zurrQ2+EBoR9/lx+77sLPD/kp4CD2yHo1zpWCff0RffBlHg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2soHO5pqVhPKU0ZvTfbVCSI26pWUOxaocuEWCEw3AiU=;
+ b=UWCDY7rgWI1Bp1YsezsSzJqZG9kgpwwRQ8lcs26OaSLAFETufBnWT/nSNHHFrrdu/b2Yv9z+GZns02PHZ0I/UfienFgYGUP2Sdk3at2z7K0wD+zdKlPxRlwxyGjm4qBiqB0cT3oOxCjT8J72yThRKVbJ7s1Qk99nADMCsrS9yNgga5QncjoDRN+kLwIaDaiBFaAnezCBXLlQGIAiNTuvTVkQcBvT7i6aw85oxC+oQsf/7OMkvLQAVMbJyVSsqY3LB3107G4KpSkEa3QNT4BI9tuT8WqCb62czzoBaPVWgtcDX22Z128ikSXklWB5LZkiRj3DySV1apWgnBCm6OAd+w==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DM4PR12MB5246.namprd12.prod.outlook.com (2603:10b6:5:399::17)
+ by IA1PR12MB8538.namprd12.prod.outlook.com (2603:10b6:208:455::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Thu, 17 Sep
+ 2026 11:01:47 +0000
+Received: from DM4PR12MB5246.namprd12.prod.outlook.com
+ ([fe80::9c9e:30a1:5456:c485]) by DM4PR12MB5246.namprd12.prod.outlook.com
+ ([fe80::9c9e:30a1:5456:c485%4]) with mapi id 15.21.0428.011; Thu, 17 Sep 2026
+ 11:01:45 +0000
+Message-ID: <404f0fea-4980-4e7f-ae05-eadcc2b13d7d@nvidia.com>
+Date: Thu, 17 Sep 2026 16:31:33 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/4] cpufreq: CPPC: Keep the policy across CPU hotplug
+To: Jie Zhan <zhanjie9@hisilicon.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, christian.loehle@arm.com,
+ ionela.voinescu@arm.com, zhenglifeng1@huawei.com, lenb@kernel.org,
+ saket.dumbre@intel.com, ray.huang@amd.com, mario.limonciello@amd.com,
+ perry.yuan@amd.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
+Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
+ ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
+References: <20260806200857.601152-1-sumitg@nvidia.com>
+ <20260806200857.601152-2-sumitg@nvidia.com>
+ <c30ddb21-2c97-4b9f-bae6-b29e30aa5e5e@hisilicon.com>
+ <753b98a6-b3f7-431b-a867-eccbfd15d357@nvidia.com>
+ <26439302-6759-446b-a498-310c218e4102@hisilicon.com>
+Content-Language: en-US
+From: Sumit Gupta <sumitg@nvidia.com>
+In-Reply-To: <26439302-6759-446b-a498-310c218e4102@hisilicon.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: PN3PEPF0000017E.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c04::4e) To DM4PR12MB5246.namprd12.prod.outlook.com
+ (2603:10b6:5:399::17)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 02/20] ACPI: CPPC: Validate _CPC entry and control
- semantics
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
- Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
- Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com,
- Sashiko <sashiko-bot@kernel.org>
-References: <20260916162805.1039247-1-christian.loehle@arm.com>
- <20260916162805.1039247-3-christian.loehle@arm.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260916162805.1039247-3-christian.loehle@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR12MB5246:EE_|IA1PR12MB8538:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1a77439d-e500-4ae1-d018-08df14ab101d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|366016|7416014|376014|921020|4143699003|6133799003|11063799006|56012099006|22082099003|10067099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	e6nDytxlyukQpjc5/EKpGL7/kwfCsaHzi6c4Z7zZ8qiy1QpYxdDIY4gNFU0+lRWn31ume1YS1yoln8OM5q2kRUbUVsNfaPnBVUDCmMCgSV5Ou0FCiNTww9k8s6BLy/pVB8Xy3MK6MtCA2G12IhXuwHKlMMD3Ob8j5Gp8tVOScKB9TXqggoz5W7GaLHhu+KE/F4twLdD259eHu+Fw+rB08xbEF8eJOWbxX3sOC0wFKhtNHPMdD5xKIwH+8BvxtUOx1QPYbbljwSM4cP+UIEkNr4XRdcZ4ggMMVnhjQIx5ruMw/e3uICFt8KqKxAg6zmbtjmed1Izf7XV/ta0ISNh9//RXEDyANzd+hltSuhT8Z9rKgCXB+QLVbS7mZYU/bm7NKaB1YBnVeBCHzd1H1nDWz6MhpPMHTAuymU9cPOlOTJKfXNM2P9+RFl1QcTlyxU5QREagrx0VH+FxIP4luyYUwQg74bDLsSpxjQeC/dElMkl1B4y/xencuIuhajxzGNXU/C0v3aU+w3Sww0MoVGJNCkw0bXxSumHmNUQ/PmagKXtzmfGSYTQUz0Xnqz7/DI7yp8iAXw5Y7tBxSXFhP8t84Ptr1+Y4+pxiWQJHyBQDBhRXdRXifbZQXvykLuKU7c9LOSVsBMnY5ZvcChuV6aDUsmtgmfq0wfydQTeruAEbPNNtW3rFa4FittHrfCDveOGuzVyCQpMAK782B1uRQx/ffA==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB5246.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(366016)(7416014)(376014)(921020)(4143699003)(6133799003)(11063799006)(56012099006)(22082099003)(10067099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?dDBOR3ZJWXVxVkRqZmFvRk9mUWRueWp4Rlp2ME9OVFAzTXdJUWY5RW5JZENX?=
+ =?utf-8?B?aThFU2lMVS8remVITm12QWdMbENYaHFaOXhiYUN5Z0NHYit3d3dEUXp3VE1k?=
+ =?utf-8?B?b0MyL2pWeEliWVFma1piQTFqVGJsc0xOaWZKUDBYakozdXJwOFNRTmRyZlo4?=
+ =?utf-8?B?QWhJb0VucVlsSmZJcmdjSDk0eHpZUEJwWUVzYjZFaEVSL21HVFFrUGoyWWUx?=
+ =?utf-8?B?cExLNDIwWHN3aVFnaUZNZ3ZsbDlOTGtiNmhoTWV6ei96eVdQWGFPOTNUWUZV?=
+ =?utf-8?B?V3Y1TG5KTTFhTDV4NEZGL3pFN1pyZzYyVmE0bXVzVitGbG8rdlMzU2JxMzEy?=
+ =?utf-8?B?Nk1Jd3VDMCtMMjRIb0s5cndneGJta1NZVXVObHZXS0llZjc3MTM5M1BQUW01?=
+ =?utf-8?B?bDFLZE4yV2Z0QXpjekJoNmlSWHlhbmZ5eHltN1VGcGptSFMvL05YRFZSOUc3?=
+ =?utf-8?B?aFljaWJ0MVlTMWRMSHY1MFU1OEhHWnI1Sjg5RTBoS3VVT2RmR1oxZmFBWmFz?=
+ =?utf-8?B?anR6Nzk3R3huZ20yTUsya0g1NUJDYU91NmxaTFFoUjdYWVhMV211UjlrN0Fv?=
+ =?utf-8?B?RGtuajgvSXhJaDVlbEZEUlA2QWFPMmowazhCemJtL0pCVHZ5cVFzMUNVMmdT?=
+ =?utf-8?B?TWtidUlkbHlDZ0dRdHhvZ2dpaGdJZnhoRzFMZ294aEdoSHRkVm85SjN1dGlK?=
+ =?utf-8?B?czFXM2dWSTkyN3pGYVFPUU50WmtKbG9uTzZub24vUmNlSjk4TVgyRWxCRDY5?=
+ =?utf-8?B?VTJwQ3FqcWZBUllYVzdqeHJsRDRsZ1JXSlBUSHg5N0tNZ2xxQjY0cTZTai90?=
+ =?utf-8?B?MG5zL1ZteGFSYnBmWERqM25jcE45ZWREOHZWcnlYa3M1Tnord1hyMkVwbFQw?=
+ =?utf-8?B?YW5JOXFudnhkZjMzVE5MZU1WRlJpaFpTRHJubGZyVHpCT1dVWnFZTGwzVFd5?=
+ =?utf-8?B?cFpXRWxtRzBoUWpJZXVDZ0o2VXc3dU1vY0VuSkFNQUpIZ0U3bmg1TjJYOXd5?=
+ =?utf-8?B?THhTVFJKV2NUUnM1RlVMdXVVRVA1S1RPZUh3Z2pMOFEzRTkwcDhyVjZwUjVh?=
+ =?utf-8?B?YnJUZG9Rak1YWHZ6TmpBNlV4WXlPem1MTGt5TDhYbHM5anpVWEUxTmZnaEcw?=
+ =?utf-8?B?cTFBZVBROXhWWTl1eTRXaVdOa2Vpclc5Nm1LQnp3NFRIcU9OVXVwSTRGb2wr?=
+ =?utf-8?B?VFdaaytKREo5dkNTcVNTcWdaSlFBamYycnY0dTFHZ1B0UzhPT0Y4K21nakFU?=
+ =?utf-8?B?TnJJNzRROHlLbHVnSDlqVHYwTnJzQi8rbEFscTZ5TmdZS01rZnBlU3BvV2Zh?=
+ =?utf-8?B?VkNBbUhOVTVRVXhGRUFKbm5aY3JoSW9KVmNwTTFaSkthRWxrQks3Tm1vSUJq?=
+ =?utf-8?B?MXBYZHh6Z2Y3cjRDSWxoRWExYmg4NmNpWnJzTytUMWRaNjNnZ1J0Y0Z3MkNW?=
+ =?utf-8?B?MFhieTJHK3JYaWJ2WElocXB4TmhjYWoranFCNkJtUW10NzR6SjV0aGkyYTFx?=
+ =?utf-8?B?QXg1RkJOMjNXWFpmeHM5enFoTXdDdUV4OEVPTW9na0lleHhWQzF6WWpwb0JG?=
+ =?utf-8?B?MldWRFVjOEpnSXZnSTJ0UHlSOXNvU20zNmtoVmZ1UWpvR2pkQVRQbi8xREVS?=
+ =?utf-8?B?V29xSVZsZlZMNGFkd2k5NDF2NHlBWE8zVHhLYjFYaS9WYW82Vjl6SDVpalIz?=
+ =?utf-8?B?TEVSanR0bmlZdlU4amU4MFE3TmRYczNjbmFPUlZzQml2VXVWZnZxQXhEdVlO?=
+ =?utf-8?B?WEx5UERMbEVMRklDcW9Hd0RlTkRkZW9FeDQ4elRuQU5JYjBRdytYNkxkMFdM?=
+ =?utf-8?B?NXlxUGZCMGJxMlh6R1pRK2VUZmQrdkpvRmdIdGhUeGlmazhFQ0hJRDBqWWZO?=
+ =?utf-8?B?QzlvUVJTVTlib1pQdXgzOHFQOVFhVGFyQXhvajc4WG5qWjZyaEFaNGlnZHVV?=
+ =?utf-8?B?MUk4Nmg5Vzd2OWs3WDNWbTZjVXRwbnR1TGtlcVFoTG9ubVpIVWYzVTg0OU4y?=
+ =?utf-8?B?YVBSSjJrSjZYZHo0V1lnemZucnhZN2dQWlJNazFsaGJaeFdRK0NqWkx3T1VL?=
+ =?utf-8?B?RUhxWU96UG9yRGs5ekd3S0E4NmsyNlBuN04xRFcvUllOK3BNdUVJc1lIVStD?=
+ =?utf-8?B?Q1F0LzVWd1B6aHFMTnJRbjI1ZjMzU2M4VTYzL1ZqTnRRcEhxVWsvbk91ZVp4?=
+ =?utf-8?B?aHQwL2JNcjVvc0JHZ1RoYk1scFlCVEJIOXUwQWgxb0VQV090MmhsOTM5S0ZV?=
+ =?utf-8?B?a2VOeUNMbkRlVjFJemIrMjdPTyszaHdQeFpnTDJmWjNjUVEvTGJjZlAxcHRx?=
+ =?utf-8?Q?IBfW4Ho1DpOfmp9d0Y?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1a77439d-e500-4ae1-d018-08df14ab101d
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB5246.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Sep 2026 11:01:45.6325
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hjeJkl1n8Nlyc4zR94blqtggI9JZX4seXpdWqd+iICgiITdZbjbxGiqDgLw959BjJ0Obt9UM9Hy6fs3OrvH45A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB8538
 
-On 9/16/26 17:27, Christian Loehle wrote:
-> Writable _CPC controls are Register descriptors encoded as Buffer objects.
-> Integer entries represent fixed values or legacy placeholders for
-> unsupported optional registers; Autonomous Selection Integer 1 is the
-> special immutable form which enables operation without Desired Performance.
+
+
+>>>
+>>> On 8/7/2026 4:08 AM, Sumit Gupta wrote:
+>>>> Without online()/offline() callbacks, the cpufreq core fully tears
+>>>> down a policy during exit() when its last online CPU is offlined, and
+>>>> rebuilds it during init() when it comes back.
+>>>>
+>>>> Add lightweight online()/offline() callbacks so the core instead keeps
+>>>> the policy live and reuses the driver's cpu_data across CPU hotplug.
+>>>> This avoids re-reading the CPPC capabilities on every offline/online,
+>>>> making CPU hotplug faster.
+>>>>
+>>>> Move what init() and exit() did on hotplug into the new callbacks:
+>>>>
+>>>>     - offline() requests the lowest desired performance, as exit() did.
+>>>>     - online() re-enables CPPC and restores the performance controls, as
+>>>>       the platform may have reset them. Failures are logged, not returned,
+>>>>       as the core would free the policy.
+>>>>     - online() also resyncs the frequency invariance counters, so that the
+>>>>       first tick does not measure across the offline window.
+>>>>
+>>>> The restore in online() uses cppc_set_perf(), which writes MIN before
+>>>> MAX. If the platform lowered MAX while the CPU was offline, writing the
+>>>> saved MIN could briefly leave MIN above MAX on registers not accessed
+>>>> through PCC, as PCC delivers the writes in one transaction. Raise MAX
+>>>> ahead of the restore when the saved MIN is above it.
+>>>>
+>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>>> ---
+>>>>    drivers/cpufreq/cppc_cpufreq.c | 128 +++++++++++++++++++++++++++++++++
+>>>>    1 file changed, 128 insertions(+)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>>>> index 80893844353c..4b3da9a3e122 100644
+>>>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>>>> @@ -211,6 +211,29 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+>>>>         }
+>>>>    }
+>>>>
+>>>> +/*
+>>>> + * Resync the counter snapshot, as the policy is kept across CPU hotplug and
+>>>> + * the first tick after online would otherwise span the offline window.
+>>>> + */
+>>>> +static void cppc_cpufreq_cpu_fie_resync(struct cpufreq_policy *policy)
+>>>> +{
+>>>> +     struct cppc_freq_invariance *cppc_fi;
+>>>> +     int cpu, ret;
+>>>> +
+>>>> +     if (fie_disabled)
+>>>> +             return;
+>>>> +
+>>>> +     /* policy->cpus still holds related_cpus here, so skip offline CPUs. */
+>>>> +     for_each_cpu_and(cpu, policy->cpus, cpu_online_mask) {
+>>>> +             cppc_fi = &per_cpu(cppc_freq_inv, cpu);
+>>>> +
+>>>> +             ret = cppc_get_perf_ctrs(cpu, &cppc_fi->prev_perf_fb_ctrs);
+>>>> +             if (ret)
+>>>> +                     pr_debug("%s: failed to read perf counters for cpu:%d: %d\n",
+>>>> +                              __func__, cpu, ret);
+>>>> +     }
+>>>> +}
+>>>> +
+>>>>    static void cppc_fie_kworker_init(void)
+>>>>    {
+>>>>         struct sched_attr attr = {
+>>>> @@ -281,6 +304,10 @@ static inline void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+>>>>    {
+>>>>    }
+>>>>
+>>>> +static inline void cppc_cpufreq_cpu_fie_resync(struct cpufreq_policy *policy)
+>>>> +{
+>>>> +}
+>>>> +
+>>>>    static inline void cppc_freq_invariance_init(void)
+>>>>    {
+>>>>    }
+>>>> @@ -735,6 +762,105 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>>         return ret;
+>>>>    }
+>>>>
+>>>> +/*
+>>>> + * With offline() defined, the cpufreq core keeps the policy alive when
+>>>> + * a CPU is hotplugged out.
+>>>> + */
+>>>> +static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
+>>>> +{
+>>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
+>>>> +     struct cppc_perf_ctrls perf_ctrls = cpu_data->perf_ctrls;
+>>>> +     unsigned int cpu = policy->cpu;
+>>>> +     int ret;
+>>>> +
+>>>> +     /*
+>>>> +      * Request the lowest desired performance while the policy has no online
+>>>> +      * CPU. Zeroing MIN and MAX makes cppc_set_perf() leave them unchanged.
+>>>> +      */
+>>>> +     perf_ctrls.desired_perf = cpu_data->perf_caps.lowest_perf;
+>>>> +     perf_ctrls.min_perf = 0;
+>>>> +     perf_ctrls.max_perf = 0;
+>>>> +
+>>>> +     ret = cppc_set_perf(cpu, &perf_ctrls);
+>>>> +     if (ret)
+>>>> +             pr_debug("Err setting perf value:%u on CPU:%u. ret:%d\n",
+>>>> +                      cpu_data->perf_caps.lowest_perf, cpu, ret);
+>>>> +
+>>>> +     return 0;
+>>>> +}
+>>>> +
+>>>> +/*
+>>>> + * Raise MAX ahead of the full restore when the requested MIN is above the
+>>>> + * current MAX. cppc_set_perf() writes MIN before MAX, so the platform would
+>>>> + * otherwise briefly see MIN above MAX on registers not accessed through PCC.
+>>>> + * Lowering MAX is safe, as the MIN written first is never above it.
+>>>> + */
+>>>> +static int
+>>>> +cppc_cpufreq_prepare_perf_restore(unsigned int cpu,
+>>>> +                               const struct cppc_perf_ctrls *target)
+>>>> +{
+>>>> +     struct cppc_perf_ctrls cur = {}, prep = {};
+>>>> +     int ret;
+>>>> +
+>>>> +     ret = cppc_get_perf(cpu, &cur);
+>>>> +     if (ret)
+>>>> +             return ret;
+>>>> +
+>>>> +     if (!cur.max_perf || target->min_perf <= cur.max_perf)
+>>>> +             return 0;
+>>>> +
+>>>> +     prep.desired_perf = target->desired_perf;
+>>>> +     prep.min_perf = 0;      /* Zero leaves MIN unchanged. */
+>>>> +     prep.max_perf = target->max_perf;
+>>>> +
+>>>> +     return cppc_set_perf(cpu, &prep);
+>>>> +}
+>>>> +
+>>>> +/*
+>>>> + * Restore what the CPU may have lost while offline, as the platform may have
+>>>> + * disabled CPPC and reset the performance controls. Never fail the callback,
+>>>> + * or the core would free the policy and leave the CPU without cpufreq. The
+>>>> + * governor redoes the control writes, so they are best effort, unlike the
+>>>> + * enable, which only a later online() can retry.
+>>> Sorry, I don't quite understand the last sentence.
+>>
+>>
+>> Will rewrite in v5 as below:
+>>
+>>   Report failures without returning them, or the core would free the
+>>   policy and leave the CPU without cpufreq. A failed write to the
+>>   performance controls is not fatal, as the governor's next request
+>>   programs them again. A failed CPPC enable stops the restore, as the
+>>   writes that follow may not reach the platform.
+>>
+>>>> + */
+>>>> +static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
+>>>> +{
+>>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
+>>>> +     unsigned int cpu = policy->cpu;
+>>>> +     int ret;
+>>>> +
+>>>> +     cppc_cpufreq_cpu_fie_resync(policy);
+>>>> +
+>>>> +     ret = cppc_set_enable(cpu, true);
+>>>> +     if (ret && ret != -EOPNOTSUPP) {
+>>>> +             pr_warn("Failed to re-enable CPPC for CPU%u (%d)\n", cpu, ret);
+>>>> +             return 0;
+>>>> +     }
+>>>> +
+>>>> +     /*
+>>>> +      * The platform may reset the controls while the CPU is offline, so
+>>>> +      * recompute min/max, clamp desired_perf into range, and reprogram them.
+>>>> +      */
+>>>> +     cppc_cpufreq_update_perf_limits(cpu_data, policy);
+>>>> +
+>>>> +     cpu_data->perf_ctrls.desired_perf =
+>>>> +             clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
+>>>> +                     cpu_data->perf_ctrls.min_perf,
+>>>> +                     cpu_data->perf_ctrls.max_perf);
+>>>> +
+>>>> +     ret = cppc_cpufreq_prepare_perf_restore(cpu, &cpu_data->perf_ctrls);
+>>> Actually, I don't quite think this is necessary?
+>>>
+>>> The motivation of doing this is fair (as mentioned in v3), but what's the
+>>> real consequence of transiently setting min_perf larger than max_perf?
+>>> Platforms should be able to handle this.
+>>>
+>>> Even if we have to fix it, it's supposed to be done in cppc_acpi.c.  The
+>>> current ABI wraps many things up.  cppc_get_perf() reads 4 values -
+>>> min_perf, max_perf, energy_perf, auto_sel.  cppc_set_perf writes 3
+>>> values - desired_perf, min_perf, max_perf.  The cppc_cpufreq driver would
+>>> be able to handle performance setting cleaner if those are separated.
+>>>
+>>> I don't suggest we complicate the driver for now?
+>>
+>> Agreed that it is not hotplug specific and can be done in the
+>> generic API.
+>>
+>> cppc_set_perf() would have to know the programmed MIN and MAX to pick
+>> the write order. Separate accessors would let it read only those two,
+>> but that would add a read before every write, including fast_switch().
+> fast_switch() doesn't have to touch min/max_perf, but it did at the moment.
+>> Caching what was last written would avoid that, but the platform can
+>> reset the registers while the CPU is offline or suspended.
+> Yeah, understood.  My question is still whether it's practically useful and
+> we're complicating this.
 > 
-> The parser accepts arbitrary object types and cpc_write() assumes that its
-> argument contains a GAS. Malformed firmware can therefore make it interpret
-> an Integer union member as a register.
+> Two reasons.
 > 
-> Validate the portion of each encoding consumed by the driver: bound Integer
-> capabilities stored in u32 fields to U32_MAX, and require Buffer entries to
-> start with a complete Generic Register descriptor with the expected header.
-> Do not restrict an Integer Counter Wraparound Time. Both AML Integers and
-> the kernel interface are 64-bit, despite the DWORD annotation in the ACPI
-> table. Continue tolerating Integer 0 placeholders for absent optional
-> Buffer registers to avoid breaking legacy platforms. Report their invalid
-> encoding as a firmware bug. Retain type checks in cpc_write() as defense in
-> depth. Reject an attempt to disable immutable Autonomous Selection instead
-> of silently applying only the EPP part of the request.
+> 1. Platform should be able to handle min_perf being trasiently larger than
+> max_perf, otherwise it would be fragile.
 > 
-> Capability registers are read into u64 temporaries but exposed through u32
-> fields. Reject values above U32_MAX instead of allowing them to be
-> truncated. In particular, a truncated Highest Performance value can become
-> a zero divisor in the performance-to-frequency conversion. Enforce the
-> required ordering from Highest through Nominal, Lowest Nonlinear, and
-> Lowest Performance, and constrain a present Guaranteed Performance to the
-> inclusive Lowest-to-Nominal range. Also reject reversed frequency anchors
-> and unequal frequency anchors with identical performance anchors. Those
-> invalid tuples otherwise make affine-conversion differences wrap or divide
-> by zero.
+> 2. It depends on the reset values of the two registers.
 > 
-> Check mandatory object presence separately from the Integer-zero convention
-> for absent optional fields.
+> I went over the ACPI Spec and didn't manage to find a descprition on what
+> the default/reset values of min/max perf registers should be.
 > 
-> Reject Minimum and Maximum Performance readbacks above U32_MAX before
-> narrowing them. A truncated minimum could otherwise become an explicit
-> zero update when cppc-cpufreq writes the initial controls back to the
-> platform.
-> 
-> Minimum Performance also defines zero as a real no-limit value, but the
-> exported cppc_set_perf() interface historically used zero to omit a bound.
-> Add a minimum-valid flag so callers can request zero without changing that
-> legacy convention. Set it when reading a supported Minimum Performance
-> register, preserving zero across cppc-cpufreq initialization and exit.
-> Keep zero-as-omit for Maximum Performance, whose no-limit encoding is all
-> ones, not zero. Initialize amd-pstate's control structure with the new flag
-> clear: its shared-memory backend does not record bios_min_perf, so its
-> zero-valued restore requests must remain omitted.
-> 
-> Performance Limited is listed as a required Buffer, but the interface does
-> not depend on it to control performance and the specification permits a
-> platform with no limiting indication to always report zero. Preserve
-> compatibility with firmware that represents that case using a NULL register
-> descriptor instead of disabling CPPC entirely.
-> 
-> Emit an error when a present _CPC package fails parsing or initialization
-> so such firmware and resource failures no longer silently suppress cpufreq.
-> Initialize malformed-package failures to -EINVAL and preserve specific
-> allocation, mapping, and unsupported-access errors in that diagnostic.
-> 
-> Fixes: 337aadff8e45 ("ACPI: Introduce CPU performance controls using CPPC")
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> Link: https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
-> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
-> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
-> ---
->  drivers/acpi/cppc_acpi.c     | 183 +++++++++++++++++++++++++++++++----
->  drivers/cpufreq/amd-pstate.c |  10 +-
->  include/acpi/cppc_acpi.h     |   2 +
->  3 files changed, 169 insertions(+), 26 deletions(-)
-> 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 3b8cdf88e31d..965ac29ab8b1 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -129,6 +129,21 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
->  				!!(cpc)->cpc_entry.int_value :		\
->  				!IS_NULL_REG(&(cpc)->cpc_entry.reg))
->  
-> +static bool cpc_is_writable(const struct cpc_register_resource *cpc)
-> +{
-> +	return cpc->type == ACPI_TYPE_BUFFER &&
-> +	       !IS_NULL_REG(&cpc->cpc_entry.reg);
-> +}
-> +
-> +static bool cpc_entry_present(const struct cpc_register_resource *cpc)
-> +{
-> +	if (cpc->type == ACPI_TYPE_INTEGER)
-> +		return true;
-> +
-> +	return cpc->type == ACPI_TYPE_BUFFER &&
-> +	       !IS_NULL_REG(&cpc->cpc_entry.reg);
-> +}
-> +
->  /*
->   * Each bit indicates the optionality of the register in per-cpu
->   * cpc_regs[] with the corresponding index. 0 means mandatory and 1
-> @@ -142,6 +157,36 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
->   */
->  #define IS_OPTIONAL_CPC_REG(reg_idx) (REG_OPTIONAL & (1U << (reg_idx)))
->  
-> +static bool cpc_integer_entry_valid(unsigned int reg_idx, u64 value,
-> +				    bool *legacy_null)
-> +{
-> +	*legacy_null = false;
-> +
-> +	switch (reg_idx) {
-> +	case HIGHEST_PERF:
-> +	case NOMINAL_PERF:
-> +	case LOW_NON_LINEAR_PERF:
-> +	case LOWEST_PERF:
-> +	case REFERENCE_PERF:
-> +	case LOWEST_FREQ:
-> +	case NOMINAL_FREQ:
-> +		return value <= U32_MAX;
+> For a sensisble design, min_perf defaults to be 0 or lowest perf, and
+> max_perf defaults to be all 1s or highest perf.  In those cases, we are
+> safe to directly restore the saved values.
 
-Sashiko:
-"Does this code accidentally omit GUARANTEED_PERF from the whitelist?
-According to the ACPI specification (Section 8.4.6.1.1), the firmware can
-provide Guaranteed Performance as a non-zero Integer. Because it is missing
-from this switch statement, valid non-zero integer values for this register
-will be rejected here, causing CPPC initialization to fail on compliant
-platforms."
-So first of all 8.4.6.1.1 doesn't describe the type at all.
+Hi Jie,
 
-We have
-8.4.6.1 _CPC (Continuous Performance Control)
-describing
-GuaranteedPerformanceRegister, // Buffer (Resource Descriptor)
-(i.e. no Integer)
-and
-Table 8.23: Continuous Performance Control Package Values
-Guaranteed Performance Register Buffer
-(i.e. Integer)
+Agreed, those values would be safe, although they are not required
+reset defaults. A platform could reset MAX to a lower value, such as
+lowest_perf, while the saved policy MIN is higher.
+Restoring MIN first would then temporarily result in MIN greater than
+MAX on non-PCC systems.
 
-The 'finding' is deliberate behavior and correct.
+This preparation was added in response to Christian’s v3 comment [1].
+I had already posted v5 [2] before receiving this reply, and it retains
+the preparation.
 
+Christian, are you okay with dropping it and restoring the controls
+directly with cppc_set_perf(), as in v3?
+Any general requirement for ordered MIN/MAX updates can then be handled
+in a separate CPPC core series.
 
-> +	case CTR_WRAP_TIME:
-> +		/* AML Integers and the kernel interface are both 64-bit. */
-> +		return true;
-> +	case AUTO_SEL_ENABLE:
-> +		return value <= 1;
-> +	case DESIRED_PERF:
-> +		/* Validated against Autonomous Selection after parsing. */
-> +		*legacy_null = value == 0;
-> +		return *legacy_null;
-> +	default:
-> +		/* Tolerate legacy Integer 0 placeholders for absent options. */
-> +		*legacy_null = value == 0 && IS_OPTIONAL_CPC_REG(reg_idx);
-> +		return *legacy_null;
-> +	}
-> +}
-> +
->  /*
->   * Arbitrary Retries in case the remote processor is slow to respond
->   * to PCC commands. Keeping it high enough to cover emulators where
-> @@ -150,6 +195,8 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
->  #define NUM_RETRIES 500ULL
->  
->  #define OVER_16BTS_MASK ~0xFFFFULL
-> +#define CPC_GENERIC_REGISTER_DESCRIPTOR 0x82
-> +#define CPC_GENERIC_REGISTER_LENGTH (sizeof(struct cpc_reg) - 3)
->  
->  #define define_one_cppc_ro(_name)		\
->  static struct kobj_attribute _name =		\
-> @@ -773,8 +820,10 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  	acpi_handle handle = pr->handle;
->  	unsigned int num_ent, i, cpc_rev;
->  	int pcc_subspace_id = -1;
-> +	bool cpc_present = false;
->  	acpi_status status;
->  	int ret = -ENODATA;
-> +	int err;
->  
->  	if (!osc_sb_cppc2_support_acked) {
->  		pr_debug("CPPC v2 _OSC not acked\n");
-> @@ -791,6 +840,8 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  		ret = -ENODEV;
->  		goto out_buf_free;
->  	}
-> +	cpc_present = true;
-> +	ret = -EINVAL;
->  
->  	out_obj = (union acpi_object *) output.pointer;
->  	if (out_obj->package.count < 2) {
-> @@ -871,11 +922,38 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  		cpc_obj = &out_obj->package.elements[i];
->  
->  		if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
-> -			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
-> -			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = cpc_obj->integer.value;
-> +			bool legacy_null;
-> +
-> +			if (!cpc_integer_entry_valid(i - 2,
-> +						     cpc_obj->integer.value,
-> +						     &legacy_null)) {
-> +				pr_debug("Invalid Integer _CPC register %u for CPU:%d\n",
-> +					 i - 2, pr->id);
-> +				ret = -EINVAL;
-> +				goto out_free;
-> +			}
-> +			if (legacy_null)
-> +				pr_warn_once(FW_BUG "_CPC register %u uses Integer 0 for an absent Buffer\n",
-> +					     i - 2);
+[1] 
+https://lore.kernel.org/lkml/40d72385-0b3f-46e5-9f32-a27be3842d7c@arm.com/
+[2] https://lore.kernel.org/lkml/20260916103820.1760297-1-sumitg@nvidia.com/
 
-Sashiko:
-"Is this FW_BUG warning spurious?
-The ACPI specification explicitly states that if a platform does not support
-an optional register, the field must be an Integer with a value of 0 or a
-Buffer containing a null register descriptor. Printing a FW_BUG warning here
-incorrectly flags spec-compliant Integer 0 absent fields as firmware bugs."
+Thanks,
+Sumit
+....
 
-This is wrong, the ACPI spec doesn't state that. No FW_BUG is printed if the platform
-uses the null register descriptor (like the ACPI spec specifies in 8.4.6.1).
-We tolerate Integer 0 for compatibility reasons and log it as an appropriate FW_BUG.
-Also see v6 review:
-https://lore.kernel.org/lkml/CAJZ5v0jp9q-ZzOKXsOVpvF0ABytHXU9qeSdGyHdhLUL-cLX4sA@mail.gmail.com/
-
-> +			cpc_ptr->cpc_regs[i - 2].type = ACPI_TYPE_INTEGER;
-> +			cpc_ptr->cpc_regs[i - 2].cpc_entry.int_value = cpc_obj->integer.value;
->  		} else if (cpc_obj->type == ACPI_TYPE_BUFFER) {
-> +			if (cpc_obj->buffer.length < sizeof(*gas_t)) {
-> +				pr_debug("Invalid register descriptor for CPU:%d\n",
-> +					 pr->id);
-> +				ret = -EINVAL;
-> +				goto out_free;
-> +			}
-> +
->  			gas_t = (struct cpc_reg *)
->  				cpc_obj->buffer.pointer;
-> +			if (gas_t->descriptor != CPC_GENERIC_REGISTER_DESCRIPTOR ||
-> +			    gas_t->length != CPC_GENERIC_REGISTER_LENGTH) {
-> +				pr_debug("Invalid register resource for CPU:%d\n",
-> +					 pr->id);
-> +				ret = -EINVAL;
-> +				goto out_free;
-> +			}
->  
->  			/*
->  			 * The PCC Subspace index is encoded inside
-> @@ -886,8 +964,11 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  			if (gas_t->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
->  				if (pcc_subspace_id < 0) {
->  					pcc_subspace_id = gas_t->access_width;
-> -					if (pcc_data_alloc(pcc_subspace_id))
-> +					err = pcc_data_alloc(pcc_subspace_id);
-> +					if (err) {
-> +						ret = err;
->  						goto out_free;
-> +					}
->  				} else if (pcc_subspace_id != gas_t->access_width) {
->  					pr_debug("Mismatched PCC ids in _CPC for CPU:%d\n",
->  						 pr->id);
-> @@ -900,14 +981,18 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  
->  					if (!osc_cpc_flexible_adr_space_confirmed) {
->  						pr_debug("Flexible address space capability not supported\n");
-> +						ret = -EOPNOTSUPP;
->  						if (!cpc_supported_by_cpu())
->  							goto out_free;
-> +						ret = -EINVAL;
->  					}
->  
->  					access_width = GET_BIT_WIDTH(gas_t) / 8;
->  					addr = ioremap(gas_t->address, access_width);
-> -					if (!addr)
-> +					if (!addr) {
-> +						ret = -ENOMEM;
->  						goto out_free;
-> +					}
->  					cpc_ptr->cpc_regs[i-2].sys_mem_vaddr = addr;
->  				}
->  			} else if (gas_t->space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
-> @@ -929,14 +1014,17 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  				}
->  				if (!osc_cpc_flexible_adr_space_confirmed) {
->  					pr_debug("Flexible address space capability not supported\n");
-> +					ret = -EOPNOTSUPP;
->  					if (!cpc_supported_by_cpu())
->  						goto out_free;
-> +					ret = -EINVAL;
->  				}
->  			} else {
->  				if (gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE || !cpc_ffh_supported()) {
->  					/* Support only PCC, SystemMemory, SystemIO, and FFH type regs. */
->  					pr_debug("Unsupported register type (%d) in _CPC\n",
->  						 gas_t->space_id);
-> +					ret = -EOPNOTSUPP;
->  					goto out_free;
->  				}
->  			}
-> @@ -961,15 +1049,35 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  	}
->  	per_cpu(cpu_pcc_subspace_idx, pr->id) = pcc_subspace_id;
->  
-> +	/*
-> +	 * Performance Limited is required by the specification, but tolerate a
-> +	 * NULL descriptor used by firmware which cannot report limiting events.
-> +	 * CPPC control does not depend on this status.
-> +	 */
-> +	for (i = 0; i < num_ent - 2; i++) {
-> +		if (i != DESIRED_PERF && i != PERF_LIMITED &&
-> +		    !IS_OPTIONAL_CPC_REG(i) &&
-> +		    !cpc_entry_present(&cpc_ptr->cpc_regs[i])) {
-> +			pr_debug("CPU:%d lacks mandatory _CPC register %u\n",
-> +				 pr->id, i);
-> +			ret = -EINVAL;
-> +			goto out_free;
-> +		}
-> +	}
-> +
->  	/*
->  	 * In CPPC v1, DESIRED_PERF is mandatory. In CPPC v2, it is optional
->  	 * only when AUTO_SEL_ENABLE is supported.
->  	 */
-> -	if (!CPC_SUPPORTED(&cpc_ptr->cpc_regs[DESIRED_PERF]) &&
-> +	if (!cpc_is_writable(&cpc_ptr->cpc_regs[DESIRED_PERF]) &&
->  	    (!osc_sb_cppc2_support_acked ||
-> -	     !CPC_SUPPORTED(&cpc_ptr->cpc_regs[AUTO_SEL_ENABLE])))
-> -		pr_warn("Desired perf. register is mandatory if CPPC v2 is not supported "
-> -			"or autonomous selection is disabled\n");
-> +	     cpc_ptr->cpc_regs[AUTO_SEL_ENABLE].type != ACPI_TYPE_INTEGER ||
-> +	     cpc_ptr->cpc_regs[AUTO_SEL_ENABLE].cpc_entry.int_value != 1)) {
-> +		pr_debug("CPU:%d lacks a writable Desired Performance register\n",
-> +			 pr->id);
-> +		ret = -EINVAL;
-> +		goto out_free;
-> +	}
->  
->  	/*
->  	 * Initialize the remaining cpc_regs as unsupported.
-> @@ -1037,6 +1145,8 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  	kfree(cpc_ptr);
->  
->  out_buf_free:
-> +	if (cpc_present)
-> +		pr_err("CPU%d: failed to initialize _CPC: %d\n", pr->id, ret);
->  	kfree(output.pointer);
->  	return ret;
->  }
-> @@ -1217,11 +1327,18 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
->  	u64 prev_val;
->  	void __iomem *vaddr = NULL;
->  	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
-> -	struct cpc_reg *reg = &reg_res->cpc_entry.reg;
-> +	struct cpc_reg *reg;
->  	struct cpc_desc *cpc_desc;
->  	unsigned long flags;
->  	bool locked = false;
->  
-> +	if (reg_res->type != ACPI_TYPE_BUFFER)
-> +		return -EOPNOTSUPP;
-> +
-> +	reg = &reg_res->cpc_entry.reg;
-> +	if (IS_NULL_REG(reg))
-> +		return -EOPNOTSUPP;
-> +
->  	size = GET_BIT_WIDTH(reg);
->  
->  	if (IS_ENABLED(CONFIG_HAS_IOPORT) &&
-> @@ -1364,7 +1481,9 @@ static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
->  
->  	reg = &cpc_desc->cpc_regs[reg_idx];
->  
-> -	if ((reg->type == ACPI_TYPE_INTEGER && IS_OPTIONAL_CPC_REG(reg_idx) &&
-> +	/* Desired may be absent for immutable autonomous selection. */
-> +	if ((reg->type == ACPI_TYPE_INTEGER &&
-> +	     (IS_OPTIONAL_CPC_REG(reg_idx) || reg_idx == DESIRED_PERF) &&
->  	     !reg->cpc_entry.int_value) || (reg->type != ACPI_TYPE_INTEGER &&
->  	     IS_NULL_REG(&reg->cpc_entry.reg))) {
->  		pr_debug("CPC register is not supported\n");
-> @@ -1415,7 +1534,7 @@ static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
->  	reg = &cpc_desc->cpc_regs[reg_idx];
->  
->  	/* if a register is writeable, it must be a buffer and not null */
-> -	if ((reg->type != ACPI_TYPE_BUFFER) || IS_NULL_REG(&reg->cpc_entry.reg)) {
-> +	if (!cpc_is_writable(reg)) {
->  		pr_debug("CPC register is not supported\n");
->  		return -EOPNOTSUPP;
->  	}
-> @@ -1505,7 +1624,7 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
->  	struct cpc_register_resource *highest_reg, *lowest_reg,
->  		*lowest_non_linear_reg, *nominal_reg, *reference_reg,
->  		*guaranteed_reg, *low_freq_reg = NULL, *nom_freq_reg = NULL;
-> -	u64 high, low, guaranteed, nom, ref, min_nonlinear,
-> +	u64 high, low, guaranteed = 0, nom, ref, min_nonlinear,
->  	    low_f = 0, nom_f = 0;
->  	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
->  	struct cppc_pcc_data *pcc_ss_data = NULL;
-> @@ -1588,7 +1707,12 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
->  		goto out_err;
->  	perf_caps->lowest_nonlinear_perf = min_nonlinear;
->  
-> -	if (!high || !low || !nom || !ref || !min_nonlinear) {
-> +	if (!high || !low || !nom || !ref || !min_nonlinear ||
-> +	    high > U32_MAX || low > U32_MAX || guaranteed > U32_MAX ||
-> +	    nom > U32_MAX || ref > U32_MAX || min_nonlinear > U32_MAX ||
-> +	    high < nom || nom < min_nonlinear || min_nonlinear < low ||
-> +	    (CPC_SUPPORTED(guaranteed_reg) &&
-> +	     (guaranteed < low || guaranteed > nom))) {
->  		ret = -EFAULT;
->  		goto out_err;
->  	}
-
-Sashiko:
-"Can this check fail on platforms where Guaranteed Performance is provided as
-an integer?
-If probe succeeds, legacy code in cppc_get_perf_caps() forces the local
-guaranteed value to 0 when the type is ACPI_TYPE_INTEGER. However,
-CPC_SUPPORTED(guaranteed_reg) still evaluates to true, so the new bounds
-check (guaranteed < low) will evaluate as (0 < low), returning -EFAULT."
-
-(also see above)
-We only accept 0 (as an absent buffer) and then CPC_SUPPORTED(guaranteed_reg)
-evaluates to false.
-
-
-> [snip]
