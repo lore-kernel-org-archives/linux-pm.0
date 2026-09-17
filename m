@@ -1,77 +1,67 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 84827420476;
-	Thu, 17 Sep 2026 10:01:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B938F497B70;
+	Thu, 17 Sep 2026 10:07:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789639308; cv=none; b=BvXeGDK0YUhA+5gmZpEBshc4KMmH7ahjfqAJ6kJa7VxUP87AIHANPm30ui0V84YsS5Z5Lo5RmXW6HbKmnciqAF5XYeV7YETjUKTEhEeu414uQCd5Mtge/eFdQH3rrwi0oUe+Cb0uPG6X5kFaK9RuJWLWk7lDewOft5wNKVH1WUI=
+	t=1789639646; cv=none; b=r1ztHABYnYnFs4N4F40q1HCjL8gfaxvrPzauYUZV/1LrJqWW5RWd9RSwbK2cFLNSQVwn0fPfcRc4ps/s6Af4xVVXJgyUGluORsz5+bQJBUpFvudLqGQll0+uOHYx26KEpi/eYIBpvsr05oc1CQ9NBk9liPqPX6EBSmcuFxR1w0M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789639308; c=relaxed/simple;
-	bh=1pwwAA8ZeOmKPOIlnHk+XRlZJTnA6zBlBTY2TxR85cU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=j1SykDim4Zj9miPb7KF0ttVnpON7WlrVZR0oZmWRbPTRAvZzwu/sZhGWDDHAFpE9PWhZgrzEnWuXZMRWzP3Tyc/q7ceoHqXWe6UteMHj9W9T9n5NQqR/0ocvT+DYlKaAi7nysGhi06XAES3AqnUEFU3IMw8mKftRW66NF7DC6Hw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=SvAAG4W6; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1789639646; c=relaxed/simple;
+	bh=vr78XkyUyNz4FhQ+rZDpiq0+MHJb0qYrj6xJoq7cUAQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HbJeKwIOyjoIlSgw3VVAuqG1N4hsSOiWsdUIGr48FfWXEAvrlX+xoSXy5ssNEGmEJJTSpgf6Q7TNZp0jSTQGDUWdp29ARdfsdnOQ1+HjZZKiA9In4qu+Ig2vGBd7aj1HhelPrkvzJ8DIE3yZbKoI2JZ4yIR1ytiHVrhOW0ca9rw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EwcnUwFm; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="SvAAG4W6"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5102E1476;
-	Thu, 17 Sep 2026 03:01:32 -0700 (PDT)
-Received: from [10.57.74.102] (unknown [10.57.74.102])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0CE963F7B4;
-	Thu, 17 Sep 2026 03:01:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789639295; bh=1pwwAA8ZeOmKPOIlnHk+XRlZJTnA6zBlBTY2TxR85cU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=SvAAG4W6pCrBYl8UpXFPHTB71j6RSyCdPuWmd6UkpE0cOM3aNKMGhTZAlgIGEB7fV
-	 Cd4IX/FcwNi0bAPpT+dbXe03++P3TJBX21zD+nSnKRWo8w05d+mhGf6NjzzytfXlME
-	 YQWqbo5gb1j49X8rnLzxfNNa3piSKywqbAZlc1EM=
-Message-ID: <6f2907ec-848e-4e60-98b2-a3b7a905b880@arm.com>
-Date: Thu, 17 Sep 2026 12:01:31 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EwcnUwFm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E14681F00898;
+	Thu, 17 Sep 2026 10:07:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789639636;
+	bh=vr78XkyUyNz4FhQ+rZDpiq0+MHJb0qYrj6xJoq7cUAQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=EwcnUwFmhyTCZmadv/3w9YiGD2s9RKbonJTGdei4qoe2ZD7N82N5eTyo7rkXyjurF
+	 D32B16rXse/DZnzV8E2B71vysZx6D/rUKvmqVHb3NjVjmBz8ClWAZY9+s7Tj4mMejz
+	 ip8lF70SNbXfmWnaDk1ZndvD0VsH/JI6bcDCbFo/1ztp7djwFxW2zLzYMD9WqQQ0/z
+	 cjr63EfBa0/91KVSb7Dvm8hoNyWUN0EUCDf22JaZKXPsFBKICAzv+zi/VJjftqIJVD
+	 VhhFH6iYuW/hhx1uXXHYTletk1DmQXR8+CHLGwm7pn1UAECHgOKd7L3ByDJMGN+m3s
+	 PfUc5CUP8zStQ==
+Date: Thu, 17 Sep 2026 12:07:11 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Stanislav Zaikin <zstaseg@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 1/3] dt-bindings: soc: qcom: add
+ xiaomi,taoyao-pmic-glink compatible
+Message-ID: <20260917-sticky-sheep-from-pluto-adf65b@quoll>
+References: <20260915084901.56622-1-zstaseg@gmail.com>
+ <20260915084901.56622-2-zstaseg@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/2] arm64: topology: fix arch_freq_get_on_cpu()
- overflow above 4.19 GHz
-To: Oleg Keri <okerixx@gmail.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
- Beata Michalska <beata.michalska@arm.com>,
- Russell King <linux@armlinux.org.uk>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Sudeep Holla <sudeep.holla@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <55538466-2203-42ec-a0bd-b743c04a3b38@arm.com>
- <178955779940.30466.10860982419496123467@gmail.com>
-Content-Language: en-GB
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <178955779940.30466.10860982419496123467@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260915084901.56622-2-zstaseg@gmail.com>
 
-Hi Oleg,
+On Tue, Sep 15, 2026 at 10:48:59AM +0200, Stanislav Zaikin wrote:
+> Add the compatible string used by Xiaomi 12 Lite 5G (taoyao) so its
+> battery manager can be matched to a device-specific variant in
+> qcom_battmgr.
 
-On 16.09.26 13:23, Oleg Keri wrote:
-> Hi Dietmar,
-> 
-> On Wed, Sep 16, 2026, Dietmar Eggemann wrote:
+Previously you were asked if the device is compatible with qcm6490. You
+responded about something completely else - that you need qcm6490. That
+was not the question if you need it or not. The question was are they
+compatible and you have entire commit msg to explain that.
 
-[...]
+Instead, describing standard Linux device driver matching in commit msg
+is redundant.
 
-> Fine by me, that reads better than open-coding the shift. Your diff
-> builds here on arm64 (topology.o and kernel/sched/), so I will fold it
-> into v4 and add the scheduler maintainers to Cc for the header move.
-> 
-> Since the diff is yours: is a Suggested-by enough, or would you rather
-> have Co-developed-by and your Signed-off-by on the patch?
+Best regards,
+Krzysztof
 
-Don't worry, I will give my 'Reviewed-By' for the final version.
