@@ -1,43 +1,43 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15D07595737;
-	Thu, 17 Sep 2026 14:04:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33A0E59573E;
+	Thu, 17 Sep 2026 14:04:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789653861; cv=none; b=lTF3+nw42OUR7d+dYr4ntNpkO9r4TiLVYYjKvh7cGIfl7A/HeGbe2LH8BOvZkvxtHTdsA4k8sAf8q4rWFNFIlfV0javBd1Xw0zsxRYzW9wMsCB2eJrdK+axyPj3tcFsuUgisHQZpOtJvq9SfegGLaZihnbOrCyeEnZEAdBvIQFc=
+	t=1789653861; cv=none; b=eI2srEvrJ/XoycqFfKlkPvfbcezxNu4Pt/rtg4IA1Iyk9hR9BLbHcmKnBbDCP0kVSrVZHyaA5uik2DgBG+pGh2x2h3tJQggt4C77r0P+7H4w33H76/2AougBxVDspWh7Y7N9uSKMYVcJBpfNkYUVA9bvWIKCBLH7VwM6hV3hNgU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1789653861; c=relaxed/simple;
-	bh=la91QlmnzQ+cMr3xbEYXMZpWQxq/64sHaIS6pJZM8PY=;
+	bh=jfYcxTTge/XmKelpU+UmxaEpjwECbZ6NBqUYAgA9V9c=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SdHTPXeWDATxTcH5gUQa3c2mxlRjsxTMXsvubWF+r6yTm+UEAI2zM/mRDCXZDKg5RPH3s7mfN+ZBF2M2BlK7Jzpbc5sn/EbecULmvqUKw7rRfAafb9+44qiisCwD+fUnMMYP46e7X800i3DwwNFsrBcF/7ewzT+J5Evj6yTNyHw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=nwwbpKnI; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=hbsW009wLceN/06Uew+85wWNXmthZHLKCOA+RaYiPRPwdbQ0dhKQZewe9A5YqlFMIyTNsiORIDHfznbfoFGgXsWqwSwRdtcwbyp+U2DWJyfz3IzHLNoTwBvCq7nAdP5q2rLRbHMZJEeEbG5KnlIY/OHxWhMpSc9M7c00xTnDin0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=WrtFawFI; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="nwwbpKnI"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="WrtFawFI"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1789653858;
-	bh=la91QlmnzQ+cMr3xbEYXMZpWQxq/64sHaIS6pJZM8PY=;
+	bh=jfYcxTTge/XmKelpU+UmxaEpjwECbZ6NBqUYAgA9V9c=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=nwwbpKnIkNnZSKCOqVZpNsy/SfJVMAcsWR9LtSQQ6KPBTN+wj+Gs7Po9qKyEHUls4
-	 nCeksrOY/U8DF/kMXZGZ5boPyX3OxVpF/TTrrIs6Xrt6C5PmA2JZUBhs5IFISiukx9
-	 8c7lxDeHO5SFiaWHsbmvXMFNtIf5mtgOai/WTVLYrQpjHzBvYhyI+NZ8ePiIqMyoc1
-	 sh5q+X23ZiEOoOqIbCxdtFgeZK02tJWUMS8/csOAa5iiIr6U2DTbjoq3IyJmoQlj8H
-	 QprVGG2EjW/EJtBizpZQOIia0KPh7P5Xu6d2KSc/n6GAEm0SM/jciSe0TCoxopn4CA
-	 208NlNcFj9y6Q==
+	b=WrtFawFIn/EhfWLxmpRthIry64McmcbFhmBPj/LpvgwnEleBbK4C5Ef5jTx1BkRO6
+	 1OwkR4Mlq5kVbrHq5w2UO53vxVjEq2fpiFAWCIPWUb+WGjX42clLVnxvnnjQexD0X7
+	 WzttJCXlfKMz8MceG2bYf+/r1MB7m9ZB3G0z7aDY9ig8Ur7adPvYemm18564c2VUAx
+	 JYUtRZ0Y3ZQSZ+iOrC8csHWXniWcCB0PTIqwNAFHxcq0DGqj5kUro7E1Yyo43qcM93
+	 fUWrLvzJF5oJZvdt68xaqx+LxVqCNS63vQdabA/0IMLSaSXCwhrRdHOia92JhQjiRp
+	 BxYRHbIgdX+Xg==
 Received: from jupiter.universe (unknown [100.64.1.62])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
 	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 2E2D417E087F;
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 3205517E09B5;
 	Thu, 17 Sep 2026 16:04:18 +0200 (CEST)
 Received: by jupiter.universe (Postfix, from userid 1000)
-	id E587748002F; Thu, 17 Sep 2026 16:04:17 +0200 (CEST)
+	id E743D480030; Thu, 17 Sep 2026 16:04:17 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Thu, 17 Sep 2026 16:04:08 +0200
-Subject: [PATCH 2/7] clk: rockchip: rk3576: add missing DFI clock branch
+Date: Thu, 17 Sep 2026 16:04:09 +0200
+Subject: [PATCH 3/7] dt-bindings: devfreq: event: rockchip,dfi: add rk3576
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,7 +46,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260917-b4-rockchip-dfi-rk3576-support-v1-2-a5752a29f7bd@collabora.com>
+Message-Id: <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
 References: <20260917-b4-rockchip-dfi-rk3576-support-v1-0-a5752a29f7bd@collabora.com>
 In-Reply-To: <20260917-b4-rockchip-dfi-rk3576-support-v1-0-a5752a29f7bd@collabora.com>
 To: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
@@ -63,57 +63,80 @@ Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  kernel@collabora.com, Sebastian Reichel <sebastian.reichel@collabora.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1647;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1828;
  i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=jv2cP7PAalymZeRc3au2vjT1JUKCsZkY6Uv6EoH/o0k=;
- b=owJ4nAFtApL9kA0DAAoB2O7X88g7+poByyZiAGqr82FktkXT94orgup/c43WCmAIcDc8ndErt
- 0ZvdhOKI0xWSIkCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJqq/NhAAoJENju1/PI
- O/qabCAP+QEGU1rHYDnoXLzXs4Vmy2mOsll3+fdbfjsyWAvZuXSwpMrwTvGit7mvx0qp1djpQ5a
- OwmYWZ/ZwbW0o2ij1+DV4LjeMA8vlsoxaf+4uqau2LAZ1JHjvCnWyBxrgfCYNHPnbGPwnY8Nm88
- 0pK7lW0F/Wv3MUbLgE1JuG30wMZOLhKGpNVVa8UNpJbYYFLyNBB5OXJl+DTXRTxtU+jrMzxWYgL
- 9XJJY01rwoQQoSVd3Vk5S7jNGDl8cLOoVIBtTWeuNRy1VLdcSXzGFbLKTf/wzZvI45q1xiX8a3+
- SNMJnQSLqlnZ18OoA2HZbm4/lIJwgPkAr6A3GOflsEAWH2jg2zW+J1Ivo+EzhAX+3xzmtrQhyhm
- BY7wopdOZtxbPoqn5XUgF+inr+JiUwKetTYgeO1D2vnc/WPIspmAAxAbHmhh5uIOCSuwvWiF3Kt
- BkvT4skj69q6+o/FGU4hobixqZqClNtF0A6Kac091VJL/+iQy7z64luLYbjW2C3KUTv7hsxDJjw
- YSobTPmJ2tzqu3KdUgcezlD3TIPJerdhW6T7iKpw5qIL2QuDhv4yPwbf2yDurB5HLJAtnqPKkXM
- umpiN3F2uhSul3ZNIvu1rfndZlJFUyvlu4WbxHb80KN8Jtw+wZbviiPrKCPI4lvYHGHW5VQKuK+
- u0JmBi4egr2/DOeb2qtQy6Q==
+ bh=gg15H4xn9mrUfnzUgOUkLrMFrsLYyUUofwQOjEIeUro=;
+ b=owJ4nAFtApL9kA0DAAoB2O7X88g7+poByyZiAGqr82HzXT4+aqQkl8zg1fEYbZo9h3mwzv/Vb
+ vMLy3g/aOV9rIkCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJqq/NhAAoJENju1/PI
+ O/qanx8P/jFUMsYVr30zewv03SLoEdGbgd5WIVqWBI8bqMF2KCZLMBGff8SL3Vn1mBZ+vtXeujT
+ ALRNU0DGLAOzsYjmuEPqhEIS+xl2+mAVBdH3qZSLlMEz8cK/+jtB1ypszZnlN7iLdc99c/U3AB1
+ /dvUa/4cPg3m9mE/ZU/Bxp4m14zgu+kSUh2bQwjNuY+iRu0ItWd4CdOnKAmhCi8/KLJElY9LR/t
+ EKUcK37jicRB0R9rIEipYKuNcguIsElXH7I1axKEvLIA/3C1/LtzA3OB/0SaxrKF1sUE9qYuEGN
+ eOyGHlXgDRJR470bgWgGvXvTDAV//KKnmsz/m66J9R+g8VpFjbhYzBIRZoKEwy3HdiVm5M/EkKg
+ WnSlL4NPcY5K78X3qTfnWcu0vi8MMlUyRDGr5oNetg2lWp4tY3mfFAbur6iOyQQTPv1RiTmKouf
+ rbEtI7rmpZKLXcJKjnt3W160j6kLpDnhHIqUc3Jb6yscALUrZQZk+Zjv6BRnI6cgVWL8ODCzUbR
+ No62VTiFT3HvcJB7OH/U06+63p4l7pkZrKM43nOVeA2S8xseNaIqOVsfszqS7pYU1q4dZirYBH5
+ J/xbzDzxcffiBMvd2nT8UyPMwc9vi1ztV7T3c8NDZfoydU4q6yfVLysL3VggjMOK6nDedohVRkL
+ RYHiBYMrIys2JbjB7vsI+SQ==
 X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
  fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 
-RK3576 DFI has one pclk for each channel's monitor. However, mainline's
-clock tree does not model this second DDRMON PCLK gate, and got away
-with it so far because they both default to ungated and there is no
-upstream RK3576 DFI driver.
+The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
+like other rockchip SoCs do. Unlike the RK3588 however, it only has two
+memory channels, so only two per-channel pclks for DFI.
 
-Add a clock gate branch for it, and remove the CLK_IGNORE_UNUSED flag
-from its sibling. In opposite to RK3588 we can add a mandatory
-requirement for a clock reference to the RK3576 DFI DT binding.
+Add a compatible for this SoC's variant, and add it to the conditionals
+at the bottom of the bindings file.
 
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/clk/rockchip/clk-rk3576.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ .../bindings/devfreq/event/rockchip,dfi.yaml       | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/drivers/clk/rockchip/clk-rk3576.c b/drivers/clk/rockchip/clk-rk3576.c
-index 2cdd667f4004..0c94e9db81c1 100644
---- a/drivers/clk/rockchip/clk-rk3576.c
-+++ b/drivers/clk/rockchip/clk-rk3576.c
-@@ -883,8 +883,10 @@ static struct rockchip_clk_branch rk3576_clk_branches[] __initdata = {
- 	COMPOSITE(PCLK_DDR_ROOT, "pclk_ddr_root", gpll_cpll_24m_p, CLK_IS_CRITICAL,
- 			RK3576_CLKSEL_CON(76), 5, 2, MFLAGS, 0, 5, DFLAGS,
- 			RK3576_CLKGATE_CON(21), 0, GFLAGS),
--	GATE(PCLK_DDR_MON_CH0, "pclk_ddr_mon_ch0", "pclk_ddr_root", CLK_IGNORE_UNUSED,
-+	GATE(PCLK_DDR_MON_CH0, "pclk_ddr_mon_ch0", "pclk_ddr_root", 0,
- 			RK3576_CLKGATE_CON(21), 1, GFLAGS),
-+	GATE(PCLK_DDR_MON_CH1, "pclk_ddr_mon_ch1", "pclk_ddr_root", 0,
-+			RK3576_CLKGATE_CON(21), 14, GFLAGS),
- 	COMPOSITE(HCLK_DDR_ROOT, "hclk_ddr_root", gpll_cpll_p, CLK_IGNORE_UNUSED,
- 			RK3576_CLKSEL_CON(77), 5, 1, MFLAGS, 0, 5, DFLAGS,
- 			RK3576_CLKGATE_CON(22), 11, GFLAGS),
+diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+index d6e06a9bea19..964f1827496a 100644
+--- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
++++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+@@ -14,6 +14,7 @@ properties:
+     enum:
+       - rockchip,rk3399-dfi
+       - rockchip,rk3568-dfi
++      - rockchip,rk3576-dfi
+       - rockchip,rk3588-dfi
+ 
+   clocks:
+@@ -68,6 +69,28 @@ allOf:
+         - clocks
+         - clock-names
+ 
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - rockchip,rk3576-dfi
++    then:
++      properties:
++        clocks:
++          items:
++            - description:
++                clock driving the DDR monitoring logic for memory channel 0
++            - description:
++                clock driving the DDR monitoring logic for memory channel 1
++        clock-names:
++          items:
++            - const: pclk_ddr_mon_ch0
++            - const: pclk_ddr_mon_ch1
++      required:
++        - clocks
++        - clock-names
++
+   - if:
+       properties:
+         compatible:
 
 -- 
 2.53.0
