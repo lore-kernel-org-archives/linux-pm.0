@@ -1,104 +1,160 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD1DE3CDBD3;
-	Thu, 17 Sep 2026 19:04:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FB6249D5AB
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 19:07:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789671849; cv=none; b=sptVEhH8OcU8FOUIaMFec1obKY2dlQAw7r+KZ2PZPcrSpjVpBZWD6dBLfryt4zFjiZ1VznwLZCYWO6YaMA8/JnLvb83MBp5LK7wVGky2bqEQ6JnxTkj11osgG02DgAYHdxBSh8awopvikH+X6WBpubL74zI3nPQ3cV0H1CFIB94=
+	t=1789672023; cv=none; b=HZL6FniFByiHAfWjlOBgFCGjPKgw5bM9FEhe5d7maC26TvpxbkaR+VR5LDhJZs473BN/pIjTJUCIF2s/DQezBYpaLCYDVRLU44djiPaDREofBPMoB8DI0K44kquOQ0ElvWNri0b9hydON5k/zjg7hTazc0tIXxaYchou9U2RbCE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789671849; c=relaxed/simple;
-	bh=tCosBkLYGEEsi74OqSOrc66diUULUxKBq3+Wh50tyjM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CB2CvTaSAO/x5LrFDjnH1sopLgKM3GmFLreCIBTw2jViAsSBGXFODUq8LCyy+2CjiSxt/UoSOd3us1s3VU7j5U7570YepuTATK9Yr6kVQFnZP2IpRVov72gjtM6u138eXkeOQGt9CQ885Rz++u1uMrU4DlNtbbyo1AZNwKQi8/4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=k48NjLkH; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789672023; c=relaxed/simple;
+	bh=3MNB59KuRrONZ1G4/oINcksRsjMdTDrarM9Aa+nyIaY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=tuleCaxBQsD0vYDfFYuCMYfiqsQSfyy80RjWKKp2X+uCBK1boRBg+r3vR3OevaYhzpFsewUGbxXHPJOo3merdb3gy1GuCNBn9zAF2UiccpFCDZv4xGJudYTJPJMzs3nTnDdEElP8C9k8EFZBUDyI0kzdU8hhQcvj4AZFUo9vABE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KSwDAPK3; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="k48NjLkH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51E801F000FF;
-	Thu, 17 Sep 2026 19:04:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KSwDAPK3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF1D11F00893
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 19:07:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789671847;
-	bh=gzQp6LW1nXvwBEwBhGNPe+tNOASC0dgPxppHtMaIJkM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=k48NjLkHVhtOalPBGpW0mEiCAI8LrDMLOLiZZXWRnf6WbeYW47QCVsuZaVq3BD6PS
-	 XUj//7Wh+NEwRa44zMB7p+gOfG4tMr0K9Fi+m735eHJ7v8M139VmX1Ri7YIcA5LtVY
-	 ZryHyhQrvuiNZ9NBiopiVKxfWj4eRtwA6+AkAWaHss8V28snEBfZgiA9uQUpOQzN6+
-	 s+JLhtI68GSF75d1C8CD9Hr3S8EOcR+AZuNZPLVqFyJDUEdOmja5kkOxJb6PrtMtNZ
-	 oWIryW6xoOLDS0OV5YGZqloxJtvl0jkE/QfLDaQQM5e6sEcdSvaYVuoEHIJWaEiQwD
-	 oecVv3ZxWaUbA==
-Date: Thu, 17 Sep 2026 14:04:06 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Douglas Anderson <dianders@chromium.org>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Chen-Yu Tsai <wens@kernel.org>, devicetree@vger.kernel.org,
-	Conor Dooley <conor+dt@kernel.org>, Suman Anna <s-anna@ti.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Michal Simek <michal.simek@amd.com>,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	linux-tegra@vger.kernel.org, Konrad Dybcio <konradybcio@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org,
-	Lee Jones <lee@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>,
-	linux-sunxi@lists.linux.dev,
-	Thierry Reding <thierry.reding@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
-	Jernej Skrabec <jernej.skrabec@gmail.com>
-Subject: Re: [PATCH v2] dt-bindings: mailbox: Delete old 'mailbox.txt'
- bindings file
-Message-ID: <178967102478.3104808.16225171904149470188.robh@kernel.org>
-References: <20260814124603.v2.1.I8b3ff71c528133e7d6f81fe926fa39e6451d63fd@changeid>
+	s=k20260515; t=1789672021;
+	bh=Bm3bnAq+YUUR/05QEONsbFO18RrWasKhSRqIzvk/6E4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=KSwDAPK3JMAyE7T3tN1ElaJAZu+35WJEs3GNisrTnhqIIgham/GjyPVadpJ/lpf1G
+	 LY/Gce6awif0Yz0lgAfEd/uHnNJ4N3nXGozLh470yrK1UHNMs18Yx3Gt4lbLtJXcag
+	 m/5wUROx2UrH6DRpNEECU7iIXksqIg5uOw1K0bF/C/nCETIRiL4P4oJ7fa2nOg3oc7
+	 qeXCDXfPdKcp8ZV9MxvEFZUgYNx7rmEVgjCkfc9WGdOpeFvwZxt7N3OZiTt4pWld6y
+	 ZJXDf/jzmFfY7bm4EeYTOvttBtDzHNJkMWeMqXnxfTg3kpbUTqLEPGSRgwDs52CQAL
+	 I8t3hRgcu8zPg==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8b402f4e3so1198785e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 12:07:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxFZ7mwMSeKCyMO48ZW8otIOxq8ssfgH3keUl3ug90HRLfK4Ujyd8YKDgQV790hPC+osYi5gaAQcQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++ngbKyvDPIhu6brFZDJxQ1XY9v99bviLFDH6G2UAqncVGgPwreg
+	pA88kbSbA09JOrGDQ4tO3FEizTZe/hjfOUxnpStuZecKfd+SEHTI0+e0pIpoiIefxRLWrdwaFSr
+	VKnK3Xei98PuaKkHqYJnYQluK3me7UmQ=
+X-Received: by 2002:a05:6512:640b:b0:5b6:1603:7c8b with SMTP id
+ 2adb3069b0e04-5b8b6655c9cmr3287892e87.18.1789672020252; Thu, 17 Sep 2026
+ 12:07:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260814124603.v2.1.I8b3ff71c528133e7d6f81fe926fa39e6451d63fd@changeid>
+References: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
+ <20260908-schedutil-boost-frequency-handling-v2-1-25312a713699@oss.qualcomm.com>
+In-Reply-To: <20260908-schedutil-boost-frequency-handling-v2-1-25312a713699@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 17 Sep 2026 21:05:37 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jbYHcEWqqO3YSbwyeHBLkYCFn+_nQ9Ktt3yYPPcNH6LQ@mail.gmail.com>
+X-Gm-Features: AcwNN1VasRWS8HiJHGDy74pWeVE-itua9NNF64RwExFD0rkuQM7IztWuAAwbQd8
+Message-ID: <CAJZ5v0jbYHcEWqqO3YSbwyeHBLkYCFn+_nQ9Ktt3yYPPcNH6LQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] arch_topology: seed capacity_freq_ref with
+ boost-aware max freq
+To: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On Fri, 14 Aug 2026 12:46:12 -0700, Douglas Anderson wrote:
-> As per mailing-list discussions [1] [2] [3], we want to delete the
-> following old file from the device-tree bindings that live in the
-> Linux kernel git tree:
-> * Documentation/devicetree/bindings/mailbox/mailbox.txt
-> 
-> The old .txt file did have some descriptive text about what some of
-> the properties meant. Those have been added to the dt-schema
-> repository in a pull request [4].
-> 
-> Also remove dangling references to `mailbox.txt` across all remaining
-> device-tree binding documentation files.
-> 
-> Link: https://lore.kernel.org/r/20260722140214.GA548057-robh@kernel.org [1]
-> Link: https://lore.kernel.org/r/dc7a2041-50a4-482e-9930-566bb3fd1e72@kernel.org [2]
-> Link: https://lore.kernel.org/r/CAL_JsqKVjQ2m-dzMUENQry-f_YE9QrYSOKoH9CPj1gjj8XkPRA@mail.gmail.com [3]
-> Link: https://github.com/devicetree-org/dt-schema/pull/202 [4]
-> Cc: Sudeep Holla <sudeep.holla@kernel.org>
-> Cc: Jassi Brar <jassisinghbrar@gmail.com>
-> Cc: Lee Jones <lee@kernel.org>
-> Signed-off-by: Douglas Anderson <dianders@chromium.org>
+On Tue, Sep 8, 2026 at 10:31=E2=80=AFAM Ananthu C V <ananthu.cv@oss.qualcom=
+m.com> wrote:
+>
+> capacity_freq_ref, the per-CPU frequency-invariance reference used by
+> schedutil, is seeded from policy->cpuinfo.max_freq at policy creation.
+> If boost frequencies are filtered out of the frequency table because
+> boost isn't yet enabled at boot, max_freq only reflects the non-boost
+> ceiling, so capacity_freq_ref never learns about boost frequencies for
+> the policy's lifetime. Enabling boost later raises policy->max, but
+> capacity_freq_ref stays stale, leaving schedutil unable to scale
+> utilization or target a frequency above the non-boost maximum.
+>
+> Track the highest frequency in the table regardless of boost state
+> (max_table_freq) and seed capacity_freq_ref with max(cpuinfo.max_freq,
+> max_table_freq), so the invariance reference is boost-aware from boot
+> regardless of whether boost is currently enabled. Runtime enforcement,
+> still handled by policy->max, is unaffected.
+>
+> Suggested-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
 > ---
-> - v1: https://lore.kernel.org/r/20260804133801.1.I8b3ff71c528133e7d6f81fe926fa39e6451d63fd@changeid
-> 
-> Changes in v2:
-> - Remove dangling mailbox.txt references as per Sashiko.
-> 
->  .../firmware/nvidia,tegra186-bpmp.yaml        |  6 +-
->  .../mailbox/allwinner,sun6i-a31-msgbox.yaml   |  3 -
->  .../bindings/mailbox/altera-mailbox.txt       | 12 ++--
->  .../mailbox/hisilicon,hi3660-mailbox.txt      |  2 +-
->  .../mailbox/hisilicon,hi6220-mailbox.txt      |  2 +-
->  .../devicetree/bindings/mailbox/mailbox.txt   | 60 -------------------
->  .../bindings/mailbox/ti,omap-mailbox.yaml     |  3 +-
->  .../power/reset/xlnx,zynqmp-power.yaml        |  9 +--
->  .../bindings/soc/qcom/qcom,aoss-qmp.yaml      |  2 +-
->  9 files changed, 15 insertions(+), 84 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/mailbox/mailbox.txt
-> 
+>  drivers/base/arch_topology.c | 3 ++-
+>  drivers/cpufreq/freq_table.c | 6 ++++++
+>  include/linux/cpufreq.h      | 1 +
+>  3 files changed, 9 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> index 8c5e47c28d9a..da94f77441da 100644
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -404,7 +404,8 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+>         cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cpus=
+);
+>
+>         for_each_cpu(cpu, policy->related_cpus) {
+> -               per_cpu(capacity_freq_ref, cpu) =3D policy->cpuinfo.max_f=
+req;
+> +               per_cpu(capacity_freq_ref, cpu) =3D max(policy->cpuinfo.m=
+ax_freq,
+> +                                                     policy->cpuinfo.max=
+_table_freq);
 
-Applied, thanks!
+So isn't capacity_freq_ref supposed to correspond to the CPU capacity
+returned by arch_scale_cpu_capacity()?
 
+If that's the case and boost was disabled when the CPU capacity was
+computed, how can cpuinfo.max_table_freq correspond to that capacity?
+
+>                 freq_inv_set_max_ratio(cpu,
+>                                        per_cpu(capacity_freq_ref, cpu) * =
+HZ_PER_KHZ);
+>         }
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index ea994647abc8..4984142dc08a 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -33,11 +33,15 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_po=
+licy *policy)
+>         struct cpufreq_frequency_table *pos, *table =3D policy->freq_tabl=
+e;
+>         unsigned int min_freq =3D ~0;
+>         unsigned int max_freq =3D 0;
+> +       unsigned int max_table_freq =3D 0;
+>         unsigned int freq, i;
+>
+>         cpufreq_for_each_valid_entry_idx(pos, table, i) {
+>                 freq =3D pos->frequency;
+>
+> +               if (freq > max_table_freq)
+> +                       max_table_freq =3D freq;
+> +
+>                 if ((!cpufreq_boost_enabled() || !policy->boost_enabled)
+>                     && (pos->flags & CPUFREQ_BOOST_FREQ))
+>                         continue;
+> @@ -57,6 +61,8 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_poli=
+cy *policy)
+>         if (policy->cpuinfo.max_freq < max_freq)
+>                 policy->cpuinfo.max_freq =3D max_freq;
+>
+> +       policy->cpuinfo.max_table_freq =3D max_table_freq;
+> +
+>         if (min_freq =3D=3D ~0)
+>                 return -EINVAL;
+>         else
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 35ce665edfd8..3f3b1380251a 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -45,6 +45,7 @@ enum cpufreq_table_sorting {
+>  struct cpufreq_cpuinfo {
+>         unsigned int            max_freq;
+>         unsigned int            min_freq;
+> +       unsigned int            max_table_freq; /* Highest valid frequenc=
+y in the table */
+>
+>         /* in 10^(-9) s =3D nanoseconds */
+>         unsigned int            transition_latency;
+>
+> --
