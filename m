@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF2C03EB7F8;
-	Thu, 17 Sep 2026 08:09:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C29C84E50AB;
+	Thu, 17 Sep 2026 08:11:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789632572; cv=none; b=CbeFRdTDEFuYVpLoxJ6Zxo1yc7sC6fVeVfBUFCymiohVzkfajhm1brwruewqmqJQiyNlAuWkGz4m7r0NUzNPXsOmHapGSIZueHk91O0SrJeREHcd2hOw6v4febREJ20IPabL4dDF+xWHhaVt9NyLqjeMzTGkOw6MYyD7vIJdtM8=
+	t=1789632701; cv=none; b=noKBYaJK0U0zyMYlU4vGPBGXnDp3cXBvqjNACmfaRLeV2oa+c0Hz1Bd0GSS4zr2cfd2wsyCdRPd/45dce2O6R2Go+T3P+nBqFs3IFcG62BjVtVXx6JZTJ/txjfkcFUPkoY24Ik1eHoDbOWgooPSQpv+YldNlX5TRR8BFFcXhytc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789632572; c=relaxed/simple;
-	bh=hnzo5OuwdGzMqY+suA7RQ6qymDPictDenfcvZJQb3FQ=;
+	s=arc-20240116; t=1789632701; c=relaxed/simple;
+	bh=iWtD4KtSIinvyAz/cSGAyfF+qqhETmFIb9XFQ8CJULU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FNyMHgpsDFtCKhh+GcBgLFWD0ag6qDO8PpsLBBLoQu0ii2EdZSPkQPVYvbAX4sYZ4ZPJ/UGBOMBClB25ldQsTipy0O+a/2vknXzKbuovS9Ru/FfVIikrTVqjLkQEQK0o+DmNM8CTwxRil14axFsomSM1wIiT8kuBkUuuK27yA5M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lTSdDuI9; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=uT6MSEFD/fh3IrjdSNgdkHi5jLjkm/7IsSbz23nVqj1UKCNhf4rP2vyeJcha3AZpXdzDp+CqLe//D/XE2qS0RDdZANDXVa1IEy3iCkIJ3hyhhYYwOkA7JiAHRLcd9pgcO8mTsb0XUDZyC7BslzmW2Z1EwHHVOaats3SGQIsmJ8U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZOpm035e; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lTSdDuI9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F383A1F000FF;
-	Thu, 17 Sep 2026 08:09:30 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZOpm035e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40EDF1F000FF;
+	Thu, 17 Sep 2026 08:11:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789632571;
-	bh=sbes0882iMbhpDutz94uKHFUZV6ExaVjEgbOPnw20JM=;
+	s=k20260515; t=1789632699;
+	bh=xKFlmy94vGms3q+8yoOryQB2R7lIFvrQJ2IENZn4QY8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=lTSdDuI9KbA/YNynTcioXRA66l6F0PDbH0/e9a+5mYdfdy85aJM0vAdPrZwQI1B+N
-	 No+jizLoau/ThooMkRqmLDZm/Jk4/5GY4z6sDi6PcuI1jOTk0jocBvaUE/A9+8V5j8
-	 RzLKzTnjN3z9g4rZ+VrcaEpbehMCgIb2c0o709WGjCRfzjy/TtIz+FAGCLG17WhKvf
-	 OMg0oUfnK+qFnK/3sHCRgIdoTI6Xkxw0jNrv42dp7y6Kwuofym0kkKRm3IivPd6UxI
-	 HWwIiFBxEp1fu2Z8Dlm7hvL0UTkGQtYpmnob0jJC6JmozrNWWGuLWPl3i5+0MDMPxQ
-	 +Y6PYW3fD2vTw==
-Date: Thu, 17 Sep 2026 10:09:28 +0200
+	b=ZOpm035eWyG8a9NKUBPJ7ynlFx1LEbAVQ2UIy9fUjwMrqEDUp6500b4FdfC7TaL8K
+	 AQZeLdcJ3NT0bFXb7Ko7GnzF4jiVKJfx9RD2tf6los9vAP2HsQd3keqfdrNnS/DiQt
+	 ZWrtC56j84I6lc4YmrEbbQwCgH41ELqc/xuazy96bJ49UMuPh6Mjb28gHx3wTAg39e
+	 Gy9xOsOgECq9onHZxHzlIyh9E1H0xtCKSvYhV8nIqeCeEnXpxWCRWEYmVebfw/NPc+
+	 CnD7gDXwHTZPW+ZY3kfJo7JBm8DU38Rd0PvsdGlbEiNGYTvjL97rUmH1/ExtsDdqUF
+	 fe9Yevo7ibzKg==
+Date: Thu, 17 Sep 2026 10:11:36 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Linus Walleij <linusw@kernel.org>
 Cc: Rob Herring <robh@kernel.org>, 
@@ -37,10 +37,11 @@ Cc: Rob Herring <robh@kernel.org>,
 	Simona Vetter <simona@ffwll.ch>, Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
 	Lee Jones <lee@kernel.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
 	linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, dmaengine@vger.kernel.org
-Subject: Re: [PATCH v2 02/20] dt-bindings: arm: ux500: Drop NR_DOMAINS
-Message-ID: <20260917-arrogant-onyx-weasel-e59f06@quoll>
+Subject: Re: [PATCH v2 03/20] dt-bindings: arm: Add the actual power domains
+ on U8500
+Message-ID: <20260917-humorous-galago-of-tornado-e4ade5@quoll>
 References: <20260914-ux500-power-domains-v7-1-v2-0-9d0c17e1f816@kernel.org>
- <20260914-ux500-power-domains-v7-1-v2-2-9d0c17e1f816@kernel.org>
+ <20260914-ux500-power-domains-v7-1-v2-3-9d0c17e1f816@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -49,18 +50,21 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260914-ux500-power-domains-v7-1-v2-2-9d0c17e1f816@kernel.org>
+In-Reply-To: <20260914-ux500-power-domains-v7-1-v2-3-9d0c17e1f816@kernel.org>
 
-On Mon, Sep 14, 2026 at 01:54:30PM +0200, Linus Walleij wrote:
-> Keep the internal Ux500 PM domain count local to the only driver
-> that uses it.
+On Mon, Sep 14, 2026 at 01:54:31PM +0200, Linus Walleij wrote:
+> This file has been left in an unfinished state just defining
+> the root power domain for the U8500 SoC. Fix it up by adding
+> the actual existing power domains in this SoC.
 > 
-> Do not expose this implementation detail through the DT binding header.
+> The PRCMU code and old regulator driver is mentioning some
+> *_RET domains, this means "retention" and is a state in the
+> domain and not a domain of its own.
 > 
-> Assisted-by: LLM
-> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-I would say Suggested-by, because it is not a bug, just preference.
+> Signed-off-by: Linus Walleij <linusw@kernel.org>
+> ---
+>  include/dt-bindings/arm/ux500_pm_domains.h | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
 
 Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
