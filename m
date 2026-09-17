@@ -1,114 +1,124 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D67E4FE2E0
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 18:11:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2016D547071;
+	Thu, 17 Sep 2026 18:12:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789668719; cv=none; b=KsKjeZHKtGKfzg0jQ5WMZAC/ttRJ+fBbBgo7RM7zgDiiF6IQlxdR7yNERmGGMp8ax0X35YsyvUbptWuK1RRjQf830YkrswDAFtt8Wfe8R6ra1mNXSoSFTLG3CQITkeE2sND1Oh/9pJCAXiKlBFKBaqigtA+irYRtrymSZ7/3C3s=
+	t=1789668740; cv=none; b=VVgQ46/uIdvyWbtvOFS8xApO7sQlifJ8tj6LK6Cv/fNETTn7WFrtzYqUSWqHs7kBdV06CYe9EQLnCTift2d5MyZgcKHr82+JRKK3kEuAlzgOyNj7UYc/fkh01yKqrWgY++PweibwiNUMMrGpcBG/9yroJ/epwpFcr9bTWU61P8A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789668719; c=relaxed/simple;
-	bh=JdBVjgiLF+LfTWyDPjdZ0Ler+mATxkgx/NrxbmnfWcA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Dlvkfz7OnP22W3omMSD9s/YhEi3RUl1+W1kxORJpyF3MZJweJAfxdMpMkptk61FskjlHhsdGrDX9D8BgbQbku8jgDDl+zpfJ7EQTnwwz4jCLU0Rz8CNGCu6iZeLV8dWctcOFk7YNAZHUQA9Hj9f8+JVrc24ZyMuEhmQg5FfBMBw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y+G7xJwL; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789668740; c=relaxed/simple;
+	bh=JRotaeYUDA8OKw6fWgN1iioU01GNC1YxBAHOCuSkCcg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=A+WiMdyH09KRiQQK8rbppLwHH3B0RkDemfNQq32+JBRJUyTrpCtrOjhay/mMk2mDeHUdSPJIDnls0FE0EQ+s0MXc+8Jk64CaVM5AEPw2JdlcJElsbQLa6J8ii7Kxqo2eB08WhdqOEcOmPAPhesKrvdsyaJx+2a0x2bPdLbDh43E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=mCMXQQCu; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y+G7xJwL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8F9B1F008A2
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 18:11:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789668717;
-	bh=EbP28uDo6ifWQjSsYPtF0OSTEKqjklYhZOU78M+KyY0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Y+G7xJwLW1LYbtGwg+BSMto+sa7T13bwFfVcO/nSzbV+X/a2kXwoS66ZDqCSffJlR
-	 fIVIrynIDz0Q18sK/+hyeVKqYGiSfwc9jQpuFlvQqaNG+kyqWHZJ6whX9P1yb5JaVG
-	 /a6fl/9ndJFmJvUbun1k4fhuUxWx57tHAx1/AenPiyO50oAbQbDvcacqHfnLbXLOde
-	 oBCz4NZOxSslkLNGJT2ENIMATMGX7xQ0qSH39X5eea9dJT6SXQIF+SsLWXs8GEMz+g
-	 PzdqFPpqQZ7wHh9x66toIkw/GAuy8Nd96zf8WYs1t2SCqZSR7jLzSaVMoPpO4qgV9/
-	 hi9wWVLSWSXEQ==
-Received: by mail-lr2-f23.google.com with SMTP id 38308e7fff4ca-3a306a4f735so10020561fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 11:11:57 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxJqPYwzElJCMNMdDTgGmyoEDI+vjoC+3nIyGPLSlUmcpsDurs7zAiLf28WB5IPvcfR2LXm+rptGw==@vger.kernel.org
-X-Gm-Message-State: AFuF++ktz6TIxIch8dRaEiC06LZDXtQKsqm5eP6LTdqRDhGZ8kj0dE6S
-	edDME/nF3rhoyGdzs4VRiByq6ycDifCkocZNNvbqrhlBX/bMz5u8+OMHobYDvVTv4jxxGSHURLC
-	aybntKUPtYFBPS3338dO8xSIOnImZCgs=
-X-Received: by 2002:a2e:be86:0:b0:3a3:27f6:69b9 with SMTP id
- 38308e7fff4ca-3a5dc99e99fmr14666301fa.11.1789668716222; Thu, 17 Sep 2026
- 11:11:56 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="mCMXQQCu"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A6D8D1596;
+	Thu, 17 Sep 2026 11:12:13 -0700 (PDT)
+Received: from [10.57.7.135] (unknown [10.57.7.135])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EB6E23F86F;
+	Thu, 17 Sep 2026 11:12:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1789668737; bh=JRotaeYUDA8OKw6fWgN1iioU01GNC1YxBAHOCuSkCcg=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=mCMXQQCuXWXGh8CqhS0W7cwhE2pXGdXIab/vrQATUL3/XaFJNt8Xf3XcEukOlMYCK
+	 ugh3zQSksUsKim10k1OD4vF/PrNn0SbUDLvpZ5GQyazWmyouKJGKG5+oDmjP89b8Rg
+	 7/ZY9aaQUsSH+CtdxVNQuZgcibuXfkywZeR0hrNM=
+Message-ID: <19b00695-9f99-4d21-9592-13fad31f85e7@arm.com>
+Date: Thu, 17 Sep 2026 20:12:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com>
- <20260908-schedutil-boost-frequency-handling-v2-1-25312a713699@oss.qualcomm.com>
- <CAKfTPtCR8SnQwpxzE-=WXenhTU=Hv5hrf7Vz22tMipX7uP_xxA@mail.gmail.com>
-In-Reply-To: <CAKfTPtCR8SnQwpxzE-=WXenhTU=Hv5hrf7Vz22tMipX7uP_xxA@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 17 Sep 2026 20:10:32 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hkgMK=4Vksm2wwBV9cENRPGELVifcCZgaGD33=7CZTKg@mail.gmail.com>
-X-Gm-Features: AcwNN1XspAB1t0lbFuIcMtXYYLIlMwemR7Tvz3-dS82Fe1yBm31AMh89Igc0VZE
-Message-ID: <CAJZ5v0hkgMK=4Vksm2wwBV9cENRPGELVifcCZgaGD33=7CZTKg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] arch_topology: seed capacity_freq_ref with
- boost-aware max freq
-To: Vincent Guittot <vincent.guittot@linaro.org>, Ananthu C V <ananthu.cv@oss.qualcomm.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/6] mm/vmalloc: make set_area_direct_map HUGE_VMAP
+ friendly
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: =?UTF-8?Q?Adrian_Barna=C5=9B?= <abarnas@google.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexander Gordeev
+ <agordeev@linux.ibm.com>, Alexandre Ghiti <alex@ghiti.fr>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Brendan Jackman <brendan.jackman@linux.dev>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@kernel.org>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>, Sven Schnelle <svens@linux.ibm.com>,
+ Thomas Gleixner <tglx@kernel.org>, Uladzislau Rezki <urezki@gmail.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>,
+ Will Deacon <will@kernel.org>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-pm@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ loongarch@lists.linux.dev
+References: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
+ <20260903-execmem-set-vm-perms-v0-2-v3-4-949b64a9f755@kernel.org>
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+Content-Language: en-GB
+In-Reply-To: <20260903-execmem-set-vm-perms-v0-2-v3-4-949b64a9f755@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 15, 2026 at 9:58=E2=80=AFAM Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
+On 03/09/2026 11:28, Mike Rapoport (Microsoft) wrote:
+> set_area_direct_map() always updates direct map alias permissions in
+> single page increments.
 >
-> On Tue, 8 Sept 2026 at 10:31, Ananthu C V <ananthu.cv@oss.qualcomm.com> w=
-rote:
-> >
-> > capacity_freq_ref, the per-CPU frequency-invariance reference used by
-> > schedutil, is seeded from policy->cpuinfo.max_freq at policy creation.
-> > If boost frequencies are filtered out of the frequency table because
-> > boost isn't yet enabled at boot, max_freq only reflects the non-boost
-> > ceiling, so capacity_freq_ref never learns about boost frequencies for
-> > the policy's lifetime. Enabling boost later raises policy->max, but
-> > capacity_freq_ref stays stale, leaving schedutil unable to scale
-> > utilization or target a frequency above the non-boost maximum.
-> >
-> > Track the highest frequency in the table regardless of boost state
-> > (max_table_freq) and seed capacity_freq_ref with max(cpuinfo.max_freq,
-> > max_table_freq), so the invariance reference is boost-aware from boot
-> > regardless of whether boost is currently enabled. Runtime enforcement,
-> > still handled by policy->max, is unaffected.
-> >
-> > Suggested-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-> > ---
-> >  drivers/base/arch_topology.c | 3 ++-
-> >  drivers/cpufreq/freq_table.c | 6 ++++++
-> >  include/linux/cpufreq.h      | 1 +
-> >  3 files changed, 9 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.=
-c
-> > index 8c5e47c28d9a..da94f77441da 100644
-> > --- a/drivers/base/arch_topology.c
-> > +++ b/drivers/base/arch_topology.c
-> > @@ -404,7 +404,8 @@ init_cpu_capacity_callback(struct notifier_block *n=
-b,
-> >         cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cp=
-us);
-> >
-> >         for_each_cpu(cpu, policy->related_cpus) {
-> > -               per_cpu(capacity_freq_ref, cpu) =3D policy->cpuinfo.max=
-_freq;
-> > +               per_cpu(capacity_freq_ref, cpu) =3D max(policy->cpuinfo=
-.max_freq,
-> > +                                                     policy->cpuinfo.m=
-ax_table_freq);
+> For HUGE_VMAP areas it's suboptimal. Not only the loop in
+> set_area_direct_map() needlessly has more iterations (e.g times 512 on
+> x86), but it also causes fragmentation of the direct map that could be
+> avoided for the HUGE_VMAP areas populated with large pages.
 >
-> I will let cpufreq maintainer comment about the need for a
-> policy->cpuinfo.max_table_freq field or not
+> All pages in an area are always of the same order: either same-order
+> large pages when VM_ALLOW_HUGE_VMAP is set and all huge pages were
+> successfully allocated, or order-0 page when VM_ALLOW_HUGE_VMAP is
+> cleared or when huge pages allocation fails and fallback path is taken.
+>
+> Instead of updating the direct map permissions for every order-0 page in
+> an area, use the area's page_order as the loop increment and update the
+> large pages in one call to set_direct_map_{invalid,default}_noflush().
+>
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-Well, there are cpufreq drivers that don't use frequency tables at
-all, so I'd rather not add it.
+Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+
+> ---
+>  mm/vmalloc.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
+>
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 5506b180f5c27..6ed6c160abed7 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -3367,12 +3367,15 @@ static inline void set_area_direct_map(const struct vm_struct *area,
+>  				       int (*set_direct_map)(struct page *page,
+>  							     unsigned int nr))
+>  {
+> -	unsigned long i;
+> +	unsigned int nr = (1U << vm_area_page_order(area));
+> +
+> +	for (unsigned long i = 0; i < area->nr_pages; i += nr) {
+> +		if (page_address(area->pages[i])) {
+> +			int err = set_direct_map(area->pages[i], nr);
+>  
+> -	/* HUGE_VMALLOC passes small pages to set_direct_map */
+> -	for (i = 0; i < area->nr_pages; i++)
+> -		if (page_address(area->pages[i]))
+> -			set_direct_map(area->pages[i], 1);
+> +			WARN_ON_ONCE(err);
+> +		}
+> +	}
+>  }
+>  
+>  /*
+>
