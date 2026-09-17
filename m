@@ -1,64 +1,64 @@
 Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD43A4EC640
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 12:51:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA3EE503BD9
+	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 12:51:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789649502; cv=none; b=BaWB/z6xFKOGhMdybfnoc4jX2sYCJCtTXDCncAYAMu04CdhaEsochETpQjLZ3UVNWG+aw12O04CFQ+B1bQhZkeTl2unMdW3Z1HgBj0bxytJmuJb5lKi1x755oTn8dbnb0VfO/jjVEbYS3t8+8FsaqVl9z6OzMxo3kDtrjNqzstI=
+	t=1789649505; cv=none; b=sF0KbGPxJyFXlas2m9k5+8LmQXh6LGKSjJrI6UqWS0qi3HfHH5jaLAArIwkHckaVQNpa9Mc4F0g5MIiB+woFJOuR5xndiwqrfrCaGpEDq8fVVud3d6vqE6MDgg7z8TL0Q0B2VQLJSuV9fH7W6jIHgI2zLvhQ0hvCAe6talACg3U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789649502; c=relaxed/simple;
-	bh=EdyvNUGzZQfOCichJt6a2G8qG+Z+dq696yNIz94RDV0=;
+	s=arc-20240116; t=1789649505; c=relaxed/simple;
+	bh=9OmuWBvelp9lDciabV7GiixARHZSbiIlS541rWDiTO8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sYKzFCnLqab2AdgMoGIyF8obYFHIy3lV/nMH7k8TjX3hNwNeobNw23AY5qFNpATYgppTOgyijWpe1QaVI3xPNPMaODhSZuUDGzGh/ui4At6RCitdVgSH9Zu1rGfFiVh7+WwWxaFzLrqgh0GPGb7NZU//vnJTWcZrdTLFSDp2wys=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lxOnDJqZ; arc=none smtp.client-ip=74.125.225.140
+	 MIME-Version; b=KCJQ4COMtGR9v4zPa1y98a2CONXYbk+hc6zheuum4J7asePvSvdn2Fk/21UKDn4YRotoGXu4ksP0JhpFuL5Y/GYNgsqhuSWBGXc+mE4oOEyqUBLSFfwhyshvCNdML34wNg8IecwYtCe05/XmeSYWJAiw1QcxJ9aFpjsQRCsUGZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KKMaJNC3; arc=none smtp.client-ip=74.125.225.140
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lxOnDJqZ"
-Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49b912e2406so4225415e9.1
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 05:51:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KKMaJNC3"
+Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49ccfd61ecaso7570615e9.3
+        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 05:51:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789649484; x=1790254284; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1789649483; x=1790254283; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=SuwmjuHNbGK5+6CI3MWKqt2Q2NhbCap9Z5LDmt81Ho8=;
-        b=lxOnDJqZWJQ6rUn3e8fZTgqNyRiIZadguNCaYIQZdw9XJnL6c3wGngXimE3m9TvTqu
-         Q89Gdbail7OHKTjI5eMDDOPOVbhlzFpDQz54d5VPPx1iBWbnBOBV7c5rpu/8fkCT8tC9
-         LtWcbI0ZEw43F2kX5OXG8o/NpLDX54bCQM64nCBOMNuaFEnEDaDIzqVH7zMMho3dkGH2
-         C8npca9FkmH3cMfaYbgVW8WALx3KjHAvWhqEp9LevTtYn40ZJsTeHMt1BSkVq4newc6b
-         tw+vrSw6Aagu+urT8vYSEKZf/j9Hg+xNGBEDCrmA/qftUt8jVNOgaHG3pjykUrhhKR9Y
-         tocw==
+        bh=fsBJ75Nos/JKeIDPM3xGBy+cj9I+X9kBPg+21akMtHI=;
+        b=KKMaJNC3+nMMzTXrk0Voqe2C5agN2WlPyUOLErXVRdqxyTS9n8RgiDXAWxq7XE8VD9
+         NOGncy26u5LOKxKpXD95GzRkhW2IC4TcKFIRAR5o2DFvXmoclk5uaqfSgQJTWb7/Am74
+         uXAcgBZqb4e7mLA3HCnaW44ms1t7WMILYFLDC5I+BF9l0fJOBKzhBlRE2peHYtypaw9G
+         s1KzvZ3KDGLS/PajzTZYD9iIbs7EsQKQRh/+7MRD4xYzJyzDiPJID3O2RPmM1XzJ/7M0
+         k0+7oGYBxqCEMfLZG6s7qfFAzXLKOQymFGQ+dstAdmSk7Uzr0gJA19/oUulqW/+KlgT9
+         Eqnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789649484; x=1790254284;
+        d=1e100.net; s=20260707; t=1789649483; x=1790254283;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SuwmjuHNbGK5+6CI3MWKqt2Q2NhbCap9Z5LDmt81Ho8=;
-        b=zJwbsWjddX6FuQH0it+54pCcfVEhn5bp8+R7W9Din4oksWijx618NzsJFiG5K97o8P
-         I+JpGsXqKaKSo+xcUQoFyPvQI4wNE5fUR6xy1y+uObFYL4L+0Oa3ll8TeTuZYAxEmxqj
-         smUMYywYQ4rqc8rgOLJRg3A+364aUZKEY1dw7rMKXhTuSifpaLwpfod/Qtg6/bcT/Mrl
-         +ncaSpF1NPToZ0CXpd32GwBPoJCXCO9pvpXQbaVHVH3Ac8fFO8nSChJDO2yKJvNNR9fU
-         xb6VCvmeZ3AlUdd3IOITg1n0mM3xFGI+bzjXfrHUVnuMSLVh9MGqU1f6mHER9hvM6tXH
-         ir5g==
-X-Forwarded-Encrypted: i=1; AKwUvBx03xytKUKJ78bMZQs2COXMyashqyRu9o1scaI+fgtl2m7g+gtAQ2fcQKbd6VPDTG1x1RLX4mnD4A==@vger.kernel.org
-X-Gm-Message-State: AFuF++mWbznBjuH1YEyn7duAGncs+iWd3YQJxkQKJC1gDMU2zmcnpJGB
-	y1r/2x13lP7tCJqKTflW8d/wa8fF4f6Y6oybFpGu9xsnd7Tj2OSDzgMh
-X-Gm-Gg: AYBFou0w6ycwV3YmQuufaSOVsBt9aqgfCyn65vRIO/VI/56wqnOkAEGmQN2Kolwd99y
-	CR3boofjjNvwak+Cq/QQIgx3nElhpYhorwnKKM87iGOmABQ5JpWZuiXKGAO7CUwXZK8DisZWanD
-	7azvMpGCEePeEp1pYhqrpodv7YbxbUOvdn3mQI/SQYTKMByw9FuKfwu3fyFfJoQ3BsiOp6t+j3z
-	CznImbuA0EgyhaLOyhlvHilyOcvs0s+zOrFTTi2WTp6OFc32FvfZ+sJ4lk1nDEwaw3mzCjvG6kL
-	1iheJKI2efDm8w+p6hgiH0tXET4/vmNWmZ3CU158MkecE563ksmn3rPkA9N4saljaTjCEpByxpK
-	30XvO65v9mTF7u+GIaPLOARCFTtyztF4dDqv4NWTXMOu/fwzENfjtmzxWZY++lut1uABlAEQ+/C
-	PDArvAJfLWY+eIeSjbHOViHvzRKpjcY2XnCJ42+4j+2BtKUT94q4tyyBZ75DAffqAj+XWU6pUen
-	kr663H6
-X-Received: by 2002:a05:600d:4442:10b0:49e:715d:95ca with SMTP id 5b1f17b1804b1-49fbd1e4f0amr32449375e9.13.1789649484234;
-        Thu, 17 Sep 2026 05:51:24 -0700 (PDT)
-Received: from localhost.localdomain ([94.252.75.113])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49fbd204d89sm86555015e9.3.2026.09.17.05.51.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        bh=fsBJ75Nos/JKeIDPM3xGBy+cj9I+X9kBPg+21akMtHI=;
+        b=Ug89PYiv/R2O5wNkQD036yKjJSSiSGzXRos2advJr2jGcV+RgQVUhkzX5R4icoxlEH
+         dU1zuKJ72rJVZLI+TEdSH/7lrk2LfB7FcN33Jur9nes/siQPQVHoo5YQ+P5o+JjQe5u2
+         pAymHPihw2H55u978SljdDV5gyt9Qxh1MoS3XN6zuctVqg7stxMjPTLJXPTumWz9aupu
+         6jkS0jKk/NXI+z8g9MTdVNSf/tFsLnsWOqDY8ymMewcJNlCa9z9QQsKd8oMiDI261g5L
+         znkNJSKRkS6Y+DmYkTWHy6du8U8FAC67dlcxry1hRoesdSiWYg8qWDuSNdRCPs/OQDbs
+         tdcQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwDBvXLTrk2X/eID7fifVc8okxWVDgqrWIPVo+KT87dOsCLA9qDrGLgX5jTONR8dP5Z9vAx2TU0Fg==@vger.kernel.org
+X-Gm-Message-State: AFuF++nje5GywE2hnD6y2hZ9zPH6mIFUVQQvmJbh5AbrLH9AK9RxfA3v
+	NMP937Zek3ILZQx1nmV+7eobJAK9loAynuLP49Q1pRo7AHwlK7tI1csz
+X-Gm-Gg: AYBFou2FrS+y/4Zseyu7aRin4REotrOCma8PNzVPa0II9O/NgTi2wHBp4hvwOh2UurG
+	YNY1dxE+abV7VghSL6uobTSjSkHeICrOcRqlzjbAizZB1Ipg1RDWG9dQaN8m0/GlSoJWIYMKGEC
+	qTTWfOVIq9F71CFRu7TqKs/p9NbuHy33HNTS/rKviYNbpbBjKrMeivhuzUuVg87ZziNuRdK3fp2
+	tawNegebXTMkorYSvbNWBYQMHnDKnl+Kp2HFtuX+PdQla4mQ+I85j6lWkvOoPb43UiKESoRQ/0M
+	OaByE9fvOrTYdxiYItKts5XylzKLMf8OUmlcKhteI615skPcRjOCFEVaY2aEslG2FWN6kW4rthP
+	G0Ay/NMPgZX/nwrzh2QNgJGJz4r95XkyHlOPxYMl6J05K8P6Gbyhy8ASAPVM9OveAe5Tw5hc3gi
+	c8Sw6jwF4Y1oiE8iR1d9zSr3MFQs9jS8mXU9Y/ENxV0T3BuzX7tzntZHrmuCqUEqx0mfm20nCUL
+	J2+952w
+X-Received: by 2002:a05:600c:83c9:b0:49e:7caa:e7b2 with SMTP id 5b1f17b1804b1-49eb733800amr66060375e9.29.1789649483005;
         Thu, 17 Sep 2026 05:51:23 -0700 (PDT)
+Received: from localhost.localdomain ([94.252.75.113])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49fbd204d89sm86555015e9.3.2026.09.17.05.51.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Sep 2026 05:51:22 -0700 (PDT)
 From: Oleg Keri <okerixx@gmail.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
@@ -85,9 +85,9 @@ Cc: linux-arm-kernel@lists.infradead.org,
 	driver-core@lists.linux.dev,
 	Viresh Kumar <viresh.kumar@linaro.org>,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v4 2/2] arch_topology: use the boost frequencies for capacity_freq_ref
-Date: Thu, 17 Sep 2026 14:51:12 +0200
-Message-ID: <20260917125112.2283-3-okerixx@gmail.com>
+Subject: [PATCH v4 1/2] arm64: topology: fix arch_freq_get_on_cpu() overflow above 4.19 GHz
+Date: Thu, 17 Sep 2026 14:51:11 +0200
+Message-ID: <20260917125112.2283-2-okerixx@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260917125112.2283-1-okerixx@gmail.com>
 References: <20260917125112.2283-1-okerixx@gmail.com>
@@ -99,67 +99,84 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-capacity_freq_ref is latched from policy->cpuinfo.max_freq by
-init_cpu_capacity_callback() on CPUFREQ_CREATE_POLICY.
-cpufreq_frequency_table_cpuinfo() excludes CPUFREQ_BOOST_FREQ entries
-while boost is disabled, so on a system that boots with boost off the
-reference is the non-boost maximum and stays there.
+arch_freq_get_on_cpu() computes the product of the frequency scale and
+the reference frequency as a u64, but assigns it to an unsigned int
+before shifting it back down:
 
-Once boost is enabled the CPU runs above its reference.  On arm64, where
-the AMU drives frequency invariance, amu_scale_freq_tick() caps the scale
-at SCHED_CAPACITY_SCALE, so the scheduler cannot tell a boosted CPU from
-one at the sustained maximum, and arch_freq_get_on_cpu() cannot report
-above the reference, so cpuinfo_avg_freq is pinned to it.
+	freq = scale * arch_scale_freq_ref(cpu);
+	freq >>= SCHED_CAPACITY_SHIFT;
 
-CPPC based systems do not have the problem: their reference comes from
-highest_perf, and a disabled boost shows up as cpufreq pressure.  Do the
-same for frequency table drivers and take the highest valid table entry,
-boost entries included, as the reference.  With boost off
-cpufreq_update_pressure() then reports the difference as pressure.
+The product is truncated to 32 bits before the shift, so the result
+wraps once arch_scale_freq_ref() exceeds 2^32 / SCHED_CAPACITY_SCALE,
+i.e. 4194304 kHz.
 
-On a Snapdragon X2 Elite (Glymur) laptop with a 4032000 kHz sustained
-and a 4723200 kHz boost OPP this moves the reference of the big cores
-from 4032000 to 4723200 kHz.
+On a Snapdragon X2 Elite (Glymur) laptop, whose boost OPP is 4723200
+kHz, cpuinfo_avg_freq reports 524283 kHz instead of ~4723200 kHz while
+the CPU demonstrably runs at the boost frequency: a fixed workload
+completes in 1.72 s at the 4723200 kHz OPP versus 2.01 s at 4032000
+kHz, matching the 1.171 frequency ratio.
 
+Use cap_scale(), which the scheduler already has for exactly this
+capacity scaling, so the multiply and the shift stay in 64 bits and
+only the final value is narrowed by the return type. Move the macro
+from the scheduler's private header to <linux/topology.h> so it can be
+used outside kernel/sched.
+
+Fixes: 16d1e27475f6 ("arm64: Provide an AMU-based version of arch_freq_get_on_cpu")
 Signed-off-by: Oleg Keri <okerixx@gmail.com>
 ---
- drivers/base/arch_topology.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ arch/arm64/kernel/topology.c | 5 +----
+ include/linux/topology.h     | 2 ++
+ kernel/sched/sched.h         | 2 --
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 8c5e47c28d9a..300f64ffea2f 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -386,6 +386,20 @@ static cpumask_var_t cpus_to_visit;
- static void parsing_done_workfn(struct work_struct *work);
- static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index d28438f8b83f..07b8c497c9e6 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -186,7 +186,6 @@ int arch_freq_get_on_cpu(int cpu)
+ 	struct amu_cntr_sample *amu_sample;
+ 	unsigned int start_cpu = cpu;
+ 	unsigned long last_update;
+-	unsigned int freq = 0;
+ 	u64 scale;
  
-+static unsigned int topology_policy_max_freq(struct cpufreq_policy *policy)
-+{
-+	unsigned int max_freq = policy->cpuinfo.max_freq;
-+	struct cpufreq_frequency_table *pos;
-+
-+	if (!policy->freq_table)
-+		return max_freq;
-+
-+	cpufreq_for_each_valid_entry(pos, policy->freq_table)
-+		max_freq = max(max_freq, pos->frequency);
-+
-+	return max_freq;
-+}
-+
- static int
- init_cpu_capacity_callback(struct notifier_block *nb,
- 			   unsigned long val,
-@@ -404,7 +418,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
- 	cpumask_andnot(cpus_to_visit, cpus_to_visit, policy->related_cpus);
+ 	if (!amu_fie_cpu_supported(cpu) || !arch_scale_freq_ref(cpu))
+@@ -245,9 +244,7 @@ int arch_freq_get_on_cpu(int cpu)
+ 	 * (see amu_scale_freq_tick for details)
+ 	 */
+ 	scale = arch_scale_freq_capacity(cpu);
+-	freq = scale * arch_scale_freq_ref(cpu);
+-	freq >>= SCHED_CAPACITY_SHIFT;
+-	return freq;
++	return cap_scale(arch_scale_freq_ref(cpu), scale);
+ }
  
- 	for_each_cpu(cpu, policy->related_cpus) {
--		per_cpu(capacity_freq_ref, cpu) = policy->cpuinfo.max_freq;
-+		per_cpu(capacity_freq_ref, cpu) = topology_policy_max_freq(policy);
- 		freq_inv_set_max_ratio(cpu,
- 				       per_cpu(capacity_freq_ref, cpu) * HZ_PER_KHZ);
- 	}
+ static void amu_fie_setup(const struct cpumask *cpus)
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 709a2dcf4c73..0a4ee12a98d5 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -351,4 +351,6 @@ static inline unsigned long topology_get_cpu_scale(int cpu)
+ 
+ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+ 
++#define cap_scale(v, s)		((v)*(s) >> SCHED_CAPACITY_SHIFT)
++
+ #endif /* _LINUX_TOPOLOGY_H */
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 6c3ad70e58b8..45796fccdc84 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -236,8 +236,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
+ 	return dl_policy(p->policy);
+ }
+ 
+-#define cap_scale(v, s)		((v)*(s) >> SCHED_CAPACITY_SHIFT)
+-
+ static inline void update_avg(u64 *avg, u64 sample)
+ {
+ 	s64 diff = sample - *avg;
 -- 
 2.55.0
 
