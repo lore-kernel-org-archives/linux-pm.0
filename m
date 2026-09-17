@@ -1,135 +1,168 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2395F5908DE
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 14:36:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF6DA59C995;
+	Thu, 17 Sep 2026 14:44:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789655802; cv=none; b=Lm/BHrBQo4i5P78IcB9yNUkx3Uf7rDAYH5Pa7BhmQlVFB9sqAEYhAfnE3VdoFrNJAvB+nuPvHZMBE97LOuVuezGQ0d/1kkrs0zQlYNKdCBptXxiZmsQzh5wYMpa7S3tS7fen5Vz11n3PU510DIQhC3zqZGhn6vUSkn11k7Wxuo4=
+	t=1789656261; cv=none; b=mWWVllJlGUXp+Y40aa83pijdBa2EP/at/jaUrPZhmMuClgIXvzOOwC3tgSIxRtKd6eiu20mICDpy1GTZ9qwikJS+kC0mRBdO9JbE8rrpKGA2EkNENfwDIYNzI2UbwQZ1Los4n59GUqWXp5cn7FUeKgeta0zhawB6qsuNi/8S0eY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789655802; c=relaxed/simple;
-	bh=qXfADDzsfmD+8zF+G8Ti+6sPkyfTJNIlgRnwzG3jmII=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rimzJ36KiTKaYlRL1f3IRsABOkrd7IW+RQ3OVdt04yw7Z7snP8efHxXKCTT8Wy7cV7sWHZoQVOLWTk41zrNkxu0jHkWxRWFAbYe2OboJ6Rmxv3LNR+EMzvLaVJsTL8ivNx+hdEg2AtXU8aokAy9NKSrwT3wHICkLqYqdkN8fheA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B7neBrWG; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789656261; c=relaxed/simple;
+	bh=fgOcdHPD2TZKgufAHTVhqcVWGrvfpBid9Xt/WoiDt64=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=u5fOnbbK+TT14JMQ/PIgDug21dWRch41cxeOcyMPxO9j8Zcy0LSnRmvTOpAsCW0FkM2MsF9/XOmnX65NiSm41BxA68xr+Lx0pxp4xPOke5ISXGorePsIvnqBRUIHEO6FvdNJcZrjH9cst6YSLQL6z3BdXOkx1Y5zBw1Eg+qWqqU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XFgoLF5c; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B7neBrWG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B52D61F00898
-	for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 14:36:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789655800;
-	bh=YJ9By9xlanJ7LT/vqhWLGY4bzMDNOpTYeD6ECVxBkSM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=B7neBrWGA7q0fAr6Y8IPM384lbYMzPvuWg0Efy5OAPCJcpdSr+3oBybuQ8nkAd4En
-	 Vxjc6CBcTPX585O7Pw4hOO4oEUOEzMVMbxVfLf9BQdX5PfNDgku4H/zP/fJeOvmNRV
-	 ydn7x5ZipZgmtJ07/QIifOn4S0ZRCrH7wyiTBUVzDwc+QU0JpG1MJWz2lJi+P7mu0w
-	 jmDufHcNczReAgPqCLFaq+TFTqTnCYvhwnGLNf9lppieH0V1b9ivZ1KJwaJaiZ/HXZ
-	 DggqWa8QnBUbyDr+rBLEjyz6cFxi+IojaB3zEYJBI6rVMUtgd59b6GYXB06ONrM7kd
-	 DjhkBVtX/TIJg==
-Received: by mail-vs2-f38.google.com with SMTP id 71dfb90a1353d-5c67e2ff27bso506594e0c.1
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 07:36:40 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwsb25pRF36/lyEgoh3/Zrdzkf5wF3ZO1TLRjAtm65+2xX8FTBBpxu4OPyPNewFkKZjRJs6w67FMw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kIQzB+kyO2izmIEEUkTk/NojlzhjLGhisMVH4BNC3aRU0cWymb
-	qjbPznLIdFkwNopIasIV7yW96aAPFBfH1Rx4zN2hnVrtFIIt/Mnr89N8X/mMB4e+GvzXDP4CBB4
-	VFbFN7cgUDjbgRib2UDSPk1JfleY6gq8=
-X-Received: by 2002:a05:6102:50ab:b0:7a1:b6c2:56df with SMTP id
- ada2fe7eead31-7a1b6c27177mr4845476137.10.1789655799951; Thu, 17 Sep 2026
- 07:36:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XFgoLF5c"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789656255; x=1821192255;
+  h=date:from:to:cc:subject:message-id;
+  bh=fgOcdHPD2TZKgufAHTVhqcVWGrvfpBid9Xt/WoiDt64=;
+  b=XFgoLF5cu6qP0rxTJFnpzblQRuDJ8IDhzeRdxUTeYFzrLNCOuk9YaRaV
+   9mWXd5acIq/Ui4yocl+yuvxoMu6VXB/ulbVrcfq412E1qq0BX8TxoxJex
+   2EHFlSyg94xIsARi585MBluHMfxfX3x8vSsoStz980e+vbyL9yQQdd/Qe
+   0FGJVwJAMKXf3/leHk0wOYD5XLx30mRYodUEgurWEM+yF88gqr/55Dn4j
+   Tgx4Q8Yg1UwSPd7xtKgbmzdOfEo3jEpG/fQf8SdO992+RuYSvLNNOYdjB
+   ORs+yf3T3tdbx1krCMhBC0Hg+y6d3VyKq4pbu+F9Q9KCAjMNaWMxIgKMg
+   w==;
+X-CSE-ConnectionGUID: zLlKGjqdQ3Cf4U265JfJBA==
+X-CSE-MsgGUID: zhYBbcVSRpWh9+PxUBhoAA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="90102624"
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="90102624"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2026 07:44:07 -0700
+X-CSE-ConnectionGUID: 7aedmUayT/i13+JrZkoftA==
+X-CSE-MsgGUID: mlCPDRp6QO2CB7ncgRjX8w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="269567570"
+Received: from lkp-server01.sh.intel.com (HELO 462990a40a85) ([10.239.97.150])
+  by fmviesa006.fm.intel.com with ESMTP; 17 Sep 2026 07:44:05 -0700
+Received: from kbuild by 462990a40a85 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1x7DLH-0000000080V-1V71;
+	Thu, 17 Sep 2026 14:44:03 +0000
+Date: Thu, 17 Sep 2026 22:43:08 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge 84/106]
+ drivers/bluetooth/btintel.c:2725:7: error: implicit declaration of function
+ 'acpi_has_method'; did you mean 'acpi_has_watchdog'?
+Message-ID: <202609172243.uPgiesDR-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260904073844.2740931-1-saranya.gopal@intel.com>
-In-Reply-To: <20260904073844.2740931-1-saranya.gopal@intel.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 17 Sep 2026 16:35:13 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hLxKdg_4Fs2uJAq20=jd=6PrFKW55xGc=83JWYk7_S8A@mail.gmail.com>
-X-Gm-Features: AcwNN1UnHgaYXwQ_ob6pRJUfKwZEiwXBier1kCP2NyWNC_JSXhs9r5sdKCmW2nI
-Message-ID: <CAJZ5v0hLxKdg_4Fs2uJAq20=jd=6PrFKW55xGc=83JWYk7_S8A@mail.gmail.com>
-Subject: Re: [PATCH] ACPI: s2idle: Add _Ixx GPE wake indicator support
-To: Saranya Gopal <saranya.gopal@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com, 
-	Mario Limonciello <superm1@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 4, 2026 at 9:38=E2=80=AFAM Saranya Gopal <saranya.gopal@intel.c=
-om> wrote:
->
-> ACPI 6.6 defines _Ixx indicator objects under \_GPE to mark GPEs that
-> should remain wake-enabled in s2idle without a _PRW association.
-> To support them, add new function acpi_setup_ixx_gpes() that looks for
-> _Ixx objects for all GPEs in the FADT 0/1 blocks and if it finds any, it
-> marks the corresponding GPE as wake-capable, in which case the GPE is
-> also enabled so long as it has a handler method because marking it as
-> wake-capable causes acpi_update_all_gpes() to skip it. Since that only
-> needs to be done if suspend-to-idle is enabled, make acpi_s2idle_setup()
-> call that new function.
->
-> For now, this is limited to x86 systems and it assumes that the GPEs
-> with _Ixx will not cause spurious wakeups to occur while suspended.
->
-> Signed-off-by: Saranya Gopal <saranya.gopal@intel.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   7d81fd7f1644e8172350caa5b32aa00e57050ec0
+commit: b732fbc37b8eaacdb07b9463a45728b5152e1028 [84/106] ACPI: bus: Use acpi/acpi_bus.h without CONFIG_ACPI
+config: sparc-randconfig-1000-20260917 (https://download.01.org/0day-ci/archive/20260917/202609172243.uPgiesDR-lkp@intel.com/config)
+compiler: sparc64-linux-gcc (GCC) 8.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260917/202609172243.uPgiesDR-lkp@intel.com/reproduce)
 
-Applied as 7.4 material, thanks!
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202609172243.uPgiesDR-lkp@intel.com/
 
-> ---
->  drivers/acpi/x86/s2idle.c | 26 ++++++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
->
-> diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
-> index b6b1dd76a06b..ac49f9e75fae 100644
-> --- a/drivers/acpi/x86/s2idle.c
-> +++ b/drivers/acpi/x86/s2idle.c
-> @@ -24,6 +24,31 @@
->
->  #ifdef CONFIG_SUSPEND
->
-> +static void acpi_setup_ixx_gpes(void)
-> +{
-> +       acpi_handle gpe_root;
-> +       unsigned int i;
-> +       char gpe_nr_str[5];
-> +
-> +       if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_GPE", &gpe_root)))
-> +               return;
-> +
-> +       for (i =3D 0; i <=3D 0xff; i++) {
-> +               scnprintf(gpe_nr_str, sizeof(gpe_nr_str), "_I%02X", i);
-> +               if (!acpi_has_method(gpe_root, gpe_nr_str))
-> +                       continue;
-> +               /*
-> +                * Enable the GPE if it has a handler method because mark=
-ing it
-> +                * as wake-capable causes acpi_update_all_gpes() to skip =
-it.
-> +                */
-> +               if (ACPI_FAILURE(acpi_enable_gpe_cond(NULL, i, ACPI_GPE_D=
-ISPATCH_METHOD)))
-> +                       continue;
-> +               acpi_mark_gpe_for_wake(NULL, i);
-> +               acpi_set_gpe_wake_mask(NULL, i, ACPI_GPE_ENABLE);
-> +               pm_pr_dbg("ACPI: GPE 0x%02x armed for wake via %s\n", i, =
-gpe_nr_str);
-> +       }
-> +}
-> +
->  static bool sleep_no_lps0 __read_mostly;
->  module_param(sleep_no_lps0, bool, 0644);
->  MODULE_PARM_DESC(sleep_no_lps0, "Do not use the special LPS0 device inte=
-rface");
-> @@ -649,6 +674,7 @@ void __init acpi_s2idle_setup(void)
->  {
->         acpi_scan_add_handler(&lps0_handler);
->         s2idle_set_ops(&acpi_s2idle_ops_lps0);
-> +       acpi_setup_ixx_gpes();
->  }
->
->  int acpi_register_lps0_dev(struct acpi_s2idle_dev_ops *arg)
-> --
-> 2.34.1
->
->
+All errors (new ones prefixed by >>):
+
+   drivers/bluetooth/btintel.c: In function 'btintel_set_dsm_reset_method':
+>> drivers/bluetooth/btintel.c:2725:7: error: implicit declaration of function 'acpi_has_method'; did you mean 'acpi_has_watchdog'? [-Werror=implicit-function-declaration]
+     if (!acpi_has_method(handle, "_PRR")) {
+          ^~~~~~~~~~~~~~~
+          acpi_has_watchdog
+   cc1: some warnings being treated as errors
+
+
+vim +2725 drivers/bluetooth/btintel.c
+
+8f0a3786f56d9fa Kiran K 2023-06-11  2705  
+8f0a3786f56d9fa Kiran K 2023-06-11  2706  static void btintel_set_dsm_reset_method(struct hci_dev *hdev,
+8f0a3786f56d9fa Kiran K 2023-06-11  2707  					 struct intel_version_tlv *ver_tlv)
+8f0a3786f56d9fa Kiran K 2023-06-11  2708  {
+8f0a3786f56d9fa Kiran K 2023-06-11  2709  	struct btintel_data *data = hci_get_priv(hdev);
+8f0a3786f56d9fa Kiran K 2023-06-11  2710  	acpi_handle handle = ACPI_HANDLE(GET_HCIDEV_DEV(hdev));
+8f0a3786f56d9fa Kiran K 2023-06-11  2711  	u8 reset_payload[4] = {0x01, 0x00, 0x01, 0x00};
+8f0a3786f56d9fa Kiran K 2023-06-11  2712  	union acpi_object *obj, argv4;
+8f0a3786f56d9fa Kiran K 2023-06-11  2713  	enum {
+8f0a3786f56d9fa Kiran K 2023-06-11  2714  		RESET_TYPE_WDISABLE2,
+8f0a3786f56d9fa Kiran K 2023-06-11  2715  		RESET_TYPE_VSEC
+8f0a3786f56d9fa Kiran K 2023-06-11  2716  	};
+8f0a3786f56d9fa Kiran K 2023-06-11  2717  
+8f0a3786f56d9fa Kiran K 2023-06-11  2718  	handle = ACPI_HANDLE(GET_HCIDEV_DEV(hdev));
+8f0a3786f56d9fa Kiran K 2023-06-11  2719  
+8f0a3786f56d9fa Kiran K 2023-06-11  2720  	if (!handle) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2721  		bt_dev_dbg(hdev, "No support for bluetooth device in ACPI firmware");
+8f0a3786f56d9fa Kiran K 2023-06-11  2722  		return;
+8f0a3786f56d9fa Kiran K 2023-06-11  2723  	}
+8f0a3786f56d9fa Kiran K 2023-06-11  2724  
+8f0a3786f56d9fa Kiran K 2023-06-11 @2725  	if (!acpi_has_method(handle, "_PRR")) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2726  		bt_dev_err(hdev, "No support for _PRR ACPI method");
+8f0a3786f56d9fa Kiran K 2023-06-11  2727  		return;
+8f0a3786f56d9fa Kiran K 2023-06-11  2728  	}
+8f0a3786f56d9fa Kiran K 2023-06-11  2729  
+8f0a3786f56d9fa Kiran K 2023-06-11  2730  	switch (ver_tlv->cnvi_top & 0xfff) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2731  	case 0x910: /* GalePeak2 */
+8f0a3786f56d9fa Kiran K 2023-06-11  2732  		reset_payload[2] = RESET_TYPE_VSEC;
+8f0a3786f56d9fa Kiran K 2023-06-11  2733  		break;
+8f0a3786f56d9fa Kiran K 2023-06-11  2734  	default:
+8f0a3786f56d9fa Kiran K 2023-06-11  2735  		/* WDISABLE2 is the default reset method */
+8f0a3786f56d9fa Kiran K 2023-06-11  2736  		reset_payload[2] = RESET_TYPE_WDISABLE2;
+8f0a3786f56d9fa Kiran K 2023-06-11  2737  
+8f0a3786f56d9fa Kiran K 2023-06-11  2738  		if (!acpi_check_dsm(handle, &btintel_guid_dsm, 0,
+8f0a3786f56d9fa Kiran K 2023-06-11  2739  				    BIT(DSM_SET_WDISABLE2_DELAY))) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2740  			bt_dev_err(hdev, "No dsm support to set reset delay");
+8f0a3786f56d9fa Kiran K 2023-06-11  2741  			return;
+8f0a3786f56d9fa Kiran K 2023-06-11  2742  		}
+8f0a3786f56d9fa Kiran K 2023-06-11  2743  		argv4.integer.type = ACPI_TYPE_INTEGER;
+8f0a3786f56d9fa Kiran K 2023-06-11  2744  		/* delay required to toggle BT power */
+8f0a3786f56d9fa Kiran K 2023-06-11  2745  		argv4.integer.value = 160;
+8f0a3786f56d9fa Kiran K 2023-06-11  2746  		obj = acpi_evaluate_dsm(handle, &btintel_guid_dsm, 0,
+8f0a3786f56d9fa Kiran K 2023-06-11  2747  					DSM_SET_WDISABLE2_DELAY, &argv4);
+8f0a3786f56d9fa Kiran K 2023-06-11  2748  		if (!obj) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2749  			bt_dev_err(hdev, "Failed to call dsm to set reset delay");
+8f0a3786f56d9fa Kiran K 2023-06-11  2750  			return;
+8f0a3786f56d9fa Kiran K 2023-06-11  2751  		}
+8f0a3786f56d9fa Kiran K 2023-06-11  2752  		ACPI_FREE(obj);
+8f0a3786f56d9fa Kiran K 2023-06-11  2753  	}
+8f0a3786f56d9fa Kiran K 2023-06-11  2754  
+8f0a3786f56d9fa Kiran K 2023-06-11  2755  	bt_dev_info(hdev, "DSM reset method type: 0x%02x", reset_payload[2]);
+8f0a3786f56d9fa Kiran K 2023-06-11  2756  
+8f0a3786f56d9fa Kiran K 2023-06-11  2757  	if (!acpi_check_dsm(handle, &btintel_guid_dsm, 0,
+8f0a3786f56d9fa Kiran K 2023-06-11  2758  			    DSM_SET_RESET_METHOD)) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2759  		bt_dev_warn(hdev, "No support for dsm to set reset method");
+8f0a3786f56d9fa Kiran K 2023-06-11  2760  		return;
+8f0a3786f56d9fa Kiran K 2023-06-11  2761  	}
+8f0a3786f56d9fa Kiran K 2023-06-11  2762  	argv4.buffer.type = ACPI_TYPE_BUFFER;
+8f0a3786f56d9fa Kiran K 2023-06-11  2763  	argv4.buffer.length = sizeof(reset_payload);
+8f0a3786f56d9fa Kiran K 2023-06-11  2764  	argv4.buffer.pointer = reset_payload;
+8f0a3786f56d9fa Kiran K 2023-06-11  2765  
+8f0a3786f56d9fa Kiran K 2023-06-11  2766  	obj = acpi_evaluate_dsm(handle, &btintel_guid_dsm, 0,
+8f0a3786f56d9fa Kiran K 2023-06-11  2767  				DSM_SET_RESET_METHOD, &argv4);
+8f0a3786f56d9fa Kiran K 2023-06-11  2768  	if (!obj) {
+8f0a3786f56d9fa Kiran K 2023-06-11  2769  		bt_dev_err(hdev, "Failed to call dsm to set reset method");
+8f0a3786f56d9fa Kiran K 2023-06-11  2770  		return;
+8f0a3786f56d9fa Kiran K 2023-06-11  2771  	}
+8f0a3786f56d9fa Kiran K 2023-06-11  2772  	ACPI_FREE(obj);
+8f0a3786f56d9fa Kiran K 2023-06-11  2773  	data->acpi_reset_method = btintel_acpi_reset_method;
+8f0a3786f56d9fa Kiran K 2023-06-11  2774  }
+8f0a3786f56d9fa Kiran K 2023-06-11  2775  
+
+:::::: The code at line 2725 was first introduced by commit
+:::::: 8f0a3786f56d9fa4b308bdbd54757a51145dbb7a Bluetooth: btintel: Add support to reset bluetooth via ACPI DSM
+
+:::::: TO: Kiran K <kiran.k@intel.com>
+:::::: CC: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
