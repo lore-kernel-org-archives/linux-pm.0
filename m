@@ -1,56 +1,56 @@
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com [209.85.128.72])
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com [209.85.221.70])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC94437A85B
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 13:19:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.72
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28EF14F30DC
+	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 13:19:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.70
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789737546; cv=none; b=F//LugT2YPn28OQvagcy7f0g+dl1g0WFiJkv+C5DmO9QO8L5OlCR+cJRnI/bfvshv06a6wpZF1zi6dCinRxnDgnmauFqCnO0mmFFhYK/LxUdFyZzGKCS0JVxHn6mAo9E0oVRjl6N61r8d9UZQN5eEm8xuVM2D3ikQDZM60Bew9U=
+	t=1789737547; cv=none; b=c/UkSwm1SpkcStPpFW2PItnnr57tdWkkMbrbgbvWNwkbBXKzD8AJHLupHGyptWrvqws43iJo6iqXAV6lAqWWhtNZ8RAmFOK3tAVGvTd+rOHC+DLtdWto6nyQRncD2c70Ay3iZs8UeWRDsSEbnsy+GoGvj3moKWoitvIFVe/tEFA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789737546; c=relaxed/simple;
-	bh=ncZg2VuW+AySF8gMan+UeGIC3Uxuyips31vZXC/8WFE=;
+	s=arc-20240116; t=1789737547; c=relaxed/simple;
+	bh=GrzDV6cczkYxjO5tC/93Uw9vwmtlbRDBmm6zE9MIKJ8=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=hcKcspDl9/HOw//AVjwKZ5+VpwhU0aX8Ssmu9lfKNuS535oAy6Z7ir7TFUI1Ryd2v2yZnovkhcgJn2aSiWQqFAHCbJQ5pEzw2+8y6YV75gAmlGeVk/fCeGk5ak42PTGjpU98C2go4bEuOg9QdwzTIJ2S8xeowBirBiG1WfpInbs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--vdonnefort.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=B/gWKm33; arc=none smtp.client-ip=209.85.128.72
+	 To:Cc:Content-Type; b=gylF9n624GNcDJgypQFXjDGcPYht7YAvBI5YnO2mGS8+QrC/VSjCwFtF2SxvcpUZXkrvdK69ICSDTY4UvC7ICDBKATMuAgW3FQ19YVASiQF/R6C1mt3BKfCk1i487xk7hcoPAgCq4LrlbU79uTK3mG4vcz9pTOj4o0ZDOlldKhc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--vdonnefort.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=R/JFIC4z; arc=none smtp.client-ip=209.85.221.70
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--vdonnefort.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="B/gWKm33"
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-49ccfad90f1so5968705e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 06:19:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="R/JFIC4z"
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-4843e59c32dso636643f8f.3
+        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 06:19:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789737543; x=1790342343; darn=vger.kernel.org;
+        d=google.com; s=20251104; t=1789737544; x=1790342344; darn=vger.kernel.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=R10EWAoqeqiwKYs38V4/eu87hmfK6YBmKaV1HjMgWDg=;
-        b=B/gWKm33uRLY8ViiqpqQuf3gOS2bqWPrpt4nqhleSfJMIhc9LdiVIL2w0IDp/6k/Lc
-         JNCb0mU7s4bdXBF1ZsECVKDFwtPUmHcrdNkcToZDR0XqPKwB+WdwdCVva541OcOlFKgp
-         wgciMsVAidAgQb4nJEtz17JpYV3RjCE/5jR0IZNDM8kb1NoXGX8YK6LxuRaQy/yrJOBl
-         khrcf4Q4rG1cdTMS5RugwSu1SKR3SnvhcFky8wxPleTqaKn1QoZc5tTbeVkNfrGxV6Li
-         Z6KQU3HjbL5ipHnlNUz3wHEwh1YeMSvBKM+O/k+v1c0Y6kX5vtTsPOnztwf6+Xxb9sxx
-         Wavg==
+        bh=9aOX9z3d/XK6ZHrErASZL6mYBZmtA4GVOMC24/C+YOg=;
+        b=R/JFIC4zEEQpEff/oP2df94bgAiDtd+SE/pejnaF/QeIS71LUweyItTE7HpAxCZ2fP
+         xl2bZHyQhulpFc5LSOlYLF5L5Q9fwgKT69h0TUjNwap7yIi2RK0Zr2T5X0BFMdK+zucw
+         8Y06uQ9jD4KqyUvXg6UWPeLOUcoN8jdtsRZYZo+16sK3sYyDoAPW1k1q/IOfuQpAxVKj
+         8RMfBoAM5/p1Gf5FP93KmZOUtrfqy90KrHdQ8ld8JGMrVJfvdN7LuYepmpeBnV5CyY5e
+         UQk2vMQxiMHymM0k/0Co7Dy/adOvSO7gwweFfJPbjNe8d3t7NQmMMgixVv6+xNZIDGtp
+         kjpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789737543; x=1790342343;
+        d=1e100.net; s=20260707; t=1789737544; x=1790342344;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=R10EWAoqeqiwKYs38V4/eu87hmfK6YBmKaV1HjMgWDg=;
-        b=tKn/iETx+MjlElY59zpbWixqmtz6xtdFjbzw5VlwEQcre7fO7nwOhnusMbTBSR35TO
-         THaFa14Svm2VXKNRb4TPVDWKvRQtQvhV51sUVR2wAPl30JcbdBkcPOVI5PhLUn6g/3Di
-         9R+vGzL6mBL6J3f2KFqFWc/0r+ZqMBdfOnqjTJX/TlEjSwVdn40qwy612IZEvShuskPB
-         KTD7DmSUN5qO/4n/TokQXlU8lSe44kL0ze31ueFqaogGCehi++sbh/jCgdNcHZXmB6st
-         8jAP1Pt3/X6i5zAgflQfuSf4g2iGElMcK0L+6Q55oIrW2skF3ybdrH9hODejPqVWBTE9
-         1evQ==
-X-Forwarded-Encrypted: i=1; AKwUvBx4WNu3XREEgKrMi8ws80tRHKT+Y6V8oq7WkRfea6Mn/pmWILvsOwLt6Yd3CqmfSt2OuNTYuYUIzw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kpQMPrvc3YrrBnpM/R0xpbOx2m2OtYZwEb6gjC2Esr2x8nlQHU
-	XI7//NTn5YAntWQQzBaGZ+edWDKyEJpzCnRPrxjicTnMjVzqpZAscwWAlkAzh0P02xIogpW/Ibm
-	wac8GoUT1VcqYgIJV2uYXuQ==
-X-Received: from wmsl26.prod.google.com ([2002:a05:600c:1d1a:b0:49e:6680:860c])
+        bh=9aOX9z3d/XK6ZHrErASZL6mYBZmtA4GVOMC24/C+YOg=;
+        b=W5+5UpVWV7x7d19TctXzha4v59YxmdpdX+MBUzyn7G1A9AsusndbJkyfOaX2t6u7qT
+         MZuYuwwsWJflHbDWayLCXsRszAvS8qqzEjXEXKTqAamdVXb6Lg6zLvhAkgvIyg5fVtbQ
+         FcIMod54cLpYkaF+QAwmVgj1+LQlvU0MqRZz9oNXWWOnCSZ6DzGGCUaSq5IbcJmDKuIN
+         VBcTEjpHywPGoSvW1rI6pVS4B5YujgzMMLonu/shCkVgydRWWNx5JkL4NMKgNkWAdjr0
+         6ew6tkzVVRlhmtVKjCJcpVO1LLCsDdnD+2g/vmw0K6jQgtjVtdE2B/cS9BYG4eiXC/5c
+         MqEA==
+X-Forwarded-Encrypted: i=1; AKwUvBwuHA9iHDL7VyWNnY4T1Up6Rkig1Gk2II9IKxqnOyWtNziKQROq0on8oPUGkWmRGoM3r9nd8JTOMA==@vger.kernel.org
+X-Gm-Message-State: AFuF++mqZNZCB5uiUXTLvd2rJOhIAZAPsIOa+LzAKbCZou8KdFgBMn0S
+	7Sj4UFjKGTI84ypB5K9s1gSLynHE/aCtpWfXTrurRVU79DsMVA41eTkjn3cHdJhoyF/O+O++hsY
+	+RjslmGAUSfXHeZZz28Vm+Q==
+X-Received: from wrdf12.prod.google.com ([2002:a5d:58ec:0:b0:487:11c9:7de9])
  (user=vdonnefort job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:1993:b0:49c:ffe3:2b3f with SMTP id 5b1f17b1804b1-49fc56dbc54mr34667275e9.3.1789737542981;
- Fri, 18 Sep 2026 06:19:02 -0700 (PDT)
-Date: Fri, 18 Sep 2026 14:16:54 +0100
+ 2002:a05:6000:2884:b0:487:360:5be1 with SMTP id ffacd0b85a97d-4871e2112femr3684285f8f.8.1789737544221;
+ Fri, 18 Sep 2026 06:19:04 -0700 (PDT)
+Date: Fri, 18 Sep 2026 14:16:55 +0100
 In-Reply-To: <20260918131656.3710047-1-vdonnefort@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 References: <20260918131656.3710047-1-vdonnefort@google.com>
 X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
-Message-ID: <20260918131656.3710047-3-vdonnefort@google.com>
-Subject: [PATCH v1 2/4] arm64: hibernate: Use fixmap for hibernate_map/unmap_page
+Message-ID: <20260918131656.3710047-4-vdonnefort@google.com>
+Subject: [PATCH v1 3/4] arm64: mm: Introduce linear_map_needs_set() helper
 From: Vincent Donnefort <vdonnefort@google.com>
 To: catalin.marinas@arm.com, will@kernel.org, rafael@kernel.org
 Cc: mark.rutland@arm.com, lenb@kernel.org, pavel@kernel.org, 
@@ -70,72 +70,103 @@ Cc: mark.rutland@arm.com, lenb@kernel.org, pavel@kernel.org,
 	Vincent Donnefort <vdonnefort@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-The default implementation for hibernate_map_page uses the direct map.
-This creates an unnecessary limitation for BBML3 enabled systems which
-can split linear map blocks and can enable memfd_secret users regardless
-of the linear map mapping level.
+can_set_direct_map() is intended as an external query function, but is
+also being called internally by map_mem() to initialise
+linear_map_requires_bbml3, duplicating the feature checks already
+present in force_pte_mapping().
 
-Block splitting acquires a mutex (pgtable_split_lock) and as a
-consequence is incompatible with hibernation. We know hibernation would
-only call set_direct_map*() on a PTE-level region since it was
-previously split by memfd_secret. But let's avoid special casing
-hibernation in split_kernel_leaf_mapping().
-
-On hibernation, do not modify the direct map and instead use a fixmap,
-better suited for a transient mapping hibernation needs to copy the page
-content. It removes the need for handling atomic context in
-split_kernel_leaf_mapping() altogether.
+Factor the list of features that require modifying linear map attributes
+into a shared helper linear_map_needs_set().
 
 Signed-off-by: Vincent Donnefort <vdonnefort@google.com>
 ---
- arch/arm64/include/asm/fixmap.h |  3 +++
- arch/arm64/kernel/hibernate.c   | 12 ++++++++++++
- 2 files changed, 15 insertions(+)
+ arch/arm64/include/asm/mmu.h |  1 +
+ arch/arm64/mm/mmu.c          | 22 ++++++++++++++++++++--
+ arch/arm64/mm/pageattr.c     | 12 +-----------
+ 3 files changed, 22 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm64/include/asm/fixmap.h b/arch/arm64/include/asm/fixmap.h
-index 170c3502d723..c8a65fd8584d 100644
---- a/arch/arm64/include/asm/fixmap.h
-+++ b/arch/arm64/include/asm/fixmap.h
-@@ -73,6 +73,9 @@ enum fixed_addresses {
- 	FIX_ENTRY_TRAMP_TEXT1,
- #define TRAMP_VALIAS		(__fix_to_virt(FIX_ENTRY_TRAMP_TEXT1))
- #endif /* CONFIG_UNMAP_KERNEL_AT_EL0 */
-+#ifdef CONFIG_HIBERNATION
-+	FIX_HIBERNATE,
-+#endif
- 	__end_of_permanent_fixed_addresses,
+diff --git a/arch/arm64/include/asm/mmu.h b/arch/arm64/include/asm/mmu.h
+index 5e1211c540ab..12ed21e2d0d7 100644
+--- a/arch/arm64/include/asm/mmu.h
++++ b/arch/arm64/include/asm/mmu.h
+@@ -70,6 +70,7 @@ extern void create_pgd_mapping(struct mm_struct *mm, phys_addr_t phys,
+ 			       pgprot_t prot, bool page_mappings_only);
+ extern void *fixmap_remap_fdt(phys_addr_t dt_phys, int *size, pgprot_t prot);
+ extern void mark_linear_text_alias_ro(void);
++extern bool linear_map_needs_set(void);
+ extern int split_kernel_leaf_mapping(unsigned long start, unsigned long end);
+ extern void linear_map_maybe_split_to_ptes(void);
  
- 	/*
-diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
-index 7bf117427777..bbd0779081fa 100644
---- a/arch/arm64/kernel/hibernate.c
-+++ b/arch/arm64/kernel/hibernate.c
-@@ -21,6 +21,7 @@
- #include <asm/cacheflush.h>
- #include <asm/cputype.h>
- #include <asm/daifflags.h>
-+#include <asm/fixmap.h>
- #include <asm/irqflags.h>
- #include <asm/kexec.h>
- #include <asm/memory.h>
-@@ -213,6 +214,17 @@ static int create_safe_exec_page(void *src_start, size_t length,
- 	return 0;
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 79d90226fd5d..c18ed601f0a8 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -776,6 +776,24 @@ static int split_kernel_leaf_mapping_locked(unsigned long addr)
+ 	return ret;
  }
  
-+void *hibernate_map_page(struct page *page)
++/*
++ * True if the linear map needs to be modified for one of the following
++ * features:
++ *
++ * rodata_full and DEBUG_PAGEALLOC need to protect/unprotect pages in
++ * the linear map.
++ *
++ * KFENCE pool needs to protect/unprotect pages in the linear map if
++ * initialized late.
++ *
++ * Realms need to mark pages shared/protected in the linear map.
++ */
++bool linear_map_needs_set(void)
 +{
-+	set_fixmap(FIX_HIBERNATE, page_to_phys(page));
-+	return (void *)__fix_to_virt(FIX_HIBERNATE);
++	return rodata_full || debug_pagealloc_enabled() ||
++	       arm64_kfence_can_set_direct_map() || is_realm_world();
 +}
 +
-+void hibernate_unmap_page(struct page *page)
-+{
-+	clear_fixmap(FIX_HIBERNATE);
-+}
-+
- #ifdef CONFIG_ARM64_MTE
+ static inline bool force_pte_mapping(void)
+ {
+ 	const bool bbml3 = system_capabilities_finalized() ?
+@@ -785,7 +803,7 @@ static inline bool force_pte_mapping(void)
+ 		return true;
+ 	if (bbml3)
+ 		return false;
+-	return rodata_full || arm64_kfence_can_set_direct_map() || is_realm_world();
++	return linear_map_needs_set();
+ }
  
- static DEFINE_XARRAY(mte_pages);
+ static DEFINE_MUTEX(pgtable_split_lock);
+@@ -1203,7 +1221,7 @@ static void __init map_mem(void)
+ 
+ 	arm64_kfence_map_pool();
+ 
+-	linear_map_requires_bbml3 = !force_pte_mapping() && can_set_direct_map();
++	linear_map_requires_bbml3 = !force_pte_mapping() && linear_map_needs_set();
+ 
+ 	if (force_pte_mapping())
+ 		flags |= NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS;
+diff --git a/arch/arm64/mm/pageattr.c b/arch/arm64/mm/pageattr.c
+index bbe98ac9ad8c..c1ba74eb602f 100644
+--- a/arch/arm64/mm/pageattr.c
++++ b/arch/arm64/mm/pageattr.c
+@@ -89,17 +89,7 @@ bool rodata_full __ro_after_init = true;
+ 
+ bool can_set_direct_map(void)
+ {
+-	/*
+-	 * rodata_full, DEBUG_PAGEALLOC and a Realm guest all require linear
+-	 * map to be mapped at page granularity, so that it is possible to
+-	 * protect/unprotect single pages.
+-	 *
+-	 * KFENCE pool requires page-granular mapping if initialized late.
+-	 *
+-	 * Realms need to make pages shared/protected at page granularity.
+-	 */
+-	return rodata_full || debug_pagealloc_enabled() ||
+-		arm64_kfence_can_set_direct_map() || is_realm_world();
++	return linear_map_needs_set();
+ }
+ 
+ static int update_range_prot(unsigned long start, unsigned long size,
 -- 
 2.55.0.1082.g2b9226bbc0-goog
 
