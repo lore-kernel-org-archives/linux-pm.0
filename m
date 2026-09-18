@@ -1,118 +1,84 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6319A519DF4;
-	Fri, 18 Sep 2026 16:45:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DB3051AEC6;
+	Fri, 18 Sep 2026 16:56:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789749922; cv=none; b=E2UAQL1dzQyfCoROOSLwokV78WIWak224on0tBxmfXjNq8lxa98OyNrYb1yn3D4gVI8O5CHT9jyLwIV707r6/vvf25Usz8YbZtkjUTOzrPhBGg501n2Z496xQQVSwJwJGugbN86zY01lS4URQdupVb+Kqo7fj5U8JB9rpAs7wYs=
+	t=1789750616; cv=none; b=b/dH49RcYf9POnD9ceENs3sruQANSoTvLfVUg0/zWh4KrCvS5+eVkoTGkRybGGL/t1D+21Z1A2G13C6WINqp/WLT9ntglYunEMVIq/8liVx/iIqcCfBFj6VNb036f/iSqG4F+e4KgHD/VDbCC9YwCySfe/a/J8VtW/x37QEX4Yo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789749922; c=relaxed/simple;
-	bh=JSThcUrSD9d3bIVSbKFCAkriwYQ2bNjsEP5KWhJecRw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Zx2Cx5228laMU7s0CvFhYGIN+0iC6RklnGQ5GJ96/C9a7FzjdaHTsjjU93vRCSVjbNUas8g2Px5++g2rUgt8lTOqTV77SB/j1AkwF8iNtnzHF8BvdRbDEW5HHsIWuRKifZkdSMTjn84Wttaa/iUBF8A+Lz+2hRZd0rCuJBp/ldo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m0ZxH+mQ; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789750616; c=relaxed/simple;
+	bh=CQZIO9y14xWMvYtSG5S3I0MH10i/y4EA+msZa4tSNK8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=nPFYiH6JmVfyxp4yT9vFEvAezc9bUSJ+wIb179B+BZOoRtdepBOWrujr51DtJ5smCsla0HwAJHODt0k5ptpsqN5r3B4h7l4rivyeNRDUnvk1ry8BpMPBGszbjNQGsMxzn+ZU09/fITqDQwoINLg6XIpAEA0i82EbJsnGQaZRdK0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VYJkq4TL; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m0ZxH+mQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BD441F000FF;
-	Fri, 18 Sep 2026 16:45:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VYJkq4TL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62A481F00898;
+	Fri, 18 Sep 2026 16:56:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789749921;
-	bh=p/afdDpUjxDvfFW6cnI4C09DF82vIDcSPuyrBSmUfI8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=m0ZxH+mQR/Uf05x4/48ROHKNATIza8gPxVi9lr/10jZq9xCYRtDE/fWPiXpPDIptg
-	 NEwjz9dqpcwCeEqhaOsJleFsQGsJNGJEUZfhpuL5wpWm9JBoHt0mUR4OVdjyWmjCbG
-	 dzzdxEP3OyCH2hiqgVHf/fcLd/xNuh6plVyoSkSOn56fTM+nkksaoa12NoOPvvm+mP
-	 lvhPZOcyBajJLlVgdxPBw3CN9YfXVWn4+S6njb/t25DJZgpd7o0eLiSlBsVpTNbPmr
-	 3RvoEByxqiK8FJ8YFKt909e9VmG4CpOs2Mj/K4vtODVKrThWr7KcCSooCUMeNdMFtV
-	 SRRp9VjR6oPdQ==
-Date: Fri, 18 Sep 2026 11:45:19 -0500
-From: Rob Herring <robh@kernel.org>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, kernel@collabora.com
-Subject: Re: [PATCH 3/7] dt-bindings: devfreq: event: rockchip,dfi: add rk3576
-Message-ID: <20260918164519.GA435751-robh@kernel.org>
-References: <20260917-b4-rockchip-dfi-rk3576-support-v1-0-a5752a29f7bd@collabora.com>
- <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
+	s=k20260515; t=1789750615;
+	bh=3o9CJDBKReLtFRb+X5uo2RFSoFOlGneG62lyu4CaMz4=;
+	h=From:Subject:Date:To:Cc;
+	b=VYJkq4TLIcNs5Yaco2IUHLfPci7OB7bz/qkaS6tJM0+8IlkfUgK88boFH6ni/2lC/
+	 4tFM4sjWawRvSBMyg9H0eonKa64jkkL/QuY6dXjrV7oxyPayhXgmUTcq9arE1YhjUy
+	 Ni+OFY0vD48Ka1zi39qyyCwTTf7k1Qu2K773oOVN4VCD5HFrRdgM5A0NA3ZRhkNqNw
+	 GLA3ZHQA6AMgKEziu2ZWOSKCkv0Fez1bwZSrmiQYOnfEdubgFzxprnY/JLo81mtHmX
+	 fV7ZVTFKFVggbnfGfl6V+IXduWbIVmTOQWD+Nf20R+wnS37/SmPmXZFqcvzWsQMr5/
+	 k8vPmAeUNyEoA==
+From: Linus Walleij <linusw@kernel.org>
+Subject: [PATCH v2 0/2] power: supply: Correct AB8505 charger device tree
+Date: Fri, 18 Sep 2026 18:56:50 +0200
+Message-Id: <20260918-ab8500-charger-dt-v2-0-5f17c332a2a7@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32NQQ6CMBBFr0Jm7ZhpkQKuvIdhUcoIjYaSKSEa0
+ rtbOYDL93/++ztEFs8RrsUOwpuPPswZ9KkAN9l5ZPRDZtCkDbWqQts3FRHmUkYWHFZsW6fdxej
+ SNgR5twg//Ptw3rvMk49rkM9xsalf+s+2KSRU1Nd92dRsrLk9WWZ+nYOM0KWUvqJNIwazAAAA
+X-Change-ID: 20260915-ab8500-charger-dt-99c2c4623a80
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ Linus Walleij <linusw@kernel.org>
+X-Mailer: b4 0.14.3
 
-On Thu, Sep 17, 2026 at 04:04:09PM +0200, Sebastian Reichel wrote:
-> From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> 
-> The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
-> like other rockchip SoCs do. Unlike the RK3588 however, it only has two
-> memory channels, so only two per-channel pclks for DFI.
-> 
-> Add a compatible for this SoC's variant, and add it to the conditionals
-> at the bottom of the bindings file.
-> 
-> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> ---
->  .../bindings/devfreq/event/rockchip,dfi.yaml       | 23 ++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-> index d6e06a9bea19..964f1827496a 100644
-> --- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-> +++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-> @@ -14,6 +14,7 @@ properties:
->      enum:
->        - rockchip,rk3399-dfi
->        - rockchip,rk3568-dfi
-> +      - rockchip,rk3576-dfi
->        - rockchip,rk3588-dfi
->  
->    clocks:
-> @@ -68,6 +69,28 @@ allOf:
->          - clocks
->          - clock-names
->  
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - rockchip,rk3576-dfi
-> +    then:
-> +      properties:
-> +        clocks:
-> +          items:
-> +            - description:
-> +                clock driving the DDR monitoring logic for memory channel 0
-> +            - description:
-> +                clock driving the DDR monitoring logic for memory channel 1
-> +        clock-names:
-> +          items:
-> +            - const: pclk_ddr_mon_ch0
-> +            - const: pclk_ddr_mon_ch1
+AB8505 retains the USB charger from AB8500 but omits the separate main
+charger block. Its charger node consequently has nine valid interrupts,
+not the fourteen interrupts used by AB8500.
 
-Names are already defined at the top-level, just:
+Adjust the binding to describe the variant-specific interrupt sets and
+remove the five nonexistent main-charger interrupts from the AB8505
+device tree. The binding update also limits the autopower_cfg description
+to AB8500, since the corresponding AB8505 register bit is reserved.
 
-minItems: 2
-maxItems: 2
+Assisted-by: LLM
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+Changes in v2:
+- Add an AB8505-specific compatible with the AB8500 fallback.
+- Tie interrupt counts and names to the charger compatible.
+- Use the new compatible in the AB8505 DTSI.
+- Link to v1: https://lore.kernel.org/r/20260915-ab8500-charger-dt-v1-0-10b7b387e6a6@kernel.org
 
-(On clocks too)
+---
+Linus Walleij (2):
+      dt-bindings: power: supply: ab8500: Add AB8505 charger
+      ARM: dts: ux500: Use AB8505 charger compatible
 
-Rob
+ .../power/supply/stericsson,ab8500-charger.yaml    | 70 ++++++++++++++++------
+ arch/arm/boot/dts/st/ste-ab8505.dtsi               | 17 ++----
+ 2 files changed, 57 insertions(+), 30 deletions(-)
+---
+base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+change-id: 20260915-ab8500-charger-dt-99c2c4623a80
+
+Best regards,
+-- 
+Linus Walleij <linusw@kernel.org>
+
