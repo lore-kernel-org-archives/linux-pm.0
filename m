@@ -1,138 +1,142 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi2-f43.google.com (mail-oi2-f43.google.com [74.125.231.235])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A11AA3BE155;
-	Fri, 18 Sep 2026 07:39:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52BD649F123
+	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 07:53:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.235
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789717206; cv=none; b=hYDlk1cJH2VfA8mxfaBl8gcaZZlVtJ9dept19ql2gKBtzp8GTlafuYga3G4FLp4wSh+BY/AHt5GtptQYOIuC+uUOAvScHrWUfzZq+8KNDv21B2ftSltkVktJpS6z7EX2jBJH75frm4+u5HR4wVBWP6rnFeIVKuvSjhnQy6QCpZc=
+	t=1789717988; cv=none; b=lbeE6dxoRTeMAJkz0tjL7z2KOOXmQZBLovjYzTfp31fcVRXtXK1XBEhpsduosjtrPcoGHln2Ndp5BCuVdILpe6FhICK0F923qdeXHYHwtnyD0P7//c/2bKIuy5EBZp6VdcPYQrVsY+YpyN1AHPE1clwfGYZwZmBTLLh8jC9jQrY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789717206; c=relaxed/simple;
-	bh=9HjgM9JbkGt1A3yefJhN4x6xA3Vg7LoR3hGeySb0Qow=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AeFfo2fQ5C/dcYEqvUuJ+dXQYu+ZmubxzEW9cM55fVZAREs4jiFOV9NZfI3rLp4K5q+TjSMioqeqZ8bevOX1EHvr5JekoPLitO+zFRVYNITxV9QMuwnr+z20UXWI6jcGno6QOvmoIpLb9k5JL24jDXpTvsw5VHZd4eKJdleGp04=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QRyltiK/; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QRyltiK/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789717199; x=1821253199;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=9HjgM9JbkGt1A3yefJhN4x6xA3Vg7LoR3hGeySb0Qow=;
-  b=QRyltiK/8VXtmYoDNqHqSA6+r/9gYRqGlcGdjn5gfRAhfQYAn5XrGY+x
-   /+35p6LcSwkm7LHxQ0H0T7RP61tFADN8S0MIQBnpTXmqy1wJlBfBetV8D
-   M0sM5sNh7CvD6aBqts1P3nYb3nGLGHE4yU652I33CC3bngi3TQwFTcxAM
-   pP7c2U8bSt06+1+1/MKj2IhZGMSCRZDLIqtfLwiyHZoMUaLXo/e34lt73
-   3eMaFW6VmLVdJy13a1YgT2W8h/AwUBXpEMCyuMjYl9a4V6QWavGhOpmcL
-   LT+mt+THYI+YR8kQ1SogLaARS2dQsaUtbsHxCqQ4tDduzF5sjo4nlVIAA
-   Q==;
-X-CSE-ConnectionGUID: 9td86wudQRe8nBfvawUHFg==
-X-CSE-MsgGUID: uZRVMeamQZSrFr1z7FHMXA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="89340112"
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
-   d="scan'208";a="89340112"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 00:39:52 -0700
-X-CSE-ConnectionGUID: EQSigIixQTGHBye9zTlPZA==
-X-CSE-MsgGUID: SCwZTKvvQfmatyBz20cYNw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
-   d="scan'208";a="297731196"
-Received: from carterle-desk.ger.corp.intel.com (HELO localhost) ([10.245.245.170])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 00:39:47 -0700
-Date: Fri, 18 Sep 2026 10:39:41 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Guangshuo Li <lgs201920130244@gmail.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Wentao Liang <vulab@iscas.ac.cn>, Miaoqian Lin <linmq006@gmail.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Lucas Stach <l.stach@pengutronix.de>,
-	Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] pmdomain: imx: gpc: remove all initialized power domains
-Message-ID: <aqzqvfbeh653jUce@ashevche-desk.local>
-References: <20260918031323.3376849-1-lgs201920130244@gmail.com>
+	s=arc-20240116; t=1789717988; c=relaxed/simple;
+	bh=wTlung53wgG0U6uz6ynHrcjwVaYOb0YK4Nvyasm8+go=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=llea2qSwtktgROgf8vN95VpY29HjgiZ0z4HD/TqKvirNrh1t/1bEstQKem7cDzcwRZlU3+zaB86myGHFSmW3dlBBUSTQHapUBWny8h2OaGXg+gLjzYHDKlmeNT/JaGUSC+I5t506S+vRU1u1dVBZ1DNOphjfFQRaQG0Pq1pIv0g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.231.235
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-oi2-f43.google.com with SMTP id 46e09a7af769-7fcb425fc2bso226639a34.3
+        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 00:53:07 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789717986; x=1790322786;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=y+tYCkkvzZJmFoYOhTQyYw6fM+qA/usgZs/lU8fn+ao=;
+        b=teWj4zF0s+y49ph9wA8CjYnAolSMM3n6T78KM/brr9naTEnk5EUUREsEBMIFaMiRUw
+         8KVEhvacYQu66D25AnK3N6eI/njZ3EpHvJpCLpXMZYXRCadDPLsrrtLWFQIlUSc+niGv
+         w41hF7+poczufETa06wciroMy18CGpH7H1Rnk7ydXxybn4GUhY+pTnZBmrXcfA2Cvamp
+         h4RgT8rZivqYdMN3C7TrJMiXjAyeewe5w6iUdyJ//Y1JEhuTnNAm8CuRIp4AaAKCpanv
+         XBJ+Rg9j8egiaiUOXGhOWXq76QostPxkogKqD3hvF39VgreDwtUESEwDpEvHP4VIi09r
+         1Siw==
+X-Forwarded-Encrypted: i=1; AKwUvBwFMIJ1y4q/8qQ1yT5jhuGyIm1jmjxSh51Fs0rg6GKC36zzupNTY26YGP1+/0QRsKfZQxGzJkeT8g==@vger.kernel.org
+X-Gm-Message-State: AFuF++lXmu2Aa3CzWd90vRslMUVycT/2RLpcNMRTRml9+36UiX6q28JM
+	p0PwCQwm0hr3X7pn+SUGWRkMPJsuTImb+Rj3YyPoA4WJ5qcLGNE5jiMr0EJLQhBU
+X-Gm-Gg: AYBFou2haQ/GtWAJvWyg8rdT+k+blk9vNbVg5QNL05abfPS4P5DqV1JSBdlEfqJDLnw
+	NYvgzI+ju/5H0hJGkgsKojdiZixPSiNvfX1PxB6951Gi2NJJ0vAr4CNEN20cq/BUHRMl3cXjGUp
+	pKCku9x+KAraAiFHIVU4wlGiZSgXKFxqpPP6HMA3klOS/sLj7NnFyaXNvHmMOb8103xNQyLt80F
+	t2yjyI2nRPtbqEj5q+4NQf1cP9JihL0V37r+R0IoB/NbCiiE76cchrQGy/I5ChrcRn2MrYZH3a0
+	ZQVXPxr1enzrENejA92ubju9f7HHcIkk+wmMUrs36yBPklqIOnzsZOaj5XeNDfb0OHV7nduGpgG
+	wewUOz/PfOnsbf7rYbG11RvXaoFbjoqHCB8axDLOpkDQhjqCsNqL5lj58HY937lsKJpzueLCep2
+	BMD1kyMcHTomWtbW2PDGL53WAlbixRi2+xF0foArpyZAEoGOVVye8REfuh4o9ZNO+pKnNdDDqGP
+	9Oio+MvEBjgDDsm/Xkt5IZBdWoXTd4Wkc+V
+X-Received: by 2002:a05:6830:34a7:b0:7fa:5c49:5253 with SMTP id 46e09a7af769-80de3ae7362mr1924355a34.26.1789717986125;
+        Fri, 18 Sep 2026 00:53:06 -0700 (PDT)
+Received: from mail-oa2-f17.google.com (mail-oa2-f17.google.com. [74.125.231.81])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-80e52854f16sm805345a34.27.2026.09.18.00.53.05
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 18 Sep 2026 00:53:05 -0700 (PDT)
+Received: by mail-oa2-f17.google.com with SMTP id 586e51a60fabf-466cc88a0d7so390015fac.2
+        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 00:53:05 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBw3AMYptdp0upSzIiy7W59A++ut5xNfScw2HMC0popleJsltxIyQlnayR2AgsqYceysEXZZ4woSIA==@vger.kernel.org
+X-Received: by 2002:a05:6102:358d:b0:79f:e8ce:27f2 with SMTP id
+ ada2fe7eead31-7a55af2df71mr547985137.4.1789717606396; Fri, 18 Sep 2026
+ 00:46:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260918031323.3376849-1-lgs201920130244@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+References: <cover.1788338320.git.geert+renesas@glider.be> <1d5c56c80291e447208ac8777aaf90ad6f0a4f4d.1788338320.git.geert+renesas@glider.be>
+ <20260917221647.GA4038349-robh@kernel.org>
+In-Reply-To: <20260917221647.GA4038349-robh@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 18 Sep 2026 09:46:34 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXCFY7-SEGLjhaO1uCDwsvogc0ocdqSz=1C_gsWX6T_tA@mail.gmail.com>
+X-Gm-Features: AcwNN1XFZho-l6FTtqXfFYSmbjO5DpuymjytNtvp4sOSdCdr5EidSrnlACqjwyk
+Message-ID: <CAMuHMdXCFY7-SEGLjhaO1uCDwsvogc0ocdqSz=1C_gsWX6T_tA@mail.gmail.com>
+Subject: Re: [PATCH v3 04/12] of: property: fw_devlink: Add support for renesas,scmi-firmware
+To: Rob Herring <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Cristian Marussi <cristian.marussi@arm.com>, Saravana Kannan <saravanak@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
+	Vinod Koul <vkoul@kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+	=?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clegoffic@baylibre.com>, 
+	devicetree@vger.kernel.org, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, Sep 18, 2026 at 11:13:22AM +0800, Guangshuo Li wrote:
-> imx_gpc_old_dt_init() initializes all power domains described by
-> of_id_data->num_domains. Its probe failure path removes all of these
-> domains, but imx_gpc_remove() only removes the PU and ARM domains.
-> 
-> On SoCs with more than two domains, such as i.MX6SL and i.MX6SX, the
-> additional DISPLAY and PCI generic power domains can remain registered
-> after the GPC driver is removed.
-> 
-> Remove all initialized power domains in reverse order. Keep releasing
-> the PU clocks immediately after the PU domain has been successfully
-> removed.
-> 
-> This issue was found by manual code inspection.
+Hi Rob,
 
-...
+On Fri, 18 Sept 2026 at 00:16, Rob Herring <robh@kernel.org> wrote:
+> On Wed, Sep 02, 2026 at 01:29:20PM +0200, Geert Uytterhoeven wrote:
+> > Let fw_devlink create device links between consumers and suppliers of
+> > SCMI firmware on Renesas platforms, and enforce these dependencies.
+> >
+> > This prevents probing of drivers before the firmware they depend on
+> > becomes available, thus avoiding unneeded probe deferrals.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> > v3:
+> >   - s/firmware/renesas,scmi-firmware/,
 
->  static void imx_gpc_remove(struct platform_device *pdev)
->  {
-> +	const struct imx_gpc_dt_data *of_id_data =
-> +		device_get_match_data(&pdev->dev);
+> > +++ b/drivers/of/property.c
+> > @@ -1417,6 +1417,7 @@ DEFINE_SIMPLE_PROP(power_supplies, "power-supplies", NULL)
+> >  DEFINE_SIMPLE_PROP(mmc_pwrseq, "mmc-pwrseq", NULL)
+> >  DEFINE_SUFFIX_PROP(regulators, "-supply", NULL)
+> >  DEFINE_SUFFIX_PROP(gpio, "-gpio", "#gpio-cells")
+> > +DEFINE_SIMPLE_PROP(renesas_scmi_firmware, "renesas,scmi-firmware", NULL)
+> >
+> >  static struct device_node *parse_pinctrl_n(struct device_node *np,
+> >                                          const char *prop_name, int index)
+> > @@ -1574,6 +1575,7 @@ static const struct supplier_bindings of_supplier_bindings[] = {
+> >       { .parse_prop = parse_regulators, },
+> >       { .parse_prop = parse_gpio, },
+> >       { .parse_prop = parse_gpios, },
+> > +     { .parse_prop = parse_renesas_scmi_firmware, },
+>
+> This is going to be a catch-22, we can't have vendor specific properties
+> here. If we need this, we need to come up with a distributed way to
+> declare them. Linker section tricks is one way. Maybe something in the
+> driver struct would work?
 
-No...
+Quoting myself:
+"I still think the vendor prefix should be dropped, or replaced by "arm".
 
->  	struct device_node *pgc_node;
-> -	int ret;
-> +	int i, ret;
+> Can you just avoid a property altogether? Why can't you check for the
+> presence of SCMI at runtime?
 
-...and no.
+A system can have multiple SCMI providers, so
+of_find_compatible_node(..., "arm,scmi") is not sufficient to find
+the right one.
 
-The result of the device_get_match_data() better to be checked, in some cases
-it might lead to NULL dereference.
+Gr{oetje,eeting}s,
 
-It's better to split semantically different variables, also naming 'i' is not
-good, num_domains is better. Besides that, why is it signed?
-
-...
-
-> +		for (i = of_id_data->num_domains - 1; i >= 0; i--) {
-
-What you are doing here can be written in a shorter form
-
-		num_domains = of_id_data->num_domains;
-		while (num_domains--) {
-
-> +			ret = pm_genpd_remove(&imx_gpc_domains[i].base);
-> +			if (ret) {
-> +				dev_err(&pdev->dev,
-> +					"Failed to remove %s power domain (%pe)\n",
-> +					imx_gpc_domains[i].base.name,
-> +					ERR_PTR(ret));
-> +				return;
-> +			}
->  
-> +			if (i == GPC_PGC_DOMAIN_PU)
-> +				imx_pgc_put_clocks(&imx_gpc_domains[i]);
->  		}
+                        Geert
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
