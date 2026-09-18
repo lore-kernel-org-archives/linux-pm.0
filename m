@@ -1,74 +1,101 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED4695172C2
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 16:30:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3364151815A;
+	Fri, 18 Sep 2026 16:41:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789749038; cv=none; b=jWqKcVVi83Scs9sDbamt8KsLI+G7HrynqZymCriNCSbgcDNUKxwb5HRgTMVtrDoqFphfyUK5MWwM9nw6hpA21RfZm6Mb3LFJmPmBBel1nly9HfmclZDLPa6Lm38Ejbh8UqYx7rzqhAXvxLvcq/Qb20kGHvqczvx0ZrdkAq9UgPw=
+	t=1789749685; cv=none; b=qOPxgtEOMWy/D5kpVuhJlQSXVU51WbGlAsmo3EsSypMYgP5e/1wirwaJuzkrNj/fWsCj/nd494RI4JY8WxRMiKZSB0JHgAnbS33g17wC5vKEpNLDZXmbF1gltUpRfjAlkon+Gu3hYlP08GSu8LYPyqKcYITXpAv5Jq183nqHo8U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789749038; c=relaxed/simple;
-	bh=nVyy7RW+ergekuB/uPOMCJEpJFWqYOWoZXegAiVVCME=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TCDlFDI/PQtpkiCGExs3juERMoH1vTLSZPuPpU9potE0fVlvm0891+mtfDDN4qsZ1YjEJCyj+khEOvzeV8jLTOw+HbzGLz0e4CbLKwMRAKF2cFnSsqpCMpWI7ifGA3Fjw95aYjWwyHbe6R4e1ZzRKYS8ErQFYHu6Z0vqbJFOdT0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XW9r0F8k; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789749685; c=relaxed/simple;
+	bh=BOZWafU3f4ITSsJBLEr368j82TV+YUOqf180XRodaHg=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=t/OUKBYf8xYux/ipKfcrjyS8tPYN3AXt4745qrW+O74UxaAIlbRKUS6osKO4jTlGt9d/9N7xCANx0vF5aeAm16RkSLKUVDCcMwgy4sCZtpmT61m5N0cNf2teJUxteoxZdTJFbJ3afJXw4nsPEKoUz3AsmW6Uxfi8CLQbMdSaQSU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ICXEfZWG; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XW9r0F8k"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DACA1F00898
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 16:30:36 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ICXEfZWG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 057BC1F00899;
+	Fri, 18 Sep 2026 16:41:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789749036;
-	bh=nVyy7RW+ergekuB/uPOMCJEpJFWqYOWoZXegAiVVCME=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=XW9r0F8kS+IWuqtVDkgtB2FooS5PntWPpAOWJrLEsoR7zHE5rmcIwTR3mzPu2dUzA
-	 wJj08hc3bJPNe2B+ynw/DwaGxvqi1bpmEy37PCbQOGzLGnBXjnesr8OUhW5wHFf5tR
-	 Re52/tmUXJbknZJ3YnyP//UI+3+zfdAbwX/BGoczzUmb8tgOFjTWaXqL4ZUmm7Lqe2
-	 IvVnIlymKOwUXBBcgYLjATMmKzBmf3KEaT59p9qb18c4Y5hrslyYRnZHphe4l1HTSA
-	 tcQsp0KvnH48tDstgzEoDFMdxgxDwfBJLosOBXlvfGIqkFusTboM98oQfUq6x49qE8
-	 1A5rnc2tBfV7A==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8b402f4e3so981805e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 09:30:36 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByuK0B0xEf7vPGcqZ/nCxMO4xuPpKXT8/Ga57eE4sbun5+DYVd/UlGhk3WTlR41yHQe7u6LwvA9kQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kLju0LTsC6dsvGSRF9P+PMX1AqNN3n/BOCt0lt3FFGArZxBufY
-	MVI2vbF+nsb5KlnLJtjYwc0whYQbJgrjaGZgyjoS6/J42MPe2Rq+2VNnJDogNgC/P5VkkSYAi1b
-	h9mBZZEzVGoWXXdbdeskW7rMUYctYToY=
-X-Received: by 2002:a05:6512:1389:b0:5b7:6489:37c7 with SMTP id
- 2adb3069b0e04-5b8c179d8cdmr984730e87.0.1789749034962; Fri, 18 Sep 2026
- 09:30:34 -0700 (PDT)
+	s=k20260515; t=1789749681;
+	bh=WbkQpYzW8fMnBq57NK7jpTmVbQoZoa+LajFAmJqaKwg=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject;
+	b=ICXEfZWGgydsyAdHsmcIuO4df3Y4EmINakIsTIkpaCi6VmkVnmH7MXbZGhReGj2Ow
+	 ZXF/3hck8Ye7aD4t69fCe7WHqgn9VD3D3XWtRv8FrP3OM42vigP7m8SJJbwOSf82wK
+	 +GkZH2rTy7zUpje/4SmZg6BCJmATbTrN3RcIyaCYxa5RAlT0aqjFteGuDJVV3qyN2h
+	 D5qJn0E5oegFAxnC7eIwVZB+XTJWijZsTQuJ3o08jgBb+aOql6zky8m1PSF+0mRWkx
+	 vWpzhYyJ7S8vphq4LER8kYXpb7Tyx42RQN6x9nC3byDve67DG9lTwceG9x7XqXa+p1
+	 qmKaxYqoSi75g==
+Date: Fri, 18 Sep 2026 11:41:20 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260915-ab8500-charger-dt-v1-0-10b7b387e6a6@kernel.org>
- <20260915-ab8500-charger-dt-v1-1-10b7b387e6a6@kernel.org> <20260918-cerise-chamois-of-speed-af2e93@quoll>
-In-Reply-To: <20260918-cerise-chamois-of-speed-af2e93@quoll>
-From: Linus Walleij <linusw@kernel.org>
-Date: Fri, 18 Sep 2026 18:30:21 +0200
-X-Gmail-Original-Message-ID: <CAD++jLnwtzxNjTJXW9C67pR2EBFuqdRHPzwqmCX5kQ6qeX+2gw@mail.gmail.com>
-X-Gm-Features: AcwNN1WdXWgijiWOr0m5rk2m597QDFcKhkw6iGYMsxL-jbJcKd6zzeJ40K6OZv8
-Message-ID: <CAD++jLnwtzxNjTJXW9C67pR2EBFuqdRHPzwqmCX5kQ6qeX+2gw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] dt-bindings: power: supply: ab8500: Allow AB8505 interrupts
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ linux-rockchip@lists.infradead.org, Chanwoo Choi <cw00.choi@samsung.com>, 
+ Kyungmin Park <kyungmin.park@samsung.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, 
+ Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Brian Masney <bmasney+clk@redhat.com>, 
+ MyungJoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, 
+ Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.infradead.org, 
+ linux-clk@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, 
+ Heiko Stuebner <heiko@sntech.de>, kernel@collabora.com, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+In-Reply-To: <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
+References: <20260917-b4-rockchip-dfi-rk3576-support-v1-0-a5752a29f7bd@collabora.com>
+ <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
+Message-Id: <178974864695.290479.16274908479214373555.robh@kernel.org>
+Subject: Re: [PATCH 3/7] dt-bindings: devfreq: event: rockchip,dfi: add
+ rk3576
 
-On Fri, Sep 18, 2026 at 11:00=E2=80=AFAM Krzysztof Kozlowski <krzk@kernel.o=
-rg> wrote:
 
-> You should have a different compatible for ab8505, with ab8500 as
-> fallback, but maybe we just don't care about such old hardware?
+On Thu, 17 Sep 2026 16:04:09 +0200, Sebastian Reichel wrote:
+> From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> 
+> The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
+> like other rockchip SoCs do. Unlike the RK3588 however, it only has two
+> memory channels, so only two per-channel pclks for DFI.
+> 
+> Add a compatible for this SoC's variant, and add it to the conditionals
+> at the bottom of the bindings file.
+> 
+> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> ---
+>  .../bindings/devfreq/event/rockchip,dfi.yaml       | 23 ++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
 
-Hm!
+My bot found errors running 'make dt_binding_check' on your patch:
 
-The parent MFD device has the two different compatibles:
-Documentation/devicetree/bindings/mfd/stericsson,ab8500.yaml
+yamllint warnings/errors:
 
-I guess I should add it here too.
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml: properties:clock-names: {'minItems': 1, 'maxItems': 4, 'items': [{'enum': ['pclk_ddr_mon', 'pclk_ddr_mon_ch0']}, {'const': 'pclk_ddr_mon_ch1'}, {'const': 'pclk_ddr_mon_ch2'}, {'const': 'pclk_ddr_mon_ch3'}]} should not be valid under {'required': ['maxItems']}
+	hint: "maxItems" is not needed with an "items" list
+	from schema $id: http://devicetree.org/meta-schemas/items.yaml
 
-Yours,
-Linus Walleij
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.kernel.org/project/devicetree/patch/20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
