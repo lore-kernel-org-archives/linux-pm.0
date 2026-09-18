@@ -1,63 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A45B4DE70B;
-	Fri, 18 Sep 2026 11:38:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B43444973BF;
+	Fri, 18 Sep 2026 11:43:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789731490; cv=none; b=Ma7RfYMGLw3fdI2hvlBJjR5IkHniL6YXFLVUz5i1BiDwdoXToLKUMo3WFpC/PhRfK9+khGBLP0wQScy7R24qSwENPIQv2+pAGkq8ov+YeYzLhlMwxuZKk6cEY7XD5v/gtm0ih1T5X5Jn2+d2E/0T4F7JdNTdD1DKFHqFmArfn3U=
+	t=1789731809; cv=none; b=NnpfXHyFXQmC8c/uEuYw8QYagEhbhNBBLUkg8ZwRSdtfnND7pSOu8zHXzLA2UBvKY6r0pPd642O+CXSy7kPPL2YYDcQE+I02aabjBv6WzV2YRgaV7ApA/+WU0xGHMCwGUxZE3pescJvzgf9IiZJ/GmVg/shoHMB6wtuRTOC4C8g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789731490; c=relaxed/simple;
-	bh=NhcpE0x86WaY3L19vDcMfmEYtxxZPDkTvFPvMJ1x3ds=;
+	s=arc-20240116; t=1789731809; c=relaxed/simple;
+	bh=/W9itLwGfr1e1jnzyKgGlEkGZU5X81u/k+YHG6nf/fc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ff5yjAjQBd+XHFZon5hf6v+mvCU02yKj6KWy8madCAZB3UYEaRxN6cxvk/0qIPD5W/yTgpFP+FC9TlOdMwWqGdvSyJpdYT8XHsoUGqziG3O+SeNILzckHx+UpzSNvL85omv22ScfpymWoFXLiCLxNzo2hU3+Q+T12mMRR0/Kn4k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YFvekzFV; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=glP4MWbxLF3yPd3gGnjgJz6e6voC/yIVNrUQXELm3kZQWAuiKcbisdq+ldvyT1PRLNccbyGH1WKMNn/nIdnVsPBKHmOcVVTleNfmOj/ut3BkE2UzNbuN/fDLHi4CUZDq4DrBDzLtIMxQxxgj9CVTGUG29t/3gLFryu/j3kvetvA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=OSkK20Fn; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YFvekzFV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C05A1F00898;
-	Fri, 18 Sep 2026 11:38:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789731489;
-	bh=NhcpE0x86WaY3L19vDcMfmEYtxxZPDkTvFPvMJ1x3ds=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YFvekzFV/BhGm83OLudte0Mksm9JDZLcIOjq9OxmVjcT5wRz9Gr7dEpgfBQxFXHHu
-	 NJpg7mWtiAOAaTsyL1N9IMfz7leMvwd00DogqrXlXIxIJhQxEkAXVcZeI8u2It+uPd
-	 bIfSdZA/Q87xj1eB0Zrd19PJlzE80Ilj4w579X3lfnsz+4lGix2AUm548CqsQp+/0K
-	 sunL6xZCuKn65mLdFWStJQnyRpIVjsJSvtlzonPrtlWt1Xsm/kQSseldoQ/FDxCFsp
-	 yrRi2991ROKw7vDljvclqiWfYtZ08G/UEwkLtUXdudUxs16r6LeF63B47pseb2AXJo
-	 2sD7FFeiT5r4w==
-Date: Fri, 18 Sep 2026 13:38:05 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, 
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH 01/10] dt-bindings: clock: renesas,r8a78000-cpg: Add
- CPG_SGD4_VIO_DP_{TX,OTHER}
-Message-ID: <20260918-masked-tidy-sheep-b326d4@quoll>
-References: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-0-4c72d4e086dd@ideasonboard.com>
- <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-1-4c72d4e086dd@ideasonboard.com>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="OSkK20Fn"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=1H8mMS7ZyLHqrQSJ/fwgAtYDIhNJ85L1vxMyUhJcXVQ=; b=OSkK20FnIj3q52wXGIKdYJJV/T
+	EaOZvUarfDhLkY2ls/ihX82UcjThLeaI5D7neLwwvddiDBV496MDNiga1dl6/1kM+xAUW28f63boB
+	GX9J+wqB2K6/pJPMJOt7wjsx4++iYtYXxuQlCG1BKB1o/D+JzxmxKXEAydTsHEd7O+iBxmIoVt7M7
+	p770/BAvtH5TD2hQqnrupFDYhMBXNjqpOgHvj2Gs4pYtu8r6ju1BDSeJCs5ijlFlrq2XVQZzX226g
+	7ii60jOY9gxmY+bt9Xh8Y+aYPvshrgDkFI5feUsb7wakGcxOdGlRBcmJFmlSctYyyu8E2PvP+GHTd
+	hkJlfyGQ==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x7Wzu-0000000HAkq-0cDR;
+	Fri, 18 Sep 2026 11:43:18 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id B265630057F; Fri, 18 Sep 2026 13:43:17 +0200 (CEST)
+Date: Fri, 18 Sep 2026 13:43:17 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Christian Loehle <christian.loehle@arm.com>,
+	Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Beata Michalska <beata.michalska@arm.com>,
+	Elif Topuz <elif.topuz@arm.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Shubhang Kaushik <sh@gentwo.org>, Christoph Lameter <cl@gentwo.org>,
+	Huang Shijie <shijie@os.amperecomputing.com>,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] sched/fair: Randomize equally shallow slow-path
+ candidates
+Message-ID: <20260918114317.GO776954@noisy.programming.kicks-ass.net>
+References: <20260917153915.1563875-1-christian.loehle@arm.com>
+ <20260917153915.1563875-3-christian.loehle@arm.com>
+ <CAKfTPtBft2pVrsZQGJu0UBjuqaGJ2ViE9N6YExLvBnpgEXDvag@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-1-4c72d4e086dd@ideasonboard.com>
+In-Reply-To: <CAKfTPtBft2pVrsZQGJu0UBjuqaGJ2ViE9N6YExLvBnpgEXDvag@mail.gmail.com>
 
-On Thu, Sep 17, 2026 at 09:04:40PM +0900, Paul Elder wrote:
-> Add preliminary clocks for testing:
+On Thu, Sep 17, 2026 at 06:06:42PM +0200, Vincent Guittot wrote:
+> On Thu, 17 Sept 2026 at 17:41, Christian Loehle
+> <christian.loehle@arm.com> wrote:
+> >
+> > Picking the first eligible idle CPU leaves a scan-order bias. Concurrent
+> > slow-path selectors can choose the same CPU before either task is enqueued.
+> >
+> > Use reservoir sampling for equal exit latencies, resetting the candidate
+> > count when a shallower candidate appears. Use the per-CPU scheduler PRNG
+> > and reciprocal_scale() to avoid variable division or a second scan.
+> >
+> > Use a u64 latency key with U64_MAX for unpublished states. Published
+> > states take precedence; when none are found, sample among the idle CPUs
+> > without a published state.
+> >
+> > Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+> 
+> Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
 
-What is a preliminary clock?
-
-Best regards,
-Krzysztof
-
+Thanks, let me go queue this.
