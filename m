@@ -1,32 +1,32 @@
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E992348C5D;
-	Fri, 18 Sep 2026 01:22:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B270537F00C;
+	Fri, 18 Sep 2026 01:23:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789694525; cv=none; b=QYQBhbzPUU3rG/P/6ozATBukkHzVBIJWeq6sH5Rh194+Ry7N5M7GHz4kZcJWzUeSg6W8els07T2CL7vEmgeermUzF4WdrxGuVNkZR+iRC/F9bj/xn4DXiq4DUrblrn+ikDdJs7c6qg5gQaxLaEHUZ5PaxHvyJvpCWoXPUkz5dJk=
+	t=1789694595; cv=none; b=WlHHOt+uKV5cfqXrLXueEOVX8riKvVazgS9HQAuokYJsB/e2d+gZNi2WWq+cUxW3ukjSfNiYHFGW1HpKi7XebuTq7zY/fYfW/GXIjwiteC1L6zQoPwrLt3YUiNpHBRAg/xnGOsWNhnOpA+trvqm/AhlAk7eYvFdlq6UwiAlr/r4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789694525; c=relaxed/simple;
-	bh=NprK1WE9s3afYX1CixzE73TQnctfnNwedCGApWOmWMI=;
+	s=arc-20240116; t=1789694595; c=relaxed/simple;
+	bh=PNg0lMCpe5gaiKH93nJLG/WisP3rw+iuR+oq2dNmerg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A2582nnR0ySl3E+D+RTLTK4mDuC99O+NiZIvXj9QrJLNDDLAysAFp7cN15FbktoJD4VwJiUUxnGfeFxJksqZJQC1+toxTfaw5zQ0qHkqEQEeoZb0DD09uhWv//BFoqcvu0Y1Pa3mDFjQG85Frg9SCuVL3UqczgZdOpK+VSY36/w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=wEdblEIK; arc=none smtp.client-ip=213.167.242.64
+	 Content-Type:Content-Disposition:In-Reply-To; b=dSPbQ7J8yhNPoLqI4IBf/v0hjVIBgkdFrJbOjsnQelscdfbDsMXYCAIbxyU2HFXp74jr0bOlDYH5k9InpaanUy/3egPW4kdHRis+hgQmw/tZ1N+3LLbOt1PG1o/BG0HHOcOabCxc1TSBvUPMmZl7dfkZUPjTdUbZJamyDV18pI8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=cUw2gGxK; arc=none smtp.client-ip=213.167.242.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="wEdblEIK"
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="cUw2gGxK"
 Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 17B2F22B;
-	Fri, 18 Sep 2026 03:20:12 +0200 (CEST)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id BD26C4DC;
+	Fri, 18 Sep 2026 03:21:24 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1789694412;
-	bh=NprK1WE9s3afYX1CixzE73TQnctfnNwedCGApWOmWMI=;
+	s=mail; t=1789694484;
+	bh=PNg0lMCpe5gaiKH93nJLG/WisP3rw+iuR+oq2dNmerg=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=wEdblEIKiyuK2mnqAv4nJMPuvyp2wZf+lFda6iKz6tSiS2G+Ql2LdV3P+3S587Pc/
-	 mjgQhunI9jjO6YYOSUBCExS4sALF+WhMbyltG4SltqE5Gq/yRgnPyFZUgWCJwGG98n
-	 hzvOpBDLfHRbQCfR2ZQmLpV+0TesSw5YxPNB2j4M=
-Date: Fri, 18 Sep 2026 04:21:53 +0300
+	b=cUw2gGxKG5ci6QjycG2Hjxek4/ACFCYQXosC1EkBRbmwzXWdy2uYazhc6sVwFnGAS
+	 TqC3fX5SUdgWPKWTpMU4GRV+Exc/y2Gs9S8q3+ckQFiFGJFbS/A52KapxscTK2yFO2
+	 p4zIqW/hTCKujXYlaufVmttnaqGMVF6mDxEnXHTI=
+Date: Fri, 18 Sep 2026 04:23:05 +0300
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: Paul Elder <paul.elder+renesas@ideasonboard.com>
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -43,10 +43,11 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
 	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH 05/10] arm64: renesas: r8a78000: Add VSP[BI] nodes
-Message-ID: <20260918012153.GE145152@killaraus.ideasonboard.com>
+Subject: Re: [PATCH 06/10] media: rcar-fcp: Check device revision at probe
+ time
+Message-ID: <20260918012305.GF145152@killaraus.ideasonboard.com>
 References: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-0-4c72d4e086dd@ideasonboard.com>
- <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-5-4c72d4e086dd@ideasonboard.com>
+ <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-6-4c72d4e086dd@ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,133 +56,228 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-5-4c72d4e086dd@ideasonboard.com>
+In-Reply-To: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-6-4c72d4e086dd@ideasonboard.com>
 
-On Thu, Sep 17, 2026 at 09:04:44PM +0900, Paul Elder wrote:
-> Add DT nodes for the VSPB and VSPI IP cores in the R-Car X5H Soc.
-> 
+On Thu, Sep 17, 2026 at 09:04:45PM +0900, Paul Elder wrote:
+
+I'm the original author of this patch, please preserve authorship.
+
+> Verify that the device revision register reports a valid value,
+> otherwise reject the device.
+
+The code is fine, but I don't think we should merge this now. It will
+slow down probe for little value.
+
 > Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 > Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
 > ---
->  arch/arm64/boot/dts/renesas/r8a78000.dtsi | 99 +++++++++++++++++++++++++++++++
->  1 file changed, 99 insertions(+)
+> Changes since v2:
 > 
-> diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> index 2f8886f8b6545026397fd83969882f8c62afa9d3..f90b869579d384e3fc13d0a13625b7cddaac2868 100644
-> --- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> +++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> @@ -1072,6 +1072,105 @@ fcpvb4: fcp@c503c000 {
->  			resets = <&mdlc_vio 0x106>;
->  		};
+> - Add FCP type information
+> - Reject devices with an unsupported version
+> 
+> Changes since v1:
+> 
+> - Use devm_platform_ioremap_resource()
+> ---
+>  drivers/media/platform/renesas/rcar-fcp.c | 130 +++++++++++++++++++++++++++---
+>  1 file changed, 119 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/media/platform/renesas/rcar-fcp.c b/drivers/media/platform/renesas/rcar-fcp.c
+> index dfb0ca93e854dd0bb8aedfb757fd786ef6e45542..d99b3ff976e80f275af19e5dc02c6e1de98c38a3 100644
+> --- a/drivers/media/platform/renesas/rcar-fcp.c
+> +++ b/drivers/media/platform/renesas/rcar-fcp.c
+> @@ -14,26 +14,75 @@
+>  #include <linux/list.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+> +#include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/property.h>
+>  #include <linux/slab.h>
 >  
-> +		vspi0: vsp@c5080000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc5080000 0 0x8000>;
-> +			interrupts = <GIC_SPI 643 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-
-Same comment as for 04/10.
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Tested-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-
-> +			power-domains = <&mdlc_vio 0x07 0xfe>;
-> +			resets = <&mdlc_vio 0xfe>;
+>  #include <media/rcar-fcp.h>
+>  
+> -#define RCAR_FCP_REG_RST		0x0010
+> -#define RCAR_FCP_REG_RST_SOFTRST	BIT(0)
+> -#define RCAR_FCP_REG_STA		0x0018
+> -#define RCAR_FCP_REG_STA_ACT		BIT(0)
+> +#define RCAR_FCP_REG_VCR			0x0000
+> +#define RCAR_FCP_REG_VCR_CATEGORY		(1 << 8)
+> +#define RCAR_FCP_REG_VCR_REVISION_H3_ES1	(1 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_M3W		(2 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_V3M		(3 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_H3		(4 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_D3		(5 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_M3N		(6 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_V3H		(7 << 0)
+> +#define RCAR_FCP_REG_VCR_REVISION_E3		(8 << 0)
 > +
-> +			renesas,fcp = <&fcpvi0>;
-> +		};
+> +#define RCAR_FCP_REG_CFG0			0x0004
+> +#define RCAR_FCP_REG_CFG0_FCPVSEL		BIT(1)
 > +
-> +		vspi1: vsp@c5088000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc5088000 0 0x8000>;
-> +			interrupts = <GIC_SPI 644 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0xff>;
-> +			resets = <&mdlc_vio 0xff>;
+> +#define RCAR_FCP_REG_RST			0x0010
+> +#define RCAR_FCP_REG_RST_RIIFRST		BIT(22)
+> +#define RCAR_FCP_REG_RST_RSIFRST		BIT(21)
+> +#define RCAR_FCP_REG_RST_DCMPRST		BIT(20)
+> +#define RCAR_FCP_REG_RST_MODRST			BIT(4)
+> +#define RCAR_FCP_REG_RST_SOFTRST		BIT(0)
 > +
-> +			renesas,fcp = <&fcpvi1>;
-> +		};
+> +#define RCAR_FCP_REG_STA			0x0018
+> +#define RCAR_FCP_REG_STA_ACT			BIT(0)
 > +
-> +		vspi2: vsp@c5090000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc5090000 0 0x8000>;
-> +			interrupts = <GIC_SPI 645 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0x100>;
-> +			resets = <&mdlc_vio 0x100>;
+> +#define RCAR_FCP_REG_TL_CTRL			0x0070
+> +#define RCAR_FCP_REG_TL_CTRL_TLEN		BIT(31)
+> +#define RCAR_FCP_REG_TL_CTRL_VPOS_C(n)		((n) << 16)
+> +#define RCAR_FCP_REG_TL_CTRL_VPOS_Y(n)		((n) << 0)
 > +
-> +			renesas,fcp = <&fcpvi2>;
-> +		};
+> +#define RCAR_FCP_REG_PICINFO1			0x00c4
+> +#define RCAR_FCP_REG_PICINFO1_STRIDE_DIV16	((n) << 0)
 > +
-> +		vspi3: vsp@c5098000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc5098000 0 0x8000>;
-> +			interrupts = <GIC_SPI 646 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0x101>;
-> +			resets = <&mdlc_vio 0x101>;
+> +#define RCAR_FCP_REG_BA_ANC_Y0			0x0100
+> +#define RCAR_FCP_REG_BA_ANC_Y1			0x0104
+> +#define RCAR_FCP_REG_BA_ANC_Y2			0x0108
+> +#define RCAR_FCP_REG_BA_ANC_C			0x010c
+> +#define RCAR_FCP_REG_BA_REF_Y0			0x0110
+> +#define RCAR_FCP_REG_BA_REF_Y1			0x0114
+> +#define RCAR_FCP_REG_BA_REF_Y2			0x0118
+> +#define RCAR_FCP_REG_BA_REF_C			0x011c
 > +
-> +			renesas,fcp = <&fcpvi3>;
-> +		};
+> +enum rcar_fcp_type {
+> +	RCAR_FCPF,
+> +	RCAR_FCPV,
+> +};
+>  
+>  struct rcar_fcp_device {
+>  	struct list_head list;
+>  	struct device *dev;
+>  	void __iomem *base;
+> +	enum rcar_fcp_type type;
+>  };
+>  
+>  static LIST_HEAD(fcp_devices);
+>  static DEFINE_MUTEX(fcp_lock);
+>  
+> +static inline u32 rcar_fcp_read(struct rcar_fcp_device *fcp, u32 reg)
+> +{
+> +	return ioread32(fcp->base + reg);
+> +}
 > +
-> +		vspb0: vsp@c50c0000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc50c0000 0 0x8000>;
-> +			interrupts = <GIC_SPI 618 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0xf9>;
-> +			resets = <&mdlc_vio 0xf9>;
+>  static inline void rcar_fcp_write(struct rcar_fcp_device *fcp, u32 reg, u32 val)
+>  {
+>  	iowrite32(val, fcp->base + reg);
+> @@ -152,15 +201,66 @@ EXPORT_SYMBOL_GPL(rcar_fcp_soft_reset);
+>   * Platform Driver
+>   */
+>  
+> +static int rcar_fcp_setup(struct rcar_fcp_device *fcp)
+> +{
+> +	static const char * const models[] = {
+> +		[RCAR_FCPF] = "FCPF",
+> +		[RCAR_FCPV] = "FCPV",
+> +	};
+> +	static struct {
+> +		u32 version;
+> +		const char *name;
+> +	} versions[] = {
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3_ES1, "H3 ES1.x" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3W, "M3W" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3M, "V3M" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3, "H3" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_D3, "D3" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3N, "M3N" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3H, "V3H" },
+> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_E3, "E3" },
+> +	};
 > +
-> +			renesas,fcp = <&fcpvb0>;
-> +		};
+> +	unsigned int i;
+> +	u32 version;
 > +
-> +		vspb1: vsp@c50c8000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc50c8000 0 0x8000>;
-> +			interrupts = <GIC_SPI 619 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0xfa>;
-> +			resets = <&mdlc_vio 0xfa>;
+> +	/* Check the device version register. */
+> +	version = rcar_fcp_read(fcp, RCAR_FCP_REG_VCR);
 > +
-> +			renesas,fcp = <&fcpvb1>;
-> +		};
+> +	for (i = 0; i < ARRAY_SIZE(versions); ++i) {
+> +		if (versions[i].version == version)
+> +			break;
+> +	}
 > +
-> +		vspb2: vsp@c50d0000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc50d0000 0 0x8000>;
-> +			interrupts = <GIC_SPI 620 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0xfb>;
-> +			resets = <&mdlc_vio 0xfb>;
+> +	if (i >= ARRAY_SIZE(versions)) {
+> +		dev_err(fcp->dev, "Invalid FCP version 0x%08x\n", version);
+> +		return -ENODEV;
+> +	}
 > +
-> +			renesas,fcp = <&fcpvb2>;
-> +		};
+> +	dev_dbg(fcp->dev, "%s %s device found\n", models[fcp->type],
+> +		versions[i].name);
 > +
-> +		vspb3: vsp@c50d8000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc50d8000 0 0x8000>;
-> +			interrupts = <GIC_SPI 621 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0xfc>;
-> +			resets = <&mdlc_vio 0xfc>;
+> +	return 0;
+> +}
 > +
-> +			renesas,fcp = <&fcpvb3>;
-> +		};
+> +static const struct of_device_id rcar_fcp_of_match[] = {
+> +	{ .compatible = "renesas,fcpf", .data = (void *)RCAR_FCPF },
+> +	{ .compatible = "renesas,fcpv", .data = (void *)RCAR_FCPV },
+> +	{ },
+> +};
+> +MODULE_DEVICE_TABLE(of, rcar_fcp_of_match);
 > +
-> +		vspb4: vsp@c50e0000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc50e0000 0 0x8000>;
-> +			interrupts = <GIC_SPI 622 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_OTHER>;
-> +			power-domains = <&mdlc_vio 0x07 0xfd>;
-> +			resets = <&mdlc_vio 0xfd>;
+>  static int rcar_fcp_probe(struct platform_device *pdev)
+>  {
+>  	struct rcar_fcp_device *fcp;
+> +	int ret;
+>  
+>  	fcp = devm_kzalloc(&pdev->dev, sizeof(*fcp), GFP_KERNEL);
+>  	if (fcp == NULL)
+>  		return -ENOMEM;
+>  
+>  	fcp->dev = &pdev->dev;
+> +	fcp->type = (enum rcar_fcp_type)device_get_match_data(&pdev->dev);
+>  
+>  	fcp->base = devm_platform_ioremap_resource(pdev, 0);
+>  	if (IS_ERR(fcp->base))
+> @@ -169,6 +269,15 @@ static int rcar_fcp_probe(struct platform_device *pdev)
+>  	dma_set_max_seg_size(fcp->dev, UINT_MAX);
+>  
+>  	pm_runtime_enable(&pdev->dev);
+> +	ret = pm_runtime_resume_and_get(&pdev->dev);
+> +	if (ret < 0)
+> +		goto error_pm_disable;
 > +
-> +			renesas,fcp = <&fcpvb4>;
-> +		};
+> +	ret = rcar_fcp_setup(fcp);
+> +	if (ret < 0)
+> +		goto error_pm_put;
 > +
->  		mdlc_cmnn: system-controller@ca410000 {
->  			compatible = "renesas,r8a78000-mdlc";
->  			reg = <0 0xca410000 0 0x1000>;
+> +	pm_runtime_put(&pdev->dev);
+>  
+>  	mutex_lock(&fcp_lock);
+>  	list_add_tail(&fcp->list, &fcp_devices);
+> @@ -177,6 +286,12 @@ static int rcar_fcp_probe(struct platform_device *pdev)
+>  	platform_set_drvdata(pdev, fcp);
+>  
+>  	return 0;
+> +
+> +error_pm_put:
+> +	pm_runtime_put(&pdev->dev);
+> +error_pm_disable:
+> +	pm_runtime_disable(&pdev->dev);
+> +	return ret;
+>  }
+>  
+>  static void rcar_fcp_remove(struct platform_device *pdev)
+> @@ -190,13 +305,6 @@ static void rcar_fcp_remove(struct platform_device *pdev)
+>  	pm_runtime_disable(&pdev->dev);
+>  }
+>  
+> -static const struct of_device_id rcar_fcp_of_match[] = {
+> -	{ .compatible = "renesas,fcpf" },
+> -	{ .compatible = "renesas,fcpv" },
+> -	{ },
+> -};
+> -MODULE_DEVICE_TABLE(of, rcar_fcp_of_match);
+> -
+>  static struct platform_driver rcar_fcp_platform_driver = {
+>  	.probe		= rcar_fcp_probe,
+>  	.remove		= rcar_fcp_remove,
+> 
 
 -- 
 Regards,
