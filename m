@@ -1,32 +1,32 @@
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B270537F00C;
-	Fri, 18 Sep 2026 01:23:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EED0A38F233;
+	Fri, 18 Sep 2026 01:28:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789694595; cv=none; b=WlHHOt+uKV5cfqXrLXueEOVX8riKvVazgS9HQAuokYJsB/e2d+gZNi2WWq+cUxW3ukjSfNiYHFGW1HpKi7XebuTq7zY/fYfW/GXIjwiteC1L6zQoPwrLt3YUiNpHBRAg/xnGOsWNhnOpA+trvqm/AhlAk7eYvFdlq6UwiAlr/r4=
+	t=1789694940; cv=none; b=cubj8V0v2bd5GLocWG4E0mNbvptS1oeCPkBXFAo9CAMbKz7jgjGe85sP/yF+NhymJLl3UqWq+YmeDCMQ5WGmmNGlfYd5r1X2OJ21gk8Vip4WzS5rIfg99ffsVSx9DGDpfaKgPnmm7/zspeQYlp6N27Y7hKj6kO7Lpec/iZnaVus=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789694595; c=relaxed/simple;
-	bh=PNg0lMCpe5gaiKH93nJLG/WisP3rw+iuR+oq2dNmerg=;
+	s=arc-20240116; t=1789694940; c=relaxed/simple;
+	bh=r2wb3vrsQzTnLpySrB3l2Zf678BNuRe+z38ynKuL/3w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dSPbQ7J8yhNPoLqI4IBf/v0hjVIBgkdFrJbOjsnQelscdfbDsMXYCAIbxyU2HFXp74jr0bOlDYH5k9InpaanUy/3egPW4kdHRis+hgQmw/tZ1N+3LLbOt1PG1o/BG0HHOcOabCxc1TSBvUPMmZl7dfkZUPjTdUbZJamyDV18pI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=cUw2gGxK; arc=none smtp.client-ip=213.167.242.64
+	 Content-Type:Content-Disposition:In-Reply-To; b=LmpEygJyGLdE2WmOmemXtDHr12BhEk9D3Iuy7aCsH5QHqc/fMTErFiXo84AS4JPSlDcI93pTpEERiCDeX0U2OBvDnllJc0wqmWKPOv1trrKVE4gkG3x9dqWEImkMPJnPUh1Bit+IHNmLUoIW/HNSbKngdFZ+WM8T0V9UKAvn71Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=A55hI1Cr; arc=none smtp.client-ip=213.167.242.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="cUw2gGxK"
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="A55hI1Cr"
 Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id BD26C4DC;
-	Fri, 18 Sep 2026 03:21:24 +0200 (CEST)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 202524DC;
+	Fri, 18 Sep 2026 03:27:14 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1789694484;
-	bh=PNg0lMCpe5gaiKH93nJLG/WisP3rw+iuR+oq2dNmerg=;
+	s=mail; t=1789694834;
+	bh=r2wb3vrsQzTnLpySrB3l2Zf678BNuRe+z38ynKuL/3w=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=cUw2gGxKG5ci6QjycG2Hjxek4/ACFCYQXosC1EkBRbmwzXWdy2uYazhc6sVwFnGAS
-	 TqC3fX5SUdgWPKWTpMU4GRV+Exc/y2Gs9S8q3+ckQFiFGJFbS/A52KapxscTK2yFO2
-	 p4zIqW/hTCKujXYlaufVmttnaqGMVF6mDxEnXHTI=
-Date: Fri, 18 Sep 2026 04:23:05 +0300
+	b=A55hI1CrqpCZyKWZC3zKAArpORIZOW8IyOuISbQNcprB8NEPq837EFUkXQNQ8CUNV
+	 j/1rvYT9Y55WTq+ldgzv8wR8OBZNp4nY9c3VqFEjnT4o0aLKPz6jRKmsYmbbj4Cwat
+	 2XJkbM/UG7cGhMl2EXZwDBJYsJARaBlX54DI7Kx8=
+Date: Fri, 18 Sep 2026 04:28:55 +0300
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: Paul Elder <paul.elder+renesas@ideasonboard.com>
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -43,11 +43,10 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
 	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH 06/10] media: rcar-fcp: Check device revision at probe
- time
-Message-ID: <20260918012305.GF145152@killaraus.ideasonboard.com>
+Subject: Re: [PATCH 07/10] media: rcar-fcp: Handle resets
+Message-ID: <20260918012855.GG145152@killaraus.ideasonboard.com>
 References: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-0-4c72d4e086dd@ideasonboard.com>
- <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-6-4c72d4e086dd@ideasonboard.com>
+ <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-7-4c72d4e086dd@ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,227 +55,121 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-6-4c72d4e086dd@ideasonboard.com>
+In-Reply-To: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-7-4c72d4e086dd@ideasonboard.com>
 
-On Thu, Sep 17, 2026 at 09:04:45PM +0900, Paul Elder wrote:
-
-I'm the original author of this patch, please preserve authorship.
-
-> Verify that the device revision register reports a valid value,
-> otherwise reject the device.
-
-The code is fine, but I don't think we should merge this now. It will
-slow down probe for little value.
-
-> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+On Thu, Sep 17, 2026 at 09:04:46PM +0900, Paul Elder wrote:
+> On some versions of the FCP, such as the one on the X5H, reset control
+> is required to operate the FCP. Add support for handling resets
+> optionally, to continue supporting versions that do not require it.
+> 
 > Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
 > ---
-> Changes since v2:
-> 
-> - Add FCP type information
-> - Reject devices with an unsupported version
-> 
-> Changes since v1:
-> 
-> - Use devm_platform_ioremap_resource()
-> ---
->  drivers/media/platform/renesas/rcar-fcp.c | 130 +++++++++++++++++++++++++++---
->  1 file changed, 119 insertions(+), 11 deletions(-)
+>  drivers/media/platform/renesas/rcar-fcp.c | 34 +++++++++++++++++++++++++++++--
+>  1 file changed, 32 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/media/platform/renesas/rcar-fcp.c b/drivers/media/platform/renesas/rcar-fcp.c
-> index dfb0ca93e854dd0bb8aedfb757fd786ef6e45542..d99b3ff976e80f275af19e5dc02c6e1de98c38a3 100644
+> index d99b3ff976e80f275af19e5dc02c6e1de98c38a3..15bcbbda3b853f71780aae876f6440b33addf193 100644
 > --- a/drivers/media/platform/renesas/rcar-fcp.c
 > +++ b/drivers/media/platform/renesas/rcar-fcp.c
-> @@ -14,26 +14,75 @@
->  #include <linux/list.h>
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> +#include <linux/of_device.h>
+> @@ -18,6 +18,7 @@
 >  #include <linux/platform_device.h>
 >  #include <linux/pm_runtime.h>
-> +#include <linux/property.h>
+>  #include <linux/property.h>
+> +#include <linux/reset.h>
 >  #include <linux/slab.h>
 >  
 >  #include <media/rcar-fcp.h>
+> @@ -63,6 +64,8 @@
+>  #define RCAR_FCP_REG_BA_REF_Y2			0x0118
+>  #define RCAR_FCP_REG_BA_REF_C			0x011c
 >  
-> -#define RCAR_FCP_REG_RST		0x0010
-> -#define RCAR_FCP_REG_RST_SOFTRST	BIT(0)
-> -#define RCAR_FCP_REG_STA		0x0018
-> -#define RCAR_FCP_REG_STA_ACT		BIT(0)
-> +#define RCAR_FCP_REG_VCR			0x0000
-> +#define RCAR_FCP_REG_VCR_CATEGORY		(1 << 8)
-> +#define RCAR_FCP_REG_VCR_REVISION_H3_ES1	(1 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_M3W		(2 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_V3M		(3 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_H3		(4 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_D3		(5 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_M3N		(6 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_V3H		(7 << 0)
-> +#define RCAR_FCP_REG_VCR_REVISION_E3		(8 << 0)
+> +struct reset_control;
 > +
-> +#define RCAR_FCP_REG_CFG0			0x0004
-> +#define RCAR_FCP_REG_CFG0_FCPVSEL		BIT(1)
-> +
-> +#define RCAR_FCP_REG_RST			0x0010
-> +#define RCAR_FCP_REG_RST_RIIFRST		BIT(22)
-> +#define RCAR_FCP_REG_RST_RSIFRST		BIT(21)
-> +#define RCAR_FCP_REG_RST_DCMPRST		BIT(20)
-> +#define RCAR_FCP_REG_RST_MODRST			BIT(4)
-> +#define RCAR_FCP_REG_RST_SOFTRST		BIT(0)
-> +
-> +#define RCAR_FCP_REG_STA			0x0018
-> +#define RCAR_FCP_REG_STA_ACT			BIT(0)
-> +
-> +#define RCAR_FCP_REG_TL_CTRL			0x0070
-> +#define RCAR_FCP_REG_TL_CTRL_TLEN		BIT(31)
-> +#define RCAR_FCP_REG_TL_CTRL_VPOS_C(n)		((n) << 16)
-> +#define RCAR_FCP_REG_TL_CTRL_VPOS_Y(n)		((n) << 0)
-> +
-> +#define RCAR_FCP_REG_PICINFO1			0x00c4
-> +#define RCAR_FCP_REG_PICINFO1_STRIDE_DIV16	((n) << 0)
-> +
-> +#define RCAR_FCP_REG_BA_ANC_Y0			0x0100
-> +#define RCAR_FCP_REG_BA_ANC_Y1			0x0104
-> +#define RCAR_FCP_REG_BA_ANC_Y2			0x0108
-> +#define RCAR_FCP_REG_BA_ANC_C			0x010c
-> +#define RCAR_FCP_REG_BA_REF_Y0			0x0110
-> +#define RCAR_FCP_REG_BA_REF_Y1			0x0114
-> +#define RCAR_FCP_REG_BA_REF_Y2			0x0118
-> +#define RCAR_FCP_REG_BA_REF_C			0x011c
-> +
-> +enum rcar_fcp_type {
-> +	RCAR_FCPF,
-> +	RCAR_FCPV,
-> +};
->  
->  struct rcar_fcp_device {
->  	struct list_head list;
+
+Not needed, you include linux/reset.h.
+
+>  enum rcar_fcp_type {
+>  	RCAR_FCPF,
+>  	RCAR_FCPV,
+> @@ -73,6 +76,7 @@ struct rcar_fcp_device {
 >  	struct device *dev;
 >  	void __iomem *base;
-> +	enum rcar_fcp_type type;
+>  	enum rcar_fcp_type type;
+> +	struct reset_control *rstc;
 >  };
 >  
 >  static LIST_HEAD(fcp_devices);
->  static DEFINE_MUTEX(fcp_lock);
->  
-> +static inline u32 rcar_fcp_read(struct rcar_fcp_device *fcp, u32 reg)
-> +{
-> +	return ioread32(fcp->base + reg);
-> +}
-> +
->  static inline void rcar_fcp_write(struct rcar_fcp_device *fcp, u32 reg, u32 val)
->  {
->  	iowrite32(val, fcp->base + reg);
-> @@ -152,15 +201,66 @@ EXPORT_SYMBOL_GPL(rcar_fcp_soft_reset);
->   * Platform Driver
->   */
->  
-> +static int rcar_fcp_setup(struct rcar_fcp_device *fcp)
-> +{
-> +	static const char * const models[] = {
-> +		[RCAR_FCPF] = "FCPF",
-> +		[RCAR_FCPV] = "FCPV",
-> +	};
-> +	static struct {
-> +		u32 version;
-> +		const char *name;
-> +	} versions[] = {
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3_ES1, "H3 ES1.x" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3W, "M3W" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3M, "V3M" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3, "H3" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_D3, "D3" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3N, "M3N" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3H, "V3H" },
-> +		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_E3, "E3" },
-> +	};
-> +
-> +	unsigned int i;
-> +	u32 version;
-> +
-> +	/* Check the device version register. */
-> +	version = rcar_fcp_read(fcp, RCAR_FCP_REG_VCR);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(versions); ++i) {
-> +		if (versions[i].version == version)
-> +			break;
-> +	}
-> +
-> +	if (i >= ARRAY_SIZE(versions)) {
-> +		dev_err(fcp->dev, "Invalid FCP version 0x%08x\n", version);
-> +		return -ENODEV;
-> +	}
-> +
-> +	dev_dbg(fcp->dev, "%s %s device found\n", models[fcp->type],
-> +		versions[i].name);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id rcar_fcp_of_match[] = {
-> +	{ .compatible = "renesas,fcpf", .data = (void *)RCAR_FCPF },
-> +	{ .compatible = "renesas,fcpv", .data = (void *)RCAR_FCPV },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, rcar_fcp_of_match);
-> +
->  static int rcar_fcp_probe(struct platform_device *pdev)
->  {
->  	struct rcar_fcp_device *fcp;
-> +	int ret;
->  
->  	fcp = devm_kzalloc(&pdev->dev, sizeof(*fcp), GFP_KERNEL);
->  	if (fcp == NULL)
->  		return -ENOMEM;
->  
+> @@ -262,12 +266,19 @@ static int rcar_fcp_probe(struct platform_device *pdev)
 >  	fcp->dev = &pdev->dev;
-> +	fcp->type = (enum rcar_fcp_type)device_get_match_data(&pdev->dev);
+>  	fcp->type = (enum rcar_fcp_type)device_get_match_data(&pdev->dev);
 >  
+> +	platform_set_drvdata(pdev, fcp);
+> +
 >  	fcp->base = devm_platform_ioremap_resource(pdev, 0);
 >  	if (IS_ERR(fcp->base))
-> @@ -169,6 +269,15 @@ static int rcar_fcp_probe(struct platform_device *pdev)
+>  		return PTR_ERR(fcp->base);
+>  
 >  	dma_set_max_seg_size(fcp->dev, UINT_MAX);
 >  
+> +	fcp->rstc = devm_reset_control_get_optional(&pdev->dev, NULL);
+> +	if (IS_ERR(fcp->rstc))
+> +		return dev_err_probe(&pdev->dev, PTR_ERR(fcp->rstc),
+> +				     "failed to get reset control\n");
+> +
 >  	pm_runtime_enable(&pdev->dev);
-> +	ret = pm_runtime_resume_and_get(&pdev->dev);
-> +	if (ret < 0)
-> +		goto error_pm_disable;
-> +
-> +	ret = rcar_fcp_setup(fcp);
-> +	if (ret < 0)
-> +		goto error_pm_put;
-> +
-> +	pm_runtime_put(&pdev->dev);
->  
->  	mutex_lock(&fcp_lock);
+>  	ret = pm_runtime_resume_and_get(&pdev->dev);
+>  	if (ret < 0)
+> @@ -283,8 +294,6 @@ static int rcar_fcp_probe(struct platform_device *pdev)
 >  	list_add_tail(&fcp->list, &fcp_devices);
-> @@ -177,6 +286,12 @@ static int rcar_fcp_probe(struct platform_device *pdev)
->  	platform_set_drvdata(pdev, fcp);
+>  	mutex_unlock(&fcp_lock);
 >  
+> -	platform_set_drvdata(pdev, fcp);
+> -
 >  	return 0;
-> +
-> +error_pm_put:
-> +	pm_runtime_put(&pdev->dev);
-> +error_pm_disable:
-> +	pm_runtime_disable(&pdev->dev);
-> +	return ret;
->  }
 >  
->  static void rcar_fcp_remove(struct platform_device *pdev)
-> @@ -190,13 +305,6 @@ static void rcar_fcp_remove(struct platform_device *pdev)
+>  error_pm_put:
+> @@ -305,11 +314,32 @@ static void rcar_fcp_remove(struct platform_device *pdev)
 >  	pm_runtime_disable(&pdev->dev);
 >  }
 >  
-> -static const struct of_device_id rcar_fcp_of_match[] = {
-> -	{ .compatible = "renesas,fcpf" },
-> -	{ .compatible = "renesas,fcpv" },
-> -	{ },
-> -};
-> -MODULE_DEVICE_TABLE(of, rcar_fcp_of_match);
-> -
+> +static int fcp_pm_runtime_suspend(struct device *dev)
+> +{
+> +	struct rcar_fcp_device *fcp = dev_get_drvdata(dev);
+> +
+> +	reset_control_assert(fcp->rstc);
+
+No need for error checking ?
+
+> +	return 0;
+> +}
+> +
+> +static int fcp_pm_runtime_resume(struct device *dev)
+> +{
+> +	struct rcar_fcp_device *fcp = dev_get_drvdata(dev);
+> +
+> +	reset_control_deassert(fcp->rstc);
+
+Same here.
+
+Otherwise this looks good, but please move it before patch 06/10 as I
+would like to upstream this without 06/10.
+
+> +	return 0;
+> +}
+> +
+> +static const struct dev_pm_ops fcp_pm_ops = {
+> +	RUNTIME_PM_OPS(fcp_pm_runtime_suspend, fcp_pm_runtime_resume, NULL)
+> +};
+> +
 >  static struct platform_driver rcar_fcp_platform_driver = {
 >  	.probe		= rcar_fcp_probe,
 >  	.remove		= rcar_fcp_remove,
+>  	.driver		= {
+>  		.name	= "rcar-fcp",
+> +		.pm = pm_ptr(&fcp_pm_ops),
+>  		.of_match_table = rcar_fcp_of_match,
+>  		.suppress_bind_attrs = true,
+>  	},
 > 
 
 -- 
