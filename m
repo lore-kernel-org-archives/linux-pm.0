@@ -1,34 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DB3051AEC6;
-	Fri, 18 Sep 2026 16:56:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F3FF51A132;
+	Fri, 18 Sep 2026 16:56:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789750616; cv=none; b=b/dH49RcYf9POnD9ceENs3sruQANSoTvLfVUg0/zWh4KrCvS5+eVkoTGkRybGGL/t1D+21Z1A2G13C6WINqp/WLT9ntglYunEMVIq/8liVx/iIqcCfBFj6VNb036f/iSqG4F+e4KgHD/VDbCC9YwCySfe/a/J8VtW/x37QEX4Yo=
+	t=1789750618; cv=none; b=Cki9Br3SaQkkwkOzcwYEe1czjw4LPYX3eGYmKO+9PJ0cC4sX3Z3l+6La+uHCZwb91n4x6U+l/snaYMzz/x4491Z+mIZJ5SdaMp9+fiCnCz2o2XYvj8hTIwI78H+HL6aQiWhg3gN4iJVhAism7PTX85av5lqtkDhhs5v0axllG1M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789750616; c=relaxed/simple;
-	bh=CQZIO9y14xWMvYtSG5S3I0MH10i/y4EA+msZa4tSNK8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=nPFYiH6JmVfyxp4yT9vFEvAezc9bUSJ+wIb179B+BZOoRtdepBOWrujr51DtJ5smCsla0HwAJHODt0k5ptpsqN5r3B4h7l4rivyeNRDUnvk1ry8BpMPBGszbjNQGsMxzn+ZU09/fITqDQwoINLg6XIpAEA0i82EbJsnGQaZRdK0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VYJkq4TL; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789750618; c=relaxed/simple;
+	bh=xHZ76/JTCsIp54kTa9uFV+Wyd9Sq4I0xWG21cji0XzY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ue7LvINXNkUvYwnn6suJB5HVpPH+MSLaA2QZEbzh5zram9xKh2VACqXwh02SLXdiBUS0stsTVkP6VzOfGtZWBzeKLrw1Afexy04jjexDoLFxebepUV478Rp45FPGHthO6EIZ0cZH5YkTJCB9bMami18LpgraWOFJcrA94kRvNMQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Iiv+4B3I; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VYJkq4TL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62A481F00898;
-	Fri, 18 Sep 2026 16:56:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Iiv+4B3I"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 725C01F000FF;
+	Fri, 18 Sep 2026 16:56:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789750615;
-	bh=3o9CJDBKReLtFRb+X5uo2RFSoFOlGneG62lyu4CaMz4=;
-	h=From:Subject:Date:To:Cc;
-	b=VYJkq4TLIcNs5Yaco2IUHLfPci7OB7bz/qkaS6tJM0+8IlkfUgK88boFH6ni/2lC/
-	 4tFM4sjWawRvSBMyg9H0eonKa64jkkL/QuY6dXjrV7oxyPayhXgmUTcq9arE1YhjUy
-	 Ni+OFY0vD48Ka1zi39qyyCwTTf7k1Qu2K773oOVN4VCD5HFrRdgM5A0NA3ZRhkNqNw
-	 GLA3ZHQA6AMgKEziu2ZWOSKCkv0Fez1bwZSrmiQYOnfEdubgFzxprnY/JLo81mtHmX
-	 fV7ZVTFKFVggbnfGfl6V+IXduWbIVmTOQWD+Nf20R+wnS37/SmPmXZFqcvzWsQMr5/
-	 k8vPmAeUNyEoA==
+	s=k20260515; t=1789750617;
+	bh=JnjD5uTxUzRLD4xPJw/Uy/MHkSAmk7MI9VnoFTHi/G4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=Iiv+4B3IwbRt23ARyVWzaPfF/VZRdtEVpKsVyuLMGrvEMHqn2HSa7nJshKn8qB2Se
+	 7hpARJGuKHVKkBeuKyAG9cALNpR52yuLDiB7P10KEaFEWmizmyjcW7/tPp0uec5pIw
+	 cTFRqAdY1Vli7j2G03ctes6dd++g/02ouRx1dGvyHwovf1s/CdbelJ2Hr38Hi/tCnX
+	 cLQiTKparfo/Nt2TtypIl+VMVnMv2ZKje6cR0fSlRWglUEKov06u4xGrEnc3NpEOlp
+	 JLAKN0uRZRsfiJ9ZuvCeyV7NjHnxDLXW4Mtck6nkrhb0KV52as0WpyDIey48aKkllr
+	 RJG2sueMRh8oQ==
 From: Linus Walleij <linusw@kernel.org>
-Subject: [PATCH v2 0/2] power: supply: Correct AB8505 charger device tree
-Date: Fri, 18 Sep 2026 18:56:50 +0200
-Message-Id: <20260918-ab8500-charger-dt-v2-0-5f17c332a2a7@kernel.org>
+Date: Fri, 18 Sep 2026 18:56:51 +0200
+Subject: [PATCH v2 1/2] dt-bindings: power: supply: ab8500: Add AB8505
+ charger
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,10 +38,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32NQQ6CMBBFr0Jm7ZhpkQKuvIdhUcoIjYaSKSEa0
- rtbOYDL93/++ztEFs8RrsUOwpuPPswZ9KkAN9l5ZPRDZtCkDbWqQts3FRHmUkYWHFZsW6fdxej
- SNgR5twg//Ptw3rvMk49rkM9xsalf+s+2KSRU1Nd92dRsrLk9WWZ+nYOM0KWUvqJNIwazAAAA
-X-Change-ID: 20260915-ab8500-charger-dt-99c2c4623a80
+Message-Id: <20260918-ab8500-charger-dt-v2-1-5f17c332a2a7@kernel.org>
+References: <20260918-ab8500-charger-dt-v2-0-5f17c332a2a7@kernel.org>
+In-Reply-To: <20260918-ab8500-charger-dt-v2-0-5f17c332a2a7@kernel.org>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>
@@ -48,37 +48,119 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  Linus Walleij <linusw@kernel.org>
 X-Mailer: b4 0.14.3
 
-AB8505 retains the USB charger from AB8500 but omits the separate main
-charger block. Its charger node consequently has nine valid interrupts,
-not the fourteen interrupts used by AB8500.
+AB8500 and AB8505 expose different charger interrupt sets. Add a unique
+AB8505 charger compatible with the AB8500 compatible as its fallback.
+Use the variant-specific string to require the fourteen main and USB
+charger interrupts on AB8500 and the nine USB charger interrupts on
+AB8505.
 
-Adjust the binding to describe the variant-specific interrupt sets and
-remove the five nonexistent main-charger interrupts from the AB8505
-device tree. The binding update also limits the autopower_cfg description
-to AB8500, since the corresponding AB8505 register bit is reserved.
+Also clarify that autopower_cfg describes the AB8500 facility, since the
+corresponding AB8505 register bit is reserved.
 
+Fixes: eb917497734c ("dt-bindings: power: supply: ab8500: Convert to DT schema format")
 Assisted-by: LLM
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
-Changes in v2:
-- Add an AB8505-specific compatible with the AB8500 fallback.
-- Tie interrupt counts and names to the charger compatible.
-- Use the new compatible in the AB8505 DTSI.
-- Link to v1: https://lore.kernel.org/r/20260915-ab8500-charger-dt-v1-0-10b7b387e6a6@kernel.org
-
----
-Linus Walleij (2):
-      dt-bindings: power: supply: ab8500: Add AB8505 charger
-      ARM: dts: ux500: Use AB8505 charger compatible
-
  .../power/supply/stericsson,ab8500-charger.yaml    | 70 ++++++++++++++++------
- arch/arm/boot/dts/st/ste-ab8505.dtsi               | 17 ++----
- 2 files changed, 57 insertions(+), 30 deletions(-)
----
-base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
-change-id: 20260915-ab8500-charger-dt-99c2c4623a80
+ 1 file changed, 53 insertions(+), 17 deletions(-)
 
-Best regards,
+diff --git a/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-charger.yaml b/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-charger.yaml
+index 4f19744844e9..73f5df2d7a36 100644
+--- a/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/stericsson,ab8500-charger.yaml
+@@ -12,10 +12,58 @@ maintainers:
+ 
+ allOf:
+   - $ref: power-supply.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: stericsson,ab8505-charger
++    then:
++      properties:
++        interrupts:
++          minItems: 9
++          maxItems: 9
++
++        interrupt-names:
++          items:
++            - const: VBUS_DET_F
++            - const: VBUS_DET_R
++            - const: USB_LINK_STATUS
++            - const: USB_CH_TH_PROT_R
++            - const: USB_CH_TH_PROT_F
++            - const: USB_CHARGER_NOT_OKR
++            - const: VBUS_OVV
++            - const: CH_WD_EXP
++            - const: VBUS_CH_DROP_END
++    else:
++      properties:
++        interrupts:
++          minItems: 14
++          maxItems: 14
++
++        interrupt-names:
++          items:
++            - const: MAIN_CH_UNPLUG_DET
++            - const: MAIN_CHARGE_PLUG_DET
++            - const: MAIN_EXT_CH_NOT_OK
++            - const: MAIN_CH_TH_PROT_R
++            - const: MAIN_CH_TH_PROT_F
++            - const: VBUS_DET_F
++            - const: VBUS_DET_R
++            - const: USB_LINK_STATUS
++            - const: USB_CH_TH_PROT_R
++            - const: USB_CH_TH_PROT_F
++            - const: USB_CHARGER_NOT_OKR
++            - const: VBUS_OVV
++            - const: CH_WD_EXP
++            - const: VBUS_CH_DROP_END
+ 
+ properties:
+   compatible:
+-    const: stericsson,ab8500-charger
++    oneOf:
++      - const: stericsson,ab8500-charger
++      - items:
++          - const: stericsson,ab8505-charger
++          - const: stericsson,ab8500-charger
+ 
+   monitored-battery: true
+ 
+@@ -28,27 +76,15 @@ properties:
+ 
+   autopower_cfg:
+     type: boolean
+-    description: automatic poweron after powerloss
++    description: AB8500 automatic poweron after powerloss
+ 
+   interrupts:
++    minItems: 9
+     maxItems: 14
+ 
+   interrupt-names:
+-    items:
+-      - const: MAIN_CH_UNPLUG_DET
+-      - const: MAIN_CHARGE_PLUG_DET
+-      - const: MAIN_EXT_CH_NOT_OK
+-      - const: MAIN_CH_TH_PROT_R
+-      - const: MAIN_CH_TH_PROT_F
+-      - const: VBUS_DET_F
+-      - const: VBUS_DET_R
+-      - const: USB_LINK_STATUS
+-      - const: USB_CH_TH_PROT_R
+-      - const: USB_CH_TH_PROT_F
+-      - const: USB_CHARGER_NOT_OKR
+-      - const: VBUS_OVV
+-      - const: CH_WD_EXP
+-      - const: VBUS_CH_DROP_END
++    minItems: 9
++    maxItems: 14
+ 
+   io-channels:
+     minItems: 2
+
 -- 
-Linus Walleij <linusw@kernel.org>
+2.55.0
 
