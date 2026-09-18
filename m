@@ -1,125 +1,138 @@
-Received: from mail-vs2-f12.google.com (mail-vs2-f12.google.com [74.125.227.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98B4934D4DE
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 07:35:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A11AA3BE155;
+	Fri, 18 Sep 2026 07:39:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789716950; cv=none; b=n4a3SVpqyCrp0W8HWzccbVmwAadcjYMzfupzDzvaM52Z4BrEsUSh7wO3zaIoKsdkjYzHg7SqRZ2seHjgsuFA6qilSdxN7UeAcFG3U4KIwqgXKaydcNiDRLGXa9nATR7XiKQ7mGxmtx5W33jAuEJxJ2b7CcdKG25aB2nKB/fd9zY=
+	t=1789717206; cv=none; b=hYDlk1cJH2VfA8mxfaBl8gcaZZlVtJ9dept19ql2gKBtzp8GTlafuYga3G4FLp4wSh+BY/AHt5GtptQYOIuC+uUOAvScHrWUfzZq+8KNDv21B2ftSltkVktJpS6z7EX2jBJH75frm4+u5HR4wVBWP6rnFeIVKuvSjhnQy6QCpZc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789716950; c=relaxed/simple;
-	bh=cHVPOWKKfhZVIB7cWuXyuW2OrGOIzBYJeXQE3IvAcLo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ihsoAZUdSbwL8bwknPEKHljgwjIwcuG0JRTDtqqJeSooDR1MHgRzmLR9jPcrVD2euNb3guXMRPSY9omUZd6aDf205fRsyf2E4C80AZ5+0wFjCbNoxrvACuk3xD/lXsXajDPDvWHi/F2qR5wVIF6WJRyqLP1uNWgbxnr5ivhd5oE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs2-f12.google.com with SMTP id 71dfb90a1353d-5c67e4d9197so258297e0c.0
-        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 00:35:41 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789716935; x=1790321735;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=0WtucTJYH5u+SsiRL/3DRg9hQeKGo+JDwDdtR43iO30=;
-        b=wUrUceFw3PoUEHj+w5cqO8fq67p0lNqkVbliKT1Fa3VgdgGQRUf328IcQaPx1I0QTV
-         ixSgpKebyHDBrCvz2fmBwGkoLH14gsanbw+qi8YzGpu+vBfwbqhiDfNItApyWeU03Dva
-         mY7k31T+eUfDlyRYoXVZdA0Chn/6i0gd3hcZIoymtq9zCnfn1PXX4ViNLu9yGJMClEtj
-         PM7/E5+hFCb7LXqcZpNUDm+9qVJqKHQMDrUUlqt7swCH14F2ifBfLD4sSwAQc+cDqtXd
-         +LZdJnm6G7mGXn2qNq73POeSjyEBttRxjFKBtfQYUdJiqZ+NagQF4GNGsQd4Z//aO4PL
-         ghMw==
-X-Forwarded-Encrypted: i=1; AKwUvBxM3W9FjwCswQmbs1ZReMkkydDg6mqOhFAnaF5UhJt2HEpJHZ4q1Nh1S3rbomMdBw9AqIfqVuATwA==@vger.kernel.org
-X-Gm-Message-State: AFuF++lLX65a9Bye6auyaZucQFnlkpmrfAQGKOvqUiJLF6QgjGnSGMTh
-	hwBwu5PCf9kOSf7LSGvZZksDN33DugY5JDNAolQAQWjjLHy9D6ThQEtUNum84z8J
-X-Gm-Gg: AYBFou2NDT91iH0jCtfq9T3X67t4AyE+/abdUuef8j658P67hq3ytXE2i4vkesVQPVv
-	P+t+lVyLZETNat/B6+HXwCphla5A2O++kjEdQ+LopJGYbYkmcBZU6IDPglLc+sZCTu8usbYXKN3
-	BzfSJTv3x2O/8tQygTq7vNpwf/BXpRZP5FzdjILAhReR0N7VuLn0VlVabPO9/5eWGuaoZGH6z5f
-	09uU/Yu7C1SL6viz/L1LPQbEXGbb9VNmLs/ese5TxXDXEhGccRWFf87/JK4NHnRa5d/YV0VIKPD
-	AnbwyNj87evcRmYO2hOMGh1vn6rX+qZQD8slJ96mJaca7t2we9SzY6Yy9raQXQkJn9m5pBS098M
-	sQ0cYUjYzsqPXSp826q+qkgkne6Z2QlqfkgP2ckG31qv+Lrs8mVD5Bf7rbZMfS+y0bm52tnXap8
-	+iFcw09/ifnXCmglrwELbI4uB/xPruQpvEAp1qIkCDLTweadp8evzhWOyjNfbpVvd5JCOjwbt3C
-	vqLx7jp1THHjlmnY1l7aCQTRkLRwBlR0YR1yw==
-X-Received: by 2002:a05:6122:8f8b:b0:5c9:a60c:2732 with SMTP id 71dfb90a1353d-5c9b58e9e3dmr535664e0c.10.1789716935582;
-        Fri, 18 Sep 2026 00:35:35 -0700 (PDT)
-Received: from mail-ua2-f12.google.com (mail-ua2-f12.google.com. [74.125.226.204])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c9b82ff09bsm824843e0c.6.2026.09.18.00.35.32
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 18 Sep 2026 00:35:33 -0700 (PDT)
-Received: by mail-ua2-f12.google.com with SMTP id a1e0cc1a2514c-97e97e2c7d4so208199241.1
-        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 00:35:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxSaWCAOoXhXHYnUAH0erPbYm/wHmpY86A0PEJHhON0vbWtoQpB5kbOQJKaON+GrjvOyyX526hFfw==@vger.kernel.org
-X-Received: by 2002:a05:6102:91c:b0:7a3:2e52:1163 with SMTP id
- ada2fe7eead31-7a55da9b0damr516237137.26.1789716931735; Fri, 18 Sep 2026
- 00:35:31 -0700 (PDT)
+	s=arc-20240116; t=1789717206; c=relaxed/simple;
+	bh=9HjgM9JbkGt1A3yefJhN4x6xA3Vg7LoR3hGeySb0Qow=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AeFfo2fQ5C/dcYEqvUuJ+dXQYu+ZmubxzEW9cM55fVZAREs4jiFOV9NZfI3rLp4K5q+TjSMioqeqZ8bevOX1EHvr5JekoPLitO+zFRVYNITxV9QMuwnr+z20UXWI6jcGno6QOvmoIpLb9k5JL24jDXpTvsw5VHZd4eKJdleGp04=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QRyltiK/; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QRyltiK/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789717199; x=1821253199;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=9HjgM9JbkGt1A3yefJhN4x6xA3Vg7LoR3hGeySb0Qow=;
+  b=QRyltiK/8VXtmYoDNqHqSA6+r/9gYRqGlcGdjn5gfRAhfQYAn5XrGY+x
+   /+35p6LcSwkm7LHxQ0H0T7RP61tFADN8S0MIQBnpTXmqy1wJlBfBetV8D
+   M0sM5sNh7CvD6aBqts1P3nYb3nGLGHE4yU652I33CC3bngi3TQwFTcxAM
+   pP7c2U8bSt06+1+1/MKj2IhZGMSCRZDLIqtfLwiyHZoMUaLXo/e34lt73
+   3eMaFW6VmLVdJy13a1YgT2W8h/AwUBXpEMCyuMjYl9a4V6QWavGhOpmcL
+   LT+mt+THYI+YR8kQ1SogLaARS2dQsaUtbsHxCqQ4tDduzF5sjo4nlVIAA
+   Q==;
+X-CSE-ConnectionGUID: 9td86wudQRe8nBfvawUHFg==
+X-CSE-MsgGUID: uZRVMeamQZSrFr1z7FHMXA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="89340112"
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="89340112"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 00:39:52 -0700
+X-CSE-ConnectionGUID: EQSigIixQTGHBye9zTlPZA==
+X-CSE-MsgGUID: SCwZTKvvQfmatyBz20cYNw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="297731196"
+Received: from carterle-desk.ger.corp.intel.com (HELO localhost) ([10.245.245.170])
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 00:39:47 -0700
+Date: Fri, 18 Sep 2026 10:39:41 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Guangshuo Li <lgs201920130244@gmail.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Wentao Liang <vulab@iscas.ac.cn>, Miaoqian Lin <linmq006@gmail.com>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Lucas Stach <l.stach@pengutronix.de>,
+	Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] pmdomain: imx: gpc: remove all initialized power domains
+Message-ID: <aqzqvfbeh653jUce@ashevche-desk.local>
+References: <20260918031323.3376849-1-lgs201920130244@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-0-4c72d4e086dd@ideasonboard.com>
- <20260917-epaul-v7-3-rc1-x5h-vsp-fcp-v1-2-4c72d4e086dd@ideasonboard.com> <20260918011156.GB145152@killaraus.ideasonboard.com>
-In-Reply-To: <20260918011156.GB145152@killaraus.ideasonboard.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 18 Sep 2026 09:35:20 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUWwCLiQASDhr3yY6XFY1704W3tAWEPgYw77evrK9ECRg@mail.gmail.com>
-X-Gm-Features: AcwNN1Uhv0ZzlOO0pTf4pD3p_OGSBmogWfpHa_8PkhuJrVnrMv3c15ALo4pMZkM
-Message-ID: <CAMuHMdUWwCLiQASDhr3yY6XFY1704W3tAWEPgYw77evrK9ECRg@mail.gmail.com>
-Subject: Re: [PATCH 02/10] clk: renesas: r8a78000: Add clock for FCPV and VSP
- for SCP FW SDKv4.36
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Paul Elder <paul.elder+renesas@ideasonboard.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-media@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260918031323.3376849-1-lgs201920130244@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Hi Laurent,
+On Fri, Sep 18, 2026 at 11:13:22AM +0800, Guangshuo Li wrote:
+> imx_gpc_old_dt_init() initializes all power domains described by
+> of_id_data->num_domains. Its probe failure path removes all of these
+> domains, but imx_gpc_remove() only removes the PU and ARM domains.
+> 
+> On SoCs with more than two domains, such as i.MX6SL and i.MX6SX, the
+> additional DISPLAY and PCI generic power domains can remain registered
+> after the GPC driver is removed.
+> 
+> Remove all initialized power domains in reverse order. Keep releasing
+> the PU clocks immediately after the PU domain has been successfully
+> removed.
+> 
+> This issue was found by manual code inspection.
 
-On Fri, 18 Sept 2026 at 03:12, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Thu, Sep 17, 2026 at 09:04:41PM +0900, Paul Elder wrote:
-> > Add clocks for the FCPV{B,I,D} and VSP{B,I}. They each have one clock
-> > from an option of two: a 1066MHz and a quarter-divided 266MHz. As we
-> > already have support for the 266MHz one, add just those for now.
-> >
-> > Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-> > ---
-> >  drivers/clk/renesas/r8a78000-cpg.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
-> > index b820d09e1a195068debe8a6eea7a01c534a97b23..17792ff6ab8ae2f7eb5c8f7e3d581b43177e195d 100644
-> > --- a/drivers/clk/renesas/r8a78000-cpg.c
-> > +++ b/drivers/clk/renesas/r8a78000-cpg.c
-> > @@ -326,6 +326,8 @@ static const struct clk_map_in r8a78000_cpg_fw_4_31_0[] = {
-> >       { R8A78000_CPG_SGASYNCD16_PERW_BUS,     FIXED_CLK(66M) },
-> >       { R8A78000_CPG_S0D4_PERE_MAIN,          FIXED_CLK(200M) },
-> >       { R8A78000_CPG_MSOCK_PERW_BUS,          1667 },
-> > +     { R8A78000_CPG_SGD4_VIO_DP_TX,          FIXED_CLK(266M)},
-> > +     { R8A78000_CPG_SGD4_VIO_DP_OTHER,       FIXED_CLK(266M)},
->
-> Same comment as for 01/10. I think the two patches can be squashed
-> together actually (unless Geert disagrees).
+...
 
-DT binding definitions are shared by driver and DT sources.
-Please keep them separate, so I can apply them to the shared
-renesas-r8a78000-dt-binding-defs branch.
+>  static void imx_gpc_remove(struct platform_device *pdev)
+>  {
+> +	const struct imx_gpc_dt_data *of_id_data =
+> +		device_get_match_data(&pdev->dev);
 
-Gr{oetje,eeting}s,
+No...
 
-                        Geert
+>  	struct device_node *pgc_node;
+> -	int ret;
+> +	int i, ret;
+
+...and no.
+
+The result of the device_get_match_data() better to be checked, in some cases
+it might lead to NULL dereference.
+
+It's better to split semantically different variables, also naming 'i' is not
+good, num_domains is better. Besides that, why is it signed?
+
+...
+
+> +		for (i = of_id_data->num_domains - 1; i >= 0; i--) {
+
+What you are doing here can be written in a shorter form
+
+		num_domains = of_id_data->num_domains;
+		while (num_domains--) {
+
+> +			ret = pm_genpd_remove(&imx_gpc_domains[i].base);
+> +			if (ret) {
+> +				dev_err(&pdev->dev,
+> +					"Failed to remove %s power domain (%pe)\n",
+> +					imx_gpc_domains[i].base.name,
+> +					ERR_PTR(ret));
+> +				return;
+> +			}
+>  
+> +			if (i == GPC_PGC_DOMAIN_PU)
+> +				imx_pgc_put_clocks(&imx_gpc_domains[i]);
+>  		}
+
+-- 
+With Best Regards,
+Andy Shevchenko
 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
