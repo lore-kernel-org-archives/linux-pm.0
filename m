@@ -1,139 +1,136 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from smtpbgeu1.qq.com (smtpbgeu1.qq.com [52.59.177.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E344498906;
-	Fri, 18 Sep 2026 07:06:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 290AE1DFFD;
+	Fri, 18 Sep 2026 07:09:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.59.177.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789715222; cv=none; b=bhxkxG5AOXqDwh/qyHrhnUptgL+isLB4izAFvzMn0u54HiCcmtcOViWFgmKC+kpDCKsHDt0XMbGb1ExmkRLS3Y6eWI/Yucts6Zm3rKAH7aLb1mDgH5KkZ2pFMLfCRco3gLK3f03AvCdV+BIqDrMCnXVFA1dE6/rRunITJpt8Prk=
+	t=1789715392; cv=none; b=FEsrJKgaVcH8UZ+vuUiP4LcIs6zxFbr2cbHSwnIVnXmr275NqqnX+F9EUIf2D15GEhoJJkWZdG08A5GBky9X2CfGqtyEyvMxb7tmvRTnB0kD6GwRl73BqKZMXk0GH9Z65YlN2wI68sqTbG5NuvBaRrr0KzxL5/9svu9LE4xR7QU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789715222; c=relaxed/simple;
-	bh=gjbyf3Gcbv4XlVEKdrgPMZz66DVdSELa98i5Z2lm5Tw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VtT1FMswPxP9i+SdhXjrJAizMiuEM4UqzPBdEuSBtS6OSZO8zvgbVNMY5EY9YZIQ8RfojO6h7eV2TqwHdw+nEJD8WTcCL9/o/tUujfbmRLpPCbzFcQWcD8/NzA3Hl0Mfoft3TKUD2O+K3A4JvYAClfQS1QrjuzduK3AF7xUHEXg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QPezEhSF; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789715392; c=relaxed/simple;
+	bh=UZs2Rsco60WjYn3xcHhrRfZBIWacFhQyas2Wala4R9I=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=h6XfuICerMDq5/fTV1BnYJgAkAKfVqYK5JIRl6KqRorRR8HbQk8/qHsFzcjYx4XGBfNK+zavITzD82w1IWeG3tn/l06gRe4K0vE02kELwlILCvESj4KDkQZsJCUJ0+ooOWUvEPi5Omsbelvdtt1tqsadPObeVLqO5DvDnM3ZyWY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=aUhuh6Ih; arc=none smtp.client-ip=52.59.177.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QPezEhSF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE5821F000FF;
-	Fri, 18 Sep 2026 07:06:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789715217;
-	bh=CYTKS6LtEqOXedQDCZMgSMsK8BAtRN8tnXK08Vs7mUg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=QPezEhSFz1oJEKdWrJysPdVqTui36u9odN7Ok89a/CQ+JbBtuDOXa15EERg8ZHwM6
-	 ZTt4ZDn1nuVULyCuBvwHgV2346nH5Q31xiBVxqTWKRcU7H6+vPVnG+MBoStEXxZlH1
-	 Xap4i3X/5T8j7QsiIHsnc7bbLDJvtAEI0m4rAYlMU5rHISYDO7bukISllG5+xtwJNz
-	 kM7l/Kjb5SAW/Fihbkforg6oxz5cfiOZ4ZYWcuKqsxjhJpAKsTlv7VRjoreQWFvDxr
-	 TGrZ/lQF71IY8+LNwMLWkMQDSnXz5F5cqxBokgTzQ5HZlmjxvRF1P5+OBsVW9rmiXP
-	 MqnIc0HIdvADA==
-Date: Fri, 18 Sep 2026 10:06:44 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Kevin Brodsky <kevin.brodsky@arm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Adrian =?utf-8?Q?Barna=C5=9B?= <abarnas@google.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Alexandre Ghiti <alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Brendan Jackman <brendan.jackman@linux.dev>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@kernel.org>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Len Brown <lenb@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vasily Gorbik <gor@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>,
-	Will Deacon <will@kernel.org>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-pm@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	loongarch@lists.linux.dev
-Subject: Re: [PATCH v3 1/6] set_memory: add number of pages parameter to
- set_direct_map APIs
-Message-ID: <aqzjBA_101LcKRCD@kernel.org>
-References: <20260903-execmem-set-vm-perms-v0-2-v3-0-949b64a9f755@kernel.org>
- <20260903-execmem-set-vm-perms-v0-2-v3-1-949b64a9f755@kernel.org>
- <d299f7c5-6c71-499a-b8cd-aa69c4c81dd1@arm.com>
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="aUhuh6Ih"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1789715318;
+	bh=VoNPLwrfLGwJ1Joc3IIGCRT3MwFrlW7kjCI7cxYzVRc=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version;
+	b=aUhuh6IhMvP5WuO+FeFw74jCd8/BaoyKo0+vxlE6uOpag84Hfp0pYd4z9VITk8PIZ
+	 kBeueXQjHAcLZcDsL2Kjw0KFFzxu0hved58/huPhhQDOOq/rhvmltbnLCZ1A0kTa9W
+	 2I5OMcDakLTqWDNLBw4ZDyDGlG8O0UJ6Y8ctIhjM=
+X-QQ-mid: esmtpgz10t1789715298t3f12930d
+X-QQ-Originating-IP: F51MbfdSWsMFopoCOaRZlwUeG/ke3KRdncZEcs0zje0=
+Received: from localhost.localdomain ( [113.57.152.160])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Fri, 18 Sep 2026 15:08:16 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 6459385882852576826
+EX-QQ-RecipientCnt: 9
+From: Wentao Guan <guanwentao@uniontech.com>
+To: kprateek.nayak@amd.com
+Cc: guanwentao@uniontech.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	ray.huang@amd.com,
+	ronforever@outlook.com,
+	scardracs@disroot.org,
+	stable@vger.kernel.org,
+	superm1@kernel.org
+Subject: [PATCH v2] cpufreq/amd-pstate: Skip auto_sel write when it already matches the mode
+Date: Fri, 18 Sep 2026 15:08:14 +0800
+Message-Id: <20260918070814.59582-1-guanwentao@uniontech.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <748cb8d6-174c-4cad-98bc-ebb985e2eced@amd.com>
+References: <748cb8d6-174c-4cad-98bc-ebb985e2eced@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d299f7c5-6c71-499a-b8cd-aa69c4c81dd1@arm.com>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz3a-0
+X-QQ-XMAILINFO: MZgXmQBAUNskm3j0cVVKLfuWtexoC6bEyCjnJKvRPjysaMXnH/vXTzqK
+	ny8Iauf1PXp3vG1TBIB7oyKO5Nz6+kpa4VyWSzzUNy7btwWTiLdfc7c2jwzkocvxirsQtFA
+	FVhlf4sO3tVX4uBCA72kG0Tik9iC1c98QO2NbhlZtGAPCQTgYQiTu/yhXsRXbVjuexMSCt/
+	kbiif0jjyEgPa/fwrIk3KfjqWUmFDAkL2h1VI9KmP34frVUpWJ5uqQwr4Y8k23f7cBOr1uF
+	foS3PsMG5hCZdXIsD+HB0X+ln2gFLyAFKY/TIJxyh9Dov9GdH0GvRtLbS+UlN1lYUPtyc10
+	wb4mPV6ejJ/WKtkU4SWFA+XrggPTLiXgM6igyOUNcVkvVMQupXfGpbkNRNAK2iEhdugjZFJ
+	27p61Eh7mksbhMl4CmTQzpg2OySAtsM/9wUaxwSg8FkL791LFZnAEu9VrEFFf4TlmEo3UBt
+	y71ef2D+39KeFA3/FKnphlZut4Xf9teQcZXiOiSlvBx6yYv9D4qcMhUwHUWj/f0vZgyUboE
+	icisWdhgFzxEtGyu/no44Xga77ZnEtOWUDjsCZ/1LLDzMscwM2NUre1OAr/7lmZVOtd5IOe
+	39zx1shnQLvatQatAHT2ocJsh7ZFpvywk8eZZ2QKvNsLMyAWjvQvb2eBInsJVIZeNqGpqFS
+	2kv8Jfl18lQ0H3AIw5qR6G0ORVDHMP63+53QLBDslfjr38pW+pYnh9YR1Q05jtc+WUJBY3f
+	JmaOMyKY3RB83hbQ6+3N1G0xiDu9o9PFA/j87AGEDY9xSaOiiVZMJr7s6FniMYGiN/ITk7i
+	9tK2Z2rzxaxrk3LoVVCNRVole+XGyqdHULYCO9bptPZ0ve7YzVDHWCwHDhVQORSHR8LbNoB
+	zIDCf1WWVscHjkk7PQXRssOHs68ksK/UyN1ooLNvj5Kz6GjTOdAin8HuIyzyaNKVhfrofJs
+	5/ygg+XThcVlfrjMD6s/xzi9OlonowAgJsiefv/QnNC6AazooNIo3cMkjZcOWVOCwibaBST
+	ZTxCNRqKfVc4xxRmc3kMyQh1geuPG7yZ6nYGDeI21KCogVK1ZVl4x2HX51FdLXqn0jL4i+n
+	rFTvJojPXzP
+X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
+X-QQ-RECHKSPAM: 0
 
-On Thu, Sep 17, 2026 at 08:11:22PM +0200, Kevin Brodsky wrote:
-> On 03/09/2026 11:28, Mike Rapoport (Microsoft) wrote:
-> > When set_direct_map APIs were introduced by the commit d253ca0c3865
-> > ("x86/mm/cpa: Add set_direct_map_*() functions") the single page
-> > parameter made sense because the initial callers (vmalloc and
-> > hibernation) had sets of unsorted struct pages that required changes of
-> > their mappings in the direct map.
-> >
-> > Since there is an increasing demand for direct map manipulation and it
-> > is also desirable to be able to update larger physically contiguous
-> > mappings, for example an entire large folio, extend set_direct_map APIs
-> > to receive number of pages parameter.
-> >
-> > As there is still only a handful of callers, change the existing
-> > functions directly and update all the call sites rather than adding
-> > wrappers for single page case.
-> >
-> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> > ---
-> >  arch/arm64/include/asm/set_memory.h     | 4 ++--
-> >  arch/arm64/mm/pageattr.c                | 8 ++++----
-> >  arch/loongarch/include/asm/set_memory.h | 4 ++--
-> >  arch/loongarch/mm/pageattr.c            | 8 ++++----
-> >  arch/riscv/include/asm/set_memory.h     | 4 ++--
-> >  arch/riscv/mm/pageattr.c                | 8 ++++----
-> >  arch/s390/include/asm/set_memory.h      | 4 ++--
-> >  arch/s390/mm/pageattr.c                 | 8 ++++----
-> >  arch/x86/include/asm/set_memory.h       | 4 ++--
-> >  arch/x86/mm/pat/set_memory.c            | 8 ++++----
-> >  include/linux/set_memory.h              | 6 ++++--
-> >  kernel/power/snapshot.c                 | 4 ++--
-> >  mm/secretmem.c                          | 6 +++---
-> >  mm/vmalloc.c                            | 5 +++--
-> >  14 files changed, 42 insertions(+), 39 deletions(-)
-> >
-> > diff --git a/arch/arm64/include/asm/set_memory.h b/arch/arm64/include/asm/set_memory.h
-> > index 90f61b17275e1..b07fd4e026eac 100644
-> > --- a/arch/arm64/include/asm/set_memory.h
-> > +++ b/arch/arm64/include/asm/set_memory.h
-> > @@ -11,8 +11,8 @@ bool can_set_direct_map(void);
-> >  
-> >  int set_memory_valid(unsigned long addr, int numpages, int enable);
-> >  
-> > -int set_direct_map_invalid_noflush(struct page *page);
-> > -int set_direct_map_default_noflush(struct page *page);
-> > +int set_direct_map_invalid_noflush(struct page *page, unsigned int numpages);
-> > +int set_direct_map_default_noflush(struct page *page, unsigned int numpages);
-> 
-> I don't have a strong opinion on whether to call the argument nr or
-> numpages, but we might as well be consistent across archs :)
+Since commit 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active
+mode on shared memory systems"), shmem_init_perf() programs
+AUTONOMOUS_SELECTION_ENABLE unconditionally, including in active mode.
 
-Well, it's either consistent across archs or consistent within each arch :)
-Or add a churny patch that renames it everywhere to nr_pages :)
+Platforms that exclusively support autonomous selection report this field
+as an Integer of 1, as required by the ACPI specification, instead of as a
+register descriptor.  cppc_get_reg_val() reads such a field back
+successfully, but cppc_set_reg_val() rejects the write with -EOPNOTSUPP
+because the entry is not an ACPI_TYPE_BUFFER.
+
+shmem_init_perf() propagates that error, so every amd_pstate_epp_cpu_init()
+fails, cpufreq_register_driver() ends up with an empty policy list and
+returns -ENODEV, and amd-pstate refuses to load at all:
+
+  amd_pstate: failed to set auto_sel, ret: -95
+  amd_pstate: Failed to initialize CPU 0: -95
+  ...
+  amd_pstate: failed to register with return -19
+
+Skip the write when the register already holds the value the requested mode
+needs.  Active and guided mode are fixed on these platforms, which report
+auto_sel as 1, while passive mode still fails to load on a platform that
+cannot disable autonomous selection, exactly as it did before the
+offending commit.
+
+Fixes: 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active mode on shared memory systems")
+Cc: stable@vger.kernel.org
+Tested-by: LFRon <ronforever@outlook.com>
+Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+Signed-off-by: Wentao Guan <guanwentao@uniontech.com>
+---
+changelog v2:
+Accecpt and tested the K Prateek Nayak reviews.
+v1 link:
+https://lore.kernel.org/stable/20260918054808.48999-1-guanwentao@uniontech.com/#R
+---
+---
+ drivers/cpufreq/amd-pstate.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 3a6b4b224a66d..91ec44f9fbb96 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -535,6 +535,9 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
+ 		return 0;
+ 	}
  
-> Aside from that:
-> 
-> Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
-
-Thanks!
-
++	if ((cppc_state != AMD_PSTATE_PASSIVE) == auto_sel)
++		return 0;
++
+ 	ret = cppc_set_auto_sel(cpudata->cpu,
+ 			(cppc_state == AMD_PSTATE_PASSIVE) ? 0 : 1);
+ 
 -- 
-Sincerely yours,
-Mike.
+2.30.2
+
