@@ -1,53 +1,53 @@
-Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+Received: from sender6-op-o11.zoho.com (sender6-op-o11.zoho.com [165.173.180.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 028864582F6
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 17:54:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61640472557
+	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 17:59:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.180.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789754073; cv=pass; b=riFK/faQY23hKmiu4IMyFrxD7VLQ94qs7u8+zhvrMzQ5vstLw7AIa22fFAsHr0WBNAsC5C6rm3WQr0a730yMCK2IiD6h13ViMHjfIMAqAEHTw58Y6vWvo44HE3FUfVwAN/fu2+kldd8Icn+Kka46CRp5JWoc0fr8j/gxzlJntis=
+	t=1789754362; cv=pass; b=U6ZU5dOqEcFrZsVpNwtFxBrGbAyCMTNFaAwCJeJcLvWcwIuVF6VPp8drFaP28x9ZIs6WkbBgGGbu0vAtPxWVMHc0qNSNUy/M3Z1+gvheXD9Z0iZqWk3GnPWl1s2LwTvZyoq4vkW4K/lWIGYrfKx92sE7UqthilqWk1PmbuS0fHI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789754073; c=relaxed/simple;
-	bh=GsKVvJLwF0c/ZF1XYuy0FF1oQZeeINqC56jLuJY1/2k=;
+	s=arc-20240116; t=1789754362; c=relaxed/simple;
+	bh=7f5gziOQsqSvthX4AN6Wbmx+9oDPJLoKp/VIUZqH/F0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LOpZR/jKv1btZnxmSlmu8L0AF5KDqIJ3F8SZcOkWcJUL3yhTRkwj6VCeePW9i6MriV0P4ZsrR3IXu0TUNlqRcwzYgMI3r646BHQ9zgH3c9IVM5A/DnTUen1bxySXTEPL7dhiDm2TCsscNooF5jP3wMAu3Yr1E/l/wsjdCss8iqQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=L3ZL1gbP; arc=pass smtp.client-ip=165.173.182.11
+	 Content-Type:Content-Disposition:In-Reply-To; b=e4O/EOn9zv97eYpuZhT30BexCCrizs77YBXbpF7H1i/5D0PT7rBo7NRdCrxudokqLGuEl999w9RwPs2MQaoKM5s7N8zOGXVhWh2vpFb3gL0MS2pMrI5lTkLlkByNbGMmrx8M9S2u7uq2gf70Jhb/x4tQdr4XAlrXL9XKziD+u+8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=W+2RgyfS; arc=pass smtp.client-ip=165.173.180.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="L3ZL1gbP"
-ARC-Seal: i=1; a=rsa-sha256; t=1789754057; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="W+2RgyfS"
+ARC-Seal: i=1; a=rsa-sha256; t=1789754351; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=jzZp+bCCtv8N6HtMmrvG3103FUUHf/RPkD2/52jxisHwhyI1Xr8fZ3atd4PBU5zsXc45x0MNOr5iAqvd3lDQmZ92LG2taSFx2DkvCkhS+pxGVu6e9c2aL91c6S2cHAfrqXZb7t0PLPpDGpTJBOKU9aZVKvee+szALm7IZiWfitI=
+	b=mlB7qU5gcehEKzGxFzgUo0KtBETvwoRtLpQW/IKGcV5xe1eNrFxE9ZPAmDGwbNbo00jU32OeN7gTF2CF6Jfp8luTKkw/XRz2z0STvrYPFFL95+t6gDoUItAzRKGCLnYs3h/75df4PvqutUt538E/84628zQZ5VFUhZik6NV6yY8=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1789754057; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=gGFaTfRq5dYHvrVJRIxLQYdylPpTIHpysFaBIisPlMM=; 
-	b=GuqnqxFXsfQqGypMFz4aEg78QyDo7YN5hMqASOfueg1H4GWN1aWVERU7nt8/O3vT4ceRG3bbiyPcBs6I+furS62Xq1utiUoIjLrC7kgH0LXPXQrH/idYujaNu0ybRrv3AsIQCA+RgMXrQyOzRuAEVIGRF70nZEOpJnd2INgHU4w=
+	t=1789754351; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=IXnlYsOw284Jns76QNX5PPz8/Szr6hkOSfn2OKsgiLI=; 
+	b=h/Y1olcmYtssgpRHtlLC4N/VrPektyfBQE6Cjjoo+TT4ltr/XOlSP6fFmHVoD31EIupWzv/AGGHgbtaICQfBUx+jtpeljOG32fMWiJvWVPehLREazBKJrr95IBy2lF7jWTj1gPA9pHNKqXOD2wheaGdtKIbuNa8Xf4ch1hccSBM=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
 	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789754057;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789754351;
 	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
 	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=gGFaTfRq5dYHvrVJRIxLQYdylPpTIHpysFaBIisPlMM=;
-	b=L3ZL1gbPjcsJ6lwtG/LAk5mFvlBqaIrMkesSe+nIEsCZ6f94A6IqP15puwmyAS8K
-	FCZmeWgWvG17xUoucNdFPcKIVK8phrOY9fmUNelzr9rH733CvWGckNEoXzPQ03x26Dd
-	K6TJ34ZXGblx+Ail2iARZShaFVbjHtaBVLyQY8j0=
-Received: by smtp.zohomail.com with SMTPS id 1789754056775590.397012828916;
-	Fri, 18 Sep 2026 10:54:16 -0700 (PDT)
+	bh=IXnlYsOw284Jns76QNX5PPz8/Szr6hkOSfn2OKsgiLI=;
+	b=W+2RgyfSi0Qz+urepmJOA+qOijOidXtWLk1ckKOLGFDIeC+FLE+kici3HS2qhwnH
+	3cTTkRjMXWP401Kq4y1F4CH9LVSC9fPRgEfXB3NUkXaUkElDkBdrWCJ/4S1jUu/ryQV
+	p9sXg8EhPRQLJPNj/2L+lQswf8BbWEmhJF6O5rIo=
+Received: by smtp.zohomail.com with SMTPS id 1789754351047914.3784682567832;
+	Fri, 18 Sep 2026 10:59:11 -0700 (PDT)
 Received: by venus (Postfix, from userid 1000)
-	id 41E40180608; Fri, 18 Sep 2026 19:54:14 +0200 (CEST)
-Date: Fri, 18 Sep 2026 19:54:14 +0200
+	id 62314180608; Fri, 18 Sep 2026 19:59:08 +0200 (CEST)
+Date: Fri, 18 Sep 2026 19:59:08 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Shawn Lin <shawn.lin@rock-chips.com>
 Cc: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
 	linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
-Subject: Re: [PATCH 4/4] pmdomain: rockchip: drop duplicated errno from
- supply failure message
-Message-ID: <aq16py92V1vR7kcX@venus>
+Subject: Re: [PATCH 3/4] pmdomain: rockchip: don't ignore clock lookup errors
+ on attach
+Message-ID: <aq16yrdiWH95uYQ8@venus>
 References: <1789733258-10133-1-git-send-email-shawn.lin@rock-chips.com>
- <1789733258-10133-5-git-send-email-shawn.lin@rock-chips.com>
+ <1789733258-10133-4-git-send-email-shawn.lin@rock-chips.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,27 +55,33 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wo4ywt35kyoe72ye"
+	protocol="application/pgp-signature"; boundary="5zmlbusiipz75m4r"
 Content-Disposition: inline
-In-Reply-To: <1789733258-10133-5-git-send-email-shawn.lin@rock-chips.com>
+In-Reply-To: <1789733258-10133-4-git-send-email-shawn.lin@rock-chips.com>
 X-Zoho-Virus-Status: 1
 X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/289.731.60
 X-ZohoMailClient: External
 
 
---wo4ywt35kyoe72ye
+--5zmlbusiipz75m4r
 Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 4/4] pmdomain: rockchip: drop duplicated errno from
- supply failure message
+Subject: Re: [PATCH 3/4] pmdomain: rockchip: don't ignore clock lookup errors
+ on attach
 MIME-Version: 1.0
 
 Hi,
 
-On Fri, Sep 18, 2026 at 08:07:38PM +0800, Shawn Lin wrote:
-> dev_err_probe() already appends the error code.
+On Fri, Sep 18, 2026 at 08:07:37PM +0800, Shawn Lin wrote:
+> rockchip_pd_attach_dev() treated every of_clk_get() error as the end
+> of the clock list, so a clock that exists but is not available yet
+> (e.g. -EPROBE_DEFER) was silently skipped and the device ended up
+> without pm_clk management.  Only -ENOENT means there are no more
+> clocks.
 >=20
+> Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain drive=
+r")
 > Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
 > ---
 
@@ -83,48 +89,59 @@ Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 -- Sebastian
 
->=20
->  drivers/pmdomain/rockchip/pm-domains.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/pmdomain/rockchip/pm-domains.c | 14 +++++++++++++-
+>  1 file changed, 13 insertions(+), 1 deletion(-)
 >=20
 > diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/ro=
 ckchip/pm-domains.c
-> index e193f97..dd5e2987 100644
+> index b6b099b..e193f97 100644
 > --- a/drivers/pmdomain/rockchip/pm-domains.c
 > +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -721,7 +721,7 @@ static int rockchip_pd_power_on(struct generic_pm_dom=
-ain *domain)
->  	ret =3D rockchip_pd_regulator_enable(pd);
->  	if (ret)
->  		return dev_err_probe(pd->pmu->dev, ret,
-> -				     "Failed to enable supply: %d\n", ret);
-> +				     "Failed to enable supply\n");
+> @@ -759,7 +759,19 @@ static int rockchip_pd_attach_dev(struct generic_pm_=
+domain *genpd,
+>  	}
 > =20
->  	ret =3D rockchip_pd_power(pd, true);
->  	if (ret)
+>  	i =3D 0;
+> -	while ((clk =3D of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+> +	while (1) {
+> +		clk =3D of_clk_get(dev->of_node, i++);
+> +		if (IS_ERR(clk)) {
+> +			error =3D PTR_ERR(clk);
+> +			if (error =3D=3D -ENOENT)
+> +				break;
+> +
+> +			dev_err(dev, "failed to get clock %d: %d\n", i - 1,
+> +				error);
+> +			pm_clk_destroy(dev);
+> +			return error;
+> +		}
+> +
+>  		dev_dbg(dev, "adding clock '%pC' to list of PM clocks\n", clk);
+>  		error =3D pm_clk_add_clk(dev, clk);
+>  		if (error) {
 > --=20
 > 2.7.4
 >=20
 >=20
 
---wo4ywt35kyoe72ye
+--5zmlbusiipz75m4r
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmqtesIACgkQ2O7X88g7
-+pqZuw//WxV/jL8BUfpYOrO2ZLi84y8R0/RQ1tzDgZKL3SONJyfT/ovqpUkIaMGi
-eyzCCTX8ugrJQyN22eVN95C0Xxn8GDPgWh13sAvDzBrAWDFMeGtCZr+qQGVTR85O
-csKLVjUWEyxrOoamG516K51D7E8+jDuIu+VLbO4be0ZGNQhQDPf383PVxAGX/9W1
-dPF+9T9lzq0tR+AbDSWq+T2Fg98+9ioCRgJNLa302j2W423okiRHmjX7N8XmDJ9i
-jTLVRTGKhxoRjbePz1oxuaQ/20dUflIAtLD8Pxr/gZK4DlwRopgor+EGKwENOo5R
-5kMc7qTLfHeY9bE7XnRgXSdVG3oHUFnpJt0747i8TmgG7pYpfydmwx3C6QUnEyAr
-kweNavOTuzZErZ7fV25+k7Nt0/BDBT/LGKSCmKatJ1bN3kAahv620amUQo3z9Qi/
-epErlDzuUuBRkB0oVB7faSU3NpTj5T00JW4yQrML8cTnxEiuK39yAFoV3GBI6/Ma
-MLKjcTmQmXD+4wFvQz5GghTyeCZn1q4BMyTpRQpjp4R0NjcgYSHuX4UkocayoqEj
-Ep8kJIbIXjAE0ROVAk52BfBpvD8kGM79fil30Mm8UCywsQIBXVjW+K9YC1ghDORv
-b1HEeY7mfVw3oEGFOOGLSyeTgqIwr9wF2b6HfQ0ExwKNSYcw/vI=
-=0bqw
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmqte+sACgkQ2O7X88g7
++pp/rg/9E0K5Y3juU+WAyHN7VwCZTa/CXCWLdA2WG7AEvCX5FVLMV3zttcfHAImp
+ejiJdooJY4jlBq0SL/PfPXWu1DUH2kjUl//7+vUJSI8IosuiecUlbKl1LuASXoSE
+rY5omU+uFfBrydSKH2jrM9ztezETs/6RbZBcL5lFA8hwMSXLWfeXs0SXDOvedo9N
+ZkZRVKVG8GffcdiaK42eT10AONWeerInHK1PAHjCHwdzpbd+HiZoOMYRJvIv2cZd
+guCCZ3uf0nbLKpr/1oQeK3KPmG0Oh8sRZV4YdLNesdOp9CCno32XPmqBRPjEXCEM
+lkV1GLWSmm2H7gQExCTLed5iDoYGrkJ+oGrmoil0sbpv32ReAZeJeg4YrBC8JCBi
+XCU+EXehkZ4jZYNjEbqHQuKRobpA3PKU7VHTJbDW7St5k3Zqlw4hq8SuktiofNyL
+Es9gAYXSjdhgPciyD+po19kokDHLooVWdIwTcWEuXbf/6IynTBq7jAMfO86D6KCO
+RzeQXdeS2ldmiXwfTBxbc4ZUngOLlinP9mc+TVOgf077QDgx05/wgJmNUcGw6fO/
+QfLvFGODmoh6I7FsxfTgF+OxaJdJuyfup1eIsJ+lJG3slj/0O517A1KpOzANGc6V
+XdNLHFLDvzgrhzM8qCaeO855UyfNAcQCLchXwB8snaY07kWxBuU=
+=/dh9
 -----END PGP SIGNATURE-----
 
---wo4ywt35kyoe72ye--
+--5zmlbusiipz75m4r--
