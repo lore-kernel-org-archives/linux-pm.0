@@ -1,666 +1,167 @@
-Received: from sender5-op-o12.zoho.com (sender5-op-o12.zoho.com [165.173.182.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BDD436167B;
-	Fri, 18 Sep 2026 09:01:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.12
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789722065; cv=pass; b=e9aCWcYaiXOXradAXT8nstoteltyK0MWJOtjUAJMr3k74af7N1wAWoc1Mgb+DbUZi3DTVI/rmR8U+UxGc0/w+Qb9BWnb5+2I21/MYPuX0eAwKdwTiWUFwRQAr/EYXZbQU8Tv893rvSZxEyRZlULnzEw8pMR1Prlm768bhTSuB0E=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789722065; c=relaxed/simple;
-	bh=/d0SKhnC8hr5GRW42c3XVaWi18HMqbdYu72djCO1SXg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=COvdAgsMNxOZEXhyM1f3Io4wOlAMgYvKHiNoxI9r4xBqIOS4k+TInyI1wbhcKpoHQhEhro38yV00H1zLI5ut9qHVV+BtwOSbsdAnj0m0bWeHrGarlmhR38HgJM9tV9S/NR8b4qIgOXcFdJ1ntQL8pXgDBnZI4Ok24nekmMQFisY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me; spf=pass smtp.mailfrom=icenowy.me; dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b=MhdgnxWJ; arc=pass smtp.client-ip=165.173.182.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icenowy.me
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EAF854704E
+	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 09:05:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789722352; cv=none; b=OorS9E8DRu2KwJLFKUXRA0o6F7rOGaVKO8DRP7OvdhLsXy3E1PruRAr8wcUV4+Cuh5uCWBW+66Uv/LHYkQSyZOCslCnkC554HAPNt/N51g5EBu6XvNqXeDHhnB/awof6tHMWeAWE0aw+XQdpWhBago/WgNzyugRpqAj4kUAVhXI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789722352; c=relaxed/simple;
+	bh=Ej4swH6U/hn+2J3iilCARYgFatpiiV0z/ciLvDehIOY=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=B/MGrEm5+zj3YUhfUnfL3inkGC9l0R62UIqEtlS+TJzTGSr8TYzSE9gOzgwRrIJ1+G65P57yi7o5Y6TwYAzKml3kfmoUtoll6+0XR+m0VkZu5NO/kG6A+Rh+fUb7rYkzki/sxzAWZ5jBnh7Z5tBsLrVxOH5LdD4AyBZ7cKo/aus=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NYK7ELnr; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b="MhdgnxWJ"
-ARC-Seal: i=1; a=rsa-sha256; t=1789722014; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=TSUYg1tsIlaR0q1oqihzK+5VecJZfnQR7o8ty+dhNbm3rCbcGiFUi6r6fk/iFGLrVqB7JXvBhAMNqtdmekfn+5sYVDo+DoY68az6k1+ef61dxBTFu43UaKnQW7eRqWIcsiO0zwIYTMFt2KlLrSi+QpyI8Pts4CIbr3J7I3cDbz0=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1789722014; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=tKU5PGY3GjfsKNtM9294AKz3n+ep9Fo8PM/k6/HdFSg=; 
-	b=l+RfpEKASI2aT9JMs1vWAn0oLRtUAKk2B62ROZ4L8EjUKHg+6JW1f1mEq0q9S5/6D6A5z3VSV+dacaFTbHAfQxCO+67iiFjhI+FuC0B2qJyUYCpawpeQ3DCc4/fYwg21P12APhKdg3ZAfe9ZnkE0usg1iiZ7r8UiUVv0lf7CChg=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=icenowy.me;
-	spf=pass  smtp.mailfrom=uwu@icenowy.me;
-	dmarc=pass header.from=<uwu@icenowy.me>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789722014;
-	s=zmail2; d=icenowy.me; i=uwu@icenowy.me;
-	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
-	bh=tKU5PGY3GjfsKNtM9294AKz3n+ep9Fo8PM/k6/HdFSg=;
-	b=MhdgnxWJLLHyAjllDb4hNfNGca5J6WUaxWA5WilLugsrtpnlNwul8oqTSku0SMRD
-	0JOLPwRNKU8cS+afIbIp0Cpw3+eJXRZcsegHd8XrmpsTVXcidrBvajSd1Yj4dUlsx4l
-	D0yj6fsV/QHKAVsqDNfytnorl5T4FHO1tFCVe/H/ucZzSQLOyTiYAySzdo5bHrY2w73
-	4P3LHbLmVnCuDlxZ8dAclsDDEqog3HfQiCMuW+OYiOHHCW524+7v1FYsFM3noe6FDI+
-	LwEP0AhiOe82TkmpbF1MR1t7jpZ3SqjT8OQ+6NE5AieZa+r3FUJKgsZVqEf4wCviOsf
-	DOdXNprZpg==
-Received: by smtp.zohomail.com with SMTPS id 1789722013037290.91804390297057;
-	Fri, 18 Sep 2026 02:00:13 -0700 (PDT)
-Message-ID: <a4359efeee2220903a05a2383a651ec8ec7284b7.camel@icenowy.me>
-Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
-From: Icenowy Zheng <uwu@icenowy.me>
-To: Yixun Lan <dlan@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Ulf
- Hansson <ulfh@kernel.org>,  Paul Walmsley	 <pjw@kernel.org>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou	 <aou@eecs.berkeley.edu>, Alexandre Ghiti
- <alex@ghiti.fr>
-Cc: devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Date: Fri, 18 Sep 2026 17:00:06 +0800
-In-Reply-To: <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
-References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
-	 <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
-Organization: Anthon Open-Source Community
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NYK7ELnr"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49b912d3920so3510905e9.1
+        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 02:05:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1789722349; x=1790327149; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :autocrypt:content-language:references:cc:to:subject:reply-to:from
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=7uSQneWyD9u8uXUDCmfCQSOWQMsG1MluBHm0qVsycCg=;
+        b=NYK7ELnrTbVX7If3tsGOXjSYXB9pZrvVLZ6rSVnhml8kNBQ0WOWWGhV3VEtNkzamVu
+         89GGV9Y5woYv8iSbWV4fIMlMv5YU/q5Ah63Eci0mtaZqFq/pGRBBmlPtgLS8dcCq6G/C
+         Tq90jKhAsNbCQq2SiySH3oIxzftz6rrrLWFMhgaZWLle1CDAVQo/r+UVTp4YpaYMvtNP
+         n+lfdrEvLEcga0AzS2CCMhDmcjzrvzS0bayKOnZMF+1QfFGrlKP9ZK1iscF5+JIW763Z
+         60OTlAY/EH/8rK90pwiaLi52g8LtRJtMp/nSaxSF12gWjD7xjvrUpv4T7kHOc1FUFhrZ
+         fkGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789722349; x=1790327149;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :autocrypt:content-language:references:cc:to:subject:reply-to:from
+         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=7uSQneWyD9u8uXUDCmfCQSOWQMsG1MluBHm0qVsycCg=;
+        b=uINFvrgzBbgyA3Y7pE6gP23JZIBpoQDp/wVOBXuO26CLj2F1FAKph3yy/AzvZ9dwtk
+         OmkXP8P3/KhBB7CHAPSAyCqgd5eqKnxMCN86ARw16qnnQqhHC3+m3j0QL5+NgxDp+gQ+
+         rALdz0qhJ9suKuUHw2tjEUKB06NWWPggE+tLtxeHal6IajJ6WoStkHbLHhlyc2pvBtGG
+         KFoXYonI6TDYxC0K0vslbKXiTrJlA8SjODLrIH6dOArTJAA5RGAJa8GnFkO/MWE6GFdX
+         cYTADll/gvxm4YM/5RTjlc9IywZ/09DaPxVnJeaHkD29tjobWt2+gUGNGh4QfPXj/dY0
+         XXLg==
+X-Forwarded-Encrypted: i=1; AKwUvBwx6/wh/6Lz0grBr7YZMiUXxJCYzzCV1Ro7fsdMJhExVrwOfO/IctLCXAWtlk61Dcoh+E6WTbd7Lw==@vger.kernel.org
+X-Gm-Message-State: AFuF++mo50EObofeoJsVEgrZK1BbQuZwLsQ8129DTThlA+voy68I3Sli
+	tFD4ztoY7AIZrpwZgkRKeO10ahB4oHx8Gmp7kJN2MhVWGStJaH//mBqPkWkgFKahdz8=
+X-Gm-Gg: AYBFou2N4E/dlMpHiLnARtaTZyxHUjLv+dbU+o0VfEY/TsStbAj8qZbtOawvWo5P9/B
+	0zXXwXzX8lo+x/NU+mSpGvaxIrsqEgqfw1Udv8GudgVs+GdQz7+PgboPLodavQtNNVEk74DO/Ty
+	o/gyEhJ/CbBasibyj7tx4mehjJWU+mvAc0XnHNh56cMNcIYqx68qM7qd8mQIjT7/Gf3kNUKiGks
+	XSp2YU2TxcIFRh0sL3JKa1TBEM8nkPCnifbLR/3pCiNu13D4NJBYgMNzh2Dbk9IqWvAsXoaCRJc
+	eUoNXsiRSn+HRP9d6n7ZT9Pb88bax2va/rRMU317VeFHKB7c6hjxT+xFdx3PMT+frzzyOXH3LWM
+	gJk4si+23BgsysRiC+Dac7OSArGIB35U/LPgkhP20CGGVsHf5HYU1/pVVdoY/YC3kZsh3TApOrk
+	PldJWFYcS1dDKUcuRtppSt8KwgoUKgCOO+seRDMi4JBxpOhAJ0Lx+txsyiiIuEJqUDxjvIiGvV7
+	g2qb1L6Uka6Lll9G+gzEHb8DYAS8OWpiPr9O11Im65f5D6UiZeSOg==
+X-Received: by 2002:a05:600c:1f8f:b0:49e:8354:26fb with SMTP id 5b1f17b1804b1-49fc574c729mr22905995e9.32.1789722348545;
+        Fri, 18 Sep 2026 02:05:48 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:106d:1080:c55f:cb91:1ca5:54dc? ([2a01:e0a:106d:1080:c55f:cb91:1ca5:54dc])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fc471b9a2sm26149925e9.0.2026.09.18.02.05.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 18 Sep 2026 02:05:48 -0700 (PDT)
+Message-ID: <43f75100-b255-462b-aed2-b3f19fb19342@linaro.org>
+Date: Fri, 18 Sep 2026 11:05:46 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ZohoMailClient: External
+User-Agent: Mozilla Thunderbird
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
+Subject: Re: [PATCH v12 2/6] mfd: khadas-mcu: Use MFD_CELL_* macros for cell
+ declarations
+To: linux-kernel-dev@aliel.fr, Lee Jones <lee@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Beniamino Galvani <b.galvani@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>
+Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ mfd@lists.linux.dev
+References: <20260917-add-mcu-fan-khadas-vim4-v12-0-497cd543a148@aliel.fr>
+ <20260917-add-mcu-fan-khadas-vim4-v12-2-497cd543a148@aliel.fr>
+Content-Language: en-US, fr
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro
+In-Reply-To: <20260917-add-mcu-fan-khadas-vim4-v12-2-497cd543a148@aliel.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-=E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 02:40 +0000=EF=BC=8CYixun Lan=E5=86=
-=99=E9=81=93=EF=BC=9A
-> =C2=A0 SpacemiT's PMU (Power Management Unit) consist of several power
-> domains
-> which can be managed independently, depending on different
-> application
-> scenario, each domain can be powered on/off for saving power.
->=20
-> =C2=A0 The driver is implemented based on Linux Generic PM Domain
-> framework.
-> From a hardware perspective, either of two distinct power-on
-> sequences
-> are supported, in software mode (SW mode), the driver is responsible
-> for
-> controlling the states of bits such as sleep1, sleep2, isolation and
-> pwr_state, while in hardware mode (HW mode), the PMU hardware will
-> complete
-> the sequence automatically without requiring software intervention.
+On 9/17/26 09:59, Ronald Claveau via B4 Relay wrote:
+> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> 
+> Convert khadas_mcu_fan_cells[] and khadas_mcu_cells[] to use the
+> MFD_CELL_NAME() helper macro instead of open-coding the struct
+> mfd_cell initialisers. While at it, make both arrays const since
+> they are never modified after initialisation.
+> 
+> This is a pure cleanup with no functional change, done in
+> preparation for a subsequent patch which will need to attach
+> platform_data to the fan cell.
+> 
+> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> ---
+>   drivers/mfd/khadas-mcu.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/mfd/khadas-mcu.c b/drivers/mfd/khadas-mcu.c
+> index ba981a7886921..0e74efe14f367 100644
+> --- a/drivers/mfd/khadas-mcu.c
+> +++ b/drivers/mfd/khadas-mcu.c
+> @@ -75,13 +75,13 @@ static const struct regmap_config khadas_mcu_regmap_config = {
+>   	.cache_type	= REGCACHE_MAPLE,
+>   };
+>   
+> -static struct mfd_cell khadas_mcu_fan_cells[] = {
+> +static const struct mfd_cell khadas_mcu_fan_cells[] = {
+>   	/* VIM1/2 Rev13+ and VIM3 only */
+> -	{ .name = "khadas-mcu-fan-ctrl", },
+> +	MFD_CELL_NAME("khadas-mcu-fan-ctrl"),
+>   };
+>   
+> -static struct mfd_cell khadas_mcu_cells[] = {
+> -	{ .name = "khadas-mcu-user-mem", },
+> +static const struct mfd_cell khadas_mcu_cells[] = {
+> +	MFD_CELL_NAME("khadas-mcu-user-mem"),
+>   };
+>   
+>   static int khadas_mcu_probe(struct i2c_client *client)
+> 
 
-I think there also exists solutions for K3 that uses RPMI power
-domains, and let their ESOS firmware to access the hardware.
-
-What's the relationship of this implementation with the ESOS
-implementation? Should the ESOS part be disabled to use this
-implementation?
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
 
 Thanks,
-Icenowy
-
->=20
-> Signed-off-by: Yixun Lan <dlan@kernel.org>
-> ---
-> =C2=A0drivers/pmdomain/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1 +
-> =C2=A0drivers/pmdomain/Makefile=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1 +
-> =C2=A0drivers/pmdomain/spacemit/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0 15 ++
-> =C2=A0drivers/pmdomain/spacemit/Makefile=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=
-=C2=A0 1 +
-> =C2=A0drivers/pmdomain/spacemit/pm_domains.c | 448
-> +++++++++++++++++++++++++++++++++
-> =C2=A05 files changed, 466 insertions(+)
->=20
-> diff --git a/drivers/pmdomain/Kconfig b/drivers/pmdomain/Kconfig
-> index 23076ae90e66..0610acd030f6 100644
-> --- a/drivers/pmdomain/Kconfig
-> +++ b/drivers/pmdomain/Kconfig
-> @@ -13,6 +13,7 @@ source "drivers/pmdomain/qcom/Kconfig"
-> =C2=A0source "drivers/pmdomain/renesas/Kconfig"
-> =C2=A0source "drivers/pmdomain/rockchip/Kconfig"
-> =C2=A0source "drivers/pmdomain/samsung/Kconfig"
-> +source "drivers/pmdomain/spacemit/Kconfig"
-> =C2=A0source "drivers/pmdomain/st/Kconfig"
-> =C2=A0source "drivers/pmdomain/starfive/Kconfig"
-> =C2=A0source "drivers/pmdomain/sunxi/Kconfig"
-> diff --git a/drivers/pmdomain/Makefile b/drivers/pmdomain/Makefile
-> index ebc802f13eb9..ba25b444e263 100644
-> --- a/drivers/pmdomain/Makefile
-> +++ b/drivers/pmdomain/Makefile
-> @@ -11,6 +11,7 @@ obj-y					+=3D qcom/
-> =C2=A0obj-y					+=3D renesas/
-> =C2=A0obj-y					+=3D rockchip/
-> =C2=A0obj-y					+=3D samsung/
-> +obj-y					+=3D spacemit/
-> =C2=A0obj-y					+=3D st/
-> =C2=A0obj-y					+=3D starfive/
-> =C2=A0obj-y					+=3D sunxi/
-> diff --git a/drivers/pmdomain/spacemit/Kconfig
-> b/drivers/pmdomain/spacemit/Kconfig
-> new file mode 100644
-> index 000000000000..4b927beedc7c
-> --- /dev/null
-> +++ b/drivers/pmdomain/spacemit/Kconfig
-> @@ -0,0 +1,15 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +
-> +menu "SpacemiT PM Domains"
-> +
-> +config SPACEMIT_PM_DOMAINS
-> +	bool "PM Domain driver for SpacemiT SoC"
-> +	depends on PM
-> +	depends on OF
-> +	depends on MFD_SYSCON
-> +	select PM_GENERIC_DOMAINS
-> +	help
-> +	=C2=A0 PM Domain driver for SpacemiT SoC. Say Y if you want to
-> support
-> +	=C2=A0 SpacemiT SoCs.
-> +
-> +endmenu
-> diff --git a/drivers/pmdomain/spacemit/Makefile
-> b/drivers/pmdomain/spacemit/Makefile
-> new file mode 100644
-> index 000000000000..5e8a740ba494
-> --- /dev/null
-> +++ b/drivers/pmdomain/spacemit/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_SPACEMIT_PM_DOMAINS)	+=3D pm_domains.o
-> diff --git a/drivers/pmdomain/spacemit/pm_domains.c
-> b/drivers/pmdomain/spacemit/pm_domains.c
-> new file mode 100644
-> index 000000000000..d563e4e4e232
-> --- /dev/null
-> +++ b/drivers/pmdomain/spacemit/pm_domains.c
-> @@ -0,0 +1,448 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Spacemit Generic power domain support.
-> + *
-> + * Copyright (c) 2026 SpacemiT Technology Co. Ltd
-> + */
-> +
-> +#include <linux/io.h>
-> +#include <linux/err.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/regmap.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <dt-bindings/power/spacemit,k1-power.h>
-> +#include <dt-bindings/power/spacemit,k3-power.h>
-> +
-> +#define APMU_POWER_STATUS_REG	0xf0
-> +#define APMU_POWER_TIMEOUT_US	10000
-> +
-> +struct spacemit_pm_domain_param {
-> +	int reg_pwr_ctrl;
-> +	int bit_hw_mode;
-> +	int bit_sleep2;
-> +	int bit_sleep1;
-> +	int bit_isolation;
-> +	int bit_auto_pwr_on;
-> +	int bit_hw_pwr_stat;
-> +	int bit_pwr_stat;
-> +	int use_hw;
-> +	const char *name;
-> +};
-> +
-> +struct spacemit_pm_domain {
-> +	struct generic_pm_domain genpd;
-> +	int pm_index;
-> +	const struct spacemit_pm_domain_param *param;
-> +};
-> +
-> +struct spacemit_pmu {
-> +	struct device *dev;
-> +	struct genpd_onecell_data genpd_data;
-> +	struct regmap *regmap;
-> +	struct spacemit_pm_domain **domains;
-> +	int num_domains;
-> +};
-> +
-> +struct spacemit_pm_of_data {
-> +	int num_domains;
-> +	const struct spacemit_pm_domain_param *param;
-> +};
-> +
-> +static struct spacemit_pmu *gpmu;
-> +
-> +static int spacemit_pd_power_off(struct generic_pm_domain *domain)
-> +{
-> +	struct spacemit_pm_domain *spd =3D container_of(domain, struct
-> spacemit_pm_domain, genpd);
-> +	const struct spacemit_pm_domain_param *p =3D spd->param;
-> +	unsigned int val;
-> +	int ret;
-> +
-> +	if (!spd->param->use_hw) {
-> +		regmap_clear_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> BIT(p->bit_isolation));
-> +		fsleep(15);
-> +
-> +		val =3D BIT(p->bit_sleep1) | BIT(p->bit_sleep2);
-> +		regmap_clear_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> val);
-> +		fsleep(15);
-> +
-> +		ret =3D regmap_read_poll_timeout(gpmu->regmap,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_STATUS_REG,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 val,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 !(val & BIT(p-
-> >bit_pwr_stat)),
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 5,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_TIMEOUT_US);
-> +	} else {
-> +		val =3D BIT(p->bit_auto_pwr_on) | BIT(p->bit_hw_mode);
-> +		regmap_clear_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> val);
-> +		fsleep(15);
-> +
-> +		ret =3D regmap_read_poll_timeout(gpmu->regmap,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_STATUS_REG,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 val,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 !(val & BIT(p-
-> >bit_hw_pwr_stat)),
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 5,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_TIMEOUT_US);
-> +	}
-> +
-> +	if (ret) {
-> +		dev_err(&domain->dev, "Fail to power-off domain:
-> %d\n",
-> +				spd->pm_index);
-> +		return -EBUSY;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int spacemit_pd_power_on(struct generic_pm_domain *domain)
-> +{
-> +	struct spacemit_pm_domain *spd =3D container_of(domain, struct
-> spacemit_pm_domain, genpd);
-> +	const struct spacemit_pm_domain_param *p =3D spd->param;
-> +	unsigned int val;
-> +	int ret =3D 0;
-> +
-> +	regmap_read(gpmu->regmap, APMU_POWER_STATUS_REG, &val);
-> +
-> +	if (!p->use_hw && (val & BIT(p->bit_pwr_stat))) {
-> +		val =3D BIT(p->bit_isolation);
-> +		regmap_clear_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> val);
-> +		fsleep(15);
-> +
-> +		val =3D BIT(p->bit_sleep1) | BIT(p->bit_sleep2);
-> +		regmap_clear_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> val);
-> +		fsleep(15);
-> +
-> +		ret =3D regmap_read_poll_timeout(gpmu->regmap,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_STATUS_REG,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 val,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 !(val & BIT(p-
-> >bit_pwr_stat)),
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 5,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_TIMEOUT_US);
-> +	}
-> +
-> +	if (p->use_hw && (val & BIT(p->bit_hw_pwr_stat))) {
-> +		val =3D BIT(p->bit_auto_pwr_on) | BIT(p->bit_hw_mode);
-> +		regmap_clear_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> val);
-> +		fsleep(30);
-> +
-> +		ret =3D regmap_read_poll_timeout(gpmu->regmap,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_STATUS_REG,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 val,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 !(val & BIT(p-
-> >bit_hw_pwr_stat)),
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 5,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_TIMEOUT_US);
-> +	}
-> +
-> +	if (ret < 0) {
-> +		dev_err(&domain->dev, "power-off domain: %d,
-> error\n", spd->pm_index);
-> +		return -EBUSY;
-> +	}
-> +
-> +	if (!p->use_hw) {
-> +		regmap_set_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> BIT(p->bit_sleep1));
-> +		fsleep(20);
-> +
-> +		val =3D BIT(p->bit_sleep2) | BIT(p->bit_sleep1);
-> +		regmap_set_bits(gpmu->regmap, p->reg_pwr_ctrl, val);
-> +		fsleep(20);
-> +
-> +		regmap_set_bits(gpmu->regmap, p->reg_pwr_ctrl,
-> BIT(p->bit_isolation));
-> +		fsleep(15);
-> +
-> +		ret =3D regmap_read_poll_timeout(gpmu->regmap,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_STATUS_REG,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 val,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 (val & BIT(p-
-> >bit_pwr_stat)),
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 5,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_TIMEOUT_US);
-> +	} else {
-> +		val =3D BIT(p->bit_auto_pwr_on) | BIT(p->bit_hw_mode);
-> +		regmap_set_bits(gpmu->regmap, p->reg_pwr_ctrl, val);
-> +		fsleep(300);
-> +
-> +		ret =3D regmap_read_poll_timeout(gpmu->regmap,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_STATUS_REG,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 val,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 (val & BIT(p-
-> >bit_hw_pwr_stat)),
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 5,
-> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-> APMU_POWER_TIMEOUT_US);
-> +	}
-> +
-> +	if (ret < 0) {
-> +		dev_err(&domain->dev, "power-on domain: %d,
-> error\n", spd->pm_index);
-> +		return -EBUSY;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static bool spacemit_pm_get_state(struct spacemit_pmu *pmu,
-> +				=C2=A0 struct spacemit_pm_domain *pd)
-> +{
-> +	const struct spacemit_pm_domain_param *p =3D pd->param;
-> +	u32 reg, bit;
-> +
-> +	regmap_read(pmu->regmap, APMU_POWER_STATUS_REG, &reg);
-> +
-> +	bit =3D p->use_hw ? BIT(pd->param->bit_hw_pwr_stat) :
-> +		BIT(pd->param->bit_pwr_stat);
-> +
-> +	return !!(reg & bit);
-> +}
-> +
-> +static int spacemit_pm_add_one_domain(struct spacemit_pmu *pmu, int
-> id,
-> +				=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 const struct
-> spacemit_pm_domain_param *param)
-> +{
-> +	struct spacemit_pm_domain *pd;
-> +
-> +	pd =3D devm_kzalloc(pmu->dev, sizeof(*pd), GFP_KERNEL);
-> +	if (!pd)
-> +		return -ENOMEM;
-> +
-> +	pd->pm_index=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D id;
-> +	pd->param=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-=3D param;
-> +	pd->genpd.name=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D param->name;
-> +	pd->genpd.power_off =3D spacemit_pd_power_off;
-> +	pd->genpd.power_on=C2=A0 =3D spacemit_pd_power_on;
-> +
-> +	pm_genpd_init(&pd->genpd, NULL, !spacemit_pm_get_state(pmu,
-> pd));
-> +
-> +	pmu->domains[id] =3D pd;
-> +
-> +	return 0;
-> +}
-> +
-> +static void spacemit_pm_domain_cleanup(struct spacemit_pmu *pmu)
-> +{
-> +	int i;
-> +
-> +	for (i =3D 0; i < pmu->num_domains; i++) {
-> +		if (pmu->domains[i])
-> +			pm_genpd_remove(&pmu->domains[i]->genpd);
-> +	}
-> +}
-> +
-> +static int spacemit_pm_domain_probe(struct platform_device *pdev)
-> +{
-> +	const struct spacemit_pm_of_data *data;
-> +	struct device *dev =3D &pdev->dev;
-> +	struct spacemit_pmu *pmu;
-> +	int err, i;
-> +
-> +	data =3D device_get_match_data(dev);
-> +
-> +	pmu =3D devm_kzalloc(dev, sizeof(*pmu), GFP_KERNEL);
-> +	if (!pmu)
-> +		return -ENOMEM;
-> +
-> +	pmu->dev =3D dev;
-> +	pmu->num_domains =3D data->num_domains;
-> +
-> +	pmu->regmap =3D syscon_regmap_lookup_by_phandle(dev->of_node,
-> "spacemit,apmu");
-> +	if (IS_ERR(pmu->regmap))
-> +		return dev_err_probe(dev, PTR_ERR(pmu->regmap),
-> "failed to get apmu regmap\n");
-> +
-> +	pmu->domains =3D devm_kcalloc(dev, data->num_domains,
-> +				=C2=A0=C2=A0=C2=A0 sizeof(*pmu->domains),
-> GFP_KERNEL);
-> +	if (!pmu->domains)
-> +		return -ENOMEM;
-> +
-> +	for (i =3D 0; i < data->num_domains; i++) {
-> +		err =3D spacemit_pm_add_one_domain(pmu, i, &data-
-> >param[i]);
-> +		if (err) {
-> +			dev_err(dev, "failed to add domain %d:
-> %d\n", i, err);
-> +			goto err_out;
-> +		}
-> +	}
-> +
-> +	pmu->genpd_data.domains=C2=A0=C2=A0=C2=A0=C2=A0 =3D (struct generic_pm_=
-domain
-> **)pmu->domains;
-> +	pmu->genpd_data.num_domains =3D data->num_domains;
-> +
-> +	err =3D of_genpd_add_provider_onecell(dev->of_node, &pmu-
-> >genpd_data);
-> +	if (err) {
-> +		dev_err(dev, "failed to add provider: %d\n", err);
-> +		goto err_out;
-> +	}
-> +
-> +	gpmu =3D pmu;
-> +
-> +	return 0;
-> +
-> +err_out:
-> +	spacemit_pm_domain_cleanup(pmu);
-> +	return err;
-> +}
-> +
-> +static const struct spacemit_pm_domain_param k1_domain_params[] =3D {
-> +	[K1_PMDOMAIN_VPU] =3D {
-> +		.reg_pwr_ctrl		=3D 0xa8,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_pwr_stat		=3D 1,
-> +		.bit_hw_pwr_stat	=3D 9,
-> +		.name			=3D "vpu",
-> +	},
-> +	[K1_PMDOMAIN_GPU] =3D {
-> +		.reg_pwr_ctrl		=3D 0xd0,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_pwr_stat		=3D 0,
-> +		.name			=3D "gpu",
-> +	},
-> +	[K1_PMDOMAIN_LCD] =3D {
-> +		.reg_pwr_ctrl		=3D 0x380,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_pwr_stat		=3D 4,
-> +		.bit_hw_pwr_stat	=3D 12,
-> +		.use_hw			=3D 1,
-> +		.name			=3D "lcd",
-> +	},
-> +	[K1_PMDOMAIN_ISP] =3D {
-> +		.reg_pwr_ctrl		=3D 0x37c,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_pwr_stat		=3D 2,
-> +		.bit_hw_pwr_stat	=3D 10,
-> +		.name			=3D "isp",
-> +	},
-> +	[K1_PMDOMAIN_AUDIO] =3D {
-> +		.reg_pwr_ctrl		=3D 0x378,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_pwr_stat		=3D 3,
-> +		.bit_hw_pwr_stat	=3D 11,
-> +		.use_hw			=3D 1,
-> +		.name			=3D "audio",
-> +	},
-> +	[K1_PMDOMAIN_GNSS] =3D {
-> +		.reg_pwr_ctrl		=3D 0x13c,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_pwr_stat		=3D 6,
-> +		.bit_hw_pwr_stat	=3D 14,
-> +		.name			=3D "gnss",
-> +	},
-> +	[K1_PMDOMAIN_HDMI] =3D {
-> +		.reg_pwr_ctrl		=3D 0x3f4,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_isolation		=3D 1,
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_pwr_stat		=3D 7,
-> +		.bit_hw_pwr_stat	=3D 15,
-> +		.use_hw			=3D 1,
-> +		.name			=3D "hdmi",
-> +	},
-> +};
-> +
-> +static const struct spacemit_pm_domain_param k3_domain_params[] =3D {
-> +	[K3_PMDOMAIN_VPU] =3D {
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_isolation		=3D 1,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_pwr_stat		=3D 2,
-> +		.bit_hw_pwr_stat	=3D 9,
-> +		.use_hw			=3D 1,
-> +		.reg_pwr_ctrl		=3D 0xa8,
-> +		.name			=3D "vpu",
-> +	},
-> +	[K3_PMDOMAIN_GPU] =3D {
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_isolation		=3D 1,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_pwr_stat		=3D 0,
-> +		.bit_hw_pwr_stat	=3D 8,
-> +		.use_hw			=3D 1,
-> +		.reg_pwr_ctrl		=3D 0xd0,
-> +		.name			=3D "gpu",
-> +	},
-> +	[K3_PMDOMAIN_AUDIO] =3D {
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_isolation		=3D 1,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_pwr_stat		=3D 3,
-> +		.reg_pwr_ctrl		=3D 0x378,
-> +		.name			=3D "audio",
-> +	},
-> +	[K3_PMDOMAIN_LCD0] =3D {
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_isolation		=3D 1,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_pwr_stat		=3D 4,
-> +		.bit_hw_pwr_stat	=3D 12,
-> +		.use_hw			=3D 1,
-> +		.reg_pwr_ctrl		=3D 0x380,
-> +		.name			=3D "lcd0",
-> +	},
-> +	[K3_PMDOMAIN_LCD1] =3D {
-> +		.bit_auto_pwr_on	=3D 0,
-> +		.bit_isolation		=3D 1,
-> +		.bit_sleep1		=3D 2,
-> +		.bit_sleep2		=3D 3,
-> +		.bit_hw_mode		=3D 4,
-> +		.bit_pwr_stat		=3D 5,
-> +		.bit_hw_pwr_stat	=3D 15,
-> +		.use_hw			=3D 1,
-> +		.reg_pwr_ctrl		=3D 0x3f4,
-> +		.name			=3D "lcd1",
-> +	},
-> +};
-> +
-> +static const struct spacemit_pm_of_data k1_of_data =3D {
-> +	.num_domains	=3D ARRAY_SIZE(k1_domain_params),
-> +	.param		=3D k1_domain_params,
-> +};
-> +
-> +static const struct spacemit_pm_of_data k3_of_data =3D {
-> +	.num_domains	=3D ARRAY_SIZE(k3_domain_params),
-> +	.param		=3D k3_domain_params,
-> +};
-> +
-> +static const struct of_device_id spacemit_pm_domain_dt_match[] =3D {
-> +	{
-> +		.compatible =3D "spacemit,k1-power-controller",
-> +		.data =3D &k1_of_data,
-> +	},
-> +	{
-> +		.compatible =3D "spacemit,k3-power-controller",
-> +		.data =3D &k3_of_data,
-> +	},
-> +	{ /* sentinel */ }
-> +};
-> +
-> +static struct platform_driver spacemit_pm_domain_driver =3D {
-> +	.probe =3D spacemit_pm_domain_probe,
-> +	.driver =3D {
-> +		.name=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D =
-"spacemit-pm-domain",
-> +		.of_match_table =3D spacemit_pm_domain_dt_match,
-> +	},
-> +};
-> +
-> +builtin_platform_driver(spacemit_pm_domain_driver);
-> +MODULE_DESCRIPTION("SpacemiT Generic Power Domains driver");
-> +MODULE_LICENSE("GPL");
+Neil
