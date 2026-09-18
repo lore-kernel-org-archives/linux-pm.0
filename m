@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3364151815A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7CBA5172C5;
 	Fri, 18 Sep 2026 16:41:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789749685; cv=none; b=qOPxgtEOMWy/D5kpVuhJlQSXVU51WbGlAsmo3EsSypMYgP5e/1wirwaJuzkrNj/fWsCj/nd494RI4JY8WxRMiKZSB0JHgAnbS33g17wC5vKEpNLDZXmbF1gltUpRfjAlkon+Gu3hYlP08GSu8LYPyqKcYITXpAv5Jq183nqHo8U=
+	t=1789749686; cv=none; b=tkVhRGMY+meatIH7Th8AbmCfS/ndiwichPIz3pHKTEHMcoWzBR8+PSsYH5hgFUjcmnaneTPpNhegeWDtzz7qdtkOmPwb0n/R5AkaC/6BwzVdgRqyA8V/WUNx0WkBlkTHYyf1x0lAq68v7pKNmB1wmuXghuFCLIovr5Wn++8Vv8U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789749685; c=relaxed/simple;
-	bh=BOZWafU3f4ITSsJBLEr368j82TV+YUOqf180XRodaHg=;
+	s=arc-20240116; t=1789749686; c=relaxed/simple;
+	bh=wHDE/ogxFqC0ePubpUai8RfXfh2NL6ahN/FENdluccE=;
 	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=t/OUKBYf8xYux/ipKfcrjyS8tPYN3AXt4745qrW+O74UxaAIlbRKUS6osKO4jTlGt9d/9N7xCANx0vF5aeAm16RkSLKUVDCcMwgy4sCZtpmT61m5N0cNf2teJUxteoxZdTJFbJ3afJXw4nsPEKoUz3AsmW6Uxfi8CLQbMdSaQSU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ICXEfZWG; arc=none smtp.client-ip=100.103.45.18
+	 Message-Id:Subject; b=cgXXMbkpEns+SfZS+/semEf+dO2I/zBqLE4eqQ2cpkDfvIpQAfDlqv4+KXs86BoFHkZhOwPCPc2umML2cOAWzWc+HwtTRP6bz8dbmOiZ8cTIWovys9cBs4yHT6KIsu/+W8na8FRALmB+oCJEI8cF2ongugqna0YSa6N7Ho3XdlY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lLLNwwwJ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ICXEfZWG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 057BC1F00899;
-	Fri, 18 Sep 2026 16:41:20 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lLLNwwwJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D92771F000FF;
+	Fri, 18 Sep 2026 16:41:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789749681;
-	bh=WbkQpYzW8fMnBq57NK7jpTmVbQoZoa+LajFAmJqaKwg=;
+	s=k20260515; t=1789749680;
+	bh=LPArZUqqB353rHy4QKLaGuKuBspay5gmps9/H6dZ24E=;
 	h=Date:From:Cc:To:In-Reply-To:References:Subject;
-	b=ICXEfZWGgydsyAdHsmcIuO4df3Y4EmINakIsTIkpaCi6VmkVnmH7MXbZGhReGj2Ow
-	 ZXF/3hck8Ye7aD4t69fCe7WHqgn9VD3D3XWtRv8FrP3OM42vigP7m8SJJbwOSf82wK
-	 +GkZH2rTy7zUpje/4SmZg6BCJmATbTrN3RcIyaCYxa5RAlT0aqjFteGuDJVV3qyN2h
-	 D5qJn0E5oegFAxnC7eIwVZB+XTJWijZsTQuJ3o08jgBb+aOql6zky8m1PSF+0mRWkx
-	 vWpzhYyJ7S8vphq4LER8kYXpb7Tyx42RQN6x9nC3byDve67DG9lTwceG9x7XqXa+p1
-	 qmKaxYqoSi75g==
-Date: Fri, 18 Sep 2026 11:41:20 -0500
+	b=lLLNwwwJiE5/2cU6UHhp/fjL3PKGf72K/YZ6rzfn/unLjMVnMa8IHZRfCnJsgR8j9
+	 4kPw2kqclFT0xeZvvl+N1lhn+1qDk2xxcsKKDFNKHytEzGY4NK8Vfv1n2i2Kcjs1Sb
+	 dmG5pNpsUGoo2xONeCiRLf9VAz1Miv7nwg9fCaJsumBL3AekoTnYZECJlegh/fzjvH
+	 S7FUg/TvBwSVs6oCghNBU6NUn3dCU4iCHzWHUbGUw7xWmls4m0O/jdNBsUS6tWIXFy
+	 vPQJjJEKgZiki1Vwkn5fYIs8l52aP6SgIpMyBjbI1dKusS4I6VDmY3PEEgJt1Up5OD
+	 /5K2YW7WAHfnQ==
+Date: Fri, 18 Sep 2026 11:41:18 -0500
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -36,41 +36,44 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- linux-rockchip@lists.infradead.org, Chanwoo Choi <cw00.choi@samsung.com>, 
- Kyungmin Park <kyungmin.park@samsung.com>, 
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, 
+ Brian Masney <bmasney+clk@redhat.com>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ devicetree@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, 
+ linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, 
+ linux-clk@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
  Jerome Brunet <jbrunet+clk@baylibre.com>, 
- Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Brian Masney <bmasney+clk@redhat.com>, 
- MyungJoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, 
- Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.infradead.org, 
- linux-clk@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, 
- Heiko Stuebner <heiko@sntech.de>, kernel@collabora.com, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+ linux-arm-kernel@lists.infradead.org, Conor Dooley <conor+dt@kernel.org>, 
+ kernel@collabora.com, Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
+ Stephen Boyd <sboyd@kernel.org>
 To: Sebastian Reichel <sebastian.reichel@collabora.com>
-In-Reply-To: <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
-References: <20260917-b4-rockchip-dfi-rk3576-support-v1-0-a5752a29f7bd@collabora.com>
- <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
-Message-Id: <178974864695.290479.16274908479214373555.robh@kernel.org>
-Subject: Re: [PATCH 3/7] dt-bindings: devfreq: event: rockchip,dfi: add
- rk3576
+In-Reply-To: <20260917-rockchip-dfi-cleanup-v1-2-4f00a97a69a6@collabora.com>
+References: <20260917-rockchip-dfi-cleanup-v1-0-4f00a97a69a6@collabora.com>
+ <20260917-rockchip-dfi-cleanup-v1-2-4f00a97a69a6@collabora.com>
+Message-Id: <178974864508.290014.10595821680814130371.robh@kernel.org>
+Subject: Re: [PATCH 2/8] dt-bindings: devfreq: event: rockchip,dfi: add
+ clocks to rk3588
 
 
-On Thu, 17 Sep 2026 16:04:09 +0200, Sebastian Reichel wrote:
+On Thu, 17 Sep 2026 15:49:14 +0200, Sebastian Reichel wrote:
 > From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > 
-> The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
-> like other rockchip SoCs do. Unlike the RK3588 however, it only has two
-> memory channels, so only two per-channel pclks for DFI.
+> RK3588's DFI has pclks for each channel. They just weren't noticed as
+> missing until now because nothing ever gates them, and they're ungated
+> by default on power-on.
 > 
-> Add a compatible for this SoC's variant, and add it to the conditionals
-> at the bottom of the bindings file.
+> The RK3399 clock situation needs no changes, as there the hardware
+> really just has one monitoring unit for both channels.
+> 
+> Add these clocks to the binding, so that drivers for this device can
+> properly know about their existence.
 > 
 > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 > ---
->  .../bindings/devfreq/event/rockchip,dfi.yaml       | 23 ++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
+>  .../bindings/devfreq/event/rockchip,dfi.yaml       | 84 ++++++++++++++++++----
+>  1 file changed, 72 insertions(+), 12 deletions(-)
 > 
 
 My bot found errors running 'make dt_binding_check' on your patch:
@@ -84,7 +87,7 @@ dtschema/dtc warnings/errors:
 
 doc reference errors (make refcheckdocs):
 
-See https://patchwork.kernel.org/project/devicetree/patch/20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com
+See https://patchwork.kernel.org/project/devicetree/patch/20260917-rockchip-dfi-cleanup-v1-2-4f00a97a69a6@collabora.com
 
 The base for the series is generally the latest rc1. A different dependency
 should be noted in *this* patch.
