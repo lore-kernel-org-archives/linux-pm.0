@@ -1,161 +1,144 @@
-Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 641533DBD48
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 03:13:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.141
+Received: from mailgw1.hygon.cn (unknown [101.204.27.37])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CC407140E5F;
+	Fri, 18 Sep 2026 04:08:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.204.27.37
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789701226; cv=none; b=LfacEobT8ko4Xe9E6E01q9d5/UJlNwBHDC8qYfDOhmO/EKR4iwaiJQGnswwtItaLOKZy4ULuLN5dygIs61gOdRSPJZH/PAr2z2xDJunG+6+Kyvv515JTcwSj2S1kaD5fhZSxJbA0J/IPxmrCfBCZ7TxHzdzPzjGZRu35d8+iD7A=
+	t=1789704552; cv=none; b=l8GJJ9M7DOaQna44BGy3HV9lz8oVzjH8jLHLoGXfLSIZTG0wx6qQ7nR69HQe9zfp7X7Sw8Qqr2/uEpRct4TWBFEiG8PriBndVzqhv+7LnNl83vDjiaTIZ6iuVSoHzgW2YZKwMBYRIwWP02Wi8tH+pnu1d9cgfNpoacAbaUKVyeo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789701226; c=relaxed/simple;
-	bh=NjLc/8TORdZon0fRfkIxyX9z0eAz0zc3Bki0New4I28=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uYoAzVA7wUNocyIjloAuouMn3oAxoBymYLU9ARR580JZ+YdDcJl/qKa/TvepabbWBk+Yr4LAukR865Vvs70T8Lmanfkgeh1LgQCwpyibOWo/EABjY9n1ouTIdVGp+IYU9CvHR6WY8oQfoaSOg5nNQ4qteujelwem3vpyK3qKIn0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=heqx2FWO; arc=none smtp.client-ip=74.125.227.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="heqx2FWO"
-Received: by mail-pj2-f13.google.com with SMTP id d9443c01a7336-2d747ed6d6eso2437015ad.2
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2026 20:13:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789701217; x=1790306017; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=CKFxldesfAj8FdEDKAwfFPd/txX/9A+5mA0y6fZJndM=;
-        b=heqx2FWOCghTSUMFUuasFLqTjgj0Sje9zetpQa8ncnWz6V2wvd65Rh7qgmgBGz1nWO
-         gUTZzX/gMOe0LGEXiwZhUTfvhxBIWaeReKmd7YPV6d8+/lH7HOmBhdUZ9txV9IF/zszv
-         JOchZmu/UKMP17vLBQ0ZtG3RUcTs6cmwCXPwA80/nVMefrkRGp+/wwthR7Zzxqkc81zN
-         DV1puxp+UAIRfvUn/jhMx1e4eVde7SQrLm2/nZqJ72nRdb7IY681wy4UK7UCNj9RzRm2
-         5YBXKKQCqjzH09ZAIRzE6o9GctHIxMYHhpMtSDqsj6fqIxMi5Fx4dd/1N2f2gyEBRZe0
-         mkvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789701217; x=1790306017;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=CKFxldesfAj8FdEDKAwfFPd/txX/9A+5mA0y6fZJndM=;
-        b=WWA2pceZN2Y1503xvwX09/luPOg92yqX8mHaZac5gepzEnJPov0azRoOgOZ6+3oOKd
-         TawZunSUujqDhcCwHW0LgATmRpWbtmAws/OLG3Dzi59czLB8VFzUzuZpG5Oumrtr5wgu
-         +jB3SBFHSiz7ZJHhHMr20uq/25TZ8P95XrSLtAfn/NSJIW0th9j1iZyGtZaMS1HnhLuh
-         gZY7HYEiN+Dm0pBtUdiA63jCHX84RaK4yW6D8h8uXzNJrWXcc+FVQLjtQvO52LktCyOF
-         ZTmEPot+RuikdB1eXgcDTIsgOnNsOl50gAQqilaJvoQ0cHH0Teap/AWLTVPWkvWDnl1r
-         fjAw==
-X-Forwarded-Encrypted: i=1; AKwUvBy1SVqSHrD1MciogrZSWs5THMloZTuQb6zNoXuaMG0gL5p0Xg7EF1tz6wCCYgA96ZActg3gC057ZQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++m3qaecMyfiuUzTZVienoR5xMD34XroLI8bCj991jpmf+t5h/y8
-	XhVDg7s2EzCN/8zuOO7iJDs1mu7dIrr2Jluplpk17ZNVXGKvEH9LcwDm
-X-Gm-Gg: AYBFou0oacSACouZbyCqxUU+V9dvZUfk0cB5IkXychIuZhcgFQa1lEomK0/YoSsAyKS
-	B2mfcVaaAxkrViZWrDjPKSMjvMjszTVztjGOq/NI+kMPapMx7H0KoM6pjzkQYbHHIsCLirRXcS0
-	8rvsBuL8C1SGmAEYhhH45PV2LKXDooBK6Nz2C/GiKn7Vp8VB90x91gCIKP8L7Rnv0HMCbFlzMBt
-	fbvcyz1B3nD0naovQFNvV1N97hU2RUQnCMbN32YLnLhx6iibFsCTLessCfCoqRzyKDa0YLjf76x
-	PbzbJNZEH3gEwqF4GfHxUCHKJZ25J/4ku8CebyGnE4ALx67mv8osH1ZsqeWJRds9J24ir2rN1C5
-	bC6x30nMlRZVKXlNsm2HhErN7B5II6ua8394v+6Ks3FLgtZF2g4FOmjdgDkQq6VQGaRzkAPh8uz
-	RRhHgaU9Y+x76dBr1Heq/6XKRrHhg68Lyg6gXmTAAzLBc5YNjjAJSXBg==
-X-Received: by 2002:a17:90b:54c4:b0:39e:4c7f:7308 with SMTP id 98e67ed59e1d1-39e55071981mr2385940a91.31.1789701217262;
-        Thu, 17 Sep 2026 20:13:37 -0700 (PDT)
-Received: from lgs.. ([2001:250:5800:1002::de93])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e5a0e860asm827971a91.1.2026.09.17.20.13.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Sep 2026 20:13:36 -0700 (PDT)
-From: Guangshuo Li <lgs201920130244@gmail.com>
-To: Ulf Hansson <ulfh@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Guangshuo Li <lgs201920130244@gmail.com>,
-	Wentao Liang <vulab@iscas.ac.cn>,
-	Miaoqian Lin <linmq006@gmail.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Lucas Stach <l.stach@pengutronix.de>,
-	Dong Aisheng <aisheng.dong@nxp.com>,
-	linux-pm@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Cc: stable@vger.kernel.org
-Subject: [PATCH] pmdomain: imx: gpc: remove all initialized power domains
-Date: Fri, 18 Sep 2026 11:13:22 +0800
-Message-ID: <20260918031323.3376849-1-lgs201920130244@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1789704552; c=relaxed/simple;
+	bh=8pzLUd9k5b+qBeH7Wtidx6o3EKNEy6VMXT6cnIaOPlk=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=TSbbcGUDwKFhR5gS8khSBFHLQSEZpSRpzTl3wmIgBHY9nuaEXtpMByyOXwgEsF2D3ynZMMw+I8cltK3ZqzugB0sWCiUdKecHUaE3MTlXjHWKwh1kYPgMQnQXC4VQGIWxLGYhcqQDAqmKXKWJh5alRPClyySeD0zh8iuP81V5mFk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hygon.cn; spf=pass smtp.mailfrom=hygon.cn; arc=none smtp.client-ip=101.204.27.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hygon.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hygon.cn
+Received: from maildlp1.hygon.cn (unknown [127.0.0.1])
+	by mailgw1.hygon.cn (Postfix) with ESMTP id 4hmJyp3gVdzvRj9;
+	Fri, 18 Sep 2026 12:08:50 +0800 (CST)
+Received: from maildlp1.hygon.cn (unknown [172.23.18.60])
+	by mailgw1.hygon.cn (Postfix) with ESMTP id 4hmJyn02pPzvRj9;
+	Fri, 18 Sep 2026 12:08:49 +0800 (CST)
+Received: from cncheex03.Hygon.cn (unknown [172.23.18.113])
+	by maildlp1.hygon.cn (Postfix) with ESMTPS id 96B55164E;
+	Fri, 18 Sep 2026 12:08:40 +0800 (CST)
+Received: from cncheex04.Hygon.cn (172.23.18.114) by cncheex03.Hygon.cn
+ (172.23.18.113) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Fri, 18 Sep
+ 2026 12:08:49 +0800
+Received: from cncheex04.Hygon.cn ([fe80::1b6f:6c58:58a4:430d]) by
+ cncheex04.Hygon.cn ([fe80::1b6f:6c58:58a4:430d%10]) with mapi id
+ 15.02.1544.036; Fri, 18 Sep 2026 12:08:49 +0800
+From: Jianyong Wu <wujianyong@hygon.cn>
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Vincent Guittot
+	<vincent.guittot@linaro.org>
+CC: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+	"kprateek.nayak@amd.com" <kprateek.nayak@amd.com>, "linux-pm@vger.kernel.org"
+	<linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "ray.huang@amd.com" <ray.huang@amd.com>,
+	"mario.limonciello@amd.com" <mario.limonciello@amd.com>, "perry.yuan@amd.com"
+	<perry.yuan@amd.com>, "zhanjie9@hisilicon.com" <zhanjie9@hisilicon.com>,
+	"zhenglifeng1@huawei.com" <zhenglifeng1@huawei.com>, "pierre.gondois@arm.com"
+	<pierre.gondois@arm.com>, "sumitg@nvidia.com" <sumitg@nvidia.com>,
+	"srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>,
+	"hongyan.xia@transsion.com" <hongyan.xia@transsion.com>,
+	"zhongqiu.han@oss.qualcomm.com" <zhongqiu.han@oss.qualcomm.com>, Fengyu Wang
+	<wangfengyu@hygon.cn>, Yuan Zhong <zhongyuan@hygon.cn>, Huangsj
+	<huangsj@hygon.cn>, Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: Use a non-boost reference frequency for pressure
+ calculation
+Thread-Topic: [PATCH] cpufreq: Use a non-boost reference frequency for
+ pressure calculation
+Thread-Index: AQHdROA84sx4SsqcvEWfPOLMo4juUrbShuMAgACwkgA=
+Date: Fri, 18 Sep 2026 04:08:49 +0000
+Message-ID: <B5C2AA60-4A07-45B6-AF06-3C5810E19F8C@hygon.cn>
+References: <20260915065747.1671965-1-wujianyong@hygon.cn>
+ <CAJZ5v0g2d6fY8hM0FVH8tiOUhXm0PZM+Qn7OxM9YNXm8i0pYmg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0g2d6fY8hM0FVH8tiOUhXm0PZM+Qn7OxM9YNXm8i0pYmg@mail.gmail.com>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <56198BE12078074BAC1E942D2DA0899F@Hygon.cn>
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-imx_gpc_old_dt_init() initializes all power domains described by
-of_id_data->num_domains. Its probe failure path removes all of these
-domains, but imx_gpc_remove() only removes the PU and ARM domains.
-
-On SoCs with more than two domains, such as i.MX6SL and i.MX6SX, the
-additional DISPLAY and PCI generic power domains can remain registered
-after the GPC driver is removed.
-
-Remove all initialized power domains in reverse order. Keep releasing
-the PU clocks immediately after the PU domain has been successfully
-removed.
-
-This issue was found by manual code inspection.
-
-Fixes: 5a42d1198901 ("soc: imx: gpc: fix imx6sl gpc power domain regression")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
----
- drivers/pmdomain/imx/gpc.c | 27 ++++++++++++++-------------
- 1 file changed, 14 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/pmdomain/imx/gpc.c b/drivers/pmdomain/imx/gpc.c
-index abca5f449a22..5766e3b40470 100644
---- a/drivers/pmdomain/imx/gpc.c
-+++ b/drivers/pmdomain/imx/gpc.c
-@@ -502,8 +502,10 @@ static int imx_gpc_probe(struct platform_device *pdev)
- 
- static void imx_gpc_remove(struct platform_device *pdev)
- {
-+	const struct imx_gpc_dt_data *of_id_data =
-+		device_get_match_data(&pdev->dev);
- 	struct device_node *pgc_node;
--	int ret;
-+	int i, ret;
- 
- 	pgc_node = of_get_child_by_name(pdev->dev.of_node, "pgc");
- 
-@@ -519,19 +521,18 @@ static void imx_gpc_remove(struct platform_device *pdev)
- 	if (!pgc_node) {
- 		of_genpd_del_provider(pdev->dev.of_node);
- 
--		ret = pm_genpd_remove(&imx_gpc_domains[GPC_PGC_DOMAIN_PU].base);
--		if (ret) {
--			dev_err(&pdev->dev, "Failed to remove PU power domain (%pe)\n",
--				ERR_PTR(ret));
--			return;
--		}
--		imx_pgc_put_clocks(&imx_gpc_domains[GPC_PGC_DOMAIN_PU]);
-+		for (i = of_id_data->num_domains - 1; i >= 0; i--) {
-+			ret = pm_genpd_remove(&imx_gpc_domains[i].base);
-+			if (ret) {
-+				dev_err(&pdev->dev,
-+					"Failed to remove %s power domain (%pe)\n",
-+					imx_gpc_domains[i].base.name,
-+					ERR_PTR(ret));
-+				return;
-+			}
- 
--		ret = pm_genpd_remove(&imx_gpc_domains[GPC_PGC_DOMAIN_ARM].base);
--		if (ret) {
--			dev_err(&pdev->dev, "Failed to remove ARM power domain (%pe)\n",
--				ERR_PTR(ret));
--			return;
-+			if (i == GPC_PGC_DOMAIN_PU)
-+				imx_pgc_put_clocks(&imx_gpc_domains[i]);
- 		}
- 	}
- 
--- 
-2.43.0
+SGkgUmFmYWVsLA0KDQo+IA0KPiBPbiBTZXAgMTgsIDIwMjYsIGF0IDAxOjM4LCBSYWZhZWwgSi4g
+V3lzb2NraSAoSW50ZWwpIDxyYWZhZWxAa2VybmVsLm9yZz4gd3JvdGU6DQo+IE9uIFR1ZSwgU2Vw
+IDE1LCAyMDI2IGF0IDk6MDPigK9BTSBKaWFueW9uZyBXdSA8d3VqaWFueW9uZ0BoeWdvbi5jbj4g
+d3JvdGU6DQo+PiANCj4+IENvbW1pdCBkMmQ1YzEyOWQwN2UgKCJjcHVmcmVxOiBNYWtlIGNwdWZy
+ZXFfdXBkYXRlX3ByZXNzdXJlKCkgZmFsbA0KPj4gYmFjayB0byBjcHVpbmZvLm1heF9mcmVxIikg
+aW50cm9kdWNlZCBjcHVpbmZvLm1heF9mcmVxIGFzIHRoZSByZWZlcmVuY2UNCj4+IGZyZXF1ZW5j
+eSBmb3IgY3B1ZnJlcSBwcmVzc3VyZSB3aGVuIGFyY2hfc2NhbGVfZnJlcV9yZWYoKSByZXR1cm5z
+IHplcm8uDQo+PiANCj4+IEhvd2V2ZXIsIGNwdWluZm8ubWF4X2ZyZXEgbWF5IGluY2x1ZGUgYm9v
+c3QgZnJlcXVlbmNpZXMgYW5kIHRoZXJlZm9yZQ0KPj4gZG9lcyBub3QgbmVjZXNzYXJpbHkgcmVw
+cmVzZW50IHRoZSBtYXhpbXVtIHN1c3RhaW5hYmxlIGZyZXF1ZW5jeS4NCj4gDQo+IEFuZCB0aGVu
+IGl0IHJlYWxseSBtYXR0ZXJzIHdoYXQgaXMgc3VzdGFpbmFibGUgYW5kIGZvciBob3cgbG9uZy4N
+Cg0KSSB0aGluayBpdCdzIGNvbmZ1c2luZyB0byBzYXkgInN1c3RhaW5hYmxlIGZyZXEiIGluIGNw
+dWZyZXEgcGFydC4gSSBtZWFuIHRoZSBtYXhpbXVtDQpjcHUgZnJlcXVlbmN5IGJlbG93IGJvb3N0
+IGhlcmUuIEZvciBhY3BpLWNwdWZyZXEsIGl04oCZcyBQMC4gRm9yIGFtZC1wc3RhdGUsIGl04oCZ
+cw0Kbm9taW5hbCBmcmVxdWVuY3kuIEJ1dCBJIGNhbid0IGZpbmQgYSBiZXR0ZXIgd29yZC4NCg0K
+PiANCj4+IE9uIHNvbWUgc3lzdGVtcyB1c2luZyBhY3BpLWNwdWZyZXEsIGNwdWluZm8ubWF4X2Zy
+ZXEgaW5jbHVkZXMgYm9vc3Qgd2hpbGUNCj4+IHRoZSBmcmVxdWVuY3kgdGFibGUgb25seSBjb250
+YWlucyBub24tYm9vc3QgZnJlcXVlbmNpZXMuDQo+IA0KPiBJbiB3aGljaCBjYXNlIHNlbGVjdGlu
+ZyBmcmVxX3RhYmxlWzBdIG1heSBnaXZlIHRoZSBwcm9jZXNzb3IgYSBsaWNlbnNlDQo+IHRvIGdv
+IHRvIHRoZSB0dXJibyAob3IgYm9vc3QpIGZyZXF1ZW5jeSByYW5nZS4NCg0KWWVhaCwgc2VsZWN0
+aW5nIGZyZXFfdGFibGVbMF0gbWF5IGFsc28gbWVhbiBjcHUgY2FuIGdvIHRvIGJvb3N0IGZyZXF1
+ZW5jeS4gDQpCdXQgdGhlIHZhbHVlIGRvZXNuJ3QgZGVub3RlIHRoYXQuIGZyZXFfdGFibGVbMF0g
+aXMgYXNzaWduZWQgIHRvIHBvbGljeS0+bWF4IHdoaWNoDQppcyBjb21wYXJlZCB3aXRoIHBvbGlj
+eS0+Y3B1aW5mby5tYXhfZnJlcS4gVGhlIGRpZmZlcmVuY2UgYmV0d2VlbiB0aGVtIG1ha2VzDQp0
+aGUgY3B1IHByZXNzdXJlIHdoaWNoIGlzIG5vdCBpbnRlbmRlZC4NCiANCj4gDQo+PiBDb25zZXF1
+ZW50bHksIGNwdWZyZXEgcHJlc3N1cmUgcmVtYWlucyBub256ZXJvIGV2ZW4gd2l0aG91dCBhbiBh
+ZGRpdGlvbmFsDQo+PiBmcmVxdWVuY3kgbGltaXQuDQo+IA0KPiBTbyB3aGVuIGFuZCB3aGVyZSBk
+b2VzIHRoaXMgbWF0dGVyPw0KDQpJIHRlc3QgaXQgb24gYW1kLCBpbnRlbCBhbmQgaHlnb24gYm94
+LiBPbmNlIGFjcGktY3B1ZnJlcSBpcyB1c2VkLCB0aGUgdW5leHBlY3RlZA0KY3B1IHByZXNzdXJl
+IGFwcGVhcnMgd2hlbiB0aGVyZSBpcyBubyBjcHUgZnJlcXVlbmN5IGNhcHBlZCBhbmQgYm9vc3Qg
+aXMgZW5hYmxlZC4NCg0KVGhlIHdyb25nIGNwdSBwcmVzc3VyZSBhZmZlY3RzIGxvYWQgYmFsYW5j
+aW5nLiBGb3IgZXhhbXBsZSwgQ2FjaGUgYXdhcmUNCnNjaGVkdWxpbmcgd2FudHMgdG8gYWdncmVn
+YXRlIHRhc2sgaW4gYSBMTEMgdXNpbmcgNTAlIG9mIHRoZSB3aG9sZSBMTEMgY2FwYWNpdHkuDQpC
+ZWZvcmUgY29tbWl0IGQyZDVjMTI5ZDA3ZSwgZXZlcnl0aGluZyBpcyBPSy4gQnV0IHdpdGggdGhh
+dCBjb21taXQgYW5kIHVzaW5nDQphY3BpLWNwdWZyZXEgYW5kIHdpdGggYm9vc3Qgb24sIGNhY2hl
+IGF3YXJlIHNjaGVkdWxpbmcgY2Fu4oCZdCBhZ2dyZWdhdGUNCnRhc2sgdG8gb2NjdXB5IDUwJSBv
+ZiB0aGUgTExDIGJ5IGRlZmF1bHQgYXMgdGhlIGNwdSBjYXBhY2l0eSBpbiB0aGUgTExDIGlzIHJl
+ZHVjZWQuIA0KPiANCj4+IEZ1cnRoZXJtb3JlLCBkcml2ZXJzIG1heSB1cGRhdGUgY3B1aW5mby5t
+YXhfZnJlcSB3aGVuIGJvb3N0IGlzIGVuYWJsZWQNCj4+IG9yIGRpc2FibGVkLiBXaXRoIGEgZml4
+ZWQgcG9saWN5IGxpbWl0IGJlbG93IHRoZSBtYXhpbXVtIG5vbi1ib29zdA0KPj4gZnJlcXVlbmN5
+LCB0aGlzIGNoYW5nZXMgdGhlIHByZXNzdXJlIHJlZmVyZW5jZSBhbmQgaGVuY2UgdGhlIHJlcG9y
+dGVkDQo+PiBwcmVzc3VyZSwgYWx0aG91Z2ggdGhlIG5vbi1ib29zdCBmcmVxdWVuY3kgbGltaXQg
+cmVtYWlucyB1bmNoYW5nZWQuDQo+IA0KPiBJZiB0aGUgY2FwYWNpdHkgaXMgdXBkYXRlZCB0aG91
+Z2ggYWxvbmcgd2l0aCB0aGUgY3B1aW5mby5tYXhfZnJlcQ0KPiBjaGFuZ2UsIHRoZW4gdGhpcyBp
+cyBhbGwgZmluZSBiZWNhdXNlIHRoZSBwcmVzc3VyZSBpcyB0aGVuIGNvbXB1dGVkDQo+IHJlbGF0
+aXZlIHRvIHRoZSBuZXcgY2FwYWNpdHkuICBpbnRlbF9wc3RhdGUgZG9lcyB0aGF0Lg0KDQpUaGlz
+IGZvbGxvd3MgVmluY2VudC4gUmVmZXJlbmNlIFZpbmNlbnTigJlzIHdvcmRzIFsxXToNCg0KIkFz
+IGxvbmcgYXMgdGhlIHJlZmVyZW5jZSBmcmVxdWVuY3kgdXNlZCBpbiBjcHVmcmVxX3VwZGF0ZV9w
+cmVzc3VyZQ0KcmVtYWlucyBmaXhlZCB3aGV0ZXZlciBib29zdCBpcyBlbmFibGVkIG9yIG5vdCB0
+aGlzIGlzIG9rLiBXZSBkb24ndA0Kd2FudCB0aGUgcHJlc3N1cmUgdG8gY2hhbmdlIHdoZW4gYm9v
+c3QgaXMgZW5hYmxlZCBvciBkaXNhYmxlZCBvbmx5DQp3aGVuIHBvbGljeS0+bWF4IGNoYW5nZXMu
+Ig0KDQpJZiBpbnRlbF9wc3RhdGUgbGV0IHRoZSBjcHUgcHJlc3N1cmUgdmFyeSB3aXRoIHRoZSBi
+b29zdCBvbiBvciBvZmYsIHdoYXQNCmFib3V0IGFjcGktY3B1ZnJlcS4gSXTigJlzIG5vdCBlYXN5
+IHRvIGRvIHRoZSBzYW1lIHRoaW5nIHRoZXJlLiBJIHRoaW5rIGl0DQppcyBiZXR0ZXIgdG8gZ2l2
+ZSBhIHVuaWZvcm0gYmVoYXZpb3IgYWNyb3NzIGRpZmZlcmVudCBjcHVmcmVxIGRyaXZlci4NCg0K
+WzFdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC9DQUtmVFB0QmppOGRrcjVpeGh0WmpreXJX
+TEE2OFRGLUtITHJOWVdvZXdQV0x5dVVkNEFAbWFpbC5nbWFpbC5jb20vDQo+IA0KPj4gQWRkIG1h
+eF9zdXN0YWluYWJsZV9mcmVxIHRvIHN0cnVjdCBjcHVmcmVxX2NwdWluZm8gdG8gcHJvdmlkZSBh
+IHJlZmVyZW5jZQ0KPj4gZnJlcXVlbmN5IGV4Y2x1ZGluZyBib29zdC4gUG9wdWxhdGUgaXQgZnJv
+bSB0aGUgbm9taW5hbCBmcmVxdWVuY3kgaW4NCj4+IGFtZC1wc3RhdGUgYW5kIGNwcGNfY3B1ZnJl
+cSwgdGhlIG1heGltdW0gbm9uLXR1cmJvIGZyZXF1ZW5jeSBpbg0KPj4gaW50ZWxfcHN0YXRlLCBh
+bmQgdGhlIGhpZ2hlc3QgZnJlcXVlbmN5LXRhYmxlIGVudHJ5IGluIGFjcGktY3B1ZnJlcS4NCj4+
+IA0KPj4gVXNlIHRoaXMgdmFsdWUgd2hlbiBhcmNoX3NjYWxlX2ZyZXFfcmVmKCkgcmV0dXJucyB6
+ZXJvLiBQcmVzZXJ2ZSB0aGUNCj4+IGV4aXN0aW5nIGNwdWluZm8ubWF4X2ZyZXEgZmFsbGJhY2sg
+Zm9yIGRyaXZlcnMgdGhhdCBsZWF2ZSB0aGUgbmV3IGZpZWxkDQo+PiBhdCB6ZXJvLg0KPj4gDQo+
+PiBUZXN0ZWQgd2l0aCBhY3BpLWNwdWZyZXEsIGludGVsX3BzdGF0ZSwgYW5kIGFtZC1wc3RhdGUg
+aW4gYWN0aXZlIGFuZA0KPj4gcGFzc2l2ZSBtb2Rlcy4gV2l0aCBubyBhZGRpdGlvbmFsIGZyZXF1
+ZW5jeSBsaW1pdCwgcHJlc3N1cmUgaXMgemVyby4NCj4+IFdpdGggYSBmaXhlZCBsaW1pdCBiZWxv
+dyB0aGUgbm9uLWJvb3N0IHJlZmVyZW5jZSBmcmVxdWVuY3ksIHByZXNzdXJlDQo+PiByZW1haW5z
+IHVuY2hhbmdlZCBhY3Jvc3MgYm9vc3QgdHJhbnNpdGlvbnMuDQo+IA0KPiBXaGljaCBtYXkgbm90
+IGJlIHdoYXQgaXMgaW50ZW5kZWQuDQoNClNhbWUgYXMgYWJvdmU6IElNTywgd2l0aCBhIGZpeGVk
+IGNhcCwgdGhlIHByZXNzdXJlIHNob3VsZCBub3QgY2hhbmdlDQpqdXN0IGJlY2F1c2UgYm9vc3Qg
+aXMgdG9nZ2xlZC4NCg0KVGhhbmtzDQpKaWFueW9uZw0KDQo=
 
