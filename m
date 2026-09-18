@@ -1,221 +1,87 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BB4441F342;
-	Fri, 18 Sep 2026 18:19:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E665251DB01
+	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 19:52:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789755589; cv=none; b=coAzDzzvd3iH9w1kSnPaGk234MRVXmyYjxON0Rhujpf1tsnoZf7aaNA4zOJckIGX4zT9a3s/oel1Yzj30JQnSIJaKtuKm8PDildsB+l8ZGnRHTV+QWO5VPEgeKlvfQGBJh3KnaV4rxwEN//Ehit/iPg5RGMq39bSYMpu6YmrGpE=
+	t=1789761133; cv=none; b=SvSJ+5gIvLhflvmN0dxtoenHlYoTPuqPuEf3d/YtndiEuJrVpc12nl5heBkw5OKXjdEPdZ5OHtj+mBs+4VJsH6Jz1sYY2dY5uuT8pPmHyTR1RpbKxMElf/6VLFIHwGMZTdSg9PhFF3Du3qKBEr+7Q1YcqWlVVsL0/nK83uM6840=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789755589; c=relaxed/simple;
-	bh=XlsoKoyOZJJOlrj90Rg9bXIKOIoQo7u2V1+5XG4lemU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qXXkaVrOhMTW80l96ahumbpuetooAl5grI0tKl3wp6XP8PzMCcu8RrKwxmGInNf86xQ1O4x3ptRijKYaNaWofJrjMsMSaTky6gceAoBnDqlqnTVzrM3JymIVnbO1CztDhdmdNRl94JCSAFNUfrZ4n6EmRqpNPXQ8fKGAmYMUl3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S5IUZTk7; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789761133; c=relaxed/simple;
+	bh=GvLNCDNFJca2SZB7bGwmDI8D0tBR6aZy0yCPA3XIn+8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ixQz7aSQQ9Za+KPD2KcDK/0YtQBYMcXPKyGV6+Da/fca9OCU0WgdYRpDiL6il9T/9LwFtvOC3p/Nw4GwwZNtHWhLnbuObm9Kx5oCo9xYI1Lt2yWmchLIByUmcCJGyQOu8GBFm9nzwMCA+Vohimnvqamu5rFZopjhe6IYQJGIn7w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Gm6qzNfW; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S5IUZTk7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D9901F000FF;
-	Fri, 18 Sep 2026 18:19:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Gm6qzNfW"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 159F41F008A1
+	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 19:52:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789755588;
-	bh=E4x1orVy3zQ7AGPIczdDg64oCzP4Y9taMje2rrNyhqo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=S5IUZTk7eWuZuU7sRjP3DJAKcrfsFmeK7mXWbo2pC79yioHpLSGf7naKFDEsZaTRm
-	 oT5DENCTjvjI4FyuNoaz/ACNIdMt8CDggSHuyVRQS7pMwaRXn42EAUN1IB7O9dnIPM
-	 GvdoFgz4Dmqk/eXb1A6PFfVPwCIk887vWIF/P45nujLIt9HQVx6vMPmZSQFZNGwWLf
-	 WjB5/C+lejXh0RPAku5kIev11ykzlldcpUA+sz3hV4marWMlcUOdxPdFti5k6i57qu
-	 I6VTqWvxm3QdAF5o+1ZtBwCLNHCEnitvrbrMEInaURomdhIdpVwEccpmC/DjAXUsbb
-	 LKVoB4F8haTmg==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Jianyong Wu <wujianyong@hygon.cn>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "kprateek.nayak@amd.com" <kprateek.nayak@amd.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "ray.huang@amd.com" <ray.huang@amd.com>,
- "mario.limonciello@amd.com" <mario.limonciello@amd.com>,
- "perry.yuan@amd.com" <perry.yuan@amd.com>,
- "zhanjie9@hisilicon.com" <zhanjie9@hisilicon.com>,
- "zhenglifeng1@huawei.com" <zhenglifeng1@huawei.com>,
- "pierre.gondois@arm.com" <pierre.gondois@arm.com>,
- "sumitg@nvidia.com" <sumitg@nvidia.com>,
- "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>,
- "hongyan.xia@transsion.com" <hongyan.xia@transsion.com>,
- "zhongqiu.han@oss.qualcomm.com" <zhongqiu.han@oss.qualcomm.com>,
- Fengyu Wang <wangfengyu@hygon.cn>, Yuan Zhong <zhongyuan@hygon.cn>,
- Huangsj <huangsj@hygon.cn>
-Subject:
- Re: [PATCH] cpufreq: Use a non-boost reference frequency for pressure
- calculation
-Date: Fri, 18 Sep 2026 20:19:37 +0200
-Message-ID: <5135696.31r3eYUQgx@rafael.j.wysocki>
-Organization: Linux Kernel Development - Intel
-In-Reply-To: <B5C2AA60-4A07-45B6-AF06-3C5810E19F8C@hygon.cn>
-References:
- <20260915065747.1671965-1-wujianyong@hygon.cn>
- <CAJZ5v0g2d6fY8hM0FVH8tiOUhXm0PZM+Qn7OxM9YNXm8i0pYmg@mail.gmail.com>
- <B5C2AA60-4A07-45B6-AF06-3C5810E19F8C@hygon.cn>
+	s=k20260515; t=1789761129;
+	bh=2aZ2SRdSwMAy6l7corBl6TSn3cdYhbUcwCmUTuq+Lz0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Gm6qzNfWy5SaEaZiWboTlhe73I5Y3sKUdV6dA1lzHfVwoETVwe+9hP7CmVBl37W43
+	 X8HruD8sWl9SRDFkfNmCHKrzypv+Oh0peVFrVCV026JEEP8+eguYm8Yy+gakSLDM+e
+	 h+m+fv9lnjTbvJ0rf5+NYRXRuQ5NW4+Vjc2dCMAq2MKfiznZQPeqnMlra/QJxE3iaC
+	 KzUnoA71jnKCeftkRbab5KjOcfPHnTV4eVW8WJUJwQFgArkQpF4yQyg/dR7XURkReL
+	 1QIjIi01Po7Ajp4zITvll8Yj5PdiraLijx4XpY+89UhP1uEzsw2oSatYZ9aWf2cc/X
+	 F/+VsHDt6R/cQ==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b899413537so1620586e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 12:52:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxju+yknTKMJ8wybV3N140c2UU/w1HDmgjmvN1rY76JX+o4gnEazP3csoGdGY3j5ssdalNdHcRhNw==@vger.kernel.org
+X-Gm-Message-State: AFuF++nLASCIFak42YnYnI7ALeGfeDUW3DiQZbffuxCVviND7ojKkjWv
+	2HkF6BmRKehG51ABB7O7m7Ve5psZKzL1Z5OQDrSoeiIAs6NRMHMA4660LhBoDzTOzXT/sDbeNpS
+	cEShIIR3FDP9qI+ZtUDSoY7twoLYEKBc=
+X-Received: by 2002:a05:6512:a94:b0:5b6:183b:d1fb with SMTP id
+ 2adb3069b0e04-5b8c184918cmr1248231e87.34.1789761127739; Fri, 18 Sep 2026
+ 12:52:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20260914-ux500-power-domains-v7-1-v2-0-9d0c17e1f816@kernel.org>
+ <20260914-ux500-power-domains-v7-1-v2-17-9d0c17e1f816@kernel.org> <aqhg8fCuVBqDvRrh@lizhi-Precision-Tower-5810>
+In-Reply-To: <aqhg8fCuVBqDvRrh@lizhi-Precision-Tower-5810>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 18 Sep 2026 21:51:54 +0200
+X-Gmail-Original-Message-ID: <CAD++jLm-_-a1ROYBYPo96Tp+qdUr2Ka=F1H0O=ngoqJ9wrqyqg@mail.gmail.com>
+X-Gm-Features: AcwNN1VfgwBXDgi6e_-s2oKD27ppfBOu9eGlZ28XYdT8IngR0jAuGkn-SUSGs0s
+Message-ID: <CAD++jLm-_-a1ROYBYPo96Tp+qdUr2Ka=F1H0O=ngoqJ9wrqyqg@mail.gmail.com>
+Subject: Re: [PATCH v2 17/20] dmaengine: ste_dma40: Use power domain for LCLA SRAM
+To: Frank Li <Frank.li@oss.nxp.com>, Saravana Kannan <saravanak@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Mark Brown <broonie@kernel.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, Lee Jones <lee@kernel.org>, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	dmaengine@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
 
-On Friday, September 18, 2026 6:08:49=E2=80=AFAM Central European Summer Ti=
-me Jianyong Wu wrote:
-> Hi Rafael,
->=20
-> >=20
-> > On Sep 18, 2026, at 01:38, Rafael J. Wysocki (Intel) <rafael@kernel.org=
-> wrote:
-> > On Tue, Sep 15, 2026 at 9:03=E2=80=AFAM Jianyong Wu <wujianyong@hygon.c=
-n> wrote:
-> >>=20
-> >> Commit d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall
-> >> back to cpuinfo.max_freq") introduced cpuinfo.max_freq as the reference
-> >> frequency for cpufreq pressure when arch_scale_freq_ref() returns zero.
-> >>=20
-> >> However, cpuinfo.max_freq may include boost frequencies and therefore
-> >> does not necessarily represent the maximum sustainable frequency.
-> >=20
-> > And then it really matters what is sustainable and for how long.
->=20
-> I think it's confusing to say "sustainable freq" in cpufreq part. I mean =
-the maximum
-> cpu frequency below boost here. For acpi-cpufreq, it=E2=80=99s P0. For am=
-d-pstate, it=E2=80=99s
-> nominal frequency. But I can't find a better word.
->=20
-> >=20
-> >> On some systems using acpi-cpufreq, cpuinfo.max_freq includes boost wh=
-ile
-> >> the frequency table only contains non-boost frequencies.
-> >=20
-> > In which case selecting freq_table[0] may give the processor a license
-> > to go to the turbo (or boost) frequency range.
->=20
-> Yeah, selecting freq_table[0] may also mean cpu can go to boost frequency=
-=2E=20
-> But the value doesn't denote that. freq_table[0] is assigned  to policy->=
-max which
-> is compared with policy->cpuinfo.max_freq. The difference between them ma=
-kes
-> the cpu pressure which is not intended.
-> =20
-> >=20
-> >> Consequently, cpufreq pressure remains nonzero even without an additio=
-nal
-> >> frequency limit.
-> >=20
-> > So when and where does this matter?
->=20
-> I test it on amd, intel and hygon box. Once acpi-cpufreq is used, the une=
-xpected
-> cpu pressure appears when there is no cpu frequency capped and boost is e=
-nabled.
->=20
-> The wrong cpu pressure affects load balancing. For example, Cache aware
-> scheduling wants to aggregate task in a LLC using 50% of the whole LLC ca=
-pacity.
-> Before commit d2d5c129d07e, everything is OK. But with that commit and us=
-ing
-> acpi-cpufreq and with boost on, cache aware scheduling can=E2=80=99t aggr=
-egate
-> task to occupy 50% of the LLC by default as the cpu capacity in the LLC i=
-s reduced.=20
+On Mon, Sep 14, 2026 at 11:02=E2=80=AFPM Frank Li <Frank.li@oss.nxp.com> wr=
+ote:
+> On Mon, Sep 14, 2026 at 01:54:45PM +0200, Linus Walleij wrote:
 
-So actually the problem is that now the pressure is applied when it is not
-expected to be applied in general.
+> >       if (base->plat_data->use_esram_lcla) {
+> > +             np_lcla =3D of_parse_phandle(np, "sram", 1);
+> > +             if (!np_lcla) {
+> > +                     dev_err(dev, "no LCLA SRAM node\n");
+> > +                     ret =3D -EINVAL;
+> > +                     goto destroy_cache;
+> > +             }
+>
+> sram is used at many place, is it good to put into
+> drivers/of/property.c DEFINE_SIMPLE_PROP to avoid set up device link by
+> each driver?
 
-Clearly, the scheduler assumes that the pressure will be zero when
-arch_scale_freq_ref() is zero and the commit in question violates that
-assumption.
+I have absolutely no idea if that is a good idea or how to
+even use that macro.
 
-This actually has a little to do with boost and making it depend on boost
-doesn't really help.  In fact, the reason for making the change was some
-inadequate behavior when intel_pstate ran with asym capacity, so something
-like the patch below (completely untested) can be used to limit the scope
-of it to the case in question.
+But Saravana will know, so let's ask him!
 
-Can you please check if it helps?
-
-Ricardo, can you please test this one too?
-
-Thanks!
-
-
-=2D--
- drivers/cpufreq/cpufreq.c      |    4 ++--
- drivers/cpufreq/intel_pstate.c |   12 ++++++++++++
- include/linux/cpufreq.h        |    3 +++
- 3 files changed, 17 insertions(+), 2 deletions(-)
-
-=2D-- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2590,8 +2590,8 @@ static void cpufreq_update_pressure(stru
-=20
- 	cpu =3D cpumask_first(policy->related_cpus);
- 	max_freq =3D arch_scale_freq_ref(cpu);
-=2D	if (!max_freq)
-=2D		max_freq =3D policy->cpuinfo.max_freq;
-+	if (!max_freq && cpufreq_driver->scale_freq_ref)
-+		max_freq =3D cpufreq_driver->scale_freq_ref(policy);
-=20
- 	capped_freq =3D policy->max;
-=20
-=2D-- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1135,6 +1135,16 @@ static bool hybrid_clear_max_perf_cpu(vo
- 	return ret;
- }
-=20
-+static unsigned int intel_pstate_scale_freq_ref(struct cpufreq_policy *pol=
-icy)
-+{
-+	struct cpudata *cpu =3D all_cpu_data[policy->cpu];
-+
-+	if (cpu && cpu->capacity_perf)
-+		return policy->cpuinfo.max_freq;
-+
-+	return 0;
-+}
-+
- static void intel_pstate_update_freq_limits(struct cpudata *cpu)
- {
- 	int scaling =3D cpu->pstate.scaling;
-@@ -3088,6 +3098,7 @@ static struct cpufreq_driver intel_pstat
- 	.offline	=3D intel_pstate_cpu_offline,
- 	.online		=3D intel_pstate_cpu_online,
- 	.update_limits	=3D intel_pstate_update_limits,
-+	.scale_freq_ref =3D intel_pstate_scale_freq_ref,
- 	.name		=3D "intel_pstate",
- };
-=20
-@@ -3411,6 +3422,7 @@ static struct cpufreq_driver intel_cpufr
- 	.suspend	=3D intel_cpufreq_suspend,
- 	.resume		=3D intel_pstate_resume,
- 	.update_limits	=3D intel_pstate_update_limits,
-+	.scale_freq_ref =3D intel_pstate_scale_freq_ref,
- 	.name		=3D "intel_cpufreq",
- };
-=20
-=2D-- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -420,6 +420,9 @@ struct cpufreq_driver {
- 	/* Will be called after the driver is fully initialized */
- 	void		(*ready)(struct cpufreq_policy *policy);
-=20
-+	/* Return the capacity reference frequency for policy. */
-+	unsigned int	(*scale_freq_ref)(struct cpufreq_policy *policy);
-+
- 	struct freq_attr **attr;
-=20
- 	/* platform specific boost support code */
-
-
-
+Yours,
+Linus Walleij
