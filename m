@@ -1,77 +1,152 @@
-Received: from mail-m3273.qiye.163.com (mail-m3273.qiye.163.com [220.197.32.73])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F2D73563E1
-	for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2026 12:43:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7F9948FF67;
+	Fri, 18 Sep 2026 13:02:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789735418; cv=none; b=j+75C+8zq++7mTtbPHZrI8dKPypXWY+UnTtiw/YN9aZYvZkGQsMFGHVLwOdh+mF9E31HvtWHpN4cv7dNqyQRiAr7s8AFVQyjn/TFA+rZFWj1jI5cGnOoYAcVeGhiKHzSNCpIw0qx2nUoTWbJ7J39lNoIgoamB3f0Nf5orWAHzus=
+	t=1789736560; cv=none; b=W0dxzbHNrne/+ijhIq1qUx8xRXwewk2HtKa5k2OcZSiYaNF6yEy4UN0y3Lg4t1sx38U469Li+SW0Us1wJuTdAEs1KfbVtL651UyTWrE4qZFx0RLy26czI69GrC+2oEhqzMTqwL/Wt61EUiNWUUzgegQkRuv0wlD194BkCNIfdU4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789735418; c=relaxed/simple;
-	bh=FQQomiHrOADtf6rpCoNNq+sosE2LZpopxa3GIRLKlO8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=mpkfbDPJ4NVFIRFIcOwd2ldC8PBoD7ee8Y4APNRUfvlMfWj60mBX/SrigWEnky+XgEn+ConpDL5+WyffzNL6rvKCyFxT4CVOC9KOiHfRE0ohXq5u6SK207dJ21pSjI4VClusnghHdDL8bjRHsM/EA89RfR+CarvsyHevCs6y2Yk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=AlS/by0n; arc=none smtp.client-ip=220.197.32.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="AlS/by0n"
-Received: from localhost.localdomain (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4e4c12fbe;
-	Fri, 18 Sep 2026 20:07:54 +0800 (GMT+08:00)
-From: Shawn Lin <shawn.lin@rock-chips.com>
-To: Ulf Hansson <ulfh@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>
-Cc: linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	Shawn Lin <shawn.lin@rock-chips.com>
-Subject: [PATCH 1/4] pmdomain: rockchip: propagate subdomain add errors
-Date: Fri, 18 Sep 2026 20:07:35 +0800
-Message-Id: <1789733258-10133-2-git-send-email-shawn.lin@rock-chips.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1789733258-10133-1-git-send-email-shawn.lin@rock-chips.com>
-References: <1789733258-10133-1-git-send-email-shawn.lin@rock-chips.com>
-X-HM-Tid: 0aa0b46a82e203a4kunm5c34220f1640d1
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1kYFggdWUFKV1ktWUFJV1kPCRoVCBIfWUFZQhgeQ1YdSR5CThpCGE
-	5MHRlWFRQJFhoXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0
-	tIVUpLSU9PT0hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=AlS/by0nylogZoeV0XjpX1P4PnYDBWH18sFZJWj9U0h8WOQlZ54IxIQ+BXA6/IKDq8FqHAW/zhET68hqVEeOkzWgBnjJQSbiuaa7bZ/ZKzyslSi4WFRBT3OyOq1Jj7D1BwWXngq+stgGV6ehcgJjP27VIQcwN/cY+Plo8dBNnEQ=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=GhhwQoELOawdooWCrE2EbpE6ODju7TA9wquESlNU2sA=;
-	h=date:mime-version:subject:message-id:from;
+	s=arc-20240116; t=1789736560; c=relaxed/simple;
+	bh=yVcEqSXbP/8mFfz7dHA2v+SFBTVxlkUsy2wH62WCuGg=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=bkz57M5Dqi0UzjeV364SclpinvmLP7ZYIV/tJe7tI4Y9OdIROTB96cXRNYq2vELWSFD49Bg7SSQIQokl3kErtxoaZKZ9RWK1SmWit8FmJN8x9ktjTs5D4ZFNdWdUtvXKXB6KrBfwnLckskxUP3drwQGRNz4TPYCVCBQGYFhsupc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.helo=mail.mainlining.org; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.helo=mail.mainlining.org
+Message-ID: <29506e08-9337-487f-af2d-b75f5aa8341e@mainlining.org>
+Date: Fri, 18 Sep 2026 16:01:43 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+Subject: Re: [PATCH v2 01/19] dt-bindings: clock: qcom: Add MSM8952 global
+ clock controller
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Srinivas Kandagatla <srini@kernel.org>,
+ Ulf Hansson <ulfh@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
+ "Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+ Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>,
+ Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov
+ <lumag@kernel.org>, Abhinav Kumar <abhinav.kumar@linux.dev>,
+ Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>,
+ Marijn Suijten <marijn.suijten@somainline.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Robert Marko <robimarko@gmail.com>, Guru Das Srinagesh <linux@gurudas.dev>,
+ Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Kees Cook <kees@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli"
+ <gpiccoli@igalia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ David Heidelberg <david@ixit.cz>, Dang Huynh <danct12@riseup.net>,
+ phone-devel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org,
+ iommu@lists.linux.dev, mfd@lists.linux.dev, dri-devel@lists.freedesktop.org,
+ freedreno@lists.freedesktop.org, linux-pm@vger.kernel.org,
+ linux-input@vger.kernel.org
+References: <20260916-msm8952-initial-support-v2-0-798c2602dde1@mainlining.org>
+ <20260916-msm8952-initial-support-v2-1-798c2602dde1@mainlining.org>
+ <20260918-liberal-significant-crow-f1e66f@quoll>
+Content-Language: en-US
+In-Reply-To: <20260918-liberal-significant-crow-f1e66f@quoll>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-rockchip_pm_add_subdomain() ignored the return value of its recursive
-call, so a failure deeper in the hierarchy was silently dropped and
-probe still succeeded with an incomplete domain tree.
+Hi Krzysztof,
 
-Fixes: 6be05b5ec161 ("soc: rockchip: power-domain: add support for sub-power domains")
-Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
----
+On Fri, 18 Sep 2026 12:02:02 +0200, Krzysztof Kozlowski wrote:
+> On Wed, Sep 16, 2026 at 05:22:06PM +0300, Muzaffer Kadir wrote:
+>> Add a device tree binding to describe clocks, resets and power domains
+>> provided by the global clock controller on MSM8952 SoC.
+>>
+>> Signed-off-by: Muzaffer Kadir <muzafferkadir@mainlining.org>
+> 
+> Please run scripts/checkpatch.pl on the patches and fix reported
+> warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
+> patches and (probably) fix more warnings. Some warnings can be ignored,
+> especially from --strict run, but the code here looks like it needs a
+> fix. Feel free to get in touch if the warning is not clear.
+> 
 
- drivers/pmdomain/rockchip/pm-domains.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Then I will ask a few things,
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index ba66ae7..068dd4b3 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -1018,7 +1018,9 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 				parent_domain->name, child_domain->name);
- 		}
- 
--		rockchip_pm_add_subdomain(pmu, np);
-+		error = rockchip_pm_add_subdomain(pmu, np);
-+		if (error)
-+			return error;
- 	}
- 
- 	return 0;
--- 
-2.7.4
+WARNING: DT binding headers should be licensed (GPL-2.0-only OR .*)
+#88: FILE: include/dt-bindings/clock/qcom,gcc-msm8952.h:1:
++/* SPDX-License-Identifier: GPL-2.0-only */
 
+As I said on cover, I originally based on msm8939 gcc,
+would it cause license problems with file if I fix this
+warning?
+
+Some patches say "has style problems, please review."
+Is this related to formatting of code inside patch ?
+
+WARNING: Prefer a maximum 75 chars per line (possible unwrapped commit description?)
+#16: 
+[1] https://android.googlesource.com/kernel/msm.git/+/refs/tags/android-wear-7.0.0_r0.3/drivers/clk/qcom/clock-gcc-8952.c
+
+Should I move these to "Link:" to fix this type of warnings?
+Wouldn't moving them cause a bit understanding loss?
+
+grep: warning: stray \ before -
+What does this mean ?
+
+Thanks
+
+>> ---
+>>  .../bindings/clock/qcom,gcc-msm8952.yaml           |  56 ++++++
+>>  include/dt-bindings/clock/qcom,gcc-msm8952.h       | 217 +++++++++++++++++++++
+>>  2 files changed, 273 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/clock/qcom,gcc-msm8952.yaml b/Documentation/devicetree/bindings/clock/qcom,gcc-msm8952.yaml
+>> new file mode 100644
+>> index 000000000000..274dde633e17
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/clock/qcom,gcc-msm8952.yaml
+>> @@ -0,0 +1,56 @@
+>> +# SPDX-License-Identifier: GPL-2.0-only
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/clock/qcom,gcc-msm8952.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Qualcomm Global Clock & Reset Controller on MSM8952
+>> +
+>> +maintainers:
+>> +  - Muzaffer Kadir <muzafferkadir@mainlining.org>
+>> +
+>> +description: |
+>> +  Qualcomm global clock control module provides the clocks, resets and power
+>> +  domains on MSM8952.
+>> +
+>> +  See also::
+> 
+> git grep "also::" -- Documentation/devicetree/bindings/clock/
+> 
+> I asked you month ago here:
+> <e3fb3794-ca7a-4794-8036-b69e563aaa57@kernel.org>
+> to not work on old forks.
+> 
+> Old fork which you should not use is postmarketos, lineageos, whatever
+> Android fork kernel, and whatever other tree which is not upstream from
+> kernel.org.
+
+I created all of this before sending pinctrl. I tried to clean up by
+reading others in upstream before sending but I guess I didn't
+noticed that, sorry about that.
+I didn't reused fork and mainly used upstream after your reply.
+
+Best regards,
+Muzaffer Kadir
