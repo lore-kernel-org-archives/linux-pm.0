@@ -1,104 +1,118 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7CBA5172C5;
-	Fri, 18 Sep 2026 16:41:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6319A519DF4;
+	Fri, 18 Sep 2026 16:45:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789749686; cv=none; b=tkVhRGMY+meatIH7Th8AbmCfS/ndiwichPIz3pHKTEHMcoWzBR8+PSsYH5hgFUjcmnaneTPpNhegeWDtzz7qdtkOmPwb0n/R5AkaC/6BwzVdgRqyA8V/WUNx0WkBlkTHYyf1x0lAq68v7pKNmB1wmuXghuFCLIovr5Wn++8Vv8U=
+	t=1789749922; cv=none; b=E2UAQL1dzQyfCoROOSLwokV78WIWak224on0tBxmfXjNq8lxa98OyNrYb1yn3D4gVI8O5CHT9jyLwIV707r6/vvf25Usz8YbZtkjUTOzrPhBGg501n2Z496xQQVSwJwJGugbN86zY01lS4URQdupVb+Kqo7fj5U8JB9rpAs7wYs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789749686; c=relaxed/simple;
-	bh=wHDE/ogxFqC0ePubpUai8RfXfh2NL6ahN/FENdluccE=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=cgXXMbkpEns+SfZS+/semEf+dO2I/zBqLE4eqQ2cpkDfvIpQAfDlqv4+KXs86BoFHkZhOwPCPc2umML2cOAWzWc+HwtTRP6bz8dbmOiZ8cTIWovys9cBs4yHT6KIsu/+W8na8FRALmB+oCJEI8cF2ongugqna0YSa6N7Ho3XdlY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lLLNwwwJ; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789749922; c=relaxed/simple;
+	bh=JSThcUrSD9d3bIVSbKFCAkriwYQ2bNjsEP5KWhJecRw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Zx2Cx5228laMU7s0CvFhYGIN+0iC6RklnGQ5GJ96/C9a7FzjdaHTsjjU93vRCSVjbNUas8g2Px5++g2rUgt8lTOqTV77SB/j1AkwF8iNtnzHF8BvdRbDEW5HHsIWuRKifZkdSMTjn84Wttaa/iUBF8A+Lz+2hRZd0rCuJBp/ldo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m0ZxH+mQ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lLLNwwwJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D92771F000FF;
-	Fri, 18 Sep 2026 16:41:19 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m0ZxH+mQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BD441F000FF;
+	Fri, 18 Sep 2026 16:45:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789749680;
-	bh=LPArZUqqB353rHy4QKLaGuKuBspay5gmps9/H6dZ24E=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject;
-	b=lLLNwwwJiE5/2cU6UHhp/fjL3PKGf72K/YZ6rzfn/unLjMVnMa8IHZRfCnJsgR8j9
-	 4kPw2kqclFT0xeZvvl+N1lhn+1qDk2xxcsKKDFNKHytEzGY4NK8Vfv1n2i2Kcjs1Sb
-	 dmG5pNpsUGoo2xONeCiRLf9VAz1Miv7nwg9fCaJsumBL3AekoTnYZECJlegh/fzjvH
-	 S7FUg/TvBwSVs6oCghNBU6NUn3dCU4iCHzWHUbGUw7xWmls4m0O/jdNBsUS6tWIXFy
-	 vPQJjJEKgZiki1Vwkn5fYIs8l52aP6SgIpMyBjbI1dKusS4I6VDmY3PEEgJt1Up5OD
-	 /5K2YW7WAHfnQ==
-Date: Fri, 18 Sep 2026 11:41:18 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=k20260515; t=1789749921;
+	bh=p/afdDpUjxDvfFW6cnI4C09DF82vIDcSPuyrBSmUfI8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=m0ZxH+mQR/Uf05x4/48ROHKNATIza8gPxVi9lr/10jZq9xCYRtDE/fWPiXpPDIptg
+	 NEwjz9dqpcwCeEqhaOsJleFsQGsJNGJEUZfhpuL5wpWm9JBoHt0mUR4OVdjyWmjCbG
+	 dzzdxEP3OyCH2hiqgVHf/fcLd/xNuh6plVyoSkSOn56fTM+nkksaoa12NoOPvvm+mP
+	 lvhPZOcyBajJLlVgdxPBw3CN9YfXVWn4+S6njb/t25DJZgpd7o0eLiSlBsVpTNbPmr
+	 3RvoEByxqiK8FJ8YFKt909e9VmG4CpOs2Mj/K4vtODVKrThWr7KcCSooCUMeNdMFtV
+	 SRRp9VjR6oPdQ==
+Date: Fri, 18 Sep 2026 11:45:19 -0500
+From: Rob Herring <robh@kernel.org>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+	linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, kernel@collabora.com
+Subject: Re: [PATCH 3/7] dt-bindings: devfreq: event: rockchip,dfi: add rk3576
+Message-ID: <20260918164519.GA435751-robh@kernel.org>
+References: <20260917-b4-rockchip-dfi-rk3576-support-v1-0-a5752a29f7bd@collabora.com>
+ <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, 
- Brian Masney <bmasney+clk@redhat.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
- devicetree@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, 
- linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, 
- linux-clk@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
- linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, 
- linux-arm-kernel@lists.infradead.org, Conor Dooley <conor+dt@kernel.org>, 
- kernel@collabora.com, Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
- Stephen Boyd <sboyd@kernel.org>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-In-Reply-To: <20260917-rockchip-dfi-cleanup-v1-2-4f00a97a69a6@collabora.com>
-References: <20260917-rockchip-dfi-cleanup-v1-0-4f00a97a69a6@collabora.com>
- <20260917-rockchip-dfi-cleanup-v1-2-4f00a97a69a6@collabora.com>
-Message-Id: <178974864508.290014.10595821680814130371.robh@kernel.org>
-Subject: Re: [PATCH 2/8] dt-bindings: devfreq: event: rockchip,dfi: add
- clocks to rk3588
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260917-b4-rockchip-dfi-rk3576-support-v1-3-a5752a29f7bd@collabora.com>
 
-
-On Thu, 17 Sep 2026 15:49:14 +0200, Sebastian Reichel wrote:
+On Thu, Sep 17, 2026 at 04:04:09PM +0200, Sebastian Reichel wrote:
 > From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > 
-> RK3588's DFI has pclks for each channel. They just weren't noticed as
-> missing until now because nothing ever gates them, and they're ungated
-> by default on power-on.
+> The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
+> like other rockchip SoCs do. Unlike the RK3588 however, it only has two
+> memory channels, so only two per-channel pclks for DFI.
 > 
-> The RK3399 clock situation needs no changes, as there the hardware
-> really just has one monitoring unit for both channels.
-> 
-> Add these clocks to the binding, so that drivers for this device can
-> properly know about their existence.
+> Add a compatible for this SoC's variant, and add it to the conditionals
+> at the bottom of the bindings file.
 > 
 > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 > ---
->  .../bindings/devfreq/event/rockchip,dfi.yaml       | 84 ++++++++++++++++++----
->  1 file changed, 72 insertions(+), 12 deletions(-)
+>  .../bindings/devfreq/event/rockchip,dfi.yaml       | 23 ++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
 > 
+> diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+> index d6e06a9bea19..964f1827496a 100644
+> --- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+> +++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+> @@ -14,6 +14,7 @@ properties:
+>      enum:
+>        - rockchip,rk3399-dfi
+>        - rockchip,rk3568-dfi
+> +      - rockchip,rk3576-dfi
+>        - rockchip,rk3588-dfi
+>  
+>    clocks:
+> @@ -68,6 +69,28 @@ allOf:
+>          - clocks
+>          - clock-names
+>  
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            enum:
+> +              - rockchip,rk3576-dfi
+> +    then:
+> +      properties:
+> +        clocks:
+> +          items:
+> +            - description:
+> +                clock driving the DDR monitoring logic for memory channel 0
+> +            - description:
+> +                clock driving the DDR monitoring logic for memory channel 1
+> +        clock-names:
+> +          items:
+> +            - const: pclk_ddr_mon_ch0
+> +            - const: pclk_ddr_mon_ch1
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Names are already defined at the top-level, just:
 
-yamllint warnings/errors:
+minItems: 2
+maxItems: 2
 
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml: properties:clock-names: {'minItems': 1, 'maxItems': 4, 'items': [{'enum': ['pclk_ddr_mon', 'pclk_ddr_mon_ch0']}, {'const': 'pclk_ddr_mon_ch1'}, {'const': 'pclk_ddr_mon_ch2'}, {'const': 'pclk_ddr_mon_ch3'}]} should not be valid under {'required': ['maxItems']}
-	hint: "maxItems" is not needed with an "items" list
-	from schema $id: http://devicetree.org/meta-schemas/items.yaml
+(On clocks too)
 
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.kernel.org/project/devicetree/patch/20260917-rockchip-dfi-cleanup-v1-2-4f00a97a69a6@collabora.com
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+Rob
