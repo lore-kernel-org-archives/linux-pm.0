@@ -1,32 +1,32 @@
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B01DD2BDC1C;
-	Sat, 19 Sep 2026 17:56:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF55CBA3D;
+	Sat, 19 Sep 2026 17:58:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789840619; cv=none; b=ox9WakPbyGgGwAICw9Xhlp9s7lIuK2F1kRPeNuSgKPTqZdhVgeymLBIgOcTSfZaJrWZmCDj1DW+q4OFl4dlp1zoZGYalDJsCEKXdDCDUrbZee9IkbIdkU6G9/1zgXcYU0X25+lzujClvT+LLMpeYRoj8kt36T7+AWqj0+dFXOFs=
+	t=1789840737; cv=none; b=mKNC748otwVTXUqI9Rz10gsivv2jsISn+gwlzWEUTvXbQZ8WHi0J2q73ydtk1indomhl73iVTsM+9i/a/RzrR1ggGLrRhNHNI/hcggRJg5HCqgkvFeGw3KD/pbmliZCcPwP3vpcrnbRsfG5RywR2FXk5vp0RZJU1uI3P2kW/ars=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789840619; c=relaxed/simple;
-	bh=RCGzlZ9KMnx0c/n9rB6iEJzUfvQoHIj8lEo7Kt2ijug=;
+	s=arc-20240116; t=1789840737; c=relaxed/simple;
+	bh=ojbN8jYKugn8rnd9PnnsxJsi+SUjUc1tUk1+gBuo4vM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k+41L+kY0A8VlQSCEuAI1d1cgCKPORrrYhKTHjcfteQeTEhq+btnyGp2gVhmKUmrNbWRYyR4+pz8Pwv7pifEDQDRC43BLomOJx1YpUuwJrxYc8LVRUnkd2Zd/eHYh4jd5lML1/UoJo7LEpjaWrMr4876e7sZD8QwATA/STaxQ2k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=WoRa9vwF; arc=none smtp.client-ip=213.167.242.64
+	 Content-Type:Content-Disposition:In-Reply-To; b=Oo1F8sFEIcmj1bNywq8Pmp4xF7un6iZAPo++4gTyEzgFCqa1Ufz3pf0Uro2lmjdCG4tQyEQ9yg+Z7RLVruuolgKCloraf0dStddA37yxcPfqd4GjjijBb1A6uXTotI4zxeXb24OTiP2JmGFgUPHsoyAvT1PDBcfayo+cXnTAl1Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=sKJgL6fw; arc=none smtp.client-ip=213.167.242.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="WoRa9vwF"
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="sKJgL6fw"
 Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 30ACF15BF;
-	Sat, 19 Sep 2026 19:55:11 +0200 (CEST)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 9F79615BF;
+	Sat, 19 Sep 2026 19:57:09 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1789840511;
-	bh=RCGzlZ9KMnx0c/n9rB6iEJzUfvQoHIj8lEo7Kt2ijug=;
+	s=mail; t=1789840629;
+	bh=ojbN8jYKugn8rnd9PnnsxJsi+SUjUc1tUk1+gBuo4vM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WoRa9vwFiB4HLe6KMSATvIZjw8gsp6cBhGERheiZLYDXnQov0Vwe899PoIFSyYUYt
-	 zJTtN7jhgPH9cWNqsydDOGndG8HryR6o4ZLYCfCeIXxVsf6HyH8sfrcadvVCpaLKtl
-	 Oh/HneX0GMlQidxLASSMZKhByeGAedHp5FIuT8cs=
-Date: Sat, 19 Sep 2026 20:56:53 +0300
+	b=sKJgL6fwSAIJ/UmUSyjil/zQ+pxlG1VwlFT4y34A8XD6+ismvrgYOYsAwnVDYQWnU
+	 B2d8oFYRx71Ed8dyvuBu1oD65RWJ+zJFXoyzVPecv905QyVPi621SoNCI5o8NqCBEe
+	 E56EH/0mDlqJr2Afi85rPU56q8PzXefkzXK7Hn8k=
+Date: Sat, 19 Sep 2026 20:58:51 +0300
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: Paul Elder <paul.elder+renesas@ideasonboard.com>
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -43,11 +43,10 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
 	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH v2 06/11] arm64: renesas: r8a78000: Add FCPVD and VSPD
- nodes
-Message-ID: <20260919175653.GH1124359@killaraus.ideasonboard.com>
+Subject: Re: [PATCH v2 08/11] media: vsp1: Document X5H SoC ID
+Message-ID: <20260919175851.GI1124359@killaraus.ideasonboard.com>
 References: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-0-dbe9236bfd22@ideasonboard.com>
- <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-6-dbe9236bfd22@ideasonboard.com>
+ <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-8-dbe9236bfd22@ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,224 +55,42 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-6-dbe9236bfd22@ideasonboard.com>
+In-Reply-To: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-8-dbe9236bfd22@ideasonboard.com>
 
-Hi Paul,
-
-Thank you for the patch.
-
-On Sat, Sep 19, 2026 at 02:07:03AM +0900, Paul Elder wrote:
-> Add DT nodes for the FCPVD and VSPD IP cores in the R-Car X5H SoC.
+On Sat, Sep 19, 2026 at 02:07:05AM +0900, Paul Elder wrote:
+> From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 > 
+> The R-Car X5H uses 0x09 as the SoC ID in the version register. Document
+> is with a macro, as done for other R-Car SoCs.
+> 
+> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 > Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
+> ---
+> Changes in v2:
+> - Fix the version register number: s/0x04/0x09/
+
+Thanks for the fix.
 
 Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
+But I think we can squash this with patch 09/11.
+
 > ---
->  arch/arm64/boot/dts/renesas/r8a78000.dtsi | 190 ++++++++++++++++++++++++++++++
->  1 file changed, 190 insertions(+)
+>  drivers/media/platform/renesas/vsp1/vsp1_regs.h | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> index f90b869579d384e3fc13d0a13625b7cddaac2868..21b83531a5b6ceec02dd11f6bccdd40d253bb42d 100644
-> --- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> +++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-> @@ -1000,6 +1000,196 @@ mdlc_aon: system-controller@c1338000 {
->  			bootph-all;
->  		};
+> diff --git a/drivers/media/platform/renesas/vsp1/vsp1_regs.h b/drivers/media/platform/renesas/vsp1/vsp1_regs.h
+> index 4c0315656e9f81a9656b58fb6f0233f8a22ac0e1..8abf39bac6c2f333696ebf55de87586d2df3bed0 100644
+> --- a/drivers/media/platform/renesas/vsp1/vsp1_regs.h
+> +++ b/drivers/media/platform/renesas/vsp1/vsp1_regs.h
+> @@ -816,6 +816,7 @@
+>  #define VI6_IP_VERSION_SOC_E3		(0x04 << 0)
+>  #define VI6_IP_VERSION_SOC_V3U		(0x05 << 0)
+>  #define VI6_IP_VERSION_SOC_V4H		(0x06 << 0)
+> +#define VI6_IP_VERSION_SOC_X5H		(0x09 << 0)
+>  /* RZ/G2L SoCs have no version register, So use 0x80 for SoC Identification */
+>  #define VI6_IP_VERSION_SOC_RZG2L	(0x80 << 0)
 >  
-> +		fcpvd0: fcp@c5010000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5010000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x7e>;
-> +			resets = <&mdlc_vio 0x7e>;
-> +		};
-> +
-> +		fcpvd1: fcp@c5011000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5011000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x7f>;
-> +			resets = <&mdlc_vio 0x7f>;
-> +		};
-> +
-> +		fcpvd2: fcp@c5012000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5012000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x80>;
-> +			resets = <&mdlc_vio 0x80>;
-> +		};
-> +
-> +		fcpvd3: fcp@c5013000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5013000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x81>;
-> +			resets = <&mdlc_vio 0x81>;
-> +		};
-> +
-> +		fcpvd4: fcp@c5014000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5014000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x82>;
-> +			resets = <&mdlc_vio 0x82>;
-> +		};
-> +
-> +		fcpvd5: fcp@c5015000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5015000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x83>;
-> +			resets = <&mdlc_vio 0x83>;
-> +		};
-> +
-> +		fcpvd6: fcp@c5016000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5016000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x84>;
-> +			resets = <&mdlc_vio 0x84>;
-> +		};
-> +
-> +		fcpvd7: fcp@c5017000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5017000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x85>;
-> +			resets = <&mdlc_vio 0x85>;
-> +		};
-> +
-> +		fcpvd8: fcp@c5018000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5018000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x86>;
-> +			resets = <&mdlc_vio 0x86>;
-> +		};
-> +
-> +		fcpvd9: fcp@c5019000 {
-> +			compatible = "renesas,fcpv";
-> +			reg = <0 0xc5019000 0 0x1000>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x87>;
-> +			resets = <&mdlc_vio 0x87>;
-> +		};
-> +
-> +		vspd0: vsp@c4800000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4800000 0 0x8000>;
-> +			interrupts = <GIC_SPI 623 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x70>;
-> +			resets = <&mdlc_vio 0x70>;
-> +
-> +			renesas,fcp = <&fcpvd0>;
-> +		};
-> +
-> +		vspd1: vsp@c4808000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4808000 0 0x8000>;
-> +			interrupts = <GIC_SPI 624 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x71>;
-> +			resets = <&mdlc_vio 0x71>;
-> +
-> +			renesas,fcp = <&fcpvd1>;
-> +		};
-> +
-> +		vspd2: vsp@c4810000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4810000 0 0x8000>;
-> +			interrupts = <GIC_SPI 625 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x72>;
-> +			resets = <&mdlc_vio 0x72>;
-> +
-> +			renesas,fcp = <&fcpvd2>;
-> +		};
-> +
-> +		vspd3: vsp@c4818000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4818000 0 0x8000>;
-> +			interrupts = <GIC_SPI 626 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x73>;
-> +			resets = <&mdlc_vio 0x73>;
-> +
-> +			renesas,fcp = <&fcpvd3>;
-> +		};
-> +
-> +		vspd4: vsp@c4820000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4820000 0 0x8000>;
-> +			interrupts = <GIC_SPI 627 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x74>;
-> +			resets = <&mdlc_vio 0x74>;
-> +
-> +			renesas,fcp = <&fcpvd4>;
-> +		};
-> +
-> +		vspdb0: vsp@c4828000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4828000 0 0x8000>;
-> +			interrupts = <GIC_SPI 628 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x75>;
-> +			resets = <&mdlc_vio 0x75>;
-> +
-> +			renesas,fcp = <&fcpvd5>;
-> +		};
-> +
-> +		vspdb1: vsp@c4830000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4830000 0 0x8000>;
-> +			interrupts = <GIC_SPI 629 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x76>;
-> +			resets = <&mdlc_vio 0x76>;
-> +
-> +			renesas,fcp = <&fcpvd6>;
-> +		};
-> +
-> +		vspdb2: vsp@c4838000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4838000 0 0x8000>;
-> +			interrupts = <GIC_SPI 630 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x77>;
-> +			resets = <&mdlc_vio 0x77>;
-> +
-> +			renesas,fcp = <&fcpvd7>;
-> +		};
-> +
-> +		vspdb3: vsp@c4840000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4840000 0 0x8000>;
-> +			interrupts = <GIC_SPI 631 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x78>;
-> +			resets = <&mdlc_vio 0x78>;
-> +
-> +			renesas,fcp = <&fcpvd8>;
-> +		};
-> +
-> +		vspdb4: vsp@c4848000 {
-> +			compatible = "renesas,vsp2";
-> +			reg = <0 0xc4848000 0 0x8000>;
-> +			interrupts = <GIC_SPI 632 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg R8A78000_CPG_SGD4_VIO_DP_TX>;
-> +			power-domains = <&mdlc_vio 0x07 0x79>;
-> +			resets = <&mdlc_vio 0x79>;
-> +
-> +			renesas,fcp = <&fcpvd9>;
-> +		};
-> +
->  		fcpvi0: fcp@c5030000 {
->  			compatible = "renesas,fcpv";
->  			reg = <0 0xc5030000 0 0x1000>;
 
 -- 
 Regards,
