@@ -1,160 +1,159 @@
-Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender6-op-o12.zoho.com (sender6-op-o12.zoho.com [165.173.180.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C3E15474F
-	for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 13:48:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.227.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F5E778F2B;
+	Sat, 19 Sep 2026 13:56:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.180.12
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789825684; cv=pass; b=X+U0ynkfX6vXdRoG8s4TVnhXYG86qiWvKsOUsA9cA99eSTPzISCdfHOPgnprFi+d49/enAptcLB9TGaTWsWxtv9CdNn6XWHhU0qQRXRqkpehJLAsR7o0ym9585nbmB0qfZHosFxqIJoSBstkdQHQZeYzRXJperq9RUO7j1qBAvY=
+	t=1789826195; cv=pass; b=bEZnB6+ZzFtK/xoGlYCWaPWSdroZbRY8m3rjlR1RqDmdtPmOdigBrvDhysWDpTOZE7dwSlJYLk8+weuGVnLtHBhmEDuyATPYv92IKdiPU308nYODybk84Zs+SYVMPuTa+UXkmrPw6Ir0Vhc1tHuZMR57fUwiZe4kJkBLMLthvfQ=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789825684; c=relaxed/simple;
-	bh=uxDzFlXIhCWkpp4nn7OscT4I75j1F3IPZnT3erfb0Lk=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=kiAPWsrD46N7vNmTMrXmUD3TDgIQDnak3CVCua9VCrhJlodyVIIqcR7T3e4ZvZD181mwykHrunYu7oTpilBFV1D/jihKiUtdbH8cD1gRpQt/3k8kC5Aah6tzagSBd0fllyXjxCpxam3aSesJDJG/26Mqxmb5m/aMjwP0ocvp/eE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Kqi5Xlsp; arc=pass smtp.client-ip=74.125.227.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789826195; c=relaxed/simple;
+	bh=yhX14Zjrs1T1LKc/UQ3XM5yVsTmDWG/q39PuOw4fZkw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=MXReRyciGZaeMTnWzbjgo9h6HYnL4zMPpALLRky8cg3cQVKFQ2yHUyjs6DsOSxiu8/HBohUb9PwNGCIbbsClIlYTj/EtiJPMh8z3Tw9fYPy9n2SD4ooZONdNcH3QuZ4C8nB3UpSQKD4+ZLRnq01raL8V8/7RsFavFkzesJ62xBY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me; spf=pass smtp.mailfrom=icenowy.me; dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b=e8k+DUqK; arc=pass smtp.client-ip=165.173.180.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icenowy.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kqi5Xlsp"
-Received: by mail-pj2-f13.google.com with SMTP id 98e67ed59e1d1-396ccafb751so1385355a91.2
-        for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 06:48:02 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789825682; cv=none;
-        d=google.com; s=arc-20260327;
-        b=pxOmrzuylIBs5hJAcLzaH9WY86shyt3Uz0gLflJtTWqgnKsupnicByQKPEn7oyUtpX
-         87VE10/jajqQaHXP0gVVhr0PXe+7V/gGCLSK9BLjy6kDwwDZCk0u3oD68YMKrkWHZieF
-         F5cGgzMBbO/DfJ+wOriOOr1f3O23uFRAux1qpDN5vRhcSK3up5fN1uETjrWUiYbO/7zr
-         L+o18bj/+mmbrhjqlkSpaslkaUOOwItmreX3Wl7lel3ilLh7sxX90vF+JlWXDhppvE5N
-         emAmxyRO8OOyyoz9lzfRO8M0ly9Kbh9jtKKXUGX0DijWBXJn1bJnG7LlpKrH5wgiG/Ps
-         gYnw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=sIIVnS4jjgLWZUNl3bwsvpIjYgvoUL8a8FSJ4KXXWw4=;
-        fh=ef7o5cURY1D3tvzwwCwfpvOTv3vUD1LKaRZNX6M2opI=;
-        b=S3Pe8pI5m7M23Sj18RuwZRgQ0m6O6gkH01kAZjZb6Q1N0m5FJlijO48xSxTB30gQpW
-         RLp6OWnuQRa4SpZrfsGtB0wbb1RDrMYImNw3xDa9u+EHCT1uR3uzqYsSPc88zjvHaZ+y
-         iAlz/LWpGJA4G7WUh9jPGrUS5nyeI/xgykOuO1w1YmTijXszm9XI4MCoLQ7Cvr0sRIJt
-         4JZ/8DJlYlqPQb1+wMTCmddNy5UKM1m4HH71Sx1EVn/GajksxPqiUtW1d7wMlDzKDUSp
-         gt3HzhFYX+S7W/YXuCqcf8mFOGSGcHLRNHaCsmHakB8cPtHa7F+r/8kA/WSxsKO1uWF+
-         Arcg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789825682; x=1790430482; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=sIIVnS4jjgLWZUNl3bwsvpIjYgvoUL8a8FSJ4KXXWw4=;
-        b=Kqi5XlspJA2t/INDZdP2hfeEhsJlKsHZ+CG6ZbjCBcdVg8WhjoOVDaXX9XeizRfCEx
-         PKKCBPcv/BBz962YOk/43a1Y/sy40Vuvh2SG6xhJDVuN3mncGLBMqw71nYZ3YLi0I6aF
-         zXXHUWp1tlPC2KqXjj/sPxmbNTX3q4R1WvprZ14SiE8Pfu6u4+904r6H/Mhpf550Ftq9
-         /xkK2xPiasRBt0yoyozy37VJXScSFpyHI6H+URG5O70qTylbnKDhVL+EE36yC+E/fZi6
-         qvPG5DLaIo7nO6OhFUfg9+/mwnJK1thn37dwbgOd17WPfUn3HPT9NQhMBPoZbDYxQxFt
-         T7Ig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789825682; x=1790430482;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=sIIVnS4jjgLWZUNl3bwsvpIjYgvoUL8a8FSJ4KXXWw4=;
-        b=AaI7Kxtm9DkYttaPEyUL5dXUJUzW7DbbQs+s/TcRuzhDk2Cz3VAbuoy4oBIkDlmz8y
-         xYJtIYR+LoZFvPmtmjW8EDgnrLX2yHO4gB/V2qU3445SHLcjwDSPzQDTaYrk46Cewb/t
-         RUVeb9KOkHp9+0wdGgCiLo/etxQvRIuCXZc8eLCZHkL2Huk1LhpndXkY1C1u+r2TqkKL
-         +z4JqPwiM5FS5Af8efpCiJcpJCICag2fuOY3bNdyqlbpipLzDFtYm/6pnuKaWMNomP7H
-         oT3DIv8d0dtn1inh1I36wOjQqSXefXRpu+igHJ9y14/3xy9xJ0aQXj/5mp0+m0b/+Q7U
-         bDUQ==
-X-Forwarded-Encrypted: i=1; AKwUvBw7xf765F1BM7eT6SrR8UCYgH64WxtRAz2LgOPIGAlnwgVUayG+CTJxhF1Ct+typaZkmlaKrt+Lfw==@vger.kernel.org
-X-Gm-Message-State: AFuF++mw34f7zqb29v8TA2zRj3fUKiWTTg46xL12zyDSsFCatQpqPho7
-	FJWjT0L+G/dHbENZoBrzEA+31Fyc0wkcZVdYtQxwAhF6b0Lw3EKYlpyqLBb5jJTsJiT2a8N4cw/
-	UQtNZRyF6NMPB+Qqbe8DBsoPUQq82hcji/wcK4zs=
-X-Gm-Gg: AYBFou1lAKa45pWBt1QMbnlF80gOOCn9kvKezbRoftvXyFu0lP7x2+HoGwjQMl7Dn1I
-	ox1BCVUR8O/xK6+xoywaAD5O45h4J6M2+3qawBmGm0rXQWkZMMF4e7v3WTCDG/6BZ+ldmqrFdnl
-	bCg48LmgObuVQWskWy9gCvHprbSIpDlt6w2Z3UeWKb9iyCGIrOGpC47Hu1EgF9p2f42BDG+J5nX
-	Rz9ycRUA8iLTwBSFu/UxeEFArWKB48GzymtEeuzqhqtkStgM2uqK+e5GoKPipweCIU27TeurEJ3
-	bjW740ICldBvg520ooVSRhloRw7fi63460HEBd9s3QpyUcKG0sJhESeSBw6RKZRKEOONr+mB+uh
-	D9CA2/6YVnkHnCYS6bsBADvpVdVf59tBJDkoM7aHp4ca3JOkERCkWHaz6ZIdTPp0djfzYOj+l36
-	mkBTULLkc=
-X-Received: by 2002:a17:90b:1dc9:b0:39e:6c69:7775 with SMTP id
- 98e67ed59e1d1-39e6c697929mr4698625a91.30.1789825682239; Sat, 19 Sep 2026
- 06:48:02 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b="e8k+DUqK"
+ARC-Seal: i=1; a=rsa-sha256; t=1789826181; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=lxJtI0f5J52eBI0jkXF+fCjjktZihnJal+2wxXAFeJeMr7hA4MNnFTo6o7kTkRNxQ9sqToreVpEPJMb6lDHMXWiWt/Sn5mBpdBc1J3gk9PEdZSjUnBDNXPKWHqFzKw9omeR5d/bUaRiFN5/hABtXZ21lbuaepN05CPHYQk65/9E=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1789826181; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=yhX14Zjrs1T1LKc/UQ3XM5yVsTmDWG/q39PuOw4fZkw=; 
+	b=Ni5XsT26yJfRAbsYM5mTkdiCmtEN0MPSyQgGGYkdqtjQGGnc21MbM+O/BVfJ3jYagernbGAQeD5YURO+kitKwVeKiAdJOWWxpUWNo0BSW+8gwsx6A+7EjkikN+lXDdsHV+sOMpr3r5h6Bo0wRXt5s3mFiZ8tvVdKSL1M8n5IrQA=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=icenowy.me;
+	spf=pass  smtp.mailfrom=uwu@icenowy.me;
+	dmarc=pass header.from=<uwu@icenowy.me>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789826181;
+	s=zmail2; d=icenowy.me; i=uwu@icenowy.me;
+	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
+	bh=yhX14Zjrs1T1LKc/UQ3XM5yVsTmDWG/q39PuOw4fZkw=;
+	b=e8k+DUqK8L0f/XjRqQOdi0HQ/UI5S1Gu7O3c6Lg1eNJdymP25Cp1kkckNIXJ4pr1
+	qQueD0jICa932JYSArNLhRFepAzNl6pGdZTXd3w6qJMMSm78hNB94PTGtRILf0Ca2WW
+	6Vs7//Uin5WcuhlDsPpYPyp4iteilNXakZ5/Tq/wyJL1wjJl0K9NoM0w2PRem4k8kYg
+	Jd04Owgb8RpA96d6og4yDllg9edyQhblplh/pBgVE0Q9/B1Qvio9RdwKVhrUGVSpZGY
+	AfLA55XW4Ak/PiTIhfoHKjyxKa5zdkMrzrYRe4/laVg/IN4ov9FipAwjd6YPLxBdP45
+	ZL2yKzRZRA==
+Received: by smtp.zohomail.com with SMTPS id 1789826179625358.0297920384029;
+	Sat, 19 Sep 2026 06:56:19 -0700 (PDT)
+Message-ID: <8301abce221e33d827053c54a64aed05f3227f7f.camel@icenowy.me>
+Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
+From: Icenowy Zheng <uwu@icenowy.me>
+To: Yixun Lan <dlan@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+  Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul
+ Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+	devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Date: Sat, 19 Sep 2026 21:56:12 +0800
+In-Reply-To: <20260919095936-GKA322102@kernel.org>
+References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
+	 <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
+	 <a4359efeee2220903a05a2383a651ec8ec7284b7.camel@icenowy.me>
+	 <20260918230107-GKC297024@kernel.org>
+	 <33b33b2b79763d410bc2e5b4ef46c305aaf6f7c8.camel@icenowy.me>
+	 <20260919095936-GKA322102@kernel.org>
+Organization: Anthon Open-Source Community
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: David Lomas <david.s.lomas@gmail.com>
-Date: Sat, 19 Sep 2026 14:47:25 +0100
-X-Gm-Features: AcwNN1WfyXVWtbUsXrdmQZGWXpS1W_8PSzgAYorOUUpF0oVLqT3c8afoCgKVMbs
-Message-ID: <CALjEBWQo0-Sdimo+aRNKUQvgDGw=jBFCcfwCXaqVdtoPrHLAQA@mail.gmail.com>
-Subject: Re: [PATCH 6.18 0167/1250] PM: hibernate: call preallocate_image()
- after freeze prepare
-To: gregkh@linuxfoundation.org, sashal@kernel.org
-Cc: stable@vger.kernel.org, rafael.j.wysocki@intel.com, 
-	matthew.leach@collabora.com, superm1@kernel.org, linux-pm@vger.kernel.org, 
-	regressions@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+X-ZohoMailClient: External
 
-Please note, I'm chasing a bug on this laptop using claude, and not
-familiar at all with kernel development, so take what it's written
-below with a pinch of whatever you prefer. But it seems pretty
-convinced it has found the root cause of periodic freezes during
-hibernation (whether from sleep on a timer, or direct via 'systemctl
-hibernate').
+=E5=9C=A8 2026-09-19=E5=85=AD=E7=9A=84 09:59 +0000=EF=BC=8CYixun Lan=E5=86=
+=99=E9=81=93=EF=BC=9A
+> Hi Icenowy,
+>=20
+> On 14:57 Sat 19 Sep=C2=A0=C2=A0=C2=A0=C2=A0 , Icenowy Zheng wrote:
+> > =E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 23:01 +0000=EF=BC=8CYixun Lan=E5=
+=86=99=E9=81=93=EF=BC=9A
+> > > Hi Icenowy,=20
+> > >=20
+> > > On 17:00 Fri 18 Sep=C2=A0=C2=A0=C2=A0=C2=A0 , Icenowy Zheng wrote:
+> > > > =E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 02:40 +0000=EF=BC=8CYixun La=
+n=E5=86=99=E9=81=93=EF=BC=9A
+> > > > > =C2=A0 SpacemiT's PMU (Power Management Unit) consist of several
+> > > > > power
+> > > > > domains
+> > > > > which can be managed independently, depending on different
+> > > > > application
+> > > > > scenario, each domain can be powered on/off for saving power.
+> > > > >=20
+> > > > > =C2=A0 The driver is implemented based on Linux Generic PM Domain
+> > > > > framework.
+> > > > > From a hardware perspective, either of two distinct power-on
+> > > > > sequences
+> > > > > are supported, in software mode (SW mode), the driver is
+> > > > > responsible
+> > > > > for
+> > > > > controlling the states of bits such as sleep1, sleep2,
+> > > > > isolation
+> > > > > and
+> > > > > pwr_state, while in hardware mode (HW mode), the PMU hardware
+> > > > > will
+> > > > > complete
+> > > > > the sequence automatically without requiring software
+> > > > > intervention.
+> > > >=20
+> > > > I think there also exists solutions for K3 that uses RPMI power
+> > > > domains, and let their ESOS firmware to access the hardware.
+> > > >=20
+> > > Yes, I'm aware of that
+> > >=20
+> > > > What's the relationship of this implementation with the ESOS
+> > > > implementation? Should the ESOS part be disabled to use this
+> > > > implementation?
+> > > >=20
+> > > I should say, it's a mutually exclusive solution, so yes, the
+> > > ESOS
+> > > part
+> > > should be disabled in order to use this version
+> > >=20
+> > > The motivation of this patch is trying to support drm/display
+> > > driver's
+> > > PM requirement, while avoid going with vendor's complicated RPMI
+> > > solution
+> > > which isn't mainline ready
+> >=20
+> > Is this a long-term solution, or a temporary one?
+> >=20
+> For upstream, I'd say we probably will stick to this solution for
+> long time, won't say it 'forever', see comment below..
+>=20
+> > If it's a temporary conflicting one, I don't think it's worth
+> > picking
+> > at all.
+> >=20
+> Well, checked current Linux kernel status, there is no RPMI PM
+> solution=20
+> implemented although there is documentation in riscv-rpmi spec[1]
 
-Re: <20260917151556.616977299@linuxfoundation.org>
-Upstream commit 783c8109844503bd1c35dab41b6d5fd074a9f131 deadlocks
-hibernation entry on my machine (7.2.4, Dell XPS 13 9360, 8 GB, zswap
-on) whenever the system has been in use for some hours: the hibernate
-call never returns and the laptop sits warm with no image written,
-seven times in ten days. Direct `systemctl hibernate` and
-suspend-then-hibernate are the same. Never on 7.1.x or 6.18.49, and
-never on a fresh boot.
+I have seen pending patch for it with multiple revisions [1], the dt
+binding is even already ACKed by Conor, so I think it's not a big
+problem here.
 
-Captured with SysRq (w) after ~8 minutes hung. The hibernating task is
-in the direct-reclaim throttle waiting for kswapd, which was frozen 27
-ms earlier by freeze_kernel_threads(), which this commit moved ahead
-of hibernate_preallocate_memory():
+Thanks,
+Icenowy
 
-  [ 8404.650787] Freezing remaining freezable tasks completed (elapsed
-0.001 seconds)
-  [ 8404.677608] PM: hibernation: Preallocating image memory
-  (nothing further; SysRq at 8871)
+[1] 20260903092347.620060-1-joshua.yeong@starfivetech.com
 
-  task:systemd-sleep   state:D pid:36677
-   __schedule
-   schedule
-   throttle_direct_reclaim+0x358/0x3e0
-   try_to_free_pages+0xbf/0x220
-   __alloc_pages_slowpath.constprop.0+0x531/0x1510
-   __alloc_frozen_pages_noprof+0x334/0x370
-   alloc_pages_mpol+0xb2/0x160
-   alloc_pages_noprof+0x49/0x90
-   preallocate_image_memory+0x35/0x9b
-   hibernate_preallocate_memory+0x25b/0x390
-   hibernation_snapshot+0xc1/0x4e0
-   hibernate.cold+0x117/0x4b5
-   state_store+0xf2/0x100
-
-  Node 0 Normal free:32044kB boost:119232kB min:172224kB low:185472kB
-  high:198720kB ... inactive_anon:1601740kB zspages:362688kB
-  377713 pages in swap cache
-
-All four CPUs idle (SysRq l). Free memory is below the pfmemalloc
-reserve (two thirds of which is watermark boost), so the GFP_KERNEL
-allocations in preallocate_image_memory() go through
-throttle_direct_reclaim(), which does wait_event_killable() on
-pgdat->pfmemalloc_wait until kswapd raises free pages above the
-reserve. kswapd is frozen, so nothing ever wakes it. The wait is
-killable, so the hung-task detector does not report it either. With
-hung_task_panic, softlockup_panic and hardlockup_panic all set,
-nothing fired in eight minutes.
-
-This is the concern Rafael raised on v3 (frozen kswapd); the reply
-covered the I/O path but not the pfmemalloc throttle. Reverting the
-order, or bypassing the throttle for the hibernation task (PF_KTHREAD
-style), would avoid it. Setting vm.watermark_boost_factor=0 shrinks
-the window but does not close it.
-
-Full SysRq dump (l/m/w, via efi-pstore) available on request.
-
-#regzbot introduced: 783c8109844503bd1c35dab41b6d5fd074a9f131
-
-David Lomas
+>=20
+> On the other hand, I see no problem to switch to RPMI solution once
+> it
+> became mature, it's very similar to two solution of clock CLK_CCU vs
+> CLK_RPMI..=20
+>=20
+> Link:
+> https://github.com/riscv-non-isa/riscv-rpmi/blob/main/src/srvgrp-device-p=
+ower.adoc
+> =C2=A0[1]
