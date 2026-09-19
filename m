@@ -1,23 +1,23 @@
-Received: from mail-m49239.qiye.163.com (mail-m49239.qiye.163.com [45.254.49.239])
+Received: from mail-m1973189.qiye.163.com (mail-m1973189.qiye.163.com [220.197.31.89])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 247432135B8
-	for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 00:40:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.239
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1893317B50F
+	for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 00:40:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.89
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789778456; cv=none; b=nXvsNwUJ0FIrdQESi9bZOWLPfHHm1Rxw8vMrmPz+bNuuDXOT0UlhtTdrVnrAeX+yBY5GhqVOO/WOdWLHzG4dhcd66eUHmfZoEtlvKUIofmmq3FcU3l3KQ8UMByiRFKn4/J3qP4GklWEv8u9bu0x9bpzj5zhmSvoQNvJovdr/30U=
+	t=1789778461; cv=none; b=KHntzUNgjqJ6eS9pSTnnLsF5L2xdparlvaPZOM4fCipGzepHIRxyeKyOQq6OxyyvUYzbcsYYYcEO26wmiS+UC6mZRp4rXRWVjDMxA7f4JkmwYHR16eg/Ma3lukjdeamDd+qA1KXvsfJDLFauAbH2MXm8fCNe13yOvbeSr2pq0HE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789778456; c=relaxed/simple;
-	bh=PTMa9fUxoMasaUFE8bTBoC27Q2dUrvScEYpwBvws18I=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=T6trdKvy/9vQY0PDRi8kkRWVKfGbd/4imYrGVBDwsM55exN1z6A+QWgk4yzaxd7NnGw+qVcWMzKXM3Ns/ev0myTCLtmY9rWW4fMoOl2My6JL+ikG6xdSszCfe1si3rtWvSQuy0l6r+adBG/hopXSY1r5HwLqvKgfS1Ul32R6pdM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=kH54/VFk; arc=none smtp.client-ip=45.254.49.239
+	s=arc-20240116; t=1789778461; c=relaxed/simple;
+	bh=H5hSSCcwB/a/OUKaJejkcv4f/IZpXXlA2t2MIic9M4I=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=iu8yRHcP7OCg9TQpOo6Kpnu6Qy4CxyHJfmCJpQoH5kI3NgCSp11T7pVQbNp5RT/nIfKbAjWgsLemXWxHPfYHXWb91E1aJrWlbS4+o6xF+VhgxyG+ICugImhQ9J3WnofOkqr4M+wPvVHrDXEqRguzkxxNlZapYfZdSAUvFP7hBZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=EcNiWVMh; arc=none smtp.client-ip=220.197.31.89
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="kH54/VFk"
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="EcNiWVMh"
 Received: from localhost.localdomain (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4e57cbc33;
-	Sat, 19 Sep 2026 08:35:33 +0800 (GMT+08:00)
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4e57cbc48;
+	Sat, 19 Sep 2026 08:35:38 +0800 (GMT+08:00)
 From: Shawn Lin <shawn.lin@rock-chips.com>
 To: Ulf Hansson <ulfh@kernel.org>,
 	Heiko Stuebner <heiko@sntech.de>
@@ -25,21 +25,21 @@ Cc: Sebastian Reichel <sebastian.reichel@collabora.com>,
 	linux-pm@vger.kernel.org,
 	linux-rockchip@lists.infradead.org,
 	Shawn Lin <shawn.lin@rock-chips.com>
-Subject: [PATCH v2 2/4] pmdomain: rockchip: fix clock leak on domain probe failure
-Date: Sat, 19 Sep 2026 08:35:09 +0800
-Message-Id: <1789778111-173149-3-git-send-email-shawn.lin@rock-chips.com>
+Subject: [PATCH v2 3/4] pmdomain: rockchip: don't ignore clock lookup errors on attach
+Date: Sat, 19 Sep 2026 08:35:10 +0800
+Message-Id: <1789778111-173149-4-git-send-email-shawn.lin@rock-chips.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1789778111-173149-1-git-send-email-shawn.lin@rock-chips.com>
 References: <1789778111-173149-1-git-send-email-shawn.lin@rock-chips.com>
-X-HM-Tid: 0aa0b717036c03a4kunm44a9997f1a8f48
+X-HM-Tid: 0aa0b717176703a4kunm44a9997f1a8f7c
 X-HM-MType: 1
 X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1kYFggdWUFKV1ktWUFJV1kPCRoVCBIfWUFZGUtJSlYeHx0fHx8aHx
-	5JQh1WFRQJFhoXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0
+	tZV1koWUFDSUNOT01LS0k3V1kYFggdWUFKV1ktWUFJV1kPCRoVCBIfWUFZQx1MQ1YdT09JGRlOHk
+	1KThhWFRQJFhoXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0
 	tIVUpLSU9PT0hVSktLVUpCS0tZBg++
 DKIM-Signature: a=rsa-sha256;
-	b=kH54/VFk6EvU9fU8EhdG14A8ceKlzrcF56qKf43MS6txJKjcSTTGtOT7sQG0lXg/YNI0RbVkDhLfFOOr0QlD6dNCMDxACvUGgHsAzOygZj7x2RxJeaRe4jIfpMKu1zQLZSR0y1Jmi91SMF9dPtB3mCOVdB2zH3e8gvVcZTIlPhA=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=WLDykJQrp5KlPCvARAF3I/UtgiimZR4PVoih3I+nZLU=;
+	b=EcNiWVMhMtGNCGsTJXwaiheok3HlL8MgjfHHWzJU+yvdvmmbQPbHo3LTQ/ijR8StaIPt4Sre1g2g9ETsWWTpe3MIX7BNpoV/KuzA09rMuW9WL/q59/9SUGso2rwWuYyn0lth2IaZGpliKzxVItXnSqkQSZ1alIZXlf/oXyJGDAw=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=mgvmj6m957pGi+bVcTpBcCjGWsGSHBOd3BuEmdIZGXg=;
 	h=date:mime-version:subject:message-id:from;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -47,48 +47,47 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-When of_clk_get() failed in the middle of the loop, the references of
-the clocks acquired so far were leaked instead of being released by
-the error path.
+rockchip_pd_attach_dev() treated every of_clk_get() error as the end
+of the clock list, so a clock that exists but is not available yet
+(e.g. -EPROBE_DEFER) was silently skipped and the device ended up
+without pm_clk management.  Only -ENOENT means there are no more
+clocks.
 
-Also switch the clks array allocation from devm_kcalloc() to
-devm_kzalloc() so that clk_bulk_put() cannot run over uninitialized
-entries.
-
-Fixes: d909072d0521 ("soc: rockchip: power-domain: use clk_bulk APIs")
+Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
 Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
 
-Changes in v2:
-- switch to use devm_kzalloc()
-- add Sebastian's tag
+Changes in v2: None
 
- drivers/pmdomain/rockchip/pm-domains.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/pmdomain/rockchip/pm-domains.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 068dd4b3..43fdb7f 100644
+index 43fdb7f..9917ebf 100644
 --- a/drivers/pmdomain/rockchip/pm-domains.c
 +++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -825,7 +825,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 
- 	pd->num_clks = of_clk_get_parent_count(node);
- 	if (pd->num_clks > 0) {
--		pd->clks = devm_kcalloc(pmu->dev, pd->num_clks,
-+		pd->clks = devm_kzalloc(pmu->dev, pd->num_clks,
- 					sizeof(*pd->clks), GFP_KERNEL);
- 		if (!pd->clks)
- 			return -ENOMEM;
-@@ -842,7 +842,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 			dev_err(pmu->dev,
- 				"%pOFn: failed to get clk at index %d: %d\n",
- 				node, i, error);
--			return error;
-+			goto err_put_clocks;
- 		}
+@@ -759,7 +759,19 @@ static int rockchip_pd_attach_dev(struct generic_pm_domain *genpd,
  	}
  
+ 	i = 0;
+-	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
++	while (1) {
++		clk = of_clk_get(dev->of_node, i++);
++		if (IS_ERR(clk)) {
++			error = PTR_ERR(clk);
++			if (error == -ENOENT)
++				break;
++
++			dev_err(dev, "failed to get clock %d: %d\n", i - 1,
++				error);
++			pm_clk_destroy(dev);
++			return error;
++		}
++
+ 		dev_dbg(dev, "adding clock '%pC' to list of PM clocks\n", clk);
+ 		error = pm_clk_add_clk(dev, clk);
+ 		if (error) {
 -- 
 2.7.4
 
