@@ -1,102 +1,139 @@
-Received: from mail-pz2-f12.google.com (mail-pz2-f12.google.com [74.125.228.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8AE731F9B9
-	for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 20:53:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.12
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789851215; cv=pass; b=EkP5VpG6XtXVj9Pf4p0CP5tBbJxXtW0Thb+bSRlOFURrveOc2C3saT0WhoNhFjgX1x29JDrTFgeroBIgnojE9APVuqenlLytKWha6QJlUEhaDL0PuDEPIDj2iD4rwBTKthj92lJOpczkDDkXqq2COscdUCXaXk/RhgCf+Sid6Hw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789851215; c=relaxed/simple;
-	bh=1yDDpGk7UlB1XRm2igJPt/Nd5az01ELMWZVQ62sfJZk=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=noDlHb04GQmKbXAmYsZqlLHzzHCTmrHo90YwzkGXO6afvTrfd/G+wyfHRy8JnfyvvQtzYJ3mNIVvr07OYFiQaADUqqUpSadBog95Q7wD2Lbe3/eki1qkFgHno8nO+9geA2mIay+e6Rx64Ak9NCj6PRUVk7lWSURr2s4Ovz+fWcU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GCYdMdaE; arc=pass smtp.client-ip=74.125.228.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6F9B348C7B;
+	Sat, 19 Sep 2026 23:13:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789859617; cv=none; b=k1u4LfNHM8uz9SUU6nY12iqab1o5qS53yEWfkiVXdimnDVND5lHsntLS6F1S9dOD+o+wIjq6OJqWuRM1OJGLA5YAuzOrV5auypH66fimR9HZwnOHZHx6h+BFdI0nTXxtlOUlMB/BaTTBM8ZyvGstN0hFSGOmzfT597wQH0rjrAs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789859617; c=relaxed/simple;
+	bh=sK2yacM6Q3NGD6pgtUu/ouaNBLyacVN5mFpthK3M0EE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Eo+2g1bZBJEDqv0mCtw2MokV1q1X6LQnhTiYiw0KOI1sJU8Fd6zmkDRAzj6RsIlv/n96zRKg2ITYKc2ZhjoK/V+0T/rIU2G906xXIB98mlQLzKs3/2yffeDDTT4oTEaw0kMS5jJ8j/4/1988y0ITvxStn5sAC0fL+Doies0m834=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=agsW2GL4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GCYdMdaE"
-Received: by mail-pz2-f12.google.com with SMTP id d2e1a72fcca58-8692a8568e9so1554301b3a.3
-        for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 13:53:34 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789851214; cv=none;
-        d=google.com; s=arc-20260327;
-        b=M2vwSDJAD4dPp4K3lv2BEJEAetGhcnPdYxojUrLFwZAP0NSxSB2D4JqRK7mdDe9rqg
-         4GFMP/9VECxbHrP/bRMZE0zRrMh+S0eUpsQPssRQAzmfs/yaKEjIr+BZ7RBO/3dClmi8
-         ccDn5cNFfJt+z499L8lDQ0eR7NpFEeAnpOi35L+YgPnTDcP3TNB6rxNHPQtE/cxlzhuX
-         1fUYA3GIkqTx/EcyEZyX1EAUmrQww/SguaapBNhe+NvhrG9wViM50DpcwojZ9fmSmmFn
-         GB9EUAF6InFa3G05XAhwLWZlD5oaPVxOSNJtW5G5b5Wag9p6VO+twzCrvt+jQF2vU5RV
-         oLLA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=1yDDpGk7UlB1XRm2igJPt/Nd5az01ELMWZVQ62sfJZk=;
-        fh=SvysSHKCtIzGvNEmWInZFFj4+5spoWhVsg+Z35xqQLk=;
-        b=pCTLuFdbTiRp5UhRmYDO0izEwIWsmyOzhyVPlu9gR9CT2Pqnetsuk/l2DrwZnK6zs+
-         Gjx9/3BFIdruneqiLnjPAjT+0tNteJ9Yw63X4GA1fEMjw/LVTtPRqlu3TzdISjX+Ca0d
-         2RtkijfpTfy2AOFzjreuhsuhzP+rvXAmpHj7rwKcdBPvZLLQwg+SVZAeGZMVaG4S/erL
-         fi8Y5mPr7qPXcYZUylOtnu+D8WQyU1CnZBHSLmQG/nZVIZhp0ZdCRFeWIEuSPLjOgCOO
-         V1ydbrZGy6Y9b3BZiSDxqTeL2G9EcyCHMZAM4RvGOeMkUuxiqPVGjdWldt75Yz6l9OeM
-         eYWA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789851214; x=1790456014; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1yDDpGk7UlB1XRm2igJPt/Nd5az01ELMWZVQ62sfJZk=;
-        b=GCYdMdaElAFUrge1m5HEc8Lsu8lsI7i/hXDOVxq0k79HW/RA1H1dCkUTqX/7LSZ6qg
-         bC965UsWeFUaAlFRZoe7MhFiNEykjJsrFzhnceCz5bN5tDCiye4IrA1cw0/A+FWRBdgA
-         +zOx6CfPhnXATZq/EyxutbO+gt2q7RA6rNBifo+LlCYnyMvDKLiSTGMXud9DfNSDxuKN
-         S32uRQ+HtMUQgclb3FPmJsc7L2J83JRX6KU4qJaJLbMreU/A4koMYHIZ/oy0EN6tQum4
-         Vf1IHvkOqFQyDRKoAXk8kXd5tD49zouDa+yfUmtNhscW4Wa1sC/goQJjLasKiLgOu3Cv
-         xsaw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789851214; x=1790456014;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=1yDDpGk7UlB1XRm2igJPt/Nd5az01ELMWZVQ62sfJZk=;
-        b=fHd2e1hxB4lzh4/HtxoC1fUaWMcmckRu1IP2osI91dY2Zf04HdM6ThZ09Sadqyua8c
-         LPQUaDoVkfjK0qNVbK3KlU3FKNj3ZwCfAuDTsYt8mB/K+nN4pXFVSGmM9FS1Jz7PYwmQ
-         UqAuiD0/alGMDff2djyt4zQkAYJKLlbb9JnVyl+6q6hKI0KTjPi79KPY40R1fTuZBqBw
-         ka4bWqlBnOhyI1oZd3WVs7YzaGcbn9NYOngQbpYroeCt/eDJEcszcktTJ9RNUdo43599
-         fDzi53mv9OQwFb7jBNvRwfhZEkHDr6ZiLzq/EqQUxbCXvq/PYp6qA+k8SfATtdkRR2Dy
-         kYFg==
-X-Gm-Message-State: AFuF++nEQvpfnwDr9ZMudoOl+4PAzMd6/cefXkcnPPILTIJCBYOyeOdB
-	lMG4DCoirHNWt7AZtxNjxgpI2Pi7t2KKSHcovJI7w49QTnm5jomXq4I8HF4FQRCMrHnOW2nV5DR
-	+XwmnJklafBC04qQp+eN9KaWocPfLImM=
-X-Gm-Gg: AYBFou0nL+Wm8DmHPfV9vY/5WbGe1mHaAzJ8PBi1N2Jry//tHCr7YYxGcfYfrkouIrt
-	kKajaxubPJfnftkCRVAWEopxDIJwqpZ/ahSyBK/uI3LCwPMZPMJHbMQFvF2pQhQngxlStGcMbKR
-	ALR9OQVRVS0lJTCMCkZUHnthSZFCWEBExvCQUQTquc+JXoH8i/1QYrgrC5YIVV/Z1x7NCFjUrZJ
-	HvoIwK5ppjtaRXjWg5KbvDD8D0m+R2EYmQDd9PQ8+VHG1YIwLnAJh87AlzObSOJ9nyxXhIWDpUG
-	eGAC+A7A+wteesaRdNHN4Nv7UJDTK1McRgfvXLsy3qdxSIRrdvs4yaV/GNf41eGEGdMMP0OQaQe
-	aCPPxKN+uNui8UJkI699wYgEZPmI9SV2sJb3QlBiA7cy1z4IH37quy7UNDgnQF1U1XxtAQ0c8
-X-Received: by 2002:a05:6a21:6b01:b0:3da:b089:dba4 with SMTP id
- adf61e73a8af0-3dd8c3fc826mr11732141637.2.1789851214024; Sat, 19 Sep 2026
- 13:53:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="agsW2GL4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E960B1F000FF;
+	Sat, 19 Sep 2026 23:13:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789859615;
+	bh=2Sef/0wxyMwTpjYCRnlB9CgtNUDrbK2hMY8qeX5WdGA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=agsW2GL4vTTRqpy7+o1jwke4n1/xbLd5GX9CLNxEpk/J+J6CA5r6gJkG1jKju+NPm
+	 wMOwUqTa8PrIQ5wkmYvByON9AH34njGzQIckoWUQPP6lfYsVH1JubRrXOdrW/fDw1f
+	 J2KFvOBBVO/gh08nduHOQAzcOQ9ftbLQRO7OVHCnjhE6vE1wWWV93XFIHgu/NnTaQy
+	 bwWdMoTMk2f5hcq3K2BvqZN+6n8vMasxFKOUFPoOB/yX3n73ayxbMRHE+cQ9UhK+Rg
+	 2as9+UFbBD1l4QEoqvsNfhlrtSmWN6j5jQbj2zLUJ0MnCtSxGzVIQUE/LcE7liMVkP
+	 JWzwOrSYgSyVg==
+Date: Sat, 19 Sep 2026 23:13:33 +0000
+From: Yixun Lan <dlan@kernel.org>
+To: Icenowy Zheng <uwu@icenowy.me>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	devicetree@vger.kernel.org, linux-riscv@lists.infradead.org,
+	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
+Message-ID: <20260919231333-GKB322102@kernel.org>
+References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
+ <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
+ <a4359efeee2220903a05a2383a651ec8ec7284b7.camel@icenowy.me>
+ <20260918230107-GKC297024@kernel.org>
+ <33b33b2b79763d410bc2e5b4ef46c305aaf6f7c8.camel@icenowy.me>
+ <20260919095936-GKA322102@kernel.org>
+ <8301abce221e33d827053c54a64aed05f3227f7f.camel@icenowy.me>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: David Lomas <david.s.lomas@gmail.com>
-Date: Sat, 19 Sep 2026 21:52:57 +0100
-X-Gm-Features: AcwNN1VByzJrKqU7LMzWxWek7XyZ9CB60Q9hWtTQdOYL4Vi6JhYXo8yhZonG_r8
-Message-ID: <CALjEBWT9wyBYtWPgtg8Xd_FxRU_XnatzQMcwMB9_P2Fdj83+cQ@mail.gmail.com>
-Subject: Re: [PATCH 6.18 0167/1250] PM: hibernate: call preallocate_image()
- after freeze prepare
-To: h.haechoc+kernel@gmail.com
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, 
-	matthew.leach@collabora.com, gregkh@linuxfoundation.org, 
-	stable@vger.kernel.org, regressions@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8301abce221e33d827053c54a64aed05f3227f7f.camel@icenowy.me>
 
-Same commit, same symptom: my report with the blocked-task backtrace
-is at https://lore.kernel.org/all/CALjEBWQo0-Sdimo+aRNKUQvgDGw=jBFCcfwCXaqVdtoPrHLAQA@mail.gmail.com/
-(XPS 13 9360, 8 GB, zswap). The hibernating task sits in
-throttle_direct_reclaim() waiting for kswapd, which
-freeze_kernel_threads() froze just before
-hibernate_preallocate_memory() ran.
+Hi Icenowy,
 
-#regzbot introduced: 783c8109844503bd1c35dab41b6d5fd074a9f131
+On 21:56 Sat 19 Sep     , Icenowy Zheng wrote:
+> 在 2026-09-19六的 09:59 +0000，Yixun Lan写道：
+> > Hi Icenowy,
+> > 
+> > On 14:57 Sat 19 Sep     , Icenowy Zheng wrote:
+> > > 在 2026-09-18五的 23:01 +0000，Yixun Lan写道：
+> > > > Hi Icenowy, 
+> > > > 
+> > > > On 17:00 Fri 18 Sep     , Icenowy Zheng wrote:
+> > > > > 在 2026-09-18五的 02:40 +0000，Yixun Lan写道：
+> > > > > >   SpacemiT's PMU (Power Management Unit) consist of several
+> > > > > > power
+> > > > > > domains
+> > > > > > which can be managed independently, depending on different
+> > > > > > application
+> > > > > > scenario, each domain can be powered on/off for saving power.
+> > > > > > 
+> > > > > >   The driver is implemented based on Linux Generic PM Domain
+> > > > > > framework.
+> > > > > > From a hardware perspective, either of two distinct power-on
+> > > > > > sequences
+> > > > > > are supported, in software mode (SW mode), the driver is
+> > > > > > responsible
+> > > > > > for
+> > > > > > controlling the states of bits such as sleep1, sleep2,
+> > > > > > isolation
+> > > > > > and
+> > > > > > pwr_state, while in hardware mode (HW mode), the PMU hardware
+> > > > > > will
+> > > > > > complete
+> > > > > > the sequence automatically without requiring software
+> > > > > > intervention.
+> > > > > 
+> > > > > I think there also exists solutions for K3 that uses RPMI power
+> > > > > domains, and let their ESOS firmware to access the hardware.
+> > > > > 
+> > > > Yes, I'm aware of that
+> > > > 
+> > > > > What's the relationship of this implementation with the ESOS
+> > > > > implementation? Should the ESOS part be disabled to use this
+> > > > > implementation?
+> > > > > 
+> > > > I should say, it's a mutually exclusive solution, so yes, the
+> > > > ESOS
+> > > > part
+> > > > should be disabled in order to use this version
+> > > > 
+> > > > The motivation of this patch is trying to support drm/display
+> > > > driver's
+> > > > PM requirement, while avoid going with vendor's complicated RPMI
+> > > > solution
+> > > > which isn't mainline ready
+> > > 
+> > > Is this a long-term solution, or a temporary one?
+> > > 
+> > For upstream, I'd say we probably will stick to this solution for
+> > long time, won't say it 'forever', see comment below..
+> > 
+> > > If it's a temporary conflicting one, I don't think it's worth
+> > > picking
+> > > at all.
+> > > 
+> > Well, checked current Linux kernel status, there is no RPMI PM
+> > solution 
+> > implemented although there is documentation in riscv-rpmi spec[1]
+> 
+> I have seen pending patch for it with multiple revisions [1], the dt
+> binding is even already ACKed by Conor, so I think it's not a big
+> problem here.
+> 
+That's exactly what I said - it's not mature, not saying it's pending
+patch for review, but for whole solution that involve Linux driver,
+opensbi and underlying fimware (ESOS) - which not upstream-ed..
 
-David
+To make it clear, I'm not going to pursue the RPMI solution, but if
+someone insist and willing to spend the effort, please feel free to push
+
+-- 
+Yixun Lan (dlan)
