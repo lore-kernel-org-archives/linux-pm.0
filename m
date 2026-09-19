@@ -1,117 +1,126 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+Received: from sender5-op-o12.zoho.com (sender5-op-o12.zoho.com [165.173.182.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AC137083C;
-	Sat, 19 Sep 2026 05:18:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789795117; cv=none; b=YCX2EJ/Ns98S8bZbUyx51n9K13MxPhLaFa9I+O8owlA4Fex2wwhPhuV0gUfooeVsYXayn3BUZ509fvlswAgCDoz3woYa7W6bkfgHDM6ijTkPtSvfZRVngaD9w0V/UxyiP04ynPUoNztUsaL5SY+MVKqEM3p559Ss2NVaEEGG33E=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789795117; c=relaxed/simple;
-	bh=a8qdtL7EWICimlI1nt2nXMPjAaA3O6GDY2kFEuzOOqA=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=dbhJ5u+k+NG3i/CBlIRF3sR6hvsYpPazGL3YowaE7E5TX/HnZybN7appg6afOq1G13VHhBK2GYKqUP36EdgD9jJVOfLBAaCqi++pLt7enmCePb6C13ehe3UZByw5j1vcJEm0G9gE6kg5Papr5J42S5LAdJR9d8FK+nXr0RWNiL0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=R+XISzl9; arc=none smtp.client-ip=192.198.163.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28A4B23D297;
+	Sat, 19 Sep 2026 06:57:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.12
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789801072; cv=pass; b=VEClowDxuWg2xOEBaBXxVZ8545/WfvvZxNLxbrs5iCBrYFkcLHJqz7UqgdYGAnZKK11AF4f4BahyMn0Xam8dsNShyZmhDoeNQdmsnHIuwV8S8nYK4+2In4H7oDWQMSIBUo52IAhG7WZV5DBZZJK/EFrCm9NN/MYP56fSbfTSHzs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789801072; c=relaxed/simple;
+	bh=IdHUg8gZsKG1eK8ddv1bf9KJVpCAWuDGitsqS71bHqY=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=iPAUNhixeE7FaRZK26V6ACHEwRvlBl6km8z6rTgxoAgA8F4bFV6BihzIo/Yym30CWAj1pXZ6rOXxrSzRsM+RhbMNJ70KJVzep+/ghzsvtWuwnsHpBrJsHcM5pQlB/I68eqLfcfoNhydIN1VOUreBdG/TJ5kxVxP0xWzCcDDdOC0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me; spf=pass smtp.mailfrom=icenowy.me; dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b=ii9TMd7W; arc=pass smtp.client-ip=165.173.182.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icenowy.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="R+XISzl9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789795114; x=1821331114;
-  h=from:to:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=a8qdtL7EWICimlI1nt2nXMPjAaA3O6GDY2kFEuzOOqA=;
-  b=R+XISzl9JLNjj7yhjC4hbmIVhvjgBUJ9CAm/L5rfo695Tt8y7RCdrHea
-   +XmJx9Oa0O9k2vZktZI31WlbkRmUiKR1RC6AuasS5YyDmVdP68sfjUKzc
-   NKh+bbadosRxUEj/TLvALo2abgLITw2Y+F7NsiwA/R6Wo0TC0jJbxEAur
-   fgczlO2aTvMqUEgbKGamGuK93/y1zC/az6/PdodlUd7itmoiI9MY9YK5d
-   QkELkVzOUjBzC7D1hFSMBoh2SgWdEdx+eZw1VR+JKsdwVjo8wN4Bc0qdS
-   2TzjPq1czBQonNuf2wXhIJZBHiFMHhkNqdv1igiO6sk79zCJiatC/vwcG
-   Q==;
-X-CSE-ConnectionGUID: kFQUX324SaiVT/+CK+bcUg==
-X-CSE-MsgGUID: /QvL04KiSyOP2pssRZCvDg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11909"; a="100996810"
-X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
-   d="scan'208";a="100996810"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 22:18:34 -0700
-X-CSE-ConnectionGUID: zVqK4maSTgmqONh6odSF3A==
-X-CSE-MsgGUID: R3XfW6M4RIiPStawKauQ4Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
-   d="scan'208";a="268422215"
-Received: from bradocaj-mobl.ger.corp.intel.com (HELO xpardee-desk.intel.com) ([10.125.109.168])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 22:18:33 -0700
-From: Xi Pardee <xi.pardee@linux.intel.com>
-To: xi.pardee@linux.intel.com,
-	irenic.rajneesh@gmail.com,
-	david.e.box@linux.intel.com,
-	ilpo.jarvinen@linux.intel.com,
-	platform-driver-x86@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] platform/x86/intel/pmc: Fix stale NVL PCD-S S0ix_LPM telemetry constants
-Date: Fri, 18 Sep 2026 22:18:28 -0700
-Message-ID: <20260919051830.565240-1-xi.pardee@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b="ii9TMd7W"
+ARC-Seal: i=1; a=rsa-sha256; t=1789801056; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=n0F7k2w7VW6EWRhehL503C5goS+g4WXzxQE1Q4WSeMcZ+SQl7TquN8jk00yDaVGfLMt3jcgxPkMCYT6epgtsum8G+FleBEB6sfNASLvZlI7J0xwExrn5RfPKD5Co/m+AJhu3ctQnekwVCx+wbCqWDYXIduZDDmJrGJEczDy3BaY=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1789801056; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=IdHUg8gZsKG1eK8ddv1bf9KJVpCAWuDGitsqS71bHqY=; 
+	b=ThHCOdSDW8ZX5mkA+xL47/XC7XYpL4AAmOIDWiiFybZoQzXC/GpScqKEh2XcyEIMR0NLnEnzajJvO0datpLfesDwUZCjZuQLA3Xg5cTF7J8ATHEq+0CqcPOLnUOf+FUauSwN1ZTPd977GgONqIN2kLTvC5mtK0qqkpA/JP5G0no=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=icenowy.me;
+	spf=pass  smtp.mailfrom=uwu@icenowy.me;
+	dmarc=pass header.from=<uwu@icenowy.me>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789801056;
+	s=zmail2; d=icenowy.me; i=uwu@icenowy.me;
+	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
+	bh=IdHUg8gZsKG1eK8ddv1bf9KJVpCAWuDGitsqS71bHqY=;
+	b=ii9TMd7W+t3husvchZhqJ+OsMxmnNSPDkkHH35pmcrXxz1jtG0VBgw04RG/CPffG
+	EtF2EUDlWt3+eSLSRsK3pfz3Lkaci+ytI9aJnRMgVa+r5CyreYK3T15dNet90fxsrMG
+	47vnjaI8QVajUlMYCIPGILNj66aJMJmxYjHTJ9UwPF5CWP8QKkvDcnbdW/vF1XFxQC2
+	x8zMxNuZl6a3gN/eFMXGhbexkCAIqx0fAYFeLlvJHEdGmzmFw5y4w1H5ZBv2G9lp5n2
+	7UNQEErodd2Q9XoQdKxbVI+i/M62M1htkrjo3VQK2FN0DRgZOz2kS4Wsrj6zNNuZPW/
+	vy0rGsNWbg==
+Received: by smtp.zohomail.com with SMTPS id 1789801054439855.651129720259;
+	Fri, 18 Sep 2026 23:57:34 -0700 (PDT)
+Message-ID: <33b33b2b79763d410bc2e5b4ef46c305aaf6f7c8.camel@icenowy.me>
+Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
+From: Icenowy Zheng <uwu@icenowy.me>
+To: Yixun Lan <dlan@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+  Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul
+ Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+	devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Date: Sat, 19 Sep 2026 14:57:28 +0800
+In-Reply-To: <20260918230107-GKC297024@kernel.org>
+References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
+	 <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
+	 <a4359efeee2220903a05a2383a651ec8ec7284b7.camel@icenowy.me>
+	 <20260918230107-GKC297024@kernel.org>
+Organization: Anthon Open-Source Community
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-ZohoMailClient: External
 
-The Nova Lake PCD-S S0ix_LPM telemetry layout changed. The PCD-S telemetry
-GUID was changed to reflect the layout change, per the client GUID
-revision rule.
+=E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 23:01 +0000=EF=BC=8CYixun Lan=E5=86=
+=99=E9=81=93=EF=BC=9A
+> Hi Icenowy,=20
+>=20
+> On 17:00 Fri 18 Sep=C2=A0=C2=A0=C2=A0=C2=A0 , Icenowy Zheng wrote:
+> > =E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 02:40 +0000=EF=BC=8CYixun Lan=E5=
+=86=99=E9=81=93=EF=BC=9A
+> > > =C2=A0 SpacemiT's PMU (Power Management Unit) consist of several powe=
+r
+> > > domains
+> > > which can be managed independently, depending on different
+> > > application
+> > > scenario, each domain can be powered on/off for saving power.
+> > >=20
+> > > =C2=A0 The driver is implemented based on Linux Generic PM Domain
+> > > framework.
+> > > From a hardware perspective, either of two distinct power-on
+> > > sequences
+> > > are supported, in software mode (SW mode), the driver is
+> > > responsible
+> > > for
+> > > controlling the states of bits such as sleep1, sleep2, isolation
+> > > and
+> > > pwr_state, while in hardware mode (HW mode), the PMU hardware
+> > > will
+> > > complete
+> > > the sequence automatically without requiring software
+> > > intervention.
+> >=20
+> > I think there also exists solutions for K3 that uses RPMI power
+> > domains, and let their ESOS firmware to access the hardware.
+> >=20
+> Yes, I'm aware of that
+>=20
+> > What's the relationship of this implementation with the ESOS
+> > implementation? Should the ESOS part be disabled to use this
+> > implementation?
+> >=20
+> I should say, it's a mutually exclusive solution, so yes, the ESOS
+> part
+> should be disabled in order to use this version
+>=20
+> The motivation of this patch is trying to support drm/display
+> driver's
+> PM requirement, while avoid going with vendor's complicated RPMI
+> solution
+> which isn't mainline ready
 
-nvl_pcds_d3_status_1_map[] was correctly updated, but two companion
-constants were never updated to match:
+Is this a long-term solution, or a temporary one?
 
- 1. NVL_PCDS_NUM_S0IX_BLOCKER (core.h) is 71 instead of the actual
-    number of blk == 1 entries across nvl_pcds_blk_maps.
+If it's a temporary conflicting one, I don't think it's worth picking
+at all.
 
- 2. PCDS_LPM_REQ_GUID (nvl.c) is still 0x01091102. It was never
-    bumped to 0x01091103 to reflect the S0ix_LPM telemetry metadata
-    layout change.
-
-Both constants describe the same S0ix_LPM/blocker telemetry region
-for PCD-S, so fix them together in one change.
-
-Fixes: 41354f4c8a79 ("platform/x86/intel/pmc: Add Nova Lake support to intel_pmc_core driver")
-Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
----
- drivers/platform/x86/intel/pmc/core.h | 2 +-
- drivers/platform/x86/intel/pmc/nvl.c  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
-index b4c7399f8369d..e55164e5807fd 100644
---- a/drivers/platform/x86/intel/pmc/core.h
-+++ b/drivers/platform/x86/intel/pmc/core.h
-@@ -323,7 +323,7 @@ enum ppfear_regs {
- #define NVL_LPM_LIVE_STATUS_OFFSET		0x1760
- #define NVL_LPM_NUM_MAPS			15
- #define NVL_PCDH_NUM_S0IX_BLOCKER		107
--#define NVL_PCDS_NUM_S0IX_BLOCKER		71
-+#define NVL_PCDS_NUM_S0IX_BLOCKER		70
- #define NVL_PCHS_NUM_S0IX_BLOCKER		54
- #define NVL_PCDS_PMC_LTR_RESERVED		0x1bac
- #define NVL_PCDH_BLK_REQ_OFFSET			53
-diff --git a/drivers/platform/x86/intel/pmc/nvl.c b/drivers/platform/x86/intel/pmc/nvl.c
-index 8dabf2511dd9d..1ed02332dbfce 100644
---- a/drivers/platform/x86/intel/pmc/nvl.c
-+++ b/drivers/platform/x86/intel/pmc/nvl.c
-@@ -14,7 +14,7 @@
- /* PMC SSRAM PMT Telemetry GUIDS */
- #define PCDH_LPM_REQ_GUID 0x01093101
- #define PCHS_LPM_REQ_GUID 0x01092101
--#define PCDS_LPM_REQ_GUID 0x01091102
-+#define PCDS_LPM_REQ_GUID 0x01091103
- 
- /*
-  * Die Mapping to Product.
--- 
-2.43.0
+Thanks,
+Icenowy
 
