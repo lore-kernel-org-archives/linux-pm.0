@@ -1,32 +1,32 @@
 Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3595E3546C2;
-	Sat, 19 Sep 2026 18:11:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D530349CD8;
+	Sat, 19 Sep 2026 18:16:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789841499; cv=none; b=kX44nzV2KOuw44EtTMihX7GuUh35CIxQ2aGtxiCvjWw37UQflIND1eSJpFztrr9z/oQnLU8u77IdOGKaHLY2CT/wev1QOY9lpE1K2FpQnpmirindx9gaNJG02KguCxNo3J4TyZ/fY3r3M1jsdWEmjtGrI6ycaQAEcSYwi++tiVk=
+	t=1789841765; cv=none; b=Sw3xs4rZaonOJaGhrlGo501dS8ztv1rnsPSGh76e9GLqwTKshsexaoWNlSG45RikRKRORVzPND1sTg9R/OhCn/rnqaBR3lHrzzBSJ9oPKRDzxr5VetRtvSnhP0KO9xkufteoH57YltLnLUDxj2PVE4lHy1vzJ1bR+6VLbRSuWeM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789841499; c=relaxed/simple;
-	bh=juRcElsuKHGTVIIhdWymsPWLTCa2llbcM+acLYSoikc=;
+	s=arc-20240116; t=1789841765; c=relaxed/simple;
+	bh=wH8Tb4KqRc4VOh6/dbLrwuxzssZnUUFHkjcWJvCsIAE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A3ShCdpDbSbcJCsbgQaHXsAYgqQKu2MrMGWjAPIuMuzXyg955IZLJESzt8ggejBvCF9P2B12FOXiNA6VCPttd7ziyjOizscrXWXTe55pF57ADX+8bLXpl7l9ev/TCTANLNSpDGGEkmVUL6IzL2jNVImVzMPq5yNvH56ktM+5Mn4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=KblOEAm7; arc=none smtp.client-ip=213.167.242.64
+	 Content-Type:Content-Disposition:In-Reply-To; b=pm8c+p+fiSXDWN8m5gRLK6nG+JvtwRDNUQUS/vCwaDn2q/vFaZPJLlcha8LYsmMg86ZX+dww6qkn85m7+NSi6FjHO5yZIg6h6r7UMehhCUYTQLznJkD/RCuE85osBpBm3rGmfKMbPVhRLPFbX8oaES7MbLUYebsLe+fE+YYQeZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=uZ10c8pz; arc=none smtp.client-ip=213.167.242.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="KblOEAm7"
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="uZ10c8pz"
 Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 12215C36;
-	Sat, 19 Sep 2026 20:09:51 +0200 (CEST)
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 3C502C36;
+	Sat, 19 Sep 2026 20:14:15 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1789841391;
-	bh=juRcElsuKHGTVIIhdWymsPWLTCa2llbcM+acLYSoikc=;
+	s=mail; t=1789841655;
+	bh=wH8Tb4KqRc4VOh6/dbLrwuxzssZnUUFHkjcWJvCsIAE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=KblOEAm7LXbZ3HvOpz336eDVbR1LraAQpNdb3ued8nBGMDpUab5jJMCpCEacfH7Co
-	 TZjksmq2RzZTd7lkWvHD7oBA2rSOE5eKd9u89SOMY7fMGZWxci7rpQv6U57oRxUqvB
-	 o5Y2sTwPUKD6ttJ7i610jV11EcrR4v3TpIt7AZFw=
-Date: Sat, 19 Sep 2026 21:11:33 +0300
+	b=uZ10c8pz/N2zzU7AqCtcuG4Y5uHw/9SgQOpCgF8n0ljm9CDLNkZ1AhCdncdud52hj
+	 nOjGc5OsfdA4Ia5olYwgqz6CgKHItk5HnBnjXZiYQnWY4i6kX42wWMGO1J5hGiEFX1
+	 4NEr+BuZns3VgYrdr4GsV0GBd2zzU4bDGcMbbuFI=
+Date: Sat, 19 Sep 2026 21:15:57 +0300
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 To: Paul Elder <paul.elder+renesas@ideasonboard.com>
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -43,11 +43,10 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
 	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH v2 09/11] media: vsp1: Add device info entries for VSPD
- on X5H
-Message-ID: <20260919181133.GJ1124359@killaraus.ideasonboard.com>
+Subject: Re: [PATCH v2 10/11] media: rcar-fcp: Handle resets
+Message-ID: <20260919181557.GK1124359@killaraus.ideasonboard.com>
 References: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-0-dbe9236bfd22@ideasonboard.com>
- <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-9-dbe9236bfd22@ideasonboard.com>
+ <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-10-dbe9236bfd22@ideasonboard.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,99 +55,109 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-9-dbe9236bfd22@ideasonboard.com>
+In-Reply-To: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-10-dbe9236bfd22@ideasonboard.com>
 
 Hi Paul,
 
 Thank you for the patch.
 
-On Sat, Sep 19, 2026 at 02:07:06AM +0900, Paul Elder wrote:
-> Add device info entries for the VSPD so that the driver can match on the
-> VSPD on the X5H and handle it slightly different hardware configuration.
-
-s/it/its/
-
-> 
-> On the X5H there are two variants, the VSPD (a) and VSPD (b). As the (b)
-> version has a separate version number, add that as well.
+On Sat, Sep 19, 2026 at 02:07:07AM +0900, Paul Elder wrote:
+> On some versions of the FCP, such as the one on the X5H, reset control
+> is required to operate the FCP. Add support for handling resets
+> optionally, to continue supporting versions that do not require it.
 > 
 > Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
-> ---
->  drivers/media/platform/renesas/vsp1/vsp1_drv.c  | 22 ++++++++++++++++++++++
->  drivers/media/platform/renesas/vsp1/vsp1_regs.h |  1 +
->  2 files changed, 23 insertions(+)
-> 
-> diff --git a/drivers/media/platform/renesas/vsp1/vsp1_drv.c b/drivers/media/platform/renesas/vsp1/vsp1_drv.c
-> index 5597595414fe787413c7daa5a3142faa9ced8408..627771e3056617daa8e10d1fb68218435cde0a64 100644
-> --- a/drivers/media/platform/renesas/vsp1/vsp1_drv.c
-> +++ b/drivers/media/platform/renesas/vsp1/vsp1_drv.c
-> @@ -860,6 +860,17 @@ static const struct vsp1_device_info vsp1_device_infos[] = {
->  		.uif_count = 2,
->  		.wpf_count = 2,
->  		.num_bru_inputs = 5,
-> +	}, {
-> +		.version = VI6_IP_VERSION_MODEL_VSPD_GEN4,
-> +		.model = "VSP2-D (a)",
-> +		.soc = VI6_IP_VERSION_SOC_X5H,
-> +		.gen = 4,
-> +		.features = VSP1_HAS_BRU | VSP1_HAS_EXT_DL,
-> +		.lif_count = 1,
-> +		.rpf_count = 5,
-> +		.uif_count = 2,
-
-This is not quite correct, this VSP has 8 UIFs (from UIF0 to UIF7).
-However, not only does the driver support at most two UIFs, it hardcodes
-usage of one UIF per LIF, and starts at UIF4. Declaring two UIFs here is
-fine for the time being, but a comment would be nice.
-
-		/* TODO: The VSP has 8 UIFs, while the driver only support 2. */
-		.uif_count = 2,
-
-> +		.wpf_count = 1,
-> +		.num_bru_inputs = 5,
->  	}, {
->  		.version = VI6_IP_VERSION_MODEL_VSPD_GEN4,
->  		.model = "VSP2-D",
-> @@ -870,6 +881,17 @@ static const struct vsp1_device_info vsp1_device_infos[] = {
->  		.uif_count = 2,
->  		.wpf_count = 1,
->  		.num_bru_inputs = 5,
-> +	}, {
-> +		.version = VI6_IP_VERSION_MODEL_VSPDB_GEN4,
-
-I think that should be VI6_IP_VERSION_MODEL_VSPDB_GEN5.
-
-> +		.model = "VSP2-D (b)",
-> +		.soc = VI6_IP_VERSION_SOC_X5H,
-
-And you can drop the soc match for now, no other SoC uses the version
-model ID 0x20.
-
-With those small issues addressed,
 
 Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
-> +		.gen = 4,
-> +		.features = VSP1_HAS_BRU | VSP1_HAS_EXT_DL,
-> +		.lif_count = 1,
-> +		.rpf_count = 5,
-> +		.uif_count = 1,
-> +		.wpf_count = 1,
-> +		.num_bru_inputs = 5,
->  	}, {
->  		.version = VI6_IP_VERSION_MODEL_VSPX_GEN4,
->  		.model = "VSP2-X",
-> diff --git a/drivers/media/platform/renesas/vsp1/vsp1_regs.h b/drivers/media/platform/renesas/vsp1/vsp1_regs.h
-> index 8abf39bac6c2f333696ebf55de87586d2df3bed0..489d88107d1c17530a74736c40563a93cc17e567 100644
-> --- a/drivers/media/platform/renesas/vsp1/vsp1_regs.h
-> +++ b/drivers/media/platform/renesas/vsp1/vsp1_regs.h
-> @@ -800,6 +800,7 @@
->  #define VI6_IP_VERSION_MODEL_VSPBS_GEN3	(0x1a << 8)
->  #define VI6_IP_VERSION_MODEL_VSPD_GEN4	(0x1c << 8)
->  #define VI6_IP_VERSION_MODEL_VSPX_GEN4	(0x1d << 8)
-> +#define VI6_IP_VERSION_MODEL_VSPDB_GEN4	(0x20 << 8)
->  /* RZ/G2L SoCs have no version register, So use 0x80 as the model version */
->  #define VI6_IP_VERSION_MODEL_VSPD_RZG2L	(0x80 << 8)
+> ---
+> Changes in v2:
+> - handle errors
+> ---
+>  drivers/media/platform/renesas/rcar-fcp.c | 30 ++++++++++++++++++++++++++++--
+>  1 file changed, 28 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/platform/renesas/rcar-fcp.c b/drivers/media/platform/renesas/rcar-fcp.c
+> index dfb0ca93e854dd0bb8aedfb757fd786ef6e45542..76d4c250b30815d9eac58f9b54ad923748df79f6 100644
+> --- a/drivers/media/platform/renesas/rcar-fcp.c
+> +++ b/drivers/media/platform/renesas/rcar-fcp.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/reset.h>
+>  #include <linux/slab.h>
+>  
+>  #include <media/rcar-fcp.h>
+> @@ -29,6 +30,7 @@ struct rcar_fcp_device {
+>  	struct list_head list;
+>  	struct device *dev;
+>  	void __iomem *base;
+> +	struct reset_control *rstc;
+>  };
+>  
+>  static LIST_HEAD(fcp_devices);
+> @@ -162,20 +164,25 @@ static int rcar_fcp_probe(struct platform_device *pdev)
+>  
+>  	fcp->dev = &pdev->dev;
+>  
+> +	platform_set_drvdata(pdev, fcp);
+> +
+>  	fcp->base = devm_platform_ioremap_resource(pdev, 0);
+>  	if (IS_ERR(fcp->base))
+>  		return PTR_ERR(fcp->base);
+>  
+>  	dma_set_max_seg_size(fcp->dev, UINT_MAX);
+>  
+> +	fcp->rstc = devm_reset_control_get_optional(&pdev->dev, NULL);
+> +	if (IS_ERR(fcp->rstc))
+> +		return dev_err_probe(&pdev->dev, PTR_ERR(fcp->rstc),
+> +				     "failed to get reset control\n");
+> +
+>  	pm_runtime_enable(&pdev->dev);
+>  
+>  	mutex_lock(&fcp_lock);
+>  	list_add_tail(&fcp->list, &fcp_devices);
+>  	mutex_unlock(&fcp_lock);
+>  
+> -	platform_set_drvdata(pdev, fcp);
+> -
+>  	return 0;
+>  }
+>  
+> @@ -190,6 +197,24 @@ static void rcar_fcp_remove(struct platform_device *pdev)
+>  	pm_runtime_disable(&pdev->dev);
+>  }
+>  
+> +static int fcp_pm_runtime_suspend(struct device *dev)
+> +{
+> +	struct rcar_fcp_device *fcp = dev_get_drvdata(dev);
+> +
+> +	return reset_control_assert(fcp->rstc);
+> +}
+> +
+> +static int fcp_pm_runtime_resume(struct device *dev)
+> +{
+> +	struct rcar_fcp_device *fcp = dev_get_drvdata(dev);
+> +
+> +	return reset_control_deassert(fcp->rstc);
+> +}
+> +
+> +static const struct dev_pm_ops fcp_pm_ops = {
+> +	RUNTIME_PM_OPS(fcp_pm_runtime_suspend, fcp_pm_runtime_resume, NULL)
+> +};
+> +
+>  static const struct of_device_id rcar_fcp_of_match[] = {
+>  	{ .compatible = "renesas,fcpf" },
+>  	{ .compatible = "renesas,fcpv" },
+> @@ -202,6 +227,7 @@ static struct platform_driver rcar_fcp_platform_driver = {
+>  	.remove		= rcar_fcp_remove,
+>  	.driver		= {
+>  		.name	= "rcar-fcp",
+> +		.pm = pm_ptr(&fcp_pm_ops),
+>  		.of_match_table = rcar_fcp_of_match,
+>  		.suppress_bind_attrs = true,
+>  	},
 
 -- 
 Regards,
