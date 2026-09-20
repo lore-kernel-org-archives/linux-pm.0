@@ -1,40 +1,26 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from mail-m49203.qiye.163.com (mail-m49203.qiye.163.com [45.254.49.203])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A113F3203B4;
-	Sun, 20 Sep 2026 01:26:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE7CE1643B
+	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 01:31:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.203
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789867608; cv=none; b=PKlfrode5GwJ21a1hD2rl19xAUJdx5Wh+nTmY1D+9IUAKYLA3jbhbZFoZcaciaY3mOQISwHjAg4/ACRY/wz1LnWRV3xFeCDtX5Hl+rlTLkUk+pTxFfhOTh9NGEu2tHdCqNB8czp35dNw+BsuJ34ewszbKdyAWwcWVICQb1uRF6M=
+	t=1789867886; cv=none; b=sHMN1wHrQV+LIjutX0qXB4vNgkonlQ4Lakp7rtXgRJgzopObRhvDzSM23qKCnSkv7cKx6IsBhh1wp3U2iMF8/ZhoYOzbyA52VKY6lPa8nGwm2VhX03LLK9MxIrvAUhDXz/nfUF4eHHaS1yLc1hsZEkmC1IQ7xTedoQdSQvHoYRo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789867608; c=relaxed/simple;
-	bh=hQ2YQtKo+lGFX5pz4R9iNvjn2ddTKSsWKeIbp79soKE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QOQX+Fcbn6vxBCgPd2FgjnSF9dDlI311/+Ux9gwoSO/6cIXIF3Qk8OI9HAJNo6IfyvC2JgdsIVEcg1JPHdXv/q/If7WpXTu6ac+/XYiuyKQPfZqfvXiw73W+y6Y9vI9rGikcC47ZPuwNDaA/J9dr9LQBHdlZ7ENEBgSDeFq+OUM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 53c3b2a6b49211f19a56ed5b684f684d-20260920
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:663688f7-5d7c-4453-8f6e-b72763eef6d6,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:7db8b62,CLOUDID:173d2fe8b43c80a999446499db76668c,BulkI
-	D:nil,BulkQuantity:0,SF:80|81|82|83|102|865|898,TC:nil,Content:0|15|50|99,
-	EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OS
-	A:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 53c3b2a6b49211f19a56ed5b684f684d-20260920
-X-User: tianyaxiong@kylinos.cn
-Received: from [10.42.13.21] [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <tianyaxiong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
-	with ESMTP id 1775970865; Sun, 20 Sep 2026 09:26:38 +0800
-Message-ID: <ac745597-8a43-43d0-b468-07896c3ac9a9@kylinos.cn>
-Date: Sun, 20 Sep 2026 09:26:35 +0800
+	s=arc-20240116; t=1789867886; c=relaxed/simple;
+	bh=1at9Ltdotc5tXpI2tdF3Lgs3zGnNUocJDhc7VN5UY2E=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=CzaZirU+dRlhqX2IdyTfzplEZYaKjjAddF6QTzFTCflpJF+6YUiaoJZ38Jb4EgNsYpQDH/aWwxD93h+iajZRgZBcTNZQJirhFS9yjmxrzOnVJoekKs8r1FWx09KXgHbVlWWwc5KVXaMH7l0Mw2yCosulHyckNqhGofHcs7w05uI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=irK9E5Sn; arc=none smtp.client-ip=45.254.49.203
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="irK9E5Sn"
+Received: from [172.16.12.48] (unknown [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4e65c9cbf;
+	Sun, 20 Sep 2026 09:15:56 +0800 (GMT+08:00)
+Message-ID: <3fa0fcbc-b6ff-4934-bb7d-b763d6f5f818@rock-chips.com>
+Date: Sun, 20 Sep 2026 09:15:52 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,92 +28,99 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/6] cpuidle: speed up do_idle() by caching the
- governor latency QoS constraint
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: daniel.lezcano@kernel.org, christian.loehle@arm.com, lenb@kernel.org,
- pavel@kernel.org, shuah@kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kselftest@vger.kernel.org
-References: <20260729061549.13419-1-tianyaxiong@kylinos.cn>
- <1789693766158145.347.seg@mailgw.kylinos.cn>
- <b81b66cc-1761-4653-9cdb-c8a8286718bf@kylinos.cn>
- <1789866017803592.362.seg@mailgw.kylinos.cn>
-Content-Language: en-US
-From: Yaxiong Tian <tianyaxiong@kylinos.cn>
-In-Reply-To: <1789866017803592.362.seg@mailgw.kylinos.cn>
-Content-Type: text/plain; charset=UTF-8
+Cc: shawn.lin@rock-chips.com, Ulf Hansson <ulfh@kernel.org>,
+ Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org,
+ linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH 2/4] pmdomain: rockchip: fix clock leak on domain probe
+ failure
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+References: <1789733258-10133-1-git-send-email-shawn.lin@rock-chips.com>
+ <1789733258-10133-3-git-send-email-shawn.lin@rock-chips.com>
+ <aq1yU47vQT5OnxLo@venus>
+ <27e3944f-81c6-48e4-8033-e30ae70f8e26@rock-chips.com>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+In-Reply-To: <27e3944f-81c6-48e4-8033-e30ae70f8e26@rock-chips.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa0bc6255e003a4kunmd3d2597e236429
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDQklIVksaQx0fT0lDH0tPGlYVFA
+	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSU
+	9PT0hVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=irK9E5Sn8gjx26N6v03fi92SxtUUQkf878PQkcEHbHH/C1VWK42Th86sM3fTjzd8Gtummu2GG0JsbdMOAUK6OxfoS9A0YI+JdD6j4Yhcf9kQrKCOOKv5svqr481yOCtYfdenEgw5M4xE2CK/z0aDIrfmtJ/FzD8V+4Ct1cq9mzI=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=VtX02XvGRhQ2FxudCuxh58xlxXnkNt9W6SpJeJT1xZI=;
+	h=date:mime-version:subject:message-id:from;
+
+Hi Sebastian
+
+在 2026/09/19 星期六 8:13, Shawn Lin 写道:
+> Hi Sebastian
+> 
+> 在 2026/09/19 星期六 1:21, Sebastian Reichel 写道:
+>> Hi,
+>>
+>> On Fri, Sep 18, 2026 at 08:07:36PM +0800, Shawn Lin wrote:
+>>> When of_clk_get() failed in the middle of the loop, the references of
+>>> the clocks acquired so far were leaked instead of being released by
+>>> the error path.
+>>>
+>>> Fixes: d909072d0521 ("soc: rockchip: power-domain: use clk_bulk APIs")
+>>> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+>>> ---
+>>
+>> Right, but this should switch
+>>
+>> pd->clks = devm_kcalloc(...);
+>>
+>> to
+>>
+>> pd->clks = devm_kzalloc(...);
+>>
+>> at the same time to ensure that clk_bulk_put() does not run over
+>> non-initialized data. Otherwise
+> 
+> Good catch, will improve it in v2.
+> 
+
+I was too quick to response, but didn't looked into devm_kcalloc, just
+guess it didn't zero the data from the name. However it does zero the
+data by passing in __GFP_ZERO. So I need to respin v3 and drop
+devm_kzalloc change.
 
 
-On 2026/9/18 20:06, Rafael J. Wysocki (Intel) wrote:
-> On Fri, Sep 18, 2026 at 4:09 AM Yaxiong Tian <tianyaxiong@kylinos.cn> wrote:
+> Thanks.
+> 
 >>
->> On 2026/9/18 03:34, Rafael J. Wysocki (Intel) wrote:
->>> On Wed, Jul 29, 2026 at 8:16 AM Yaxiong Tian <tianyaxiong@kylinos.cn> wrote:
->>>> cpuidle_governor_latency_req() is evaluated on every idle-state
->>>> selection.  It aggregates the per-CPU resume latency with the global
->>>> CPU latency and wakeup latency QoS limits
->>> True.
->>>
->>>> by repeatedly calling
->>>> get_cpu_device() and pm_qos_read_value() cpu_latency_qos_limit()
->>>> cpu_wakeup_latency_qos_limit().
->>> I would say "every time" rather than "repeatedly", but fair enough.
->>>
->>> However, those functions don't do anything expensive except for
->>> defensive checks that can be omitted.  Have you tried to omit them?
->> I haven't tried that, but I found that function_graph may introduce measurement errors, especially for very short functions.
->>>> Use ftrace's function_graph, we can see:
->>>> parent:          do_idle
->>>> parent_total_ns: 36671010505
->>>> parent_count:    5994
->>>>
->>>> SYMBOL                                                      TIME_NS    %ROOT  %PARENT      COUNT
->>>> --------------------------------------------------------------------------------------------------
->>>> do_idle                                                 36671010505  100.00%  100.00%       5994
->>>>   cpuidle_idle_call                                     35566528731   96.99%   96.99%       8570
->>>>     call_cpuidle                                        35476606844   96.74%   99.75%       8561
->>>>       cpuidle_enter                                     35472932468   96.73%   99.99%       8526
->>>>     cpuidle_select                                         52097031    0.14%    0.15%       8580
->>>>       menu_select                                          49555181    0.14%   95.12%       8580
->>>>         tick_nohz_get_sleep_length                         28843887    0.08%   58.21%       8570
->>>>         cpuidle_governor_latency_req                        9567488    0.03%   19.31%       8580
->>>>         tick_nohz_tick_stopped                              2057031    0.01%    4.15%      15695
->>>>     cpuidle_reflect                                        11427201    0.03%    0.03%       8561
->>>>       menu_reflect                                          6579506    0.02%   57.58%       8526
->>>>         tick_nohz_idle_got_tick                             2231559    0.01%   33.92%       8526
->>>>       __sysvec_apic_timer_interrupt                          105520    0.00%    0.92%          3
->>>>     tick_nohz_idle_stop_tick                                8279641    0.02%    0.02%       1475
->>>>     ---- skip
->>>>
->>>> The majority of the time spent in cpuidle_enter for CPUs entering
->>>> idle state has already been charged to the idle path. Among the
->>>> remaining contributors, cpuidle_governor_latency_req() accounts
->>>> for a non-negligible portion of the overall latency.
->>>>
->>>> Under the menu governor this shows up hot: ftrace data shows,
->>>>  cpuidle_governor_latency_req() accounts for about 19.9% of
->>>> menu_select() time (~1.9 us/call).  After caching the aggregated
->>>> value per CPU and invalidating via QoS notifiers, that share drops to
->>>> about 4.2% (~0.3 us/call), roughly a 6x reduction on this path.
->>> Is there any real-world workload in which that difference is actually visible?
->> Sorry, I only tested it under no load.
+>> Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 >>
->>>> The ftrace data before and after the optimization is shown below:
->>>> 1) original
->>>> parent:          menu_select
->>>> parent_total_ns: 160492937
->>>> parent_count:    16718
->>>>
->>>> SYMBOL                                                      TIME_NS    %ROOT  %PARENT      COUNT
->>>> --------------------------------------------------------------------------------------------------
->>>> menu_select                                               160492937  100.00%  100.00%      16718
->>> Where did you lose menu_update()?
->> Because menu_update() was optimized away by the compiler, it can't be seen in /proc/kallsyms, so it won't be traced by ftrace either.
-> How could it be optimized away?
-Sorry, "optimized away" was a poor choice of words. Nothing was removed
-- menu_update() still runs, but the compiler inlined it into its only
-caller, so no out-of-line body is emitted. No body -> no function entry
--> no call fentry site in __mcount_loc -> no kallsyms symbol -> nothing
-for function_graph to trace. GCC can do that because menu_update() is
-static, has exactly one caller (menu.c:228) .
+>> Greetings,
+>>
+>> -- Sebastian
+>>
+>>>
+>>>   drivers/pmdomain/rockchip/pm-domains.c | 2 +-
+>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/ 
+>>> pmdomain/rockchip/pm-domains.c
+>>> index 068dd4b3..b6b099b 100644
+>>> --- a/drivers/pmdomain/rockchip/pm-domains.c
+>>> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+>>> @@ -842,7 +842,7 @@ static int rockchip_pm_add_one_domain(struct 
+>>> rockchip_pmu *pmu,
+>>>               dev_err(pmu->dev,
+>>>                   "%pOFn: failed to get clk at index %d: %d\n",
+>>>                   node, i, error);
+>>> -            return error;
+>>> +            goto err_put_clocks;
+>>>           }
+>>>       }
+>>> -- 
+>>> 2.7.4
+>>>
+>>>
+> 
+> 
+
