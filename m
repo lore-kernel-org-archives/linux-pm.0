@@ -1,35 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41EE3370D6E;
-	Sun, 20 Sep 2026 22:48:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8728E370D6E;
+	Sun, 20 Sep 2026 22:48:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789944509; cv=none; b=MJbhfVbBhGbQ/Ze5tMqT/3toTm0sc3fc/mhfEAgvEuczwXeaPvTnFHBIQrWhophRQN2Q0s2QzzHTvEjjNtaDTuRZrTurKdCXQa+pmBQUUxiqmMD/QhR10lhlhMoXfTdIRYT/lCAgJfWjdSFXfHThAVKTf5fY2MpkiaRsdMmps4c=
+	t=1789944513; cv=none; b=Xve7zRCMAp+wkirMEvWzD1/7iIPFgpeXrFXh1nm2vr7b11ktGFG6JBrjGKKyTWhzRCgFPp9r8rXSUfe1dhZ9lycPoLaTHTMPC7uYSUN9OJh7c9abLTfM79o5Et9jQWyvJoFjsThL6R96EgLm7UptG7AYt2rVNvNSeUgYgx/v5s8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789944509; c=relaxed/simple;
-	bh=9s6+go964v+F7zQjZYUB7oxVX1+N07SWkvoqIRb0A4Q=;
+	s=arc-20240116; t=1789944513; c=relaxed/simple;
+	bh=s/0h16hfnfqRKZuQ/g3Nft3QV5dlSj0PbZf2kBAy5DY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fssP8LghNZxgXsecomoytJZs5CGp1ITFuo2yiS1l9QFJEEkP5EzWt7RzqYWSFwSANvPJ0eg0q+Pr5y4EUSrgdDZO0+eVtDp85I4eoCZqdcN+Uxip2auAK4Tfybc622EV76cm3HyooC8oC+6dTSSyc3qF768YAiyRX+NzG2Gk87M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SntqHsBI; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=tEc5Fi3KklHGlPxemp56S00qGKRJ7uSQSq0lUNHyO1wsOXXufH/pQeNi5/sRk7IVMC39CBp/aAvX2GHi7NJAznWpl5Shtk61nJCa3dBKXU7e27ipp+gh2DwUvXk+M4tVfA36OZooiv9v6aLWsmpFN32fH4RuinjDCe5mFOfzIJU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Z95RNuQ+; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SntqHsBI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EFD261F000FF;
-	Sun, 20 Sep 2026 22:48:23 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z95RNuQ+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B0AC1F00893;
+	Sun, 20 Sep 2026 22:48:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789944508;
-	bh=qYOnwGjU9FvWidAAprn3NnZ89m+Pt/3YnDA4zAbg1Tk=;
+	s=k20260515; t=1789944512;
+	bh=ct+O4ixtCHinAZv5so5VQfOPnRD8CixwghDCy1rLpDY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=SntqHsBIDlBzy6c6nUvfeBGaHWTzuEH3BZj0lSx1cipCgIKWOkqS6Q6wcVqUv8hff
-	 8GOX/DOyVFj5QwcZ67mOhARf5CjbjbcmD0rA4wOcvl0Q0NzIXGaleNWCX6Icp5H8Hp
-	 6iLdHbgSZXC1u5FGhjOYFv1RJzTQKcOoVEdUJlpzw+kU55BbB+zko7WMQ0iCe0Hyzh
-	 i5tpPMW8v83kZUr2qCe94Av52VM9ocLC/uNrSKqNt9Sld3BMtnljz7n58TqpM/MmjO
-	 fidtbujq/yrPg9yJJRSbAEHJQzZk8uEmv+4BN4PxmAsXRKiCNmNsQWrMGjZYbX4R7A
-	 p4I1w9U7JnEOg==
+	b=Z95RNuQ+ZkOX7UDafjLMQn8BFXJ5CU0B3Zn8Tk6vIwFw6qQlZ/HjV6G3cKUrNwkeU
+	 ek5PTdW1AlcQUoRg1bz97pwI4Cyp5HQ9wLUitwkmK6N4AH5+NR5urWOl3NtVlKFWDM
+	 p5Vq5JbGIgFcRTcGEIQIKl1I6MH4fVzvzrpCbq02MN1Tmv8addEAhc7+v5IrZAkOPT
+	 UgmszfbmdlfyKGs19Y1OUWGBdH0eHYS6F0MFtzpZy5X8alSlY15pbMjjwWzb+cdxfQ
+	 lQ5eXaY8Taz8Fkht3UwqC7qKmTNb5X7fiYUkq29aA0RIQmaqGr2R4kO3k1TuxcPyZA
+	 cHN2eapn4P52w==
 From: Linus Walleij <linusw@kernel.org>
-Date: Mon, 21 Sep 2026 00:48:09 +0200
-Subject: [PATCH v3 03/18] dt-bindings: arm: Add the actual power domains on
- U8500
+Date: Mon, 21 Sep 2026 00:48:10 +0200
+Subject: [PATCH v3 04/18] dt-bindings: mfd: db8500-prcmu: Deprecate EPOD
+ regulators
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,7 +38,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260921-ux500-power-domains-v7-1-v3-3-9352be6b86b1@kernel.org>
+Message-Id: <20260921-ux500-power-domains-v7-1-v3-4-9352be6b86b1@kernel.org>
 References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
 In-Reply-To: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -55,46 +55,66 @@ Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
  Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
 
-This file has been left in an unfinished state just defining
-the root power domain for the U8500 SoC. Fix it up by adding
-the actual existing power domains in this SoC.
+Deprecate the db8500-prcmu-regulators node and make it optional as EPOD
+control moves to generic power domains. External consumers of VAPE and
+VSMPS2 now use the actual AB8500 or AB8505 buck regulators.
 
-The PRCMU code and old regulator driver is mentioning some
-*_RET domains, this means "retention" and is a state in the
-domain and not a domain of its own.
+Stop requiring the individual regulator child nodes while retaining
+their definitions for existing device trees.
 
+Assisted-by: LLM
 Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
- include/dt-bindings/arm/ux500_pm_domains.h | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ .../bindings/mfd/stericsson,db8500-prcmu.yaml      | 22 +---------------------
+ 1 file changed, 1 insertion(+), 21 deletions(-)
 
-diff --git a/include/dt-bindings/arm/ux500_pm_domains.h b/include/dt-bindings/arm/ux500_pm_domains.h
-index 9d94801d8b89..f7a9fc101fb2 100644
---- a/include/dt-bindings/arm/ux500_pm_domains.h
-+++ b/include/dt-bindings/arm/ux500_pm_domains.h
-@@ -8,6 +8,21 @@
- #define _DT_BINDINGS_ARM_UX500_PM_DOMAINS_H
+diff --git a/Documentation/devicetree/bindings/mfd/stericsson,db8500-prcmu.yaml b/Documentation/devicetree/bindings/mfd/stericsson,db8500-prcmu.yaml
+index 4edd4a3bab88..ce9060340e0c 100644
+--- a/Documentation/devicetree/bindings/mfd/stericsson,db8500-prcmu.yaml
++++ b/Documentation/devicetree/bindings/mfd/stericsson,db8500-prcmu.yaml
+@@ -58,6 +58,7 @@ properties:
+     const: 2
  
- #define DOMAIN_VAPE		0
-+#define DOMAIN_VARM		1
-+#define DOMAIN_VMODEM		2
-+#define DOMAIN_VPLL		3
-+#define DOMAIN_VSMPS1		4
-+#define DOMAIN_VSMPS2		5
-+#define DOMAIN_VSMPS3		6
-+#define DOMAIN_VRF1		7
-+#define DOMAIN_SVA_MMDSP	8
-+#define DOMAIN_SVA_PIPE		9
-+#define DOMAIN_SIA_MMDSP	10
-+#define DOMAIN_SIA_PIPE		11
-+#define DOMAIN_SGA		12
-+#define DOMAIN_B2R2_MCDE	13
-+#define DOMAIN_ESRAM_12		14
-+#define DOMAIN_ESRAM_34		15
+   db8500-prcmu-regulators:
++    deprecated: true
+     description: Node describing the DB8500 regulators. These are mainly
+       power rails inside the silicon but some of those are also routed
+       out to external pins.
+@@ -207,26 +208,6 @@ properties:
  
+     required:
+       - compatible
+-      - db8500_vape
+-      - db8500_varm
+-      - db8500_vmodem
+-      - db8500_vpll
+-      - db8500_vsmps1
+-      - db8500_vsmps2
+-      - db8500_vsmps3
+-      - db8500_vrf1
+-      - db8500_sva_mmdsp
+-      - db8500_sva_mmdsp_ret
+-      - db8500_sva_pipe
+-      - db8500_sia_mmdsp
+-      - db8500_sia_mmdsp_ret
+-      - db8500_sia_pipe
+-      - db8500_sga
+-      - db8500_b2r2_mcde
+-      - db8500_esram12
+-      - db8500_esram12_ret
+-      - db8500_esram34
+-      - db8500_esram34_ret
  
- #endif
+     additionalProperties: false
+ 
+@@ -294,6 +275,5 @@ required:
+   - interrupts
+   - interrupt-controller
+   - '#interrupt-cells'
+-  - db8500-prcmu-regulators
+ 
+ additionalProperties: false
 
 -- 
 2.55.0
