@@ -1,56 +1,55 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 302923F23BB
-	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 09:50:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF18C3F12DE
+	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 10:03:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789897859; cv=none; b=aVXXXfQKQlOXiqB51sGEW6bNG/hzmDz9Hirzig9kASe+A7zgweAdF0rHeU+qY3U8q5jD0tGMRXYbF/jNZebXRCLuJHSz/GYSo2M4zR1BS+RlJ+MFcA6+MfnKt9ohL7y7dwf9dS25JjRieWLr3M4CHFDwe17y5bnQsw+DSZsYjuk=
+	t=1789898585; cv=none; b=AeDem7v2FgRiD0NqdEJf1a1vSaUMVakBUhL9KM6E+b1vx+5kiSLi6/4ZntHqqpMGIdM/NsVclWIqvHqE4GbO+qVn7DOR8fiASkfAIwjt8LyLl/pssyV0SuQ1RJVXQjZc19iUMkN0URaOkH0Iqrvv8oWG1xnoN7rjUwASFsIUKXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789897859; c=relaxed/simple;
-	bh=fSQDFoD2QDiHdD9sozjPUbTo2K0Q/Jp9hC3TXlCvVoI=;
+	s=arc-20240116; t=1789898585; c=relaxed/simple;
+	bh=6Z2B9efW6oQ12wEhyEUlN9Sfd4HI65DR1Bu8uFgI2HY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=On3AsJiNAH9VAiidi7o5LMvd0e/qYpK2NmqtpP+2JOgMD3VbXPsSNY0bY3yx8aAZ5zJEDj+d9Je910uf6zg/8pNrHLvXiRBlqQYXa6soJ+4UugwesZxRpzp8cAv0OtytZ0hiRkDDtWFqhR5D66IoRvKivuqdDocPYb+XkFgFQok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jq2xHSG6; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=tTZhaNqftTmZPOg43t6jKLoqhr8D7QWZPUzKtWOV5NuOw+KpykLjxMFuVJetpTXFOF08LAaICiaNHn38kHu+B3KWUYolPlLFEUMjc8Z7dB7VBMSOgeh7/2PCOI28jFA0ra8E7gOnVbC5N4lID/6I/77nkn8zEnllWbly2rCpQ90=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tco057qg; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jq2xHSG6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E58781F00898
-	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 09:50:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tco057qg"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3533E1F008A2
+	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 10:03:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789897855;
-	bh=SjYJbPqlOSw/5GKAWiHuamoPBcbEI2Y/L8HWn+XiZW0=;
+	s=k20260515; t=1789898581;
+	bh=A5oO+cMTbQ47NycpUxUJcMEhXz8+yRynclZhYTmvhis=;
 	h=References:In-Reply-To:Reply-To:From:Date:Subject:To:Cc;
-	b=jq2xHSG6KxF751GPakxt7ulzGYJ+uhk6NuIEjm3nqg9F+qqcxgZCxxlZW/8DHYSNc
-	 xq5DMDZuf2CmPKJyiV4NZd4UVZZBaUI1uTbJe0asfGSvLdr454bEctYE7yguxNGh5u
-	 H4MT1PqX3yi0nrvtq7P/L6bnlJFQZwzfGkAaXxTaKcKnWs1dpx0d41H8Ruc1J3u6V2
-	 GhH1Z+LkTg/ZJBYIz+HQHf4tb4xWs43jOf+TuE/xMtytSUa1qllafst6r5o1JRSn/b
-	 MW8uv7+X6LMiI6+iMqvI+0MoWF7FLag46rR2Be77sUp2J5KhBATQ4p7D3KSFMp/DVn
-	 FdBYWcgGGWpyw==
-Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a49a10ee5aso15949641fa.3
-        for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 02:50:55 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByt5tGgACOHLYCfsRHAhkZ1ce/v+d/wm6tWAgBvh7qNLWgHAeZv4KceMUTKPanMoFFeuZathi4mYQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kQLfQxoVjOMvEWtJYS3HchqLunf8ok607TjZ/SREoUHDjuahYF
-	iBOYVKcOLsfCJHKkiXCIbp6/WuVBQkspKKZwxykwNxHaT42gmnDUPU0gr1ltpMrT2VfuLalnfGU
-	14CrZfyWXbGxYEFSM5+KsOsgtcZJbmsA=
-X-Received: by 2002:a05:651c:1543:b0:3a3:7741:b43c with SMTP id
- 38308e7fff4ca-3a5fbf06931mr15872001fa.7.1789897854214; Sun, 20 Sep 2026
- 02:50:54 -0700 (PDT)
+	b=Tco057qgWvgMuPuc4/91xhT2/7OKkAszD83wQzIYe3mDkMMJxIBWH4LbtRvfobKUQ
+	 yAhKphrUMBpepjuzK5gt+voyHNIhtbk1Qa4gtqAR5NrZ52Fukpcpc9QKE1Si744HIW
+	 3M1wAMKAnSNIb8pbkJcltguiMRTchvMg/2OUShSix9qONcds0jja/ROfDQVtNqEEAX
+	 XP51rAlP9Kf1UOGcpl/6AeG7aWjQYJH6oAilT6SEEfZN5JeF5ACfrxtXmLdhK3aF3D
+	 creBqK1Tsbt9p3vxcj1K0VKo88iBq2tpSkIeFO4SN7/qwr62XWYK4tdL1P8ffIY7dd
+	 sjugVvnfX9l7w==
+Received: by mail-lr2-f13.google.com with SMTP id 38308e7fff4ca-3a302c06eceso15405421fa.0
+        for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 03:03:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzV/ofkU9BIQlnkhdNiIs0Dpxo7AhBt0yzsxTD6xXq1U5Yw1jOSaWb16cuThCb3auK53mPfwZOz5g==@vger.kernel.org
+X-Gm-Message-State: AFuF++la8GUefJysYJsVNlqxqxNkWZNQPDuNoQbw0mVNFiaUYpfy6heA
+	yEidFFZeS8cwFWbUPThWvkb8mVnlM9uqWe/F/BDocmJFE5QQo9Qi3/clK7zn+ammdWrLM6ZH6+E
+	n0S3r/Nu2YVnul5a+A1asM/DV15z3kjw=
+X-Received: by 2002:a05:651c:31c5:b0:3a3:7681:6d60 with SMTP id
+ 38308e7fff4ca-3a5fc0aa3afmr16089621fa.24.1789898579440; Sun, 20 Sep 2026
+ 03:02:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260913145527.18148-1-iuncuim@gmail.com> <20260913145527.18148-4-iuncuim@gmail.com>
-In-Reply-To: <20260913145527.18148-4-iuncuim@gmail.com>
+References: <20260913145527.18148-1-iuncuim@gmail.com> <20260913145527.18148-5-iuncuim@gmail.com>
+In-Reply-To: <20260913145527.18148-5-iuncuim@gmail.com>
 Reply-To: wens@kernel.org
 From: Chen-Yu Tsai <wens@kernel.org>
-Date: Sun, 20 Sep 2026 17:50:41 +0800
-X-Gmail-Original-Message-ID: <CAGb2v67jmSPeKD-kr2MsASJy7v5Mqw+FBOvX9ziE__-35W6EJA@mail.gmail.com>
-X-Gm-Features: AcwNN1XesilYUDb2NviAIFfSkaFxFlN66gg2pfogUxTJxiboh6rzWf-zN1gPLSI
-Message-ID: <CAGb2v67jmSPeKD-kr2MsASJy7v5Mqw+FBOvX9ziE__-35W6EJA@mail.gmail.com>
-Subject: Re: [PATCH v6 3/5] thermal/drivers/sun8i: get calibration data from
- two nvmem cells
+Date: Sun, 20 Sep 2026 18:02:45 +0800
+X-Gmail-Original-Message-ID: <CAGb2v64SfV4wdXwn2Si8w87r6E+PidAAKJJfUJDWqz3kHn9chg@mail.gmail.com>
+X-Gm-Features: AcwNN1WNiiqZx-dirR42ASsi4bsV2jdbUXD9xI8djW0wkB4hBsUX1s8oMylt76o
+Message-ID: <CAGb2v64SfV4wdXwn2Si8w87r6E+PidAAKJJfUJDWqz3kHn9chg@mail.gmail.com>
+Subject: Re: [PATCH v6 4/5] thermal/drivers/sun8i: Add support for A523 THS0/1 controllers
 To: Mikhail Kalashnikov <iuncuim@gmail.com>
 Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li <tiny.windzz@gmail.com>, 
 	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
@@ -70,138 +69,30 @@ On Sun, Sep 13, 2026 at 10:56=E2=80=AFPM Mikhail Kalashnikov <iuncuim@gmail=
 >
 > From: Mikhail Kalashnikov <iuncuim@gmail.com>
 >
-> The A523 processor has calibration data in two nvmem cells. To be able to
-> add support, the ability to add data from two cells into one array must b=
-e
-> added.
+> The A523 processor has two temperature controllers, THS0 and THS1.
+> THS0 has only one temperature sensor, which is located in the DRAM
+> controller. THS1 does have 4 sensors:
+> ths1_0 - "big" cores
+> ths1_1 - "little" cores
+> ths1_2 - gpu
+> ths1_3 - npu
+>
+> The user manual for the T527 processor describes 4 sensors, whereas
+> the one for the A523 describes only 3. As additional information, the BSP
+> driver was used, in which the value SUN55IW3_CAL_COM(5000) is used as
+> the calibration value in the formula; in the mainline driver it is
+> treated as the ft_deviation value. Also, in the BSP driver the NPU sensor
+> is used for both the GPU and the NPU =E2=80=94 its actual purpose is uncl=
+ear;
+> both sensors are functional and show temperature changes depending on
+> load.
 >
 > Signed-off-by: Mikhail Kalashnikov <iuncuim@gmail.com>
 
-I'd say that Sashiko's comment on "leaking" memory until the device is
-removed is not too much of a concern. Sure it could be released sooner
-since it's not used, but it's not a lot of memory.
-
 Reviewed-by: Chen-Yu Tsai <wens@kernel.org>
 
-> ---
->  drivers/thermal/sun8i_thermal.c | 81 +++++++++++++++++++++------------
->  1 file changed, 53 insertions(+), 28 deletions(-)
->
-> diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_ther=
-mal.c
-> index 1412bce63..360654880 100644
-> --- a/drivers/thermal/sun8i_thermal.c
-> +++ b/drivers/thermal/sun8i_thermal.c
-> @@ -300,43 +300,68 @@ static int sun50i_h6_ths_calibrate(struct ths_devic=
-e *tmdev,
->
->  static int sun8i_ths_calibrate(struct ths_device *tmdev)
->  {
-> -       struct nvmem_cell *calcell;
-> +       struct nvmem_cell *calcell =3D NULL;
->         struct device *dev =3D tmdev->dev;
-> -       u16 *caldata;
-> -       size_t callen;
-> +       struct device_node *np =3D dev_of_node(dev);
-> +       struct property *prop;
-> +       const char *cellname;
-> +       u8 *caldata =3D NULL;
-> +       size_t callen =3D 0;
->         int ret =3D 0;
->
-> -       calcell =3D nvmem_cell_get(dev, "calibration");
-> -       if (IS_ERR(calcell)) {
-> -               if (PTR_ERR(calcell) =3D=3D -EPROBE_DEFER)
-> -                       return -EPROBE_DEFER;
-> -               /*
-> -                * Even if the external calibration data stored in sid is
-> -                * not accessible, the THS hardware can still work, altho=
-ugh
-> -                * the data won't be so accurate.
-> -                *
-> -                * The default value of calibration register is 0x800 for
-> -                * every sensor, and the calibration value is usually 0x7=
-xx
-> -                * or 0x8xx, so they won't be away from the default value
-> -                * for a lot.
-> -                *
-> -                * So here we do not return error if the calibration data=
- is
-> -                * not available, except the probe needs deferring.
-> -                */
-> -               goto out;
-> +       of_property_for_each_string(np, "nvmem-cell-names", prop, cellnam=
-e) {
-> +               size_t len;
-> +               u8 *caldatapart;
-> +
-> +               calcell =3D of_nvmem_cell_get(np, cellname);
-> +               if (IS_ERR(calcell)) {
-> +                       if (PTR_ERR(calcell) =3D=3D -EPROBE_DEFER)
-> +                               return -EPROBE_DEFER;
-> +                       /*
-> +                        * Even if the external calibration data stored i=
-n sid is
-> +                        * not accessible, the THS hardware can still wor=
-k, although
-> +                        * the data won't be so accurate.
-> +                        *
-> +                        * The default value of calibration register is 0=
-x800 for
-> +                        * every sensor, and the calibration value is usu=
-ally 0x7xx
-> +                        * or 0x8xx, so they won't be away from the defau=
-lt value
-> +                        * for a lot.
-> +                        *
-> +                        * So here we do not return error if the calibrat=
-ion data is
-> +                        * not available, except the probe needs deferrin=
-g.
-> +                        */
-> +                       goto out;
-> +               }
-> +
-> +               caldatapart =3D nvmem_cell_read(calcell, &len);
-> +               nvmem_cell_put(calcell);
-> +               calcell =3D NULL;
-> +               if (IS_ERR(caldatapart)) {
-> +                       ret =3D PTR_ERR(caldatapart);
-> +                       goto out;
-> +               }
-> +
-> +               caldata =3D devm_krealloc(dev, caldata, callen + len, GFP=
-_KERNEL);
-> +               if (!caldata) {
-> +                       kfree(caldatapart);
-> +                       ret =3D -ENOMEM;
-> +                       goto out;
-> +               }
-> +
-> +               memcpy(caldata + callen, caldatapart, len);
-> +               callen +=3D len;
-> +               kfree(caldatapart);
->         }
->
-> -       caldata =3D nvmem_cell_read(calcell, &callen);
-> -       if (IS_ERR(caldata)) {
-> -               ret =3D PTR_ERR(caldata);
-> +       if (!caldata)
->                 goto out;
-> -       }
->
-> -       tmdev->chip->calibrate(tmdev, caldata, callen);
-> +       tmdev->chip->calibrate(tmdev, (u16 *)caldata, callen);
->
-> -       kfree(caldata);
-> +       devm_kfree(dev, caldata);
-> +       caldata =3D NULL;
->  out:
-> -       if (!IS_ERR(calcell))
-> +       if (!IS_ERR_OR_NULL(calcell))
->                 nvmem_cell_put(calcell);
->         return ret;
->  }
-> --
-> 2.55.0
->
+I think we can ignore Sashiko's concerns for this patch.
+
+1. calibration likely happens at room temperature
+2. it is not the drivers responsibility to guard against incorrect
+   device trees
