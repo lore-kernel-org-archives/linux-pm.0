@@ -1,158 +1,131 @@
-Received: from mail-oa2-f9.google.com (mail-oa2-f9.google.com [74.125.231.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C465D3D3CE4
-	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 06:42:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 560A1393DE0;
+	Sun, 20 Sep 2026 08:01:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.34.216
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789886529; cv=none; b=ilbz937Je3qPd5GA9POf+Fk7wNSeEhXenqkQaiZEyaDi0rr510AAbmio1gJE0mL0xXIKiYJdt+HALaV9qLQjU70Ym7Sec0eCaBITPr+uRDXJ4SuwBxyrL/2HpsuDL4JF6ae6Kp2ZUWKO2YmsWbXMyf2lUwPd9tI3hPKg46/2/Go=
+	t=1789891270; cv=none; b=nxnrXgKAJkpkWhxrthy1E0WAXO9v9+gjimxDj3IQKjQebKxXF8EPf9PBvzPaP7ktJGCvnGAHFsW/IbyhGRiPnnF4+7p2R7XyJuuygKalFx0Hft5cYL7d+y3S40kY3HWkgFehkf7SXzDhZy/Bw7LvBKSQdDVch9u6iec0e+gdQU8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789886529; c=relaxed/simple;
-	bh=bKFyQFP+H9CKKJRClIaGqP/oH3xakPCq/Uh034txxHg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NiWLVDfyNx/G6zQEffbdprBYD7hfAGUjyX07ysyiEl2+nA0VUQcI/F2u8Aa3eEk3UvbP5X4bIGwosTjWTJCZDxvUfRv273NqhbevTqohOwM0Ib1Qcqo77NFHmNql7W5Qs0vgJuIh+IIJlheRQcSoJGwKhDYcGK8OOfsJs9rc5BM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mNpQXyCs; arc=none smtp.client-ip=74.125.231.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789891270; c=relaxed/simple;
+	bh=Y5tPHoLczDWNnwZ5iXFWT2WFskib+hCciE0xxvvh5Bg=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 In-Reply-To:References; b=HPgi9efsFEBlvJ8OAHHS2ifZ802G36qpjCNc5Wvk4y2qgIsRhts0lU7pyaL+Zv/wRLTZrfS80isX4ccJreiWQHqaTSUbP42OnHdP2HngJx/fvp7rR6ylFNzTfNe+DCRKFs37EuNrQeNctW+kL/o/ZYbFtDwl/ortpmz9F/aCRT4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com; spf=none smtp.mailfrom=linux.spacemit.com; dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b=dC5IRRtI; arc=none smtp.client-ip=54.206.34.216
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.spacemit.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mNpQXyCs"
-Received: by mail-oa2-f9.google.com with SMTP id 586e51a60fabf-4840f0c24bbso974270fac.1
-        for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 23:42:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789886526; x=1790491326; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kmH2de0kdW01Esae1dcXkd/FPy1YNazdkMTeV2gFsXY=;
-        b=mNpQXyCsfKZ+q0GPbYAp6+t6bwoIw/uGc0mECXK6WdVDxQGkg4NzvvlKWkVPNAz0py
-         a2C6b7Nt7XuzQQM01MyrH77sG0oGeUy/+ADMDbeUybzT7y4513IeIzA2KTxtqGA7dl8c
-         PBTG7KKe/SJMms8U59TEfHU0dyGaH2Dr2MIU9d4MJNn4kmz5EH9L6WHmvw8TgW4Z6ylz
-         MrF3npDCq0ay4gnij7JGDZUKLwDfKvNQs2sxBF0APl2lVkj7BGFi8uQC7/kwvz1B6IUM
-         1SMDMX+SwyJHikC3T72g6BZhN1Y9LoJM6ctu8APvA3eU+mGps/jozvmufd7QT6IbhOiC
-         B3YQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789886526; x=1790491326;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kmH2de0kdW01Esae1dcXkd/FPy1YNazdkMTeV2gFsXY=;
-        b=gmnwYNrrJL0Q/l8ggOlzHsSVK886wFroUhU8toI0Wdmj5lGjwq4TPxAXHt/axKa9et
-         iRJ2AxFRs9+WSoUBN0ZLPNcAldOG2p9WCVcVID2r0c8pdoKouwW7ajAZLVFul8Tc2uNs
-         A6UmsFph95o5rY2xEI5I6IczMyFrkH7bTJLzM+fb1cSy80tItbJYAkQQ+KxaC2FhrFDp
-         4mNftfOHsDaWcfCOPVKKBaB5zigfKpWRNZVni07eeochebSOcrxSoVy3Q6jLFrhQjhZI
-         lww3uNJcuDUGNePCSbw1GET1/NzKjhDBVBXr5V2p70TwD49JhT2yCzwwZrBIaPc+4SFO
-         KLlw==
-X-Forwarded-Encrypted: i=1; AKwUvBzN+du7NeUuJT0t9FY/TpQNcsFtrCbFlWeoZFBG7kHeDpSJYFtzwtjLESwkm4GmGZ5+ypUs1I+A7g==@vger.kernel.org
-X-Gm-Message-State: AFuF++mf+LwOcJgJEfNJ9G7TYgxddqxKtgya/34W6fD7Y0/tcCfLXDW0
-	ZeuZrgY8c9gtPpFDLMMJi4DoAmO1xGfptb/O+Q0qPtyoyaXmPzRo9hf4
-X-Gm-Gg: AYBFou1iyFeAPhrkW+FsumIOf3uRGQOO4ZJbKTK+zKTfJnO3D41bR/bfN5Hm6zCPfwl
-	3M32LG+OdoG0idTlL8SDtfFtkGOgd5ItJo288uBJOoeCUvdMkTWnLiKTnkmm7NwATPVs7OONSb1
-	IUVPEVH6oU+0DwB1Xjwlw7jn41umKnjhlZP16XcA01OkX53XcgDYgikLmftgf0b97QmwjoDwRo0
-	Qqj2TGsKDcL53OUNtC1aHOnVgYP0pywffOyCt3J5nAbAZdUErzE1qzgELk6TL47xLv5DxLbEE0I
-	wkT6KehkSufBD7dqFQiHadJIO7y1FoSb+sV38owwoFNQKfjPzdRA6O7/R7MPJnnBfgEDsD5CF6i
-	S51AcAnR8Oti4dYrQgmkKJa/Ouu7bwoikUVTThxMO8JJLmx8YJ+i4nUKkgKyOkTSnkiPswW/7aA
-	ncCE6Ig7EGnP7bObKKfhoq5H4efyouZISibSjHUZvbYnC/Pu5ZPpVz9Hlq6GiwTRgx2VzHoVwRP
-	g5tnUDyG4+bTZ0=
-X-Received: by 2002:a05:6820:1f04:b0:6bd:af9e:a802 with SMTP id 006d021491bc7-6ca9c94f259mr6638022eaf.57.1789886526512;
-        Sat, 19 Sep 2026 23:42:06 -0700 (PDT)
-Received: from ?IPV6:2600:8804:5716:d800::2620? ([2600:8804:5716:d800::2620])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-48820f30fe9sm4490104fac.4.2026.09.19.23.42.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 19 Sep 2026 23:42:05 -0700 (PDT)
-Message-ID: <fff86d6b-e4e6-4d90-8373-3ee32432807a@gmail.com>
-Date: Sun, 20 Sep 2026 01:42:02 -0500
+	dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b="dC5IRRtI"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
+	s=mxsw2412; t=1789891218;
+	bh=etqlwVVIRZowk3f8uquWoSpq/cd+t/r2MmegfPcTx4c=;
+	h=Mime-Version:Date:Message-Id:Subject:From:To;
+	b=dC5IRRtIJ/5sHCSunLfzHAt7GvE5WmEKw6BLIpj/sfoXQkaKorUs9N7QxmsyBGF3v
+	 dH3qy6S7TmxtqJGcUvi773CWB7Ki8gzhkJBQcgo8OATZLzc4SFqGBvfemuLS3DDKDT
+	 fTLC6CNxNyAxnYaxPbowWBJ9ZmqHBJ0uFMed8ej4=
+X-QQ-mid: zesmtpsz6t1789891212tfd2b0654
+X-QQ-Originating-IP: ++rQGpFiadxZGjlXFjk0ZmTswmyw1WBX7/+cHBxjjtM=
+Received: from = ( [120.237.158.181])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Sun, 20 Sep 2026 16:00:10 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 12539381814827415666
+EX-QQ-RecipientCnt: 16
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] dt-bindings: power: supply: battery: allow longer
- ocv-capacity tables
-To: Henrik Grimler <henrik.grimler@axis.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260918-rbrue-suez-upstreaming-battery-ocv-table-128-v1-1-f477ef39ef0d@gmail.com>
- <20260918082921.GA1515928@pc67698-2615.sto.se.axis.com>
-Content-Language: en-US
-From: Ryan Brue <ryanbrue.dev@gmail.com>
-In-Reply-To: <20260918082921.GA1515928@pc67698-2615.sto.se.axis.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Mime-Version: 1.0
+Content-Type: multipart/signed;
+ boundary=e109c0058aed249261fbb125f7ffb89a9c6eec3c2886db4215a836200e53;
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+Date: Sun, 20 Sep 2026 16:00:07 +0800
+Message-Id: <DLJZH96MO7V1.11IN77H2734TN@linux.spacemit.com>
+Cc: "Rob Herring" <robh@kernel.org>, "Krzysztof Kozlowski"
+ <krzk+dt@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>, "Ulf Hansson"
+ <ulfh@kernel.org>, "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt"
+ <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre
+ Ghiti" <alex@ghiti.fr>, <devicetree@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <spacemit@lists.linux.dev>,
+ <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, "Troy Mitchell"
+ <troy.mitchell@linux.spacemit.com>
+Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
+From: "Troy Mitchell" <troy.mitchell@linux.spacemit.com>
+To: "Icenowy Zheng" <uwu@icenowy.me>, "Yixun Lan" <dlan@kernel.org>
+In-Reply-To: <8301abce221e33d827053c54a64aed05f3227f7f.camel@icenowy.me>
+References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
+	<20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
+	<a4359efeee2220903a05a2383a651ec8ec7284b7.camel@icenowy.me>
+	<20260918230107-GKC297024@kernel.org>
+	<33b33b2b79763d410bc2e5b4ef46c305aaf6f7c8.camel@icenowy.me>
+	<20260919095936-GKA322102@kernel.org>
+	<8301abce221e33d827053c54a64aed05f3227f7f.camel@icenowy.me>
 Content-Transfer-Encoding: 7bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpsz:linux.spacemit.com:qybglogicsvrgz:qybglogicsvrgz3a-0
+X-QQ-XMAILINFO: NbgegmlEc3JuESYaEd5BhmnZaMOyQ3XiW1zRP3ssJWGEMRyC1cyRmF7M
+	IFxYhhZZehcgH4QJh/37E6fEaPt3KrEOsgPWDoO+hCXKGEtsjJ8B1Oq1SKwz+CA8K2iI5dE
+	Oy2sR/YgCJ4ViEK6Gw8J1RaHXzX0rf3PIia0Fn9fTlsqcK3TCkRmSzdkXkBmwkKGE5h632c
+	fw1ZLosNSQL9w0XWifdAmQN0lL4LLNLo+GNRX1VhlN+/IY7i6/2rl80S9woWmeBW101B6Xr
+	+BHr2HJKdX278Ep8ZN8y7Di9AkSkIAnAuEssrRwakXyvjcM6OyfGRff9z9JoHo0nYzDfA0N
+	DRflOYjtXSZ2zqPoUXc+QidYNX++hkO9Mn/dnoMaGokEUgx6XlPtkUHQHoUAhuwW7Py8ege
+	FVx+thQ1mh4Rg5K02HtHKk0/ktxlbtLMOc4+VVBAaYpRCreP32kiN8m5ehDMtu658A1lMP9
+	8O+dXKdqVw7MQUc3HU/YvAx3d5f4Z+0l7WWiwn9Ns94pIGRfY7mxgNclOH6knrBdzfsa+uj
+	+2lN8DUSznh6Eej+rpWN5eYaLdY3nD8SM9HVAaFQ/7tnetmMdj0DZBQEf8e+B04dc8Q/P9/
+	2DN7HJuU92uSQ0zK/UGBrdB+k9oqbSS3wHzEzl0BCszxY8oj/ad/BSRzPlY5gGQa4EVYctc
+	7A+3vggV1hd4XLTsu8/iWivCzTJ+NONOiogDNgZxARFfZiX4UW/fEhvLHPzgpIZoHY7PrcL
+	GJdo5GF9Mjwa79u8Bmm17CsoZp8nzrnaYeo++SgJNGt+e00I+rGZewriFL9IXTFKqsDKmIC
+	1AikP1WTI0iV/fvVtJ8rSsSuJ1Ypq6R7/AAg92VgU5/5Ee0/BHaWxmfL+7R8XqUciTFKL+5
+	BZvRjU/HOhPxsWvN7Xter8lYgpOOx7IJF1Duk6aaK+pswTAtM23F/lQGEko/hUb4bfS+3Tz
+	nEKNtSkmvxcZ6oj+SRuAdxucCQyiV3Tt7DjndMRMUf7GJLd9BbD8ogENnVgr/wNK6gpXL0w
+	TmyxaCJbv7yN2XDv5p46KM943WXr2Q3WZW56TYaXqi3aYmDLzJ12BeVcnnX09NAYyQcGjPY
+	7zzUmALEMnIVgyjBzs/SkY7rBcjpcHJA5naLmyArTz3RFOd8XIS7ek=
+X-QQ-XMRINFO: OD9hHCdaPRBwH5bRRRw8tsiH4UAatJqXfg==
+X-QQ-RECHKSPAM: 0
 
-On 9/18/26 3:29 AM, Henrik Grimler wrote:
-> Hi Ryan,
+--e109c0058aed249261fbb125f7ffb89a9c6eec3c2886db4215a836200e53
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+
+On Sat, Sep 19, 2026 at 09:56:12PM +0800, Icenowy Zheng wrote:
+> I have seen pending patch for it with multiple revisions [1], the dt
+> binding is even already ACKed by Conor, so I think it's not a big
+> problem here.
 >
-> On Fri, Sep 18, 2026 at 12:36:31AM -0500, Ryan Brue wrote:
->> ocv-capacity-table-N has been capped at 100 points since battery.txt was
->> converted to YAML, where the limit arrived without a stated reason.
->>
->> The MT6397 fuel gauge is characterised per temperature by a table the
->> Amazon Fire HD 10 (2017) vendor device tree carries with 126 points, of
->> which 122 are expressible here - the remainder are greater than 100%
->> discharged, so the binding excludes those points. Boards carrying this
->> PMIC fuel gauge would need more than 100 points to describe the pack with
->> the generic property. Raise the cap to 128.
->>
->> Assisted-by: LLM
->> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
->> ---
->> No kernel change goes with this. power_supply_get_battery_info() sizes each
->> ocv-capacity-table-N from the property itself -- it reads the length with
->> fwnode_property_count_u32() and devm_kcalloc()s that many entries -- so
->> maxItems in the binding is the only cap on points per table.
->> POWER_SUPPLY_OCV_TEMP_MAX bounds the number of tables, not their length.
->>
->> The consumer that wants this is an MT6397 PMIC fuel gauge not yet posted;
->> its pack is characterised at 126 points per temperature in the vendor's
->> kernel (Amazon Fire OS, based on Linux 3.18), with 122 of those points
->> being expressible with the generic property (the rest are greater than
->> 100%).
-> Allowing for points > 100 % could make sense, but why would you need
-> 122 points up to 100 %? If the vendor kernel has several values at for
-> example 20 %, then a better solution is probably to take the average
-> of them.
->
-> I think only reason to have multiple values for the same percentage
-> would be if hysterersis (see for example this open-access article [1]
-> for discussion about hysteresis) is taken into account, i.e. having
-> one table for charge direction, and one table for discharge direction,
-> but I don't think any driver uses multiple tables to handle something
-> like that.
->
-> [1] https://doi.org/10.1038/s41598-019-51474-5
->
-> Best regards,
-> Henrik Grimler
-Hi Henrik,
-Yeah, you're right. To be honest, I didn't think about that, and should 
-have.
+> [1] 20260903092347.620060-1-joshua.yeong@starfivetech.com
 
-On why there's so many points: the vendor's table isn't indexed by 
-percentage at all. A row is a fixed 54 mAh step of charge - 
-step_of_qmax, which the meter converts to mAh directly - and the 
-percentage column is just that rounded, round(i * 54 * 100 / Qmax), 
-which fits every row of all five tables exactly. At 0.85% per row about 
-one in six repeats, so the duplicates carry nothing. I should also 
-correct the figures I sent: 126/122 is a different cell in the same 
-vendor file. This unit's tables are 120 points and none of the points 
-are above 100% in this one.
+ESOS is based on RT-Thread, and we currently have no plans to upstream
+our ESOS changes to RT-Thread. Our team's scope here is upstream
+open-source support; upstreaming ESOS itself is outside that scope.
 
-I don't need to model the vendor one to one. I measured what dropping 
-resolution costs, and decimating to 100 points changes the capacity I 
-report by at most 1% - so it fits the binding as it stands, and the 
-justification I sent doesn't hold.
+The pending Linux RPMI patches are useful progress, but making the
+complete solution work on K3 still requires substantial integration,
+validation and maintenance work across Linux, OpenSBI and ESOS. We
+cannot assume that someone in the community will take on that work.
 
-The only thing I can see still being worth raising is 101 rather than 
-128. Capacity percent is capped at 100, and 0..100 inclusive is 101 
-values, so if I'm not mistaken no board can express 1% granularity today 
-if they have points at both 0 and 100. I'm not sure that's worth a patch 
-on its own, so I'm fine dropping this, or doing a v2 allowing 101 values.
+I am not opposed to RPMI, nor does this require ESOS to be merged into
+RT-Thread first. My concern is who will bring up and maintain the
+complete solution. If our team is not pursuing that work and nobody
+else takes it on, should power-domain support remain blocked
+indefinitely?
 
-Best regards,
-Ryan Brue
+Could we move forward with the direct-control driver, with its
+mutual exclusion with ESOS power-domain management clearly documented,
+and revisit RPMI when someone is ready to support that path?
+
+                                            - Troy
+
+--e109c0058aed249261fbb125f7ffb89a9c6eec3c2886db4215a836200e53
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iIMEABYKACsWIQSL4Ay2cExaPXAQcU2YCe+A+TM0LwUCaq+Shw0caUB0cm95LXku
+b3JnAAoJEJgJ74D5MzQvKbEBAM3JGT8zMz/qwCLlFLbDvQLCE51eHJZ+3Dft2z67
+kBvuAQDFfQQClaI2mk0/LoEmsI9nsFXig4tdzJ/NoEsP9pSPAg==
+=PdYA
+-----END PGP SIGNATURE-----
+
+--e109c0058aed249261fbb125f7ffb89a9c6eec3c2886db4215a836200e53--
