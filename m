@@ -1,34 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F4159486639;
-	Sun, 20 Sep 2026 22:49:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DD9E486647;
+	Sun, 20 Sep 2026 22:49:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789944548; cv=none; b=j1Klcn/+kxOvBzIdkPnN20jWOOhIqp0tT1Xe1xXjQC+xl4trF6raXNDv2h5nnODGXKQt0mII3QTFiNSQrTfqKZk0x6Uo0YZ2XBel2sv5UMYHyVraAAKHJgqmBpl+9eRRyC8nLeS+qwYavh3N1r1qSwSbPIbhVEqYP+qLxhBVM0k=
+	t=1789944552; cv=none; b=FY5hu3+Xthl4DtpfnwlGDqsLAnGWF+I6T0qyBH4KqI+sNU7MPsp7LS24rTip8NYIF5xVzMnzKm+XbtTLQUQiEQ/HL6YQYo7/KQ12SErkp/bbCwFJinAICH/fsil1nt9YVu2NxiGjc6mDsLLrega8Jwe2uEYo5ib+92oXa30Wgww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789944548; c=relaxed/simple;
-	bh=9ESZC2kAiIQ34d9RGOlJO31tspF69xxIkSrfZ5ZpUoo=;
+	s=arc-20240116; t=1789944552; c=relaxed/simple;
+	bh=dOysZtx2pQ0gXkBSwTGxeJZDrh2GrZbR4+x7mdVvBSY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=irfeK5Uh7KrwMEN4pnXQOHXcbKy5YOQHeFuX4gf3ywMLs21QzqE9Uut6qSTJ4I+jqMUobu2/H2g7qVTZLUxilNzjAl3+gUyu7qIHnC5AAGwVxM6bhiiosaHNg44Ejb0Agur5S4Ov5L8KqZfc3rf3Av96NSe1mefUSo0/Lrnuf6s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OTIehBHv; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=TN5GFFDkpLXmiUK/zHZbpdcOfVok4+6MxRbeyhnH/6NFo6+I0P6PVJ/10EWplNVe56KFpT9oLqumSC5giyvTpUc2/F/7vf6DnwzdanN3GyP3BOkmyFNMs4QVeaVMRYV7OHVa2ljO/C0nRJyvOK/UBEn4aWNcnSMgsfqGN/VIMIA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lgRp/fmO; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OTIehBHv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 054201F000FF;
-	Sun, 20 Sep 2026 22:49:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lgRp/fmO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43D7F1F0089A;
+	Sun, 20 Sep 2026 22:49:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789944546;
-	bh=kcHEEuxa8gkPmRZrK0Eoct63x6eoW301jlgZRtUKdPI=;
+	s=k20260515; t=1789944551;
+	bh=p/Bug8kcoCTJvkuCSvSWkWwMkK0rongkUVUrvU0VBQs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=OTIehBHvHDcjY7d3hGYLlQtOFpu2l3HavymxseF36BG742iId+XTGXfeyJxCxhW3w
-	 r6u2ybzXJbO1W4xFMoO6m5NwvvtPYo27fb/E5PJq1vJtt4Pnym1VH/aC6AppGb3nnF
-	 16pYJFD0Ee653Tkm5yBLvOLKqScyOvHF1CB9F6GzKK/xsNsS7jC3K87aCyaw6wt/8N
-	 aRd4cNyVJAitD+5YUWRUIxmLFWwUB/rnXbRe4WBvciCl/Qtx1kprcXt+gmtMG1D0Vf
-	 lrTpLMhJ1G7RAgCCZ8A4XqupKbY6kwHsFmNcF51Vj9/I36iULnUBqVs1O9fzXl4S9e
-	 +NlOacl3pfnrw==
+	b=lgRp/fmOrVbSq3GX9ARPJOQaymFNLixFWxaWVbCxLakQHQ/Z+ptRid2wLVXHI5PWQ
+	 tu0mQdRCYnRv741w1MrUOeT6oPZY21xhMk8ndbm41uGcqUVe8UW6PkUeXWLr135PTb
+	 +Z3fyhUufJRj9pS757chUbIt/rRX9wveW88to/oO/YkmLTwfTnSO/qVEeo6CKeFuxC
+	 tBs4oKMGnDFeKna4bcQXxXa315mAM+Rvgbmtx3LjGr2CHj/PtN+IknyrcSFjwxiDUh
+	 E7opLjoi6blUQRhthPtMrbF2riynWJbhO/19IIE8l3+7XrQmF9MTVtaJstT5zTjqk6
+	 ee+mSCVNJQApg==
 From: Linus Walleij <linusw@kernel.org>
-Date: Mon, 21 Sep 2026 00:48:18 +0200
-Subject: [PATCH v3 12/18] pmdomain: st: ux500: Control DB8500 EPODs
+Date: Mon, 21 Sep 2026 00:48:19 +0200
+Subject: [PATCH v3 13/18] drm/mcde: Use power domain for display power
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,7 +37,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260921-ux500-power-domains-v7-1-v3-12-9352be6b86b1@kernel.org>
+Message-Id: <20260921-ux500-power-domains-v7-1-v3-13-9352be6b86b1@kernel.org>
 References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
 In-Reply-To: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -53,501 +53,241 @@ Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
  dmaengine@vger.kernel.org, Linus Walleij <linusw@kernel.org>
 X-Mailer: b4 0.14.3
 
-Move the DB8500 EPOD state handling into the Ux500 power-domain driver.
+Replace explicit EPOD regulator handling with runtime PM.
 
-Keep the old regulator driver mutually exclusive with the pmdomain driver.
+Use the MCDE power domain and drop the regulator dependency.
 
 Assisted-by: LLM
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
- arch/arm/mach-ux500/Kconfig               |   2 +-
- drivers/pmdomain/st/ste-ux500-pm-domain.c | 355 +++++++++++++++++++++---------
- drivers/regulator/Kconfig                 |   1 +
- 3 files changed, 254 insertions(+), 104 deletions(-)
+ drivers/gpu/drm/mcde/mcde_clk_div.c |  4 +--
+ drivers/gpu/drm/mcde/mcde_display.c | 11 +++---
+ drivers/gpu/drm/mcde/mcde_drm.h     |  2 --
+ drivers/gpu/drm/mcde/mcde_drv.c     | 68 ++++++++++++-------------------------
+ drivers/gpu/drm/mcde/mcde_dsi.c     |  1 -
+ 5 files changed, 29 insertions(+), 57 deletions(-)
 
-diff --git a/arch/arm/mach-ux500/Kconfig b/arch/arm/mach-ux500/Kconfig
-index c18def269137..56636c993f49 100644
---- a/arch/arm/mach-ux500/Kconfig
-+++ b/arch/arm/mach-ux500/Kconfig
-@@ -26,7 +26,7 @@ menuconfig ARCH_U8500
- 	select PL310_ERRATA_753970 if CACHE_L2X0
- 	select PM_GENERIC_DOMAINS if PM
- 	select REGULATOR
--	select REGULATOR_DB8500_PRCMU
-+	select UX500_PM_DOMAIN
- 	select REGULATOR_FIXED_VOLTAGE
- 	select SOC_BUS
- 	select RESET_CONTROLLER
-diff --git a/drivers/pmdomain/st/ste-ux500-pm-domain.c b/drivers/pmdomain/st/ste-ux500-pm-domain.c
-index d90a563cd6f3..b31a36a4acd1 100644
---- a/drivers/pmdomain/st/ste-ux500-pm-domain.c
-+++ b/drivers/pmdomain/st/ste-ux500-pm-domain.c
-@@ -6,174 +6,292 @@
-  *
-  * Implements PM domains using the generic PM domain for ux500.
-  */
-+#include <linux/cleanup.h>
- #include <linux/device.h>
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/printk.h>
--#include <linux/slab.h>
- #include <linux/err.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/db8500-prcmu.h>
-+#include <linux/mutex.h>
+diff --git a/drivers/gpu/drm/mcde/mcde_clk_div.c b/drivers/gpu/drm/mcde/mcde_clk_div.c
+index 8c5af2677357..1a22e6233946 100644
+--- a/drivers/gpu/drm/mcde/mcde_clk_div.c
++++ b/drivers/gpu/drm/mcde/mcde_clk_div.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/clk-provider.h>
+ #include <linux/io.h>
+-#include <linux/regulator/consumer.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "mcde_drm.h"
+ #include "mcde_display_regs.h"
+@@ -95,7 +95,7 @@ static unsigned long mcde_clk_div_recalc_rate(struct clk_hw *hw,
+ 	 * It will come up with 0 in the divider register bits, which
+ 	 * means "divide by 2".
+ 	 */
+-	if (!regulator_is_enabled(mcde->epod))
++	if (!pm_runtime_active(mcde->dev))
+ 		return DIV_ROUND_UP_ULL(prate, 2);
+ 
+ 	cr = readl(mcde->regs + cdiv->cr);
+diff --git a/drivers/gpu/drm/mcde/mcde_display.c b/drivers/gpu/drm/mcde/mcde_display.c
+index 257a6e84dd58..52f071bb347c 100644
+--- a/drivers/gpu/drm/mcde/mcde_display.c
++++ b/drivers/gpu/drm/mcde/mcde_display.c
+@@ -7,7 +7,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/dma-buf.h>
+-#include <linux/regulator/consumer.h>
++#include <linux/pm_runtime.h>
+ #include <linux/media-bus-format.h>
+ 
+ #include <drm/drm_device.h>
+@@ -1168,16 +1168,15 @@ static void mcde_display_enable(struct drm_simple_display_pipe *pipe,
+ 	int ret;
+ 
+ 	/* This powers up the entire MCDE block and the DSI hardware */
+-	ret = regulator_enable(mcde->epod);
++	ret = pm_runtime_resume_and_get(mcde->dev);
+ 	if (ret) {
+-		dev_err(drm->dev, "can't re-enable EPOD regulator\n");
++		dev_err(drm->dev, "can't enable MCDE power domain\n");
+ 		return;
+ 	}
+ 
+ 	dev_info(drm->dev, "enable MCDE, %d x %d format %p4cc\n",
+ 		 mode->hdisplay, mode->vdisplay, &format);
+ 
+-
+ 	/* Clear any pending interrupts */
+ 	mcde_display_disable_irqs(mcde);
+ 	writel(0, mcde->regs + MCDE_IMSCERR);
+@@ -1327,9 +1326,9 @@ static void mcde_display_disable(struct drm_simple_display_pipe *pipe)
+ 		spin_unlock_irq(&crtc->dev->event_lock);
+ 	}
+ 
+-	ret = regulator_disable(mcde->epod);
++	ret = pm_runtime_put_sync_suspend(mcde->dev);
+ 	if (ret)
+-		dev_err(drm->dev, "can't disable EPOD regulator\n");
++		dev_err(drm->dev, "can't disable MCDE power domain\n");
+ 	/* Make sure we are powered down (before we may power up again) */
+ 	usleep_range(50000, 70000);
+ 
+diff --git a/drivers/gpu/drm/mcde/mcde_drm.h b/drivers/gpu/drm/mcde/mcde_drm.h
+index ecb70b4b737c..d4ff7606d917 100644
+--- a/drivers/gpu/drm/mcde/mcde_drm.h
++++ b/drivers/gpu/drm/mcde/mcde_drm.h
+@@ -91,8 +91,6 @@ struct mcde {
+ 	/* Locks the MCDE FIFO control register A and B */
+ 	spinlock_t fifo_crx1_lock;
+ 
+-	struct regulator *epod;
+-	struct regulator *vana;
+ };
+ 
+ #define to_mcde(dev) container_of(dev, struct mcde, drm)
+diff --git a/drivers/gpu/drm/mcde/mcde_drv.c b/drivers/gpu/drm/mcde/mcde_drv.c
+index 53275b575f0c..d5a2cc98c65b 100644
+--- a/drivers/gpu/drm/mcde/mcde_drv.c
++++ b/drivers/gpu/drm/mcde/mcde_drv.c
+@@ -61,7 +61,7 @@
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
+-#include <linux/regulator/consumer.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ 
+@@ -284,45 +284,25 @@ static int mcde_probe(struct platform_device *pdev)
+ 	mcde->dev = dev;
+ 	platform_set_drvdata(pdev, drm);
+ 
+-	/* First obtain and turn on the main power */
+-	mcde->epod = devm_regulator_get(dev, "epod");
+-	if (IS_ERR(mcde->epod)) {
+-		ret = PTR_ERR(mcde->epod);
+-		dev_err(dev, "can't get EPOD regulator\n");
+-		return ret;
+-	}
+-	ret = regulator_enable(mcde->epod);
++	pm_runtime_enable(dev);
++	ret = pm_runtime_resume_and_get(dev);
+ 	if (ret) {
+-		dev_err(dev, "can't enable EPOD regulator\n");
++		dev_err(dev, "can't enable MCDE power domain\n");
++		pm_runtime_disable(dev);
+ 		return ret;
+ 	}
+-	mcde->vana = devm_regulator_get(dev, "vana");
+-	if (IS_ERR(mcde->vana)) {
+-		ret = PTR_ERR(mcde->vana);
+-		dev_err(dev, "can't get VANA regulator\n");
+-		goto regulator_epod_off;
+-	}
+-	ret = regulator_enable(mcde->vana);
+-	if (ret) {
+-		dev_err(dev, "can't enable VANA regulator\n");
+-		goto regulator_epod_off;
+-	}
+-	/*
+-	 * The vendor code uses ESRAM (onchip RAM) and need to activate
+-	 * the v-esram34 regulator, but we don't use that yet
+-	 */
+ 
+ 	/* Clock the silicon so we can access the registers */
+ 	mcde->mcde_clk = devm_clk_get(dev, "mcde");
+ 	if (IS_ERR(mcde->mcde_clk)) {
+ 		dev_err(dev, "unable to get MCDE main clock\n");
+ 		ret = PTR_ERR(mcde->mcde_clk);
+-		goto regulator_off;
++		goto pm_runtime_put;
+ 	}
+ 	ret = clk_prepare_enable(mcde->mcde_clk);
+ 	if (ret) {
+ 		dev_err(dev, "failed to enable MCDE main clock\n");
+-		goto regulator_off;
++		goto pm_runtime_put;
+ 	}
+ 	dev_info(dev, "MCDE clk rate %lu Hz\n", clk_get_rate(mcde->mcde_clk));
+ 
+@@ -413,14 +393,15 @@ static int mcde_probe(struct platform_device *pdev)
+ 
+ 	/*
+ 	 * Perform an invasive reset of the MCDE and all blocks by
+-	 * cutting the power to the subsystem, then bring it back up
++	 * powering down the subsystem, then bring it back up
+ 	 * later when we enable the display as a result of
+ 	 * component_master_add_with_match().
+ 	 */
+-	ret = regulator_disable(mcde->epod);
+-	if (ret) {
+-		dev_err(dev, "can't disable EPOD regulator\n");
+-		return ret;
++	ret = pm_runtime_put_sync_suspend(dev);
++	if (ret < 0) {
++		dev_err(dev, "can't disable MCDE power domain\n");
++		pm_runtime_get_noresume(dev);
++		goto clk_disable;
+ 	}
+ 	/* Wait 50 ms so we are sure we cut the power */
+ 	usleep_range(50000, 70000);
+@@ -429,25 +410,21 @@ static int mcde_probe(struct platform_device *pdev)
+ 					      match);
+ 	if (ret) {
+ 		dev_err(dev, "failed to add component master\n");
+-		/*
+-		 * The EPOD regulator is already disabled at this point so some
+-		 * special errorpath code is needed
+-		 */
+-		clk_disable_unprepare(mcde->mcde_clk);
+-		regulator_disable(mcde->vana);
+-		return ret;
++		goto clk_disable_pm_disabled;
+ 	}
+ 
+ 	return 0;
+ 
+ clk_disable:
+ 	clk_disable_unprepare(mcde->mcde_clk);
+-regulator_off:
+-	regulator_disable(mcde->vana);
+-regulator_epod_off:
+-	regulator_disable(mcde->epod);
++pm_runtime_put:
++	pm_runtime_put_sync_suspend(dev);
++	goto pm_runtime_disable;
++clk_disable_pm_disabled:
++	clk_disable_unprepare(mcde->mcde_clk);
++pm_runtime_disable:
++	pm_runtime_disable(dev);
+ 	return ret;
+-
+ }
+ 
+ static void mcde_remove(struct platform_device *pdev)
+@@ -457,8 +434,7 @@ static void mcde_remove(struct platform_device *pdev)
+ 
+ 	component_master_del(&pdev->dev, &mcde_drm_comp_ops);
+ 	clk_disable_unprepare(mcde->mcde_clk);
+-	regulator_disable(mcde->vana);
+-	regulator_disable(mcde->epod);
++	pm_runtime_disable(&pdev->dev);
+ }
+ 
+ static void mcde_shutdown(struct platform_device *pdev)
+diff --git a/drivers/gpu/drm/mcde/mcde_dsi.c b/drivers/gpu/drm/mcde/mcde_dsi.c
+index 694372581840..ab8afb5cb0c5 100644
+--- a/drivers/gpu/drm/mcde/mcde_dsi.c
++++ b/drivers/gpu/drm/mcde/mcde_dsi.c
+@@ -8,7 +8,6 @@
  #include <linux/of.h>
-+#include <linux/platform_device.h>
- #include <linux/pm_domain.h>
-+#include <linux/slab.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+-#include <linux/regulator/consumer.h>
+ #include <video/mipi_display.h>
  
- #include <dt-bindings/arm/ux500_pm_domains.h>
- 
- #define NR_DOMAINS		(DOMAIN_ESRAM_34 + 1)
-+#define UX500_EPOD_NONE		NUM_EPOD_ID
- 
--static int pd_power_off(struct generic_pm_domain *domain)
-+/**
-+ * struct dbx500_powerdomain_info - dbx500 power domain information
-+ * @genpd: generic power domain
-+ * @epod_id: id for EPOD (power domain)
-+ * @is_ramret: RAM retention switch for EPOD (power domain)
-+ */
-+struct dbx500_powerdomain_info {
-+	struct generic_pm_domain genpd;
-+	u16 epod_id;
-+	bool is_ramret;
-+};
-+
-+static DEFINE_MUTEX(ux500_pd_lock);
-+static bool epod_on[NUM_EPOD_ID];
-+static bool epod_ramret[NUM_EPOD_ID];
-+
-+static int enable_epod(u16 epod_id, bool ramret)
- {
--	/*
--	 * Handle the gating of the PM domain regulator here.
--	 *
--	 * Drivers/subsystems handling devices in the PM domain needs to perform
--	 * register context save/restore from their respective runtime PM
--	 * callbacks, to be able to enable PM domain gating/ungating.
--	 */
-+	int ret;
-+
-+	if (ramret) {
-+		if (!epod_on[epod_id]) {
-+			ret = db8500_prcmu_set_epod(epod_id, EPOD_STATE_RAMRET);
-+			if (ret < 0)
-+				return ret;
-+		}
-+		epod_ramret[epod_id] = true;
-+	} else {
-+		ret = db8500_prcmu_set_epod(epod_id, EPOD_STATE_ON);
-+		if (ret < 0)
-+			return ret;
-+		epod_on[epod_id] = true;
-+	}
-+
- 	return 0;
- }
- 
--static int pd_power_on(struct generic_pm_domain *domain)
-+static int disable_epod(u16 epod_id, bool ramret)
- {
--	/*
--	 * Handle the ungating of the PM domain regulator here.
--	 *
--	 * Drivers/subsystems handling devices in the PM domain needs to perform
--	 * register context save/restore from their respective runtime PM
--	 * callbacks, to be able to enable PM domain gating/ungating.
--	 */
-+	int ret;
-+
-+	if (ramret) {
-+		if (!epod_on[epod_id]) {
-+			ret = db8500_prcmu_set_epod(epod_id, EPOD_STATE_OFF);
-+			if (ret < 0)
-+				return ret;
-+		}
-+		epod_ramret[epod_id] = false;
-+	} else {
-+		if (epod_ramret[epod_id]) {
-+			ret = db8500_prcmu_set_epod(epod_id, EPOD_STATE_RAMRET);
-+			if (ret < 0)
-+				return ret;
-+		} else {
-+			ret = db8500_prcmu_set_epod(epod_id, EPOD_STATE_OFF);
-+			if (ret < 0)
-+				return ret;
-+		}
-+		epod_on[epod_id] = false;
-+	}
-+
- 	return 0;
- }
- 
-+
-+static int pd_power_off(struct generic_pm_domain *domain)
-+{
-+	struct dbx500_powerdomain_info *info =
-+		container_of(domain, struct dbx500_powerdomain_info, genpd);
-+	int ret = 0;
-+
-+	guard(mutex)(&ux500_pd_lock);
-+	if (info->epod_id < NUM_EPOD_ID)
-+		ret = disable_epod(info->epod_id, info->is_ramret);
-+
-+	return ret;
-+}
-+
-+static int pd_power_on(struct generic_pm_domain *domain)
-+{
-+	struct dbx500_powerdomain_info *info =
-+		container_of(domain, struct dbx500_powerdomain_info, genpd);
-+	int ret = 0;
-+
-+	guard(mutex)(&ux500_pd_lock);
-+	if (info->epod_id < NUM_EPOD_ID)
-+		ret = enable_epod(info->epod_id, info->is_ramret);
-+
-+	return ret;
-+}
-+
- /*
-  * Apart from these voltage domains there is also VSAFE which is always
-  * on. Vape_esram0_pwr for eSRAM0 is connected to VSAFE.
-  */
--static struct generic_pm_domain ux500_pm_domain_vape = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_vape = {
- 	/* Vape_pwr */
--	.name = "VAPE",  /* 0.95 .. 1.20 V */
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "VAPE",  /* 0.95 .. 1.20 V */
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_varm = {
--	.name = "VARM",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_varm = {
-+	.genpd = {
-+		.name = "VARM",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_vmodem = {
--	.name = "VMODEM",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_vmodem = {
-+	.genpd = {
-+		.name = "VMODEM",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_vpll = {
--	.name = "VPLL", /* 1.8 V */
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_vpll = {
-+	.genpd = {
-+		.name = "VPLL", /* 1.8 V */
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
- /*
-  * CHECKME: as these are used directly by peripherals as regulators,
-  * perhaps they should stay in the regulator subsystem?
-  */
--static struct generic_pm_domain ux500_pm_domain_vsmps1 = {
--	.name = "VSMPS1", /* Also called VIO (1.2V) */
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_vsmps1 = {
-+	.genpd = {
-+		.name = "VSMPS1", /* Also called VIO (1.2V) */
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_vsmps2 = {
--	.name = "VSMPS2", /* Also called VIO (1.8V) */
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_vsmps2 = {
-+	.genpd = {
-+		.name = "VSMPS2", /* Also called VIO (1.8V) */
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_vsmps3 = {
--	.name = "VSMPS3",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_vsmps3 = {
-+	.genpd = {
-+		.name = "VSMPS3",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_vrf1 = {
--	.name = "VRF1",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+static struct dbx500_powerdomain_info ux500_pm_domain_vrf1 = {
-+	.genpd = {
-+		.name = "VRF1",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = UX500_EPOD_NONE,
- };
- 
- /* The following are technically children of VAPE */
--static struct generic_pm_domain ux500_pm_domain_sva_mmdsp = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_sva_mmdsp = {
- 	/* Vape_SVA_MMDSP_pwr */
--	.name = "SVA_MMDSP",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "SVA_MMDSP",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_SVAMMDSP,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_sva_pipe = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_sva_pipe = {
- 	/* Vape_SVA_pwr */
--	.name = "SVA_PIPE",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "SVA_PIPE",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_SVAPIPE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_sia_mmdsp = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_sia_mmdsp = {
- 	/* Vape_SIA_MMDSP_pwr */
--	.name = "SIA_MMDSP",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "SIA_MMDSP",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_SIAMMDSP,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_sia_pipe = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_sia_pipe = {
- 	/* Vape_SIA_pwr */
--	.name = "SIA_PIPE",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "SIA_PIPE",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_SIAPIPE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_sga = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_sga = {
- 	/* Vape_SGA_pwr */
--	.name = "SGA",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "SGA",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_SGA,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_b2r2_mcde = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_b2r2_mcde = {
- 	/* Vape_DSS_pwr DSS (display subsystem) */
--	.name = "B2R2_MCDE",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "B2R2_MCDE",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_B2R2_MCDE,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_esram_12 = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_esram_12 = {
- 	/* Vape_esram1_pwr, Vape_esram2_pwr */
--	.name = "ESRAM_12",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "ESRAM_12",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_ESRAM12,
- };
- 
--static struct generic_pm_domain ux500_pm_domain_esram_34 = {
-+static struct dbx500_powerdomain_info ux500_pm_domain_esram_34 = {
- 	/* Vape_esram3_pwr, Vape_esram4_pwr */
--	.name = "ESRAM_34",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.genpd = {
-+		.name = "ESRAM_34",
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+	},
-+	.epod_id = EPOD_ID_ESRAM34,
- };
- 
- static struct generic_pm_domain *ux500_pm_domains[NR_DOMAINS] = {
--	[DOMAIN_VAPE] = &ux500_pm_domain_vape,
--	[DOMAIN_VARM] = &ux500_pm_domain_varm,
--	[DOMAIN_VMODEM] = &ux500_pm_domain_vmodem,
--	[DOMAIN_VPLL] = &ux500_pm_domain_vpll,
--	[DOMAIN_VSMPS1] = &ux500_pm_domain_vsmps1,
--	[DOMAIN_VSMPS2] = &ux500_pm_domain_vsmps2,
--	[DOMAIN_VSMPS3] = &ux500_pm_domain_vsmps3,
--	[DOMAIN_VRF1] = &ux500_pm_domain_vrf1,
--	[DOMAIN_SVA_MMDSP] = &ux500_pm_domain_sva_mmdsp,
--	[DOMAIN_SVA_PIPE] = &ux500_pm_domain_sva_pipe,
--	[DOMAIN_SIA_MMDSP] = &ux500_pm_domain_sia_mmdsp,
--	[DOMAIN_SIA_PIPE] = &ux500_pm_domain_sia_pipe,
--	[DOMAIN_SGA] = &ux500_pm_domain_sga,
--	[DOMAIN_B2R2_MCDE] = &ux500_pm_domain_b2r2_mcde,
--	[DOMAIN_ESRAM_12] = &ux500_pm_domain_esram_12,
--	[DOMAIN_ESRAM_34] = &ux500_pm_domain_esram_34,
-+	[DOMAIN_VAPE] = &ux500_pm_domain_vape.genpd,
-+	[DOMAIN_VARM] = &ux500_pm_domain_varm.genpd,
-+	[DOMAIN_VMODEM] = &ux500_pm_domain_vmodem.genpd,
-+	[DOMAIN_VPLL] = &ux500_pm_domain_vpll.genpd,
-+	[DOMAIN_VSMPS1] = &ux500_pm_domain_vsmps1.genpd,
-+	[DOMAIN_VSMPS2] = &ux500_pm_domain_vsmps2.genpd,
-+	[DOMAIN_VSMPS3] = &ux500_pm_domain_vsmps3.genpd,
-+	[DOMAIN_VRF1] = &ux500_pm_domain_vrf1.genpd,
-+	[DOMAIN_SVA_MMDSP] = &ux500_pm_domain_sva_mmdsp.genpd,
-+	[DOMAIN_SVA_PIPE] = &ux500_pm_domain_sva_pipe.genpd,
-+	[DOMAIN_SIA_MMDSP] = &ux500_pm_domain_sia_mmdsp.genpd,
-+	[DOMAIN_SIA_PIPE] = &ux500_pm_domain_sia_pipe.genpd,
-+	[DOMAIN_SGA] = &ux500_pm_domain_sga.genpd,
-+	[DOMAIN_B2R2_MCDE] = &ux500_pm_domain_b2r2_mcde.genpd,
-+	[DOMAIN_ESRAM_12] = &ux500_pm_domain_esram_12.genpd,
-+	[DOMAIN_ESRAM_34] = &ux500_pm_domain_esram_34.genpd,
- };
- 
- static const struct of_device_id ux500_pm_domain_matches[] = {
-@@ -186,11 +304,12 @@ static int ux500_pm_domains_probe(struct platform_device *pdev)
- 	struct device_node *np = pdev->dev.of_node;
- 	struct genpd_onecell_data *genpd_data;
- 	int i;
-+	int ret;
- 
- 	if (!np)
- 		return -ENODEV;
- 
--	genpd_data = kzalloc_obj(*genpd_data);
-+	genpd_data = devm_kzalloc(&pdev->dev, sizeof(*genpd_data), GFP_KERNEL);
- 	if (!genpd_data)
- 		return -ENOMEM;
- 
-@@ -198,14 +317,44 @@ static int ux500_pm_domains_probe(struct platform_device *pdev)
- 	genpd_data->num_domains = ARRAY_SIZE(ux500_pm_domains);
- 
- 	for (i = 0; i < ARRAY_SIZE(ux500_pm_domains); ++i)
--		pm_genpd_init(ux500_pm_domains[i], NULL, false);
-+		pm_genpd_init(ux500_pm_domains[i], NULL, true);
-+
-+	ret = of_genpd_add_provider_onecell(np, genpd_data);
-+	if (ret)
-+		goto remove_genpds;
-+
-+	ret = of_genpd_add_child_ids(np, genpd_data);
-+	if (ret < 0)
-+		goto del_provider;
-+
-+	platform_set_drvdata(pdev, genpd_data);
- 
--	of_genpd_add_provider_onecell(np, genpd_data);
- 	return 0;
-+
-+del_provider:
-+	of_genpd_del_provider(np);
-+remove_genpds:
-+	while (i--)
-+		pm_genpd_remove(ux500_pm_domains[i]);
-+
-+	return ret;
-+}
-+
-+static void ux500_pm_domains_remove(struct platform_device *pdev)
-+{
-+	struct genpd_onecell_data *genpd_data = platform_get_drvdata(pdev);
-+	int i;
-+
-+	of_genpd_remove_child_ids(pdev->dev.of_node, genpd_data);
-+	of_genpd_del_provider(pdev->dev.of_node);
-+
-+	for (i = genpd_data->num_domains - 1; i >= 0; i--)
-+		pm_genpd_remove(genpd_data->domains[i]);
- }
- 
- static struct platform_driver ux500_pm_domains_driver = {
- 	.probe  = ux500_pm_domains_probe,
-+	.remove = ux500_pm_domains_remove,
- 	.driver = {
- 		.name = "ux500_pm_domains",
- 		.of_match_table = ux500_pm_domain_matches,
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 89789ac7a786..851e1a8fc22f 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -414,6 +414,7 @@ config REGULATOR_DBX500_PRCMU
- config REGULATOR_DB8500_PRCMU
- 	bool "ST-Ericsson DB8500 Voltage Domain Regulators"
- 	depends on MFD_DB8500_PRCMU
-+	depends on !UX500_PM_DOMAIN
- 	select REGULATOR_DBX500_PRCMU
- 	help
- 	  This driver supports the voltage domain regulators controlled by the
+ #include <drm/drm_atomic_helper.h>
 
 -- 
 2.55.0
