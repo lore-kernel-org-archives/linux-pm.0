@@ -1,182 +1,158 @@
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mail-oa2-f9.google.com (mail-oa2-f9.google.com [74.125.231.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B6653C4557;
-	Sun, 20 Sep 2026 05:18:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C465D3D3CE4
+	for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 06:42:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789881498; cv=none; b=jSSF3CKlbEF6il3zmkK3G8nW/PutNboKxI0FGJ3aK3b+1/pCqyQJnBOx+z5UxpebHyP0+7ndskgl+DJPWdd+KtX+N7OaH4PU0x2jk45JnlrdAb0tE2F5w5Jva/dL467LFG8s/ujekR3lK1JHZulEj+OsOtyjirexTuP8yZ/5vHc=
+	t=1789886529; cv=none; b=ilbz937Je3qPd5GA9POf+Fk7wNSeEhXenqkQaiZEyaDi0rr510AAbmio1gJE0mL0xXIKiYJdt+HALaV9qLQjU70Ym7Sec0eCaBITPr+uRDXJ4SuwBxyrL/2HpsuDL4JF6ae6Kp2ZUWKO2YmsWbXMyf2lUwPd9tI3hPKg46/2/Go=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789881498; c=relaxed/simple;
-	bh=1AdTZrjEG5rVm64Wy23q6UY0iEhLPLMZtuoUctrq8do=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Arjy8NRMXM3VplukQ7lcpV7HBl+6fQ/A5YuYHFrEjdVDyLxM6nN1H1BS4zE7nvNgUsfIhCldXRa3lUj5MA7THU5h3h2BGlefh4e/f3ZhsHsHplbA8HPuc/Rh2MxVlNZftNAS4SEpua8Tjx8/9zpBDqOztoOqODJ87/uSlEWwiik=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from edelgard.fodlan.icenowy.me (unknown [112.94.103.44])
-	by APP-03 (Coremail) with SMTP id rQCowADX4D6HbK9qQxUuCA--.44669S2;
-	Sun, 20 Sep 2026 13:17:59 +0800 (CST)
-Message-ID: <58c888729f24169a9f487bf8c4240a6d45ee6fe5.camel@iscas.ac.cn>
-Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
-From: Icenowy Zheng <zhengxingda@iscas.ac.cn>
-To: Yixun Lan <dlan@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-  Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul
- Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Date: Sun, 20 Sep 2026 13:17:58 +0800
-In-Reply-To: <20260919231333-GKB322102@kernel.org>
-References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
-	 <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
-	 <a4359efeee2220903a05a2383a651ec8ec7284b7.camel@icenowy.me>
-	 <20260918230107-GKC297024@kernel.org>
-	 <33b33b2b79763d410bc2e5b4ef46c305aaf6f7c8.camel@icenowy.me>
-	 <20260919095936-GKA322102@kernel.org>
-	 <8301abce221e33d827053c54a64aed05f3227f7f.camel@icenowy.me>
-	 <20260919231333-GKB322102@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 
+	s=arc-20240116; t=1789886529; c=relaxed/simple;
+	bh=bKFyQFP+H9CKKJRClIaGqP/oH3xakPCq/Uh034txxHg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NiWLVDfyNx/G6zQEffbdprBYD7hfAGUjyX07ysyiEl2+nA0VUQcI/F2u8Aa3eEk3UvbP5X4bIGwosTjWTJCZDxvUfRv273NqhbevTqohOwM0Ib1Qcqo77NFHmNql7W5Qs0vgJuIh+IIJlheRQcSoJGwKhDYcGK8OOfsJs9rc5BM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mNpQXyCs; arc=none smtp.client-ip=74.125.231.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mNpQXyCs"
+Received: by mail-oa2-f9.google.com with SMTP id 586e51a60fabf-4840f0c24bbso974270fac.1
+        for <linux-pm@vger.kernel.org>; Sat, 19 Sep 2026 23:42:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789886526; x=1790491326; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=kmH2de0kdW01Esae1dcXkd/FPy1YNazdkMTeV2gFsXY=;
+        b=mNpQXyCsfKZ+q0GPbYAp6+t6bwoIw/uGc0mECXK6WdVDxQGkg4NzvvlKWkVPNAz0py
+         a2C6b7Nt7XuzQQM01MyrH77sG0oGeUy/+ADMDbeUybzT7y4513IeIzA2KTxtqGA7dl8c
+         PBTG7KKe/SJMms8U59TEfHU0dyGaH2Dr2MIU9d4MJNn4kmz5EH9L6WHmvw8TgW4Z6ylz
+         MrF3npDCq0ay4gnij7JGDZUKLwDfKvNQs2sxBF0APl2lVkj7BGFi8uQC7/kwvz1B6IUM
+         1SMDMX+SwyJHikC3T72g6BZhN1Y9LoJM6ctu8APvA3eU+mGps/jozvmufd7QT6IbhOiC
+         B3YQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789886526; x=1790491326;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=kmH2de0kdW01Esae1dcXkd/FPy1YNazdkMTeV2gFsXY=;
+        b=gmnwYNrrJL0Q/l8ggOlzHsSVK886wFroUhU8toI0Wdmj5lGjwq4TPxAXHt/axKa9et
+         iRJ2AxFRs9+WSoUBN0ZLPNcAldOG2p9WCVcVID2r0c8pdoKouwW7ajAZLVFul8Tc2uNs
+         A6UmsFph95o5rY2xEI5I6IczMyFrkH7bTJLzM+fb1cSy80tItbJYAkQQ+KxaC2FhrFDp
+         4mNftfOHsDaWcfCOPVKKBaB5zigfKpWRNZVni07eeochebSOcrxSoVy3Q6jLFrhQjhZI
+         lww3uNJcuDUGNePCSbw1GET1/NzKjhDBVBXr5V2p70TwD49JhT2yCzwwZrBIaPc+4SFO
+         KLlw==
+X-Forwarded-Encrypted: i=1; AKwUvBzN+du7NeUuJT0t9FY/TpQNcsFtrCbFlWeoZFBG7kHeDpSJYFtzwtjLESwkm4GmGZ5+ypUs1I+A7g==@vger.kernel.org
+X-Gm-Message-State: AFuF++mf+LwOcJgJEfNJ9G7TYgxddqxKtgya/34W6fD7Y0/tcCfLXDW0
+	ZeuZrgY8c9gtPpFDLMMJi4DoAmO1xGfptb/O+Q0qPtyoyaXmPzRo9hf4
+X-Gm-Gg: AYBFou1iyFeAPhrkW+FsumIOf3uRGQOO4ZJbKTK+zKTfJnO3D41bR/bfN5Hm6zCPfwl
+	3M32LG+OdoG0idTlL8SDtfFtkGOgd5ItJo288uBJOoeCUvdMkTWnLiKTnkmm7NwATPVs7OONSb1
+	IUVPEVH6oU+0DwB1Xjwlw7jn41umKnjhlZP16XcA01OkX53XcgDYgikLmftgf0b97QmwjoDwRo0
+	Qqj2TGsKDcL53OUNtC1aHOnVgYP0pywffOyCt3J5nAbAZdUErzE1qzgELk6TL47xLv5DxLbEE0I
+	wkT6KehkSufBD7dqFQiHadJIO7y1FoSb+sV38owwoFNQKfjPzdRA6O7/R7MPJnnBfgEDsD5CF6i
+	S51AcAnR8Oti4dYrQgmkKJa/Ouu7bwoikUVTThxMO8JJLmx8YJ+i4nUKkgKyOkTSnkiPswW/7aA
+	ncCE6Ig7EGnP7bObKKfhoq5H4efyouZISibSjHUZvbYnC/Pu5ZPpVz9Hlq6GiwTRgx2VzHoVwRP
+	g5tnUDyG4+bTZ0=
+X-Received: by 2002:a05:6820:1f04:b0:6bd:af9e:a802 with SMTP id 006d021491bc7-6ca9c94f259mr6638022eaf.57.1789886526512;
+        Sat, 19 Sep 2026 23:42:06 -0700 (PDT)
+Received: from ?IPV6:2600:8804:5716:d800::2620? ([2600:8804:5716:d800::2620])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-48820f30fe9sm4490104fac.4.2026.09.19.23.42.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 19 Sep 2026 23:42:05 -0700 (PDT)
+Message-ID: <fff86d6b-e4e6-4d90-8373-3ee32432807a@gmail.com>
+Date: Sun, 20 Sep 2026 01:42:02 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-CM-TRANSID:rQCowADX4D6HbK9qQxUuCA--.44669S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXrWDKFWfAF13ZF18tw48tFb_yoW5tF4kpF
-	WUGa1UKa1kJr1ayr1Ut3WUXa4UK3y8Jr4UWrn8J348XrZ0vr1rKr1xtr98uF97Xr18Gw12
-	qr1DtryfW3W8A3DanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvqb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4
-	A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IE
-	w4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMc
-	vjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwIxGrwACI402YVCY1x02628vn2kIc2xKxwCY
-	1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8Jw
-	C20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAF
-	wI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjx
-	v20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2
-	jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0x
-	ZFpf9x07betCcUUUUU=
-X-CM-SenderInfo: x2kh0wp0lqwv3d6l2u1dvotugofq/
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: power: supply: battery: allow longer
+ ocv-capacity tables
+To: Henrik Grimler <henrik.grimler@axis.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260918-rbrue-suez-upstreaming-battery-ocv-table-128-v1-1-f477ef39ef0d@gmail.com>
+ <20260918082921.GA1515928@pc67698-2615.sto.se.axis.com>
+Content-Language: en-US
+From: Ryan Brue <ryanbrue.dev@gmail.com>
+In-Reply-To: <20260918082921.GA1515928@pc67698-2615.sto.se.axis.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-=E5=9C=A8 2026-09-19=E5=85=AD=E7=9A=84 23:13 +0000=EF=BC=8CYixun Lan=E5=86=
-=99=E9=81=93=EF=BC=9A
-> Hi Icenowy,
->=20
-> On 21:56 Sat 19 Sep=C2=A0=C2=A0=C2=A0=C2=A0 , Icenowy Zheng wrote:
-> > =E5=9C=A8 2026-09-19=E5=85=AD=E7=9A=84 09:59 +0000=EF=BC=8CYixun Lan=E5=
-=86=99=E9=81=93=EF=BC=9A
-> > > Hi Icenowy,
-> > >=20
-> > > On 14:57 Sat 19 Sep=C2=A0=C2=A0=C2=A0=C2=A0 , Icenowy Zheng wrote:
-> > > > =E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 23:01 +0000=EF=BC=8CYixun La=
-n=E5=86=99=E9=81=93=EF=BC=9A
-> > > > > Hi Icenowy,=20
-> > > > >=20
-> > > > > On 17:00 Fri 18 Sep=C2=A0=C2=A0=C2=A0=C2=A0 , Icenowy Zheng wrote=
-:
-> > > > > > =E5=9C=A8 2026-09-18=E4=BA=94=E7=9A=84 02:40 +0000=EF=BC=8CYixu=
-n Lan=E5=86=99=E9=81=93=EF=BC=9A
-> > > > > > > =C2=A0 SpacemiT's PMU (Power Management Unit) consist of
-> > > > > > > several
-> > > > > > > power
-> > > > > > > domains
-> > > > > > > which can be managed independently, depending on
-> > > > > > > different
-> > > > > > > application
-> > > > > > > scenario, each domain can be powered on/off for saving
-> > > > > > > power.
-> > > > > > >=20
-> > > > > > > =C2=A0 The driver is implemented based on Linux Generic PM
-> > > > > > > Domain
-> > > > > > > framework.
-> > > > > > > From a hardware perspective, either of two distinct
-> > > > > > > power-on
-> > > > > > > sequences
-> > > > > > > are supported, in software mode (SW mode), the driver is
-> > > > > > > responsible
-> > > > > > > for
-> > > > > > > controlling the states of bits such as sleep1, sleep2,
-> > > > > > > isolation
-> > > > > > > and
-> > > > > > > pwr_state, while in hardware mode (HW mode), the PMU
-> > > > > > > hardware
-> > > > > > > will
-> > > > > > > complete
-> > > > > > > the sequence automatically without requiring software
-> > > > > > > intervention.
-> > > > > >=20
-> > > > > > I think there also exists solutions for K3 that uses RPMI
-> > > > > > power
-> > > > > > domains, and let their ESOS firmware to access the
-> > > > > > hardware.
-> > > > > >=20
-> > > > > Yes, I'm aware of that
-> > > > >=20
-> > > > > > What's the relationship of this implementation with the
-> > > > > > ESOS
-> > > > > > implementation? Should the ESOS part be disabled to use
-> > > > > > this
-> > > > > > implementation?
-> > > > > >=20
-> > > > > I should say, it's a mutually exclusive solution, so yes, the
-> > > > > ESOS
-> > > > > part
-> > > > > should be disabled in order to use this version
-> > > > >=20
-> > > > > The motivation of this patch is trying to support drm/display
-> > > > > driver's
-> > > > > PM requirement, while avoid going with vendor's complicated
-> > > > > RPMI
-> > > > > solution
-> > > > > which isn't mainline ready
-> > > >=20
-> > > > Is this a long-term solution, or a temporary one?
-> > > >=20
-> > > For upstream, I'd say we probably will stick to this solution for
-> > > long time, won't say it 'forever', see comment below..
-> > >=20
-> > > > If it's a temporary conflicting one, I don't think it's worth
-> > > > picking
-> > > > at all.
-> > > >=20
-> > > Well, checked current Linux kernel status, there is no RPMI PM
-> > > solution=20
-> > > implemented although there is documentation in riscv-rpmi spec[1]
-> >=20
-> > I have seen pending patch for it with multiple revisions [1], the
-> > dt
-> > binding is even already ACKed by Conor, so I think it's not a big
-> > problem here.
-> >=20
-> That's exactly what I said - it's not mature, not saying it's pending
-> patch for review, but for whole solution that involve Linux driver,
-> opensbi and underlying fimware (ESOS) - which not upstream-ed..
+On 9/18/26 3:29 AM, Henrik Grimler wrote:
+> Hi Ryan,
+>
+> On Fri, Sep 18, 2026 at 12:36:31AM -0500, Ryan Brue wrote:
+>> ocv-capacity-table-N has been capped at 100 points since battery.txt was
+>> converted to YAML, where the limit arrived without a stated reason.
+>>
+>> The MT6397 fuel gauge is characterised per temperature by a table the
+>> Amazon Fire HD 10 (2017) vendor device tree carries with 126 points, of
+>> which 122 are expressible here - the remainder are greater than 100%
+>> discharged, so the binding excludes those points. Boards carrying this
+>> PMIC fuel gauge would need more than 100 points to describe the pack with
+>> the generic property. Raise the cap to 128.
+>>
+>> Assisted-by: LLM
+>> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+>> ---
+>> No kernel change goes with this. power_supply_get_battery_info() sizes each
+>> ocv-capacity-table-N from the property itself -- it reads the length with
+>> fwnode_property_count_u32() and devm_kcalloc()s that many entries -- so
+>> maxItems in the binding is the only cap on points per table.
+>> POWER_SUPPLY_OCV_TEMP_MAX bounds the number of tables, not their length.
+>>
+>> The consumer that wants this is an MT6397 PMIC fuel gauge not yet posted;
+>> its pack is characterised at 126 points per temperature in the vendor's
+>> kernel (Amazon Fire OS, based on Linux 3.18), with 122 of those points
+>> being expressible with the generic property (the rest are greater than
+>> 100%).
+> Allowing for points > 100 % could make sense, but why would you need
+> 122 points up to 100 %? If the vendor kernel has several values at for
+> example 20 %, then a better solution is probably to take the average
+> of them.
+>
+> I think only reason to have multiple values for the same percentage
+> would be if hysterersis (see for example this open-access article [1]
+> for discussion about hysteresis) is taken into account, i.e. having
+> one table for charge direction, and one table for discharge direction,
+> but I don't think any driver uses multiple tables to handle something
+> like that.
+>
+> [1] https://doi.org/10.1038/s41598-019-51474-5
+>
+> Best regards,
+> Henrik Grimler
+Hi Henrik,
+Yeah, you're right. To be honest, I didn't think about that, and should 
+have.
 
-Except for the MPXY part (which seems to be already mainlined), OpenSBI
-is only a RPMI consumer.
+On why there's so many points: the vendor's table isn't indexed by 
+percentage at all. A row is a fixed 54 mAh step of charge - 
+step_of_qmax, which the meter converts to mAh directly - and the 
+percentage column is just that rounded, round(i * 54 * 100 / Qmax), 
+which fits every row of all five tables exactly. At 0.85% per row about 
+one in six repeats, so the duplicates carry nothing. I should also 
+correct the figures I sent: 126/122 is a different cell in the same 
+vendor file. This unit's tables are 120 points and none of the points 
+are above 100% in this one.
 
-ESOS is vendor-specific thing and its version from the vendor already
-contains the RPMI implementation.
+I don't need to model the vendor one to one. I measured what dropping 
+resolution costs, and decimating to 100 points changes the capacity I 
+report by at most 1% - so it fits the binding as it stands, and the 
+justification I sent doesn't hold.
 
-The Linux driver also appears earlier and received more review than
-this driver.
+The only thing I can see still being worth raising is 101 rather than 
+128. Capacity percent is capped at 100, and 0..100 inclusive is 101 
+values, so if I'm not mistaken no board can express 1% granularity today 
+if they have points at both 0 and 100. I'm not sure that's worth a patch 
+on its own, so I'm fine dropping this, or doing a v2 allowing 101 values.
 
-For not reinventing the wheel, it would be better to work on the RPMI
-PM driver.
-
-Thanks,
-Icenowy
-
->=20
-> To make it clear, I'm not going to pursue the RPMI solution, but if
-> someone insist and willing to spend the effort, please feel free to
-> push
-
+Best regards,
+Ryan Brue
