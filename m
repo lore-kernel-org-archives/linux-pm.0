@@ -1,35 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B27FD42902E;
-	Sun, 20 Sep 2026 22:48:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40E92324B33;
+	Sun, 20 Sep 2026 22:48:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789944496; cv=none; b=dlAYHA6MCr/BVGHc6Tbwb5mhywTggx3a38OALH6n4urk70p5KupnUXnBe1V7zi+EZSEBdw3hgbpf6hH2D5tfgaiAr+zkJuMVTvKyNYkXREHxJUC5ttvmjOkrk4YMJEGs9GjlH5HEgfCVJZ5jT8j5NOjIKMsJHYhbdmP890L3ZJY=
+	t=1789944500; cv=none; b=V/Lz6DLJgOIrceh00YlDh+qx1jBx4xlDtAo81NhtZJzN9XXjxYUOnRi5ZEVk7kB6ntHPaIztdTtCQaC8UBuZGDn6JzHTP8n5zTiKxIHZiqveRHvz1SjRlOUkIutGsfhqlda0DI6cYueV8V8MNvp8o2m2qiqIwd5kbgWMgBlozpI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789944496; c=relaxed/simple;
-	bh=hTVS2pyhq8BAAFNzXnLEMtL7aOU0crRzY6m0C+2QuuU=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XgD6ONBGbLratoaUSND7PuV89k0qfeJkilxbTc8Xspc0Jj/xh4i5TYMvBS/DR4e5GKqAGLqiUr5CJHN6EqrLWu2i76VvZQchv0K6gDZLgRqWk7tpajyMmb9LgQA9lHWmz0yAjFPeGw13YLSx2HGy+uKKhqdDG9RNOThEYWW5Fbk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iexvHXWw; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789944500; c=relaxed/simple;
+	bh=YtHxihfWSxJWTt8FBAgiKDoWqMHdoXKp2g+P/CoC2yg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=HO16AmfL1UbtvARDAxOGOr3jN1HKyFzqokGLDtzpI6kMi0dY+ZfcMLnK3QS4A7aE9f02bfOY6PG05PG4Z2LdPhelOJhNjKVOmREnX/t8vA8+2+KxRU+F1wCy2k3pMcYa2yI5PWAS5C9zSPAUU7SLOzVocNEtdyw4ATgVmkUEliE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EnwEW9WM; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iexvHXWw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10E8C1F000FF;
-	Sun, 20 Sep 2026 22:48:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EnwEW9WM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17D131F00893;
+	Sun, 20 Sep 2026 22:48:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789944494;
-	bh=jvo3QO4amxkN+7pI7qwJibnL1dMkxvTD7jUaeVBvCTY=;
-	h=From:Subject:Date:To:Cc;
-	b=iexvHXWw+TIeebLVnF5NANG8nOE7ZTxAr3Qtry2rMMurKyhrGatGnmTjkDSCJJZwf
-	 lRPbVZe4/nLWkCluuMBfipr9IS8ZRWxKp/IP/s0vW/qDkRZjcjdCF5yepoqzjsTpis
-	 +nomG7asqnbc42TYNDS02/OvHJGyeZFRNxx8zjIKNiyGt2Pd+nzBDpXXspNDR7hBYm
-	 efpxfGSi9z8tymiG864loIEKOBc7Zb4g09ThRunN1LkvVPVtsAg4dlk+blSsRfWaIi
-	 URPHPo6GdfYkoKzw2LOJGcdmrclCZRA8+OAUyCzSuHJawT2/JQE36bcfOFjjUTd8aC
-	 FfKS/MBCOxk2g==
+	s=k20260515; t=1789944498;
+	bh=upUfSmELTJPYWMCaHbN6SO7e3HRXAnxCKT/GKC3ryoY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=EnwEW9WMyCxf7j8hg46gwjmXdR7hJFm8ycbWYe2bR1uWaUHbWc5sC+d7AYXiNi+j4
+	 bd2qwyILPHI448Iw8bt9cigrDzjOynwLwujM7ef5clOiEZFEWWLF3I1BcLmDBRjCQ3
+	 9jWwZ3vF5r8kbXKkAfOY48WwjTGXD38pLQnxrP7MHTuve8vqWeIYn912wU7aatzWR1
+	 9G7QKL/GVroLdb+ESRVW7bw0zC1hue1AE0FZLBpKYcdlgPv/g5QSlgXo4fk/JnRWci
+	 5ASoBphuKJ6jXjc9bwKRk/X+F6SyYlm5rEsWtr1HOpagDAFkBgvYK3UK3ze5cefOFf
+	 kCAYmJB44qsOw==
 From: Linus Walleij <linusw@kernel.org>
-Subject: [PATCH v3 00/18] pmdomain: st: ux500: Implement ux500 power
- domains
-Date: Mon, 21 Sep 2026 00:48:06 +0200
-Message-Id: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
+Date: Mon, 21 Sep 2026 00:48:07 +0200
+Subject: [PATCH v3 01/18] dt-bindings: power: Convert Ux500 PM domains to
+ schema
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,11 +38,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/43OwQ6CMAyA4VcxO1uzDgfDk+9hPMAosKgb2XRiC
- O/u4GK8GI9/k37txAJ5Q4EdNhPzFE0wzqbIthum+8p2BKZJzQQXOc9RwWOUnMPgnuShcbfK2AC
- xAIRMlw0vpRJKC5bWB0+tGVf6dE7dm3B3/rVeirhM/0AjAgeqJUleYyWVOl7IW7runO/Yokbxk
- Urc/5BEktKHGgvCVmH+Jc3z/AaE1Q9QCwEAAA==
-X-Change-ID: 20260618-ux500-power-domains-v7-1-3c9d095828c2
+Message-Id: <20260921-ux500-power-domains-v7-1-v3-1-9352be6b86b1@kernel.org>
+References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
+In-Reply-To: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
  Mark Brown <broonie@kernel.org>, 
@@ -53,159 +51,134 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Lee Jones <lee@kernel.org>
 Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
  linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- dmaengine@vger.kernel.org, Linus Walleij <linusw@kernel.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
- Frank Li <Frank.Li@nxp.com>, Frank Li <Frank.li@oss.nxp.com>
+ dmaengine@vger.kernel.org, Linus Walleij <linusw@kernel.org>
 X-Mailer: b4 0.14.3
 
-This series pays off technical debt from the beginning of the device
-tree for ARM initiative in the early 2010s.
+Convert the legacy Ux500 power domain text binding to YAML.
 
-Today the Ux500 SoC specifically DB8500 is using what is called "EPOD
-regulators" (EPOD = Electric POwer Domain) to control its power domains.
-This was done like this because at the time, power domains did not exist
-as a concept in the Linux kernel.
+Move it under bindings/power.
 
-This patch series completes the ambitious work started in commit
-cd931dcfda5e ("ARM: ux500: Initial support for PM domains") which added
-a dummy domain driver for Ux500 in the following steps:
+Reference the generic power-domain schema.
 
-- Convert the old Ux500 power domain text DT bindings to YAML schema.
+Update MAINTAINERS for the new path.
 
-- Extend the bindings with all the 16 power domains actually existing in
-  the hardware.
-
-- Add these domains to the existing ux500 power domain driver (still as
-  dummy domains).
-
-- Add the power domains to the DB8500 SoC DTSI file.
-
-- Move code over from the EPOD regulators to the actual power domain
-  driver. Since the two drivers now control the same hardware, make the
-  drivers mutually exclusive.
-
-- Modify the MCDE display driver to use the power domain instead of the
-  EPOD regulators.
-
-- Modify the DMA40 DMA controller to use the power domain instead of the
-  EPOD regulators.
-
-- Delete the old EPOD regulators.
-
-- Delete the references to the unused EPOD regulators from the device
-  tree.
-
-The series is ordered so binding updates and compatibility glue precede
-the DTS and driver changes that depend on them.
-
-MERGE STRATEGY:
-
-1. Device tree bindings need review, before that the series is a
-   no-go.
-
-2. For simplicity, the series can be merged in separate paths and
-   subsystems as there are no build-time dependencies, as long as the
-   result ends up in kernel v7.4.
-
-   Once the concept and patches are ACKed by the power domain folks, I
-   will send the patches that can be split out individually to each
-   maintainer and it can all be merged in parallel. I will send a
-   pull request to the SoC tree with bindings and DTS changes.
-
+Assisted-by: LLM
 Signed-off-by: Linus Walleij <linusw@kernel.org>
 ---
-Changes in v3:
-- Complete the EPOD regulator removal: delete the old regulator drivers
-  and the entire db8500-prcmu-regulators DTS node, including VAPE and
-  VSMPS2. Deprecate the binding and make the node optional, retaining
-  its schema only for older device trees.
-- Make the whole db8500-prcmu-regulators node optional and deprecated,
-  replacing the individual VAPE and VSMPS2 deprecations.
-- Drop the PMU power-domain binding patch: the PMU shares the CPU domain.
-- Assign both CPUs to DOMAIN_VARM as described by arm/cpus.yaml, and
-  remove the separate PMU power-domain assignment.
-- Link to v2: https://lore.kernel.org/r/20260914-ux500-power-domains-v7-1-v2-0-9d0c17e1f816@kernel.org
+ .../devicetree/bindings/arm/ux500/power_domain.txt | 35 ----------------
+ .../power/stericsson,ux500-pm-domains.yaml         | 49 ++++++++++++++++++++++
+ MAINTAINERS                                        |  1 +
+ 3 files changed, 50 insertions(+), 35 deletions(-)
 
-Changes in v2:
-- Went on a detour clean-up job relating to buck regulators.
-  Rebased on kernel v7.3-rc1 and the regulator re-works in this
-  mail thread:
-  https://lore.kernel.org/mfd/20260901-ux500-dts-snowball-regulator-v2-0-fe88b01829bf@kernel.org/
-- Drop the PM domain "regulators" entirely, the external components
-  now use their actual buck regulators.
-- Fix the DB8500 pin controller power domain to use VAPE.
-- Allow power-domain references in the l2c2x0, arm,pmu,
-  stericsson,u8500-clks, arm,twd-timer, arm,twd-wdt and ste,mcde
-  schemas used by the DB8500 DTS additions.
-- Treat only negative pm_runtime_put_sync_suspend() returns as errors.
-- Fix the MCDE probe error path to disable the main clock after reset.
-- Fix Ux500 PM-domain probe error cleanup for domains and provider data.
-- Drop the unused Ux500 power-state activity counter.
-- Describe Ux500 subdomains in DT and use OF child ID helpers.
-- Move DMA40 LCLA power-domain get out of atomic transfer paths.
-- Enable runtime PM in the generic SRAM driver so SRAM power domains
-  are managed by their owner before DMA40 takes LCLA references.
-- Add a DMA40 device link so system PM orders the LCLA SRAM supplier.
-- Add binding fixes for the DB8500 PRCMU regulator child nodes.
-- Add an MCDE binding update for the new power-domain reference.
-- Fix up the DB8500 DTS changes for the remaining VAPE and VSMPS2
-  compatibility regulators.
-- Link to v1: https://lore.kernel.org/r/20260618-ux500-power-domains-v7-1-v1-0-eb5e50b1a588@kernel.org
+diff --git a/Documentation/devicetree/bindings/arm/ux500/power_domain.txt b/Documentation/devicetree/bindings/arm/ux500/power_domain.txt
+deleted file mode 100644
+index 5679d1742d3e..000000000000
+--- a/Documentation/devicetree/bindings/arm/ux500/power_domain.txt
++++ /dev/null
+@@ -1,35 +0,0 @@
+-* ST-Ericsson UX500 PM Domains
+-
+-UX500 supports multiple PM domains which are used to gate power to one or
+-more peripherals on the SOC.
+-
+-The implementation of PM domains for UX500 are based upon the generic PM domain
+-and use the corresponding DT bindings.
+-
+-==PM domain providers==
+-
+-Required properties:
+- - compatible: Must be "stericsson,ux500-pm-domains".
+- - #power-domain-cells : Number of cells in a power domain specifier, must be 1.
+-
+-Example:
+-	pm_domains: pm_domains0 {
+-		compatible = "stericsson,ux500-pm-domains";
+-		#power-domain-cells = <1>;
+-	};
+-
+-==PM domain consumers==
+-
+-Required properties:
+- - power-domains: A phandle and PM domain specifier. Below are the list of
+-		valid specifiers:
+-
+-		Index	Specifier
+-		-----	---------
+-		0	DOMAIN_VAPE
+-
+-Example:
+-	sdi0_per1@80126000 {
+-		compatible = "arm,pl18x", "arm,primecell";
+-		power-domains = <&pm_domains DOMAIN_VAPE>
+-	};
+diff --git a/Documentation/devicetree/bindings/power/stericsson,ux500-pm-domains.yaml b/Documentation/devicetree/bindings/power/stericsson,ux500-pm-domains.yaml
+new file mode 100644
+index 000000000000..1d5b4787aada
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/stericsson,ux500-pm-domains.yaml
+@@ -0,0 +1,49 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/stericsson,ux500-pm-domains.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ST-Ericsson UX500 power domains
++
++maintainers:
++  - Linus Walleij <linusw@kernel.org>
++  - Ulf Hansson <ulfh@kernel.org>
++
++description:
++  The UX500 power domain controller gates power to one or more peripherals on
++  the SoC. Domain specifiers use one cell containing one of the DOMAIN_*
++  indexes defined in dt-bindings/arm/ux500_pm_domains.h.
++
++allOf:
++  - $ref: power-domain.yaml#
++
++properties:
++  compatible:
++    const: stericsson,ux500-pm-domains
++
++  '#power-domain-cells':
++    const: 1
++
++required:
++  - compatible
++  - '#power-domain-cells'
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/arm/ux500_pm_domains.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++
++    pm_domains: power-controller {
++        compatible = "stericsson,ux500-pm-domains";
++        #power-domain-cells = <1>;
++    };
++
++    mmc@80126000 {
++        compatible = "arm,pl18x", "arm,primecell";
++        reg = <0x80126000 0x1000>;
++        interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
++        power-domains = <&pm_domains DOMAIN_VAPE>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3a19da74d00c..560079711469 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3273,6 +3273,7 @@ F:	Documentation/devicetree/bindings/arm/ux500.yaml
+ F:	Documentation/devicetree/bindings/arm/ux500/
+ F:	Documentation/devicetree/bindings/gpio/st,nomadik-gpio.yaml
+ F:	Documentation/devicetree/bindings/i2c/st,nomadik-i2c.yaml
++F:	Documentation/devicetree/bindings/power/stericsson,ux500-pm-domains.yaml
+ F:	arch/arm/boot/dts/st/ste-*
+ F:	arch/arm/mach-nomadik/
+ F:	arch/arm/mach-ux500/
 
----
-Linus Walleij (18):
-      dt-bindings: power: Convert Ux500 PM domains to schema
-      dt-bindings: arm: ux500: Drop NR_DOMAINS
-      dt-bindings: arm: Add the actual power domains on U8500
-      dt-bindings: mfd: db8500-prcmu: Deprecate EPOD regulators
-      dt-bindings: display: ste,mcde: Allow power domains
-      pmdomain: st: ux500: Implement more power domains
-      ARM: dts: ux500: Rename power domains node
-      dt-bindings: clock: stericsson,u8500-clks: Allow power domains
-      dt-bindings: timer: arm,twd-timer: Allow power domains
-      dt-bindings: watchdog: arm,twd-wdt: Allow power domains
-      ARM: dts: ux500: Add power domains
-      pmdomain: st: ux500: Control DB8500 EPODs
-      drm/mcde: Use power domain for display power
-      misc: sram: Enable runtime PM
-      dmaengine: ste_dma40: Use power domain for LCLA SRAM
-      mfd/regulator: db8500-prcmu: Remove EPOD regulators
-      dt-bindings: display: ste,mcde: Deprecate EPOD supply
-      ARM: dts: ux500: Remove DB8500 EPOD regulators
-
- .../devicetree/bindings/arm/ux500/power_domain.txt |  35 --
- .../bindings/clock/stericsson,u8500-clks.yaml      |   3 +
- .../devicetree/bindings/display/ste,mcde.yaml      |  10 +-
- .../bindings/mfd/stericsson,db8500-prcmu.yaml      |  22 +-
- .../power/stericsson,ux500-pm-domains.yaml         |  49 ++
- .../devicetree/bindings/timer/arm,twd-timer.yaml   |   3 +
- .../devicetree/bindings/watchdog/arm,twd-wdt.yaml  |   3 +
- MAINTAINERS                                        |   1 +
- arch/arm/boot/dts/st/ste-dbx5x0.dtsi               | 156 +++----
- arch/arm/mach-ux500/Kconfig                        |   2 +-
- drivers/dma/ste_dma40.c                            | 130 ++++--
- drivers/gpu/drm/mcde/mcde_clk_div.c                |   4 +-
- drivers/gpu/drm/mcde/mcde_display.c                |  11 +-
- drivers/gpu/drm/mcde/mcde_drm.h                    |   2 -
- drivers/gpu/drm/mcde/mcde_drv.c                    |  68 +--
- drivers/gpu/drm/mcde/mcde_dsi.c                    |   1 -
- drivers/mfd/db8500-prcmu.c                         | 239 ----------
- drivers/misc/sram.c                                |   5 +
- drivers/pmdomain/st/ste-ux500-pm-domain.c          | 330 ++++++++++++--
- drivers/regulator/Kconfig                          |  11 -
- drivers/regulator/Makefile                         |   2 -
- drivers/regulator/db8500-prcmu.c                   | 501 ---------------------
- drivers/regulator/dbx500-prcmu.c                   | 155 -------
- drivers/regulator/dbx500-prcmu.h                   |  55 ---
- include/dt-bindings/arm/ux500_pm_domains.h         |  17 +-
- include/linux/regulator/db8500-prcmu.h             |  38 --
- 26 files changed, 560 insertions(+), 1293 deletions(-)
----
-base-commit: 67aa45aae7efe0162f198f26714f668b759468c4
-change-id: 20260618-ux500-power-domains-v7-1-3c9d095828c2
-
-Best regards,
 -- 
-Linus Walleij <linusw@kernel.org>
+2.55.0
 
