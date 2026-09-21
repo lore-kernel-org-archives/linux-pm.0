@@ -1,45 +1,45 @@
-Received: from sender5-op-o12.zoho.com (sender5-op-o12.zoho.com [165.173.182.12])
+Received: from sender4-op-o12.zoho.com (sender4-op-o12.zoho.com [136.143.188.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 870F7314D1F;
-	Mon, 21 Sep 2026 03:40:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43A1843AB0;
+	Mon, 21 Sep 2026 03:41:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.12
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789962011; cv=pass; b=YXskanthFv0Negp7Z2S9yEKul9VTW8oyZwH8l9jprjlCFVnoq0n5rMS9q1RURIbbnXJGLKewTeB8gr8Sium+1HtIZNkuMS3KC89kV1mTvEs9YPh1Bs2KlU14JydnrbXV79CzrXXRLHZ6w+uOHklkavfqWkLnfjUxqSGEOuMA5Rw=
+	t=1789962103; cv=pass; b=IdjR4GalhkPKiWSzU1f9yRUOKovJs/neYh68NUH3/IIS5HUovGYD2hoYaRwrd8gmV0nWjT+jn3fT5sBeDF5zITZ+e8mRnqATMnnlZYiIlUASWgcpeMo+2t0v3nmgPH7F0tUsSPqQnKC79XdzjJ4SgtQBKNBR2m+516j7Xd+aM7A=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789962011; c=relaxed/simple;
-	bh=4w6Ld7u1Q8BK4R3B8dFoO9XD4j47BYZ7ETJ2PULMJOo=;
+	s=arc-20240116; t=1789962103; c=relaxed/simple;
+	bh=ct1Y8laxYTB/3w6Vg9zeWZ4IUgz1j3gsDtqDeWDoQhE=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=XIr3RjR/BRDmX8ohPTQYi88U/nanVMvRhMZGYO5W6OhUW7lEsxCXY18DDGWuAtE7ACd2rlpKstcS4i5azs5xJy8gnfFV0Iqmxj0TpvAl/8yTSj47C23f0fIuDK9swXQRAojQsPZAtjFv1oi7hWGQmsopSG5VNGTafij92cZL0uE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me; spf=pass smtp.mailfrom=icenowy.me; dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b=HLTiSKnR; arc=pass smtp.client-ip=165.173.182.12
+	 Content-Type:MIME-Version; b=AI8RYqkqMHb/9z4clPe/bldSDgXXNZnKfrfIGdMmDZRJgB5FtqRDsTgmT8QdkwqFnFCI09OeLNl/wwO4o6WwjGZ0R/u3aDxj44afnC8XnaMTtZpdirn2mTGR1QXGTGka2LT/nmRomCWxj9njfBdu5awRTl0i59YHIqSm1aUhVm4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me; spf=pass smtp.mailfrom=icenowy.me; dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b=KKyxMWkr; arc=pass smtp.client-ip=136.143.188.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icenowy.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b="HLTiSKnR"
-ARC-Seal: i=1; a=rsa-sha256; t=1789961995; cv=none; 
+	dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b="KKyxMWkr"
+ARC-Seal: i=1; a=rsa-sha256; t=1789962091; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=X5pwW2IjnPHpzmr5K7OAGIATf4tr1RmrHZShCHmkRnFB80eb0og99S3ptID2GyBSbzyK50lRChsuR19Or95NULFeQDe9NQCur4D69JIHRsBhvk2b6Glao7gcFhr5uKFS/KvyKbAGadw/NpVtvvwYgp035iHibnjJuh4p0CJAH9I=
+	b=eUpZbo6UGPiXN2S6WVP1wk0hx+PmToMYHyOYTTguBgJ4H9sVslZFlrxBnfQT4mM3Z5AZ7UOy3rZNvo17i3UdqfpsEgNaqu68X0/0JwomkhLkf2qjtxxXiGRxn37yIBJqRx2YqxUALC17XGIE2yqpJRIJ5jxeOc4Nu3E1+uny24o=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1789961995; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=4w6Ld7u1Q8BK4R3B8dFoO9XD4j47BYZ7ETJ2PULMJOo=; 
-	b=jrPzwenixC18SQEbj/hawwd2Ab/GR2YJ4aN9WSpVlxJl6MQSEi1UIu935TXYXnnofGOQQxzq+AhuKZbm2O7rWZ6sYeH9VUrZ90j49X2NhFngYAIfOKslUIWQwc0Q8QzWTyWWoUUubdWr8RDX0dFrx2u/AGEc8EvsnP2TLeX4YLM=
+	t=1789962091; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=ct1Y8laxYTB/3w6Vg9zeWZ4IUgz1j3gsDtqDeWDoQhE=; 
+	b=LlH1IOfz33DnRYAxx9I6GoXSqRBEmqI9o/RsJEmtsUKDnGaWqGJBG906d7dSp2Dj+BzNXlBX47SKvktceUb4Bzku5DCFlQn9RA02jMAwb8sNqFnlQdzNyNDPMBI4QM4pNsCCRKnx6aiBFxkdKiwrp0sPigjFXChVV/AedprbU9Q=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=icenowy.me;
 	spf=pass  smtp.mailfrom=uwu@icenowy.me;
 	dmarc=pass header.from=<uwu@icenowy.me>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789961995;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1789962091;
 	s=zmail2; d=icenowy.me; i=uwu@icenowy.me;
 	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
-	bh=4w6Ld7u1Q8BK4R3B8dFoO9XD4j47BYZ7ETJ2PULMJOo=;
-	b=HLTiSKnRBxDG+DPoUe3cXgKegVFcNOD0rXriszZDzV1/F8Q+FYh0Lq2R2pUHcb9Y
-	9HRcudk/GGPCRYxoArQ6deKisimm35MVSCMzGl8zVIa8o1Up0Gj0sNp2eqBpj8Ezxni
-	rxpwU46CgPRFJekJUgUrLvG8MJWm6gw1sNLPv51gORVjhjVfocygjLSwS5towg0HB3/
-	9qC9vaRbzWwaAFps2Kk2dNQUhskGeiCFFG5yzdHrSE2mI+RtR6S2PZEmv/dO26UU3ao
-	OATfGI2Xfc/CboFvOf3pwIRJ2yDLcnU6Vl7ukFXtXfPoldSOlngD64qK1vak5j+s/89
-	MzIRisP3Jw==
-Received: by smtp.zohomail.com with SMTPS id 1789961993543581.7356580542081;
-	Sun, 20 Sep 2026 20:39:53 -0700 (PDT)
-Message-ID: <8ac3815961bebc5065ecabbbaed3e9920d5cbba7.camel@icenowy.me>
+	bh=ct1Y8laxYTB/3w6Vg9zeWZ4IUgz1j3gsDtqDeWDoQhE=;
+	b=KKyxMWkr1Oqh8lrvqaWs7m1N6FzlBaoLhknnkzLltncc3AkkgB5WY2M96m6WIter
+	mYQMF5NjtFKuGpzN60dP7oDOTxsApCfGkLIJqLFG1nRZk/hDxeqtXJS8ZiYTSCdTslQ
+	m2rNeSh56U+5rJfMkxZpQnKZOzu83HvQDklD0/IPXjBGk/xm99NGA3HMl7CWXzC5B3R
+	wbMoy4euTn/gbWJYViQdBwhypOZCc/k9a3XHxwL/gWYQUQCAwZNFDLOtFKGmGyb7yHY
+	WpJKF0cvTBInpl0ITZfI6jSAncFGxZ+qI7g3Y+FaCzxwtFsWE0MUm995EQvAbc7AlWr
+	545ZoCVD/w==
+Received: by smtp.zohomail.com with SMTPS id 1789962090652102.41171456130746;
+	Sun, 20 Sep 2026 20:41:30 -0700 (PDT)
+Message-ID: <e96ddd73ca83f0d8b6f08ff63a14b5f0d1bcee57.camel@icenowy.me>
 Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
 From: Icenowy Zheng <uwu@icenowy.me>
 To: Yixun Lan <dlan@kernel.org>
@@ -50,7 +50,7 @@ Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
 	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org
-Date: Mon, 21 Sep 2026 11:39:47 +0800
+Date: Mon, 21 Sep 2026 11:41:25 +0800
 In-Reply-To: <20260921033540-GKG297024@kernel.org>
 References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
 	 <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
@@ -110,16 +110,15 @@ r
 > also shut down the rcpu, so the power switch currently is configured
 > as always on from software perspective, it's unable to power-off even
 > in Linux or rcpu once system up.
-
-Should the GENPD_FLAG_ALWAYS_ON flag be applied onto this power domain
-if it's not meant to be shut down?
-
-Thanks,
-Icenowy
-
 >=20
 > I will drop audio power domain control in next version
 >=20
 > > (BTW I built it as a module to prevent whole kernel being rebuilt)
 > >=20
 > that's fine
+
+In this case, do you consider to make the Kconfig option in your patch
+tristate instead of bool?
+
+Thanks,
+Icenowy
