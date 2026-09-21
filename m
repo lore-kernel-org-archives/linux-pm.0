@@ -1,77 +1,150 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta1.migadu.com (out-153.mta1.migadu.com [95.215.58.153])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 808131EE7B7;
-	Mon, 21 Sep 2026 09:30:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C57F048F832
+	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 09:33:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.153
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789983010; cv=none; b=drhoSmodTliIm6DWM15R5PxVL+rHscFMdZYZ5RzfswmpM+pQKWpSxjIFafDWQDzbj6lMhj9K7hvhufZNf3X5VuRgwAYr/qFZ36gEskcdSZf5oIF2kGktMmLJaPIrTJ5SFhycFvhXgqBwltMTxMcoIPPOxcUdGeORxM498ZmQLKE=
+	t=1789983207; cv=none; b=FM1ica496A23ptyHijAtuxJVt7x4ofdKFWnpFk0/L4EqAy+HZOzYv67jXfWT5OJOskac41qaex4m9HIhOMe60arc7OMSjb3dZCW010putyD/+L+8aAXhfgPQxZrUl+7MlQWYfP1E0Ffp7UJ6vml3Ygcqm0SChzpvIR/cgMv6lEQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789983010; c=relaxed/simple;
-	bh=+iFRmCim2bL/Hit6Ji1xAwG/vAEbkPWDxu96VVAUByk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=q+mW+RbLVLLjmssCrR7zOf2g+kuapmThKRi0nGWCOA6PMaGyKUslcPCpiJqxzd9W78DQQSxcsLVd+jYRKMV+irsz09mHdz6SYaQfpoRKzCN6NFFAOIB6g+xVBSwGA4yRsgzOHQ7ejC8eMGDzuouvoWEpgXZgvgHXioWTPBiNR9w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T6EkPaW8; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789983207; c=relaxed/simple;
+	bh=ngtWac8X3lY5A5SaQnbYXeWkN/JG2JLNpAbPKFOiOjM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=MaGYx0wYqnIT93+69inERDpBnL09PKpe4afu2rqDRnf51EmqCZQIDDiOK/kOYjVuY190KlbXQO3PNdktf577v5nHqFoEzHgVrVTtQRrck886t1RrgOeEsFBRHriQ1dmZ+pUe4qNMSCF67WK7Jdhdue1jltu5zG2TAw/eEfN+Dlk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=f9zsQ83j; arc=none smtp.client-ip=95.215.58.153
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T6EkPaW8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDA9E1F000FF;
-	Mon, 21 Sep 2026 09:30:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789983009;
-	bh=fDV7ej+Ox1nQKHx/ew3bMhanMK8N1Rijzwg3wqZsevM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=T6EkPaW8nl5RG/Vrh5zOqyl+8Ps/1gi42E+fU8sO/VxI5JycNTK5ponQGxnzZdn3L
-	 DJZjxsqg5xDiRvEj3pZ9GKOV9t5nO7HjNpqnMw3x6TPbd+LP47KW4JmWdCtQlkaxTJ
-	 1Cxhv7j78QOF/q3ohDJHw/DzfogmHEvUpte9i7vbKSI4O8ZRp+F5SOtkBLiUmBbvAg
-	 zXsZvUwaL2X5+2bBwblJNxkEF8i7CLtp4v+8ehb1qu5LGVWlYxpAbdN91sALGYkflb
-	 dsR6LY+He8uO1ODCjKpl2C+fAsZJ6eoY00roHxzQNufj8AJ+xdBcfYpW2PgqHrlRso
-	 L/Tif4pXiKUkg==
-From: Srinivas Kandagatla <srini@kernel.org>
-To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
- Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Roman Vivchar <rva333@protonmail.com>
-Cc: Andy Shevchenko <andy@kernel.org>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
- Ben Grisdale <bengris32@protonmail.ch>, 
- Conor Dooley <conor.dooley@microchip.com>
-In-Reply-To: <20260921-mt6323-nvmem-v5-0-2f5d308369f0@protonmail.com>
-References: <20260921-mt6323-nvmem-v5-0-2f5d308369f0@protonmail.com>
-Subject: Re: (subset) [PATCH v5 0/3] nvmem: add support for the MediaTek
- mt6323 PMIC
-Message-Id: <178998300288.889964.6727834790176967515.b4-ty@kernel.org>
-Date: Mon, 21 Sep 2026 10:30:02 +0100
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="f9zsQ83j"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=ngtWac8X3lY5A5SaQnbYXeWkN/JG2JLNpAbPKFOiOjM=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1789983203; v=1; x=1790588003;
+ b=f9zsQ83jctwgcHU/RmDsAzFpBmzcyeP8XJuu2OwoLEJIDVTZwJcC39vehYpLwR6qsxzsPI9Y
+ 1+31/aiNiv1DKkowHmxvokW9QTtZDPyV4BGyLdG4qzQ6MDM57NXkFeWBffJ0r7oaY0jB/d2Xufl
+ QY//agRj3sw71upZe3+FidVc=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 0b8bc6083ed009dd;
+	Mon, 21 Sep 2026 09:33:23 +0000
+X-Mizu-Trace-ID: 0b8bc6083ed009dd
+X-Migadu-Flow: FLOW_OUT
+From: Ye Liu <ye.liu@linux.dev>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ye Liu <liuye@kylinos.cn>,
+	Michal Hocko <mhocko@suse.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	Gregory Price <gourry@gourry.net>,
+	SJ Park <sj@kernel.org>,
+	peterz@infradead.org,
+	paulmck@kernel.org,
+	mingo@redhat.com,
+	rostedt@goodmis.org,
+	jpoimboe@kernel.org,
+	mic@digikod.net,
+	oleg@redhat.com,
+	tglx@kernel.org,
+	david@kernel.org,
+	linmiaohe@huawei.com,
+	nao.horiguchi@gmail.com,
+	rafael@kernel.org,
+	gnoack3000@gmail.com,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	rcu@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	rientjes@google.com,
+	shakeel.butt@linux.dev,
+	xu.xin16@zte.com.cn,
+	chengming.zhou@linux.dev,
+	will@kernel.org,
+	boqun@kernel.org,
+	frederic@kernel.org,
+	neeraj.upadhyay@kernel.org,
+	joelagnelf@nvidia.com,
+	josh@joshtriplett.org,
+	urezki@gmail.com,
+	juri.lelli@redhat.com,
+	vincent.guittot@linaro.org,
+	tony.luck@intel.com,
+	reinette.chatre@intel.com,
+	x86@kernel.org,
+	paul@paul-moore.com,
+	jmorris@namei.org,
+	serge@hallyn.com,
+	pavel@kernel.org,
+	lance.yang@linux.dev,
+	mhiramat@kernel.org,
+	pmladek@suse.com,
+	longman@redhat.com,
+	mathieu.desnoyers@efficios.com,
+	jiangshanlai@gmail.com,
+	qiang.zhang@linux.dev,
+	dietmar.eggemann@arm.com,
+	bsegall@google.com,
+	mgorman@suse.de,
+	vschneid@redhat.com,
+	kprateek.nayak@amd.com,
+	mark.rutland@arm.com,
+	Dave.Martin@arm.com,
+	james.morse@arm.com,
+	babu.moger@amd.com
+Subject: [PATCH v4 14/15] lib: convert process iterator to for_each_process_rculock
+Date: Mon, 21 Sep 2026 17:33:10 +0800
+Message-Id: <20260921093311.104814-1-ye.liu@linux.dev>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20260921092101.89285-1-ye.liu@linux.dev>
+References: <20260921092101.89285-1-ye.liu@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
+Content-Transfer-Encoding: 8bit
 
+From: Ye Liu <liuye@kylinos.cn>
 
-On Mon, 21 Sep 2026 10:50:01 +0300, Roman Vivchar wrote:
-> This series adds support for the EFUSE found on the MediaTek mt6323 PMIC.
-> 
-> Tested on the MediaTek mt6572 and mt8163 SoCs (Ben), both paired with a
-> mt6323.
-> 
-> 
+Replace the manual rcu_read_lock()/rcu_read_unlock() pair combined
+with for_each_process() loop in lib/ with for_each_process_rculock(),
+which scopes the RCU read lock to the loop body via scoped_guard(rcu).
 
-Applied, thanks!
+No functional change.
 
-[1/3] dt-bindings: mfd: mediatek: mt6397: add mt6323 PMIC EFUSE
-      commit: c29abe7af10aa891da6c0b68274258232ee3a1a7
-[2/3] nvmem: add mt6323 PMIC EFUSE driver
-      commit: 70a3d85e936cb43165331b9ea470b311a5beeeaa
+Signed-off-by: Ye Liu <liuye@kylinos.cn>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
+Reviewed-by: SJ Park <sj@kernel.org>
+---
+ lib/is_single_threaded.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Best regards,
+diff --git a/lib/is_single_threaded.c b/lib/is_single_threaded.c
+index 8c98b20bfc41..4e7fe85454ab 100644
+--- a/lib/is_single_threaded.c
++++ b/lib/is_single_threaded.c
+@@ -26,8 +26,7 @@ bool current_is_single_threaded(void)
+ 		return true;
+ 
+ 	ret = false;
+-	rcu_read_lock();
+-	for_each_process(p) {
++	for_each_process_rculock(p) {
+ 		if (unlikely(p->flags & PF_KTHREAD))
+ 			continue;
+ 		if (unlikely(p == task->group_leader))
+@@ -48,7 +47,5 @@ bool current_is_single_threaded(void)
+ 	}
+ 	ret = true;
+ found:
+-	rcu_read_unlock();
+-
+ 	return ret;
+ }
 -- 
-Srinivas Kandagatla <srini@kernel.org>
+2.25.1
 
