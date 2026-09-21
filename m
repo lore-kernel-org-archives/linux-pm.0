@@ -1,108 +1,94 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail-m49246.qiye.163.com (mail-m49246.qiye.163.com [45.254.49.246])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 155C33559C9
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 09:09:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64F2345FFC1
+	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 09:16:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.246
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789981743; cv=none; b=buvUDGwzX99uEa9xeEKZ0LMBMBA0WZ3HxmdEh/ruVYI8sZaxvPnWim7tl5j4lVDUZLt/OZ+Xz9MnZTE04gTxvGmUgeAHDZZl1JxBJpfgHQfDGZBVKgi9KTCheT0ce5xLbCOFOwPmuS04tmiJ1kXQaXy8c++GEGrCwlWDBxSHAqA=
+	t=1789982202; cv=none; b=Ecl21piFfxB9SInZbo5yKbAlGlTNGETQqBJuMyhackmJIST3ucbBbdczQcuKJBRw6QZF44ng16KxuRYVak5jCVVLBKGQWxUL1elALezfbfpa7dBv0qQCWKX65JOHmocSEfjoPhVdf+9T/yWHljJejsYxAwokSpgmPRc2Hkfb4SU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789981743; c=relaxed/simple;
-	bh=6jCtNbzvAFfnCkQvIJdZvE2yI4m1pEyatz+z0ebGt7Q=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=s/TaY020GlUhELnW0k4VFKCveLpAkqXgHEuHbdsc864AJD4MKTa5gIzQ5iyl8xVoBCTDiEbdit9u1aveomDDpNor9ZvQoweQxvwxOTunCGVzJuMJeVeHPFyBzKZcLVpZfJ2MBTgEHhHlFKykAEjE9Y/lKhO52z3JElosMV9Wb4o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LjmuDHjb; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789982202; c=relaxed/simple;
+	bh=GX4rkvzFLnBNDvYDip0AbFR7/ATZsWy1dqwa8cjP90s=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=sPT/jQKnPUuyXSO5RUF8qkjnuu6N12laFRMgPQWGmHJpiDlm6VKR8UPE/wfjaXmGIHSXAl+eDSBkXDTYaCXAATvDu522qovdCQ7GJmnwet2q0zaPY4Fe4oDDjg5cf99+BDn8lKSFDamwQJXXXlysTo/ARvpS83q/FTe+UTDNQrw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=U1en4AOe; arc=none smtp.client-ip=45.254.49.246
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LjmuDHjb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C09A61F008A0
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 09:09:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789981741;
-	bh=6jCtNbzvAFfnCkQvIJdZvE2yI4m1pEyatz+z0ebGt7Q=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=LjmuDHjbkOR3/7rHtGdfeVrBzYXeLYJMOatv4fto1oYsMSduTQ6p1BSpZrkjSNqjU
-	 aJ4ezS/BKOdfPGlMC8sErOlNKw2hszGXbpCXglYmJibp1wO5Po/QqueVB9r8IWKbJN
-	 NP/2cvqPuJzJ2ZEr2B/EPZ3Yae3TvFmf8JtJ3SHC5FQIEuORjcxxh1VyQ9IypER/me
-	 EfXbH9DQl0mSnMfXO5ErytVrwpDzx5Zb9VHM1FPkSfuYY8lEv9HxN6XMHgdZUwrTCC
-	 GsCXfYfy1wrtgSWgCyx1qpHxfy9e+PrcIumAClL/EysBcVu+5RplzLy5U2cYh77mY1
-	 VOgQs63lmwlAg==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b74e0c2e4dso2389603e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 02:09:01 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBy3LrN6vZuM1MogBp35ckWCs/83ubNOUehFD6qXG5Ugc6dkni6ijD/VgyZhS0mYbHg/zOGLjCAa/A==@vger.kernel.org
-X-Gm-Message-State: AFuF++kZ0+MCLvXYwNcqqy7Aq7dqbl5ZIEzJkGKxX0W1o+87w80yXGiM
-	gM9GbjIYLek1BE7bXXw0Zr5UllmsxMWI4nZBpIzkKzXTOkIezVBOmvWnts8qfyoDJra8hh95prh
-	wHcEjXaOf3b0b7mM44BiuzKQ98OwuoAJ+EBu8j7tt+g==
-X-Received: by 2002:ac2:4e15:0:b0:5b8:bc5e:b580 with SMTP id
- 2adb3069b0e04-5b8c19583a7mr3502274e87.56.1789981740260; Mon, 21 Sep 2026
- 02:09:00 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 21 Sep 2026 05:08:58 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 21 Sep 2026 05:08:58 -0400
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <p2qiwwig7ap74puja6mgnz37lofljhexiapmpp6y3xmwkhs2dn@v2mxawoivkn4>
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="U1en4AOe"
+Received: from localhost.localdomain (unknown [61.154.14.86])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4e889c066;
+	Mon, 21 Sep 2026 14:53:38 +0800 (GMT+08:00)
+From: Shawn Lin <shawn.lin@rock-chips.com>
+To: Ulf Hansson <ulfh@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	Shawn Lin <shawn.lin@rock-chips.com>
+Subject: [PATCH v3 3/4] pmdomain: rockchip: don't ignore clock lookup errors on attach
+Date: Mon, 21 Sep 2026 14:52:52 +0800
+Message-Id: <1789973573-151146-4-git-send-email-shawn.lin@rock-chips.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1789973573-151146-1-git-send-email-shawn.lin@rock-chips.com>
+References: <1789973573-151146-1-git-send-email-shawn.lin@rock-chips.com>
+X-HM-Tid: 0aa0c2bddec603a4kunmfcbddeea30c3c0
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZS05NVkpNGk1KGUJNSh1MSlYVFA
+	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSU
+	9PT0hVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=U1en4AOeVs5x8FopBm5fX92B0QNGN9KYSXVzFRe2K1Osm8EVeJ12MSFr9yBECO2DRKzIS/6Bso5+wlhJ4HjSTwphxMFdkftFS1Ikqraq3ccY0QyvBMmLDRSgSy4kH+wIJ35BsbYLFovCZLVSbb5SkMuON7/mCfWdARI/VDqFgus=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=LDzfuJ9zFjGPIivIDj5ael+x0eh5KurV+j4tyeiVfgc=;
+	h=date:mime-version:subject:message-id:from;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
- <20260915-pci-m2-bt-rework-v1-3-3c7d9cf9c010@oss.qualcomm.com>
- <CAMRc=MdJgXDUb-Uac0TRB8u1WUpLng51C4yMH6iMEMoK56tQYA@mail.gmail.com> <p2qiwwig7ap74puja6mgnz37lofljhexiapmpp6y3xmwkhs2dn@v2mxawoivkn4>
-Date: Mon, 21 Sep 2026 05:08:58 -0400
-X-Gmail-Original-Message-ID: <CAMRc=MdHy6M9cY-ZqMXP_F6yLuVuipDkZwHoBF0D9W3A5VkOSQ@mail.gmail.com>
-X-Gm-Features: AcwNN1WxEae6jjegpliI2fL_J2GC3AMnE_px_o8YJ5SvWUKC9-5ouNBZ6FP8184
-Message-ID: <CAMRc=MdHy6M9cY-ZqMXP_F6yLuVuipDkZwHoBF0D9W3A5VkOSQ@mail.gmail.com>
-Subject: Re: [PATCH 3/5] power: sequencing: pcie-m2: Create auxiliary device
- for the M.2 BT interface
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
-	linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Rahul Samana <rahul.samana@oss.qualcomm.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>, Loic Poulain <loic.poulain@oss.qualcomm.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Amitkumar Karwar <amitkumar.karwar@nxp.com>, 
-	Neeraj Kale <neeraj.sanjaykale@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
 
-On Mon, 21 Sep 2026 09:58:27 +0200, Manivannan Sadhasivam
-<mani@kernel.org> said:
-> On Wed, Sep 16, 2026 at 04:19:16AM -0500, Bartosz Golaszewski wrote:
->> On Tue, 15 Sep 2026 16:24:04 +0200, Manivannan Sadhasivam via B4 Relay
->> <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
->> > From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->> >
->> > Currently, the driver instantiates the BT interface of the WCN6855 and
->> > WCN7850 combo modules by creating a devicetree node at runtime using an
->> > of_changeset, with the compatible passed through the PCI ID table. But this
->> > method of creating a devicetree node just for matching with the driver is
->> > not recommended.
->> >
->> > So create an auxiliary device for the BT interface instead. The serdev
->> > transport is still allocated here and handed over to the Bluetooth driver
->> > through the auxiliary device, along with the power sequencing target used
->> > to power up the controller. Also extend the provider match so that the
->> > auxiliary device created for this connector is matched as its power
->> > sequencing consumer.
->> >
->> > Since the runtime node creation is now gone, select AUXILIARY_BUS in
->> > place of OF_DYNAMIC.
->> >
->> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->> > ---
->>
->> That's some nice stuff, thanks for doing it!
->>
->> It looks like there's no build-time dependency on this, only run-time? Can I
->> take it independently?
->>
->
-> Yeah sure!
->
+rockchip_pd_attach_dev() treated every of_clk_get() error as the end
+of the clock list, so a clock that exists but is not available yet
+(e.g. -EPROBE_DEFER) was silently skipped and the device ended up
+without pm_clk management.  Only -ENOENT means there are no more
+clocks.
 
-Nevermind that, it still needs is_controllable().
+Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
+Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
 
-Bart
+Changes in v3: None
+Changes in v2: None
+
+ drivers/pmdomain/rockchip/pm-domains.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index b6b099b..e193f97 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -759,7 +759,19 @@ static int rockchip_pd_attach_dev(struct generic_pm_domain *genpd,
+ 	}
+ 
+ 	i = 0;
+-	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
++	while (1) {
++		clk = of_clk_get(dev->of_node, i++);
++		if (IS_ERR(clk)) {
++			error = PTR_ERR(clk);
++			if (error == -ENOENT)
++				break;
++
++			dev_err(dev, "failed to get clock %d: %d\n", i - 1,
++				error);
++			pm_clk_destroy(dev);
++			return error;
++		}
++
+ 		dev_dbg(dev, "adding clock '%pC' to list of PM clocks\n", clk);
+ 		error = pm_clk_add_clk(dev, clk);
+ 		if (error) {
+-- 
+2.7.4
+
