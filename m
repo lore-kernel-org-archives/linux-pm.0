@@ -1,153 +1,120 @@
-Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
+Received: from mail-ua2-f12.google.com (mail-ua2-f12.google.com [74.125.226.204])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7A3642AF9B
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 07:34:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.227.140
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789976059; cv=pass; b=Pl5qQwkldZT2mJBTcp931ZdAyJI8ZbYZ9b1CYPOgKigUW9q2sbRudZ1OKJAnRu+Kq1uJ9r/hfxwZhootJT18Tmttuy3lIFP2vn1TXJuWOWaeN86Al7v0s838/B0s1zPrZsj7EdsB81WWHNpc7Jch+KlVFYFO79z8az+G93ByozM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789976059; c=relaxed/simple;
-	bh=57Sok7jJDa/57dP/GDfeHEhYnwuYZlpWnaikd4BSZrk=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0D0343BDB7
+	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 07:41:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.226.204
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789976489; cv=none; b=kO9bpbIWUG26fU/w1wM1rdKuOIdYWdk6zrvhcs4GqhfmvU56/5FkdB6LvmVsJxtTeqzqm9KnPvE3XTrts9IuZ6cwBkpXoXosSAkKa4CcMfomXRnXkMPawPmv5afCYRn07Tt0Moy3rCpepiCt3amnPfA5/UH+qs38ZIR88hAJExU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789976489; c=relaxed/simple;
+	bh=nRr2NwONb5MDiY74TwbEFnamWl7CEbEpARCJXKG89CU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=crniq+feB5WmMHNDANb/c2OA1NuEKdbR/FlV1v4ni+xNe8bWgkwedSTmGmruPKR86QphKorQx0b0D8tStmDP2lU26xxYWr5+qyoVEDrXgAfyCRwvR9L6M2BUViUDyEFf1qBqzM4nLZQwVod6GofcsaSOfsF93zOhexxBggPAeUs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bRho8oHk; arc=pass smtp.client-ip=74.125.227.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 To:Cc:Content-Type; b=uIuRPl6mDisgBetTL57ihQ5l7UCAt2u2UKVMl8ioUYdUEOoT+8P+uYxrlOvqNB2fytrQp8IbRkXXdrHMjQHN+EXA+9C8LCuTv4fgqbdbpefxe2+i1wLnb7/QbxCAn1zK+xhY3RoH/QRpUnwH2jtd0JAf1NTA9CZczRdOu6cYDb8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.226.204
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bRho8oHk"
-Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-396ccb652d7so2322591a91.0
-        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 00:34:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789976057; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Ek1jO/CZFq06fB8s4Etl6eaGy56h7pgbDyb+p/Jmno4CTAQMrwAONouHMB0rO9Aybo
-         gIdj3mvjUxKFChjQT+xiZvtoOMGR5k2p/LgCH3ylhKeTRb5LojAocYtDQDYDl5B5NziY
-         0JaYGMbHKcGm2Fr4Ri1x4MS1mocf2lyX7cp9loi3G5yHFF5LtjRFTVhBxbdSmEh1TeMw
-         BQYFxtO4mFDWdcdS0n1tSWx7papBT58qEdzEyuCcR1Iq4uL1+FxvaVd5bJCnSQGNB5Fc
-         wY9RzHOr/CBt41ernKTBDLgfEX0AfA0Uwozb3taeR3P23Y5NZ388+9BNE3hzSyWloXpw
-         SgQw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=i/KB7XKvlLtdNPe51SuZ6hkHW35ikyi0W/vUmCBDQwM=;
-        fh=QerA8Gn8mWxkqnsK7CxPgUX2rGgBviUc3k3RYDtw9o8=;
-        b=aKQ6INc9RFltI2vG89mTH8+7cvFIqCkOQZ6HoQsy1CFwQkLdhl3QuJEyxEbAl2/RJP
-         5ZPRxGvhHmCW3Il/xIKiNuX54oHRTwnXCmJUXx5s3C61PMc9F6u/J2+CL8ne+0LChi3V
-         6ZXWEidLz/PSwPMYQJoWUrWZVKWzehmrG33vVkaejh4+AXxf1ctfG8M3bmFvTBFcRNwy
-         Gt4od5Fr5Lm3GNvhCmq9/Xv1uSBLZHY5o1mkLzLKY2b3OuQFbAT3t40j9GSj7bozUF2B
-         K3HlxxFYxC6vLDeDY4Kvv+Prb9QOYfyEVXLchu7lRe6QsiELEa4a5RJlMUH9iEzip4pw
-         Mb1w==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789976057; x=1790580857; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=i/KB7XKvlLtdNPe51SuZ6hkHW35ikyi0W/vUmCBDQwM=;
-        b=bRho8oHkSZ6eNFFlMVFarqQ5ou6tGwP6n0eX0AMCacl0jOnq/EcGvM7lHBlgkmMQP7
-         zLLh08JXmiwSrxOeMNy0Tw7uLfdHnUz1OHewAdYTttaeLiZZIRbpdqKAm1exhBXt0SJ2
-         uwLkghVLI+wKYXaKcDPzLNu4LmatZLIhyK9LSr7vpCufUr4zYs+7bCeFlZ0tLLW0hSZD
-         TgyIWK0sBY2F98z5zFIvPOsTthpcp0n1jNIxNiXIZlkb07px7TcCrRNBMw8uaYpQmBZT
-         ni3Oas86iQDAeF7bEgd4d758qslkBQczuds/1ZuAokt+/PN415MLqRAZdPxSP20gQeeM
-         UVvw==
+Received: by mail-ua2-f12.google.com with SMTP id a1e0cc1a2514c-97e96a8ba8cso1714368241.3
+        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 00:41:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789976057; x=1790580857;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=i/KB7XKvlLtdNPe51SuZ6hkHW35ikyi0W/vUmCBDQwM=;
-        b=g4ZO/jw+vtjQByRGNjhKERTwINnHni/oBK224eM2RrGr9m9o/hL4OHXUOT2Nvy3QqL
-         yBF7t70OgiFZts9p7JJvrRi4hO8L1bK7UZBlQxEtKs7jwg/6qfaZc/nrXq8Ogi5zKjrh
-         lx5OCkprYj3mwwZ7BfvTWgcQk81d0Twg4WlTHI2o6kkYY+Fa04TVrYIi/riY1IgH7dYD
-         JK0x26OqWcyUXL+OssvpXSOmvtTLKr1PjCFoH7dfCTIvzBFjmKV8+P/c7bq4WIyMyDDA
-         Qb5g0DIUY+e/XH7ADbuVnr6i8a1kMspYngY+1zT2ZG+KE9RQr1lpxx8DOF2Dnp9pnTgz
-         St1w==
-X-Forwarded-Encrypted: i=1; AKwUvBwQRNSRhcGTLQtdNY0z0+4fJu9tJlGuZpzz0PAMQzSP3SISsqk6vHFmUpfJ4W+amXIZ6VV6ZeJ94w==@vger.kernel.org
-X-Gm-Message-State: AFuF++k9ZHpSseArQaK6VnxxdCHV70fAD4Jd0zAch0bWm6XEzXXfXWAE
-	ZKF2PAFLHraLIQeLp5A4p0lMZV/FikVxDgfF/9L4gSpk/jdq03trvnFz5lTjqDY7aLwB5Ie+4QH
-	HyBJBny6AD4S2fZov7DzVgmmxyDp5FME=
-X-Gm-Gg: AYBFou33dYJTtOBgH0YZeQOW2OGq8HLhVCcvPtyVRss21tVLv957EpV6X/AfJF7P+ER
-	mGDOlzK4pZ0akuEdVxO8JmXcblsx49/wYrBvTbnTCQ/yxADlZ1hJBogGOK8+dB5z6E691wioq9I
-	OR35orozJB7IPce00gOngofzPj3ZlI0Drpx0/WOuox94VB6MxPAChOhSa40Awpz9l/vIdCAhCgo
-	XYu7FBEBvfltngjryZ8N+YtaxElOfYDjHOZkGSDGsmP9kmb13+ic/SvLf87FWzb8aTL/Oo+lP4s
-	0ObB+2NLqNmsdvVHMoMt0Du3akbYAdgyeQ5BXEYuVm4X+IlQMa/iQayOhQSqfjkfFKQfciKbcjv
-	6kRNnWyrjldSM
-X-Received: by 2002:a17:90b:4b87:b0:39e:345b:3323 with SMTP id
- 98e67ed59e1d1-39e54fb121dmr14066759a91.22.1789976057124; Mon, 21 Sep 2026
- 00:34:17 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1789976487; x=1790581287;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=FDUPsKvRHny4pMpTXrqtNbtll59mp87r5rbb0L/oblw=;
+        b=KGT49oqr7cC3nSLIQ1ZmEIqppMetP44kQG9rMQzAU3Qo8PdTI1lhVmUVRmZKdnPbfg
+         7q2Db2CwMlKbUVqjqPAvH25T+tDD9/W61oOSz/g/tRuHVG3BlY1g226QDxgAXfvqoUwA
+         IDV37KKPq0Pu6BhdbDTIpBGZa4vNe+xP8qUNyjzuSi1HtpHDuAaxqYWLwMA2pAQlfjwd
+         7+THbaFUiwjJC3Z7s7TBpVcXCbj3+7AVCt7gvlm2DheEz5nhDHNlFNeUrffjdSLyAJ1J
+         cMZ1Ne8rqx0c45wTXShE5Qvc9b056a1525GiBw3eVqFuSlWoESMskg9mE2aL2mdXYD9D
+         3zKw==
+X-Forwarded-Encrypted: i=1; AKwUvBy4dsMbHEucdZViSgoSNT1p59DuAEFECJUi8K3aOWUuhvA6kBTmJ4211nszajrtu0l/l3FqmHPapw==@vger.kernel.org
+X-Gm-Message-State: AFuF++mIWMmuk0ARAkKXrBOlm0TeOcfn0B0mrCLIEPIeQQRsASEEfhw+
+	W/rL9dlACOsJSW9d3W3PWXv8tE0HBL7gnpyZwgQ81G+AGrweGoaOO2zwhctIJ1N1
+X-Gm-Gg: AYBFou3Kz79lvXGJs1wzY8h9vOUTyfpnYtyLByXADhSEEkixf/XTSoCmIkUXpFLQ0TI
+	243pzs90IbeQ5iiJeq/nSYnztgypuIm8yn7cA/swg8VqUKHixkI1oKPDgXa+FoLPcRp80fxcfHy
+	/b5UmWd9j5J18eDLAhYn4U4akqcW/+v9+CatCDxVm8DxdX4PoNjn7QD3P4XyyZnEHIjg3mm+j08
+	lbZw1nOwHuBsV9Q2cYDumY1xzcxzeTiYRi48RZQtTIrL1NyNwhSGBmmOUYZ4bmhmRr0U7nWVEO7
+	eGdPnSOwSAB2vJHJ0kPcry0Cisp+kOX2Gz0Om5pJ5Ab3r2zo4UtG+b+Psv7Qr74TiV8fQfu86sA
+	GFh/9AsfWPiRIsUPTbfN/nvK8VHFIciB0fU4drMIGdSK9sMwrvLpuWc+nsWi8+iqLzY4ZYN2P7K
+	pwjEPTFWtt21S+58EDeRcG4KQV6xDWCE18OReB5WNAbXQLajIj6oOzgY1KMf3HoPLpqyO1OgY35
+	hRX9ySh+jqIdZjL63EoXBN8I1EIngkQYn3New==
+X-Received: by 2002:a05:6102:e0e:b0:7a6:ef60:dac with SMTP id ada2fe7eead31-7a6ef6011abmr2042869137.34.1789976486606;
+        Mon, 21 Sep 2026 00:41:26 -0700 (PDT)
+Received: from mail-ua2-f12.google.com (mail-ua2-f12.google.com. [74.125.226.204])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7a6acafe715sm7329452137.11.2026.09.21.00.41.23
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 21 Sep 2026 00:41:24 -0700 (PDT)
+Received: by mail-ua2-f12.google.com with SMTP id a1e0cc1a2514c-97e96a8ba8cso1714335241.3
+        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 00:41:23 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxVwtR6r4bhJB9iMsxf6FZvpJZkIIzHtGovxyqdxk/jsAorvCpZ0/ntJUWvI4lfFQYmM9Qvj48wzQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:83d5:b0:7aa:17ba:3dfa with SMTP id
+ ada2fe7eead31-7aa17ba42bbmr32910137.31.1789976483444; Mon, 21 Sep 2026
+ 00:41:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260721095233.420823-1-clamor95@gmail.com> <20260721095233.420823-5-clamor95@gmail.com>
- <CAPVz0n2rhZk0fjM06u=C5H4LgVOsN6ACriO1o+byx0dyqTwGzQ@mail.gmail.com> <CAPVz0n2mzwp-ffUu7tw5ojXgM=+G-PT3V9pHN--dT=dnYw5hHw@mail.gmail.com>
-In-Reply-To: <CAPVz0n2mzwp-ffUu7tw5ojXgM=+G-PT3V9pHN--dT=dnYw5hHw@mail.gmail.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Mon, 21 Sep 2026 10:34:04 +0300
-X-Gm-Features: AcwNN1W6gcxmcfy1bLN5jucC74BzWiaaqHA32OWE3YHnq2Or7J12ypc4KJW69uA
-Message-ID: <CAPVz0n2ZeYk8WbWfW7L1kLsQN4e0mdQ7nM4Lozy16z9X8kPCWA@mail.gmail.com>
-Subject: Re: [PATCH v10 4/7] input: keyboard: Add driver for ASUS Transformer
- dock multimedia keys
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>, 
+References: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-0-dbe9236bfd22@ideasonboard.com>
+In-Reply-To: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-0-dbe9236bfd22@ideasonboard.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 21 Sep 2026 09:41:10 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVC2vNp2nTHUi3saTZ8UD4ggeB_aBEvN9XP+EToOr7G2w@mail.gmail.com>
+X-Gm-Features: AcwNN1UjZbDPnIaj-fYRvcBoX7YE3K7C7k2z9bWrLFQVkND6DSGXX-e-oumCCsA
+Message-ID: <CAMuHMdVC2vNp2nTHUi3saTZ8UD4ggeB_aBEvN9XP+EToOr7G2w@mail.gmail.com>
+Subject: Re: [PATCH DNI v2 00/11] media: rcar-fcp, vsp1: Enable on R-Car X5H
+To: Paul Elder <paul.elder+renesas@ideasonboard.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
-	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-media@vger.kernel.org, 
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-=D0=BD=D0=B4, 6 =D0=B2=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 20:22 Svyat=
-oslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> =D1=81=D1=80, 19 =D1=81=D0=B5=D1=80=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 12=
-:20 Svyatoslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
-> >
-> > =D0=B2=D1=82, 21 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 12:53 =
-Svyatoslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
-> > >
-> > > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > >
-> > > Add support for multimedia top button row of ASUS Transformer's Mobil=
-e
-> > > Dock keyboard. Driver is made that function keys (F1-F12) are used by
-> > > default which suits average Linux use better and with pressing
-> > > ScreenLock + AltGr function keys layout is switched to multimedia key=
-s.
-> > > Only Dock keyboard input events are tracked for AltGr pressing.
-> > >
-> > > Co-developed-by: Ion Agorria <ion@agorria.com>
-> > > Signed-off-by: Ion Agorria <ion@agorria.com>
-> > > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > ---
-> > >  drivers/input/keyboard/Kconfig                |  10 +
-> > >  drivers/input/keyboard/Makefile               |   1 +
-> > >  .../input/keyboard/asus-transformer-ec-keys.c | 310 ++++++++++++++++=
-++
-> > >  3 files changed, 321 insertions(+)
-> > >  create mode 100644 drivers/input/keyboard/asus-transformer-ec-keys.c
-> > >
-> >
-> > Hello Dmitry!
-> >
-> > May you please take a look? ATM only ACK on input patches left.
-> >
-> > Thank you!
->
-> Hello Dmitry!
->
-> May you please take a look? ATM only ACK on input patches left. I
-> would like this patch set to move forward.
->
-> Thank you!
+Hi Paul,
 
-Hello Dmitry!
+On Fri, 18 Sept 2026 at 19:07, Paul Elder
+<paul.elder+renesas@ideasonboard.com> wrote:
+> This series is based on Geert's
+> "topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v3" branch [0]. A
+> branch including this series is available here [1].
+>
+> This series enables the FCPV{B,I,D} and the VSP{B,I,D} blocks on the Renesas
+> R-Car X5H SoC.
+>
+> This has been tested on an Ironhide with the vsp-tests test suite [2].
+> VSPI:
+> 145 tests: 138 passed, 0 failed, 7 skipped
+> VSPB:
+> 115 tests: 104 passed, 0 failed, 11 skipped
+> VSPD (a):
+> 114 tests: 99 passed, 0 failed, 15 skipped
+>
+> VSPD (b) hangs on the tests, so that needs some investigation.
+>
+> The first couple patches add clocks that are used by the FCP and VSP,
+> but as the upstream X5H CPG driver is barebones at the moment and we
+> don't yet ensure that the parents are enabled, these are marked as DNI
+> for the moment.
 
-May you please take a look? ATM only ACK on input patches left. I
-would like this series to move forward. Thank you!
+The DTS patches use DNI definitions of clocks, so they should be DNI, too.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
