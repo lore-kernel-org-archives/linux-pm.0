@@ -1,92 +1,101 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.98])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1589D44F56D;
-	Mon, 21 Sep 2026 07:58:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9569B41D4FE;
+	Mon, 21 Sep 2026 08:09:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.68.63.98
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789977517; cv=none; b=BexfL4RM9aWC36UZaYoC+wkAGfbU74Oswc2U4YBR48qea0g7Fz3lFyY/Spg3mxhSiPc7tsRhwAP+puK7VD3weo8psGihypO6vNPiDrqBefQrp1RTVKNM0NODh4uBuH1dJ4EpiyMBmI2lyadFI2FjQozCYRUq1uCDExk8JDFwgWI=
+	t=1789978147; cv=none; b=sajo/CNeUJWy6FUcTtXXZd2kJL20Fa4r5CqZcjBX3zr9CBGVm09CzwPhStfSWFeA1XiXqBvam/66b+YLC3BG+XHnI/fylHgfIGv352ya3XJfJMGIQVArXynca/q8FFuoR9CEO5ujlYN/WXiWmNZYPwTiWZMkxs2Np9k338dH0Qw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789977517; c=relaxed/simple;
-	bh=EUfSpRHBF3fPSX0w9+7hQaeikTQIYwpee7jsi20JUL8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EdZWei1kaOu8fkW6My/fmNRuPZ3Irsqi6g4qSeLkDkzuihdZwKsc+PpDgH7d4e+14EpcDI3H4Yo8A1n6qpdpaiuKNNQbu40s3bE9w5lIilmV5cqmpJwGjAbQqx4AbjiS2cAXE+qLYnLVptIW2wK+TT4/zp8RKoayS1+d+/SbD28=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HJQcs/Ti; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789978147; c=relaxed/simple;
+	bh=yG94IDnRPo7ZwRo0nGVXZF/hqh0iJRXqgpvzk04JUTE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hymNgPtyoxnj6Ps5WorISbuR5p35RT7PtAm8B+7+iKIXA2Q2TXeiEo1bqeYNEBvSMSnItTD+Z22FusdYzN1+K6xdpcyjna3ESw/BOkL4SDFDv4jCN1fdzIRuIWisFrpOe+G2nWGvcYVqOMykC5J9bhQb+Nyg2I3iLqf4nGxkQTo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=g8OQOE7G; arc=none smtp.client-ip=188.68.63.98
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HJQcs/Ti"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 149951F000FF;
-	Mon, 21 Sep 2026 07:58:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789977516;
-	bh=oAyAx8t+7fJPyP33W2CjPs2RDHxeq3KJ8H7frGEAPfo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=HJQcs/Tiqvkf8RqWovy/B2NlzULMBtQX+gPSH8bJ0Hyhs/ryNy6scPa1frf8WDJ59
-	 2Mq+o5MsC9NXcvtYn8mryTl2Azl0q3uMDoTZlZAbfa5ZbqMdYVF9U3eDQcpsom+G/V
-	 dkho3HgKiD1BoXy3vKE9V+C1DTiVuSAVIGAK0LFkARBiMM9rTiYEfMqAgaSxcMnYsq
-	 2g9Q3RQ0rZbb3hDGccvJeuFI+iZfPbFoghG3J9VWRtPjcgLrsFGpTTW0jWT14cdmi5
-	 VH3yiCO0Nt5QKdkVlsHeVnPoeQwFhW/VUj4qoo9MHbwGpO404Yjo5OBi+klPhQkinM
-	 Ro0jpnPfyPzyA==
-Date: Mon, 21 Sep 2026 09:58:27 +0200
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: 
-	Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Rahul Samana <rahul.samana@oss.qualcomm.com>, Wei Deng <wei.deng@oss.qualcomm.com>, 
-	Loic Poulain <loic.poulain@oss.qualcomm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
-	Amitkumar Karwar <amitkumar.karwar@nxp.com>, Neeraj Kale <neeraj.sanjaykale@nxp.com>, 
-	Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: [PATCH 3/5] power: sequencing: pcie-m2: Create auxiliary device
- for the M.2 BT interface
-Message-ID: <p2qiwwig7ap74puja6mgnz37lofljhexiapmpp6y3xmwkhs2dn@v2mxawoivkn4>
-References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
- <20260915-pci-m2-bt-rework-v1-3-3c7d9cf9c010@oss.qualcomm.com>
- <CAMRc=MdJgXDUb-Uac0TRB8u1WUpLng51C4yMH6iMEMoK56tQYA@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="g8OQOE7G"
+Received: from mors-relay-2501.netcup.net (localhost [127.0.0.1])
+	by mors-relay-2501.netcup.net (Postfix) with ESMTPS id 4hpG8G23S7z6SXg;
+	Mon, 21 Sep 2026 10:08:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
+	s=key2; t=1789978126;
+	bh=yG94IDnRPo7ZwRo0nGVXZF/hqh0iJRXqgpvzk04JUTE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=g8OQOE7GljT0CxIcDfRd1o1O6QIFNLAP5Bl2LkuCJr35rL3PdHzZYYT1upAOG86l/
+	 R+M/QkvIeVDwPCBTOB7j7VifTuEoZr9JK8mDQdk6waz3odX/2MzYjJXA8U0T4RPAxb
+	 nt9u1yEYCyWCNrGRJ5FoRp4ntHB7Szx0jnQu1+t4Wh6K3peenkH3pq0dP66NbAe9gU
+	 V3C0h5b40ithZAXqcLJqXHtInFwkMWCKPslHIKoGaTMdTd8bKgS8RIkHWlIa3EB3uf
+	 7MJJDfwEiAPUkH6Sx0Rgrdzt5xBSMyrolPVwQtyuKYjGGE+FByMMPw2Ip8qEpxE6rw
+	 BHuIj7JIoGiBA==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+	by mors-relay-2501.netcup.net (Postfix) with ESMTPS id 4hpG8G1KWLz50Dm;
+	Mon, 21 Sep 2026 10:08:46 +0200 (CEST)
+Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4hpG8D2Stcz8scg;
+	Mon, 21 Sep 2026 10:08:44 +0200 (CEST)
+Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
+	by mxe9fb.netcup.net (Postfix) with ESMTPSA id CC40C5FA21;
+	Mon, 21 Sep 2026 10:08:36 +0200 (CEST)
+Authentication-Results: mxe9fb;
+        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
+Received-SPF: pass (mxe9fb: connection is authenticated)
+Message-ID: <a40f9988-7e82-42f0-a27d-7a7c94dc37d7@leemhuis.info>
+Date: Mon, 21 Sep 2026 10:08:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMRc=MdJgXDUb-Uac0TRB8u1WUpLng51C4yMH6iMEMoK56tQYA@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 6.18 0167/1250] PM: hibernate: call preallocate_image()
+ after freeze prepare
+To: David Lomas <david.s.lomas@gmail.com>
+Cc: Sasha Levin <sashal@kernel.org>, stable@vger.kernel.org,
+ rafael.j.wysocki@intel.com, gregkh@linuxfoundation.org,
+ matthew.leach@collabora.com, superm1@kernel.org, linux-pm@vger.kernel.org,
+ regressions@lists.linux.dev, Florian Schmaus <flo@geekplace.eu>
+References: 
+ <CALjEBWQo0-Sdimo+aRNKUQvgDGw=jBFCcfwCXaqVdtoPrHLAQA@mail.gmail.com>
+ <2026-09-20-daily-reply-0011-re-hibernate-preallocate-deadlock@kernel.org>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Content-Language: de-DE, en-US
+In-Reply-To: 
+ <2026-09-20-daily-reply-0011-re-hibernate-preallocate-deadlock@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-PPP-Message-ID: 
+ <178997811733.4166978.15433736405461601017@mxe9fb.netcup.net>
+X-Rspamd-Server: rspamd-worker-8404
+X-Rspamd-Queue-Id: CC40C5FA21
+X-NC-CID: R1o9YNrR4YLrPmjeFjPCGDNUa9u6P2zxWTuAYaBDBMxyJJN9O+c=
 
-On Wed, Sep 16, 2026 at 04:19:16AM -0500, Bartosz Golaszewski wrote:
-> On Tue, 15 Sep 2026 16:24:04 +0200, Manivannan Sadhasivam via B4 Relay
-> <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
-> > From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> >
-> > Currently, the driver instantiates the BT interface of the WCN6855 and
-> > WCN7850 combo modules by creating a devicetree node at runtime using an
-> > of_changeset, with the compatible passed through the PCI ID table. But this
-> > method of creating a devicetree node just for matching with the driver is
-> > not recommended.
-> >
-> > So create an auxiliary device for the BT interface instead. The serdev
-> > transport is still allocated here and handed over to the Bluetooth driver
-> > through the auxiliary device, along with the power sequencing target used
-> > to power up the controller. Also extend the provider match so that the
-> > auxiliary device created for this connector is matched as its power
-> > sequencing consumer.
-> >
-> > Since the runtime node creation is now gone, select AUXILIARY_BUS in
-> > place of OF_DYNAMIC.
-> >
-> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> > ---
+On 9/20/26 19:50, Sasha Levin wrote:
+>>   task:systemd-sleep   state:D pid:36677
+>>    throttle_direct_reclaim+0x358/0x3e0
+>>    try_to_free_pages+0xbf/0x220
+>>    preallocate_image_memory+0x35/0x9b
+>>    hibernate_preallocate_memory+0x25b/0x390
+>>    hibernation_snapshot+0xc1/0x4e0
 > 
-> That's some nice stuff, thanks for doing it!
-> 
-> It looks like there's no build-time dependency on this, only run-time? Can I
-> take it independently?
-> 
+> Rafael, Matthew: there is no fix or revert in mainline, and 7.2 has the
+> commit in its base release, so 7.2.y users keep the hang whatever the
+> stable queues do. Should the ordering go back, or should the hibernation
+> task bypass the pfmemalloc throttle?
 
-Yeah sure!
+Not my area of expertise, butm FWIW, Florian Schmaus (now CCed) on
+Saturday posted a fix referencing the culprit and from a very brief
+looks sounds like it might address David's problem:
 
-- Mani
+PM: hibernate: Freeze kernel threads after image
+preallocationhttps://lore.kernel.org/all/20260920-fix-hibernation-v1-1-f9940c2d7d7f@geekplace.eu/#t
+David, you might want to take a closer look or even try that patch.
 
--- 
-மணிவண்ணன் சதாசிவம்
+Ciao, Thorsten
+
+#regzbot title: PM: hibernate: deadlock due to waiting for kswapd
