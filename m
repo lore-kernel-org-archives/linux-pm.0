@@ -1,96 +1,116 @@
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A5D6514762;
-	Mon, 21 Sep 2026 22:06:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2445F50129E;
+	Mon, 21 Sep 2026 22:25:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790028404; cv=none; b=bD6UqfmZ95WBfZLmOcuSPvcolVYPL5zUmIHd8G7YqhcADiZgW1qbt4nkIMkXNh9v3MeNhWgObKCH/AFh1gwonKSCZ5XKUDosz7TszFRbPktyXk77VEtzOT03NMlq2gBeHiKDaT4HMcPP7b0AbXuf+WrR4eKyeYBXFQ/88/TUsNc=
+	t=1790029514; cv=none; b=AQmOqGNTT0+utx8c0Lp3HiYmnGtC2A4GnQaYTsIBPQhMWs/cB4djXwGQ7rF1ujy0is0pIiZTIcu5Gb/hyxeJnw1hUYQ8I0Jmg1ORwkqinPi8c6jKub6pQvpmcOY/dXY7ZuWW2YvbpME1PQOPO7xAJD34yvGdjeCJxlj7D2yTm2w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790028404; c=relaxed/simple;
-	bh=X/0hh96nzijd9yDSFT9pakn2WTJfPccstachVOiA3f0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Il6MIWCMXnstJvWbrUMDVFiuaTesRtzvA0Jda5zCRoKA4Ik2JGgeQ75oLgr04J+O+5hFtLrnsZRoVszLEQHQZHNYjLWFrqhcV19rRs2Pq5edcwey1iMtEL8N319yUgYfgdHEp2yQasiiZLZY2ApseRBpVTS6a6zbl/NjwfbpXk4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=VdwN1/m6; arc=none smtp.client-ip=185.11.138.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
+	s=arc-20240116; t=1790029514; c=relaxed/simple;
+	bh=h5e5IrKpWCsLN6tg5FAxVpJAXqj3+QByX8OR87u2sGU=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=aS3tljq4ubvBt8wkYXRvftyz/M5boaTZD2v7aIcwz+msvN55YZdLaBQrDsoAtMSu21VMC5iYFpMfUmylDJ6dbkGoV2OKXstn2EE8H0Y9N+kzVCE6c6YXwPcnaOFmDaYlAD+V9/2O/1UqhHCaZw9Kou2NL8LHmu3+ATR/V17EtSY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cI/wTlCh; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="VdwN1/m6"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=Xh7r+wBULLX7xOhkCrEp64UsGuqdkH4pf7taI2bfz/Y=; b=VdwN1/m6cob8uyb69bcrs6kzSx
-	wtZUqa2i/g68w6+aAstSNytJPJAdb7p0plB3mUGSxy1VC/EHfNYwPRyrZz8tiSDF1anBMUg7gK6rU
-	eQC9D04+lNHkSnHgdukiwNCNsh6MSaUxYoATm8yDqOfGvbbi0V+WgZQImmgt9bArxhDuBZEaWhj7c
-	xHLDzjwwbJGJ/pM0PyQX75uvDyz/O1A8n2E8GYOXOv5ZfHn9Z00J6AGt7DHP+YSCA3KUqgEzYDLnK
-	EuCneA+xU2pEcqJX7T4gH5Qqo/H26phoAVxLkUy4Gsmj2RFiVxQ/hSIlSwLVSOTfYjm57u1SHLhSL
-	t0eaVU+Q==;
-From: Heiko Stuebner <heiko@sntech.de>
-To: tomeu@tomeuvizoso.net, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, robin.murphy@arm.com,
- ulfh@kernel.org, p.zabel@pengutronix.de, ogabbay@kernel.org,
- zhangqing@rock-chips.com, Jiaxing Hu <gahing@gahingwoo.com>
-Cc: royalnet026@gmail.com, abel.vesa@oss.qualcomm.com,
- sebastian.reichel@collabora.com, sidong.yang@furiosa.ai,
- u.kleine-koenig@baylibre.com, chaoyi.chen@rock-chips.com,
- diederik@cknow-tech.com, alchark@flipper.net,
- dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
- iommu@lists.linux.dev, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Jiaxing Hu <gahing@gahingwoo.com>
-Subject:
- Re: [PATCH v13 09/14] pmdomain: rockchip: add optional per-domain power-on
- settle delay
-Date: Tue, 22 Sep 2026 00:06:12 +0200
-Message-ID: <15844283.tv2OnDr8pf@phil>
-In-Reply-To: <20260915104328.45901-10-gahing@gahingwoo.com>
-References:
- <20260915104328.45901-1-gahing@gahingwoo.com>
- <20260915104328.45901-10-gahing@gahingwoo.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cI/wTlCh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B010A1F000FF;
+	Mon, 21 Sep 2026 22:25:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790029512;
+	bh=23D3MQz3fCUCgpRz+OxP3fbdkMJEv8tAqXTKIYEwZ+Q=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=cI/wTlCh3gSvgMpcp574D01tXV9/G5XAbC26SShUYOScCVubB2uRu7bLM0K0T2I65
+	 ZpLa5U5iSuHr3brz565yy+HIvCcPvLZ3fDmRnpfOe0Z/1utYsRtjru7Ro1hKV6Owdc
+	 wXxgeyrygGqQvs/cIK2fYkwfh8HFmSwV3E+LkvMIzPuRX02b1OoBEOFs9rW8/sfwQ6
+	 IjNYFYFlosuYDOtVQXvlQAuQQWTG+4/1KgOklR+dWhR67zCwxLZM2HoApTQ+/HVPVH
+	 FGY4L/s/uckYWbF3mVlx9GKproA0aGMwUUDVic+bRK511h3EGFFbG30wO33mx32r8r
+	 UyfV2ywgW05YA==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1x8mRi-0000000Bl5Y-2Auk;
+	Mon, 21 Sep 2026 22:25:10 +0000
+Date: Mon, 21 Sep 2026 23:25:10 +0100
+Message-ID: <86wlse44zd.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Georgi Djakov <djakov@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Mostafa Saleh <smostafa@google.com>,
+	Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Re: [PATCH] Revert "interconnect: qcom: x1e80100: enable QoS configuration"
+In-Reply-To: <2e666363-9a57-41a0-9605-db0dee304f52@kernel.org>
+References: <20260915123703.3228329-1-maz@kernel.org>
+	<86y0cu49iv.wl-maz@kernel.org>
+	<2e666363-9a57-41a0-9605-db0dee304f52@kernel.org>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: djakov@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, raviteja.laggyshetty@oss.qualcomm.com, konrad.dybcio@oss.qualcomm.com, abelvesa@kernel.org, andersson@kernel.org, smostafa@google.com, regressions@leemhuis.info
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
-Hi,
+On Mon, 21 Sep 2026 22:36:36 +0100,
+Georgi Djakov <djakov@kernel.org> wrote:
+> 
+> On 9/21/26 11:47 PM, Marc Zyngier wrote:
+> > On Tue, 15 Sep 2026 13:37:03 +0100,
+> > Marc Zyngier <maz@kernel.org> wrote:
+> >> 
+> >> This reverts commit 5a8b2cc36e796d595c9d97eab23c2be22805cc1c.
+> >> 
+> >> Since the introduction of this QoS change, X1 machines based on the
+> >> Purwa SoC (such as the Lenovo Mini X) take a hard reset at boot time.
+> >> 
+> >> Other machines based on Hamoa (such as the X1E001DE Snapdragon Devkit)
+> >> end-up with a similar hard reset while under load, most likely due to
+> >> the PCIe ports being starved of traffic.
+> >> 
+> >> Revert the whole thing until someone figures out what magic parameters
+> >> allow QoS to work in a sensible manner, as a usable machine is somehow
+> >> preferable to one that crashes efficiently.
+> >> 
+> >> Link: https://lore.kernel.org/all/apgeBNSiP01YfNcs@google.com
+> >> Link: https://lore.kernel.org/all/86ld9d4h4n.wl-maz@kernel.org
+> >> Signed-off-by: Marc Zyngier <maz@kernel.org>
+> >> Cc: Georgi Djakov <djakov@kernel.org>
+> >> Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+> >> Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> >> Cc: Abel Vesa <abelvesa@kernel.org>
+> >> Cc: Bjorn Andersson <andersson@kernel.org>
+> >> Cc: Mostafa Saleh <smostafa@google.com>
+> >> Cc: Thorsten Leemhuis <regressions@leemhuis.info>
+> >> ---
+> >>   drivers/interconnect/qcom/x1e80100.c | 485 ---------------------------
+> >>   1 file changed, 485 deletions(-)
+> > 
+> > Any update on applying this? These machines have been broken for the
+> > past 4 release candidates, and it'd be great to get them back to a
+> > working state.
+> > 
+> The revert is in linux-next already and i will propagate it as a fix in
+> a couple of days. Thank you for the report and for sending the patch!
 
-Am Dienstag, 15. September 2026, 12:43:23 Mitteleurop=C3=A4ische Sommerzeit=
- schrieb Jiaxing Hu:
-> The RK3576 NPU domains need a short settle time after the idle request is
-> released before the registers behind the domain answer. Without it the QoS
-> writes that rockchip_pmu_restore_qos() issues land while the domain is
-> still coming up, and the NPU throws an async SError on the first cold
-> power-on.
+Ah, I hadn't looked into -next. Thanks for letting me know. I'm
+looking forward to being able to use these machines with upstream
+again!
 
-are you really really sure, this is the fault of the domain itself?
+	M.
 
-The regulator also can just need a longer time to bring up the power.
-Looking at [0], it seems I actually encountered the same thing back
-on the RK3588.
-
-Only difference is, on RK3588 a fan5355-type regulator normally does
-provide the npu supply, while on your board it comes from the main pmic.
-
-Can you please try the following:
-=2D set your power-domain regulator to always-on in the DT (so it stays
-  on even when the domain gets turned off)
-=2D try to reproduce your SError issue and see if it still appears
-
-
-And for the other case, look through the pmic datasheet to find the
-enable-time values and do something similar for the RK806.
-
-
-Thanks a lot
-Heiko
-
-
-[0] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
-it/?id=3D8acfb165a492251a08a22a4fa6497a131e8c2609
-
-
-
+-- 
+Without deviation from the norm, progress is not possible.
