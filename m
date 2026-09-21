@@ -1,202 +1,192 @@
-Received: from 9.mo17.mail-out.ovh.net (9.mo17.mail-out.ovh.net [46.105.73.52])
+Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazon11010017.outbound.protection.outlook.com [52.101.228.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35A5A49B5AA
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 13:13:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.105.73.52
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789996437; cv=none; b=hK16Pfj+GX+9eoYTD9mlE6y3UtEcTcUIyqwnxHOWNE38ya8+c0SepYSWq4RvT0DysM9QhYywSN5/ehv9Hfv6ySc/z1v7wo03j+Rj59H9SpCp7cKOzK2cTJmKuBC49CF9WlR66UeFopHoAF1hJvXns2MHzeTIxPtn89CC0DzZ64g=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789996437; c=relaxed/simple;
-	bh=lh4UrIoSXewLFHp76QY/Q0+dUJHd+++CaGLD1NcODj8=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=POXL+uLTSSyz7G7bHypUhM3294rr/OBNqB1nrsmis37N2MUbsx5YN+2NqHvTMm7N7M3+/CJnfo4KoJaSO1ukr5qgVR80fSV0xma2F49Hlkz1dK3B22sjm4+lUZo6b2hfzH/MDZCJkZXT1G78Ed7l0ET2wWEJ0vsWWOoh4QRKk9E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=trinity-net.com; spf=pass smtp.mailfrom=trinity-net.com; dkim=pass (2048-bit key) header.d=trinity-net.com header.i=@trinity-net.com header.b=vTiMaFm6; arc=none smtp.client-ip=46.105.73.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=trinity-net.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=trinity-net.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C86D249E147;
+	Mon, 21 Sep 2026 13:45:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.228.17
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789998304; cv=fail; b=J7NmidIYUqH+XxZN1IcltyEY70Lez6WWp+6ExePMjDVCrJXbGT/Y/OAkzR5i9imLCvQgGzXsd3C6ZNwUkp+aHsr/2rpMiIcuSON7GK//3qnq8YqGovnrWPvWR0qoNnkm1GQP4mGmaNA7EZwhUDH4ajnlSlM+m8J7ygCSt9WCcbI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789998304; c=relaxed/simple;
+	bh=zrwTBtPFhdDfYlBbn8H3zgcy6TXcfkFYJOHAc99cedg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Rk1kOJpp1hKmzlkSyyqNozKXhiaGzF1hi2+0FOdDxUqQDiT8VO1Q6eolNp6dUYR87pjU4HOh9UnxIhxdXAYCrkAU4zNvWse9sCOR1c4wUUA72xcPH1a3tf9YGu0cHRB38dWkHplqNsfQMeqvrUz/gb/FbAkB0H1IkZv7nah8Ohk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=QA2Jhp+J; arc=fail smtp.client-ip=52.101.228.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=trinity-net.com header.i=@trinity-net.com header.b="vTiMaFm6"
-Received: from director1.derp.mail-out.ovh.net (director1.derp.mail-out.ovh.net [79.137.60.221])
-	by mo17.mail-out.ovh.net (Postfix) with ESMTPS id 4hpNmN6xM4z82jT;
-	Mon, 21 Sep 2026 13:07:00 +0000 (UTC)
-Received: from director1.derp.mail-out.ovh.net (director1.derp.mail-out.ovh.net. [127.0.0.1])
-        by director1.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
-        for <regressions@leemhuis.info>; Mon, 21 Sep 2026 13:07:00 +0000 (UTC)
-Received: from mta3.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.110.58.168])
-	by director1.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4hpNmN4r0rz6GrY;
-	Mon, 21 Sep 2026 13:07:00 +0000 (UTC)
-Received: from mailstore7.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.1.8.7])
-	by mta3.priv.ovhmail-u1.ea.mail.ovh.net (Postfix) with ESMTP id C7A14941C53;
-	Mon, 21 Sep 2026 13:06:59 +0000 (UTC)
-Date: Mon, 21 Sep 2026 13:06:59 +0000 (UTC)
-From: Support TRINITY <support@trinity-net.com>
-To: Thorsten Leemhuis <regressions@leemhuis.info>
-Cc: regressions <regressions@lists.linux.dev>, 
-	linux-acpi <linux-acpi@vger.kernel.org>, 
-	linux-pm <linux-pm@vger.kernel.org>, stable <stable@vger.kernel.org>, 
-	xen-devel <xen-devel@lists.xenproject.org>, 
-	linux-kernel <linux-kernel@vger.kernel.org>
-Message-ID: <8375109.285919554.1789996019673.JavaMail.zimbra@trinity-net.com>
-In-Reply-To: <8aaad113-1952-4655-978d-0cdd8b048064@leemhuis.info>
-References: <905771062.272724286.1789919301858.JavaMail.zimbra@trinity-net.com> <8aaad113-1952-4655-978d-0cdd8b048064@leemhuis.info>
-Subject: Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks
- bare-metal Xen dom0 boot
+	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="QA2Jhp+J"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=YlclNC9wNr+V9kJzDvV+gmpcHFCO3cSXjTUrrDotlcf2Lom4DC08bDPG8kOjqVdflLwZxmDFUCFsNLiyKGt8F6OhcRTD142295/4cVmXccGxCSBe8hxf4fg+dYvHlNrVahnckCeIMIZbQUceHCzBz7WYxg5Nu0z80BAdrnoiBCWhFGG2BCHhH33jj6Uu1EfiqkpmDBhh5n/8hbHc8xXh8oRrriYl60+9cG4bpt1/Q7m4wifR2QN43wWVcErNA92uQ2UobztkoRnMlbRufkv/xNt0E/hSc/OpvkPtZhWb4q/+iSZx5sEltSNLMxrj7093lpBKmzSOW47w2CZzEPjp4Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=8RXK6jmXXDMQpQTY50RcnpcJIUPzSH4ZCAeKIfZjXYw=;
+ b=d9TjKNf1nQOOIYY7FuYLrQoykq9CNaA7d3n1RWLtelLoHyGzBOlB2fZz0Ekp2GUUHNErgB1exHGh3vdzs7GTuZ2gC6e3VT7lyR7MU28MyobHRt9w34nEBWWSthCDIURoeC4qXhU9fb2OfOb8oWCiDKcdG9BVNsWC7MeaMwHH9zYqQkG9huFofA/5IYt6ql/kG7he4q20B7NcirxCXtrb0UxQvFj3dlpABqeTXrp92gGowURXLwQvCbt9huX/h0cj2QXnyxNNa/H4zMqdKel9Q6E6c7KewEdqQT9ALGeyW8F2K4HzqzQLu9aEAplJUizrGoOyQHnmEBmqV/472O7EbA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 8.62.32.50) smtp.rcpttodomain=baylibre.com smtp.mailfrom=renesas.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=renesas.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=8RXK6jmXXDMQpQTY50RcnpcJIUPzSH4ZCAeKIfZjXYw=;
+ b=QA2Jhp+J3RnsGVfnVj6ySn6lO5L6j83waeEaB1roS2sVdBcEGEJ3Nw1LQuMcMbTSPb7BwWZAbwRA0mhN4mC+gU68o9DQmzcdfPw84RPInwr06tvt/IPNoIYtwwx8XpHUfGsfhhAHc/A0yLsBNi/Q0bXYPMBM2XX+amvFLNfTHRY=
+Received: from OS0P286CA0129.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:16b::21)
+ by TY4PR01MB13334.jpnprd01.prod.outlook.com (2603:1096:405:1df::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.16; Mon, 21 Sep
+ 2026 13:44:57 +0000
+Received: from OS3PEPF0000003B.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:604:16b:cafe::30) by OS0P286CA0129.outlook.office365.com
+ (2603:1096:604:16b::21) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.16 via Frontend Transport; Mon,
+ 21 Sep 2026 13:44:57 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 8.62.32.50)
+ smtp.mailfrom=renesas.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=renesas.com;
+Received-SPF: Pass (protection.outlook.com: domain of renesas.com designates
+ 8.62.32.50 as permitted sender) receiver=protection.outlook.com;
+ client-ip=8.62.32.50; helo=ejcrelay004p.adwin.renesas.com; pr=E
+Received: from ejcrelay004p.adwin.renesas.com (8.62.32.50) by
+ OS3PEPF0000003B.mail.protection.outlook.com (10.167.240.4) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.451.8
+ via Frontend Transport; Mon, 21 Sep 2026 13:44:57 +0000
+Received: from laptop.adwin.renesas.com (GBR-5CG34119KX.adwin.renesas.com [10.226.37.103])
+	by ejcrelay004p.adwin.renesas.com (Postfix) with ESMTP id 6CBFB300025F;
+	Mon, 21 Sep 2026 22:44:51 +0900 (JST)
+From: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Ulf Hansson <ulfh@kernel.org>
+Cc: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	=?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>,
+	devicetree@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Chris Paterson <Chris.Paterson2@renesas.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Subject: [PATCH v2 0/9] Add support for Renesas RZ/G2M v3.0 (a.k.a R8A774A3) SoC
+Date: Mon, 21 Sep 2026 13:44:20 +0000
+Message-ID: <20260921134432.50338-1-ayman.chaudhry.kc@renesas.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Authenticated-User: support@trinity-net.com
-Thread-Topic: ACPI processor/cpuidle change in 6.18.52 breaks bare-metal Xen dom0 boot
-Thread-Index: xFt9ystRsn0Dmv4s3yH1kJqjVpPWwg==
-x-ovh-tracer-id: 3167156440896468507
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: dmFkZTEHV8uBM0suxcILPQHuI4B8S1OlSB/YHVb8/g14zw22rJSYP6YTO3+DnqnA+Iiq/RUcQphEfXjDQ/UHfZZSRJNBTelxXbMRNo3B0LhXj3vb0nz7rj1ftl80sdRSdU+oOTu0saDMx0LVlG6WOGEqrqskthR2jdSTt/m2u4IWuJa+w4JHgqqm3bofnzgYZpue/RkXIZtFa6K1rRNM6DEitB5WBe4SeO6p8zXCFjrVomW2QLcnNQPNdv8+vC1FxRa52dzN59qcPZ5o+LlrnzTh84iUnjzdKGw0B/OBYdviw4vd1Ytcba8j7YxDIHQnBvrObdbKHApuFDwTESa88H6ObHc8Qpf0kIMm5KQGY76Vgq/nmjcmlpm3/WsIJxP9rJ0XzKduzBF2pfhPzpVG/m9x9wE42vnJDzk/0u9Klx7f/4Aqcqcv8VX46u3StkL/4QXyF1ZJgJUUSOK88EcjfPcjYladpDkqwrhuGI3+9CqS6owu58W5g1iIFxUQ88WPn/zfdGO9Mr+EUIVBk2+d6X1m+J0O4oZVS8AsQnvHFKSOntrHeUqs8fwukXDiKFOpaDYXKNLmYHXW3NBy3oZWCWU8/9bfzy8003z/9iAhiVVZzehFLAkFTlcZKZEAaN3QVu6H4/nqzz5+FfiZU4y4JY4d0tvBdf22J9dWgJsYyWSGFRDEJQ
-DKIM-Signature: a=rsa-sha256; bh=QD4uKSRlS28zp5D1m/z675fqJs3w1celrAPe2tovDvQ=;
- c=relaxed/relaxed; d=trinity-net.com; h=From; s=ovhmo-selector-1;
- t=1789996021; v=1;
- b=vTiMaFm6OJNBaQJZhBE6oZXC6f+0KXjkr0BPkQ0mDJ9O0sKMaJAAUVD8gVPYo2XQXRZHoEVY
- woIukHkU1/wY4grSFnD1ep7In4CdeKPQfEC8dpZ6xkYSIK0J6RUc3ykHMxt13Hycc7+593qgcxP
- 9qEwYu6k6BvnPWRAut4BRcVnH32ar2bmS85enSKkK3c36/6nrL0VCyrscLliGcMZ2dkMN8MAokS
- XCuI+DJ69RWcpSpVD+s+mdNZPBcGXsPloVYNG/Mye6bTjmlx82d2id5VliQG8KYGRjSIi8hX8/u
- 7kW1WAQKTjB101q9b4AW3pJ3pEM2+GmieCKPhv6F0wsZw==
+Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: OS3PEPF0000003B:EE_|TY4PR01MB13334:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 6cd72914-6755-47aa-b7ab-08df17e6864f
+X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|36860700016|7416014|376014|1800799024|23010399003|10067099003|56012099006|11063799006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	2c+9qgYiYUSXg4+zB9VziCUFsWN/oHPTFH/Cpykgz9TuuGmfgVXbNw5OgTysP5tJGFx8QkfrDFZ/TVRFh3vioUfKlSrcFKfDRwHUJdKk5sl8W532OsXqzloaLuiZIbHF3/MeKWF71pnq8dtkgollsudsoVUWFLf/Wh793jl5ffq9crVvtW0SPsnHw/kOT2BzdSOi0HLEvjjVhp+1tcumN1OWxpgSBvHvBxjZqjKzD3MPR0aiTiZqfPMZ0+0Uy3WxEq71DQlopni0mryF19zpraN6BG3Akv+POUY4prZI2dQYS/Q1lQmQfZQp8stg7nGHD0llr/+2U64/YY5TY1lcx9XpHElV+F3F2VM3Ahu5aRCNnlzsskcl+DYKcsu9Eorp98p4VGhbJVZCeXhdgi4N6UbdIFYjby2fizsw+pWJ7QbVEHoUgSvH078Jyy5foNdqxbMBzVXwtw7wy60bzBNaIsHLBIgpghK6/xYxI5on4WsNygnVn7vvwltlBYl2giPKBI2fTPNACU50nvYI667tI55hrElQBgqHtSn9EfQMWomRQlTzUV7bHeY54vJYSUtgkDqR79UWKercRsvAdKRJuTm1I4pBqZ9C6jHHshuxwLmbd6c2g8hmx9WvjzvrW4Aj95eKq2W6SMY79I2xY8m7PpbkoFdY8oUW4+QmoCnrzuk=
+X-Forefront-Antispam-Report:
+	CIP:8.62.32.50;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ejcrelay004p.adwin.renesas.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(7416014)(376014)(1800799024)(23010399003)(10067099003)(56012099006)(11063799006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	foFRpfZ9rnN0us8hFsr+gaVIY+E+cFyWzcukP1Ut/GBKN4BFeZ7zgFwD3iLvQ+gm27P5+zvQy+faTwpZ4iI9ZgWxb7RYXV8W8pqPd9ZymC15ffMnNosfirbpqAx0NDe/NQOWUQ23e31dNMsPRNewJRSqprhYgeLUJLoBWAB2Z767X/lwW8cwCmuOqM9VPHGvVV/z+bv+C9ZQPMR4VXnoQXQ+gM2ybUIwNMkrZFd2u4Ij2INfjTXofCeHsTWcxJrF6Nj2u60mUNEkkEUx0RwZaQNnCDiGOMtDDj8/wi/2t03xcFIIUhdUMDm6bsaaiU6tAOTkxZ3UoJLkstp9mIBWz1lLM9dmmFeiuaK7zs2qg7VU17+YwqZ3cWoY7wFctzQBRMw8+DTq8Y8rGr3AMK4WwIqV4fLzXqTd4APu/Ip0emYjdRMoLQeNtFJNM+PPDw1w
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Sep 2026 13:44:57.2545
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6cd72914-6755-47aa-b7ab-08df17e6864f
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=53d82571-da19-47e4-9cb4-625a166a4a2a;Ip=[8.62.32.50];Helo=[ejcrelay004p.adwin.renesas.com]
+X-MS-Exchange-CrossTenant-AuthSource: OS3PEPF0000003B.JPNP286.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY4PR01MB13334
 
-Hello Thorsten,
-Thanks for the follow-up.
-I have not tested latest 7.3-rc yet. So far, the regression was only tested=
- and isolated on the Alpine linux-lts 6.18.51 -> 6.18.52 path.
-I will now test:
-latest 7.3-rc as-is on the affected bare-metal Xen dom0 host;
-latest 7.3-rc with the same partial ACPI processor/cpuidle lifecycle revert=
- applied.
-I will report back with the results.
-Regards,
-Tony
+Hi All,
 
+This patch series adds initial support for the Renesas RZ/G2M v3.0
+(a.k.a. R8A774A3) SoC, which is similar to the Renesas RZ/G2M v1.3
+(a.k.a. R8A774A1) SoC but does have hardware differences, for example
+the System Controller lacks the A2VC0 power area, and CPG lacks modules
+like FCPCI.
 
------Message original-----
-De: Thorsten Leemhuis <regressions@leemhuis.info>
-=C3=A0: Support TRINITY <support@trinity-net.com>; regressions <regressions=
-@lists.linux.dev>; linux-acpi <linux-acpi@vger.kernel.org>; linux-pm <linux=
--pm@vger.kernel.org>; stable <stable@vger.kernel.org>; xen-devel <xen-devel=
-@lists.xenproject.org>; linux-kernel <linux-kernel@vger.kernel.org>
-Envoy=C3=A9: lundi 21 septembre 2026 12:01 CEST
-Sujet : Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks ba=
-re-metal Xen dom0 boot
+v1->v2:
+- Dropped patch 01/10 ("soc: renesas: Identify RZ/G2M v3.0 SoC") as it
+  has already been mainlined.
+- Dropped patch 05/10 ("soc: renesas: rcar-rst: Add support for RZ/G2M
+  v3.0") as it has already been mainlined.
+- PATCH 01/09: New patch.
+- Renamed SYSC and CPG dt-bindings to include vendor prefix and updated
+  all references accordingly.
+- Added vendor prefix to include guards for SYSC and CPG dt-bindings.
+- Updated commit message for patch #2.
+- Added space before closing brace for `ca57-cpu1` area.
+- Replaced underscores of node names with hyphens in DTSI.
+- Updated patch #7 to not use odd sizes for the sizes of registers and
+  also removed the leading 0 for the system-controller node.
+- Added soc: label to soc node.
+- Dropped bootargs from chosen.
+- Corrected indentation for patch #9.
+- Updated licensing to use "GPL-2.0-only OR BSD-2-Clause".
+- Added Reviewed-by tag to patches #2-7.
 
+v1: https://lore.kernel.org/all/20260821150408.73829-1-ayman.chaudhry.kc@renesas.com/
 
-On 9/20/26 17:48, Support TRINITY wrote:
->
-> I am reporting a bare-metal *Xen* dom0 boot regression seen with *Linux
-> 6.18.52.*
+Thanks,
+Ayman
 
-Thx for the report. There is one somewhat important detail that was
-missing (hope I didn't miss it):
+Ayman Chaudhry (9):
+  dt-bindings: power: renesas,rcar-sysc: Document vendor-prefixed header
+    paths
+  dt-bindings: power: Add r8a774a3 SYSC power domain definitions
+  pmdomain: renesas: rcar-sys: Add r8a774a3 support
+  soc: renesas: Enable SYSC driver for r8a774a3
+  dt-bindings: clock: Add r8a774a3 CPG Core Clock definitions
+  clk: renesas: Add support for RZ/G2M v3.0
+  arm64: dts: renesas: Add initial SoC DTSI for RZ/G2M v3.0
+  arm64: dts: renesas: Add HiHope RZ/G2M v3.0 SoC main board support
+  arm64: dts: renesas: Add HiHope RZ/G2M v3.0 SoC sub board support
 
-Is latest 7.3-rc also affected? And if it is: does that partial revert
-help there, too?
+ .../bindings/power/renesas,rcar-sysc.yaml     |   7 +-
+ arch/arm64/boot/dts/renesas/Makefile          |   3 +
+ .../dts/renesas/r8a774a3-hihope-rzg2m-ex.dts  |  14 +
+ .../dts/renesas/r8a774a3-hihope-rzg2m.dts     |  49 +++
+ arch/arm64/boot/dts/renesas/r8a774a3.dtsi     | 302 ++++++++++++++++++
+ drivers/clk/renesas/Kconfig                   |   5 +
+ drivers/clk/renesas/Makefile                  |   1 +
+ drivers/clk/renesas/r8a774a3-cpg-mssr.c       | 168 ++++++++++
+ drivers/clk/renesas/renesas-cpg-mssr.c        |   6 +
+ drivers/clk/renesas/renesas-cpg-mssr.h        |   1 +
+ drivers/pmdomain/renesas/Kconfig              |   4 +
+ drivers/pmdomain/renesas/Makefile             |   1 +
+ drivers/pmdomain/renesas/r8a774a3-sysc.c      |  45 +++
+ drivers/pmdomain/renesas/rcar-sysc.c          |   3 +
+ drivers/pmdomain/renesas/rcar-sysc.h          |   1 +
+ drivers/soc/renesas/Kconfig                   |   1 +
+ .../clock/renesas,r8a774a3-cpg-mssr.h         |  59 ++++
+ .../dt-bindings/power/renesas,r8a774a3-sysc.h |  30 ++
+ 18 files changed, 698 insertions(+), 2 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m-ex.dts
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3-hihope-rzg2m.dts
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a774a3.dtsi
+ create mode 100644 drivers/clk/renesas/r8a774a3-cpg-mssr.c
+ create mode 100644 drivers/pmdomain/renesas/r8a774a3-sysc.c
+ create mode 100644 include/dt-bindings/clock/renesas,r8a774a3-cpg-mssr.h
+ create mode 100644 include/dt-bindings/power/renesas,r8a774a3-sysc.h
 
-Ciao, Thorsten
-> On affected systems, Linux 6.18.51 boots successfully as Xen dom0 on
-> bare metal, while Linux 6.18.52 *consistently black-screens before dom0
-> userspace/networking comes up.*
->=20
-> #regzbot introduced: v6.18.51..v6.18.52
-> #regzbot title: ACPI processor/cpuidle lifecycle change breaks bare-
-> metal Xen dom0 boot
-> #regzbot link: https://gitlab.alpinelinux.org/alpine/aports/-/
-> work_items/18447 <https://gitlab.alpinelinux.org/alpine/aports/-/
-> work_items/18447>
->=20
-> Tested results:
->=20
->   * Linux 6.18.51-r0, Xen dom0, bare metal: boots
->   * Linux 6.18.52-r0, Xen dom0, bare metal: black screen before
->     userspace/network
->   * Linux 6.18.52-r0, Xen domU: boots
->   * Linux 6.18.52-r0 with Xenbus notifier change reverted: still fails
->   * Linux 6.18.52-r0 with only ACPI processor/cpuidle changes reverted:
->     boots
->   * Linux 6.18.52-r0 with refined ACPI idle lifecycle patch: boots
->=20
-> Affected hardware tested:
->=20
->   * Intel Core i7-4785T thin mini-ITX, 16 GB DDR3
->   * Intel N305 thin mini-ITX, 16 GB DDR5
->   * Supermicro / Intel Xeon E5-1650, 32 GB DDR3
->=20
-> The successful boot used the regular Xen command line:
->=20
-> multiboot2 /boot/xen.gz cpufreq=3Dxen:performance
-> module2 /boot/vmlinuz-lts modules=3Dloop,squashfs,sd-mod,usb-storage,xfs =
-quiet
-> module2 /boot/initramfs-lts
->=20
-> No IOMMU workaround, serial console parameter, debug parameter, storage
-> workaround, or Xen command-line change was required.
->=20
-> The regression was narrowed to *ACPI processor/cpuidle* changes between
-> 6.18.51 and 6.18.52, specifically the idle-driver registration lifecycle.
->=20
-> The working 6.18.51-style behavior registers the ACPI idle driver from
-> *acpi_processor_power_init()* and unregisters it from
-> *acpi_processor_power_exit().*
->=20
-> The failing 6.18.52 behavior registers the ACPI idle driver globally
-> from *acpi_processor_driver_init()* before *driver_register().*
->=20
-> A first ACPI-only revert confirmed the regression source. A refined
-> candidate patch was then prepared to preserve the working ACPI idle
-> lifecycle while keeping unrelated 6.18.52 safety fixes, including:
->=20
->   * _LPI bounds checks
->   * cpufreq notifier cleanup on *acpi_processor_driver_init()* failure
->=20
-> The refined candidate patch modifies only:
->=20
->   * *drivers/acpi/processor_driver.c*
->   * *drivers/acpi/processor_idle.c*
->   * *include/acpi/processor.h*
->=20
-> It does not modify Xen, Xenbus, IOMMU, APIC, PCI/ASPM, intel_idle,
-> syscore, USB, storage, XFS, networking, printk, or the cpuidle core API.
->=20
-> The earlier cpuidle_disabled() workaround is not included.
->=20
-> The refined patch has been rebuilt and boot-tested successfully as Xen
-> dom0 on bare metal on TRINITY-EDGE.
->=20
-> This issue is currently visible to *Alpine* users because the *Alpine
-> v3.24 *stable repository contains:
->=20
-> alpine-release 3.24.2-r0
-> *linux-lts 6.18.52-r0*
->=20
-> Systems tracking Alpine 3.24 stable / latest-stable may therefore
-> receive Linux 6.18.52 as the default LTS kernel.
->=20
-> Attachments:
->=20
->   * revert-acpi-idle-registration-lifecycle.patch
->   * APKBUILD
->=20
-> The original Alpine report is here:
->=20
-> https://gitlab.alpinelinux.org/alpine/aports/-/work_items/18447
-> <https://gitlab.alpinelinux.org/alpine/aports/-/work_items/18447>
->=20
-> Please let me know if this should be submitted as a formal patch with
-> Signed-off-by, or if there is a better upstream fix/dependency that
-> should be backported instead.
->=20
-> Regards,
->=20
-> *Tony BONNIN*
->=20
+-- 
+2.34.1
 
-
-#regzbot introduced: 6cffb59ee50ea4
