@@ -1,127 +1,106 @@
-Received: from 1.mo564.mail-out.ovh.net (1.mo564.mail-out.ovh.net [178.33.106.226])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D48564570EE;
-	Mon, 21 Sep 2026 18:34:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.33.106.226
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34A454F4032;
+	Mon, 21 Sep 2026 18:41:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790015692; cv=none; b=mRQyYzVkBdhmBz39g7PgroL25Ly0cZPMVXNRnAfj2exx3lZPwEsB1HfkH2yGojUrfDirWDojXrBWnqAdA/qDE3fMPziKhgeH4FDOQtLEIqqfbuLatJyWZXf5r7KOLuPgcPZeftiy6H/3HGEhmtf6t3vhnrYtY17oNgbJuW2XIUs=
+	t=1790016077; cv=none; b=UCIlRpGR20XDv5LqyMOlTtoqHevF7TQsQd5Kk3cTdhRZomijtPsf3gERoUpZ3QngFyFP/Criq88Pkdrl13cYogpGY4gW6SDrGZrL/OBvdKj1HwYtPhZshAHkXmHUlGWckmjiLEoAURQTV7EwZPWFVjWBS1HyKHTIx+B7XmwAhIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790015692; c=relaxed/simple;
-	bh=IevpoNZUdNHiZNaAd8TIxxp6Ai1AoI8OzFr7NwXjpT8=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=Xy8JjDMjzICJaW/e11oY+idXWPaYpQsdvRHxzgPmpsYGyevl9UmnyPytiUIkOUuBB8m75D7rTzv0G2pra7f89OkQdc7jdIWKX84izu25qJLdxM5l8AuuA8MlQIaGEjaOM2YxnjP66zrASn5ZF5AFEWRwa6HAXKf4duP0bXal9rM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=trinity-net.com; spf=pass smtp.mailfrom=trinity-net.com; dkim=pass (2048-bit key) header.d=trinity-net.com header.i=@trinity-net.com header.b=SWCas21S; arc=none smtp.client-ip=178.33.106.226
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=trinity-net.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=trinity-net.com
+	s=arc-20240116; t=1790016077; c=relaxed/simple;
+	bh=erDUfccdx9b1ae8tfdpzQo24LmbknARaiyYGluhC+9Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a4yOEI/THAZ9Ro2MRcgt6/+1Dw2/xHZ9cBMi/eLUo8Lf9HdZjQpHNgeCwtqZ/sXwuBnl+FBDqn99cb3Am2fxMJc4qevlUDwqycnm1OmXIGlyNrI1hp2EEmKSwtw7Ojt9fNmbbJJTql43yfY9AvQBVtXRVxayI8IpHjYcQ6RjCCw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QU+QQFzw; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=trinity-net.com header.i=@trinity-net.com header.b="SWCas21S"
-Received: from director2.derp.mail-out.ovh.net (director2.derp.mail-out.ovh.net [79.137.60.36])
-	by mo564.mail-out.ovh.net (Postfix) with ESMTPS id 4hpWwY16nJz87rB;
-	Mon, 21 Sep 2026 18:29:33 +0000 (UTC)
-Received: from director2.derp.mail-out.ovh.net (director2.derp.mail-out.ovh.net. [127.0.0.1])
-        by director2.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
-        for <marmarek@invisiblethingslab.com>; Mon, 21 Sep 2026 18:29:33 +0000 (UTC)
-Received: from mta7.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.109.231.30])
-	by director2.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4hpWwY0Jt5z1xp3;
-	Mon, 21 Sep 2026 18:29:33 +0000 (UTC)
-Received: from mailstore7.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.1.8.7])
-	by mta7.priv.ovhmail-u1.ea.mail.ovh.net (Postfix) with ESMTP id 2C3E3B81C5B;
-	Mon, 21 Sep 2026 18:29:32 +0000 (UTC)
-Date: Mon, 21 Sep 2026 18:29:32 +0000 (UTC)
-From: Support TRINITY <support@trinity-net.com>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: 
-	Marek =?utf-8?Q?Marczykowski-G=C3=B3recki?= <marmarek@invisiblethingslab.com>, 
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, 
-	regressions <regressions@lists.linux.dev>, 
-	linux-acpi <linux-acpi@vger.kernel.org>, 
-	linux-pm <linux-pm@vger.kernel.org>, 
-	xen-devel <xen-devel@lists.xenproject.org>, 
-	linux-kernel <linux-kernel@vger.kernel.org>, 
-	Stable <stable@vger.kernel.org>
-Message-ID: <1909296988.289641012.1790015372050.JavaMail.zimbra@trinity-net.com>
-In-Reply-To: <CAJZ5v0geSD8ig9_kcrPZp9FEzF+Oh34HV4F_aqyGF89TYVjDzw@mail.gmail.com>
-References: <905771062.272724286.1789919301858.JavaMail.zimbra@trinity-net.com> <CAJZ5v0gg7kBtEhagR9SYKaPNstPC6aSyP7W4xBjP1r-kzbcH1A@mail.gmail.com> <arFe7-xa3HtCUOHs@mail-itl> <750088883.289173062.1790012799166.JavaMail.zimbra@trinity-net.com> <CAJZ5v0geSD8ig9_kcrPZp9FEzF+Oh34HV4F_aqyGF89TYVjDzw@mail.gmail.com>
-Subject: Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks
- bare-metal Xen dom0 boot
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QU+QQFzw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7ACB31F000FF;
+	Mon, 21 Sep 2026 18:41:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790016075;
+	bh=qcGY65hS+6BY3CDr/NBRDjfgtOdWVX7qh93GVRRkDmU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=QU+QQFzwL2DzW81MiDQ21qaNETIZnN3LdiRsJ9XVYMQ7ujd4MhD0UDWdWcIIllIp+
+	 7J7eoTHRSPfDu5xKz1fo2PeUb+bFLiy5f6THkYrua7NOgEyAmX5icuMeJSpnDq8xrx
+	 g2dKUDtLRsLfZ636SdjsD14KqUGI8U94YjrUDnA84LvwyX34YE9rc7wVXlKADGS+U+
+	 WP8I2nzLRlBKMPmfC1uBt5A5Y6BOPNK1+jRpoUtOte0hmYLMtPVgUIhyWtlHoqD9wI
+	 d2hr+5yIE6JABNsXeD85oNbR7RgK+EO1J8ffhVIgNtm6hIN9CuATryz6k8WZ7v5zsu
+	 lRHXe2SRtaaOA==
+Date: Mon, 21 Sep 2026 13:41:13 -0500
+From: Rob Herring <robh@kernel.org>
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	John Stultz <john.stultz@linaro.org>,
+	Moritz Fischer <moritz.fischer@ettus.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+	Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+	Andre Draszik <andre.draszik@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org, mfd@lists.linux.dev,
+	Srinivas Kandagatla <srini@kernel.org>
+Subject: Re: [PATCH v25 05/10] dt-bindings: arm: Document reboot mode magic
+Message-ID: <20260921184113.GA1250850-robh@kernel.org>
+References: <20260914-arm-psci-system_reset2-vendor-reboots-v25-0-4aaf5c09b5c2@oss.qualcomm.com>
+ <20260914-arm-psci-system_reset2-vendor-reboots-v25-5-4aaf5c09b5c2@oss.qualcomm.com>
+ <20260918220634.GA2441717-robh@kernel.org>
+ <0e6877df-0306-474f-bc25-aa7d3fd2f53c@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Authenticated-User: support@trinity-net.com
-Thread-Topic: ACPI processor/cpuidle change in 6.18.52 breaks bare-metal Xen dom0 boot
-Thread-Index: NJLEBWSSWTxHlP+F8t+OBJCvRxFPqg==
-x-ovh-tracer-id: 8614541665962587675
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: dmFkZTGlMSjzMXFz4ipw5mo6C1GD1JTY1bhHZVs/p5Nv78Znzkhq/k5NZSemwOJrLkzTGnUzuV0P/CTidewhj7HXiC0xfdN+5BaQEY8b3Kwct82UB6zjNGfqm7kJb4ttjwgACxdgPLh28GyRgxbQdrzMMGLFU4TEKIBs/Hh/ceN1Ms8ygaAkZa73h/yWpK10Zk+rPH2CFV4DqCBe6v/FcGsC5wPEGnDFVYlvd9IBdmSLOpOraDnlklBSiGLwer90wPuuQCpMujjVvhFtN0P1Oz74+OkrfJx/Jy5A4CUoHvG19uKnRaPEM3CpSTQsCAUgou9SCvuq9JVZsKk9ivIous6fBlSjZ7Z7/Jjn5OzVnC++aJqeBliXUKmxjzvGg2M6Fd0m0BF5aPPVc2cc37vdPCpjL5mXCfVqvzWz4U18syj1KDv4yjaiMSHUk46h3992+zDjBAWdKcBQ6W7VWeiG9YtWP5EimiGuAjzW05zdL4fyq5avG/IGV9b4I/zT3euOpFSSmXC60MqmO9zIXqVc3KJH753bxtVK4VKSCbhNwoX2cX3XzYsiLX8Yvh8tULu32jL5zJ423LULpLitttfsvYREBBOP4sKgzZmb719gBBRa/EV02sDW8ufbUjS6z10SAS7esMwLu1EOHzNBh3dEpP0E4RRroixZggB5S1JvVPhXSCiYtA
-DKIM-Signature: a=rsa-sha256; bh=IevpoNZUdNHiZNaAd8TIxxp6Ai1AoI8OzFr7NwXjpT8=;
- c=relaxed/relaxed; d=trinity-net.com; h=From; s=ovhmo-selector-1;
- t=1790015373; v=1;
- b=SWCas21S6jgUkey7Pctwpi5A1HH+1Teaj1FMFU60FF+y6ADgSfJkAx0zCroA2Q+A+PuHs1+s
- 1g0+8j4nyaGafOo/4es9hi5OFB+M5U7l00jYO38PRNAQNnGL+DcOBaBlcMynflLysfjtgbK9STj
- K7peWk5eJEJs2dHYQ+PzyDaJ+nfqJR8HQc7Nq2xTzZ7Z3Di2xncyVKULZt/8C/VfSmKy1tVV3be
- lVhVJS16oZDxnDLi4BwQgPWxE1DXQLXMexKnIjff0a+HNED62AYx0U8TabTrTaztf4RhgVRR7Gd
- x4HFNYwju0WotFHLv5drWc7SVfZOP++XWpGv89qzL33hw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0e6877df-0306-474f-bc25-aa7d3fd2f53c@oss.qualcomm.com>
 
-Hello,
+On Mon, Sep 21, 2026 at 03:59:22PM +0530, Shivendra Pratap wrote:
+> 
+> 
+> On 9/19/2026 3:36 AM, Rob Herring wrote:
+> > > +            minimum: 0x80000000
+> > > +          - description:
+> > > +              arg2 (cookie_lo in 2-cell form, cookie_hi in 3-cell form)
+> > > +            $ref: /schemas/types.yaml#/definitions/uint32
+> > Drop. Types are per property, not per item.
+> 
+> Ack.
+> 
+> > > +          - description: arg3 (cookie_lo in 3-cell form)
+> > > +            $ref: /schemas/types.yaml#/definitions/uint32
+> > Drop.
+> 
+> something like this?
+> 
+>   items:
+>     - description: arg1 (vendor-specific SYSTEM_RESET2 reset_type)
+>       minimum: 0x80000000
+>     - description: arg2 (cookie_lo in 2-cell form, cookie_hi in 3-cell form)
+>     - description: arg3 (cookie_lo in 3-cell form)
 
-Thank you, that makes sense and matches the behavior I observed.
+Yes.
 
-The Alpine 6.18.52 kernel fails as Xen dom0, while restoring the previous
-ACPI idle registration lifecycle makes it boot again. That is consistent
-with 13ebeef6a1b9 being present in 6.18.y without the later dependency
-that avoids calling acpi_processor_power_init() in the !cpuidle_get_driver(=
-)
-case.
-
-I will try testing 6.18.52 with commit 0089ce1c056a ("ACPI: processor:
-Update cpuidle driver check in __acpi_processor_start()") applied,
-instead of using my lifecycle revert.
-
-If that boots successfully on the affected Alpine Xen dom0 hosts, I will
-report the result here.
-
-Thanks,
-Tony
-
-
------Message original-----
-De: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-=C3=A0: Support TRINITY <support@trinity-net.com>
-Cc: Marek Marczykowski-G=C3=B3recki <marmarek@invisiblethingslab.com>; Rafa=
-el J. Wysocki (Intel) <rafael@kernel.org>; regressions <regressions@lists.l=
-inux.dev>; linux-acpi <linux-acpi@vger.kernel.org>; linux-pm <linux-pm@vger=
-.kernel.org>; xen-devel <xen-devel@lists.xenproject.org>; linux-kernel <lin=
-ux-kernel@vger.kernel.org>; Stable <stable@vger.kernel.org>
-Envoy=C3=A9: lundi 21 septembre 2026 20:07 CEST
-Sujet : Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks ba=
-re-metal Xen dom0 boot
-
-
-On Mon, Sep 21, 2026 at 7:46=E2=80=AFPM Support TRINITY <support@trinity-ne=
-t.com> wrote:
->
-> Hello,
->
-> Thank you, this matches what I see on the affected Alpine Xen dom0
-> systems.
->
-> I also tested Linux 6.18.52 with processor=3Dnocst on the Linux kernel
->
-> Result: it still fails with the same black screen before dom0 userspace
-> and networking come up.
->
-> Marek's trace looks consistent with the failure mode I isolated: the
-> crash happens from acpi_processor_power_init() while registering the
-> cpuidle device.
-
-I think I know what the problem is, see
-
-https://lore.kernel.org/linux-acpi/CAJZ5v0h4giv53a2mPvJYT=3DfvBTj7vVXs=3Db7=
-+qC2Q2L35qSTOSA@mail.gmail.com/
+Rob
