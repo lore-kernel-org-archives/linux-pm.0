@@ -1,96 +1,122 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F28EC137750;
-	Mon, 21 Sep 2026 03:35:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DEEA3358B9
+	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 03:37:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789961745; cv=none; b=g2kK7j5ubDrZE9mOscsiMV/yiaI65faqcE4iadGFY116DlT7s+kLwbCF/PvegVf7MzlrP+Lk0VYapJC17F4Avb7Shk4aopnmdqLosttyzi6cKVb6C59qaImqvfBBtuV6rdpIyJqAGuG0YkPqcK0YI3gRZZ7U87sPStDxBgwYEaU=
+	t=1789961849; cv=none; b=QrQrqviJbQUiIgoyChZCI9ni3NR2RVq+A1Ic8DyBTrJHnzpfWo92IbNle360n2zjN9cPLakZHNeiu4HyODVh7kQcsSwssIJnLVfLpEZbJ1wkp1clGD6yZdxyVRvaN1f0qcLAeR/Mn9K4u+iVK/I/iTE1C/JBWmHBr/tgGVXwEIU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789961745; c=relaxed/simple;
-	bh=fz6+v9N9vZnNUJRxljVDYRwQqnqDkcQzlFwG3oaBx84=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G4p7U5rlnoHVSjQGeWGJzY9kVmg/jc8/FBZlkY28AZz4GcYHrIHOE0AWcA4C6MVE+UqatkPgV9aRMcjzIs8spT/sNiHB9UjhcNaLcUx1eNMpiAtwjwQFofxvUO6BczmeBC7T7JnqsFrSNy8aPanoUUhcIJDV0nZqksSwvI6a950=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LiqM7AiO; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789961849; c=relaxed/simple;
+	bh=x/6QvB9InBIhpi7aIvuJrdQOgjAvdt+ushjxl3YRC1M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oaqK9sHd/nlfnWphprln09ZvCZSpTH8uz8p89q7fXn3X980Wk7skypEBbEfZ4oJhwXRCVzqribhIDxmYDh2YQKxOUOn0V8UJmNhTvqBTYe3cjXQEBM+2cUQjG7gvO24/1CwmwLrPA7n8OH+hu6TjtXXeqgGCCbcLxipvKEklrHI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LB3abMeH; arc=none smtp.client-ip=74.125.227.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LiqM7AiO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA9131F00893;
-	Mon, 21 Sep 2026 03:35:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789961743;
-	bh=/uc/dy3X3PpC2I1mymMB7hcZN+ZV0xyG3Njd3ZzgLFs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LiqM7AiO2IjBtLmcuwiHc0Xis7kACHmYKH3NlI+J0E8skSi1jdzfkMwMBj3fwgFSI
-	 ZUodi7bIfq1iHFdWccnIf3ZTZBJRaoxtjseyuhgd0FKbPtF/UBjECFi1B8mHnstAp2
-	 lJuGWTJAGPStDQm0ydIJLIIi2ut5rRDbplt/EESN5YYu7qwgEP/Eg7mqxDOUImqvA+
-	 FDBRBm7YNkrSRxSzhJ5+KCaq7yTOMKvB8emF4jRjZC6QqBNwRtRldjT+uHYu3s81jU
-	 dzUmjMZiyJl7t97QEKuwdrYZmJjnGkoLl7K/b85Zom5A1FJLVfSVKecqCKgdX3GkbK
-	 CAEOdFRyCjwxQ==
-Date: Mon, 21 Sep 2026 03:35:40 +0000
-From: Yixun Lan <dlan@kernel.org>
-To: Icenowy Zheng <uwu@icenowy.me>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	devicetree@vger.kernel.org, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
-Message-ID: <20260921033540-GKG297024@kernel.org>
-References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org>
- <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
- <56e5f32102c67575ded8af9e81a06dc9f1dcf0ee.camel@icenowy.me>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LB3abMeH"
+Received: by mail-pj2-f13.google.com with SMTP id d9443c01a7336-2d747eefae4so7483445ad.0
+        for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2026 20:37:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789961848; x=1790566648; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=OOn5aDKklfWuyRcWQiw2HtX9kHA+GiSG8zyirY1ZU/0=;
+        b=LB3abMeHzcwmn8haOBaErtdqkMJww582qo+kyJVBiroFPfGRLlMYoCrhaPWQtXM8u2
+         rdx+0J30ymGqxiGexjinw8fdLhxQA4ArmqHBIzyfLqKtR6vjQYwYOZ6Ji46mlvT7d8Jr
+         W6mwkYE0pRd1u+IlkNv/QLS76lzD7eabVLuWAw+20nRpjVk+jwAbgOs9Hj743laKDt+R
+         0OsM31AS596tadEYzjq18RAP4zyczzsce4hFvcFQQiLjbUe92URbBomPS2yqHOiR3p36
+         R6fh39ViVZ5Sr2WLpz9dS4WDRcbGKQpBBQdBiPJUK/HkCqxZvKHuOxTcMb5Y4gnPdUgY
+         HOpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789961848; x=1790566648;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=OOn5aDKklfWuyRcWQiw2HtX9kHA+GiSG8zyirY1ZU/0=;
+        b=w/vF+rHqRZleZ2WP3OBuGzLaKPAKowjebXemNEIFILEGFZFBxwoVXd2IEE36HOVeiM
+         Ijb1rLtbBSfbSrZLnP7NFa6Fu5I0JTkN+gmPU7tdVTCD1iDu58M8BnwesmwoREA2+5mH
+         4VmDKpv13vLFIbvINNZ+dBJdJ0uRN/72G+eEefoLRnSmv8IWOi0J4w3PooaSxK6wv2n+
+         4u9w8j1sIrZ3+WWuUVdruqOWV+r6d9FJrA+gZ3FAzaPwxFaaan5UxVJA4FUXiSH1GIDt
+         zffCAYre03m500b19K0XdW08YQrnEK0SHOPTZMzbZwRFN+arZsI75L5PbL6F+rY78DFd
+         Nyjw==
+X-Forwarded-Encrypted: i=1; AKwUvBwZDomTHrJ0It03QFauwUmtox+KdDzuch4zA7o/tuWJzJnOtu/17LnoYNBcpP/bqqGoJL//K2CpXg==@vger.kernel.org
+X-Gm-Message-State: AFuF++ki57MON/6HGA8PLS2FnMb8LQVsuaq9hZ0iPwlvWktA37CUgFzT
+	V1cUQQx4zqOO0XX/JaKMJDdWx6v2HN7a1CnuSDLyOKum2FCQhHwloY3V
+X-Gm-Gg: AYBFou0e3afIAatzc32g524Uj13K4iy+jrrjkWboKpONFerAn0uoN7WXC9n02PY9vK1
+	YJZId1RIlG3cWFkigsaTAvJsAaQVb3OtPZI1Dh4GcBpQuQ0JQuQJ9wkP3xS/9godd1C9S9954Zp
+	r/qut110GkELE5Q4IaktzlGn8Of/1NPwXK/TNTHan92jYC0bwIJz53rULB02xGfREou1fOI9Ezd
+	Xzv4LOE9J+OMXWvqWsxQ6bG4+Xa7fMZ5T4x7Lqp/QTzVwZELymk0NefOlL/V2UWgbT/ZTpCJvxG
+	Esl6xBqa07IVGBC5BbSCXOHHOigzP/+csOUBvMLcuDAZibEd8ALlXZhp7IjxDqPBPM53XR7Kxdl
+	c7EEkGHScLHK8QTN8Yvfah3dTD6/J3fBUCblzVBXB9Gf3xuL/abK9OsNMrs6Kt40LGSV1oW0SVr
+	NoD03FRKfjwFLdKhEsTYZsWC1oDk0rhmrEaK8rU5WKX8SygVcXvGXNfHk9TjCmayQKwVn/+GLTu
+	sC2NtjsRZTAQbgDndfd7jU9GtoVQegO05NfgUnCVGQEK2e0GC2pbd5Or85f1Lba1mfFVgTl2iVK
+	1l+RgEur3n8FEQ==
+X-Received: by 2002:a17:903:2447:b0:2dd:7370:e19e with SMTP id d9443c01a7336-2ddb2233bc1mr94006865ad.16.1789961847686;
+        Sun, 20 Sep 2026 20:37:27 -0700 (PDT)
+Received: from phuc-desktop.. ([183.91.15.56])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ddc18032d5sm25966515ad.83.2026.09.20.20.37.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 20 Sep 2026 20:37:27 -0700 (PDT)
+From: phucduc.bui@gmail.com
+To: Ulf Hansson <ulfh@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	rafael.j.wysocki@intel.com,
+	Jacky Bai <ping.bai@nxp.com>,
+	Lucas Stach <l.stach@pengutronix.de>,
+	Peng Fan <peng.fan@nxp.com>,
+	Xu Yang <xu.yang_2@nxp.com>,
+	Benjamin Gaignard <benjamin.gaignard@collabora.com>,
+	Ming Qian <ming.qian@oss.nxp.com>,
+	u.kleine-koenig@baylibre.com,
+	Marco Felsch <m.felsch@pengutronix.de>,
+	Alexander Stein <alexander.stein@ew.tq-group.com>,
+	Guoniu Zhou <guoniu.zhou@oss.nxp.com>,
+	linux-pm@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	bui duc phuc <phucduc.bui@gmail.com>
+Subject: [PATCH 0/3] pmdomain: imx: Use pm_runtime_resume_and_get()
+Date: Mon, 21 Sep 2026 10:37:05 +0700
+Message-ID: <20260921033708.14433-1-phucduc.bui@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <56e5f32102c67575ded8af9e81a06dc9f1dcf0ee.camel@icenowy.me>
 
-Hi Icenowy,
+From: bui duc phuc <phucduc.bui@gmail.com>
 
-On 20:56 Sun 20 Sep     , Icenowy Zheng wrote:
-> 在 2026-09-18五的 02:40 +0000，Yixun Lan写道：
-> >   SpacemiT's PMU (Power Management Unit) consist of several power
-> > domains
-> > which can be managed independently, depending on different
-> > application
-> > scenario, each domain can be powered on/off for saving power.
-> > 
-> >   The driver is implemented based on Linux Generic PM Domain
-> > framework.
-> > From a hardware perspective, either of two distinct power-on
-> > sequences
-> > are supported, in software mode (SW mode), the driver is responsible
-> > for
-> > controlling the states of bits such as sleep1, sleep2, isolation and
-> > pwr_state, while in hardware mode (HW mode), the PMU hardware will
-> > complete
-> > the sequence automatically without requiring software intervention.
-> 
-> This driver is tested to be able to power up the GPU on SpacemiT K3,
-> however the following warning appears in the kernel log:
-> 
-> ```
-> genpd_provider audio: Fail to power-off domain: 2
-> ```
-> 
-This is kind of an expected issue, due to hardware design, the audio
-power switch is coupled with rcpu core, which means power off it will
-also shut down the rcpu, so the power switch currently is configured
-as always on from software perspective, it's unable to power-off even
-in Linux or rcpu once system up.
+Hi all,
 
-I will drop audio power domain control in next version
+This series replaces open-coded pm_runtime_get_sync() and
+pm_runtime_put_noidle() error handling with
+pm_runtime_resume_and_get() in the i.MX power domain drivers.
 
-> (BTW I built it as a module to prevent whole kernel being rebuilt)
-> 
-that's fine
+No functional change.
+
+Found by manual code inspection.
+
+Best regards,
+Phuc
+
+bui duc phuc (3):
+  pmdomain: imx: gpcv2: Use pm_runtime_resume_and_get()
+  pmdomain: imx8m-blk-ctrl: Use pm_runtime_resume_and_get()
+  pmdomain: imx93-blk-ctrl: Use pm_runtime_resume_and_get()
+
+ drivers/pmdomain/imx/gpcv2.c          | 16 +++-------------
+ drivers/pmdomain/imx/imx8m-blk-ctrl.c | 15 +++++----------
+ drivers/pmdomain/imx/imx93-blk-ctrl.c |  3 +--
+ 3 files changed, 9 insertions(+), 25 deletions(-)
 
 -- 
-Yixun Lan (dlan)
+2.43.0
+
