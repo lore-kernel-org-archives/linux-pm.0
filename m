@@ -1,120 +1,134 @@
-Received: from mail-ua2-f12.google.com (mail-ua2-f12.google.com [74.125.226.204])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0D0343BDB7
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 07:41:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.226.204
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6B3D44A416;
+	Mon, 21 Sep 2026 07:50:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789976489; cv=none; b=kO9bpbIWUG26fU/w1wM1rdKuOIdYWdk6zrvhcs4GqhfmvU56/5FkdB6LvmVsJxtTeqzqm9KnPvE3XTrts9IuZ6cwBkpXoXosSAkKa4CcMfomXRnXkMPawPmv5afCYRn07Tt0Moy3rCpepiCt3amnPfA5/UH+qs38ZIR88hAJExU=
+	t=1789977029; cv=none; b=tr/G5zcZ5X3L6h9eYw2Nn9oWIgVaF208iYVjUuuazKaM+LhtoyPvW7ZktbMU/qzUl40sY5Sl+4jtNE9EXaEG0m5RImmIIgTGY0Jp7E6Ipxr99MEF21gDJjN8wIctbGAKz84PepZpgbS2WtXdGVC0kQEX42iDmIhXevWUIbyJKDY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789976489; c=relaxed/simple;
-	bh=nRr2NwONb5MDiY74TwbEFnamWl7CEbEpARCJXKG89CU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=uIuRPl6mDisgBetTL57ihQ5l7UCAt2u2UKVMl8ioUYdUEOoT+8P+uYxrlOvqNB2fytrQp8IbRkXXdrHMjQHN+EXA+9C8LCuTv4fgqbdbpefxe2+i1wLnb7/QbxCAn1zK+xhY3RoH/QRpUnwH2jtd0JAf1NTA9CZczRdOu6cYDb8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.226.204
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua2-f12.google.com with SMTP id a1e0cc1a2514c-97e96a8ba8cso1714368241.3
-        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 00:41:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789976487; x=1790581287;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=FDUPsKvRHny4pMpTXrqtNbtll59mp87r5rbb0L/oblw=;
-        b=KGT49oqr7cC3nSLIQ1ZmEIqppMetP44kQG9rMQzAU3Qo8PdTI1lhVmUVRmZKdnPbfg
-         7q2Db2CwMlKbUVqjqPAvH25T+tDD9/W61oOSz/g/tRuHVG3BlY1g226QDxgAXfvqoUwA
-         IDV37KKPq0Pu6BhdbDTIpBGZa4vNe+xP8qUNyjzuSi1HtpHDuAaxqYWLwMA2pAQlfjwd
-         7+THbaFUiwjJC3Z7s7TBpVcXCbj3+7AVCt7gvlm2DheEz5nhDHNlFNeUrffjdSLyAJ1J
-         cMZ1Ne8rqx0c45wTXShE5Qvc9b056a1525GiBw3eVqFuSlWoESMskg9mE2aL2mdXYD9D
-         3zKw==
-X-Forwarded-Encrypted: i=1; AKwUvBy4dsMbHEucdZViSgoSNT1p59DuAEFECJUi8K3aOWUuhvA6kBTmJ4211nszajrtu0l/l3FqmHPapw==@vger.kernel.org
-X-Gm-Message-State: AFuF++mIWMmuk0ARAkKXrBOlm0TeOcfn0B0mrCLIEPIeQQRsASEEfhw+
-	W/rL9dlACOsJSW9d3W3PWXv8tE0HBL7gnpyZwgQ81G+AGrweGoaOO2zwhctIJ1N1
-X-Gm-Gg: AYBFou3Kz79lvXGJs1wzY8h9vOUTyfpnYtyLByXADhSEEkixf/XTSoCmIkUXpFLQ0TI
-	243pzs90IbeQ5iiJeq/nSYnztgypuIm8yn7cA/swg8VqUKHixkI1oKPDgXa+FoLPcRp80fxcfHy
-	/b5UmWd9j5J18eDLAhYn4U4akqcW/+v9+CatCDxVm8DxdX4PoNjn7QD3P4XyyZnEHIjg3mm+j08
-	lbZw1nOwHuBsV9Q2cYDumY1xzcxzeTiYRi48RZQtTIrL1NyNwhSGBmmOUYZ4bmhmRr0U7nWVEO7
-	eGdPnSOwSAB2vJHJ0kPcry0Cisp+kOX2Gz0Om5pJ5Ab3r2zo4UtG+b+Psv7Qr74TiV8fQfu86sA
-	GFh/9AsfWPiRIsUPTbfN/nvK8VHFIciB0fU4drMIGdSK9sMwrvLpuWc+nsWi8+iqLzY4ZYN2P7K
-	pwjEPTFWtt21S+58EDeRcG4KQV6xDWCE18OReB5WNAbXQLajIj6oOzgY1KMf3HoPLpqyO1OgY35
-	hRX9ySh+jqIdZjL63EoXBN8I1EIngkQYn3New==
-X-Received: by 2002:a05:6102:e0e:b0:7a6:ef60:dac with SMTP id ada2fe7eead31-7a6ef6011abmr2042869137.34.1789976486606;
-        Mon, 21 Sep 2026 00:41:26 -0700 (PDT)
-Received: from mail-ua2-f12.google.com (mail-ua2-f12.google.com. [74.125.226.204])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7a6acafe715sm7329452137.11.2026.09.21.00.41.23
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 21 Sep 2026 00:41:24 -0700 (PDT)
-Received: by mail-ua2-f12.google.com with SMTP id a1e0cc1a2514c-97e96a8ba8cso1714335241.3
-        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 00:41:23 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxVwtR6r4bhJB9iMsxf6FZvpJZkIIzHtGovxyqdxk/jsAorvCpZ0/ntJUWvI4lfFQYmM9Qvj48wzQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:83d5:b0:7aa:17ba:3dfa with SMTP id
- ada2fe7eead31-7aa17ba42bbmr32910137.31.1789976483444; Mon, 21 Sep 2026
- 00:41:23 -0700 (PDT)
+	s=arc-20240116; t=1789977029; c=relaxed/simple;
+	bh=MN6wjM73jwFJE0BBGgrZ2DP1kz/GNI2gsTbQ6k5QYKg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=L6s+NLyrXa3Oj2wnXr447AC1gwoSU1GHQIN0+rpzdJAB6mb/rfUnMAnWoFx8JKvnYegGKDFgB9RAXxj7QWQY0jGqgPY59dH68XJlxmjF6rR89gTWbPOfbbSXwsr4Y1xiDsLAQnxuOM8n4eQd5mmr9Nkhr2Bfwh2nJ8pGXGnMroo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jy0egReD; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jy0egReD"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 787C5C2BCFA;
+	Mon, 21 Sep 2026 07:50:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1789977028;
+	bh=MN6wjM73jwFJE0BBGgrZ2DP1kz/GNI2gsTbQ6k5QYKg=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=jy0egReD+8CgpgGNZcEoGc6MnHzSrqY8YQvM5daE5jPaDbqZmre0CW3f7cO4LhJvA
+	 6T7lAAfhYUC7Hq1FthIqk4rzdNhD6NT+UN+ybSJ4rT/K11YxTl6IECBYpPsqVcCcgL
+	 mBpMw80R97EGB8864NkCzza4eu35YRT7pYvEV+cz8FR+qN7UEVdlK6R45vbMpk93f0
+	 to8f2tl1Gown9Ln3k7cq6EhyDDwAjqwmRN88M1eRJkCkQVrQZtPI4frtjXzyHJ7TYm
+	 xRJ6VF0cWNBoL6Upj2PzVnVKwOsA+BBubhl/GLPvWNmomHSBSHDRV/mkrc1QaGlKSA
+	 HXN15hfdQJbZQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54E78C982ED;
+	Mon, 21 Sep 2026 07:50:28 +0000 (UTC)
+From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Subject: [PATCH v5 0/3] nvmem: add support for the MediaTek mt6323 PMIC
+Date: Mon, 21 Sep 2026 10:50:01 +0300
+Message-Id: <20260921-mt6323-nvmem-v5-0-2f5d308369f0@protonmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-0-dbe9236bfd22@ideasonboard.com>
-In-Reply-To: <20260919-epaul-v7-3-rc1-x5h-vsp-fcp-v2-0-dbe9236bfd22@ideasonboard.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 21 Sep 2026 09:41:10 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVC2vNp2nTHUi3saTZ8UD4ggeB_aBEvN9XP+EToOr7G2w@mail.gmail.com>
-X-Gm-Features: AcwNN1UjZbDPnIaj-fYRvcBoX7YE3K7C7k2z9bWrLFQVkND6DSGXX-e-oumCCsA
-Message-ID: <CAMuHMdVC2vNp2nTHUi3saTZ8UD4ggeB_aBEvN9XP+EToOr7G2w@mail.gmail.com>
-Subject: Re: [PATCH DNI v2 00/11] media: rcar-fcp, vsp1: Enable on R-Car X5H
-To: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Cc: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
-	Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-media@vger.kernel.org, 
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3XPwW7DIAwG4FepOI8KbCDKTnuPaQdCzEpVQgUZa
+ lXl3Ue6Q6u2O/7S78/2hRXKgQp731xYphpKSFML+m3D3M5O38TD2DIDAUYYKXmcDQLyqUaKXDi
+ trPDgbe9ZGzlm8uF05T6//nL5Gfbk5tVYG7tQ5pTP131Vrr1/6Cq54IMmOfSOtPTwccxpTlO04
+ bB1KbLVr3AvdA8CNEF5FITGtivVSwFvQifxQcAmgNAOezCdhdeCugn90xeqCQbMOMpOoxzdk7A
+ syy9+Vg4WhQEAAA==
+X-Change-ID: 20260611-mt6323-nvmem-0c54a0f2fa9f
+To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
+ Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Srinivas Kandagatla <srini@kernel.org>, 
+ Roman Vivchar <rva333@protonmail.com>
+Cc: Andy Shevchenko <andy@kernel.org>, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
+ Ben Grisdale <bengris32@protonmail.ch>, 
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789977026; l=2403;
+ i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
+ bh=MN6wjM73jwFJE0BBGgrZ2DP1kz/GNI2gsTbQ6k5QYKg=;
+ b=WfuNkR0MZFTaJPn5Cgdqk4A6l9M4n4AssM/47amKmWilCckA8bhc+0ZqCnazyL3HtApVK61Vh
+ bJCgtxCUZ28Abj0eGsH68mAgfNWjTroT7j4ofNoF8QSt1nNO8OXiuad
+X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
+ pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
+X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
+ auth_id=777
+X-Original-From: Roman Vivchar <rva333@protonmail.com>
+Reply-To: rva333@protonmail.com
 
-Hi Paul,
+This series adds support for the EFUSE found on the MediaTek mt6323 PMIC.
 
-On Fri, 18 Sept 2026 at 19:07, Paul Elder
-<paul.elder+renesas@ideasonboard.com> wrote:
-> This series is based on Geert's
-> "topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v3" branch [0]. A
-> branch including this series is available here [1].
->
-> This series enables the FCPV{B,I,D} and the VSP{B,I,D} blocks on the Renesas
-> R-Car X5H SoC.
->
-> This has been tested on an Ironhide with the vsp-tests test suite [2].
-> VSPI:
-> 145 tests: 138 passed, 0 failed, 7 skipped
-> VSPB:
-> 115 tests: 104 passed, 0 failed, 11 skipped
-> VSPD (a):
-> 114 tests: 99 passed, 0 failed, 15 skipped
->
-> VSPD (b) hangs on the tests, so that needs some investigation.
->
-> The first couple patches add clocks that are used by the FCP and VSP,
-> but as the upstream X5H CPG driver is barebones at the moment and we
-> don't yet ensure that the parents are enabled, these are marked as DNI
-> for the moment.
+Tested on the MediaTek mt6572 and mt8163 SoCs (Ben), both paired with a
+mt6323.
 
-The DTS patches use DNI definitions of clocks, so they should be DNI, too.
+Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
+Signed-off-by: Roman Vivchar <rva333@protonmail.com>
 
-Gr{oetje,eeting}s,
+---
+Changes in v5:
+- Reorder Makefile entries
+- Use mt6323_regulators driver pattern for regmap instead of dev->parent->parent
+- Link to v4: https://patch.msgid.link/20260911-mt6323-nvmem-v4-0-626dd17531dc@protonmail.com
 
-                        Geert
+Changes in v4:
+- Rebase onto nvmem/for-next (8f596c13b6b7 ("dt-bindings: nvmem: qfprom: Add compatible for Qualcomm Maili"))
+- Drop device-id/of.h header (Andy)
+- Mediatek -> MediaTek in Kconfig
+- Link to v3: https://patch.msgid.link/20260713-mt6323-nvmem-v3-0-205c39267a24@protonmail.com
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Changes in v3:
+- Rebase onto next-20260708
+- EFUSE driver: Replace 'mod_devicetable.h' with explicit 'device-id/of.h'
+- Drop MFD patch since it's applied
+- Link to v2: https://patch.msgid.link/20260617-mt6323-nvmem-v2-0-4f30e36aa0f4@protonmail.com
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Changes in v2:
+- EFUSE driver: Sort variables in the mt6323_efuse_read (Andy)
+- Link to v1: https://patch.msgid.link/20260611-mt6323-nvmem-v1-0-b5e1b9ce51f2@protonmail.com
+
+Changes after split:
+- EFUSE driver:
+    - Remove 'linux/errno.h' header (Andy)
+    - Remove explicit cast to u16 in the 'mt6323_efuse_read' (Andy)
+    - Reword comment in the 'mt6323_efuse_read'
+    - Capitalize MediaTek in the module description
+- Link to a previous series: https://patch.msgid.link/20260512-mt6323-v2-0-3efcba579e88@protonmail.com
+
+---
+Roman Vivchar (3):
+      dt-bindings: mfd: mediatek: mt6397: add mt6323 PMIC EFUSE
+      nvmem: add mt6323 PMIC EFUSE driver
+      ARM: dts: mediatek: mt6323: add EFUSE support
+
+ .../devicetree/bindings/mfd/mediatek,mt6397.yaml   | 21 ++++++
+ MAINTAINERS                                        |  5 ++
+ arch/arm/boot/dts/mediatek/mt6323.dtsi             |  4 ++
+ drivers/nvmem/Kconfig                              | 11 +++
+ drivers/nvmem/Makefile                             |  2 +
+ drivers/nvmem/mt6323-efuse.c                       | 83 ++++++++++++++++++++++
+ 6 files changed, 126 insertions(+)
+---
+base-commit: 8f596c13b6b7fa9fa35091273c37f9b6e3fc2d0f
+change-id: 20260611-mt6323-nvmem-0c54a0f2fa9f
+
+Best regards,
+--  
+Roman Vivchar <rva333@protonmail.com>
+
+
