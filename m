@@ -1,62 +1,62 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97B4B3CC32E
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 19:58:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93ADD414417
+	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 20:00:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790020731; cv=none; b=qru3ShbJB+uoiStVZxgo5DAkhKniVUlJQ3zHnpgOUKFNIfNpAGRnnRGBBiz4jLcGNXhp7Wy0wAahYZlvWlTNyBHosf85wvpb9xWUDLL/xMzCVxxdb7N5jiaI/JWpO3n4BzNt3zoKo3hkebNM/pnpteL0EdgoEWM2mBQLiUB0KGk=
+	t=1790020806; cv=none; b=qi+/wIkijQ/C7hQSzSwNIAy+fQnUSK7JzbG3XB3YAr09+/Dkx5goK3C7Ah3nsa79HuShscUGOH3a9S3jJXTYlYm6VAX9YddlKwyW0aHB7SyU/vL6gSkhGENuUsDCVdhv6MkqaMLNu3/7HpaUqH9czRuCWBj/EtAdQVMg5p3Cgfo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790020731; c=relaxed/simple;
-	bh=z48FpH7PIx2OiXiR4P5GOSs7qt1bO2Vg16w8mN6lx1o=;
+	s=arc-20240116; t=1790020806; c=relaxed/simple;
+	bh=oibKvVVhPVKq6HaFrc3MJTlwNCEu7DEW4mS8DM+sD3M=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FX8AMI6lipTDUHwFVuKJSkaYpqTFQo9z55QE9EeCMVXVsD5uG7bGDkbFAOw40GPhnaUMpeUvb9Oz4p7zr7Q4HmRGBoTHesf0lMvuVN2i6XqhIJHS03bazy6GSZGAGaIPac5ujA1puLi0UdBcMXoHkZLJH9cQNMoEJafFZ/3cN8A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=RiG2r283; arc=none smtp.client-ip=170.10.129.124
+	 Content-Type:Content-Disposition:In-Reply-To; b=iLOeXUlI2ubAVGBIluVjgU8RotEWjzKOaoJnsqv/hhP1B0wJhMhoO0TD9H/3rl2/PvEeaNhabEsvOj7GHzP8ziMisyYT8x4Y40Ny9KleGAtceyXJLsqfcOEOq752L2TeRi80CjM5CHGpSH2WfHpNB+oldr36isecpRZRYtENMTk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=deoEOCXm; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RiG2r283"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="deoEOCXm"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790020728;
+	s=mimecast20190719; t=1790020800;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=7PQp78DBLyCecA5Hv0HqsD2IBBaq/qhrBbKSaa4Pw6A=;
-	b=RiG2r283y0NZEzGkQ/ro0+Pzfqo/HwJHC5+6LpzVqUQBiGwODJbiiAp/Ps+b8a8K4eSids
-	HV3RpxKx0HX5LFi9vqlG9S026DN1lYKjxlaSjPXNbYVD/zZUZrOHe811inWAgA8Dh50hXW
-	Mu/+WX8mReoarcX2WdsP+86ap7KMoxE=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+	bh=kSjpsnGB6PkMlYt3gFNBn+l9/iXfVXQ9UfiCD3HwhPU=;
+	b=deoEOCXm5UOO/yrn77VtJm0sZIKD7baooR+6hgXYpdXERNHerJbKnHr7Z3R0VT3ka6j3I8
+	w9gtKP4c1V59fP39PEgI6v0Rs+iEL+JnoS/+CVZ3AWlEwDBbWh7Lvn59oDqkr2zWYBdrny
+	EJadfm2TMWUNyYtYT9y7wgchGo3eBXw=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-101-uhJugSIvPImDr0Dcg1tQkg-1; Mon,
- 21 Sep 2026 15:58:47 -0400
-X-MC-Unique: uhJugSIvPImDr0Dcg1tQkg-1
-X-Mimecast-MFC-AGG-ID: uhJugSIvPImDr0Dcg1tQkg_1790020726
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-90-Cl5toB87Mx-6IDyPy9kzbg-1; Mon,
+ 21 Sep 2026 15:59:56 -0400
+X-MC-Unique: Cl5toB87Mx-6IDyPy9kzbg-1
+X-Mimecast-MFC-AGG-ID: Cl5toB87Mx-6IDyPy9kzbg_1790020795
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 970C71829E21;
-	Mon, 21 Sep 2026 19:58:45 +0000 (UTC)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 41E6518558B4;
+	Mon, 21 Sep 2026 19:59:55 +0000 (UTC)
 Received: from fedora (headnet03.pony-001.prod.iad2.dc.redhat.com [10.2.32.114])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id B445F180036E;
-	Mon, 21 Sep 2026 19:58:26 +0000 (UTC)
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id D76DF1800361;
+	Mon, 21 Sep 2026 19:59:38 +0000 (UTC)
 Received: by fedora (nbSMTP-1.00) for uid 1000
-	oleg@redhat.com; Mon, 21 Sep 2026 21:58:45 +0200 (CEST)
-Date: Mon, 21 Sep 2026 21:58:25 +0200
+	oleg@redhat.com; Mon, 21 Sep 2026 21:59:54 +0200 (CEST)
+Date: Mon, 21 Sep 2026 21:59:37 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Ye Liu <ye.liu@linux.dev>
-Cc: Michal Hocko <mhocko@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ye Liu <liuye@kylinos.cn>, SJ Park <sj@kernel.org>,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>, Ye Liu <liuye@kylinos.cn>,
+	Michal Hocko <mhocko@suse.com>, SJ Park <sj@kernel.org>,
 	Gregory Price <gourry@gourry.net>, Lorenzo Stoakes <ljs@kernel.org>,
 	peterz@infradead.org, paulmck@kernel.org, mingo@redhat.com,
 	rostedt@goodmis.org, jpoimboe@kernel.org, mic@digikod.net,
-	tglx@kernel.org, david@kernel.org, linmiaohe@huawei.com,
-	nao.horiguchi@gmail.com, rafael@kernel.org, gnoack3000@gmail.com,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, rcu@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	tglx@kernel.org, linmiaohe@huawei.com, nao.horiguchi@gmail.com,
+	rafael@kernel.org, gnoack3000@gmail.com, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	rcu@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
 	linux-security-module@vger.kernel.org, rientjes@google.com,
 	shakeel.butt@linux.dev, xu.xin16@zte.com.cn,
 	chengming.zhou@linux.dev, will@kernel.org, boqun@kernel.org,
@@ -72,11 +72,11 @@ Cc: Michal Hocko <mhocko@suse.com>,
 	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
 	mark.rutland@arm.com, Dave.Martin@arm.com, james.morse@arm.com,
 	babu.moger@amd.com
-Subject: Re: [PATCH v4 02/15] mm/oom_kill: convert process/thread iterators
- to for_each_*_rculock
-Message-ID: <arGMYSL8lEZqhRnW@redhat.com>
+Subject: Re: [PATCH v4 03/15] mm/ksm: convert process iterator to
+ for_each_process_rculock
+Message-ID: <arGMqePU2L4q33o_@redhat.com>
 References: <20260921092101.89285-1-ye.liu@linux.dev>
- <20260921092101.89285-3-ye.liu@linux.dev>
+ <20260921092101.89285-4-ye.liu@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -85,28 +85,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260921092101.89285-3-ye.liu@linux.dev>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
+In-Reply-To: <20260921092101.89285-4-ye.liu@linux.dev>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
 
 On 09/21, Ye Liu wrote:
 >
-> From: Ye Liu <liuye@kylinos.cn>
->
-> Replace the manual rcu_read_lock()/rcu_read_unlock() pairs wrapping
-> for_each_process()/for_each_thread() loops with for_each_process_rculock()
-> and for_each_thread_rculock(), which scope the RCU read lock to the
-> loop body via scoped_guard(rcu).
->
-> No functional change.
->
-> Signed-off-by: Ye Liu <liuye@kylinos.cn>
-> Acked-by: Michal Hocko <mhocko@suse.com>
-> Reviewed-by: SJ Park <sj@kernel.org>
-> Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
-> Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
->  mm/oom_kill.c | 20 +++++---------------
->  1 file changed, 5 insertions(+), 15 deletions(-)
+> --- a/mm/ksm.c
+> +++ b/mm/ksm.c
+> @@ -3280,8 +3280,7 @@ void collect_procs_ksm(const struct folio *folio, const struct page *page,
+>  		struct anon_vma *av = rmap_item->anon_vma;
+>  
+>  		anon_vma_lock_read(av);
+> -		rcu_read_lock();
+> -		for_each_process(tsk) {
+> +		for_each_process_rculock(tsk) {
+>  			struct anon_vma_chain *vmac;
+>  			const unsigned long addr = rmap_item->address & PAGE_MASK;
+>  			const unsigned long index = rmap_item->linear_page_index;
+> @@ -3298,7 +3297,6 @@ void collect_procs_ksm(const struct folio *folio, const struct page *page,
+>  				}
+>  			}
+>  		}
+> -		rcu_read_unlock();
 
 Reviewed-by: Oleg Nesterov <oleg@redhat.com>
 
