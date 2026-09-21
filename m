@@ -1,113 +1,190 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.162])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C85BB45349C
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 09:51:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCE2E2E1746;
+	Mon, 21 Sep 2026 10:01:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.68.63.162
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789984293; cv=none; b=cNK/BRkt0QvR2ghGPMQGu58NkaHqohjbEunYWSO547A/CVq3BoHeK11bkrC21fywks5hKtuCouScm5BHOrIE+8Akc8XUy0MTtQ6ygoTbGW7HZ4bOehuv2qe5PTOkDl6Cn9Czee7I3ujgCvZqceMvrPB1uLQUpvDQDxUAUF+5QXw=
+	t=1789984892; cv=none; b=tLm7ltO/8PbLqIyF4Eu0+cMQDhCAPLnBQrvF1oM3XNGg4+3PGwXh2oIlpXSDZFmg6cb8v5CrgTSRvA83KyOIrnCAb7zILw+OyklEtAdNQN/hg+juGU8NKz+XdIZazVheSU3XQ4VvEPzdXySFJu6enI4k5uBKMxyLM3QvRirANtI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789984293; c=relaxed/simple;
-	bh=R9F7eCs5hlVe0XrQOYg+00J2R1c/rmdJwPU5ijIE2p4=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=E2tHnWNJTuiPisyl3pqcYITpfwjJ18iM/9paxo8t4Bl8jboImpZD5LXu4+IR1y+MKVB8qLlqnyDHolOPa8U9FuJnOtqIaqC/UtZaWxrwrV+IaYpt4YDnygU04tdns/wXG7/ItQgOJs9ETEYmO9q9xgffcb7URiASgI4wOWVFXJA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=J0w6cxpR; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789984892; c=relaxed/simple;
+	bh=8EDrVz3B5Ui9t+59/tsVLp1aP1KLxbEoqN01RrOD6w8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=XMq8IQ8U64QovbxYwKaSsqBEE5kEPc/dWwK1GRaRBNzNnWWmXg14CW+iwH4Qsva275cPFZyU76sxhpiKdXc7EgzgTEZ21iKLh66TMzVR7ZQt3n8p4N5JfOS2FI6TtW52n1LmPmht75LXJ6DdM2ad6xiQEiYv0tLqbWpv50cti9o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=N+muyZXc; arc=none smtp.client-ip=188.68.63.162
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="J0w6cxpR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5B121F00893
-	for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 09:51:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789984291;
-	bh=R9F7eCs5hlVe0XrQOYg+00J2R1c/rmdJwPU5ijIE2p4=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=J0w6cxpROIX6TE4J6DIgJu76eJyynKDstTTr+tfblPFjw2DpF0VReVyWoC8LMaHGO
-	 r1/PyRV3pBHDz2rfJkTnrbV1korY59q41VfoZZ3HWiHwYt5oF0nV3BLMA1e2xLmXSB
-	 mkU5CfqPdkI94cNEUd7p+fiS1Z1bEI0Up8CZzMk+QIgu/atRjd0/F6za9Gwv4ObiE/
-	 ET3v/p9ig6JEpn4PNtqCU/y9HiM52wJQqzDPgQDLFz8e5klse5Dp+3S+3/ucCIDUnW
-	 0bBn8c+UEBJA2Ika5GCuU4YTXyn9buv3OkjlGYZph77CSkHoka8ezapPxlziSh9+cG
-	 RbipTfsze7Kow==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16c81so2326787e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 21 Sep 2026 02:51:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBykDaHgLWNScLCsWWv3z8j5pmSXDn0Cpropw6MG0y4spbauFW8pOcCkzbBA61kL09nM1EEayQ2zVw==@vger.kernel.org
-X-Gm-Message-State: AFuF++m4P9nLIa8I20cQMLhr92rM3RiAIArf8N8RpuG2cL/iVBEO+oPV
-	dlVk3CYhvj+3BYWgBxSibb5ruxo8QcaXknYoH2g6g23Uux+TeJcgozL42X75YL4Wxd9DJfvPYGg
-	2MgkGG163T3MbjlqSFvH/3Ho1gfuD4MQNQkLEsPjM2g==
-X-Received: by 2002:a05:6512:4023:b0:5b6:1a7c:fd96 with SMTP id
- 2adb3069b0e04-5b8c197532bmr3127147e87.60.1789984290166; Mon, 21 Sep 2026
- 02:51:30 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 21 Sep 2026 05:51:28 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 21 Sep 2026 05:51:28 -0400
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <CAMRc=MdHy6M9cY-ZqMXP_F6yLuVuipDkZwHoBF0D9W3A5VkOSQ@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="N+muyZXc"
+Received: from mors-relay-8201.netcup.net (localhost [127.0.0.1])
+	by mors-relay-8201.netcup.net (Postfix) with ESMTPS id 4hpJdV2sb7z4NRn;
+	Mon, 21 Sep 2026 12:00:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
+	s=key2; t=1789984846;
+	bh=8EDrVz3B5Ui9t+59/tsVLp1aP1KLxbEoqN01RrOD6w8=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=N+muyZXc8ymigm1X4WJYdQfg2FAM32UXD62GkYAoXAwUrk7y9wSeo8wrc/kijMJRV
+	 y5tWKY3o2n02jG8BFKiSIVU0+QItf44A8F/uAvgSzG094QdLpHkIhB2vYGkX46B20i
+	 VN8otbW9QVGTprs7yAikun99LjJZdMuY8JvNPtYmNbSMCRCvzKBQOTZyd8gdjxZZ5l
+	 DyvixvqPU0uzZ2XY48NNI84277giq0riOIyvt5KdUAjXgXxXqYHUF2UnaCKvpjyJhB
+	 wokbeEO1V5wZCwoLz8JbmY9fO/UzY31upQSqXV2mNt9yhCmfs119MpbQUfndGp34Ma
+	 0jJsS2X3dDAMA==
+Received: from policy01-mors.netcup.net (unknown [46.38.225.35])
+	by mors-relay-8201.netcup.net (Postfix) with ESMTPS id 4hpJdV27C2z4NRh;
+	Mon, 21 Sep 2026 12:00:46 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at policy01-mors.netcup.net
+X-Spam-Flag: NO
+X-Spam-Score: -2.898
+X-Spam-Level: 
+Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by policy01-mors.netcup.net (Postfix) with ESMTPS id 4hpJdS65cXz8td8;
+	Mon, 21 Sep 2026 12:00:44 +0200 (CEST)
+Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
+	by mxe9fb.netcup.net (Postfix) with ESMTPSA id 5AA1A5FA21;
+	Mon, 21 Sep 2026 12:00:39 +0200 (CEST)
+Authentication-Results: mxe9fb;
+        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
+Received-SPF: pass (mxe9fb: connection is authenticated)
+Message-ID: <8aaad113-1952-4655-978d-0cdd8b048064@leemhuis.info>
+Date: Mon, 21 Sep 2026 12:00:37 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
- <20260915-pci-m2-bt-rework-v1-3-3c7d9cf9c010@oss.qualcomm.com>
- <CAMRc=MdJgXDUb-Uac0TRB8u1WUpLng51C4yMH6iMEMoK56tQYA@mail.gmail.com>
- <p2qiwwig7ap74puja6mgnz37lofljhexiapmpp6y3xmwkhs2dn@v2mxawoivkn4> <CAMRc=MdHy6M9cY-ZqMXP_F6yLuVuipDkZwHoBF0D9W3A5VkOSQ@mail.gmail.com>
-Date: Mon, 21 Sep 2026 05:51:28 -0400
-X-Gmail-Original-Message-ID: <CAMRc=McfFtRi_kwPh6Dfz6MwGEy_Q7ojFmJ3ibJ6V4PiEDPetw@mail.gmail.com>
-X-Gm-Features: AcwNN1XisqOT1G4P_pz-zd8sYeXwsQoqqLC2dtscBpTlrZOqZnjSykzHCvQdieE
-Message-ID: <CAMRc=McfFtRi_kwPh6Dfz6MwGEy_Q7ojFmJ3ibJ6V4PiEDPetw@mail.gmail.com>
-Subject: Re: [PATCH 3/5] power: sequencing: pcie-m2: Create auxiliary device
- for the M.2 BT interface
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
-	linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Rahul Samana <rahul.samana@oss.qualcomm.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>, Loic Poulain <loic.poulain@oss.qualcomm.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Amitkumar Karwar <amitkumar.karwar@nxp.com>, 
-	Neeraj Kale <neeraj.sanjaykale@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Manivannan Sadhasivam <mani@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks
+ bare-metal Xen dom0 boot
+To: Support TRINITY <support@trinity-net.com>,
+ regressions <regressions@lists.linux.dev>,
+ linux-acpi <linux-acpi@vger.kernel.org>, linux-pm
+ <linux-pm@vger.kernel.org>, stable <stable@vger.kernel.org>,
+ xen-devel <xen-devel@lists.xenproject.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+References: 
+ <905771062.272724286.1789919301858.JavaMail.zimbra@trinity-net.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Content-Language: de-DE, en-US
+In-Reply-To: 
+ <905771062.272724286.1789919301858.JavaMail.zimbra@trinity-net.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-PPP-Message-ID: <178998483973.134331.13310613659725459518@mxe9fb.netcup.net>
+X-Rspamd-Server: rspamd-worker-8404
+X-Rspamd-Queue-Id: 5AA1A5FA21
+X-NC-CID: jHAYD1xjKcSrG8HKUMDccnDoibkQCgWtGfye6GROeeyolTZ1i1c=
 
-On Mon, 21 Sep 2026 11:08:58 +0200, Bartosz Golaszewski <brgl@kernel.org> said:
-> On Mon, 21 Sep 2026 09:58:27 +0200, Manivannan Sadhasivam <mani@kernel.org> said:
->> On Wed, Sep 16, 2026 at 04:19:16AM -0500, Bartosz Golaszewski wrote:
->>> On Tue, 15 Sep 2026 16:24:04 +0200, Manivannan Sadhasivam via B4 Relay
->>> <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
->>> > From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->>> >
->>> > Currently, the driver instantiates the BT interface of the WCN6855 and
->>> > WCN7850 combo modules by creating a devicetree node at runtime using an
->>> > of_changeset, with the compatible passed through the PCI ID table. But this
->>> > method of creating a devicetree node just for matching with the driver is
->>> > not recommended.
->>> >
->>> > So create an auxiliary device for the BT interface instead. The serdev
->>> > transport is still allocated here and handed over to the Bluetooth driver
->>> > through the auxiliary device, along with the power sequencing target used
->>> > to power up the controller. Also extend the provider match so that the
->>> > auxiliary device created for this connector is matched as its power
->>> > sequencing consumer.
->>> >
->>> > Since the runtime node creation is now gone, select AUXILIARY_BUS in
->>> > place of OF_DYNAMIC.
->>> >
->>> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->>> > ---
->>>
->>> That's some nice stuff, thanks for doing it!
->>>
->>> It looks like there's no build-time dependency on this, only run-time? Can I
->>> take it independently?
->>>
->>
->> Yeah sure!
->>
+On 9/20/26 17:48, Support TRINITY wrote:
 >
-> Nevermind that, it still needs is_controllable().
->
+> I am reporting a bare-metal *Xen* dom0 boot regression seen with *Linux
+> 6.18.52.*
 
-Patch 3/5 also needs the header patch 1/5 adds, so we'll need a different
-merge strategy here.
+Thx for the report. There is one somewhat important detail that was
+missing (hope I didn't miss it):
 
-Bart
+Is latest 7.3-rc also affected? And if it is: does that partial revert
+help there, too?
+
+Ciao, Thorsten
+> On affected systems, Linux 6.18.51 boots successfully as Xen dom0 on
+> bare metal, while Linux 6.18.52 *consistently black-screens before dom0
+> userspace/networking comes up.*
+> 
+> #regzbot introduced: v6.18.51..v6.18.52
+> #regzbot title: ACPI processor/cpuidle lifecycle change breaks bare-
+> metal Xen dom0 boot
+> #regzbot link: https://gitlab.alpinelinux.org/alpine/aports/-/
+> work_items/18447 <https://gitlab.alpinelinux.org/alpine/aports/-/
+> work_items/18447>
+> 
+> Tested results:
+> 
+>   * Linux 6.18.51-r0, Xen dom0, bare metal: boots
+>   * Linux 6.18.52-r0, Xen dom0, bare metal: black screen before
+>     userspace/network
+>   * Linux 6.18.52-r0, Xen domU: boots
+>   * Linux 6.18.52-r0 with Xenbus notifier change reverted: still fails
+>   * Linux 6.18.52-r0 with only ACPI processor/cpuidle changes reverted:
+>     boots
+>   * Linux 6.18.52-r0 with refined ACPI idle lifecycle patch: boots
+> 
+> Affected hardware tested:
+> 
+>   * Intel Core i7-4785T thin mini-ITX, 16 GB DDR3
+>   * Intel N305 thin mini-ITX, 16 GB DDR5
+>   * Supermicro / Intel Xeon E5-1650, 32 GB DDR3
+> 
+> The successful boot used the regular Xen command line:
+> 
+> multiboot2 /boot/xen.gz cpufreq=xen:performance
+> module2 /boot/vmlinuz-lts modules=loop,squashfs,sd-mod,usb-storage,xfs quiet
+> module2 /boot/initramfs-lts
+> 
+> No IOMMU workaround, serial console parameter, debug parameter, storage
+> workaround, or Xen command-line change was required.
+> 
+> The regression was narrowed to *ACPI processor/cpuidle* changes between
+> 6.18.51 and 6.18.52, specifically the idle-driver registration lifecycle.
+> 
+> The working 6.18.51-style behavior registers the ACPI idle driver from
+> *acpi_processor_power_init()* and unregisters it from
+> *acpi_processor_power_exit().*
+> 
+> The failing 6.18.52 behavior registers the ACPI idle driver globally
+> from *acpi_processor_driver_init()* before *driver_register().*
+> 
+> A first ACPI-only revert confirmed the regression source. A refined
+> candidate patch was then prepared to preserve the working ACPI idle
+> lifecycle while keeping unrelated 6.18.52 safety fixes, including:
+> 
+>   * _LPI bounds checks
+>   * cpufreq notifier cleanup on *acpi_processor_driver_init()* failure
+> 
+> The refined candidate patch modifies only:
+> 
+>   * *drivers/acpi/processor_driver.c*
+>   * *drivers/acpi/processor_idle.c*
+>   * *include/acpi/processor.h*
+> 
+> It does not modify Xen, Xenbus, IOMMU, APIC, PCI/ASPM, intel_idle,
+> syscore, USB, storage, XFS, networking, printk, or the cpuidle core API.
+> 
+> The earlier cpuidle_disabled() workaround is not included.
+> 
+> The refined patch has been rebuilt and boot-tested successfully as Xen
+> dom0 on bare metal on TRINITY-EDGE.
+> 
+> This issue is currently visible to *Alpine* users because the *Alpine
+> v3.24 *stable repository contains:
+> 
+> alpine-release 3.24.2-r0
+> *linux-lts 6.18.52-r0*
+> 
+> Systems tracking Alpine 3.24 stable / latest-stable may therefore
+> receive Linux 6.18.52 as the default LTS kernel.
+> 
+> Attachments:
+> 
+>   * revert-acpi-idle-registration-lifecycle.patch
+>   * APKBUILD
+> 
+> The original Alpine report is here:
+> 
+> https://gitlab.alpinelinux.org/alpine/aports/-/work_items/18447
+> <https://gitlab.alpinelinux.org/alpine/aports/-/work_items/18447>
+> 
+> Please let me know if this should be submitted as a formal patch with
+> Signed-off-by, or if there is a better upstream fix/dependency that
+> should be backported instead.
+> 
+> Regards,
+> 
+> *Tony BONNIN*
+> 
+
+
+#regzbot introduced: 6cffb59ee50ea4
