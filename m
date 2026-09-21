@@ -1,48 +1,48 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7993E4EDCD4;
-	Mon, 21 Sep 2026 17:45:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B0FA4FB9A4;
+	Mon, 21 Sep 2026 17:45:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790012742; cv=none; b=bLVrweq5vRepGN8f8okbE/HBktDSWauNeNIZX/sjWbG0Y4L/umET1WLqLMSyF00fhGKoS1jW84FQ7f+mKfhQHVZMnotHkdl71+3I2x4awId2AYLOMNODWTiV81gOdo3yUGtFcLmxSYky2MArlHMZSmRpz9mia9vxPDZ9gui2BX0=
+	t=1790012749; cv=none; b=p5BzYBghA+yU1+1/ot380NvVH8xn2P8euEk19IlhCdczF6I1X0CV2klT1VHE9JCbrEewrjrf4qkzrB/DSotemYAcf3HPwBftXynEOcrnrBTkqBCppqybu7SoulB04pwc6+ZmapbvIhyUHJtD7ROWQJjxSTr85uRLJiK6s2dWpdg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790012742; c=relaxed/simple;
-	bh=r5pwx0D4qyzdb1/pAk1vEAnmtsvN/8GvGQzOVNJmEoc=;
+	s=arc-20240116; t=1790012749; c=relaxed/simple;
+	bh=3JNuDbC3MYiW0wD9BU0cQBSagn2V8MECWlf42eQnG5A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hwJhMI076CSqKIi0jzHf+QPqJyd6SGX9h6tfqlsqQO7eJ0VwpRCkAL+zdLblHg9LuQ1a5LFLObK0L1E4PYBdlLjJSBgYJ7XeY3GvC7VtBCJE7aLIwz0qVoh1G0ckdZxrOfgGFxPgOXMSIZJA2GT0QiXbLM1E945nWz/2GWss9pE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=doSxOOic; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:Cc; b=A+ZOzxvIRDQRmDH8qULtJFeDs5UA3nfYKJ6g4i6CEo4KQDg6qsdp5m/Km3S3/06uI8ueduInwRT+aIuyTCHiUQ9wDy3ZY/zmXOYi1IcnbNTjL3dCNauM1iEfyQCegbjp1I75mSe/pdKI3TLbauzUmU19medPNcS89e1+a1TQ6AQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=NmyNtGS5; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="doSxOOic"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68LGUj7d2707792;
-	Mon, 21 Sep 2026 17:45:12 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="NmyNtGS5"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68LG77BE351741;
+	Mon, 21 Sep 2026 17:45:13 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	e91v/0IgGsGPh6qcVxGFQwWxAX6WmD95pIQ/G4euJps=; b=doSxOOic+VXUoTX2
-	wl/VPVZlj+hmHIFGFWrke8g6Tywu3Emh3z9l32uEmpvXUnsC9Bgl5LfQy3LnFbBd
-	033JyuhZW7TbYSH7W3aLKfvfCqRTwgdSL3DYlktwnzkmfbV4QXsSepOiklTYii+k
-	sy/Ce9wWi91MxF6LKKqllWEOBX9TkagnaLByqqjHOfN1bWVoRuFCfjByomMwxNdY
-	2PsdprubJNWSTC89+KQ2WwBDKiqBJ2cyRSuO4DoGZGExx6n6hLrfRf5hQR3orLG8
-	+3BMd6HhuTE8aqYr7NdTK/ah3HuPvsVwHoiDzbEyB+XPLykUNfhi0VZSMi5SutxZ
-	45hfqw==
+	D6NbZZHpPoqVn4Ft2AC0hXSIRwrxMSla9Aj6VmbIubU=; b=NmyNtGS5gmLdHjJg
+	+8xxQffLay8JdLe9fWp5Pu8J01BwkLSQf6IZT9dDRn3uDnr130jz1QE1ceu9VQku
+	N7XLLqtdlOPegOCjAaGULOh1hyeP4/NpH8U90jVnJ9ZThRLZ4KQUuFLVc//Ce3Ld
+	+k2DjlPgMnCMmwNBM1ZTnRyE0TqgeZwOPN0io2R4dsOesIU/K1mYgsLy0ApTYnS6
+	9Ac41As6sKkWzluvQ+Qictm0U4qpp/SG48z9TZvBOBzq8h5X4D/rqSfH2F/rk4E7
+	XWtf57nNKYHW5uIHC5tSVkX1/C3SZIp7SEj6QP1h3Wnr32C5bZcKhFs28UMC+pq2
+	neSNhA==
 Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gu85vgaqj-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gu7tsge9b-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 21 Sep 2026 17:45:11 +0000 (GMT)
+	Mon, 21 Sep 2026 17:45:13 +0000 (GMT)
 Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 68LHecCS1524331;
-	Mon, 21 Sep 2026 17:45:09 GMT
+	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 68LHecwb1524338;
+	Mon, 21 Sep 2026 17:45:10 GMT
 Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 68LHj7Pr1531207;
-	Mon, 21 Sep 2026 17:45:09 +0000 (GMT)
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 68LHj7Pu1531207;
+	Mon, 21 Sep 2026 17:45:10 +0000 (GMT)
 From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-Date: Mon, 21 Sep 2026 23:14:17 +0530
-Subject: [PATCH v14 2/6] reboot: hw_protection_trigger: use standardized
- numeric shutdown/reboot reasons instead of strings
+Date: Mon, 21 Sep 2026 23:14:20 +0530
+Subject: [PATCH v14 5/6] power: reset: Introduce PSCR Recording Framework
+ for Non-Volatile Storage
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -51,7 +51,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260921-pscrr-framework-v14-2-a16290003b7c@oss.qualcomm.com>
+Message-Id: <20260921-pscrr-framework-v14-5-a16290003b7c@oss.qualcomm.com>
 References: <20260921-pscrr-framework-v14-0-a16290003b7c@oss.qualcomm.com>
 In-Reply-To: <20260921-pscrr-framework-v14-0-a16290003b7c@oss.qualcomm.com>
 To: Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
@@ -69,470 +69,950 @@ Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         avaneesh.dwivedi@oss.qualcomm.com,
         Umang Chheda <umang.chheda@oss.qualcomm.com>,
         Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>
+        Francesco Valla <francesco@valla.it>
 X-Mailer: b4 0.14.3
 X-Proofpoint-Reinject: loops=2 maxloops=12
 X-QCInternal: smtphost
 X-QCInternal: smtphost
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDI1OSBTYWx0ZWRfX9NIzm/egw5ly
- kBBxP+rN8WWkaOk3ABHiolYWO+szzHsSILzESpFdbYnqAHrATLInLXTNbI6WbbVMhO9ZOlm3v/f
- wIcu0jlMp53Jq4h6KHV7QuGJhj5bG1A=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDI1OSBTYWx0ZWRfX0SKcumMX2dWT
- HjqGOE4ulV4Cxrp2DXsva1NilNiur+WLd4HyOOTHmuVQAeK748RY02RyfhR3x0u943eUzHrCxms
- Vv4bPTQ0uyTjc36xkRE9Mc4mftOFiHtmVuh+3hbsl2kTt51LM8W0FjYeH2E/6iNzzevfYcUI2Va
- FQzYKq9PwA+dVE4OfgWR94gSsItArLQwJy0ki+bMmeNwUYh0+1CCMnz2bAo7UPiNv5P4F4H9eMq
- dBkFhpD81pzqb4hwkKbYTgHkmQlruwwNCgkCEChti81vOowgTHLJ0fYpP5lhJMuYGFzWzqEa7gM
- ePG7BbMqu8kAOU/wSjAj+fM5hw4NichWipw0QaND0xivJ+QQSPub4BYgIyr7oan7W9UYveWTDYj
- JP61AuinreZHJY5fR48leY62DAu6wv7EwBc+UXpQBLpwt8oMyaSoDoFA81zBpeXhegFnwY8soQD
- 6cfxkljzTGw86nn8ivA==
-X-Authority-Analysis: v=2.4 cv=E8FYNqdl c=1 sm=1 tr=0 ts=6ab16d28 cx=c_pps
+X-Proofpoint-ORIG-GUID: lrj_hb9FnZs5RqKpH5T9lqxNoya_2sLm
+X-Authority-Analysis: v=2.4 cv=aqgnmiZV c=1 sm=1 tr=0 ts=6ab16d29 cx=c_pps
  a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22 a=pGLkceISAAAA:8
- a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8 a=7sc-FwRdcYxzY__InfsA:9
- a=QEXdDO2ut3YA:10 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-ORIG-GUID: laIsjN0vtpU7wjglTrZhf3yagXpRtiYu
-X-Proofpoint-GUID: laIsjN0vtpU7wjglTrZhf3yagXpRtiYu
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=7CQSdrXTAAAA:8 a=F-jeClLd32UZZCvIPigA:9 a=QEXdDO2ut3YA:10
+ a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDI1OSBTYWx0ZWRfX/c6J2mU1Wjgw
+ jPwPs5Hg7HZe7wtd5DOnIBoHjUHmBa2ZsPPDSaW0IupNH8WhtAIUdOUKIohn9OOxKB6lPmgvxyq
+ E4wI8TZzFGyDfoiIrqAlwpJj+HTRqEU=
+X-Proofpoint-GUID: lrj_hb9FnZs5RqKpH5T9lqxNoya_2sLm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDI1OSBTYWx0ZWRfX0vrhfNL93xg/
+ NEjpyT5/1Iu8/1CjoEvBlw5hE7PAfoYFJByemM5iy9qaYwTHm7Cz8VpHejd8mmJKDQj2EnWfvee
+ N7iqjRrkgC2XEESjZI1LnIM08AJI5Ur7l78ft3kJS+2B0gRyg6zpl8ciOrD6lVWL9Qpgg+WslCq
+ HwY+z/lJXOPzDqwijVc4HdQzXSpxtSdQSTdKueQ7vAChYhilHWSOC6ZWUYR57IWcWjt7GFNt4tv
+ zQ7K/g1ICAx/mj0LGaYqf/hHOPePHoK35HQHF8egZ/Dh5uNLf/wBglUql3zlm3IN2ka2ADZlHJP
+ MSQpBB3JTH13xGsB2wNePzRE0lPVkK+THEN0vXzIm1f3zNriMSDgxr87IGYdUYcCOmU2s9GcCEU
+ sDHcySIcs7VT/vJzjaHSvZz17JKdOze/vleRa5QoW8TkRE6seB4AYc8mTvOIgYXfOGTwFq2Jrrb
+ Gv48GHrf3dN709dJfDg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-21_05,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 spamscore=0 lowpriorityscore=0 impostorscore=0
- phishscore=0 suspectscore=0 priorityscore=1501 malwarescore=0 adultscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0
+ bulkscore=0 clxscore=1015 priorityscore=1501 adultscore=0 spamscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609210259
 
-Prepares the kernel for the Power State Change Reason (PSCR) recorder,
-which will store shutdown and reboot reasons in persistent storage.
+Introduce the Power State Change Reasons Recording (PSCRR) framework: a
+generic mechanism to record why the last power state change (shutdown or
+reboot) happened - under-voltage, thermal, watchdog, software-triggered,
+etc. - so a postmortem reason survives a reboot or an abrupt power loss.
 
-Instead of using string-based reason descriptions, which are often too
-large to fit within limited storage spaces (e.g., RTC clocks with only 8
-bits of battery-backed storage), we introduce `enum psc_reason`. This
-enumerates predefined reasons for power state changes, making it
-efficient to store and retrieve shutdown causes.
+PSCRR is built around providers. A provider is either a hardware reason
+source (a PMIC, SoC reset controller or watchdog exposing a reset cause)
+or a recorder that persists the reason across a power cycle (an NVMEM or
+RTC scratch cell). Each provider gets a directory under
+/sys/kernel/pscrr/providerN/ exposing its name, backing device, the set
+of observed reasons (as tokens), its capabilities, the reasons it
+supports and - for recorders - a record policy. The reason set is
+deliberately not collapsed to a single winning cause, since resets are
+often multi-causal.
 
-Key changes:
-- Introduced `enum psc_reason`, defining structured reasons for power state
-  changes.
-- Replaced string-based shutdown reasons with `psc_reason` identifiers.
-- Implemented `get_psc_reason()` and `set_psc_reason()` for tracking the
-  last shutdown cause.
-- Added `psc_reason_to_str()` to map enum values to human-readable strings.
-- Updated `hw_protection_trigger()` to use `psc_reason` instead of string
-  parameters.
-- Updated all consumers of `hw_protection_trigger()` to pass an appropriate
-  `psc_reason` value instead of a string.
-- All structured logs now go through a single `pr_emerg()` in
-  `__hw_protection_trigger()`, providing consistent output:
-    HARDWARE PROTECTION <action>: <reason-code> (<reason-string>)
+Reasons are the numeric enum psc_reason values from reboot.h, shared with
+the POWER_ON_REASON_* vocabulary, so they store compactly in small
+battery-backed cells. The current reason (get/set_psc_reason(), set by
+the thermal/regulator/hw_protection paths) is written to every recorder
+from the reboot notifier.
 
 Co-developed-by: Oleksij Rempel <o.rempel@pengutronix.de>
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
-Acked-by: Mark Brown <broonie@kernel.org>
-Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reported-by: Francesco Valla <francesco@valla.it>
+Closes: https://lore.kernel.org/all/178749889134.204450.5740187753642158305.b4-review@b4/
 Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 
+changes v13:
+- Narrow pscrr_lock usage in pscrr_provider_register() to only protect
+  pscrr_dirs list updates.
+- Check pscrr_root before allocation and limit locking around
+  ida_alloc() and kobject/sysfs setup.
 changes v12:
-- drop Tested-by: Faruque Ansari and Francesco Valla; the end-to-end
-  recording flow they tested has been reworked (multi-provider) and the
-  recorder driver is no longer part of the series - re-testing is welcome
-changes v10
-- regulator_handle_critical: set pscr = PSCR_UNKNOWN for default case
-- add Acked-by: Daniel Lezcano ..
-changes v9:
-- Remove redundant pr_crit() messages before hw_protection_trigger()
-- Replace psc_reason_to_str() switch with static const string array
-- Mark psc_last_reason as static
+- rework into a multi-provider framework: one sysfs directory per
+  provider instead of a single backend
+- add per-provider capabilities, supported_reasons and record policy
+- register providers through a const ops table via
+  (devm_)pscrr_provider_register()
+- report reasons as parsable tokens
+- move the sources under drivers/power/reset/pscrr/
+- add a MAINTAINERS entry; PSCRR depends on POWER_RESET
+- drop Reviewed-by: Matti Vaittinen; the framework was substantially
+  reworked since it was given
+changes v10:
+- make g_pscrr static
 changes v8:
-- add Acked/Reviewed-by.
+- introduce struct pscrr_core to encapsulate backend and locking
+- replace global mutex and backend pointer with centralized pscrr_core
+- use DEFINE_GUARD() + guard(g_pscrr) for scoped mutex locking
+- simplify code using local backend pointer after locking
+- prepare code structure for future multi-backend support
+changes v7:
+- make write_reason optional
+- update documentation
 changes v6:
-- added in this version
-(cherry picked from commit 29591d88486c392e2264de73c4e90106f181b33c)
+- move enum pscr_reason to kernel reboot core
+- move reason storage to reboot core
+- add locking
 ---
- drivers/platform/chrome/cros_ec_lpc.c |   2 +-
- drivers/regulator/core.c              |  16 ++---
- drivers/regulator/irq_helpers.c       |   9 +--
- drivers/thermal/thermal_core.c        |   3 +-
- include/linux/reboot.h                |  78 ++++++++++++++++++++++-
- kernel/reboot.c                       | 112 ++++++++++++++++++++++++++++++++--
- 6 files changed, 198 insertions(+), 22 deletions(-)
+ MAINTAINERS                        |  11 +
+ drivers/power/reset/Kconfig        |   2 +
+ drivers/power/reset/Makefile       |   1 +
+ drivers/power/reset/pscrr/Kconfig  |  33 ++
+ drivers/power/reset/pscrr/Makefile |   2 +
+ drivers/power/reset/pscrr/pscrr.c  | 633 +++++++++++++++++++++++++++++++++++++
+ include/linux/pscrr.h              | 107 +++++++
+ 7 files changed, 789 insertions(+)
 
-diff --git a/drivers/platform/chrome/cros_ec_lpc.c b/drivers/platform/chrome/cros_ec_lpc.c
-index 78cfff80cdea..00e98d12ddbc 100644
---- a/drivers/platform/chrome/cros_ec_lpc.c
-+++ b/drivers/platform/chrome/cros_ec_lpc.c
-@@ -455,7 +455,7 @@ static void cros_ec_lpc_acpi_notify(acpi_handle device, u32 value, void *data)
- 		blocking_notifier_call_chain(&ec_dev->panic_notifier, 0, ec_dev);
- 		kobject_uevent_env(&ec_dev->dev->kobj, KOBJ_CHANGE, (char **)env);
- 		/* Begin orderly shutdown. EC will force reset after a short period. */
--		__hw_protection_trigger("CrOS EC Panic", -1, HWPROT_ACT_SHUTDOWN);
-+		__hw_protection_trigger(PSCR_EC_PANIC, -1, HWPROT_ACT_SHUTDOWN);
- 		/* Do not query for other events after a panic is reported */
- 		return;
- 	}
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 631b55142809..90c406a4a045 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -5551,26 +5551,26 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
- static void regulator_handle_critical(struct regulator_dev *rdev,
- 				      unsigned long event)
- {
--	const char *reason = NULL;
-+	enum psc_reason pscr;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 05215fcc18a5..a7145dbb6eb7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -21967,6 +21967,17 @@ F:	Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+ F:	Documentation/devicetree/bindings/connector/pcie-m2-m-connector.yaml
+ F:	drivers/power/sequencing/pwrseq-pcie-m2.c
  
- 	if (!rdev->constraints->system_critical)
- 		return;
- 
- 	switch (event) {
- 	case REGULATOR_EVENT_UNDER_VOLTAGE:
--		reason = "System critical regulator: voltage drop detected";
-+		pscr = PSCR_UNDER_VOLTAGE;
- 		break;
- 	case REGULATOR_EVENT_OVER_CURRENT:
--		reason = "System critical regulator: over-current detected";
-+		pscr = PSCR_OVER_CURRENT;
- 		break;
- 	case REGULATOR_EVENT_FAIL:
--		reason = "System critical regulator: unknown error";
-+		pscr = PSCR_REGULATOR_FAILURE;
-+		break;
-+	default:
-+		pscr = PSCR_UNKNOWN;
- 	}
- 
--	if (!reason)
--		return;
--
--	hw_protection_trigger(reason,
-+	hw_protection_trigger(pscr,
- 			      rdev->constraints->uv_less_critical_window_ms);
- }
- 
-diff --git a/drivers/regulator/irq_helpers.c b/drivers/regulator/irq_helpers.c
-index 5b3cfac28667..712e0ce840e7 100644
---- a/drivers/regulator/irq_helpers.c
-+++ b/drivers/regulator/irq_helpers.c
-@@ -64,15 +64,16 @@ static void regulator_notifier_isr_work(struct work_struct *work)
- reread:
- 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
- 		if (!d->die)
--			return hw_protection_trigger("Regulator HW failure? - no IC recovery",
-+			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++POWER STATE CHANGE REASON RECORDING (PSCRR)
++M:	Oleksij Rempel <o.rempel@pengutronix.de>
++M:	Faruque Ansari <faruque.ansari@oss.qualcomm.com>
++R:	Pengutronix Kernel Team <kernel@pengutronix.de>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	Documentation/ABI/testing/sysfs-kernel-pscrr
++F:	drivers/power/reset/pscrr/
++F:	include/linux/pscrr.h
++F:	tools/testing/selftests/pscrr/
 +
- 		ret = d->die(rid);
- 		/*
- 		 * If the 'last resort' IC recovery failed we will have
- 		 * nothing else left to do...
- 		 */
- 		if (ret)
--			return hw_protection_trigger("Regulator HW failure. IC recovery failed",
-+			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ POWER STATE COORDINATION INTERFACE (PSCI)
+ M:	Mark Rutland <mark.rutland@arm.com>
+ M:	Lorenzo Pieralisi <lpieralisi@kernel.org>
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index bce996bbef28..f24ff89dd94e 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -377,3 +377,5 @@ config POWER_RESET_QEMU_VIRT_CTRL
+ 	  provides this controller, such as the m68k virt machine.
  
- 		/*
-@@ -263,13 +264,13 @@ static irqreturn_t regulator_notifier_isr(int irq, void *data)
- 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
- 		/* If we have no recovery, just try shut down straight away */
- 		if (!d->die) {
--			hw_protection_trigger("Regulator failure. Retry count exceeded",
-+			hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 					      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		} else {
- 			ret = d->die(rid);
- 			/* If die() failed shut down as a last attempt to save the HW */
- 			if (ret)
--				hw_protection_trigger("Regulator failure. Recovery failed",
-+				hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		}
- 	}
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index ac928c199829..3618986c1cab 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -319,11 +319,10 @@ static void thermal_zone_device_halt(struct thermal_zone_device *tz,
- 	 * Its a must for forced_emergency_poweroff_work to be scheduled.
- 	 */
- 	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
--	const char *msg = "Temperature too high";
- 
- 	dev_emerg(&tz->device, "%s: critical temperature reached\n", tz->type);
- 
--	__hw_protection_trigger(msg, poweroff_delay_ms, action);
-+	__hw_protection_trigger(PSCR_OVER_TEMPERATURE, poweroff_delay_ms, action);
- }
- 
- void thermal_zone_device_critical(struct thermal_zone_device *tz)
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index aa08c3bbbf59..08a7549bbc40 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -178,6 +178,73 @@ void ctrl_alt_del(void);
- extern void orderly_poweroff(bool force);
- extern void orderly_reboot(void);
- 
+ endif
 +
-+/**
-+ * enum psc_reason - Enumerates reasons for power state changes.
++source "drivers/power/reset/pscrr/Kconfig"
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index e31cab4ba78e..c73dc747e36c 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -37,6 +37,7 @@ obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
+ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
+ obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
+ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
++obj-$(CONFIG_PSCRR) += pscrr/
+ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
+ obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
+ obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
+diff --git a/drivers/power/reset/pscrr/Kconfig b/drivers/power/reset/pscrr/Kconfig
+new file mode 100644
+index 000000000000..72de82731b53
+--- /dev/null
++++ b/drivers/power/reset/pscrr/Kconfig
+@@ -0,0 +1,33 @@
++# SPDX-License-Identifier: GPL-2.0-only
++menuconfig PSCRR
++	bool "Power State Change Reasons Recording (PSCRR) Framework"
++	depends on POWER_RESET
++	help
++	  Enables the Power State Change Reasons Recording (PSCRR) framework.
++
++	  PSCRR records why the system last shut down or rebooted into
++	  non-volatile storage, so the reason survives the reset and can be
++	  read by the bootloader or early user space on the next boot. Reasons
++	  come from software (thermal or regulator hardware-protection events,
++	  a watchdog pretimeout, a kernel panic, a controlled reboot) or from
++	  hardware reset-cause registers (PMIC, SoC reset controller, watchdog).
++
++	  It helps whenever the real cause would otherwise be lost or ambiguous
++	  on the next boot, for example:
++
++	  - the reset is abrupt and block storage (eMMC/NAND) may not survive
++	    it; on systems that can detect the event in time - such as an
++	    imminent power loss with a short backup-capacitor window - the
++	    reason can still be persisted first;
++
++	  - the hardware does not preserve the cause and the boot looks like a
++	    plain power-on reset, e.g. a watchdog pretimeout that escalates
++	    into a panic reboot would otherwise be indistinguishable from a
++	    POR.
++
++	  The framework is extensible and exposes software-defined and
++	  hardware-reported reasons through one interface. Sudden power cuts,
++	  CPU freezes or other uncontrolled resets may still go unrecorded
++	  unless hardware provides the reset cause.
++
++	  If unsure, say N.
+diff --git a/drivers/power/reset/pscrr/Makefile b/drivers/power/reset/pscrr/Makefile
+new file mode 100644
+index 000000000000..e5530a858971
+--- /dev/null
++++ b/drivers/power/reset/pscrr/Makefile
+@@ -0,0 +1,2 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_PSCRR) += pscrr.o
+diff --git a/drivers/power/reset/pscrr/pscrr.c b/drivers/power/reset/pscrr/pscrr.c
+new file mode 100644
+index 000000000000..ab0974d0423e
+--- /dev/null
++++ b/drivers/power/reset/pscrr/pscrr.c
+@@ -0,0 +1,633 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * pscrr.c - Core Power State Change Reason Recording
 + *
-+ * This enum defines various reasons why a system might transition into a
-+ * shutdown, reboot, or kexec state. While originally intended for hardware
-+ * protection events, `psc_reason` can be extended to track other system
-+ * transitions, such as controlled reboots triggered by software or
-+ * maintenance operations.
++ * PSCRR records why the last power state change (shutdown/reboot) happened.
++ * Reasons come from providers: hardware reset-cause registers (PMIC, SoC reset
++ * controller, watchdog), persistent recorders (NVMEM/RTC scratch), the
++ * bootloader's device-tree /chosen/reset-source (a built-in provider here), or
++ * test stubs. Each provider gets a directory under /sys/kernel/pscrr/ and reports
++ * the full set of reasons it observed - the picture is deliberately not
++ * collapsed to a single "winning" cause, since resets are often multi-causal.
 + *
-+ * The values in this enumeration provide structured and standardized
-+ * identifiers that replace free-form string descriptions. They are designed
-+ * to be stored efficiently, making them suitable for use in environments
-+ * with limited storage, such as battery-backed RTC registers, non-volatile
-+ * memory, or bootloader communication mechanisms.
++ * Sysfs (per provider, under /sys/kernel/pscrr/providerN/):
++ *   name               ro  human label of the provider
++ *   device             symlink to the backing device (if any)
++ *   reason             the provider's reason set, as tokens; writable (record
++ *                      one reason) when the provider supports it
++ *   caps               ro  non-default capabilities ("writable"); empty for a
++ *                      read-only, single-slot provider
++ *   supported_reasons  ro  reasons this provider can report or record
++ *   record_policy      recorders only: keep the "first" or "last" reason
++ *                      recorded in a power cycle
 + *
-+ * Importantly, the order of these values **must remain stable**, as
-+ * bootloaders, user-space tools, or post-mortem investigation utilities
-+ * may rely on their numerical representation for consistent behavior.
++ * The kernel keeps the first (root cause) and last power-state-change reason
++ * (get_psc_first_reason()/get_psc_reason(), set by the thermal, regulator and
++ * hw_protection paths). At reboot each recorder is given the first or the last
++ * reason according to its record policy.
 + *
-+ * @PSCR_UNKNOWN: Unknown or unspecified reason for the power state change.
-+ *	This value serves as a default when no explicit cause is recorded.
-+ *
-+ * @PSCR_UNDER_VOLTAGE: Shutdown or reboot triggered due to supply voltage
-+ *      dropping below a safe threshold. This helps prevent instability or
-+ *      corruption caused by insufficient power.
-+ *
-+ * @PSCR_OVER_CURRENT: System shutdown or reboot due to excessive current draw,
-+ *      which may indicate a short circuit, an overloaded power rail, or other
-+ *      hardware faults requiring immediate action.
-+ *
-+ * @PSCR_REGULATOR_FAILURE: A critical failure in a voltage regulator, causing
-+ *      improper power delivery. This may be due to internal component failure,
-+ *      transient conditions, or external load issues requiring mitigation.
-+ *
-+ * @PSCR_OVER_TEMPERATURE: System shutdown or reboot due to excessive thermal
-+ *	conditions. This attempts to prevent hardware damage when temperature
-+ *	sensors detect unsafe levels, often impacting CPUs, GPUs, or power
-+ *	components.
-+ *
-+ * @PSCR_EC_PANIC: Shutdown or reboot triggered by an Embedded Controller (EC)
-+ *	panic. The EC is a microcontroller responsible for low-level system
-+ *	management, including power sequencing, thermal control, and battery
-+ *	management. An EC panic may indicate critical firmware issues, power
-+ *	management errors, or an unrecoverable hardware fault requiring
-+ *	immediate response.
-+ *
-+ * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
-+ *	value is useful for range checking and potential future extensions
-+ *	while maintaining compatibility.
++ * Copyright (C) 2025 Pengutronix, Oleksij Rempel <o.rempel@pengutronix.de>
 + */
-+enum psc_reason {
-+	PSCR_UNKNOWN,
-+	PSCR_UNDER_VOLTAGE,
-+	PSCR_OVER_CURRENT,
-+	PSCR_REGULATOR_FAILURE,
-+	PSCR_OVER_TEMPERATURE,
-+	PSCR_EC_PANIC,
 +
-+	/* Number of reasons */
-+	PSCR_REASON_COUNT,
++#define pr_fmt(fmt) "PSCRR: " fmt
++
++#include <linux/bitmap.h>
++#include <linux/device.h>
++#include <linux/idr.h>
++#include <linux/kernel.h>
++#include <linux/kobject.h>
++#include <linux/list.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/notifier.h>
++#include <linux/of.h>
++#include <linux/pscrr.h>
++#include <linux/reboot.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/sysfs.h>
++
++static struct kobject *pscrr_root;
++static DEFINE_MUTEX(pscrr_lock);
++static LIST_HEAD(pscrr_dirs);
++static DEFINE_IDA(pscrr_ida);
++
++/*
++ * Record policy: when several reasons are recorded in one power cycle, keep the
++ * first (root cause) or overwrite with the last. Global, tunable via sysfs.
++ */
++enum pscrr_record_policy {
++	PSCRR_RECORD_FIRST,
++	PSCRR_RECORD_LAST,
 +};
 +
-+#define PSCR_MAX_REASON	(PSCR_REASON_COUNT - 1)
-+
-+const char *psc_reason_to_str(enum psc_reason reason);
-+
- /**
-  * enum hw_protection_action - Hardware protection action
-  *
-@@ -191,13 +258,13 @@ extern void orderly_reboot(void);
-  */
- enum hw_protection_action { HWPROT_ACT_DEFAULT, HWPROT_ACT_SHUTDOWN, HWPROT_ACT_REBOOT };
- 
--void __hw_protection_trigger(const char *reason, int ms_until_forced,
-+void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
- 			     enum hw_protection_action action);
- 
- /**
-  * hw_protection_trigger - Trigger default emergency system hardware protection action
-  *
-- * @reason:		Reason of emergency shutdown or reboot to be printed.
-+ * @reason:		Reason of emergency shutdown or reboot.
-  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
-  *			triggering it. Negative value disables the forced
-  *			shutdown or reboot.
-@@ -206,11 +273,16 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
-  * hardware from further damage. The exact action taken is controllable at
-  * runtime and defaults to shutdown.
-  */
--static inline void hw_protection_trigger(const char *reason, int ms_until_forced)
-+static inline void hw_protection_trigger(enum psc_reason reason,
-+					 int ms_until_forced)
- {
- 	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_DEFAULT);
- }
- 
-+enum psc_reason get_psc_reason(void);
-+enum psc_reason get_psc_first_reason(void);
-+void set_psc_reason(enum psc_reason reason);
-+
- /*
-  * Emergency restart, callable from an interrupt handler.
-  */
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index d177d89fcc33..d5a45db82c3d 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -13,6 +13,7 @@
- #include <linux/kexec.h>
- #include <linux/kmod.h>
- #include <linux/kmsg_dump.h>
-+#include <linux/power/power_on_reason.h>
- #include <linux/rcupdate.h>
- #include <linux/reboot.h>
- #include <linux/sched/signal.h>
-@@ -50,6 +51,8 @@ int reboot_default = 1;
- int reboot_cpu;
- enum reboot_type reboot_type = BOOT_ACPI;
- int reboot_force;
-+static enum psc_reason psc_last_reason = PSCR_UNKNOWN;
-+static enum psc_reason psc_first_reason = PSCR_UNKNOWN;
- 
- struct sys_off_handler {
- 	struct notifier_block nb;
-@@ -1011,10 +1014,108 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
- 			      msecs_to_jiffies(action_delay_ms));
- }
- 
-+/**
-+ * get_psc_reason - Retrieve the last recorded power state change reason.
-+ *
-+ * This function returns the most recent power state change reason stored
-+ * in `psc_last_reason`. The value is set using `set_psc_reason()` when a
-+ * shutdown, reboot, or kexec event occurs.
-+ *
-+ * The reason can be used for system diagnostics, post-mortem analysis, or
-+ * debugging unexpected power state changes. Bootloaders or user-space tools
-+ * may retrieve this value to determine why the system last transitioned to
-+ * a new power state.
-+ *
-+ * Return: A value from `enum psc_reason`, indicating the last known power
-+ * state change reason.
++/*
++ * Per-provider sysfs directory. Core-owned and self-freeing on kobject_put(),
++ * so its lifetime is decoupled from the caller-owned struct pscrr_provider.
 + */
-+enum psc_reason get_psc_reason(void)
++struct pscrr_provider_dir {
++	struct kobject kobj;
++	struct pscrr_provider *provider;
++	struct list_head node;
++	int id;
++	enum pscrr_record_policy policy;	/* single-slot recorder: keep first/last */
++	bool recorded;		/* a reason was recorded this power cycle */
++};
++
++static inline struct pscrr_provider_dir *to_pscrr_dir(struct kobject *kobj)
 +{
-+	return READ_ONCE(psc_last_reason);
++	return container_of(kobj, struct pscrr_provider_dir, kobj);
 +}
-+EXPORT_SYMBOL_GPL(get_psc_reason);
 +
-+/**
-+ * get_psc_first_reason - Retrieve the first power state change reason.
-+ *
-+ * Returns the first meaningful (non-PSCR_UNKNOWN) reason recorded during this
-+ * boot, i.e. the root cause, as opposed to get_psc_reason() which returns the
-+ * most recent one. A later event (a watchdog pretimeout, a kernel panic, ...)
-+ * updates the last reason but leaves this one untouched, so a recorder using
-+ * the "first" record policy can preserve the original cause.
-+ *
-+ * Return: A value from `enum psc_reason`.
-+ */
-+enum psc_reason get_psc_first_reason(void)
++/*----------------------------------------------------------------------*/
++/* Per-provider attributes */
++/*----------------------------------------------------------------------*/
++
++static ssize_t name_show(struct kobject *kobj, struct kobj_attribute *attr,
++			 char *buf)
 +{
-+	return READ_ONCE(psc_first_reason);
++	return sysfs_emit(buf, "%s\n", to_pscrr_dir(kobj)->provider->name);
 +}
-+EXPORT_SYMBOL_GPL(get_psc_first_reason);
 +
-+/**
-+ * set_psc_reason - Set the reason for the last power state change.
-+ *
-+ * @reason: A value from `enum psc_reason` indicating the cause of the power
-+ *          state change.
-+ *
-+ * This function records the reason for a shutdown, reboot, or kexec event
-+ * by storing it in `psc_last_reason`. It ensures that the value remains
-+ * consistent within the running system, allowing retrieval via
-+ * `get_psc_reason()` for diagnostics, logging, or post-mortem analysis.
-+ *
-+ * Persistence Consideration:
-+ * - This function **does not persist** the recorded reason across power cycles.
-+ * - After a system reset or complete power loss, the recorded reason is lost.
-+ * - To store power state change reasons persistently, additional tools such as
-+ *   the Power State Change Reason Recorder (PSCRR) framework should be used.
-+ */
-+void set_psc_reason(enum psc_reason reason)
++static struct kobj_attribute pscrr_name_attr = __ATTR_RO(name);
++
++static int pscrr_parse_reason(const char *buf, enum psc_reason *out)
 +{
-+	WRITE_ONCE(psc_last_reason, reason);
++	unsigned int val;
++
++	/* Accept either a decimal index or a reason token. */
++	if (!kstrtouint(buf, 0, &val)) {
++		if (val >= PSCR_REASON_COUNT)
++			return -ERANGE;
++		*out = val;
++		return 0;
++	}
++
++	return psc_reason_from_token(buf, out);
++}
++
++static ssize_t reason_show(struct kobject *kobj, struct kobj_attribute *attr,
++			   char *buf)
++{
++	struct pscrr_provider *p = to_pscrr_dir(kobj)->provider;
++	DECLARE_BITMAP(reasons, PSCR_REASON_COUNT);
++	ssize_t len = 0;
++	int bit, ret;
++
++	bitmap_zero(reasons, PSCR_REASON_COUNT);
++
++	ret = p->ops->read_reasons(p, reasons);
++	if (ret)
++		return ret;
++
++	for_each_set_bit(bit, reasons, PSCR_REASON_COUNT)
++		len += sysfs_emit_at(buf, len, "%s%s", len ? " " : "",
++				     psc_reason_to_token(bit));
++	len += sysfs_emit_at(buf, len, "\n");
++
++	return len;
++}
++
++/* Record @reason into @dir honouring the global record policy. */
++static int pscrr_do_record(struct pscrr_provider_dir *dir, enum psc_reason reason)
++{
++	struct pscrr_provider *p = dir->provider;
++	int ret;
++
++	if (!p->ops->write_reason)
++		return -EPERM;
 +
 +	/*
-+	 * Latch the first meaningful reason of this boot as the root cause, so
-+	 * that a later event overwriting the last reason does not hide it from
-+	 * a recorder using the "first" record policy.
++	 * PSCR_UNKNOWN clears the slot and releases the latch, regardless of
++	 * policy, so a reason recorded afterwards is taken again.
 +	 */
-+	if (reason != PSCR_UNKNOWN &&
-+	    READ_ONCE(psc_first_reason) == PSCR_UNKNOWN)
-+		WRITE_ONCE(psc_first_reason, reason);
-+}
-+EXPORT_SYMBOL_GPL(set_psc_reason);
++	if (reason == PSCR_UNKNOWN) {
++		ret = p->ops->write_reason(p, reason);
++		if (ret)
++			return ret;
 +
-+static const char * const pscr_reason_strs[] = {
-+	[PSCR_UNKNOWN]            = POWER_ON_REASON_UNKNOWN,
-+	[PSCR_UNDER_VOLTAGE]      = POWER_ON_REASON_BROWN_OUT,
-+	[PSCR_OVER_CURRENT]       = POWER_ON_REASON_OVER_CURRENT,
-+	[PSCR_REGULATOR_FAILURE]  = POWER_ON_REASON_REGULATOR_FAILURE,
-+	[PSCR_OVER_TEMPERATURE]   = POWER_ON_REASON_OVER_TEMPERATURE,
-+	[PSCR_EC_PANIC]           = POWER_ON_REASON_EC_PANIC,
++		dir->recorded = false;
++		return 0;
++	}
++
++	/* Reject reasons the provider does not advertise (NULL == all). */
++	if (p->supported_reasons && !test_bit(reason, p->supported_reasons))
++		return -EOPNOTSUPP;
++
++	/* "first" policy: keep the first reason recorded this power cycle. */
++	if (dir->policy == PSCRR_RECORD_FIRST && dir->recorded)
++		return 0;
++
++	ret = p->ops->write_reason(p, reason);
++	if (ret)
++		return ret;
++
++	dir->recorded = true;
++
++	return 0;
++}
++
++static ssize_t reason_store(struct kobject *kobj, struct kobj_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct pscrr_provider_dir *dir = to_pscrr_dir(kobj);
++	enum psc_reason reason;
++	int ret;
++
++	if (!dir->provider->ops->write_reason)
++		return -EPERM;
++
++	ret = pscrr_parse_reason(buf, &reason);
++	if (ret)
++		return ret;
++
++	/* Serialise the record state against concurrent stores and the notifier. */
++	scoped_guard(mutex, &pscrr_lock)
++		ret = pscrr_do_record(dir, reason);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
++static struct kobj_attribute pscrr_reason_attr =
++	__ATTR(reason, 0644, reason_show, reason_store);
++
++static ssize_t caps_show(struct kobject *kobj, struct kobj_attribute *attr,
++			 char *buf)
++{
++	struct pscrr_provider *p = to_pscrr_dir(kobj)->provider;
++	ssize_t len = 0;
++
++	/* Readable and single-slot are the defaults and not listed. */
++	if (p->ops->write_reason)
++		len += sysfs_emit_at(buf, len, "writable");
++
++	return len + sysfs_emit_at(buf, len, "\n");
++}
++
++static struct kobj_attribute pscrr_caps_attr = __ATTR_RO(caps);
++
++static ssize_t supported_reasons_show(struct kobject *kobj,
++				      struct kobj_attribute *attr, char *buf)
++{
++	struct pscrr_provider *p = to_pscrr_dir(kobj)->provider;
++	const unsigned long *sup = p->supported_reasons;
++	ssize_t len = 0;
++	int i;
++
++	for (i = 0; i < PSCR_REASON_COUNT; i++) {
++		if (sup && !test_bit(i, sup))	/* NULL means all */
++			continue;
++		len += sysfs_emit_at(buf, len, "%s%s", len ? " " : "",
++				     psc_reason_to_token(i));
++	}
++
++	return len + sysfs_emit_at(buf, len, "\n");
++}
++
++static struct kobj_attribute pscrr_supported_attr =
++	__ATTR(supported_reasons, 0444, supported_reasons_show, NULL);
++
++static ssize_t record_policy_show(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
++{
++	struct pscrr_provider_dir *dir = to_pscrr_dir(kobj);
++
++	return sysfs_emit(buf, "%s\n",
++			  READ_ONCE(dir->policy) == PSCRR_RECORD_FIRST ?
++			  "first" : "last");
++}
++
++static ssize_t record_policy_store(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t count)
++{
++	struct pscrr_provider_dir *dir = to_pscrr_dir(kobj);
++
++	guard(mutex)(&pscrr_lock);
++
++	if (sysfs_streq(buf, "first"))
++		WRITE_ONCE(dir->policy, PSCRR_RECORD_FIRST);
++	else if (sysfs_streq(buf, "last"))
++		WRITE_ONCE(dir->policy, PSCRR_RECORD_LAST);
++	else
++		return -EINVAL;
++
++	return count;
++}
++
++static struct kobj_attribute pscrr_record_policy_attr =
++	__ATTR(record_policy, 0644, record_policy_show, record_policy_store);
++
++static struct attribute *pscrr_dir_attrs[] = {
++	&pscrr_name_attr.attr,
++	&pscrr_reason_attr.attr,
++	&pscrr_caps_attr.attr,
++	&pscrr_supported_attr.attr,
++	&pscrr_record_policy_attr.attr,
++	NULL,
++};
++
++static umode_t pscrr_dir_is_visible(struct kobject *kobj, struct attribute *attr,
++				    int n)
++{
++	struct pscrr_provider *p = to_pscrr_dir(kobj)->provider;
++
++	/* A provider without write_reason() exposes reason read-only. */
++	if (attr == &pscrr_reason_attr.attr && !p->ops->write_reason)
++		return 0444;
++
++	/* record_policy only applies to a (single-slot) recorder. */
++	if (attr == &pscrr_record_policy_attr.attr && !p->ops->write_reason)
++		return 0;
++
++	return attr->mode;
++}
++
++static const struct attribute_group pscrr_dir_group = {
++	.attrs		= pscrr_dir_attrs,
++	.is_visible	= pscrr_dir_is_visible,
++};
++
++static const struct attribute_group *pscrr_dir_groups[] = {
++	&pscrr_dir_group,
++	NULL,
++};
++
++static void pscrr_dir_release(struct kobject *kobj)
++{
++	kfree(to_pscrr_dir(kobj));
++}
++
++static const struct kobj_type pscrr_dir_ktype = {
++	.sysfs_ops	= &kobj_sysfs_ops,
++	.release	= pscrr_dir_release,
++	.default_groups	= pscrr_dir_groups,
++};
++
++/*----------------------------------------------------------------------*/
++/* Provider registration */
++/*----------------------------------------------------------------------*/
++
++/**
++ * pscrr_provider_register - register a power state change reason provider
++ * @p: caller-owned provider description
++ *
++ * Creates /sys/kernel/pscrr/providerN/ with "name" and "reason" attributes
++ * and, when @p->dev is set, a "device" symlink. @p->reason is writable when
++ * @p provides write_reason(). The provider must outlive the matching
++ * pscrr_provider_unregister() call.
++ *
++ * Return: 0 on success or a negative errno.
++ */
++int pscrr_provider_register(struct pscrr_provider *p)
++{
++	struct pscrr_provider_dir *dir;
++	int ret;
++
++	if (!p || !p->name || !p->ops || !p->ops->read_reasons)
++		return -EINVAL;
++
++	/*
++	 * pscrr_root is set once at core init and cleared at core exit;
++	 * neither transition is serialised against this function by
++	 * pscrr_lock, so check it up front rather than under the lock below.
++	 */
++	if (!pscrr_root)
++		return -ENODEV;
++
++	dir = kzalloc_obj(*dir);
++	if (!dir)
++		return -ENOMEM;
++
++	dir->provider = p;
++	dir->policy = PSCRR_RECORD_FIRST;
++
++	/* ida_alloc() and the kobject/sysfs calls below are individually thread-safe. */
++	dir->id = ida_alloc(&pscrr_ida, GFP_KERNEL);
++	if (dir->id < 0) {
++		ret = dir->id;
++		kfree(dir);
++		return ret;
++	}
++
++	ret = kobject_init_and_add(&dir->kobj, &pscrr_dir_ktype, pscrr_root,
++				   "provider%d", dir->id);
++	if (ret) {
++		/*
++		 * kobject_init_and_add() failed: per its contract only
++		 * kobject_put() may follow, no kobject_del().
++		 */
++		ida_free(&pscrr_ida, dir->id);
++		kobject_put(&dir->kobj);
++		return ret;
++	}
++
++	if (p->dev) {
++		ret = sysfs_create_link(&dir->kobj, &p->dev->kobj, "device");
++		if (ret)
++			goto err_del;
++	}
++
++	/* pscrr_lock only serialises pscrr_dirs against concurrent (un)registration. */
++	scoped_guard(mutex, &pscrr_lock)
++		list_add_tail(&dir->node, &pscrr_dirs);
++
++	return 0;
++
++err_del:
++	kobject_del(&dir->kobj);
++	ida_free(&pscrr_ida, dir->id);
++	kobject_put(&dir->kobj);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pscrr_provider_register);
++
++/**
++ * pscrr_provider_unregister - remove a previously registered provider
++ * @p: the provider passed to pscrr_provider_register()
++ */
++void pscrr_provider_unregister(struct pscrr_provider *p)
++{
++	struct pscrr_provider_dir *dir = NULL, *iter;
++
++	scoped_guard(mutex, &pscrr_lock) {
++		list_for_each_entry(iter, &pscrr_dirs, node) {
++			if (iter->provider == p) {
++				dir = iter;
++				list_del(&dir->node);
++				break;
++			}
++		}
++	}
++
++	if (!dir)
++		return;
++
++	/*
++	 * Tear the sysfs directory down outside pscrr_lock: kobject_del()
++	 * drains in-flight reason/record_policy stores, which take pscrr_lock,
++	 * so holding it here would deadlock. Release the id only once the
++	 * directory is gone, so a concurrent register cannot reuse it and
++	 * collide on the providerN name.
++	 */
++	if (p->dev)
++		sysfs_remove_link(&dir->kobj, "device");
++	kobject_del(&dir->kobj);
++	ida_free(&pscrr_ida, dir->id);
++	kobject_put(&dir->kobj);
++}
++EXPORT_SYMBOL_GPL(pscrr_provider_unregister);
++
++static void pscrr_provider_devm_release(void *p)
++{
++	pscrr_provider_unregister(p);
++}
++
++/**
++ * devm_pscrr_provider_register - device-managed reason provider registration
++ * @dev: device the provider belongs to; also backs the "device" symlink
++ * @name: human-readable provider label
++ * @ops: provider callback table; read_reasons() is required, write_reason() is
++ *	 optional and makes the provider a recorder
++ * @supported_reasons: bitmap of the reasons the provider supports, or NULL
++ *	 for all; set before the provider is exposed in sysfs
++ * @priv: provider private data, handed back to the @ops callbacks
++ *
++ * Allocates and registers a struct pscrr_provider and schedules its
++ * unregistration when @dev is unbound, so the caller keeps no reference to it.
++ *
++ * Return: the registered provider on success or an ERR_PTR() on failure. When
++ * CONFIG_PSCRR is disabled the call resolves to a stub returning NULL, so
++ * callers need no IS_ENABLED() guard.
++ */
++struct pscrr_provider *
++devm_pscrr_provider_register(struct device *dev, const char *name,
++			     const struct pscrr_provider_ops *ops,
++			     const unsigned long *supported_reasons, void *priv)
++{
++	struct pscrr_provider *p;
++	int ret;
++
++	p = devm_kzalloc(dev, sizeof(*p), GFP_KERNEL);
++	if (!p)
++		return ERR_PTR(-ENOMEM);
++
++	p->name = name;
++	p->dev = dev;
++	p->ops = ops;
++	p->supported_reasons = supported_reasons;
++	p->priv = priv;
++
++	ret = pscrr_provider_register(p);
++	if (ret)
++		return ERR_PTR(ret);
++
++	ret = devm_add_action_or_reset(dev, pscrr_provider_devm_release, p);
++	if (ret)
++		return ERR_PTR(ret);
++
++	return p;
++}
++EXPORT_SYMBOL_GPL(devm_pscrr_provider_register);
++
++/*----------------------------------------------------------------------*/
++/* Record path: reboot notifier writes the current reason to recorders */
++/*----------------------------------------------------------------------*/
++
++/*
++ * Record the current power-state-change reason into every provider, giving
++ * each the first (root cause) or the last reason according to its record
++ * policy. The kernel keeps both, so "first" is meaningful even when later
++ * events overwrite the last reason. The caller holds pscrr_lock, or runs where
++ * the provider list is stable (panic).
++ */
++static void pscrr_record_current(void)
++{
++	enum psc_reason first = get_psc_first_reason();
++	enum psc_reason last = get_psc_reason();
++	struct pscrr_provider_dir *dir;
++
++	list_for_each_entry(dir, &pscrr_dirs, node)
++		pscrr_do_record(dir, dir->policy == PSCRR_RECORD_FIRST ?
++					     first : last);
++}
++
++static int pscrr_reboot_notifier(struct notifier_block *nb,
++				 unsigned long action, void *unused)
++{
++	guard(mutex)(&pscrr_lock);
++
++	/*
++	 * A reboot, halt or power-off that reaches here with no more specific
++	 * reason is software-initiated by definition. Record it as such rather
++	 * than leaving it unattributed; a real cause set earlier (thermal,
++	 * under-voltage, ...) is already latched and left untouched.
++	 */
++	if (get_psc_reason() == PSCR_UNKNOWN)
++		set_psc_reason(PSCR_SOFTWARE);
++
++	pscrr_record_current();
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block pscrr_reboot_nb = {
++	.notifier_call = pscrr_reboot_notifier,
++};
++
++/*----------------------------------------------------------------------*/
++/* Built-in provider: device-tree /chosen/reset-source                  */
++/*----------------------------------------------------------------------*/
++
++/*
++ * Bootloaders such as barebox record the SoC reset cause in the standard
++ * device-tree /chosen/reset-source property. When it is present, surface it as
++ * a read-only, device-less provider so the bootloader's view of the last reset
++ * shows up next to any hardware or software providers - the framework just
++ * reads the property already there, with no dedicated node or new binding.
++ */
++static const struct {
++	const char *name;
++	enum psc_reason reason;
++} pscrr_reset_source_map[] = {
++	{ "POR",      PSCR_POWER_ON },
++	{ "RST",      PSCR_SOFTWARE },
++	{ "WDG",      PSCR_WATCHDOG },
++	{ "THERM",    PSCR_OVER_TEMPERATURE },
++	{ "EXT",      PSCR_EXTERNAL },
++	{ "BROWNOUT", PSCR_UNDER_VOLTAGE },
++};
++
++static const unsigned long
++pscrr_reset_source_supported[BITS_TO_LONGS(PSCR_REASON_COUNT)] = {
++	BIT(PSCR_UNDER_VOLTAGE) | BIT(PSCR_OVER_TEMPERATURE) |
++	BIT(PSCR_POWER_ON) | BIT(PSCR_WATCHDOG) | BIT(PSCR_SOFTWARE) |
++	BIT(PSCR_EXTERNAL),
++};
++
++/* Parsed once at init; read back by the provider's read_reasons(). */
++static enum psc_reason pscrr_reset_source_reason = PSCR_UNKNOWN;
++
++static int pscrr_reset_source_read(struct pscrr_provider *p,
++				   unsigned long *reasons)
++{
++	set_bit(pscrr_reset_source_reason, reasons);
++
++	return 0;
++}
++
++static const struct pscrr_provider_ops pscrr_reset_source_ops = {
++	.read_reasons = pscrr_reset_source_read,
++};
++
++static struct pscrr_provider pscrr_reset_source_provider = {
++	.name			= "reset-source",
++	.ops			= &pscrr_reset_source_ops,
++	.supported_reasons	= pscrr_reset_source_supported,
++};
++
++static void __init pscrr_register_reset_source(void)
++{
++	const char *name;
++	int i, ret;
++
++	if (!IS_ENABLED(CONFIG_OF) || !of_chosen)
++		return;
++
++	if (of_property_read_string(of_chosen, "reset-source", &name))
++		return;
++
++	for (i = 0; i < ARRAY_SIZE(pscrr_reset_source_map); i++)
++		if (!strcmp(name, pscrr_reset_source_map[i].name)) {
++			pscrr_reset_source_reason = pscrr_reset_source_map[i].reason;
++			break;
++		}
++
++	ret = pscrr_provider_register(&pscrr_reset_source_provider);
++	if (ret)
++		pr_warn("failed to register the reset-source provider: %d\n", ret);
++}
++
++/*----------------------------------------------------------------------*/
++/* Module init/exit */
++/*----------------------------------------------------------------------*/
++
++static int __init pscrr_core_init(void)
++{
++	int ret;
++
++	pscrr_root = kobject_create_and_add("pscrr", kernel_kobj);
++	if (!pscrr_root)
++		return -ENOMEM;
++
++	ret = register_reboot_notifier(&pscrr_reboot_nb);
++	if (ret) {
++		kobject_put(pscrr_root);
++		pscrr_root = NULL;
++		return ret;
++	}
++
++	pscrr_register_reset_source();
++
++	return 0;
++}
++
++static void __exit pscrr_core_exit(void)
++{
++	pscrr_provider_unregister(&pscrr_reset_source_provider);
++	unregister_reboot_notifier(&pscrr_reboot_nb);
++	kobject_put(pscrr_root);
++	pscrr_root = NULL;
++	ida_destroy(&pscrr_ida);
++}
++
++/* Bring the core up before device drivers probe and register providers. */
++subsys_initcall(pscrr_core_init);
++module_exit(pscrr_core_exit);
++
++MODULE_AUTHOR("Oleksij Rempel <o.rempel@pengutronix.de>");
++MODULE_AUTHOR("Faruque Ansari <faruque.ansari@oss.qualcomm.com>");
++MODULE_DESCRIPTION("Power State Change Reason Recording (PSCRR) core");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/pscrr.h b/include/linux/pscrr.h
+new file mode 100644
+index 000000000000..330d6ac191bd
+--- /dev/null
++++ b/include/linux/pscrr.h
+@@ -0,0 +1,107 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * pscrr.h - Public header for Power State Change Reason Recording (PSCRR).
++ *
++ * Copyright (C) 2025 Pengutronix, Oleksij Rempel <o.rempel@pengutronix.de>
++ */
++
++#ifndef __PSCRR_H__
++#define __PSCRR_H__
++
++#include <linux/reboot.h>
++
++struct device;
++struct pscrr_provider;
++
++/**
++ * struct pscrr_provider_ops - Provider callbacks.
++ * @read_reasons: Fill @reasons with the complete set this source observed.
++ *		@reasons is a bitmap of PSCR_REASON_COUNT bits; set members
++ *		with set_bit(PSCR_x, reasons). Return 0 on success or a
++ *		negative errno. Required. Driver state is reached via p->priv.
++ * @write_reason: Persist @reason. Called from the reboot notifier for
++ *		recorder-capable providers so the cause survives the power
++ *		cycle. Leave NULL for read-only hardware sources.
++ *
++ * A const ops table per provider type; extend it with new callbacks without
++ * touching the registration signature or existing callers.
++ */
++struct pscrr_provider_ops {
++	int (*read_reasons)(struct pscrr_provider *p, unsigned long *reasons);
++	int (*write_reason)(struct pscrr_provider *p, enum psc_reason reason);
 +};
 +
 +/**
-+ * psc_reason_to_str - Converts a power state change reason enum to a string.
-+ * @reason: The `psc_reason` enum value to be converted.
++ * struct pscrr_provider - A source (and optionally recorder) of power state
++ *			   change reasons.
 + *
-+ * This function provides a human-readable string representation of the power
-+ * state change reason, making it easier to interpret logs and debug messages.
++ * A provider represents one place the system can learn *why* the last power
++ * state change happened: a hardware reset-cause register (PMIC, SoC SRC,
++ * watchdog), a persistent recorder (NVMEM/RTC scratch), or a test stub. Each
++ * registered provider gets its own directory under /sys/kernel/pscrr/, so the
++ * full, un-prioritised picture is visible: several providers - and several
++ * reasons within one provider - can be reported simultaneously.
 + *
-+ * Return:
-+ * - A string corresponding to the given `psc_reason` value.
-+ * - `"Invalid"` if the value is not recognized.
++ * @name:	Human-readable label, exported as the "name" attribute. The
++ *		directory itself is core-indexed (providerN), so this need not
++ *		be unique. Required.
++ * @dev:	Backing device. When set it is exported as the "device" symlink
++ *		in the provider directory, tying the reason to real hardware.
++ *		May be NULL (e.g. for a test provider).
++ * @ops:	Provider callbacks. Required.
++ * @supported_reasons: Bitmap of the reasons this provider can store or report,
++ *		limited e.g. by the storage size. 0 means all reasons.
++ * @priv:	Provider private data, passed back through the callbacks.
++ *
++ * Providers are readable and single-slot by default; only capabilities beyond
++ * that (currently: writable) are advertised.
 + */
-+const char *psc_reason_to_str(enum psc_reason reason)
++struct pscrr_provider {
++	const char *name;
++	struct device *dev;
++	const struct pscrr_provider_ops *ops;
++	const unsigned long *supported_reasons;
++	void *priv;
++};
++
++#if IS_ENABLED(CONFIG_PSCRR)
++int pscrr_provider_register(struct pscrr_provider *p);
++void pscrr_provider_unregister(struct pscrr_provider *p);
++
++/**
++ * devm_pscrr_provider_register - allocate, fill and register a provider
++ * @dev: device the provider belongs to (also the "device" symlink target)
++ * @name: provider label
++ * @ops: provider callbacks
++ * @supported_reasons: bitmap of supported reasons, or NULL for all
++ * @priv: driver state passed back through the callbacks
++ *
++ * The provider is unregistered automatically on device teardown.
++ *
++ * Return: the provider on success, ERR_PTR() on failure, or NULL when PSCRR
++ * is not built (so the caller need not guard the call).
++ */
++struct pscrr_provider *
++devm_pscrr_provider_register(struct device *dev, const char *name,
++			     const struct pscrr_provider_ops *ops,
++			     const unsigned long *supported_reasons, void *priv);
++#else
++static inline int pscrr_provider_register(struct pscrr_provider *p)
 +{
-+	if (reason < 0 || reason >= PSCR_REASON_COUNT)
-+		return "Invalid";
-+	return pscr_reason_strs[reason];
++	return -EOPNOTSUPP;
 +}
-+EXPORT_SYMBOL_GPL(psc_reason_to_str);
 +
- /**
-  * __hw_protection_trigger - Trigger an emergency system shutdown or reboot
-  *
-- * @reason:		Reason of emergency shutdown or reboot to be printed.
-+ * @reason:		Reason of emergency shutdown or reboot.
-  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
-  *			triggering it. Negative value disables the forced
-  *			shutdown or reboot.
-@@ -1026,7 +1127,7 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
-  * pending even if the previous request has given a large timeout for forced
-  * shutdown/reboot.
-  */
--void __hw_protection_trigger(const char *reason, int ms_until_forced,
-+void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
- 			     enum hw_protection_action action)
- {
- 	static atomic_t allow_proceed = ATOMIC_INIT(1);
-@@ -1034,8 +1135,11 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
- 	if (action == HWPROT_ACT_DEFAULT)
- 		action = hw_protection_action;
- 
--	pr_emerg("HARDWARE PROTECTION %s (%s)\n",
--		 hw_protection_action_str(action), reason);
-+	set_psc_reason(reason);
++static inline void pscrr_provider_unregister(struct pscrr_provider *p)
++{
++}
 +
-+	pr_emerg("HARDWARE PROTECTION %s: %i (%s)\n",
-+		 hw_protection_action_str(action), reason,
-+		 psc_reason_to_str(reason));
- 
- 	/* Shutdown should be initiated only once. */
- 	if (!atomic_dec_and_test(&allow_proceed))
++static inline struct pscrr_provider *
++devm_pscrr_provider_register(struct device *dev, const char *name,
++			     const struct pscrr_provider_ops *ops,
++			     const unsigned long *supported_reasons, void *priv)
++{
++	return NULL;
++}
++#endif
++
++#endif /* __PSCRR_H__ */
 
 -- 
 2.34.1
