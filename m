@@ -1,33 +1,33 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADE7A37DE87;
-	Mon, 21 Sep 2026 19:19:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 296123A7597;
+	Mon, 21 Sep 2026 19:47:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790018356; cv=none; b=Zm+pFHfCPQiRRQAo9Gtt5pGh7VnStySlQEAqd0yjg6k2odQicrLplDaXMq4UtaArsaB88Y6g6L099W1kd3UvjsiBcR0+Hxo0FjhhWd3471cxkiM53I3P5i5AAsOwgV6OShHhSoRf8gmJ7dVRKZ9CA1YpnZwGZA0tSBksGtLCNNE=
+	t=1790020043; cv=none; b=IaYK6rxvfmRkJB6huPXBjnXSI+Cf+6TRL3Js7PMktpaogHBNZqCu8jXlxvqKksjnbIIz6o5jDwNi0cs5iZughiI4ieC+eoW/6bLb80ilcASBJZfHAE1u/1Cn3qyRm1S7qrZc7xwP/78vhz65C/hwxXLBBOltLc3Xk3rBpPFO7t4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790018356; c=relaxed/simple;
-	bh=Mfe/YPoBIvIFMdg6DNCNmmzwv6iEWWgKp3lCu04jjJ8=;
+	s=arc-20240116; t=1790020043; c=relaxed/simple;
+	bh=BcnEdl8QDnPqGivNaUv7+XCrZTH93GaYtfPRvDAlIUc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Aatevnxy0NyijQnNmXYSu0CtLrgL/vlEqul/OZgadWOn/xmtdUoEkOrHFhTnG8IF3t9j9t3G8XqbJg1B2zOSRHYKc9zdKB+2PSvRY1cULz1JVc3enr0x7ikHEZbHVxM6r4V8QYZstkkBvj/xt840rhpVXtEiWprO3y8/hWEUlbo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SzmWiG3S; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=TnZ0+yxBMp1AF0cc6kA0mSy2rSG2YN1CrJGjhH4AvKsPV/xKnTGHKMy8cOFKzpMAeNw1o9/uVjGSQpCjZ1iM6k0VG1DO8DqgyctdlN8Wsc3THS4nncJyVoJZIRTK4/2DiOogeom7rMHFT8BC8H/P8dKXyF8C4xIVUlVO5RorceI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=nz8FspN0; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SzmWiG3S"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 016851F0089A;
-	Mon, 21 Sep 2026 19:19:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790018354;
-	bh=rme2RDXE0Q3i+onTTofchJv1V8gBFZbfhEbeCgEfq9Q=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=SzmWiG3SmFH7M3s3lLVcUKfmQo3Ww+onl5w9ohFXBzj+EVEfdROsbKrtKeLddN+Xr
-	 FEyA7Nbm05zot5WbqU+ttloINInr8EpDxaXM3Aj3HJpzrLtc8J0CPsp2Zd9PM9BTBw
-	 tcVqPxcqyM+URfyV+gZujTkx5dZSvfbF4xOupkcJlZ7qJBjC5eI/tjQCU/8u9Rw2BW
-	 XibVsi/JFiiIkSgUznBTVRMACnoAUnvSu1abhdN+9qjBfSxcsZsOZ/UrbtbiH5tf4i
-	 Avg75rJ288nc/ltEPmRIg/bYvZxjlqPKl5iUp2eX8opMg2Zs5L5x6KEcxRYaBhvlS9
-	 RLClV/Am+Cpow==
-Message-ID: <7feb56df-15d4-4821-99c7-b8c96ce66b81@kernel.org>
-Date: Mon, 21 Sep 2026 14:19:11 -0500
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="nz8FspN0"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 97E3D19F6;
+	Mon, 21 Sep 2026 12:47:16 -0700 (PDT)
+Received: from [10.57.75.12] (unknown [10.57.75.12])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7769F3F86C;
+	Mon, 21 Sep 2026 12:47:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790020040; bh=BcnEdl8QDnPqGivNaUv7+XCrZTH93GaYtfPRvDAlIUc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=nz8FspN0pLBCdbpMaLV6xXFKibR6EyNm0OYxDS1JWJv0pGrc01MsCyANO9tYHfF20
+	 SYOxqilDpslCPZDQoPtPIyY2/Q1GMDfkPcGbuGznjqfgonX1i4i5ivEEUvNz3t2KhA
+	 7sSj9y8X06NV8QYcNCILO3VHs8gbhL0+iezIPg0U=
+Message-ID: <651d6392-984e-4363-8ef6-94a23be615d7@arm.com>
+Date: Mon, 21 Sep 2026 20:47:15 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,141 +35,52 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] PM: hibernate: Freeze kernel threads after image
- preallocation
+Subject: Re: [PATCH v5 0/3] cpufreq: cppc: Handle Highest Performance changes
+ at runtime
+To: Jie Zhan <zhanjie9@hisilicon.com>, Xueqin Luo <luoxueqin@kylinos.cn>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich
+ <dakr@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+ linux-pm@vger.kernel.org, Ionela Voinescu <Ionela.Voinescu@arm.com>
+References: <20260807060848.832929-1-luoxueqin@kylinos.cn>
+ <d02f335a-c97d-49ad-85c0-2eacd744eb0c@hisilicon.com>
 Content-Language: en-US
-To: flo@geekplace.eu, "Rafael J. Wysocki" <rafael@kernel.org>,
- Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
- Matthew Leach <matthew.leach@collabora.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260920-fix-hibernation-v1-1-f9940c2d7d7f@geekplace.eu>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <20260920-fix-hibernation-v1-1-f9940c2d7d7f@geekplace.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <d02f335a-c97d-49ad-85c0-2eacd744eb0c@hisilicon.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/20/26 09:35, Florian Schmaus via B4 Relay wrote:
-> From: Florian Schmaus <flo@geekplace.eu>
+On 9/7/26 09:49, Jie Zhan wrote:
 > 
-> Commit 783c81098445 ("PM: hibernate: call preallocate_image() after freeze
-> prepare") moved hibernate_preallocate_memory() after dpm_prepare() so
-> that device drivers have the opportunity to release pinned/unswappable
-> memory during their ->prepare() callback before memory is preallocated
-> for the snapshot image.
 > 
-> However, that commit also placed hibernate_preallocate_memory() after
-> freeze_kernel_threads(). While it was assumed during review that swap
-> I/O submitted via submit_bio() is synchronous and would not depend on
-> frozen kernel threads, this does not hold in practice. Calling
-> hibernate_preallocate_memory() with kernel threads frozen leads to
-> intermittent deadlocks during hibernation.
+> On 8/7/2026 2:08 PM, Xueqin Luo wrote:
+>> Hi Rafael, Pierre,
+>>
+>> This series adds support for handling ACPI CPPC Highest Performance
+>> register changes at runtime, triggered by Notify(0x85) on a processor
+>> device.
+>>
+>> When the platform changes the Highest Performance value (e.g. due to
+>> thermal or power budget adjustments), the OSPM must re-evaluate the
+>> cached capability and propagate the change to the cpufreq policy,
+>> the scheduler's CPU capacity model, and the frequency invariance
+>> engine.
+> Any real use case of this on platforms that run cppc_cpufreq drivers?
+> Some addtional motivation may help.
 > 
-> Inside hibernate_preallocate_memory(), shrink_all_memory() is invoked with
-> .may_writepage = 1 and .may_swap = 1 to aggressively reclaim and swap out
-> pages. Any writeback or swap I/O that relies on freezable kernel threads,
-> block device helpers, or WQ_FREEZABLE workqueues (such as those in storage
-> drivers, device mapper, or filesystems) deadlocks waiting on tasks that
-> are stuck in the refrigerator.
-> 
-> Fix this by reordering hibernation_snapshot():
-> 1. Call dpm_prepare(PMSG_FREEZE) first, allowing device drivers to release
->     pinned resources while kernel threads are still active.
-> 2. Call hibernate_preallocate_memory() second, performing page reclaim and
->     swapout while storage layers, workqueues, and kernel threads are alive.
-> 3. Call freeze_kernel_threads() third, only after all memory preallocation
->     and swap I/O have completed.
-> 
-> Additionally, restore the call to swsusp_free() in the cleanup path so
-> that preallocated image memory is properly freed if freeze_kernel_threads()
-> fails or if TEST_FREEZER is enabled.
-> 
-> Fixes: 783c81098445 ("PM: hibernate: call preallocate_image() after freeze prepare")
-> Signed-off-by: Florian Schmaus <flo@geekplace.eu>
-> ---
-> During the review of commit 783c81098445 ("PM: hibernate: call
-> preallocate_image() after freeze prepare") [1], concerns were raised
-> regarding whether memory reclaim and swap I/O could deadlock if kernel
-> threads were already frozen.
-> 
-> At the time, it was thought that pageout to swap would not depend on
-> frozen threads. However, on Linux 7.2, I ran into reliable issues with
-> suspend-to-disk hanging during hibernation. Reordering the sequence so
-> that kernel threads are frozen after image preallocation (as done in
-> this patch) fixes the issue for me.
-> 
-> This patch restores the ordering where kernel threads are frozen only after
-> memory preallocation and swap I/O have completed, while keeping the
-> benefit of calling dpm_prepare() beforehand so drivers can release pinned
-> pages.
-> 
-> [1] https://patch.msgid.link/20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com
-> ---
->   kernel/power/hibernate.c | 26 ++++++++++++++------------
->   1 file changed, 14 insertions(+), 12 deletions(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index d2479c69d71a..c13f68ab7f6e 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -408,9 +408,18 @@ int hibernation_snapshot(int platform_mode)
->   	if (error)
->   		goto Close;
->   
-> +	error = dpm_prepare(PMSG_FREEZE);
-> +	if (error)
-> +		goto Complete;
-> +
-> +	/* Preallocate image memory before freezing kernel threads and shutting down devices. */
-> +	error = hibernate_preallocate_memory();
-> +	if (error)
-> +		goto Complete;
-> +
->   	error = freeze_kernel_threads();
->   	if (error)
-> -		goto Close;
-> +		goto Cleanup;
->   
->   	if (hibernation_test(TEST_FREEZER)) {
->   
-> @@ -422,15 +431,6 @@ int hibernation_snapshot(int platform_mode)
->   		goto Thaw;
->   	}
->   
-> -	error = dpm_prepare(PMSG_FREEZE);
-> -	if (error)
-> -		goto Complete;
-> -
-> -	/* Preallocate image memory before shutting down devices. */
-> -	error = hibernate_preallocate_memory();
-> -	if (error)
-> -		goto Complete;
-> -
->   	console_suspend_all();
->   	pm_restrict_gfp_mask();
->   
-> @@ -464,10 +464,12 @@ int hibernation_snapshot(int platform_mode)
->   	platform_end(platform_mode);
->   	return error;
->   
-> - Complete:
-> -	dpm_complete(PMSG_RECOVER);
->    Thaw:
->   	thaw_kernel_threads();
-> + Cleanup:
-> +	swsusp_free();
-> + Complete:
-> +	dpm_complete(PMSG_RECOVER);
->   	goto Close;
->   }
->   
-> 
-> ---
-> base-commit: 40288c9206c17eb66a603262e06a58d300d0f279
-> change-id: 20260915-fix-hibernation-aad94ce17506
-> 
-> Best regards,
-> --
-> Florian Schmaus <flo@geekplace.eu>
+> For example, a processor can age over time and its core frequency degrades.
+> It's good if platforms can make OSPM and userspace aware of this.
 
-Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
++1
+If this is still current then I'd love to see a resend with a fix to affect
+the entire policy at once, not just policy->cpu and I'd propose for now
+also limiting highest_perf at first probe and ignoring any
+highest_perf_new > highest_perf, until we have a compelling case / platform
+that uses it, because IMO it does make everything more complicated.
+(+CC Ionela)
+
+> [snip]
