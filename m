@@ -1,130 +1,135 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs2-f12.google.com (mail-vs2-f12.google.com [74.125.227.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADFB543F095
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 09:23:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 692861EB5CE
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 09:23:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790068982; cv=none; b=AHoLUvRWSJudvWgtjdoD4CPJvW2JLaRq+Bc9UQ06Sa4PO39eXLF/jlA71ofCITFtNd/PxIY/IJgyk3GX0k0urzapG63gXHW5U0Fu8qO7fJ17V4N5C7YBNmgfC12uJZ7iUYada/0suXjBlSYdhxxO5ermdL5c2d5SEnAjpzJ3dbM=
+	t=1790068996; cv=none; b=TINtTMho8hmmM0LrY3ygC/3PXKMYi+sAeB3MsRR5viNQLcshEiMkE5rWaFqSUOmFeyZ5LFtcYGayHI5CymzdhsoI/sCeJBEYTvw64RqTlnKcXS89qAUkp7T93sd6UA127TeWM9RwCC80s1AbNCVK8lDV7ASQvxMOxa841rS1WKw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790068982; c=relaxed/simple;
-	bh=0MlNWyi4hCXVJVEWimjJfjTosZLJAjP+I7BsGPwrE50=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Gf5miZ2mLoZUwICQp9JbFZ0bZSVw69ncD6oWhLOMWEI1IEW/EzO4+2ZdsDjupu4HbBsLfVQ97RKrbZb6hf3b1znSeLTpCkMHTGPO9GKAjpFr2RhSqOnm7DicO9yNT1jmfcJswMmoRWoOJj2zZ4Glb0BL/+GMHG75upDQ+VVHNDg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JojTQ7H2; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=YAruvlcd; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JojTQ7H2";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="YAruvlcd"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790068979;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rpAVQ1UlV+yVL/E0QTVtJ9fL9FL/1XwCUiRQoK1VFSk=;
-	b=JojTQ7H2pBNe5yFMbDwJ7+sE5gEhge6YPdwq9ej4Yt86p1x2QcWM6bD06XTsFoWf7tAVN2
-	CaGMUgYRlf0EtK+aUlz2rhsUFsRLhea0eW7UobzvVEhJ9OiTZ+qukkLs8jNDdT6m1gu/4c
-	g/M6nm/lWMVuDLLXyAfSAPjnGRN4NWs=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-128-1h8lHXxLOf6wAA4NAEGtaQ-1; Tue, 22 Sep 2026 05:22:58 -0400
-X-MC-Unique: 1h8lHXxLOf6wAA4NAEGtaQ-1
-X-Mimecast-MFC-AGG-ID: 1h8lHXxLOf6wAA4NAEGtaQ_1790068977
-Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-486e90b59a6so1794812f8f.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 02:22:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1790068977; x=1790673777; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=rpAVQ1UlV+yVL/E0QTVtJ9fL9FL/1XwCUiRQoK1VFSk=;
-        b=YAruvlcdtaY8dQeuDq2W6zA9Z2lefnnlqGufgfEqcdR8Mb12IdlD8YwXXGyyvI6hGN
-         pOktEV5gjZUSDiqKnV8n4doVLlUZ/nFm8T+rJoaxJ63oXKalf1o5NNfVLtRtth6Zsyj/
-         VVpDTcOlIsZnNDhjyP2E3+ilyodO+y6yNVrACznxlX3la+7WApq59lnJT2KRVFPmt3KB
-         OwUH4EQNG1qKGG9yCGBOZomtuHO1HjbyjWC5X8D/4UWORPRzFQTepamEPIdo0mzl9G3X
-         6jHYc/kOXI/ZOXF2cB4CIC5TAc/WRi68c0FTNykJmgshZo3EJbRJBHzq6fqm234yUB9U
-         qXOw==
+	s=arc-20240116; t=1790068996; c=relaxed/simple;
+	bh=zQAGAJqK01u1hsgk9tM79y+qHgIMow8bJd7VCIfEqak=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=lu9STeC7UyYUehxTJpqSSKOde6ZNJHXsfiLtRczrBLkvjsgtVp3C3LPqMi79wxgOOr+9gdgoEB956VJIX5vpqxWGAQLoAGXC7plohMXkNOBeJh6JPDk4kefR0ysTP5nZMFfPCrYco6EmmFuXJD4uAET2r2U2YQMEBY53ZWTRfJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs2-f12.google.com with SMTP id 71dfb90a1353d-5c82bb05ddaso2779639e0c.3
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 02:23:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790068977; x=1790673777;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rpAVQ1UlV+yVL/E0QTVtJ9fL9FL/1XwCUiRQoK1VFSk=;
-        b=INpd9CaIHDaF8zfRS4kxW1H3mYrIGSfEPdwc0z0BI/5/lRthvJbVpRhaCZR8R57aBi
-         aJUj0hJX/804jWAUvEiLJrGwntHs3pHofLWL0nBoug01x/8dne1WgIk4kfg6LBeuw02R
-         0qk3g0ktqGRL7RqKH8CVpkmYD17oNWdQShcnzOEScbPALBOS2qKaoMMKRuqQ/Dx/zugS
-         8uvkAjbi+Qp+OwEbHPajGsGsg1j/g5UoX65Mq1Dnx8DhgAyCpP1tGZDQCEDzlyM6vFGr
-         iaVTFN8HHwEg2UK3G0JOqAvqIrmB4yAeSQwl60oSGduz2P39pUsdAACfE1Adl+kE+uAs
-         aI/Q==
-X-Gm-Message-State: AFuF++mmkzA1JHrMBNVmfuwYMWBHMcWb4+5fMFqCMsE5zlIuakTO5aVT
-	rtOMOyx00YIxJB5QD02i0hymLfl2qF9tjx+PH+0Pdv7gENHVeQjrjjoh7ZVynDs3QqASmWra53H
-	SOFidFlEEYaiW7wae0kPsq4RGM0nE9K433J2IzXScmZja+I6rNAFfb4AkWmhXFLHsFei3cfc=
-X-Gm-Gg: AYBFou2VD5VOPJQg7fCJiOuHPclk5X/jcisU7wFeU3nJsaUi3mrK5njeX3uEOUHylRW
-	fIm/wyHMHoQDV+alkCSRzcVEA4Ru/+EzPDvoaVVuymosdIGmtYKcH2iWtsY2ul7CepBWxdqdbIP
-	o3m4rWD/f9zHzp1Pz3pyN7N8+yjcVmNbOX1PfNM/f3FlXkyMmUY3zyJTe2t6s8xlFAqssD5wL1A
-	Y+2gqha11/tkFMBKQy9dQ3KhKVl2AMWGwpEjdqTMsrTok34jMYgGUICz+Gw2ziVXjPycuWMnWWq
-	Htqaq3ID5vCVkEQZX5ciF94DHsmu7MqQXrn+SSXr35yqqevIJBNEfeNDX/qlUk2DVDMiGx6e9g2
-	rUYBAba93YBf7whFoy1K65L0=
-X-Received: by 2002:a05:600c:a013:b0:49e:6891:27a8 with SMTP id 5b1f17b1804b1-49fc574a9bcmr167312795e9.25.1790068976729;
-        Tue, 22 Sep 2026 02:22:56 -0700 (PDT)
-X-Received: by 2002:a05:600c:a013:b0:49e:6891:27a8 with SMTP id 5b1f17b1804b1-49fc574a9bcmr167312555e9.25.1790068976311;
-        Tue, 22 Sep 2026 02:22:56 -0700 (PDT)
-Received: from redhat.com (IGLD-80-230-79-236.inter.net.il. [80.230.79.236])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fd8ce2623sm79760035e9.13.2026.09.22.02.22.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Sep 2026 02:22:55 -0700 (PDT)
-Date: Tue, 22 Sep 2026 05:22:53 -0400
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Baorui.Liu" <baorliu@amd.com>
-Cc: linux-pm@vger.kernel.org, rafael@kernel.org, viresh.kumar@linaro.org,
-	saravanak@kernel.org, jasowangio@gmail.com, eperezma@redhat.com,
-	xuanzhuo@linux.alibaba.com, virtualization@lists.linux.dev
-Subject: Re: [RFC PATCH v2 0/1] cpufreq: virtio frontend to report host CPU
- frequency
-Message-ID: <20260922052231-mutt-send-email-mst@kernel.org>
-References: <20260916073735.541-1-baorliu@amd.com>
- <20260922090224.430-1-baorliu@amd.com>
+        d=1e100.net; s=20260707; t=1790068994; x=1790673794;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=gxG2KWqjG9DQXNsqNUjR1bwSMAhv13VrmESGniF7QY0=;
+        b=1byre7rkSH4yQhf67KdJ09/932S+v5Zi6gON5wW3bKLquEz0E6YYiPdjWWEHD1Z+rQ
+         hbtBAjaJpsXOSJduIqV2m7BESyTwO/9R3dH+0nIp1jJRiCFxqh3JOYgKR2b6jICFK0vb
+         yjN9fvGREZFdGJeOTtd8vEzJsB8D7VQLbY1a0htq4K8ydi8yiaMdV2xOUDIdIXkk2Bv9
+         aJOc2qUfSr6fu9lXOMnkktNaa8zk/FVcihJKf0YKQ225VAm6Ydj6mD4BhhSuPEgTCuvh
+         YmLUOcN1Tdysw0CyYJDE172ub+O6jKZb15MVS0QkYYFI6RpLU7U8oIApZwyeP+UWlmau
+         0Jxg==
+X-Forwarded-Encrypted: i=1; AKwUvByUWnKSW4B8JL4NWiQFYXS6ZlDMMOI1LIazPRIqbiAHu0JKtleS/V0r2QgjNnK+QkqwD2H8+RF+wA==@vger.kernel.org
+X-Gm-Message-State: AFuF++kXiaMSK+N7KSPVvbgG7fKCaxorBzTQDylYGOrE0jcJH2MnsbQy
+	opVrRz3+KdzQYBhE2KOXg/UiKsPlqvSGn3/Nz7ERYIrgAXne9ZElOP+cG4BXu356ijE=
+X-Gm-Gg: AYBFou3EngjGmiBjYWy7uZgteXG72cn/ILF2Br4CsErZW5m4AlCul+ulR9LX0Pt/bCL
+	4F6LdPFdrhL7k7FAIZhDGanNTxaOb02AVFvmK+aKGV1Y5eaywEmPoIEIPD4IpZwj7laFZ/9U77T
+	efJyfXZG6khWbsB+o5FEaa4EDqV1JwvgaRyFwYD0/fgu36wSBcLsNFqYgFMReqHEck3gD0oVA8L
+	dyqH5KH8chi/xqDjnsApQvR5m1Uo6Yx4ThXOheo6aKiz7DnqLqUW2JkHJs1GcxKGTu2uqYVovs+
+	shqwn/qSCXXjPDlIkqKJq5hzD3mSeu5OTLdBYTG69VOl6/Q+ATQroLzO2rpOyShahDnWj22oUtO
+	LKVZuRif26xhChF/aio36t/xqPx9+1sXU05QYaGDysgL2GW8iJD3Rvk6ObZ737KMxv7Oj5Yufit
+	9ceaDmLhk3Mrd0V/qznz8EfGBJn4P9szyrlQvw3g0uJed3h0++1q7uChTlWi+8YIve7h7JnQjps
+	jSmAYEgZvBnCc+MSp4Mfcoxt6fWvgRs/fOv
+X-Received: by 2002:a05:6122:f05:b0:5c9:ae70:e784 with SMTP id 71dfb90a1353d-5c9b58b3dafmr8231399e0c.3.1790068994130;
+        Tue, 22 Sep 2026 02:23:14 -0700 (PDT)
+Received: from mail-vs2-f24.google.com (mail-vs2-f24.google.com. [74.125.227.24])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c9e7d76809sm997862e0c.16.2026.09.22.02.23.13
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 22 Sep 2026 02:23:13 -0700 (PDT)
+Received: by mail-vs2-f24.google.com with SMTP id 71dfb90a1353d-5c97b28165bso3837123e0c.2
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 02:23:13 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBy+N/KTaalulsUGz2jbbqReBqhr2w6wBz1Uv8ooJWplY9m780adIhXhah5GsI+BhCCcHHM161CBMQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:e10:b0:7a8:1817:276f with SMTP id
+ ada2fe7eead31-7a8181729a3mr5004222137.37.1790068993345; Tue, 22 Sep 2026
+ 02:23:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260922090224.430-1-baorliu@amd.com>
+References: <20260921-mb-rcar-sysc-v1-1-fb25996bb2f4@vt.edu>
+In-Reply-To: <20260921-mb-rcar-sysc-v1-1-fb25996bb2f4@vt.edu>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 22 Sep 2026 11:23:02 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUSA=firVaQ8HQ-ztKd+Em16Xj3LTfcLLk9SHBw2gCE=w@mail.gmail.com>
+X-Gm-Features: AclHuK-dqoaxKnjPGxgLEKwBtvJRMWUy2-_GWvI3MviqiUfHAePyiKA8wtVLn60
+Message-ID: <CAMuHMdUSA=firVaQ8HQ-ztKd+Em16Xj3LTfcLLk9SHBw2gCE=w@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: renesas: rcar-sysc: publish the external
+ request mask
+To: jaidevshastri@vt.edu
+Cc: Ulf Hansson <ulfh@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, Sep 22, 2026 at 05:02:23PM +0800, Baorui.Liu wrote:
-> This is RFC v2 of the guest virtio-cpufreq frontend.
-> 
-> Changes since RFC v1
-> ====================
-> - Fix 0-day kbuild error: cpufreq_generic_attr is gone on current
->   linux-pm; use cpufreq_freq_attr_scaling_available_freqs.
->   Reported-by: kernel test robot <lkp@intel.com>
->   Closes: https://lore.kernel.org/oe-kbuild-all/202609191437.OaXd0Blz-lkp@intel.com/
-> 
-> RFC notes unchanged: experimental virtio ID 42, hardcoded OPPs,
-> sleeping .get(), QEMU backend is a separate series.
-> 
-> v1: https://lore.kernel.org/r/20260916073735.541-1-baorliu@amd.com
+Hi Jaidev,
 
-could you link to qemu and spec series, please?
+On Tue, 22 Sept 2026 at 03:18, Jaidev Shastri via B4 Relay
+<devnull+jaidevshastri.vt.edu@kernel.org> wrote:
+> From: Jaidev Shastri <jaidevshastri@vt.edu>
+>
+> rcar_sysc_pd_init() maps the SYSC registers and stores rcar_sysc_base,
+> rcar_sysc_extmask_offs and rcar_sysc_extmask_val with plain stores,
+> before it registers the power domains. rcar_sysc_power() tests
+> rcar_sysc_extmask_val and then writes through rcar_sysc_base at that
+> offset, from genpd on any CPU.
+>
+> Publish the mask value last with smp_store_release() and read it once
+> with smp_load_acquire() in rcar_sysc_power().
+>
+> Found with MBCheck, a static herd7-based memory consistency checker.
+>
+> Signed-off-by: Jaidev Shastri <jaidevshastri@vt.edu>
 
+Thanks for your patch!
 
-> Baorui.Liu (1):
->   cpufreq: virtio: add driver to report host frequency to guests
-> 
->  drivers/cpufreq/Kconfig          |  14 ++
->  drivers/cpufreq/Makefile         |   1 +
->  drivers/cpufreq/virtio-cpufreq.c | 240 +++++++++++++++++++++++++++++++
->  include/uapi/linux/virtio_ids.h  |   1 +
->  4 files changed, 256 insertions(+)
->  create mode 100644 drivers/cpufreq/virtio-cpufreq.c
-> 
-> -- 
-> 2.34.1
+Have you tested it?
 
+> --- a/drivers/pmdomain/renesas/rcar-sysc.c
+> +++ b/drivers/pmdomain/renesas/rcar-sysc.c
+> @@ -106,15 +106,19 @@ static int rcar_sysc_power(const struct rcar_sysc_pd *pd, bool on)
+>         unsigned int chan_mask = BIT(pd->chan_bit);
+>         unsigned int status, k;
+>         unsigned long flags;
+> +       u32 extmask_val;
+>         int ret;
+>
+>         spin_lock_irqsave(&rcar_sysc_lock, flags);
+
+Isn't the spin_lock acquisition a sufficient barrier?
+
+>
+> +       /* Pairs with the smp_store_release() in rcar_sysc_pd_init(). */
+> +       extmask_val = smp_load_acquire(&rcar_sysc_extmask_val);
+> +
+>         /*
+>          * Mask external power requests for CPU or 3DG domains
+>          */
+> -       if (rcar_sysc_extmask_val) {
+> -               iowrite32(rcar_sysc_extmask_val,
+> +       if (extmask_val) {
+> +               iowrite32(extmask_val,
+>                           rcar_sysc_base + rcar_sysc_extmask_offs);
+>         }
+>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
