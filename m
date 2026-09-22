@@ -1,221 +1,160 @@
-Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010046.outbound.protection.outlook.com [52.101.56.46])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59BCE408023;
-	Tue, 22 Sep 2026 20:00:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.56.46
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790107227; cv=fail; b=f8t1dndEM2VNipBvYiPAaQKQVfEN3OwQfv6RNNpxSBAp2Zb51FRvFmp5MxkTFyDqrIoGQDH6MvwEAINp/bopr2fTYEwcBjPqJvdJ5dXa9v9eu4dr+zcJbbfDIiFsp5funw/eEaj0QS4sZsVt0WzuMAlRM187CsfXDELaHocZlqU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790107227; c=relaxed/simple;
-	bh=9hzRwm/cwkk9ouG6X8bimtYro4gax5/sSGesu4/bvnc=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=cikqs3AUJ9xAiyD5tvHa2nrmm7ermzjb60GNFl4SIF1UKoWG9kYrS0EWDpkX1GaF2xlb28hBqx0v5Y+/BJowUeUdxuesGGtoPagEgH2i9BFmpg7LOngedRIWmOXn6wHA4b0ggNBqOx9zg2G6g6nws0GYqWSB3mcxdMKdhRB1yQ4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Nj73Q4Uf; arc=fail smtp.client-ip=52.101.56.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC0BE3C3F44
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 20:22:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790108590; cv=none; b=ulqxVFjj+rJtezuaEVDV/bKlMnnEXbHb3b/OoVuF7dmFqRUfm33KYqq5++SnCstu3cMqCVm4VFGNt+b+sasJKkaMGV1yXL6ETJHnHtCtVMdO8y34Kmn/IXf6yGnpp1x/8Xv8smZnc9Y92+ylFS2DtQeendffryYuSAvEvjOwtfE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790108590; c=relaxed/simple;
+	bh=riYamvsVX2oKQRx/xBDLH39QziKxI0EWYK7OjNxVRDc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=eYztEL3vrsd7JJ2302OQDeHCfM6Hp9PKos1LAQnR0dsAqzyomVSReKF9ccLjhjAB8GYe/CWce2rgJ7lKVD9SL5vL7VB+PAViM+Sev2NoRKwAwi6e0jYM7LBcm8QQL+iYxhLyse9JqxHGI9SKRjq/3aEdbh5ss1uLMWeVA/3xu0w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=bqxcTDE0; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=kl3hFeC6; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Nj73Q4Uf"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=bm/Ue6mm2nucxbMi3JP6aXCK2C5usnMWGuGjhW2esZtQ5n1ITQ0LdNDOLMwnzea0JagFxEpDBoEQSvLSmt1CYkPFMuZLgT0PnghO6avzHXBLHlWR5ZPePbr1r1BXIlTarX+750HOfOh/MNukv1mTdMzoZYBGGXGga2AJZVIQBYuQp+01Moop9rgVdE2dUwfpt8vSUe5MD6t3zu98qSAWWhnACRWxfoudKqh6mSfllIel/JaGUEO5Q4jgBvdGoTnPxa8DO3h5mfH7MBZCn/WC9tkeu6Bqu7IYsuSN7GjZWP24NRuceTGvG6aUnSacIcPv/KIo0QSAKfuBp5+40IAMaA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=FhgGkyxuDRLeQSL5yk/ipbrqGWEgaHqN3S/1zVLX3c4=;
- b=TSS5yM0pSFvPL/IVhs2JyC4flQvplFtrSc4keReqEmzRAWelNyvZk46+Tkkg+MUIE9/gYjz90vKyrMsGH5qtnU6XWqidBZC4vB3Yri6FZXTwlkSuxkhjVxKWUTU2mQVRLsjjadlcnWC9HjstUACc8IGMasVn722g/JannDSWWLlOjZE8tIHjE/Z9VWwM2vdb/0SM9DES6n+/1jAlbJHTsIBbgQHkcnFEynR+T3zHL3u7olHo6hYgocCYNXWrktEPXqeK809pEU1FrCfWmmBPOKorGOTZi2vNdGv3UdVLzBFLZ7N3XYZ8eNaFKCYy8fVXW9s5A73KS7GiO4zbRKndMA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FhgGkyxuDRLeQSL5yk/ipbrqGWEgaHqN3S/1zVLX3c4=;
- b=Nj73Q4Ufx0prpZKdAqR1zP2Tl4eIHBAOGswhyavuQwt5JC1OK+I9+vIfmepdQbBf8I0ZUG0Rg/MRZdUlYJF42AYY0VhXq2pcXWCsSsdKW/DzbHDJvfiJShPBPpyVSBI36ZXLrMHI2rpHBYl5N6GG46xinprpMa6FoSqNc0xv53I=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by BY5PR12MB4067.namprd12.prod.outlook.com (2603:10b6:a03:212::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.13; Tue, 22 Sep
- 2026 20:00:15 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%7]) with mapi id 15.21.0451.014; Tue, 22 Sep 2026
- 20:00:14 +0000
-Message-ID: <eaaf891b-7b0b-4eea-b104-de2c0db7cb42@amd.com>
-Date: Tue, 22 Sep 2026 15:00:10 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents
- JHL9480 downstream enumeration
-Content-Language: en-US
-To: "Kovacs, Alexander" <Alexander.Kovacs@amd.com>,
- Freeman Z <SHD-ISAC@outlook.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "westeri@kernel.org" <westeri@kernel.org>,
- "andreas.noever@gmail.com" <andreas.noever@gmail.com>,
- "YehezkelShB@gmail.com" <yehezkelshb@gmail.com>,
- "rafael@kernel.org" <rafael@kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "S, Sanath" <Sanath.S@amd.com>,
- "Natikar, Basavaraj" <Basavaraj.Natikar@amd.com>,
- "Martinez, Juan" <Juan.Martinez@amd.com>
-References: <TYCPR01MB1092795BE7AB51121BBAB292496862@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <20260921050450.GM106095@black.igk.intel.com>
- <f8b929da-b4ae-48ae-9667-3eb93aa0a4bd@amd.com>
- <TYCPR01MB10927E6DC71CDC3B39C26F35196832@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <BL4PR12MB9533BF5ABF7035E6DF151C0A9C832@BL4PR12MB9533.namprd12.prod.outlook.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <BL4PR12MB9533BF5ABF7035E6DF151C0A9C832@BL4PR12MB9533.namprd12.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: CH0PR03CA0415.namprd03.prod.outlook.com
- (2603:10b6:610:11b::26) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="bqxcTDE0";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="kl3hFeC6"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68MI81M8767932
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 20:22:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=8htKgBaDIdBPsyrAeJXC/gbT
+	CTAoJcyryDOr9QBMzvk=; b=bqxcTDE0j/q1DK4LnyB/VLFYvXXdTuMOY0MjQ7kq
+	y1Hg5NAV4XO6jXLDNYtZ+lBJlqxd0DO4uxLNvy4vYbKYuHcxss5KCJAmevvC9pzv
+	500sDSIX8D8TgdcVCYEEkOIV2oJ8ma26HmSCH+b0ix4ck9w8zxQkrGOkOZgMzE0w
+	ldSkuH3pvcNPafWJ0F+8sXl1CfdAmKXdh4RnTNYBKGlUcpPgJFpduG1TzLNkewAC
+	wzlO6/6q3Ee6ZRKIH9btk7WVHCA6Yh55+M+Jp2nVGZk4F+xNHwdB5QVqtB0zqmrI
+	vMlaAOO0IPA0Jl8vhXwPlDQkp4ussLGcO9UOWMb/4FqgtQ==
+Received: from mail-vk1-f197.google.com (mail-vk1-f197.google.com [209.85.221.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gupbqkd57-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 20:22:51 +0000 (GMT)
+Received: by mail-vk1-f197.google.com with SMTP id 71dfb90a1353d-5c830ea02d3so289479e0c.3
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 13:22:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1790108571; x=1790713371; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=8htKgBaDIdBPsyrAeJXC/gbTCTAoJcyryDOr9QBMzvk=;
+        b=kl3hFeC61t3BuaJc6wEu0fOtsMnFirmKYvw6zV2QE+WdKVdEjmNJ1avd7tStbydUPI
+         zeVOreaVXbiDH0z2qvu9OzFrxpjazYCVTuShOOh2ocO4Kw22kVmkNZlqRl62f2H2ERbh
+         zUBZ0N/npi/1umFzLlQWjXO5pGXBfJckzHuol1yvLL1Ul+gM9GWWoCD4GbRRtZqscorM
+         oHV1Zx9IzCtLglWeEWXeJ7UycX4ZaMeVgN9FtCQZVDqoBMI51N8T2tCjlOAR/0fOQk3k
+         tHfoXwVnCBxoFMFt/Iey0QdIzDGY/hawy5BBwOZRfqJWZjsz7QYPMeP3FF/0R9aK5GAr
+         X88g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790108571; x=1790713371;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=8htKgBaDIdBPsyrAeJXC/gbTCTAoJcyryDOr9QBMzvk=;
+        b=ODvY/iFDP0oRjeVvRdhHFlTAFgA2DSGAFCGwyaEO/7YoY+PX+wNe+xUD8NsuP4ad6p
+         YDRzgFhQtzNPE+3CIxNMqOdEkYdgLA7QZ3vCOwCWq9a/IabCmQ3ArUEl9FkGePv5cOiv
+         qbU4wINcktMNOr+LlXKwJGhbJQygyg2tVErh/Moc7YXS+T3AfzBE0A+ISaVVBpLmDMlx
+         XJptgYd/EmQh2FtugEtjkEpPBJyDjDEPj7kxjpyi7o7kqQLr7rOODp33DdfjQ6370+e6
+         a4U30X68vfCZmkW9kmlQGAD3QOxdWFGFWbzCfAOe7Da124MlIhnRaMcenJhf/SAZGZ4f
+         WLLw==
+X-Forwarded-Encrypted: i=1; AKwUvBw8qlwGnutJyw1X1qJsWo/cUho8u6s7cyJ0C47O1gyHB+Z4DIJKNn+0UoPC+2ej3TCbHLs9BkL/gA==@vger.kernel.org
+X-Gm-Message-State: AFuF++lIiqvwIgX4w/pAtghbFzkYpa54tiCfRfZrTJSV0VZScXf5258m
+	5Ublo4YkCTSOUKfQEtjR1sLTF4HkMb4RpdELCVukZMO/aE0lwnGhQFKRif8hlcwyue0yK/Hxg2s
+	eQK5QCIQUefr4aASCjaY/jBkovpJ488ORnuAElGlybzohxD3+dyZy2WUqXRNzag==
+X-Gm-Gg: AYBFou3wq/auGiVCJcUhcdbBeg9LgaC3jZcz0W8y5x/cmCHAhuTv0o0xD6hcPedos/V
+	vonb3rU5tluGJuS14XjKxI/bSRB8cX7Ao+BAbeAHkJQo3kvk10Gy8ad70qn3ti0qQ66GDD8goBY
+	+CnV0vE3UTDrWu2aN4QWxQbXn5034GCLej2qVrp8P9SkLPpmLTjkkXsRxwv63AcFij8145BYQQJ
+	11JSWa2J0oNWD4fwbHHiK5W+0O8HdhHk0xc9K3I9YWqKKujAk1Aio+XGbu3YLPdKOb/v4mXSEsB
+	PVilZS7g/CfW8pL5BDjcPGTChXft0JzRGJuz07fYzzI9pZRCMrMI6GECMlcM65deILYFJWCHRtJ
+	WHt/Op5ZsUxMGJtc=
+X-Received: by 2002:a05:6122:179e:b0:5c9:c60e:5cf4 with SMTP id 71dfb90a1353d-5c9f1684ca7mr1189846e0c.18.1790108570681;
+        Tue, 22 Sep 2026 13:22:50 -0700 (PDT)
+X-Received: by 2002:a05:6122:179e:b0:5c9:c60e:5cf4 with SMTP id 71dfb90a1353d-5c9f1684ca7mr1189793e0c.18.1790108570226;
+        Tue, 22 Sep 2026 13:22:50 -0700 (PDT)
+Received: from oss.qualcomm.com ([86.121.170.232])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48868486461sm885650f8f.8.2026.09.22.13.22.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 22 Sep 2026 13:22:49 -0700 (PDT)
+Date: Tue, 22 Sep 2026 23:22:48 +0300
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+To: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Luca Weiss <luca.weiss@fairphone.com>,
+        Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] interconnect: qcom: Skip get_bw on QoS programming
+ providers
+Message-ID: <r5oa7d7rrdcenoiks5efex73huxr6mzpqkqjt5jlgu7y3rdb2m@uqak7vhuucf5>
+References: <20260922020623.398913-1-shengchao.guo@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|BY5PR12MB4067:EE_
-X-MS-Office365-Filtering-Correlation-Id: e9e9524c-b873-4fd5-af8e-08df18e41d98
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|366016|23010399003|7416014|10067099003|56012099006|6133799003|4143699003|11063799006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	92YogMmYNDdYItOUOducraRHsOEA0gC//3XqXRVthC387cHI+8N+VpjCYaTPfTZm0xAikzbfFo+aP5wksbzYsMr2TiQaNiW1acoY4THuQf34G9CyVnFAJNhOzJ+dnFGRJcf7WonPP5OaSRxeck770889ca3CMsvw+jBS3bSZf8gp2ledtaILPj1cTmOQ8WffWDfp0sTyCEHlUKFs3CixJ0jpjEDd1V6ouDVzWhcf9mkiX2nYDYr30baZCDlOUqH4hMIYDsXxaoPaLWUd2fgGTmxXdXZr/beuig1v/K/Qh3DpsAM9zKb2r3oi184AFfUqSFD+Opvyef08ppYaY1hCXbQpitphU0mRdePHDVfdF6zlUa56+p4rtttgePbq4dVnxLUnbMe60uxQqOM4mAEJjpEbWb2IuZuh0j+X+yJftl7UTtOP+gZ/sLNMh/XjYrnhh2JZn6ta3e/45++UaoAvzrKxM5DHLwVJ3BdKK292CvTfZIhTIexiDqAXjpQ8IaaMt/s3J6DGkSjbO2naFtt7UevdPpkWfEc8+cXms4K3ZJcQTMUsV8icPLaFIgL4I4a94okFXgJpG61vL3+Et44BELAwCwp1WLCs5CHb3rvFnFOIU+Cx/iqGF0/RXUch+ASff70VL3EpsUnYjGWzawPpL6b4GTfbjMb6Pmlhm6L1Jwo=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(23010399003)(7416014)(10067099003)(56012099006)(6133799003)(4143699003)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZFdES2hjUkpnRlFXa3lXdVA4TlRBMGE2NjVVNWt0eHB2eUdObXk0dzR0ZW9k?=
- =?utf-8?B?Y3lleTZPMFYxa0JoZVBxSWFUVkNuL2M4NmtuaGs4ZCtHK21vTytCcXRMQXQr?=
- =?utf-8?B?V0RRL293MUdxc0x3TnFndTI4ME1vamF1KzBhL1VRcTNSU0hCdXRWUGp3T0VU?=
- =?utf-8?B?eGZkam03OFk0VEF2RjdjdnUvYUVDODRVc3pMUS9SbjNnRUFiNnk3VWNLd0JS?=
- =?utf-8?B?OVdjU0pWa2g3OEZmZyt6RGMybm1xck1ySUZxcjVRbng0WkJPbE45cE4xbzlT?=
- =?utf-8?B?U0NzaFBkQkxrVUp0WXJJSDQxcDFrekxyOU5EcDZMVFBudGU2V1VGK2lPWU9M?=
- =?utf-8?B?TTgydFNsWHBLQjBrOHJ2dUM4MWJJZCtuTUttZTRRVldMY2JrYXNqY2xldWpS?=
- =?utf-8?B?aE5xM3pDTTkzbHpBbFVOZ3FrbDFXMWJmUEQ1TjJkTERIMnI0RlpuTFd0K0Jy?=
- =?utf-8?B?L1ZCMFpUakRHSmtNOW9YTW5PMUhpVUExZEd5dDQrTFJEUHVlQ0s4RG1pbVRI?=
- =?utf-8?B?elZtU3IwL3BocE42NHVRTUFDR2p0cVlkaURPM0VSUTRkZmh3NU9ROGRIZE5L?=
- =?utf-8?B?bXRFR3RxWnFnZkJzTGwzc0I3ejExT1cvTVkzbkkyZmNNSUE3NnU3Z2w0TXlJ?=
- =?utf-8?B?SVVobmJRMTgzVHdXK05OY0E2bjJPZjVUa2RzNkRJN3VBTC9mOTV0cXZWdlBI?=
- =?utf-8?B?TndJL3llcWVOeU5LdlE1Q3VHOFU3THU5MFJoM3BweC81Z0tvdVI3TTVMMGRB?=
- =?utf-8?B?MHh2bFZqbDIxajBoNDRCdmZuU3k5ck9iU2JMSTFjQnBRVThCVE8vMFpWamlK?=
- =?utf-8?B?TFU0QmM5Rlk1S0tpS3BzQjRwd3pKMzRsaUkyOFhDWllQU2s1cXVrQmtpdm1J?=
- =?utf-8?B?aFZBUnJkWFdaUmtBRmtKbnpIU09rTk1OZ1cwbGZPeXhnb21TS280QW5MZ2lN?=
- =?utf-8?B?ZzRabW1zdFRkY3NHZXpSd3dGbExFYmtxNGhzUUlUcU1Cc1lIM3p4VDhLT1lh?=
- =?utf-8?B?MVg4Y0tSWlV0TlByZzR2QXRUTHZUS3ZFblZkYm5QbHhzekR5WHhJbTU2WWtX?=
- =?utf-8?B?bjZaMlVFZGZCY1RVbHZzYzdqN2RYbE9sNVV2STZmNzZFWHppZ1RKcXlqVksv?=
- =?utf-8?B?Z3NjY2RtUFhXeC9QWlZuVnBpVFF5VGc1N2FKSmdJQmRSaWpjUERiaVdPVDBL?=
- =?utf-8?B?QVVxSEVWeEp1cmN0d2pwS2R2TnpKMWpIaHdGNFRQbW9aY01sQ0w4Q1ZJUnd1?=
- =?utf-8?B?YzFyaElrSnQzQm9Ha0U3Wk5MM28xNTdURWJHVWdsdXRjNlE3dW0rVjNRUzBK?=
- =?utf-8?B?bmtIc003dzNrd0VVOVU5eHhRQnRaTGR6YzB0M1lYRDJGdytCbXRVbmE1MzQr?=
- =?utf-8?B?RXRPUGlDdlhCN1RvV1hFdHZidURYZHVnWE93Q1pVSXFDcEdTZFpvY3JJNi9M?=
- =?utf-8?B?L054aU9DR3E5T3dRZU5rQXhVZGRLNmN0YSt3R1ZGZjVDclErSlZWakp2UWNY?=
- =?utf-8?B?QnlTZk04MFZVTFU2NnZNSFViNXh0Slphd0JvSEU2UEhuZVEwaUxoY3hHdmlz?=
- =?utf-8?B?SVo3MHN1d2ZmWmpnWmRoU0M5eHdsMWZEc0Y2NmJVMG9ZQ1hLS0FCQmkxUURN?=
- =?utf-8?B?Vk90czlZNXEzMEFiWXJjZGtJSlNxYUxrRmZLVUdBaGN4b01LQXhXb1BkN0tQ?=
- =?utf-8?B?Ly9RTDd3dVpEWnF2RnBpcmxRTGxCanFBb0tSVlVwUVVOMjh0M1oyMnk2WjJ0?=
- =?utf-8?B?TllMSWlCT2hWSktNVDFZbStkMEcxNkVlYnN1RjJJTkVoeTY0bHBkWEd6eDBh?=
- =?utf-8?B?N1pCRGFvWmJRTDZnbTMrRVpwM0pXVEFVZzk1T2RwQXR6YmdEcDFkOHN5Vkdk?=
- =?utf-8?B?eHNsOG9scEYyR2RYdC9OZW1BUnlka3k1bTg2VVpyVGFLcmtMK295cjRjdVRY?=
- =?utf-8?B?Ui9BS3dKSmNlazNPVFIzcEUrUmVMcDlFeUY1WjIrRlRhZUtMdnN4L25obkRr?=
- =?utf-8?B?SDlRNkd2VEw4Zjg2ZzNmWnhMRTRzQ2cxNTFhdzJIdmpjbmtKTGtUcHM5M2tS?=
- =?utf-8?B?eFFXTG40djhDdjJEUmp3YmRYT1RDdlRZN0xwRm9EZC9wb3lXaGVnWE50ajRy?=
- =?utf-8?B?RC9SRnB0OGhZZTBFM1BJTE84Q0VDZUp1cC8rdE9QVWdUMDU3WkpxcVFlMTIr?=
- =?utf-8?B?UjZOU0Q5WFhBT3NDWXJzR0xucy81Tks5cnJtUkFwOEFYekZmcjZiYy9qdDhO?=
- =?utf-8?B?NWFKMkdOeDdUYUtpdENZU0h1b3pSbzBybWQvMXVsL29ESWZ2VDloSTk4ZjZF?=
- =?utf-8?Q?eLd+axqmO3/IGI8fCy?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e9e9524c-b873-4fd5-af8e-08df18e41d98
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2026 20:00:14.0636
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 00s96xUyKk0e3bQbb5DU5lfHC8K9RgjijIuOsbt95ar0pg6Y6oRzXMjDe9VJOHb/OuMhs1jNeBx7OaggI9cA/g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4067
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260922020623.398913-1-shengchao.guo@oss.qualcomm.com>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIyMDI5NCBTYWx0ZWRfXzkXNZH4SCqEd
+ MRObqq2gL6VWuvJI5YFAgoOqOkJUFF5cpBgtwE6bbwlNjBihugdY2Im9aIqwIWxdJy1tDToydWm
+ uQpwuTU8S8cECFtop2rji1otKpmgU/wm1F+PWDcZ7/gP5c5nxhx8qwbbklpLt1Ue/RmPKdpJavW
+ D62RBl2BaDW6OSUTK5qZLcxqEg50Y3RTql8hKMqcKibF9SmLhm9Z3nxhcon92qtGmqmqHkJPXeO
+ l4noL4g+cOfLnd6+a9k9R0DgHTPt7d3ELWpv4Le5WIyEnQKDNN9swo46uVpsH5uIB1L5Yaw4V1G
+ Ko/9YBqx2u4NNP93Rz2KfKKTD1az2hLEubNyxulnH5oxQPGkw/Of/qBwdTvNP+KXghmxQRW/JZc
+ 7oF8E/VVDHNH8JIT/D7QNNefxBfZyAaYeyvg21N0BOsX5Ot1pxa3NOt8S5ghVcj01CQU1WNGVIZ
+ imMzLQ1xJX2Q7FJpPNg==
+X-Authority-Analysis: v=2.4 cv=FdaiV5+6 c=1 sm=1 tr=0 ts=6ab2e39b cx=c_pps
+ a=JIY1xp/sjQ9K5JH4t62bdg==:117 a=po8fGBi+ks8MzcVQGuqtFQ==:17
+ a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=bdokXQhzV7AcA4co5KEA:9 a=CjuIK1q_8ugA:10
+ a=tNoRWFLymzeba-QzToBc:22
+X-Proofpoint-ORIG-GUID: xSfuelDXehMCfR8lNbP0dNTJ4yDORZ83
+X-Proofpoint-GUID: xSfuelDXehMCfR8lNbP0dNTJ4yDORZ83
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIyMDI5NCBTYWx0ZWRfXxgKkknHUv+j0
+ 2bpsWV6yEXqg72uDXcAcfNr3lKDedIzyEU4bYctsN+/qoFpAaAua00do2vRMs44/OaM3MyaThyX
+ /ElFSJu1JiU5Dhg0feaHRPP+3S9o0kY=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-22_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0
+ malwarescore=0 spamscore=0 priorityscore=1501 clxscore=1015 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609220294
 
-> -----Original Message-----
-> From: Freeman Z <SHD-ISAC@outlook.com>
-> Sent: Tuesday, September 22, 2026 11:41 AM
-> To: Limonciello, Mario <Mario.Limonciello@amd.com>; Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: linux-pci@vger.kernel.org; linux-usb@vger.kernel.org; bhelgaas@google.com; westeri@kernel.org; andreas.noever@gmail.com; YehezkelShB@gmail.com; rafael@kernel.org; linux-pm@vger.kernel.org; S, Sanath <Sanath.S@amd.com>; Natikar, Basavaraj <Basavaraj.Natikar@amd.com>; Kovacs, Alexander <Alexander.Kovacs@amd.com>
-> Subject: Re: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents JHL9480 downstream enumeration
+On 26-09-22 10:06:23, Shawn Guo wrote:
+> Programming the static QoS configuration in qcom_icc_rpmh_probe()
+> touches NoC registers directly, and nothing in that path clocks or
+> powers the NoC first.  It has been working only because the
+> interconnect core used to vote every node to INT_MAX while adding it,
+> and that vote stays in hardware until sync_state.
 > 
-> [You don't often get email from shd-isac@outlook.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
+> Reading the boot-time AMC votes back from RPMh removed that implicit
+> guarantee: a NoC whose BCMs come out of the bootloader unvoted is now
+> left unclocked, and the first QoS register access aborts.  On Qualcomm
+> Nord SoC, the MMSS NoC dies while programming qnm_camnoc_hf, taking the
+> board down before rootfs:
 > 
-> Caution: This message originated from an External Source. Use proper caution when opening attachments, clicking links, or responding.
+>   Internal error: synchronous external abort: 0000000096001610
+>     regmap_mmio_read32le+0xc/0xa4
+>     regmap_update_bits_base+0x64/0x98
+>     qcom_icc_rpmh_probe+0x44c/0x540
 > 
+> Only install the get_bw() callback for providers that do not program
+> QoS, i.e. those without a regmap config.  Providers that do program
+> QoS keep the previous INT_MAX initial votes, so their register
+> accesses stay safe, and the rest keep the benefit of honouring the
+> boot-time votes.
 > 
-> Hi Mika, Mario,
-> 
-> I reproduced the failure following the requested sequence on my installed CachyOS system with kernel 7.2.6-1-cachyos and thunderbolt.dyndbg=+p.
-> 
-> For this trace the dock was physically disconnected at boot. I did not run lspci before or during the reproduction.
-> 
-> Before plugging the dock:
-> 
->      0000:00:04.1
->        power/control        = auto
->        power/runtime_status = suspended
->        power_state          = D3cold
-> 
->      0000:6b:00.6
->        power/control        = auto
->        power/runtime_status = suspended
->        power_state          = D3cold
-> 
-> After plugging the Kensington SD5000T5 and waiting about 15 seconds:
-> 
->      0000:00:04.1
->        power/control        = auto
->        power/runtime_status = suspended
->        power_state          = D3cold
-> 
->      0000:09:00.0
->        missing
-> 
->      0000:6b:00.6
->        power/control        = auto
->        power/runtime_status = active
->        power_state          = D0
-> 
-> The Thunderbolt dynamic debug log shows the NHI/control channel waking and the USB4 fabric being configured. In particular:
-> 
->      thunderbolt 0000:6b:00.6: control channel starting...
->      thunderbolt 0000:6b:00.6: 0: resuming switch
->      thunderbolt 0000:6b:00.6: 0:2: is connected, link is up (state: 2)
->      thunderbolt 0-2: Kensington SD5000T5 EQ Thunderbolt 5 Dock
->      thunderbolt 0000:6b:00.6: 0:5 <-> 2:9 (PCI): activating
->      thunderbolt 0000:6b:00.6: PCIe Down path activation complete
->      thunderbolt 0000:6b:00.6: PCIe Up path activation complete
-> 
-> However, I do not see a PME message corresponding to the dock insertion.
-> The PME messages in the full dmesg are the early-boot
-> "PME: Signaling with IRQ ..." initialization messages.
-> 
-> So in this reproduction, the NHI at 0000:6b:00.6 wakes from D3cold to D0 and the Thunderbolt driver successfully programs the PCIe tunnel in the
-> USB4 fabric, but the AMD 1022:14ef PCIe root port/tunnel at 0000:00:04.1 remains in D3cold and the downstream 0000:09:00.0 hierarchy never appears.
-> 
-> I attached the full dmesg captured after the dock plug, plus the small before/after state files. I redacted only unrelated local network identifiers, the hostname, and filesystem/LUKS UUIDs; the Thunderbolt debug data and device UIDs are otherwise unchanged.
-> 
-> This particular dynamic-debug trace was collected on CachyOS rather than the Arch stock kernel used for my earlier reproduction.
-> 
-It sure sounds like a PME doesn't deliver properly for some reason.
+> Reported-by: Bartosz Golaszewski <brgl@kernel.org>
+> Fixes: 11a44c6087c6 ("interconnect: qcom: implement get_bw with rpmh_read")
+> Assisted-by: LLM
+> Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
 
-I suppose that while in this state - if you ran lspci the root port at 
-0000:00:04.1 exits D3cold and 0000:09:00.0 shows up, right?
-
-Does the PME show up in the logs after you've done this?
-
-Any chance you can easily check Ubuntu 26.04.1 live media?  There is a 
-7.0 based kernel there, and I would like to know if this regressed from 
-that.
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
