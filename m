@@ -1,125 +1,146 @@
-Received: from mail-vs2-f12.google.com (mail-vs2-f12.google.com [74.125.227.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ECC0382381
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 14:34:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.12
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790087648; cv=none; b=sMUcoUpvMxzwYYs7R+yOG3qVTNCojfBmAcgjEJJ8LZT9EZZD4qaSav2TX7lbLcJ0/8ejbpDROlnT5hI6u3aQPOcwjijZ/3ZvDeM3kAs7gA7Q9ymT4BCc6F6x6oi05mdu3Xql4W5dv048vEwGFcR65YBOhkF99EuiZG6dktBUm14=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790087648; c=relaxed/simple;
-	bh=zHlsfWC8sX3pz0/XSFoxgX7FqDI7whEHdUXnwOXIQoM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PMBVvAMVR6q/qpT1IMgaOW4fikNobSrysv+PEWU2NK49uMOa0SAtvIbq/hHDO7UFDiUYCLbxtWhZb6Fp2Ws5wR/YmjX4vmoNHEEBYrCp3rVzr3qmrkuBuAlDOdvPVheBCtagFNKHSpSYYKTli6tI4xZziHVxDZJ2CnDdEnN9df4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs2-f12.google.com with SMTP id 71dfb90a1353d-5c67e5059f9so2432282e0c.2
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 07:34:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790087645; x=1790692445;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=Ifr1hHZZAJWVubWKqPeVb9esvq1iy0mCWPvBSTHrG+w=;
-        b=n/yjDL64sz+b8zx4sFJ1NTLtdGPal7JTgwB2PNXiL6eZGILvH/zo2hoA5FJnMTpZ/D
-         4MjgdvLoeosR08jjo4ZAqKOc4lXer06CyD80z55gNCmdm5GRT+0G+gO8XAc7rV0+szr8
-         PxVIaESJ8kbdIkNQlaCkg9Iz7t9fT3PsBtvHBItEhiTQBeFmLADKq+1BlWI6Y//zovgY
-         ruvC/kEroLLNz+wqCe4/xSvtDnve8CM9Vxmr6DcR30mLPG/Fa+LMpzSY9Pa9J9mINx+h
-         qGEK650IAXHxoK7Kh2+7yY3wIDjw17FwRslzIDIhrJFV7VfMVpxEvX1MbJiwVXYhtLRq
-         TGdQ==
-X-Forwarded-Encrypted: i=1; AKwUvByqf5Z5SzT4DZxluM1C8nWTJ6aAbLXOxCMletFaoKGr2Nx/pPvvFwOBI+qalDa7wXKisn9xPAPvCA==@vger.kernel.org
-X-Gm-Message-State: AFuF++kbtWj0t2NC+mMrsvX3g1rs/nojY2t3FsMZD332xOkgkieLGH/F
-	+1LVZR6i8STC83n8xEM5Hfc9EoyYVOS/Cph0HBAoOepgyfmXWYnC/wloqTtpaGcW
-X-Gm-Gg: AYBFou1kF/sWD5rTmm58HzJEB85hKXQo1zIIKMRrZyzDBGRf6f9s6Elh1XLUlWvNxOd
-	hO1upsPmo6GDhs6wOmeburhQDJ03ILSVMGBZHbn8jPW7Q0h+fZ4sk14nHMKfyaRoBkeqymJzOMU
-	vWLitE1a7rQtCwriqW5Upra9JTKDRUviHnXmhCcXIxgHRTzlb/3go4XdmAF9HN2+4RJCx6+y+tH
-	PoAwHFN43nK8bcNHpBKe2ft8or8uCHVn9p3kV76bt/sftlqq76d5Nhny8rKQfdR22NN2LwKjxPT
-	SyV6HSzOWmruURZmYGalu4wHZ5audcd0vrOgDwGDtlwrQW1zFP+P1eckATH5oQ/SuqNC5oMGUNa
-	H6zEw5uwVhUftlf4KoZ+mDc6RFPAQJjzzXwXc7oRNbQ152irb5DY8jGZGZeLLgGqS/6FRswOEwT
-	cnkPJane4OK+KkpZ4pRz8+xXrAbUoBDiKAz/0uxWDLGprerF0n7j68MT8hX00AHZZfSMMeY0XJH
-	nWQ2uME3BK9EzWjB0ajTDQ+guYaodvA+sDR
-X-Received: by 2002:a05:6122:3106:b0:5c9:c60e:3a41 with SMTP id 71dfb90a1353d-5c9c60e3d74mr6805193e0c.19.1790087644914;
-        Tue, 22 Sep 2026 07:34:04 -0700 (PDT)
-Received: from mail-vs2-f42.google.com (mail-vs2-f42.google.com. [74.125.227.42])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c9e7be86f3sm1793684e0c.2.2026.09.22.07.34.03
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Sep 2026 07:34:03 -0700 (PDT)
-Received: by mail-vs2-f42.google.com with SMTP id 71dfb90a1353d-5c67e5059f9so2432213e0c.2
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 07:34:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxywqX+SrwbzMOvqgUv9RCZTrZyLSS1F1BkAs7GaVlDPhJbYhiiHqHB9ehM3F5Ej0HL64Y5YUhEcw==@vger.kernel.org
-X-Received: by 2002:a05:6122:390a:b0:5c9:a617:580e with SMTP id
- 71dfb90a1353d-5c9b8b29cf6mr8586451e0c.11.1790087642750; Tue, 22 Sep 2026
- 07:34:02 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8A413876C3
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 14:46:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790088401; cv=pass; b=PfeV15ANqSLfEj7SePTASLlkOYD7EbuDD4ssInHK2BfDkSh+xxLWYNNz/uNBdm1L0PoqKzxgUbYtSkcPGNJFq0aBCRIWqeGi+D4BBwUYWzOMhx4WhVZWY00NT8+ed6iWt26nYMkxAVhZ1NUnZHX4uAEbSR1tzpWGvrYURoA1B1o=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790088401; c=relaxed/simple;
+	bh=Qwx+kJuQICvSPr4P3roIQDm9q++mxK6wM7ysb0fmGAI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sBrdloVmsmY8gE0bDtuSNWSQKwWh0cMKUWADlbZkIp/LGnyhd8aPMpprJ2Z373bPcjm/PaMS73XaCncRv7zdwZLiwwErztHtF7mu758pcuYFKFqH0c6w+QbzyVjZBY3SONNPPvGj04uWQ7+Prnl80ISW6SeWry6/eguiFCeqdSA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=atHxtnb5; arc=pass smtp.client-ip=165.173.182.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="atHxtnb5"
+ARC-Seal: i=1; a=rsa-sha256; t=1790088386; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=lINpbbHL8WlWkG1i8bb+xXn09sYPqdyfwfc33YCyvTUo0Jt9mTXD9i7JWSNZzhr3fzHwptTl051hqfG3mTgziQPzC/95iia+TLPtePCySYl4kGzGcOoiRW2sz9JIaE6ZGXBaLPPMEPYSA6DqsO3cp34mlQjHFEDq5Bi+TwVF/LY=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1790088386; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=Qwx+kJuQICvSPr4P3roIQDm9q++mxK6wM7ysb0fmGAI=; 
+	b=N2jecwrujmVKknUdnZI8hpwvaQr4rHX3lmMIasWRHTo+M+W6isMc+5Co5h5BM1+HFjrvtT/bcvLYbCJOcOKOrlw4nYWGDTiuerDr8X2xaN1zB64S6TuYV1/pgGE54JIZyk4vewHwCbvdDduYiBLq1VG0Li9L79QUp5ppH4NnbAA=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790088386;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=Qwx+kJuQICvSPr4P3roIQDm9q++mxK6wM7ysb0fmGAI=;
+	b=atHxtnb5L+z/h5X+XQtl3C6XGLBqqV9tev/82tkYT3Ybs3OsVcwCgXf2p7Too6Kz
+	W6kXdnVxcx1S/NVQ2MQqvQ2gVX4sWDyHIJbQ2/t4LxXjmwdpFjDKT9Oqvzka3dpQYmV
+	zHU/pTzCmaYwyGzL2Ihox7mtEBB2BQiCmC2BIetM=
+Received: by smtp.zohomail.com with SMTPS id 179008838367530.32193819537838;
+	Tue, 22 Sep 2026 07:46:23 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id BBD671805B9; Tue, 22 Sep 2026 16:46:20 +0200 (CEST)
+Date: Tue, 22 Sep 2026 16:46:20 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Shawn Lin <shawn.lin@rock-chips.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH 2/4] pmdomain: rockchip: fix clock leak on domain probe
+ failure
+Message-ID: <arKUZKPoySJBQ8Tz@venus>
+References: <1789733258-10133-1-git-send-email-shawn.lin@rock-chips.com>
+ <1789733258-10133-3-git-send-email-shawn.lin@rock-chips.com>
+ <aq1yU47vQT5OnxLo@venus>
+ <27e3944f-81c6-48e4-8033-e30ae70f8e26@rock-chips.com>
+ <3fa0fcbc-b6ff-4934-bb7d-b763d6f5f818@rock-chips.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260922042707.116378-1-biju.das.jz@bp.renesas.com> <20260922042707.116378-7-biju.das.jz@bp.renesas.com>
-In-Reply-To: <20260922042707.116378-7-biju.das.jz@bp.renesas.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 22 Sep 2026 16:33:51 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVbyktVBAwBh=LoARWHHmb_FrF+omeDvNdR76uxus3mPA@mail.gmail.com>
-X-Gm-Features: AclHuK8QDsFUbN6MlA77zfZcOMVCYGTCDIMnum6Wgku5P-WW7MUQq9pjTBb7a98
-Message-ID: <CAMuHMdVbyktVBAwBh=LoARWHHmb_FrF+omeDvNdR76uxus3mPA@mail.gmail.com>
-Subject: Re: [PATCH v3 6/8] iio: adc: rzg2l_adc: Rename num_channels to max_channels
-To: Biju Das <biju.das.jz@bp.renesas.com>
-Cc: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>, 
-	linux-iio@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="q5tkxria2nmblprg"
+Content-Disposition: inline
+In-Reply-To: <3fa0fcbc-b6ff-4934-bb7d-b763d6f5f818@rock-chips.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/290.71.86
+X-ZohoMailClient: External
 
-Hi Biju,
 
-Thanks for your patch!
+--q5tkxria2nmblprg
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 2/4] pmdomain: rockchip: fix clock leak on domain probe
+ failure
+MIME-Version: 1.0
 
-On Tue, 22 Sept 2026 at 06:28, Biju Das <biju.das.jz@bp.renesas.com> wrote:
-> Rename the num_channels member of struct rzg2l_adc_hw_params to
-> max_channels, as it represents the maximum channel supported by
+Hi,
 
-... maximum number of channels...
+On Sun, Sep 20, 2026 at 09:15:52AM +0800, Shawn Lin wrote:
+> Hi Sebastian
+>=20
+> =E5=9C=A8 2026/09/19 =E6=98=9F=E6=9C=9F=E5=85=AD 8:13, Shawn Lin =E5=86=
+=99=E9=81=93:
+> > Hi Sebastian
+> >=20
+> > =E5=9C=A8 2026/09/19 =E6=98=9F=E6=9C=9F=E5=85=AD 1:21, Sebastian Reiche=
+l =E5=86=99=E9=81=93:
+> > > Hi,
+> > >=20
+> > > On Fri, Sep 18, 2026 at 08:07:36PM +0800, Shawn Lin wrote:
+> > > > When of_clk_get() failed in the middle of the loop, the references =
+of
+> > > > the clocks acquired so far were leaked instead of being released by
+> > > > the error path.
+> > > >=20
+> > > > Fixes: d909072d0521 ("soc: rockchip: power-domain: use clk_bulk API=
+s")
+> > > > Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+> > > > ---
+> > >=20
+> > > Right, but this should switch
+> > >=20
+> > > pd->clks =3D devm_kcalloc(...);
+> > >=20
+> > > to
+> > >=20
+> > > pd->clks =3D devm_kzalloc(...);
+> > >=20
+> > > at the same time to ensure that clk_bulk_put() does not run over
+> > > non-initialized data. Otherwise
+> >=20
+> > Good catch, will improve it in v2.
+> >=20
+>=20
+> I was too quick to response, but didn't looked into devm_kcalloc, just
+> guess it didn't zero the data from the name. However it does zero the
+> data by passing in __GFP_ZERO. So I need to respin v3 and drop
+> devm_kzalloc change.
 
-"the maximum channel" (aka singular "max_channel") would be equal to
-the maximum number of channels minus one.
+Sorry about that detour.
 
-> the ADC hardware rather than a count of channels currently in use.
->
-> No functional change intended.
->
-> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+Greetings,
 
-> --- a/drivers/iio/adc/rzg2l_adc.c
-> +++ b/drivers/iio/adc/rzg2l_adc.c
-> @@ -62,7 +62,7 @@
->   * @adsmp_mask: ADC sampling period mask (see ADM3 register)
->   * @adint_inten_mask: conversion end interrupt mask (see ADINT register)
->   * @default_adcmp: default ADC cmp (see ADM3 register)
-> - * @num_channels: number of supported channels
-> + * @max_channels: the maximum channel for the ADC
+-- Sebastian
 
-"maximum number of channels", to avoid confusion.
+--q5tkxria2nmblprg
+Content-Type: application/pgp-signature; name="signature.asc"
 
->   * @adivc: specifies if ADVIC register is available
->   */
->  struct rzg2l_adc_hw_params {
+-----BEGIN PGP SIGNATURE-----
 
-Gr{oetje,eeting}s,
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmqylLUACgkQ2O7X88g7
++ppJ/g/9F/SNd3BhsI5ZrZp4u5k9pKbGJhgXPwsDBEqStk4Ya9bfB1Yyvbi73Pxp
+iXn29jlgHJfkySob1TY9drXu0zUvfkYN+f/qitKodyC7LiIrcxMhETy3echyp9G7
++sR/CcY99MCYksk+s4yzMWXRO5cuFcwLYcuHk1YN1Q5/hpfnp+aUEhWrDdzE7Q5Q
+DAZ1iYkrDT8fvYeY9JHlvCEF92KMKqybcEPCCiLQAWPR3IEAnfGvJkFmV5pAme9p
+w42yj4TJUkVRVjR3hFVYDLB2Vw0VR1T7541oc5lvGxUNiLNQWk/esSYN5T2dIk21
+6N2s7AbQ4XmBg//YVO/Qyf7QAXMPOqaVhLQo1dQAgSqxKsutsMlnaBfi3pIC2d2O
+Zbb9WQ66iKzX8F5rqUPjbRsnJDLc94HvZYq+HCqc8Uq297jfVthyC3UbkeTnbewg
+fF3xe8Ra4GOr/k2z70vPLySJXRQEzTB9mqju5SahcQ/4JH4Z0SQz06TdoixDb4gJ
+sy9PpU80gL2FcK1l7ttYuazjqIqUCCTbBH7XHz5L2T/wowWuWHuTKFLfisEAGhHg
++KCqogjFJd2PR2/dEcquwwX1wgMYMb1nImjTLstOk7hf5H+SpAnuS6eI6Gp8cRTW
+EPQuECwtF/LhjuoWKjXezBoIjtV9F8CLYyUrDQOwXRqEDOLwP1w=
+=fNV2
+-----END PGP SIGNATURE-----
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--q5tkxria2nmblprg--
