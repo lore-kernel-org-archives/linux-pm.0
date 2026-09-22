@@ -1,318 +1,166 @@
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [207.46.229.174])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 548CC3D6CCA;
-	Tue, 22 Sep 2026 08:12:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=207.46.229.174
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790064734; cv=none; b=YF394gJ092VAqZdd/pNQ5BL6R54E7J7J6wvOgyfcp4M1nGhqTrXQ0KMEet6alu7fAdTaHGiyBeDzMszfgL+2lN2z+pDSwjI25NqNzoZpdNuLyIDdFdzd5r34oawBfM/KaRXhaaarjGtKg50dkmnNXd6xNsXTTe+GiU6hnQLMLWk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790064734; c=relaxed/simple;
-	bh=3uY1ZzQFjuNnByobm1ruIq7eFhX6iux2RNyqlgkn5iI=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=tGqsXyAE1IVk9EnO0CGOajzKeOfF/dUCaSBW7KW9B4E/x3YDMDSFbkiknIq2vHoYAiIxbE5oHY5FB2s7dAWkLTjfxX1XnOceTpzyMm6nFTBP48gKp53VZB5B81uSMJE1mVVv8qi7uRFM73Id+/THoaawrNFcAgs/1sXBTgHUFBA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=207.46.229.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
-Received: from zju.edu.cn (unknown [10.98.66.117])
-	by mtasvr (Coremail) with SMTP id _____wD3SGREOLJqY5MtAQ--.1323S3;
-	Tue, 22 Sep 2026 16:11:49 +0800 (CST)
-Received: from localhost.localdomain (unknown [10.98.66.117])
-	by mail-app2 (Coremail) with SMTP id zC_KCgAnl8xDOLJqObySBA--.33459S2;
-	Tue, 22 Sep 2026 16:11:48 +0800 (CST)
-From: Fan Wu <fanwu01@zju.edu.cn>
-To: rafael@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Fan Wu <fanwu01@zju.edu.cn>,
-	stable@vger.kernel.org,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Song Li <songl@zju.edu.cn>
-Subject: [PATCH] PM: EM: Fix use-after-free of perf domain in netlink doit handlers
-Date: Tue, 22 Sep 2026 08:10:52 +0000
-Message-Id: <20260922081052.321581-1-fanwu01@zju.edu.cn>
-X-Mailer: git-send-email 2.34.1
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022098.outbound.protection.outlook.com [40.107.75.98])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CB1D530E09;
+	Tue, 22 Sep 2026 08:44:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.98
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790066666; cv=fail; b=dsdepLpRXqyQUrGjin4gDC/zxxgHESn9nvPxx48OK0JpArwj97cXa8zVRjMSUyfdLAYbCM1nB66nUSrc/hnU74w2a6E6jbVEiKQwgylAI6b5EZ7zAe0sUh/+t6XU3U9gymQcM2F09XPI2r5gSskn0TDYcuMsRlZzBeQYrwEyK88=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790066666; c=relaxed/simple;
+	bh=nA/yjDV5Jd2dZmy/gLWSQgXkAjJ9dxN5yKPYf14B5pk=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=lK0631TDPy0zVKoaNshhfJ/YuzSbFAOo3MgWzsIkUo/ts2ssPyCCXNGGniLaqw93YzZpaqwbKZRTKE3dPbM05Gv89TZNG8c5U9DiCkOBWWwlLcpTp0kRdM+y5UAnp0zMDJy/C1ZZeQPWT8drf6K9f9dgCxE+lcwF/rG8l6wk0sE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com; spf=pass smtp.mailfrom=amlogic.com; dkim=pass (2048-bit key) header.d=amlogic.com header.i=@amlogic.com header.b=KOSc34d1; arc=fail smtp.client-ip=40.107.75.98
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amlogic.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=amlogic.com header.i=@amlogic.com header.b="KOSc34d1"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=DFvvbbuC27l5zr5yoK1Q1T8Mjjeiz6Uzyvz5V+mJd7obMjvi2nPNosnwtQK+cK5nfTsNp0lslCmidQj0kptTRMzkinhSkHyr4+fZO0KDp6fs1/3T1RtKuioeq+wPNG1b8NJyI0FugoQNfW+N3+2VpNWEWx1ao4vVYleOlfmvAvczykCAJmyg7cyNVrABmNf8riUPyisMiInGQdm0W9/LM3yyGVuhgasq/r5aJo1pTLMrrms7usOHtkau4pnChASzVUgI/MjQQBxKYHe/ZHFuVS9yQG7qf/7CRF73ZK7IBxZUp+tUsVzaeWz72wVqNLq33DVfrs+GBLxXCDAy33nmZw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=T5zJl0gGGETHWu3U5rcJmI1eY+ktAKf3KrxZ/OniHvk=;
+ b=moroVeFNKa39Zz0EHZnCaHk3sLHomWeRzB0t0Sua1hYYu6jy5kEKb4y8ytP4a32sfkPlyeb33g1CWq1rtVgQXi3Yo2VlfNoa0FRHXOakjRCiJauwd52DYwQh7l2kqk9jxyoS/pcL6cwPG9kM3/0UH87+2Zz015jMz/DmCFfIHYfZDY/uMf+AVapX0169zVTYAN89hAjjqcV9DNl6vdQcus+/Kf1lv5nx+GkxTgefeKC5COnuLXnnr/kvRIvqAWR79xJxBZ6r7PJrKDpoxBwc9F9B6Qp5AgBc+JiG5U+VcHkxLIBIMXlmacegb4wWxmS00V5l2hglZx6Q9kAD9pmH8w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amlogic.com; dmarc=pass action=none header.from=amlogic.com;
+ dkim=pass header.d=amlogic.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amlogic.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=T5zJl0gGGETHWu3U5rcJmI1eY+ktAKf3KrxZ/OniHvk=;
+ b=KOSc34d1CvLs+vkZG0+z+zTG6BEB2VgaIjz5ZJXWzNosFNKNde+6XB2RCjpdK10ODKBFV0Ra/E8t9TrdnSQ/iDOGrgTxZDZczOem14RsD3GOgwDpOXZk8DUTzYpK0HLOvb1JvT+QWyi9kv8p5othjWzORPsPiCSu03df7d4lP3coylkZNhJgdWoi6KGyA5srHmnYzOmC1OKgvaWo9F1Vnh7/m6u9Scfph4oBHLSJtKIPfNhm3LI8Tso580HUxaMHhRuzjZV7qI4Zac4+yZzZ4y0KZP2skl5iXk5FXvwUpbDNzOVqRLzYKwniNaC9J4udonnfjnmJ7JGeoXTPI5y7NA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amlogic.com;
+Received: from SG2PR03MB6416.apcprd03.prod.outlook.com (2603:1096:4:17f::12)
+ by KU2PPF5FB3746AA.apcprd03.prod.outlook.com (2603:1096:d18::412) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.16; Tue, 22 Sep
+ 2026 08:44:19 +0000
+Received: from SG2PR03MB6416.apcprd03.prod.outlook.com
+ ([fe80::e7e9:94d6:830a:5222]) by SG2PR03MB6416.apcprd03.prod.outlook.com
+ ([fe80::e7e9:94d6:830a:5222%3]) with mapi id 15.21.0428.015; Tue, 22 Sep 2026
+ 08:44:19 +0000
+Message-ID: <5cae3485-47cf-47eb-9757-de765b485961@amlogic.com>
+Date: Tue, 22 Sep 2026 16:44:14 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: amlogic: Keep Amlogic A9 ETH domain always on
+To: Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ xianwei.zhao@amlogic.com
+Cc: Ulf Hansson <ulfh@kernel.org>, Neil Armstrong
+ <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>,
+ Jerome Brunet <jbrunet@baylibre.com>, linux-pm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+References: <20260914-a9-pwr-eth-v1-1-752005131135@amlogic.com>
+ <CAFBinCCgvMbM5zf8OXFhjNRWjDMTjAVPu_BBJf1GRKp7JPqk=A@mail.gmail.com>
+From: Qingpeng Yang <qingpeng.yang@amlogic.com>
+In-Reply-To: <CAFBinCCgvMbM5zf8OXFhjNRWjDMTjAVPu_BBJf1GRKp7JPqk=A@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: TYCP301CA0002.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:400:386::20) To SG2PR03MB6416.apcprd03.prod.outlook.com
+ (2603:1096:4:17f::12)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zC_KCgAnl8xDOLJqObySBA--.33459S2
-X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
-X-CM-DELIVERINFO: =?B?xWOwzwXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
-	sfncGSG+szpQCInt5Y8rbJUI2uaDNMb7vQ75MmoQ9iB71T+wILGpmjwP10e21M2U3fDg67
-	kMmEGEwP0XnGFdBH/aLN5RPxYw6l01w8CbPzC/8w
-X-Coremail-Antispam: 1Uk129KBj93XoW3Xw1xZr4DAw47KF43Kw4UAwc_yoW3XF47pa
-	y5Cr9rXr40qrWjv3WIkF18uFyayryrXr42v3y3Kws3Ar1qqrZ8ua1YgF4j9FyYyryxWF1a
-	yrsFqFW3Cw17KacCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUU9lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Cr1j6rxdM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v2
-	6rxl6s0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6x
-	kI12xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v2
-	6r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2
-	Ij64vIr41lF7xvr2IYc2Ij64vIr40E4x8a64kEw24l42xK82IYc2Ij64vIr41l4I8I3I0E
-	4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGV
-	WUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_
-	Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rV
-	WUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4U
-	JbIYCTnIWIevJa73UjIFyTuYvjxU2LIDUUUUU
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SG2PR03MB6416:EE_|KU2PPF5FB3746AA:EE_
+X-MS-Office365-Filtering-Correlation-Id: 34026580-adb6-4210-0128-08df1885b0f8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|23010399003|376014|11063799006|56012099006|4143699003|10067099003|6133799003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	/12evLpMKtTMNiJgGnxp6w4kaMUFDUstw53sysa/6efUjX0giTIkNH0p6n0CM9k+FRAJYO1WsQlPzMz3tzPpgIE0CQJgpRDwB+NOO2a2AIveLMKsGrkXOAtxeKimZp6Xo7XKEHjVAih7nXxvEkMp/RWBL6mdflIY7kI0Yyy+tEX/RbQWvVTBYUrst5O7ET1wdEDBHzVpVc/+8qb/waH/rxtcHBk8YYf8zEuTVigMr/CgKOOk6QZ+vJ+RUMeVCROp5djo2y6pm8IwqZaA0/tnR3+PEzMLGya2mgB2808vZ4D24cGTBQmwSfk7oW26eiOy4ezdQz2XgkcPhGnU6JbcgH+Bg79BNMoyMhrW2uS+YjHGFh0dYO30wdpWNSLp3fDcSaimdn/dWl8aQggqON1a0GWPZTiql3BFnXP7KkXEXgNvpIcPjOtUDhGncZkn1w/Mlkr6ewNhUmV5J9elHDjZ9W7FqLaxgBr2jygMguA7fGjL4y1/euv/xrM5LFnMMh9cRvsqT+WbHslpk60J701Jm8wEAG9JnGh+ULuyZaAPuBHJ3bjGP+9l9ojMw+X2ocJhWuij0NqT0R8L5tKhrzdcwCPP+gkAPS1JZ6lgrcx+T4PcQnbrBZr2bIi1DQzvywQO9YS9qO7WVpZgZES40tA2yCglYyeoQif+gwf/Te36e7I=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SG2PR03MB6416.apcprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(11063799006)(56012099006)(4143699003)(10067099003)(6133799003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?T0RqWGlCVEpjQTlEQjlwcEI4YldxNFpPNG5vbWxYT2Z5QmM5cEpxbjdabjNC?=
+ =?utf-8?B?ZDdrWmlNeWxPWUFyenlSWXVIeHB3akU1ZUxYUDhoblZ5K2w4N0NHVFdMWWwx?=
+ =?utf-8?B?SFU3NEk5cklKSTVsSS9Kb29weEVFT3ZZQ2pGSDJ4SE5TMlVRUWdqenh6akp6?=
+ =?utf-8?B?RllDN0NVZWI0RitrSmd5dVpPbDQzNEk1b1FRc212ZzlzZGZ4TkhUeHR1NUY2?=
+ =?utf-8?B?c1lkMk1sWU9OWkswRVc4SlRPbDBYY25NNUZ5YW95N25NYXlzVk1ibHY0cEU1?=
+ =?utf-8?B?UnB4NFhrY0JaOFhSSGN6YTJCNTF3U1B1ekZTbjA0YlZqZWM4dDV6RUo0ZUJH?=
+ =?utf-8?B?NTAxUTVHb2FHa0dSQTJ0ZnlWRStLbnB0QXFjQW5sSG80eU1tN3pWT3orYjJy?=
+ =?utf-8?B?NldSZ3NuU2VQeU0wM2FXdVJabkpEZlVlNGRTNGhuZzJrK3B2WjNpTUVNL1Ns?=
+ =?utf-8?B?djN4ZktMNXBadDZ4RURQN1dtY3p6aG9YZ3RtaXRGb1paSUoxTU94ZkM3YW00?=
+ =?utf-8?B?bjNsdjR1Y3dzNE5LejNyNENKZEZCYUtWQk9ybWFabDVHMStWTkcwYXNaL1p3?=
+ =?utf-8?B?VXppRHQ5MTVQQVZIRldWcG1sbjBrV0Zkak5mUjUrSlV1ZFBJbTQ3eFlBR2dw?=
+ =?utf-8?B?ekVqNC9wM0NUNzVpTXpFelE3bjYrb3dqMytrVFhvRDZSS3k2QWR1b0ZUYjNX?=
+ =?utf-8?B?TkgyL0dtS1lWeW5Mc3B4SHI3dTJTODBZSE1GSHUvSEkyVG1qeVRic3lTeU1a?=
+ =?utf-8?B?V3VUWHB6Q3l6bFpNRjAxN0RLUlVGQ2FvWGFoY0dOUS9QRm0xN00yQlJwZ0Ur?=
+ =?utf-8?B?UlcrUURPbW45end4RzE3OGljckxkME0zby9nZnh2ZUE1aGFUN3BXVU0rT1Ji?=
+ =?utf-8?B?TnJoMkVSOVVkKzZCd0VvTUczMzFZZ0VqVEpOSytHWW91djNYYklmbVdzKzJx?=
+ =?utf-8?B?WDJWUUZzeVJ0VC9jN0twSWs0MFZXS3JqSWsxK3FJdGhucTlkbXR2N3FjWE16?=
+ =?utf-8?B?V0xrWTlmcXpiaWZlRXBFSmNVcll3SDJlWG5TZ2I0dWR1MUJhNVcwcSt2WE9D?=
+ =?utf-8?B?TkxXS0FKVzFMamtRU0orU2hRYTE3TTRCdmVTRE4ya05wMUk3UmZHUk04NDEv?=
+ =?utf-8?B?RE03R3BzTXQvNkladTBjRlJCR2ZZa2g4bWxwTE9jTy82MDVQRTVKTndsVFJR?=
+ =?utf-8?B?dVEvbTZobnc2Wmp2cHZoYW9BaDFSWWlJTzNlb3JxUStNOEs5QU5iUE0yWjdI?=
+ =?utf-8?B?YTQ2SHFueHpYRSsyL09PdGZVamt1eEJaMlFYR3dYeGU3TnZjK3E1dkk5YXc2?=
+ =?utf-8?B?b2s1ZmNpVDZEbjIzcnFmRENudWlEcHM1OFc1b2NRM3dUQ2t6TW9ISnQ2S21k?=
+ =?utf-8?B?ZVUvbDhHSUtUN2ZCVFVYWmVoN1FSL2FYaFdoQU13cXJTOGxzUlFIM3lvUmg2?=
+ =?utf-8?B?aTFLMmFrY0dpQk4vc0lxaVNjR2VRODd2MEk0RzdRalFJTmxuRnU2TXR0Vm1v?=
+ =?utf-8?B?M0xRY0JaOWxBVlpvL1ZobE0zaEF2bkwrRVlzTFppTHdwSGJHYXBoVTBZZmc5?=
+ =?utf-8?B?NkFDdjNtelNWcHZKc0xoNG1VUUhuelhEcFBQSHd6RVNTQlA4TS93a2JKRzFt?=
+ =?utf-8?B?Nmdlc0lONkFjdjV4YnRuemlRczR0RkdhMm5kS3loR05FMlJLREVGYisvaXg3?=
+ =?utf-8?B?all4WWxGcURMakZjaENaWWkxMjZhbDFWcTEzSXZ6WFhlUUgydWVrKzM0bWg5?=
+ =?utf-8?B?OTUyU2RNczBhTFg5ZGpNK1BaWEVidFB4Q2NFcXJ6OC9Qa3duWW5zeHBzcDZn?=
+ =?utf-8?B?OUVSY0p1VmVScUdaenYzdkZ6VTBqM0c1bFlJWStIa0Z5Z2ZWQmZtVHNTaUNw?=
+ =?utf-8?B?Z2MvdDZmUngwNFZ4WElzWlVRTUZFNlRVU29LYWlLTGJwWjl2ejMxdklGS2hD?=
+ =?utf-8?B?TEhKZmRHM3kvV3orSXZkOTZ3Zmw1U3Q4Z0NTZWEzY2dDTjVZQTUxdW1oVlFl?=
+ =?utf-8?B?YnZTbHlZTUhXSXVFNXFJNFJCQnhlRi90K2wzOVFHZy9QN3BYZUI0UHREaEZ4?=
+ =?utf-8?B?bzNzbE1VNzFwNk0wamZaeS8xTTFiYk1LMkJwUUFWS2FGYm1hUGQvK05USmtR?=
+ =?utf-8?B?R2xkRm5jdkZmNHhHOE5TeE5PZ3MyblN6SUMxWG9HbWlabVEwZ3pHZGhmNGF0?=
+ =?utf-8?B?NXBITXBWNS96ZUdZVi83bnY5VWxOaVREYVNiR1VUdnBjYXBqditUUVgvQlY1?=
+ =?utf-8?B?WVNkMXFzMVFZK2R0cFhZQjZpYXN6ZVpUOWxaSEJTZ094VXc2V0RMVjRWUkxk?=
+ =?utf-8?B?alBTZHk0aWtvR2NocHg1TWRIU01WYkRScDhVbURQV2hRRTVPYzk1cUZZWXRr?=
+ =?utf-8?Q?Pytnbr/lYdly6jBM=3D?=
+X-OriginatorOrg: amlogic.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 34026580-adb6-4210-0128-08df1885b0f8
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR03MB6416.apcprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2026 08:44:19.0106
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 0df2add9-25ca-4b3a-acb4-c99ddf0b1114
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: cOOoBCxEbSw1WRqZ2Xt+CcZCB97lejEjUM/fhU/5oGSOKDnRZGJFtMtelLbbcadWNPZZWGprjDvqB9r2NlXQbOextdOt41DURQHHQi1m/W0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: KU2PPF5FB3746AA
 
-The doit handlers dropped em_pd_list_mutex before dereferencing the
-perf domain, so a concurrent device unregister could free it while the
-reply was being built.
+Hi Martin,
+     Thanks for your review.
 
-Encode the reply from em_perf_domain_for_id() callbacks, which run
-under the mutex, and allocate the skb outside of it, like the dumpit
-path already does.
+On 9/14/2026 6:40 PM, Martin Blumenstingl wrote:
+> 
+> On Mon, Sep 14, 2026 at 10:56 AM Xianwei Zhao via B4 Relay
+> <devnull+xianwei.zhao.amlogic.com@kernel.org> wrote:
+>>
+>> From: Qingpeng Yang <qingpeng.yang@amlogic.com>
+>>
+>> Mark the A9 ethernet power domain as always-on since it is required
+>> for ethernet online wakeup and must not be powered down.
+> Is "online wakeup" a wake up from suspend?
+> If so: is the Ethernet controller listed with the "wakeup-source" flag
+> in .dts{,i}?
+> I'm wondering if the pmdomain and/or power (wakeup) frameworks in
+> Linux have other ways of managing this case (e.g. only keeping the
+> power domain active if needed).
+> 
 
-This issue was found by an in-house static analysis tool.
+Yes, "online wakeup" here means wakeup from system suspend.
+The Ethernet controller is not currently listed with the "wakeup-source"
+flag in the .dtsi.
 
-Fixes: 380ff27af25e ("PM: EM: Add dump to get-perf-domains in the EM YNL spec")
-Fixes: f2d2946eaa5c ("PM: EM: Implement em_nl_get_pd_table_doit()")
-Cc: stable@vger.kernel.org
-Cc: Lukasz Luba <lukasz.luba@arm.com>
-Assisted-by: Codex:gpt-5.6
-Co-developed-by: Song Li <songl@zju.edu.cn>
-Signed-off-by: Song Li <songl@zju.edu.cn>
-Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
----
- kernel/power/em_netlink.c   | 122 +++++++++++++++++++++++-------------
- kernel/power/em_netlink.h   |   8 ++-
- kernel/power/energy_model.c |   8 ++-
- 3 files changed, 87 insertions(+), 51 deletions(-)
+After internal discussion, we have decided not to support Ethernet
+wakeup for now. So we will drop the always-on change for the Ethernet
+power domain in this series.
 
-diff --git a/kernel/power/em_netlink.c b/kernel/power/em_netlink.c
-index 4d4fd29bd2be..1f68d456a713 100644
---- a/kernel/power/em_netlink.c
-+++ b/kernel/power/em_netlink.c
-@@ -95,41 +95,62 @@ static int __em_nl_get_pd_for_dump(struct em_perf_domain *pd, void *data)
- 	return ret;
- }
- 
-+struct em_nl_doit_ctx {
-+	struct genl_info *info;
-+	int cmd;
-+	struct sk_buff *msg;
-+};
-+
-+static int __em_nl_get_pd_doit_fill(struct em_perf_domain *pd, void *data)
-+{
-+	struct em_nl_doit_ctx *ctx = data;
-+	void *hdr;
-+
-+	hdr = genlmsg_put_reply(ctx->msg, ctx->info, &dev_energymodel_nl_family, 0,
-+				ctx->cmd);
-+	if (!hdr)
-+		return -EMSGSIZE;
-+
-+	if (__em_nl_get_pd(pd, ctx->msg)) {
-+		genlmsg_cancel(ctx->msg, hdr);
-+		return -EMSGSIZE;
-+	}
-+
-+	genlmsg_end(ctx->msg, hdr);
-+	return 0;
-+}
-+
- int dev_energymodel_nl_get_perf_domains_doit(struct sk_buff *skb,
--					      struct genl_info *info)
-+					     struct genl_info *info)
- {
--	int id, ret = -EMSGSIZE, msg_sz = 0;
--	int cmd = info->genlhdr->cmd;
--	struct em_perf_domain *pd;
-+	struct em_nl_doit_ctx ctx = {
-+		.info = info,
-+		.cmd = info->genlhdr->cmd,
-+	};
- 	struct sk_buff *msg;
--	void *hdr;
-+	int id, ret, msg_sz = 0;
- 
- 	if (!info->attrs[DEV_ENERGYMODEL_A_PERF_DOMAIN_PERF_DOMAIN_ID])
- 		return -EINVAL;
- 
- 	id = nla_get_u32(info->attrs[DEV_ENERGYMODEL_A_PERF_DOMAIN_PERF_DOMAIN_ID]);
--	pd = em_perf_domain_get_by_id(id);
--	if (!pd)
--		return -EINVAL;
- 
--	__em_nl_get_pd_size(pd, &msg_sz);
-+	/* Encode under em_pd_list_mutex, like the dumpit path. */
-+	ret = em_perf_domain_for_id(id, __em_nl_get_pd_size, &msg_sz);
-+	if (ret)
-+		return ret;
-+
- 	msg = genlmsg_new(msg_sz, GFP_KERNEL);
- 	if (!msg)
- 		return -ENOMEM;
- 
--	hdr = genlmsg_put_reply(msg, info, &dev_energymodel_nl_family, 0, cmd);
--	if (!hdr)
--		goto out_free_msg;
--
--	ret = __em_nl_get_pd(pd, msg);
-+	ctx.msg = msg;
-+	ret = em_perf_domain_for_id(id, __em_nl_get_pd_doit_fill, &ctx);
- 	if (ret)
--		goto out_cancel_msg;
--	genlmsg_end(msg, hdr);
-+		goto out_free_msg;
- 
- 	return genlmsg_reply(msg, info);
- 
--out_cancel_msg:
--	genlmsg_cancel(msg, hdr);
- out_free_msg:
- 	nlmsg_free(msg);
- 	return ret;
-@@ -148,19 +169,6 @@ int dev_energymodel_nl_get_perf_domains_dumpit(struct sk_buff *skb,
- 	return for_each_em_perf_domain(__em_nl_get_pd_for_dump, &ctx);
- }
- 
--static struct em_perf_domain *__em_nl_get_pd_table_id(struct nlattr **attrs)
--{
--	struct em_perf_domain *pd;
--	int id;
--
--	if (!attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN_ID])
--		return NULL;
--
--	id = nla_get_u32(attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN_ID]);
--	pd = em_perf_domain_get_by_id(id);
--	return pd;
--}
--
- static int __em_nl_get_pd_table_size(const struct em_perf_domain *pd)
- {
- 	int id_sz, ps_sz;
-@@ -245,34 +253,58 @@ int __em_nl_get_pd_table(struct sk_buff *msg, const struct em_perf_domain *pd)
- 	return -EMSGSIZE;
- }
- 
-+static int __em_nl_get_pd_table_size_cb(struct em_perf_domain *pd, void *data)
-+{
-+	*(int *)data = __em_nl_get_pd_table_size(pd);
-+	return 0;
-+}
-+
-+static int __em_nl_get_pd_table_doit_fill(struct em_perf_domain *pd,
-+					  void *data)
-+{
-+	struct em_nl_doit_ctx *ctx = data;
-+	void *hdr;
-+
-+	hdr = genlmsg_put_reply(ctx->msg, ctx->info, &dev_energymodel_nl_family, 0,
-+				ctx->cmd);
-+	if (!hdr)
-+		return -EMSGSIZE;
-+
-+	if (__em_nl_get_pd_table(ctx->msg, pd))
-+		return -EMSGSIZE;
-+
-+	genlmsg_end(ctx->msg, hdr);
-+	return 0;
-+}
-+
- int dev_energymodel_nl_get_perf_table_doit(struct sk_buff *skb,
--					    struct genl_info *info)
-+					   struct genl_info *info)
- {
--	int cmd = info->genlhdr->cmd;
--	int msg_sz, ret = -EMSGSIZE;
--	struct em_perf_domain *pd;
-+	struct em_nl_doit_ctx ctx = {
-+		.info = info,
-+		.cmd = info->genlhdr->cmd,
-+	};
- 	struct sk_buff *msg;
--	void *hdr;
-+	int id, ret, msg_sz;
- 
--	pd = __em_nl_get_pd_table_id(info->attrs);
--	if (!pd)
-+	if (!info->attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN_ID])
- 		return -EINVAL;
- 
--	msg_sz = __em_nl_get_pd_table_size(pd);
-+	id = nla_get_u32(info->attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN_ID]);
-+
-+	ret = em_perf_domain_for_id(id, __em_nl_get_pd_table_size_cb, &msg_sz);
-+	if (ret)
-+		return ret;
- 
- 	msg = genlmsg_new(msg_sz, GFP_KERNEL);
- 	if (!msg)
- 		return -ENOMEM;
- 
--	hdr = genlmsg_put_reply(msg, info, &dev_energymodel_nl_family, 0, cmd);
--	if (!hdr)
--		goto out_free_msg;
--
--	ret = __em_nl_get_pd_table(msg, pd);
-+	ctx.msg = msg;
-+	ret = em_perf_domain_for_id(id, __em_nl_get_pd_table_doit_fill, &ctx);
- 	if (ret)
- 		goto out_free_msg;
- 
--	genlmsg_end(msg, hdr);
- 	return genlmsg_reply(msg, info);
- 
- out_free_msg:
-diff --git a/kernel/power/em_netlink.h b/kernel/power/em_netlink.h
-index 583d7f1c3939..bc98a3c278b9 100644
---- a/kernel/power/em_netlink.h
-+++ b/kernel/power/em_netlink.h
-@@ -12,7 +12,8 @@
- #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_NET)
- int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
- 			    void *data);
--struct em_perf_domain *em_perf_domain_get_by_id(int id);
-+int em_perf_domain_for_id(int id, int (*cb)(struct em_perf_domain *, void *),
-+			  void *data);
- void em_notify_pd_created(const struct em_perf_domain *pd);
- void em_notify_pd_deleted(const struct em_perf_domain *pd);
- void em_notify_pd_updated(const struct em_perf_domain *pd);
-@@ -24,9 +25,10 @@ int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
- 	return -EINVAL;
- }
- static inline
--struct em_perf_domain *em_perf_domain_get_by_id(int id)
-+int em_perf_domain_for_id(int id, int (*cb)(struct em_perf_domain *, void *),
-+			  void *data)
- {
--	return NULL;
-+	return -EINVAL;
- }
- 
- static inline void em_notify_pd_created(const struct em_perf_domain *pd) {}
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index e610cf8e9a06..a76089e2ce8c 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -1031,7 +1031,9 @@ int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
- 	return 0;
- }
- 
--struct em_perf_domain *em_perf_domain_get_by_id(int id)
-+/* Run @cb on the matching domain with em_pd_list_mutex held. */
-+int em_perf_domain_for_id(int id, int (*cb)(struct em_perf_domain *, void *),
-+			  void *data)
- {
- 	struct em_perf_domain *pd;
- 
-@@ -1040,9 +1042,9 @@ struct em_perf_domain *em_perf_domain_get_by_id(int id)
- 
- 	list_for_each_entry(pd, &em_pd_list, node) {
- 		if (pd->id == id)
--			return pd;
-+			return cb(pd, data);
- 	}
- 
--	return NULL;
-+	return -EINVAL;
- }
- #endif
-
+> 
+> Best regards,
+> Martin
