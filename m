@@ -1,28 +1,28 @@
-Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazon11011041.outbound.protection.outlook.com [40.107.74.41])
+Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazon11010054.outbound.protection.outlook.com [52.101.228.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 907693EB105;
-	Tue, 22 Sep 2026 04:28:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.74.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BB253ED5A1;
+	Tue, 22 Sep 2026 04:28:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.228.54
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790051303; cv=fail; b=aS/1+gVmMZ+ECJ/08vJiMwoQcvQAUMOx3oG7iDYyZIXIydhHkAf01xc3Sw/XJd1twdAnwUtYwnfRMLnEeWb9u56gTAhIMQe/HQAfnT3fg+b35nGzcu/gPutknW/FTHpO7SzWdzetqI9kKcxVfw5oXwCiwQgsX7OOTnsylbo69no=
+	t=1790051313; cv=fail; b=Ek50qgkW7ACH8YNPWIK7+56esHl8hDQYrW2W1fj0xVGTiuYh4AofgM6VZzDVRZB0HIrvG4kXtwA6brCPVvA3kmGBNdBUMmwOvm5IdCGitV3PpxAvyo2j/XlE7cRZDn6XHrHuPvmd98sgQC+0G7uJ17Z+NgKNOrgHnxdfeqGVBWY=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790051303; c=relaxed/simple;
-	bh=eiUaBU+b+BjbfvHLDjLsxjCaZ1NX09J/tLVQ/eKu8q0=;
+	s=arc-20240116; t=1790051313; c=relaxed/simple;
+	bh=rWuX1v+1Btjymp+G1JWCUTeDaVDhlFPqFLT8fR3q0ZY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kRhXnLGSg+gA5YixSjHq2zzJ25MkzH/Wj5qQJXMtmOyZvCnyyZRL+DUwheeExxqos7dgamGs6IBpZTvx6OWYKwmZ2Igs/v2xrnX5NgpGhfR7/saGgNnCITBPBSzraP3BAttQcorMpAOuQYqzfTl+xpla57l7E4GrZIynpqYso2E=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; dkim=pass (1024-bit key) header.d=bp.renesas.com header.i=@bp.renesas.com header.b=VbNBaMJG; arc=fail smtp.client-ip=40.107.74.41
+	 MIME-Version:Content-Type; b=LeTb8Aof/kpfSfFi1x7wmGBeoXLCzLCuZ6E43RWAhDgyFzJ+fk0CUbXcAEEhtuQZ4M6qngLDxObyLmfI0kIId5WE6RiPWbWo1Xn59j8ycqEopOqJTzZOLZC2bkKp4ZeBLQ5TMEH66nNKco1U6bejHbaP6YPlICH3MUYhYS17RZo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; dkim=pass (1024-bit key) header.d=bp.renesas.com header.i=@bp.renesas.com header.b=woPbtYLj; arc=fail smtp.client-ip=52.101.228.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=bp.renesas.com header.i=@bp.renesas.com header.b="VbNBaMJG"
+	dkim=pass (1024-bit key) header.d=bp.renesas.com header.i=@bp.renesas.com header.b="woPbtYLj"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wg3tWkia7FjWgGSJ6rz3/tR2Rkz9Iv0xTVFXTS8FrYKP/gIRhQYpjZaQ/jR2B5p9ELS2l4gydBa3pOm1rMiOHDosDptI/T1XP37C3ssmLZmzQ3YiOd05myrCSZNx2E5RCiNSbCahRxEn+Q1Wme1KOgxSatGo1dVuMsWozj2QCOiEbM1sl0FFF+EJZDIsBL5+GGN66o0yEYcuK6VGEpY+9usjbwbERNZS8K7be7V4rqhfkeqiX7n2b4Y2myTaK7jGipGG5Z1RishFV/pvrzv4XwcBuZXVgGgl29sI6aqvlNvqnfY5mLjAoMT0C4rWtoJfvlb8GsjzBwBfcjQWquS+cQ==
+ b=XfTX3qjJknGE8UdjLZXWJS5ucQS+e9AUrlSDJlPkYp0mdxL86/1r4MZnZEbUoWcAyWV9RSn7ENJNum08DkP/fvseNA3gGceuJkBsZxDq0WwRnW5A7iFxN7pd+/Ukdp9uqAGbaoXaayFdd7JOuORMah6PRNwzyzKzDt2Vv+4kVYoTwxJRxWX4oqXnCWC/7n73Io3HI0OvmhVTdFgfWoBQxLPuvbAkQCsASiOcptHnoJpHwvhTiQnzzx8n5gYZk7KqI9Xi9j1XCMXaoAmI7UG7OwqqvaNTXnQcHPExbujhH+DxYgWhbp9iEjau4/L+PI/RUODOow5qEEGnVb+FqiOcYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=O1vd2koHcYNjVN9z+9+rt+QOg6V3747MkEW3XMUYnU0=;
- b=LOf0gK3IgUckerSMS79pKRbIctkD49k1fHMesNbpRJDAMIxVPcewr4ILc7EClvZuTTZAJUgLvYY6nSnjvS4DPy8bBCAWeDPRifUTw4B6y+5ULLv9uxlpvs1SEUKn2Qun6OsLGxsfKuzhcOpxMFop3s7rSkfg36Ck/b6yXoT3/ElshW5cxUj4FdXwX/tqWxneyjeuaC6WJ2DMMZ25hKlB4EtjgZRhKATs/gJVsMCEPhwWP+OeZxKNHHuwSlvPifFyq5NJtgsLNAo2CVlQgf1lsELfGQi8nFC1nI5BnYHn6sMJLOs8XEMVblwSHuNZSz34FcDwRoPhVM61GmnPC/0zTQ==
+ bh=xd/oSPpEpPyYR6qP4fYSqGyInGDqXsWcqkzHSYhhlVs=;
+ b=EGgZzmrACaL3W2X2a/w+tXa1+Ou1MsKKL/bkNL3akjxOZcALKrEIF82cnxQx2H0D7AK9RuwSyHjNm/XK0auj7Zcpy90T+pNA3DiWGj6emVKsYeBiKzbDsEQoYMotXHi3GWginde2RETqe/8x0FiaJ5n3nq8GTTmYsZwiXQWW1e/A6V2WoMrKEgPT5OpEM3fZgUQXMn19YI+O+KP+hMLe1QFZFs0PdzJNpAuRFTx2DFgGst5zJ8nR5r7f8aInYyklgsrv/oFk/3AuYDwJ77nv8ovz4J1KZTuLLvElxY99W/azRyFrnnt/IJ5KgiRTsQ3h49JF3LvpKFgAUQZcBWODyg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  8.62.32.50) smtp.rcpttodomain=analog.com smtp.mailfrom=bp.renesas.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=bp.renesas.com;
@@ -30,31 +30,31 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bp.renesas.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=O1vd2koHcYNjVN9z+9+rt+QOg6V3747MkEW3XMUYnU0=;
- b=VbNBaMJGkGQJAdYPZ+B8TL4qy5s8wt1kVZ9nvSSKK20HtD169Rf403t3dkii4TvMvDvigRvaTiddAE6SUffhtkI8WZxu+NZgJSV0fGd1mLyN9zlS2uuGtsNy4/mZ7SI2nf1s1W5TIYGyuLk8RO1BScrZwMcNsRPFMLwUgxEwk/g=
-Received: from TY4P286CA0041.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:2b2::18)
- by OSZPR01MB8204.jpnprd01.prod.outlook.com (2603:1096:604:1a5::5) with
+ bh=xd/oSPpEpPyYR6qP4fYSqGyInGDqXsWcqkzHSYhhlVs=;
+ b=woPbtYLjInMjgO9tokmRGZzpDyV1bLdEz0kju3Zk8C8btLYVhYdUtytLvZT0RGLa0dBjiw1myH3YCWMjUEsv5TReNJ9abIT9tkoTTDhiIKMxF4bMqZ6+NosNqOfBT63xFivQNIoW2Z7NYmiONIBwo1aV9d5LSK89rZJ2o/411c0=
+Received: from OSTP286CA0101.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:219::17)
+ by OS3PR01MB8602.jpnprd01.prod.outlook.com (2603:1096:604:19c::7) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.15; Tue, 22 Sep
- 2026 04:28:16 +0000
-Received: from TYO1EPF00005023.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:2b2:cafe::af) by TY4P286CA0041.outlook.office365.com
- (2603:1096:405:2b2::18) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.13; Tue, 22 Sep
+ 2026 04:28:27 +0000
+Received: from OS1PEPF0000D216.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:604:219:cafe::6c) by OSTP286CA0101.outlook.office365.com
+ (2603:1096:604:219::17) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.16 via Frontend Transport; Tue,
- 22 Sep 2026 04:28:16 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 8.62.32.50)
- smtp.mailfrom=bp.renesas.com; dkim=none (message not signed)
+ 22 Sep 2026 04:28:27 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 8.62.32.50) smtp.mailfrom=bp.renesas.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=bp.renesas.com;
 Received-SPF: Pass (protection.outlook.com: domain of bp.renesas.com
  designates 8.62.32.50 as permitted sender) receiver=protection.outlook.com;
  client-ip=8.62.32.50; helo=ejcrelay005p.adwin.renesas.com; pr=E
 Received: from ejcrelay005p.adwin.renesas.com (8.62.32.50) by
- TYO1EPF00005023.mail.protection.outlook.com (10.167.240.20) with Microsoft
+ OS1PEPF0000D216.mail.protection.outlook.com (10.167.240.23) with Microsoft
  SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.451.8
- via Frontend Transport; Tue, 22 Sep 2026 04:28:15 +0000
+ via Frontend Transport; Tue, 22 Sep 2026 04:28:26 +0000
 Received: from biju-VirtualBox.adwin.renesas.com (ree-0065939.adwin.renesas.com [10.226.92.1])
-	by ejcrelay005p.adwin.renesas.com (Postfix) with ESMTP id 0B37C300028B;
-	Tue, 22 Sep 2026 13:28:05 +0900 (JST)
+	by ejcrelay005p.adwin.renesas.com (Postfix) with ESMTP id 8F690300028A;
+	Tue, 22 Sep 2026 13:28:16 +0900 (JST)
 From: Biju Das <biju.das.jz@bp.renesas.com>
 To: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
 	Jonathan Cameron <jic23@kernel.org>,
@@ -76,9 +76,9 @@ Cc: Biju Das <biju.das.jz@bp.renesas.com>,
 	devicetree@vger.kernel.org,
 	Chris Paterson <Chris.Paterson2@renesas.com>,
 	Biju Das <biju.das@bp.renesas.com>
-Subject: [PATCH v3 6/8] iio: adc: rzg2l_adc: Rename num_channels to max_channels
-Date: Tue, 22 Sep 2026 05:26:58 +0100
-Message-ID: <20260922042707.116378-7-biju.das.jz@bp.renesas.com>
+Subject: [PATCH v3 7/8] iio: adc: rzg2l_adc: Add RZ/G3L ADC support for TSU
+Date: Tue, 22 Sep 2026 05:26:59 +0100
+Message-ID: <20260922042707.116378-8-biju.das.jz@bp.renesas.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260922042707.116378-1-biju.das.jz@bp.renesas.com>
 References: <20260922042707.116378-1-biju.das.jz@bp.renesas.com>
@@ -91,133 +91,68 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TYO1EPF00005023:EE_|OSZPR01MB8204:EE_
+X-MS-TrafficTypeDiagnostic: OS1PEPF0000D216:EE_|OS3PR01MB8602:EE_
 Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 1d753495-75dd-42f5-22ef-08df1861ebda
+X-MS-Office365-Filtering-Correlation-Id: 9ffb48dd-0f55-41af-548b-08df1861f23a
 X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|82310400026|7416014|1800799024|376014|23010399003|18002099003|22082099003|11063799006|10067099003|56012099006;
+	BCL:0;ARA:13230040|1800799024|23010399003|36860700016|82310400026|7416014|376014|56012099006|3023799007|10067099003|11063799006|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	KBAa7FqWS/u7hMXDnmnMf953NMpyYmLlE8hLhhVXzG3LKipxpkH4p3aNR1eSkF1HczLzF7E9q2RSLXd/TQnsZ5yMUTnUjGzWZwcrauuMef0oOv7hDC4u/BZoL7HIh7Fn+0xOmC+uHYg/GR5/kXbokC3n1XzwApo0tpBR7wH9wY0es+6TKQHte6jcA/iOPgA9NCdsi27sJjdHHYJ5MYrNkD4U4aR2v9WXpgAfLmGisFCv4LkwdunriuZZDRzAz4LMgHk2/fhpr9hPxaH+2XZOCuV9ROK/OxmklkKhGkqQ1PELLxk+4ADFKQ/Wz/OVgK5KAmC9n8JtuFckzqi7mSf1WcU74W+INmfsnCXn5gVWYZ9sunnfJT+ZPJb8IinkRM+seQedzA4gOHctNjrup2rBEp35k4eij6H+lqpDH/C96cSW5NoWOnd9P4oZfxpqOn4ICPQLAESpSnxafuxNeacW7GQmaB+7/tx9WbhLNtu0D+DufTCRdDtjm3bpvhR1q10E/Zyw0J5w1ZF1h1S0lkJf+p3TNQc4EgNa1q7Z/y9q5h1UlcSUjzliqQsspqVUOlA5pH4xTIxUk50jT1+t63Dbeoay75LiKw6NCQF9qGy+ojxbSeILpz1iXkEsRBKmlLxltVx89FSlra5gQ3gRamskg52JYNK0t1kKajZxPLmKBYHxp0TpNenh7rjxW+kDM4DSK4B+SpNV+f8k6itR9lV6WQ==
+	/IPYacYIYDAuW1HXyETp1M3U+ehv+ooPlW/pgAd2bAGxpVpa6uzNSfFYZYSqKthgYOnFRhxRZuAnWasxWjwrjFgjE5Q5uWy0GugpGcmVoil0vBnjLtx7MV5T/ZQbsua5WWuLboDtfcKgvDTQLrEsj0de1daCg89yk1OixcAcThUzy+3Y7bS/WI8ohyA/i2OnW7LxNaHGFlpUoho7Yb1VWBpyUUVzz3mkeTN7vFSzfNEIKcExv6gBii2F8jAN19i894RqwwOhOFoyonUHrF2Xg1p3pQMPwjhULm1g4fTKF0Tlgq2g0KJ+GQ7HSvg6r22sDwZ7lcrcr4PkG+2Sz6vwZQX69pMCnn2L80xBdR342uYatCckXHwPTogb4rxzf0NBmSza30kaE3hkt7sLsWR3S9qgZlo8YvcynqgcdyZNz68g7A98KfrzJOZuhJDKM/867/elBCdvvsbnNPpiJ2HfjxYbNMEqbY5ScsdNlMt6GjPAdXEE1cQi2j6vdg/a6NDZT3QT0MxHa6y0Z9rLOPb3cW73oHqxLxs4aGWnNbcnJq+HWgdp0hokswy0g6FYNhHhEZ5pI9/DhWroNFCHrwLcFZi5QmRmbBJjjCz9ldYxdpJAG7TozOHcSKr590LRfA9CXmBzcMrTZp5mD7jQShfy4yu/zWDN+3qoFAoGw4+Nl0bM+wU+KqVl84NCLLn76BRLUlnCHshhWx+jjM3m0kd+sA==
 X-Forefront-Antispam-Report:
-	CIP:8.62.32.50;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ejcrelay005p.adwin.renesas.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(7416014)(1800799024)(376014)(23010399003)(18002099003)(22082099003)(11063799006)(10067099003)(56012099006);DIR:OUT;SFP:1101;
+	CIP:8.62.32.50;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ejcrelay005p.adwin.renesas.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(36860700016)(82310400026)(7416014)(376014)(56012099006)(3023799007)(10067099003)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	RZnds8gJk9JMhrEKd0lGBz9LxEBtt1bLyp4VHhDSF7PFbrSqRLPeO1xtckenqNZLWxduqnpHy67cLS4eoZQx9iipnNL0OPYFr8xJAGwzDrIL5QbeyQ1a8zsewz/6zRa7JtPK12chY6VbaPzlXOqS7AS037TmqOfEyzd0hu5WQ6bByNEhDcDtEoaGX4zLVyZO0HRZ/KxPmdfqWbYJP/KmF40Nr8woiEX1zwOSZg39EWzL+P5QW9kzTils1IvPGJtWojoYXNTlhIddz1ZOrlp0RtgVjM4k1g7cTHyhALhIPUdnHdr8VPlpP/0SF7yh3UYrWxBljEGhW2C4IVBtm6WUgj0Ug/Xd2zT84h8dq35yp7KW+cmRT6Q86A9hsdFXdHnxtEZ01WurVp95C3re9aQw4cZcNFdA2puhK/Ae6jY1Bb5cajZ/n9IPlGYYX9bNOzW/
+	yNuTjwwOubIL88GFgByUfqnoXpWMkBtmLeY/mD8fn6yUcoqZ0kkBtQyxeWRswrQuD5gxB3XWPKXAHJqkgILfAAEmtub3hApWmABaVnpkUekQOyB4OAsZ3vYMFloQbZsKFfrXMmZev9+jNPa8clIF2y+Dy4MxUUfJGoUrOp+jGjZNLp38MiARmIrOHUCfZi7PkZfV9r4ycnd+mSv22IIU2Xv+827nJSN+0M6aPRITH38lHrr4dC8uHbGOy99OORZsdPh9xP81+SNfbg5nowkIqd/JNf66FG/rmcXyrGSKgUlxVUFhFfDWD9yZsAaLwQHTzy13qHRK3kUGPc4JVOFGiVakUFKnJcBFtlH6fAbXR9ufBFHRNGVGtC0l97sIocHzq/dnWY43YzpkUZ8+fjzTVSdUPjm4xOioHXSGc0EgGbJQyqsdarvkuH/w1DFZjYaJ
 X-OriginatorOrg: bp.renesas.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2026 04:28:15.7247
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2026 04:28:26.4079
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1d753495-75dd-42f5-22ef-08df1861ebda
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9ffb48dd-0f55-41af-548b-08df1861f23a
 X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=53d82571-da19-47e4-9cb4-625a166a4a2a;Ip=[8.62.32.50];Helo=[ejcrelay005p.adwin.renesas.com]
-X-MS-Exchange-CrossTenant-AuthSource: TYO1EPF00005023.JPNP286.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthSource: OS1PEPF0000D216.JPNP286.PROD.OUTLOOK.COM
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OSZPR01MB8204
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS3PR01MB8602
 
-Rename the num_channels member of struct rzg2l_adc_hw_params to
-max_channels, as it represents the maximum channel supported by
-the ADC hardware rather than a count of channels currently in use.
-
-No functional change intended.
+Add renesas,r9a08g046-adc1 compatible string and its hardware
+parameters for the ADC1 IP on RZ/G3L, which is dedicated to
+the on-chip TSU (thermal sensor unit).
 
 Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
 ---
-v3:
- * New patch.
+v2->v3:
+ * No Change.
+v1->v2:
+ * No Change.
 ---
- drivers/iio/adc/rzg2l_adc.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/iio/adc/rzg2l_adc.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/drivers/iio/adc/rzg2l_adc.c b/drivers/iio/adc/rzg2l_adc.c
-index 408fbf8c29cc..aaf7e2ceff8a 100644
+index aaf7e2ceff8a..c892e355b739 100644
 --- a/drivers/iio/adc/rzg2l_adc.c
 +++ b/drivers/iio/adc/rzg2l_adc.c
-@@ -62,7 +62,7 @@
-  * @adsmp_mask: ADC sampling period mask (see ADM3 register)
-  * @adint_inten_mask: conversion end interrupt mask (see ADINT register)
-  * @default_adcmp: default ADC cmp (see ADM3 register)
-- * @num_channels: number of supported channels
-+ * @max_channels: the maximum channel for the ADC
-  * @adivc: specifies if ADVIC register is available
-  */
- struct rzg2l_adc_hw_params {
-@@ -70,7 +70,7 @@ struct rzg2l_adc_hw_params {
- 	u16 adsmp_mask;
- 	u16 adint_inten_mask;
- 	u8 default_adcmp;
--	u8 num_channels;
-+	u8 max_channels;
- 	bool adivc;
+@@ -500,8 +500,17 @@ static const struct rzg2l_adc_hw_params rzg3s_hw_params = {
+ 	.adint_inten_mask = GENMASK(11, 0),
  };
  
-@@ -196,7 +196,7 @@ static int rzg2l_adc_conversion_setup(struct rzg2l_adc *adc, u8 ch)
- 
- 	/* Select analog input channel subjected to conversion. */
- 	reg = rzg2l_adc_readl(adc, RZG2L_ADM(2));
--	reg &= ~GENMASK(hw_params->num_channels - 1, 0);
-+	reg &= ~GENMASK(hw_params->max_channels - 1, 0);
- 	reg |= BIT(ch);
- 	rzg2l_adc_writel(adc, RZG2L_ADM(2), reg);
- 
-@@ -307,11 +307,11 @@ static irqreturn_t rzg2l_adc_isr(int irq, void *dev_id)
- 		return IRQ_HANDLED;
- 	}
- 
--	intst = reg & GENMASK(hw_params->num_channels - 1, 0);
-+	intst = reg & GENMASK(hw_params->max_channels - 1, 0);
- 	if (!intst)
- 		return IRQ_NONE;
- 
--	for_each_set_bit(ch, &intst, hw_params->num_channels)
-+	for_each_set_bit(ch, &intst, hw_params->max_channels)
- 		adc->last_val[ch] = rzg2l_adc_readl(adc, RZG2L_ADCR(ch)) & RZG2L_ADCR_AD_MASK;
- 
- 	/* clear the channel interrupt */
-@@ -341,12 +341,12 @@ static int rzg2l_adc_parse_properties(struct platform_device *pdev, struct rzg2l
- 
- 	num_channels = devm_iio_adc_device_alloc_chaninfo_se(&pdev->dev,
- 						&rzg2l_adc_chan_template,
--						hw_params->num_channels - 1,
-+						hw_params->max_channels - 1,
- 						&chan_array);
- 	if (num_channels < 0)
- 		return num_channels;
- 
--	if (num_channels > hw_params->num_channels)
-+	if (num_channels > hw_params->max_channels)
- 		return dev_err_probe(&pdev->dev, -EINVAL,
- 				     "num of channel children out of range\n");
- 
-@@ -429,7 +429,7 @@ static int rzg2l_adc_probe(struct platform_device *pdev)
- 	adc = iio_priv(indio_dev);
- 
- 	adc->hw_params = device_get_match_data(dev);
--	if (!adc->hw_params || adc->hw_params->num_channels > RZG2L_ADC_MAX_CHANNELS)
-+	if (!adc->hw_params || adc->hw_params->max_channels > RZG2L_ADC_MAX_CHANNELS)
- 		return -EINVAL;
- 
- 	ret = rzg2l_adc_parse_properties(pdev, adc);
-@@ -484,7 +484,7 @@ static int rzg2l_adc_probe(struct platform_device *pdev)
- }
- 
- static const struct rzg2l_adc_hw_params rzg2l_hw_params = {
--	.num_channels = 8,
-+	.max_channels = 8,
- 	.default_adcmp = 0xe,
- 	.default_adsmp = { 0x578 },
- 	.adsmp_mask = GENMASK(15, 0),
-@@ -493,7 +493,7 @@ static const struct rzg2l_adc_hw_params rzg2l_hw_params = {
- };
- 
- static const struct rzg2l_adc_hw_params rzg3s_hw_params = {
--	.num_channels = 9,
++static const struct rzg2l_adc_hw_params rzg3l_adc1_hw_params = {
 +	.max_channels = 9,
- 	.default_adcmp = 0x1d,
- 	.default_adsmp = { 0x7f, 0xff },
- 	.adsmp_mask = GENMASK(7, 0),
++	.default_adcmp = 0x1d,
++	.default_adsmp = { 0x7f, 0xff },
++	.adsmp_mask = GENMASK(7, 0),
++	.adint_inten_mask = BIT(8),
++};
++
+ static const struct of_device_id rzg2l_adc_match[] = {
+ 	{ .compatible = "renesas,r9a08g045-adc", .data = &rzg3s_hw_params },
++	{ .compatible = "renesas,r9a08g046-adc1", .data = &rzg3l_adc1_hw_params },
+ 	{ .compatible = "renesas,rzg2l-adc", .data = &rzg2l_hw_params },
+ 	{ }
+ };
 -- 
 2.43.0
 
