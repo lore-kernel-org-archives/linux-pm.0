@@ -1,115 +1,94 @@
-Received: from 6.mo563.mail-out.ovh.net (6.mo563.mail-out.ovh.net [46.105.55.200])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56E9B5349CC
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 10:22:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.105.55.200
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC5FF535FCE
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 10:58:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790072551; cv=none; b=LhkC4LBKGyRVEdzLvX14kNq9HfmxYqShABcfCURuCJc4ujgkuwZ/hzRL3CA0VZFT7xUHN0EUCoQZnB02NtT2+XJN4U9kSV9YfhjyBwbamOzXT/vicuKbhXDxCKui6PkyXTnmRB1ZQN7ElM/M9ysZ+fphQh4cEVU7evYZUcLMW28=
+	t=1790074733; cv=none; b=u9r2dxXXnm+MnAGvDSBf2r7YXwgNJrTKFij0e3ZF7e/zT8fBnPS/Z65hq1YVGY98PgkhttUTrcFx5OaEi2wpdZAV/NXjguNDHPHCdi6a+Q3E+IkOpcN6WhbwHSRsCI6xepOnM6P0u9NxA2fVpVMaSj7og6n+4jMLiSfNBJkf37c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790072551; c=relaxed/simple;
-	bh=SQqW3vRIkopO+wMee+p+HGuzJFeS+9zxJ92hnhTL4vE=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=OV0bixUqu8OxYLz/OwjtYhPPX3dotIjBxGM7kfAmhErt4drT2fGkMqXdq7FlTJnDGU91WvCi9mwhkXqb+zEhHApU/OvBwrR2hmrmABxoL5/b3SZCiIVAoJ3FmzPVbFzIy+1OemVk+MvEieAdEvG+KhMCvTwf5pOjY5PIhlLWzJE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=trinity-net.com; spf=pass smtp.mailfrom=trinity-net.com; dkim=pass (2048-bit key) header.d=trinity-net.com header.i=@trinity-net.com header.b=VaG/sPRT; arc=none smtp.client-ip=46.105.55.200
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=trinity-net.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=trinity-net.com
+	s=arc-20240116; t=1790074733; c=relaxed/simple;
+	bh=503RZmhHuB49hcMMHyhvEKRa7joa1Czu0UxId6pYLn8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Cqll6jcMpjFXPXd4dbwyr75LnuRtRjCTFi9PaRV+13PDJFNkeq6csan5SNr1GFKmvusxh8bovaFWxLPpcXiHlUuri/ewzwyXZqMMdHteV8/CFzQ9gDXHWKyPYcJp/KgIw+59CCST690vk24m1FkirSrTGAjbM3h7MLSuf9g9Ee4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nOkx3hGU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=trinity-net.com header.i=@trinity-net.com header.b="VaG/sPRT"
-Received: from director6.derp.mail-out.ovh.net (director6.derp.mail-out.ovh.net [79.137.60.226])
-	by mo563.mail-out.ovh.net (Postfix) with ESMTPS id 4hpwgX32ZXz5xBq;
-	Tue, 22 Sep 2026 10:04:40 +0000 (UTC)
-Received: from director6.derp.mail-out.ovh.net (director6.derp.mail-out.ovh.net. [127.0.0.1])
-        by director6.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
-        for <marmarek@invisiblethingslab.com>; Tue, 22 Sep 2026 10:04:40 +0000 (UTC)
-Received: from mta2.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.110.96.120])
-	by director6.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4hpwgX1hzLz46XY;
-	Tue, 22 Sep 2026 10:04:40 +0000 (UTC)
-Received: from mailstore7.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.1.8.7])
-	by mta2.priv.ovhmail-u1.ea.mail.ovh.net (Postfix) with ESMTP id 47B7F3E1C79;
-	Tue, 22 Sep 2026 10:04:39 +0000 (UTC)
-Date: Tue, 22 Sep 2026 10:04:39 +0000 (UTC)
-From: Support TRINITY <support@trinity-net.com>
-To: Sasha Levin <sashal@kernel.org>
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, 
-	Sasha Levin <sashal@kernel.org>, 
-	Marek =?utf-8?Q?Marczykowski-G=C3=B3recki?= <marmarek@invisiblethingslab.com>, 
-	regressions <regressions@lists.linux.dev>, 
-	linux-acpi <linux-acpi@vger.kernel.org>, 
-	linux-pm <linux-pm@vger.kernel.org>, 
-	xen-devel <xen-devel@lists.xenproject.org>, 
-	linux-kernel <linux-kernel@vger.kernel.org>, 
-	Stable <stable@vger.kernel.org>
-Message-ID: <85435495.299101679.1790071479170.JavaMail.zimbra@trinity-net.com>
-In-Reply-To: <2026-09-21-daily-reply-0001-re-acpi-cpuidle-xen-dom0-6-18@kernel.org>
-References: <1909296988.289641012.1790015372050.JavaMail.zimbra@trinity-net.com> <2026-09-21-daily-reply-0001-re-acpi-cpuidle-xen-dom0-6-18@kernel.org>
-Subject: Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks
- bare-metal Xen dom0 boot
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nOkx3hGU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 431971F008A2
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 10:58:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790074729;
+	bh=503RZmhHuB49hcMMHyhvEKRa7joa1Czu0UxId6pYLn8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=nOkx3hGUl25hdOM6H8GEff1F9lmGyMGL5B+aHbi+jf4DPkg8awP2mR0qpwPAmwL81
+	 D+Cz3GUV0J0YVZYZI2B30ZEnX+bdAAoLlYjcQtM0/fNqGVm06IqeRxJRXUjmo0MiZj
+	 o9IHYE1larAI0VigviXS3nyqxG1fOZcK1xRNGx/uup24wVLw1XqcINqx4dtEhlycrf
+	 SzRsYYRNSfresp/A0Y02ARFycbX8Ve2oy9n9To3mvK8LySlUyRX8qJx4kObf0y3RKi
+	 ghQPT+lUK2kBFrjB52Vt8sCUj2I8iY0X4yHH/5c3Q4fjc2Z/8Dk6BIOHynglPqBQn/
+	 X8bke+58rOC1w==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b5e4f1b845so3281081e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 03:58:49 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxZ08IfL05SIsJ40w4xhiDEHFdYkcdHLKgCy9t0szpI4Zb3GRSesArayDX9lTvDTl7gaEZ/dGibDw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lswMDWevFAi+4sWpdUNdiqRwv8GFqwpXHffbc8uy7KjO/qU/B2
+	BGGKENobHPM69PB5YQtqvPWVaC6OdzSxUPzsFSBNZj4y8iph95bLdSFJ7J4ZNW2RD6x+oLTvU1B
+	O5Oa+ZqkOVzvrlYZ9vVOM3zdeu9KwAeg=
+X-Received: by 2002:a2e:b8ca:0:b0:3a1:5172:c287 with SMTP id
+ 38308e7fff4ca-3a5fbeb3c28mr28047001fa.5.1790074727534; Tue, 22 Sep 2026
+ 03:58:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <20260807060848.832929-1-luoxueqin@kylinos.cn> <d02f335a-c97d-49ad-85c0-2eacd744eb0c@hisilicon.com>
+ <651d6392-984e-4363-8ef6-94a23be615d7@arm.com>
+In-Reply-To: <651d6392-984e-4363-8ef6-94a23be615d7@arm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 22 Sep 2026 12:57:15 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gQfycqWaGpGQzYq6T_HOXiumFi0SD4sGJhn4eUS1FHCg@mail.gmail.com>
+X-Gm-Features: AcwNN1Wby-rXjqfv0v1XIHNQU4vGq0TGDTF64LITUG1nSspF8SSKp1AzEAfWb4I
+Message-ID: <CAJZ5v0gQfycqWaGpGQzYq6T_HOXiumFi0SD4sGJhn4eUS1FHCg@mail.gmail.com>
+Subject: Re: [PATCH v5 0/3] cpufreq: cppc: Handle Highest Performance changes
+ at runtime
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: Jie Zhan <zhanjie9@hisilicon.com>, Xueqin Luo <luoxueqin@kylinos.cn>, 
+	Sudeep Holla <sudeep.holla@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
+	Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>, linux-kernel@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	Ionela Voinescu <Ionela.Voinescu@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Authenticated-User: support@trinity-net.com
-Thread-Topic: ACPI processor/cpuidle change in 6.18.52 breaks bare-metal Xen dom0 boot
-Thread-Index: K73oORQOTU57TlGFBhdBixjIo6r4Nw==
-x-ovh-tracer-id: 5960514109192304155
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: dmFkZTGW2IyZ/YhHU9dSERzRYRpzlG0d5PBjuMM0K21jz02Okjd/bCKxP1ZZRuOy/r/ltrGOr888QHzjvDzzQi0zj0e4dR+2bAR/+R5MiSycoysPZjrO4AkftF3W8vsz6sYndEZb11LXltTssTuH3cOm3NP7FMwSfLDM4TpFiRM0f8kwLKIjc1sjh1mq+V1a49WPCknOvHd+6HbFREV6QWabnMcF1iWJPn/XdJ0h2YIJrvYkDioxQiNhuucf8YCjEDugAeC6CDc9v8yBLGuRKHaDh9Y8a4rat0hJKtkf+jmC5RDEOsrwiNA929B7TyYqVi76j6YnQg/UkD3KxtM3T+NyePm/nl6lpqhjSrJb6CIlzOTm/ovxqvyM2s2w067weK8F5tLYlwMR2Q4VYJhw8iC7LtzUqXb2LH6+jU92iwCRleThQlUbC6Z0fWGXQfVKe4/w49zB011P8Ps0Iup2oL1EEdCa6P77NRQcwCybSn1jRzIEmGpOdnRHRv4ibhop54BmayavlnDMye4CjEtUYTGHMQHGopXIAm5faRbrlXNuaaotm+LIjnskpaFCxAyxdETDPsxHH6oU9AbDWl+48A9jqIizrN9dsRSHih4XBZTE8ST0EAJ+tO6BWBDGbkn26cy5ORq+weZ/21z56gDpsC6jogFYmRcUYq8kXsp3AQpEO5fC7g
-DKIM-Signature: a=rsa-sha256; bh=SQqW3vRIkopO+wMee+p+HGuzJFeS+9zxJ92hnhTL4vE=;
- c=relaxed/relaxed; d=trinity-net.com; h=From; s=ovhmo-selector-1;
- t=1790071480; v=1;
- b=VaG/sPRT/5Wkmyg6O2UgpCTVF3vInOg+yIy0yxjvtzD+plqdz/3Jn8A2tgKtSc4LHHhFb9A2
- TaHW5/PY2TSRsydiH3xeLpmPt/o4ErSwqQ/dBL6rslyZnGDs5zfOTBKOuQx1dxeGg6+wTqHc6HH
- i4NejfDLPmyb8yaJHV2TSSmhLfJbbFTxt4DsXcO4PvvlJibEsebZPiZSZFWKWszTcZ/SFnE3on6
- 5y2aKAVehynIDD4854CTMrOL+J7+kFigmlPlagWvJ92YgDZoMKz8t0xgKOL9me0y2n8zlWvMpG5
- 6GLGQLBsnGp6ZFcqqQF64ERmSEuMxY8baALBB9axwHFtg==
 
-I have now tested Linux 6.18.52 with commit:
+On Mon, Sep 21, 2026 at 9:47=E2=80=AFPM Christian Loehle
+<christian.loehle@arm.com> wrote:
+>
+> On 9/7/26 09:49, Jie Zhan wrote:
+> >
+> >
+> > On 8/7/2026 2:08 PM, Xueqin Luo wrote:
+> >> Hi Rafael, Pierre,
+> >>
+> >> This series adds support for handling ACPI CPPC Highest Performance
+> >> register changes at runtime, triggered by Notify(0x85) on a processor
+> >> device.
+> >>
+> >> When the platform changes the Highest Performance value (e.g. due to
+> >> thermal or power budget adjustments), the OSPM must re-evaluate the
+> >> cached capability and propagate the change to the cpufreq policy,
+> >> the scheduler's CPU capacity model, and the frequency invariance
+> >> engine.
+> > Any real use case of this on platforms that run cppc_cpufreq drivers?
+> > Some addtional motivation may help.
+> >
+> > For example, a processor can age over time and its core frequency degra=
+des.
+> > It's good if platforms can make OSPM and userspace aware of this.
+>
+> +1
 
-0089ce1c056a ("ACPI: processor: Update cpuidle driver check in __acpi_proce=
-ssor_start()") applied on the affected Alpine Xen dom0 bare-metal host.
-
-Result: it boots successfully.
-
-Xen dom0 comes up correctly, /proc/xen is mounted, xenstored starts, SSH
-is reachable, and xl info, xl list, etc... work as expected.
-
-So this confirms that 0089ce1c056a fixes the regression on this affected
-Alpine system.
-
-Thank you Rafael for identifying the missing stable dependency.
-
-Regards,
-Tony
-
-
------Message original-----
-De: Sasha Levin <sashal@kernel.org>
-=C3=A0: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-Cc: Sasha Levin <sashal@kernel.org>; Marek Marczykowski-G=C3=B3recki <marma=
-rek@invisiblethingslab.com>; regressions <regressions@lists.linux.dev>; lin=
-ux-acpi <linux-acpi@vger.kernel.org>; linux-pm <linux-pm@vger.kernel.org>; =
-xen-devel <xen-devel@lists.xenproject.org>; linux-kernel <linux-kernel@vger=
-.kernel.org>; Stable <stable@vger.kernel.org>; Support TRINITY <support@tri=
-nity-net.com>
-Envoy=C3=A9: mardi 22 septembre 2026 04:23 CEST
-Sujet : Re: [REGRESSION] ACPI processor/cpuidle change in 6.18.52 breaks ba=
-re-metal Xen dom0 boot
-
-
-> I will try testing 6.18.52 with commit 0089ce1c056a ("ACPI: processor:
-> Update cpuidle driver check in __acpi_processor_start()") applied,
-> instead of using my lifecycle revert.
-
-Queued for 6.18, thanks.
-
-Please still post the result of that test once you have it.
-
---=20
-Thanks,
-Sasha
+FWIW, this may be related to platform operating mode changes between
+"performance" and "powersave" (longer battery life) if the top-most
+OPP is a high-cost one.
