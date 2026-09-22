@@ -1,198 +1,152 @@
-Received: from mail-vs2-f12.google.com (mail-vs2-f12.google.com [74.125.227.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 627F3542EF7
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 12:40:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5F6A542EF2;
+	Tue, 22 Sep 2026 12:43:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.218
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790080803; cv=none; b=ljGwV88DWfwJKbqdMwqUcY/glA7R/L6qG4epXkcyc7HQaLewpdn9qAiaA6FbJgvG1sWD2Lvv+MMH3fd2w+ORBgPw142hnxwpxWC3ictnQZV/g710ip2eNo5Qd69ElCXSAqA/Mi+HAMdmhoHwn0hVl9/wCo/jRWzpk45g9NaSLMw=
+	t=1790081030; cv=none; b=ek3mavLZgCs7speEoc4u8Bofz0VGKOD0+NDV4O+rE8Nj7+J9ZYnZ8p8a5EDdmTgfq8iTGZ71pEaOWCm5g4Qvgyi4ijUvI9g/sd7ft63XCz5qT68y7/0rrZF94E0hoiqys2n4qhv+gsPPd6DUKIBTMzWIEb5pQww+K/igL91ok8g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790080803; c=relaxed/simple;
-	bh=wFmJBrwWil7bpAeYIpoN4GzUL1HvXOt5ldn6IIIiFHY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uv+JsT0Yb8zIVSy5mU86bYClC1mSuIj1GrLxmQifRnGxXqKlQtxI0QgjSfDpL2RtdmbI8gWOvX3lZs/9SU1Iu6EFwOM1+tfsSw6Y6uRUdo5B+uCaqW/TxzNcajnKzDwHbGiPqQJW//OSIBT+CwJh8KGvjBB3Yrdb+6GobOUTH+E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ieee.org; spf=pass smtp.mailfrom=ieee.org; dkim=pass (1024-bit key) header.d=ieee.org header.i=@ieee.org header.b=O2oXCldz; arc=none smtp.client-ip=74.125.227.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ieee.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ieee.org
+	s=arc-20240116; t=1790081030; c=relaxed/simple;
+	bh=gzCsz+SnDPGloWskezHtX2a5TcZGKEaHW8efwsxAwRI=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=unV8ZFgs1Lx5ISftosK9pYzJflWOxjLQ/vUn2o1INodyG33BnLDXTPhWlOOONRlrOTqzW7iD7FoO8UxdvoAcYzlvpENbmRVs0be3lrk6XyjxrUwbyFGKWuCfPdVchNm1g5petxejWvbtuxRNtiYFAKaTDMprDiKzdVnq0Duwr3I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=xBWhAHOp; arc=none smtp.client-ip=113.46.200.218
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ieee.org header.i=@ieee.org header.b="O2oXCldz"
-Received: by mail-vs2-f12.google.com with SMTP id 71dfb90a1353d-5c67e4d9197so2604984e0c.0
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 05:40:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ieee.org; s=google; t=1790080799; x=1790685599; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=o9blDfaIlaDE7zWOzf7sAkl81n8mIgiGQIMLz8R8dVg=;
-        b=O2oXCldzJ3LpA4QHBbXInqG6gPFkiSS8IpezgH8R+ZrmCNrQGw2qZ3cz2HJXPR/LD3
-         nDnwu+h/q1ydJlARyj62co9tTwdWIgt6A4ziEIgZPoWy6ktNQVyLZgBsOE9UYoUt4d3f
-         ApfWcUtfyoMebnbxzEyQSfJL5IYMdQPZlYtb0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790080799; x=1790685599;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=o9blDfaIlaDE7zWOzf7sAkl81n8mIgiGQIMLz8R8dVg=;
-        b=h59OzCnM+1+hjjy6+YBC62tK+HeE4yrW2SxyDBX3iarJ+MzeG9CJ1ICNVh8EzQy+iu
-         fmRc3afi/6npAn8O2Hsq4Nq7OXvwOo4YU/Lo/xudQ26A32fKAQebiBve0urvtuPDovT8
-         lrYBfjpZxLiShRb5PLKnd2TJWDNyM8E6K8oFwlEm5fy8xcY3U7SzA/dZxrhLqDKbDh/H
-         kTF3I2knCvS4NKr134KXTtomipLFIuGwsKB/EpM4C2DfHFcORVjWPaci4/2X+Jd5EcUX
-         +H3N2VhpRO+vq+ACU8mnaifbP56Lmwtc5PEg0opOhjLAOeTdXlzQX+oIo6z8bTJjaBq+
-         k99A==
-X-Forwarded-Encrypted: i=1; AKwUvBxKiq+FGYQCEI9sZeUVg6niawTaSUnfcvnq3ZzKMRf8h52/3YyiWY1LS8pLVizon2wLRlP2w7e3sQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mV/iTrVkpkhLhin4O6gqLuLC5/Vc7Wo9/lt2YilyrdNKryLVey
-	Z1nUvABeGAV7OmRQxQBctLxqdgEjmR0dH4avVRVotmJ8HQFaDV9OFtHqZCiKfc83DQ==
-X-Gm-Gg: AYBFou04T+xQjql+W86VTkS3fg7cNorDdsRwVrGQ0rF0Gl9jZogOsOzFMUp5YhsIN0i
-	qTu8RSMOGIDfYPzLPpN1MVbMIcPq3apHbVJLqMWUL6PZU1n6pwqjn82erc2sbzgDS7J2TJNUnDA
-	FJfTUeF2rRqRMFflIIKVHCej2xqHD1d7CG6T9jThlA4Qv1d5GpQbGa/U5N2GZBQYoIxgsdBRfdh
-	3/8Vi1sDaWzxQ5/8zSxbco2Pjb7k1kmQGvHc0Xfqj/OvujksyG7shf30NJchcJthqgXiEftc9D5
-	9d+CXbUGGT0bBiQtd40cvBykXBAHu4R8jwdMKN7rkAzyQ6XPlCabH2HBwg8qJMggKssugcgO+SO
-	m1RYwhMzA3+K5vPK32tZbNiBAWkE/4jFn8j6fWl9St/xfyAMRS1iK7yA+80PeHQOI8ma1hYO4mL
-	r/NrI6U2wVguBhSP/3OSjVZMI6xb1qaPHSch1ZIALAh4T4+T0eKHw/EWbnjaqgzAwY9s1LHkMHK
-	BHp
-X-Received: by 2002:a05:6122:e22b:b0:5c9:a60c:2736 with SMTP id 71dfb90a1353d-5c9b598e442mr8405960e0c.14.1790080799199;
-        Tue, 22 Sep 2026 05:39:59 -0700 (PDT)
-Received: from [172.22.22.28] ([73.62.185.64])
-        by smtp.googlemail.com with ESMTPSA id 6a1803df08f44-91402535ce1sm14566906d6.48.2026.09.22.05.39.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Sep 2026 05:39:53 -0700 (PDT)
-Message-ID: <d2052425-3fb4-4104-b1ed-f2d53e5a710d@ieee.org>
-Date: Tue, 22 Sep 2026 07:39:47 -0500
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="xBWhAHOp"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=89lkpAhKk+Q47Br0JON/IAfdr9J7zh/QLtYMmazm4as=;
+	b=xBWhAHOpgsxYsw3NN6KmZbS/2kV69Dxa56R2RU8AH+nMpBOoxlz7m6hry9Y2CeV0ccFJ4Wi3a
+	03weYe7sTgDF6mQNiT6a1S7NkbgP9m1k6MdILc4LOeq9jA1vVv53DP2uDZdIk0a4wfoEfsexx+4
+	cYlQDkW8Bl4FNx1dmI8TRH8=
+Received: from mail.maildlp.com (unknown [172.19.162.144])
+	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4hpzxG1YQKzpStW;
+	Tue, 22 Sep 2026 20:31:46 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id 9803C4056D;
+	Tue, 22 Sep 2026 20:43:42 +0800 (CST)
+Received: from localhost.localdomain (10.50.163.32) by
+ kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.45; Tue, 22 Sep 2026 20:43:41 +0800
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>,
+	<lenb@kernel.org>, <ionela.voinescu@arm.com>, <zhanjie9@hisilicon.com>,
+	<pierre.gondois@arm.com>, <sumitg@nvidia.com>
+CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
+	<linuxarm@huawei.com>, <yubowen8@huawei.com>, <zhangpengjie2@huawei.com>,
+	<wangzhi12@huawei.com>, <linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
+Subject: [PATCH v4 0/8] ACPI: CPPC: Resource Priority Register support and sysfs interface
+Date: Tue, 22 Sep 2026 20:41:13 +0800
+Message-ID: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
+X-Mailer: git-send-email 2.33.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/3] umh, treewide: Explicitly include linux/umh.h
- where needed
-To: Petr Pavlu <petr.pavlu@suse.com>, Tony Luck <tony.luck@intel.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Philipp Reisner <philipp.reisner@linbit.com>,
- Lars Ellenberg <lars.ellenberg@linbit.com>,
- =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
- Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
- Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
- Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
- Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
- Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?=
- <mkoutny@suse.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
- <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
- Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-References: <20260911-module-include-kmod-v3-0-6ebccc3e0731@suse.com>
- <20260911-module-include-kmod-v3-1-6ebccc3e0731@suse.com>
-Content-Language: en-US
-From: Alex Elder <elder@ieee.org>
-In-Reply-To: <20260911-module-include-kmod-v3-1-6ebccc3e0731@suse.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-On 9/11/26 9:46 AM, Petr Pavlu wrote:
-> The usermode helper declarations were previously provided by linux/kmod.h
-> but commit c1f3fa2a4fde ("kmod: split off umh headers into its own file")
-> moved them to linux/umh.h in 2017.
-> 
-> Add explicit includes of linux/umh.h to files that use usermode helpers and
-> remove linux/kmod.h where it is no longer needed.
-> 
-> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-> ---
->   arch/x86/kernel/cpu/mce/dev-mcelog.c | 2 +-
->   drivers/block/drbd/drbd_nl.c         | 1 +
->   drivers/greybus/svc_watchdog.c       | 1 +
+This series implements support for the CPPC v4 Resource Priority Register
+mechanism defined in ACPI 6.6, Section 8.4.6.1.2.7, and exposes it to
+userspace via sysfs.
 
-For Greybus:
+Resource Priority allows OSPM to control the relative priority among
+processors for shared resources. OSPM can utilize these sysfs interfaces
+to configure resource priorities, allowing resources to be preferentially
+allocated to more important tasks.
 
-Acked-by: Alex Elder <elder@riscstar.com>
+The controlled resource types include processor boost, throttle, L2 cache,
+L3 cache, and memory bandwidth.  Each Resource Priority group consists of:
 
->   drivers/macintosh/windfarm_core.c    | 1 +
->   drivers/pnp/pnpbios/core.c           | 2 +-
->   drivers/video/fbdev/uvesafb.c        | 1 +
->   fs/coredump.c                        | 2 +-
->   fs/nfs/cache_lib.c                   | 2 +-
->   fs/nfsd/nfs4layouts.c                | 2 +-
->   fs/nfsd/nfs4recover.c                | 1 +
->   fs/ocfs2/stackglue.c                 | 1 +
->   kernel/cgroup/cgroup-v1.c            | 2 +-
->   kernel/module/kmod.c                 | 1 +
->   kernel/power/process.c               | 2 +-
->   kernel/reboot.c                      | 2 +-
->   kernel/umh.c                         | 2 +-
->   lib/kobject_uevent.c                 | 2 +-
->   net/bridge/br_stp_if.c               | 2 +-
->   security/keys/request_key.c          | 2 +-
->   security/tomoyo/common.h             | 2 +-
->   20 files changed, 20 insertions(+), 13 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/mce/dev-mcelog.c b/arch/x86/kernel/cpu/mce/dev-mcelog.c
-> index 053555206d81..af4e76babe7a 100644
-> --- a/arch/x86/kernel/cpu/mce/dev-mcelog.c
-> +++ b/arch/x86/kernel/cpu/mce/dev-mcelog.c
-> @@ -11,7 +11,7 @@
->   
->   #include <linux/miscdevice.h>
->   #include <linux/slab.h>
-> -#include <linux/kmod.h>
-> +#include <linux/umh.h>
->   #include <linux/poll.h>
->   
->   #include "internal.h"
-> diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
-> index b77f901fc3ef..6f5d059394b3 100644
-> --- a/drivers/block/drbd/drbd_nl.c
-> +++ b/drivers/block/drbd/drbd_nl.c
-> @@ -14,6 +14,7 @@
->   #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
->   
->   #include <linux/module.h>
-> +#include <linux/umh.h>
->   #include <linux/drbd.h>
->   #include <linux/in.h>
->   #include <linux/fs.h>
-> diff --git a/drivers/greybus/svc_watchdog.c b/drivers/greybus/svc_watchdog.c
-> index 16e6de5e9eff..b318eb34bcca 100644
-> --- a/drivers/greybus/svc_watchdog.c
-> +++ b/drivers/greybus/svc_watchdog.c
-> @@ -7,6 +7,7 @@
->   
->   #include <linux/delay.h>
->   #include <linux/suspend.h>
-> +#include <linux/umh.h>
->   #include <linux/workqueue.h>
->   #include <linux/greybus.h>
->   
-. . .
+  - CONTROLLED_RESOURCES: which resource types the group affects
+  - ENABLE_VALUE / ENABLE_REGISTER: enable/disable the group
+  - PRIORITY_COUNT / PRIORITY_REGISTER: read/write the priority level
+
+The patch series is organized in three parts:
+
+  - patches 1-4 extend the CPPC data structures and _CPC parser to handle
+    Package-type entries and parse Resource Priority sub-packages into
+    structured descriptors.
+
+  - patches 5-7 refactor existing register I/O helpers to support direct
+    register access and add accessor functions for Resource Priority
+    attributes (enable, priority count, priority value).
+
+  - patch 8 creates a "resource_priority" sysfs hierarchy under each
+    cpufreq policy to expose the Resource Priority attributes to userspace.
+
+Changelog:
+v4:
+ - Patch 7: Set *num_resources to 0 when controlled resources number
+   invalid in cppc_get_resource_priority_resources(), therefore, the caller
+   will not read the unassigned `resources` pointer.
+ - Patch 8: Remove kfree() from the error path of
+   cppc_create_res_prio_sysfs() because cppc_res_prio_release() will do it.
+
+v3:
+ - Patch 2: Add the (i - 2) == RESOURCE_PRIORITY condition back to ensure
+   the new code behaves the same as the original.
+ - Patch 4: Assign -ENODATA to ret when an unexpected ACPI_TYPE_PACKAGE
+   appears.
+ - Patch 5: Initialize the `optional` field of the remaining cpc_regs to
+   true so that they are treated as unsupported.
+ - Patch 8: Call cppc_cpufreq_cpu_fie_exit() and set perf to lowest_perf
+   when cppc_create_res_prio_sysfs() fails. Call kobject_put() and kfree()
+   when kobject_init_and_add() fails in cppc_create_res_prio_sysfs().
+ - Link: https://lore.kernel.org/all/20260812015217.74598-1-zhenglifeng1@huawei.com/
+
+v2:
+ - Patch 1: Revert changes to the CPC_SUPPORTED() macro.
+ - Link: https://lore.kernel.org/all/20260804085042.4118193-1-zhenglifeng1@huawei.com/
+
+v1:
+ - Link: https://lore.kernel.org/all/20260717024502.3520445-1-zhenglifeng1@huawei.com/
+
+---
+
+RFC: sysfs placement
+
+The sysfs interface is currently placed under /sys/devices/system/cpu/cpufreq/
+(i.e. the cpufreq policy directory). I am unsure whether this is the best
+location and would appreciate reviewer feedback.
+
+The concern is that Resource Priority covers resource types beyond CPU
+frequency control:
+
+  - PROCESSOR_BOOST, PROCESSOR_THROTTLE -- clearly CPU-frequency related
+  - L2_CACHE, L3_CACHE -- cache partitioning, not frequency
+  - MEMORY_BANDWIDTH -- memory QoS, not frequency
+
+Placing the attributes under cpufreq makes sense for boost/throttle but
+feels semantically wrong for cache and memory bandwidth resources.
+
+I would appreciate feedback on whether cpufreq is the right home for
+this interface, or whether a different location would be more appropriate.
+
+Lifeng Zheng (8):
+  ACPI: CPPC: Prepare cpc_register_resource for Package-type entries
+  ACPI: CPPC: Refactor element parsing into parse_cpc_element()
+  ACPI: CPPC: Refactor resource cleanup into free_reg_resource()
+  ACPI: CPPC: Parse Resource Priority Register entries from _CPC package
+  ACPI: CPPC: Store optional flag in cpc_register_resource
+  ACPI: CPPC: Factor out cpc_read_reg() and cpc_write_reg()
+  ACPI: CPPC: Add Resource Priority accessors
+  cpufreq: cppc: Expose Resource Priority attributes via sysfs
+
+ drivers/acpi/cppc_acpi.c       | 719 +++++++++++++++++++++++++++------
+ drivers/cpufreq/cppc_cpufreq.c | 281 ++++++++++++-
+ include/acpi/cppc_acpi.h       |  60 +++
+ 3 files changed, 930 insertions(+), 130 deletions(-)
+
+-- 
+2.33.0
+
