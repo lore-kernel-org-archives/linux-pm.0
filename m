@@ -1,101 +1,157 @@
-Received: from mail.auroraos.dev (unknown [95.181.193.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5154560AD7
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 16:04:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.181.193.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 375AC563FD5;
+	Tue, 22 Sep 2026 16:14:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790093062; cv=none; b=crpw7tJY32SVNPKgXWY35V4nWb56xI0F4csXMjGhbKrC7W8UP+9sxxMBAwF/ydZIhHlP0FEDtkbg1rmjy+jHb/NTlHt7+Kd9OcJczyCV105T/ZPs1oEonM9zT3mxhPcqIi6g9gJFcFgqH3ksTRVaXpoOI81O2VNCSZ3H1aaR4/I=
+	t=1790093649; cv=none; b=L6AMiUcToGGC7ebxZzTUni4Wxq9EDmG9/6Nv7dJTxSfi+DGqZr9xfklEYd2Umt8RygpOst8c3zOF2FE+Kj21bJSf9AHcbSN75pzmvJoccwCPKt2C6IqCZPmkCo3CMOwAXqiC3eZK6kSKOt0F27A7MiCVJlfej9rlrrM4jRda9WI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790093062; c=relaxed/simple;
-	bh=oaCEVmmDUZPoq/ZCamPNEd+hzpoG1DwAkKtsiWhi6tI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=BzwJ0TJ+sraGHOHEEhMpq3gLh7byFelegqnWhZovLzpAj3M8vU5J37/hkKoiBFBMOtUTuV9Jiae2wBZXWXbrfYkzQYhoL5oWM0gXFR/YK9isb2kbBvC8PgLHrwW8T/XFSM9SbejrQLTRvKF+TDFNC49gyuRPthgcjBG9D+bPht0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev; spf=pass smtp.mailfrom=auroraos.dev; arc=none smtp.client-ip=95.181.193.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=auroraos.dev
-Received: from [192.168.2.104] (91.79.44.40) by exch16.corp.auroraos.dev
- (10.189.209.38) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1847.3; Tue, 22 Sep
- 2026 19:04:08 +0300
-Message-ID: <f38e4d45-5a4b-4526-b630-7189bd187b77@auroraos.dev>
-Date: Tue, 22 Sep 2026 19:04:08 +0300
+	s=arc-20240116; t=1790093649; c=relaxed/simple;
+	bh=CHmgmxub88Xrygqm1D/E4gpUPQCkatJllJy0+tqHrV0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=efKlEw1Jy0x2puKZFPvaBTcVJqm70Im5Zetqx5gy3UUdT7beVnTr3xUZlrp0n9oNpy33hOaS8wEMS6NJL0huauah5FHbwGkQIPb0AGxgLhNYxCE97ZcMdJDnVPuo1w3a4Sn0uNsgEAujMNQ5/P4srePALNMRe3eDzjTQwzLAx78=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KJ3dk0u5; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KJ3dk0u5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E27ED1F000FF;
+	Tue, 22 Sep 2026 16:14:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790093647;
+	bh=ENorQJ/pLh3pPA/2sJg/M7aUt54CHEBCt3OvYkywruk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KJ3dk0u53UyHdo8MUMbEJc+Q6GjkB7nePEU1r/iUnou6lgcF07QQGKmNPF6owynjA
+	 brmhN9xePWg2kiaOYX5WD/RUONjKLGahkuYAvzfdkH+JrHy+Rm9/AKc8PO9y3v9s22
+	 lf6pNZSh5+eUKN4cl1Xm48r0KKKmvqnprbXx2mgeR+GkrGGDYcZxII3XEs+JIwevr4
+	 pALKzntLFWks4/AW2wPfBDzMit4HYfI2otNErskLQSSDEp2KDI904oSvXH4gEBa1vB
+	 PskLsc9R3M/e7QYq1txbjLLDlPqV8Qow96tVMHG48dVi/LKGTW1uo3XpVWah0U/7hD
+	 OiUjml68PB+8A==
+Date: Tue, 22 Sep 2026 17:14:00 +0100
+From: Will Deacon <will@kernel.org>
+To: Oleg Keri <okerixx@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Beata Michalska <beata.michalska@arm.com>,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Ananthu C V <ananthu.cv@oss.qualcomm.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5] arm64: topology: fix arch_freq_get_on_cpu() overflow
+ above 4.19 GHz
+Message-ID: <arKpSGPXOCFF09hM@willie-the-truck>
+References: <20260917182059.2851-1-okerixx@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: rockchip: fix domain check in
- rockchip_pm_add_one_domain()
-To: Shawn Lin <shawn.lin@rock-chips.com>, Ulf Hansson <ulfh@kernel.org>, Heiko
- Stuebner <heiko@sntech.de>, <linux-pm@vger.kernel.org>,
-	<linux-rockchip@lists.infradead.org>
-CC: Caesar Wang <wxt@rock-chips.com>, Kevin Hilman <khilman@linaro.org>,
-	<linux-arm-kernel@lists.infradead.org>
-References: <20260920175928.42566-1-s.shtylyov@auroraos.dev>
- <ee8bf4cf-b2bd-4cbd-ba8c-2e7a871203e1@rock-chips.com>
- <140e4538-d493-40a7-a682-00be091332f0@auroraos.dev>
- <1d8950b4-315f-44a4-9fc8-fcb35ac33043@rock-chips.com>
-Content-Language: en-US
-From: Sergey Shtylyov <s.shtylyov@auroraos.dev>
-In-Reply-To: <1d8950b4-315f-44a4-9fc8-fcb35ac33043@rock-chips.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: exch16.corp.auroraos.dev (10.189.209.38) To
- exch16.corp.auroraos.dev (10.189.209.38)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260917182059.2851-1-okerixx@gmail.com>
 
-On 9/22/26 3:47 AM, Shawn Lin wrote:
-
-[...]
-
->>>> In rockchip_pm_add_one_domain(), there's the check (most probably for
->>>> the case where the "reg" prop has an unexpected value?) which doesn't
->>>
->>> Agreed that check indeed makes little sense. But "most probably for the
->>> case where the reg prop has an unexpected value" does not hold: an
->>
->>     I tried to guess what the check in question was actually intended for
->> (despite making a little sense as it is now)...
->>
->>> out-of-range reg value is already rejected by the "id >= pmu->info-
->>>> num_domains" check above, and num_domains equals
->>
->>     I noticed. :-)
->>
->>> ARRAY_SIZE(domain_info) for every SoC, so there are no holes in the
->>> table that the new check could catch with the current data. AFAICT, this
->>
->>     Oh, there are holes! :-)
->>     If you look at (and behind) the indexed initializers of *_pm_domains[],
->> you'll see that the indexes don't always start at 0, and so the arrays are
->> actually sparse...
+On Thu, Sep 17, 2026 at 08:20:59PM +0200, Oleg Keri wrote:
+> arch_freq_get_on_cpu() computes the product of the frequency scale and
+> the reference frequency as a u64, but assigns it to an unsigned int
+> before shifting it back down:
 > 
-> Looked more closely by each one, you're right.
-
-   Perhaps I just should've been more verbose in the patch description...
-
->>> patch does not change any runtime behaviour; it only turns dead code
->>> into a defensive check on the match-data tables.
->>
->>     I hope you see now that this defensive check makes a bit more sense...
->>
->>>> make much sense as the variable pd_info will be NULL iff pmu->info->
->>>> domain_info is NULL and the variable id is 0.  What does make sense
->>>> there is checking pd_info->pwr_mask and pd_info->req_mask which (as
->>>> seems to follow from the code) can't both be 0 for a valid domain...
->>>
->>> That means there is no bug being fixed here, should we drop the fixes tag?
->>
->>     I'd like to keep it (but that's up to the maintainers, of course)...
+> 	freq = scale * arch_scale_freq_ref(cpu);
+> 	freq >>= SCHED_CAPACITY_SHIFT;
 > 
-> Sure, it's  Ulf's call. Anyway, feel free to add
+> The product is truncated to 32 bits before the shift, so the result
+> wraps once arch_scale_freq_ref() exceeds 2^32 / SCHED_CAPACITY_SCALE,
+> i.e. 4194304 kHz.
 > 
-> Reviewed-by: Shawn Lin <shawn.lin@rock-chips.com>
+> On a Snapdragon X2 Elite (Glymur) laptop, whose boost OPP is 4723200
+> kHz, cpuinfo_avg_freq reports 524283 kHz instead of ~4723200 kHz while
+> the CPU demonstrably runs at the boost frequency: a fixed workload
+> completes in 1.72 s at the 4723200 kHz OPP versus 2.01 s at 4032000
+> kHz, matching the 1.171 frequency ratio.
+> 
+> Compute it with cap_scale(), turned into a static inline taking u64 and
+> moved to <linux/sched/topology.h> so it is usable outside kernel/sched.
+> 
+> Fixes: 16d1e27475f6 ("arm64: Provide an AMU-based version of arch_freq_get_on_cpu")
+> Signed-off-by: Oleg Keri <okerixx@gmail.com>
+> ---
+> Changes in v5:
+> - cap_scale() becomes a static inline taking u64 arguments instead of
+>   a macro, as Dietmar proposed and Peter agreed, after Peter pointed out
+>   that the macro relies on one operand being u64.  It now lives in
+>   <linux/sched/topology.h>, where SCHED_CAPACITY_SHIFT is visible,
+>   rather than <linux/topology.h>.
+> - Patch 2/2 of v4 is dropped: it duplicated Ananthu C V's series [1],
+>   which I tested instead.  This fix is needed with that series, since
+>   it puts the reference above 4194304 kHz from boot.
+> - v4: https://lore.kernel.org/all/20260917125112.2283-1-okerixx@gmail.com/
+> 
+> [1] https://lore.kernel.org/all/20260908-schedutil-boost-frequency-handling-v2-0-25312a713699@oss.qualcomm.com/
+> 
+>  arch/arm64/kernel/topology.c   | 6 ++----
+>  include/linux/sched/topology.h | 5 +++++
+>  kernel/sched/sched.h           | 2 --
+>  3 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+> index d28438f8b83f..39dd7f8575cd 100644
+> --- a/arch/arm64/kernel/topology.c
+> +++ b/arch/arm64/kernel/topology.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/init.h>
+>  #include <linux/percpu.h>
+>  #include <linux/sched/isolation.h>
+> +#include <linux/sched/topology.h>
+>  #include <linux/xarray.h>
+>  
+>  #include <asm/cpu.h>
+> @@ -186,7 +187,6 @@ int arch_freq_get_on_cpu(int cpu)
+>  	struct amu_cntr_sample *amu_sample;
+>  	unsigned int start_cpu = cpu;
+>  	unsigned long last_update;
+> -	unsigned int freq = 0;
+>  	u64 scale;
+>  
+>  	if (!amu_fie_cpu_supported(cpu) || !arch_scale_freq_ref(cpu))
+> @@ -245,9 +245,7 @@ int arch_freq_get_on_cpu(int cpu)
+>  	 * (see amu_scale_freq_tick for details)
+>  	 */
+>  	scale = arch_scale_freq_capacity(cpu);
+> -	freq = scale * arch_scale_freq_ref(cpu);
+> -	freq >>= SCHED_CAPACITY_SHIFT;
+> -	return freq;
+> +	return cap_scale(arch_scale_freq_ref(cpu), scale);
+>  }
+>  
+>  static void amu_fie_setup(const struct cpumask *cpus)
 
-   Thank you!
+The arm64 part looks fine to me, so for that:
 
-[...]
+Acked-by: Will Deacon <will@kernel.org>
 
-MBR, Sergey
+However...
+
+> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+> index b5d9d7c2b8ad..922b2f015e89 100644
+> --- a/include/linux/sched/topology.h
+> +++ b/include/linux/sched/topology.h
+> @@ -234,6 +234,11 @@ static inline void rebuild_sched_domains_energy(void)
+>  }
+>  #endif
+>  
+> +static inline u64 cap_scale(u64 value, u64 scale)
+> +{
+> +	return value * scale >> SCHED_CAPACITY_SHIFT;
+> +}
+
+... does this introduce unnecessary 64-bit arithmetic for 32-bit
+architectures that currently pass 'unsigned long' to the existing macro?
+
+Will
