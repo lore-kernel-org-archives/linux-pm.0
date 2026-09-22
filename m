@@ -1,105 +1,129 @@
-Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.102])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1E51429825;
-	Tue, 22 Sep 2026 05:11:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.68.63.102
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D283350D7D;
+	Tue, 22 Sep 2026 05:55:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790053869; cv=none; b=NymhPBtTY17gFPFCTlmTL+NktK+7I4aG/3I1Euu0q+B6HEFoA86Tko86M+fkBVBiiXX2ZqCfHaVaCV3veg2ufk6YMnEBpZWbq2YQBf8KgRWAzH7mhLem9q2PUp4Mx2YOMKjtghh6uQGpnUYNDxyJvA+605TMhGsQCaW8jdNvM8Y=
+	t=1790056510; cv=none; b=BSJNk67nlWg8QW/WI5Fxs7G7eBiRXLqlwdOlWUnRnqUHqYzfK7sertbZHB70QfB7dwBeEhvsrKztgVqE59yCSQlxmzVaa09hOvy0N7h+O2JlbOJeRBLZiD6IAvTtFJoFPTvk7wQ4ZqStwQLVN3sSSQjdAWT+aAVrqiRgy49Hsjk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790053869; c=relaxed/simple;
-	bh=+rOLlOcSnTuhGolRvrYiCHv46Rgbvvy135eqpmo7aKM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UVMEzJdADZEfv+0zd6fNLv8wrAiJIjHwzu8qEZePepJl8XkoeSoWG4f4YokB3uOqxxY0Hy3wA82jAJLyn0u1xN4XS38a2EBdzsHQhmNycNAysEYOQprWnzUh6oUWTdW0bqx720vRdlwuAEwMw1qT1VnbiGgkg5s6pnkqrf4bNkg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=agc4q3v+; arc=none smtp.client-ip=188.68.63.102
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
+	s=arc-20240116; t=1790056510; c=relaxed/simple;
+	bh=Aqa9mX2RqSKxdgvAwau1o6WmbwcRAGpRhQPj+UCHJ/w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=X7zdzp9jb4tzeF4W58HFoCeMZ7U7Rns60cGf/OdGcdTIaT8XeqIKeR6aq+iuYW1VONv16NnADBl5bUNTsCTeAvYmRlfppKR6mJA1a5dcJSAKzitISujJzJjJSa+10gI9QQC8zvTUVIMeF6ycl/Eg23127m47PyUwcUPzulGVIlA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O0cvYgM8; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="agc4q3v+"
-Received: from mors-relay-2502.netcup.net (localhost [127.0.0.1])
-	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4hpp8M14Sbz6Nb7;
-	Tue, 22 Sep 2026 07:10:43 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
-	s=key2; t=1790053843;
-	bh=+rOLlOcSnTuhGolRvrYiCHv46Rgbvvy135eqpmo7aKM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=agc4q3v+peuu8FcSl7YvGQT+gGnGjdR2Iwq5IGGaf3fq46pRICiA1kkUmX/F8LBMQ
-	 tiyUEzOeXiAa3phinZE9rjLUgFNr8P/aeol4P4IfMwYEdiKlqDUp+DWJK6alZTKWBV
-	 XlT+n6pYPx3X6OVX0NHMzBb8WArje/497mMKP2WeaqgGkgA7pCsbNHYb6Y1dXJwULS
-	 PUj8aI/iea0jzUc+sGylCYSr+UJ9+xa4HUdzSqUnMX8+L2dN4FYAY1Daw+7Z3zY+6z
-	 cKLmHJYfcQKs884cMSa0vG5BNYJmQoXQqzbBvRoanRnNHxQ0023dIVajY5VNca3M4e
-	 ctgpSAqPt9RuA==
-Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
-	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4hpp8M0Kkkz4ybD;
-	Tue, 22 Sep 2026 07:10:43 +0200 (CEST)
-Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4hpp8L0xWZz8sbH;
-	Tue, 22 Sep 2026 07:10:42 +0200 (CEST)
-Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
-	by mxe9fb.netcup.net (Postfix) with ESMTPSA id 1DB055FC2E;
-	Tue, 22 Sep 2026 07:10:41 +0200 (CEST)
-Authentication-Results: mxe9fb;
-        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
-Received-SPF: pass (mxe9fb: connection is authenticated)
-Message-ID: <1d25a149-8f00-4d3f-8b5e-56943a9bfa02@leemhuis.info>
-Date: Tue, 22 Sep 2026 07:10:39 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O0cvYgM8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6941E1F000FF;
+	Tue, 22 Sep 2026 05:55:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790056509;
+	bh=iztKm2JMcpPyD4ogPKgWEoylK7dEWOn5IAjcyxHLqcg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=O0cvYgM8kt/cMF7FBXrvQkxWgtZ2Glj7e3ADqsEpq3bD6vXdPWL3K2NoyKhbpGVvw
+	 EtP8rsjdrAEFvnuhUZ5CBWuEjXK5SUQQynKfcuWnzRRfdVm6bQcFXDTDtQr9ZKgmKb
+	 uvsqAQZ251m+AZnrQto2WVFz+y4AxcUH4eRKZg1eTCVDDKudXus8BfpkPm0ehW9SCK
+	 AMP1iadYeZENwWQWP+vq2xWiOGqD/zujoBpwJyDYSZtEhl+VvaeyIhKp2r+SOZ/wvi
+	 so58HdN8dJGzckKAB/RmLv57qkUHFGJu/G/maafzVT2kOZoa90eShkTUXYDzEcX5uW
+	 mLyah6pWuRtuQ==
+Date: Tue, 22 Sep 2026 08:55:03 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Vincent Donnefort <vdonnefort@google.com>
+Cc: catalin.marinas@arm.com, will@kernel.org, rafael@kernel.org,
+	mark.rutland@arm.com, lenb@kernel.org, pavel@kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, thierry.reding@kernel.org
+Subject: Re: [PATCH v1 1/4] PM: hibernate: Add arch specific hooks for
+ hibernate_map/unmap_page
+Message-ID: <arIYNzM7kiKlr21r@kernel.org>
+References: <20260918131656.3710047-1-vdonnefort@google.com>
+ <20260918131656.3710047-2-vdonnefort@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] PM: hibernate: Freeze kernel threads after image
- preallocation
-To: Florian Schmaus <flo@geekplace.eu>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Matthew Leach <matthew.leach@collabora.com>,
- "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- David Lomas <david.s.lomas@gmail.com>, Hic Haec Hoc <h.haechoc@gmail.com>
-References: <20260920-fix-hibernation-v1-1-f9940c2d7d7f@geekplace.eu>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Content-Language: de-DE, en-US
-In-Reply-To: <20260920-fix-hibernation-v1-1-f9940c2d7d7f@geekplace.eu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-PPP-Message-ID: 
- <179005384163.4132640.15499112207501133857@mxe9fb.netcup.net>
-X-NC-CID: Uhis3gRudamMTVFkNuULSZleteeot9H2AYWWqpJyf2lwR0kA8xc=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260918131656.3710047-2-vdonnefort@google.com>
 
-On 9/20/26 16:35, Florian Schmaus wrote:
-> Commit 783c81098445 ("PM: hibernate: call preallocate_image() after freeze
-> prepare") moved hibernate_preallocate_memory() after dpm_prepare() so
-> that device drivers have the opportunity to release pinned/unswappable
-> memory during their ->prepare() callback before memory is preallocated
-> for the snapshot image.
+Hi Vincent,
+
+On Fri, Sep 18, 2026 at 02:16:53PM +0100, Vincent Donnefort wrote:
+> hibernate_map_page() is called from an atomic context. This is
+> problematic for Arm BBML3 systems where the linear map may contain
+> blocks and is allowed to split as splitting is a sleepable operation.
 > 
-> However, that commit also placed hibernate_preallocate_memory() after
-> freeze_kernel_threads(). While it was assumed during review that swap
-> I/O submitted via submit_bio() is synchronous and would not depend on
-> frozen kernel threads, this does not hold in practice. Calling
-> hibernate_preallocate_memory() with kernel threads frozen leads to
-> intermittent deadlocks during hibernation.
-> [...]
-> Fixes: 783c81098445 ("PM: hibernate: call preallocate_image() after freeze prepare")
-> Signed-off-by: Florian Schmaus <flo@geekplace.eu>
+> Add arch hook so arm64 can define its own implementation without relying
+> on the direct map.
 
-TWIMC, there are two reports about hibernate problems that identified
-the mentioned commit as culprit (in one case while a stable backport was
-prepared that was dropped meanwhile). One of the reporters mentioned
-that the quoted patch fixed things in 7.2.y (see the last of the
-following links):
+I posted patches that remove set_direct_map usage from hibernation:
 
-https://lore.kernel.org/all/CALjEBWT9wyBYtWPgtg8Xd_FxRU_XnatzQMcwMB9_P2Fdj83+cQ@mail.gmail.com/#t
-https://lore.kernel.org/all/CALjEBWQo0-Sdimo+aRNKUQvgDGw=jBFCcfwCXaqVdtoPrHLAQA@mail.gmail.com/
-https://lore.kernel.org/all/CAKp=m=DkRA3FQdJC+1AKDtn1X8ZuO0HRF5H7PJVf15uQyBuEbg@mail.gmail.com/
+https://lore.kernel.org/all/20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org
+ 
+So I really hope this patch won't be needed :)
 
+> Signed-off-by: Vincent Donnefort <vdonnefort@google.com>
+> ---
+>  include/linux/suspend.h |  2 ++
+>  kernel/power/snapshot.c | 10 ++++++----
+>  2 files changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index b02876f1ae38..10fe2298d94e 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -401,6 +401,8 @@ int hibernate_quiet_exec(int (*func)(void *data), void *data);
+>  int hibernate_resume_nonboot_cpu_disable(void);
+>  int arch_hibernation_header_save(void *addr, unsigned int max_size);
+>  int arch_hibernation_header_restore(void *addr);
+> +void *hibernate_map_page(struct page *page);
+> +void hibernate_unmap_page(struct page *page);
+>  
+>  #else /* CONFIG_HIBERNATION */
+>  static inline void register_nosave_region(unsigned long b, unsigned long e) {}
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index b209712cb2c3..b41952f1de2a 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -85,7 +85,7 @@ static inline int hibernate_restore_unprotect_page(void *page_address) {return 0
+>   * It is still worth to have a warning here if something changes and this
+>   * will no longer be the case.
+>   */
+> -static inline void hibernate_map_page(struct page *page)
+> +void * __weak hibernate_map_page(struct page *page)
+>  {
+>  	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+>  		int ret = set_direct_map_default_noflush(page);
+> @@ -95,9 +95,10 @@ static inline void hibernate_map_page(struct page *page)
+>  	} else {
+>  		debug_pagealloc_map_pages(page, 1);
+>  	}
+> +	return page_address(page);
+>  }
+>  
+> -static inline void hibernate_unmap_page(struct page *page)
+> +void __weak hibernate_unmap_page(struct page *page)
+>  {
+>  	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+>  		unsigned long addr = (unsigned long)page_address(page);
+> @@ -1456,8 +1457,9 @@ static bool safe_copy_page(void *dst, struct page *s_page)
+>  	if (kernel_page_present(s_page)) {
+>  		zeros_only = do_copy_page(dst, page_address(s_page));
+>  	} else {
+> -		hibernate_map_page(s_page);
+> -		zeros_only = do_copy_page(dst, page_address(s_page));
+> +		void *src = hibernate_map_page(s_page);
+> +
+> +		zeros_only = do_copy_page(dst, src);
+>  		hibernate_unmap_page(s_page);
+>  	}
+>  	return zeros_only;
+> -- 
+> 2.55.0.1082.g2b9226bbc0-goog
+> 
 
-Adding a stable tag would likely a nice touch.
-
-Ciao, Thorsten
+-- 
+Sincerely yours,
+Mike.
