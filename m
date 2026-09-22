@@ -1,38 +1,38 @@
-Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B9FB5437CC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D8C55448BD;
 	Tue, 22 Sep 2026 12:43:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.221
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790081034; cv=none; b=p00P96TZh7OyJC+WUoxrTIG1aqZusNAjpHhb0pKaMt0W/SL9kWpMbWIbDFZSucUsotMTjKaySh/YK6AuMt4kCtShD7pjbNYk9DP9+gV+F7mHF5FY/RsvaFfFK+cO9CLdMOjMNkF/qnALOX4m1Cfxe/VdZVrUAPaZmDgLrnvSeYc=
+	t=1790081035; cv=none; b=nBFCVC7L4XMZUr0Dg9KNNLr7fsyuRtCAfPwrDDenIcU2w8Mqm3m1pkoXIdT6nM866vo4dNXg7RjT9rUvdi+JTdpFUxC/lrhnrHWGsTjib2DHjc+SU8aUKx3ey5NO22yrAYrtCsl9eLQG55szWKT8wVwTpVEqzKMTpRaX2es15BU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790081034; c=relaxed/simple;
-	bh=mYSr0K4zrRaOvDJ4RTYqmqbIJNYtzjYqJJKzjZAl1Uc=;
+	s=arc-20240116; t=1790081035; c=relaxed/simple;
+	bh=/B5NYFLugt9DIQ2id6d1oXbGd3V3fWNDJUDlnSTzymY=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=blXOp7ooHQN0xSGewDE2/AvYrTIMcjE+Uh/3s3Q4kdm2b8QkoYmLv2ottqSKEucD8y4DNq0cqHtgcotdNhjDYACHI9ZVfkSlH9qEqwSjHk6tdcRjFCNnAeNTnnfmvNoSVMUumV4d8OdJWskNaChICcuAKeF5SzbjOuUBkE5MkQA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=QSbzwbf5; arc=none smtp.client-ip=113.46.200.216
+	 MIME-Version:Content-Type; b=Y/CnW6Q21+YBq0x6zj6dwpa/wEqCgoNhtZyHo7kYaInR0BZrhxgpuqLxCzd/oW9XJfb/dC/CGKohaXQuz/OCQQYaRwV0r4NqjH6i/z06ZiHreEBo8bhKD+gvDGSkdllBC47FJv/h/C7+S5PcHTHvoi7EcR+yBhMTpiSR1QZ+2Tc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=m+8mqWQQ; arc=none smtp.client-ip=113.46.200.221
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="QSbzwbf5"
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="m+8mqWQQ"
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=ruZedv3T9GAEEFlS4qhDZuZMFHjSElM+C872GQj8Nko=;
-	b=QSbzwbf5iOXNxfklN5dHFd3rXrPZuGllejWqonfeOcTDr4n84cDEbRHt0PiuX2K2PROHirnS8
-	4vzdRt0Lio/69yN+qiIP/kH0qVoM2ptPPNhUiC0UMUE1FZyHGFSv8H3ZXIgz7KAXReLlfyS3Y9Q
-	WQYTcun5eo3ywMZJfSTSJvA=
+	bh=gk+Cw3lijNognwTB0VP6k3qTqQ7UBTDBC3Vxl2cQR8E=;
+	b=m+8mqWQQVbQgZoOlCrVCz8CmyNI/Z2D1VSRnG8AMhyJPbU0kbVXBPfIKIOG+JeMqRTwqRgpq2
+	E1YvK4PVmpiYTFG+i23vW96EavlHxk/XOO/D7Lj5FCyVROi9Pilu5nAc8z86jU1iGk3tZU0Vz40
+	0cTY9heOSsDiiViZnPBMMmw=
 Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4hpzxT1PnQz1T4LY;
-	Tue, 22 Sep 2026 20:31:57 +0800 (CST)
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4hpzxG4zTGzRhQs;
+	Tue, 22 Sep 2026 20:31:46 +0800 (CST)
 Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id 64DAD4058C;
-	Tue, 22 Sep 2026 20:43:47 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 176054058C;
+	Tue, 22 Sep 2026 20:43:48 +0800 (CST)
 Received: from localhost.localdomain (10.50.163.32) by
  kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Tue, 22 Sep 2026 20:43:46 +0800
+ 15.2.2562.45; Tue, 22 Sep 2026 20:43:47 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>,
 	<lenb@kernel.org>, <ionela.voinescu@arm.com>, <zhanjie9@hisilicon.com>,
@@ -41,9 +41,9 @@ CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
 	<linux-pm@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
 	<linuxarm@huawei.com>, <yubowen8@huawei.com>, <zhangpengjie2@huawei.com>,
 	<wangzhi12@huawei.com>, <linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
-Subject: [PATCH v4 7/8] ACPI: CPPC: Add Resource Priority accessors
-Date: Tue, 22 Sep 2026 20:41:20 +0800
-Message-ID: <20260922124121.3426219-8-zhenglifeng1@huawei.com>
+Subject: [PATCH v4 8/8] cpufreq: cppc: Expose Resource Priority attributes via sysfs
+Date: Tue, 22 Sep 2026 20:41:21 +0800
+Message-ID: <20260922124121.3426219-9-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
 References: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
@@ -58,361 +58,360 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
  kwepemf100001.china.huawei.com (7.202.181.215)
 
-CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) defines the Resource Priority
-mechanism that lets OSPM control relative priority among processors for
-shared resources such as processor boost, throttle, L2/L3 cache, and
-memory bandwidth.
+Add a "resource_priority" kobject directory under each cpufreq policy
+that has CPPC v4 Resource Priority entries.  Inside it, create a
+sub-directory per resource priority group (indexed 0..N-1) with the
+following sysfs attributes:
 
-Add the following exported APIs for user-space and driver consumers:
+  controlled_resources  (RO) -- resource type IDs as human-readable names
+  enable                (RW) -- enable/disable the priority group
+  priority_count        (RO) -- number of priority levels
+  priority              (RW) -- current priority value
 
-  - cppc_get_resource_priority_count() -- number of sub-packages
-  - cppc_get_resource_priority_resources() -- resource type IDs
-  - cppc_get/set_res_priority_enable() -- enable/disable a group
-  - cppc_get_res_priority_count() -- priority levels in a group
-  - cppc_get/set_res_priority() -- read/write the priority value
+Create the sysfs hierarchy in cppc_cpufreq_cpu_init() and tear it down
+in cppc_cpufreq_cpu_exit().  A void *res_prio_data pointer in
+cppc_cpudata tracks the allocation.
 
-These wrappers navigate the nested Package structure parsed earlier by
-parse_priority_regs() and delegate register I/O to cpc_read_reg() /
-cpc_write_reg().
-
-Provide stubs returning -EOPNOTSUPP for the !CONFIG_ACPI_CPPC_LIB case.
+These attributes allow administrators and power-management daemons to
+inspect and tune Resource Priority settings at runtime without
+requiring platform-specific tools.
 
 Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 ---
- drivers/acpi/cppc_acpi.c | 264 +++++++++++++++++++++++++++++++++++++++
- include/acpi/cppc_acpi.h |  37 ++++++
- 2 files changed, 301 insertions(+)
+ drivers/cpufreq/cppc_cpufreq.c | 281 ++++++++++++++++++++++++++++++++-
+ include/acpi/cppc_acpi.h       |   1 +
+ 2 files changed, 280 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 2c2b25ec3e27..f90d727798e8 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -2284,6 +2284,270 @@ int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index f6cea0c54dd9..497c10e806ac 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -640,12 +640,15 @@ static void cppc_cpufreq_put_cpu_data(struct cpufreq_policy *policy)
+ 	policy->driver_data = NULL;
  }
- EXPORT_SYMBOL_GPL(cppc_set_perf_limited);
  
-+/**
-+ * get_res_prio_subpkg - Get pointer to the elements array of a RESOURCE_PRIORITY sub-package.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index (0 to count-1).
-+ *
-+ * Return: Pointer to the sub-package's elements array, or NULL on error.
-+ *
-+ * The layout within each sub-package element is:
-+ *   elements[CONTROLLED_RESOURCES] = [0]
-+ *   elements[ENABLE_VALUE]         = [1]
-+ *   elements[ENABLE_REGISTER]      = [2]
-+ *   elements[PRIORITY_COUNT]       = [3]
-+ *   elements[PRIORITY_REGISTER]    = [4]
-+ */
-+static struct cpc_register_resource *get_res_prio_subpkg(int cpu, int index)
-+{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+	struct cpc_register_resource *rp_pkg;
++static int cppc_create_res_prio_sysfs(struct cpufreq_policy *policy);
++static void cppc_remove_res_prio_sysfs(struct cpufreq_policy *policy);
 +
-+	if (!cpc_desc)
-+		return NULL;
+ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned int cpu = policy->cpu;
+ 	struct cppc_cpudata *cpu_data;
+ 	struct cppc_perf_caps *caps;
+-	int ret;
++	int ret, retval;
+ 
+ 	cpu_data = cppc_cpufreq_get_cpu_data(cpu);
+ 	if (!cpu_data) {
+@@ -715,7 +718,19 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	cppc_cpufreq_cpu_fie_init(policy);
+-	return 0;
 +
-+	rp_pkg = &cpc_desc->cpc_regs[RESOURCE_PRIORITY];
-+	if (rp_pkg->type != ACPI_TYPE_PACKAGE)
-+		return NULL;
-+
-+	if (index < 0 || index >= rp_pkg->cpc_entry.package.count)
-+		return NULL;
-+
-+	return rp_pkg->cpc_entry.package.elements[index].cpc_entry.package.elements;
-+}
-+
-+/**
-+ * cppc_get_resource_priority_count - Get number of Resource Priority sub-packages.
-+ * @cpu: CPU number.
-+ * @count: Output number of resource priority groups.
-+ *
-+ * Return: 0 on success, -EOPNOTSUPP if RESOURCE_PRIORITY not provided by firmware.
-+ */
-+int cppc_get_resource_priority_count(int cpu, int *count)
-+{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+	struct cpc_register_resource *rp_pkg;
-+
-+	if (!count)
-+		return -EINVAL;
-+
-+	if (!cpc_desc)
-+		return -ENODEV;
-+
-+	rp_pkg = &cpc_desc->cpc_regs[RESOURCE_PRIORITY];
-+	if (rp_pkg->type != ACPI_TYPE_PACKAGE)
-+		return -EOPNOTSUPP;
-+
-+	*count = rp_pkg->cpc_entry.package.count;
-+	if (*count <= 0)
-+		return -EOPNOTSUPP;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cppc_get_resource_priority_count);
-+
-+/**
-+ * cppc_get_resource_priority_resources - Read Controlled Resources list for a sub-package.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index (0 to count-1).
-+ * @resources: Output array of resource type IDs (caller-allocated).
-+ * @num_resources: Input = array capacity, output = actual count.
-+ *
-+ * Return: 0 on success, -EOPNOTSUPP, -EINVAL, etc.
-+ */
-+int cppc_get_resource_priority_resources(int cpu, int index,
-+					 u32 *resources, int *num_resources)
-+{
-+	struct cpc_register_resource *elems;
-+	struct cpc_register_resource *cr_pkg;
-+	int i, cr_count;
-+
-+	if (!resources || !num_resources || *num_resources <= 0)
-+		return -EINVAL;
-+
-+	elems = get_res_prio_subpkg(cpu, index);
-+	if (!elems)
-+		return -EOPNOTSUPP;
-+
-+	cr_pkg = &elems[CONTROLLED_RESOURCES];
-+	if (cr_pkg->type != ACPI_TYPE_PACKAGE)
-+		return -EOPNOTSUPP;
-+
-+	cr_count = cr_pkg->cpc_entry.package.count;
-+	if (cr_count <= 0) {
-+		*num_resources = 0;
++	ret = cppc_create_res_prio_sysfs(policy);
++	if (!ret)
 +		return 0;
++
++	cppc_cpufreq_cpu_fie_exit(policy);
++
++	cpu_data->perf_ctrls.desired_perf = caps->lowest_perf;
++
++	retval = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
++	if (retval)
++		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
++			 caps->lowest_perf, cpu, retval);
+ 
+ out:
+ 	cppc_cpufreq_put_cpu_data(policy);
+@@ -729,6 +744,7 @@ static void cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 	unsigned int cpu = policy->cpu;
+ 	int ret;
+ 
++	cppc_remove_res_prio_sysfs(policy);
+ 	cppc_cpufreq_cpu_fie_exit(policy);
+ 
+ 	cpu_data->perf_ctrls.desired_perf = caps->lowest_perf;
+@@ -1026,6 +1042,267 @@ static struct freq_attr *cppc_cpufreq_attr[] = {
+ 	NULL,
+ };
+ 
++/* ====== Resource Priority sysfs interface (CPPC v4) ====== */
++
++struct cppc_res_prio_group {
++	struct kobject kobj;
++	int index;
++	unsigned int cpu;
++};
++
++struct cppc_res_prio_data {
++	struct kobject kobj;
++	int num_groups;
++	struct cppc_res_prio_group groups[];
++};
++
++static const char * const resource_type_names[] = {
++	NULL,
++	"processor_boost",
++	"processor_throttle",
++	"l2_cache",
++	"l3_cache",
++	"memory_bandwidth",
++};
++
++#define RESOURCE_TYPE_MAX 5
++
++static const char *resource_type_to_name(u32 id)
++{
++	if (id >= 1 && id <= RESOURCE_TYPE_MAX)
++		return resource_type_names[id];
++	return NULL;
++}
++
++static ssize_t controlled_resources_show(struct kobject *kobj,
++					 struct kobj_attribute *attr, char *buf)
++{
++	struct cppc_res_prio_group *grp =
++		container_of(kobj, struct cppc_res_prio_group, kobj);
++	u32 resources[32];
++	int num = ARRAY_SIZE(resources);
++	int ret, i, pos = 0;
++
++	ret = cppc_get_resource_priority_resources(grp->cpu, grp->index,
++						   resources, &num);
++	if (ret)
++		return ret;
++
++	if (num == 0)
++		return sysfs_emit(buf, "\n");
++
++	for (i = 0; i < num; i++) {
++		const char *name = resource_type_to_name(resources[i]);
++
++		if (name)
++			pos += sysfs_emit_at(buf, pos, "%s", name);
++		else
++			pos += sysfs_emit_at(buf, pos, "unknown(0x%02x)", resources[i]);
++
++		if (i < num - 1)
++			pos += sysfs_emit_at(buf, pos, " ");
 +	}
 +
-+	*num_resources = min(cr_count, *num_resources);
-+
-+	for (i = 0; i < *num_resources; i++)
-+		resources[i] = cr_pkg->cpc_entry.package.elements[i].cpc_entry.int_value;
-+
-+	return 0;
++	pos += sysfs_emit_at(buf, pos, "\n");
++	return pos;
 +}
-+EXPORT_SYMBOL_GPL(cppc_get_resource_priority_resources);
 +
-+/**
-+ * cppc_get_res_priority_enable - Read enable state of a Resource Priority register.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index.
-+ * @enable: Output true if enabled, false if disabled.
-+ *
-+ * Compares the current ENABLE_REGISTER value against ENABLE_VALUE.
-+ * If ENABLE_REGISTER is null/unsupported, returns -EOPNOTSUPP.
-+ *
-+ * Return: 0 on success, negative error otherwise.
-+ */
-+int cppc_get_res_priority_enable(int cpu, int index, bool *enable)
++static ssize_t enable_show(struct kobject *kobj,
++			   struct kobj_attribute *attr, char *buf)
 +{
-+	struct cpc_register_resource *elems;
-+	struct cpc_register_resource *enable_reg;
-+	u64 reg_val, enable_val;
++	struct cppc_res_prio_group *grp =
++		container_of(kobj, struct cppc_res_prio_group, kobj);
++	bool val;
 +	int ret;
 +
-+	if (!enable)
-+		return -EINVAL;
-+
-+	elems = get_res_prio_subpkg(cpu, index);
-+	if (!elems)
-+		return -EOPNOTSUPP;
-+
-+	enable_reg = &elems[ENABLE_REGISTER];
-+	if (enable_reg->type != ACPI_TYPE_BUFFER ||
-+	    IS_NULL_REG(&enable_reg->cpc_entry.reg))
-+		return -EOPNOTSUPP;
-+
-+	ret = cpc_read_reg(cpu, enable_reg, &reg_val);
++	ret = cppc_get_res_priority_enable(grp->cpu, grp->index, &val);
++	if (ret == -EOPNOTSUPP)
++		return sysfs_emit(buf, "<unsupported>\n");
 +	if (ret)
 +		return ret;
 +
-+	ret = cpc_read_reg(cpu, &elems[ENABLE_VALUE], &enable_val);
-+	if (ret)
-+		return ret;
-+
-+	*enable = (reg_val == enable_val);
-+	return 0;
++	return sysfs_emit(buf, "%d\n", val);
 +}
-+EXPORT_SYMBOL_GPL(cppc_get_res_priority_enable);
 +
-+/**
-+ * cppc_set_res_priority_enable - Set enable state of a Resource Priority register.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index.
-+ * @enable: true to enable (write ENABLE_VALUE), false to disable (write 0).
-+ *
-+ * Return: 0 on success, negative error otherwise.
-+ */
-+int cppc_set_res_priority_enable(int cpu, int index, bool enable)
++static ssize_t enable_store(struct kobject *kobj,
++			    struct kobj_attribute *attr,
++			    const char *buf, size_t count)
 +{
-+	struct cpc_register_resource *elems;
-+	struct cpc_register_resource *enable_reg;
++	struct cppc_res_prio_group *grp =
++		container_of(kobj, struct cppc_res_prio_group, kobj);
++	bool val;
++	int ret;
++
++	ret = kstrtobool(buf, &val);
++	if (ret)
++		return ret;
++
++	ret = cppc_set_res_priority_enable(grp->cpu, grp->index, val);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
++static ssize_t priority_count_show(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   char *buf)
++{
++	struct cppc_res_prio_group *grp =
++		container_of(kobj, struct cppc_res_prio_group, kobj);
 +	u64 val;
 +	int ret;
 +
-+	elems = get_res_prio_subpkg(cpu, index);
-+	if (!elems)
-+		return -EOPNOTSUPP;
-+
-+	enable_reg = &elems[ENABLE_REGISTER];
-+
-+	if (enable) {
-+		ret = cpc_read_reg(cpu, &elems[ENABLE_VALUE], &val);
-+		if (ret)
-+			return ret;
-+	} else {
-+		val = 0;
-+	}
-+
-+	return cpc_write_reg(cpu, enable_reg, val);
-+}
-+EXPORT_SYMBOL_GPL(cppc_set_res_priority_enable);
-+
-+/**
-+ * cppc_get_res_priority_count - Read priority count for a Resource Priority register.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index.
-+ * @count: Output priority count (>= 2 per spec).
-+ *
-+ * Return: 0 on success, negative error otherwise.
-+ */
-+int cppc_get_res_priority_count(int cpu, int index, u64 *count)
-+{
-+	struct cpc_register_resource *elems;
-+
-+	if (!count)
-+		return -EINVAL;
-+
-+	elems = get_res_prio_subpkg(cpu, index);
-+	if (!elems)
-+		return -EOPNOTSUPP;
-+
-+	return cpc_read_reg(cpu, &elems[PRIORITY_COUNT], count);
-+}
-+EXPORT_SYMBOL_GPL(cppc_get_res_priority_count);
-+
-+/**
-+ * cppc_get_res_priority - Read priority value for a Resource Priority register.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index.
-+ * @priority: Output priority value.
-+ *
-+ * Return: 0 on success, negative error otherwise.
-+ */
-+int cppc_get_res_priority(int cpu, int index, u64 *priority)
-+{
-+	struct cpc_register_resource *elems;
-+	struct cpc_register_resource *prio_reg;
-+
-+	if (!priority)
-+		return -EINVAL;
-+
-+	elems = get_res_prio_subpkg(cpu, index);
-+	if (!elems)
-+		return -EOPNOTSUPP;
-+
-+	prio_reg = &elems[PRIORITY_REGISTER];
-+	if (prio_reg->type != ACPI_TYPE_BUFFER ||
-+	    IS_NULL_REG(&prio_reg->cpc_entry.reg))
-+		return -EOPNOTSUPP;
-+
-+	return cpc_read_reg(cpu, prio_reg, priority);
-+}
-+EXPORT_SYMBOL_GPL(cppc_get_res_priority);
-+
-+/**
-+ * cppc_set_res_priority - Write priority value for a Resource Priority register.
-+ * @cpu: CPU number.
-+ * @index: Sub-package index.
-+ * @priority: Priority value to write (valid range: [0, PriorityCount - 1]).
-+ *
-+ * Return: 0 on success, negative error otherwise.
-+ */
-+int cppc_set_res_priority(int cpu, int index, u64 priority)
-+{
-+	struct cpc_register_resource *elems;
-+	struct cpc_register_resource *prio_reg;
-+	u64 prio_count;
-+	int ret;
-+
-+	elems = get_res_prio_subpkg(cpu, index);
-+	if (!elems)
-+		return -EOPNOTSUPP;
-+
-+	ret = cpc_read_reg(cpu, &elems[PRIORITY_COUNT], &prio_count);
++	ret = cppc_get_res_priority_count(grp->cpu, grp->index, &val);
++	if (ret == -EOPNOTSUPP)
++		return sysfs_emit(buf, "<unsupported>\n");
 +	if (ret)
 +		return ret;
 +
-+	if (priority >= prio_count)
-+		return -EINVAL;
-+
-+	prio_reg = &elems[PRIORITY_REGISTER];
-+
-+	return cpc_write_reg(cpu, prio_reg, priority);
++	return sysfs_emit(buf, "%llu\n", val);
 +}
-+EXPORT_SYMBOL_GPL(cppc_set_res_priority);
 +
- /**
-  * cppc_get_transition_latency - returns frequency transition latency in ns
-  * @cpu_num: CPU number for per_cpu().
++static ssize_t priority_show(struct kobject *kobj,
++			     struct kobj_attribute *attr, char *buf)
++{
++	struct cppc_res_prio_group *grp =
++		container_of(kobj, struct cppc_res_prio_group, kobj);
++	u64 val;
++	int ret;
++
++	ret = cppc_get_res_priority(grp->cpu, grp->index, &val);
++	if (ret == -EOPNOTSUPP)
++		return sysfs_emit(buf, "<unsupported>\n");
++	if (ret)
++		return ret;
++
++	return sysfs_emit(buf, "%llu\n", val);
++}
++
++static ssize_t priority_store(struct kobject *kobj,
++			      struct kobj_attribute *attr,
++			      const char *buf, size_t count)
++{
++	struct cppc_res_prio_group *grp =
++		container_of(kobj, struct cppc_res_prio_group, kobj);
++	u64 val;
++	int ret;
++
++	ret = kstrtou64(buf, 0, &val);
++	if (ret)
++		return ret;
++
++	ret = cppc_set_res_priority(grp->cpu, grp->index, val);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
++static struct kobj_attribute attr_controlled_resources =
++	__ATTR(controlled_resources, 0444, controlled_resources_show, NULL);
++static struct kobj_attribute attr_enable =
++	__ATTR(enable, 0644, enable_show, enable_store);
++static struct kobj_attribute attr_priority_count =
++	__ATTR(priority_count, 0444, priority_count_show, NULL);
++static struct kobj_attribute attr_priority =
++	__ATTR(priority, 0644, priority_show, priority_store);
++
++static struct attribute *res_prio_group_attrs[] = {
++	&attr_controlled_resources.attr,
++	&attr_enable.attr,
++	&attr_priority_count.attr,
++	&attr_priority.attr,
++	NULL,
++};
++
++ATTRIBUTE_GROUPS(res_prio_group);
++
++static void cppc_res_prio_group_release(struct kobject *kobj)
++{
++	/*
++	 * cppc_res_prio_group is embedded in the flexible array of
++	 * cppc_res_prio_data and freed when the parent is released.
++	 */
++}
++
++static const struct kobj_type cppc_res_prio_group_ktype = {
++	.release = cppc_res_prio_group_release,
++	.sysfs_ops = &kobj_sysfs_ops,
++	.default_groups = res_prio_group_groups,
++};
++
++static void cppc_res_prio_release(struct kobject *kobj)
++{
++	struct cppc_res_prio_data *data =
++		container_of(kobj, struct cppc_res_prio_data, kobj);
++
++	kfree(data);
++}
++
++static const struct kobj_type cppc_res_prio_ktype = {
++	.release = cppc_res_prio_release,
++	.sysfs_ops = &kobj_sysfs_ops,
++};
++
++static void cppc_remove_res_prio_sysfs(struct cpufreq_policy *policy)
++{
++	struct cppc_cpudata *cpu_data = policy->driver_data;
++	struct cppc_res_prio_data *data = cpu_data->res_prio_data;
++	int i;
++
++	if (!data)
++		return;
++
++	for (i = 0; i < data->num_groups; i++)
++		kobject_put(&data->groups[i].kobj);
++
++	kobject_put(&data->kobj);
++	cpu_data->res_prio_data = NULL;
++}
++
++static int cppc_create_res_prio_sysfs(struct cpufreq_policy *policy)
++{
++	struct cppc_cpudata *cpu_data = policy->driver_data;
++	struct cppc_res_prio_data *data;
++	int num, i, ret;
++
++	ret = cppc_get_resource_priority_count(policy->cpu, &num);
++	if (ret || num <= 0)
++		return 0;
++
++	data = kzalloc(struct_size(data, groups, num), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->num_groups = num;
++
++	ret = kobject_init_and_add(&data->kobj, &cppc_res_prio_ktype,
++				   &policy->kobj, "resource_priority");
++	if (ret) {
++		kobject_put(&data->kobj);
++		return ret;
++	}
++
++	for (i = 0; i < num; i++) {
++		data->groups[i].index = i;
++		data->groups[i].cpu = policy->cpu;
++
++		ret = kobject_init_and_add(&data->groups[i].kobj,
++					   &cppc_res_prio_group_ktype,
++					   &data->kobj, "%d", i);
++		if (ret) {
++			for (; i >= 0; i--)
++				kobject_put(&data->groups[i].kobj);
++			kobject_put(&data->kobj);
++			return ret;
++		}
++	}
++
++	cpu_data->res_prio_data = data;
++	return 0;
++}
++
+ static struct cpufreq_driver cppc_cpufreq_driver = {
+ 	.flags = CPUFREQ_CONST_LOOPS | CPUFREQ_NEED_UPDATE_LIMITS,
+ 	.verify = cppc_verify_policy,
 diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index c0b8d52016cd..86a4764c504d 100644
+index 86a4764c504d..481fca627389 100644
 --- a/include/acpi/cppc_acpi.h
 +++ b/include/acpi/cppc_acpi.h
-@@ -208,6 +208,14 @@ extern int cppc_get_auto_sel(int cpu, bool *enable);
- extern int cppc_set_auto_sel(int cpu, bool enable);
- extern int cppc_get_perf_limited(int cpu, u64 *perf_limited);
- extern int cppc_set_perf_limited(int cpu, u64 bits_to_clear);
-+extern int cppc_get_resource_priority_count(int cpu, int *count);
-+extern int cppc_get_resource_priority_resources(int cpu, int index,
-+						u32 *resources, int *num_resources);
-+extern int cppc_get_res_priority_enable(int cpu, int index, bool *enable);
-+extern int cppc_set_res_priority_enable(int cpu, int index, bool enable);
-+extern int cppc_get_res_priority_count(int cpu, int index, u64 *count);
-+extern int cppc_get_res_priority(int cpu, int index, u64 *priority);
-+extern int cppc_set_res_priority(int cpu, int index, u64 priority);
- extern int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf);
- extern int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator);
- extern int amd_detect_prefcore(bool *detected);
-@@ -312,6 +320,35 @@ static inline int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
- {
- 	return -EOPNOTSUPP;
- }
-+static inline int cppc_get_resource_priority_count(int cpu, int *count)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int cppc_get_resource_priority_resources(int cpu, int index,
-+						       u32 *resources, int *num_resources)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int cppc_get_res_priority_enable(int cpu, int index, bool *enable)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int cppc_set_res_priority_enable(int cpu, int index, bool enable)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int cppc_get_res_priority_count(int cpu, int index, u64 *count)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int cppc_get_res_priority(int cpu, int index, u64 *priority)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int cppc_set_res_priority(int cpu, int index, u64 priority)
-+{
-+	return -EOPNOTSUPP;
-+}
- static inline int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf)
- {
- 	return -ENODEV;
+@@ -175,6 +175,7 @@ struct cppc_cpudata {
+ 	struct cppc_perf_fb_ctrs perf_fb_ctrs;
+ 	unsigned int shared_type;
+ 	cpumask_var_t shared_cpu_map;
++	void *res_prio_data;
+ };
+ 
+ #ifdef CONFIG_ACPI_CPPC_LIB
 -- 
 2.33.0
 
