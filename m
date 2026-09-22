@@ -1,84 +1,172 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82ADC49B5AC
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 19:13:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07E594A3F14
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 19:23:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790104420; cv=none; b=mhM7BN+mVVtc3zG2ZOVYoap9XZYeEvhRR1Xjw89OKyjrh7K+b7Rz1LMBhYabA8KJjyVkT4+DT9XlZUEyh//jcmiXTL4cbSoNWEe2KwOpB48JkN+Ol5ZSEyDXwQ902lWuX2w+jM/KhAA127OUnvaTivuNtiUtHbXLQOmibdTaM94=
+	t=1790104986; cv=none; b=EcozTRojOiOOG8y9r+f8TyZxFCL4e7flp3ezqQWmmLT+9qkPdwiVU6JDi8eGfvGT1PndnTbJkorw/wRjI8AbXqdbbDW+IIOpZWt2YlqzwSj8Mcu4wb356Tsk16vqWf+8MF9b7FypKQRLJ+MEhLiYvwffPtf+ZLoxoGOBgzneeSM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790104420; c=relaxed/simple;
-	bh=PM3YWhQj26OxqlfqxABsAhf7EA9P5fAzAXziwoQMM6s=;
+	s=arc-20240116; t=1790104986; c=relaxed/simple;
+	bh=6+jWmzAMpzZFHnkcLGjZJ1J8P6nJWosJEjYxYxNzf2o=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ub3ApuoeBPOz4vRyUNI43hVntBJRej0mCvxXaITcsfCBMzj5qqDHqGgV6Leo0Lh70DoGQ1iEeOkTS2jpMwXveTtZVPzeGIsng95Hxhsnb59XBQCn+T6YyNsvWCJdezrkqDb1rN8ZHkFS/yF3XdHTLZYI70WBVaC5b6hEYQqWx8I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YtU56KyI; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=mlYCqYBl39+aXrDKco2afsGsP8JCknQZGqmBNvimhA81KQDigxIXXKpTXSzTWuQ/ss8GajZei3fMVvDIt/ipRs2IWzmgLkETXYl/PDIyRePIejrLTvhktpfDIj+p1nBLKsucnkz7d5R/X1D7xfoSs+zMALhtR0abD0r23rrlY2k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cwS1NeNU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YtU56KyI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 509E61F0089B
-	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 19:13:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cwS1NeNU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 521641F0089C
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 19:23:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790104419;
-	bh=PM3YWhQj26OxqlfqxABsAhf7EA9P5fAzAXziwoQMM6s=;
+	s=k20260515; t=1790104983;
+	bh=afdFbb0Oxpswz4JQtJZyx58sYBBrJDryxTxTGWpHsUs=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=YtU56KyIUs+z5oJoBxZVr6j3xV9VZ5m1c8xOG7x2c35Pn+q4LGUmvXP9emn44D4Rm
-	 P2dAoN7anvD/e44J732zKnJmyT0kiBWbHBoEXC7vBMukwGOHWYeQYBNOB6EukgneZm
-	 o6hYWiOYsarJu6O7pp5CC+9nQy/aykEpviGWre1VM553nGXe2IdbAN/BiTIRgT9z8O
-	 /Ig9csMr/UjtYxA97lfZFreasI/Odhx0hU3ogStU+7pbc4XU/kFWANlDf3NZJSiARb
-	 oa5mTVXvBJGaJtmcI5M8Zq5hPK+PTTADqcJSHsGNm1vcqnHuDoXS4hfIB42MGib783
-	 rG+AynjKnlwWA==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b5e4f17452so102785e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 12:13:39 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBysuv2qk0fiY9sogG4Gq19L5K211FYwjLHFHLiq7+HQsjMXylQjd4326RHKAkv3Cvcj7dDE+nIChw==@vger.kernel.org
-X-Gm-Message-State: AFuF++nej9bvJ2w0cErWhFg6dBEVIQKaGAR8YS8MYOjExXgnc7LI0bee
-	mtTMmo6OHHUDv/a/SWCjlCFbLjgiM3bupL6MguF0BJtxo0TQpqLDU0NLnr/ITUJa8ASnBkZzJtj
-	qD/aGxJt/f8pfdvm/5dJTzr5zipbRD2o=
-X-Received: by 2002:a05:6512:618c:b0:5b6:183c:5c8c with SMTP id
- 2adb3069b0e04-5b8d89a565fmr71281e87.42.1790104417597; Tue, 22 Sep 2026
- 12:13:37 -0700 (PDT)
+	b=cwS1NeNU/1megkIFwX7RWYEYgR6blyuYff+wv2z2HaJkf5i1I/6ykUVcoWIv9xERr
+	 yso3akEDXwi02+tRu8BUn9ihzUBUpdjI9czzVajdXCxlkOZedOsk76aokQ5yP1/0PQ
+	 uQ2In8SXt9CUDLFrKlLF8lcXQqHQN7s9awifazewZ8sFS18R7Jrg6EN7dleq/nxsbk
+	 NufD8mryXvdPqaL3NjbpNkZnOuApjHBIDu95kZsojYid46p3QNFSJqObf2jX6SKAjm
+	 TfFD9ngatyHZP2ZiCCHw03yx8PtH+WXVhf8xcUZDUYO4sKQjfQzRjs6OqM2SFqRJwl
+	 f2Ig6uOwlq2eg==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b74e0c2e4dso161284e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 12:23:03 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxJXZFoSvmQAY5T3QYbnvwApg/jdAsA6yttrUtnQcsdOrZ+FNgCW6eOwQq3oniVGvhvzebxjiM9xQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++mla8usr5g7leE/QNsO/Po2fXnRV8JBvyN6KOb50Jhbw2+lMnBd
+	klmxx+ywG/ogoT0iftLV0EGNjk97hSPUTaP8tmKAGb01Ko1xmVHW5WPX8bPhgdQa3HwrCS+AEOS
+	9VsC63V++xsKcTulMiUgLHQFr5jS4U2s=
+X-Received: by 2002:a05:6512:3ca0:b0:5b8:bc5e:b574 with SMTP id
+ 2adb3069b0e04-5b8d89b0a6bmr80176e87.44.1790104981582; Tue, 22 Sep 2026
+ 12:23:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260920-fix-hibernation-v1-1-f9940c2d7d7f@geekplace.eu> <87zex963x1.fsf@collabora.com>
-In-Reply-To: <87zex963x1.fsf@collabora.com>
+References: <20260922-step_wise_multi_zone_stale_vote_fix-v1-1-789f68dab229@oss.qualcomm.com>
+In-Reply-To: <20260922-step_wise_multi_zone_stale_vote_fix-v1-1-789f68dab229@oss.qualcomm.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 22 Sep 2026 21:12:05 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g4OXgxELt98Ea8KVg+QDuG+7=9O44kHWQW_1koZWMXxg@mail.gmail.com>
-X-Gm-Features: AcwNN1XAFesbYtGuG1wmKNFnZTylIzRVQgeFA-Zt8JbiqpgYhDwswKfHRBP2Pwc
-Message-ID: <CAJZ5v0g4OXgxELt98Ea8KVg+QDuG+7=9O44kHWQW_1koZWMXxg@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: Freeze kernel threads after image preallocation
-To: Matthew Leach <matthew.leach@collabora.com>, flo@geekplace.eu
-Cc: Pavel Machek <pavel@kernel.org>, "Mario Limonciello (AMD)" <superm1@kernel.org>, 
+Date: Tue, 22 Sep 2026 21:21:29 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0h8w4Za5jU7M5Vos7OWf6hkXXHoRetR87-_A7U-Rj9-Zw@mail.gmail.com>
+X-Gm-Features: AcwNN1VYiKZQLUWuoqK1GWIegsgx5WasS_Lrro2nwSBi5LKy9AFX7qy1FHw6H04
+Message-ID: <CAJZ5v0h8w4Za5jU7M5Vos7OWf6hkXXHoRetR87-_A7U-Rj9-Zw@mail.gmail.com>
+Subject: Re: [PATCH] thermal: gov_step_wise: Fix stale mitigation vote with
+ non-zero lower bounds
+To: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
 	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Thorsten Leemhuis <regressions@leemhuis.info>
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Sep 22, 2026 at 11:17=E2=80=AFAM Matthew Leach
-<matthew.leach@collabora.com> wrote:
+On Tue, Sep 22, 2026 at 2:19=E2=80=AFPM Manaf Meethalavalappu Pallikunhi
+<manaf.pallikunhi@oss.qualcomm.com> wrote:
 >
-> Hi Florian,
+> When two or more thermal zones bind to a common cooling device and one zo=
+ne
+> uses a non-zero instance->lower value, there is a bug where the instance
+> holds a stale mitigation vote even after its trip is cleared.
 >
-> Florian Schmaus via B4 Relay <devnull+flo.geekplace.eu@kernel.org> writes=
-:
+> Problem scenario:
+> - thermal-zone1: Trip at 50=C2=B0C, cooling-map with lower=3D0
+> - thermal-zone2: Trip at 55=C2=B0C, cooling-map with lower=3D2
+> - Both zones share the same cooling device (e.g., CPU)
 >
-> > From: Florian Schmaus <flo@geekplace.eu>
+> Issue flow:
+> 1. Both trips trigger, zone1 requests state 5, zone2 also mitigates
+> 2. Zone2 trip clears (temp < 53=C2=B0C due to hysteresis)
+> 3. When throttle=3Dfalse and trend=3DTHERMAL_TREND_DROPPING:
+>    - Current code checks: if (cur_state <=3D instance->lower)
+>      return THERMAL_NO_TARGET
+>    - Since cur_state (5) > instance->lower (2),
+>      it returns instance->lower (2)
+>    - This is the BUG where it returns instance->lower even though
+>      trip is cleared
+> 4. Zone2's passive polling stops (tz->passive reaches 0) - no more update=
+s
+>    for zone2
+> 5. Zone2's stale vote of 2 persists indefinitely
+> 6. Even when zone1 wants to reduce cooling to state, the cooling device
+>    cannot go below state 2 due to zone2's stale vote
 >
-> [...]
+> When a trip is cleared (throttle =3D=3D false), always return THERMAL_NO_=
+TARGET
+> instead of instance->lower. Remove the unnecessary check comparing
+> cur_state with instance->lower. Since passive polling is already
+> deactivated when the trip is cleared, the instance should always be
+> deactivated regardless of its current cooling state. This ensures that
+> instances with non-zero lower bounds do not retain stale mitigation votes
+> after their trips are cleared.
 >
-> > Fixes: 783c81098445 ("PM: hibernate: call preallocate_image() after fre=
-eze prepare")
-> > Signed-off-by: Florian Schmaus <flo@geekplace.eu>
-> >
+> Fixes: 042a3d80f118 ("thermal: core: Move passive polling management to t=
+he core")
+> Signed-off-by: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qua=
+lcomm.com>
+> ---
+> When two thermal zones bind to a common cooling device and one zone uses
+> a non-zero instance->lower value, there is a bug where the instance holds
+> a stale mitigation vote even after its trip is cleared.
 >
-> Thanks for the fix, and sorry for the breakage. I've tested this on top
-> of 7.2 and the original issue my patch addressed remains fixed. I wasn't
-> able to reproduce the deadlock under high memory-pressure locally, so I
-> can't confirm that side of it.
+> Problem scenario:
+> - thermal-zone1: Trip at 50=C2=B0C, cooling-map with lower=3D0
+> - thermal-zone2: Trip at 55=C2=B0C, cooling-map with lower=3D2
+> - Both zones share the same cooling device (e.g., CPU)
 >
-> Tested-by: Matthew Leach <matthew.leach@collabora.com>
-> Reviewed-by: Matthew Leach <matthew.leach@collabora.com>
+> Issue flow:
+> 1. Both trips trigger, zone1 requests state 5, zone2 also mitigates
+> 2. Zone2 trip clears (temp < 53=C2=B0C due to hysteresis)
+> 3. When throttle=3Dfalse and trend=3DTHERMAL_TREND_DROPPING:
+>    - Current code checks: if (cur_state <=3D instance->lower)
+>      return THERMAL_NO_TARGET
+>    - Since cur_state (5) > instance->lower (2),
+>      it returns instance->lower (2)
+>    - This is the BUG where it returns instance->lower even though
+>      trip is cleared
+> 4. Zone2's passive polling stops (tz->passive reaches 0) - no more update=
+s
+>    for zone2
+> 5. Zone2's stale vote of 2 persists indefinitely
+> 6. Even when zone1 wants to reduce cooling to state, the cooling device
+>    cannot go below state 2 due to zone2's stale vote
+>
+> When a trip is cleared (throttle =3D=3D false), always return THERMAL_NO_=
+TARGET
+> instead of instance->lower. Remove the unnecessary check comparing
+> cur_state with instance->lower. Since passive polling is already
+> deactivated when the trip is cleared, the instance should always be
+> deactivated regardless of its current cooling state. This ensures that
+> instances with non-zero lower bounds do not retain stale mitigation votes
+> after their trips are cleared.
+> ---
+>  drivers/thermal/gov_step_wise.c | 10 ++++------
+>  1 file changed, 4 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/thermal/gov_step_wise.c b/drivers/thermal/gov_step_w=
+ise.c
+> index ea277c466d8d..4fa4377f0d42 100644
+> --- a/drivers/thermal/gov_step_wise.c
+> +++ b/drivers/thermal/gov_step_wise.c
+> @@ -65,14 +65,12 @@ static unsigned long get_target_state(struct thermal_=
+instance *instance,
+>                                      min(instance->lower + 1, instance->u=
+pper),
+>                                      instance->upper);
+>         } else if (trend =3D=3D THERMAL_TREND_DROPPING) {
+> -               if (cur_state <=3D instance->lower)
+> -                       return THERMAL_NO_TARGET;
+> -
+>                 /*
+> -                * If 'throttle' is false, no mitigation is necessary, so
+> -                * request the lower state for this instance.
+> +                * If 'throttle' is false, no mitigation is necessary and
+> +                * passive polling is already deactivated, so clear this
+> +                * instance state by returning THERMAL_NO_TARGET.
+>                  */
+> -               return instance->lower;
+> +               return THERMAL_NO_TARGET;
+>         }
+>
+>         return instance->target;
+>
+> ---
 
 Applied as 7.3-rc material, thanks!
