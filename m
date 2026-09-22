@@ -1,397 +1,296 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010000.outbound.protection.outlook.com [52.101.193.0])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D500337DEBF;
-	Tue, 22 Sep 2026 19:47:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790106455; cv=none; b=V5+tq14kferEhiKcRFwfOAp6F2DEAR5l74iKqTJpWqqn6FjsLX4K+szvQluuz/ji8fWFWItQhswzB10AjzFXlDh8zL13twckT7n2WNHYwRHJWQZQKnfKvSuEjG0NAqB+M4wQhsA2KQUcYjbWJ0+Vk+Mp4WbCEKTDNUVv9KxB8lE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790106455; c=relaxed/simple;
-	bh=Cu/b7zYXwkRqkT8An5yjhmWghNWweq8zx46GB9DslOc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IFQ/c1rO66m+92W67//fee8TOmvk2sA/Wu3G5zMZqapMnspL3nVyZqphSxRwuIKql+q8yEnHBDmTH9YnZBRsHRTINA1AHY/NMp4KvRRq7zlo7yhTUe0i3EvyukuqCkKweXUtD6T9VYHxGrJwgJNlpB/LKh1YQlEvdK4gGf8fA7Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b=VG9dB1b8; arc=none smtp.client-ip=212.227.15.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA46B45D5E7;
+	Tue, 22 Sep 2026 19:54:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.0
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790106870; cv=fail; b=Y9QdG4FmiRCpImA/pHdqvBOuwUYDmsRH/MZ0zgFhm9O/wXctIFVCQudzn/DmNDA2E/rYy9Lq14pd92fu79TFHGrEsA1RCLFv0y8spKQ0QMKywA4Yf2XrTiiOD1TQWRfo635Q5u2PA7mCSsVOyPtvJqdZMsjBKBN1fTT+qwbBLsI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790106870; c=relaxed/simple;
+	bh=DntOTyiehTYLE/ecSj68RfJvncCmRDLPsD8e/ZTDRs8=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=QuUWVKHRUFsuN1PNRjM5prZTdVxwPHvXNbsR5asGv/A1Ei2UgXYXPGCJ0+a/c7zNYaLyuzRihElbQpGb4LbuVYWPhjp2w89W5/Voocv7E9/NKn0dXkuw04QcKPAd9WQzsD+/zBKWI5yNa+NAAWqQ4h0T9TvrwiD2ymiT4PD7XOo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=TQuftjtg; arc=fail smtp.client-ip=52.101.193.0
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b="VG9dB1b8"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1790106443; x=1790711243; i=w_armin@gmx.de;
-	bh=3LMdM/DqOCOAi/wrMN0qVAmfGfkIM2YtiHkQRCXTUaI=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=VG9dB1b8ZHLxkfVoaFo77Ji6L+QwFxArxwZYOfSLGC33NbhVBG8gJegfiM8JH2Iq
-	 eI8eoz/jtls8uZCsTjaRv3a1SBLeJU52czfVbq1CrTy2jx7eESWcgQjLsLEDcn1zh
-	 Iwidj93+4N3pzs2YgDCHQWL4bQBB+wFTgiogUF3FHl4EsznwjKpgpVTNsoHFCikT/
-	 E3J8W9A2h/wAv+z5k0seupd7a8hQW40vPzqG/ZTfWIDHjv223i06QKoLHT8i+WKT0
-	 +xC71fgI4IxD6mlo5lIbfqK5/4XtwEPWmVR7iGgfgR02R1OEW9u/+pNlkjn3C+NbM
-	 ftBCSHz7KKdR8j41Tw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MRCK6-1xNJvj1gyi-00MLZg; Tue, 22
- Sep 2026 21:47:23 +0200
-Message-ID: <7a80b4e3-1f87-43d4-ad4a-21bf1a897395@gmx.de>
-Date: Tue, 22 Sep 2026 21:47:20 +0200
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="TQuftjtg"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Uj0AguIikl3vp5+DlhQgTFdDWszZCVW7npK4/gY4gf2GW7lOdDt6zS63zkc3tK89xo2b8eP32t2FPTL6R5jPzHtfIoEZXC0bZXJ77s9KitUuBgIVGtF0qF/Dvry6uUm0qwF9lhP9GvpQ7nIQdJEuPmGKl3uiG0qwOQNyDt1++URea/gg7hf9EsGBfMYTOFtaHlcNLKAkCkEoMRD7mXWcSxT+Pt2snF0WC51uwcMs/bDH68vZoO8KyHDDfnY07ILeq/MMF3dI8rczO988JV/SyPtB30/8CJGjeNYRGB6010AwV8CGBG0z8z1iZVxREI2LduiCHnX5x7AlNDU/vT5SEg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xLVnx364MwIiqrNO5GzKIfgM07nDj2xdFyOqvCpheno=;
+ b=wKBjgJvH5Yoq5thkjSPqeLTHWDU4n9m2zfY4vA1eTNaQ6tDS1sl9BgTwiLqn9iWaMPrJMX4fb/3q8eBEUl2X0eqwKFFP2l+GJq/GN7VU3lOZaqTf7h+JF8HzlKXhyDmIDp9nxZySlzKKe7hxziGNterpFwrE3FC2vOeu9OuD0mDFcWG1RDFCHVZJHH4NgFteBRmatpdALzQjO9MPm2sTlLnocha6GYqaHBAk2jBfOhxBVW91WdQJS4+QVSG9uyjpEszcefr2E/29ZYAAGiJXNv3JgolPc4fb3FtbtUMJwlI9iWmaAmvQb6iUT7J+nLQE4xXIK4ksSAvYJT/PoJtsAA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xLVnx364MwIiqrNO5GzKIfgM07nDj2xdFyOqvCpheno=;
+ b=TQuftjtgDHzdE+bqlRbk64ygUy5BSKlW0lXmzkzQgmNG18ynV17DvrYlgrABHFcke9Ir7UQSODpV8HsBBB8bnr+fqBwQj02+nMqtBjWwSlzrmDlPqHXD11KDveU+KwinvzKtE0oa1fAbLy4rzo/Ang3Ho4mrLTc9Jh/HUH/ihG8=
+Received: from BL4PR12MB9533.namprd12.prod.outlook.com (2603:10b6:208:58f::21)
+ by DS4PR12MB9611.namprd12.prod.outlook.com (2603:10b6:8:277::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.14; Tue, 22 Sep
+ 2026 19:54:17 +0000
+Received: from BL4PR12MB9533.namprd12.prod.outlook.com
+ ([fe80::d6cc:9c7e:12b9:a418]) by BL4PR12MB9533.namprd12.prod.outlook.com
+ ([fe80::d6cc:9c7e:12b9:a418%6]) with mapi id 15.21.0451.014; Tue, 22 Sep 2026
+ 19:54:17 +0000
+From: "Kovacs, Alexander" <Alexander.Kovacs@amd.com>
+To: Freeman Z <SHD-ISAC@outlook.com>, "Limonciello, Mario"
+	<Mario.Limonciello@amd.com>, Mika Westerberg
+	<mika.westerberg@linux.intel.com>
+CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	"linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+	"bhelgaas@google.com" <bhelgaas@google.com>, "westeri@kernel.org"
+	<westeri@kernel.org>, "andreas.noever@gmail.com" <andreas.noever@gmail.com>,
+	"YehezkelShB@gmail.com" <yehezkelshb@gmail.com>, "rafael@kernel.org"
+	<rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+	"S, Sanath" <Sanath.S@amd.com>, "Natikar, Basavaraj"
+	<Basavaraj.Natikar@amd.com>, "Martinez, Juan" <Juan.Martinez@amd.com>
+Subject: RE: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents
+ JHL9480 downstream enumeration
+Thread-Topic: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents
+ JHL9480 downstream enumeration
+Thread-Index: AQHdSd1c593zF2yuc0efXEtk9KFFoLbazowAgAA18BA=
+Date: Tue, 22 Sep 2026 19:54:17 +0000
+Message-ID:
+ <BL4PR12MB9533BF5ABF7035E6DF151C0A9C832@BL4PR12MB9533.namprd12.prod.outlook.com>
+References:
+ <TYCPR01MB1092795BE7AB51121BBAB292496862@TYCPR01MB10927.jpnprd01.prod.outlook.com>
+ <20260921050450.GM106095@black.igk.intel.com>
+ <f8b929da-b4ae-48ae-9667-3eb93aa0a4bd@amd.com>
+ <TYCPR01MB10927E6DC71CDC3B39C26F35196832@TYCPR01MB10927.jpnprd01.prod.outlook.com>
+In-Reply-To:
+ <TYCPR01MB10927E6DC71CDC3B39C26F35196832@TYCPR01MB10927.jpnprd01.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+ MSIP_Label_198e8dea-a4f3-4850-b16a-fd6d2b1302b4_Enabled=True;MSIP_Label_198e8dea-a4f3-4850-b16a-fd6d2b1302b4_SiteId=3dd8961f-e488-4e60-8e11-a82d994e183d;MSIP_Label_198e8dea-a4f3-4850-b16a-fd6d2b1302b4_SetDate=2026-09-22T19:53:58.0000000Z;MSIP_Label_198e8dea-a4f3-4850-b16a-fd6d2b1302b4_Name=AMD
+ General
+ v26;MSIP_Label_198e8dea-a4f3-4850-b16a-fd6d2b1302b4_ContentBits=3;MSIP_Label_198e8dea-a4f3-4850-b16a-fd6d2b1302b4_Method=Standard
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: BL4PR12MB9533:EE_|DS4PR12MB9611:EE_
+x-ms-office365-filtering-correlation-id: c822f807-d630-4890-5d6a-08df18e3492b
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|7416014|23010399003|1800799024|366016|38070700021|4143699003|56012099006|5023799004|11063799006|10067099003|18002099003|22082099003|6133799003;
+x-microsoft-antispam-message-info:
+ SeVYP3Hw0FBj+BFQ4bFvZQKrBpinG171+PsAEPY68m2D3PAkYyEZv8zmU83ValzKgD9h/BwdV2zbMY87wsJ5/2jaf1oncLabSt956G8a9oVh3OpPkee2/27ym8rOjtg7k8Kz/C/ZbNjZdNrKfe3O8qSizjvJkxuBTLARXssxRbbP7YeNoDgXBsQ19bjmZ0WjtFgeNFgGE8+KJ2mM/J/4lSEY+bYIQ7VpnHbC83Iy7wiGgWBFv4ikYzHDSqY0NLwUEAzXrHe7hLUsopjMTCFMnPVmvMzcJRyYGrWXZbWMXj4b5MVGS7xD2iQsVOg5rzOAAn5Do2RadA7PiGo66nAQ9jWXG47TOTUIS/U4fdOMGUkPW9MjAtkA48B1594XGIgSnUXRP2HUqv0Aou01g0RpPbNu+oQkS4N1r7/JH0bIANSrj7pM+CS2e8cwnuptkM58+CWPZptiexfGtGo27pIr3iZdjsdmHo+J5+gyApRprOQbEmsngmGDd2mZwfSumsqi/eU1HCNesFsYSQi998wuKpY/zShVoB4Yh1YGUAyvlnYFE+Ja+sz7kpwGBIzZhpmqnhNo/4cUQ28Mlm6rE6hV3GjnHeR5DKAnt7+c12T1TKWtvgR4tsih0ppPY2neGrBjXgjF3tfAkgymTEFHw5xO+m+fSJXEKv5G662K5B2fZL+h16h6QIyM/feLEuq5l+wBpkfnElqGz+KBV4sICETOIAxaGWSd9ifoGQpA4Vmtwgc=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL4PR12MB9533.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(23010399003)(1800799024)(366016)(38070700021)(4143699003)(56012099006)(5023799004)(11063799006)(10067099003)(18002099003)(22082099003)(6133799003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?iso-8859-1?Q?jOjEv3IxPeiCChwQEre2VvwlXC1xJi7Ah+juJa7/yF2S38EdVZR4AA1CId?=
+ =?iso-8859-1?Q?8nS2sRBZA9XPF4yUhfnEX859yr+u3MmIEX3r+oBr+O/zjT1NTEtYyyc3Q3?=
+ =?iso-8859-1?Q?BcrilNCwM0MlHEaLZICGhDRf9kmS37AIZrHTtarASTANdYpXwCVdvRCTKV?=
+ =?iso-8859-1?Q?R/mSXOHEjDqhqFriPG66fea4lPjBoo9rZlt55jEjgejF4QVp8GCmS3jvli?=
+ =?iso-8859-1?Q?flC6eUAWKmw/qvOSPaKuzbO0Hb1oqbVR4mjXniBt1L799m3u1wAdZPlN1S?=
+ =?iso-8859-1?Q?O5g6RbhdrrG3ySIo0R/77JiL5O/7rYFDpZwPUir4SXv2xrGEvzhe3FRe81?=
+ =?iso-8859-1?Q?1+eVoof0nDF3cSUaplxjMxlGIwBODtVY3rsluekToawgHREfuEkHXebHjj?=
+ =?iso-8859-1?Q?GVWFSEvg+qjmzs28cSjocs8XWORthw9ji3lPR3c7v4eLHdjsNmEctKMivg?=
+ =?iso-8859-1?Q?Se3O9Tbe/TNUmOTblM+OlRBcPTvKkACinQZqSJeA8Zr+HI2aMgIgYmPVb3?=
+ =?iso-8859-1?Q?dyCI7BvQTaVUualr3ZRciLp/i/Jc/PyEY+4TOzq/U5avQ/OiMHq+gJHvef?=
+ =?iso-8859-1?Q?jEsoPbuK+I+Pcv8yLwIco1Y2MzdX/X5zv4LNciOMx5X1uaslNqZBZjohVi?=
+ =?iso-8859-1?Q?4vsuHkjovA3HdZNe51zES8Wl+SMJZORgvFpjt59N++5qdhUAEaZ3Az+fDK?=
+ =?iso-8859-1?Q?mzoG4aZwotrWQUGg4MqpUKzxzaBOkV0xv+VA8o9mNeeZ/Wy1oLrkqvXPV1?=
+ =?iso-8859-1?Q?lcxy6C7yGjcnhUm475aVbVUgzt711IQqeXkx5XitYoWQdc4cvjCHawzRGK?=
+ =?iso-8859-1?Q?NB/E5EuYoAJ9MlUvWvrK1Hef4+wbcaqW6oe1ESW7ez3Fxf/PUTsWMQRrX6?=
+ =?iso-8859-1?Q?LLOQ4WYYK93ALMo7Jfs+YWETrfPssS8ZaT6qS7CBa/zPaFOrC7Gz8QZ3Ah?=
+ =?iso-8859-1?Q?MJTmmCxcpwK1C7hwl9Vzv+eWmDZRV4oB+cLU4BTYb25QgabEUd6iFNHMiH?=
+ =?iso-8859-1?Q?UWLxq0LmpQS9Lq5bbk+UF0lWjdA0yMa81z9u1qzhefmpS6UiyW7Z/SuEkq?=
+ =?iso-8859-1?Q?EORYhoqxHxmS6rM5CL+Lc5/UjvrrIIByuuml0s3lpPnWtDuwLKrQYB1HIv?=
+ =?iso-8859-1?Q?BOhmJWgBqlm2Ylmchn+4CHrveG7gPiqiH8sz68E80368pDfaOH57Agnmog?=
+ =?iso-8859-1?Q?1xYCMbr70E+K4nGAz/vhr8T2PvmDQHC951qAn9RIttZNII3mh7bV7hfLQL?=
+ =?iso-8859-1?Q?5PjB51A7oKUCW+uGim4G7WvzQKzl6eXbl+BXwN785AXH1KB15RCGKgEe0i?=
+ =?iso-8859-1?Q?NTeaJOKOGID7tN53tc5mMVdxLD3FYnmGe3xElA9ltxqjlLclpVB6vybkH/?=
+ =?iso-8859-1?Q?/PSRJ91K90gaAJ+CR9GlcpsGz3fhYEmx0Czp2yDXFDu9urlQRlTsDKcTWb?=
+ =?iso-8859-1?Q?6gS1KTgCeYg2KChWQiVD7CBWqXGXjeIV05MqlK4B836PiyCRtMBAUAV0Eo?=
+ =?iso-8859-1?Q?9JD0I9vNgd7dzyIKF9P3BPxsW+k+LMThP0mSCccmsuM3bD+vwr6pGnTavj?=
+ =?iso-8859-1?Q?IvHDViAOBADyYOEKX5jNIEHFALNfkoocpT6gkU0pa9fjjYy9eNlcrJ6B/9?=
+ =?iso-8859-1?Q?nl82H/v/VVIGtl6pBVHYRHJTsC6p6GlF1RBbtuKONv9htVi8mcUlQl+bqC?=
+ =?iso-8859-1?Q?ACqhdaBqK+o0al9kIZzkVJkbb4Ee0mLlJMOlYI5a5JS17v4S99cKfnhJai?=
+ =?iso-8859-1?Q?KMuNBrHUni+TdZBMp7xzh5QTFxA89A20SPxrYlmeQx+gCQ?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1][linux-next] ACPI: fan: Use __free() to simplify AML
- error handling
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>
-References: <6029013.DvuYhMxLoT@rafael.j.wysocki>
-Content-Language: en-US
-From: Armin Wolf <W_Armin@gmx.de>
-In-Reply-To: <6029013.DvuYhMxLoT@rafael.j.wysocki>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:MmwjrgKYgbQsskSRZgENQpJs8OKxjj+rnMc5tXMK7GT+IPL7twF
- 9rmrpCfTsb9aDHzlJL2D/O/Gm2aAU9IKSQak5AiHMS+GxyGJl1lPrnhZooGKpzRPHuBNpj1
- QB5g+jywbtsIZ9SnoUeGiwt+QbL9Pk47gZTa9w7BmkUPT4BVQlI8U+T8YLl5RBYleyc0n/D
- ueUZOfjBuwmBGIjbO+NvA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:gQz8jRyNHrk=;SruD2W+XQY5Vqqzg55UEAo97wcg
- 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
- HvS70v51xpND3Luaw==
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: BL4PR12MB9533.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c822f807-d630-4890-5d6a-08df18e3492b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Sep 2026 19:54:17.4035
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: CEtHRDJoN7HUO0G1gXbUgVuPC9VXDw82YxmEGPI0/+J5q5oCbE/BZXY58mr9FBRr
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PR12MB9611
 
-Am 16.09.26 um 21:42 schrieb Rafael J. Wysocki:
+AMD General
 
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
->
-> Introduce acpi_object_free for freeing union acpi_object objects
-> allocated by AML and use it for simplifying AML error handling in
-> the ACPI fan driver.
->
-> While at it, update the driver to use consistent error values across
-> all function using the union acpi_object data type.
++Juan
 
-Reviewed-by: Armin Wolf <W_Armin@gmx.de>
+Replied or Forwarded By:
+Alex Kovacs
+845-625-4422
+akovacs@amd.com
 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
+-----Original Message-----
+From: Freeman Z <SHD-ISAC@outlook.com>
+Sent: Tuesday, September 22, 2026 11:41 AM
+To: Limonciello, Mario <Mario.Limonciello@amd.com>; Mika Westerberg <mika.w=
+esterberg@linux.intel.com>
+Cc: linux-pci@vger.kernel.org; linux-usb@vger.kernel.org; bhelgaas@google.c=
+om; westeri@kernel.org; andreas.noever@gmail.com; YehezkelShB@gmail.com; ra=
+fael@kernel.org; linux-pm@vger.kernel.org; S, Sanath <Sanath.S@amd.com>; Na=
+tikar, Basavaraj <Basavaraj.Natikar@amd.com>; Kovacs, Alexander <Alexander.=
+Kovacs@amd.com>
+Subject: Re: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents=
+ JHL9480 downstream enumeration
+
+[You don't often get email from shd-isac@outlook.com. Learn why this is imp=
+ortant at https://aka.ms/LearnAboutSenderIdentification ]
+
+Caution: This message originated from an External Source. Use proper cautio=
+n when opening attachments, clicking links, or responding.
+
+
+Hi Mika, Mario,
+
+I reproduced the failure following the requested sequence on my installed C=
+achyOS system with kernel 7.2.6-1-cachyos and thunderbolt.dyndbg=3D+p.
+
+For this trace the dock was physically disconnected at boot. I did not run =
+lspci before or during the reproduction.
+
+Before plugging the dock:
+
+    0000:00:04.1
+      power/control        =3D auto
+      power/runtime_status =3D suspended
+      power_state          =3D D3cold
+
+    0000:6b:00.6
+      power/control        =3D auto
+      power/runtime_status =3D suspended
+      power_state          =3D D3cold
+
+After plugging the Kensington SD5000T5 and waiting about 15 seconds:
+
+    0000:00:04.1
+      power/control        =3D auto
+      power/runtime_status =3D suspended
+      power_state          =3D D3cold
+
+    0000:09:00.0
+      missing
+
+    0000:6b:00.6
+      power/control        =3D auto
+      power/runtime_status =3D active
+      power_state          =3D D0
+
+The Thunderbolt dynamic debug log shows the NHI/control channel waking and =
+the USB4 fabric being configured. In particular:
+
+    thunderbolt 0000:6b:00.6: control channel starting...
+    thunderbolt 0000:6b:00.6: 0: resuming switch
+    thunderbolt 0000:6b:00.6: 0:2: is connected, link is up (state: 2)
+    thunderbolt 0-2: Kensington SD5000T5 EQ Thunderbolt 5 Dock
+    thunderbolt 0000:6b:00.6: 0:5 <-> 2:9 (PCI): activating
+    thunderbolt 0000:6b:00.6: PCIe Down path activation complete
+    thunderbolt 0000:6b:00.6: PCIe Up path activation complete
+
+However, I do not see a PME message corresponding to the dock insertion.
+The PME messages in the full dmesg are the early-boot
+"PME: Signaling with IRQ ..." initialization messages.
+
+So in this reproduction, the NHI at 0000:6b:00.6 wakes from D3cold to D0 an=
+d the Thunderbolt driver successfully programs the PCIe tunnel in the
+USB4 fabric, but the AMD 1022:14ef PCIe root port/tunnel at 0000:00:04.1 re=
+mains in D3cold and the downstream 0000:09:00.0 hierarchy never appears.
+
+I attached the full dmesg captured after the dock plug, plus the small befo=
+re/after state files. I redacted only unrelated local network identifiers, =
+the hostname, and filesystem/LUKS UUIDs; the Thunderbolt debug data and dev=
+ice UIDs are otherwise unchanged.
+
+This particular dynamic-debug trace was collected on CachyOS rather than th=
+e Arch stock kernel used for my earlier reproduction.
+
+Thanks,
+Freeman
+
+________________________________________
+From: Mario Limonciello <mario.limonciello@amd.com>
+Sent: Monday, September 21, 2026 23:24
+To: Mika Westerberg <mika.westerberg@linux.intel.com>; Freeman Z <SHD-ISAC@=
+outlook.com>
+Cc: linux-pci@vger.kernel.org <linux-pci@vger.kernel.org>; linux-usb@vger.k=
+ernel.org <linux-usb@vger.kernel.org>; bhelgaas@google.com <bhelgaas@google=
+.com>; westeri@kernel.org <westeri@kernel.org>; andreas.noever@gmail.com <a=
+ndreas.noever@gmail.com>; YehezkelShB@gmail.com <yehezkelshb@gmail.com>; ra=
+fael@kernel.org <rafael@kernel.org>; linux-pm@vger.kernel.org <linux-pm@vge=
+r.kernel.org>; Sanath S <Sanath.S@amd.com>; Basavaraj Natikar <Basavaraj.Na=
+tikar@amd.com>; Kovacs, Alexander <Alexander.Kovacs@amd.com>
+Subject: Re: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents=
+ JHL9480 downstream enumeration
+
++Alex K
+
+On 9/21/26 00:04, Mika Westerberg wrote:
+> Hi,
 >
-> Applies on top of
+> Adding AMD folks in case this is known issue.
 >
-> https://lore.kernel.org/linux-acpi/1965933.tdWV9SEqCh@rafael.j.wysocki/
+> On Sat, Sep 19, 2026 at 12:39:37PM +0000, Freeman Z wrote:
+>> Hello,
+>>
+>> I am seeing a reproducible USB4/PCIe runtime-PM problem on an ASUS
+>> ROG Flow X13 GV302XV (Ryzen 9 7940HS / Phoenix) with a Kensington
+>> SD5000T5 EQ Thunderbolt 5 dock connected to the laptop's USB4 host port.
+>>
+>> The failure is reproducible with the official Arch Linux Live ISO
+>> using Arch's stock `linux` kernel:
+>>
+>>      7.2.2-arch1-1
+>>
+>> I have not yet tested a self-built kernel.org mainline/vanilla kernel.
+>> I can test patches, or collect additional traces if requested.
 >
-> which is in linux-next now.
+> Can you provide full dmesg with "thunderbolt.dyndbg=3D+p" in the kernel
+> command line?
 >
-> ---
->   drivers/acpi/fan_core.c |   80 ++++++++++++++++++---------------------=
-=2D--------
->   include/linux/acpi.h    |    2 +
->   2 files changed, 32 insertions(+), 50 deletions(-)
+> With the below steps (following your description):
 >
-> --- a/drivers/acpi/fan_core.c
-> +++ b/drivers/acpi/fan_core.c
-> @@ -71,37 +71,29 @@ static int fan_get_max_state(struct ther
->   int acpi_fan_get_fst(acpi_handle handle, struct acpi_fan_fst *fst)
->   {
->   	struct acpi_buffer buffer =3D { ACPI_ALLOCATE_BUFFER, NULL };
-> -	union acpi_object *obj;
->   	acpi_status status;
-> -	int ret =3D 0;
->  =20
->   	status =3D acpi_evaluate_object(handle, "_FST", NULL, &buffer);
->   	if (ACPI_FAILURE(status))
-> -		return -EIO;
-> +		return -ENXIO;
->  =20
-> -	obj =3D buffer.pointer;
-> +	union acpi_object *obj __free(acpi_object_free) =3D buffer.pointer;
->   	if (!obj)
->   		return -ENODATA;
->  =20
-> -	if (obj->type !=3D ACPI_TYPE_PACKAGE || obj->package.count !=3D 3) {
-> -		ret =3D -EPROTO;
-> -		goto err;
-> -	}
-> +	if (obj->type !=3D ACPI_TYPE_PACKAGE || obj->package.count !=3D 3)
-> +		return -EPROTO;
->  =20
->   	if (obj->package.elements[0].type !=3D ACPI_TYPE_INTEGER ||
->   	    obj->package.elements[1].type !=3D ACPI_TYPE_INTEGER ||
-> -	    obj->package.elements[2].type !=3D ACPI_TYPE_INTEGER) {
-> -		ret =3D -EPROTO;
-> -		goto err;
-> -	}
-> +	    obj->package.elements[2].type !=3D ACPI_TYPE_INTEGER)
-> +		return -EPROTO;
->  =20
->   	fst->revision =3D obj->package.elements[0].integer.value;
->   	fst->control =3D obj->package.elements[1].integer.value;
->   	fst->speed =3D obj->package.elements[2].integer.value;
->  =20
-> -err:
-> -	kfree(obj);
-> -	return ret;
-> +	return 0;
->   }
->  =20
->   static int fan_get_state_acpi4(struct acpi_fan *fan, unsigned long *st=
-ate)
-> @@ -237,25 +229,22 @@ static int acpi_fan_get_fif(struct acpi_
->   	struct acpi_buffer format =3D { sizeof("NNNN"), "NNNN" };
->   	u64 fields[4];
->   	struct acpi_buffer fif =3D { sizeof(fields), fields };
-> -	union acpi_object *obj;
->   	acpi_status status;
->  =20
->   	status =3D acpi_evaluate_object(device->handle, "_FIF", NULL, &buffer=
-);
->   	if (ACPI_FAILURE(status))
-> -		return status;
-> +		return -ENXIO;
->  =20
-> -	obj =3D buffer.pointer;
-> +	union acpi_object *obj __free(acpi_object_free) =3D buffer.pointer;
->   	if (!obj || obj->type !=3D ACPI_TYPE_PACKAGE) {
->   		dev_err(&device->dev, "Invalid _FIF data\n");
-> -		status =3D -EINVAL;
-> -		goto err;
-> +		return -ENODATA;
->   	}
->  =20
->   	status =3D acpi_extract_package(obj, &format, &fif);
->   	if (ACPI_FAILURE(status)) {
->   		dev_err(&device->dev, "Invalid _FIF element\n");
-> -		status =3D -EINVAL;
-> -		goto err;
-> +		return -ENODATA;
->   	}
->  =20
->   	fan->fif.revision =3D fields[0];
-> @@ -269,9 +258,8 @@ static int acpi_fan_get_fif(struct acpi_
->   	/* If step size > 9, change to 9 (by spec valid values 1-9) */
->   	else if (fan->fif.step_size > 9)
->   		fan->fif.step_size =3D 9;
-> -err:
-> -	kfree(obj);
-> -	return status;
-> +
-> +	return 0;
->   }
->  =20
->   static int acpi_fan_speed_cmp(const void *a, const void *b)
-> @@ -285,27 +273,24 @@ static int acpi_fan_get_fps(struct devic
->   {
->   	struct acpi_fan *fan =3D acpi_driver_data(device);
->   	struct acpi_buffer buffer =3D { ACPI_ALLOCATE_BUFFER, NULL };
-> -	union acpi_object *obj;
->   	acpi_status status;
->   	int i;
->  =20
->   	status =3D acpi_evaluate_object(device->handle, "_FPS", NULL, &buffer=
-);
->   	if (ACPI_FAILURE(status))
-> -		return status;
-> +		return -ENXIO;
->  =20
-> -	obj =3D buffer.pointer;
-> +	union acpi_object *obj __free(acpi_object_free) =3D buffer.pointer;
->   	if (!obj || obj->type !=3D ACPI_TYPE_PACKAGE || obj->package.count < =
-2) {
->   		dev_err(&device->dev, "Invalid _FPS data\n");
-> -		status =3D -EINVAL;
-> -		goto err;
-> +		return -ENODATA;
->   	}
->  =20
->   	fan->fps_count =3D obj->package.count - 1; /* minus revision field */
->   	fan->fps =3D devm_kcalloc(dev, fan->fps_count, sizeof(*fan->fps), GFP=
-_KERNEL);
-> -	if (!fan->fps) {
-> -		status =3D -ENOMEM;
-> -		goto err;
-> -	}
-> +	if (!fan->fps)
-> +		return -ENOMEM;
-> +
->   	for (i =3D 0; i < fan->fps_count; i++) {
->   		struct acpi_buffer format =3D { sizeof("NNNNN"), "NNNNN" };
->   		struct acpi_buffer fps =3D { offsetof(struct acpi_fan_fps, name),
-> @@ -314,7 +299,7 @@ static int acpi_fan_get_fps(struct devic
->   					      &format, &fps);
->   		if (ACPI_FAILURE(status)) {
->   			dev_err(&device->dev, "Invalid _FPS element\n");
-> -			goto err;
-> +			return -ENODATA;
->   		}
->   	}
->  =20
-> @@ -322,9 +307,7 @@ static int acpi_fan_get_fps(struct devic
->   	sort(fan->fps, fan->fps_count, sizeof(*fan->fps),
->   	     acpi_fan_speed_cmp, NULL);
->  =20
-> -err:
-> -	kfree(obj);
-> -	return status;
-> +	return 0;
->   }
->  =20
->   static int acpi_fan_dsm_init(struct device *dev)
-> @@ -338,8 +321,6 @@ static int acpi_fan_dsm_init(struct devi
->   	};
->   	struct acpi_fan *fan =3D dev_get_drvdata(dev);
->   	acpi_handle fan_handle =3D fan->adev->handle;
-> -	union acpi_object *obj;
-> -	int ret =3D 0;
->  =20
->   	if (!acpi_check_dsm(fan_handle, &acpi_fan_microsoft_guid, 0,
->   			    BIT(ACPI_FAN_DSM_GET_TRIP_POINT_GRANULARITY) |
-> @@ -348,20 +329,19 @@ static int acpi_fan_dsm_init(struct devi
->  =20
->   	dev_info(dev, "Using Microsoft fan extensions\n");
->  =20
-> -	obj =3D acpi_evaluate_dsm_typed(fan_handle, &acpi_fan_microsoft_guid, =
-0,
-> -				      ACPI_FAN_DSM_GET_TRIP_POINT_GRANULARITY, &dummy,
-> -				      ACPI_TYPE_INTEGER);
-> +	union acpi_object *obj __free(acpi_object_free) =3D
-> +		acpi_evaluate_dsm_typed(fan_handle, &acpi_fan_microsoft_guid, 0,
-> +					ACPI_FAN_DSM_GET_TRIP_POINT_GRANULARITY,
-> +					&dummy, ACPI_TYPE_INTEGER);
->   	if (!obj)
-> -		return -EIO;
-> +		return -ENXIO;
->  =20
->   	if (obj->integer.value > U32_MAX)
-> -		ret =3D -EOVERFLOW;
-> -	else
-> -		fan->fan_trip_granularity =3D obj->integer.value;
-> +		return -EOVERFLOW;
->  =20
-> -	kfree(obj);
-> +	fan->fan_trip_granularity =3D obj->integer.value;
->  =20
-> -	return ret;
-> +	return 0;
->   }
->  =20
->   static int acpi_fan_dsm_set_trip_points(struct device *dev, u64 upper,=
- u64 lower)
-> @@ -392,7 +372,7 @@ static int acpi_fan_dsm_set_trip_points(
->  =20
->   	obj =3D acpi_evaluate_dsm(fan->adev->handle, &acpi_fan_microsoft_guid=
-,
->   				0, ACPI_FAN_DSM_SET_TRIP_POINTS, &in);
-> -	kfree(obj);
-> +	ACPI_FREE(obj);
->  =20
->   	return 0;
->   }
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -27,6 +27,8 @@ struct irq_domain_ops;
->   #include <acpi/acpi.h>
->   #include <acpi/acpi_numa.h>
->  =20
-> +DEFINE_FREE(acpi_object_free, union acpi_object *, if (_T) ACPI_FREE(_T=
-));
-> +
->   #ifdef	CONFIG_ACPI
->  =20
->   #include <linux/list.h>
+> 0. Drop all non-standard command line options except the above.
+> 1. Boot the system up, nothing connected.
+> 2. Once up let the TB and the related PCIe root ports enter D3cold
+>(don't
+>     run lspci it will wake them up but you can look at the runtime
+>status that
+>     they are all suspended).
+> 3. Plug in the dock.
 >
->
->
+> We should see in the dmesg the PME if it works as expected. If not
+> then it may be that there is something wrong with the wakeup path.
+
+There was something like this that was reported in the past, but it was a r=
+ace condition of some sort.  It ended up being fixed by a non-obvious optim=
+ization (I forget the specific commit).
+
+But it was definitely older than 7.2, so it sounds like it might have regre=
+ssed again.
