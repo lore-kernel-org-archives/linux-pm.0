@@ -1,112 +1,81 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDFB953E305
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 14:50:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0368938F630
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 15:02:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790175028; cv=none; b=eUOs2UTbF270tEcB1PjSWfZxCBIWQbDom7zI9iA5unuM3vyxegWdHREA6eDSSMbnXk3h6Zq0MVtQqR8inG49VAPuwuxs/jAa7unFzin277dhGB5xnTBCIW7LmmbcJ+qdQoNFZ7hww7l4gTI0vbFs9MgyYVr6x3F6+rq/dCD5YmU=
+	t=1790175770; cv=none; b=mIAUYwWRXejITAwGuy7f7PilZO5rWLPLpe8/p8UxezqKtP+e2yBQfnK8UnU6uc2KC8TZTpijzpnFINS1N2n6oVFTwKCQ45/P+BAYxHUUjLIz8Dixfg2N/mz+MZn/46tZlY06yRwvze6GlbgOkyYw6pl8SaU3zo+FhcuJXuldXCk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790175028; c=relaxed/simple;
-	bh=IzzL7+Nj8QonEGXWGBjAeG8r0vDLzLBNWdQVTV5ByIU=;
+	s=arc-20240116; t=1790175770; c=relaxed/simple;
+	bh=qCzxaJJFHfprXQbh4vmH4wgYmFJYPzKzETaM7jXQlBI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Qvsp8wuiVhcEf82AEXB1EYSmzpelhfnxGwXmLhdPyA2zPMHHlyNKyM6i3+T3aBP68T6xbOmbIq2FysriHPiNKQCRQxiRP5EOQOiiQCk/f6Q7R003aJD9MtMavOed4+OjZ4Woo88SDzhwoUsz2Hb6yYsDhRfQDAd8AKeOnmWS6Uo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aLBwq6vj; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=l5KPwoqZjWGjCF5UforBDX9ZmfKyRTTJM/uItpvou6hl0eMWpfdc2gFAtp2ST0uD3jddlGfSC+oF6KcvxaVpKH2z3eS43vMghD7epQmiIj50mWYMTXgALrZwjU9groUKIUQDhg0n6Ol/79bAoWvlwoPg7IIHLjD9qgeKZqX8RQQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e7tQZmpc; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aLBwq6vj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFBB01F000FF
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 14:50:26 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e7tQZmpc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A0FE71F00898
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 15:02:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790175026;
-	bh=IzzL7+Nj8QonEGXWGBjAeG8r0vDLzLBNWdQVTV5ByIU=;
+	s=k20260515; t=1790175768;
+	bh=qCzxaJJFHfprXQbh4vmH4wgYmFJYPzKzETaM7jXQlBI=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=aLBwq6vj757NMxKlFJ9VT5v4iAb6Kxrpyto/A/1t+Fl9TZmhinL40xXkpv45Ljntt
-	 3NdGV+3ZVzLscGmwGMu7+dMJ67L9a9Z3QBtuUYOTGXq6nN4y5gH2KPO5s0kAonvtb8
-	 RWmBqdUi+nciKOu1hKmjyZ/fHw6HJr9mFqY/V0cXQktG0xloXgXctfUrQAO1GzSuRu
-	 Iy4M3Ih0P8oeKtIRgR2hFElxf8oJGAiLYVwST5V3aAu+apxdLaX066SZZsfIii5XYs
-	 mqAs6kaf9kvB71CrCQ2UhJS7YoR5kXiPgK126WQ1+G0gre/5I8D6rfdxx3JGKmiSO9
-	 EC9egqlKLpbew==
-Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a47f740839so9482401fa.2
-        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 07:50:26 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwP/l/x4isRoGmmGxlSl3BvWV/7bZ0BSZiDIr3TmHZ2UuOTahDDMqKBN+zY1hbw9q7GVdTxSwNeXw==@vger.kernel.org
-X-Gm-Message-State: AFuF++nOkLmObDJAk/gCJfpt+1Yk5SdUym14waux4wtQCifRZWLGDKfh
-	8KS1JJDghlRD3oxoXn3upgJIbdbryQ8Dvc7Wm/EfnZv3MLXr7RGc/ZcIqA8EcCk7z3VvUwRyppp
-	PVBjrwjokV/2KqXiR9TyCHzzc/Gt7Ed8=
-X-Received: by 2002:a05:6512:2205:b0:5ae:bba5:aee8 with SMTP id
- 2adb3069b0e04-5b8d89695bfmr975813e87.24.1790175025051; Wed, 23 Sep 2026
- 07:50:25 -0700 (PDT)
+	b=e7tQZmpc/tHQEy07WZhyEAyTFWB7a1IMF01kHmnd4maBvCD5EFe+nevyuOpjdQuxn
+	 UUMxOgzmut6ghdtzyClLxICO2pXHeRyIfl67bfFRYfWOX6oV52F7ZQ5H5gzK21BjEa
+	 Mwk4bP70XX9hIFDOOPe+RHQkOJsxecdKaw+0b9uK6bh7HB5dxEfrwdy6NUyurh+VAb
+	 Gtbci4fKu5gxYHKXEdwzs+hzzd28ag5jZQuCbz7Q9+sq9iB/51g2z00V7v6CmC/n9+
+	 PmjoS8+WF/kSJvzZDuWlXQbc9P++F6R3NLPdvAHPC5k/jaChNp5/F3T/IdSaJ332M6
+	 kYfLLuEkh18pg==
+Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a6124046f0so9634511fa.3
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 08:02:48 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBx5TzA99/EUbuzXluP/0Icq7/byOZQfnT67iSjaiju/s0Pnz3XfBLfHLFUPHZYCYpX6cY9lzzcieg==@vger.kernel.org
+X-Gm-Message-State: AFuF++lJJ5nhRFBxVOz8rpCC9tBZ4DysbKHf4dAowQY8mKHBwaCkWhHr
+	//PwDj0Ud1TxcqBM7dwgxw38/EZDBqimIKJyaQlD+dNnHuEeDWUxJ+8d5/V16dz4rfsU9b8IAT9
+	5eTXzm+PwsKiuzYNcBQgGzkUbwIxw+Q8=
+X-Received: by 2002:a2e:b8d5:0:b0:3a4:99ed:beac with SMTP id
+ 38308e7fff4ca-3a630614d0cmr7434701fa.4.1790175766981; Wed, 23 Sep 2026
+ 08:02:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <12975163.O9o76ZdvQC@rafael.j.wysocki> <20260923145111.GA24137@ranerica-svr.sc.intel.com>
-In-Reply-To: <20260923145111.GA24137@ranerica-svr.sc.intel.com>
+References: <20260501165542.GA491695@bhelgaas> <561131dd-0e42-437a-9724-a036238a9bb4@gmx.net>
+ <5f716613-d996-46db-96ec-6c0251219922@gmx.net> <449c834d-d115-4242-aa5a-43daa085f178@leemhuis.info>
+ <81ac70ae-c51e-4960-8dd3-bed47ceafafb@gmx.net> <012b3ebc-62f0-402e-afa9-02712e67e72a@leemhuis.info>
+ <86030fc1-473b-4695-a2f3-c30b5f19614c@gmx.net> <CAJZ5v0iw9Jrdv2MaCu5Dou3Ust5L-YsEMWDpZPP58-ag_pbZSg@mail.gmail.com>
+ <e61e7c84-344a-44cd-ba99-53f23739a774@gmx.net> <CAJZ5v0im31nB_R5cL8QWMgjr4_cuoX482d_XY9bFCqsbXZGi6A@mail.gmail.com>
+In-Reply-To: <CAJZ5v0im31nB_R5cL8QWMgjr4_cuoX482d_XY9bFCqsbXZGi6A@mail.gmail.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 23 Sep 2026 16:48:51 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hYU1Ky6L8Oa5ALWw3Z9gbM82oxZGv4cpXmPYwW-DM+6Q@mail.gmail.com>
-X-Gm-Features: AclHuK-TH8zgxZvgw2rSng8MWTaJpTYigpy4ey8bOBKR_AfqOaoiRjhNuKNhcMw
-Message-ID: <CAJZ5v0hYU1Ky6L8Oa5ALWw3Z9gbM82oxZGv4cpXmPYwW-DM+6Q@mail.gmail.com>
-Subject: Re: [PATCH v1] cpufreq: intel_pstate: Fix max_freq fallback in cpufreq_update_pressure()
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, 
-	Linux PM <linux-pm@vger.kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Christian Loehle <christian.loehle@arm.com>, Jianyong Wu <wujianyong@hygon.cn>, 
-	LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 23 Sep 2026 17:01:13 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hnDVzQoZSv9w2cd--UapwWrLr7R+hK5+gZKHUSxX=O5g@mail.gmail.com>
+X-Gm-Features: AclHuK-skz_B-BkpRNH4pUyxow8wShQzSEmaWBJMxY9DW_q-o4f2W69-gNTriUY
+Message-ID: <CAJZ5v0hnDVzQoZSv9w2cd--UapwWrLr7R+hK5+gZKHUSxX=O5g@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: PM: Add quirk for Acer Swift 3 SF314-56G (MX250)
+To: Matthias Dittrich <dittrich.m@gmx.net>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 23, 2026 at 4:42=E2=80=AFPM Ricardo Neri
-<ricardo.neri-calderon@linux.intel.com> wrote:
+On Tue, Sep 22, 2026 at 6:41=E2=80=AFPM Rafael J. Wysocki (Intel)
+<rafael@kernel.org> wrote:
 >
-> On Mon, Sep 21, 2026 at 09:12:00PM +0200, Rafael J. Wysocki wrote:
-> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> On Tue, Sep 22, 2026 at 6:06=E2=80=AFPM Matthias Dittrich <dittrich.m@gmx=
+.net> wrote:
 > >
-> > After commit d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fal=
-l
-> > back to cpuinfo.max_freq"), cpufreq pressure appears in the CPU load
-> > balancer unexpectedly in some cases in which it was not present before,
-> > leading to confusion and uncertainty.
+> > Dear Rafael,
 > >
-> > Clearly, the scheduler assumes that cpufreq pressure will not be set
-> > unless the capacity reference frequency of the CPU is known, and the
-> > commit mentioned above violates that assumption.
+> > i checked the patch THUNDEROBOT patch with "Signed-off-by: Zhai Can
+> > <bczhc0@126.com>" I copied the format in my patch file:
 > >
-> > However, in some cases the capacity reference frequency of the CPU is
-> > in fact known even though arch_scale_freq_ref() returns 0 and in those
-> > cases it should be possible to set cpufreq pressure as appropriate.
+> > From: Matthias Dittrich <dittrich.m@gmx.net>
+> > Signed-off-by: Matthias Dittrich <dittrich.m@gmx.net>
 > >
-> > For this purpose, introduce a new cpufreq driver callback returning
-> > the CPU capacity reference frequency, .scale_freq_ref(), and make
-> > cpufreq_update_pressure() invoke it, if present, instead of falling
-> > back to cpuinfo.max_freq unconditionally.
+> > The corrected file "acer-swift3-quirk-final2.patch" is attached.
 > >
-> > Add that callback to the intel_pstate driver and make it return 0 unles=
-s
-> > the scale-invariant capacity of the given CPU has been explicitly set,
-> > in which cases its reference frequency is always cpuinfo.max_freq.
-> >
-> > Fixes: d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall back=
- to cpuinfo.max_freq")
-> > Reported-by: Jianyong Wu <wujianyong@hygon.cn>
-> > Closes: https://lore.kernel.org/linux-pm/20260915065747.1671965-1-wujia=
-nyong@hygon.cn/
-> > Tested-by: Jianyong Wu <wujianyong@hygon.cn>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > I hope this is ok?
 >
-> This patch did not break anything for me. I tested this in several Intel
-> processors with asymmetric capacity capacity enabled. Tasks spread as
-> expected when no cpufreq pressure is applied. Tasks duly migrate away whe=
-n
-> this pressure is applied to a subset of CPUs. They come back when the
-> pressure is removed.
->
-> Tested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com> # Intel h=
-ybrid parts
+> It's fine, thanks!
 
-Thank you!
-
-In the absence of objections or concerns, I'll queue up this patch as
-a fix for 7.3.
+And now applied as 7.4 material, thanks!
