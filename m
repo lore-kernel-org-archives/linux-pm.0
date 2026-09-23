@@ -1,107 +1,125 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7BC7485924;
-	Wed, 23 Sep 2026 11:52:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E51C94FE2E0;
+	Wed, 23 Sep 2026 12:02:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790164366; cv=none; b=MSaoUFWzwu7IsYDq/xocoAV/ui6ycHBTJS6EKVLueW9jOnBabqSkMSqxbrv5JhvP1+u/V2yHNdFcAh9vh4bi2BNalxF6KhXaQ3k/zDfsFzw8ncjtVazFOAt4Irlvk8Bb5vtesmbT1rdA3qw3K0x5ctVuCwsqDEJkZnwMgov32OE=
+	t=1790164988; cv=none; b=hXtePMfwI3XcW+JC/+4qdiZc5m31lZsmzTuG4m/SQTiYGeZSzdsA5ltqAYwGcq6/u9yRA0sN2S8a61ZUdj0+gXZxCYk4ZZKPQMapBeo7XI7OSZBrItGEfxM6AgImjsaCOV0IVlPs2yYjRrZyAYnMsOxt2uGOgqY75Sxn2NRPAwc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790164366; c=relaxed/simple;
-	bh=mNVNZhOFGrZFEhWuUYugPaoxFl6qri6EXLAgumV6vFE=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=a0+kQ3hvgA9TRVBattTG0ly/DxXGXOxnTKra8YFewLByf1HxcpP0I7sO51kD4cP7+VFTNlIf81vu2V3obDbSRKsdDhlvgRqllo1gdqvYFEeOsqW8fS4WPjm6Bp/Ocx8UM7fBvW8cDP3UU+aZO9oE7hpNG4WORt6VkoFtOiJBH9M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VSZIDe0H; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1790164988; c=relaxed/simple;
+	bh=4frttbngS7QkX1ir+/KkeE2xAaJ7hExNCsHW+rad7Ew=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=SPKxg31FAH+heoyZosjuFGFbc6ERkjVkPp2eDT4rob8cLYa7VGYPyBMbwxO4EIPx882nfPUngKy5E76eduy3nqVegH5uk+ED631G+7ejX7yhXJHgwiJ7hIzBnslWlZawmKRxfrVRnPPZxH91PfgA4K3v+CXlcmW92uCGVnt/SKI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZDBC6Iuu; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VSZIDe0H"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AA7DAC2BCC7;
-	Wed, 23 Sep 2026 11:52:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1790164365;
-	bh=mNVNZhOFGrZFEhWuUYugPaoxFl6qri6EXLAgumV6vFE=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=VSZIDe0HAE9QN8v+7cJQczstQQoQDrTsyLDhhvGoaK+1JEGl//aHAwdqTwmPI2Z0R
-	 +hd46AuMa0PQLRW4v5u7e7B20hMeje8wyCN7OB6KQnMd6/mgYO4V9Hy378X1hARELU
-	 cc8glrLb3lkDV0cwHMoTgEaspwCDYOzahad9axw74AlpIuDqx/wjqsFb5cVqHY5OyJ
-	 JutYjihQ703/jPNkV3RuiYW9Pxaq0GKggGE1BVYvfbVI+fx/A+9lQPQBbBv91/4gzN
-	 rU8DGaEa5wpf3kea3XNA0Cyz8+RztbeaRwO/FS3w0uEu+41scaEY1idnKXO6BXvgGG
-	 SSdKWrJXqOkOw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85733C98309;
-	Wed, 23 Sep 2026 11:52:45 +0000 (UTC)
-From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Subject: [PATCH 0/2] Add bus clock for t7-thermal sensor
-Date: Wed, 23 Sep 2026 13:51:01 +0200
-Message-Id: <20260923-fix-t7-thermal-clock-v1-0-7d4c4682f182@aliel.fr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZDBC6Iuu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5F951F000FF;
+	Wed, 23 Sep 2026 12:02:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790164973;
+	bh=iVAmwpf5dyW/6A+zC689qjiOe+z/75rgcrw/9xbJgls=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=ZDBC6Iuu/z7DxeUWhW6wToZFQLHkxKfpEaMk8igRMJIJjM7/nGGKe0PxUI23qRD0P
+	 HbqCE1712R9zkACMWftCWQvDH8o7NfXE+3ieezQx2BpgAUwL14r4kzp/0j6hxutZDT
+	 ZX0GzovYtYxwu2xiZhIdqBs51hv/otNToJPOIpCiIFIldkJQm8jYUmJEDcC7/QsIyd
+	 ZVr4E51MENlztuRAUcx1Uu44rH5DJ3m4RBWa41AN7FbTUj0I1XV+eJT64+NlBHXzst
+	 9B+kOWUHbdPXsHbzi1krGGiQTlFipsaE5NQmZoQ97I7VwdSgyFUT8mJH24XXfe/yrw
+	 yx1dy5EHFGk1g==
+Message-ID: <8c93d281-981f-40ea-839e-6dd24964fbce@kernel.org>
+Date: Wed, 23 Sep 2026 14:02:51 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: amlogic: describe bus clock for
+ t7-thermal
+To: linux-kernel-dev@aliel.fr, Guillaume La Roque <glaroque@baylibre.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>
+Cc: Conor Dooley <conor.dooley@microchip.com>, linux-pm@vger.kernel.org,
+ linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260923-fix-t7-thermal-clock-v1-0-7d4c4682f182@aliel.fr>
+ <20260923-fix-t7-thermal-clock-v1-1-7d4c4682f182@aliel.fr>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260923-fix-t7-thermal-clock-v1-1-7d4c4682f182@aliel.fr>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2MQQqAIBAAvxJ7bkGlkvpKdDDbcsksNCKI/p50H
- JiZBxJFpgRd8UCkixPvIYMsC7DOhIWQp8yghGpEqxTOfOOp8XQUN+PR+t2uKGtpxDhXumoIcnp
- Eyt6/7Yf3/QBuLdd2ZgAAAA==
-X-Change-ID: 20260922-fix-t7-thermal-clock-151a0bf4746e
-To: Guillaume La Roque <glaroque@baylibre.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>
-Cc: Conor Dooley <conor.dooley@microchip.com>, linux-pm@vger.kernel.org, 
- linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Ronald Claveau <linux-kernel-dev@aliel.fr>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1539;
- i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=mNVNZhOFGrZFEhWuUYugPaoxFl6qri6EXLAgumV6vFE=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ9bmvWUcTfONOQ+JLFLVT/w7Z84cqUi9afNTTVhWX1p8s
- 9flSqtDRykLgxgXg6yYIkv/XMsT7y4fPfN1j3oKzBxWJpAhDFycAjCRtVkM/yu4g61POIqx7ja/
- 4fWg3maegO/iK2s3VS2XWB1nPUdnaybDX4Euvuq/806cm/jlLltPcmHG1HZzu8JeQw63i2FdhbP
- m8gIA
-X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
- fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
-X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
- auth_id=744
-X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Reply-To: linux-kernel-dev@aliel.fr
 
-The t7 thermal sensor requires a bus clock, gating register access to
-the sensor, in addition to the functional clock that is already
-described and shared between sensors on other Amlogic SoCs.
+On 23/09/2026 13:51, Ronald Claveau via B4 Relay wrote:
+> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> 
+> The t7 thermal sensor needs a bus clock, in addition to the existing
+> functional clock, to gate register access to the sensor. This bus
+> clock is specific to each sensor, unlike the functional clock which
+> is shared between sensors. The current binding only describes a
+> single unnamed clock and therefore cannot represent this hardware
+> requirement, so add clock-names to disambiguate "bus" from "core" and
 
-This series first extends the devicetree binding to describe this
-second clock, making it mandatory only for the t7-thermal compatible
-so other SoCs are unaffected, then updates the driver to use the
-clk_bulk API instead of a single struct clk, so it can transparently
-handle however many clocks a given compatible declares.
+Index distinguishes, not the clock-names because items have strict
+order. That part of sentence is redundant and more important - if I ack
+this patch, people will use it as an argument in the future review
+discussions.
 
-`dt_binding_check DT_SCHEMA_FILES=amlogic,thermal.yaml` is ok
+Drop this part of sentence. clock-names are fine if you need them, but
+still the disambiguation is provided by indices.
 
-  CHKDT   ./Documentation/devicetree/bindings
-warning: python package 'yamllint' not installed, skipping
-  STYLE   ./Documentation/devicetree/bindings
-  DTEX    Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dts
-  DTC [C] Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dtb
+> make the second clock mandatory for the t7-thermal compatible only
 
-Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
----
-Ronald Claveau (2):
-      dt-bindings: thermal: amlogic: describe bus clock for t7-thermal
-      thermal/drivers/amlogic: switch to clk_bulk API to support multiple clocks
 
- .../bindings/thermal/amlogic,thermal.yaml          | 29 ++++++++++++++++++++--
- drivers/thermal/amlogic_thermal.c                  | 14 ++++++-----
- 2 files changed, 35 insertions(+), 8 deletions(-)
----
-base-commit: a8c591ed6b672915e0be57843f943a2a723aff40
-change-id: 20260922-fix-t7-thermal-clock-151a0bf4746e
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+
 
 Best regards,
--- 
-Ronald Claveau <linux-kernel-dev@aliel.fr>
-
-
+Krzysztof
