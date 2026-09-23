@@ -1,109 +1,188 @@
-Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0366949B466
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:20:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F1923BE156;
+	Wed, 23 Sep 2026 11:24:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790162454; cv=none; b=jskyOdt8jKO5pKb9ny6/dJrAIbOTOvwwII8ZoEtXNWVgXxeEcVWyP6/BfqDmbBOpMhMwN/2V/B32UfgEzgh4mIal63v+OsS7aLyLmtQRqSIsouIiqlTSmLhrH8K/eHQHE4DFhvvW2t5dAO7w1Ua9/z4mJ7TaMWnlG+qSw27OTrM=
+	t=1790162656; cv=none; b=HxjE7/KRbBE7Q2QQqA2WiCMUPy5YbDs0gmd9UeE+zYJm0vZA+08IpHOpPfn2rAM5anFWw8xqcUl6RYms2D3KtRl4XqVd5Ea0HWa26Xxlvc+kGA86tlxnr+B+elBQGoz/F2+SFcmgwnkjGwbgR/pV7ZVHgq1Zpi45UlhcXDUMsgY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790162454; c=relaxed/simple;
-	bh=ljPZGMW3EOOyQDGbBFq6Gu4+MAFs0+T56XB1zZrbm2E=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sylqbQgY+Rg4ZzoUlMew+NfTyrlOWEc14rcHzBwnSmUJjgi4fLPsV7shqGRCVSn05Xaw05NcKGyvwYhvLcDUtj8/G8l3YQmL5N+8clT3b+w7HwwQpxtZBRzEV7Qe3LfskQL7ZPBhUz8gy4fi5bWzQqOf7cQevlAr9fN2cI4lb7c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BVWOiFIK; arc=none smtp.client-ip=74.125.229.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790162656; c=relaxed/simple;
+	bh=Uam1aAg0TZby4kQQ7Pu91OfFEjng3tPLNmcYKdXWumk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KR3qDMV8oBfoIy526Cfz3lYyQDk8Judk7frgBRl/UBzH5CL9VjRP8vdyrJbzMaJDzaPzpHhgq/2Z6OvlkRX3olZhpj4HlTZIpoIvyZjzgQJ+sbSB5l9+n5C8tAQKFaTpIODRumZsaWyxHvfart2IpHNN7IOUXO6PeRScIhcu3mQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass smtp.mailfrom=suse.cz; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=gdTZGavJ; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=j9ka2BWP; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=GCqTsNFb; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=3kAh+SAf; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BVWOiFIK"
-Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-33c14c9c8ccso107790eec.0
-        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 04:20:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790162452; x=1790767252; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=M3A4c/xbFZ6e0tq+hH+/3HeXVXMCnlcmFGa/+buKPU0=;
-        b=BVWOiFIKs2ja0GMbAE2WuwcWnyFcW3E1bmvWj/P1Z4sHdFzevPgXnMLf6U+4SChNRK
-         ThMpxkMNan5bX1AZ904J4qOgvBHI+bvo7Wa3R2jS8W0mhkhuCIOhCZ+t2YAgD9gaW5Ub
-         zVD7Jwz8oDk0rE4qOBeWvnpjD9dwVG1M7YCZBKeAGmtIChPbY+ZZAXnOBTSL9ok+IQN0
-         LD7s0I0nEBWlKZ7vOBMgUkeJqrIWaZ+8rqGcJkq3wQRfedt4qrowVvH3ODniEF24JtkB
-         d6MwreZxeMkp3AfN9Dz+//01pDqy5eL55GmfJfRAwzJUXgoWU7jW+vOHKcHrFHPkFkoZ
-         QjeQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790162452; x=1790767252;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=M3A4c/xbFZ6e0tq+hH+/3HeXVXMCnlcmFGa/+buKPU0=;
-        b=HrivKTMjRRnjERGNoZXEQRef5E1eNjRvYCh7jkGNKP9vkYE3USj6dLa3kTOFp6QGyM
-         aMMg5WkZVQq06MfEYFBEESNSENi/PAiPlo2bQz/kByY1PKniWJoDpCXV+aF/Od/diQi4
-         MsqFalpoSD8fS9V9/TBONmtEzz28GmUp2eeFz/GKBB2X0TkTLSal15wTHSsQe1XiFvuM
-         zGv90AwTgb1rQAKfQkQ5bPkN4WOy0YBwXN3MAljpoyi+IxY7w+MvKirBfMYCXbww/t0M
-         rqcnBZWwJKATAQfEFn35yxBbJR5zrvXSs6Ar3rpd1QdGynDOxxeZRHl3zRBAZdNKScJA
-         8/rw==
-X-Forwarded-Encrypted: i=1; AKwUvBwqAvGVqLLJStFafdF0GnTKvb0m6n4IwOHXlhyr1Ky0PmqOgvl6SbII13cNWQM/VlJI+i1dRZRuyg==@vger.kernel.org
-X-Gm-Message-State: AFuF++kE0GFdIpejKUOwHwtjh/SglH3gSKgsrFPIv3VPltan0jmraZI8
-	ZdIog9evESpJL5cMLix+y8Hd7luJ2f84wFysYpVqNWfyAzDpK6lkvffl
-X-Gm-Gg: AYBFou05uQ1YGte6uryv2g8hBIPOyOEbRbVrM91aE4CTmOquQ/yv2dk+L8retkPyBJV
-	q7elhqGce6nxLQRcOtG9ZeblnnJ4x2UwxePUkauw695tMYd1vn3uU73q1H/KGNmNJXrIw0YyRmZ
-	LORPcMMbaFKlsqb0JzDOnfF1vIHYXt+fQ7oc2Xw0Y5+/YTl3vuHXcM6rPs9BdBLwBJmR20PiOkg
-	kJXvi1EFjAmbb2K4H+QgeOJzZTa9UlBOiW1nEdyRs5GPochYCwY1bHlOKU4AuG7jdJK2I3mBF8D
-	avKh5OgZKqJJ9134mCMhEYM1hlr9RZED9woYu0KtyG0Kw8OsQ/yHac2Qoti0wtgRhOckrp0uTvb
-	0wHXCY7YRG4JjVZmvs0PC+KIAaGA/hRXLYj6MErApXrpAMpZtURBrrqMv2Hma9Ewc4O/zi4JneY
-	VoO8IwbXiwJdDS6d7sogV0hEsjX2A/pP/YAk6YJloz9P5yoBMf7ldvyvTn0aD4POtZ0HSU8vDZ3
-	n8VE2W7bDWQ1NQCK6lCd1fyAjskc/PuRRkspIjTac9DYC81t6VhZHK4LP4QHMxNXH6OlZ/xL8vA
-	OrekjcAzmknTYTQAUQ==
-X-Received: by 2002:a05:7300:c8c7:b0:33f:3750:4e22 with SMTP id 5a478bee46e88-33f3750519cmr1326580eec.0.1790162451512;
-        Wed, 23 Sep 2026 04:20:51 -0700 (PDT)
-Received: from cachyos-aura ([45.112.148.98])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e96d46f48sm11925271eec.23.2026.09.23.04.20.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Sep 2026 04:20:51 -0700 (PDT)
-From: Navon John Lukose <navonjohnlukose@gmail.com>
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	Mario Limonciello <Mario.Limonciello@amd.com>,
-	linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] PCI/PM: Skip the suspend_noirq config save if runtime-suspended
-Date: Wed, 23 Sep 2026 16:50:44 +0530
-Message-ID: <20260923112044.187266-1-navonjohnlukose@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <arOpj4C67BnrNreM@wunner.de>
-References: <20260923022511.24932-1-navonjohnlukose@gmail.com> <arOpj4C67BnrNreM@wunner.de>
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="gdTZGavJ";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="j9ka2BWP";
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="GCqTsNFb";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="3kAh+SAf"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B40011FF72;
+	Wed, 23 Sep 2026 11:24:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1790162648; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8J1fJO3PoUASIoxVEUYPDfzhb5Id5vgFRROctbMSRL8=;
+	b=gdTZGavJTIRC7qo/QIG7J1ySPZLwUDic0vfHhL7qWL0dCubWBaRZyp/oa9N6TQO440jYno
+	L5wc+Ps8RxDMSDKEdSGPZfr2sgLgDjET+CwkpN3UGd8tBK/SeefQQf6BQRobFGF5/r9fwO
+	CmrVDY4TEtcnxWhU73OYnwqdm/5hVhc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1790162648;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8J1fJO3PoUASIoxVEUYPDfzhb5Id5vgFRROctbMSRL8=;
+	b=j9ka2BWPTBDbuAfUJlAs7e0FIuRF/Y0fg9Op83H/eYnZW3MjydHuzhKV12ezBSpqUh8XPK
+	+rXCOmp0BF5aZzDA==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=GCqTsNFb;
+	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=3kAh+SAf
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1790162644; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8J1fJO3PoUASIoxVEUYPDfzhb5Id5vgFRROctbMSRL8=;
+	b=GCqTsNFbDWrCkgrgQEWkoeBn4SWX5gG8CGWCs5kNTdpoAEBA/oPHosBGH1XyqbGkbllKK0
+	1kok52OVNao2ZJuMTp9qhfqK43WFvtVmhrNwwx8HtGxSPU9LI7OlNUZ/OuzNZaqLMu6Vrb
+	/CZu7FJNWLY65dEPAXjXHYg4wZUJMJc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1790162644;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8J1fJO3PoUASIoxVEUYPDfzhb5Id5vgFRROctbMSRL8=;
+	b=3kAh+SAfjqoWesjBriDJ7Rw3sNQymn5v9QtoTLXlZ5v5YUp7hyBYfPah8GQmtSyKPBdFY3
+	7rNNBgxaJfZN1TDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8A2BB13432;
+	Wed, 23 Sep 2026 11:24:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id i16rGNS2s2pLGQAAD6G6ig
+	(envelope-from <jack@suse.cz>); Wed, 23 Sep 2026 11:24:04 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+	id 1588CA13D4; Wed, 23 Sep 2026 13:24:00 +0200 (CEST)
+Date: Wed, 23 Sep 2026 13:24:00 +0200
+From: Jan Kara <jack@suse.cz>
+To: Sadrul Chowdhury <sadrul@google.com>
+Cc: linux-kernel@vger.kernel.org, 
+	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, 
+	Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org, John Stultz <jstultz@google.com>
+Subject: Re: [PATCH 2/2] fs/select: mark select and poll tasks TASK_FREEZABLE
+Message-ID: <temfkewrcrvv7cnw7f26m7wl2flmr4n2ytcfqa5hcosuoer54j@mfuovklowkc4>
+References: <20260922211559.3633398-1-sadrul@google.com>
+ <20260922211559.3633398-2-sadrul@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260922211559.3633398-2-sadrul@google.com>
+X-Spam-Level: 
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: B40011FF72
+X-Spamd-Result: default: False [-4.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:email,suse.cz:dkim,suse.cz:email];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_COUNT_THREE(0.00)[3];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	RCVD_TLS_LAST(0.00)[];
+	DKIM_TRACE(0.00)[suse.cz:+]
+X-Spam-Flag: NO
+X-Spam-Score: -4.01
 
-On Wed, Sep 23, 2026 at 12:27:27PM +0200, Lukas Wunner wrote:
-> Hm, pci_pm_suspend_noirq() should bail out earlier because of the
-> dev_pm_skip_suspend() check.  That check resolves to:
->
->   dev_pm_smart_suspend(dev) && pm_runtime_status_suspended(dev)
->
-> The code comment in device_prepare_smart_suspend() explains that
-> smart_suspend is true for devices without PM callbacks.  But only
-> if the parent has smart suspend enabled as well.  I guess that's
-> the sticking point?  That the port above the card reader doesn't
-> have smart suspend enabled?
+On Tue 22-09-26 21:15:59, Sadrul Chowdhury wrote:
+> Similar to epoll_wait(), threads sleeping in do_select() and do_poll()
+> sleep in TASK_INTERRUPTIBLE via poll_schedule_timeout(). During system
+> suspend and resume, these threads are woken up by the freezer solely to
+> transition to TASK_FROZEN, and woken again upon thaw only to re-evaluate
+> file descriptors with no pending activity and sleep again.
+> 
+> A previous attempt to make select() and poll() freezable in commit
+> 9745cdb36da8 ("select: use freezable blocking call") was reverted in
+> commit 59612d187912 ("Revert "select: use freezable blocking call"")
+> alongside the epoll revert due to issues caused by the legacy freezer
+> architecture.
+> 
+> Following the freezer overhaul in commit f5d39b020809 ("freezer,sched:
+> Rewrite core freezer logic"), tasks in TASK_FREEZABLE are safely frozen
+> in-place into TASK_FROZEN without running userspace code or experiencing
+> premature wakeups before resume completes.
+> 
+> Pass TASK_FREEZABLE to poll_schedule_timeout() in do_select() and
+> do_poll() (TASK_INTERRUPTIBLE | TASK_FREEZABLE) so that polling threads
+> remain asleep undisturbed across suspend/resume cycles.
+> 
+> Signed-off-by: Sadrul Chowdhury <sadrul@google.com>
 
-It is that check, but it fails on the card reader itself, before the
-parent is looked at.  no_pm_callbacks is only set when the bus has no
-PM ops either, and pci_bus_type always has pci_dev_pm_ops, so no PCI
-device ever counts as having no callbacks.  With no driver to set
-DPM_FLAG_SMART_SUSPEND, the reader never gets smart_suspend.
+I'm by no means system suspend expert but I don't see a reason why this
+shouldn't work. So feel free to add:
 
-pcieport does set the flag for the port, and on this machine the port
-stays in D3hot through suspend.
+Reviewed-by: Jan Kara <jack@suse.cz>
 
-Thanks,
-Navon
+								Honza
+
+> ---
+>  fs/select.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/select.c b/fs/select.c
+> index 8943f20e8300..5cbbe86135bc 100644
+> --- a/fs/select.c
+> +++ b/fs/select.c
+> @@ -601,7 +601,7 @@ static noinline_for_stack int do_select(int n, fd_set_bits *fds, struct timespec
+>  			to = &expire;
+>  		}
+>  
+> -		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE,
+> +		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE | TASK_FREEZABLE,
+>  					   to, slack))
+>  			timed_out = 1;
+>  	}
+> @@ -961,7 +961,7 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
+>  			to = &expire;
+>  		}
+>  
+> -		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE, to, slack))
+> +		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE | TASK_FREEZABLE, to, slack))
+>  			timed_out = 1;
+>  	}
+>  	return count;
+> -- 
+> 2.55.0.1082.g2b9226bbc0-goog
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
