@@ -1,183 +1,104 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua2-f12.google.com (mail-ua2-f12.google.com [74.125.226.204])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1E3D488233;
-	Wed, 23 Sep 2026 10:31:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 317D5486E70
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 10:33:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.226.204
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790159505; cv=none; b=GjEwyPsKS+PIzPhuUbUNiyw6rTOlFIR5LmKPLuVX3BNdgYwe0AW2OZ2OQoLRcVjq4KuNcc5rO/StXjBBDyQDkWu1G5O0ttELvj5PuTRp3u9zLLt91PEvzzKzBYifYCCdlLPayBuR+MYnbH7UXdriHDoEQly08Q4e6Tln8HC9aGA=
+	t=1790159642; cv=none; b=ncXLhPzju2Gc56qLTbnuuIgQUfRODXocV9vNy1YqT1axYvTFxTAURCj2TK57GlRVCVyDp9i7e1jOmScfCEHrvgezsWukb7ZA44caEeP2Gf+7OvYQZhtF5W5C9GfBkwDi8lE5yvpoecgG+VJ9NPpoI/6HNdS4Tq0LRuUO27/ISaQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790159505; c=relaxed/simple;
-	bh=puhRv8cvCWPdt+898drsZ6gAREbajbbq2Kz8e2guv0Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PfBJy+kdeLLd3ysuLeXQHa5RrADUKQ89Tn7ZiXOS/cD1FJik8ABUBWKBGCTR1doVSYKRNYRqF1o+zvlgyCogloPTqkVicCnHS6LO1pG1CX07GGHToed7umcVMG72cYuTkKqWTQIWmaVKhHX7vLKtmuepfJH3ShHjJnQvNDYWxq4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j35rH4u7; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j35rH4u7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8271A1F000FF;
-	Wed, 23 Sep 2026 10:31:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790159493;
-	bh=aF1MzpU61XRmUHcDP/fvbQ0mXhibmF/LWQ0namfOZ8U=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=j35rH4u7WV13DsI7KZ4JrOlt1/NTCQO5zUuJnhXsK3azEtUNgmnX59lKPmMfjDbqL
-	 Fwqe8wTPPPEo4297dLRg9aCSd9xpep8/RXoK1N1AHdEpiamQgo7zuQO/WC+8VWA9sy
-	 u6XdogA3R/SrEmjk3/ffko7jtDTgCzSBCpRQ9ruCfYu2ycm4tOrU8gqh4q6sD2pvaK
-	 RZX2znjko45SxPIZ9lGTG4v+DXBdne6J5DWcUpX/3H254Ur4VgR/UbBlo8nnzwPnl0
-	 Wmh2/efj9MGLgcFXE5euNPTX6V1vm8LLCaCO+xMIJxghSoX6v/6h57QTv/ffZNdzRH
-	 +DgjaGBeBMM9Q==
-Message-ID: <fec1931b-1173-4e14-b74a-7b3987a9b7bc@kernel.org>
-Date: Wed, 23 Sep 2026 12:31:26 +0200
+	s=arc-20240116; t=1790159642; c=relaxed/simple;
+	bh=6QiT+5Eti1IhGEvRyNE2dwG7QghpDhUduh0GYW+kW4U=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=F/oAvYUbTSUCLQKEpw2DXPSsQytgUOno+2wzbHM2911Bj6X5r0hJedicy1i/k2CgEu2bFGdwbpiWow9CS9pLuQyhixJse8Rfy0y4Gy65nXFU7NvoeJHHlhFs3Dgm6DhgpwuWFJXJFXjJYK1q8kqenUblSMdO9D+/5tO/4eZk6RE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.226.204
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua2-f12.google.com with SMTP id a1e0cc1a2514c-97e7c7b4ed2so457224241.2
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 03:33:50 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790159629; x=1790764429;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=YiOls8D0cbeW0kl5ScyFGGWv5xl1CQ8uKTuoQSqtSKM=;
+        b=QDesZZntka4RchGlqTCOAeJRNlfY5Od0fXo6utGulL193JGCgV5KkLoNQhm5PFJLqy
+         Ae8CY5bsZjGi2Mup1HaG281Npib4FAfeUCKsS4y9PH54Vsc2qXZfXUesrGxNqUYPtFrx
+         AFmmt5ROp/ROWh6Xnmeb5EW/MnuG8YGcLjf0OWa4wtxDKUAO8pHlmQ+zLRIlmyh07Kpa
+         EL1sfohcY/jbuAwBt5U+dHikJsrRCMEgFz6VShfqW6gIKc0zSHsF/Jg2UjERbYRu8ATD
+         tBFM4W4s14rJYm/37j+KNO+G1avJtBpvwDJMGCVQhTZKpNXhqS1J6wNLrkNBqCqNeQh7
+         F14A==
+X-Forwarded-Encrypted: i=1; AKwUvBzI+aj/1m2G0H+YFCu13ahVLNyHfgK6lrH9VzZKG1GlLrE3W+mmnZKjL3xo6B0TOMUzf76xzTlj7w==@vger.kernel.org
+X-Gm-Message-State: AFuF++nSawuvswiKGxEa2vnkz7p7okk2Uj6gJ/9wmt5Y9wQ5/qb9k5UM
+	TtMEwUDg1AUs/m7/NFi38XH5t9bPPnwmCAoH4GxeR6Bv0I8Sr69cff/oafz96v3fZVo=
+X-Gm-Gg: AYBFou1ItEXxP+HaCfeEAXjPM7g/82Nm/V6v5nUOjMqJOK5FRIWOlTEV0h/uTGH5vEa
+	fv9XyeX0uR+22yRCzzRVFePkyiiSIkJfzkrLdhwO4SWHNoNCFBZXOf9rgLrEG0f3JYz9k2FXAfn
+	wwqWUhrZfeHOq5n5GQSqkSr+Z9jDKm4jE+QNzt0yYFkbFmXxVZOSE758+MQadx+VLsIHfuMs0YC
+	BsT4VF8Php1dP04yOepCmjejg/jrSQBy+h2Ix8iZcOACmrbUD0LfeY4v1T/Rgj8OaTi69B6FzI3
+	NYvYFuq/B5onyevResRtA5mpNMcKiv84e0fkB9BeyDoa57ku/Yh8CXLIzWUWvlww7QRbPyaihKg
+	RbeiwqCu2y1vaEix0VgEE+CRzH0rgj+mYxgjlRAo4giA1jQrEVvBceUg+iiOWHkBptW4SVuqXfm
+	fvoDg9SfzsaAe9xq/xSaHLVRSDxhljO2N5I1to0sNpOdvKm2B+0ODe1cWP/wovmLtF3mYO6meF0
+	Vt7UkdS6xlPnNdqAFrLazLMSM1tYUFk71un0npzU/237EYTD67YC1QArw==
+X-Received: by 2002:a05:6102:292c:b0:7a2:2068:6e37 with SMTP id ada2fe7eead31-7ac1bb2edaamr2010257137.15.1790159629052;
+        Wed, 23 Sep 2026 03:33:49 -0700 (PDT)
+Received: from mail-vs2-f12.google.com (mail-vs2-f12.google.com. [74.125.227.12])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7abf566d033sm2950256137.5.2026.09.23.03.33.47
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 23 Sep 2026 03:33:48 -0700 (PDT)
+Received: by mail-vs2-f12.google.com with SMTP id ada2fe7eead31-7856441f7dcso329530137.2
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 03:33:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBz+V/WJsGIRVGoVfKv1gNPUPdOPRjJh16zU1EfV8Aq6UlQHtKTEFd2V10SrSvn81lFcNjMz5JAcsg==@vger.kernel.org
+X-Received: by 2002:a05:6102:3712:b0:7a1:f7e2:aae1 with SMTP id
+ ada2fe7eead31-7ac1d0ca801mr2003132137.19.1790159627332; Wed, 23 Sep 2026
+ 03:33:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
- pages
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
- Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
-References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
- <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260921134432.50338-1-ayman.chaudhry.kc@renesas.com> <20260921134432.50338-4-ayman.chaudhry.kc@renesas.com>
+In-Reply-To: <20260921134432.50338-4-ayman.chaudhry.kc@renesas.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 23 Sep 2026 12:33:36 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVkh_qpJKqD7N=njG+35gS+rE7cFfWQ-kS3aRoTByxH_Q@mail.gmail.com>
+X-Gm-Features: AclHuK_hGN_yWlJ6BENm_qv3b3xlhGSBd5j_07ozn_vS55vMXA_7UHHfcE0Hj3o
+Message-ID: <CAMuHMdVkh_qpJKqD7N=njG+35gS+rE7cFfWQ-kS3aRoTByxH_Q@mail.gmail.com>
+Subject: Re: [PATCH v2 3/9] pmdomain: renesas: rcar-sys: Add r8a774a3 support
+To: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>, Ulf Hansson <ulfh@kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 9/17/26 08:07, Mike Rapoport (Microsoft) wrote:
-> The pages protected by KFENCE are removed from the direct map.
-> 
-> safe_copy_page() temporarily maps and unmaps them using set_direct_map
-> APIs, or, when the stars align, even using debug_pagealloc_map_pages().
-> 
-> Neither of these APIs cares whether it is a KFENCE page and both blindly
-> perform the update of the kernel page table for any non-present page.
-
-Agreed, we should route this through the actual mechanism that modified the
-directmap in the first place.
-
-> 
-> Ability to use debug_pagealloc_map_pages() to remap KFENCE pages when both
-> KFENCE and debug_pagealloc are enabled is an amusing coincidence.
-> 
-> But with increasing appetite for using set_direct_map for hardening
-> purposes, it becomes too big of a hammer to enable saving any non-present
-> page in the hibernation image.
-> 
-> Another gotcha is that loongarch that does not have a direct map at all
-> advertises ARCH_HAS_SET_DIRECT_MAP to allow coexistence of KFENCE and
-> hibernation.
-> 
-> Extend KFENCE with a bitmap that tracks which pages are protected and
-> provide kfence_force_mapping() and kfence_restore_mapping() APIs that allow
-> forced mapping and unmapping of KFENCE pages.
-> 
-> Use these APIs in hibernate_{map,unmap}_pages() for KFENCE pages.
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+On Mon, 21 Sept 2026 at 15:45, Ayman Chaudhry
+<ayman.chaudhry.kc@renesas.com> wrote:
+> Add support for Renesas RZ/G2M v3.0 (a.k.a. R8A774A3) SoC power areas
+> to the R-Car SYSC driver. The RZ/G2M v3.0 SYSC is similar to the RZ/G2M
+> v1.3 SYSC, however it lacks the A2VC0 power area.
+>
+> Signed-off-by: Ayman Chaudhry <ayman.chaudhry.kc@renesas.com>
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  include/linux/kfence.h  | 29 +++++++++++++++++++++++++++
->  kernel/power/snapshot.c |  7 +++++++
->  mm/kfence/core.c        | 52 +++++++++++++++++++++++++++++++++++++++++++++++--
->  3 files changed, 86 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/kfence.h b/include/linux/kfence.h
-> index e5822f6e7f279..33a126cb6d1b7 100644
-> --- a/include/linux/kfence.h
-> +++ b/include/linux/kfence.h
-> @@ -222,6 +222,32 @@ struct kmem_obj_info;
->  bool __kfence_obj_info(struct kmem_obj_info *kpp, void *object, struct slab *slab);
->  #endif
->  
-> +/**
-> + * kfence_force_mapping() - make sure a KFENCE page is mapped
-> + * @page: page to map
-> + *
-> + * Check whether @page is protected and map it if needed.
-> + *
-> + * Requires: is_kfence_address(page_address(page))
-> + *
-> + * Return:
-> + * * false - failed to map @page
-> + * * true - @page is mapped
-> + */
-> +bool kfence_force_mapping(struct page *page);
-> +
-> +/**
-> + * kfence_restore_mapping() - restore mapping of a KFENCE page
+> v1->v2:
+> - Added space before closing brace for `ca57-cpu1` area
+> - Updated include path to SYSC dt-bindings
+> - Added Reviewed-by tag
 
+As this has a hard dependency on "[PATCH v2 2/9] dt-bindings: power:
+Add r8a774a3 SYSC power domain definitions", I will provide a shared
+branch with the dependency to Ulf.
 
-The name is misleading. You are actually restoring that the page is
-unmapped/protected?
+Gr{oetje,eeting}s,
 
-	kfence_force_mapping vs. kfence_restore_mapping
-
-is confusing.
-
-Can we find a better pair of function names that describe what is actually
-happening?
-
-Maybe something along the lines of
-
-	kfence_prepare_copy_page
-
-	kfence_finish_copy_page
-
-That rather expresses what the caller intends to do.
+                        Geert
 
 -- 
-Cheers,
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-David
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
