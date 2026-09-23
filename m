@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7CF549F10D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7BC7485924;
 	Wed, 23 Sep 2026 11:52:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790164366; cv=none; b=SVZjvNzUyPnb5OuDTk5PEuur6LWBw1T5E6S+VESmcp3xuL2fnk6dUB5tWABEWGtjjSEwAYArdB33If5XEJzHocLUkllY73tRrmm/st4EwqbwrY5lrgaR+ix2VO724ji5Qsj6ucSAT8LLuaa9ZibeG16GtLqRR8OqoIBCl06BTOc=
+	t=1790164366; cv=none; b=MSaoUFWzwu7IsYDq/xocoAV/ui6ycHBTJS6EKVLueW9jOnBabqSkMSqxbrv5JhvP1+u/V2yHNdFcAh9vh4bi2BNalxF6KhXaQ3k/zDfsFzw8ncjtVazFOAt4Irlvk8Bb5vtesmbT1rdA3qw3K0x5ctVuCwsqDEJkZnwMgov32OE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1790164366; c=relaxed/simple;
-	bh=pRBoDwm+hXbNgvkCq0UMM6iOsik44TmlbYaHoFXQ904=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Pi0qI6MwgEyfKC586eBWfH2WC4ywNmqQt+TeSP5kG5vnyAdCN716zV2bZGU8tVNEqsIa5NQXQnZdQ8YkHjaWNfxTMM0jCLtP8HdGs8w713l49fz1gXEvrFEfSnTQ4OP/QNd2A9NYsusw8xqkklLOCYrJuv5+H1HVLN9Lq4Xildo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SzALtcS/; arc=none smtp.client-ip=10.30.226.201
+	bh=mNVNZhOFGrZFEhWuUYugPaoxFl6qri6EXLAgumV6vFE=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=a0+kQ3hvgA9TRVBattTG0ly/DxXGXOxnTKra8YFewLByf1HxcpP0I7sO51kD4cP7+VFTNlIf81vu2V3obDbSRKsdDhlvgRqllo1gdqvYFEeOsqW8fS4WPjm6Bp/Ocx8UM7fBvW8cDP3UU+aZO9oE7hpNG4WORt6VkoFtOiJBH9M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VSZIDe0H; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SzALtcS/"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B9322C2BCB8;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VSZIDe0H"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AA7DAC2BCC7;
 	Wed, 23 Sep 2026 11:52:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1790164365;
-	bh=pRBoDwm+hXbNgvkCq0UMM6iOsik44TmlbYaHoFXQ904=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=SzALtcS/bElt5UmQfBT2TFCgq2+/WwkvHbETSLmyxUfEY5oGxajIrAfhivw5vkB1Q
-	 qLN28M7PeX00+qUUFew7Cmkx5waGc3wD9O0sNT2GQfavyAOUBvfCo8ZzYW2H192xQV
-	 ZflbtrSiI+62xl0By2DPng+YTFyPrXg/lDWMtJj/f/P9XBNDMqb2JJsrVq+CkBKoC6
-	 k8PoYaLBWH8piV+EpJaZgV27KLvxza7B0ljkgY9wOZchodnI69dii9lx7jgYzb3lnT
-	 I+Ydihka0FA0AwC5XxjLUT+w8Gq2a+aSk3Kvn7TQzKXCmEASbraoQE6dz4U2U3gW5E
-	 +bt7p5ZttfZnA==
+	bh=mNVNZhOFGrZFEhWuUYugPaoxFl6qri6EXLAgumV6vFE=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=VSZIDe0HAE9QN8v+7cJQczstQQoQDrTsyLDhhvGoaK+1JEGl//aHAwdqTwmPI2Z0R
+	 +hd46AuMa0PQLRW4v5u7e7B20hMeje8wyCN7OB6KQnMd6/mgYO4V9Hy378X1hARELU
+	 cc8glrLb3lkDV0cwHMoTgEaspwCDYOzahad9axw74AlpIuDqx/wjqsFb5cVqHY5OyJ
+	 JutYjihQ703/jPNkV3RuiYW9Pxaq0GKggGE1BVYvfbVI+fx/A+9lQPQBbBv91/4gzN
+	 rU8DGaEa5wpf3kea3XNA0Cyz8+RztbeaRwO/FS3w0uEu+41scaEY1idnKXO6BXvgGG
+	 SSdKWrJXqOkOw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9940BC98307;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85733C98309;
 	Wed, 23 Sep 2026 11:52:45 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Wed, 23 Sep 2026 13:51:02 +0200
-Subject: [PATCH 1/2] dt-bindings: thermal: amlogic: describe bus clock for
- t7-thermal
+Subject: [PATCH 0/2] Add bus clock for t7-thermal sensor
+Date: Wed, 23 Sep 2026 13:51:01 +0200
+Message-Id: <20260923-fix-t7-thermal-clock-v1-0-7d4c4682f182@aliel.fr>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +40,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260923-fix-t7-thermal-clock-v1-1-7d4c4682f182@aliel.fr>
-References: <20260923-fix-t7-thermal-clock-v1-0-7d4c4682f182@aliel.fr>
-In-Reply-To: <20260923-fix-t7-thermal-clock-v1-0-7d4c4682f182@aliel.fr>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2MQQqAIBAAvxJ7bkGlkvpKdDDbcsksNCKI/p50H
+ JiZBxJFpgRd8UCkixPvIYMsC7DOhIWQp8yghGpEqxTOfOOp8XQUN+PR+t2uKGtpxDhXumoIcnp
+ Eyt6/7Yf3/QBuLdd2ZgAAAA==
+X-Change-ID: 20260922-fix-t7-thermal-clock-151a0bf4746e
 To: Guillaume La Roque <glaroque@baylibre.com>, 
  "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
@@ -55,13 +55,13 @@ Cc: Conor Dooley <conor.dooley@microchip.com>, linux-pm@vger.kernel.org,
  linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2500;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1539;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=J2Flc6GT2BuQ4CMvkke4xIIVWFYzKvE68xnnn2N8gnk=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ9bmvZXNnXxeEo+0NX7eWV1vf3rqYrafP8QaNEMTnx19c
- Db9q9ScjlIWBjEuBlkxRZb+uZYn3l0+eubrHvUUmDmsTCBDGLg4BWAikSWMDFdefNDdvPTZ4d3l
- 3AGh0lNTNatfNxWdyEiw5J63ZNKmVGFGhiOnD69uevihd+mR7yHz5D+In+frbXv66ult494/pg3
- 6NxgB
+ bh=mNVNZhOFGrZFEhWuUYugPaoxFl6qri6EXLAgumV6vFE=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ9bmvWUcTfONOQ+JLFLVT/w7Z84cqUi9afNTTVhWX1p8s
+ 9flSqtDRykLgxgXg6yYIkv/XMsT7y4fPfN1j3oKzBxWJpAhDFycAjCRtVkM/yu4g61POIqx7ja/
+ 4fWg3maegO/iK2s3VS2XWB1nPUdnaybDX4Euvuq/806cm/jlLltPcmHG1HZzu8JeQw63i2FdhbP
+ m8gIA
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -69,80 +69,39 @@ X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
 X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 Reply-To: linux-kernel-dev@aliel.fr
 
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+The t7 thermal sensor requires a bus clock, gating register access to
+the sensor, in addition to the functional clock that is already
+described and shared between sensors on other Amlogic SoCs.
 
-The t7 thermal sensor needs a bus clock, in addition to the existing
-functional clock, to gate register access to the sensor. This bus
-clock is specific to each sensor, unlike the functional clock which
-is shared between sensors. The current binding only describes a
-single unnamed clock and therefore cannot represent this hardware
-requirement, so add clock-names to disambiguate "bus" from "core" and
-make the second clock mandatory for the t7-thermal compatible only,
-via an additional if/then/else, to avoid breaking other Amlogic SoCs
-that still use a single clock. Update the t7 example to match.
+This series first extends the devicetree binding to describe this
+second clock, making it mandatory only for the t7-thermal compatible
+so other SoCs are unaffected, then updates the driver to use the
+clk_bulk API instead of a single struct clk, so it can transparently
+handle however many clocks a given compatible declares.
 
-Fixes: b1c8ccdbd4e9 ("dt-bindings: thermal: amlogic: Add support for T7")
+`dt_binding_check DT_SCHEMA_FILES=amlogic,thermal.yaml` is ok
+
+  CHKDT   ./Documentation/devicetree/bindings
+warning: python package 'yamllint' not installed, skipping
+  STYLE   ./Documentation/devicetree/bindings
+  DTEX    Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dts
+  DTC [C] Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dtb
+
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
+Ronald Claveau (2):
+      dt-bindings: thermal: amlogic: describe bus clock for t7-thermal
+      thermal/drivers/amlogic: switch to clk_bulk API to support multiple clocks
+
  .../bindings/thermal/amlogic,thermal.yaml          | 29 ++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
+ drivers/thermal/amlogic_thermal.c                  | 14 ++++++-----
+ 2 files changed, 35 insertions(+), 8 deletions(-)
+---
+base-commit: a8c591ed6b672915e0be57843f943a2a723aff40
+change-id: 20260922-fix-t7-thermal-clock-151a0bf4746e
 
-diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-index 8cfa44dcda58c..e72cb39ac635d 100644
---- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-@@ -32,7 +32,15 @@ properties:
-     maxItems: 1
- 
-   clocks:
--    maxItems: 1
-+    minItems: 1
-+    items:
-+      - description: Bus clock, gates register access to the sensor.
-+      - description: Functional clock of the temperature sensor, shared between sensors.
-+
-+  clock-names:
-+    items:
-+      - const: bus
-+      - const: core
- 
-   power-domains:
-     maxItems: 1
-@@ -72,6 +80,22 @@ allOf:
-     else:
-       required:
-         - amlogic,secure-monitor
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: amlogic,t7-thermal
-+    then:
-+      properties:
-+        clocks:
-+          minItems: 2
-+      required:
-+        - clock-names
-+    else:
-+      properties:
-+        clocks:
-+          maxItems: 1
-+        clock-names: false
- 
- unevaluatedProperties: false
- 
-@@ -94,7 +118,8 @@ examples:
-         compatible = "amlogic,t7-thermal";
-         reg = <0x20000 0x50>;
-         interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
--        clocks = <&clkc_periphs CLKID_TS>;
-+        clocks = <&clkc_periphs CLKID_SYS_TS_A73>, <&clkc_periphs CLKID_TS>;
-+        clock-names = "bus", "core";
-         #thermal-sensor-cells = <0>;
-         amlogic,secure-monitor = <&sm 1>;
-     };
-
+Best regards,
 -- 
-2.49.0
+Ronald Claveau <linux-kernel-dev@aliel.fr>
 
 
