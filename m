@@ -1,128 +1,110 @@
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [52.187.6.220])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id EC41844A41B;
-	Wed, 23 Sep 2026 07:28:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.187.6.220
+Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 566424519B1
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 07:35:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790148520; cv=none; b=upmoLEr1QhqK5r1qPDloHjRT9aSN5+2Y07XQNm2t25uaebcskK0SurtsOFHMFtTBD3tbUy5mLSXM4a5y3xpWjd0lK7FezS70I/XYcLIq4Y2rjiHSPydCFoPFRCAz8E970YFiN4FXQSDKd57uDmYOdcrp+Bf6gtgEaxHeos/aCCk=
+	t=1790148916; cv=none; b=FXYIpjMYkY/7PhFD6U//ItfnypAHd/JjR2V5A9yqKA3SCtT7Xzz+GyiHHjeFyYGCVOjhRNdIToKa0JDTYlF/sHlL0xFRQSYmnRyRhB4JOXhaCiJfjdKBVFT6UVU0P9Veew6afR4bFP/D4FbDYSK1ErA2/vrBU3ux7q4ckLpx3FA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790148520; c=relaxed/simple;
-	bh=VlHrzSk0Qsa1Y3DMDPyOcIYSNZZ6W1iECCRqeFSmRI0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=qcrH1h3plW54oPRUD6AhLRPE4gmp0g/qTh2LobkwYCbFiQpAwCjNaM4CV0o7+dEuMqC+Bg407jBA+x35jIC+psV0574bFoTVskUBfvJKwo4OEIf5LD7ly5eSk/xUBDJs4v8pf9aB2upFar5EG/+dkTrng37TV6jUV6HVbFJl+SM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=52.187.6.220
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
-Received: from zju.edu.cn (unknown [10.98.66.117])
-	by mtasvr (Coremail) with SMTP id _____wCXcT6af7NqC+YwAQ--.6071S3;
-	Wed, 23 Sep 2026 15:28:27 +0800 (CST)
-Received: from localhost.localdomain (unknown [10.98.66.117])
-	by mail-app1 (Coremail) with SMTP id yy_KCgBHS6WZf7Nqb7SfBA--.29256S2;
-	Wed, 23 Sep 2026 15:28:25 +0800 (CST)
-From: Fan Wu <fanwu01@zju.edu.cn>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org,
+	s=arc-20240116; t=1790148916; c=relaxed/simple;
+	bh=NpAQJEpAggqV1p2gBrvheK1e8z0DrJ7uAPNXG/lVgjc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=rfvDuMGGxBkdgsuY36TO9kiZgqvkvPYQxllBO2/bhWjniqo/emSw0+slctphLo3uwmCt62I+Mj2vSpvObCVPh9u+DE+KXrE/YzKlKl2u98x5ep8v3a4wEWFsndMQevBkp0cBTZNNbV/iUSRTQGf+JhTEmybFwC9vesy1pXiTz0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DG5pzHh5; arc=none smtp.client-ip=74.125.225.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DG5pzHh5"
+Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49b912d37b5so3249085e9.2
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 00:35:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790148910; x=1790753710; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=NpAQJEpAggqV1p2gBrvheK1e8z0DrJ7uAPNXG/lVgjc=;
+        b=DG5pzHh5r/Zq22kTIQE4z2zCLr5Vvq+/VAZ7JzV8m0DHyr1DTaeh/5R80ylSDvhLdj
+         ulRRH/nA9DN1JUtczNNCDcttkIzx2nrPO+jr69++qZ+0qdKhOXt4F+MBJLUS6C4/Izjr
+         FeD2l4g6V8yVTS3Zb0+aoPB2Zfyu7KiZ7XJpw8J/7AHlxeKzmOGS4dROIEHp4iV3brI2
+         EMG1KiKNqgjIM367zL/GYf02rdwf7QqIo6ZVQBSBeVG5hPm5To+Bs9Remb1AovlpftvF
+         7mwxYjR5rKAHkTT69gHHbm1U9mEFJ/0hkFB6ns3gHQnTHeiEaecPDimliExUzSsg7zW/
+         A0OA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790148910; x=1790753710;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=NpAQJEpAggqV1p2gBrvheK1e8z0DrJ7uAPNXG/lVgjc=;
+        b=uefgxPp5H+M2etNvJAdV77Dmg7FVWEUi078MluU1KXCz5EPtnXSyRP9oaWQ/C4Q7Ua
+         eOhcPmAtaPI3iBOLyIbn9vdom6zJb3Gwp/rpR0XrMsCpeu1mB5Dav/1P7wMSCt976QHW
+         R5Jpyl4atalaEy5/jMRihRdOPDdRh/qtchEOUt3aca7yj2MdRocVBQHaTMBnPsNFXBmf
+         xs/CgKKKkCYkg0NDbyjDzi0vqPF2cOKuRF2IrdwKhkENcO4KoQ8Aaagr9rJuFg9W3QkB
+         og8ma85nJCej0znFzOtyhE2JqfPPO0H6XPHyhfgkSCKjHxFAF2mkVSMwXgSiWhIumtYG
+         eGEg==
+X-Forwarded-Encrypted: i=1; AKwUvBwnXHcO2usU7TtFrgg/cBWg/oQtGsGgJUY+3Vtso789BjJCd6SiUeSGTL+3CQk9z4pHTHPRUjmmkg==@vger.kernel.org
+X-Gm-Message-State: AFuF++lobwIbPZ5Z9/sz+9+guNfAky8s7/pX4CBgfy/1SayZCrd0W0YU
+	rURNSkLW4Cwnj8R803toytW+WR0SQBnXgzsUfUcwtkvBVk++AAhe2AHS
+X-Gm-Gg: AYBFou1VCEseZB+fZkY/CV2OQH0zH7R6a0/ENeCLUjsCTfguAu2NRoCl4XDRRS5iyWi
+	mOHTgTAVYlsI/8LVDHF67DNFlla9cnfO2Spcjk/d8UhW4m6MKEBB51KHWeQo1GM9cUrD71blneU
+	TVP4/b1RzYLheOtmHIctlabys5irXwnF5C57BReHxiYaeLlcCkEUSGb1J5vFRcrxKbKHH7CeaYD
+	O+PI4bPAz4HhkEA+ALpcMtc7Uiv9vHf0BMnKYY1nWjDv96X19jlBOrZ5QvdqvinM/3P3i24AkFk
+	8Ve87i+hZHnaCyGDA+gX/TG8q0DHHqmg5cHaCwLb4GDILSOYhiHNyYDaWUd9qwkj1M0zV8fJA/n
+	vJ6lul0rPLwGvIn/XjCW/EsahPFK/M/A5Dmj20Sx1BqZuKC2cZbrxoTC+fvhe68dkNgXoVktQVs
+	u+rywCt38GpTIPyaUtBP7I7p69yOOfhAo2NRys7NMxcYdVHBpAjTf4sQ3g2YhFqvqdWsAhL0Ek5
+	/165mjMZwPVDd+F/A==
+X-Received: by 2002:a05:600c:34ca:b0:49f:ce78:3568 with SMTP id 5b1f17b1804b1-49fdeffd818mr18600225e9.25.1790148909725;
+        Wed, 23 Sep 2026 00:35:09 -0700 (PDT)
+Received: from localhost.localdomain ([94.252.74.168])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-49fde180a39sm70649425e9.1.2026.09.23.00.35.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 23 Sep 2026 00:35:08 -0700 (PDT)
+From: Oleg Keri <okerixx@gmail.com>
+To: Will Deacon <will@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>,
+	Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Beata Michalska <beata.michalska@arm.com>,
+	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Fan Wu <fanwu01@zju.edu.cn>,
-	stable@vger.kernel.org,
-	Song Li <songl@zju.edu.cn>
-Subject: [PATCH] thermal: intel: int340x: Fix use-after-free in proc_thermal_pci
-Date: Wed, 23 Sep 2026 07:27:30 +0000
-Message-Id: <20260923072730.487900-1-fanwu01@zju.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	Ananthu C V <ananthu.cv@oss.qualcomm.com>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5] arm64: topology: fix arch_freq_get_on_cpu() overflow above 4.19 GHz
+Date: Wed, 23 Sep 2026 09:35:00 +0200
+Message-ID: <179014889997.344140.3757658991789489835@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <arKpSGPXOCFF09hM@willie-the-truck>
+References: <arKpSGPXOCFF09hM@willie-the-truck>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:yy_KCgBHS6WZf7Nqb7SfBA--.29256S2
-X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
-X-CM-DELIVERINFO: =?B?6z8Z2gXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
-	sfnVCjTgEH9dVomQuWcozCBBH+87qL5fRToeAOg89PGCcN6vfkQDGs8fMcgG9o1ygcca8w
-	xv9KW99gtQbXPCh4M3rN5RPxYw6l01w8CbPzC/8w
-X-Coremail-Antispam: 1Uk129KBj93XoWxur1kZry3CrykKFy7Jw13trc_yoW5Cry5pa
-	98WF9xArWkWFWrW3yDZa1xZFs5tr4kK3yfWrn3G34fKr45AFySqryrKFyUArW8CFZ3AF12
-	yr15trs7ZF98GFXCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUU9Gb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
-	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
-	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
-	xVWUXVWUAwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
-	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
-	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
-	I_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
-	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj4
-	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8
-	JrUvcSsGvfC2KfnxnUUI43ZEXa7IU8aQ6JUUUUU==
 
-proc_thermal_pci_remove() cancels pci_info->work before disabling the
-interrupt sources that schedule it. A threshold IRQ which arrives after
-the cancel but before the THRES_0 and INT_ENABLE_0 MMIO mask makes
-proc_thermal_irq_handler() reschedule the work, so
-proc_thermal_threshold_work_fn() runs after devm cleanup has freed
-pci_info and dereferences pci_info->tzone and proc_priv->mmio_base. The
-shared IRQ is never freed in remove(), which widens the window, and the
-probe error paths never cancel the work either.
+Hi Will,
 
-Fix this by cutting off the producers before draining: mask the THRES_0
-and INT_ENABLE_0 registers, free the MSI interrupts or the shared IRQ,
-and only then cancel the delayed work. The probe error paths cancel the
-work before the thermal zone is unregistered.
+On Tue, Sep 22, 2026, Will Deacon wrote:
+> ... does this introduce unnecessary 64-bit arithmetic for 32-bit
+> architectures that currently pass 'unsigned long' to the existing macro?
 
-The work function re-enables the INT_ENABLE_0 bit, but the IRQs are
-already freed when it is cancelled and THRES_0 stays cleared, so nothing
-can schedule the work again.
+Good catch. The truncation happens in the unsigned int temporary in
+arch_freq_get_on_cpu(), so v6 will drop that temporary and leave
+kernel/sched alone.
 
-This issue was found by an in-house static analysis tool.
-
-Fixes: acd65d5d1cf4 ("thermal/drivers/int340x/processor_thermal: Add PCI MMIO based thermal driver")
-Cc: stable@vger.kernel.org
-Co-developed-by: Song Li <songl@zju.edu.cn>
-Signed-off-by: Song Li <songl@zju.edu.cn>
-Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
----
- .../processor_thermal_device_pci.c                | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index c693d93..1856e76 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -409,7 +409,10 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
- err_free_vectors:
- 	if (msi_irq)
- 		proc_thermal_free_msi(pdev, pci_info);
-+	else
-+		devm_free_irq(&pdev->dev, pdev->irq, pci_info);
- err_ret_tzone:
-+	cancel_delayed_work_sync(&pci_info->work);
- 	thermal_zone_device_unregister(pci_info->tzone);
- err_del_legacy:
- 	if (!pci_info->no_legacy)
-@@ -424,13 +427,16 @@ static void proc_thermal_pci_remove(struct pci_dev *pdev)
- 	struct proc_thermal_device *proc_priv = pci_get_drvdata(pdev);
- 	struct proc_thermal_pci *pci_info = proc_priv->priv_data;
- 
--	cancel_delayed_work_sync(&pci_info->work);
--
- 	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0, 0);
- 	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
- 
- 	if (msi_irq)
- 		proc_thermal_free_msi(pdev, pci_info);
-+	else
-+		devm_free_irq(&pdev->dev, pdev->irq, pci_info);
-+
-+	/* Cancel after the IRQs are freed, or the handler may reschedule it. */
-+	cancel_delayed_work_sync(&pci_info->work);
- 
- 	thermal_zone_device_unregister(pci_info->tzone);
- 	proc_thermal_mmio_remove(pdev, pci_info->proc_priv);
-
+Thanks,
+Oleg
