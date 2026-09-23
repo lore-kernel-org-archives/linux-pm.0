@@ -1,61 +1,61 @@
-Received: from mail-pz2-f41.google.com (mail-pz2-f41.google.com [74.125.228.41])
+Received: from mail-pz2-f43.google.com (mail-pz2-f43.google.com [74.125.228.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9788423EA4
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 17:47:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9A8842122E
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 17:47:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790185665; cv=none; b=Z2ZUqB31yHQsqMw6+fxeUqojdffoew6UoBPkD43nqtUdy6pIfEK07sOipVhro5I2ukmxpm6u53WxhuzV1Isur7ODpGh9PBxgcNd7Xj/+4XWcrH2eLoVdgqAhHabH9zVb3owsNHFHR4XYRSlbFARdOaMWIMz+1Hdx/vseqjQgAkM=
+	t=1790185668; cv=none; b=HHxxdFYC8/chDS4F+IlQBPPP0vzRinbf4c8/WkpuBsJiCQR14iNseN9HOd40rQDmQ+GrJCmtqLeEjqhisSApvwAPClI8t1hh9C3qTBhrZGzs8Eca4Zu7lA4BqU9nsxrIM3OGQ5cGuz1+kK5iqX1Ya2eSn3UzBscKCO6iyvN422M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790185665; c=relaxed/simple;
-	bh=2BonED8RnAqLes9QDCALEvgg2CW7qcUbWR78q6mNvsQ=;
+	s=arc-20240116; t=1790185668; c=relaxed/simple;
+	bh=n6MwkDMMmdyC7Dq+zcQ57KcdXHon0jUo2EcFcUF/B/s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Ai1HquJ8AZtUpCDeqp6x0GlIpf15BuoTj6PL30YbGihp2G+YXNS9mSQw6kMh8BZMu6elLjSuM8B8KmiOuRDbaXjSqU39VJFkctur/eFNXRWtNmsABZutNB10LeE3dLrllVQ/3VZzJ2O/GvsFRInl6/HYodZaD/SG8RpFih+MoaA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=PaN2aWOi; arc=none smtp.client-ip=74.125.228.41
+	 MIME-Version; b=k7La8+5nbAdqQv4g72n65sD0Ep24AY6+xAjTGRFCiemzMMpYBaKZSvLqGjP6/Oh4ridUD6Zeo+YWwBhVD83Q3awHqhF3Z9FYynBS2qpNGd1ooyduRaFF8xJr1FFNgXvkFxBZD1d6tVoGliqzkjEEVAg8Lr2WedhLwWLmZAkLePo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=GgvcH/p5; arc=none smtp.client-ip=74.125.228.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="PaN2aWOi"
-Received: by mail-pz2-f41.google.com with SMTP id d2e1a72fcca58-85469b2e1d5so730575b3a.1
-        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 10:47:43 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="GgvcH/p5"
+Received: by mail-pz2-f43.google.com with SMTP id d2e1a72fcca58-86b90133ae8so712782b3a.1
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 10:47:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790185663; x=1790790463; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1790185666; x=1790790466; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=e9iFgQ0s/mszVKUPGKbaxhv7W2jRsjbdiTzglblCdQc=;
-        b=PaN2aWOimi3oPnarGVs15gLb/h73S1FSxCn8IWNVVzlqMNb99z/37L4FNukD7v84Ri
-         tJ6Dd+3bLv6F+AfChI2ht02Eu5MXO6fgqwZe1rNlM3pcd7wcynNb1hsaTgax5PRgXZu2
-         s9yHgr56d7BB8cYOsqFvrb+108nyYJuiMxWqQ=
+        bh=XdnundYlcaGdSnMUNx2jzVtyM7k47JsxnQCk7S9RVjw=;
+        b=GgvcH/p5346HEawsy0JGKsAHE70EAhAMYTxamZ9JMrvMarXvx7U5LPAwMT96RMHCRW
+         zcL2DC3nk//tbPB+OrZ3wnVAN7oCa8R8qyM6HHn223G7TXTQbxeIj4WBN4mQCJTdatzX
+         eDLYKhf12zepHgIYjqKbbRN2Tf7tn9IupLv3I=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790185663; x=1790790463;
+        d=1e100.net; s=20260707; t=1790185666; x=1790790466;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=e9iFgQ0s/mszVKUPGKbaxhv7W2jRsjbdiTzglblCdQc=;
-        b=PYKA2HzymwwRlJ4a8egVX2Z+pnmRl8gEp+RE+ejvLlwez12Xd5UMpxQ1VkHYZ2r/pn
-         JxKFGAR4zY/KB7cukHIfnzihixCOxIZaFImyr3UY9mK4r8hPnDrIq5PZSR5XZTxReNI1
-         /WAXp5UY0t+G7CdW6jFLTAeIB5dDu++MaDdHnkpXnsEPW3m5xyyU5xcCyh4hRaNQC+up
-         Sn1loXUmozW9h5rqmcGRi4WOu7wYNnRYNbzcB4pMLsrg5utKEeYAy92QkfTuVUuNhI9J
-         r0QaEJ9r4JuO4exnkPZftpwZOPx+BQWfOYKHKYgi8ZtYH2kX3Qz6YQAw0rQKO7oqGONr
-         ynpQ==
-X-Forwarded-Encrypted: i=1; AKwUvBw+o6ldtiUhIzc8wbSvXg2aS9VNPY1D6n1X+iPANpkzb4yXKQMm0nDEpRa5EkG1ObDn98r+SGgaOQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lYp0uBefQJ6rTTh+InYLyHpCmQzOlCTd4PvGd3BejtGPfbH+Hb
-	0DM0eavsPz7xykOiQ8JKeqAfhejCNnUHz+mnxCtMqbgTb12uJDa3AZOnjZu9wy6lcw==
-X-Gm-Gg: AYBFou0yMu3XrTsgkXBYhjmilUDiBLxNp9ODQZIQNy2QG8R9V+hDBvzCx5VRRo5ThOk
-	Oh77D0ngxOYivbdMU9ffwpCKDM4cctOpTaNJkTjQlRdr6hqR3LZ1L9NySUSIQznE22714aKoKMp
-	z/5ib6FGpa3Db4pDiVFygTUYi7aIsdqGvEyVf2iV+ITCvDBTOi6QUYsgrotMqh7A/T66qLiE3sM
-	P4xSjj9fUMLxXjjfyvVMKlKlQXyGr+rXKNNbRjKcrUTGcfaUX57C9lj8v+OsdpeWCZM8GRPrSwD
-	dXmTm++Li/djp5+zj0cIxU36HD+83zKX3vt4UUPb2l27agxCT1EFYBaZVeJK9yYGlmMgSSOo6H9
-	C/RR946aFfdP+y1aOiOWAbsBbjG+5i7pwD9SGRMFYrHWi9rPTWmnacxtmQsLzBgV41t5IKf4K/O
-	f0UYZUV8coHWhlxC4XPeZ47VOhA+VBmUE51BBLPDn0i85cs5KYedUv54zW8rdYs1/cS8MwFmoQ8
-	4i8u+jfQnv01NrKNrDCj9aTAOoB4KHkWCqdQCA2y4YbcmO3Hw==
-X-Received: by 2002:a05:6a20:734b:b0:3dd:a197:cf36 with SMTP id adf61e73a8af0-3ddf82e3484mr3304445637.90.1790185662903;
-        Wed, 23 Sep 2026 10:47:42 -0700 (PDT)
+        bh=XdnundYlcaGdSnMUNx2jzVtyM7k47JsxnQCk7S9RVjw=;
+        b=1W7p6DX1oAN45Pw5EN81ui0MZXEkAkkYDQtt+fdUeAb9/KqBoCFnLcdPH45tgV5/p4
+         HME3BNEjfdCpSHP60aVSvzyoyC5KNuXin/M/WE3Lyj0RDdPPe4bt3+NmkZCax/GdO/7e
+         hJw3kEtHRYsW6+I2vY7E/P1wnCT559wrjk0AQV5nK45402/f5cUcf5tqURpqw63YnpUe
+         e8jC2f8JPPZREEnpT1RwV3yARJLDIBni68hZB9zKhY6qrjvGeVKukw47tb2vJMHHakRe
+         XFex3eUKl7FuU5FtUtLQD5tVpF2cIqA83Gs6ubDNKywaUIgUqkSsE5Mys5NPiY+fJrZ0
+         ZD3w==
+X-Forwarded-Encrypted: i=1; AKwUvBymsF86ZBC60WlsPGpHTvOZskjNFS18EuXS4aUBa18kDcgqp62TXd22sBBIDiQ9sIx1FOnMosug1A==@vger.kernel.org
+X-Gm-Message-State: AFuF++m6LRrS+pR4ZvRKAElObX6XBdJyrEZ0z3sViiKCDNyiqARrG5rL
+	dec2tR5DQKyNYV0Dx/vVkT3k4tiJUzZxSRevjDQvkAXHF76OBt57GZ9vk4usH8xHaA==
+X-Gm-Gg: AYBFou3BKW7yLcgywQcS1wOAZMu7CAYeFmZTASZ5y8/lThgJkYULNvFq7l+mM3pf3tb
+	vBjBg8iQyyMboagSsN+cPoDxDSMiOJZas+sBHICEsE8GW1EsQI7oXksl8GfFqkNijQgUeDlapgX
+	9p30gv7T1OaqKeLjgfuufXrropejPYy3/zeQpxuOupwx3YHjDAVFdxnStqEEvngXgmZn4qvGjML
+	/8KsSurs7IZRrjy4sNI8pLanPn0O7Rc5MKHIbsRhRKPKACWGw8fv23EEtlKSyFeOyXKh1kJ8Qx4
+	pz7GSZIw+a0rKFv2pUbycNRnmS5oJ5Me4wZ5aqv5DdYBSfsOVjZc4/xoL9vaMoQ/WuhHIT/FpRD
+	sGcYk1W2NXUt81FpsTExhB9bBS2CZBUkMjoiOpfKs8DrLPwat4JPRFEQyHR8kiYRn9umRRPqxnw
+	YPnoLcC0boC3Gmg21Quz209n+HXJCI0+h++XHZzntci2aKYJdxC17Hxrlsl+iGL9c2imeikil2k
+	EvT22FDGFxj+uMJ9NbeYGvg8SGUr1Qq/9S8ew==
+X-Received: by 2002:a05:6a00:887:b0:87b:b799:370d with SMTP id d2e1a72fcca58-87d1a0b08d8mr2987166b3a.9.1790185666306;
+        Wed, 23 Sep 2026 10:47:46 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:642b:a4c2:7ea5:5668])
-        by smtp.gmail.com with UTF8SMTPSA id 41be03b00d2f7-cc75f21f530sm1499260a12.2.2026.09.23.10.47.39
+        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-87d1cfbf839sm1796040b3a.13.2026.09.23.10.47.44
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 23 Sep 2026 10:47:40 -0700 (PDT)
+        Wed, 23 Sep 2026 10:47:45 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: linux-doc@vger.kernel.org,
@@ -66,9 +66,9 @@ Cc: linux-doc@vger.kernel.org,
 	Doug Anderson <dianders@chromium.org>,
 	linux-kernel@vger.kernel.org,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v2 4/8] PM: runtime: Add "Section" hyperlinks
-Date: Wed, 23 Sep 2026 10:40:28 -0700
-Message-ID: <20260923104031.v2.4.I7666a5802ea59359afce4ff7d0b1af668e5f5292@changeid>
+Subject: [PATCH v2 5/8] PM: runtime: Clarify ->runtime_idle() callback return value handling
+Date: Wed, 23 Sep 2026 10:40:29 -0700
+Message-ID: <20260923104031.v2.5.If6e26acac7770c65446dd0b81f891948abb38973@changeid>
 X-Mailer: git-send-email 2.56.0.rc1.310.g51773c2048-goog
 In-Reply-To: <20260923174711.1283986-1-briannorris@chromium.org>
 References: <20260923174711.1283986-1-briannorris@chromium.org>
@@ -80,172 +80,47 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add reStructuredText targets for each section, and use them throughout
-to make the generated HTML more navigable.
+This doc says "Negative error return codes are ignored by the PM core"
+for ->runtime_idle(). This is misleading: any non-zero return value
+(including negative error codes such as -EBUSY or -EAGAIN) tells the PM
+core to abort automatic suspension of the device, which is commonly used
+by subsystems to prevent immediate runtime suspend.
+
+Clarify that unlike ->runtime_suspend() and ->runtime_resume(), the PM core
+does not treat negative return values from ->runtime_idle() as a fatal
+device error, and that any non-zero value stops the PM core from
+suspending the device.
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 
-Changes in v2:
- * Rebase to put this earlier in the series
+(no changes since v1)
 
- Documentation/power/runtime_pm.rst | 48 ++++++++++++++++++++----------
- 1 file changed, 33 insertions(+), 15 deletions(-)
+ Documentation/power/runtime_pm.rst | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-index 352cdaf0650d..114c4a872cb1 100644
+index 114c4a872cb1..423287fce34a 100644
 --- a/Documentation/power/runtime_pm.rst
 +++ b/Documentation/power/runtime_pm.rst
-@@ -8,6 +8,8 @@ Runtime Power Management Framework for I/O Devices
- 
- (C) 2014 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
- 
-+.. _Section 1:
+@@ -158,9 +158,14 @@ suspending the device are satisfied) and to queue up a suspend request for the
+ device in that case.  If there is no idle callback, or if the callback returns
+ 0, then the PM core will attempt to carry out a runtime suspend of the device,
+ also respecting devices configured for autosuspend.  In essence this means a
+-call to pm_runtime_autosuspend(). To prevent this (for example, if the callback
+-routine has started a delayed suspend), the routine must return a non-zero
+-value.  Negative error return codes are ignored by the PM core.
++call to pm_runtime_autosuspend().
 +
- 1. Introduction
- ===============
++To prevent this suspension (for example, if the callback routine has scheduled
++a delayed suspend or determined the device cannot be idle), the routine must
++return a non-zero value (typically -EBUSY or -EAGAIN).  Unlike
++->runtime_suspend() and ->runtime_resume(), the PM core does not treat negative
++return codes from ->runtime_idle() as a fatal device error; any non-zero value
++simply stops the PM core from suspending the device.
  
-@@ -37,6 +39,8 @@ The runtime PM callbacks present in 'struct dev_pm_ops', the device runtime PM
- fields of 'struct dev_pm_info' and the core helper functions provided for
- runtime PM are described below.
- 
-+.. _Section 2:
-+
- 2. Device Runtime PM Callbacks
- ==============================
- 
-@@ -80,8 +84,8 @@ the PM core that it is safe to run the ->runtime_suspend(), ->runtime_resume()
- and ->runtime_idle() callbacks for the given device in atomic context with
- interrupts disabled.  This implies that the callback routines in question must
- not block or sleep, but it also means that the synchronous helper functions
--listed at the end of Section 4 may be used for that device within an interrupt
--handler or generally in an atomic context.
-+listed at the end of `Section 4`_ may be used for that device within an
-+interrupt handler or generally in an atomic context.
- 
- The subsystem-level suspend callback, if present, is _entirely_ _responsible_
- for handling the suspend of the device as appropriate, which may, but need not
-@@ -105,9 +109,9 @@ knows what to do to handle the device).
- 
-   * If the suspend callback returns an error code different from -EBUSY and
-     -EAGAIN, the PM core regards this as a fatal error and will refuse to run
--    the helper functions described in Section 4 for the device until its status
--    is directly set to  either 'active', or 'suspended' (the PM core provides
--    special helper functions for this purpose).
-+    the helper functions described in `Section 4`_ for the device until its
-+    status is directly set to  either 'active', or 'suspended' (the PM core
-+    provides special helper functions for this purpose).
- 
- In particular, if the driver requires remote wakeup capability (i.e. hardware
- mechanism allowing the device to request a change of its power state, such as
-@@ -132,10 +136,10 @@ what to do to handle the device).
-     'active'.
- 
-   * If the resume callback returns an error code, the PM core regards this as a
--    fatal error and will refuse to run the helper functions described in Section
--    4 for the device, until its status is directly set to either 'active', or
--    'suspended' (by means of special helper functions provided by the PM core
--    for this purpose).
-+    fatal error and will refuse to run the helper functions described in
-+    `Section 4`_ for the device, until its status is directly set to either
-+    'active', or 'suspended' (by means of special helper functions provided by
-+    the PM core for this purpose).
- 
- The idle callback (a subsystem-level one, if present, or the driver one) is
- executed by the PM core whenever the device appears to be idle, which is
-@@ -158,9 +162,9 @@ call to pm_runtime_autosuspend(). To prevent this (for example, if the callback
- routine has started a delayed suspend), the routine must return a non-zero
- value.  Negative error return codes are ignored by the PM core.
- 
--The helper functions provided by the PM core, described in Section 4, guarantee
--that the following constraints are met with respect to runtime PM callbacks for
--one device:
-+The helper functions provided by the PM core, described in `Section 4`_,
-+guarantee that the following constraints are met with respect to runtime PM
-+callbacks for one device:
- 
- (1) The callbacks are mutually exclusive (e.g. it is forbidden to execute
-     ->runtime_suspend() in parallel with ->runtime_resume() or with another
-@@ -200,6 +204,8 @@ rules:
-     scheduled requests to execute the other callbacks for the same device,
-     except for scheduled autosuspends.
- 
-+.. _Section 3:
-+
- 3. Runtime PM Device Fields
- ===========================
- 
-@@ -210,6 +216,8 @@ state.
- .. kernel-doc:: include/linux/pm.h
-    :identifiers: dev_pm_info
- 
-+.. _Section 4:
-+
- 4. Runtime PM Device Helper Functions
- =====================================
- 
-@@ -257,12 +265,14 @@ functions may also be used in interrupt context:
- - pm_runtime_put_sync_suspend()
- - pm_runtime_put_sync_autosuspend()
- 
-+.. _Section 5:
-+
- 5. Runtime PM Initialization, Device Probing and Removal
- ========================================================
- 
- Initially, the runtime PM is disabled for all devices, which means that the
--majority of the runtime PM helper functions described in Section 4 will return
---EACCES until pm_runtime_enable() is called for the device.
-+majority of the runtime PM helper functions described in `Section 4`_ will
-+return -EACCES until pm_runtime_enable() is called for the device.
- 
- In addition to that, the initial runtime PM status of all devices is
- 'suspended', but it need not reflect the actual physical state of the device.
-@@ -285,7 +295,7 @@ pm_runtime_set_suspended().
- If the default initial runtime PM status of the device (i.e. 'suspended')
- reflects the actual state of the device, its bus type's or its driver's
- ->probe() callback will likely need to wake it up using one of the PM core's
--helper functions described in Section 4.  In that case, pm_runtime_resume()
-+helper functions described in `Section 4`_.  In that case, pm_runtime_resume()
- should be used.  Of course, for this purpose the device's runtime PM has to be
- enabled earlier by calling pm_runtime_enable().
- 
-@@ -336,6 +346,8 @@ value of /sys/devices/.../power/control to "auto" to allow the driver to power
- manage the device at run time, the driver may confuse it by using
- pm_runtime_forbid() this way.
- 
-+.. _Section 6:
-+
- 6. Runtime PM and System Sleep
- ==============================
- 
-@@ -428,6 +440,8 @@ out the following operations:
-     callback and right after executing the subsystem-level .complete() callback
-     for it, respectively.
- 
-+.. _Section 7:
-+
- 7. Generic subsystem callbacks
- ==============================
- 
-@@ -451,6 +465,8 @@ restore, and runtime resume, can achieve similar behaviour with the help of the
- DEFINE_RUNTIME_DEV_PM_OPS() macro defined in include/linux/pm_runtime.h
- (possibly setting its last argument to NULL).
- 
-+.. _Section 8:
-+
- 8. "No-Callback" Devices
- ========================
- 
-@@ -487,6 +503,8 @@ in subsystems/drivers, the PM core allows runtime PM callbacks to be
- unassigned. More precisely, if a callback pointer is NULL, the PM core will act
- as though there was a callback and it returned 0.
- 
-+.. _Section 9:
-+
- 9. Autosuspend, or automatically-delayed suspends
- =================================================
- 
+ The helper functions provided by the PM core, described in `Section 4`_,
+ guarantee that the following constraints are met with respect to runtime PM
 -- 
 2.56.0.rc1.310.g51773c2048-goog
 
