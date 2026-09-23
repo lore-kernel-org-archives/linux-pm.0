@@ -1,171 +1,93 @@
-Received: from mail-pj2-f43.google.com (mail-pj2-f43.google.com [74.125.227.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CA113C1D4D
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 06:54:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BED74508E0;
+	Wed, 23 Sep 2026 07:24:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790146460; cv=none; b=P+BqaTxNDm5PT5RgJZcWWrP4qQ/E75paEBAULVMSk3nmFAVuisQZ4A4RPTz49hQyJ+Uo0LqeWJzVHiDgQW/mM/aDgM+VWn+N0pyPk05Z1FC9PO/oUOs8NNCJARZUnb/XI1SGFNwa/LWROQKwv96NzmVS2Ph4g7Okk1I8ah403dU=
+	t=1790148243; cv=none; b=Ua0r4t0Whkaf5nmopEGhh5nIKq2iMGL7AHdT1lECjf1jb55CUfAkX3SS1JSGmczQJUYtsn/I44MQMxF9uRgAWUxIWI1lJX4pBAdWYJGwPEP9sEkkngzccKC55PX2LVhDLfu8ZojZQJV4PbTxX4i9y71M1jdxjf2oqw7hbz2cgro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790146460; c=relaxed/simple;
-	bh=ub9lmV/vJgIvt/52cHA9hak78+wXdVZ+Y0e9MlYNLQg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lPAKpyXMlO/cjATBPSKNcRTWn9bXsnH5pkWMCxZbqhfugBh+uj8lxhx4ORBjlhO/DZ+0Mpsg6AQkMKMTB1PNOZEG5npN7E31usfB9B5blTvwyCHjUdNHhaQZX5DHVe5WxJLlrwb3HfYeubWINKMEcXKlYzqaNHwxPUFYGDLMp4k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NRDZBxYA; arc=none smtp.client-ip=74.125.227.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790148243; c=relaxed/simple;
+	bh=8qjNV9QZqkvKmCjMRy1A4HY8U9aaXcxKtUE7iWgaDg4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=WVk5SCev1WOIyY2nxeuF850jJ5vNAzQZm5HWokNyuRKAl+VycKiy4W9N6nN1MURrfFxrD6HQfEksvP1idX1fN8FNPAATkdDcqKCVs3CadsnvCirLX6c9Ef0ZWoCoNyWWO6haI+1nAM5jCnMHhp6VcW5K9vBjcViphHyE/hzleag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qy2f5CW7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NRDZBxYA"
-Received: by mail-pj2-f43.google.com with SMTP id 98e67ed59e1d1-396ccd5cf03so444617a91.1
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2026 23:54:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790146455; x=1790751255; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=cBPFJ7pxrxjtZgenSu8SvKuqY5moK00ZFB2fToeyYWc=;
-        b=NRDZBxYAy2bPOWNeTf5QXaE/7XzsdGjWfJLlNnNvz6ifxZM9DD6f7z97XheeW0xr0i
-         MzTKfFyh7LE1X6AOzvlkV83TJRVpqFvq3Ph/8poL+sTmzvY4DilZhplT6Z+umr4aTmy5
-         4VWLwoItw8L1qg0UFBriZi07FdvvAQlb5DFwTYMWvwbFfrAGuWwxFKCKO42iI50duK7N
-         j0AGEk7Tga0SjpPa/wsL8Pn+CX2+mi8lb8LWpNUAvFLWIMwZ7Q9k9gpurKLQZQaTs91R
-         AqEBx2iBdiDrbWm4ryBsGp/zh44/UWofiEa5776aKh12EAfqWT9iXAezNTipSL+hsli3
-         vrpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790146455; x=1790751255;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=cBPFJ7pxrxjtZgenSu8SvKuqY5moK00ZFB2fToeyYWc=;
-        b=xUgnr3biHBrbjSR/4QquadEhLWO44ny4+d09movDC1UloVoLw421CPZpMWOUhwH6Lr
-         wLL51f0Mct1MC/ArDc2nFGVfWq3zKA4mC4t58toxqiITr8B76TpVtvkLTrw4tmA6nIs8
-         yNcHFZ4jb7YM0Rps37uOH4N5UcBvct2KKhdX/5IXakCMYiMs8UkKSW+3fVQX1caIpBLm
-         zBFUL5MR6zUMAT5OgdxWGPTVfXnM3WmLkGKQy8DHOJXFApBIsuUa0ZVp1qRZexzzN6NO
-         G0PiAJ8OwQyaGZjuouy2Y2KnGgPIAZC4N32AQaYdSF/6fLT0HDidFxtz1eGMSNu9HUt2
-         dDPw==
-X-Forwarded-Encrypted: i=1; AKwUvBwS70/aW0aw6HEXFYN2OZrIStBvTviR2pAlXgFay2QUdwJSDY5U7/LzGPxHIA+hl/Ev4SrFlP6pRQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kFgY1uFoHHRWelItecjinFV+AN3yO/lj/YVOahYIXTTv8HzVNM
-	wtB4XyxpSVjD5F7siDakBZbJDhNqOMhXfyveFemvRRVHPcPy9740EFTo
-X-Gm-Gg: AYBFou09tKHfJs2c8+nW3pxaOmAe/5NfE2FV6Pi8rGzgmUwKqYG1Fv4aujiVj3378uP
-	dxYKLIzXbr1W3UyaYvhWKEayNK1F/k+9qtxUm9MjU6WpXzbFVVnEAfBphEJvZP3ljLE0JovkSeg
-	EPKLYHSa7Uc7Vs8ZqwAUuHHiDc0t/3VCPlfGKAtQuhsFhzXMwTi2yS+FaQ39Dgbth7c0lZtXeC+
-	Poehy1THZyCqLSSsgmor0FeqApyp/N8TbBJPZISjefykfeCDVxzIJk69VYiszdV5o1ILHsmhr4u
-	1u1uNmd6UHo75GutP7LUqJolmPu6+Ig5xH708jV+Z+0j3N8uAk4OKR1ZLnmobnJ9WGFDKicVDfm
-	ETiYrj6bY9aZsb1BF7xk/Axi0RCC6kXZB7u1YpLU3Lueux6kPu4GhMRuvc1rtatUPBEjbcgaqzn
-	PcyzyQflyICQ+mWuq4MvcojXyidqCLN1njPyKu9zV6U+0OGiuU6A/aWuPTLRdkJA772AIlQ2Qh8
-	rWP+DQbYmlh
-X-Received: by 2002:a17:90b:3d8e:b0:39d:c3bb:98e7 with SMTP id 98e67ed59e1d1-3a07e568935mr1435549a91.6.1790146455101;
-        Tue, 22 Sep 2026 23:54:15 -0700 (PDT)
-Received: from osman.mioffice.cn ([43.224.245.178])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a07dc2b2fdsm3321787a91.12.2026.09.22.23.54.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Sep 2026 23:54:14 -0700 (PDT)
-From: Zhan Xusheng <zhanxusheng1024@gmail.com>
-X-Google-Original-From: Zhan Xusheng <zhanxusheng@xiaomi.com>
-To: Qais Yousef <qyousef@layalina.io>
-Cc: Zhan Xusheng <zhanxusheng@xiaomi.com>,
-	Ingo Molnar <mingo@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Stultz <jstultz@google.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Tim Chen <tim.c.chen@linux.intel.com>,
-	"Chen, Yu C" <yu.c.chen@intel.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 04/13] sched/fair: Remove magic hardcoded margin in fits_capacity()
-Date: Wed, 23 Sep 2026 14:54:06 +0800
-Message-ID: <20260923065407.3451520-1-zhanxusheng@xiaomi.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260504020003.71306-5-qyousef@layalina.io>
-References: <20260504020003.71306-1-qyousef@layalina.io> <20260504020003.71306-5-qyousef@layalina.io>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qy2f5CW7"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D34A1C2BCFA;
+	Wed, 23 Sep 2026 07:24:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1790148242;
+	bh=8qjNV9QZqkvKmCjMRy1A4HY8U9aaXcxKtUE7iWgaDg4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=qy2f5CW7rUNsHtY88qMWoL+eMP1gyYT4bSOqNpLQJ/srgDXyaRW/LcumAq3UIQtAT
+	 gDQxgwVZcdC1no7OygDnwyBbOg9cZbAS9pOUZS7/b+0+EWT6dlbLTEsMVg2dYDlqy4
+	 qkQtQ6iLA8xKE34eIXSiS8b9E5gyoQmQJV9pXjpS+6jYBvUJv+VqeG6dgHKUr9NkO7
+	 jZ5UrRJbPhrYIt1oPHdXDzBu9/LzA6+tAnl8Bmf0jelaxYoUW1yBfbW1KerwJhs5V1
+	 HFDuM6VZi3ZaK5wOVxY697Vc3i1fTeeiFWoQRyN7ybPdRtznvTjiXTTL6NhYSbxEco
+	 0hz4j4W+vh1ow==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEC65C982FA;
+	Wed, 23 Sep 2026 07:24:02 +0000 (UTC)
+From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Date: Wed, 23 Sep 2026 10:23:36 +0300
+Subject: [PATCH 3/3] cpufreq: dt-platdev: block the driver from probing on
+ MediaTek mt6572
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260923-6572-cpufreq-v1-3-41f7af6d6d1a@protonmail.com>
+References: <20260923-6572-cpufreq-v1-0-41f7af6d6d1a@protonmail.com>
+In-Reply-To: <20260923-6572-cpufreq-v1-0-41f7af6d6d1a@protonmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
+ Roman Vivchar <rva333@protonmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790148240; l=803;
+ i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
+ bh=pvNavw1TwxmxmNAxfAHmYvDXdUUIz8P51+5XyRZ6nPo=;
+ b=YsrJCy5QZyZQ0x8+C3yQqVv16vsP+AsTxbfCOEpZ0WJhlCdxzGXzd1uQ5BVb3/jeTge8q1/k2
+ laGs8FQ7FQ8Byo/4hbiF1LPi5WxV62mitZXUae3HxZn9/6QXtWgWCY6
+X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
+ pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
+X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
+ auth_id=777
+X-Original-From: Roman Vivchar <rva333@protonmail.com>
+Reply-To: rva333@protonmail.com
 
-On 05/04/26 02:59, Qais Yousef wrote:
-> -#define fits_capacity(cap, max)	((cap) * 1280 < (max) * 1024)
-> +static inline bool fits_capacity(unsigned long util, int cpu)
-> +{
-> +	return util < cpu_rq(cpu)->fits_capacity_threshold;
-> +}
+From: Roman Vivchar <rva333@protonmail.com>
 
-This does not hold on current tip anymore: fits_capacity() has picked up
-a second caller that does not pass a capacity, and the new signature
-accepts it silently.
+MediaTek SoCs use mediatek-cpufreq driver instead of generic one. Add
+mt6572 to the blocklist.
 
-kernel/sched/fair.c, invalid_llc_nr():
-
-	return !fits_capacity((READ_ONCE(grp->nr_running_avg) * cpu_smt_num_threads),
-			(scale * per_cpu(sd_llc_size, cpu)));
-
-The second argument is a scaled count of the CPUs in an LLC. sd_llc_size
-is a per-CPU int and scale is an int, so the product binds to the new @cpu
-parameter with no conversion and no warning, and the test becomes
-
-	cpu_rq(scale * per_cpu(sd_llc_size, cpu))->fits_capacity_threshold
-
-With the defaults (CONFIG_SCHED_CACHE=y, sysctl_sched_cache_user=1,
-llc_aggr_tolerance=1) scale is 1, so this is cpu_rq(sd_llc_size), which is
-not a valid CPU id on a machine with a single LLC. invalid_llc_nr() is
-called from account_mm_sched(), task_cache_work() and
-can_migrate_llc_task().
-
-Separating the two uses first makes 04/13 safe to apply. Something like
-the below, against tip/sched/urgent (3cb0243767fd, where the cache-aware
-fixes have just landed; sched/core still has the older mm->sc_stat form).
-It is a no functional change, since x * 1280 < y * 1024 is equivalent to
-x * 100 < y * 80. Built with CONFIG_SCHED_CACHE=y and =n, no new warnings.
-
-I can post it as a standalone patch if you would rather not carry it in
-the series.
-
+Signed-off-by: Roman Vivchar <rva333@protonmail.com>
 ---
- kernel/sched/fair.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 57360f5cdde4..97ce56fcaf85 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -1526,6 +1526,21 @@ static bool exceed_llc_capacity(struct sched_cache_group *grp, int cpu)
- 	return false;
- }
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index ff1204c666b1..ff7fb61eda74 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -132,6 +132,7 @@ static const struct of_device_id blocklist[] __initconst = {
  
-+/*
-+ * The margin used when comparing the number of a process' active threads
-+ * with the number of CPUs in an LLC.
-+ *
-+ * Mirrors the ~20% margin of fits_capacity(), but is kept separate because
-+ * fits_capacity() describes a utilization versus CPU capacity relation,
-+ * which this is not.
-+ *
-+ * (default: ~80% of the LLC's CPUs)
-+ */
-+static inline bool fits_llc_nr(u64 nr_threads, unsigned int nr_cpus)
-+{
-+	return nr_threads * 100 < (u64)nr_cpus * 80;
-+}
-+
- static bool invalid_llc_nr(struct sched_cache_group *grp, struct task_struct *p,
- 			   int cpu)
- {
-@@ -1542,8 +1557,8 @@ static bool invalid_llc_nr(struct sched_cache_group *grp, struct task_struct *p,
- 	if (scale == INT_MAX)
- 		return false;
- 
--	return !fits_capacity((READ_ONCE(grp->nr_running_avg) * cpu_smt_num_threads),
--			(scale * per_cpu(sd_llc_size, cpu)));
-+	return !fits_llc_nr(READ_ONCE(grp->nr_running_avg) * cpu_smt_num_threads,
-+			    scale * per_cpu(sd_llc_size, cpu));
- }
- 
- /*
+ 	{ .compatible = "mediatek,mt2701", },
+ 	{ .compatible = "mediatek,mt2712", },
++	{ .compatible = "mediatek,mt6572", },
+ 	{ .compatible = "mediatek,mt7622", },
+ 	{ .compatible = "mediatek,mt7623", },
+ 	{ .compatible = "mediatek,mt8167", },
+
+-- 
+2.55.0
+
+
