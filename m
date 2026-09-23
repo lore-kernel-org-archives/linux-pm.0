@@ -1,86 +1,86 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA4FB3A3835
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:05:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F127A49C4DC
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:06:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790161539; cv=none; b=mVaRDzSGKG9i0jD6HuWK0Bi3Qv1D7Mc2GWuywvRPnrTXK2jE6sh3JcE5UbvUKf9sn+BDjx2hMUwepk+hbS5r/oZq4HHahla7P0P+3whxA4Pg5qcKDA6GKAXK2Okk1QyF+xHJLea/r76W2psWzF4IavoIqaT1hePVhwRGqvONKNU=
+	t=1790161570; cv=none; b=f0mrSaSICIi0haUCA7A6Od4qPgKWbBc5n88dnfQ61bvGbMy1OVgyjngQ4QYhe5OslXaWFWNpNPk77rmfIL7QG6HvPiW60mVQF7MXbg92AC0pAr9RV1mrR9lhsJAWLIX+ulMfiQ4sbr/FF83kK9+LwOrq3oOh+KmJV3nritC4MD8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790161539; c=relaxed/simple;
-	bh=K0jycMTvi6wKLbEUqdHCJShvK5Y3X5IYyfoja2Jkq5Q=;
+	s=arc-20240116; t=1790161570; c=relaxed/simple;
+	bh=ri1HNhpNEI3K8NJVTZY7ebXc6lZQ4qegKWKC0fyDXjo=;
 	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=epUgzh5LvkyWfJtKgxZtQya5fQHRr4cCGrycI/hJX6D42+nK4sltCN4J+5ywNYCiGBS2KYsC01efeUOXPxPfyOc/f6gCI5hky4YDd/qhg9lJOIHRXNLoMO7nzJchMabNjTNsZpDJ4BXPmX417IMleq1EaDY2BZC3kjCNWxSWVhE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=l99FXg0U; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=f37NjvnT; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:Content-Type; b=u/6LpDFAzv/8GgpnF3bLa6K+vocTMaIXCBlgoVIRwYZSJYwLP8lQqrYkQBy+qgNfDgGUb8NdFV3wrTb8AlwvOtcXlpiSfTli2G1p+m2nc2ztrzGc6WZCp+2pSXjD5nMIK0+oXfrgvK7HsYBc4KjzwuLXIyGkucRqq46TciqdK4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=S6aY5p0A; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HvYhw/Eu; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="l99FXg0U";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="f37NjvnT"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="S6aY5p0A";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HvYhw/Eu"
 Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68NA2f7n2429421
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:05:31 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68NA2eIN2429380
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:06:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	JPqyhRbpOf17HmSBmiSMBHQE6Y0S0sQtUmXib+0l6+A=; b=l99FXg0UpAhzLGUt
-	+6Q8K/jLHntnFymV2NDkyNb2/Ac43ZvW+fyp23PDom3wqiO4njAyx8gJ4Bm2fMUe
-	PtQISjo3y5sp7aUMRcS07CoO/FWLVnAxtoRRAoDsxodbKSx2cSgOm4bHW56s5QLY
-	juIVBFLoQCWfsQVkubqNs07OL1niyWMNpqB4zpsIilSQAP5LYzckvULmNlhJLR+w
-	DG+odcyk19O50xFE9mDVW7S3qcTKpjRWr1tAWlIm2eAekQJmLYCvdEsabz1LNEv8
-	1WUWQJonr6QZ58zmXiadyGqCYGoEfTVR2HlJIET+g+TmQVLNmZ4H3hrdeIo4BfMN
-	aCw4UQ==
-Received: from mail-dy1-f197.google.com (mail-dy1-f197.google.com [74.125.82.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gv9bqh6tt-1
+	KJ8lUL5dHlGO0bO+PzLCGDgueon+wOA/1PhqsdFHMjI=; b=S6aY5p0AQtp2nezk
+	x7UO8r0iOX0RIe3dgAFtTnz302sb7tzZJoy5m8tFjJz1p2B1SY2rMo90QaLG5XyD
+	wI3h7K/hpzPHhTKVooOzBgxandIYeCD2Rlgi8zeKRu3YDLM0kdlqPcUC74Ipb7BC
+	wPWBaHZPVXFbEnZDrJm5KYhHSBXq3Bhaz2E1G0agi2dihVD0TNY+UuHUqJfILh7Y
+	2UvKjjh8/1+/5DvpNBwadSmEb8TQSLyaCKiNQaYok//xe0mJE6sS47C6sZ6TRkhq
+	1n0573+GNaeE44VRtN350BszhBobTWF8EAZ94vFB5DPpCAIh4ZTUv9B0roS9GR6S
+	+27XsQ==
+Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gv9bqh6w3-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:05:31 +0000 (GMT)
-Received: by mail-dy1-f197.google.com with SMTP id 5a478bee46e88-331b2ec616fso2939535eec.1
-        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 04:05:31 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 11:06:02 +0000 (GMT)
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-3282d5302ffso841425eec.1
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 04:06:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790161531; x=1790766331; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1790161560; x=1790766360; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:content-language
          :references:cc:to:subject:from:user-agent:mime-version:date
          :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=JPqyhRbpOf17HmSBmiSMBHQE6Y0S0sQtUmXib+0l6+A=;
-        b=f37NjvnTuEebAGQEvNyVdI08JSm4uVzZpcAgYxPjOBGiFYHiW5Le8hfP0D3xNU8mOV
-         S1x5VAPdI5Mq39dHx8S/1wHCVKXozqCXZKyurjE3XVLGSkZroaeMYTnUskv22pWW60jT
-         W1w+fVPQNQs98UTjy4befa3kXpI9IANnFBHUL704p6QqCVxbRBQmit0owpxoafiPaX+O
-         NSq4cFkKjTE3pwqgM3kLBPsbrbV3viOndvwxD6s5O2E+wSBn9XofmcjipVRppXH9kfHs
-         8inM1uXOm3bpYQJNDQKBSAAZQ+o9czByRJi9Uk5ZKrhlcOImdDeWx7HV+1CdHvvD8fT9
-         srRA==
+        bh=KJ8lUL5dHlGO0bO+PzLCGDgueon+wOA/1PhqsdFHMjI=;
+        b=HvYhw/EuUPS6QhN4c7cLl2IbhKPSR4Cv6CHXLXXc44+CCQzgrtuwxsqYPIulhg2RRo
+         aCkbTP0Eyiw0QexZmf44Ala4EHNOByUacGyP2oM+CmtlodVEw0gVxvi7FiKbfgnfYZwS
+         seqtmHWhY20QRrSZ5Y3Lxn8hxVHs2/x+h2GZOWi3+ZQqSlO2ZC6xOMt2pbh1VSXdZL8+
+         Kf0xDZESUB/Bxe6+bw7SWsokqc/sPnqG0mbxZZJlPRs8etTaDzhABZETKa4XpRY2+ilz
+         TOJyrIaenXAeWb7DEG2slu2DIX6HxuD4gTv1HrRvUE9oVKI4Q+1WWwQplXqEmPAciMo+
+         L8sg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790161531; x=1790766331;
+        d=1e100.net; s=20260707; t=1790161560; x=1790766360;
         h=content-transfer-encoding:content-type:in-reply-to:content-language
          :references:cc:to:subject:from:user-agent:mime-version:date
          :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=JPqyhRbpOf17HmSBmiSMBHQE6Y0S0sQtUmXib+0l6+A=;
-        b=KN20q3EmOt2KLmmth42nsUcOr8YF4Eypx+OnzwiZOcctBgQ2z1JuQPBWGfjgOgftLt
-         zmBlWXMdNcHcc1ag+qsdDH9vtPpbD3qb5BQuntOaYDESpxQg/vv2yKlRxklOJyFJBkt1
-         c8eFrgs7G7FRMtYR7j2czDqKsKjZD01ddt4VqL/+0yXTN3POpXuHSP/lJSX0h+uVpXDH
-         XorHTKCkqK2xgaeMOFADiVpejDuZz0DyTpdLW0QbzbLgEuWjCuJSXoiPGPbL2IjOiggi
-         rNsXwyOblEQfwKNZIYMk6Xu0SWoQJOCd52Rk1GB+TaCRWjEm2Xf8UGoApaL7b1yrOr0X
-         aaaw==
-X-Forwarded-Encrypted: i=1; AKwUvBwViCbXWleSsxUsLNv+88aqJrcelZO7cczHCbC3Otlw+hsqwmPpkg3EYX0nNGOobd52zwi5XmHKBg==@vger.kernel.org
-X-Gm-Message-State: AFuF++mqoRKGG2J72Q9zVMy32QSs/hNw/f3DjiF16uEadAUe79VLe+Ve
-	cdwV10osBCAKw7NTQW03d93ay9ggr1KFbT3lLkqG+gYJCYksV6LJ1cgNcnwBni8wCQnT/V3xMrA
-	ehJWp/5ItCoW3FM6mF3fi6re35591ZLSo+eKN30CXC99wfSPYslRZbiWJv4MX
-X-Gm-Gg: AYBFou1q4XN/fMggwwrWJQvSkhpxlnwL4CJ4IDYSxBE+7b4K5YjqiV0a/bjTae8h9gw
-	DWn3vo7Qo/q8zxpoqYWMXeWgGwT3BIWBoD4nJzuGewAMBy3tm8a0aAc+sxBDwQKOlYAQlMhTSrJ
-	6cQSV3tBHBd4ELZFzO7EL0/UEm5URSWRWFeELLiPq3RWQobznG/Y/HCmUGs2dJyrB6rfsPlh/sr
-	nwQfrEN8oSXlrUSDHrbAxKLI+VE1FzQyeXcbqQ7ilkZvdH6OC/DIFnSqThmDx7yfYEz/4bLqs6h
-	WY+7UtLswgpZ368OXy5+ph8Hdo1SRzOpPJvm7Htsz800TDioiVVCfxBRxUMQAoAPXPU1Ckt3IF0
-	pwKx9bxc7Jq6hik+vilEQXLkXHvj5p+xH1d/5gBsi
-X-Received: by 2002:a05:7022:7f0b:b0:13f:c02f:60b8 with SMTP id a92af1059eb24-144f9166ab0mr2272812c88.6.1790161530705;
-        Wed, 23 Sep 2026 04:05:30 -0700 (PDT)
-X-Received: by 2002:a05:7022:7f0b:b0:13f:c02f:60b8 with SMTP id a92af1059eb24-144f9166ab0mr2272778c88.6.1790161529904;
-        Wed, 23 Sep 2026 04:05:29 -0700 (PDT)
+        bh=KJ8lUL5dHlGO0bO+PzLCGDgueon+wOA/1PhqsdFHMjI=;
+        b=cb3isDTut7Wck/8c0pjgl4pKvFMZ1qBaD6xixMAYKaU2Va43FGM2Xym3yvHTiiFLXr
+         5rMgwmgktzcB9n9lyYK4a23YZENkOUb4vGcAhfUcSmkzrxCCoovtwxMKf9v6F3fsS6i6
+         +RX/J11J0fMwn0dzaiaxdRx8zLqNPxpXDrLKtb9grgv9lsRzh5nRFgA8qrmc2gW5Py0m
+         B25Azm8OUUZEwf5Aa7ZxjnUNH4+v/6u/Fa9HQypNMiuZytgPh9Quqdq/oRsAdILu8MXn
+         xMcHnKO0a1t8YE00MRTzTPBYpirlOERtJiS4WKyV3Z8vLRmUCOU9O9Rez+y4Zpwbhj+f
+         D+Xg==
+X-Forwarded-Encrypted: i=1; AKwUvBwWety697l3a3MvV0McgCWXc5rabrcB3qXkM+mfDkWJVY4HWZyox3h3DiceQImGOS6R4/Sh1YVWCQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nBTrsvs2UfZk49JpgChP+q4IU0AxhzUDagoBC81PBo5RNj7WBP
+	EefeQAFgImg+AierTIRwPxfqJ/jU9bPJK468ltZnSPnYqbY76Z2oAz3GF1eaA8Upf2Shzwskpka
+	EUeYNAVSubvJzxjUXUDGn61XPT4TPqJvRqAQrayKpo2pdsUWvIINvgPgivUo4
+X-Gm-Gg: AYBFou0stJR2zsJDww+9Ac3tvfKzPStBkIzLQdO+FFxeKNDNXvN9Z2/AFD6wBTEg/M3
+	4smlEfeSEWJ7dSxZttXwUjsPlWW1dADZrnIFXf4ZkcQgDgCSju+YTETR2/wLiyud2u7D1+9GvXk
+	15IaKJc716tFOUwnm9mSVUWBLK2qyqU96NJcIgvZZzpEK5xNjyxwttgg+pjAsv0hKFZkUY8TTAi
+	8hh3Tgh8XkAzJbfy0s2Dpm1/+D3YbtpyT39FxgXhlBLBj7aSrWpywEvuOeCww/Mlb9tDS2lijCR
+	O3uZlWkdc3uMZIMaQjShK7gNGWUkHokS6fYeoRozAT8ljgW3rxOIJOrG2CQy4qMcibq078Hvldh
+	Pwg+rP677hI/y0l7akhRWpb0kkpRFcA==
+X-Received: by 2002:a05:7300:2449:b0:33e:648e:d6da with SMTP id 5a478bee46e88-33e648edd00mr2396924eec.3.1790161560065;
+        Wed, 23 Sep 2026 04:06:00 -0700 (PDT)
+X-Received: by 2002:a05:7300:2449:b0:33e:648e:d6da with SMTP id 5a478bee46e88-33e648edd00mr2396851eec.3.1790161558688;
+        Wed, 23 Sep 2026 04:05:58 -0700 (PDT)
 Received: from [10.218.33.235] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-144f983d73fsm7741663c88.6.2026.09.23.04.05.23
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e9684ed70sm5224624eec.19.2026.09.23.04.05.52
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 23 Sep 2026 04:05:29 -0700 (PDT)
-Message-ID: <1188ca90-d3c9-40ce-ae8a-56262b4192d1@oss.qualcomm.com>
-Date: Wed, 23 Sep 2026 16:35:22 +0530
+        Wed, 23 Sep 2026 04:05:58 -0700 (PDT)
+Message-ID: <f0eef0f2-bd56-47e1-a3e5-5e83a1680c02@oss.qualcomm.com>
+Date: Wed, 23 Sep 2026 16:35:50 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,8 +89,8 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-Subject: Re: [PATCH v14 3/6] reboot: add parsable tokens for power state
- change reasons
+Subject: Re: [PATCH v14 4/6] reboot: extend psc_reason with power-on and reset
+ causes
 To: Matti Vaittinen <mazziesaccount@gmail.com>,
         Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
         Tzung-Bi Shih <tzungbi@kernel.org>,
@@ -106,31 +106,31 @@ Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         avaneesh.dwivedi@oss.qualcomm.com,
         Umang Chheda <umang.chheda@oss.qualcomm.com>
 References: <20260921-pscrr-framework-v14-0-a16290003b7c@oss.qualcomm.com>
- <20260921-pscrr-framework-v14-3-a16290003b7c@oss.qualcomm.com>
- <f4d2e209-1c89-447a-a5d1-92696b51b614@gmail.com>
+ <20260921-pscrr-framework-v14-4-a16290003b7c@oss.qualcomm.com>
+ <9ba75a42-a3cb-4ee2-bd29-84f23bbaa70c@gmail.com>
 Content-Language: en-US
-In-Reply-To: <f4d2e209-1c89-447a-a5d1-92696b51b614@gmail.com>
+In-Reply-To: <9ba75a42-a3cb-4ee2-bd29-84f23bbaa70c@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: n1Tok1X7n--WNj_1VKIFqoKHitvEDNCX
-X-Proofpoint-ORIG-GUID: n1Tok1X7n--WNj_1VKIFqoKHitvEDNCX
-X-Authority-Analysis: v=2.4 cv=WZuZ+EhX c=1 sm=1 tr=0 ts=6ab3b27b cx=c_pps
- a=Uww141gWH0fZj/3QKPojxA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+X-Proofpoint-GUID: lqipvMmMfzC5Z2UEf8S9D4VcUBx_hFuP
+X-Proofpoint-ORIG-GUID: lqipvMmMfzC5Z2UEf8S9D4VcUBx_hFuP
+X-Authority-Analysis: v=2.4 cv=WZuZ+EhX c=1 sm=1 tr=0 ts=6ab3b29a cx=c_pps
+ a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
  a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8 a=6S1-GrwmiCmPnoYEXswA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=PxkB5W3o20Ba91AHUih5:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA0NCBTYWx0ZWRfX37PF3yB899Qg
- DoQNZFjeeoxZnYhLmqF/2SJ9V+VQLPHsvQ+njjn4Lgjfnzeg9L8gR9W+5ctfjhm2yP4FmlVsw8P
- DqVOb6QOLOJ1M2y9nLQiRwEbrk7Bkvc=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA0NCBTYWx0ZWRfX4gGZ3v9eqpRH
- xcZlBM2OzV/W2digpYEDq6Il0B21raJZGSAf6yz7F9WsiwVbfAgutu8EODOBXH5+n2UvEJRHZDl
- HHa4AduPhJuhgLg+NB/Ajdfw44E83yFLsi8Td/gWmLMEfw1d8W3SE7GH/7Qaw3IkLPq5X5863pQ
- 0RgZEVeLuA3bp85xugPiT2qiszBrZ27LHcwHEAQAv2DNqg04FV9zBp3JfKSZ2Rhn6lylZk2s5Mp
- k1xz3DWsXWRuLfLRSqz9s+EZJAMWryVOwvl1F4MvOGk4DXmxkoZ/Oj626UaMnDWsT4ooR2q4Q3+
- QmU5Q0hIrqSh/LeQuDaPQlu0HZDZiZhlxbgMr1A1xN+vLDau6OnY1JhqsROG47r86HxI1Do1T/D
- CkPLrq9Dja5ZBzSe+bfRPksFyDOuo77DN7oUo7cGN/p5rGYaqXOB/j+a21SXvl3ktWifYQ74IY8
- Dc3Rsbec5ndFJZ3M/Kw==
+ a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8 a=DLwBeq2uPfsNgwiNNIgA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=bBxd6f-gb0O0v-kibOvt:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA0NCBTYWx0ZWRfX3ovZ1h/qI5C0
+ biO6RsXuwR3r+QkVDc6ZVoZDeq/KWU7qhOLX43EaCSxn07Ve+09QcR2cIYuVxurpEgQMWGjCvMj
+ Ci1MUwjGs1dgrdsvy6AHfNjTO7mg2oc=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA0NCBTYWx0ZWRfXzhxc2Cac6tmE
+ LUm0Zijhvt3sm+FgDtaafnMEwL8g8V7poKSEHou5bNqN2xmKFHF/rxSX0Dv6XamiZIntHwZ6s5o
+ vXvYWg3HaAjysxGKBaHiNioIfmHi/ctJn/DKtyLXJ9550/u26czBeaXTbtEkjL4vEdlHHxuC4TB
+ wQ9hjuYy5uaqf4WZW1TcTTjQE0G771RvVIOgrod7PvHXwThceltiEnnTtj4VlQ3F7Lv4rlMx5s7
+ 6/8UPnw51KxXRoPySnhXUb5xOIXHdNbUoMhUf26h9wVhlo31JmMnr14X9nOSlDYOWkXuVKA5AVT
+ RevPppDn7Vv7awE3DryJF22sRku+0HLUCeDZ4wecHmhEZ0cc7myYmrXzR/MEDKKoskJ5pfnpZnK
+ kvNk5G+UIVkIdaIi+/uE8FjTveBXAFWBQ6RlbvFmFq/qulXKwGNkB5RWZzoO0xXGj1pQhV+Teff
+ oXe2nmJdlrFhzc9SPUg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-23_04,2026-09-21_02,2025-10-01_01
@@ -140,22 +140,19 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230044
 
+
 Hi Matti Vaittinen,
 
-On 22-Sep-26 1:07 PM, Matti Vaittinen wrote:
+On 22-Sep-26 1:15 PM, Matti Vaittinen wrote:
 > On 21/09/2026 20:44, Faruque Ansari wrote:
->> psc_reason_to_str() returns human-readable labels that contain 
->> spaces
->> (e.g. "over temperature"). Those are fine for logs but unusable as
->> values in a space-separated sysfs list or as a write target.
->>
->> Extend the single reason descriptor table with a stable, space- 
->> free
->> token next to the existing label, and add psc_reason_to_token() 
->> and
->> psc_reason_from_token() so consumers can emit and parse reasons 
->> without
->> inventing their own string table.
+>> psc_reason covered only the protection reasons. Extend it to 
+>> mirror the
+>> full POWER_ON_REASON_* vocabulary - power-on, watchdog, software,
+>> external, RTC, reset button, CPU clock and crystal failures - so a
+>> provider can report why the system last powered on, not only 
+>> why it was
+>> shut down. New values are appended to keep the existing numeric 
+>> ABI.
 >>
 >> Co-developed-by: Oleksij Rempel <o.rempel@pengutronix.de>
 >> Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
@@ -164,198 +161,121 @@ On 22-Sep-26 1:07 PM, Matti Vaittinen wrote:
 >> changes v12:
 >> - new patch
 >> ---
->>   include/linux/reboot.h |  2 ++
->>   kernel/reboot.c        | 77 +++++++++++++++++++++++++++++++++ 
->> ++++++-----------
->>   2 files changed, 63 insertions(+), 16 deletions(-)
+>>   include/linux/reboot.h | 28 ++++++++++++++++++++++++++++
+>>   kernel/reboot.c        |  8 ++++++++
+>>   2 files changed, 36 insertions(+)
 >>
 >> diff --git a/include/linux/reboot.h b/include/linux/reboot.h
->> index 08a7549bbc40..4c5327dd7645 100644
+>> index 4c5327dd7645..13f004ad1066 100644
 >> --- a/include/linux/reboot.h
 >> +++ b/include/linux/reboot.h
->> @@ -244,6 +244,8 @@ enum psc_reason {
->>   #define PSCR_MAX_REASON    (PSCR_REASON_COUNT - 1)
->>   const char *psc_reason_to_str(enum psc_reason reason);
->> +const char *psc_reason_to_token(enum psc_reason reason);
->> +int psc_reason_from_token(const char *token, enum psc_reason 
->> *reason);
->>   /**
->>    * enum hw_protection_action - Hardware protection action
->> diff --git a/kernel/reboot.c b/kernel/reboot.c
->> index d5a45db82c3d..e53fb31bad06 100644
->> --- a/kernel/reboot.c
->> +++ b/kernel/reboot.c
->> @@ -1084,34 +1084,79 @@ void set_psc_reason(enum psc_reason 
->> reason)
->>   }
->>   EXPORT_SYMBOL_GPL(set_psc_reason);
->> -static const char * const pscr_reason_strs[] = {
->> -    [PSCR_UNKNOWN]            = POWER_ON_REASON_UNKNOWN,
->> -    [PSCR_UNDER_VOLTAGE]      = POWER_ON_REASON_BROWN_OUT,
->> -    [PSCR_OVER_CURRENT]       = POWER_ON_REASON_OVER_CURRENT,
->> -    [PSCR_REGULATOR_FAILURE]  = 
->> POWER_ON_REASON_REGULATOR_FAILURE,
->> -    [PSCR_OVER_TEMPERATURE]   = POWER_ON_REASON_OVER_TEMPERATURE,
->> -    [PSCR_EC_PANIC]           = POWER_ON_REASON_EC_PANIC,
->> +/**
->> + * struct psc_reason_desc - Descriptor for a power state 
->> change reason.
->> + * @token: Stable, parsable identifier without spaces (e.g. 
->> "over-temperature").
->> + *       Suitable for use in sysfs values and as a user/kernel 
->> contract.
->> + * @label: Human-readable description (e.g. "over 
->> temperature"), for logs.
->> + */
->> +struct psc_reason_desc {
->> +    const char *token;
->> +    const char *label;
->> +};
->> +
->> +static const struct psc_reason_desc psc_reason_descs[] = {
->> +    [PSCR_UNKNOWN]         = { "unknown",          
->> POWER_ON_REASON_UNKNOWN },
->> +    [PSCR_UNDER_VOLTAGE]     = { "under-voltage",      
->> POWER_ON_REASON_BROWN_OUT },
->> +    [PSCR_OVER_CURRENT]     = { "over-current",      
->> POWER_ON_REASON_OVER_CURRENT },
->> +    [PSCR_REGULATOR_FAILURE] = { "regulator-failure", 
->> POWER_ON_REASON_REGULATOR_FAILURE },
->> +    [PSCR_OVER_TEMPERATURE]     = { "over-temperature",  
->> POWER_ON_REASON_OVER_TEMPERATURE },
->> +    [PSCR_EC_PANIC]         = { "ec-panic",      
->> POWER_ON_REASON_EC_PANIC },
->>   };
+>> @@ -225,9 +225,28 @@ extern void orderly_reboot(void);
+>>    *    management errors, or an unrecoverable hardware fault 
+>> requiring
+>>    *    immediate response.
+>>    *
+>> + * @PSCR_POWER_ON: Regular cold power-on (e.g. via a PMIC 
+>> power-on request).
+>> + *
+>> + * @PSCR_WATCHDOG: Reset caused by a watchdog timeout.
+>> + *
+>> + * @PSCR_SOFTWARE: Software-initiated reset or reboot.
+>> + *
+>> + * @PSCR_EXTERNAL: Reset asserted through an external pin or 
+>> reset input.
+>> + *
+>> + * @PSCR_RTC: Wake-up or power-on triggered by the RTC.
+>> + *
+>> + * @PSCR_RESET_BUTTON: Reset triggered by a user reset button.
+>> + *
+>> + * @PSCR_CPU_CLK_FAIL: Reset caused by a CPU clock failure.
+>> + *
+>> + * @PSCR_XTAL_FAIL: Reset caused by a crystal oscillator failure.
+>> + *
+>>    * @PSCR_REASON_COUNT: Number of defined power state change 
+>> reasons. This
+>>    *    value is useful for range checking and potential future 
+>> extensions
+>>    *    while maintaining compatibility.
+>> + *
+>> + * The reasons mirror the POWER_ON_REASON_* strings in
+>> + * <linux/power/power_on_reason.h>; keep the two in sync when 
+>> extending.
 > 
-> nit:
-> Is there a reason for having the label as a define while token is 
-> a plain string? It may be just me, but I would have expected the 
-> userland contract to be defined in a header. (It may be just my 
-> false expectation though!).
+> (still a nit)
+> We should now also ensure the psc_reason_desc[] in reboot.c stays 
+> in sync... (See my nits for 3/6). I have a nagging feeling this 
+> is not optimal :)
 
 Thanks for the review.
-
-On token vs. label: I'd prefer to keep token as a plain literal 
-in reboot.c. Unlike label, which mirrors the shared 
-POWER_ON_REASON_* definitions and is used by code outside 
-reboot.c, token is introduced by this patch and is only produced 
-and consumed by psc_reason_to_token() and psc_reason_from_token() 
-within this file.
-Since there are no external users that need the string to be 
-shared, moving it to a header doesn't provide additional benefit.
+I will address this in patch 3/6.
 
 > 
->>   /**
->> - * psc_reason_to_str - Converts a power state change reason 
->> enum to a string.
->> - * @reason: The `psc_reason` enum value to be converted.
->> - *
->> - * This function provides a human-readable string 
->> representation of the power
->> - * state change reason, making it easier to interpret logs and 
->> debug messages.
->> + * psc_reason_to_str - Human-readable label for a power state 
->> change reason.
->> + * @reason: The `psc_reason` value to convert.
->>    *
->> - * Return:
->> - * - A string corresponding to the given `psc_reason` value.
->> - * - `"Invalid"` if the value is not recognized.
->> + * Return: The label string, or "Invalid" if @reason is out of 
->> range. For a
->> + * stable, parsable form use psc_reason_to_token() instead.
->>    */
->>   const char *psc_reason_to_str(enum psc_reason reason)
->>   {
->>       if (reason < 0 || reason >= PSCR_REASON_COUNT)
->>           return "Invalid";
->> -    return pscr_reason_strs[reason];
->> +    return psc_reason_descs[reason].label;
+> Is there a reason for having this as a separate patch and not 
+> merged with 3/6? If yes:
 > 
-> nit:
-> I would feel a tad safer if the psc_reason_descs[] was always 
-> guaranteed to be initialized up-to PSCR_REASON_COUNT. Having the 
-> enum and PSCR_REASON_COUNT defined in one place, and 
-> psc_reason_descs[] initialized here, adds a window for: "I added 
-> new enum value, forgot to update the psc_reason_descs[]". Can we 
-> add a NULL check or are we on a very performance critical path here?
-> 
-
-Thanks for pointing this out. I'll fix it in the next revision.
-
->>   }
->>   EXPORT_SYMBOL_GPL(psc_reason_to_str);
->> +/**
->> + * psc_reason_to_token - Stable, parsable token for a power 
->> state change reason.
->> + * @reason: The `psc_reason` value to convert.
->> + *
->> + * Return: The token string (no spaces), or "invalid" if 
->> @reason is out of
->> + * range. Round-trips with psc_reason_from_token().
->> + */
->> +const char *psc_reason_to_token(enum psc_reason reason)
->> +{
->> +    if (reason < 0 || reason >= PSCR_REASON_COUNT)
->> +        return "invalid";
->> +    return psc_reason_descs[reason].token;
-> 
-> Please, see my comment above.
-> 
->> +}
->> +EXPORT_SYMBOL_GPL(psc_reason_to_token);
->> +
->> +/**
->> + * psc_reason_from_token - Parse a reason token into a 
->> `psc_reason` value.
->> + * @token: A token as returned by psc_reason_to_token(). A 
->> trailing newline is
->> + *       tolerated.
->> + * @reason: Output; set on success.
->> + *
->> + * Return: 0 on success or -EINVAL if @token matches no known 
->> reason.
->> + */
->> +int psc_reason_from_token(const char *token, enum psc_reason 
->> *reason)
->> +{
->> +    int i;
->> +
->> +    for (i = 0; i < PSCR_REASON_COUNT; i++) {
->> +        if (sysfs_streq(token, psc_reason_descs[i].token)) {
-> 
-> I suppose my comment applies here as well.
-> 
->> +            *reason = i;
->> +            return 0;
->> +        }
->> +    }
->> +
->> +    return -EINVAL;
->> +}
->> +EXPORT_SYMBOL_GPL(psc_reason_from_token);
->> +
->>   /**
->>    * __hw_protection_trigger - Trigger an emergency system 
->> shutdown or reboot
->>    *
-> 
-> After all these years in the business - it's hard to be as 
-> confident as I used to. ;) So, I won't say [aloud] that my 
-> preferred way is the only correct way. Please weigh my comments 
-> and decide as you see best, this is "good enough" for me if you 
-> don't agree with my suggestions.
-
-I agree with your suggestion and will incorporate it in the next 
-version.
+Yes, there is a reason.
+patch 3/6 introduces the mechanism — the struct, the token/label 
+table shape, and the two accessor functions.
+patch 4/6 only adds data on top of that — new enum values and 
+their matching table rows, nothing else.
+Keeping them separate keeps each patch focused on a single 
+concern and makes review, bisection, and potential reverts more 
+straightforward.
 
 Thanks,
 Faruque Ansari
 
-> 
 > Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
 > 
-> Yours,
->    -- Matti
+>>    */
+>>   enum psc_reason {
+>>       PSCR_UNKNOWN,
+>> @@ -236,6 +255,15 @@ enum psc_reason {
+>>       PSCR_REGULATOR_FAILURE,
+>>       PSCR_OVER_TEMPERATURE,
+>>       PSCR_EC_PANIC,
+>> +    /* Append new reasons here; the numeric order is ABI. */
+>> +    PSCR_POWER_ON,
+>> +    PSCR_WATCHDOG,
+>> +    PSCR_SOFTWARE,
+>> +    PSCR_EXTERNAL,
+>> +    PSCR_RTC,
+>> +    PSCR_RESET_BUTTON,
+>> +    PSCR_CPU_CLK_FAIL,
+>> +    PSCR_XTAL_FAIL,
+>>       /* Number of reasons */
+>>       PSCR_REASON_COUNT,
+>> diff --git a/kernel/reboot.c b/kernel/reboot.c
+>> index e53fb31bad06..5d4ecc82b35e 100644
+>> --- a/kernel/reboot.c
+>> +++ b/kernel/reboot.c
+>> @@ -1102,6 +1102,14 @@ static const struct psc_reason_desc 
+>> psc_reason_descs[] = {
+>>       [PSCR_REGULATOR_FAILURE] = { "regulator-failure", 
+>> POWER_ON_REASON_REGULATOR_FAILURE },
+>>       [PSCR_OVER_TEMPERATURE]     = { "over-temperature",  
+>> POWER_ON_REASON_OVER_TEMPERATURE },
+>>       [PSCR_EC_PANIC]         = { "ec-panic",      
+>> POWER_ON_REASON_EC_PANIC },
+>> +    [PSCR_POWER_ON]         = { "power-on",      
+>> POWER_ON_REASON_REGULAR },
+>> +    [PSCR_WATCHDOG]         = { "watchdog",      
+>> POWER_ON_REASON_WATCHDOG },
+>> +    [PSCR_SOFTWARE]         = { "software",      
+>> POWER_ON_REASON_SOFTWARE },
+>> +    [PSCR_EXTERNAL]         = { "external",      
+>> POWER_ON_REASON_EXTERNAL },
+>> +    [PSCR_RTC]         = { "rtc",          POWER_ON_REASON_RTC },
+>> +    [PSCR_RESET_BUTTON]     = { "reset-button",      
+>> POWER_ON_REASON_RST_BTN },
+>> +    [PSCR_CPU_CLK_FAIL]     = { "cpu-clock-failure", 
+>> POWER_ON_REASON_CPU_CLK_FAIL },
+>> +    [PSCR_XTAL_FAIL]     = { "crystal-failure",      
+>> POWER_ON_REASON_XTAL_FAIL },
+>>   };
+>>   /**
+>>
+> 
 > 
 
