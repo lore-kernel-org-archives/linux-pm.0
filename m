@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FCC940A940;
-	Wed, 23 Sep 2026 10:11:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEA9247DFB0;
+	Wed, 23 Sep 2026 10:13:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790158268; cv=none; b=nC2Z9FV8cRggDHb8UJJQsRbUoLhjTLydKd378N8JFSfw3s8lkU1uCTywtIcAae6SxYCmAsgyVJ0mbjaNUcdms0srFPzoV2v+PTlSq9SpaiOF5XPQul/UtFAoa/xJoXRFabwBOg7ZgiH0QNqpES3YD4bYq8kPunZnBmddO/E3nSs=
+	t=1790158443; cv=none; b=g81fPwAxLXQ9zaqCS1jjVnAg6pzgZ5x2J0g/i/dV06CcnfnfGcKdPYJ6C0CqzGpw2scVvDfEJreW6Vua8+e3Y20tm3eBd8vy3a3IbFB1TW803CzolkcSS7GJJqCLn6RazrU3ifZMw1esoKOC9KATINzyMF648KTIEXObrVDw5do=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790158268; c=relaxed/simple;
-	bh=hfN6bb/BccbmHX3jGfTSR+iEBq4Mtu3l+Vb1SdaEcpU=;
+	s=arc-20240116; t=1790158443; c=relaxed/simple;
+	bh=uJXHXw2jx69ih4DAMrKNLWy++uwTIYy2WsgdE3k5d+s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bMdGng+Wdq/EUWAXq7kphhWmJi1dOZnhomJPyqjqAaVkC5ACt36bOTSxjcYL6e7U8tWDtxY+kp3JkoQPe3uT4ZQ2Xh4JT8/Iz/93Pq8xHmr4Tz61UV6Y8xcwMXmzWMd8SHGQ74fpAb1heck3ThnbI6G5zrZdq11a5TFFgWmWXgE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XtDYZfly; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=fEX2H5qHOW8e7rEBRXEEp+emWHZ9ic1/uLJewkjm/1y9pKsuDIYrm1ZfrvPfqYFEY9+5IUzbFzKz3VFEq0dBNorrZkffz3dsTUgC9jEaEGxnz8brdI/sA0TuslXRNvzpzRa7dAiqz20DHVqRprDk7EBjb/rPQfbePQfRSL3CLp8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HPhKOaCv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XtDYZfly"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 186EF1F000FF;
-	Wed, 23 Sep 2026 10:10:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HPhKOaCv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 382301F00893;
+	Wed, 23 Sep 2026 10:13:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790158259;
-	bh=y/Lsy3aQo8ST6yfvqxJfwQZYt7hLNGAoRopvtUmrCXo=;
+	s=k20260515; t=1790158427;
+	bh=PREKX6Wfx3ocgL0Q8g3oQ27X39xtDWzJRCtGGTbSjy4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=XtDYZflyMBVa12YMJtw+/y4wcdfl/F1RLqNVmHCV706DNSXHaNvuUBrLzLnuV/3jt
-	 m2cTdNutk2RdWWzmE4kuWiE8YHva8EYheJW4jz/1Jl14HMyGhOyX3x8GYGdOg9NUtW
-	 zw9rOEKnEOU9L8uFRFB//uutMz7tbFHY0cJ2+//giUe6HcgC1RnNgQHS1f8hPG7f5X
-	 ehxFqkgeeKbzdhCNKUzWa1mH1UBPTLjUpjkW6me1Zrm5ivSDuF7+5K9ffb0sYo6qu+
-	 fluqlpZnXO/zxgUnl0BMKqbnq951cAXvsGRmIMgpD8d3+Uyf0qOg7HOyQKRDCTmeZm
-	 FHu9jVuJvE/0A==
-Message-ID: <4ed926ae-9e9b-45d7-9ba3-a24431522bb2@kernel.org>
-Date: Wed, 23 Sep 2026 12:10:52 +0200
+	b=HPhKOaCvWCzYSlAAHvGPirT13fNYuHIJ2LWzRria8HssijiCd0iFrRZLIukuZ3FU1
+	 EGZe1X5rXLmLUkikEjc4K5RoUaBZoClgb2pTgfTI4HJ7jt7TaQzMKZ0gNMpD5x6xtx
+	 ZEfxcZsObvhR1V4IjHTAbT4cwCLbgsl9rQi6pqQW9kbO6lwtyacD7aVdFbNcpHH0JA
+	 df0thB5tKOtukXu8mCV2+Ivf+pVKMQf63PYEMuBByA8zBHaG7/xL49PfU+OhTZsU7d
+	 cT1ObMow7SOsSVrurB0qxnQ+lPfHkTK8LIhgWSx115Hb9ZGAmbrHzzHcEOrKmN0FC6
+	 J9QiqSXszvWXA==
+Message-ID: <5271866c-a334-453b-a95c-8bfbede1232b@kernel.org>
+Date: Wed, 23 Sep 2026 12:13:39 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/5] hibernation: ensure secretmem pages don't reach a
- snapshot
+Subject: Re: [PATCH 3/5] hibernate: handle potential errors in
+ hibernate_{map,unmap}_page()
 To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
@@ -45,7 +45,7 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
  Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
 References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
- <20260917-hibernation-v1-2-7f7dfae3dbe0@kernel.org>
+ <20260917-hibernation-v1-3-7f7dfae3dbe0@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -92,39 +92,22 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-hibernation-v1-2-7f7dfae3dbe0@kernel.org>
+In-Reply-To: <20260917-hibernation-v1-3-7f7dfae3dbe0@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/17/26 08:07, Mike Rapoport (Microsoft) wrote:
-> hibernation_available() checks for active secretmem users, but a secretmem
-> file can be created after this check and its pages may get into the
-> hibernation snapshot although they should not.
+> When safe_copy_page() had to map/unmap pages only because of
+> debug_pagealloc() there could be no errors in the kernel page table
+> updates.
 > 
-> Recheck secretmem state after userspace is frozen and abort hibernation if
-> secretmem is active.
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
->  kernel/power/hibernate.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index d2479c69d71a4..281ad49411481 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -412,6 +412,11 @@ int hibernation_snapshot(int platform_mode)
->  	if (error)
->  		goto Close;
->  
-> +	if (secretmem_active()) {
-> +		error = -EBUSY;
-> +		goto Thaw;
-> +	}
-> +
+> However, with the increasing desire to remove pages from the direct map
+> this assumption becomes a real stretch.
 
-Should we instead recheck hibernation_available() like we do at the beginning of
-hibernate() before freezing?
+What's our general direction in that regard?
+
+I'd assume we'd not want to modify the directmap from hibernation code and
+simply fail instead if we encounter that scenario.
 
 -- 
 Cheers,
