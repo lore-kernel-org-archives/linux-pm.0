@@ -1,143 +1,173 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mail-106104.protonmail.ch (mail-106104.protonmail.ch [79.135.106.104])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FBE63E49DA
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 08:52:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D55783D88F5;
+	Wed, 23 Sep 2026 08:55:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.104
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790153560; cv=none; b=IeLSD/CB3kErBwjMKj74rj3+sRlKv/to0jQtaX42WsC+eP1BZkxc5FCS9z+zbbDOZlBV0VNeZPtd2lVGx/ZmGHw2aDl+qlXs5CJfb0ZwZt9H+jJ7pbnh+X3aVOH+Q0brLesU6GXPievsHd/FgheObQv9ZsXeFxSTBw3LMTnC0d4=
+	t=1790153716; cv=none; b=bjdoyudxEsPQgVJeD4+8Nc+8gAehEZQlhsmERg7oFh+RCCMAlR+gX2ZmrHlvpSEv01iQk/rXy2bFnQapVeHs0p/h3L8yM7wfnB14+PuNt1U+7QxWzIbIzfVsgjk8TnKbO2c+m43/5XxAELZ3Mf+2yU1ULWfWsPVFjJ6yO3vAc9g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790153560; c=relaxed/simple;
-	bh=PLWW2hnEf6IevrdZ7b8dtjyCj2TTYWxcRo+NjhzeynE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MdsxuFdSKxyvje7ABRfoR0kn3qGT+AZ569bn2vQZsnkF0Exqf1fUA/v+wBjyns/jFmA4EMVxbMr9YqR6ZHKCX4eGBSXwHK1w/HsTrFl3GJZjUlBTR/Kw97byWo+/HRp4igfvRDzrrt2eLVdg6Wkvv2RySJcmYDHGIPZ9PbPiJG4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=D1yXQXZW; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=L/oEQip1; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1790153716; c=relaxed/simple;
+	bh=/cw0Gf6BhBKIwmrj7VitPlyAXAwQs6MZ5sJPb2UXbS0=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MjGgZDEptmGNkp02fg7wZBll9sEHqOOF9e43oPicSCAsVB/jFLVp9UgkJ5N3WIE7BdXYf9hEvUG5Wog6xm+NwbFClvx8V0s5fF2kPuwPmcfcUDrGn3l6BZa4rSykjGZKeBf3b0WSazIvV5n/o+XAsClzbMFMMh8AJWCXzE9heJ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=TddZoA5a; arc=none smtp.client-ip=79.135.106.104
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="D1yXQXZW";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="L/oEQip1"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68N8JkKt2004333
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 08:52:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	PLWW2hnEf6IevrdZ7b8dtjyCj2TTYWxcRo+NjhzeynE=; b=D1yXQXZWi905ULVL
-	vPltoe3VMdIlemBudUlnlMJ5AztG22PkcN1QTcuLm9BZXiVVVzpmtEg8jy3IJkdy
-	KK2gslkctFmg+sLnvKIr9nuOb56TuBdZoVwPzzN9LjQuXdYdawey3T32MMXa1NXh
-	/jXKvPkXaYZil5YUQ8fufDYgbGP36eWwgvOifq+/UIKnsKxWtfEOukRyeHmFdfED
-	RPTXw8g3qhsXtIw4OxPLjZ5VoSAFMMcePZH5kkVTkrsyrJUWpTAtl7nnKHA8cIRQ
-	v/y7AiqNPvEc7m9alyr1gIdS7pR/YJNotK0i7MDWspxD1Bgg7w57/oI1kpxWSH+W
-	AHerpw==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4guuec4hcq-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 08:52:33 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93102454272so20930685a.1
-        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 01:52:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790153552; x=1790758352; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=PLWW2hnEf6IevrdZ7b8dtjyCj2TTYWxcRo+NjhzeynE=;
-        b=L/oEQip1IjS0u5oUWJpw7R7omKRCdXKys4Ij1zE5DZQXt4Mmx+8KvN04sf+nwveJai
-         SltcnFJT3Q0I4tlzwkijdCGB6Qjdx4m2zw46EpK+orbN24Kpnqz0qk/OyRmrI5hNUEB3
-         azRam49oJASiAE0wdNCHLtv6VBJchrqWwxBAu9d+DnIJfjbj0Tuw5tI/PoK4N0VkeXOP
-         ffXe7xWxDBJd5NuG30euzqv1KnueP/2suOL+yE11m8cts6qb+zuZtMJsLP8uO2qybEzh
-         FPTFu2vVzhvWagZOlHdEzp8LvL2wNK/lcWphRQstO7f55h+1Kp24s0lAuTw1UNF94lX3
-         9xRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790153552; x=1790758352;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=PLWW2hnEf6IevrdZ7b8dtjyCj2TTYWxcRo+NjhzeynE=;
-        b=ZDm7F8KDIHisMFZ6d9OkZIJ0GT+fsvDaGqgnaCaNwK1uayjRHn1Ce81dGTY635vvO1
-         tjzD2XV2Pr4+Mkitmolo9mfIcx6Vcao+SzfO6IbC7F1TzfH3qgtidjE+q+sbUGleXvZ4
-         ZSr7uUfTIAJ+c5mGoo8R9DE9P58YHFkrmGELKF66x8NZDbxdVnFNauD/HkbQ0U0w4S3J
-         mM2lQ7ky78rzT/U2MT30iVrGqtWWXJ4wy18j1FS1GUXGRUIBCokwKaJQDZT2SutkEdhD
-         Za2kIiLkMssoQbQ2Sx/SAM4bh479hFGObEVBhx3UMMy5SiguoYpLmXoFc9Al05rWpYpJ
-         7fMA==
-X-Forwarded-Encrypted: i=1; AKwUvBy8o0t8HKhkjOY6QCIvbQhetw808qHD3yEtA6YmQ0PaM4HRlA/py3TTcLJhn9JmyfVCkTmRnfSTlw==@vger.kernel.org
-X-Gm-Message-State: AFuF++nChCNODcqgxoeAd2ylQ6EfOLRUsF5yxVkxYSx5QBfwODqKOy1j
-	22BhY9x2v6XR5vFqnwMo+LID39FUxCb4gxH1djZ5B4wgjBvItSwZVmiVkpbB6gzC8l9i5BMkiX3
-	ul3hqZfgJ9YGtQKCBPIHUBX45+KKrifkKqZVwf/G+slE1jqU8Op7yhIFHSoP9Yg==
-X-Gm-Gg: AYBFou1DMVVAuaWRYtO29w3JzYt9ZHUk4xgWqxBzkx3zDMzavQ9qOTlReFRE1k1kbBx
-	l19DJbFHrUE/XYmJEFG043iul8gHTid+9TXxxQ045nIsF+PU+b3g2t2OW0QWCPOV/MG7kyPuk30
-	ZoRuOd7LYbuhlerq2t6/Rg+d9JOKjbkxf60HYzhB0t75YMWOiqyDwzyfSk4l3nPxC4nm1eQuwOR
-	7PIVDwRMgxeOjfaUVDZM8LOvuIzvXRHyJpvwfoxoI1w4pg36r/OtYhBghuVKi1Z5b8va6pJA5e2
-	RH2rYCeSU/xMedYe5nnJWEg4EIQOVeqbOEAMV4xoMyA4a2VTLlxKgSDNjQoldZK5gUAriQI3DoM
-	sDvS/S9rTYUXTfRiV8EvQRw==
-X-Received: by 2002:a05:620a:8013:b0:93a:3e11:e2f9 with SMTP id af79cd13be357-93c2511c770mr256690585a.2.1790153552437;
-        Wed, 23 Sep 2026 01:52:32 -0700 (PDT)
-X-Received: by 2002:a05:620a:8013:b0:93a:3e11:e2f9 with SMTP id af79cd13be357-93c2511c770mr256688885a.2.1790153552106;
-        Wed, 23 Sep 2026 01:52:32 -0700 (PDT)
-Received: from [192.168.202.12] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2aae5c604fsm73371366b.13.2026.09.23.01.52.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 23 Sep 2026 01:52:31 -0700 (PDT)
-Message-ID: <cacaa28b-28ef-4f69-b002-2757aac2a50b@oss.qualcomm.com>
-Date: Wed, 23 Sep 2026 10:52:29 +0200
+	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="TddZoA5a"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
+	s=protonmail3; t=1790153705; x=1790412905;
+	bh=+RV1NtqO516Apv2E+ZHJwj1viG7WQSDMwoxKdXtbB6o=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=TddZoA5a2tvh6qDgOx31P0FId/1ImmOvUijMw4UcdlZAxbIKMlwSSkPacNUyYp7su
+	 4GC0alVCait4/DHOVWKKBglFKI3rhy9tEaxAKE2QPLIeIOYAMyjgqrF4AE4/7IksDy
+	 E5c6JVh0l9ydPMBaafkBTCCwXo1NSJelsyWOLyeKQIz/Cu9JUbk+KS622BJzId+T3i
+	 OLn+M69WHww1/Vh23eUvxCjFpY7DAPIN2KO5owmJqSf8tveTkVIIDzIYgMxgwLaJ08
+	 NzW+wXxC1RGgnttWbwQ0JGg+yWbBCl/p6oyZ1tpvwkFMgbxPHlJJCCixlXJDt789Lx
+	 3hl+C5He5SH0Q==
+Date: Wed, 23 Sep 2026 08:55:01 +0000
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+From: Roman Vivchar <rva333@protonmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
+Subject: Re: [PATCH 1/3] cpufreq: mediatek: add support for CPU speedbin
+Message-ID: <wJbd2H75Mz4krM43MhNiVFaZUbIFOf9VaWE1d_3svO1Vwk6_da6fdLG8kp7T2rDjyLkI6mmY6avYGuhJVWjYeqvoKDmCn0_3a9kCdDFQUoE=@protonmail.com>
+In-Reply-To: <c4908f1a-878c-4958-aaac-9960aae11879@collabora.com>
+References: <20260923-6572-cpufreq-v1-0-41f7af6d6d1a@protonmail.com> <20260923-6572-cpufreq-v1-1-41f7af6d6d1a@protonmail.com> <c4908f1a-878c-4958-aaac-9960aae11879@collabora.com>
+Feedback-ID: 173184497:user:proton
+X-Pm-Message-ID: a1dd8bb99c550ed6bf477e6127df214386284e9e
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] interconnect: qcom: fix endian annotations of BCM aux
- data
-To: Rosen Penev <rosenp@gmail.com>, linux-pm@vger.kernel.org
-Cc: Georgi Djakov <djakov@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        "open list:ARM/QUALCOMM MAILING LIST" <linux-arm-msm@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>
-References: <20260922182711.25176-1-rosenp@gmail.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260922182711.25176-1-rosenp@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDAzNSBTYWx0ZWRfX8QYqmYXZjgMl
- /kRXxb7WW+LAGluvyd2EUv0SBHtLg2ANv7oYP0gF59xGhxLhLg4Lw3WwWFkCXR6haJn1q0RDf4B
- N7g+x24zfZuXescd7w2NNybcgK8CqwAdORIbjFgj8BfxX3BqLdV5h/WieeZr1QYlirz5EVTI9vi
- RcgdymldMdBvaXsuYWv96T3bYZahdwVDy37uzDJDbvSWk2JiNudT9wZwZGSbWQnYfOyFgblLzVA
- PwI6IqWOgwmdJv1aZuqr+ONvjh9x95C8P7d6/XlVfZECZfkRyK+EHMAXqzjQSULPpumUtX2IyFV
- PN/mNb/fEONNN21/SOH4RFIe1OeEJRaMOFizfBNniFySCtTjCA+FbFMQIsYu3aHs70KjtMhHzhl
- 60vupwTlKVWqg36i8T3lJrS7/lGxO4F8ivnnqhU0558BEsie1ZdGau50iFXxhllJr72gI1DMN2g
- gJIz8aNGL7x3hEf2uuA==
-X-Authority-Analysis: v=2.4 cv=VKdIDNPX c=1 sm=1 tr=0 ts=6ab39351 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=kBXQb9JHnCtroGRzBYQA:9 a=QEXdDO2ut3YA:10 a=ZXulRonScM0A:10
- a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-GUID: Mz5lRaMvReMQXyfzngstAkRAYyHO10hu
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDAzNSBTYWx0ZWRfX6aE5dAmYBU7w
- kYO+2OrEJ1IgJ9qu/f3OOY4jko2hC+VlqBgCRYB4Ne8s7Ycl3FFECeBeBoCQn97g0RENKE/+O41
- nyXHLgb9p2nqnYdOE+ihB1Pu1JV32/w=
-X-Proofpoint-ORIG-GUID: Mz5lRaMvReMQXyfzngstAkRAYyHO10hu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-23_04,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0 malwarescore=0
- suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230035
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On 9/22/26 8:27 PM, Rosen Penev wrote:
-> struct qcom_icc_bcm::aux_data stores the values parsed from the command
-> db, converted to native byte order, but is typed as the raw little-endian
-> struct bcm_db. Sparse therefore complains when the converted values are
-> assigned to the __le32/__le16 fields and when those restricted fields
-> are used in bandwidth calculations.
+Hi Angelo,
 
-This should be fixed by using cpu_to_leXX()/leXX_to_cpu() when
-accessing these fields instead
+On Wednesday, September 23rd, 2026 at 11:31 AM, AngeloGioacchino Del Regno =
+<angelogioacchino.delregno@collabora.com> wrote:
 
-Konrad
+> On 9/23/26 09:23, Roman Vivchar via B4 Relay wrote:
+> > From: Roman Vivchar <rva333@protonmail.com>
+> >
+> > MediaTek SoCs are often released under the same marketing name, but wit=
+h
+> > different suffix for the speedbin. For example, mt6572m has 1 GHz limit=
+,
+> > mt6572a - 1.2 GHz, mt6572w - 1.4 GHz.
+> >
+> > Add code to support per-cluster 'opp-supported-hw' property. The DT is
+> > expected to pass a CPU speedbin using standard 'nvmem-cells' property
+> > under the CPU node.
+> >
+> > Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+> > ---
+> >   drivers/cpufreq/mediatek-cpufreq.c | 50 +++++++++++++++++++++++++++++=
++++++++--
+> >   1 file changed, 48 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/media=
+tek-cpufreq.c
+> > index 052ca7cd2f4f..f15135b2898b 100644
+> > --- a/drivers/cpufreq/mediatek-cpufreq.c
+> > +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> > @@ -10,6 +10,7 @@
+> >   #include <linux/cpumask.h>
+> >   #include <linux/minmax.h>
+> >   #include <linux/module.h>
+> > +#include <linux/nvmem-consumer.h>
+> >   #include <linux/of.h>
+> >   #include <linux/of_platform.h>
+> >   #include <linux/platform_device.h>
+> > @@ -57,6 +58,7 @@ struct mtk_cpu_dvfs_info {
+> >   =09const struct mtk_cpufreq_platform_data *soc_data;
+> >   =09int vtrack_max;
+> >   =09bool ccifreq_bound;
+> > +=09int opp_token;
+> >   };
+> >
+> >   static struct platform_device *cpufreq_pdev;
+> > @@ -381,6 +383,38 @@ static struct device *of_get_cci(struct device *cp=
+u_dev)
+> >   =09return &pdev->dev;
+> >   }
+> >
+> > +static int mtk_cpu_parse_speedbin(struct mtk_cpu_dvfs_info *info, int =
+cpu)
+> > +{
+> > +=09struct device *cpu_dev =3D get_cpu_device(cpu);
+> > +=09struct dev_pm_opp_config config =3D {};
+> > +=09u32 val, opp_hw_ver;
+> > +=09int ret;
+> > +
+> > +=09ret =3D nvmem_cell_read_variable_le_u32(cpu_dev, "speed_grade", &va=
+l);
+>=20
+> Let's keep consistency with cell names: for example, on the GPU side, the=
+ node
+> in devicetree is called "gpu-speedbin@1234", and the panfrost node has
+>=20
+> nvmem-cells =3D <&gpu_speedbin>;
+> nvmem-cell-names =3D "speed-bin";
+>=20
+> Check MT8186 and MT8188 devicetrees ;-)
+
+Not sure if it works like that. speed_grade comes from the arm/cpus.yaml.
+Indeed I'd prefer some other name, but this means either modifying cpus.yam=
+l
+schema or making something like qcom's custom opp table binding.
+
+>=20
+> > +=09if (ret) {
+> > +=09=09if (ret =3D=3D -ENOENT)
+>=20
+> if (ret !=3D -ENOENT && ret !=3D -EOPNOTSUPP)
+
+Ack.
+
+>=20
+> > +=09=09=09/* speedbin is optional */
+> > +=09=09=09return 0;
+> > +=09=09return dev_err_probe(cpu_dev, ret, "cpu%d: failed to read speedb=
+in\n", cpu);
+> > +=09}
+> > +
+> > +=09/* Convert the raw value to a bitmask */
+> > +=09if (val >=3D 32)
+> > +=09=09return dev_err_probe(cpu_dev, -EINVAL,
+> > +=09=09=09=09     "cpu%d: invalid speedbin value %u\n", cpu, val);
+> > +=09opp_hw_ver =3D BIT(val);
+>=20
+> If you look at nvmem/mtk-efuse.c there is a mtk_efuse_gpu_speedbin_pp() f=
+unction
+> that is doing (almost) *exactly* what you're doing here.
+>=20
+> Check if the same constraints as GPU speed binning applies to the CPU: if=
+ they do,
+> just allow "cpu-speedbin" as node name in the fixup function, otherwise a=
+dd a new
+> post processing function for the CPU and act accordingly.
+
+...right. Should this go as separate nvmem patch or include it in this
+series?
+
+>=20
+> > +
+> > +=09config.supported_hw =3D &opp_hw_ver;
+> > +=09config.supported_hw_count =3D 1;
+> > +
+> > +=09info->opp_token =3D dev_pm_opp_set_config(cpu_dev, &config);
+>=20
+> It's way easier if you use
+>=20
+> devm_pm_opp_set_supported_hw(dev, &opp_hw_ver, 1);
+
+Ack
+
+Best regards,
+Roman
