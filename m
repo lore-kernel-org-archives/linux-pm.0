@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEA9247DFB0;
-	Wed, 23 Sep 2026 10:13:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8191547F3D0;
+	Wed, 23 Sep 2026 10:24:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790158443; cv=none; b=g81fPwAxLXQ9zaqCS1jjVnAg6pzgZ5x2J0g/i/dV06CcnfnfGcKdPYJ6C0CqzGpw2scVvDfEJreW6Vua8+e3Y20tm3eBd8vy3a3IbFB1TW803CzolkcSS7GJJqCLn6RazrU3ifZMw1esoKOC9KATINzyMF648KTIEXObrVDw5do=
+	t=1790159099; cv=none; b=eJgbb0AE+MiQ3KbYERiZhkb9u7G5y44RzPja1iCPYnOBKsh1nDZUnOTnMatfxNO8URabLKcriUXojL5MsMVEZ2XoelUU+TdfwIR6Xso3Lce+/m3Bq6cTltKCeTAqklYEbbJ3aO9U+36K5syH7QvZpMMc+zLAEkfPo1LFfrce20Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790158443; c=relaxed/simple;
-	bh=uJXHXw2jx69ih4DAMrKNLWy++uwTIYy2WsgdE3k5d+s=;
+	s=arc-20240116; t=1790159099; c=relaxed/simple;
+	bh=ILjfJ96cJXS2S28ajCssn+RQ5jLi9NLGaUpBGPkFZwQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fEX2H5qHOW8e7rEBRXEEp+emWHZ9ic1/uLJewkjm/1y9pKsuDIYrm1ZfrvPfqYFEY9+5IUzbFzKz3VFEq0dBNorrZkffz3dsTUgC9jEaEGxnz8brdI/sA0TuslXRNvzpzRa7dAiqz20DHVqRprDk7EBjb/rPQfbePQfRSL3CLp8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HPhKOaCv; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=rqvvkWOsqYJ+l8JmPHnYdxJpPQ9BbH3verI34y17gf1SR5XVMDIN3KEFUoXdMvEqparMJ9yhoxEEXUrssD9BlPCYTkCVaQ2lwC41RcRSMJd23BP+PvQ1AgsGDIee063nmBs40kBtffrisfkxibDTU9Gdi41087puhBYPlDzk0X4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SpOMLrJt; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HPhKOaCv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 382301F00893;
-	Wed, 23 Sep 2026 10:13:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SpOMLrJt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53AA61F000FF;
+	Wed, 23 Sep 2026 10:24:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790158427;
-	bh=PREKX6Wfx3ocgL0Q8g3oQ27X39xtDWzJRCtGGTbSjy4=;
+	s=k20260515; t=1790159088;
+	bh=ytkhLFeElfVPBsukpabe8slF4KeBj+GfJ/6CohjWEXY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=HPhKOaCvWCzYSlAAHvGPirT13fNYuHIJ2LWzRria8HssijiCd0iFrRZLIukuZ3FU1
-	 EGZe1X5rXLmLUkikEjc4K5RoUaBZoClgb2pTgfTI4HJ7jt7TaQzMKZ0gNMpD5x6xtx
-	 ZEfxcZsObvhR1V4IjHTAbT4cwCLbgsl9rQi6pqQW9kbO6lwtyacD7aVdFbNcpHH0JA
-	 df0thB5tKOtukXu8mCV2+Ivf+pVKMQf63PYEMuBByA8zBHaG7/xL49PfU+OhTZsU7d
-	 cT1ObMow7SOsSVrurB0qxnQ+lPfHkTK8LIhgWSx115Hb9ZGAmbrHzzHcEOrKmN0FC6
-	 J9QiqSXszvWXA==
-Message-ID: <5271866c-a334-453b-a95c-8bfbede1232b@kernel.org>
-Date: Wed, 23 Sep 2026 12:13:39 +0200
+	b=SpOMLrJtP9axVwXjkGFayVrvhJ/jv+v91G4KvRUZKKFlfySjUkjy2Jv37KwcVWE9h
+	 OdmJpsUg33iQSuIb1PkURFL4saPNW7Xt5d2SMBGSnJRGgk2MuLBlw2Ym/MJ+K89Zhj
+	 tqDRW/I2HXZSw2rCzoOpRt/844ycGW1CSLe+TZID9bBoS5d6U2cFpE8pegkltHclEF
+	 IndMs5vjVDySCqv6jqakzGVsfdYZxPR2K/amWRvoVUWSXswACj/vfvHS2YAw1GWEVI
+	 B4ebwdAA8g1MPUhlUeGdIifSethVOPlQ7LNgW1Vc0nbq/YayH8Hp4OXsn4rh2VFm9j
+	 bGUyJhlNgHYOg==
+Message-ID: <5f950806-3e76-4a16-9511-a23719125f4b@kernel.org>
+Date: Wed, 23 Sep 2026 12:24:41 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/5] hibernate: handle potential errors in
- hibernate_{map,unmap}_page()
+Subject: Re: [PATCH 5/5] hibernation: make hibernation unavailable when
+ debug_pagealloc is on
 To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
@@ -45,7 +45,7 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
  Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
 References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
- <20260917-hibernation-v1-3-7f7dfae3dbe0@kernel.org>
+ <20260917-hibernation-v1-5-7f7dfae3dbe0@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -92,22 +92,87 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-hibernation-v1-3-7f7dfae3dbe0@kernel.org>
+In-Reply-To: <20260917-hibernation-v1-5-7f7dfae3dbe0@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/17/26 08:07, Mike Rapoport (Microsoft) wrote:
-> When safe_copy_page() had to map/unmap pages only because of
-> debug_pagealloc() there could be no errors in the kernel page table
-> updates.
+> Back in 2008 when commit 8a235efad548a ("Hibernation: Handle
+> DEBUG_PAGEALLOC on x86") enabled coexistence of hibernation and
+> DEBUG_PAGEALLOC, the world was simpler, the combination was only supported
+> on x86 and a non-present page in the direct map meant that the page was
+> free and debug_pagealloc removed its mapping.
 > 
-> However, with the increasing desire to remove pages from the direct map
-> this assumption becomes a real stretch.
+> Nowadays there are more architectures with inconsistent views of how the
+> direct map should be managed, there are more debug mechanisms in MM that
+> can either drop a page from the direct map (e.g. KFENCE) or require that a
+> page must be mapped immediately after resume (e.g. init_on_free).
+> 
+> The latter constraint is particularly nasty, because enabling
+> debug_pagealloc and PAGE_POISON at the same time simply breaks resume:
+> 
+>   BUG: unable to handle page fault for address: ffff888000100000
+>   #PF: supervisor write access in kernel mode
+>   #PF: error_code(0x0002) - not-present page
+>   PGD 4f0c067 P4D 4f0c067 PUD 4f0d067 PMD 4f0e067 PTE 800fffffffeff020
+>   Oops: Oops: 0002 [#1] SMP DEBUG_PAGEALLOC NOPTI
+>   CPU: 0 UID: 0 PID: 477 Comm: bash Not tainted 7.3.0-rc3-00090-g4a613f1d9124 #1 PREEMPT(full)
+>   Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-debian-1.17.0-1 04/01/2014
+>   RIP: 0010:__kernel_poison_pages+0x45/0x70
+>   Code: 89 fa 48 c1 e6 06 48 01 fe 48 89 d1 48 2b 0d 9a ed 87 01 48 83 c2 40 48 c1 f9 06 48 c1 e1 0c 48 03 0d 97 ed 87 01 48 8d 79 08 <48> 89 01 48 83 e7 f8 48 89 81 f8 0f 00 00 48 29 f9 81 c1 00 10 00
+>   RSP: 0018:ffffc900017dfd78 EFLAGS: 00010086
+>   RAX: aaaaaaaaaaaaaaaa RBX: 0000000000000000 RCX: ffff888000100000
+>   RDX: ffffea0000004040 RSI: ffffea0000004040 RDI: ffff888000100008
+>   RBP: 0000000000000000 R08: ffff888130fcada0 R09: 00000000723e0de4
+>   R10: 0000000096ad9215 R11: 00000000db907bcf R12: 0000000000000005
+>   R13: 0000000000000005 R14: 0000000000000000 R15: 0000000000000000
+>   FS:  00007f8f2243e780(0000) GS:ffff8882e8e13000(0000) knlGS:0000000000000000
+>   CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>   CR2: ffff888000100000 CR3: 0000000140679000 CR4: 0000000000750ef0
+>   PKRU: 55555554
+>   Call Trace:
+>    <TASK>
+>    clear_or_poison_free_pages+0xd1/0xe0
+>    hibernation_snapshot+0x548/0x5a0
+>    hibernate.cold+0xcb/0x321
+>    state_store+0xc3/0xd0
+>    kernfs_fop_write_iter+0x163/0x240
+>    vfs_write+0x21f/0x550
+>    ksys_write+0x70/0xf0
+>    do_syscall_64+0xb1/0x590
+>    ? __irq_exit_rcu+0x40/0x110
+>    entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>   RIP: 0033:0x7f8f224d0687
+>   Code: 48 89 fa 4c 89 df e8 58 b3 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
+>   RSP: 002b:00007ffe7bbe0910 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
+>   RAX: ffffffffffffffda RBX: 00007f8f2243e780 RCX: 00007f8f224d0687
+>   RDX: 0000000000000005 RSI: 000055e3e53135d0 RDI: 0000000000000001
+>   RBP: 000055e3e53135d0 R08: 0000000000000000 R09: 0000000000000000
+>   R10: 0000000000000000 R11: 0000000000000202 R12: 0000000000000005
+>   R13: 00007f8f226295c0 R14: 00007f8f22626e80 R15: 0000000000000000
+>    </TASK>
+>   Modules linked in:
+>   CR2: ffff888000100000
+> 
+> It's possible to build a complex infrastructure involving a new page flag
+> and/or page_type to allow robust hibernation and restore with
+> debug_pagealloc enabled.
+> 
+> This infrastructure requires a proper detection whether it is safe to
+> temporarily remap a page to include it in the hibernation snapshot because
+> relying on kernel_page_present() is too permissive and may include pages
+> that were deliberately removed from the direct map for security reasons.
+> 
+> This complexity does not seem justified to deal with an esoteric use case
+> of hibernating a system that runs with debug_pagealloc enabled.
+> 
+> Make hibernation unavailable when debug_pagealloc is enabled and simplify
+> hibernate_{map,unmap}_page() that don't need to deal with debug_pagealloc
+> anymore.
+> 
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-What's our general direction in that regard?
-
-I'd assume we'd not want to modify the directmap from hibernation code and
-simply fail instead if we encounter that scenario.
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
