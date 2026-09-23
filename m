@@ -1,180 +1,86 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [144.76.133.104])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8191547F3D0;
-	Wed, 23 Sep 2026 10:24:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09B8C48C8DC;
+	Wed, 23 Sep 2026 10:27:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=144.76.133.104
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790159099; cv=none; b=eJgbb0AE+MiQ3KbYERiZhkb9u7G5y44RzPja1iCPYnOBKsh1nDZUnOTnMatfxNO8URabLKcriUXojL5MsMVEZ2XoelUU+TdfwIR6Xso3Lce+/m3Bq6cTltKCeTAqklYEbbJ3aO9U+36K5syH7QvZpMMc+zLAEkfPo1LFfrce20Q=
+	t=1790159281; cv=none; b=TWq87w4nzpW9hyNpn4EX9qURblAg938dsq7/x/C5Cjz/hLt8Sr9AxhBeXZ8U4oemudVUymgB3Lox0YbeHYJ63SqGhhwS51+H0Lcz3lmc2LtTtrOJMkhgTwmeNEmVNZyjw2fz8Jbluks+ZiNctQf0/XYOFcClTVPT7OQGedaHad4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790159099; c=relaxed/simple;
-	bh=ILjfJ96cJXS2S28ajCssn+RQ5jLi9NLGaUpBGPkFZwQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rqvvkWOsqYJ+l8JmPHnYdxJpPQ9BbH3verI34y17gf1SR5XVMDIN3KEFUoXdMvEqparMJ9yhoxEEXUrssD9BlPCYTkCVaQ2lwC41RcRSMJd23BP+PvQ1AgsGDIee063nmBs40kBtffrisfkxibDTU9Gdi41087puhBYPlDzk0X4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SpOMLrJt; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SpOMLrJt"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53AA61F000FF;
-	Wed, 23 Sep 2026 10:24:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790159088;
-	bh=ytkhLFeElfVPBsukpabe8slF4KeBj+GfJ/6CohjWEXY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=SpOMLrJtP9axVwXjkGFayVrvhJ/jv+v91G4KvRUZKKFlfySjUkjy2Jv37KwcVWE9h
-	 OdmJpsUg33iQSuIb1PkURFL4saPNW7Xt5d2SMBGSnJRGgk2MuLBlw2Ym/MJ+K89Zhj
-	 tqDRW/I2HXZSw2rCzoOpRt/844ycGW1CSLe+TZID9bBoS5d6U2cFpE8pegkltHclEF
-	 IndMs5vjVDySCqv6jqakzGVsfdYZxPR2K/amWRvoVUWSXswACj/vfvHS2YAw1GWEVI
-	 B4ebwdAA8g1MPUhlUeGdIifSethVOPlQ7LNgW1Vc0nbq/YayH8Hp4OXsn4rh2VFm9j
-	 bGUyJhlNgHYOg==
-Message-ID: <5f950806-3e76-4a16-9511-a23719125f4b@kernel.org>
-Date: Wed, 23 Sep 2026 12:24:41 +0200
+	s=arc-20240116; t=1790159281; c=relaxed/simple;
+	bh=8bsRzgiDz06/1Ig7A3wbd46dRe7z3zLwUB654q1EDak=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KHCKEUoPqVOzDl67G4bMJmXr0htq4G563Q9I8r83bleUw0L3KRgIRZBFxZG/LlZg+Bxf1C9kjPJ9XpFNHGOqIGyz9emr1GB+64ADxYD/bgV54UaX9z3LhMf1qiiNaMiGnC2u+46r30XoMRN1Lpp6gPoMUMajdoSD9okRWYe2KfA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass smtp.mailfrom=wunner.de; arc=none smtp.client-ip=144.76.133.104
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wunner.de
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by mailout3.hostsharing.net (Postfix) with ESMTPS id 91F3E1685;
+	Wed, 23 Sep 2026 12:27:27 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 404CE6235255; Wed, 23 Sep 2026 12:27:27 +0200 (CEST)
+Date: Wed, 23 Sep 2026 12:27:27 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Navon John Lukose <navonjohnlukose@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Mario Limonciello <Mario.Limonciello@amd.com>,
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] PCI/PM: Skip the suspend_noirq config save if
+ runtime-suspended
+Message-ID: <arOpj4C67BnrNreM@wunner.de>
+References: <20260923022511.24932-1-navonjohnlukose@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] hibernation: make hibernation unavailable when
- debug_pagealloc is on
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
- Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
-References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
- <20260917-hibernation-v1-5-7f7dfae3dbe0@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20260917-hibernation-v1-5-7f7dfae3dbe0@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260923022511.24932-1-navonjohnlukose@gmail.com>
 
-On 9/17/26 08:07, Mike Rapoport (Microsoft) wrote:
-> Back in 2008 when commit 8a235efad548a ("Hibernation: Handle
-> DEBUG_PAGEALLOC on x86") enabled coexistence of hibernation and
-> DEBUG_PAGEALLOC, the world was simpler, the combination was only supported
-> on x86 and a non-present page in the direct map meant that the page was
-> free and debug_pagealloc removed its mapping.
+On Wed, Sep 23, 2026 at 07:55:11AM +0530, Navon John Lukose wrote:
+> pci_pm_suspend_noirq() saves config space unconditionally when the driver
+> of the device has no PM callbacks, which includes unbound devices.  If
+> such a device is runtime-suspended, the bridge above it may be in a
+> low-power state with the link down.  Depending on the platform, the
+> config reads then either hang the CPU or return all ones, which overwrite
+> the snapshot taken at runtime suspend and are written back to the device
+> on resume.
 > 
-> Nowadays there are more architectures with inconsistent views of how the
-> direct map should be managed, there are more debug mechanisms in MM that
-> can either drop a page from the direct map (e.g. KFENCE) or require that a
-> page must be mapped immediately after resume (e.g. init_on_free).
+> Skip the save if the device is runtime-suspended, as pci_pm_freeze()
+> does, since pci_pm_runtime_suspend() has already saved the config space.
+> Use pm_runtime_status_suspended(), because runtime PM is disabled by the
+> noirq phase and pm_runtime_suspended() would always be false.
 > 
-> The latter constraint is particularly nasty, because enabling
-> debug_pagealloc and PAGE_POISON at the same time simply breaks resume:
-> 
->   BUG: unable to handle page fault for address: ffff888000100000
->   #PF: supervisor write access in kernel mode
->   #PF: error_code(0x0002) - not-present page
->   PGD 4f0c067 P4D 4f0c067 PUD 4f0d067 PMD 4f0e067 PTE 800fffffffeff020
->   Oops: Oops: 0002 [#1] SMP DEBUG_PAGEALLOC NOPTI
->   CPU: 0 UID: 0 PID: 477 Comm: bash Not tainted 7.3.0-rc3-00090-g4a613f1d9124 #1 PREEMPT(full)
->   Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-debian-1.17.0-1 04/01/2014
->   RIP: 0010:__kernel_poison_pages+0x45/0x70
->   Code: 89 fa 48 c1 e6 06 48 01 fe 48 89 d1 48 2b 0d 9a ed 87 01 48 83 c2 40 48 c1 f9 06 48 c1 e1 0c 48 03 0d 97 ed 87 01 48 8d 79 08 <48> 89 01 48 83 e7 f8 48 89 81 f8 0f 00 00 48 29 f9 81 c1 00 10 00
->   RSP: 0018:ffffc900017dfd78 EFLAGS: 00010086
->   RAX: aaaaaaaaaaaaaaaa RBX: 0000000000000000 RCX: ffff888000100000
->   RDX: ffffea0000004040 RSI: ffffea0000004040 RDI: ffff888000100008
->   RBP: 0000000000000000 R08: ffff888130fcada0 R09: 00000000723e0de4
->   R10: 0000000096ad9215 R11: 00000000db907bcf R12: 0000000000000005
->   R13: 0000000000000005 R14: 0000000000000000 R15: 0000000000000000
->   FS:  00007f8f2243e780(0000) GS:ffff8882e8e13000(0000) knlGS:0000000000000000
->   CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->   CR2: ffff888000100000 CR3: 0000000140679000 CR4: 0000000000750ef0
->   PKRU: 55555554
->   Call Trace:
->    <TASK>
->    clear_or_poison_free_pages+0xd1/0xe0
->    hibernation_snapshot+0x548/0x5a0
->    hibernate.cold+0xcb/0x321
->    state_store+0xc3/0xd0
->    kernfs_fop_write_iter+0x163/0x240
->    vfs_write+0x21f/0x550
->    ksys_write+0x70/0xf0
->    do_syscall_64+0xb1/0x590
->    ? __irq_exit_rcu+0x40/0x110
->    entry_SYSCALL_64_after_hwframe+0x76/0x7e
->   RIP: 0033:0x7f8f224d0687
->   Code: 48 89 fa 4c 89 df e8 58 b3 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
->   RSP: 002b:00007ffe7bbe0910 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
->   RAX: ffffffffffffffda RBX: 00007f8f2243e780 RCX: 00007f8f224d0687
->   RDX: 0000000000000005 RSI: 000055e3e53135d0 RDI: 0000000000000001
->   RBP: 000055e3e53135d0 R08: 0000000000000000 R09: 0000000000000000
->   R10: 0000000000000000 R11: 0000000000000202 R12: 0000000000000005
->   R13: 00007f8f226295c0 R14: 00007f8f22626e80 R15: 0000000000000000
->    </TASK>
->   Modules linked in:
->   CR2: ffff888000100000
-> 
-> It's possible to build a complex infrastructure involving a new page flag
-> and/or page_type to allow robust hibernation and restore with
-> debug_pagealloc enabled.
-> 
-> This infrastructure requires a proper detection whether it is safe to
-> temporarily remap a page to include it in the hibernation snapshot because
-> relying on kernel_page_present() is too permissive and may include pages
-> that were deliberately removed from the direct map for security reasons.
-> 
-> This complexity does not seem justified to deal with an esoteric use case
-> of hibernating a system that runs with debug_pagealloc enabled.
-> 
-> Make hibernation unavailable when debug_pagealloc is enabled and simplify
-> hibernate_{map,unmap}_page() that don't need to deal with debug_pagealloc
-> anymore.
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Fixes: 931ff68a5a53 ("PCI PM: Restore config spaces of all devices during early resume")
+> Cc: stable@vger.kernel.org # v6.19+
+> Signed-off-by: Navon John Lukose <navonjohnlukose@gmail.com>
+> ---
+> Found on a Lenovo Yoga 83KF (Arrow Lake-H).  A driverless O2 Micro SD
+> reader at 57:00.0 with power/control=auto lets its root port 00:1c.0
+> runtime-suspend to D3hot.  The port then swallows the ECAM reads in
+> pci_save_state(), and the forward-progress watchdog raises a fatal machine
+> check at the ECAM load in pci_mmcfg_read().
 
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+Hm, pci_pm_suspend_noirq() should bail out earlier because of the
+dev_pm_skip_suspend() check.  That check resolves to:
 
--- 
-Cheers,
+  dev_pm_smart_suspend(dev) && pm_runtime_status_suspended(dev)
 
-David
+The code comment in device_prepare_smart_suspend() explains that
+smart_suspend is true for devices without PM callbacks.  But only
+if the parent has smart suspend enabled as well.  I guess that's
+the sticking point?  That the port above the card reader doesn't
+have smart suspend enabled?
+
+Thanks,
+
+Lukas
