@@ -1,25 +1,25 @@
 Received: from mail.auroraos.dev (unknown [95.181.193.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E65E52CCEA
-	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 20:38:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD01253CA70
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 20:44:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.181.193.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790195890; cv=none; b=ZE7uMpKtPR8e0S3C55Y4JUVLfYV6ySpHsJQdpKK2q0790wd5yUeXx+eMNoHXdIhJhUGaSLXoqG8CdDoaw+gwW8wgXisOFMxWQWWkIIQIjhyEeow7u2FCdttzZljrMmD6WmBkKmEuhPH0ePvQ370bbuUw6Y8dIP4iB6B+zs0rW+0=
+	t=1790196295; cv=none; b=EQFcd3NHlHUt2gdzvF3yYtfRpdmPxmp45A/sSbCbFao+cAL/SLkz31OVgLF2GEfBXqEzJtTDsn+EYqis77acZGFmAih966IdJ/sir/XdnbHu6Ef0D/q5jtGpPvxwS02IC+jgxTED2t4LqC3HXUxHFVXOKl8sffph+cICKJsTGPk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790195890; c=relaxed/simple;
-	bh=1izgqRgDgf8F4DJdotcB+sXd9AMgBsYaT/oS7TyvQ7Y=;
+	s=arc-20240116; t=1790196295; c=relaxed/simple;
+	bh=4cMOqIMZKwKIxMjsKtP2EJNpWImYEYamewt1djpz8uQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=HhGT8U0HE0PhQPHSqAuup6kyWmK53/+r72KBHIO6hZe1Ug5FNlRLNjAT77Vv1uO88U/uytTiSY0bo5rPLVD4YKNo3AEtUTw6TFJ68lDA0HsTiz/yM8/SLJXZ18beecpwtuWFzWn3ccVYVF6jPns0GNw7w3dkBd1F9t4QkadNHMo=
+	 In-Reply-To:Content-Type; b=KZbPPV/iq9oMb6FYZe+zl2tht3AqHTyluWjw26Cj0nm/bmxPEn3gLTW7//zfzHpqXH73v1t8LTAIaew31+wgLXpY4fPFtU93nrzy4YfzXuBsd31lEKvyFbMdELE3ZeF6B0guAAEmau/baS6epI1gYX1ccBMByAXvhhJaGHNQYuI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev; spf=pass smtp.mailfrom=auroraos.dev; arc=none smtp.client-ip=95.181.193.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=auroraos.dev
 Received: from [192.168.2.104] (91.78.46.39) by exch16.corp.auroraos.dev
  (10.189.209.38) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1847.3; Wed, 23 Sep
- 2026 23:38:02 +0300
-Message-ID: <d07cb609-ca44-46aa-bd56-2554846399f6@auroraos.dev>
-Date: Wed, 23 Sep 2026 23:38:02 +0300
+ 2026 23:44:46 +0300
+Message-ID: <eae7ec74-5b90-4258-9576-159c700bd8f4@auroraos.dev>
+Date: Wed, 23 Sep 2026 23:44:46 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -45,7 +45,6 @@ X-ClientProxiedBy: exch16.corp.auroraos.dev (10.189.209.38) To
  exch16.corp.auroraos.dev (10.189.209.38)
 
 On 9/23/26 3:14 PM, Ulf Hansson wrote:
-
 [...]
 
 >> In rockchip_pm_add_one_domain(), there's the check (most probably for
@@ -68,13 +67,12 @@ On 9/23/26 3:14 PM, Ulf Hansson wrote:
 > corresponding domain declaration to be correct. Yet, the patch is
 > useful as is!
 
-   I'm not sure I understand you. The patch should hopefully be
-enough to detect the undefined entries (implicitly init'ed with
-all 0s). What fix for the domain definitions do you have in mind,
-turning the arrays into lookup tables by adding a domain ID as a
-field to *struct* rockchip_domain_info?
+   I was thinking of doing a more elaborate description but if you
+considered it good enough, OK... :-)
 
 > Kind regards
 > Uffe
+[...]
+
 MBR, Sergey
 
