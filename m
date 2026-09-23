@@ -1,90 +1,112 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8999A51CF76;
-	Wed, 23 Sep 2026 14:47:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDFB953E305
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 14:50:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790174861; cv=none; b=ApcdWt3uD6dkE73E4XKlp8o7IckmaSu1LMr5ZURfRq6iXeYG68XLSZpLvI08YWe1k2UBVyfF/G4az897H3wTHvSvwmLBdcTbpC8vmxTUA7MzgCrdK5Vc1K5zz1ItHUfFbUK2RQ5cVKAs905t3U3XcNIARkOTK69oWc5lHTIqvwo=
+	t=1790175028; cv=none; b=eUOs2UTbF270tEcB1PjSWfZxCBIWQbDom7zI9iA5unuM3vyxegWdHREA6eDSSMbnXk3h6Zq0MVtQqR8inG49VAPuwuxs/jAa7unFzin277dhGB5xnTBCIW7LmmbcJ+qdQoNFZ7hww7l4gTI0vbFs9MgyYVr6x3F6+rq/dCD5YmU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790174861; c=relaxed/simple;
-	bh=MwZgnHPFFGSL49mOgaoJtNsPPKvCGM4K3GZNXUY+5xg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jXFbWVddrpnolNmm5v0q7Tt9JMZ1jymix80vDDFsMqaxw8Qgok4KL6wIzw4WFCQqp0kKUo97MpaHiOqNDD7jekHE01c+3o1XYPtSA8Vo9zyfl35pTa4V/HXSUolbOY98DIbNGlTIV8Hxl1D9rJlsOrwQgIwwRRvKrxCec/AruK8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=DiitupBx; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1790175028; c=relaxed/simple;
+	bh=IzzL7+Nj8QonEGXWGBjAeG8r0vDLzLBNWdQVTV5ByIU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Qvsp8wuiVhcEf82AEXB1EYSmzpelhfnxGwXmLhdPyA2zPMHHlyNKyM6i3+T3aBP68T6xbOmbIq2FysriHPiNKQCRQxiRP5EOQOiiQCk/f6Q7R003aJD9MtMavOed4+OjZ4Woo88SDzhwoUsz2Hb6yYsDhRfQDAd8AKeOnmWS6Uo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aLBwq6vj; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="DiitupBx"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 453C9152B;
-	Wed, 23 Sep 2026 07:47:35 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D7B9E3F86C;
-	Wed, 23 Sep 2026 07:47:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790174858; bh=MwZgnHPFFGSL49mOgaoJtNsPPKvCGM4K3GZNXUY+5xg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=DiitupBxbjkThSFpOSKScvVyDKIYwZVZU+IsbhFP/W6+udcJWW9cCrEzhu6dvx6EN
-	 p3L9MfIbHQOPCEuSWLgvC3bHkfURsw+BrWtEUB9/1+QHUCVAkYMcMINcaJlsfBSEro
-	 2aMOQW8rfqkvqYa2+YZnMF8jexjIVFnZ9e/NewoQ=
-Date: Wed, 23 Sep 2026 15:47:34 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Oleg Keri <okerixx@gmail.com>
-Cc: Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
-	Beata Michalska <beata.michalska@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Ananthu C V <ananthu.cv@oss.qualcomm.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v6] arm64: topology: fix arch_freq_get_on_cpu() overflow
- above 4.19 GHz
-Message-ID: <arPmhnU-pkGpaD4-@arm.com>
-References: <20260923125604.2482-1-okerixx@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aLBwq6vj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFBB01F000FF
+	for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 14:50:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790175026;
+	bh=IzzL7+Nj8QonEGXWGBjAeG8r0vDLzLBNWdQVTV5ByIU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=aLBwq6vj757NMxKlFJ9VT5v4iAb6Kxrpyto/A/1t+Fl9TZmhinL40xXkpv45Ljntt
+	 3NdGV+3ZVzLscGmwGMu7+dMJ67L9a9Z3QBtuUYOTGXq6nN4y5gH2KPO5s0kAonvtb8
+	 RWmBqdUi+nciKOu1hKmjyZ/fHw6HJr9mFqY/V0cXQktG0xloXgXctfUrQAO1GzSuRu
+	 Iy4M3Ih0P8oeKtIRgR2hFElxf8oJGAiLYVwST5V3aAu+apxdLaX066SZZsfIii5XYs
+	 mqAs6kaf9kvB71CrCQ2UhJS7YoR5kXiPgK126WQ1+G0gre/5I8D6rfdxx3JGKmiSO9
+	 EC9egqlKLpbew==
+Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a47f740839so9482401fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 07:50:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwP/l/x4isRoGmmGxlSl3BvWV/7bZ0BSZiDIr3TmHZ2UuOTahDDMqKBN+zY1hbw9q7GVdTxSwNeXw==@vger.kernel.org
+X-Gm-Message-State: AFuF++nOkLmObDJAk/gCJfpt+1Yk5SdUym14waux4wtQCifRZWLGDKfh
+	8KS1JJDghlRD3oxoXn3upgJIbdbryQ8Dvc7Wm/EfnZv3MLXr7RGc/ZcIqA8EcCk7z3VvUwRyppp
+	PVBjrwjokV/2KqXiR9TyCHzzc/Gt7Ed8=
+X-Received: by 2002:a05:6512:2205:b0:5ae:bba5:aee8 with SMTP id
+ 2adb3069b0e04-5b8d89695bfmr975813e87.24.1790175025051; Wed, 23 Sep 2026
+ 07:50:25 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260923125604.2482-1-okerixx@gmail.com>
+References: <12975163.O9o76ZdvQC@rafael.j.wysocki> <20260923145111.GA24137@ranerica-svr.sc.intel.com>
+In-Reply-To: <20260923145111.GA24137@ranerica-svr.sc.intel.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 23 Sep 2026 16:48:51 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hYU1Ky6L8Oa5ALWw3Z9gbM82oxZGv4cpXmPYwW-DM+6Q@mail.gmail.com>
+X-Gm-Features: AclHuK-TH8zgxZvgw2rSng8MWTaJpTYigpy4ey8bOBKR_AfqOaoiRjhNuKNhcMw
+Message-ID: <CAJZ5v0hYU1Ky6L8Oa5ALWw3Z9gbM82oxZGv4cpXmPYwW-DM+6Q@mail.gmail.com>
+Subject: Re: [PATCH v1] cpufreq: intel_pstate: Fix max_freq fallback in cpufreq_update_pressure()
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, 
+	Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Christian Loehle <christian.loehle@arm.com>, Jianyong Wu <wujianyong@hygon.cn>, 
+	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 23, 2026 at 02:56:04PM +0200, Oleg Keri wrote:
-> arch_freq_get_on_cpu() computes the product of the frequency scale and
-> the reference frequency as a u64, but assigns it to an unsigned int
-> before shifting it back down:
-> 
-> 	freq = scale * arch_scale_freq_ref(cpu);
-> 	freq >>= SCHED_CAPACITY_SHIFT;
-> 
-> The product is truncated to 32 bits before the shift, so the result
-> wraps once arch_scale_freq_ref() exceeds 2^32 / SCHED_CAPACITY_SCALE,
-> i.e. 4194304 kHz.
-> 
-> On a Snapdragon X2 Elite (Glymur) laptop, whose boost OPP is 4723200
-> kHz, cpuinfo_avg_freq reports 524283 kHz instead of ~4723200 kHz while
-> the CPU demonstrably runs at the boost frequency: a fixed workload
-> completes in 1.72 s at the 4723200 kHz OPP versus 2.01 s at 4032000
-> kHz, matching the 1.171 frequency ratio.
-> 
-> Shift the u64 product and narrow only at the return.
-> 
-> Fixes: 16d1e27475f6 ("arm64: Provide an AMU-based version of arch_freq_get_on_cpu")
-> Signed-off-by: Oleg Keri <okerixx@gmail.com>
-> ---
-> Changes in v6:
-> - Drop the cap_scale() change. As a u64 static inline in a shared
->   header it would cost future 32-bit callers a 64-bit multiply that the
->   macro did not (Will); the truncation is the unsigned int temporary, so
->   drop that and leave kernel/sched untouched. Will's Ack on v5 not
->   carried since the arm64 hunk changed.
-> - v5: https://lore.kernel.org/all/20260917182059.2851-1-okerixx@gmail.com/
+On Wed, Sep 23, 2026 at 4:42=E2=80=AFPM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
+>
+> On Mon, Sep 21, 2026 at 09:12:00PM +0200, Rafael J. Wysocki wrote:
+> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> >
+> > After commit d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fal=
+l
+> > back to cpuinfo.max_freq"), cpufreq pressure appears in the CPU load
+> > balancer unexpectedly in some cases in which it was not present before,
+> > leading to confusion and uncertainty.
+> >
+> > Clearly, the scheduler assumes that cpufreq pressure will not be set
+> > unless the capacity reference frequency of the CPU is known, and the
+> > commit mentioned above violates that assumption.
+> >
+> > However, in some cases the capacity reference frequency of the CPU is
+> > in fact known even though arch_scale_freq_ref() returns 0 and in those
+> > cases it should be possible to set cpufreq pressure as appropriate.
+> >
+> > For this purpose, introduce a new cpufreq driver callback returning
+> > the CPU capacity reference frequency, .scale_freq_ref(), and make
+> > cpufreq_update_pressure() invoke it, if present, instead of falling
+> > back to cpuinfo.max_freq unconditionally.
+> >
+> > Add that callback to the intel_pstate driver and make it return 0 unles=
+s
+> > the scale-invariant capacity of the given CPU has been explicitly set,
+> > in which cases its reference frequency is always cpuinfo.max_freq.
+> >
+> > Fixes: d2d5c129d07e ("cpufreq: Make cpufreq_update_pressure() fall back=
+ to cpuinfo.max_freq")
+> > Reported-by: Jianyong Wu <wujianyong@hygon.cn>
+> > Closes: https://lore.kernel.org/linux-pm/20260915065747.1671965-1-wujia=
+nyong@hygon.cn/
+> > Tested-by: Jianyong Wu <wujianyong@hygon.cn>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> This patch did not break anything for me. I tested this in several Intel
+> processors with asymmetric capacity capacity enabled. Tasks spread as
+> expected when no cpufreq pressure is applied. Tasks duly migrate away whe=
+n
+> this pressure is applied to a subset of CPUs. They come back when the
+> pressure is removed.
+>
+> Tested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com> # Intel h=
+ybrid parts
 
-I assume Dietmar and Will's acks still stand. I can add them from v5
-(let me know if you disagree).
+Thank you!
 
--- 
-Catalin
+In the absence of objections or concerns, I'll queue up this patch as
+a fix for 7.3.
