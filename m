@@ -1,86 +1,183 @@
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [144.76.133.104])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09B8C48C8DC;
-	Wed, 23 Sep 2026 10:27:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=144.76.133.104
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1E3D488233;
+	Wed, 23 Sep 2026 10:31:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790159281; cv=none; b=TWq87w4nzpW9hyNpn4EX9qURblAg938dsq7/x/C5Cjz/hLt8Sr9AxhBeXZ8U4oemudVUymgB3Lox0YbeHYJ63SqGhhwS51+H0Lcz3lmc2LtTtrOJMkhgTwmeNEmVNZyjw2fz8Jbluks+ZiNctQf0/XYOFcClTVPT7OQGedaHad4=
+	t=1790159505; cv=none; b=GjEwyPsKS+PIzPhuUbUNiyw6rTOlFIR5LmKPLuVX3BNdgYwe0AW2OZ2OQoLRcVjq4KuNcc5rO/StXjBBDyQDkWu1G5O0ttELvj5PuTRp3u9zLLt91PEvzzKzBYifYCCdlLPayBuR+MYnbH7UXdriHDoEQly08Q4e6Tln8HC9aGA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790159281; c=relaxed/simple;
-	bh=8bsRzgiDz06/1Ig7A3wbd46dRe7z3zLwUB654q1EDak=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KHCKEUoPqVOzDl67G4bMJmXr0htq4G563Q9I8r83bleUw0L3KRgIRZBFxZG/LlZg+Bxf1C9kjPJ9XpFNHGOqIGyz9emr1GB+64ADxYD/bgV54UaX9z3LhMf1qiiNaMiGnC2u+46r30XoMRN1Lpp6gPoMUMajdoSD9okRWYe2KfA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass smtp.mailfrom=wunner.de; arc=none smtp.client-ip=144.76.133.104
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wunner.de
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout3.hostsharing.net (Postfix) with ESMTPS id 91F3E1685;
-	Wed, 23 Sep 2026 12:27:27 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 404CE6235255; Wed, 23 Sep 2026 12:27:27 +0200 (CEST)
-Date: Wed, 23 Sep 2026 12:27:27 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Navon John Lukose <navonjohnlukose@gmail.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	Mario Limonciello <Mario.Limonciello@amd.com>,
-	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] PCI/PM: Skip the suspend_noirq config save if
- runtime-suspended
-Message-ID: <arOpj4C67BnrNreM@wunner.de>
-References: <20260923022511.24932-1-navonjohnlukose@gmail.com>
+	s=arc-20240116; t=1790159505; c=relaxed/simple;
+	bh=puhRv8cvCWPdt+898drsZ6gAREbajbbq2Kz8e2guv0Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PfBJy+kdeLLd3ysuLeXQHa5RrADUKQ89Tn7ZiXOS/cD1FJik8ABUBWKBGCTR1doVSYKRNYRqF1o+zvlgyCogloPTqkVicCnHS6LO1pG1CX07GGHToed7umcVMG72cYuTkKqWTQIWmaVKhHX7vLKtmuepfJH3ShHjJnQvNDYWxq4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j35rH4u7; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j35rH4u7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8271A1F000FF;
+	Wed, 23 Sep 2026 10:31:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790159493;
+	bh=aF1MzpU61XRmUHcDP/fvbQ0mXhibmF/LWQ0namfOZ8U=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=j35rH4u7WV13DsI7KZ4JrOlt1/NTCQO5zUuJnhXsK3azEtUNgmnX59lKPmMfjDbqL
+	 Fwqe8wTPPPEo4297dLRg9aCSd9xpep8/RXoK1N1AHdEpiamQgo7zuQO/WC+8VWA9sy
+	 u6XdogA3R/SrEmjk3/ffko7jtDTgCzSBCpRQ9ruCfYu2ycm4tOrU8gqh4q6sD2pvaK
+	 RZX2znjko45SxPIZ9lGTG4v+DXBdne6J5DWcUpX/3H254Ur4VgR/UbBlo8nnzwPnl0
+	 Wmh2/efj9MGLgcFXE5euNPTX6V1vm8LLCaCO+xMIJxghSoX6v/6h57QTv/ffZNdzRH
+	 +DgjaGBeBMM9Q==
+Message-ID: <fec1931b-1173-4e14-b74a-7b3987a9b7bc@kernel.org>
+Date: Wed, 23 Sep 2026 12:31:26 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260923022511.24932-1-navonjohnlukose@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
+ pages
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
+References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
+ <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 23, 2026 at 07:55:11AM +0530, Navon John Lukose wrote:
-> pci_pm_suspend_noirq() saves config space unconditionally when the driver
-> of the device has no PM callbacks, which includes unbound devices.  If
-> such a device is runtime-suspended, the bridge above it may be in a
-> low-power state with the link down.  Depending on the platform, the
-> config reads then either hang the CPU or return all ones, which overwrite
-> the snapshot taken at runtime suspend and are written back to the device
-> on resume.
+On 9/17/26 08:07, Mike Rapoport (Microsoft) wrote:
+> The pages protected by KFENCE are removed from the direct map.
 > 
-> Skip the save if the device is runtime-suspended, as pci_pm_freeze()
-> does, since pci_pm_runtime_suspend() has already saved the config space.
-> Use pm_runtime_status_suspended(), because runtime PM is disabled by the
-> noirq phase and pm_runtime_suspended() would always be false.
+> safe_copy_page() temporarily maps and unmaps them using set_direct_map
+> APIs, or, when the stars align, even using debug_pagealloc_map_pages().
 > 
-> Fixes: 931ff68a5a53 ("PCI PM: Restore config spaces of all devices during early resume")
-> Cc: stable@vger.kernel.org # v6.19+
-> Signed-off-by: Navon John Lukose <navonjohnlukose@gmail.com>
+> Neither of these APIs cares whether it is a KFENCE page and both blindly
+> perform the update of the kernel page table for any non-present page.
+
+Agreed, we should route this through the actual mechanism that modified the
+directmap in the first place.
+
+> 
+> Ability to use debug_pagealloc_map_pages() to remap KFENCE pages when both
+> KFENCE and debug_pagealloc are enabled is an amusing coincidence.
+> 
+> But with increasing appetite for using set_direct_map for hardening
+> purposes, it becomes too big of a hammer to enable saving any non-present
+> page in the hibernation image.
+> 
+> Another gotcha is that loongarch that does not have a direct map at all
+> advertises ARCH_HAS_SET_DIRECT_MAP to allow coexistence of KFENCE and
+> hibernation.
+> 
+> Extend KFENCE with a bitmap that tracks which pages are protected and
+> provide kfence_force_mapping() and kfence_restore_mapping() APIs that allow
+> forced mapping and unmapping of KFENCE pages.
+> 
+> Use these APIs in hibernate_{map,unmap}_pages() for KFENCE pages.
+> 
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 > ---
-> Found on a Lenovo Yoga 83KF (Arrow Lake-H).  A driverless O2 Micro SD
-> reader at 57:00.0 with power/control=auto lets its root port 00:1c.0
-> runtime-suspend to D3hot.  The port then swallows the ECAM reads in
-> pci_save_state(), and the forward-progress watchdog raises a fatal machine
-> check at the ECAM load in pci_mmcfg_read().
+>  include/linux/kfence.h  | 29 +++++++++++++++++++++++++++
+>  kernel/power/snapshot.c |  7 +++++++
+>  mm/kfence/core.c        | 52 +++++++++++++++++++++++++++++++++++++++++++++++--
+>  3 files changed, 86 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/kfence.h b/include/linux/kfence.h
+> index e5822f6e7f279..33a126cb6d1b7 100644
+> --- a/include/linux/kfence.h
+> +++ b/include/linux/kfence.h
+> @@ -222,6 +222,32 @@ struct kmem_obj_info;
+>  bool __kfence_obj_info(struct kmem_obj_info *kpp, void *object, struct slab *slab);
+>  #endif
+>  
+> +/**
+> + * kfence_force_mapping() - make sure a KFENCE page is mapped
+> + * @page: page to map
+> + *
+> + * Check whether @page is protected and map it if needed.
+> + *
+> + * Requires: is_kfence_address(page_address(page))
+> + *
+> + * Return:
+> + * * false - failed to map @page
+> + * * true - @page is mapped
+> + */
+> +bool kfence_force_mapping(struct page *page);
+> +
+> +/**
+> + * kfence_restore_mapping() - restore mapping of a KFENCE page
 
-Hm, pci_pm_suspend_noirq() should bail out earlier because of the
-dev_pm_skip_suspend() check.  That check resolves to:
 
-  dev_pm_smart_suspend(dev) && pm_runtime_status_suspended(dev)
+The name is misleading. You are actually restoring that the page is
+unmapped/protected?
 
-The code comment in device_prepare_smart_suspend() explains that
-smart_suspend is true for devices without PM callbacks.  But only
-if the parent has smart suspend enabled as well.  I guess that's
-the sticking point?  That the port above the card reader doesn't
-have smart suspend enabled?
+	kfence_force_mapping vs. kfence_restore_mapping
 
-Thanks,
+is confusing.
 
-Lukas
+Can we find a better pair of function names that describe what is actually
+happening?
+
+Maybe something along the lines of
+
+	kfence_prepare_copy_page
+
+	kfence_finish_copy_page
+
+That rather expresses what the caller intends to do.
+
+-- 
+Cheers,
+
+David
