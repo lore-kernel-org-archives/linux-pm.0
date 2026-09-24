@@ -1,137 +1,141 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi2-f0.google.com (mail-oi2-f0.google.com [74.125.231.192])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88B0E414DDB;
-	Wed, 23 Sep 2026 22:53:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C0CE344D8C
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 03:15:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.192
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790204022; cv=none; b=LH+Y4xcmW+y2Yw0bpVln596s3+WuPJe20pvPjRRZ5aaf6NByRcMvsa+axMApsc1sahI/tCM5sm36p22dwCX5fItbAdK6N9/Tb1sCVbPQGmk+gj+yF2K2wnZ8vDrU/gTwHTsUZoTfLn6Si7lHmUecHYCP+peLKZpb9XoZ7m+Vbyo=
+	t=1790219740; cv=none; b=Yh9hWdZOTaLJZRtp8dFT983AS7gv242MrA0KddaWjrNnDFyWOH0kkAMfKxacvW66N5mcWt7rigA34W9YfKq3KE5RfLF281B7yffFAAiykAqz3oPMJd+U2DW4JkOG5eSSlfPTVkVg7xxoiVb5/qOWj8CpwTKPubUEsxENLUWihJ4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790204022; c=relaxed/simple;
-	bh=fwZSaqpmByB20i96UeW2mqdIG75USPYigGVMnEnWY2g=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=OzSZqg27PtUb7A3AptNI8YPe+kHIl+BjSCt3uN2/1v8nQivHoLCQXYpMxJf7JvSxm5y2BI/a2PMlELB7I6TeSwVQD+/5q8PLZ0DJrR1iWgXbNyXaHFuZeYNM0tXTWLqGUFoSMOwRw5ykBfGgHpjlDue3S+P9Ayv6TY8GCpwa/yU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=scGfOW6F; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790219740; c=relaxed/simple;
+	bh=SFCDsL+KLosjLiTfRG/h9sWFqTjT5EdHrRCiuR0pch8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=jAvxe7sh2bC2E3X2OUtig28XGu+VpEZoIAldaTd6RAgAaFDOYs39W954Wlf07klsWOSlgI45Oku6etzQXeQjA2rp7IQAyWVhPKDTIxH9iKZ2fg5120okxi0Xf3ks8S8ry8NgRy5v5GmLmAmFhnZzkpXiJePWBNicqqKtuLbJkV8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OUkoZbLz; arc=none smtp.client-ip=74.125.231.192
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="scGfOW6F"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03D461F000FF;
-	Wed, 23 Sep 2026 22:53:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OUkoZbLz"
+Received: by mail-oi2-f0.google.com with SMTP id 5614622812f47-4a49b13b745so656755b6e.0
+        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 20:15:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1790204021;
-	bh=ep7wns9wPyTqnmGHhjmbGEV+muuH/iLwEmgevdLFK+Y=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=scGfOW6FNrNiqxjD54xQajwaC+4WYqC6RG/88f1T+E4tqhorzFVBYXL1q9XvKZq/L
-	 EBTL5TAFO+L4muscbIneqi/sYK9xm73Aa56lde4wfrllpbydBzL/wWnM9xNyKrubd9
-	 sbmpz652ub/EEGRm8Lp6Vjcgd5QxMI1CtuS4ssq4=
-Date: Wed, 23 Sep 2026 15:53:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jim Cromie <jim.cromie@gmail.com>
-Cc: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, Maarten
- Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Arnd Bergmann
- <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu
- <petr.pavlu@suse.com>, Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen
- <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>, Jonathan
- Corbet <corbet@net.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel
- Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, Jonathan Corbet
- <corbet@lwn.net>, Petr Mladek <pmladek@suse.com>, Steven Rostedt
- <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>, Sergey
- Senozhatsky <senozhatsky@chromium.org>, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kbuild@vger.kernel.org,
- linux-pm@vger.kernel.org, Louis Chauvet <louis.chauvet@bootlin.com>,
- Philipp Hahn <phahn-oss@avm.de>, kernel test robot <lkp@intel.com>
-Subject: Re: [PATCH v11 00/38] dyndbg: Fix classmaps API for subsystems,
- query extensions, selftests
-Message-Id: <20260923155339.bdc677e8e688611bcf190ad9@linux-foundation.org>
-In-Reply-To: <20260923-dd-cmap-part2-clean-v11-0-9b6c217fdf2f@gmail.com>
-References: <20260923-dd-cmap-part2-clean-v11-0-9b6c217fdf2f@gmail.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        d=gmail.com; s=20251104; t=1790219738; x=1790824538; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=v6SgjFofGfUKX1jxaWBbw3Uq6YYLhDmkU5+NgvCiQuE=;
+        b=OUkoZbLzguI+ibZYbGRe+gQvQGRs6ace60kOaJ+bJXVsl4zhlOQ1SalqTRHGKd+r/W
+         wCvbjKgrtnogwY9JHrbhM1QBkaBmLa1z3ojHYuLfX/MyCLRZVZdtL3OQIrXnBqwq+vmO
+         zjsW/hhy8ZmSjbF8Jk240g1DOce7k/vRuTGFrziP6gEDBpccBFez9P7yth6+BWwiBgMb
+         HXWzMXUyEEKQ0dTGXM00VQQ8fS9hHO1X4NAKb88+vzpXAx1hDTiaUhtY7J4u5pcJtnKF
+         JstYNTM0mME9GNiXMspYEamae2UTVLpAmC+tDTOORCe009WRTNORm6I3babW1LqgBKyi
+         /MBQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790219738; x=1790824538;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=v6SgjFofGfUKX1jxaWBbw3Uq6YYLhDmkU5+NgvCiQuE=;
+        b=YTW4lOXZc3whladdrWq64p+QkzEDyp2Z99Psu1zWCLQ63YhmV2cI7Q2Wo5TkVeSz4N
+         0vP9MUpBCUgGn3yAmJIoq93O5c4l0uRfTqwqOEWwFjWbx4ejoRDC3/nytugUef0msBqr
+         9OGPYdszTf71zlPQXpcsjSNMwD9JVpPUHSdqimJeqRUDF0KDYSdckxRwOI0bqmciteCO
+         5H2oXhQU0xrJlN/YZMA6kXP/GofA4vJuv2ODPEkteAFKi6Bh8SwZ8UnIAIjMex/rigqO
+         qW9mF5R6yB+PaMR9hMkK+Kl7e5kbqbjD0P92YGC+LjXZWqpI8O/LCXh9KkkmIWw35dd9
+         X+uQ==
+X-Forwarded-Encrypted: i=1; AKwUvBw+9tAzGXOU3pTKSVRYR+lUClLdQOl1zc7eRIll70WF6TdwiXZy4GSlm/YlWYMhuvafOx2bLot7oQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++lOrOYW5450jf+Z4zAycOIHnOZLDQ9o4aozk58VZ2+HbppORs9s
+	hDItKySXgtQLbZINqElieB4ehms2H8pPvzxgxi16wE4SdELhrZFQXjia
+X-Gm-Gg: AYBFou2Yg3jEmpd/CaGKtMABnHR2HOOWkWheYix47iNR/8vKvaL+9h9131zejSUxa84
+	6j/hvQfCoXzAys1QyNF0RETSTNbTt0RTi773bedML1+L6CfOlTYFPfnPxo+8KslKg2WSnprcS7M
+	ydcrVhu3tW/vl+qEaM9CSIwtOP1VrWs9xoGtsgQZepycLoPOAcbOKur/1HZ8HeECfYDsBwKKmZT
+	FyXjIlT5cQ5pLDY9W8JfNLkAUFB1+CpDmsn9U7oh8aBh5ixO3+1EQc66ncmbT7+IikkmiuVz/hF
+	7Tk4r44sB5t1/9gQd8qhm4TQe+Kz9914NvN0auTtFoSf1JbmYCStYWNmtpCY7S4P+ZKTgDmvlNT
+	W/cwND+D0eIoj+77WoMYD47PR88a0eabUxuy5MRBV2ZzRFK7Ygss1fHBW6ErEmLEs4D/EVRkpUI
+	51XgLt57vv1LDoCYX/SS4rEOqKD1O2GVP6xXVg6n4Wy3TbzoaUHqFzppbSN1IvnhZGHw==
+X-Received: by 2002:a05:6808:4f60:b0:4d6:9222:9a1c with SMTP id 5614622812f47-4d730d691bdmr1241821b6e.55.1790219737822;
+        Wed, 23 Sep 2026 20:15:37 -0700 (PDT)
+Received: from [192.168.18.164] ([2600:8804:5716:d800::2620])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-4d5c1b305b8sm3946699b6e.1.2026.09.23.20.15.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 23 Sep 2026 20:15:36 -0700 (PDT)
+From: Ryan Brue <ryanbrue.dev@gmail.com>
+Date: Wed, 23 Sep 2026 22:15:35 -0500
+Subject: [PATCH v2] dt-bindings: power: supply: battery: allow 101
+ ocv-capacity points
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20260923-rbrue-suez-upstreaming-battery-ocv-table-128-v2-1-b827406d768d@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/5XNQQ6CMBCF4auYrh1DWyPUlfcwLFqYQhOgZFoak
+ XB3K4kHcPm/xfs2FpAcBnY/bYwwueD8lEOcT6zp9dQhuDY3E4W4FYqXQIYWhLDgG5Y5REI9uqk
+ Do2NEWsE3CaI2AwIXFSijK2mV5NIYli9nQuteB/esc/cuRE/roSf+XX9Q9R+UOHCw17JEKxXao
+ n10o3bDpfEjq/d9/wCjfcFK6AAAAA==
+X-Change-ID: 20260917-rbrue-suez-upstreaming-battery-ocv-table-128-9ba83f9313bb
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: Henrik Grimler <henrik.grimler@axis.com>, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Ryan Brue <ryanbrue.dev@gmail.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790219736; l=2094;
+ i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
+ bh=SFCDsL+KLosjLiTfRG/h9sWFqTjT5EdHrRCiuR0pch8=;
+ b=qyZ09NfBzrkLduWXKawj7lI0MD0dd8kSQgR5MeZrQxDQrJIqkbmKcf/HJ6ymP/WdEtA9hQeTF
+ eR30FVrIn2QDPzZNIt17mC+HJeNZPp0j2CnchW+loJkUh92R1xFpTLv
+X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
+ pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
 
-On Wed, 23 Sep 2026 16:34:24 -0600 Jim Cromie <jim.cromie@gmail.com> wrote:
+ocv-capacity-table-N is capped at 100 points, while the capacity percent
+in each point may be anything from 0 to 100. A table with a point for
+every percent, both ends included, needs 101 and does not fit. Raise the
+cap to 101.
 
-> The drm subsystem has *lots* of debug statements, in 11 categories:
-> 
->  $> git grep '\w*_dbg' drivers/gpu/drm/ | wc
->    5663   30159  542864
+power_supply_get_battery_info() sizes each table from the property, so
+no kernel change is needed.
 
-Methinks this regexp was overly promiscuous, but point taken.
+Assisted-by: LLM
+Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+---
+As discussed with Henrik on v1: rather than a larger cap for one vendor's
+tables, which fit in 100 points once resampled, allow the one extra point
+that a table at every percent from 0 to 100 needs, and say so in the
+binding.
+---
+Changes in v2:
+- Raise the cap to 101 instead of 128, with a comment saying why (Henrik)
+- Drop the justification from the vendor's tables; the figures in v1
+  were for a different cell, and resampled tables fit in 100 points
+- Rebase on v7.3-rc4
+- Link to v1: https://patch.msgid.link/20260918-rbrue-suez-upstreaming-battery-ocv-table-128-v1-1-f477ef39ef0d@gmail.com
+---
+ Documentation/devicetree/bindings/power/supply/battery.yaml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
->  $> git grep 'DRM_DEBUG\w*' drivers/gpu/drm/ | wc
->    2206   12834  202332
-> 
-> All of these are bit-tests on __drm_debug, exposed to users as
-> /sys/module/drm/parameters/debug. Many of these are done often;
-> vblank is done ~100/sec for some displays. Over the uptime of many
-> boxes, this is a lot of cpu cycles on bits that are almost always off.
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.yaml b/Documentation/devicetree/bindings/power/supply/battery.yaml
+index 8ebf05d9497c..9575ee1491bb 100644
+--- a/Documentation/devicetree/bindings/power/supply/battery.yaml
++++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
+@@ -154,7 +154,8 @@ patternProperties:
+       of the battery and corresponding battery capacity percent, which is used
+       to look up battery capacity according to current OCV value. And the open
+       circuit voltage unit is microvolt.
+-    maxItems: 100
++    # One point for each capacity percent from 0 to 100
++    maxItems: 101
+     items:
+       items:
+         - description: open circuit voltage (OCV) in microvolts
 
-A __test_bit (or |) every 10ms sounds quite negligible?
+---
+base-commit: 93f51579e7df248780214094418f205253383cc5
+change-id: 20260917-rbrue-suez-upstreaming-battery-ocv-table-128-9ba83f9313bb
 
-Especially if __drm_debug is __read_mostly.  Which it isn't, afaict. 
-Um, low-hanging fruit?
+Best regards,
+--  
+Ryan Brue <ryanbrue.dev@gmail.com>
 
-> Dynamic-debug excels at replacing such tests with NOOPs (via static
-> keys). Classmaps was devised to bring that 0-off-cost to drm's
-> categories.
-> 
-> Classmaps-v1 went into the kernel in Sept 2022, in 2 chunks:
->   b7b4eebdba7b..6ea3bf466ac6    # core dyndbg changes
->   0406faf25fb1..ee7d633f2dfb    # drm adoption
-> 
-> Sadly DRM-CI found a regression during init with drm.debug=<initval>;
-> the static-keys underneath the drm-dbgs in drm.ko got enabled, but
-> those in drivers & helpers did not.
-> 
-> So in Feb 2023, it got pulled:
-> commit bb2ff6c27bc9 ("drm: Disable dynamic debug as broken")
-> 
-> Root Problem:
-> 
-> DECLARE_DYNDBG_CLASSMAP defined the classmap, but its repeated use in
-> both core and drivers violated a K&R rule "define once, refer
-> afterwards". This flaw resulted in a regression; with drm.debug=0xFF
-> boot arg, drm-core got enabled, but drivers/helpers did not.
-> 
-> This patchset replaces DECLARE_DYNDBG_CLASSMAP with:
-> - DYNAMIC_DEBUG_CLASSMAP_DEFINE (invoked once in the exporting module)
-> - DYNAMIC_DEBUG_CLASSMAP_USE (invoked repeatedly in drivers & helpers)
-> 
-> _DEFINE exports the classmap it creates (in drm.ko), and other modules
-> _USE the classmap. The _USE adds a record referencing the _DEFINEd (&
-> exported) classmap in a 2nd __dyndbg_class_users section.
-> 
-> At modprobe, dyndbg scans the new section after __dyndbg_class_maps,
-> follows the linkage to the _DEFINEr module, finds the (optional)
-> kernel-param controlling the classmap, examines its drm.debug=<initval>,
-> and applies it to the module being initialized.
-> 
-> To recapitulate the multi-module problem wo DRM involvement, we add:
-> 
-> - tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh:
->   Alters pr_debugs in builtins and test modules,
->   checks results against checksums of expected results
-> 
-> - lib/test_dynamic_debug.c & test_dynamic_debug_submod.c:
->   Builds parent & _submod modules with _DEFINE and _USE inside #if/#else
->   blocks, reproducing the 2-module scenario under selftests.
-
-So what I'm understanding is that this series presently has no effect
-upon DRM?
-
-What subsystems *does* it affect?
-
-Sashiko had quite a bit to say.  It hasn't quite completed at present.
-	https://sashiko.dev/#/patchset/20260923-dd-cmap-part2-clean-v11-0-9b6c217fdf2f@gmail.com
