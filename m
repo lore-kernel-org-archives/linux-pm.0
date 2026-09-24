@@ -1,213 +1,143 @@
-Received: from mail-pz2-f12.google.com (mail-pz2-f12.google.com [74.125.228.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 462E44BA1D7
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 18:51:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAA644B1CF4;
+	Thu, 24 Sep 2026 18:51:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790275876; cv=none; b=BGkHpmJaENpt8Q7rk4kNtX7YcjaCDZxjgvIVxBdKuWGnh7SY8CECbcNR2g8nt6BVwRDwZ43ePLze3OJf6yZuyUttjpoVYnimMGJUi+nP1NchyDQKhIBbOXlC3VWwM60vZFnZlJTUeXLg/fSNY7+DDmNfE9BPi6NWJXmyqt4ngfc=
+	t=1790275899; cv=none; b=Vzve02k8sZr9NIqn1jN6BiWBvYr595Y5QNrpPAoWsScPZy/Yh35M4Nl0LJThBvw1IHGl/ftx2Pmi2WcoVFvSRsNLOtpWbH1RUiXs2yxNSkv3X+AHhcwDZJoAdF5jddPVfCl3Ztt1fQXl72KnixDQU/ZpB9sJfD64GHChT8Lsqi4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790275876; c=relaxed/simple;
-	bh=xIBkTD5g8oWaR6/5h59ukLX3DRjDG/lsJCYvT3JpSYw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=nnbXLHiG+K/rvXCfbmTgmBQf4VvWh+El0BZHz+BLVf/wh0vbGqaRB4pXzArQmECWk/LN30fPAwraI3zSH0LnfECi1olNbk+zfEcggqwf14tuOkpvLGagbPkFWtPvSuRgmykD98VUo5B+1MOSs9gtqWkrJXOxJEkpcykc0rrf7wk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=Be1tQSh2; arc=none smtp.client-ip=74.125.228.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1790275899; c=relaxed/simple;
+	bh=bobb1yGPI9T6ulgAD2sFP7Wn3VWWoj/3bquKkPJqRf0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bX5VHCRZqjRWTfqQyD6G4FBfLSgoBIoD0lxMoJt2COmD5ypW/y2cGelNRXx0vRS5oDhlB4aRlXCUS6NuYiwdcb/kOnehYxB24WdApQI0LX2c7wo+En5Ni2wtq9xRHzwvcJqBxHssta/18/P06vYVKefuIrlSxw3wrf1235NwO1k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B9TaPuWg; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="Be1tQSh2"
-Received: by mail-pz2-f12.google.com with SMTP id d2e1a72fcca58-8674704dab1so223128b3a.2
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 11:51:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1790275867; x=1790880667; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :references:in-reply-to:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=O+9gOXv28s7LpFRTXptC9SC7mTsay3dhZbC8CfxfBQo=;
-        b=Be1tQSh26TB15AP4mKPTatXPXxuBHovlUdvsijd5gB9F5Dky//diIO3y8hiem0wMSQ
-         trv6290UseaYFcrrS86aMHOmGwLfYhpd1x4IGHgKDtxgLGjshQmZRI1G7aaMmxNuMZBO
-         eQFT7yXi+B4w/CJqGWDRaljlxMcH3cGwf0m0Y52K9nJJr2p0lIp2ycOflSIwIuB/Rq6z
-         E9KeGrz7NUF+CpYqOqTmuZyQgFfLss8tR4+gtGDQegRQdcACa5hewlkVGI6uAy8fFQOi
-         Cc4jxsyMW7IJPkgvFE6gBHpPDJZ1aZLU0jdyBnTRdRhpM86NpZYpVgM9tiy3QOQ8WoUN
-         lH4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790275867; x=1790880667;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :references:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=O+9gOXv28s7LpFRTXptC9SC7mTsay3dhZbC8CfxfBQo=;
-        b=Quv2hXijKALmFPCJzIg4ARhmTd3yi8mUjgJwMF8vlFdbAbZhkJubSdK3odf+8ZiyrP
-         J2x4jx94fXkfyRP83MmXO+lh0gfvseriFwNIP9OX+vxquGklJlfIzOZnyK2RV/3Bl8ph
-         GhGzoDojxDUpg8FaD3n9vW114HHgrZvGI+ULvuLEYeeY9zvyr2KaknqMs6yE+Qhct2uP
-         YvSoS8FwdLdlfEQ8/Prr/txvd7PIkMEwBiLvcojLTs+Z5EssFpo97bl1eBncpbmdEZhb
-         UfoOibp8vAbct69AZBVexjPWnRAl5t4hfiat6bux1MgtjtPqQQUErtCyCtIwPvo4/y3J
-         R5+Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzcu9mI0zeQGiissAmVjwepE1Dq2clUeHZyM+HP6xkhtjqx7tpZRoYejnErhLlqRmLsJSNKny3ZJA==@vger.kernel.org
-X-Gm-Message-State: AFuF++k4tbcXY2TpLw6SJGlxP8OeW2BdTubufq3W6Mtd63s1pYbvm0mE
-	Mvpd5c3iS8wZ7uZA80sWT3anmTY9NeGgxZKIE7jM7zlD/fwFguqNQ0PHHaDaTRG6svg=
-X-Gm-Gg: AYBFou2icbeWVneQn+WUsb+6+ZSLXkYDlbtDiM7KkawTc/o7zRUGWxWtBexoUxYrPpl
-	tqKPXoLnIJuUaS9jQiadgKsCDK9WrF4c+qywqJwjpWFBZ739Cj1vabOSITzBUaZIYSCkDw1owam
-	9jwO7pR9Vprh1lbxJprPnHK8NHB3+KtqSgA/JO2P89jDrntielC7Df8v1/l03hqY0DvIprbhfE4
-	YOJkwh/aO6T9t/S3ek95N4hAUOLeHMzRPBsXLDemukTG6/ggeG3On2ag9XLcxK5PGl4SDrogtPq
-	fX2jwJQi/91KG5h2XiEpJaUd73JwrpPWeTKdDo1SsbbpsunH0+ai1p/sDGWU0mDpy6cxoks+XsD
-	r9gzdXCrjWq9nGtciHlpvnojS7m/Kxud8uVctY4Ejpc1FEulNa4B2SOb53k7dR/LOAIkHZdLwx7
-	fRehto6PDZIXhe7IqruCucFJHcBOCkxkOlPdzcAUgWy4TJnrfROZtIItgAQJVPEJ87s8g=
-X-Received: by 2002:a05:6a00:300d:b0:82f:50cd:e586 with SMTP id d2e1a72fcca58-87e9cb2196cmr2826556b3a.13.1790275866641;
-        Thu, 24 Sep 2026 11:51:06 -0700 (PDT)
-Received: from localhost ([71.212.197.238])
-        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-87feb980a0dsm86615b3a.55.2026.09.24.11.51.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 11:51:06 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Ulf
- Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org, Abel Vesa
- <abel.vesa@oss.qualcomm.com>
-Subject: Re: [PATCH v5 3/4] pmdomain: core: add genpd_for_each_child() helper
-In-Reply-To: <CAPx+jO98X6dr20r3o7iHUq7zrjsDy+6YDM=FiO6MOkpCJFfhEA@mail.gmail.com>
-References: <20260826-topic-lpm-pmdomain-device-constraints-v5-0-28cbf43f7e38@baylibre.com>
- <20260826-topic-lpm-pmdomain-device-constraints-v5-3-28cbf43f7e38@baylibre.com>
- <CAPx+jO98X6dr20r3o7iHUq7zrjsDy+6YDM=FiO6MOkpCJFfhEA@mail.gmail.com>
-Date: Thu, 24 Sep 2026 11:51:05 -0700
-Message-ID: <7hwlsabi06.fsf@baylibre.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B9TaPuWg"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA4B71F000FF;
+	Thu, 24 Sep 2026 18:51:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790275888;
+	bh=19lgN71Gpsx5vFX/9xhZyr5Tn9Zwnud+YgNQwdRHAz0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=B9TaPuWgeX2V6EXNOynhKmYXxpgBuhF0GO9GvEleV73ppMJ+4jg0gfKTK508nINu0
+	 y5E68P/eS0N1Nf2rY9y/C35ESNH3DuJHHqCrktyZKsEz142m40zL+RvZubdy2Bbj6N
+	 B0gGhz7zq8YO1mV19YDxCBqcO/vi5mSTd8odzb0MeZcOcB11UVJJtzGXMG2x4uJaSx
+	 J6Es0Ej/BiLSmH0sepF5PDeoQzTg3lpupc7vbO24JxIqjpYE92LknGL0hQWuXIc+2N
+	 lQWjUiD9QO4+Z4unk5ZVWj6SNX/rkJMzJgTrpEerfy+R/pvx/8bE5MjCg6M/22H1aH
+	 pbA958pAZJ98w==
+Message-ID: <c01aa1e3-f2cd-4b28-8e6a-8e8a1c36c641@kernel.org>
+Date: Thu, 24 Sep 2026 20:49:13 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
+ pages
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Dmitry Vyukov <dvyukov@google.com>,
+ Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ kasan-dev@googlegroups.com, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-pm@vger.kernel.org
+References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
+ <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
+ <fec1931b-1173-4e14-b74a-7b3987a9b7bc@kernel.org>
+ <arP0-maAEi5yeNnl@kernel.org>
+ <d568a29b-5745-4214-96d3-1b635cd46c15@kernel.org>
+ <arVJm8CiLG6vpy9-@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <arVJm8CiLG6vpy9-@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Ulf Hansson <ulf.hansson@oss.qualcomm.com> writes:
+On 9/24/26 18:02, Mike Rapoport wrote:
+> On Thu, Sep 24, 2026 at 10:19:33AM +0200, David Hildenbrand (Arm) wrote:
+>> On 9/23/26 17:49, Mike Rapoport wrote:
+>>>
+>>> Naming is hard :-D
+>>>
+>>> I feel that _copy_page() is to vague and adding hibernation there is to
+>>> mouthful :(
+>>
+>> Yeah, I wouldn't mention hibernation.
+>>
+>>
+>>
+>>>
+>>> And these could be used outside of safe_copy_page() someday.
+>>>
+>>> How about 
+>>>
+>>> kfence_set_page_present()
+>>> kfence_set_page_default()
+>>
+>>
+>> Maybe spell out "direct_map" ?
+>>
+>> kfence_set_direct_map_present()
+>>
+>> kfence_set_direct_map_default()
+> 
+> They are not necessarily in direct map :)
+> loongarch does not have direct map, but still supports kfence
 
-> On Thu, Aug 27, 2026 at 12:23=E2=80=AFAM Kevin Hilman (TI) <khilman@bayli=
-bre.com> wrote:
->>
->> Add a new internal helper function genpd_for_each_child() that recursive=
-ly
->> iterates over all devices in a PM domain and its child domains (subdomai=
-ns).
->> This helper is useful for governors and other core PM domain code that n=
-eeds
->> to examine or apply operations to all devices within a domain hierarchy.
->>
->> The function takes a callback that is invoked for each device, and suppo=
-rts
->> early termination if the callback returns a non-zero value.
->>
->> The helper is defined in a new internal header drivers/pmdomain/core.h a=
-nd
->> implemented in drivers/pmdomain/core.c, making it available to other PM
->> domain subsystem components.
->>
->> The first user of this helper is the cpu_system_power_down_ok() governor
->> function, which uses it to check device QoS latency constraints across t=
-he
->> entire domain hierarchy.
->>
->> Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
->> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
->> ---
->>  drivers/pmdomain/core.c | 45 ++++++++++++++++++++++++++++++++++++++++++=
-+++
->>  drivers/pmdomain/core.h | 17 +++++++++++++++++
->>  2 files changed, 62 insertions(+)
->>
->> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
->> index 842c4169e290..ff27369d9a97 100644
->> --- a/drivers/pmdomain/core.c
->> +++ b/drivers/pmdomain/core.c
->> @@ -24,6 +24,8 @@
->>  #include <linux/cpu.h>
->>  #include <linux/debugfs.h>
->>
->> +#include "core.h"
->> +
->>  /* Provides a unique ID for each genpd device */
->>  static DEFINE_IDA(genpd_ida);
->>
->> @@ -276,6 +278,49 @@ static void genpd_sd_counter_inc(struct generic_pm_=
-domain *genpd)
->>         smp_mb__after_atomic();
->>  }
->>
->> +/**
->> + * genpd_for_each_child - Recursively iterate over all devices
->> + *                        in a PM domain and its subdomains.
->> + * @genpd: PM domain to iterate over.
->> + * @fn: Callback function to invoke for each device.
->> + * @data: Data to pass to the callback function.
->> + *
->> + * This function recursively walks through all devices in the given PM =
-domain
->> + * and all devices in its child PM domains (subdomains). For each devic=
-e found,
->> + * the callback function @fn is invoked with the device and @data as ar=
-guments.
->> + *
->> + * Note: this function is inteded for use by the core and governors,
->> + * not for pmdomain providers.
->> + *
->> + * Returns: 0 on success, or the first non-zero value returned by @fn.
->> + */
->> +int genpd_for_each_child(struct generic_pm_domain *genpd,
->> +                        int (*fn)(struct device *dev, void *data),
->> +                        void *data)
->> +{
->> +       struct pm_domain_data *pdd;
->> +       struct gpd_link *link;
->> +       int ret;
->> +
->> +       /* First, iterate over all devices in this domain */
->> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
->> +               ret =3D fn(pdd->dev, data);
->> +               if (ret)
->> +                       return ret;
->> +       }
->> +
->> +       /* Then, recursively iterate over all child domains (subdomains)=
- */
->> +       list_for_each_entry(link, &genpd->parent_links, parent_node) {
->> +               struct generic_pm_domain *child_pd =3D link->child;
->> +
->> +               ret =3D genpd_for_each_child(child_pd, fn, data);
->> +               if (ret)
->> +                       return ret;
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->>  #ifdef CONFIG_DEBUG_FS
->>  static struct dentry *genpd_debugfs_dir;
->>
->> diff --git a/drivers/pmdomain/core.h b/drivers/pmdomain/core.h
->> new file mode 100644
->> index 000000000000..a296134d4005
->> --- /dev/null
->> +++ b/drivers/pmdomain/core.h
->> @@ -0,0 +1,17 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/*
->> + * Internal header for PM domain core
->> + *
->> + * Copyright (C) 2026 Kevin Hilman <khilman@baylibre.com>, Texas Instru=
-ments
->> + */
->> +
->> +#ifndef __PM_DOMAIN_CORE_H__
->> +#define __PM_DOMAIN_CORE_H__
->> +
->> +#include <linux/pm_domain.h>
->
-> I don't think this is needed. Instead please make forward declaration
-> of the structs we need. Like:
->
-> struct device;
-> struct generic_pm_domain;
+Ugh :D
 
-OK.
+But where are the pages mapped/unmapped then?
 
-Kevin
+(I know, I should read your doc patch)
+
+-- 
+Cheers,
+
+David
