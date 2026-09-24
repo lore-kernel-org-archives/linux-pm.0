@@ -1,187 +1,195 @@
-Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AC53475335
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:21:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.179
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790252474; cv=pass; b=nwL+BIz66uUMHtKW5LxVYdDNrZjIzLtq8qY+xISYPUKncfyc+vVz4Fc/dqib5SimdhyfmaubhKiFHNKyJdjME0O8oSSAwT5CkHFBg8satxaPW38yHw1HzVsQLDjhK9l8Kqq//FZDdZCC4wm/M+IBkYbOSLrdm+h4Mf514R13vGY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790252474; c=relaxed/simple;
-	bh=K9ufhPEWTbcGbUWPnsFi5tG5G32ivdBgHbHB+/9JtVw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UeLlsUZR4DxG7m7IFT4OY7iQYupt2y1OdXI4bOr5W7mpbYA6V6BOxQwmPNYFoVbV2KJW2DWnDp1Q6usFCh4a8sxwJ8pJyMG0x+nO4UW4zcYz2y+6bLWTp7dR6TU94/fL/4zePcjgeOvJgzr7+T9/yc2IrI+w8ZKC+g5tuEf3g+M=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=RxOLFp8z; arc=pass smtp.client-ip=209.85.160.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 189A73382FC
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:32:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790253167; cv=none; b=bmz2NDnnAEVk7LtEw+loclCWtRnB5A5giPmzllWJ36vwhUPi5V4tru08dG3AUuZjIgSUDVcQSEQGdxglTKY/vCchGqnPGvGW1GI8dpY3ibvs1q6IKMdrncEnpINOlEa8re8sJlp4KqesyLxUhqUVaF9DGtw/455zI9Ks8fM+Vr0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790253167; c=relaxed/simple;
+	bh=I+J3lijk9qNAEc8We+uj5POGMAxHJEguo+5161ZH51A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VJOGvsb8A0MkEXk5/NyCYYF40v1Ryt/xdnSpb/y0W6vqj5UwQ5SEUgtgwYPR3P0lNN96jgaZVo/E6sJxymeoV+Mh9myly76eu8pEybIqtzCamoN82kIGv1KNYPqBmp3x/HZShURWS045qAQwr7/Q/LFmbvVy72Zlk0k4IBnE0yM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=PsSn/PK4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=TmwxhUL1; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="RxOLFp8z"
-Received: by mail-qt1-f179.google.com with SMTP id d75a77b69052e-530e8c6fb80so215891cf.1
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 05:21:12 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790252472; cv=none;
-        d=google.com; s=arc-20260327;
-        b=rUBFiymTuJJWwlzU7otDOVVdM5//T+OPsYXWkBynjwGUjsUuPAZtnyfX+CLhdhbz+F
-         RvwmQXBdfaUf0Ksz1LM6zBP+QGj/ZX0SA/4tNycZcqtw5o0/smwb8I0z8see35ULp2YH
-         yKOOAokJydWerhbSrtwXaR9MF6Un4iZScCVJP8VHpuNRHvcGsr3ZmsBwV+rtE33wvpBF
-         f/7CcC2Qcan6+kGGatU44WMYULrSdhzWCx9IsVg9woGY41fCm46Ot1UG30Gs7Khz3tPC
-         K9KriV3dzHEkEu/2uP8u7/ceK5Kcs2Td3bEbTje04Rw6arXJMuQZ+iQe3EW0le8i8e6e
-         lAyw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=NkGH7LeMJDJfHMf9D0brPKFR1SEB0UnnB2ab6h95oe4=;
-        fh=Lq6m5xb6el+CkY363euxH82ELd5hC3NoSSt7V8soLlo=;
-        b=pLHlA0PVfX3w4GxAZBZBliHH0aMNKQwugmBITtQkD/uY8BgjaqPTCpj/78kwvXPNoP
-         rZwwK9jTGUKllUbwbd6ERiIb3Bl7val27gMY08ROuPhrZW9CYNBL3mR/L8r9XKEnXe8S
-         zbF3YLiSlSldLJqOBxXFGCoSaYeXZdp4mTJ/EBzQK28F4cEKcm4ES0KafrqKK61Zdsoj
-         5a/tUbxulbM9yo0ErQxTizKU0jg+ap1cSqSLQ2/IrMs8EtzcYGL+bk5PWtzYTZk+Wm8x
-         F3uyr+PGBxEMAEhM2sP+pq5ctdM3mSs5IzCcIgMIlSWCerWJGEFNK/BWgBXEwpQEyYq1
-         vRQQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="PsSn/PK4";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="TmwxhUL1"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68OC4kIG1429858
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:32:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	A0DzMsof/BPeClgNGuLflawDdZB+Su4EkTYJSKZSgpk=; b=PsSn/PK4jle23gbd
+	MNEt0oNAfO8sIJY3D/Am/tdXEQazyDYk1SG2Np7kO3KqBXVvdZI0Y8TJCwbj7Cnt
+	jBJ87XwM7+yTUsxu+0rMfD7Uz2VYaVYIHuAlImjb9v5BFH5xivKsk/vfhYjmAfIq
+	y5sNexITJMd6QCTG49+uZH+fMXcWPEyOknvI6rF9XH3Tk3cZCDHvCOKi0jRyR5TU
+	VaF0XpYj8FzMvbPONhPYwfc2rp8gotzGr4wVK6vMyB4hrZFzAF5k+BnGtu17kB5n
+	Qb5sBIogxoBqD20Ez44D15qaWkG+0+nd3FJ+gEbD8worjdTYGelVmDwP6ULqKEfN
+	J4fmSg==
+Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gvvgha0c7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:32:42 +0000 (GMT)
+Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-30c0d568830so3715004eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 05:32:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790252472; x=1790857272; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=NkGH7LeMJDJfHMf9D0brPKFR1SEB0UnnB2ab6h95oe4=;
-        b=RxOLFp8zns9PebEfZOT5KCV4HOlHPO51bVjqJXi77VlNxbLzELm0H3mDLQ0YG5FSbP
-         iHnwm+NSqxJ6fMldJbBXqaoBzY68es+RwxdL1ReKIX/wWGPpQsaLPH71d6bmCOiCn6l9
-         UrbDCzYsyF0jPJE0prMOVEUbVQqjAy2TKax/yaCQVXqQra4x38ey9+i3CTpaD+pOizwV
-         CDMvzkDNQBIB2RnIZvX663wd8SAJ5W0bgdUnvLnzjPllJ3qiTF1IcO/N9B8KhX6PUMaU
-         lE8o10voXt4eKcpDKrx6JTPn2hnLMemEJ/Lya/Ay6apKDtceIncTxBlInsqPK9sf72dq
-         setg==
+        d=oss.qualcomm.com; s=google; t=1790253162; x=1790857962; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=A0DzMsof/BPeClgNGuLflawDdZB+Su4EkTYJSKZSgpk=;
+        b=TmwxhUL1J/orAeuhjL5PWO/aOIeEP0TNX8q9QXleZVu6GB+FTeZKjbMjUtkEt8F1Kn
+         WJQSKhwAr+Bnin1nsletVJ1l3HRSwIk3hlbpHRE3715w2P3aSge1HgbWDflltfM9ArFv
+         HzMQPU9iy8zUh/pqWRk572C1Eqh8ryRiuJToUL8cbWaEszQvUh6xoLT6b5plUeI6Th+Z
+         CJHWMWz+HPvNqLJElwfAc72r29IKit5tQ1I+3/yZ8PJiA/kepPwhfjh9THkKFoD99gt7
+         /WF4bVqMmTVy5UxlNIHcE30eg6opb/if1FrtbBhTGQXiGNJK70Sr25SZ2xdRexBvUI85
+         f7Kg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790252472; x=1790857272;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=NkGH7LeMJDJfHMf9D0brPKFR1SEB0UnnB2ab6h95oe4=;
-        b=FJbQLnHsrWD23pHdYBRIjkAulM/wIgllj1mZ+IuFcqnkaJR6OBsx230zm39r3FEI2s
-         SCJTPk+93WTZZd4BIt0RF6e+Z0ahH6OSu/9NomDCXOSMJj4aM1VGh6M3DJbclvnJurl8
-         fN3H+qzAbIZVlwuWStc9Qe8L3u5nIisz8lJU52aKkMFZPT8kh7gRmWv89k2fB8/NAKFO
-         KI0bRRUo7dsRh5vZhtI3hTlsDYjF4N24gGSQqj4DdAzWy9nDy7MDUhfZE2FbSU7O/2OB
-         ADNVIa9axB/ylyvAgqioOVnlEIh1w/SSDcuoBAesQeQMNLlktm/kftjBpBoe4XdNSETv
-         IIWA==
-X-Forwarded-Encrypted: i=1; AKwUvBxf4/cgdsu4Ha/JirYN2uoveyXAlYAfYAUoSTnOXkmLMV1n0Et0BoRzw7y+xa09PF/VgmzzIzj3Lg==@vger.kernel.org
-X-Gm-Message-State: AFuF++kwcVb22Ab40pZX6bUAJRPl7v/8VG3TO5Ds1HvIgp1DusqSOMKb
-	Hj4QKxf0A7VsoRlAIVvi2Pgk+pZgsWwp2eOEdGKvOYjBE28/W6zzVXIEdNdT/kqKzGQrBuJkJPz
-	3m+sYD6hvHeTYXpAQ1IT70eRdUKC2BKHdn7evjet8
-X-Gm-Gg: AYBFou3TotNjDVpTNBNy7KMMiK+pDQHlPzkmFtm5UHnFGoejUhPtjXaSQHN/2zb4skX
-	4+SUsq6u+lcQK54IOCjh7hiqTnBML3RhuWeiHTATNLQtyhq1IJrEQhdHgAC+dQnexPz4jjHpVs5
-	PxUQvkUCaQqpOTweugeFxrWmwomec+XKHht/HmmdmrZYJM70zULV7/8GjvSDGK3WKKYnd/1kx9t
-	P/3JQVkXtiYhNRnHmzCN4Ul/pBR4kCSrPPghBguCSBS7KhVOWKdG7cYX6VmeG6FIC8BDZhfl/hR
-	ZpOB+/aTa7c5WQYRbKgrH3hKQ3pFWjCeE8zFocs6YBb01LRZuB4C5tIaXTZ4LUH4otZgeY7NL++
-	ZIUx5cwG3
-X-Received: by 2002:a05:622a:5507:b0:50f:af60:3496 with SMTP id
- d75a77b69052e-532fe9f468dmr9310531cf.1.1790252471121; Thu, 24 Sep 2026
- 05:21:11 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790253162; x=1790857962;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=A0DzMsof/BPeClgNGuLflawDdZB+Su4EkTYJSKZSgpk=;
+        b=gu/JEu8JUSZ6a3JwX8TW6fjY5ltXzU5hyOxAkIRT9lQBAzbxSTMJfun6ts+QgH+BeW
+         ut2qvOZhznx9wuOtHhJZuwNO/hu2G96iBxn256mkuJ/JgOOjJoHw4OQ/eu6h1q7QZI2Q
+         teiuDcwQiWDWnzQgmpOmpbq70igHi09GGGjzN5ZRYtKwyCt/6zNM4BdIZFkc/VdhsdZX
+         058qs50tWbyIc6RHx8GxUFn7EXCybTsceuB/woLJEqHWXiFhfyaLVhafSomcZRJlsrBB
+         CItIUKFb1Mirob8eMM5wXRMHcXe4v+qhcXxYI6obvMHwSkFwrJkIvsPe3g0zDtReqmwy
+         57iA==
+X-Gm-Message-State: AFuF++kVB3EicaUdBGJaT0sHGZP5j3EKgALw4EwI1h5fV0q5riQBOLdj
+	RqRSnxnRpyrAn0neyPYGoHHDN1ZlmgbH2wWkesmnRT6TtLFbhgJhOAGzELwo82lNmJlqVF71i7R
+	v5Nf+NmGnhEue2a2PBPgaabzDz3c62DxfRO/0YCgP1RG5ByJFKBudCTliaof+ow==
+X-Gm-Gg: AYBFou2gv97gEfvWlNSpMEsPy6WhYX0xeRionF0vJZrKPROCE2MuGCCL3p89rHrLBM/
+	PVJNy/c8obQ70UE7ej0RW1qaPe1BpzFEwLNvnPecYC11lUhwjJAWTuA56smaOXe6DCAf5y9gSt2
+	x/A8U1pw/KEuTN6yMpqRscN0WcPna85SrpwQXb94zh7J1EGCcsTTG8L/4dStbCt9ih9kiGe9xvL
+	hbSXxyZLTmYv+LCbU1yyD34DfnDyVNAWll1ihdKqfXzUPkzezJ60Gl79OFliQYyVuCcjiqdq9kx
+	J24aLiBdBDiwa1+OTZO/khanJeMb4iCXepB680nJhc2Uix4v1qjGe/uUuwVsqrC296ei8mOfoLz
+	FTlVRmAMZ60nvaaAqo75Qyplpcw==
+X-Received: by 2002:a05:7301:da87:b0:339:d06e:64ea with SMTP id 5a478bee46e88-33ffe343a49mr1710413eec.4.1790253157157;
+        Thu, 24 Sep 2026 05:32:37 -0700 (PDT)
+X-Received: by 2002:a05:7301:da87:b0:339:d06e:64ea with SMTP id 5a478bee46e88-33ffe343a49mr1710371eec.4.1790253156373;
+        Thu, 24 Sep 2026 05:32:36 -0700 (PDT)
+Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e95c7c63bsm13461908eec.10.2026.09.24.05.32.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 05:32:35 -0700 (PDT)
+Date: Thu, 24 Sep 2026 18:02:29 +0530
+From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        stable@vger.kernel.org
+Subject: Re: [PATCH] devfreq: stop monitor before calling governor GOV_STOP
+Message-ID: <20260924123229.qkiyz5zo2owh5xtv@hu-mojha-hyd.qualcomm.com>
+References: <20260721171141.1281754-1-mukesh.ojha@oss.qualcomm.com>
+ <20260803181614.wk62kshvmbx6rpab@hu-mojha-hyd.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260922211559.3633398-1-sadrul@google.com> <sqmmgjre63ltp2m6y5ui35hijnnwfljnzjscceunvzmzd5rh6i@us2amzhvtkw7>
-In-Reply-To: <sqmmgjre63ltp2m6y5ui35hijnnwfljnzjscceunvzmzd5rh6i@us2amzhvtkw7>
-From: Sadrul Chowdhury <sadrul@google.com>
-Date: Thu, 24 Sep 2026 08:21:00 -0400
-X-Gm-Features: AclHuK89lBo3kLTsEvW7wqXIE_9vbscPCVVxotToLaOHDgnCk-gw32aXdN6iQ4M
-Message-ID: <CAKgcGXgfr-hbBj+tc--uD5t3J6Q7zhnSsm17JwU0ZdVhb1ai+Q@mail.gmail.com>
-Subject: Re: [PATCH 1/2] fs/epoll: mark epoll_wait tasks TASK_FREEZABLE
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, 
-	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org, 
-	Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org, 
-	John Stultz <jstultz@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260803181614.wk62kshvmbx6rpab@hu-mojha-hyd.qualcomm.com>
+X-Authority-Analysis: v=2.4 cv=KYhHIgYD c=1 sm=1 tr=0 ts=6ab5186a cx=c_pps
+ a=cFYjgdjTJScbgFmBucgdfQ==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=x_Bf0CEzfFRy0vkMM70A:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=scEy_gLbYbu1JhEsrz4S:22
+X-Proofpoint-GUID: KaUEmMSBDfCsHtGex2VaQxo21A4iy7YD
+X-Proofpoint-ORIG-GUID: KaUEmMSBDfCsHtGex2VaQxo21A4iy7YD
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDA1MSBTYWx0ZWRfX+vyg4SlG+nkS
+ Mj6/Agn9YANveY84RN9mpVGwmGoXaPwYxw6JsIcOWiDYxW7qwLxePALqwFX6M5FWgumlD2djPV1
+ u7jPJj8SHs+WQt4TNa7Z0oPGXcOuWDs=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDA1MSBTYWx0ZWRfX6msfdwSy+Pmm
+ R0+hczFpQpG8tzcW82GItAQiAsSmdtMPCe/aptoiOTXzatsBb3h5h6tdJD5x6qBF5WeavTVltLC
+ zaMzg64qxo640BSdpyvs3bQ8V9Xif7rFwZTXxw4EeouNN5gG/HoyQ0EwVhAwdsQOU+vUdwWqDEI
+ 2ym/MPddGCV5zf73S0wn18i2b7+bK6jgonpmQ+Q1lOf1jsk6BOGcU6qrJEd5uG5qtb4ZXjjbNUm
+ 0gtTPHaY8IQqHfSWM5oKyfNTgRrirgatvc9c62teagO5iYWj9pGNxrAh+jx8XlxlKiqyydgG8rc
+ 0LpDbGSjj6Kp72iu1EfuPAwAZ4H5ehLToLFtt7fcRzvhedbAkKRXi1TqD1iNNhQpfPWzazhlPUb
+ dh3giYW6Zys5wjF6LMmH1r0cx4MLA2xAvpdt34+2XoGr2qMn+K5fE+DgffH3PQSWD/KJpnYYcNl
+ TpjOECVqg17snBspTbQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-24_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 impostorscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
+ clxscore=1015 spamscore=0 suspectscore=0 phishscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609240051
 
-On Wed, Sep 23, 2026 at 7:24=E2=80=AFAM Jan Kara <jack@suse.cz> wrote:
->
-> On Tue 22-09-26 21:15:58, Sadrul Chowdhury wrote:
-> > During system suspend (freeze_processes) and resume (thaw_processes),
-> > threads blocked in epoll_wait() sleep in TASK_INTERRUPTIBLE. When
-> > try_to_freeze_tasks() executes, it must wake up every sleeping thread
-> > with a synthetic signal so the thread can schedule, run try_to_freeze()=
-,
-> > enter TASK_FROZEN, and sleep again. Upon resume, the freezer wakes them
-> > all up simultaneously, only for each thread to re-enter ep_poll(),
-> > observe no ready I/O events, and call schedule() to go back to sleep.
-> >
-> > On systems with numerous event-driven daemons (where hundreds of
-> > threads idle in event loops), this causes a large wakeup stampede and
-> > thousands of redundant context switches per suspend/resume cycle.
-> >
-> > An earlier attempt to make epoll_wait() freezable in commit 1c441e92120=
-1
-> > ("epoll: use freezable blocking call") was reverted in commit
-> > c511851de162 ("Revert "epoll: use freezable blocking call"") due to
-> > reports of userspace corruption (Bugzilla #61781). Under the legacy
-> > freezer design, freezable tasks could wake up prematurely while
-> > hardware and peripheral drivers were still suspended.
-> >
-> > With the 2022 core freezer rewrite (commit f5d39b020809 ("freezer,sched=
-:
-> > Rewrite core freezer logic")), the legacy fake-signal mechanism was
-> > replaced with the TASK_FROZEN state. Tasks sleeping in TASK_FREEZABLE
-> > are safely frozen in-place without waking them up, and the scheduler
-> > guarantees they cannot be woken until thaw_processes() explicitly clear=
-s
-> > the frozen state.
-> >
-> > Mark sleeping tasks in ep_poll() as TASK_FREEZABLE. Benchmarks on an
-> > ARM64 test device demonstrate that combining this with freezable
-> > select/poll reduces thaw latency by 63% (from 20.64 ms down to 7.55 ms
-> > mean at fixed CPU frequency) and reduces context switches during
-> > freeze/thaw by 87%.
-> >
-> > Signed-off-by: Sadrul Chowdhury <sadrul@google.com>
->
-> With similar caveat as on patch 2/2 feel free to add:
->
-> Reviewed-by: Jan Kara <jack@suse.cz>
->
+On Mon, Aug 03, 2026 at 11:46:14PM +0530, Mukesh Ojha wrote:
+> On Tue, Jul 21, 2026 at 10:41:41PM +0530, Mukesh Ojha wrote:
+> > The following NULL pointer dereference is observed when devfreq_monitor
+> > fires after userspace_exit() has freed governor_data:
+> > 
+> >   pc : devfreq_userspace_func+0x10/0x2c
+> >   Code: 39402109 --> ldrb w9, [x0, #8]   (x0 = NULL)
+> >   Call trace:
+> >    devfreq_userspace_func+0x10/0x2c
+> >    devfreq_monitor+0x34/0x134
+> >    process_scheduled_works+0x1d8/0x804
+> >    worker_thread+0x1c0/0x458
+> > 
+> > The fault address 0x8 is userspace_data.valid — an 8-byte unsigned long
+> > (user_frequency) precedes it, so governor_data == NULL is the cause.
+> > 
+> > The race: devfreq_resume_device() reads df->governor without holding
+> > devfreq_list_lock, while governor_store() updates it under that lock.
+> > The stale pointer dispatches GOV_RESUME to the old governor
+> > (simple_ondemand) after the switch has already completed:
+> > 
+> >   CPU 0 (devfreq_resume_device)        CPU 1 (governor_store)
+> > 
+> >   read df->governor → simple_ondemand
+> >                                        lock(devfreq_list_lock)
+> >                                        GOV_STOP → monitor stopped
+> >                                        df->governor = userspace
+> >                                        GOV_START → governor_data alloc'd
+> >                                        unlock(devfreq_list_lock)
+> >   simple_ondemand->event_handler
+> >     (DEVFREQ_GOV_RESUME)
+> >     → devfreq_monitor_resume()
+> >         stop_polling == true → re-queue work  ← stray monitor!
+> >         stop_polling = false
+> > 
+> > devfreq_monitor is now queued with df->governor == userspace. When
+> > devfreq_remove_device() or governor_store() next calls userspace GOV_STOP,
+> > userspace_exit() frees governor_data. The stray monitor fires,
+> > dereferences NULL governor_data, and crashes.
+> > 
+> > Call devfreq_monitor_stop() before every GOV_STOP dispatch in the core,
+> > ensuring the polling work is fully cancelled before any governor tears down
+> > its private data.  devfreq_monitor_stop() is safe unconditionally:
+> > IRQ_DRIVEN governors return immediately, polling governors that already
+> > call it in their own GOV_STOP handler make the second call a no-op
+> > (stop_polling already true), and governors that never polled get a harmless
+> > cancel_delayed_work_sync() on an empty queue.
+> > 
+> > Four sites are fixed: devfreq_remove_device(), governor_store(),
+> > devfreq_remove_governor() (governor module unload), and timer_store()
+> > (timer-type change performs a GOV_STOP + GOV_START cycle).
+> > 
+> > Fixes: 7e6fdd4bad03 ("PM / devfreq: Core updates to support devices which can idle")
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+> 
+> Can we consider reviewing fix for the mentioned issue ?
 
-Thank you for the review!
+Change still applies on linux-next tip, So no need of a rebase.
 
-Regards,
-Sadrul
+Can I get review on this ?
 
->                                                                 Honza
->
-> > ---
-> >  fs/eventpoll.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-> > index 6cbef8b4c2e0..35992f6457bf 100644
-> > --- a/fs/eventpoll.c
-> > +++ b/fs/eventpoll.c
-> > @@ -39,6 +39,7 @@
-> >  #include <linux/rculist.h>
-> >  #include <linux/capability.h>
-> >  #include <net/busy_poll.h>
-> > +#include <linux/freezer.h>
-> >
-> >  #include <trace/hooks/fs.h>
-> >
-> > @@ -1987,7 +1988,7 @@ static int ep_poll(struct eventpoll *ep, struct e=
-poll_event __user *events,
-> >                * the same lock on wakeup ep_poll_callback() side, so it
-> >                * is safe to avoid an explicit barrier.
-> >                */
-> > -             __set_current_state(TASK_INTERRUPTIBLE);
-> > +             __set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZABLE);
-> >
-> >               /*
-> >                * Do the final check under the lock. ep_start/done_scan(=
-)
-> > --
-> > 2.55.0.1082.g2b9226bbc0-goog
-> >
-> --
-> Jan Kara <jack@suse.com>
-> SUSE Labs, CR
+-- 
+-Mukesh Ojha
