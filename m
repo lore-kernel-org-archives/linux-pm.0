@@ -1,143 +1,236 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f42.google.com (mail-pj2-f42.google.com [74.125.227.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAA644B1CF4;
-	Thu, 24 Sep 2026 18:51:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E55B04AD4CD
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 19:13:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790275899; cv=none; b=Vzve02k8sZr9NIqn1jN6BiWBvYr595Y5QNrpPAoWsScPZy/Yh35M4Nl0LJThBvw1IHGl/ftx2Pmi2WcoVFvSRsNLOtpWbH1RUiXs2yxNSkv3X+AHhcwDZJoAdF5jddPVfCl3Ztt1fQXl72KnixDQU/ZpB9sJfD64GHChT8Lsqi4=
+	t=1790277242; cv=none; b=EA57azjje/wXYT3MMfUSVFVbJVlpA2v7jTKSThjQ1+5Gx8Pcwf46fT8vDiO4yYMNRQHN1K09tHvyCggK/h6klDVcvQuOLIJEvoCgMbJI89WFeeOH6FJBc1WO+pCUrgVoak6HzMxh5pMCRKU/iIpAicHA5vO8Kcm6y8d0fGVU4gY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790275899; c=relaxed/simple;
-	bh=bobb1yGPI9T6ulgAD2sFP7Wn3VWWoj/3bquKkPJqRf0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bX5VHCRZqjRWTfqQyD6G4FBfLSgoBIoD0lxMoJt2COmD5ypW/y2cGelNRXx0vRS5oDhlB4aRlXCUS6NuYiwdcb/kOnehYxB24WdApQI0LX2c7wo+En5Ni2wtq9xRHzwvcJqBxHssta/18/P06vYVKefuIrlSxw3wrf1235NwO1k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B9TaPuWg; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790277242; c=relaxed/simple;
+	bh=tey29UewwiZagl2viBjDQeferNNKc9zQ3gy8ftfL4Ao=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=dC7rBap4rKTZCXpuR7vT6xrBkZMl6ib1XcnSRHkPxdo2g+SPdXS+KqEY4u6nxsKcOOLhXumkVLox+gzGeQBBB2EGW9sYO07aVLIvAhVvSOziW+qqrCQQ+euJ8EqEsLwiRqoT5P4Go1ZmG+C62L2bTBwuyEbKjC9hFnoRwpIuluU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=eQCm2wUV; arc=none smtp.client-ip=74.125.227.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B9TaPuWg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA4B71F000FF;
-	Thu, 24 Sep 2026 18:51:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790275888;
-	bh=19lgN71Gpsx5vFX/9xhZyr5Tn9Zwnud+YgNQwdRHAz0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=B9TaPuWgeX2V6EXNOynhKmYXxpgBuhF0GO9GvEleV73ppMJ+4jg0gfKTK508nINu0
-	 y5E68P/eS0N1Nf2rY9y/C35ESNH3DuJHHqCrktyZKsEz142m40zL+RvZubdy2Bbj6N
-	 B0gGhz7zq8YO1mV19YDxCBqcO/vi5mSTd8odzb0MeZcOcB11UVJJtzGXMG2x4uJaSx
-	 J6Es0Ej/BiLSmH0sepF5PDeoQzTg3lpupc7vbO24JxIqjpYE92LknGL0hQWuXIc+2N
-	 lQWjUiD9QO4+Z4unk5ZVWj6SNX/rkJMzJgTrpEerfy+R/pvx/8bE5MjCg6M/22H1aH
-	 pbA958pAZJ98w==
-Message-ID: <c01aa1e3-f2cd-4b28-8e6a-8e8a1c36c641@kernel.org>
-Date: Thu, 24 Sep 2026 20:49:13 +0200
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="eQCm2wUV"
+Received: by mail-pj2-f42.google.com with SMTP id 98e67ed59e1d1-398cb5615deso186547a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:13:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1790277238; x=1790882038; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :references:in-reply-to:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=zvnf1ghRh8D9V9XevJAw+7YNx2ihEAZAcBmwrerr6hI=;
+        b=eQCm2wUVLkLrXPozVJse6COtqjhYxNVrac0jOjWcdJcF+gJ6snJenkLozwQ5vOD9yB
+         IzBQklETEZZYVi4EF4WQkOPnGuDDFCYOlI2Rbwc/u/YDOUAINHTcwk9A5rFUu6gqdt5o
+         QNXy7ijvQbokuaVnmDM+6V1zcjXscKjkxgI56wkOQ++asP7hp3uZPsOn99SuXjrGp7kk
+         QfLtYH/fciAof/nddLnN7HtYA2bGsDSxY4IGg/O3g066ORvaOtvmpKyo6T7095bkN6f3
+         e57jAzCfmYBFvOGodaTGeh5c0ckJmDPkgJbfQTAGbG361mpPSUZn8l4REAieuF1YOW4m
+         N3+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790277238; x=1790882038;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :references:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zvnf1ghRh8D9V9XevJAw+7YNx2ihEAZAcBmwrerr6hI=;
+        b=qzxTbZQlxbNagUQvCjIgC/HP0IgWxB8wYYyakH7Kn1HhIKTGXw4r75SkpOvWiXuvzE
+         FCBWHSNGhT7lSUwIakKn4kt+Uais/OE4ElgPaO1VyEpiehv8eZ6KruvoV0PQuxohaXZC
+         z0Zl0xD4qZd6rqLsQd5iHFE4EG9YQwrQmHVr30jILJ/u7ezvwyIdZkQioVNrJ3hCACah
+         wLZCnIqsngkK61Qrjx7EcYkAHV1FLanvx6I06o4ERfsO7uxA5HalBxWJpMmsa+rg5MTj
+         79bZhEjjjjA4O9BaKB+80dPL39hhnJXkbcnQcl74lmpHaT7k//1aPnPHIXUYmHtgL3GS
+         ql/A==
+X-Forwarded-Encrypted: i=1; AKwUvBwKKJVkGu4s1snbxDg+mosrA+Q5ysTpP4NUyX6uk+m2jBGiBVJoltWLILbiykIPeIUyyRk9uilL8Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++l1LJ0ue5RU1tT9ohjZ4PsC7DrXDqHCW5FZl5G/PJUDSELVoExK
+	18D978FQ53QItC8FOfHR/dpm4c619haqjjpOJcsB8Qe/HLV9I531XkWA5RFjWk6X4V8=
+X-Gm-Gg: AYBFou2aAQC0ofs6FQClfe3ODcvUAp3o9I3FejcPpWRoIYfdwEBgGhZPNLfuuqzZkaJ
+	seHJlTsabCAFDPAIkmhl1wF4diFu6Uf3QPBPxOUQs9t5xFqVQCXODxszFQHUOJhNOZv2mk7xCJc
+	T5rbTx9fxcCVYfWEL1Bn3Yqcwj3q/I59ebhqBB+7x+MwPc5pjsA3pODJNU8I+gk/Z/JXQrygyg3
+	HTiSDnRwrJQ4PlrQ5PwHnphAaxyMG22zq6pfzby0kyFAg2NwbW53qrrTjT89arLyCU/o1FZj6L9
+	uSAqoGSdsIEnD/zMcMsl1sYUv3oH1pit5NZOMzOt8t3D/btltk0YH8VWQ3l0y5Gd3tXdMnh0nSP
+	rD1crA27B/ZUQ0fSNxO5TzQCS4UlgrcalKwqg8YzaY5icCrNX34vvBqFSKJDrat9RV4i7dUqRff
+	JoJGdygHUyHhJgMZautbQd86E/aX4KX6OtVzi7hJEoPuBVuEgwdNz9CA6TaxJHsy1DIBMV
+X-Received: by 2002:a17:90b:3852:b0:39d:f024:c7ec with SMTP id 98e67ed59e1d1-3a098d883b8mr3513768a91.16.1790277238027;
+        Thu, 24 Sep 2026 12:13:58 -0700 (PDT)
+Received: from localhost ([71.212.197.238])
+        by smtp.gmail.com with UTF8SMTPSA id 98e67ed59e1d1-3a0976ca5f9sm6528651a91.14.2026.09.24.12.13.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 12:13:57 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Ulf
+ Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org, Abel Vesa
+ <abel.vesa@oss.qualcomm.com>, Kendall Willis <k-willis@ti.com>
+Subject: Re: [PATCH v5 4/4] pmdomain: add support system-wide resume latency
+ constraints
+In-Reply-To: <CAPx+jO8UWa37s0XSZN2gGjcBrYOR9i_YMyZ8QWqkHoXrqVkorQ@mail.gmail.com>
+References: <20260826-topic-lpm-pmdomain-device-constraints-v5-0-28cbf43f7e38@baylibre.com>
+ <20260826-topic-lpm-pmdomain-device-constraints-v5-4-28cbf43f7e38@baylibre.com>
+ <CAPx+jO8UWa37s0XSZN2gGjcBrYOR9i_YMyZ8QWqkHoXrqVkorQ@mail.gmail.com>
+Date: Thu, 24 Sep 2026 12:13:56 -0700
+Message-ID: <7hmrt6bgy3.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
- pages
-To: Mike Rapoport <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Dmitry Vyukov <dvyukov@google.com>,
- Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
- kasan-dev@googlegroups.com, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linux-pm@vger.kernel.org
-References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
- <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
- <fec1931b-1173-4e14-b74a-7b3987a9b7bc@kernel.org>
- <arP0-maAEi5yeNnl@kernel.org>
- <d568a29b-5745-4214-96d3-1b635cd46c15@kernel.org>
- <arVJm8CiLG6vpy9-@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <arVJm8CiLG6vpy9-@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On 9/24/26 18:02, Mike Rapoport wrote:
-> On Thu, Sep 24, 2026 at 10:19:33AM +0200, David Hildenbrand (Arm) wrote:
->> On 9/23/26 17:49, Mike Rapoport wrote:
->>>
->>> Naming is hard :-D
->>>
->>> I feel that _copy_page() is to vague and adding hibernation there is to
->>> mouthful :(
->>
->> Yeah, I wouldn't mention hibernation.
->>
->>
->>
->>>
->>> And these could be used outside of safe_copy_page() someday.
->>>
->>> How about 
->>>
->>> kfence_set_page_present()
->>> kfence_set_page_default()
->>
->>
->> Maybe spell out "direct_map" ?
->>
->> kfence_set_direct_map_present()
->>
->> kfence_set_direct_map_default()
-> 
-> They are not necessarily in direct map :)
-> loongarch does not have direct map, but still supports kfence
+Ulf Hansson <ulf.hansson@oss.qualcomm.com> writes:
 
-Ugh :D
+> On Thu, Aug 27, 2026 at 12:23=E2=80=AFAM Kevin Hilman (TI) <khilman@bayli=
+bre.com> wrote:
+>>
+>> In addition to checking for CPU latency constraints when checking if
+>> OK to power down a domain, also check for QoS latency constraints in
+>> all devices of a domain and use that in determining the final latency
+>> constraint to use for the domain.
+>>
+>> Since cpu_system_power_down_ok() is used for system-wide suspend, the
+>> per-device constratints are only relevant if the LATENCY_SYS QoS flag
+>> is set.
+>
+> cpu_system_power_down_ok() is especially used for genpd's that have
+> the GENPD_FLAG_CPU_DOMAIN bit set (cpuidle-psci-domain and
+> cpuidle-riscv-sbi).
+>
+> In other words, this has no effect on other types of PM domains that
+> are managed by genpd. Are you planning on adding that on top or this
+> is sufficient for your use cases?
 
-But where are the pages mapped/unmapped then?
+This is sufficient for my use cases.
 
-(I know, I should read your doc patch)
+>> Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+>> Reviewed-by: Kendall Willis <k-willis@ti.com>
+>> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+>> ---
+>>  drivers/pmdomain/governor.c | 56 ++++++++++++++++++++++++++++++++++++++=
+++++++++++++++++++
+>>  1 file changed, 56 insertions(+)
+>>
+>> diff --git a/drivers/pmdomain/governor.c b/drivers/pmdomain/governor.c
+>> index 96737abbb496..1a85fd375db9 100644
+>> --- a/drivers/pmdomain/governor.c
+>> +++ b/drivers/pmdomain/governor.c
+>> @@ -13,6 +13,8 @@
+>>  #include <linux/cpumask.h>
+>>  #include <linux/ktime.h>
+>>
+>> +#include "core.h"
+>> +
+>>  static int dev_update_qos_constraint(struct device *dev, void *data)
+>>  {
+>>         s64 *constraint_ns_p =3D data;
+>> @@ -425,17 +427,71 @@ static bool cpu_power_down_ok(struct dev_pm_domain=
+ *pd)
+>>         return true;
+>>  }
+>>
+>> +/**
+>> + * check_device_qos_latency - Callback to check device QoS latency cons=
+traints
+>> + * @dev: Device to check
+>> + * @data: Pointer to s32 variable holding minimum latency found so far
+>> + *
+>> + * This callback checks if the device has a system-wide resume latency =
+QoS
+>> + * constraint and updates the minimum latency if this device has a stri=
+cter
+>> + * constraint.
+>> + *
+>> + * This runs in atomic context: for a CPU domain the genpd lock is a raw
+>> + * spinlock and the s2idle path runs in the syscore suspend window with
+>> + * interrupts disabled.  The lockless dev_pm_qos_raw_*() accessors must
+>> + * therefore be used here; the locked dev_pm_qos_read_value() /
+>> + * dev_pm_qos_flags() would take dev->power.lock, which is a sleeping l=
+ock
+>> + * on PREEMPT_RT and must not be acquired in this context.  The values =
+read
+>> + * are best-effort, which matches the sibling cpu_power_down_ok() gover=
+nor.
+>
+> This is a bit too much in my opinion, please leave out the parts
+> concerning the syscore/atomic/lockless parts.
+> If we want that information to be described (I guess it would make
+> sense), I suggest we add that along with cpu_system_power_down_ok()
+> instead as it better belongs there.
 
--- 
-Cheers,
+OK, sounds good.  I'll move it.
 
-David
+>> + *
+>> + * The system-wide flag is checked first so that devices that have not =
+opted
+>> + * in only incur a single lockless read.
+>> + *
+>> + * Returns: 0 to continue iteration.
+>> + */
+>> +static int check_device_qos_latency(struct device *dev, void *data)
+>> +{
+>> +       s32 *min_dev_latency =3D data;
+>> +       s32 dev_latency;
+>> +
+>> +       if (!(dev_pm_qos_raw_flags(dev) & PM_QOS_FLAG_LATENCY_SYS))
+>> +               return 0;
+>> +
+>> +       dev_latency =3D dev_pm_qos_raw_resume_latency(dev);
+>> +       if (dev_latency !=3D PM_QOS_RESUME_LATENCY_NO_CONSTRAINT) {
+>> +               dev_dbg(dev,
+>> +                       "has QoS system-wide resume latency=3D%d\n",
+>> +                       dev_latency);
+>
+> Do we really need a dev_dbg() here? Leftover from debugging?
+
+Not needed, debug leftover.
+
+>> +               if (dev_latency < *min_dev_latency)
+>> +                       *min_dev_latency =3D dev_latency;
+>> +       }
+>> +
+>> +       return 0;
+>> +}
+>> +
+>>  static bool cpu_system_power_down_ok(struct dev_pm_domain *pd)
+>>  {
+>>         s64 constraint_ns =3D cpu_wakeup_latency_qos_limit() * NSEC_PER_=
+USEC;
+>>         struct generic_pm_domain *genpd =3D pd_to_genpd(pd);
+>>         int state_idx =3D genpd->state_count - 1;
+>> +       s32 min_dev_latency =3D PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+>> +       s64 min_dev_latency_ns =3D PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_N=
+S;
+>
+> We don't need to assign a default value for min_dev_latency_ns.
+
+OK.
+
+>>
+>>         if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN)) {
+>>                 genpd->state_idx =3D state_idx;
+>>                 return true;
+>>         }
+>>
+>> +       genpd_for_each_child(genpd, check_device_qos_latency,
+>> +                            &min_dev_latency);
+>> +
+>> +       /* If device latency < CPU wakeup latency, use it instead */
+>> +       if (min_dev_latency !=3D PM_QOS_RESUME_LATENCY_NO_CONSTRAINT) {
+>> +               min_dev_latency_ns =3D min_dev_latency * NSEC_PER_USEC;
+>> +               if (min_dev_latency_ns < constraint_ns)
+>> +                       constraint_ns =3D min_dev_latency_ns;
+>> +       }
+>> +
+>>         /* Find the deepest state for the latency constraint. */
+>>         while (state_idx >=3D 0) {
+>>                 s64 latency_ns =3D genpd->states[state_idx].power_off_la=
+tency_ns +
+>>
+>> --
+>> 2.47.3
+>>
+
+Kevin
