@@ -1,73 +1,73 @@
 Received: from fhigh-b6-smtp.messagingengine.com (fhigh-b6-smtp.messagingengine.com [202.12.124.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 798BB42048E;
-	Thu, 24 Sep 2026 10:22:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 948A5471CFE;
+	Thu, 24 Sep 2026 10:22:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790245337; cv=none; b=F5D+213QLvhkh9QmH73FJ9tv+xUgdo/0ruE0VUcPgOsjcPzKU1Ebr3f5gYt+u4DSH/lKTLFVA2DYlf8+aeg4Qt28BHvKusxkcMsTpPkK3J/wui1JMvgee+neWN8xbOZn3Dwv9y15dT7mVJMxiHq08jcoOBQahrejNcxpdNkCIKc=
+	t=1790245350; cv=none; b=miBNyd5a/RfxurGhNWSbyyq2dXVn7MdTWgHuxJhODPrRxecAU29NN2m/HN0zK/mvdBK05EUEF7zP4381krG2uX1L+bLG7/T612nYGCf1AmLbK73JhyCil3FnycOR2lPrPDuXo6nRMdoaFIRRQp7yGos0+Uwbyx5gm5067JZGbkI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790245337; c=relaxed/simple;
-	bh=p7WfmYTkODHOEFl9clEJBkP3krYIo2yhpaG4jz66mME=;
+	s=arc-20240116; t=1790245350; c=relaxed/simple;
+	bh=S7VJI8rNqqoTZtXfNnT82b4wv6KgWc73yuntbX1kjqM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WwGJZBW0AmTMu574sX5CxkqO7sWPF2uMHd7Iov+sTvRPHzWSc0vqe0rftMyCUy9jPqdOVVEGc+ricPZ8RfFz5asrJtvTaAEIhliZIckUFvlePitGs7Dh7pPf9sXACsLS5vqoFl5pAhBvcU81ZcrejhwU4tuQhSngPLvSufQy4RQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=fffb6f3C; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=VB8tyHwO; arc=none smtp.client-ip=202.12.124.157
+	 MIME-Version; b=PXJw7n94/KA2Io5pSUjg5BT0on5y+zLxke9WGhEReKEN/3Itmjgi1XaRGgR1GcQs7TIGZcWxCc9FO0SvJnpF7V9sfES+iHTw7Szyige+RgErK0NJMVglgAAgaNVLYX+VOH6j4x4lyPoWuW5kt5RSPYbSFboeBg3LQCt7NO6Ojhc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=RIxqB2HR; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=SaZvD3D5; arc=none smtp.client-ip=202.12.124.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="fffb6f3C";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="VB8tyHwO"
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="RIxqB2HR";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="SaZvD3D5"
 Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 06A607A0095;
-	Thu, 24 Sep 2026 06:22:14 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-04.internal (MEProxy); Thu, 24 Sep 2026 06:22:14 -0400
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 43DF17A0050;
+	Thu, 24 Sep 2026 06:22:26 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-04.internal (MEProxy); Thu, 24 Sep 2026 06:22:27 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm3; t=1790245333; x=
-	1790331733; bh=gpp762BvRwhu+TFLXORNswWov10yfkMbGud787FoQf0=; b=f
-	ffb6f3C94LwANYV35FZ8qm8D/mav8mbwAJhplM9rabV2JVT91NLT2iNSbMJH78iO
-	bBM7lTJjf/9d0v+gq5+RKLmwZa2M972YpNInQz46tBbVDoZgEVFd5cTLqIb+qWwr
-	ywtP9q1UkK5hmzyH8VNTLaK2hV7GjTMYd6ccDOW/S9XbhA4lciwF0CQL/GKP+ycM
-	eLtrSrEuaDnYImavd0jpESvgFPmurgVmsxINmbsZxq/B1jJ7/ldQUX2WTIRt6x97
-	d2ks/W/EtjpsSOfhyThssaK+dYOCdtDON+30q7sgGRhN2GWvlD4W5Iol9lODmfOS
-	DYEYBy26YlHMX3JRZx1JQ==
+	:reply-to:subject:subject:to:to; s=fm3; t=1790245346; x=
+	1790331746; bh=49B2LH0OEjwjigLeB2EyzGpXNjuF1qmoGFk9qR05DBA=; b=R
+	IxqB2HR3GiVIENBla1T4u5F0EDFAI6jyjNVcDjhgCQ3KrlCbAZ3v/fUd+Od04P2U
+	jeKXjLNiunNgFeZRhw7m6tXlYfWLpRpIxy/dE0+mZFWn5VeKTrr+JIumlMtOIa56
+	lOEMxpcO5oaa8Vu2BDA8TzzNY27wmeSYYliJ06iyPtjlNF7Srkal1cwt61Du7pS+
+	dvEZFEnFmbI9xCr44w4kCeJTzYf2j6UAA93vCiyDL/VOKQT+rhbIetK84zg4R7TG
+	5CrleGKZuXdEvOYJ0EWIMFPRRLVzL9xsytuZiNB2xmL3UCZRpRRKCIhhXytjLNqb
+	RWZrBTlJscOF4cp0Amw2g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm1; t=1790245333; x=1790331733; bh=g
-	pp762BvRwhu+TFLXORNswWov10yfkMbGud787FoQf0=; b=VB8tyHwOe7DrPeyG5
-	szZsJw4OIjJDu4FJihWnoY86bPoycfseTd4SW0BeQ0ADUSWZporS3SX/9By7aRvh
-	HRX2YjzvZb/FiJBab70qJSMXk7zxkYCUFkOwb0zeUfS581Q49wGjv1C11rcqT+xA
-	B4pX8oXj7eicWluj75Er/9/ENf8gYUtS1ttla2REc6nSTEA6l7GWl4aIOjdHLX0n
-	UfFSOyLWQ2VJlfchHumuFW1Rcu+PkFs2WRIK8hJSQXf8aOv01L29uSknODSYr3I0
-	u6oTzoT+xbWDYE/DqQSXgiFQCXFiZYe8eidP1pA1WII0isMzVmbX/gUZNmlSfnin
-	GapQA==
-X-ME-Sender: <xms:1fm0anRAqwpjjnrjt2JacYJnC4oEFlSkpQI2ucjXy7_pte3hWh9IfA>
-    <xme:1fm0ao6JytdW9884n6Y7FCoO2Wy6cMmd2EgO6gDVWCpLtFnrWHz_sVNNhEvAxg2OM
-    vajgG9aN7F2dfvki0PWTHJwaTzyzuNdsAMzaOAAke6pF7iZ_EBNjW4>
-X-ME-Received: <xmr:1fm0aqqDkMa0zfS0P6mKjPCmVSdWJuwwD9DT69bHA-hkzzQ_mnirzJHswL-e9Iw-MKa515AVFw>
-X-ME-Proxy-Cause: dmFkZTE5U9DWJ/1d8NZBV16bjZrXhnu9+RjSei8Egg+AJBodp1SsqcAZICkdFDYYk8PQ/z
-    nbl5nAv32NCM/Rvob60jzzR/sJI+sbtZKf4EXYq6NkDnWs3QsBAvLEkGDZPcVAuKZu09hj
-    kufWDx+OHd427BpEwAmDDK2HcwDl5PIVxykoKPNTzoVswPV46/qyR6Xp/JY/TaNWyTgMqq
-    yMy5OLUd6yAzE6clJlYL4qCFZSrQCDEMACpcb7vwZPjxoszy3u6FTeAITQlCqDvBOfb2xA
-    f1SHw7kF1Gfs8fOU43Noc1IHs7QEkTjIEBtZWO5SBQ25T666ulWx7WKsjltbKYna0Y/oKo
-    JPQ8pXQilrwWWeYarZXzxUVNS0M/pRyhhSA/ZhGS/PW7j4SW8pzBCqeBL0BDNss3H9rVlQ
-    GmjOBu5qLmik+D6L6Y3ZUH+gjnAUSROvWgx25huEVjbrLy73SjjLubx/JtmdnaUoE3V/ii
-    Q/YZaHvfbrS+cHiDux+ECtXWYKn/KzJ/te6vg8bwJy7dlpon6m06lEf1Rk5plm4ejhMOcS
-    6/Y4/nuw9byymDIyDoaB3tcooeOgCRXS6J0T2W9bs7Vb48CTCEppJPDrniXI2XeNmeKSgE
-    iWAjzW1xknWlW9lGrArSle1RTyotE1AZle7NbEtVheRhRJEHaA6DQrPtLiHQ
-X-ME-Proxy: <xmx:1fm0arQKgMJkcp6HFTDRZ7IcAwiaddE1CbFbA29vPpVL4uZalSZqfQ>
-    <xmx:1fm0auv0KyoRR_C2jpgPeup2larQ_VJOPHzxBMfhT-Q65SR04krzww>
-    <xmx:1fm0arNd7LRAVlzMeAew5BKssaE-xhUmhz3damoFMql9fAWiQpH8zw>
-    <xmx:1fm0aoXdSOMPakH9lSS57aGoCIbhCeayfXxbhvl_UY1GmZSCFXf1xg>
-    <xmx:1fm0auvm_zZNGUNoXtTlup2OJeTX60ihjJPwb7vufzVNu-C01glj3fKx>
+	:x-me-sender:x-sasl-enc; s=fm1; t=1790245346; x=1790331746; bh=4
+	9B2LH0OEjwjigLeB2EyzGpXNjuF1qmoGFk9qR05DBA=; b=SaZvD3D5h9s+YQ8m7
+	cTVflLlo0Q8os5V5HAlPEWNyBKLZ0UIO2VhR24tiwxWPbg3u379fPvPxQ2XGFds+
+	ryuS/sq92DcZA5f8bzqyl9q1dkmdLvhPCsQBt9DTirZKgLXCeuaALkCAE8uaXj27
+	ir1L6A1homfvb8crgmCX3rMn+M4rQfIO+Tf59REqgsXtSpzmeqJaHkWe7r2Q1f1S
+	vFORJBKEgqPVGnJKTExvioi+5oGy6Pg5a7G6sI09pNmIUQEa5IBUFqjPdB5BFf80
+	ogC0VKIEWh9iikHZI4aBB1+rPJ02Wrj6vHoBPi5nmyHNO0JlzvK/sHCOYQv2KTtN
+	1rL1A==
+X-ME-Sender: <xms:4vm0at2fqAiEjF_voPWkxQqKHGMNrQ-5K4eD_Emgqg4aa027C0RDkQ>
+    <xme:4vm0ak39_i9yBd5UuLGnRAY0WLeHeEqGqyRS_n6QykIUxSb4RlCTQ_Vr9d_1zodYK
+    BYKWOYp7mc5YJyOvf6cDCKn7jg46B2_MVYTHCdIMG0ZLU0YCrbuFVE>
+X-ME-Received: <xmr:4vm0ahtHFmT8H91ERJyV6DXBTnS4z8fx4ZtmsB_Xa5cgPO8wQWfUzHmYw25h_Xw0wvS9IOPjyw>
+X-ME-Proxy-Cause: dmFkZTFPKKwhcsF2tVcf6J1tdoJzHIGivu3GiCcgJWp0Pt/Z9Gazphq9uGNO64qgWXMd+/
+    r0Y/QC+GxAQC2Q0ieU8CUeap8kK2TKuEf79EXK3nmOyezz75bao1uY7ZOtIqBBuPshRXdM
+    IOJk66Q73oMH4TFALUk5Kcv9/tV+8zmUjNu4znwNLW6QCtNjM5T8lbyMLgXah+SwAfjMDC
+    rCr4sv174gNvDyZRPPY9GCenUHIgd5s2D05F8pDWC2YXojrrAeUc6Y5eDqXskNa/85NpzE
+    OHpcem/V6xXRehfddSOwZh22araaf502XMhjJIeZwed46ATd8n5B6uoJ2HCgVahU0f6UNP
+    1TkXNgqCi1AbBpPcJwLHekqpsHW/kLvonsHOYrxJM9r/Y5Ihp+Uwed6Cj5GKQlaNpiaNpG
+    ezXitG6vTbIPVIEahEl2r7H837aVhl9/5FepLbRyUEaEPx7T4LCVHFrnkYJEaDr79b5DEb
+    4R9+tNdQqZITD1qZMOH+zZQQiSyAew7HW2koDUhex5nTrk9ZbwJWdQ1ThUA3D5jzvkUOJv
+    URIoCxLsig/RG1sqG792Lz3HjxyeBZCekuA59ezj7LpeVXVSvKg+owZ+33odVg4QLMiEJB
+    2gJ5oMDatDmy1Fx6ww6+Tsx/RyJQITfV5/uimj2B9qAJsZ24B2/TkORKBvVQ
+X-ME-Proxy: <xmx:4vm0asY2XPKFFZvngEEuYz3SJjZL-5QopCI8W0JqZyKk7qtZmqAqeA>
+    <xmx:4vm0avIph-zRblkfHV7fYcONjF8i0bJAZKcYsq-HHejM2BEbt_A5vA>
+    <xmx:4vm0alhuxo-tOyHMW66DZJJRnun-G7bdQkEjfl1xZ5LWrQ0-RIqapA>
+    <xmx:4vm0ag8NU4HuFvjWcgKlQK09OaGNMumXEB55ITcbkQxrq_qCHOjkiw>
+    <xmx:4vm0avW_f4-tmwVY6H5Aqypm7sKmvEIGzKnK3THAi9JevaCWgc9DwVTZ>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 24 Sep 2026 06:22:05 -0400 (EDT)
+ 24 Sep 2026 06:22:17 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -97,9 +97,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [PATCH v14 02/15] accel/rocket: take the completion register writes under job_lock
-Date: Thu, 24 Sep 2026 22:21:22 +1200
-Message-ID: <20260924102135.92217-3-gahing@gahingwoo.com>
+Subject: [PATCH v14 03/15] accel/rocket: wait for a running IRQ handler before resetting a core
+Date: Thu, 24 Sep 2026 22:21:23 +1200
+Message-ID: <20260924102135.92217-4-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260924102135.92217-1-gahing@gahingwoo.com>
 References: <20260924102135.92217-1-gahing@gahingwoo.com>
@@ -111,50 +111,115 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-rocket_job_handle_irq() writes OPERATION_ENABLE and INTERRUPT_CLEAR before
-taking job_lock, while rocket_job_hw_submit() writes OPERATION_ENABLE under
-it, so a completion can write its zero after a submit has written its one
-and stop a task that has just started. Move both writes inside the existing
-scoped_guard().
+drm_sched_stop() does not wait for a threaded handler that is already
+running. Call synchronize_irq() after it, outside job_lock, which the
+handler takes.
 
-Fixes: 0810d5ad88a1 ("accel/rocket: Add job submission IOCTL")
+Before the sync, mask the block's interrupt and clear its raw status, so
+that an active core cannot signal a completion after it. Do that under
+job_lock, since rocket_job_hw_submit() arms the same mask under that lock,
+and only when pm_runtime_get_if_active() returns a positive count: the
+reset holds no runtime PM reference, and with the domain down a register
+access takes an async SError.
+
+Igor Paunovic's induced-reset runs on RK3588, including a two-task job that
+puts hw_submit() on the IRQ thread, found no fault; as he put it, "this
+does not show the race is closed".
+
+Link: https://lore.kernel.org/all/20260819073530.6087-1-royalnet026@gmail.com/
+Link: https://lore.kernel.org/all/CAEWPSH5mxTbUkNouxm6yecMZYvDowquhvYvhaXQ8HoMtHD5U1g@mail.gmail.com/
+Link: https://lore.kernel.org/all/20260912113717.6819-1-royalnet026@gmail.com/
+Link: https://lore.kernel.org/all/20260916132824.13527-1-royalnet026@gmail.com/
+Link: https://lore.kernel.org/all/20260919103422.148834-1-royalnet026@gmail.com/
+Suggested-by: Igor Paunovic <royalnet026@gmail.com>
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588, three cores, induced reset, JOB_TIMEOUT_MS=2
 ---
- drivers/accel/rocket/rocket_job.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/accel/rocket/rocket_job.c | 71 +++++++++++++++++++++++++++++--
+ 1 file changed, 68 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
-index f40435505..575945015 100644
+index 575945015..bcafa89ba 100644
 --- a/drivers/accel/rocket/rocket_job.c
 +++ b/drivers/accel/rocket/rocket_job.c
-@@ -345,10 +345,15 @@ static void rocket_job_handle_irq(struct rocket_core *core)
- {
- 	pm_runtime_mark_last_busy(core->dev);
+@@ -377,9 +377,74 @@ rocket_reset(struct rocket_core *core, struct drm_sched_job *bad)
+ 	drm_sched_stop(&core->sched, bad);
  
--	rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
--	rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+ 	/*
+-	 * Remaining interrupts have been handled, but we might still have
+-	 * stuck jobs. Let's make sure the PM counters stay balanced by
+-	 * manually calling pm_runtime_put_noidle().
++	 * Mask the block before waiting. hw_submit() arms INTERRUPT_MASK on
++	 * every submit and only the hardirq clears it, so on an ordinary
++	 * timeout it is still live and a completion can arrive after the sync
++	 * returns. The next submit re-arms it, so nothing is lost here.
++	 *
++	 * Only when the device is already awake, though. This function holds no
++	 * runtime PM reference of its own: the only one in the window belongs to
++	 * in_flight_job, and the completion path may have put it and cleared the
++	 * pointer before the timeout worker got here. drm_sched_stop() above can
++	 * block for a long time, and it drops every pending job's credits, so
++	 * rocket_job_is_idle() is true and nothing keeps the core resumed. On
++	 * this hardware a register access with the domain down takes an async
++	 * SError, so a reset must not be the thing that causes one.
++	 *
++	 * Only a positive answer will do. pm_runtime_get_if_active() tests
++	 * power.disable_depth before power.runtime_status, so -EINVAL MASKS a
++	 * suspended device rather than excluding one: pm_runtime_force_suspend(),
++	 * which is this driver's own system suspend callback, disables runtime PM
++	 * first and turns the clocks off second, and rocket_core_fini() suspends
++	 * the core and disables before it cancels the timeout worker. Both leave
++	 * the domain down with -EINVAL on offer.
++	 *
++	 * The cost is the other half of that ambiguity. A core that is still up
++	 * with runtime PM disabled (pm_runtime_force_suspend() before its
++	 * callback has run, or CONFIG_PM=n under COMPILE_TEST) is left unmasked,
++	 * because writing to it would mean writing to the half that is down as
++	 * well.
++	 *
++	 * Clear the raw status along with the mask, the way the completion path
++	 * does. Masking alone leaves the DPU bit latched until
++	 * rocket_core_reset(), and the hardirq decides on raw status alone, so a
++	 * fault from the IOMMU that shares this line would wake the thread again
++	 * and what the comment below asserts would stop being true.
++	 *
++	 * UNDER job_lock, because rocket_job_hw_submit() arms this same
++	 * register and always runs under that lock. reset.pending is set here
++	 * without the lock and read there with it, so a submit that has already
++	 * passed its check can re-arm the mask after this clears it, and then
++	 * the synchronize_irq() below fences a handler that is no longer the
++	 * one that matters: the block is left running a task with its
++	 * interrupt live. rocket_job_handle_irq() avoids the same race on
++	 * OPERATION_ENABLE by making its completion writes under this lock.
++	 *
++	 * pm_runtime_get_if_active() does not invoke a callback -- it only
++	 * takes a reference on an already-active device -- and
++	 * pm_runtime_put_autosuspend() is asynchronous, so neither can re-enter
++	 * this driver's runtime PM callbacks while the lock is held.
++	 */
 +	scoped_guard(mutex, &core->job_lock) {
-+		/*
-+		 * Stopping the block belongs under the lock. hw_submit() writes
-+		 * OPERATION_ENABLE too, and outside the lock this zero can land
-+		 * after that one and stop a task that has only just started.
-+		 */
-+		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
-+		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
- 
--	scoped_guard(mutex, &core->job_lock)
- 		if (core->in_flight_job) {
- 			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_count) {
- 				rocket_job_hw_submit(core, core->in_flight_job);
-@@ -360,6 +365,7 @@ static void rocket_job_handle_irq(struct rocket_core *core)
- 			pm_runtime_put_autosuspend(core->dev);
- 			core->in_flight_job = NULL;
- 		}
++		if (pm_runtime_get_if_active(core->dev) > 0) {
++			rocket_pc_writel(core, INTERRUPT_MASK, 0x0);
++			rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
++			pm_runtime_put_autosuspend(core->dev);
++		}
 +	}
- }
- 
- static void
++
++	/*
++	 * drm_sched_stop() returns without waiting for a threaded handler that
++	 * is already running, so wait for one here. This has to stay outside
++	 * job_lock: the handler takes that lock, so waiting for it while
++	 * holding it would deadlock instead of fencing anything.
++	 */
++	synchronize_irq(core->irq);
++
++	/*
++	 * No handler is running now, but we might still have stuck jobs. Let's
++	 * make sure the PM counters stay balanced by manually calling
++	 * pm_runtime_put_noidle().
+ 	 */
+ 	scoped_guard(mutex, &core->job_lock) {
+ 		if (core->in_flight_job)
 -- 
 2.43.0
 
