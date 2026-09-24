@@ -1,181 +1,290 @@
-Received: from smtp-bc0c.mail.infomaniak.ch (smtp-bc0c.mail.infomaniak.ch [45.157.188.12])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0D8D374E7A
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 05:36:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.157.188.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDE2454788;
+	Thu, 24 Sep 2026 06:07:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790228185; cv=none; b=igdUDCDxzEsv7zwJ45H8D20JP23zWsLXQp0XW8CzF+0EuTspsn1SbFpf67Lk85Z73fo6du8H5873LS0xKosh5IFifYILvNZGfuooUgr+V93viefwYNobseJLbmBvGZbeGf3zTyYDKogox78oxz0vi89FZ5baeXXNiD1JaJo10o0=
+	t=1790230054; cv=none; b=k2rDJe3GIb4VZNN95rio4jKP+rIJmy49W4E0Y4Hj5eFmwWd+EALkzftRiLwzQ6WnYlKOLST/IQOkD08URdlwa3eZuPi7meHZ1a7obBYooBmH7t/lBGMgFkJpjHhIssbIXsyGBcKPVSkeskZqjwNi0s5AoQQGQo75CkJAGefMDVo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790228185; c=relaxed/simple;
-	bh=LNQ6/cxi1/RiLFN1o9CBtzzPi9Abau/Eed0WKkToToM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Z7WbrjOQCznQZIgXTg0uXVDYIMa6BDFEAV2//WX63Q9nWUyNwsiUqi43WFmrSrPBQ9ariGgSS2eZl0sBQg4ju6JX9DONjV327ynmJxQv3eUsWmzs59r3Xruh4YB82nEFOxTCPGK8Sbww0XoLtUrJGKL5F3YO2gpZwzoP468zafU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ik.me; spf=pass smtp.mailfrom=ik.me; dkim=pass (1024-bit key) header.d=ik.me header.i=@ik.me header.b=2E+gFHzX; arc=none smtp.client-ip=45.157.188.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ik.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ik.me
+	s=arc-20240116; t=1790230054; c=relaxed/simple;
+	bh=YOw3OVrZiDHYgM0NiUOZfPnr7a8Jbblx9bFPQ6jhPYw=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=NAOjBrdE9GcyLJpfh3n4M2wsx3IR8J6855/XQbUb3qK1aHpK+bU0T+OgXUblBlHlf2wdrf1O1DTzV2QUobhxfs7HwpT8scmiIGoW03fqNSMsK7pAy48I0ZZJqWOr4W46v1SA6bzpHA5trdNlvjJlke3IUnIglroAXyMGNB+xm3o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JBLAjyKG; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ik.me header.i=@ik.me header.b="2E+gFHzX"
-Received: from smtp-4-0000.mail.infomaniak.ch (smtp-4-0000.mail.infomaniak.ch [10.7.10.107])
-	by smtp-3-3000.mail.infomaniak.ch (Postfix) with ESMTPS id 4hr2ct2bvszbZW
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 07:36:14 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ik.me; s=20200325;
-	t=1790228174; bh=9Kyz/rTPJQ9RhsttYivOqfj/H4Czdnx83Wb1MtyABdA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=2E+gFHzX0/10BKmG5ZkjGMrtO9MbHodUxUvchSGUKWdNGj7EpxmWr7Utb6pbDjS0O
-	 +pNPehGh223Fr7g+O34tTY6oYUr0kq+e6Df/I3q/HD6HFgC/lGWl3L2lgz/ttxL9vX
-	 xIigYCQAPS5Ed+0G/pgQQD//oROE1Wp5n8BhXOGY=
-Received: from unknown by smtp-4-0000.mail.infomaniak.ch (Postfix) with ESMTPA id 4hr2cs1rLfz4TS;
-	Thu, 24 Sep 2026 07:36:13 +0200 (CEST)
-Message-ID: <da547f98-8bb0-ae1d-ded1-28fde8a64b46@ik.me>
-Date: Thu, 24 Sep 2026 07:36:12 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JBLAjyKG"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1790230053; x=1821766053;
+  h=date:from:to:cc:subject:message-id;
+  bh=YOw3OVrZiDHYgM0NiUOZfPnr7a8Jbblx9bFPQ6jhPYw=;
+  b=JBLAjyKGYrJ69vrKi1eCqrh8n3tiyZoBtTaJpFHG1hR7gkq7/vp9qg51
+   SxsOFgEwpAatcPV49jT17AySmL+Nv1LhcebPBho6Mtca1rl4EnD/WbYD2
+   VRCrPtKOWsMmP9TOt4OIoCq/2MFzoJqRMw2XeDEgwj54VpK0G71FzXIps
+   2wiQUU++EIbiMn7y+RNIrrXVfFlSYv8vpXEdywwa2fR/9BD+giLyG+vWz
+   zJbhSBxojASPB3xwUY/CxetQN7FfSeFfhiuzhrkPxY8VCAq7/uI405SDu
+   5djLNgCASjCyduGMWu7yZCgUXwqf2RJpjgwggOFW43Ug2A78eccwDzy+L
+   w==;
+X-CSE-ConnectionGUID: loEzA3AARDOVSHMvVZHE6g==
+X-CSE-MsgGUID: j06TsCH6TLShmnXZ4wZ6Ig==
+X-IronPort-AV: E=McAfee;i="6800,10657,11914"; a="90853889"
+X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; 
+   d="scan'208";a="90853889"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2026 23:07:32 -0700
+X-CSE-ConnectionGUID: dzE7sc+IS2G+iyOwaL4U8Q==
+X-CSE-MsgGUID: iBH+YVPSRgaEe39YAgaBLw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; 
+   d="scan'208";a="273073626"
+Received: from lkp-server01.sh.intel.com (HELO 462990a40a85) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 23 Sep 2026 23:07:31 -0700
+Received: from kbuild by 462990a40a85 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1x9ccC-00000000IHY-0jPW;
+	Thu, 24 Sep 2026 06:07:28 +0000
+Date: Thu, 24 Sep 2026 14:06:31 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 7f88876ea414e90350f19e5e429368170574f618
+Message-ID: <202609241428.c7cBA17T-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [BUG] s2idle: unrecoverable sleep on ThinkPad P16s Gen 4 AMD,
- (Strix Point) when more than 16 logical CPUs are online
-To: Mario Limonciello <mario.limonciello@amd.com>,
- platform-driver-x86@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Shyam-sundar.S-k@amd.com, hansg@kernel.org,
- ilpo.jarvinen@linux.intel.com, rafael@kernel.org
-References: <82329b33-ba2d-ee43-d444-5fdc14af1bce@ik.me>
- <4d377d87-c2d3-5541-53af-68c9d67daa72@ik.me>
- <55854916-292a-40ae-8421-1a784785d899@amd.com>
- <f872d7e0-79f6-911a-b0c0-639c58e780f3@ik.me>
- <66dee9c5-ad66-4bd7-982c-c5694d806cf2@amd.com>
- <0bb77796-790f-44db-b4cc-e4742ed1b2d0@amd.com>
- <eafbba40-a10f-6a7f-54e6-b14d59ad1525@ik.me>
- <99dcb462-5045-4fa7-9f6b-ee0f13ff96ab@amd.com>
- <4a161dd5-4dfe-81f4-e4d8-ba9d3280c25a@ik.me>
- <6d7773c8-0dc5-4e11-8bbb-088289dd508b@amd.com>
- <a5611ca8-b28d-4102-0caa-542fc162758a@ik.me>
- <60a5c26c-8fe2-477f-b576-2a18d8b6394d@amd.com>
- <fc70f3b0-6ac5-7ac9-dca8-595b65785718@ik.me>
- <b29e9341-70cb-4201-99fc-ef307dd10fa5@amd.com>
- <aab50dd0-5141-bded-0b58-0f01ae9621d5@ik.me>
- <c42ab776-6fa9-4e8e-acae-fa921a5ac108@amd.com>
- <0d1686e8-a50e-6f3b-2923-a0eca6ab4271@ik.me>
- <b6015026-fe8c-4823-ad39-c630350c0cc1@amd.com>
- <c58f84c7-bfe6-58db-cad5-6859e96a7daf@ik.me>
- <afb1949a-8465-cfc8-bddb-bc27783af223@ik.me>
- <8f06af84-c0fb-4d24-8868-bf16a1678b4a@amd.com>
-Content-Language: en-US
-From: Fourhundred Thecat <400thecat@ik.me>
-In-Reply-To: <8f06af84-c0fb-4d24-8868-bf16a1678b4a@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Feedback-ID: :2997a34c1a6c8c6:ham:c07166f4469634d
-X-Infomaniak-Routing: alpha
 
-On 2026-09-23 23:10, Mario Limonciello wrote:
-> On 9/23/26 15:48, Fourhundred Thecat wrote:
->> the bug reproduces on 7.3-rc4.
->>
->> Built 7.3-rc4 from the torvalds snapshot, migrated my 6.18.51 config 
->> with make olddefconfig, IOMMU enabled, all 24 CPUs online, no IOMMU 
->> boot parameters. Same result: the machine suspends and never wakes, 
->> forced power off required.
->>
->> Both attempts recorded by the same script, neither produced a resume 
->> block:
->>
->>    === 2026-09-23T22:15:02 BEFORE
->>    cmdline:     (6.18.51, no iommu parameters)
->>    cpus online: 0-23
->>    iommu:       ivhd0
->>    ff_rt_clk:   0
->>    S0ix Entry Time: 0 / Exit Time: 0 / Residency Time: 0
->>    suspending with +30s alarm
->>
->>    === 2026-09-23T22:39:06 BEFORE
->>    cmdline:     (7.3.0-rc4, no iommu parameters)
->>    cpus online: 0-23
->>    iommu:       ivhd0
->>    ff_rt_clk:   0
->>    S0ix Entry Time: 0 / Exit Time: 0 / Residency Time: 0
->>    suspending with +30s alarm
->>
->> Both used a programmed RTC wakealarm at +30s and were left untouched 
->> for several minutes.
->>
->> Relevant details of the 7.3-rc4 build, so this is not a configuration 
->> difference:
->>
->>    CONFIG_AMD_IOMMU=y, CONFIG_IOMMU_PT=y, CONFIG_IOMMU_PT_AMDV1=y
->>    CONFIG_NR_CPUS=24, CONFIG_MODULES not set
->>    CONFIG_DEBUG_FS=y, CONFIG_PM_DEBUG=y, CONFIG_DYNAMIC_DEBUG=y
->>    CONFIG_AMD_MP2_STB=y, CONFIG_X86_MSR=y, CONFIG_DMIID=y
->>    CONFIG_LOG_BUF_SHIFT=20, CONFIG_RANDSTRUCT_NONE=y
->>    kernel is not tainted, builds with zero warnings
->>
->> Only 243 config lines differ between my 6.18.51 and 7.3-rc4 configs. 
->> Both commits you pointed me at are present in 7.3-rc4: rtc-cmos uses 
->> platform_get_irq_optional(), and iommu/amd carries the "No ACPI device 
->> matched UID" check. As on 6.18, that FW_BUG message does not appear 
->> here either.
->>
->> Two things worth noting about the 7.3 build specifically. The new 
->> IOMMU page table layer is in use (CONFIG_IOMMU_PT / IOMMU_PT_AMDV1 
->> replacing CONFIG_IOMMU_IO_PGTABLE), so that rework does not change the 
->> outcome. And AMD_PMF and DRM_ACCEL_AMDXDNA are not compiled into 
->> either kernel - DRM_ACCEL and AMD_SFH_HID are both off in my config - 
->> so neither driver is involved in any of these results at all, which is 
->> a stronger statement than the initcall_blacklist tests I reported 
->> earlier.
->>
->> Where that leaves things. With the IOMMU enabled and all 24 CPUs, on 
->> both 6.18.51 and 7.3-rc4:
->>
->>    lid switch, internal keyboard, power button, USB mouse with wakeup
->>    armed, and a programmed ACPI RTC alarm        all fail to wake
->>
->>    intremap=off, iommu=pt, amd_iommu_intr=legacy  all still hang
->>    pm_test freezer / devices / platform           all pass
->>    PC6 and CC6 enabled per amd-s2idle             yes
->>
->>    amd_iommu=off                                  wakes normally,
->>                                                   Last S0i3 Status 
->> Success,
->>                                                   13.3s residency,
->>                                                   pm_wakeup_irq 9
->>
->> Since it fails identically on 6.18 and 7.3 there is no working kernel 
->> version to bisect against. The only variable that changes the outcome 
->> is whether the IOMMU is enabled, and secondarily whether more than 16 
->> CPUs are brought up at boot.
-> 
-> To me this still feels like a BIOS bug.  I wouldn't discount the 
-> possibility that think-lmi didn't apply a setting properly or something 
-> like that.
-> 
-> Can you please try to manually go into your BIOS and reset BIOS default 
-> settings?  Does it reproduce with IOMMU left on?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 7f88876ea414e90350f19e5e429368170574f618  Merge branch 'thermal-core-fixes' into fixes
 
-I did another test:
+elapsed time: 2070m
 
-I bootet latest Debian live CD image before touching the BIOS, and it 
-reproduces.
+configs tested: 213
+configs skipped: 4
 
-Debian live, kernel 7.1.12+deb14-amd64 #1 SMP PREEMPT_DYNAMIC Debian 
-7.1.12-1 (2026-08-28). Stock distro kernel with modules, systemd and 
-udev, every device driver bound, distro defaults throughout, nothing of 
-mine involved except the BIOS settings. echo mem > /sys/power/state 
-suspends and never wakes. Forced power off required, same as always.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-So my custom kernel configuration is not the cause.
+tested configs:
+alpha                              allnoconfig    gcc-16.1.0
+alpha                             allyesconfig    gcc-16.1.0
+alpha                                defconfig    gcc-16.1.0
+arc                               allmodconfig    clang-24
+arc                                allnoconfig    gcc-16.1.0
+arc                               allyesconfig    clang-24
+arc                           axs103_defconfig    gcc-16.1.0
+arc                                  defconfig    gcc-16.1.0
+arc                   randconfig-1000-20260924    clang-24
+arc                   randconfig-1001-20260924    clang-24
+arm                                allnoconfig    gcc-16.1.0
+arm                               allyesconfig    clang-24
+arm                                  defconfig    gcc-16.1.0
+arm                       integrator_defconfig    gcc-16.1.0
+arm                       jornada720_defconfig    clang-24
+arm                         mvebu_v7_defconfig    gcc-16.1.0
+arm                   randconfig-1000-20260924    clang-24
+arm                   randconfig-1001-20260924    clang-24
+arm                   randconfig-1002-20260924    clang-24
+arm                   randconfig-1003-20260924    clang-24
+arm                          socfpga_defconfig    gcc-16.1.0
+arm                            spitz_defconfig    gcc-16.1.0
+arm64                             allmodconfig    clang-24
+arm64                              allnoconfig    gcc-16.1.0
+arm64                                defconfig    gcc-16.1.0
+arm64                 randconfig-1000-20260924    gcc-11.5.0
+arm64                 randconfig-1001-20260924    gcc-11.5.0
+arm64                 randconfig-1002-20260924    gcc-11.5.0
+arm64                 randconfig-1003-20260924    gcc-11.5.0
+arm64                randconfig-r1302-20260924    gcc-12.5.0 sparse
+arm64                randconfig-r1304-20260924    gcc-13.4.0 sparse
+csky                              allmodconfig    gcc-16.1.0
+csky                               allnoconfig    gcc-16.1.0
+csky                                 defconfig    gcc-16.1.0
+csky                  randconfig-1000-20260924    gcc-11.5.0
+csky                  randconfig-1001-20260924    gcc-11.5.0
+csky                 randconfig-r1306-20260924    gcc-14     sparse
+csky                 randconfig-r1309-20260924    gcc-14     sparse
+hexagon                           allmodconfig    gcc-16.1.0
+hexagon                            allnoconfig    gcc-16.1.0
+hexagon                              defconfig    gcc-16.1.0
+hexagon               randconfig-1000-20260924    gcc-8.5.0
+hexagon               randconfig-1001-20260924    gcc-8.5.0
+hexagon              randconfig-r1305-20260924    gcc-13.4.0 sparse
+i386                              alldefconfig    gcc-16.1.0
+i386                              allmodconfig    clang-22
+i386                               allnoconfig    gcc-16.1.0
+i386                              allyesconfig    clang-22
+i386        buildonly-randconfig-1000-20260924    gcc-14
+i386        buildonly-randconfig-1001-20260924    gcc-14
+i386        buildonly-randconfig-1002-20260924    gcc-14
+i386        buildonly-randconfig-1003-20260924    gcc-14
+i386        buildonly-randconfig-1004-20260924    gcc-14
+i386        buildonly-randconfig-1005-20260924    gcc-14
+i386                                 defconfig    gcc-16.1.0
+i386                  randconfig-1000-20260924    gcc-12
+i386                  randconfig-1001-20260924    gcc-12
+i386                  randconfig-1002-20260924    gcc-12
+i386                  randconfig-1003-20260924    gcc-12
+i386                  randconfig-1004-20260924    gcc-12
+i386                  randconfig-1005-20260924    gcc-12
+i386                  randconfig-1006-20260924    gcc-12
+i386                  randconfig-1007-20260924    clang-22
+i386                  randconfig-1008-20260924    clang-22
+i386                  randconfig-1009-20260924    clang-22
+i386                  randconfig-1010-20260924    clang-22
+i386                  randconfig-1011-20260924    clang-22
+i386                  randconfig-1012-20260924    clang-22
+i386                  randconfig-1013-20260924    clang-22
+i386                  randconfig-1300-20260924    clang-22   sparse
+i386                  randconfig-1301-20260924    clang-22   sparse
+i386                  randconfig-1302-20260924    clang-22   sparse
+i386                 randconfig-r1300-20260924    gcc-13.4.0 sparse
+i386                 randconfig-r1306-20260924    gcc-11.5.0 sparse
+i386                 randconfig-r1307-20260924    gcc-14     sparse
+loongarch                         allmodconfig    clang-24
+loongarch                          allnoconfig    gcc-16.1.0
+loongarch                            defconfig    clang-24
+loongarch             randconfig-1000-20260924    gcc-8.5.0
+loongarch             randconfig-1001-20260924    gcc-8.5.0
+loongarch            randconfig-r1307-20260924    gcc-11.5.0 sparse
+loongarch            randconfig-r1308-20260924    gcc-14     sparse
+m68k                              allmodconfig    gcc-16.1.0
+m68k                               allnoconfig    gcc-16.1.0
+m68k                              allyesconfig    clang-24
+m68k                                 defconfig    clang-24
+microblaze                         allnoconfig    gcc-16.1.0
+microblaze                        allyesconfig    gcc-16.1.0
+microblaze                           defconfig    clang-24
+mips                              allmodconfig    gcc-16.1.0
+mips                               allnoconfig    gcc-16.1.0
+mips                              allyesconfig    gcc-16.1.0
+mips                          cobalt_defconfig    clang-24
+mips                           eyeq6_defconfig    gcc-16.1.0
+mips                            ip28_defconfig    clang-24
+nios2                             allmodconfig    clang-20
+nios2                              allnoconfig    clang-24
+nios2                                defconfig    clang-24
+nios2                 randconfig-1000-20260924    gcc-8.5.0
+nios2                 randconfig-1001-20260924    gcc-8.5.0
+openrisc                          allmodconfig    clang-20
+openrisc                           allnoconfig    clang-24
+openrisc                             defconfig    gcc-16.1.0
+parisc                            allmodconfig    gcc-16.1.0
+parisc                             allnoconfig    clang-24
+parisc                            allyesconfig    clang-17
+parisc                               defconfig    gcc-16.1.0
+parisc                 generic-32bit_defconfig    gcc-16.1.0
+parisc                randconfig-1000-20260924    gcc-8.5.0
+parisc                randconfig-1001-20260924    gcc-8.5.0
+parisc64                             defconfig    clang-24
+powerpc                           allmodconfig    gcc-16.1.0
+powerpc                            allnoconfig    clang-24
+powerpc                      ksi8560_defconfig    gcc-16.1.0
+powerpc                      mpc83xx_defconfig    gcc-16.1.0
+powerpc               randconfig-1000-20260924    gcc-8.5.0
+powerpc               randconfig-1001-20260924    gcc-8.5.0
+powerpc                       tqm8xx_defconfig    gcc-16.1.0
+powerpc                         warp_defconfig    clang-24
+powerpc64             randconfig-1000-20260924    gcc-8.5.0
+powerpc64             randconfig-1001-20260924    gcc-8.5.0
+powerpc64            randconfig-r1301-20260924    gcc-13.4.0 sparse
+powerpc64            randconfig-r1309-20260924    gcc-11.5.0 sparse
+riscv                             alldefconfig    clang-24
+riscv                             allmodconfig    clang-24
+riscv                              allnoconfig    clang-24
+riscv                             allyesconfig    clang-24
+riscv                                defconfig    gcc-16.1.0
+riscv                                defconfig    gcc-16.1.0
+riscv              nommu_k210_sdcard_defconfig    gcc-16.1.0
+riscv                 randconfig-1000-20260924    gcc-15.2.0
+riscv                 randconfig-1001-20260924    gcc-15.2.0
+riscv                randconfig-r1300-20260924    gcc-12.5.0 sparse
+riscv                randconfig-r1305-20260924    gcc-12.5.0 sparse
+s390                              allmodconfig    clang-17
+s390                               allnoconfig    clang-24
+s390                              allyesconfig    gcc-16.1.0
+s390                                 defconfig    clang-24
+s390                                 defconfig    gcc-16.1.0
+s390                  randconfig-1000-20260924    gcc-15.2.0
+s390                  randconfig-1001-20260924    gcc-15.2.0
+s390                 randconfig-r1302-20260924    gcc-13.4.0 sparse
+sh                                allmodconfig    gcc-16.1.0
+sh                                 allnoconfig    clang-24
+sh                                allyesconfig    clang-17
+sh                                   defconfig    gcc-14
+sh                           r7780mp_defconfig    clang-24
+sh                    randconfig-1000-20260924    gcc-15.2.0
+sh                    randconfig-1001-20260924    gcc-15.2.0
+sh                            se7712_defconfig    gcc-16.1.0
+sh                            se7724_defconfig    clang-24
+sh                    sh7770_generic_defconfig    gcc-16.1.0
+sh                         sh7785lcr_defconfig    gcc-16.1.0
+sparc                              allnoconfig    clang-24
+sparc                                defconfig    gcc-16.1.0
+sparc                 randconfig-1000-20260924    clang-17
+sparc                 randconfig-1001-20260924    clang-17
+sparc                randconfig-r1301-20260924    gcc-12.5.0 sparse
+sparc                randconfig-r1303-20260924    gcc-12.5.0 sparse
+sparc64                           allmodconfig    clang-20
+sparc64                              defconfig    gcc-14
+sparc64               randconfig-1000-20260924    clang-17
+sparc64               randconfig-1001-20260924    clang-17
+sparc64              randconfig-r1303-20260924    gcc-13.4.0 sparse
+sparc64              randconfig-r1308-20260924    gcc-11.5.0 sparse
+um                                allmodconfig    clang-17
+um                                 allnoconfig    clang-24
+um                                allyesconfig    gcc-16.1.0
+um                                   defconfig    gcc-14
+um                              i386_defconfig    gcc-14
+um                    randconfig-1000-20260924    clang-17
+um                    randconfig-1001-20260924    clang-17
+um                   randconfig-r1304-20260924    gcc-12.5.0 sparse
+um                            x86_64_defconfig    gcc-14
+x86_64                            allmodconfig    clang-22
+x86_64                             allnoconfig    clang-24
+x86_64                            allyesconfig    clang-22
+x86_64      buildonly-randconfig-1000-20260924    clang-22
+x86_64      buildonly-randconfig-1001-20260924    clang-22
+x86_64      buildonly-randconfig-1002-20260924    clang-22
+x86_64      buildonly-randconfig-1003-20260924    clang-22
+x86_64      buildonly-randconfig-1004-20260924    clang-22
+x86_64      buildonly-randconfig-1005-20260924    clang-22
+x86_64                               defconfig    gcc-14
+x86_64                randconfig-1000-20260924    clang-22
+x86_64                randconfig-1001-20260924    clang-22
+x86_64                randconfig-1002-20260924    clang-22
+x86_64                randconfig-1003-20260924    clang-22
+x86_64                randconfig-1004-20260924    clang-22
+x86_64                randconfig-1005-20260924    clang-22
+x86_64                randconfig-1006-20260924    clang-22
+x86_64                randconfig-1007-20260924    clang-22
+x86_64                randconfig-1008-20260924    clang-22
+x86_64                randconfig-1009-20260924    clang-22
+x86_64                randconfig-1010-20260924    clang-22
+x86_64                randconfig-1011-20260924    clang-22
+x86_64                randconfig-1012-20260924    clang-22
+x86_64                randconfig-1013-20260924    clang-22
+x86_64                randconfig-1014-20260924    clang-22
+x86_64                randconfig-1015-20260924    clang-22
+x86_64                randconfig-1016-20260924    clang-22
+x86_64                randconfig-1017-20260924    clang-22
+x86_64                randconfig-1300-20260924    clang-22   sparse
+x86_64                randconfig-1301-20260924    clang-22   sparse
+x86_64                randconfig-1302-20260924    clang-22   sparse
+x86_64                            rhel-9.4-bpf    gcc-14
+x86_64                          rhel-9.4-kunit    gcc-14
+x86_64                            rhel-9.4-ltp    gcc-14
+x86_64                           rhel-9.4-rust    clang-22
+xtensa                             allnoconfig    clang-24
+xtensa                            allyesconfig    clang-20
+xtensa                randconfig-1000-20260924    clang-17
+xtensa                randconfig-1001-20260924    clang-17
 
-That now leaves three kernels reproducing it:
-
-   6.18.51    my build, minimal config
-   7.3-rc4    my build, migrated config
-   7.1.12     stock Debian live image, distro config
-
-I will do the BIOS defaults reset next, as you asked.
-
-
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
