@@ -1,167 +1,161 @@
-Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
+Received: from mail-dy2-f12.google.com (mail-dy2-f12.google.com [74.125.229.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0870742641B
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 20:30:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF4D74D2EC3
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 20:32:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790281821; cv=none; b=pPIq1h/IoqOR4SYn2KoyBvMtIdOYl8h6LdvgJHuNVRBU55f//dyl5Eek/QOBO+D/Kb9G88x+1U8Rvr44+aRTIfrTYWl6vhA/GIEGLmsj2igXDBjlXWpqhOL5yWCEs4XZAcgvF0vFl2sfT9gjJ82x3pOKCXa4pCKSykXGyyCfN2E=
+	t=1790281935; cv=none; b=Ti9KE2uWgCw5ajA4bTBUGz61CHtdE5UBJT8NLK1JwPSTEq0M5xT4I+yjBqY8kf29qMzIWumro3DJi15OnOIEvVR1wwMv7KRshthT50szZ/4jyv+NH2zRFUpddd8LlUxTs3PyNJu1JSNpmXg5QmdMrzws15wm81cgqgrAkCiBDsY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790281821; c=relaxed/simple;
-	bh=5DZ/nLnxCxfQO4kajog7xGVkPie0bnH1eSRCJb9Yst8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=c4rEdmfDRXmiji07G+sruOOQauPKdgqw0NwVEwKCnYKuySRFj/X6MKulcvYNl1c7jEgAebIo6B1yRMWyAMwlrayzhr1+owf1xg28PlxbdYPXjNr9Q/ACY452q6VbzzA0gu0EVGvzDALUGgO7dsytPprzSUwmL8owlupcL9dJNq0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=X28JdzRv; arc=none smtp.client-ip=74.125.227.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1790281935; c=relaxed/simple;
+	bh=v3fnB7xz+w9vdQgoBzGCx0rltywWs4k7dX0JJ8+/yM8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Yq/MN0297IV4EPJ1vIhQJjqvpyptkDxcJpkbl7jtkEZFyjhYQd5GAQRna+5a3KNg1+MTZKG53vY5puuetuH6wI/IPIfOfVt4fmr3jgsHnMGgTbo/ad32veOccQCLECpAqOqgEZpK8YyR8rQm1FUVN2zcW5nA2t4DLB+mEjtyVz8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=N/JI4o5I; arc=none smtp.client-ip=74.125.229.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="X28JdzRv"
-Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-396ccafb751so158755a91.2
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 13:30:14 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="N/JI4o5I"
+Received: by mail-dy2-f12.google.com with SMTP id 5a478bee46e88-3381a6a05c9so81971eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 13:32:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1790281810; x=1790886610; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Sv+MUiOEP3/RF1kItJkpWgD1vZhiIIYN2y4NUfdViXQ=;
-        b=X28JdzRvuJKGdoQsspNlPxl6E4Gdr/oTGlM1qSXgR67Cd6dH4Sgb9yEnhg6Q7dvDz5
-         XMbsERHW1cyhVPY4eS18qlhty7t736qKvIqUyvn72FesJKUV79gU2Ssg1iKV86T6O5md
-         7fMtXcfdYZbXXLpJxq/T7e/uXpHuIgVf6uYWI9woc10rRrY3/Ge3s8kRdgOs9nTA6XTL
-         zBbxP/m7dlyxTiTAKV6OMDF55WWIPGLbh0zpUxTxvonDPFORdG6mPpTRNjitMEdFZm9r
-         v7d6nJQFqAw5PTzxSq6kYVI1ztiWEDmP/pfBNsOGIYDaHvBMZjZuIVczMxFR9jFiR0KV
-         ZhHg==
+        d=chromium.org; s=google; t=1790281931; x=1790886731; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ZvGsLC6n0EXaAgGju5mJ8B3bsonAIhyXpY3nurvIZ6Y=;
+        b=N/JI4o5IR9f6ZEfB5gFtUA+nqKBxB4AsvxhEJ0Zg3BwkleI4ZL3jzVUf1S5J/fnxUC
+         nh/smWHq0r4/Q1ZzMalynCXjCSN8/1OVIQxvRzu8OciX6ip/7E1Dbu0dTovgb4jqYbVQ
+         8SiNfOcXTN2iX+4tL7l1KARWkeWkzb9F/XPFg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790281810; x=1790886610;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Sv+MUiOEP3/RF1kItJkpWgD1vZhiIIYN2y4NUfdViXQ=;
-        b=1/uC3JkGgEXtNyMRmauxqw+a4gK2+upMP79Ls5kQG9+qAPRU/01U7hcC9GKJ8OAjLG
-         aavEtZh6NkTvflRrkqfrSomJvPwn1hm9f2+aBI2UJ09a0SuTcn3XaSOez4gy4gOCnfSm
-         jGA6+roNxLqyjHsv1sGbXnJ6xyDOadzoiC1cOQhbOkgqMrZ+BWqd+eaUfUvtB5jn4NW4
-         8j5kyYK9kFAdhbbRUwDfCEBBKu3mocqsixB6aD3LMEmhoN8ZNaHRTar6b1ii06W1Y7oC
-         hZp2BMxfOPvgNPARik27idTBXEYBQ82EyfVo3YC+O0GRyNbkSXd9VftKLoSSXzObgmlo
-         CilA==
-X-Forwarded-Encrypted: i=1; AKwUvBydKD0jzGph0gXn7qFqXc8kQp+IeGVUHxNZFsRv79ft+a7yCRqj2M1BK/WUsAt5o9WfIe9CMANXuQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++m5yB3NbdfggT6lC0wXfvweghLEqYsPOESQt4teKcxcJ8RPCYyq
-	Ztf85f5O2zWKsf9e/d2x+FbJBERnVjvdnoJAlaa1BBypUokyRADz/gWnhdGPutn6mpE=
-X-Gm-Gg: AYBFou0IGmIgWXq3Fogx9lmwCwctjiaVFnUP8fD4LmTaF9NZy8dlcgKr40bO4u//laL
-	+jsunT7bwhoH84CWVNzX0sNMKJkuYvFFR/XvRCWsRn9Xq+FTo0+641LZUnBGM3ckX6Z1no7rYur
-	nMuK0UjQLp66NG1q7uLTKThSjmRGQ77vq1Kzv0fo+UpRMc/wCz8bl/8vfbs++OoH2AP9+60pSEL
-	8CNM/W+cQlk5RgDC9VAA+Ga1iPnF1C2olQZ9hCsYAqyUlbYAyz1ENVZLyxp3UX0LUyXzv8r1avn
-	ZAvv29yoGrpAklfzxCPolFb6bx8bL0UJaY5vhc1KCgsb+5nnfsU6wz0Rthx1c4RsHwLw55Iqv8M
-	OsFaIwzddEIO7ehOybqhdxh+qQJnbpQ7ftXJVB/T6sDONn/A6nwmR0OTc6Si4by5U0Mu+ezul/I
-	8azZv5awDLhHiVYWx5Qbnp5FXu6/5yEolGH8i2krYv2XcdLOFM6ueQIK2JSsT6YP/KWQ8RzmwpG
-	bdhrvc=
-X-Received: by 2002:a17:90a:d40f:b0:3a0:42a9:9c81 with SMTP id 98e67ed59e1d1-3a0986ee06cmr3294941a91.17.1790281809938;
-        Thu, 24 Sep 2026 13:30:09 -0700 (PDT)
-Received: from localhost ([71.212.197.238])
-        by smtp.gmail.com with UTF8SMTPSA id 98e67ed59e1d1-3a0976c8f8dsm6695485a91.12.2026.09.24.13.30.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 13:30:09 -0700 (PDT)
-From: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Date: Thu, 24 Sep 2026 13:29:57 -0700
-Subject: [PATCH v6 2/4] PM / QoS: add lockless read for flags
+        d=1e100.net; s=20260707; t=1790281931; x=1790886731;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=ZvGsLC6n0EXaAgGju5mJ8B3bsonAIhyXpY3nurvIZ6Y=;
+        b=nhrLVQ0L32T8nmF9OgUtKiXNQdKtELoaOqCOLRzV5iZyk0xXNAzd2M7Z0TXunm6hAb
+         WvXkbdzj4DolFtve6z+f75Ut5yigqf0VGP3lMXz97DAgppEjannkGaQkafAyle/1St1Q
+         rxau4kthAYbfkf3p7ykKPC9T7M7CJ7U4AkjDsnRJ47f+uCUxCe2SJ+AB40049/nA+uM8
+         c3BCZewwBJnEq2BaMxxpYyCg0WN9aZ9Imihq6aoFF1SN85XMfY/VOeF1lreZzNk2LwAf
+         O2/TakRolE3c2SoAO89b3uu4JfKxoXbAJEw/zfLIEw4qDV6T1Y3iyB+V0AnJhBuQgidV
+         roZA==
+X-Forwarded-Encrypted: i=1; AKwUvBzwdVEr+06Zko2ZGUHby/26QLzfsQOxTnndacSlmTzMW/HVyEqqRkMZBMa059SzWC81ladlFqz/dA==@vger.kernel.org
+X-Gm-Message-State: AFuF++k/QcY5Q6zBfAKuV2wE2bYgeBmInzLlMuHScO2P1zfad+qy1bSj
+	qKbQ/GH13G6RF6er/0QmZh+YBq+GRhTCloIfqqxuXbubJO8Ske398Q7mWKCwO7uTcw==
+X-Gm-Gg: AYBFou3tFz1Aiyrdk/NSkLCcVKy9ehuvA0+sZw26HAZiyvnimYcBp9sfMPQc9DPRHpN
+	4/ffOBBW4Q1IHLyupWgUCFgu60gTtQResQlNjGoltEowmFsFVmo/nG+PeOUSdW0PzIscFPnRM40
+	1CyZBy+KYYTa85y6kf65y5K56MfO8HNlud9JujtSpwHMCKUZQeE0ygWpL0+CPLGC7me7SUoowv1
+	FiF2Z/VFWOO8fuAfnRQIsgz0EjqVHkVXjp/luN/9GG0aHVIfA6iZyRLfp2nc85dnJMq0jibyVdN
+	1sTSj4S3AfeGBYguLnDtY1Cmn/lg7upLE7wt4EVatveoNZmKN60HMluEm7pgsz1vbSuclimWELD
+	6AjQeSXU2G6yXX8vgyqgV2qnrV8AuiBI6ofcJy9/heh5FkJRSVJjxO67j1Lpoq0gI33BJ1y+YTY
+	KqkErSOVvv4uJaP7vzp94Lg/bkI1PQFEJR/SoOSseOaO0i9+XPL5Ii7+UX8+jhSoaI4TCkZscfI
+	rCwxMlKZJG44nlIPyANSwDJEj8Pduj7uQ4orwPfPznX2ZYa
+X-Received: by 2002:a05:7300:7312:b0:33b:dd45:716c with SMTP id 5a478bee46e88-340cc11f887mr2475296eec.13.1790281930898;
+        Thu, 24 Sep 2026 13:32:10 -0700 (PDT)
+Received: from localhost ([2a00:79e0:2e7c:8:b9bb:8d53:6635:9f5f])
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34144757f31sm1220938eec.14.2026.09.24.13.32.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 24 Sep 2026 13:32:10 -0700 (PDT)
+Date: Thu, 24 Sep 2026 13:32:08 -0700
+From: Brian Norris <briannorris@chromium.org>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, linux-doc@vger.kernel.org,
+	linux-pm@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>,
+	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	Doug Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 8/8] PM: runtime: Add Example Driver Patterns section
+Message-ID: <arWIyLcKuyFvp2Ko@google.com>
+References: <20260923174711.1283986-1-briannorris@chromium.org>
+ <20260923104031.v2.8.I75ceea7b1afd016e08922e47b82e6eb36de144fe@changeid>
+ <CAPx+jO843h9bOeWNATHm8D2afbniQsX7WECJzCxmfi9ZcH9+5w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260924-topic-lpm-pmdomain-device-constraints-v6-2-a69a4856252b@baylibre.com>
-References: <20260924-topic-lpm-pmdomain-device-constraints-v6-0-a69a4856252b@baylibre.com>
-In-Reply-To: <20260924-topic-lpm-pmdomain-device-constraints-v6-0-a69a4856252b@baylibre.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
- Ulf Hansson <ulfh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Kendall Willis <k-willis@ti.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2506; i=khilman@baylibre.com;
- h=from:subject:message-id; bh=5DZ/nLnxCxfQO4kajog7xGVkPie0bnH1eSRCJb9Yst8=;
- b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBqtYhOaqDZnD+pG3K/6nVjR++x0keaZsrbzYMrY
- UYyM/bHZAmJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCarWITgAKCRBZNxia0/vG
- Ze3LD/4rvCrToYDOg4NocQRJjY9FXamA4TtwaNIUX1UdgVfHvj+MVDFDtbWkIW+4Uk5UjhrdWsZ
- 78Qz9t6C27Gz1au0yFeQxHYh0hTwJD8hB8xOuwVEuqRLYZ/6IhBSK4ywyp3qUzLY4y2m85qhFds
- t8M9244JvoL7Gsy/Y7G4v3cFihf0haSHFWwwUB2htRrF8nhq86mFWvkL16bq9Ekg8VMViXdyP7Z
- qlxiFzjtccIJg3TxiwvGOnu8yIznbnNa0VstOM7egDveMjDZ+s9xastv9iUEpaWB6YoRpAYyzXf
- Wtg7q0uUftXUhdqC5FbnVz2VU9JURkoFRrfrqZ8SJ5LHPvcifzfqwsHoSCK6yid+g0eSR++tJn5
- vKU/qjyAK3OUoSIh09bFZaeR+s7BNlM3+p/6Z++t7uC74bVDo7iWOaRmXD/+lUUhCZcuNeti9Ua
- S9NVMYQXwU7iV3BGE9Nfi8jmsYv7AGBeN4QoPwIfDcVecMQu8ogvoH9FP9oajs4SnyL+Ux1Ixik
- 1NZdfw2NCdl3H6O+3LixdRyMW/Jvqfw+QeKpWELvXG/OqnfGQ3lilhmLOnULcMyJAG7zD3Exa1D
- BPwYia7Q77DCewRRzsy6VuN/gkejH4K8K479T1gXp1XvIRR5KOeIoJ8E4qUI9KVRsvQsJ3K5XrU
- /zVDgMe5/4rc3kA==
-X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
- fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPx+jO843h9bOeWNATHm8D2afbniQsX7WECJzCxmfi9ZcH9+5w@mail.gmail.com>
 
-Add a lockless read for QoS flags similar to the lockless read for
-resume latency (dev_pm_qos_raw_resume_latency) which may be called
-from atomic context (e.g. genpd governors running under a raw spinlock
-or in the syscore suspend path), where taking that sleeping lock would
-be invalid on PREEMPT_RT.
+On Thu, Sep 24, 2026 at 04:13:30PM +0200, Ulf Hansson wrote:
+> On Wed, Sep 23, 2026 at 7:48 PM Brian Norris <briannorris@chromium.org> wrote:
 
-dev_pm_qos_raw_flags() now reads dev->power.qos->flags.effective_flags
-with READ_ONCE() so also add corresponding WRITE_ONCE() to the two
-effective_flags writes, the same way pm_qos_set_value() already does
-for target_value/pm_qos_read_value().
+> > +Basic Probe
+> > +~~~~~~~~~~~
+> > +
+> > +A driver that powers on its hardware during probe and does not use autosuspend
+> > +can initialize runtime PM using device-managed helpers:
+> > +
+> > +.. code-block:: c
+> > +
+> > +       static int foo_probe(struct platform_device *pdev)
+> > +       {
+> > +               struct device *dev = &pdev->dev;
+> > +               struct foo_priv *priv;
+> > +               int ret;
+> > +
+> > +               priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> > +               if (!priv)
+> > +                       return -ENOMEM;
+> > +
+> > +               /* Power on and initialize hardware registers... */
+> > +
+> > +               /*
+> > +                * The code above left hardware powered on and operational, so
+> > +                * tell the PM core that the device is active before enabling
+> > +                * runtime PM.
+> > +                */
+> > +               pm_runtime_set_active(dev);
+> > +
+> > +               ret = devm_pm_runtime_enable(dev);
+> > +               if (ret)
+> > +                       return ret;
+> > +
+> > +               /*
+> > +                * Alternatively, the above two calls can be combined into:
+> > +                * ret = devm_pm_runtime_set_active_enabled(dev);
+> > +                * if (ret)
+> > +                *     return ret;
+> > +                */
+> > +
+> > +               /*
+> > +                * Upon successful return from ->probe(), the driver core
+> > +                * automatically executes pm_request_idle(dev), allowing the
+> > +                * device to suspend asynchronously if its usage counter is zero.
+> > +                */
+> > +               return 0;
+> 
+> The above looks nice and simple, but what happens in the error path is
+> equally important.
+> 
+> In principle, nothing prevents the runtime PM callbacks to be invoked
+> until pm_runtime_disable() has been called at some point *after* the
+> probe callback has returned. This needs to be taken care of correctly.
+> 
+> Likewise, as it's great with an example for ->probe(), it would be
+> nice with a corresponding example for ->remove().
 
-Reviewed-by: Kendall Willis <k-willis@ti.com>
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
----
- include/linux/pm_qos.h | 7 +++++++
- kernel/power/qos.c     | 4 ++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+Good points. I've rewritten much of the Examples to now:
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index aededda52b6b..439a9e779d81 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -219,6 +219,12 @@ static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
- 		PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
- 		pm_qos_read_value(&dev->power.qos->resume_latency);
- }
-+
-+static inline s32 dev_pm_qos_raw_flags(struct device *dev)
-+{
-+	return IS_ERR_OR_NULL(dev->power.qos) ?
-+		0 : READ_ONCE(dev->power.qos->flags.effective_flags);
-+}
- #else
- static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
- 							  s32 mask)
-@@ -300,6 +306,7 @@ static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
- {
- 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
- }
-+static inline s32 dev_pm_qos_raw_flags(struct device *dev) { return 0; }
- #endif
- 
- static inline int freq_qos_request_active(struct freq_qos_request *req)
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 1944dbeb0d4c..c241da5bccf6 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -159,7 +159,7 @@ static void pm_qos_flags_remove_req(struct pm_qos_flags *pqf,
- 	list_for_each_entry(req, &pqf->list, node)
- 		val |= req->flags;
- 
--	pqf->effective_flags = val;
-+	WRITE_ONCE(pqf->effective_flags, val);
- }
- 
- /**
-@@ -193,7 +193,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
- 		req->flags = val;
- 		INIT_LIST_HEAD(&req->node);
- 		list_add_tail(&req->node, &pqf->list);
--		pqf->effective_flags |= val;
-+		WRITE_ONCE(pqf->effective_flags, pqf->effective_flags | val);
- 		break;
- 	default:
- 		/* no action */
+(a) largely *not* use devm_*;
 
--- 
-2.47.3
+(b) include a more interesting set of error handling and remove(); and
 
+(c) only after doing (a) and (b), show an example that uses devm_*() to
+    replace the appropriate error handling and remove() teardown.
+
+I hope that will also partially address your other comment about
+devm_pm_runtime_enable(), and how it's difficult to use correctly.
+
+> I will have to defer reviewing the remaining parts in the $subject
+> patch, a bit limited bandwidth at the moment.
+
+Thanks for the time you spent on it!
+
+I'll wait a bit more in case Rafael had other feedback, before sending a
+v3 that (I think) addresses your feedback.
+
+Brian
