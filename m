@@ -1,178 +1,213 @@
-Received: from mail-yx2-f12.google.com (mail-yx2-f12.google.com [74.125.224.140])
+Received: from mail-pz2-f12.google.com (mail-pz2-f12.google.com [74.125.228.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 952C746AA9E
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 18:13:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.140
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790273593; cv=pass; b=prh91plFX6ks3GEZv+G1cC71MIuhk8n5n3SkqxS/OdV/4zkwMGTChtufwIeZULBOmADV5r5G+jWGyj6YQqwSy9yaQxw8gJB9bSfpKWjWpmFX19K2H8SKFdAE3OHejBEawgg1R2sHPd2UMjx5YJw5H/rZC/fc1e5gIvkTvFRBJnM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790273593; c=relaxed/simple;
-	bh=obM89duV/YDQdOLprqIx6ewSPHAr0cjoNZPC7dSU81A=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IEU4YtnVSvrLrjDcefUywZaMxaZom+A/mEKPnGOZL3LYE06EkqZrSDxM49KEVag9/UCoFeDeF/ORTKP4RZDakg+ha29x7Pige0NsAeFB+uGj4C1ky36ry/++jqgEN9fqukpJMhd2ck4g0yipAphuPMSoWZ5VITC0YSMUad+iZp0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SbvzXo7h; arc=pass smtp.client-ip=74.125.224.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 462E44BA1D7
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 18:51:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.12
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790275876; cv=none; b=BGkHpmJaENpt8Q7rk4kNtX7YcjaCDZxjgvIVxBdKuWGnh7SY8CECbcNR2g8nt6BVwRDwZ43ePLze3OJf6yZuyUttjpoVYnimMGJUi+nP1NchyDQKhIBbOXlC3VWwM60vZFnZlJTUeXLg/fSNY7+DDmNfE9BPi6NWJXmyqt4ngfc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790275876; c=relaxed/simple;
+	bh=xIBkTD5g8oWaR6/5h59ukLX3DRjDG/lsJCYvT3JpSYw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=nnbXLHiG+K/rvXCfbmTgmBQf4VvWh+El0BZHz+BLVf/wh0vbGqaRB4pXzArQmECWk/LN30fPAwraI3zSH0LnfECi1olNbk+zfEcggqwf14tuOkpvLGagbPkFWtPvSuRgmykD98VUo5B+1MOSs9gtqWkrJXOxJEkpcykc0rrf7wk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=Be1tQSh2; arc=none smtp.client-ip=74.125.228.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SbvzXo7h"
-Received: by mail-yx2-f12.google.com with SMTP id 956f58d0204a3-670fee39d73so290294d50.3
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 11:13:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790273590; cv=none;
-        d=google.com; s=arc-20260327;
-        b=cCRmDJFMK8iVESYcNMn5M/Ah+deKbW5EsK0GbdZh+e0W2PN5xXa1dGNjU8w7/LRe5/
-         zb3PNIIzBEvCj0LyS/Z0NBbG0NQJJw+AVxGXyAdI38+V96GZiYfEF02jWYgUYA9PdxZi
-         dn96vpfOEuFCXekl1aZMBEoOTq+C9bU+YRU0AP5rjkLIBN/6RCzzPTI9NyvSLmCo6HMR
-         7lYU9/8/drK3F8rymgwnysAvmk+1cbEzd5jaTSWCMyoHPO6gN4O4FL/nuzO3qG2M5RFP
-         fxi4lNO3dYUHFe4Tbr/3FjQ/PiMxlauM3+b6MVLYgsS6DWf/eRPM7e1K+6YyUZObYcwU
-         GByA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=K5/HMVOS3XLD3/CmnfQQxYp5K4Q9PjCgcZilabgKRo8=;
-        fh=P3wXWz4TWU0yp/2paHh7Pjfk9A6GieNdgQpvY12ipn4=;
-        b=EeVWgMeJbgcU9WlW1g5Ypr350m7EyfZMbbz0pcDGIRhIxLjNnl2YG50OiwoGR2rXh2
-         ewYhyiCyNNmbr7VYqXJDTfVMDv2/BFMSqylw70iWb6hwpwqPG+SQgyYeVYT8cQIx8cnJ
-         c6HVtAhACC0EE17b9xbrkDG4jlXGV511PBzHDMyCtVD79pRQ0OGXyZFi3ygwY5YrgWZD
-         GERaC1bZjFp/mcxxmfMnnXJhciNgIdfXe0fvNLXCcFHYeJw7sDNSxleX9h7HgEA/9sYM
-         ZLGIEbkIDkjw1eg+qDWbzjM1JKaY6iHsSZOY9qArg+QbU5JdIHFrIVLt3hfEVRDn2xg8
-         3XVw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="Be1tQSh2"
+Received: by mail-pz2-f12.google.com with SMTP id d2e1a72fcca58-8674704dab1so223128b3a.2
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 11:51:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790273590; x=1790878390; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=K5/HMVOS3XLD3/CmnfQQxYp5K4Q9PjCgcZilabgKRo8=;
-        b=SbvzXo7hrk0G6IauEmNn8RcRTFDhXSYqND3iYB+yTSkk/RWTVAJUMeNbgREjaGaJht
-         dlN1Eg/3m89JfwDHLE0FluvYhAG3q3xdg3l7jNZUUJrO+l21ou8qZFzxUfbvYJvzQXOg
-         5/+ygTJVT+uaqLti+EfJmQA/N2W5pjkKps/R6ID31PGjFY4W5cJ8VvClXQeU/Ck/ZqAQ
-         Y3WpYCjClKYmTsfxbbDWMvEQMJKv2FtuUgZQjWqydKctnyzYsWgzRtVwS8KSrcokkmr6
-         KIqzntdUUlJs5UMpLtcBj6DmlwlgqYUD+4o6vaTavK6EWNOGL++xcPWaQBtsgV/s5fPB
-         y9Fg==
+        d=baylibre.com; s=google; t=1790275867; x=1790880667; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :references:in-reply-to:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=O+9gOXv28s7LpFRTXptC9SC7mTsay3dhZbC8CfxfBQo=;
+        b=Be1tQSh26TB15AP4mKPTatXPXxuBHovlUdvsijd5gB9F5Dky//diIO3y8hiem0wMSQ
+         trv6290UseaYFcrrS86aMHOmGwLfYhpd1x4IGHgKDtxgLGjshQmZRI1G7aaMmxNuMZBO
+         eQFT7yXi+B4w/CJqGWDRaljlxMcH3cGwf0m0Y52K9nJJr2p0lIp2ycOflSIwIuB/Rq6z
+         E9KeGrz7NUF+CpYqOqTmuZyQgFfLss8tR4+gtGDQegRQdcACa5hewlkVGI6uAy8fFQOi
+         Cc4jxsyMW7IJPkgvFE6gBHpPDJZ1aZLU0jdyBnTRdRhpM86NpZYpVgM9tiy3QOQ8WoUN
+         lH4w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790273590; x=1790878390;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1790275867; x=1790880667;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :references:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=K5/HMVOS3XLD3/CmnfQQxYp5K4Q9PjCgcZilabgKRo8=;
-        b=bDZNgvXK8UtrgafgkxORK3C2ykrYM0gjkce8gKSrEalefa3Fv0Zhpd86rpE312ySUh
-         GQcQSf8Ssuj5iQmbKU5WVFiiR8325u6ZRjQleil/PpLGMc8f07/JW3ENg1zwxr9uJIpp
-         n90eL+lDkxJRbXig3ghxBbzoiryoplb/qXcNxkaRVW8kLf7ZhvyYi999ga8qqDrVV+87
-         PPgWHIslYiuCakYI3RnEpEkoKdsv7qO+c5AMVmj5uDR3jO2hT8zL/zNP29FYqRplkK9c
-         S01t00xfRz4uE01j5XNRk3t307eYIcYikfWn4nPMNgJwjs6w9RJLMvQezjViR2zNdKE4
-         Z9Tg==
-X-Forwarded-Encrypted: i=1; AKwUvByCP68nUNtsk7fGT6zSDGXq3+PnpG9MdmHeOKsT57Zk7ptgH9PB7Z1zGJ0HsikgGqWOcHA+xupkKw==@vger.kernel.org
-X-Gm-Message-State: AFuF++mLr75EhzSYf/Z0XmXydRTvqJuhF+bSyRsljUugfvmpwJYvnT7r
-	JQVW2+ztNtlI5tgtPPgeTGGofmnkSl5SaKBXrjXUGVgQtR5J/SqRgG/5UHxHY0PocrZAeqXTmEt
-	1cfu4dbe5CBtVi3ElRL63Eg4P7kJyq7k=
-X-Gm-Gg: AYBFou10Vw9ObSuKmbY4bfwYI64VHlyzrajEVHHl/dh1ZYpFVM6OYPfmHMCBkn6oUHr
-	pwe53cZjfC+mhbHppegT1ECWKbsTZb/n878XkE4XvVY65pknK/ca1jFl0lvljWm9vV1MHWWyEnG
-	DEmtLyJI2GZ6pIz8eOqas/ZGeJW6rBTqFOjoMkuNeiflfBOatHL+AiZZYkQwPG8zD3Fc0BRgJhq
-	j2lerp+58UUD6evxJH157gHRRk7YmM5BpwG9eVlC7b2Q9sGn4XwHhqRQCSX4ybtQiKPNbn79VIo
-	lGqmOZnTW766aAsqag5gEijfZRbH5tQlL/7E5lJ0304tj3G8wdfEbmhX
-X-Received: by 2002:a05:690e:418b:b0:671:5ede:96e2 with SMTP id
- 956f58d0204a3-672ed2603d0mr2064645d50.8.1790273590483; Thu, 24 Sep 2026
- 11:13:10 -0700 (PDT)
+        bh=O+9gOXv28s7LpFRTXptC9SC7mTsay3dhZbC8CfxfBQo=;
+        b=Quv2hXijKALmFPCJzIg4ARhmTd3yi8mUjgJwMF8vlFdbAbZhkJubSdK3odf+8ZiyrP
+         J2x4jx94fXkfyRP83MmXO+lh0gfvseriFwNIP9OX+vxquGklJlfIzOZnyK2RV/3Bl8ph
+         GhGzoDojxDUpg8FaD3n9vW114HHgrZvGI+ULvuLEYeeY9zvyr2KaknqMs6yE+Qhct2uP
+         YvSoS8FwdLdlfEQ8/Prr/txvd7PIkMEwBiLvcojLTs+Z5EssFpo97bl1eBncpbmdEZhb
+         UfoOibp8vAbct69AZBVexjPWnRAl5t4hfiat6bux1MgtjtPqQQUErtCyCtIwPvo4/y3J
+         R5+Q==
+X-Forwarded-Encrypted: i=1; AKwUvBzcu9mI0zeQGiissAmVjwepE1Dq2clUeHZyM+HP6xkhtjqx7tpZRoYejnErhLlqRmLsJSNKny3ZJA==@vger.kernel.org
+X-Gm-Message-State: AFuF++k4tbcXY2TpLw6SJGlxP8OeW2BdTubufq3W6Mtd63s1pYbvm0mE
+	Mvpd5c3iS8wZ7uZA80sWT3anmTY9NeGgxZKIE7jM7zlD/fwFguqNQ0PHHaDaTRG6svg=
+X-Gm-Gg: AYBFou2icbeWVneQn+WUsb+6+ZSLXkYDlbtDiM7KkawTc/o7zRUGWxWtBexoUxYrPpl
+	tqKPXoLnIJuUaS9jQiadgKsCDK9WrF4c+qywqJwjpWFBZ739Cj1vabOSITzBUaZIYSCkDw1owam
+	9jwO7pR9Vprh1lbxJprPnHK8NHB3+KtqSgA/JO2P89jDrntielC7Df8v1/l03hqY0DvIprbhfE4
+	YOJkwh/aO6T9t/S3ek95N4hAUOLeHMzRPBsXLDemukTG6/ggeG3On2ag9XLcxK5PGl4SDrogtPq
+	fX2jwJQi/91KG5h2XiEpJaUd73JwrpPWeTKdDo1SsbbpsunH0+ai1p/sDGWU0mDpy6cxoks+XsD
+	r9gzdXCrjWq9nGtciHlpvnojS7m/Kxud8uVctY4Ejpc1FEulNa4B2SOb53k7dR/LOAIkHZdLwx7
+	fRehto6PDZIXhe7IqruCucFJHcBOCkxkOlPdzcAUgWy4TJnrfROZtIItgAQJVPEJ87s8g=
+X-Received: by 2002:a05:6a00:300d:b0:82f:50cd:e586 with SMTP id d2e1a72fcca58-87e9cb2196cmr2826556b3a.13.1790275866641;
+        Thu, 24 Sep 2026 11:51:06 -0700 (PDT)
+Received: from localhost ([71.212.197.238])
+        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-87feb980a0dsm86615b3a.55.2026.09.24.11.51.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 11:51:06 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Ulf
+ Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org, Abel Vesa
+ <abel.vesa@oss.qualcomm.com>
+Subject: Re: [PATCH v5 3/4] pmdomain: core: add genpd_for_each_child() helper
+In-Reply-To: <CAPx+jO98X6dr20r3o7iHUq7zrjsDy+6YDM=FiO6MOkpCJFfhEA@mail.gmail.com>
+References: <20260826-topic-lpm-pmdomain-device-constraints-v5-0-28cbf43f7e38@baylibre.com>
+ <20260826-topic-lpm-pmdomain-device-constraints-v5-3-28cbf43f7e38@baylibre.com>
+ <CAPx+jO98X6dr20r3o7iHUq7zrjsDy+6YDM=FiO6MOkpCJFfhEA@mail.gmail.com>
+Date: Thu, 24 Sep 2026 11:51:05 -0700
+Message-ID: <7hwlsabi06.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260912191156.185448-1-sumeet4linux@gmail.com>
-In-Reply-To: <20260912191156.185448-1-sumeet4linux@gmail.com>
-From: Sumeet Pawnikar <sumeet4linux@gmail.com>
-Date: Thu, 24 Sep 2026 23:42:59 +0530
-X-Gm-Features: AclHuK9xd3dlB_Cgp98d7h2ns81HK8suGpMur6yXKcYJOLZ9LOtfHEkjox28BFY
-Message-ID: <CAJ9orWTDrTTRLqwnwu9YMQQKt0k2g7qZEpH6fDcMFcTbTs55KA@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] PM: Use %pe to print error pointers symbolically
-To: rafael@kernel.org, krzk@kernel.org, amit.kachhap@gmail.com, 
-	daniel.lezcano@kernel.org, thara.gopinath@gmail.com, talel@amazon.com, 
-	hayashi.kunihiko@socionext.com, mhiramat@kernel.org, mmayer@broadcom.com, 
-	viresh.kumar@linaro.org, sumitg@nvidia.com, peter.griffin@linaro.org, 
-	myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, 
-	Frank.Li@nxp.com, s.hauer@pengutronix.de, matthias.bgg@gmail.com, 
-	angelogioacchino.delregno@collabora.com, sven@kernel.org, j@jannau.net, 
-	marcan@marcan.st, casey.connolly@linaro.org, sre@kernel.org, wens@kernel.org, 
-	t.schramm@manjaro.org
-Cc: bcm-kernel-feedback-list@broadcom.com, linux-samsung-soc@vger.kernel.org, 
-	kernel@pengutronix.de, imx@lists.linux.dev, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Sep 13, 2026 at 12:42=E2=80=AFAM Sumeet Pawnikar <sumeet4linux@gmai=
-l.com> wrote:
->
-> This patch series is a cleanup for subsystems under power management
-> (linux-pm) that converts several instances of error pointer printing
-> to use the `%pe` format specifier instead of explicitly casting with
-> `PTR_ERR()`.
->
-> Currently, many drivers use `PTR_ERR()` paired with `%ld` or `%li` to
-> print error codes returned as pointers. By switching to `%pe` and passing
-> the error pointer directly, the logging subsystem will automatically
-> print the symbolic error name (e.g., `-ENOMEM`, `-EPROBE_DEFER`) when
-> `CONFIG_SYMBOLIC_ERRNAME` is enabled, and gracefully fall back to the
-> numeric value otherwise.
->
-> This change significantly improves the readability of kernel logs and
-> dmesg traces during debugging, without introducing any functional changes
-> or side effects.
->
-> The cleanup has been applied across the following PM subsystems/drivers:
-> * powercap (intel_rapl_msr)
-> * thermal (cpufreq_cooling, devfreq_cooling, qcom)
-> * cpufreq (bmips, cppc, qoriq, s3c64xx)
-> * devfreq (imx-bus, imx8m-ddrc)
-> * power/supply (various battery and charger drivers)
->
-ping for review request on above listed changes in this v2 series.
+Ulf Hansson <ulf.hansson@oss.qualcomm.com> writes:
 
-Thanks,
-Sumeet.
+> On Thu, Aug 27, 2026 at 12:23=E2=80=AFAM Kevin Hilman (TI) <khilman@bayli=
+bre.com> wrote:
+>>
+>> Add a new internal helper function genpd_for_each_child() that recursive=
+ly
+>> iterates over all devices in a PM domain and its child domains (subdomai=
+ns).
+>> This helper is useful for governors and other core PM domain code that n=
+eeds
+>> to examine or apply operations to all devices within a domain hierarchy.
+>>
+>> The function takes a callback that is invoked for each device, and suppo=
+rts
+>> early termination if the callback returns a non-zero value.
+>>
+>> The helper is defined in a new internal header drivers/pmdomain/core.h a=
+nd
+>> implemented in drivers/pmdomain/core.c, making it available to other PM
+>> domain subsystem components.
+>>
+>> The first user of this helper is the cpu_system_power_down_ok() governor
+>> function, which uses it to check device QoS latency constraints across t=
+he
+>> entire domain hierarchy.
+>>
+>> Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+>> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+>> ---
+>>  drivers/pmdomain/core.c | 45 ++++++++++++++++++++++++++++++++++++++++++=
++++
+>>  drivers/pmdomain/core.h | 17 +++++++++++++++++
+>>  2 files changed, 62 insertions(+)
+>>
+>> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+>> index 842c4169e290..ff27369d9a97 100644
+>> --- a/drivers/pmdomain/core.c
+>> +++ b/drivers/pmdomain/core.c
+>> @@ -24,6 +24,8 @@
+>>  #include <linux/cpu.h>
+>>  #include <linux/debugfs.h>
+>>
+>> +#include "core.h"
+>> +
+>>  /* Provides a unique ID for each genpd device */
+>>  static DEFINE_IDA(genpd_ida);
+>>
+>> @@ -276,6 +278,49 @@ static void genpd_sd_counter_inc(struct generic_pm_=
+domain *genpd)
+>>         smp_mb__after_atomic();
+>>  }
+>>
+>> +/**
+>> + * genpd_for_each_child - Recursively iterate over all devices
+>> + *                        in a PM domain and its subdomains.
+>> + * @genpd: PM domain to iterate over.
+>> + * @fn: Callback function to invoke for each device.
+>> + * @data: Data to pass to the callback function.
+>> + *
+>> + * This function recursively walks through all devices in the given PM =
+domain
+>> + * and all devices in its child PM domains (subdomains). For each devic=
+e found,
+>> + * the callback function @fn is invoked with the device and @data as ar=
+guments.
+>> + *
+>> + * Note: this function is inteded for use by the core and governors,
+>> + * not for pmdomain providers.
+>> + *
+>> + * Returns: 0 on success, or the first non-zero value returned by @fn.
+>> + */
+>> +int genpd_for_each_child(struct generic_pm_domain *genpd,
+>> +                        int (*fn)(struct device *dev, void *data),
+>> +                        void *data)
+>> +{
+>> +       struct pm_domain_data *pdd;
+>> +       struct gpd_link *link;
+>> +       int ret;
+>> +
+>> +       /* First, iterate over all devices in this domain */
+>> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+>> +               ret =3D fn(pdd->dev, data);
+>> +               if (ret)
+>> +                       return ret;
+>> +       }
+>> +
+>> +       /* Then, recursively iterate over all child domains (subdomains)=
+ */
+>> +       list_for_each_entry(link, &genpd->parent_links, parent_node) {
+>> +               struct generic_pm_domain *child_pd =3D link->child;
+>> +
+>> +               ret =3D genpd_for_each_child(child_pd, fn, data);
+>> +               if (ret)
+>> +                       return ret;
+>> +       }
+>> +
+>> +       return 0;
+>> +}
+>> +
+>>  #ifdef CONFIG_DEBUG_FS
+>>  static struct dentry *genpd_debugfs_dir;
+>>
+>> diff --git a/drivers/pmdomain/core.h b/drivers/pmdomain/core.h
+>> new file mode 100644
+>> index 000000000000..a296134d4005
+>> --- /dev/null
+>> +++ b/drivers/pmdomain/core.h
+>> @@ -0,0 +1,17 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +/*
+>> + * Internal header for PM domain core
+>> + *
+>> + * Copyright (C) 2026 Kevin Hilman <khilman@baylibre.com>, Texas Instru=
+ments
+>> + */
+>> +
+>> +#ifndef __PM_DOMAIN_CORE_H__
+>> +#define __PM_DOMAIN_CORE_H__
+>> +
+>> +#include <linux/pm_domain.h>
+>
+> I don't think this is needed. Instead please make forward declaration
+> of the structs we need. Like:
+>
+> struct device;
+> struct generic_pm_domain;
 
-> ---
-> changes in v2:
->  - Krzysztof kozlowski suggested to use dev_err_probe instead of dev_err
->    for *_probe() functions during review of v1 series. This will be done
->    in different patch series.
->  - Here in v2, reverted the changes for dev_err under *_probe() functions=
-.
->
->  - Link to v1: https://lore.kernel.org/all/20260906061755.5103-1-sumeet4l=
-inux@gmail.com/
->
-> ---
->
-> Sumeet Pawnikar (5):
->   power: Use %pe to print error pointers symbolically
->   devfreq: Use %pe to print error pointers symbolically
->   cpufreq: Use %pe to print error pointers symbolically
->   thermal: Use %pe to print error pointers symbolically
->   powercap: intel_rapl: Use %pe to print error pointers symbolically
->
->  drivers/cpufreq/bmips-cpufreq.c            | 4 ++--
->  drivers/cpufreq/cppc_cpufreq.c             | 4 ++--
->  drivers/cpufreq/qoriq-cpufreq.c            | 4 ++--
->  drivers/cpufreq/s3c64xx-cpufreq.c          | 5 ++---
->  drivers/devfreq/imx-bus.c                  | 4 ++--
->  drivers/devfreq/imx8m-ddrc.c               | 3 +--
->  drivers/power/reset/macsmc-reboot.c        | 4 ++--
->  drivers/power/supply/cpcap-charger.c       | 4 ++--
->  drivers/power/supply/intel_dc_ti_battery.c | 2 +-
->  drivers/power/supply/qcom_smbx.c           | 2 +-
->  drivers/powercap/intel_rapl_msr.c          | 4 ++--
->  drivers/thermal/cpufreq_cooling.c          | 4 ++--
->  drivers/thermal/devfreq_cooling.c          | 4 ++--
->  drivers/thermal/qcom/qcom-spmi-adc-tm5.c   | 4 ++--
->  14 files changed, 25 insertions(+), 27 deletions(-)
->
-> --
-> 2.43.0
->
+OK.
+
+Kevin
