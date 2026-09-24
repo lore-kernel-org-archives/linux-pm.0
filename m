@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DE1D34A797;
-	Thu, 24 Sep 2026 08:16:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D41F41CB5A;
+	Thu, 24 Sep 2026 08:19:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790237810; cv=none; b=EehPngexdvubGJPKyIpc6riyQzqD9JjCvpTayRC72aZuTqIkNaeCp5HIkLnUqmSzi/ut0W+F/tpFTxNM5DhZYMay5+pzWcwgKidNk4X9AEccESZGiEoTq2gpZdyDNNMw9b5xRo8+sMmfBacOvdLO5oH9u8D4g8qSp6tiLFflgkA=
+	t=1790237985; cv=none; b=EiY+e9Sid0QaUhwz+cqpqlWDtoYLv3oP7yt+RdxIPi9KIzvOa6xm76q4pPC7VGrs0q9Bb/tP+yNsuO1CY4gxW8s6ZjzYr+6+gwO1tkJyaETlG9yevTnjBeNN3jkT3t+y0gR/P1beXLbG433uEIFrhn0txbKCjUsGQ1H+eu92myI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790237810; c=relaxed/simple;
-	bh=bg0j1aaB176FQuIV1Xv8HLgmwrfs2NdrMlu4GU828fU=;
+	s=arc-20240116; t=1790237985; c=relaxed/simple;
+	bh=WImGzSPhUQrfFfdTg4EMX+LlTIkR51MI4LJsWWS8GTE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X9bwcNz9IAuBC5ckYylLkzFMdmH7cDQJ7Gd2+9XJogr7lScFEUD3hCNbnz9jlmn1sX/bi+C4nKfG3vplTLDowvwX+9kQ0mmwc4zXV3+E8BYiVqkdLF/TDSZqTMKbYpSGHnBUEfTdyimsnVmqi932tqBTG9fhnJbgPNZBxFah+1s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ntwTH3MF; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=MGVyUsuGBqZeBYUfM/jMCsS5ozon+jxMDrrXCbLSXAnmoLHgqXjkQqHNaNCLfe2ZqzMgeZyVai/iFfk5a64Mhi7UdTScJKQDfKKzEaVeOrQsnRpZRI7SsWrnzT6BLvoG8tUtWBp8t4czoPEYyUd1gaXcX0DSJGaP0bD+Rl22dpk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=n+gQShgo; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ntwTH3MF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D4081F00893;
-	Thu, 24 Sep 2026 08:16:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n+gQShgo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0BEF1F000FF;
+	Thu, 24 Sep 2026 08:19:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790237808;
-	bh=GlkUeK+CoI4sX/1Kb/GGrPydzXNfACW/Fk6fPi/2geQ=;
+	s=k20260515; t=1790237984;
+	bh=j38sKxcUuo+v+Xf2oFDiECaiMijka26xvcA+axqRQxY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ntwTH3MFC1AqMSiVALyjvMdSqJhNw+QehUMFv8ChNY3nUEPoeQRCQqWQEYYGguK+q
-	 3RgCJtdywgJapljiYq1Mey4P8axQtGGQdgSxrIn61KlKS3GAjqIgEFHE3hskBKgaXE
-	 zj82bUfAQ2PvnnrgeT/1qcwEYmzPsRF7hwfIm+Cq7eif1U1gsp2b9V4w6YEDdei1To
-	 0PE222KjY0oceNBHyh8nMSdJUeMwlvbXXNvNeUrdRnqqaqsHc/YZMjvlJRHUbTjGEb
-	 2AL2arEhpgB/BMoQ75pkMbmqwDN8UoIBr3D84WgVCD4cdkA917WVjA/Rm6RWtU6Zy3
-	 ROazRS22MSxJQ==
-Message-ID: <b3de63c9-32ea-471d-b2d6-0565d93313f3@kernel.org>
-Date: Thu, 24 Sep 2026 10:16:39 +0200
+	b=n+gQShgouLNB4db+aIgFmU0669lvvGgyqD5kLZaf6uVg42XzHAnFT+lXpFJw9bJKb
+	 EO1Bjtpb6VPH/M/4BVZKIF8ezAVotbvVw8WTP+tW7F7BQrt3if0KdoQ6pQ47M1GMdH
+	 TXRFzeOPvpjVJbZM7hixJhvVnDv+asJOWGsjGrSOyCVwDX7k2TE0Iqih5KSeCNZ1n/
+	 savoOMzeKelYBBa5rpykQ3V84ZCeIBG69Sj7aXKVzhDzOdo1rW4d1WvT8pPU+PZroG
+	 ppFv+Rwl1qgTNwaPNx/AA9iHYcGixy3TEbTwZAglGLRyta1LNgIqUlzPACmUYjrV0Y
+	 VrBK2DVCZG97g==
+Message-ID: <d568a29b-5745-4214-96d3-1b635cd46c15@kernel.org>
+Date: Thu, 24 Sep 2026 10:19:33 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/5] hibernate: handle potential errors in
- hibernate_{map,unmap}_page()
+Subject: Re: [PATCH 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
+ pages
 To: Mike Rapoport <rppt@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
  Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
@@ -45,9 +45,9 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  kasan-dev@googlegroups.com, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, linux-pm@vger.kernel.org
 References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
- <20260917-hibernation-v1-3-7f7dfae3dbe0@kernel.org>
- <5271866c-a334-453b-a95c-8bfbede1232b@kernel.org>
- <arPzeJ7ZsdrXkzbF@kernel.org>
+ <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
+ <fec1931b-1173-4e14-b74a-7b3987a9b7bc@kernel.org>
+ <arP0-maAEi5yeNnl@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -94,33 +94,118 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <arPzeJ7ZsdrXkzbF@kernel.org>
+In-Reply-To: <arP0-maAEi5yeNnl@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/23/26 17:42, Mike Rapoport wrote:
-> On Wed, Sep 23, 2026 at 12:13:39PM +0200, David Hildenbrand (Arm) wrote:
+On 9/23/26 17:49, Mike Rapoport wrote:
+> On Wed, Sep 23, 2026 at 12:31:26PM +0200, David Hildenbrand (Arm) wrote:
 >> On 9/17/26 08:07, Mike Rapoport (Microsoft) wrote:
->>> When safe_copy_page() had to map/unmap pages only because of
->>> debug_pagealloc() there could be no errors in the kernel page table
->>> updates.
+>>> The pages protected by KFENCE are removed from the direct map.
 >>>
->>> However, with the increasing desire to remove pages from the direct map
->>> this assumption becomes a real stretch.
+>>> safe_copy_page() temporarily maps and unmaps them using set_direct_map
+>>> APIs, or, when the stars align, even using debug_pagealloc_map_pages().
+>>>
+>>> Neither of these APIs cares whether it is a KFENCE page and both blindly
+>>> perform the update of the kernel page table for any non-present page.
 >>
->> What's our general direction in that regard?
+>> Agreed, we should route this through the actual mechanism that modified the
+>> directmap in the first place.
 >>
->> I'd assume we'd not want to modify the directmap from hibernation code and
->> simply fail instead if we encounter that scenario.
+>>>
+>>> Ability to use debug_pagealloc_map_pages() to remap KFENCE pages when both
+>>> KFENCE and debug_pagealloc are enabled is an amusing coincidence.
+>>>
+>>> But with increasing appetite for using set_direct_map for hardening
+>>> purposes, it becomes too big of a hammer to enable saving any non-present
+>>> page in the hibernation image.
+>>>
+>>> Another gotcha is that loongarch that does not have a direct map at all
+>>> advertises ARCH_HAS_SET_DIRECT_MAP to allow coexistence of KFENCE and
+>>> hibernation.
+>>>
+>>> Extend KFENCE with a bitmap that tracks which pages are protected and
+>>> provide kfence_force_mapping() and kfence_restore_mapping() APIs that allow
+>>> forced mapping and unmapping of KFENCE pages.
+>>>
+>>> Use these APIs in hibernate_{map,unmap}_pages() for KFENCE pages.
+>>>
+>>> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+>>> ---
+>>>  include/linux/kfence.h  | 29 +++++++++++++++++++++++++++
+>>>  kernel/power/snapshot.c |  7 +++++++
+>>>  mm/kfence/core.c        | 52 +++++++++++++++++++++++++++++++++++++++++++++++--
+>>>  3 files changed, 86 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/include/linux/kfence.h b/include/linux/kfence.h
+>>> index e5822f6e7f279..33a126cb6d1b7 100644
+>>> --- a/include/linux/kfence.h
+>>> +++ b/include/linux/kfence.h
+>>> @@ -222,6 +222,32 @@ struct kmem_obj_info;
+>>>  bool __kfence_obj_info(struct kmem_obj_info *kpp, void *object, struct slab *slab);
+>>>  #endif
+>>>  
+>>> +/**
+>>> + * kfence_force_mapping() - make sure a KFENCE page is mapped
+>>> + * @page: page to map
+>>> + *
+>>> + * Check whether @page is protected and map it if needed.
+>>> + *
+>>> + * Requires: is_kfence_address(page_address(page))
+>>> + *
+>>> + * Return:
+>>> + * * false - failed to map @page
+>>> + * * true - @page is mapped
+>>> + */
+>>> +bool kfence_force_mapping(struct page *page);
+>>> +
+>>> +/**
+>>> + * kfence_restore_mapping() - restore mapping of a KFENCE page
+>>
+>>
+>> The name is misleading. You are actually restoring that the page is
+>> unmapped/protected?
+>>
+>> 	kfence_force_mapping vs. kfence_restore_mapping
+>>
+>> is confusing.
+>>
+>> Can we find a better pair of function names that describe what is actually
+>> happening?
+>>
+>> Maybe something along the lines of
+>>
+>> 	kfence_prepare_copy_page
+>>
+>> 	kfence_finish_copy_page
+>>
+>> That rather expresses what the caller intends to do.
 > 
-> First I want hibernation to only touch the memory that we know is safe to
-> remap, for now it's only kfence (the next patch), so no arbitrary direct
-> map changes there.
+> Naming is hard :-D
 > 
-> And if remapping fails, my take is that we should abort the hibernation.
+> I feel that _copy_page() is to vague and adding hibernation there is to
+> mouthful :(
 
-Yes, agreed. Only handle known users and leave anything else just aborting
-hibernation.
+Yeah, I wouldn't mention hibernation.
+
+
+
+> 
+> And these could be used outside of safe_copy_page() someday.
+> 
+> How about 
+> 
+> kfence_set_page_present()
+> kfence_set_page_default()
+
+
+Maybe spell out "direct_map" ?
+
+kfence_set_direct_map_present()
+
+kfence_set_direct_map_default()
+
+But yeah, something along those lines is better.
 
 -- 
 Cheers,
