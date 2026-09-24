@@ -1,161 +1,245 @@
-Received: from mail-dy2-f12.google.com (mail-dy2-f12.google.com [74.125.229.12])
+Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF4D74D2EC3
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 20:32:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEE48428475
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 22:51:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790281935; cv=none; b=Ti9KE2uWgCw5ajA4bTBUGz61CHtdE5UBJT8NLK1JwPSTEq0M5xT4I+yjBqY8kf29qMzIWumro3DJi15OnOIEvVR1wwMv7KRshthT50szZ/4jyv+NH2zRFUpddd8LlUxTs3PyNJu1JSNpmXg5QmdMrzws15wm81cgqgrAkCiBDsY=
+	t=1790290318; cv=none; b=iBoDaPOIJJV8AChy0U/CqeQHlnvXQYChdGMyUEa81U+OcrAd5r4CUHG4te/SVuA2uODa2xJ63/3RGqbSOrcZhuu1OdTSKUTihH+VV6FWMRoF5mhJS/5Gn4bW+q37j+o3g45xPVFKmZQmcFxJ6eoeklExqTjnDUJJfNjQxbHNizs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790281935; c=relaxed/simple;
-	bh=v3fnB7xz+w9vdQgoBzGCx0rltywWs4k7dX0JJ8+/yM8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Yq/MN0297IV4EPJ1vIhQJjqvpyptkDxcJpkbl7jtkEZFyjhYQd5GAQRna+5a3KNg1+MTZKG53vY5puuetuH6wI/IPIfOfVt4fmr3jgsHnMGgTbo/ad32veOccQCLECpAqOqgEZpK8YyR8rQm1FUVN2zcW5nA2t4DLB+mEjtyVz8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=N/JI4o5I; arc=none smtp.client-ip=74.125.229.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1790290318; c=relaxed/simple;
+	bh=62XiZv6zk3rTKUR1/CJN607c+3Nv6L/9YqYGWxYk92A=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RgN1xTHWQhOg3DrjeJo1+G2/vfPmTv8kYvhB0YfQVI9p4d4alLGv/GX2BUEJ7aXxKax5ILc5HdC3BNHsAYy2d6dIaFUcYQu4aQE32FDjPzF/b2rMpenLUcsXnD54hSRBOeuO0Ivcv0pEt/tTcfvejLpW07AU/S01v8YT0KMVak4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jr7MkNWE; arc=none smtp.client-ip=74.125.225.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="N/JI4o5I"
-Received: by mail-dy2-f12.google.com with SMTP id 5a478bee46e88-3381a6a05c9so81971eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 13:32:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jr7MkNWE"
+Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49cd4ba9f68so3431885e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 15:51:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790281931; x=1790886731; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ZvGsLC6n0EXaAgGju5mJ8B3bsonAIhyXpY3nurvIZ6Y=;
-        b=N/JI4o5IR9f6ZEfB5gFtUA+nqKBxB4AsvxhEJ0Zg3BwkleI4ZL3jzVUf1S5J/fnxUC
-         nh/smWHq0r4/Q1ZzMalynCXjCSN8/1OVIQxvRzu8OciX6ip/7E1Dbu0dTovgb4jqYbVQ
-         8SiNfOcXTN2iX+4tL7l1KARWkeWkzb9F/XPFg=
+        d=gmail.com; s=20251104; t=1790290315; x=1790895115; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=DY4/sCTlc60wxmtt4c/QaqdPIrvNF/5bj6Z1Qp+fliA=;
+        b=Jr7MkNWEv9EYHPscJTXfpurWeYrYnCM+0e9DH3RLK9v+Nzxzgy3jxSmw3Rz3HEmIeM
+         vc8RvLFYRO3qGRbf2Ab6qQZd8G+2zmeNFT1kR7r0K1BIumx0TyHU+TPNUmg4K7itAeCt
+         KqSB8clSDNfg6p2TZHy/2Xg+HH9Y70oOO+JLGLlPyAtpB048S9L9LfO8EiyEPT9w5ncO
+         O9xTcLFXKKweYgvlRQoGX7c9W0QaNUKpi3OTzmA7r0lvpgI5Mtubsx9+3vjF7lnwRrYq
+         HvPGtjDoVqqmO3uNUaE01pxfloL+FrLDw2FtO9/QOI+DzuBwtCVFKscHyN2qzVb6EvJF
+         veTw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790281931; x=1790886731;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=ZvGsLC6n0EXaAgGju5mJ8B3bsonAIhyXpY3nurvIZ6Y=;
-        b=nhrLVQ0L32T8nmF9OgUtKiXNQdKtELoaOqCOLRzV5iZyk0xXNAzd2M7Z0TXunm6hAb
-         WvXkbdzj4DolFtve6z+f75Ut5yigqf0VGP3lMXz97DAgppEjannkGaQkafAyle/1St1Q
-         rxau4kthAYbfkf3p7ykKPC9T7M7CJ7U4AkjDsnRJ47f+uCUxCe2SJ+AB40049/nA+uM8
-         c3BCZewwBJnEq2BaMxxpYyCg0WN9aZ9Imihq6aoFF1SN85XMfY/VOeF1lreZzNk2LwAf
-         O2/TakRolE3c2SoAO89b3uu4JfKxoXbAJEw/zfLIEw4qDV6T1Y3iyB+V0AnJhBuQgidV
-         roZA==
-X-Forwarded-Encrypted: i=1; AKwUvBzwdVEr+06Zko2ZGUHby/26QLzfsQOxTnndacSlmTzMW/HVyEqqRkMZBMa059SzWC81ladlFqz/dA==@vger.kernel.org
-X-Gm-Message-State: AFuF++k/QcY5Q6zBfAKuV2wE2bYgeBmInzLlMuHScO2P1zfad+qy1bSj
-	qKbQ/GH13G6RF6er/0QmZh+YBq+GRhTCloIfqqxuXbubJO8Ske398Q7mWKCwO7uTcw==
-X-Gm-Gg: AYBFou3tFz1Aiyrdk/NSkLCcVKy9ehuvA0+sZw26HAZiyvnimYcBp9sfMPQc9DPRHpN
-	4/ffOBBW4Q1IHLyupWgUCFgu60gTtQResQlNjGoltEowmFsFVmo/nG+PeOUSdW0PzIscFPnRM40
-	1CyZBy+KYYTa85y6kf65y5K56MfO8HNlud9JujtSpwHMCKUZQeE0ygWpL0+CPLGC7me7SUoowv1
-	FiF2Z/VFWOO8fuAfnRQIsgz0EjqVHkVXjp/luN/9GG0aHVIfA6iZyRLfp2nc85dnJMq0jibyVdN
-	1sTSj4S3AfeGBYguLnDtY1Cmn/lg7upLE7wt4EVatveoNZmKN60HMluEm7pgsz1vbSuclimWELD
-	6AjQeSXU2G6yXX8vgyqgV2qnrV8AuiBI6ofcJy9/heh5FkJRSVJjxO67j1Lpoq0gI33BJ1y+YTY
-	KqkErSOVvv4uJaP7vzp94Lg/bkI1PQFEJR/SoOSseOaO0i9+XPL5Ii7+UX8+jhSoaI4TCkZscfI
-	rCwxMlKZJG44nlIPyANSwDJEj8Pduj7uQ4orwPfPznX2ZYa
-X-Received: by 2002:a05:7300:7312:b0:33b:dd45:716c with SMTP id 5a478bee46e88-340cc11f887mr2475296eec.13.1790281930898;
-        Thu, 24 Sep 2026 13:32:10 -0700 (PDT)
-Received: from localhost ([2a00:79e0:2e7c:8:b9bb:8d53:6635:9f5f])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34144757f31sm1220938eec.14.2026.09.24.13.32.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 24 Sep 2026 13:32:10 -0700 (PDT)
-Date: Thu, 24 Sep 2026 13:32:08 -0700
-From: Brian Norris <briannorris@chromium.org>
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, linux-doc@vger.kernel.org,
-	linux-pm@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>,
-	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Doug Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 8/8] PM: runtime: Add Example Driver Patterns section
-Message-ID: <arWIyLcKuyFvp2Ko@google.com>
-References: <20260923174711.1283986-1-briannorris@chromium.org>
- <20260923104031.v2.8.I75ceea7b1afd016e08922e47b82e6eb36de144fe@changeid>
- <CAPx+jO843h9bOeWNATHm8D2afbniQsX7WECJzCxmfi9ZcH9+5w@mail.gmail.com>
+        d=1e100.net; s=20260707; t=1790290315; x=1790895115;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=DY4/sCTlc60wxmtt4c/QaqdPIrvNF/5bj6Z1Qp+fliA=;
+        b=zi7VLDpAzSw86RSpssHuVl/3BdaorokvrAVk17pTWZosm6gxStElJvjbFuh4TAsjAt
+         357g1IU5Q2YhmP6Vv1kh93cQcVBTMGWfRqimSmlFfvE9Jxvu1Vujl0LsPX95P7P4kV+u
+         mfjszbQ9CPy4frZ70HBH1NPWrl8LtgmIoZdOe/DO/9Jwc/kzEO8X4pBF6XjjjzWxB3c2
+         NAt2wfuW70CF+zDFmdeK7fmV9f0yuirJisbXBTRJW9UW4PJX5Y08CWTNx8zYkz6lAb/G
+         ugzRNT/IOaBEYydCY9OgeTJ3QmKzQYluXcbLlskoxx63mmK7KxF2YCTW9zvHRBW2uCxp
+         CVmw==
+X-Forwarded-Encrypted: i=1; AKwUvBxMxSfuxiimTEv0UHsh9UD3LDWNcXd9w9/4zYI4KtGe8l/2qVWG/2e30+1OJXNVnWVVD3P1fkmD3g==@vger.kernel.org
+X-Gm-Message-State: AFuF++l2nsApBHUh19EU6aREei9lcvXlPTPz7JTuwHkP6/Ai3oIcmyEN
+	ozIUhJB4iuDhwhIhMr6Do9mEIc7QLq4RO/+dkV4X0hXNdb6tVgYLgdfW
+X-Gm-Gg: AYBFou0thcURDn6c1T2CrbbVMvmQ7KMZlxK9Cq78cdmL5kRxslJ0xhz46ypEaBNbxRW
+	RY3F3qhs1VTrgNp7THOrnSel9UkJiStZ/Tbxy0486E7sN26FT2UrSzQrN/w0/4xzgWK8FjObOi7
+	5Unhb2F+ejsSE14+FmQL9IWGQua8GVEQx56rElPAmADn2IYQh13cf7z4WxEJd8tut6N8+qBU6fk
+	/yQao/az9L+ON1rg2CHDDofX8rhYtTAcmorfsIfeucJ9J+XOpywypGitskqoPBvkk0diKvQhJKY
+	Nmaijk4KqJqI9GulP+L4SEmLsWC6+jtl/Ec4XOhy7ZMo8LLOxq9s6hyRi0BNRxvVP0+rcEWY9mf
+	9DxoLjmnbxqKianTL93JWJ9YvsMJuBfvy2FxxMSvwLF6AQzfoFQDKZmzSCl/7QSDpf7ouvaZQ0U
+	x/EchPiDjHdTtJ+DNegzXoGKeZYB8cltyWwHyekPVt8tHcuI2uV+lfmSB2poxC/SCFN35/FedSQ
+	8Nyr+PvYBkmWPdupYTXBE+Pqw9tqF3r0pI3xqQcrHAXs3A7GKvmaZnRqwrjH+spzCAOtDOCHSA6
+	FmMt2pUlkDztZr5E9h5hgNTYfQ8=
+X-Received: by 2002:a05:600c:1d28:b0:49c:fc6e:8cbd with SMTP id 5b1f17b1804b1-49fe66fc677mr74153985e9.33.1790290314882;
+        Thu, 24 Sep 2026 15:51:54 -0700 (PDT)
+Received: from 1Z10 (mob-176-245-31-160.net.vodafone.it. [176.245.31.160])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fe5ce4941sm97253225e9.6.2026.09.24.15.51.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 15:51:54 -0700 (PDT)
+From: Maurizio Casciano <mauriziocasciano7@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v2] power: supply: core: Honor supplied-from with CONFIG_OF=y
+Date: Fri, 25 Sep 2026 00:51:52 +0200
+Message-ID: <20260924225152.985489-1-mauriziocasciano7@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPx+jO843h9bOeWNATHm8D2afbniQsX7WECJzCxmfi9ZcH9+5w@mail.gmail.com>
 
-On Thu, Sep 24, 2026 at 04:13:30PM +0200, Ulf Hansson wrote:
-> On Wed, Sep 23, 2026 at 7:48 PM Brian Norris <briannorris@chromium.org> wrote:
+The supplied-from device property is the name-based counterpart to
+firmware-node power-supplies references. It was added for non-DT platforms,
+but its parser is compiled only when CONFIG_OF is disabled. CONFIG_OF is
+a global kernel option, so x86 systems commonly enable it even when
+individual power supplies are described by software nodes.
 
-> > +Basic Probe
-> > +~~~~~~~~~~~
-> > +
-> > +A driver that powers on its hardware during probe and does not use autosuspend
-> > +can initialize runtime PM using device-managed helpers:
-> > +
-> > +.. code-block:: c
-> > +
-> > +       static int foo_probe(struct platform_device *pdev)
-> > +       {
-> > +               struct device *dev = &pdev->dev;
-> > +               struct foo_priv *priv;
-> > +               int ret;
-> > +
-> > +               priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> > +               if (!priv)
-> > +                       return -ENOMEM;
-> > +
-> > +               /* Power on and initialize hardware registers... */
-> > +
-> > +               /*
-> > +                * The code above left hardware powered on and operational, so
-> > +                * tell the PM core that the device is active before enabling
-> > +                * runtime PM.
-> > +                */
-> > +               pm_runtime_set_active(dev);
-> > +
-> > +               ret = devm_pm_runtime_enable(dev);
-> > +               if (ret)
-> > +                       return ret;
-> > +
-> > +               /*
-> > +                * Alternatively, the above two calls can be combined into:
-> > +                * ret = devm_pm_runtime_set_active_enabled(dev);
-> > +                * if (ret)
-> > +                *     return ret;
-> > +                */
-> > +
-> > +               /*
-> > +                * Upon successful return from ->probe(), the driver core
-> > +                * automatically executes pm_request_idle(dev), allowing the
-> > +                * device to suspend asynchronously if its usage counter is zero.
-> > +                */
-> > +               return 0;
-> 
-> The above looks nice and simple, but what happens in the error path is
-> equally important.
-> 
-> In principle, nothing prevents the runtime PM callbacks to be invoked
-> until pm_runtime_disable() has been called at some point *after* the
-> probe callback has returned. This needs to be taken care of correctly.
-> 
-> Likewise, as it's great with an example for ->probe(), it would be
-> nice with a corresponding example for ->remove().
+Consequently, these consumers never populate supplied_from and supplier
+notifications do not reach their external_power_changed() callbacks. On a
+Lenovo Yoga Book YB1-X91L, ftrace showed the Whiskey Cove supplier
+notification running without invoking the BQ25892 callback, leaving the
+input current limit at its boot-time value.
 
-Good points. I've rewritten much of the Examples to now:
+Use a single power_supply_check_supplies() implementation for all
+configurations. Preserve firmware-node power-supplies references as the
+preferred firmware description and use the name-based supplied-from
+property only when no references are specified. Continue to honor an
+explicitly provided supplied_from list first and propagate errors from
+specified firmware references.
 
-(a) largely *not* use devm_*;
+With the fix, ftrace shows the BQ25892 callback on hotplug. A boot-offline
+test changes its input current limit from 500 mA to 2 A.
 
-(b) include a more interesting set of error handling and remove(); and
+Fixes: 58a36bb06891 ("power: supply: core: Add support for supplied-from device-property")
+Cc: stable@vger.kernel.org
+Assisted-by: LLM
+Signed-off-by: Maurizio Casciano <mauriziocasciano7@gmail.com>
+---
+Changes in v2:
+- Keep firmware-node power-supplies references ahead of the name-based
+  supplied-from fallback, as requested by Hans.
+- Propagate errors while resolving specified firmware references.
+- Use one power_supply_check_supplies() implementation, as requested by
+  Sebastian.
 
-(c) only after doing (a) and (b), show an example that uses devm_*() to
-    replace the appropriate error handling and remove() teardown.
+Link: https://lore.kernel.org/r/20260901145156.3177187-1-mauriziocasciano7@gmail.com
+---
+ drivers/power/supply/power_supply_core.c | 84 ++++++++++++------------
+ 1 file changed, 42 insertions(+), 42 deletions(-)
 
-I hope that will also partially address your other comment about
-devm_pm_runtime_enable(), and how it's difficult to use correctly.
-
-> I will have to defer reviewing the remaining parts in the $subject
-> patch, a bit limited bandwidth at the moment.
-
-Thanks for the time you spent on it!
-
-I'll wait a bit more in case Rafael had other feedback, before sending a
-v3 that (I think) addresses your feedback.
-
-Brian
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 47e307709e5e..945052a8371e 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -190,7 +190,35 @@ static void power_supply_deferred_register_work(struct work_struct *work)
+ 		device_unlock(psy->dev.parent);
+ }
+ 
+-#ifdef CONFIG_OF
++static int power_supply_check_supplies_by_name(struct power_supply *psy)
++{
++	struct device *parent = psy->dev.parent;
++	int nval, ret;
++
++	if (!parent)
++		return 0;
++
++	nval = device_property_string_array_count(parent, "supplied-from");
++	if (nval <= 0)
++		return 0;
++
++	psy->supplied_from = devm_kmalloc_array(&psy->dev, nval,
++						sizeof(*psy->supplied_from),
++						GFP_KERNEL);
++	if (!psy->supplied_from)
++		return -ENOMEM;
++
++	ret = device_property_read_string_array(parent, "supplied-from",
++						(const char **)psy->supplied_from,
++						nval);
++	if (ret < 0)
++		return ret;
++
++	psy->num_supplies = nval;
++
++	return 0;
++}
++
+ static int __power_supply_populate_supplied_from(struct power_supply *epsy,
+ 						 void *data)
+ {
+@@ -262,22 +290,21 @@ static int power_supply_find_supply_from_fwnode(struct fwnode_handle *supply_nod
+ static int power_supply_check_supplies(struct power_supply *psy)
+ {
+ 	struct fwnode_handle *np;
+-	int cnt = 0;
++	int cnt, ret;
+ 
+ 	/* If there is already a list honor it */
+ 	if (psy->supplied_from && psy->num_supplies > 0)
+ 		return 0;
+ 
+-	/* No device node found, nothing to do */
+-	if (!psy->dev.fwnode)
+-		return 0;
+-
+-	do {
+-		int ret;
++	for (cnt = 0; psy->dev.fwnode; cnt++) {
++		np = fwnode_find_reference(psy->dev.fwnode, "power-supplies", cnt);
++		if (IS_ERR(np)) {
++			ret = PTR_ERR(np);
++			if (ret != -ENOENT)
++				return ret;
+ 
+-		np = fwnode_find_reference(psy->dev.fwnode, "power-supplies", cnt++);
+-		if (IS_ERR(np))
+ 			break;
++		}
+ 
+ 		ret = power_supply_find_supply_from_fwnode(np);
+ 		fwnode_handle_put(np);
+@@ -286,48 +313,21 @@ static int power_supply_check_supplies(struct power_supply *psy)
+ 			dev_dbg(&psy->dev, "Failed to find supply!\n");
+ 			return ret;
+ 		}
+-	} while (!IS_ERR(np));
++	}
+ 
+-	/* Missing valid "power-supplies" entries */
+-	if (cnt == 1)
+-		return 0;
++	/* Fall back to the name-based property if no references were specified. */
++	if (!cnt)
++		return power_supply_check_supplies_by_name(psy);
+ 
+ 	/* All supplies found, allocate char * array for filling */
+ 	psy->supplied_from = devm_kcalloc(&psy->dev,
+-					  cnt - 1, sizeof(*psy->supplied_from),
++					  cnt, sizeof(*psy->supplied_from),
+ 					  GFP_KERNEL);
+ 	if (!psy->supplied_from)
+ 		return -ENOMEM;
+ 
+ 	return power_supply_populate_supplied_from(psy);
+ }
+-#else
+-static int power_supply_check_supplies(struct power_supply *psy)
+-{
+-	int nval, ret;
+-
+-	if (!psy->dev.parent)
+-		return 0;
+-
+-	nval = device_property_string_array_count(psy->dev.parent, "supplied-from");
+-	if (nval <= 0)
+-		return 0;
+-
+-	psy->supplied_from = devm_kmalloc_array(&psy->dev, nval,
+-						sizeof(char *), GFP_KERNEL);
+-	if (!psy->supplied_from)
+-		return -ENOMEM;
+-
+-	ret = device_property_read_string_array(psy->dev.parent,
+-		"supplied-from", (const char **)psy->supplied_from, nval);
+-	if (ret < 0)
+-		return ret;
+-
+-	psy->num_supplies = nval;
+-
+-	return 0;
+-}
+-#endif
+ 
+ struct psy_am_i_supplied_data {
+ 	struct power_supply *psy;
+-- 
+2.53.0
