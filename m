@@ -1,245 +1,132 @@
-Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEE48428475
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 22:51:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D21C41E6C5;
+	Thu, 24 Sep 2026 23:19:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790290318; cv=none; b=iBoDaPOIJJV8AChy0U/CqeQHlnvXQYChdGMyUEa81U+OcrAd5r4CUHG4te/SVuA2uODa2xJ63/3RGqbSOrcZhuu1OdTSKUTihH+VV6FWMRoF5mhJS/5Gn4bW+q37j+o3g45xPVFKmZQmcFxJ6eoeklExqTjnDUJJfNjQxbHNizs=
+	t=1790291973; cv=none; b=pDTHu6CVd5mrRVLrC0uEAIq5cLzsANFc5/5WIED/AxveJzAxsa6rHC5i+P1d07BYXSSno8LAQESJm0i6swtbk49uDSswgzguIVllSK40dDhxuGbXIfVYLjCESCDXptHCs3ANyfgQHoV4gFiGbDLMIFYP8nelDIRmyUavOixkW4c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790290318; c=relaxed/simple;
-	bh=62XiZv6zk3rTKUR1/CJN607c+3Nv6L/9YqYGWxYk92A=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RgN1xTHWQhOg3DrjeJo1+G2/vfPmTv8kYvhB0YfQVI9p4d4alLGv/GX2BUEJ7aXxKax5ILc5HdC3BNHsAYy2d6dIaFUcYQu4aQE32FDjPzF/b2rMpenLUcsXnD54hSRBOeuO0Ivcv0pEt/tTcfvejLpW07AU/S01v8YT0KMVak4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jr7MkNWE; arc=none smtp.client-ip=74.125.225.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790291973; c=relaxed/simple;
+	bh=VUYEEE3HevbpBaBEh98rRlQ6afkhGNAfaMMbUMmhrRU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VH8Jcq44S98dbzhcBMJNCmYN0/xmMdE93XJe4VfYmiOq4MYgNed1JS4cTFNkECX0o5NKSHZLYaDKb9gP2WaUQRDfu0XNPCrXjVTYwIZYcov2QSYLecSf2luvlzlZcgaEWUKwMNCs62ZBFOUPrt2qucdWKBKOuCqNO/PX7XBIWgU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Hx/LMMZp; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jr7MkNWE"
-Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49cd4ba9f68so3431885e9.1
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 15:51:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790290315; x=1790895115; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=DY4/sCTlc60wxmtt4c/QaqdPIrvNF/5bj6Z1Qp+fliA=;
-        b=Jr7MkNWEv9EYHPscJTXfpurWeYrYnCM+0e9DH3RLK9v+Nzxzgy3jxSmw3Rz3HEmIeM
-         vc8RvLFYRO3qGRbf2Ab6qQZd8G+2zmeNFT1kR7r0K1BIumx0TyHU+TPNUmg4K7itAeCt
-         KqSB8clSDNfg6p2TZHy/2Xg+HH9Y70oOO+JLGLlPyAtpB048S9L9LfO8EiyEPT9w5ncO
-         O9xTcLFXKKweYgvlRQoGX7c9W0QaNUKpi3OTzmA7r0lvpgI5Mtubsx9+3vjF7lnwRrYq
-         HvPGtjDoVqqmO3uNUaE01pxfloL+FrLDw2FtO9/QOI+DzuBwtCVFKscHyN2qzVb6EvJF
-         veTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790290315; x=1790895115;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=DY4/sCTlc60wxmtt4c/QaqdPIrvNF/5bj6Z1Qp+fliA=;
-        b=zi7VLDpAzSw86RSpssHuVl/3BdaorokvrAVk17pTWZosm6gxStElJvjbFuh4TAsjAt
-         357g1IU5Q2YhmP6Vv1kh93cQcVBTMGWfRqimSmlFfvE9Jxvu1Vujl0LsPX95P7P4kV+u
-         mfjszbQ9CPy4frZ70HBH1NPWrl8LtgmIoZdOe/DO/9Jwc/kzEO8X4pBF6XjjjzWxB3c2
-         NAt2wfuW70CF+zDFmdeK7fmV9f0yuirJisbXBTRJW9UW4PJX5Y08CWTNx8zYkz6lAb/G
-         ugzRNT/IOaBEYydCY9OgeTJ3QmKzQYluXcbLlskoxx63mmK7KxF2YCTW9zvHRBW2uCxp
-         CVmw==
-X-Forwarded-Encrypted: i=1; AKwUvBxMxSfuxiimTEv0UHsh9UD3LDWNcXd9w9/4zYI4KtGe8l/2qVWG/2e30+1OJXNVnWVVD3P1fkmD3g==@vger.kernel.org
-X-Gm-Message-State: AFuF++l2nsApBHUh19EU6aREei9lcvXlPTPz7JTuwHkP6/Ai3oIcmyEN
-	ozIUhJB4iuDhwhIhMr6Do9mEIc7QLq4RO/+dkV4X0hXNdb6tVgYLgdfW
-X-Gm-Gg: AYBFou0thcURDn6c1T2CrbbVMvmQ7KMZlxK9Cq78cdmL5kRxslJ0xhz46ypEaBNbxRW
-	RY3F3qhs1VTrgNp7THOrnSel9UkJiStZ/Tbxy0486E7sN26FT2UrSzQrN/w0/4xzgWK8FjObOi7
-	5Unhb2F+ejsSE14+FmQL9IWGQua8GVEQx56rElPAmADn2IYQh13cf7z4WxEJd8tut6N8+qBU6fk
-	/yQao/az9L+ON1rg2CHDDofX8rhYtTAcmorfsIfeucJ9J+XOpywypGitskqoPBvkk0diKvQhJKY
-	Nmaijk4KqJqI9GulP+L4SEmLsWC6+jtl/Ec4XOhy7ZMo8LLOxq9s6hyRi0BNRxvVP0+rcEWY9mf
-	9DxoLjmnbxqKianTL93JWJ9YvsMJuBfvy2FxxMSvwLF6AQzfoFQDKZmzSCl/7QSDpf7ouvaZQ0U
-	x/EchPiDjHdTtJ+DNegzXoGKeZYB8cltyWwHyekPVt8tHcuI2uV+lfmSB2poxC/SCFN35/FedSQ
-	8Nyr+PvYBkmWPdupYTXBE+Pqw9tqF3r0pI3xqQcrHAXs3A7GKvmaZnRqwrjH+spzCAOtDOCHSA6
-	FmMt2pUlkDztZr5E9h5hgNTYfQ8=
-X-Received: by 2002:a05:600c:1d28:b0:49c:fc6e:8cbd with SMTP id 5b1f17b1804b1-49fe66fc677mr74153985e9.33.1790290314882;
-        Thu, 24 Sep 2026 15:51:54 -0700 (PDT)
-Received: from 1Z10 (mob-176-245-31-160.net.vodafone.it. [176.245.31.160])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fe5ce4941sm97253225e9.6.2026.09.24.15.51.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 15:51:54 -0700 (PDT)
-From: Maurizio Casciano <mauriziocasciano7@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v2] power: supply: core: Honor supplied-from with CONFIG_OF=y
-Date: Fri, 25 Sep 2026 00:51:52 +0200
-Message-ID: <20260924225152.985489-1-mauriziocasciano7@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hx/LMMZp"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB38A1F00893;
+	Thu, 24 Sep 2026 23:19:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790291971;
+	bh=58txGiUYq2o3vDEpNYOXBhgESMZOWm8Yh5OzD7flxWs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Hx/LMMZpDqXxSUq4Ps9iyk/DvO84jO7vrOHI7QGUK0/3u+qPYj1fbPk9HjocHzPHa
+	 GCQC6ftH+HYwS0E14C4lXK/gFIJ0IOrqW/rXyaU/R82RSjd7GeMYDIDC2/0hVPr7y3
+	 Iqoef6j89dA8muGvk1Uxzy/QDWLV03WptSO0Osu0LIcepbOHLuXvEYsT7vGrX7vwZL
+	 gg/L8HvHjoQHYvISgobMg/RwBVEYfFsRFDyn8CAjzpWdKxq2TpbkhgMzPtLEGtODf/
+	 WpdA+ESbaem7uXhuKp+jX1oFk09qjjE6Zj1u8x8A+ujPSJ9xzrP0Z5kqf6F7J9rn1B
+	 coSq3UH3GMp2w==
+Date: Fri, 25 Sep 2026 00:19:27 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Konrad Dybcio <konradybcio@kernel.org>
+Cc: Georgi Djakov <djakov@kernel.org>, Evan Green <evgreen@chromium.org>,
+	Yassine Oudjana <y.oudjana@protonmail.com>,
+	Dmitry Baryshkov <lumag@kernel.org>,
+	Adam Skladowski <a39.skl@gmail.com>, linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Aishwarya.TCV@arm.com
+Subject: Re: [PATCH 0/6] Assorted fixes for icc-rpm
+Message-ID: <a4439f1d-6c2c-43ee-966c-239eaee148df@sirena.org.uk>
+References: <20260909-topic-icc_rpm_smd_qol-v1-0-6dc5b5e97626@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="viEvHksDB/4cQVa2"
+Content-Disposition: inline
+In-Reply-To: <20260909-topic-icc_rpm_smd_qol-v1-0-6dc5b5e97626@oss.qualcomm.com>
+X-Cookie: A grammarian's life is always in tense.
 
-The supplied-from device property is the name-based counterpart to
-firmware-node power-supplies references. It was added for non-DT platforms,
-but its parser is compiled only when CONFIG_OF is disabled. CONFIG_OF is
-a global kernel option, so x86 systems commonly enable it even when
-individual power supplies are described by software nodes.
 
-Consequently, these consumers never populate supplied_from and supplier
-notifications do not reach their external_power_changed() callbacks. On a
-Lenovo Yoga Book YB1-X91L, ftrace showed the Whiskey Cove supplier
-notification running without invoking the BQ25892 callback, leaving the
-input current limit at its boot-time value.
+--viEvHksDB/4cQVa2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Use a single power_supply_check_supplies() implementation for all
-configurations. Preserve firmware-node power-supplies references as the
-preferred firmware description and use the name-based supplied-from
-property only when no references are specified. Continue to honor an
-explicitly provided supplied_from list first and propagate errors from
-specified firmware references.
+On Wed, Sep 09, 2026 at 06:41:53PM +0200, Konrad Dybcio wrote:
+> This series brings multi-port QoS programming and squashes some
+> minor existing issues. No dependencies.
 
-With the fix, ftrace shows the BQ25892 callback on hotplug. A boot-offline
-test changes its input current limit from 500 mA to 2 A.
+Something about this series seems to break network boot on db845c, the
+system comes up but the USB and network never appears and eventually the
+board reboots (I guess a watchdog?):
 
-Fixes: 58a36bb06891 ("power: supply: core: Add support for supplied-from device-property")
-Cc: stable@vger.kernel.org
-Assisted-by: LLM
-Signed-off-by: Maurizio Casciano <mauriziocasciano7@gmail.com>
----
-Changes in v2:
-- Keep firmware-node power-supplies references ahead of the name-based
-  supplied-from fallback, as requested by Hans.
-- Propagate errors while resolving specified firmware references.
-- Use one power_supply_check_supplies() implementation, as requested by
-  Sebastian.
+<6>[    3.127987] Trying to probe devices needed for running init ...
+<4>[    3.131178] qcom-pcie 1c00000.pcie: supply vdda not found, using dummy regulator
+<4>[    3.133600] qcom-pcie 1c08000.pcie: supply vdda not found, using dummy regulator
+<4>[    3.133765] qcom-pcie 1c08000.pcie: supply vddpe-3v3 not found, using dummy regulator
+<4>[    3.145996] qcom-pcie 1c00000.pcie: supply vdda not found, using dummy regulator
+<4>[    3.147172] qcom-pcie 1c08000.pcie: supply vdda not found, using dummy regulator
+<4>[    3.147292] qcom-pcie 1c08000.pcie: supply vddpe-3v3 not found, using dummy regulator
+Format: Log Type - Time(microsec) - Message - Optional Info
+Log Type: B - Since Boot(Power On Reset),  D - Delta,  S - Statistic
 
-Link: https://lore.kernel.org/r/20260901145156.3177187-1-mauriziocasciano7@gmail.com
----
- drivers/power/supply/power_supply_core.c | 84 ++++++++++++------------
- 1 file changed, 42 insertions(+), 42 deletions(-)
+bisect log seems to coverge fairly nicely, but only on the merge commit
+unfortunately:
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 47e307709e5e..945052a8371e 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -190,7 +190,35 @@ static void power_supply_deferred_register_work(struct work_struct *work)
- 		device_unlock(psy->dev.parent);
- }
- 
--#ifdef CONFIG_OF
-+static int power_supply_check_supplies_by_name(struct power_supply *psy)
-+{
-+	struct device *parent = psy->dev.parent;
-+	int nval, ret;
-+
-+	if (!parent)
-+		return 0;
-+
-+	nval = device_property_string_array_count(parent, "supplied-from");
-+	if (nval <= 0)
-+		return 0;
-+
-+	psy->supplied_from = devm_kmalloc_array(&psy->dev, nval,
-+						sizeof(*psy->supplied_from),
-+						GFP_KERNEL);
-+	if (!psy->supplied_from)
-+		return -ENOMEM;
-+
-+	ret = device_property_read_string_array(parent, "supplied-from",
-+						(const char **)psy->supplied_from,
-+						nval);
-+	if (ret < 0)
-+		return ret;
-+
-+	psy->num_supplies = nval;
-+
-+	return 0;
-+}
-+
- static int __power_supply_populate_supplied_from(struct power_supply *epsy,
- 						 void *data)
- {
-@@ -262,22 +290,21 @@ static int power_supply_find_supply_from_fwnode(struct fwnode_handle *supply_nod
- static int power_supply_check_supplies(struct power_supply *psy)
- {
- 	struct fwnode_handle *np;
--	int cnt = 0;
-+	int cnt, ret;
- 
- 	/* If there is already a list honor it */
- 	if (psy->supplied_from && psy->num_supplies > 0)
- 		return 0;
- 
--	/* No device node found, nothing to do */
--	if (!psy->dev.fwnode)
--		return 0;
--
--	do {
--		int ret;
-+	for (cnt = 0; psy->dev.fwnode; cnt++) {
-+		np = fwnode_find_reference(psy->dev.fwnode, "power-supplies", cnt);
-+		if (IS_ERR(np)) {
-+			ret = PTR_ERR(np);
-+			if (ret != -ENOENT)
-+				return ret;
- 
--		np = fwnode_find_reference(psy->dev.fwnode, "power-supplies", cnt++);
--		if (IS_ERR(np))
- 			break;
-+		}
- 
- 		ret = power_supply_find_supply_from_fwnode(np);
- 		fwnode_handle_put(np);
-@@ -286,48 +313,21 @@ static int power_supply_check_supplies(struct power_supply *psy)
- 			dev_dbg(&psy->dev, "Failed to find supply!\n");
- 			return ret;
- 		}
--	} while (!IS_ERR(np));
-+	}
- 
--	/* Missing valid "power-supplies" entries */
--	if (cnt == 1)
--		return 0;
-+	/* Fall back to the name-based property if no references were specified. */
-+	if (!cnt)
-+		return power_supply_check_supplies_by_name(psy);
- 
- 	/* All supplies found, allocate char * array for filling */
- 	psy->supplied_from = devm_kcalloc(&psy->dev,
--					  cnt - 1, sizeof(*psy->supplied_from),
-+					  cnt, sizeof(*psy->supplied_from),
- 					  GFP_KERNEL);
- 	if (!psy->supplied_from)
- 		return -ENOMEM;
- 
- 	return power_supply_populate_supplied_from(psy);
- }
--#else
--static int power_supply_check_supplies(struct power_supply *psy)
--{
--	int nval, ret;
--
--	if (!psy->dev.parent)
--		return 0;
--
--	nval = device_property_string_array_count(psy->dev.parent, "supplied-from");
--	if (nval <= 0)
--		return 0;
--
--	psy->supplied_from = devm_kmalloc_array(&psy->dev, nval,
--						sizeof(char *), GFP_KERNEL);
--	if (!psy->supplied_from)
--		return -ENOMEM;
--
--	ret = device_property_read_string_array(psy->dev.parent,
--		"supplied-from", (const char **)psy->supplied_from, nval);
--	if (ret < 0)
--		return ret;
--
--	psy->num_supplies = nval;
--
--	return 0;
--}
--#endif
- 
- struct psy_am_i_supplied_data {
- 	struct power_supply *psy;
--- 
-2.53.0
+git bisect start
+# status: waiting for both good and bad commits
+# good: [93f51579e7df248780214094418f205253383cc5] Linux 7.3-rc4
+git bisect good 93f51579e7df248780214094418f205253383cc5
+# status: waiting for bad commit, 1 good commit known
+# bad: [3d7783543c2646af69ad65825e810060494bea21] Add linux-next specific files for 20260923
+git bisect bad 3d7783543c2646af69ad65825e810060494bea21
+# skip: [f5c66cf1cc3d0412aae3a79defe24f2558fd3796] Merge branch 'main' of https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git
+git bisect skip f5c66cf1cc3d0412aae3a79defe24f2558fd3796
+# good: [f5c66cf1cc3d0412aae3a79defe24f2558fd3796] Merge branch 'main' of https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git
+git bisect good f5c66cf1cc3d0412aae3a79defe24f2558fd3796
+# good: [25bd2398be78da6f80b39de910027470b29617ae] Merge branch 'for-next' of https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git
+git bisect good 25bd2398be78da6f80b39de910027470b29617ae
+# good: [294dea4858e9113fd11d22a1b8cbf1e8c0aa7876] Merge branch 'for-next' of https://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git
+git bisect good 294dea4858e9113fd11d22a1b8cbf1e8c0aa7876
+# bad: [23c47f595e5eb361f426eb541d56fd2cdb96b30f] Merge branch 'staging-next' of https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
+git bisect bad 23c47f595e5eb361f426eb541d56fd2cdb96b30f
+# bad: [ffa9e57e6ed0b967209bf65aad8d834fe2103e1d] Merge branch 'icc-next' of https://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git
+git bisect bad ffa9e57e6ed0b967209bf65aad8d834fe2103e1d
+# good: [ade03fa0fb64ac61c6eb1b409baa2c2f710c27d8] Merge branch 'driver-core-next' of https://git.kernel.org/pub/scm/linux/kernel/git/driver-core/driver-core.git
+git bisect good ade03fa0fb64ac61c6eb1b409baa2c2f710c27d8
+# good: [bbed88f72dbbb960080282de3b90ca0933fa6226] usb: dwc2: fix typos in comments
+git bisect good bbed88f72dbbb960080282de3b90ca0933fa6226
+# good: [f9b0809c23123401290e3a144d231aa40fff692e] Merge branch 'char-misc-next' of https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git
+git bisect good f9b0809c23123401290e3a144d231aa40fff692e
+# bad: [07bf225c62c00b9b934b9125e78e2208b961d9c3] Merge branch 'icc-rpm' into icc-next
+git bisect bad 07bf225c62c00b9b934b9125e78e2208b961d9c3
+# good: [041e725a102fbf3a4e484e28abe66575bc515888] Merge branch 'icc-milos' into icc-next
+git bisect good 041e725a102fbf3a4e484e28abe66575bc515888
+# good: [ddbacca26d1db5bd9c477253b0af83b028136a24] interconnect: qcom: icc-rpm: Program SMD RPM auxiliary QoS ports
+git bisect good ddbacca26d1db5bd9c477253b0af83b028136a24
+# good: [cc91c1b99101f2dcd2f624a27bec6f6f557e5421] interconnect: qcom: msm8976: Configure auxiliary GPU QoS port
+git bisect good cc91c1b99101f2dcd2f624a27bec6f6f557e5421
+# good: [24e7422ce31189502d07279c083646aaca513311] interconnect: qcom: use 64-bit SMD RPM bus votes
+git bisect good 24e7422ce31189502d07279c083646aaca513311
+# first bad commit: [07bf225c62c00b9b934b9125e78e2208b961d9c3] Merge branch 'icc-rpm' into icc-next
+
+--viEvHksDB/4cQVa2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmq1r/4ACgkQJNaLcl1U
+h9Dh9gf/eGI/sxImujr0Sy/J0ViycI4sDeeZsyoN/+XpufUAbGSqYfgGWcEzcw8N
+Fy4s0lr6rGF5wusBlBbSubkJt/AJL4wbA4WnMMrYJzkt0SPby3CBp+5yYV+dk8NP
+shNeo4vgPVdESbC/vbYab91uhni3HPNWQq5HE7xsXQEUfHXc2m0DuzNUwffJCJ0X
+Ym+jsciOCK9VvC1T0AY+kaHlcPf34PMovWi0+8uweLZFn2u/6jrPUMfuFDsR/Pll
+Anr09x/LsxBjteZ9lpUMyvyFD/uwlZviNDO8EcIviqHf4oiFpnteLleyq/Fsnals
+vdtIk/VJB+lpGOd8yaGqSQs2Whw93w==
+=2+KG
+-----END PGP SIGNATURE-----
+
+--viEvHksDB/4cQVa2--
