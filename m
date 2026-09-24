@@ -1,236 +1,187 @@
-Received: from mail-lr2-f12.google.com (mail-lr2-f12.google.com [74.125.230.76])
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2A1D4756B1
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:14:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.76
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790252046; cv=none; b=Xwm7cIiFkF8UQxwYIS4mrx7KIBTVyOBh7tZktcdEvSv0NdzFEH5EZp5qejUByeBoupV6D0y0lO0TE73nPc+DPGzGJdmpwCVhtHbdpWbGEi7pm/srm68GxucYtSLpcHlDxF07sZzqf1A5rC4cR7lgl/7wua8AEkfUAta+yOzdQUo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790252046; c=relaxed/simple;
-	bh=otGD8El/usb5+EdYLvRCSLCI0HhgOOwUewbzGHi4nw4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kRzlJJxU3ImnpksB3grQ9t5r8AvIBwcnRaw45x1M4lzwIPbrOVW6xJm3hIk/O1kgrNUazE32zjPgn0bi5sIfp6CijOKtcpdpuijrRNeSfNiH46g4x9xGV7TFNwfZYaUscjQbDsrrWI8SMXEETL+GQoBQwVCHq8IR7lMz67/0ZKU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pTu+qwoD; arc=none smtp.client-ip=74.125.230.76
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AC53475335
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 12:21:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.179
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790252474; cv=pass; b=nwL+BIz66uUMHtKW5LxVYdDNrZjIzLtq8qY+xISYPUKncfyc+vVz4Fc/dqib5SimdhyfmaubhKiFHNKyJdjME0O8oSSAwT5CkHFBg8satxaPW38yHw1HzVsQLDjhK9l8Kqq//FZDdZCC4wm/M+IBkYbOSLrdm+h4Mf514R13vGY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790252474; c=relaxed/simple;
+	bh=K9ufhPEWTbcGbUWPnsFi5tG5G32ivdBgHbHB+/9JtVw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UeLlsUZR4DxG7m7IFT4OY7iQYupt2y1OdXI4bOr5W7mpbYA6V6BOxQwmPNYFoVbV2KJW2DWnDp1Q6usFCh4a8sxwJ8pJyMG0x+nO4UW4zcYz2y+6bLWTp7dR6TU94/fL/4zePcjgeOvJgzr7+T9/yc2IrI+w8ZKC+g5tuEf3g+M=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=RxOLFp8z; arc=pass smtp.client-ip=209.85.160.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pTu+qwoD"
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a59bc470d6so17467901fa.0
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 05:14:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="RxOLFp8z"
+Received: by mail-qt1-f179.google.com with SMTP id d75a77b69052e-530e8c6fb80so215891cf.1
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 05:21:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790252472; cv=none;
+        d=google.com; s=arc-20260327;
+        b=rUBFiymTuJJWwlzU7otDOVVdM5//T+OPsYXWkBynjwGUjsUuPAZtnyfX+CLhdhbz+F
+         RvwmQXBdfaUf0Ksz1LM6zBP+QGj/ZX0SA/4tNycZcqtw5o0/smwb8I0z8see35ULp2YH
+         yKOOAokJydWerhbSrtwXaR9MF6Un4iZScCVJP8VHpuNRHvcGsr3ZmsBwV+rtE33wvpBF
+         f/7CcC2Qcan6+kGGatU44WMYULrSdhzWCx9IsVg9woGY41fCm46Ot1UG30Gs7Khz3tPC
+         K9KriV3dzHEkEu/2uP8u7/ceK5Kcs2Td3bEbTje04Rw6arXJMuQZ+iQe3EW0le8i8e6e
+         lAyw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=NkGH7LeMJDJfHMf9D0brPKFR1SEB0UnnB2ab6h95oe4=;
+        fh=Lq6m5xb6el+CkY363euxH82ELd5hC3NoSSt7V8soLlo=;
+        b=pLHlA0PVfX3w4GxAZBZBliHH0aMNKQwugmBITtQkD/uY8BgjaqPTCpj/78kwvXPNoP
+         rZwwK9jTGUKllUbwbd6ERiIb3Bl7val27gMY08ROuPhrZW9CYNBL3mR/L8r9XKEnXe8S
+         zbF3YLiSlSldLJqOBxXFGCoSaYeXZdp4mTJ/EBzQK28F4cEKcm4ES0KafrqKK61Zdsoj
+         5a/tUbxulbM9yo0ErQxTizKU0jg+ap1cSqSLQ2/IrMs8EtzcYGL+bk5PWtzYTZk+Wm8x
+         F3uyr+PGBxEMAEhM2sP+pq5ctdM3mSs5IzCcIgMIlSWCerWJGEFNK/BWgBXEwpQEyYq1
+         vRQQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790252043; x=1790856843; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rhr+KJXZzXoDkRQD5ZZRVZfYL8tC8NnQwJ47gS6L1EQ=;
-        b=pTu+qwoDcb3s9ihKFMqI7NQwOEHuFvOgNt7q+p5D/awpOw5+FjgkvdixZVTTLXU0PF
-         s88/18pigY/hzhXLLrYcXOYfG0pCf5yfkiyhaOorgFVae6OyxtA46VfatZz9gVjZ9kg1
-         0CTb4JIL1kShApBn82ezMjYSZXrafXw1gCsUfo1KfZ+A9ADhs3h/aiBf/6qrhW5wCc1d
-         5vWFJR65yTGqRFcLVs+85xlr01Nota2p0ZWGSeoa697oC4AZ3ArhGfG6UM5uEo9JkgaB
-         nxi2NCfs2NE8XksrTnEMIq8peRXVaDWk20NOGdZZVRw0h5IOqScWcc/IOWyRi+2CNb7v
-         1xVw==
+        d=google.com; s=20251104; t=1790252472; x=1790857272; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=NkGH7LeMJDJfHMf9D0brPKFR1SEB0UnnB2ab6h95oe4=;
+        b=RxOLFp8zns9PebEfZOT5KCV4HOlHPO51bVjqJXi77VlNxbLzELm0H3mDLQ0YG5FSbP
+         iHnwm+NSqxJ6fMldJbBXqaoBzY68es+RwxdL1ReKIX/wWGPpQsaLPH71d6bmCOiCn6l9
+         UrbDCzYsyF0jPJE0prMOVEUbVQqjAy2TKax/yaCQVXqQra4x38ey9+i3CTpaD+pOizwV
+         CDMvzkDNQBIB2RnIZvX663wd8SAJ5W0bgdUnvLnzjPllJ3qiTF1IcO/N9B8KhX6PUMaU
+         lE8o10voXt4eKcpDKrx6JTPn2hnLMemEJ/Lya/Ay6apKDtceIncTxBlInsqPK9sf72dq
+         setg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790252043; x=1790856843;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=rhr+KJXZzXoDkRQD5ZZRVZfYL8tC8NnQwJ47gS6L1EQ=;
-        b=b61L+7R94WFMmU7SVxjqjLaacR2NlL4uSI85cDLd4n9dVrzW/X9/lFTLX/DExr9wcP
-         s59x/qjkc8YqJ9rn1AqjD7eUdySVV7Y7haLq32r4YGT1+jiWZoWGnJhKRmFnngTYDEzo
-         5XDDUbAISYGeFKTPWK9kXtLWW62QblcYxD9qAPn1e5PSY0/PhRdhIAvEKNuE0aXzSdoC
-         7Y+g6i0gzf1F+KPdz6phRyPmSUlmEbGO/poSXbN6i0x6Uq3oZF2o32E7XwR+sA4YkEPm
-         +AcJkpSUefCyy36rpMRHXL26C5/ac3tfGhUnQME4pDmKKEb5o08DmHPie++E11OErRz8
-         uJZw==
-X-Forwarded-Encrypted: i=1; AKwUvBx+jqEZX0zd2eniBPAlDb/XIkjixffl7wzIAusn7/vlfKLoVYudRB0jX7WJ80ZjqAD4dJ7leLzXRg==@vger.kernel.org
-X-Gm-Message-State: AFuF++mRzqf0J3XGBxCBdtYDr81yj0rAf+30LSs+14SL8bYAVeeE0qJG
-	+vzcXYSz4PoDbAbvk+rNLmOZ/j0zTMf1rFsnaFgeVSNBWs/Dg1rUmEOP
-X-Gm-Gg: AYBFou2wyujcZLMhOMcsEoLkZe9Lb5A+3g+Muuu15w7KX70EbHKC34YcZyxESPl7lEj
-	dDH4b//Rquwwy7ZeBGBj0WbGEllC5xkG3RceAY+GJ2cVsIIe17LzFJEissW90vlhP7GrRnfM/Tm
-	2iGv9n985JWP72rgGK5TlbW8brDuE0WWENilzwyNdKQw+lR4F8toYgwPMVcUXGEezjeQ6c/PfQ3
-	WWdyt1e5JUhJJM1yHLIic6rZfJdmLz4s/S4xZksayGn/SHyCUiXo1LjzrU28IODklebL94qyTOf
-	dNs7oX+DqWHkQEQuIYllekpZ6iSOz946hDDL7vjwwtn1NbC1XT6vM7AZ2NH4bonPTnFkt3NEQrs
-	hH3GShREVvvq3bGfixPzIop1cZM/xtvVJNS4DG9uE/gThtUWo+2pWCYVRjLAN/dSMBwCUag746N
-	FtK12XWkfLB1QXU6SI315u3DTfrgzmH/xzg2/mVPBNeBQCebN1fpCAAcoqhXpatNRXNaeJ7zAsc
-	PejWxeLjIqj/3Q/Du3HIpgYM2VyvKkx8T4x1/Wd7tSgWNEuw9IOr8E=
-X-Received: by 2002:a05:651c:2107:b0:3a5:d0ad:7df2 with SMTP id 38308e7fff4ca-3a63c06d2d1mr5437961fa.6.1790252042323;
-        Thu, 24 Sep 2026 05:14:02 -0700 (PDT)
-Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a63bf2c113sm7362221fa.11.2026.09.24.05.14.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 24 Sep 2026 05:14:01 -0700 (PDT)
-Message-ID: <8a08809f-a276-4c5b-9734-1bb6aca4f51c@gmail.com>
-Date: Thu, 24 Sep 2026 15:14:00 +0300
+        d=1e100.net; s=20260707; t=1790252472; x=1790857272;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=NkGH7LeMJDJfHMf9D0brPKFR1SEB0UnnB2ab6h95oe4=;
+        b=FJbQLnHsrWD23pHdYBRIjkAulM/wIgllj1mZ+IuFcqnkaJR6OBsx230zm39r3FEI2s
+         SCJTPk+93WTZZd4BIt0RF6e+Z0ahH6OSu/9NomDCXOSMJj4aM1VGh6M3DJbclvnJurl8
+         fN3H+qzAbIZVlwuWStc9Qe8L3u5nIisz8lJU52aKkMFZPT8kh7gRmWv89k2fB8/NAKFO
+         KI0bRRUo7dsRh5vZhtI3hTlsDYjF4N24gGSQqj4DdAzWy9nDy7MDUhfZE2FbSU7O/2OB
+         ADNVIa9axB/ylyvAgqioOVnlEIh1w/SSDcuoBAesQeQMNLlktm/kftjBpBoe4XdNSETv
+         IIWA==
+X-Forwarded-Encrypted: i=1; AKwUvBxf4/cgdsu4Ha/JirYN2uoveyXAlYAfYAUoSTnOXkmLMV1n0Et0BoRzw7y+xa09PF/VgmzzIzj3Lg==@vger.kernel.org
+X-Gm-Message-State: AFuF++kwcVb22Ab40pZX6bUAJRPl7v/8VG3TO5Ds1HvIgp1DusqSOMKb
+	Hj4QKxf0A7VsoRlAIVvi2Pgk+pZgsWwp2eOEdGKvOYjBE28/W6zzVXIEdNdT/kqKzGQrBuJkJPz
+	3m+sYD6hvHeTYXpAQ1IT70eRdUKC2BKHdn7evjet8
+X-Gm-Gg: AYBFou3TotNjDVpTNBNy7KMMiK+pDQHlPzkmFtm5UHnFGoejUhPtjXaSQHN/2zb4skX
+	4+SUsq6u+lcQK54IOCjh7hiqTnBML3RhuWeiHTATNLQtyhq1IJrEQhdHgAC+dQnexPz4jjHpVs5
+	PxUQvkUCaQqpOTweugeFxrWmwomec+XKHht/HmmdmrZYJM70zULV7/8GjvSDGK3WKKYnd/1kx9t
+	P/3JQVkXtiYhNRnHmzCN4Ul/pBR4kCSrPPghBguCSBS7KhVOWKdG7cYX6VmeG6FIC8BDZhfl/hR
+	ZpOB+/aTa7c5WQYRbKgrH3hKQ3pFWjCeE8zFocs6YBb01LRZuB4C5tIaXTZ4LUH4otZgeY7NL++
+	ZIUx5cwG3
+X-Received: by 2002:a05:622a:5507:b0:50f:af60:3496 with SMTP id
+ d75a77b69052e-532fe9f468dmr9310531cf.1.1790252471121; Thu, 24 Sep 2026
+ 05:21:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v15 4/6] reboot: extend psc_reason with power-on and reset
- causes
-To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
- Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
- Tzung-Bi Shih <tzungbi@kernel.org>, Guenter Roeck <groeck@chromium.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Oleksij Rempel <o.rempel@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, chrome-platform@lists.linux.dev,
- avaneesh.dwivedi@oss.qualcomm.com,
- Umang Chheda <umang.chheda@oss.qualcomm.com>
-References: <20260924-pscrr-framework-v15-0-7af87107e0d3@oss.qualcomm.com>
- <20260924-pscrr-framework-v15-4-7af87107e0d3@oss.qualcomm.com>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <20260924-pscrr-framework-v15-4-7af87107e0d3@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260922211559.3633398-1-sadrul@google.com> <sqmmgjre63ltp2m6y5ui35hijnnwfljnzjscceunvzmzd5rh6i@us2amzhvtkw7>
+In-Reply-To: <sqmmgjre63ltp2m6y5ui35hijnnwfljnzjscceunvzmzd5rh6i@us2amzhvtkw7>
+From: Sadrul Chowdhury <sadrul@google.com>
+Date: Thu, 24 Sep 2026 08:21:00 -0400
+X-Gm-Features: AclHuK89lBo3kLTsEvW7wqXIE_9vbscPCVVxotToLaOHDgnCk-gw32aXdN6iQ4M
+Message-ID: <CAKgcGXgfr-hbBj+tc--uD5t3J6Q7zhnSsm17JwU0ZdVhb1ai+Q@mail.gmail.com>
+Subject: Re: [PATCH 1/2] fs/epoll: mark epoll_wait tasks TASK_FREEZABLE
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, 
+	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org, 
+	Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org, 
+	John Stultz <jstultz@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 24/09/2026 10:08, Faruque Ansari wrote:
-> psc_reason covered only the protection reasons. Extend it to mirror the
-> full POWER_ON_REASON_* vocabulary - power-on, watchdog, software,
-> external, RTC, reset button, CPU clock and crystal failures - so a
-> provider can report why the system last powered on, not only why it was
-> shut down. New values are appended to keep the existing numeric ABI.
-> 
-> Co-developed-by: Oleksij Rempel <o.rempel@pengutronix.de>
-> Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-> Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-> Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
-> 
-> changes v15:
-> - add a static_assert() tying ARRAY_SIZE(psc_reason_descs) to
->    PSCR_REASON_COUNT, so a future enum addition without a matching
->    table entry fails the build instead of silently reading a hole
->    (Matti Vaittinen)
-> - Add Reviewed-by tags from Matti Vaittinen.
-> changes v12:
-> - new patch
-> ---
->   include/linux/reboot.h | 28 ++++++++++++++++++++++++++++
->   kernel/reboot.c        | 12 ++++++++++++
->   2 files changed, 40 insertions(+)
-> 
-> diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-> index 4c5327dd7645..13f004ad1066 100644
-> --- a/include/linux/reboot.h
-> +++ b/include/linux/reboot.h
-> @@ -225,9 +225,28 @@ extern void orderly_reboot(void);
->    *	management errors, or an unrecoverable hardware fault requiring
->    *	immediate response.
->    *
-> + * @PSCR_POWER_ON: Regular cold power-on (e.g. via a PMIC power-on request).
-> + *
-> + * @PSCR_WATCHDOG: Reset caused by a watchdog timeout.
-> + *
-> + * @PSCR_SOFTWARE: Software-initiated reset or reboot.
-> + *
-> + * @PSCR_EXTERNAL: Reset asserted through an external pin or reset input.
-> + *
-> + * @PSCR_RTC: Wake-up or power-on triggered by the RTC.
-> + *
-> + * @PSCR_RESET_BUTTON: Reset triggered by a user reset button.
-> + *
-> + * @PSCR_CPU_CLK_FAIL: Reset caused by a CPU clock failure.
-> + *
-> + * @PSCR_XTAL_FAIL: Reset caused by a crystal oscillator failure.
-> + *
->    * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
->    *	value is useful for range checking and potential future extensions
->    *	while maintaining compatibility.
-> + *
-> + * The reasons mirror the POWER_ON_REASON_* strings in
-> + * <linux/power/power_on_reason.h>; keep the two in sync when extending.
->    */
->   enum psc_reason {
->   	PSCR_UNKNOWN,
-> @@ -236,6 +255,15 @@ enum psc_reason {
->   	PSCR_REGULATOR_FAILURE,
->   	PSCR_OVER_TEMPERATURE,
->   	PSCR_EC_PANIC,
-> +	/* Append new reasons here; the numeric order is ABI. */
-> +	PSCR_POWER_ON,
-> +	PSCR_WATCHDOG,
-> +	PSCR_SOFTWARE,
-> +	PSCR_EXTERNAL,
-> +	PSCR_RTC,
-> +	PSCR_RESET_BUTTON,
-> +	PSCR_CPU_CLK_FAIL,
-> +	PSCR_XTAL_FAIL,
->   
->   	/* Number of reasons */
->   	PSCR_REASON_COUNT,
-> diff --git a/kernel/reboot.c b/kernel/reboot.c
-> index e53fb31bad06..7094c7a8f315 100644
-> --- a/kernel/reboot.c
-> +++ b/kernel/reboot.c
-> @@ -7,7 +7,9 @@
->   
->   #define pr_fmt(fmt)	"reboot: " fmt
->   
-> +#include <linux/array_size.h>
->   #include <linux/atomic.h>
-> +#include <linux/build_bug.h>
->   #include <linux/ctype.h>
->   #include <linux/export.h>
->   #include <linux/kexec.h>
-> @@ -1102,7 +1104,17 @@ static const struct psc_reason_desc psc_reason_descs[] = {
->   	[PSCR_REGULATOR_FAILURE] = { "regulator-failure", POWER_ON_REASON_REGULATOR_FAILURE },
->   	[PSCR_OVER_TEMPERATURE]	 = { "over-temperature",  POWER_ON_REASON_OVER_TEMPERATURE },
->   	[PSCR_EC_PANIC]		 = { "ec-panic",	  POWER_ON_REASON_EC_PANIC },
-> +	[PSCR_POWER_ON]		 = { "power-on",	  POWER_ON_REASON_REGULAR },
-> +	[PSCR_WATCHDOG]		 = { "watchdog",	  POWER_ON_REASON_WATCHDOG },
-> +	[PSCR_SOFTWARE]		 = { "software",	  POWER_ON_REASON_SOFTWARE },
-> +	[PSCR_EXTERNAL]		 = { "external",	  POWER_ON_REASON_EXTERNAL },
-> +	[PSCR_RTC]		 = { "rtc",		  POWER_ON_REASON_RTC },
-> +	[PSCR_RESET_BUTTON]	 = { "reset-button",	  POWER_ON_REASON_RST_BTN },
-> +	[PSCR_CPU_CLK_FAIL]	 = { "cpu-clock-failure", POWER_ON_REASON_CPU_CLK_FAIL },
-> +	[PSCR_XTAL_FAIL]	 = { "crystal-failure",	  POWER_ON_REASON_XTAL_FAIL },
->   };
-> +static_assert(ARRAY_SIZE(psc_reason_descs) == PSCR_REASON_COUNT,
-> +	      "psc_reason_descs[] must have an entry for every psc_reason");
+On Wed, Sep 23, 2026 at 7:24=E2=80=AFAM Jan Kara <jack@suse.cz> wrote:
+>
+> On Tue 22-09-26 21:15:58, Sadrul Chowdhury wrote:
+> > During system suspend (freeze_processes) and resume (thaw_processes),
+> > threads blocked in epoll_wait() sleep in TASK_INTERRUPTIBLE. When
+> > try_to_freeze_tasks() executes, it must wake up every sleeping thread
+> > with a synthetic signal so the thread can schedule, run try_to_freeze()=
+,
+> > enter TASK_FROZEN, and sleep again. Upon resume, the freezer wakes them
+> > all up simultaneously, only for each thread to re-enter ep_poll(),
+> > observe no ready I/O events, and call schedule() to go back to sleep.
+> >
+> > On systems with numerous event-driven daemons (where hundreds of
+> > threads idle in event loops), this causes a large wakeup stampede and
+> > thousands of redundant context switches per suspend/resume cycle.
+> >
+> > An earlier attempt to make epoll_wait() freezable in commit 1c441e92120=
+1
+> > ("epoll: use freezable blocking call") was reverted in commit
+> > c511851de162 ("Revert "epoll: use freezable blocking call"") due to
+> > reports of userspace corruption (Bugzilla #61781). Under the legacy
+> > freezer design, freezable tasks could wake up prematurely while
+> > hardware and peripheral drivers were still suspended.
+> >
+> > With the 2022 core freezer rewrite (commit f5d39b020809 ("freezer,sched=
+:
+> > Rewrite core freezer logic")), the legacy fake-signal mechanism was
+> > replaced with the TASK_FROZEN state. Tasks sleeping in TASK_FREEZABLE
+> > are safely frozen in-place without waking them up, and the scheduler
+> > guarantees they cannot be woken until thaw_processes() explicitly clear=
+s
+> > the frozen state.
+> >
+> > Mark sleeping tasks in ep_poll() as TASK_FREEZABLE. Benchmarks on an
+> > ARM64 test device demonstrate that combining this with freezable
+> > select/poll reduces thaw latency by 63% (from 20.64 ms down to 7.55 ms
+> > mean at fixed CPU frequency) and reduces context switches during
+> > freeze/thaw by 87%.
+> >
+> > Signed-off-by: Sadrul Chowdhury <sadrul@google.com>
+>
+> With similar caveat as on patch 2/2 feel free to add:
+>
+> Reviewed-by: Jan Kara <jack@suse.cz>
+>
 
-Thanks Faruque. This is better than nothing, but if I read it right, it 
-won't still catch missing initializations when last item is initialized 
-(but not all items). Eg:
+Thank you for the review!
 
-enum {
-	PSCR_REGULATOR_FAILURE,
-	PSCR_OVER_TEMPERATURE,
-	PSCR_EC_PANIC,
-	...
-	PSCR_REASON_COUNT
-};
+Regards,
+Sadrul
 
-static const struct psc_reason_desc psc_reason_descs[] = {
-	[ PSCR_REASON_COUNT - 1] = { "foo", BAR }
-};
-
-static_assert(ARRAY_SIZE(psc_reason_descs) == PSCR_REASON_COUNT,
-	      "psc_reason_descs[] must have an entry for every psc_reason");
-
-would pass the check, but accessors would crash to uninitialized 
-entries. Hence, I would still prefer the run-time NULL checks.
-
-Oh, and I just noticed there is comma following the 'PSCR_REASON_COUNT' 
-in the enum. Since 'PSCR_REASON_COUNT' should always be kept as the last 
-enum value, the comma should be omitted.
-
-Other than this - I like the changes you implemented this series. Won't 
-reply to other patches, but I think this is a very nice series!
-
-Yours,
-	-- Matti
-
--- 
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
-
-~~ When things go utterly wrong vim users can always type :help! ~~
+>                                                                 Honza
+>
+> > ---
+> >  fs/eventpoll.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+> > index 6cbef8b4c2e0..35992f6457bf 100644
+> > --- a/fs/eventpoll.c
+> > +++ b/fs/eventpoll.c
+> > @@ -39,6 +39,7 @@
+> >  #include <linux/rculist.h>
+> >  #include <linux/capability.h>
+> >  #include <net/busy_poll.h>
+> > +#include <linux/freezer.h>
+> >
+> >  #include <trace/hooks/fs.h>
+> >
+> > @@ -1987,7 +1988,7 @@ static int ep_poll(struct eventpoll *ep, struct e=
+poll_event __user *events,
+> >                * the same lock on wakeup ep_poll_callback() side, so it
+> >                * is safe to avoid an explicit barrier.
+> >                */
+> > -             __set_current_state(TASK_INTERRUPTIBLE);
+> > +             __set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZABLE);
+> >
+> >               /*
+> >                * Do the final check under the lock. ep_start/done_scan(=
+)
+> > --
+> > 2.55.0.1082.g2b9226bbc0-goog
+> >
+> --
+> Jan Kara <jack@suse.com>
+> SUSE Labs, CR
