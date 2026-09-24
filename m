@@ -1,141 +1,181 @@
-Received: from mail-oi2-f0.google.com (mail-oi2-f0.google.com [74.125.231.192])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp-bc0c.mail.infomaniak.ch (smtp-bc0c.mail.infomaniak.ch [45.157.188.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C0CE344D8C
-	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 03:15:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.192
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0D8D374E7A
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 05:36:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.157.188.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790219740; cv=none; b=Yh9hWdZOTaLJZRtp8dFT983AS7gv242MrA0KddaWjrNnDFyWOH0kkAMfKxacvW66N5mcWt7rigA34W9YfKq3KE5RfLF281B7yffFAAiykAqz3oPMJd+U2DW4JkOG5eSSlfPTVkVg7xxoiVb5/qOWj8CpwTKPubUEsxENLUWihJ4=
+	t=1790228185; cv=none; b=igdUDCDxzEsv7zwJ45H8D20JP23zWsLXQp0XW8CzF+0EuTspsn1SbFpf67Lk85Z73fo6du8H5873LS0xKosh5IFifYILvNZGfuooUgr+V93viefwYNobseJLbmBvGZbeGf3zTyYDKogox78oxz0vi89FZ5baeXXNiD1JaJo10o0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790219740; c=relaxed/simple;
-	bh=SFCDsL+KLosjLiTfRG/h9sWFqTjT5EdHrRCiuR0pch8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=jAvxe7sh2bC2E3X2OUtig28XGu+VpEZoIAldaTd6RAgAaFDOYs39W954Wlf07klsWOSlgI45Oku6etzQXeQjA2rp7IQAyWVhPKDTIxH9iKZ2fg5120okxi0Xf3ks8S8ry8NgRy5v5GmLmAmFhnZzkpXiJePWBNicqqKtuLbJkV8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OUkoZbLz; arc=none smtp.client-ip=74.125.231.192
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790228185; c=relaxed/simple;
+	bh=LNQ6/cxi1/RiLFN1o9CBtzzPi9Abau/Eed0WKkToToM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Z7WbrjOQCznQZIgXTg0uXVDYIMa6BDFEAV2//WX63Q9nWUyNwsiUqi43WFmrSrPBQ9ariGgSS2eZl0sBQg4ju6JX9DONjV327ynmJxQv3eUsWmzs59r3Xruh4YB82nEFOxTCPGK8Sbww0XoLtUrJGKL5F3YO2gpZwzoP468zafU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ik.me; spf=pass smtp.mailfrom=ik.me; dkim=pass (1024-bit key) header.d=ik.me header.i=@ik.me header.b=2E+gFHzX; arc=none smtp.client-ip=45.157.188.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ik.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ik.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OUkoZbLz"
-Received: by mail-oi2-f0.google.com with SMTP id 5614622812f47-4a49b13b745so656755b6e.0
-        for <linux-pm@vger.kernel.org>; Wed, 23 Sep 2026 20:15:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790219738; x=1790824538; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=v6SgjFofGfUKX1jxaWBbw3Uq6YYLhDmkU5+NgvCiQuE=;
-        b=OUkoZbLzguI+ibZYbGRe+gQvQGRs6ace60kOaJ+bJXVsl4zhlOQ1SalqTRHGKd+r/W
-         wCvbjKgrtnogwY9JHrbhM1QBkaBmLa1z3ojHYuLfX/MyCLRZVZdtL3OQIrXnBqwq+vmO
-         zjsW/hhy8ZmSjbF8Jk240g1DOce7k/vRuTGFrziP6gEDBpccBFez9P7yth6+BWwiBgMb
-         HXWzMXUyEEKQ0dTGXM00VQQ8fS9hHO1X4NAKb88+vzpXAx1hDTiaUhtY7J4u5pcJtnKF
-         JstYNTM0mME9GNiXMspYEamae2UTVLpAmC+tDTOORCe009WRTNORm6I3babW1LqgBKyi
-         /MBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790219738; x=1790824538;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=v6SgjFofGfUKX1jxaWBbw3Uq6YYLhDmkU5+NgvCiQuE=;
-        b=YTW4lOXZc3whladdrWq64p+QkzEDyp2Z99Psu1zWCLQ63YhmV2cI7Q2Wo5TkVeSz4N
-         0vP9MUpBCUgGn3yAmJIoq93O5c4l0uRfTqwqOEWwFjWbx4ejoRDC3/nytugUef0msBqr
-         9OGPYdszTf71zlPQXpcsjSNMwD9JVpPUHSdqimJeqRUDF0KDYSdckxRwOI0bqmciteCO
-         5H2oXhQU0xrJlN/YZMA6kXP/GofA4vJuv2ODPEkteAFKi6Bh8SwZ8UnIAIjMex/rigqO
-         qW9mF5R6yB+PaMR9hMkK+Kl7e5kbqbjD0P92YGC+LjXZWqpI8O/LCXh9KkkmIWw35dd9
-         X+uQ==
-X-Forwarded-Encrypted: i=1; AKwUvBw+9tAzGXOU3pTKSVRYR+lUClLdQOl1zc7eRIll70WF6TdwiXZy4GSlm/YlWYMhuvafOx2bLot7oQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lOrOYW5450jf+Z4zAycOIHnOZLDQ9o4aozk58VZ2+HbppORs9s
-	hDItKySXgtQLbZINqElieB4ehms2H8pPvzxgxi16wE4SdELhrZFQXjia
-X-Gm-Gg: AYBFou2Yg3jEmpd/CaGKtMABnHR2HOOWkWheYix47iNR/8vKvaL+9h9131zejSUxa84
-	6j/hvQfCoXzAys1QyNF0RETSTNbTt0RTi773bedML1+L6CfOlTYFPfnPxo+8KslKg2WSnprcS7M
-	ydcrVhu3tW/vl+qEaM9CSIwtOP1VrWs9xoGtsgQZepycLoPOAcbOKur/1HZ8HeECfYDsBwKKmZT
-	FyXjIlT5cQ5pLDY9W8JfNLkAUFB1+CpDmsn9U7oh8aBh5ixO3+1EQc66ncmbT7+IikkmiuVz/hF
-	7Tk4r44sB5t1/9gQd8qhm4TQe+Kz9914NvN0auTtFoSf1JbmYCStYWNmtpCY7S4P+ZKTgDmvlNT
-	W/cwND+D0eIoj+77WoMYD47PR88a0eabUxuy5MRBV2ZzRFK7Ygss1fHBW6ErEmLEs4D/EVRkpUI
-	51XgLt57vv1LDoCYX/SS4rEOqKD1O2GVP6xXVg6n4Wy3TbzoaUHqFzppbSN1IvnhZGHw==
-X-Received: by 2002:a05:6808:4f60:b0:4d6:9222:9a1c with SMTP id 5614622812f47-4d730d691bdmr1241821b6e.55.1790219737822;
-        Wed, 23 Sep 2026 20:15:37 -0700 (PDT)
-Received: from [192.168.18.164] ([2600:8804:5716:d800::2620])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-4d5c1b305b8sm3946699b6e.1.2026.09.23.20.15.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Sep 2026 20:15:36 -0700 (PDT)
-From: Ryan Brue <ryanbrue.dev@gmail.com>
-Date: Wed, 23 Sep 2026 22:15:35 -0500
-Subject: [PATCH v2] dt-bindings: power: supply: battery: allow 101
- ocv-capacity points
+	dkim=pass (1024-bit key) header.d=ik.me header.i=@ik.me header.b="2E+gFHzX"
+Received: from smtp-4-0000.mail.infomaniak.ch (smtp-4-0000.mail.infomaniak.ch [10.7.10.107])
+	by smtp-3-3000.mail.infomaniak.ch (Postfix) with ESMTPS id 4hr2ct2bvszbZW
+	for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2026 07:36:14 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ik.me; s=20200325;
+	t=1790228174; bh=9Kyz/rTPJQ9RhsttYivOqfj/H4Czdnx83Wb1MtyABdA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=2E+gFHzX0/10BKmG5ZkjGMrtO9MbHodUxUvchSGUKWdNGj7EpxmWr7Utb6pbDjS0O
+	 +pNPehGh223Fr7g+O34tTY6oYUr0kq+e6Df/I3q/HD6HFgC/lGWl3L2lgz/ttxL9vX
+	 xIigYCQAPS5Ed+0G/pgQQD//oROE1Wp5n8BhXOGY=
+Received: from unknown by smtp-4-0000.mail.infomaniak.ch (Postfix) with ESMTPA id 4hr2cs1rLfz4TS;
+	Thu, 24 Sep 2026 07:36:13 +0200 (CEST)
+Message-ID: <da547f98-8bb0-ae1d-ded1-28fde8a64b46@ik.me>
+Date: Thu, 24 Sep 2026 07:36:12 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260923-rbrue-suez-upstreaming-battery-ocv-table-128-v2-1-b827406d768d@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/5XNQQ6CMBCF4auYrh1DWyPUlfcwLFqYQhOgZFoak
- XB3K4kHcPm/xfs2FpAcBnY/bYwwueD8lEOcT6zp9dQhuDY3E4W4FYqXQIYWhLDgG5Y5REI9uqk
- Do2NEWsE3CaI2AwIXFSijK2mV5NIYli9nQuteB/esc/cuRE/roSf+XX9Q9R+UOHCw17JEKxXao
- n10o3bDpfEjq/d9/wCjfcFK6AAAAA==
-X-Change-ID: 20260917-rbrue-suez-upstreaming-battery-ocv-table-128-9ba83f9313bb
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: Henrik Grimler <henrik.grimler@axis.com>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Ryan Brue <ryanbrue.dev@gmail.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790219736; l=2094;
- i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
- bh=SFCDsL+KLosjLiTfRG/h9sWFqTjT5EdHrRCiuR0pch8=;
- b=qyZ09NfBzrkLduWXKawj7lI0MD0dd8kSQgR5MeZrQxDQrJIqkbmKcf/HJ6ymP/WdEtA9hQeTF
- eR30FVrIn2QDPzZNIt17mC+HJeNZPp0j2CnchW+loJkUh92R1xFpTLv
-X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
- pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [BUG] s2idle: unrecoverable sleep on ThinkPad P16s Gen 4 AMD,
+ (Strix Point) when more than 16 logical CPUs are online
+To: Mario Limonciello <mario.limonciello@amd.com>,
+ platform-driver-x86@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Shyam-sundar.S-k@amd.com, hansg@kernel.org,
+ ilpo.jarvinen@linux.intel.com, rafael@kernel.org
+References: <82329b33-ba2d-ee43-d444-5fdc14af1bce@ik.me>
+ <4d377d87-c2d3-5541-53af-68c9d67daa72@ik.me>
+ <55854916-292a-40ae-8421-1a784785d899@amd.com>
+ <f872d7e0-79f6-911a-b0c0-639c58e780f3@ik.me>
+ <66dee9c5-ad66-4bd7-982c-c5694d806cf2@amd.com>
+ <0bb77796-790f-44db-b4cc-e4742ed1b2d0@amd.com>
+ <eafbba40-a10f-6a7f-54e6-b14d59ad1525@ik.me>
+ <99dcb462-5045-4fa7-9f6b-ee0f13ff96ab@amd.com>
+ <4a161dd5-4dfe-81f4-e4d8-ba9d3280c25a@ik.me>
+ <6d7773c8-0dc5-4e11-8bbb-088289dd508b@amd.com>
+ <a5611ca8-b28d-4102-0caa-542fc162758a@ik.me>
+ <60a5c26c-8fe2-477f-b576-2a18d8b6394d@amd.com>
+ <fc70f3b0-6ac5-7ac9-dca8-595b65785718@ik.me>
+ <b29e9341-70cb-4201-99fc-ef307dd10fa5@amd.com>
+ <aab50dd0-5141-bded-0b58-0f01ae9621d5@ik.me>
+ <c42ab776-6fa9-4e8e-acae-fa921a5ac108@amd.com>
+ <0d1686e8-a50e-6f3b-2923-a0eca6ab4271@ik.me>
+ <b6015026-fe8c-4823-ad39-c630350c0cc1@amd.com>
+ <c58f84c7-bfe6-58db-cad5-6859e96a7daf@ik.me>
+ <afb1949a-8465-cfc8-bddb-bc27783af223@ik.me>
+ <8f06af84-c0fb-4d24-8868-bf16a1678b4a@amd.com>
+Content-Language: en-US
+From: Fourhundred Thecat <400thecat@ik.me>
+In-Reply-To: <8f06af84-c0fb-4d24-8868-bf16a1678b4a@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Feedback-ID: :2997a34c1a6c8c6:ham:c07166f4469634d
+X-Infomaniak-Routing: alpha
 
-ocv-capacity-table-N is capped at 100 points, while the capacity percent
-in each point may be anything from 0 to 100. A table with a point for
-every percent, both ends included, needs 101 and does not fit. Raise the
-cap to 101.
+On 2026-09-23 23:10, Mario Limonciello wrote:
+> On 9/23/26 15:48, Fourhundred Thecat wrote:
+>> the bug reproduces on 7.3-rc4.
+>>
+>> Built 7.3-rc4 from the torvalds snapshot, migrated my 6.18.51 config 
+>> with make olddefconfig, IOMMU enabled, all 24 CPUs online, no IOMMU 
+>> boot parameters. Same result: the machine suspends and never wakes, 
+>> forced power off required.
+>>
+>> Both attempts recorded by the same script, neither produced a resume 
+>> block:
+>>
+>>    === 2026-09-23T22:15:02 BEFORE
+>>    cmdline:     (6.18.51, no iommu parameters)
+>>    cpus online: 0-23
+>>    iommu:       ivhd0
+>>    ff_rt_clk:   0
+>>    S0ix Entry Time: 0 / Exit Time: 0 / Residency Time: 0
+>>    suspending with +30s alarm
+>>
+>>    === 2026-09-23T22:39:06 BEFORE
+>>    cmdline:     (7.3.0-rc4, no iommu parameters)
+>>    cpus online: 0-23
+>>    iommu:       ivhd0
+>>    ff_rt_clk:   0
+>>    S0ix Entry Time: 0 / Exit Time: 0 / Residency Time: 0
+>>    suspending with +30s alarm
+>>
+>> Both used a programmed RTC wakealarm at +30s and were left untouched 
+>> for several minutes.
+>>
+>> Relevant details of the 7.3-rc4 build, so this is not a configuration 
+>> difference:
+>>
+>>    CONFIG_AMD_IOMMU=y, CONFIG_IOMMU_PT=y, CONFIG_IOMMU_PT_AMDV1=y
+>>    CONFIG_NR_CPUS=24, CONFIG_MODULES not set
+>>    CONFIG_DEBUG_FS=y, CONFIG_PM_DEBUG=y, CONFIG_DYNAMIC_DEBUG=y
+>>    CONFIG_AMD_MP2_STB=y, CONFIG_X86_MSR=y, CONFIG_DMIID=y
+>>    CONFIG_LOG_BUF_SHIFT=20, CONFIG_RANDSTRUCT_NONE=y
+>>    kernel is not tainted, builds with zero warnings
+>>
+>> Only 243 config lines differ between my 6.18.51 and 7.3-rc4 configs. 
+>> Both commits you pointed me at are present in 7.3-rc4: rtc-cmos uses 
+>> platform_get_irq_optional(), and iommu/amd carries the "No ACPI device 
+>> matched UID" check. As on 6.18, that FW_BUG message does not appear 
+>> here either.
+>>
+>> Two things worth noting about the 7.3 build specifically. The new 
+>> IOMMU page table layer is in use (CONFIG_IOMMU_PT / IOMMU_PT_AMDV1 
+>> replacing CONFIG_IOMMU_IO_PGTABLE), so that rework does not change the 
+>> outcome. And AMD_PMF and DRM_ACCEL_AMDXDNA are not compiled into 
+>> either kernel - DRM_ACCEL and AMD_SFH_HID are both off in my config - 
+>> so neither driver is involved in any of these results at all, which is 
+>> a stronger statement than the initcall_blacklist tests I reported 
+>> earlier.
+>>
+>> Where that leaves things. With the IOMMU enabled and all 24 CPUs, on 
+>> both 6.18.51 and 7.3-rc4:
+>>
+>>    lid switch, internal keyboard, power button, USB mouse with wakeup
+>>    armed, and a programmed ACPI RTC alarm        all fail to wake
+>>
+>>    intremap=off, iommu=pt, amd_iommu_intr=legacy  all still hang
+>>    pm_test freezer / devices / platform           all pass
+>>    PC6 and CC6 enabled per amd-s2idle             yes
+>>
+>>    amd_iommu=off                                  wakes normally,
+>>                                                   Last S0i3 Status 
+>> Success,
+>>                                                   13.3s residency,
+>>                                                   pm_wakeup_irq 9
+>>
+>> Since it fails identically on 6.18 and 7.3 there is no working kernel 
+>> version to bisect against. The only variable that changes the outcome 
+>> is whether the IOMMU is enabled, and secondarily whether more than 16 
+>> CPUs are brought up at boot.
+> 
+> To me this still feels like a BIOS bug.  I wouldn't discount the 
+> possibility that think-lmi didn't apply a setting properly or something 
+> like that.
+> 
+> Can you please try to manually go into your BIOS and reset BIOS default 
+> settings?  Does it reproduce with IOMMU left on?
 
-power_supply_get_battery_info() sizes each table from the property, so
-no kernel change is needed.
+I did another test:
 
-Assisted-by: LLM
-Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
----
-As discussed with Henrik on v1: rather than a larger cap for one vendor's
-tables, which fit in 100 points once resampled, allow the one extra point
-that a table at every percent from 0 to 100 needs, and say so in the
-binding.
----
-Changes in v2:
-- Raise the cap to 101 instead of 128, with a comment saying why (Henrik)
-- Drop the justification from the vendor's tables; the figures in v1
-  were for a different cell, and resampled tables fit in 100 points
-- Rebase on v7.3-rc4
-- Link to v1: https://patch.msgid.link/20260918-rbrue-suez-upstreaming-battery-ocv-table-128-v1-1-f477ef39ef0d@gmail.com
----
- Documentation/devicetree/bindings/power/supply/battery.yaml | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I bootet latest Debian live CD image before touching the BIOS, and it 
+reproduces.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.yaml b/Documentation/devicetree/bindings/power/supply/battery.yaml
-index 8ebf05d9497c..9575ee1491bb 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
-@@ -154,7 +154,8 @@ patternProperties:
-       of the battery and corresponding battery capacity percent, which is used
-       to look up battery capacity according to current OCV value. And the open
-       circuit voltage unit is microvolt.
--    maxItems: 100
-+    # One point for each capacity percent from 0 to 100
-+    maxItems: 101
-     items:
-       items:
-         - description: open circuit voltage (OCV) in microvolts
+Debian live, kernel 7.1.12+deb14-amd64 #1 SMP PREEMPT_DYNAMIC Debian 
+7.1.12-1 (2026-08-28). Stock distro kernel with modules, systemd and 
+udev, every device driver bound, distro defaults throughout, nothing of 
+mine involved except the BIOS settings. echo mem > /sys/power/state 
+suspends and never wakes. Forced power off required, same as always.
 
----
-base-commit: 93f51579e7df248780214094418f205253383cc5
-change-id: 20260917-rbrue-suez-upstreaming-battery-ocv-table-128-9ba83f9313bb
+So my custom kernel configuration is not the cause.
 
-Best regards,
---  
-Ryan Brue <ryanbrue.dev@gmail.com>
+That now leaves three kernels reproducing it:
+
+   6.18.51    my build, minimal config
+   7.3-rc4    my build, migrated config
+   7.1.12     stock Debian live image, distro config
+
+I will do the BIOS defaults reset next, as you asked.
+
+
 
