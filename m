@@ -1,94 +1,108 @@
-Received: from mail.auroraos.dev (unknown [95.181.193.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08C0B4E2F15
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:38:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.181.193.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A45BA4E8DEF
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:51:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790365135; cv=none; b=ak+Mt6SlC9LdruI4CWA8zvVTQfEebLf3+gy4XLHJ43Huea7ooIDYDOE/rMfZsXujumDwT6QPOGcNBQ9eNP81AguIN9T6PdMYDLyqhh7OKmn5AXlj3j1JzKuJXiwIW2YmD4Y09S5jq5uxJgfE5/mQ5nKMgS5jYeay3EmHsIWhPPw=
+	t=1790365902; cv=none; b=KZmd6HElHruyTNL6NlsAXrzgfc7BbIRISWTYl7QNvIP8izs2Dl5E+IICsB4ItA4OgRTJeod8e4o4Dy7NJX4NE3fBIrTeCyFE4ypTmalMMAkDW/6yILvo85gfneoV0MkSw+uNowcCEGQLtStQQOItMfC0Ncq6PVcbev6Vx6Qc+ys=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790365135; c=relaxed/simple;
-	bh=NtuTSdMxZQgjZD6OH7gqvHSJR034KGquI+zsl/blznU=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:CC:References:
-	 In-Reply-To:Content-Type; b=PhGer6fgNW/tCrMcOqsq6DzBjRElABc6m/jN4kv/3Iitz1aWeq2wqpGpuFC5IKxujmpNgFeTZmYhi2jku/WEIhSh6jvrT1sQyeeImX3VyKHQJ0jdeFi6hOKYWgMqMFXlUs/OMZKcp7stczwikKnokMpPNC5p4V2RBFktPrEYyDc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev; spf=pass smtp.mailfrom=auroraos.dev; arc=none smtp.client-ip=95.181.193.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=auroraos.dev
-Received: from [192.168.2.104] (91.78.45.169) by exch16.corp.auroraos.dev
- (10.189.209.38) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1847.3; Fri, 25 Sep
- 2026 22:38:46 +0300
-Message-ID: <66a4cfe1-286c-4d63-9285-2445c48739ab@auroraos.dev>
-Date: Fri, 25 Sep 2026 22:38:46 +0300
+	s=arc-20240116; t=1790365902; c=relaxed/simple;
+	bh=2pKdO3h1Su01tEz4Iq9muFSMNq+nPhG24Qel2AaGW1Y=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=LraQUA8t3VtfcDsIyyeQ7NDCPTs7HU727ZTQpWSyycjErKgt4HgrjegLSH2+4/tviib9GI8qUK832ZsMrLNO0VvbHfaICL/wA59LqkYFYNZU+tz2EaUK1N9AVr+MPvcf7LER/Xx3+68ac3D5bEGv7/igaEiBvK9c6T8w+9es2HY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mQQSQ7lq; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mQQSQ7lq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D4C21F00899
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:51:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790365901;
+	bh=4B7e94SXd49oJbq/xM76z20C0J2FDWZN5SoKxn3ph4s=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=mQQSQ7lqhEbPy0Bg5CRVfBLmVjYDS+qOSYrWWuqQylY29b4CLgO6VoDpv+O7TJHEh
+	 w4JFrKhvkJNl8h+H/izj+4IGC02IJdOjZOzCFGw/J+kCuoUGGem3BV+7KdEEpDJ1kf
+	 2W8tYoG3QN+scWDa2JWd0bt52WrnuTvaXQ6/B0JSrXXADUfpwYbe2C6ixDceAIQCe2
+	 zrFnRSQPeWnVXXOJeaH07kjwnZ2ZDiqjXj8GtJLRpseLZjGquzr/SrREIID2FqTJn8
+	 mSVi+/BI0Deb/ltW3HLm37wnL+ro+YnW2fbWR3bH846utxAnXX31BCsLe3o+cH9GV4
+	 l0zzvES3O/jcA==
+Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a64e7f4892so3215621fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 12:51:41 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzwb2a7ww8Xbn/5cNjoYIe55t85mptLzA/iO4D1WULvTnDGC7a7+YE7KE3tyzof7KgnCbt5HfnJ7g==@vger.kernel.org
+X-Gm-Message-State: AFuF++nHO1UYkD+tla1UXfOC0rRMiH/ld4KtGvnFMXsb7D/zUDXkEUOc
+	DY8GZEQCMUbFVZA3A7asK6a4+Pz/T/a2hzIf/XJvUrtRxdQz94nh1O5M/UrBOhSJrNcJgPCyS4R
+	5dTBc6vni3V8peePofpQyHxzcU0Yk1GQ=
+X-Received: by 2002:a05:651c:54f:b0:3a4:9881:8de0 with SMTP id
+ 38308e7fff4ca-3a63bf5cf4cmr14741281fa.7.1790365899771; Fri, 25 Sep 2026
+ 12:51:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: rockchip: fix domain check in
- rockchip_pm_add_one_domain()
-From: Sergey Shtylyov <s.shtylyov@auroraos.dev>
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-CC: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
-	<linux-pm@vger.kernel.org>, <linux-rockchip@lists.infradead.org>, Caesar Wang
-	<wxt@rock-chips.com>, Kevin Hilman <khilman@linaro.org>,
-	<linux-arm-kernel@lists.infradead.org>
-References: <20260920175928.42566-1-s.shtylyov@auroraos.dev>
- <CAPx+jO-Ph038WJQ4gMH93XzoMC09+meht=yT9JQBAnTD6HzGEg@mail.gmail.com>
- <eae7ec74-5b90-4258-9576-159c700bd8f4@auroraos.dev>
-Content-Language: en-US
-In-Reply-To: <eae7ec74-5b90-4258-9576-159c700bd8f4@auroraos.dev>
+References: <20260919-move-dont-use-autosuspend-v1-1-f6e2d1315c23@gmail.com>
+In-Reply-To: <20260919-move-dont-use-autosuspend-v1-1-f6e2d1315c23@gmail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 25 Sep 2026 21:50:02 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jzj0QdaYvYcUOF=h5JkV-oYmRZ3U+v4gtrmPkJnGNpTg@mail.gmail.com>
+X-Gm-Features: AclHuK9N0CY2rxHQrszYK4T8Nsdnpx1GicGt8vAlTD-qOhnRvw_jso2Nf_Tn79s
+Message-ID: <CAJZ5v0jzj0QdaYvYcUOF=h5JkV-oYmRZ3U+v4gtrmPkJnGNpTg@mail.gmail.com>
+Subject: Re: [PATCH] PM: runtime: call pm_runtime_dont_use_autosuspend() on reinit()
+To: Joshua Crofts <joshua.crofts1@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, linux-pm@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	Frank Li <Frank.Li@nxp.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: exch16.corp.auroraos.dev (10.189.209.38) To
- exch16.corp.auroraos.dev (10.189.209.38)
+Content-Transfer-Encoding: quoted-printable
 
-On 9/23/26 11:44 PM, Sergey Shtylyov wrote:
-[...]
+On Sat, Sep 19, 2026 at 10:25=E2=80=AFAM Joshua Crofts <joshua.crofts1@gmai=
+l.com> wrote:
+>
+> Add a pm_runtime_dont_use_autosuspend() call to pm_runtime_reinit() to
+> ensure autosuspend is disabled on driver teardown.
+>
+> Suggested-by: Frank Li <Frank.Li@nxp.com>
+> Signed-off-by: Joshua Crofts <joshua.crofts1@gmail.com>
+> ---
+> If a driver doesn't use devm_* functions for automatic cleanup on
+> teardown and autosuspend is enabled during probe, it should also be
+> disabled on teardown in a _remove() function or equivalent. However,
+> due to bad documentation, driver authors usually omit the
+> pm_runtime_dont_use_autosuspend() call on teardown.
+>
+> Reason for investigating: this week, several patches popped up in
+> the linux-iio mailing list, adding these missing calls to several
+> IIO drivers. For some reason I ended up writing a cocci script to
+> find other instances of this and found ~195 offending drivers.
+>
+> After a discussion with Frank Li on the matter [1] when sending a similar
+> patch adding these missing calls to the clk subsystem, we arrived to the
+> idea of actually adding the dont_use_autosuspend() call to
+> pm_runtime_reinit() and have driver core handle this instead of
+> submitting 195+ patches to amend the issue.
+>
+> [1] https://lore.kernel.org/all/aq1N863eJpD_ZrLU@SMW015318/
+> ---
+>  drivers/base/power/runtime.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index fab38bc98113..9a37f6162fe0 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1874,6 +1874,9 @@ void pm_runtime_reinit(struct device *dev)
+>         if (dev->power.runtime_status =3D=3D RPM_ACTIVE)
+>                 pm_runtime_set_suspended(dev);
+>
+> +       if (dev->power.use_autosuspend)
+> +               pm_runtime_dont_use_autosuspend(dev);
+> +
+>         if (dev->power.irq_safe) {
+>                 spin_lock_irq(&dev->power.lock);
+>                 dev->power.irq_safe =3D 0;
+>
+> ---
 
->>> In rockchip_pm_add_one_domain(), there's the check (most probably for
->>> the case where the "reg" prop has an unexpected value?) which doesn't
-
-   By "unexpected value" I meant a domain that isn't controlled by this
-driver and so have no explicit initializer in *_pm_domains[]. Looks like
-for such domain #s rockchip_pm_add_one_domain() should fail with -EINVAL.
-
->>> make much sense as the variable pd_info will be NULL iff pmu->info->
->>> domain_info is NULL and the variable id is 0.  What does make sense
->>> there is checking pd_info->pwr_mask and pd_info->req_mask which (as
->>> seems to follow from the code) can't both be 0 for a valid domain...
-
-   For the domains that have no matching initializer these fields should
-be both 0. I had chosen checking these 2 fields instead of pd_info->name
-as I intended this patch as a fix, easily backportable to the LTS kernels.
-
->>> Found by Linux Verification Center (linuxtesting.org) with the Svace
->>> static analysis tool.
->>>
->>> Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
->>> Signed-off-by: Sergey Shtylyov <s.shtylyov@auroraos.dev>
->>
->> Applied for next, but without the fixes tag, thanks!
->>
->> Note, that I am dropping the fixes tag because if there was a real
->> problem, we would require yet another fix on top to get the
-
-   If a defective DT is considered an issue then there's a problem. :-)
-
->> corresponding domain declaration to be correct. Yet, the patch is
->> useful as is!
-
-   Like I've already told, my aim was not detecting the bad declarations,
-just bad DTs. I probably just wasn't elaborate/assertive enough...
->    I was thinking of doing a more elaborate description but if you
-> considered it good enough, OK... :-)
-
-   So what are you going to do with this, leave things as they are: the
-patch merged to the next branch (in its current form) and not merged to
-fixes? Perhaps a revert or an incremental patch?
-
->> Kind regards
->> Uffe
-MBR, Sergey
+Applied as 7.4 material, thanks!
