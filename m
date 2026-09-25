@@ -1,341 +1,144 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC7124078F5
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:06:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 717AD44470C
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:12:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790366801; cv=none; b=sd+GxGBVY9pZa6n3QyMX6Z6vDJwi4fhwQq/Azn6nIRSWkvaif0YgeC1/QD2cR2nmQeKiX4z9QygqLwE/Kqem8EOxeaBgZfGZtxbr7D1Zlwcy/N6h8yRHwl9FVqLZR7dcQxoLz+LnRQyqd8upqRch39ZlOXVUdtLS8DJPJCuRkgE=
+	t=1790367135; cv=none; b=tmLqTmUg6WvHIp/m7/lGCDna3bnquDEHozLkS5TgUQeH4QVYHs7NPzn4k8pHYHQRMMNAJMl3S97gn+7BvW+ZQd8LiqvspAqxI5Jdri18sm544euJQteVdlfrvlo/qUzA7tK54z+aSk3hjRiCU+8AKacneU+lLRE+Y3QEVajr5NI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790366801; c=relaxed/simple;
-	bh=NEuCVKYpXaXTglhJheHiFNsL1MQDxePE9zq5IU7cI+0=;
+	s=arc-20240116; t=1790367135; c=relaxed/simple;
+	bh=002S8vnOMFAFJ6nMl4iWnh77cSjc+g9V5FRVgu3Kd9M=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Bv6CdGYV+90feW4WpKYGPsv9AWoMzVTs2gEpoIuNMS/Czuv/xc/fJ4+YF2xFxCqqPNREk6+sWP8Lzlr4s1d3MD5Jqc3pDuXoKUsQmlUocRH8HCaZB1js0EO4XeOsWGZqRSnxJFvVdu/RUX+UuzdDOzQppvXwWcZ3Nl0938mMMdo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jllMzOMs; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=dHsNkFOHZghcy9DCm9NXoYKiEvW22PbcKZPn+7qlD+yzVL97HxOlcNkINk0skAj9dWVpFnxlpzJhIU6SmEJHeWrZE9suZaczUsy8unNYo356SmDVqunr8twYsffkcqvZ4RteZtajwIy52fqbe78w0hQvMXxZEVSym7Z3An65yEg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P43pVqON; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jllMzOMs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23D751F000FF
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:06:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P43pVqON"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B72E21F0089A
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:12:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790366797;
-	bh=PvjIw4Gs04yENhnrcbPATTUQJ8DYxFb6SwPViZKQF2k=;
+	s=k20260515; t=1790367126;
+	bh=NN+opJ6O2i01W0leRwrhsq0wiHd+Q/Ia/9/Q0jKm2jo=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=jllMzOMsRcewmmqSXsblf+UxIBx5k8QdJm4oV2wnL4SIPttjrGGRMYUH5shiyHVlH
-	 wGueA3QfUnlrfcebBKXlfueCb8IwDothJnWl2mNQKOu09BDnAnBm9S2JT9gy4sfD/w
-	 NbEw8H51BE94R3JLA+s21zfbiWxRPZgsHrtqDfqmpsvdDhledZuu7detQFrq90+Q4o
-	 dsHbWgS/jACUkC/uaxF5v95gD3FsqLEkZZyEwgT3bLiUVkvy0csh+F5fHYJSo+t7qJ
-	 hAa95kNEeNyPyX26Mk/V2HL9QMwGf/PrDb0ACnvbBCmvy1bdLjDAnWQP6DtOswwnWE
-	 jDU2iYuR2WH7w==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8e6ec4dd4so842138e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:06:37 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBztJhNGSj4YvgYEpwklnn99i5DDEjG9Zi54ZlhZWc9w0V5DVdWuZ3XgK3ldzc8UAAbGAzMXfnIbgA==@vger.kernel.org
-X-Gm-Message-State: AFuF++kNSoKNb1pIoFUeDlRByT44z9xEp0xw+8anprPKp1LWVpk27tn8
-	VL2SjwfI1f+l4SOyH0B3mybmjvtKdWreoBz0UYjqB1jVI300kA+IRqit9CzZQIqkvVHDAy/i84q
-	FQPodgkvU1fq2o/7x3ZubHOrfeTJLZRo=
-X-Received: by 2002:a05:6512:12cc:b0:5b8:e716:64e3 with SMTP id
- 2adb3069b0e04-5b8e716662cmr1316403e87.31.1790366795556; Fri, 25 Sep 2026
- 13:06:35 -0700 (PDT)
+	b=P43pVqON16RdSxxedGDaoYJRXM0lPKYOXPyFcPO6QGJ7o5qjzmFPr0VwvOOveyt2X
+	 zR4oF8a36+p76I2Lqf5k2JR+9TsEP3AzLYb7aEGU0UTf0syDHHm+HDyCcROptndioo
+	 faiWzEGv7C3PSA3m7IoRJbN7txH9OPm0unPs+JX+s3zkhnLkz0TTQdaMhRLAcblzvm
+	 sOewHWYQ5dMB/SkLg8Lxo+pmrrkhscHh00vCpQ7oNVxI8eU9TmIkZCiG9228jDt0YQ
+	 Dd3vcAw+UTPz8QwGMLFpg00bNlj+cv1TqcxvwQ+jBBQLjooytQ7nyROmMwp3r5UZ1D
+	 kl6d5+0bgIawA==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b8e911e665so855306e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:12:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxiirvvGOxbsO9IhYID9QHItJtCV1DOi7+KRDd5obX2vibQMuc1PIbtxzJrHBMm9/b1l/w2WG8CcQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nJjog1ggJMvTjQonQ4uOuKhJNyBDTx+ih9AIuuBjUeEoShH7M1
+	DRkYQLYoMFKvGsFSj62UvJxOcEkuTewdKgve6Lv24I2RyGDzdAuipO4Gk/bXNCo09hzh8rfcWPV
+	4L6+XhtC2fyRU6Gga4UKtHs8N4dc1vnE=
+X-Received: by 2002:a05:6512:10cf:b0:5b6:1a7c:fd82 with SMTP id
+ 2adb3069b0e04-5b8df0d7b78mr2515060e87.40.1790367125182; Fri, 25 Sep 2026
+ 13:12:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260922081052.321581-1-fanwu01@zju.edu.cn>
-In-Reply-To: <20260922081052.321581-1-fanwu01@zju.edu.cn>
+References: <20260923072730.487900-1-fanwu01@zju.edu.cn>
+In-Reply-To: <20260923072730.487900-1-fanwu01@zju.edu.cn>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 25 Sep 2026 22:04:56 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jJ4-2kRtozUzQY1K08uw2wnjFBMadSa-gTrYEAHmM-ow@mail.gmail.com>
-X-Gm-Features: AclHuK8KWMJjQNWo7EjI7Q-RsAPzdXQBOdtga1f-vYg85MK18pnUSJR1Qx6NV5s
-Message-ID: <CAJZ5v0jJ4-2kRtozUzQY1K08uw2wnjFBMadSa-gTrYEAHmM-ow@mail.gmail.com>
-Subject: Re: [PATCH] PM: EM: Fix use-after-free of perf domain in netlink doit handlers
+Date: Fri, 25 Sep 2026 22:10:26 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i6W1QX97vuNvenqQ3QDv-fzStCff3LtyJTXWnheTCRSQ@mail.gmail.com>
+X-Gm-Features: AclHuK-Wj2SzVKECYTkqnGCHaP1RVehr5DmH6bxqZpoFFJ9I8SsW-EPjTvEB7GM
+Message-ID: <CAJZ5v0i6W1QX97vuNvenqQ3QDv-fzStCff3LtyJTXWnheTCRSQ@mail.gmail.com>
+Subject: Re: [PATCH] thermal: intel: int340x: Fix use-after-free in proc_thermal_pci
 To: Fan Wu <fanwu01@zju.edu.cn>
-Cc: rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org, Lukasz Luba <lukasz.luba@arm.com>, Song Li <songl@zju.edu.cn>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, stable@vger.kernel.org, 
+	Song Li <songl@zju.edu.cn>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Sep 22, 2026 at 10:12=E2=80=AFAM Fan Wu <fanwu01@zju.edu.cn> wrote:
+On Wed, Sep 23, 2026 at 9:28=E2=80=AFAM Fan Wu <fanwu01@zju.edu.cn> wrote:
 >
-> The doit handlers dropped em_pd_list_mutex before dereferencing the
-> perf domain, so a concurrent device unregister could free it while the
-> reply was being built.
+> proc_thermal_pci_remove() cancels pci_info->work before disabling the
+> interrupt sources that schedule it. A threshold IRQ which arrives after
+> the cancel but before the THRES_0 and INT_ENABLE_0 MMIO mask makes
+> proc_thermal_irq_handler() reschedule the work, so
+> proc_thermal_threshold_work_fn() runs after devm cleanup has freed
+> pci_info and dereferences pci_info->tzone and proc_priv->mmio_base. The
+> shared IRQ is never freed in remove(), which widens the window, and the
+> probe error paths never cancel the work either.
 >
-> Encode the reply from em_perf_domain_for_id() callbacks, which run
-> under the mutex, and allocate the skb outside of it, like the dumpit
-> path already does.
+> Fix this by cutting off the producers before draining: mask the THRES_0
+> and INT_ENABLE_0 registers, free the MSI interrupts or the shared IRQ,
+> and only then cancel the delayed work. The probe error paths cancel the
+> work before the thermal zone is unregistered.
+>
+> The work function re-enables the INT_ENABLE_0 bit, but the IRQs are
+> already freed when it is cancelled and THRES_0 stays cleared, so nothing
+> can schedule the work again.
 >
 > This issue was found by an in-house static analysis tool.
 >
-> Fixes: 380ff27af25e ("PM: EM: Add dump to get-perf-domains in the EM YNL =
-spec")
-> Fixes: f2d2946eaa5c ("PM: EM: Implement em_nl_get_pd_table_doit()")
+> Fixes: acd65d5d1cf4 ("thermal/drivers/int340x/processor_thermal: Add PCI =
+MMIO based thermal driver")
 > Cc: stable@vger.kernel.org
-> Cc: Lukasz Luba <lukasz.luba@arm.com>
-> Assisted-by: Codex:gpt-5.6
 > Co-developed-by: Song Li <songl@zju.edu.cn>
 > Signed-off-by: Song Li <songl@zju.edu.cn>
 > Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
-> ---
->  kernel/power/em_netlink.c   | 122 +++++++++++++++++++++++-------------
->  kernel/power/em_netlink.h   |   8 ++-
->  kernel/power/energy_model.c |   8 ++-
->  3 files changed, 87 insertions(+), 51 deletions(-)
->
-> diff --git a/kernel/power/em_netlink.c b/kernel/power/em_netlink.c
-> index 4d4fd29bd2be..1f68d456a713 100644
-> --- a/kernel/power/em_netlink.c
-> +++ b/kernel/power/em_netlink.c
-> @@ -95,41 +95,62 @@ static int __em_nl_get_pd_for_dump(struct em_perf_dom=
-ain *pd, void *data)
->         return ret;
->  }
->
-> +struct em_nl_doit_ctx {
-> +       struct genl_info *info;
-> +       int cmd;
-> +       struct sk_buff *msg;
-> +};
-> +
-> +static int __em_nl_get_pd_doit_fill(struct em_perf_domain *pd, void *dat=
-a)
-> +{
-> +       struct em_nl_doit_ctx *ctx =3D data;
-> +       void *hdr;
-> +
-> +       hdr =3D genlmsg_put_reply(ctx->msg, ctx->info, &dev_energymodel_n=
-l_family, 0,
-> +                               ctx->cmd);
-> +       if (!hdr)
-> +               return -EMSGSIZE;
-> +
-> +       if (__em_nl_get_pd(pd, ctx->msg)) {
-> +               genlmsg_cancel(ctx->msg, hdr);
-> +               return -EMSGSIZE;
-> +       }
-> +
-> +       genlmsg_end(ctx->msg, hdr);
-> +       return 0;
-> +}
-> +
->  int dev_energymodel_nl_get_perf_domains_doit(struct sk_buff *skb,
-> -                                             struct genl_info *info)
-> +                                            struct genl_info *info)
->  {
-> -       int id, ret =3D -EMSGSIZE, msg_sz =3D 0;
-> -       int cmd =3D info->genlhdr->cmd;
-> -       struct em_perf_domain *pd;
-> +       struct em_nl_doit_ctx ctx =3D {
-> +               .info =3D info,
-> +               .cmd =3D info->genlhdr->cmd,
-> +       };
->         struct sk_buff *msg;
-> -       void *hdr;
-> +       int id, ret, msg_sz =3D 0;
->
->         if (!info->attrs[DEV_ENERGYMODEL_A_PERF_DOMAIN_PERF_DOMAIN_ID])
->                 return -EINVAL;
->
->         id =3D nla_get_u32(info->attrs[DEV_ENERGYMODEL_A_PERF_DOMAIN_PERF=
-_DOMAIN_ID]);
-> -       pd =3D em_perf_domain_get_by_id(id);
-> -       if (!pd)
-> -               return -EINVAL;
->
-> -       __em_nl_get_pd_size(pd, &msg_sz);
-> +       /* Encode under em_pd_list_mutex, like the dumpit path. */
-> +       ret =3D em_perf_domain_for_id(id, __em_nl_get_pd_size, &msg_sz);
-> +       if (ret)
-> +               return ret;
-> +
->         msg =3D genlmsg_new(msg_sz, GFP_KERNEL);
->         if (!msg)
->                 return -ENOMEM;
->
-> -       hdr =3D genlmsg_put_reply(msg, info, &dev_energymodel_nl_family, =
-0, cmd);
-> -       if (!hdr)
-> -               goto out_free_msg;
-> -
-> -       ret =3D __em_nl_get_pd(pd, msg);
-> +       ctx.msg =3D msg;
-> +       ret =3D em_perf_domain_for_id(id, __em_nl_get_pd_doit_fill, &ctx)=
-;
->         if (ret)
-> -               goto out_cancel_msg;
-> -       genlmsg_end(msg, hdr);
-> +               goto out_free_msg;
->
->         return genlmsg_reply(msg, info);
->
-> -out_cancel_msg:
-> -       genlmsg_cancel(msg, hdr);
->  out_free_msg:
->         nlmsg_free(msg);
->         return ret;
-> @@ -148,19 +169,6 @@ int dev_energymodel_nl_get_perf_domains_dumpit(struc=
-t sk_buff *skb,
->         return for_each_em_perf_domain(__em_nl_get_pd_for_dump, &ctx);
->  }
->
-> -static struct em_perf_domain *__em_nl_get_pd_table_id(struct nlattr **at=
-trs)
-> -{
-> -       struct em_perf_domain *pd;
-> -       int id;
-> -
-> -       if (!attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN_ID])
-> -               return NULL;
-> -
-> -       id =3D nla_get_u32(attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN=
-_ID]);
-> -       pd =3D em_perf_domain_get_by_id(id);
-> -       return pd;
-> -}
-> -
->  static int __em_nl_get_pd_table_size(const struct em_perf_domain *pd)
->  {
->         int id_sz, ps_sz;
-> @@ -245,34 +253,58 @@ int __em_nl_get_pd_table(struct sk_buff *msg, const=
- struct em_perf_domain *pd)
->         return -EMSGSIZE;
->  }
->
-> +static int __em_nl_get_pd_table_size_cb(struct em_perf_domain *pd, void =
-*data)
-> +{
-> +       *(int *)data =3D __em_nl_get_pd_table_size(pd);
-> +       return 0;
-> +}
-> +
-> +static int __em_nl_get_pd_table_doit_fill(struct em_perf_domain *pd,
-> +                                         void *data)
-> +{
-> +       struct em_nl_doit_ctx *ctx =3D data;
-> +       void *hdr;
-> +
-> +       hdr =3D genlmsg_put_reply(ctx->msg, ctx->info, &dev_energymodel_n=
-l_family, 0,
-> +                               ctx->cmd);
-> +       if (!hdr)
-> +               return -EMSGSIZE;
-> +
-> +       if (__em_nl_get_pd_table(ctx->msg, pd))
-> +               return -EMSGSIZE;
-> +
-> +       genlmsg_end(ctx->msg, hdr);
-> +       return 0;
-> +}
-> +
->  int dev_energymodel_nl_get_perf_table_doit(struct sk_buff *skb,
-> -                                           struct genl_info *info)
-> +                                          struct genl_info *info)
->  {
-> -       int cmd =3D info->genlhdr->cmd;
-> -       int msg_sz, ret =3D -EMSGSIZE;
-> -       struct em_perf_domain *pd;
-> +       struct em_nl_doit_ctx ctx =3D {
-> +               .info =3D info,
-> +               .cmd =3D info->genlhdr->cmd,
-> +       };
->         struct sk_buff *msg;
-> -       void *hdr;
-> +       int id, ret, msg_sz;
->
-> -       pd =3D __em_nl_get_pd_table_id(info->attrs);
-> -       if (!pd)
-> +       if (!info->attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_DOMAIN_ID])
->                 return -EINVAL;
->
-> -       msg_sz =3D __em_nl_get_pd_table_size(pd);
-> +       id =3D nla_get_u32(info->attrs[DEV_ENERGYMODEL_A_PERF_TABLE_PERF_=
-DOMAIN_ID]);
-> +
-> +       ret =3D em_perf_domain_for_id(id, __em_nl_get_pd_table_size_cb, &=
-msg_sz);
-> +       if (ret)
-> +               return ret;
->
->         msg =3D genlmsg_new(msg_sz, GFP_KERNEL);
->         if (!msg)
->                 return -ENOMEM;
->
-> -       hdr =3D genlmsg_put_reply(msg, info, &dev_energymodel_nl_family, =
-0, cmd);
-> -       if (!hdr)
-> -               goto out_free_msg;
-> -
-> -       ret =3D __em_nl_get_pd_table(msg, pd);
-> +       ctx.msg =3D msg;
-> +       ret =3D em_perf_domain_for_id(id, __em_nl_get_pd_table_doit_fill,=
- &ctx);
->         if (ret)
->                 goto out_free_msg;
->
-> -       genlmsg_end(msg, hdr);
->         return genlmsg_reply(msg, info);
->
->  out_free_msg:
-> diff --git a/kernel/power/em_netlink.h b/kernel/power/em_netlink.h
-> index 583d7f1c3939..bc98a3c278b9 100644
-> --- a/kernel/power/em_netlink.h
-> +++ b/kernel/power/em_netlink.h
-> @@ -12,7 +12,8 @@
->  #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_NET)
->  int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
->                             void *data);
-> -struct em_perf_domain *em_perf_domain_get_by_id(int id);
-> +int em_perf_domain_for_id(int id, int (*cb)(struct em_perf_domain *, voi=
-d *),
-> +                         void *data);
->  void em_notify_pd_created(const struct em_perf_domain *pd);
->  void em_notify_pd_deleted(const struct em_perf_domain *pd);
->  void em_notify_pd_updated(const struct em_perf_domain *pd);
-> @@ -24,9 +25,10 @@ int for_each_em_perf_domain(int (*cb)(struct em_perf_d=
-omain*, void *),
->         return -EINVAL;
->  }
->  static inline
-> -struct em_perf_domain *em_perf_domain_get_by_id(int id)
-> +int em_perf_domain_for_id(int id, int (*cb)(struct em_perf_domain *, voi=
-d *),
-> +                         void *data)
->  {
-> -       return NULL;
-> +       return -EINVAL;
->  }
->
->  static inline void em_notify_pd_created(const struct em_perf_domain *pd)=
- {}
-> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> index e610cf8e9a06..a76089e2ce8c 100644
-> --- a/kernel/power/energy_model.c
-> +++ b/kernel/power/energy_model.c
-> @@ -1031,7 +1031,9 @@ int for_each_em_perf_domain(int (*cb)(struct em_per=
-f_domain*, void *),
->         return 0;
->  }
->
-> -struct em_perf_domain *em_perf_domain_get_by_id(int id)
-> +/* Run @cb on the matching domain with em_pd_list_mutex held. */
-> +int em_perf_domain_for_id(int id, int (*cb)(struct em_perf_domain *, voi=
-d *),
-> +                         void *data)
->  {
->         struct em_perf_domain *pd;
->
-> @@ -1040,9 +1042,9 @@ struct em_perf_domain *em_perf_domain_get_by_id(int=
- id)
->
->         list_for_each_entry(pd, &em_pd_list, node) {
->                 if (pd->id =3D=3D id)
-> -                       return pd;
-> +                       return cb(pd, data);
->         }
->
-> -       return NULL;
-> +       return -EINVAL;
->  }
->  #endif
 
-Applied as 7.4 material, thanks!
+Please see Sashiko's feedback on this:
+
+https://sashiko.dev/#/patchset/20260923072730.487900-1-fanwu01%40zju.edu.cn
+
+and let me know what you think.
+
+Thanks!
+
+> ---
+>  .../processor_thermal_device_pci.c                | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_devi=
+ce_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_p=
+ci.c
+> index c693d93..1856e76 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.=
+c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.=
+c
+> @@ -409,7 +409,10 @@ static int proc_thermal_pci_probe(struct pci_dev *pd=
+ev, const struct pci_device_
+>  err_free_vectors:
+>         if (msi_irq)
+>                 proc_thermal_free_msi(pdev, pci_info);
+> +       else
+> +               devm_free_irq(&pdev->dev, pdev->irq, pci_info);
+>  err_ret_tzone:
+> +       cancel_delayed_work_sync(&pci_info->work);
+>         thermal_zone_device_unregister(pci_info->tzone);
+>  err_del_legacy:
+>         if (!pci_info->no_legacy)
+> @@ -424,13 +427,16 @@ static void proc_thermal_pci_remove(struct pci_dev =
+*pdev)
+>         struct proc_thermal_device *proc_priv =3D pci_get_drvdata(pdev);
+>         struct proc_thermal_pci *pci_info =3D proc_priv->priv_data;
+>
+> -       cancel_delayed_work_sync(&pci_info->work);
+> -
+>         proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0, 0);
+>         proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0,=
+ 0);
+>
+>         if (msi_irq)
+>                 proc_thermal_free_msi(pdev, pci_info);
+> +       else
+> +               devm_free_irq(&pdev->dev, pdev->irq, pci_info);
+> +
+> +       /* Cancel after the IRQs are freed, or the handler may reschedule=
+ it. */
+> +       cancel_delayed_work_sync(&pci_info->work);
+>
+>         thermal_zone_device_unregister(pci_info->tzone);
+>         proc_thermal_mmio_remove(pdev, pci_info->proc_priv);
+>
