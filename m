@@ -1,54 +1,55 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAAF5386C12
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 17:27:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 010EC2931DE
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 17:30:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790357226; cv=none; b=T+6n0NPGDoUpJazb31O8FoALN6BdqRmRZU/8w2Rqcojh/TfeWdQSvhk3DJI5gBModAAvASFb5EXSJoYKG1GNYmCOrx4VGr6kkOpwiToUFeis/hxBYpiCFem8/ZN4vuJjUscIqRXzmZ9Iyz20ImnQiCZ5P/zo2wtIKKafWZFCcQc=
+	t=1790357454; cv=none; b=o+Ivi9EoxjwgJIXG07s2TrTjTlstILIfwnzhBy7bK/Sfgx/k7smlHWOG6GIiB0ljWtxgpXFb+ubMMPZPVElXEuJHK6FxZy4ktXRy4EwVMEMjDJEAeEzzwB4dk0fSXBVKRnUZ3hKhczrtKVfNzVeCJ/kT+iVSQxtHGB+XVO7G6ks=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790357226; c=relaxed/simple;
-	bh=xDh1Ss17oGJ0UYJjAazKqzsfdZ+kwOSaB4uaBWStnx4=;
+	s=arc-20240116; t=1790357454; c=relaxed/simple;
+	bh=tMANEnh28G4gjKICJ4CJmZpedyKfSj78ViMvzrZBw1k=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=itjDkjdXBFl7m1rwu37wodi0uFwgNbYfZBE5yr+rwFrCInne7FtCCk1RWX8taDl1wMbutUYaJEIkDclYJ5BTgfUQTNJoyio0rCrbafHFVMnHLcvVTkssj/0xXtO4tK9MNxGrUPwxEXL6oRsmdkd2BR9im9oYjzfDh399LMx3vZw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UfFKqsvK; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=kr7aAI2U5FERC82in8msBVcdYZFB5MFEaiRLbCgA10Ikv6xkhSqEAzMdmxSmte+ZH7U5v9MC4ROCy6RfyHWM3mdGkfu5la9vuz6YJPMsv9RGxqm2m4Lhuu5Z8ffgRPfTT2hLiYWuqZnl7Jq7V/DxA0AcW5qci+VNwVL20X70mgs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y/XUqu53; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UfFKqsvK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4BE61F00900
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 17:27:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y/XUqu53"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE9A31F008A1
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 17:30:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790357224;
-	bh=nrCZY+w8ZAuOgUKyJ5bzQ3lA0kZX185uW8oYwG5RuQA=;
+	s=k20260515; t=1790357452;
+	bh=Epk7UhZ5gcKRlHUrHbKgkjCtg/Lgn+z/n5ZSjQcdqpg=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=UfFKqsvK75p5eO5B5LPWqx7YmtHZp5SiX1PFOsrb/Rw7u/0QFbVRoYO3MBcG/t5cL
-	 f0grYRNmRlCV/gnwPAuW3LI+ccOXT0MjTt7Y8FeHXxJ869jP4sIIJdGs5M2A3YPkRs
-	 ukh/P2eflHnEpauu+zEccKoAmEXT4qeEDi7o0bJS06Qz1CCYGEgXO5YqMpVQhl3no4
-	 lLRGB99pVq05PP0MRgcsH4//8wpFOz+qWgGYKGx2Z78V8f5l9jdhS4QzuPEDb8kFis
-	 pnJBNA0VYqlKgjIBYJuffADzzi0g5B+u1BB7AUPs4ANGSHG8KVd1IE7vW4tmTi93D2
-	 bENY6AcgbMT3A==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a2ff176d5bso8791661fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 10:27:04 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxqv/Pzk7akYCadDsTYTmhimwOm0xsBnZbLnuSfubZaqrjhlbsAcaOUlxzI8+XZpWW1V6IDoc8/DQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++ny8taEWg5ywSa4DDMbKH3zCULCJD7gRy3qenUOLI6sl5xL0deN
-	f17N1nkJ021s4oGhwF1sANmsgbfm+IcOienMbLKfEDxBTdYOhvx37RnbvbFj4J3DiYk2gIAPQDS
-	2lvg/7Ju9CcyNyHTHWCCtjL5OJJXzWh8=
-X-Received: by 2002:a05:651c:43dc:10b0:3a6:95a:52ab with SMTP id
- 38308e7fff4ca-3a63c0e006emr12420831fa.18.1790357222990; Fri, 25 Sep 2026
- 10:27:02 -0700 (PDT)
+	b=Y/XUqu531F/cGxWNwQZP2KG77Zo/WMA+a2WvMMRbN7BfMI9PrV3w2grWHN7FeDQ3P
+	 V6H1WGyGtemPdDpa86l7/FirJmYdVcLZ0afDSQpWpcaagB9mIMo/4IimSgl+irC+Ba
+	 7Uwoa8O/oiLOgSfajuan9d0VUnzxBFnHegatmVAc08ehBPOnl/k7CrIF5FSxYGlwcI
+	 qbUaMkE0+tJgd54/hu7JN0b8vSKyHceLGyOzCKk/ZGOcik/F3I/rchZ8mJt16+4dqM
+	 CRH8mXtTHa/HDfUQiyO8mONN560pa+TrMq2oukgjlnIkhq8Y4dwiri294Ymt7GhEjZ
+	 1Q3lnD9Gbf4OQ==
+Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a5e548cd7dso8804351fa.3
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 10:30:52 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzl8kJ+38uL8m0zPCGJCyXuUXPjDrkW3thwZTkIC49Gt6lsGcyv66mGI2CdJPOGSiroB6y3el/5aQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nexJsslyAR7sAhG4z7jHXMLzIPss10HX8WQtJQkuKBFUAevpU8
+	Nd5f+sBZNrlZ7V7ZF1uc6Cmm3+QITeEKy5cK4etFh3mBt/lrdklR2tr5BziUInsDQyv3Etzyy7+
+	DkWqAVAsvfispLZNPB038EjJg09a/pUg=
+X-Received: by 2002:a05:651c:b1e:b0:3a5:f041:d7c9 with SMTP id
+ 38308e7fff4ca-3a63c2fbe45mr14867181fa.22.1790357451157; Fri, 25 Sep 2026
+ 10:30:51 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260912191156.185448-1-sumeet4linux@gmail.com> <20260912191156.185448-5-sumeet4linux@gmail.com>
-In-Reply-To: <20260912191156.185448-5-sumeet4linux@gmail.com>
+References: <20260912191156.185448-1-sumeet4linux@gmail.com> <20260912191156.185448-6-sumeet4linux@gmail.com>
+In-Reply-To: <20260912191156.185448-6-sumeet4linux@gmail.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 25 Sep 2026 19:25:25 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0inzDfF5zNba7BHnq=-xTH1ucHvBv-bJSKXW0dTF71Q0g@mail.gmail.com>
-X-Gm-Features: AclHuK-zkJzcW3eTrPbI8n4uwvaOkU97xV6DSlSAXWBceH5EJVI8blUeGSzDawM
-Message-ID: <CAJZ5v0inzDfF5zNba7BHnq=-xTH1ucHvBv-bJSKXW0dTF71Q0g@mail.gmail.com>
-Subject: Re: [PATCH v2 4/5] thermal: Use %pe to print error pointers symbolically
+Date: Fri, 25 Sep 2026 19:29:14 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0j49-yEYmZXm8-2xWzy9OV7-8dUEwMonzPjbscgGd+6qg@mail.gmail.com>
+X-Gm-Features: AclHuK-XXXjTpNVDNNDdptaZZX-F6i5Cfcawa8JfiTGZUJ-XQXiTSEwpAEK52uE
+Message-ID: <CAJZ5v0j49-yEYmZXm8-2xWzy9OV7-8dUEwMonzPjbscgGd+6qg@mail.gmail.com>
+Subject: Re: [PATCH v2 5/5] powercap: intel_rapl: Use %pe to print error
+ pointers symbolically
 To: Sumeet Pawnikar <sumeet4linux@gmail.com>
 Cc: rafael@kernel.org, krzk@kernel.org, amit.kachhap@gmail.com, 
 	daniel.lezcano@kernel.org, thara.gopinath@gmail.com, talel@amazon.com, 
@@ -70,78 +71,37 @@ On Sat, Sep 12, 2026 at 9:13=E2=80=AFPM Sumeet Pawnikar <sumeet4linux@gmail=
 .com> wrote:
 >
 > Replace PTR_ERR() and %ld with %pe and pass the original pointer directly
-> to pr_err() and dev_err(). The %pe format specifier prints a symbolic err=
-or
-> name (e.g. -ENOMEM) when CONFIG_SYMBOLIC_ERRNAME is enabled, otherwise it
-> falls back gracefully and prints the raw integer value. This makes messag=
-es
-> more readable without any functional change.
+> to pr_debug(). The %pe format specifier prints a symbolic error name
+> (e.g. -ENOMEM) when CONFIG_SYMBOLIC_ERRNAME is enabled, otherwise it fall=
+s
+> back gracefully and prints the raw integer value. This makes messages mor=
+e
+> readable without any functional change.
 >
 > Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
 > ---
->  drivers/thermal/cpufreq_cooling.c        | 4 ++--
->  drivers/thermal/devfreq_cooling.c        | 4 ++--
->  drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 4 ++--
->  3 files changed, 6 insertions(+), 6 deletions(-)
+>  drivers/powercap/intel_rapl_msr.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_=
-cooling.c
-> index 768859a7aed0..856d619370db 100644
-> --- a/drivers/thermal/cpufreq_cooling.c
-> +++ b/drivers/thermal/cpufreq_cooling.c
-> @@ -661,8 +661,8 @@ of_cpufreq_cooling_register(struct cpufreq_policy *po=
-licy)
+> diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_r=
+apl_msr.c
+> index a34543e66446..46972ee1ff84 100644
+> --- a/drivers/powercap/intel_rapl_msr.c
+> +++ b/drivers/powercap/intel_rapl_msr.c
+> @@ -582,8 +582,8 @@ static int intel_rapl_msr_init(void)
+>         rapl_msr_platdev =3D platform_device_register_data(NULL, "intel_r=
+apl_msr", 0, def,
+>                                                          sizeof(*def));
+>         if (IS_ERR(rapl_msr_platdev))
+> -               pr_debug("intel_rapl_msr device register failed, ret:%ld\=
+n",
+> -                        PTR_ERR(rapl_msr_platdev));
+> +               pr_debug("intel_rapl_msr device register failed, ret:%pe\=
+n",
+> +                        rapl_msr_platdev);
 >
->                 cdev =3D __cpufreq_cooling_register(np, policy, em);
->                 if (IS_ERR(cdev)) {
-> -                       pr_err("cpufreq_cooling: cpu%d failed to register=
- as cooling device: %ld\n",
-> -                              policy->cpu, PTR_ERR(cdev));
-> +                       pr_err("cpufreq_cooling: cpu%d failed to register=
- as cooling device: %pe\n",
-> +                              policy->cpu, cdev);
->                         cdev =3D NULL;
->                 }
->         }
-> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_=
-cooling.c
-> index 0330a8112832..9ada52cbf7dd 100644
-> --- a/drivers/thermal/devfreq_cooling.c
-> +++ b/drivers/thermal/devfreq_cooling.c
-> @@ -156,8 +156,8 @@ static unsigned long get_voltage(struct devfreq *df, =
-unsigned long freq)
->                 opp =3D dev_pm_opp_find_freq_exact(dev, freq, false);
->
->         if (IS_ERR(opp)) {
-> -               dev_err_ratelimited(dev, "Failed to find OPP for frequenc=
-y %lu: %ld\n",
-> -                                   freq, PTR_ERR(opp));
-> +               dev_err_ratelimited(dev, "Failed to find OPP for frequenc=
-y %lu: %pe\n",
-> +                                   freq, opp);
->                 return 0;
->         }
->
-> diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/q=
-com/qcom-spmi-adc-tm5.c
-> index af72db6299cd..4554a6fa55d1 100644
-> --- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-> +++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-> @@ -680,8 +680,8 @@ static int adc_tm5_register_tzd(struct adc_tm5_chip *=
-adc_tm)
->                                 continue;
->                         }
->
-> -                       dev_err(adc_tm->dev, "Error registering TZ zone f=
-or channel %d: %ld\n",
-> -                               adc_tm->channels[i].channel, PTR_ERR(tzd)=
-);
-> +                       dev_err(adc_tm->dev, "Error registering TZ zone f=
-or channel %d: %pe\n",
-> +                               adc_tm->channels[i].channel, tzd);
->                         return PTR_ERR(tzd);
->                 }
->                 adc_tm->channels[i].tzd =3D tzd;
+>         return 0;
+>  }
 > --
 
 Applied as 7.4 material, thanks!
