@@ -1,176 +1,218 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx2-f43.google.com (mail-yx2-f43.google.com [74.125.224.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB28143F8C9
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:25:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790367905; cv=none; b=d2quoNJALRVadnTKVbfG6LWt4sxYmE2AnrFQC5/+pI9vwdGACwMSeM6t1yYGS8QW3peog4cJ2azZyNb9I4meO/7QlglJaith0sHTRTeAggxJP1nIEEOii2k1pjDQUyTxQYTVdEP1TXW1P8SB+qT7xnJr3w6kb2lardce8n9KeCc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790367905; c=relaxed/simple;
-	bh=ONfzlMwZUmt9iQP0GdhJWz6HRCumIiMG2gc58uPgNpM=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6C294F30F7
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:31:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.171
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790368287; cv=pass; b=J4wb0D9vPYOmWIsUvZJra1WwuEzUYdYT/qtw3zeVtTFEvDR/eWcdBnwEx6F9xdYBBMpS5LKyBY7/oxUh2zmf8e5MIQVTyxpizXKkSwSgjtkvRO7FRA31YWuBmPBuMdZdDd1yLH/A874522p3c8DHvMDARfI0DEvntTODMymkkOM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790368287; c=relaxed/simple;
+	bh=i8K2V7iauqRYBnywpRsfGwdqYCZfWv4UWx7sJDax4N8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=O2f3x+klh2f4RNZPphBXcOiSjYS/C/KKohZzMtrYvj02WM6YYzn+8MfPeVPxzpe9hdojBZWBJUpc5TUxJkZRfoaAuwPjgRvgd4fIGqG9AB0dj41fTnTwQVXKChLm0YAEdna8vEjwNsqOTjNq6cW+BK2A3w4CODrH+qam9y9ctT0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jGn3yQGo; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=B2XnTbfLaiKR/uuFOuDbOP47kuk5HE42GoVaR3XFZHbXimS2lqaE3MSCOFgGWH+Hk5ZwjZgzhjHw2EuSMFkfcLYoCmV7K8V5UMpfj5tF7BdWLKjh6bGiPpYnB3ycUJ5vB8sZFl2ACaQmzuVhSfsKXi//bVOKLNSpTaEdOk7WUMw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TjpNXmLz; arc=pass smtp.client-ip=74.125.224.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jGn3yQGo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B2441F00893
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:25:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790367903;
-	bh=WNQees8/ehGot81631VV5fQVbOPJSRm59MHRcSjht10=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=jGn3yQGookNeaQk/WwM3h8B906jLy4vTACkjht1SDqGucEZ9thWqH7V92mT+lsTP6
-	 zHE0Ds5BpIqcfevi7utJZifH8N483Xj80nyzIOhOwwwwjWAeoCLbX20hFFxN37h+Ja
-	 qqIdh6kQ0sTBREyfvNINbQGViPL44H5GUuXxjVHaBc6Eh1LVdQXcuMasbqKMsURgTc
-	 LRPAx2NkvzFRS72WJ3FubNCldpt7kIheGJSp0J3l0z7ju377cn0P9iPYUvriSpW23F
-	 6rzleVti+v8AptG2Q6DyRdK2v2aRSp+gflygpQ+VzN2OSxLKhCxiUM4InQmqdCNGAZ
-	 ScAibf+CxO+dw==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8ef09e288so217121e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:25:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwHlTn8Ju9KeI+T00Xs2dXYKWJ1FgK20LUhW9er6G2SB96qYb2boX6h8yswXq/vM5Y1IWpf4KNExg==@vger.kernel.org
-X-Gm-Message-State: AFuF++lo3NPLsQwc6z1d8LKayxO5WdXZByHyu+gbmubF/lBAtS1kF5Jl
-	8UPDYSxGclChoVFX3v1DKHt3u3AgC+vamsFvEI19EwnyIRVRDOlQIkid+hVzWSgglV4PSZHfAUe
-	h7aeEapXjy/50+45FfH9jCb+k0/2d8o0=
-X-Received: by 2002:a05:6512:b1a:b0:5b8:ed7d:8b42 with SMTP id
- 2adb3069b0e04-5b8ed7d8bc7mr577236e87.39.1790367901803; Fri, 25 Sep 2026
- 13:25:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TjpNXmLz"
+Received: by mail-yx2-f43.google.com with SMTP id 00721157ae682-895353e9051so12489847b3.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:31:23 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790368282; cv=none;
+        d=google.com; s=arc-20260327;
+        b=QiTw1MGTjkjC9BUuh5sRT5EEh1hIWeXzHmVvQS2/usJOe3dsRu5Likc2pE24KqDEjE
+         A/8srUh3G0OzR+hW1yD/i9sQrp6bry9r3feNl/WK/VlLnq4YX3XrnRc8UCf2Xh7C8sfM
+         JqS+ao362vyiqY6jdVPXRTxtuuiBIXjmy+G4zBRidixanzSaSwCy9oTBLGND9xfJTSTc
+         rbcmSh8GT5ASTxhMTgQg+Qia/UGf59fILyomj5Q2xuR6eUmjm2EVmfHoMWGX6vYsXfnt
+         2ejdNGm44XGLRoDVh+8EYaZ2vW7sYnMSAaHKjoa4pOpfjxpnUDYU8TbBW7bjK2BWCl7m
+         rPOw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=noxPgsc3ymzPUXdD7j20u0RQJiwVbYzVMSbEnyT4ByQ=;
+        fh=zc648zXKNa6gS0QM/wEL2tnolREegM4XZfhXAGSj8AE=;
+        b=LM1uh3c9FEMS9ek6RGUpmihBBp0oc50NrmiXvqngUk9C4II/eKLQpGtzblccZlCor3
+         tq0gaX9plcqIUAtHk4pt5VH4OFIub7VyFH//B9xMb4HAoNw8Jq+8LzpUSpMamARxKxfe
+         gSRV5A5A49ujxHLnWVkEJg5N0LbjAgnf5Svofsqlty2uO+/f0COljCVVbvNYznXGoCxV
+         sf4h6yAi83aqckWUJEZLwXzhbKqA5b6kSg70PmRBZrc0cxIHO9vNKwwg9SYg5sCZl6uG
+         Y9f/kVLPrq41yqA11iA0Tgq6Wm9RC1de31UG77TcUSExzUD2ctfMuOwdRJ+kkAKFymcG
+         lalg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790368282; x=1790973082; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=noxPgsc3ymzPUXdD7j20u0RQJiwVbYzVMSbEnyT4ByQ=;
+        b=TjpNXmLzBaIdJEpWXZQ+rE33LSI7Ijg4oqvYvQ8zcO1X4TIybbM9R7tW+Rx6PJ94e6
+         VL9xrMXYP5AoQ+b2+Lvexr8ZUqvzm5VAO32nn5LsfFgf7KyxWMiL3fwwKV2VAF44BJ25
+         /3ZuVluFlCo490TVbBuLDq0x7fEwGBek7zym35Z9sHhXJ9/aIGj0NNK5WaxUMLABOtuy
+         PaTWKoHMvq8svAdwg2t14P+TNeADlcXCbREq4dN0mDj/eq7kE8QdAwzMSbdAT13vDivf
+         VrMILSLZSdZiBeMumuRGXPqK2VGB8kzp4kE3GIGtqSkT407KGvLiHAm/oVl/92qqPuzP
+         cVww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790368282; x=1790973082;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=noxPgsc3ymzPUXdD7j20u0RQJiwVbYzVMSbEnyT4ByQ=;
+        b=B25uYiPAncHfwJFUHUy4C7qZQbo7zOZlWBu/tjvCA44n8vQMFtBEPQhU37evWdYIZc
+         hyRNJ8EIlNp9h2Rd/3ARuMcqiO9PsgcA/ZYKWmNHV07PgfJ3ufgEHdoQmmPFDSAiPUJm
+         w7/Sm4gqMolA+4RHwpC0ZOHMp+VPoMNqvdcKxdHRnvGSC3lKYlVDhJEMX0N5p8wynPnJ
+         t7n61ok3G6Kb2hvFBEEBxDbx44wJQgs1xR7HI+a8loj5Fwa+KkTwYqNDyioipvFZUJnw
+         vVLbsI47d+VxMXpSH4D9dDf0at+7GBVCQM8Mlmt2lCNOu572JZBHVoCya+982HAzX/te
+         M5Xg==
+X-Forwarded-Encrypted: i=1; AKwUvBwftIitWMfHMXIPWWIxYV49XixyFsvOhFnbf8tUjy9Xko5B8jd5dGCFfrciSvRBdHLamqaDHt/UDQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++krTQXfkkZ1KJ5u7mj7/WQmHKd25Nl009F+NitvNH+1ZAXFuBcF
+	dpJQkswpucpVHcsFHBz210aElBDOk0Fb0f+FfM7SiiigKSPJE4GHRnsIoE37l3M4ursILrKbjaO
+	Mbz9MoLnA9r9NLqM8iRWmriHKHKleZTo=
+X-Gm-Gg: AYBFou0NgtqZghCBFXOIO4uz4wRnwHgSHRVKIccAd+PtIB02y2zLI5Dnu7/m9zULF3U
+	IePmh4nsMQZP+WB5RLN/Yx37hYZin3PmVURnwurld6ryq26wXo0PSmkxhEKtgaICZ+6FO6cwrRW
+	D1sDFuMCx+3TSgWzYa24cp3dAZbWjnWgo1OSnA7c8GsRiwm6mSwjk/j4UOryS4WuHEYLRW7uDVx
+	l43eizu1ep0EQ6oWgB42oLPRQPydKQzKezzZRDpQEPBOVp+FCmMaa1eXlRMdBe8mT+6IFXpzRSQ
+	ScJiP281vAWBG4Aq7L6hhFJGKNLLKTjMd55VBzFxQZTBFFViZR3L1pZ5sih2CvbIwXQcJu3LFt6
+	hCAfPnGr67TPPWfHNzgIMaCgMCcJQV0d5OQ==
+X-Received: by 2002:a05:690e:1382:b0:672:a289:7b0 with SMTP id
+ 956f58d0204a3-672ed93a88emr3463724d50.76.1790368282266; Fri, 25 Sep 2026
+ 13:31:22 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
-In-Reply-To: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 25 Sep 2026 22:23:24 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jko6SjZ2642DryhSMZyPgatvG442m7y1E8J7TcxvtOKA@mail.gmail.com>
-X-Gm-Features: AclHuK9frkW9y83b_87zzoPb_5_iwomW9wqA2MKboLGqOzwuRlqnR5CdgiySfqg
-Message-ID: <CAJZ5v0jko6SjZ2642DryhSMZyPgatvG442m7y1E8J7TcxvtOKA@mail.gmail.com>
-Subject: Re: [PATCH v4 0/8] ACPI: CPPC: Resource Priority Register support and
- sysfs interface
-To: Lifeng Zheng <zhenglifeng1@huawei.com>, Christian Loehle <christian.loehle@arm.com>
-Cc: viresh.kumar@linaro.org, ionela.voinescu@arm.com, zhanjie9@hisilicon.com, 
-	pierre.gondois@arm.com, sumitg@nvidia.com, linux-acpi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, 
-	yubowen8@huawei.com, zhangpengjie2@huawei.com, wangzhi12@huawei.com, 
-	linhongye@h-partners.com
+References: <20260923-dd-cmap-part2-clean-v11-0-9b6c217fdf2f@gmail.com> <20260923155339.bdc677e8e688611bcf190ad9@linux-foundation.org>
+In-Reply-To: <20260923155339.bdc677e8e688611bcf190ad9@linux-foundation.org>
+From: jim.cromie@gmail.com
+Date: Fri, 25 Sep 2026 14:30:54 -0600
+X-Gm-Features: AclHuK81aQy7pcphOyoCN0Cv4efDR1k93Uxkj909m52hc-_PgnQGdKhUE2sknH8
+Message-ID: <CAJfuBxxd8hMf0OcnOK+w-QyizaKY=WA4VL+fyoD3y6EsHW1+og@mail.gmail.com>
+Subject: Re: [PATCH v11 00/38] dyndbg: Fix classmaps API for subsystems, query
+ extensions, selftests
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
+	Aaron Tomlin <atomlin@atomlin.com>, Jonathan Corbet <corbet@net.net>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nathan Chancellor <nathan@kernel.org>, 
+	Nicolas Schier <nsc@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+	Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, 
+	John Ogness <john.ogness@linutronix.de>, Sergey Senozhatsky <senozhatsky@chromium.org>, 
+	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
+	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Louis Chauvet <louis.chauvet@bootlin.com>, Philipp Hahn <phahn-oss@avm.de>, 
+	kernel test robot <lkp@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-+Christian
+On Wed, Sep 23, 2026 at 4:53=E2=80=AFPM Andrew Morton <akpm@linux-foundatio=
+n.org> wrote:
+>
+> On Wed, 23 Sep 2026 16:34:24 -0600 Jim Cromie <jim.cromie@gmail.com> wrot=
+e:
+>
+> > The drm subsystem has *lots* of debug statements, in 11 categories:
+> >
+> >  $> git grep '\w*_dbg' drivers/gpu/drm/ | wc
+> >    5663   30159  542864
+>
+> Methinks this regexp was overly promiscuous, but point taken.
+>
+> >  $> git grep 'DRM_DEBUG\w*' drivers/gpu/drm/ | wc
+> >    2206   12834  202332
+> >
+> > All of these are bit-tests on __drm_debug, exposed to users as
+> > /sys/module/drm/parameters/debug. Many of these are done often;
+> > vblank is done ~100/sec for some displays. Over the uptime of many
+> > boxes, this is a lot of cpu cycles on bits that are almost always off.
+>
+> A __test_bit (or |) every 10ms sounds quite negligible?
+>
+> Especially if __drm_debug is __read_mostly.  Which it isn't, afaict.
+> Um, low-hanging fruit?
+>
 
-Christian, can you have a look at this, please?
+__drm_debug certainly qualifies.
+I will send the patch, separately.
 
-On Tue, Sep 22, 2026 at 2:43=E2=80=AFPM Lifeng Zheng <zhenglifeng1@huawei.c=
-om> wrote:
+patch 37 adds a +c flag, to count invocations of flagged callsites
+it counted 5M calls in 60 sec.  or 83 KHz.
+That seems "fast-ish" at least,
+perhaps worthy of a static-key over a __read_mostly
+
+
+
+> > Dynamic-debug excels at replacing such tests with NOOPs (via static
+> > keys). Classmaps was devised to bring that 0-off-cost to drm's
+> > categories.
+> >
+> > Classmaps-v1 went into the kernel in Sept 2022, in 2 chunks:
+> >   b7b4eebdba7b..6ea3bf466ac6    # core dyndbg changes
+> >   0406faf25fb1..ee7d633f2dfb    # drm adoption
+> >
+> > Sadly DRM-CI found a regression during init with drm.debug=3D<initval>;
+> > the static-keys underneath the drm-dbgs in drm.ko got enabled, but
+> > those in drivers & helpers did not.
+> >
+> > So in Feb 2023, it got pulled:
+> > commit bb2ff6c27bc9 ("drm: Disable dynamic debug as broken")
+> >
+> > Root Problem:
+> >
+> > DECLARE_DYNDBG_CLASSMAP defined the classmap, but its repeated use in
+> > both core and drivers violated a K&R rule "define once, refer
+> > afterwards". This flaw resulted in a regression; with drm.debug=3D0xFF
+> > boot arg, drm-core got enabled, but drivers/helpers did not.
+> >
+> > This patchset replaces DECLARE_DYNDBG_CLASSMAP with:
+> > - DYNAMIC_DEBUG_CLASSMAP_DEFINE (invoked once in the exporting module)
+> > - DYNAMIC_DEBUG_CLASSMAP_USE (invoked repeatedly in drivers & helpers)
+> >
+> > _DEFINE exports the classmap it creates (in drm.ko), and other modules
+> > _USE the classmap. The _USE adds a record referencing the _DEFINEd (&
+> > exported) classmap in a 2nd __dyndbg_class_users section.
+> >
+> > At modprobe, dyndbg scans the new section after __dyndbg_class_maps,
+> > follows the linkage to the _DEFINEr module, finds the (optional)
+> > kernel-param controlling the classmap, examines its drm.debug=3D<initva=
+l>,
+> > and applies it to the module being initialized.
+> >
+> > To recapitulate the multi-module problem wo DRM involvement, we add:
+> >
+> > - tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh:
+> >   Alters pr_debugs in builtins and test modules,
+> >   checks results against checksums of expected results
+> >
+> > - lib/test_dynamic_debug.c & test_dynamic_debug_submod.c:
+> >   Builds parent & _submod modules with _DEFINE and _USE inside #if/#els=
+e
+> >   blocks, reproducing the 2-module scenario under selftests.
 >
-> This series implements support for the CPPC v4 Resource Priority Register
-> mechanism defined in ACPI 6.6, Section 8.4.6.1.2.7, and exposes it to
-> userspace via sysfs.
+> So what I'm understanding is that this series presently has no effect
+> upon DRM?
+
+I have 2-3 DRM adaptation patches,
+then a single 1-liner patch per driver,
+to get DRM using the new API.
+
+39 patches seemed big enough for now,
+if you'd like the rest tacked on, Im happy to do so.
+
+
+> What subsystems *does* it affect?
+
+
+
 >
-> Resource Priority allows OSPM to control the relative priority among
-> processors for shared resources. OSPM can utilize these sysfs interfaces
-> to configure resource priorities, allowing resources to be preferentially
-> allocated to more important tasks.
->
-> The controlled resource types include processor boost, throttle, L2 cache=
-,
-> L3 cache, and memory bandwidth.  Each Resource Priority group consists of=
-:
->
->   - CONTROLLED_RESOURCES: which resource types the group affects
->   - ENABLE_VALUE / ENABLE_REGISTER: enable/disable the group
->   - PRIORITY_COUNT / PRIORITY_REGISTER: read/write the priority level
->
-> The patch series is organized in three parts:
->
->   - patches 1-4 extend the CPPC data structures and _CPC parser to handle
->     Package-type entries and parse Resource Priority sub-packages into
->     structured descriptors.
->
->   - patches 5-7 refactor existing register I/O helpers to support direct
->     register access and add accessor functions for Resource Priority
->     attributes (enable, priority count, priority value).
->
->   - patch 8 creates a "resource_priority" sysfs hierarchy under each
->     cpufreq policy to expose the Resource Priority attributes to userspac=
-e.
->
-> Changelog:
-> v4:
->  - Patch 7: Set *num_resources to 0 when controlled resources number
->    invalid in cppc_get_resource_priority_resources(), therefore, the call=
-er
->    will not read the unassigned `resources` pointer.
->  - Patch 8: Remove kfree() from the error path of
->    cppc_create_res_prio_sysfs() because cppc_res_prio_release() will do i=
-t.
->
-> v3:
->  - Patch 2: Add the (i - 2) =3D=3D RESOURCE_PRIORITY condition back to en=
-sure
->    the new code behaves the same as the original.
->  - Patch 4: Assign -ENODATA to ret when an unexpected ACPI_TYPE_PACKAGE
->    appears.
->  - Patch 5: Initialize the `optional` field of the remaining cpc_regs to
->    true so that they are treated as unsupported.
->  - Patch 8: Call cppc_cpufreq_cpu_fie_exit() and set perf to lowest_perf
->    when cppc_create_res_prio_sysfs() fails. Call kobject_put() and kfree(=
-)
->    when kobject_init_and_add() fails in cppc_create_res_prio_sysfs().
->  - Link: https://lore.kernel.org/all/20260812015217.74598-1-zhenglifeng1@=
-huawei.com/
->
-> v2:
->  - Patch 1: Revert changes to the CPC_SUPPORTED() macro.
->  - Link: https://lore.kernel.org/all/20260804085042.4118193-1-zhenglifeng=
-1@huawei.com/
->
-> v1:
->  - Link: https://lore.kernel.org/all/20260717024502.3520445-1-zhenglifeng=
-1@huawei.com/
->
-> ---
->
-> RFC: sysfs placement
->
-> The sysfs interface is currently placed under /sys/devices/system/cpu/cpu=
-freq/
-> (i.e. the cpufreq policy directory). I am unsure whether this is the best
-> location and would appreciate reviewer feedback.
->
-> The concern is that Resource Priority covers resource types beyond CPU
-> frequency control:
->
->   - PROCESSOR_BOOST, PROCESSOR_THROTTLE -- clearly CPU-frequency related
->   - L2_CACHE, L3_CACHE -- cache partitioning, not frequency
->   - MEMORY_BANDWIDTH -- memory QoS, not frequency
->
-> Placing the attributes under cpufreq makes sense for boost/throttle but
-> feels semantically wrong for cache and memory bandwidth resources.
->
-> I would appreciate feedback on whether cpufreq is the right home for
-> this interface, or whether a different location would be more appropriate=
-.
->
-> Lifeng Zheng (8):
->   ACPI: CPPC: Prepare cpc_register_resource for Package-type entries
->   ACPI: CPPC: Refactor element parsing into parse_cpc_element()
->   ACPI: CPPC: Refactor resource cleanup into free_reg_resource()
->   ACPI: CPPC: Parse Resource Priority Register entries from _CPC package
->   ACPI: CPPC: Store optional flag in cpc_register_resource
->   ACPI: CPPC: Factor out cpc_read_reg() and cpc_write_reg()
->   ACPI: CPPC: Add Resource Priority accessors
->   cpufreq: cppc: Expose Resource Priority attributes via sysfs
->
->  drivers/acpi/cppc_acpi.c       | 719 +++++++++++++++++++++++++++------
->  drivers/cpufreq/cppc_cpufreq.c | 281 ++++++++++++-
->  include/acpi/cppc_acpi.h       |  60 +++
->  3 files changed, 930 insertions(+), 130 deletions(-)
->
-> --
-> 2.33.0
->
->
+> Sashiko had quite a bit to say.  It hasn't quite completed at present.
+>         https://sashiko.dev/#/patchset/20260923-dd-cmap-part2-clean-v11-0=
+-9b6c217fdf2f@gmail.com
