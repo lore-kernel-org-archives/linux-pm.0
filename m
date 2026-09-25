@@ -1,74 +1,93 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B64536E489;
-	Fri, 25 Sep 2026 08:37:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ED56477E51;
+	Fri, 25 Sep 2026 08:59:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790325466; cv=none; b=Mh76FgHQLtHVnGEgF7Pq1x/kIgK4rp0b9aJWSfsaDPZ557/+3I9TuiTr/G04mgm9g4yKHBeKPyfQezOntdmoOI3hcYs2CTNDv0LylSORPxd6sf/IRmjdYbXLSXIUOCr/Pv9F/LeWis6gNhSFxTtjE5sXA4tczznYA/sPoBFqI9I=
+	t=1790326769; cv=none; b=o+tsnETEgRez5hewu8iiQ7DNinrEhsJX/mGN7MhQJAPWaeUYuOqwuD0cWJ6edv8rPV4S9N5bmjN2qhCeTtpWmDlsz8gmJue3kyoYaj1e5iZK+jVAv9isjQF4+GrrHU8mNLkvEqg/bdEsHp7CyLoUZnxaxKHFBL8SOHCi/lF0rkA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790325466; c=relaxed/simple;
-	bh=dYkZ1PcbOsm8+hVJ6fyLXzRG6VxBJylZlFh8Z+RKoq8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KHRhQTyZpy17MOwoQdGPyJi17DX8gkZO6pKNF8EJtBe97tG03COWZueRg2XAdlt1+P2FBvF9CYcEncKt57PI6ZkGntT1KAsrPfe2DlNxXxngJXXOE2A0/5+kSCV9LDU4jMmKw2axB+kThGWQXxXkcvN6U9MBX1dT6HUbup6RoJc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Bqnf7vu5; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790326769; c=relaxed/simple;
+	bh=RSNwSSTx2eqkwh6SNPpmBWShiYztNRp2A78G/08sizU=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=CL6coc00J12nzr4GCZtsJeSxK9ALZgFh2XKIknoEg9A/2vSp5U71WIJ39rykrzuVtD9NV1wNh/XUeKpcKrpxSWOJHc6vcdBSIMwapIED2MkmC8IT7v3fwrK4w1wJ7fPdDZRp4ttsfHeUbMYqavRx660NT0hHSnNuVh72JYxE5F0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RVoyDc3z; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Bqnf7vu5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBBC71F000FF;
-	Fri, 25 Sep 2026 08:37:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RVoyDc3z"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B1BC1F000FF;
+	Fri, 25 Sep 2026 08:59:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790325465;
-	bh=sfijTU51Vh7or10tSZAJfrDehvDBspnHgWMvZGqhjuQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Bqnf7vu5yAU7u35i6Xftde/oz3hh8Mbo/rF4T0QlwpDNYw6HK+98CL+CypSKMX8Eo
-	 XU2urOzmFZc+yvqOWB79yWvWE6TdPGo/IGn3W0jUKvYE2j97djahbkIRHqANGJZoIg
-	 CYRUTooqZ777cSZ/gUdHXhEbbz9YImxl6Q/hlya/BzKmppI/6IaktV1vISgFa/BYFG
-	 ay8cSApy1yQqGeRSZ5lKyH5kxihoygDtF78oD5BjB5l/D0ggVQH9C8ng/7entNzsle
-	 Q2yWr1zfaC2zIAskk+MDUjd6pKc6djR0k69WU26lyiw9DVHX4Bhqr6YKX1dokBc9V6
-	 y48jde93phpTA==
-Message-ID: <158671d2-ec78-4863-b67e-7180e218b758@kernel.org>
-Date: Fri, 25 Sep 2026 11:37:40 +0300
+	s=k20260515; t=1790326767;
+	bh=/R8EDsFWm4mzuLIIsmkOdeGXz3KnTcXcIqVJWLIi1d4=;
+	h=From:Subject:Date:To:Cc;
+	b=RVoyDc3zNe9cJbetwR8Fil5lOc/YQ4ig/b6P+VHfriqUL0f5G+Gp+zdfq973K02M4
+	 HLUGcQ00kU+UfUSQoa/g1LjnrWfvHw3yu/0MF2Irmrcz9jgyAsN0E/so9cOPLpJKQ5
+	 nRm/UMyhGYXpYHxl7Xb3EI+o6RNZEzwmXfc+/GfVfIEEUEpN9Q4v/bRiZ5+8Y7ZjY/
+	 sAVj9XliNBcxt3g2Xkf0GZRf0woXDOvxm1/137nvPktkZyKYI956qd0EiqUmzxeqiO
+	 1Mya311ZPuwe1wqzzrXsTnoQsCrfUk6bQtxIl3rVWOR78Qso75gd/dSWr+Ukss9rtW
+	 6dulKxgvPUT8Q==
+From: Linus Walleij <linusw@kernel.org>
+Subject: [PATCH v3 0/2] power: supply: Correct AB8505 charger device tree
+Date: Fri, 25 Sep 2026 10:59:23 +0200
+Message-Id: <20260925-ab8500-charger-dt-v3-0-f80b8d295e2d@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/7] dt-bindings: thermal: r9a08g045-tsu: Document
- RZ/G3L TSU
-To: Biju Das <biju.das.jz@bp.renesas.com>,
- Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>,
- Magnus Damm <magnus.damm@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- Chris Paterson <Chris.Paterson2@renesas.com>,
- Biju Das <biju.das@bp.renesas.com>,
- Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
-References: <20260925061617.127349-1-biju.das.jz@bp.renesas.com>
- <20260925061617.127349-2-biju.das.jz@bp.renesas.com>
-Content-Language: en-US
-From: Claudiu Beznea <claudiu.beznea@kernel.org>
-In-Reply-To: <20260925061617.127349-2-biju.das.jz@bp.renesas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33NwQ6CMAyA4VchOzuzdbINT76H8TBGgUUDpCOLh
+ vDuDk6aGI9/m35dWEQKGNm5WBhhCjGMQw51KJjv3dAhD01uBgK0qGTJXW1LIXheUofEm5lXlQd
+ /0qCcFSzfTYRteO7m9Za7D3Ee6bW/SHKb/tOS5IJLUZtaWYPa6csdacDHcaSObVyCT8L+IiATZ
+ SuNVwocOPNFrOv6Bk2l3vv2AAAA
+X-Change-ID: 20260915-ab8500-charger-dt-99c2c4623a80
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ Linus Walleij <linusw@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
 
+AB8505 retains the USB charger from AB8500 but omits the separate main
+charger block. Its charger node consequently has nine valid interrupts,
+not the fourteen interrupts used by AB8500.
 
+Adjust the binding to describe the variant-specific interrupt sets and
+remove the five nonexistent main-charger interrupts from the AB8505
+device tree. The binding update also limits the autopower_cfg description
+to AB8500, since the corresponding AB8505 register bit is reserved.
 
-On 9/25/26 09:15, Biju Das wrote:
-> Add the renesas,r9a08g046-tsu compatible string for the RZ/G3L Thermal
-> Sensor Unit (a.k.a TSU), which is similar to the RZ/G3S TSU but uses
-> different calibration constants. TSU is connected to a dedicated ADC IP
-> (a.k.a ADC1) on RZ/G3L.
-> 
-> Acked-by: Rob Herring (Arm) <robh@kernel.org>
-> Reviewed-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
-> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
-Reviewed-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+The power maintainer can apply patch 1/2, I will funnel patch 2/2.
+
+Assisted-by: LLM
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+Changes in v3:
+- Move the conditional constraints below the top-level properties.
+- Expecting Sebastian to apply patch 1/2.
+- Link to v2: https://lore.kernel.org/r/20260918-ab8500-charger-dt-v2-0-5f17c332a2a7@kernel.org
+
+Changes in v2:
+- Add an AB8505-specific compatible with the AB8500 fallback.
+- Tie interrupt counts and names to the charger compatible.
+- Use the new compatible in the AB8505 DTSI.
+- Link to v1: https://lore.kernel.org/r/20260915-ab8500-charger-dt-v1-0-10b7b387e6a6@kernel.org
+
+---
+Linus Walleij (2):
+      dt-bindings: power: supply: ab8500: Add AB8505 charger
+      ARM: dts: ux500: Use AB8505 charger compatible
+
+ .../power/supply/stericsson,ab8500-charger.yaml    | 76 ++++++++++++++++------
+ arch/arm/boot/dts/st/ste-ab8505.dtsi               | 17 ++---
+ 2 files changed, 60 insertions(+), 33 deletions(-)
+---
+base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+change-id: 20260915-ab8500-charger-dt-99c2c4623a80
+
+Best regards,
+-- 
+Linus Walleij <linusw@kernel.org>
+
