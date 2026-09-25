@@ -1,144 +1,96 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 717AD44470C
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:12:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0229046A60E
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:16:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790367135; cv=none; b=tmLqTmUg6WvHIp/m7/lGCDna3bnquDEHozLkS5TgUQeH4QVYHs7NPzn4k8pHYHQRMMNAJMl3S97gn+7BvW+ZQd8LiqvspAqxI5Jdri18sm544euJQteVdlfrvlo/qUzA7tK54z+aSk3hjRiCU+8AKacneU+lLRE+Y3QEVajr5NI=
+	t=1790367378; cv=none; b=d55Fkg4Y/vLSuX74vOuPMIVlTe7QOeKOJ94aXDJpmTYKQCC+Hqj+V8ZzETATdGuPF/wcB5Wthee1QY36KlM5atO1wR+XSSgtXC9QGbvbHJtHLahLB51o6onh9ZUSmpDn7d16E5CMakJirDBTtvavrpg/mvtREYhGqzyfAq39Dt0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790367135; c=relaxed/simple;
-	bh=002S8vnOMFAFJ6nMl4iWnh77cSjc+g9V5FRVgu3Kd9M=;
+	s=arc-20240116; t=1790367378; c=relaxed/simple;
+	bh=zhCwoSHvOhH/sMmyMDPzYTxwaB5CFqS+vt/BBq5Sww8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=dHsNkFOHZghcy9DCm9NXoYKiEvW22PbcKZPn+7qlD+yzVL97HxOlcNkINk0skAj9dWVpFnxlpzJhIU6SmEJHeWrZE9suZaczUsy8unNYo356SmDVqunr8twYsffkcqvZ4RteZtajwIy52fqbe78w0hQvMXxZEVSym7Z3An65yEg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P43pVqON; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=hKd5SuSvQJZfOGX9/JbjtnBdnhotwlZCSAqf6qBGDx0B6G+uqcCpMPc1nFM1X6vWiI8aJj+490t6IPK0svGHqGwpAPfnq2CCOvM4tApZ2nMMGZbOk9np9fgZfhxtouX6ZEstmljzs8TZgbkmvmfnq4Bl1GtgUqX71qO0wQ27At8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fo5jKir0; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P43pVqON"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B72E21F0089A
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:12:06 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fo5jKir0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B75CD1F0089A
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:16:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790367126;
-	bh=NN+opJ6O2i01W0leRwrhsq0wiHd+Q/Ia/9/Q0jKm2jo=;
+	s=k20260515; t=1790367376;
+	bh=yHQYo+JSQ0XDZc7/NCT+iFGUGwIfIqKSC52HsPPN9ko=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=P43pVqON16RdSxxedGDaoYJRXM0lPKYOXPyFcPO6QGJ7o5qjzmFPr0VwvOOveyt2X
-	 zR4oF8a36+p76I2Lqf5k2JR+9TsEP3AzLYb7aEGU0UTf0syDHHm+HDyCcROptndioo
-	 faiWzEGv7C3PSA3m7IoRJbN7txH9OPm0unPs+JX+s3zkhnLkz0TTQdaMhRLAcblzvm
-	 sOewHWYQ5dMB/SkLg8Lxo+pmrrkhscHh00vCpQ7oNVxI8eU9TmIkZCiG9228jDt0YQ
-	 Dd3vcAw+UTPz8QwGMLFpg00bNlj+cv1TqcxvwQ+jBBQLjooytQ7nyROmMwp3r5UZ1D
-	 kl6d5+0bgIawA==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b8e911e665so855306e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:12:06 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxiirvvGOxbsO9IhYID9QHItJtCV1DOi7+KRDd5obX2vibQMuc1PIbtxzJrHBMm9/b1l/w2WG8CcQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++nJjog1ggJMvTjQonQ4uOuKhJNyBDTx+ih9AIuuBjUeEoShH7M1
-	DRkYQLYoMFKvGsFSj62UvJxOcEkuTewdKgve6Lv24I2RyGDzdAuipO4Gk/bXNCo09hzh8rfcWPV
-	4L6+XhtC2fyRU6Gga4UKtHs8N4dc1vnE=
-X-Received: by 2002:a05:6512:10cf:b0:5b6:1a7c:fd82 with SMTP id
- 2adb3069b0e04-5b8df0d7b78mr2515060e87.40.1790367125182; Fri, 25 Sep 2026
- 13:12:05 -0700 (PDT)
+	b=fo5jKir0aAl3pSrTu094VUCVC7L05JswkGn+p7hxsWSby5XrdRmM6UVh08TG7Ozjp
+	 Ijbg03rFbvQeGgXaNc+oHwWFYqcGraCnL+muisOYXLTgBVnYr2uqvs/h/G27+rIV4m
+	 DqsltJVqs/A0nb2K+91B/m1FLpcV+jNyzZUXn3bi1HZehrukuYT51i5a+Yj9qJvqF6
+	 5ygjix4T5nCyirBLup2Y0lzEsSA5VhVO926adcINUJIlefIbNJXftOOeGbM7WT9IzS
+	 stSj9MxKYlVHaiWUzP4FhYtem2FycFBBqwHPrMMU8/ioejs9JWzoVpgg9G1QXdq5cn
+	 6HyEiBh0uVVDg==
+Received: by mail-lr2-f35.google.com with SMTP id 38308e7fff4ca-3a60e33d456so10263931fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:16:16 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwKuIDcChs15MOumZ2zD7FurzDWZ1oWuXCo0iYtANp9Y7QMlKMOYW5lTpe8kmPJtXHTC91cg3UWaA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nqDXYb2aoA47i7GdoHIT/92QA6VnyNWDuspsk8rfy2kE833dxF
+	nm66qWwf0c0EDJt87JVVB9LFA8wqZC22rDA9eUBFHi3WXCVGg6cKAcVtAZm21uKDSS7I81g4DuH
+	ag6PEMpIEedxNQ4+P4aO+PK6HWKo5a7U=
+X-Received: by 2002:a05:651c:19a4:b0:3a4:d4de:bad0 with SMTP id
+ 38308e7fff4ca-3a63c0f59c8mr18075131fa.19.1790367375165; Fri, 25 Sep 2026
+ 13:16:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260923072730.487900-1-fanwu01@zju.edu.cn>
-In-Reply-To: <20260923072730.487900-1-fanwu01@zju.edu.cn>
+References: <20260923202911.90464-3-blum@kernel.org>
+In-Reply-To: <20260923202911.90464-3-blum@kernel.org>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 25 Sep 2026 22:10:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i6W1QX97vuNvenqQ3QDv-fzStCff3LtyJTXWnheTCRSQ@mail.gmail.com>
-X-Gm-Features: AclHuK-Wj2SzVKECYTkqnGCHaP1RVehr5DmH6bxqZpoFFJ9I8SsW-EPjTvEB7GM
-Message-ID: <CAJZ5v0i6W1QX97vuNvenqQ3QDv-fzStCff3LtyJTXWnheTCRSQ@mail.gmail.com>
-Subject: Re: [PATCH] thermal: intel: int340x: Fix use-after-free in proc_thermal_pci
-To: Fan Wu <fanwu01@zju.edu.cn>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, stable@vger.kernel.org, 
-	Song Li <songl@zju.edu.cn>
+Date: Fri, 25 Sep 2026 22:14:38 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ix=uLVTHzVO3t5HdPKrm-ybFU-HeVuYyXdbcDyNxCAUQ@mail.gmail.com>
+X-Gm-Features: AclHuK-LV4aj5PiuJEt7_RFmYLgQqlMjsLW-7diENuwp-vDaLduNq-s8v_TxG6c
+Message-ID: <CAJZ5v0ix=uLVTHzVO3t5HdPKrm-ybFU-HeVuYyXdbcDyNxCAUQ@mail.gmail.com>
+Subject: Re: [PATCH] thermal/cpufreq_cooling: Simplify cpufreq_set_cur_state()
+To: Thorsten Blum <blum@kernel.org>
+Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 23, 2026 at 9:28=E2=80=AFAM Fan Wu <fanwu01@zju.edu.cn> wrote:
+On Wed, Sep 23, 2026 at 10:30=E2=80=AFPM Thorsten Blum <blum@kernel.org> wr=
+ote:
 >
-> proc_thermal_pci_remove() cancels pci_info->work before disabling the
-> interrupt sources that schedule it. A threshold IRQ which arrives after
-> the cancel but before the THRES_0 and INT_ENABLE_0 MMIO mask makes
-> proc_thermal_irq_handler() reschedule the work, so
-> proc_thermal_threshold_work_fn() runs after devm cleanup has freed
-> pci_info and dereferences pci_info->tzone and proc_priv->mmio_base. The
-> shared IRQ is never freed in remove(), which widens the window, and the
-> probe error paths never cancel the work either.
+> Return freq_qos_update_request() errors directly to simplify the code.
 >
-> Fix this by cutting off the producers before draining: mask the THRES_0
-> and INT_ENABLE_0 registers, free the MSI interrupts or the shared IRQ,
-> and only then cancel the delayed work. The probe error paths cancel the
-> work before the thermal zone is unregistered.
->
-> The work function re-enables the INT_ENABLE_0 bit, but the IRQs are
-> already freed when it is cancelled and THRES_0 stays cleared, so nothing
-> can schedule the work again.
->
-> This issue was found by an in-house static analysis tool.
->
-> Fixes: acd65d5d1cf4 ("thermal/drivers/int340x/processor_thermal: Add PCI =
-MMIO based thermal driver")
-> Cc: stable@vger.kernel.org
-> Co-developed-by: Song Li <songl@zju.edu.cn>
-> Signed-off-by: Song Li <songl@zju.edu.cn>
-> Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
-
-Please see Sashiko's feedback on this:
-
-https://sashiko.dev/#/patchset/20260923072730.487900-1-fanwu01%40zju.edu.cn
-
-and let me know what you think.
-
-Thanks!
-
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
 > ---
->  .../processor_thermal_device_pci.c                | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+>  drivers/thermal/cpufreq_cooling.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 >
-> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_devi=
-ce_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_p=
-ci.c
-> index c693d93..1856e76 100644
-> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.=
-c
-> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.=
-c
-> @@ -409,7 +409,10 @@ static int proc_thermal_pci_probe(struct pci_dev *pd=
-ev, const struct pci_device_
->  err_free_vectors:
->         if (msi_irq)
->                 proc_thermal_free_msi(pdev, pci_info);
-> +       else
-> +               devm_free_irq(&pdev->dev, pdev->irq, pci_info);
->  err_ret_tzone:
-> +       cancel_delayed_work_sync(&pci_info->work);
->         thermal_zone_device_unregister(pci_info->tzone);
->  err_del_legacy:
->         if (!pci_info->no_legacy)
-> @@ -424,13 +427,16 @@ static void proc_thermal_pci_remove(struct pci_dev =
-*pdev)
->         struct proc_thermal_device *proc_priv =3D pci_get_drvdata(pdev);
->         struct proc_thermal_pci *pci_info =3D proc_priv->priv_data;
+> diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_=
+cooling.c
+> index 768859a7aed0..e89036077bef 100644
+> --- a/drivers/thermal/cpufreq_cooling.c
+> +++ b/drivers/thermal/cpufreq_cooling.c
+> @@ -488,12 +488,12 @@ static int cpufreq_set_cur_state(struct thermal_coo=
+ling_device *cdev,
+>         frequency =3D get_state_freq(cpufreq_cdev, state);
 >
-> -       cancel_delayed_work_sync(&pci_info->work);
-> -
->         proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0, 0);
->         proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0,=
- 0);
->
->         if (msi_irq)
->                 proc_thermal_free_msi(pdev, pci_info);
-> +       else
-> +               devm_free_irq(&pdev->dev, pdev->irq, pci_info);
+>         ret =3D freq_qos_update_request(&cpufreq_cdev->qos_req, frequency=
+);
+> -       if (ret >=3D 0) {
+> -               cpufreq_cdev->cpufreq_state =3D state;
+> -               ret =3D 0;
+> -       }
+> +       if (ret < 0)
+> +               return ret;
 > +
-> +       /* Cancel after the IRQs are freed, or the handler may reschedule=
- it. */
-> +       cancel_delayed_work_sync(&pci_info->work);
+> +       cpufreq_cdev->cpufreq_state =3D state;
 >
->         thermal_zone_device_unregister(pci_info->tzone);
->         proc_thermal_mmio_remove(pdev, pci_info->proc_priv);
+> -       return ret;
+> +       return 0;
+>  }
 >
+>  /**
+
+Applied as 7.4 material, thanks!
