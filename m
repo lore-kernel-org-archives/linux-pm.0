@@ -1,94 +1,131 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B271738AC68
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:22:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F21B043F4DA
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:25:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790364166; cv=none; b=i3yaIN8Dfnl/GgIYgmsifpX+daudQiyYJ67+k9SxA/h2CI+XGWq1TlS5QL2ezaM/Q/PWqju9kBtcjgxQ6UejDXe47hcQPKBVSxFG+7eIYAorVtLlH2MTLuzDmFmZYvT77k3ohZ0GKkPZg9lGVhBuTlJoTWJLNhX1I3KL/POB6mg=
+	t=1790364319; cv=none; b=Ram6/G+jd1hzIGxRVNcMsRhEKyCKssqquQ/KStrHyo9Etj5zCN628uVodVXAUdqpgkeD2WpDmrLWCY3jYDsZwudcaEk2LQzncbf9lUNmZU29oCSFrouhMHJ1+d1Y5XKXi9ncIhGBD6Wtt6uTV2xxoulAgnQgQYONQYlrajwptp8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790364166; c=relaxed/simple;
-	bh=vGzWmhmfK5+msJjtqqDpL/8yiq1ZzPnKCmsyqZQPYuk=;
+	s=arc-20240116; t=1790364319; c=relaxed/simple;
+	bh=orOQIuMWgmNfpyVvSBIiKDXXIfxlvVwi1uDc6JpnOnE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=uc2y6bLQq+vjpOhS/dErMhd1aNifiXph1lve0nV5/LZ4SWiAZvB8BBJgtNOfWt5dx6YGugWKiAjYSaEju91AFEZw9JHRLN1EcFlqNWNt7hCoZDLabboQeKCL1phBXZiotbkSK9DqUbKwljlzuzd3VpH5TkUMb8PCK4dfxUggoSc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jk18WX5X; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=eOdFzBCQDisqbc69DuiicR3EppWngj8A6FjPU8f3u9kCe8NLmv+KcxxZdaodu6/QRQdzb2/49/75j44dnDhSw5er5C6o7IBtGspUUj7HFXicCZ3RXgFra4PUnAjXAxTbaCkj0LJtrMCRl9ekMnyg9ZcL3e9qkNapdIhxGhKGCds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SgMhPCgS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jk18WX5X"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A52191F0089E
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:22:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SgMhPCgS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3FDD1F008A0
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:25:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790364160;
-	bh=6ow/A/OW+wK5EkwH7DjhZj9xv4azuS0V+QzcTkjBalI=;
+	s=k20260515; t=1790364317;
+	bh=nBf4LR0QybGxODUVGWLYzoR9YycS12OFozmgvcTcyzc=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Jk18WX5X3grRl2Lz40D5NBuNmMGEvbFhXlRzscj2TfNsigZ1fFVYDpS0WolM2uQox
-	 NxxevCqoftMKfxww559cQvHEYci7icFEtCSbufr1fuOeRBVztjfyEdZuxy8VFXd1hB
-	 vwXOLezdWw2VYnhTGBeXVK60Z3VDuSOC3X2UCOOZzL0wsMWfx+nXmtfIv+WyyWSTkI
-	 s3uvNROTpRDtGRjZe/mWjacjBZO21sTzOdt5566cRpDMdhDrdEOoeRi5kJFJypuyF+
-	 P51DxlW1HLJAP0elczKj99MWDO86CIvhx0RWiow9aaCoJ37ndn177BCQm+a3h1C3pq
-	 Ceri/XiTEtbvQ==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a49bc59559so8901411fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 12:22:40 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBx6qWjizNyHvJ34CPqHtsu5O2/OwmJo/+pKUtSTtfskV0jVL4TWcqjyKXPmp9HxPsYRGfKyi4b2Qw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lEpiG/QwOvQmn8Y2W2KmCpkcYKEme8zFGdjNV65cbTnaJ5RD+g
-	dYEX8wkEpIh0BxTokjAT9PataC3VrHLdnlmVidcKT9CvqduNruxNma9+PiHRAj3/AN8rXwdyir6
-	I8RCvXoWQeHlFmehMa99Q6EFN8hqZHw4=
-X-Received: by 2002:a05:651c:b23:b0:3a5:e027:1b49 with SMTP id
- 38308e7fff4ca-3a64c71fe9bmr7397371fa.2.1790364159052; Fri, 25 Sep 2026
- 12:22:39 -0700 (PDT)
+	b=SgMhPCgS1g/SBrRAXC8/7WLHaXSM2aK4ZHjIgziO+Y1yxNb0kRKuGqhqLKFt4ivnU
+	 ESvmWhh8cb3ASdcq9bciF2ZUUCnRpAJ+osXj13vUizJB8bBqrCyj+MYcXwsF50SOFh
+	 eYIUau2uDrZQrg9AigBLcithA5eKQWoCmSHzA4LoSXR8C/Xo/9DKbTteAl6ZuHpk3j
+	 Hhm7ReTPekFizzh+KnWlu7NscYt5+j4GIbyDURUfiVvDrnlUzbAQuQI7mJzQJonR1G
+	 wkXhIwRaPfL6f7SLxQ3InNFxsXbBdfhAcaT28SkpfgUgQq9fRokW1pK44HuKIAtqkv
+	 uOvEYVmuAC0iQ==
+Received: by mail-lr2-f28.google.com with SMTP id 38308e7fff4ca-3a659495608so2060971fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 12:25:17 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzz82NeKljXZ0if2z0R0EHew07ApE+DGynNzN3nnk8oS1y+vZDheWwyrTgs+luo26fTozfOoDSXpw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lj0My301ZnQ64PnkFS4dXfXOcorQNhlg3Y6Eu5ps3XLLI4YQ1h
+	IMhK1ANyn9gNT3i3NugmsRJ8bLOgZWis8gB/6PcN7vGVM+5nMzrBD19ZyATZMd1hEI8X5sBHlfe
+	HCOOq8ZcHmTeSSQnmrjEKRX28jxQ/9H8=
+X-Received: by 2002:a05:651c:418e:b0:3a6:553d:cb1c with SMTP id
+ 38308e7fff4ca-3a6553dce4cmr4861551fa.12.1790364316036; Fri, 25 Sep 2026
+ 12:25:16 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260915221548.104852-3-blum@kernel.org>
-In-Reply-To: <20260915221548.104852-3-blum@kernel.org>
+References: <20260916103820.1760297-1-sumitg@nvidia.com>
+In-Reply-To: <20260916103820.1760297-1-sumitg@nvidia.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 25 Sep 2026 21:21:01 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h4RvH-Yg6y8H6+6wqVQRvrY7zJZknrEqjiftKf3vWx7w@mail.gmail.com>
-X-Gm-Features: AclHuK-Vdpf60QGX2Zw2meAjmYNb7AVQ44cC9-5GsRSxXzi3TvHsdGbIEGCjEX4
-Message-ID: <CAJZ5v0h4RvH-Yg6y8H6+6wqVQRvrY7zJZknrEqjiftKf3vWx7w@mail.gmail.com>
-Subject: Re: [PATCH 1/2] thermal: intel: powerclamp: Simplify duration_get()
-To: Thorsten Blum <blum@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Yury Norov <ynorov@nvidia.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+Date: Fri, 25 Sep 2026 21:23:38 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hXcRSj5ufpLTAgTSYtFDCXRQL3bJ5wNLtfRMrvHfo9ow@mail.gmail.com>
+X-Gm-Features: AclHuK9qDYz-k5dcjQxp54XHZKMEw0rv2InbPBzQTUFY63R1_VmtSqKrupNEn6Q
+Message-ID: <CAJZ5v0hXcRSj5ufpLTAgTSYtFDCXRQL3bJ5wNLtfRMrvHfo9ow@mail.gmail.com>
+Subject: Re: [PATCH v5 0/4] cpufreq: CPPC: Preserve OSPM-set registers across
+ hotplug and unload
+To: Sumit Gupta <sumitg@nvidia.com>, pierre.gondois@arm.com, zhenglifeng1@huawei.com, 
+	zhanjie9@hisilicon.com
+Cc: viresh.kumar@linaro.org, christian.loehle@arm.com, ionela.voinescu@arm.com, 
+	ray.huang@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com, 
+	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org, treding@nvidia.com, 
+	jonathanh@nvidia.com, vsethi@nvidia.com, ksitaraman@nvidia.com, 
+	sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 16, 2026 at 12:16=E2=80=AFAM Thorsten Blum <blum@kernel.org> wr=
+On Wed, Sep 16, 2026 at 12:39=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wr=
 ote:
 >
-> Use guard(mutex) and return the result of sysfs_emit() directly to
-> simplify the code. Also use %u to format the unsigned duration.
+> This series keeps the CPPC cpufreq policy alive across CPU hotplug and
+> preserves the OSPM-set CPPC registers (Energy Performance Preference,
+> Autonomous Activity Window, Autonomous Selection - set via sysfs).
 >
-> Signed-off-by: Thorsten Blum <blum@kernel.org>
-> ---
->  drivers/thermal/intel/intel_powerclamp.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
+> Without online()/offline() callbacks, the core tears a policy down when
+> its last CPU goes offline and rebuilds it on the way back, re-reading the
+> CPPC capabilities each time. The values written to these registers can
+> be lost:
 >
-> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/i=
-ntel/intel_powerclamp.c
-> index bd7fd98dc310..8ceb1270646c 100644
-> --- a/drivers/thermal/intel/intel_powerclamp.c
-> +++ b/drivers/thermal/intel/intel_powerclamp.c
-> @@ -103,13 +103,9 @@ static int duration_set(const char *arg, const struc=
-t kernel_param *kp)
+>  - Across CPU hotplug or suspend/resume: the platform may reset them
+>    while the CPU is offline.
+>  - On driver unload: the driver-written value is left in the register
+>    instead of returning to its pre-driver state.
 >
->  static int duration_get(char *buf, const struct kernel_param *kp)
->  {
-> -       int ret;
-> +       guard(mutex)(&powerclamp_lock);
+> Handle these with:
 >
-> -       mutex_lock(&powerclamp_lock);
-> -       ret =3D sysfs_emit(buf, "%d\n", duration / 1000);
-> -       mutex_unlock(&powerclamp_lock);
-> -
-> -       return ret;
-> +       return sysfs_emit(buf, "%u\n", duration / 1000);
->  }
+>  - Patch 1: adds online()/offline() callbacks so the core keeps policy
+>    alive across CPU hotplug instead of tearing it down and rebuilding it.
+>  - Patch 2: makes the autonomous selection register helpers take a u64.
+>  - Patch 3: adds a table-driven mechanism that captures each register's
+>    firmware value at init(), restores it from offline(), and reapplies
+>    the OSPM-set value from online().
+>  - Patch 4: extends the same save/restore to system suspend/resume.
 >
->  static const struct kernel_param_ops duration_ops =3D {
+> v4[4] -> v5:
+>  - Patch 1:
+>    - offline() stops the frequency invariance updates and online()
+>      restarts them, replacing the resync that raced with tick. (Sashiko)
+>    - reorder the functions to match cppc_cpufreq_driver. (Jie Zhan)
+>  - Patch 3:
+>    - reapply the OSPM-set registers even when the performance control
+>      write fails. (Sashiko)
+>  - Patch 4:
+>    - suspend() stops the frequency invariance updates too, completing the
+>      patch 1 change for a policy whose CPUs stay online.
+>
+> Sumit Gupta (4):
+>   cpufreq: CPPC: Keep the policy across CPU hotplug
+>   ACPI: CPPC: Make autonomous selection helpers take a u64
+>   cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload
+>   cpufreq: CPPC: Preserve OSPM-set registers across suspend/resume
+>
+>  drivers/acpi/cppc_acpi.c       |  20 +-
+>  drivers/cpufreq/amd-pstate.c   |   2 +-
+>  drivers/cpufreq/cppc_cpufreq.c | 378 ++++++++++++++++++++++++++++++++-
+>  include/acpi/cppc_acpi.h       |   8 +-
+>  4 files changed, 381 insertions(+), 27 deletions(-)
+>
+> [1] v1: https://lore.kernel.org/lkml/20260623095403.3407436-1-sumitg@nvid=
+ia.com/
+> [2] v2: https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvid=
+ia.com/
+> [3] v3: https://lore.kernel.org/lkml/20260724215937.3368276-1-sumitg@nvid=
+ia.com/
+> [4] v4: https://lore.kernel.org/lkml/20260806200857.601152-1-sumitg@nvidi=
+a.com/
+>
+> --
 
-Applied as 7.4 material along with the [2/2], thanks!
+Dear CPPC cpufreq driver reviewers, I need your input on this series.
+
+It is not going to be applied without any input from anyone.
+
+Thanks!
