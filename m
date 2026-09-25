@@ -1,33 +1,33 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 59C383AFD07;
-	Fri, 25 Sep 2026 09:40:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4371738E12D;
+	Fri, 25 Sep 2026 11:00:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790329222; cv=none; b=MeXcA6RSGl0DASXFtPt0vZhEKnwR4w5UgAbK3gZJ7QZ+MXj1bGj3quqDjpnquyRb698B4A4EduIq7SavyTw++Rvkq7k5noRXbboyNuIjHeJqow5ZRBpTNSvea0kun2wN5bVpU51dv1DRK3OAx71YDCoP0EFncGujQvtfV7+1P5Y=
+	t=1790334038; cv=none; b=HuG1MjoyzF1qlf48EQyj78uWhJV+pIHEsKCE6w5HNJNJmYjNMs88GSWiaEHBjNLYtCq73jhr7odhOilOvs461zMAj5pIL9uEP02LjpzZnqgEcf/5bFPz+TPlQdsRbE+1Oad+MBhIiyruEiaB/t92u4PQdPYZAI8adA82vCnoYQU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790329222; c=relaxed/simple;
-	bh=way/k1DfToRH5wnKsA1X/p9sWr09PaQ/1o8euvyoZ6c=;
+	s=arc-20240116; t=1790334038; c=relaxed/simple;
+	bh=QpU5oGH9tjQGBb4iVGqAcn0OWNoJPvlo5SGptgRsWqY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LB9CMoh3J3q3ZseQMSqT3I9c32NO2ImGjQN6tfNb5v8hKCCJhBTC5lv7kFF9bb53daLiKslajdG/HNtHzSytECQnnvgvM7oxvt4/6jssRZSGv0a8zq72QqJ/oBTfDke+ar+9eiEOxQfa4m8haP7NJZ4ONT2vFblq+M4vWU8UdJA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=oaD0O+9s; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=oAnHYBwNQ/8aFMu1retc+qgwerFJP8F3FNUvXncFRP+mAYcG744LHsySLxviHPWWepQwoGniLX6n8akaATMltdn+imRgYYnYKiXz6TKZEdDxA3I/y/0Ua8bVFA3/pINrq+W2Zf1ug6gBoxExB7EF5ueBrRKFobuS7wWLFv2EGuM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iaqtgpTC; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="oaD0O+9s"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 52FF91688;
-	Fri, 25 Sep 2026 02:40:16 -0700 (PDT)
-Received: from [10.57.50.51] (unknown [10.57.50.51])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C476E3F86C;
-	Fri, 25 Sep 2026 02:40:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790329219; bh=way/k1DfToRH5wnKsA1X/p9sWr09PaQ/1o8euvyoZ6c=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oaD0O+9sCcRPh9yBiSXVPhRMluEXfEtIDLDXiRrWza+n7vLPwj72dCAAcC5scpm2X
-	 hXT4r3xL2DEW2clAuLDwoEf1xYTEy+uRQPM19qc9cDPCITDyjGC35Jwwye9kc53XQZ
-	 cf/Fk5UmPQy0nnFCUEHESb9uY977hnZj5/1bX54o=
-Message-ID: <213bc2ba-2ee4-4a89-9054-3bd953546789@arm.com>
-Date: Fri, 25 Sep 2026 10:40:15 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iaqtgpTC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A71CA1F000FF;
+	Fri, 25 Sep 2026 11:00:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790334036;
+	bh=XSBvmNS7ZrGQmp0x6AI9LjYH8484eEgbwZLrKBALkwo=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=iaqtgpTC57Sh0JN58cp22Qidd2SWU+IqRCF21YNdtRjwz2nLkEkCdPCKkKbNjyvh4
+	 evtY/NxHNsbko26zoZztfgAgv1VG+ZdAAv4Oovra4smkT6QzB17j7i82mwCF8HOGDq
+	 no99NpY1ZWoYSLMbMdfzfCpeuty3CMkuQJQ/fFkSx/WhkjzHMa1QRfHD8PWKbYeB2k
+	 BJK6hrdq4lZ0+67kSsPLA/RD6EwBP0SCLPa9qBBPC2We2VqhREwvk3A3JO5MmO1Gdt
+	 dthhuVLNyPU7G2L0/DunkYXtDWHba6N/z1IFHZRKiPuGSfAsiC30UXmHrofaNU1zKj
+	 m6ZB//6T/YdQg==
+Message-ID: <d57e00ba-f34c-4d30-adcd-aed02f9a0d30@kernel.org>
+Date: Fri, 25 Sep 2026 13:00:30 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,364 +35,95 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/3] ACPI: CPPC: Refactor boost ratio handling
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>,
- =?UTF-8?Q?Rafael_J_=2E_Wysocki_=E2=8F=8E?= <rafael@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, K Prateek Nayak <kprateek.nayak@amd.com>,
- x86@kernel.org, Mario Limonciello <mario.limonciello@amd.com>
-References: <20260924160052.2858456-1-superm1@kernel.org>
- <20260924160052.2858456-2-superm1@kernel.org>
+Subject: Re: [PATCH 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
+ pages
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Dmitry Vyukov <dvyukov@google.com>,
+ Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ kasan-dev@googlegroups.com, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-pm@vger.kernel.org
+References: <20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org>
+ <20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org>
+ <fec1931b-1173-4e14-b74a-7b3987a9b7bc@kernel.org>
+ <arP0-maAEi5yeNnl@kernel.org>
+ <d568a29b-5745-4214-96d3-1b635cd46c15@kernel.org>
+ <arVJm8CiLG6vpy9-@kernel.org>
+ <c01aa1e3-f2cd-4b28-8e6a-8e8a1c36c641@kernel.org>
+ <arY_058nsjb_Ie1l@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260924160052.2858456-2-superm1@kernel.org>
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <arY_058nsjb_Ie1l@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/24/26 17:00, Mario Limonciello (AMD) wrote:
-> From: Mario Limonciello <mario.limonciello@amd.com>
+On 9/25/26 11:33, Mike Rapoport wrote:
+> On Thu, Sep 24, 2026 at 08:49:13PM +0200, David Hildenbrand (Arm) wrote:
+>> On 9/24/26 18:02, Mike Rapoport wrote:
+>>>
+>>> They are not necessarily in direct map :)
+>>> loongarch does not have direct map, but still supports kfence
+>>
+>> Ugh :D
+>>
+>> But where are the pages mapped/unmapped then?
 > 
-> Rename amd_get_boost_ratio_numerator() to amd_get_effective_highest_perf()
-> to better reflect that it returns the effective highest performance value
-> for a CPU, accounting for preferred cores and heterogeneous topologies.
-> 
-> Add a new helper amd_get_boost_ratio() for doing both for boost
-> ratio calculations and update callers to use it.
-> 
-> This refactoring is needed because on some AMD systems (Zen6+),
-> the boost ratio should be calculated from frequency values rather than
-> performance values.
+> loongarch remaps them into vmalloc address space and sets page->virtual for
+> page_address() to work.
 
-I think I see why you chose to implement it this way (the x86 APERF / MPERF)
-issue, but I'd still prefer it to be spelled out here why this is necessary.
+Okay, so it's really not about the direct map in the traditional sense.
 
+kfence_map_page_if_protected()
+kfence_unmap_page_if_protected()
 
-> 
-> The frequency values will eventually come from the BIOS, but for now
-> use some hardcoded values for Zen6 platforms.
-> 
-> Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
-> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-> ---
->  arch/x86/kernel/acpi/cppc.c    | 166 ++++++++++++++++++++++-----------
->  drivers/cpufreq/acpi-cpufreq.c |   5 +-
->  drivers/cpufreq/amd-pstate.c   |  14 ++-
->  include/acpi/cppc_acpi.h       |  14 ++-
->  4 files changed, 134 insertions(+), 65 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/cppc.c b/arch/x86/kernel/acpi/cppc.c
-> index d2185b7a20306..1c6bf56c3215b 100644
-> --- a/arch/x86/kernel/acpi/cppc.c
-> +++ b/arch/x86/kernel/acpi/cppc.c
-> @@ -11,6 +11,7 @@
->  #include <asm/msr.h>
->  #include <asm/processor.h>
->  #include <asm/topology.h>
-> +#include <asm/cpu_device_id.h>
->  
->  #define CPPC_HIGHEST_PERF_PERFORMANCE	196
->  #define CPPC_HIGHEST_PERF_PREFCORE	166
-> @@ -95,31 +96,18 @@ int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
->  
->  static void amd_set_max_freq_ratio(void)
->  {
-> -	struct cppc_perf_caps perf_caps;
-> -	u64 numerator, nominal_perf;
-> +	u64 numerator, denominator;
->  	u64 perf_ratio;
->  	int rc;
->  
-> -	rc = cppc_get_perf_caps(0, &perf_caps);
-> -	if (rc) {
-> -		pr_debug("Could not retrieve perf counters (%d)\n", rc);
-> -		return;
-> -	}
-> -
-> -	rc = amd_get_boost_ratio_numerator(0, &numerator);
-> +	rc = amd_get_boost_ratio(0, &numerator, &denominator);
->  	if (rc) {
-> -		pr_debug("Could not retrieve highest performance (%d)\n", rc);
-> -		return;
-> -	}
-> -	nominal_perf = perf_caps.nominal_perf;
-> -
-> -	if (!nominal_perf) {
-> -		pr_debug("Could not retrieve nominal performance\n");
-> +		pr_debug("Could not retrieve boost ratio (%d)\n", rc);
->  		return;
->  	}
->  
->  	/* midpoint between max_boost and max_P */
-> -	perf_ratio = (div_u64(numerator * SCHED_CAPACITY_SCALE, nominal_perf) + SCHED_CAPACITY_SCALE) >> 1;
-> +	perf_ratio = (div_u64(numerator * SCHED_CAPACITY_SCALE, denominator) + SCHED_CAPACITY_SCALE) >> 1;
->  
->  	freq_invariance_set_perf_ratio(perf_ratio, false);
->  }
-> @@ -239,35 +227,30 @@ int amd_detect_prefcore(bool *detected)
->  EXPORT_SYMBOL_GPL(amd_detect_prefcore);
->  
->  /**
-> - * amd_get_boost_ratio_numerator: Get the numerator to use for boost ratio calculation
-> - * @cpu: CPU to get numerator for.
-> - * @numerator: Output variable for numerator.
-> - *
-> - * Determine the numerator to use for calculating the boost ratio on
-> - * a CPU. On systems that support preferred cores, this will be a hardcoded
-> - * value. On other systems this will the highest performance register value.
-> + * amd_get_effective_highest_perf: Get the effective highest performance value
-> + * @cpu: CPU to get highest performance for.
->   *
-> - * If booting the system with amd-pstate enabled but preferred cores disabled then
-> - * the correct boost numerator will be returned to match hardware capabilities
-> - * even if the preferred cores scheduling hints are not enabled.
-> + * Get the effective highest performance value for a CPU, accounting for
-> + * preferred cores and heterogeneous topologies. On systems with preferred
-> + * cores, this may be a hardcoded value. On heterogeneous systems, this
-> + * may be a per-CPU value. On other systems, this is the shared highest
-> + * performance value.
->   *
-> - * Return: 0 for success, negative error code otherwise.
-> + * Return: Effective highest performance value, or negative error code.
->   */
-> -int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator)
-> +int amd_get_effective_highest_perf(unsigned int cpu)
->  {
->  	bool prefcore;
->  	int ret;
->  	u32 tmp;
->  
->  	ret = amd_detect_prefcore(&prefcore);
-> -	if (ret)
-> +	if (ret < 0)
->  		return ret;
->  
->  	/* without preferred cores, return the highest perf register value */
-> -	if (!prefcore) {
-> -		*numerator = boost_numerator;
-> -		return 0;
-> -	}
-> +	if (!prefcore)
-> +		return boost_numerator;
->  
->  	/*
->  	 * For AMD CPUs with Family ID 19H and Model ID range 0x70 to 0x7f,
-> @@ -277,8 +260,7 @@ int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator)
->  	if (cpu_feature_enabled(X86_FEATURE_ZEN4)) {
->  		switch (boot_cpu_data.x86_model) {
->  		case 0x70 ... 0x7f:
-> -			*numerator = CPPC_HIGHEST_PERF_PERFORMANCE;
-> -			return 0;
-> +			return CPPC_HIGHEST_PERF_PERFORMANCE;
->  		default:
->  			break;
->  		}
-> @@ -286,28 +268,100 @@ int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator)
->  
->  	/* detect if running on heterogeneous design */
->  	if (cpu_feature_enabled(X86_FEATURE_AMD_HTR_CORES)) {
-> -		switch (cpu_data(cpu).topo.cpu_type) {
-> -		case TOPO_CPU_TYPE_UNKNOWN:
-> -		case TOPO_CPU_TYPE_ANY:
-> -			pr_warn("Undefined core type found for cpu %d\n", cpu);
-> -			break;
-> -		case TOPO_CPU_TYPE_PERFORMANCE:
-> -			/* use the max scale for performance cores */
-> -			*numerator = CPPC_HIGHEST_PERF_PERFORMANCE;
-> -			return 0;
-> -		case TOPO_CPU_TYPE_LOW_POWER:
-> -		case TOPO_CPU_TYPE_EFFICIENCY:
-> -			/* use the highest perf value for efficiency and low-power cores */
-> -			ret = amd_get_highest_perf(cpu, &tmp);
-> -			if (ret)
-> -				return ret;
-> -			*numerator = tmp;
-> -			return 0;
-> -		}
-> +		if (cpu_feature_enabled(X86_FEATURE_ZEN5) &&
-> +		    cpu_data(cpu).topo.cpu_type == TOPO_CPU_TYPE_PERFORMANCE)
-> +			return CPPC_HIGHEST_PERF_PERFORMANCE;
-> +
-> +		/* Zen 5 efficiency, and Zen 6+ */
-> +		ret = amd_get_highest_perf(cpu, &tmp);
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		return tmp;
-> +	}
-> +
-> +	return CPPC_HIGHEST_PERF_PREFCORE;
-> +}
-> +EXPORT_SYMBOL_GPL(amd_get_effective_highest_perf);
-> +
-> +struct amd_max_freq {
-> +	u32 performance;
-> +	u32 efficiency;
-> +	u32 low_power;
-> +};
-> +
-> +static const struct amd_max_freq max_freq_zen6_client = {
-> +	.performance = 5025,
-> +	.efficiency = 3524,
-> +	.low_power = 2399,
-> +};
-> +
-> +int amd_get_max_frequency(unsigned int cpu)
-> +{
-> +	enum x86_topology_cpu_type type = cpu_data(cpu).topo.cpu_type;
-> +	const struct amd_max_freq *max_freq = NULL;
-> +
-> +	if (cpu_feature_enabled(X86_FEATURE_ZEN6) &&
-> +	    cpu_feature_enabled(X86_FEATURE_AMD_HTR_CORES))
-> +		max_freq = &max_freq_zen6_client;
-> +
-> +	if (!max_freq)
-> +		return 0;
-> +
-> +	switch (type) {
-> +	case TOPO_CPU_TYPE_PERFORMANCE:
-> +		return max_freq->performance;
-> +	case TOPO_CPU_TYPE_EFFICIENCY:
-> +		return max_freq->efficiency;
-> +	case TOPO_CPU_TYPE_LOW_POWER:
-> +		return max_freq->low_power;
-> +	default:
-> +		break;
->  	}
->  
-> -	*numerator = CPPC_HIGHEST_PERF_PREFCORE;
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(amd_get_max_frequency);
-> +
-> +/**
-> + * amd_get_boost_ratio: Get numerator and denominator for boost ratio
-> + * @cpu: CPU to get the boost ratio for.
-> + * @numerator: Output variable for numerator.
-> + * @denominator: Output variable for denominator.
-> + *
-> + * Get the numerator and denominator for calculating the boost ratio.
-> + *
-> + * Return: 0 for success, negative error code otherwise.
-> + */
-> +int amd_get_boost_ratio(unsigned int cpu, u64 *numerator, u64 *denominator)
-> +{
-> +	struct cppc_perf_caps perf_caps;
-> +	int max_frequency;
-> +	int ret;
-> +
-> +	ret = cppc_get_perf_caps(cpu, &perf_caps);
-> +	if (ret)
-> +		return ret;
-> +
-> +	max_frequency = amd_get_max_frequency(cpu);
-> +	/* Use frequency values if available */
-> +	if (max_frequency && perf_caps.nominal_freq) {
-> +		*numerator = max_frequency;
-> +		*denominator = perf_caps.nominal_freq;
-> +		return 0;
-> +	}
-> +
-> +	/* Fall back to performance values */
-> +	ret = amd_get_effective_highest_perf(cpu);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	*numerator = ret;
-> +
-> +	*denominator = perf_caps.nominal_perf;
-> +	if (!*denominator)
-> +		return -EINVAL;
->  
->  	return 0;
->  }
-> -EXPORT_SYMBOL_GPL(amd_get_boost_ratio_numerator);
-> +EXPORT_SYMBOL_GPL(amd_get_boost_ratio);
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 10ea6035f4ad6..523ee1a06ef8a 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -640,12 +640,13 @@ static u64 get_max_boost_ratio(unsigned int cpu, u64 *nominal_freq)
->  	}
->  
->  	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
-> -		ret = amd_get_boost_ratio_numerator(cpu, &highest_perf);
-> -		if (ret) {
-> +		ret = amd_get_effective_highest_perf(cpu);
-> +		if (ret < 0) {
->  			pr_debug("CPU%d: Unable to get boost ratio numerator (%d)\n",
->  				 cpu, ret);
->  			return 0;
->  		}
-> +		highest_perf = ret;
->  	} else {
->  		highest_perf = perf_caps.highest_perf;
->  	}
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index fbccbe86c94d0..496e0342c1c90 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -555,11 +555,13 @@ static int msr_init_perf(struct amd_cpudata *cpudata)
->  	if (ret)
->  		return ret;
->  
-> -	ret = amd_get_boost_ratio_numerator(cpudata->cpu, &numerator);
-> -	if (ret)
-> +	ret = amd_get_effective_highest_perf(cpudata->cpu);
-> +	if (ret < 0)
->  		return ret;
->  
-> -	ret = rdmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, &cppc_req);
-> +	numerator = ret;
-> +
-> +	ret = rdmsrq_safe_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, &cppc_req);
->  	if (ret)
->  		return ret;
->  
-> @@ -590,10 +592,12 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
->  	if (ret)
->  		return ret;
->  
-> -	ret = amd_get_boost_ratio_numerator(cpudata->cpu, &numerator);
-> -	if (ret)
-> +	ret = amd_get_effective_highest_perf(cpudata->cpu);
-> +	if (ret < 0)
->  		return ret;
->  
-> +	numerator = ret;
-> +
->  	perf.highest_perf = numerator;
->  	perf.max_limit_perf = numerator;
->  	perf.min_limit_perf = cppc_perf.lowest_perf;
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index 3f0005abac648..5bcdb0e553b96 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -202,7 +202,9 @@ extern int cppc_set_auto_sel(int cpu, bool enable);
->  extern int cppc_get_perf_limited(int cpu, u64 *perf_limited);
->  extern int cppc_set_perf_limited(int cpu, u64 bits_to_clear);
->  extern int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf);
-> -extern int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator);
-> +extern int amd_get_effective_highest_perf(unsigned int cpu);
-> +extern int amd_get_max_frequency(unsigned int cpu);
-> +extern int amd_get_boost_ratio(unsigned int cpu, u64 *numerator, u64 *denominator);
->  extern int amd_detect_prefcore(bool *detected);
->  #else /* !CONFIG_ACPI_CPPC_LIB */
->  static inline int cppc_get_desired_perf(int cpunum, u64 *desired_perf)
-> @@ -321,7 +323,15 @@ static inline int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf)
->  {
->  	return -ENODEV;
->  }
-> -static inline int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator)
-> +static inline int amd_get_effective_highest_perf(unsigned int cpu)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +static inline int amd_get_max_frequency(unsigned int cpu)
-> +{
-> +	return 0;
-> +}
-> +static inline int amd_get_boost_ratio(unsigned int cpu, u64 *numerator, u64 *denominator)
->  {
->  	return -EOPNOTSUPP;
->  }
+Maybe something like that? Anyhow, pick one and let's move forward :)
 
+-- 
+Cheers,
+
+David
