@@ -1,108 +1,94 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.auroraos.dev (unknown [95.181.193.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3918A4D37BD
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:31:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08C0B4E2F15
+	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:38:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.181.193.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790364694; cv=none; b=sh10hLYESPm+PGGUtsB8F+x3Kj4je4Bau0oomqjwCn1Y26O1RAjZ7LPrrmk1BN51DmFRwuLktLCKflZLV4kUvWeTCLcN4PmSo8vXgLWTKKTLah8DXwG09Kpe9R+7QSNZrsGznu4rzjOs+QOllUfaMDvEHj9eRoWmr7s+eHwZbcc=
+	t=1790365135; cv=none; b=ak+Mt6SlC9LdruI4CWA8zvVTQfEebLf3+gy4XLHJ43Huea7ooIDYDOE/rMfZsXujumDwT6QPOGcNBQ9eNP81AguIN9T6PdMYDLyqhh7OKmn5AXlj3j1JzKuJXiwIW2YmD4Y09S5jq5uxJgfE5/mQ5nKMgS5jYeay3EmHsIWhPPw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790364694; c=relaxed/simple;
-	bh=bQpiDAkN8PFpxGCZhmyWfwZ5uGOq8rQmBqjhIP8KmzY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RsYAivCNE7RrADX0V0WjpAXtFH2yIy18Q1HZYYmCLGlsuGqaETCIZlBhXhO7H7ka23DShILLPRknT0ULMKL2bPQb04MBNJxPCm5EFDsd6onJ0gzRTSCqg/yvsMKdJfhvCDdiq0VaTUDPzlBjQMpif+yXMDT/6OlVBsrocWdGNtc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SpEtQ5D+; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SpEtQ5D+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E668F1F0089B
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 19:31:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790364692;
-	bh=wdWQ30emSDP4qcVrkdnvjNPbDT0awLP6/Wq6pXd/aiA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=SpEtQ5D+cpSAeGghBbByC9WkZOOimQ4lLNYvc2IES/XraDZ0i5dEFdgeEIi4E5eRG
-	 z0+ZVqaMv68sesDwFQROZyeUAiDzDwutjMbYqeJut6mgM5zu5zh64PuKkiGUFjfoLi
-	 xRYkHU8tXimQGPknGgl/5137/NG91OrjVJSqQYDf3jcVmzUnWy6A+KyE4GsJINGM0D
-	 wgR9+4PQwnuk8l2jEI+ASBekc+oYqFEEyRC1AbQiN7oMPgbW79YG9ohxo0smchi234
-	 HOpB6K+0F368zkYfn+9fIRv2wUyh3W+6Z1CDfOEPGfeKCIxKm++wFHr6Wacjcz8GVd
-	 Jg3Zbx6a9N1vw==
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a59fa3112cso10414561fa.3
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 12:31:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwY8H1t56yGmSPu+hiBq7OzAUwgDokBHWviw2avJFrCyazezlcvAJ7tMUBGwmF9TgkvRJ8kZIyWUw==@vger.kernel.org
-X-Gm-Message-State: AFuF++n/4ulHS3UeNe3JsIya17SmIloS0ctjcb5hJiNxQ6dQHKQCd8tb
-	fUTtuTRSVvIGQ1szQ2dEL/RLx2JqqI08V8Ckd+oZOwosrJvH+4uQ4cQ+wg3qM+zoUC+848mWMAy
-	pI4KCj2xO3GdGuZR6Uhzlmis6XBwsM1E=
-X-Received: by 2002:a2e:bc16:0:b0:3a4:9b64:9811 with SMTP id
- 38308e7fff4ca-3a63c0de06amr17290141fa.15.1790364691303; Fri, 25 Sep 2026
- 12:31:31 -0700 (PDT)
+	s=arc-20240116; t=1790365135; c=relaxed/simple;
+	bh=NtuTSdMxZQgjZD6OH7gqvHSJR034KGquI+zsl/blznU=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:CC:References:
+	 In-Reply-To:Content-Type; b=PhGer6fgNW/tCrMcOqsq6DzBjRElABc6m/jN4kv/3Iitz1aWeq2wqpGpuFC5IKxujmpNgFeTZmYhi2jku/WEIhSh6jvrT1sQyeeImX3VyKHQJ0jdeFi6hOKYWgMqMFXlUs/OMZKcp7stczwikKnokMpPNC5p4V2RBFktPrEYyDc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev; spf=pass smtp.mailfrom=auroraos.dev; arc=none smtp.client-ip=95.181.193.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=auroraos.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=auroraos.dev
+Received: from [192.168.2.104] (91.78.45.169) by exch16.corp.auroraos.dev
+ (10.189.209.38) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1847.3; Fri, 25 Sep
+ 2026 22:38:46 +0300
+Message-ID: <66a4cfe1-286c-4d63-9285-2445c48739ab@auroraos.dev>
+Date: Fri, 25 Sep 2026 22:38:46 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260916211317.433349-1-superm1@kernel.org>
-In-Reply-To: <20260916211317.433349-1-superm1@kernel.org>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 25 Sep 2026 21:29:53 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hhnrwBuZK=enaAc3XYAchveAYjsqykfuYfT2qotRMtng@mail.gmail.com>
-X-Gm-Features: AclHuK-cyn3LGeOhIcKp7elU2kLQVMA3nE8eF9NLLpbDIO69bKhlbmZz-TbeD8Y
-Message-ID: <CAJZ5v0hhnrwBuZK=enaAc3XYAchveAYjsqykfuYfT2qotRMtng@mail.gmail.com>
-Subject: Re: [PATCH] PM: Add resume event mapping for PMSG_POWEROFF
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: mario.limonciello@amd.com, rafael@kernel.org, lenb@kernel.org, 
-	pavel@kernel.org, gregkh@linuxfoundation.org, dakr@kernel.org, 
-	Eric Naim <dnaim@cachyos.org>, linux-pm@vger.kernel.org, driver-core@lists.linux.dev
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: rockchip: fix domain check in
+ rockchip_pm_add_one_domain()
+From: Sergey Shtylyov <s.shtylyov@auroraos.dev>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+CC: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+	<linux-pm@vger.kernel.org>, <linux-rockchip@lists.infradead.org>, Caesar Wang
+	<wxt@rock-chips.com>, Kevin Hilman <khilman@linaro.org>,
+	<linux-arm-kernel@lists.infradead.org>
+References: <20260920175928.42566-1-s.shtylyov@auroraos.dev>
+ <CAPx+jO-Ph038WJQ4gMH93XzoMC09+meht=yT9JQBAnTD6HzGEg@mail.gmail.com>
+ <eae7ec74-5b90-4258-9576-159c700bd8f4@auroraos.dev>
+Content-Language: en-US
+In-Reply-To: <eae7ec74-5b90-4258-9576-159c700bd8f4@auroraos.dev>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: exch16.corp.auroraos.dev (10.189.209.38) To
+ exch16.corp.auroraos.dev (10.189.209.38)
 
-On Wed, Sep 16, 2026 at 11:13=E2=80=AFPM Mario Limonciello (AMD)
-<superm1@kernel.org> wrote:
->
-> PM_EVENT_POWEROFF (0x0800) and PMSG_POWEROFF were already defined in
-> include/linux/pm.h. Add the resume_event() which is used when a shutdown
-> sequence needs to be aborted and the system should return to normal
-> operation.
->
-> This completes the PMSG_POWEROFF infrastructure needed to support
-> differentiating between hibernation and shutdown sequences when
-> re-using callbacks for common code.
->
-> Hibernation is started by writing a hibernation method (such as 'platform=
-'
-> 'shutdown', or 'reboot') to use into /sys/power/disk and writing 'disk' t=
-o
-> /sys/power/state.
->
-> Later shutdown will be initiated with the reboot() syscall with arguments
-> on whether to halt the system or power it off.
->
-> Tested-by: Eric Naim <dnaim@cachyos.org>
-> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
-> ---
->  drivers/base/power/main.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index e130da4281410..7265553ba24ca 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1472,6 +1472,8 @@ static pm_message_t resume_event(pm_message_t sleep=
-_state)
->                 return PMSG_RECOVER;
->         case PM_EVENT_HIBERNATE:
->                 return PMSG_RESTORE;
-> +       case PM_EVENT_POWEROFF:
-> +               return PMSG_ON;
+On 9/23/26 11:44 PM, Sergey Shtylyov wrote:
+[...]
 
-Why should it be PMSG_ON?
+>>> In rockchip_pm_add_one_domain(), there's the check (most probably for
+>>> the case where the "reg" prop has an unexpected value?) which doesn't
 
-pm_op() doesn't actually take PM_EVENT_ON into account, so I'm not
-sure how the change helps.
+   By "unexpected value" I meant a domain that isn't controlled by this
+driver and so have no explicit initializer in *_pm_domains[]. Looks like
+for such domain #s rockchip_pm_add_one_domain() should fail with -EINVAL.
 
->         }
->         return PMSG_ON;
->  }
-> --
-> 2.53.0
->
+>>> make much sense as the variable pd_info will be NULL iff pmu->info->
+>>> domain_info is NULL and the variable id is 0.  What does make sense
+>>> there is checking pd_info->pwr_mask and pd_info->req_mask which (as
+>>> seems to follow from the code) can't both be 0 for a valid domain...
+
+   For the domains that have no matching initializer these fields should
+be both 0. I had chosen checking these 2 fields instead of pd_info->name
+as I intended this patch as a fix, easily backportable to the LTS kernels.
+
+>>> Found by Linux Verification Center (linuxtesting.org) with the Svace
+>>> static analysis tool.
+>>>
+>>> Fixes: 7c696693a4f5 ("soc: rockchip: power-domain: Add power domain driver")
+>>> Signed-off-by: Sergey Shtylyov <s.shtylyov@auroraos.dev>
+>>
+>> Applied for next, but without the fixes tag, thanks!
+>>
+>> Note, that I am dropping the fixes tag because if there was a real
+>> problem, we would require yet another fix on top to get the
+
+   If a defective DT is considered an issue then there's a problem. :-)
+
+>> corresponding domain declaration to be correct. Yet, the patch is
+>> useful as is!
+
+   Like I've already told, my aim was not detecting the bad declarations,
+just bad DTs. I probably just wasn't elaborate/assertive enough...
+>    I was thinking of doing a more elaborate description but if you
+> considered it good enough, OK... :-)
+
+   So what are you going to do with this, leave things as they are: the
+patch merged to the next branch (in its current form) and not merged to
+fixes? Perhaps a revert or an incremental patch?
+
+>> Kind regards
+>> Uffe
+MBR, Sergey
