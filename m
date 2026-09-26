@@ -1,153 +1,194 @@
-Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012013.outbound.protection.outlook.com [40.107.209.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46FCF284B37
-	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 22:56:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.13
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790463411; cv=fail; b=FJVNAMHYDcskvVhyjhopEqIxKmXAT22dUbEdAxCMEjYgo7FR6GG4NEbqT4HCI/8g6dWRa3rOvdMTK+NpV5+HPHNZfpdLdvaMJK0hi6lBIiSTp+oT/2Tpi/wx+2NCM2YfZK4baDVzeuJmo7L1+VYW79PTppnVqS5uYHRNw2IA5ZE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790463411; c=relaxed/simple;
-	bh=xUPWQ800eLQQcyH5sZclyIiO/GUIeD0pODtikaZ8tv8=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=bu1HYQ1Pac4/oidOgqthVa2CCA5ghvBK2WiN0OBOR0nO5Qqoyg0q40XILnwIvpvyausCSgSsAX+k3pC3u8XUyLqP8Ll1rqN9t41Pk9wqGq/NCIzeToD4VMiVIRn3f+TWM32RleK2sMM1aOJ6mCiLbgZgZIjCfwzf9ua+bc+SRNg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=aqK64J3g; arc=fail smtp.client-ip=40.107.209.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEC463033EB
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 23:32:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790465541; cv=none; b=PN2NNrm0IkACeGN7YPk5L8N7FyyUfpuwSDc1a3NR7vhvf6pf5KLXPmKVs9YDuu4lRzGXpd8AgDUdxz0v48fbgn4PAEv7xDav5lhE6CnJWMZlJ/3vPyry2QpvTPhumHHknydQ9ttwFyGoV1kxMFelkO7vQRtwnVz2shYc18rBuMA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790465541; c=relaxed/simple;
+	bh=/4VC4x9PpIfi2jsGgmcRErzz+roJvLD2iHnoUCXfJK4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WnxE6KhToakd7MDq1nRlTQ3lb4UIvTBhZuTOr3lCFUGjueN6rc+GZOC/7x2CMwcF2QEdmQOQuRK1Q3nPluRrYoKgjXl7Z21OzQFEupoRQ54ryI5da78ZRTo3Gtvmh/e2sES0hf/+AOmPZbpuGewlwbNINTTDWjvvowB+5/AOmb8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SOntKYBx; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="aqK64J3g"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=W+py5s88hKSIPqQa5uxWr2FLuywAbY76GNKa0OGDRy3kmKt2PX3WJf/iUHtY0MaCnhEsQbhz/9bUlGqJQuGp0rr0HXeXw46Myotxrn7aNCapescXslaZWhX7QE1IuYCCPKLWTV/WvQveklBq+oJeo+1CH7aYR++eqOYdcGXW1qVbQ+Fe0uV8J6fFHNewKI2AoQxT6zZIK/zuxY3kOWJUOStlCAojjMwlDg0ABiBJfTX75z08H9uTEssKCgY6+iDBcnmkXAsxELZ08oJ/9ZoAC8ML/nt2UEg63R1aTMNntiUy80LESFp3uFLOFvOgA5C+gq6OZ219DNMmrfEkULSIMQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9BfJzFdOs5VKC9YLj1q4duN/TcmGQENRk69UGDSIRpQ=;
- b=puMX0nNRRp7peOEB0ObWH18jNhf6plmVvLEuNvMbjuS0QMYBc70yGNHppx81VbjX3gJ+BE1HqZniSkd34yr/tvQ4MARZzvKwf/5JI+cdDV+68lnzEltB0fx2uS3sY4VPCtwV/Qz8VOA6EIdmUnAqfnw4uDXTbeN0jQKPNgRDKvr7mrvP3SEQ4SZD3NbNNMYnfplLfKEbmvb15fu448uRR9DtTR3bi8TTw+EnclfXnqxSIX1LgWL9t9uXKtnefGr0yjQ4D3XOGs710EQiqABYGwivtk9xOl3DreEj6AMdO/glKVTzFxaMPqngQeu7ca6cosr30YMhQF/a5747xw5Hfg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9BfJzFdOs5VKC9YLj1q4duN/TcmGQENRk69UGDSIRpQ=;
- b=aqK64J3gzSj5gmeAPg8Jwn4mNP4kmLvY7uZYq60ZViGqmnzP+w6sQx7kKNRxF0dhcalCd3klqkDlzTFpY8DVmie8SDQk/mR+oSJJ69ltg2FMK2shUsgyebnrHfktJNUrrcf4wCwOGr2ByY5+pWQFGaA0JowNw0YtlcAYOzqiQ1A=
-Received: from DSZP220CA0006.NAMP220.PROD.OUTLOOK.COM (2603:10b6:5:280::14) by
- CYYPR12MB8940.namprd12.prod.outlook.com (2603:10b6:930:bd::17) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.451.19; Sat, 26 Sep 2026 22:56:44 +0000
-Received: from DM2PEPF00003FC5.namprd04.prod.outlook.com
- (2603:10b6:5:280:cafe::4f) by DSZP220CA0006.outlook.office365.com
- (2603:10b6:5:280::14) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.451.23 via Frontend Transport; Sat,
- 26 Sep 2026 22:56:44 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- DM2PEPF00003FC5.mail.protection.outlook.com (10.167.23.23) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.451.8 via Frontend Transport; Sat, 26 Sep 2026 22:56:43 +0000
-Received: from ausmlimonci-lx1.amd.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Sat, 26 Sep
- 2026 17:56:42 -0500
-From: Mario Limonciello <mario.limonciello@amd.com>
-To: <rafael@kernel.org>, <pavel@kernel.org>, <lenb@kernel.org>,
-	<gregkh@linuxfoundation.org>, <dakr@kernel.org>
-CC: "Mario Limonciello (AMD)" <superm1@kernel.org>, Eric Naim
-	<dnaim@cachyos.org>, <linux-pm@vger.kernel.org>,
-	<driver-core@lists.linux.dev>
-Subject: [PATCH v2] PM: Add resume event mapping for PMSG_POWEROFF
-Date: Sat, 26 Sep 2026 17:55:51 -0500
-Message-ID: <20260926225555.2916525-1-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SOntKYBx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A2E51F0089B
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 23:32:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790465538;
+	bh=nw4tcFFem5fMw8F25atJ8BPsyQyyVvwGckLrZIYusgw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=SOntKYBx3mVDqzQQqKmTLcy5SmH61dXRyWMz0CKfqKDGhmmX6DzBF3I+b5HvtGETW
+	 PxGXDUWq6iL8F9Jd+QR4jj7Ei5t9F9818kuauVMuFHw/taZntebsNY+G4fYhG8IKr8
+	 gzX5bwD26p1BOmhW86v+HIWAPt+lIsFjWRKPNalZEb6eul6QjDRNUuSVIS9vJZtM0G
+	 gcroxCinZJzF9ShuIDqq1EosXzHliS/g5ECjIh48ei+DBMQXx3UCPyqKPngM+74oTS
+	 AqJdxm8iJp5FWBKA25WxTTBCgvaIrqddbE99s5/kFPFaCn8NBID1BPVsoFwCIcO7+f
+	 Zcx92O+aH+Fqw==
+Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c29703cb470so306779566b.0
+        for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 16:32:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxY6A4gVPh0vdeDDcjD1+OW3bDiEijqU2JyDD/fLQypplL4EVb29Wp5fv8QTZpmfFIk5o/qhmRkRA==@vger.kernel.org
+X-Gm-Message-State: AFuF++mJqYhuRkXFZYreYsZp5iCIi4BZa4bHahO6RSYewah+loE6YWOo
+	kOSYjSBMSpETUlio6h+2HG3vf6/ahtofqh+ti1QKq2eArCD/LHAzLYwNLAop2FXpng0AU9Qn41e
+	bE8ndUqvHBqfWZk/+3Z8ucvU+1g6iSG9+unrBidCRXA==
+X-Received: by 2002:a17:907:962a:b0:c2d:ca32:2176 with SMTP id
+ a640c23a62f3a-c2dca3235abmr54019966b.8.1790465537433; Sat, 26 Sep 2026
+ 16:32:17 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
- (10.181.42.216)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM2PEPF00003FC5:EE_|CYYPR12MB8940:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9ff9f9a4-2044-47f0-ac0a-08df1c216f8b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|23010399003|36860700016|82310400026|1800799024|11063799006|56012099006|10067099003|18002099003|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	9BxH/jdJrcmv0DeaoEBgb2NPS0Ifz/USVf0icHoyErLqZTFDnB1SFeNrvg2j07g3bj9kHqEr8oe8mbWN6KJntn/jjMyQ7TrP6ZhprXpg5CQrqQ/KcP3KjheAkzETUdWB7nDyuUV4B2IQV5EaYZxaPGXvnPezcwcv36T5R0tLYa4oDZFwr1LkGPUi3Bb9D9o4j5jxMYpdN9lOpMPdLkaCaL+tdlMhiZcBG8DXEIHzhJi5hm7jqwAmjvMJJlocNJELQZbEQPAVcZQGW/paO8+Brarslwnwax3ixs7/BUwSSBvHCLYgxJ9pL59/jFaCgcG3tS/Uhohrky9X90G6wzXxiyRLEx6g9Wi60aCJ5yjAvSBLa7nCf/5K1XL3FmK7jPn8jUTwrdMTCBxPwGRRDAORR+ydxtu4YOGrC5TNgaAXTJ7WqppZXBKGePwKwpHHaYD+uLxxZyaMPlN/nZOXCI390zIHphLbm0De5sxm0DHXa6Iaq6r/Ry2DRztdrSfa9WhhRiC2/BT8adH/DjrbFbHcRtnyPZKPcf1vztQ3927mdFCF+DCA89vglziD5o+X9ouZRKzDesoa6T8nMllYjxWq/c633yQHwRQBFcflmdk3Fb/8ZZiSpIu3+EDwin6WIFujjCEN9nbyABm+iO9Z7GytbqxszXHjDigo9vyWeSNyF3h8591l0+ZU+9pm95zGZdaUM+oBtDc0gZ8nDuHxH1J2rQ==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(23010399003)(36860700016)(82310400026)(1800799024)(11063799006)(56012099006)(10067099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	Ucx3tL2cmLxiaTF5bmXErqpFazBZd8BMrMEFZuLqgEIhlpd8GgO5zi7FVcOhDLg5C5xsN702xrnNXEaiTnhL6Ba1x6oPtvX5OFAwIUdt4LKAozyR0xjpExjI3/gW3J8PyLaKCGCNO2+w3ph18wbwhJjYyerDTFTw06YMjaKmzHmji+P2bobwpadA1XtMKS+1H5Fl1/UsqNrUjxIOpOyGzYva9B0bPn16WCp7QVca4b0nBrtW+xiQkc4vlO6HFyxnNkiREnNbClbc2oxSFdWKKfzFgZv/gKOFTxZPM3O35qHtGjZJOuekOq3JbV1cQuzsogOviYaFdTMwNaRAe3wUiKKChfchkzvfVH7nu6t+eVYUndms45Kaho+eMfjlCqeenWj1g5HBtHpD7Ck6pvKFbWvedU/tHR4m/vpx2JP5+j0l7GmI4zOieCHWbll7l7CD
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Sep 2026 22:56:43.9995
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9ff9f9a4-2044-47f0-ac0a-08df1c216f8b
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DM2PEPF00003FC5.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CYYPR12MB8940
+References: <20260926045517.3458413-1-matthias.goergens@gmail.com>
+In-Reply-To: <20260926045517.3458413-1-matthias.goergens@gmail.com>
+From: Chris Li <chrisl@kernel.org>
+Date: Sat, 26 Sep 2026 13:32:06 -1000
+X-Gmail-Original-Message-ID: <CACePvbWPLegjMtF4jYN4+_1ZeoEuBHwZuwNyMpYwPZaA0edO5A@mail.gmail.com>
+X-Gm-Features: AclHuK9AxoX5x-gecpb2ks2aU57CnhQ2g3FIIpOxpjBk-hgB0LOGfyaEJiKPKFM
+Message-ID: <CACePvbWPLegjMtF4jYN4+_1ZeoEuBHwZuwNyMpYwPZaA0edO5A@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 0/4] mm/swap: reserve swap areas for deliberate offload
+To: Matthias Goergens <matthias.goergens@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kairui Song <kasong@tencent.com>, 
+	Johannes Weiner <hannes@cmpxchg.org>, David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>, 
+	Shakeel Butt <shakeel.butt@linux.dev>, Kemeng Shi <shikemeng@huaweicloud.com>, 
+	Nhat Pham <nphamcs@gmail.com>, Yosry Ahmed <yosry@kernel.org>, 
+	Youngjun Park <youngjun.park@lge.com>, Baoquan He <baoquan.he@linux.dev>, 
+	Barry Song <baohua@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+	cgroups@vger.kernel.org, linux-api@vger.kernel.org, 
+	Alejandro Colomar <alx@kernel.org>, linux-man@vger.kernel.org, Karel Zak <kzak@redhat.com>, 
+	util-linux@vger.kernel.org, Jani Nikula <jani.nikula@linux.intel.com>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, intel-gfx@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, Shuah Khan <shuah@kernel.org>, 
+	linux-kselftest@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: "Mario Limonciello (AMD)" <superm1@kernel.org>
+On Fri, Sep 25, 2026 at 6:55=E2=80=AFPM Matthias Goergens
+<matthias.goergens@gmail.com> wrote:
+> The series fixes zram selftest device tracking and error reporting, adds
+> the swap policy with DRM eligibility checks, and tests routing, workingse=
+t
+> activation and retained-entry write refusal. It is based on mm-new at
+> 995829088503.
 
-PM_EVENT_POWEROFF (0x0800) and PMSG_POWEROFF were already defined in
-include/linux/pm.h, and pm_op(), pm_late_early_op() and pm_noirq_op()
-already dispatch PM_EVENT_POWEROFF to the same ops->poweroff*() callbacks
-as PM_EVENT_HIBERNATE.  Add the matching entry to resume_event() so that
-when a poweroff suspend sequence is aborted (for example a device's
-->poweroff_noirq() callback fails and the PM core rolls the
-already-suspended devices back), those devices are resumed with
-PMSG_RESTORE and their ->restore*() callbacks run.
+Hi Matthias,
 
-Map it to PMSG_RESTORE, mirroring the existing PM_EVENT_HIBERNATE
-handling.  This is correct because both events suspend via
-ops->poweroff*(), whose counterpart is ops->restore*().  Mapping to
-PMSG_ON would be a no-op: it is what the default return already yields,
-and pm_op()/pm_late_early_op()/pm_noirq_op() have no PM_EVENT_ON case,
-so they would return NULL and silently skip every resume callback on the
-abort path.
+I can't find mm-new 995829088503 anymore.
 
-This completes the PMSG_POWEROFF infrastructure needed to support
-differentiating between hibernation and shutdown sequences when
-re-using callbacks for common code.
+Your patch does not apply cleanly to the current tip of mm-new
+mm-unstable, or mm-stable branches.
+Do you have a git repo with your patch applied?
 
-Hibernation is started by writing a hibernation method (such as 'platform'
-'shutdown', or 'reboot') to use into /sys/power/disk and writing 'disk' to
-/sys/power/state.
+mm-new is whatever Andrew can find on the mailing list, regardless of
+whether it has been reviewed. That mm-new branch is very unstable,
+even more so than mm-unstable, which should at least have some review
+already. Maybe consider using mm-stable or mm-unstable as base next
+time.
 
-Shutdown is initiated with the reboot() syscall with arguments on whether
-to halt the system or power it off.
+Chris
 
-Tested-by: Eric Naim <dnaim@cachyos.org>
-Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
----
- drivers/base/power/main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e130da4281410..2ed687e3e6b11 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1471,6 +1471,7 @@ static pm_message_t resume_event(pm_message_t sleep_state)
- 	case PM_EVENT_QUIESCE:
- 		return PMSG_RECOVER;
- 	case PM_EVENT_HIBERNATE:
-+	case PM_EVENT_POWEROFF:
- 		return PMSG_RESTORE;
- 	}
- 	return PMSG_ON;
--- 
-2.43.0
-
+>
+> Feedback is particularly welcome on:
+>
+> - Activation-time eligibility versus backend placement or migration:
+>   is retained-entry refusal, with possible reclaim churn or OOM,
+>   acceptable without migration?
+> - Eligible-capacity accounting, including overcommit limits and OOM
+>   scoring; cache recovery, cluster invalidation and workingset activation=
+.
+> - Persistent activation and visibility: current swap listings do not
+>   expose the policy.
+>
+> Validation includes x86 builds, affected arm64 MTE objects and builds
+> without swap or memory cgroups. QEMU tests covered routing, retained-entr=
+y
+> recovery, data integrity and cleanup, with negative controls for write
+> refusal and teardown failure.
+>
+> I have also been using this policy on my own machine with experimental
+> bcachefs swap support, with no problems observed so far. Deliberate stres=
+s
+> testing is confined to VMs; I do not deliberately stress-test this machin=
+e.
+>
+> Changes since v1, incorporating Sashiko's public review [7]:
+>
+> - Improve selftest isolation, retained-swap measurement and memlock skips=
+.
+> - Track allocated zram devices, wait for udev probes and report cleanup
+>   errors without deleting data through a mount that could not be released=
+.
+> - Clarify activation, capacity reporting and conventional fallback limits=
+.
+>
+> [1] https://patchew.org/linux/20260825153238.2695446-1-nphamcs@gmail.com/
+> [2] https://patchew.org/linux/20260713025644.170839-1-youngjun.park@lge.c=
+om/
+> [3] https://openzfs.github.io/openzfs-docs/Project%20and%20Community/FAQ.=
+html#using-a-zvol-for-a-swap-device-on-linux
+> [4] https://engineering.fb.com/2022/06/20/data-infrastructure/transparent=
+-memory-offloading-more-memory-at-a-fraction-of-the-cost-and-power/
+> [5] https://www.kernel.org/doc/html/latest/admin-guide/mm/damon/reclaim.h=
+tml
+> [6] https://www.kernel.org/doc/html/latest/admin-guide/mm/zswap.html
+> [7] https://sashiko.dev/#/patchset/20260914104501.3960616-1-matthias.goer=
+gens@gmail.com
+> [8] https://github.com/util-linux/util-linux/pull/4633
+> [9] https://lore.kernel.org/all/20260914105606.3997649-1-matthias.goergen=
+s@gmail.com/
+>
+> v1: https://lore.kernel.org/all/20260914104501.3960616-1-matthias.goergen=
+s@gmail.com/
+>
+> Matthias Goergens (4):
+>   selftests: zram: track owned devices and report cleanup failures
+>   mm: restrict offload-only swap to proactive reclaim
+>   selftests: zram: cover offload-only swap policy
+>   selftests: zram: cover retained offload-only entries
+>
+>  Documentation/mm/swap.rst                     | 105 ++++
+>  drivers/gpu/drm/i915/gem/i915_gem_shrinker.c  |   2 +-
+>  .../gpu/drm/i915/gem/selftests/huge_pages.c   |   6 +-
+>  drivers/gpu/drm/msm/msm_gem_shrinker.c        |   2 +-
+>  drivers/gpu/drm/panthor/panthor_gem.c         |   2 +-
+>  drivers/gpu/drm/ttm/ttm_backup.c              |   2 +-
+>  drivers/gpu/drm/xe/tests/xe_bo.c              |   2 +-
+>  include/linux/swap.h                          |  29 +-
+>  include/linux/vm_event_item.h                 |   1 +
+>  mm/memcontrol.c                               |  20 +-
+>  mm/page_io.c                                  |  24 +-
+>  mm/swapfile.c                                 | 123 ++++-
+>  mm/vmscan.c                                   |  31 +-
+>  mm/vmstat.c                                   |   1 +
+>  tools/testing/selftests/zram/.gitignore       |   2 +
+>  tools/testing/selftests/zram/Makefile         |   4 +-
+>  tools/testing/selftests/zram/README           |  20 +-
+>  tools/testing/selftests/zram/config           |  10 +-
+>  tools/testing/selftests/zram/settings         |   1 +
+>  tools/testing/selftests/zram/swap_offload.c   | 425 +++++++++++++++++
+>  .../selftests/zram/workingset_offload.c       | 207 ++++++++
+>  tools/testing/selftests/zram/zram.sh          |   9 +
+>  tools/testing/selftests/zram/zram01.sh        |   9 +-
+>  tools/testing/selftests/zram/zram02.sh        |   9 +-
+>  tools/testing/selftests/zram/zram03.sh        | 174 +++++++
+>  tools/testing/selftests/zram/zram04.sh        | 164 +++++++
+>  tools/testing/selftests/zram/zram05.sh        | 447 ++++++++++++++++++
+>  tools/testing/selftests/zram/zram_lib.sh      | 189 ++++++--
+>  28 files changed, 1926 insertions(+), 94 deletions(-)
+>  create mode 100644 tools/testing/selftests/zram/settings
+>  create mode 100644 tools/testing/selftests/zram/swap_offload.c
+>  create mode 100644 tools/testing/selftests/zram/workingset_offload.c
+>  create mode 100755 tools/testing/selftests/zram/zram03.sh
+>  create mode 100755 tools/testing/selftests/zram/zram04.sh
+>  create mode 100755 tools/testing/selftests/zram/zram05.sh
+>
+> --
+> 2.55.0
+>
