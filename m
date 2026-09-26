@@ -1,92 +1,68 @@
-Received: from smtp-relay-internal-1.canonical.com (smtp-relay-internal-1.canonical.com [185.125.188.123])
+Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012013.outbound.protection.outlook.com [40.107.209.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42A7A37F313
-	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 19:24:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.188.123
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790450703; cv=none; b=pHLSQtdBrroKse3bVmjf13mZV9yvl4GmAfzKVdE8z6LyXt1XgaHBKv9luLeOQ1ivwADzTHqBhByiSLoUl+pAudKhiDt033xWTeUsq07Wbd6Mee3EDarvS4EV8niTnjwPlMTG0Rh6YhrchQTCYppSYgGpDwXjJyFatTUwNmMXKX0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790450703; c=relaxed/simple;
-	bh=oCFJ8eagL1YdjxsPUSetCl7HDigF8OCJNgKYHZIE3B0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bhrLc3h4YR8oyw5fZPmKS1bAEIBG7VmqJXi3CQF9WYZKlrf82mPflQsaklQd8hAY925IX0dhyl3OGIQ409Obo0wkAbYhj1JmuXR9fnRNEusOzibLTagzzDYmVPdduxevuU1WGEvmDU+gf3oGQYplY+/MrMSuVPZowUrrrzGv31U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=canonical.com; spf=pass smtp.mailfrom=canonical.com; dkim=pass (4096-bit key) header.d=canonical.com header.i=@canonical.com header.b=TpdUp71e; arc=none smtp.client-ip=185.125.188.123
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=canonical.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=canonical.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46FCF284B37
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 22:56:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.13
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790463411; cv=fail; b=FJVNAMHYDcskvVhyjhopEqIxKmXAT22dUbEdAxCMEjYgo7FR6GG4NEbqT4HCI/8g6dWRa3rOvdMTK+NpV5+HPHNZfpdLdvaMJK0hi6lBIiSTp+oT/2Tpi/wx+2NCM2YfZK4baDVzeuJmo7L1+VYW79PTppnVqS5uYHRNw2IA5ZE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790463411; c=relaxed/simple;
+	bh=xUPWQ800eLQQcyH5sZclyIiO/GUIeD0pODtikaZ8tv8=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=bu1HYQ1Pac4/oidOgqthVa2CCA5ghvBK2WiN0OBOR0nO5Qqoyg0q40XILnwIvpvyausCSgSsAX+k3pC3u8XUyLqP8Ll1rqN9t41Pk9wqGq/NCIzeToD4VMiVIRn3f+TWM32RleK2sMM1aOJ6mCiLbgZgZIjCfwzf9ua+bc+SRNg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=aqK64J3g; arc=fail smtp.client-ip=40.107.209.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=canonical.com header.i=@canonical.com header.b="TpdUp71e"
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com [209.85.128.71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 7BFF13F2A3
-	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 19:24:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20251003; t=1790450697;
-	bh=aAoDWVuRpxNlTIg9DRKgevYj0ImdfdGD3NJ5Lik81No=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version;
-	b=TpdUp71eKEG/ywXMeLpBTOgcv1iaMO8MoiwvOZ5s0zvInPq7Hgsd1cWNJPqgryobH
-	 6f6Y5XwsHdHSQhKhuLVVcTptQxUfL8S9HgKljlNXYlYUUCb9IiFdXe3Pv0gGMV4wqN
-	 DJbMg/cMkeiRyURVQeTCCs5Gir1YynueCzA8ZBvib6HK9UZonlEp/fIZUvV39hRUu1
-	 hetZ8AR6LBkDDF3vAft4JZeYFKOjZxH6sWXtCYXRWNoDT44v94vS9MKA1U7HiXeloA
-	 Z+Lt3C9gER45hIFIazu7iC8v+wXGC5+e4I8rAcWvjHNl42j9LGcxXs4JbcnOmz9Fk3
-	 ONY6r2Fnt1qc4EB0bDOVu9JzgCkBy+ZuKH40DtLNTGMCeEj3J5kz+KGpEXph7SaIzi
-	 fbGePWZghQteKIP0yd+qzOX+BYVfaRnC7f6T6R1q9stfZvcJT0ZCt2Tu81bbKd9xe0
-	 hPB9a9HdMnZ0EkeTRN4snurm1oBYuUIPWyu9JDSZGZOSHy73br637NmpxLY4ZbZ0Xb
-	 VuAWmj+k4E/pluW+5PjpJCiUH6AhVDeZsWcLS0Fvz0sO2AkBxnIVE4pBSry+OMFshX
-	 YLNuY1JYE/a/N3zeR5QBNwoBxCE8F7uANugDrEomFURxnlcf1TLH277v3tIhPDKpGM
-	 LM4yLMCa00B2MOeXnGWLCqAo=
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-495689bfcc8so14781025e9.1
-        for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 12:24:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790450697; x=1791055497;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=aAoDWVuRpxNlTIg9DRKgevYj0ImdfdGD3NJ5Lik81No=;
-        b=aC2CBalX/nyuPtvwXVash6zjsPjIcKSZENNnMOFskz+NJlxxhs6vrg3TnLpYwEPhaX
-         MuGiH+AK7OJL5Z4wMsaFiV9UEm4wML0XhNGdKavCxozZkWcwaJp+5kYvRo3u36v84UFD
-         4RilBOjlmCNx8G9sc7r50oWgLMHL+LdwauZq+rJs+IzZJSIpqrmoZRkiHMhchw244nbM
-         cifxDSTjVCGg21jv643BZdNgZhCeXnohY5MDfW/O2DpOCO80nO/EJb8R4JGswlpczXdM
-         qf0Y/jvA85hEJ1GOp0oRe0UW5HSSmDIHRraA3sDXjmNaMDnkoWJ6pzMzWNv8Oevm0E3x
-         HljA==
-X-Forwarded-Encrypted: i=1; AKwUvBy28xLEg6VwZn8P8TngUBICePbuJLxuWQ5ABRp7TUAA9RuT1ik/ZgbqbpeKyhiu1oCzjMrJxjIJLQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mlgUkU2+oTCsmH8mx8YvC9jx+muZ7uziPPqTxl0lRm0jWR8MDF
-	5rKN5JoOicvYUcP62iLiG7QKtSE3ur5dCAvNSBOhrQ4Tgakp84SuTKHO3sjSSTvvp3wJOr2ttaB
-	m9EdD3+zxm35wWsZ/bo1ho13g77w6sdC8lBPE8BFKF/5mV7joR6b8nM5ZIlijxfbWiikeGwhlGz
-	lv
-X-Gm-Gg: AYBFou2EpMCJNsOG9Tahqaj/uEcuCoVfRzRGXAGPD2rLNZVjyIvZwRJniAYFyucGQVs
-	UYTu2qW5tMIAWF3Hyf4gYJeiemfCsWL3J+VNzgx4arJ2xet2n2iwFXWiCAjNO3Yu2vSTzS45hpm
-	LZzbu6eEZsM6enbv+j6gD4BHGjW5TYcxPgBcyAfI5+4V4Zmwr2Kc25wVVXWf8MJxuQut+tehXb6
-	EoDbzCKVX9A4oFeTGDFOLfUhttGLbd3hBonElGSFcLDtaSUYZee/3AGgH0mYfn1oeGy4uEtpbiW
-	ieAhSyTx+juM5POQOHiq3EWzBhG281h8u2BTtE8N+lWWGMavb6mMBkOVwYTClLU8kyHp2yW8Jhe
-	m9iQNJBd+kNdqstlCypEJF5TqdwE6Pb2f0Q==
-X-Received: by 2002:a05:600c:1d0d:b0:49c:f4e1:4c2d with SMTP id 5b1f17b1804b1-49fe66f144fmr165830585e9.16.1790450697044;
-        Sat, 26 Sep 2026 12:24:57 -0700 (PDT)
-X-Received: by 2002:a05:600c:1d0d:b0:49c:f4e1:4c2d with SMTP id 5b1f17b1804b1-49fe66f144fmr165830285e9.16.1790450696753;
-        Sat, 26 Sep 2026 12:24:56 -0700 (PDT)
-Received: from k6.lan (141.175.65.37.rev.sfr.net. [37.65.175.141])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49ff21cc844sm59706145e9.3.2026.09.26.12.24.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 26 Sep 2026 12:24:56 -0700 (PDT)
-From: Valentin Haudiquet <valentin.haudiquet@canonical.com>
-To: linux-mediatek@lists.infradead.org
-Cc: linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Valentin Haudiquet <valentin.haudiquet@canonical.com>,
-	Jian Hui Lee <jianhui.lee@canonical.com>,
-	stable@vger.kernel.org,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Yong Wu <yong.wu@mediatek.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2] memory: mtk-smi: fail larb runtime resume until component bind
-Date: Sat, 26 Sep 2026 21:24:17 +0200
-Message-ID: <20260926192417.1448813-1-valentin.haudiquet@canonical.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="aqK64J3g"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=W+py5s88hKSIPqQa5uxWr2FLuywAbY76GNKa0OGDRy3kmKt2PX3WJf/iUHtY0MaCnhEsQbhz/9bUlGqJQuGp0rr0HXeXw46Myotxrn7aNCapescXslaZWhX7QE1IuYCCPKLWTV/WvQveklBq+oJeo+1CH7aYR++eqOYdcGXW1qVbQ+Fe0uV8J6fFHNewKI2AoQxT6zZIK/zuxY3kOWJUOStlCAojjMwlDg0ABiBJfTX75z08H9uTEssKCgY6+iDBcnmkXAsxELZ08oJ/9ZoAC8ML/nt2UEg63R1aTMNntiUy80LESFp3uFLOFvOgA5C+gq6OZ219DNMmrfEkULSIMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9BfJzFdOs5VKC9YLj1q4duN/TcmGQENRk69UGDSIRpQ=;
+ b=puMX0nNRRp7peOEB0ObWH18jNhf6plmVvLEuNvMbjuS0QMYBc70yGNHppx81VbjX3gJ+BE1HqZniSkd34yr/tvQ4MARZzvKwf/5JI+cdDV+68lnzEltB0fx2uS3sY4VPCtwV/Qz8VOA6EIdmUnAqfnw4uDXTbeN0jQKPNgRDKvr7mrvP3SEQ4SZD3NbNNMYnfplLfKEbmvb15fu448uRR9DtTR3bi8TTw+EnclfXnqxSIX1LgWL9t9uXKtnefGr0yjQ4D3XOGs710EQiqABYGwivtk9xOl3DreEj6AMdO/glKVTzFxaMPqngQeu7ca6cosr30YMhQF/a5747xw5Hfg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9BfJzFdOs5VKC9YLj1q4duN/TcmGQENRk69UGDSIRpQ=;
+ b=aqK64J3gzSj5gmeAPg8Jwn4mNP4kmLvY7uZYq60ZViGqmnzP+w6sQx7kKNRxF0dhcalCd3klqkDlzTFpY8DVmie8SDQk/mR+oSJJ69ltg2FMK2shUsgyebnrHfktJNUrrcf4wCwOGr2ByY5+pWQFGaA0JowNw0YtlcAYOzqiQ1A=
+Received: from DSZP220CA0006.NAMP220.PROD.OUTLOOK.COM (2603:10b6:5:280::14) by
+ CYYPR12MB8940.namprd12.prod.outlook.com (2603:10b6:930:bd::17) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.451.19; Sat, 26 Sep 2026 22:56:44 +0000
+Received: from DM2PEPF00003FC5.namprd04.prod.outlook.com
+ (2603:10b6:5:280:cafe::4f) by DSZP220CA0006.outlook.office365.com
+ (2603:10b6:5:280::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.451.23 via Frontend Transport; Sat,
+ 26 Sep 2026 22:56:44 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ DM2PEPF00003FC5.mail.protection.outlook.com (10.167.23.23) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.451.8 via Frontend Transport; Sat, 26 Sep 2026 22:56:43 +0000
+Received: from ausmlimonci-lx1.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Sat, 26 Sep
+ 2026 17:56:42 -0500
+From: Mario Limonciello <mario.limonciello@amd.com>
+To: <rafael@kernel.org>, <pavel@kernel.org>, <lenb@kernel.org>,
+	<gregkh@linuxfoundation.org>, <dakr@kernel.org>
+CC: "Mario Limonciello (AMD)" <superm1@kernel.org>, Eric Naim
+	<dnaim@cachyos.org>, <linux-pm@vger.kernel.org>,
+	<driver-core@lists.linux.dev>
+Subject: [PATCH v2] PM: Add resume event mapping for PMSG_POWEROFF
+Date: Sat, 26 Sep 2026 17:55:51 -0500
+Message-ID: <20260926225555.2916525-1-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -94,194 +70,84 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM2PEPF00003FC5:EE_|CYYPR12MB8940:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9ff9f9a4-2044-47f0-ac0a-08df1c216f8b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|23010399003|36860700016|82310400026|1800799024|11063799006|56012099006|10067099003|18002099003|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	9BxH/jdJrcmv0DeaoEBgb2NPS0Ifz/USVf0icHoyErLqZTFDnB1SFeNrvg2j07g3bj9kHqEr8oe8mbWN6KJntn/jjMyQ7TrP6ZhprXpg5CQrqQ/KcP3KjheAkzETUdWB7nDyuUV4B2IQV5EaYZxaPGXvnPezcwcv36T5R0tLYa4oDZFwr1LkGPUi3Bb9D9o4j5jxMYpdN9lOpMPdLkaCaL+tdlMhiZcBG8DXEIHzhJi5hm7jqwAmjvMJJlocNJELQZbEQPAVcZQGW/paO8+Brarslwnwax3ixs7/BUwSSBvHCLYgxJ9pL59/jFaCgcG3tS/Uhohrky9X90G6wzXxiyRLEx6g9Wi60aCJ5yjAvSBLa7nCf/5K1XL3FmK7jPn8jUTwrdMTCBxPwGRRDAORR+ydxtu4YOGrC5TNgaAXTJ7WqppZXBKGePwKwpHHaYD+uLxxZyaMPlN/nZOXCI390zIHphLbm0De5sxm0DHXa6Iaq6r/Ry2DRztdrSfa9WhhRiC2/BT8adH/DjrbFbHcRtnyPZKPcf1vztQ3927mdFCF+DCA89vglziD5o+X9ouZRKzDesoa6T8nMllYjxWq/c633yQHwRQBFcflmdk3Fb/8ZZiSpIu3+EDwin6WIFujjCEN9nbyABm+iO9Z7GytbqxszXHjDigo9vyWeSNyF3h8591l0+ZU+9pm95zGZdaUM+oBtDc0gZ8nDuHxH1J2rQ==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(23010399003)(36860700016)(82310400026)(1800799024)(11063799006)(56012099006)(10067099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	Ucx3tL2cmLxiaTF5bmXErqpFazBZd8BMrMEFZuLqgEIhlpd8GgO5zi7FVcOhDLg5C5xsN702xrnNXEaiTnhL6Ba1x6oPtvX5OFAwIUdt4LKAozyR0xjpExjI3/gW3J8PyLaKCGCNO2+w3ph18wbwhJjYyerDTFTw06YMjaKmzHmji+P2bobwpadA1XtMKS+1H5Fl1/UsqNrUjxIOpOyGzYva9B0bPn16WCp7QVca4b0nBrtW+xiQkc4vlO6HFyxnNkiREnNbClbc2oxSFdWKKfzFgZv/gKOFTxZPM3O35qHtGjZJOuekOq3JbV1cQuzsogOviYaFdTMwNaRAe3wUiKKChfchkzvfVH7nu6t+eVYUndms45Kaho+eMfjlCqeenWj1g5HBtHpD7Ck6pvKFbWvedU/tHR4m/vpx2JP5+j0l7GmI4zOieCHWbll7l7CD
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Sep 2026 22:56:43.9995
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9ff9f9a4-2044-47f0-ac0a-08df1c216f8b
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	DM2PEPF00003FC5.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CYYPR12MB8940
 
-With the mtk-smi and mtk-iommu drivers built as modules, a consumer
-device probe (e.g. mediatek-drm on MT8183) can race the iommu's
-component master bind.  The consumer's probe path runtime-resumes its
-smi-larb suppliers, and the larb's runtime resume then runs
-mtk_smi_larb_config_port_gen2_general(), which dereferences
-larb->mmu and larb->bank.  Those pointers are only populated by
-mtk_smi_larb_bind() when the component master completes, so a larb
-resumed inside the window dereferences NULL and oopses in the module
-loader's initcall context.  The module loader is then stuck and the
-rest of the boot dies.  On MT8183 (krane), mediatek-drm module init
-hits this:
+From: "Mario Limonciello (AMD)" <superm1@kernel.org>
 
-  Internal error: Oops: 0000000096000004 [#1] SMP
-  CPU: 4 UID: 0 PID: 270 Comm: (udev-worker) Tainted: G W
-  pc : mtk_smi_larb_config_port_gen2_general+0xe0/0x660 [mtk_smi]
-  lr : mtk_smi_larb_resume+0xb8/0x1b8 [mtk_smi]
-  Call trace:
-   mtk_smi_larb_config_port_gen2_general+0xe0/0x660 [mtk_smi] (P)
-   mtk_smi_larb_resume+0xb8/0x1b8 [mtk_smi]
-   pm_generic_runtime_resume+0x38/0x80
-   genpd_runtime_resume+0x118/0x320
-   rpm_callback+0x8c/0xc8
-   rpm_resume+0x558/0x758
-   __pm_runtime_resume+0x64/0xd8
-   pm_runtime_get_suppliers+0x6c/0xb8
-   __driver_probe_device+0x68/0x230
-   driver_probe_device+0xdc/0x1b0
-   __driver_attach+0x10c/0x2c8
-   bus_add_driver+0x17c/0x2e0
-   __platform_register_drivers+0x7c/0x1c0
-   mtk_drm_init+0x38/0xfd0 [mediatek_drm]
-   do_one_initcall+0x60/0x4e0
-   do_init_module+0xa0/0x308
-   init_module_from_file+0x10c/0x180
-   idempotent_init_module+0x1f8/0x2f0
-   __arm64_sys_finit_module+0x74/0x120
+PM_EVENT_POWEROFF (0x0800) and PMSG_POWEROFF were already defined in
+include/linux/pm.h, and pm_op(), pm_late_early_op() and pm_noirq_op()
+already dispatch PM_EVENT_POWEROFF to the same ops->poweroff*() callbacks
+as PM_EVENT_HIBERNATE.  Add the matching entry to resume_event() so that
+when a poweroff suspend sequence is aborted (for example a device's
+->poweroff_noirq() callback fails and the PM core rolls the
+already-suspended devices back), those devices are resumed with
+PMSG_RESTORE and their ->restore*() callbacks run.
 
-The oopsing udev worker exits holding the module loader's locks, so
-every later module load soft-locks and the boot dies in the initrd.
-The same oops was reported on MT8188 (Genio 700 EVK) from mtk_mdp3
-module init.
+Map it to PMSG_RESTORE, mirroring the existing PM_EVENT_HIBERNATE
+handling.  This is correct because both events suspend via
+ops->poweroff*(), whose counterpart is ops->restore*().  Mapping to
+PMSG_ON would be a no-op: it is what the default return already yields,
+and pm_op()/pm_late_early_op()/pm_noirq_op() have no PM_EVENT_ON case,
+so they would return NULL and silently skip every resume callback on the
+abort path.
 
-Publish the bind state with smp_store_release() and check it with
-smp_load_acquire() in mtk_smi_larb_resume(); that answers how the
-check synchronizes between CPUs.  Fail the resume with -EAGAIN: the
-larb stays RPM_SUSPENDED and retryable, the error is dropped by
-pm_runtime_get_suppliers() on the driver-core probe path, and the
-consumer's first runtime resume after the bind (at display enable,
-mtk_crtc_atomic_enable()) re-runs the callback, which configures the
-larb ports then.  Failing rather than skipping keeps the larb
-suspended instead of marking it active with unconfigured MMU ports,
-which would only turn the crash into silent iommu faults.
+This completes the PMSG_POWEROFF infrastructure needed to support
+differentiating between hibernation and shutdown sequences when
+re-using callbacks for common code.
 
-A failed supplier resume does not break the consumer's probe.
-pm_runtime_get_suppliers() is void and drops the error, so a probe
-inside the window just proceeds.  The display components do not touch
-the larb in probe: mtk_disp_ovl_probe() and its siblings only call
-pm_runtime_enable(), and mdp3 only enables runtime PM for its
-DMA-capable components (mtk-mdp3-comp.c).  The first real runtime
-resume happens later, at display enable: mtk_crtc_atomic_enable()
-does pm_runtime_resume_and_get() and the device links resume the
-larb first.  By then the component master bind has completed, so the
-larb configures its ports and the resume succeeds.  There is no
-deadlock either: the bind only records the larb pointers, it does not
-resume the larb, so the window closes when the bind completes
-regardless of what consumers do.  -ENODEV is not an alternative;
-like -EPROBE_DEFER it is recorded in dev->power.runtime_error
-instead of being exempted.
+Hibernation is started by writing a hibernation method (such as 'platform'
+'shutdown', or 'reboot') to use into /sys/power/disk and writing 'disk' to
+/sys/power/state.
 
-The bind state is a separate flag rather than a NULL test on
-larb->mmu so that the publication explicitly covers both larb->mmu
-and larb->bank.  mtk_smi_larb_unbind() clears it again with
-WRITE_ONCE(), which is all the clear side needs since it publishes
-nothing, so an iommu removal or module unload can not leave a stale
-bound state pointing at the freed iommu data.  A resume in flight
-while the iommu goes away is a pre-existing teardown hazard (the
-data it reads belongs to the iommu device, whose removal breaks
-bound consumers anyway); clearing the flag makes every resume that
-starts after the clear fail safely instead.
+Shutdown is initiated with the reboot() syscall with arguments on whether
+to halt the system or power it off.
 
-Tested on MT8183 (krane) with the full MTK stack built as modules:
-with this change applied the machine boots reliably, the iommu
-probes and binds all larbs, and the display stack comes up fully
-functional.
-
-The Fixes: tag points at 4f0a1a1ae351, which moved the port
-configuration into the runtime resume.  The device links that open
-the race window are added on the mtk-iommu side, but the dereference
-guarded here is the one that commit introduced.
-
-Fixes: 4f0a1a1ae351 ("memory: mtk-smi: Invoke pm runtime_callback to enable clocks")
-Reported-by: Jian Hui Lee <jianhui.lee@canonical.com>
-Closes: https://lore.kernel.org/linux-arm-kernel/20251111124853.2916889-1-jianhui.lee@canonical.com/
-Cc: stable@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Yong Wu <yong.wu@mediatek.com>
-Cc: Jian Hui Lee <jianhui.lee@canonical.com>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>
-Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mediatek@lists.infradead.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Valentin Haudiquet <valentin.haudiquet@canonical.com>
+Tested-by: Eric Naim <dnaim@cachyos.org>
+Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
 ---
+ drivers/base/power/main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-A fix for this was posted by Jian Hui Lee in November 2025, but the
-thread went quiet after review.  This revision is not from the
-original poster: it is an independent rework of the same fix,
-submitted because the same problem was hit on krane and the machine
-needed a working kernel.
-
-Changes in v2:
- - publish the bind state with smp_store_release()/smp_load_acquire()
-   instead of a bare NULL check, answering the "how does this
-   synchronize between CPUs" question from the v1 review
- - fail the resume with -EAGAIN instead of silently skipping the port
-   configuration; the larb stays RPM_SUSPENDED and the retry is
-   demand-driven (the consumer's next runtime resume, after the bind)
- - clear the flag in mtk_smi_larb_unbind() so an iommu removal can not
-   leave a stale bound state pointing at the freed iommu data
- - quote the oops backtrace and add proper tags
- drivers/memory/mtk-smi.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/memory/mtk-smi.c b/drivers/memory/mtk-smi.c
-index aaeba8ab2..dfc65b208 100644
---- a/drivers/memory/mtk-smi.c
-+++ b/drivers/memory/mtk-smi.c
-@@ -157,6 +157,7 @@ struct mtk_smi_larb { /* larb: local arbiter */
- 	int				larbid;
- 	u32				*mmu;
- 	unsigned char			*bank;
-+	bool				bound; /* set once the iommu binds us */
- };
- 
- static int
-@@ -171,6 +172,11 @@ mtk_smi_larb_bind(struct device *dev, struct device *master, void *data)
- 			larb->larbid = i;
- 			larb->mmu = &larb_mmu[i].mmu;
- 			larb->bank = larb_mmu[i].bank;
-+			/*
-+			 * Publish larb->mmu and larb->bank; pairs with
-+			 * smp_load_acquire() in mtk_smi_larb_resume().
-+			 */
-+			smp_store_release(&larb->bound, true);
- 			return 0;
- 		}
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index e130da4281410..2ed687e3e6b11 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1471,6 +1471,7 @@ static pm_message_t resume_event(pm_message_t sleep_state)
+ 	case PM_EVENT_QUIESCE:
+ 		return PMSG_RECOVER;
+ 	case PM_EVENT_HIBERNATE:
++	case PM_EVENT_POWEROFF:
+ 		return PMSG_RESTORE;
  	}
-@@ -180,7 +186,13 @@ mtk_smi_larb_bind(struct device *dev, struct device *master, void *data)
- static void
- mtk_smi_larb_unbind(struct device *dev, struct device *master, void *data)
- {
--	/* Do nothing as the iommu is always enabled. */
-+	struct mtk_smi_larb *larb = dev_get_drvdata(dev);
-+
-+	/*
-+	 * The iommu data recorded at bind time is going away; make the
-+	 * next runtime resume wait for a fresh bind.
-+	 */
-+	WRITE_ONCE(larb->bound, false);
- }
- 
- static const struct component_ops mtk_smi_larb_component_ops = {
-@@ -697,6 +709,19 @@ static int __maybe_unused mtk_smi_larb_resume(struct device *dev)
- 	const struct mtk_smi_larb_gen *larb_gen = larb->larb_gen;
- 	int ret;
- 
-+	/*
-+	 * With modular builds a consumer device probe can runtime-resume
-+	 * the larb (pm_runtime_get_suppliers()) before the iommu's
-+	 * component master bind has populated larb->mmu and larb->bank.
-+	 * Fail the resume with -EAGAIN: the larb stays RPM_SUSPENDED and
-+	 * retryable, and the next resume after the bind configures the
-+	 * larb ports.
-+	 */
-+	if (!smp_load_acquire(&larb->bound)) {
-+		dev_dbg(dev, "not yet bound to an iommu, skipping port configuration\n");
-+		return -EAGAIN;
-+	}
-+
- 	ret = clk_bulk_prepare_enable(larb->smi.clk_num, larb->smi.clks);
- 	if (ret)
- 		return ret;
-base-commit: 93f51579e7df248780214094418f205253383cc5
+ 	return PMSG_ON;
 -- 
-2.53.0
+2.43.0
 
