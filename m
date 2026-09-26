@@ -1,218 +1,183 @@
-Received: from mail-yx2-f43.google.com (mail-yx2-f43.google.com [74.125.224.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6C294F30F7
-	for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:31:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.171
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790368287; cv=pass; b=J4wb0D9vPYOmWIsUvZJra1WwuEzUYdYT/qtw3zeVtTFEvDR/eWcdBnwEx6F9xdYBBMpS5LKyBY7/oxUh2zmf8e5MIQVTyxpizXKkSwSgjtkvRO7FRA31YWuBmPBuMdZdDd1yLH/A874522p3c8DHvMDARfI0DEvntTODMymkkOM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790368287; c=relaxed/simple;
-	bh=i8K2V7iauqRYBnywpRsfGwdqYCZfWv4UWx7sJDax4N8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=B2XnTbfLaiKR/uuFOuDbOP47kuk5HE42GoVaR3XFZHbXimS2lqaE3MSCOFgGWH+Hk5ZwjZgzhjHw2EuSMFkfcLYoCmV7K8V5UMpfj5tF7BdWLKjh6bGiPpYnB3ycUJ5vB8sZFl2ACaQmzuVhSfsKXi//bVOKLNSpTaEdOk7WUMw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TjpNXmLz; arc=pass smtp.client-ip=74.125.224.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TjpNXmLz"
-Received: by mail-yx2-f43.google.com with SMTP id 00721157ae682-895353e9051so12489847b3.0
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 13:31:23 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790368282; cv=none;
-        d=google.com; s=arc-20260327;
-        b=QiTw1MGTjkjC9BUuh5sRT5EEh1hIWeXzHmVvQS2/usJOe3dsRu5Likc2pE24KqDEjE
-         A/8srUh3G0OzR+hW1yD/i9sQrp6bry9r3feNl/WK/VlLnq4YX3XrnRc8UCf2Xh7C8sfM
-         JqS+ao362vyiqY6jdVPXRTxtuuiBIXjmy+G4zBRidixanzSaSwCy9oTBLGND9xfJTSTc
-         rbcmSh8GT5ASTxhMTgQg+Qia/UGf59fILyomj5Q2xuR6eUmjm2EVmfHoMWGX6vYsXfnt
-         2ejdNGm44XGLRoDVh+8EYaZ2vW7sYnMSAaHKjoa4pOpfjxpnUDYU8TbBW7bjK2BWCl7m
-         rPOw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=noxPgsc3ymzPUXdD7j20u0RQJiwVbYzVMSbEnyT4ByQ=;
-        fh=zc648zXKNa6gS0QM/wEL2tnolREegM4XZfhXAGSj8AE=;
-        b=LM1uh3c9FEMS9ek6RGUpmihBBp0oc50NrmiXvqngUk9C4II/eKLQpGtzblccZlCor3
-         tq0gaX9plcqIUAtHk4pt5VH4OFIub7VyFH//B9xMb4HAoNw8Jq+8LzpUSpMamARxKxfe
-         gSRV5A5A49ujxHLnWVkEJg5N0LbjAgnf5Svofsqlty2uO+/f0COljCVVbvNYznXGoCxV
-         sf4h6yAi83aqckWUJEZLwXzhbKqA5b6kSg70PmRBZrc0cxIHO9vNKwwg9SYg5sCZl6uG
-         Y9f/kVLPrq41yqA11iA0Tgq6Wm9RC1de31UG77TcUSExzUD2ctfMuOwdRJ+kkAKFymcG
-         lalg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790368282; x=1790973082; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=noxPgsc3ymzPUXdD7j20u0RQJiwVbYzVMSbEnyT4ByQ=;
-        b=TjpNXmLzBaIdJEpWXZQ+rE33LSI7Ijg4oqvYvQ8zcO1X4TIybbM9R7tW+Rx6PJ94e6
-         VL9xrMXYP5AoQ+b2+Lvexr8ZUqvzm5VAO32nn5LsfFgf7KyxWMiL3fwwKV2VAF44BJ25
-         /3ZuVluFlCo490TVbBuLDq0x7fEwGBek7zym35Z9sHhXJ9/aIGj0NNK5WaxUMLABOtuy
-         PaTWKoHMvq8svAdwg2t14P+TNeADlcXCbREq4dN0mDj/eq7kE8QdAwzMSbdAT13vDivf
-         VrMILSLZSdZiBeMumuRGXPqK2VGB8kzp4kE3GIGtqSkT407KGvLiHAm/oVl/92qqPuzP
-         cVww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790368282; x=1790973082;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=noxPgsc3ymzPUXdD7j20u0RQJiwVbYzVMSbEnyT4ByQ=;
-        b=B25uYiPAncHfwJFUHUy4C7qZQbo7zOZlWBu/tjvCA44n8vQMFtBEPQhU37evWdYIZc
-         hyRNJ8EIlNp9h2Rd/3ARuMcqiO9PsgcA/ZYKWmNHV07PgfJ3ufgEHdoQmmPFDSAiPUJm
-         w7/Sm4gqMolA+4RHwpC0ZOHMp+VPoMNqvdcKxdHRnvGSC3lKYlVDhJEMX0N5p8wynPnJ
-         t7n61ok3G6Kb2hvFBEEBxDbx44wJQgs1xR7HI+a8loj5Fwa+KkTwYqNDyioipvFZUJnw
-         vVLbsI47d+VxMXpSH4D9dDf0at+7GBVCQM8Mlmt2lCNOu572JZBHVoCya+982HAzX/te
-         M5Xg==
-X-Forwarded-Encrypted: i=1; AKwUvBwftIitWMfHMXIPWWIxYV49XixyFsvOhFnbf8tUjy9Xko5B8jd5dGCFfrciSvRBdHLamqaDHt/UDQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++krTQXfkkZ1KJ5u7mj7/WQmHKd25Nl009F+NitvNH+1ZAXFuBcF
-	dpJQkswpucpVHcsFHBz210aElBDOk0Fb0f+FfM7SiiigKSPJE4GHRnsIoE37l3M4ursILrKbjaO
-	Mbz9MoLnA9r9NLqM8iRWmriHKHKleZTo=
-X-Gm-Gg: AYBFou0NgtqZghCBFXOIO4uz4wRnwHgSHRVKIccAd+PtIB02y2zLI5Dnu7/m9zULF3U
-	IePmh4nsMQZP+WB5RLN/Yx37hYZin3PmVURnwurld6ryq26wXo0PSmkxhEKtgaICZ+6FO6cwrRW
-	D1sDFuMCx+3TSgWzYa24cp3dAZbWjnWgo1OSnA7c8GsRiwm6mSwjk/j4UOryS4WuHEYLRW7uDVx
-	l43eizu1ep0EQ6oWgB42oLPRQPydKQzKezzZRDpQEPBOVp+FCmMaa1eXlRMdBe8mT+6IFXpzRSQ
-	ScJiP281vAWBG4Aq7L6hhFJGKNLLKTjMd55VBzFxQZTBFFViZR3L1pZ5sih2CvbIwXQcJu3LFt6
-	hCAfPnGr67TPPWfHNzgIMaCgMCcJQV0d5OQ==
-X-Received: by 2002:a05:690e:1382:b0:672:a289:7b0 with SMTP id
- 956f58d0204a3-672ed93a88emr3463724d50.76.1790368282266; Fri, 25 Sep 2026
- 13:31:22 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B96893090E8;
+	Sat, 26 Sep 2026 03:24:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790393080; cv=none; b=ANnjCEqMz9K8IIQFFTi8ZsfGF0a619jb1SdbZkoa5lbl8iylW6MFlRFt1uZw4MgwsgH2a7SoKzUOoZyu4jQRW5DF5JMV8CAgcw+SL3haRxiOFZbXM6vQKuIdlXP/qwZUuT18X7sthhWmWTaV1S61QPlClU6Gxb+QeeOpOqpv62I=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790393080; c=relaxed/simple;
+	bh=u2bKMqmHH9et5bmwCUGc4r3mQCwAL+nmjWrOC5+NGQU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LSXAKP7piNuBgIiN8TU7LRWwjtnMkAzL3OJf8jN5JL7OK2BXm/iWl33FvtKJrvECtj7tVgH34Z3hfgfh6ThOcDBY44N1J30c8ddQ1cfy1Vn/Bjf/rItIZRDaLP4MqpHnJV0ip/MgzjXyIDkwOVKkVUPd8qIqXBu1rEdK2ohQtFk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: c343442cb95911f19a56ed5b684f684d-20260926
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:da21d866-1b8c-42a3-b086-51ce81a585f3,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:7db8b62,CLOUDID:5bdde6c24e8d515c24ed0be13df09ffd,BulkI
+	D:nil,BulkQuantity:0,SF:102|136|850|865|898,TC:nil,Content:0|15|50|99,EDM:
+	-3|-100,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,O
+	SA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: c343442cb95911f19a56ed5b684f684d-20260926
+X-User: xiongxin@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <xiongxin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 204045198; Sat, 26 Sep 2026 11:24:20 +0800
+From: Xiong Xin <xiongxin@kylinos.cn>
+To: rafael@kernel.org,
+	lenb@kernel.org,
+	pavel@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Xiong Xin <xiongxin@kylinos.cn>,
+	Riwen Lu <luriwen@kylinos.cn>
+Subject: [PATCH v2] PM: hibernate: flush icache for restored pages from task context
+Date: Sat, 26 Sep 2026 11:24:16 +0800
+Message-Id: <20260926032416.467937-1-xiongxin@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260923-dd-cmap-part2-clean-v11-0-9b6c217fdf2f@gmail.com> <20260923155339.bdc677e8e688611bcf190ad9@linux-foundation.org>
-In-Reply-To: <20260923155339.bdc677e8e688611bcf190ad9@linux-foundation.org>
-From: jim.cromie@gmail.com
-Date: Fri, 25 Sep 2026 14:30:54 -0600
-X-Gm-Features: AclHuK81aQy7pcphOyoCN0Cv4efDR1k93Uxkj909m52hc-_PgnQGdKhUE2sknH8
-Message-ID: <CAJfuBxxd8hMf0OcnOK+w-QyizaKY=WA4VL+fyoD3y6EsHW1+og@mail.gmail.com>
-Subject: Re: [PATCH v11 00/38] dyndbg: Fix classmaps API for subsystems, query
- extensions, selftests
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
-	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
-	Aaron Tomlin <atomlin@atomlin.com>, Jonathan Corbet <corbet@net.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Nicolas Schier <nsc@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, 
-	John Ogness <john.ogness@linutronix.de>, Sergey Senozhatsky <senozhatsky@chromium.org>, 
-	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
-	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Louis Chauvet <louis.chauvet@bootlin.com>, Philipp Hahn <phahn-oss@avm.de>, 
-	kernel test robot <lkp@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 23, 2026 at 4:53=E2=80=AFPM Andrew Morton <akpm@linux-foundatio=
-n.org> wrote:
->
-> On Wed, 23 Sep 2026 16:34:24 -0600 Jim Cromie <jim.cromie@gmail.com> wrot=
-e:
->
-> > The drm subsystem has *lots* of debug statements, in 11 categories:
-> >
-> >  $> git grep '\w*_dbg' drivers/gpu/drm/ | wc
-> >    5663   30159  542864
->
-> Methinks this regexp was overly promiscuous, but point taken.
->
-> >  $> git grep 'DRM_DEBUG\w*' drivers/gpu/drm/ | wc
-> >    2206   12834  202332
-> >
-> > All of these are bit-tests on __drm_debug, exposed to users as
-> > /sys/module/drm/parameters/debug. Many of these are done often;
-> > vblank is done ~100/sec for some displays. Over the uptime of many
-> > boxes, this is a lot of cpu cycles on bits that are almost always off.
->
-> A __test_bit (or |) every 10ms sounds quite negligible?
->
-> Especially if __drm_debug is __read_mostly.  Which it isn't, afaict.
-> Um, low-hanging fruit?
->
+With `hibernate=nocompress`, load_image() submits read bios asynchronously
+and hib_end_io() completes them from hardirq/softirq context.  Commit
+f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored
+in-place") calls flush_icache_range() there, which on ARM64 ends with
+kick_all_cpus_sync() and so triggers
 
-__drm_debug certainly qualifies.
-I will send the patch, separately.
+    WARN_ON_ONCE(!in_task());
 
-patch 37 adds a +c flag, to count invocations of flagged callsites
-it counted 5M calls in 60 sec.  or 83 KHz.
-That seems "fast-ish" at least,
-perhaps worthy of a static-key over a __read_mostly
+in smp_call_function(), as in_task() is always false in interrupt context.
 
+Only the nocompress path is affected: load_compressed_image() flushes from
+the decompression kthread, in task context.
 
+Defer the flush to task context.  hib_end_io() now only records the
+restored page on a per-batch list (page->lru is free to use, as safe
+in-place pages are on no LRU).  Once hib_wait_io() returns to load_image(),
+hib_flush_icache_pages() walks the list and flushes each page, preserving
+the asynchronous batched I/O throughput.
 
-> > Dynamic-debug excels at replacing such tests with NOOPs (via static
-> > keys). Classmaps was devised to bring that 0-off-cost to drm's
-> > categories.
-> >
-> > Classmaps-v1 went into the kernel in Sept 2022, in 2 chunks:
-> >   b7b4eebdba7b..6ea3bf466ac6    # core dyndbg changes
-> >   0406faf25fb1..ee7d633f2dfb    # drm adoption
-> >
-> > Sadly DRM-CI found a regression during init with drm.debug=3D<initval>;
-> > the static-keys underneath the drm-dbgs in drm.ko got enabled, but
-> > those in drivers & helpers did not.
-> >
-> > So in Feb 2023, it got pulled:
-> > commit bb2ff6c27bc9 ("drm: Disable dynamic debug as broken")
-> >
-> > Root Problem:
-> >
-> > DECLARE_DYNDBG_CLASSMAP defined the classmap, but its repeated use in
-> > both core and drivers violated a K&R rule "define once, refer
-> > afterwards". This flaw resulted in a regression; with drm.debug=3D0xFF
-> > boot arg, drm-core got enabled, but drivers/helpers did not.
-> >
-> > This patchset replaces DECLARE_DYNDBG_CLASSMAP with:
-> > - DYNAMIC_DEBUG_CLASSMAP_DEFINE (invoked once in the exporting module)
-> > - DYNAMIC_DEBUG_CLASSMAP_USE (invoked repeatedly in drivers & helpers)
-> >
-> > _DEFINE exports the classmap it creates (in drm.ko), and other modules
-> > _USE the classmap. The _USE adds a record referencing the _DEFINEd (&
-> > exported) classmap in a 2nd __dyndbg_class_users section.
-> >
-> > At modprobe, dyndbg scans the new section after __dyndbg_class_maps,
-> > follows the linkage to the _DEFINEr module, finds the (optional)
-> > kernel-param controlling the classmap, examines its drm.debug=3D<initva=
-l>,
-> > and applies it to the module being initialized.
-> >
-> > To recapitulate the multi-module problem wo DRM involvement, we add:
-> >
-> > - tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh:
-> >   Alters pr_debugs in builtins and test modules,
-> >   checks results against checksums of expected results
-> >
-> > - lib/test_dynamic_debug.c & test_dynamic_debug_submod.c:
-> >   Builds parent & _submod modules with _DEFINE and _USE inside #if/#els=
-e
-> >   blocks, reproducing the 2-module scenario under selftests.
->
-> So what I'm understanding is that this series presently has no effect
-> upon DRM?
+Fixes: f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored in-place")
+Assisted-by: GLM:5.3
+Acked-by: Riwen Lu <luriwen@kylinos.cn>
+Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
 
-I have 2-3 DRM adaptation patches,
-then a single 1-liner patch per driver,
-to get DRM using the new API.
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index c78f1593600b..6d1019a2780f 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -223,6 +223,8 @@ struct hib_bio_batch {
+ 	wait_queue_head_t	wait;
+ 	blk_status_t		error;
+ 	struct blk_plug		plug;
++	struct list_head	icache_pages;
++	spinlock_t		icache_lock;
+ };
+ 
+ static void hib_init_batch(struct hib_bio_batch *hb)
+@@ -230,6 +232,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
+ 	atomic_set(&hb->count, 0);
+ 	init_waitqueue_head(&hb->wait);
+ 	hb->error = BLK_STS_OK;
++	INIT_LIST_HEAD(&hb->icache_pages);
++	spin_lock_init(&hb->icache_lock);
+ 	blk_start_plug(&hb->plug);
+ }
+ 
+@@ -249,11 +253,19 @@ static void hib_end_io(struct bio *bio)
+ 			 (unsigned long long)bio->bi_iter.bi_sector);
+ 	}
+ 
+-	if (bio_data_dir(bio) == WRITE)
++	if (bio_data_dir(bio) == WRITE) {
+ 		put_page(page);
+-	else if (clean_pages_on_read)
+-		flush_icache_range((unsigned long)page_address(page),
+-				   (unsigned long)page_address(page) + PAGE_SIZE);
++	} else if (clean_pages_on_read) {
++		/*
++		 * Stash the page on the batch list, load_image()
++		 * will flush it once hib_wait_io() has returned to task
++		 * context. The page is neither on an LRU nor in the page
++		 * cache, so its lru member is free to use as link node.
++		 */
++		spin_lock(&hb->icache_lock);
++		list_add(&page->lru, &hb->icache_pages);
++		spin_unlock(&hb->icache_lock);
++	}
+ 
+ 	if (bio->bi_status && !hb->error)
+ 		hb->error = bio->bi_status;
+@@ -295,6 +307,23 @@ static int hib_wait_io(struct hib_bio_batch *hb)
+ 	return blk_status_to_errno(hb->error);
+ }
+ 
++/*
++ * Flush the icache for pages restored since the last hib_wait_io().
++ * Must be called from task context (after hib_wait_io() returned): all
++ * bios of the batch have completed, so the icache_pages list is no longer
++ * touched by hib_end_io() and can be walked without the lock.
++ */
++static void hib_flush_icache_pages(struct hib_bio_batch *hb)
++{
++	struct page *page, *tmp;
++
++	list_for_each_entry_safe(page, tmp, &hb->icache_pages, lru) {
++		list_del_init(&page->lru);
++		flush_icache_range((unsigned long)page_address(page),
++				   (unsigned long)page_address(page) + PAGE_SIZE);
++	}
++}
++
+ /*
+  * Saving part
+  */
+@@ -1116,8 +1145,12 @@ static int load_image(struct swap_map_handle *handle,
+ 		ret = swap_read_page(handle, data_of(*snapshot), &hb);
+ 		if (ret)
+ 			break;
+-		if (snapshot->sync_read)
++		if (snapshot->sync_read) {
+ 			ret = hib_wait_io(&hb);
++			if (ret)
++				break;
++			hib_flush_icache_pages(&hb);
++		}
+ 		if (ret)
+ 			break;
+ 		if (!(nr_pages % m))
+@@ -1131,10 +1164,17 @@ static int load_image(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret) {
++		hib_flush_icache_pages(&hb);
+ 		pr_info("Image loading done\n");
+ 		ret = snapshot_write_finalize(snapshot);
+ 		if (!ret && !snapshot_image_loaded(snapshot))
+ 			ret = -ENODATA;
++	} else {
++		/*
++		 * Reinit the list instead of walking it to avoid
++		 * use-after-free.
++		 */
++		INIT_LIST_HEAD(&hb.icache_pages);
+ 	}
+ 	swsusp_show_speed(start, stop, nr_to_read, "Read");
+ 	return ret;
+-- 
+2.25.1
 
-39 patches seemed big enough for now,
-if you'd like the rest tacked on, Im happy to do so.
-
-
-> What subsystems *does* it affect?
-
-
-
->
-> Sashiko had quite a bit to say.  It hasn't quite completed at present.
->         https://sashiko.dev/#/patchset/20260923-dd-cmap-part2-clean-v11-0=
--9b6c217fdf2f@gmail.com
