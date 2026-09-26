@@ -1,35 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7786436B905;
-	Sat, 26 Sep 2026 09:26:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FC5739060C;
+	Sat, 26 Sep 2026 09:26:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790414813; cv=none; b=HMjX+T8u0RzhthFZnW2dCwz9qOVS6phnuHc2ehFcCq/D+vt7amQ/c56VWpRtt9tP2b5imekd7XI4kXydkAsPSGwYNmhrWYnfy0rA0YlSQ7GGjfOfzhBV50uUZBSL41Qg9KchtKkSrQFCUH32veg8/PlsTSfekh50gEl/Np8xo0s=
+	t=1790414816; cv=none; b=COp+vivap65XvZo/KVfeIj1WDVXYpJbnMn5VRiXdL1YLnrmItbFPh60rN2WpQ0WKlPksBGoAEh6U0I+GCsq13SNcrpBBMr7ICIuMVUF0AIM7nyLEqOkbjYzPBHC7Ng7kuEbFR3dXoekOu8A32G/C/zRLEBAGOiKWSY2hcI+hUlo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790414813; c=relaxed/simple;
-	bh=LO8AKIR1ZYcQaQz00PDxir3UMP6AhxPZBPVs1IhWyU0=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ivE+NGXbZi469gBYU0q7IGm0jw3c5QNBQb4Gxx6aVBwPNyexyaTJw6wKuM0aJxL4lhXT4MuMg+nCJFHVcHMBM2Crfvdwbb46GSLN3J+JlhDh6xOocpBMvFPB7842X5toxd35xHPJun2Oe/iN10AgU6P9McpH8NrR35KqbChZJBc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FOuRxBEY; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790414816; c=relaxed/simple;
+	bh=VFH9Xfb7nRASCoAcg748W8suCX76wLeHhKKb1IYUWqM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=FSM7/w13sMIh3qrfVsuS2oizCWWYp1MD1Bas3lmHG25djy75Et6ip9R20EGiHA7r8teyOyejbcrYN3D/8BewhaNx8YDp4bBIQep129f/PVMD+eouyv2wfZGGWmB08rufECVxlp9f4S8hwsasciYjmDXACVmqbg5/Jlkik83RNU4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ot1JG7uA; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FOuRxBEY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 340D41F000FF;
-	Sat, 26 Sep 2026 09:26:49 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ot1JG7uA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82CA21F00893;
+	Sat, 26 Sep 2026 09:26:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790414812;
-	bh=ESmr6c9B3f3nPHgJ9uIGzyifAGO5yB3Lw2nHs6HrCGI=;
-	h=From:Subject:Date:To:Cc;
-	b=FOuRxBEYB8jZsQc86a0abbiPSCGuVnZ3dl/ZVCDQpDGwhDchPhx1mx2qZmuVIUza7
-	 dGG6SHxZJAcUWQ+27tgUyQVZXe6sK7yxODc3PctEl0fhb5ElOINWn4LjJD0z78SoNC
-	 GHvsSvYyUrAoArg5BT4dn7DNtFKaN5/By8CPJflPSPVlDbomVkiTgdjzEl4orM+q9Q
-	 OU+vdQCb1BQl+r30ju34Nr3McD6Wp4PLcAGmlxgTl2z6gkUDfuPflHTHpTuTETX7pX
-	 1w0bJrCQKiurLmCqfhaRxZpLR9J33Kslw+R5p2cvobTUR3PQ33Mz1eLKm4Rm7K6+EE
-	 t9fa0m2bP+kEw==
+	s=k20260515; t=1790414815;
+	bh=eV84FIWl/nzRxlwPhoVqnWJO2Z3uN9aWosu8vZ1OKII=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=ot1JG7uAEJRhW6v2Qwk04AMXnxVxrYCaSmAMfXnv2bKPpKm8Ip2GpOBFlvKsGloxO
+	 ND1XdE8rL2JgosT/JamxHnT+bk/YGYjMaW9BnwhqPMinJ0D5hyMjLB3HYjgoTezdd4
+	 6DlKAcy16ogcTPjAYFxIJXE3vC4ar5EprlmAqQn2i286DzXlgCIQ+b7wdPcHqZZA3m
+	 3BwgD0FdiJLSJzMIHWuRpNyC/hkoFDqMens1SU2HJo+wQ0o0EYnxCbhH+Ci4M9IdUJ
+	 m3LWSxCck6QkYxxTVuE6mB3tqB4LX+cFF3tqc+PI8gkxSVsNhDX0HDTe5CDkkqmCpZ
+	 fxmEGNwG2Lv0Q==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Subject: [PATCH v2 0/5] hibernation: make safe_copy_page more robust and
- remove debug_pagealloc support
-Date: Sat, 26 Sep 2026 12:26:29 +0300
-Message-Id: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
+Date: Sat, 26 Sep 2026 12:26:30 +0300
+Subject: [PATCH v2 1/5] hibernation: make swsusp_page helpers static
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,11 +37,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/1WOQQ7CIBBFr9KwFoU2oa0r72G6YNppQQUM0EbT9
- O5CjQuXb+bN/7OSgF5jIOdiJR4XHbSzCcpDQXol7YRUD4lJyUrBWi6o0oDeypg8WgtWQSMQ2oa
- TdPH0OOrXnnbtvhxmuGEfc0Q2QAak4KXtVR4Z46I5GUNnG6KEB2ZH6RCdf+8vLTxn/drrv/aFU
- 0brsR5GidUAyC73tMPH0fmJdNu2fQD97zla3QAAAA==
-X-Change-ID: 20260916-hibernation-7603b86eb981
+Message-Id: <20260926-hibernation-v2-1-235f69f3ab2a@kernel.org>
+References: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
+In-Reply-To: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
  Alexander Potapenko <glider@google.com>, 
  David Hildenbrand <david@kernel.org>, Marco Elver <elver@google.com>, 
@@ -53,64 +50,92 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
  linux-mm@kvack.org, linux-pm@vger.kernel.org
 X-Mailer: b4 0.16.1-dev
 
-When hibernation creates a memory image, it uses set_direct_map() APIs to
-temporarily map pages that are marked as not present in the kernel page
-tables.
+Since commit 31a1b9d7fe768 ("mm: page_alloc: move mark_free_page() into
+snapshot.c") several helpers that set, clear and query free and forbidden
+page status are only used inside kernel/power/snapshot.c
 
-Initially, this was intended to support debug_pagealloc along with
-hibernation on x86.
+Make them static and add necessary forward declarations near the existing
+declarations of similar helpers.
 
-With the increasing desire to use set_direct_map APIs for hardening
-features and with their inconsistent implementations across architectures,
-using kernel_page_present() + set_direct_map_valid_noflush() to save
-non-present pages in the hibernation image is not very safe, to say the
-least.
-
-Worse, some combinations of debug features, such as debug_pagealloc and
-PAGE_POISON cause a crash during restore.
-
-Keeping debug_pagealloc compatible with hibernation requires a complex
-infrastructure for tracking free unmapped pages with a page flag/page type,
-verifying that it is actually a free page that hibernate_map_page() tries
-to remap and making sure there are no stale or failed page table updates.
-With init_on_{alloc,free} and/or PAGE_POISON on top, this also requires the
-ability to map and initialize these free pages on restore.
-
-This complexity does not seem justified for a somewhat niche debugging
-scenario.
-
-Instead of a complex fix to support hibernation with debug_pagealloc, make
-sure that copy_data_pages() and its helpers properly handle errors that may
-happen during page table updates, explicitly enable saving of KFENCE pages
-and disallow hibernation when debug_pagealloc is enabled.
-
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
-Changes in v2:
-- use hibernation_available() to close secretmem race
-- rename kfence_restore_mapping() to kfence_reset_mapping() for better
-  symmetry with kfence_force_mapping()
+ include/linux/suspend.h |  6 ------
+ kernel/power/snapshot.c | 15 +++++++++------
+ 2 files changed, 9 insertions(+), 12 deletions(-)
 
-- Link to v1: https://patch.msgid.link/20260917-hibernation-v1-0-7f7dfae3dbe0@kernel.org
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index b02876f1ae38..b3435c5ef63f 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -381,9 +381,6 @@ struct platform_hibernation_ops {
+ #ifdef CONFIG_HIBERNATION
+ /* kernel/power/snapshot.c */
+ extern void register_nosave_region(unsigned long b, unsigned long e);
+-extern int swsusp_page_is_forbidden(struct page *);
+-extern void swsusp_set_page_free(struct page *);
+-extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
+ extern asmlinkage int swsusp_arch_suspend(void);
+ extern asmlinkage int swsusp_arch_resume(void);
+@@ -404,9 +401,6 @@ int arch_hibernation_header_restore(void *addr);
+ 
+ #else /* CONFIG_HIBERNATION */
+ static inline void register_nosave_region(unsigned long b, unsigned long e) {}
+-static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
+-static inline void swsusp_set_page_free(struct page *p) {}
+-static inline void swsusp_unset_page_free(struct page *p) {}
+ 
+ static inline void hibernation_set_ops(const struct platform_hibernation_ops *ops) {}
+ static inline int hibernate(void) { return -ENOSYS; }
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index d5dba0e50b2e..e732bf6389e4 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -112,9 +112,12 @@ static inline void hibernate_unmap_page(struct page *page)
+ 	}
+ }
+ 
+-static int swsusp_page_is_free(struct page *);
+-static void swsusp_set_page_forbidden(struct page *);
+-static void swsusp_unset_page_forbidden(struct page *);
++static int swsusp_page_is_free(struct page *page);
++static void swsusp_set_page_free(struct page *page);
++static void swsusp_unset_page_free(struct page *page);
++static int swsusp_page_is_forbidden(struct page *page);
++static void swsusp_set_page_forbidden(struct page *page);
++static void swsusp_unset_page_forbidden(struct page *page);
+ 
+ /*
+  * Number of bytes to reserve for memory allocations made by device drivers
+@@ -1036,7 +1039,7 @@ static struct memory_bitmap *free_pages_map;
+  * corresponding bits in forbidden_pages_map and free_pages_map simultaneously
+  */
+ 
+-void swsusp_set_page_free(struct page *page)
++static void swsusp_set_page_free(struct page *page)
+ {
+ 	if (free_pages_map)
+ 		memory_bm_set_bit(free_pages_map, page_to_pfn(page));
+@@ -1048,7 +1051,7 @@ static int swsusp_page_is_free(struct page *page)
+ 		memory_bm_test_bit(free_pages_map, page_to_pfn(page)) : 0;
+ }
+ 
+-void swsusp_unset_page_free(struct page *page)
++static void swsusp_unset_page_free(struct page *page)
+ {
+ 	if (free_pages_map)
+ 		memory_bm_clear_bit(free_pages_map, page_to_pfn(page));
+@@ -1060,7 +1063,7 @@ static void swsusp_set_page_forbidden(struct page *page)
+ 		memory_bm_set_bit(forbidden_pages_map, page_to_pfn(page));
+ }
+ 
+-int swsusp_page_is_forbidden(struct page *page)
++static int swsusp_page_is_forbidden(struct page *page)
+ {
+ 	return forbidden_pages_map ?
+ 		memory_bm_test_bit(forbidden_pages_map, page_to_pfn(page)) : 0;
 
----
-Mike Rapoport (Microsoft) (5):
-      hibernation: make swsusp_page helpers static
-      hibernation: ensure secretmem pages don't reach a snapshot
-      hibernate: handle potential errors in hibernate_{map,unmap}_page()
-      hibernation, KFENCE: explicitly map/unmap KFENCE pages
-      hibernation: make hibernation unavailable when debug_pagealloc is on
-
- include/linux/kfence.h   |  29 ++++++++++
- include/linux/suspend.h  |   6 ---
- kernel/power/hibernate.c |   6 +++
- kernel/power/snapshot.c  | 137 +++++++++++++++++++++++++----------------------
- mm/kfence/core.c         |  52 +++++++++++++++++-
- 5 files changed, 159 insertions(+), 71 deletions(-)
----
-base-commit: 99d08cb94abb5aeefbda36dc8bd15677c6f76f45
-change-id: 20260916-hibernation-7603b86eb981
-
---
-Sincerely yours,
-Mike.
+-- 
+2.53.0
 
