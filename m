@@ -1,259 +1,287 @@
-Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp-relay-internal-1.canonical.com (smtp-relay-internal-1.canonical.com [185.125.188.123])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4CD137C934
-	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 18:29:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42A7A37F313
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 19:24:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.188.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790447392; cv=none; b=d+2BrduwOtjSumqkbyUi5RK1yt07bDaeP58S16poLb7JncXF7BN1oL3gkJgrLcpMsDKkUgv1uzgl94ALFjQskHHRwKgaRJiy8bjKYC+eoVtSWPXnjp/hx6pL79p/JZEYcyF4blCk4b6UDoHSKdfJ8H5o9IxjSx6DC35rrmOJWlA=
+	t=1790450703; cv=none; b=pHLSQtdBrroKse3bVmjf13mZV9yvl4GmAfzKVdE8z6LyXt1XgaHBKv9luLeOQ1ivwADzTHqBhByiSLoUl+pAudKhiDt033xWTeUsq07Wbd6Mee3EDarvS4EV8niTnjwPlMTG0Rh6YhrchQTCYppSYgGpDwXjJyFatTUwNmMXKX0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790447392; c=relaxed/simple;
-	bh=GYYkxdsqA9IOszTyIJpe5/gKgcitrLgq+lC0i609rOo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=a0sQLp9duoL5ZmSn0SB3G6qTzb+1HX/mO+owQ6D+IQQya5bGfg4ZTNLPD8e7HCKZOnnLqqr3uh2hI7MXGylS9vlFkMYGJcPYr+gYNbdcpfTpyZ1FQlrZzpWaXakMSYt6k/CFrocKaxKjEqk5x+BFpHmAvfaRp9zPS7OWRpkhBVY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=U6g2DD/6; arc=none smtp.client-ip=209.85.160.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790450703; c=relaxed/simple;
+	bh=oCFJ8eagL1YdjxsPUSetCl7HDigF8OCJNgKYHZIE3B0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bhrLc3h4YR8oyw5fZPmKS1bAEIBG7VmqJXi3CQF9WYZKlrf82mPflQsaklQd8hAY925IX0dhyl3OGIQ409Obo0wkAbYhj1JmuXR9fnRNEusOzibLTagzzDYmVPdduxevuU1WGEvmDU+gf3oGQYplY+/MrMSuVPZowUrrrzGv31U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=canonical.com; spf=pass smtp.mailfrom=canonical.com; dkim=pass (4096-bit key) header.d=canonical.com header.i=@canonical.com header.b=TpdUp71e; arc=none smtp.client-ip=185.125.188.123
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=canonical.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=canonical.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U6g2DD/6"
-Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-4678d3e490bso2091866fac.1
-        for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 11:29:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790447388; x=1791052188; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rfzsmIxXLWNZ4YNn3nfLndjooAshaJxKXBcH7abjIWk=;
-        b=U6g2DD/6wQV0/2neHMks0htv6Tf0n4ASV5xICBKRqzYezKCvcABGT8AE+DDpyVf2Lq
-         URcRhN4FKJp8p+D4VA2/HI64OPJbfOkMGXVFpdPb3Wz9gU2QvyDeMaiZ5ik6mc41oGl3
-         HbOhjc9Hzvhk1NN6HkO+Vxhwbf2WDArWIofzfrOauqSpBvy/QTyhLqOUsNOWgDeYMw4G
-         UaHilzr2mY3zg9XQJl19m9KBdClfROKSZBZsOOEva4hOdlh6RHzifNlkG0cgHFqxKQGP
-         Sgmi6NFnOrKTHb2eTGRe6OtsGzJoMdLvPsXOg4Kgf0HUearB2hhHjePZOmo4hfaJnAn1
-         pGVA==
+	dkim=pass (4096-bit key) header.d=canonical.com header.i=@canonical.com header.b="TpdUp71e"
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com [209.85.128.71])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 7BFF13F2A3
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 19:24:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+	s=20251003; t=1790450697;
+	bh=aAoDWVuRpxNlTIg9DRKgevYj0ImdfdGD3NJ5Lik81No=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version;
+	b=TpdUp71eKEG/ywXMeLpBTOgcv1iaMO8MoiwvOZ5s0zvInPq7Hgsd1cWNJPqgryobH
+	 6f6Y5XwsHdHSQhKhuLVVcTptQxUfL8S9HgKljlNXYlYUUCb9IiFdXe3Pv0gGMV4wqN
+	 DJbMg/cMkeiRyURVQeTCCs5Gir1YynueCzA8ZBvib6HK9UZonlEp/fIZUvV39hRUu1
+	 hetZ8AR6LBkDDF3vAft4JZeYFKOjZxH6sWXtCYXRWNoDT44v94vS9MKA1U7HiXeloA
+	 Z+Lt3C9gER45hIFIazu7iC8v+wXGC5+e4I8rAcWvjHNl42j9LGcxXs4JbcnOmz9Fk3
+	 ONY6r2Fnt1qc4EB0bDOVu9JzgCkBy+ZuKH40DtLNTGMCeEj3J5kz+KGpEXph7SaIzi
+	 fbGePWZghQteKIP0yd+qzOX+BYVfaRnC7f6T6R1q9stfZvcJT0ZCt2Tu81bbKd9xe0
+	 hPB9a9HdMnZ0EkeTRN4snurm1oBYuUIPWyu9JDSZGZOSHy73br637NmpxLY4ZbZ0Xb
+	 VuAWmj+k4E/pluW+5PjpJCiUH6AhVDeZsWcLS0Fvz0sO2AkBxnIVE4pBSry+OMFshX
+	 YLNuY1JYE/a/N3zeR5QBNwoBxCE8F7uANugDrEomFURxnlcf1TLH277v3tIhPDKpGM
+	 LM4yLMCa00B2MOeXnGWLCqAo=
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-495689bfcc8so14781025e9.1
+        for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 12:24:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790447388; x=1791052188;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20260707; t=1790450697; x=1791055497;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=rfzsmIxXLWNZ4YNn3nfLndjooAshaJxKXBcH7abjIWk=;
-        b=ChXa3QVQ+9QjEY9QW+M/UnXOU42PyrnB77zLYxnnDbTyGhOR+oHHhldbvr82mF/nj8
-         QhlSUkolOWWt33J/3hNvLeQGvxP8shgiVEWcRqSMZV93cX4IkKc5zmb7+0+gVsRDDhi9
-         tiMYx6hZznIukxEyP8Q4jkrnBNwpK1z71OmbMBYcQxoWsUndM8mJHLWAakevugFa0/wh
-         LJEMiK2RGACe6Hlc2tZglpTx2H4AxQcDFlAu1ORMu9oBupGoLkBqqiEJtT7cKhPBFymM
-         xMWE/zEout29525aC9ryRBBf/64b2fqkQtIsb2/+Y8mIC9g2JhLQAKTmjmQ5mc0zF21L
-         9PXw==
-X-Gm-Message-State: AFq9FYLwy+cDmYX2JOOyQCHIKGOdi4YXpwuFlrpBnNquyewAuYtS0o2w
-	Y4hv9KcKeEeAr1lagMurSNzW3xKXEMVJ9RitTZqtjvH9K5E6n+MNbVsv
-X-Gm-Gg: AYBFou3qTiugvnHS3UBfNeaMI9rUY8qFbZWO5eXqf6tEPoEM8OE/wHlbtY4sFG9JLeM
-	X5Eb474OecWHjnnSgdwUxe99SKearwspK9ivcS1aEm+vt5i00r2zcr1yE3tI0Unb89pSo554tdG
-	HF5BFI3eMPTJfdLklysCz1GG2Kgpyx4I08irKQtqWkvnbPrl2O8Du1V41UijWnnmgDoxN5rtnz9
-	d891NydxsEq5A7TML+qCtZnXP/ys7zzDnQa0E37Kj2fmby+N7ykGHbDHEgFRMmsvvd9TW/LAdaW
-	FjSoL8WeD+gjuqZ2TGZcGcdu0ng5CeS5kncplTJQxYld14QpIyVWm78s1LCMLBnp2+1C2apMrHz
-	+ypDMOqvrjOCP2Y2o8W8bWwv+4+eHyaCD9abnE/VKO7I5qL0y+eCEkTT2PDVhPtzdi1CR0XSOOF
-	tI1cH4He/d/TNh9rXws/EoBHcJNaIlg9EBdM3UCLoiWp8t7Vi5VIpP3XEvkDqiDJ2a89BPkstHy
-	HskO+9r0a666phYsM0JNdsixFMixnZI6aS08CJ55o+mY5D1bj4gEHW08fgE7q0EMuN/RqXW5X/6
-	O34IdFmpbGjNaesACzc8gteX2bLIAqOINSzzHkW2jBuk+RZec3cuOaKcSSk=
-X-Received: by 2002:a05:6870:2417:b0:462:e12e:c561 with SMTP id 586e51a60fabf-491e9301751mr6610599fac.4.1790447388417;
-        Sat, 26 Sep 2026 11:29:48 -0700 (PDT)
-Received: from ?IPV6:2603:80a0:3900:aa00:abba:f323:b886:8886? ([2603:80a0:3900:aa00:abba:f323:b886:8886])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-49335c784a1sm4808792fac.10.2026.09.26.11.29.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 26 Sep 2026 11:29:46 -0700 (PDT)
-Message-ID: <049f2564-3ef2-433e-9206-be44b7885d7b@gmail.com>
-Date: Sat, 26 Sep 2026 13:29:43 -0500
+        bh=aAoDWVuRpxNlTIg9DRKgevYj0ImdfdGD3NJ5Lik81No=;
+        b=aC2CBalX/nyuPtvwXVash6zjsPjIcKSZENNnMOFskz+NJlxxhs6vrg3TnLpYwEPhaX
+         MuGiH+AK7OJL5Z4wMsaFiV9UEm4wML0XhNGdKavCxozZkWcwaJp+5kYvRo3u36v84UFD
+         4RilBOjlmCNx8G9sc7r50oWgLMHL+LdwauZq+rJs+IzZJSIpqrmoZRkiHMhchw244nbM
+         cifxDSTjVCGg21jv643BZdNgZhCeXnohY5MDfW/O2DpOCO80nO/EJb8R4JGswlpczXdM
+         qf0Y/jvA85hEJ1GOp0oRe0UW5HSSmDIHRraA3sDXjmNaMDnkoWJ6pzMzWNv8Oevm0E3x
+         HljA==
+X-Forwarded-Encrypted: i=1; AKwUvBy28xLEg6VwZn8P8TngUBICePbuJLxuWQ5ABRp7TUAA9RuT1ik/ZgbqbpeKyhiu1oCzjMrJxjIJLQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++mlgUkU2+oTCsmH8mx8YvC9jx+muZ7uziPPqTxl0lRm0jWR8MDF
+	5rKN5JoOicvYUcP62iLiG7QKtSE3ur5dCAvNSBOhrQ4Tgakp84SuTKHO3sjSSTvvp3wJOr2ttaB
+	m9EdD3+zxm35wWsZ/bo1ho13g77w6sdC8lBPE8BFKF/5mV7joR6b8nM5ZIlijxfbWiikeGwhlGz
+	lv
+X-Gm-Gg: AYBFou2EpMCJNsOG9Tahqaj/uEcuCoVfRzRGXAGPD2rLNZVjyIvZwRJniAYFyucGQVs
+	UYTu2qW5tMIAWF3Hyf4gYJeiemfCsWL3J+VNzgx4arJ2xet2n2iwFXWiCAjNO3Yu2vSTzS45hpm
+	LZzbu6eEZsM6enbv+j6gD4BHGjW5TYcxPgBcyAfI5+4V4Zmwr2Kc25wVVXWf8MJxuQut+tehXb6
+	EoDbzCKVX9A4oFeTGDFOLfUhttGLbd3hBonElGSFcLDtaSUYZee/3AGgH0mYfn1oeGy4uEtpbiW
+	ieAhSyTx+juM5POQOHiq3EWzBhG281h8u2BTtE8N+lWWGMavb6mMBkOVwYTClLU8kyHp2yW8Jhe
+	m9iQNJBd+kNdqstlCypEJF5TqdwE6Pb2f0Q==
+X-Received: by 2002:a05:600c:1d0d:b0:49c:f4e1:4c2d with SMTP id 5b1f17b1804b1-49fe66f144fmr165830585e9.16.1790450697044;
+        Sat, 26 Sep 2026 12:24:57 -0700 (PDT)
+X-Received: by 2002:a05:600c:1d0d:b0:49c:f4e1:4c2d with SMTP id 5b1f17b1804b1-49fe66f144fmr165830285e9.16.1790450696753;
+        Sat, 26 Sep 2026 12:24:56 -0700 (PDT)
+Received: from k6.lan (141.175.65.37.rev.sfr.net. [37.65.175.141])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49ff21cc844sm59706145e9.3.2026.09.26.12.24.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 26 Sep 2026 12:24:56 -0700 (PDT)
+From: Valentin Haudiquet <valentin.haudiquet@canonical.com>
+To: linux-mediatek@lists.infradead.org
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Valentin Haudiquet <valentin.haudiquet@canonical.com>,
+	Jian Hui Lee <jianhui.lee@canonical.com>,
+	stable@vger.kernel.org,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Yong Wu <yong.wu@mediatek.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2] memory: mtk-smi: fail larb runtime resume until component bind
+Date: Sat, 26 Sep 2026 21:24:17 +0200
+Message-ID: <20260926192417.1448813-1-valentin.haudiquet@canonical.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] s2idle: unrecoverable sleep on ThinkPad P16s Gen 4 AMD,
- (Strix Point) when more than 16 logical CPUs are online
-To: Fourhundred Thecat <400thecat@ik.me>,
- Mario Limonciello <mario.limonciello@amd.com>,
- platform-driver-x86@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Shyam-sundar.S-k@amd.com, hansg@kernel.org,
- ilpo.jarvinen@linux.intel.com, rafael@kernel.org
-References: <82329b33-ba2d-ee43-d444-5fdc14af1bce@ik.me>
- <66dee9c5-ad66-4bd7-982c-c5694d806cf2@amd.com>
- <0bb77796-790f-44db-b4cc-e4742ed1b2d0@amd.com>
- <eafbba40-a10f-6a7f-54e6-b14d59ad1525@ik.me>
- <99dcb462-5045-4fa7-9f6b-ee0f13ff96ab@amd.com>
- <4a161dd5-4dfe-81f4-e4d8-ba9d3280c25a@ik.me>
- <6d7773c8-0dc5-4e11-8bbb-088289dd508b@amd.com>
- <a5611ca8-b28d-4102-0caa-542fc162758a@ik.me>
- <60a5c26c-8fe2-477f-b576-2a18d8b6394d@amd.com>
- <fc70f3b0-6ac5-7ac9-dca8-595b65785718@ik.me>
- <b29e9341-70cb-4201-99fc-ef307dd10fa5@amd.com>
- <aab50dd0-5141-bded-0b58-0f01ae9621d5@ik.me>
- <c42ab776-6fa9-4e8e-acae-fa921a5ac108@amd.com>
- <0d1686e8-a50e-6f3b-2923-a0eca6ab4271@ik.me>
- <b6015026-fe8c-4823-ad39-c630350c0cc1@amd.com>
- <c58f84c7-bfe6-58db-cad5-6859e96a7daf@ik.me>
- <afb1949a-8465-cfc8-bddb-bc27783af223@ik.me>
- <8f06af84-c0fb-4d24-8868-bf16a1678b4a@amd.com>
- <3a080b50-6396-bf8f-2e70-011b85c15fe2@ik.me>
- <b2e13400-d1b7-4a9f-b7bc-a2d1dc7a4912@amd.com>
- <66bbe070-36d9-d854-f0ba-a350634713db@ik.me>
-Content-Language: en-US
-From: Mario Limonciello <superm1@gmail.com>
-Autocrypt: addr=superm1@gmail.com; keydata=
- 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
-In-Reply-To: <66bbe070-36d9-d854-f0ba-a350634713db@ik.me>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-> Captured acpidumps for all three configurations. Your hunch was right 
-> that the IVRS table is still created with AmdVt disabled, but it is not 
-> identical - and the difference looks like the actual mechanism.
+With the mtk-smi and mtk-iommu drivers built as modules, a consumer
+device probe (e.g. mediatek-drm on MT8183) can race the iommu's
+component master bind.  The consumer's probe path runtime-resumes its
+smi-larb suppliers, and the larb's runtime resume then runs
+mtk_smi_larb_config_port_gen2_general(), which dereferences
+larb->mmu and larb->bank.  Those pointers are only populated by
+mtk_smi_larb_bind() when the component master completes, so a larb
+resumed inside the window dereferences NULL and oopses in the module
+loader's initcall context.  The module loader is then stuck and the
+rest of the boot dies.  On MT8183 (krane), mediatek-drm module init
+hits this:
 
-OK.  That makes a lot of sense for this issue now.
+  Internal error: Oops: 0000000096000004 [#1] SMP
+  CPU: 4 UID: 0 PID: 270 Comm: (udev-worker) Tainted: G W
+  pc : mtk_smi_larb_config_port_gen2_general+0xe0/0x660 [mtk_smi]
+  lr : mtk_smi_larb_resume+0xb8/0x1b8 [mtk_smi]
+  Call trace:
+   mtk_smi_larb_config_port_gen2_general+0xe0/0x660 [mtk_smi] (P)
+   mtk_smi_larb_resume+0xb8/0x1b8 [mtk_smi]
+   pm_generic_runtime_resume+0x38/0x80
+   genpd_runtime_resume+0x118/0x320
+   rpm_callback+0x8c/0xc8
+   rpm_resume+0x558/0x758
+   __pm_runtime_resume+0x64/0xd8
+   pm_runtime_get_suppliers+0x6c/0xb8
+   __driver_probe_device+0x68/0x230
+   driver_probe_device+0xdc/0x1b0
+   __driver_attach+0x10c/0x2c8
+   bus_add_driver+0x17c/0x2e0
+   __platform_register_drivers+0x7c/0x1c0
+   mtk_drm_init+0x38/0xfd0 [mediatek_drm]
+   do_one_initcall+0x60/0x4e0
+   do_init_module+0xa0/0x308
+   init_module_from_file+0x10c/0x180
+   idempotent_init_module+0x1f8/0x2f0
+   __arm64_sys_finit_module+0x74/0x120
 
-> 
-> Summary, all with the IOMMU enabled and 24 CPUs online:
-> 
->    config          IVinfo      IVRS len   IVMDs   MSFT0201 in IVRS 
-> MSFT0201 ACPI dev   SSDTs
->    both enabled    0x00203043  0x216      3       yes                yes 
->                  29
->    AmdVt off       0x00203041  0x1F6      2       yes                yes 
->                  29
->    Pluton off      0x00203043  0x216      3       yes                NO 
->                  28
-> 
-> AmdVt off changes two things. The IVinfo word loses bit 0x2, the 
-> DmaRemap bit you already parse at offset 36. And the table is 32 bytes 
-> shorter because one IVMD disappears:
-> 
->    both enabled:
->      IVMD DeviceId=0060 Flags=07 Start=0x7D900000 Len=0x100000
->      IVMD DeviceId=C507 Flags=08 Start=0x6B400000 Len=0x20000
->      IVMD DeviceId=C100 Flags=08 Start=0x6B1F5000 Len=0x28000
-> 
->    AmdVt off:
->      IVMD DeviceId=C507 Flags=08 Start=0x6B400000 Len=0x20000
->      IVMD DeviceId=C100 Flags=08 Start=0x6B1F5000 Len=0x28000
-> 
-> DeviceId 0x0060 is MSFT0201:
-> 
->    AMD-Vi: ivrs, add hid:MSFT0201, uid:1, rdevid:0x60
-> 
-> and Flags 0x07 is unity mapped with read and write. So disabling AMD 
-> virtualization removes Pluton's unity mapped DMA region from IVRS, while 
-> the device is still declared in IVRS, still present as an ACPI device, 
-> and still attached to iommu group 0:
-> 
->    platform MSFT0201:00: Adding to iommu group 0
-> 
-> That would leave Pluton's DMA translated with nothing mapped for it, 
-> which fits every observation: it only breaks with the IOMMU enabled, 
-> amd_iommu=off is the only thing that fixes it, and neither intremap=off 
-> nor iommu=pt helps, since iommu=pt gives other devices identity domains 
-> but the IVMD is how firmware asks for one for this device specifically.
-> 
-> Pluton off is a different failure. The IVRS is byte identical to the 
-> working case, IVMD 0060 included, but one SSDT is gone and with it the 
-> MSFT0201 ACPI device. Your existing check already catches that case 
-> correctly:
-> 
->    found_iommu=True  found_acpi=False
->    -> IOMMU is misconfigured: missing MSFT0201 ACPI device
-> 
-> The AmdVt case is the one that slips through. In check_iommu():
-> 
->    if not found_ivrs_dmar and not found_ivrs_msft0201:
-> 
-> with AmdVt off, found_ivrs_dmar is False because bit 0x2 is cleared, but 
-> found_ivrs_msft0201 is True, so the and makes it pass and the tool 
-> reports "IOMMU properly configured" on a machine that cannot be woken.
-> 
-> So to answer your question about keying off something else: yes, and I 
-> think the signal is "IVRS declares an ACPI HID device but provides no 
-> IVMD covering its device id". That needs no vendor attributes and no DMI 
-> matching. The device id sits 3 bytes before the HID string in the type 
-> 0xF0 entry, and IVMDs are subtable types 0x20/0x21/0x22 with the device 
-> id at entry offset 4:
-> 
->    devid = struct.unpack_from("<H", data, data.find(b"MSFT0201") - 3)[0]
->    off = 48
->    while off + 4 <= len(data):
->        length = struct.unpack_from("<H", data, off + 2)[0]
->        if length == 0:
->            break
->        if data[off] in (0x20, 0x21, 0x22):
->            if struct.unpack_from("<H", data, off + 4)[0] == devid:
->                mapped = True
->                break
->        off += length
-> 
-> I checked this against all three dumps: it reports mapped for both- 
-> enabled and Pluton-off, and unmapped for AmdVt-off. Note that it would 
-> contradict test_check_iommu_no_dma_protection_BUT_msft0201, which 
-> currently asserts that MSFT0201 in IVRS is an acceptable substitute for 
-> pre-boot DMA protection, so whether to change that semantic is your call.
-> 
-> I am happy to send you the three acpidumps, with the extracted and 
-> disassembled tables and a record of the BIOS settings each was taken under.
-> 
-> Beyond that I have to stop here. This has taken the better part of a 
-> week, a lot of forced power cycles, and around $700 in LLM tokens 
-> working through it, and I am out of time and energy to take it further. 
-> The machine works now with AMD virtualization and Pluton enabled, which 
-> is a perfectly acceptable outcome for me.
-> 
-> Everything I found is in this thread, and I hope the IVRS observation is 
-> useful to you or to whoever picks it up. Thanks for the help getting 
-> here - the amd-s2idle tool, the pointer to e9f850ba66cd, and the 
-> suggestion to reset the BIOS were all what moved it forward.
-> 
-> 
-I've opened up a PR that should hopefully adjust the tool against your 
-failure cases.  Would you be able to confirm this against your system?
+The oopsing udev worker exits holding the module loader's locks, so
+every later module load soft-locks and the boot dies in the initrd.
+The same oops was reported on MT8188 (Genio 700 EVK) from mtk_mdp3
+module init.
 
-https://github.com/superm1/amd-debug-tools/pull/58
+Publish the bind state with smp_store_release() and check it with
+smp_load_acquire() in mtk_smi_larb_resume(); that answers how the
+check synchronizes between CPUs.  Fail the resume with -EAGAIN: the
+larb stays RPM_SUSPENDED and retryable, the error is dropped by
+pm_runtime_get_suppliers() on the driver-core probe path, and the
+consumer's first runtime resume after the bind (at display enable,
+mtk_crtc_atomic_enable()) re-runs the callback, which configures the
+larb ports then.  Failing rather than skipping keeps the larb
+suspended instead of marking it active with unconfigured MMU ports,
+which would only turn the crash into silent iommu faults.
 
-If it doesn't work, can you please send me the acpidumps and I'll adjust.
+A failed supplier resume does not break the consumer's probe.
+pm_runtime_get_suppliers() is void and drops the error, so a probe
+inside the window just proceeds.  The display components do not touch
+the larb in probe: mtk_disp_ovl_probe() and its siblings only call
+pm_runtime_enable(), and mdp3 only enables runtime PM for its
+DMA-capable components (mtk-mdp3-comp.c).  The first real runtime
+resume happens later, at display enable: mtk_crtc_atomic_enable()
+does pm_runtime_resume_and_get() and the device links resume the
+larb first.  By then the component master bind has completed, so the
+larb configures its ports and the resume succeeds.  There is no
+deadlock either: the bind only records the larb pointers, it does not
+resume the larb, so the window closes when the bind completes
+regardless of what consumers do.  -ENODEV is not an alternative;
+like -EPROBE_DEFER it is recorded in dev->power.runtime_error
+instead of being exempted.
+
+The bind state is a separate flag rather than a NULL test on
+larb->mmu so that the publication explicitly covers both larb->mmu
+and larb->bank.  mtk_smi_larb_unbind() clears it again with
+WRITE_ONCE(), which is all the clear side needs since it publishes
+nothing, so an iommu removal or module unload can not leave a stale
+bound state pointing at the freed iommu data.  A resume in flight
+while the iommu goes away is a pre-existing teardown hazard (the
+data it reads belongs to the iommu device, whose removal breaks
+bound consumers anyway); clearing the flag makes every resume that
+starts after the clear fail safely instead.
+
+Tested on MT8183 (krane) with the full MTK stack built as modules:
+with this change applied the machine boots reliably, the iommu
+probes and binds all larbs, and the display stack comes up fully
+functional.
+
+The Fixes: tag points at 4f0a1a1ae351, which moved the port
+configuration into the runtime resume.  The device links that open
+the race window are added on the mtk-iommu side, but the dereference
+guarded here is the one that commit introduced.
+
+Fixes: 4f0a1a1ae351 ("memory: mtk-smi: Invoke pm runtime_callback to enable clocks")
+Reported-by: Jian Hui Lee <jianhui.lee@canonical.com>
+Closes: https://lore.kernel.org/linux-arm-kernel/20251111124853.2916889-1-jianhui.lee@canonical.com/
+Cc: stable@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Yong Wu <yong.wu@mediatek.com>
+Cc: Jian Hui Lee <jianhui.lee@canonical.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mediatek@lists.infradead.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Valentin Haudiquet <valentin.haudiquet@canonical.com>
+---
+
+A fix for this was posted by Jian Hui Lee in November 2025, but the
+thread went quiet after review.  This revision is not from the
+original poster: it is an independent rework of the same fix,
+submitted because the same problem was hit on krane and the machine
+needed a working kernel.
+
+Changes in v2:
+ - publish the bind state with smp_store_release()/smp_load_acquire()
+   instead of a bare NULL check, answering the "how does this
+   synchronize between CPUs" question from the v1 review
+ - fail the resume with -EAGAIN instead of silently skipping the port
+   configuration; the larb stays RPM_SUSPENDED and the retry is
+   demand-driven (the consumer's next runtime resume, after the bind)
+ - clear the flag in mtk_smi_larb_unbind() so an iommu removal can not
+   leave a stale bound state pointing at the freed iommu data
+ - quote the oops backtrace and add proper tags
+ drivers/memory/mtk-smi.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/memory/mtk-smi.c b/drivers/memory/mtk-smi.c
+index aaeba8ab2..dfc65b208 100644
+--- a/drivers/memory/mtk-smi.c
++++ b/drivers/memory/mtk-smi.c
+@@ -157,6 +157,7 @@ struct mtk_smi_larb { /* larb: local arbiter */
+ 	int				larbid;
+ 	u32				*mmu;
+ 	unsigned char			*bank;
++	bool				bound; /* set once the iommu binds us */
+ };
+ 
+ static int
+@@ -171,6 +172,11 @@ mtk_smi_larb_bind(struct device *dev, struct device *master, void *data)
+ 			larb->larbid = i;
+ 			larb->mmu = &larb_mmu[i].mmu;
+ 			larb->bank = larb_mmu[i].bank;
++			/*
++			 * Publish larb->mmu and larb->bank; pairs with
++			 * smp_load_acquire() in mtk_smi_larb_resume().
++			 */
++			smp_store_release(&larb->bound, true);
+ 			return 0;
+ 		}
+ 	}
+@@ -180,7 +186,13 @@ mtk_smi_larb_bind(struct device *dev, struct device *master, void *data)
+ static void
+ mtk_smi_larb_unbind(struct device *dev, struct device *master, void *data)
+ {
+-	/* Do nothing as the iommu is always enabled. */
++	struct mtk_smi_larb *larb = dev_get_drvdata(dev);
++
++	/*
++	 * The iommu data recorded at bind time is going away; make the
++	 * next runtime resume wait for a fresh bind.
++	 */
++	WRITE_ONCE(larb->bound, false);
+ }
+ 
+ static const struct component_ops mtk_smi_larb_component_ops = {
+@@ -697,6 +709,19 @@ static int __maybe_unused mtk_smi_larb_resume(struct device *dev)
+ 	const struct mtk_smi_larb_gen *larb_gen = larb->larb_gen;
+ 	int ret;
+ 
++	/*
++	 * With modular builds a consumer device probe can runtime-resume
++	 * the larb (pm_runtime_get_suppliers()) before the iommu's
++	 * component master bind has populated larb->mmu and larb->bank.
++	 * Fail the resume with -EAGAIN: the larb stays RPM_SUSPENDED and
++	 * retryable, and the next resume after the bind configures the
++	 * larb ports.
++	 */
++	if (!smp_load_acquire(&larb->bound)) {
++		dev_dbg(dev, "not yet bound to an iommu, skipping port configuration\n");
++		return -EAGAIN;
++	}
++
+ 	ret = clk_bulk_prepare_enable(larb->smi.clk_num, larb->smi.clks);
+ 	if (ret)
+ 		return ret;
+base-commit: 93f51579e7df248780214094418f205253383cc5
+-- 
+2.53.0
+
