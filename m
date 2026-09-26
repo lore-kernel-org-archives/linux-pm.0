@@ -1,35 +1,66 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74EF039060C;
-	Sat, 26 Sep 2026 09:27:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CD683DE440
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 09:59:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790414836; cv=none; b=bSIl706kyaw7GaWOFwHDy6RYKu0FLUyhb06pMhFlnZdwJk6tdjaawrQVAnkealmuJECR01ZzIM+K98DAzgHP70xfYPjmSksl9At+qmmWK6QPxPmVE3ra96cfKeSbdNK3BKfrOLDh78w7JZLFtkmvFXVhy7pTf55zUtckWGPSQXA=
+	t=1790416784; cv=none; b=ZDrmHQIWCBoEBei+vX979iSSiwCps2Pt8tULLcvpZxqOSW4pN0u1kyaTvemdDqvzm83C5kin4sKAqDK/4kEF5kABEquJ3G3iaVTi1c6V+VBDrxWSaIAScQEWKR4W54vABSGIO22Nb+9Ki9XUwXkx6pJoXnbYHbKvczq0fIuZ060=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790414836; c=relaxed/simple;
-	bh=kNRuPrqgtHcxY8p63nt0TcL87K8N5D5xRZrd6GnaHiw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=INNb8GTnO+H6sEzt34F26j4A6nX7k2KcjMJljXoRoWZOp0U+CWrw8PU4PpsO3/TWFI3dEwmG9+10lxo94ksKcoOAMmS9aajon2CsKTtgiqpRDVMupcoQynh9DHxFXGGdfVBJl8oL2oxe1u6at5HiYw7E6BcPS/L24g5uZIimINo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bLWp7dPv; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790416784; c=relaxed/simple;
+	bh=9ZZ+x5hkD/0mxZXJpd66ErYLDuF7UKdZxcRaCMgFe+Y=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=fTZ/2/WjtK+dljEP/hcV+QATKrh4+IMyaJDrbuvxKYyrCT4FblyWNuH9Rm2Ntk1RKrCFv9Ic/D1Zd8WLLPA5LPgtSa+3H5q1K9pIUwGV4M6nMNoef6aAFWO9JxT4BEMcaf6pioxEQfXVwqPv+Fp77MzFQBucoCTKGTG00/MpisA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JAcQXAFT; arc=none smtp.client-ip=74.125.227.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bLWp7dPv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD4E41F00893;
-	Sat, 26 Sep 2026 09:27:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790414828;
-	bh=2IB/emxkyHo2HX8WhbXxbTX5kHFJvnRUt1R1zJ5EJrY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=bLWp7dPvvkC5iYRn7QCrP+n9zSTEV8wSmdq5FLV+7rYRGdMhh+tpPjxpnq+4hKK+J
-	 8BKlAXrHl9Cp9xDuPkaBrwHNg/in02IrPjosuTDhMQczYv27FfMLn8pJlJho48qLT6
-	 Z3IIFsrvAPo6O4v6WpPzfb4JBsmop7Jxbs44KA+6ugbrbZeEDkQHbs/bwwRe8TiGiZ
-	 nM20PIm1RDsbFfAV5pfG/hgppsIWZE13Hhthp4QxT9HNKxPadW2zjX5/pY/kFPJkxw
-	 hbWNIET7AKzXxDO8ucZep/LqAibyByxWc17RpEqLwaAQ6jgvO/L5N6tF6wNH9kSk12
-	 iHr1cJxNWeKzw==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Sat, 26 Sep 2026 12:26:34 +0300
-Subject: [PATCH v2 5/5] hibernation: make hibernation unavailable when
- debug_pagealloc is on
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JAcQXAFT"
+Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-398a147688bso1200338a91.1
+        for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 02:59:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790416782; x=1791021582; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=kUiyvyXhITScv6LZw2RrZkQ+8/ZN40BHdOZkzQnRKMo=;
+        b=JAcQXAFTHCpeAKPZOkXYY9JMAUHuN82T8hqCcbla4DEoRIZotLtKIoSIxPxJflHuam
+         GwMsgVVGMT0HHoKk91LFylQ2bwTet+pBUVFHAaV37dtclhUrITWNdpRCY6i8ZAcj7lQ9
+         J5bfpt7Wh2AcQcdqX5XhzW4tfr8pvKow9S29kCkUy91DFffkVU/P8yWKs4rJs4ECR9h2
+         +2OtFrB21hnxpS5zwgci519LTTbM/RsmGEmjYgxBLJIRffpJKrFmYMNzBs98EyiHQIbj
+         D00HC5BaeHPDb0hb7fjNXm3iBugVBzAMCsymtIPcrHm7ku67TgLY3zGc3p9J9oLhEHNH
+         CxUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790416782; x=1791021582;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=kUiyvyXhITScv6LZw2RrZkQ+8/ZN40BHdOZkzQnRKMo=;
+        b=rZllBcuQHqV4mZ0msci3GktOKGUQDWTPEYqnf4OrlDdlg5Q/J7g0yNz4v3EH8tbFMi
+         i5AU009d2/+qMIj892DH9/tIDCGeisXjAF1rtcdQxoS+sLoLIX8KrohqcaG9VGygkYD4
+         75qVwTVTglGxbajuOOLImiWWok8IY/u/MpRL5/tBcdeAt5Z5tRCmiBYDAa6W1fKNxQxw
+         tf0ZfQGXvAtZQtw9opbJQtIaf9MHuHjHxGOyQNewozvIMMt2eD9Z5y4TqJBPd0udDZ+X
+         Bn3DcLAWzpXTFSbp2L+mY+YCmm1GRvzefqoErsyZj3Rl0CypIRMqDG9pCo0YbQt+m/xm
+         thfw==
+X-Forwarded-Encrypted: i=1; AKwUvByhqEdk1gresRMgPrxk8qVt+Pd1+9qXTQ1CV8AfMwuV2WIZiaLphjeln1N4eRdWdqTgTjSvk1a9Zg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJmeXBaKjilreED90Q75cHvKso9UPehvBgMsWnV8EeWkqTojwmC
+	3jKMNbcCJljStCzhBgDIzYK7Xdwbm1kzwXP7/vHsQ96p5Ay1aacVAoT8Iu614Clzw+s=
+X-Gm-Gg: AYBFou25HdwkaIYImC089+6nvuFMaHFJ5XiEa32h+vQ4nEUySDoRwPDpFW+XShHmlyF
+	1UeC+avfA8FXCRjM11cCJBn/Jb704+3iKxeCuQ7FrMf49gLpDwgfiHLR/9kwS106av4Ohx/IDst
+	yEFtoMpKMdYYxi5174Ygd/PZRIb0q5g58QsQmBDEnS3+qbcl8d74Bj3KCaLAJ3Vkjfb+x4MHNAc
+	IIMX8pHESBMbMQbVevF0XuPnPiWS6DzjG4ZGASsAtSev/ZUqRWJFRrFYzlBv1uWTkApSjPp78kq
+	AeBuX6e8cFcpSvdMSb0t6rq/bsuQ6Zr6pK5hf/zt7944FsqiMs6GF+A3GaYKP+Pzy38awDaADsf
+	xOg3cT9JmpR5wGi+oBInEaw4dDGtjS3ajyColNn4qzjrduFvAqx6NA2Tw4MyWaPl3EdSzX9omMh
+	kmvPal2PKHbbV4kAhHwUdBF2CWju7kjeAIFc8CQzhDX8xcCSCoD7UgBbEofqoHizREGkxEXHu5P
+	V5xLKRWBw==
+X-Received: by 2002:a17:90b:4a45:b0:39e:1633:d29e with SMTP id 98e67ed59e1d1-3a098d43634mr7056631a91.5.1790416782257;
+        Sat, 26 Sep 2026 02:59:42 -0700 (PDT)
+Received: from localhost.localdomain ([2a09:bac5:55f7:25d7::3c5:1f])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a09766210bsm15033663a91.8.2026.09.26.02.59.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 26 Sep 2026 02:59:41 -0700 (PDT)
+From: Chuanhong Guo <gch981213@gmail.com>
+Date: Sat, 26 Sep 2026 17:59:28 +0800
+Subject: [PATCH] pmdomain: mediatek: scpsys: add MT7629 support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,175 +69,70 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260926-hibernation-v2-5-235f69f3ab2a@kernel.org>
-References: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
-In-Reply-To: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- Alexander Potapenko <glider@google.com>, 
- David Hildenbrand <david@kernel.org>, Marco Elver <elver@google.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Pavel Machek <pavel@kernel.org>, 
- kasan-dev@googlegroups.com, linux-kernel@vger.kernel.org, 
- linux-mm@kvack.org, linux-pm@vger.kernel.org
-X-Mailer: b4 0.16.1-dev
+Message-Id: <20260926-b4-mt7629-scpsys-v1-1-e02d03d2151e@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQ6CMBBA0auQWTuxVlPAqxAXbRlkEqlkppoaw
+ t2tLt/i/w2UhEnh2mwg9GblZ6o4HRqIs093Qh6rwRrrTG8dhgsuuXW2R42rfhS7bjRxOrfRkYW
+ arUITl/9yuFUHr4RBfIrzb/Tg9CqYqOTj4jWTwL5/AfKwaoGGAAAA
+X-Change-ID: 20260926-b4-mt7629-scpsys-88d0cf37c6e2
+To: Ulf Hansson <ulfh@kernel.org>, Ryder Lee <ryder.lee@mediatek.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ Chuanhong Guo <gch981213@gmail.com>
+X-Mailer: b4 0.14.3
 
-Back in 2008 when commit 8a235efad548a ("Hibernation: Handle
-DEBUG_PAGEALLOC on x86") enabled coexistence of hibernation and
-DEBUG_PAGEALLOC, the world was simpler, the combination was only supported
-on x86 and a non-present page in the direct map meant that the page was
-free and debug_pagealloc removed its mapping.
+MT7629 currently uses the MT7622 domain table through the device tree
+fallback compatible. Attempting to power on the WB domain triggers a
+warning during boot, and powering off AUDSYS times out.
 
-Nowadays there are more architectures with inconsistent views of how the
-direct map should be managed, there are more debug mechanisms in MM that
-can either drop a page from the direct map (e.g. KFENCE) or require that a
-page must be mapped immediately after resume (e.g. init_on_free).
+Add an MT7629-specific match entry to register only ETHSYS, HIF0 and
+HIF1, matching the domains exposed by the vendor driver. These occupy
+the first three entries in the MT7622 domain table.
 
-The latter constraint is particularly nasty, because enabling
-debug_pagealloc and PAGE_POISON at the same time simply breaks resume:
-
-  BUG: unable to handle page fault for address: ffff888000100000
-  #PF: supervisor write access in kernel mode
-  #PF: error_code(0x0002) - not-present page
-  PGD 4f0c067 P4D 4f0c067 PUD 4f0d067 PMD 4f0e067 PTE 800fffffffeff020
-  Oops: Oops: 0002 [#1] SMP DEBUG_PAGEALLOC NOPTI
-  CPU: 0 UID: 0 PID: 477 Comm: bash Not tainted 7.3.0-rc3-00090-g4a613f1d9124 #1 PREEMPT(full)
-  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-debian-1.17.0-1 04/01/2014
-  RIP: 0010:__kernel_poison_pages+0x45/0x70
-  Code: 89 fa 48 c1 e6 06 48 01 fe 48 89 d1 48 2b 0d 9a ed 87 01 48 83 c2 40 48 c1 f9 06 48 c1 e1 0c 48 03 0d 97 ed 87 01 48 8d 79 08 <48> 89 01 48 83 e7 f8 48 89 81 f8 0f 00 00 48 29 f9 81 c1 00 10 00
-  RSP: 0018:ffffc900017dfd78 EFLAGS: 00010086
-  RAX: aaaaaaaaaaaaaaaa RBX: 0000000000000000 RCX: ffff888000100000
-  RDX: ffffea0000004040 RSI: ffffea0000004040 RDI: ffff888000100008
-  RBP: 0000000000000000 R08: ffff888130fcada0 R09: 00000000723e0de4
-  R10: 0000000096ad9215 R11: 00000000db907bcf R12: 0000000000000005
-  R13: 0000000000000005 R14: 0000000000000000 R15: 0000000000000000
-  FS:  00007f8f2243e780(0000) GS:ffff8882e8e13000(0000) knlGS:0000000000000000
-  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-  CR2: ffff888000100000 CR3: 0000000140679000 CR4: 0000000000750ef0
-  PKRU: 55555554
-  Call Trace:
-   <TASK>
-   clear_or_poison_free_pages+0xd1/0xe0
-   hibernation_snapshot+0x548/0x5a0
-   hibernate.cold+0xcb/0x321
-   state_store+0xc3/0xd0
-   kernfs_fop_write_iter+0x163/0x240
-   vfs_write+0x21f/0x550
-   ksys_write+0x70/0xf0
-   do_syscall_64+0xb1/0x590
-   ? __irq_exit_rcu+0x40/0x110
-   entry_SYSCALL_64_after_hwframe+0x76/0x7e
-  RIP: 0033:0x7f8f224d0687
-  Code: 48 89 fa 4c 89 df e8 58 b3 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
-  RSP: 002b:00007ffe7bbe0910 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
-  RAX: ffffffffffffffda RBX: 00007f8f2243e780 RCX: 00007f8f224d0687
-  RDX: 0000000000000005 RSI: 000055e3e53135d0 RDI: 0000000000000001
-  RBP: 000055e3e53135d0 R08: 0000000000000000 R09: 0000000000000000
-  R10: 0000000000000000 R11: 0000000000000202 R12: 0000000000000005
-  R13: 00007f8f226295c0 R14: 00007f8f22626e80 R15: 0000000000000000
-   </TASK>
-  Modules linked in:
-  CR2: ffff888000100000
-
-It's possible to build a complex infrastructure involving a new page flag
-and/or page_type to allow robust hibernation and restore with
-debug_pagealloc enabled.
-
-This infrastructure requires a proper detection whether it is safe to
-temporarily remap a page to include it in the hibernation snapshot because
-relying on kernel_page_present() is too permissive and may include pages
-that were deliberately removed from the direct map for security reasons.
-
-This complexity does not seem justified to deal with an esoteric use case
-of hibernating a system that runs with debug_pagealloc enabled.
-
-Make hibernation unavailable when debug_pagealloc is enabled and simplify
-hibernate_{map,unmap}_page() that don't need to deal with debug_pagealloc
-anymore.
-
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Signed-off-by: Chuanhong Guo <gch981213@gmail.com>
 ---
- kernel/power/hibernate.c |  1 +
- kernel/power/snapshot.c  | 31 +++++--------------------------
- 2 files changed, 6 insertions(+), 26 deletions(-)
+ drivers/pmdomain/mediatek/mtk-scpsys.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 97de677e360f..187ec6e87345 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -110,6 +110,7 @@ bool hibernation_available(void)
- {
- 	return nohibernate == 0 &&
- 		!security_locked_down(LOCKDOWN_HIBERNATION) &&
-+		!debug_pagealloc_enabled() &&
- 		!secretmem_active() && !cxl_mem_active();
- }
+diff --git a/drivers/pmdomain/mediatek/mtk-scpsys.c b/drivers/pmdomain/mediatek/mtk-scpsys.c
+index efc8f276ffce..2b5bd8d61cb5 100644
+--- a/drivers/pmdomain/mediatek/mtk-scpsys.c
++++ b/drivers/pmdomain/mediatek/mtk-scpsys.c
+@@ -1073,6 +1073,17 @@ static const struct scp_soc_data mt7623a_data = {
+ 	.bus_prot_reg_update = true,
+ };
  
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 6868d6155daa..17b7cbbfc441 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -85,12 +85,7 @@ static inline int hibernate_map_page(struct page *page)
- 	if (is_kfence_address(page_address(page)))
- 		return kfence_force_mapping(page) ? 0 : -EFAULT;
- 
--	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
--		return set_direct_map_default_noflush(page, 1);
--	} else {
--		debug_pagealloc_map_pages(page, 1);
--		return 0;
--	}
-+	return 0;
- }
- 
- static inline int hibernate_unmap_page(struct page *page)
-@@ -98,17 +93,6 @@ static inline int hibernate_unmap_page(struct page *page)
- 	if (is_kfence_address(page_address(page)))
- 		return kfence_reset_mapping(page) ? 0 : -EFAULT;
- 
--	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
--		unsigned long addr = (unsigned long)page_address(page);
--		int ret  = set_direct_map_invalid_noflush(page, 1);
--
--		if (ret)
--			return ret;
--
--		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
--	} else {
--		debug_pagealloc_unmap_pages(page, 1);
--	}
- 	return 0;
- }
- 
-@@ -1446,10 +1430,10 @@ static inline bool do_copy_page(long *dst, long *src)
- /*
-  * safe_copy_page - Copy a page in a safe way.
-  *
-- * Check if the page we are going to copy is marked as present in the kernel
-- * page tables. This always is the case if CONFIG_DEBUG_PAGEALLOC or
-- * CONFIG_ARCH_HAS_SET_DIRECT_MAP is not set. In that case kernel_page_present()
-- * always returns 'true'.
-+ * Page could be not present in the kernel page tables. Try to map it before
-+ * copiyng and unmap back as needed.
-+ * If the kernel page table update fails, bail out with an error.
-+ *
-  * Sets @zeros_only to true if the page was entirely composed of zeros.
-  *
-  * Returns 0 on success, a negative error code on failure.
-@@ -1458,11 +1442,6 @@ static int safe_copy_page(void *dst, struct page *s_page, bool *zeros_only)
- {
- 	int err;
- 
--	if (kernel_page_present(s_page)) {
--		*zeros_only = do_copy_page(dst, page_address(s_page));
--		return 0;
--	}
--
- 	err = hibernate_map_page(s_page);
- 	if (err)
- 		return err;
++static const struct scp_soc_data mt7629_data = {
++	/* Reuse the MT7622 entries from ETHSYS through HIF1. */
++	.domains = scp_domain_data_mt7622,
++	.num_domains = MT7622_POWER_DOMAIN_HIF1 + 1,
++	.regs = {
++		.pwr_sta_offs = SPM_PWR_STATUS,
++		.pwr_sta2nd_offs = SPM_PWR_STATUS_2ND,
++	},
++	.bus_prot_reg_update = true,
++};
++
+ static const struct scp_soc_data mt8173_data = {
+ 	.domains = scp_domain_data_mt8173,
+ 	.num_domains = ARRAY_SIZE(scp_domain_data_mt8173),
+@@ -1105,6 +1116,9 @@ static const struct of_device_id of_scpsys_match_tbl[] = {
+ 	}, {
+ 		.compatible = "mediatek,mt7623a-scpsys",
+ 		.data = &mt7623a_data,
++	}, {
++		.compatible = "mediatek,mt7629-scpsys",
++		.data = &mt7629_data,
+ 	}, {
+ 		.compatible = "mediatek,mt8173-scpsys",
+ 		.data = &mt8173_data,
 
+---
+base-commit: f5f84daefcd92d7a630066635ecea1433ed5eac7
+change-id: 20260926-b4-mt7629-scpsys-88d0cf37c6e2
+
+Best regards,
 -- 
-2.53.0
+Chuanhong Guo <gch981213@gmail.com>
 
