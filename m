@@ -1,183 +1,131 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B96893090E8;
-	Sat, 26 Sep 2026 03:24:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8425A2E06ED
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 03:48:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790393080; cv=none; b=ANnjCEqMz9K8IIQFFTi8ZsfGF0a619jb1SdbZkoa5lbl8iylW6MFlRFt1uZw4MgwsgH2a7SoKzUOoZyu4jQRW5DF5JMV8CAgcw+SL3haRxiOFZbXM6vQKuIdlXP/qwZUuT18X7sthhWmWTaV1S61QPlClU6Gxb+QeeOpOqpv62I=
+	t=1790394535; cv=none; b=lnMVjd1W09gsMCq2VNoBGdj3dUPoz/uptjlEvzAFts92BMf/gs12Xa4W/sITL/TAsQfKr+L38QAbsjoJ9hHgsY1a3zI80xRDN/PdgvDEFIbQqZplK8kK53EJMiJstetmwHSaQhxdeL0igJRiu7NB6TzVrmWjfIg8f5UrpYeJtGU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790393080; c=relaxed/simple;
-	bh=u2bKMqmHH9et5bmwCUGc4r3mQCwAL+nmjWrOC5+NGQU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LSXAKP7piNuBgIiN8TU7LRWwjtnMkAzL3OJf8jN5JL7OK2BXm/iWl33FvtKJrvECtj7tVgH34Z3hfgfh6ThOcDBY44N1J30c8ddQ1cfy1Vn/Bjf/rItIZRDaLP4MqpHnJV0ip/MgzjXyIDkwOVKkVUPd8qIqXBu1rEdK2ohQtFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: c343442cb95911f19a56ed5b684f684d-20260926
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:da21d866-1b8c-42a3-b086-51ce81a585f3,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:7db8b62,CLOUDID:5bdde6c24e8d515c24ed0be13df09ffd,BulkI
-	D:nil,BulkQuantity:0,SF:102|136|850|865|898,TC:nil,Content:0|15|50|99,EDM:
-	-3|-100,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,O
-	SA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: c343442cb95911f19a56ed5b684f684d-20260926
-X-User: xiongxin@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <xiongxin@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 204045198; Sat, 26 Sep 2026 11:24:20 +0800
-From: Xiong Xin <xiongxin@kylinos.cn>
-To: rafael@kernel.org,
-	lenb@kernel.org,
-	pavel@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Xiong Xin <xiongxin@kylinos.cn>,
-	Riwen Lu <luriwen@kylinos.cn>
-Subject: [PATCH v2] PM: hibernate: flush icache for restored pages from task context
-Date: Sat, 26 Sep 2026 11:24:16 +0800
-Message-Id: <20260926032416.467937-1-xiongxin@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	s=arc-20240116; t=1790394535; c=relaxed/simple;
+	bh=CLrM2wPA9wxnXi7IhEgR7GfVZFShh2FdnM2mC8plLbc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FPoJ8yJ7yDiMMgvCowkTC2WOJ9uyOnLCf4efALyrgF4sSLnu5WTPxKaqTqAmP2oTTzd4K3AMHa3Mha0DLOP3/aNPVHTTOzfBnljiR1NvFD3w7V1Zsra52+DXVBfRpJu6DlSdBGgBPlbP/PKUkUSn+Jgt2MHMbFgstuRyDhaWNnU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aZOt4gGv; arc=none smtp.client-ip=74.125.229.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aZOt4gGv"
+Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-33bfb26865fso1302104eec.2
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:48:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790394534; x=1790999334; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=s/TFdpTxMiYwHrmjouP2VwdkJofSRV30LB9rRr0t5Pc=;
+        b=aZOt4gGvvEzchDBFSC9yD++v637Ri/q83vubCPw9DRvXUDMvTQorzc2JQ/+Qo9mW0L
+         DMgTlQzLuLjzDd0Li77YnoObe9Et/pI42EUl/6mmQYxza+jx7++zJQr+CzWE+2hntHkb
+         YQAFtK3hU8UQVAdSZAn40qRR5iFbNZodlSKqI9lLQeLfed2wQnr4XxMpulUqIA+fxxFk
+         iBjxqnVqzcoSsI4Ls+n+s51pr974feV4KxP6HVLz7MWN2pXxcqv3K/JRS8mb0U6REyaM
+         JkJ3GnH5TlM+3cQaYrc1bYaY+yoELUsq86M7VfNKeRlBqV2QZapMcsU2989dYOBtIrOT
+         4eGg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790394534; x=1790999334;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=s/TFdpTxMiYwHrmjouP2VwdkJofSRV30LB9rRr0t5Pc=;
+        b=AxBYsWwz/xBavH1mtn9U6Zt5KWzvf1GAN1sld0w5iGzyP6kM1o6uEUGjHxEDfopOYB
+         sW0lTpVC2dnPj6VIO+0fxw1AL++2frRrTspFP4cLDUbGpyYzRAJg91oRHH6JhwCnttWl
+         5Rfn3N3TvAJ3eDDieqe/1XCMbFKzliLioGMI5MaR+n9/DdJb/n+REHmXrwYlkpWI+V0P
+         3/HkwCf1spocFzXlbukINmw/R7rOzp7dhq/QDYnvo865SnUj57dppjVq8JIEhd4vBcyi
+         CYHWIvDQOvKx7qOy7UTfJYryV5w7GMzGE4zOFvV2FwS/DRp8h9G9HP0uaOMWmG8oKEsb
+         wP6A==
+X-Forwarded-Encrypted: i=1; AKwUvBzGa3XcK0UU4KtbQirp47CkBtBgodIxPFhnqbJVsmY2QfibrwjNIsnMaBuQ6/jxJrAGy0+eHbqqaA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nDXtRyfPbLEn+CWcg/30IJkoJIkHULcB8BefAbqTWS7sFW9wg1
+	ZqS1BD0woOaMVrXXJsjglqHh7dZ7Q/l5U8NkX9Lnm59l7LvLgZPHs5XL
+X-Gm-Gg: AYBFou0LQDJvB9vvqBHSvuhT84WfYmKqsaqZMPk4vAE3ZnOG1xHfLochcdSDOzmtY35
+	U+PcWT+5H0r9b38PNoLLh2B07enfkQ5b2orf9J57SAcnXgxQ8dfj++Zth958M0ysiwatZSeMVdd
+	KY+jEd4FIeNHiGxu3cSAnZcx6PC5tfIRpK2DoFgW91skwF5ngdVUx7aQzuyHg9Cg6xT1MFK9/c0
+	yamyKqiQsvpS01f8jrQS1v4olPk0KXG5Tl2P8Ced2sljIwpA6oT9KYDH7zszuvCLcVD1pqyfrNN
+	KFhqZS6fZ2yCvIRlNOzNLmGqf6r26cImhja6AhXxsFXTwA/SoHa3+mD1Tp+qIdUKCnB5NYgzbxK
+	k4MiaSqQKWgSOflYIW92xDqv6b/bmwZ6wg9cOuM0P/N9Jx/XlpHL3P71jWEtJaCnsOo15f7VSEh
+	n+bHirod4sCOiYTITgtgH0NZpRG2AMt5ffIwfQGLZrJS5/w5eH9/Vbvy8/cMsSmqO+cZBf9N3f6
+	5wPtVGK1lrnterxgUcbn+/1yidbfA21ODNeuMmVzc+s14DxRg==
+X-Received: by 2002:a05:7301:7e04:b0:33b:c122:6bd4 with SMTP id 5a478bee46e88-342701bed7amr1482746eec.6.1790394532963;
+        Fri, 25 Sep 2026 20:48:52 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2ebe:8:375:19cf:5fee:be32])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3434958c3adsm902665eec.22.2026.09.25.20.48.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Sep 2026 20:48:52 -0700 (PDT)
+Date: Fri, 25 Sep 2026 20:48:49 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Vladimir <anykey196@gmail.com>
+Cc: Chen-Yu Tsai <wens@kernel.org>, Samuel Holland <samuel@sholland.org>, 
+	linux-input@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@lists.linux.dev
+Subject: Re: [PATCH v2] Input: axp20x-pek - add AXP313a support
+Message-ID: <arc-Q9D1xcFn8I1q@google.com>
+References: <20260923110741.1880-1-anykey196@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260923110741.1880-1-anykey196@gmail.com>
 
-With `hibernate=nocompress`, load_image() submits read bios asynchronously
-and hib_end_io() completes them from hardirq/softirq context.  Commit
-f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored
-in-place") calls flush_icache_range() there, which on ARM64 ends with
-kick_all_cpus_sync() and so triggers
+On Wed, Sep 23, 2026 at 04:07:41PM +0500, Vladimir wrote:
+> The AXP313a MFD driver registers its power button cell as "axp313a-pek",
+> but the axp20x-pek platform id table only matches "axp20x-pek" and
+> "axp221-pek".  The power button therefore never probes on boards using the
+> AXP313a PMIC (e.g. the OrangePi Zero 2W).
+> 
+> Add the missing id table entry.  Unlike the other variants the AXP313a has
+> no PEK key/startup/shutdown registers - AXP20X_PEK_KEY (0x36) lies beyond
+> its register map (max_register = AXP313A_IRQ_STATE, 0x21) - so give it its
+> own axp20x_info without start-up/shutdown times and hide the corresponding
+> sysfs attributes, instead of exposing files that always fail with -EIO.
+> 
+> Tested on: OrangePi Zero 2W (Allwinner H618 + AXP313a), kernel 7.1.13.
+> 
+> Signed-off-by: Vladimir <anykey196@gmail.com>
 
-    WARN_ON_ONCE(!in_task());
+While we no longer require legal names on sign-offs we do need a "known
+identity" and just the first name does not cut.
 
-in smp_call_function(), as in_task() is always false in interrupt context.
+> ---
+>  drivers/input/misc/axp20x-pek.c | 39 ++++++++++++++++++++++++++++++++-
+>  1 file changed, 38 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/input/misc/axp20x-pek.c b/drivers/input/misc/axp20x-pek.c
+> index 24f9e9d893d..b912f13b607 100644
+> --- a/drivers/input/misc/axp20x-pek.c
+> +++ b/drivers/input/misc/axp20x-pek.c
+> @@ -85,6 +85,16 @@ static const struct axp20x_info axp221_info = {
+>  	.shutdown_mask = AXP20X_PEK_SHUTDOWN_MASK,
+>  };
+>  
+> +static const struct axp20x_info axp313a_info = {
+> +	/*
+> +	 * The AXP313a has no PEK key/startup/shutdown registers: AXP20X_PEK_KEY
+> +	 * (0x36) lies beyond the end of its register map (max_register =
+> +	 * AXP313A_IRQ_STATE, 0x21).  Leaving startup_time/shutdown_time unset
+> +	 * keeps the matching sysfs attributes from being created, so they
+> +	 * cannot fail with -EIO.
+> +	 */
 
-Only the nocompress path is affected: load_compressed_image() flushes from
-the decompression kthread, in task context.
+Maybe just say:
 
-Defer the flush to task context.  hib_end_io() now only records the
-restored page on a per-batch list (page->lru is free to use, as safe
-in-place pages are on no LRU).  Once hib_wait_io() returns to load_image(),
-hib_flush_icache_pages() walks the list and flushes each page, preserving
-the asynchronous batched I/O throughput.
+	.startup_time = NULL, /* not supported */
+	.shutdown_time = NULL, /* not supported */
+> +};
+> +
 
-Fixes: f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored in-place")
-Assisted-by: GLM:5.3
-Acked-by: Riwen Lu <luriwen@kylinos.cn>
-Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
+Thanks.
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index c78f1593600b..6d1019a2780f 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -223,6 +223,8 @@ struct hib_bio_batch {
- 	wait_queue_head_t	wait;
- 	blk_status_t		error;
- 	struct blk_plug		plug;
-+	struct list_head	icache_pages;
-+	spinlock_t		icache_lock;
- };
- 
- static void hib_init_batch(struct hib_bio_batch *hb)
-@@ -230,6 +232,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
- 	atomic_set(&hb->count, 0);
- 	init_waitqueue_head(&hb->wait);
- 	hb->error = BLK_STS_OK;
-+	INIT_LIST_HEAD(&hb->icache_pages);
-+	spin_lock_init(&hb->icache_lock);
- 	blk_start_plug(&hb->plug);
- }
- 
-@@ -249,11 +253,19 @@ static void hib_end_io(struct bio *bio)
- 			 (unsigned long long)bio->bi_iter.bi_sector);
- 	}
- 
--	if (bio_data_dir(bio) == WRITE)
-+	if (bio_data_dir(bio) == WRITE) {
- 		put_page(page);
--	else if (clean_pages_on_read)
--		flush_icache_range((unsigned long)page_address(page),
--				   (unsigned long)page_address(page) + PAGE_SIZE);
-+	} else if (clean_pages_on_read) {
-+		/*
-+		 * Stash the page on the batch list, load_image()
-+		 * will flush it once hib_wait_io() has returned to task
-+		 * context. The page is neither on an LRU nor in the page
-+		 * cache, so its lru member is free to use as link node.
-+		 */
-+		spin_lock(&hb->icache_lock);
-+		list_add(&page->lru, &hb->icache_pages);
-+		spin_unlock(&hb->icache_lock);
-+	}
- 
- 	if (bio->bi_status && !hb->error)
- 		hb->error = bio->bi_status;
-@@ -295,6 +307,23 @@ static int hib_wait_io(struct hib_bio_batch *hb)
- 	return blk_status_to_errno(hb->error);
- }
- 
-+/*
-+ * Flush the icache for pages restored since the last hib_wait_io().
-+ * Must be called from task context (after hib_wait_io() returned): all
-+ * bios of the batch have completed, so the icache_pages list is no longer
-+ * touched by hib_end_io() and can be walked without the lock.
-+ */
-+static void hib_flush_icache_pages(struct hib_bio_batch *hb)
-+{
-+	struct page *page, *tmp;
-+
-+	list_for_each_entry_safe(page, tmp, &hb->icache_pages, lru) {
-+		list_del_init(&page->lru);
-+		flush_icache_range((unsigned long)page_address(page),
-+				   (unsigned long)page_address(page) + PAGE_SIZE);
-+	}
-+}
-+
- /*
-  * Saving part
-  */
-@@ -1116,8 +1145,12 @@ static int load_image(struct swap_map_handle *handle,
- 		ret = swap_read_page(handle, data_of(*snapshot), &hb);
- 		if (ret)
- 			break;
--		if (snapshot->sync_read)
-+		if (snapshot->sync_read) {
- 			ret = hib_wait_io(&hb);
-+			if (ret)
-+				break;
-+			hib_flush_icache_pages(&hb);
-+		}
- 		if (ret)
- 			break;
- 		if (!(nr_pages % m))
-@@ -1131,10 +1164,17 @@ static int load_image(struct swap_map_handle *handle,
- 	if (!ret)
- 		ret = err2;
- 	if (!ret) {
-+		hib_flush_icache_pages(&hb);
- 		pr_info("Image loading done\n");
- 		ret = snapshot_write_finalize(snapshot);
- 		if (!ret && !snapshot_image_loaded(snapshot))
- 			ret = -ENODATA;
-+	} else {
-+		/*
-+		 * Reinit the list instead of walking it to avoid
-+		 * use-after-free.
-+		 */
-+		INIT_LIST_HEAD(&hb.icache_pages);
- 	}
- 	swsusp_show_speed(start, stop, nr_to_read, "Read");
- 	return ret;
 -- 
-2.25.1
-
+Dmitry
