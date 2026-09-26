@@ -1,78 +1,106 @@
-Received: from mail-pj2-f43.google.com (mail-pj2-f43.google.com [74.125.227.171])
+Received: from mail-dl2-f33.google.com (mail-dl2-f33.google.com [74.125.229.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6551E30F95C
-	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 04:28:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50D3338A73F
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 04:55:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790396885; cv=none; b=f95oXUgYqF5nVNv5Qu2BvU/O1sJNMLMjgzmGGFXLT7Y2nKBYrRh9Qd+WfPrvklxD1W8m3CbwDtS89qu9Eh50OirQ5v/BEvxBJratB/J5LnfwJACAhw0lIN1ZSB+nxSgdyyNk5Ip3PmSIUweAdNkkjDUKgrrrNwSbpLQPxx0NJ0M=
+	t=1790398532; cv=none; b=cGeVPIi4sH5vKbyhjTQfTCWdQSbo4bZlIMrFp1PcIC3yE2jt8XjsNDGcGfQfXsXibAOQKlePOJUVsyHULwjLaDV1u67ISpH7RRkIS5DBxQD9dIZ/XyPKohpZ3fAsEYPGGsuLybaL95/E30zUr12xXZ8unusuvV4hfphQDa18oIY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790396885; c=relaxed/simple;
-	bh=zDWRznreaCj9pwq4xoxCFPqmAgk2FFcPqeo4LAIzOII=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fqPj9ajJdSu4cl5wI+Xtd1KTSDxCYMo3GAj/Vl2LJrcl7wkfn5HADZYKI+09vcUEc+LAYa2Z7Mj9YAXoSeAls3H7uvmeohVzq4AJAOmhhOQQwnyBqfyaLS3oeHhsEuTTmbEb74UglKeOqVD2hSPrZFC8TgxwUt05mW8lurWrYQQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kDmQtY33; arc=none smtp.client-ip=74.125.227.171
+	s=arc-20240116; t=1790398532; c=relaxed/simple;
+	bh=VJt+X1k/ydRjcIAibigZ3Pxk4kxu4GwSuJxbtbPx6e0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=b/MpYyZ0Y0hkXzZi/TD7HJS1QKVcqoM0g+36asnO+0m2GRoVlLInhaVAqfSDjAfeAHJOPx2VQFCXkwbWstZTCxtvTF2cK/dkEF43C67Hma9bIBqSih8yelUXOFaBA4O0QWdJZbbBTx9VLtufGPMXx3kwIRIFGVShmZ85rjuD+Gk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b7s1KCd1; arc=none smtp.client-ip=74.125.229.161
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kDmQtY33"
-Received: by mail-pj2-f43.google.com with SMTP id 98e67ed59e1d1-396ccb1a98dso945711a91.0
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 21:28:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b7s1KCd1"
+Received: by mail-dl2-f33.google.com with SMTP id a92af1059eb24-1438e88300cso1319786c88.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 21:55:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790396884; x=1791001684; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1790398529; x=1791003329; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0jBdH+3CimcIocBItRqRUNlkXd/F1gm5vjU+KHPvU30=;
-        b=kDmQtY33uk1muvuEoQAwaHHWThlOr9705WM1jBXsU6JUWOJyAXN4gVNL/v5ZlGumor
-         ugv/IWgrGCpQhHVWpJF9sVA0Mc1qY2mZJvZMW4s8kubYA6IN2eWBChK9ZnaXQuU7qehe
-         tF5SFShrK+9NYsR4Sh4Iv9WwjH4hTUYjKS6h+MN95Rb6ao+9MD18rUqp7i6vzj3YoX4R
-         WxpEy2+savqk3DSMmzzdV02QKtYHiwZfIsIxubwcA8BTtn22MrJLX4ieGahXncxdoX2w
-         f5fSEJMqMBhV2Awd6z80OUgpXnzz7V5621kESkUGTrMN84OrzcZgEFEppvRecSWFHdGe
-         vrlQ==
+        bh=lez8Lh9LK2IJV3Lg+4+qOHMKMvDRPEZgp+OMdBxRRpI=;
+        b=b7s1KCd1Fc3xk7Px/PBFexs1HShEbmxEi3Q/iJYAj5PgTXH9qm5E/gmCE1R0dPRlbD
+         2qQezhrQiSfuQxXSg5DmYbvvtXPVuM3erE53zeONQJlGk7S5Ekh0+o2VWqM+0950t7rS
+         QP8zY6BIytqUO2w4L/tROUegVB/hV7x5/050miymXwwzjtSepoRxWBEdCHLUSwS1KPwA
+         PCIeOfTm0v/uSuCVk5NWm9dMICd8VhGbXRMni37lFvhEl/BEJvBy6mJNyMj9KS2mkQNX
+         g40MyqggOsyDLyAfHsNB+wKwufepyQCd+AhSGrsUZsQLyEv0F1eR1TUd2ox+0/YL6NdR
+         9WXg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790396884; x=1791001684;
+        d=1e100.net; s=20260707; t=1790398529; x=1791003329;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=0jBdH+3CimcIocBItRqRUNlkXd/F1gm5vjU+KHPvU30=;
-        b=kUnipcGr8jzzPb78AbvPWXv7a7lpdtZp/nYGOuZqHoHhgZuAkfJ3GkJoKVVCZgRbDC
-         EcmqF7O7VDUZdCS1MHauqn2vBcH0ixRiD/o1scTB4blsFTPk3bRWmuK+H7mwQ0jghZFP
-         /W6EpdAC5MRO9hLaXHjXR7QCn+ngWI8Mr7/1gsKdnU6nQMFA9K2dQ4DdOX/AdUUmjyQY
-         sZgC+dy2hLe9DRITWZ/UsY0HxU6ObtgqpMjx5ALtWJmTUxVmsmSy+A4wJ8/tDjvLegSa
-         oa5i+/AZ7YJxULkEDootcOdKL8QLnAhAvV+/wqPfJGPRt8Vr2riS3Dv0O6daZXXFwyuI
-         Rx3Q==
-X-Forwarded-Encrypted: i=1; AKwUvBw1zRdETXKEVUunDVvJDXXs0ci4BYLkRqrlX588Nlv/xd/2VllXYm2HzjAdGJxIqux6gsEvKQhAtg==@vger.kernel.org
-X-Gm-Message-State: AFuF++n/VdlwFbuHV9CIIcwhQD5nJKQEp+2NbtFKIreDpVRCYY0PJd5b
-	Cy9Bq7LoGVq5nFYMjdMKK3VlvkRvRs7ledNcAVNYgs8eZrdQeAXGmnG+
-X-Gm-Gg: AYBFou0t3V9qxQTgtZje9yP+DOjWEh0KJJEGUdZMN9sjt7mA74NNcG3mKu+Pl7PbFry
-	Mb8/+UedjSY9NLhg8XGtj02jZpF/RCf9C1Q2E9xbDo9eoQU4WaPtFOrUpUJUuUVdaC/pzots5Dy
-	xZUwMsi4TGdxc0jgHWXkALrwG2MXuta5wsakDHCKHFhcZYJtwaYTuGGwPEDi4J3/AiP05Vd5rCB
-	olEwMTcDHMPEIPlgcQne+MMxGlF61davZQ+MJHS+zrLcBHx9rh8Q9g2l4tKitdSCaxQMdSDjcTF
-	xl1nT3d136Wy9YC9hImv2JgmjKbvXqyLNL0MiN2M4cf3GNrwDAFzeXmTU1OWBbm/KOE0g8WvY/w
-	VzFpH5ciVQKMUXcp7vAgqjVl+Vmeq1euMJzTM1EwX83Rmk4ly3qhmEnS6xSizfBgq+bFUmhdTYa
-	VZuQ8NX9ykj4IQsrAOZhdJUFEGNf4OL6aglzy3pT2K2DYkBDGU7LBqzZr8uqBEM00hmuUCy1GN1
-	raA7f257BZOWn9m7f8TiIERzcFnuD/5QLtpb2BpyLzXf9Kr0Ep/vADsRXYBE7qr1354bMHirUkt
-	az4mpKcBQ5KTBtk6MW1ZoxtgGWx0CKjzwYUrQg==
-X-Received: by 2002:a17:90b:2d81:b0:38e:2517:5d1f with SMTP id 98e67ed59e1d1-3a0bb552feamr3228577a91.9.1790396883522;
-        Fri, 25 Sep 2026 21:28:03 -0700 (PDT)
-Received: from dell-pro-max-tower-t2.cse.unsw.EDU.AU (pag-t2-pc.cse.unsw.EDU.AU. [129.94.173.199])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0c2e986easm8034535a91.1.2026.09.25.21.27.59
+        bh=lez8Lh9LK2IJV3Lg+4+qOHMKMvDRPEZgp+OMdBxRRpI=;
+        b=ieXojLFBaUKCH6ihr2hV8MATcW+2XksrsHjJndME+whRZuF8eT7SmzmKLlY5jvAugv
+         JTdzUMf+/00BhM/BVgRgVGZlAYzGqQu2p0Xr6g6epspUET9JAqmeZ+gXYAcGOEJ5J92V
+         UTGCgC4OpxrP9+TYrW34BO3PBSP7kFW0J9X55hQXErpqSxIJWmrX0VMEB0KChdTZBLRE
+         57518ayk9B8ZYgN5qs7o9LfHUFDrAIZKx2oKLRu0qXvOvNPHgLzQc/r+IFq9+zwQIFEA
+         JDR6SYGdh4Fs3NiBaSmjmaFLOU1jiax6EkdtyhawCcPoxbytMlknfW1aaeWUdW3fvm1E
+         9xtQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwEVZADMgvxHwZntrWTDDYmzi7ztWila+qZ0VVWHo5yHsyHVIXyMQtUp36mYmRvsid0JA86wCsy4g==@vger.kernel.org
+X-Gm-Message-State: AFuF++mcUCOgwOVBTwt+k7IkdXXqvx8T2PHEivYnON/hpFXzelHBGdcO
+	gvmfqaOR7fMHrcX+/643w4iScgv4sLn5CVQt5iobXPhX8HCzGa4NwW9y
+X-Gm-Gg: AYBFou3oRLpfEOUwoPs+5pfgu2iwgWG0kk5g/9clujrjYfMePi8NFnf3B4IObXekvNh
+	xzV/lcs3DXNJAbwhs0T4ggI7X1WwqSImog1rNuxuhkKOXCi0FP2i8Qyp78YHHQ+OTNRrkvLIKo1
+	w6pCF7a0YKGXDSoyBcyTZG/YNSE2SkT/cb3JTc9ZK9fJp/sJZ4o7mE8/1ZwWr2xH/wXD00TYuy7
+	BiLbjZLagKssIJUS9aWZ4MkVy6iece3jsbEyhk3giMIZhD07bPyv45TryEW3ddjAN6CDO1cC2Oa
+	UnZ0syHVqg28OYlO9dKOnsNLJPtC35DLWypuU1koTRJHUKP0hFlfkKuDFWJBevL/tipEVRFlNNx
+	CKEoWp9xE1Xhx2Cwen9CsTk212BLel7lu8DtX90MnDwIcbSRuEUrr+NR0W+9jLJMyrXx9c5qZMa
+	He2poiFHjvYE3bXB3mcpLIlF3H9fmZCmhK79YobU2vWH0sKz7eo3flyNeqgfl8WTsWPByPHuBX/
+	ZSDp3XHE4XTT/ztK9HD5QzTL+YCGmUbfFRaMgve7Ouw6Ps+yBB3Bob6etJn0xHNhkwsxVrKU5vl
+	jVqb86mVi9X0UXGjvdHBRqfg8hRu7pz951rIkDRuwxmhanRYIYPJm9sRDbM=
+X-Received: by 2002:a05:701b:4354:b0:143:8865:cca with SMTP id a92af1059eb24-146cfdcf390mr1703579c88.22.1790398527862;
+        Fri, 25 Sep 2026 21:55:27 -0700 (PDT)
+Received: from spider.bream-herring.ts.net ([103.6.151.236])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-145adcc5b00sm9334211c88.15.2026.09.25.21.55.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Sep 2026 21:28:02 -0700 (PDT)
-From: Weigang He <geoffreyhe2@gmail.com>
-To: Daniel Lezcano <daniel.lezcano@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	linux-pm@vger.kernel.org,
+        Fri, 25 Sep 2026 21:55:27 -0700 (PDT)
+From: Matthias Goergens <matthias.goergens@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthias Goergens <matthias.goergens@gmail.com>,
+	Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	David Hildenbrand <david@kernel.org>,
+	Michal Hocko <mhocko@kernel.org>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Yosry Ahmed <yosry@kernel.org>,
+	Youngjun Park <youngjun.park@lge.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Barry Song <baohua@kernel.org>,
+	linux-mm@kvack.org,
 	linux-kernel@vger.kernel.org,
-	Weigang He <geoffreyhe2@gmail.com>
-Subject: [PATCH] thermal/drivers/sprd: validate the sensor id from the device tree
-Date: Sat, 26 Sep 2026 14:27:57 +1000
-Message-ID: <20260926042757.2109927-1-geoffreyhe2@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	cgroups@vger.kernel.org,
+	linux-api@vger.kernel.org,
+	Alejandro Colomar <alx@kernel.org>,
+	linux-man@vger.kernel.org,
+	Karel Zak <kzak@redhat.com>,
+	util-linux@vger.kernel.org,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	intel-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	Shuah Khan <shuah@kernel.org>,
+	linux-kselftest@vger.kernel.org
+Subject: [RFC PATCH v2 0/4] mm/swap: reserve swap areas for deliberate offload
+Date: Sat, 26 Sep 2026 12:55:13 +0800
+Message-ID: <20260926045517.3458413-1-matthias.goergens@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -81,71 +109,113 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-sprd_thm_probe() reads each sensor child node's "reg" property into
-sen->id and uses it without validation: to compute the sensor's
-register offsets in sprd_thm_sensor_init(), as the thermal zone id, and
-finally as an index into thm->sensor[], which has SPRD_THM_MAX_SENSOR
-(8) entries:
+This RFC adds offload-only swap areas for deliberate cold-page offload to
+backends unsuitable for pressure reclaim. ZFS zvol swap has documented
+deadlocks under memory pressure [3]; compressed swap is another target
+because writes may need memory despite free logical slots.
 
-	ret = of_property_read_u32(sen_child, "reg", &sen->id);
-	...
-	thm->sensor[sen->id] = sen;
+Explicit proactive reclaim can use these areas alongside conventional
+swap, ordered by priority. Ordinary reclaim cannot initiate non-zero
+writes to them, including through retained swap entries. Conventional
+capacity is not reserved for emergencies. Operators choose the policy;
+the kernel does not measure headroom or make an allocating backend safe.
 
-Only the number of sensor nodes is checked against SPRD_THM_MAX_SENSOR.
-A "reg" value of 8 or more, or one that is negative once stored in the
-int sen->id, makes the register offsets point outside the sensor range
-and the final store land outside thm->sensor[], overwriting the fields
-that follow it in struct sprd_thermal_data or other memory.
+TMO/Senpai [4] and DAMON_RECLAIM [5] are related cold-page reclaim
+approaches. This RFC admits offload-only swap through memory.reclaim and
+per-node reclaim, but not DAMON. Other related work includes per-cgroup
+zswap writeback control [6], Virtual Swap Space v4 [1] and swap tiers v10
+[2].
 
-Reject an out-of-range id right after reading it, before it is used.
+The util-linux companion [8] proposes swapon --offload-only and an fstab
+option. Older swapon silently ignores the fstab token, so persistent
+activation needs discussion. Apply the separate i915 fix [9] first to avoid
+a pre-existing folio-lock leak when shmem writeback is skipped.
 
-This does not address sparse ids, such as a single sensor with id 7:
-they leave holes in thm->sensor[] that the later loops over
-0..nr_sensors-1 dereference. That needs a separate fix.
+The series fixes zram selftest device tracking and error reporting, adds
+the swap policy with DRM eligibility checks, and tests routing, workingset
+activation and retained-entry write refusal. It is based on mm-new at
+995829088503.
 
-Found by static analysis tool CodeQL.
+Feedback is particularly welcome on:
 
-Fixes: 554fdbaf19b1 ("thermal: sprd: Add Spreadtrum thermal driver support")
-Assisted-by: LLM codeql
-Signed-off-by: Weigang He <geoffreyhe2@gmail.com>
----
+- Activation-time eligibility versus backend placement or migration:
+  is retained-entry refusal, with possible reclaim churn or OOM,
+  acceptable without migration?
+- Eligible-capacity accounting, including overcommit limits and OOM
+  scoring; cache recovery, cluster invalidation and workingset activation.
+- Persistent activation and visibility: current swap listings do not
+  expose the policy.
 
-Notes:
-    Compile-tested only (ARCH=arm64 allmodconfig, W=1). Not tested on
-    hardware, and there is no reproducer.
-    
-    The CodeQL query behind this report was synthesized with LLM assistance,
-    and the fix and changelog were drafted with LLM assistance; I have
-    reviewed them.
+Validation includes x86 builds, affected arm64 MTE objects and builds
+without swap or memory cgroups. QEMU tests covered routing, retained-entry
+recovery, data integrity and cleanup, with negative controls for write
+refusal and teardown failure.
 
- drivers/thermal/sprd_thermal.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+I have also been using this policy on my own machine with experimental
+bcachefs swap support, with no problems observed so far. Deliberate stress
+testing is confined to VMs; I do not deliberately stress-test this machine.
 
-diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-index d683fcb0f8ab8..b57277e2eac01 100644
---- a/drivers/thermal/sprd_thermal.c
-+++ b/drivers/thermal/sprd_thermal.c
-@@ -396,6 +396,12 @@ static int sprd_thm_probe(struct platform_device *pdev)
- 			goto of_put;
- 		}
- 
-+		if (sen->id < 0 || sen->id >= SPRD_THM_MAX_SENSOR) {
-+			dev_err(&pdev->dev, "invalid sensor id %d\n", sen->id);
-+			ret = -EINVAL;
-+			goto of_put;
-+		}
-+
- 		ret = sprd_thm_sensor_calibration(sen_child, thm, sen);
- 		if (ret) {
- 			dev_err(&pdev->dev, "efuse cal analysis failed");
+Changes since v1, incorporating Sashiko's public review [7]:
 
-base-commit: 165768bb70265b5c38cf0b73fafd75be235f8b14
-prerequisite-patch-id: c5a3be8688fd8e88a00352acb1374e91fcb52a03
-prerequisite-patch-id: 67693e2c08624df0841619cc085ce9200f4385fc
-prerequisite-patch-id: f3d73f7c19be7e952aa8061303f53f9a08576a88
-prerequisite-patch-id: 541e578709d048f4c8115f1d926be2f2c03ecb0e
-prerequisite-patch-id: f23f8e0693435497645805822d98a92e57fb46f3
-prerequisite-patch-id: eae82895db8ba67018a777a91a283ad6bc4a55b2
+- Improve selftest isolation, retained-swap measurement and memlock skips.
+- Track allocated zram devices, wait for udev probes and report cleanup
+  errors without deleting data through a mount that could not be released.
+- Clarify activation, capacity reporting and conventional fallback limits.
+
+[1] https://patchew.org/linux/20260825153238.2695446-1-nphamcs@gmail.com/
+[2] https://patchew.org/linux/20260713025644.170839-1-youngjun.park@lge.com/
+[3] https://openzfs.github.io/openzfs-docs/Project%20and%20Community/FAQ.html#using-a-zvol-for-a-swap-device-on-linux
+[4] https://engineering.fb.com/2022/06/20/data-infrastructure/transparent-memory-offloading-more-memory-at-a-fraction-of-the-cost-and-power/
+[5] https://www.kernel.org/doc/html/latest/admin-guide/mm/damon/reclaim.html
+[6] https://www.kernel.org/doc/html/latest/admin-guide/mm/zswap.html
+[7] https://sashiko.dev/#/patchset/20260914104501.3960616-1-matthias.goergens@gmail.com
+[8] https://github.com/util-linux/util-linux/pull/4633
+[9] https://lore.kernel.org/all/20260914105606.3997649-1-matthias.goergens@gmail.com/
+
+v1: https://lore.kernel.org/all/20260914104501.3960616-1-matthias.goergens@gmail.com/
+
+Matthias Goergens (4):
+  selftests: zram: track owned devices and report cleanup failures
+  mm: restrict offload-only swap to proactive reclaim
+  selftests: zram: cover offload-only swap policy
+  selftests: zram: cover retained offload-only entries
+
+ Documentation/mm/swap.rst                     | 105 ++++
+ drivers/gpu/drm/i915/gem/i915_gem_shrinker.c  |   2 +-
+ .../gpu/drm/i915/gem/selftests/huge_pages.c   |   6 +-
+ drivers/gpu/drm/msm/msm_gem_shrinker.c        |   2 +-
+ drivers/gpu/drm/panthor/panthor_gem.c         |   2 +-
+ drivers/gpu/drm/ttm/ttm_backup.c              |   2 +-
+ drivers/gpu/drm/xe/tests/xe_bo.c              |   2 +-
+ include/linux/swap.h                          |  29 +-
+ include/linux/vm_event_item.h                 |   1 +
+ mm/memcontrol.c                               |  20 +-
+ mm/page_io.c                                  |  24 +-
+ mm/swapfile.c                                 | 123 ++++-
+ mm/vmscan.c                                   |  31 +-
+ mm/vmstat.c                                   |   1 +
+ tools/testing/selftests/zram/.gitignore       |   2 +
+ tools/testing/selftests/zram/Makefile         |   4 +-
+ tools/testing/selftests/zram/README           |  20 +-
+ tools/testing/selftests/zram/config           |  10 +-
+ tools/testing/selftests/zram/settings         |   1 +
+ tools/testing/selftests/zram/swap_offload.c   | 425 +++++++++++++++++
+ .../selftests/zram/workingset_offload.c       | 207 ++++++++
+ tools/testing/selftests/zram/zram.sh          |   9 +
+ tools/testing/selftests/zram/zram01.sh        |   9 +-
+ tools/testing/selftests/zram/zram02.sh        |   9 +-
+ tools/testing/selftests/zram/zram03.sh        | 174 +++++++
+ tools/testing/selftests/zram/zram04.sh        | 164 +++++++
+ tools/testing/selftests/zram/zram05.sh        | 447 ++++++++++++++++++
+ tools/testing/selftests/zram/zram_lib.sh      | 189 ++++++--
+ 28 files changed, 1926 insertions(+), 94 deletions(-)
+ create mode 100644 tools/testing/selftests/zram/settings
+ create mode 100644 tools/testing/selftests/zram/swap_offload.c
+ create mode 100644 tools/testing/selftests/zram/workingset_offload.c
+ create mode 100755 tools/testing/selftests/zram/zram03.sh
+ create mode 100755 tools/testing/selftests/zram/zram04.sh
+ create mode 100755 tools/testing/selftests/zram/zram05.sh
+
 -- 
-2.43.0
+2.55.0
 
