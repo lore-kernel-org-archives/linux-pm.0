@@ -1,131 +1,240 @@
-Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp-190a.mail.infomaniak.ch (smtp-190a.mail.infomaniak.ch [185.125.25.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8425A2E06ED
-	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 03:48:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93E63254B03
+	for <linux-pm@vger.kernel.org>; Sat, 26 Sep 2026 04:13:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.125.25.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790394535; cv=none; b=lnMVjd1W09gsMCq2VNoBGdj3dUPoz/uptjlEvzAFts92BMf/gs12Xa4W/sITL/TAsQfKr+L38QAbsjoJ9hHgsY1a3zI80xRDN/PdgvDEFIbQqZplK8kK53EJMiJstetmwHSaQhxdeL0igJRiu7NB6TzVrmWjfIg8f5UrpYeJtGU=
+	t=1790396027; cv=none; b=mYyTITfibiMEiN/hy7vpBvPHUAPz8yMT0d6sZxx38EHR3mNO/R/FQQYOUtKAajaFNUUUhQRoN6krxlDdfZdXTakfHfbxbbJRSxuZm4zBg/u1585SKblgjXoKmWH5sVcXzfMCMa2zltvJTFcPAIKwJriFJmevhJsdBzR3DBFXIX0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790394535; c=relaxed/simple;
-	bh=CLrM2wPA9wxnXi7IhEgR7GfVZFShh2FdnM2mC8plLbc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FPoJ8yJ7yDiMMgvCowkTC2WOJ9uyOnLCf4efALyrgF4sSLnu5WTPxKaqTqAmP2oTTzd4K3AMHa3Mha0DLOP3/aNPVHTTOzfBnljiR1NvFD3w7V1Zsra52+DXVBfRpJu6DlSdBGgBPlbP/PKUkUSn+Jgt2MHMbFgstuRyDhaWNnU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aZOt4gGv; arc=none smtp.client-ip=74.125.229.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790396027; c=relaxed/simple;
+	bh=dZTixQQwFD5sG1UHiJiGYRYfvrxCW8KwqDULWaS0RZo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ustQuLudn5o2HNLQGmp3/kuIosKxJ+rOqci/opLma+6IahMYa+7VfMj+yOdHflOL/5XZNJs2Ibq6KdGonZKJLSvPGr62Rl2wlW1LQH7uwmKrb5D+WjgxED7boEp15onr4KSxG8O2t1PJw4l5hox2UOrr9Vnrcn7pc5geRiRPzq0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ik.me; spf=pass smtp.mailfrom=ik.me; dkim=pass (1024-bit key) header.d=ik.me header.i=@ik.me header.b=p1u2J4GV; arc=none smtp.client-ip=185.125.25.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ik.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ik.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aZOt4gGv"
-Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-33bfb26865fso1302104eec.2
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2026 20:48:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790394534; x=1790999334; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=s/TFdpTxMiYwHrmjouP2VwdkJofSRV30LB9rRr0t5Pc=;
-        b=aZOt4gGvvEzchDBFSC9yD++v637Ri/q83vubCPw9DRvXUDMvTQorzc2JQ/+Qo9mW0L
-         DMgTlQzLuLjzDd0Li77YnoObe9Et/pI42EUl/6mmQYxza+jx7++zJQr+CzWE+2hntHkb
-         YQAFtK3hU8UQVAdSZAn40qRR5iFbNZodlSKqI9lLQeLfed2wQnr4XxMpulUqIA+fxxFk
-         iBjxqnVqzcoSsI4Ls+n+s51pr974feV4KxP6HVLz7MWN2pXxcqv3K/JRS8mb0U6REyaM
-         JkJ3GnH5TlM+3cQaYrc1bYaY+yoELUsq86M7VfNKeRlBqV2QZapMcsU2989dYOBtIrOT
-         4eGg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790394534; x=1790999334;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=s/TFdpTxMiYwHrmjouP2VwdkJofSRV30LB9rRr0t5Pc=;
-        b=AxBYsWwz/xBavH1mtn9U6Zt5KWzvf1GAN1sld0w5iGzyP6kM1o6uEUGjHxEDfopOYB
-         sW0lTpVC2dnPj6VIO+0fxw1AL++2frRrTspFP4cLDUbGpyYzRAJg91oRHH6JhwCnttWl
-         5Rfn3N3TvAJ3eDDieqe/1XCMbFKzliLioGMI5MaR+n9/DdJb/n+REHmXrwYlkpWI+V0P
-         3/HkwCf1spocFzXlbukINmw/R7rOzp7dhq/QDYnvo865SnUj57dppjVq8JIEhd4vBcyi
-         CYHWIvDQOvKx7qOy7UTfJYryV5w7GMzGE4zOFvV2FwS/DRp8h9G9HP0uaOMWmG8oKEsb
-         wP6A==
-X-Forwarded-Encrypted: i=1; AKwUvBzGa3XcK0UU4KtbQirp47CkBtBgodIxPFhnqbJVsmY2QfibrwjNIsnMaBuQ6/jxJrAGy0+eHbqqaA==@vger.kernel.org
-X-Gm-Message-State: AFuF++nDXtRyfPbLEn+CWcg/30IJkoJIkHULcB8BefAbqTWS7sFW9wg1
-	ZqS1BD0woOaMVrXXJsjglqHh7dZ7Q/l5U8NkX9Lnm59l7LvLgZPHs5XL
-X-Gm-Gg: AYBFou0LQDJvB9vvqBHSvuhT84WfYmKqsaqZMPk4vAE3ZnOG1xHfLochcdSDOzmtY35
-	U+PcWT+5H0r9b38PNoLLh2B07enfkQ5b2orf9J57SAcnXgxQ8dfj++Zth958M0ysiwatZSeMVdd
-	KY+jEd4FIeNHiGxu3cSAnZcx6PC5tfIRpK2DoFgW91skwF5ngdVUx7aQzuyHg9Cg6xT1MFK9/c0
-	yamyKqiQsvpS01f8jrQS1v4olPk0KXG5Tl2P8Ced2sljIwpA6oT9KYDH7zszuvCLcVD1pqyfrNN
-	KFhqZS6fZ2yCvIRlNOzNLmGqf6r26cImhja6AhXxsFXTwA/SoHa3+mD1Tp+qIdUKCnB5NYgzbxK
-	k4MiaSqQKWgSOflYIW92xDqv6b/bmwZ6wg9cOuM0P/N9Jx/XlpHL3P71jWEtJaCnsOo15f7VSEh
-	n+bHirod4sCOiYTITgtgH0NZpRG2AMt5ffIwfQGLZrJS5/w5eH9/Vbvy8/cMsSmqO+cZBf9N3f6
-	5wPtVGK1lrnterxgUcbn+/1yidbfA21ODNeuMmVzc+s14DxRg==
-X-Received: by 2002:a05:7301:7e04:b0:33b:c122:6bd4 with SMTP id 5a478bee46e88-342701bed7amr1482746eec.6.1790394532963;
-        Fri, 25 Sep 2026 20:48:52 -0700 (PDT)
-Received: from google.com ([2a00:79e0:2ebe:8:375:19cf:5fee:be32])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3434958c3adsm902665eec.22.2026.09.25.20.48.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Sep 2026 20:48:52 -0700 (PDT)
-Date: Fri, 25 Sep 2026 20:48:49 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Vladimir <anykey196@gmail.com>
-Cc: Chen-Yu Tsai <wens@kernel.org>, Samuel Holland <samuel@sholland.org>, 
-	linux-input@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@lists.linux.dev
-Subject: Re: [PATCH v2] Input: axp20x-pek - add AXP313a support
-Message-ID: <arc-Q9D1xcFn8I1q@google.com>
-References: <20260923110741.1880-1-anykey196@gmail.com>
+	dkim=pass (1024-bit key) header.d=ik.me header.i=@ik.me header.b="p1u2J4GV"
+Received: from smtp-3-0001.mail.infomaniak.ch (smtp-3-0001.mail.infomaniak.ch [10.4.36.108])
+	by smtp-3-3000.mail.infomaniak.ch (Postfix) with ESMTPS id 4hsDhZ74v2zS4l;
+	Sat, 26 Sep 2026 06:13:34 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ik.me; s=20200325;
+	t=1790396014; bh=bY1UkuqzRv8r8dxuJWff4KeFA+qBT8ziWq7lBmDh/fc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=p1u2J4GVrfMOuX2hqObW6X0oG4k8H7FqLrVfMSI3ZQq3nsxUYvwV1U2IdDx+P4CqH
+	 9fhFq60UUbWk+Sulc1s2WAMJAOsgyeKOfcO5dFf9JMvOJmBZVoE1T716+Hf0HI1o/v
+	 Te9W3qWI9RlPTLBNZrZBhc2hF2Qpu6cPNTDdoW3I=
+Received: from unknown by smtp-3-0001.mail.infomaniak.ch (Postfix) with ESMTPA id 4hsDhY4jK6zjxw;
+	Sat, 26 Sep 2026 06:13:33 +0200 (CEST)
+Message-ID: <66bbe070-36d9-d854-f0ba-a350634713db@ik.me>
+Date: Sat, 26 Sep 2026 06:13:33 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260923110741.1880-1-anykey196@gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [BUG] s2idle: unrecoverable sleep on ThinkPad P16s Gen 4 AMD,
+ (Strix Point) when more than 16 logical CPUs are online
+Content-Language: en-US
+To: Mario Limonciello <mario.limonciello@amd.com>,
+ platform-driver-x86@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Shyam-sundar.S-k@amd.com, hansg@kernel.org,
+ ilpo.jarvinen@linux.intel.com, rafael@kernel.org
+References: <82329b33-ba2d-ee43-d444-5fdc14af1bce@ik.me>
+ <f872d7e0-79f6-911a-b0c0-639c58e780f3@ik.me>
+ <66dee9c5-ad66-4bd7-982c-c5694d806cf2@amd.com>
+ <0bb77796-790f-44db-b4cc-e4742ed1b2d0@amd.com>
+ <eafbba40-a10f-6a7f-54e6-b14d59ad1525@ik.me>
+ <99dcb462-5045-4fa7-9f6b-ee0f13ff96ab@amd.com>
+ <4a161dd5-4dfe-81f4-e4d8-ba9d3280c25a@ik.me>
+ <6d7773c8-0dc5-4e11-8bbb-088289dd508b@amd.com>
+ <a5611ca8-b28d-4102-0caa-542fc162758a@ik.me>
+ <60a5c26c-8fe2-477f-b576-2a18d8b6394d@amd.com>
+ <fc70f3b0-6ac5-7ac9-dca8-595b65785718@ik.me>
+ <b29e9341-70cb-4201-99fc-ef307dd10fa5@amd.com>
+ <aab50dd0-5141-bded-0b58-0f01ae9621d5@ik.me>
+ <c42ab776-6fa9-4e8e-acae-fa921a5ac108@amd.com>
+ <0d1686e8-a50e-6f3b-2923-a0eca6ab4271@ik.me>
+ <b6015026-fe8c-4823-ad39-c630350c0cc1@amd.com>
+ <c58f84c7-bfe6-58db-cad5-6859e96a7daf@ik.me>
+ <afb1949a-8465-cfc8-bddb-bc27783af223@ik.me>
+ <8f06af84-c0fb-4d24-8868-bf16a1678b4a@amd.com>
+ <3a080b50-6396-bf8f-2e70-011b85c15fe2@ik.me>
+ <b2e13400-d1b7-4a9f-b7bc-a2d1dc7a4912@amd.com>
+From: Fourhundred Thecat <400thecat@ik.me>
+In-Reply-To: <b2e13400-d1b7-4a9f-b7bc-a2d1dc7a4912@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Feedback-ID: :2997a34c1a6c8c6:ham:c07166f4469634d
+X-Infomaniak-Routing: alpha
 
-On Wed, Sep 23, 2026 at 04:07:41PM +0500, Vladimir wrote:
-> The AXP313a MFD driver registers its power button cell as "axp313a-pek",
-> but the axp20x-pek platform id table only matches "axp20x-pek" and
-> "axp221-pek".  The power button therefore never probes on boards using the
-> AXP313a PMIC (e.g. the OrangePi Zero 2W).
+On 2026-09-25 15:30, Mario Limonciello wrote:
 > 
-> Add the missing id table entry.  Unlike the other variants the AXP313a has
-> no PEK key/startup/shutdown registers - AXP20X_PEK_KEY (0x36) lies beyond
-> its register map (max_register = AXP313A_IRQ_STATE, 0x21) - so give it its
-> own axp20x_info without start-up/shutdown times and hide the corresponding
-> sysfs attributes, instead of exposing files that always fail with -EIO.
 > 
-> Tested on: OrangePi Zero 2W (Allwinner H618 + AXP313a), kernel 7.1.13.
+> On 9/25/26 02:05, Fourhundred Thecat wrote:
+>> resolved by resetting BIOS to factory defaults
+>>
+>> after that, I tried painstakingly to enable/disable one by one
+>>
+>> The cause is two BIOS settings, and the reason it took so long to find 
+>> is that they are independently sufficient:
+>>
+>>    AmdVt (AMD virtualization)        Disable  -> breaks s2idle wake
+>>    PlutonSecurityProcessor           Disable  -> breaks s2idle wake
+>>
+>> Either one alone is enough. Both must be enabled for the machine to 
+>> resume. The full matrix, all with the IOMMU enabled and 24 CPUs online:
+>>
+>>    AmdVt      Pluton     result
+>>    Enable     Disable    no wake
+>>    Disable    Enable     no wake
+>>    Disable    Disable    no wake
+>>    Enable     Enable     wakes normally
+>>
+>> I had both disabled.
+>> It also explains the confusing bisect: when I tested AmdVt=Enable with 
+>> everything else at my settings it still hung, and when I tested 
+>> Pluton=Enable with everything else at my settings it still hung, so I 
+>> eliminated both. Each test only showed the setting was not necessary; 
+>> neither showed it was not sufficient. With two independent triggers 
+>> those observations are both true at once and single-setting 
+>> elimination gives nothing.
+>>
+>> So amd_iommu=off and nr_cpus=16 were both masking this rather than 
+>> telling us anything about the kernel.
 > 
-> Signed-off-by: Vladimir <anykey196@gmail.com>
-
-While we no longer require legal names on sign-offs we do need a "known
-identity" and just the first name does not cut.
-
-> ---
->  drivers/input/misc/axp20x-pek.c | 39 ++++++++++++++++++++++++++++++++-
->  1 file changed, 38 insertions(+), 1 deletion(-)
+> Well this is a great outcome.  Would you mind opening a pull request to 
+> amd-debug-tools and adding a case to this to test for this issue?  That 
+> would help anyone else that encounters this in the future and save us 
+> effort drilling down again.
 > 
-> diff --git a/drivers/input/misc/axp20x-pek.c b/drivers/input/misc/axp20x-pek.c
-> index 24f9e9d893d..b912f13b607 100644
-> --- a/drivers/input/misc/axp20x-pek.c
-> +++ b/drivers/input/misc/axp20x-pek.c
-> @@ -85,6 +85,16 @@ static const struct axp20x_info axp221_info = {
->  	.shutdown_mask = AXP20X_PEK_SHUTDOWN_MASK,
->  };
->  
-> +static const struct axp20x_info axp313a_info = {
-> +	/*
-> +	 * The AXP313a has no PEK key/startup/shutdown registers: AXP20X_PEK_KEY
-> +	 * (0x36) lies beyond the end of its register map (max_register =
-> +	 * AXP313A_IRQ_STATE, 0x21).  Leaving startup_time/shutdown_time unset
-> +	 * keeps the matching sysfs attributes from being created, so they
-> +	 * cannot fail with -EIO.
-> +	 */
+> You should be able to add a new check that verified the value of these 
+> BIOS settings using the think-lmi driver sysfs interface.
+> My thought on the logic would be something like this:
+> 
+> 1) Check whether think-lmi directory exists, skip the check if it doesn't.
+> 2) Check whether both of those attributes exist.  If they don't, skip 
+> the check.
+> 3) Check the values of both of those attributes.  If there is a failure 
+> report it.  If it's a pass report it.
+> 
+> It can generally apply to all Lenovo systems that offer these settings 
+> then (It's more likely a "generic" BIOS bug).
+> 
+>>
+>> this is clearly a Lenovo BIOS bug. should this be reported to them ?
+> 
+> Before you report this to them, can you diff some acpidumps from the two 
+> changes that break things?
+> 
+> I would have "expected" that turning off this AmdVt BIOS option stopped 
+> the IVRS table from being created, but that seems not to be the case.
+> 
+> I just wonder if we should be keying off anything else in Linux for this 
+> case to avoid the issue.
 
-Maybe just say:
+Captured acpidumps for all three configurations. Your hunch was right 
+that the IVRS table is still created with AmdVt disabled, but it is not 
+identical - and the difference looks like the actual mechanism.
 
-	.startup_time = NULL, /* not supported */
-	.shutdown_time = NULL, /* not supported */
-> +};
-> +
+Summary, all with the IOMMU enabled and 24 CPUs online:
 
-Thanks.
+   config          IVinfo      IVRS len   IVMDs   MSFT0201 in IVRS 
+MSFT0201 ACPI dev   SSDTs
+   both enabled    0x00203043  0x216      3       yes                yes 
+                 29
+   AmdVt off       0x00203041  0x1F6      2       yes                yes 
+                 29
+   Pluton off      0x00203043  0x216      3       yes                NO 
+                 28
 
--- 
-Dmitry
+AmdVt off changes two things. The IVinfo word loses bit 0x2, the 
+DmaRemap bit you already parse at offset 36. And the table is 32 bytes 
+shorter because one IVMD disappears:
+
+   both enabled:
+     IVMD DeviceId=0060 Flags=07 Start=0x7D900000 Len=0x100000
+     IVMD DeviceId=C507 Flags=08 Start=0x6B400000 Len=0x20000
+     IVMD DeviceId=C100 Flags=08 Start=0x6B1F5000 Len=0x28000
+
+   AmdVt off:
+     IVMD DeviceId=C507 Flags=08 Start=0x6B400000 Len=0x20000
+     IVMD DeviceId=C100 Flags=08 Start=0x6B1F5000 Len=0x28000
+
+DeviceId 0x0060 is MSFT0201:
+
+   AMD-Vi: ivrs, add hid:MSFT0201, uid:1, rdevid:0x60
+
+and Flags 0x07 is unity mapped with read and write. So disabling AMD 
+virtualization removes Pluton's unity mapped DMA region from IVRS, while 
+the device is still declared in IVRS, still present as an ACPI device, 
+and still attached to iommu group 0:
+
+   platform MSFT0201:00: Adding to iommu group 0
+
+That would leave Pluton's DMA translated with nothing mapped for it, 
+which fits every observation: it only breaks with the IOMMU enabled, 
+amd_iommu=off is the only thing that fixes it, and neither intremap=off 
+nor iommu=pt helps, since iommu=pt gives other devices identity domains 
+but the IVMD is how firmware asks for one for this device specifically.
+
+Pluton off is a different failure. The IVRS is byte identical to the 
+working case, IVMD 0060 included, but one SSDT is gone and with it the 
+MSFT0201 ACPI device. Your existing check already catches that case 
+correctly:
+
+   found_iommu=True  found_acpi=False
+   -> IOMMU is misconfigured: missing MSFT0201 ACPI device
+
+The AmdVt case is the one that slips through. In check_iommu():
+
+   if not found_ivrs_dmar and not found_ivrs_msft0201:
+
+with AmdVt off, found_ivrs_dmar is False because bit 0x2 is cleared, but 
+found_ivrs_msft0201 is True, so the and makes it pass and the tool 
+reports "IOMMU properly configured" on a machine that cannot be woken.
+
+So to answer your question about keying off something else: yes, and I 
+think the signal is "IVRS declares an ACPI HID device but provides no 
+IVMD covering its device id". That needs no vendor attributes and no DMI 
+matching. The device id sits 3 bytes before the HID string in the type 
+0xF0 entry, and IVMDs are subtable types 0x20/0x21/0x22 with the device 
+id at entry offset 4:
+
+   devid = struct.unpack_from("<H", data, data.find(b"MSFT0201") - 3)[0]
+   off = 48
+   while off + 4 <= len(data):
+       length = struct.unpack_from("<H", data, off + 2)[0]
+       if length == 0:
+           break
+       if data[off] in (0x20, 0x21, 0x22):
+           if struct.unpack_from("<H", data, off + 4)[0] == devid:
+               mapped = True
+               break
+       off += length
+
+I checked this against all three dumps: it reports mapped for 
+both-enabled and Pluton-off, and unmapped for AmdVt-off. Note that it 
+would contradict test_check_iommu_no_dma_protection_BUT_msft0201, which 
+currently asserts that MSFT0201 in IVRS is an acceptable substitute for 
+pre-boot DMA protection, so whether to change that semantic is your call.
+
+I am happy to send you the three acpidumps, with the extracted and 
+disassembled tables and a record of the BIOS settings each was taken under.
+
+Beyond that I have to stop here. This has taken the better part of a 
+week, a lot of forced power cycles, and around $700 in LLM tokens 
+working through it, and I am out of time and energy to take it further. 
+The machine works now with AMD virtualization and Pluton enabled, which 
+is a perfectly acceptable outcome for me.
+
+Everything I found is in this thread, and I hope the IVRS observation is 
+useful to you or to whoever picks it up. Thanks for the help getting 
+here - the amd-s2idle tool, the pointer to e9f850ba66cd, and the 
+suggestion to reset the BIOS were all what moved it forward.
+
+
