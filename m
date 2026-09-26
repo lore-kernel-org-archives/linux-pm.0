@@ -1,35 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0385A3A8384;
-	Sat, 26 Sep 2026 09:26:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 600EC3A960E;
+	Sat, 26 Sep 2026 09:27:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790414820; cv=none; b=aHLFNiCrhs8IScUwTPrKaN6gs7nIIQKhHrvy5wqYJV16Rw+qyZM5iPn1w6R0OtfEVFEDHBQ77iU/hKaohOl1LCPNhsXHXEEiGvOeFceq+ND8M4JO/zTchi5Pc1ivmPeAx0c+Kg6nLjMXR8cMQxRGj2Lhu54p52Xn0iSy5/Od0Uc=
+	t=1790414823; cv=none; b=aaWGzQFLekzHW33R+HqM8Pj11Da3uNWEr1RhmKOmPNTAqscSWyi0u4pCYEZS9iLgN2M9BlNUxchcRpiqR2Meh3xvq+YxbvsfgD1+yQTgmAL3zhC7IBYS0Lu9sfwzivs30GkYUF5WmmG8qwXPwgPLIQsY8x/g/OroCQGsJM/X9zs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790414820; c=relaxed/simple;
-	bh=P4kh85FTN8DAxfJsZLJOniQICOo28o7KmNDKIvMnSoU=;
+	s=arc-20240116; t=1790414823; c=relaxed/simple;
+	bh=vC7kodyv8RzPJXMrxiFoLnMCSmke5TJwcJwhi49p5B4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qABQBmE4b3n/PY+3Z6e0OVgAlk+U4yEgXsdEf6ltJ/P5p84ex9hvELPJxhgE5HMw21OK6Z4R8gyclIv7dCrCPDp4Nz5nDyXOfQmjdc0auEd8yCZYAxQjLdYI70kkkhuKe7w1VQqqy/8TVIA34AplaDxnGXcAB4LTrEG05262aJ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=k320yvC/; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=W3w208LfljRRrWEZIxkJZzhMVMZDQw9EsZ5NvuI1HKBUE/UVq1tWAZ/il7rUnUBhitfLyjGTy9o4gKf0jD/XP//BMzgFBuHpGM+CHWuh+eXrMoNgQ/oUzcpAwMJSsM6lZIQhQNdbtzT4gF7+cmUg1PrrHMwmSt3EJ1E/dIjoo98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oFGtdbcN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="k320yvC/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEE841F000FF;
-	Sat, 26 Sep 2026 09:26:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oFGtdbcN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 264D21F00893;
+	Sat, 26 Sep 2026 09:26:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790414818;
-	bh=apeXnFxwzPd45aFiHP0MNpAyA7JkKV4wuaIPOREj6NU=;
+	s=k20260515; t=1790414822;
+	bh=gUyFr1OfmXhgoSo4gzdF2ZgZigwrnK/l9YAOSrtW0JE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=k320yvC/8eFUDkUHTucUsYfIFPTBJRLOAqKMjYUGTeuvP/Q89YgerwbE6E2JAe8Xt
-	 u1uOdprP1otEhBeIa3MSONT5D76mh8IzLQBsOmK22qZILMF9UPt2IP4GswMo6/kQ2T
-	 +K85a5hk0LFQTFyHXVTbW7r+FdW4xBYelMlNH8rpnk2FnJz8VEtzAB/7rVjNWbbeYF
-	 xDiIq2bGXGS7DVmB8Q41b+ODN7zBr63uEVBuyAG8Cl/kiZMsbbmkKR0Ca3G0tcVDjB
-	 fwAgD4YMPkTfAuOXJeCGMj+pyf6aYRapzk0pD7GGYBrwiedtC+mcr2kl4ZjheBtI79
-	 MkstHnVzkERBg==
+	b=oFGtdbcNSF/K7qXEKcO5Vwg393hxMt+J2c1yPvzMX5wj6v5k4XPJlv5WqhJuYOFLF
+	 7UA82vQwg3lchbTjWvGhKqWXAfPSaFsKNB9OTA9w2rf4FocMdMUAT6CYOoNPyuD9sT
+	 u/QdNImpqhTZKgzlfmnfwMO3QT1D5wlnHS+XhnZ2RzdobSeXpKMtv7u2WoFRMunAJ3
+	 V+9UzPOnXWKSDM0My9Zw0Rsam6Ir1MRwWn+iaiqA39yYXT1gBzeBhBaiJnFpbdZqW8
+	 h9eSbLpgl5rI8gk//bkiXhnz74HRHX6H3IVhxkE2IqSaZa4YzQAo7bMI+cfqr57spY
+	 dXuDkCzF06GBA==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Sat, 26 Sep 2026 12:26:31 +0300
-Subject: [PATCH v2 2/5] hibernation: ensure secretmem pages don't reach a
- snapshot
+Date: Sat, 26 Sep 2026 12:26:32 +0300
+Subject: [PATCH v2 3/5] hibernate: handle potential errors in
+ hibernate_{map,unmap}_page()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,7 +38,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260926-hibernation-v2-2-235f69f3ab2a@kernel.org>
+Message-Id: <20260926-hibernation-v2-3-235f69f3ab2a@kernel.org>
 References: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
 In-Reply-To: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -51,34 +51,244 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
  linux-mm@kvack.org, linux-pm@vger.kernel.org
 X-Mailer: b4 0.16.1-dev
 
-hibernation_available() checks for active secretmem users, but a secretmem
-file can be created after this check and its pages may get into the
-hibernation snapshot although they should not.
+When safe_copy_page() had to map/unmap pages only because of
+debug_pagealloc() there could be no errors in the kernel page table
+updates.
 
-Recheck that hibernation_available() after userspace is frozen and abort
-hibernation if it is not.
+However, with the increasing desire to remove pages from the direct map
+this assumption becomes a real stretch.
+
+Properly handle errors in hibernate_map_page() and hibernate_unmap_page()
+and propagate that error along the page copying path.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- kernel/power/hibernate.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ kernel/power/snapshot.c | 102 +++++++++++++++++++++++++++++-------------------
+ 1 file changed, 62 insertions(+), 40 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index d2479c69d71a..97de677e360f 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -412,6 +412,11 @@ int hibernation_snapshot(int platform_mode)
- 	if (error)
- 		goto Close;
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index e732bf6389e4..52ef0599c207 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -79,37 +79,30 @@ static inline int hibernate_restore_unprotect_page(void *page_address) {return 0
+ #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
  
-+	if (!hibernation_available()) {
-+		error = -EBUSY;
-+		goto Thaw;
-+	}
+ 
+-/*
+- * The calls to set_direct_map_*() should not fail because remapping a page
+- * here means that we only update protection bits in an existing PTE.
+- * It is still worth to have a warning here if something changes and this
+- * will no longer be the case.
+- */
+-static inline void hibernate_map_page(struct page *page)
++static inline int hibernate_map_page(struct page *page)
+ {
+ 	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+-		int ret = set_direct_map_default_noflush(page, 1);
+-
+-		if (ret)
+-			pr_warn_once("Failed to remap page\n");
++		return set_direct_map_default_noflush(page, 1);
+ 	} else {
+ 		debug_pagealloc_map_pages(page, 1);
++		return 0;
+ 	}
+ }
+ 
+-static inline void hibernate_unmap_page(struct page *page)
++static inline int hibernate_unmap_page(struct page *page)
+ {
+ 	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+ 		unsigned long addr = (unsigned long)page_address(page);
+ 		int ret  = set_direct_map_invalid_noflush(page, 1);
+ 
+ 		if (ret)
+-			pr_warn_once("Failed to remap page\n");
++			return ret;
+ 
+ 		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+ 	} else {
+ 		debug_pagealloc_unmap_pages(page, 1);
+ 	}
++	return 0;
+ }
+ 
+ static int swsusp_page_is_free(struct page *page);
+@@ -1449,21 +1442,25 @@ static inline bool do_copy_page(long *dst, long *src)
+  * Check if the page we are going to copy is marked as present in the kernel
+  * page tables. This always is the case if CONFIG_DEBUG_PAGEALLOC or
+  * CONFIG_ARCH_HAS_SET_DIRECT_MAP is not set. In that case kernel_page_present()
+- * always returns 'true'. Returns true if the page was entirely composed of
+- * zeros, otherwise it will return false.
++ * always returns 'true'.
++ * Sets @zeros_only to true if the page was entirely composed of zeros.
++ *
++ * Returns 0 on success, a negative error code on failure.
+  */
+-static bool safe_copy_page(void *dst, struct page *s_page)
++static int safe_copy_page(void *dst, struct page *s_page, bool *zeros_only)
+ {
+-	bool zeros_only;
++	int err;
+ 
+ 	if (kernel_page_present(s_page)) {
+-		zeros_only = do_copy_page(dst, page_address(s_page));
+-	} else {
+-		hibernate_map_page(s_page);
+-		zeros_only = do_copy_page(dst, page_address(s_page));
+-		hibernate_unmap_page(s_page);
++		*zeros_only = do_copy_page(dst, page_address(s_page));
++		return 0;
+ 	}
+-	return zeros_only;
 +
- 	if (hibernation_test(TEST_FREEZER)) {
++	err = hibernate_map_page(s_page);
++	if (err)
++		return err;
++	*zeros_only = do_copy_page(dst, page_address(s_page));
++	return hibernate_unmap_page(s_page);
+ }
  
- 		/*
+ #ifdef CONFIG_HIGHMEM
+@@ -1473,18 +1470,19 @@ static inline struct page *page_is_saveable(struct zone *zone, unsigned long pfn
+ 		saveable_highmem_page(zone, pfn) : saveable_page(zone, pfn);
+ }
+ 
+-static bool copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
++static int copy_data_page(unsigned long dst_pfn, unsigned long src_pfn,
++			  bool *zeros_only)
+ {
+ 	struct page *s_page, *d_page;
+ 	void *src, *dst;
+-	bool zeros_only;
++	int err = 0;
+ 
+ 	s_page = pfn_to_page(src_pfn);
+ 	d_page = pfn_to_page(dst_pfn);
+ 	if (PageHighMem(s_page)) {
+ 		src = kmap_local_page(s_page);
+ 		dst = kmap_local_page(d_page);
+-		zeros_only = do_copy_page(dst, src);
++		*zeros_only = do_copy_page(dst, src);
+ 		kunmap_local(dst);
+ 		kunmap_local(src);
+ 	} else {
+@@ -1493,23 +1491,29 @@ static bool copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
+ 			 * The page pointed to by src may contain some kernel
+ 			 * data modified by kmap_atomic()
+ 			 */
+-			zeros_only = safe_copy_page(buffer, s_page);
++			err = safe_copy_page(buffer, s_page, zeros_only);
++			if (err)
++				goto out;
+ 			dst = kmap_local_page(d_page);
+ 			copy_page(dst, buffer);
+ 			kunmap_local(dst);
+ 		} else {
+-			zeros_only = safe_copy_page(page_address(d_page), s_page);
++			err = safe_copy_page(page_address(d_page), s_page,
++					     zeros_only);
+ 		}
+ 	}
+-	return zeros_only;
++out:
++	return err;
++
+ }
+ #else
+ #define page_is_saveable(zone, pfn)	saveable_page(zone, pfn)
+ 
+-static inline int copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
++static inline int copy_data_page(unsigned long dst_pfn, unsigned long src_pfn,
++				 bool *zeros_only)
+ {
+ 	return safe_copy_page(page_address(pfn_to_page(dst_pfn)),
+-				pfn_to_page(src_pfn));
++				pfn_to_page(src_pfn), zeros_only);
+ }
+ #endif /* CONFIG_HIGHMEM */
+ 
+@@ -1517,15 +1521,20 @@ static inline int copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
+  * Copy data pages will copy all pages into pages pulled from the copy_bm.
+  * If a page was entirely filled with zeros it will be marked in the zero_bm.
+  *
+- * Returns the number of pages copied.
++ * Sets @copied_pages to the number of pages copied.
++ *
++ * Returns 0 on success, a negative error code on failure.
+  */
+-static unsigned long copy_data_pages(struct memory_bitmap *copy_bm,
+-			    struct memory_bitmap *orig_bm,
+-			    struct memory_bitmap *zero_bm)
++static int copy_data_pages(struct memory_bitmap *copy_bm,
++			   struct memory_bitmap *orig_bm,
++			   struct memory_bitmap *zero_bm,
++			   unsigned int *copied_pages)
+ {
+-	unsigned long copied_pages = 0;
++	unsigned long nr_pages = 0;
+ 	struct zone *zone;
+ 	unsigned long pfn, copy_pfn;
++	bool zeros_only;
++	int err;
+ 
+ 	for_each_populated_zone(zone) {
+ 		unsigned long max_zone_pfn;
+@@ -1543,15 +1552,21 @@ static unsigned long copy_data_pages(struct memory_bitmap *copy_bm,
+ 		pfn = memory_bm_next_pfn(orig_bm);
+ 		if (unlikely(pfn == BM_END_OF_MAP))
+ 			break;
+-		if (copy_data_page(copy_pfn, pfn)) {
++		err = copy_data_page(copy_pfn, pfn, &zeros_only);
++		if (err)
++			return err;
++
++		if (zeros_only) {
+ 			memory_bm_set_bit(zero_bm, pfn);
+ 			/* Use this copy_pfn for a page that is not full of zeros */
+ 			continue;
+ 		}
+-		copied_pages++;
++		nr_pages++;
+ 		copy_pfn = memory_bm_next_pfn(copy_bm);
+ 	}
+-	return copied_pages;
++
++	*copied_pages = nr_pages;
++	return 0;
+ }
+ 
+ /* Total number of image pages */
+@@ -2112,6 +2127,7 @@ static int swsusp_alloc(struct memory_bitmap *copy_bm,
+ asmlinkage __visible int swsusp_save(void)
+ {
+ 	unsigned int nr_pages, nr_highmem;
++	int err;
+ 
+ 	pm_deferred_pr_dbg("Creating image\n");
+ 
+@@ -2133,7 +2149,9 @@ asmlinkage __visible int swsusp_save(void)
+ 	 * Kill them.
+ 	 */
+ 	drain_local_pages(NULL);
+-	nr_copy_pages = copy_data_pages(&copy_bm, &orig_bm, &zero_bm);
++	err = copy_data_pages(&copy_bm, &orig_bm, &zero_bm, &nr_copy_pages);
++	if (err)
++		goto err_swsusp_free;
+ 
+ 	/*
+ 	 * End of critical section. From now on, we can write to memory,
+@@ -2149,6 +2167,10 @@ asmlinkage __visible int swsusp_save(void)
+ 			   nr_copy_pages, nr_zero_pages);
+ 
+ 	return 0;
++
++err_swsusp_free:
++	swsusp_free();
++	return err;
+ }
+ 
+ #ifndef CONFIG_ARCH_HIBERNATION_HEADER
 
 -- 
 2.53.0
