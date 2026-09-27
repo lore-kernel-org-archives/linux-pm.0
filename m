@@ -1,84 +1,112 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20723431E71;
-	Sun, 27 Sep 2026 17:52:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E1632F6920;
+	Sun, 27 Sep 2026 18:22:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790531541; cv=none; b=psUc+2N1jdInoLlwzsoleMWTFOskSbXHtQezWGXgBjb5Cpyv88s5p+FKRP2Qe7FiPSkEFp53GBQMg92rSWKxVCv2qLjaxgFbuApXLFug7Ehc6oexBpr5v3JvMGl0cXpITNzSFvYQABvCFl5rzlPsthrK7CAsA2NxnkHPvG6DVk0=
+	t=1790533337; cv=none; b=ZiBhkErrd1zUmSPvKn8Ia9bAYraGDAPEbDjsNIJVxU889AYvDd8TXgLHBn9lqaTJvcIMw6tfDMn09vJEd5xKC+8hT7MWYJ1guJuCGr4ZpVyQx3x5MUNApWU915X0aagV7szSetRWFJRkLGkaHegSsM5vuCIemfvcQ8LZPTtKT04=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790531541; c=relaxed/simple;
-	bh=6cEUMP31L4/CdlrVra674pnUkoxfmAa0lhY52HMvXT8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=glgdJU4qC0z3hNm1gI0zDq/URFViRKQ2x0PXZpQM2arEvWcsa3xSOQsCwAQpgFkSbf+Ae2jsbn3osNh5/KmBGSziwf7PJ4pUcBCa6lADiN8CYXl1ae59bLmNRnPyGH/GJ76OkKSFmuC+7gKF2PievsAE/0zqjjjtjnc70d0Ho+g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NPWVAc17; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790533337; c=relaxed/simple;
+	bh=LcibjBPP6VbofJDx12LxvHxpuVoxkzI8k9nSDUGLz6E=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=QBZXoArZlQMllYnC4dZ4mTNzfOlicGOz9R23+ce691AG62mT7AbiJyxUs9W2C7OS2cLv8tfuKZJi7Nbf6IqD2+aIVshq0SAqq/F232cMQhwJMSZZexLwXu4uPwwwJgfp5PA2t1vqEE1cNtvBplwheVkncGTNb67qHOIbK25dvk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I57Osc6S; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NPWVAc17"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4486B1F00893;
-	Sun, 27 Sep 2026 17:52:17 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I57Osc6S"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AAFAE1F000FF;
+	Sun, 27 Sep 2026 18:22:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790531538;
-	bh=QazZ2O3eNUMlHmNoeOgTtKD8VMEf7NnZOMkD5FjrEGE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=NPWVAc17BwaG8NWnQglCsaYlwi54DrweQwn5HxAje9YeEh6A1HBC6vR4hKsbyNPqo
-	 zcrpg9SzPthq6JeV7iWiIZW79p6G5bQAWFmUokFF+tewUOt1SVUzSZnZwazJ8iw/MR
-	 qjOFObIx+NDDRKEIOIHkabBBFbQ2ELQi7JwExHR+KUdsJad0l33qIXFxYHbPEPVgBK
-	 EtDrpZd+S16KxqFTJUSG8B0x8qBQm6dWckb+ZFi2XVC4O0eKW/MxAriCPKI56n6Udx
-	 b9xKeeb7Fbu9sNt03/9rKoKUgcGITYqhAanEyBE5m8lksVsDBkdTaZIb70zIMaT6KT
-	 B5PuKxI/xhofA==
-Date: Sun, 27 Sep 2026 19:52:14 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Muzaffer Kadir <muzafferkadir@mainlining.org>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Abel Vesa <abelvesa@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney+clk@redhat.com>, Jerome Brunet <jbrunet+clk@baylibre.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
-	Ulf Hansson <ulfh@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	"Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
-	Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>, 
-	Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, 
-	Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>, 
-	Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Robert Marko <robimarko@gmail.com>, 
-	Guru Das Srinagesh <linux@gurudas.dev>, Amit Kucheria <amitk@kernel.org>, 
-	Thara Gopinath <thara.gopinath@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>, 
-	"Guilherme G. Piccoli" <gpiccoli@igalia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	David Heidelberg <david@ixit.cz>, phone-devel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-mmc@vger.kernel.org, iommu@lists.linux.dev, mfd@lists.linux.dev, 
-	dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-pm@vger.kernel.org, 
-	linux-input@vger.kernel.org
-Subject: Re: [PATCH v3 18/19] dt-bindings: input: touchscreen: goodix: Add
- binding for GT970
-Message-ID: <20260927-acrid-labrador-of-typhoon-897f7c@quoll>
-References: <20260921-msm8952-initial-support-v3-0-b96fd3fe298b@mainlining.org>
- <20260921-msm8952-initial-support-v3-18-b96fd3fe298b@mainlining.org>
+	s=k20260515; t=1790533335;
+	bh=bY3jOCg5ioTozBEBo/T8vK2x5sI+OIe3yUJpHmcuHaQ=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=I57Osc6SOaXrl24j9rwKkR03WA8J2xd80vsvt9ISleyr5H+mGM8IvqVvk1MP9T264
+	 KkbjMjrwLgYqxKZAgwkcU/yY36HPBU0glBu627zd5ZWnu9b9AlVYz51ShoCIbVxupg
+	 XLHvp3btuaKGM3grWQSf84R4mbQfbO7Qc3fwaPFFX/8lUBEaSa+XPMPuBhBSeUke/t
+	 ORcU8rzvrirRpagXl4CBRaFIYk5k5NGDKkQRj3XT7uybvQfV/Z1kiur3hZWh9se6AS
+	 SlWO6XwaV+2srh6v1zQxx4eyuSQaKqt0NezEIgftuKuPkMfw2Wy4oZK+c/79s1kztZ
+	 D7LHZ20q0LO0A==
+Date: Sun, 27 Sep 2026 19:22:11 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Biju Das <biju.das.jz@bp.renesas.com>
+Cc: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Rob
+ Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
+ Dooley <conor+dt@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>,
+ Magnus Damm <magnus.damm@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org, Chris Paterson
+ <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>,
+ Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Subject: Re: [PATCH v4 0/7] Add Renesas RZ/G3L TSU support
+Message-ID: <20260927192211.03ebd188@jic23-hlaptop>
+In-Reply-To: <20260925061617.127349-1-biju.das.jz@bp.renesas.com>
+References: <20260925061617.127349-1-biju.das.jz@bp.renesas.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260921-msm8952-initial-support-v3-18-b96fd3fe298b@mainlining.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 21, 2026 at 09:19:09PM +0300, Muzaffer Kadir wrote:
-> GT970 works with GT911 driver, document it to be
-> used with GT911 compatible.
+On Fri, 25 Sep 2026 07:15:58 +0100
+Biju Das <biju.das.jz@bp.renesas.com> wrote:
+
+> The Thermal sensor unit (a.k.a TSU) IP found on the RZ/G3L SoC is similar
+> to the RZ/G3S, but it has different calibration constants. Moreover, the
+> TSU is connected to A/D converter of TSU (a.k.a ADC1) on the RZ/G3L,
+> whereas it is connected to ADC0 on the RZ/G3S.
 > 
-> Signed-off-by: Muzaffer Kadir <muzafferkadir@mainlining.org>
-> ---
->  .../bindings/input/touchscreen/goodix.yaml         | 35 ++++++++++++----------
->  1 file changed, 20 insertions(+), 15 deletions(-)
+> Compared to ADC0, there are no A/D conversion result registers(ADCR0 to
+> ADCR7) on the RZ/G3L, and the INTEN bits in the A/D converter interrupt
+> control register(a.k.a ADINT)  are also different.
+> 
+> This patch series aims to add support for TSU along with ADC1.
+> 
+> Merge strategy:
+>   * patch #1-#3 thermal subsystem
+>   * patch #4-#6 iio subsystem
+Applied these to the testing branch of iio.git.  That will show
+up in linux-next once 0-day has taken a first look at it.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Thanks,
 
-Best regards,
-Krzysztof
+Jonathan
+
+>   * patch #7 SoC subsystem
+> 
+> v3->v4:
+>  * Dropped clk patch as it is accepted.
+>  * Collected tag.
+>  * Updated commit description for patch#5.
+>  * Updated kernel doc comment for max_channels.
+> v2->v3:
+>  * Collected tags
+>  * Dropped required property '#io-channel-cells' from bindings.
+>  * Renamed num_channels to max_channels in struct rzg2l_adc_hw_params
+> v1->v2:
+>  * Merged TSU and ADC1 series together.
+>  * Moved the clk patch.
+> 
+> Biju Das (7):
+>   dt-bindings: thermal: r9a08g045-tsu: Document RZ/G3L TSU
+>   thermal/drivers/renesas/rzg3s: Convert calibration defaults to per-SoC
+>     match data
+>   thermal/drivers/renesas/rzg3s: Add RZ/G3L TSU support
+>   dt-bindings: iio: adc: renesas,rzg2l-adc: Document RZ/G3L ADC for TSU
+>   iio: adc: rzg2l_adc: Rename num_channels to max_channels
+>   iio: adc: rzg2l_adc: Add RZ/G3L ADC support for TSU
+>   arm64: dts: renesas: r9a08g046: Enable TSU
+> 
+>  .../bindings/iio/adc/renesas,rzg2l-adc.yaml   | 17 ++++-
+>  .../thermal/renesas,r9a08g045-tsu.yaml        |  4 +-
+>  arch/arm64/boot/dts/renesas/r9a08g046.dtsi    | 66 +++++++++++++++++++
+>  drivers/iio/adc/rzg2l_adc.c                   | 29 +++++---
+>  drivers/thermal/renesas/rzg3s_thermal.c       | 38 ++++++++---
+>  5 files changed, 133 insertions(+), 21 deletions(-)
+> 
 
