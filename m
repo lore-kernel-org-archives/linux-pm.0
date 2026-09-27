@@ -1,29 +1,30 @@
-Received: from outbound.ci.icloud.com (ci-2007g-snip4-5.eps.apple.com [57.103.88.68])
+Received: from outbound.ci.icloud.com (ci-2001k-snip4-5.eps.apple.com [57.103.91.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06D6D2FB97B
-	for <linux-pm@vger.kernel.org>; Sun, 27 Sep 2026 14:56:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.88.68
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BB8F2FD7B1
+	for <linux-pm@vger.kernel.org>; Sun, 27 Sep 2026 14:56:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.91.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790520962; cv=none; b=PG9NjrmULP0mrKKXUY0PuEWGEhaGwKGei8Wtbucx/ogDaIaA30qoVCH6UqxOp/MN1/M3leW6+5xIglKkwbJVglbbMB9/FiFlhLTFUpfc03wYHIQYLd5r/x2ffH/K074EGPT5hhjMjFd93/FruUdWyPpvgYCssKF5rKpohzdf3M4=
+	t=1790520963; cv=none; b=Tml48ttqChKRxDfnRMXtPlGV8FXeUHm2id/KTvjpVMWUALRBV7H7xnZZ0OOYtvLhMsIG9UEycJLprmT9A9pXOCpunqydVvSZQc6Qk9K9C7T8SPHDwK7+kfc/gOinBQyBOd4fWJANqMVEYzao2zhAhuv9jWCt/bod1Fs3QqVZVMQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790520962; c=relaxed/simple;
-	bh=7Fucyxk78Ob6ZWKmE623fPCZrdKRvEpxE+aNCKoyC50=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R5YoNMXbHOr+F+M7OPIW5+DfG2Qq+z59zqCK1AY7p77cVhagTVVIKn7gXRz9ffmieRu8/YupZpzghqV6+xrPTul5dm9PErwUfaEBi9bqTaPn6il8vCmB9FfziGTRCLK9a6e29lYzE+cMlyRxq8l7FgNeTP2czHxMmBs8W/WytZs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=KmaWwe5R; arc=none smtp.client-ip=57.103.88.68
+	s=arc-20240116; t=1790520963; c=relaxed/simple;
+	bh=Z/UD2u6sFVRQ99WmPmXJfPHo9vF5oqNt39mZjGaiDiA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ZiF/Dw4cVYyYmPTC3PnLjwKBr8XuLmohJksXrcwVb/o5TSWxUawJXmdYrbVNi1ZfgGBIeQWpeIeySz/kuzfou7gMIpdECBICJfF7lZca6nLfJJhZe2jR6aHqOaB2PaoO+TrlO+gJ7JdtROd02eWvL8jjFtMENDEg6i6H2iOIaxo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=M/G3kwei; arc=none smtp.client-ip=57.103.91.108
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="KmaWwe5R"
+	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="M/G3kwei"
 Received: from outbound.ci.icloud.com (unknown [127.0.0.2])
-	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPS id 9394E180105E;
-	Sun, 27 Sep 2026 14:55:57 +0000 (UTC)
-X-ICL-RepId: 01a0e35d-9a6b-732f-afee-2f344ed13100
-X-ICL-Out-Info: HUtFAUMEWwJACUgATUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0gZEFYBWFZdBU0aXBhZDxwTUFZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdSAEcITAZYBFMcQgpLBlkPRgNdTxFdDlIFRl5aFFwYQwJXAnkRUAFYHlZeWhdeUxcfSwBcRVoOWwRHFA==
-Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1790520959; x=1793112959; bh=iXUCUjq71+8k3taqxC+i/sW2l2F2mupWy1EdJWtMaQE=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=KmaWwe5RpfruJNaObUnI0NbRqrwznM62sd6vJHfRWnK0CPG3vDc0fzlYuzApv0CdUCgxrLwY9BZqhGZALGM472rLEP4djyKuRzWqsWxlQcXmTb3IzCWLUk3sk6ztVnHB01/5XxjQKJsU+/9O94lYqQS92kPljcnvYLTfGN1J93Ht6fm982CnZWM4608sKFbM0JUgEoETSNY2YcmtHAcWEbKLYQCyuzxQCR0gyGJpbN14y3SnjT7cei5UZDR46srvaolgUjI/ILvfHP2pcpsqfKR8oYY3uwbyGawpmBfxcB3D+krU2SZ/CmGo+j8KGXzdOkXEkQb72sDjaSFlLUp8/Q==
+	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPS id 3D6581801068;
+	Sun, 27 Sep 2026 14:55:59 +0000 (UTC)
+X-ICL-RepId: 01a0e35d-a0e2-7ca1-b5a6-946884500313
+X-ICL-Out-Info: HUtFAUMEWwJACUgATUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0gZEFYBWFZdBU0aXBhZDxwTUFZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdSAEcITAZYBFMcQgpLBlkPRgFdTxFdDlIFRl5aFFwYQwJXAnkRUAFYHlZeWhdeUxcfSwBcRVoOWwRHFA==
+Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1790520961; x=1793112961; bh=PhYOgaxRR7j4ejOJFgl1IvOss9RYAM+ujwKR+cXQZZ8=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=M/G3kweicwFEEfe2xlpl3zsCBmHu9HjLa+G/bGYb45v61+uNErHtxe/O8jwlQo4t/olmmJoXbK2eBl90Lo1FGPThJQVcI5N1e4zpSLXMoXg8/f24YAUgJbW3blIkNA0JJF/3Y63kj2AmZCJS4/CFtJqvl8BrTuqCMV8l0jhMSLr9fzSjhnzl7KOT6/Vjc8IvwcHpBOiHoCu4JLAx5j1opFMHXIntMwLpje4WZdDbsIiucH5KNfFzJVNBMw3AFdusy8numDGUP8Z8bK/wxYpLnlDwlLcTduBa6T/c8Js4/hO/XuvFARFd92Gmu1gDinwLKlP5P3ncNQxltw0mX+yt6g==
 Received: from bigre.tail98293.ts.net (unknown [17.57.156.36])
-	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPSA id 469461800629;
-	Sun, 27 Sep 2026 14:55:56 +0000 (UTC)
+	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPSA id 2083A1801064;
+	Sun, 27 Sep 2026 14:55:58 +0000 (UTC)
 From: Vincent Cloutier <vincent.cloutier@icloud.com>
 To: sre@kernel.org
 Cc: linux-pm@vger.kernel.org,
@@ -43,10 +44,12 @@ Cc: linux-pm@vger.kernel.org,
 	agx@sigxcpu.org,
 	angus@akkea.ca,
 	Vincent Cloutier <vincent@cloutier.co>
-Subject: [PATCH v1 0/4] power: supply: bq25890: add input voltage limit
-Date: Sun, 27 Sep 2026 10:55:34 -0400
-Message-ID: <20260927145538.233548-1-vincent.cloutier@icloud.com>
+Subject: [PATCH v1 2/4] dt-bindings: power: supply: bq25890: Add input voltage limit
+Date: Sun, 27 Sep 2026 10:55:36 -0400
+Message-ID: <20260927145538.233548-3-vincent.cloutier@icloud.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260927145538.233548-1-vincent.cloutier@icloud.com>
+References: <20260927145538.233548-1-vincent.cloutier@icloud.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,92 +57,59 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Authority-Info-Out: v=2.4 cv=SMBPlevH c=1 sm=1 tr=0 ts=6ab92e7e
+X-Proofpoint-GUID: P6pgAecUhM4pEb_rI-AEGSwQPkMH0dde
+X-Authority-Info-Out: v=2.4 cv=FdQ6BZ+6 c=1 sm=1 tr=0 ts=6ab92e80
  cx=c_apl:c_pps:t_out a=2G65uMN5HjSv0sBfM2Yj2w==:117
  a=2G65uMN5HjSv0sBfM2Yj2w==:17 a=VdqzKS8jKosA:10 a=x7bEGLp0ZPQA:10
- a=5j__JWfIoqoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=_-FhWcXjAAAA:8
- a=7kaDOHpzh_6BBANZ6oEA:9 a=c3Bybt16QQbktBXcOhN1:22
-X-Proofpoint-GUID: -Mx4m7wrWKjDpt2pbCTiVoBYco1bWvGm
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI3MDA1OSBTYWx0ZWRfX7mfTiPcpoSlj
- M2sJD3G7ChBIa8sHb42EIt/+X1yhSqbo1xvXQ4IUf8ndMx1omETwV1i0WeYL7V46xJtwFhXozbN
- Ukmvn0WtWMTQb98iYYxH0RO2/YrPzup5bxhkNz1JQWSaBOrJAfgLw5sA6qXejrk9YLQeeccAFCl
- cbg9NU3mFSctzzizX3Y7xjz+kXlo4pcQzAerGDzMrv0kVyatjWvxTj7+q2/n0ElBVEQIgwyOynp
- yhclHJw0VpCE143lHxYp+HNDUzvtf6VolsRzQNLxXAlzCP9XU97CO96rvWMm+fqHLc6Wp4dL7fT
- uJuIR2KWT40j6h7LGaoh1MEhDIIyXKFwy9rcrFKQju0BkgFDL3IlIkewJs+pws=
-X-Proofpoint-ORIG-GUID: -Mx4m7wrWKjDpt2pbCTiVoBYco1bWvGm
-X-JNJ: AAAAAAABQw24dVJiFzThQi34z3rbhBNnEcPJAhQ45L8T+fS+9nssl2H7kwZydwd3bafYhvqfaPDwI4AxCYqpU2SnfoqCbyHJ4yXC9eeN13HrQspPwglQ7TDQmIlkUSpXTInv3FbIg0NAwwyWgsbqgMjjEyCIrJqdjHrd17upC/uVeaZDMAz6p30s4T5RLzgML/FGedhXGr9MMj787OlD6vA/PWUSTbW+7zXUQleVPZpyqitC8ER9JlOzYE250ncL4WiiwAdEjVo9PVRMa301XD2nV3wr7HEBO7G5NJ09p2WJRahQskCIHVoMnsbMRMWwFEIxLwOsOeJQK/+pzGJR+pKPLJprZFR7Oh5un4RZeMbQknzRvJoGcMnBpp1F3v8wnQN3OxyvBx5QInb1jL+37hH7Ey4KhGC3eEVuvar4FXcyYaxcvm2Uh3Jqse/NKlupDv5Hxq4a+ngiSHJwebd8Bk3igbsq3scmpS6X0MhUthPNEOmiezp8BY4PBe08WutiszUsPvLwBOyKcPU9VhVco3UFfmSnTUodMe3WqtIW2QfEEEqDmyDhf2GpaKbVGH7AjOl97KqrS+YIWKJR1bILbQ1+2ID2cQ2+W8jEEgA4RFZdRrhjdvb0o9dYk33WHBmJFgHEkQj+7epzkQvfJNJ9xi2fkYnaEs0ZXR6UHraHcffGk0HUTIBNAtZLziwTRJcHCrLBuzrcz2UaeEWkwcxajwYUzxldBEXW8Z61UH7o2J3izNk2ki/umX+ckA+PNcwSHUFfmNmrfR9umMlDRtvyNP9Qw5DtYOO+EBBuLRAcubbdRzZKomxwAENTdU5Cg2p36L6mrTr0ui6OZpS20uv2Hvqmw8XMDe/ZLGG0o0lrOfP3B591olpkrfn8J47otG9CwjTEJAhgyqQa4aFTCQ16j1a4wonzZqGdYdigfxCTe/3NxmtWDsLi7gJs04SAT9EEHZgkeT3Heb18pFW13sQ0tql0W4+ISmO
- qliMjo4qopqAYGfztr3Z4W6/1AnG3DJc7Lg+0z34IOJPxjQGXhQRj71cvMsPjjdYbDPPzvottx6wC9qO0hjsBPi0QQNRuBDfY2/5COguft5OrORnc0Iw+lKFzMhVMoQ+ffe/pkHcdNv0nUqLPh3v+hkE7KZbG/r2LmDcUCDvYxNJbIclRL0y54NR8HLCy9FsHkOF2D3UAZiZdGx9Wwjrv5uQYnkCQ99IWeEBUOFblCGd1M+mtj5S9hxa8WnV6roAzNttSsLw7hiESAW9krAaxX2o59ILZjwCJs1KKhsNTzxN1zmaFTWOzW8ay1cIdgHQFh8YP/nTN1gheQ13ws/iucI7nHydNQR4rb7unwmWuF4PiZDNBGB/ZcxxXppkZaaGTehB++j0AylL1+93B0YW3W75Uof1VTCdr4vvvDakebKy4LEN5X8nyDMp1ht0=
+ a=5j__JWfIoqoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=3-V7KW_DX7Zo5MS4syoA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI3MDA1OSBTYWx0ZWRfX+DE8PropbEAA
+ VCPkZNVjSwkwH0Nhc6hI07FGmcZorApVbLi4sCmhOiqxzn7fhhSsrwa4FQE4qAuPvRpvWjbsofq
+ l+809hBV9bjBMyIdSz68WGzwJa0unsITcUxhPbHAgvtjCA0QSXJrxEgozHtt/jieZfSY+6hktHo
+ Di7uX9DBHdCn2HtXcB2NikI8uqvs2QYodaIfTVaDdpEvHM20bI4s/DBaoemr96Qp3+5cA5CHl10
+ 51UmrFx2vxbTMAry32bOIE/S3SNl9Riea5EHwgSi8hAr6I+asr3boX2FeJt41mDJZj1me1WTF/7
+ yT2CyMsFFebkrD++j6xyLUgAoZfail+Tb2e5cEd0OX7JPusHWamv0CuLjOzpyo=
+X-Proofpoint-ORIG-GUID: P6pgAecUhM4pEb_rI-AEGSwQPkMH0dde
+X-JNJ: AAAAAAABLirx1JOWFPvAiGSg/j+EDim6HyyuQtU2itYCM7VRT4nVBTyQoKsY9qHb3C4SQ7bEZddzQPzCAO8BLGqZb4OxkL0llBEGPFY906JanWmSKzubulTXJ/dLGKpDwd4eg+9jwwGUbjCAnuF3P8xr6f1ti8uATyBPDpmNjOweOYXW/ZzgQUOnfGKtvZYkFh4yYp7208dqdkMxvUYNm524qTU3PnbuTD+mOtZoEq8ti3MM5rVk0bUbw6QpP8JVtzjLciKzaFEgLUTJ8+78KdOqd9lKy5MN37SzWtwrVT+eabbDgM5Xg2Vz4uUp3qlH3LC5EurE9vA0R4x7CVSEzbMtzt616QGp3j85TKf8tN635ao/G9ouF4TfIPOS24SAwJGmayiJGeFN1OQRECifyGl3MO2CyKrg1aTrj0xwjFFLwxeVTG2UaNejDkjXmr5NBBvmOi5qpZLeixsuaM18xqXWjCH4O8Rclu4U10NPfgZk/VyVtwXVMKEi4hVwJNZRQ6bIQKHtYhIDeFXESLJRG1HjAFfEV5JbyoIl40jrW1xPPC5Agzak7eyMDK3wXrCnf0q2atW0jtsgmuRUMs26xikj7HeqqbQZFRLWm6gtGWL/O1MuqkGPTt2yG8J+A4mkYJ6nnR0RSlcIdVHTyhdywl7T/iHQ1nGXYK81bWQtvGW7O9CUd8GJLc3Pdk+Qo7fdFwj2smRNZ0J/G2Gw2otZoxSWGqUdKkqyfSyt8UHXn1n4z/5CGD73g6fdmu35V6X3GmCXl1wymVMBvBBnjshTlCdCQsqog6SgyEl9XZNU0lcnPoVjWd7GPV+QJRnx0ACqGfTR2MDS9drnhEUjxM0qTs1opvplCwmfqhixYDdJAkhz42D0f6vlj0IIGKtlmlDDbM9E1F4JaJk25RqvH4Z8TkZDN4I++MWTfDZHSnjnv9/juAZCpX/GXKZh+KT/v4HJBfHGKRQ2Hh4kiw==
 
 From: Vincent Cloutier <vincent@cloutier.co>
 
-Hi,
+Document input-voltage-limit-microvolt for configuring the absolute input
+voltage dynamic power management threshold. When the property is absent,
+the charger retains its relative VINDPM behavior.
 
-Add an optional input-voltage-limit-microvolt firmware property for
-selecting and programming an absolute VINDPM threshold. The Librem 5 uses
-a BQ25895 charger; the board patch sets the 3.9 V threshold tested on the
-phone. This provides useful standalone fixed-threshold configuration.
+Assisted-by: OpenCode:gpt-5.6-sol
+Signed-off-by: Vincent Cloutier <vincent@cloutier.co>
+---
+ .../devicetree/bindings/power/supply/bq25890.yaml        | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Purism's newer charging work pairs a 4.2 V threshold with Input Current
-Optimizer support to improve operation with weak sources and resistive
-cables. Those changes shipped in 6.12.79pureos1 as commit 3bd0fc6da9d0
-("arm64: dts: imx8mq-librem5: Bump VINDPM to 4.2V") and commit ca7bb9bc4d24
-("power: supply: bq25890: Support Input Current Optimizer"), and remain in
-the inspected downstream 6.18 branches. That additional optimization is
-follow-up work which can build on the generic configuration added here.
-
-The BQ25896 resets FORCE_VINDPM and VINDPM when an input source is
-inserted. Its source-detection and VINDPM-selection stages generate
-separate interrupts, so the driver compares both fields with the requested
-values whenever the charger is online, before returning for unchanged
-charger state. It repeats the comparison during resume in case an input
-insertion occurred while suspended. Registers are written only on a
-mismatch, avoiding an interrupt loop. Successful restoration is reported as
-a handled interrupt even when the tracked state is unchanged, without a
-redundant power-supply change notification.
-
-VINDPM programming and restoration require the explicit voltage-limit
-property. linux,read-back-settings continues to bypass initialization
-properties and does not enable restoration of a firmware-set threshold.
-
-The binding and driver changes revisit this 2019 posting:
-https://lore.kernel.org/all/20190520180712.32405-1-angus@akkea.ca/
-
-This version addresses that review by using one property. Its presence
-selects absolute VINDPM without supplying a default. The earlier review
-suggested input-voltage-min-microvolt; the current bq256xx and sgm41542
-bindings instead use input-voltage-limit-microvolt.
-
-Patch 1 removes the invalid monitored-battery reference from the same
-charger node. This cleanup is independent and can be applied separately.
-It retains Angus Ainslie's original authorship and sign-off and adds my
-submitter sign-off. Patches 2 through 4 are authored by me.
-
-The series passes a focused arm64 W=1 driver build, BQ25890 binding and
-example validation, Librem 5r2/r3/r4 DTB builds, and targeted CHECK_DTBS=y.
-Host-side register-mock tests of the driver functions verify opt-in
-behavior through initialization, online IRQ handling, and resume,
-including read-back configurations with firmware-set absolute VINDPM.
-They also check IRQ results, notification counts, and register I/O failures.
-Earlier Librem 5r4 testing validated the property and BQ25895 board
-setting: REG0D remained 0x8d on an attached boot, unplug, and flipped
-replug. This validates initial BQ25895 programming and retention, but
-cannot exercise the BQ25896 input-insertion restoration path. No BQ25896
-hardware was available to test that path.
-
-Angus Ainslie (Purism) (1):
-  arm64: dts: imx8mq-librem5: Remove invalid monitored-battery
-
-Vincent Cloutier (3):
-  dt-bindings: power: supply: bq25890: Add input voltage limit
-  power: supply: bq25890: Add input voltage limit
-  arm64: dts: imx8mq-librem5: Set BQ25895 input voltage limit
-
- .../devicetree/bindings/power/supply/bq25890.yaml  |  9 +++
- arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi  |  2 +-
- drivers/power/supply/bq25890_charger.c             | 74 +++++++++++++++++++++-
- 3 files changed, 83 insertions(+), 2 deletions(-)
-
-
-base-commit: 4477a78374a57c3809b172ad30cceabda48c47c6
+diff --git a/Documentation/devicetree/bindings/power/supply/bq25890.yaml b/Documentation/devicetree/bindings/power/supply/bq25890.yaml
+index 0ad302ab2bcc..8d1f27447cca 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq25890.yaml
++++ b/Documentation/devicetree/bindings/power/supply/bq25890.yaml
+@@ -31,6 +31,14 @@ properties:
+   interrupts:
+     maxItems: 1
+ 
++  input-voltage-limit-microvolt:
++    description: |
++      Absolute input voltage limit. When present, the charger uses the
++      absolute VINDPM threshold instead of relative VINDPM.
++    minimum: 3900000
++    maximum: 14000000
++    multipleOf: 100000
++
+   ti,battery-regulation-voltage:
+     $ref: /schemas/types.yaml#/definitions/uint32
+     description: maximum charging voltage (in uV)
+@@ -113,6 +121,7 @@ examples:
+         interrupt-parent = <&gpio1>;
+         interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
+ 
++        input-voltage-limit-microvolt = <3900000>;
+         ti,battery-regulation-voltage = <4200000>;
+         ti,charge-current = <1000000>;
+         ti,termination-current = <50000>;
 -- 
 2.55.0
+
