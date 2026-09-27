@@ -1,30 +1,30 @@
-Received: from outbound.ci.icloud.com (ci-2003b-snip4-7.eps.apple.com [57.103.91.148])
+Received: from outbound.ci.icloud.com (ci-2003c-snip4-11.eps.apple.com [57.103.91.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94D2031AABC
-	for <linux-pm@vger.kernel.org>; Sun, 27 Sep 2026 14:56:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.91.148
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4A493246EB
+	for <linux-pm@vger.kernel.org>; Sun, 27 Sep 2026 14:56:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.91.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790520964; cv=none; b=STpfeTgI1wo7cUl4DDDqsfC7YzjtcLdFXTfRUV2FBgBGcRkQxfuxMv+8nkiEIoRR4ohmDhOMzm77HXpnpFQGYCBqaZJgTzsAVLuauMinqFwB2MtZ8EXj2knjGiBfSfZMUGP9qD3tpgrvry2x8qHvAXoIRiCvIMU3mNT9dG5FOmU=
+	t=1790520968; cv=none; b=L8C4mmlxy2rcm8IhT/VZeylPygmfkLhyz4uXTxoHM/Tu13ng4Tc1i/WspJFXcuP//WoUTVp3/xfut4R8qIFZOERFKdhzW4t27gmkiKy40mfY9yjKC6eDBqpm+WP233ToPMy8A65m5XMPMXieYvKmOE53t0AR/DdfI7Z3Qklu/ZM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790520964; c=relaxed/simple;
-	bh=UUoWXCxDvO6r2JlFkyfmeUmr7VyR9UD0H568ShKZ+00=;
+	s=arc-20240116; t=1790520968; c=relaxed/simple;
+	bh=ULOwOstfSqAAOt39IAdLaJCi8D8WjsQQRutFhB7SBTE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IrFbbtMByA/cyRwCdvsiwoanXJly+/f8eGboJJUCQGl8ye1usoaRJ7CGBHOsevYNzsK1jK1RtWmNNXXk8boPlcLBysGEG1tnj5gckSN7XEvaQnlwJPCWR0Lw/PkWi3UL3N+lu/B2m/NFoXL0sdOwfhUB64YEGmo0xbpV/kzPYV8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=ANv1yiAP; arc=none smtp.client-ip=57.103.91.148
+	 MIME-Version; b=YdNjc8sXnDhRFtNRMP4gc1ZepbM/JeSFcM63lOmtw6XOSWTr6yU4/Bd/LRGISdn5/caVYRYDyB5JPjCtCfruIm9/+FopcRr/THNDNnuNHYI+udTHoow3gir2vvssOwgVN6yHuGxWlkHNshqd70XlTp2hzPnGUFFl68si/ldCZwI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=AVdOUrsm; arc=none smtp.client-ip=57.103.91.161
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="ANv1yiAP"
+	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="AVdOUrsm"
 Received: from outbound.ci.icloud.com (unknown [127.0.0.2])
-	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPS id 9E5051801066;
-	Sun, 27 Sep 2026 14:55:58 +0000 (UTC)
-X-ICL-RepId: 01a0e35d-9e64-7ed5-8134-ce24affd0e72
-X-ICL-Out-Info: HUtFAUMEWwJACUgBTUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0gZEFYBWFZdBU0aXBhZDxwTUFZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdSAEcITAZYBFMcQgpLBlkPRgBdTxFdDlIFRl5aFFwYQwJXAnkRUAFYHlZeWhdeUxcfSwBcRVoOWwRHFA==
-Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1790520961; x=1793112961; bh=vOLbn1jnQFiFSgxpC+eYo1Hv38mbuS419e9eJih/QEU=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=ANv1yiAPeBPJCfaYHO92hiOt4pJAClDbm2J9q6ZvfnPYS3V8ACJfa8WtIlCnTuLrXzNuc1TaCGeuF3aGXBrbsfQ8suLyAo3f4DBuOdYMAh5q9s2dZT2z4BWy4sbGQF708SgCQ7+0LtlJFHp2VG3SivYPDnG1z74emQMimaJy9mo4gARtpThYc4AFHe0JNtwG7i2SFKYeZcDAudMYsMz4ZeauasIEsUN55KObLvl48SO3s+q0sUUAeD3p/a+CAAoge3GUOTyWMK0X5XmBc4K1hxLeZYI/O6QV6TMfap3RjOhczvxwPPqUfL9XidWbjtYsNSV1wjrJo2rYHZr6STb8jQ==
+	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPS id 31A3718001AD;
+	Sun, 27 Sep 2026 14:56:01 +0000 (UTC)
+X-ICL-RepId: 01a0e35d-a860-791f-91c2-79ad026e9876
+X-ICL-Out-Info: HUtFAUMEWwJACUgATUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0gZEFYBWFZdBU0aXBhZDxwTUFZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdSAEcITAZYBFMcQgpLBlkPRgddTxFdDlIFRl5aFFwYQwJXAnkRUAFYHlZeWhdeUxcfSwBcRVoOWwRHFA==
+Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1790520964; x=1793112964; bh=0sWFvs9jcAbnIPCvsVLUf2FvnlKcEx51RgjL4GFBuUs=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=AVdOUrsmCUVT9N5dFwppyEBCW4bQwk2ZQ4Ji7aTXAXs7fMasZbWyn/M1pnvJKKUZsSjDfuoO+H5eUo1TmkvUBmVYfzQiVIaRji3YarsIz97kPEnQ/8wh1JjioO8SOdNjDGmQSIgX1ANDGWOBTgS/v9QxZFDvWf1mUgl9uZsCsvqrwO5dYjWNcObuMm6zKDKvWc2iNkXy6Fxw6iyeV9LM34Yu6sJnIGqasl0Iht6d1JLeJhDUz71aQqn1ny0XhFaC4+lO/UDcwlno2d0mbjmX2cl0lRjDtZg3SAsDeOKmJLXFYJ6+FxC4kuF1+szUquPj29kYxzU0gMb0Qm1DLSRS6A==
 Received: from bigre.tail98293.ts.net (unknown [17.57.156.36])
-	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPSA id 4449418002E0;
-	Sun, 27 Sep 2026 14:55:57 +0000 (UTC)
+	by p00-icloudmta-asmtp-us-central-1k-60-percent-7 (Postfix) with ESMTPSA id CF2771800101;
+	Sun, 27 Sep 2026 14:55:59 +0000 (UTC)
 From: Vincent Cloutier <vincent.cloutier@icloud.com>
 To: sre@kernel.org
 Cc: linux-pm@vger.kernel.org,
@@ -44,9 +44,9 @@ Cc: linux-pm@vger.kernel.org,
 	agx@sigxcpu.org,
 	angus@akkea.ca,
 	Vincent Cloutier <vincent@cloutier.co>
-Subject: [PATCH v1 1/4] arm64: dts: imx8mq-librem5: Remove invalid monitored-battery
-Date: Sun, 27 Sep 2026 10:55:35 -0400
-Message-ID: <20260927145538.233548-2-vincent.cloutier@icloud.com>
+Subject: [PATCH v1 4/4] arm64: dts: imx8mq-librem5: Set BQ25895 input voltage limit
+Date: Sun, 27 Sep 2026 10:55:38 -0400
+Message-ID: <20260927145538.233548-5-vincent.cloutier@icloud.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260927145538.233548-1-vincent.cloutier@icloud.com>
 References: <20260927145538.233548-1-vincent.cloutier@icloud.com>
@@ -57,48 +57,52 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Authority-Info-Out: v=2.4 cv=BqaQAIX5 c=1 sm=1 tr=0 ts=6ab92e80
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI3MDA1OSBTYWx0ZWRfX6PGhkr9hh8BC
+ MXaGaJppbOycdipEdYBv4XzULmXixLQyG5gZCwzx75IseyTUO1h8S/RF5CIXgp6qF3mh+akPNEg
+ oR4xbMgkGTVqcZoDzO7yFqT2EY4yXgS4sZj1QVDjx2mb8YIXwV+P3xcDvscBP4v6GJ5WpmJDzAv
+ AkDrWRZKRIb/lPax256TexayH1mrmvvtFGbwSN4+P+v5aVW+UPeh22Xne6UjJCTMx4jEg0adl5y
+ JIRcd4cQGWM7N5eZ6GVwP2hJvGFDJpJn5HM3NviZvKqYPV4laTNaqywAgANmRfGCRPLEE8+N/+P
+ JAM7fxUY/2rQ5s4c/f/q1uV25boL7XS8ofhWGJdRV5gNSseJ1fIcdcRm1eX6AA=
+X-Proofpoint-GUID: QTEQCjd7c7jR8u7ym1r8_K71LmCWqNq6
+X-Authority-Info-Out: v=2.4 cv=ZdAQ98VA c=1 sm=1 tr=0 ts=6ab92e82
  cx=c_apl:c_pps:t_out a=2G65uMN5HjSv0sBfM2Yj2w==:117
  a=2G65uMN5HjSv0sBfM2Yj2w==:17 a=VdqzKS8jKosA:10 a=x7bEGLp0ZPQA:10
- a=5j__JWfIoqoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=_-FhWcXjAAAA:8
- a=nrsuy9JVKKtfWTm6JsgA:9 a=c3Bybt16QQbktBXcOhN1:22
-X-Proofpoint-GUID: 2g6l57dVJmbFiv48J3yGrRr-y6I4hDgv
-X-Proofpoint-ORIG-GUID: 2g6l57dVJmbFiv48J3yGrRr-y6I4hDgv
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI3MDA1OSBTYWx0ZWRfX0XdBR5pTvSU4
- 3V2cXCLpxYY3sZ/iyBYKNPn5HdV2yQ/8rwlOv5kF+eDKSu+N0dnk/CfJms4vLYQzkeArLVwwtqd
- 5qB40xtJwpIeqHrhPwRhBIzO59tFrV8VU6YY0JCWf/ZjDngWoaKJfd9NAcbO9ndi+rMXZN6Hfx+
- Kp5Ba5+n/3IDDhlZKG+IjzVXnxmM6leh9asmn5zlighSc/CpS6LBVSCTjpyJ8PqjDQJGNK63x7m
- dpA8PkGB27qXiHZQ4R8Bi2pfkMyRpMQX+eNYTGGuNSdQz7m5p/sn3XuU0KzcJiWswD88sG18BWv
- UWtaSwvHFR+wtO/GKgoyQLc9D/Ks5MvlWOCdTK4b+jLUTlJpQm7vSEE/GCkg+w=
-X-JNJ: AAAAAAAByTRhRa0g/bAY4J12S4Su1Mvxp/farNAGbYVWFrzD9qnnEsDcpE4fik2cnApSp53QMElBBnUROAQxaO/U2airQj538zYcly7/jWcdzaZLT385KuKqy8dGEwedjsCgadEeAVv0xMibm5vKbMDICKMrVIz9gyIZPGdjiWJCDQ/AaOSFNy+PTh0dViT8MjxJAYyd7czZVMIF6qtLl1Ur+OdAFK1Hj8JMEdmtODDtFeNbgbTTGpTjQkXeOSKVPs+v6bOsxiiJJwZIvdMiyC6YmPY7RKeFZOi1B4ggz0e6T9OlfeM218qaxwAwhNfCaYAcjQV4hEe0mdINbv2hkDIPDGNKZja8vrhSrjwSTtZVb9mL4QKZK+SwhwAY+D/Szta4z2Zz8vNvQnQV6pjXNpC5ZLA67rDUlCu0wD2N6QT2li3c3Ye5F2AFkHhaaggK+U842qzM/pKdWUkCY5nKIxDFp3ubF5oyliVhUBeAG6ezkJuMTijRs5jB2HGVl2ldw61J0B5W/kkx9BI+zT4dgau49UOAHjRCWIioKfji20kPEdEWXweNkJmzQgMYR/cBWR8JqlUTPZ/xu6edTFlSkzXtg+GvWdCa/ymE+h3b21IDJOBI3V/4kgph3z85iacTEChNiygY2m6wyMxEWvxtlcebZKP+I5cwUGAlIcZUcT3jvv/OZFCPegtn/Cc+EkR9pAUgPryld4jpFF/ZJpfqB0OVOPvKh/JhVn25VoNDwUrTN01CqWWrTEynCn1D1eia3+KydbZrkJl7GpqsnMQRZOKFIcOjaFLrxKKi7Foi4zQ8PIU6qEv1javcA3ArrYttgd6QHGnTKTIKy46QYoUYT2huH0LfSDPbEoirKWW19WzZ59D6h5F/KKc5kUHkTXcRUOxnXIp7VyGKFZ7eVx6KVvgQXtMWeU0QM9wsLy47V60nvY8Yw42XAM/vuepQubQjwDg=
+ a=5j__JWfIoqoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=-L4RI-O3Sy8stOntbg4A:9
+X-Proofpoint-ORIG-GUID: QTEQCjd7c7jR8u7ym1r8_K71LmCWqNq6
+X-JNJ: AAAAAAABrJvhxWKjcv/pct2SEpSWHTv+iUMuRRpS7G5d5dIYZCPF8+OWuYVaAWtSMFI2AZO3gEwXvSaAOEIPYaBsSPlLQAvtu0euzU2bvmYDRJwp/U1SbeuMHRcP5OKgXRJg2ra50xlG5qOxb8vyzPMIr67akLa72bb3hEXV07x+AEg8sn3Df5Qo3UqD7bVIvuWNxcFspecabJH7befI1sMKseIwq8Ucfu+CBqTfJszeUNPuJjjWolVG/N+lUvSPf4bCi2Atuztaoj46NkKnn2AOhVPAeH4FjvL8DfdenXw63KxONPHkPwq22fI8/gyWoya7rvH1tTA87Xw9Jjv2TlXOk1p5STHBOj8e6hN19AVgpegbj+Z6xSOWHrLP9L8HZc78LPDnak4JlTLDC9CHBElO5dPTxBu1Gc3dP4pncpeCL3sYj4u/X0C6IxZZvun9/ugEJhST8PwuwzbFC7GkUa0S5TlFVHpdJ1yLqobSDR5ra/UNKORAryOUDjfaXDIatxq+mu4K4TQBq+bythwxL3SYOlYrMQP511PU6z/Tey8HRiV6h/9R2HpY7SPbhilEYQVd7d0eMhkwFvNPmMYsrCfmvtVF7HBcmtkZkvGLfGyzsZ074ypLWZpZy2EBVGQwWGUfT6RMmcRd8MNN67sbK2F/t7yokihV5nR+Nrk70WiCjPQ+i3ivQVJ6DXzvmDsPV7adzhEXIy8QMwstPWab44m7h+x6w1uTLGEXo6RffdXhpacz1TuEwDXrWj1g6neb1wqGJ5BC9XntK7YGvvU9HNoxuJESibAzbxtPcGSuf9zdxvCBBuz9HkOK4dxz1ft8AceB5n88N2yHM/HkLG0qt2DeiyYt0p9qaM0Q6OiV9PxsYNhxXEU1SRaiA2ngF1ns91W3bMTIP+4sxeiahXQBu/6W5pMYctXg4RzbxOx7405z5jD/Kxm3YKoiN8n53SMxPqTrWoxbQG/uIw==
 
-From: "Angus Ainslie (Purism)" <angus@akkea.ca>
+From: Vincent Cloutier <vincent@cloutier.co>
 
-The BQ25895 charger node points monitored-battery at the MAX17055 fuel
-gauge. The property requires a phandle to a simple-battery node, and the
-upstream BQ25890 driver does not consume battery information.
+Purism's production Librem 5 kernels used a 3.9 V absolute VINDPM
+threshold for years, from the 2019 board support through the releases
+preceding the March 2026 charging update. Use this established board
+setting for the BQ25895 input voltage limit.
 
-Remove the invalid relationship.
+Set input-voltage-limit-microvolt to 3900000 to select absolute VINDPM
+and program the 3.9 V threshold through the generic binding.
 
-Fixes: 8f0216b006e5 ("arm64: dts: Add a device tree for the Librem 5 phone")
-Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
+Tested on Librem 5r4: REG0D remained 0x8d across an attached boot, unplug,
+and flipped replug.
+
+Assisted-by: OpenCode:gpt-5.6-sol
+Assisted-by: OpenCode:gpt-6-astra
 Signed-off-by: Vincent Cloutier <vincent@cloutier.co>
 ---
- arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi | 1 -
- 1 file changed, 1 deletion(-)
+ arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi b/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
-index f5d529c5baf3..099195279e84 100644
+index 099195279e84..8badebfcdbb4 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
-@@ -1201,7 +1201,6 @@ bq25895: charger@6a {
- 		ti,minimum-sys-voltage = <3700000>; /* uV */
- 		ti,boost-voltage = <5000000>; /* uV */
- 		ti,boost-max-current = <1500000>; /* uA */
--		monitored-battery = <&bat>;
- 		power-supplies = <&typec_pd>;
- 	};
- };
+@@ -1195,6 +1195,7 @@ bq25895: charger@6a {
+ 		pinctrl-0 = <&pinctrl_charger_in>;
+ 		interrupt-parent = <&gpio3>;
+ 		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
++		input-voltage-limit-microvolt = <3900000>;
+ 		ti,battery-regulation-voltage = <4208000>; /* uV */
+ 		ti,termination-current = <128000>;  /* uA */
+ 		ti,precharge-current = <128000>; /* uA */
 -- 
 2.55.0
 
