@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4148C4D09FE;
-	Mon, 28 Sep 2026 14:06:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 46708547052;
+	Mon, 28 Sep 2026 15:19:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790604403; cv=none; b=l7UntQ7wULJObmiLdflH3sxdOsXGEa4eby18D79XkmXPbdXB913pRkEnCq7Bir7VLdR/kSFVs85Uk0jDcou5RSDDhoNzUXeU4wksPzK1GvaZcfvR/+ALrj0FFALYGdLgrOD99MHB8xPdue473N+WIOgPj070YVmdr0oN+8S7HsA=
+	t=1790608756; cv=none; b=Tp+qUA1SZUbbJcWeAvCaKfWhY3qIkfVnc3YsPcjq6U/5mIIVGDTT9f2mx6n1KGR9Oq4lAn4c26czPfXUUstBOfWvAiMrNFdt8iY0K3WP3+Z0Pjm59pQh3zKm0F25/T/eZRgfXzpmsoGn7wFksJdTe8cwATJEp5Gb60G7AXx8/uA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790604403; c=relaxed/simple;
-	bh=8G8SqLk/hmvlFAAW+G/IG3SMCE9/a5m6EYqzTMIf1Qk=;
+	s=arc-20240116; t=1790608756; c=relaxed/simple;
+	bh=2GOz34l7ZuP2xTH5AFBhWdZi4hxnXdSdFJDa738reiw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lPzcTVtHvN7mPrrdDswQA4SoYsFYlKfjILCc/hdmsmoejzDHasEkVplNiPY2gJIt/r6XIIWssDjjEIfiP4q1/KZxUKXB9971AIEfRaoVIPJ7Y7MLcNZ5NSOj8EjpcEzhdXhCD0MNtl3aEbyZzAWk7YTDlUtXvuJ3+JN3y68AxSQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Z2PYMTQp; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=t32UUqPRmqGfhtgsYxDXTDv2tlK1jBCkCIAzbG/Xd53A0sV+hC+wRuo1NOhFYU36bQdz1ltcpcUl8BJEP1DqrL0I+gzrxQUGDw2gNwFIbbIQuKPnnlyK6GAwGtieM2C23N9X6K6eM74x0XVQ1s2sNaSL6zYT2Ha94pBSYZQk/Ts=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Kny/YJ5o; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Z2PYMTQp"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Kny/YJ5o"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1947F1655;
-	Mon, 28 Sep 2026 07:06:37 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 21EBD1C00;
+	Mon, 28 Sep 2026 08:19:10 -0700 (PDT)
 Received: from [10.57.52.74] (unknown [10.57.52.74])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EC53F3F86F;
-	Mon, 28 Sep 2026 07:06:36 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7E2863F763;
+	Mon, 28 Sep 2026 08:19:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790604400; bh=8G8SqLk/hmvlFAAW+G/IG3SMCE9/a5m6EYqzTMIf1Qk=;
+	t=1790608753; bh=2GOz34l7ZuP2xTH5AFBhWdZi4hxnXdSdFJDa738reiw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Z2PYMTQpAeLKjYpF8IpYgvK+C1q7AR5ds0mMaR88Eo90V00uuUcSYtqe9DPISn1Us
-	 GzZHPP4hUZYP9syCq1a6IGwq+4tD7Ot5eZC1bMDpQeE/Ix8n1F+PfMjpVMxFw9RwtY
-	 ySnWqFpIilugQUdy/3jSishKAPWr4S2NBuZzC1D0=
-Message-ID: <75f2372a-9eb4-4ea8-a45e-24153484a5e6@arm.com>
-Date: Mon, 28 Sep 2026 15:06:34 +0100
+	b=Kny/YJ5oWUrrfV/Q4MoRVHD86LDnzNEJIqygb9EPX3QquEUWdoOjXcnYV5GHomBpM
+	 lir1QWlRR15n7TXBflYGtjczGLSt7dBkZOqHqBT4pO+UXTal6gCnOFDhVqK9yEqaOA
+	 UQ2tUhgqBnEbvxbOXjb2l9PHnFTunyJeAyehhNoE=
+Message-ID: <e539dce2-1b2a-45cc-9ea8-1ab0e0f11972@arm.com>
+Date: Mon, 28 Sep 2026 16:19:07 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,260 +35,220 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 4/8] ACPI: CPPC: Parse Resource Priority Register
- entries from _CPC package
-To: Lifeng Zheng <zhenglifeng1@huawei.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, saket.dumbre@intel.com, lenb@kernel.org,
- ionela.voinescu@arm.com, zhanjie9@hisilicon.com, pierre.gondois@arm.com,
- sumitg@nvidia.com
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev, linuxarm@huawei.com,
- yubowen8@huawei.com, zhangpengjie2@huawei.com, wangzhi12@huawei.com,
- linhongye@h-partners.com
-References: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
- <20260922124121.3426219-5-zhenglifeng1@huawei.com>
+Subject: Re: [PATCH v7 2/3] cpufreq: CPPC: Add ospm_nominal_freq attribute
+To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
+ saket.dumbre@intel.co, mario.limonciello@amd.com,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-acpi@vger.kernel.org, acpica-devel@lists.linux.dev,
+ linux-tegra@vger.kernel.org
+Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
+ ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
+References: <20260807214837.863209-1-sumitg@nvidia.com>
+ <20260807214837.863209-3-sumitg@nvidia.com>
 Content-Language: en-US
 From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260922124121.3426219-5-zhenglifeng1@huawei.com>
+In-Reply-To: <20260807214837.863209-3-sumitg@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/22/26 13:41, Lifeng Zheng wrote:
-> CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) defines the Resource Priority
-> entry as a Package of sub-packages, each containing:
+On 8/7/26 22:48, Sumit Gupta wrote:
+> OSPM Nominal Performance (ACPI 6.6, Section 8.4.6.1.2.6) lets the OS
+> request a nominal performance level below the platform-reported one. The
+> platform treats performance above that level as boosted and below it as
+> throttled for its power and thermal decisions. A lower value moves that
+> boundary down, so sustained work runs at a lower point while the range
+> above it remains available as boost.
 > 
->   - CONTROLLED_RESOURCES: a Package of integer resource IDs
->   - ENABLE_VALUE / ENABLE_REGISTER: enable/disable control
->   - PRIORITY_COUNT / PRIORITY_REGISTER: priority level setting
+> Expose it as a per-policy cpufreq attribute in kHz, matching the unit
+> convention of the other frequency attributes:
 > 
-> These allow OSPM to set relative priority among processors for shared
-> resources such as boost, throttle, L2/L3 cache, and memory bandwidth.
+>   /sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
 > 
-> Implement parse_priority_regs() which:
+> The attribute is write-only as the register cannot be read back. Writes
+> are converted with cppc_khz_to_perf() and rejected unless they fall in
+> [Lowest Performance, Nominal Performance].
 > 
->   1. Validates each sub-package has the expected element count
->      (RESOURCE_PRIORITY_NUM).
->   2. Allocates cpc_register_resource arrays for the sub-package
->      elements and the nested CONTROLLED_RESOURCES list.
->   3. Parses CONTROLLED_RESOURCES as integers and the remaining
->      entries (ENABLE_REGISTER, PRIORITY_REGISTER, etc.) via
->      parse_cpc_element() so that register descriptors, PCC subspace
->      tracking, and ioremap are handled consistently.
->   4. Wires the parser into the main _CPC probe loop, replacing the
->      previous "package type not supported" stub with full parsing for
->      RESOURCE_PRIORITY while rejecting unexpected Package entries.
+> Also track the register in the OSPM-set save/restore table, so a
+> requested value survives CPU hotplug and suspend/resume. The store
+> handler records the request rather than init() capturing a firmware
+> value, and driver unload reverts the register to the platform-reported
+> Nominal Performance.
 > 
-> The probe and _exit() error/cleanup paths already use
-> free_reg_resource(), which recursively frees Package-type entries,
-> so no additional cleanup changes are needed.
-> 
-> Add the resource_priority_regs enumeration that defines the indices
-> into each Resource Priority sub-package (CONTROLLED_RESOURCES,
-> ENABLE_VALUE, ENABLE_REGISTER, PRIORITY_COUNT, PRIORITY_REGISTER)
-> and RESOURCE_PRIORITY_NUM as the element count sentinel.
-> 
-> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
 > ---
->  drivers/acpi/cppc_acpi.c | 137 ++++++++++++++++++++++++++++++++++++---
->  include/acpi/cppc_acpi.h |  13 ++++
->  2 files changed, 142 insertions(+), 8 deletions(-)
+>  .../ABI/testing/sysfs-devices-system-cpu      | 24 +++++++
+>  drivers/cpufreq/cppc_cpufreq.c                | 70 +++++++++++++++++--
+>  2 files changed, 90 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index dce15d875c62..b5563d75d6c5 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -777,6 +777,91 @@ static void free_reg_resource(struct cpc_register_resource *cpc_reg)
->  	}
->  }
+> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> index 82d10d556cc8..59aafcb2af97 100644
+> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
+> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> @@ -346,6 +346,30 @@ Description:	Performance Limited
 >  
-> +/**
-> + * parse_priority_regs - Parse the RESOURCE_PRIORITY nested package structure.
-> + * @cpc_obj:         ACPI Package object for the RESOURCE_PRIORITY entry.
-> + * @regs:            Output array of cpc_register_resource to fill.
-> + * @pcc_subspace_id: In/out pointer to PCC subspace ID.
-> + * @cpu:             CPU number, used for debug messages.
-> + *
-> + * The RESOURCE_PRIORITY entry (CPPC v4) is a Package of sub-packages.
-> + * Each sub-package has RESOURCE_PRIORITY_NUM elements:
-> + *   [0] = Package of integers (CONTROLLED_RESOURCES list)
-> + *   [1] = ENABLE_VALUE, [2] = ENABLE_REGISTER,
-> + *   [3] = PRIORITY_COUNT, [4] = PRIORITY_REGISTER
-> + *
-> + * Return: 0 on success, -ENODATA on malformed data, -ENOMEM on allocation failure.
-> + */
-> +static int parse_priority_regs(union acpi_object *cpc_obj,
-> +			       struct cpc_register_resource *regs,
-> +			       int *pcc_subspace_id, u32 cpu)
-> +{
-> +	struct cpc_register_resource *reg_elements;
-> +	union acpi_object reg_desc_obj;
-> +	unsigned int i, j, resources_count;
-> +	int ret;
-> +
-> +	for (i = 0; i < cpc_obj->package.count; i++) {
-> +		reg_desc_obj = cpc_obj->package.elements[i];
-> +		if (reg_desc_obj.type != ACPI_TYPE_PACKAGE ||
-> +		    reg_desc_obj.package.count != RESOURCE_PRIORITY_NUM) {
-> +			pr_debug("Malformed priority regs sub-pkg: type %d count %d, expected %d for CPU:%d\n",
-> +				 reg_desc_obj.type, reg_desc_obj.package.count,
-> +				 RESOURCE_PRIORITY_NUM, cpu);
-> +			return -ENODATA;
-> +		}
-> +
-> +		reg_elements = kzalloc_objs(struct cpc_register_resource, RESOURCE_PRIORITY_NUM);
-> +		if (!reg_elements) {
-> +			pr_debug("Failed to allocate reg_elements for CPU:%d\n", cpu);
-> +			return -ENOMEM;
-> +		}
-> +
-> +		/*
-> +		 * Assign values immediately after successful allocation to ensure that resources
-> +		 * can be properly released.
-> +		 */
-> +		regs[i].type = ACPI_TYPE_PACKAGE;
-> +		regs[i].cpc_entry.package.count = RESOURCE_PRIORITY_NUM;
-> +		regs[i].cpc_entry.package.elements = reg_elements;
-> +
-> +		resources_count = reg_desc_obj.package.elements[0].package.count;
-> +
-> +		if (reg_desc_obj.package.elements[0].type != ACPI_TYPE_PACKAGE ||
-> +		    !resources_count) {
-> +			pr_debug("Invalid priority sub-elements: type %d count %d for CPU:%d\n",
-> +				 reg_desc_obj.package.elements[0].type, resources_count, cpu);
-> +			return -ENODATA;
-> +		}
-> +
-> +		reg_elements[0].cpc_entry.package.elements =
-> +			kzalloc_objs(struct cpc_register_resource, resources_count);
-> +		if (!reg_elements[0].cpc_entry.package.elements) {
-> +			pr_debug("Failed to allocate %d priority sub-elements for CPU:%d\n",
-> +				 resources_count, cpu);
-> +			return -ENOMEM;
-> +		}
-> +
-> +		reg_elements[0].type = ACPI_TYPE_PACKAGE;
-> +		reg_elements[0].cpc_entry.package.count = resources_count;
-> +
-> +		for (j = 0; j < reg_elements[0].cpc_entry.package.count; j++) {
-> +			reg_elements[0].cpc_entry.package.elements[j].type = ACPI_TYPE_INTEGER;
+>  		This file is only present if the cppc-cpufreq driver is in use.
+>  
+> +What:		/sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
+> +Date:		August 2026
+> +Contact:	linux-pm@vger.kernel.org
+> +Description:	OSPM Nominal Performance (kHz), write-only
 
-ACPI_TYPE_INTEGER could be checked instead of just assumed (and the value copied) to be sure.
+IMO exposing this as write-only feels an awkward interface, when we can just
+return (-EOPNOTSUPP, requested_val, or <unset>)?
 
-> +			reg_elements[0].cpc_entry.package.elements[j].cpc_entry.int_value =
-> +				reg_desc_obj.package.elements[0].package.elements[j].integer.value;
-> +		}
 > +
-> +		for (j = 1; j < RESOURCE_PRIORITY_NUM; j++) {
-> +			ret = parse_cpc_element(&reg_desc_obj.package.elements[j], &reg_elements[j],
-> +						pcc_subspace_id, cpu, RESOURCE_PRIORITY);
-> +			if (ret)
-> +				return ret;
-> +		}
-> +	}
+> +		OSPM uses this attribute to request a nominal performance level
+> +		lower than the platform-reported nominal. The platform treats
+> +		performance above this level as boost and below as throttle for
+> +		power and thermal decisions.
 > +
-> +	return 0;
-> +}
+> +		Write a value in kHz, between the frequencies corresponding to
+> +		Lowest Performance and Nominal Performance. The register cannot
+> +		be read back, so this attribute has no read side.
 > +
->  /*
->   * An example CPC table looks like the following.
+> +		Note that tasks may be migrated from one CPU to another by the
+> +		scheduler's load-balancing algorithm, and if different OSPM
+> +		Nominal Performance values are set for those CPUs (through
+> +		different cpufreq policies), that may lead to undesirable
+> +		outcomes. To avoid such issues it is better to set the same
+> +		value across all policies, or to pin every task potentially
+> +		sensitive to it to a specific CPU.
+> +
+> +		This file is only present if the cppc-cpufreq driver is in use.
+> +
+>  What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
+>  Date:		August 2008
+>  KernelVersion:	2.6.27
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 32f38b0c492b..fe714e71826a 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -33,11 +33,13 @@ static struct cpufreq_driver cppc_cpufreq_driver;
+>   * reapplied from online() across CPU hotplug, and the firmware value is
+>   * restored from offline().
 >   *
-> @@ -815,6 +900,7 @@ static void free_reg_resource(struct cpc_register_resource *cpc_reg)
->  int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  {
->  	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
-> +	struct cpc_register_resource *pkg_elements;
->  	union acpi_object *out_obj, *cpc_obj;
->  	struct cpc_desc *cpc_ptr;
->  	struct device *cpu_dev;
-> @@ -823,6 +909,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  	int pcc_subspace_id = -1;
->  	acpi_status status;
->  	int ret = -ENODATA;
-> +	u32 pkg_count;
->  
->  	if (!osc_sb_cppc2_support_acked) {
->  		pr_debug("CPPC v2 _OSC not acked\n");
-> @@ -904,16 +991,50 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->  	for (i = 2; i < num_ent; i++) {
->  		cpc_obj = &out_obj->package.elements[i];
->  
-> -		if (cpc_obj->type == ACPI_TYPE_PACKAGE && (i - 2) == RESOURCE_PRIORITY) {
-> +		/*
-> +		 * Package-type entries are used for nested structures such as
-> +		 * RESOURCE_PRIORITY (CPPC v4). Only RESOURCE_PRIORITY is
-> +		 * currently supported; any other Package entry is rejected.
-> +		 */
-> +		if (cpc_obj->type == ACPI_TYPE_PACKAGE) {
-> +			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_PACKAGE;
-> +			cpc_ptr->cpc_regs[i-2].cpc_entry.package.count = 0;
-> +			cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements = NULL;
-> +
-> +			pkg_count = cpc_obj->package.count;
-> +			if (!pkg_count) {
-> +				pr_debug("Empty package entry at index %d for CPU:%d\n",
-> +					 i, pr->id);
-> +				continue;
-> +			}
-> +
-> +			pkg_elements = kzalloc_objs(struct cpc_register_resource, pkg_count);
-> +			if (!pkg_elements) {
-> +				ret = -ENOMEM;
-> +				goto out_free;
-> +			}
-> +
->  			/*
-> -			 * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priority as a
-> -			 * Package of Resource Priority Register Descriptor sub-packages.
-> -			 * Parsing the full structure is not yet supported.
-> -			 * Mark the register as unsupported for now.
-> +			 * Assign values immediately after successful allocation to ensure that
-> +			 * resources can be properly released.
->  			 */
-> -			pr_debug("CPU:%d Resource Priority not supported\n", pr->id);
-> -			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
-> -			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
-> +			cpc_ptr->cpc_regs[i-2].cpc_entry.package.count = pkg_count;
-> +			cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements = pkg_elements;
-> +
-> +			if (i - 2 == RESOURCE_PRIORITY) {
-> +				ret = parse_priority_regs(cpc_obj, pkg_elements,
-> +							  &pcc_subspace_id, pr->id);
-> +				if (ret)
-> +					goto out_free;
-> +
-> +				pr_debug("Parsed RESOURCE_PRIORITY (%d sub-pkgs) for CPU:%d\n",
-> +					 pkg_count, pr->id);
-> +			} else {
-> +				pr_debug("Unexpected ACPI_TYPE_PACKAGE at index %d for CPU:%d\n",
-> +					 i, pr->id);
-> +				ret = -ENODATA;
-> +				goto out_free;
-> +			}
->  		} else {
->  			ret = parse_cpc_element(cpc_obj, &cpc_ptr->cpc_regs[i-2],
->  						&pcc_subspace_id, pr->id, i);
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index 1839582b80be..19f8a722654b 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -123,6 +123,19 @@ enum cppc_regs {
->  	RESOURCE_PRIORITY,
+> - * Autonomous Selection (auto_sel) is kept first, as writes to the registers
+> - * listed after it only have meaning while autonomous selection is enabled.
+> + * Autonomous Selection (auto_sel) splits the list: the registers before it are
+> + * independent of it, and those after it have meaning only while autonomous
+> + * selection is enabled. Place a new register on the matching side.
+>   */
+>  enum cppc_saved_reg_id {
+> -	CPPC_SAVED_AUTO_SEL,
+> +	CPPC_SAVED_OSPM_NOMINAL_PERF,
+> +	CPPC_SAVED_AUTO_SEL,	/* Entries below need auto_sel enabled. */
+>  	CPPC_SAVED_EPP,
+>  	CPPC_SAVED_AUTO_ACT_WINDOW,
+>  	CPPC_NR_SAVED_REGS,
+> @@ -50,6 +52,11 @@ struct cppc_saved_reg {
 >  };
 >  
-> +/*
-> + * Indices into each sub-package of the RESOURCE_PRIORITY entry.
-> + * RESOURCE_PRIORITY_NUM serves as the element count / loop bound.
-> + */
-> +enum resource_priority_regs {
-> +	CONTROLLED_RESOURCES,	/* Package of integer resource IDs */
-> +	ENABLE_VALUE,		/* Enable/disable value */
-> +	ENABLE_REGISTER,	/* Register for enable/disable control */
-> +	PRIORITY_COUNT,		/* Number of priority levels */
-> +	PRIORITY_REGISTER,	/* Register for priority setting */
-> +	RESOURCE_PRIORITY_NUM,	/* Number of elements (sentinel) */
-> +};
+>  static const struct cppc_saved_reg cppc_saved_regs[CPPC_NR_SAVED_REGS] = {
+> +	/* Write-only: the requested value is tracked in software. */
+> +	[CPPC_SAVED_OSPM_NOMINAL_PERF] = {
+> +		.name = "ospm_nominal_perf",
+> +		.set = cppc_set_ospm_nominal_perf,
+> +	},
+>  	[CPPC_SAVED_AUTO_SEL] = {
+>  		.name = "auto_sel",
+>  		.get = cppc_get_auto_sel,
+> @@ -79,6 +86,9 @@ enum cppc_saved_type {
+>   *                   could not be read
+>   *   requested_val - value in effect when the policy last went offline,
+>   *                   reapplied at online(). U64_MAX if none
+> + *
+> + * A write-only register cannot be read back, so its store handler sets
+> + * firmware_val and requested_val instead of init() and offline().
+>   */
+>  struct cppc_saved_vals {
+>  	u64 firmware_val;
+> @@ -135,7 +145,17 @@ static void cppc_cpufreq_save_regs(struct cpufreq_policy *policy,
+>  		st->suspend_regs_handled = false;
+>  
+>  	for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
+> -		if (cppc_saved_regs[i].get(cpu, &val))
+> +		const struct cppc_saved_reg *reg = &cppc_saved_regs[i];
 > +
->  /*
->   * Categorization of registers as described
->   * in the ACPI v.5.1 spec.
+> +		/*
+> +		 * A write-only register cannot be read back. It has no
+> +		 * firmware value to capture, and its requested value comes
+> +		 * from the store handler, so do not overwrite it here.
+> +		 */
+> +		if (!reg->get && saved_type == CPPC_SAVED_REQUESTED)
+> +			continue;
+> +
+> +		if (!reg->get || reg->get(cpu, &val))
+>  			val = U64_MAX;
+>  
+>  		if (saved_type == CPPC_SAVED_FIRMWARE) {
+> @@ -197,6 +217,12 @@ static void cppc_cpufreq_apply_saved_regs(struct cpufreq_policy *policy,
+>  	u64 auto_sel, val;
+>  	int i;
+>  
+> +	/* Registers before auto_sel do not depend on it. */
+> +	for (i = 0; i < CPPC_SAVED_AUTO_SEL; i++) {
+> +		val = cppc_cpufreq_saved_reg_value(st, i, saved_type);
+> +		cppc_cpufreq_write_saved_reg(cpu, i, val, saved_type);
+> +	}
+> +
+>  	auto_sel = cppc_cpufreq_saved_reg_value(st, CPPC_SAVED_AUTO_SEL,
+>  						saved_type);
+>  
+> @@ -1385,11 +1411,46 @@ static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
+>  CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
+>  			 cppc_set_perf_limited)
+>  
+> +static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
+> +				       const char *buf, size_t count)
+> +{
+> +	struct cppc_cpudata *cpu_data = policy->driver_data;
+> +	struct cppc_saved_vals *st;
+> +	unsigned int freq_khz;
+> +	u32 perf;
+> +	int ret;
+> +
+> +	ret = kstrtouint(buf, 0, &freq_khz);
+> +	if (ret)
+> +		return ret;
+> +
+> +	perf = cppc_khz_to_perf(&cpu_data->perf_caps, freq_khz);
+> +	if (perf < cpu_data->perf_caps.lowest_perf ||
+> +	    perf > cpu_data->perf_caps.nominal_perf)
+> +		return -EINVAL;
+> +
+> +	ret = cppc_set_ospm_nominal_perf(policy->cpu, perf);
+> +	if (ret)
+> +		return ret;
+> +
+> +	/*
+> +	 * Track the request in software: requested_val is reapplied across
+> +	 * hotplug, and firmware_val makes the register revert to the platform
+> +	 * Nominal on driver unload, since the value cannot be read back.
+> +	 */
+> +	st = &cppc_cpufreq_policy_state(policy)->regs[CPPC_SAVED_OSPM_NOMINAL_PERF];
+> +	st->requested_val = perf;
+> +	st->firmware_val = cpu_data->perf_caps.nominal_perf;
+> +
+> +	return count;
+> +}
+> +
+>  cpufreq_freq_attr_ro(freqdomain_cpus);
+>  cpufreq_freq_attr_rw(auto_select);
+>  cpufreq_freq_attr_rw(auto_act_window);
+>  cpufreq_freq_attr_rw(energy_performance_preference_val);
+>  cpufreq_freq_attr_rw(perf_limited);
+> +cpufreq_freq_attr_wo(ospm_nominal_freq);
+>  
+>  static struct freq_attr *cppc_cpufreq_attr[] = {
+>  	&freqdomain_cpus,
+> @@ -1397,6 +1458,7 @@ static struct freq_attr *cppc_cpufreq_attr[] = {
+>  	&auto_act_window,
+>  	&energy_performance_preference_val,
+>  	&perf_limited,
+> +	&ospm_nominal_freq,
+>  	NULL,
+>  };
+>  
 
