@@ -1,312 +1,265 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011052.outbound.protection.outlook.com [52.101.65.52])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F01803290C5;
-	Mon, 28 Sep 2026 12:21:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.52
-ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790598109; cv=fail; b=qR42nLR7J3Dj6jBZdYT8FL33AAOp/Wu2/3jMpzh6nqIEfOlJHyyj/xrPkPqWmGRDCy/riaIa18sNA4BWlUp72FEXY8zmhKRfHSx7l2N3OiWobblx64SuOcZDvOhmg94N5uHuYk99jkFHszwcnNxxclFJDpRmNz4ngILWncOuKDs=
-ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790598109; c=relaxed/simple;
-	bh=IeKVBdmRFZuxAZsxmH10tt041RguarhC1LXDp8C9sLA=;
-	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=sN+JnZtAeG80kSotTxgx8B/H8B0X4ee8RF6MuO2oiRNnEB4zEv5usHstwqSA1uoiD6ZKyQEOlcg4YrImuZgRg4dMZC2oCilGd5pNaDbupO+VpG1/sJaBLzqWOctSmEgDL8381ZKavGDuLHxw6u5cZNC9MA1qDvfDfn2A+v/mcYE=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=EQJYCsYD; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=EQJYCsYD; arc=fail smtp.client-ip=52.101.65.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C24F49EC7A
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:15:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790601358; cv=pass; b=k3ViYnXE5yLHbm7iZMMzSJMmUpHDhYgfTJVBba36zgQwihBlbzLy99i0LNxWxVppTaR9OG/hbm/+2AG5kyaaR1sY3ZtwDdbkYNYS6cg5yVL3VL0Q6gux6oANZXiqAEETOG6J0Q7rnCAHJRgo6n8w6vcelVJ5PxUrAgHLaHofTkA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790601358; c=relaxed/simple;
+	bh=RYNnodyGj2H4ZDL9Nl1Q9njPA0WoMAdmfxHZpNUl6v0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AiR/wxfURRxourxvQxwmRsDwNzVzwuNTYe0m2fEOaelxEyOMLH5nIMQi3A3UjYXVCDPAE73u5APZnoOSAcyWt1uikYzuNVakSCaoYPAGvrVbVXm3aJkWqVaQb7X23EIvFzmr/y3fslH7iYlMCCa+cWIEwgn14Sbq6yBBCFzDFCI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XbTp5OQb; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=gwzB9ILM; arc=pass smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="EQJYCsYD";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="EQJYCsYD"
-ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=NJwy2opvOPVaYL1gvT5OVuUXEzjEKA6L1urA8vYPOuh+koHUKFmz0yOaSgprvag7qQZdTt2v79xxzFtWy7GszHJZTahOxNSDNhfcaMtRkc82JOcg42wki/9Vnen9IxlJIBx+nCD5XgB1DAAtce3Jy0G80apW679XvOmqUxMwPxEElAKSL15K1uT9+YOmN/IsvGlwGW7ca0fL3NBr+CcVdSGua4pgy3ZDIODhgABwdN0M98WbCGTspVbeZE4mDGzPM/ZN6Nh/z2juLM9+J6Nf52sqCXrkFKM/nhJswkwanq4q73ZtlnlXQ0ViQ/2uEm4jHKChF8nxsAtzgoDObUV+kQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=OQY8OLE9s8YJ+eInybIKT9Cvpk5pCYTL9tVN/Ym4Opo=;
- b=Y0NCg9QJdpeatPGNYkzFB6BZLz0P2A8bhN3uAnw1nIk30CCVEYdYY7DTaIJo0jKGmDRlkBTKyJMwwYZ9IiLHwVeE6Vb8f6mKgi9weHuSdfULDTuEjEHi4AiRPAcHYkVxo2HKQ3HdmQ4lLudcDu5gTUcLDqTS0JbvZuZnuEv3ldpRkXjF9vlHVjaVoz+DYTumN0SA9CT1k1GzY0I3AvqbZ7m2hi+fHpVSAKcRQ18M1iM1Emd+ztWM131o4cagrMvVp8S0wL7vFlN+AzpfCr21T9OxN+By2aWIULDfmv+QeE+jN760I5QsRqFG03vurFHwsOBcA/Q0ZkdcemrzS5zWow==
-ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=nvidia.com smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
- spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
- dmarc=[1,1,header.from=arm.com])
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=OQY8OLE9s8YJ+eInybIKT9Cvpk5pCYTL9tVN/Ym4Opo=;
- b=EQJYCsYD2bMFsdORSD5hwnGWhPiMBYSMRYf/cGfqfsmLxagTUMw2ySkN+r10tJykLYvJvotfoZckJUDR/NeAB1gX6QgtS8lK0CEyrYCdXU1lEdF7IflJopfMXRrg67/fRSSG7gkn9H+qVNQPoO7KYHptY30xATXUxezdwZ/g6Ec=
-Received: from DUZPR01CA0110.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:4bb::7) by AS8PR08MB9289.eurprd08.prod.outlook.com
- (2603:10a6:20b:5a4::19) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.19; Mon, 28 Sep
- 2026 12:21:41 +0000
-Received: from DB1PEPF00050A01.eurprd03.prod.outlook.com
- (2603:10a6:10:4bb:cafe::5d) by DUZPR01CA0110.outlook.office365.com
- (2603:10a6:10:4bb::7) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.451.23 via Frontend Transport; Mon,
- 28 Sep 2026 12:21:41 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 4.158.2.129) smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=arm.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
- client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
-Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- DB1PEPF00050A01.mail.protection.outlook.com (10.167.242.43) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.14
- via Frontend Transport; Mon, 28 Sep 2026 12:21:41 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=L9NtOWHRXAcVzIdq2AR/mYb2HFAQDQO0i2TxfmvuREGcYqueIDySl0z8wUv8MgNAsgLp/F8Ob+BkUiNcKtFM7m8DKpu6KWWs+Tz2GvJMKH9vqEpTJG2Ihl16zyIXg0m5vVaL7d2mF/7gLsV6w+Bzo9xIKMGwgmVZ39y1/M6uMoi2fmaKheytVXoSUeateUsAUYQkT1sKbpf6ZQDYBxDCqGdYCofrMQj4Q4BmMDebEWOs1T4WwE02/04IxQfljiJDVUq9lYV8NVA/bJEFpVvY20eMtUNSuqjah24bQk3FIVX+RPTVtcbssXs0wEJusFbxcze4oNWfJcoHbWtXEwJTQA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=OQY8OLE9s8YJ+eInybIKT9Cvpk5pCYTL9tVN/Ym4Opo=;
- b=n0Ld8VDLswLokD32dNswdQwqLVsemB1YbkTOyCICW57+N8+TOpI8Rn1PHpZIp1/6ttskOe2Qvyz6o/cZwIIK/KyQgAj1Odl74/ZMTsb8I8BR5lZMRvU5xcXgSxE3g0SDkqY30QJbDVg6UCI6BYNNo88SV/VXuym4SRrux68ihlUgxl57syTtzjCSDq0UdnniMZwsQ7fu1r8vreEsWuT7vfjbDuHGQbvC0iDsybbZxLBApG9NT1nce8uYVZtEvC9jKKFoVaIjObxhpu0iszWmR+AJ27PLi5rAzgSf1lIwnbvLCnSWYLf7lNqHLGSeYDIXzyVxdR8UdDUHz1YDOD845g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=OQY8OLE9s8YJ+eInybIKT9Cvpk5pCYTL9tVN/Ym4Opo=;
- b=EQJYCsYD2bMFsdORSD5hwnGWhPiMBYSMRYf/cGfqfsmLxagTUMw2ySkN+r10tJykLYvJvotfoZckJUDR/NeAB1gX6QgtS8lK0CEyrYCdXU1lEdF7IflJopfMXRrg67/fRSSG7gkn9H+qVNQPoO7KYHptY30xATXUxezdwZ/g6Ec=
-Authentication-Results-Original: mx.microsoft.com 1; dkim=none (message not
- signed) header.d=none;dmarc=none action=none header.from=arm.com;
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
- by GVXPR08MB11129.eurprd08.prod.outlook.com (2603:10a6:150:1fc::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Mon, 28 Sep
- 2026 12:21:06 +0000
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91%4]) with mapi id 15.21.0451.014; Mon, 28 Sep 2026
- 12:21:06 +0000
-Message-ID: <e6ef3dd2-c2dc-4156-b5d5-35cad9c524f2@arm.com>
-Date: Mon, 28 Sep 2026 14:21:04 +0200
-User-Agent: Mozilla Thunderbird
-From: Pierre Gondois <pierre.gondois@arm.com>
-Subject: Re: [PATCH v5 4/4] cpufreq: CPPC: Preserve OSPM-set registers across
- suspend/resume
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, christian.loehle@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
- ray.huang@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com,
- kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-References: <20260916103820.1760297-1-sumitg@nvidia.com>
- <20260916103820.1760297-5-sumitg@nvidia.com>
-Content-Language: en-US
-In-Reply-To: <20260916103820.1760297-5-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: LO4P123CA0138.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:193::17) To VI0PR08MB10391.eurprd08.prod.outlook.com
- (2603:10a6:800:20c::6)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XbTp5OQb";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="gwzB9ILM"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68SBAMZq558602
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:15:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	N4n5cIJubYf0152q28FSh/pocYyVNa6tYRLNKG8jP7g=; b=XbTp5OQbKoXax8+1
+	TbIP6VO4B0jP0m6BbYqkq48DBQBCjunQwA6pGwmTeLGH3Pj60TPsImezhof+zWfP
+	/VsPH0cVPoEpWhcrK/R/cua0TmwJSNVSqdoLdRc9fT/IYhO8+Axt+7I3xeWol4Vo
+	Prvzc+SSKnJbGNEhsJ80lxMyvdWfVFdsoRsuERJK74v5SBssh+8Y3dY4iM/7l7qt
+	RQMd9Qxn1s3dM4O3zogtAR6OMsdrAXLGptIQRf4vquBT+ArIR/beCvPD2CAwuAqB
+	8VRHA3ERN4sJCNat4XEmOZt2LcuL4da+zOZhjjzWeX2TfFjVMnlEUA3EZ4jcVCg5
+	MAXutQ==
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gyebq298b-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:15:56 +0000 (GMT)
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-877ef1457aeso2334757b3a.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 06:15:56 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790601356; cv=none;
+        d=google.com; s=arc-20260327;
+        b=e0ifVkI/izL4k1iBPeD5L5UxethXCLatjuPw+zgev/ZZ8Ycha3wjW/iV1SFcjv292V
+         kMWEGWSk++ZJvg8CLLLSs1IzSRW47s8eaetE2Apj25xKP7FEF8Sek9Lzwaf8bmLVh3Cc
+         GeA5+9yuwx5xBtRYnswL50PHJkQ9ZFDPyVbfUoBf2UzqQkMzfHN6DfmHxpTpwZZ+Ygyi
+         VTLt7zgXvXuJWjCXhN+FEXTW4edRdiOVEGlrhq/JFopGf4R2PzaBJFZiSsXB99tjJzp1
+         xRCvQJ0PljmTheDjV1AYBYknmA0wVoWSR7jVo4Ry6eezkCiNOHNGEF4AUqwsViUprlXy
+         /wFg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=N4n5cIJubYf0152q28FSh/pocYyVNa6tYRLNKG8jP7g=;
+        fh=d5esiCLIxjQs/QfIp/GdvkcohEB3z/cVXTSZXZBqs7U=;
+        b=lYgwALdPZVf1ciSo1gB7eIX4dfRGaXEe3gphBvOZ3EWw4K2lnttlVAbna7OFnpBytS
+         MgKTTK25+oC5ZLnQL3XYM7BlSY/9f/cz68Cg0DeooPn14cHxdg6pA6QiuBp2wU/GABbh
+         Rp5iGQqpoWGqwTQLX8OdkM2VuEvkx5h6ZPRfOhenf6IGaAlQPqviK0WOkHxIOTMdbtsv
+         /BeFd23OcgbtQZhn/S/MsmJCaXUb79gdZROkV6wq0ll2+bm1wABvZiTLGc5WNDgzD4z/
+         4R5AfDSfU8FD7cADkQVCTGIqfZuaxWrzGVHFZmo3ToIJfAcnQhWm613MH/5LOm3opPc4
+         9pRQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1790601356; x=1791206156; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=N4n5cIJubYf0152q28FSh/pocYyVNa6tYRLNKG8jP7g=;
+        b=gwzB9ILMfzSoSOjJ08ZBSTSncUQt3BtTIaRrl/xccPwhqlQX/pL4mRumhw3OgDWNUu
+         jgUe9C0AzrmJ8ECkiY3CJ4WENXiF+dJl4Ft0I+8445W9FQ5Y3KtcPbn2+C6q2zWhPw9D
+         w8N1Lgon2n0jYOpWBLnPl2x5QlVKCPN2XS4bkKH8uTkke212+rKSGdfDvOAd/WrP0V0h
+         D3faRoS8Zt+13pwONGvEvt4oBDMf3pO+Uldl01Q4MPJKLL7NYRVWZoREztcPgZXvRuN2
+         surG55g0NDD35nEyR9Pxd4vixuxHPkpndfQHLD/j1qPY4RNoBg22b58R4rvA6JJJ4rtf
+         aqTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790601356; x=1791206156;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=N4n5cIJubYf0152q28FSh/pocYyVNa6tYRLNKG8jP7g=;
+        b=G+uJbQShrotcDhD+PC4a+XKjVWeESJwDqYNkGZkkVHRM/2xrkgGtiEBvbO1tdhOB0m
+         3z3Jr0rVs8+EYfr8TGsHT2Nz9CGsqfI2E86Wipb9EyYO9hRzq0xk+JSs2AIbCn9Xh8qi
+         3DOCqGc0oXe+dEyXkdRThocL9F/OMTcyVNNNZbHDjo2GbuYprWlh4OkSGzpsUWbCR044
+         d1am68QlpTHvKN0wNj4w/bFFu2nHiDkmQbLI/yOYUjzIVT31QIlM0uaskVM4em0iMlmq
+         sdqqMLlGzcUiPPHWHgas4tAqctUcNMoSOr0G/7yTWgchdqphxBFLSPb/APo2KgnMdqOj
+         hXYg==
+X-Forwarded-Encrypted: i=1; AKwUvByN2hP3wnT5vFNUCUTcqDqbpGHvudA0WDdzWNe5rJD9rw+TrzHrbhClpNdKPc3mQSZQ4YSUMJnkwg==@vger.kernel.org
+X-Gm-Message-State: AFuF++mMgI492HhpuYUo1Ip5lkYh2oGy/nrUz13xSvxyPQZoRumpwlq1
+	XJQ+ppYshJA7PQLU67ys5NyCfi/GQyDUZprBPzHSmgodY4a2ec1wQlprG6uIyRDxHSka11Dvr6A
+	KI2IXx08wRIXQgj+fyNSuOUHqyWn6iupPTaUmZSx7J7ruigoQPbDtyxONGyOH5OJfN9fX5xfEVv
+	rb/BFAZbg8HO/LRw5JlCdhsevK1CeZCmkPNKXZ
+X-Gm-Gg: AYBFou1/yJ0enCvvp4yL7+f/3QmEZLx7fUlYhLWcARvXRBjKH/pWm+UQ8MCc+e6WLTC
+	8e2eawUehRRqWwqXvoERjTZ/IjzO5+NQVKf7m3lvDZ12loKjmBP9YlGFuDBbe0i/dAOtbHLSj4l
+	53FnWDJovVnJLzU5C9myFZiEJfKBsGFo2oaBkFDA8RF4lK6cCTugvBlYHb5Q==
+X-Received: by 2002:a05:6a00:2a0f:b0:874:705d:f640 with SMTP id d2e1a72fcca58-87e9b89660dmr9757095b3a.34.1790601355554;
+        Mon, 28 Sep 2026 06:15:55 -0700 (PDT)
+X-Received: by 2002:a05:6a00:2a0f:b0:874:705d:f640 with SMTP id
+ d2e1a72fcca58-87e9b89660dmr9757075b3a.34.1790601355104; Mon, 28 Sep 2026
+ 06:15:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|GVXPR08MB11129:EE_|DB1PEPF00050A01:EE_|AS8PR08MB9289:EE_
-X-MS-Office365-Filtering-Correlation-Id: a37f03ae-d424-4630-cfb4-08df1d5b0d4c
-x-checkrecipientrouted: true
-NoDisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|1800799024|366016|7416014|376014|23010399003|10067099003|4143699003|11063799006|22082099003|18002099003|56012099006|921020;
-X-Microsoft-Antispam-Message-Info-Original:
- Je8dWCcQGr0CCD9izOj4nRAyugCJDiTcwcKo33DQvunjFbqJ0LNKuRqV84TkGQEPmR/roJF16+vjtQzAB8D/dhuPgMFrnQL4V8l5C3K0xbGS6l14yFcJH3+dOtsdl3wgbfCOA0x47rLLSpIOwFjWjbhvi4OJ2RQNazsFTrPCtRRCktRrMl0FiUdovt1WZA6GvDWfQNw7nJGMd6zHWEuHY40wcCPh1uqikcgjFfUlDHhRYsC9Y1vejTbO8si9VBLdMAAT1FD6x27JcWawxvcD7re4GZbSJUvRDrAkmlKGH9ffZmSKvT3KMYpWjlj4F46kyDlqtPL0whmJd1C+8Ctv0apji6asc0+qmQIwiCthcL7Jq/2xwULx+ZLlb/O0NV1JUpuglHQu6g36E3oX0gbdFtQLHfy+/zMyounr8VeQyLHbcf27TJ8NIfqwZgS9pbxnSeTBdC1Zs25xPvRPpls52KyWm4R+vOXjy/T0uzx2ZAxjBlbE8qnsFHyz+J4eBIcI4vBewcqwBKmzETnQbMgH7LAU1rUwl9MwWnAp1oTG2qYKj/GbwtywaFXl9ah6GR1kZJEGqjUq4qQvfPLXFq3Id6/JEDi3AqA7GEwis45HOISx0t1LrMYE4N0gA0fM5mchqOK6fiah2wXkzzEB8wDF2A==
-X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(23010399003)(10067099003)(4143699003)(11063799006)(22082099003)(18002099003)(56012099006)(921020);DIR:OUT;SFP:1101;
-X-Exchange-RoutingPolicyChecked:
- Qzz+zW4DXFmCBUL6d1hFRlcdbCQspOCg614oCSHEwvmOAScgPH8zA+jTPTz0zEWoJZY9fYPLbfH/8FXZWdPt5XdQDTMUPLkQfD8oXOQhGlLw/6zqpoiC1mguSZgS5CsC0yedfSXQUfQpSq3PgASZALH7Rzhtxbe+qI9LyJgTPQDhzNtCPeUnYFGrfJHjvDVFiMYJTmrOAmgYAtwNEk/uEwJ0c3TLfuRJWeHspVuhC8gz4rGO/49QZe8uwqMaXnjnQCRRxGRMLe/m4FyH+RRBIF+B+7qScF3X5wS+Dml26awHcTqcWT+8furabzVPjhcBXMmG/a57ioZJO9+w20fHFw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR08MB11129
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DB1PEPF00050A01.eurprd03.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	c264e8bc-034c-43ca-7a72-08df1d5af857
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|35042699022|7416014|376014|23010399003|36860700016|14060799003|82310400026|1800799024|921020|56012099006|11063799006|4143699003|10067099003|22082099003|18002099003|13003099007;
-X-Microsoft-Antispam-Message-Info:
-	V9x7ZDA+Q4D3GDDAC7QtXVHtHtVoiJ1KlQTXvwBkzXuncV/wjbXBDMqTe9uAq7kTo+a16+QZ4Ov2dfwnyAxu8H4ITgutpjStj/UmBPd9nMjURiQTOAt1a3Yw+6CnEbrtaLVHetZVOm35HlQq3iWEsqmB8mOnLxcUJwii+UcRn9mimnnvYWepGxdMhbuMh9+VeQPIW2ba5UYZyKZYC/Jza6+CALRr+cYmNmPP9P8LEfclaJAtB6G0IRhuQUDa7YX1+HSMJb34CBHdoM6fuLhnBdhVM9Z1hNbVwHTC4weBgIKieAGd99e+cCgs7xFrMB+UzlCADOqVOh45sjcIvg50TxV8qbAuJrMR3j+JdPyk9iCUCVVyN0MjA7NyIqPQ56Ta2R6zkahxf5XDOXOnXkkfWYwg4h5apEDwUTno4K6OgzkI+WswgnwU7MmGykxT2hqKkwowcKkb4YopRgolpp7s2A0XPgc1/AzQwnPjkL2uSXW/IbIGswcuLDmkRejYWk1EBfeyzknsw6pf1aRz7FtQDpdE1cYnnMflyLbBIUj2OmxDYpkNEJ2k0kHpx3CMuTxHgL4SlsPKBAU5mGUkJYcVkquFy2czxZQE9OJG7zkshivgyx7lLFy4ig7lEwMR1YyUTaMiMxkKXKxjUqi0F+lPeuL/Hcem6E6PfyMP9KSYdX6Vf/iOSclk/AYhnHTONiEO
-X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(35042699022)(7416014)(376014)(23010399003)(36860700016)(14060799003)(82310400026)(1800799024)(921020)(56012099006)(11063799006)(4143699003)(10067099003)(22082099003)(18002099003)(13003099007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	+NJT08Q5R/k99HHv8TavP74TEY+DCkWEYNcIXsheogr3CxBJDjfP7/m+iPpq1Bb1tDyMVFFLBOI6YMk/9DcsvTpzKqBCAYuAW4nVBYyttYS59VW0Z29E1d9bhlR12B1VrF08qaFkTJx1Ultv5TUd6gb64HwpGb0Rjj3wmhhz7lnxCejs4fNBWN+/kq4CaVJsD74PjDFpAmbVHbUknw1XjaUpsCrO3r2DSX7ciSx8H7e8rY0308Cow94W+j3dCMd8as+cPXvhFA3qTZaDC0a5GW4PfgWH+BfeUtfbGQ9Lt3MbLsuvgkku+ojtrhW9Kapzxdqe0Vo0VkxldSTmyUX+T/ip5SyYWwKBvVaKjBQz0zmQn4qaX862eAHdiOVwTAO9Hsj0viDuhU/dgaF3VFB+NwMl29agcMF0vd+MVfxTz+QeDYW2jT/s3Pw32YWR9/t/
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2026 12:21:41.0982
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a37f03ae-d424-4630-cfb4-08df1d5b0d4c
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DB1PEPF00050A01.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR08MB9289
+References: <20260923174711.1283986-1-briannorris@chromium.org>
+ <20260923104031.v2.3.I383681b22c12d7caee976cb91aa90d1a94d4a591@changeid>
+ <CAPx+jO_1qYnN37diVN1=PA0xGa0iSBfXD_uqgSdFpTn4t0zJiw@mail.gmail.com> <arVWVA3lks7SopQH@google.com>
+In-Reply-To: <arVWVA3lks7SopQH@google.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Mon, 28 Sep 2026 15:15:43 +0200
+X-Gm-Features: AclHuK8aZhiycUM7FNAEkB4H-JU_VDrs399BqS11JuG1Exo3d6B2KC32ckC6HkA
+Message-ID: <CAPx+jO_A684fd8SJML9NEmsGzNx2Ge3-mWyQcyjgGP2S5aX1jQ@mail.gmail.com>
+Subject: Re: [PATCH v2 3/8] PM: runtime: Misc improvements to runtime_pm.rst
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, linux-doc@vger.kernel.org,
+        linux-pm@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>,
+        Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+        Doug Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-ORIG-GUID: quyd9TG6YscPVCJVe2nSTlmvIDrFuN9Q
+X-Proofpoint-GUID: quyd9TG6YscPVCJVe2nSTlmvIDrFuN9Q
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA1MiBTYWx0ZWRfX4Gf5FII/d5hG
+ uE7PVvhXpDCxKE1TWmkbOP8k1F/FVNlUDHlBpWEZzwUq0okplO9+CMBbQgFwnX3tzQlgjR4ORLV
+ 39OQgQgYymZTXnsbt6lAme6EAK+jZAc=
+X-Authority-Analysis: v=2.4 cv=EqRHPicA c=1 sm=1 tr=0 ts=6aba688c cx=c_pps
+ a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=YMgV9FUhrdKAYTUUvYB2:22 a=cm27Pg_UAAAA:8 a=cMkGN2WWBoTvdrordToA:9
+ a=QEXdDO2ut3YA:10 a=zc0IvFSfCIW2DFIPzwfm:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA1MiBTYWx0ZWRfXyziwbBZNxB5X
+ OyD998rMt96uuNmQwp4rHTNNSAhuojAwEGUVZ+X10wgrQtL7LgicFMziPk/WTcbt1nfIepXdGrP
+ j6Raep0zMPwC21/HfHjB5Y2kfHOU0bfR3WbqJ2p8FVA0ap9aVwLmorXnvYjPbSSCdaHT15EqjTY
+ 6lMJxHckPXfItzgzSNwq1vBEIgAhZRyXQhXdlZe5lk09uK+Phe2kkkDgJRU8jL7HwCMnMOFPW5u
+ fqPT0qHbcnFcJbeYBIjXXVbjD4hXxm5OsDht41nlf1fiBXpn2pcjQtsJjMBZoXrWA2bUIcjPGyR
+ PHH8dELaM31y9iXltUHVFhPRG0PYMhIeRY91t3HplM3K8RRvHfYDnueWgmoNmfT4AAVdvc0/B/T
+ SEQGbJiP/8dJv1boolyuqjQXpvG/rMtXNQ0fWkzxCb4ivrl9moObQ6RBP7bvmiVTNRaJuXCG+z8
+ Xf5JmS0QUPBOjrvpvJQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-28_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 adultscore=0 phishscore=0 clxscore=1015 spamscore=0
+ malwarescore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609280052
 
-
-On 9/16/26 12:38, Sumit Gupta wrote:
-> The driver preserves the OSPM-set registers across CPU hotplug, but system
-> suspend/resume is a separate path. On platforms that reset those registers
-> or the performance controls across suspend, the values are lost.
+On Thu, Sep 24, 2026 at 6:56=E2=80=AFPM Brian Norris <briannorris@chromium.=
+org> wrote:
 >
-> The hotplug callbacks cannot cover suspend on their own. Secondary CPUs go
-> offline only after devices are suspended, too late to touch the CPPC
-> registers. offline() does not run for every policy either, as the boot CPU
-> stays up during suspend-to-RAM and no CPU goes offline during
-> suspend-to-idle. The driver's suspend() callback runs earlier, from
-> cpufreq_suspend(), while all CPUs are still online and no device is
-> suspended, so CPPC access is still safe.
+> On Thu, Sep 24, 2026 at 04:01:00PM +0200, Ulf Hansson wrote:
+> > On Wed, Sep 23, 2026 at 7:47=E2=80=AFPM Brian Norris <briannorris@chrom=
+ium.org> wrote:
+> > > diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power=
+/runtime_pm.rst
+> > > index 39fdeeda7a1e..352cdaf0650d 100644
+> > > --- a/Documentation/power/runtime_pm.rst
+> > > +++ b/Documentation/power/runtime_pm.rst
 >
-> Reuse the same save/restore mechanism for suspend/resume:
+> > > @@ -315,7 +319,10 @@ removal of their drivers.
+> > >
+> > >  Drivers in ->remove() callback should undo the runtime PM changes do=
+ne
+> > >  in ->probe(). Usually this means calling pm_runtime_disable(),
+> > > -pm_runtime_dont_use_autosuspend() etc.
+> > > +pm_runtime_dont_use_autosuspend() etc. Alternatively, drivers can us=
+e
+> > > +devm_pm_runtime_enable() during probe, which automatically takes car=
+e of
+> > > +calling pm_runtime_disable() and pm_runtime_dont_use_autosuspend() u=
+pon driver
+> > > +detachment.
+> >
+> > As I have stated in earlier discussions at LKML, the
+> > devm_pm_runtime_enable() API is not entirely easy to use correctly by
+> > drivers. It means that pm_runtime_disable() gets called at some point
+> > *after* the ->remove() callback has been invoked, which can cause
+> > problems, unless the driver's ->remove() callback has managed things
+> > correctly.
 >
->    - suspend() saves the current OSPM-set values, restores the firmware
->      ones and sets a per-policy flag, suspend_regs_handled, to record that.
->      It also stops the frequency invariance updates, so that no sample
->      spans the suspend window.
->    - offline() sees the flag and skips the save and restore, as suspend()
->      has already done both. Saving again would capture the firmware values
->      that suspend() wrote back and lose what the OS set. It still requests
->      the lowest desired performance.
->    - online() clears the flag, so that a later offline() takes a fresh
->      snapshot. It also restarts the frequency invariance updates.
->    - resume() calls online() for a policy that still has the flag set. CPUs
->      offlined during suspend come back before the core calls resume(), so
->      online() has already run for their policies and cleared the flag.
+> Yeah. And I think it's rare for drivers to have done a thorough job. A
+> rare exception: I found commit 2d90ecdfa326 ("ASoC: rockchip: i2s: Use
+> managed hclk and runtime PM cleanup") an interesting outlier -- it adds
+> an additional devres teardown to power things off afterward.
 >
-> Suggested-by: Christian Loehle<christian.loehle@arm.com>
-> Signed-off-by: Sumit Gupta<sumitg@nvidia.com>
-> ---
->   drivers/cpufreq/cppc_cpufreq.c | 63 ++++++++++++++++++++++++++++++++--
->   1 file changed, 60 insertions(+), 3 deletions(-)
+> OTOH, between v1 and v2, I chose to tweak one of the Examples to avoid
+> devm, precisely because it was committing (or hinting at) these kinds of
+> mistakes.
 >
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index ac315071a979..11f2e8111ef9 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -87,6 +87,12 @@ struct cppc_saved_vals {
->   
->   struct cppc_policy_state {
->   	struct cppc_saved_vals regs[CPPC_NR_SAVED_REGS];
-> +	/*
-> +	 * Set by suspend() after it saves the OSPM-set values and restores the
-> +	 * firmware ones, so a later offline() does not repeat those accesses.
-> +	 * Cleared at init() and by online().
-> +	 */
-> +	bool suspend_regs_handled;
->   };
->   
->   static DEFINE_PER_CPU(struct cppc_policy_state, cppc_policy_state);
-> @@ -895,6 +901,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->   	policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
->   	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
->   
-> +	cppc_cpufreq_policy_state(policy)->suspend_regs_handled = false;
->   	cppc_cpufreq_save_regs(policy, CPPC_SAVED_FIRMWARE);
->   
->   	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
-> @@ -986,6 +993,8 @@ static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
->   	unsigned int cpu = policy->cpu;
->   	int ret;
->   
-> +	cppc_cpufreq_policy_state(policy)->suspend_regs_handled = false;
-> +
->   	ret = cppc_set_enable(cpu, true);
->   	if (ret && ret != -EOPNOTSUPP) {
->   		pr_warn("Failed to re-enable CPPC for CPU%u (%d)\n", cpu, ret);
-> @@ -1034,9 +1043,14 @@ static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
->   	unsigned int cpu = policy->cpu;
->   	int ret;
->   
-> -	/* Save what the OS set, and leave the platform in its pre-driver state. */
-> -	cppc_cpufreq_save_regs(policy, CPPC_SAVED_REQUESTED);
-> -	cppc_cpufreq_apply_saved_regs(policy, CPPC_SAVED_FIRMWARE);
-> +	/*
-> +	 * Save what the OS set and leave the platform in its pre-driver state,
-> +	 * unless suspend() already did so earlier in this suspend cycle.
-> +	 */
-> +	if (!cppc_cpufreq_policy_state(policy)->suspend_regs_handled) {
-> +		cppc_cpufreq_save_regs(policy, CPPC_SAVED_REQUESTED);
-> +		cppc_cpufreq_apply_saved_regs(policy, CPPC_SAVED_FIRMWARE);
-> +	}
->   
->   	/*
->   	 * Stop the frequency invariance updates and cancel the pending work, so
-> @@ -1061,6 +1075,47 @@ static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
->   	return 0;
->   }
->   
-> +/*
-> + * Run for every active policy when the system suspends, before any CPU goes
-> + * offline.
-> + *
-> + * Save the OSPM-set values and restore the firmware values here, while CPPC
-> + * access is still safe. Secondary CPUs go offline much later, with devices
-> + * already suspended. That is too late for these accesses, so offline() skips
-> + * them. Doing it here also covers a policy whose CPUs stay online, for which
-> + * offline() never runs.
-> + *
-> + * Stop the frequency invariance updates here as well, so that no sample spans
-> + * the suspend window. offline() would not do it for a policy whose CPUs stay
-> + * online. online() restarts them on the way back.
-> + */
-> +static int cppc_cpufreq_cpu_suspend(struct cpufreq_policy *policy)
-> +{
-> +	cppc_cpufreq_save_regs(policy, CPPC_SAVED_REQUESTED);
-> +	cppc_cpufreq_apply_saved_regs(policy, CPPC_SAVED_FIRMWARE);
-> +	cppc_cpufreq_policy_state(policy)->suspend_regs_handled = true;
-> +
+> > My point is, the above makes it sounds like it's easy to switch to the
+> > devm managed version, while it certainly isn't that straight forward.
+>
+> Right, I said as much in the cover letter too:
+>
+> (possible future work)
+> <quote>
+>  * Adjust the way devm_pm_runtime_enable() works, specifically for
+>    remove()/teardown. Currently, this is very hard to use correctly --
+>    some common driver patterns may assume that a device will tear down
+>    while RPM_SUSPENDED; but that's not actually guaranteed. Notably,
+>    this makes some of the "Examples" section fairly tricky/subtle.
+> </quote>
 
-Shouldn't we also request the lowest freq when calling suspend ?
-This would make suspend/offline() function look similar aswell
+I think having some examples that *don't* use devm_pm_runtime_enable()
+would make better sense, as it would show what is needed to take care
+of things correctly.
 
+Stating that there is devm_pm_runtime_enable() available would of
+course be fine too, but in that context, I think we should point out
+that the user really needs to address the ordering problems that get
+introduced when using it.
 
-> +	cppc_cpufreq_cpu_fie_exit(policy);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Run the online() restore for a policy whose CPUs stayed online through
-> + * suspend.
-> + *
-> + * CPUs offlined during suspend come back before the core calls resume(), so
-> + * online() has already run for their policies and cleared the flag. Only a
-> + * policy that still has it set needs online() here.
-> + */
-> +static int cppc_cpufreq_cpu_resume(struct cpufreq_policy *policy)
-> +{
-> +	if (!cppc_cpufreq_policy_state(policy)->suspend_regs_handled)
-> +		return 0;
-> +
-> +	return cppc_cpufreq_cpu_online(policy);
+>
+> Would this be a good moment to pass this possibility by you? What if we
+> taught the teardown to force a device back to RPM_SUSPENDED? Something
+> like:
+>
+>     static void pm_runtime_disable_action(void *data)
+>     {
+>             pm_runtime_dont_use_autosuspend(data);
+>             pm_runtime_disable(data);
+>
+>             // New code:
+>             if (pm_runtime_status_suspended(data)) {
+>                     int (*callback)(struct device *);
+>                     int ret;
+>
+>                     callback =3D GET_CALLBACK(data, runtime_suspend);
+>                     ret =3D callback ? callback(data) : 0;
+>                     if (ret)
+>                             return;
+>
+>                     pm_runtime_set_suspended(data);
+>             }
+>     }
 
-I think there is something raised by sashiko:
+pm_runtime_reinit() is already taking care of some of the above.
 
-https://sashiko.dev/#/patchset/20260916103820.1760297-1-sumitg%40nvidia.com
+Moreover, we have pm_runtime_force_suspend(), which may fit well for
+some cases, but not for all.
 
-about the fact that fie is init using policy->cpus and exits using
-policy->related_cpus. Is it possible to check ?
+>
+> > Not sure what that means for the documentation though. :-)
+>
+> Well, I don't feel like the part you quoted is a problem. IMO, it's
+> totally fair to mention relevant APIs even if they're hard to use --
+> there is no part of the runtime PM that is easy to use!
 
-> +}
-> +
->   static inline u64 get_delta(u64 t1, u64 t0)
->   {
->   	if (t1 > t0 || t0 > ~(u32)0)
-> @@ -1356,6 +1411,8 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
->   	.exit = cppc_cpufreq_cpu_exit,
->   	.online = cppc_cpufreq_cpu_online,
->   	.offline = cppc_cpufreq_cpu_offline,
-> +	.suspend = cppc_cpufreq_cpu_suspend,
-> +	.resume = cppc_cpufreq_cpu_resume,
->   	.set_boost = cppc_cpufreq_set_boost,
->   	.attr = cppc_cpufreq_attr,
->   	.name = "cppc_cpufreq",
+Right.
+
+>
+> But I'm definitely trying to make things easier too. Ideally, we can do
+> something like the above to make it easier to use. But if we
+> can't...well, I guess I can try to document pitfalls better -- possibly
+> in the Examples section, or maybe an extra note in the above quoted
+> area.
+>
+> Thanks for looking,
+> Brian
+
+Np, I will try to help the best I can. I certainly appreciate the work
+you are doing here!
+
+Kind regards
+Uffe
