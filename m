@@ -1,213 +1,145 @@
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010015.outbound.protection.outlook.com [40.93.198.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB31F3644C9
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 20:18:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.174
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790626734; cv=none; b=RVdn/fa2map/wcCHycRAuhUkK67eVZbzDpMoj2JIcKs6gp3rci5c2f2iLjsckZClGFbDzhLs7GvZdm3COGpK+ML7s70TlKou+wgIk5Y8iHPkePji7hRCYR9fdcDYluA7wORQUXH7NAVMQHh39nwynSFxXo35fPMDmdPsq3Re+qI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790626734; c=relaxed/simple;
-	bh=yfMpwjR4Mb76xt9y9RfMOOwobv/4i5sPUE8M+81Aq+k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OsuZCvzz/JzaHc8mN3i3LWvJuNl0Gh/U93xdiMBQ0bU3rTw13pE3uduyRZVLhH6dbiZplw4dHb6lDawSWgBdANFaeprCc+hbj3E5SBkkdjoPkYLxDT6u7rqassacAPEcjwpjun97HPSRc+NeHx/9Ok9OfHo0NKLm1JsApIR25R4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=cezuWU/0; arc=none smtp.client-ip=74.125.82.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BE2E4D0CF3;
+	Mon, 28 Sep 2026 20:35:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.15
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790627754; cv=fail; b=TFauJz8uN98lkqad+/cpnAiW3IA817xtQo7+TI8IMa0exeefsJaaQUGK1QNeeBed2n3HxPbaRk2jpDvRzcdOBYCacPy1Rq+P8IqTlkWEp4y9/6sxsJ/apQ0Fyd8NhWhdQu5CtwCxl9czOkZHenYRTt1jnB27sNto/C+KvMjHP38=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790627754; c=relaxed/simple;
+	bh=ilec+sdtP3+YCCVZi7wtkLs1/hQ0dRfaIRF4Btc3pfg=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=REYZEFa5cxnZQy3m+o+YiSE1F6zjZ18xZMZWrnumgKSHNiG/mc2oakCWEHXpmbZiv0FO57mDldCldVyJ9LPE72Noj0AWFevW4qxffIkkIcvqvW/4S8J3AeR32bPtUdXgkJDES92Mfcl7picPmtTIWcsr8fU2amjqfA4KXqqX8f8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=XiwlmcT7; arc=fail smtp.client-ip=40.93.198.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="cezuWU/0"
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-3115c4451c8so202008eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:18:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790626732; x=1791231532; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=cr8XQlonHStI5lsvWXRcBcaqjtnReUb4PPL/E4xIzB0=;
-        b=cezuWU/08FS+by4fS+xPJMIyemHPtvVMgqEP9iCj3hXYYqH9x683FpcrjpAv9IDr77
-         jpsXJaY/tVeUhTBoJB4Ysi+zasoM82RFIMqMDqlQJq+dHEv+9ZjmSI+wQvZQgPZgsFWQ
-         VgaYTlMVHOGjTil9kAFWedOdPpBbbG6fraWDA=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790626732; x=1791231532;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=cr8XQlonHStI5lsvWXRcBcaqjtnReUb4PPL/E4xIzB0=;
-        b=C9JZD3jG2XhKGfxe0++tJajCMskBpAiHa378yejj0QKo6c4jIa6AK9lgLwHV09rKwA
-         YGEVeLVaFONTMYbdFwhOKflqBJVSgcvrHUwpAzxXzR+x1nQ/iHRv06pl8HBteUoDLW5N
-         UwtqWFeL3v6oz3/pXkA4jMwpdo1e1u38kTp0jxF1L4rb5J/YfKKR2Is1xrzH1+av58Jt
-         9Sk4D2RzF0xAL2SyV2riJ0hYbMJHkeXXg0jw5xyZeTeky/7gAyvZ3fKL8+CHOBvysCRs
-         LNMWamhpMivyo2XU3QpgYdbxe/5ekxgmTLSDv86oP2rYhAvkzbJdYle5qOzNDStchPPq
-         LOuw==
-X-Forwarded-Encrypted: i=1; AKwUvBxzS3bNepHGHM9SAiB8N/imDLYrvmu3GHIKbsAfQ649N4w2Fasuewqu/6HLkcg/bjD4jBihuafFbA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKMEDfXC4T916LkRgwCYTvejdJbnmmFRak3G41jSb6BgDZL9yGZ
-	QGCYyF+G0y+rBaMpwhFOZvijVemDfWXB9c1ePSES/kU5ycYn73HtmfXS0sUTyySNSQ==
-X-Gm-Gg: AYBFou35ziHXhqUvOmRPSsX1pd3l4gTmtuNgxUrmF2r249X2aBVwqS0Av/MkAc+3/Ko
-	optdKCwsD9YkmhDeiCMG8VyykmXcf7qh09S5jdWO0ubZVqbynW05qXPDsZnWAXwMySDf5RyrsF7
-	zZG/aqdsDYb52GNJvzn4NrKr8xDGH2e34uq/XqbdaoDZ5XAl/AyE8AiDH5bhGsFN8RH16LrbFot
-	d5r63nOta0FHcypxDJygPih9Jj/3zDpxRp0gHXBd9LzAPQNtesIzzb1AkfRGJ6oM9gCjit8Zmpu
-	zyyy14h5Jf8sH6IA6ZJd5FsX4cbU/JRIBsZgzzE9P57PVNAEE6LAfxB9NQTBa1k53BpHNWVnjkA
-	qJCtUIfNsppc+ga5Nu+Zfzzf3TkM5qgdEpcw5gVyHPC9yGrX4F0XQCfrtaOR6+TCxpwYjHVNGM2
-	ZpA16gGjDXMHWoOpiOQEWrjuq3tDez5TOUklWyy+LrP/jkM+wXTN4it0j5kYT3TBasSD4/MwnHY
-	dwOSm9O5a0sERZ2CjG0u6pWEKZrVJyLXgBXqg==
-X-Received: by 2002:a05:7301:433:b0:342:890a:4088 with SMTP id 5a478bee46e88-34af520868fmr530048eec.2.1790626731636;
-        Mon, 28 Sep 2026 13:18:51 -0700 (PDT)
-Received: from localhost ([2a00:79e0:2e7c:8:a706:cad8:8223:aefa])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34141a49febsm32169717eec.2.2026.09.28.13.18.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 28 Sep 2026 13:18:50 -0700 (PDT)
-Date: Mon, 28 Sep 2026 13:18:48 -0700
-From: Brian Norris <briannorris@chromium.org>
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, linux-doc@vger.kernel.org,
-	linux-pm@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>,
-	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Doug Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/8] PM: runtime: Misc improvements to runtime_pm.rst
-Message-ID: <arrLqEyoXhIm1vVu@google.com>
-References: <20260923174711.1283986-1-briannorris@chromium.org>
- <20260923104031.v2.3.I383681b22c12d7caee976cb91aa90d1a94d4a591@changeid>
- <CAPx+jO_1qYnN37diVN1=PA0xGa0iSBfXD_uqgSdFpTn4t0zJiw@mail.gmail.com>
- <arVWVA3lks7SopQH@google.com>
- <CAPx+jO_A684fd8SJML9NEmsGzNx2Ge3-mWyQcyjgGP2S5aX1jQ@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="XiwlmcT7"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=q3EUVeV8DTMP4/TJTM9t2HAgIHexd+Y9RiweLoy2DXX1WhUntIXcK1xubzujPYXOSgED8GInkadll7dViiSoqVklxmYMMj11/8suJEQhfA9DmniFXsljzNdzLutFyHI5MURLPBcjc9Kkho6Kz3VxEqUMAl24HRIMtPqVkQZib0ZzlYRw1O29YRWFy05/7gJTz3trugSMhAQpUN4vT3163heMYtUrEvSowVMfq4xUM+xyeINeEE7pgD2j0q2DSAxc2I0XYA6lR6QVasMF8kynPE1U+5IaHH6iQKmJclyHwzX94uBg2zgYj4Y75H1hfw2hgwlAE1fBt7Cdbi11z/SJBw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FN/mfUfsmiLCQUdNy5CbADPi2FdN/NJIHM+9YSsO/4E=;
+ b=R2QozACV77jAB4EB25SlLnxZox7nvrus7iqkLjJomGtwgZFefILyo+7aumZB/9VW0Uo1+onY6SxYNMFp9J7qbM9S1+E1K7CdYyyfytqDq2LSGPZoFq2JKmis8BjG4FrFZ3gBjhdDpbGdecMwK9aft50OoR7MhpqLuGjIWT2Ridv3m4Ge0Kbidx70NhOTZAdZ0/cHemrXxRhZm6pI0ay3WZTGks7LEkLB1YfEQpaEteVUBM/WBLmK2n1OxpqqzTe0YMpoWUH+XvS6EHjqv5TXudmhSSawQgo+LHqBxweuRRoK2nqdnI3cgeb5FsA7KJscb08FokYr2xLG9NbmGMpEQQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FN/mfUfsmiLCQUdNy5CbADPi2FdN/NJIHM+9YSsO/4E=;
+ b=XiwlmcT7HH9TcNTPn+fb2w3BjtIfSDrdtaJ8p4Lfi/Vz7UdwiZxBGUPpmoyQS662UPMM3HaG/q1dh04Sb0W4SuELRmDXmilZjChn/ATR4x3dd9qTnAvH/ztesnmpSwjN2JMepgHNnrlfhU3XFw60WMu+JldbV+XjJKxKgq/sbDY=
+Received: from MW4PR04CA0319.namprd04.prod.outlook.com (2603:10b6:303:82::24)
+ by FT1PR12MB689230.namprd12.prod.outlook.com (2603:10b6:170:c::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Mon, 28 Sep
+ 2026 20:35:49 +0000
+Received: from MWH0EPF000C6186.namprd02.prod.outlook.com
+ (2603:10b6:303:82:cafe::38) by MW4PR04CA0319.outlook.office365.com
+ (2603:10b6:303:82::24) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.451.24 via Frontend Transport; Mon,
+ 28 Sep 2026 20:35:48 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ MWH0EPF000C6186.mail.protection.outlook.com (10.167.249.118) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.472.14 via Frontend Transport; Mon, 28 Sep 2026 20:35:48 +0000
+Received: from airavat.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Mon, 28 Sep
+ 2026 15:35:44 -0500
+From: Vishal Badole <Vishal.Badole@amd.com>
+To: <ray.huang@amd.com>, <mario.limonciello@amd.com>, <rafael@kernel.org>,
+	<viresh.kumar@linaro.org>, <perry.yuan@amd.com>, <kprateek.nayak@amd.com>,
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC: Vishal Badole <Vishal.Badole@amd.com>, Mario Limonciello
+	<Mario.Limonciello@amd.com>
+Subject: [PATCH] cpufreq: amd-pstate: Update Zen6 client EPP tuning values
+Date: Tue, 29 Sep 2026 02:05:23 +0530
+Message-ID: <20260928203523.1290623-1-Vishal.Badole@amd.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPx+jO_A684fd8SJML9NEmsGzNx2Ge3-mWyQcyjgGP2S5aX1jQ@mail.gmail.com>
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MWH0EPF000C6186:EE_|FT1PR12MB689230:EE_
+X-MS-Office365-Filtering-Correlation-Id: af601de6-3f2a-4b53-f5bc-08df1da01444
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|1800799024|82310400026|36860700016|23010399003|56012099006|10067099003|11063799006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	ODW0if0TeUD2lk4qI+GGDcSRZLl4Oit2XuKi3W1iP1Gp61D+ZML9GlaxeQHhbPhgPbSv2wwqLkR8BJHRmC/RS6LoOb929xBRUqMRiPbfU+/GZOaCwqY/Rx32hKjiWpF3KhMKicsVBnKLA56Mzd2Q6VptI2seiOpVy7BIJf5YXwWRprxmsmNPLxgmFVTQO6tVZlK5zRUdSlG8WWTtyx0JsQN9pnD5EhOVwNfNBSkM1Cx/pymuC7bXuID6yeApIaMehJivXx3DbQdEnSLCb/jWRe9/WizvlJVzRr1TeHGatktR0lNkbt2HCjJ2Hlt5drbVXLT4T18lKfQLmDKr9fMK1+Ra1+XcfKRk2bsJFlMKyF2mvlDFtSpsQyoLCv65IZWsxyl3pLAbzqQCFAtOcUtQv2pCeJJsbrJYel7HNKxP23r02ux8xio79VERB+t/YFUs9yX9SPln9rqN2uNZX6jAtxftEyMFL1rT01MAAtky5bCn/lT0/ePEui3wKbIXN0W9lBNak/8Y4x31aodAieuMMJ7vqOD5kXg5u4gZpnw9lUtdnLF+C0jcsDh+qnBgOJU5fPkmGozOd48rxannxaLDRLr98pOjxh4EMkJGX/Jk1YAMgNAeHFvzXC1yFKyVYkBUQgEPkSxalSSg0aqkiX8FZ219H7ReDbHpB9bdKilS1PfH2RgxlcIH0AdJMtlHxbnh1/2eER4sy5v0SYtmC5LY8A==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(82310400026)(36860700016)(23010399003)(56012099006)(10067099003)(11063799006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	iUtzpgRpP9uWRL6jhbLcTEC7fcQmBluGB9R2WDO2kQbJZCCNA41gv9bIVrxoEMdYWKVUawEWRABy50U23TTiw5iotRXpeclle8/+pCnnHQK1U8/c3ai5UST4oAlpNdxZAa0yNBP7fs7j+fdWBWPwxcdix/RR2P31lyCGr4GkPjhMVVxAzzE0O4fbkio7Z6q2lvzKOva9wsheR88xHrgtZartH4MMmJH3fThSkPCrbTcEjLzcM9Rg452YsPk8aIfkJx3388ihemSUhrgS/BByyTc5/I28Hl4EsRMScvBwJNgo/tS4usu6y5WKOK1z4U5pxiRpB3ieRWXTgfiQCyox0xRLhe879iR0Oxb9DiejeevCm31sYfixU27ekF4/B2RfEsHgyZzFb5mWX8tNzgQ/MocdXdfkHbNtLeRH8tpwuktZSnKf3/fGKrdUsc60SxfV
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2026 20:35:48.0515
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: af601de6-3f2a-4b53-f5bc-08df1da01444
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MWH0EPF000C6186.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: FT1PR12MB689230
 
-On Mon, Sep 28, 2026 at 03:15:43PM +0200, Ulf Hansson wrote:
-> On Thu, Sep 24, 2026 at 6:56 PM Brian Norris <briannorris@chromium.org> wrote:
-> >
-> > On Thu, Sep 24, 2026 at 04:01:00PM +0200, Ulf Hansson wrote:
-> > > On Wed, Sep 23, 2026 at 7:47 PM Brian Norris <briannorris@chromium.org> wrote:
-> > > > diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-> > > > index 39fdeeda7a1e..352cdaf0650d 100644
-> > > > --- a/Documentation/power/runtime_pm.rst
-> > > > +++ b/Documentation/power/runtime_pm.rst
-> >
-> > > > @@ -315,7 +319,10 @@ removal of their drivers.
-> > > >
-> > > >  Drivers in ->remove() callback should undo the runtime PM changes done
-> > > >  in ->probe(). Usually this means calling pm_runtime_disable(),
-> > > > -pm_runtime_dont_use_autosuspend() etc.
-> > > > +pm_runtime_dont_use_autosuspend() etc. Alternatively, drivers can use
-> > > > +devm_pm_runtime_enable() during probe, which automatically takes care of
-> > > > +calling pm_runtime_disable() and pm_runtime_dont_use_autosuspend() upon driver
-> > > > +detachment.
-> > >
-> > > As I have stated in earlier discussions at LKML, the
-> > > devm_pm_runtime_enable() API is not entirely easy to use correctly by
-> > > drivers. It means that pm_runtime_disable() gets called at some point
-> > > *after* the ->remove() callback has been invoked, which can cause
-> > > problems, unless the driver's ->remove() callback has managed things
-> > > correctly.
-> >
-> > Yeah. And I think it's rare for drivers to have done a thorough job. A
-> > rare exception: I found commit 2d90ecdfa326 ("ASoC: rockchip: i2s: Use
-> > managed hclk and runtime PM cleanup") an interesting outlier -- it adds
-> > an additional devres teardown to power things off afterward.
-> >
-> > OTOH, between v1 and v2, I chose to tweak one of the Examples to avoid
-> > devm, precisely because it was committing (or hinting at) these kinds of
-> > mistakes.
-> >
-> > > My point is, the above makes it sounds like it's easy to switch to the
-> > > devm managed version, while it certainly isn't that straight forward.
-> >
-> > Right, I said as much in the cover letter too:
-> >
-> > (possible future work)
-> > <quote>
-> >  * Adjust the way devm_pm_runtime_enable() works, specifically for
-> >    remove()/teardown. Currently, this is very hard to use correctly --
-> >    some common driver patterns may assume that a device will tear down
-> >    while RPM_SUSPENDED; but that's not actually guaranteed. Notably,
-> >    this makes some of the "Examples" section fairly tricky/subtle.
-> > </quote>
-> 
-> I think having some examples that *don't* use devm_pm_runtime_enable()
-> would make better sense, as it would show what is needed to take care
-> of things correctly.
-> 
-> Stating that there is devm_pm_runtime_enable() available would of
-> course be fine too, but in that context, I think we should point out
-> that the user really needs to address the ordering problems that get
-> introduced when using it.
+The per-CPU-type EPP values for the Zen6 client platform are further
+tuned based on platform characterization. Adjust the performance and
+low-power core entries so each core type uses its intended EPP settings.
 
-Yep, that's exactly I took out of the patch 8 discussion. I have such a
-revision ready to send out in v3.
+Reviewed-by: Mario Limonciello <Mario.Limonciello@amd.com>
+Signed-off-by: Vishal Badole <Vishal.Badole@amd.com>
+---
+This patch is based on Mario Limonciello's:
+  "cpufreq/amd-pstate: Add EPP tunings for Zen6 client platforms"
+  https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git/commit/?id=114a157e8d30601d024b53564a0fe54202f6567f
 
-(Some part of this is a general problem with devm_*; for one, if you
-only use it partially, and still have some manual teardown in remove(),
-there's a high probability you'll get the ordering wrong. But that's
-general advice, and not really specific to RPM documentation, IMO.)
+ drivers/cpufreq/amd-pstate.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> > Would this be a good moment to pass this possibility by you? What if we
-> > taught the teardown to force a device back to RPM_SUSPENDED? Something
-> > like:
-> >
-> >     static void pm_runtime_disable_action(void *data)
-> >     {
-> >             pm_runtime_dont_use_autosuspend(data);
-> >             pm_runtime_disable(data);
-> >
-> >             // New code:
-> >             if (pm_runtime_status_suspended(data)) {
-> >                     int (*callback)(struct device *);
-> >                     int ret;
-> >
-> >                     callback = GET_CALLBACK(data, runtime_suspend);
-> >                     ret = callback ? callback(data) : 0;
-> >                     if (ret)
-> >                             return;
-> >
-> >                     pm_runtime_set_suspended(data);
-> >             }
-> >     }
-> 
-> pm_runtime_reinit() is already taking care of some of the above.
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 83960a6336b9..2529cee9a6cc 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -211,7 +211,7 @@ static const struct amd_pstate_epp_soc epp_soc_zen6_client __initconst = {
+ 		.performance		= 25,
+ 		.balance_performance	= 51,
+ 		.balance_power		= 64,
+-		.power			= 64,
++		.power			= 115,
+ 	},
+ 	.efficiency_core = {
+ 		.performance		= 25,
+@@ -221,9 +221,9 @@ static const struct amd_pstate_epp_soc epp_soc_zen6_client __initconst = {
+ 	},
+ 	.low_power_core = {
+ 		.performance		= 25,
+-		.balance_performance	= 51,
++		.balance_performance	= 64,
+ 		.balance_power		= 64,
+-		.power			= 115,
++		.power			= 64,
+ 	},
+ };
+ 
+-- 
+2.34.1
 
-It gets the set_suspended() part, but not the real key point -- running
-the suspend callback.
-
-I believe this is one of the bigger RPM-specific misconceptions and
-pitfalls people make, and is made worse with devm_pm_runtime_enable():
-people assume that as long as their driver isn't trying to use the
-device (e.g., they've closed any open handles, etc.), then the device
-will leave in the same state as it came in -- suspended. But that's
-absolutely not the case, due to:
-
-1) race conditions -- async put()/suspend is not guaranteed to complete
-   before pm_runtime_disable(), and therefore the post-disable status
-   is not guaranteed.
-
-2) forbid() -- if user space forbade runtime PM (on >
-   .../power/control), the device will not suspend.
-
-I think it's a clear win to ensure balance -- that
-devm_pm_runtime_enable() can ensure the device leaves the same way it
-came in -- suspended. (Or, if that was somehow not true: I could add a
-check into devm_pm_runtime_enable() to make this conditional on initial
-runtime_status.)
-
-Note that many (most?) drivers *do* care about balance -- e.g., they
-expect a balanced regulator_enable()/disable(), because resource
-teardown (regulator_put()) will fire a WARN_ON() otherwise.
-
-Anyway, unless I hear major objection, I'll try to put my proposal into
-a proper patch + description, so it can be reviewed on its own.
-
-> Moreover, we have pm_runtime_force_suspend(), which may fit well for
-> some cases, but not for all.
-
-Yeah, I was imitating that, more or less. I suppose there's no harm in
-using it here though. I'll think about it.
-
-Brian
