@@ -1,88 +1,105 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA9ED35675E;
-	Mon, 28 Sep 2026 05:19:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9764637E2E1;
+	Mon, 28 Sep 2026 05:37:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790572754; cv=none; b=kCWXtFRz19Y6KGQo67yuqx2FoJC39r1Vn1Soa1TFd5T2tBj3sXqe4hC/VshY5z3oAMeCHSZr+12ChNnNySLDl6IkefoLexC5a9vFP/KRuC9auF8dKdUWRiQfTcdfbzOuleAVlqMsASxUSTG3u7zjsxJ4YjUjN9682NRpB1ps6vE=
+	t=1790573835; cv=none; b=GDH4vopCUUG34Ls35y+YjXXRZlK6RpZ5VC48rXVHztK+DHHLDoc/LIiuUEUiaNLLje40Hxje7w3eRduSkLPDcMz/eCcornDa6bDzJz6/NLyhWiPEksUNsZB+OpTU/68/b/siMlfDHfxqcN8erIA3Vaoi5rfsPtnL0G/7XuvJ0+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790572754; c=relaxed/simple;
-	bh=DCBM11/YsDsAJeJrJrcLh/3bh79c31FOub1VkMd0e0A=;
+	s=arc-20240116; t=1790573835; c=relaxed/simple;
+	bh=8KUFjbAMBy4PelaOUS84OaEnF4yW4XEW7SEYfT2ELTk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Eem5HhqzWBPsSaJnJqKX7be16oVsyXghlp+yRCj6sVS8hTLl0Gx5G9Esrk0bx1abF8j9Mek36r8WH0N3ZDPX7TeKmAKluNK8CNrmxClVhVhPAu0wX8PEDj03yPdGXL1s7qWP4PVqn5SU82ypGTL1iPQsrvYCk1QzSa5v+81xEkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=pWh+GUF3; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=pKwjpcxzcLwjB/PLjjz6+hqNFHJ1hTbcIICq1FjVjt1BNmxRgvWTLcDDrLMOBd8vuGvg0SXEiYMzFvnhXiBhw5TvPUpS6BuTBsfBuB23HuSPE+RCaXee6XXsRue3XgMbCt3oSnobhBG6DL9SYV1VJU/yOHFWqi94zJcDPdnsrOk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XkjvhMfR; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pWh+GUF3"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=9wXI30xoHEFIzp1nZZ3HcM6IjWcoLUOaEIDAeAGQdHQ=; b=pWh+GUF3s5/CFkDVtfkmZ4JgT7
-	GVKHQROAkdpwQgH/mbX0zjcaPdKpCeEU+lSfrTXZ5wxa2ofozHMrRK9THFiYZYtygaX7Ma8a6mnIZ
-	zmcJr4CsJWiS7umUNA1bYo4RQ830IaTVE1xcmPSc5XHX44c1KUs2p4A6E/GcpEBW8DIlzzqBWsCMd
-	vX57SjP0m63bp/8+9uw8ZwQzGqa/YMe5GXcKZ6mphGkpLohZ4vA80mIcUnRGrDKrHz4aEFiL0G8/R
-	jeyk8Q8UmR5ulxbTM2CUNN9J8u0iB2JBIEmsXEM60WFfysKhCvJSzzJqh1dgDafNh15/jwd2Fr+Ku
-	vf+IJGIQ==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xB3lU-0000000HLuk-0rJd;
-	Mon, 28 Sep 2026 05:19:00 +0000
-Date: Sun, 27 Sep 2026 22:19:00 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Matthias Goergens <matthias.goergens@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>,
-	Kairui Song <kasong@tencent.com>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	David Hildenbrand <david@kernel.org>,
-	Michal Hocko <mhocko@kernel.org>,
-	Shakeel Butt <shakeel.butt@linux.dev>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>, Yosry Ahmed <yosry@kernel.org>,
-	Youngjun Park <youngjun.park@lge.com>,
-	Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	cgroups@vger.kernel.org, linux-api@vger.kernel.org,
-	Alejandro Colomar <alx@kernel.org>, linux-man@vger.kernel.org,
-	Karel Zak <kzak@redhat.com>, util-linux@vger.kernel.org,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, Shuah Khan <shuah@kernel.org>,
-	linux-kselftest@vger.kernel.org
-Subject: Re: [RFC PATCH v2 0/4] mm/swap: reserve swap areas for deliberate
- offload
-Message-ID: <arn4xOIxFRD8qY_x@infradead.org>
-References: <20260926045517.3458413-1-matthias.goergens@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XkjvhMfR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 257B91F000FF;
+	Mon, 28 Sep 2026 05:37:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790573834;
+	bh=8QhxpW00yraLjdsyXjafndt02JRMMBCzVdcuQl77r+s=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=XkjvhMfRfahuE79Gj1oGilaIo+aVnkpFIqwL9/vgwvfn1KREvgOHru0lQB08u6ssL
+	 WFOQHHkAFbjMIbqCu9FlJYQK8Totuh9O6tSg8Lnzq6ltw+hqHWxXvl3P8f+Ed5Vo9Y
+	 8qFLKTzh7rqofkmB6cuDhGZnKMB6kOGEzmynhnbnqDr+m2fFTDc9hMVKbJNUOykU36
+	 RlwPrMqYwV9hAdDxvrWIq3NwWEKxSxlo4MHk8lNAlqR3kSys2agzmaTzcur1XdTxDp
+	 5AjlaSO5pELgXbE3CHhAGRNfDeUIfNQZGoqeC26gvVa9TPkZLfkDKI9T4UJxEGCRAO
+	 RHeOh8oV+QTAQ==
+Date: Mon, 28 Sep 2026 07:37:10 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Linus Walleij <linusw@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, Mark Brown <broonie@kernel.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
+	Lee Jones <lee@kernel.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, dmaengine@vger.kernel.org
+Subject: Re: [PATCH v3 01/18] dt-bindings: power: Convert Ux500 PM domains to
+ schema
+Message-ID: <20260928-rainbow-adventurous-otter-3aa6a7@quoll>
+References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
+ <20260921-ux500-power-domains-v7-1-v3-1-9352be6b86b1@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260926045517.3458413-1-matthias.goergens@gmail.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <20260921-ux500-power-domains-v7-1-v3-1-9352be6b86b1@kernel.org>
 
-On Sat, Sep 26, 2026 at 12:55:13PM +0800, Matthias Goergens wrote:
-> This RFC adds offload-only swap areas for deliberate cold-page offload to
-> backends unsuitable for pressure reclaim. ZFS zvol swap has documented
-> deadlocks under memory pressure [3]; compressed swap is another target
-> because writes may need memory despite free logical slots.
+On Mon, Sep 21, 2026 at 12:48:07AM +0200, Linus Walleij wrote:
+> +description:
+> +  The UX500 power domain controller gates power to one or more peripherals on
+> +  the SoC. Domain specifiers use one cell containing one of the DOMAIN_*
+> +  indexes defined in dt-bindings/arm/ux500_pm_domains.h.
 
-Out of tree code not matter.  Out of tree that violates the linux
-license terms even less.
+Use rather full path, so include/dt-bindings/arm/ux500_pm_domains.h
 
-Either way block devices must be safe to be called from paging paths,
-not just for swap but also for file system based paging.  So this is a
-bug in the implementation, and not something worked around in the swap
-code.
+> +
+> +allOf:
+> +  - $ref: power-domain.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    const: stericsson,ux500-pm-domains
+> +
+> +  '#power-domain-cells':
+> +    const: 1
+> +
+> +required:
+> +  - compatible
+> +  - '#power-domain-cells'
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/arm/ux500_pm_domains.h>
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +
+> +    pm_domains: power-controller {
+> +        compatible = "stericsson,ux500-pm-domains";
+> +        #power-domain-cells = <1>;
+> +    };
+> +
+> +    mmc@80126000 {
+> +        compatible = "arm,pl18x", "arm,primecell";
+> +        reg = <0x80126000 0x1000>;
+> +        interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+> +        power-domains = <&pm_domains DOMAIN_VAPE>;
+> +    };
+
+Please drop the consumer from the example (thus also arm-gic header).
+
+With these:
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+
+Best regards,
+Krzysztof
+
