@@ -1,119 +1,133 @@
-Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5CFC379991
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 17:17:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.227.140
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790615843; cv=pass; b=MpLXJkjnVTgnqARbrb2UIQK9M9x+KgNV+zZea6hDCl6EHl8tzBfeLmMdLTSGXKZSSWqmbBRhIBttVG/LACtGYupTyolASQlCCwWvTS8OmQ2hvdaHkrLSdfpXcXn7zs9hoR0xpERv47QO6kJd4qTsqUU6VpZvepQ6H7L4hkhLDoU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790615843; c=relaxed/simple;
-	bh=UyqntIiPxC/vJFVio3C1PXsVCPlN47xjv622T7oLz7k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=R1zrTYpoBiJwenvXHfv9fRzFz5ggzkV5uD+ssF30v3MfwKOHsVMLqdUT04Ozru9O3rpxBY2btRyjUPGEWLmijkEPx6mIYoHIuiz6R6ndrnYUX4wEOYkuxY1SSMkKY68uwyadsxLdXDshv1c2HiV9aIhMLksZXEYSEr8fq7nlQBs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Zdlq+bpe; arc=pass smtp.client-ip=74.125.227.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAAE040EB80
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 17:18:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790615910; cv=none; b=DkvZEsNC1KaEIxoa1IS7MbHxTYNPBLlZPcP5KFIrcbyovwD8WY1tK2hKa8CGZmmkF1n0MZ38l7m6q7C15rB74st+rgucaLvbUMkPZspxBd1fZZpsL0V/ru+OEjVpfzC0eZ+qlHcvMVwBYXeaFwj3VNu5ru14M6805RbcZal34rQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790615910; c=relaxed/simple;
+	bh=s/mTlAGn0bObuTqVrR8xDe8Fg6yt56YXK2In/CNgXbE=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=gcay7vZ+oijBC5zNaARkGqLD2JXP/eA0kN/qwA8chfYPFXBV51MxRzl+UgK9bSA1FKhxWI1V1KnegsXHixnly7DRran5rni5m2oj8I0Nh+Rg3w062vrzQ8LoiEogoCLvsrEWrHxnh9zBscbK/sbiFWUlw48NMsJ5vVFFu7uwMks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=wTolbVbD; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zdlq+bpe"
-Received: by mail-pj2-f12.google.com with SMTP id d9443c01a7336-2d6ff23d81eso2777835ad.2
-        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 10:17:21 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790615841; cv=none;
-        d=google.com; s=arc-20260327;
-        b=mspbzb4qwSoIfkUAC7mQsC5Ls43eYUdT/YrRicEyJIIavSwC4YYh+nFmTbMPnDL47W
-         gQeLTmI3aP+34E10GfaBm/z8A1Cr+CwZ/OiDOjYl4IEzIDbBcGs8LelW50CcQr9nQMj6
-         +BTmIeDwEcio6VgwAFm3nS3hj4rgbMzlcroBiep9vsIkNLg9E04/SkeaICy5lUwllzoO
-         pNNVSKb+4Kg6holNV6cNEBRLpsQsz3wZ1HtV/3W/CcX7DKJNRz/VjzLqbinFsqO1F0NZ
-         25EyY3BvNt2MSB1mAgkXkFxKHXD7SRdatLdNfscJYQZf1iwxdnnE0l/R9Py+jj5TOdL1
-         JAdA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=UyqntIiPxC/vJFVio3C1PXsVCPlN47xjv622T7oLz7k=;
-        fh=tVBKQDrpcvxuA+rxzwytufTdFwSKUpFBxkz35KSL0ig=;
-        b=Gl5B4JUTpIr8xXYTdQv+dbEvvFqCdK4kHXn2/dVFaqg/jGb7MIe2TiBBzgq0t+nQgf
-         2hhcOw9xHUx5yLZEJqjmsbFsfQ0Ku4L9wbjWJWk/uP1pWWeMg5Z14/YZdskYMIT/1AvQ
-         tlbqd2Da3P2aA//q+YVWQD3e6ja0JanQNXA0I1is9NxXYzul9v57D6o7TPXIg+oA1wLK
-         zTx8CRKjQAulTG67YGhHLLeTe2dhWxKN1qYPThUo4Xw+r6BOMBuMUbgiFDHBJrIDwqy5
-         I4DDddFvJGjU0P1ptGPh7okLShPLczIBRnlt5VtGJ0I+1JBJCO2+pHkavAJKI1cqqLot
-         yP1A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="wTolbVbD"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e83a388f8so25170085e9.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 10:18:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790615841; x=1791220641; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=UyqntIiPxC/vJFVio3C1PXsVCPlN47xjv622T7oLz7k=;
-        b=Zdlq+bpeL+kRHts1FA6LBO9vO6RxDaEwHIGmOpHPWL3l2+EuzQwzRSocuwCHg4BfPJ
-         MrRM3yq+HfPcaCIN+cbpWLMNKHFB5ZoFwoCLuc08/xk7Nx8oiIL2E80964/A8hzTMczz
-         +O+HpCjbB17ecFv+VEx5gu3QznWMkJvC7dw/b/54qseP7BKXxrTN4WjQjIgP6KQV/ugK
-         0inB95S5ds9ga3Zifkz6V8JgT2i2gBoCIpPWfTIsJjtnVh3snE1we+84DssT1rz4y8AI
-         dB6yNa6qOX1nEkTvfAxs9Q/G8lRTf3JKahUbN8WYreXFKOeQpcbypL3sPlVNXR0Jxm0X
-         CeIQ==
+        d=flipper.net; s=google; t=1790615906; x=1791220706; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=/FtP8QfYvdqSZuTV1DgfaQnem0vOH6RafKPHcaYLj5g=;
+        b=wTolbVbDtYhpCce6IK6o1dCqVffCVCP9blXXWdTzQSusspLs8slyjpb4aTwE2ncgHW
+         S19mvCSEIC24BtYENhYqO+/CdCMxK81DqMA4z6d0I6Yrkd/mo/mn1+6ESjjg/ffh7YDy
+         OE4OXIetK3M/CQXcNLLQCzY2CCDZK6bfrTR66sBsv2Kat6mOGeNHdm8saJADYP8074ci
+         cRsX+2jVoXFe8TfOHZT48Jxmmim1OBYuM0fzsuHQTvKv7l2nPzmY4A+KjSvaPEO25Hwm
+         TbmBo7rs98RB3wmoLlcRphX+i11DxCfDnHPuMtShVq2MkF6K24wkSEcGs6AWoCpvj4wK
+         kNhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790615841; x=1791220641;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=UyqntIiPxC/vJFVio3C1PXsVCPlN47xjv622T7oLz7k=;
-        b=P/tba9ERnIFifuJttkM2WcUz54/pg4RDmEIQNf878QmsS6APfJ3FH3/ZCZeD1+O9dK
-         Fyxvkix60y6Y2Z19Vu7YWOGgQBmZSBY/YxF/tcIiyQ2IMRiXmKQcPII2vEMZJDBquynB
-         572MtrKZMwC5HF6n9uu1BSzEL+7OpJx8GYpiy/DLPuqFoHWoxQSbW9lLLYRfOTz/2JUZ
-         wLolpm2aerEqkkJhUEfrCJ2q0vKIswCVcCQpPdWfQp5WV+Un1ppvwYsUM4D0z8Pi/Qxv
-         X8AMh9lEobIvXwxUWZrzBAwKBpL/isn7WzjezVjUXErj37t8RZaAbE1jN89Oynebycp7
-         ttQw==
-X-Forwarded-Encrypted: i=1; AKwUvByZpGyDRb2kcH85ewL4uD6Foe2BuXvw7obG3c9yogXSwCjxoPQB3W6+uv1gf+2G6BgzEWMZgeBLqQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL9ANRsr2zGZZ2iRgmmcO3IHQmAQsq+eh+/pI37jqBs0qtBuIxu
-	/POnqgUz+IL97cJNFn56XeIS8L7Iio4Ep83BqjsiqvlLWcV1EeEbIjX+HsKRZtGe70H2jq/U5BL
-	yNQAbuMjbggWLZYHpID73XzFAaU0mYMo=
-X-Gm-Gg: AYBFou2yLydJkfi7EjcAG+hdZ8OhcfEvwHf6yJ01JQTCEdzKhiKHqLHVcXDD+K2kuuj
-	epFLEWeD/Dac0fQArIQOhNkwF3lvp338bZ5W9hBK4ZLSftuqT4drYKbT9oNrGapAuezOqLbEx5m
-	fAqPmcRM5nrVWyGo57T1Jj2q8O2K23R0Q4BzW1nzyFnd62yVq9Or8jtRbTmw/5gQFm8Ftj7tc9g
-	X853sSnJPUAYIQjWjNNzRKe9Tjm3Nd3L5AXjNzJuYXkeGDw3QgdbtMbsg6+ManZdHwgqZdzaQQz
-	H+likuGTn4yIpAtv+02mpiAXt8EseOoahRjv9+Jll4hTY6rvIwxXLOFVkoTrNiOAZJmaWUQKbJ1
-	ezCbE01cVUvHTvI7gDiCw+ft3tAHBTyrIugwtnuT4Hoc8PSTJgqNYXtq2oH6w/z4YIrTNSxMxOe
-	c3JlbglkblxSAV/6Z/vgh4ktUAkEQZrxLL4TQH2xwI/qS8T3ivhj0=
-X-Received: by 2002:a17:903:32cc:b0:2d8:f4d4:7044 with SMTP id
- d9443c01a7336-2df7deaa2femr181005175ad.3.1790615840841; Mon, 28 Sep 2026
- 10:17:20 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790615906; x=1791220706;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=/FtP8QfYvdqSZuTV1DgfaQnem0vOH6RafKPHcaYLj5g=;
+        b=j8TK4nRaGaBHU5bmDB/YSysJ3Mg+DJAaXqL82YiQPc7vb63Zo5R57EEDlcBZ0KZXR9
+         p0W2DmG5C3ji6jVNTn4IPCe308sQRRenh3TjNqSMhtcJmjMOotmkCrAlfZTHIvjZhHjt
+         K86B3HSJb+8wZO329UBiH0CUJyJNcraxaCEvij0iW9jwh4ca1Au2DG1fzc8Qy7l1soa2
+         +GwXa0Qu83eQq5xwChjduNIHezQuz0SFrlpYbuoPfNsO84dMz8XUu1dOZJ4awrfvDEbk
+         psD7WlQ0WnMVq1DQSdiSXBuoXvPds7hkD5GXdF+/5F7IEehkPBZQedpphw/9hWDCubTZ
+         yvjw==
+X-Forwarded-Encrypted: i=1; AKwUvBxZDwLNv7WQDWMUkcPmLDESTmkdqlF+byAcHfYI0O+oxTiy/X5CQ+aC7ETqIhNec0Kker+mF5x5wQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++ng0EJtxyV/oSGwR7UHfP169CQvjpYqmADwPUJcdvrYLs/MZjsh
+	Lk4j9C1NXRKTKceEQRZGifsECnQNK8aaXE+Jv/aFTImSeiry7CAT84csVzk4X1fOuC4=
+X-Gm-Gg: AYBFou3lsmR6+4klnIXBpypnXc9AWCn2UZ+BAMCMvX6MWVDj34vWF4SyBWcV5z5LWNK
+	ZUywhYMJSypslnqnZ6Zcb8a3XMEMhtgkTWrH0edRbftCiv0xuiRE681L80WoqUTubcsv7HWgIt4
+	ffFsz9Stzv2i03ga4V9MniIHol5k6aIRGW96g/j5Y+fky53g2t2Xm0BoDEEFGxnn68nnMAJJT4y
+	REwmuIksbway7ZeONK1UZa7iAwoimf6mF5ihyhNVsjHu+YYiVj96yzahSSpgBCiETZieYWo6xdG
+	zYvCJZ+50O9klJJ91b0wzAs0D7v9oS9QsXyMf0LW7uaYLDEto5UWKc6mUguCUKBE4Qz6sm+C0+7
+	pb1fOtNbm/ON4o/psF+TAx/JO/+8PQu85RVf8OAfzLfbWS4jqO/PrKQrdlDnS0bS0UnJjQxe1Ka
+	GhlkmU9G96HZuE5gEJqwcT7j9MG6xgO/nw3+SU4QcCLg9c/JStw5Dltr//yxkbJAvd/VW/wKHKA
+	wmELlh7DdkxXa9V
+X-Received: by 2002:a05:600c:1d1c:b0:49f:bd3c:bc28 with SMTP id 5b1f17b1804b1-49fe6712809mr247163255e9.35.1790615905740;
+        Mon, 28 Sep 2026 10:18:25 -0700 (PDT)
+Received: from alchark-surface.localdomain ([5.194.93.183])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4887a84221bsm29224973f8f.36.2026.09.28.10.18.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 28 Sep 2026 10:18:25 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH 0/5] power: reset: syscon-reboot-mode: Add support for
+ Rockchip RK3576 reboot modes
+Date: Mon, 28 Sep 2026 21:18:15 +0400
+Message-Id: <20260928-b4-rk3576-reboot-mode-v1-0-65486b03bd41@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260829161013.102967-1-mehmet.mkoseoglu@gmail.com> <20260928162214.487564-1-xuyiwen14@gmail.com>
-In-Reply-To: <20260928162214.487564-1-xuyiwen14@gmail.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Mon, 28 Sep 2026 19:17:08 +0200
-X-Gm-Features: AclHuK9Oi3HYdpfBssBZXi59FnPj8n8w5d4DbZjLEM1vQmIq2zJQWHOZwy-yEls
-Message-ID: <CANiq72ki8M1KmxhO4vSkMUfLcuqOMvZtuTNdDpS-UcJy8rqWpA@mail.gmail.com>
-Subject: Re: [PATCH v3] rust: cpufreq: reject NULL from cpufreq_cpu_get()
-To: spidermana <xuyiwen14@gmail.com>
-Cc: mehmet.mkoseoglu@gmail.com, a.hindborg@kernel.org, acourbot@nvidia.com, 
-	aliceryhl@google.com, bjorn3_gh@protonmail.com, boqun@kernel.org, 
-	dakr@kernel.org, daniel.almeida@collabora.com, gary@garyguo.net, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lossin@kernel.org, 
-	ojeda@kernel.org, rafael@kernel.org, rust-for-linux@vger.kernel.org, 
-	tamird@kernel.org, tmgross@umich.edu, viresh.kumar@linaro.org, 
-	work@onurozkan.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQ6CMBBG4auQWTtJbSuCVzEuKP3R0UjJFA0J4
+ e5WXX6L91bKUEGmU7WS4i1Z0liw31XU37rxCpZYTNbY2rS24eBZH+5wrFkRUpr5mSI4usZ4uDY
+ OxlNpJ8Ugy+97vvydX+GOfv7OaNs+19H5QHkAAAA=
+X-Change-ID: 20260928-b4-rk3576-reboot-mode-d3804e39df04
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1836; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=s/mTlAGn0bObuTqVrR8xDe8Fg6yt56YXK2In/CNgXbE=;
+ b=kA0DAAoWsqLYjxBZ1KUByyZiAGq6oV6iNH/VmmFzlQ1hQhAYxvpamHsdpOIQq94PE4kcQtNIB
+ IiRBAAWCgA5FiEEnfakPZUyDpq6SEj1sqLYjxBZ1KUFAmq6oV4bFIAAAAAABAAObWFudTIsMi41
+ KzEuMTIsMywyAAoJELKi2I8QWdSlvdkA+wRRO3lgERV5W1lHYPI+DQvpFJPuu/7czqqt6XFZwTG
+ PAQDw9MHAy9l+53NYrKPFyIz2M01jBJjFuVhK7mB7r8c2Bw==
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-On Mon, Sep 28, 2026 at 6:22=E2=80=AFPM spidermana <xuyiwen14@gmail.com> wr=
-ote:
->
-> Either way, looks good to me.
-> FWIW, I hit this too and have a reproducer [1].
-> [1] https://github.com/Rust-for-Linux/linux/issues/1258
->
-> Reviewed-by: Elowen Xu <malanalyzing@gmail.com>
+Rockchip RK3576 supports reboots with a specified boot device priority
+mode, allowing one to override the board-defined strapping config and the
+OTP programmed priority setting.
 
-Thanks for taking the time to send the tag! :)
+Supporting it requires several changes though:
+- The boot mode request needs to be forwarded via TF-A to the boot ROM
+  (upstream since TF-A commit 2a97ba20e901 ("feat(rk3576): forward any
+  boot ROM boot mode request on reset"))
+- Some power supplies need to be kept active across the reboot to prevent
+  early boot code from running into a synchronous abort
+- The magic values for each of the supported boot modes need to be defined
+  for the OS to use
 
-The From: doesn't seem to match the email of the tag, is that intended?
+This series enables the above with the RK3576 EVB1 board as the example
+user. Other boards will likely need a close to identical change to make
+use of this functionality, but need testing.
 
-Cheers,
-Miguel
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+Alexey Charkov (5):
+      dt-bindings: soc: rockchip: add boot ROM download boot mode
+      dt-bindings: power: reset: syscon-reboot-mode: allow supplies
+      power: reset: syscon-reboot-mode: enable supplies for the next stage
+      arm64: dts: rockchip: add reboot-mode node to RK3576
+      arm64: dts: rockchip: name the reboot mode supplies on RK3576 EVB1
+
+ .../bindings/power/reset/syscon-reboot-mode.yaml   |  8 +++++
+ arch/arm64/boot/dts/rockchip/rk3576-evb1-v10.dts   | 16 +++++++++
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi           | 36 ++++++++++++++++++++
+ drivers/power/reset/syscon-reboot-mode.c           | 39 ++++++++++++++++++++++
+ include/dt-bindings/soc/rockchip,boot-mode.h       |  2 ++
+ 5 files changed, 101 insertions(+)
+---
+base-commit: 6375e61c01e93e35ee7acd336a689ac1fae4b509
+change-id: 20260928-b4-rk3576-reboot-mode-d3804e39df04
+
+Best regards,
+--  
+Alexey Charkov <alchark@flipper.net>
+
