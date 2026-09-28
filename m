@@ -1,180 +1,218 @@
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012063.outbound.protection.outlook.com [52.101.53.63])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 278FB472774;
-	Mon, 28 Sep 2026 20:59:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.63
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790629152; cv=fail; b=Fg5UYFZzj7brhc5Br6r+4QqD0lwews6oiVIfCUFT4M5xF3i0WtV08DvTaCqELMDweAY+k85n4NO4e7TytnNF1oRN+XlU04obDtUPWr+AtBvw4qDzQCNeLaPFxgexxBZoC4Nx0dKpxX1ER7u1MNsuarEQ6ts9eIlK4Uv4NjWq5lE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790629152; c=relaxed/simple;
-	bh=wlOdRt4RVSG+ySU9JVbH0KUn2i9UK+SSVsYTSbCrWbc=;
-	h=Message-ID:Date:Subject:To:References:Cc:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=dhjtRr8obJYiK3wfdAnLdzFabJiT47rWvSEmAtkLyrEqh/OzTC8jZKyRdXgjHLtSZC86XPrxd0yIlfdVLgIeyIeRJo0PRC7sF5VeE62/wlbElI4WQcJaUXqjXOlzznEbU39swd4n2SQ6oDNu6iYXoPBvqnbQa6yM3ez3hIwGABc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=lbYEL/ln; arc=fail smtp.client-ip=52.101.53.63
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CE974ED1A8
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 21:13:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790630034; cv=none; b=S1pwYXMBmTXB/wb3Z0rZtegdVk1Bor/EMnypawJpijJWfnGzeQbj5ozJjmN+8PVVPTIKtwvNcnw4HNK8fIHhJVqMdN9aiDeYQJ/6ZAYSDwwQtYlebcYIb6T2Njy1SlbuIROdnJPxQNCFsrE9gB84BzOwSED/caYXQ5KDvEgqwDw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790630034; c=relaxed/simple;
+	bh=P5L4D7b0DgwzH55GIDmJxW7XWwPhhdMjQQhJQLHohuY=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=XUBZzGLSIW7g5eXNdAb77vZggrRb29MX3XG1WObRrh7UOQIf+xg13UNzY1xo4p8wY6YxoZ5uWgSc+mFE3kTfV19wzvhJe5jk1JbG49rODVicWBTb59mq/dvj9i2KXcPAVB+/4wnszaQ828XFDsgVBEW46XZq05RE7EnvDSTUqv4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ElHMIasg; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=iqJDNE5/; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="lbYEL/ln"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WxA8/mwNFJwxNOjKeG2IIXTszlMow8s89rpSreSDQv5G45NBoTBTZIkm9ayhiEmegIn956xGA5rRydvUqQWe1m/olxjid9JQzHQ9m/Nsq+RoCc/Zbyf8qIwSmKHiCbRvNT/YNBEZN3OF3U0flIIbG69OaP+03cQoK6j3+FqoqiDvpQUJEof8K/ZXNnx28JwgQjxxALMCATu4GJXQ9vVIPlgfP0W8E0K6EwBJ7pOSm1i87wCk5EPXTQ1QCPuaS9oWH9YXWqMPZ90ypLcT61SfGNiSmjOnLTtz73FOJppZ8yjANZUr4GMNgYRgkuruLpYxMQXhFLz33BvJZJgXYX30cA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=23/p8uYz4oVdzVmWAtyQt/c85l8CAtrNdTerwclM7gc=;
- b=uGKi4HmP0WuM3vUM85kAG51+j4lW04Z0Ytxv98rRqKnnQSLCeWH7STE57ivyg10dElPkPgjLAld6OtszthdA45sYLWaT80+6bqdUuoBChE1X+ZP7mTrRpiFtsNECQlS4Uw4SGWtywY8BnhcgHcWiC/b0+sBS/Vy4WfbUgF2KVy6Meo564PEDJUUIq6Gcse0MzQbPEoTVZVF/bEUGqyHLCFmEu4HynvfP9rL22KmdlSpGYylfQWFJlu0aQ6jn4kJKxODrx4MmD8Do1364awc3fyQ+oW5RnbpnboCZxuUhara9g6sBXi5diqyMkxfeCnhmSkVPsdGkpBwo+Lc0k8Zo9g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=23/p8uYz4oVdzVmWAtyQt/c85l8CAtrNdTerwclM7gc=;
- b=lbYEL/lnVB7qPw1jKUZTCSc2qglIOmJkfHqawLuwjGDU3A28WNbu3W+6OdGAtWDxtJY3fLV2sUeMXmobmvYr1Oi9n5jIo97TIr63ZQYWWaqTPM0ZfWbyxkkyV3+nxRaM4l1RgLAk6K1ghGIHUI0Lv1w2QNGSMyJoATjIhmnndsc=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by MW4PR12MB7334.namprd12.prod.outlook.com (2603:10b6:303:219::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Mon, 28 Sep
- 2026 20:59:07 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%7]) with mapi id 15.21.0451.022; Mon, 28 Sep 2026
- 20:59:07 +0000
-Message-ID: <83294b60-a371-43b8-be01-2ff122df2b5f@amd.com>
-Date: Mon, 28 Sep 2026 15:59:04 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: amd-pstate: Update Zen6 client EPP tuning values
-Content-Language: en-US
-To: Vishal Badole <Vishal.Badole@amd.com>
-References: <20260928203523.1290623-1-Vishal.Badole@amd.com>
-Cc: ray.huang@amd.com, rafael@kernel.org, viresh.kumar@linaro.org,
- perry.yuan@amd.com, kprateek.nayak@amd.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <20260928203523.1290623-1-Vishal.Badole@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: CH0PR03CA0009.namprd03.prod.outlook.com
- (2603:10b6:610:b0::14) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ElHMIasg";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="iqJDNE5/"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68SHwRsr2585906
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 21:13:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	1IzV/IBSShZ4MUiO1jS1RtbXx8+cT8mcQQSxay4AXCY=; b=ElHMIasgcoWtec81
+	3XonYLFaXwfoNl70XfrXu6ilNBG7PlPa9Xn0GyzTsuK/WCpyQtxBjy7Zmrc7yXm/
+	7dLE/5GYMjYifV6ijFiCgDFpdZLK1AKkRmc6srll7n9nJNaYVuQ8tfaMCoLZSgB0
+	DI56EdKOK48inW2ixLMXwuFptI8bTnL+qyYXUwLV/w4XfMyyU8GKchIzx+I3E5wz
+	DTqohJBDZ6HKGJzhXIT74vsqqnT+D6jbAczE1Bop7X0T8CBeuJowFmLxVLIiB49a
+	UA+HT9106VzHNWlLLkji847eOvSkPkQILxXZVWBCrWk/pxYb19wrdW74ObwohJ66
+	8xR5JA==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gynfkttjh-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 21:13:51 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93c77c0d96eso192515285a.3
+        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 14:13:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1790630030; x=1791234830; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :references:cc:to:from:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=1IzV/IBSShZ4MUiO1jS1RtbXx8+cT8mcQQSxay4AXCY=;
+        b=iqJDNE5/POKPkKmY5Nh5NOErszSBYjCnu2PzRCL3z4KEWyY1xXdnpbVec1zGGbLCXT
+         W4acjw6me683lf1SzvXLtZo2oo8RPMSh3vpk8WpolYSLzQcyoQnTGe6T6JBwnsmcH2xS
+         n02tgTnZ0bErg3CRCpLH1nZBgiylM0CX2neNDbKDuwn0NF7NnRGROqGpxV87El5bpr+c
+         tfR8wHFYJYZQJjc4QKjHC3LG3yAe292hta9mbUdM0lR8/VsDzmfvbdOoWsHj/5T/juj4
+         Elks48pIM79iHP7R62tpv/s3nPdI7yQGp6VPG6JIOfrrxUJ+pJRcV/uFemKBGn2+/0Mm
+         x2vQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790630030; x=1791234830;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :references:cc:to:from:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=1IzV/IBSShZ4MUiO1jS1RtbXx8+cT8mcQQSxay4AXCY=;
+        b=gEmUhZrhetHnLagA8D8yD6OTP22S+GNniNQcOQ5/BwOWYulPWMK1s/2+nsJBfpIn7i
+         ENm9eM9Bdg7xPguG21kIiTJFJl7rW4vrKYCFg/kUNi2JfejMXhe/ZLDxP+Ud85J/5UIC
+         XyHvv+B6/p+m/OK2bqpmyLEoptRWSk2Y+2szfFKJmreDFE8cEqpDH3UU2QVNtSw8KJby
+         rPMFFoclw6siJ7iuSQHuf4NKyCHF6zDOhoqoDRddXxBrLnp6A55p4oPp1Xzj9xS06KvS
+         VFuyP2Mxh4S9QOMkJygxquUoa600ffJvECqFmeN1B+IoYRJtembsNWASmvXbtkZYSCXN
+         7mFg==
+X-Gm-Message-State: AFuF++ksQxHb3/9IxY5Fbb3PsHyc9kYlqL76RksV0t7KmbbtkoyfuUXv
+	71GE2VXeaVmWZlUrZM5ypVwmrJenJCC212iviH9FUIwI11XF8pp89LdyQtk9ZSd9lx4YOaGVA5E
+	skuXzQF2A22kMSI/gIr5U63BneTMI/fQJwmZkS60FIi8coVw3nWQKl4O5MKGQaA==
+X-Gm-Gg: AYBFou2957FjTT31fv5deXk1EeFgMj491wYJYMBdUuhqXBKnyilKaJ2S3PK8gOW3c8d
+	zzB3X1bNY/cR1hKXyrt22QZADCzGi/SKvE6Nd73DPqRDiLWIRnZLUuqo1CpJBXT0ZZh65QXA1gE
+	T4974oKwWR6F9c42PeBiFZnXBwBGXaNaz/zExAZICh16/kfFgVZ2Je77c2HX0w+6q8O+g49jJID
+	DKzI9lbzTere/qxlsFPZAnMq7MRuLKqLBoB+frUk2q1vtK+cCv6F0eWe3ccfd0FaaIXBeTcqkG+
+	EhMiq2Krf9Upbla3lmB4ejoR4QDO1iR1XWQhr66Tvf19Zs3Rp1RSG7YxTpgYORcwVOjaRRJVSg9
+	Kowh3N399kJK5o57XeES7T/JNr70bmX+iDaXeytBZ6jPaNG+0OSGyLm2mZ0W7SA==
+X-Received: by 2002:a05:620a:8810:b0:939:c303:c54a with SMTP id af79cd13be357-93c43c9db58mr2376024985a.31.1790630030554;
+        Mon, 28 Sep 2026 14:13:50 -0700 (PDT)
+X-Received: by 2002:a05:620a:8810:b0:939:c303:c54a with SMTP id af79cd13be357-93c43c9db58mr2376018085a.31.1790630030051;
+        Mon, 28 Sep 2026 14:13:50 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7? ([2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a00cfe13a1sm20969785e9.5.2026.09.28.14.13.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 28 Sep 2026 14:13:49 -0700 (PDT)
+Message-ID: <6a29116b-92a8-4605-95de-7372c9befec8@oss.qualcomm.com>
+Date: Mon, 28 Sep 2026 23:13:47 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|MW4PR12MB7334:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1bf332f3-684f-4909-6294-08df1da355dc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|366016|23010399003|10067099003|56012099006|11063799006|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	aH/WQR6MEH/de7msPKmUSlrbhtt3+wAXzWTrXNFTRB7yRRBZqY29coGPQGJTqfLWvpSTAyo5kN1+biTuFCl/4OogCzFxXtPu4ZAVi3wupZ7+wS3L7+L/oFweklz85qAQjjDsBJdmXLlp9bOy3vS/CACYTLMj0icQPjAy012NWpu65Bli05U9xel22AV8QG+yRB3whIpqE2swPCgx/TS4hHSFn4mtNSggeKczmCfqdv4Z1PhArpexnU5J4N11Scn+s+cvovGhIjcYnyD44C8GD9WXZhBBIqXZpLJ/Yd1Ww6L/ewIJqKNtLmkPlHDFe+45xcSfNAo/N9c4PKF8n45lLk7RAt5HPWHjFG8c0uTWKCOGawXDHShkjjui1sSGuheENGKbxUiNo7/2/KUnL+zwcs4PkW6JuGdNtAb9brU86y05AmbJkORwxX9KP7bY08har75s9btJGNmtLvzEVYNocbxBpaPAq52AP3o9ug6k3U2LNPf7TpgggNCjZ4BA13q2HO/2f1QHa0wqwfTLQaulfar9d0CRVs120DR1d9ELEYodSdWacc+LW1NYL/JUEzLqUjlQzdQtzy7UwTQJEXhqacQ2HWLKp1MDrz+SeONFJ8/sLX+2hgYpiD4RVNFZaVmEBoe10Q3sw/LTq+l/xoR+4VOwj0IcX/Jql4jfBddORSs=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(23010399003)(10067099003)(56012099006)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?TVNaSVBFTGErazVaUml5S0orT2xWMzRjMm1Obkp2NXRiZzZGMEtNL2lYT2Y4?=
- =?utf-8?B?M0pGVmJ4RDc1bWNOTzI1WUNqSlJQSVhMQXkxVUJrR29nRkcwckJDSHhwWHM5?=
- =?utf-8?B?YU5SdTFGQXltSHNNeHRQcTdKcStyK3k4MEo4S1kwbXpEb0MvMjNzVTZpempQ?=
- =?utf-8?B?NGNoUXIrem1TQU1zenFHUGp0T0owYzc4cTY0R0FjTjJ6NE90MEZ0QVEwZE1u?=
- =?utf-8?B?UXNTQnorV3lKNC96V2JxYUhaTDFUaTdWYXNHaXNLb2Fwa2ZiOWdFQVhVM1hm?=
- =?utf-8?B?Tzg2ZW5kZW1waG9sWGphVTVMelFrbnBuMXJHQ3NpdGtpQlB5aGtMSXZUS2lr?=
- =?utf-8?B?eDdFbUR2aUxxS2Z0RFZWUTczL21XYWg3SVF4UkxqbjllTlRpUkptYVErK0JK?=
- =?utf-8?B?WXZUemRpR0plQTZkclFsOWN0cVVXakxHa3paSkkvbkFIQjNsZ1ZlVTUyRlJL?=
- =?utf-8?B?ZmxGMVJYTWQrdEJ3WGRlaks5M00vUjRBY2Y2aURkUTJJeWFHR2MxaU9iekJJ?=
- =?utf-8?B?YXNFclhPS3RWWXRMNnhpR3h3dEJnRVFTSFc4NkhVN3B0eTdvd1BHQllqNFIy?=
- =?utf-8?B?SXppK24vTmFLZlRHQ1l6RkUrUkFrVWJWL0ZtNnlUYU9hUTJwQUNaaWRZSzZs?=
- =?utf-8?B?YkE4MXB3eUo1S0tienFRT3NxbUNtTTNRZE5wdlprRFc0NGk5UUs3TFljMTd5?=
- =?utf-8?B?THpZL3pvTldXNnMwTzNCSWpYZ04xRDg0SEtqRnlwcTlIZzU1L2kvQ1N3VVZx?=
- =?utf-8?B?eUNHZTZXUHczYTNLV3NpMDVOZDEwT1NDbEUreWpxU3VwdGUrdlpWWU5QTFFz?=
- =?utf-8?B?UlRQVVIrZFRWaUJJR0xlS1dSYklkVVJJRng5NDl2QjZoc3Z2TXBBYWFkdXIz?=
- =?utf-8?B?WTU2dkJ2NnU2VnoyVnFlaEd0ekdtNDFveVVsbHBIRmVVdVNsR3dvaGI3VFlG?=
- =?utf-8?B?eit0N2JST1lMcW5VYi9RdUcyb1h3eTk1aXN3VHFpMlpGbjRBWklNdWVDUDFm?=
- =?utf-8?B?WFJoRFJZclQxemtIbnJRbnlvK3gzcTRyRi9FS0trMFI3eXRVRDBPYnRKeFUy?=
- =?utf-8?B?Y0tIc2Q5VXV6QUdhSWREMXhHcm5oSjZ6NkhWR0xkQThaY2o4ZzFJa2lZZU8r?=
- =?utf-8?B?WU90VUlxb1FGdXlwQ1VuR3l2UzdUdXhaYVlzK3lxNjh1anhFWGZOVEwwZmY0?=
- =?utf-8?B?K0hBdzQyUEpaUkw5SDZWQWlFTE04WlBTZnZWNU15bzBNZGkyUHNHQjdNVmZn?=
- =?utf-8?B?eDV6TjlrdjhWRGdCWDFRcm9pSTFid2pjam5yZEpzL3F0YUJReUNLNzgrRnV5?=
- =?utf-8?B?SzFvcTJZNWlBVnhqUkRBaWFiUDAwZTVWbVJEbWhhalNsWDI3V3ArL1hNVThW?=
- =?utf-8?B?MTVtQ24zNkppNXlGQzZWbmVGVms4amdSYW9oTlE4U29nMVVjR0hldjVuTmti?=
- =?utf-8?B?ZlY4aUF2UEN0VjBYaHkvMlBJUzNubHlRMndPaHlwWGJLazVUMEJvbCthMmYw?=
- =?utf-8?B?M2dtUnQ0UzU5YUZzNDlRMGtYTk0rbjRhbkljQ2NBNW1IK1JONC9nR3JlaWx2?=
- =?utf-8?B?bEVUbjN5Rm85a014bDVmSTFkSm4zZ3k5VlpFK1cxdUVwKzdiVWNUNVJhZm8x?=
- =?utf-8?B?TE1LaTlyN0lHRWcrazk0Z1RrSDVmK0oxcEs3NWFtOEhtdzZHN3R1Y09uTFlC?=
- =?utf-8?B?N1dtNU5NQ3ZNSXlrMWpLZ1lMcTg1dDNhVi9SR1NEejVjejFpSXlRVXhKVGpL?=
- =?utf-8?B?MUV4SkRndVpLWk5ZQnMvSmkvRHRZWkNibVIrVlhPRHZrQkF1OWJLNVhGZERH?=
- =?utf-8?B?MXZpZWdIeEZhbUVJdmhuYWlSSkpvZS9jUlgwNkVyY0swT0Erdk56ai8xZk9s?=
- =?utf-8?B?VlJXbG03dkllNVJsSE4wb2JPeDRQUVN3Q0JaMG9nbERsY3c5cUd6SjRwTjlH?=
- =?utf-8?B?TjhiYkhkNTdGUkw0NmliWlJHdU5VdUJpSTlnVnBydS93RFJOT3RkUmU5V0ZE?=
- =?utf-8?B?ZzZpRkkyUFJyWmR0cDMwYVIxdCtDQWJ1dmViaTNZdkEvNGR4K0N4V21IaTgy?=
- =?utf-8?B?SXd0QkNQM1R5ekVtb3VwMDViZVM1SWFrSzcwdDJXTE9iVXdPb1NxODAxL1Er?=
- =?utf-8?B?UFhvZHNaMnc1Q0xvOWFWUllPUko2anBPREZmTDRrRUZmeWRvRVVVcTBNbDVx?=
- =?utf-8?B?MDd3cDJxVUhJcDRlY2tWd2kzLzFidXZocTh6L0ZyaWdRelpodEFGUmN2ZFg4?=
- =?utf-8?B?S1E3WjZzcDdUeDg0cnpFZ0QvajRHUUNycWtEVllmdy9FSDhqZ0pYTkdxWnRP?=
- =?utf-8?B?VDVVd3RBd1NRaGhnU2ViUGNhVk1qRnhtbnFIVUh4WVBlY3pNMzhWdz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1bf332f3-684f-4909-6294-08df1da355dc
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2026 20:59:06.9336
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ENn/iOF9/A9+UDTqQL/fN1XgutbG98A2G43a9E9mmH0WVN1+QAzg/LJcdNADDY0pKjpfJDlnPl/2RBy25zcd4w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB7334
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/6] powercap: Add generic hierarchy support and
+ convert DTPM
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+To: rafael@kernel.org
+Cc: linux-pm@vger.kernel.org, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
+References: <20260923143416.3713485-1-daniel.lezcano@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <20260923143416.3713485-1-daniel.lezcano@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA4NCBTYWx0ZWRfXxEmmiBgKrY7C
+ CxIuW41hipTrVt2i0DrJCCTd448qeY2j4FmiXQHuTC6V4UuQn1WHLslP1nltmn6znFtR88nKmI7
+ XJ/SMTTfiQYv71rqbBl2ZsEHsi3aKcFP6to8xNMb9X6tjU5Lo8W1GOZ+iencG5LVpoPsVe0nwwy
+ Ba69vwJZ3/d9AXGMxe5RDkENJoN1foOWYy+EYt68VMnpGefbXOHQZfZPsQS/iX/gpP5LgqkoArM
+ i/MyAbb6CBKPr2kBB8FLVfIO5aERj+5Y5Q5gzlMANAXPuOBKkjSWieV4RcJze7TrxNQpj7cBqT9
+ HNEzJxMfHanob4vWfBsaLl7/PiqTGYn3gHVKKyYfzTbHQY8GPGH1bKSXNkyLr58F2z00v/Orx+g
+ uagnKCGZjNM0ibtkZNG//mZl3OWA5gbwFeAwzmJezJv508Wgr0O5Zb9xSIRMzUqGucM9Mf6Temj
+ 1yXJDAvhznw7U3rH0dQ==
+X-Authority-Analysis: v=2.4 cv=e6aT2qp/ c=1 sm=1 tr=0 ts=6abad88f cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=IyVTcIoXJR3s1VaE0TQA:9 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-GUID: QqW2ALSqTgit5K42AI_GSlTF1Cn190MR
+X-Proofpoint-ORIG-GUID: QqW2ALSqTgit5K42AI_GSlTF1Cn190MR
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA4NCBTYWx0ZWRfX/VvOXoO+23G0
+ U8RbnL1HbJPn4X7v5gieIf21BqurVWqpqbsdCWdxLYh9NDnLhTROueXr2++lVHcM5razk+ru0fI
+ vpz1gCZMRaQu4dCyQLu4lL+5gc+q8nc=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-28_05,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 priorityscore=1501 adultscore=0 suspectscore=0 bulkscore=0
+ clxscore=1015 impostorscore=0 malwarescore=0 phishscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609280084
 
 
+Hi Rafael,
 
-On 9/28/26 15:35, Vishal Badole wrote:
-> The per-CPU-type EPP values for the Zen6 client platform are further
-> tuned based on platform characterization. Adjust the performance and
-> low-power core entries so each core type uses its intended EPP settings.
+just a gentle ping on this series ;)
+
+Thanks
+
+
+On 9/23/26 16:34, Daniel Lezcano wrote:
+> Powercap controllers frequently expose a hierarchy of power zones, for
+> example packages, clusters and CPUs. Until now, each driver had to
+> implement its own hierarchy traversal, parent lookup, error handling and
+> teardown logic.
 > 
-> Reviewed-by: Mario Limonciello <Mario.Limonciello@amd.com>
-> Signed-off-by: Vishal Badole <Vishal.Badole@amd.com>
-> ---
-> This patch is based on Mario Limonciello's:
->    "cpufreq/amd-pstate: Add EPP tunings for Zen6 client platforms"
->    https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git/commit/?id=114a157e8d30601d024b53564a0fe54202f6567f
+> This series introduces a generic hierarchy description and helper
+> functions allowing a powercap controller to instantiate and destroy an
+> entire hierarchy from a static description. The powercap core takes care
+> of duplicating the hierarchy description, rebasing parent pointers,
+> creating zones in dependency order, and performing the appropriate
+> rollback and cleanup on errors.
 > 
-
-Appreciated.
-
-Applied to superm1/linux.git bleeding-edge.
-
-I'll include this in my last PR for 7.4.
-
->   drivers/cpufreq/amd-pstate.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
+> The API was primarily motivated by the recently posted SPEL series and
+> also provides a migration path for DTPM to use the same generic
+> infrastructure instead of maintaining its own hierarchy handling.
 > 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 83960a6336b9..2529cee9a6cc 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -211,7 +211,7 @@ static const struct amd_pstate_epp_soc epp_soc_zen6_client __initconst = {
->   		.performance		= 25,
->   		.balance_performance	= 51,
->   		.balance_power		= 64,
-> -		.power			= 64,
-> +		.power			= 115,
->   	},
->   	.efficiency_core = {
->   		.performance		= 25,
-> @@ -221,9 +221,9 @@ static const struct amd_pstate_epp_soc epp_soc_zen6_client __initconst = {
->   	},
->   	.low_power_core = {
->   		.performance		= 25,
-> -		.balance_performance	= 51,
-> +		.balance_performance	= 64,
->   		.balance_power		= 64,
-> -		.power			= 115,
-> +		.power			= 64,
->   	},
->   };
->   
+> Link: SPEL cover letter https://lore.kernel.org/lkml/20260702-qcom_spel_driver_upstream-v3-0-434d50f0c5b0@oss.qualcomm.com/
+> 
+> A kselftest is added to exercise the new API. It creates a synthetic
+> hierarchy, validates the resulting sysfs hierarchy and attributes, and
+> checks that all resources are correctly released when the hierarchy is
+> destroyed.
+> 
+> DTPM currently implements its own hierarchy creation logic to walk a
+> platform-provided description, create the corresponding DTPM zones and
+> tear them down. With the generic powercap hierarchy infrastructure in
+> place, this logic can instead be shared at the powercap core level.
+> 
+> The series therefore converts DTPM to use the generic powercap hierarchy
+> helpers. The platform hierarchy is duplicated before use, while
+> powercap_hierarchy_create() and powercap_hierarchy_destroy() handle its
+> lifetime and traversal. DTPM only provides the callbacks responsible for
+> creating and destroying the DTPM instance associated with each powercap
+> node. The CPU and devfreq backends are adjusted accordingly.
+> 
+> As part of this conversion, the existing RK3399 description is
+> simplified. The CPU backend creates one DTPM zone per cpufreq policy, so
+> describing every CPU belonging to the same policy results in duplicate
+> zones. The RK3399 hierarchy is therefore reduced to one CPU node per
+> cpufreq policy.
+> 
+> The Rockchip virtual node descriptor is also made SoC-independent so it
+> can be reused by other Rockchip platforms.
+> 
+> Finally, an RK3588 hierarchy is added. The RK3588 exposes three cpufreq
+> policies, represented by cpu@0, cpu@400 and cpu@600. These three CPU
+> domains are grouped below a virtual package node:
+> 
+> rk3588
+>    `-- package
+>      |-- cpu0-cpufreq
+>      |-- cpu4-cpufreq
+>      `-- cpu6-cpufreq
+> 
+> Daniel Lezcano (6):
+>    powercap: Add generic zone hierarchy creation helpers
+>    selftests/powercap: Add powercap hierarchy creation API tests
+>    powercap: dtpm: Remove duplicate RK3399 CPU hierarchy nodes
+>    powercap: dtpm: Use generic powercap hierarchy helpers
+>    powercap: dtpm: Rename Rockchip virtual node descriptor
+>    powercap: dtpm: Add RK3588 hierarchy
+> 
+>   drivers/powercap/dtpm.c                       | 165 ++++++------
+>   drivers/powercap/dtpm_cpu.c                   |  22 +-
+>   drivers/powercap/dtpm_devfreq.c               |  22 +-
+>   drivers/powercap/powercap_sys.c               | 148 +++++++++++
+>   drivers/soc/rockchip/dtpm.c                   | 127 ++++++---
+>   include/linux/dtpm.h                          |   5 +-
+>   include/linux/powercap.h                      | 178 +++++++++++++
+>   tools/testing/selftests/Makefile              |   1 +
+>   tools/testing/selftests/powercap/Kbuild       |   3 +
+>   tools/testing/selftests/powercap/Makefile     |  17 ++
+>   .../selftests/powercap/powercap_hierarchy.c   | 246 ++++++++++++++++++
+>   .../selftests/powercap/powercap_hierarchy.sh  | 118 +++++++++
+>   12 files changed, 906 insertions(+), 146 deletions(-)
+>   create mode 100644 tools/testing/selftests/powercap/Kbuild
+>   create mode 100644 tools/testing/selftests/powercap/Makefile
+>   create mode 100644 tools/testing/selftests/powercap/powercap_hierarchy.c
+>   create mode 100755 tools/testing/selftests/powercap/powercap_hierarchy.sh
+> 
 
