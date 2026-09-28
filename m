@@ -1,45 +1,49 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F634078E8;
-	Mon, 28 Sep 2026 06:00:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FEDC358381;
+	Mon, 28 Sep 2026 06:05:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790575241; cv=none; b=UbgU1mUYN1JJXnwdqAJiza+d6ezblL9xTIsZzSu0kErQA/miczdEI+pjK/AP99GJBs7KL7DX6JgmTV+bXd56OIQyjptTeI9/+JUMWdvsqPVs3LwS1n3C7+vBKXW9Lq4DJzjkUKtz7tquMNCPpDFywTWIxJJKT2/xT1che9/5iYY=
+	t=1790575526; cv=none; b=CV9M4/a4Rb+8n2GlOrbm83cEp6Cl8zJhz8LN08YTkYFT6k7rN1eMIo3OLTFHAA6VgMjUrg/E3T7wGWhWJuU4LOWzwlars9y/J8A37Iqed7MGiPMmnWv64X5jUaJczgIEozZcfropkEd5D6NWRwB9ks9liTogGsMQOIZIEy8cits=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790575241; c=relaxed/simple;
-	bh=K3uMva7d9WnPdrm/iqWhJRl1LnOJxT1/2FNjqgcYsPo=;
+	s=arc-20240116; t=1790575526; c=relaxed/simple;
+	bh=SRIVWSNq3KWGvgesxCgQZHeMYaQNq8qGyM04vvRBSBU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hWFr+e/vBcG/KcGY/rwRG56hN+b6UTiuTp+rSeDTBYxU+/X7iurFa7z7fzhZGogjI3r1Ih0G0e7UmQhS2sYz+TrRN+RL+u3pX2HuWleais9HFqkxlDq63H1iPfhcUGUMft2Aes44Rj5+PkvRH0dr+0a0AvZ5WnxaIoIJTMcDvEs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I0bXdv4j; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=uD2DkbcDDJtxvYpub1jue6gKp2RNsemrlTNHA9WP+mq+NpQ1qtfW4PqqrXHg9QiTln7r97oURqo/M42jCMp5NOlGrUtCFHoLu8IUo4g1X+ldIJ7vzbq/NCeGsxRj89UmXOsuNP7nxu+L5C7SfBwyXVPf/ynmBg+J8eYGvl94QNs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E0nMX7JI; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I0bXdv4j"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 766291F000FF;
-	Mon, 28 Sep 2026 06:00:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E0nMX7JI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F169C1F000FF;
+	Mon, 28 Sep 2026 06:05:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790575239;
-	bh=t9pKM+MlAPbDUZEiqQ8pO6ftc9z7NmBVCj5vCnlWtoI=;
+	s=k20260515; t=1790575524;
+	bh=jV0YdUb90luw2wkc1DzhQGAKsyzFWyg8sRvBE0GqwaQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=I0bXdv4jZuTShWJfhlPoE6ZNnJlgvc35a0SdLsa6fcWtGur+jMv0fdFwyfSfjQg0M
-	 BjNAevSKzXVtGWDBU6/8YsrBENob6/2j7BdtwwfFD/Qa5xEVpToDvLcWX2+cdsvfma
-	 fc51ZzpD5KmgDYzX4DqTufQ1IRUnwFZdqL5TaBMaOJXW33opQgRlDIdtCN0HuEB83F
-	 Vu9EkRj5D3aSriVZsnIIorEpqDR1tYLwU7KcJA0MMmkG1yiDZhNrIMYKDedUYmP379
-	 qFpCTFUSZ1fOkFzD3XV9tyNdTwrN3CeRES1stX8JOL6Nor5BwIFPOeLwQrRjggLXZ4
-	 8hAHwcDlfsnJw==
-Date: Mon, 28 Sep 2026 08:00:35 +0200
+	b=E0nMX7JIFIn6vJn4WFiHlMfoAwaOes2EeJJNCsygq7dFzsxkjrJIAetWDfD3m1z5n
+	 aTRxxUb9+UD5aN/A3ICOGmo8YKEo3iI7IMsIPsx3BKmdi9Pu4CtZl5Z3b1s7FtXX7k
+	 Y6NutCUUNv3yBniSJN2KEIfRLCmP4wQ8sl2dTJApnjDZp0+E9x4QZRUIFD/NtoBDEV
+	 o3sjsOlL2yDn1lzMsN4PNmJWuhohvpH2PcKPKFG50xS2N/x0CuMr8LB2qmRsm3nlO+
+	 E4kssRDuAoaPwpjvrWTP1L+Pd6xMropQEeCKSGP3dR8GfTQkC95APYalqsVfu1e+RW
+	 mXkONZKVH0Gbw==
+Date: Mon, 28 Sep 2026 08:05:21 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, Rob Herring <robh@kernel.org>, 
+To: Biju Das <biju.das.jz@bp.renesas.com>
+Cc: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
+	Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Ilia Lin <ilia.lin@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] dt-bindings: arm: qcom,ids: add few more SOC IDs
- for IPQ5210 family
-Message-ID: <20260928-accurate-cobra-of-security-efbbd6@quoll>
-References: <20260922-ipq52xx_new_ids-v2-0-4b1a0f3d04b2@oss.qualcomm.com>
- <20260922-ipq52xx_new_ids-v2-1-4b1a0f3d04b2@oss.qualcomm.com>
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	David Lechner <dlechner@baylibre.com>, Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>, 
+	linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
+	devicetree@vger.kernel.org, Chris Paterson <Chris.Paterson2@renesas.com>, 
+	Biju Das <biju.das@bp.renesas.com>
+Subject: Re: [PATCH v3 5/8] dt-bindings: iio: adc: renesas,rzg2l-adc:
+ Document RZ/G3L ADC for TSU
+Message-ID: <20260928-controversial-foamy-tanuki-7fef04@quoll>
+References: <20260922042707.116378-1-biju.das.jz@bp.renesas.com>
+ <20260922042707.116378-6-biju.das.jz@bp.renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,18 +52,62 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260922-ipq52xx_new_ids-v2-1-4b1a0f3d04b2@oss.qualcomm.com>
+In-Reply-To: <20260922042707.116378-6-biju.das.jz@bp.renesas.com>
 
-On Tue, Sep 22, 2026 at 10:03:14AM +0530, Kathiravan Thirumoorthy wrote:
-> QCF3211 and IPQ5211 are the new SoCs based on the IPQ5210 family. Add
-> the SoC IDs for the same.
+On Tue, Sep 22, 2026 at 05:26:57AM +0100, Biju Das wrote:
+> Add the renesas,r9a08g046-adc1 compatible string for the ADC1
+> instance on RZ/G3L, which is dedicated to the on-chip TSU (thermal
+
+Is there ADC2 instance?
+
+> sensor unit). Unlike the other ADC instances, this one only exposes
+> a single channel (channel@8), so restrict the allowed channel nodes
+> accordingly.
 > 
-> Signed-off-by: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
+> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
 > ---
->  include/dt-bindings/arm/qcom,ids.h | 2 ++
->  1 file changed, 2 insertions(+)
+> v2->v3:
+>  * Dropped required property '#io-channel-cells'.
+> v1->v2:
+>  * No Change.
+> ---
+>  .../bindings/iio/adc/renesas,rzg2l-adc.yaml     | 17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/renesas,rzg2l-adc.yaml b/Documentation/devicetree/bindings/iio/adc/renesas,rzg2l-adc.yaml
+> index 40341d541726..f08f5439d127 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/renesas,rzg2l-adc.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/renesas,rzg2l-adc.yaml
+> @@ -25,7 +25,9 @@ properties:
+>                - renesas,r9a07g054-adc   # RZ/V2L
+>            - const: renesas,rzg2l-adc
+>        - items:
+> -          - const: renesas,r9a08g045-adc  # RZ/G3S
+> +          - enum:
+> +              - renesas,r9a08g045-adc   # RZ/G3S
+> +              - renesas,r9a08g046-adc1  # RZ/G3L ADC for TSU
+>  
+>    reg:
+>      maxItems: 1
+> @@ -121,6 +123,19 @@ allOf:
+>              reg:
+>                maximum: 7
+>  
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: renesas,r9a08g046-adc1
+> +    then:
+> +      patternProperties:
+> +        "^channel@[0-7]$": false
+> +        "^channel@[8]$":
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Why number 8? Does datasheet actually calls it that way?
+
+> +          properties:
+> +            reg:
+> +              const: 8
 
 Best regards,
 Krzysztof
