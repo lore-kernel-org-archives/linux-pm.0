@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8308E48551F;
-	Mon, 28 Sep 2026 08:56:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29B9844E650;
+	Mon, 28 Sep 2026 08:59:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790585820; cv=none; b=kT+M4YJFjygw+dAEmUIYzkkpcCGc0oRMX9W5JXplzIe7QYwLfiQk3LpYFppp8JIanKeOpIvZU6u4GcO3DQSc5PDfBanKrDkLOLCPhdktKbbfQ6mJ/J3ISg2F7mMMOPVfElrzSDineMDaMk44OUbbPxV1q3YIfblwl+W0jgOqOdQ=
+	t=1790585946; cv=none; b=pdGYR6tIHyd64yOh3q12vSSDtBN+70FC0I5PIslb1Qe3FiE/1Pm4iwyFnKX2KHPZgtKlHlwO+s6iIWL/IOGz3s0VVJdjABASaPbCu3GxegStLEGwkwMMp5YQG4AW9Puob6t4X7Ux/eQKaGFpv3JC/b0+8YW5e/SBJgYXCrKtJaA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790585820; c=relaxed/simple;
-	bh=pQhHA53XZ7r/wTOO9enUNyjt4XUU5j1XxqqzmdDhGi4=;
+	s=arc-20240116; t=1790585946; c=relaxed/simple;
+	bh=iqGwyhjP5tENHrICFJVwFY9PSHRrONHMS5ZR8NyY13w=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WGoVmbXGRf1ExMFOWuj3Y63Q1nEc57QQs4bKu2Ko+X4X7pLFgalkHUXmiie1Dzrn8V+M4UNrTKUlde4jadCOHM+0NKXn3HBy5Fpdktr2LtDQ5o5FNg8CTvE5PONPfLKt7VXVhzOnoE8sWY+2qohp2AsGL6UTFnSlkuu7LqdLA3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JH+eE9go; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=SZabNe541bPbNU9AZ9d06ZdWrc/Cyq0h3eNUPPDpNvGNXcs6vBhh+7KrjVXhOH5X9pbMt3biSfcdYBJ+6B6nxCC2ApLZr6+FXfbs7ZInh1j58qyrZtZ4xiWPnlspZ/4AUde9GhoGI3nKyP+967V1AqLlBmvwvYv7DRKbOWBPWEA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Km6Zv/DU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JH+eE9go"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 580571F000FF;
-	Mon, 28 Sep 2026 08:56:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Km6Zv/DU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F4AA1F000FF;
+	Mon, 28 Sep 2026 08:59:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790585819;
-	bh=U/es/Q6WATzmcpCkf73wnBo14QES0LRvqpHHAkP1+Fo=;
+	s=k20260515; t=1790585944;
+	bh=w0tEMEZABMUMybhQ6JMQ4iuwXaDpmcIr5Zo58vu3ZdY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=JH+eE9goK3rIn18v64x245T5XiGN0xKbfc/yMGdWKxFecHTX8vVxR/Bp/RhgQ3dYs
-	 I25+7FZsblm0M7Lg5E1uQIi/zO6fE9bh+v1DLVoDKHruUJg27Pr11zdKknZdDPWJmr
-	 n0XxxGtRTTgF3pf12tH6f9zM631CLRHADVgQyrtdYKU4UP9UMeOynUEEA/GlWd7jqJ
-	 Svh2sqlBv0baQZy+xp9E072C8feuqjOWnKlbaDrQ4F8m+efdlQ1N9iKhzSrxdOyNZO
-	 cHSrCCKDUBC/z4A1gMjLXrXStdvs1Rc/iDMyPQLXUa8dEFAQhaUOe8OBXvjli4Hclg
-	 GmGqb3obY99cQ==
-Message-ID: <85284364-9e38-46aa-87a6-a81720447c07@kernel.org>
-Date: Mon, 28 Sep 2026 10:56:53 +0200
+	b=Km6Zv/DUH6aAZxFRxoenVGwlabuEa1T5ncTqhrPo7HROhIDbZxwUE1JiNRG5L+M+S
+	 6OFqQN32BFeW4HMpGoFPtF4g2SKVJ9wd2bdd/2+U/LDBNWXC74ybkJHwbju+zm0dtD
+	 YBTbagaezSQjgbZBiuvRrFr64Fl4FfpvD8ZLaPdj5znk4cODIDTA8zmYtXunt0y93n
+	 F2h+FttzqIkSPkSs9LU3vJTk2OKibGUb/U8tZmKz2rmZiAfE3hIQ6NXuDNz+4P+WU8
+	 6g9uPo+ln95qPZgSMiG8hiixwinAPeXGIjYd/9MphMfU6b3qH9mF/H8/rhXIsyJdEt
+	 8+ACzM+uAbNFQ==
+Message-ID: <e9d81053-440c-4a69-a6e0-6d0722989383@kernel.org>
+Date: Mon, 28 Sep 2026 10:58:57 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/5] hibernation: ensure secretmem pages don't reach a
- snapshot
+Subject: Re: [PATCH v2 3/5] hibernate: handle potential errors in
+ hibernate_{map,unmap}_page()
 To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
@@ -45,7 +45,7 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
  Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
 References: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
- <20260926-hibernation-v2-2-235f69f3ab2a@kernel.org>
+ <20260926-hibernation-v2-3-235f69f3ab2a@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -92,21 +92,25 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260926-hibernation-v2-2-235f69f3ab2a@kernel.org>
+In-Reply-To: <20260926-hibernation-v2-3-235f69f3ab2a@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/26/26 11:26, Mike Rapoport (Microsoft) wrote:
-> hibernation_available() checks for active secretmem users, but a secretmem
-> file can be created after this check and its pages may get into the
-> hibernation snapshot although they should not.
+> When safe_copy_page() had to map/unmap pages only because of
+> debug_pagealloc() there could be no errors in the kernel page table
+> updates.
 > 
-> Recheck that hibernation_available() after userspace is frozen and abort
-> hibernation if it is not.
+> However, with the increasing desire to remove pages from the direct map
+> this assumption becomes a real stretch.
+> 
+> Properly handle errors in hibernate_map_page() and hibernate_unmap_page()
+> and propagate that error along the page copying path.
 > 
 > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
 
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
