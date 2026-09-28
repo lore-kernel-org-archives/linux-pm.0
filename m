@@ -1,236 +1,156 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F1284BF946
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:41:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790602865; cv=pass; b=ilRYFBCc5iRBs2yHnr9GppzeMNUAOvQk1gbFRxo0VDGXLTlKc687AKsoLctvGPBWhoiCYRQD8p90ETVwMncvKVbO6bjxG+swcxhsw/J4pxlrqnZVXJ3tUxRbIMlWlTE4jzpUFQdjmgfcYZds3l3KaIbVjlx0d0+p0I42twivyFY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790602865; c=relaxed/simple;
-	bh=UXrUssOqDs424Ot/LRBm3Bd2VSf1a8hGnA+UMCBoH/M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iIhV61L46CcykZaQtf8tUnG8hvTaChPTQCEUrXQ6MP923KHlJSyCy6+Fu797KHwm5o1GdzXnP+lYcTmQ7V3OQOXsaKKuI8Qr7fCzO1C0lh1XpGKnS4eEACyVmQwpwj0HexMjSZW0PwgkZp6J+XS0Rfnp2Zv8k9N7GcmwE3WCQ84=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=QLuMvo/z; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=eUxl2YUO; arc=pass smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 908CC4D2EC6;
+	Mon, 28 Sep 2026 13:51:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790603468; cv=none; b=nJSkx1sMDqTf9nWOpVVfinaDzLhj4uvB7q6KKFPqNW4XxgyF4ALUY+HCEUmu0Tsuoldkwybhw66fpWdOZPeHRI4KzVzhYSLn2x6eIYiUrwkENNPV1VTUsMGzZI2U8YDFUKkBeEO++XAPFPWnxK3bsnI8SYWP/VyVEsjmLPfCQiQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790603468; c=relaxed/simple;
+	bh=sSzs5TmeZWukHQjRBFbvOyAP6kTnX8ikVYAGdbyWEAU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TbrgRJiK1aTY3YSby5PgW5Zf8yDhnZQgL4TKGdFvm6hSmtN+8mxVzDvRmOad+HwhE1dP/SkYEPqXh1L4Db+BMQatBp8o5GJWDbuUdH0d+NTdkM4brWtk8otr0Kdw68uE3x1tbRctWlqa6eXHbq36sdbOv96dT1mspRtt3EUJMHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=D4Pd9Wf0; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="QLuMvo/z";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="eUxl2YUO"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68SBACOL1433783
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:41:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	zvO4KHh5+3Sjn/8S8nN2GCtDB0hzNLgAuajWPejXCKU=; b=QLuMvo/zKetP2bON
-	1F6JTRCiTcgBMx+GIOZLYV96NkedIQM3tfwhmLDlUP2mHp3Ivp/6BP1M06NLdYE3
-	fZye0wPD0FvcQhR1oddp6UqNxE/kZyxG/c3QlnHA5ufatTHMbO5kl1NBzOgFH0hX
-	4OkKQWAfJyAZIXrjfs7jRq5UYWrco1uQFDwnmjRGpoo+JXm3WTUyn24th1NuvyOr
-	kzDpEQ2NdAyI1VW+5yvm8hhAXVqopozfJJKko9Q+TSZqulJN8ImuD2kJyCBuG0TQ
-	QEp3scaa4iJEREz0yO1DHJ6jlVXl7chRGi0WqXVhqVGthm2Owztq2BA/xy24HdgX
-	1aY8uw==
-Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gyj2s1rhd-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 13:41:02 +0000 (GMT)
-Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-cc1a439db36so1800202a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 06:41:02 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790602862; cv=none;
-        d=google.com; s=arc-20260327;
-        b=f9AutV95WkK+N+sHhV8VY5I52MDgWp+X8R7a59x9AjW8ErjHJB8mXr6p7EKIRAhNUe
-         A4Ix5pdqAFijYs5bjp90p7i5kTVwtzJaQCjhUngvde1twziS6HWKcNL2A3o2FQK3s0WX
-         WzLDh2kwKwYeld6twxCXmBNwODkCPCNE9iEawbKrsr4jJvUOCSWLgqLs/rmAiR43HSHQ
-         a5OxmPAD09xRjW7yE64GBoDGNHlXm9IsSTdrZ7Z6MeGEFucqFU95Puy4lrZMtZJoPTQR
-         pMLizInYqKPaBcx0A7V3BdmnmxV4L2S56dkUmgeMIS4SOehqUSYtPVvLv92xGCzJpGkJ
-         vyuA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=zvO4KHh5+3Sjn/8S8nN2GCtDB0hzNLgAuajWPejXCKU=;
-        fh=ajrIsGYZ4F/hIuLnCGly/Ue1Ngd5wnNHKy0nfmwNK+Y=;
-        b=fPf5HgyCZXaXkBlyI9xnGCL37+8ISXav34Sc+bgXObMu5nIEkgXFy0YmzfBfv7dggw
-         t+92RZWaQsAHDR3HXJP75dVDKuIBrLh6Bdo5he7tGxA7e8zjgiGrfAmaGjBTFGiz6Cdf
-         L3GzV9r3UE9jvPKUo+EiPF4AanqUlJQpTmy0v+eWHB2QTwEEASO+l9AeG/ZU6kCK88YC
-         184061KklqVsc4Rb7PLImLqTNT84bJu27k4M1WasucJJ97LrB0fJ4PmaF6rqzBch6Qek
-         Ws/rZ+hMz9LMCSDxK3jGYolhwlHpBI4OzwWlurSGXgwxR95MREaNT/G6eYDq1bE2FB2O
-         NSIg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790602862; x=1791207662; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=zvO4KHh5+3Sjn/8S8nN2GCtDB0hzNLgAuajWPejXCKU=;
-        b=eUxl2YUOYV5qTkXXmMLB66sayqwk02HDcRUq1jAFocnMO/E7RKhbsb1ks8CPeRB1lj
-         WRWDWBe+JGGX47XSDH0lB3hJys1Kvh51YhVYe9nMna00Pm3UsQXdLUrYGVjHdXyTfevX
-         06Z8FimQqrJaWQ+P3rTWwmEEHKCfDEc19cKaIWf5uUK/PIKH/3x/YQYM72UXh0r8PR7X
-         s7OCKk1ZX9dI3qMWM6Tmd8UPH7Di/esx6x0//jephzdPB9xyzhYuFOFxOf1XfJD1+bHo
-         EFcsI0q0jqQa0hnL574Vh1kQQE1JCLpljY/sJyb+OxBC9jEytI+9rek8p+zXO0/+QM5O
-         gK4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790602862; x=1791207662;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=zvO4KHh5+3Sjn/8S8nN2GCtDB0hzNLgAuajWPejXCKU=;
-        b=WiuaDIhV5K9QjwGgiCezW2n+ugP0wF7QB0tmcBYO1K3duJ9xzaK43l8w0+JinIAepb
-         b3zskQANKVyeKlBJNx1cONkVcGjmdkndHSR5SvYZCucbuXr0Exr5t9VUF4ww7cV4tV9f
-         jf/CQIzRwr//uqWVXSYPpkNPhtz5ekPrk57NRJGZDXmVCvhx/0gGgvl0autTNgvga8tG
-         xpk80GkYG116lZX0BIa5sYrNWzm2LYXf0zXb0hFgbIAZ2RL0tAOfLL848VbmKO1LaH18
-         hcIVR6gfnyfKN2IW9vdbOL1GRP/mN4kowSM693DaAgYo2Ii98UM2j0mSg5SHu+rBveqS
-         0SLA==
-X-Forwarded-Encrypted: i=1; AKwUvBzaMAzpRv7M23+9903bODtd2G0vwPeXxmTyrHyWaIaAVMdtVJuhpPE+QON0dIc3hvAOa9CDtKNpeQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIzB8auHucGjlhqrWQ7BncHKi8261scLjWdQ8iMGs99Pdl75OVk
-	fhoVmT59sJdQWDnbI/M+2Bb1NwdQQiFDi3SAgqvlddVnJ3e8EW1oRABbvYb19Lwq9n7zpc7nb5T
-	Ofq3fuP30Onz7+aA30o/Dyb6IUxbHUOlsZgxRiFgMTdAXTFOHhnORyKEpSleQ3hUeI+j9jLQvgv
-	sNJ2F6GNZ7kOdCJMa8urFAcQfp0im5OXyER27w
-X-Gm-Gg: AYBFou3w1mFDBfrjN2jFyw9IAqMAGUk0mELs9TkIkVRXviOkKxRuBmAmPJlwIUISHht
-	b1R2zrV6/Hzxdtt7SfmpWW4EnFOW7XwGSrynGIkGM1thQpIdvtheZEtK5Fo5sIu7igOEsP+jEyP
-	iiJfwmikb6VQ4lkHaVOSMFNtAS/kwfdT/iyU0x0e2noxz8N9ggbVAXB6X9SQ==
-X-Received: by 2002:a17:90a:1149:b0:3a0:9c9d:eb0b with SMTP id 98e67ed59e1d1-3a09c9df050mr7621264a91.58.1790602861459;
-        Mon, 28 Sep 2026 06:41:01 -0700 (PDT)
-X-Received: by 2002:a17:90a:1149:b0:3a0:9c9d:eb0b with SMTP id
- 98e67ed59e1d1-3a09c9df050mr7621242a91.58.1790602860981; Mon, 28 Sep 2026
- 06:41:00 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="D4Pd9Wf0"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5F98E1655;
+	Mon, 28 Sep 2026 06:51:02 -0700 (PDT)
+Received: from [10.57.52.74] (unknown [10.57.52.74])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B785F3F763;
+	Mon, 28 Sep 2026 06:51:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790603465; bh=sSzs5TmeZWukHQjRBFbvOyAP6kTnX8ikVYAGdbyWEAU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=D4Pd9Wf0jbZEmnV+Kz/fVFG0i6sTjPObmIYL+5FoeLG99Xo0a+vS/yUbfzIg4sS+d
+	 CLsO04G36T1ruKB3aTcMgeCErznO6EsD99jqma9k5Yuc1OxuAZqWrG2+ccaru3VucO
+	 pWdhAbXj2NAjwCVgRBVEwGsaGsGI4zmdE3OGLe40=
+Message-ID: <2c6f79b9-2830-4a56-b4bb-8ae728eb41ee@arm.com>
+Date: Mon, 28 Sep 2026 14:51:00 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260924-topic-lpm-pmdomain-device-constraints-v6-0-a69a4856252b@baylibre.com>
-In-Reply-To: <20260924-topic-lpm-pmdomain-device-constraints-v6-0-a69a4856252b@baylibre.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Mon, 28 Sep 2026 15:40:49 +0200
-X-Gm-Features: AclHuK-CYfFjfJ09V4kjeu9-c6eVsXUrgX-bJNJlISAp6_i-4inIr8jE3KRN5YE
-Message-ID: <CAPx+jO-xXqqXU5Y1QiKU9M7muLqFJstd2e+rb+FacWoYsvc0ag@mail.gmail.com>
-Subject: Re: [PATCH v6 0/4] PM: QoS/pmdomains: support resume latencies for
- system-wide PM
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-        Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org,
-        Kendall Willis <k-willis@ti.com>,
-        Abel Vesa <abel.vesa@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA1NCBTYWx0ZWRfX4eanN2eAJ95k
- FkddOAbv+UuEBIFgoKT75s6E9e3WoZl9y6IJVi3vFFTj4wxTotlSUh5paM1tLw8W2yVSbJvE6ty
- 1iJ1YYw5aVS/d5as9NAHtBtYhYxE0tImwaNvEP8mZ4lPDs84XUa3StN4bkPnMAeEWIqQT6I0PXx
- zIY0+TDyBJKoJWT2Ec5AmnEFTTA8CIQd38Tb1vPC5PfFhnGi8CuIaO5GNCVF8XOjMc5Wsy7T6ZS
- +69sHY52tgpUXj80Bzr7hyDH1Q/+rGq+yNvvvxNhaOFu0h0j78mGqcRZGSqAEWNdJ+i7+TfCWbS
- Voq+VBxhrpq/Yfqe9qUGllLQkBp2zaoI5zwTnsEFiwYAr2sXHrLEmDKSsoJfcQQspl8gTur7MXQ
- b8VGBNnn0r1hd8ql4ZaRY2E2n/6FjrXn7+vMvcv5EMyuoFOBiN85cmXxotrG/+cmoRpJ4W0MJS8
- UD5J5HYvlwJIRzAbQmw==
-X-Proofpoint-ORIG-GUID: qLnu5KJq3bt3k5Xcq4jXp86ENiwpjTTO
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA1NCBTYWx0ZWRfX47YFSqCjfDCd
- fzJlHXMhKdeuVLjTc6W6JB4xD3wG8h1HR/NlhgWeMOCVo7FPyOaypjPnqqBDDC+9BHjQODR7pAj
- ixfbsS2VT+0NhOijjhlwkciMMka4pAU=
-X-Proofpoint-GUID: qLnu5KJq3bt3k5Xcq4jXp86ENiwpjTTO
-X-Authority-Analysis: v=2.4 cv=TptzFzXh c=1 sm=1 tr=0 ts=6aba6e6e cx=c_pps
- a=rz3CxIlbcmazkYymdCej/Q==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yOCtJkima9RkubShWh1s:22 a=bC-a23v3AAAA:8 a=IpJZQVW2AAAA:8 a=VwQbUJbxAAAA:8
- a=KKAkSRfTAAAA:8 a=x7h4Y0DfyXJz4sC5yoMA:9 a=QEXdDO2ut3YA:10
- a=bFCP_H2QrGi7Okbo017w:22 a=FO4_E8m0qiDe52t0p3_H:22 a=IawgGOuG5U0WyFbmm1f5:22
- a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-28_03,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 priorityscore=1501 adultscore=0 lowpriorityscore=0
- bulkscore=0 phishscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609280054
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 0/8] ACPI: CPPC: Resource Priority Register support and
+ sysfs interface
+To: Lifeng Zheng <zhenglifeng1@huawei.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, saket.dumbre@intel.com, lenb@kernel.org,
+ ionela.voinescu@arm.com, zhanjie9@hisilicon.com, pierre.gondois@arm.com,
+ sumitg@nvidia.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev, linuxarm@huawei.com,
+ yubowen8@huawei.com, zhangpengjie2@huawei.com, wangzhi12@huawei.com,
+ linhongye@h-partners.com
+References: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260922124121.3426219-1-zhenglifeng1@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 24, 2026 at 10:30=E2=80=AFPM Kevin Hilman (TI) <khilman@baylibr=
-e.com> wrote:
->
-> Currently QoS resume latencies are only considered for runtime PM
-> transitions of pmdomains, which remains the default.
->
-> In order to also support QoS resume latencies during system-wide PM,
-> add a new flag to indicate a resume latency should be used for
-> system-wide PM *in addition to* runtime PM.
->
-> If a user requires a different latency value for system-wide PM
-> compared to runtime PM, then the runtime PM value can be set for
-> normal operations, and the system-wide value (and flag) can be set by
-> during suspend (for example in a drivers ->prepare() hook) and the
-> runtime PM value can be restored after resume (for example, in a
-> driver's ->complete() hook.)
->
-> To: Rafael J. Wysocki <rafael@kernel.org>
-> To: Ulf Hansson <ulf.hansson@linaro.org>
-> To: linux-pm@vger.kernel.org
->
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+On 9/22/26 13:41, Lifeng Zheng wrote:
+> This series implements support for the CPPC v4 Resource Priority Register
+> mechanism defined in ACPI 6.6, Section 8.4.6.1.2.7, and exposes it to
+> userspace via sysfs.
+> 
+> Resource Priority allows OSPM to control the relative priority among
+> processors for shared resources. OSPM can utilize these sysfs interfaces
+> to configure resource priorities, allowing resources to be preferentially
+> allocated to more important tasks.
+> 
+> The controlled resource types include processor boost, throttle, L2 cache,
+> L3 cache, and memory bandwidth.  Each Resource Priority group consists of:
+> >   - CONTROLLED_RESOURCES: which resource types the group affects
+>   - ENABLE_VALUE / ENABLE_REGISTER: enable/disable the group
+>   - PRIORITY_COUNT / PRIORITY_REGISTER: read/write the priority level
+> 
+> The patch series is organized in three parts:
+> 
+>   - patches 1-4 extend the CPPC data structures and _CPC parser to handle
+>     Package-type entries and parse Resource Priority sub-packages into
+>     structured descriptors.
+> 
+>   - patches 5-7 refactor existing register I/O helpers to support direct
+>     register access and add accessor functions for Resource Priority
+>     attributes (enable, priority count, priority value).
+> 
+>   - patch 8 creates a "resource_priority" sysfs hierarchy under each
+>     cpufreq policy to expose the Resource Priority attributes to userspace.
+> 
+> Changelog:
+> v4:
+>  - Patch 7: Set *num_resources to 0 when controlled resources number
+>    invalid in cppc_get_resource_priority_resources(), therefore, the caller
+>    will not read the unassigned `resources` pointer.
+>  - Patch 8: Remove kfree() from the error path of
+>    cppc_create_res_prio_sysfs() because cppc_res_prio_release() will do it.
+> 
+> v3:
+>  - Patch 2: Add the (i - 2) == RESOURCE_PRIORITY condition back to ensure
+>    the new code behaves the same as the original.
+>  - Patch 4: Assign -ENODATA to ret when an unexpected ACPI_TYPE_PACKAGE
+>    appears.
+>  - Patch 5: Initialize the `optional` field of the remaining cpc_regs to
+>    true so that they are treated as unsupported.
+>  - Patch 8: Call cppc_cpufreq_cpu_fie_exit() and set perf to lowest_perf
+>    when cppc_create_res_prio_sysfs() fails. Call kobject_put() and kfree()
+>    when kobject_init_and_add() fails in cppc_create_res_prio_sysfs().
+>  - Link: https://lore.kernel.org/all/20260812015217.74598-1-zhenglifeng1@huawei.com/
+> 
+> v2:
+>  - Patch 1: Revert changes to the CPC_SUPPORTED() macro.
+>  - Link: https://lore.kernel.org/all/20260804085042.4118193-1-zhenglifeng1@huawei.com/
+> 
+> v1:
+>  - Link: https://lore.kernel.org/all/20260717024502.3520445-1-zhenglifeng1@huawei.com/
+> 
 > ---
-> Changes in v6:
-> - use forward declarations instead of include pm_domain.h
-> - remove over-detailed locking/lockless comments
-> - fix 64-bit math overflow on 32-bit systems
-> - drop extra dev_dbg()
-> - added Rafael's ack on patch 2
-> - Link to v5: https://patch.msgid.link/20260826-topic-lpm-pmdomain-device=
--constraints-v5-0-28cbf43f7e38@baylibre.com
->
-> Changes in v5:
-> - update copyright year & author in new header
-> - add Reviewed-by tags from Kendall & Abel
-> - Link to v4: https://patch.msgid.link/20260819-topic-lpm-pmdomain-device=
--constraints-v4-0-7ceb095f5474@baylibre.com
->
-> Changes in v4:
-> - added corresponding WRITE_ONCE() to match READ_ONCE()
-> - rebase to v7.2
-> - Link to v3: https://patch.msgid.link/20260611-topic-lpm-pmdomain-device=
--constraints-v3-0-75d69438518b@baylibre.com
->
-> Changes in v3:
-> - rebased to v7.0
-> - fix PREEMPT_RT: add new helper for lockless read of flags for atomic co=
-ntexts
-> - update kerneldoc for genpd_for_each_child() as requested by Ulf
-> - Link to v2: https://patch.msgid.link/20260205-topic-lpm-pmdomain-device=
--constraints-v2-0-61f7be7d35ac@baylibre.com
->
-> Changes in v2:
-> - drop the userspace interface
-> - add genpd helper to iterate over all devices in domain and child domain=
-s
-> - new flag means latency applies to runtime PM *and* system-wide PM
-> - Link to v1: https://patch.msgid.link/20260120-topic-lpm-pmdomain-device=
--constraints-v1-0-108fc4cfafce@baylibre.com
->
-> ---
-> Kevin Hilman (TI) (4):
->       PM / QoS: add flag to indicate latency applies system-wide
->       PM / QoS: add lockless read for flags
->       pmdomain: core: add genpd_for_each_child() helper
->       pmdomain: add support system-wide resume latency constraints
->
->  drivers/pmdomain/core.c     | 45 +++++++++++++++++++++++++++++++++++++++=
-++++++
->  drivers/pmdomain/core.h     | 18 ++++++++++++++++++
->  drivers/pmdomain/governor.c | 45 +++++++++++++++++++++++++++++++++++++++=
-++++++
->  include/linux/pm_qos.h      |  9 +++++++++
->  kernel/power/qos.c          |  4 ++--
->  5 files changed, 119 insertions(+), 2 deletions(-)
-> ---
-> base-commit: 237a1c39e8dfd3e1c6f1f023eea37a48ec04cc63
-> change-id: 20260120-topic-lpm-pmdomain-device-constraints-e5e78ce48502
->
-> Best regards,
-> --
-> Kevin Hilman (TI) <khilman@baylibre.com>
->
+> 
+> RFC: sysfs placement
+> 
+> The sysfs interface is currently placed under /sys/devices/system/cpu/cpufreq/
+> (i.e. the cpufreq policy directory). I am unsure whether this is the best
+> location and would appreciate reviewer feedback.
+> 
+> The concern is that Resource Priority covers resource types beyond CPU
+> frequency control:
+> 
+>   - PROCESSOR_BOOST, PROCESSOR_THROTTLE -- clearly CPU-frequency related
+>   - L2_CACHE, L3_CACHE -- cache partitioning, not frequency
+>   - MEMORY_BANDWIDTH -- memory QoS, not frequency
+> 
+> Placing the attributes under cpufreq makes sense for boost/throttle but
+> feels semantically wrong for cache and memory bandwidth resources.
+> 
+> I would appreciate feedback on whether cpufreq is the right home for
+> this interface, or whether a different location would be more appropriate.
 
-The v6 applied for next, thanks!
+Another issue is regarding adjacent interfaces (Intel-RDT, AMD-QoS, Arm-MPAM,
+RISCV-CBQR for memory and cache. I'm hoping no sane platform advertises both,
+but should the kernel sanitize these?
 
-Kind regards
-Uffe
+Additionally what if we ever do want to be more 'clever' in the kernel about
+aggregating these hints of "boost-worthiness" of tasks/CPUs, do we just disable
+the low level sysfs controls here then?
+
+> 
+> Lifeng Zheng (8):
+>   ACPI: CPPC: Prepare cpc_register_resource for Package-type entries
+>   ACPI: CPPC: Refactor element parsing into parse_cpc_element()
+>   ACPI: CPPC: Refactor resource cleanup into free_reg_resource()
+>   ACPI: CPPC: Parse Resource Priority Register entries from _CPC package
+>   ACPI: CPPC: Store optional flag in cpc_register_resource
+>   ACPI: CPPC: Factor out cpc_read_reg() and cpc_write_reg()
+>   ACPI: CPPC: Add Resource Priority accessors
+>   cpufreq: cppc: Expose Resource Priority attributes via sysfs
+> 
+>  drivers/acpi/cppc_acpi.c       | 719 +++++++++++++++++++++++++++------
+>  drivers/cpufreq/cppc_cpufreq.c | 281 ++++++++++++-
+>  include/acpi/cppc_acpi.h       |  60 +++
+>  3 files changed, 930 insertions(+), 130 deletions(-)
+> 
+
