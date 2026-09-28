@@ -1,118 +1,211 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com [74.125.228.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9EC14611EE;
-	Mon, 28 Sep 2026 07:53:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790582011; cv=none; b=u9PKdh+DZJIuYBsXS9K67ybkpjxruKU7U7ER0Hkbc4e7Xk6nGdZD94FHToPZ/Po1UUnUjmxNFtnj9WI3OWkgd+vLQV0dxdBI/7SFbw0aYwEu6ojrTn/WLAnYrsrjGaTO/hLBFXyh+4rTbpQsKybyGxexgi4kGHq94rzSvLw2VJs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790582011; c=relaxed/simple;
-	bh=0mfzjK8mUAeG2Ip0jwsowlur0vip7mDGss8cqbe5xas=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qyl2tVWSrPnRX8C+UfYgagismnUmo9zLKv5vedBZr+agb5HxxW6LFp/+HMIOR6Dc6lwY6JSGns4rTWMCmL9Ct1Wl2bKagB9xZGkXHMDYDBuk7Ab/mKMcZ4hXGNTqVq+ZceNXn7RPf/puPMZxqlkn+6fuX2RyvvycglZx3pJr7IE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UWqQE1Ee; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBEEE43FD3F
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 08:17:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.140
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790583439; cv=pass; b=XlfOtgajMAoa2TLIWzSigVmzzMF+FnmAAxQJHSKUctEE45OkOxhIRIot2fPf+qfUymhwuFgE6XKiEfP4q7GskURfnbJoe5HIf5x71cs9GBKoraZNHxAcwqEMkAYYQrtMfwFvwAn8ve1PqtSZm/vNeaOjT2TWSGHYYHzDL4Y3kn4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790583439; c=relaxed/simple;
+	bh=aYwJC4BScg6xo8RaWoJ6AsT9nwuM3VqyxukWf+p+5lw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=txiy9OQ16az2tnsMwjVpAwyeBaTwAbxzg5hbdN5v5UOuS3ChCT6kXhM7oe6bwziFTs16zRA5LOwpL/sL9bwTG0z4r/cygw0mmR+O5X3bHjmahZORcVzCtSOlIrhuGWpBFyF7fFgbmXIY867HkEl2YlTqMwpNgMqcbPjCsannVaQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ENaQt00N; arc=pass smtp.client-ip=74.125.228.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UWqQE1Ee"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFC401F000FF;
-	Mon, 28 Sep 2026 07:53:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790582009;
-	bh=y3wv9BqAiTw2HCY3ulbCx5oK7QCkC1dJqen90pJn9Jo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=UWqQE1Eeh4cDpY4agdO4gNEiy+8Lw+xDHm9yvxnP6jzi+sSszLFTslJm2FpjSiuye
-	 N/RLk1IiTEU1OtA6wCn23XR6ue059PaIdW3D07YnGqVc+PdaIfgrj9Zq/f5KZLyDRx
-	 bkBZmrBdhrrj8hx5XRIxBGNyV90WR+1EpRwPem88r/5ycevVpsF3PQE3+ZrHKmkC26
-	 7WDQTkcO/P8CMT+9rN6yoOl2AY3VFC63feabB5MaeFXrSlHcp6OcHqYEzkOAj7A+i2
-	 tYR47lxdSMHa9knWelQSEOU3MpMylBHIpuZo45IoD+gyDW5ESGJd3/fbzU7e072Kmh
-	 GS91VYxTSNMkw==
-Message-ID: <0e0ad632-3dd9-4dbc-ae25-38fcfaab3508@kernel.org>
-Date: Mon, 28 Sep 2026 09:53:21 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ENaQt00N"
+Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c294496989aso358572466b.3
+        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 01:17:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790583435; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Sqgq9Mw6jLDjI0yd2KpWcaujxWXGp/EQUCp4u9ArWdh24j88lgUW3Fs5xmKeTPfFT+
+         JxuJckmZtlRl4x1su1sTOAbNLeswnNTPPmewd3Aj+DIyfQmHI+YxRhiTYBBGheEJapJN
+         BIDfCV6q8Wd6KiYOfCDKxoj7cbagqzYFTx7MxFIx8qzwowl/zT86lvXp7SSOD89Owlug
+         /Ikn/k7SpD1J35g06pvVLo8uldvVU7XSCFxX8RmaJi8cBZ4aV0CJmDx6JpwBs3/TbJLg
+         0w/Hxk+zh43j3uN6U7xB/85z4Z2anjM4MB4v70Iq+chCALFi178n/2rtkBleA1gdNKT1
+         WoDQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=x52vdN3RGFH8b7Z3g2Hq5cceezp96zx3/fKU5lU+Vhs=;
+        fh=JY4StkXkt6t4u4iTOo19acbYitug6nTSee8t5B/uixY=;
+        b=O/lnmpMywfXfeqL+nziAzuOf7xl8XZBLCkzPj7U+3q1oA2XnhfEFdWXJlVIZhUXYCB
+         bRU1OGtHlV7NGyV4zxKTZLJ2SJ6WoSDJnnNyQNW62qzbLB3j7kU72zBe7T4sTkI5IZ6z
+         7UhC+tY9UcRFbGIKUYodgn05K+fKuunJYWfr9V1LBr9JtaZJSgnr3Bcv1F5PSKIkjcCQ
+         TvtgyLwhSEQUXAdMBgLx4x7XbqqGHFjetLVRNhAV+2wvrbH/SdaUQR0tR+3FOF3jnv7Y
+         oe7CMwV43GnVgd44Hjv8JIZlA0yvBJheu+KLRYaw3oMuF2bXi8L7ZwJCchzm5a/HjAuZ
+         vkkA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790583435; x=1791188235; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=x52vdN3RGFH8b7Z3g2Hq5cceezp96zx3/fKU5lU+Vhs=;
+        b=ENaQt00NIoQUsVZvGPkqqNpXP27pDX6aTNu0QCWi0I1BU7j/Xr30D6NLo+A4hyUutI
+         oknIti4ILVzeEN95I4SSm5RYTBLlCllslerIvW7oKN3dAb8jGeKUkTbTbmKa7l0BOfJS
+         uXZ4gbVJNTndhQyl2zhXLry/oXT6DsOheRKF+zpTQQ01Nnck9iMhKOFUq6qZxPrQo/CM
+         XOtxR65WpnNeTGsJPvRduINwA9aSrd9C3bJ/TWfrWtNdgDiIMew+KjVQ2zW6RRNy42ZE
+         qp5DlQfzqimmBZdsixxl+R8kmHVMQgHJjpc+shh6ghvoNvg4kQjQVIa+FzcD7T5Dr4x5
+         3ePQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790583435; x=1791188235;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=x52vdN3RGFH8b7Z3g2Hq5cceezp96zx3/fKU5lU+Vhs=;
+        b=o8HJPqkRW3Yh9YmRnosGCgEzp7hB7gYDO9Wu+rTRztQfC8KCat+erFvj9GFf0jGZYv
+         mR3oZGWwSBAb1g/DQxYcGMjkkqiQ0zJZJgkj/PEWECYyCoAcpF7s5pwY338WD9d0yiAk
+         pdGkZr/CJMSYDExHXrml2ibZaRaI9Eo1Iil/COUBaU6nuBAEF1lXZ3dUA/j2yMJQXHnd
+         /w9wro7Zz5GcPm0i1afpMyDjQ4mAmVwNRxX1Z6MXaLMlUCcxmcwe+3DY5By70mhA4fry
+         Sic+pRZUYIT/FmS4/b5TrhtU9GbK7BuyZKY/iOtftbPphyTbjEdXmRBZhCl89Igl+vSc
+         BRiA==
+X-Forwarded-Encrypted: i=1; AKwUvBxPYDduO5HvJDavO3g/fUg9cwlH67ipxMxZmkqStNkCJWptUuDWx1fZjKZC/V8RsLxCog140Mb7Fg==@vger.kernel.org
+X-Gm-Message-State: AFuF++lQaaBDi/W1SuOCDIEH6QVqC6kB/Wnc6b800iary1xIyIDdFZnZ
+	WBB7nZ32Olr1EbYDkzAxfzreI+iX2cnVjny1kazqTxpJPqijnPg0qxjTM8xYtVLJ3n2NzHrgCtD
+	wdY1XvsT0aW7EfkvsJ4BjpvH9KkhMgYg=
+X-Gm-Gg: AYBFou1uImOHG5ZA1hnQEusNMnjJD1Q741RvX4xpY9G4qMsY+bZzaCiwWoLKA6vhGs2
+	Eel30I4WOgqCHnKdd4MVegJ8C1AR+lngGScWkyRWznMsluHw35w0V1YlXl8sDOgROz0EqX1quHv
+	k6BgZqFlrMe79TId7XDheQkj227GChI4S+LpRf/C1G19UJqufhUL1eaLAORhDYNn9auGvjsf+Ho
+	OASQGcwKsHWsf/neYilT7zw+Gf13nXuj/2gVON66J/DWLyumRdVCphCE8Wc/NBjlVIfadProVxa
+	LXIoOUTqn5iDI1ZPa3Qas7Cf9ij7ZLPXm5+2veP8ZJJ+jSROFR5AGN6PnQ==
+X-Received: by 2002:a17:907:c491:b0:c26:1648:a06f with SMTP id
+ a640c23a62f3a-c2ac253fd57mr1046162166b.42.1790583434617; Mon, 28 Sep 2026
+ 01:17:14 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 5/8] dt-bindings: iio: adc: renesas,rzg2l-adc: Document
- RZ/G3L ADC for TSU
-To: Biju Das <biju.das.jz@bp.renesas.com>,
- Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Magnus Damm <magnus.damm@gmail.com>
-Cc: David Lechner <dlechner@baylibre.com>, =?UTF-8?Q?Nuno_S=C3=A1?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
- Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>, linux-pm@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- devicetree@vger.kernel.org, Chris Paterson <Chris.Paterson2@renesas.com>,
- Biju Das <biju.das@bp.renesas.com>
-References: <20260922042707.116378-1-biju.das.jz@bp.renesas.com>
- <20260922042707.116378-6-biju.das.jz@bp.renesas.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
- /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
- s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
- EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
- rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
- DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
- IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
- vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
- oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
- sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
- vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
- Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
- BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
- 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
- f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
- WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
- XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
- IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
- YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
- p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
- GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
- YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
- vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
- ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
- QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
- +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
- wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
- c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
- K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
- n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
- qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260922042707.116378-6-biju.das.jz@bp.renesas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <cover.1790561983.git.zhoubinbin@loongson.cn> <502911659e15a51c4e98c11f3cf476dd5f92e75b.1790561983.git.zhoubinbin@loongson.cn>
+ <0aaf7166-378c-47d7-98d4-1004fdaeae7b@oss.qualcomm.com>
+In-Reply-To: <0aaf7166-378c-47d7-98d4-1004fdaeae7b@oss.qualcomm.com>
+From: Binbin Zhou <zhoubb.aaron@gmail.com>
+Date: Mon, 28 Sep 2026 16:17:02 +0800
+X-Gm-Features: AclHuK9Vua98KWEJM57MhTJw4SsJBaEsxZP1W-rR6PIaRSRBPFPETsYhRw_q6Fo
+Message-ID: <CAMpQs4+uWMfFib7MhRcc7o-QMXkFrFCtdcGj04y56u44JL4iOg@mail.gmail.com>
+Subject: Re: [PATCH v6 1/7] thermal/drivers/loongson2: Correct thermal sensor
+ registration loop
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Binbin Zhou <zhoubinbin@loongson.cn>, Huacai Chen <chenhuacai@loongson.cn>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Yinbo Zhu <zhuyinbo@loongson.cn>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, stable@vger.kernel.org, 
+	Sashiko <sashiko-bot@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 22/09/2026 06:26, Biju Das wrote:
-> Add the renesas,r9a08g046-adc1 compatible string for the ADC1
-> instance on RZ/G3L, which is dedicated to the on-chip TSU (thermal
-> sensor unit). Unlike the other ADC instances, this one only exposes
-> a single channel (channel@8), so restrict the allowed channel nodes
-> accordingly.
-> 
-> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+Hi Daniel:
+
+Thanks for your review.
+
+On Mon, Sep 28, 2026 at 3:15=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+> On 9/28/26 06:44, Binbin Zhou wrote:
+> > The registration loop in loongson2_thermal_probe() incorrectly uses
+> > dev_err_probe() when the sensor is not present (-ENODEV). In that case,
+> > the driver should continue to the next sensor index rather than treatin=
+g
+> > it as a fatal error.
+> >
+> > Fix this by correctly handling -ENODEV and only returning on other
+> > errors. Also add a final check to ensure at least one thermal zone was
+> > registered.
+> >
+> > Cc: stable@vger.kernel.org
+> > Reported-by: Sashiko <sashiko-bot@kernel.org>
+> > Closes: https://sashiko.dev/#/patchset/cover.1783670011.git.zhoubinbin@=
+loongson.cn?part=3D2
+> > Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal managemen=
+t support")
+> > Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+> > ---
+> >   drivers/thermal/loongson2_thermal.c | 8 +++++---
+> >   1 file changed, 5 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loon=
+gson2_thermal.c
+> > index 4d40fc706a53..99b7392fc68f 100644
+> > --- a/drivers/thermal/loongson2_thermal.c
+> > +++ b/drivers/thermal/loongson2_thermal.c
+> > @@ -160,16 +160,18 @@ static int loongson2_thermal_probe(struct platfor=
+m_device *pdev)
+> >
+> >       for (i =3D 0; i <=3D LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
+> >               tzd =3D devm_thermal_of_zone_register(dev, i, data, therm=
+al_ops);
+> > -
+> >               if (!IS_ERR(tzd))
+> >                       break;
+> >
+> > -             if (PTR_ERR(tzd) !=3D -ENODEV)
+> > +             if (PTR_ERR(tzd) =3D=3D -ENODEV)
+> >                       continue;
+> >
+> > -             return dev_err_probe(dev, PTR_ERR(tzd), "failed to regist=
+er");
+> > +             return dev_err_probe(dev, PTR_ERR(tzd), "failed to regist=
+er sensor %d\n", i);
+>
+>
+> >       }
+> >
+> > +     if (IS_ERR(tzd))
+> > +             return dev_err_probe(dev, -ENODEV, "No thermal sensor reg=
+istered\n");
+> > +
+> >       ret =3D devm_request_threaded_irq(dev, irq, NULL, loongson2_therm=
+al_irq_thread,
+> >                                       IRQF_ONESHOT, "loongson2_thermal"=
+, tzd);
+> >       if (ret < 0)
+>
+>
+> The [no]error paths are confusing and prone to error, eg: 'if there is
+> no error then check if there is an error', 'when exiting the loop
+> without registering any sensor, then we assume tzd is -ENODEV'.
+>
+> Please make a less cumbersome and implicit checks here. For example
+> count the number of sensors and then do the check against.
+
+I thought about it, and you're right=E2=80=94I made the logic here too comp=
+licated.
+Let's use `sensor_count` as the counter. Is the following check logic clear=
+er?
+
+        u32 sensor_count =3D 0;
+
+        for (unsigned int i =3D 0; i <=3D LOONGSON2_MAX_SENSOR_SEL_NUM; i++=
+) {
+                tzd =3D devm_thermal_of_zone_register(dev, i, data,
+data->chip_data->thermal_ops);
+                if (IS_ERR(tzd)) {
+                        if (PTR_ERR(tzd) =3D=3D -ENODEV)
+                                continue;
+
+                        return dev_err_probe(dev, PTR_ERR(tzd),
+                                             "failed to register sensor %d"=
+, i);
+                }
+
+                sensor_count++;
+                break;
+        }
+
+        if (!sensor_count)
+                return dev_err_probe(dev, -ENODEV, "no thermal sensor
+registered");
 
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-
-Best regards,
-Krzysztof
+--=20
+Thanks.
+Binbin
