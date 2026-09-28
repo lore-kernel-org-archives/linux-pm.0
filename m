@@ -1,87 +1,33 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D45894825B0
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 08:59:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7D45485501;
+	Mon, 28 Sep 2026 09:00:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790585965; cv=none; b=Q9tpmDJ57dq0khAlGFaR/1TwfmRjE40pE0umMHieRBqA6nqSLi7AHYKcoR9+6zegjMhEKdDp8kPerOiVu8AsTrkB6yf0W0wkDlPNVikRSyl8OVKZXsqIDv5+f9albY+DuBOnB4XdVGm2ynOrAXFSkmwdMP4LE4R7/xdRdbLfyO0=
+	t=1790586058; cv=none; b=nEC/Me71nwmQ4ITAdytK3jl5Q/e832dY89MY6Fz50Z0c2jPlFNVK3RgVVbnqWD0QEpVCy5bGIQGS4DIvowY7zxXB9LnVMlSqClsBOGkdGHQHQX4x8wMYjjiKyaJus7cwFAC6CMH7lMT8GZiuq+SiOBlVuHq0vtEkafM7s62tC9M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790585965; c=relaxed/simple;
-	bh=u2z1RbxlO+iN4QhyX1e0vutTscqzLPwYGNNKsJVvdl4=;
+	s=arc-20240116; t=1790586058; c=relaxed/simple;
+	bh=b+FkB6VJP0LX+X0YtlNiUZHBkfBYXUZk8WfmQo9B0pY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=J6vLzIu/rxllLjChNlIO7ukuWXC9aN8HlHkRX1Ep9KR2aiwzuMSTSUGHeVaiCaK2ezpt8GyNG92bxRpFx3RZVPjwJEFKChryR+7LIuJwPmivfnchhsl8H4DT3j3dkVrVc8F1a2XcuE/EbMXZMy/wmXhiXmGtiVl07H/MAJeeyxA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=O50Rlp6P; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UhX6Aqdi; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=JU4FToHFqi0hqdI2pjjT9ei+oqINJyndiCI7bj85rwBEF0y86iPIGvE1lduQF4S0RAeGHtcxuN2Wg/Ar7Df/HNY4QlXcEDsN+xPwlGDa/q4DczDVxt3U9CTuuGFjOw0sSOLNuB7JS8lcAu9PS0g6L0yo1itIyU5vzQ7MO6MaGXI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Vc9FA6OO; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="O50Rlp6P";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UhX6Aqdi"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68S7xfNV621106
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 08:59:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	RA/vkNg7yN8i6zn82jKDCXocOVdLs/IMifjYk1p+w80=; b=O50Rlp6PfgjifU8Q
-	iHxTBmTSP5Wh9vUyfvMJNUht+Bm0i3h+l3l/kgzlOdEg5D3EyV84RpqM4flKRyGm
-	MCjcwkSoGEZ+YjPNIk2DnyPPa5GZTDn5ituQiuESayBl3whUyTH6Zta0JPQw+VDv
-	0SFFq/33gE1WJlT1sqAUzBe9uNLzmSQ5zvYqeTU0SDf1zJBwdzo57aOw3k2TADBw
-	nib8hD+T6jt5tgHJnTtma+5GbEe+9jl+EwAjlz3DbfNc5n3IUo8ik9RnPKUJAXfH
-	ZAKKRCbRtcxNIOwM2yR8JwtGxTHskfKY8DQ5SV1am2lM9FGnKf+bN0cWO7GnJPW5
-	fGlG6A==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gyk5mrggn-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 08:59:22 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-3a0be20102fso2484513a91.0
-        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2026 01:59:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790585961; x=1791190761; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=RA/vkNg7yN8i6zn82jKDCXocOVdLs/IMifjYk1p+w80=;
-        b=UhX6Aqdim5cbUbujxCAm2U2K9b2SP7kealQIWS8mY8JiSBH6j+JTt+CUfgchzoIi14
-         eP0rgu4sEDUeoTVIwq5kkTMUOD2VLg+MNUTWQ3+EKOkSjKRgSLUnx6d64YYRBhX/3X8x
-         TSFvnxipkRE675RTKK3HHBxqAcii4/QycJUlU0BdZbQcUGUmULIMER3PEuGZeuaNYGm8
-         JyRnBzewB9GlFTYGhgP/nyPCIdQ5bK3ZTLFktHsYc9F2Zj2X3ApBgXEkl6qHHoowKgkn
-         ezuJ9z1NaKovxWtF6C1Sw3Qy5Bb/LSLpqBHgiws2DCN5a5padDHxY9hHjKKXqvSoAaRv
-         tQwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790585961; x=1791190761;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=RA/vkNg7yN8i6zn82jKDCXocOVdLs/IMifjYk1p+w80=;
-        b=QH8xyIop9r/6Wo3k4OqhccjTxBjWXR09HhlDpAvcXYqB1DTP2490aF/pr1oNjGEnaq
-         ap5+FRJ3vL5mgmLerYSFa0a9AqQcrgqDqG51fdMMDyc3QnOfMQl8GjEoh1oek4DZ694W
-         td862Kwm+OQOjzlUL8vm5I9Oq6JCUfsN1Cm8GPkUe6GT/8iO9luByjtGJH/f2+eyOr+F
-         S/NVvPjdIqHk14W92Wer4fAVJEZiuudtSeSME6rNaePmrJ9ivadVYgUz+9d8ehFfEA5/
-         WNJXEMzY+3GJXOdo43EV3eEAgWcLYKqu0IAyhVORwMrpKPicaxiTQd7ch1Hjk5x0ThVc
-         YOzw==
-X-Forwarded-Encrypted: i=1; AKwUvBwhj909xvh9DvlegOb9twQaB4fq5R9XhSQQionPmmhP9tQe8Oojh2j/0tsRNBqgqY+zQ2PgV0V8Ug==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIBU9bJyC+CpFADiUdBpGPXF6EttnZrIa9vquoRKVkn9+mKgCIh
-	zijUkP/XSlG+xfX3jAw8FzK9ia96oQlwDVKMnsjraIRXAcNCO6xZshF+Ukt3UXjxWrPX+5FIFSZ
-	yVx/esR0Dle3jsx2actsEviHjncxN9t5HE5F+w2eb9VnYN1b9xXAx4ooJU+VtbA==
-X-Gm-Gg: AYBFou1n10NuC/mebP12Pm7gqfub9j0LAOXY/JMmxmV9R7AetUYrQq/n2UmV1HJHytO
-	tsMVjmz5VrBMUUxxL0owysM1yhV2qbjHGTq49m+5Y1jM24V4f1RsPz6ULZ9AfSFM85WRAaTzual
-	1eIcqO53xpqhKNsF0azjC57EVNNaz8Iti7ekOkhxBT+Q/SNsUhvYllIYbpCVuhC3ZGfgFco4+Pl
-	3Wg0Qdd1DYG1FNaD1BL6CYCi7W/ISbPgPqhmmZSbxYtJAzPvr/hdro9ndBBs7SR64d5NT7NuTXN
-	qTAJjZbfOKXtA8WyYK6IzN45duC5mJ9/U+mKt4lCduUs3ZyJ4jq/JSb9ehmAv1DRYdLHgFLhdPh
-	1bC0oU/mNU25RK8cE04aG0DGIyWu+aQ==
-X-Received: by 2002:a17:90b:4a41:b0:3a0:ea63:13f4 with SMTP id 98e67ed59e1d1-3a0ea631b3bmr4076109a91.38.1790585961397;
-        Mon, 28 Sep 2026 01:59:21 -0700 (PDT)
-X-Received: by 2002:a17:90b:4a41:b0:3a0:ea63:13f4 with SMTP id 98e67ed59e1d1-3a0ea631b3bmr4076080a91.38.1790585960815;
-        Mon, 28 Sep 2026 01:59:20 -0700 (PDT)
-Received: from [10.218.14.97] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0e151be04sm13302899a91.9.2026.09.28.01.59.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 28 Sep 2026 01:59:20 -0700 (PDT)
-Message-ID: <db2fa5de-6b2b-4555-a268-1c4f9e736f24@oss.qualcomm.com>
-Date: Mon, 28 Sep 2026 14:29:12 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Vc9FA6OO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A9331F000FF;
+	Mon, 28 Sep 2026 09:00:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790586057;
+	bh=x450XlcjIL1p7LFEC3Tf+NE6Fbnndr/8bL+TDaQA93g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Vc9FA6OOXax+HTWehEVc8scEkVzDkEYpkCJmMjtZEGm0pEDwZhGMoPX/JRahcuGTj
+	 jZ28zJgxBMiNHCGquf5E5k834oO7gJLejtP3dPTnrZbD2aV599wsb9RlapsLJgdRIH
+	 yHzPx+bIOedPC0PnqTwdFz2dBUrtnYFr9qvpXPfVZHeKQ40Qp8OQTF4rMSlDWE7/z2
+	 F6DqvhUmpz/92a8VzqCsmYgCm5HnaylhVjBvGpoMvTetJ7MnVaW5EtOrDOPAzpiZTi
+	 2sDoOC/SktSOpNE/B47Y/m1xi/Sks5aP4xeD8ZJhydj0qgdTUmiTDdXnsB1aD4nv1j
+	 NAAnAToQDRnEA==
+Message-ID: <f2e718cd-92eb-4127-84fc-23f29396ccb6@kernel.org>
+Date: Mon, 28 Sep 2026 11:00:51 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,136 +35,102 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/9] soc: qcom: geni: Derive SE clock configuration
- from OPP table on SA8255P
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
-        Mukesh Kumar Savaliya <mukesh.savaliya@oss.qualcomm.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Viken Dadhaniya <viken.dadhaniya@oss.qualcomm.com>,
-        Andi Shyti <andi.shyti@kernel.org>,
-        chandana.chiluveru@oss.qualcomm.com, arm-scmi@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-i2c@vger.kernel.org, Abel Vesa <abel.vesa@oss.qualcomm.com>
-References: <20260827-derive_clk_perf_tbl_from_perf_domain_opp_table-v2-0-091697dbeb02@oss.qualcomm.com>
- <CAPx+jO9fcvBsxe9yx9oK=0EXmpNwub5ba0a-TGk1WRFaRGsqpA@mail.gmail.com>
- <177884a8-902f-49be-8fcb-b2bec3ec7d6c@oss.qualcomm.com>
- <CAPx+jO8bXn2F3cWz87Ozjrh00E+a_UWBrHeUViTEkTL87JHW9Q@mail.gmail.com>
- <0f5494c7-c3c1-4668-a09f-d8c43d1c58b9@oss.qualcomm.com>
- <6c28e672-349c-49cb-892d-ec521b3004bf@oss.qualcomm.com>
- <ae4581c0-1339-4398-8d35-1d7611a0f47e@oss.qualcomm.com>
+Subject: Re: [PATCH v2 4/5] hibernation, KFENCE: explicitly map/unmap KFENCE
+ pages
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Dmitry Vyukov <dvyukov@google.com>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, kasan-dev@googlegroups.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
+References: <20260926-hibernation-v2-0-235f69f3ab2a@kernel.org>
+ <20260926-hibernation-v2-4-235f69f3ab2a@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
-From: Praveen Talari <praveen.talari@oss.qualcomm.com>
-In-Reply-To: <ae4581c0-1339-4398-8d35-1d7611a0f47e@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: J-Gc6C3Bs90M-tElGc3mqeJ2s0hlgYnb
-X-Proofpoint-GUID: J-Gc6C3Bs90M-tElGc3mqeJ2s0hlgYnb
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDAzNSBTYWx0ZWRfXz1KNiNlexLgw
- QKRMipigsMzWHvFwlgpfNC2/srZNp62fQoGiZdAuwz7Fg4sfqKC5CJc+uvKhjWQVqh9Ej0cuLNY
- rGA1GS+b3X/yY52fg1gIMVEemAEle0aeneO14LGRx46RRt19dJ6nWAiinaICRXQt8sL5MdyKObd
- AzUm0WYMJHczGjyhNmbIP7srMbzvG7D/TewiXvxryibDBxYsKy8SCwobpulVC+Cqz8m9ZraK8ND
- ioGsZOsm8lVLLXUKp5IzRcRg0UTkkO9tClQlfVmX6ITrjj/XU5/niuUCUc5aYBUBk9xDkQqXSeZ
- Oh/DvqteobaMymhAGAEVlmALRpBJAD2rjuAUT+aliV5jdy9d5UUowkf4Fi4dbtw/VCBBj8FnRxg
- ZjJ8Gnd2ZA/GDJMJh0RUvmhhwOEUTGy6v3OaoLU34ShlIw8LM6gq6ugSy3pKYNBvQebLvqOMdTG
- 07KRe8wtl2vK9fg6Ceg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDAzNSBTYWx0ZWRfXzb8UyXOzfOXp
- SVEQ9BnP5mZIIXtY+jWajnHf/P6jjbfeA2s+8z8ukfkSJdG68IUQkKtswVzLMp/yhkwebaqfd+j
- 9orNO9nRs0f36hx6P1tS5WP+mkI8TZs=
-X-Authority-Analysis: v=2.4 cv=asYnmiZV c=1 sm=1 tr=0 ts=6aba2c6a cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=EUspDBNiAAAA:8 a=AjVmRg8o_XJH9waDQPAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=iS9zxrgQBfv6-_F4QbHw:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-28_01,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
- lowpriorityscore=0 clxscore=1015 adultscore=0 bulkscore=0 malwarescore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609280035
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260926-hibernation-v2-4-235f69f3ab2a@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Konrad,
+On 9/26/26 11:26, Mike Rapoport (Microsoft) wrote:
+> The pages protected by KFENCE are removed from the direct map.
+> 
+> safe_copy_page() temporarily maps and unmaps them using set_direct_map
+> APIs, or, when the stars align, even using debug_pagealloc_map_pages().
+> 
+> Neither of these APIs cares whether it is a KFENCE page and both blindly
+> perform the update of the kernel page table for any non-present page.
+> 
+> Ability to use debug_pagealloc_map_pages() to remap KFENCE pages when both
+> KFENCE and debug_pagealloc are enabled is an amusing coincidence.
+> 
+> But with increasing appetite for using set_direct_map for hardening
+> purposes, it becomes too big of a hammer to enable saving any non-present
+> page in the hibernation image.
+> 
+> Another gotcha is that loongarch that does not have a direct map at all
+> advertises ARCH_HAS_SET_DIRECT_MAP to allow coexistence of KFENCE and
+> hibernation.
+> 
+> Extend KFENCE with a bitmap that tracks which pages are protected and
+> provide kfence_force_mapping() and kfence_reset_mapping() APIs that allow
+> forced mapping and unmapping of KFENCE pages.
+> 
+> Use these APIs in hibernate_{map,unmap}_pages() for KFENCE pages.
+> 
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
 
-On 22-09-2026 18:36, Konrad Dybcio wrote:
-> On 9/11/26 7:33 PM, Praveen Talari wrote:
->> Hi Konrad,
->>
->> On 04-09-2026 14:30, Konrad Dybcio wrote:
->>> On 9/4/26 9:56 AM, Ulf Hansson wrote:
->>>> On Tue, Sep 1, 2026 at 6:48 PM Praveen Talari
->>>> <praveen.talari@oss.qualcomm.com> wrote:
->>> [...]
->>>
->>>> So geni_se_clk_freq_match() is used by two consumer drivers today,
->>>> drivers/spi/spi-geni-qcom.c and drivers/tty/serial/qcom_geni_serial.c.
->>>>
->>>> Beyond the $subject series, there will be even more consumer drivers
->>>> that call these platform specific functions. As I said above, I don't
->>>> think this is moving things in the right direction.
->>>>
->>>> If this can't be solved with generic frameworks (clocks and OPP),
->>>> please clarify why so we can figure out a better way forward.
->>> The way I read it, isn't geni_se_clk_freq_match() more or less
->>> dev_pm_opp_find_freq_exact() called in a loop with an increasing
->>> divider?
->> Currently, geni_se_clk_freq_match() relies on clk_perf_tbl to
->> determine the source clock index and divider corresponding to
->> a requested frequency.
-> So I think the part that blocks going in the direction I
-> suggested is that the index and divider values you mentioned
-> are then required to be fed into some GENI-internal registers:
->
-> -- drivers/spi/spi-geni-qcom.c
-> clk_sel = idx & CLK_SEL_MSK;
-> m_clk_cfg = (div << CLK_DIV_SHFT) | SER_CLK_EN;
-> writel(clk_sel, se->base + SE_GENI_CLK_SEL);
-> writel(m_clk_cfg, se->base + GENI_SER_M_CLK_CFG);
->
-> and it seems like every protocol driver does some NIH things
-> to take care of that.. perhaps this bit could be moved up to
-> the common geni-se layer (Mukesh, are there some historical
-> reasons for this being handled in proto drivers?)
-
-Just to confirm, would you like the clock programming logic to be moved 
-into
-
-the common GENI driver (geni-se.c)? If yes, I can take that up in a 
-separate series.
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 
 
-Thanks,
 
-Praveen Talari
 
->
-> I think this may just be an effect of how the hardware is wired
-> up - the ""DFS"" clocks that feed into the serial engines are
-> partly set up in the clock controller driver, but then there's
-> this bit:
->
-> -- drivers/clk/qcom/clk-rcg2.c
-> clk_rcg2_enable_dfs()
-> 	/*
->           * Rate changes with consumer writing a register in
->           * their own I/O region
->           */
->          init->flags |= CLK_GET_RATE_NOCACHE;
->          init->ops = &clk_rcg2_dfs_ops;
->
-> which is the writes i mentioned above.
->
-> At a glance, plumbing this into OPP would require making GENI
-> SEs self-consumed clock providers, which sounds no less messy
->
-> Konrad
+-- 
+Cheers,
+
+David
