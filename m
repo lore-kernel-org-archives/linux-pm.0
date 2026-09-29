@@ -1,413 +1,638 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 367483D9027
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 17:56:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E8543CF688
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 18:04:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790704563; cv=none; b=sVeKG8VbKs4PXD13QyCxg5m8OZUyp9rIS6m8p9sb0YB5MhMmiXBBcHyNcsO8uMy8ubvdFoi481VsK+zspTgnLrWRJKcxEOZzAfCx1eG3uVthYskwXuK8adsAAYd0TkR1y0Yctrveqie75z/AK1ifB3PhCM7WCFCYNQspPbFQp6o=
+	t=1790705046; cv=none; b=gT+w+wkRzVDaIoiLz1lcp5tqmnVPtkzt8DeMTbGGBiNh1T4G7hVW3dTCH5SWrzzyrYtQiKA3FOnFQvaRaV9yD6bl9L3VjSc54Vj5PTq0veXwPPzbrSielWKN55qyrHoeA0qNLfstVZJgS66b7HoohX9gl0RKhWa4jz+pfrZyhHE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790704563; c=relaxed/simple;
-	bh=wK478mWs55/YGrfau3lYBcZH/HDA3wgeH+Nwz1xIGu0=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=cNXmO8hK3gwBqyBtE0c4+eorKUz94Gn4sYtZi6tbzPXPouAfauf1B2DHMpnfx1r4zofXymm5izpBVBJdqVu3BZGnhOADeqNZAC8LwOmTj637eYkO2J26iDoIkvz4bap+QS+lJxJ26fJgKuHyXqF9GlHi9L/dH1hayTX98jGA8dw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Tt+VwKBf; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1790705046; c=relaxed/simple;
+	bh=syaOp/uZj6dD0zmtNRzrmcNmXC+yLxR9bWC8W73sWP0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XwfQzcN+dmstOhKAuz+i7x4skfw4DBG0gEsxFmMKDH0GLh94uqPd1+dJDWAPWL8++AlsBW2NaUyjoTWUpWPa8G5EVWxyDmmbk2UfSF4AFgM7xJBtIaOiJoCigHem4j8CImWLZjr6Vzc9+8M2CajMzSg4rKkK7HjsrWbPcFm9bpE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jM1wU8S9; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Tt+VwKBf"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1790704562; x=1822240562;
-  h=date:from:to:cc:subject:message-id;
-  bh=wK478mWs55/YGrfau3lYBcZH/HDA3wgeH+Nwz1xIGu0=;
-  b=Tt+VwKBfieJ5KWcamfVlVKvWfrviC06PYUufb0Mi0mgSulEwWvoq7iwt
-   +l6kufjMHwAnbldAQ2HjOXJ3rmG32WGbImFOEe4BKE7YznS0P9bsNoVKR
-   KEmW316ScX1VsJyH2mp0OUnd5gcceJnwah+Z/YxVh8ECl0pcgfU8FDBcV
-   GqzQ1LOFh4vzPznIsdA9mqGOYZRIHbbxshUU1fNu96NCkDKdhJSOo5JX2
-   iqbermUMiEYYY9Wd01W/reojNX5lMdGmcfZzTGNboo1qT/Htjjllv4Dyz
-   fqjno0kqf3fQi0kf1f0R4FMyIvOhsms+/f+oJLZX81KH3sp8kR/Mq0GF0
-   Q==;
-X-CSE-ConnectionGUID: W9KmbwDCR6OlORzZZ+5T5g==
-X-CSE-MsgGUID: Ey19zBvQS/yl/YyxNIT+gw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11920"; a="90294635"
-X-IronPort-AV: E=Sophos;i="6.27,130,1787036400"; 
-   d="scan'208";a="90294635"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Sep 2026 10:56:02 -0700
-X-CSE-ConnectionGUID: XV2GXl7vRMO3sUIDhKJATw==
-X-CSE-MsgGUID: o4WTaL/0TxqQyenEl0ihWg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,130,1787036400"; 
-   d="scan'208";a="280196547"
-Received: from lkp-server01.sh.intel.com (HELO 462990a40a85) ([10.239.97.150])
-  by fmviesa004.fm.intel.com with ESMTP; 29 Sep 2026 10:56:00 -0700
-Received: from kbuild by 462990a40a85 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xBc3a-00000000Pbk-0jLW;
-	Tue, 29 Sep 2026 17:55:58 +0000
-Date: Wed, 30 Sep 2026 01:55:24 +0800
-From: kernel test robot <lkp@intel.com>
-To: Mario Limonciello <superm1@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Subject: [amd-pstate:bleeding-edge] BUILD SUCCESS
- 8f83f0474eb9744dc675a9af46c17ef2d03fea76
-Message-ID: <202609300121.Stc00r0t-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jM1wU8S9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1223D1F0089A
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 18:04:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790705044;
+	bh=d05m2MxOZ724TTvpTaSVZeJxO3gGGW8/skvYmnq1Zxo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=jM1wU8S9A64dNBfDG1JblQPRmWlkt7AvTIGADeRJ+6a32kun9zazHzQReBAbdoHXM
+	 Hgwt1K8/TwQUF6VBLkUB1HEgp6+VtYEnrPjn0f9Z6VGejo6QFG4UqPeFuTDa9O8e5a
+	 1njyDTlvvtYPZ1r81fNYl4hdOzwf5k6Gi9Cx51JaVQQMzfn03FUsZr/CqIj9ma8ikW
+	 7hNnHs/xA1pQFQuPkD4zDKb4mRXVO4m1ChXq0SZoUcOhDBxhCO5KAl4ddiOL++HGf8
+	 tOcTY6IEMsIVKZLyaZTZfVxv/5hJfdCXE1GWH8INKSZW0Wgu79EvK65w9HFX/F1NvQ
+	 xxirSOZA4+LKA==
+Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b8ede3ab7aso1353156e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:04:03 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwn8Den/hB2hn6QPvNMmHMjNB/8SbKrFj1vz0AHcdXb4eEj2w3c4dBWCzQmAaRRmc6o4DKcoQRoaQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJ+3qU4AufrdiIpY/SZkNwJFGJevvb463nB8nkp6Il3ZeeG+hXu
+	edSMxRUlSIv3FaFnFxykIuSQ1i+wGLUu3NPWwMiSFMe7jL545Tb0rQDGbM3siQiu/9Kuh5S+uK9
+	b8MyvKrA/1Hjv7diFI0ISOK3789vROyw=
+X-Received: by 2002:a05:6512:1182:b0:5b4:7d9d:16d7 with SMTP id
+ 2adb3069b0e04-5ba3bf66fabmr47894e87.11.1790705042253; Tue, 29 Sep 2026
+ 11:04:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+References: <20260923143416.3713485-1-daniel.lezcano@oss.qualcomm.com> <20260923143416.3713485-2-daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260923143416.3713485-2-daniel.lezcano@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 29 Sep 2026 20:02:18 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jikgt4wYS1MJqTBMKBaw=qeuGyD58ArQCoRpZNPZMSSQ@mail.gmail.com>
+X-Gm-Features: AclHuK9auQ0-YfkZoG__v-DORNn7c5Io_cb3GYObcbokiAAF5oTC7SsrwH-lZ0g
+Message-ID: <CAJZ5v0jikgt4wYS1MJqTBMKBaw=qeuGyD58ArQCoRpZNPZMSSQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] powercap: Add generic zone hierarchy creation helpers
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, shuah@kernel.org, 
+	linux-kselftest@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
-branch HEAD: 8f83f0474eb9744dc675a9af46c17ef2d03fea76  cpufreq: amd-pstate: Update Zen6 client EPP tuning values
+On Wed, Sep 23, 2026 at 4:34=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+> Powercap controllers may need to create several powercap zones organized
+> as a hierarchy. At present, each controller has to open-code the
+> hierarchy traversal, parent lookup, error rollback and reverse-order
+> destruction.
+>
+> Introduce struct powercap_hierarchy to describe a powercap
+> hierarchy. Each node contains its name, parent, backend-specific data
+> and the powercap zone created for it.
+>
+> For example, the following description:
+>
+>   static struct powercap_node nodes[] =3D {
+>           { .name =3D "package" },
+>           { .name =3D "cpu", .parent =3D &nodes[0] },
+>           { .name =3D "gpu", .parent =3D &nodes[0] },
+>   };
+>
+>   static struct powercap_hierarchy hierarchy =3D {
+>           .nodes =3D nodes,
+>           .nr_nodes =3D ARRAY_SIZE(nodes),
+>   };
+>
+> creates the following hierarchy:
+>
+>   package
+>   |-- cpu
+>   `-- gpu
 
-elapsed time: 951m
+I gather that this works, but TBH it doesn't look particularly nice,
+especially because of the way in which indices need to be used in it.
 
-configs tested: 336
-configs skipped: 5
+If a few extra bytes can be sacrificed for storing extra pointers,
+something like this can be done instead:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+struct powercap_node {
+    const char *name;
+    struct powercap_node *parent_node;
+    struct powercap_zone *pcap_zone;
+    void *data;
+    unsigned int nr_subnodes;
+    struct powercap_node *subnodes[];
+};
 
-tested configs:
-alpha                              allnoconfig    gcc-16.1.0
-alpha                             allyesconfig    gcc-16.1.0
-alpha                                defconfig    gcc-16.1.0
-alpha                randconfig-r2103-20260929    gcc-16.1.0 cocci
-alpha                randconfig-r2104-20260929    gcc-11.5.0 cocci
-alpha                randconfig-r2107-20260929    gcc-11.5.0 cocci
-alpha                randconfig-r2107-20260929    gcc-15.2.0 cocci
-alpha                randconfig-r2200-20260929    gcc-11.5.0 smatch
-alpha                randconfig-r2302-20260929    gcc-12.5.0 sparse
-alpha                randconfig-r2303-20260929    gcc-12.5.0 sparse
-alpha                randconfig-r2305-20260929    gcc-13.4.0 sparse
-alpha                randconfig-r2309-20260929    gcc-13.4.0 sparse
-arc                               allmodconfig    clang-24
-arc                                allnoconfig    gcc-16.1.0
-arc                               allyesconfig    clang-24
-arc                                  defconfig    gcc-16.1.0
-arc                         nsim_700_defconfig    gcc-16.1.0
-arc                   randconfig-1000-20260929    clang-17
-arc                   randconfig-1001-20260929    clang-17
-arc                  randconfig-r2100-20260929    clang-24   cocci
-arc                  randconfig-r2103-20260929    clang-22   cocci
-arc                  randconfig-r2300-20260929    clang-24   sparse
-arc                  randconfig-r2307-20260929    gcc-13.4.0 sparse
-arc                  randconfig-r2309-20260929    clang-24   sparse
-arc                            tb10x_defconfig    gcc-16.1.0
-arc                     vdk_hs38_smp_defconfig    gcc-16.1.0
-arm                                allnoconfig    gcc-16.1.0
-arm                               allyesconfig    clang-24
-arm                          assabet_defconfig    gcc-16.1.0
-arm                          at91_dt_defconfig    gcc-16.1.0
-arm                         clps711x_defconfig    gcc-16.1.0
-arm                                  defconfig    gcc-16.1.0
-arm                       footbridge_defconfig    gcc-16.1.0
-arm                              mxs_defconfig    gcc-16.1.0
-arm                          orion5x_defconfig    gcc-16.1.0
-arm                   randconfig-1000-20260929    clang-17
-arm                   randconfig-1001-20260929    clang-17
-arm                   randconfig-1002-20260929    clang-17
-arm                   randconfig-1003-20260929    clang-17
-arm                  randconfig-r2305-20260929    gcc-12.5.0 sparse
-arm                  randconfig-r2308-20260929    gcc-13.4.0 sparse
-arm                         spear6xx_defconfig    gcc-16.1.0
-arm64                             allmodconfig    clang-24
-arm64                              allnoconfig    gcc-16.1.0
-arm64                                defconfig    gcc-16.1.0
-arm64                 randconfig-1000-20260929    clang-24
-arm64                 randconfig-1001-20260929    clang-24
-arm64                 randconfig-1002-20260929    clang-24
-arm64                 randconfig-1003-20260929    clang-24
-arm64                randconfig-r2102-20260929    clang-24   cocci
-arm64                randconfig-r2301-20260929    gcc-12.5.0 sparse
-arm64                randconfig-r2301-20260929    gcc-13.4.0 sparse
-arm64                randconfig-r2302-20260929    clang-24   sparse
-arm64                randconfig-r2306-20260929    clang-19   sparse
-arm64                randconfig-r2309-20260929    gcc-16.1.0 sparse
-csky                              allmodconfig    gcc-16.1.0
-csky                               allnoconfig    gcc-16.1.0
-csky                                 defconfig    gcc-16.1.0
-csky                                 defconfig    gcc-16.1.0
-csky                  randconfig-1000-20260929    clang-24
-csky                  randconfig-1001-20260929    clang-24
-csky                 randconfig-r2105-20260929    gcc-16.1.0 cocci
-csky                 randconfig-r2107-20260929    gcc-16.1.0 cocci
-csky                 randconfig-r2200-20260929    gcc-14.3.0 smatch
-csky                 randconfig-r2300-20260929    gcc-12.5.0 sparse
-csky                 randconfig-r2309-20260929    clang-19   sparse
-csky                 randconfig-r2309-20260929    gcc-11.5.0 sparse
-hexagon                           allmodconfig    gcc-16.1.0
-hexagon                            allnoconfig    gcc-16.1.0
-hexagon                              defconfig    gcc-16.1.0
-hexagon               randconfig-1000-20260929    gcc-8.5.0
-hexagon               randconfig-1001-20260929    gcc-8.5.0
-hexagon              randconfig-r2101-20260929    clang-24   cocci
-hexagon              randconfig-r2202-20260929    clang-17   smatch
-hexagon              randconfig-r2302-20260929    clang-24   sparse
-i386                              allmodconfig    clang-22
-i386                               allnoconfig    gcc-16.1.0
-i386                              allyesconfig    clang-22
-i386        buildonly-randconfig-1000-20260929    clang-22
-i386        buildonly-randconfig-1001-20260929    clang-22
-i386        buildonly-randconfig-1002-20260929    clang-22
-i386        buildonly-randconfig-1003-20260929    clang-22
-i386        buildonly-randconfig-1004-20260929    clang-22
-i386        buildonly-randconfig-1005-20260929    clang-22
-i386                                 defconfig    gcc-16.1.0
-i386                  randconfig-1000-20260929    gcc-13
-i386                  randconfig-1001-20260929    gcc-13
-i386                  randconfig-1002-20260929    gcc-13
-i386                  randconfig-1003-20260929    gcc-13
-i386                  randconfig-1004-20260929    gcc-13
-i386                  randconfig-1005-20260929    gcc-13
-i386                  randconfig-1006-20260929    gcc-13
-i386                  randconfig-1007-20260929    gcc-14
-i386                  randconfig-1008-20260929    gcc-14
-i386                  randconfig-1009-20260929    gcc-14
-i386                  randconfig-1010-20260929    gcc-14
-i386                  randconfig-1011-20260929    gcc-14
-i386                  randconfig-1012-20260929    gcc-14
-i386                  randconfig-1013-20260929    gcc-14
-i386                  randconfig-2100-20260929    clang-22   cocci
-i386                  randconfig-2101-20260929    clang-22   cocci
-i386                  randconfig-2102-20260929    clang-22   cocci
-i386                  randconfig-2103-20260929    clang-22   cocci
-i386                  randconfig-2200-20260929    gcc-14     smatch
-i386                  randconfig-2300-20260929    gcc-14     sparse
-i386                  randconfig-2301-20260929    gcc-14     sparse
-i386                  randconfig-2302-20260929    gcc-14     sparse
-i386                 randconfig-r2106-20260929    gcc-16.1.0 cocci
-loongarch                         allmodconfig    clang-24
-loongarch                          allnoconfig    gcc-16.1.0
-loongarch                            defconfig    clang-24
-loongarch             randconfig-1000-20260929    gcc-8.5.0
-loongarch             randconfig-1001-20260929    gcc-8.5.0
-loongarch            randconfig-r2102-20260929    clang-24   cocci
-loongarch            randconfig-r2107-20260929    clang-22   cocci
-loongarch            randconfig-r2201-20260929    clang-24   smatch
-m68k                              allmodconfig    gcc-16.1.0
-m68k                               allnoconfig    gcc-16.1.0
-m68k                              allyesconfig    clang-24
-m68k                          amcore_defconfig    gcc-16.1.0
-m68k                        bvme6000_defconfig    gcc-16.1.0
-m68k                                 defconfig    clang-24
-m68k                 randconfig-r2101-20260929    clang-24   cocci
-m68k                 randconfig-r2104-20260929    clang-22   cocci
-m68k                 randconfig-r2105-20260929    clang-22   cocci
-m68k                 randconfig-r2200-20260929    gcc-11.5.0 smatch
-m68k                 randconfig-r2303-20260929    clang-24   sparse
-m68k                 randconfig-r2304-20260929    gcc-13.4.0 sparse
-microblaze                         allnoconfig    gcc-16.1.0
-microblaze                        allyesconfig    gcc-16.1.0
-microblaze                           defconfig    clang-24
-microblaze           randconfig-r2201-20260929    gcc-13.4.0 smatch
-microblaze           randconfig-r2301-20260929    clang-24   sparse
-microblaze           randconfig-r2306-20260929    clang-24   sparse
-mips                              allmodconfig    gcc-16.1.0
-mips                               allnoconfig    gcc-16.1.0
-mips                              allyesconfig    gcc-16.1.0
-mips                             gpr_defconfig    gcc-16.1.0
-mips                            ip30_defconfig    gcc-16.1.0
-mips                       loongson3_defconfig    gcc-16.1.0
-mips                       malta_kvm_defconfig    gcc-16.1.0
-mips                 randconfig-r2100-20260929    clang-22   cocci
-mips                 randconfig-r2103-20260929    clang-24   cocci
-mips                 randconfig-r2200-20260929    gcc-12.5.0 smatch
-mips                 randconfig-r2202-20260929    gcc-12.5.0 smatch
-mips                 randconfig-r2300-20260929    clang-24   sparse
-mips                 randconfig-r2300-20260929    gcc-13.4.0 sparse
-mips                 randconfig-r2302-20260929    gcc-13.4.0 sparse
-mips                 randconfig-r2303-20260929    clang-24   sparse
-mips                 randconfig-r2306-20260929    gcc-13.4.0 sparse
-mips                 randconfig-r2308-20260929    gcc-16.1.0 sparse
-nios2                          10m50_defconfig    gcc-16.1.0
-nios2                             allmodconfig    clang-20
-nios2                              allnoconfig    clang-24
-nios2                                defconfig    clang-24
-nios2                 randconfig-1000-20260929    gcc-8.5.0
-nios2                 randconfig-1001-20260929    gcc-8.5.0
-nios2                randconfig-r2106-20260929    gcc-11.5.0 cocci
-nios2                randconfig-r2200-20260929    gcc-11.5.0 smatch
-nios2                randconfig-r2303-20260929    gcc-13.4.0 sparse
-nios2                randconfig-r2305-20260929    clang-24   sparse
-nios2                randconfig-r2306-20260929    gcc-11.5.0 sparse
-nios2                randconfig-r2307-20260929    gcc-11.5.0 sparse
-openrisc                          alldefconfig    gcc-16.1.0
-openrisc                          allmodconfig    clang-20
-openrisc                           allnoconfig    clang-24
-openrisc                             defconfig    gcc-16.1.0
-openrisc             randconfig-r2304-20260929    gcc-12.5.0 sparse
-openrisc             randconfig-r2305-20260929    clang-24   sparse
-parisc                            allmodconfig    gcc-16.1.0
-parisc                             allnoconfig    clang-24
-parisc                            allyesconfig    clang-17
-parisc                               defconfig    gcc-16.1.0
-parisc                randconfig-1000-20260929    gcc-8.5.0
-parisc                randconfig-1001-20260929    gcc-8.5.0
-parisc               randconfig-r2105-20260929    gcc-11.5.0 cocci
-parisc64                             defconfig    clang-24
-powerpc                      akebono_defconfig    gcc-16.1.0
-powerpc                           allmodconfig    gcc-16.1.0
-powerpc                            allnoconfig    clang-24
-powerpc                       chrp32_defconfig    gcc-16.1.0
-powerpc                     gamecube_defconfig    gcc-16.1.0
-powerpc                         icon_defconfig    gcc-16.1.0
-powerpc                      ksi8560_defconfig    gcc-16.1.0
-powerpc                    motionpro_defconfig    gcc-16.1.0
-powerpc                  mpc837x_rdb_defconfig    gcc-16.1.0
-powerpc               randconfig-1000-20260929    gcc-8.5.0
-powerpc               randconfig-1001-20260929    gcc-8.5.0
-powerpc              randconfig-r2102-20260929    gcc-16.1.0 cocci
-powerpc              randconfig-r2104-20260929    gcc-16.1.0 cocci
-powerpc              randconfig-r2201-20260929    gcc-10.5.0 smatch
-powerpc              randconfig-r2202-20260929    clang-24   smatch
-powerpc                     socrates_defconfig    gcc-16.1.0
-powerpc64             randconfig-1000-20260929    gcc-8.5.0
-powerpc64             randconfig-1001-20260929    gcc-8.5.0
-powerpc64            randconfig-r2104-20260929    gcc-15.2.0 cocci
-powerpc64            randconfig-r2106-20260929    gcc-15.2.0 cocci
-powerpc64            randconfig-r2304-20260929    clang-24   sparse
-powerpc64            randconfig-r2307-20260929    clang-24   sparse
-riscv                             allmodconfig    clang-24
-riscv                              allnoconfig    clang-24
-riscv                             allyesconfig    clang-24
-riscv                                defconfig    gcc-16.1.0
-riscv                 randconfig-1000-20260929    clang-24
-riscv                 randconfig-1001-20260929    clang-24
-riscv                 randconfig-2000-20260929    gcc-11.5.0
-riscv                 randconfig-2001-20260929    gcc-11.5.0
-riscv                randconfig-r2100-20260929    clang-24   cocci
-riscv                randconfig-r2100-20260929    gcc-16.1.0 cocci
-riscv                randconfig-r2202-20260929    clang-24   smatch
-s390                              allmodconfig    clang-17
-s390                               allnoconfig    clang-24
-s390                              allyesconfig    gcc-16.1.0
-s390                                 defconfig    gcc-16.1.0
-s390                  randconfig-1000-20260929    clang-24
-s390                  randconfig-1001-20260929    clang-24
-s390                  randconfig-2000-20260929    gcc-11.5.0
-s390                  randconfig-2001-20260929    gcc-11.5.0
-s390                 randconfig-r2307-20260929    clang-19   sparse
-sh                                allmodconfig    gcc-16.1.0
-sh                                 allnoconfig    clang-24
-sh                                allyesconfig    clang-17
-sh                                   defconfig    gcc-14
-sh                              espt_defconfig    gcc-16.1.0
-sh                           kfr2r09_defconfig    gcc-16.1.0
-sh                    randconfig-1000-20260929    clang-24
-sh                    randconfig-1001-20260929    clang-24
-sh                    randconfig-2000-20260929    gcc-11.5.0
-sh                    randconfig-2001-20260929    gcc-11.5.0
-sh                   randconfig-r2104-20260929    clang-22   cocci
-sh                   randconfig-r2106-20260929    clang-22   cocci
-sh                            se7343_defconfig    gcc-16.1.0
-sh                            se7705_defconfig    gcc-16.1.0
-sh                            se7721_defconfig    gcc-16.1.0
-sh                            se7722_defconfig    gcc-16.1.0
-sh                    secureedge5410_defconfig    gcc-16.1.0
-sh                            sh2007_defconfig    gcc-16.1.0
-sh                         sh7757lcr_defconfig    gcc-16.1.0
-sh                         sh7785lcr_defconfig    gcc-16.1.0
-sh                              shx3_defconfig    gcc-16.1.0
-sh                             titan_defconfig    gcc-16.1.0
-sparc                              allnoconfig    clang-24
-sparc                                defconfig    gcc-16.1.0
-sparc                 randconfig-1000-20260929    gcc-14
-sparc                 randconfig-1001-20260929    gcc-14
-sparc                 randconfig-2000-20260929    gcc-12.5.0
-sparc                 randconfig-2001-20260929    gcc-12.5.0
-sparc                randconfig-r2101-20260929    gcc-16.1.0 cocci
-sparc                randconfig-r2102-20260929    clang-24   cocci
-sparc                randconfig-r2307-20260929    gcc-16.1.0 sparse
-sparc64                           allmodconfig    clang-20
-sparc64                              defconfig    gcc-14
-sparc64               randconfig-1000-20260929    gcc-14
-sparc64               randconfig-1001-20260929    gcc-14
-sparc64               randconfig-2000-20260929    gcc-12.5.0
-sparc64               randconfig-2001-20260929    gcc-12.5.0
-sparc64              randconfig-r2100-20260929    clang-24   cocci
-sparc64              randconfig-r2304-20260929    clang-24   sparse
-sparc64              randconfig-r2308-20260929    clang-19   sparse
-um                                allmodconfig    clang-17
-um                                 allnoconfig    clang-24
-um                                allyesconfig    gcc-16.1.0
-um                                   defconfig    gcc-14
-um                              i386_defconfig    gcc-14
-um                    randconfig-1000-20260929    gcc-14
-um                    randconfig-1001-20260929    gcc-14
-um                    randconfig-2000-20260929    gcc-12.5.0
-um                    randconfig-2001-20260929    gcc-12.5.0
-um                   randconfig-r2201-20260929    gcc-14     smatch
-um                   randconfig-r2202-20260929    clang-24   smatch
-um                   randconfig-r2301-20260929    clang-24   sparse
-um                   randconfig-r2308-20260929    clang-24   sparse
-um                            x86_64_defconfig    gcc-14
-x86_64                            allmodconfig    clang-22
-x86_64                             allnoconfig    clang-24
-x86_64                            allyesconfig    clang-22
-x86_64      buildonly-randconfig-1000-20260929    clang-22
-x86_64      buildonly-randconfig-1001-20260929    clang-22
-x86_64      buildonly-randconfig-1002-20260929    clang-22
-x86_64      buildonly-randconfig-1003-20260929    clang-22
-x86_64      buildonly-randconfig-1004-20260929    clang-22
-x86_64      buildonly-randconfig-1005-20260929    clang-22
-x86_64                               defconfig    gcc-14
-x86_64                                   kexec    clang-22
-x86_64                randconfig-1000-20260929    clang-22
-x86_64                randconfig-1001-20260929    clang-22
-x86_64                randconfig-1002-20260929    clang-22
-x86_64                randconfig-1003-20260929    clang-22
-x86_64                randconfig-1004-20260929    clang-22
-x86_64                randconfig-1005-20260929    clang-22
-x86_64                randconfig-1006-20260929    gcc-13
-x86_64                randconfig-1007-20260929    gcc-13
-x86_64                randconfig-1008-20260929    gcc-13
-x86_64                randconfig-1009-20260929    gcc-13
-x86_64                randconfig-1010-20260929    gcc-13
-x86_64                randconfig-1011-20260929    gcc-13
-x86_64                randconfig-1012-20260929    clang-22
-x86_64                randconfig-1013-20260929    clang-22
-x86_64                randconfig-1014-20260929    clang-22
-x86_64                randconfig-1015-20260929    clang-22
-x86_64                randconfig-1016-20260929    clang-22
-x86_64                randconfig-1017-20260929    clang-22
-x86_64                randconfig-2100-20260929    clang-22   cocci
-x86_64                randconfig-2101-20260929    clang-22   cocci
-x86_64                randconfig-2102-20260929    clang-22   cocci
-x86_64                randconfig-2103-20260929    clang-22   cocci
-x86_64                randconfig-2200-20260929    clang-22   smatch
-x86_64                randconfig-2300-20260929    gcc-14     sparse
-x86_64                randconfig-2301-20260929    gcc-14     sparse
-x86_64                randconfig-2302-20260929    gcc-14     sparse
-x86_64               randconfig-r2101-20260929    clang-24   cocci
-x86_64               randconfig-r2102-20260929    clang-22   cocci
-x86_64               randconfig-r2105-20260929    clang-22   cocci
-x86_64               randconfig-r2106-20260929    clang-22   cocci
-x86_64               randconfig-r2107-20260929    clang-22   cocci
-x86_64                                rhel-9.4    clang-22
-x86_64                            rhel-9.4-bpf    clang-22
-x86_64                            rhel-9.4-bpf    gcc-14
-x86_64                           rhel-9.4-func    clang-22
-x86_64                     rhel-9.4-kselftests    clang-22
-x86_64                          rhel-9.4-kunit    clang-22
-x86_64                          rhel-9.4-kunit    gcc-14
-x86_64                            rhel-9.4-ltp    clang-22
-x86_64                            rhel-9.4-ltp    gcc-14
-x86_64                           rhel-9.4-rust    clang-22
-x86_64                           rhel-9.4-rust    clang-22
-xtensa                             allnoconfig    clang-24
-xtensa                            allyesconfig    clang-20
-xtensa                randconfig-1000-20260929    gcc-14
-xtensa                randconfig-1001-20260929    gcc-14
-xtensa                randconfig-2000-20260929    gcc-12.5.0
-xtensa                randconfig-2001-20260929    gcc-12.5.0
-xtensa               randconfig-r2101-20260929    clang-22   cocci
-xtensa               randconfig-r2105-20260929    gcc-15.2.0 cocci
-xtensa               randconfig-r2306-20260929    gcc-16.1.0 sparse
-xtensa               randconfig-r2308-20260929    gcc-11.5.0 sparse
+struct powercap_node cpu_node =3D {
+    .name =3D "cpu",
+};
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+struct powercap_node gpu_node =3D {
+    .name =3D "gpu",
+};
+
+struct powercap_node package_node =3D {
+    .name =3D "package",
+    .nr_subnodes =3D ARRAY_SIZE(package_node.subnodes),
+    .subnodes[] =3D { &cpu_node, &gpu_node };
+};
+
+and then &package_node can be passed directly to
+powercap_hierarchy_create() without a need to create an auxiliary
+struct powercap_hierarchy.
+
+The parent_node pointers can be populated during the creation of the hierar=
+chy.
+
+> Add powercap_hierarchy_dup() to create a runtime copy of a hierarchy
+> description. Rebase the parent pointers so that the copy does not keep
+> references to the original array, which may be stored in init memory.
+>
+> Add powercap_hierarchy_create() to walk the description in order
+> and create each zone through a controller-provided callback. The parent
+> zone is passed to the callback, keeping the node creation operation
+> specific to the controller.
+>
+> The backend is responsible for allocating and registering each powercap
+> zone from the creation callback. The powercap_zone object is expected to
+> be embedded in a backend-specific structure, allowing the backend
+> callbacks to retrieve their private data later using container_of().
+>
+> For example:
+>
+>   struct foo_powercap_zone {
+>           struct powercap_zone zone;
+>           struct foo_domain *domain;
+>   };
+>
+>   foo_zone =3D kzalloc(sizeof(*foo_zone), GFP_KERNEL);
+>   if (!foo_zone)
+>           return ERR_PTR(-ENOMEM);
+>
+>   foo_zone->domain =3D domain;
+>
+>   pcz =3D powercap_register_zone(&foo_zone->zone, pct, name, parent,
+>                                &foo_zone_ops, nr_constraints,
+>                                &foo_constraint_ops);
+>
+> Its allocation, private state and lifetime remain under the control of
+> the backend.
+>
+> The creation callback therefore returns the same powercap_zone pointer
+
+Which creation callback?
+
+> that was passed to powercap_register_zone(). The hierarchy helper stores
+> this pointer to provide it as the parent of subsequent nodes and to pass
+> it back to the backend during hierarchy destruction.
+>
+> Add powercap_hierarchy_destroy() to destroy the hierarchy in
+> reverse order, ensuring that children are removed before their parents.
+> Use the same mechanism to roll back previously created zones when the
+> creation of a subsequent node fails.
+>
+> Serialize creation and destruction of each hierarchy to prevent
+> concurrent updates of the powercap zone pointers stored in its runtime
+> copy.
+>
+> This provides a common mechanism for creating controller-defined
+> powercap hierarchies while keeping controller-specific operations
+> outside the powercap core.
+>
+> Cc: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+> Link: https://patch.msgid.link/20260806110159.69690-2-daniel.lezcano@oss.=
+qualcomm.com
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+> ---
+>  drivers/powercap/powercap_sys.c | 148 ++++++++++++++++++++++++++
+>  include/linux/powercap.h        | 178 ++++++++++++++++++++++++++++++++
+>  2 files changed, 326 insertions(+)
+>
+> diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_=
+sys.c
+> index 9197fa20d93f..fefb36c5bcd2 100644
+> --- a/drivers/powercap/powercap_sys.c
+> +++ b/drivers/powercap/powercap_sys.c
+> @@ -667,6 +667,154 @@ int powercap_unregister_control_type(struct powerca=
+p_control_type *control_type)
+>  }
+>  EXPORT_SYMBOL_GPL(powercap_unregister_control_type);
+>
+> +struct powercap_hierarchy *
+> +powercap_hierarchy_dup(const struct powercap_hierarchy *hierarchy)
+
+This is sort of awkward even though I seem to understand its purpose.
+The duplication is extra overhead that would be entirely avoidable by
+creating the original structure in memory that is not __initdata.
+
+> +{
+> +       struct powercap_hierarchy *copy;
+> +       size_t i;
+> +
+> +       if (!hierarchy || !hierarchy->nodes || !hierarchy->nr_nodes)
+> +               return ERR_PTR(-EINVAL);
+> +
+> +       copy =3D kzalloc_obj(*copy);
+> +       if (!copy)
+> +               return ERR_PTR(-ENOMEM);
+> +
+> +       /*
+> +        * The source node array may live in init memory. A shallow copy =
+would
+> +        * leave parent pointers referencing that array after it has been=
+ freed.
+> +        * Copy the nodes now and rebase their parent pointers below. The=
+ name
+> +        * and data objects remain owned by the backend and are not dupli=
+cated.
+> +        */
+> +       copy->nodes =3D kmemdup_array(hierarchy->nodes, hierarchy->nr_nod=
+es,
+> +                                   sizeof(*copy->nodes), GFP_KERNEL);
+> +       if (!copy->nodes) {
+> +               kfree(copy);
+> +               return ERR_PTR(-ENOMEM);
+> +       }
+> +
+> +       copy->nr_nodes =3D hierarchy->nr_nodes;
+> +       mutex_init(&copy->lock);
+> +
+> +       for (i =3D 0; i < copy->nr_nodes; i++) {
+> +               const struct powercap_node *parent =3D hierarchy->nodes[i=
+].parent;
+> +               ptrdiff_t index;
+> +
+> +               copy->nodes[i].pcz =3D NULL;
+> +
+> +               if (!copy->nodes[i].name)
+> +                       goto invalid;
+> +
+> +               if (!parent)
+> +                       continue;
+> +
+> +               index =3D parent - hierarchy->nodes;
+> +               if (index < 0 || index >=3D i)
+> +                       goto invalid;
+> +
+> +               copy->nodes[i].parent =3D &copy->nodes[index];
+> +       }
+> +
+> +       return copy;
+> +
+> +invalid:
+> +       mutex_destroy(&copy->lock);
+> +       kfree(copy->nodes);
+> +       kfree(copy);
+> +
+> +       return ERR_PTR(-EINVAL);
+> +}
+> +EXPORT_SYMBOL_GPL(powercap_hierarchy_dup);
+> +
+> +void powercap_hierarchy_free(struct powercap_hierarchy *hierarchy)
+> +{
+> +       if (!hierarchy)
+> +               return;
+> +
+> +       mutex_destroy(&hierarchy->lock);
+> +       kfree(hierarchy->nodes);
+> +       kfree(hierarchy);
+> +}
+> +EXPORT_SYMBOL_GPL(powercap_hierarchy_free);
+> +
+> +static void __powercap_hierarchy_destroy(struct powercap_control_type *p=
+ct,
+> +                                        struct powercap_hierarchy *hiera=
+rchy,
+> +                                        powercap_node_destroy_t powercap=
+_node_destroy)
+> +{
+> +       size_t i;
+
+ssize_t i;
+
+would be more convenient.
+
+> +
+> +       for (i =3D hierarchy->nr_nodes; i-- > 0;) {
+
+First, if you use for (), there is no need to combine the
+decrementation of the index variable with the termination condition.
+
+I'd do
+
+      for (i =3D hierarchy->nr_nodes - 1; i >=3D 0; i--) {
+
+Second, this seems to require a certain ordering of rows in the array
+representing the hierarchy.  In particular, the index of a parent node
+needs to be less than the indices of all of its child nodes AFAICS,
+which makes it a bit fragile.  Note that my example arrangement
+doesn't have this problem.
+
+> +               if (!hierarchy->nodes[i].pcz)
+> +                       continue;
+> +
+> +               powercap_node_destroy(pct, hierarchy->nodes[i].pcz,
+> +                                     hierarchy->nodes[i].data);
+> +
+> +               hierarchy->nodes[i].pcz =3D NULL;
+> +       }
+> +}
+> +
+> +int powercap_hierarchy_destroy(struct powercap_control_type *pct,
+> +                              struct powercap_hierarchy *hierarchy,
+> +                              powercap_node_destroy_t powercap_node_dest=
+roy)
+> +{
+> +       if (!pct || !hierarchy || !hierarchy->nodes ||
+> +           !hierarchy->nr_nodes || !powercap_node_destroy)
+> +               return -EINVAL;
+> +
+> +       guard(mutex)(&hierarchy->lock);
+> +
+> +       __powercap_hierarchy_destroy(pct, hierarchy, powercap_node_destro=
+y);
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(powercap_hierarchy_destroy);
+> +
+> +int powercap_hierarchy_create(struct powercap_control_type *pct,
+> +                             struct powercap_hierarchy *hierarchy,
+> +                             powercap_node_create_t powercap_node_create=
+,
+> +                             powercap_node_destroy_t powercap_node_destr=
+oy)
+> +{
+> +       struct powercap_zone *pcz;
+> +       int ret;
+> +       size_t i;
+> +
+> +       if (!pct || !hierarchy || !hierarchy->nodes || !hierarchy->nr_nod=
+es ||
+> +           !powercap_node_create || !powercap_node_destroy)
+> +               return -EINVAL;
+> +
+> +       guard(mutex)(&hierarchy->lock);
+> +
+> +       for (i =3D 0; i < hierarchy->nr_nodes; i++) {
+> +               struct powercap_zone *parent =3D NULL;
+> +
+> +               if (hierarchy->nodes[i].parent) {
+> +                       parent =3D hierarchy->nodes[i].parent->pcz;
+> +                       if (!parent) {
+> +                               ret =3D -EINVAL;
+> +                               goto rollback;
+> +                       }
+> +               }
+> +
+> +               pcz =3D powercap_node_create(pct, hierarchy->nodes[i].nam=
+e,
+> +                                          hierarchy->nodes[i].data, pare=
+nt);
+> +               if (IS_ERR_OR_NULL(pcz)) {
+> +                       ret =3D pcz ? PTR_ERR(pcz) : -EINVAL;
+> +                       goto rollback;
+> +               }
+> +
+> +               hierarchy->nodes[i].pcz =3D pcz;
+> +       }
+> +
+> +       return 0;
+> +
+> +rollback:
+> +       __powercap_hierarchy_destroy(pct, hierarchy, powercap_node_destro=
+y);
+> +
+> +       return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(powercap_hierarchy_create);
+> +
+>  static int __init powercap_init(void)
+>  {
+>         int result;
+> diff --git a/include/linux/powercap.h b/include/linux/powercap.h
+> index 603419db924c..939cd58dff4f 100644
+> --- a/include/linux/powercap.h
+> +++ b/include/linux/powercap.h
+> @@ -9,6 +9,7 @@
+>
+>  #include <linux/device.h>
+>  #include <linux/idr.h>
+> +#include <linux/mutex.h>
+>
+>  /*
+>   * A power cap class device can contain multiple powercap control_types.
+> @@ -309,4 +310,181 @@ struct powercap_zone *powercap_register_zone(
+>  int powercap_unregister_zone(struct powercap_control_type *control_type,
+>                                 struct powercap_zone *power_zone);
+> +/**
+> + * struct powercap_node - Description of a node in a powercap hierarchy
+> + * @name: Name of the powercap zone.
+> + * @parent: Parent node, or NULL if the node is a hierarchy root.
+> + * @pcz: Powercap zone created for this node. This field is managed by t=
+he
+> + *      hierarchy creation and destruction helpers.
+> + * @data: Private data passed unchanged to the creation and destruction
+> + *       callbacks.
+> + *
+> + * This structure describes one node of a powercap hierarchy. The backen=
+d
+> + * supplies an array of nodes through &struct powercap_hierarchy.
+> + *
+> + * Nodes must be ordered so that a parent appears before all its childre=
+n.
+> + *
+> + * The @name and @data objects must remain valid until the duplicated hi=
+erarchy
+> + * has been freed. The @parent pointer is rebased by powercap_hierarchy_=
+dup(),
+> + * allowing the original node array to be released after duplication.
+> + *
+> + * The @pcz field is runtime state managed by powercap_hierarchy_create(=
+) and
+> + * powercap_hierarchy_destroy(). It is cleared when a node is destroyed.
+> + */
+> +struct powercap_node {
+> +       const char *name;
+> +       struct powercap_node *parent;
+> +       struct powercap_zone *pcz;
+
+I'd call this "zone" or "pcap_zone" like in my example above.
+
+> +       void *data;
+> +};
+> +
+> +/**
+> + * struct powercap_hierarchy - Powercap zone hierarchy
+> + * @nodes: Array describing the hierarchy nodes.
+> + * @nr_nodes: Number of entries in @nodes.
+> + * @lock: Lock serializing hierarchy creation and destruction.
+> + *
+> + * A backend may place the initial description in init memory and duplic=
+ate it
+> + * with powercap_hierarchy_dup() before the init sections are released. =
+The
+> + * duplicated hierarchy owns the @nodes array, but not the objects refer=
+enced
+> + * by &struct powercap_node.name and &struct powercap_node.data.
+> + */
+> +struct powercap_hierarchy {
+> +       struct powercap_node *nodes;
+> +       size_t nr_nodes;
+> +       struct mutex lock;
+> +};
+> +
+
+I'd prefer the kerneldoc comments of new functions to go where the
+function definitions are located.
+
+> +/**
+> + * powercap_hierarchy_dup - Duplicate a powercap hierarchy description
+> + * @hierarchy: Hierarchy description to duplicate.
+> + *
+> + * Allocate a runtime hierarchy and copy the nodes from @hierarchy. Pare=
+nt
+> + * pointers are rebased to the duplicated node array and the runtime pcz=
+ fields
+> + * are initialized to NULL.
+> + *
+> + * Every parent must belong to the source node array and precede its chi=
+ldren.
+> + * The node names and private data are not duplicated and must remain va=
+lid
+> + * until powercap_hierarchy_free() is called.
+> + *
+> + * Context: Process context. May sleep.
+> + *
+> + * Return: A pointer to the duplicated hierarchy on success, or an ERR_P=
+TR()
+> + * encoded error otherwise.
+> + */
+> +struct powercap_hierarchy *powercap_hierarchy_dup(const struct powercap_=
+hierarchy *hierarchy);
+> +
+> +/**
+> + * powercap_hierarchy_free - Free a duplicated powercap hierarchy
+> + * @hierarchy: Hierarchy to free, or NULL.
+> + *
+> + * Free the node array and hierarchy allocated by powercap_hierarchy_dup=
+(). All
+> + * registered zones must have been destroyed before calling this functio=
+n.
+> + */
+> +void powercap_hierarchy_free(struct powercap_hierarchy *hierarchy);
+> +
+> +/**
+> + * typedef powercap_node_create_t - Create a powercap hierarchy node
+> + * @pct: Powercap control type owning the hierarchy.
+> + * @name: Name of the powercap zone to create.
+> + * @data: Private data associated with the hierarchy node.
+> + * @parent: Parent powercap zone, or NULL for a root node.
+> + *
+> + * Callback invoked by powercap_hierarchy_create() for each node in the
+> + * hierarchy. The callback must create and register a powercap zone belo=
+w
+> + * @parent. The backend is expected to embed struct powercap_zone in its=
+ own
+> + * object, pass the address of that member to powercap_register_zone(), =
+and
+> + * return the same address from this callback. This lets the backend rec=
+over
+> + * its object with container_of() from subsequent powercap callbacks.
+> + *
+> + * Context: Called with the powercap hierarchy mutex held. The callback =
+may
+> + * sleep, but must not call powercap_hierarchy_create() or
+> + * powercap_hierarchy_destroy() for the same hierarchy.
+> + *
+> + * Return: A valid pointer to the created powercap zone on success, or a=
+n
+> + * ERR_PTR() encoded error on failure.
+> + */
+> +typedef struct powercap_zone *(*powercap_node_create_t)(struct powercap_=
+control_type *pct,
+> +                                                       const char *name,=
+ void *data,
+> +                                                       struct powercap_z=
+one *parent);
+> +/**
+> + * typedef powercap_node_destroy_t - Destroy a powercap hierarchy node
+> + * @pct: Powercap control type owning the hierarchy.
+> + * @zone: Powercap zone to destroy.
+> + * @data: Private data associated with the hierarchy node.
+> + *
+> + * Callback invoked when a hierarchy is destroyed or when its creation m=
+ust
+> + * be rolled back. The callback must unregister the powercap zone repres=
+ented
+> + * by @zone. The backend remains responsible for the lifetime of the enc=
+losing
+> + * object, including releasing it from the powercap zone release callbac=
+k when
+> + * necessary.
+> + *
+> + * Nodes are passed to this callback in reverse creation order, ensuring=
+ that
+> + * all children are destroyed before their parent.
+> + *
+> + * Context: Called with the powercap hierarchy mutex held. The callback =
+may
+> + * sleep, but must not call powercap_hierarchy_create() or
+> + * powercap_hierarchy_destroy() for the same hierarchy.
+> + */
+> +typedef void (*powercap_node_destroy_t)(struct powercap_control_type *pc=
+t,
+> +                                       struct powercap_zone *zone,
+> +                                       void *data);
+> +
+> +/**
+> + * powercap_hierarchy_destroy - Destroy a powercap hierarchy
+> + * @pct: Powercap control type owning the hierarchy.
+> + * @hierarchy: Hierarchy to destroy.
+> + * @powercap_node_destroy: Callback used to destroy each powercap zone.
+> + *
+> + * Destroy all powercap zones previously created for @hierarchy. Nodes a=
+re
+> + * destroyed in reverse array order so that children are removed before =
+their
+> + * parents.
+> + *
+> + * Entries whose &struct powercap_node.pcz field is NULL are ignored. Af=
+ter
+> + * a zone has been destroyed, its pcz field is cleared.
+> + *
+> + * The caller must ensure that no users of the hierarchy remain when thi=
+s
+> + * function is called.
+> + *
+> + * Context: Process context. May sleep.
+> + *
+> + * Return: 0 on success or -EINVAL if an argument is invalid.
+> + */
+> +int powercap_hierarchy_destroy(struct powercap_control_type *pct,
+> +                              struct powercap_hierarchy *hierarchy,
+> +                              powercap_node_destroy_t powercap_node_dest=
+roy);
+> +
+> +/**
+> + * powercap_hierarchy_create - Create a powercap hierarchy
+> + * @pct: Powercap control type that will own the hierarchy.
+> + * @hierarchy: Hierarchy to create.
+> + * @powercap_node_create: Callback used to create each powercap zone.
+> + * @powercap_node_destroy: Callback used to roll back an incomplete hier=
+archy.
+> + *
+> + * Create the powercap zones described by @hierarchy in array order. For=
+ each
+> + * entry, @powercap_node_create is called with the powercap zone stored =
+in its
+> + * parent entry. Root nodes are created with a NULL parent.
+> + *
+> + * Each parent entry must precede all its children in the node array. Al=
+l pcz
+> + * fields must be NULL when this function is called.
+> + *
+> + * If a node cannot be created, all zones created by this invocation are
+> + * destroyed in reverse order by calling @powercap_node_destroy. Therefo=
+re,
+> + * @powercap_node_destroy must be provided even when the caller does not
+> + * expect to destroy the hierarchy explicitly.
+> + *
+> + * The hierarchy and the objects referenced by its name and data fields =
+must
+> + * remain valid until powercap_hierarchy_destroy() has completed.
+> + *
+> + * Context: Process context. May sleep.
+> + *
+> + * Return: 0 on success, -EINVAL if an argument or hierarchy entry is in=
+valid,
+> + * -EBUSY if the hierarchy already contains a created zone, or the error
+> + * returned by @powercap_node_create.
+> + */
+> +int powercap_hierarchy_create(struct powercap_control_type *pct,
+> +                             struct powercap_hierarchy *hierarchy,
+> +                             powercap_node_create_t powercap_node_create=
+,
+> +                             powercap_node_destroy_t powercap_node_destr=
+oy);
+> +
+>  #endif
+> --
