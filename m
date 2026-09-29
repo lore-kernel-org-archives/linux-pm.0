@@ -1,297 +1,179 @@
-Received: from mail-pj2-f39.google.com (mail-pj2-f39.google.com [74.125.227.167])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 244DB391E76
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 17:26:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.167
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8B17541E69
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 17:27:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790702763; cv=none; b=J6DELd9MhV51U89INA+yd4HsaIhRzelrFh+wZ+jGsrORxSvZI/T7mKSD0S5rue2aZRm8T8UWpIPTbJ+6AJmBrYtjCNQ8lyT9k9SadNrAbhfNnefj1eqApETcT7yP1PqrFLawr09QvvNcreIvOk6fzZM/MzQGfXbSewTFEEnbqk8=
+	t=1790702854; cv=none; b=eu9nBYtY/0wpgbp4suD+lnB7dLBkmuJcf+oYtOCdcyjBdiV5SXUpyLlEPpHCKJVFEFHn05WzRLIvjBxw6NO6IIzf51e2Tnn8Ok6l+SwEfmO6mTQcwPc/A591kTK7xYUtNLMdgG3eWbZpZOgUxb1PFzj6LVNjMq2sYSmTeE2J12I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790702763; c=relaxed/simple;
-	bh=mkfBiCMpwWCDcgy4prnMcLNrL6MWyBNP1gJn2fbsPok=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dUTMv76I8m2vRGLna3YpylIvM67RB3rqJSS2yO1c9N4mCtq6nH7CZ9GpUMOhNT7ye+MUERI36IJIB6S2e90dJ0J3CEgfG72OCw/bwE+1chyzq1TWQt3wOtG0oLiXdBphsTuUkia8Y8lbUsHrPRgWs3ZWpwaLpLC/LM1B+hfAUbc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YzmhBLjJ; arc=none smtp.client-ip=74.125.227.167
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790702854; c=relaxed/simple;
+	bh=XAr0ib5BIPLtsY2IvBczHBGu8cAfEMxCkyCJpApDgVo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=D3WsJHtr8InqbzExPERHhjaq7tbxg9csLm9BbiiSnic9YNT7I6z7CeyEMq2QJHyIe86zIvY1bo9zNJh37xUz2zJ278toStgj7qzM8YhhCeANM/2OVG85Xx7LT/+ue27P1cJbiCoGVqDIvuGz8VAkZGOYSFB1G6S7G6/YLKOyEnY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=b0PhfIzm; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hSLUpAmL; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YzmhBLjJ"
-Received: by mail-pj2-f39.google.com with SMTP id d9443c01a7336-2e2d2bbcab2so2895955ad.2
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 10:26:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="b0PhfIzm";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hSLUpAmL"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68TFG1C3941993
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 17:27:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	u3SUEE7AbKzsNjWqdW9tpkLCiHmZCXAa87H/nM0eXMM=; b=b0PhfIzmOk/QmqOk
+	FVyf9GPr4FheKSIazX6ZpB5hFQNl6tKAh5GNR/d/ZVbzld3wLYDvfdGjOyQ3voKI
+	XJfEGMIT36vPoGXzXRJFpyFaCryKIreS5dNbSqvqXRR1TsW+odAvrfpYModnZuhA
+	dZDb6IvoP4Sc6Fk06dQRWW2Xbp5ITvRx3P4n94xXEaatFET1PQFBtZlq2xEvIpH/
+	9XxzPTSFCkSyf4/AWpb1CxgjGQguInWfBvsNK5rYdhbQ5+kBbjEI7kXOh1lQPPzA
+	NA6GdmQ7BdgKVKd9JLAKEPxGFoYWVT/utozk0x0IY+o1HAP93KM7G4qSUQdprqbB
+	z1KXMg==
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h0ftugkym-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 17:27:32 +0000 (GMT)
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-cc1bbd7d6e6so3133377a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 10:27:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790702761; x=1791307561; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=U6jepSVcmHm+oxwGNgqeKz9lXh7Z2Z4id6g1VGOo8Vc=;
-        b=YzmhBLjJ278BJHpWtTeDyMguKjUFwEztZB7W8JI4HE3Edt/308SRL9JIpuVsyA3Jej
-         WR9AWjVXFyu7hCrOi9+3OpYoTbXrozTcfF0sZ/NThdwzI0ngrhSTEk7aP6XeX6/7+dF9
-         yJVTr12Mo71ZJlSjl25DK/2/6QLFgbKkCbqsqgQpaqN9U0O5YMWuD//2/AdyImMTg1Ia
-         ZG/Otr4rL9VzcfGhNEephC6qgrHVdKCi/IrV8hoDkiCq3bLNzNe8eKDm7Cq+l9RJzEA6
-         ypWHvjj/xRxx0tyYj4MioSX9VCqxsyXUD+pnptKxq6rKKLNnims8tNeaExuh4M5xax5C
-         QNYQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790702761; x=1791307561;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1790702851; x=1791307651; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=U6jepSVcmHm+oxwGNgqeKz9lXh7Z2Z4id6g1VGOo8Vc=;
-        b=qZjoqXoOuOL/204pyYoF/1rKiLYNCIXO9MVmn1YFr37VhQHrgKTTNQH8FIMWq0mKMd
-         SDKElv8Wr6+NAB/ZbmnX2eEJQF9mKxFgp/jdET+h85N/OAjBjkGqiMjs8JQq+xLzqqDt
-         DL9rj2sSlg9/GZTbfQDrTWA+Y9MT0048WN77kpB6VbFQEYBL9ekMVibyvpFDSE8hDEEV
-         MaqUSuMHcyd96PxdNmo6x0sQYq7sYTVWO111Xbmy5UdC1dsXk5rRImeTbGxChYn16qSE
-         mwPhW9UJGPWhLMle2OAY1xlaw6PwHTg5nMcdHR2w6zLIJ/1tHN7E/67jelQWpCxS+/ud
-         Sw2A==
-X-Forwarded-Encrypted: i=1; AKwUvBz8fq0Nt8ySL/mZg5CFxn3yG0Q9Xl+OkfhwCb3Aop008oNUMYeRrcX6VdT74gRO1HSewV08DPxj7A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIJFJul0DoLpogxj/5xL8vxfJX7v4BsDXXdKotmnISjnDOntyhY
-	kr7FW8qcYHgM0e/HTHYL3u8FL9or7XDkWd6ZC6Ll1kiRaDslKOLOsni0
-X-Gm-Gg: AYBFou0q1GHm0fqqkOyiQWSTFuD48o7zhFGfmh9nlIOpIHTVKafdWNDOu7r6MBT2jWX
-	n7t/0V39iE+TTnh93eopQ/AsS6oaQ4/eJS5DvH4BdSzNPEtBbdrIKfdXMcIGGKwpXroChp/HVJE
-	AS/i9jhn00icudvzhx+7RVFjslraRIyvSp+9ZPNJJ0S03I6v1cGM3l/5RKAhQLKTOZnthRZpQSY
-	5MuNMCPKE1es083uwXRhLsJhj527U8Bi3wDJ69Lvxeq6an10aSilaKLHnbJSiWOqlRsLX2GmyaG
-	TbgkZGhNoLwbhCbhf2WBC8koI9phm+1RlQzo+vMjGWJCU4/2DTPOSUTDg3Y3Nnn8yBbTrNKgjA1
-	vTdVlMvSporI/9Ws9TNMnvJfe+rRUCjJwtdhcw3c3wB7Ak5+x5Z0OEPxqJ8bgI+oCkwLX4fPBxz
-	pR0TRhxeQS12C2ErhiQnYNw9yfe1M7N8wp/nUKu6iZj/UTK9BvcDkuec9feQK6jezpbjjm29TYm
-	JaKv31grKHbrucYReSpof9H7Lp1tDDJJ6KYXK+L
-X-Received: by 2002:a17:903:38cc:b0:2e2:aa17:477f with SMTP id d9443c01a7336-2e2aa174e56mr51304225ad.58.1790702761038;
-        Tue, 29 Sep 2026 10:26:01 -0700 (PDT)
-Received: from KASONG-MC4 ([101.32.222.185])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2df9143a3aasm60994385ad.53.2026.09.29.10.25.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Sep 2026 10:26:00 -0700 (PDT)
-Date: Wed, 30 Sep 2026 01:25:54 +0800
-From: Kairui Song <ryncsn@gmail.com>
-To: Youngjun Park <youngjun.park@lge.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Kairui Song <kasong@tencent.com>, Chris Li <chrisl@kernel.org>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Barry Song <baohua@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	linux-mm@kvack.org, linux-pm@vger.kernel.org, her0gyugyu@gmail.com, 
-	taejoon.song@lge.com
-Subject: Re: [RFC PATCH 00/10] mm/swap, PM: hibernate: improve image slot
- allocation and I/O
-Message-ID: <aruGQpdsq7_O-AC8@KASONG-MC4>
-References: <20260915031658.1505680-1-youngjun.park@lge.com>
+        bh=u3SUEE7AbKzsNjWqdW9tpkLCiHmZCXAa87H/nM0eXMM=;
+        b=hSLUpAmLTEPWOyEpQlvqwj9hsA+gcinZQBrmuwbQR5a7Y+7wTBNMKMZi2xvCu2HxaG
+         tpJPpc/uXgBpWqWgg6nlsSgCubGksH89XUb9NFwKkbSpajUPVprb50tu2KQ3eihcm5hX
+         ncYn8RzV2kCzp4lKl4LVx8N55qJUSh0W3OhG3IcpkT4BKqu3xl9R8BY6V0HcUlhhb8eD
+         rbhV6oB3okQjRWVq5AEHJZcgGmf64T/Z/ior3VJGwqtZQI7tsUHL42vJdbXT/ptzx8eK
+         MKO3CYV2NrAC14GXRKT3G7pWVj4FVDVzJA/Sps2u2pVowDPN27247f73hghiqDwYMH/G
+         FUPw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790702851; x=1791307651;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=u3SUEE7AbKzsNjWqdW9tpkLCiHmZCXAa87H/nM0eXMM=;
+        b=PtegRFTKT9i7zWU2E2gVOkcUJ/CK0PX+1wP49G7e1JKvn7I7X09LJanij927l2Iqnx
+         2horwdPrzDnBMl9MHnAtzlT6VAav8gElj0nt3FUaQueSOYePV6nRGrQvcofiV1U9TaXc
+         DuzGg0NgMzDUl4yI9Dlxu+vbuJqSDyqC5dht8cgBiheygjjhjrjVu4/qV9cewDdtkHaP
+         gAeQqlPAbYp6h9ddsbdKRbxPlQ9ivT5sqFHRvq3fG70CCv9sLphR86M4XYyi+k20/0bb
+         Wnk4QjCXOffDInFMLckWtrQQw5lC3ZYwVMU2l/FdsDUCMPL1DjFlvJfN0ceaAAUsLuG7
+         bKmQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwaJlAoj0c1tVc+zaN2D7881kr9hmil3VggJv9fjD+3CekNwkub0y4I6Yxg2LKe/DlHqmHJmU19IA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nrd2WxIdz1ckaJkefOEMY65mXT2eMlb3w5usC8RitK7o09J9M2
+	esHWdSHLORJlNJ7EiCLNEFZVjROzRLiZRousvD38U6WuDJpjUOzf4zsf2jX0MeR8RMkoyVqZzhk
+	mZtp2PNIYgNzd9cjTNbSEMYmkuiCdjJj70q6EAAFjE8M3BseGYW+EFnv2Bngy7g==
+X-Gm-Gg: AYBFou1IXpo4DBexRoo5Xfa5fbwyzGAN4sFS1841l0iu6QS1fDiGZ9Un4D+euFaOtGP
+	MkcjrZZ07L4PuGW8DDr5k5YUYdECNt/681wQN6wUCUE9jo/SpStHTaCL25O9Vlf8mL7svyhEQ3U
+	MbyKPDPkkzhUA7Ww3/6nQbfSpOqbhp/jp5tOl8kf80RjlLNiqkB0rtH3Z78pGSa4tJ0/ynCfxF3
+	kHy8qVY+1dGXFaN2gRV5SVYOqcxyL/ZMz76a7c7NG9Y9YpWe9WiwpxLcWyraJV+Jv+rtMrbvD4Q
+	OauXODG1wU32meeuxD8WFwYU91lk+PwwKhA1Ut111sdFns8wTBAUOxRX0teX65+aVu/9rqf5grZ
+	2eW0RDl0x6z8VghEZK7fUDAYWwoextON4Gb2u7A/6QXY=
+X-Received: by 2002:a05:6a21:398f:b0:3dd:85aa:d26a with SMTP id adf61e73a8af0-3de0e7f02e6mr14024933637.34.1790702851333;
+        Tue, 29 Sep 2026 10:27:31 -0700 (PDT)
+X-Received: by 2002:a05:6a21:398f:b0:3dd:85aa:d26a with SMTP id adf61e73a8af0-3de0e7f02e6mr14024769637.34.1790702846060;
+        Tue, 29 Sep 2026 10:27:26 -0700 (PDT)
+Received: from [192.168.1.3] ([122.164.83.157])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8868c9d62afsm280619b3a.44.2026.09.29.10.27.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Sep 2026 10:27:25 -0700 (PDT)
+Message-ID: <b77e8d79-fc90-4bf8-835e-23e84198a008@oss.qualcomm.com>
+Date: Tue, 29 Sep 2026 22:57:07 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260915031658.1505680-1-youngjun.park@lge.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: (subset) [PATCH 00/11] Add a few minor enhancements to the
+ Qualcomm IPQ GCC drivers.
+To: Bjorn Andersson <andersson@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+        Brian Masney <bmasney+clk@redhat.com>,
+        Jerome Brunet <jbrunet+clk@baylibre.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>, Georgi Djakov <djakov@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Varadarajan Narayanan <quic_varada@quicinc.com>,
+        Dmitry Baryshkov <lumag@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+        Gokul Sriram Palanisamy <quic_gokulsri@quicinc.com>,
+        Sricharan Ramabadhran <quic_srichara@quicinc.com>,
+        Kathiravan T <quic_kathirav@quicinc.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, stable@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+References: <20260921-ipq_clk_changes-v1-0-d242e3d49648@oss.qualcomm.com>
+ <179065171028.2673486.10540547681271836423.b4-ty@b4>
+Content-Language: en-US
+From: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
+In-Reply-To: <179065171028.2673486.10540547681271836423.b4-ty@b4>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDA2OSBTYWx0ZWRfX1nex077kZaet
+ SISsTJ9xapBWb9nrjV1a4IOIgwWWqObJc/CTvje/hj0TpnC4UDh1pZZMV7gqMlpZ56717MzAavD
+ YQ0oMT+EaDa30wkXuYkfGL1cY4BJIx+prh1kIMd6aIUUSgrd3SOja6weTbuaDPM58IszYL7+6Fr
+ DHxjs/sz7w+3mtIpBEV1neHR9wsREryTVhozA7zpc1uDY8NVR0pdq9AEVQ+F/YTVRuI//PopHWH
+ r/n/uCjnGenzyDek8W+NdIA5KSugTEEvqNCAyXWxtL37ZLLdwRYAFW+kCA0J+dRWG1yk0NUA5x8
+ dsL/oWUEEdp+qJ/9oGzQIT9AdiO6mDR/k0fO48iefN6TFzhbOsclWCZJq/vXQvshI5psIPNzt+n
+ mBD94A5brKV0POtFHHmppVlCUHUQs7YkSnU1w/mVJZABq3MvQspY4oVS9yAwUHHw28nnxfzAAea
+ pDKWn1h0EOl2Jvqr1bA==
+X-Authority-Analysis: v=2.4 cv=AoB7T+9P c=1 sm=1 tr=0 ts=6abbf504 cx=c_pps
+ a=rz3CxIlbcmazkYymdCej/Q==:117 a=1HAn/k65X8NeSyO5TsuCIQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=NSf5Sc59ZZly-qZ_PXUA:9 a=QEXdDO2ut3YA:10 a=bFCP_H2QrGi7Okbo017w:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDA2OSBTYWx0ZWRfX0rg55cq0UFgQ
+ Wa2HLfy/ldyJqIsNR+UsVbidBdLiljZuVyhhCd0nJSU0j1/Y1KD3PUlTewJNcql/Km3JhxYzspX
+ J2Gg12hGpBidDvZpQeWfF74XRB0p13Q=
+X-Proofpoint-GUID: fRsPviKiVeBLb7QqGxCgnpmSaZRH_c1p
+X-Proofpoint-ORIG-GUID: fRsPviKiVeBLb7QqGxCgnpmSaZRH_c1p
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-29_04,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 malwarescore=0 impostorscore=0 clxscore=1015 phishscore=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609290069
 
-On Tue, Sep 15, 2026 at 12:16:48PM +0800, Youngjun Park wrote:
-> This series improves how hibernation allocates swap slots for its
-> image.  It starts from a few observations about what happens while
-> the image is written.  With them the allocator can hand the image
-> contiguous runs, the image I/O can be batched per run, and
-> hibernation gets faster. Contiguous I/O pattern is friendly to flash device also.
-> 
-> Slot allocation matters for hibernation speed.  After commit
-> 0ff67f990bd4 ("mm, swap: remove swap slot cache") in v6.15, writing
-> the image was about ten times slower on some SSDs [1], until
-> commit 396f57b57200 ("mm, swap: speed up hibernation allocation and
-> writeout") fixed it in v7.1.
-> 
-> Note
->  - I was responsible for the observation and design, 
->  while receiving substantial support from LLMs throughout the series.
-> -  Submitting this patch to confirm whether this work is progressing or not.
 
-Hi Youngjun
+On 9/29/2026 8:44 AM, Bjorn Andersson wrote:
+> On Mon, 21 Sep 2026 11:49:33 +0530, Kathiravan Thirumoorthy wrote:
+>> This series adds USB, NSS, and clock-related updates for several
+>> Qualcomm IPQ SoCs, including:
+>>
+>>    - Configure the USB UTMI reference clock to 24 MHz on IPQ5018,
+>>      IPQ5210, and IPQ5332 to fix USB enumeration issues.
+>>    - Wire the USB3 PHY PIPE clocks to GCC on IPQ5424 and IPQ9574.
+>>    - Add NSS MEMNOC clocks and corresponding clock and ICC IDs for
+>>      IPQ5424.
+>>    - Connect the IPQ5424 PPE clock to GCC and document the required
+>>      clock input ordering.
+>>    - Add UNIPHY XPCS reset definitions required for NSS support on
+>>      IPQ5210.
+>>    - Fix IPA-related typos in the IPQ5424 APSS clock driver.
+>>
+>> [...]
+> Applied, thanks!
+>
+> [01/11] clk: qcom: ipq5018: add 24MHz rate for USB UTMI clock
+>          commit: 0fe2995196a5973e226f506c9ec705f0dccec82f
+> [02/11] clk: qcom: ipq5332: add 24MHz rate for USB UTMI clock
+>          commit: 33e6a4864ddc4824f8a9505a97232b7879eb5528
+> [03/11] clk: qcom: ipq5210: add 24MHz rate for USB UTMI clock
+>          commit: 0336b65aef4721edbc01073dffdf9bc12673f0e5
+> [04/11] arm64: dts: qcom: ipq9574: Wire up USB3 PHY PIPE clock to GCC
+>          commit: 117d8d40be1ded4f35f3252efa83607a7134d5e0
 
-Thanks for the patch!
+Thanks Bjorn. Patch 10/11 and 11/11 are independent of the IPQ5424 
+dt-binding discussion. Since those patches are not bug fixes, added into 
+the last part of the series. Can you pick those patches as well for v7.4?
 
-Splitting out the hibernation specific part out of swapfile.c
-looks a good idea to me. We can then compile that file conditionally
-rather than having a huge ifdef block in swapfile.c.  Would be nice
-to get more feedback from hibnernation side.
-
-> 
-> Observations
-> ============
-> 
-> 1. While the image is written, swap can only hand out slots that are
->    already free.  Swap cache cannot be reclaimed to make more.
-> 
->    folio_swapcache_freeable() refuses every folio while storage is
->    suspended.  The image may already hold a folio as clean swap cache.
->    If its slot were freed and reused for the image, the resumed kernel
->    could later drop that folio and read it back from the slot, now
->    with the wrong data.
-> 
->    Storage is suspended before the image is written, so every
->    allocation for the image falls in that window.
-> 
->      hibernate()
->        freeze_processes()                user space is frozen
->        hibernation_snapshot()
->          freeze_kernel_threads()         kswapd is frozen
->          hibernate_preallocate_memory()  may swap out to shrink memory
->          pm_restrict_gfp_mask()          storage is suspended from here
->          create_image()                  the snapshot is taken
->        swsusp_write()                    image slots are allocated here
->        power_down()
-
-...
-
-> 2. Image slots are not freed and reused while the image is written.
->    And whatever the allocator changes during the write is gone at
->    resume, because the resumed kernel is the snapshot.
-> 
->    With observation 1, once the image owns a free cluster it can use
->    all of it.  Nothing has to be recorded per slot, neither in the
->    swap table nor as a memcg id.
-
-That's pretty nice indeed. But I'm a bit concerned about having a
-specific cluster isolation path for hibernation.
-
-Will it be cleaner to provide a more generic cluster sized
-allocation (PMD sized) so common swap can benefit too?
-
-And I'm not sure is IO batching working properly before?
-How much performance gain is due to the cluster sized IO?
-
-But if other appraoches won't work or hibernation is really
-special, and we can keep all the hibernation tricky clean and
-simple in just one place, maybe it's not too bad.
-
-> 3. User space and kswapd do not swap out while the image is written,
->    and allocations from the page allocator cannot start swap I/O.
->    What is left is rare.  DAMON pageout and the memcg high work can
->    still reach swap(This is all I found. anything else?), 
->    and both were seen running in that window.
-> 
->    So the allocator can favor the image then.  Other users take slots
->    from the nonfull and frag clusters and leave the free clusters to
->    the image.
-> 
-> With these the allocator gets simpler and faster, and batching the
-> image read and write becomes easy.
-> 
-> What the series does
-> ====================
-> 
->   1-2    fixes, a slot leak after a failed test_resume and a NULL
->          dereference for a swapfile with no block device (some bug fix)
->   3      move the hibernation code to mm/swap_hibernate.c (refactor)
->   4      skip swap cache reclaim while storage is suspended (optimization)
->   5-6    hand the image whole free clusters, in disk order (exploit contiguous space)
->   7-8    write and read the image one bio per run (batch I/O)
->   9-10   optional reservation at swapon, hibernate=reserve (assure contiguous space)
-> 
-> Based on mm-new (383fc05d4650) with patches 2 to 4 of [3] under it.
-> Patch 1 of [3] is in mm-new as 10d9012e83ef.
-> 
-> Note.  [3] gives hibernation slots their own swap table entry, keeps
-> readahead off them, and frees them by offset alone.  The single slot
-> path of patch 5 builds on that.
-
-Nice, maybe that series need a refresh to get merged first.
-
-> 
-> Results
-> =======
-> 
-> Setup
->   - qemu, 12G RAM, 4 CPUs, no KVM.  Times only compare against each
->     other.
->   - swap on virtio-blk as a non-rotational device
->   - image 5.0G, written with hibernate=nocompress
->   - 3 reps of two hibernations each.  Times are medians of the 4 to 6
->     samples per cell that no host load hit.
->   - base is patch 3 and allocates as mm-new does, allocator is
->     patch 6, allocator + bio is patch 8
-> 
-> Rows.  runs is how many contiguous stretches of the device the image
-> ends up in.  bios is how many bios the kernel allocates and submits to
-> write it.  In both cases the image fits in free clusters, so the
-> fallback to nonfull and frag clusters is not measured.  Percentages
-> are against base.
-> 
-> Shuffled free list.  A device that has been in use, emptied.
->   - 6G swap, 5.4G of 2M tmpfs files swapped out, then all removed in
->     random order
->   - every cluster is free, the free list is in free order, not in
->     disk order
-> 
->                         base       allocator   allocator + bio
->   write, s             10.60     9.32 (-12%)       7.94 (-25%)
->   read, s               9.15     8.92  (-3%)       8.10 (-11%)
->   runs                  3560               1                 1
->   bios                 1.30M           1.30M             12.7K
-> 
-> Holes in nonfull clusters.  What taking free clusters first buys.
->   - 12G swap, one 4G file swapped out, every other 64K of it freed
->   - 2G of 64K holes in 2048 clusters, 8G of free clusters
->   - mm-new fills the holes first, the series takes the free clusters
-> 
->                         base       allocator   allocator + bio
->   write, s             10.69    10.07  (-6%)       8.81 (-18%)
->   read, s              12.21    10.89 (-11%)       9.78 (-20%)
->   runs                 31899               1                 1
->   bios                 1.30M           1.30M             12.8K
-> 
-> Summary against base
->   - the allocator cuts write time by 6 to 12%
->   - allocator + bio cuts write time by 18 to 25% and read time by
->     11 to 20%
-> 
-> These are VM numbers without compression.  Compression, the default,
-> and real hardware are still to be checked.
-> 
-> Next steps
-> ==========
-> 
-> Things to keep working on after this RFC.  Comments are welcome.
-> 
-> 1. Dropping swap cache before hibernation starts, so more slots are
->    free.  This series does not do that.
-> 
-> 2. Whether the reservation in patches 9 and 10 is worth keeping.  It
->    makes sure the image gets contiguous slots when swap has room to
->    spare.
-> 
-> 3. A block device of its own for hibernation instead of swap.  Not
->    taken for now.  Sharing one device keeps the spare space useful, the
->    existing infrastructure stays, and the ideas above give much the same
->    effect.
-
-So is the idea for 2 and 3 here to make sure hibernation always success by
-avoid the allocator using too much for common swap?
-
-We only want one of them I think, and we need to be careful here to not
-make the maintainance messup by adding too many knobs...
-
-> 
-> 4. Whether the extent tree can go.  A normal hibernation never walks
->    it, the swap state comes back as it was at the snapshot.  It is only
->    walked to free the slots after an error or a wake from hybrid sleep.
->    With the slots marked in the swap table [3] and taken as whole
->    clusters, a free could find them without it.
-
-The extent tree is not a hibernation issue right? At least for block based
-swap the extent tree is useless (only one node). I think swap_ops can be
-used to make this limited to certain swap_ops (e.g. file swap ops).
-
-And maybe, the swap_ops can provide some interface for hibenation usage to
-make things cleaner?
-
-> 
-> 5. Whether SNAPSHOT_ALLOC_SWAP_PAGE should refuse a request made before
->    storage is suspended.  Such a request gets single slots from the
->    normal allocator today, and s2disk only asks after
->    SNAPSHOT_CREATE_IMAGE anyway.
-
-Is that a even a right thing to do during hibernation?
-
-> 6. Two cases are not measured yet.  A device with both a shuffled free
->    list and partly used clusters.  An image bigger than the free
->    clusters, so part of it comes from nonfull and frag clusters.
-
-I think that's fine, free cluster shuffle should not effect the
-performance much as 2M is a pretty big IO unit. For the
-fragmentation batching IO should be very helpful.
+>
+> Best regards,
