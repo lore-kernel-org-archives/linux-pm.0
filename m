@@ -1,60 +1,54 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBF1F400963;
-	Tue, 29 Sep 2026 03:15:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF3FB42586F;
+	Tue, 29 Sep 2026 03:16:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790651758; cv=none; b=CEPcfRtYP316GD1Z/Ul8KeFI661k42fnu1VwNrg2ZenpuY4fW1Oqu6RdlUXFbMRbGqhXVkKsRHqSRM91KWm3znU38HsrfoJ3B28p1xlqwZXutr/YoSV51Ik4rLKAN7r6Pcg4gh4d2tWuVY/IRzbPA0eBbs2LJ4AOyaVVLfVNyO4=
+	t=1790651768; cv=none; b=l2MYzmj9k+nvIhrnbfoHQs/FLqeNujHIEVBxh+mhGcXF0o4cAYF4HpCUP0OLYMXeFeeSOfMyOFq+JYD1ugVxiyxCBa7AwBVWbwkM8dsoIZFJvY+zwoLc6KlMDmhSrtE0Tu+WlLDkuzF3qdZoiKqtIuEaNiCHmNwhBEDoi20U3/o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790651758; c=relaxed/simple;
-	bh=rMMywrQPVotdTJXKWnA7fA/jIw8kTH4deSYUGjACCn4=;
+	s=arc-20240116; t=1790651768; c=relaxed/simple;
+	bh=oBgbWYgC+ZBrzhObpkva32WpKuS+aOXGzbQIzF9hqDE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=pIiJYJNKD7Op72WQMBWd7w486OP4Wsl0ACLeeKZvbPpOShu+RKECKY8ABIACiIBeQ0G6NXrutzvbHHkBLv552plYFOiAptOmHiRWNoQV7AqPe3pB3ZqWb8OCEU0oFLO+bCNqXEY4Qg7lSbJRORqUSIQmnN91TPdKWiZgxbfs62o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LjyA4a1s; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=Q40QCUJHUY29E57LOtPx8BcZVMRmwrjJjbc/9LcPrXgv3WL6SnF8CqxNgWAZQXDvJjWdZYjRRX5n4WkTrLmcKcMAR5vCuh6poW2aSIf5wAIb+xMiCTNHyIybVhLgR78H14e7cMWCVxhIj3IkU7xdWkNKhK4BLFJCkv7ohj4s248=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MLMiskN5; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LjyA4a1s"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C37A11F000FF;
-	Tue, 29 Sep 2026 03:15:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MLMiskN5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C18B1F00893;
+	Tue, 29 Sep 2026 03:15:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790651753;
-	bh=78W0xyGmzjQhvYh02lpflQkqZHnBUWP9h5Jo9BRQgZQ=;
+	s=k20260515; t=1790651757;
+	bh=hiGyuLuD6AP0jRy/rb60HA1xE5OCWcCwSzuvDIKtN+M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=LjyA4a1soY/+vRkBGB5ZhY8ksduABoq+kHh4nco17xL0Su00mJbnnZNkN9OL4Vle+
-	 yAFCimwT8Pnm9UfN/PEeHYWir5fH4/WHm3q2Dqj7iFnhKbwAzLelxnvtBJFN8II/6G
-	 dnHGeOTddqalSGT3BTv0qM5afuOKTasv1kkgPbcU68I1mgB9NQmbsWBmowJmeGEIot
-	 mSNZ0F/9Q3lMwAHrtf0oceHEqz6boQPZPbtTHg8jS/4IkBnPLrBN/DE2VZbjh5kJcd
-	 5lw3jAPWnFWBe2kDvrdYJjG+pIC7Qw3NNb/OAMQW4TrHu9PdtbnhF9E1t/UUXHyj+Q
-	 86n3XElhzIYsg==
+	b=MLMiskN5g/jvHVk8MTXA2yjPMOz5retjmKaqAPfT4AG+NtOLcTMKMo4MoIWRTXqDy
+	 wgX6ZxGRPh+jSyj5kf+3hGWEgzGgT0XU8Y+j/NPOnzWo+DzUZMRxkn+VIx9gX4ty/m
+	 ZceiNOanCZ16JAVpLjQSrOSOeLg42itt3Ovq8XU0ekmqkt8JxVWVYuC8i2vibJNkDL
+	 Xixmyn9KQBqDOeWJmmckWN1gYC3+kEWjrlcIQIYFy3REpha2xUDuNdzYGb/oYEXiua
+	 zCZCiZhabyoea/j/QIEI8yMNUaxSwpgwVPQPHK95wdAJyy2kY770Lf2IyUN8qfT0J9
+	 ocrdqss+MJLUg==
 From: Bjorn Andersson <andersson@kernel.org>
-To: Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney+clk@redhat.com>,
-	Jerome Brunet <jbrunet+clk@baylibre.com>,
+To: Georgi Djakov <djakov@kernel.org>,
 	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Georgi Djakov <djakov@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney@redhat.com>,
 	Konrad Dybcio <konradybcio@kernel.org>,
-	Varadarajan Narayanan <quic_varada@quicinc.com>,
-	Dmitry Baryshkov <lumag@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Gokul Sriram Palanisamy <quic_gokulsri@quicinc.com>,
-	Sricharan Ramabadhran <quic_srichara@quicinc.com>,
-	Kathiravan T <quic_kathirav@quicinc.com>,
 	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org,
-	linux-clk@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org,
+Cc: linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	stable@vger.kernel.org,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: (subset) [PATCH 00/11] Add a few minor enhancements to the Qualcomm IPQ GCC drivers.
-Date: Mon, 28 Sep 2026 22:14:49 -0500
-Message-ID: <179065171028.2673486.10540547681271836423.b4-ty@b4>
+	devicetree@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v2 0/3] Enable icc-clk support for Qualcomm IPQ9650
+Date: Mon, 28 Sep 2026 22:14:52 -0500
+Message-ID: <179065171040.2673486.723562378764431827.b4-ty@b4>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260921-ipq_clk_changes-v1-0-d242e3d49648@oss.qualcomm.com>
-References: <20260921-ipq_clk_changes-v1-0-d242e3d49648@oss.qualcomm.com>
+In-Reply-To: <20260811-ipq9650_icc-v2-0-55b8efbd62c6@oss.qualcomm.com>
+References: <20260811-ipq9650_icc-v2-0-55b8efbd62c6@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,33 +59,21 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
 
-On Mon, 21 Sep 2026 11:49:33 +0530, Kathiravan Thirumoorthy wrote:
-> This series adds USB, NSS, and clock-related updates for several
-> Qualcomm IPQ SoCs, including:
+On Tue, 11 Aug 2026 21:23:07 +0530, Kathiravan Thirumoorthy wrote:
+> On Qualcomm IPQ9650 platform the interconnect busses don't have separate
+> RPM / RPMh controls. Instead they require direct votes through the GCC.
+> To unify hardware descriptions (and software interfaces) between this
+> platform and other Qualcomm platforms, make GCC export corresponding NoC
+> clocks as interconnects.
 > 
->   - Configure the USB UTMI reference clock to 24 MHz on IPQ5018,
->     IPQ5210, and IPQ5332 to fix USB enumeration issues.
->   - Wire the USB3 PHY PIPE clocks to GCC on IPQ5424 and IPQ9574.
->   - Add NSS MEMNOC clocks and corresponding clock and ICC IDs for
->     IPQ5424.
->   - Connect the IPQ5424 PPE clock to GCC and document the required
->     clock input ordering.
->   - Add UNIPHY XPCS reset definitions required for NSS support on
->     IPQ5210.
->   - Fix IPA-related typos in the IPQ5424 APSS clock driver.
+> Add the necessary bindings and the drivers changes for the same.
 > 
 > [...]
 
 Applied, thanks!
 
-[01/11] clk: qcom: ipq5018: add 24MHz rate for USB UTMI clock
-        commit: 0fe2995196a5973e226f506c9ec705f0dccec82f
-[02/11] clk: qcom: ipq5332: add 24MHz rate for USB UTMI clock
-        commit: 33e6a4864ddc4824f8a9505a97232b7879eb5528
-[03/11] clk: qcom: ipq5210: add 24MHz rate for USB UTMI clock
-        commit: 0336b65aef4721edbc01073dffdf9bc12673f0e5
-[04/11] arm64: dts: qcom: ipq9574: Wire up USB3 PHY PIPE clock to GCC
-        commit: 117d8d40be1ded4f35f3252efa83607a7134d5e0
+[3/3] arm64: dts: qcom: ipq9650: add interconnect-cells to GCC node
+      commit: 5187d5790a7945362ca8133b937c0af8b770542e
 
 Best regards,
 -- 
