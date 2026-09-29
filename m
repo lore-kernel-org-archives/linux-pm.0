@@ -1,33 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68C714772BF;
-	Tue, 29 Sep 2026 08:39:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C029848CD7A
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 08:44:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790671179; cv=none; b=qWqm9h106BeiusAVvbtqr5I5CJRkepdLFCn0AIBK9PP5bxRIgjpdtVLsI6BnpkL5mozyLMGKbUIifI2+nCjPcYbs7WLKywjza9QbfwL2q/BZM3+UiZSiR72EJcLSedF1YKR02Td2VRsKG61JQOB0TG4IPftGY5c4MkGKI23Wb3A=
+	t=1790671444; cv=none; b=XpFyOL4FPqQ7wLsvU6Gd+OQ068jChwnTTynwlGWwzlqsYsPAWhmHhBlilT+d1ELLR9xeGpFqPfWtJ3XewJQBcX3X70K9ViaHTaJ3f6cHRDxM8qFXU1q3QdVgYxK5sWMknm+AOfTetmhGamHS7VgeU2feLhDEQELWrx8yKyKc+9Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790671179; c=relaxed/simple;
-	bh=9XLVLnpAd04sheys1cEFbNRxuH25X5RyWkhQaJt/wZw=;
+	s=arc-20240116; t=1790671444; c=relaxed/simple;
+	bh=PW29nh6AHKIAfInJuhHm2rTl7ZNcfWfYAnmTTwkdspk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aJw7xr3iT/2ltKwk7LoL+EX0KPTrO4oiyPhsp/PbsB8D4l91GPDbyHH0FyhsgT45g00ZpbvnHNIc+ms3L+dhNGdW7txoLK6AMcOoM7qGTgcZwrWejsgzhEWlApRKs8aREuGpqs3pFvBmEYFUnCA9mlS78kJHnPBq4w9Il7Gv0dc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Imd8QD70; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=bg/c6YCK8LpdWZC39fUJT5l2WCdNPVhE5b1uIMTEv5mSWYlR5Fj0EQk78FAFB2/yN+bdOI9NKfd4sOs0PcW5Bvjmi9ZAbuQi5YulyhySzSfx8q0mc0EcGEzLuBMIG4DpJtsZSmnewl472dQSn8ouCAfNND1/F0kfb0mne5WW1XA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hrL6QsEX; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hI9m2mjh; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Imd8QD70"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 500C71F000FF;
-	Tue, 29 Sep 2026 08:39:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790671178;
-	bh=APDT/Ge7NyqJm0LUEW4MYf/ImZiM+AqEbii4Z4M87Zc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Imd8QD70VLom82XyvrlV2U0dHQnHRjGOV7ix+4uE8cEUrr0obacbMCo8eJgn/fhVS
-	 L3oVS8OuztmV/SF00n1dG94dzumISFWsr+t875TzEeepJWgSXDAcvQmFGt/akTvu6E
-	 JeA+kKd0HtLXpe80LOvKyEU6bFPWrhE6UDGyTEvUi/lj9Z96JW8GpXhBZUq1LxSkcz
-	 mWurn+2V4ps4NyVKxqqj223uzkFK8lWkD+V+3To7+JJzpCl0dXoyJwstTqGsa8x8qH
-	 Q59kIplYv9lqLWJ5/jVVChT0NUOk8cCXFafvlP6y0qUTMgGMXk6SeoaMmFeltnNMWy
-	 KyWHDBLfBw0uw==
-Message-ID: <8df7fdb2-813c-402c-99c0-9de6b0dbcd0e@kernel.org>
-Date: Tue, 29 Sep 2026 09:39:33 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hrL6QsEX";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hI9m2mjh"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68T7Tp1x3435194
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 08:43:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	IrKwOcgAyyYp97eQvpSA/WpL5HLMDhjcoFZkd6DMhmQ=; b=hrL6QsEX1aXwzaj2
+	/nmBYfgLXBUNlA8EIbp0Q/hWDhvaDrOksMM+nuWhdijbF9KSuiDtuuPBxzp87CEN
+	PO/rFxo6wnvJOxPbCMI3s6Nxe3q7WIlFNx84bSDhLETTzX0+Cak0oI2xgUprLI3e
+	2LmHZ7mw8WtDQAtkA35Wf72wmhWVIEwiFWHT3lz3FNAK5qW5hsR6MIiqY5Y7yBte
+	xZ+iAWWPuYNRVju0Kxw15UQYufFusVKzFByXfC+kd2tn0n5xotO5Y6ljJa8WQZKX
+	dWcxv939+CrjOu0O91Nj3Uz08vRaZPjMthqWdNAq1Su2uy1dE1BN3/ZI18jC/wJG
+	Zk+/NQ==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gyvwnb3e5-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 08:43:57 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93a3f673221so1117640885a.0
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 01:43:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1790671436; x=1791276236; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=IrKwOcgAyyYp97eQvpSA/WpL5HLMDhjcoFZkd6DMhmQ=;
+        b=hI9m2mjhFvvbiKUZrdpycZjv/u8moN+vxbpnBn3g7eTVL+cRxnz6/XtJ+U+PKhyyVt
+         bHaS6hNFk3V1JGNopfFlvUdrGraYEUhDRl5DyTSBYwuB9NPlYH1YN191h85IQuG+53XZ
+         atTxo71ieXci3KTp/t82mK6cGQ5jHItmOuoYOzMnO9DFyGSqeA+gf2UlfWunE0ZTqtM9
+         +pb/yv0hCQTyvl5pjlIrVcknwVZVqaTo1uE3nmBaKGsfVRclki9/8wexQNrLwlq0cBhA
+         qKl2X27SgOJrHOtmCGbeWBMC76XUHkOvIs1fMxQu6FJCZQsX/jveVkuIRaqmzEjCwfI9
+         ZaHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790671436; x=1791276236;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=IrKwOcgAyyYp97eQvpSA/WpL5HLMDhjcoFZkd6DMhmQ=;
+        b=IP659ggRZvLr9nL2ZhOK/ghEbedOELlUirGpztFl5YBcnlWnSe3tdZtTKwjEJYxXCs
+         UFwFfcw3PUisU6R/zHwpAgVztDph4pfNhKWs8hNpxQ0BdqxdWQe4tN6tVePfrUMZmtyo
+         eW1UwmsJeo//6tZmGaTKq6/7ENKzbdnatThaTt9NbyyqD8M/CDd0prcuTvCqbqvXliSx
+         B1RqYGzXJ2L6z73uVJdX8Qfhsi/DJLDICzeQ3H5g1Yiziu12Uklu5miLnx90jVF5RGhR
+         gnkd0xACKJ7GeYlahWN4mobHkf3/MXETzge/nafZmR9wU3yF/qBFj4Q1uEZxYpt468T6
+         XnNQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwQfoBnyayDIgsV2nYYWBEhad7GXByHMzxLbANWnzKT09a62dwjVMmnKsWMDViu/g+0qMNF36PcvQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++kVBqx1+xHFJOzOwBRzbXx4/DjD1QwIhs3KALqVN7AwU16NnVRw
+	i1z75pXr5CjtNHNQlxf9jlsB7H+sLJhEhuO4CewGNAtX/+AwOIGjXYPnCjVl3MaIf4Kh2rZLTPC
+	7t5qKjIMKqc5RcMmpOC2EAZaf8FoSUGgdz/+El6ErCNatU8tws/B+879jhFzgzNatK7hYJA==
+X-Gm-Gg: AYBFou0XWjXjjSd3oJSGYcc8hJnekP22JCyhFbySbu40o2DmbflNDFhtYHASvQO+YvD
+	UohmO2I1expnZc5UN8E32H1o+Kvc/i1tuLAxw/1qd4A21nqg76MDLKAiSU1ieD18HlnZ1EgG4F1
+	N5tbI0Kvzv+dRyvqbDMHuhwVleXBgyerkqz4XPzQohuH9JI2jKWfQEFj4JrJQNSDeAp4mdX+gVE
+	kRZQ7ez3c/zlEUOO2kfIpW9uACb9rr021+Uj7q/nl6/k8Gaw4yfN7jm3tXCjNhNQ4E7LlrGnRqU
+	ztpIR46W0TywITWefIOKm3ks0hFhvU+zKRYOUZ1So+LeMyhdnoqKax8hb8xyzxpX173flAWUqlJ
+	73lc/vyBw3IdETESg3gh171zXiHFrNp+iebJ6NhmBVONYqA1+h46b0SbNUB0NXg==
+X-Received: by 2002:a05:620a:8906:b0:939:de48:e41f with SMTP id af79cd13be357-93c4749888cmr2363839285a.31.1790671436417;
+        Tue, 29 Sep 2026 01:43:56 -0700 (PDT)
+X-Received: by 2002:a05:620a:8906:b0:939:de48:e41f with SMTP id af79cd13be357-93c4749888cmr2363836785a.31.1790671435949;
+        Tue, 29 Sep 2026 01:43:55 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7? ([2a05:6e02:1041:c10:7d20:e20f:a77f:4ef7])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48af507611csm2211528f8f.22.2026.09.29.01.43.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Sep 2026 01:43:55 -0700 (PDT)
+Message-ID: <a2b8e238-7f40-48fe-85c2-f8e52041b3e6@oss.qualcomm.com>
+Date: Tue, 29 Sep 2026 10:43:53 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,113 +89,135 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/3] Add Qualcomm CAMNOC ICC provider
-To: Atanas Filipov <atanas.filipov@oss.qualcomm.com>,
- Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org,
- linux-pm@vger.kernel.org
-Cc: Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Gjorgji Rosikopulos <gjorgji.rosikopulos@oss.qualcomm.com>
-References: <w3u_oVZRxmZkAlC5RmxuB0v5k970jezsVHDZvryQ3oYkStqmsp79LjODiA0mYkNl1jkRya-7Ncvk8KGrE1vnUQ==@protonmail.internalid>
- <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
-From: Bryan O'Donoghue <bod@kernel.org>
-Content-Language: en-GB
-Autocrypt: addr=bod@kernel.org; keydata=
- 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
-In-Reply-To: <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
+Subject: Re: [PATCH v6 1/7] thermal/drivers/loongson2: Correct thermal sensor
+ registration loop
+To: Binbin Zhou <zhoubb.aaron@gmail.com>
+Cc: Binbin Zhou <zhoubinbin@loongson.cn>,
+        Huacai Chen
+ <chenhuacai@loongson.cn>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>, Yinbo Zhu <zhuyinbo@loongson.cn>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Huacai Chen <chenhuacai@kernel.org>, Xuerui Wang <kernel@xen0n.name>,
+        loongarch@lists.linux.dev, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, stable@vger.kernel.org,
+        Sashiko <sashiko-bot@kernel.org>
+References: <cover.1790561983.git.zhoubinbin@loongson.cn>
+ <502911659e15a51c4e98c11f3cf476dd5f92e75b.1790561983.git.zhoubinbin@loongson.cn>
+ <0aaf7166-378c-47d7-98d4-1004fdaeae7b@oss.qualcomm.com>
+ <CAMpQs4+uWMfFib7MhRcc7o-QMXkFrFCtdcGj04y56u44JL4iOg@mail.gmail.com>
+ <ed99f62d-cf90-4ba9-89b3-08dbe7f7227e@oss.qualcomm.com>
+ <CAMpQs4+hATFf+0w6Wq09RoZB1JJ5L_GP0aWxcGAeraTW7Gfy0w@mail.gmail.com>
+ <8eba263a-c233-42c5-842e-7487ea36d5aa@oss.qualcomm.com>
+ <CAMpQs4JvLOUv3o8tktg-EOT85KCunY9gJhgxQVkZEXPH_C+4EQ@mail.gmail.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <CAMpQs4JvLOUv3o8tktg-EOT85KCunY9gJhgxQVkZEXPH_C+4EQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: wWpyUIYtgJeZ0I0wzZmbJIWGb-Xa2f7o
+X-Authority-Analysis: v=2.4 cv=W42txhWk c=1 sm=1 tr=0 ts=6abb7a4d cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8
+ a=AP4mLQHTS3Hkw8D5x4QA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDAzNCBTYWx0ZWRfX8IEqlQOk0aoT
+ orf+ChPcfwOzT/EzmuA5AjqnRB/b91Tpg955is9cCObsHLrr4AsQQ4OZoxcA+Zt4912nvBumqXj
+ /vVpYH6BXsl/zVVSYai8tn0/SahvN+cFka5yOe7VuIUb2zuCoHp/wzPosIHVG4WeA91RwTC0bVF
+ cKqYxli3kj8DZDwQd+8BaVfBS4b1N44MHsYc48k/zUah6i6YwB9wV9IB5bMdk0fgSPXRPkTbrzG
+ JXoXtZErfsIqKJrrxG5YKU6WV19tBRQK4L4LUj4iUdybXAmvaE+Rwv1Y2ygfCNy4WcMqX0UdK56
+ D/tl0l6fhiuCpZr1E6dOfqIf1iIZ5eXEFlTYofsFU0Z+W5BHeENoeQh6Wm3HLjf09FqLVJl9OC8
+ C9AnkLPwNamUD6y8W222IVgzJMnwF3fYbtA0Js3dt3S5PVATGCkewP+nmWmiBX8zrOWXiVu9q9+
+ 9EukZvD1GpsZYt/JaXQ==
+X-Proofpoint-GUID: wWpyUIYtgJeZ0I0wzZmbJIWGb-Xa2f7o
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDAzNCBTYWx0ZWRfX6cjYIvEUcvl/
+ zzft1WESJhR8Takp8PSsPb5v3xfIquHZ3eQ4qBOsg+VtUgIcJAhegJ+jIHrnq309EbGsATkrsHl
+ vaGR+kQtn0F/yqN0Wlc3vH2LRH+wdbs=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-29_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 lowpriorityscore=0
+ adultscore=0 impostorscore=0 malwarescore=0 clxscore=1015 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609290034
 
-On 19/08/2026 10:32, Atanas Filipov wrote:
-> This series adds a device tree binding and driver for the Qualcomm
-> Camera Network-on-Chip (CAMNOC) interconnect provider for SM8250.
+On 9/29/26 10:23, Binbin Zhou wrote:
+> Hi Daniel:
 > 
-> CAMNOC is the internal AXI interconnect within the camera subsystem.
-> Multiple camera sub-devices (IFE, JPEG, BPS, IPE, etc.) share
-> CAM_CC_CAMNOC_AXI_CLK. Direct clk_set_rate() calls from each consumer
-> cause a last-writer-wins race. This series introduces a lightweight ICC
-> provider that aggregates bandwidth votes from all consumers and applies
-> a single clk_set_rate() call.
+> On Tue, Sep 29, 2026 at 1:46 PM Daniel Lezcano
+> <daniel.lezcano@oss.qualcomm.com> wrote:
+>>
+>> On 9/29/26 05:06, Binbin Zhou wrote:
+>>> Hi Daniel:
+>>
+>> [ ... ]
+>>
+>>>>>> Please make a less cumbersome and implicit checks here. For example
+>>>>>> count the number of sensors and then do the check against.
+>>>>>
+>>>>> I thought about it, and you're right—I made the logic here too complicated.
+>>>>> Let's use `sensor_count` as the counter. Is the following check logic clearer?
+>>>>>
+>>>>>            u32 sensor_count = 0;
+>>>>>
+>>>>>            for (unsigned int i = 0; i <= LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
+>>>>>                    tzd = devm_thermal_of_zone_register(dev, i, data,
+>>>>> data->chip_data->thermal_ops);
+>>>>>                    if (IS_ERR(tzd)) {
+>>>>>                            if (PTR_ERR(tzd) == -ENODEV)
+>>>>>                                    continue;
+>>>>>
+>>>>>                            return dev_err_probe(dev, PTR_ERR(tzd),
+>>>>>                                                 "failed to register sensor %d", i);
+>>>>>                    }
+>>>>>
+>>>>>                    sensor_count++;
+>>>>
+>>>> If I'm not mistaken in the previous version, the loop exits at the first
+>>>> registered sensor
+>>>>
+>>>>           if (!IS_ERR(tzd))
+>>>>                   break;
+>>>>
+>>>> Here all the available sensors are registered
+>>>
+>>> The name `sensor_count` might be a bit misleading, but here the loop
+>>> exits after the first success:
+>>>
+>>>                   sensor_count++;
+>>>                   break;
+>>>
+>>> Let’s rename it:
+>>
+>> Can you clarify why only the first sensor found stops the thermal zones
+>> registration ?
 > 
-> Changes since v1:
-> - dt-bindings: add all SM8250 CAMNOC master port IDs to qcom,camnoc.h
->    (IFE 0/1, IFE Lite 0-4, BPS, IPE 0/1, JPEG, JPEG DMA, CDM, FD, SBI,
->    ICP) with a short comment per group (Dmitry Baryshkov)
-> - dt-bindings: add IFE simple consumer example alongside the JPEG
->    OPP-based example; clarify opp-hz and opp-peak-kBps semantics in
->    comments; fix maintainer email; align provider node name with DTS
-> - driver: register all SM8250 CAMNOC master nodes
+> This section of code is based on the original version by zhuyinbo; I
+> noticed that you’ve had related discussions about it before[1][2].
 > 
-> Atanas Filipov (3):
->    dt-bindings: interconnect: Add Qualcomm CAMNOC ICC binding
->    interconnect: qcom: Add CAMNOC interconnect provider driver
->    arm64: dts: qcom: sm8250: Add CAMNOC ICC provider node
+> I’ve reviewed all Loongson-2K CPUs that support thermal monitoring,
+> and they all have only one temperature sensor, with “SEL” set to 0.
 > 
->   .../bindings/interconnect/qcom,camnoc.yaml    | 124 ++++++++
->   arch/arm64/boot/dts/qcom/sm8250.dtsi          |   8 +
->   drivers/interconnect/qcom/Kconfig             |  10 +
->   drivers/interconnect/qcom/Makefile            |   2 +
->   drivers/interconnect/qcom/qcom-camnoc.c       | 279 ++++++++++++++++++
->   .../dt-bindings/interconnect/qcom,camnoc.h    |  52 ++++
->   6 files changed, 475 insertions(+)
->   create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
->   create mode 100644 drivers/interconnect/qcom/qcom-camnoc.c
->   create mode 100644 include/dt-bindings/interconnect/qcom,camnoc.h
+> As I understand it, given the current situation, the loop here doesn’t
+> seem necessary—physically, there is only one temperature sensor (even
+> though its SEL value might theoretically be non-zero).
+> `LOONGSON2_MAX_SENSOR_SEL_NUM` does not accurately reflect the number
+> of temperature sensors; it is merely an interrupt input selection, so
+> using it here does not seem entirely appropriate.
 > 
-> 
-> base-commit: 9e970952a9503d6ab471a2fea4c10b6a2785406f
-> --
-> 2.34.1
-> 
-> 
+> Therefore, I believe treating the Loongson-2K thermal driver as a
+> single thermal sensor better aligns with the current hardware
+> behavior.
 
-I'd like to see the code for actually _using_ this in CAMSS, seems a bit 
-incomplete without that part.
+Sure, if the Loongson-2K is only one sensor based board then no need to 
+have this loop.
 
----
-bod
+In the future, if there are more sensors coming with a new board, they 
+can be described in platform private data
+
+
