@@ -1,274 +1,197 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 128B551615D
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:38:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86B11516176
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:44:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790681927; cv=none; b=q9ehNATpWURRtIbk/eavEu5RgqKh1nGjKUNVZnUos/cDtGMeD/Oa2DuCQJz/bDGGPr0hHGcLv6iYeJwLALR4H5Hv3IUk042j6qR/21UVo5QJPf1/UNhXAmQzICfibPSEJzTFURGFDlLkpH9v0geixhidlsvdnH+/sUwLrk98TRE=
+	t=1790682245; cv=none; b=HT75zJxmgUDj6WlCaSA56vIZ9NMDWW6ZGXYenpm1WJ1HavME7e/EDFDnMl8utTGRaXqho/8A3U7xlaVnQH7pfKxjKfInil46zkVjW8cT/2rMD7DaqVYS+DA+dHhRB7sUsj9F986aEAj8XG3D5E6mDVsEhHm5tBYExq1pvYBW+pI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790681927; c=relaxed/simple;
-	bh=IRkPQ48QnFX19GoN/M4c8BIX+Ad9l2A+S+ag7idBrDI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ETQ8zsxc7Hn9aX31pFBAiWjFO6DZdcyM7NBGcMdO7/qCwIp5YdlsYsRsPuQ9UozosOm8RuTBe797eXHpH+ckWDS1BCXCNNOW4f1ULpVE9e7FMxi2IdxxtNt5Eg0vb+yys5MQHfkPOJ+rIHpuIPGY0YnPT+rOnkCmAJsmzFoN6HI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Y+ToRTXC; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OYB3IP9P; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1790682245; c=relaxed/simple;
+	bh=vqE74hSqpullA8LLZ475ZN4prtKm1cvbqlh6+zEdAYI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jYluIBv/srM9O2G1X5RHM4KPzjWMCwccGT6emr6/R2kjfaqQ/16E0kaJovNS4f3I4/x6HJbo146gFplf8rKrjxnxi7KGfZe4gwuKooavzPjRDw4llnzZzRwwY63pQLL33L4K8jAyFRuELjPxPSKbNWz178LPEvs2C8cjY/rmd1M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=W2a/30ZG; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=MkKWnaQF; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Y+ToRTXC";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OYB3IP9P"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68TAj6q4335139
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:38:43 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="W2a/30ZG";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="MkKWnaQF"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68TAilNG3561519
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:44:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	sjuBHnNOqcpw5ApUs2RooCq8aTsOYyQ4QeK2GhXHYlI=; b=Y+ToRTXCNjUAfeFE
-	C/6ElZeFVpKv0drkZ59SiNBa+mh/wd0ne1qZtFd57k9DSn4zDhaGZvxxXJzDztYF
-	6VVedoYihiJ36xnYCLBMCqeCNntkxyElKg/T8/aqvBKPIWfOzjHaC6zVcb7wiLGs
-	hAtoOwhPMnm7C/YPyd5xuWTafLsMyAGzth881TIVaaHJpOPufD5fcR/PVbrWSzR4
-	ZDf4o9vx3iJm0Fnr9VIFNneyuNH3yRvvTht1sgj3j14CqUiJOfRnzYLGYSDf13AD
-	0pUl7dnf++XUSCbk3wcyFN6S2uBw9WRw74yJC/5tcPwxKQ6/lvdkbwCgS6JcxM5t
-	zy5wbA==
-Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h03ew27ey-1
+	X+ukk1SWi8NzAbh3z6v2PaRAJT2YQzW/pe/nUUSijms=; b=W2a/30ZGjxUjRudd
+	HL9zqrdJZ/JGZrpE9qhefBa4KGXfjdWghvRWSRJHB7/LgoBicLjGoO5Y7vAoAiXg
+	13XoPgS0VtFIBvdwhfUAN5Rn+3tQ7nOCQmtSN96WH2AzdOBISWDfa9gbK3pU/iCE
+	rfey8LqpAvN3LOIkvQ6raCtyAbNSM9OabjpEvlL6a8oBk3xKKSyuhH7Ia+RkP/2B
+	1S+zzCOT1HU/zLZMtERCDN6MeAQZLcMl2cw8q+uUUEAG/jg+FJnlpUbXF4vSRtk2
+	pvrpGM6MDbjCwp6nv5IK2ld2lyF2bTVHvatFdkdOPljt0wjd+TdyCH6taihMOJtq
+	VJCr2g==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h0b0v8f2s-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:38:43 +0000 (GMT)
-Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-34afa104860so1096992eec.1
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 04:38:43 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:44:02 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93c614646e9so451309385a.0
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 04:44:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790681922; x=1791286722; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=sjuBHnNOqcpw5ApUs2RooCq8aTsOYyQ4QeK2GhXHYlI=;
-        b=OYB3IP9PGBAV9ZEzdIVXCwsJdxhNEVZggdJyQ3jqrq0rqUtSziWhBpAGGVR89sjhs3
-         fWnJrfUnFDenRBnA5QGyHf9D7+Z8rwAiMABPL7RiRnUbhTYNo4T3+f8tEuN0k1XlJyn5
-         vC39I9mPs2mvJzcgzBKmp29p4WEggiDzh4SLDUQSgvJk+FBpi9j2E/0STSALv/STc60u
-         76QYN4nL3x7zXgaHzBmRmeAcqrrFOudN3PJBlms8KOwyt18rdrt69ZCOGMOqhzJeIynB
-         +Axb9flijYtUd8KkzJp9uhVq8M+Jtzl1SdpQQmTl6YbHNFJHUUvoa6+HMGzNygMahZKy
-         famQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790681922; x=1791286722;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1790682242; x=1791287042; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=sjuBHnNOqcpw5ApUs2RooCq8aTsOYyQ4QeK2GhXHYlI=;
-        b=0UEyvXuk980jD31RJR0Jg8k90e7zjujozV3hSaIGFXCr4OJ2FvsggC+L55gE+t+qr8
-         uwUosNBYK1vcSQRUwKfD17hUcvxbgq7CFtoNCksJR+CsICsGftW2OM0aZNXT6UIlcXzL
-         4rFnbSgMtDLPX6CbrE1jzHDHpE/hI0MlHlgZGZmpQC80HVo2q//dpc6tBA6D9kaN+sWd
-         YKWoABeiQI0O2S4wDMx0wJQH1i3+832/gvZm3ATpRr94UGoCedWusxBcHBtrb7eeEf9b
-         8x4N73dQPEzNIyroZna9wY3ZPQC/+U9CmwtIzCt+1m+7Tsj5tv3I9LpccEflI7g2jlgk
-         gebw==
-X-Forwarded-Encrypted: i=1; AKwUvBzeq0oOUJIrlPm2YIM6b9qBd9qW7rmQq9adnx3KTIrIIpaQLeVhp/YDdl8xHvX3u8ycRcSb3W8ARg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLgDvqJmXWTDpHndWo1rjBvEmTCNwsatGzrbItOpEGR8Fs2zJf+
-	uicDc4wA9RiBngvYfN3sCzUC85gK5Shcrh0Kj3fW200Ue7zVdDr0YlBSQgl+EViVeLhU8y/zst7
-	PJruJRb3CCE9dY4LW+h+tgnUMRrhYKRyoilV7e1qTL19HpsXwBsr7Yy7UkT30vw==
-X-Gm-Gg: AYBFou0MpA69SWU/KgmMjk8nrZUz6voPfAvzOCRKG53HIavRcdu0Tdb2CineZN2PHNG
-	e3+yJuWSF1dDCOhY2TJmPIdwdgkXVi68GbANMpF+qGjbFFhv/JWqOIbHatvEzm/ymwv4weZXfNN
-	yKJ5WjKzuX7n7+vt5sZSPakMGyyX8q0ac9hsrTx8+dddbS6mSWWGTqqU22xW+yEJ5R9AzNUO7BN
-	EaR0TtZs1XTjlpYukQyU/otwW8zoyHXPWy5jRr9ijiG+FgqzpRRtkY/ZIjGWujU7SApSB0Edfq1
-	U6trZHOslFMn2XsNMpwfS86THT5CWtdCLUEIahSKNpIAoerU2t2cehGMJ0LBWJh9rjcycot1xIW
-	y2AytLkvoJsUL6w5z4umsj8kPPw75DT+MKJltaMmYdAdbx30q18LNpKb5x14H77UvFcG4+n79Re
-	Ay95rPkHVmlYL3gnE=
-X-Received: by 2002:a05:7300:b90a:b0:343:4dcc:d29a with SMTP id 5a478bee46e88-3434dcce606mr16197163eec.28.1790681922089;
-        Tue, 29 Sep 2026 04:38:42 -0700 (PDT)
-X-Received: by 2002:a05:7300:b90a:b0:343:4dcc:d29a with SMTP id 5a478bee46e88-3434dcce606mr16197123eec.28.1790681921508;
-        Tue, 29 Sep 2026 04:38:41 -0700 (PDT)
-Received: from hu-anancv-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34145d0fc9fsm37145604eec.25.2026.09.29.04.38.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Sep 2026 04:38:41 -0700 (PDT)
-From: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-Date: Tue, 29 Sep 2026 17:08:07 +0530
-Subject: [PATCH v3 2/2] cpufreq: fix policy max not returning to non-boost
- freq on boost disable
+        bh=X+ukk1SWi8NzAbh3z6v2PaRAJT2YQzW/pe/nUUSijms=;
+        b=MkKWnaQFw04Qo9Vi691c/10feQR90neXxbbl5X4WUsVC9Tf0XClnxgaxW8oInPorNd
+         yEJ4OtdgUJInV2PEk0tE84MhdrpG5TtDLF8UYC3t6dHAwg6DiBT0W652cLhGlVH2UYpR
+         b8lVfD7Db+kvbQHLGtNLriXoc4FVN9LaUcCZ9PduPWn86LO7WVt8C01fiIS12B+1WMZq
+         5BL/15W6JHCWkC5nRGssgKQbHnCupXDI83+deTOqjGihSVy7OMVkw/ePOLzLUAzvsSXs
+         jxHl6lrbceBcWpxc0mjyCq8VUGdHM2ayLPcPAduyMVZKVwsq5Pzyr+YWqENnVHyvfSCq
+         EYLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790682242; x=1791287042;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=X+ukk1SWi8NzAbh3z6v2PaRAJT2YQzW/pe/nUUSijms=;
+        b=xK5NoqOd5oOhZLPhNHx9rWj9YCpan4H74d2aqkckEg1iv9xc+HY4r5iMWDSr3iT0IO
+         dqI9k73NmEmEdGhEZZMUIAvmjt9kzHCCrnJ3TlrNtX9tJjVsgpu2bBbz1z3kYtcqqEAz
+         Y3LIoFVf5x0pIp6r2v83MnyQuocAtsx4w0pHUsdrnlYWrKeML20PBmye6FC5nmy9OyoR
+         gIzGhfvQaW1cdW1ZaFIH3uGdjtwun1pC87hfLjfWUakZOEv4MW6OjoGEnOfX1Ep4vqUQ
+         cXDy6Ov+CAtecCTryXVxtWtooSvQqF4jfWjArt+JeOIl756VBFcD9px4yHfx4H4j8CvK
+         NAoA==
+X-Forwarded-Encrypted: i=1; AKwUvBzi5HGuGGLMd4x05rhNzRIiGkDL4EMZJq64vaccKJjj9e5VQHlfVV0lqXmRX5FLixT9/LUUrYVHsw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lIZigKmLDOCS0D1syV88yktiM1qbiSx8PKfYsK9uLoSBXuu/4m
+	95x7dHrJfhyn6G5K1XmDMX9Aw27xpB79xuyeKkJRj8CVdkCOg7q4kURbh+SMrO4lLKS9KSTxD+L
+	5+pi/5w28cy/fOkSy8GokLPCrBGdy7FTmro4y2SVTCQ+kY3hTWxMmyTdX5RDuVw==
+X-Gm-Gg: AYBFou1mpyBqRRe88bdXvibd2nASDyhp54xpkN3Vnkg41mjrcq+6JT2Qebu9AwIIs0c
+	qL1ylrp+69rruQayWM+mlz8GP3ozRc5513wUx299Xs82PYWWlUq5LjPRWSTLypQqh34K6UDFf9W
+	SfdicZHsZe7V9iBWEhKtcKSKw613kGvXYyH8hBabLF1sxbpK9VUne0AuTXZjIhLBKJemVO+vQWN
+	/7s1slJQM2nwOkHdJnxmh70aiPEkv4JuvYBVDTeBi0U4MmToX7ehg91pew9aCJK7vmckvpHVKVy
+	Uoyq9/rQt8/8asYg2Fjim9qNZmy14VTFkKrYyUa5E3rvZZwj+HTF0K5vDID0ORAAMfYGSTrgReT
+	8lxBm3jEVjXpgTQ26i7+bwG0kfKbR5l+s0SYgvIw=
+X-Received: by 2002:a05:620a:404d:b0:939:9f51:29a0 with SMTP id af79cd13be357-93c43ce6b41mr2573894185a.50.1790682242318;
+        Tue, 29 Sep 2026 04:44:02 -0700 (PDT)
+X-Received: by 2002:a05:620a:404d:b0:939:9f51:29a0 with SMTP id af79cd13be357-93c43ce6b41mr2573889185a.50.1790682241809;
+        Tue, 29 Sep 2026 04:44:01 -0700 (PDT)
+Received: from [192.168.1.31] ([85.196.172.179])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a00cf2d973sm86145495e9.0.2026.09.29.04.44.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Sep 2026 04:44:01 -0700 (PDT)
+Message-ID: <63cc2480-a8b7-460f-b89d-8526cb17db36@oss.qualcomm.com>
+Date: Tue, 29 Sep 2026 14:43:58 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/3] Add Qualcomm CAMNOC ICC provider
+To: Bryan O'Donoghue <bod@kernel.org>,
+        Atanas Filipov <atanas.filipov@oss.qualcomm.com>,
+        Georgi Djakov <djakov@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+References: <w3u_oVZRxmZkAlC5RmxuB0v5k970jezsVHDZvryQ3oYkStqmsp79LjODiA0mYkNl1jkRya-7Ncvk8KGrE1vnUQ==@protonmail.internalid>
+ <20260819093211.1436275-1-atanas.filipov@oss.qualcomm.com>
+ <8df7fdb2-813c-402c-99c0-9de6b0dbcd0e@kernel.org>
+Content-Language: en-US
+From: "Gjorgji Rosikopulos (Consultant)"
+ <gjorgji.rosikopulos@oss.qualcomm.com>
+In-Reply-To: <8df7fdb2-813c-402c-99c0-9de6b0dbcd0e@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
-References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
-In-Reply-To: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Jie Zhan <zhanjie9@hisilicon.com>,
-        Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
-        linux-pm@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Oleg Keri <okerixx@gmail.com>,
-        Ananthu C V <ananthu.cv@oss.qualcomm.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790681906; l=4806;
- i=ananthu.cv@oss.qualcomm.com; s=20260903; h=from:subject:message-id;
- bh=IRkPQ48QnFX19GoN/M4c8BIX+Ad9l2A+S+ag7idBrDI=;
- b=IXje9iJZJznKOH54JVQd3nu1rEXtSKUyWr1zXv8ANd3q3Y8tn+bLjdFRhZ2pBZa6Imz3RWOHQ
- c5nkPHitCXICHMBd9pYCH1G9canzcpyjXv521zmVY19/DHGmPvrSL48
-X-Developer-Key: i=ananthu.cv@oss.qualcomm.com; a=ed25519;
- pk=gutNfLSMVTRkB+MxVviMFq9I07C5qPe9xHY2J5XCMpo=
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDA0NiBTYWx0ZWRfX+eVbWd5X2JFl
- eiL+QmhuBoPIDmvdZvedaCuY5ZZPVdM08TpB22zNn+0V0ssSx/K1rDtvk3AFQ/YmwOMepOkofiC
- 2YtQUWpb9ZEVyLYpIAJU7X1WHMKMdGY=
-X-Authority-Analysis: v=2.4 cv=IIOXmQvG c=1 sm=1 tr=0 ts=6abba343 cx=c_pps
- a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+X-Proofpoint-ORIG-GUID: dIjITXrWOUZ7mVe2MDPfWW55WSMNTrU6
+X-Proofpoint-GUID: dIjITXrWOUZ7mVe2MDPfWW55WSMNTrU6
+X-Authority-Analysis: v=2.4 cv=Z+55j3RA c=1 sm=1 tr=0 ts=6abba483 cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=Q/e3f29T3Hw2hnAEzBPF7w==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=2yvpktbjYSEXaF6n4vkA:9 a=QEXdDO2ut3YA:10
- a=6Ab_bkdmUrQuMsNx7PHu:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDA0NiBTYWx0ZWRfX3RGHUB7FpGsx
- ZP/2La1bPw1szgA+FVCSDfE1MXt6hI4bAyE86vLPJLkMNx6n9ymkUC1YWXC9h2Y7QAuu6v+u4T0
- VWbIYG4Cdb7/yPkVMzlGEfrYi3Xz2PFUW3kG8UKJ20G/+gtjoRss4LzgR998R1OGlK4ptZffK5z
- S/TnTxzJE7VZWbhYnVaaVvMTUXYsKN0O2Q9Szs+WUtB99FyfFGK9vPMrQH9aBrevgYKCj6YhiFb
- 3t12uBZA4Zl5bXGKd45TUh+RJUe5YyUJqSEfZX3UG63eGhmfWRFD84erwTODs2wHcT6OAQFiiMn
- rlNm5GORDKw2dU6Y+Q5KNpdWoYcg8HuF6MavZSNczXGY/BeBAMjz/VJ6siiL+nG1V/6DCOqKS8d
- X7fjxfRWjVUagB5zHlsUbzCYEiU0t4q+YStqRfhtSmupWAwAqCqvgmI2lkaKZCgd0aMLtrzcGrM
- 8pccl9jmxwDY+cgbqOQ==
-X-Proofpoint-GUID: oALN3nj9XtKMY8fasfwKWL-KjV-rXLTd
-X-Proofpoint-ORIG-GUID: oALN3nj9XtKMY8fasfwKWL-KjV-rXLTd
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
+ a=R6d1XtvNd3bo7WazfPwA:9 a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDA0NiBTYWx0ZWRfX/yzpIJ06l2IK
+ 8KwNC1RTEKKxgaZSAlBerKPq1PPYAe5vwo56Hv3oJqP9hCsDQ0VR3Fki+4y/YgANGQhSznIH1OZ
+ HMWc9+JsLtDnJCUVn2FEeRmE0vErps0syJSOuDFkfidP5ORx6cfkhurUB4GgvJ5PxJ5mDKzOWA1
+ XDr61g7Gz8y5bKHQcb+GVemP2nSiLLAtVRE+l7/wdnq67383fPNFKEjnzw2xxcGwvg3XR2j8W6N
+ gDkHZCob0T/uy0QDy65Xf8qFJ/nOYKCvia88Y/hUKjeE40qNXxmIiOGoNejkvpM2/hutg8gCZ9Y
+ 2sbQ+TPEbHwC96DHSJiqBjnR+D1/K5OlT/W7VaW5pOOCsX46zf8mGEak/eiF2xRTjDPLRY34YSV
+ NeCAFRoOimLTIk+MW0Gs/JIHQn9KwdiFaH8M88NiWX5Jf6mOqzc9ZPvPDmnVSpFs6XZoU6IQc51
+ tHyKIfiUdQpNqsPzj6w==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDA0NiBTYWx0ZWRfX6gnbF40r/Dk8
+ /HDDl7XXd6X89nS3jSq7oaO/Ov4BE4qb+nUxQIZCUyscr57izR4M7W6jkxcab6OWFqtGqDI8Wf5
+ Quh6V9xOzX1RnkIKUMYByznIVJZYajU=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-29_04,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 phishscore=0 lowpriorityscore=0 clxscore=1015
- impostorscore=0 adultscore=0 bulkscore=0 malwarescore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ spamscore=0 impostorscore=0 phishscore=0 bulkscore=0 malwarescore=0
+ suspectscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
  definitions=main-2609290046
 
-Commit 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if
-max boost is known") introduced a guard for cpuinfo max updates to only
-increase, to preserve driver-set values above the freq table maximum.
-Later commit db80ad776cd2 ("cpufreq: Remove driver default policy->min/max
-init") dropped the 'policy->max = max_freq' assignment from
-cpufreq_frequency_table_cpuinfo, leaving that one-way-guard to be the only
-path for cpuinfo max and consequently policy max to be updated, causing
-both values to be stuck at boost frequency even when boost is disabled.
+Hi Bryan,
 
-Unconditionally track the highest non-boost frequency (max_base_freq)
-in the freq table. If boost frequencies are available, use the highest
-frequency from the table/max_base_freq instead of cpuinfo->max_freq to
-control boost values, so the value can decrease again when boost is
-disabled.
+On 9/29/2026 11:39 AM, Bryan O'Donoghue wrote:
+> On 19/08/2026 10:32, Atanas Filipov wrote:
+>> This series adds a device tree binding and driver for the Qualcomm
+>> Camera Network-on-Chip (CAMNOC) interconnect provider for SM8250.
+>>
+>> CAMNOC is the internal AXI interconnect within the camera subsystem.
+>> Multiple camera sub-devices (IFE, JPEG, BPS, IPE, etc.) share
+>> CAM_CC_CAMNOC_AXI_CLK. Direct clk_set_rate() calls from each consumer
+>> cause a last-writer-wins race. This series introduces a lightweight ICC
+>> provider that aggregates bandwidth votes from all consumers and applies
+>> a single clk_set_rate() call.
+>>
+>> Changes since v1:
+>> - dt-bindings: add all SM8250 CAMNOC master port IDs to qcom,camnoc.h
+>>    (IFE 0/1, IFE Lite 0-4, BPS, IPE 0/1, JPEG, JPEG DMA, CDM, FD, SBI,
+>>    ICP) with a short comment per group (Dmitry Baryshkov)
+>> - dt-bindings: add IFE simple consumer example alongside the JPEG
+>>    OPP-based example; clarify opp-hz and opp-peak-kBps semantics in
+>>    comments; fix maintainer email; align provider node name with DTS
+>> - driver: register all SM8250 CAMNOC master nodes
+>>
+>> Atanas Filipov (3):
+>>    dt-bindings: interconnect: Add Qualcomm CAMNOC ICC binding
+>>    interconnect: qcom: Add CAMNOC interconnect provider driver
+>>    arm64: dts: qcom: sm8250: Add CAMNOC ICC provider node
+>>
+>>   .../bindings/interconnect/qcom,camnoc.yaml    | 124 ++++++++
+>>   arch/arm64/boot/dts/qcom/sm8250.dtsi          |   8 +
+>>   drivers/interconnect/qcom/Kconfig             |  10 +
+>>   drivers/interconnect/qcom/Makefile            |   2 +
+>>   drivers/interconnect/qcom/qcom-camnoc.c       | 279 ++++++++++++++++++
+>>   .../dt-bindings/interconnect/qcom,camnoc.h    |  52 ++++
+>>   6 files changed, 475 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,camnoc.yaml
+>>   create mode 100644 drivers/interconnect/qcom/qcom-camnoc.c
+>>   create mode 100644 include/dt-bindings/interconnect/qcom,camnoc.h
+>>
+>>
+>> base-commit: 9e970952a9503d6ab471a2fea4c10b6a2785406f
+>> --
+>> 2.34.1
+>>
+>>
+> 
+> I'd like to see the code for actually _using_ this in CAMSS, seems a bit 
+> incomplete without that part.
 
-Fixes: db80ad776cd2 ("cpufreq: Remove driver default policy->min/max init")
-Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
----
- drivers/cpufreq/cpufreq.c    | 16 +++++++++++++++-
- drivers/cpufreq/freq_table.c |  9 ++++++++-
- include/linux/cpufreq.h      |  3 +++
- 3 files changed, 26 insertions(+), 2 deletions(-)
+Yes the next patchset will include the CAMSS part.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 96515880b4ac..5e6afb6f8826 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -574,6 +574,8 @@ static ssize_t show_local_boost(struct cpufreq_policy *policy, char *buf)
- 
- static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- {
-+	unsigned int max_freq;
-+	unsigned int max_table_freq;
- 	int ret;
- 
- 	if (policy->boost_enabled == enable)
-@@ -587,7 +589,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- 		return ret;
- 	}
- 
--	ret = freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
-+	max_table_freq = cpufreq_frequency_table_max(policy);
-+
-+	if (policy_has_boost_freq(policy)) {
-+		max_freq = enable ? max_table_freq : policy->cpuinfo.max_base_freq;
-+
-+		if (!max_freq)
-+			/* when the freq table contains only boost frequencies */
-+			max_freq = max_table_freq;
-+	} else {
-+		max_freq = policy->cpuinfo.max_freq;
-+	}
-+
-+	ret = freq_qos_update_request(&policy->boost_freq_req, max_freq);
- 	if (ret < 0) {
- 		policy->boost_enabled = !policy->boost_enabled;
- 		cpufreq_driver->set_boost(policy, policy->boost_enabled);
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index ea994647abc8..820ed4559f6c 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -14,7 +14,7 @@
-  *                     FREQUENCY TABLE HELPERS                       *
-  *********************************************************************/
- 
--static bool policy_has_boost_freq(struct cpufreq_policy *policy)
-+bool policy_has_boost_freq(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
- 
-@@ -27,17 +27,22 @@ static bool policy_has_boost_freq(struct cpufreq_policy *policy)
- 
- 	return false;
- }
-+EXPORT_SYMBOL_GPL(policy_has_boost_freq);
- 
- int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
- 	unsigned int min_freq = ~0;
- 	unsigned int max_freq = 0;
-+	unsigned int max_base_freq = 0;
- 	unsigned int freq, i;
- 
- 	cpufreq_for_each_valid_entry_idx(pos, table, i) {
- 		freq = pos->frequency;
- 
-+		if (!(pos->flags & CPUFREQ_BOOST_FREQ) && freq > max_base_freq)
-+			max_base_freq = freq;
-+
- 		if ((!cpufreq_boost_enabled() || !policy->boost_enabled)
- 		    && (pos->flags & CPUFREQ_BOOST_FREQ))
- 			continue;
-@@ -57,6 +62,8 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
- 	if (policy->cpuinfo.max_freq < max_freq)
- 		policy->cpuinfo.max_freq = max_freq;
- 
-+	policy->cpuinfo.max_base_freq = max_base_freq;
-+
- 	if (min_freq == ~0)
- 		return -EINVAL;
- 	else
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index f048c925fd98..7bb58405e004 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -45,6 +45,7 @@ enum cpufreq_table_sorting {
- struct cpufreq_cpuinfo {
- 	unsigned int		max_freq;
- 	unsigned int		min_freq;
-+	unsigned int		max_base_freq; /* Highest non-boost frequency in the table */
- 
- 	/* in 10^(-9) s = nanoseconds */
- 	unsigned int		transition_latency;
-@@ -791,6 +792,8 @@ struct cpufreq_frequency_table {
- 
- int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy);
- 
-+bool policy_has_boost_freq(struct cpufreq_policy *policy);
-+
- int cpufreq_frequency_table_verify(struct cpufreq_policy_data *policy);
- 
- int cpufreq_generic_frequency_table_verify(struct cpufreq_policy_data *policy);
+~Gjorgji
 
--- 
-2.43.0
+> 
+> ---
+> bod
 
