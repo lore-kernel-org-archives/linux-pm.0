@@ -1,61 +1,61 @@
-Received: from mail-dy2-f12.google.com (mail-dy2-f12.google.com [74.125.229.12])
+Received: from mail-dy2-f36.google.com (mail-dy2-f36.google.com [74.125.229.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 640A755C322
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 18:47:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D974A559CB1
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 18:47:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.36
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790707668; cv=none; b=tEoBHKWYOmnxnQz8ztzjcqcm3RM+cs3W4ArB5E+q0wUMnsKK9+5466qUEaPrUdpin33AfL/n76U11g7tgepFn+Clq0wvzkNUjJ2cU51B1nCno6MVLqE3DGyuZYQ0fmbzeh6Zh34zwuBXJPzc6Zl6noZpXJstRY00TUKfv/QkHVE=
+	t=1790707671; cv=none; b=u3SMTTLyVpQMCpkNZGiT8nVYmOAAoE1C8u9wYnK0eAyjvE59DJHwME9PdoRnuzfCSjWKxXO+6HrNYVVNlf95+F2vg0PKj6K9RKOU3UEh3bHrlEpp6DuHzb6+uVsx+paxk2cT/LRD+pZ9TqV0DOFzfBFRmgZFojl5UEiQJSuE7pg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790707668; c=relaxed/simple;
-	bh=yiXw4ZAJ6K1lX1vgZJkcyMAh2ZgU2cmsfxm8gSeEMjE=;
+	s=arc-20240116; t=1790707671; c=relaxed/simple;
+	bh=EfN4DRQ7RGeIckCzz0l9GMwp+1v5qtliTwAQlB4LR8s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UBrrmP6xk7HRMZ6UF2EzaVQ9fWdhiEnPZpNAdXDcy3p9rU7VNmafx+nS2v7bR7Du0m9DUaJjaFBdZs3/P5MIe4uuf9ZVbNrK2xOYVsj600t+76Z31HltwkxJxXSnvAc5IZ2+Q9Qs5q1dOZp0CzyQ4qmyNHft3oPV4TJzC38cr7I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=AtVYQWnu; arc=none smtp.client-ip=74.125.229.12
+	 MIME-Version; b=T3SaMAj8p91JxarhneAjg3a33h4VkrJ+TCjeUSmsJ3G56+q4yWe50cKnBTVOE12qN7tybLP67SAPz5xxGf6zeXjrveyfn74Z9u9D/GZr+/dS4KZesWkyTGL+OPzqV3XyR5DulFCEj1w1mvP54debKYgCqKJ8ewIBIL6PDBEH9xA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=guhqNydw; arc=none smtp.client-ip=74.125.229.36
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="AtVYQWnu"
-Received: by mail-dy2-f12.google.com with SMTP id 5a478bee46e88-3396cec93b6so5178424eec.3
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:47:47 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="guhqNydw"
+Received: by mail-dy2-f36.google.com with SMTP id 5a478bee46e88-328664c2da6so3829534eec.1
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 11:47:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790707666; x=1791312466; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1790707669; x=1791312469; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=ZgozAJoGL7V7A8Vx0dGILM7Wft28EEkHkLDt/QHtR3E=;
-        b=AtVYQWnu6+kD4AbR1SWhUXu/kYtodlAWsshkkR4zQQU2Ut8DFA/HICPJ6+mCgREoCN
-         qA48HK7ofCiCfb/PSF5tgB6pAH4VS2NePyCwLaECc6zcPqV0opBer77TwBrVpXMYE2M8
-         Ai22DpElWex6zMmXHp9GBtr5rwjP5MNVSMJaU=
+        bh=Nc0gE7Gombl2PMFQGXcyIkbha/LFCYb67kK5kCWn/0A=;
+        b=guhqNydwZBBeh+DNGU+7czrZ1GEdDFWXps+BTuK/k3OOfIk55GJzgw349vYbAZS4/M
+         8lgrwKRZhLlJwrvxvnVnlCQMsyQWIqtSUQjDMefEqgr/gY5EwmCQXeVztMC2fEO56vZQ
+         kq9gaRNo+1nZGdQ8dD8mkyPgqL7koFN3cFJhc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790707666; x=1791312466;
+        d=1e100.net; s=20260707; t=1790707669; x=1791312469;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ZgozAJoGL7V7A8Vx0dGILM7Wft28EEkHkLDt/QHtR3E=;
-        b=dl74uSDJTmm8KPSvaZADDd0gjJCVS84aCrKMfKKgr5KN9DRP+MqbegkzPUr/nbrJnU
-         JmuDuLMTA5bqXNNivYf0NicU/bgAZGtXP4zEIusluzXJ6fPgXVmZv+DtJ10e45CK0BTr
-         4Ee9ZnA5SMy3tJZMJXulGUETEOYxvRPh/75U5m2pQAlwWoIDFAcxIqM9barHMZdXGBkP
-         6QkY77nSBmhh1QXw6sZLKYZKLl68hnxM9qM0DIV94SmrLXnbcd/+7651hMWgivVhXWUb
-         +04ca+4v3rBkHzxuUlVHH5g1RrW0KU7RdCn9XgHVe0oXJvePdGf9bzulSkqItj2PCiQA
-         rwhA==
-X-Forwarded-Encrypted: i=1; AKwUvBxw5xGfusi+LcHlL9PP95X3iye3oYWA5mp1LiH2FaI06aoib1v/qXvg58ZSJ9M9nnl8C/QIvcYd5g==@vger.kernel.org
-X-Gm-Message-State: AFuF++n5+BHb/pQa5e30uzPPzkRBHm7AMvoKtuJ0gNomT0a2Eq4aTFVf
-	U9p3LU4Es93ubYsfoHjNaY7sHvbLiXIz1fefXfCgerAMVqBagg+qyevk1wRXSpdTKw==
-X-Gm-Gg: AYBFou2JHq2XOt2vDW9hH/5aB633vd3UNsUfDvwbUAoDYAVMa5NzjLeSarXVl7g7rJx
-	TeifcRDgjPN7xgvqWcj/IdXmu1Y8deBHr/xyKr+d0TE1LoUsaALfwh8XvdDeSF1FxigJ4LLuPDv
-	uGnGr/O+G6hLzydBJr5yDmp5oXPQrQGfVx1cfoYGLyLGfsMfbgmPw8JRc2r4tELnGNy5sJ9EN0m
-	6yr4elWvt6baIgcDYpmNJjYStSOxibNeRUXHGAVS8DaxjwH/EEpYb7l8rolBLNin7dTcAc1iwxR
-	RGv+n87CHmynYTDq0j4fCAbMClmoAM95NgBcMFFvuXaM/EHMXI92ji8JPCzzRtXoEgGTnlQMKoI
-	e3IqlQic8LPF4R5hnaL3Sr3jVHNtnlznNRK2XENJ5hkfusSXv7nlLaIQ2t8CxxsuqSsJ6EBSPiu
-	3qcymscfbnBuXk9JacT5gj3bbHXkJ3THMUkNvZLtb5I3mG8oHHNZ5Jsx+yk+RPipCOwzBEqJ+lE
-	mFK5Q+QHrHQJvfEDKDYL0ESIWBkRnaOyVOP
-X-Received: by 2002:a05:7300:6a9c:b0:342:8ee0:1962 with SMTP id 5a478bee46e88-34c647d3a1amr230483eec.23.1790707665655;
-        Tue, 29 Sep 2026 11:47:45 -0700 (PDT)
+        bh=Nc0gE7Gombl2PMFQGXcyIkbha/LFCYb67kK5kCWn/0A=;
+        b=ye8Qy6sKkMV6qNf4We3aeXcIi0L/9zUML1Gzdp3X6LJ0lyOsMBzD3Hkhgfwbc7eC0C
+         Fe4z4m6bVjlkiuJUhSTT0YuRR91T1lG+B5+cTzUjjNoM0YiF2CcgmhrD6b1dEIk7ahYC
+         bZ2+2A2+4VEbCT40KixwLaB/ohtMav1rQtJccx69be1oCU+HHKH9XfFRpLIMNg/esd72
+         SWlmPb3IMBG4lBqnD3wkIB6qjpCCdbsITRM171lU4fnIMu5V3OdP8LdMCjrn+nwt0TQs
+         XjMu0xxjEQRoCfpcA8ULdOHy4KMWRDi+cwIh9+bbLuwkAMgKfyNMnyT0M3yBApSi7aKi
+         rQEw==
+X-Forwarded-Encrypted: i=1; AKwUvBxgeOCovRqe//oum8e/qNtVafh2xbVHAsr2yVqehsP4C0VGHvmi9AoyQJB5FHwRR98pEP2HrPZTJw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK9MLpddi6aTc1rIQlz7EVn3NSItm/EJXmE6EyErI8d6YGxencX
+	5Yo8dDt0tuw1B5ObGzcU8+CnJ0vukoKsHiX4jvXkUSysZ/D+E/CNwbK0rgv5VqlEdQ==
+X-Gm-Gg: AYBFou1Eu1UA+wFHMLoFfNUkOQhGyW6TFw1V0R5a/UD8KryQbavnRLfi3TpjsoE6lCk
+	Az87Aki2eEGy928K8GnHVQBXzsa64bHhSQ+bwEO2kyy9mXfTbepb5oBM9DN9wLvsiFmmReCLiwZ
+	XStH+Q70be0+zT+PMLV4oomcgC+QeeMem8gQ/KnIMaYEfekw4tGsnbM5jol8Lsc0oZzuVpPqy6z
+	5Azp4nmI8hRx7281onZOCnCywa7rh8O4OxuK9mJ4B6dZpQeAOt7x2yZ+prkwYGXFIGaJRH6vMkc
+	N0ddh0Zsi4+0l2fKxOWsGbCa7AyaE0qOV0ftfM7YFkyOb7zLe+yI7HJzsrCBgJLm18TOXfJGuNb
+	Aie3PTuP7RJFH71LwE27PaWiQamvv/0ZuLmKufXT2+2/0a454y9hQJ9kpYqtff0f24lgcDTzTSy
+	farHl7XViLxMpV6EW5DP6N17YjjD2ICFslM+QFMX+an+TXknjLQDld5+APixPohVpK+rs4lSD2Z
+	0iYVJpEYg3Hn1dC2M3BKwzyXOgUH31hQfMT1g85/hvLQFQ=
+X-Received: by 2002:a05:7301:4882:b0:34b:f279:2c29 with SMTP id 5a478bee46e88-34c65a742damr266421eec.13.1790707668531;
+        Tue, 29 Sep 2026 11:47:48 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:5f5a:aa9:d06d:b4a7])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34c32072ee7sm965764eec.0.2026.09.29.11.47.44
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34c388c76c1sm1004071eec.19.2026.09.29.11.47.47
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 29 Sep 2026 11:47:44 -0700 (PDT)
+        Tue, 29 Sep 2026 11:47:47 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: Ulf Hansson <ulfh@kernel.org>,
@@ -66,9 +66,9 @@ Cc: Ulf Hansson <ulfh@kernel.org>,
 	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
 	linux-pm@vger.kernel.org,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 2/5] PM: runtime: Avoid racy clock checks for autosuspend-retry
-Date: Tue, 29 Sep 2026 11:47:12 -0700
-Message-ID: <20260929114714.2.Id0a3276d23d30e0b5fd4d6dca730be0f9d8fe018@changeid>
+Subject: [PATCH 3/5] PM: runtime: Add test for autosuspend-rearm
+Date: Tue, 29 Sep 2026 11:47:13 -0700
+Message-ID: <20260929114714.3.I7104ceb30c7a54ada598a7a37806432997216cce@changeid>
 X-Mailer: git-send-email 2.56.0.rc1.315.gc6ed9934b7-goog
 In-Reply-To: <20260929184729.2346769-1-briannorris@chromium.org>
 References: <20260929184729.2346769-1-briannorris@chromium.org>
@@ -80,172 +80,112 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The runtime PM docs clearly tell how a .runtime_suspend() implementation
-can update the last-busy time (pm_runtime_mark_last_busy()) and return a
-transient error code (-EBUSY or -EAGAIN) in order to rearm the
-autosuspend timer. However, this check is racy, such that it will not
-always rearm the timer properly.
+If runtime_suspend() fails with a transient error (e.g., -EBUSY) +
+pm_runtime_mark_last_busy(), we intend to rearm/retry autosuspend. Add a
+test for it.
 
-Consider:
+This is a regression test for the bug fixed in "PM: runtime: Avoid racy
+clock checks for autosuspend-retry".
 
- 1. runtime_suspend() updates last_busy
- 2. long delay (scheduling, etc.)
- 3. runtime_suspend() returns -EBUSY
- 4. pm_runtime_autosuspend_expiration() looks up the current time
-    (ktime_get_mono_fast_ns())
- 5. the time from #4 suggests the "expiry" time (based on #1) is already
-    in the past
- 6. rpm_suspend() quits without either retry or rearm
+Example invocation:
 
-This violates the documented expectations.
-
-The primary problem is the racy lookup of the current time in #4. We can
-avoid that by:
-
- * Checking whether the expiration time changed before/after the suspend
-   attempt, *without* consulting the current clock for past-expiry
-
- * Improving pm_runtime_mark_last_busy() so that it guards against
-   producing the same expiry (e.g., consider a system with a
-   low-resolution clock)
-
-Noticed by inspection, and proved out with KUnit tests which follow this
-patch.
-
-I see this pattern is utilized in at least a few drivers:
-
- * blk_pre_runtime_suspend() (block/blk-pm.c)
- * serial_port_runtime_suspend() (drivers/tty/serial/serial_port.c)
- * omap4_keypad_runtime_suspend() (drivers/input/keyboard/omap4-keypad.c)
- * omap_rproc_runtime_suspend() (drivers/remoteproc/omap_remoteproc.c)
- * more...
+  $ ./tools/testing/kunit/kunit.py run --kconfig_add CONFIG_PM=y \
+      'pm_runtime*'
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
-There's a vanishingly small corner case in here still, if:
 
-1) the monotonic clock gets an update while we're suspending
+ drivers/base/power/runtime-test.c | 70 +++++++++++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
-2) there are *two* mark_last_busy() calls
-
-3) the result of those updates (backward in time) and mark_last_busy()
-   (forward in time) puts us back at the same expiration.
-
-We could potentially solve this by updating a |last_busy_counter|, and
-tracking that instead. I'm not sure if it's worth the complexity though.
-
-There's a similar corner case if somebody calls
-pm_runtime_set_autosuspend_delay(), such that a shortened autosuspend
-delay lands on the same expiry. This also seems vanishingly unlikely;
-but this also could be solved by using a |last_busy_counter|, and
-ignoring the delay entirely.
-
- drivers/base/power/runtime.c | 43 +++++++++++++++++++++++++-----------
- include/linux/pm_runtime.h   |  7 +++++-
- 2 files changed, 36 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index bc5905ffc45f..2a99b7509744 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -162,6 +162,26 @@ static void pm_runtime_cancel_pending(struct device *dev)
- 	dev->power.request = RPM_REQ_NONE;
+diff --git a/drivers/base/power/runtime-test.c b/drivers/base/power/runtime-test.c
+index 24865ce844fc..3487392e0afd 100644
+--- a/drivers/base/power/runtime-test.c
++++ b/drivers/base/power/runtime-test.c
+@@ -285,6 +285,75 @@ static void pm_runtime_supplier_suspend_test(struct kunit *test)
+ 	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(norpm_supplier));
  }
  
-+/*
-+ * Expiration time without considering whether it has already passed.
-+ */
-+static u64 __pm_runtime_autosuspend_expiration(struct device *dev)
++struct pm_runtime_test_data {
++	int pm_counter;
++};
++
++static int pm_runtime_rearm_test_suspend(struct device *dev)
 +{
-+	int autosuspend_delay;
-+	u64 expires;
++	struct pm_runtime_test_data *data = dev_get_drvdata(dev);
 +
-+	if (!dev->power.use_autosuspend)
-+		return 0;
++	/* Say we're busy the first time. */
++	if (data->pm_counter) {
++		data->pm_counter--;
++		pm_runtime_mark_last_busy(dev);
 +
-+	autosuspend_delay = READ_ONCE(dev->power.autosuspend_delay);
-+	if (autosuspend_delay < 0)
-+		return 0;
++		/*
++		 * We could also purposely slow this down, to potentially lose
++		 * more races:
++		 *   msleep(1000);
++		 */
 +
-+	expires = READ_ONCE(dev->power.last_busy);
-+	expires += (u64)autosuspend_delay * NSEC_PER_MSEC;
-+	return expires;
++		return -EBUSY;
++	}
++
++	return 0;
 +}
 +
- /**
-  * pm_runtime_autosuspend_expiration - Get a device's autosuspend-delay expiration time.
-  * @dev: Device to handle.
-@@ -176,18 +196,10 @@ static void pm_runtime_cancel_pending(struct device *dev)
-  */
- u64 pm_runtime_autosuspend_expiration(struct device *dev)
- {
--	int autosuspend_delay;
--	u64 expires;
-+	u64 expires = __pm_runtime_autosuspend_expiration(dev);
- 
--	if (!dev->power.use_autosuspend)
--		return 0;
--
--	autosuspend_delay = READ_ONCE(dev->power.autosuspend_delay);
--	if (autosuspend_delay < 0)
-+	if (!expires)
- 		return 0;
--
--	expires  = READ_ONCE(dev->power.last_busy);
--	expires += (u64)autosuspend_delay * NSEC_PER_MSEC;
- 	if (expires > ktime_get_mono_fast_ns())
- 		return expires;	/* Expires in the future */
- 
-@@ -586,6 +598,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- {
- 	int (*callback)(struct device *);
- 	struct device *parent = NULL;
-+	u64 old_expires;
- 	int retval;
- 
- 	trace_rpm_suspend(dev, rpmflags);
-@@ -689,6 +702,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 	}
- 
- 	__update_runtime_status(dev, RPM_SUSPENDING);
-+	old_expires = __pm_runtime_autosuspend_expiration(dev);
- 
- 	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
- 
-@@ -760,9 +774,12 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 	 * autosuspend expiration time, automatically reschedule another
- 	 * autosuspend.
- 	 */
--	if (!dev->power.runtime_error && (rpmflags & RPM_AUTO) &&
--	    pm_runtime_autosuspend_expiration(dev) != 0)
--		goto repeat;
-+	if (!dev->power.runtime_error && (rpmflags & RPM_AUTO)) {
-+		u64 new_expires = __pm_runtime_autosuspend_expiration(dev);
++static int pm_runtime_rearm_test_resume(struct device *dev)
++{
++	struct pm_runtime_test_data *data = dev_get_drvdata(dev);
 +
-+		if (new_expires && new_expires != old_expires)
-+			goto repeat;
-+	}
- 
- 	goto out;
- }
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 322e3b17f987..424ac9da94ef 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -242,7 +242,12 @@ static inline bool pm_runtime_has_no_callbacks(struct device *dev)
-  */
- static inline void pm_runtime_mark_last_busy(struct device *dev)
- {
--	WRITE_ONCE(dev->power.last_busy, ktime_get_mono_fast_ns());
-+	u64 now = ktime_get_mono_fast_ns();
++	data->pm_counter++;
++	return 0;
++}
 +
-+	if (now == READ_ONCE(dev->power.last_busy))
-+		now++;
++static const struct dev_pm_ops pm_runtime_rearm_test_ops = {
++	RUNTIME_PM_OPS(pm_runtime_rearm_test_suspend, pm_runtime_rearm_test_resume, NULL)
++};
 +
-+	WRITE_ONCE(dev->power.last_busy, now);
- }
++static void pm_runtime_autosuspend_rearm_test(struct kunit *test)
++{
++	struct device *dev = kunit_device_register(test, DEVICE_NAME);
++	struct pm_runtime_test_data data = {
++		.pm_counter = 1,
++	};
++
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
++
++	dev_set_drvdata(dev, &data);
++	dev->driver->pm = &pm_runtime_rearm_test_ops;
++
++	pm_runtime_set_active(dev);
++	pm_runtime_use_autosuspend(dev);
++	pm_runtime_enable(dev);
++
++	KUNIT_EXPECT_TRUE(test, pm_runtime_active(dev));
++
++	/*
++	 * .runtime_suspend() should return -EBUSY once, but retry due to
++	 * pm_runtime_mark_last_busy().
++	 */
++	KUNIT_EXPECT_EQ(test, 0, pm_runtime_autosuspend(dev));
++
++	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(dev));
++	KUNIT_EXPECT_EQ(test, 0, data.pm_counter);
++
++	/* Don't let on-stack drvdata escape this context. */
++	dev->driver->pm = NULL;
++	dev_set_drvdata(dev, NULL);
++}
++
+ static struct kunit_case pm_runtime_test_cases[] = {
+ 	KUNIT_CASE(pm_runtime_depth_test),
+ 	KUNIT_CASE(pm_runtime_already_suspended_test),
+@@ -293,6 +362,7 @@ static struct kunit_case pm_runtime_test_cases[] = {
+ 	KUNIT_CASE(pm_runtime_error_test),
+ 	KUNIT_CASE(pm_runtime_probe_active_test),
+ 	KUNIT_CASE(pm_runtime_supplier_suspend_test),
++	KUNIT_CASE(pm_runtime_autosuspend_rearm_test),
+ 	{}
+ };
  
- /**
 -- 
 2.56.0.rc1.315.gc6ed9934b7-goog
 
