@@ -1,105 +1,159 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D54B350E5AA;
-	Tue, 29 Sep 2026 12:10:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59EF1396B8C
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 12:24:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790683806; cv=none; b=hEgd749UHhcJAkBVagpqEEplcvObgDn0jDa/Ddn7r3bmH/ORF23KlC0B5BvFVy+8L0gvc2tem3fgQqdNW3qdPRDrAuP3xZfxokEUFQT5AWpLsRXMtUB5GH0S+cHbAJsM/3gIk5wDoq2N8KePJiqkVdNm3sl9Hl2UIeSaxPtHtN4=
+	t=1790684669; cv=none; b=gW89w4OazP0Pp7GXOUthZYmIpPL6N/wNe1QwchS5ZEofR+Bk7tJvsg1KpMhBKaZT5/81vl4T4ATzyMMNLD91XF6c2KuQ5MBN1lchZBtnm3rSSZc0HBmQ93fZ7mw584n6M4Q54vknCjEGhLInXQWpP6atPRr7bT0cDjeu4QjVbXA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790683806; c=relaxed/simple;
-	bh=0TQIG6b0QhiYyhhVsn09ZaXE0tRmvWDczzbfnRItPCs=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=iYH6/Lc8nmgvf/dFl5/YsQXRM71QXh8ZP6Exwm5OSzufUiKLjBG3GKMA+JpahV6nyEqmA+ffoKO8VdAY3uujf297UAv7V91w1JJX572vKNFwJ52fQX/tK+IeYwvwRb2+gH0wdANp35GRlevuv2tgiPam02HkSZ0cPrmfnkEp+fo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.helo=mail.mainlining.org; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.helo=mail.mainlining.org
-Message-ID: <d3b99da7-bc64-4df8-94ab-25080474ee35@mainlining.org>
-Date: Tue, 29 Sep 2026 15:09:27 +0300
+	s=arc-20240116; t=1790684669; c=relaxed/simple;
+	bh=xPyRjwfyilCcyeFg+vatR1rOEVXq+Oc6Sf8alsTW/bE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=p1x6P19SEFIJjkWrvTb7RsRLAzAaWEanuuAhM79/QdfWqkDCFpdWqG7U27+nDIX4SUnd03TvbwejQsCfdg8EtAvwKF0aqBmpdDpfbbGLdT8WOfDRECLagSTksYyfBzco2ldUnuYjY5IQc6iG9Cif4QYS0yKya1QNcbZ/7PGvGmU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jua+9kxT; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jua+9kxT"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e721b5503so38772255e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 05:24:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790684663; x=1791289463; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=noLRTkEou4q4y255qEcc6T3lEUPxoco+dVf+qITIb+s=;
+        b=Jua+9kxTCF0yft/xR0g9AActLz8CW+Yyt9k7L8vb852LJbVgafHAfe7jhBrKySMlmv
+         2HwiLVBuaBZ838kdDqeFuplAh6+VTjH3OUd7WrW3LUrwf9aXh2rv6qH6kpzU7+f6vJQP
+         F0+gM8LrJlhO2/p/trAQcVehFRCfIZ1cVLLe51Fi8bBwcErJLcAw73QBtBNivHaaxQr4
+         fwGHWWhamjdP6Ku7t2+EjwmTa9TXigxDW/duO1tkDoLicu91nLa/pN/6PI2h1pEzpVUZ
+         lyIztKy2lGcRPFBNq6FOne6oN8mChvrakn51vj6A6itpZIcmq/x07oVtfsghKKuGsEDY
+         CUyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790684663; x=1791289463;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=noLRTkEou4q4y255qEcc6T3lEUPxoco+dVf+qITIb+s=;
+        b=1Knss99ntVOkDuVdyIxiFWBKIWgPU2qgp38wpPdTBeM3U8xVMDUgQ4KcknqjBjvqgK
+         m4BndvWlbMeI6D8R2+2u0WLtxkdRq3hIrqzPTP3WGwWe4rXRbYC3vQyjgUWD94h7V+Bq
+         eQLC26vgDdQEgIUfeW72SzNYOLA6Y6DuD/V3C/9yDwO3kF/1q4I32LoF9GlIBuzgtKda
+         GogFm2lytyVMQaqJwqGkqbto7fdK9t1m9+nEyaHxdMtrXgGm4fihClieCKpDE4PBAka5
+         T44AvukdqgDJMVnxhboGMQOewFeiyWLAY6+ap3qnLGN5ujpGWJeIy06lIucL+d4wbaa/
+         2Iow==
+X-Gm-Message-State: AFuF++n7g6pYKYvuB1ST8EWZj15o/RgyprBKavU0hR8skVzULKiKWOwC
+	UW28wztrtdGhGVOZfNRjcwb6CkCgPEXi4gXWeHrbpu/xz9//UCNUPxLI
+X-Gm-Gg: AYBFou2/ZbJ9+kAiw71gRLaOHeBZny0GV3Mg8peLgMQfJRuxi8zpLc56os2UnO624n4
+	hxMy7K6GXtVtkmrS4HIyMPTex2yeHfIgl4h6sRAZf1JYXsEs9BSeZ52gXs4FlodH7RLVLLTqsr0
+	aU0AIrhC/8xpqlE46uu15IVIXMlENi0TzJz7VgtLmCDy9LXSxacm0OnYxyh6Qo1LboQzXIWV5yY
+	HdzRqO53yjEV6/V5gqo0iGrOTujKYOl9yTcn8+32CnwR39fPDmj0SWIlP+wakbvOtnwZzb3yE2I
+	cr3zEFmktWvVzZHPemytLL/Z8bYZdpNKpn1lLADOgmUVZ4+VgzlGsTH5CWRA439CQkqf7vfwetb
+	BTTP0MAvr1DYqe+AUHciFfCib63vzU4T+MJr/R9PB+UImYZguqfc9PHVn6gu051KkV1GcWvjRtC
+	vLGMSfxhALzWX+1iJdQ/+b/rJEUFbg0U+d6ZM2pqRV1qIQTjqsou2RCDiuv7+YVt9GsN/gBWM3F
+	daG+5Ze63FeHjyjG8gR9w7o9hGpLz0qVzlZFMzkt1U0w6NYT3b/tuFRc9IBb6UqYpeYG3Zrx5OZ
+	Hy0ZosZGFUeORrxiOrE=
+X-Received: by 2002:a05:600c:3511:b0:49d:17d4:d6ad with SMTP id 5b1f17b1804b1-49fe66fca74mr259377975e9.23.1790684662478;
+        Tue, 29 Sep 2026 05:24:22 -0700 (PDT)
+Received: from iku.example.org ([2a06:5906:61b:2d00:be4b:8730:c872:1736])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a00cfafa23sm70994965e9.14.2026.09.29.05.24.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Sep 2026 05:24:22 -0700 (PDT)
+From: Prabhakar <prabhakar.csengg@gmail.com>
+X-Google-Original-From: Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+To: Bartosz Golaszewski <brgl@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	Prabhakar <prabhakar.csengg+renesas@gmail.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Subject: [PATCH 3/5] power: sequencing: renesas-pwrrdy: Add per-SoC probe via driver data
+Date: Tue, 29 Sep 2026 13:24:05 +0100
+Message-ID: <20260929122407.219448-4-prabhakar.mahadev-lad.rj@bp.renesas.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260929122407.219448-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
+References: <20260929122407.219448-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Muzaffer Kadir <muzafferkadir@mainlining.org>
-Subject: Re: [PATCH v3 16/19] thermal: qcom: tsens: Add support for MSM8952
- tsens
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Srinivas Kandagatla <srini@kernel.org>,
- Ulf Hansson <ulfh@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
- "Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>,
- Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>,
- Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov
- <lumag@kernel.org>, Abhinav Kumar <abhinav.kumar@linux.dev>,
- Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>,
- Marijn Suijten <marijn.suijten@somainline.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Robert Marko <robimarko@gmail.com>, Guru Das Srinagesh <linux@gurudas.dev>,
- Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Kees Cook <kees@kernel.org>,
- Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli"
- <gpiccoli@igalia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- David Heidelberg <david@ixit.cz>, phone-devel@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mmc@vger.kernel.org, iommu@lists.linux.dev, mfd@lists.linux.dev,
- dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
- Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org,
- linux-input@vger.kernel.org
-References: <20260921-msm8952-initial-support-v3-0-b96fd3fe298b@mainlining.org>
- <20260921-msm8952-initial-support-v3-16-b96fd3fe298b@mainlining.org>
- <4de27200-3598-47b7-b0af-8f7acd037618@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <4de27200-3598-47b7-b0af-8f7acd037618@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi Daniel,
+From: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 
-On Tue, 29 Sep 2026 09:11:28 +0200, Daniel Lezcano wrote:
-> On 9/21/26 20:19, Muzaffer Kadir via B4 Relay wrote:
->> From: Muzaffer Kadir <muzafferkadir@mainlining.org>
->>
->> Add MSM8952 support for tsens.
->>
->> Downstream does a lot of advanced things with calculations.
->> But seems like using tsens-v1 directly works too.
-> 
-> Can you elaborate a bit the changelog please ?
-> 
-> Thanks
-> 
+The driver only supports the RZ/G3L PWRRDY signals. Other Renesas SoCs
+use the system controller (SYS) for different power controls, needing
+their own power sequencer targets and consumer matching. For example,
+RZ/V2H(P) and RZ/V2N use SYS_ADC_CFG.SY_MSTP_ADA for A/D converter
+power-down.
 
-MSM8952 has 11 sensors
-and 3200 default slope (according to downstream)
+Add a struct pwrseq_rz_info holding a SoC specific probe callback,
+reference it from the auxiliary device ID table's driver_data, and
+dispatch to it from a common probe function. This allows support for
+further SoCs to be added by extending the ID table.
 
-For tests, this is the table for readings:
-tsens sensor 0  1  2  3  4  5  6  7  8  9  10
-TWRP         32 31 29 28 28 31 30 30 30 32 30
-this patch   31 29 31 29 29 31 30 31 31 30 30
+Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+---
+ .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 25 +++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
 
-Both are read from same device, one after the other,
-First upstream then TWRP.
-2 degree difference seems reasonable in my idea,
-as there is a reboot process happens in between reads and
-downstream has more power saving features than this port.
+diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+index 743855620501..0190e53913bf 100644
+--- a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
++++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+@@ -15,6 +15,11 @@
+ #define SYS_PWRRDY_N_DSI_MASK	BIT(1)
+ #define SYS_PWRRDY_N_CSI_MASK	BIT(2)
+ 
++struct pwrseq_rz_info {
++	int (*probe)(struct auxiliary_device *adev,
++		     const struct auxiliary_device_id *id);
++};
++
+ static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mask,
+ 				   bool val)
+ {
+@@ -122,8 +127,24 @@ static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
+ 	return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &config));
+ }
+ 
++static int pwrseq_pwrrdy_probe_common(struct auxiliary_device *adev,
++				      const struct auxiliary_device_id *id)
++{
++	const struct pwrseq_rz_info *info =
++		(const struct pwrseq_rz_info *)id->driver_data;
++
++	return info->probe(adev, id);
++}
++
++static const struct pwrseq_rz_info pwrseq_rzg3l_info = {
++	.probe = pwrseq_rzg3l_pwrrdy_probe,
++};
++
+ static const struct auxiliary_device_id pwrseq_rzg3l_pwrrdy_id_table[] = {
+-	{ .name = "rz_sysc.pwrseq-pwrrdy" },
++	{
++		.name = "rz_sysc.pwrseq-pwrrdy",
++		.driver_data = (kernel_ulong_t)&pwrseq_rzg3l_info,
++	},
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(auxiliary, pwrseq_rzg3l_pwrrdy_id_table);
+@@ -132,7 +153,7 @@ static struct auxiliary_driver pwrseq_rzg3l_pwrrdy_driver = {
+ 	.driver = {
+ 		.name = "pwrseq-rzg3l-pwrrdy",
+ 	},
+-	.probe = pwrseq_rzg3l_pwrrdy_probe,
++	.probe = pwrseq_pwrrdy_probe_common,
+ 	.id_table = pwrseq_rzg3l_pwrrdy_id_table,
+ };
+ module_auxiliary_driver(pwrseq_rzg3l_pwrrdy_driver);
+-- 
+2.55.0
 
-I don't know any way to independently measure temperature.
-
-I reused offsets and slope from downstream.
-
-My commit message wasn't good, I will expand the
-commit message by v4.
-
-Best regards,
-Muzaffer Kadir
