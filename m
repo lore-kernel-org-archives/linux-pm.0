@@ -1,183 +1,153 @@
-Received: from mail-m155100.qiye.163.com (mail-m155100.qiye.163.com [101.71.155.100])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr2-f35.google.com (mail-wr2-f35.google.com [74.125.225.99])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83A9D4FE2F3;
-	Tue, 29 Sep 2026 10:17:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C41450B8DB
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 10:28:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.99
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790677036; cv=none; b=gqSDsxzXLeHy4Q4CGHs+sp2JPTuIlVYsVecfQtYaQZSJ3xohqrEL1HnYVeFCw7a6vgrmbFGQ9skTPz7B/N4RcO7sSOjGvexswO5DKC8TTgd4e+fHm/qeWSNl3Y3pmgvdI+iAI6yCr96PK2WBDijwHLL/fr08/3M6QPkcmZC1jss=
+	t=1790677731; cv=none; b=tWvxG7UuZ32yHvye+SGvfQu5dRUB5S2nrdE/lrNXOaN5HsOg0vGbAJeHXnVbPqHFRe6VtmZoxCuJdhF1I4mMFVMhOLXZ3sO2s88cGFbBZaguBWGT2XAkQ/j9UoquBlqbhoyHo4a4apzi4qlKH88oDSEE09soJSNs3u2YwpU4o88=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790677036; c=relaxed/simple;
-	bh=gF+taqkEcxcO3WIFRjei2FuP2Hluu/NETaBeqyRE64Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=bAh5ZD7f+snoNowNrXzF1Z7YsKsiy251FlukCdCAnBL4Fx75ngN9A14qcPFIanudPcSYrNsqpilkiUCOdMGCeW52FTp/rDIUc9Saixmv1Se4iMXW93hRl2+ilGCtT4kw2IxXCO+uCkU3fwzX3Thy/4z7t6Dwl3h9pkJYpEtIkD4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=gJj838I8; arc=none smtp.client-ip=101.71.155.100
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1790677731; c=relaxed/simple;
+	bh=nD0jQ0sanXtfhte+cS4Eb6xgGbAdsdiqP+FoF7tBRHM=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=CnAy84Jaja4/w4Z3zepdTGRo84DwRG15Wv07jWxabxE70IqPVI+VWi8nHOSIYAGbRUuXnu24369tOFzDVvmSBxLfiXRtn5GbAjLyUrwAYCkIn8oY1OD9JFbDQFDwsSBB6mcR41AgI9hmsgDvythM5d9MF5AWnq6gd9k0MVkUaOo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=86AxwoQj; arc=none smtp.client-ip=74.125.225.99
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="gJj838I8"
-Received: from [172.16.12.11] (gy-adaptive-ssl-proxy-2-entmail-virt205.gy.ntes [61.154.14.86])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4f7eb7435;
-	Tue, 29 Sep 2026 18:11:40 +0800 (GMT+08:00)
-Message-ID: <8ab0f451-7be2-4c9d-8237-b27292bb3fa7@rock-chips.com>
-Date: Tue, 29 Sep 2026 18:11:40 +0800
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="86AxwoQj"
+Received: by mail-wr2-f35.google.com with SMTP id ffacd0b85a97d-4887f690df6so2854752f8f.1
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 03:28:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1790677714; x=1791282514; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=OjnLLZEy4NZ05RWw4wcrVNfIfzQkE+4cewTuv6QJdW8=;
+        b=86AxwoQjp8tyrf2rh+EQ/6k0rZuE6nFtpDLR1dJRe+laj2umkWNcfzBMQEZLMdNnkc
+         AtYlntrifj20TwAzWMaLfWxTrW9+BMDVg9PSWo32cxAO+PjIBQJ1huKgGdeQBVJ+iLm0
+         MJetV8cwW1ZyUVONHG/7NEPC9xieRWcMdOQ7D0vYqbM/qXOGQNlrv374Srxj7kWygDqK
+         iEmO6ZSSx28ifgWPLQf4pL56rgSvd+jAjb0SxCcu1mBPzFVrX+4IdM0SRqAclTmeOX8e
+         H6fws2aKiKiWhhVbePt7fV9MlwPwLYk1ZmBtHz8TmrLGQwhwGBvQc4O6fKeCNrlBnrm4
+         Loww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790677714; x=1791282514;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=OjnLLZEy4NZ05RWw4wcrVNfIfzQkE+4cewTuv6QJdW8=;
+        b=nWjWZwcC2Ff4Mfew5CwUzWloUYlWFkW7YBvuXv+MocawHilhImedmfDn3BWXJ7PYB6
+         M9qFw6IzjL8J9TtavZ3hEUyPbYIjnIwRTrTcCCyVAx9Y/K6T+qQYCSQnJ0c0/5uxyuVT
+         WfE8pLQOu6AQR5YCLPAY4g4WDKZ1D9hJIaDBvpIFGLmjv5oIL33A4DIz9IyZXdYFhi+s
+         JXzg6KVC2c4qN48Ptewwi/LD1SfnsCouuw1X2gkQsw/Gxs+sHSMBjo0/CwmNAQjjGO2K
+         2QvCl21+JZd7YQJpTCjX2AqtTgnErualFBiD+FZAiLhbSITfEJRtJjyCoVsgjoiII+V2
+         yezQ==
+X-Forwarded-Encrypted: i=1; AKwUvBw5DtS9TJ4G+3eS4M48GOf54jElCHVKgfobrnYEvG5F93CquYWQT9k/W5dEN+/J6Hl1fgC27KxrjQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++la77zeBTUnGpbbnvS/1+kheTGdCFeBNntjFH5LyHkKPYOD4RJt
+	jytPAE+zg9FkAtqFsciEjAnA9l+OEbVu/iJghcJR6v6QF67opJjqVdSI8M9FmfBBi/M=
+X-Gm-Gg: AYBFou2UudLhMG32mfPj4tyxLQmVxBKwZAtUOizso5LMoK1DQmKg6yqneSfPY4rTftE
+	V/505VBzp+H/gSMT74+vh/m7ryVO5KmrfERCFqfKoSP4APdM9NGdnRkWDeCvepIycdwuM0Ultnc
+	QnMY/8hWVsxECd83+9axVd2KgSsnQkOmjIkuUI5oqQB/kd7XQh4Jbh5038quLA29iecZbaFKuR8
+	SsE1HUOWDMAzWfZDJUoQj4JnoxybzeUDnIsB8Z3a5ZPtIkDlQzJi57vI3nTy7yRebZIMhovevdH
+	OLpzwnvCxHKcxMIqfDd8sqlBWtR9WdLOmmkjA/hjdKIe0M6TvZwC9aHL0tWoOihPHLdPza55qKB
+	hK0sAx5biqVElqmUMXzzASlc9fQTytlUQOVCre4NwXEJmVgHWjBbxGmlKGC/Nt6Ww7oaCRu1m0P
+	thuLKTlWkye0r8OA8uLNEIHnlNotzlc7jDIiHtSsr4dVHaBr+6et2SCLTwXcbY0aN3WYbiDaOwE
+	rqiIvlJfq92Bc9HbQ==
+X-Received: by 2002:a05:600c:198a:b0:49f:ce78:356c with SMTP id 5b1f17b1804b1-49fe67023femr268059845e9.29.1790677714116;
+        Tue, 29 Sep 2026 03:28:34 -0700 (PDT)
+Received: from alchark-surface.localdomain ([5.194.93.183])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a00cfb479asm66579305e9.15.2026.09.29.03.28.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Sep 2026 03:28:33 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH v2 0/5] power: reset: syscon-reboot-mode: Add support for
+ Rockchip RK3576 reboot modes
+Date: Tue, 29 Sep 2026 14:28:17 +0400
+Message-Id: <20260929-b4-rk3576-reboot-mode-v2-0-5a34ca72065a@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] PM / devfreq: governor_userspace: Guard against NULL
- governor_data during switch
-To: Jie Zhan <zhanjie9@hisilicon.com>, heiko@sntech.de,
- myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260723080806.1451-1-finley.xiao@rock-chips.com>
- <4e1b7360-4ab9-4c50-b4b9-61a44707068a@hisilicon.com>
-From: Finley Xiao <finley.xiao@rock-chips.com>
-In-Reply-To: <4e1b7360-4ab9-4c50-b4b9-61a44707068a@hisilicon.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa0eca60db203a8kunm4df5fc7a41f296
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCTBlLVh5OT0JOHh9CSR9CGVYVFA
-	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUJCSU
-	5LVUpLS1VKQktCWQY+
-DKIM-Signature: a=rsa-sha256;
-	b=gJj838I8K/H0TcZgOEiluq/SJXdmNUxakdOUJ5QT/AayTPBFXrgrZD4FuFmpXW4XYJMrnpILV0eTTxGj7DQehS/nftp0j4/WlNjmJ6aNaQaq+oDGrJfyAAT6jwrzQMr/OqAXd6is66prgrkRLPX3F64dFIWMVz60gsvLocH+lnQ=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=Z//izYTKBBySq35BtFboabm7+7Su7nvQvEU/xskjOvw=;
-	h=date:mime-version:subject:message-id:from;
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WNTQ6CMBBGr0K6dkxpSwVX3sOwsHSQ8YeSaSUaw
+ t0FPIDLl7zvfZOIyIRRHLNJMI4UKfQLqF0mmu7SXxHILyyUVFZWqgRngO+6OFhgdCEkeAaP4HU
+ pDerKt9KIZTswtvTeuuf6x/HlbtikNbYaHcUU+LMdj/nq/fsYc5BgC1NaJ7XzJj+1DxoG5H2PS
+ dTzPH8B4FNEVc4AAAA=
+X-Change-ID: 20260928-b4-rk3576-reboot-mode-d3804e39df04
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Sebastian Reichel <sre@kernel.org>
+Cc: Alexey Charkov <alchark@flipper.net>, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Shawn Lin <shawn.lin@rock-chips.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2582; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=nD0jQ0sanXtfhte+cS4Eb6xgGbAdsdiqP+FoF7tBRHM=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWTtnnSR24Hn36M+tdhN73vMn2dv5+A7vic1urqA+dy0K
+ GUb2eCHHRNZGMS4GCzFFFnmfltiO9WIb9YuD4+vMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
+ oZGOsY4RAxenAEz1tRxGhkeGK8/VXUmyZrOYcDszYNPaNR82PKzOOuRe6b9XaZNouyHDH265n3t
+ KDv94cDB6pZ1E28/UYKuKxnWzJsVOrauLnR14lR0A
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
+Rockchip RK3576 supports reboots with a specified boot device priority
+mode, allowing one to override the board-defined strapping config and the
+OTP programmed priority setting.
 
-在 2026/7/28 11:06, Jie Zhan 写道:
-> Hi Finley,
->
-> On 7/23/2026 4:08 PM, Finley Xiao wrote:
->> The userspace governor is the only one that uses devfreq->governor_data,
->> allocated in its DEVFREQ_GOV_START handler (userspace_init()) and freed
->> in its DEVFREQ_GOV_STOP handler (userspace_exit()).
->>
->> When switching governors via sysfs (governor_store in devfreq.c), the
->> sequence is:
->>
->> STOP(old) -> df->governor = userspace -> START(userspace) -> userspace_init
->>
->> Between the df->governor assignment and userspace_init() completing,
->> governor_data is still NULL (the previous governor never touched it,
->> and the core does not clear or pre-allocate it). During that window,
->> asynchronous paths that call update_devfreq() outside of the driver's
->> control -- the OPP notifier (devfreq.c:686) and the pm_qos notifier
->> (devfreq.c:707) -- run devfreq_update_target() under df->lock and reach
->> devfreq_userspace_func(), which dereferences governor_data without a
->> NULL check, causing:
->>
->>    Unable to handle kernel access to user memory outside uaccess routines
->>    pc : devfreq_userspace_func+0xc/0x28
->>    lr : devfreq_update_target+0x58/0x158
->>
->> Add a NULL check in devfreq_userspace_func() and fall back to
->> previous_freq, which is the same behaviour as the existing "no user
->> frequency specified yet" branch. This closes the race for all callers
->> since every path ultimately goes through get_target_freq.
->>
->> Additionally, take devfreq->lock around the kfree()/NULL assignment in
->> userspace_exit(). Without it, a concurrent OPP/pm_qos notifier running
->> under devfreq->lock could read governor_data after it is freed but
->> before it is set to NULL, constituting a use-after-free.
->>
->> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
->> ---
->>   drivers/devfreq/governor_userspace.c | 4 +++-
->>   1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
->> index 3906ebedbae8..f7a485c43fd7 100644
->> --- a/drivers/devfreq/governor_userspace.c
->> +++ b/drivers/devfreq/governor_userspace.c
->> @@ -24,7 +24,7 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
->>   {
->>   	struct userspace_data *data = df->governor_data;
->>   
->> -	if (data->valid)
->> +	if (data && data->valid)
-> This one is fine.
->>   		*freq = data->user_frequency;
->>   	else
->>   		*freq = df->previous_freq; /* No user freq specified yet */
->> @@ -110,8 +110,10 @@ static void userspace_exit(struct devfreq *devfreq)
->>   	if (devfreq->dev.kobj.sd)
->>   		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
->>   
->> +	mutex_lock(&devfreq->lock);
->>   	kfree(devfreq->governor_data);
->>   	devfreq->governor_data = NULL;
->> +	mutex_unlock(&devfreq->lock);
-> However, for this one, I'm not sure it's the proper place to add the lock.
->
-> Why should we allow the whole governor switching to be concurrent with
-> frequency switching?  I guess there might be something wrong elsewhere.
-> The devfreq->lock should be held around governor switching.
-> Can you have a try?  but be careful of deadlock because the governor
-> switching currently holds devfreq_list_lock.
-I tried to hold devfreq->lock around the governor switching, but the
-GOV_STOP event handlers cannot run with devfreq->lock held. There are
-three independent reasons:
+Supporting it requires several changes though:
+- The boot mode request needs to be forwarded via TF-A to the boot ROM
+  (upstream since TF-A commit 2a97ba20e901 ("feat(rk3576): forward any
+  boot ROM boot mode request on reset"))
+- Some power supplies need to be kept active across the reboot to prevent
+  early boot code from running into a synchronous abort
+- The magic values for each of the supported boot modes need to be defined
+  for the OS to use
 
-1. userspace_exit(): sysfs_remove_group() must not be called with
-    devfreq->lock held.  The removal waits for the in-flight sysfs readers
-    of the "set_freq" attribute to release the kernfs active reference, and
-    those readers take the active reference first and then block on
-    devfreq->lock inside set_freq_show()/set_freq_store(). Removing the
-    group while holding devfreq->lock waits for a reader that is waiting for
-    the same lock, i.e. a deadlock.
+This series enables the above with the RK3576 EVB1 board as the example
+user. Other boards will likely need a close to identical change to make
+use of this functionality, but need testing.
 
-2. simple_ondemand: devfreq_monitor_stop() (DEVFREQ_GOV_STOP) has to call
-    cancel_delayed_work_sync() with devfreq->lock released, because the
-    monitoring work (devfreq_monitor()) takes devfreq->lock. Waiting for
-    the work while holding devfreq->lock deadlocks.  This is also why
-    devfreq_monitor_stop() drops the lock before cancel_delayed_work_sync()
-    today.
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+Changes in v2:
+- Fixed a leak of the dynamically allocated syscon_rbm->supplies (Sashiko)
+- Uninitialized access to supplies[].supply (Sashiko) is fixed separately in:
+  https://lore.kernel.org/all/20260929-regulator-get-all-v1-1-e887c66a47f1@flipper.net/
+- Link to v1: https://patch.msgid.link/20260928-b4-rk3576-reboot-mode-v1-0-65486b03bd41@flipper.net
 
-3. passive: the passive governor's DEVFREQ_GOV_STOP calls
-    devfreq_unregister_notifier() -> srcu_notifier_chain_unregister() ->
-    synchronize_srcu(), which waits for the in-flight notifier callbacks.
-    Those callbacks (devfreq_passive_notifier_call()) take the child's
-    devfreq->lock, so unregistering while holding the child's devfreq->lock
-    can deadlock if the parent's frequency transition is in flight.
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Heiko Stuebner <heiko@sntech.de>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-rockchip@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-In addition, the GOV_START handlers take devfreq->lock themselves:
-performance/powersave call update_devfreq() under the lock, simple_ondemand
-calls devfreq_monitor_start() which takes the lock, and the passive
-governor's cpufreq path takes it.  Holding devfreq->lock around the
-switching would therefore also self-deadlock unless their internal locking
-is removed as well.
+---
+Alexey Charkov (5):
+      dt-bindings: soc: rockchip: add boot ROM download boot mode
+      dt-bindings: power: reset: syscon-reboot-mode: allow supplies
+      power: reset: syscon-reboot-mode: enable supplies for the next stage
+      arm64: dts: rockchip: add reboot-mode node to RK3576
+      arm64: dts: rockchip: name the reboot mode supplies on RK3576 EVB1
 
-Even if devfreq->lock were held around the whole switch,
-the userspace governor would still need to hold the devfreq->lock
-around the kfree itself: because of (1), userspace_exit() has to remove the
-sysfs files with the lock released, so the handler would have to drop the
-lock for the sysfs part and take it again for the kfree.  Holding the lock
-around the switching would not remove the lock from the userspace governor;
-it would only add locking around it and require restructuring all
-governors.
->
-> Thanks!
-> Jie
->>   }
->>   
->>   static int devfreq_userspace_handler(struct devfreq *devfreq,
+ .../bindings/power/reset/syscon-reboot-mode.yaml   |  8 +++++
+ arch/arm64/boot/dts/rockchip/rk3576-evb1-v10.dts   | 16 +++++++++
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi           | 36 +++++++++++++++++++
+ drivers/power/reset/syscon-reboot-mode.c           | 41 ++++++++++++++++++++++
+ include/dt-bindings/soc/rockchip,boot-mode.h       |  2 ++
+ 5 files changed, 103 insertions(+)
+---
+base-commit: 6375e61c01e93e35ee7acd336a689ac1fae4b509
+change-id: 20260928-b4-rk3576-reboot-mode-d3804e39df04
 
--- 
 Best regards,
-
-底层平台中心 肖锋（Finley Xiao）
-************************************************************************************
-瑞芯微电子股份有限公司
-Rockchip Electronics Co., Ltd.
-福建省福州市铜盘路软件大道89号软件园A区21号楼 350003
-No.21 Building, A District, Fuzhou Software Park, Fuzhou, Fujian 350003, P.R. China
-Tel: 0591-83991906-8602 Mobile: 18506057603
-************************************************************************************
+--  
+Alexey Charkov <alchark@flipper.net>
 
