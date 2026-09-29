@@ -1,248 +1,297 @@
-Received: from mail-lr2-f12.google.com (mail-lr2-f12.google.com [74.125.230.76])
+Received: from mail-pj2-f39.google.com (mail-pj2-f39.google.com [74.125.227.167])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9942C53B603
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 16:52:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.76
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 244DB391E76
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 17:26:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.167
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790700760; cv=none; b=EcrGKVHcnZTqK1tO2LPLo9J2XtT3O3v2iR0BcCsjqfQ/HYBjacU3fURRlIcixEbRay5MRhIr8odtqnNS/QYLKRf5KzpM0PLaMZ4wl5lmA5nGvYVBoK2B34Dm3Nge+h5E27gvdrBpFch1p6Ceh8M2ANBMlLFiCBR4iG8Py589EEA=
+	t=1790702763; cv=none; b=J6DELd9MhV51U89INA+yd4HsaIhRzelrFh+wZ+jGsrORxSvZI/T7mKSD0S5rue2aZRm8T8UWpIPTbJ+6AJmBrYtjCNQ8lyT9k9SadNrAbhfNnefj1eqApETcT7yP1PqrFLawr09QvvNcreIvOk6fzZM/MzQGfXbSewTFEEnbqk8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790700760; c=relaxed/simple;
-	bh=CaGRYcmoudXU11QZBW+RXEllJE8sR+maRTwVpD6ZkwU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dE08wgWeiyL57WK8gxUplgDgnetmsBjO0NZlqXeev6EnaMcOj2dGFuEOZlMIKH9Mz96ZPYDDUhx0er3LKuY0glpdQYbwNbRoGvQDr7G/sDRSCG2FKwI0gaqHgx/7JPIw3eSQ1KliJVoszF4CHwj7u3/M3p4q+MQxgClUpL/x2Cc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=n5tdsQNQ; arc=none smtp.client-ip=74.125.230.76
+	s=arc-20240116; t=1790702763; c=relaxed/simple;
+	bh=mkfBiCMpwWCDcgy4prnMcLNrL6MWyBNP1gJn2fbsPok=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dUTMv76I8m2vRGLna3YpylIvM67RB3rqJSS2yO1c9N4mCtq6nH7CZ9GpUMOhNT7ye+MUERI36IJIB6S2e90dJ0J3CEgfG72OCw/bwE+1chyzq1TWQt3wOtG0oLiXdBphsTuUkia8Y8lbUsHrPRgWs3ZWpwaLpLC/LM1B+hfAUbc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YzmhBLjJ; arc=none smtp.client-ip=74.125.227.167
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n5tdsQNQ"
-Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a2ff148dfdso35893181fa.1
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 09:52:36 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YzmhBLjJ"
+Received: by mail-pj2-f39.google.com with SMTP id d9443c01a7336-2e2d2bbcab2so2895955ad.2
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 10:26:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790700754; x=1791305554; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=gg3hFgqk0ZsxaUG+QumlUoTIw9JpugzQWPqN5D8ejLw=;
-        b=n5tdsQNQw6McahZ4i3WgMLZ85kk0JP9fP92+maZg3pJI/OJoahM8EnLJtwAtDOolYj
-         m/g+c8RN4oo6+QOHUji9c6n5hXkHM/SgKP1B1wg6DwRnEZxrIe258Q+uKzNcSAI3CDln
-         1GXOL5ycQTtCdz8De+r4gjfm+kIWerXRcwmL9zTsjeduweYLbOpoSdjPbBUn0S07aDas
-         rOwQ+nUkzmjoazhEy8cV/44nU6gQOyzX7RE7GNQ2GRMTQHCYs3M9elW2bRGzErjM1Mek
-         fDGPrjBUrtGrzZToTRpj+LP39xtSWbHXlhdq4KDqdJxxOCmlmCVtthHp82tQuVfKzTg9
-         rAVA==
+        d=gmail.com; s=20251104; t=1790702761; x=1791307561; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=U6jepSVcmHm+oxwGNgqeKz9lXh7Z2Z4id6g1VGOo8Vc=;
+        b=YzmhBLjJ278BJHpWtTeDyMguKjUFwEztZB7W8JI4HE3Edt/308SRL9JIpuVsyA3Jej
+         WR9AWjVXFyu7hCrOi9+3OpYoTbXrozTcfF0sZ/NThdwzI0ngrhSTEk7aP6XeX6/7+dF9
+         yJVTr12Mo71ZJlSjl25DK/2/6QLFgbKkCbqsqgQpaqN9U0O5YMWuD//2/AdyImMTg1Ia
+         ZG/Otr4rL9VzcfGhNEephC6qgrHVdKCi/IrV8hoDkiCq3bLNzNe8eKDm7Cq+l9RJzEA6
+         ypWHvjj/xRxx0tyYj4MioSX9VCqxsyXUD+pnptKxq6rKKLNnims8tNeaExuh4M5xax5C
+         QNYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790700754; x=1791305554;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=gg3hFgqk0ZsxaUG+QumlUoTIw9JpugzQWPqN5D8ejLw=;
-        b=LLdHhA4Z0Z59jOgt0U0CM0bRIYv7yphkb0Mun2zvoAUKSwtmwR/ANAHMTWPLFd/BpL
-         cG4COdM1Zh29LHnr/kQDXWu/62JJcug4V+Stt5+yRCPx747HGj+F+DfVKi4Epd7drtQv
-         5WPuNQ/SePTtnxMzs76GjN3PML0OQqLuTWF7BpmvMTSWzn8REquD7E0XRZePVTJBrEGF
-         Of0WVRKxZee3OpuGcy8vz59epNnaa8E2vH6V7x2H15nfNT1Of2UE4+HqNZSDPPiFuSGw
-         shTN7utDQBrWbhQFjmWOXK1ADnLmIcdAvzdZJZ1Kyhghd8vxophWt/J0m8D4XkxDr74t
-         ZB/g==
-X-Forwarded-Encrypted: i=1; AKwUvBz/kNd5m7c6JCIKiXzAuNz4ymYJx8atSGSeCqbt5eYPm0Zm/zl2jSgaJPQPyFloMTnLK8AUUCmIpQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIqHUBixWaaSDXyczqJqXNXiEkoOm8LZANX9vaSktwqzPLZtqwB
-	QAew9vAzpU3bPRxOlKGzHlBIkxXGIxyiE5RJ+dkmA4r6mQsEvtrEDAc=
-X-Gm-Gg: AYBFou0gpi82eQxfS6NdwhoCKe1hNXW4hYpxMOmL1S54NGzoj/Nc9icutNo0i4u5262
-	wahwX2aQ0hkC4FqQB3ncwL6I8wzDMgfgKpk2MCQTSHmsEqePoVr0bdEn5QXi+2F6sbLbXbywDL7
-	XmNCkBGZCM3dfKkKkWx8QAVuYCjcXdXoYHxxMuA2YyiOtzp2Sag/VyJAU6mEaHRWXvNNQDHdVQl
-	KlelQc5oNyFhLNARLlcgXJk+kkWpZCdwhRRZ0PuPkAkwnF5HiJFxEZ+uqTMcMANQHBNerwTcAIP
-	gchqVVrRuVXEcYgSLgamYGjdV/xukgGigxJJT/zstJfUwusfuOmf7XQCmmd51WgZQrhDdII5tpj
-	Ysd/p9z85mBSAZTogMkl3GRRnplq5U86u4JRO0z78Tz0c6UhvnfMLg7KzEZYdDvtGRL/r37fsh9
-	7edGseGv6ch9Fa3oOqljGO5BvVol6aYPU1Yo5UD99ff5H8HXOiLr4QSAzPZUoFvA==
-X-Received: by 2002:a05:651c:19a7:b0:3a7:71d2:2f9c with SMTP id 38308e7fff4ca-3a771d2306bmr33601fa.23.1790700754468;
-        Tue, 29 Sep 2026 09:52:34 -0700 (PDT)
-Received: from fedora ([46.8.219.5])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a771947b14sm137751fa.32.2026.09.29.09.52.33
+        d=1e100.net; s=20260707; t=1790702761; x=1791307561;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=U6jepSVcmHm+oxwGNgqeKz9lXh7Z2Z4id6g1VGOo8Vc=;
+        b=qZjoqXoOuOL/204pyYoF/1rKiLYNCIXO9MVmn1YFr37VhQHrgKTTNQH8FIMWq0mKMd
+         SDKElv8Wr6+NAB/ZbmnX2eEJQF9mKxFgp/jdET+h85N/OAjBjkGqiMjs8JQq+xLzqqDt
+         DL9rj2sSlg9/GZTbfQDrTWA+Y9MT0048WN77kpB6VbFQEYBL9ekMVibyvpFDSE8hDEEV
+         MaqUSuMHcyd96PxdNmo6x0sQYq7sYTVWO111Xbmy5UdC1dsXk5rRImeTbGxChYn16qSE
+         mwPhW9UJGPWhLMle2OAY1xlaw6PwHTg5nMcdHR2w6zLIJ/1tHN7E/67jelQWpCxS+/ud
+         Sw2A==
+X-Forwarded-Encrypted: i=1; AKwUvBz8fq0Nt8ySL/mZg5CFxn3yG0Q9Xl+OkfhwCb3Aop008oNUMYeRrcX6VdT74gRO1HSewV08DPxj7A==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIJFJul0DoLpogxj/5xL8vxfJX7v4BsDXXdKotmnISjnDOntyhY
+	kr7FW8qcYHgM0e/HTHYL3u8FL9or7XDkWd6ZC6Ll1kiRaDslKOLOsni0
+X-Gm-Gg: AYBFou0q1GHm0fqqkOyiQWSTFuD48o7zhFGfmh9nlIOpIHTVKafdWNDOu7r6MBT2jWX
+	n7t/0V39iE+TTnh93eopQ/AsS6oaQ4/eJS5DvH4BdSzNPEtBbdrIKfdXMcIGGKwpXroChp/HVJE
+	AS/i9jhn00icudvzhx+7RVFjslraRIyvSp+9ZPNJJ0S03I6v1cGM3l/5RKAhQLKTOZnthRZpQSY
+	5MuNMCPKE1es083uwXRhLsJhj527U8Bi3wDJ69Lvxeq6an10aSilaKLHnbJSiWOqlRsLX2GmyaG
+	TbgkZGhNoLwbhCbhf2WBC8koI9phm+1RlQzo+vMjGWJCU4/2DTPOSUTDg3Y3Nnn8yBbTrNKgjA1
+	vTdVlMvSporI/9Ws9TNMnvJfe+rRUCjJwtdhcw3c3wB7Ak5+x5Z0OEPxqJ8bgI+oCkwLX4fPBxz
+	pR0TRhxeQS12C2ErhiQnYNw9yfe1M7N8wp/nUKu6iZj/UTK9BvcDkuec9feQK6jezpbjjm29TYm
+	JaKv31grKHbrucYReSpof9H7Lp1tDDJJ6KYXK+L
+X-Received: by 2002:a17:903:38cc:b0:2e2:aa17:477f with SMTP id d9443c01a7336-2e2aa174e56mr51304225ad.58.1790702761038;
+        Tue, 29 Sep 2026 10:26:01 -0700 (PDT)
+Received: from KASONG-MC4 ([101.32.222.185])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2df9143a3aasm60994385ad.53.2026.09.29.10.25.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Sep 2026 09:52:34 -0700 (PDT)
-From: Vitaliy Sochnev <sochnev.v.74@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Christian Marangi <ansuelsmth@gmail.com>,
-	Lorenzo Bianconi <lorenzo@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Vitaliy Sochnev <sochnev.v.74@gmail.com>
-Subject: [PATCH v3 4/4] thermal/drivers/airoha: Register a thermal zone per AN7583 sensor
-Date: Tue, 29 Sep 2026 19:52:09 +0300
-Message-ID: <20260929165209.69669-5-sochnev.v.74@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260929165209.69669-1-sochnev.v.74@gmail.com>
-References: <20260929165209.69669-1-sochnev.v.74@gmail.com>
+        Tue, 29 Sep 2026 10:26:00 -0700 (PDT)
+Date: Wed, 30 Sep 2026 01:25:54 +0800
+From: Kairui Song <ryncsn@gmail.com>
+To: Youngjun Park <youngjun.park@lge.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Kairui Song <kasong@tencent.com>, Chris Li <chrisl@kernel.org>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
+	Barry Song <baohua@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	linux-mm@kvack.org, linux-pm@vger.kernel.org, her0gyugyu@gmail.com, 
+	taejoon.song@lge.com
+Subject: Re: [RFC PATCH 00/10] mm/swap, PM: hibernate: improve image slot
+ allocation and I/O
+Message-ID: <aruGQpdsq7_O-AC8@KASONG-MC4>
+References: <20260915031658.1505680-1-youngjun.park@lge.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260915031658.1505680-1-youngjun.park@lge.com>
 
-AN7583 has three temperature sensors and the driver has constants for
-all of them, but it registers one zone and reads only the bandgap sensor.
+On Tue, Sep 15, 2026 at 12:16:48PM +0800, Youngjun Park wrote:
+> This series improves how hibernation allocates swap slots for its
+> image.  It starts from a few observations about what happens while
+> the image is written.  With them the allocator can hand the image
+> contiguous runs, the image I/O can be batched per run, and
+> hibernation gets faster. Contiguous I/O pattern is friendly to flash device also.
+> 
+> Slot allocation matters for hibernation speed.  After commit
+> 0ff67f990bd4 ("mm, swap: remove swap slot cache") in v6.15, writing
+> the image was about ten times slower on some SSDs [1], until
+> commit 396f57b57200 ("mm, swap: speed up hibernation allocation and
+> writeout") fixed it in v7.1.
+> 
+> Note
+>  - I was responsible for the observation and design, 
+>  while receiving substantial support from LLMs throughout the series.
+> -  Submitting this patch to confirm whether this work is progressing or not.
 
-Register a zone per sensor; the thermal sensor cell selects it. A device
-tree may describe fewer zones than sensors. EN7581 still registers one
-zone.
+Hi Youngjun
 
-Idle and with both cores loaded on a Nokia XG-040G-MF:
+Thanks for the patch!
 
-  bandgap  56.9 C -> 59.3 C
-  GbE      58.7 C -> 61.5 C
-  CPU      57.0 C -> 61.1 C
+Splitting out the hibernation specific part out of swapfile.c
+looks a good idea to me. We can then compile that file conditionally
+rather than having a huge ifdef block in swapfile.c.  Would be nice
+to get more feedback from hibnernation side.
 
-Signed-off-by: Vitaliy Sochnev <sochnev.v.74@gmail.com>
----
- drivers/thermal/airoha_thermal.c | 64 +++++++++++++++++++++++++-------
- 1 file changed, 51 insertions(+), 13 deletions(-)
+> 
+> Observations
+> ============
+> 
+> 1. While the image is written, swap can only hand out slots that are
+>    already free.  Swap cache cannot be reclaimed to make more.
+> 
+>    folio_swapcache_freeable() refuses every folio while storage is
+>    suspended.  The image may already hold a folio as clean swap cache.
+>    If its slot were freed and reused for the image, the resumed kernel
+>    could later drop that folio and read it back from the slot, now
+>    with the wrong data.
+> 
+>    Storage is suspended before the image is written, so every
+>    allocation for the image falls in that window.
+> 
+>      hibernate()
+>        freeze_processes()                user space is frozen
+>        hibernation_snapshot()
+>          freeze_kernel_threads()         kswapd is frozen
+>          hibernate_preallocate_memory()  may swap out to shrink memory
+>          pm_restrict_gfp_mask()          storage is suspended from here
+>          create_image()                  the snapshot is taken
+>        swsusp_write()                    image slots are allocated here
+>        power_down()
 
-diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_thermal.c
-index 0f0e6f3af3cd..7c63a1b44a6b 100644
---- a/drivers/thermal/airoha_thermal.c
-+++ b/drivers/thermal/airoha_thermal.c
-@@ -245,6 +245,11 @@ enum airoha_thermal_chip_scu_field {
- 	AIROHA_THERMAL_FIELD_MAX,
- };
- 
-+struct airoha_thermal_zone {
-+	struct airoha_thermal_priv *priv;
-+	int sensor;
-+};
-+
- struct airoha_thermal_priv {
- 	struct regmap *map;
- 	struct regmap *chip_scu;
-@@ -263,6 +268,9 @@ struct airoha_thermal_priv {
- 
- struct airoha_thermal_soc_data {
- 	u32 pllrg_protect;
-+	/* Sensor mux value per zone, NULL without a sensor mux */
-+	const int *sensors;
-+	int num_sensors;
- 
- 	const struct thermal_zone_device_ops *thdev_ops;
- 	int (*probe)(struct platform_device *pdev,
-@@ -348,7 +356,8 @@ static void airoha_set_thermal_mux(struct airoha_thermal_priv *priv,
- 
- static int en7581_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct airoha_thermal_priv *priv = thermal_zone_device_priv(tz);
-+	struct airoha_thermal_zone *zone = thermal_zone_device_priv(tz);
-+	struct airoha_thermal_priv *priv = zone->priv;
- 	int min_value, max_value, avg_value, value;
- 	int i;
- 
-@@ -374,7 +383,8 @@ static int en7581_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- static int en7581_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 				    int high)
- {
--	struct airoha_thermal_priv *priv = thermal_zone_device_priv(tz);
-+	struct airoha_thermal_zone *zone = thermal_zone_device_priv(tz);
-+	struct airoha_thermal_priv *priv = zone->priv;
- 	bool enable_monitor = false;
- 
- 	if (high != INT_MAX) {
-@@ -642,8 +652,9 @@ static int an7583_thermal_read_diodes(struct airoha_thermal_priv *priv,
- 
- static int an7583_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct airoha_thermal_priv *priv = thermal_zone_device_priv(tz);
--	int sensor_idx;
-+	struct airoha_thermal_zone *zone = thermal_zone_device_priv(tz);
-+	struct airoha_thermal_priv *priv = zone->priv;
-+	int sensor_idx = zone->sensor;
- 	int delta_diode, delta_gain;
- 	int coeff, slope, offset;
- 	int tries = AIROHA_THERMAL_MUX_TRIES;
-@@ -651,9 +662,6 @@ static int an7583_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- 
- 	int diode_zero, diode_d0, diode_d1;
- 
--	/* Always read sensor AN7583_BGP_TEMP_SENSOR */
--	sensor_idx = AN7583_BGP_TEMP_SENSOR;
--
- 	coeff = an7583_thermal_coeff[sensor_idx];
- 	slope = an7583_thermal_slope[sensor_idx];
- 	offset = an7583_thermal_offset[sensor_idx];
-@@ -717,7 +725,7 @@ static int airoha_thermal_probe(struct platform_device *pdev)
- 	const struct airoha_thermal_soc_data *soc_data;
- 	struct airoha_thermal_priv *priv;
- 	struct device *dev = &pdev->dev;
--	int ret;
-+	int ret, i;
- 
- 	soc_data = device_get_match_data(dev);
- 
-@@ -739,11 +747,31 @@ static int airoha_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 
- 	/* register of thermal sensor and get info from DT */
--	priv->tz = devm_thermal_of_zone_register(dev, 0, priv,
--						 soc_data->thdev_ops);
--	if (IS_ERR(priv->tz)) {
--		dev_err(dev, "register thermal zone sensor failed\n");
--		return PTR_ERR(priv->tz);
-+	for (i = 0; i < soc_data->num_sensors; i++) {
-+		struct airoha_thermal_zone *zone;
-+		struct thermal_zone_device *tz;
-+
-+		zone = devm_kzalloc(dev, sizeof(*zone), GFP_KERNEL);
-+		if (!zone)
-+			return -ENOMEM;
-+
-+		zone->priv = priv;
-+		zone->sensor = soc_data->sensors ? soc_data->sensors[i] :
-+						   AIROHA_THERMAL_NO_MUX_SENSOR;
-+
-+		tz = devm_thermal_of_zone_register(dev, i, zone,
-+						   soc_data->thdev_ops);
-+		if (IS_ERR(tz)) {
-+			/* A DT may describe fewer zones than sensors */
-+			if (i && PTR_ERR(tz) == -ENODEV)
-+				continue;
-+
-+			dev_err(dev, "register thermal zone %d failed\n", i);
-+			return PTR_ERR(tz);
-+		}
-+
-+		if (!i)
-+			priv->tz = tz;
- 	}
- 
- 	platform_set_drvdata(pdev, priv);
-@@ -751,7 +779,15 @@ static int airoha_thermal_probe(struct platform_device *pdev)
- 	return soc_data->post_probe ? soc_data->post_probe(pdev) : 0;
- }
- 
-+/* The bandgap sensor stays zone 0 */
-+static const int an7583_zone_sensors[AN7583_NUM_SENSOR] = {
-+	AN7583_BGP_TEMP_SENSOR,
-+	AN7583_GBE_TEMP_SENSOR,
-+	AN7583_CPU_TEMP_SENSOR,
-+};
-+
- static const struct airoha_thermal_soc_data en7581_data = {
-+	.num_sensors = 1,
- 	.pllrg_protect = EN7581_SCU_THERMAL_PROTECT_KEY,
- 	.thdev_ops = &en7581_thdev_ops,
- 	.probe = &en7581_thermal_probe,
-@@ -759,6 +795,8 @@ static const struct airoha_thermal_soc_data en7581_data = {
- };
- 
- static const struct airoha_thermal_soc_data an7583_data = {
-+	.sensors = an7583_zone_sensors,
-+	.num_sensors = AN7583_NUM_SENSOR,
- 	.pllrg_protect = AN7583_SCU_THERMAL_PROTECT_KEY,
- 	.thdev_ops = &an7583_tz_ops,
- 	.probe = &an7583_thermal_probe,
--- 
-2.55.0
+...
 
+> 2. Image slots are not freed and reused while the image is written.
+>    And whatever the allocator changes during the write is gone at
+>    resume, because the resumed kernel is the snapshot.
+> 
+>    With observation 1, once the image owns a free cluster it can use
+>    all of it.  Nothing has to be recorded per slot, neither in the
+>    swap table nor as a memcg id.
+
+That's pretty nice indeed. But I'm a bit concerned about having a
+specific cluster isolation path for hibernation.
+
+Will it be cleaner to provide a more generic cluster sized
+allocation (PMD sized) so common swap can benefit too?
+
+And I'm not sure is IO batching working properly before?
+How much performance gain is due to the cluster sized IO?
+
+But if other appraoches won't work or hibernation is really
+special, and we can keep all the hibernation tricky clean and
+simple in just one place, maybe it's not too bad.
+
+> 3. User space and kswapd do not swap out while the image is written,
+>    and allocations from the page allocator cannot start swap I/O.
+>    What is left is rare.  DAMON pageout and the memcg high work can
+>    still reach swap(This is all I found. anything else?), 
+>    and both were seen running in that window.
+> 
+>    So the allocator can favor the image then.  Other users take slots
+>    from the nonfull and frag clusters and leave the free clusters to
+>    the image.
+> 
+> With these the allocator gets simpler and faster, and batching the
+> image read and write becomes easy.
+> 
+> What the series does
+> ====================
+> 
+>   1-2    fixes, a slot leak after a failed test_resume and a NULL
+>          dereference for a swapfile with no block device (some bug fix)
+>   3      move the hibernation code to mm/swap_hibernate.c (refactor)
+>   4      skip swap cache reclaim while storage is suspended (optimization)
+>   5-6    hand the image whole free clusters, in disk order (exploit contiguous space)
+>   7-8    write and read the image one bio per run (batch I/O)
+>   9-10   optional reservation at swapon, hibernate=reserve (assure contiguous space)
+> 
+> Based on mm-new (383fc05d4650) with patches 2 to 4 of [3] under it.
+> Patch 1 of [3] is in mm-new as 10d9012e83ef.
+> 
+> Note.  [3] gives hibernation slots their own swap table entry, keeps
+> readahead off them, and frees them by offset alone.  The single slot
+> path of patch 5 builds on that.
+
+Nice, maybe that series need a refresh to get merged first.
+
+> 
+> Results
+> =======
+> 
+> Setup
+>   - qemu, 12G RAM, 4 CPUs, no KVM.  Times only compare against each
+>     other.
+>   - swap on virtio-blk as a non-rotational device
+>   - image 5.0G, written with hibernate=nocompress
+>   - 3 reps of two hibernations each.  Times are medians of the 4 to 6
+>     samples per cell that no host load hit.
+>   - base is patch 3 and allocates as mm-new does, allocator is
+>     patch 6, allocator + bio is patch 8
+> 
+> Rows.  runs is how many contiguous stretches of the device the image
+> ends up in.  bios is how many bios the kernel allocates and submits to
+> write it.  In both cases the image fits in free clusters, so the
+> fallback to nonfull and frag clusters is not measured.  Percentages
+> are against base.
+> 
+> Shuffled free list.  A device that has been in use, emptied.
+>   - 6G swap, 5.4G of 2M tmpfs files swapped out, then all removed in
+>     random order
+>   - every cluster is free, the free list is in free order, not in
+>     disk order
+> 
+>                         base       allocator   allocator + bio
+>   write, s             10.60     9.32 (-12%)       7.94 (-25%)
+>   read, s               9.15     8.92  (-3%)       8.10 (-11%)
+>   runs                  3560               1                 1
+>   bios                 1.30M           1.30M             12.7K
+> 
+> Holes in nonfull clusters.  What taking free clusters first buys.
+>   - 12G swap, one 4G file swapped out, every other 64K of it freed
+>   - 2G of 64K holes in 2048 clusters, 8G of free clusters
+>   - mm-new fills the holes first, the series takes the free clusters
+> 
+>                         base       allocator   allocator + bio
+>   write, s             10.69    10.07  (-6%)       8.81 (-18%)
+>   read, s              12.21    10.89 (-11%)       9.78 (-20%)
+>   runs                 31899               1                 1
+>   bios                 1.30M           1.30M             12.8K
+> 
+> Summary against base
+>   - the allocator cuts write time by 6 to 12%
+>   - allocator + bio cuts write time by 18 to 25% and read time by
+>     11 to 20%
+> 
+> These are VM numbers without compression.  Compression, the default,
+> and real hardware are still to be checked.
+> 
+> Next steps
+> ==========
+> 
+> Things to keep working on after this RFC.  Comments are welcome.
+> 
+> 1. Dropping swap cache before hibernation starts, so more slots are
+>    free.  This series does not do that.
+> 
+> 2. Whether the reservation in patches 9 and 10 is worth keeping.  It
+>    makes sure the image gets contiguous slots when swap has room to
+>    spare.
+> 
+> 3. A block device of its own for hibernation instead of swap.  Not
+>    taken for now.  Sharing one device keeps the spare space useful, the
+>    existing infrastructure stays, and the ideas above give much the same
+>    effect.
+
+So is the idea for 2 and 3 here to make sure hibernation always success by
+avoid the allocator using too much for common swap?
+
+We only want one of them I think, and we need to be careful here to not
+make the maintainance messup by adding too many knobs...
+
+> 
+> 4. Whether the extent tree can go.  A normal hibernation never walks
+>    it, the swap state comes back as it was at the snapshot.  It is only
+>    walked to free the slots after an error or a wake from hybrid sleep.
+>    With the slots marked in the swap table [3] and taken as whole
+>    clusters, a free could find them without it.
+
+The extent tree is not a hibernation issue right? At least for block based
+swap the extent tree is useless (only one node). I think swap_ops can be
+used to make this limited to certain swap_ops (e.g. file swap ops).
+
+And maybe, the swap_ops can provide some interface for hibenation usage to
+make things cleaner?
+
+> 
+> 5. Whether SNAPSHOT_ALLOC_SWAP_PAGE should refuse a request made before
+>    storage is suspended.  Such a request gets single slots from the
+>    normal allocator today, and s2disk only asks after
+>    SNAPSHOT_CREATE_IMAGE anyway.
+
+Is that a even a right thing to do during hibernation?
+
+> 6. Two cases are not measured yet.  A device with both a shuffled free
+>    list and partly used clusters.  An image bigger than the free
+>    clusters, so part of it comes from nonfull and frag clusters.
+
+I think that's fine, free cluster shuffle should not effect the
+performance much as 2M is a pretty big IO unit. For the
+fragmentation batching IO should be very helpful.
