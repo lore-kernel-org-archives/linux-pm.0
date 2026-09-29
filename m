@@ -1,239 +1,193 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej2-f42.google.com (mail-ej2-f42.google.com [74.125.228.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C4B13AE1A9;
-	Tue, 29 Sep 2026 08:12:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790669583; cv=none; b=gczb7xm0d0lc4xGr1Z4FjPds4IA3KuSKA9/76OkKiyWnTlphNv/fQNA4CQZbzSB9CUhKOcjBdgH/GRO+wznlBvOu7kOfnZo5nFA5HBvaXqTLjvSSCzzhV58wbeybpLQzzMYViOG5DRcOuLBvNdzJ3RnPz2fWr4HrBStOsnWNorc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790669583; c=relaxed/simple;
-	bh=p6VFXDCQ35oUu/wiXEDJnmmomRCbx/8pSU298eAAQzo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OxB3qXtQeoLQEOqfEmxs2oewDdBleRESjij3cGuziWyYri5ra3YL2n0EjZlaHkLKO45bfpNWrez8wbrsOEwNa6ccr1ZNzUq1TFbuZqXfkSOrzkuksFhH2kXCP7QDu55OXMBTFGAFXZYtlhW/W8idJRVXCmyZgqcTOs8C/s1jZk0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T845o3hT; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E3D43D9537
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 08:23:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.170
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790670220; cv=pass; b=NOOc84FraX53RbaVyySNH0yFb188Z0CO000Et5pDM44t/AqorCj6/eR8402STz8WktCi1thb9pxn+lsRQYxuFPpviZeYtVw+X1Z/6VgWcwoeeMj+VbKl8z9fkIlDmt+4gn4ehVNZRaXYTTNJKMHgVXkW6vFiiZxFIjkDpkHxFNk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790670220; c=relaxed/simple;
+	bh=Bk+aDP7Fo6BLFnfF0mkl/u5hMpwIT56K5DBxKBjeA+0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qaNmd5XKKhRrTcdgUqmS4i2jCQC4Qf/p8nDyc3b+TiJjrlPeyTIMsOs0wEWfL5gRv4bNXkUXX4fDBAyevnIgKzcFDbdrV1A0q0IKXWTf0oL09Xt1RYn81S4uL0jFheYlMv6qF1EhaQn1EMoj8hkx+nGi7Per/86nsxoNndVfGLk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ptOOUjPl; arc=pass smtp.client-ip=74.125.228.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T845o3hT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43AB71F000FF;
-	Tue, 29 Sep 2026 08:12:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790669577;
-	bh=7WahPd8Op0iJAHb7FWgw8lU+qoV2ftDNyrghi54evm0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=T845o3hTFGpB92/JGkmUKA4BVH6XTBKHzIRgW3uUkgUCI0nG3tqG7JSEKYZUXvMMm
-	 jPYnyQMx5zEV08HUT38LBdSY05Y4MvC2TFKsNcQJn2BTTAp85yDmjQsh6cwbDD4G3t
-	 RgzAc3gjIVPBjbloS/XpCXu0P0uV3802XFdCj28AtOGO+ghfN1rR87uSIF8Dr+Bv1J
-	 OGgoECo9YqzmNoGbZCXMlP2L2UPv2bVY5nW+bckTExiLpkm1kjLuYCQioQl4UJhIrQ
-	 z+Y5Io+zRIYtrrDKJvxeKLAQAsGsqiCrtkswJ9a76RmrHCiFHz+pZ8/QABv/IbHV8K
-	 Nejq/OysF0zFQ==
-Message-ID: <6058552b-7c86-42b3-acb0-00190c03716c@kernel.org>
-Date: Tue, 29 Sep 2026 10:12:53 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ptOOUjPl"
+Received: by mail-ej2-f42.google.com with SMTP id a640c23a62f3a-c2cd04e72f6so410552366b.1
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2026 01:23:38 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790670217; cv=none;
+        d=google.com; s=arc-20260327;
+        b=V9KQ+4ZxgeVwvafHoL8etZBqIQ1w4ONZBNz8uCxlfzZjhIe6MZE42bSTu51ExGw25R
+         1doqoADB8o0eR7TkT74I28ohFiSup/qd0DK7IcMrFCRQxvXogxwgdFZXwk106ym/P+gz
+         1AuKwdyxn0OzkcIfLdmOjq0H/tTABkF2tCHXgwjPTtycIILPRuQRw3NZiRd+YQGu817s
+         VRBV22y7HA9EnHimn2YUkOS60McvGiotyQhWhG+2QYCUgul3Qv/0j+eYVpNxKmU17fln
+         vEUEDQutOthFAGuhC8tkBWoo4ZX8439k5u7NUry1qcpO5ks7c/BW/77LrDw9rdpBYTup
+         S/DQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=QsSsp02Bm0lwSm0F+9L2uo07sOJ8G2AE2hjXwr01EUg=;
+        fh=jGxk0aGt398S77MhSOuxsSYhumtlnER1B6iZOKn6UzE=;
+        b=mL5grXssyAnGglEJjjMBpFou/4g4ThYDaI3pU2E3cn2M4kvWy9KDQLL80YXDDpzVvf
+         tMEmYfJqB/PsPlLWdB2q7T8eFrREi3QR0RcQgVuT1kTRv/5BhuTG0UfOVpv2mwQwjUVv
+         EPHyiTuKsUSM8lbdnB14bORS1cpKh37ymuNQfmVgL5Y7s2kHIJ7inWmUmjR1LDLRKwX2
+         x7YZ7sMZaAhcvzfTGj7dl/OXy4EaL01UutCQbakhmL3wtK3ds8wB22vexM9WwOayrFtj
+         BSBGAfAos1ALtGZmSyDgd0Z2rsmGV9ZxMjxrKcqmtoAFXVGlnTBIuJpOKcqReTj0ZEN1
+         NP5Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790670217; x=1791275017; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QsSsp02Bm0lwSm0F+9L2uo07sOJ8G2AE2hjXwr01EUg=;
+        b=ptOOUjPlL+RS3tKUM7QTODf5FGFIgxXCO/zzgYXcYjaiMVz8J1A3zIWXUK23O//ZoU
+         EW61h7LlY1kqHxJ3EJYC3AVOTr/+v73lNMKYE+qxowVN0ynN/4LlDT25XzZwCThYabXF
+         kqR/EK5GE1s3DIOETLl7nKKfiWsK3VKLB29dHMs5ZJRplBrAXr1u1SaXRVBoKNWUhLDe
+         MPu+LL/K8OU/VFMwBqG6u1253AnOIO4OOZ9B9jTEYvZuJmX8QHZyVm4gs9Dd80R+HbxH
+         Mj8gOx99P78vj3T+ffndKbGnqJWFTmQL9PzZ66sgEkSQWWNzl2lNDH0J2xCXIuYizwwa
+         UGkw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790670217; x=1791275017;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QsSsp02Bm0lwSm0F+9L2uo07sOJ8G2AE2hjXwr01EUg=;
+        b=bHFobZXq23ipu/Pg8kFjgwdCmvlQQeW+wWdctQJ2J65lUksOsyznMKN6ahq7eTiHgw
+         4SKiBjEC9843hzKESueFIFcDVfsLJ6dA5bPhgpw5aHuH3CPG0nXwmJSRwTrMXmyIW+5C
+         IQZqu3ZGYgrixnFUS/MauTXcUsxspBamRS+yIsoSUs62Dh3CJibGwNBq+Z7EmuCvj2Lz
+         9HqzsR0M1RmpSZryvOp5zIiVsyGgeBspe+CZJ6S7BzESmizFT1eNH/lLBJPsvlNMni/k
+         bvy9YcvpwpCa4+s6BQxP57+H2+WQ+nOt3iBFXvgptkvI5YIuhwCRY/JmbZAJ6wXONepx
+         iecg==
+X-Forwarded-Encrypted: i=1; AKwUvBxuczuFeDpvat894bw7kW0ENn7KnZ0uFoG2vKw/ruMqA3z1hR4Xwr1uhlwed2WaFAZEViM4jAp0bg==@vger.kernel.org
+X-Gm-Message-State: AFuF++m9HY6carniH/7Ye1r4jAKmb9NFmq5dytqrF6ImOsEFkoWuMmLP
+	0s2spKy0bIH/sTi5CgJoBIkupCZDgs4vuC30Mck7497eqkaR4V2gxjDjsCUVmVxGlK5dYr+bNor
+	SS8CjScs5uLySqV/NHCdE2fA4f+pdOu0=
+X-Gm-Gg: AYBFou3CCQiNgm/2RwnLUgKfTTlxEVmMjCR9Cmvy+xcj+C3t79lpJZ/ty4S8ethD7RS
+	ETnPMDHQIftyVKx+yBfIxrL8X1seEvMvOP0L+PLRqWvQOs3M0/H8Rm9zPQnmsJHOEuA5ylnZe0j
+	Gmu21G0KPrfhPc+QV1J8yWKrlQonxT/nTqzJS65KZxQ9zo3oKdEeEVL2Ub+xROCa8xH33TiIun7
+	UGEPbkBSrljpjZdnYtcbtdGLglqyA+qp05xDjuZOj8Vt5j9GdSc40jzmPH2Rkkth0IqdKBC5hhQ
+	9PXPUeqouG0PaUDKBl9aN5a9AD10K75TXXxMHQR2/z9GUrPjwcePfTPEGA==
+X-Received: by 2002:a17:907:7b8c:b0:c2d:c33d:a9cd with SMTP id
+ a640c23a62f3a-c2dc33dad54mr618259366b.4.1790670216558; Tue, 29 Sep 2026
+ 01:23:36 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND] power: supply: bq24190_charger: don't reset
- registers across system suspend
-To: Ryan Brue <ryanbrue.dev@gmail.com>, Sebastian Reichel <sre@kernel.org>,
- "Mark A. Greer" <mgreer@animalcreek.com>, Anton Vorontsov <anton@enomsg.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260928-rbrue-suez-upstreaming-bq24190_charger-no-reset-regs-sys-suspend-v1-1-9a7689f12c05@gmail.com>
-From: Hans de Goede <hansg@kernel.org>
-Content-Language: en-US, nl
-In-Reply-To: <20260928-rbrue-suez-upstreaming-bq24190_charger-no-reset-regs-sys-suspend-v1-1-9a7689f12c05@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <cover.1790561983.git.zhoubinbin@loongson.cn> <502911659e15a51c4e98c11f3cf476dd5f92e75b.1790561983.git.zhoubinbin@loongson.cn>
+ <0aaf7166-378c-47d7-98d4-1004fdaeae7b@oss.qualcomm.com> <CAMpQs4+uWMfFib7MhRcc7o-QMXkFrFCtdcGj04y56u44JL4iOg@mail.gmail.com>
+ <ed99f62d-cf90-4ba9-89b3-08dbe7f7227e@oss.qualcomm.com> <CAMpQs4+hATFf+0w6Wq09RoZB1JJ5L_GP0aWxcGAeraTW7Gfy0w@mail.gmail.com>
+ <8eba263a-c233-42c5-842e-7487ea36d5aa@oss.qualcomm.com>
+In-Reply-To: <8eba263a-c233-42c5-842e-7487ea36d5aa@oss.qualcomm.com>
+From: Binbin Zhou <zhoubb.aaron@gmail.com>
+Date: Tue, 29 Sep 2026 16:23:24 +0800
+X-Gm-Features: AclHuK88BsaqlI4K2ocbd-PK2C68a5LcpD95joZ3dWjYgjyNNn2FFfvJo1d4Dpk
+Message-ID: <CAMpQs4JvLOUv3o8tktg-EOT85KCunY9gJhgxQVkZEXPH_C+4EQ@mail.gmail.com>
+Subject: Re: [PATCH v6 1/7] thermal/drivers/loongson2: Correct thermal sensor
+ registration loop
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Binbin Zhou <zhoubinbin@loongson.cn>, Huacai Chen <chenhuacai@loongson.cn>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Yinbo Zhu <zhuyinbo@loongson.cn>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, stable@vger.kernel.org, 
+	Sashiko <sashiko-bot@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Daniel:
 
-On 29-Sep-26 00:26, Ryan Brue wrote:
-> bq24190_pm_suspend() calls bq24190_register_reset(), which returns every
-> register to its power-on default, and bq24190_pm_resume() does it again
-> before re-applying the probe-time configuration. On any board that wires
-> the charger's interrupt this makes system suspend unusable.
-> 
-> The reset re-arms the chip's 40 s i2c watchdog. bq24190_set_config() turns
-> that watchdog off at probe, deliberately: as the comment there explains,
-> the same write also takes the part out of default mode into host mode.
-> Nothing pets it while the system is asleep, so it expires, resets the
-> registers again and pulses INT. The charger interrupt is a system wake
-> source -- armed unconditionally in probe since commit f385e6e2a153 ("power:
-> bq24190_charger: Use PM runtime autosuspend"), and still enabled by default
-> after the conversion to the wake irq API [1] -- so the pulse wakes the
-> machine.
-> 
-> Measured on an MT8173 board (Amazon Fire HD 10 2017, BQ24297) by swapping
-> only this driver between builds with and without this change, asking for
-> a 150 s suspend each time:
-> 
->   on charger, with the reset:     41-43 s, 7 runs of 7
->   on charger, without the reset:  150 s,   3 runs of 3
->   on battery, with the reset:     40-41 s, 3 runs of 3
->   on battery, without the reset:  150 s,   3 runs of 3
-> 
-> It is not a charging-only problem. The watchdog runs from VBUS or from
-> the battery, so an unplugged tablet loses suspend in the same way.
-> 
-> ftrace names the wake source. Across the resume, the first device
-> interrupt after the machine comes back is the charger:
-> 
->   1270.760799: suspend_resume: machine_suspend[3] end
->   1270.775683: irq_handler_entry: irq=25 name=bq24190-charger
->   1270.776156: irq_handler_entry: irq=250 name=11010000.i2c
-> 
-> Everything between is IPI and arch_timer from bringing the secondary CPUs
-> back up, and no RTC interrupt appears anywhere in the trace -- the 150 s
-> wake alarm never fired. The cause leaves nothing behind for userspace to
-> find, because WATCHDOG_FAULT is in the latch-on-read fault register and
-> the driver's own interrupt handler has already consumed it.
-> 
-> The reset also discards host configuration that nothing restores. Resume
-> calls bq24190_set_config(), which writes only the watchdog, SYS_MIN,
-> IPRECHG, ITERM, ICHG and VREG, so:
-> 
->  - IINLIM returns to its power-on default. Boards without a charger-type
->    detector set the input limit from userspace; measured here, one ordinary
->    suspend/resume silently took input_current_limit from 1500 mA to 500 mA,
->    and to 100 mA when running from the battery, where the default differs.
-> 
->  - EN_HIZ is cleared, so a charger the host put into high-impedance mode
->    starts drawing from VBUS again the moment the system sleeps.
-> 
-> There is no way to have both. Default mode is what the reset is for, and on
-> this part default mode and a disarmed watchdog are mutually exclusive: a
-> write to any register moves the chip into host mode, and it only returns to
-> default mode when the watchdog times out. Parking it in default mode for
-> the sleep therefore always leaves a timer armed that will fire, and on any
-> board that wires INT that firing is a wake. A per-board opt-out would not
-> be choosing between two workable configurations, only between a working
-> suspend and a broken one.
-> 
-> Resetting in suspend buys nothing worth this. The part is in host mode with
-> its watchdog off; it charges on its own, switching from constant current to
-> constant voltage and terminating when the battery is full, and nothing in
-> it can expire or change while the host sleeps. Resetting on resume is
-> weaker
-> still: the host is awake and about to reconfigure the chip, so the reset
-> only guarantees the loss.
-> 
-> The one thing the reset does guard against is a host that never comes back:
-> a chip in host mode keeps whatever it was last told, where default mode
-> would revert to the power-on values. But that is the state the driver
-> leaves it in for all of normal runtime operation already, so sleep is not
-> special, and the part still makes its own constant-current to
-> constant-voltage transition and terminates when the battery is full.
-> 
-> So drop it in both directions. The suspend callback has nothing left to do
-> and goes away. Resume re-applies the probe-time configuration, which is
-> idempotent and also recovers a part that did somehow fall back to default
-> mode, since bq24190_set_config() starts by turning the watchdog off.
-> 
-> This has been proposed before. Hans de Goede sent the same change in 2017
-> [2] and Sebastian Reichel agreed with the reasoning [3], but v6 kept the
-> reset on by default and added the "disable-reset" device property instead
-> [4]. That property cannot answer this: it is set only from x86 platform
-> code -- i2c-cht-wc and x86-android-tablets -- and is not in bq24190.yaml,
-> so no DT board can reach it. Every in-tree DT user of this driver
-> (tegra124-xiaomi-mocha, qcom-msm8974-lge-nexus5-hammerhead,
-> qcom-msm8974pro-oneplus-bacon, rk3188-bqedison2qc) wires the charger
-> interrupt and so has the same wake armed, with no way to opt out. If some
-> board does want the reset, it would be better expressed the other way
-> round.
-> 
-> The vendor kernel for this board does not reset across suspend either: its
-> driver, drivers/power/mt81xx/bq24297.c, only masks the charger interrupt on
-> suspend and unmasks it on resume.
-> 
-> Reproduced on a BQ24297. The reasoning applies to the family, but the other
-> parts were not available to test.
-> 
-> [1] https://lore.kernel.org/all/20260908-rbrue-suez-upstreaming-bq24190_charger-use-wake-irq-api-v1-1-c3f10ae2a34a@gmail.com/
-> [2] https://lore.kernel.org/all/20170322145536.30570-5-hdegoede@redhat.com/
-> [3] https://lore.kernel.org/all/20170323112052.ukyazi4pnji7n6st@earth/
-> [4] https://lore.kernel.org/all/20170414165233.4532-1-hdegoede@redhat.com/
-> 
-> Fixes: d7bf353fd0aa ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
-> Assisted-by: LLM
-> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+On Tue, Sep 29, 2026 at 1:46=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+> On 9/29/26 05:06, Binbin Zhou wrote:
+> > Hi Daniel:
+>
+> [ ... ]
+>
+> >>>> Please make a less cumbersome and implicit checks here. For example
+> >>>> count the number of sensors and then do the check against.
+> >>>
+> >>> I thought about it, and you're right=E2=80=94I made the logic here to=
+o complicated.
+> >>> Let's use `sensor_count` as the counter. Is the following check logic=
+ clearer?
+> >>>
+> >>>           u32 sensor_count =3D 0;
+> >>>
+> >>>           for (unsigned int i =3D 0; i <=3D LOONGSON2_MAX_SENSOR_SEL_=
+NUM; i++) {
+> >>>                   tzd =3D devm_thermal_of_zone_register(dev, i, data,
+> >>> data->chip_data->thermal_ops);
+> >>>                   if (IS_ERR(tzd)) {
+> >>>                           if (PTR_ERR(tzd) =3D=3D -ENODEV)
+> >>>                                   continue;
+> >>>
+> >>>                           return dev_err_probe(dev, PTR_ERR(tzd),
+> >>>                                                "failed to register se=
+nsor %d", i);
+> >>>                   }
+> >>>
+> >>>                   sensor_count++;
+> >>
+> >> If I'm not mistaken in the previous version, the loop exits at the fir=
+st
+> >> registered sensor
+> >>
+> >>          if (!IS_ERR(tzd))
+> >>                  break;
+> >>
+> >> Here all the available sensors are registered
+> >
+> > The name `sensor_count` might be a bit misleading, but here the loop
+> > exits after the first success:
+> >
+> >                  sensor_count++;
+> >                  break;
+> >
+> > Let=E2=80=99s rename it:
+>
+> Can you clarify why only the first sensor found stops the thermal zones
+> registration ?
 
-Thanks, patch looks good to me:
+This section of code is based on the original version by zhuyinbo; I
+noticed that you=E2=80=99ve had related discussions about it before[1][2].
 
-Reviewed-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
+I=E2=80=99ve reviewed all Loongson-2K CPUs that support thermal monitoring,
+and they all have only one temperature sensor, with =E2=80=9CSEL=E2=80=9D s=
+et to 0.
 
-Regards,
+As I understand it, given the current situation, the loop here doesn=E2=80=
+=99t
+seem necessary=E2=80=94physically, there is only one temperature sensor (ev=
+en
+though its SEL value might theoretically be non-zero).
+`LOONGSON2_MAX_SENSOR_SEL_NUM` does not accurately reflect the number
+of temperature sensors; it is merely an interrupt input selection, so
+using it here does not seem entirely appropriate.
 
-Hans
+Therefore, I believe treating the Loongson-2K thermal driver as a
+single thermal sensor better aligns with the current hardware
+behavior.
 
+Just use:
+         devm_thermal_of_zone_register(dev, 0, data, thermal_ops);
 
+[1]: https://lore.kernel.org/all/ac5b3982-a658-e05b-1b5c-3aeeda1585ed@loong=
+son.cn/
+[2]: https://lore.kernel.org/all/8ca44091-35fd-cc24-9896-0317772c5620@loong=
+son.cn/
 
-> ---
->  drivers/power/supply/bq24190_charger.c | 30 +++++++++---------------------
->  1 file changed, 9 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index 4bea6fd83c36..fef277bb18d3 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -2242,25 +2242,6 @@ static __maybe_unused int bq24190_runtime_resume(struct device *dev)
->  	return 0;
->  }
->  
-> -static __maybe_unused int bq24190_pm_suspend(struct device *dev)
-> -{
-> -	struct i2c_client *client = to_i2c_client(dev);
-> -	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> -	int error;
-> -
-> -	error = pm_runtime_resume_and_get(bdi->dev);
-> -	if (error < 0)
-> -		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> -
-> -	bq24190_register_reset(bdi);
-> -
-> -	if (error >= 0) {
-> -		pm_runtime_put_autosuspend(bdi->dev);
-> -	}
-> -
-> -	return 0;
-> -}
-> -
->  static __maybe_unused int bq24190_pm_resume(struct device *dev)
->  {
->  	struct i2c_client *client = to_i2c_client(dev);
-> @@ -2274,7 +2255,14 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
->  	if (error < 0)
->  		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
->  
-> -	bq24190_register_reset(bdi);
-> +	/*
-> +	 * The chip kept its configuration through the sleep: it is in host
-> +	 * mode with the i2c watchdog off, so nothing expired and nothing was
-> +	 * reset. Do not reset it here either -- a userspace setting such as
-> +	 * EN_HIZ or IINLIM would otherwise be silently lost on every resume.
-> +	 * Re-applying the probe-time configuration is idempotent and cheap,
-> +	 * and covers a part that did somehow fall back to default mode.
-> +	 */
->  	bq24190_set_config(bdi);
->  	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
->  
-> @@ -2293,7 +2281,7 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
->  static const struct dev_pm_ops bq24190_pm_ops = {
->  	SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
->  			   NULL)
-> -	SET_SYSTEM_SLEEP_PM_OPS(bq24190_pm_suspend, bq24190_pm_resume)
-> +	SET_SYSTEM_SLEEP_PM_OPS(NULL, bq24190_pm_resume)
->  };
->  
->  static const struct i2c_device_id bq24190_i2c_ids[] = {
-> 
-> ---
-> base-commit: df2908090cda368b01ff43709f51890076c56157
-> change-id: 20260908-rbrue-suez-upstreaming-bq24190_charger-no-reset-regs-sys-suspend-ad74a7cfd6f0
-> 
-> Best regards,
-> --
-> Ryan Brue <ryanbrue.dev@gmail.com>
-
+--=20
+Thanks.
+Binbin
