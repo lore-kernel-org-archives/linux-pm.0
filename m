@@ -1,36 +1,37 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26096544D79;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26761545DAF;
 	Tue, 29 Sep 2026 18:29:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790706548; cv=none; b=cAtgjj8LXXU5BRlVRxBo/kmYMG4VFdSYry3Uy57w/xGK2e9lGzBuwN+2ViQi/bNpo6eWTasNFgi5UYKFYcBnUHj90BtZx9cFssar3TnjH3k92GIGN31PMW+qFlR6gCrcfJ5WeOfjZ8YIKaAlcX0z9UeLq6sTkpVKNok+xh1CfrY=
+	t=1790706549; cv=none; b=BFozkmlnIDLhhhTN3BUqlWRg2QJmMVgoDCtZYzShnUD4YDiBL5xwbK9NjybReoprdgJeeGHmrvg0Z3ACxca3ncwqkn/YdzZygFICTOhm99yaVNSd2a6gudU9RZsmnDmJIE/VXTNiDRJHn0sB+J6uxCw/Ut1Nck0kNtGJ8DqNFQQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790706548; c=relaxed/simple;
-	bh=QVLv2HnN4E/QEnpzL/J/pll7aQfosBt+Kx7BXlhxaKE=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=miFCUKEWST1O8k78WOHmvFgCpGhz4/cay5voht5wmO6QgK1KHuXgZNU687pSc+LIu+1Lgsv8ZI+BYODkFyIZzNjf5PhhmrKbSezxJIuF3u2Sly+b7XBa/4qK04O0TXpo+bqOxhDGf4bsppx+5EL4Qn5g4/CzgX8/hnHLghUxwbY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=M5koVvc1; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=oXfItZB+; arc=none smtp.client-ip=5.75.144.95
+	s=arc-20240116; t=1790706549; c=relaxed/simple;
+	bh=oxkAfnnfUHZLCN1LsIX3vfohY3GBL9Qx6kRG0WJioMA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=VLmWiWWa4zRcye+aFq3rIHWL99shWd+S1eOWA8YzFfgcp81joOZsebSuvTDOX6JPkgjR4vtfg7cSxYvu00pyeXD2UpQ8aolVV1DRr3BQR040X0rX/2dHSznkur2DyI+c6o4321FCmtctx1YOPZrSbvIkdgIEez0+ZvPoh1Yt1uc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=dIVo02SX; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=x1Vg+25n; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="M5koVvc1";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="oXfItZB+"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="dIVo02SX";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="x1Vg+25n"
 DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Date:Subject:From; t=1790706520; bh=Gnfeq3trRNlTBmZloFXeOj3
-	OAbYXAx6OWuuY/mgNDOU=; b=M5koVvc1RK3GwP1nben8HqMrjq2RZEADXQaKdFZx81ZTtEe0Gz
-	eHZIgjF9pDgQ4LjjQVwRL8+Wuwpxj19DsvLVaQ1fHXTllF0puvJ6RbAaVnflAu0V7w1seo5s3Nx
-	s4q1p7/ISvVl38Kd2FDagFllOnjwaPVho8dLhhGIDFQJsKlIHb/Yd50wBxwDf8UKOWWzmOTpQN1
-	4loB6MtcUF0mBMb12lgBrHLWbt/a2LJT62gc2Mefs0DrMbA9h9mXzSAmUwOi8zX8QMBkvZS1jEK
-	+NlRPawn0k0Ns/XgUdGLCRzSfmy42ohluN0Uvl7Y2m267KKyYK66gWrKyxakRpQLj5A==;
+	h=To:Message-Id:Subject:Date:From; t=1790706524; bh=uyLBclGccRqlV/1Ed7yjAWa
+	or8gd7y11+OdY3H6pDgQ=; b=dIVo02SXZjiXYdAJoDxKe6ZgUPbdKESQWuyL2bKNXzfk5fRbLo
+	w6qrYvFudYIPCOCKxg7OPT6HFBC1cCE2CoXUUq0rahVkbTmTquFi7rxvH+F1Cdt+C29NHRPczQ2
+	Bw19KSx0wwpnTD20gsi+ibOM06vZq6yOaFNRULCtgNFs2EY8BuMQADBIVBDan2Xh6xuI3B0Oces
+	d8afrl7Kk6SjzhGh5LmIp3o6ETCNlpiyUWaJnBezwf6u5HLOhhZICyVb3LUM9m0fSEJSY/PSSoy
+	mzV3ljPYxWVe3AAOcnxpyWt0KRf4OB6kWVQbXUPBjEs4dgcdobjw6MJsUGdWueK8MKQ==;
 DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Date:Subject:From; t=1790706520; bh=Gnfeq3trRNlTBmZloFXeOj3
-	OAbYXAx6OWuuY/mgNDOU=; b=oXfItZB+KcvU7b1CQWeKZSBimRtIW3Mx3LyGD3u3tR6BhNtb1s
-	hiFtC2QDvTKke75LebWZhmKoGHJsvc5zzWCw==;
+	h=To:Message-Id:Subject:Date:From; t=1790706524; bh=uyLBclGccRqlV/1Ed7yjAWa
+	or8gd7y11+OdY3H6pDgQ=; b=x1Vg+25nC+gqOI5w0R6SIwmNJDEVrOnUek8aM5sDy+YoR0tvEZ
+	CLWMr+geA/+KTVelmu4ZbO2uqHyzhLYrXBBg==;
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Subject: [PATCH v2 0/6] MSM8953/SDM632 rpmpd/mss fixes
-Date: Tue, 29 Sep 2026 20:28:29 +0200
-Message-Id: <20260929-sdm632-rpmpd-v2-0-97ef8858161b@mainlining.org>
+Date: Tue, 29 Sep 2026 20:28:30 +0200
+Subject: [PATCH v2 1/6] dt-bindings: power: qcom-rpmpd: Remove unused
+ MSM8953 indices
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,11 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/1XMQQ6DIBCF4auYWZcGsCK46j0aF1ZGnKSCgYa0M
- d691HTT5f+S922QMBIm6KoNImZKFHwJeapgnAfvkJEtDZJLxWthWLKLqiWL67JaNnKs8d5c9NR
- oKJc14kSvg7v1pWdKzxDfh57Fd/1Bsv2HsmCcKW60HY1prVLXZSD/IE/enUN00O/7/gHnIAmlr
- QAAAA==
-X-Change-ID: 20260319-sdm632-rpmpd-c0e3eb548f58
+Message-Id: <20260929-sdm632-rpmpd-v2-1-97ef8858161b@mainlining.org>
+References: <20260929-sdm632-rpmpd-v2-0-97ef8858161b@mainlining.org>
+In-Reply-To: <20260929-sdm632-rpmpd-v2-0-97ef8858161b@mainlining.org>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
  Mathieu Poirier <mathieu.poirier@linaro.org>, 
@@ -53,74 +52,61 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  linux-remoteproc@vger.kernel.org, 
- =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+ =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790706517; l=2402;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790706517; l=1718;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=QVLv2HnN4E/QEnpzL/J/pll7aQfosBt+Kx7BXlhxaKE=;
- b=4pUKGGXHE+LvU55K8Wk7dAqtbOC8lUICww2l9F/bQgaNuNvqxF40clH4WRNy1S1tuwmnCTUwZ
- yC9FOVoXoP3Das45KhvUbZAlIAagAnzS6rcG4k8JKIox1OdDIxHK/Bn
+ bh=oxkAfnnfUHZLCN1LsIX3vfohY3GBL9Qx6kRG0WJioMA=;
+ b=4mGy5INwQZDh9bueSuLa7B8mFN8FN75ToDgFjyjNlj9QG6KbFHvxwbuLKJRknJwnNuzD3y/rm
+ wPbD4GXOsbqA5lfecpBp7n7xPilQ3VCd3KIFHpW8KlBnMUExAmeL0qn
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-SDM632 pm domains are different from MSM8953 because MSM8953
-is defining pm8953_s1 as regulator but SDM632 is defining it
-as pm domain.
-
-This patch series correcting the pm domains defined in rpmpd
-driver and splitting the MSS resources for the both SoC to match
-the reality.
-
-These changes was discussed in a previous threads:
-https://lore.kernel.org/all/2b057aa5-4416-4fd4-aeab-6bc23acbb53d@oss.qualcomm.com/
+Remove unused MSM8953_VDDMD and MSM8953_VDDMD_AO used for MSM8953 MSS
+because it is using mss-supply as a regulator.
+Define RPMPD_VDDMD for SDM632 MSS because it is using mss-supply
+as a pm domain.
 
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
-Changes in v2:
-- Define RPMPD_VDDMD
-- Remove unused MSM8953_VDDMD and MSM8953_VDDMD_AO
-- Squash MSM8953 mss related commits.
-- Rebase on latest next.
-- Link to v1: https://patch.msgid.link/20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org
+ Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
+ include/dt-bindings/power/qcom-rpmpd.h                  | 3 +--
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-To: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>
-To: Conor Dooley <conor+dt@kernel.org>
-To: Bjorn Andersson <andersson@kernel.org>
-To: Ulf Hansson <ulfh@kernel.org>
-To: Konrad Dybcio <konradybcio@kernel.org>
-To: Abel Vesa <abelvesa@kernel.org>
-To: Mathieu Poirier <mathieu.poirier@linaro.org>
-To: Stephan Gerhold <stephan@gerhold.net>
-Cc: linux-arm-msm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-remoteproc@vger.kernel.org
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+index a70bfacbc5d1..4b263a982fca 100644
+--- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+@@ -51,6 +51,7 @@ properties:
+           - qcom,sc7280-rpmhpd
+           - qcom,sc8180x-rpmhpd
+           - qcom,sc8280xp-rpmhpd
++          - qcom,sdm632-rpmpd
+           - qcom,sdm660-rpmpd
+           - qcom,sdm670-rpmhpd
+           - qcom,sdm845-rpmhpd
+diff --git a/include/dt-bindings/power/qcom-rpmpd.h b/include/dt-bindings/power/qcom-rpmpd.h
+index 4371ac941f29..120f8855b427 100644
+--- a/include/dt-bindings/power/qcom-rpmpd.h
++++ b/include/dt-bindings/power/qcom-rpmpd.h
+@@ -19,6 +19,7 @@
+ #define RPMPD_SSCCX_VFL		7
+ #define RPMPD_SSCMX		8
+ #define RPMPD_SSCMX_VFL		9
++#define RPMPD_VDDMD		10
+ 
+ /*
+  * Platform-specific power domain bindings. Don't add new entries here, use
+@@ -84,8 +85,6 @@
+ #define QM215_VDDMX_AO		MSM8917_VDDMX_AO
+ 
+ /* MSM8953 Power Domain Indexes */
+-#define MSM8953_VDDMD		0
+-#define MSM8953_VDDMD_AO	1
+ #define MSM8953_VDDCX		2
+ #define MSM8953_VDDCX_AO	3
+ #define MSM8953_VDDCX_VFL	4
 
----
-Barnabás Czémán (6):
-      dt-bindings: power: qcom-rpmpd: Remove unused MSM8953 indices
-      pmdomain: qcom: rpmpd: Split SDM632 pm domains from MSM8953
-      remoteproc: qcom_q6v5_mss: Use mss as regulator for MSM8953
-      dt-bindings: remoteproc: qcom,msm8916-mss-pil: Add SDM632
-      remoteproc: qcom_q6v5_mss: Add SDM632 MSS
-      arm64: dts: qcom: sdm632: Correct power domains
-
- .../devicetree/bindings/power/qcom,rpmpd.yaml      |  1 +
- .../bindings/remoteproc/qcom,msm8916-mss-pil.yaml  |  9 ++--
- arch/arm64/boot/dts/qcom/msm8953.dtsi              |  5 +-
- arch/arm64/boot/dts/qcom/sdm632.dtsi               | 34 +++++++++++++
- drivers/pmdomain/qcom/rpmpd.c                      | 29 ++++++-----
- drivers/remoteproc/qcom_q6v5_mss.c                 | 56 ++++++++++++++++++++--
- include/dt-bindings/power/qcom-rpmpd.h             |  3 +-
- 7 files changed, 113 insertions(+), 24 deletions(-)
----
-base-commit: 6375e61c01e93e35ee7acd336a689ac1fae4b509
-change-id: 20260319-sdm632-rpmpd-c0e3eb548f58
-
-Best regards,
---  
-Barnabás Czémán <barnabas.czeman@mainlining.org>
+-- 
+2.55.0
 
