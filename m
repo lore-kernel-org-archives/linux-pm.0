@@ -1,142 +1,178 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej2-f43.google.com (mail-ej2-f43.google.com [74.125.228.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A7013546CC;
-	Wed, 30 Sep 2026 11:50:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790769059; cv=none; b=kuTLwIny7xBqEJ6GRHdVavEFMHZ7RM4tMlBeftUDJvLFXw7nXkgPvW//NlDgti2RyvIFuTt5ofbIn8ujn86Zx66lqp9k23o9W2occtaVKA/h/T8o6ZjrO8g0RRbfD8jRdPg2V4Ji4L8g7gZKftXtc52yKu7tpuEUyMs9sDQw/TI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790769059; c=relaxed/simple;
-	bh=cYn7Ze/P7oEkD1Z+uBj09CPrLrnPKQFy4Z7HMToNqQ8=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=WWcrnOLwYIWcAqwf/CcVcHqlvDJEOLAh7X4ySs0e4esnFJfjtZL2YSewa6ynQ40L+8cLjTgdc/E/m15QiDASEwf536hBc7zRjnXPSifd48N1syjxZcnWBH9GsDkSexQoR79mgfqfd2MbXTf8mTkjQZFpVzhKryAHdXU2Wiv8U1E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dtUhLBbl; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8CAF4CCDC1
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 11:58:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.171
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790769536; cv=pass; b=WlT32lzoVARB7aqnxyJw0AiGA+DLrjZOrZ5Y1AfirGkX/D8hJTaisCihBR86y3ak6+tNOCiqwCz9DTkCmVHBZtTR7lyMmJRhhvFLhRDNgQ86Kt7JVZWiWv9z/0n0mwAQ41fBQPdbCmprHTII1Ik20wd99FWjmTbcy0OKBuyU4Pk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790769536; c=relaxed/simple;
+	bh=gDDF0XFUuoqlHKuciYsAXxZPSv08MbbVx/bzfReSE8U=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VYC0kPOVLx6wJ7zyVuUnP8ssOyhPLCyGF+yr5o2fUWkePBCr0/lxv2bdFEyEfQ5MaAwsemdJe5L1x2uwyn2+ugXHQInZmsgcJMcqc2AmU0nsXXst7NKCR56Y3R+W/8MN/6OMr1YdHkpLotiz844unbTqWZTCqAvW9NJQYO7tZ3U=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=I6Ou7jtF; arc=pass smtp.client-ip=74.125.228.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dtUhLBbl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AB5C1F00893;
-	Wed, 30 Sep 2026 11:50:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790769057;
-	bh=8XCU4MQS8FddGxbqTGB/oQsbxL2Xtt6aCSHUXFWTIFQ=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To;
-	b=dtUhLBblbqcZi62VlxZoeUQn0kLmO4+x8QiLE+InV0zooxBoxH5ewP8EVJ1q7EbzC
-	 +Cbxa8u+cF5x8tqhmsErHIPSro+5Ye/8h2bp+GWRtGXj+EGFy9WIbBki5wPTGWRYkN
-	 tNYEvICgG9Psr2eMPVXcrYLkz3xP78TbP9JoHqkf8ZjlcONlVdcvAyLgsxf+HmNhrL
-	 1CYkKxCd3le6N6vT8L19NVW8GOe3bJw+bpiAWDAnaVCSyH/oesTq8E93oIdn3ydG++
-	 TCATm/JrOwn8fDk2iokxhMtBScjgPBy4+OFcsYKubf6QB/Waz2XgdTewsWPh1LtBar
-	 lCkjUsbHrxgTw==
-Message-ID: <eb2d513b-3c7b-4298-932f-8e7cc8d9c08b@kernel.org>
-Date: Wed, 30 Sep 2026 13:50:50 +0200
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="I6Ou7jtF"
+Received: by mail-ej2-f43.google.com with SMTP id a640c23a62f3a-c2e17e5de00so128818666b.3
+        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 04:58:54 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790769533; cv=none;
+        d=google.com; s=arc-20260327;
+        b=HybEJJB3hpKDMTzi2HHmNjzamvHoKZSXnRg2+u6p+c+ULKCgMy1v7A7RYU2GrAU6nT
+         b/xEaLbmndt+vnK/n7mnibbZfIosuHyh13nfCE405aAz40KgjVFNamgz144NwpR403y7
+         wEl2YfkHz3DgakbqYalTqbptFRcY2HiadhFVX7XMW42wk2nOyQrjcijYaQmtr/YQbfQ6
+         c2HJMzQcv/9hAeSZdTY2+lAkgjrDq5HHoMO8FXsiUaYgVIr5VMMhxTrTtf5+yfYfZR+Y
+         XD5yfKgvj292YSOWVpfJd6BPXnxGkaKLJI4TfSlzLOGuD9pT49qJRH5Piug85Ob+bBQS
+         950Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=6F2ERHZWXw7WA/3EGNJE+vEhgczaBRrblyhbjUi05hs=;
+        fh=hOZlxbMSMQWEdGvY8S0FaYWTEuVcJ2j9vcdaPNFFzKo=;
+        b=qwu9gz4P9wHoJjFxiWHMazFku9fzRRN3g8haZON8t+wYPVg9dJsuUzsdAJgyIvwhgk
+         QQEfc7rAunlYmhgQznAQYJxMoJ/90rQmppdpXKJxiuvfhj5+rF+x2yqF0Qcfmck+fc60
+         Xvh5wXElODmlyvPbniDro/hq/UBvxuc5P5oIt576MLR9XBgsRZ+K/9b4dqHWAtNz2cmt
+         CLeaqvACVFsKH7k5jRdTEea8R0P7fDmRMVRwJPQB93eTnkt1HkuNuRS+gMiuAB9UMEYU
+         4d7rptYOpyxhaD97necZ9C6J9Ryxpe6UrX5n12zOQUuP1lzWcRH5e6ZkcxYRSRwh2EaN
+         1wBw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1790769533; x=1791374333; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=6F2ERHZWXw7WA/3EGNJE+vEhgczaBRrblyhbjUi05hs=;
+        b=I6Ou7jtF3DP4pS402dtNK+2SD6R1BKdYTVSruchFRPXUmAcszzgBp5ws7sA+bY3Zzo
+         nKvRl21mTNINsLGVIp17z3PI8aM5mAH4YxlLp2ka9hfRGBqUSDSY347ekDkZNSJ8MMvf
+         /+Av059YD6q/04oJaoZ+S01ZjXstAXYxZa/mFrIVnj1C9vxr5jqiZWtFvojuhw8xYIjz
+         YcITNQdgSBAheMj+JOR5faow7VYFQGFVDIXFdN45CsI5Y++j0H6eAbkLWzodIwwwCQ37
+         e43rJVJEz4BMwQlWb7OfqQr5uQjTa8YpSdndIJAjdCGwkG0kdNk5F+6fhrApZCVr6ooG
+         upVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790769533; x=1791374333;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=6F2ERHZWXw7WA/3EGNJE+vEhgczaBRrblyhbjUi05hs=;
+        b=LbbetY5i1oELROvPt4sFAYhfky61U5LVwuEb4jfwmFiSmzo1P2i4FaNNScrSQNKxj2
+         HG/20bDluXlSIzpxlZ7+SWmQRM4CULXI5vX7s7ejdHIfVvSisKQn/enK63naX4b5OYsZ
+         RIirS8z8mePZj3VC1pfn2VPK63aywwONayWOk7G/ZO0Eer9pJHOWUMPoJANZCiDrlyh5
+         MTBRUT6uZda8xBMVogBXHVUuaSYO+oLyK89/3ZF8N/3bbUM18jCq3OWKgKfol/X3jX7C
+         xz+cIRvjj7EYw9oJ1ZCqL/tpH5CMBARFQlXbr2Ytt4R3TPtJTqJq7vJtskRZFKxqv8Ig
+         9GXw==
+X-Forwarded-Encrypted: i=1; AKwUvBxvq2bL6zzrPSC8NlkDA2AGvAk3DVUcDxe9aHFDYHReoRQ06wkhTFbMTpoNO44msWEpo/jGa+If2Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++l0HHwMqICNMxZAus6ZYgykdkO41eDWAl8jj0BaTo2VAtoIiZSd
+	TuO2uRU1kEjHEr9jqEA5fqQjfU0fN8ZVCWILPQGIGJHxy5LEzj9yLtsfYNoNbkR/Deby7SCyZpH
+	MvxQlOCbBSz5EZShlhoTVB+WO3YfGx/K/uZDwWA97Zg==
+X-Gm-Gg: AYBFou0KCgpTVtPzsS0BWbnboTlzek7HZO/FI8XQLjFv3RlM8r3nbCKVXMImdH6JGQL
+	/vdSwNiPheWcQmFUHgPoUGr/av5i5QPxATkyePZBW8eFcO49Vu9hb2Ul/5/RGytEw9rp42XPpkL
+	SQQUkIhlAHGEZ8ZTUyGn71GmfINixT+gc0oYHRG4KiO8WriE4KhEBlPoYmYEFYwjhXPzXxFfMq+
+	2GYi+Vt7SUzEmpxqG29qW3Qeq/ba4LMpqQXNnS0hyV3Xe6ohZvBxkOLFHBYeclxlSu9Tus6/TSW
+	zbspSgwdAGaqPWGlrJ0RQ/WUjybSTF23eAi6DU74I2kVUfPbvxi9NFEiF57wJ4RdGX2cunlK11I
+	0sTTwsDPerjAisg==
+X-Received: by 2002:a17:907:9708:b0:c26:19de:913a with SMTP id
+ a640c23a62f3a-c2e23e58df9mr108073466b.45.1790769533085; Wed, 30 Sep 2026
+ 04:58:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/5] dt-bindings: power: reset: syscon-reboot-mode:
- allow supplies
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
- Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Shawn Lin <shawn.lin@rock-chips.com>
 References: <20260929-b4-rk3576-reboot-mode-v2-0-5a34ca72065a@flipper.net>
  <20260929-b4-rk3576-reboot-mode-v2-2-5a34ca72065a@flipper.net>
- <20260930-fascinating-cheetah-of-speed-7cccd0@quoll>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20260930-fascinating-cheetah-of-speed-7cccd0@quoll>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <20260930-fascinating-cheetah-of-speed-7cccd0@quoll> <eb2d513b-3c7b-4298-932f-8e7cc8d9c08b@kernel.org>
+In-Reply-To: <eb2d513b-3c7b-4298-932f-8e7cc8d9c08b@kernel.org>
+From: Alexey Charkov <alchark@flipper.net>
+Date: Wed, 30 Sep 2026 15:58:45 +0400
+X-Gm-Features: AclHuK9WjZS6N6YQrXd5XAL-P_3Z00CVqfe-4TuT9v8_bFTVQ6par63t-_u8TFM
+Message-ID: <CAKTNdwHy41vh_Hp1zOnOtK-v7LvpvH0tgjP0MrMXdtZUqwubnQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/5] dt-bindings: power: reset: syscon-reboot-mode:
+ allow supplies
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Shawn Lin <shawn.lin@rock-chips.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 30/09/2026 13:47, Krzysztof Kozlowski wrote:
-> On Tue, Sep 29, 2026 at 02:28:19PM +0400, Alexey Charkov wrote:
->> Whatever program that acts on a reboot mode runs before a full OS, so it
->> may lack the capability to enable the regulators it depends on, and a
->> reset that preserves the mode register generally leaves the regulators as
->> the previously running system left them.
->>
->> Allow a reboot mode node to name such supplies, so that they can be
->> turned on while the mode is being requested.
->>
->> Tested-by: Shawn Lin <shawn.lin@rock-chips.com>
-> 
-> Again fake tag.
-> 
->> Signed-off-by: Alexey Charkov <alchark@flipper.net>
->> ---
->>  .../devicetree/bindings/power/reset/syscon-reboot-mode.yaml       | 8 ++++++++
->>  1 file changed, 8 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
->> index 79ffc78b23ea..5ed70c87269e 100644
->> --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
->> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
->> @@ -36,6 +36,14 @@ patternProperties:
->>    "^mode-.*$":
->>      maxItems: 1
->>  
->> +  "^[a-z0-9]+(-[a-z0-9]+)*-supply$":
->> +    description:
->> +      Supply that has to be powered for whatever program acts on the mode.
->> +      That could be a boot ROM with no access to regulators, and a warm reset
->> +      leaves them as the previously running system left them and not necessarily
->> +      what their expected out-of-reboot state is. Any supply described here is
->> +      enabled when a mode is requested, and stays enabled.
-> 
-> This looks like workaround for missing supply handling in actual
-> consumers. Fix your devices instead.
+On Wed, Sep 30, 2026 at 3:50=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On 30/09/2026 13:47, Krzysztof Kozlowski wrote:
+> > On Tue, Sep 29, 2026 at 02:28:19PM +0400, Alexey Charkov wrote:
+> >> Whatever program that acts on a reboot mode runs before a full OS, so =
+it
+> >> may lack the capability to enable the regulators it depends on, and a
+> >> reset that preserves the mode register generally leaves the regulators=
+ as
+> >> the previously running system left them.
+> >>
+> >> Allow a reboot mode node to name such supplies, so that they can be
+> >> turned on while the mode is being requested.
+> >>
+> >> Tested-by: Shawn Lin <shawn.lin@rock-chips.com>
+> >
+> > Again fake tag.
+> >
+> >> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> >> ---
+> >>  .../devicetree/bindings/power/reset/syscon-reboot-mode.yaml       | 8=
+ ++++++++
+> >>  1 file changed, 8 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-rebo=
+ot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-=
+mode.yaml
+> >> index 79ffc78b23ea..5ed70c87269e 100644
+> >> --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode=
+.yaml
+> >> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode=
+.yaml
+> >> @@ -36,6 +36,14 @@ patternProperties:
+> >>    "^mode-.*$":
+> >>      maxItems: 1
+> >>
+> >> +  "^[a-z0-9]+(-[a-z0-9]+)*-supply$":
+> >> +    description:
+> >> +      Supply that has to be powered for whatever program acts on the =
+mode.
+> >> +      That could be a boot ROM with no access to regulators, and a wa=
+rm reset
+> >> +      leaves them as the previously running system left them and not =
+necessarily
+> >> +      what their expected out-of-reboot state is. Any supply describe=
+d here is
+> >> +      enabled when a mode is requested, and stays enabled.
+> >
+> > This looks like workaround for missing supply handling in actual
+> > consumers. Fix your devices instead.
+>
+> Heh, I misread - you need to power this on? Then how does your board
+> powers itself in the first place? And how do you even solve the
+> incorrect - e.g. too low - voltage on these regulators?
 
-Heh, I misread - you need to power this on? Then how does your board
-powers itself in the first place? And how do you even solve the
-incorrect - e.g. too low - voltage on these regulators?
+When the PMIC comes out of a cold reset it has all the needed rails
+enabled by its power-on default state, which the DDR trainer relies
+on. But the OS will normally disable the rails it knows it doesn't use
+itself, so a _warm_ reset which keeps the boot mode argument live and
+keeps the PMIC running would leave those rails disabled, unless the OS
+put them back as it found them.
+
+So to make warm resets work one would have to either ignore unused
+regulators in the OS to keep it from powering them down (ugly), or
+mark them "always-on" in DT (also ugly), or state that they are needed
+for the reboot mode feature, as done here (which is least ugly IMO).
+
+The DDR trainer unfortunately cannot access the PMIC at all, so it
+won't be able to enable the supplies it needs.
 
 Best regards,
-Krzysztof
+Alexey
