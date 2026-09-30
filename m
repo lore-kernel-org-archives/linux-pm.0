@@ -1,111 +1,92 @@
-Received: from mailsc.amlogic.com (unknown [64.106.246.77])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr2-f34.google.com (mail-wr2-f34.google.com [74.125.225.98])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97CCE2D77F5;
-	Wed, 30 Sep 2026 06:19:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=64.106.246.77
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FBF03939D0
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 07:25:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.98
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790749155; cv=none; b=hDUCmsVnHiXLxQAmHjjPu8Ru0SQlYRnVal3FaMb15ZjhAQ/k5/z0dHTT3pVvHJc41H+XPT+pyPrsoISntAFffkHmdzv+S95hHK0ovqrrcc8GvpBXsScNY1l8rx2JxQdcx5mZPhU8QyUMsZ4LkxVvRA7tsEIMPtvqWgdrADnRcuQ=
+	t=1790753103; cv=none; b=cpQoh/T2hu9qxbYZ7wuhyEPbJwjlzdXM0zHTYaqXF74XWucKXGgePN0uT2FAyV9KleApgwjlVEaJWx8XdAWSwixg7iFm0fYUXZufCchC5dRCHAhtiw1eJaf0OMpuHzm/n+Ecx5rXqeYZOzjIBURPyE5VV/N94bZ6otlcOxIHg2Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790749155; c=relaxed/simple;
-	bh=xRm3gEACpNR+yLo44YiEitOwVR6sFn5jhprGz3gHx2w=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=JG2k0Cz0B9AUFR+f9NVEGP1p9FLQtEIv0AtjeBfSo0jCp8eiIHyZGRuVq8y3dSjqjQGV7cu+cxl4JRtgcZUVbgWmQmA/WZ1/d2sEEd4H4NXrMIIAocOApfbu08L21u/4HMsdi8AG+rokdfZ7Dz89BGXNf3ynjnM7vWhLTS+bj50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com; spf=pass smtp.mailfrom=amlogic.com; arc=none smtp.client-ip=64.106.246.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amlogic.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amlogic.com
-Received: from [127.0.1.1] (10.18.11.116) by mailsc.amlogic.com (10.8.11.35)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.35; Tue, 29 Sep
- 2026 23:14:06 -0700
-From: Chongchong Ding <chongchong.ding@amlogic.com>
-Date: Wed, 30 Sep 2026 14:13:49 +0800
-Subject: [PATCH] ARM: hibernate: flush TLB after switching to idmap
+	s=arc-20240116; t=1790753103; c=relaxed/simple;
+	bh=3nG/sDKEXby/WIrLfH86wORGS+f2incixoM/JnZ1iJw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qUBbI7a+zaCDoE2QDaaZOBvNapFwT6gTFVR6ru0pbGImHgL2L4KLI2/TZ3O32Z+4PaKWSTXt+q6Mbp9xa5BINF4vioMulBmfm8ZO3wEiqGl7V3fQSsRkMAiFPF+IBxXmIO2bMZCC63LsNzYYAgZhh7bVy+cmW2hLVY0I/x4VhXU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=inAmJie9; arc=none smtp.client-ip=74.125.225.98
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="inAmJie9"
+Received: by mail-wr2-f34.google.com with SMTP id ffacd0b85a97d-48b01c41135so151050f8f.0
+        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 00:25:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790753100; x=1791357900; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=XAd6nfAO22oQbqKamKmwvUK9RC63ufUS5aB+67o1X1Q=;
+        b=inAmJie9Vl9FlWO2TXS8afcevZQYRiCqQ2D1blJ3gQRcwjecBwmKmScYrPtZVPK+xy
+         F9sAbwXUtk0oHtn+UzCLXDi8RYpRt3Hm4hCthH5jVFi8CDeU/YogY3t2U+JfWz6DCP7n
+         /Jwo92Cdmgr1caNq0Txieb5/1FT3jdTCB5jgNe3iTmsF3MleVLyqeY9kg1lkHmkI29Tt
+         sA0N0QGpNxSLz2ZAD9omxq5Z7BDga+3jnDt3zvfKpW7qilFs5qv8Btpo0hxd4buAi/uA
+         gkpop/yH754SAZ9Q4jspnDMcSS+vndFfhaZ9xh4+Ix+oeu3DGlC/fiE7B8EkjZVm//eU
+         t1QQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790753100; x=1791357900;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=XAd6nfAO22oQbqKamKmwvUK9RC63ufUS5aB+67o1X1Q=;
+        b=EL5tg6kA8ejyhF502hGupjhJQKn69QW1rlFGbmjEehLt8htPl8PI4TGME523rQVFd5
+         TDpJVF7rynqdljU+Ek5NHFRGW+KshVCqzqrV7lfsatySY0n/v/+uBVGfpYYrZJHeusPF
+         9/rqvzbz+fsw1BXK0SdWqCiUN+4vea6Eu0VuatAxiXoysGED+zdr6kaW0qUQ3HitHhrW
+         hc5ApiG1iPfvrLuUGaCHclw3oKhMdrJ79SifP4OJQDr1avy0NkRS+knAX0EjQ3ysT32Y
+         Ihc2Wb++X2QDezgtsVd+l4fhbMJjjMeGlvQdSPbYm0Oy+YJAfnYp6liuWNxKrJLF8nKx
+         x1Ew==
+X-Gm-Message-State: AFq9FYKR9jO95YT7aPXdgsW0Ge34I3h6VENSDtKPUWw2sh1pgtNUXERS
+	eLb5oRWUgv+bCFKZEeyUbrC3ixVM0k6p2NsIECdU7vcpRVzVckMlzABD
+X-Gm-Gg: AYBFou366TbdhnGhioCIybJg32yBf3aYHnImL3YYMkfUq8QL5kwDhz7cw0GtcqVuqj5
+	0bgQgjZd6ewVzQIVgwutlCupI+F6In18wcQv9crFJvkzTUqsTzPa4N6EfjIYLjt7juCTDR0lD+V
+	yhVNXcejEcVjZhVllB14EZ+2zmvgluc8HJwOu1EPA1wdWglH7gvYsqwbe+PGKt35NIFif+VlxW0
+	UoPotHfdRkg4X1iB9FJBY83Owvn3E8VBu9nBklqwlHXXkT2uAWEiPvUzAPzu7taz3ULIsYfuB9D
+	aoO/ATTOZf1uUzwae2MuLcrQ6Xwczgx6uTfhTG5cH8G8Zk9k0JS1aaa/VP6B3aQo6SfUxP2EFNa
+	BJpberVd1WR1AREsda+7ClTsF52ZcubIE1rdiiMiLuyS7agYL42S/tNTh9UVg8N4xl8PqFWy1Ny
+	UiOSovhnnBYhJrcEVDAfYIGtqvjVOz9CvJP6XX1MOMQsstincugGnQmvLvpFrfYdSCe2me/bnru
+	tgplI2GbRrdDmLKa1k=
+X-Received: by 2002:a05:6000:400f:b0:48a:f26d:18b3 with SMTP id ffacd0b85a97d-48b02535074mr1142441f8f.42.1790753100479;
+        Wed, 30 Sep 2026 00:25:00 -0700 (PDT)
+Received: from xeon ([188.163.112.76])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b029fc420sm1267411f8f.28.2026.09.30.00.24.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Sep 2026 00:24:59 -0700 (PDT)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v1 0/1] dt-bindings: power: supply: maxim,max8903: Document MAX8922L and RT9524
+Date: Wed, 30 Sep 2026 10:24:49 +0300
+Message-ID: <20260930072450.61836-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260930-hibernate-tlb-flush-v1-1-a0143c144c19@amlogic.com>
-X-B4-Tracking: v=1; b=H4sIAJyovGoC/yXMQQqDMBBA0avIrDtgpkTaXkW6MHFipkgqmVgK4
- t2b6vIt/t9AOQsrPJoNMn9E5Z0qzKUBH4c0McpYDdRS197phlEc5zQUxjI7DPOqEQN54+3V2I4
- s1HLJHOR7XPvnaV3di335r2DffwloWe93AAAA
-X-Change-ID: 20260928-hibernate-tlb-flush-f2c1c5315625
-To: Russell King <linux@armlinux.org.uk>
-CC: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, Linus Walleij <linusw@kernel.org>, "Florian
- Fainelli" <f.fainelli@gmail.com>, Chongchong Ding
-	<chongchong.ding@amlogic.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790748845; l=2140;
- i=chongchong.ding@amlogic.com; s=20260930; h=from:subject:message-id;
- bh=xRm3gEACpNR+yLo44YiEitOwVR6sFn5jhprGz3gHx2w=;
- b=mVY4hSIXxmwZwPg1yYsJdj/VEZwtR3MM2B3k+7Jzwm7JwFJD3phlpkbnh86VDwpuXiaeDS50v
- T0h+6xd+Eb5D0l9QU25+thhxHo+V9YPBWgZ+2HLVOF7qkFU8pVLibIJ
-X-Developer-Key: i=chongchong.ding@amlogic.com; a=ed25519;
- pk=x1D2PG3lUVeB9gT9LLK2qTEJMxyeSY7/nexaR/wvK6o=
-X-ClientProxiedBy: mailsh.amlogic.com (10.18.11.5) To mailsc.amlogic.com
- (10.8.11.35)
+Content-Transfer-Encoding: 8bit
 
-On 32-bit ARM, hibernate switches to the identity mapping to copy pages.
-The idmap keeps an early RW snapshot of kernel mappings, so
-STRICT_KERNEL_RWX text/rodata can be written during restore.
+Document MAX8922L and RT9524, which use a similar charging control pattern
+to the MAX8903. The MAX8903 is set as a fallback for both chips. No driver
+changes are required.
 
-cpu_switch_mm() does not drop the global TLB entries from swapper.
-copy_page() can therefore still hit the old RO translations and fail to
-restore kernel RO sections.
+Svyatoslav Ryhel (1):
+  dt-bindings: power: supply: maxim,max8903: Document MAX8922L and
+    RT9524
 
-Flush the local BTB and TLB after installing the idmap, matching
-setup_mm_for_reboot() and the cpu_suspend() resume path.
+ .../bindings/power/supply/maxim,max8903.yaml           | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-Signed-off-by: Chongchong Ding <chongchong.ding@amlogic.com>
----
-arch/arm/kernel/hibernate.c is only compiled when CONFIG_HIBERNATION is
-enabled, and none of the 32-bit ARM defconfigs enable it, so the ARM
-hibernation code has never been covered by the regular build tests.  This
-bug was found while enabling the option for build coverage.
----
- arch/arm/kernel/hibernate.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
-index 231a76af09a0..1c7c1cb6dade 100644
---- a/arch/arm/kernel/hibernate.c
-+++ b/arch/arm/kernel/hibernate.c
-@@ -21,6 +21,7 @@
- #include <asm/suspend.h>
- #include <asm/page.h>
- #include <asm/sections.h>
-+#include <asm/tlbflush.h>
- #include <asm/uaccess.h>
- #include "reboot.h"
- 
-@@ -93,6 +94,17 @@ static void notrace arch_restore_image(void *unused)
- 	if (IS_ENABLED(CONFIG_CPU_TTBR0_PAN))
- 		uaccess_save_and_enable();
- 	cpu_switch_mm(idmap_pgd, &init_mm);
-+	local_flush_bp_all();
-+
-+#ifdef CONFIG_CPU_HAS_ASID
-+	/*
-+	 * The identity mapping has no clean ASID and may clash with entries
-+	 * left behind by the previous page tables.  Without this flush,
-+	 * copy_page() can translate through the stale read-only kernel
-+	 * mappings instead of the writable aliases in the idmap.
-+	 */
-+	local_flush_tlb_all();
-+#endif
- 	for (pbe = restore_pblist; pbe; pbe = pbe->next)
- 		copy_page(pbe->orig_address, pbe->address);
- 
-
----
-base-commit: 551c722f40809618230001baccf219193e22fc5a
-change-id: 20260928-hibernate-tlb-flush-f2c1c5315625
-
-Best regards,
---  
-Chongchong Ding <chongchong.ding@amlogic.com>
+-- 
+2.53.0
 
