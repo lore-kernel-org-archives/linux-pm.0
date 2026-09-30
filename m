@@ -1,61 +1,63 @@
-Received: from mail-wr2-f34.google.com (mail-wr2-f34.google.com [74.125.225.98])
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FBF03939D0
-	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 07:25:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.98
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95189448BA0
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 07:25:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790753103; cv=none; b=cpQoh/T2hu9qxbYZ7wuhyEPbJwjlzdXM0zHTYaqXF74XWucKXGgePN0uT2FAyV9KleApgwjlVEaJWx8XdAWSwixg7iFm0fYUXZufCchC5dRCHAhtiw1eJaf0OMpuHzm/n+Ecx5rXqeYZOzjIBURPyE5VV/N94bZ6otlcOxIHg2Y=
+	t=1790753105; cv=none; b=TLhGYcXptnIYQTMTxOhaRE31cuwZBETUlzw5Mkh2YgAIimXNaVZJq+DVUlChG8y9hwSRtLBG8vKAUk0hsuUngLoKc25hoaXvTNLhygo31plVVelxRZeplgy+JUVMOzNPeXxzWoyv7ZvsDCaIVCTqWg63IJOuAmGaSdIA1P7toyM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790753103; c=relaxed/simple;
-	bh=3nG/sDKEXby/WIrLfH86wORGS+f2incixoM/JnZ1iJw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qUBbI7a+zaCDoE2QDaaZOBvNapFwT6gTFVR6ru0pbGImHgL2L4KLI2/TZ3O32Z+4PaKWSTXt+q6Mbp9xa5BINF4vioMulBmfm8ZO3wEiqGl7V3fQSsRkMAiFPF+IBxXmIO2bMZCC63LsNzYYAgZhh7bVy+cmW2hLVY0I/x4VhXU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=inAmJie9; arc=none smtp.client-ip=74.125.225.98
+	s=arc-20240116; t=1790753105; c=relaxed/simple;
+	bh=jMyD1jqGz1AaC/ou0E2FfmxGvxgefkJ6CyuNcosYIJw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ZsNZIY11LqFS74qw9Net8TVbIBSS6DB1goalZWWpqvsnyeby/mcGVTdBTIg7zyExS1d9SUxcJIhSiaBb4zfTyp/6EoO8KBLTff53xb+vdUgNNTVUHY6DUYDElWnFkFXeC47bZuqspS8jf7LbRzzT4bvOGTSA5HkAXfteTNLwh2M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KNwr9+uf; arc=none smtp.client-ip=74.125.225.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="inAmJie9"
-Received: by mail-wr2-f34.google.com with SMTP id ffacd0b85a97d-48b01c41135so151050f8f.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 00:25:02 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KNwr9+uf"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e6b885ef8so29021425e9.1
+        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 00:25:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790753100; x=1791357900; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=XAd6nfAO22oQbqKamKmwvUK9RC63ufUS5aB+67o1X1Q=;
-        b=inAmJie9Vl9FlWO2TXS8afcevZQYRiCqQ2D1blJ3gQRcwjecBwmKmScYrPtZVPK+xy
-         F9sAbwXUtk0oHtn+UzCLXDi8RYpRt3Hm4hCthH5jVFi8CDeU/YogY3t2U+JfWz6DCP7n
-         /Jwo92Cdmgr1caNq0Txieb5/1FT3jdTCB5jgNe3iTmsF3MleVLyqeY9kg1lkHmkI29Tt
-         sA0N0QGpNxSLz2ZAD9omxq5Z7BDga+3jnDt3zvfKpW7qilFs5qv8Btpo0hxd4buAi/uA
-         gkpop/yH754SAZ9Q4jspnDMcSS+vndFfhaZ9xh4+Ix+oeu3DGlC/fiE7B8EkjZVm//eU
-         t1QQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790753100; x=1791357900;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1790753102; x=1791357902; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=XAd6nfAO22oQbqKamKmwvUK9RC63ufUS5aB+67o1X1Q=;
-        b=EL5tg6kA8ejyhF502hGupjhJQKn69QW1rlFGbmjEehLt8htPl8PI4TGME523rQVFd5
-         TDpJVF7rynqdljU+Ek5NHFRGW+KshVCqzqrV7lfsatySY0n/v/+uBVGfpYYrZJHeusPF
-         9/rqvzbz+fsw1BXK0SdWqCiUN+4vea6Eu0VuatAxiXoysGED+zdr6kaW0qUQ3HitHhrW
-         hc5ApiG1iPfvrLuUGaCHclw3oKhMdrJ79SifP4OJQDr1avy0NkRS+knAX0EjQ3ysT32Y
-         Ihc2Wb++X2QDezgtsVd+l4fhbMJjjMeGlvQdSPbYm0Oy+YJAfnYp6liuWNxKrJLF8nKx
-         x1Ew==
-X-Gm-Message-State: AFq9FYKR9jO95YT7aPXdgsW0Ge34I3h6VENSDtKPUWw2sh1pgtNUXERS
-	eLb5oRWUgv+bCFKZEeyUbrC3ixVM0k6p2NsIECdU7vcpRVzVckMlzABD
-X-Gm-Gg: AYBFou366TbdhnGhioCIybJg32yBf3aYHnImL3YYMkfUq8QL5kwDhz7cw0GtcqVuqj5
-	0bgQgjZd6ewVzQIVgwutlCupI+F6In18wcQv9crFJvkzTUqsTzPa4N6EfjIYLjt7juCTDR0lD+V
-	yhVNXcejEcVjZhVllB14EZ+2zmvgluc8HJwOu1EPA1wdWglH7gvYsqwbe+PGKt35NIFif+VlxW0
-	UoPotHfdRkg4X1iB9FJBY83Owvn3E8VBu9nBklqwlHXXkT2uAWEiPvUzAPzu7taz3ULIsYfuB9D
-	aoO/ATTOZf1uUzwae2MuLcrQ6Xwczgx6uTfhTG5cH8G8Zk9k0JS1aaa/VP6B3aQo6SfUxP2EFNa
-	BJpberVd1WR1AREsda+7ClTsF52ZcubIE1rdiiMiLuyS7agYL42S/tNTh9UVg8N4xl8PqFWy1Ny
-	UiOSovhnnBYhJrcEVDAfYIGtqvjVOz9CvJP6XX1MOMQsstincugGnQmvLvpFrfYdSCe2me/bnru
-	tgplI2GbRrdDmLKa1k=
-X-Received: by 2002:a05:6000:400f:b0:48a:f26d:18b3 with SMTP id ffacd0b85a97d-48b02535074mr1142441f8f.42.1790753100479;
-        Wed, 30 Sep 2026 00:25:00 -0700 (PDT)
+        bh=D46y/6BuhZzAx6HMKm4qk803Zjc4arpmPOdiKp9sksc=;
+        b=KNwr9+ufQ1fFKABsEa8PAigkfvzFReVgBzWFUkyuJvqpUuC3VK14f7p/wwq9/uK6Pf
+         TBaiIQXxkClqYQBMMFvYezmnm3R2qqsPSCfw2QNFq5I+x7ihbQd3KGXQc4POFFt36Yqd
+         3MBStPcyTXqjBE6XUPqneBwNBVZQSD8aDPIznzpZMYsEptvEjcVQHoDLITlqjGWKC5w/
+         uBvi1GvN7OsCIk0+aUBNcb/6fwgZWNbtN79gfnVslLJme5+hULEeuTacHjGhS9OCxGc3
+         HNjRUwx1b5qlKcmBkLbZ2l2V32FJJdsUDlblv8SlUr1bb+AvtcBkoEboFGnAivSftSHf
+         kx1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790753102; x=1791357902;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=D46y/6BuhZzAx6HMKm4qk803Zjc4arpmPOdiKp9sksc=;
+        b=USSasrcmZRUUGY4bCRInaovcOZ6SmqOFHaTfyZ7be9CHdsymF/uImM2cnxv9Iw2g9t
+         WevpYlMDWSwV2zBqrwwEm7RjAMBCPuYQpYVS+SjMh14vLxNURsye+zsABX9eamT53kVH
+         mG8iKWVL6LiFSEFYE63N2HuPdVzPOd2UN2mbJqd8GcP0dINi6h+8DiSzyOdxDkSQ385m
+         RbGiZkSijgiUEYast3xrimnRrXwQGv96rKgrtkCwtaprdlmnMVAt2vGF+QYc9CRz7Uio
+         kcP3WU63brzO2w1zvvvt/MjXQQnl5Z+aiPJZrQ2tKaw18I0ieQkslQZ88OWY80gEFHnj
+         Jmdg==
+X-Gm-Message-State: AFuF++kctJCJ95tIcb5fVB1RoB6SXcNdAwiE7Eb9Eb/LAA0Qo1ELN2ol
+	Pn0j1CQDNu71YbdLbAmpNqjZxHuX03AJEfECjh8VLzfLPcDUS0/dUNvy
+X-Gm-Gg: AYBFou3nrFp9vT+36o0CwI93URuSdkyd5+zk4C5h9wSnp2AAlLtM//j+nu1oEkRUQpt
+	RtEechxBkepNX3cyekuUqPfW9aIJUzCNyYKVuRgJO3RaK3BPBMhic6ICxTQitRXMTcEQ5XdsHVn
+	Enn/FmjnZwDyCTutAXJJ8tmYYaXOhejP1guSABTwCcfW1phS95JvrGLQXBx2XABhzI+HTRVKJVw
+	ZOpczMTRkTnYzfAYFg6yzqbkexJsKxb3HXoj5CkPCM2FT7yqnjr1mx8U9JaD465cTNjipBAMpsY
+	L/QVF6FI/Al/zZgjdKTooUa5wAtpibgmcuFl5fVS/C5GoJ1cEtHLLDZ3a1WyL7609zFHaawSbPR
+	wWKPlcao+XrNlhFb1N0cE93XqXOd+ubkzwtWbAJu9zJYZXrKHlzRUOO1redtoOC+yC5dHCCiTBh
+	AEWbKgARlr+2Am93S1Ev/GQC3mT59nfP96Hati9tdb3cRf1YeIpgTKc9My7Faq3dlBRHPoiYett
+	7EEu4CPecnfCqw9v6fysoUBRnPt4Q==
+X-Received: by 2002:a05:600c:4691:b0:49c:fa21:e749 with SMTP id 5b1f17b1804b1-4a01b126e5dmr5753075e9.31.1790753101752;
+        Wed, 30 Sep 2026 00:25:01 -0700 (PDT)
 Received: from xeon ([188.163.112.76])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b029fc420sm1267411f8f.28.2026.09.30.00.24.59
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b029fc420sm1267411f8f.28.2026.09.30.00.25.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Sep 2026 00:24:59 -0700 (PDT)
+        Wed, 30 Sep 2026 00:25:01 -0700 (PDT)
 From: Svyatoslav Ryhel <clamor95@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>,
 	Rob Herring <robh@kernel.org>,
@@ -64,10 +66,12 @@ To: Sebastian Reichel <sre@kernel.org>,
 Cc: linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 0/1] dt-bindings: power: supply: maxim,max8903: Document MAX8922L and RT9524
-Date: Wed, 30 Sep 2026 10:24:49 +0300
-Message-ID: <20260930072450.61836-1-clamor95@gmail.com>
+Subject: [PATCH v1 1/1] dt-bindings: power: supply: maxim,max8903: Document MAX8922L and RT9524
+Date: Wed, 30 Sep 2026 10:24:50 +0300
+Message-ID: <20260930072450.61836-2-clamor95@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260930072450.61836-1-clamor95@gmail.com>
+References: <20260930072450.61836-1-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -80,13 +84,32 @@ Document MAX8922L and RT9524, which use a similar charging control pattern
 to the MAX8903. The MAX8903 is set as a fallback for both chips. No driver
 changes are required.
 
-Svyatoslav Ryhel (1):
-  dt-bindings: power: supply: maxim,max8903: Document MAX8922L and
-    RT9524
-
+Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+---
  .../bindings/power/supply/maxim,max8903.yaml           | 10 +++++++++-
  1 file changed, 9 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml
+index b3d8c0a5f2142..11287d07ae898 100644
+--- a/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml
++++ b/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml
+@@ -14,7 +14,15 @@ allOf:
+ 
+ properties:
+   compatible:
+-    const: maxim,max8903
++    oneOf:
++      - enum:
++          - maxim,max8903
++
++      - items:
++          - enum:
++              - maxim,max8922l
++              - richtek,rt9524
++          - const: maxim,max8903
+ 
+   dok-gpios:
+     maxItems: 1
 -- 
 2.53.0
 
