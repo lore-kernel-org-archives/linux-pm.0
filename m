@@ -1,77 +1,80 @@
-Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
+Received: from mail-dy2-f29.google.com (mail-dy2-f29.google.com [74.125.229.29])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19FAB370AE4
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 06:11:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A19224848BA
+	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 06:22:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.29
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790835084; cv=none; b=FRv3EgZxsm6AK23D219i9U7mLg70tjjfiAGnm4ln+Q6TILJrDA92b3GtBPsGwdsKGEIPcq0d1pvpRNbqzJDFc0eAskk037a32SuAWFF3VDs8qgxvwHGjdKvGLTEq5Pm6LkGl/Lc+a6Ririm8+UH+nWquNnwBKds9w4z/hFIEhZo=
+	t=1790835730; cv=none; b=cbPje8QjN73HeQ7JytOIC39DNL49V8bsZqz8PIDuxzX+ayZvCcj5DXu4TELzKQ5lyuC7QeHhPmtPCdzDfUQNAnAhF810C+3oDb9KAwnCDlNpxoIyWYksTu4NY9UHl9Jv1alq2S+GuDptpuRd9//l+SLWvDBWscP8/mqPV3YMvf4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790835084; c=relaxed/simple;
-	bh=V+7fq0aIITW4y/H2dS9YpjMAyw1V9R1Ey7YiRCW4oTY=;
+	s=arc-20240116; t=1790835730; c=relaxed/simple;
+	bh=jK8YcmgULqcX6JVEZ4kRXjt5tovYz/f4IYFMschjLGo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LFcNyyZY46F0l1AWqGNW1Hrt7iiPYgNBl/2tn73GGe1c62njYxCDf/6D8THVQUklF3QZKhSDEJ9JKOKy0cOOnDUdYAay+AUdBtKltXtt572S6okQMpRiwQlpHGBQoz3HJbxjx1zhLjoEgasqrYiWcl/e4sAQOwdWUUm/0u5HDvU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=kuylOZMb; arc=none smtp.client-ip=74.125.229.43
+	 Content-Type:Content-Disposition:In-Reply-To; b=JCQy8r/AiuI/FabuBMyzVqQlQ1udQ3DTh0jpRxAl5UttIFTZcKQKbmVgXa5b/nU4X7Q9TjUKE9zprRyPkTN4iWK2JmQtQ0O7bVTVqikJPUfClrjE8loYaafqWTsmDKP9MMKAwNgX9liXIjJNvajPPlqIN11eg+arAKSLCCg5hZ4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=K2iA6g8w; arc=none smtp.client-ip=74.125.229.29
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kuylOZMb"
-Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-33e62211987so6154805eec.2
-        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 23:11:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="K2iA6g8w"
+Received: by mail-dy2-f29.google.com with SMTP id 5a478bee46e88-34b48100af4so2121302eec.3
+        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2026 23:22:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1790835081; x=1791439881; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1790835727; x=1791440527; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=APRwSvDbSgJ/cF1X+Olcbk7Y4gCP43eD+/63lefDSyc=;
-        b=kuylOZMbaTm8sEDuXDeBrd9s52Wi2En15V1n3Y1jCs+Di4GvWbvL8VOsMqsid6+G15
-         nNwixxKqaKFCmSfInCjuqQgqnvfNCeRWPHjQN0HTkJokQGXudpNSouUwUnC16l3sVIhv
-         t72ZCqkWmoNZTvMP0pLoqPWWDYFFBdU9GTdfeZ4taf+TdbgaOIBGJxIAsSUY5epYZlgQ
-         z4O9P1Qkg7XXblbZRgGbyAG12V/+PSZhhvkgsLbr2axQoRCyHlCEVtbvN4/+uj45a/xS
-         iNJXRixPR7mH4Z9hbHW+WTX9nZbD5tYNThVRNR1ywKlc+jOnRvJ/MBJnZWcAs03U/0ae
-         FGaw==
+        bh=y7zcw/ukAiD8lLlXAKYppSFNCW4crk+K0J8KwggLYx4=;
+        b=K2iA6g8wbvHkPECXpwO+9T5iw0NOSqhMYLQOuAHXigUm862xvqbeGZu4i8dLYBUpcG
+         BREAAMQlLV6Fzr65uxxxGpJW7MZO6bePGyhaWcdliPm4F8hwSIjjnEj+cUK6t1jtjFEL
+         3fkKekmeRDumBmBjlWm7erxBFqMpkt6iT1XX/8bd/v+RWZ1/HLwbnkESlHDRSHN+pgf1
+         4TUZ/AiXPw5ngly4xlsylLo4F6IjfDE+g0IZEXKgpWjj3xLf7aZmsOMnLO7ySiLTvicy
+         PwfL+AUsncVtgJz0Zrb/5zvqVdcfpxUFhyIslxTJIdYaJ4iikwZLNcJc9DP66CcMFwHT
+         +pkw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790835081; x=1791439881;
+        d=1e100.net; s=20260707; t=1790835727; x=1791440527;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=APRwSvDbSgJ/cF1X+Olcbk7Y4gCP43eD+/63lefDSyc=;
-        b=KVEl9yS2a33Xv3kNGyiMhlx85VFFylAcMwizbW9QxS6sTWRfl6soXFqx8GGQQmx/F2
-         3DbGs4xl3j9xR6qPZSlXfg0bi1MW/FNCE//oX8dxC58ACGGusGwjwOWOsL82lVe7Ck2U
-         axaGkfRX7dNcn5ZlzDPNLS7bqFQ6rgHOiWBsiDdx0tp3H2/DR8MzuI2MZfveEKkAK+1C
-         KN4+MXKlKpKC6ts5Gz33rjV1Px5xD7QBCcD1JrrqJmLrYJjX6VwE7xm6ROJkuGkYOhL/
-         crzhuMoOKaGw53H/4sgphouFU4KegElEST2N2nay+LKT39yVpaq0dvCLVDQvybItDU9z
-         y22w==
-X-Forwarded-Encrypted: i=1; AKwUvBw0oIYr4qZwVhgko3t6EkG5ZqgkwIZRcYHbfFbi0tYaptGYWsFmXJ8HFWdBHfjjW6XvFyppO3DCcQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ2iSY1GdZvOlUEJBlWpsjCCj1s/G5QawS6I9nobJyAOifVtZqy
-	1JYOh3Tbf/Nw6wCbgRcdnUu1EgJIWKi1iyQVN1/1SxMsEOmQvj+fhDhtS3E5lkszuoA=
-X-Gm-Gg: AYBFou39nnNsUlTpq9KVcbke2RSXIcBnEgEUVzujwj//4rFOBY/50scU6YLC6LVcGLK
-	eoWO7loi03Z90iWlVhcMKxGgsqiYva40Ko0EC2okNiFwcug7+S2AuNR7HjUBf3YTSr/EenHsWS0
-	BE9wvg9S/rdb7nFXpYBoFIjPhZ8Ux5RzOjbNbeHQfVJEXESWglVvgUS6xgCf/Bq9NCltRg5NOk8
-	aTtgdp2piCntxtq2WV0hIuSDykabjVe6IIv4bWHtvwYNVdfxGs0oIu7dPthzxAMyQBQXxbnuB6F
-	cDNDBdAqyw7XGUQNpazEoXuEfjTljd2tMSSwjnREC/VCnbh0t9Ieh1Jg5Vrog4B6UNxB+EKZ0vm
-	gsHNjuAF0Dyv7ZNFBQEajJXmRWaZ87XTFeT4v5+Fz4V575aWF2L3WaQcCpzCY/1TP8TKrM3fqzO
-	dSURG/YDBPkpbJ/OUPHH8r0tOQ2w07sjY6s9McoDzdnUC4sXuuGliWEC7i+BbDz56XefetygTnG
-	Q==
-X-Received: by 2002:a05:7300:f408:b0:34c:b75a:ac21 with SMTP id 5a478bee46e88-34cdcabcc65mr4493118eec.35.1790835080766;
-        Wed, 30 Sep 2026 23:11:20 -0700 (PDT)
+        bh=y7zcw/ukAiD8lLlXAKYppSFNCW4crk+K0J8KwggLYx4=;
+        b=D7BX29AO74KVeytOJukSfYdIrD2lCqP2hPdDbBSDVJfo104KVFf3vyX0dib8dYkZ5G
+         +Tj5i1d0qFHRrLFw7OnCbCyb0siEZbUYs6xIKOVybCrLGNKlztI67MZmhmdRzt+78id9
+         sJWiIJCX8S31uK991sTCrPNZ7iTFASgpbFC1zgYuuMvGJ3UV4Z9ofZWZwzCYoKl8mCmX
+         LdjvcrAnv2ANMheOosCqmj9XrXTf/bpj3GlpX6/D1cRoeUgwPQb+xHzjPK9zg19peLxp
+         9HrMx4cByO3bApxbaloUFvKlwj70tbD1ulN8qs92JJiZiwPvTqbNcUmMJnwFM9sTdLOo
+         PryA==
+X-Forwarded-Encrypted: i=1; AKwUvBwnc6c+4pxt0EquBw79Xfu3FuhRwr7qdzLJbKnKb8yUftmYK4P48x+nIIY0/WsR1z2HlmAPjDYDZg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJpOZANUC07k47Y1xJmebBaeEZz90vp6zuV6SPW/MO7AxRP8hEU
+	39iGU8DsC8yhVrY6UCmxlj1pUPp4JxNzK0j7x4PZeripAL9ONJlYRw0sS3j4VA8FG+M=
+X-Gm-Gg: AYBFou04Gy1N/nsXJNJK8T7/P6TUHYZ1TC8yUCOHTzeSWzJab1CsbhfzwEAXEvogJgN
+	tWINfj+FjAU+ZeaRP2UHyymHeRuG2Vlsn44LdeP/qqUQped5+gigiZyzFFnhGwVRbOmcdF7ZPl3
+	STIvNL/rizPCNoNTV4dqQgEOlIz4ll7ylqRtW/Hh/I9mqvL+YUFT7CjyFlR/I2o8NcswPZVgC/b
+	kV1T429mNQTt17vapDXSbWZQXZJMg1IZRAdqiaMa6la7YRLnG4NZryedJe4OwuI17i7LZslgcQB
+	fbYf1XqeOLm16TOwSZkqRRdqozsSgLIXDbJV6AoRDoAG3blOZhwMu/i9HMX18YKUeVapggKjtSX
+	lIVXuKtI+fBBBxiB5j01NVfumCLUnCnVXLe4s8LvpAiX9+e2bTyhbHxnPzo+AYN3fmpiNqfjmC5
+	fQ1fD4au9MGsh9X/O8uh72TM0DAgS2ZKsOn8d9nFBFNuiBYot0MPOwQ+VlqNVAoG84/Slj8H7M
+X-Received: by 2002:a05:7300:d947:b0:34b:101f:cda2 with SMTP id 5a478bee46e88-34cdc1ce13amr3929856eec.27.1790835727212;
+        Wed, 30 Sep 2026 23:22:07 -0700 (PDT)
 Received: from localhost ([122.172.87.224])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34db5016caasm4237966eec.30.2026.09.30.23.11.19
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34db3750765sm4040631eec.12.2026.09.30.23.22.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Sep 2026 23:11:19 -0700 (PDT)
-Date: Thu, 1 Oct 2026 11:41:16 +0530
+        Wed, 30 Sep 2026 23:22:06 -0700 (PDT)
+Date: Thu, 1 Oct 2026 11:52:03 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Karl Mehltretter <kmehltretter@gmail.com>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-	Stephen Boyd <sboyd@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Rajendra Nayak <rajendra.nayak@oss.qualcomm.com>,
-	Jordan Crouse <jordan@cosmicpenguin.net>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] OPP: Fix the return value in dev_pm_opp_get_of_node()
- kernel-doc
-Message-ID: <ar35hDWrzXcqdc45@vireshk-B250M-D3H>
-References: <20260911221443.7139-1-kmehltretter@gmail.com>
+To: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Ilia Lin <ilia.lin@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 3/3] cpufreq: qcom-nvmem: add support for QCF3211 &
+ IPQ5211
+Message-ID: <ar38C5omDdaXQAID@vireshk-B250M-D3H>
+References: <20260922-ipq52xx_new_ids-v2-0-4b1a0f3d04b2@oss.qualcomm.com>
+ <20260922-ipq52xx_new_ids-v2-3-4b1a0f3d04b2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -80,34 +83,32 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260911221443.7139-1-kmehltretter@gmail.com>
+In-Reply-To: <20260922-ipq52xx_new_ids-v2-3-4b1a0f3d04b2@oss.qualcomm.com>
 
-On 12-09-26, 00:14, Karl Mehltretter wrote:
-> dev_pm_opp_get_of_node() returns NULL when the OPP is invalid, but its
-> kernel-doc says "else 0 on success", which was never true. Say NULL.
+On 22-09-26, 10:03, Kathiravan Thirumoorthy wrote:
+> Like all other SoCs in IPQ5210 family, cpufreq for QCF3211 & IPQ5211 is
+> also determined by the eFuse. Add support for the same.
 > 
-> Fixes: e2f4b5f8dc59 ("PM / OPP: Implement dev_pm_opp_get_of_node()")
-> Assisted-by: LLM
-> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+> Signed-off-by: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
 > ---
->  drivers/opp/of.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/cpufreq/qcom-cpufreq-nvmem.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index 2f3bbde9a9e1742a2d6b40be91a65d8fa7365bf3..ea93800795783f0595483742c0c10de42b25518a 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -1409,7 +1409,7 @@ bool dev_pm_opp_of_has_required_opp(struct device *dev)
->   * dev_pm_opp_get_of_node() - Gets the DT node corresponding to an opp
->   * @opp:	opp for which DT node has to be returned for
->   *
-> - * Return: DT node corresponding to the opp, else 0 on success.
-> + * Return: DT node corresponding to the opp, else NULL.
->   *
->   * The caller needs to put the node with of_node_put() after using it.
->   */
+> diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+> index efa766e98d86..9f2e6e6c0905 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+> @@ -205,6 +205,8 @@ static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
+>  	case QCOM_ID_QCF2200:
+>  	case QCOM_ID_QCF3200:
+>  	case QCOM_ID_QCF3210:
+> +	case QCOM_ID_QCF3211:
+> +	case QCOM_ID_IPQ5211:
+>  		drv->versions = (*speedbin == 0xcd) ? BIT(1) : BIT(0);
+>  		break;
+>  	case QCOM_ID_IPQ5424:
 
-Applied. Thanks.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
