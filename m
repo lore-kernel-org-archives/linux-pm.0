@@ -1,79 +1,73 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A15073C457D
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 07:52:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A11D547533C;
+	Thu,  1 Oct 2026 08:10:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790841159; cv=none; b=CeY80Ns40CjPR9ik4LIaiJ18wG7sIcMijDWSDQtEhyQI3QZD1guPDRBVYa5edvbmQtmtquZ/RyYJYXUvaHU3uzCUYaV0qwsEp+Xq0pqF6cMxW2O06a0hlwvkW9zE368WAO2K7re1m9ISD6L26BB8Ytk1qsO9NKCz16KdPr51dQA=
+	t=1790842252; cv=none; b=XJiAgLVgimGQfxaKaRyz6XQLp+ZuwU+YuAi6XaDzwDaS43VxjvDVHoscRHlkXn8lMuX7Sm2GovQ8X2HXp+SDEpM1UvGgOYpva2mdtjGy9qL8xxnKe7bahiTFhWmVJVzyMJOl+rkd4l/ekiOLEHozhSPAGpXzaayxFShmpY897qM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790841159; c=relaxed/simple;
-	bh=TNWX3OiscYdEIgqQTdlMe6MVT+KT9Zr0Ks4fA9xYcc0=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LDNpwm7F0HqvJjmyKoG5VO8sR6b1hhRYoML/X574hhbgdOgEhqPbMW4bIW79BBgDx7k7ZVoqnqV+8zboHIiwB6e9b6N1PgWZdT10G5UwaJEiY9TIAiSydR1+pho3Wc2mxDEnkNswLh+A970i1N7I1cXhWU5XkvkrD7m2qkdmKnM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=G/2Ymtg6; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790842252; c=relaxed/simple;
+	bh=ZGbR4aB3RIriXOPKFAmkD07CgNPUT4F2e8vEKPFVn6g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=C97gXRxoz7rEKgzqmBvPCpXl5WILtxF+tqRCj4REiEcOCNMjylBhge8zMME5azUXUOQ72hZM2A6ro41zlpJ5cOmazjXIWICMDOgN4GVPYMeog+mvdEjPwntjfF3RHjtAgONnWYDuy/wThSmZ4e5J7dRQjNmPFf5T5bVOUf9G070=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X7XCn3CZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="G/2Ymtg6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6296B1F0089B
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 07:52:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X7XCn3CZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1DADD1F000FF;
+	Thu,  1 Oct 2026 08:10:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790841158;
-	bh=TNWX3OiscYdEIgqQTdlMe6MVT+KT9Zr0Ks4fA9xYcc0=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=G/2Ymtg64FfVIeozboVa/rvXddNL6pBVVvl+jqjzFkFlfeyvR07+4JdfpZ+p7viA0
-	 vtRbtKLeazbYGoRmb7e47uFRx4gI8m2uiI7y1UJVy0cXHUhN1UBQFrDYUO14H3I3eC
-	 8/3h6wXdgsMCNRr6S71CyqsvprgDp8mT4X/D2K1EVz2PEqi6CRDUQ3gmGlMo0ZcXlk
-	 CpM7GY6DSb3t0XXnjpB2KaG0mffpYSl5+iS8IzL1WQMpZqzHCY6irgW/t40qiYPr6N
-	 yRwr/dfenfY1K9udhOMLj9yG1hqXBTkZNxrEe/qb4CzV4S4xRUXIL4gSil/JwphfRK
-	 3X9le4P0HfXjw==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5ba390408cdso2420363e87.0
-        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 00:52:38 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzPOStuzVp7Q2lEfWGzy2Wa7/Zy7icCxf7++coAzAqxxnNKXwb7tlRXM5fjfD8iN9TdCoweDMMSJg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLawRXCE+oAeljisufvl/6e2k5aHPJJdF+QSxCrZY+hU/7x5JOH
-	Li5mN52PSLHHFsRoTL0Fsi7Bv0uMgCN2Spb0yizyUWkjfep7dbvtljnwtVbdmMrIZ/uo53A3EHb
-	m7VVPSe8Pqj4f1TvnO2LxoS8KtsBWExbHn3b9ygkBig==
-X-Received: by 2002:ac2:5615:0:b0:5b6:1a7c:59d1 with SMTP id
- 2adb3069b0e04-5ba405f88ebmr1216346e87.43.1790841157086; Thu, 01 Oct 2026
- 00:52:37 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 1 Oct 2026 10:52:36 +0300
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 1 Oct 2026 10:52:36 +0300
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260929-regulator-get-all-v1-4-e887c66a47f1@flipper.net>
+	s=k20260515; t=1790842244;
+	bh=xA3sVAvYHgl3WQ28VzOBB4tFDEYxog/63WIwwHEYI4M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=X7XCn3CZSGnU/DQEmbXVC2KxvWCaEWE/zzE/5M55htl9YGHCXHFjOp6YeGsR7OeAd
+	 /4PPfWTaMxcg3UIFpvkQnhcY/2wB27X33HvsHzM2ItcdXe35hp0ubkDElO66v/2lOh
+	 e1c7Wdc+Mx/sn8x6I61TRHK81zT6Tdz0KIXJyoSWQB1sEMbsVIEGkyLA2yZHlNSSLq
+	 dEMDNj48nab0mvRjtLxt4bl0uVgfoMab5blRzn7MQ9+xD3hEgPx5xjt8FKb08P/6b8
+	 PKkCQSsFpNuD4c8WYbmcQ9oJe+aMHdVJ8L9wjr73Qms76SZ9t+4OQcK20mgNxti279
+	 oseg7fbZiO+Dg==
+Date: Thu, 1 Oct 2026 10:10:40 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: =?utf-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Stephan Gerhold <stephan@gerhold.net>, 
+	Ulf Hansson <ulfh@kernel.org>, Abel Vesa <abelvesa@kernel.org>, linux-arm-msm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-remoteproc@vger.kernel.org
+Subject: Re: [PATCH v2 1/6] dt-bindings: power: qcom-rpmpd: Remove unused
+ MSM8953 indices
+Message-ID: <20261001-noisy-jolly-labradoodle-fba5bc@quoll>
+References: <20260929-sdm632-rpmpd-v2-0-97ef8858161b@mainlining.org>
+ <20260929-sdm632-rpmpd-v2-1-97ef8858161b@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260929-regulator-get-all-v1-0-e887c66a47f1@flipper.net> <20260929-regulator-get-all-v1-4-e887c66a47f1@flipper.net>
-Date: Thu, 1 Oct 2026 10:52:36 +0300
-X-Gmail-Original-Message-ID: <CAMRc=Me4m2vR8qScuP5DzV-Q7x_q2qC3kkus1TbMDbmfarhFAQ@mail.gmail.com>
-X-Gm-Features: AclHuK9lDtmp-6zlrLdql0EWyux__fuJev2I81mWG7n21T5kCqKjNHkMh7-kRLc
-Message-ID: <CAMRc=Me4m2vR8qScuP5DzV-Q7x_q2qC3kkus1TbMDbmfarhFAQ@mail.gmail.com>
-Subject: Re: [PATCH 4/4] PCI/pwrctrl: generic: Fix leaking array from of_regulator_bulk_get_all()
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Corentin Labbe <clabbe@baylibre.com>, Manivannan Sadhasivam <mani@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
-	linux-kernel@vger.kernel.org, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260929-sdm632-rpmpd-v2-1-97ef8858161b@mainlining.org>
 
-On Tue, 29 Sep 2026 12:05:49 +0200, Alexey Charkov <alchark@flipper.net> said:
-> of_regulator_bulk_get_all() allocates the consumers array and hands it to
-> the caller, who is expected to free it at an appropriate time.
-> PCI pwrctrl never did, leading to a memory leak.
->
-> Add an explicit kfree() for the consumers array.
->
-> Cc: stable@vger.kernel.org
-> Fixes: 75996c92f4de ("PCI/pwrctrl: Add pwrctrl driver for PCI slots")
-> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+On Tue, Sep 29, 2026 at 08:28:30PM +0200, Barnab=C3=A1s Cz=C3=A9m=C3=A1n wr=
+ote:
+> Remove unused MSM8953_VDDMD and MSM8953_VDDMD_AO used for MSM8953 MSS
+> because it is using mss-supply as a regulator.
+> Define RPMPD_VDDMD for SDM632 MSS because it is using mss-supply
+> as a pm domain.
+>=20
+> Signed-off-by: Barnab=C3=A1s Cz=C3=A9m=C3=A1n <barnabas.czeman@mainlining=
+=2Eorg>
 > ---
+>  Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
+>  include/dt-bindings/power/qcom-rpmpd.h                  | 3 +--
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+I don't understand how does this even build.
+
+Best regards,
+Krzysztof
+
