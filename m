@@ -1,228 +1,205 @@
-Received: from mail-yx2-f40.google.com (mail-yx2-f40.google.com [74.125.224.168])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1B5944C659
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 10:53:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.168
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790852032; cv=pass; b=uF1a3u7cle+uWAJOWdohCUQGkna1YJy9yOam9TnaKdN4yYBwaIS3wp1lCMdcc0tXHnc2Dv8Zk1DGRb05QIAUcbZp6z0xHxrA2Sh/agxTahFj/Vf8zXx473j+ZDWfYAzS1s3BelGSc1jeTOXOm3fmOfjkVv6cJFytzEeWi3ODD4Y=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790852032; c=relaxed/simple;
-	bh=Fs1edfuHx1in4X4WdK3upBMt8kh7e3INqc862LZOi+0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AIcptElLpMaimJsswJqWUTtF1EdwAoRNS9JgB233HUSeRPJDBbY/5RPkiUUR6pY1QkBFdv0O92+0vrBpP2m6ihITNndviafhGscx3E6SBgVNOYKSQIWiR1ZnQgntGJN/zIfIMyxGDZd2nbw/THAUutRCrvRAOkvw607Nmj/8e+Y=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=FAbj7CJM; arc=pass smtp.client-ip=74.125.224.168
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id ECEF04F5DF7;
+	Thu,  1 Oct 2026 11:06:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790852772; cv=none; b=OBGjyICoJyzlRkmhqxAdSoVuw/uAy0dNeu7jiyIxNwiukOnNzcHC2DrfF83+bhdQ+Xf6z7uRxWBJL8Y0goAEy0cXHoWoTwyyBThes9dJkbnbAnE4Vze4ie4TeGoq96/eonaRTWLYrnqaZ4q10KmxjnH6MwJFGZMeoBnhqWv7iRk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790852772; c=relaxed/simple;
+	bh=+V5xRtwSpEjK63wJ+cyKK9U6lr5/HJMU+DNwniXIDPM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kyy46k4S8G/IPiScCNjeJHMNuv6BPRY2Ii0pC5/8gjIgMLZZZKDRDUSNroetxCDJ7PtYY+/s+j79So+WaH7NQ2oWmZxjgith7R8PJbYf2HpjzGC7/Ow6JJ52pgR170tEjnbxDn5MWoSCIEGEbvIkzP/HjQ2RuQRlWXupMsclbCg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=QA4Dw1zg; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="FAbj7CJM"
-Received: by mail-yx2-f40.google.com with SMTP id 956f58d0204a3-6756a6320f6so2404705d50.2
-        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 03:53:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790852028; cv=none;
-        d=google.com; s=arc-20260327;
-        b=e0/cH6LBpl8r/Cc7YeZWvJ78NNfRVQBbHpL18etvXT89NWYT8cwW5AwBz9L8sPdl4I
-         guyMbdTfr2O7uTtV/7jEFFnFBEOdJgjqm6NujFCSIjQC8uxCKmuu0SXdCTw1U8qdQXOa
-         iDFy0Wbi6jdrPLTdtol1ZUx7WlURr79lrdC1ach2/SufU2c2XNy/q+ABjovsN5zZVv/D
-         J8o7Usb6MAzg0gSX4yqc4M+eqvrGNiCI8LhTg3Fq6i2+vyz9gMr8ek3snqUnCxohYKBS
-         5/hkMWRWau5IPvhlWjG+FG1/3CO7/NGJFLC8RrCja2zwC8tUzMl0Zf+Io4aPFjin1qEb
-         T/ZQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=vEbjjiBAb1Gv1/q3JktK2vYVX0s4JpnfBYopaxaaLpw=;
-        fh=z0tc/nDlyOe8Hjq1ZFBMIVkFZr8DXtwDmJ/acfFNcWg=;
-        b=kAUA8faKNK/bzyANb/BtqKEHYcWWLTBgynW3rC9HJMbpV3E1mpxKpvwc+YZjtg/Bu3
-         ChcEiOIN+Q+ufSe+728Zk8JWHBgFQVJ60GNOzVVKSLRSLGVWC21twoW2gV8gaKTrLzap
-         fq4A/rRTAC4ut2vxd+k4tfNWKfclmfFZbix6GV2L3CZIO1ByPB38XUcidqmMti2OM+Fl
-         +8bT47Xy8EXAyIUhzJGhdY8KQ/jcplR84T9wV77tfVOyupn3BruJXjTbbyuUxXZ9alME
-         b5QEOhn5jHVbzPiU97/bwMjPXbuZNQM9uwXFUPV26WEsqf/o9eChK99KCPFAQ7woS3/c
-         sp4g==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790852028; x=1791456828; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=vEbjjiBAb1Gv1/q3JktK2vYVX0s4JpnfBYopaxaaLpw=;
-        b=FAbj7CJMgab72MHHmfF2iW2O3xqNR2anisVVFAtjFiL8Qh2Pe5qy3EyOrrPogoYZG0
-         bHFeHvcH710U1lLtLuR3jI9u641NZFI/ayhqFd8MJYamxB6t0hvhIGtP6038fE2n9VNh
-         aGUR74pT+Qqo5mbpidnVPdUTQ8clM7IBi2Ymc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790852028; x=1791456828;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=vEbjjiBAb1Gv1/q3JktK2vYVX0s4JpnfBYopaxaaLpw=;
-        b=DyQ3PkpCCmnWogCCqki6jQ7wn2MjLwPigaHkhDxzvwdmJkHTEfmGlN+kMNSTEI9DUF
-         HfEYHFb8ZqaSrgqZqQpy2k2jq2guqLR0bUwLz4uVjlnOz4D/HNfiirRPMpw4t/YV6UDw
-         aXYwIY2QeRFtTG90O0OxJNIuKPBnXuBYRwkdKHquotfTlpcTXMlJpINC+U/Eya72cepe
-         WJePD3gfZPiQ7HsUsNe6V/6cMNsVyVQk9UhhpZ7egphIYouAByqfd/kHyWryrRagufzz
-         CmMXEm40ymNH7Tac6y1efEU0kZzT8/EHrbZpdYIKpWH790rSJsAA/AX7QygZBfB8dPcR
-         L6Dg==
-X-Forwarded-Encrypted: i=1; AKwUvBx4WAsbyZV0m+RR1pTBLphnU1wF3Rjqg/cDDNfWqAAIRykPC/OlfGVktLot76R++DgPwMl8aVx5FA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKKngORhzNVxJHdJYPiofEAEgY0+MXGz/fS7or0MSAGlO5u78Is
-	y2Ls+mIghme9VxYLHu9KdR1egR+tfORT1kGcwGNRy65v7cmB3V51/QImxU+g58UzXQ+7L3wAweY
-	mJDbx8zVDVohgwmhFoM0S/gUFpb2JPMxOL4WjwObo
-X-Gm-Gg: AYBFou1Eu3nms8+eBTN3BXEqxkGJeq9xz1Fv4PJLLBuafaT1jkSBosUCGBTlxJeeh8l
-	HDNXzaoP6FZ4vE+IebIT34caFbARq6+vI+sTGZRxIOtoqAe0ZeQlTQ0/huhz9Kl5a3SY8HD8LxD
-	tPhc3f5oJx239pEtngvyLHG5wSTUhZscRbYcyTEhSuO9yOLIPL5dYSB7fcDVR/cSV4N8PftvXVM
-	XP17ilIWgPE6WSEaRjNNveagAz6ShJwl//uxGZXrzVJ/WzHr4lvgox2mI1eyGUcXpzIMbD6d7/A
-	4yi6BhmeSM1bdFn3y0dbk8M2dWf0A4UwTwZve67iHJbVgHttFv/4YvBOJpkHX/Mvt/jlT/KliQt
-	paYrI1CCdyA==
-X-Received: by 2002:a05:690e:4105:b0:676:9954:81ef with SMTP id
- 956f58d0204a3-676995489a9mr323421d50.14.1790852028003; Thu, 01 Oct 2026
- 03:53:48 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="QA4Dw1zg"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D1A18497;
+	Thu,  1 Oct 2026 04:06:05 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 629933F86F;
+	Thu,  1 Oct 2026 04:06:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790852769; bh=+V5xRtwSpEjK63wJ+cyKK9U6lr5/HJMU+DNwniXIDPM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=QA4Dw1zgbThIBjOabcmXcqRHYzROk+Gtzp31ZMqTM1Gizq4hBiCin0fp9CZK59U3Z
+	 lnsZgFVLWM+YD5l+BCQwOtq4F4JiM/pb/+vop0z4oiTIc3E6LJHU7eaxU6vNx7EXKu
+	 x7Lh+csDbTkySVd40j7jwq/nY4waPO8BTz6TOZ1s=
+Date: Thu, 1 Oct 2026 12:05:54 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Suzuki K Poulose <suzuki.poulose@arm.com>
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, maz@kernel.org,
+	will@kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, steven.price@arm.com,
+	aneesh.kumar@kernel.org, oupton@kernel.org, gshan@redhat.com,
+	joey.gouly@arm.com, tabba@google.com, yuzenghui@huawei.com,
+	linux-coco@lists.linux.dev, gankulkarni@os.amperecomputing.com,
+	sdonthineni@nvidia.com, alpergun@google.com, fj0570is@fujitsu.com,
+	WeiLin.Chang@arm.com, lpieralisi@kernel.org, enju.kohei@fujitsu.com,
+	sudeep.holla@arm.com, jonathan.cameron@oss.qualcomm.com,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v21 7/9] arm64: Block hibernate and kexec while RMM is
+ active
+Message-ID: <ar4-kg8Jq9BTn7Sb@arm.com>
+References: <20261001084555.1456543-1-suzuki.poulose@arm.com>
+ <20261001084555.1456543-8-suzuki.poulose@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260916075745.3549953-1-wenst@chromium.org> <20260916075745.3549953-7-wenst@chromium.org>
-In-Reply-To: <20260916075745.3549953-7-wenst@chromium.org>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Thu, 1 Oct 2026 18:53:36 +0800
-X-Gm-Features: AclHuK_wafiRDk696txMZ3q8q7Qaz4NsP-wYkipLMPcHq1r5tW6zotnKrD-_NRc
-Message-ID: <CAGXv+5GdBUafk6niG-UMDx=z6LJQ6iHAWhDpm1Ly2ce6CQDaxg@mail.gmail.com>
-Subject: Re: [PATCH v9 06/15] usb: hub: Associate port@ fwnode with USB port device
-To: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261001084555.1456543-8-suzuki.poulose@arm.com>
 
-On Wed, Sep 16, 2026 at 3:58=E2=80=AFPM Chen-Yu Tsai <wenst@chromium.org> w=
-rote:
->
-> When a USB hub port is connected to a connector in a firmware node
-> graph, the port itself has a node in the graph.
->
-> Associate the port's firmware node with the USB port's device,
-> usb_port::dev. This is used in later changes for the M.2 slot power
-> sequencing provider to match against the requesting port.
->
-> To avoid potential conflicts with ACPI firmware nodes and then causing
-> power management issues, only assign the firmware node if the hub's
-> firmware node is not an ACPI firmware node.
->
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+On Thu, Oct 01, 2026 at 09:45:53AM +0100, Suzuki K Poulose wrote:
+> RMM can be deactivated only after all delegated granules have been
+> reclaimed. If a new kernel is entered while any granules remain in the
+> Realm PAS, accesses to that memory can raise a Granule Protection Fault
+> and be fatal to the new kernel.
+> 
+> Crash kexec/kdump needs separate handling. It can be supported only once
+> the crash kernel can tolerate delegated memory inherited from the primary
+> kernel. i.e., be able to read the pages safely and fixup the GPF. Until
+> then disable the kexec completely.
+> 
+> Hibernate has a similar problem. The image cannot be safely saved for
+> delegated pages, as the RMM doesn't support exporting the pages.
+> 
+> Disable both kexec and hiberation while the RMM is active.
+
+I would mention that this adds a new arch_hibernation_available() hook
+called from hibernation_available(), otherwise the hibernation
+maintainers may not realise why they've been cc'ed.
+
+Alternatively, just introduce the hook as a separate patch without any
+arch code.
+
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Pavel Machek <pavel@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
 > ---
-> Changes since v5:
-> - Added extra |struct fwnode_handle *| local variables to shorten lines
->   (Andy)
-> - Added comment about passing fwnode_graph_get_port_by_id() return value
->   directly to device_set_node() (Andy)
->
-> Changes since v4:
-> - Dropped unused |hdev| variable
-> - Added flags for fwnode_graph_get_port_by_id() with
->   FWNODE_GRAPH_DEVICE_DISABLED so that even incomplete
->   ports can be connected
->
-> Changes since v3:
-> - Added missing fwnode_handle_put()
->
-> Changes since v2:
-> - Skip assignment if hub firmware node is ACPI node
+> Changes since v20:
+>  - Add arch_hibernation_available() hook for archs to have a say and drop the
+>    other checks.
+> Changes since v19:
+>  - New patch to disable kexec and hibernation with RMM
 > ---
->  drivers/usb/core/port.c | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->
-> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-> index b4452b665f59..c0a51d9b06a6 100644
-> --- a/drivers/usb/core/port.c
-> +++ b/drivers/usb/core/port.c
-> @@ -7,6 +7,7 @@
->   * Author: Lan Tianyu <tianyu.lan@intel.com>
+>  arch/arm64/kernel/hibernate.c     | 14 ++++++++++++++
+>  arch/arm64/kernel/machine_kexec.c | 11 +++++++++++
+>  include/linux/suspend.h           |  1 +
+>  kernel/power/hibernate.c          |  8 +++++++-
+>  4 files changed, 33 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
+> index 7bf1174277772..08e03d24b93a8 100644
+> --- a/arch/arm64/kernel/hibernate.c
+> +++ b/arch/arm64/kernel/hibernate.c
+> @@ -10,6 +10,8 @@
+>   * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
 >   */
->
-> +#include <linux/acpi.h>
->  #include <linux/kstrtox.h>
->  #include <linux/slab.h>
->  #include <linux/string_choices.h>
-> @@ -358,6 +359,11 @@ static void usb_port_device_release(struct device *d=
-ev)
+>  #define pr_fmt(x) "hibernate: " x
+> +
+> +#include <linux/arm-rmi-cmds.h>
+>  #include <linux/cpu.h>
+>  #include <linux/kvm_host.h>
+>  #include <linux/pm.h>
+> @@ -105,6 +107,18 @@ void notrace restore_processor_state(void)
 >  {
->         struct usb_port *port_dev =3D to_usb_port(dev);
->
-> +       /*
-> +        * At this point ACPI nodes and swnodes have been removed by
-> +        * device_platform_notify_remove() in device_del().
-> +        */
-> +       fwnode_handle_put(dev_fwnode(dev));
->         kfree(port_dev->req);
->         kfree(port_dev);
 >  }
-> @@ -754,6 +760,7 @@ int usb_hub_create_port_device(struct usb_hub *hub, i=
-nt port1)
+>  
+> +bool arch_hibernation_available(void)
+> +{
+> +	/*
+> +	 * If we have activated the RMM, there could be pages that are
+> +	 * delegated to the RMM. Trying to save them to the image will be fatal.
+> +	 * Also, we donate pages to the RMM at activation and restoring data
+> +	 * to those pages are going to be fatal.
+> +	 * Hence, disable the hibernation when the RMM is active
+> +	 */
+> +	return !cpus_are_stuck_in_kernel() && !is_rmm_active();
+> +}
+
+For now, I would keep is_rmm_active() only in here as not to change the
+behaviour for pKVM. "disk" would disappear from /sys/power/state with
+this patch. I think it's the correct thing to do for pKVM as well but we
+can discuss this separately once this goes in (I also think pKVM using
+cpus_are_stuck_in_kernel() is a bit of a bodge but it's a handy hook
+called in the right places).
+
+> +
+>  int arch_hibernation_header_save(void *addr, unsigned int max_size)
 >  {
->         struct usb_port *port_dev;
->         struct usb_device *hdev =3D hub->hdev;
-> +       struct fwnode_handle *fwnode =3D dev_fwnode(&hdev->dev);
->         int retval;
->
->         port_dev =3D kzalloc_obj(*port_dev);
-> @@ -782,6 +789,24 @@ int usb_hub_create_port_device(struct usb_hub *hub, =
-int port1)
->         port_dev->dev.driver =3D &usb_port_driver;
->         dev_set_name(&port_dev->dev, "%s-port%d", dev_name(&hub->hdev->de=
-v),
->                         port1);
+>  	struct arch_hibernate_hdr *hdr = addr;
+> diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
+> index 8f9bc2327dc85..48f343704cb54 100644
+> --- a/arch/arm64/kernel/machine_kexec.c
+> +++ b/arch/arm64/kernel/machine_kexec.c
+> @@ -6,6 +6,7 @@
+>   * Copyright (C) Huawei Futurewei Technologies.
+>   */
+>  
+> +#include <linux/arm-rmi-cmds.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/irq.h>
+>  #include <linux/kernel.h>
+> @@ -59,6 +60,16 @@ int machine_kexec_prepare(struct kimage *kimage)
+>  		return -EBUSY;
+>  	}
+>  
+> +	/*
+> +	 * We will be able to allow kdump to proceed, once we have the support
+> +	 * for handling GPF from vmcore accesses to delegated pages. Until then
+> +	 * block kexec completely.
+> +	 */
+> +	if (is_rmm_active()) {
+> +		pr_err("Can't kexec: RMM is active.\n");
+> +		return -EBUSY;
+> +	}
 > +
-> +       /*
-> +        * ACPI FW nodes are associated later when device_register() happ=
-ens.
-> +        * Skip assigning one here to avoid potential conflicts.
-> +        */
-> +       if (!is_acpi_node(fwnode)) {
-> +               struct fwnode_handle *port;
+>  	return 0;
+>  }
+>  
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index b02876f1ae38a..a3815027773c5 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -401,6 +401,7 @@ int hibernate_quiet_exec(int (*func)(void *data), void *data);
+>  int hibernate_resume_nonboot_cpu_disable(void);
+>  int arch_hibernation_header_save(void *addr, unsigned int max_size);
+>  int arch_hibernation_header_restore(void *addr);
+> +bool arch_hibernation_available(void);
+>  
+>  #else /* CONFIG_HIBERNATION */
+>  static inline void register_nosave_region(unsigned long b, unsigned long e) {}
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index d2479c69d71a4..9d9d53828542f 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -106,11 +106,17 @@ bool hibernation_in_progress(void)
+>  	return !atomic_read(&hibernate_atomic);
+>  }
+>  
+> +__weak bool arch_hibernation_available(void)
+> +{
+> +	return true;
+> +}
 > +
-> +               /*
-> +                * fwnode_graph_get_port_by_id() returns either a valid f=
-wnode handle
-> +                * or NULL. Passing NULL to device_set_node() clears any =
-associated
-> +                * fwnode. It is effectively a no-op here, since no fwnod=
-e has been
-> +                * assigned to the newly created device yet.
-> +                */
-> +               port =3D fwnode_graph_get_port_by_id(fwnode, port1, FWNOD=
-E_GRAPH_DEVICE_DISABLED);
+>  bool hibernation_available(void)
+>  {
+>  	return nohibernate == 0 &&
+>  		!security_locked_down(LOCKDOWN_HIBERNATION) &&
+> -		!secretmem_active() && !cxl_mem_active();
+> +		!secretmem_active() && !cxl_mem_active() &&
+> +		arch_hibernation_available();
+>  }
 
-After AI hinted, I found some dwc3 hardware to test this on.
+With the comments above addressed:
 
-"port1" needs to be remapped using usb_hcd_find_raw_port_number() when the
-hub is the root hub. Otherwise both HS and SS ports end up getting the
-same port node, which is incorrect.
-
-Same needs to be done for "usb_of_get_connect_type(hdev, port1)" some
-lines above the diff context.
-
-This mapping is currently only done in usb_acpi_get_companion_for_port()
-and usb_alloc_dev().
-
-
-> +               device_set_node(&port_dev->dev, port);
-> +       }
-> +
->         mutex_init(&port_dev->status_lock);
->         retval =3D device_register(&port_dev->dev);
->         if (retval) {
-> --
-> 2.55.0.1032.g73a4cd73de-goog
->
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
