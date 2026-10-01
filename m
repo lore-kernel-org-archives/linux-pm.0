@@ -1,115 +1,111 @@
-Received: from relay.smtp-ext.broadcom.com (relay.smtp-ext.broadcom.com [192.19.144.205])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B579253B42;
-	Thu,  1 Oct 2026 16:02:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.19.144.205
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD5B22BD022;
+	Thu,  1 Oct 2026 16:24:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790870522; cv=none; b=EUvGQ9fqeGJQqpnn+kMw16e7+qftypYSOxNPYEDRGzcCOgr0zOs97OMNqkrpj7/dUGnkcWfxt8/sn8ujaOMgIRgv39j7+WPm0HNiLe1jCFhZqgwTIwT2vES4PrzR3/vRztHYH25fM463+jl/RvyrzVt4pC0dF381ucKl5rYlG0w=
+	t=1790871882; cv=none; b=YhAoGMbIscJHBaqBKbxk+bnHMreIPkXrzLAVkIjle9cW1uC88/JjXzxVlPuBGJqae1UvN742k5NlPsx4JUAWEvyU3zxFvMYtzMO2w+NxJcRQ6YxrSHsKVzj250Tq5wJMOsM6jhxnDgEkMPVQg1gXVh5MGGqjE167sTBhxDSCnSA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790870522; c=relaxed/simple;
-	bh=6tzBwYezvCHMFybOlAjAjqSt/P2oNWqJ4vxlblDRPUA=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZTovC0IKCcs6sg1WsGODq3fS98kJFIFMU4acLR2gN8woRnT12GprDYgMy/Jrj4NFQ6tCT2FiYEpbi0HFyS7PFW1z2ApY5NjnDl4hZ8BB+JEL3qz7DSqow0xo7uJQYEFKL14IzdC5Z/GpVOzFfd1tPC2aYcZR3zOMyc/LyqE6564=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=V1U7nrc/; arc=none smtp.client-ip=192.19.144.205
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
+	s=arc-20240116; t=1790871882; c=relaxed/simple;
+	bh=LdA11I/nUewSl4reDrAPjEkS9+UNNAsC7hhq6mX0lXw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=U/4qJvdyjPhnctYbtJ8WjHmvUIkIsxMr3vO7V9ZF+nXmNnJJqYHVr3b77/zHwXf/dVQZPMvbJcz5s21/RwWlbmX4al/joRH8Leqvaqm5U3Sq69arMUCRZObNn087JW0Xrgsh+206S0P/4uZJsYe5mMyTWJfT/xCsmQ6ENmALMSc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=A4xfcYQu; arc=none smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="V1U7nrc/"
-Received: from mail-acc-it-01.broadcom.com (mail-acc-it-01.acc.broadcom.net [10.35.36.83])
-	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id 22DACC0005C5;
-	Thu,  1 Oct 2026 09:02:00 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com 22DACC0005C5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
-	s=dkimrelay; t=1790870520;
-	bh=6tzBwYezvCHMFybOlAjAjqSt/P2oNWqJ4vxlblDRPUA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=V1U7nrc/UL4pOBZzYnrxjDev2Y1njEPG4ai+m9bUj3zxdkfTzgY5ORVMW0MdIBeay
-	 pTQe07QMLy5Xj2k5EjbgPKYX3hfQ5uMkqdFFEaqnmwZ0p+GdjuipuKzb/sE3mwnjt4
-	 WzduhjuIpI6LCDNHDsEFqV6miaLGK0uKAgK3hW50=
-Received: from stbirv-lnx-1.igp.broadcom.net (stbirv-lnx-1.igp.broadcom.net [10.67.48.32])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail-acc-it-01.broadcom.com (Postfix) with ESMTPSA id 5DACEAEA2;
-	Thu,  1 Oct 2026 12:01:59 -0400 (EDT)
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-To: stable@vger.kernel.org
-Cc: Florian Eckert <fe@dev.tdt.de>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org (open list:THERMAL),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH stable 5.10] tools/thermal/tmon: Fix compilation warning for wrong format
-Date: Thu,  1 Oct 2026 09:01:56 -0700
-Message-Id: <20261001160156.814419-1-florian.fainelli@broadcom.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="A4xfcYQu"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1790871880; x=1822407880;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=LdA11I/nUewSl4reDrAPjEkS9+UNNAsC7hhq6mX0lXw=;
+  b=A4xfcYQuuZ09DTesGjaBmh/OyTdT28ML+ge1jiPV8LS1MpaoZ0jp2Px2
+   0nZoQUbpcP9Cup4Rdt7A5XWcvnrsAGwGoujKTRUaXPX2mXwi9TU/CHgvl
+   VIPSBCHVyOioKzktDBQyIY/eTKwZkAS0Gi9JG9Vibg4SXJiha6vyFyJat
+   ypZo6Ez8P6pLl4+xB8w2mUmEx0ZQwBOLapUaVRklU9T/++3VV2CLFntwr
+   C/mZSodqNquOU4uxuMDaVaDk2/ekfMvj9acT51XWxGk2GC5Jxh1HT+y3o
+   LMj8fUC236ulTWt+PlR2f4Tep3bNuGwE2+DZWpQ2UWODyhJStP2p60zWn
+   A==;
+X-CSE-ConnectionGUID: E+CynqiBThO3EQ8SQZt6qw==
+X-CSE-MsgGUID: OyDFrVOkSN6q/TssnCSxcg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11922"; a="103011532"
+X-IronPort-AV: E=Sophos;i="6.27,134,1787036400"; 
+   d="scan'208";a="103011532"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Oct 2026 09:24:37 -0700
+X-CSE-ConnectionGUID: kex1FDhVSja/AyOfsNxdnw==
+X-CSE-MsgGUID: yz97lrRpR7aCNRjNQ6LfTg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,134,1787036400"; 
+   d="scan'208";a="279338349"
+Received: from soc-pf446t5c.clients.intel.com (HELO [10.24.80.90]) ([10.24.80.90])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Oct 2026 09:24:36 -0700
+Message-ID: <aa1d85c2-cd19-4c18-9a6c-85f83c6c18fa@linux.intel.com>
+Date: Thu, 1 Oct 2026 09:24:20 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1] tools/power turbostat: Add rugged Panther Lake support
+To: Len Brown <lenb@kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260819174154.1184393-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+ <CAJvTdKm5g2-rLjSXNPkGqUU3BD-PUbSbNJecBn2-CA29O3WJvQ@mail.gmail.com>
+Content-Language: en-US
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <CAJvTdKm5g2-rLjSXNPkGqUU3BD-PUbSbNJecBn2-CA29O3WJvQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Florian Eckert <fe@dev.tdt.de>
+Hi Len,
 
-commit 9da39ef332c417ce52732564c1c682a6e1209302 upstream.
+On 10/1/2026 7:49 AM, Len Brown wrote:
+> perf_model_support() also should be updated.
 
-The following warnings are shown during compilation:
+Thanks. Will submit a patch to update it.
 
-tui.c: In function 'show_cooling_device':
- tui.c:216:40: warning: format '%d' expects argument of type 'int', but
-argument 7 has type 'long unsigned int' [-Wformat=]
-   216 |                         "%02d %12.12s%6d %6d",
-       |                                      ~~^
-       |                                        |
-       |                                        int
-       |                                      %6ld
- .....
-   219 |                         ptdata.cdi[j].cur_state,
-       |                         ~~~~~~~~~~~~~~~~~~~~~~~
-       |                                      |
-       |                                      long unsigned int
- tui.c:216:44: warning: format '%d' expects argument of type 'int', but
-argument 8 has type 'long unsigned int' [-Wformat=]
-   216 |                         "%02d %12.12s%6d %6d",
-       |                                          ~~^
-       |                                            |
-       |                                            int
-       |                                          %6ld
- .....
-   220 |                         ptdata.cdi[j].max_state);
-       |                         ~~~~~~~~~~~~~~~~~~~~~~~
-       |                                      |
-       |                                      long unsigned int
+> 
+> thanks,
+> -Len
+> 
+> On Wed, Aug 19, 2026 at 1:41 PM Kuppuswamy Sathyanarayanan
+> <sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+>>
+>> From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>>
+>> Add CPU model for rugged Panther Lake.
+>>
+>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>> ---
+>>  tools/power/x86/turbostat/turbostat.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+>> index 920694c3c1ec..f5b3afa050bf 100644
+>> --- a/tools/power/x86/turbostat/turbostat.c
+>> +++ b/tools/power/x86/turbostat/turbostat.c
+>> @@ -1229,6 +1229,7 @@ static const struct platform_data turbostat_pdata[] = {
+>>         { INTEL_ARROWLAKE, &adl_features },
+>>         { INTEL_LUNARLAKE_M, &lnl_features },
+>>         { INTEL_PANTHERLAKE_L, &lnl_features },
+>> +       { INTEL_PANTHERLAKE_R, &lnl_features },
+>>         { INTEL_NOVALAKE, &lnl_features },
+>>         { INTEL_NOVALAKE_L, &lnl_features },
+>>         { INTEL_WILDCATLAKE_L, &lnl_features },
+>> --
+>> 2.43.0
+>>
+> 
+> 
 
-To fix this, the correct string format must be used for printing.
-
-Signed-off-by: Florian Eckert <fe@dev.tdt.de>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20231204141335.2798194-1-fe@dev.tdt.de
-Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
----
- tools/thermal/tmon/tui.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/tools/thermal/tmon/tui.c b/tools/thermal/tmon/tui.c
-index 031b258667d8..7f5dd2b87f15 100644
---- a/tools/thermal/tmon/tui.c
-+++ b/tools/thermal/tmon/tui.c
-@@ -213,7 +213,7 @@ void show_cooling_device(void)
- 		 * cooling device instances. skip unused idr.
- 		 */
- 		mvwprintw(cooling_device_window, j + 2, 1,
--			"%02d %12.12s%6d %6d",
-+			"%02d %12.12s%6lu %6lu",
- 			ptdata.cdi[j].instance,
- 			ptdata.cdi[j].type,
- 			ptdata.cdi[j].cur_state,
 -- 
-2.34.1
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
 
