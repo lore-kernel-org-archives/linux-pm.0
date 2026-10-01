@@ -1,30 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 185F8534473;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16E9252CCF6;
 	Thu,  1 Oct 2026 20:23:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790886186; cv=none; b=fD2Nzh7wXkXmOuPtCMaRvJaT5mUOvzdrVhyJ2wSrz8xdFk17WofO4vvfDOXTwEXXq+VpYkhOak7crMCBtuBwarWufa5kSdMzCjPNLVMyVwui5MM2W0NUqZZfGrkJSru3o8tbqGQZqUh0JPjqP6CGrjBvX5pEWk38VMISgH9TKPU=
+	t=1790886186; cv=none; b=PhFIy1YcjBs0slQR5VX/rJe1CzdarJcHbr+ttvt86Upqfx5RPvAIoY9YXmhG1oazealZTlpxVC29f9hExZmAt4ek7r5oxBHkGJGHt17RiHQ/CtXfY3QwdsOYRbzTPElTVCz8tE6oNzbPf0fSy8/DOsU/4OIgZBk2EYPV4DQsPhE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1790886186; c=relaxed/simple;
-	bh=QwpCCepGhj9lgRWd0EkYNhJZKP0rOe4Mfz1MYctjnDo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oz69Zw/gtleWIhz9EeKTRDAL+iVe5JcJA6tnVOLOV7YcZgwKFePRXnoxXEnzu0ibAXPpkFXnStqC/i2cghUlw3tOIpl9Afw3g+BIzFEdITi3zvSlAZZRxWYr/XpDRR42JEugs6zUqJxVh8ACtmfqzk6x/dVfCrcjvFgVfwinskI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GMwmUxuu; arc=none smtp.client-ip=100.103.45.18
+	bh=hr/2b7myJXr012oTzrImDdTw/Mb8Bg3gfPuyPMaow00=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=UE+gl5eK5A6RtawXdQqT+T+T1Uhn5t/UQYCXAeWk+wceTMTOrCvoe3Tq1totdErZ17faBdOs8g9Pp9OcFIJs/MghniS1rxkTRJF0j4c9Kc8ahn2ZU4eAjEghTKXt2lWgYZY3j9GVLj6GMgDmwsRyfvegWC41a/DE09WtOJV8lrI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Hg9t9q/E; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GMwmUxuu"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FD491F000FF;
-	Thu,  1 Oct 2026 20:22:59 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hg9t9q/E"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F8C41F00893;
+	Thu,  1 Oct 2026 20:23:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790886179;
-	bh=wguAyofh+2kg9EHi04fUcFmtJNnKWrwa9V7NNaUAkzE=;
-	h=From:To:Cc:Subject:Date;
-	b=GMwmUxuucPMJh0mHQZYU2Wj7gm6mHYoXdYus2G57eImhVzImQmNjPdIY4h+JT2xf8
-	 XukOyt0YdlMcYTf+1im8gRZoXOjDT+ttqGbOfzPsriQtxX3hqUfT+smcXtleSnwi1k
-	 nEuYQ0LRFNwh4lXTTC0bE+egrFIdVeGtsK4eQU2z/8N3yPXoOzG2cnBz8b3gFO/Cid
-	 2M67CDylknLYx/VSODMcdXekFzr1HRQEwa2DuS5NEJ/pNuA9r/jjx/t7/N1VxuhS5c
-	 xEbflaz2ovSJG93UJpdf/aV91tA8BJ0ZnleAt9OWIMOHleJJClmyHm1w/biDZDtl6E
-	 6WOXNnvHhOgkg==
+	s=k20260515; t=1790886180;
+	bh=jqZ50XSjTWUK89UaZiWAw+nT5M4EKEPI0sEx5clcGrY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Hg9t9q/EHm5If0ZiHEDUbjzpdneFAA8AHVGTpC+YTD4Dk5cUFIcqHnMLPQFBoSufi
+	 3ZsRtw80HZZpdbCWTqhtBP2NqFIl4Nk+nx8Lfvh4xnxLTYNHxvcKnTjYHLq29wwBC+
+	 IG3ZcjIjDAmQrtqmn4zihQ9dpZ0LEfRgFxgeHEAxm72IyigMEe0H+Mc1O9AGs1jwEe
+	 bem1V4O0Jf1IWLPGhLA5bSYG2hL8rv6TRLeG3hrljMl1Jf2b4hxaebf2XU77zUascI
+	 8b6nsjPD+BteKiGfKp2xhE+gZ+20fGvFni1heeBrVMsKznvyw8umzK2fIbqEv5fkfu
+	 V4gykvwJPGHhA==
 From: "Mario Limonciello (AMD)" <superm1@kernel.org>
 To: K Prateek Nayak <kprateek.nayak@amd.com>
 Cc: Perry Yuan <perry.yuan@amd.com>,
@@ -33,10 +34,12 @@ Cc: Perry Yuan <perry.yuan@amd.com>,
 	Mario Limonciello <mario.limonciello@amd.com>,
 	Sashiko <sashiko-bot@kernel.org>,
 	Mario Limonciello <superm1@kernel.org>
-Subject: [PATCH v2 1/3] cpufreq: amd-pstate: Restore previous mode when changing driver mode fails
-Date: Thu,  1 Oct 2026 15:22:52 -0500
-Message-ID: <20261001202254.1679976-1-superm1@kernel.org>
+Subject: [PATCH v2 2/3] cpufreq: amd-pstate: Propagate cppc_set_auto_sel() errors on mode change
+Date: Thu,  1 Oct 2026 15:22:53 -0500
+Message-ID: <20261001202254.1679976-2-superm1@kernel.org>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261001202254.1679976-1-superm1@kernel.org>
+References: <20261001202254.1679976-1-superm1@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,59 +50,51 @@ Content-Transfer-Encoding: 8bit
 
 From: Mario Limonciello <mario.limonciello@amd.com>
 
-amd_pstate_change_driver_mode() unregisters the currently active driver
-before registering the requested mode.  If amd_pstate_register_driver()
-fails for the new mode, the function returns the error without restoring
-anything, leaving the system with no cpufreq scaling driver at all until
-a valid mode is manually re-selected.
+amd_pstate_change_mode_without_dvr_change() iterates over the online CPUs
+and calls cppc_set_auto_sel() to enable or disable hardware autonomous
+selection, but discards its return value and unconditionally returns 0.
 
-Remember the mode that was active before the transition and, if
-registering the requested mode fails, register the previous mode again so
-the system keeps a working scaling driver.  The original error is still
-returned to the caller so the sysfs write reports the failure.
+If the firmware rejects the request, the failure is hidden: the cpufreq
+core records the mode transition as successful while the hardware stays in
+its previous autonomous-selection state.  The software mode and the actual
+hardware behaviour then disagree, breaking the expected frequency scaling.
+
+Check the return value of cppc_set_auto_sel() and propagate the first
+error to the caller so the sysfs write reports the failure.
 
 Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/bug/linux-5b138ddb-c88b-4f82-8a2d-f39446b625d4
+Closes: https://sashiko.dev/#/bug/linux-d114a94a-655b-43a6-91b1-9484889726c9
 Fixes: 3ca7bc818d8c ("cpufreq: amd-pstate: Add guided mode control support via sysfs")
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-Link: https://lore.kernel.org/r/20260921190235.3651688-1-mario.limonciello@amd.com
+Link: https://lore.kernel.org/r/20260921190235.3651688-2-mario.limonciello@amd.com
 Signed-off-by: Mario Limonciello <superm1@kernel.org>
 ---
- drivers/cpufreq/amd-pstate.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/cpufreq/amd-pstate.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 743d90ed6af46..a1d58d1f5f3aa 100644
+index a1d58d1f5f3aa..d8e2eec6e7250 100644
 --- a/drivers/cpufreq/amd-pstate.c
 +++ b/drivers/cpufreq/amd-pstate.c
-@@ -1837,6 +1837,7 @@ static int amd_pstate_change_mode_without_dvr_change(int mode)
- 
- static int amd_pstate_change_driver_mode(int mode)
+@@ -1822,6 +1822,7 @@ static int amd_pstate_unregister_driver(int dummy)
+ static int amd_pstate_change_mode_without_dvr_change(int mode)
  {
-+	int old_mode = cppc_state;
- 	int ret;
+ 	int cpu = 0;
++	int ret;
  
- 	lockdep_assert_held(&amd_pstate_driver_lock);
-@@ -1846,10 +1847,16 @@ static int amd_pstate_change_driver_mode(int mode)
- 		return ret;
+ 	cppc_state = mode;
  
- 	ret = amd_pstate_register_driver(mode);
--	if (ret)
--		return ret;
-+	if (ret) {
-+		pr_err("Failed to register %s mode, restoring %s mode\n",
-+		       amd_pstate_get_mode_string(mode),
-+		       amd_pstate_get_mode_string(old_mode));
-+		if (amd_pstate_register_driver(old_mode))
-+			pr_err("Failed to restore %s mode\n",
-+			       amd_pstate_get_mode_string(old_mode));
-+	}
+@@ -1829,7 +1830,9 @@ static int amd_pstate_change_mode_without_dvr_change(int mode)
+ 		return 0;
  
--	return 0;
-+	return ret;
- }
+ 	for_each_online_cpu(cpu) {
+-		cppc_set_auto_sel(cpu, (cppc_state == AMD_PSTATE_PASSIVE) ? 0 : 1);
++		ret = cppc_set_auto_sel(cpu, (cppc_state == AMD_PSTATE_PASSIVE) ? 0 : 1);
++		if (ret)
++			return ret;
+ 	}
  
- static cppc_mode_transition_fn mode_state_machine[AMD_PSTATE_MAX][AMD_PSTATE_MAX] = {
+ 	return 0;
 -- 
 2.53.0
 
