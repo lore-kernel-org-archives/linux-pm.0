@@ -1,194 +1,228 @@
-Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
+Received: from mail-yx2-f40.google.com (mail-yx2-f40.google.com [74.125.224.168])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C58DD468C1A
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 10:22:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.140
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790850150; cv=none; b=kALu8WHpsMEw/HIV59SXkqeHwhBNOo9yp3B9yvqkaJMaxMTAbjYK7V4m7gKCs1Wbw5VF7FVKWBkioaZrulzXCxPm19ACgFvg23SJK+ZXQCGA2cjLkzQKLq7Ce5gpbtDM/q4L7zvnil8E6E/EvmDGMT/wDsMf++fohAHGZFOYl7o=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790850150; c=relaxed/simple;
-	bh=VnVU8bPLJLWfbtAdNiLdfbQJCPObLTqpHbQuXDlr2xU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Kxtyz/h0u1xiJV2Wszs2Cj86Lp9ce3fVw3XUR77susXr1Xe8OecFvPDVWkQ0o9NZwChFpbQiZIaM65LnYG06w4ZueEAXkkWa+cF6MZAwA0qf1jonxS2pGu5P9kum9A7SHktGzoF3YMwURgtIZcKg+DK8/ouVNjLnGHwBorBebzE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YcoasWwK; arc=none smtp.client-ip=74.125.225.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1B5944C659
+	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 10:53:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.168
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790852032; cv=pass; b=uF1a3u7cle+uWAJOWdohCUQGkna1YJy9yOam9TnaKdN4yYBwaIS3wp1lCMdcc0tXHnc2Dv8Zk1DGRb05QIAUcbZp6z0xHxrA2Sh/agxTahFj/Vf8zXx473j+ZDWfYAzS1s3BelGSc1jeTOXOm3fmOfjkVv6cJFytzEeWi3ODD4Y=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790852032; c=relaxed/simple;
+	bh=Fs1edfuHx1in4X4WdK3upBMt8kh7e3INqc862LZOi+0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AIcptElLpMaimJsswJqWUTtF1EdwAoRNS9JgB233HUSeRPJDBbY/5RPkiUUR6pY1QkBFdv0O92+0vrBpP2m6ihITNndviafhGscx3E6SBgVNOYKSQIWiR1ZnQgntGJN/zIfIMyxGDZd2nbw/THAUutRCrvRAOkvw607Nmj/8e+Y=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=FAbj7CJM; arc=pass smtp.client-ip=74.125.224.168
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YcoasWwK"
-Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49fff72474fso28808095e9.3
-        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 03:22:27 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="FAbj7CJM"
+Received: by mail-yx2-f40.google.com with SMTP id 956f58d0204a3-6756a6320f6so2404705d50.2
+        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 03:53:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790852028; cv=none;
+        d=google.com; s=arc-20260327;
+        b=e0/cH6LBpl8r/Cc7YeZWvJ78NNfRVQBbHpL18etvXT89NWYT8cwW5AwBz9L8sPdl4I
+         guyMbdTfr2O7uTtV/7jEFFnFBEOdJgjqm6NujFCSIjQC8uxCKmuu0SXdCTw1U8qdQXOa
+         iDFy0Wbi6jdrPLTdtol1ZUx7WlURr79lrdC1ach2/SufU2c2XNy/q+ABjovsN5zZVv/D
+         J8o7Usb6MAzg0gSX4yqc4M+eqvrGNiCI8LhTg3Fq6i2+vyz9gMr8ek3snqUnCxohYKBS
+         5/hkMWRWau5IPvhlWjG+FG1/3CO7/NGJFLC8RrCja2zwC8tUzMl0Zf+Io4aPFjin1qEb
+         T/ZQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=vEbjjiBAb1Gv1/q3JktK2vYVX0s4JpnfBYopaxaaLpw=;
+        fh=z0tc/nDlyOe8Hjq1ZFBMIVkFZr8DXtwDmJ/acfFNcWg=;
+        b=kAUA8faKNK/bzyANb/BtqKEHYcWWLTBgynW3rC9HJMbpV3E1mpxKpvwc+YZjtg/Bu3
+         ChcEiOIN+Q+ufSe+728Zk8JWHBgFQVJ60GNOzVVKSLRSLGVWC21twoW2gV8gaKTrLzap
+         fq4A/rRTAC4ut2vxd+k4tfNWKfclmfFZbix6GV2L3CZIO1ByPB38XUcidqmMti2OM+Fl
+         +8bT47Xy8EXAyIUhzJGhdY8KQ/jcplR84T9wV77tfVOyupn3BruJXjTbbyuUxXZ9alME
+         b5QEOhn5jHVbzPiU97/bwMjPXbuZNQM9uwXFUPV26WEsqf/o9eChK99KCPFAQ7woS3/c
+         sp4g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790850146; x=1791454946; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+        d=chromium.org; s=google; t=1790852028; x=1791456828; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=nFzLuRrxO1MNqfhxtzwDFW5LDm+149ISNFd1xuYHuCg=;
-        b=YcoasWwKANqhJAT6ITRJApGZlPhldlCa3xeDRxEfwNSU7DdcpSvcZbECqojDb+i15L
-         iTz2NxaLca/myE23nQbmPyIMSRIthvctpPeXyyxfi8r1qmMc4zC/alrLzYLdN3ouN5D2
-         U4iTFWDDoj7ixO4ig1FDmEZ9qfc5myNxyc8kq9DjFl8/BqobYHyE2x/01WxvzLUZjZ3O
-         Jzl48w2XjO4J4HAerMfCJ1+OKjrbJulAhazaEQuzk4XQiwDdO2SKTC5azlLMoQnNlSJh
-         K8IgfpJ8xoftjXCuBTDZ5P83xNg9cMCi+bbTQriNhuGkHGaEWUXaFY4F/qUBDs/MX2Yr
-         Ihzg==
+        bh=vEbjjiBAb1Gv1/q3JktK2vYVX0s4JpnfBYopaxaaLpw=;
+        b=FAbj7CJMgab72MHHmfF2iW2O3xqNR2anisVVFAtjFiL8Qh2Pe5qy3EyOrrPogoYZG0
+         bHFeHvcH710U1lLtLuR3jI9u641NZFI/ayhqFd8MJYamxB6t0hvhIGtP6038fE2n9VNh
+         aGUR74pT+Qqo5mbpidnVPdUTQ8clM7IBi2Ymc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790850146; x=1791454946;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1790852028; x=1791456828;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=nFzLuRrxO1MNqfhxtzwDFW5LDm+149ISNFd1xuYHuCg=;
-        b=Bb9/udOKEwhZZMNTRv2Z88cPM95O1SzHE1enaiNZsJHWT1pez2BgcMEGtv6szwKBNJ
-         zUNiHJcovR5MnjKGCl9ek2sT5emTHhiAgePbmHByIuVN2X9z3HHNFHmFR24mVKzOkbkg
-         grqMWzlDUFBe20EDfT6u35SBhA+axn0g2cHkMUOlRSeTjVrgDJ9/xyUsoIfw9COrVjQs
-         Eqrvlr8sKCZsEjHCgVTcrCqbwKOmxMyUieQ/J2xLFNZCrNDMYsRzZfbtWvq/o7O/X9P4
-         ZOjPEjsGBSMAGznxYYJqIzejK5ruUCIBGuW1xjL3Tmzm4dPUnjprTY3sWyn9gijePnib
-         kkTg==
-X-Forwarded-Encrypted: i=1; AKwUvBz7+3X2E7Zti52X8a+4SJZZ8B968b8Un4YkdHb+HO9OLh2vXlzX43oCA1SzYfRsObGhP4ETqOb83Q==@vger.kernel.org
-X-Gm-Message-State: AFuF++kI+gP7RNgQH7DoKmQcN3gfYm3ZnGdwUQS9b2LDVz2IkWd4Zzbs
-	LN3hXcdmSDl4xp3NSVwMRjRLeQr/n05vQVuQvslT/nev2Ysviqj6RcJJ
-X-Gm-Gg: AYBFou12MNy3Gw+hChBlov9vOP1GHn+bTqt0utqo+5I+DwAtz1Vjzb3q+jmaNJpVz7k
-	sBBwTCck+muqcEzF7E54GVlbgOXVI78dyhPfuJqYGH5J1JRRozNS4cVRjaAYtxaOQhMSKmNjq8H
-	Y3rRBcWBX1K7QtE5xR/tNwt0saGmcteHk17NLVLYay6AHZ3ztITXR+RITCaA48queyQO9AfU8q6
-	BqW0b7uL3K/8VjVwW5uHRQeYjIg1ADVnGe1VzMoUkj2c2C57VYeR+e7POCiAXyVmJW0NkvwWTJa
-	Ta772nBxJsOeVpxIehoX/1uY1Q7q/goODoHkhnOb9WmsNR26Jtvc1usE/vfBCvO1RXBy4a/O/Pq
-	pgTPtoqeP3IjpmGYu7xXCYUVuseYwVDJbeZVCCaID2ivgfRn96lF2RFcw1UOOzjej5qCy+GuPc7
-	zR7tlE6h3f3usAgrLvTgJAt9aD/Q+ncBMBonZN2bxBdPQoeunKn0vzDTN33t+zkp9l5mY=
-X-Received: by 2002:a05:600c:6815:b0:49f:ff32:803c with SMTP id 5b1f17b1804b1-4a01b0031a5mr65592665e9.16.1790850145677;
-        Thu, 01 Oct 2026 03:22:25 -0700 (PDT)
-Received: from main ([5.27.43.223])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a01fa15e51sm58094425e9.2.2026.10.01.03.22.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Oct 2026 03:22:25 -0700 (PDT)
-From: Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	ojeda@kernel.org
-Cc: Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	daniel.almeida@collabora.com,
-	tamird@kernel.org,
-	acourbot@nvidia.com,
-	work@onurozkan.dev,
-	linux-pm@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	xuyiwen14@gmail.com,
-	miguel.ojeda.sandonis@gmail.com,
-	stable@vger.kernel.org
-Subject: [PATCH v4] rust: cpufreq: reject NULL from cpufreq_cpu_get()
-Date: Thu,  1 Oct 2026 13:19:15 +0300
-Message-ID: <20261001102213.45437-1-mehmet.mkoseoglu@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20260829161013.102967-1-mehmet.mkoseoglu@gmail.com>
-References: <20260829161013.102967-1-mehmet.mkoseoglu@gmail.com>
+        bh=vEbjjiBAb1Gv1/q3JktK2vYVX0s4JpnfBYopaxaaLpw=;
+        b=DyQ3PkpCCmnWogCCqki6jQ7wn2MjLwPigaHkhDxzvwdmJkHTEfmGlN+kMNSTEI9DUF
+         HfEYHFb8ZqaSrgqZqQpy2k2jq2guqLR0bUwLz4uVjlnOz4D/HNfiirRPMpw4t/YV6UDw
+         aXYwIY2QeRFtTG90O0OxJNIuKPBnXuBYRwkdKHquotfTlpcTXMlJpINC+U/Eya72cepe
+         WJePD3gfZPiQ7HsUsNe6V/6cMNsVyVQk9UhhpZ7egphIYouAByqfd/kHyWryrRagufzz
+         CmMXEm40ymNH7Tac6y1efEU0kZzT8/EHrbZpdYIKpWH790rSJsAA/AX7QygZBfB8dPcR
+         L6Dg==
+X-Forwarded-Encrypted: i=1; AKwUvBx4WAsbyZV0m+RR1pTBLphnU1wF3Rjqg/cDDNfWqAAIRykPC/OlfGVktLot76R++DgPwMl8aVx5FA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKKngORhzNVxJHdJYPiofEAEgY0+MXGz/fS7or0MSAGlO5u78Is
+	y2Ls+mIghme9VxYLHu9KdR1egR+tfORT1kGcwGNRy65v7cmB3V51/QImxU+g58UzXQ+7L3wAweY
+	mJDbx8zVDVohgwmhFoM0S/gUFpb2JPMxOL4WjwObo
+X-Gm-Gg: AYBFou1Eu3nms8+eBTN3BXEqxkGJeq9xz1Fv4PJLLBuafaT1jkSBosUCGBTlxJeeh8l
+	HDNXzaoP6FZ4vE+IebIT34caFbARq6+vI+sTGZRxIOtoqAe0ZeQlTQ0/huhz9Kl5a3SY8HD8LxD
+	tPhc3f5oJx239pEtngvyLHG5wSTUhZscRbYcyTEhSuO9yOLIPL5dYSB7fcDVR/cSV4N8PftvXVM
+	XP17ilIWgPE6WSEaRjNNveagAz6ShJwl//uxGZXrzVJ/WzHr4lvgox2mI1eyGUcXpzIMbD6d7/A
+	4yi6BhmeSM1bdFn3y0dbk8M2dWf0A4UwTwZve67iHJbVgHttFv/4YvBOJpkHX/Mvt/jlT/KliQt
+	paYrI1CCdyA==
+X-Received: by 2002:a05:690e:4105:b0:676:9954:81ef with SMTP id
+ 956f58d0204a3-676995489a9mr323421d50.14.1790852028003; Thu, 01 Oct 2026
+ 03:53:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260916075745.3549953-1-wenst@chromium.org> <20260916075745.3549953-7-wenst@chromium.org>
+In-Reply-To: <20260916075745.3549953-7-wenst@chromium.org>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 1 Oct 2026 18:53:36 +0800
+X-Gm-Features: AclHuK_wafiRDk696txMZ3q8q7Qaz4NsP-wYkipLMPcHq1r5tW6zotnKrD-_NRc
+Message-ID: <CAGXv+5GdBUafk6niG-UMDx=z6LJQ6iHAWhDpm1Ly2ce6CQDaxg@mail.gmail.com>
+Subject: Re: [PATCH v9 06/15] usb: hub: Associate port@ fwnode with USB port device
+To: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-cpufreq_cpu_get() returns either a referenced policy or NULL.
-PolicyCpu::from_cpu() passed its return value to from_err_ptr(), which
-rejects ERR_PTR values but accepts NULL.
+On Wed, Sep 16, 2026 at 3:58=E2=80=AFPM Chen-Yu Tsai <wenst@chromium.org> w=
+rote:
+>
+> When a USB hub port is connected to a connector in a firmware node
+> graph, the port itself has a node in the graph.
+>
+> Associate the port's firmware node with the USB port's device,
+> usb_port::dev. This is used in later changes for the M.2 slot power
+> sequencing provider to match against the requesting port.
+>
+> To avoid potential conflicts with ACPI firmware nodes and then causing
+> power management issues, only assign the firmware node if the hub's
+> firmware node is not an ACPI firmware node.
+>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+> ---
+> Changes since v5:
+> - Added extra |struct fwnode_handle *| local variables to shorten lines
+>   (Andy)
+> - Added comment about passing fwnode_graph_get_port_by_id() return value
+>   directly to device_set_node() (Andy)
+>
+> Changes since v4:
+> - Dropped unused |hdev| variable
+> - Added flags for fwnode_graph_get_port_by_id() with
+>   FWNODE_GRAPH_DEVICE_DISABLED so that even incomplete
+>   ports can be connected
+>
+> Changes since v3:
+> - Added missing fwnode_handle_put()
+>
+> Changes since v2:
+> - Skip assignment if hub firmware node is ACPI node
+> ---
+>  drivers/usb/core/port.c | 25 +++++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>
+> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+> index b4452b665f59..c0a51d9b06a6 100644
+> --- a/drivers/usb/core/port.c
+> +++ b/drivers/usb/core/port.c
+> @@ -7,6 +7,7 @@
+>   * Author: Lan Tianyu <tianyu.lan@intel.com>
+>   */
+>
+> +#include <linux/acpi.h>
+>  #include <linux/kstrtox.h>
+>  #include <linux/slab.h>
+>  #include <linux/string_choices.h>
+> @@ -358,6 +359,11 @@ static void usb_port_device_release(struct device *d=
+ev)
+>  {
+>         struct usb_port *port_dev =3D to_usb_port(dev);
+>
+> +       /*
+> +        * At this point ACPI nodes and swnodes have been removed by
+> +        * device_platform_notify_remove() in device_del().
+> +        */
+> +       fwnode_handle_put(dev_fwnode(dev));
+>         kfree(port_dev->req);
+>         kfree(port_dev);
+>  }
+> @@ -754,6 +760,7 @@ int usb_hub_create_port_device(struct usb_hub *hub, i=
+nt port1)
+>  {
+>         struct usb_port *port_dev;
+>         struct usb_device *hdev =3D hub->hdev;
+> +       struct fwnode_handle *fwnode =3D dev_fwnode(&hdev->dev);
+>         int retval;
+>
+>         port_dev =3D kzalloc_obj(*port_dev);
+> @@ -782,6 +789,24 @@ int usb_hub_create_port_device(struct usb_hub *hub, =
+int port1)
+>         port_dev->dev.driver =3D &usb_port_driver;
+>         dev_set_name(&port_dev->dev, "%s-port%d", dev_name(&hub->hdev->de=
+v),
+>                         port1);
+> +
+> +       /*
+> +        * ACPI FW nodes are associated later when device_register() happ=
+ens.
+> +        * Skip assigning one here to avoid potential conflicts.
+> +        */
+> +       if (!is_acpi_node(fwnode)) {
+> +               struct fwnode_handle *port;
+> +
+> +               /*
+> +                * fwnode_graph_get_port_by_id() returns either a valid f=
+wnode handle
+> +                * or NULL. Passing NULL to device_set_node() clears any =
+associated
+> +                * fwnode. It is effectively a no-op here, since no fwnod=
+e has been
+> +                * assigned to the newly created device yet.
+> +                */
+> +               port =3D fwnode_graph_get_port_by_id(fwnode, port1, FWNOD=
+E_GRAPH_DEVICE_DISABLED);
 
-If the lookup fails, Policy::from_raw_mut() therefore constructs a mutable
-reference from NULL. Dropping the resulting PolicyCpu then passes the
-invalid pointer to cpufreq_cpu_put(), causing an oops in kobject_put().
+After AI hinted, I found some dwc3 hardware to test this on.
 
-Reject NULL with NonNull before constructing the Policy reference. Return
-ENODEV instead.
+"port1" needs to be remapped using usb_hcd_find_raw_port_number() when the
+hub is the root hub. Otherwise both HS and SS ports end up getting the
+same port node, which is incorrect.
 
-A KUnit negative-control run reproduced the oops with the original
-conversion. The same test passed with this change. The reproducer is
-available on request.
+Same needs to be done for "usb_of_get_connect_type(hdev, port1)" some
+lines above the diff context.
 
-Fixes: 6ebdd7c93177 ("rust: cpufreq: Extend abstractions for policy and driver ops")
-Cc: stable@vger.kernel.org
-Assisted-by: LLM
-Signed-off-by: Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>
-Reviewed-by: Onur Özkan <work@onurozkan.dev>
-Reviewed-by: spidermana <xuyiwen14@gmail.com>
----
-No worries at all, here is a v4 update with the comment update and
-review tags.
+This mapping is currently only done in usb_acpi_get_companion_for_port()
+and usb_alloc_dev().
 
-Changes in v4:
-- Clarify that the policy pointer is non-NULL and cpufreq_cpu_get() holds
-  a reference for the lifetime of the returned reference.
-- Add Reviewed-by tags from Onur Özkan and spidermana (using the corrected
-  tag from spidermana's follow-up).
-- Resend at Viresh's request to replace the previously applied v3.
 
-Changes in v3:
-- Add Cc: stable@vger.kernel.org.
-
-Changes in v2:
-- Format modified imports using the kernel's vertical import style.
-
-v3: https://lore.kernel.org/r/20260829161013.102967-1-mehmet.mkoseoglu@gmail.com
-v2: https://lore.kernel.org/r/20260828161834.29539-1-mehmet.mkoseoglu@gmail.com
-
- rust/kernel/cpufreq.rs | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
-
-diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
-index affa2b9490ef..b75d692846a2 100644
---- a/rust/kernel/cpufreq.rs
-+++ b/rust/kernel/cpufreq.rs
-@@ -14,7 +14,13 @@
-     cpumask,
-     device::{Bound, Device},
-     devres,
--    error::{code::*, from_err_ptr, from_result, to_result, Result, VTABLE_DEFAULT_ERROR},
-+    error::{
-+        code::*,
-+        from_result,
-+        to_result,
-+        Result,
-+        VTABLE_DEFAULT_ERROR, //
-+    },
-     ffi::{c_char, c_ulong},
-     prelude::*,
-     types::ForeignOwnable,
-@@ -29,7 +35,10 @@
-     marker::PhantomData,
-     ops::{Deref, DerefMut},
-     pin::Pin,
--    ptr,
-+    ptr::{
-+        self,
-+        NonNull, //
-+    },
- };
- 
- use macros::vtable;
-@@ -687,12 +696,13 @@ fn clear_data<T: ForeignOwnable>(&mut self) -> Option<T> {
- impl<'a> PolicyCpu<'a> {
-     fn from_cpu(cpu: CpuId) -> Result<Self> {
-         // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
--        let ptr = from_err_ptr(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) })?;
-+        let ptr =
-+            NonNull::new(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) }).ok_or(ENODEV)?;
- 
-         Ok(Self(
--            // SAFETY: The `ptr` is guaranteed to be valid and remains valid for the lifetime of
--            // the returned reference.
-+            // SAFETY: `ptr` is non-NULL and `cpufreq_cpu_get()` took a reference on it, so it is
-+            // valid for writing and remains valid for the lifetime of the returned reference.
--            unsafe { Policy::from_raw_mut(ptr) },
-+            unsafe { Policy::from_raw_mut(ptr.as_ptr()) },
-         ))
-     }
- }
--- 
-2.55.0
+> +               device_set_node(&port_dev->dev, port);
+> +       }
+> +
+>         mutex_init(&port_dev->status_lock);
+>         retval =3D device_register(&port_dev->dev);
+>         if (retval) {
+> --
+> 2.55.0.1032.g73a4cd73de-goog
+>
