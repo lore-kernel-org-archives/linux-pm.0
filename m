@@ -1,170 +1,95 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C001553A897;
-	Thu,  1 Oct 2026 22:39:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C41D2D12EE
+	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 23:38:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790894370; cv=none; b=qF1/uapqG4xzaaz74TOPbKV0vvTq7MjDVRnT7SW2sM1+qpzw19ag37kB5jTk0Kstj6sVGnCG0I9WTDyr0W1JTy9PV3dbsJ08nbIvn7FxcDTnn/W5fM4jTbmSHeb/LTCW/dHSd6A/EVCAT9QrKsg71YnSG1Bn+X1ADGfkLy1FVNU=
+	t=1790897895; cv=none; b=AR6EgkTsTd4crIkouIXwo2HHMPxdUcU7G5rX+75Nru8N77BQbeA85mAkQ8GMQmQ/Sltl1yb2SSAsyFTlravxfNWPMtkPKXFXrLoJAqK7oMdBH6PyJOmNmokMbUdPUxTBAcmCCU/ZMTCzp9DAXnK2Z4RDQTlkSnqONsG9rLA5kxk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790894370; c=relaxed/simple;
-	bh=k2ve9LUY268MZQ1u8RQTTwA9UBykr9y3Q6hKUz/3Hq4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CrvvgwTSCw2Woe4j3ARtO2iLJX4k3CMz7HSPuCOQGB7f8flPN8lDTNgbIToFAqlLC2d59isNTX96fFO2qQcIdz/cSoGE1tkSWMQDfIAzL0/yXjaf4hJJGcIWgngivlNxzLIls43mtNQFB7Athumc7cH2yjuIoawDPtaIUWSfnGA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=pl8FVpK8; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=wlIzbNP0; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	s=arc-20240116; t=1790897895; c=relaxed/simple;
+	bh=w138yJmKql9CsB3j6NeuLwJiWYTSGe9wiSiVMcaP8hQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=UqRah4N4oZgSVMwcRqie8ahlBGzM4APGy7x6E1aR9tGDzmMrgJPwN8QAlH2BMj/f5Lgd0ThTWR0lFv/9AL+RLT9KlK0xXDq2RsdxDWKbncVq2o4Y1huBPcz/jaRVDc2trlqRUTxXZVEiiUPVwpxk5uQ0PK0+RfcpUqplCZJc+M4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CAok20QT; arc=none smtp.client-ip=74.125.227.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="pl8FVpK8";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="wlIzbNP0"
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Subject:Date:From; t=1790894353; bh=qH8qtAvJt6QBAaVW7+RemNL
-	LbkyXjP6yIK8kxrITcAE=; b=pl8FVpK8NleKwQaoR7eoQxDkNpWpJzYNwX2fTSB7Uv59y/2CAf
-	9C+4xTMxjrr6FHoK352uySyaufZ/5ERnkOaRo/+Pin3NnJRsRebgVp2g0Bxq624VNKjo49bUba/
-	cMkvaWJwAP1SL4d6jT78B/JlH6vlgFoE+xmAVpqdONSZ0XkYHKXQ1CdW0La07lzg3n8Fo0cgqIs
-	ns11gjsJoA7VqTckkgQLGILc+QVS+86O0Rg6uX9CLeOozy4JjhxLD0k0B5aYBcEGPx4wGrJrlL7
-	shIi/o8/xcC9LkXMIOxTTC4ChC4rtvGId+c9pcWQPOtpD/4pMDFyn3FpFsAZkHZU74w==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Subject:Date:From; t=1790894353; bh=qH8qtAvJt6QBAaVW7+RemNL
-	LbkyXjP6yIK8kxrITcAE=; b=wlIzbNP0VypHJVk4EtJmjR0hJcnYOSbMK30vtlT604kSaILw3O
-	/ayz630/emtOsHq4kQ1PJIE1Wdcgtg+XMFDA==;
-From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Fri, 02 Oct 2026 00:38:34 +0200
-Subject: [PATCH v3 6/7] remoteproc: qcom_q6v5_mss: Add SDM632 MSS
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CAok20QT"
+Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-39d654f02baso3310685a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 16:38:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790897893; x=1791502693; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=w138yJmKql9CsB3j6NeuLwJiWYTSGe9wiSiVMcaP8hQ=;
+        b=CAok20QTcEL+UkMAo7F9++JNNsODxVrzmFiO78jNj+tx2Ds7OlJ5WwAlu/L18im028
+         9o8g0p+s56nHqYw3biYEkbTOhJczii4iJtQI1cT8dfebfas8FW0G04xanps7ZDv/vLLC
+         tjaLkFjXF2NFPyH99/awvT7mnD+AM6FHSPycTeIaUvD8lIG3ZPZnIt9WbhG5TJ3ln1Tx
+         eUpZdU8IJSR/wPvZhwZ5NJLZegbLRC6rsotpY9cx5VsO6OgHth9+NpfZ4UWhyHskWD4Y
+         nkI+x8jyg2Kaj5psP2NJT1BZY9ruiOsG3U/x1Ijf6BZZvr+ZPFf1knuyIoOAzbc/CaJj
+         WAgw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790897893; x=1791502693;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=w138yJmKql9CsB3j6NeuLwJiWYTSGe9wiSiVMcaP8hQ=;
+        b=DPP9dGhTjC42ggFGjSmPULDhefRK9XzQL0dtXuOWxQV1vWGQ4KZ7q4qDrCroo3vw7o
+         sFgGPnN0naQt9dbmU/QsmgFEODBC7NAzFueREULZbbCZjoFj0daY0pbJzY/9qMpLGJH/
+         oac0gyQDCYztJEYzYmhGyYxW/f+FX/rNcie/+iAfF9TfWwZtQbyauTPp2Qg2FdFwzzwQ
+         2pHpRZezQyyqDlpJRdhrGl31XYdDpggGszIpge18RREYBGNnh8daPznzhFTMTZeunz7p
+         5HIG36vbHp3ennt1VLdkLVnOwW/P+eKKy9aXr1hlWOCQJIzYvX7y1QD0HdTPgWadcEjs
+         7FRA==
+X-Forwarded-Encrypted: i=1; AKwUvBxjZkO1EQjjt1radDUijfwwI7v7H1UYy2zGibKIa1P0/9w7kbl3M+jb0+V1+YTcRz6pfP/HZFExxg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYINnKVVP94WusWrI9nnEtkrLUKQ8gJ/g0/FpFJUDLwN88ECdLPg
+	rK3ePijy3wgvPp5UQsylGcKNvHSbsL6gQDWd7Sjq9BlPnRlxyy6Uq3d7
+X-Gm-Gg: AYBFou3aJVFz0V7leSSKqaRetQIl2jSvzob0HqyfeiuhbI4EvYS6jiOD8znaFODtzb4
+	yGsRgbInaYbDy5XL1WXhIfpQgF9/zFOu8lMfa4T6nBIVx0ir22aN8k66a0EqhpFzzR30LIW96Jc
+	k1hUh9isREuFXghDAe+o5hcU5DQeOVL0lNlxeRfUPK57BS8dYwp1v7xavbhdT2T4zqz7PKtSmgh
+	bRB993G9l/cEsXkm1rC+DPc2Ac0KiWbCMcv2pfluBh4h8wnTYq5qKq02xqt394tPQk8co1RppiD
+	blhODk0/u9wAFfGn+/UMMPh5fOyfZJncNDatxuS5kYKb8p/fM/07ZWRqMZM55taEjS8QbH+Ut7H
+	tgvzFnXHS4U2nQulSjmgFnBig0ocn0RqeLPXjKLSXqtUOqgsOLjizbjTtUeEKVZu7CAPsag1JGo
+	B7OPSWSvPYGiwxXESzm84qZ0y8k6mGaxL+pcLM8olv9ife1xbKQi6KZuNRxnfN4WvILqqFTA2bn
+	YnFGkVO
+X-Received: by 2002:a17:90b:3a0f:b0:3a4:d476:e10c with SMTP id 98e67ed59e1d1-3a6ce79667amr848084a91.28.1790897893326;
+        Thu, 01 Oct 2026 16:38:13 -0700 (PDT)
+Received: from kdev.. ([108.180.130.139])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a6ccc92646sm1284785a91.1.2026.10.01.16.38.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Oct 2026 16:38:12 -0700 (PDT)
+From: Babanpreet Singh <bbnpreetsingh@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+	Purism Kernel Team <kernel@puri.sm>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Dan Carpenter <error27@gmail.com>,
+	kernel test robot <lkp@intel.com>,
+	bbnpreetsingh@gmail.com
+Subject: Re: [PATCH] power: supply: max17042_battery: Make the fractional LSB macros safe
+Date: Thu,  1 Oct 2026 23:38:12 +0000
+Message-ID: <20261001233812.7-1-bbnpreetsingh@gmail.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260915052529.7-1-bbnpreetsingh@gmail.com>
+References: <20260915052529.7-1-bbnpreetsingh@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261002-sdm632-rpmpd-v3-6-95c47d0f26cf@mainlining.org>
-References: <20261002-sdm632-rpmpd-v3-0-95c47d0f26cf@mainlining.org>
-In-Reply-To: <20261002-sdm632-rpmpd-v3-0-95c47d0f26cf@mainlining.org>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
- Mathieu Poirier <mathieu.poirier@linaro.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Stephan Gerhold <stephan@gerhold.net>, Ulf Hansson <ulfh@kernel.org>, 
- Abel Vesa <abelvesa@kernel.org>, Ulf Hansson <ulfh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-remoteproc@vger.kernel.org, 
- =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790894346; l=3313;
- i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=k2ve9LUY268MZQ1u8RQTTwA9UBykr9y3Q6hKUz/3Hq4=;
- b=QA2ybEKXnMS4IouRyfOhlylms5jU/Ev4lQ6zvFnS9KLDj04s3Jlaom7B/OCn/S0mvsIssVBsJ
- 2sxtSv4Gw7aAme0V2mwIqWCAp/UdeOc2R9IvDUPracupcyf7SsPI4RT
-X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
- pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-Add support for SDM632 mss, it is very similar to MSM8953 mss only
-difference SDM632 is using mss-supply as pm domain.
+Hi Sebastian,
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
----
- drivers/remoteproc/qcom_q6v5_mss.c | 47 ++++++++++++++++++++++++++++++++++++--
- 1 file changed, 45 insertions(+), 2 deletions(-)
+Gentle ping on this one. It has been a little over two weeks and I could
+not find it in your for-next or fixes branch, so I wanted to check
+whether it needs anything from my side.
 
-diff --git a/drivers/remoteproc/qcom_q6v5_mss.c b/drivers/remoteproc/qcom_q6v5_mss.c
-index 8f6312213e1a..79510cbfcb8f 100644
---- a/drivers/remoteproc/qcom_q6v5_mss.c
-+++ b/drivers/remoteproc/qcom_q6v5_mss.c
-@@ -273,6 +273,7 @@ enum {
- 	MSS_MSM8998,
- 	MSS_SC7180,
- 	MSS_SC7280,
-+	MSS_SDM632,
- 	MSS_SDM660,
- 	MSS_SDM845,
- };
-@@ -762,6 +763,7 @@ static int q6v5proc_reset(struct q6v5 *qproc)
- 		   qproc->version == MSS_MSM8953 ||
- 		   qproc->version == MSS_MSM8996 ||
- 		   qproc->version == MSS_MSM8998 ||
-+		   qproc->version == MSS_SDM632 ||
- 		   qproc->version == MSS_SDM660) {
- 
- 		/* Override the ACC value if required */
-@@ -772,7 +774,8 @@ static int q6v5proc_reset(struct q6v5 *qproc)
- 			writel(QDSP6SS_ACC_OVERRIDE_VAL_9607,
- 			       qproc->reg_base + QDSP6SS_STRAP_ACC);
- 		else if (qproc->version != MSS_MSM8909 &&
--			 qproc->version != MSS_MSM8953)
-+			 qproc->version != MSS_MSM8953 &&
-+			 qproc->version != MSS_SDM632)
- 			writel(QDSP6SS_ACC_OVERRIDE_VAL,
- 			       qproc->reg_base + QDSP6SS_STRAP_ACC);
- 
-@@ -832,7 +835,8 @@ static int q6v5proc_reset(struct q6v5 *qproc)
- 			/* Turn on L1, L2, ETB and JU memories 1 at a time */
- 			if (qproc->version == MSS_MSM8940 ||
- 			    qproc->version == MSS_MSM8953 ||
--			    qproc->version == MSS_MSM8996) {
-+			    qproc->version == MSS_MSM8996 ||
-+			    qproc->version == MSS_SDM632) {
- 				mem_pwr_ctl = QDSP6SS_MEM_PWR_CTL;
- 				i = 19;
- 				reverse = 0;
-@@ -2316,6 +2320,44 @@ static const struct rproc_hexagon_res sc7280_mss = {
- 	.ssctl_id = 0x12,
- };
- 
-+static const struct rproc_hexagon_res sdm632_mss = {
-+	.hexagon_mba_image = "mba.mbn",
-+	.proxy_supply = (struct qcom_mss_reg_res[]) {
-+		{
-+			.supply = "pll",
-+			.uA = 100000,
-+		},
-+		{}
-+	},
-+	.proxy_clk_names = (char*[]){
-+		"xo",
-+		NULL
-+	},
-+	.active_clk_names = (char*[]){
-+		"iface",
-+		"bus",
-+		"mem",
-+		NULL
-+	},
-+	.proxy_pd_names = (char*[]) {
-+		"cx",
-+		"mx",
-+		"mss",
-+		NULL
-+	},
-+	.need_mem_protection = false,
-+	.need_pas_mem_setup = true,
-+	.has_alt_reset = false,
-+	.has_mba_logs = false,
-+	.has_spare_reg = false,
-+	.has_qaccept_regs = false,
-+	.has_ext_bhs_reg = false,
-+	.has_ext_cntl_regs = false,
-+	.has_vq6 = false,
-+	.version = MSS_SDM632,
-+	.ssctl_id = 0x12,
-+};
-+
- static const struct rproc_hexagon_res sdm660_mss = {
- 	.hexagon_mba_image = "mba.mbn",
- 	.proxy_clk_names = (char*[]){
-@@ -2923,6 +2965,7 @@ static const struct of_device_id q6v5_of_match[] = {
- 	{ .compatible = "qcom,msm8998-mss-pil", .data = &msm8998_mss },
- 	{ .compatible = "qcom,sc7180-mss-pil", .data = &sc7180_mss },
- 	{ .compatible = "qcom,sc7280-mss-pil", .data = &sc7280_mss },
-+	{ .compatible = "qcom,sdm632-mss-pil", .data = &sdm632_mss},
- 	{ .compatible = "qcom,sdm660-mss-pil", .data = &sdm660_mss },
- 	{ .compatible = "qcom,sdm845-mss-pil", .data = &sdm845_mss },
- 	{ },
-
--- 
-2.56.0
-
+Thanks,
+Babanpreet
