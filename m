@@ -1,87 +1,125 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4A6B509EE4;
-	Thu,  1 Oct 2026 13:47:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1D50496D35;
+	Thu,  1 Oct 2026 13:50:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790862435; cv=none; b=icueJBr6kLMaN/utWDlvYXfcDFk6xhQc0KTX0/8GCI27kCrMTU2hjIBKdn2em8Yp+tvuLt+PH9cbh5akdOdXDOXmloZxjmaLCk3X+40oR/BnNYKzlB9i2vDNmgWptzWN/5eFXzPVxbGMFoBmgv2Wx98SiwKwy4jh86QDGU25CWs=
+	t=1790862603; cv=none; b=EaTGBP9UixiJmwibIgf5Zh9hCXHk0Zh7VPIo/hlhXRn1+EXGdGZRIaLSZGltMoAegLHXCyFOgY08IK82A2+R3UpLtBnniG1QP+TC8wTd4kB07k/GiLnjVSDqUc/cIGE1hsHa1rox8SdI50m78XzRovNmB7NCShIjOZIWnqFLD2E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790862435; c=relaxed/simple;
-	bh=LRHJAJ//qK4zk5OywvnZY+1YB/70Tz1Iq3n2t0jyays=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MwgODolvkV9/YBsJoJyCRmzMTDVEAJy46D7Q9k4l0n7xO9Mu5638d8uXqcibwlZRqKpzj7hJP5DqmDUfXFyonhUcSV3ib6eIivikRKP6htK3IWXCqh03OedJthNxxUer3bNEm0KDnjqbUvgcbFr/FmpDlYntpJm8WjKu3guQg6k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O5s1UsAr; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790862603; c=relaxed/simple;
+	bh=zQ9MtrvJfthHd5Vg84A7ZAy6wwcDhigK3I4PjJDOPMc=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=t+zCUiYielXQlJ6QrHf2EouI6fa1vAT71eqwKeAbuu3+QUZPcgk99hGK8oUcLZLqGAdZ5KqNjOw8BZFetRwLUgE1C3zajlhyOcycMEzzeXdx5IVmMXJbeSQ+cHNvuaIUnxEeZi9/ZqobQtqtVy/X80yIJb7sab8jyOoOovUpuP4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NO8uIpvr; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O5s1UsAr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 202351F000FF;
-	Thu,  1 Oct 2026 13:47:14 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NO8uIpvr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 285EE1F00898;
+	Thu,  1 Oct 2026 13:49:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790862434;
-	bh=bnMoeykuBZptdA3ds37XtwuD8lIdtRVgD7fPQTAPgf8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=O5s1UsArXOSPxdyHpqke7ocbx389Ztd7tE2kzQudZOuwWhvh5K1trVpaCYfiVbBvi
-	 o0oWe0B0quz5w/JnezKzkYeeoGm1qtPAKVaMXUiZkWA66YjVjWnkyxtcScGe0KSDwk
-	 KbPaHigeWOh4loRna77wiA8sLl7MKotQ4XjGjtoLe4wp8kp7Hco3H3UxGlG9fYJp0/
-	 IiGV/15KHQxF8QDe2C7e2KKghI06cEkfHv9otCW2rkCYTajU/Csb4PNHqLoZFybKV2
-	 V8MD7+C+cBYHp2QiIpBXBnRBI2GhxF36exeVzgLa/qSIhkLe5Exard8gr2xluK01cB
-	 +Yf9tbhF1IHZQ==
-Message-ID: <ca33c615-e429-49b1-b1f5-fa25a879a6fa@kernel.org>
-Date: Thu, 1 Oct 2026 08:47:12 -0500
+	s=k20260515; t=1790862598;
+	bh=sXzExsQ7ko37b3Osdz1dvDlhOHBAgHiJiu7t1kn79LQ=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=NO8uIpvrwNZMMO29VNksLG+RliC7ewccbvWQrg1gu2HiClGxxN31B9nPLDzbaU8X8
+	 9ShhxDp1khV1a+mLptUYOfjeYcO1oXEIyrGmA0i1KMqv+HVEWneMBnfEsbZJAwVkb5
+	 mc7kGmp59awUEw8u492ae0CkWUt6ZWHUkk4tuRlDouiAbQ52MzuC+/xTNiTZjsQo6t
+	 cTzEPfzLMdcJPV2el+rVAaKXs6gU17aA/jVZrWrFsa5zgCWJcShSKmJjZov4P2vLyf
+	 fKmnHTO1tkN7ziKwYlA9uDFhJcC116G7u9/7J4XJmbmL/LagmnfrNljz+6fw78ZJ42
+	 op3HUq56R2iMQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/3] cpufreq/amd-pstate: Get Highest Freq for a CPU
-Content-Language: en-US
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, K Prateek Nayak <kprateek.nayak@amd.com>,
- x86@kernel.org, Mario Limonciello <mario.limonciello@amd.com>,
- =?UTF-8?Q?Rafael_J_=2E_Wysocki_=E2=8F=8E?= <rafael@kernel.org>
-References: <20260924160052.2858456-1-superm1@kernel.org>
- <20260924160052.2858456-4-superm1@kernel.org>
- <5b748ac7-26da-4010-bfc8-014a0c97abe2@arm.com>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <5b748ac7-26da-4010-bfc8-014a0c97abe2@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 01 Oct 2026 15:49:54 +0200
+Message-Id: <DLTJT271O5MJ.29DXT8VS9712I@kernel.org>
+Subject: Re: [PATCH v3 0/3] debugfs: make debugfs_create_str() read-only
+Cc: "Yichong Chen" <chenyichong@uniontech.com>, <rafael@kernel.org>,
+ <djakov@kernel.org>, <quic_mdtipton@quicinc.com>, <vkoul@kernel.org>,
+ <yung-chuan.liao@linux.intel.com>, <pierre-louis.bossart@linux.dev>,
+ <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>, <linux-sound@vger.kernel.org>
+To: "Greg KH" <gregkh@linuxfoundation.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260807100053.1089834-1-chenyichong@uniontech.com>
+ <2026100153-unmanaged-impart-3adf@gregkh>
+ <DLTIZ3CNCQDS.24NN9OMJG7AXA@kernel.org>
+ <2026100139-deviancy-direction-edea@gregkh>
+In-Reply-To: <2026100139-deviancy-direction-edea@gregkh>
 
-On 10/1/26 05:03, Christian Loehle wrote:
-> On 9/24/26 17:00, Mario Limonciello (AMD) wrote:
->> From: Mario Limonciello <mario.limonciello@amd.com>
->>
->> If the highest frequency is known for a CPU, use this instead of
->> trying to calculate by linear interpolation.
->>
->> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
->> ---
->>   drivers/cpufreq/amd-pstate.c | 6 ++++--
->>   1 file changed, 4 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
->> index 496e0342c1c90..2a0cbfe21a67d 100644
->> --- a/drivers/cpufreq/amd-pstate.c
->> +++ b/drivers/cpufreq/amd-pstate.c
->> @@ -1102,8 +1102,10 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
->>   
->>   	WRITE_ONCE(cpudata->nominal_freq, nominal_freq);
->>   
->> -	/* max_freq is calculated according to (nominal_freq * highest_perf)/nominal_perf */
->> -	max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
->> +	/* try to look up from BIOS/quirk first, fall back to (nominal_freq * highest_perf)/nominal_perf */
->> +	max_freq = amd_get_max_frequency(cpudata->cpu) * 1000;
->> +	if (!max_freq)
->> +		max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
-> 
-> Don't you need to align freq_to_perf() (or the callers) for the BIOS-overwrite case too?
-> amd_pstate_update_min_max_limit() still uses the nominal-based conversion for policy->max,
-> so the new maximum frequency maps back to highest_perf on each core type?
-> (and we end up with max_limit_perf < highest_perf if the BIOS-overwrite values are below
-> the interpolation result.)
-> 
-> 
-That's an excellent finding, thanks.
+On Thu Oct 1, 2026 at 3:19 PM CEST, Greg KH wrote:
+> On Thu, Oct 01, 2026 at 03:10:45PM +0200, Danilo Krummrich wrote:
+>> On Thu Oct 1, 2026 at 2:51 PM CEST, Greg KH wrote:
+>> > On Fri, Aug 07, 2026 at 06:00:50PM +0800, Yichong Chen wrote:
+>> >> debugfs_create_str() has a generic write implementation that replaces=
+ the
+>> >> backing string.  Concurrent writers can race and free the same old st=
+ring
+>> >> twice.
+>> >>=20
+>> >> Instead of adding more locking to the generic helper, convert the exi=
+sting
+>> >> writable in-tree users to local file operations and make
+>> >> debugfs_create_str() read-only.
+>> >>=20
+>> >> Changes since v2:
+>> >> - Use scoped mutex guards in the interconnect and SoundWire conversio=
+ns.
+>> >> - Clarify why GFP_KERNEL is safe in the interconnect conversion after=
+ the
+>> >>   RCU read-side critical section is removed.
+>> >> - Drop the unnecessary firmware_file =3D NULL assignment in the Sound=
+Wire
+>> >>   exit path.
+>> >> - Use WARN() instead of WARN_ONCE() so each writable debugfs_create_s=
+tr()
+>> >>   caller can be reported.
+>> >
+>> > Sorry for the delay, now applied.
+>>=20
+>> This series fell through the cracks on my end. I also reported this issu=
+e in [1]
+>> and I agree making debugfs_create_str() read-only is the best fix for no=
+w.
+>>=20
+>> However, it duplicates code and I think having a proper helper as sugges=
+ted in
+>> [1] would be nice follow-up.
+>>=20
+>> [1] https://lore.kernel.org/driver-core/DLPDB44JJRGJ.3K6JNS746M7QC@kerne=
+l.org/
+>
+> Yes, that would be nice, but for read-only debugfs strings, let's keep
+> writable ones away if at all possible :)
+
+The two converted subsystems now have identical code that can easily be
+generalized. And I think we have other users that open code this too.
+
+For instance, soundwire would collapse to just:
+
+In sdw_debugfs_init():
+
+	/* Initialize struct debugfs_string */
+	ret =3D debugfs_string_create(&firmware_file, "");
+
+In sdw_debugfs_exit():
+
+	/* Free struct debugfs_string */
+	debugfs_string_free(&firmware_file);
+
+In sdw_slave_debugfs_init():
+
+	debugfs_create_str("firmware_file", 0600, d, &firmware_file);
+
+In cmd_go():
+
+	scoped_guard(debugfs_string, &firmware_file)
+		ret =3D request_firmware(&fw,
+				       debugfs_string_read_locked(&firmware_file),
+				       &slave->dev);
+
+Thanks,
+Danilo
