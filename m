@@ -1,63 +1,86 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E14D3F0A9B;
-	Thu,  1 Oct 2026 21:38:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C557D47CA74;
+	Thu,  1 Oct 2026 22:39:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790890684; cv=none; b=GDAWyyoYEaKUUInTjwrNdlWiIYfONcscfviw5tvY6E9qBnH1GNJMqGyl4/OaVNMO++kZ3DB0hK+DWStWZeH+2A3jqZC/9dhmPdZA46/W/WgeL55QxdaDMr3MmAnyesls3vAXZTGgRGLsRAzZ6J822EBzUAE253yIf4+DREf8l5Q=
+	t=1790894359; cv=none; b=ZZNzlWY/JuwBcXFLyJryytkNaWSeqHhehUgIUqMqful3xNxikdoiWQbIIXVgW7Bi+BSa8NS7RxiZNMNfLWeAr689URIAgqdFb+G0amjB/48C/nOO/3TozepZh1MSTGlm5TzwKt6+2bNUXzbpVj0Ce8ZxWVXLVdqEjK16CHX6KXg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790890684; c=relaxed/simple;
-	bh=OUl2WXwN/zarlGpVS2A0cD+l2FoPR3JAw3jfLTH/PAU=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=OFBKIrkA0fXZt4y9hv+8rcHGkRYYk3EpiWArAgHvi+fwQ4Jh/IVaFHlTUN0cdkR54KYKBL7da4RJMRKIov4UGtvwVMvExlR6jUvKzDy5X2Cjh/IhfYLm298JvatdJ4eSGZXyGDiQWOicKFKD/59inUYLru+HK7xO+CG3mex6yrY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TtURV3t+; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790894359; c=relaxed/simple;
+	bh=2RGRNeAAXOyVNaG1ySuLiyiJ9LWhXcEJmrLKm5yEslM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=qxuPXS7UHgXuRtlG0eva0p9gCa2sBPAybdcdrTe6ehylL59PCXOP73scIQPpHYaAbE+vbIYIDhuzNVHFlTZLaQ3gQ9zWcDLNIejPrKtzvGhOkrTgIXBlo8eznvCRib0xEW2vJy6T7pZl3//A1M89bAQy/VXF8hufR9JPvRKVjzc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=rzOchwtt; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=wQX4eQx7; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TtURV3t+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 089631F000FF;
-	Thu,  1 Oct 2026 21:38:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790890681;
-	bh=9/LTYwSOnQGFomWo+QwTpJ0xrlhqp1PGPero5RfkhS4=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=TtURV3t+LN+z872iDnur32aTGzoAU4gQs5jZbs7Pq3aGnCMy8tjTJVw1f05bmSnHJ
-	 zZT8IQ5PnH+dFiC/lWRjbRbAZd7mQsjVdszmkKukknnqAnyWnH4oESYFtc/cImxhon
-	 r9XCqcOzC5+1DnS6AvWvfIZvVF1T+WT55+mdbfN2LILyfyPNNF+H+DjIuLvKjyvRcZ
-	 Agx3Thnp7T0jcnq3awGZPQt6XqkFXotUc8lvmglEEQDA/LzgOVgQgkcxnN2xtOSb9k
-	 qPzW8E/ZsDVkEKC4l5UjYmrnTPGXPkydK/X5GmlhS9lHb4Q+dfHux58EnNUzQw9GCm
-	 A5YZFIr7yqzFQ==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id F154D3811976;
-	Thu,  1 Oct 2026 21:38:00 +0000 (UTC)
-Subject: Re: [GIT PULL] Power management fix for 7.3-rc6
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0gQ8_-9V1DhqO+vYdqVRZSYQj3pVFgH1JgXGmHN-oPd4Q@mail.gmail.com>
-References: <CAJZ5v0gQ8_-9V1DhqO+vYdqVRZSYQj3pVFgH1JgXGmHN-oPd4Q@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0gQ8_-9V1DhqO+vYdqVRZSYQj3pVFgH1JgXGmHN-oPd4Q@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-7.3-rc6
-X-PR-Tracked-Commit-Id: f341dc4d934a69ffbe6c21e3609ee725790188f1
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 100638f0f016cb0e6c75e95ff2b0495bca0b3054
-Message-Id: <179089067944.3100647.10794790809112219206.pr-tracker-bot@kernel.org>
-Date: Thu, 01 Oct 2026 21:37:59 +0000
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="rzOchwtt";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="wQX4eQx7"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=To:Message-Id:Subject:Date:From; t=1790894349; bh=gxZPHmkRT7v35KkDnbR+Pkj
+	VHOxwUuGnV/V7Md1RQpo=; b=rzOchwttuREub7AvBjQdU9bXjYxS8mQiq5NcIPbn99rt+/en0Z
+	YqG0ICkWkmBRNp27HrYcNFw6amaKkdIl1rKLEj1QUohKppyx6K7z5wqhEe53g7ZlO2QAbGB42YW
+	clHJHmwr71QR8Fp9KZNWWBhC7zYc7vBXMrQZxMBwLDAC97ww+EkC+3vPx6WatpzxfpecrQk6rVI
+	aRfiivBTbBbzCqUPRMtW8G1ThkJPR3xaRqx24UczxcjpX4X1JF3Rd7HuW0RwzBqTiOJoJ4bElB4
+	fvgfnGJsPm6TtunoE1uvrfwoQyCHwxF3kZDz3Du0gvBxWBtGgUssE1tzd1Q/S/J0Jvg==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=To:Message-Id:Subject:Date:From; t=1790894349; bh=gxZPHmkRT7v35KkDnbR+Pkj
+	VHOxwUuGnV/V7Md1RQpo=; b=wQX4eQx76l0pzaw8RgQy8jK4pNVtn7lFhDcWqGbcKuMbuTt/Jd
+	qXsGzaZqvSpUc0ELkJ5ZqnC+vQsRAX801PDw==;
+From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
+Date: Fri, 02 Oct 2026 00:38:30 +0200
+Subject: [PATCH v3 2/7] dt-bindings: power: qcom,rpmpd: Add SDM632
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20261002-sdm632-rpmpd-v3-2-95c47d0f26cf@mainlining.org>
+References: <20261002-sdm632-rpmpd-v3-0-95c47d0f26cf@mainlining.org>
+In-Reply-To: <20261002-sdm632-rpmpd-v3-0-95c47d0f26cf@mainlining.org>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+ Mathieu Poirier <mathieu.poirier@linaro.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Stephan Gerhold <stephan@gerhold.net>, Ulf Hansson <ulfh@kernel.org>, 
+ Abel Vesa <abelvesa@kernel.org>, Ulf Hansson <ulfh@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-remoteproc@vger.kernel.org, 
+ =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790894346; l=779;
+ i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
+ bh=2RGRNeAAXOyVNaG1ySuLiyiJ9LWhXcEJmrLKm5yEslM=;
+ b=97bc+x35Qd9XJ4+NOscPAkKPtnqaIKSdDK1V5UcyQn8ilh8bdvvstpZ9Wdtt1xKeZGChVDakE
+ wPjq3PpZV5bCXoUFvDNbubNXB7nkB1US66mnO8lgcRmPqqK+kXW034H
+X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
+ pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-The pull request you sent on Thu, 1 Oct 2026 20:27:30 +0200:
+Add compatible for SDM632 RPM.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-7.3-rc6
+Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+---
+ Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/100638f0f016cb0e6c75e95ff2b0495bca0b3054
-
-Thank you!
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+index a70bfacbc5d1..4b263a982fca 100644
+--- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+@@ -51,6 +51,7 @@ properties:
+           - qcom,sc7280-rpmhpd
+           - qcom,sc8180x-rpmhpd
+           - qcom,sc8280xp-rpmhpd
++          - qcom,sdm632-rpmpd
+           - qcom,sdm660-rpmpd
+           - qcom,sdm670-rpmhpd
+           - qcom,sdm845-rpmhpd
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.56.0
+
