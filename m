@@ -1,37 +1,67 @@
-Received: from lgeamrelo12.lge.com (lgeamrelo12.lge.com [156.147.23.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA196345CDA
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 08:40:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.23.52
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6838B4CDDF6;
+	Thu,  1 Oct 2026 08:46:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790844036; cv=none; b=DkZnSeX1aAqZz3QIAsM2mELEV4S+w0EdJFtwGKTcDl1D2KqenWwOkkzKInCcywDyhrEjRehmWQhU8BFNh0ysodemXE9+hmlD7TjFwzDDTcDU8V51GOhfajfB23gSBwRP7TUtf95E+OaZeJTApFOLmMJmLgHOX+0xaiGuFinPLb8=
+	t=1790844412; cv=none; b=laB1AbCiOmwTLpxITT3nz0rjgRil0kHeWQ747N6SnEDg3FvxSiH2t70ZzO+e/UWt6x0aUWOmIIEkKYmNN7I1+wlPN+3bd9oRRmIRKzzMRbYi4eWGJ5XhMlMtIcxHaSqe+EOT2vbRfTieDwnO6QB4w3Lxs3nKqgP8Vmm4OaLAdqE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790844036; c=relaxed/simple;
-	bh=d+WazRSU4VC1NB15GWvGk7DKr8Zdmm7JHR7wwGEuilA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=sbK53SAFs7opEAz6L42RWetOx6afeXmvDLry5tVAFLrAn9Nk5dC27x8al4QuFY+ikLOthNjfcV6g4/5JBK8nOguqmrZ5Kc0qFJUD4ywJgTP8wSVH05RJahgjdqQ18W+qYFSiKaC0YQmUXza9LbQgk7s4d7GVFHowHbxYwRlbR7U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.23.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
-Received: from unknown (HELO lgemrelse7q.lge.com) (156.147.1.151)
-	by 156.147.23.52 with ESMTP; 1 Oct 2026 17:40:23 +0900
-X-Original-SENDERIP: 156.147.1.151
-X-Original-MAILFROM: trieu2.huynh@lge.com
-Received: from unknown (HELO trieu2-huynh-trieuhpn-ubuntu24.bee-live.svc.cluster.local) (10.159.39.43)
-	by 156.147.1.151 with ESMTP; 1 Oct 2026 17:40:23 +0900
-X-Original-SENDERIP: 10.159.39.43
-X-Original-MAILFROM: trieu2.huynh@lge.com
-From: Nhat-Trieu Huynh-Pham <trieu2.huynh@lge.com>
-To: rafael@kernel.org
-Cc: pavel@kernel.org,
-	lenb@kernel.org,
-	linux-pm@vger.kernel.org,
+	s=arc-20240116; t=1790844412; c=relaxed/simple;
+	bh=2wRHvrkIbSPvvWwzfecNB7c/ZEPCG3huYLztmO2+diA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=p5SjRREopnzdlBxQqHDioLJ8pr0sR/Vs3uXeJrlBHO+i+2zqYKckiuKISV3T0QpBioJlv8LreCTqH2w7fEWLv+ir7uLSGCUehMNC3lCZ/nkRv8QOkCHAHwQXkZzRNTllgwRiI8z56+7LnAQ+6oYDHulAgCWHdRijrxO/i6toqWw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ub5sOlQE; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ub5sOlQE"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5E7E4143D;
+	Thu,  1 Oct 2026 01:46:46 -0700 (PDT)
+Received: from ewhatever.cambridge.arm.com (ewhatever.cambridge.arm.com [10.2.197.99])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 542C83F85F;
+	Thu,  1 Oct 2026 01:46:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790844409; bh=2wRHvrkIbSPvvWwzfecNB7c/ZEPCG3huYLztmO2+diA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=ub5sOlQEJnO0O7t4RnjDvWTPHzWqxO48fqJInAiOEbflV171Jh+yA6KGQ8vX+mYtQ
+	 Zb7BzEE2JVn9bZrJIB3DllgEewVHDsU+gOf5b2HFnjE5aq31PoAvEZAvuowmoL83Jn
+	 R4xiw2kRQQJCOEFj8MGCzifsnksI+galZiaGrRpI=
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+To: kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev
+Cc: maz@kernel.org,
+	will@kernel.org,
+	catalin.marinas@arm.com,
 	linux-kernel@vger.kernel.org,
-	Nhat-Trieu Huynh-Pham <trieu2.huynh@lge.com>
-Subject: [PATCH v2] PM: hibernate: exclude unusable free pages from image preallocation
-Date: Thu,  1 Oct 2026 17:40:20 +0900
-Message-ID: <20261001084020.2549076-1-trieu2.huynh@lge.com>
+	linux-arm-kernel@lists.infradead.org,
+	steven.price@arm.com,
+	aneesh.kumar@kernel.org,
+	oupton@kernel.org,
+	gshan@redhat.com,
+	joey.gouly@arm.com,
+	tabba@google.com,
+	yuzenghui@huawei.com,
+	linux-coco@lists.linux.dev,
+	gankulkarni@os.amperecomputing.com,
+	sdonthineni@nvidia.com,
+	alpergun@google.com,
+	fj0570is@fujitsu.com,
+	WeiLin.Chang@arm.com,
+	lpieralisi@kernel.org,
+	enju.kohei@fujitsu.com,
+	sudeep.holla@arm.com,
+	jonathan.cameron@oss.qualcomm.com,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v21 7/9] arm64: Block hibernate and kexec while RMM is active
+Date: Thu,  1 Oct 2026 09:45:53 +0100
+Message-ID: <20261001084555.1456543-8-suzuki.poulose@arm.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261001084555.1456543-1-suzuki.poulose@arm.com>
+References: <20261001084555.1456543-1-suzuki.poulose@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,132 +70,135 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-hibernate_preallocate_memory() derives the number of page frames to
-preallocate for the image from the per-zone NR_FREE_PAGES counters.  Those
-counters count every free pageblock regardless of its migratetype,
-including MIGRATE_HIGHATOMIC and MIGRATE_CMA pageblocks. Such pages are
-free from the buddy allocator's point of view, but they cannot be used by
-the order-0, non-movable, non-reserve GFP_KERNEL allocations with which the
-image is preallocated (GFP_IMAGE = GFP_KERNEL|__GFP_NOWARN).
+RMM can be deactivated only after all delegated granules have been
+reclaimed. If a new kernel is entered while any granules remain in the
+Realm PAS, accesses to that memory can raise a Granule Protection Fault
+and be fatal to the new kernel.
 
-(*) Reported free vs usable free:
+Crash kexec/kdump needs separate handling. It can be supported only once
+the crash kernel can tolerate delegated memory inherited from the primary
+kernel. i.e., be able to read the pages safely and fixup the GPF. Until
+then disable the kexec completely.
 
-The mm subsystem already accounts for this in
-__zone_watermark_unusable_free() [1]. For order-0 GFP_KERNEL neither
-ALLOC_RESERVES nor ALLOC_CMA is set, so the allocator subtracts the free
-high-order atomic [2], and the free CMA pages from the free count before
-checking the watermarks. The hibernation preallocation, however, computes
-its target from the unadjusted NR_FREE_PAGES value, so it asks for about
-half of the unusable pages more than the allocator can deliver.  On arm64
-(no CONFIG_HIGHMEM) the highmem fallback in the failure path is a no-op,
-hence even a small shortfall aborts hibernation, see [4] for example.
+Hibernate has a similar problem. The image cannot be safely saved for
+delegated pages, as the RMM doesn't support exporting the pages.
 
-(*) Why those pages are not usable by GFP_KERNEL:
+Disable both kexec and hiberation while the RMM is active.
 
-(**) CMA is reserved for movable allocations, so GFP_KERNEL has no
-ALLOC_CMA, and MIGRATE_CMA is not in the unmovable fallback list. Free CMA
-pages are therefore never handed to these allocations.
-
-(**) The high-order atomic reserve is only handed out to atomic, order > 0,
-__GFP_HIGH allocations (ALLOC_HIGHATOMIC), which GFP_KERNEL order-0 is not.
-These pages can be unreserved under memory pressure [3], but only all but
-one pageblock per zone and only after an allocation has already failed, so
-counting them as available still overestimates what the preallocation can
-obtain without failing first. Excluding them is conservative.
-
-(*) Consequence of not excluding the unusable pages:
-
-With M = managed, S = saveable, F = free, U = highatomic + CMA and
-R = reclaimable, count = S + F - totalreserve and alloc is about count / 2,
-while the allocator can actually provide about (F - U) + R pages. The
-shortfall is therefore inflated by exactly U compared with the usable
-memory.
-
-From [4], with U = 11430 unusable free pages (5120 highatomic + 6310 CMA),
-the preallocation target is inflated by about U / 2 = 5715 pages, while the
-allocator ends up 1247 pages short and hibernation is aborted even though
-the system is able to create the image.
-
-(*) What changes after excluding the unusable pages:
-
-Subtract U from the per-zone free accounting used to compute count and
-avail_normal. Then count' = count - U and, since max_size is roughly
-count / 2, max_size' = max_size - U / 2 and alloc' = alloc - U / 2.
-max_size' remains well above minimum_image_size() in practice, so the
-resulting image is effectively unchanged while hibernation no longer aborts
-unnecessarily.
-
-Testing
-=======
-(*) SA6155P running on AAOS with S2D feature
-(*) backport locally on GKI 6.1
-
-References
-==========
-[1] commit f27ce0e14088 ("page_alloc: consider highatomic reserve in watermark fast")
-[2] commit c928807f6f6b ("mm/page_alloc: keep track of free highatomic")
-[3] commit ac3f3b0a5551 ("mm: page_alloc: unreserve highatomic page blocks before oom")
-[4] Example of an abort:
-    Mem-Info:
-     free:344621 free_pcp:931 free_cma:6310
-    DMA32 free:973864kB reserved_highatomic:8192KB free_cma:25240kB
-    Normal free:404620kB reserved_highatomic:12288KB free_cma:0kB
-    PM: hibernation: Image allocation is 1247 pages short
-
-Signed-off-by: Nhat-Trieu Huynh-Pham <trieu2.huynh@lge.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Pavel Machek <pavel@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
 ---
-Changes since v1:
-(*) Add a reference to commit c928807f6f6b, and correct the words and
-quotes in the description as well.
-(*) Switched from zone->nr_reserved_highatomic to
-READ_ONCE(zone->nr_free_highatomic) to accurately fetch the active free
-highatomic counter, reflecting c928807f6f6b (Reported by: Sashiko).
+Changes since v20:
+ - Add arch_hibernation_available() hook for archs to have a say and drop the
+   other checks.
+Changes since v19:
+ - New patch to disable kexec and hibernation with RMM
+---
+ arch/arm64/kernel/hibernate.c     | 14 ++++++++++++++
+ arch/arm64/kernel/machine_kexec.c | 11 +++++++++++
+ include/linux/suspend.h           |  1 +
+ kernel/power/hibernate.c          |  8 +++++++-
+ 4 files changed, 33 insertions(+), 1 deletion(-)
 
-Link to v1:
-(*) https://lore.kernel.org/lkml/20260921101446.1193565-1-trieu2.huynh@lge.com/
-
- kernel/power/snapshot.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index b209712cb2c3..195db45ce80f 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1867,11 +1867,32 @@ int hibernate_preallocate_memory(void)
- 	highmem = save_highmem;
- 	size = 0;
- 	for_each_populated_zone(zone) {
-+		unsigned long free, unusable;
+diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
+index 7bf1174277772..08e03d24b93a8 100644
+--- a/arch/arm64/kernel/hibernate.c
++++ b/arch/arm64/kernel/hibernate.c
+@@ -10,6 +10,8 @@
+  * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
+  */
+ #define pr_fmt(x) "hibernate: " x
 +
- 		size += snapshot_additional_pages(zone);
++#include <linux/arm-rmi-cmds.h>
+ #include <linux/cpu.h>
+ #include <linux/kvm_host.h>
+ #include <linux/pm.h>
+@@ -105,6 +107,18 @@ void notrace restore_processor_state(void)
+ {
+ }
+ 
++bool arch_hibernation_available(void)
++{
++	/*
++	 * If we have activated the RMM, there could be pages that are
++	 * delegated to the RMM. Trying to save them to the image will be fatal.
++	 * Also, we donate pages to the RMM at activation and restoring data
++	 * to those pages are going to be fatal.
++	 * Hence, disable the hibernation when the RMM is active
++	 */
++	return !cpus_are_stuck_in_kernel() && !is_rmm_active();
++}
 +
-+		/*
-+		 * Pages reserved for high-order atomic allocations
-+		 * (MIGRATE_HIGHATOMIC) and free CMA pages cannot be used by
-+		 * the order-0 non-movable GFP_KERNEL allocations that
-+		 * preallocate the image, so do not count them as available.
-+		 * This mirrors __zone_watermark_unusable_free().
-+		 */
-+		free = zone_page_state(zone, NR_FREE_PAGES);
-+		unusable = READ_ONCE(zone->nr_free_highatomic);
-+#ifdef CONFIG_CMA
-+		unusable += zone_page_state(zone, NR_FREE_CMA_PAGES);
-+#endif
-+		/*
-+		 * nr_reserved_highatomic counts whole reserved pageblocks,
-+		 * so it can exceed the actual free pages.
-+		 */
-+		unusable = min(unusable, free);
-+
- 		if (is_highmem(zone))
--			highmem += zone_page_state(zone, NR_FREE_PAGES);
-+			highmem += free - unusable;
- 		else
--			count += zone_page_state(zone, NR_FREE_PAGES);
-+			count += free - unusable;
+ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ {
+ 	struct arch_hibernate_hdr *hdr = addr;
+diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
+index 8f9bc2327dc85..48f343704cb54 100644
+--- a/arch/arm64/kernel/machine_kexec.c
++++ b/arch/arm64/kernel/machine_kexec.c
+@@ -6,6 +6,7 @@
+  * Copyright (C) Huawei Futurewei Technologies.
+  */
+ 
++#include <linux/arm-rmi-cmds.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/kernel.h>
+@@ -59,6 +60,16 @@ int machine_kexec_prepare(struct kimage *kimage)
+ 		return -EBUSY;
  	}
- 	avail_normal = count;
- 	count += highmem;
+ 
++	/*
++	 * We will be able to allow kdump to proceed, once we have the support
++	 * for handling GPF from vmcore accesses to delegated pages. Until then
++	 * block kexec completely.
++	 */
++	if (is_rmm_active()) {
++		pr_err("Can't kexec: RMM is active.\n");
++		return -EBUSY;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index b02876f1ae38a..a3815027773c5 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -401,6 +401,7 @@ int hibernate_quiet_exec(int (*func)(void *data), void *data);
+ int hibernate_resume_nonboot_cpu_disable(void);
+ int arch_hibernation_header_save(void *addr, unsigned int max_size);
+ int arch_hibernation_header_restore(void *addr);
++bool arch_hibernation_available(void);
+ 
+ #else /* CONFIG_HIBERNATION */
+ static inline void register_nosave_region(unsigned long b, unsigned long e) {}
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index d2479c69d71a4..9d9d53828542f 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -106,11 +106,17 @@ bool hibernation_in_progress(void)
+ 	return !atomic_read(&hibernate_atomic);
+ }
+ 
++__weak bool arch_hibernation_available(void)
++{
++	return true;
++}
++
+ bool hibernation_available(void)
+ {
+ 	return nohibernate == 0 &&
+ 		!security_locked_down(LOCKDOWN_HIBERNATION) &&
+-		!secretmem_active() && !cxl_mem_active();
++		!secretmem_active() && !cxl_mem_active() &&
++		arch_hibernation_available();
+ }
+ 
+ /**
 -- 
 2.43.0
 
