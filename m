@@ -1,153 +1,180 @@
-Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010065.outbound.protection.outlook.com [52.101.56.65])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy2-f41.google.com (mail-dy2-f41.google.com [74.125.229.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02D2B5304A8;
-	Thu,  1 Oct 2026 15:44:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.56.65
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790869493; cv=fail; b=a6KjWdbZBa33wizlf5C66qY3LKKOMVEODRvoA3HjGJhvb9FDXtxhrAD1MKYbRfe8oreTfwBysS5kUdhaZpXf2W5L17rlnd0C1ZifCIpzpclwXLYjVEKnYD/sANY7J4ELMAmbvu11X7NTkeGdktlfUchO6vtH/RVVjbJgdg2PLBg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790869493; c=relaxed/simple;
-	bh=eXwvNRoZkneUeEZeim8ntWLFQTOAg2QvsrD4AdBgcko=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=i4oi4G3Rpx5YKB09ORZIBS3bxiol4hfsgGCSQoGTx+Ox1SPEOwCkkwFtlk4z6V03nahvBEVgU/3mvCDPXPmZwqJTX/b0hC6pJg6gIjs47wHbbIzp2umb4c8GUyCif1kiqeAWC0vvQd8EVMQ8aF/m9SxRt1HXUWNYez0kjWF4xGs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=jLTDaYOt; arc=fail smtp.client-ip=52.101.56.65
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B58F3C6600
+	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 15:51:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.41
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790869908; cv=none; b=T3WPYQe15BmhE8oxdQUGh9xpoNZHQ0/Ne5E45Ije2pty6JsfCB2qVOX0UYPJIlgxrYSliutOHawFY1WwMkl82PgLIX2YQaYOdqHg7IqmoByc+ZwJnB0C+6FJ1g5Tx6jVwKmbYwK9wN83UONRpmzAEL1Z4y5ZemIo26nVakjuBkw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790869908; c=relaxed/simple;
+	bh=OF2UpoVYoX410mc1SzzOypl8KSOO/KvZWjbPCC/0g54=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TbHpBr9ccc536keo9+OAOyqxpevVbie+UWzZsAO+KOwJLXEPgvqOIQddC5brIP8FU2U0oo9PGMl2i6ma2gD/flVqQuu46oePa7SMYww9+7P0hvvI77My7pDs6JWXuFcnNkhVMh+0jtSHa0DIbZ6txSBw4qMsQD9wz8PtRsHQVt4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=AhPM8Lsb; arc=none smtp.client-ip=74.125.229.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="jLTDaYOt"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=QK6aAeD5OAO3qm9huOYz2q+BWq6Hg7uWlcm24xs6588vS7TXY+ihDkGAAt4nCXmaHQqvDBUH1CF1aEKxxSLzKS7u2FF/UjaeKALLdNeJJ169vbEwWGhIAkG0W3SbGnkP4SnUDq18ekOdPP4LPt/oaqucJoNsoS9Lx0SjySqK+E3dUOWN8vglZ6WrfJCVRh40K6qQzM24Tu+S0inc8jpz0M+hEtrI/NUk/JwiuzCGGcBTDrnJOsHyF0lGQKwQGgK3zqnXIRiureREBmn6D2lWH/9Cs78qiQYS/ER5tqdwgf/BBJB8d2fzaGq0OGVWBFICR0Rrl+lUi6NZHRobyBD7eA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=CQ3LJyV3x6sYJkTipLRH5eePBZKCMORpJ9YDbLNAH54=;
- b=LJPGLt7ojW5AFT4HoI1kVxegr3AhijZdB1xblEnK9qSehGCr6Q3eVoCPcW7hN2XlzGIPe3tpzq2VFQwxl1ijeTnnfPiaQILjVQZzD6UTsMgI7ju5lGyYHD77ZoBNbZvFcYpX8iuvPzHXNqLmpSVx1flSuT3Wy03yRELf87cz8/2njoOlc+uHCSov9SaVxpUrQVFrqpDb8qCEr/V/gu6sky1+UBJbGlVnov+CeRzI+3CzgCIkWxbpamq0BSr0OSxivxFU3VP7Gi/ZITte2Lb2eshuZZY90YveIGvffZfWNPAr0qL8b+RiRl5/Wy6wuOHjv2yrR6x2Xbbfo+h5QhwVnQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CQ3LJyV3x6sYJkTipLRH5eePBZKCMORpJ9YDbLNAH54=;
- b=jLTDaYOtzE/j0n3wIVYIKDYVgCqN5yHDZ6a1kYKMEwUToYDlz/vDLvU5870yxF3177l/Wj18AmcgHeyfTp/XKwBLNCfbgZIGuc04FTulhD9ATvT3cbShNItOAOyTwFwSx+S/unu7oAg38c6kPt1C/yXH+ktYBmagRl6tY06EQaU=
-Received: from MW4PR04CA0302.namprd04.prod.outlook.com (2603:10b6:303:82::7)
- by IA1PR12MB7735.namprd12.prod.outlook.com (2603:10b6:208:421::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.18; Thu, 1 Oct
- 2026 15:44:45 +0000
-Received: from MWH0EPF000C6195.namprd02.prod.outlook.com (2603:10b6:303:82::4)
- by MW4PR04CA0302.outlook.office365.com (2603:10b6:303:82::7) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.17
- via Frontend Transport; Thu, 1 Oct 2026 15:44:45 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- MWH0EPF000C6195.mail.protection.outlook.com (10.167.249.105) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.472.14 via Frontend Transport; Thu, 1 Oct 2026 15:44:45 +0000
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Thu, 1 Oct
- 2026 10:44:44 -0500
-Received: from [192.168.0.226] (10.180.168.240) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.49 via Frontend
- Transport; Thu, 1 Oct 2026 10:44:42 -0500
-Message-ID: <b673fe38-eb8c-47c0-83c3-732c9b122234@amd.com>
-Date: Thu, 1 Oct 2026 21:14:41 +0530
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="AhPM8Lsb"
+Received: by mail-dy2-f41.google.com with SMTP id 5a478bee46e88-3468ec309afso3363097eec.3
+        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 08:51:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1790869905; x=1791474705; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=9SSVxD8Q50vKAGJw1dPQdeHHdj1MbKb779CFMeOXNtI=;
+        b=AhPM8LsbVad94+zbA2lzdNWS7cmrAbRUZUTKHYSpn8ECtOWLh9wZbr7OuEMpN/17pE
+         aRReW2uAR4S6ND238PjWx6eipDWIOFMrhFgQc2BymCAr5d3/rN5rLz9SbPHAMEAMtee+
+         mGz/oZFaPmkBXU2f78UHQaXLOxS2r21eW/3No=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790869905; x=1791474705;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=9SSVxD8Q50vKAGJw1dPQdeHHdj1MbKb779CFMeOXNtI=;
+        b=lJBpCl45afRM5wm07Q7PwQHyNzWd9OBKKV+1iTdmAMqcvMjVfzBnfMF4lr0uhxseim
+         kpy11mOOlmVubrmnBYfsV/UevUHT8aNQ8mK9wp9ZtjvcB8MDMfDvqjwACzESAGIReD6Y
+         HO9b6dUbK8/zTEtPk7qdXnYhTdib6lY/mB/YMijTkj8m3pUd6r0oqEtzJ9GKn9tuCpo8
+         dwcl+a5jC61iiEAAbHRVWNoQAG44ZKeWg9aDOm0N77qC6gWuDToL2R33u+jbN905JYxA
+         lUz+dw1PBfuFgNCMspkbuLz4ad9P/KdlT1XAzpIAvI7mD17dRJaNY8fw/fQuzFJGqMzD
+         PcPA==
+X-Forwarded-Encrypted: i=1; AKwUvByIh1OMPA9rxDcjsquc5jlhGyD5Ud8JYBPnMxs7BFeaP2PbYKwtZbARsj0k3OCACntOp/pp8gceEQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK5NGMlc1kTjEeGjoGLVjC8qzKR524LUy+kWvB/ZSRAoMXWE7Ig
+	7UIHeDBzWPp7ZPaXwLwiA1UMfKKub+TpbckMiooHP/sfP74a5Ab+Krdxj0HxIXFVPw==
+X-Gm-Gg: AYBFou1+2vyK/bEJA8LDfTwlnV3pqo6NdXg3HWFjyU7cRunOsC6PR4+Twf37dVxxzoV
+	kt0FOfSGkUTXIxPn9K9x2O6stXzHOn2rGUnlMFyHS2j4hUyW0/nOtIrChrEswgp3LzN48KkmC+t
+	pLaTU4cb125Q0t1wC4M0MxhiOubbWPRq+t/QmvMMnuJSTF/RbRndm0BW6L7ViE+WDxmvdT7I4mM
+	WwwR+SEJ7Hi8ALDwpCBMsxufi1OXkhj8mIS68c0nUsHNwGJzFGCdD7qNZ68oo2AiRm2sP7eT1F6
+	teGF6pxBWT1FAJwwnvgWDONS/TuIWED7IsGbHAS22t2GMiRuGVEEWuFcC5hjI2JPELBxcuAJANI
+	w0PQ/zcmgU3q9TOwXmpTEMUsblhdf7pd0WKph67FbnSeeDD0n5PVqRh9fWMjo7nFJIeRkJwo/wu
+	QHbNeK4QxmFqImpmEXWp2GVhHZ3cg/9M3b31tQ008WRdd1lE8WPzYZbdipln17HFxpYbYyHIHC8
+	lzSal4MwHczj/hzmQkZWoGml87d4BfB72LoPz8=
+X-Received: by 2002:a05:7300:b2af:b0:34b:354b:79b9 with SMTP id 5a478bee46e88-34cdbadb190mr5134704eec.12.1790869890202;
+        Thu, 01 Oct 2026 08:51:30 -0700 (PDT)
+Received: from localhost ([2a00:79e0:2e7c:8:7cf1:ee59:f140:7be9])
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34db3750765sm7796452eec.12.2026.10.01.08.51.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 01 Oct 2026 08:51:29 -0700 (PDT)
+From: Brian Norris <briannorris@chromium.org>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@kernel.org>,
+	linux-doc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Doug Anderson <dianders@chromium.org>,
+	Len Brown <lenb@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v4 0/2] PM: runtime: Overhaul kerneldoc, runtime_pm.rst docs
+Date: Thu,  1 Oct 2026 08:50:07 -0700
+Message-ID: <20261001155118.1750028-1-briannorris@chromium.org>
+X-Mailer: git-send-email 2.56.0.rc1.315.gc6ed9934b7-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq/amd-pstate: Fix TOCTOU when changing driver mode
- via sysfs
-To: Mario Limonciello <mario.limonciello@amd.com>
-CC: Perry Yuan <perry.yuan@amd.com>, "open list:X86 ARCHITECTURE (32-BIT AND
- 64-BIT)" <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY SCALING
- FRAMEWORK" <linux-pm@vger.kernel.org>, Sashiko <sashiko-bot@kernel.org>
-References: <20260922022347.1270746-1-mario.limonciello@amd.com>
-Content-Language: en-US
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-In-Reply-To: <20260922022347.1270746-1-mario.limonciello@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MWH0EPF000C6195:EE_|IA1PR12MB7735:EE_
-X-MS-Office365-Filtering-Correlation-Id: 640ab08f-7744-475a-20eb-08df1fd2eae6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|23010399003|36860700016|82310400026|13003099007|18002099003|22082099003|10067099003|56012099006|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	9zVGr3ux6HXMnVA4XpXYrrU26EDGhvjIdqkT77KbtD2J6HBbgSXK/HtI6cRfADNAvhi/rv5/TSQNeq+Hr6sj+fiWnhjOoDiEGZqm1gsyA2TGw8jSUyxBzbNFWiSvmrB4Iu8NiYAnmAE9pso1LJLKBeDX1OFMiOzAPWgksLhlM6ey4nPX4c9e7gEJxl5wVMRYs4q/xAWW8UyN7Bt9HixX2pprxe1kVjFzPZI3EzHXF3sryM2mdljeTnT37UL7JF8qBsHf5Cz8sasyuJv1YJQUMY6otBvS3POjyejBtMXjX9qM4SLST6LTsPYkyl+xw0DuNYLzZTmgZ0EpGjeGxFOTOZLAJ+rviC8wbwrExD8g5U2ASkgsv82u8M5aGg1Hhoocsa7nTUmePy19Zy52lhiIe7y/1Ab/bjdpAMbIbMg99ibMP3lM5vzj4cw5k9ONeZ2Q6qgzFS7W25GytxtvsLIsgu8vcNkMmsP5EIB4/6OvGqsFrVP3w5jqG5XuYYSAbw86fj2W9Fj9UYDegctUbe4HrhPKSwLSUH/Nixkd66pBpZgcPYgaKCZPkyap3i5on1UrRZMKRDzrw9UHyj64XkM9//PTbUcuMGNrgKdEsN7fGzGJLLvv1CvFTuxmOSqu2BZRI8cTXoSACTFxACoIyswT+A==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(23010399003)(36860700016)(82310400026)(13003099007)(18002099003)(22082099003)(10067099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	Fs6FHjJuPMF/EA8si7P2gTl9j/kEMshj//f+eo1x51Zc2Ca7AQyt66xqKODiGl9utXM/usbjBcpk4eSOYknqIo+DSGmRxfmkmdg1hgpZ8/HG+HoQg0wO4U8MgG/BsFZjiwb8szDwYZdGGtJpwbpNlLx1PdSwVqfqayzMFpDVetONCOgZoy/nOVFrUiwVQtX1BtwsJRS7Tn54NVdgCrrZidjH5r3UinwE2Vm5d3fEaJJ4ji9/qLuzB7I1xEM2+SfxE9TJAjrFvxNWG5FJbR2gGVJA5GqtznMJLJW+Z9/4DAycvKbZbhMiRAQ4g6NmhtPUCIPSclncG6tyxE7ChoqOzWarVnqG8yOKocMIFwWVzmd2RkZvkUp84AGIcbAcq0b03/B0dUPOvUZwjhqHsUdaseQkgs2SFENv2fzxMdbqNW8orDvvRQHqyysHf8FA2ynm
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Oct 2026 15:44:45.3108
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 640ab08f-7744-475a-20eb-08df1fd2eae6
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	MWH0EPF000C6195.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB7735
+Content-Transfer-Encoding: 8bit
 
-Hello Mario
+The runtime PM documentation could use some improvements and additions,
+to help guide people less familiar with the main runtime PM concepts and
+its internal implementation details.
 
-On 9/22/2026 7:53 AM, Mario Limonciello wrote:
-> amd_pstate_update_status() evaluates mode_state_machine[cppc_state]
-> [mode_idx] before taking amd_pstate_driver_lock, and then re-evaluates it
-> again once the lock is held.  cppc_state is global and only stable under
-> the lock, so concurrent sysfs writes race:
-> 
->   CPU 0                               CPU 1
->   -----                               -----
->   // cppc_state == A, mode == B
->   if (mode_state_machine[A][B])       // sees non-NULL
->                                       if (mode_state_machine[A][B])
->                                         guard(&amd_pstate_driver_lock);
->                                         mode_state_machine[A][B](B);
->                                           cppc_state = B;
->     guard(&amd_pstate_driver_lock);
->     // cppc_state is now B
->     mode_state_machine[B][B](B);      // NULL -> NULL deref
+v1 is here:
+https://lore.kernel.org/all/20260904212000.4167880-1-briannorris@chromium.org/
 
-Oof! Very interesting race that.
+v2 is here:
+https://lore.kernel.org/all/20260923174711.1283986-1-briannorris@chromium.org/
 
-> 
-> The re-read under the lock can resolve to a self-transition (NULL
-> pointer, immediate NULL deref) or to an unexpected transition that
-> redundantly runs amd_pstate_driver_cleanup(), double-freeing
-> current_pstate_driver->attr.
-> 
-> Take the lock first, then read cppc_state and resolve the transition
-> function exactly once into a local before calling it, so the check and
-> the call observe the same state.
-> 
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> Closes: https://sashiko.dev/#/bug/linux-f86ff3a6-55df-4eef-8e4d-62ac270dba25
-> Fixes: 6f0b13f16f7a ("cpufreq/amd-pstate: Overhaul locking")
-> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+v3 is here:
+https://lore.kernel.org/all/20260930025044.104824-1-briannorris@chromium.org/
 
-Feel free to include:
+Most of the v1-v3 series has been applied already. For the remaining
+work:
 
-Reviewed-by: K Prateek Nayak <kprateek.nayak@amd.com>
-Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
+ - Clarifying core concepts in the Introduction. (Pretty much all new
+   readers I encounter have a hard time with the difference between
+   "enabled", "allowed", and "active".)
+
+ - Adding Example driver patterns -- because the API is so large and
+   complicated, it can help to try to walk people through standard
+   practices, and what everything means in context.
+
+Feel free to add suggestions! Within reason, I'm open to tackling more
+here, as I think many people have many valid perspectives on exactly why
+and how the docs do or don't serve people well today. Or I can tackle
+less, if you think some of my choices are not improvements.
+
+Some possible follow-ups I'm toying with:
+
+ * Slimming down the API might be better than heavily documenting it. A
+   smaller API is a more digestible API.
+
+   My only concrete next step: drop __pm_runtime_put_autosuspend(). Its
+   last user is nearly gone:
+   https://lore.kernel.org/all/20260806-smmu-rpm-v4-1-8183d007331c@oss.qualcomm.com/
+
+   I could also see deprecating one of
+   pm_runtime_put_sync{,_suspend,_autosuspend}(). They all do slightly
+   different things, but I'm not sure every difference is actually fully
+   intentional (or at least, not necessary).
+
+ * Tweaking some of the behavior on pm_runtime_barrier(). Today, it's
+   very asymmetric, as it prefers resume. But I believe there may be
+   value in making it flush (not just cancel) pending suspend too. That
+   may be in a future proposal; for now, I just try to make its
+   asymmetry more clear in the docs.
+
+ * Sand down some more rough edges on return codes. For example, it's
+   very difficult to get any useful meaning out of pm_runtime_put_sync()
+   return codes. There's a high chance that anyone trying to treat
+   return codes as errors is inviting bugs. (Is -EAGAIN a failure?)
+
+   Of course, the answer there is not "document it better" -- we can
+   make it easier to use.
+
+ * Adjust the way devm_pm_runtime_enable() works, specifically for
+   remove()/teardown. Currently, this is very hard to use correctly --
+   some common driver patterns may assume that a device will tear down
+   while RPM_SUSPENDED; but that's not actually guaranteed. Notably,
+   this makes some of the "Examples" section fairly tricky/subtle.
+
+Regards,
+Brian
+
+Changes in v4:
+ * Significantly overhaul introduction, based on Rafael's
+   feedback/rewrite
+ * Drop most implementation details (struct fields) and API names from
+   intro
+ * Expand the "in use" and dependencies concepts in the introduction
+
+Changes in v3:
+ * Rewrite Examples to avoid devm_* at first, to highlight correct
+   approaches
+ * Include error-handling and remove() in any probe() Examples
+ * Advise more caution when using devm_*, as ordering issues are subtle
+
+Changes in v2:
+ * Major rework on Introduction section, especially regarding "enabled"
+   and "active"
+ * Add appropriate teardown to "Probe with Hardware Powered Off"
+   Example, as the remove() + power-off behavior is subtle here, and
+   easy to get wrong
+ * Drop changes that are already applied
+ * Add a few new fix patches, noticed while reviewing the rest
+ * Move Introduction patch near the end of the series, as it is a likely
+   target for further discussion and modification.
+ * Correct Ulf's email address
+ * CC linux-doc
+
+Brian Norris (2):
+  PM: runtime: Expand introduction with core concepts and structure
+  PM: runtime: Add Example Driver Patterns section
+
+ Documentation/power/runtime_pm.rst | 589 ++++++++++++++++++++++++++++-
+ 1 file changed, 568 insertions(+), 21 deletions(-)
 
 -- 
-Thanks and Regards,
-Prateek
+2.56.0.rc1.315.gc6ed9934b7-goog
 
