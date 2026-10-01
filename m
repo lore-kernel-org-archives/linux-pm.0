@@ -1,100 +1,88 @@
-Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C87D4A5EBC
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 09:58:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B457C472531;
+	Thu,  1 Oct 2026 10:03:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790848717; cv=none; b=A2r/pqtCooeH3Gn2ub6XWc4xcQl3qVpwIqMgpT0jdtqlK4EvJlQhsMqwqQhTTqHYmveavCj/tx+/AD9/Sg2UP/cnfuFIhSq20joy35FS7MD487U900Z6GzJB7uxLZ0PeuLxLxLAb7q+3N32k1cH+eErwsorzyimkybyPJ3SqFYY=
+	t=1790848987; cv=none; b=l7ClV9K6cHVolqwXwZM92IhIWuR7Fe3LNKR6gNGbn//86DsQ4tO7b6HYu6hM7tIxrv2VN+d2qu9PCTFB1YkEEDJvmW6f/qB+e0qBdzPl1CFb4CW4a7DZvm7DX1IZ6ywfIOuW6gWL2Vc26+D2yJQ8dze9ffyiNhK6hdSQmsgkVoM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790848717; c=relaxed/simple;
-	bh=FXxGXjkhNGEXZqrrH/byp0zQnsvjNHJfBhA+a5G296U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kboZ+g6VBIuA+iz7MAeTNtKiX4zMq7QN1VvIR08wRuORxF8vZ2QCfQ5kgyoQ74wg1d6sHV6iN0XfPSMlePbBQShJ71aDWLXBtR87jO4aVP7LmkgXQjWHBgBfEaKM2eBtJ6gFuZX18AIxc17tjZCzqBUtN14szKCip6cRP8EvWvU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MKYToTiV; arc=none smtp.client-ip=74.125.229.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1790848987; c=relaxed/simple;
+	bh=esFJv3tzq3GjLICQ3vHBhZdmoY4Nkj+8PiOnbXfPFS0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BSUKW1/W+eWZTlZxwEK3zvliTim9VfgshkbmwqIfm4DlHpUr67cy4mg/BACQmMf5dH5YsoBY3ka0LCXd+C1zzkNxz1SD/j9vU2CzVohJfE17ot6kxPxkpjFZhao0gGwKvQJQ2BSFtxs2QaSH8P5KkLJ/QYVJpxl6tJAvFYWaVp8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=LADWCU1+; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MKYToTiV"
-Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-34b223602d7so2171387eec.2
-        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 02:58:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1790848715; x=1791453515; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=0p+G5kuRzezJoiYkU/GdI56ndmvFnKYEbf7hSebGh+Q=;
-        b=MKYToTiVEsqTAiQw0n6uKeKMAUiGdXYozWjBpltXt7kzFzvwcbCaorisH7ByiCpayq
-         n1deHFq3vJ/sf4B6dQO8UqLy7D/QC9VsSAx+5yFZrrxdrPJYqA27gsDgtIt56uEIaTif
-         G/w/Dtsx/NIRx5fQiu7qCvkfQYbejOZtbm4+HzGG8Ra6WRJv9Hi/3/l1+wiSFXgYN26Z
-         eSPFdPvZJp5oFRYkZm5lRaLKNKh96kYpIznrnVNrUA52TdS7kZwwPQCK7z48QA/D4oBU
-         9mPHNGq9Hqj2gYGf7TF7ARUQrmW3PF6s+p1mFWAizaIWjOk/KqegDZ/MppaMGWNhQa4y
-         hirA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790848715; x=1791453515;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=0p+G5kuRzezJoiYkU/GdI56ndmvFnKYEbf7hSebGh+Q=;
-        b=iU4mDCREp1/i+eLLa4VXpE2tDHF7bMu1T/nq7zSKvxSzG9UL2NBmM+a4HTbABu24oH
-         w6Lcx4/W6FaZ/tfWaTA6GK7vGCmNs85wrzRsVDuAHierlkQDqu12jzmfXwhNL8GJUJCD
-         YOHGE/aoPZOMT64qfh1JRbC6wjKaDToVLY900E/DzMqImT8NBM3qb4In3z8GCL76kUH0
-         Eee8BPTMs67cg0srZoOfn+3dcvMGhhtUe+Hu/LIQ7URg6N/CWuq+LZgxKcxGsa6BmUFm
-         SIJLR2uj7dg0q8AJ2Uzow+XaOA67c72w1Z+7XZhvCIaqjZksuD8J24tvtQ9XofAZO9/Y
-         qSfA==
-X-Forwarded-Encrypted: i=1; AKwUvByHs2XtS5qW5BMh4yBcQGE+K7uTEYga6/Cs3EF0gTb14C9+k0+7ONnkQvXxExKngbv46tjWhkqZLA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKIsOlECxRDjv7x2Ld2hEref3+gAN+XHSqDeD2gXDFor8qgFDaA
-	WB6a6SC1/msuUeXyfO0Zb1G9p9z37tm71qVKMnMQuRP0N1SwXCXGpopoDmddm1WqoGs=
-X-Gm-Gg: AYBFou3ubTT7SBEZD/xzzaEyFhf28MHxw+DzwHcw2tdQNpDaOPxSdDtyga3uqlaV8lv
-	L6xubW8ZBNtfwy6Oghq8LKcTlmrPhbmTKJFWax+QtW6FEq5Cj4avZKuMPBabP0R3urGLE16fLqk
-	2qVcylr3SPm96DLjzo/LUBD5htQQwHmtPMzRAZMpzjvcu5StYV5kMFD4uIrOqt7R4NBkWjH/loA
-	zeh5IHd2h9HVkN0GFX6oXlRerOi/+NC9we4eD5GMgbMfAR682zDcRNID9N+zN81BU2vyS6RbNsD
-	QmpvotJV9BI6FBG8kaCt0xYpd1xlSnr1spqcwWZfeUmlPvo7c0Ha4d6UFxzaCBkG/YXPyQF9qEW
-	X+qhMuV/7/Z8E9ORbHNo0SvRO/C+Ys7yqQdq58/npgleQJXngrKpeK/koMwQzwKp74gQqT3D8aA
-	yDcjJBUwda/Vkhrj1SN5kOapQCV2bSVX4EmcQiQZwXrFqUzTc7uywFxNOJVOZuwJKlQiIY7rie
-X-Received: by 2002:a05:693c:884f:b0:34e:6ffa:ad6c with SMTP id 5a478bee46e88-34e6ffab5b3mr769959eec.40.1790848714758;
-        Thu, 01 Oct 2026 02:58:34 -0700 (PDT)
-Received: from localhost ([122.172.87.224])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34db491fae1sm6397324eec.24.2026.10.01.02.58.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Oct 2026 02:58:33 -0700 (PDT)
-Date: Thu, 1 Oct 2026 15:28:31 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Mehmet Koseoglu <mehmet.mkoseoglu@gmail.com>
-Cc: spidermana <xuyiwen14@gmail.com>, miguel.ojeda.sandonis@gmail.com,
-	a.hindborg@kernel.org, acourbot@nvidia.com, aliceryhl@google.com,
-	bjorn3_gh@protonmail.com, boqun@kernel.org, dakr@kernel.org,
-	daniel.almeida@collabora.com, gary@garyguo.net,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	lossin@kernel.org, ojeda@kernel.org, rafael@kernel.org,
-	rust-for-linux@vger.kernel.org, tamird@kernel.org,
-	tmgross@umich.edu, work@onurozkan.dev
-Subject: Re: [PATCH v3] rust: cpufreq: reject NULL from cpufreq_cpu_get()
-Message-ID: <ar4ux5SVxjlzTGvL@vireshk-B250M-D3H>
-References: <CANiq72ki8M1KmxhO4vSkMUfLcuqOMvZtuTNdDpS-UcJy8rqWpA@mail.gmail.com>
- <20260929095539.1398671-1-xuyiwen14@gmail.com>
- <ar38vCqqekY7T3SZ@vireshk-B250M-D3H>
- <DLTEONSHWRPQ.1U2Y6GDBRURFX@gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="LADWCU1+"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 553FF497;
+	Thu,  1 Oct 2026 03:03:01 -0700 (PDT)
+Received: from [10.0.130.165] (e127648.arm.com [10.0.130.165])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 73F0A3F86F;
+	Thu,  1 Oct 2026 03:03:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790848984; bh=esFJv3tzq3GjLICQ3vHBhZdmoY4Nkj+8PiOnbXfPFS0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=LADWCU1+h7wROBYy3JPnb2C+1EeR88NOYHy/RK6j+e4WArcop+CsQEvpLXVmtTf6P
+	 iV8WYMsDgeycdq/qMhmQ4mr1UpKVOchR7oWE0v05HA7uv0nbjdhYmWBMoekk7sySIk
+	 ozIqJe/JAfw3ImpogjcKvDPTzJvIOCLx3+ldb9+I=
+Message-ID: <5b748ac7-26da-4010-bfc8-014a0c97abe2@arm.com>
+Date: Thu, 1 Oct 2026 11:03:01 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DLTEONSHWRPQ.1U2Y6GDBRURFX@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] cpufreq/amd-pstate: Get Highest Freq for a CPU
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>,
+ =?UTF-8?Q?Rafael_J_=2E_Wysocki_=E2=8F=8E?= <rafael@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, K Prateek Nayak <kprateek.nayak@amd.com>,
+ x86@kernel.org, Mario Limonciello <mario.limonciello@amd.com>
+References: <20260924160052.2858456-1-superm1@kernel.org>
+ <20260924160052.2858456-4-superm1@kernel.org>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260924160052.2858456-4-superm1@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On 01-10-26, 12:49, Mehmet Koseoglu wrote:
-> I see that v3 was already applied as 0ba1ee052b3f. Would you prefer
-> a follow-up patch updating the SAFETY comment, or a v4 of the original
-> patch with the comment update and collected review tags?
+On 9/24/26 17:00, Mario Limonciello (AMD) wrote:
+> From: Mario Limonciello <mario.limonciello@amd.com>
+> 
+> If the highest frequency is known for a CPU, use this instead of
+> trying to calculate by linear interpolation.
+> 
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+> ---
+>  drivers/cpufreq/amd-pstate.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 496e0342c1c90..2a0cbfe21a67d 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -1102,8 +1102,10 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
+>  
+>  	WRITE_ONCE(cpudata->nominal_freq, nominal_freq);
+>  
+> -	/* max_freq is calculated according to (nominal_freq * highest_perf)/nominal_perf */
+> -	max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
+> +	/* try to look up from BIOS/quirk first, fall back to (nominal_freq * highest_perf)/nominal_perf */
+> +	max_freq = amd_get_max_frequency(cpudata->cpu) * 1000;
+> +	if (!max_freq)
+> +		max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
 
-Oops, I thought I haven't applied it yet. I did that couple of week ago before I
-went on vacation :(
+Don't you need to align freq_to_perf() (or the callers) for the BIOS-overwrite case too?
+amd_pstate_update_min_max_limit() still uses the nominal-based conversion for policy->max,
+so the new maximum frequency maps back to highest_perf on each core type?
+(and we end up with max_limit_perf < highest_perf if the BIOS-overwrite values are below
+the interpolation result.)
 
-You can resend the patch and I will apply the new one and drop the old one.
 
--- 
-viresh
+>  	WRITE_ONCE(cpudata->max_freq, max_freq);
+>  
+>  	lowest_nonlinear_freq = perf_to_freq(perf, nominal_freq, perf.lowest_nonlinear_perf);
+
