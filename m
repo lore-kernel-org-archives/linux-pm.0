@@ -1,117 +1,139 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B32BA4B0E3B
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 14:26:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A558F4D4886;
+	Fri,  2 Oct 2026 15:29:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790951187; cv=none; b=iinHgehXaNV1dWv2TUuTkagPeUzkfqP/iKgu4Brs6fV5ZsorroD3Z3Iu0NsepzUuW8b0alsq1tPCo1OQYJdYGSgoXopP31fmdADjGnFlwCwD/EK4jOnMyvEO9UFcf6cbxnoTjEPSPgh/tkgylvRqoV8X24ESBwebEd/06ezCX/8=
+	t=1790954954; cv=none; b=GQxYW7uhLKFylPROOgppgGbpepKkHD+eh9q1b9UYOoW8tKQk2b92iJxFCXKqbvjr9GkfNFesoswszBj7ilewO5dazYrzIzWKowKI6QXo6aNWns99N837Z6Q1ik/+olcD5/aid5BxSZbmdUmHy0aaT8DYp6NF4+WZ3ve1Qomg1sU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790951187; c=relaxed/simple;
-	bh=PbsiIeWzpYJ48wASnRqP4OeKBqhdqKTiiSGy443qL4M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FRmdQA67UQRBIufSpmwC3xbqV0rxg6J+2t2bLS9ANE59jOFzF3R6Yh+TdNeJEEyDGylv3dokpwpbSirOR0XDb/o4cKKaTW7lQfF1Fn+XkiQePVivkMDvQTo8kEv+A/CuHg720LAl7C8P9E0/zEQN2fgHyaa656JAsPKzhBGbaLo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=M2kmo5lq; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1790954954; c=relaxed/simple;
+	bh=P4f1hv785d621ll4HEeJjnSeVQYSEnQeNsJSJrh9rSw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=M4R8Ju2CwPAypE4PMFjFjRE8haeQ6qM8YAAqR93ZhHxNxUq+1fE/SNX8ubHhUEgb3XsQXvxQplshhgTrNMszqna/dyQnu7QU68MMv7/u3bU49PhM+Tc9hU/sc4+OjhkrBrZkthbAyUrDGWh6yFrcHAXoDak+yJPHE8UaqG1+b7Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=p8E8vMpM; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="M2kmo5lq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790951184;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pMbn9GyMJX2ye19RxY34Y+M9r3F2OOFTFH8nBqhUXD8=;
-	b=M2kmo5lqfPd5mH39R8r7DuwFe+2fPB4RARvHULzxr1jUuU9r6T3WN77V8zYn0xyKVhlrqp
-	yfYgBnYL6EZSq15/I7N62oQTqAxvnjYZdd0AQv7wrXHiir+69KfArUBPJ91Os+nCCQcUHg
-	cJHXchh3mUTdPKvjlAc30+RGvh0Kwjk=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-660-EyzbVaSlOOafxjQdgjdVEQ-1; Fri,
- 02 Oct 2026 10:26:19 -0400
-X-MC-Unique: EyzbVaSlOOafxjQdgjdVEQ-1
-X-Mimecast-MFC-AGG-ID: EyzbVaSlOOafxjQdgjdVEQ_1790951177
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 22F531905617;
-	Fri,  2 Oct 2026 14:26:17 +0000 (UTC)
-Received: from onestero-thinkpadp1gen7.tpbc.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id 9B0661956086;
-	Fri,  2 Oct 2026 14:26:13 +0000 (UTC)
-Received: by onestero-thinkpadp1gen7.tpbc.csb (nbSMTP-1.00) for uid 13628
-	oleg@redhat.com; Fri,  2 Oct 2026 16:26:15 +0200 (CEST)
-Date: Fri, 2 Oct 2026 16:26:12 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Aviv Vaknin <vaknins33@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Christian Brauner <brauner@kernel.org>,
-	Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] pid_namespace: make zap_pid_ns_processes() freezable
-Message-ID: <ar-_BMp5cuPwDw5J@redhat.com>
-References: <20261001121254.883973-1-vaknins33@gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="p8E8vMpM"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A4DF0143D;
+	Fri,  2 Oct 2026 08:29:08 -0700 (PDT)
+Received: from [10.57.8.170] (unknown [10.57.8.170])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 279BE3F85F;
+	Fri,  2 Oct 2026 08:29:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790954952; bh=P4f1hv785d621ll4HEeJjnSeVQYSEnQeNsJSJrh9rSw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=p8E8vMpMtKBWVnygtBY4CCJt+MHMHuQj+M7U9zx+9Pgy3DFcV8HBcxW9kxS/N/00J
+	 XhEBuSPy1e7h4vteMl/XfZe//p0e5hbbJ3qzJoOHabnne1Sh49Qvv+nypCIzoo1Ach
+	 9Du30zeEXLKrw1yW4XTxxKDrFWrNKDsec4rnAzbg=
+Message-ID: <38a5b5d5-d39a-4fa2-8de5-ccc1d92aaff1@arm.com>
+Date: Fri, 2 Oct 2026 16:29:05 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261001121254.883973-1-vaknins33@gmail.com>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v22 07/10] kernel: hibernate: Add an arch hook for
+ preventing hiberation
+Content-Language: en-GB
+To: Catalin Marinas <catalin.marinas@arm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, maz@kernel.org,
+ will@kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, steven.price@arm.com,
+ aneesh.kumar@kernel.org, oupton@kernel.org, gshan@redhat.com,
+ joey.gouly@arm.com, tabba@google.com, yuzenghui@huawei.com,
+ linux-coco@lists.linux.dev, gankulkarni@os.amperecomputing.com,
+ sdonthineni@nvidia.com, alpergun@google.com, fj0570is@fujitsu.com,
+ WeiLin.Chang@arm.com, lpieralisi@kernel.org, enju.kohei@fujitsu.com,
+ sudeep.holla@arm.com, jonathan.cameron@oss.qualcomm.com,
+ Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@kernel.org>
+References: <20261002061507.1600269-1-suzuki.poulose@arm.com>
+ <20261002061507.1600269-8-suzuki.poulose@arm.com> <ar-PiBQGye4_hQa6@arm.com>
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+In-Reply-To: <ar-PiBQGye4_hQa6@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 10/01, Aviv Vaknin wrote:
->
-> Fixes: 3eb07c8c8adb ("pid namespaces: destroy pid namespace on init's death")
-> Fixes: b9a985db9896 ("pid_ns: Sleep in TASK_INTERRUPTIBLE in zap_pid_ns_processes")
-> Cc: stable@vger.kernel.org # 6.1+
-> Assisted-by: Claude:claude-opus-5-5
-> Signed-off-by: Aviv Vaknin <vaknins33@gmail.com>
+On 02/10/2026 12:03, Catalin Marinas wrote:
+> On Fri, Oct 02, 2026 at 07:15:03AM +0100, Suzuki K Poulose wrote:
+>> Add a hook to allow arch code disable hibernation. On arm64, with an RMM active,
+>> there could be pages that are delegated to the "Realm" security state. Any
+>> access to them are fatal (e.g., hibernate save image or restoring an image to
+>> a delegated page). pKVM host also has its restrictions on enabling hibernation.
+>>
+>> Add a weak arch hook to let the architectures have a say.
+>>
+>> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+>> Cc: Len Brown <lenb@kernel.org>
+>> Cc: Pavel Machek <pavel@kernel.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: Sudeep Holla <sudeep.holla@kernel.org>
+>> Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
+>> Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+> 
+> Nit: the subject prefix for kernel/power/ usually is
+> 
+> 	PM: hibernate: ....
+> 
+> I can fix it locally, no need to respin (and probably the wrap the long
+> lines in the commit log, we tend to keep them shorter).
+> 
 
-OK, since Rafael agrees with this patch
-
-Acked-by: Oleg Nesterov <oleg@redhat.com>
+Ack, I will take care of that in the future.
 
 
-but see below...
+>> ---
+>>   include/linux/suspend.h  | 1 +
+>>   kernel/power/hibernate.c | 8 +++++++-
+>>   2 files changed, 8 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+>> index b02876f1ae38a..a3815027773c5 100644
+>> --- a/include/linux/suspend.h
+>> +++ b/include/linux/suspend.h
+>> @@ -401,6 +401,7 @@ int hibernate_quiet_exec(int (*func)(void *data), void *data);
+>>   int hibernate_resume_nonboot_cpu_disable(void);
+>>   int arch_hibernation_header_save(void *addr, unsigned int max_size);
+>>   int arch_hibernation_header_restore(void *addr);
+>> +bool arch_hibernation_available(void);
+>>   
+>>   #else /* CONFIG_HIBERNATION */
+>>   static inline void register_nosave_region(unsigned long b, unsigned long e) {}
+>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>> index d2479c69d71a4..9d9d53828542f 100644
+>> --- a/kernel/power/hibernate.c
+>> +++ b/kernel/power/hibernate.c
+>> @@ -106,11 +106,17 @@ bool hibernation_in_progress(void)
+>>   	return !atomic_read(&hibernate_atomic);
+>>   }
+>>   
+>> +__weak bool arch_hibernation_available(void)
+>> +{
+>> +	return true;
+>> +}
+>> +
+>>   bool hibernation_available(void)
+>>   {
+>>   	return nohibernate == 0 &&
+>>   		!security_locked_down(LOCKDOWN_HIBERNATION) &&
+>> -		!secretmem_active() && !cxl_mem_active();
+>> +		!secretmem_active() && !cxl_mem_active() &&
+>> +		arch_hibernation_available();
+> 
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> 
+> Raphael, any objection to this patch going in through the arm64 tree? It
+> matches the style of other __weak functions in this file.
 
-> @@ -243,6 +244,11 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
->  	do {
->  		clear_thread_flag(TIF_SIGPENDING);
->  		rc = kernel_wait4(-1, NULL, __WALL, NULL);
-> +		/*
-> +		 * The freezer's fake signal ends the wait with -ERESTARTSYS;
-> +		 * freeze here, or one stuck pid namespace blocks suspend.
-> +		 */
-> +		try_to_freeze();
->  	} while (rc != -ECHILD);
+Thanks Catalin
 
-Somehow I still think it would be better to change do_wait() to use
-TASK_INTERRUPTIBLE | TASK_FREEZABLE. Slightly less robust in theory,
-but I think should work in practice...
+Suzuki
 
-Rafael, what do you think?
-
->  	for (;;) {
-> -		set_current_state(TASK_INTERRUPTIBLE);
-> +		/*
-> +		 * TASK_IDLE: no hung task warning or load for a wait that can
-> +		 * last as long as a tracer keeps a zombie, and a pending signal
-> +		 * (e.g. the freezer's fake one) can't turn it into a busy loop.
-> +		 * TASK_FREEZABLE: let the freezer freeze us while we wait.
-> +		 */
-> +		set_current_state(TASK_IDLE | TASK_FREEZABLE);
-
-This looks like overdocumentation to me. I guess it was added by AI. Other users
-of IDLE/FREEZABLE do not try to document the meaning of these task states.
-
-But this is subjective, I won't insist.
-
-Oleg.
+> 
+> Thanks.
+> 
 
