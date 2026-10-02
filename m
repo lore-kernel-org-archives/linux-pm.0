@@ -1,99 +1,138 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31A0F311C1B
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 20:28:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6403D4968EC;
+	Fri,  2 Oct 2026 20:31:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790972927; cv=none; b=GoATk16LwshUI3XYa5tPJdf7JfW3OBvu0sN/54khc6JaaET6s9kfg0mTbUnF7W3f90eY02oXkrEqQ9v4H9GigUmNaRGLv18t3e4/Qm7DnLzkBVFw8AdNI3vmR8HBudnHQuSbR0Z5Ejdl5ExJmPJwQXs8Ze1qNvwgQiAGLT10oFI=
+	t=1790973073; cv=none; b=FpjJUu8oXKxCQoRizaa6fErw6yeyEcF1x2O2mkqm3C7OMC33gNXRxpNwK0i+kXDssaN1wNM6t6eC9KEBWe4F2Wc6bc9f4XfshZSWw2dHiisUxwy96CxAePzIU9OdgbgTw2zkYvROB4U9TM61sIl3go2lgmzyadGS5KrtfotinD8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790972927; c=relaxed/simple;
-	bh=D8X1XlYV1xq+RxSSILgm+MOm5JovS9lyKgYPVNdN+s0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sIWAMKSxfFFmWGast/pIBIwexud+mAceO53k4YhlTKz3WHBo7E6qzZqPjNLvZx9SS/W8enaPJODIIu56xLpo5r0r9fkiaoFZM14dvOWGugnzHhZa4cNKsqLAhxmT9iFtxBkSPVNCjDKs4jzDu/UmDSHebkEoTJzonCOKgOZtHTE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GO3qDnV0; arc=none smtp.client-ip=209.85.128.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790973073; c=relaxed/simple;
+	bh=Jt//0zORUjqMAZAfskjZ8vmMwU4akzPkIqM/XgZLRrk=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=PD6EuSxE/lRseh53tBZOLwdrOl/BRtgBnq3uCVYbvUUCHGQapT63pCONbT+nKzGTByQM6MYXWe//+w4rPMOeKs8HVDjVPA727Y8xbr8uL5hgZxJNDplWA7iDHvTOYNJSOBEWXuDYXwWY9hJ6VXRBL8GmdKQ0Hnbdl28EWVkvyVY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=JoWFynLp; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=9yvIpN7M; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GO3qDnV0"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-49d0da752ffso1435655e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 13:28:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790972924; x=1791577724; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=D8X1XlYV1xq+RxSSILgm+MOm5JovS9lyKgYPVNdN+s0=;
-        b=GO3qDnV0dYMmoFyyJqpNAYbapJBvvuhHH0gvbIWTIEwmvpHXI2HN4agDqg64BUU3yb
-         vgVSdzmKd70AoHapXrrSwaXh7w2EvK7TWHEP8iBQyGCNdxXO18C0fN/DEkVC7a0MmZ2r
-         VUGL8aUkUZPZFd/99/aHvbYLO2rN3St0FiRK/2iwyrcSjaS6BCgPR6quMz2zvCgdY92b
-         Y0oso/psnb7xYyTP1lqjv2gyA0geb8d5QUD6kzSOor2IGV8suTP330FyCh77zkeOrEG6
-         R8Q5sQEsp2hWYpUoCofpPeRu3cCwO5xXG76nHqe03w9OhBZlOO7F15hZqVpXPg/VdQ/x
-         Iw7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790972924; x=1791577724;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=D8X1XlYV1xq+RxSSILgm+MOm5JovS9lyKgYPVNdN+s0=;
-        b=peWUHrFSR46jV+nz82iAkUC/0OhZv6WIHrpBIEJ6RniQX9Q1a09LJ8RRqyGcKRX2Hu
-         XNxZX5TEgZl9y6shwAnOi8K4XOIlsjhaTX97+xeprKsGS63/c8IIpu99JFOR4TElVKkp
-         h5+i3w+RpfrmLAj8wLaszCxGPNlzgTSrNTx4MNdjOaJ2x9yjPchRSAsKaVmuM7dlhSS2
-         JzoBTI4400LSoGBgarEGDeX7cOnqIhQsoJEcx314VL09yNzIdNy/cRdg105Y/acFlOWW
-         ous3KJBOOHXu2t1iLqFl0RGVhk5To2Oj9TQdxXkLY2uayK1Rr3Q5s2+G+sDpLFg+laM5
-         0JDg==
-X-Forwarded-Encrypted: i=1; AKwUvBw3DYl8AbGFKlCBns7bM8im6UfwQGKqlp3CiNGBHa0vsay1yHkrqd7Dj5MvJq4Uco2995FIQQ/wwg==@vger.kernel.org
-X-Gm-Message-State: AFuF++nogbgUl2tTQjIOVvynHNdOQnm95sgmgZwsi0Rm/xj8T6GXS9Zf
-	JMRNuarOH8RtDwBR/kTiUxXPNsLkPo4t5MjXxypXWefIa8JeB5Yk7bUZ
-X-Gm-Gg: AYBFou2TaiGZ68xUVjyfUnRJrdd6j5TY492k2TeZfpeEggQDf0AqA+V3IA7cTHz+eLX
-	fOCDaosiibT+fPV4RDRPI4fzkpN88krAMsKiuCOQ3t2Rz3I1tM1NCOwwZhddBEuv2+TVzPAa511
-	Tfa/TgSqRmtPaRfKZX104wgFCBUP+SBjD9u0T7gor8ginSruZnFezssiItDBdOzdnBUicx45cLa
-	b/FxIFLafvfpPh0OEbxR8nR+jfxQoeXJmMvfq9nwzEpuCQI6ORl70NcnrD9C+sOCLSD3SBf0Zut
-	TSfq5Fwafg6ILJyncrw7mfxLR7t8AVTzsDAO6+BeDZ53gYrfQOLRX6rCJmjoAnXhRyTAl4XatAb
-	S+doGWh293vHJ7/8c3wlnwBiM7TF+O08oLJQlXcKVmYWbGHmRGwYI6R4ZYEQG18wvNBP/5rOxyZ
-	ck078N8Z7DUpB8HW7QiC/CquN7UetiYiZ9qyniugc8oAViQ+PdvjgjuEv/tW803iVz5UP1+Vmo/
-	6QBpxGu7CKbF7k35Nah4rP5i5zlYXXFazTPqfTvZOXwieXaIrssQGLHr+XzFYEkXN3HcSZfz7h+
-	8D1Ubw==
-X-Received: by 2002:a05:600c:698d:b0:49d:1842:f001 with SMTP id 5b1f17b1804b1-4a1680e5865mr7295435e9.14.1790972924299;
-        Fri, 02 Oct 2026 13:28:44 -0700 (PDT)
-Received: from arch ([37.142.150.50])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a0280c84a9sm97832585e9.10.2026.10.02.13.28.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Oct 2026 13:28:43 -0700 (PDT)
-From: Aviv Vaknin <vaknins33@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>
-Cc: Christian Brauner <brauner@kernel.org>,
-	Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Bradley Morgan <brads@mainlining.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] pid_namespace: make zap_pid_ns_processes() freezable
-Date: Fri,  2 Oct 2026 23:28:41 +0300
-Message-ID: <20261002202841.3434087-1-vaknins33@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <CAJZ5v0jQgroKLxnyeKLedZvc9f7k0OLhHAwpHjvWK1E1BHDq2A@mail.gmail.com>
-References: <CAJZ5v0jQgroKLxnyeKLedZvc9f7k0OLhHAwpHjvWK1E1BHDq2A@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="JoWFynLp";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="9yvIpN7M"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1790973059; bh=kY9pfHR4BXX5Gd5bWbFhgVK
+	EYCasw0neJs/hvnXh3jc=; b=JoWFynLpLzcP399dzDnUtnTW/3fsg4UxYfcbEPz4sLmLH8KSYT
+	HPduli38S/mXe1qUjIvrynmJ5LbOm6HxxCx5tgqIGSbYFZRcKb+PZl7h9DKuoXCgIp/RBc1/uEX
+	joIZABTwowxWmbhGWgWSjTu8Wxzsz3Au4AGXdW8Z81N0rUYth2di/JRWUky3oQhGnI494uPrIWT
+	qi8F3tHA0tD+U8LIwV+QXKd/artSgK5UX2Z8ZOhEOotXpTjz5eriQ+gfcGfIKgpg/FIGp1a3qmQ
+	SXFGMe68B09Aizod2cTn8cHjnJdmHYi5NTdw1RjIryLhoJ9qB9kQOB9g5DhZkkVNshA==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1790973059; bh=kY9pfHR4BXX5Gd5bWbFhgVK
+	EYCasw0neJs/hvnXh3jc=; b=9yvIpN7M5F09KohKB4kOG8mFjjlZzx3Na+XFtONxzX7Kdz7pSz
+	hz847bQVBwXs1v03tqXvBwsV+VSqh27HnVDQ==;
+Date: Fri, 02 Oct 2026 21:30:58 +0100
+From: Bradley Morgan <brads@mainlining.org>
+To: Aviv Vaknin <vaknins33@gmail.com>, Christian Brauner <brauner@kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>
+CC: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v2] pid_namespace: make zap_pid_ns_processes() freezable
+In-Reply-To: <20261002202820.3433318-1-vaknins33@gmail.com>
+References: <20261002202820.3433318-1-vaknins33@gmail.com>
+Message-ID: <1EEB6D9F-78FB-4E6E-9191-A9452139561C@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
 Content-Transfer-Encoding: 8bit
 
-On Fri, Oct 2, 2026 at 8:13 PM Rafael J. Wysocki (Intel) <rafael@kernel.org> wrote:
-> Yes, it looks simpler and it should actually work.
+On 2 October 2026 21:28:20 BST, Aviv Vaknin <vaknins33@gmail.com> wrote:
+>When the init of a pid namespace exits, zap_pid_ns_processes() waits
+>until all other pids in the namespace are freed. A tracer outside the
+>namespace that does not reap its traced zombies keeps those pids
+>allocated, so this wait has no upper bound, and while it lasts every
+>suspend attempt fails:
 >
-> Aviv, what do you think?
+>  Freezing user space processes failed after 20.006 seconds (2 tasks refusing to freeze, wq_busy=0):
+>
+>Neither wait is freezable. The first loop sleeps in do_wait(), which
+>returns -ERESTARTSYS on the freezer's fake signal; the loop then clears
+>TIF_SIGPENDING and waits again without ever freezing. The final loop
+>sleeps in TASK_INTERRUPTIBLE, and since nothing clears TIF_SIGPENDING
+>there, schedule() returns immediately after the first freeze attempt
+>and the task spins until the wait ends.
+>
+>Sleep in TASK_INTERRUPTIBLE | TASK_FREEZABLE in do_wait(), so that the
+>freezer can freeze tasks waiting there directly, and in TASK_IDLE |
+>TASK_FREEZABLE in the final loop, like coredump_task_exit() does.
+>
+>This was hit with Chromium-based browsers: crashpad ptrace-attaches the
+>threads of a crashed renderer, which is a pid namespace init, and does
+>not reap those killed during the dump.
 
-Agreed, it's simpler and avoids the extra try_to_freeze(). I've sent v2
-with that change and without the comments:
+Suggestion: We could do a ASCII table of the bug to make it "look" cool, I mean, you certainly don't have to.
 
-https://lore.kernel.org/r/20261002202820.3433318-1-vaknins33@gmail.com
+My tag stands:
 
-Thanks Oleg and Rafael for the review.
+Reviewed-by: Bradley Morgan <brads@mainlining.org>
 
-Aviv
+>
+>Fixes: 3eb07c8c8adb ("pid namespaces: destroy pid namespace on init's death")
+>Fixes: b9a985db9896 ("pid_ns: Sleep in TASK_INTERRUPTIBLE in zap_pid_ns_processes")
+>Cc: stable@vger.kernel.org # 6.1+
+>Suggested-by: Oleg Nesterov <oleg@redhat.com>
+>Assisted-by: Claude:claude-opus-5-5
+>Signed-off-by: Aviv Vaknin <vaknins33@gmail.com>
+>---
+>v2:
+>- Make do_wait() freezable instead of calling try_to_freeze() after
+>  kernel_wait4() (Oleg).
+>- Drop the comments.
+>- Drop the acks and the review tag, since the approach changed.
+>- Retested on v7.3-rc5 with the reproducer from v1, also unprivileged:
+>  freezing completes in 0.001 s, the zap task stays idle, and reaping
+>  the zombies still ends the wait.
+>
+>v1: https://lore.kernel.org/r/20261001121254.883973-1-vaknins33@gmail.com
+>
+> kernel/exit.c          | 2 +-
+> kernel/pid_namespace.c | 2 +-
+> 2 files changed, 2 insertions(+), 2 deletions(-)
+>
+>diff --git a/kernel/exit.c b/kernel/exit.c
+>index 97686af89..b54cc7b2b 100644
+>--- a/kernel/exit.c
+>+++ b/kernel/exit.c
+>@@ -1751,7 +1751,7 @@ static long do_wait(struct wait_opts *wo)
+> 	add_wait_queue(&current->signal->wait_chldexit, &wo->child_wait);
+> 
+> 	do {
+>-		set_current_state(TASK_INTERRUPTIBLE);
+>+		set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZABLE);
+> 		retval = __do_wait(wo);
+> 		if (retval != -ERESTARTSYS)
+> 			break;
+>diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+>index 8bc9edb40..127a5fd23 100644
+>--- a/kernel/pid_namespace.c
+>+++ b/kernel/pid_namespace.c
+>@@ -269,7 +269,7 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
+> 	 * free_pid() will awaken this task.
+> 	 */
+> 	for (;;) {
+>-		set_current_state(TASK_INTERRUPTIBLE);
+>+		set_current_state(TASK_IDLE | TASK_FREEZABLE);
+> 		if (pid_ns->pid_allocated == init_pids)
+> 			break;
+> 		schedule();
+>
+>base-commit: ed14a591175bb5f56c2936b082cffb9e4b935e6d
+>
+
+
+--- Thanks!
+https://lore.kernel.org/all/EE579805-42F2-4C58-B752-F28779EEB717@grrlz.net/
