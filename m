@@ -1,64 +1,64 @@
 Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DEF54EE84D
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 15:45:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 840734D4895
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 15:45:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790955931; cv=none; b=MA0JnoSbw39Lh7lhmTm+oEoG51L+CFIh+86MsGBg9u3PCH4S4UqNOq/rA3ZRdIc/J9GlQe55+KeR6IUKOo8Q8HQVSMQQnotwwXETsiMH0ZW0SHoQhPHFSZ+5aRCaP950wmYwowvf29n/Ogv4uIB0znMjPCsMK3aKrPayaHMnuoY=
+	t=1790955932; cv=none; b=AQtWajiETsja5n+ZKXjH7q40unOOCs0puHgpFnjCNnw5m6aDnvulsob2dDK9pciIWqSIUsxPvHDyustV1zuYNtKC5FnZQev+4h4gXFUiDtXbFAd2YPVts/xLdVqeU+JGBFjy6Y+6RaJPxV4id/BfiyUpf+umQ+V5iPliHlTLx2Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790955931; c=relaxed/simple;
-	bh=CeTHB4ypLnb5H3d23FrgyQcrpY2y8roNeeEMV+cxjyU=;
+	s=arc-20240116; t=1790955932; c=relaxed/simple;
+	bh=XJBmbAQssDpv3cWBcThWNbjc6nl3j+gt9Ko4eNiaO98=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hb33yWFqc/b5ypU+1q7+OvbVngPDoLnppxoBdn76r9pSFkSR9+2wTgOYFcAEwQ+ETVbW2JfQ0isk/q79P+jAk+rmnQ37kaxF616J++RcTxht3hhaPpsNuNK30OtzmUcOchbk6NZBsStDABYNiNPAEGb45iGLWc0qk650Zx5aZnQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=HB446zzV; arc=none smtp.client-ip=74.125.225.141
+	 MIME-Version; b=lg9cL4gySxM9dXnp1L7vPR4h6zA4pusCmRfEQjOsFVTgvP/sZDzETMGnqs78X7KbezWbDyrooDi094jEG5maYdjg4Yd81HTSXCtVIBhw6+8BLO6ijDa0Ot/6iB8TYEgWGWm4h6v0kmDsl4lU01YtmXz8QNtl4tdwRXVnFFsH7lk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=nhzdFhK4; arc=none smtp.client-ip=74.125.225.141
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HB446zzV"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49b912d391aso189965e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 08:45:25 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nhzdFhK4"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-4a11603310fso427385e9.1
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 08:45:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1790955922; x=1791560722; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1790955925; x=1791560725; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=EZjs7e//iaMUq0DbBBAkyBGkWfGjYDHq+81y/lPHXV0=;
-        b=HB446zzVAK31YlA23DKZGSW+unxN2agRncqN8pZ8aqyMcPLjQLhwDr4uxuEKyUh2V/
-         vLK8Sma5TkDvAd3JQfWR2dm5QYpfL9hUOwJa+QGEf9UmF5AMFWli87nljpDrlSIgCb0O
-         2ZZv6jpz21wxBPPgIgSjHkxlHkwEq6VkfB5rheVbz8/8tJHVfjg2WTxZlSopesI0DBhG
-         T0e2rMipBeyXcjplUKxlDGsmLqBM96Ds07z8TIqDDUhOe3YcFg0FRppYcMAYUStTSbPO
-         QaX0npVGIdf/Vtt3GPh5V5lTkjo5QR4qmV08V3v98UzZ8vD/hi6HPja1W5Rgwi+NEtaS
-         uoQg==
+        bh=WkE6gJnDRs+XLmAou5XPy/YO7fax7WUEGWY0OkDdt7Y=;
+        b=nhzdFhK4XJm4ywkcMx2iZMlbdA0TopX3qmiFqXqJugOxcLyeKb3VMWUs0kTjTnGuM8
+         2mNAe8T2O4hzGJQSPLdDh82R7EJs0X889b+En2tC6hrk17UoJZG1IZ8bXRoK56uxa2zx
+         AO+vWqV8B/fAAV8FQKM+MAHDUiEWDtazoFIeizUtFrCdVkjLsW0+qfVNTkOTlQBCuqSE
+         Vvd6wedQWqZPk6RJgoTNBb/SUo8uK55/IJa/tKgPE+Agf7NmfSihpJxqjgkTl/P5giYl
+         SQV52N9l+O719/iKvYM5j3/pDDgcnqX5MVQdEzeQrUKfYqm8CTc6LH8x3h35/b5MEyqu
+         egAA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790955922; x=1791560722;
+        d=1e100.net; s=20260707; t=1790955925; x=1791560725;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=EZjs7e//iaMUq0DbBBAkyBGkWfGjYDHq+81y/lPHXV0=;
-        b=ih+iiXQokUHIAAFOglyQ0AS9l3TcwUdgB0IKVy896n73KQcgSdznmfTR3f0lvHkN2N
-         F8wXAGPkyZFyaWIRcH2B+9sQO49IVYeKMHRaftsKrF8gkncELhEhhbJztAZIUM9wh4j2
-         mT9atcws75m/PBRhGmv/lx8Ea1wvHjcbQI8l9/g/GURJgF0M2P+miewesgEm93P20JeW
-         hlyYfBhoRVfUojVHf1teFP+7Cz3EpH1PjPMB4hsc0IhPySfmhwDVYHX/nA0ujhCJ9HOc
-         j2b0bQu3NyXYhyxSwmqNCvbogKb5AOVbFTAyP3fJLAvy7NGU65PBvtMmdaCwRGLb6M4s
-         fgTg==
-X-Forwarded-Encrypted: i=1; AKwUvBxTizLDAeRJGHva3LJ1Bw/avO6ZWwy7ZKjHdJlIjbKHTfTIFsqgLAI5dHWiw0BU5/Rtv0YKmkFlOg==@vger.kernel.org
-X-Gm-Message-State: AFuF++m3qocufG1uQPJQ+8JeTJjVVwx5eFlYcLkFWChh3vvWOVhRkH0V
-	jNuXO6y7feCFI8V47sxeFSmme9hTHO04P96AKmLqCUnA+Gvg7CYJhchHgD+MJ85BiM4=
-X-Gm-Gg: AYBFou0J/e9A9Hkiu9+9tLr5NH1+hQ/gVKYzjrW3UmI/heuER0xlbp8JeTz6iNrXW6l
-	/xzph5xjdz9nthKvhbgauaDkosfRyyc6UsNx6ZaTkFeaQe/cUs+1HwjIt2W8mQoyEYggRuJr4nC
-	c9BH/f/VMTlanqMOeQmL80MhWMaZ2kZbPVF8CX1KLji63f9szPHnLMT9hmHvbFL9Hl5IWH43q+v
-	mPvLMQbovGQ7/f0REApoadQNSgJIeAFW68NwgtLNU/8wCwMaL444u2KAx1nGMbjyiB+cdthY/5Q
-	AavEmtc7deH8CtDFfo7Rjj5xFIObhCg1URSH4WaIydEFuK7PSAfv4DN39CbTi6wFN66GlADRM1p
-	BplBXZSzjLBJ+vh6lQHIqmd/yeC/SYlU/50khCVWvarJ5rRRpTLfzqQa8ic7S94X2vekYaoR2HA
-	6h/yWhaYCQ3nN4UMO5uL4e4+7f7jrwB9SPlP7UYV2R7NvxPy/2nQSBFaSGibJVdpvGE0GvwYfqw
-	kaaa9Y2GkIuPakl
-X-Received: by 2002:a05:600c:230b:b0:4a0:2533:c8b7 with SMTP id 5b1f17b1804b1-4a0276c6176mr42183355e9.35.1790955921951;
-        Fri, 02 Oct 2026 08:45:21 -0700 (PDT)
+        bh=WkE6gJnDRs+XLmAou5XPy/YO7fax7WUEGWY0OkDdt7Y=;
+        b=bIv4hV+4IkOpwlFiIxSuNXgqhikgquW3+X491P8OOaEzNbtjQrFWn22Bu8H9/B2i23
+         N/xlMZ/uQSii3vTRvE1YUlvFgPAhEAyw7pcxTxYOGjiBclbomMFy+0KbDc8QXVJggZiE
+         ptSPmQWukNdvW8Pg6AJ9WUUYzan/frjRIUHn/gxVnjIz2pjRKwsJG5wQHNh2JmWeRi+G
+         U/NHqfVmEsrDeYl+GDroqMw6HMlWJRcz/MqkXr5lc0MOXzoqjSzr4Io03VbpUcuRzqIH
+         7/J1IjlUv+nLufB6JRIKNETi7RIgmFLTt1fshwtPUXWetejTTy2f8CYvMTB9EFiIVSUw
+         cizA==
+X-Forwarded-Encrypted: i=1; AKwUvBzD7neZT2Q0CgQ3TcHpQ+Qy6V6hbTa4f6UUuWaQhmYNPwzRgrqujOXa6wPqBi/x/r8I3HPSJbXqiw==@vger.kernel.org
+X-Gm-Message-State: AFuF++mJixMsNdhNuck7jrpZmElSdrPSj1Ku+J1Fvxf9Z/zM7RrjtWsi
+	y1K7LEWI2rU9hmXVr6RGKfTUWW0MOX9CsZH4JnSj5gTc7G0FE7C9cceHp9VSjRoEp90=
+X-Gm-Gg: AYBFou2w9bVUjRiEjHoG06uelGM4ccTu5KyDrFISDpJK8Av58jYGOdVjY705Bvo1kXB
+	Hi0X8pffm+/wfIreFV/+CsnaluJPAkJmggSAckREv0w3u6EQ2VP6Y4pbcGOMS3q3a3MOOVixRpk
+	VDTplMV/8ZFw8PfSCBfb0+IZMlcFSPNzwiB0kccfyTF4YwSaPaXUqFiMBUHpTpCcmfVqFdajXlP
+	WiG/EwTeDYJmuQQ8LAkJkcVMkMxNzKYaC15R62qQTqk9M/aiY8q51DnUasyYlyXkgp+94yHZu87
+	K77UhN6ODb9Lw3DU8h3ccKnOds/d0fivSkESNZlgKT83Ez2CEQUHSlp92ZhUVFdTKgEQRIsJ0N8
+	jXo+CwsGdPViodyhTSNHAsGa3jh8pg45+kp/yswzsHqBZ7oAsgSoGCif6/rTYb2wyeta3KG5cIR
+	q3fgwHNP1ZXhEvpHxeizLVnAAVNQ3K6DwJKiWFn4WveEo/nXDV2kIAhcShh1B/TfVurScpA4qsZ
+	YvHLxU4xBcwdgKt
+X-Received: by 2002:a05:600c:310b:b0:49f:bd3c:bc25 with SMTP id 5b1f17b1804b1-4a0276a224amr56824375e9.32.1790955924579;
+        Fri, 02 Oct 2026 08:45:24 -0700 (PDT)
 Received: from vingu-cube.home ([2a01:e0a:11f4:3020:718b:4747:291c:e5d8])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a0280bcf0fsm101958045e9.6.2026.10.02.08.45.20
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a0280bcf0fsm101958045e9.6.2026.10.02.08.45.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Oct 2026 08:45:20 -0700 (PDT)
+        Fri, 02 Oct 2026 08:45:23 -0700 (PDT)
 From: Vincent Guittot <vincent.guittot@linaro.org>
 To: mingo@redhat.com,
 	peterz@infradead.org,
@@ -83,9 +83,9 @@ Cc: qyousef@layalina.io,
 	pierre.gondois@arm.com,
 	sshegde@linux.ibm.com,
 	Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 13/18 v2] sched/eevdf: Push short slice task that are not picked
-Date: Fri,  2 Oct 2026 17:44:10 +0200
-Message-ID: <20261002154415.2270586-14-vincent.guittot@linaro.org>
+Subject: [PATCH 15/18 v2] energy model: Add a get previous state function
+Date: Fri,  2 Oct 2026 17:44:12 +0200
+Message-ID: <20261002154415.2270586-16-vincent.guittot@linaro.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261002154415.2270586-1-vincent.guittot@linaro.org>
 References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
@@ -97,50 +97,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Even when set as next buddy, a number of event can prevent short slice
-task to not be picked. Add the task in the pushable list in case it is not
-picked so it get a chance to be pushed on a better CPU.
+Instead of parsing the entire EM table everytime, add a function to get the
+previous state.
 
-This can typically happen when several short slice tasks are pushed on the
-same CPU at wake up.
-
-If the task is picked, it will be removed from the pushable list before we
-queue the callback.
+Will be used in the scheduler feec() function.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- kernel/sched/fair.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ include/linux/energy_model.h | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 186f10173eed..cccdc40b8a24 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -9981,6 +9981,12 @@ static void fair_add_pushable_prev(struct rq *rq, struct task_struct *prev, stru
- 		__fair_add_pushable_task(rq, prev);
+diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+index c909a8ba22e8..89cf109cbca6 100644
+--- a/include/linux/energy_model.h
++++ b/include/linux/energy_model.h
+@@ -224,6 +224,26 @@ em_pd_get_efficient_state(struct em_perf_state *table,
+ 	return max_ps;
  }
  
-+static void fair_add_pushable_short(struct rq *rq, struct task_struct *p)
++static inline int
++em_pd_get_previous_state(struct em_perf_state *table,
++			 struct em_perf_domain *pd, int idx)
 +{
-+	if (sched_push_task_enabled() && __check_pushable_fair_task(rq, p))
-+		__fair_add_pushable_task(rq, p);
++	unsigned long pd_flags = pd->flags;
++	int min_ps = pd->min_perf_state;
++	struct em_perf_state *ps;
++	int i;
++
++	for (i = idx - 1; i >= min_ps; i--) {
++		ps = &table[i];
++		if (pd_flags & EM_PERF_DOMAIN_SKIP_INEFFICIENCIES &&
++		    ps->flags & EM_PERF_STATE_INEFFICIENT)
++			continue;
++		return i;
++	}
++
++	return -1;
 +}
 +
- static int active_load_balance_cpu_stop(void *data);
- 
- /*
-@@ -10419,8 +10425,10 @@ static void wakeup_preempt_fair(struct rq *rq, struct task_struct *p, int wake_f
- preempt:
- 	cancel_protect_slice(se);
- 
--	if (preempt_action == PREEMPT_WAKEUP_SHORT)
-+	if (preempt_action == PREEMPT_WAKEUP_SHORT) {
- 		set_short_buddy(cfs_rq, pse);
-+		fair_add_pushable_short(rq, p);
-+	}
- 
- 	resched_curr_lazy(rq);
+ /**
+  * em_cpu_energy() - Estimates the energy consumed by the CPUs of a
+  *		performance domain
+@@ -375,6 +395,18 @@ static inline struct em_perf_domain *em_pd_get(struct device *dev)
+ {
+ 	return NULL;
  }
++static inline int
++em_pd_get_efficient_state(struct em_perf_state *table,
++			  struct em_perf_domain *pd, unsigned long max_util)
++{
++	return 0;
++}
++static inline int
++em_pd_get_previous_state(struct em_perf_state *table,
++			 struct em_perf_domain *pd, int idx)
++{
++	return -1;
++}
+ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
+ 			unsigned long max_util, unsigned long sum_util,
+ 			unsigned long allowed_cpu_cap)
 -- 
 2.53.0
 
