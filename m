@@ -1,61 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D27FC36B91A;
-	Fri,  2 Oct 2026 14:20:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B32BA4B0E3B
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 14:26:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790950816; cv=none; b=noZgzkPyygsdFymcp2Z3alPMFRbroHrO0D/X2MAXzgRJ3OqblZAd1YnzQIya8vCrh03izechZuzoKkccDSUSZvk+MhwCYvNDGF92P4j35NUuvNxf/eW3YBZbR/iWsvWa6qHSSscDyIlVUL5b0LhSv3F3lz+xMFRM1bKkupGphnA=
+	t=1790951187; cv=none; b=iinHgehXaNV1dWv2TUuTkagPeUzkfqP/iKgu4Brs6fV5ZsorroD3Z3Iu0NsepzUuW8b0alsq1tPCo1OQYJdYGSgoXopP31fmdADjGnFlwCwD/EK4jOnMyvEO9UFcf6cbxnoTjEPSPgh/tkgylvRqoV8X24ESBwebEd/06ezCX/8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790950816; c=relaxed/simple;
-	bh=4gNL5hAAUvN9utsqIqTXkPz06R8ZPLAV6wC5gh1Wx84=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=r2nzAmYJTUDVuT1Ks1il7jeqHTg3hC3DOo/XhgHK8XPrJez7lTiWAfWWFO0O2UxhdlAIyPvmVM380OtQJVoM7xNSWxIq5/dsky2h5BjbyCsV+rAv49WCq/Nxv1jNWPKJbJxxdbvwEnkhmUDQZLTtzjF8RNooFcukmb60ljvBNJ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WdRKAkgb; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790951187; c=relaxed/simple;
+	bh=PbsiIeWzpYJ48wASnRqP4OeKBqhdqKTiiSGy443qL4M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FRmdQA67UQRBIufSpmwC3xbqV0rxg6J+2t2bLS9ANE59jOFzF3R6Yh+TdNeJEEyDGylv3dokpwpbSirOR0XDb/o4cKKaTW7lQfF1Fn+XkiQePVivkMDvQTo8kEv+A/CuHg720LAl7C8P9E0/zEQN2fgHyaa656JAsPKzhBGbaLo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=M2kmo5lq; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WdRKAkgb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CF741F000FF;
-	Fri,  2 Oct 2026 14:20:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790950815;
-	bh=zZJhaUmniz68tditQ9lH3G8YYp1vap6JfMpIS8Mv4pk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=WdRKAkgbQ7O7qfEu92L/yI4pBtRkF5LgmuPnFI/nYnqtnU5AB5gTbrbCqHKLLiGZl
-	 nxqrpb0aYUj8LZnL6heILr2WZAve6f5TJzB/pYOtX9EAPja5EiUwRbWvGlxIGwqsVQ
-	 XbmuP9Knz9LbUBqN4JgXOxWHyqbYTXOeXSxPZ5q5eRkYuQ5tKwllT4HQl0XGVnplMM
-	 W8ruXDAyAnqNN6CnaaGagkN3c7yapzvGVTev86+ijb7ONA7OwdFGky7GJm1Ejqm5wO
-	 hWVKKCXGIya9S9dD9rBOYsGz1CUwMRxRHE2ECnDYtf5vDmRGtHyz6C6f4HLs05ebP9
-	 hHuyCgpkGGv7A==
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>,
-	Florian Eckert <fe@dev.tdt.de>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH stable 5.10] tools/thermal/tmon: Fix compilation warning for wrong format
-Date: Fri,  2 Oct 2026 10:19:57 -0400
-Message-ID: <2026-10-01-1-daily-reply-0013-re-tmon-format-warning-5-10@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261001160156.814419-1-florian.fainelli@broadcom.com>
-References: <20261001160156.814419-1-florian.fainelli@broadcom.com>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="M2kmo5lq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1790951184;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=pMbn9GyMJX2ye19RxY34Y+M9r3F2OOFTFH8nBqhUXD8=;
+	b=M2kmo5lqfPd5mH39R8r7DuwFe+2fPB4RARvHULzxr1jUuU9r6T3WN77V8zYn0xyKVhlrqp
+	yfYgBnYL6EZSq15/I7N62oQTqAxvnjYZdd0AQv7wrXHiir+69KfArUBPJ91Os+nCCQcUHg
+	cJHXchh3mUTdPKvjlAc30+RGvh0Kwjk=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-660-EyzbVaSlOOafxjQdgjdVEQ-1; Fri,
+ 02 Oct 2026 10:26:19 -0400
+X-MC-Unique: EyzbVaSlOOafxjQdgjdVEQ-1
+X-Mimecast-MFC-AGG-ID: EyzbVaSlOOafxjQdgjdVEQ_1790951177
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 22F531905617;
+	Fri,  2 Oct 2026 14:26:17 +0000 (UTC)
+Received: from onestero-thinkpadp1gen7.tpbc.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
+	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id 9B0661956086;
+	Fri,  2 Oct 2026 14:26:13 +0000 (UTC)
+Received: by onestero-thinkpadp1gen7.tpbc.csb (nbSMTP-1.00) for uid 13628
+	oleg@redhat.com; Fri,  2 Oct 2026 16:26:15 +0200 (CEST)
+Date: Fri, 2 Oct 2026 16:26:12 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Aviv Vaknin <vaknins33@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Christian Brauner <brauner@kernel.org>,
+	Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] pid_namespace: make zap_pid_ns_processes() freezable
+Message-ID: <ar-_BMp5cuPwDw5J@redhat.com>
+References: <20261001121254.883973-1-vaknins33@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261001121254.883973-1-vaknins33@gmail.com>
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 
-> commit 9da39ef332c417ce52732564c1c682a6e1209302 upstream.
+On 10/01, Aviv Vaknin wrote:
+>
+> Fixes: 3eb07c8c8adb ("pid namespaces: destroy pid namespace on init's death")
+> Fixes: b9a985db9896 ("pid_ns: Sleep in TASK_INTERRUPTIBLE in zap_pid_ns_processes")
+> Cc: stable@vger.kernel.org # 6.1+
+> Assisted-by: Claude:claude-opus-5-5
+> Signed-off-by: Aviv Vaknin <vaknins33@gmail.com>
 
-Queued for 5.10, thanks.
+OK, since Rafael agrees with this patch
 
--- 
-Thanks,
-Sasha
+Acked-by: Oleg Nesterov <oleg@redhat.com>
+
+
+but see below...
+
+> @@ -243,6 +244,11 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
+>  	do {
+>  		clear_thread_flag(TIF_SIGPENDING);
+>  		rc = kernel_wait4(-1, NULL, __WALL, NULL);
+> +		/*
+> +		 * The freezer's fake signal ends the wait with -ERESTARTSYS;
+> +		 * freeze here, or one stuck pid namespace blocks suspend.
+> +		 */
+> +		try_to_freeze();
+>  	} while (rc != -ECHILD);
+
+Somehow I still think it would be better to change do_wait() to use
+TASK_INTERRUPTIBLE | TASK_FREEZABLE. Slightly less robust in theory,
+but I think should work in practice...
+
+Rafael, what do you think?
+
+>  	for (;;) {
+> -		set_current_state(TASK_INTERRUPTIBLE);
+> +		/*
+> +		 * TASK_IDLE: no hung task warning or load for a wait that can
+> +		 * last as long as a tracer keeps a zombie, and a pending signal
+> +		 * (e.g. the freezer's fake one) can't turn it into a busy loop.
+> +		 * TASK_FREEZABLE: let the freezer freeze us while we wait.
+> +		 */
+> +		set_current_state(TASK_IDLE | TASK_FREEZABLE);
+
+This looks like overdocumentation to me. I guess it was added by AI. Other users
+of IDLE/FREEZABLE do not try to document the meaning of these task states.
+
+But this is subjective, I won't insist.
+
+Oleg.
+
