@@ -1,84 +1,84 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50E5D446BEA
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 07:47:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BA9343DEBC
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 07:53:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790927264; cv=none; b=fly3pBLyOz0Y+y11akbO4xFlLLLz/b3v2AflIn/rYgo3Cw7ujX08kPZaNTnu1ocN1pUeTDmsXC7G8/nTYb/Y34mvPovg5z0V8ptzpcZ1WdtfcccI4FTcL5kPv55poS/c9zc9bZ+9wpx5J6eXs6Gh7tJ1YG1aOXyjeYGXM5UK67s=
+	t=1790927609; cv=none; b=CNE3+Kg3d1J4oUH0kAb6nNVx7ZBPCsoYTHkTRT4ZZRgcvLi6Hzb+LSszWhdJbip1oKgaQj6ps+N374Kh1YNE9szcJ+8JkNTqwMIYXM634gEOzSxYXoKxaoboYUjRMoskcih00/Nra3xWvrwEgZZrEUVlI6cPquo43l0nVIxB43k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790927264; c=relaxed/simple;
-	bh=GsiBeouX/gtaMf4zOeo+rrTtK4Uq5wqLAWhlg0LU0nw=;
+	s=arc-20240116; t=1790927609; c=relaxed/simple;
+	bh=o/RvQv9f1ZtZd51QR8FJOZby6EqzahPJ2E5K519w+Ks=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G4Y1ChxTiEvfr47RCfW3ACd1ZJr+XS/rnBWFyYkZAKiZaBF3GS1bQY7+voUkNDH7uEuB9WJaocNiop3RNhBXkr/A7eWFjl4gTEQrczHbEZ4fti3L/ii1zXM9EZSZnqIzkcZgoRrIY9Clvy0bXQozuknBDm7CV4O3/iWDTAvypbQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=cLCHH9ji; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UXifZL0y; arc=none smtp.client-ip=205.220.168.131
+	 Content-Type:Content-Disposition:In-Reply-To; b=rec+gUXOmKRxgVVQnuDZA+r7WcQ9l5J62FYMCwzt+usEiSwqjV90qJqjbYc3DlRpFMe1t7nbwC6AVcxa1YBoQGImS/APEflr/5fAtpezQbtgxdMW9AH8vlQNM/zAl64Hz2Jp9C+kib9k7VJnnlg3j+lBYmZfdA8Gp0khthVbWFI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=FG8vwcof; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UbVmvE+5; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="cLCHH9ji";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UXifZL0y"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6925jEKb3415591
-	for <linux-pm@vger.kernel.org>; Fri, 2 Oct 2026 07:47:42 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="FG8vwcof";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UbVmvE+5"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6925ikv01542451
+	for <linux-pm@vger.kernel.org>; Fri, 2 Oct 2026 07:53:27 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=koV6fU0fBroPWgISEdPaMuGQ
-	L0eL41QYrOdoT4EtC4U=; b=cLCHH9jiXbsSGmJ+tqO9aDNUTBNApEwWtKKes23z
-	sPBxgFVeLXGN4ueIFrGFXakHGUflp9yq2+7fm1ktVfD6LArlcXfLmHuCxmcdkkCT
-	D/WVc//7fa5pibXdEyoWnR7CWLFICLA/BY4F76o6T6gl8KifANcjwZ6Pw9S0PWKP
-	EEMaPqbszLMf2rS95XltMTtP8lwpcGgKlr7z0mc2wcfN8EWp+dtqobSrfX1oOzVW
-	o8u/unPL/QlRx8FVT4uQWNS9qTnDFieviRbc/uBesDPZ3bonBGn3POFCPxZsg3ZT
-	YNVThu6zCo+P4cgSY3ILopBFhCH1qkBMfl8ypq2ILV+KoA==
+	:references:subject:to; s=qcppdkim1; bh=6leoAHiHC58kTdNzD41rzsHZ
+	ue8MEp5AAZ57oKNPKQI=; b=FG8vwcof6+Yymu+Xm20Dzq5uzPYgxmE7Oh+3KmL9
+	4k+05Lbc2lg9qKNEPq9qtsiLUBRv3VR4dETGZ10i/P9o+KNQdNkUM7EVqedL/Ssa
+	KK27jCk46B8ABvKq5zQ4XEA+fzDqbLSTEIu1HZ1WXYZsdicLSoJHYn8O5QLdi67o
+	zemOmMenzMGG/BDqkhJ71t8iUVgI+KjzE6yKdJuOUIlfbE997K0uT7alHIK/xHZ0
+	Oo24b23CSc50iIrinWNXkSiMqqLn0UbG49MXWuQtqjnktqJ7nEcX7AY7U3Xse7TO
+	eeDAsgdGubFKFokXl9S49mTv3V8O+eOeXtKjEX/4/NsuPA==
 Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h1vxea6p3-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h256mrkbu-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 07:47:42 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93ca9b53afaso634272285a.0
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 00:47:42 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 07:53:26 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-93cb6391e89so392691985a.1
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 00:53:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790927261; x=1791532061; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1790927606; x=1791532406; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=koV6fU0fBroPWgISEdPaMuGQL0eL41QYrOdoT4EtC4U=;
-        b=UXifZL0yeFI3n06Jy/5MUP4vbqsJbnSTA/MbsdNNYWLRsMANKmg+okhgbJVHWQDWnl
-         0FePA5N2RnO2LVPefLs6a7x/JNd+WQfubY55wD19RQ9N0L84BQmvGy/G+1g85ATNwKbw
-         W9hpxBFLNJEwyzEoCS1Q7KEwHNVdTfDDQRWT9ZM26eexdU4E+WMcw6/6DtEocVtbAZxU
-         MXo4tCQucvWpxbA11VMN4PwyGdLnuMHvBuAlkzSNhITtOrZK8MM7z4Y2Euc93Bn4wwND
-         uys174Ee9tc5pAIHnO+be4uJ8iHpZrNElcGZXeieezbQuAilCYCZd1hzUBewQIs5+489
-         E7fA==
+        bh=6leoAHiHC58kTdNzD41rzsHZue8MEp5AAZ57oKNPKQI=;
+        b=UbVmvE+5bhqJFw258+EkFZwO0AKJ8IHJzi4uChTtkuxc2nApZvbQhKyUw4cbnneBT8
+         MMSn9x1v27ckHKJBa8e49fjxd33NGFoVB4ooyCNjOub6wYfJMJHemAKjmIcQLiDqss9l
+         8Ww2+mTS2effUG+WhYZnr5SKtbDiBB5hhS4mf9+idWsX2Grb5g4zH2lQ+HPht3geF41C
+         ULiGZDx5z8sLAUW+KjoD/URsLS7oTxHyOAXpzJX6B13qAjoaQOlwEDEH0UBGFUdi1tCB
+         jeKWWbfjttMvNyxShfyDXXEah0CKqmAQGuoDKquYvPESn1W8PgaQXc2BB/XflOvIS6LO
+         mVWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790927261; x=1791532061;
+        d=1e100.net; s=20260707; t=1790927606; x=1791532406;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=koV6fU0fBroPWgISEdPaMuGQL0eL41QYrOdoT4EtC4U=;
-        b=xP5n6RpkQ8V2pU+5LFo+JDpUqjXXOiHHiqW/6Sp8BPAyd4JJkJ2J+Z8IlLFYE0LiX+
-         7K5u4RA17MpUJcQXCVlsZpKZ9mGCu8RVZ7zPulpWakbLoR1tzfTQ7zhF1Tvgy/z/2n9T
-         DjWfPGkBd7J1J51pKf5HQ5DNt/G89OOKdexxd6MKMqvQ7gQTtGvDqS+XieSuJvBD0vOB
-         nb82aQ6DcGlv0XGPzvHU5Wa29T/cUhQDjE2ScQk97awQCQ98tuPh0JqzT3ZXajQRbKtg
-         qwGEYlW1Qqwm45vEnS9Uom9SYaySXQjpwHhpjq5PkLKehOG0fXXGGPH8xbECp1nEzTrJ
-         EW8A==
-X-Forwarded-Encrypted: i=1; AKwUvBxK37rmQ6LRjPJj4OuWtLNCO8gmQejO/tpWYUJqoO6CEo9Oqjzc+92nmUablUxUcqhZPo6LCugVKQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mS2lGaRyY4+v2BNv+rZ2OTfWN3XXhbQe0wNZNE5NHZrmuEPw2P
-	n4lQ/A9N2Es7d77PLOQ0lJujZlYbHadiIakgb0bMHF4JdxE64x7gbiUeKn2nniRaBJdOK8UYvIW
-	RL97QngMa7QLwlaV6oIaLw9jjxPMbAjBZzJN84xG8j0lEduZ7qGuhGe08ND91yA==
-X-Gm-Gg: AYBFou2c38q/LihBM3UqynMcf82giI0NUV9yep6UG3AIl9hrYyj6z9GQ31sBQlY1t41
-	qCuWUaZNwWEqDMit9xW4rcr/GQCZzeaSuA1pyQGgkVh8sBOibu4NVMCiPLZ7pUuKAGAi9cUwqvC
-	+SCptfn1a2iMlkzShrHVpFjL6TzqfutU4WLS0KNFoL+AiZB/IcW+8U4S66VkbI/Qar8BTbUSigb
-	xnTmxnFc6hMKP4ega2+FsLafykjWdKqvyF3kIF6FO+KL5anMMFYLgRed5sK+K1M3Ly70p1vsTwN
-	BOpmPldsiVs87VCuEjrWJX/FcLi7yzsmKsJ+SaWM1iKCJVUjjuPm23K7gDQWWxT8fMTqCyXgiKn
-	H1CDkckAl6gCwVr3w9KP/
-X-Received: by 2002:a05:620a:1a05:b0:937:5298:7820 with SMTP id af79cd13be357-93ce7a9de10mr312520485a.8.1790927261364;
-        Fri, 02 Oct 2026 00:47:41 -0700 (PDT)
-X-Received: by 2002:a05:620a:1a05:b0:937:5298:7820 with SMTP id af79cd13be357-93ce7a9de10mr312517585a.8.1790927260779;
-        Fri, 02 Oct 2026 00:47:40 -0700 (PDT)
+        bh=6leoAHiHC58kTdNzD41rzsHZue8MEp5AAZ57oKNPKQI=;
+        b=SIoD/PCVdr6JqCxdBqnu07vNUgIKMf3vn25xcbrEapsg+evshoKJBKS/lVFbdHrcY6
+         W5UvF5b6x6ygnHqakkoXyH6oXrwY5R5Yzp/Z8awVtEp06+oAnFn4vP1JQzLP/fPfh6uV
+         X51rZ/oRfLu86FE4MZzmYB1Gvb1scKg6vRBz1Q6REFlYnF3pb330V+H/0rGQcvp+zR1T
+         zmjVLvUC3ZV+LujjfW26sPUTYhLE1SqDx4f+9FUCtSn2jhEduf/7eakELopJLaYOyEaF
+         kIeG3K1TxLna/BSXFloxmSQt9xCl8WntiPG9mQH4D9zcSUdqQ5p3FCUJo5g4H8VEE/M/
+         EiyQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzPtLZTWQUIpf/yakADAfKTOaMElat9fzFEOmgMiLIcdfHP5agIcRwWIhfv4yqGPnrglQAq1i7MBA==@vger.kernel.org
+X-Gm-Message-State: AFuF++mFZ7f3XLIwWygFPbB4SmePAO7IbCZRQbP37g0qinPQX1jyz5nf
+	izl5ZVuA+yunUadYl1vOYAyhQkMVf8FWiZDlrxtu0q6EUVHJifSuP3VWCXIjEiogLxZ/ZjmRPs3
+	Gp9GisVa+nx43lG00Sdpkwr6kvehUjrqDcwL8XSAa6dgfY+Ns6nkNUdS73ktumQ==
+X-Gm-Gg: AYBFou2QdnrqpWf16CxramIr8sdpapZ/Bxf2hYtB955CFZq0Aa0nflEp3Z9YesrzOmX
+	xv2mMpTTPNfQkLdf5fDrec5OsvqbiDForF7hkTmPvm+omHUBOqg8vRgToMbD6HBil1Ecvj8ri+9
+	XyK7lse5VokijuPtv+MqLyS45WIgKAQ1OOxzsFekNkZ9rm8Wwwvl49YiNnq/rYjX+drGeA9chUR
+	7cHzOusxj6MncnhnRUQ+VDcSDq6DZ/dVjIFeSfCqUxHTilYkqPhvOVEzfETB3+MxLvKwXOceJ48
+	8wECx33V9/OUxRWpsRTlkfXE7z4O8OnhCk35mVXuMkeY447lkKwyBAa7zlYFcMi+aV1ftyH6xbi
+	njWZJ4SJrzOCbBojqP9Hd
+X-Received: by 2002:a05:620a:a0c4:10b0:939:fc74:b6af with SMTP id af79cd13be357-93cf16b3fdbmr230241385a.11.1790927605475;
+        Fri, 02 Oct 2026 00:53:25 -0700 (PDT)
+X-Received: by 2002:a05:620a:a0c4:10b0:939:fc74:b6af with SMTP id af79cd13be357-93cf16b3fdbmr230237685a.11.1790927604917;
+        Fri, 02 Oct 2026 00:53:24 -0700 (PDT)
 Received: from mai.linaro.org ([2a05:6e02:1041:c10:f14c:b716:c104:4712])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a027741586sm59554805e9.14.2026.10.02.00.47.39
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b380fad53sm4411184f8f.19.2026.10.02.00.53.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Oct 2026 00:47:40 -0700 (PDT)
-Date: Fri, 2 Oct 2026 09:47:37 +0200
+        Fri, 02 Oct 2026 00:53:24 -0700 (PDT)
+Date: Fri, 2 Oct 2026 09:53:22 +0200
 From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
@@ -95,11 +95,11 @@ Cc: Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
         linux-kernel@vger.kernel.org, chrome-platform@lists.linux.dev,
         avaneesh.dwivedi@oss.qualcomm.com,
         Umang Chheda <umang.chheda@oss.qualcomm.com>
-Subject: Re: [PATCH v14 2/6] reboot: hw_protection_trigger: use standardized
- numeric shutdown/reboot reasons instead of strings
-Message-ID: <ar9e9-xnxO8rbJk0@mai.linaro.org>
-References: <20260921-pscrr-framework-v14-0-a16290003b7c@oss.qualcomm.com>
- <20260921-pscrr-framework-v14-2-a16290003b7c@oss.qualcomm.com>
+Subject: Re: [PATCH v15 3/6] reboot: add parsable tokens for power state
+ change reasons
+Message-ID: <ar9i8i-7a7ZnT5t8@mai.linaro.org>
+References: <20260924-pscrr-framework-v15-0-7af87107e0d3@oss.qualcomm.com>
+ <20260924-pscrr-framework-v15-3-7af87107e0d3@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -108,126 +108,54 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260921-pscrr-framework-v14-2-a16290003b7c@oss.qualcomm.com>
-X-Authority-Analysis: v=2.4 cv=fdc4WEQF c=1 sm=1 tr=0 ts=6abf619e cx=c_pps
+In-Reply-To: <20260924-pscrr-framework-v15-3-7af87107e0d3@oss.qualcomm.com>
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAyMDAzMSBTYWx0ZWRfXwijfmj2/mhi8
+ MXF17VcAGWijFREO/AZUr99RHSBM1epYF6RP/+rxN/mrNkn5WKCsWiTGdIwc/tmnC3LRJlNrksl
+ 1Yj4+q4Ogh4Wj4XNYlZnidwt++OtMC0=
+X-Proofpoint-ORIG-GUID: vcs5ElFtaMsVH5tW1XLtu-ZG5EuIJy3l
+X-Authority-Analysis: v=2.4 cv=b80ncdGx c=1 sm=1 tr=0 ts=6abf62f6 cx=c_pps
  a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
  a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=EUspDBNiAAAA:8
- a=pD7qEO7pPVLmAv5tJawA:9 a=CjuIK1q_8ugA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-GUID: HytbbxwxKsinU69HIi71N7QwV11hC7Hc
-X-Proofpoint-ORIG-GUID: HytbbxwxKsinU69HIi71N7QwV11hC7Hc
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAyMDAzMCBTYWx0ZWRfXzesRnZ2nSltD
- l1IF7Jx0VeIh/FHXF7GcD2BODnpomyrdCavFRWq+efzn/fgbQKDlcyBLbwmGkFXDD56kaHg9CLA
- tUqrLEK5JZxaZ6R3v5Cwni7Tan7pP1YsYU7BUz/kGc1NZWP2F2voH/mjlwQIJcf6Y/ElAacl/D/
- EV+u2a1UAVMuVzc06V6YndDgk0a9PopvY1MmD6KONTfdDxcwHxRBmg3/vS4pXhO4lVMgMgtUD1S
- Efdg/X5XrgcCVTVMqFDcqWyb8qDkM7FPe2huE06JD5eslDQhEA9sUFdNw0TfucIo6jXymlqvZEw
- OEre+xG9MB2Z5HJuhSRCfdmTqDb4FyWGSJD3zUhf7otuiIs9FOO8wNXtK83gkLGvyJBIlds6MH3
- BIXPp5c4IiyUIxMu4dlgopW1NNhvoRhEOeoO1953vrymTm1FxncbF4C3dD+AnwSpoV6i79lRlPq
- v7BkSFvwHRv31vwpU2Q==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAyMDAzMCBTYWx0ZWRfX+pk5LdAr525o
- EKXStrbVhfy9NpG9Ye3tA69beaWGQznaIg4g41DSBX5y5/tbVS8TGR89jn8dDoe7/PyO/cUosi+
- N6thHeORKcreT/vvGhgTX2tuFgew6zg=
+ a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22 a=EUspDBNiAAAA:8
+ a=pGLkceISAAAA:8 a=WjtHAGiS79jxuaiHvU8A:9 a=CjuIK1q_8ugA:10
+ a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-GUID: vcs5ElFtaMsVH5tW1XLtu-ZG5EuIJy3l
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAyMDAzMSBTYWx0ZWRfX8tP7l8STOMuC
+ K9LkOC2AvRUdDfgRNbXDcMVb5c+KhHhlu6ckIQO8eYbwRUSzjFgaOUoobEs1hFFlGZXH6jukotk
+ SZ5LG0P/kWPCUX2ZaPqYHqUAIzEu2Xx8Aqm0OIxFBMPI5+gnxltsxtMn76J+AlvNkDbjFhdmzCz
+ Zu3XASxIVhFlbdZ1C9U5MRrbBExHrrFAcBGwZEQ1VpMBGiqOXZ2DSmjbWBR0CwD0MC14pe9MljM
+ eZgqRinukVCVwpMuh5ReLxGHadvZJzHciwpy480oSb1CTkYjoOlLm48WMjJp1tsZppM11JJ2Sxa
+ I2vHdhRXOD4ICNxECMEXPCho/eXroHjijjBKitvTqonrkWlkpy9kkvrQg0ZiwQab4objTyqwZd/
+ dlNKfL2WRkInX+Vn/XAzKD/MNwqDHp5kJCFAH18BvbdKL1Lfk71cRqx8uufU4/Zz+DLerWH5zW6
+ eXACphuzeetEPA5Xp1w==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-02_02,2026-10-01_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0 impostorscore=0 bulkscore=0 clxscore=1015
- priorityscore=1501 suspectscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
+ suspectscore=0 priorityscore=1501 spamscore=0 bulkscore=0 adultscore=0
+ phishscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610020030
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610020031
 
-On Mon, Sep 21, 2026 at 11:14:17PM +0530, Faruque Ansari wrote:
+On Thu, Sep 24, 2026 at 12:38:44PM +0530, Faruque Ansari wrote:
+> psc_reason_to_str() returns human-readable labels that contain spaces
+> (e.g. "over temperature"). Those are fine for logs but unusable as
+> values in a space-separated sysfs list or as a write target.
+> 
+> Extend the single reason descriptor table with a stable, space-free
+> token next to the existing label, and add psc_reason_to_token() and
+> psc_reason_from_token() so consumers can emit and parse reasons without
+> inventing their own string table.
+> 
+> Co-developed-by: Oleksij Rempel <o.rempel@pengutronix.de>
+> Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+> Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+> Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+> 
+> Chnages v15
 
-[ ... ]
+Nit: ^^^
 
-> +/**
-> + * enum psc_reason - Enumerates reasons for power state changes.
-> + *
-> + * This enum defines various reasons why a system might transition into a
-> + * shutdown, reboot, or kexec state. While originally intended for hardware
-> + * protection events, `psc_reason` can be extended to track other system
-> + * transitions, such as controlled reboots triggered by software or
-> + * maintenance operations.
-> + *
-> + * The values in this enumeration provide structured and standardized
-> + * identifiers that replace free-form string descriptions. They are designed
-> + * to be stored efficiently, making them suitable for use in environments
-> + * with limited storage, such as battery-backed RTC registers, non-volatile
-> + * memory, or bootloader communication mechanisms.
-> + *
-> + * Importantly, the order of these values **must remain stable**, as
-> + * bootloaders, user-space tools, or post-mortem investigation utilities
-> + * may rely on their numerical representation for consistent behavior.
-> + *
-> + * @PSCR_UNKNOWN: Unknown or unspecified reason for the power state change.
-> + *	This value serves as a default when no explicit cause is recorded.
-> + *
-> + * @PSCR_UNDER_VOLTAGE: Shutdown or reboot triggered due to supply voltage
-> + *      dropping below a safe threshold. This helps prevent instability or
-> + *      corruption caused by insufficient power.
-> + *
-> + * @PSCR_OVER_CURRENT: System shutdown or reboot due to excessive current draw,
-> + *      which may indicate a short circuit, an overloaded power rail, or other
-> + *      hardware faults requiring immediate action.
-> + *
-> + * @PSCR_REGULATOR_FAILURE: A critical failure in a voltage regulator, causing
-> + *      improper power delivery. This may be due to internal component failure,
-> + *      transient conditions, or external load issues requiring mitigation.
-> + *
-> + * @PSCR_OVER_TEMPERATURE: System shutdown or reboot due to excessive thermal
-> + *	conditions. This attempts to prevent hardware damage when temperature
-> + *	sensors detect unsafe levels, often impacting CPUs, GPUs, or power
-> + *	components.
-> + *
-> + * @PSCR_EC_PANIC: Shutdown or reboot triggered by an Embedded Controller (EC)
-> + *	panic. The EC is a microcontroller responsible for low-level system
-> + *	management, including power sequencing, thermal control, and battery
-> + *	management. An EC panic may indicate critical firmware issues, power
-> + *	management errors, or an unrecoverable hardware fault requiring
-> + *	immediate response.
-> + *
-> + * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
-> + *	value is useful for range checking and potential future extensions
-> + *	while maintaining compatibility.
-> + */
-> +enum psc_reason {
-> +	PSCR_UNKNOWN,
-> +	PSCR_UNDER_VOLTAGE,
-> +	PSCR_OVER_CURRENT,
-> +	PSCR_REGULATOR_FAILURE,
-> +	PSCR_OVER_TEMPERATURE,
-> +	PSCR_EC_PANIC,
-> +
-> +	/* Number of reasons */
-> +	PSCR_REASON_COUNT,
-> +};
-> +
-> +#define PSCR_MAX_REASON	(PSCR_REASON_COUNT - 1)
-
-May be I missed it but where is PSCR_MAX_REASON used in this series?
-
-[ ... ]
-
-> +/**
-> + * psc_reason_to_str - Converts a power state change reason enum to a string.
-> + * @reason: The `psc_reason` enum value to be converted.
-> + *
-> + * This function provides a human-readable string representation of the power
-> + * state change reason, making it easier to interpret logs and debug messages.
-> + *
-> + * Return:
-> + * - A string corresponding to the given `psc_reason` value.
-> + * - `"Invalid"` if the value is not recognized.
-> + */
-> +const char *psc_reason_to_str(enum psc_reason reason)
-> +{
-> +	if (reason < 0 || reason >= PSCR_REASON_COUNT)
-> +		return "Invalid";
-
-s/Invalid/Invalid reason/
-
-[ ... ]
-
-With that fixed you can add:
+> - Add Reviewed-by tags from Matti Vaittinen.
 
 Reviewed-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
