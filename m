@@ -1,128 +1,117 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BC5A148989E;
-	Fri,  2 Oct 2026 11:03:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 005812165EA
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 12:03:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790939030; cv=none; b=hgjnLpxBvABU0t2bhhhJSPTz/gLpF5zRGWMfE1W0Mqj4di7HMl8GDP9O3Ghl+vpcScBAI2cjZaRC388W4ssFJv9G9yuVJ9gYmXsaH0xuQBo0+xhrFYDIw3qqeefoH4JxY3DMdaeUVfhG2De4r/2G0QEZAbwxBKJMLrOym3CGQ6M=
+	t=1790942585; cv=none; b=Jpt2MHKdymXJppBEFbQ8QS7ER6BqBII7I1ba14gJVJ+NFoRqi9UaZvXwMUFTO7/E7Kj97nDR00gm05t88ldh6L72vjjMtlQlliFxMkn3fj/LmKWIO72YdtWtoaJz/9+17PIOdk58+EmjTEtNy+QWetS0ovwa1qDhv+A3uE8ODto=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790939030; c=relaxed/simple;
-	bh=VveSnYZ4hUEZzYAVLJFm+ZlfCp0ty6xGzWYSlkf7ChU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WqqZuY6GnQZkKyNpfjfoQ67Lk1en+mNbOr2htgNrij1SnGzjtxVrXukdFYXkRgHDbzaw18w7Ru1oETXcmANl5ktmLsWou7FlZtsj7s6lfA8NSa6Z5/XpS45hZeBYNBPsoTS1EWKS7y497RtqhdCmDEIsjk+OfXJVUy2l7jOqBPY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YmhfkI/O; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1790942585; c=relaxed/simple;
+	bh=E3bFiL7YI5UMcoOM0utDxMNg5sAh4VkSM2tXjlG6tK0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=j0NOfdNkBI8sxxOyJPCJjEQX3fbrEWTEFz9VSTCMXUHn8kF9QcTJY4JKbi9R1oBEZ08hOzQCz/MnWkHUAd52BE/pIbWzeJ+UBkZ88RbfJu26ZeM6ygFnsXczNqNEsXz9hj577RwZWyr/kPJGm6MbmHqliQGfpQhnpPRBQ73TpFs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=QsGbilie; arc=none smtp.client-ip=74.125.225.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YmhfkI/O"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 39B252F;
-	Fri,  2 Oct 2026 04:03:40 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A0CB53F85F;
-	Fri,  2 Oct 2026 04:03:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790939023; bh=VveSnYZ4hUEZzYAVLJFm+ZlfCp0ty6xGzWYSlkf7ChU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YmhfkI/OD1wsPm44zabAN/XnWKsLo3drst6w219fnFnqdStfI9eJktiQ+vqKKoaSY
-	 oL42VlAgSxTo1LXxKgePhnKaFOxVVE7H2cQmdENnHIxOmISojXwENs6+QxLhtbKNe4
-	 XzxruEpHJUV6zbvvNBGAfCJIVBhCJmGs6P+7CS1I=
-Date: Fri, 2 Oct 2026 12:03:36 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Suzuki K Poulose <suzuki.poulose@arm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, maz@kernel.org,
-	will@kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, steven.price@arm.com,
-	aneesh.kumar@kernel.org, oupton@kernel.org, gshan@redhat.com,
-	joey.gouly@arm.com, tabba@google.com, yuzenghui@huawei.com,
-	linux-coco@lists.linux.dev, gankulkarni@os.amperecomputing.com,
-	sdonthineni@nvidia.com, alpergun@google.com, fj0570is@fujitsu.com,
-	WeiLin.Chang@arm.com, lpieralisi@kernel.org, enju.kohei@fujitsu.com,
-	sudeep.holla@arm.com, jonathan.cameron@oss.qualcomm.com,
-	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@kernel.org>
-Subject: Re: [PATCH v22 07/10] kernel: hibernate: Add an arch hook for
- preventing hiberation
-Message-ID: <ar-PiBQGye4_hQa6@arm.com>
-References: <20261002061507.1600269-1-suzuki.poulose@arm.com>
- <20261002061507.1600269-8-suzuki.poulose@arm.com>
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="QsGbilie"
+Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49ffbd83a92so51305785e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 05:03:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1790942582; x=1791547382; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=IYtYYZuAQMFfttbDXhmpcbK3WXYMY+yBwZAMhK11zKA=;
+        b=QsGbilieinsXZfyBUxi5BdqBz7EmekQaLI3KaCJb7FSjxl1YTq8hdVc10by+i+NTaX
+         cuYiryx2lFOXUhClKtVZdEfRg4WHknzXNlzNvdg7BlLjCzkuDqiiTr5jD1wbD23q9IPB
+         q4oD8rtpODewsM2Wm5GQ6xp5Q/99ZbUJyz/NvBazOBGkXP3U6pbq5AL3Ylq4xeXIbceq
+         OM0bS3F/Pv0J2OoNFhXGFoaUaV64VO/bnsNnBg8Bo3db6KhpAM59KQYvGQ4+L7qf+TeA
+         tq2of+NGYuOcM47sBB6FZIv2rJPeCe53LI9Ld6NSKPX+JTyP75VaTqqmJ799P4wNVuQn
+         v5Zw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790942582; x=1791547382;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=IYtYYZuAQMFfttbDXhmpcbK3WXYMY+yBwZAMhK11zKA=;
+        b=MqGNXpKelLvwrwJ12GHHytJB1184BGCdTeOK6jSIunIKN9rL9tm5q9PtR4e1z0QLQe
+         qWNbLqD9Zw65INcFzfSdgl01ifU+wwIFrgSEjpuMHwJfJWMfLt7puojTTHcFSGzWwyNy
+         NQego6nGroE9NzcX+rlbM+DPRWnJ854qBxhdVPlBmH5uJb/9dRXUyp3eg/WaRNljQ0XB
+         9rTbrRoKri4XKqVweVmmHArhf0jTA4NEh7jsgA7cb18Qm2z1F5UrOZ5CYQii3eGvEcw3
+         XJ9BmUQHbpccorsI9/Ux1nN4GObwOCOQqUVY9WIRlh+j76ZdsGBfZmmIsM54QH+Ne8Y8
+         dbjw==
+X-Gm-Message-State: AFq9FYKvBUDGBfBdH5UVTO7cBPJgzYnbXh9RPs+cgFL5FY+evJc8KXWi
+	J6HSGw86hthAm1zC2Xi+6L1NA/TsghalDnto7InrHaIjgaOluzWrO49Yx7GkvrxwZE0=
+X-Gm-Gg: AYBFou1ibZ4HqRFI0TJ18FzoqGNi8cdHgSszjK3JVieQrf7egG9rJ6IE1B/ZeVxZ7nR
+	I0f0OmHfxymuU+qUJYB0hbOjcI9PJfG1+j+bI0QT9I28zqyASBiL8h5dxQjfXlkGIikAmB92p8c
+	cuJVBsWXL232w3K8wymo/xaudKb1catEmJQX7suiB+NsTsFINID00fcpXzdTtRDRr8XB6v8/W/b
+	4vvzUYubct2qYosgl9xaG9GEvDsn4VAJU1hBsxV59z9PVzkCGc/epZhyWWZIdV7U3x/GTFd+YTt
+	pQ7BEdllutyNq7DYi9kXUTVWBxiMNhytvmJaYxbzcPNQbTnFtiHi25W2DA5N5XkifFZfB+JvBN2
+	yMuL7x/ipbe7hmfLKMGQjDaWus09LiBv/ighVaOG0I2n2fe+Hk0ZLbH5uOOfISKHNJy0wQM/24T
+	NNyhBuj/Ic1od0gaVnp1ITdHPflfJXjg2dVGdokmgLnDR6ZitBXnz2lMhmfay4gnElktJ62Vg56
+	YBRyrEE23k6HM8t
+X-Received: by 2002:a05:6000:25c3:b0:48b:722:1c6d with SMTP id ffacd0b85a97d-48c440e1b11mr1660612f8f.38.1790942582097;
+        Fri, 02 Oct 2026 05:03:02 -0700 (PDT)
+Received: from alchark-surface.localdomain ([5.194.93.183])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b380f0613sm5845213f8f.13.2026.10.02.05.02.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 02 Oct 2026 05:03:01 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH 0/2] power: supply: bq27xxx: Add TI BQ28Z620 battery gauge
+Date: Fri, 02 Oct 2026 16:02:53 +0400
+Message-Id: <20261002-bq28z620-v1-0-bdcc10d42519@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261002061507.1600269-8-suzuki.poulose@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzNDAwMj3aRCI4sqMyMDXVNjEzOLJHMzc4MkMyWg8oKi1LTMCrBR0bEQfnF
+ pUlZqcglIv1JtLQArnrFLbAAAAA==
+X-Change-ID: 20261002-bq28z620-53468b7670b6
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+ "Andrew F. Davis" <afd@ti.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1023; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=E3bFiL7YI5UMcoOM0utDxMNg5sAh4VkSM2tXjlG6tK0=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWTtn1uUbfn02o70kxbxwtE/jkxZfDObs71avHxG37dPz
+ NfurPm9rmMiC4MYF4OlmCLL3G9LbKca8c3a5eHxFWYOKxPIEGmRBgYgYGHgy03MKzXSMdIz1TbU
+ MzTSMdYxYuDiFICpnmrD8Iv5316HNxV+C2z/texTtNGfy8+7bN/s7eyfrmdKasrFh9kzMmzd9Xi
+ qxpnN29bru5975fivac7tG3dW6G4IE9tz4sq2x8YsAA==
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-On Fri, Oct 02, 2026 at 07:15:03AM +0100, Suzuki K Poulose wrote:
-> Add a hook to allow arch code disable hibernation. On arm64, with an RMM active,
-> there could be pages that are delegated to the "Realm" security state. Any
-> access to them are fatal (e.g., hibernate save image or restoring an image to
-> a delegated page). pKVM host also has its restrictions on enabling hibernation.
-> 
-> Add a weak arch hook to let the architectures have a say.
-> 
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Pavel Machek <pavel@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Sudeep Holla <sudeep.holla@kernel.org>
-> Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
-> Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+Add BQ28Z620, which is very similar to the already supported BQ28Z610 but
+drops some registers and shifts the data flash layout as a result. This
+means they are not strictly compatible, even though the existing Linux
+driver for BQ28Z610 can drive the BQ28Z620 with no changes, due to it only
+implementing the (unchanged) standard command set.
 
-Nit: the subject prefix for kernel/power/ usually is
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+Alexey Charkov (2):
+      dt-bindings: power: supply: bq27xxx: add BQ28Z620
+      power: supply: bq27xxx: add support for BQ28Z620
 
-	PM: hibernate: ....
+ Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 2 ++
+ drivers/power/supply/bq27xxx_battery.c                      | 6 ++++++
+ drivers/power/supply/bq27xxx_battery_i2c.c                  | 2 ++
+ include/linux/power/bq27xxx_battery.h                       | 1 +
+ 4 files changed, 11 insertions(+)
+---
+base-commit: 9f24d789f03b22941b905ded43cb5ff8eea9ce62
+change-id: 20261002-bq28z620-53468b7670b6
 
-I can fix it locally, no need to respin (and probably the wrap the long
-lines in the commit log, we tend to keep them shorter).
+Best regards,
+--  
+Alexey Charkov <alchark@flipper.net>
 
-> ---
->  include/linux/suspend.h  | 1 +
->  kernel/power/hibernate.c | 8 +++++++-
->  2 files changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index b02876f1ae38a..a3815027773c5 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -401,6 +401,7 @@ int hibernate_quiet_exec(int (*func)(void *data), void *data);
->  int hibernate_resume_nonboot_cpu_disable(void);
->  int arch_hibernation_header_save(void *addr, unsigned int max_size);
->  int arch_hibernation_header_restore(void *addr);
-> +bool arch_hibernation_available(void);
->  
->  #else /* CONFIG_HIBERNATION */
->  static inline void register_nosave_region(unsigned long b, unsigned long e) {}
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index d2479c69d71a4..9d9d53828542f 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -106,11 +106,17 @@ bool hibernation_in_progress(void)
->  	return !atomic_read(&hibernate_atomic);
->  }
->  
-> +__weak bool arch_hibernation_available(void)
-> +{
-> +	return true;
-> +}
-> +
->  bool hibernation_available(void)
->  {
->  	return nohibernate == 0 &&
->  		!security_locked_down(LOCKDOWN_HIBERNATION) &&
-> -		!secretmem_active() && !cxl_mem_active();
-> +		!secretmem_active() && !cxl_mem_active() &&
-> +		arch_hibernation_available();
-
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-
-Raphael, any objection to this patch going in through the arm64 tree? It
-matches the style of other __weak functions in this file.
-
-Thanks.
-
--- 
-Catalin
