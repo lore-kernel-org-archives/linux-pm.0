@@ -1,60 +1,60 @@
-Received: from mail-dl2-f40.google.com (mail-dl2-f40.google.com [74.125.229.168])
+Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04811497B64
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 23:07:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.168
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2E5247D95C
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 23:07:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790982449; cv=none; b=d73cDqjxVvMG2498xEn3kJ9bHsvPvxV8Mpooq3pael+bFL+iFiil3Tv9ad6AA8hGdZr1XZA74oQmla8nDG7ul98gKGlD1Hs6GeewykXKwTMasg5aAFGG82TOXLojGkyz6I+Tpcd7Y4ko53dv5lRAlGrwIFrIbOubfiWuT5f+fFY=
+	t=1790982449; cv=none; b=sX1dgIaEK4Sbhc49HgSKgbGSTiqCIB0vrKdS6PcOFZWyy6Um4n/qRg8W4NdhZpZG5kBIj8Ibniln2YL1o2V8WMkbsL7eWWVMMN1ZrA6ZFGUd3aB/DtQg0bhcrjlG0wp4wOW4xV8Jaf/OhYYVteRcHNdB+gwM1VmXu40DohCn324=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1790982449; c=relaxed/simple;
-	bh=ojqUoeadyLtRgHpE4QSBZ8jr4q1a9kCTFa/MCi0AEBc=;
+	bh=NXfG8BYbOogjZEXW8d5prtXBSKsGjWq60veGgTm2Dvs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QiGD5OjEX1V3wHmHH8rDsaMoBxiApXZ1ZrqEOqKfE+x4l9CYC7wzZMwxv+6Hg3EW3vuj3PxNuRtfiD3PPtkyP4RuUIECJPBzoZE9rHLSNfzxUhxD5sIUrw2V5PijhcPMeNKWKtf5uQY8C+HkeOLR6mAHlr8PMIDaFgZdN02jjYs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=k4OAZFjr; arc=none smtp.client-ip=74.125.229.168
+	 MIME-Version; b=qa+WsYbPRbhoAqgng8yLZwGK9TnPz/pq0G7WEG5U7OlYsvg+7KnBnUGxNCLdqJWnpwSHzOBbZX7iqElGB4aqWNu4F6tQhNKlSMc5wqpVnr21B3FrhnAREXAX8TCmNLQc4TZpJvN/zthmxc8CTbVMkf1S6UloIz4LZ6CMXExTxbM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=LmACTRqO; arc=none smtp.client-ip=74.125.82.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="k4OAZFjr"
-Received: by mail-dl2-f40.google.com with SMTP id a92af1059eb24-14e1fe551c3so36011c88.0
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 16:07:26 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="LmACTRqO"
+Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-3282db206d3so345291eec.0
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 16:07:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790982446; x=1791587246; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1790982443; x=1791587243; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=LXSwX5jjkSLNliyM1NMwqcwfmmI5JkAaKqy5NKFRsCg=;
-        b=k4OAZFjrT8ZpBcwWcTygc65JkvsUGDw0/mjw3fJ73pLkJEbDv+e4QnPe9yKz64yzze
-         XmEHx7UOnjKccDCjvOne8TdlNazx2DnJ8GpANDhTW+2Oc5Onoevd9UHCiXDx14c4OPoQ
-         gI5AEFDU5sWqiZastOXddjLTbZU23cgthDKKg=
+        bh=Cj31ExEyFV3PoRNZbMP+vqda3AvxSrb2+xWS+DVF+S4=;
+        b=LmACTRqOrDbKZhY2o8Hlq2GzDweKDH5JvnYjuL110WhpHEljglVg8HKdFETGH2AieH
+         nqf6UmXnleKUSD9lo8jWyovQ+mRSkeK6zr9PrfFMEOk7A2Xqvm7zHT8jCo/ENPHU3uEO
+         fhYunj0xtl/cUyKcqlk62one8V5N0elEy/xfY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790982446; x=1791587246;
+        d=1e100.net; s=20260707; t=1790982443; x=1791587243;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=LXSwX5jjkSLNliyM1NMwqcwfmmI5JkAaKqy5NKFRsCg=;
-        b=a5caqLbXiknrWH8sHuNJXhMgvwmgHuuwjUq9QFEhhwPYvFOyyv60MM3xXBdi1BdQRU
-         Qb53Gjn3vDTXaMZ7i9iXD3PlCQKQXrYF1C3QCnZuU7XQCjgZPFUxllilt3BBmHrvYM1J
-         f+7jcCMhfQKkhQFleR1dMn2Q7EnFYEa3dqAFqMUSkujt9W6eImx5vtoRk8uI6Te/WczS
-         sq1QxinAQpXUKxLuN8XJDHzTbGe+8wJwZjTpriKanYL0DkTDuzSzQW4HT1KtMUmdgANq
-         HvMxe+9XayfNGMF1eZVrWN3mx1ovBKPd315ZAbF7ODKncGDEUgvS2vrYygrAMSlL9r5+
-         mf5g==
-X-Gm-Message-State: AFuF++kcy6mEqc5XIupusksqwtJ/c1sTiYvVpf2Zaw+ESaLLZ+q3Kirk
-	9AxJTVBgPtGct80oxgVWz3MWr2iH2yuYiXLMe3Qi9xiafqXIWSeaLmJIlxq2iKtiaw==
-X-Gm-Gg: AYBFou2pXET3sVCNBRXnxo4CXqIKn9yEZKxXw8CT8vUnlKpcpgyyIHlAl1pNAGmm9IN
-	izH4T+wEDXPbb52dO+FtvwFQqv64aIge2M0AAOwLgNfk+lyRe+WIsXRR0tHz8Q5r8ezeyMFTgmZ
-	5DGg84xN0nQVxGr85RiuuvU3TufHORu5rb+HSwBn5WxE7Aou0KWdV4gVYeqEzGbzwjycuD+kg0h
-	WHddL9WLvdmOY6p4ZVFa7FIVjd04mrKbKV54OK0KYbDVsexKzjgt4iwsi5DLto+pMum7p57MQJG
-	2qg13kxkOI5EXpFfDJteHynbXHvzcXSPfvIUbQ7NK0Vp+MNGn7e0RABHziB9ft0kUGV4E7GNr5a
-	6TuzkW26Ijhx0L0WpwxflbrSoniZDCj5FKvgxIOtFoV7Omomnq1txZjhp1KAZ8HyzuoI9f5mMQR
-	BnZ+O6o7Le3B1rDXcOrImgVS25HngYUiRky/fBbDNHUfLB+OmXmggEvDFprZQmmqQFKeL5FQhUu
-	JKeOyolownmHcYy9dfF4c9YUFMiCMmRduVvrxvvcjCQSiMN
-X-Received: by 2002:a05:701b:450b:10b0:148:cfd2:1e4 with SMTP id a92af1059eb24-14f7e8aad17mr4136592c88.16.1790982445807;
-        Fri, 02 Oct 2026 16:07:25 -0700 (PDT)
+        bh=Cj31ExEyFV3PoRNZbMP+vqda3AvxSrb2+xWS+DVF+S4=;
+        b=fY/LTIDPMYIJOqKhwIMioHmcbwVdsi/YereRvIF1xSsYtmu6SRqJJkV58QT9b50mN0
+         r/xrFZfyTdDMVO8NsCQjCLkawAjkYCUEIfU2XHTXt3yD7Rjjz7ebxDJOff4iyv29e4GI
+         6/TabEcvGfIbUIY4L+eAL5+Zo3z7BqHQ5aFXaVtZNhJrGUSILlD6NXr4f6YnRzqDzcyB
+         ANTAC1TglaGal9IWQ927vexsc6ju9tnMa+Qz24HSxaY5xtNnbZf15AdLwDQsHXUXr1o6
+         liKWa3nsLljWu+QeTD6nYWtOJh3YTIgmXKYRKEzZIblngWoBXbXR/QWVupmk1dPFUF0H
+         2X0Q==
+X-Gm-Message-State: AFq9FYIL57nuCw5WfP0oDKQ12qvlnF6VFassXWwXuS3BEZ70DBgiSGfP
+	f6H5rYetoLuq3WzBUvhAVTKW7njqfyTAXcx4KhDztM4zmhd5vQYr8ug60Z/1S9wGZg==
+X-Gm-Gg: AYBFou3ZxN3GbQT6YBBQbu5u0nA4iXuReArPJatFDaL+Oz+F1a8hkFDaW5xxMJtoep/
+	hEGZXuFnkeI1y8iXhNQco8Is8RMaoII2A6EARN7WJhmbfs/rQTF4/aHCnnJJYu1NJ469xHsYo7q
+	gMpBc7HHI7/Q31+t1iKusarjhrZ+k0FYjjMzTg+dBA5wJZnyxmcah8q7ccePlZnMq69BLngkw8+
+	9kAkW8U8e7PKGoLH5RTeNDwasGgxwSOBiHCZIIxAV04lS03tZuYgEaMF4fbpiz4XXnsg8h2gEgL
+	pJtyHiuTkFxQCEZ+uWddeYdz2UZMGzN+ebSrn4L7+JKQvy9OLsmq3MiDvJwZfO0Y3rSOnCkM2NP
+	KT+y5ZBCA31g0uRgCbgFzw74nXzGTYbAxDKilyWgcfzyVFBPidSbU8S+AgCpWYNL+Kl8Ymu4v68
+	J/AXP4Q9B/MjdsZPxtFYppNY2AMVA+02kT+ricN+s+KFn60NSHlbYAZJi4KOtCcj5y7saSKWP8S
+	pNPF06CHsFwn/YJVDx/y2ySOrQinVQO3ySEqg==
+X-Received: by 2002:a05:693c:41c7:10b0:351:13b4:9c59 with SMTP id 5a478bee46e88-35113b49cb0mr571453eec.2.1790982443465;
+        Fri, 02 Oct 2026 16:07:23 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:b0dc:e72e:e96b:3323])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-151f7bd2884sm704829c88.0.2026.10.02.16.07.24
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34f0672c2d1sm12058791eec.4.2026.10.02.16.07.22
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 02 Oct 2026 16:07:25 -0700 (PDT)
+        Fri, 02 Oct 2026 16:07:22 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-pm@vger.kernel.org,
@@ -70,9 +70,9 @@ Cc: linux-pm@vger.kernel.org,
 	Fabrice Gasnier <fabrice.gasnier@st.com>,
 	linux-arm-kernel@lists.infradead.org,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 3/5] PM: runtime: Propagate last_busy from dependent to dependency
-Date: Fri,  2 Oct 2026 16:03:07 -0700
-Message-ID: <20261002160309.3.I40c0bc917fa0b13111251844e9a54feb1d9cd7d2@changeid>
+Subject: [PATCH 2/5] PM: runtime: Convert last_busy to atomic64_t
+Date: Fri,  2 Oct 2026 16:03:06 -0700
+Message-ID: <20261002160309.2.I998d26c0d635b80496ad12daa33b8de602030eb6@changeid>
 X-Mailer: git-send-email 2.56.0.rc1.315.gc6ed9934b7-goog
 In-Reply-To: <20261002230714.507921-1-briannorris@chromium.org>
 References: <20261002230714.507921-1-briannorris@chromium.org>
@@ -84,96 +84,80 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When a child device suspends, it does not update the last_busy timestamp
-for its parent. If that parent configured autosuspend and didn't
-otherwise maintain its last_busy timestamp, it may now be immediately
-eligible to suspend. This is probably not expected -- the parent should
-wait for its autosuspend delay before suspending.
+I want to use the atomic64 compare/exchange helpers. There are no
+similar 32-bit-portable helpers for non-atomic64_t.
 
-The effect of this behavior is that a parent device may suspend sooner
-than its autosuspend delay, simply because its usage was accounted by
-its children, and not by direct references to the parent device.
-
-This was noticed in several cases, and some have implemented
-workarounds, such as in commit c537d3457542 ("iio: adc: stm32-adc: fix
-runtime autosuspend delay when slow polling"). At the same time, Ulf
-suggested these problems "should be solved in the runtime PM core".
-
-Instead of working around the problem in drivers, we propagate last_busy
-timestamps from a dependent device to its dependencies any time it may
-allow a dependency to suspend -- i.e., when releasing a refcount for its
-parent or suppliers. We take care to only propagate the timestamp if it
-is larger than the existing busy timestamp.
-
-Note that this works best if the dependent device is using autosuspend
-(and therefore updates its last_busy timestamps appropriately), but even
-for a non-autosuspend child, this is still somewhat useful --
-non-autosuspend devices still automatically update their last_busy every
-time they resume.
-
-Link: https://lore.kernel.org/all/CAPDyKFp=KTf8=zGBSzPYqhjnZpY8xwvjCeM1e-WTKT1QLSxaDA@mail.gmail.com/
-Cc: Ulf Hansson <ulfh@kernel.org>
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
+This conflicts with some pending work I have here:
 
- drivers/base/power/runtime.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+  [PATCH 2/5] PM: runtime: Avoid racy clock checks for autosuspend-retry
+  https://lore.kernel.org/all/20260929114714.2.Id0a3276d23d30e0b5fd4d6dca730be0f9d8fe018@changeid/
+
+It shouldn't be much trouble for me to rework one of the two, pending
+feedback on whether my approaches are acceptable.
+
+ drivers/base/power/runtime.c | 4 +++-
+ include/linux/pm.h           | 3 ++-
+ include/linux/pm_runtime.h   | 2 +-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 9eed1f79429d..ee7253d154e2 100644
+index e70726b499e7..9eed1f79429d 100644
 --- a/drivers/base/power/runtime.c
 +++ b/drivers/base/power/runtime.c
-@@ -318,6 +318,21 @@ static int rpm_get_suppliers(struct device *dev)
- 	return 0;
+@@ -5,6 +5,8 @@
+  * Copyright (c) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+  * Copyright (C) 2010 Alan Stern <stern@rowland.harvard.edu>
+  */
++
++#include <linux/atomic.h>
+ #include <linux/sched/mm.h>
+ #include <linux/ktime.h>
+ #include <linux/hrtimer.h>
+@@ -186,7 +188,7 @@ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+ 	if (autosuspend_delay < 0)
+ 		return 0;
+ 
+-	expires  = READ_ONCE(dev->power.last_busy);
++	expires = atomic64_read(&dev->power.last_busy);
+ 	expires += (u64)autosuspend_delay * NSEC_PER_MSEC;
+ 	if (expires > ktime_get_mono_fast_ns())
+ 		return expires;	/* Expires in the future */
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index ef3f1310e749..531e46ff878e 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -8,6 +8,7 @@
+ #ifndef _LINUX_PM_H
+ #define _LINUX_PM_H
+ 
++#include <linux/atomic.h>
+ #include <linux/completion.h>
+ #include <linux/export.h>
+ #include <linux/hrtimer_types.h>
+@@ -812,7 +813,7 @@ struct dev_pm_info {
+ 	enum rpm_status		last_status;
+ 	int			runtime_error;
+ 	int			autosuspend_delay;
+-	u64			last_busy;
++	atomic64_t		last_busy;
+ 	u64			active_time;
+ 	u64			suspended_time;
+ 	u64			accounting_timestamp;
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 322e3b17f987..289fa72c0af7 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -242,7 +242,7 @@ static inline bool pm_runtime_has_no_callbacks(struct device *dev)
+  */
+ static inline void pm_runtime_mark_last_busy(struct device *dev)
+ {
+-	WRITE_ONCE(dev->power.last_busy, ktime_get_mono_fast_ns());
++	atomic64_set(&dev->power.last_busy, ktime_get_mono_fast_ns());
  }
  
-+/*
-+ * Propagate last_busy timestamp from one device to another. This can, for
-+ * example, prevent overactive suspend when a dependency's usage is primarily
-+ * driven by one of its dependents.
-+ */
-+static void rpm_propagate_last_busy(struct device *dev, struct device *target)
-+{
-+	s64 busy = atomic64_read(&dev->power.last_busy);
-+	s64 target_busy = atomic64_read(&target->power.last_busy);
-+
-+	while (target_busy < busy)
-+		if (atomic64_try_cmpxchg(&target->power.last_busy, &target_busy, busy))
-+			return;
-+}
-+
  /**
-  * pm_runtime_release_supplier - Drop references to device link's supplier.
-  * @link: Target device link.
-@@ -348,6 +363,7 @@ static void __rpm_put_suppliers(struct device *dev, bool try_to_suspend)
- 		if (!device_link_test(link, DL_FLAG_PM_RUNTIME))
- 			continue;
- 
-+		rpm_propagate_last_busy(dev, link->supplier);
- 		pm_runtime_release_supplier(link);
- 		if (try_to_suspend)
- 			pm_request_idle(link->supplier);
-@@ -710,6 +726,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 
- 	if (dev->parent) {
- 		parent = dev->parent;
-+		if (!parent->power.ignore_children)
-+			rpm_propagate_last_busy(dev, parent);
- 		atomic_add_unless(&parent->power.child_count, -1, 0);
- 	}
- 	wake_up_all(&dev->power.wait_queue);
-@@ -1369,8 +1387,10 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
- 		goto out_set;
- 
- 	if (status == RPM_SUSPENDED) {
--		atomic_add_unless(&parent->power.child_count, -1, 0);
- 		notify_parent = !parent->power.ignore_children;
-+		if (notify_parent)
-+			rpm_propagate_last_busy(dev, parent);
-+		atomic_add_unless(&parent->power.child_count, -1, 0);
- 	} else {
- 		spin_lock_nested(&parent->power.lock, SINGLE_DEPTH_NESTING);
- 
 -- 
 2.56.0.rc1.315.gc6ed9934b7-goog
 
