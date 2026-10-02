@@ -1,66 +1,67 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+Received: from mail-wr2-f35.google.com (mail-wr2-f35.google.com [74.125.225.99])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 005812165EA
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 12:03:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50BCF495029
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 12:03:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.99
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790942585; cv=none; b=Jpt2MHKdymXJppBEFbQ8QS7ER6BqBII7I1ba14gJVJ+NFoRqi9UaZvXwMUFTO7/E7Kj97nDR00gm05t88ldh6L72vjjMtlQlliFxMkn3fj/LmKWIO72YdtWtoaJz/9+17PIOdk58+EmjTEtNy+QWetS0ovwa1qDhv+A3uE8ODto=
+	t=1790942588; cv=none; b=d/LeciHzsWHFRJHLUiveItFf/PKB5uhEypTQZII2kNax7n6isVexzGSplJB2eB8FNLvtlxqkeapxQa9kcrEiVb+hnfMo3h9s5lDsfNEKS0BtpD8kZfbeOxsMWzy3y1+3fMItseiI2fOrmLUiwMPBA+b3zBf4ih2Qquvh2Jw/roU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790942585; c=relaxed/simple;
-	bh=E3bFiL7YI5UMcoOM0utDxMNg5sAh4VkSM2tXjlG6tK0=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=j0NOfdNkBI8sxxOyJPCJjEQX3fbrEWTEFz9VSTCMXUHn8kF9QcTJY4JKbi9R1oBEZ08hOzQCz/MnWkHUAd52BE/pIbWzeJ+UBkZ88RbfJu26ZeM6ygFnsXczNqNEsXz9hj577RwZWyr/kPJGm6MbmHqliQGfpQhnpPRBQ73TpFs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=QsGbilie; arc=none smtp.client-ip=74.125.225.141
+	s=arc-20240116; t=1790942588; c=relaxed/simple;
+	bh=ozSoPu+ixvTWlKFKxDp+ARaoG4Sjp3bKLj33/MrvA5g=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=rC49ivJ2l3Ym0jxJerQihmujzZCOlr0bDah3y+uWdIdsEih7aC01DlSInCrjcbVuZsoRhG0tg8EWNXmtkJklHs1yDjLGOZO4Y1zxb6iJv102nDyTUPxd9B7tN4tMSFTrYCOCzT5yXdvMqOgrwoffmxoMQMeepLYaclfiD/GqJ5c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=qdv/hkPp; arc=none smtp.client-ip=74.125.225.99
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="QsGbilie"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49ffbd83a92so51305785e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 05:03:03 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="qdv/hkPp"
+Received: by mail-wr2-f35.google.com with SMTP id ffacd0b85a97d-48b0f4efe31so1007477f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 05:03:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1790942582; x=1791547382; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=IYtYYZuAQMFfttbDXhmpcbK3WXYMY+yBwZAMhK11zKA=;
-        b=QsGbilieinsXZfyBUxi5BdqBz7EmekQaLI3KaCJb7FSjxl1YTq8hdVc10by+i+NTaX
-         cuYiryx2lFOXUhClKtVZdEfRg4WHknzXNlzNvdg7BlLjCzkuDqiiTr5jD1wbD23q9IPB
-         q4oD8rtpODewsM2Wm5GQ6xp5Q/99ZbUJyz/NvBazOBGkXP3U6pbq5AL3Ylq4xeXIbceq
-         OM0bS3F/Pv0J2OoNFhXGFoaUaV64VO/bnsNnBg8Bo3db6KhpAM59KQYvGQ4+L7qf+TeA
-         tq2of+NGYuOcM47sBB6FZIv2rJPeCe53LI9Ld6NSKPX+JTyP75VaTqqmJ799P4wNVuQn
-         v5Zw==
+        d=flipper.net; s=google; t=1790942584; x=1791547384; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=wZxA1Fz7Nhq5BAB7+pKOMZYxJVrz5ocMRvUjSVpnaqQ=;
+        b=qdv/hkPpeGWAeOea1X9b+3YicETfkFAlGNhL1wRjyKUriHagraii1N7n/yJKliil3M
+         VRaqnuHwyNpkdJWUfTamq5b4gs7vGn+Nb66mnlZZoRIE7hJH4uhF6kfWi3Z9W3H6Zfm/
+         6f9euuaNfXpfILQg6Nxncbc1AKRNpp/3d2iVfjQu3O2YeKgCXlfcaTf6e8bQhKKA+DdL
+         EIRRevLpPBhcT681YFqcCxfgWQm6Xuqm1zuTrn1bb0Jx9ryC6j4JTsft3hrUzI5b/agz
+         sdJOnXKp0REphy5DwjGAESsbyQ/BPSMvEME2JEyQcQL+K72d4o+XWbuVgy8FNCzB9hcG
+         pMcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790942582; x=1791547382;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=IYtYYZuAQMFfttbDXhmpcbK3WXYMY+yBwZAMhK11zKA=;
-        b=MqGNXpKelLvwrwJ12GHHytJB1184BGCdTeOK6jSIunIKN9rL9tm5q9PtR4e1z0QLQe
-         qWNbLqD9Zw65INcFzfSdgl01ifU+wwIFrgSEjpuMHwJfJWMfLt7puojTTHcFSGzWwyNy
-         NQego6nGroE9NzcX+rlbM+DPRWnJ854qBxhdVPlBmH5uJb/9dRXUyp3eg/WaRNljQ0XB
-         9rTbrRoKri4XKqVweVmmHArhf0jTA4NEh7jsgA7cb18Qm2z1F5UrOZ5CYQii3eGvEcw3
-         XJ9BmUQHbpccorsI9/Ux1nN4GObwOCOQqUVY9WIRlh+j76ZdsGBfZmmIsM54QH+Ne8Y8
-         dbjw==
-X-Gm-Message-State: AFq9FYKvBUDGBfBdH5UVTO7cBPJgzYnbXh9RPs+cgFL5FY+evJc8KXWi
-	J6HSGw86hthAm1zC2Xi+6L1NA/TsghalDnto7InrHaIjgaOluzWrO49Yx7GkvrxwZE0=
-X-Gm-Gg: AYBFou1ibZ4HqRFI0TJ18FzoqGNi8cdHgSszjK3JVieQrf7egG9rJ6IE1B/ZeVxZ7nR
-	I0f0OmHfxymuU+qUJYB0hbOjcI9PJfG1+j+bI0QT9I28zqyASBiL8h5dxQjfXlkGIikAmB92p8c
-	cuJVBsWXL232w3K8wymo/xaudKb1catEmJQX7suiB+NsTsFINID00fcpXzdTtRDRr8XB6v8/W/b
-	4vvzUYubct2qYosgl9xaG9GEvDsn4VAJU1hBsxV59z9PVzkCGc/epZhyWWZIdV7U3x/GTFd+YTt
-	pQ7BEdllutyNq7DYi9kXUTVWBxiMNhytvmJaYxbzcPNQbTnFtiHi25W2DA5N5XkifFZfB+JvBN2
-	yMuL7x/ipbe7hmfLKMGQjDaWus09LiBv/ighVaOG0I2n2fe+Hk0ZLbH5uOOfISKHNJy0wQM/24T
-	NNyhBuj/Ic1od0gaVnp1ITdHPflfJXjg2dVGdokmgLnDR6ZitBXnz2lMhmfay4gnElktJ62Vg56
-	YBRyrEE23k6HM8t
-X-Received: by 2002:a05:6000:25c3:b0:48b:722:1c6d with SMTP id ffacd0b85a97d-48c440e1b11mr1660612f8f.38.1790942582097;
-        Fri, 02 Oct 2026 05:03:02 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790942584; x=1791547384;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=wZxA1Fz7Nhq5BAB7+pKOMZYxJVrz5ocMRvUjSVpnaqQ=;
+        b=IW899tVku3CADalANs4n/pLH/k3mOH3xuQUdbKSfcp3x92vhZNTjYBZouWsPP3vLoC
+         0SOeycEfAk2EfND+dx7O7M08nYoSfWfys/42nUxXqOQpJqZvPyvsQqDT49ev6+VJJGnq
+         kIeVuNpdC/n3h0+TVENZgYhOt/Texf05szAZU+iujOe22S4WkLwBQu8wsRhwpbaTJ3C1
+         5ayb4a06XTBwhMT2tYpzTkAiqvotZToELXxvAXx2aRcDj7v1aRdPEHrAIPedxWrmU0Wv
+         PPjyaQ1ghBJXiBmAQaYViwzu78uKr8z7SAPfQ7HEoqShAR4ZbsQSeYw6KnnQVFr4l1xg
+         kupw==
+X-Gm-Message-State: AFq9FYLy16gyZMKDuOOOcSzzbxWT0kGe3+A1qfF/i0WxhDDDkvZAiYpA
+	46Cp13EgFsNWw4ypB6oDrgCKatHRZiEAHVc7FDLsWJVxE+hk/PoENISkzTczNlecAtY=
+X-Gm-Gg: AYBFou2AlFPv3EWPh89SOOGdo6bbJVormtwY0jl55UGOQwqhTdxtti2hmqQAZaSd/gr
+	Lx0FrjJThHR0Dnl7iKK4wBJe9epc651NX3jzyNUXcvFJ5/M0zV83lcrGezh6kWBNf2rHt7JHdDM
+	RkI2Jg70Jtp7yN60FVsAwRO5tD96Xs+/pgQEP7+hHNS1qKcb14XWqoYElwyDAfGlekWfM8k/EtN
+	WxXRxYcmD78R4s6ZZCyNVA/Zb83xr5htxbNFIUSxU1JhbDL1biT4p87QMsH1Wz4fgusMMj26XBL
+	2Povj7qoG0rOHDPH8SCABxTzzZBe7C1U+uD4eK0GCwXYIr+BDU9JmW/CImqyCFlGyEXoKmf0hNm
+	V1DFv97rbR3jcjP5ohl7BzblXslCPINEj/zjumqEOnlAiN/37IkK6lJTcxMB2YLRkJPUyuZYkdS
+	ZIABumBIXfm2oWG0/qKN3cZTmt0tTX0E6Fi1M9tcrIPFs47KxlUK2d3vmYe17xlFcFFpD4dwJ1m
+	FUyhf6oK8YhQVYq
+X-Received: by 2002:a05:6000:29c3:b0:48b:6bd:1af6 with SMTP id ffacd0b85a97d-48b1271db4dmr2867852f8f.40.1790942584471;
+        Fri, 02 Oct 2026 05:03:04 -0700 (PDT)
 Received: from alchark-surface.localdomain ([5.194.93.183])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b380f0613sm5845213f8f.13.2026.10.02.05.02.59
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b380f0613sm5845213f8f.13.2026.10.02.05.03.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Oct 2026 05:03:01 -0700 (PDT)
+        Fri, 02 Oct 2026 05:03:03 -0700 (PDT)
 From: Alexey Charkov <alchark@flipper.net>
-Subject: [PATCH 0/2] power: supply: bq27xxx: Add TI BQ28Z620 battery gauge
-Date: Fri, 02 Oct 2026 16:02:53 +0400
-Message-Id: <20261002-bq28z620-v1-0-bdcc10d42519@flipper.net>
+Date: Fri, 02 Oct 2026 16:02:54 +0400
+Subject: [PATCH 1/2] dt-bindings: power: supply: bq27xxx: add BQ28Z620
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,10 +70,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzNDAwMj3aRCI4sqMyMDXVNjEzOLJHMzc4MkMyWg8oKi1LTMCrBR0bEQfnF
- pUlZqcglIv1JtLQArnrFLbAAAAA==
-X-Change-ID: 20261002-bq28z620-53468b7670b6
+Message-Id: <20261002-bq28z620-v1-1-bdcc10d42519@flipper.net>
+References: <20261002-bq28z620-v1-0-bdcc10d42519@flipper.net>
+In-Reply-To: <20261002-bq28z620-v1-0-bdcc10d42519@flipper.net>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
@@ -81,37 +81,50 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1023; i=alchark@flipper.net;
- h=from:subject:message-id; bh=E3bFiL7YI5UMcoOM0utDxMNg5sAh4VkSM2tXjlG6tK0=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWTtn1uUbfn02o70kxbxwtE/jkxZfDObs71avHxG37dPz
- NfurPm9rmMiC4MYF4OlmCLL3G9LbKca8c3a5eHxFWYOKxPIEGmRBgYgYGHgy03MKzXSMdIz1TbU
- MzTSMdYxYuDiFICpnmrD8Iv5316HNxV+C2z/texTtNGfy8+7bN/s7eyfrmdKasrFh9kzMmzd9Xi
- qxpnN29bru5975fivac7tG3dW6G4IE9tz4sq2x8YsAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1289; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=ozSoPu+ixvTWlKFKxDp+ARaoG4Sjp3bKLj33/MrvA5g=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWTtn1tso6EfYtFrkFSziMOsRjeJR2ft1qUec8UP/OVZs
+ XXuofITHRNZGMS4GCzFFFnmfltiO9WIb9YuD4+vMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
+ oZGOsY4RAxenAEx1fSXDfw8dJo0Oz9tp0xasiJzQn+yWtXzHDpHlwdlzNqUGpb+xjGH4p1gkcdD
+ XXHNK1jOFnyIW6xf+3yArcOT+wekP78Tnsu+z4gMA
 X-Developer-Key: i=alchark@flipper.net; a=openpgp;
  fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-Add BQ28Z620, which is very similar to the already supported BQ28Z610 but
-drops some registers and shifts the data flash layout as a result. This
-means they are not strictly compatible, even though the existing Linux
-driver for BQ28Z610 can drive the BQ28Z620 with no changes, due to it only
-implementing the (unchanged) standard command set.
+Add a compatible for the TI BQ28Z620, a firmware derivative of the
+BQ28Z610 that keeps its standard command set but drops the Battery Trip
+Point feature and relocates much of the data flash as a result.
 
+Keep it standalone rather than falling back to ti,bq28z610, as software
+programming the BQ28Z610 data flash layout would corrupt the
+configuration of a BQ28Z620.
+
+Link: https://www.ti.com/product/BQ28Z620
 Signed-off-by: Alexey Charkov <alchark@flipper.net>
 ---
-Alexey Charkov (2):
-      dt-bindings: power: supply: bq27xxx: add BQ28Z620
-      power: supply: bq27xxx: add support for BQ28Z620
-
  Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 2 ++
- drivers/power/supply/bq27xxx_battery.c                      | 6 ++++++
- drivers/power/supply/bq27xxx_battery_i2c.c                  | 2 ++
- include/linux/power/bq27xxx_battery.h                       | 1 +
- 4 files changed, 11 insertions(+)
----
-base-commit: 9f24d789f03b22941b905ded43cb5ff8eea9ce62
-change-id: 20261002-bq28z620-53468b7670b6
+ 1 file changed, 2 insertions(+)
 
-Best regards,
---  
-Alexey Charkov <alchark@flipper.net>
+diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+index 79d1a3c8c685..be0f1f7292c8 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
++++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+@@ -49,6 +49,7 @@ properties:
+       - ti,bq27z561
+       - ti,bq27z746
+       - ti,bq28z610
++      - ti,bq28z620
+       - ti,bq34z100
+       - ti,bq78z100
+ 
+@@ -93,6 +94,7 @@ allOf:
+               - ti,bq27545
+               - ti,bq27411
+               - ti,bq28z610
++              - ti,bq28z620
+               - ti,bq34z100
+               - ti,bq78z100
+     then:
+
+-- 
+2.55.0
 
