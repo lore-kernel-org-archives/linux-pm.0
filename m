@@ -1,82 +1,56 @@
-Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C41D2D12EE
-	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2026 23:38:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DB7B31D362;
+	Fri,  2 Oct 2026 03:42:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790897895; cv=none; b=AR6EgkTsTd4crIkouIXwo2HHMPxdUcU7G5rX+75Nru8N77BQbeA85mAkQ8GMQmQ/Sltl1yb2SSAsyFTlravxfNWPMtkPKXFXrLoJAqK7oMdBH6PyJOmNmokMbUdPUxTBAcmCCU/ZMTCzp9DAXnK2Z4RDQTlkSnqONsG9rLA5kxk=
+	t=1790912537; cv=none; b=i6Qo8PNJclc1mugsOtRHLStXEfxAvpjNqLEgg2OUr/b2DRkNuN84JFiRdursdHfREr5vWSF3mVRkW2INfPdxxOeUQN+wg65uoktcg1VYMJs0gQyglypQaAQ3dT1sddXSfYapnuJkVPNaKwNlWaUnmwx4jV3hhoLdsN/HJAHPOpE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790897895; c=relaxed/simple;
-	bh=w138yJmKql9CsB3j6NeuLwJiWYTSGe9wiSiVMcaP8hQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UqRah4N4oZgSVMwcRqie8ahlBGzM4APGy7x6E1aR9tGDzmMrgJPwN8QAlH2BMj/f5Lgd0ThTWR0lFv/9AL+RLT9KlK0xXDq2RsdxDWKbncVq2o4Y1huBPcz/jaRVDc2trlqRUTxXZVEiiUPVwpxk5uQ0PK0+RfcpUqplCZJc+M4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CAok20QT; arc=none smtp.client-ip=74.125.227.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CAok20QT"
-Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-39d654f02baso3310685a91.3
-        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2026 16:38:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790897893; x=1791502693; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=w138yJmKql9CsB3j6NeuLwJiWYTSGe9wiSiVMcaP8hQ=;
-        b=CAok20QTcEL+UkMAo7F9++JNNsODxVrzmFiO78jNj+tx2Ds7OlJ5WwAlu/L18im028
-         9o8g0p+s56nHqYw3biYEkbTOhJczii4iJtQI1cT8dfebfas8FW0G04xanps7ZDv/vLLC
-         tjaLkFjXF2NFPyH99/awvT7mnD+AM6FHSPycTeIaUvD8lIG3ZPZnIt9WbhG5TJ3ln1Tx
-         eUpZdU8IJSR/wPvZhwZ5NJLZegbLRC6rsotpY9cx5VsO6OgHth9+NpfZ4UWhyHskWD4Y
-         nkI+x8jyg2Kaj5psP2NJT1BZY9ruiOsG3U/x1Ijf6BZZvr+ZPFf1knuyIoOAzbc/CaJj
-         WAgw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790897893; x=1791502693;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=w138yJmKql9CsB3j6NeuLwJiWYTSGe9wiSiVMcaP8hQ=;
-        b=DPP9dGhTjC42ggFGjSmPULDhefRK9XzQL0dtXuOWxQV1vWGQ4KZ7q4qDrCroo3vw7o
-         sFgGPnN0naQt9dbmU/QsmgFEODBC7NAzFueREULZbbCZjoFj0daY0pbJzY/9qMpLGJH/
-         oac0gyQDCYztJEYzYmhGyYxW/f+FX/rNcie/+iAfF9TfWwZtQbyauTPp2Qg2FdFwzzwQ
-         2pHpRZezQyyqDlpJRdhrGl31XYdDpggGszIpge18RREYBGNnh8daPznzhFTMTZeunz7p
-         5HIG36vbHp3ennt1VLdkLVnOwW/P+eKKy9aXr1hlWOCQJIzYvX7y1QD0HdTPgWadcEjs
-         7FRA==
-X-Forwarded-Encrypted: i=1; AKwUvBxjZkO1EQjjt1radDUijfwwI7v7H1UYy2zGibKIa1P0/9w7kbl3M+jb0+V1+YTcRz6pfP/HZFExxg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYINnKVVP94WusWrI9nnEtkrLUKQ8gJ/g0/FpFJUDLwN88ECdLPg
-	rK3ePijy3wgvPp5UQsylGcKNvHSbsL6gQDWd7Sjq9BlPnRlxyy6Uq3d7
-X-Gm-Gg: AYBFou3aJVFz0V7leSSKqaRetQIl2jSvzob0HqyfeiuhbI4EvYS6jiOD8znaFODtzb4
-	yGsRgbInaYbDy5XL1WXhIfpQgF9/zFOu8lMfa4T6nBIVx0ir22aN8k66a0EqhpFzzR30LIW96Jc
-	k1hUh9isREuFXghDAe+o5hcU5DQeOVL0lNlxeRfUPK57BS8dYwp1v7xavbhdT2T4zqz7PKtSmgh
-	bRB993G9l/cEsXkm1rC+DPc2Ac0KiWbCMcv2pfluBh4h8wnTYq5qKq02xqt394tPQk8co1RppiD
-	blhODk0/u9wAFfGn+/UMMPh5fOyfZJncNDatxuS5kYKb8p/fM/07ZWRqMZM55taEjS8QbH+Ut7H
-	tgvzFnXHS4U2nQulSjmgFnBig0ocn0RqeLPXjKLSXqtUOqgsOLjizbjTtUeEKVZu7CAPsag1JGo
-	B7OPSWSvPYGiwxXESzm84qZ0y8k6mGaxL+pcLM8olv9ife1xbKQi6KZuNRxnfN4WvILqqFTA2bn
-	YnFGkVO
-X-Received: by 2002:a17:90b:3a0f:b0:3a4:d476:e10c with SMTP id 98e67ed59e1d1-3a6ce79667amr848084a91.28.1790897893326;
-        Thu, 01 Oct 2026 16:38:13 -0700 (PDT)
-Received: from kdev.. ([108.180.130.139])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a6ccc92646sm1284785a91.1.2026.10.01.16.38.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Oct 2026 16:38:12 -0700 (PDT)
-From: Babanpreet Singh <bbnpreetsingh@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>,
+	s=arc-20240116; t=1790912537; c=relaxed/simple;
+	bh=dTkh+S7kQ6fMQ6FdAL/V5OFqBO95eTN53dUmKW7LHJ8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=jo4jrxbwno6Mh9cnboJhfBQnUF/JCu5LjaNSDDGWsrW4N+qpFMrsGt3TdjHytjna5NeYrmGfmfnRqteKUgNCMR5VtfdnyHLnP8qICABka6KTeyyUp2oCh5WWpW/SlYfL41ECx5ecvFneKIGSTebSTRN3jl5++Zprd74FIQF6uPM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 3ca5bfd0be1311f19a56ed5b684f684d-20261002
+X-CID-CACHE: Type:Local,Time:202610021138+08,HitQuantity:1
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:28744585-f5d4-4542-b4af-85e804c00e6d,IP:0,U
+	RL:70,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:95
+X-CID-META: VersionHash:7db8b62,CLOUDID:2facd962f07ac6b4f39243a50558353a,BulkI
+	D:nil,BulkQuantity:0,SF:81|82|102|136|850|865|898,TC:nil,Content:0|15|50|9
+	9,EDM:5|-100,IP:nil,URL:11|14|95|82|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:
+	nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULN,TF_CID_SPAM_UPP
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 3ca5bfd0be1311f19a56ed5b684f684d-20261002
+X-User: xiongxin@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <xiongxin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1616017193; Fri, 02 Oct 2026 11:42:05 +0800
+From: Xiong Xin <xiongxin@kylinos.cn>
+To: rafael@kernel.org,
+	lenb@kernel.org,
+	pavel@kernel.org,
+	james.morse@arm.com,
+	hch@lst.de
+Cc: will.deacon@arm.com,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Dan Carpenter <error27@gmail.com>,
-	kernel test robot <lkp@intel.com>,
-	bbnpreetsingh@gmail.com
-Subject: Re: [PATCH] power: supply: max17042_battery: Make the fractional LSB macros safe
-Date: Thu,  1 Oct 2026 23:38:12 +0000
-Message-ID: <20261001233812.7-1-bbnpreetsingh@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260915052529.7-1-bbnpreetsingh@gmail.com>
-References: <20260915052529.7-1-bbnpreetsingh@gmail.com>
+	Xiong Xin <xiongxin@kylinos.cn>,
+	Sashiko <sashiko-bot@kernel.org>
+Subject: [PATCH v3 1/4] PM: hibernate: reset clean_pages_on_read after load_image()
+Date: Fri,  2 Oct 2026 11:41:57 +0800
+Message-Id: <20261002034200.920546-2-xiongxin@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20261002034200.920546-1-xiongxin@kylinos.cn>
+References: <20261002034200.920546-1-xiongxin@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -85,11 +59,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi Sebastian,
+load_image() sets clean_pages_on_read but nothing clears it.  If a
+nocompress resume attempt fails and a compressed resume follows in the
+same boot, the stale flag makes hib_end_io() call flush_icache_range()
+from interrupt context for the reused ring pages of
+load_compressed_image(), triggering the WARN_ON_ONCE(!in_task()) in
+smp_call_function() on ARM64.
 
-Gentle ping on this one. It has been a little over two weeks and I could
-not find it in your for-next or fixes branch, so I wanted to check
-whether it needs anything from my side.
+Reset the flag before load_image() returns, so that it cannot leak
+into a later compressed resume.
 
-Thanks,
-Babanpreet
+Also clear it once the load is known to have failed, so that the bios
+still in flight do not trigger the same interrupt-context flush during
+the final drain.
+
+Fixes: f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored in-place")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Link: https://sashiko.dev/#/patchset/20260926032416.467937-1-xiongxin%40kylinos.cn
+Assisted-by: GLM:glm-5.3
+Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
+---
+
+New in v3, split from the single-patch v2 per review feedback from
+sashiko, as it also fixes the stale clean_pages_on_read path on its
+own; it now also covers the final drain of a failing load.
+ kernel/power/swap.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index c78f1593600b..7f3cc2cc5cca 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -1125,6 +1125,9 @@ static int load_image(struct swap_map_handle *handle,
+ 				nr_pages / m * 10);
+ 		nr_pages++;
+ 	}
++	/* Stop flushing pages on load failure. */
++	if (ret < 0)
++		clean_pages_on_read = false;
+ 	err2 = hib_wait_io(&hb);
+ 	hib_finish_batch(&hb);
+ 	stop = ktime_get();
+@@ -1137,6 +1140,7 @@ static int load_image(struct swap_map_handle *handle,
+ 			ret = -ENODATA;
+ 	}
+ 	swsusp_show_speed(start, stop, nr_to_read, "Read");
++	clean_pages_on_read = false;
+ 	return ret;
+ }
+ 
+-- 
+2.25.1
+
