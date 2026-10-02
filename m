@@ -1,213 +1,127 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1BCA304BDF;
-	Fri,  2 Oct 2026 03:42:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790912538; cv=none; b=f4K3Z+Am1wnR637GFsSdySxPdIv8ipZ5GXhT8RCi0sOBkq0GAGou3P2WpKKO6fN3eimwWQTi4dNcyc/zNup/0G3isBiVhA3KKMle9M/zBvVP5SXHYemt1ZxxV/WZLv6CEmdHhaaJIy0zTA3pBu/KXo8DaIvpQZJ6J0lpIn+sFLE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790912538; c=relaxed/simple;
-	bh=r0PebhUK6DISHy9k/VcZvjC/dQ3MIhf0s5jytEN8utA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=GCPLjlDUTK3FiNp7NKUGNF5+f/eGHmr7oMVURz/eOAxw7B64N55Pyk6McR7THlYBHF148QkmscNdGEZa8nc2mrYaoyKUaSItVxDqtkIZvrvvcdlAJhljSupvBUsqEjA4SpSvBLib/EtJ2D1xIj0ZxqLjuzMZJfNEzC//z3FIh+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 3d74b592be1311f19a56ed5b684f684d-20261002
-X-CID-CACHE: Type:Local,Time:202610021138+08,HitQuantity:1
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:362115e7-63df-48a2-9169-a6773592c685,IP:0,U
-	RL:70,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:95
-X-CID-META: VersionHash:7db8b62,CLOUDID:fc30afa5dd3474a643cbda0d816da66c,BulkI
-	D:nil,BulkQuantity:0,SF:81|82|102|136|850|865|898,TC:nil,Content:0|15|50|9
-	9,EDM:5|-100,IP:nil,URL:11|14|95|82|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:
-	nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULN,TF_CID_SPAM_UPP
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 3d74b592be1311f19a56ed5b684f684d-20261002
-X-User: xiongxin@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <xiongxin@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1429797258; Fri, 02 Oct 2026 11:42:06 +0800
-From: Xiong Xin <xiongxin@kylinos.cn>
-To: rafael@kernel.org,
-	lenb@kernel.org,
-	pavel@kernel.org,
-	james.morse@arm.com,
-	hch@lst.de
-Cc: will.deacon@arm.com,
-	linux-pm@vger.kernel.org,
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E5F6181334;
+	Fri,  2 Oct 2026 04:22:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.203.200.13
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790914968; cv=pass; b=LERohNUh71WzlXcCUw06zJ+81beT0nU4tjJTtbDII2JGIPOZGfZz0HCCaDzFjH/Oef7/PlDbossb5rpQyWzKo3iYhv6cscvus/C6QL5eiloLKlNo1OnoLj69WDc7qqYIJewhKWi7+vu53PPasjp9WELlZNLVtnR1R5C0LDancEI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790914968; c=relaxed/simple;
+	bh=e88pRB7MkAyUq2c2V8R7ncpEngY3XcHMxiFUuNJtX1o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gsVWIs229dKQj11tZRA6v8D0Lt3AKAqAmJkiZ3FyDnkDof1Vi9aMWODTqWeMhK4p0McoUQhgv0diV7xs0VNilze2vCc0ktj5Xn2D+WAZ6m9N1ESsHksXaHFXKILzG8qj9+ElpWremVRvNCydBe5l0Zislqy5uk4I+slZdwkL2UY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; dkim=pass (2048-bit key) header.d=pengutronix.de header.i=@pengutronix.de header.b=OURzAOxs; arc=pass smtp.client-ip=185.203.200.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=pengutronix.de header.i=@pengutronix.de header.b="OURzAOxs"
+Received: from drehscheibe.grey.stw.pengutronix.de (drehscheibe.grey.stw.pengutronix.de [IPv6:2a0a:edc0:0:c01:1d::a2])
+	(Authenticated sender: relay-from-drehscheibe.grey.stw.pengutronix.de)
+	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id 2C97D20058C;
+	Fri, 02 Oct 2026 06:22:43 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
+	s=20260414; t=1790914963;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=eiR1ExEbLsg+Md8FDZk2s7GKs0WpAoHQuPsCgDjYGn8=;
+	b=OURzAOxsvpnyOUa3rnjuCf1lV3jTBoFx+9pLFuN5iyWyQe6BOzyfSrAqHcidglfCep8Tna
+	1tHOaP/vupf7Mh7D9ZxMlRHHSUHQE3IB8lDfydrKkINsxw9F4zVBI/HSG0w6sRnzbR/djJ
+	8KLuQMHJ+aklwyPwhETMxhI9Vi2C2qFUiI+Y2wCN8VIn/qJJQWw2PzPvUT8w9KVFg3peRo
+	1XRfF/8/zxtclLa0y/JY84iZCRXgLts6nKhCUy5Ph2tg4v5H2Sx8UN6ea/+N8Rv7G6YYPr
+	j0gGZ0hYmHw98f2IbzlRRvFZL4lzpocwuoFgu1hj1gZb12zjx+NFI5P8Bbuqqw==
+ARC-Seal: i=1; s=20260414; d=pengutronix.de; t=1790914963; a=rsa-sha256;
+	cv=none;
+	b=PJtACP0DrMwPGLway2lHmDd9bO+31qgYdl2xUJiav8YguWCAUmZBR5FTSKTHdEHpUCFgwe
+	oabKJgCcdfMECb12qtWo6A8qq09+nTPyrOXUPzmJ7mFvsKdmK4LvbQphzO8gf4dJbVilhm
+	LNKfH+aLPAoc4p6o78Mee/UUE9GRiwzmaLrbOX4WfY2+mZR5SxoUzC1LWVRZJdBKQaGKPA
+	P72fCi+O8vadUrnv5p4CZ2QWPyDc7/KctEQl9G1k+0Bl6LQjv22Ojl5mv3SU+QXo0WUVUM
+	G5S7Ofq2Lwkn3M1BQkCVyMxG2gN9KWv0TeJJCOKDSqmJv6+bS4RIabBTXGSVZg==
+ARC-Authentication-Results: i=1;
+	ORIGINATING;
+	auth=pass smtp.auth=relay-from-drehscheibe.grey.stw.pengutronix.de smtp.mailfrom=ore@pengutronix.de
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=pengutronix.de;
+	s=20260414; t=1790914963;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=eiR1ExEbLsg+Md8FDZk2s7GKs0WpAoHQuPsCgDjYGn8=;
+	b=HSsf44kvHuV4qV7gy/WfqnayANRPA13ronMMC0Rdh1gFVFmVvJ727W3q81Fr8y4pC13O8s
+	K3i9uehkcruQin3j22ZP6eXWnWs0TqivRese8XcatZbziyP8OJVHSG4pY+T009dLTiCfO0
+	zcc+PU2IYC5zlyuQLw/F048O82BRHQyICaIFQjI8Rba9NkfXvAwqdx3OqAG0Go0VVTq8pt
+	gtu75MtPSQF01Iijdy72XyB0Sld597EegsIXiGHiTaADLHknjf2ZZOTtqmrjV8FIRaoJs8
+	7zV0y8c3pmA1Zo1p3+TW3kgPpt5v59p8bGp+oMtC4bi++x0f5rDZor0KE2EAaQ==
+Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1xCUnD-003pmF-0J;
+	Fri, 02 Oct 2026 06:22:43 +0200
+Received: from ore by pty.whiteo.stw.pengutronix.de with local (Exim 4.98.2)
+	(envelope-from <ore@pengutronix.de>)
+	id 1xCUnC-000000078BQ-43aD;
+	Fri, 02 Oct 2026 06:22:42 +0200
+Date: Fri, 2 Oct 2026 06:22:42 +0200
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Benson Leung <bleung@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Guenter Roeck <groeck@chromium.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	chrome-platform@lists.linux.dev,
+	Umang Chheda <umang.chheda@oss.qualcomm.com>,
+	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Xiong Xin <xiongxin@kylinos.cn>,
-	Sashiko <sashiko-bot@kernel.org>,
-	Riwen Lu <luriwen@kylinos.cn>
-Subject: [PATCH v3 4/4] PM: hibernate: flush icache for restored pages from task context
-Date: Fri,  2 Oct 2026 11:42:00 +0800
-Message-Id: <20261002034200.920546-5-xiongxin@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20261002034200.920546-1-xiongxin@kylinos.cn>
-References: <20261002034200.920546-1-xiongxin@kylinos.cn>
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	avaneesh.dwivedi@oss.qualcomm.com
+Subject: Re: [PATCH v15 1/6] power: Extend power_on_reason.h for upcoming
+ PSCRR framework
+Message-ID: <ar8xkv8h4x2NJTKl@pengutronix.de>
+References: <20260924-pscrr-framework-v15-0-7af87107e0d3@oss.qualcomm.com>
+ <20260924-pscrr-framework-v15-1-7af87107e0d3@oss.qualcomm.com>
+ <e34e6661-3ecf-42f6-96f2-5136afe7ab65@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <e34e6661-3ecf-42f6-96f2-5136afe7ab65@oss.qualcomm.com>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
 
-With `hibernate=nocompress`, load_image() submits read bios asynchronously
-and hib_end_io() completes them from hardirq/softirq context.  The
-commit f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages
-restored in-place") calls flush_icache_range() there, which on ARM64 ends
-kick_all_cpus_sync() and so triggers
+On Thu, Oct 01, 2026 at 10:22:44PM +0200, Daniel Lezcano wrote:
+> On 9/24/26 09:08, Faruque Ansari wrote:
+> > Prepare for the introduction of the Power State Change Reason Recorder
+> > (PSCRR) framework by expanding the power_on_reason.h header. This
+> > extension includes new power-on reasons:
+> > - POWER_ON_REASON_OVER_CURRENT for over-current conditions.
+> > - POWER_ON_REASON_REGULATOR_FAILURE for regulator failures.
+> > - POWER_ON_REASON_OVER_TEMPERATURE for over temperature situations.
+> > - POWER_ON_REASON_EC_PANIC for EC panics.
+> 
+> How the system knows an EC panic happened?
 
-    WARN_ON_ONCE(!in_task());
+Hm... looks like I lost this change on the way. I added it for this
+case:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/platform/chrome/cros_ec_lpc.c?h=v7.3-rc5#n458
 
-in smp_call_function(), as in_task() is always false in interrupt context.
 
-Only the nocompress path is affected: load_compressed_image() flushes from
-the decompression kthread, in task context.
-
-Defer the flush to task context.  hib_end_io() now only records the
-restored page on a per-batch list (page->lru is free to use, as safe
-in-place pages are on no LRU).  Once hib_wait_io() returns to load_image(),
-hib_flush_icache_pages() walks the list and flushes each page, preserving
-the asynchronous batched I/O throughput.
-
-Fixes: f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored in-place")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Link: https://sashiko.dev/#/patchset/20260926032416.467937-1-xiongxin%40kylinos.cn
-Assisted-by: GLM:glm-5.3
-Acked-by: Riwen Lu <luriwen@kylinos.cn>
-Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
----
-
-Changes in v2:
-
-- Polish the commit message and drop the embedded call trace.
-
-Changes in v3, addressing review feedback from sashiko:
-
-- Take icache_lock with spin_lock_irqsave()/spin_unlock_irqrestore():
-  hib_end_io() can also be called from task context when submit_bio()
-  completes a bio inline (e.g. on error), and a plain spin_lock() held
-  there could deadlock against a hardirq/softirq completion of another
-  bio of the same batch on the same CPU.
-- Drop the hib_wait_io() error check in load_image() that became
-  unreachable after adding the in-block break.
-- Move the clean_pages_on_read reset to 1/4 and rebase on the new
-  2/4 and 3/4, which keep the restored pages alive until the batch
-  has been drained.
- kernel/power/swap.c | 47 ++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 40 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 571aefaf09f4..fb26f1376b92 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -223,6 +223,8 @@ struct hib_bio_batch {
- 	wait_queue_head_t	wait;
- 	blk_status_t		error;
- 	struct blk_plug		plug;
-+	struct list_head	icache_pages;
-+	spinlock_t		icache_lock;
- };
- 
- static void hib_init_batch(struct hib_bio_batch *hb)
-@@ -230,6 +232,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
- 	atomic_set(&hb->count, 0);
- 	init_waitqueue_head(&hb->wait);
- 	hb->error = BLK_STS_OK;
-+	INIT_LIST_HEAD(&hb->icache_pages);
-+	spin_lock_init(&hb->icache_lock);
- 	blk_start_plug(&hb->plug);
- }
- 
-@@ -242,6 +246,7 @@ static void hib_end_io(struct bio *bio)
- {
- 	struct hib_bio_batch *hb = bio->bi_private;
- 	struct page *page = bio_first_page_all(bio);
-+	unsigned long flags;
- 
- 	if (bio->bi_status) {
- 		pr_alert("Read-error on swap-device (%u:%u:%Lu)\n",
-@@ -249,11 +254,19 @@ static void hib_end_io(struct bio *bio)
- 			 (unsigned long long)bio->bi_iter.bi_sector);
- 	}
- 
--	if (bio_data_dir(bio) == WRITE)
-+	if (bio_data_dir(bio) == WRITE) {
- 		put_page(page);
--	else if (clean_pages_on_read)
--		flush_icache_range((unsigned long)page_address(page),
--				   (unsigned long)page_address(page) + PAGE_SIZE);
-+	} else if (clean_pages_on_read) {
-+		/*
-+		 * Stash the page on the batch list, load_image()
-+		 * will flush it once hib_wait_io() has returned to task
-+		 * context. The page is neither on an LRU nor in the page
-+		 * cache, so its lru member is free to use as link node.
-+		 */
-+		spin_lock_irqsave(&hb->icache_lock, flags);
-+		list_add(&page->lru, &hb->icache_pages);
-+		spin_unlock_irqrestore(&hb->icache_lock, flags);
-+	}
- 
- 	if (bio->bi_status && !hb->error)
- 		hb->error = bio->bi_status;
-@@ -295,6 +308,23 @@ static int hib_wait_io(struct hib_bio_batch *hb)
- 	return blk_status_to_errno(hb->error);
- }
- 
-+/*
-+ * Flush the icache for pages restored since the last hib_wait_io().
-+ * Must be called from task context (after hib_wait_io() returned): all
-+ * bios of the batch have completed, so the icache_pages list is no longer
-+ * touched by hib_end_io() and can be walked without the lock.
-+ */
-+static void hib_flush_icache_pages(struct hib_bio_batch *hb)
-+{
-+	struct page *page, *tmp;
-+
-+	list_for_each_entry_safe(page, tmp, &hb->icache_pages, lru) {
-+		list_del_init(&page->lru);
-+		flush_icache_range((unsigned long)page_address(page),
-+				   (unsigned long)page_address(page) + PAGE_SIZE);
-+	}
-+}
-+
- /*
-  * Saving part
-  */
-@@ -1116,10 +1146,12 @@ static int load_image(struct swap_map_handle *handle,
- 		ret = swap_read_page(handle, data_of(*snapshot), &hb);
- 		if (ret)
- 			break;
--		if (snapshot->sync_read)
-+		if (snapshot->sync_read) {
- 			ret = hib_wait_io(&hb);
--		if (ret)
--			break;
-+			if (ret)
-+				break;
-+			hib_flush_icache_pages(&hb);
-+		}
- 		if (!(nr_pages % m))
- 			pr_info("Image loading progress: %3d%%\n",
- 				nr_pages / m * 10);
-@@ -1134,6 +1166,7 @@ static int load_image(struct swap_map_handle *handle,
- 	if (!ret)
- 		ret = err2;
- 	if (!ret) {
-+		hib_flush_icache_pages(&hb);
- 		pr_info("Image loading done\n");
- 		ret = snapshot_write_finalize(snapshot);
- 		if (!ret && !snapshot_image_loaded(snapshot))
 -- 
-2.25.1
-
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
