@@ -1,38 +1,38 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49D602EA480;
-	Fri,  2 Oct 2026 03:42:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9387032B111;
+	Fri,  2 Oct 2026 03:42:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790912537; cv=none; b=WnnX/GSAG1O+TqCFAVTE1mvTJmeF51rm6rQFfBgGfzZaoTRBW9JPYPmNkAzxrLCz2zFpqcYzZ6/iPsDV+lD8xPwLS20UkASa1ihWqNjonaopFs+oUTlOh1p+UjaJE7e3z2d5U1zBuGcsCGqz595OSUJPp1Cj1gQSX1dqVVtHPUM=
+	t=1790912537; cv=none; b=K05jCcijvNzE66zrkHiJxc9sfg7wnedeCeBz5edhzlnbJ1YOi0iIESnrdOdw+VFHoBdjl8BS2v3NSgwoZmFuG7sfCJS0wT+OoE4tOWMbHbJlZ6vR4Qx03cLi7GquA72mxKkQE2Nu+1yHsAOBcuRu0aS78oib0/OS5SPnRBaXq0c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1790912537; c=relaxed/simple;
-	bh=1CZ5hc0ZiNiuFmDQdjFQtKP9+eQjiN2Pw/AX/n4vXtk=;
+	bh=jKJLpPssFjf57DjbZxnJNzXvMSNNG6bDLx9x+CyQcto=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=A0vri8xP9RRvPDv7Rrs8rjyfwwUaZ6sucbFSlO3H1iRmVDUxHbGKWgT6sVb2s8Mmp+oJxBWhTfZfVCfUqP3GNLlWt9nfNnx9c7Pg8bPM9pRj07bOu28YdXdsVlAAeja/Rs5x4uyy5rlFNu2ydLJ2YkayJtShlt3e1eEkrxsWewU=
+	 MIME-Version; b=H5JZ3GTqzHhChR4sfuuDSOX1tUUxlyA/fYaFhd143R50EjQa4Ft+yEaTdL/KtHlq9QXzQe0ywl7iPddz0FWqiyFGSPAiBRwovgZD48IgvW9qp2bp6GTKDm5u9SCwz3c7c4hd+R5/E3hO7pvVwmKwJdSPfN9NQWkV6RMDLyhMCQI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 3d115786be1311f19a56ed5b684f684d-20261002
+X-UUID: 3cdbb644be1311f19a56ed5b684f684d-20261002
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:ff679bfe-fb40-4873-afd9-f77821df3a88,IP:0,U
-	RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:-5
-X-CID-META: VersionHash:7db8b62,CLOUDID:1a3e33aeaa9f0afb7f6f9f34456ce186,BulkI
-	D:nil,BulkQuantity:0,SF:81|82|102|136|850|865|898,TC:nil,Content:0|15|50|9
-	9,EDM:-3|-100,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,O
-	SI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-O-INFO: VERSION:1.3.19,REQID:52b77540-348f-496b-b078-7b80fef0154a,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:7db8b62,CLOUDID:bb1faf46b69f393ca1b3855d18e20eae,BulkI
+	D:nil,BulkQuantity:0,SF:81|82|102|850|865|898,TC:nil,Content:0|15|50|99,ED
+	M:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:
+	0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
 X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 3d115786be1311f19a56ed5b684f684d-20261002
+X-UUID: 3cdbb644be1311f19a56ed5b684f684d-20261002
 X-User: xiongxin@kylinos.cn
 Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <xiongxin@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 332736694; Fri, 02 Oct 2026 11:42:06 +0800
+	with ESMTP id 1806893815; Fri, 02 Oct 2026 11:42:05 +0800
 From: Xiong Xin <xiongxin@kylinos.cn>
 To: rafael@kernel.org,
 	lenb@kernel.org,
@@ -43,9 +43,9 @@ Cc: will.deacon@arm.com,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Xiong Xin <xiongxin@kylinos.cn>
-Subject: [PATCH v3 3/4] PM: hibernate: drain pending reads in compressed image load errors
-Date: Fri,  2 Oct 2026 11:41:59 +0800
-Message-Id: <20261002034200.920546-4-xiongxin@kylinos.cn>
+Subject: [PATCH v3 2/4] PM: hibernate: do not free the image in place while restore I/O is in flight
+Date: Fri,  2 Oct 2026 11:41:58 +0800
+Message-Id: <20261002034200.920546-3-xiongxin@kylinos.cn>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20261002034200.920546-1-xiongxin@kylinos.cn>
 References: <20261002034200.920546-1-xiongxin@kylinos.cn>
@@ -57,53 +57,64 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The error exits of load_compressed_image() free the ring buffer pages
-without waiting for the read bios that may still be in flight: when a
-read or decompression error aborts the load mid-round, the device can
-still be writing into pages that are handed back to the allocator by
-out_clean().
+snapshot_write_next() calls swsusp_free() to release all snapshot pages
+when one of its internal allocations fails, in prepare_image(),
+get_buffer() or get_highmem_page_buffer().  At that point read bios
+submitted by load_image() or load_compressed_image() may still be in
+flight: the bios do not take page references, so nothing prevents the
+freed pages from being handed out again while the device is still
+writing the image data into them.
 
-save_compressed_image() and load_image() both drain the batch on their
-way out; add the same wait here, which also folds the error of any
-in-flight read into the return value instead of dropping it.
+Drop the in-place releases and let the error paths of
+load_image_and_restore() and hibernate() free the image, after
+swsusp_read() has drained the batch.
 
 Fixes: 343df3c79c62 ("suspend: simplify block I/O handling")
 Assisted-by: GLM:glm-5.3
 Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
 ---
 
-New in v3: the compressed loader had the same missing drain on its
-error exits, freeing the ring pages under in-flight reads.
- kernel/power/swap.c | 4 ++++
- 1 file changed, 4 insertions(+)
+New in v3: without it, patch 4 could touch snapshot pages that this
+in-place release has already freed.
+ kernel/power/snapshot.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 7f3cc2cc5cca..571aefaf09f4 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -1204,6 +1204,7 @@ static int load_compressed_image(struct swap_map_handle *handle,
- 	int ret = 0;
- 	int eof = 0;
- 	struct hib_bio_batch hb;
-+	int err2;
- 	ktime_t start;
- 	ktime_t stop;
- 	unsigned nr_pages;
-@@ -1482,11 +1483,14 @@ static int load_compressed_image(struct swap_map_handle *handle,
- 	}
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index b209712cb2c3..244f4a19c025 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -2520,10 +2520,8 @@ static void *get_highmem_page_buffer(struct page *page,
+ 	 * use a "safe" page frame to store the loaded page.
+ 	 */
+ 	pbe = chain_alloc(ca, sizeof(struct highmem_pbe));
+-	if (!pbe) {
+-		swsusp_free();
++	if (!pbe)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 	pbe->orig_page = page;
+ 	if (safe_highmem_pages > 0) {
+ 		struct page *tmp;
+@@ -2702,7 +2700,6 @@ static int prepare_image(struct memory_bitmap *new_bm, struct memory_bitmap *bm,
+ 	return 0;
  
- out_finish:
-+	err2 = hib_wait_io(&hb);
- 	if (crc->run_threads) {
- 		wait_event(crc->done, atomic_read_acquire(&crc->stop));
- 		atomic_set(&crc->stop, 0);
- 	}
- 	stop = ktime_get();
-+	if (!ret)
-+		ret = err2;
- 	if (!ret) {
- 		pr_info("Image loading done\n");
- 		ret = snapshot_write_finalize(snapshot);
+  Free:
+-	swsusp_free();
+ 	return error;
+ }
+ 
+@@ -2737,10 +2734,8 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
+ 	 * use a "safe" page frame to store the loaded page.
+ 	 */
+ 	pbe = chain_alloc(ca, sizeof(struct pbe));
+-	if (!pbe) {
+-		swsusp_free();
++	if (!pbe)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 	pbe->orig_address = page_address(page);
+ 	pbe->address = __get_safe_page(ca->gfp_mask);
+ 	if (!pbe->address)
 -- 
 2.25.1
 
