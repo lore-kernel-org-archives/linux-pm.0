@@ -1,175 +1,151 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx2-f42.google.com (mail-yx2-f42.google.com [74.125.224.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 272B738398F
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 18:15:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790964901; cv=none; b=VieiHdd6Z4r/ywsk+fgzw55v+o5BuTaQIMxMxotQYVEVRvEZwzT/gtPUBp/CewdCuIqYbzigRoMxJg+adAXPH3WqpCfUsNcKA1TcGynfJsm+hqB/mKTUMErLjssgB5/IsF2bNQQJ/hCSebV9ZvSXG4yz/BSBZxa0BQQ5t7kIYFI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790964901; c=relaxed/simple;
-	bh=+zeNufoCEFx4IFN75vfr8kfaUmsOW5mvJwQy3E7Va0U=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCB243E2746
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 18:55:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.170
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790967353; cv=pass; b=UoEtWVM2bKDAClly1F4VlL1Angj/dZZPWP5zpgS/e5OgJWFIuMrdbP48AJ/XuSqvn7nOuLe3lyhqOrnP/bK11KV0Aurzu/qrnEZDTjF9lKogD7RmNthPFUppdX0lkhoMQY4/cM+M7c8APGXe9EVTmvkwi0okG7z1E8jWqM9DXvo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790967353; c=relaxed/simple;
+	bh=OR38zRZFAFpy4mOZaFXDsm6BWL0amMVzyna9ToNEKKc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gcAzkEh5wCwo5xNKygZ/sCEUQdXKDLuCtURebrpsUbpU0k9OFxQoGyAB6zg7Mzt6M/EDPMmpVjVI6zsD+WgTwzY8OA9NDXjrqmoRn6rGYnGDrRMxXAVeNcbrsaw/+sCZwUVQfgVRAzojOyWjVxvvEAAi7+YF51+Ak6JixEOxrJA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g6yhMITU; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=ifgCXv95Stb5ZdwU7hSVsZvF+e4n3yR08Zn+ZWuedekD3cDU61ZyNTfsp3DIDzjQ1RJ1K+s4OTrmwpiUajt3zIhjqm+xkzsJoypmJ0iCMBjbAHqhW+qpw837FV5z6R+uavvngQRGGcSCSxT0/HdnLozi6WkI8lLCaFvyg8eiueQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ixtdxi2e; arc=pass smtp.client-ip=74.125.224.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g6yhMITU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F03D81F00898
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 18:14:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790964900;
-	bh=CcQIlSTNtz7AXnQHZXt4MlH12cLkMY7zH3MNyPhmnSw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=g6yhMITUI8JBv6O2XYwWvkgNtZVm3iuhQEaQVX4IeNIq4XcuWe6O7fjdJfV6jkLcs
-	 yYD+O4U7lBZ9Y1ksp6soIg06pUmEqywUZIKfMBQ1LKcOoIb6vnHRynGs2u8RBnWKKk
-	 9vmagtmvK+rWD9sGIA29BjL5g+rx62TR4FfDn+ozAUIpz17uPrpxjH5eX5HLuaWHDJ
-	 DiVvjVgcJU6eBnBVf8eAPIrHO+bOOIE1BJIxxn6JEyO3+gODJyITm1RJhrT4JOjnsR
-	 X7DhnIbnTfXJckrCbizrQ/xuAdd/5isSJAhq3NFrOfqthDzq7+CtfyDAe+hBZN7rUf
-	 q0ylANa+2VUGw==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5bb54bd50c2so1483071e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 11:14:59 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzgNtsdbFnABAVn6J3GGWk9AQytYZOrLDB5SeqpJq5/vkj9NrQjIFr31Aik5VVZ7P4Izl3kU8fuvQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJcC0nc9Pkfa7l2vNqAuyw8Nw5kVHRiJTLx0Ctn+tRJkLUAU+SS
-	f1lOTMXkMOsmqxE9b+D0KjnIwI3PVXxgCaw4kt0vpMEKoStslDW25chiTKfHFosb/Lm6T5Cl8JR
-	dYwelrSNsF4sxqEdDUgF+hB4FcTVQ9ac=
-X-Received: by 2002:a05:6512:ace:b0:5ae:bc65:5141 with SMTP id
- 2adb3069b0e04-5bb9bb1a02amr1285277e87.11.1790964898390; Fri, 02 Oct 2026
- 11:14:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ixtdxi2e"
+Received: by mail-yx2-f42.google.com with SMTP id 956f58d0204a3-672ce86b21aso448754d50.3
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 11:55:50 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790967350; cv=none;
+        d=google.com; s=arc-20260327;
+        b=N/1EPwNfNp7VEypVggYNI47YQeXp42T3QqE+MwTOrx4nEouOB4t6DOc0HbuNgq8/4+
+         xXupVH2JIK5HrXvjR5GPxCJAr07xheF4sAB99WkYHbwPwhcuQ5bXW6Bs8eCAVfUHMohv
+         MQcnmj2XkL+qZneZ50w2Xe/QzKlX/liYZ5lQQ0wTA8Ww3GE4Y3dyZG1qTgB9uNQoOHcP
+         5XjaxK4c2LKbUxN7vZsXYfUpfnpRuMywoyGbKtx/qsUwgbphUo/5PKKZVXo0nDpIGr0f
+         83wZ3Yyz9Bv1tQPEcqQIWcBqqz+wD0K+UnvDYUOSW70oNNWHi3glfZ/6Gb8Pq+0UKfHc
+         /ClA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=9S5eAE312pd6HZl9cjvi/BgiTHAVYy5cEZ8AWzWw5xo=;
+        fh=YXfdnVsKSh1707a96+7w1hOqXTfP+E9zcyb6NuTu180=;
+        b=Ug/bmfNsR/8oV7/WUSkCdg40g+RjAeI5JO1O0jZxCgKLh6slMm8Orq6t9/xx6g55jp
+         lywtZalyjpTJ/1baWi4L+L2umuWV6tuwh0mehAO9uD2R/2E1/bU+t41Z0g5diWJBr3Eu
+         L+N0+vYJQOLqkmIEuZDfsLwqDLUTEb0yEoRRCRqv4kml7CF2gymBnk31hKjJ4/TKtriz
+         pG8anNbwONeAeAXfT7WzcHfDQYMSO7mciLsPINa01auXcikwa/L2rYpPyBUMHZ0o/p0I
+         oFhRmnyljT4sDFX0sdM1UY/igCYxAJbSdY4aQQNkAisqnvwMtsnxxFHZ3NDoiDijLO1y
+         kQGw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790967350; x=1791572150; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=9S5eAE312pd6HZl9cjvi/BgiTHAVYy5cEZ8AWzWw5xo=;
+        b=ixtdxi2epUtKkuXGhSUNb8u7gi3ElY1KdTNYlhK+kZJUHuWz1ZvjK34YDV6lujj/Up
+         GSLFC0IAjjq4Ixdmv7MqjzUtqTK8oyDqJzOvg89I/oikJqNofFCRxql+FNBq1lhsUNfr
+         Mx63HpGg0Hnnvy6xYrQPmImodN190UZSNgdMUu+EGiBAXkkLW511auUv0DD7tU6M6u16
+         uinBUCCSShX9Gkz95Fvx78wvnLoVxtU3eT+GzXvOT6BeoOte2+CunvbWjSgteAMhe1US
+         JnopbvRys2LTPbnL8H2ZeXp7OeRuTQSQihOV1IeiHnNFglSX2LX2xTNqu+WAgPxxh2cq
+         Z3zw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790967350; x=1791572150;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=9S5eAE312pd6HZl9cjvi/BgiTHAVYy5cEZ8AWzWw5xo=;
+        b=W4MXpONImdfGfszRcH2y3qouBiuzaVgJRMi2Dx9XIj63de15gLgVJ5A0VnJyAlnmJZ
+         4ml8Yis/bLSb3r5yoYOPxXc4S33Y8Ltik1tukGg/LOy92GfS2MB3FQSJx25Ma2EoAx6f
+         QSE6QRaBqHcggzUv67GIiD3jYhaWaOnyJOgWbG/0zUqgozKdOD/t0szNeejfpTRyyMxi
+         4kfp943GjhM54D9qdzii2YM6hXUL67XEYTGq92p48MAoiBdd8VIuMRDPKXsMvEx2trlP
+         EfEavqopoSI/ZCdUrd006D1ELys5XwJs+d5RFlxf1Ocfifb2uiYyiu9PmCJbJWiFl278
+         OgDQ==
+X-Forwarded-Encrypted: i=1; AKwUvByMGO+QvynAJSFPzlyzb1oMXae1B+bR0v7hct1qZbsR48KbskWL40MRiSlWyusjp9iRI7aN3yG4Zw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLUEnfXDwR8Hrle4R7MMdWA9gZ7+P8Nrgd+D6/3CSpmEBBd/cZM
+	fuFC7zRc0rwsvoHR7nYMr1NVQce3FnA3xgSEWoKNcR9brYMlfGdRkJgpn8wOsmFv8+tJBgJgAAB
+	bqwAWZq5NKjzshC0xgZecvfS5nRdDPqM=
+X-Gm-Gg: AYBFou0AKUHCxPWqnJjEom58gI4hxPj6+Dos3GIJ4dRxuHjibGGAxihiOLNsLLcChlX
+	I6/GfwP7A/OKstzIRggsaQHTlEJYDZeuC0FaA1OlNxNIgfAsh04eGf4LlQlPccUbp2Cm/OCQtHk
+	ph67TGuZzTGYuCutnHwfjTRLwfYTdW8BW0gdpsePFukVhnYVQ502pIqtMcrbJ/7MzJO1VjjapXA
+	4fBYk6CHOIrdbmQ0fuWDsP4WKt+nw5M1X/xmbQa7dr2i984UZc7EMIDgnNJj6d0vF10g1Ya+tYS
+	5rCRsTy8ozWT3YIXq804NpjDLAGZrR7scC1nYyduw3quxeBM05/3ADLu
+X-Received: by 2002:a05:690e:1243:b0:677:b7e7:f68 with SMTP id
+ 956f58d0204a3-677b7e71be5mr813923d50.108.1790967349727; Fri, 02 Oct 2026
+ 11:55:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261001121254.883973-1-vaknins33@gmail.com> <ar-_BMp5cuPwDw5J@redhat.com>
- <CAJZ5v0g83_OCjh+RjG3H45mADE48vJdrEYahWGJShv62VAVvkA@mail.gmail.com> <ar_yoLIkXpEgwPFr@redhat.com>
-In-Reply-To: <ar_yoLIkXpEgwPFr@redhat.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 2 Oct 2026 20:13:08 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jQgroKLxnyeKLedZvc9f7k0OLhHAwpHjvWK1E1BHDq2A@mail.gmail.com>
-X-Gm-Features: AclHuK9qjeEeqXsnVzQb_E-5BjIROj2N8N80tO4elq8tG7GryJssE5Lf613NJiE
-Message-ID: <CAJZ5v0jQgroKLxnyeKLedZvc9f7k0OLhHAwpHjvWK1E1BHDq2A@mail.gmail.com>
-Subject: Re: [PATCH] pid_namespace: make zap_pid_ns_processes() freezable
-To: Oleg Nesterov <oleg@redhat.com>, Aviv Vaknin <vaknins33@gmail.com>
-Cc: Christian Brauner <brauner@kernel.org>, Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, 
-	"Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <20260918-04-k3-pm-support-v1-0-0acd2b36b96f@kernel.org> <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
+In-Reply-To: <20260918-04-k3-pm-support-v1-2-0acd2b36b96f@kernel.org>
+From: Iker Pedrosa <ikerpedrosam@gmail.com>
+Date: Fri, 2 Oct 2026 20:54:00 +0200
+X-Gm-Features: AclHuK9ruP21ynPDiadHS4oYScZ4A0eIuHPpImnDhttohXSuBO4BfsPMVhy9WRo
+Message-ID: <CABdCQ=OUTASG8JDBqnJAPJ5aTDUC-BQzCVcw0r=cxrb8CPUO2A@mail.gmail.com>
+Subject: Re: [PATCH 2/3] pmdomain: spacemit: Add power domain driver
+To: Yixun Lan <dlan@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	spacemit@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 2, 2026 at 8:06=E2=80=AFPM Oleg Nesterov <oleg@redhat.com> wrot=
-e:
->
-> On 10/02, Rafael J. Wysocki (Intel) wrote:
-> >
-> > On Fri, Oct 2, 2026 at 4:26=E2=80=AFPM Oleg Nesterov <oleg@redhat.com> =
-wrote:
-> > >
-> > > > @@ -243,6 +244,11 @@ void zap_pid_ns_processes(struct pid_namespace=
- *pid_ns)
-> > > >       do {
-> > > >               clear_thread_flag(TIF_SIGPENDING);
-> > > >               rc =3D kernel_wait4(-1, NULL, __WALL, NULL);
-> > > > +             /*
-> > > > +              * The freezer's fake signal ends the wait with -ERES=
-TARTSYS;
-> > > > +              * freeze here, or one stuck pid namespace blocks sus=
-pend.
-> > > > +              */
-> > > > +             try_to_freeze();
-> > > >       } while (rc !=3D -ECHILD);
-> > >
-> > > Somehow I still think it would be better to change do_wait() to use
-> > > TASK_INTERRUPTIBLE | TASK_FREEZABLE. Slightly less robust in theory,
-> > > but I think should work in practice...
-> > >
-> > > Rafael, what do you think?
-> >
-> > Well, why exactly do you think that TASK_INTERRUPTIBLE would be better
-> > than TASK_IDLE here?
->
-> Hmm... it seems we don't understand each other. At least I certainly don'=
-t
-> understand your "than TASK_IDLE here".
->
-> I don't see TASK_IDLE "here", I see that this patch adds try_to_freeze()
-> "here". And this is fine. But, I was thinking about this change instead:
->
->         --- x/kernel/exit.c
->         +++ x/kernel/exit.c
->         @@ -1729,7 +1729,7 @@ static long do_wait(struct wait_opts *wo
->                 add_wait_queue(&current->signal->wait_chldexit, &wo->chil=
-d_wait);
->
->                 do {
->         -               set_current_state(TASK_INTERRUPTIBLE);
->         +               set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZ=
-ABLE);
->                         retval =3D __do_wait(wo);
->                         if (retval !=3D -ERESTARTSYS)
->                                 break;
->
-> because IMO it makes sense anyway. This way try_to_freeze_tasks() -> __fr=
-eeze_task()
-> path can freeze the tasks sleeping in do_wait() without waiting until the=
-y react to
-> fake_signal_wake_up() and call get_signal() -> try_to_freeze().
->
-> Plus this looks simpler,  zap_pid_ns_processes() doesn't need another try=
-_to_freeze().
->
-> Sorry if I missed your point...
+El vie, 18 sept 2026 a las 7:49, Yixun Lan (<dlan@kernel.org>) escribi=C3=
+=B3:
+> [...]
+> diff --git a/drivers/pmdomain/spacemit/pm_domains.c b/drivers/pmdomain/sp=
+acemit/pm_domains.c
+> new file mode 100644
+> index 000000000000..d563e4e4e232
+> --- /dev/null
+> +++ b/drivers/pmdomain/spacemit/pm_domains.c
+> [...]
+> +static struct spacemit_pmu *gpmu;
 
-No worries and thanks for the explanation!
+Would it make sense to embed the 'struct spacemit_pmu' pointer directly int=
+o
+'struct spacemit_pm_domain'? Other generic Power Domain drivers (Rockchip,
+QCOM, Renesas) use this pattern to keep domain callbacks self-contained and
+ready for multi-instance SoCs
 
-Yes, it looks simpler and it should actually work.
+> [...]
+> +static int spacemit_pd_power_on(struct generic_pm_domain *domain)
+> +{
+> [...]
+> + regmap_read(gpmu->regmap, APMU_POWER_STATUS_REG, &val);
 
-Aviv, what do you think?
+Please check the return value of regmap_read()
 
-> > > >       for (;;) {
-> > > > -             set_current_state(TASK_INTERRUPTIBLE);
-> > > > +             /*
-> > > > +              * TASK_IDLE: no hung task warning or load for a wait=
- that can
-> > > > +              * last as long as a tracer keeps a zombie, and a pen=
-ding signal
-> > > > +              * (e.g. the freezer's fake one) can't turn it into a=
- busy loop.
-> > > > +              * TASK_FREEZABLE: let the freezer freeze us while we=
- wait.
-> > > > +              */
-> > > > +             set_current_state(TASK_IDLE | TASK_FREEZABLE);
-> > >
-> > > This looks like overdocumentation to me. I guess it was added by AI. =
-Other users
-> > > of IDLE/FREEZABLE do not try to document the meaning of these task st=
-ates.
-> >
-> > It looks a bit like a note for self TBH.
->
-> True. But...
->
-> Ok, firstly the comment about TASK_IDLE looks a bit misleading to me. I m=
-ean the
-> "as long as a tracer keeps a zombie" part. At this point the descedants t=
-raced from
-> the parent namespace have already gone. The huge comment above this loop =
-tries to
-> explain the reasons for this "wait for pid_allocated =3D=3D init_pids" in=
- more details.
->
-> Secondly. The comment about TASK_FREEZABLE looks fine. But why should the=
- user,
-> zap_pid_ns_processes(), explain the semantics of TASK_FREEZABLE? Probably=
- this
-> documentation makes sense, but then it should be moved to sched.h. Just m=
-y IMHO.
->
-> > > But this is subjective, I won't insist.
-> >
-> > Same here.
->
-> OK ;)
->
-> Oleg.
->
+> [...]
+> + if (ret < 0) {
+> + dev_err(&domain->dev, "power-off domain: %d, error\n", spd->pm_index);
+
+Typo: should this say "power-on domain" since this is inside
+spacemit_pd_power_on()?
+
+> [...]
+> +static bool spacemit_pm_get_state(struct spacemit_pmu *pmu,
+> +  struct spacemit_pm_domain *pd)
+> +{
+> + const struct spacemit_pm_domain_param *p =3D pd->param;
+> + u32 reg, bit;
+> +
+> + regmap_read(pmu->regmap, APMU_POWER_STATUS_REG, &reg);
+
+Please check the return value here as well
+
+> + bit =3D p->use_hw ? BIT(pd->param->bit_hw_pwr_stat) :
+> +  BIT(pd->param->bit_pwr_stat);
+
+Since 'p' is initialized to 'pd->param' above, you can use 'p->bit_hw_pwr_s=
+tat'
+and 'p->bit_pwr_stat' directly here
