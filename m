@@ -1,60 +1,61 @@
-Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
+Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0D9D4E8DEB
-	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 23:07:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE1874BD10E
+	for <linux-pm@vger.kernel.org>; Fri,  2 Oct 2026 23:07:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790982457; cv=none; b=Ge/ozYzeMln8yP7B62iljS/CJGOlaZtVtn7xSkCO7uDmklhqhR0M17z+E1zjCbyIyBXEzdlk3x+89CA0fBbVNkjChkKeML5WGa1ujJqqYjj7RJqQsiraFDEdresStLsotG2RUmrgHZPmrwEt5c+AXSPbstm2kqW1J7VE+p5edAQ=
+	t=1790982459; cv=none; b=UrWgmmJjwHaUVcQBFVXH3woLgUJauNubEh/iG/eO/HCiOGRncAqA8gWCWFG5zZYcs+axRLfIMZWRtUhi3cA/lPhZOuIUuW4VFC1dQ3RbIFaBZfLolwtxpb88eHFZnm86vOLUOlaGl5ov0fJR4XWg+E2F8XRQ1muwsSFQqxXu3as=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790982457; c=relaxed/simple;
-	bh=fG6QfTVVGZNR6nW59hafDfsSx91Y6whNu7CnVnXDnuQ=;
+	s=arc-20240116; t=1790982459; c=relaxed/simple;
+	bh=jwsl/lf1nnwp9LWA9WLqxv3hu3uFGbpXprANMeMEEbk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=J/XdkfZ7ICAhXrZzTct/Iok9YgSNG2Rb7FH1EZfowcR8+743+UXprmrHFfOCkH8IrxrRYlTlwLMyM9Ec2Abt2kwgaGhGDplUT66TTihYF8new23lxUYYJIVjeN1nbL1NnXke/oJyuFEnBMTS5Hyl1djJpUR6jF78SH6E97Y59oo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=k/ypKu1i; arc=none smtp.client-ip=74.125.82.182
+	 MIME-Version:Content-Type; b=N+pSPTLEUjXx79GHW+L4nFOBVNq9lxoFVBcdnk0PIGLYD/fUTKqbWHzFqOYjNDI+ccJJ1FNzK/osmd19COBmcHuvsqTzMILxLKFw6mY+C8JHP1lAVExG9yhsAqBluKrgwloYeBw5/wwCba8f6escM7Zob3EuDXCWMeWSTeKRNLA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=jrInpME4; arc=none smtp.client-ip=74.125.229.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="k/ypKu1i"
-Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-33fb4680717so300330eec.1
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 16:07:29 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="jrInpME4"
+Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-33e46a156f4so107243eec.0
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2026 16:07:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1790982449; x=1791587249; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=OkKspYGARDVWPzoe67v9qdw1CJ7end45NsypUudMHS0=;
-        b=k/ypKu1ihBMI/a/SP34XJBjVkkCpxYL3YsQYjHeWCMaou/wXq3gcbbig9UqAFKW4Ex
-         VWts1xGkxuSAHOjlWUwvs4bYZqPxNK0SU7k9n1Mg4KyzjIYMubxiAnuzLT8941hEkO6V
-         wOc8InMExgZ1+5d0kiFi4+0DdGZmnxcDfjPHs=
+        d=chromium.org; s=google; t=1790982451; x=1791587251; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=g8C4oNz0B3j10C4TExUEIycHLskvC0S9bsmP8HfkEVE=;
+        b=jrInpME42maUckDg0GrWYnweSdpxAF9FztUmAFwQ4+et2piQl3rf9LQnmqxG1123qe
+         5oJerTHWp6w4xa7SrEKZDTo85T0jb9+qXkP+69jdtadcQl+ZxcpjIghAXpe0WYmT3FwI
+         YVs8x+Vyw0+img6C8h8NafIj5zwoaTef0Gkvw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790982449; x=1791587249;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=OkKspYGARDVWPzoe67v9qdw1CJ7end45NsypUudMHS0=;
-        b=P1MNEA/6yQKobdRzX1zMIT5G2Z3oGBTay3Za2YN+DGv/+pb+i4/OAQkgWsKUeMNyF5
-         gevwer+9DDv4Wl7Wim5Psfyv6zY8mx14Sf4SwtdYlAM6/OY+jDUJ7xb7l2VpTNV64y1c
-         VEUY1vlxDw4U7uIyTr9su/qMOftnAtFoSSdtt2UjmWwMR8L7z+uiefVdSoOdRe5CLlES
-         XRBvoq9aEYkdlGIrhpnRjzbthWpqSLHJsavwS5zp9odVqidM0iINcxuQhEMm93uYFBUO
-         k9zaLDrsYEcQZ1tLkJo8U9YWCxSSnjcWoGxyxJ/9FwU5nx6gEN+0fsp7WiP4zLIxdgh+
-         tjdg==
-X-Gm-Message-State: AFuF++lsKAIr5r9KZm0Zer0JGYvaHRTohKbb0FS2NOdvCnfJYiuIPzNS
-	FAKV/gl5223Q6mgy8tTowHDb/2TDCHNSTOqQ+2GpuxO6JfBOR2adVBreudDwa/Qw5A==
-X-Gm-Gg: AYBFou0DkAkSNpdPmo1ZKy3kbNtqroweKsc7pZDQ+oBM6MVEOnP05rju6IgC7qV4p8i
-	IPLGKeo0CT5LYsAJRu2jjvdX/+H2k9tAHyljkbCXk8a0vE/0HYobONLo9ans2dk+rrFMXxo48/q
-	g/GJYqWFjSnS2TUC+jPFvsGOBx9SCcQ1XjNpGAtNUTe0C0L3787lKAz0mCpD3pFkw+1N8TfDeCV
-	/+a+mwmjtnU0pS5sHfBK0vr25JvEC3JQbXUeQATAemzoYuyTxYDR1ZMFf6bQDvgPwS9wb75Wb0M
-	alpnTPgk3xJ2ANMApVwrPaGx4Kd5gvgfjtIvPFhFrLlfU3jsFHNbjJComvU5k1OT+Utn1X2LrOw
-	zEwhu0w1E7jFCrcxKx3inl6kKHISauF/4EOGty1UvV9AU3f7+SZJkON8pE9XBXgCjU807/Ylygv
-	/RR1Kv4QbzomUbZf6FGsAUUVa8gGvitjYfa9Zk7+2aviSwuEWdWABvTopwbnTJSwA1Pdpwg0H4g
-	rcboEHRyow93KK5FRb84fXZGg/ySQJXFPjALw==
-X-Received: by 2002:a05:701b:458e:20b0:141:4a06:ad6f with SMTP id a92af1059eb24-151c32dd5cfmr996174c88.8.1790982448536;
-        Fri, 02 Oct 2026 16:07:28 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790982451; x=1791587251;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=g8C4oNz0B3j10C4TExUEIycHLskvC0S9bsmP8HfkEVE=;
+        b=Xzz4cszTCEp4bKEImVm03cI3nX+VyWMrRTV0+YVWEfJUKm3QpiYwPvDDsMWd1bC/E+
+         R2CEUVLXJ/tstL+H4pfmRWR/aMFOd2D+FZRnoAmf6KRuZ9uc5lPvh2fC6zt6kSQxz0v1
+         4JAETQQwnbqX5fQKzHvk+8eYFvTGi68oHK+pf08dtaaa95UVmHhvSk6bDPAyR5UWw6+w
+         T+zmj8IY1VQXImK/OioKSlMAUx5490OP/0T/DVhFOj9JOqHN3DQ6ENbLnE6SDo7WmKKM
+         rw2HhvBTTRocy1RmEBI1hRXV9XGY8PNTLGwP3afbrxo4vtSOcklwT9I9p0CFAAV8atFZ
+         1+lQ==
+X-Gm-Message-State: AFq9FYJ1EbPnqpl3NnQi2UX1AV7leD1N0Y/edfipU77X1X8vatF9th+Y
+	9tVfiK+jL7QQF0T+zUw0pSW3jz3hJHE1Z3ndhsDt9hng1x4vrqRN3DE5Rl1SDDvRxw==
+X-Gm-Gg: AYBFou3Y3GSeaKdGztJLlLhzge0VrCmDG5zRqLsOsomiXcWmtD8PwuYCA82tFMLzqZB
+	78AJ/IFZMdxJLC6S+qx1GcO/UaVhpiwWktTb56U67f5w9PYTZxVBF8hfPqQTQKs/0I7S8W5tDLS
+	7i8Bi/TzA2k71Wrkzv0/ssPjd7lhy7sYJHD+WCg9I7Usv0g9NqfIUz7lA2K+WFD8dyNtRXIr5PA
+	QBS8Fr8q5skFqkkBEznAQOGX88zmp3PKoilnebIj0BQ5OgWbblohRNCxzc08NhIB3JuZfqfnRPl
+	H/X47r3QNGovjrZlCqc5jXEkM5mUTTZTkqdhqpsoJjL5MeW91Vt7GhyAG/LloCDl0bBFUcxSJsp
+	2FDkqrXMeQTFNfhqGMYkWPrSwlt6LMKgTHnKyeqs/g5aTCO06QkGEq6HynM6nUtjbmQQo1Hdlbs
+	i7WKi8yviAMn62+ZaGvE/IJOmkkawO1/EjBf9pGGj4WvFroVwz3MYDcZCvOO9rH5bjuths1HXSz
+	lfF6otpm/W3Yh9D+04LKkAVqzFYgMBo9lNJEw==
+X-Received: by 2002:a05:693c:6391:10b0:34e:7f9a:c722 with SMTP id 5a478bee46e88-34f218665camr4494122eec.34.1790982450979;
+        Fri, 02 Oct 2026 16:07:30 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:b0dc:e72e:e96b:3323])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-151fc39a6cbsm555611c88.5.2026.10.02.16.07.27
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-34f14f303e3sm11053210eec.5.2026.10.02.16.07.29
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 02 Oct 2026 16:07:27 -0700 (PDT)
+        Fri, 02 Oct 2026 16:07:30 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-pm@vger.kernel.org,
@@ -70,9 +71,9 @@ Cc: linux-pm@vger.kernel.org,
 	Fabrice Gasnier <fabrice.gasnier@st.com>,
 	linux-arm-kernel@lists.infradead.org,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 4/5] PM: runtime: Add tests for last_busy propagation
-Date: Fri,  2 Oct 2026 16:03:08 -0700
-Message-ID: <20261002160309.4.I8ab8b7f662fe1921c7084a47d554535597cc2702@changeid>
+Subject: [PATCH 5/5] iio: adc: stm32-adc: Drop runtime_idle()
+Date: Fri,  2 Oct 2026 16:03:09 -0700
+Message-ID: <20261002160309.5.Ica1e32ae51d7975844386684d2b6a097f3ca9122@changeid>
 X-Mailer: git-send-email 2.56.0.rc1.315.gc6ed9934b7-goog
 In-Reply-To: <20261002230714.507921-1-briannorris@chromium.org>
 References: <20261002230714.507921-1-briannorris@chromium.org>
@@ -82,143 +83,49 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-This is a regression test for the problem fixed in "PM: runtime:
-Propagate last_busy from dependent to dependency".
+This runtime_idle() implementation was added in commit c537d3457542 ("iio:
+adc: stm32-adc: fix runtime autosuspend delay when slow polling"), to work
+around a suboptimal behavior in the runtime PM core. It should no longer
+be necessary as of "PM: runtime: Propagate last_busy from dependent to
+dependency".
 
+Cc: Jonathan Cameron <jic23@kernel.org>
+Cc: Fabrice Gasnier <fabrice.gasnier@st.com>
+Cc: Ulf Hansson <ulfh@kernel.org>
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
+I do not have these devices to test. I have tested other drivers, and I've
+verified this behavior in unit tests as well.
 
- drivers/base/power/runtime-test.c | 101 ++++++++++++++++++++++++++++++
- 1 file changed, 101 insertions(+)
+ drivers/iio/adc/stm32-adc-core.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/base/power/runtime-test.c b/drivers/base/power/runtime-test.c
-index 24865ce844fc..4b507821912b 100644
---- a/drivers/base/power/runtime-test.c
-+++ b/drivers/base/power/runtime-test.c
-@@ -4,6 +4,7 @@
-  */
- 
- #include <linux/cleanup.h>
-+#include <linux/delay.h>
- #include <linux/pm_runtime.h>
- #include <linux/workqueue.h>
- #include <kunit/device.h>
-@@ -285,6 +286,104 @@ static void pm_runtime_supplier_suspend_test(struct kunit *test)
- 	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(norpm_supplier));
+diff --git a/drivers/iio/adc/stm32-adc-core.c b/drivers/iio/adc/stm32-adc-core.c
+index a42d82d61cb8..e9e113a46ccf 100644
+--- a/drivers/iio/adc/stm32-adc-core.c
++++ b/drivers/iio/adc/stm32-adc-core.c
+@@ -836,17 +836,10 @@ static int stm32_adc_core_runtime_resume(struct device *dev)
+ 	return stm32_adc_core_hw_start(dev);
  }
  
-+static void pm_runtime_parent_last_used_test(struct kunit *test)
-+{
-+	struct device *parent = kunit_device_register(test, DEVICE_NAME "_parent");
-+	struct device *dev = kunit_device_register(test, DEVICE_NAME);
-+	u64 expiry1, expiry2;
-+
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, parent);
-+
-+	put_device(dev->parent);
-+	dev->parent = parent;
-+	get_device(parent);
-+
-+	pm_runtime_set_active(parent);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_use_autosuspend(parent);
-+	pm_runtime_use_autosuspend(dev);
-+
-+	pm_runtime_set_autosuspend_delay(dev, 0);
-+	/* Effectively infinite delay (prevent finishing autosuspend during this test). */
-+	pm_runtime_set_autosuspend_delay(parent, 200000);
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_mark_last_busy(parent);
-+
-+	pm_runtime_get_noresume(dev);
-+
-+	pm_runtime_enable(parent);
-+	pm_runtime_enable(dev);
-+
-+	expiry1 = pm_runtime_autosuspend_expiration(parent);
-+	KUNIT_EXPECT_NE(test, 0, expiry1);
-+
-+	/* Make absolutely sure the clock advances. */
-+	msleep(1);
-+
-+	KUNIT_EXPECT_EQ(test, 0, pm_runtime_put_sync_autosuspend(dev));
-+
-+	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(dev));
-+
-+	/* Flush, in case any request was pending. */
-+	flush_workqueue(pm_wq);
-+	KUNIT_EXPECT_FALSE(test, pm_runtime_suspended(parent));
-+
-+	expiry2 = pm_runtime_autosuspend_expiration(parent);
-+	KUNIT_EXPECT_NE(test, 0, expiry2);
-+	/* The child's last_busy time should have bumped up the parent's expiration. */
-+	KUNIT_EXPECT_GT(test, expiry2, expiry1);
-+}
-+
-+static void pm_runtime_supplier_last_used_test(struct kunit *test)
-+{
-+	struct device *supplier = kunit_device_register(test, DEVICE_NAME "_supplier");
-+	struct device *dev = kunit_device_register(test, DEVICE_NAME);
-+	u64 expiry1, expiry2;
-+
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, supplier);
-+
-+	KUNIT_ASSERT_NOT_NULL(test, device_link_add(dev, supplier, DL_FLAG_PM_RUNTIME));
-+
-+	pm_runtime_set_active(supplier);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_use_autosuspend(supplier);
-+	pm_runtime_use_autosuspend(dev);
-+
-+	pm_runtime_set_autosuspend_delay(dev, 0);
-+	/* Effectively infinite delay (prevent finishing autosuspend during this test). */
-+	pm_runtime_set_autosuspend_delay(supplier, 200000);
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_mark_last_busy(supplier);
-+
-+	pm_runtime_get_noresume(dev);
-+
-+	pm_runtime_enable(supplier);
-+	pm_runtime_enable(dev);
-+
-+	expiry1 = pm_runtime_autosuspend_expiration(supplier);
-+	KUNIT_EXPECT_NE(test, 0, expiry1);
-+
-+	/* Make absolutely sure the clock advances. */
-+	msleep(1);
-+
-+	KUNIT_EXPECT_EQ(test, 0, pm_runtime_put_sync_autosuspend(dev));
-+
-+	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(dev));
-+
-+	/* Flush, in case any request was pending. */
-+	flush_workqueue(pm_wq);
-+	KUNIT_EXPECT_FALSE(test, pm_runtime_suspended(supplier));
-+
-+	expiry2 = pm_runtime_autosuspend_expiration(supplier);
-+	KUNIT_EXPECT_NE(test, 0, expiry2);
-+	/* The consumer's last_busy time should have bumped up the supplier's expiration. */
-+	KUNIT_EXPECT_GT(test, expiry2, expiry1);
-+}
-+
- static struct kunit_case pm_runtime_test_cases[] = {
- 	KUNIT_CASE(pm_runtime_depth_test),
- 	KUNIT_CASE(pm_runtime_already_suspended_test),
-@@ -293,6 +392,8 @@ static struct kunit_case pm_runtime_test_cases[] = {
- 	KUNIT_CASE(pm_runtime_error_test),
- 	KUNIT_CASE(pm_runtime_probe_active_test),
- 	KUNIT_CASE(pm_runtime_supplier_suspend_test),
-+	KUNIT_CASE(pm_runtime_parent_last_used_test),
-+	KUNIT_CASE(pm_runtime_supplier_last_used_test),
- 	{}
- };
+-static int stm32_adc_core_runtime_idle(struct device *dev)
+-{
+-	pm_runtime_mark_last_busy(dev);
+-
+-	return 0;
+-}
+-
+ static DEFINE_RUNTIME_DEV_PM_OPS(stm32_adc_core_pm_ops,
+ 				stm32_adc_core_runtime_suspend,
+ 				stm32_adc_core_runtime_resume,
+-				stm32_adc_core_runtime_idle);
++				NULL);
  
+ static const struct stm32_adc_priv_cfg stm32f4_adc_priv_cfg = {
+ 	.regs = &stm32f4_adc_common_regs,
 -- 
 2.56.0.rc1.315.gc6ed9934b7-goog
 
