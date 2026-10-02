@@ -1,80 +1,99 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D38C14A0908;
-	Fri,  2 Oct 2026 13:32:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05A89331EBD;
+	Fri,  2 Oct 2026 14:05:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790947952; cv=none; b=qSuYSfV4yg3/yNCHfdx5PmGyA7KaK2ld8eSWI2tdcdITCqcYFtTzrEpB/IvtrerLUwSaZs+FUguEsGsVfPcJIHBvwk0GAoTL7mVS4qAcXEsQw3AyylX0m2spNvOTOBXJKVEOQJ2cnn4oABTYA/2w9UMNdGKhVoseQ93o1PC8Eno=
+	t=1790949906; cv=none; b=siwuaUz9gt5mHJIlE1K3z7G+YJG3o+s+6E8f3YxNgA+P9S/ApbC1DUBQc6aMCmltCQPSudukwMk9Bag6dn5iZagvhztDb0HVAP6CJEgJWtvEcX2BARDlZGn3/ihJn5TMs+5Z9sB4kzWobsKAesqK48oU/tWX6pwcpL5IXm6bFgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790947952; c=relaxed/simple;
-	bh=QHruVCMoFYTNklV6Hc6Pj2xtU7OQpN+0VZLqbsT7pgE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RD5DQPG5Ynga61jxDkDxPV0PY3IEH8w9SW7jKGe/xVQ9QJs8uXcD+nRaRvmH5O1cwHA83QxMd1yEBCGPqu9rwW6YKyLEFW7BRQPgf2qtFWcqbvWEY6zd6n5jIIA51CvSzgA5q+mw8fwsNDYXGWQRQa1jTI8NCTN7JlbFYxJSoUs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GwG7mW8q; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1790949906; c=relaxed/simple;
+	bh=UldxzhOOWn+zI5xQbXHeUikgJJze4n+aXzYCUyjeO6w=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=Z2AcdhAalqkoEUI3j0wBi+xmVqTUa7rMu0ENTu2/WrqHDsXJ7tI2TJO2umEg6EEdIeYtWFycLYVYbcf7DZBuQmy4LLAZ06DDyW6zgrCGBJ617bHtRmxs9qPkqkx2PA8PKHBl7IHFpdKv8bOP3AHOGnBeMcmcFfd10ObWcKZ+33Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=ZRn4taga; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=tmXg5zzI; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GwG7mW8q"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 487A81F000FF;
-	Fri,  2 Oct 2026 13:32:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790947951;
-	bh=5CS+1WddC9LU2dBRnyvoTVR6p6QDTIjDWTeJO+ovyZg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=GwG7mW8qhr86CaqjYE/Yd2RsfCqwMsCXI1iDGRoNkU4pgH6lUy+JL0qRaqhYUBG6E
-	 zl1APCpFBz4sEk0HnkVUwCVe1/xIrU7ttHBmyJ6P4B5SorjsGlEFBNe6193ibDRnnU
-	 j6nUHNrUC3NQCJS5fFiDDEyjyP1heho25GZBHmlyAjzJdeJI4iVbh3WP8e6mdRDH6B
-	 fmktOK6KbL/vwdzmLlp7dkWpn6MeJ3Y/7RcoE0Ft3eTFc5jaCl8r8P/Fm80rO41m1U
-	 Su3Pmj/VsRAGHjDwyCaduNE0dHjvSg5nTjpt2K3texfLOytpg0mSoBamivZMOo+b8Y
-	 FVGaLt7RCr3VQ==
-Date: Fri, 2 Oct 2026 14:32:25 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Suzuki K Poulose <suzuki.poulose@arm.com>
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, maz@kernel.org,
-	Sudeep Holla <sudeep.holla@kernel.org>, will@kernel.org,
-	catalin.marinas@arm.com, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, steven.price@arm.com,
-	aneesh.kumar@kernel.org, oupton@kernel.org, gshan@redhat.com,
-	joey.gouly@arm.com, tabba@google.com, yuzenghui@huawei.com,
-	linux-coco@lists.linux.dev, gankulkarni@os.amperecomputing.com,
-	sdonthineni@nvidia.com, alpergun@google.com, fj0570is@fujitsu.com,
-	WeiLin.Chang@arm.com, lpieralisi@kernel.org, enju.kohei@fujitsu.com,
-	jonathan.cameron@oss.qualcomm.com,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v22 07/10] kernel: hibernate: Add an arch hook for
- preventing hiberation
-Message-ID: <20261002-sloppy-tremendous-guan-30cbe5@sudeepholla>
-References: <20261002061507.1600269-1-suzuki.poulose@arm.com>
- <20261002061507.1600269-8-suzuki.poulose@arm.com>
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="ZRn4taga";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="tmXg5zzI"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1790949890; bh=NqakC2EdNOStp+MFCguvI+4
+	5LmlhJls++C1rbkxt+2E=; b=ZRn4tagaX/5foJfAFPqsvz1sDldX6OoFbBkeRMmQ4fdZ8SEw+Y
+	tlXOy1NVsIzhp19d9M/xrk9TAwdb3BZvon94PHGuifPnpaXaY4rn8V/hdI+oPEfFqXayMxfP1l0
+	p2ThB+93usHK2v32i9siEJ1HIOpLzDAq4LKDhk1a/OILHT5c2fzAeJzGkU9UNmM0rXy05tY+AXh
+	BnBBqAnaFXVMQ7cFaGi7rpd2U4tdfd89M1ywnCQ9WV8xJLlP9iPZRctb/m3AMAUCIF2D22x9xVK
+	orOTJqfjfRa8HN9FueASyJN1TAsK/NkYTx8KMqKn5IzHRWqAcdgLDqCfDcoLHYqLq5Q==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1790949890; bh=NqakC2EdNOStp+MFCguvI+4
+	5LmlhJls++C1rbkxt+2E=; b=tmXg5zzIeYR/CTi+kG5mVr3hdVw3u9Cd7do+OA9bRnm1HypYCH
+	ERedvrHfzzeD1WVBuv5PbNHcZ5loINw7RKAw==;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261002061507.1600269-8-suzuki.poulose@arm.com>
+Date: Fri, 02 Oct 2026 16:04:50 +0200
+From: =?UTF-8?Q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?=
+ <barnabas.czeman@mainlining.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>, Konrad Dybcio
+ <konradybcio@kernel.org>, Stephan Gerhold <stephan@gerhold.net>, Ulf Hansson
+ <ulfh@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org
+Subject: Re: [PATCH v3 1/7] dt-bindings: power: qcom-rpmpd: define RPMPD_VDDMD
+In-Reply-To: <20261002-devious-mauve-wrasse-66bbeb@quoll>
+References: <20261002-sdm632-rpmpd-v3-0-95c47d0f26cf@mainlining.org>
+ <20261002-sdm632-rpmpd-v3-1-95c47d0f26cf@mainlining.org>
+ <20261002-devious-mauve-wrasse-66bbeb@quoll>
+Message-ID: <d5e9ecd991990098a4f1724750ed47f8@mainlining.org>
+X-Sender: barnabas.czeman@mainlining.org
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Fri, Oct 02, 2026 at 07:15:03AM +0100, Suzuki K Poulose wrote:
-> Add a hook to allow arch code disable hibernation. On arm64, with an RMM active,
-> there could be pages that are delegated to the "Realm" security state. Any
-> access to them are fatal (e.g., hibernate save image or restoring an image to
-> a delegated page). pKVM host also has its restrictions on enabling hibernation.
+On 2026-10-02 11:57, Krzysztof Kozlowski wrote:
+> On Fri, Oct 02, 2026 at 12:38:29AM +0200, Barnabás Czémán wrote:
+>> Define RPMPD_VDDMD can be used for SDM439 and SDM632 MSS.
 > 
-> Add a weak arch hook to let the architectures have a say.
+> There is no sdm439 RPMPD... The SDM632 is added later and bindings
+There will be.
+> header come with the compatible patch. Squash these.
+You have previously commented how that is connected to the indices.
 > 
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Pavel Machek <pavel@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Sudeep Holla <sudeep.holla@kernel.org>
-
-FWIW, it makes sense for this RMM use case:
-
-Reviewed-by: Sudeep Holla <sudeep.holla@kernel.org>
-
--- 
-Regards,
-Sudeep
+>> 
+>> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+>> ---
+>>  include/dt-bindings/power/qcom-rpmpd.h | 1 +
+>>  1 file changed, 1 insertion(+)
+>> 
+>> diff --git a/include/dt-bindings/power/qcom-rpmpd.h 
+>> b/include/dt-bindings/power/qcom-rpmpd.h
+>> index 4371ac941f29..beb066b3aa8c 100644
+>> --- a/include/dt-bindings/power/qcom-rpmpd.h
+>> +++ b/include/dt-bindings/power/qcom-rpmpd.h
+>> @@ -15,6 +15,7 @@
+>>  #define RPMPD_VDDMX		3
+>>  #define RPMPD_VDDMX_AO		4
+>>  #define RPMPD_VDDMX_VFL		5
+>> +#define RPMPD_VDDMD		5
+> 
+> Problem is that it is platform specific and comment in that file says
+> "don't do it" yet you do it.
+It is not completely platform specific and if you have check the 
+previous
+reviews Dmitry was asking me to define it. If i set it 10 what will be
+very safe for every platform i will get warning messages.
+By the way 5 is fine for SDM429, SDM439 and SDM632.
+> 
+> So the device has nbo MX? Why commit msg is silent on this? Explains
+> not much except repeating the diff and referencing users which are
+> almost obvious if this is properly squashed.
+> 
+> Best regards,
+> Krzysztof
