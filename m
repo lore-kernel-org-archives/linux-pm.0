@@ -1,175 +1,99 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64FC8350285
-	for <linux-pm@vger.kernel.org>; Sat,  3 Oct 2026 09:15:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D6113AD503
+	for <linux-pm@vger.kernel.org>; Sat,  3 Oct 2026 11:07:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791018905; cv=none; b=txDxqBtQGuX9KhJncykmD3GUBrimN6fBmuxFk1Bs3LfdYQdTgxPyc98DzPGtxkMhaoqCq1xs8kdjmUXygQo1WsMI3+6RcF1zjAhs405Sxj+GA6nK71iMsVcVIxNeR8fq1S0s/AB7inKjV6FURCnHLz8wWNwjzi+ybkkz68yNmNI=
+	t=1791025631; cv=none; b=plcN14rOp9XYr+KGGajanULfj4WmKzHHSch/ecLp3cmYfmJ/jKo1+Nft+Iyny+1EO8dC29kqYEkzdBdRulZv9IPFy52sH59ujxPtqFpayWWrFPt69yY7Ma5R/IPx3h9ggMSgw8HqyCiXMRxVUAphTYapGB06dcrGYk0WU8o9Dag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791018905; c=relaxed/simple;
-	bh=rP9RNg9VVmVKDqjlIhXyymS0DyeJ4N2kWy3XBRaq6DI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=My1gjTnSDU/P4U5h+D4q4goWdFLbF0vHuj3goWSceePAlJZ9Szm+IY494pSZv3BEcVYaLMw3Pp/5s8tBszVRiVVxcUhpoSndBu4hQeHEBclxetXTuzLjrd7i4M1eeVC/R6Ml4/KrXA10SJyBHQdDRkTUJSfUtbA7Vhy+3rpDDj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Bstz7Dpo; arc=none smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1791025631; c=relaxed/simple;
+	bh=hWDUZARlq4vDyxL8gZNwQrCt52jPkXr50aadlzHM8aU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=s6g4Xl8GClCXupT8ThR7psqpqkL2weUSgwSOaYLZ+JZGvSzf1gu4G5fO0I3Y5+RkWNsu4WbTy+yu4p++m4bTJ8+ZBnsNjtEe1epsEzwmxL+2PoqLSIVKQrN2Nb/J8hof3kbLBf1iYpZ9vdpBEUBrRVizARk210DxlyfiRVnw0nY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=SldABLOt; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Bstz7Dpo"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-48441a2ba1bso130580f8f.1
-        for <linux-pm@vger.kernel.org>; Sat, 03 Oct 2026 02:15:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791018902; x=1791623702; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IWrQtgnBBrtxYpdGid+lEFP8Z5fa4mnFJvTHl2+VUDc=;
-        b=Bstz7DpooO5uerNBptHAf7KqjxxySQWjVxB8WCxnEr1YSZ1S4MqIhtJiHrCLocv7td
-         fRXJLAR4wWTVF27Hnip/1NM//SFQoQKbs+xiNDtgxolVkIcw1mEkMLA5ISLkfATAruQa
-         BSGiJqbX66d9v8Ar5tTqq+dans4J3OOepBvkn+RfJ1S+pwupunlPcdCFBHR+QvMXdv5K
-         bzkBTF6egtNZQ45bc8Nqylr1UPyzeYaO7vMywaxpedswydnzpMCgd1yyczgECmkt2XUs
-         KRyKfZp0rP0YNBgEpjqydFtNBs7C/WvwJMwKCNpJdse68gc9TyUkzT26uyzth9dh3ep6
-         5SfA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791018902; x=1791623702;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=IWrQtgnBBrtxYpdGid+lEFP8Z5fa4mnFJvTHl2+VUDc=;
-        b=ydX7Bd7yHdRUjyk2i9o9kCnGiLM4kmazYfFdyE1cFFjwb92r3hwRkj2AvlMhysArdZ
-         fByCv2wrfiRgSV+6PAF5mPrjH/e1VrSkjJMiHSFSMqxydAo5JABWOUOglbzlLCCb037K
-         Tosx8FPUtVFa8xRwTrKCv0TbxfI3eTDPqoBnvLYT9dJbhKM/sJ6OY4d+0yijxSOroqmo
-         XwsQiWkzTA2DkgdTzj/OiqRRykBuW8IiY3k1qlGZA6sGj7XlcEIFwOuxXsQUMpHBVZLd
-         0GFeDR5cuNa+kuxFjMdpAjcx3XcZFvHyql29S1Fe3k6RZo30lwuLPQTRmQQm1YM1t0ea
-         y2Yg==
-X-Forwarded-Encrypted: i=1; AKwUvBzDUNxt7csfrvkleoXn3Oa99UVvhFsj1ot7C/LL6LDeNyBlERDqUUmrSmu4jqvkOhY+NchXjUH8MA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYId//tpEEqH/5hVmhcP9iUh/t7xKYBxoLNvk87aKrnL5LStVHzV
-	5pfnQNiffCelaTh+pAtdzJ384KZaCIa6zS+iCJm6UzrtLjNfY1CW0+wJ
-X-Gm-Gg: AYBFou29zz4xERn/ymtxMQIwRTdEbAZxneGOKuzO3Q4s6J6IcdsYkyIkO9x2IpcLx2l
-	fvEammB0MJNgYUQ/i6vylihCtTvWL9OYmLU8mctSUGtJdkddRY+G05zEf5M4HXl1VEFfRz7/pyF
-	GfVBLS5roEXooVPikDcaNFp4+W+LoQJmwaSIIlrkwCsUUj2rPPDCwa83TNjrzVDA2tHge8e7neP
-	R+MeWFnkJehoraEozA7BuC0XgFA1Vvsjj5Z4T3F0FFG6NXujsvcb1P4XNJeUcPoKfkVhSgDho2q
-	Iw1fR6LyGOi5AtRTadFhW7SoItOsPcjCLCgm9xFP1Of33gImy/XfkxEusq13ssMyEm1EcLODqrE
-	aoucQC5Yz2GXIh/C7bE7Zde5C8P5+J/DwKQqvTJzp12rRuRFYrHnUb4M/Pi69WhC38Sx7cOm+JD
-	TUBEkdNv//iqe4+XsYqfozieccjyonGetV8w7+LKz98C+dIw+SpQtUpibUaYzksiHbdZmPiwcAW
-	gvnM/Njyio=
-X-Received: by 2002:a05:6000:230c:b0:488:7f1d:2728 with SMTP id ffacd0b85a97d-48c47fe497fmr3047875f8f.30.1791018901393;
-        Sat, 03 Oct 2026 02:15:01 -0700 (PDT)
-Received: from FranzSP11.fritz.box ([31.31.60.25])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b382f8ab4sm10549817f8f.35.2026.10.03.02.14.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 03 Oct 2026 02:15:00 -0700 (PDT)
-From: Franz <franzelfranzel@gmail.com>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Manivannan Sadhasivam <mani@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	regressions@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH] power: sequencing: qcom-wcn: power off WLAN at probe
-Date: Sat,  3 Oct 2026 11:14:51 +0200
-Message-ID: <20261003091451.4727-1-franzelfranzel@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <CAPjyS8dY0Q_o3XmFjuKZZsjhzhoSNL+ZGJtw5cQt8HiV3sUtxA@mail.gmail.com>
-References: <CAPjyS8dY0Q_o3XmFjuKZZsjhzhoSNL+ZGJtw5cQt8HiV3sUtxA@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="SldABLOt"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1791025628;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=NaIBcD/hC1GVFenfbiP3xESvJltZa3E3pEsPaq2E8qE=;
+	b=SldABLOtvNc2YXSREIMhlGQtBY8ijALoehqRGOdRq9hdrEubouSiBWbMmSfWbzpxrVaJEw
+	wiKnOjXaYu3cbnzD1KKKOfSpNrZABUxD7Qn8lrly64SdKHqyPVLXqpVCHEWqM+bNkOwXIo
+	4mQ5RDQhn61RlLFY9HhltYAWdWSxiCY=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-138--AaLEvuzMzehhK0TrTqqCA-1; Sat,
+ 03 Oct 2026 07:07:04 -0400
+X-MC-Unique: -AaLEvuzMzehhK0TrTqqCA-1
+X-Mimecast-MFC-AGG-ID: -AaLEvuzMzehhK0TrTqqCA_1791025623
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 0CC0C1828B4A;
+	Sat,  3 Oct 2026 11:07:03 +0000 (UTC)
+Received: from onestero-thinkpadp1gen7.tpbc.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id 4121F1800576;
+	Sat,  3 Oct 2026 11:07:00 +0000 (UTC)
+Received: by onestero-thinkpadp1gen7.tpbc.csb (nbSMTP-1.00) for uid 13628
+	oleg@redhat.com; Sat,  3 Oct 2026 13:07:02 +0200 (CEST)
+Date: Sat, 3 Oct 2026 13:06:59 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Aviv Vaknin <vaknins33@gmail.com>
+Cc: Christian Brauner <brauner@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Bradley Morgan <brads@mainlining.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v2] pid_namespace: make zap_pid_ns_processes() freezable
+Message-ID: <asDh0zBHEIWdto5x@redhat.com>
+References: <20261002202820.3433318-1-vaknins33@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261002202820.3433318-1-vaknins33@gmail.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
 
-The WLAN enable GPIO is requested with GPIOD_ASIS and then kept at its
-current level, so that a WLAN module left powered on by the firmware is
-not switched off. The FIXME explains why: toggling it would take the
-PCIe link down, and the controller driver could not recover from that.
+On 10/02, Aviv Vaknin wrote:
+>
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -1751,7 +1751,7 @@ static long do_wait(struct wait_opts *wo)
+>  	add_wait_queue(&current->signal->wait_chldexit, &wo->child_wait);
+>  
+>  	do {
+> -		set_current_state(TASK_INTERRUPTIBLE);
+> +		set_current_state(TASK_INTERRUPTIBLE | TASK_FREEZABLE);
+>  		retval = __do_wait(wo);
+>  		if (retval != -ERESTARTSYS)
+>  			break;
+> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+> index 8bc9edb40..127a5fd23 100644
+> --- a/kernel/pid_namespace.c
+> +++ b/kernel/pid_namespace.c
+> @@ -269,7 +269,7 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
+>  	 * free_pid() will awaken this task.
+>  	 */
+>  	for (;;) {
+> -		set_current_state(TASK_INTERRUPTIBLE);
+> +		set_current_state(TASK_IDLE | TASK_FREEZABLE);
+>  		if (pid_ns->pid_allocated == init_pids)
+>  			break;
+>  		schedule();
 
-That reasoning held while the PCIe link was trained before the
-sequencer probed. Since commit b921aa3f8dec ("PCI/pwrctrl: Switch to
-pwrctrl create, power on/off, destroy APIs"), qcom_pcie_host_init()
-powers the endpoint through pwrctrl before it starts link training, and
-defers until the pwrctrl driver is bound. That driver cannot bind
-before this sequencer has probed. Power-on therefore always comes
-before link training, and keeping the firmware state is now harmful.
+Thanks Aviv,
 
-On the Microsoft Surface Pro 11 (X1E80100), the WCN7850 sits on a
-PCIe port without a PERST# GPIO. While pci-pwrctrl-pwrseq is not yet
-bound, the host init is deferred about ten times, and each attempt
-powers the PHY and controller back down. The later power-on only sets
-a GPIO that is already high, so the chip is never reset and the link
-never comes up:
-
-  qcom-pcie 1c08000.pcie: Device found, but not active
-
-The endpoint is not enumerated and ath12k never probes. Bluetooth on
-the same chip fails too ("QCA Failed to send TLV segment (-110)").
-
-Request the GPIO as GPIOD_OUT_LOW. The chip is then off when the
-sequencer probes, and pwrctrl powers it up cleanly right before link
-training. Drop the FIXME and the code that preserved the firmware
-state.
-
-Tested on a Surface Pro 11:
- - b921aa3f8dec plus a one-line version of this change: endpoint
-   enumerated at 2.4 s, ath12k and Bluetooth working.
- - next-20260929 plus this patch: "PCIe Gen.3 x2 link up" at 3.4 s,
-   ath12k and Bluetooth working, Wi-Fi connected.
-Without the change, neither kernel enumerates the endpoint.
-
-The culprit was found by bisecting v6.17..v7.1, with the DTB and
-.config held constant.
-
-Fixes: b921aa3f8dec ("PCI/pwrctrl: Switch to pwrctrl create, power on/off, destroy APIs")
-Cc: stable@vger.kernel.org
-Assisted-by: Claude:claude-opus-5-5
-Closes: https://lore.kernel.org/all/CAPjyS8dY0Q_o3XmFjuKZZsjhzhoSNL+ZGJtw5cQt8HiV3sUtxA@mail.gmail.com/
-Signed-off-by: Franz <franzelfranzel@gmail.com>
----
- drivers/power/sequencing/pwrseq-qcom-wcn.c | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
-
-diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-index 7f88a29b2..636dd7e63 100644
---- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
-+++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-@@ -526,15 +526,8 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(ctx->bt_gpio),
- 				     "Failed to get the Bluetooth enable GPIO\n");
- 
--	/*
--	 * FIXME: This should actually be GPIOD_OUT_LOW, but doing so would
--	 * cause the WLAN power to be toggled, resulting in PCIe link down.
--	 * Since the PCIe controller driver is not handling link down currently,
--	 * the device becomes unusable. So we need to keep this workaround until
--	 * the link down handling is implemented in the controller driver.
--	 */
- 	ctx->wlan_gpio = devm_gpiod_get_optional(dev, "wlan-enable",
--						 GPIOD_ASIS);
-+						 GPIOD_OUT_LOW);
- 	if (IS_ERR(ctx->wlan_gpio))
- 		return dev_err_probe(dev, PTR_ERR(ctx->wlan_gpio),
- 				     "Failed to get the WLAN enable GPIO\n");
-@@ -545,13 +538,6 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(ctx->xo_clk_gpio),
- 				     "Failed to get the XO_CLK GPIO\n");
- 
--	/*
--	 * Set direction to output but keep the current value in order to not
--	 * disable the WLAN module accidentally if it's already powered on.
--	 */
--	gpiod_direction_output(ctx->wlan_gpio,
--			       gpiod_get_value_cansleep(ctx->wlan_gpio));
--
- 	ctx->clk = devm_clk_get_optional(dev, NULL);
- 	if (IS_ERR(ctx->clk))
- 		return dev_err_probe(dev, PTR_ERR(ctx->clk),
-
-base-commit: 6474fa070f2b8013b4b87350b775b8c3be6e8aac
--- 
-2.56.0
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 
