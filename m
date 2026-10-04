@@ -1,180 +1,150 @@
-Received: from mail-wr2-f19.google.com (mail-wr2-f19.google.com [74.125.225.83])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BAA63FDBEA
-	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 19:18:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.83
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791141505; cv=none; b=poELN7StE6s5z7HgrV603TZjCBhlJn3F3ma8u/fspJYveK+s5W3I0eBg0tRVIQlTkl/leaPveyowVLTvB78d94C6HDZ2lTUQf7gpVw3UWmy2MNhRFA/0wO79ixJqZnB4Oyd+VaMu5UhtpnoBijAtI3i4V8ufCJ9VYYMvd1qEZf0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791141505; c=relaxed/simple;
-	bh=cxqvPvmP5LEKCuOrQcNT+FDABIRF0pkCGT0tYhdiTXE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WVmubkHB2VvglQoUWaF1+X+EjkXsvpM4XncA+XFnSNHKY6rbJl13c1UidKnCw9OICNIvEe1YqiI8v7fjbUiZLlsHgkU/anCPKq3f9dn2qNjgtAgcbgABoCrcqftn609L6tGxSlKsCyCTvNdXcDGGRmlsmBTtjzxXNui6S+N8JKw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=m3pUI4+v; arc=none smtp.client-ip=74.125.225.83
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FB4225F7A9;
+	Sun,  4 Oct 2026 19:31:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791142318; cv=pass; b=c/9P8IKzmF/XdCAzwQNlHe9EIjjtB/mFa01FLDZNcmtBErRmttj+vJ/PoiIaxYcZ7zu1eWsManW982iviqHa+aPvtFbeYyC2AjOm7OW43EMvtLCPnIdoIlRC5fuPyF4CPdBGrL4LIxQ7qlAcWMLabD3+9sfSNwu1W8cgJvuxuco=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791142318; c=relaxed/simple;
+	bh=npAFeNbnUiqL5FuCr3iRamjVN1PG0m2FhKEnJ4LpgTc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jcMhbY1DX0LUxs/vU9iEB/XJrYyVvXXtOW44l2dKFuhJiuxsP6aAC142Oc6O1gdhgkszgtFRDGJKXQXoWmgScrFF75W2q14kaunE0OVunsopG48hnoe1rcLUWeTdGsjjDUKZpaHSDqcP/Cvz3MdnRcM6vSXySODQQg5gbQsKgGM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=J1UyGq/U; arc=pass smtp.client-ip=165.173.182.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m3pUI4+v"
-Received: by mail-wr2-f19.google.com with SMTP id ffacd0b85a97d-48aff407b13so132721f8f.3
-        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 12:18:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791141501; x=1791746301; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=cPTMVIIAJFn9U/eu7HQEBuEphGxHwxWPSlT9dvO4lqU=;
-        b=m3pUI4+vtvXlwQQ0prQwLq01IAmQ8fmp2mggHNRBhGAiIsGmoRgOZcbKFvToxZPUyI
-         sHbu2g+6yzTceF8Wp1eHAa/+4klY8uk/5W9VATtIHFrkmfRCpXEEjvebsrhZZd1QTyT1
-         TBh1JG2CuC9fE01Ic+80bu7WETTe4d5fneZpQmd5WVYgDtUqU7tRQ+Pd4etAtxYeRSqF
-         ZDiwV50tRYY+9yhfJmsvbZL3VVeeZsJI4QELIpofmo1nFx8zBQtGmMBdDS5bPiUO+BUO
-         EixWplPNN/v/arDaBg2hVw2p6eFsqfzvDSVEdb7Kmxs3HBdNhnnPJhvYdgwh1npO45YT
-         w6Hg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791141501; x=1791746301;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=cPTMVIIAJFn9U/eu7HQEBuEphGxHwxWPSlT9dvO4lqU=;
-        b=z3wqA6JvJ+3JkOynPlOFQV1Jg+EOEKA9aB+WHbn866no5yDfzXk3GF1Dd0BWR6E1Ac
-         ARv/BdK/SREA5qrF5HIEPtFjy+Od4hYxdAzGxy7wqS30gWrZqyI1I2jiKskB7Ywcp6FG
-         Tt4BCY+LkhUd6YQw/i+tNN1XCDsnhq1y6HX8Z01/M5FVDuE310uEAs6FuQCI9LQEeOnO
-         xmjX+LomQuAll1xiqozRCWyjDNwaRfSwtJOBNsUFHfbJRsbFWRIq3Td6hfd8U8VrngAC
-         18lqW2JA54va+6TPrTV89ahn+BfpCG4uhBGEe+WUTSTi17b0MVonpetB9P/craYF7dxC
-         Y9mw==
-X-Forwarded-Encrypted: i=1; AKwUvByltw0zgPBUMU3+gkn7incsqPc3ppvbyn6SnTbO87wjlkAikY+oX2A+Cqhy/h/hWwic7S7B25pGqQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++nOhbRWBa3odAB0l/GgufDfZc+UISasomHKKBnyGnYJ8a+E+ELm
-	1/gK4N6MwuYF2zpeAzKMEqtEoUdQgTWBtnhKZ8DjhAhdXcyLK1gI2T0N
-X-Gm-Gg: AYBFou1chtHAhkYWOdEf2XUB8zMz/EW9cS7n75WKVHdSMcBDMmNSgaP3TJwXi9cWEgp
-	hISH4/binM+LVJ6Y+AM8c0D1Vgsk8OFJMGKgA1+nEYad3Lxo+ECtyid+psT6/eDYXk/acm2h9Bt
-	Wb4dEIKrwpg1rR89yotFRLTaX7fZpVs8AnRDhawNyiOncfYORv5otvRDdhvQilCRRVejCJ8l9/R
-	vAyjwb5Lz34mXYYWNOePLov4IWSBUdJ7yQ2LfSpGWa4GOaFH3+OvJMFhz4NSCsVCLzqqLDpyznT
-	2LCHZ60twnYRWE+X5nefJEp/MrDpIFbPTsnYhs9UAHzcZsVQneq9z5dUZDXbzlQaIalUdEuI3hm
-	Ogwk17RlAjZpcL0/Xq6ORKqiROLWqM/TWbgIMZmuJflnWyDCkwIhnDUS8WN4w5KtWdTYPVyFXoG
-	ml2HrwK6Jc826f6Mxwy1h8bTOFh2T+Ovfp2FthDCGHVDHBuM3z2IymBbSDX19U4SH2Nz2NQIFs1
-	zKObl8ohqbx3e2Vrf28
-X-Received: by 2002:a05:600c:46d5:b0:4a0:1ca8:70e2 with SMTP id 5b1f17b1804b1-4a02751fa7fmr143583805e9.1.1791141501458;
-        Sun, 04 Oct 2026 12:18:21 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a0276fa954sm279357515e9.3.2026.10.04.12.18.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Oct 2026 12:18:21 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: vincent.guittot@linaro.org
-Cc: arighi@nvidia.com,
-	bsegall@google.com,
-	changwoo@igalia.com,
-	christian.loehle@arm.com,
-	dietmar.eggemann@arm.com,
-	juri.lelli@redhat.com,
-	kprateek.nayak@amd.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	lukasz.luba@arm.com,
-	mgorman@suse.de,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	pierre.gondois@arm.com,
-	qyousef@layalina.io,
-	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sched-ext@lists.linux.dev,
-	sshegde@linux.ibm.com,
-	tj@kernel.org,
-	void@manifault.com,
-	vschneid@redhat.com
-Subject: Re: [PATCH 05/18 v2] sched/eevdf: Add min slice check when selecting CPU
-Date: Sun,  4 Oct 2026 22:18:17 +0300
-Message-ID: <20261004191817.20225-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261002154415.2270586-6-vincent.guittot@linaro.org>
-References: <20261002154415.2270586-6-vincent.guittot@linaro.org>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="J1UyGq/U"
+ARC-Seal: i=1; a=rsa-sha256; t=1791142201; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=Pi/oisytCHp2YKwOVmo7zZbbepwwmwkZDZCb1EC5JWzrkyCXLlwySINedWLlGCwPVbtbBb6srsQLcQSqNUC2Uo5mLGdil22SWH4H7E58k8Gpzbi4tS8ClBLBRqLqAR5Ua012yyz7z5qq1VuA/9kj+EUicoIrWMBpZGj/l7srmk4=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1791142201; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=JFR/y46AuH5zhc0c/R6tAYo9y5d3NyankY+Jgutk2ow=; 
+	b=TuepGGdR63PBpIwOlizgrHrTZyvU9DjrLKxJ6aWCpbHOwB/5lUucSX7Bbxbl0vW1pgqKy1nEIaI3Wsxs4/GR+aqEhUPYt5NoQeW/dXZ73tc9FDBCvMPXgefKmwd2JacszF2tJgElI6YAggvcEHvetpfGIwgxyTYvKkC6Ym/aQDY=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1791142201;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=JFR/y46AuH5zhc0c/R6tAYo9y5d3NyankY+Jgutk2ow=;
+	b=J1UyGq/UqBJBipmNwosM7o6xXgF20Kwd4Rrkfb/eAkbWvoL9/zgYXdnNxwiMf1Tt
+	/uaqa8ChNMu/M5250emqUgG861Ht8mDqzroZyf3SgAQHla9DvzBAQ1bzq1Hmh/DZ/e+
+	Pkl3f6MLkWlDs4Mu6l8x9VbQ06IJ3gP4gKGlXQx0=
+Received: by smtp.zohomail.com with SMTPS id 1791142198422180.87438797751383;
+	Sun, 4 Oct 2026 12:29:58 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id 092E2180951; Sun, 04 Oct 2026 21:29:35 +0200 (CEST)
+Date: Sun, 4 Oct 2026 21:29:35 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Jordan Brough <jordan@brough.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Corentin Chary <corentin.chary@gmail.com>, "Luke D. Jones" <luke@ljones.dev>, 
+	Denis Benato <denis.benato@linux.dev>, Hans de Goede <hansg@kernel.org>, 
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, Antheas Kapenekakis <lkml@antheas.dev>, 
+	Matthew Garrett <mjg59@srcf.ucam.org>, Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, 
+	Armin Wolf <W_Armin@gmx.de>, Jonathan Woithe <jwoithe@just42.net>, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+	Ike Panhc <ikepanhc@gmail.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, 
+	Matan Ziv-Av <matan@svgalib.org>, Nikita Kravets <teackot@gmail.com>, 
+	=?utf-8?Q?Joaqu=C3=ADn_Ignacio_Aramend=C3=ADa?= <samsagax@gmail.com>, Joshua Grisham <josh@joshuagrisham.com>, 
+	Jeremy Soller <jeremy@system76.com>, System76 Product Development <productdev@system76.com>, 
+	Azael Avalos <coproscefalo@gmail.com>, Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+	Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-acpi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	ibm-acpi-devel@lists.sourceforge.net, chrome-platform@lists.linux.dev, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] ACPI: battery: add acpi_ prefix to the battery
+ hook API
+Message-ID: <asKowO4nqSiCC58T@venus>
+References: <20260930222650.1883805-1-jordan@brough.org>
+ <20260930222650.1883805-2-jordan@brough.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-
-Add a new level for selecting CPU when select_task_rq_fair() fails to find
-an idle CPU. This last level will compare the slice to select a CPU where
-the task could run 1st.
-This helps a waking task to select a CPU where a longer slice runs
-instead of one where a task with the same or shorter slice already run.
-
-There's a typo. 'run'
-
-> @@ -8771,10 +8771,11 @@ static int select_idle_smt(struct task_struct *p, struct sched_domain *sd, int t
->   * comparing the average scan cost (tracked in sd->avg_scan_cost) against the
->   * average idle time for this rq (as found in rq->avg_idle).
->   */
-> -static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool has_idle_core, int target)
-> +static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool has_idle_core, int *best)
->  {
->  	struct cpumask *cpus = this_cpu_cpumask_var_ptr(select_rq_mask);
-> -	int i, cpu, idle_cpu = -1, nr = INT_MAX;
-> +	int i, cpu, idle_cpu = -1, slice_cpu = -1, target = *best, nr = INT_MAX;
-> +	unsigned long task_slice;
->  
->  	if (sched_feat(SIS_UTIL) && sd->shared) {
->  		/*
-> @@ -8795,6 +8796,8 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
->  	if (!cpumask_and(cpus, sched_domain_span(sd), p->cpus_ptr))
->  		return -1;
->  
-> +	task_slice = p->se.slice;
-> +
->  	if (static_branch_unlikely(&sched_cluster_active)) {
->  		struct sched_group *sg = sd->groups;
->  
-> @@ -8814,6 +8817,10 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
->  					if ((unsigned int)idle_cpu < nr_cpumask_bits)
->  						return idle_cpu;
->  				}
-> +
-> +				if (slice_cpu == -1 &&
-> +				    task_slice < get_rq_min_slice(cpu_rq(cpu)))
-> +					slice_cpu = cpu;
->  			}
->  			cpumask_andnot(cpus, cpus, sched_group_span(sg));
->  		}
-> @@ -8832,11 +8839,18 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
->  			if ((unsigned int)idle_cpu < nr_cpumask_bits)
->  				break;
->  		}
-> +
-> +		if (slice_cpu == -1 &&
-> +		    task_slice < get_rq_min_slice(cpu_rq(cpu)))
-> +			slice_cpu = cpu;
->  	}
->  
->  	if (has_idle_core)
->  		set_idle_cores(target, false);
->  
-> +	if (slice_cpu != -1)
-> +		*best = slice_cpu;
-> +
->  	return idle_cpu;
->  }
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="62rwvd636wwykjor"
+Content-Disposition: inline
+In-Reply-To: <20260930222650.1883805-2-jordan@brough.org>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.13.1.5.4/291.133.86
+X-ZohoMailClient: External
 
 
-Also,
+--62rwvd636wwykjor
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v3 1/3] ACPI: battery: add acpi_ prefix to the battery
+ hook API
+MIME-Version: 1.0
 
-Scene:
+Hi,
 
-Let's say that in our domain there are 8 CPU's and has_idle_core is false. And nr equals 4.
-And sched_cluster_active is true. select_idle_cpu() enters the for_each_cpu_wrap block
-and the else branch. Because nr decrases each time, and if there are not any idle_cpu's
-even if we found any slice_cpu it's not set to best. We just leave the loop after checking 3 CPU's.
+On Wed, Sep 30, 2026 at 04:26:33PM -0600, Jordan Brough wrote:
+> Rename battery_hook_register(), battery_hook_unregister() and
+> devm_battery_hook_register() to acpi_battery_hook_register(),
+> acpi_battery_hook_unregister() and devm_acpi_battery_hook_register(), so
+> that the exported ACPI battery hook API has a consistent namespace, and
+> update all in-tree callers.
+>=20
+> No functional change.
+>=20
+> Signed-off-by: Jordan Brough <jordan@brough.org>
+> ---
+>  drivers/acpi/battery.c                       | 30 ++++++++++----------
+>  drivers/platform/x86/asus-wmi.c              |  4 +--
+>  drivers/platform/x86/ayaneo-ec.c             |  2 +-
+>  drivers/platform/x86/dell/dell-laptop.c      |  4 +--
+>  drivers/platform/x86/dell/dell-wmi-ddv.c     |  2 +-
+>  drivers/platform/x86/fujitsu-laptop.c        |  4 +--
+>  drivers/platform/x86/huawei-wmi.c            |  4 +--
+>  drivers/platform/x86/lenovo/ideapad-laptop.c |  4 +--
+>  drivers/platform/x86/lenovo/thinkpad_acpi.c  |  4 +--
+>  drivers/platform/x86/lenovo/wmi-other.c      |  4 +--
+>  drivers/platform/x86/lg-laptop.c             |  4 +--
+>  drivers/platform/x86/msi-ec.c                |  4 +--
+>  drivers/platform/x86/oxpec.c                 |  2 +-
+>  drivers/platform/x86/samsung-galaxybook.c    |  3 +-
+>  drivers/platform/x86/samsung-laptop.c        |  4 +--
+>  drivers/platform/x86/system76_acpi.c         |  4 +--
+>  drivers/platform/x86/toshiba_acpi.c          |  4 +--
+>  drivers/platform/x86/uniwill/uniwill-acpi.c  |  2 +-
+>  drivers/power/supply/cros_charge-control.c   |  2 +-
+>  include/acpi/battery.h                       |  7 +++--
+>  20 files changed, 50 insertions(+), 48 deletions(-)
 
-The same thing a bit differently happens below on the main loop too.
+I expect this to be merged via other tree:
 
-But I don't think is more important than typos. Typos is the reason we're here. They are the or nevermind.
-This is a joke btw. (that, destroyed my masterpiece and created a new one. Saying a joke is a joke because it is,
-is one thing while saying a joke is a joke as a joke is one thing. I wanna go on with this but it'll be to long. :<)
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com> # power-supply
 
-I could be getting something wrong tho. (No one is perfect, but I'm not perfect at all so ya know.)
+Greetings,
 
-Thanks,
-Kayra
+-- Sebastian
+
+--62rwvd636wwykjor
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmrCqRsACgkQ2O7X88g7
++poiWxAAp/QxZ6RBEAi94THiV6q0/NPtT1zDexJhTXn8VS8LlU/lpCKicyuhrLwu
+xb8L+UumNwSbonKI7J6vBgsYc0yulnfdbjgZUQmi3qKfYEX9GD3el84MlNT3OCLF
+pxXS+003OV6xbb754fLN7OnszrFpgIRHtP8pfwTEi6ah65CImiNFUWthTUN4mf4h
+gsyw2Cok5/VP6mX9vj2Q37+UAq7+68i2/vVIrVF/t79mO8T0J4EzkvP3Et893aBz
+s3PXSTDoBD+XizKL2oPzavpY/5w3g1Caf2ZHSiO/WH0WmcJnlr5TftXo8MSlVMxJ
+JWoL9cHnqFjx11pOvRUOjYdhbyIVRvWOgZQdw/lOTrCldsH4KDHjQbjGhAOvRvrr
+XK4tUDWQj+P+Auiqj8FW535zWUPOktMlzBINyklkuzfsgnv9qjTvHmjGP6XEQE8C
+7Y3MgiB+czD5L7+NiWSpRf/7/B4Ln0YeKsQgfs8tYUeY6ukyNgwcnpY/DkQ8DewO
+7WzTm3JUa2PL7dvvlhO3WprobdjKE662PWPN8y8lPD4v8sGc28zRD+sQJ0Lss9gx
+LCxBdF+D8cvz8tTdIjteH/SljVlzcP8Alcr6Sl2PNHb2XtlKd5kgpcnsNyIh0/BE
+SETzWiZDs0b74fY9ls6reAkYRCVXsBVGu6piBJtj5saqeh4om78=
+=qtJe
+-----END PGP SIGNATURE-----
+
+--62rwvd636wwykjor--
