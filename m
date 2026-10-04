@@ -1,114 +1,196 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
+Received: from mail-dy2-f43.google.com (mail-dy2-f43.google.com [74.125.229.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3F86134CCF
-	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 10:18:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEE45424655
+	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 10:51:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791109108; cv=none; b=BYO7onOzWnAp3W4Q77mrYjsoB3SbXCr57YmAdcF8Im2zzzNQCxqeKzL6HTgrnlGPteKWQYl2mjgVLAaBAxsCBFXbcfCZ07t59cnaRH8YMsdBKEmuYTGI3u6iXtRLJsFujx5Wnz0hyUYhCVjfXhzOnQX91TynfWbBVchPix+bqWk=
+	t=1791111091; cv=none; b=BFBaZnod7GL9z/1bcWLe8eE6zUmmvD1UNID9QkdnCu7ABWylF4XdaNdwiDBM03V+ZTs/FMM6X4RVqusTYIMBJzfNq/xP0KUTS5Z6DWPxtQ5w/8Qfia8XhdxxwXJFzYGi4o2NhOcaKVjxNvdYZ54oLCRZ8K8mjFnwJOlPki4vJOM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791109108; c=relaxed/simple;
-	bh=/M79WdL5TfKGE+htbxj0oUjXUfHo8zAUfiiwGag6gKY=;
+	s=arc-20240116; t=1791111091; c=relaxed/simple;
+	bh=4MRxwd7MzrAqfyJ7mimlrfGaFAcX/tkMDz0Yg+CsHtE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=luOFKkYOxSlgAeLgqZmECNxkUf1EYLCOkseBc0hpNMt1dRdMcdX8YOQF4+x5hBJ9OzkOOHVtMTXFU4Q3PH2+zqK8rUe388DWS0YH/xOcjIy8IRbfF7MD6y/0EXMMCL2zXkI8hR79YMIGK0hzJzNVsgUKdPo5Y8ywJJ0zVIlkhzM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NLgshQkq; arc=none smtp.client-ip=74.125.225.141
+	 MIME-Version; b=i46SRusHtjdEJZDAyHMxZO+b6Ck+tjjrcaDLsmG+1NO9a+rxVKp1fDdLtcAib3pEwB3Vyj/4E04SJgq18Ff5IMtbdIWXEmSDeHH+FvuKFrEx3QfZs9sAbfIb0NkOADGA7bDdSGpwh5iRHl78Bn5osDdPhQEo6JvImS+HpauK6eI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OVA34rGy; arc=none smtp.client-ip=74.125.229.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NLgshQkq"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49e66390995so5823095e9.2
-        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 03:18:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OVA34rGy"
+Received: by mail-dy2-f43.google.com with SMTP id 5a478bee46e88-33e46a156f4so818137eec.0
+        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 03:51:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791109105; x=1791713905; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=zcABtXKvJoqx2poeQJ6t2MmxEQEWYqoclox0iAY9dqs=;
-        b=NLgshQkqvJk2GgNBFpV9taLJmFFNd8MAkZB/37V3m83Q0mp5lzW4GGaYbG4nsm1/jJ
-         dfQQ4iIL3R8LteXQ4kRHxY1m5g6UA2ZGi1iOOOEn/nnL3OOs8ggfWuafcnQn4mDl63PH
-         h/BbMFeSFmotLmxuMTYT+Kyx4+LzLqbbNjJqS44rkSbPKDNRKXqNpFJBkCTJD5cwwIzk
-         +HiS6BCzODhClrljuHKJSciuzD/UfHWbeky1aAkGUgtWVLaft0QB2j/4e1acsbJp+09O
-         Bk01u11XMwOAT9LrwzNF6yH9nfK4dLkQL6ajGsfcnExLKfcTwhWNSiFv6LgKL5YyfjC7
-         Lq7A==
+        d=gmail.com; s=20251104; t=1791111087; x=1791715887; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=OU10JUkOnCjExkP9pLJslSiL15VSpV7uAw3VaBnuTMo=;
+        b=OVA34rGyoQxPo0wRv2zEemiSYWkKsDXwZStVOByBQRpu1DQU+Ux1wXdGhPRfPWJ2ht
+         ouzg/l9fDoy4wZ4euP5p8lSaoWg9rG9fZaKYtejcMe2sLNInHQTJRfxfmQZMe1qawkEv
+         rk+ljgwDABA0aWwMOyjO7W2/GmSrlrEnlMsehl8voU4xsbmKVz9gk/Ogj6oGfr8ii6sS
+         l3qesCpMjIJp2mX/KknTTgJj92xvPMlxpmMvI3gaZdf5nWW0UYLAXpFpOv2tT9v3D2Li
+         xbUQ3aLXlQsME980CGogDR3xWSx3k1tqD8k2m/VTgDE0NLGWeD4a92JNkkElYfXQZNzC
+         HlPA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791109105; x=1791713905;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=zcABtXKvJoqx2poeQJ6t2MmxEQEWYqoclox0iAY9dqs=;
-        b=LNsFaOu+lkET9d+tbyHz9HeTaqyYC9UO7MSvjEcG5C1Q1SslC70c1E1gHTe/nL/rG8
-         Lejy5MLQ025Fgz5BDzrIU63/wfkTv68+7H5+jL5Xh/md/GGk4iYtV7bvKy1vWj36HJmR
-         CDQ9UXbxi/sgq4TpZ4nuEpYQcc13ALDl78U3YMPX2G9GAqyR2fEblbsvu5PzqLa3of+X
-         8p0VNyknE0LrM6t41Azx7R2rC9M/Dcs/k8nair5FGW/XbnC7TJqPj1KogWQRtHs1YjG7
-         WX7wb9lTUJvxFI7sk0njUQXKUKcg075yYrhg0BbKyoKnFUiqBJfHl5rQ4wFX+auB59kn
-         3N2w==
-X-Forwarded-Encrypted: i=1; AKwUvBwLdmsGiUx84bYVq+IUNFYBoClTEQPBZF+SzZ358wLYYtwlegjL8FCvJT0Mor6nqfxMuCnNDE8Lfg==@vger.kernel.org
-X-Gm-Message-State: AFuF++mnD93h8aI7wj67ln6zKGqjST1Hm1R4Ba3jrMhBWeXxPhG3SIqk
-	WIlZ3aePY5OXMckmEultov+OKITtjt/r+80EABHbh+8Scao3QD5+QY0M
-X-Gm-Gg: AYBFou12m4SK0uneGAtYBwJL0ezGqbInm5ID+QdqxASx0E9/Lcv/CR4eYfFxq4ADARU
-	mLngYDjBoEXmDKOEhYhhrc0bcEtGHfPpVBx9ZrUzqfRalRjE7eyfOnrh2qntyRLPMJan5j+I+s3
-	F9fPJnf2Jn7ZDzspkYFm081zk15g+WZ6erda0b6kNd6hG7EAuZafZ9Be/o0XuraAGC/3rGznohB
-	/t26g0SbclzIOdzQaAOcQP2J5yGOqvx/TOVWh+YbYWHOS69fRcRYIT/yFDnkY3T/3X0EbK3Oytz
-	mRI2X17dgFHtAQrP+UD5stNd4IqW6XQVz8b2cVAuybGm8P0UuxDLa6oU4ZPnV7xuMvo2BBFQuTh
-	aVdgcuFFbk3UJYhhdWcKke5x2VGdf/apwJtaWjppfZLeoOoKKbkSzMZ+CcEMcCL05rEcHm9IzKv
-	Rj5ysF6MxgNQzHEZsTzh9xI3CFKsl7WKJtX0aGdpl21QeEjtaJDzgvsvm7Hv7TopV9TQrYN991h
-	knYTXk=
-X-Received: by 2002:a05:600c:6091:b0:4a1:702f:c736 with SMTP id 5b1f17b1804b1-4a1702fc916mr16684305e9.3.1791109104687;
-        Sun, 04 Oct 2026 03:18:24 -0700 (PDT)
-Received: from localhost.localdomain ([94.252.75.11])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4a027735be1sm333552335e9.11.2026.10.04.03.18.23
+        d=1e100.net; s=20260707; t=1791111087; x=1791715887;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=OU10JUkOnCjExkP9pLJslSiL15VSpV7uAw3VaBnuTMo=;
+        b=TloNg7bRWsxDid55yoNTjSFb2ctP0t3HHgJEWTvHdIaPIx0o5+cl3JdB3VMC/cFVyj
+         q01Yify/vele99ShinRxqIXw/JObIEb4QngcpxWmWcQDTWyBilHbj7PkxSwmokLSZil/
+         0WH6Eg1HINnGzWZD0hSSmX+UL8GgQXE5wn4lZE0Ool71f10JI9zwvxogzQqrl1tKICQI
+         zhyMNINzY8GE3QUNiealqz2NC4zpJiiQc8jH87Byd/fuszrphWY6ng6ZRoXinoIkPt8D
+         0OQKwbV2sT8dUGVlxs0EypeoYQ0dKESnGYu6JvdeyKq3mHPyLgssl+LONa7N4wfPbOyA
+         zObQ==
+X-Forwarded-Encrypted: i=1; AKwUvBz9V4sXknIBL42v+6WylGUr0WBhmcxPJ7qoz5Cp5BHGuEai28GzPoEtmONJYBtzWowV2wlxM9HexQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJrnv6PgDABJaaPb5bJuoo9uy1LnsSIfspyJWlqZ2k5NE4f4QKP
+	osP/y3E4nhuHfws0dLfTCrARtjXz2rTACFcHAZTYhJ+sTwroCWKGuSfG
+X-Gm-Gg: AYBFou0R0YynE+/tcbf+lXCKZQJmgiwAXs5j+5hsILt3hqywBYc/pzSHRV94GubjNGZ
+	7Ga3aaUHp+64+0pTU/3QYPhUxYUfg3OBTFCxEgwabwL0lMysfOzru12wLe6kbOl/yboMJ8wuU3R
+	HHJqFyDvjvnmDIn8d1RQxznYn9qvR6rkMsl2j1IVcGqW4q/HfsmPfFMDAAs6rHQ/DXS310p++Px
+	+efkmglksiuUeztFpXPNVlKXtmRPvqmx9BGQ2Ie1bNipzfOhFoEG3vsWOJPqOR3f9XDpiJn1Miz
+	VweBsyf4Ea3VZO2HAwiOnVPw3Ed5Gw9nNhYskMKDJQJinxqJmF/bHpGzNUo6zuWoT3A9Z74EdOn
+	msxoz+92dTzGFYjdbwJkRDM/0rGgjdqnQkuXzMqlLxdVZQMX0FTFDLhzdLuK88TydANfer6aSBJ
+	JLx7/3bact/AeACgBvO/B/hYwi+hCrp73o/CfRDy/Jc4qICf/PWjY8B9zAqp04dWXsCbAwHU7D5
+	lDlTahj7RDqLXOOBDipyZQc5wIjV7J+114H2hEVrQvA4E4=
+X-Received: by 2002:a05:7300:e5c2:b0:341:3ca2:de2d with SMTP id 5a478bee46e88-34f15077edfmr9383419eec.6.1791111087081;
+        Sun, 04 Oct 2026 03:51:27 -0700 (PDT)
+Received: from Anshuman ([123.63.59.156])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-35127161474sm3815965eec.13.2026.10.04.03.50.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Oct 2026 03:18:23 -0700 (PDT)
-From: Oleg Keri <okerixx@gmail.com>
-To: Joonhoe Kim <26rote@gmail.com>
-Cc: Konrad Dybcio <konradybcio@kernel.org>,
-	Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>,
-	ds.heine@posteo.de,
-	Abel Vesa <abelvesa@kernel.org>,
-	Jingyi Wang <jingyi.wang@oss.qualcomm.com>,
-	linux-arm-msm@vger.kernel.org,
+        Sun, 04 Oct 2026 03:51:26 -0700 (PDT)
+From: Anshuman <anshumantewari123@gmail.com>
+To: kees@kernel.org
+Cc: Frank.Li@kernel.org,
+	James.Bottomley@HansenPartnership.com,
+	airlied@gmail.com,
+	akpm@linux-foundation.org,
+	andriy.shevchenko@linux.intel.com,
+	anton.ivanov@cambridgegreys.com,
+	apparmor@lists.ubuntu.com,
+	atomlin@atomlin.com,
+	benjamin.berg@intel.com,
+	bhelgaas@google.com,
+	bp@alien8.de,
+	bvanassche@acm.org,
+	corey@minyard.net,
+	da.gomez@kernel.org,
+	daniel.lezcano@kernel.org,
+	dave.hansen@linux.intel.com,
+	david.e.box@linux.intel.com,
+	dmaengine@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	dvyukov@google.com,
+	elver@google.com,
+	eperezma@redhat.com,
+	georgia.garcia@canonical.com,
+	glider@google.com,
+	gor@linux.ibm.com,
+	gregkh@linuxfoundation.org,
+	hansg@kernel.org,
+	hare@suse.de,
+	hca@linux.ibm.com,
+	hpa@zytor.com,
+	ilpo.jarvinen@linux.intel.com,
+	intel-gfx@lists.freedesktop.org,
+	jani.nikula@linux.intel.com,
+	jasowang@redhat.com,
+	jbaron@akamai.com,
+	jgg@ziepe.ca,
+	jim.cromie@gmail.com,
+	jirislaby@kernel.org,
+	jmorris@namei.org,
+	johannes@sipsolutions.net,
+	john.johansen@canonical.com,
+	joonas.lahtinen@linux.intel.com,
+	kasan-dev@googlegroups.com,
+	kvm@vger.kernel.org,
+	laurent.pinchart@ideasonboard.com,
+	lenb@kernel.org,
+	leon@kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-hardening@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-modules@vger.kernel.org,
+	linux-pci@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: glymur: hard reset on the first system-domain idle entry (SS3, 0x0200c354) after a heavy load - Lenovo Yoga Slim 7x Gen 11
-Date: Sun,  4 Oct 2026 12:18:15 +0200
-Message-ID: <179110890955.4630.479435085519179001@gmail.com>
+	linux-rdma@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	lukasz.luba@arm.com,
+	macro@orcam.me.uk,
+	martin.petersen@oracle.com,
+	mcgrof@kernel.org,
+	mchehab@kernel.org,
+	mingo@redhat.com,
+	mst@redhat.com,
+	netdev@vger.kernel.org,
+	openipmi-developer@lists.sourceforge.net,
+	paul@paul-moore.com,
+	pbonzini@redhat.com,
+	pengpeng@iscas.ac.cn,
+	peterz@infradead.org,
+	petr.pavlu@suse.com,
+	qemu-devel@nongnu.org,
+	rafael@kernel.org,
+	richard@nod.at,
+	rodrigo.vivi@intel.com,
+	rui.zhang@intel.com,
+	samitolvanen@google.com,
+	seanjc@google.com,
+	serge@hallyn.com,
+	simona@ffwll.ch,
+	somlo@cmu.edu,
+	srinivas.pandruvada@linux.intel.com,
+	stable@vger.kernel.org,
+	stern@rowland.harvard.edu,
+	tglx@kernel.org,
+	tiwei.btw@antgroup.com,
+	tursulin@ursulin.net,
+	usb-storage@lists.one-eyed-alien.net,
+	virtualization@lists.linux.dev,
+	vkoul@kernel.org,
+	x86@kernel.org,
+	xuanzhuo@linux.alibaba.com
+Subject: Re: [PATCH 01/11] params: bound array element output to the caller's page buffer
+Date: Sun,  4 Oct 2026 16:17:41 +0530
+Message-ID: <20261004104741.51238-1-anshumantewari123@gmail.com>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261004093509.74316-1-26rote@gmail.com>
-References: <20261004093509.74316-1-26rote@gmail.com>
+In-Reply-To: <20260521133326.2465264-1-kees@kernel.org>
+References: <20260521133326.2465264-1-kees@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Hi Joonhoe,
+On Thu, May 21, 2026 at 06:33:14AM -0700, Kees Cook wrote:
+> ret = min(ret, (int)(PAGE_SIZE - 1 - off));
+> if (!ret)
+> 	break;
 
-Thanks, that is useful. On Glymur (Lenovo Yoga Slim 7x Gen 11) the
-pattern is different:
+One question about the truncation behavior here: when an element does
+not fully fit in the remaining buffer, this min() can cause only part
+of that element to be copied. For example, if the remaining space is
+4 bytes and the next element produces "123456789\n", the resulting
+output could contain only "1234".
 
-- Plain idle has never reset here: 50,000+ cluster (0x01000054) entries
-  and hundreds of SS3 entries without a reset.
-- The reset needs a trigger: the first SS3 entry right after a full
-  all-core load (a kernel build or stress), 5 out of 5.
-- With SS3 removed from the system domain and the cluster state kept,
-  3 out of 3 runs of that trigger survived.
-- Day to day I run with a cpu_dma_latency constraint of 1500 us, which
-  vetoes both the cluster state and SS3 at runtime, and I have not seen
-  a runtime reset with it in place.
+This leaves the reader with no way to distinguish a genuinely short
+value from one that was truncated due to the PAGE_SIZE limit, while
+the array otherwise still looks like a normal comma-separated list.
 
-Glymur has a single CPU idle state, 0x4 retention, which is also the CPU
-domain state, so every cluster entry here has its CPUs in retention. I
-cannot separate the two the way you did.
-
-A correction to my original report: the min-residency override did not
-hold. With no timer pending on any CPU the governor's idle estimate is
-effectively unbounded, so the residency check passes, and I had a reset
-with it in place. Only removing SS3 from the system domain survived.
-
-Oleg
+Is this partial-element truncation intentional for this patch, or is
+the expectation that it gets handled as part of the later seq_buf
+conversion? Would it be preferable to avoid copying an element unless
+it fits completely, and leave the larger-buffer case to be addressed
+later in the series?
