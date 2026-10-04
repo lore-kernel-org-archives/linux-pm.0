@@ -1,101 +1,133 @@
-Received: from mail-24416.protonmail.ch (mail-24416.protonmail.ch [109.224.244.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com [209.85.160.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AE0B22083
-	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 00:51:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B5E43EF0C8
+	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 04:10:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791075116; cv=none; b=A2QQlgUvmh4GicxQdUmzM1PP9qvquGDaYOJE/MsnjOx4vNB6TRRg04XOk2/DdsKWpsrD2mVvW+NbCHauenGhtrRC2hwUI7YhmKw/+qaOPz8RouShdg53Y3Qh7pQHZIqPdUXAEom2jGwp4GiPgDrohspPagaA/CpI8VurFNhzcr4=
+	t=1791087031; cv=none; b=bg0caQfI0EGzHDRltMx2OIiw7kTyI28/U2IVH93w6jmtCNRbAaera60psIcgK/KiHvI00ZP0NyMv5NK8lPb5gqSSKVPhaysj9Ux47P/eHoJmIvlVRh/wHEpMByPOS8vnNRQi2a6jb7IUQ+qMTIN9CC/trQQbKoOnlEHpY5WIbew=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791075116; c=relaxed/simple;
-	bh=+xXRChb7pRTKeEKacaBfsTdJsfEptT6xDoTfO6eJkpA=;
-	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=i6zchhNqdVsNKV3WNRhzj76XExUa04yyBDhp4YpXTfbDJVI/fg6wxsI74vMDjHfoWG6QeM9n2GFzkZwiviRtXOuEbKvJpaUiP2FL7pk0gKzqMt4KKBTXgXNCcEcvvIijVPteHESHFTUKB07c9VDLHPNrcHepa6pKEq7dDqfpYUE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=kSqBw0Wb; arc=none smtp.client-ip=109.224.244.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
+	s=arc-20240116; t=1791087031; c=relaxed/simple;
+	bh=NjL6Dz3ATof4xFu51ZKZGgvreurCkfkXi5SOJyRAhac=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D/L/zkiGnyyIwHOprGhSaERw0qYq6njTdUl8GzIm8bsi5N3qvcLdtqd6dM7AoE9JsD4qFAK59EeTpGrKggMoJEnqOp8NRCEXD0ExGgVXv5nrJXUq5yeJ1gXWUJXRAqo4VDM3biTeqWRJxL3jpzpK1lH1nVqJz+4zTXbMyod+MZw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Zte3/aaS; arc=none smtp.client-ip=209.85.160.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="kSqBw0Wb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
-	s=protonmail2; t=1791075102; x=1791334302;
-	bh=+xXRChb7pRTKeEKacaBfsTdJsfEptT6xDoTfO6eJkpA=;
-	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
-	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=kSqBw0WbR/0gTff/dbPKzurZq9fdCYlKgko5qUzlv4Jllsby2isilo9777hI+ugkx
-	 jM9lcbUDWvESLDMznr2FKvofHEVWKLigRpz7advQvpLYzgiXl8wBH0fP1EdhQm3TYF
-	 DM6dSVULvA8pXhMF5aLmARdZj0PN7oh4A5Qd7PDyI1zMmEQbJLzY9wB65HLLMXBAaQ
-	 zrlOUhfCeQ4y7qroMYjTo/aXtAg4kCphHmOaW4ICWbE/QNjnKkH4nugPpEwGkWJkNn
-	 t1NWVaTUeWNf1kyaTfHufZQMteoZnYuF4BhYJx2iZPWP2tYGw9KiDRkfzCtJ5NrzEG
-	 BqwVTNWcG7SgA==
-Date: Sun, 04 Oct 2026 00:51:40 +0000
-To: "rafael@kernel.org" <rafael@kernel.org>
-From: Charis Stratakis <c.stratakis@proton.me>
-Cc: "regressions@lists.linux.dev" <regressions@lists.linux.dev>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
-Subject: [REGRESSION] thermal: core: battery data corrupted after resume on ThinkPad P1 Gen2 since d33e89d12295
-Message-ID: <37N_jFulf7n-Z55NfKfE71C_wVPxYvZ0xD_iRUg2fXu7TypDiF5PStQ6siSfVBih6fThg5WoPes8U5ZQpfVm_teMFcUGXFxz2DdMbfSWuws=@proton.me>
-Feedback-ID: 224044180:user:proton
-X-Pm-Message-ID: 9b9be756796ff897da51b7220e70e8d7add16813
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zte3/aaS"
+Received: by mail-qt1-f173.google.com with SMTP id d75a77b69052e-5350c1b9e0dso11978641cf.0
+        for <linux-pm@vger.kernel.org>; Sat, 03 Oct 2026 21:10:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791087023; x=1791691823; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=1gZl0h+Rgpt7vIrQ3DFHi4uK4eDGZkHcBR93y6eKzCg=;
+        b=Zte3/aaSR226cz1HRUtJRct3y3diWGSE0F329TBA9VuqUQTQzkH34DPK2BIKOh+GYA
+         6f6Lzy4h/QZzvvL14L1K+BSetoNcJqdHF0rPoUXyVgb3QP/T4GFWD7cTvDCSmjyFQkPB
+         k1URsnaIvVAkZXqJgp7hydAOP9po774oY+EudvjakLPiCpj7MERbkyi9APbGQn5Km0Ng
+         hEit4OoUYySjzDD45WwRgExIcTRyP6r1KN1hrvoOdNe7MSqksTighBAIdb2qY1I30/Qu
+         g5w2QQNOoXBbcy1ReqYYXbejRrtMMfWqzmxd17a4sVsGaoMAWcERdepCGzC4QRiaN3/V
+         u5bQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791087023; x=1791691823;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=1gZl0h+Rgpt7vIrQ3DFHi4uK4eDGZkHcBR93y6eKzCg=;
+        b=yfu0KoJANNIvpt96V6cVtnaOvuLpIw1vdIYTuYdz7M3zyTJLXiEySEtYNH4xtekg2a
+         6AOdynNx1cD3VWI5Epq5fxFt8D03DfcBZmw+jR4ECp/ibRG4uhBzR5DQnIiYhj6CS8pn
+         jQqwzwcAHs9jD54gWfYHpUodNfxHpIV8zf4wYUdOrsg+VMwWfHVSIi8S73hVG1ANSo2R
+         l+tZTmhJlg2L2TXcHE5oLLE4SgQc10T4UUh2CK8Jxf0oqCnwg61PbMHHdLpQyLy1BiuR
+         FGQ4fmV2YhFiGVJ1M3gk94ZkNk/emnUQLDAugyp0n8G/zblvLWsDakRxL1QyxuXZEX2F
+         PEqQ==
+X-Gm-Message-State: AFuF++lICWELaOzPnNJdtnINUPSMWLOWMdhek91iJ6bieSe2/Y+KZIQJ
+	ic0x2Vymt5EdUxqeC18/Fqa+i9uYDDYBHqBeG9BB3rBDncytcNuaql4=
+X-Gm-Gg: AYBFou0D+YXWSniELxj2FWTq4OMzTB1voj3vyCRWVGEzGe2iQWLpwBZyYg/9n4RCh5d
+	yaLiBv4VqvY5Z0E/Jl3KKBeu+sWM7yQl7G7qTDC+yhdAfpqiXUi2JwgVZO/ebLV3QYlGhTO2pWF
+	TOxHUXWD8tKYUtbv4YSZk9LCA5J/ehHOH+L5kpqm3jmvL50WV9yNM40zDdn2slOV2RFPFWBwr3e
+	LPEfLeqofsktcmKILwGdMOBdEp931ACvDH/9JagCn6fJ/NKVUOOiF8gPgm9FF3KKq5BKiflkDGt
+	0ZRUJuN1xukauStuzg2PnwilxBO8bn9yA4gDa6oZ+v1hf2mH7U2DWbtwu9rqiTsTwLc/I/Dh6NF
+	iqezW3Lcj1HULteGYReMPxTOTuXa1mHNdE92w8r7QU738OHUTxOrwnFPMx/JET6I2dnfmp0D64/
+	qy0cJZNIk7C0xg/+bQEf+r08ma5v7fvIGAyHs9xW4WW1xPPS6DQrR/H5AcFNUH9adHTuipy46ct
+	6jEt0lKnSoP7+ASbxmIZa6AjdQwCHoJTUGzQPpmgMqmEu2hwQn+FAt7eBkfDfOjIaG2VYwCX3eR
+	2r+/6QxcACJMjAd46HTCnIowUSQW
+X-Received: by 2002:a05:622a:3c6:b0:530:b2e4:4e28 with SMTP id d75a77b69052e-5351203787amr67100211cf.53.1791087023409;
+        Sat, 03 Oct 2026 21:10:23 -0700 (PDT)
+Received: from i4-gl-tmk5904-1.ad.psu.edu ([130.203.156.90])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-917e0b19424sm57968806d6.15.2026.10.03.21.10.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 03 Oct 2026 21:10:22 -0700 (PDT)
+From: Myeonghun Pak <mhun512@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Ijae Kim <ae878000@gmail.com>
+Subject: [PATCH] power: supply: sbs-battery: disable polling before supply teardown
+Date: Sun,  4 Oct 2026 00:10:19 -0400
+Message-ID: <20261004041019.1123723-1-mhun512@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
+The managed poll-work cancellation is registered before the power
+supply, so cleanup unregisters the supply before draining polling.
+A pending or running poller can then call power_supply_changed() on
+the released supply.
 
-On my ThinkPad P1 Gen2 with Fedora 44 I've noticed that the battery=C2=
-=A0percentage started showing garbage values, mainly showing less, while th=
-e battery was fully charged.
+Commit 8d59cf3887fb ("power: supply: sbs-battery: Fix use-after-free in
+power_supply_changed()") moved the IRQ request after supply registration,
+but did not change the poll-work cancellation order.
 
-I enlisted the help of Claude to help me debug this so I am providing the r=
-esults here. All the testing was done on my laptop and no vanilla kernel wa=
-s installed. Started with Fedora's build of 7.1.6 and currently I'm on 7.2.=
-8 with the same results.
+Add a later managed action that disables and drains polling before
+supply teardown. Its retained disabled state prevents external-power
+callbacks from rearming the poll work after it has been drained.
+Keep the original autocancel to initialize work before supply callbacks
+can run and to cover failed supply registration.
 
-Since v7.1, _BIX and _BST data read after resume from S3 on my Lenovo Think=
-Pad P1 Gen2 (latest BIOS 1.57) is often garbage, energy_full 327.97 Wh (des=
-ign 78 Wh), voltage_min_design 32.8 V, serial changes, or energy_now ~328 W=
-h giving 424%, reported percentage wrong until the next re-read. Same sympt=
-om as https://bugzilla.kernel.org/show_bug.cgi?id=3D218881, fixed in 494c7d=
-055081 ("thermal: core: Change PM notifier priority to the minimum").
+The teardown ordering issue was found by static analysis.
 
-#regzbot introduced: d33e89d12295
-#regzbot link: https://bugzilla.kernel.org/show_bug.cgi?id=3D218881
+Fixes: 6d0c5de2fd84 ("power: supply: Clean-up few drivers by using managed work init")
+Cc: stable@vger.kernel.org # 6.10+
+Assisted-by: LLM
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+---
+ drivers/power/supply/sbs-battery.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Out of the suspend/resume cycles I logged on this machine, the battery data=
- came back corrupted in 0 of 39 on 7.0.11-7.0.14, 14 of 22 on 7.1.6-7.1.13 =
-and 5 of 12 on 7.2.5. 7.2.8 and mainline still carry the same code.
-
-d33e89d12295 dropped the INT_MIN-priority PM notifier and starts thermal zo=
-ne resume from dpm_complete(), so INT3403 _TMP now runs concurrently with t=
-he ACPI battery driver's _BIX refresh in battery_notify().
-
-Claude provided this explanation for the "firmware confusion" left unexplai=
-ned in 494c7d055081:
-
-the DSDT method \GTST, called by every INT3403 _TMP, writes the EC page sel=
-ector (HIID =3D 0x60) without taking the BATM
-mutex that the battery methods hold while paging through the same EC window=
-. EC register trace (ec.c dyndbg) at resume:
-
-=C2=A0 =C2=A0 WR 81=3D02 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0<- GBIX (=
-_BIX) selects battery page 2
-=C2=A0 =C2=A0 WR 81=3D60 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0<- GTST f=
-rom a concurrent _TMP
-=C2=A0 =C2=A0 RD a2->3a a3->80 =C2=A0 =C2=A0<- _BIX reads "design voltage" =
-=3D 0x803A
-
-Test: 3 suspend/resume cycles (rtcwake + systemctl suspend), checking /sys/=
-class/power_supply/BAT0/{energy_full,voltage_min_design,serial_number} afte=
-r each. int3403_thermal loaded: 3/3 corrupted. Unloaded: 3/3 correct.
-
-I did not bisect though, the analysis of the responsible commit was perform=
-ed statically, happy to test patches, and can provide the DSDT/SSDT dump an=
-d full EC trace.
-
-This issue seems also similar to https://bugs.launchpad.net/ubuntu/+source/=
-linux/+bug/2070441
-
-Regards,
-Charalampos Stratakis
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 501c8e069755..6714313bb3a3 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -1068,6 +1068,13 @@ static void sbs_alert(struct i2c_client *client, enum i2c_alert_protocol prot,
+ 	sbs_supply_changed(i2c_get_clientdata(client));
+ }
+ 
++static void sbs_disable_work(void *data)
++{
++	struct sbs_info *chip = data;
++
++	disable_delayed_work_sync(&chip->work);
++}
++
+ static void sbs_external_power_changed(struct power_supply *psy)
+ {
+ 	struct sbs_info *chip = power_supply_get_drvdata(psy);
+@@ -1208,6 +1215,10 @@ static int sbs_probe(struct i2c_client *client)
+ 		return dev_err_probe(&client->dev, PTR_ERR(chip->power_supply),
+ 				     "Failed to register power supply\n");
+ 
++	rc = devm_add_action_or_reset(&client->dev, sbs_disable_work, chip);
++	if (rc)
++		return rc;
++
+ 	if (!chip->gpio_detect)
+ 		goto out;
+ 
