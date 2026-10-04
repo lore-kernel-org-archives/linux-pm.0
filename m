@@ -1,181 +1,203 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wr2-f34.google.com (mail-wr2-f34.google.com [74.125.225.98])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E2DB3D0BED
-	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 16:51:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6DDB471271
+	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 17:30:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.98
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791132697; cv=none; b=jlBl4k3sQUQOo1wLeY6r9UU1lFwb39peZP23ZKIC9n9AxgCh1euxkFXrW5dD/ozltoOlyB5/0MARsrYnwXv6W394iWzxc70RUzISAVMD9euk14u0yx+OoQTcgMnn0vU5jObbAYGDzXT324HrIFdkd8JX3rCOK9Xh97PN3ej8Unc=
+	t=1791135040; cv=none; b=mwYqM6oI7kZiOmi4OWhWHi8L2zN5wL+ox8MfcEXhdlDdJiqzEgtm003HzKfCyv6Ta5xCnGcy/fTTL5/YgF/46/mp9KGDjbeHtd5Jb5B/n85yD6u9OH9CPF9XOxL9H6Ib9keVxrq8fjzAC18fOJCN0jMFT68VOJLIjaf6/ic9Kxw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791132697; c=relaxed/simple;
-	bh=7wG9Ljo/wLQuUSFyuvqM5SlTjkxmEhtxmQbgpLCzXuA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=YwgWUGMm/zEy3y4wcmd1cnN/ywj7AJbISZhEAfzqor+5fLbRWQR7vPYR4enin1elRggnT+9JUmjJ1tVcRcOlCWKthnRRLuhZ6+k6D86szSuqjGrRO1g+RPxEeX56GLlXRZmNw+44JFvcgfhLPmgIZ/AN42BhurLmqUw8pSaS+UQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PV525KoU; arc=none smtp.client-ip=209.85.128.42
+	s=arc-20240116; t=1791135040; c=relaxed/simple;
+	bh=WXL5LZkJrtzk9YPJU9X6JrPpHjTvu4EMRFegf6wNEUM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=XxHDfu0oxfwtu8EnK13b9Ww3B5C5+8lo5zDDeXW9opar7qpMsax+RFou/MFCUd/i9KxH5lCFxsCwRQpOxwGl5r4zdGpXxkMm5TXtNgBMefF+S4AIgrGadyLILnzA1BfIWubmH575aaznc+dJ5Y4uxaXx6NzI5XUopQzeKIGcJQc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GZlhxpcP; arc=none smtp.client-ip=74.125.225.98
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PV525KoU"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a1728d8dfcso625005e9.1
-        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 09:51:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GZlhxpcP"
+Received: by mail-wr2-f34.google.com with SMTP id ffacd0b85a97d-48af51f6182so143771f8f.2
+        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 10:30:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791132692; x=1791737492; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=NP4InVw4ZvTsXvnaGIApv16AhZMv/UaEABA2B83Ciew=;
-        b=PV525KoUXzx0DE1Myx3pRxTRSvnUKDVXmrKbiBb4tSdxBVHOMS1Kstx30He8HkruKy
-         UNB3or6NsDHzpRVLekX316sW4RtsDIRlJvVh6hVLm/Dofm1Yj1qcXYgYUEp+bY7piWOM
-         ryuwflz0/CfryUbTVTTgBQaru5mAoaHPplMT4EihXPRgq0iKXaP30eyKmpRLByLr7oZG
-         5b3SzvmseEJ+RBbkmIuohSIhx+E7BVEv5L8fJOLGT+nVoaXlP4zCp10U8VX/Tmb76Odc
-         25Qs5dbYncwzqS6Nc9BF0LZi3zhHKSvFlWe17+lSt6XNaggK29I/xFTj5pjKkhd3AATS
-         v3QQ==
+        d=gmail.com; s=20251104; t=1791135037; x=1791739837; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=K9BNRj1cE9nvNKn/WOlSUCpAG1T6oqBgGlxlrkhv5sI=;
+        b=GZlhxpcPYBjSozAyWHbMWJlJts7e0Xi/f6rNEHP1OecszGrF8bS7Qc8AC3Hzt+w6ql
+         yTUwxTd/G7ovu8Cs5RzmWcsGM0jnUAVc4Xz8VeIEvAM3zd7kZphqg9oF0jycGN+sCnQe
+         UbDS+LsEllLf2+0BQH0+PFE/uCxK7INUPCtdiZ9IBkvUm8TsTjer8FJevLlBROHM9LDE
+         sP94p+LYUpje2FyX8QnYpF0HqyD0AALNYqTtBlIM+XuoHk3KwpYjZBF5vb4znY3KatIi
+         afAF0d8ElNPywuZ25iTjddvJ+DPVBz/4YQz1soSCER0D2AxjXgjOokX5P5HJWApzxb67
+         +oHg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791132692; x=1791737492;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=NP4InVw4ZvTsXvnaGIApv16AhZMv/UaEABA2B83Ciew=;
-        b=JtzS7PiVxkFLXyHnOY9H+3gYUhQ+p3u+gR+jFsNQJkt0BJzRjtVVO/ZP456ZyYG6Li
-         8R6GOR1T4Z3koU+5Y1IpH3/8b7kzgD5opuL3/tz7+iH78YuMBTqrK4TFtnbd/m34HEGe
-         1LsMM0togsAKqHkpm1yz9ClW2ltndypI+ZfjiJsU8YRgPw1CK76xSXuezKApjUr+n0cM
-         WS23ayhPfJHOGyFP/5p6BhOO13OhkaqkqBI5GZoBbeVaN6ciJz1NzqY3hpVv1WMHY3sl
-         I1nO3WZOsv82jsr82VNzEPJ3fU3toXxp1Io70etqUxmxQhbdMACSBawH8zQT4gFj3L1C
-         kjAw==
-X-Forwarded-Encrypted: i=1; AKwUvBwp5gRlEw+kq0IpXNzXdcB3I1c5EAkXkqmTeOP6GMV6toXqAglB9HdB3lYIqxgYbO+lP0v6s2csuQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kFRQK1DdTKZ6QXee4AQJKgj2e0tZLmRYhkgE7X2cJn7y+Laj4H
-	iRekpyQC5woZqhJnKSqrsv31GTk3JeMeBFcIXnFWel+2xKIppfDozrbC
-X-Gm-Gg: AYBFou0RGp5jK1g+IOseutfzOJeWIkcvt02f/TogqxyBNkav/va1SL0h0v7Sm85XGiu
-	8SvbXlL4iJx6Rk1NqlzLLDdTk1i/i76Vd2PUOSN6DluM/Fw5GaYL+t8wXjrIaU4WYnHKPmSvo3k
-	Z6YHTysTfXUKI+u8TTkKwVPVei9gg/QZ8jManaK+DA3iMnc4R61pyGw8vl3q65kYJFu+1MFYUmh
-	7niwY/Sr/0bzflMQw7EF8fqdoBer69ILyzqnrFxZgcVWocdCNNwAwR/kKPh25fesZ0sVtX7ULl7
-	G8QcFuBOlbdqEgcJqdjIodQxFHqSUJp1nt3qqk9vgpkEvaCEhM2gdb2jc6VEg6ta7+Dezu7U/S4
-	HxiJn9MJ8SJDxMP2HOhFLpMr4ZOU2sg9HEwMtz5lrmYhSpfH7/YFL3UoM0y9kQN6m4ZMyGKPjcS
-	UX1bbUQD8QlTyOHEaLwI2uIll6UVX3Qf3Wk2kNlrLvdGG+6yj3uVLDpxcH4NxRkzPu7PnwgBtsa
-	G4l8rAoaC0=
-X-Received: by 2002:a05:600c:698d:b0:49d:1842:f001 with SMTP id 5b1f17b1804b1-4a1680e5865mr77354445e9.14.1791132692261;
-        Sun, 04 Oct 2026 09:51:32 -0700 (PDT)
-Received: from FranzSP11.fritz.box ([31.31.60.25])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a027725c6asm311375035e9.8.2026.10.04.09.51.30
+        d=1e100.net; s=20260707; t=1791135037; x=1791739837;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=K9BNRj1cE9nvNKn/WOlSUCpAG1T6oqBgGlxlrkhv5sI=;
+        b=u+IffquEV+XkceVNU7vEFspDwQtd8eNllT7BmeQBfjHcvl42v/ah0onb+OVG4xyLcG
+         FHr/E9dldHZYVGUyfgML1+MLz+i66FxdIltr7zm+P2zTElUU7a6MJ2VwZdFyWVixs+bc
+         ZfZC1mRaocAk5FXeeK8Pq2qy7sOMjPeLoXBIXFB/OYai3dCusDCfos3pdFR7XwwxB2Yr
+         c67c8HBZi/bKj1Gq8Nj3wMMd+GPsnsHc5kwYiGVn4Gb3PAOqvZIyex55Hu4oDMhznRvm
+         Q8htsslVEZVhyRNrOAAHnOA1ZdxMb/A2FJMzSiKxrGLbY+XShIFuC9iHuXAQorAFgs1S
+         x8RQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwXW+c1wuOkL8cXb76mVxySYwOmueqe0gJ+GogiUxUlMGl5zariJM83mX1L8DVmHnXbU6Jp4uFy8w==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJWaHv2UwlwPk4s7NYhw3b5Za2dFQ521sf3p0jVALBGf0YMo0L5
+	JggR3GVKUW/BRDk82L5SZUnPVRhS1vwOq9jE73ki2/tSTFyRfK0y6y7N
+X-Gm-Gg: AYBFou15yfc8eicaxT4e1PQTUmokO3VAApkJ4YSA6cil2IjYY/psNO9D3S0BmJ4+x2S
+	yAV9HWIOGkwhgKhF2+mlfFZe955bQ79nzezIQo60e9oMwe7H/Triep0ZUZUEhk6aKR5/ERr3n7t
+	jIdSVuAu7HgdK9UucHcKlGikdKfkp6LQhke5nerKg8a3SG8r70C8h+SI9o+gOhColIakJtsOsCn
+	gIQctsb/oEEl8R6KBmwWTOiKxDiKjY4pQ1t6Q3wRfRLTAotWb99UWkXkZBWeoJCWnSjnkOEbeEJ
+	1BFaApOLHhWl7Z6U0UtjYttCpnRZ8rT9X2SxLyU2hFu2ds4D74K/TUevWkJt8J6oLM+ry3o4GZj
+	UXHtM46+7NAdTxMzolp9datw7wvY8hr7ASecDZQVo04/nWqWdlnIaxI52aBZX94xAiWgNIZCCwZ
+	4NP+zQvotYprIJE9H1moB6l4EFRVw/MNyLZcW15tgjm2+kdx5MlhGm52wbekN2eH2H8gW5U+Q0/
+	PoY6cEbZ4I3sfJ/16B+pmT7BvU1FzY=
+X-Received: by 2002:a05:6000:2f8a:b0:48c:4802:e253 with SMTP id ffacd0b85a97d-48c4802e368mr8983746f8f.6.1791135036570;
+        Sun, 04 Oct 2026 10:30:36 -0700 (PDT)
+Received: from lima-kdev.local ([85.100.66.184])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48b382f8ab4sm18299306f8f.35.2026.10.04.10.30.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Oct 2026 09:51:31 -0700 (PDT)
-From: =?UTF-8?q?Fran=C3=A7ois=20Roux?= <franzelfranzel@gmail.com>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Manivannan Sadhasivam <mani@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	regressions@lists.linux.dev,
+        Sun, 04 Oct 2026 10:30:36 -0700 (PDT)
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: vincent.guittot@linaro.org
+Cc: arighi@nvidia.com,
+	bsegall@google.com,
+	changwoo@igalia.com,
+	christian.loehle@arm.com,
+	dietmar.eggemann@arm.com,
+	juri.lelli@redhat.com,
+	kprateek.nayak@amd.com,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v2] power: sequencing: qcom-wcn: power off WLAN at probe
-Date: Sun,  4 Oct 2026 18:51:24 +0200
-Message-ID: <20261004165124.4277-1-franzelfranzel@gmail.com>
-X-Mailer: git-send-email 2.56.0
+	linux-pm@vger.kernel.org,
+	lukasz.luba@arm.com,
+	mgorman@suse.de,
+	mingo@redhat.com,
+	peterz@infradead.org,
+	pierre.gondois@arm.com,
+	qyousef@layalina.io,
+	rafael@kernel.org,
+	rostedt@goodmis.org,
+	sched-ext@lists.linux.dev,
+	sshegde@linux.ibm.com,
+	tj@kernel.org,
+	void@manifault.com,
+	vschneid@redhat.com
+Subject: Re: [PATCH 02/18] sched/eevdf: Reset lag when waking up on idle cpu
+Date: Sun,  4 Oct 2026 20:30:32 +0300
+Message-ID: <20261004173032.18867-1-kayracizmeci@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261002154415.2270586-3-vincent.guittot@linaro.org>
+References: <20261002154415.2270586-3-vincent.guittot@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The WLAN enable GPIO is requested with GPIOD_ASIS and then kept at its
-current level, so that a WLAN module left powered on by the firmware is
-not switched off. The FIXME explains why: toggling it would take the
-PCIe link down, and the controller driver could not recover from that.
+> When several tasks wake up simultaneously on an idle CPU, their final vlag
+> will depend of the ordering as the first one will lose its lag but not
+> the next ones.
+> Reset the lag when the enqueue happens while no fair task has already been
+> picked et set as the running task.
 
-That reasoning held while the PCIe link was trained before the
-sequencer probed. Since commit b921aa3f8dec ("PCI/pwrctrl: Switch to
-pwrctrl create, power on/off, destroy APIs"), qcom_pcie_host_init()
-powers the endpoint through pwrctrl before it starts link training, and
-defers until the pwrctrl driver is bound. That driver cannot bind
-before this sequencer has probed. Power-on therefore always comes
-before link training, and keeping the firmware state is now harmful.
+There is a typo. ('et', also 'depend' and 'loose' Not sure that's all :>) 
 
-On the Microsoft Surface Pro 11 (X1E80100), the WCN7850 sits on a
-PCIe port without a PERST# GPIO. While pci-pwrctrl-pwrseq is not yet
-bound, the host init is deferred about ten times, and each attempt
-powers the PHY and controller back down. The later power-on only sets
-a GPIO that is already high, so the chip is never reset and the link
-never comes up:
+> As a typical example:
+> CPU0 is idle
+> TA with vlag 0ms and TB with vlag 5ms wake up on CPU0 simultaneously.
+> Depending which grab the lock 1st the behavior will be different:
+> If TA is enqueued 1st, TB will be enqueued with a positive lag and will
+> be picked 1st.
+> But if TB is enqueued 1st, it will loose its positive vlag and both TA and
+> TB will have 0 vlag when fair will pick a task.
 
-  qcom-pcie 1c08000.pcie: Device found, but not active
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index d7cc77181ef9..32d7077ef148 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -592,6 +592,7 @@ struct sched_entity {
+>  	u64				vruntime;
+>  	/* Approximated virtual lag: */
+>  	s64				vlag;
+> +	u32				vlag_seq;
+>  	/* 'Protected' deadline, to give out minimum quantums: */
+>  	u64				vprot;
+>  	u64				slice;
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 8cda1d39b037..4c8f12fc8869 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -893,6 +893,7 @@ bool update_entity_lag(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  			vlag = min(vlag, 0);
+>  	}
+>  	se->vlag = vlag;
+> +	se->vlag_seq = cfs_rq->idle_seq;
+>  
+>  	return avruntime - vlag != se->vruntime;
+>  }
+> @@ -914,9 +915,22 @@ void decay_entity_lag(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+>  
+>  	rq = rq_of(cfs_rq);
+>  
+> +	/* You can't claim any lag when waking on idle CPU */
+> +	if (rq->curr == rq->idle) {
+> +		se->vlag = 0;
+> +		return;
+> +	}
+> +
+> +	/* Accessing remote rq task clock is a cost */
+>   	if (flags & ENQUEUE_MIGRATED)
+>  		return;
+>  
+> +	/* CPU has been idle in between so the lag has been removed */
+> +	if (se->vlag_seq != cfs_rq->idle_seq) {
+> +		se->vlag = 0;
+> +		return;
+> +	}
+> +
+>  	/* Compute sleep time */
+>  	delta_exec = rq_clock_task(rq) - se->exec_start;
+>  	if (unlikely(delta_exec <= 0))
+> @@ -8190,6 +8204,9 @@ static bool __dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+>  
+>  	dequeue_hierarchy(p, flags);
+>  
+> +	if (!cfs_rq->h_nr_queued)
+> +		cfs_rq->idle_seq++;
 
-The endpoint is not enumerated and ath12k never probes. Bluetooth on
-the same chip fails too ("QCA Failed to send TLV segment (-110)").
+Shouldn't this skip DEQUEUE_SAVE?
 
-Request the GPIO as GPIOD_OUT_LOW. The chip is then off when the
-sequencer probes, and pwrctrl powers it up cleanly right before link
-training. Drop the FIXME and the code that preserved the firmware
-state.
+> +
+>  	if (sched_feat(PLACE_REL_DEADLINE) && !task_sleep) {
+>  		se->deadline -= se->vruntime;
+>  		se->rel_deadline = 1;
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index b98084e1f5b0..69a2a749e188 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -689,6 +689,7 @@ struct cfs_rq {
+>  	u64			sum_weight;
+>  	u64			zero_vruntime;
+>  	unsigned int		sum_shift;
+> +	u32			idle_seq;
+>  
+>  #ifdef CONFIG_SCHED_CORE
+>  	unsigned int		forceidle_seq;
 
-Tested on a Surface Pro 11:
- - b921aa3f8dec plus a one-line version of this change: endpoint
-   enumerated at 2.4 s, ath12k and Bluetooth working.
- - next-20260929 plus this patch: "PCIe Gen.3 x2 link up" at 3.4 s,
-   ath12k and Bluetooth working, Wi-Fi connected.
-Without the change, neither kernel enumerates the endpoint.
+Yeah, well AFAICT other things seems OK.
 
-The culprit was found by bisecting v6.17..v7.1, with the DTB and
-.config held constant.
+Also, while trying to get this patch series on my tip
+branch I had a hard time. I was at the caves
+of git and b4 figthing with... Everything.
+Like there were no v2 tags on some of the patches
+so b4 didn't tracked them. I had to do some
+things by hand and finally it worked. (Not too greatly tho.)
 
-Fixes: b921aa3f8dec ("PCI/pwrctrl: Switch to pwrctrl create, power on/off, destroy APIs")
-Closes: https://lore.kernel.org/all/CAPjyS8dY0Q_o3XmFjuKZZsjhzhoSNL+ZGJtw5cQt8HiV3sUtxA@mail.gmail.com/
-Cc: stable@vger.kernel.org
-Assisted-by: LLM
-Signed-off-by: François Roux <franzelfranzel@gmail.com>
----
-Changes in v2:
-- Sign off with my full name.
-- Use the Assisted-by format from Documentation/process/coding-assistants.rst.
-- Add a Closes: tag pointing to the regression report.
-No code change.
+But who cares? :>.
 
-v1: https://lore.kernel.org/all/20261003091451.4727-1-franzelfranzel@gmail.com/
 
- drivers/power/sequencing/pwrseq-qcom-wcn.c | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
-
-diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-index 7f88a29b2..636dd7e63 100644
---- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
-+++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-@@ -526,15 +526,8 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(ctx->bt_gpio),
- 				     "Failed to get the Bluetooth enable GPIO\n");
- 
--	/*
--	 * FIXME: This should actually be GPIOD_OUT_LOW, but doing so would
--	 * cause the WLAN power to be toggled, resulting in PCIe link down.
--	 * Since the PCIe controller driver is not handling link down currently,
--	 * the device becomes unusable. So we need to keep this workaround until
--	 * the link down handling is implemented in the controller driver.
--	 */
- 	ctx->wlan_gpio = devm_gpiod_get_optional(dev, "wlan-enable",
--						 GPIOD_ASIS);
-+						 GPIOD_OUT_LOW);
- 	if (IS_ERR(ctx->wlan_gpio))
- 		return dev_err_probe(dev, PTR_ERR(ctx->wlan_gpio),
- 				     "Failed to get the WLAN enable GPIO\n");
-@@ -545,13 +538,6 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(ctx->xo_clk_gpio),
- 				     "Failed to get the XO_CLK GPIO\n");
- 
--	/*
--	 * Set direction to output but keep the current value in order to not
--	 * disable the WLAN module accidentally if it's already powered on.
--	 */
--	gpiod_direction_output(ctx->wlan_gpio,
--			       gpiod_get_value_cansleep(ctx->wlan_gpio));
--
- 	ctx->clk = devm_clk_get_optional(dev, NULL);
- 	if (IS_ERR(ctx->clk))
- 		return dev_err_probe(dev, PTR_ERR(ctx->clk),
-
-base-commit: 6474fa070f2b8013b4b87350b775b8c3be6e8aac
--- 
-2.56.0
-
+Thanks,
+Kayra
