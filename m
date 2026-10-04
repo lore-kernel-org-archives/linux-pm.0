@@ -1,150 +1,180 @@
-Received: from mail-pj2-f43.google.com (mail-pj2-f43.google.com [74.125.227.171])
+Received: from mail-wr2-f19.google.com (mail-wr2-f19.google.com [74.125.225.83])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B66C047FAE1
-	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 18:14:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BAA63FDBEA
+	for <linux-pm@vger.kernel.org>; Sun,  4 Oct 2026 19:18:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.83
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791137653; cv=none; b=TzrSiHB0ZONrQF9aUMFeAYoBIzJK6HGbrHf1pxcz+mD6Vl0pBNQeBbJsBcaQgbArJe0FUffmPxZwE6zPU34JMwzYirP23NDJdbPKdZdEazdl25nyV7YqGjeOfEDLwtK0bTKzAtmYg+flK9Ex4+aqHPKN2zRv9TbjWsBX10VcAII=
+	t=1791141505; cv=none; b=poELN7StE6s5z7HgrV603TZjCBhlJn3F3ma8u/fspJYveK+s5W3I0eBg0tRVIQlTkl/leaPveyowVLTvB78d94C6HDZ2lTUQf7gpVw3UWmy2MNhRFA/0wO79ixJqZnB4Oyd+VaMu5UhtpnoBijAtI3i4V8ufCJ9VYYMvd1qEZf0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791137653; c=relaxed/simple;
-	bh=sjH5S0CNZClDmqdFY8S86gTYCINMCORIQDzBcILuZbw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CqbqAQMgEk+NfjI6O+OIFyWG4dyWCehLZXpVLNxdUE2Xk0arJDz8mPHXWd26a9zkGkdO4WB/kGudYfuZ3+IfPwiO37/zsuTt+5M8wmUyjgnIPA9DrMPSFXEqLlFobnP0gKhKngVSQ+rIRDPGfY6iVQC0B0bneU6VCjJQwlqYLTY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=K4Sa1s33; arc=none smtp.client-ip=74.125.227.171
+	s=arc-20240116; t=1791141505; c=relaxed/simple;
+	bh=cxqvPvmP5LEKCuOrQcNT+FDABIRF0pkCGT0tYhdiTXE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=WVmubkHB2VvglQoUWaF1+X+EjkXsvpM4XncA+XFnSNHKY6rbJl13c1UidKnCw9OICNIvEe1YqiI8v7fjbUiZLlsHgkU/anCPKq3f9dn2qNjgtAgcbgABoCrcqftn609L6tGxSlKsCyCTvNdXcDGGRmlsmBTtjzxXNui6S+N8JKw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=m3pUI4+v; arc=none smtp.client-ip=74.125.225.83
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K4Sa1s33"
-Received: by mail-pj2-f43.google.com with SMTP id 98e67ed59e1d1-3a4c8262465so808855a91.2
-        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 11:14:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m3pUI4+v"
+Received: by mail-wr2-f19.google.com with SMTP id ffacd0b85a97d-48aff407b13so132721f8f.3
+        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 12:18:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791137648; x=1791742448; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=zvp184+VDrAAELa45MrIVjzHZuD6h0h7teUaAj2z138=;
-        b=K4Sa1s33e0topBLGrjJINZJoi62x44og/j03tLJmjWt2c/pJvzX2HTGqfrHcMxLOGo
-         KxzYBuopU972XPuBVEcR0ycGt415fw4raN5VEPo2z6muL17lWZ/HIG88g123LWJTPd9Q
-         rirdz9jjIW7qf6CNJ02pHhxBu7iA1urwiQXBk8Wvo5pIeMbSY2jZaZ/D1EBhVzv2BTh6
-         jqs959cePI9HiTQN5HMLqSTDbZ4rKf638sNEpvZ7ucTiJSi0gF2+JfvYODsxEmFKBRLK
-         o8+oSJ+fc86F3abO3LxElskwxBc8NX974Oso3GKIkN2Vqx+k+AED2wHfPestHNGGQ+cW
-         BnyQ==
+        d=gmail.com; s=20251104; t=1791141501; x=1791746301; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=cPTMVIIAJFn9U/eu7HQEBuEphGxHwxWPSlT9dvO4lqU=;
+        b=m3pUI4+vtvXlwQQ0prQwLq01IAmQ8fmp2mggHNRBhGAiIsGmoRgOZcbKFvToxZPUyI
+         sHbu2g+6yzTceF8Wp1eHAa/+4klY8uk/5W9VATtIHFrkmfRCpXEEjvebsrhZZd1QTyT1
+         TBh1JG2CuC9fE01Ic+80bu7WETTe4d5fneZpQmd5WVYgDtUqU7tRQ+Pd4etAtxYeRSqF
+         ZDiwV50tRYY+9yhfJmsvbZL3VVeeZsJI4QELIpofmo1nFx8zBQtGmMBdDS5bPiUO+BUO
+         EixWplPNN/v/arDaBg2hVw2p6eFsqfzvDSVEdb7Kmxs3HBdNhnnPJhvYdgwh1npO45YT
+         w6Hg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791137648; x=1791742448;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=zvp184+VDrAAELa45MrIVjzHZuD6h0h7teUaAj2z138=;
-        b=XBcfbHfnHeGztYLPAkv0H7D9M2O6n2m+uj5Tc7ZnPwWnLIn6DH6+nXbfQaKm0J59E1
-         +d1lSrBjaIZL8WWpUDAcOmBsxUA8r+L3l/+9rodmeanQJLzy00P/za4argDyasLeFIIM
-         VfnbRxkSiQiy1P8Fjr2sZq85/BWPez9HPGKl7MsnWL+P/a1A61lHBfN443/NTOLlRSXr
-         LdX4xdkuZmSSGFBph3Po2YDX862yOIbfhWL/n+nDqmTilfGBmYJinVvRPBbixDxOLuDi
-         J8tML3F5oN/cs06bsXt/Z2JKRQT6HJLKUFsO70otRgVkVKtjBx1reiwck/6Nf2P5382i
-         BKew==
-X-Forwarded-Encrypted: i=1; AKwUvByclCP/xRuCbE3b2dm+6aeczMPtBSTPV6HQFp1dfrFlVKstYrO9/AaS6wJBnRJ9Abo6hdPeMUXoEA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYILuJ6ADkvmdcsQ7Nsmh2KofSbvnG9qJ/zxpMHbGgJ71NR3pD2i
-	nKvDQhfp9sDkTTmIT8H77G/wiMxosskMYKZURBFl1d08UWd/Amw/NLo6
-X-Gm-Gg: AYBFou1rtctM6n3iaDEkmXJRIA3ij9JZIPMgL+w3XlBc2ets+9I3Vx6tm5ft6kgAU2N
-	sdWVAUhk0QP2YrwK6U0mPVqGuoRB4QPpJmqgYQmdE7RBftub158DOPrK4x6w6ADvkncZpwUzaLr
-	ND0c6ke7iy/V8kWu2QisU/zTo6wkhJMxPG+pTC0PkaedilihacCeSYzEgKGRpJgpgzbxFNSruqH
-	tSbslnoxp+qhdB+gnT3/AAv5mbcAsu9J4wmYwxuoCnTSIu5zOUecbWE/ODHkTu/YifMp+OXa9GC
-	QiEOxCOBiVEPfWCNw5j+YGQcAYgDkpnhT1VtfF8mOtIvmVS8c7ARWyrE7sDIDcgs5D+QQ0BLP6j
-	00OpjEb6Mm28rRv9MQvHVAdm77bIEPLr0hMhmUT8wVtwApBJbHJtWAfnlOZuc38h1tpR75skCHC
-	diQzH3GlaZOXywl2yup7uhcKBhXdfoIIrEXHC2aQwApAN1T5V51g8mpWH5xSyEMt+NziIoT4BER
-	nB4rWR1claw1MpXgfxJr7lTaHHXEWlDAVHWJWChfg==
-X-Received: by 2002:a17:90b:4ac3:b0:3a0:a781:2c39 with SMTP id 98e67ed59e1d1-3a6ce3a978dmr7662178a91.7.1791137648512;
-        Sun, 04 Oct 2026 11:14:08 -0700 (PDT)
-Received: from gmail.com ([220.85.166.190])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a78d59f1cdsm7460304a91.0.2026.10.04.11.14.00
+        d=1e100.net; s=20260707; t=1791141501; x=1791746301;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=cPTMVIIAJFn9U/eu7HQEBuEphGxHwxWPSlT9dvO4lqU=;
+        b=z3wqA6JvJ+3JkOynPlOFQV1Jg+EOEKA9aB+WHbn866no5yDfzXk3GF1Dd0BWR6E1Ac
+         ARv/BdK/SREA5qrF5HIEPtFjy+Od4hYxdAzGxy7wqS30gWrZqyI1I2jiKskB7Ywcp6FG
+         Tt4BCY+LkhUd6YQw/i+tNN1XCDsnhq1y6HX8Z01/M5FVDuE310uEAs6FuQCI9LQEeOnO
+         xmjX+LomQuAll1xiqozRCWyjDNwaRfSwtJOBNsUFHfbJRsbFWRIq3Td6hfd8U8VrngAC
+         18lqW2JA54va+6TPrTV89ahn+BfpCG4uhBGEe+WUTSTi17b0MVonpetB9P/craYF7dxC
+         Y9mw==
+X-Forwarded-Encrypted: i=1; AKwUvByltw0zgPBUMU3+gkn7incsqPc3ppvbyn6SnTbO87wjlkAikY+oX2A+Cqhy/h/hWwic7S7B25pGqQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nOhbRWBa3odAB0l/GgufDfZc+UISasomHKKBnyGnYJ8a+E+ELm
+	1/gK4N6MwuYF2zpeAzKMEqtEoUdQgTWBtnhKZ8DjhAhdXcyLK1gI2T0N
+X-Gm-Gg: AYBFou1chtHAhkYWOdEf2XUB8zMz/EW9cS7n75WKVHdSMcBDMmNSgaP3TJwXi9cWEgp
+	hISH4/binM+LVJ6Y+AM8c0D1Vgsk8OFJMGKgA1+nEYad3Lxo+ECtyid+psT6/eDYXk/acm2h9Bt
+	Wb4dEIKrwpg1rR89yotFRLTaX7fZpVs8AnRDhawNyiOncfYORv5otvRDdhvQilCRRVejCJ8l9/R
+	vAyjwb5Lz34mXYYWNOePLov4IWSBUdJ7yQ2LfSpGWa4GOaFH3+OvJMFhz4NSCsVCLzqqLDpyznT
+	2LCHZ60twnYRWE+X5nefJEp/MrDpIFbPTsnYhs9UAHzcZsVQneq9z5dUZDXbzlQaIalUdEuI3hm
+	Ogwk17RlAjZpcL0/Xq6ORKqiROLWqM/TWbgIMZmuJflnWyDCkwIhnDUS8WN4w5KtWdTYPVyFXoG
+	ml2HrwK6Jc826f6Mxwy1h8bTOFh2T+Ovfp2FthDCGHVDHBuM3z2IymBbSDX19U4SH2Nz2NQIFs1
+	zKObl8ohqbx3e2Vrf28
+X-Received: by 2002:a05:600c:46d5:b0:4a0:1ca8:70e2 with SMTP id 5b1f17b1804b1-4a02751fa7fmr143583805e9.1.1791141501458;
+        Sun, 04 Oct 2026 12:18:21 -0700 (PDT)
+Received: from lima-kdev.local ([85.100.66.184])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a0276fa954sm279357515e9.3.2026.10.04.12.18.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Oct 2026 11:14:06 -0700 (PDT)
-Date: Mon, 5 Oct 2026 03:13:58 +0900
-From: Youngjun Park <her0gyugyu@gmail.com>
-To: Matthias Goergens <matthias.goergens@gmail.com>
-Cc: Kairui Song <ryncsn@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Chris Li <chrisl@kernel.org>, Baoquan He <baoquan.he@linux.dev>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	David Hildenbrand <david@kernel.org>,
-	Michal Hocko <mhocko@kernel.org>,
-	Shakeel Butt <shakeel.butt@linux.dev>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>, Yosry Ahmed <yosry@kernel.org>,
-	Barry Song <baohua@kernel.org>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, cgroups@vger.kernel.org,
-	linux-api@vger.kernel.org, Alejandro Colomar <alx@kernel.org>,
-	linux-man@vger.kernel.org, Karel Zak <kzak@redhat.com>,
-	util-linux@vger.kernel.org,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, Shuah Khan <shuah@kernel.org>,
-	linux-kselftest@vger.kernel.org, Kairui Song <kasong@tencent.com>
-Subject: Re: [RFC PATCH v2 0/4] mm/swap: reserve swap areas for deliberate
- offload
-Message-ID: <asKXZv5SxBtxQxqf@gmail.com>
-References: <20260926045517.3458413-1-matthias.goergens@gmail.com>
- <CAMgjq7B7jem_dwtUEX7ZJPQm_pKBegR6WS9+B7nFp-gZugpUng@mail.gmail.com>
- <20260928151944.2686626-1-matthias.goergens@gmail.com>
+        Sun, 04 Oct 2026 12:18:21 -0700 (PDT)
+From: Kayra Cizmeci <kayracizmeci@gmail.com>
+To: vincent.guittot@linaro.org
+Cc: arighi@nvidia.com,
+	bsegall@google.com,
+	changwoo@igalia.com,
+	christian.loehle@arm.com,
+	dietmar.eggemann@arm.com,
+	juri.lelli@redhat.com,
+	kprateek.nayak@amd.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	lukasz.luba@arm.com,
+	mgorman@suse.de,
+	mingo@redhat.com,
+	peterz@infradead.org,
+	pierre.gondois@arm.com,
+	qyousef@layalina.io,
+	rafael@kernel.org,
+	rostedt@goodmis.org,
+	sched-ext@lists.linux.dev,
+	sshegde@linux.ibm.com,
+	tj@kernel.org,
+	void@manifault.com,
+	vschneid@redhat.com
+Subject: Re: [PATCH 05/18 v2] sched/eevdf: Add min slice check when selecting CPU
+Date: Sun,  4 Oct 2026 22:18:17 +0300
+Message-ID: <20261004191817.20225-1-kayracizmeci@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261002154415.2270586-6-vincent.guittot@linaro.org>
+References: <20261002154415.2270586-6-vincent.guittot@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260928151944.2686626-1-matthias.goergens@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On 2026-09-28 23:19, Matthias Goergens wrote:
+Add a new level for selecting CPU when select_task_rq_fair() fails to find
+an idle CPU. This last level will compare the slice to select a CPU where
+the task could run 1st.
+This helps a waking task to select a CPU where a longer slice runs
+instead of one where a task with the same or shorter slice already run.
 
-Hi Matthias !
+There's a typo. 'run'
 
-> > Just like we already have a "swappiness=" parameter in the reclaim
-> > interface, perhaps adding a "swap.tier=" would be better and much
-> > cleaner to achieve the same goal? Based on Youngjun's work here:
-> > https://lore.kernel.org/all/20260916183437.2946306-1-youngjun.park@lge.com/
->
-> Thanks, I think that's the right base.  I tried it: on top of
-> Youngjun's v11, a "swap.tier=" argument to memory.reclaim is about 40
-> lines.  In a VM with zram at a higher priority than a disk swap
-> device, and a cgroup whose tier mask allowed only the disk, ordinary
-> reclaim in that cgroup stayed on the disk, while memory.reclaim with
-> "swap.tier=" pointing at zram went to zram only.
+> @@ -8771,10 +8771,11 @@ static int select_idle_smt(struct task_struct *p, struct sched_domain *sd, int t
+>   * comparing the average scan cost (tracked in sd->avg_scan_cost) against the
+>   * average idle time for this rq (as found in rq->avg_idle).
+>   */
+> -static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool has_idle_core, int target)
+> +static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool has_idle_core, int *best)
+>  {
+>  	struct cpumask *cpus = this_cpu_cpumask_var_ptr(select_rq_mask);
+> -	int i, cpu, idle_cpu = -1, nr = INT_MAX;
+> +	int i, cpu, idle_cpu = -1, slice_cpu = -1, target = *best, nr = INT_MAX;
+> +	unsigned long task_slice;
+>  
+>  	if (sched_feat(SIS_UTIL) && sd->shared) {
+>  		/*
+> @@ -8795,6 +8796,8 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
+>  	if (!cpumask_and(cpus, sched_domain_span(sd), p->cpus_ptr))
+>  		return -1;
+>  
+> +	task_slice = p->se.slice;
+> +
+>  	if (static_branch_unlikely(&sched_cluster_active)) {
+>  		struct sched_group *sg = sd->groups;
+>  
+> @@ -8814,6 +8817,10 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
+>  					if ((unsigned int)idle_cpu < nr_cpumask_bits)
+>  						return idle_cpu;
+>  				}
+> +
+> +				if (slice_cpu == -1 &&
+> +				    task_slice < get_rq_min_slice(cpu_rq(cpu)))
+> +					slice_cpu = cpu;
+>  			}
+>  			cpumask_andnot(cpus, cpus, sched_group_span(sg));
+>  		}
+> @@ -8832,11 +8839,18 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool
+>  			if ((unsigned int)idle_cpu < nr_cpumask_bits)
+>  				break;
+>  		}
+> +
+> +		if (slice_cpu == -1 &&
+> +		    task_slice < get_rq_min_slice(cpu_rq(cpu)))
+> +			slice_cpu = cpu;
+>  	}
+>  
+>  	if (has_idle_core)
+>  		set_idle_cores(target, false);
+>  
+> +	if (slice_cpu != -1)
+> +		*best = slice_cpu;
+> +
+>  	return idle_cpu;
+>  }
 
-There is an earlier attempt that may be worth a look.
-https://lore.kernel.org/all/20260618044857.69439-1-jiahao.kernel@gmail.com/
 
-If you go this way, the discussion in that thread worth refering too.
+Also,
 
-> What it doesn't cover yet is reclaim outside any configured cgroup:
-> under global pressure, a cgroup nobody configured still reached the
+Scene:
 
-Right, so for now every cgroup has to be set to exclude zram, unless
-another idea or more code covers it.
+Let's say that in our domain there are 8 CPU's and has_idle_core is false. And nr equals 4.
+And sched_cluster_active is true. select_idle_cpu() enters the for_each_cpu_wrap block
+and the else branch. Because nr decrases each time, and if there are not any idle_cpu's
+even if we found any slice_cpu it's not set to best. We just leave the loop after checking 3 CPU's.
 
-> zram tier.  So for v3 I'd like to add a system-wide limit on which
-> tiers pressure reclaim may use, on top of the per-cgroup settings.
-> I'll wait for Youngjun's v12 and build on that.
+The same thing a bit differently happens below on the main loop too.
 
-I have looked through the whole series, and I will keep this use case
-in mind while working on v12. :)
+But I don't think is more important than typos. Typos is the reason we're here. They are the or nevermind.
+This is a joke btw. (that, destroyed my masterpiece and created a new one. Saying a joke is a joke because it is,
+is one thing while saying a joke is a joke as a joke is one thing. I wanna go on with this but it'll be to long. :<)
 
-Also, to share what I had in mind, I was planning a sysfs interface
-for each swap tier, /sys/kernel/mm/swap/tiers/<tier name> (exact
-naming TBD). Maybe the system-wide limit could be handled there as one
-of its use cases?
-
-Let's discuss it in more detail after v12.
+I could be getting something wrong tho. (No one is perfect, but I'm not perfect at all so ya know.)
 
 Thanks,
-Youngjun
+Kayra
