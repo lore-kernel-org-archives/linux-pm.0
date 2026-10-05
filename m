@@ -1,150 +1,196 @@
-Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
+Received: from mail-dy2-f42.google.com (mail-dy2-f42.google.com [74.125.229.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DD7D4ACC74
-	for <linux-pm@vger.kernel.org>; Mon,  5 Oct 2026 18:59:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.175
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791226778; cv=none; b=DVMUkwt8pBzKWfYFWXAhKoYq2Tmy3ngw6lr4hCTtym6CCoflPJZ5wDTkyJaw1pDqPE8EsJkcAtOTE7NkhKrodFJSr8PVe4exhPBejtWoe/mZKG6lTQyhdNavmC9Ylim4zTGk+1XZF9eLtekIM7FhvLYvCYf10L7phCQAOfM3Og8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791226778; c=relaxed/simple;
-	bh=SRcC8ohDq6n1/1x6uEFOzKfccQ4AUSwXZvAuiYjE+d0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ce5hPjinm2mIfcN30BiBGZIU8TvIOPdoleLlUpc9109sel/h9F6s660FNoObBa9/cAEBXa9cxKL9DhMqT2YVt8+DsDzCOFQT15pkW1p8x0SDhiVoEUwfQN26mdNmBK3YnATnt5bxZn2NAC1cGk6YroVcQmfKkJmZrCHEUVkIK5Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=G4cuvJ2y; arc=none smtp.client-ip=74.125.82.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E9A237EFFC
+	for <linux-pm@vger.kernel.org>; Mon,  5 Oct 2026 21:23:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.229.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791235423; cv=pass; b=p2596Di39BGvjmIi+N2GAvRIRLXE3hpRwNZjzyaJ295C6sE1Bm7vGpVkj4G3Gl6LOQx7Hhm3/ooi8G0F7UK0sXexJE7eHHxSalycaru2UcrWYkihZQ2BMMHIQz0zG6MHtXk3cKvB3pO8KTD31161//cLd5NpSUNgrpL2qwP36Cg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791235423; c=relaxed/simple;
+	bh=lKtNfmVxy6PnM08awUrBMfdT2M+Ze5BiielD1CHkFvk=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=conSK9PDJO3GQWyFiEKT83BVvN0IeJaQz9hEN+HtoVp6hThSXIY/hhB6SFWS5hE7xmrHddERatZrfn0Vb3HhzCPedqGfiFUwkXHlHeVZ81F8oh3b4jfcGpCn29qAMyG0mrPOKWJAfx+RBw/xEBnT5+r0pvrrTVoPYR6LNpNWUTI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FnnRnjXN; arc=pass smtp.client-ip=74.125.229.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="G4cuvJ2y"
-Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-3282db206d3so6702369eec.0
-        for <linux-pm@vger.kernel.org>; Mon, 05 Oct 2026 11:59:36 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FnnRnjXN"
+Received: by mail-dy2-f42.google.com with SMTP id 5a478bee46e88-35122ae71e9so998223eec.1
+        for <linux-pm@vger.kernel.org>; Mon, 05 Oct 2026 14:23:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791235421; cv=none;
+        d=google.com; s=arc-20260327;
+        b=NVoTHcrNw/0m0oxU00jDex0rgIBkO2FML93dLnnKYBU1ht6ffHJj1k2UvhPna0d6jg
+         4K94Jp5g6dpolO5uQ+iwwfiJelyKRlNlGoajDE5GOU7Qip0/twc6tUgfydluuzqc4QUv
+         Ctr1Law7X62um6W6Fc+SahI+kyD97ixLgo9T3J0SSqgeVTsebRfDnS8JBNy/jG+JCk53
+         QG+ce9dlxoZ7D8gVfLkTrvmdXTaOPvuUUpRXO8Md1ZQtVuCUjuvf1g/h5H1v332S8k6h
+         J3J3LwMUYci/6gsGnkaORrDTUJHZlfbkYU77boEG5FuJR2TET0ZtubJhrPBbsBUnlEIz
+         FA7w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=+BMsm8vxGskhN0Hd8cdAfO0SjPkALEVFiwdvrxqaZWI=;
+        fh=2Mp7SpNISovM2ex6zJZElJfc1SomXB3tvQGvJ6ReIfY=;
+        b=NY/5LyujrmxcvMWci7MgXziULcFzD6zpVAPuZGxmL52Yc9Q03nvRtnLXZYCYDK33kE
+         VuMNT2RTO6W8kkT0cvfoOGRISwBjv1hg3e8cCWHAj+4eHsau+E/BKn2QirBZzaMn+69R
+         RztfA+244q3EAYShpE/4sLE1c5OhQz8MXUQaMSWkRWsAgmcd4qFLSPrEDmPm9w6YYvGP
+         DwWyOh2RmZprRH7m2ItGuX4p3cjfHHXCOFTIGFfoSvjl7D/+l1n0JPosTP7ks/aoWZs7
+         b8Uu92wrgf5wca9jzWDOiGc19aUbzZjcQ0idPoc7xLrkKU9E2L1mDkt+CTrfu1YEqRz4
+         jbxA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1791226776; x=1791831576; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=34Mc2VGmFq4+SQZVPBzQPN4LtH9/hpTQPAekRG2rusc=;
-        b=G4cuvJ2y3Vi3vcYL+MrUs9GsLiO7W05OgIG15dVMH4EfF3C/NPnpBneKEKrK3tJOMR
-         wDcJAwXTw3M1KsQKcM65DcqzTVUFw7O//niWgSxrWHs4ZlN3AtZKaKesVLgDX3AYkpt8
-         mlcDRGp9LrK1BADyxjJ8Fn6LNSvr0icuBnK5Q=
+        d=gmail.com; s=20251104; t=1791235421; x=1791840221; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=+BMsm8vxGskhN0Hd8cdAfO0SjPkALEVFiwdvrxqaZWI=;
+        b=FnnRnjXNausk+trqCQkL2dvONA684455VH4RQJ97im0b5ZPv2EhyYxlafi+//+ZS9q
+         CiKxz36j/9JTGgO7eIGsXDyqinf6Rf8OV08L55BqUTcRYNpMNzsFP6q7suSmPSLqoMoC
+         UlvmBvaIzvN9ql5q4/3HoENUwBLyW3F1PwadtxDoRRmL7A41AcQPVmOK02m9Rs21Rcgb
+         N8lYHQqLibgolABawpz2PDprxrqs41URqynKrmr5KibciHKwX4FMSYm5gffshWqYl00H
+         neFG9za0aE9F1JOQoj1mz0BXwJvW3tsOKNsnsRAwOTiktvgPkrIWOVTMBpQh/XqH/5ha
+         sE9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791226776; x=1791831576;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20260707; t=1791235421; x=1791840221;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=34Mc2VGmFq4+SQZVPBzQPN4LtH9/hpTQPAekRG2rusc=;
-        b=IWiwt7JAmftxNQ2KyWgHuyQX6UopiA5IMS6T+QnhzVNQaee1OiW1hDifEz5+j6fZZ5
-         9WOfo413Mcu1bmWo9675ummvmDOuNYNxyMsfH5F78buhIl7XYgK4HJXTeGCYxwzF6K3n
-         sAVXWj1K8wrSqTWFrc03sUgAMnkYytGTvk7fT99wfEHndqQ4xsuk1o2XqPK6a2OPP3cb
-         hzm3MU/qUiGLybhwUd+axPrQ8Kj9qsHRO71ulfh+z4gnF+M1o+ReLscA4fP//sFh1GFZ
-         fejNZCVIqRkZms1FHc9CWbE/1O5KeECeThwfxAGqk+GwOURMl0GcE7renW1axRdBGiHm
-         V1hg==
-X-Forwarded-Encrypted: i=1; AKwUvBzF8/uCC6zcNpDN+78T69VsjT1DBxKEOGez1SwypJWAQwdp+xms2MzHbeWXApbeA4FwHuulODQV1A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLifkRNOKRF288Gga89NzyK7iGGU8A8PQIyBmwAQse9J3joFOwl
-	HocvN9x9gXYjky1jahpYUIncSiPHLgYr+Dl3vUzJjVj1W9SU/yijoWAbEmnk2qJvrryFzV/oIf6
-	ex2A=
-X-Gm-Gg: AYBFou1lqDMFKYkyflqpKD9vpPgNQkdlo/WbHAohIsuyKuEMqWavbvtzV71w/Oq7EoW
-	xTURM8A9gSN7Y51hnrbnU4hJQBRu8kTsHhqkxLrT3Tvht0LVctDascZASEemDBPr/sBvjkYRwMp
-	RiJBihieiAB6zuiwA1vroZpf7clkN+xjWqWE6XkHctjVn0/fSwZXxrfjEGXtVaOjWGlapBJmXmV
-	776+Irs4OIjBOwcKBrZWO34fD8d0+DHfJ7N4LjB4NjGeijnqlE2ubYx+utrXl6B+sEgXktvGNoU
-	L3MtddtOjqw83qREKyl2oeAHdnMYMGpmVlJi8WFBAcZM6RxuATosrQeE/iQxj8osmk5wnAY6PU2
-	pDUDSC5piWSSeMR84mo9OYa6rAeTkwbjjP+tW+fGU1sBl+GUzEGvWY0b+JcdBBfErFvy6RrjZu2
-	K3IBkcZjq1uuCxqUsLTgi08XvVf63N4ApEirQ9/ScITycvBG2ysMq4y9DVkxaiF2POdQzfOfdTX
-	VXDjux5/6cFh6dMCGdTEIbk/jHoiBXbRXX0
-X-Received: by 2002:a05:7301:fd8c:b0:34c:4af7:4da4 with SMTP id 5a478bee46e88-35111732d3dmr9225010eec.39.1791226775679;
-        Mon, 05 Oct 2026 11:59:35 -0700 (PDT)
-Received: from localhost ([2a00:79e0:2e7c:8:3452:be62:94e:a46d])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-35146abff39sm233580eec.21.2026.10.05.11.59.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 05 Oct 2026 11:59:35 -0700 (PDT)
-Date: Mon, 5 Oct 2026 11:59:33 -0700
-From: Brian Norris <briannorris@chromium.org>
-To: Doug Anderson <dianders@chromium.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-	Pavel Machek <pavel@kernel.org>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/5] PM: runtime: Avoid racy clock checks for
- autosuspend-retry
-Message-ID: <asPzlc60S4N3sIrk@google.com>
-References: <20260929184729.2346769-1-briannorris@chromium.org>
- <20260929114714.2.Id0a3276d23d30e0b5fd4d6dca730be0f9d8fe018@changeid>
- <CAD=FV=WPohx1seYHdw0Mi=5xh8XCWvh23ie03+ePXQgTixGzOw@mail.gmail.com>
+        bh=+BMsm8vxGskhN0Hd8cdAfO0SjPkALEVFiwdvrxqaZWI=;
+        b=Uz/QcUFcIWoIxCYnKhzsE6heudsSyRWJnQ8GzAaDrC6fYwjuMd0EYEHs6AlF4eEkkZ
+         sqDylhaQE1vtVH1NwfBKrGUbjstodyv0+b9D6xSREJZAqi+KtONpnV4RKrXsl58IChD4
+         YlOvY5AyROq//EeQE1QRR+eN+/sWvBFBu10ScLkpQ/LMdho7YvOHXo8fkZOdYBv1O6CR
+         +aZmNgqdieYE0JDESgCFWeD08GBwSCP+UkGuTxvOUHx9eK6HQfHn4pOjt60lrVFrNhDp
+         /0sPIUXvIYpP6cu82yBcHgp7sNuFSqDG783dEyb+IGYcScUDa4/rar74qiurRQtK3ric
+         dEuQ==
+X-Gm-Message-State: AFuF++mskvHfrP7ZJZ4Wuhz+T450n+1UHJ1vIsw+LJ769zHVln2l2ZAn
+	TWvUaGulL6eGZb57r0U1sghKmQUbpynuQSEZXEPRHD4EUHnYKtVmeIswTg6u+brMjG90VSXEo2j
+	ryVgj0CDmWCUGQ/cZNEpcla7j0ddF9Yiavo/q
+X-Gm-Gg: AYBFou3e3me0FL0bRPMdr0gRHrQbGt3pWXhn+nij8H8aCHosUrV1/Hy3oqyRp8ru9/h
+	L26jbBW8zYxF75Ot+xDEE1IX/Pj2b3d6ngU9pK+gHV1yJ6s21wHbwATAASAel++9SVrxReC2uQp
+	6lU/McW12p3zEwMXGBts/Q0lJT7+Qj1cfJrDKnuNHtlRP+vf/DgctLbE9zIDy1ao1m6Eg9agyZz
+	4GIAPB8k17nIgzqL4qzadOC4KwUnJmHQ+kttxBgYKe10McLaFw/FNe2xIr+EsEF3I+OnSUMx3Ti
+	bf+Qt05heV3HNsNlXaUo5af5Go4eLscdFUrdgkOlXHTsxkfHKb+WV/te2FdTOSlBiqB3oCJMRTF
+	0QHqu9vf6xEnSfscxzhSYooIxZvzrZeHrLJfzTOxO
+X-Received: by 2002:a05:7301:6192:20b0:351:1f6c:2adc with SMTP id
+ 5a478bee46e88-3511f6c3fa8mr8573268eec.35.1791235421007; Mon, 05 Oct 2026
+ 14:23:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAD=FV=WPohx1seYHdw0Mi=5xh8XCWvh23ie03+ePXQgTixGzOw@mail.gmail.com>
+From: Angel <angellindo@gmail.com>
+Date: Mon, 5 Oct 2026 16:23:04 -0500
+X-Gm-Features: AclHuK9Z7s602mcUDHL6s_E2f36vm8zCtPPCuSnS67fsZBsYjidhjuOavzFm7LE
+Message-ID: <CACiNov445=gavzZY=Yz74HNMUgd2BKoYoazWFDRRsz9uhA_rfA@mail.gmail.com>
+Subject: [REPORT] Kaby Lake-H (MacBookPro14,3): package C-state stuck at PC3
+ on Linux, macOS reaches PC10
+To: linux-pm@vger.kernel.org, rafael@kernel.org, 
+	artem.bityutskiy@linux.intel.com
+Cc: rajneesh bhardwaj <irenic.rajneesh@gmail.com>, xi.pardee@linux.intel.com, hansg@kernel.org, 
+	ilpo.jarvinen@linux.intel.com, platform-driver-x86@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, Oct 02, 2026 at 05:27:23PM -0700, Doug Anderson wrote:
-> On Tue, Sep 29, 2026 at 11:47 AM Brian Norris <briannorris@chromium.org> wrote:
-> >
-> > @@ -242,7 +242,12 @@ static inline bool pm_runtime_has_no_callbacks(struct device *dev)
-> >   */
-> >  static inline void pm_runtime_mark_last_busy(struct device *dev)
-> >  {
-> > -       WRITE_ONCE(dev->power.last_busy, ktime_get_mono_fast_ns());
-> > +       u64 now = ktime_get_mono_fast_ns();
-> > +
-> > +       if (now == READ_ONCE(dev->power.last_busy))
-> > +               now++;
-> > +
-> > +       WRITE_ONCE(dev->power.last_busy, now);
-> 
-> While we definitely want to fix the problem identified in this patch,
-> the proposed logic doesn't sit right with me. Let's say that
-> 'power.last_busy" starts out as a given value, let's say "1020". Now,
-> while the clock hasn't ticked you call pm_runtime_mark_last_busy(). It
-> detects that 1020 == 1020 so it sets the time to 1021 so it's
-> different. Now you call pm_runtime_mark_last_busy() again when the
-> clock hasn't ticked. Now 1020 != 1021, so it goes back to 1020. This
-> could cause the whole heuristic to fail, can't it?
-> 
-> Maybe I'm just worrying about something that can't happen, but the
-> logic still seems odd.
+Hi,
 
-Thanks for pointing this all out. The above solution was trying to be
-too clever for its own good, and left a different set of holes. It's
-definitely odd, and I think it points toward:
+On a MacBookPro14,3 the package never goes deeper than PC3 on Linux,
+while macOS on the same unit and the same firmware reaches PC10. I have
+ruled out the usual suspects and would like advice on what else can
+keep the package out of PC6 on KBL-H / SPT-H.
 
-1) either we somehow have to be even more clever or
+Hardware and software
+---------------------
+- MacBookPro14,3, i7-7820HQ (Kaby Lake-H), HD 630 + Radeon Pro 560
+- PCH: 100-series PCH-H (SPT-H), PMC 8086:a121
+- Apple EFI 529.140.2.0.0, SMC 2.45f5, Thunderbolt NVM 41.5
+- Linux 7.2.5 (distro kernel), intel_idle (native tables,
+  use_acpi=N), intel_pstate with HWP
+- gmux switched to the iGPU; the Radeon is unpowered by the gmux
+  (or unbound with its root port in D3hot, see below)
 
-2) we really need an additional state variable.
+A/B: macOS vs Linux, same machine, same firmware
+------------------------------------------------
+macOS 13.7.8, idle, display on, "powermetrics --samplers
+cpu_power,gpu_power", 6 x 10 s (means):
+  PC10 80.8 %, PC6 2.5 %, PC3 0.06 %, i915 DC6 97 %, PSR 99 %,
+  package 0.19 W (powermetrics energy-model estimate, not RAPL)
 
-I don't think #1 is a good idea.
+Linux, idle, turbostat, 10 s samples:
+  awake, display on:      PC3 58-71 %, PC6..PC10 0, PkgWatt 4.0-4.2 W
+  s2idle (5 min sleeps):  PC3 98.5-98.8 %, PC6..PC10 0
 
-And #2 was what I was pointing toward below the "---" fold, mentioning a
-|last_busy_counter|. I thought we could avoid it, but I believe I'm
-wrong.
+Residencies are comparable; the macOS wattage is only an estimate.
+With the display off, macOS still reaches PC7-PC10, and with a USB
+disk active on the Thunderbolt xHCI (PEG link up, no ASPM) it still
+reaches PC6/PC7. So firmware does not forbid deep package states.
 
-> It felt to me like we could just have a "bool". We set it to false
-> before we call runtime_suspend() and we check it after
-> runtime_suspend() returns. If the bool is set then we know they called
-> pm_runtime_mark_last_busy().
+What was ruled out (PC6..PC10 stayed at 0 in every case)
+--------------------------------------------------------
+- i915: eDP pipe disabled, no display power domain references left
+  (i915_power_domain_info). DC5 is entered (~1/s), DC6 never.
+  My guess, not verified: DC6 = 0 is a consequence of the package
+  veto, not its cause. Also 0 with DPMS off.
+- Radeon: unpowered via gmux (iGPU mode), or amdgpu unbound with
+  runtime PM so that the PEG0 root port is in D3hot; measured awake
+  and in s2idle.
+- Thunderbolt: both root ports' devices removed, root ports in D3hot;
+  awake and in s2idle. Forcing L1 on the PEG/TB links did nothing.
+- LTR: LTR_IGNORE = 0x1fbdf written to PMC PWRM+0x30C (all IPs
+  ignored), awake and during s2idle, restored afterwards.
+- Combined: Radeon off, TB removed, T1/xHCI idle, DPMS off, rfkill,
+  LTR_IGNORE, all at once. SMBus unbound in s2idle: no change.
+- IRTL (MSR 0x60B-0x60D, 0x633-0x635): lowering them only removes
+  states (with all IRTLs below 61 us even PC3 disappears), so the
+  factory values are not the limit.
+- MSR 0xE2 = 0x40000008 on all CPUs: package limit C10, lock bit
+  clear.
+- intel_idle without _CST (use_acpi=N); cpuidle shows C10 (MWAIT
+  0x60) taking most of the core idle time.
+- acpi_osi=Darwin: no change.
+- apple_set_os: the EFI stub already calls it on MacBookPro14,3
+  (declares "Mac OS X 10.9"), so that path is already taken.
 
-Yes, I think it doesn't even need to be a counter -- just a bool is
-probably fine.
+PMC
+---
+intel_pmc_core picks the Cannon Point map on SPT-H; I sent a patch
+that adds a121 to the Sunrise Point list:
+https://lore.kernel.org/r/20261005-intel-pmc-spt-h-v1-1-78c98e4f4620@gmail.com
 
-> There shouldn't even be any weird
-> problems with weakly ordered memory since this boolean should always
-> be cleared, set, and checked in the same thread, right?
+With it, pch_ip_power_gating_status at idle shows PMC, OPI-DMI,
+SPI/eSPI, XHCI, LPSS, LPC, SMB, P2SB and FUSE not power gated; SPA-SPC,
+GBE, SATA, HDA, ISH and CSME are gated. Unbinding the Bluetooth UART
+gates LPSS, but PC6 and SLP_S0 residency stay at 0. XHCI stays on
+because the Apple T1 (internal USB) is kept active. I have not
+verified that the SPT-LP PPFEAR layout is correct for SPT-H.
 
-Well, it *can* be set in other threads (there's intentionally no locking
-on pm_runtime_mark_last_busy()), but as long as the setters we care
-about are in-thread, I think the only problem we'd invite is reading a
-false "last_busy was set", and performing a spurious retry.
+Questions
+---------
+1. On KBL-H + SPT-H, besides LTR and IRTL, which platform conditions
+   make the package stop at PC3 while all cores sit in C10? Is there
+   a readable deny reason or status register for this?
+2. What should I read next: PMC registers beyond PPFEAR (ModPHY/PLL
+   or MPHY power gating status), System Agent / uncore state, or the
+   PEG link power state (L1 vs L2/L3)? Any debug tool that works on
+   a production part?
+3. Is the SPT-LP PPFEAR map valid for SPT-H (bits 13/21 are reserved
+   in the SPT map but SPD/SPE in the CNP map; root port 17 is the
+   NVMe here)? Which of the IPs above are expected to stay on in
+   an S0 idle that reaches PC10?
+4. Are there known Apple firmware settings that only macOS undoes
+   (or that Linux needs to program) for PC6 on these machines?
 
-But potentially-spurious retry is already baked into this protocol.
+I can run tests on this machine and share the raw turbostat and
+powermetrics output and register dumps.
 
-I'll let this sit for a bit in case somebody else has other
-thoughts/suggestions, but otherwise, I'll probably end up adding a
-"last_busy_updated" field for v2.
+I used AI analysis tools to help organize the measurements and draft
+this text; all measurements were run and checked by me.
 
-Brian
+It's my first time collaborating, hopefully this info is of service
+for any correction.
+
+Thanks,
+
+--
+Ing. Angel Lindo
+Director de Operaciones @ Ultratech
++507 6326-1581
+LinkedIn
