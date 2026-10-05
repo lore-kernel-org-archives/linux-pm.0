@@ -1,80 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E4014C10D6;
-	Mon,  5 Oct 2026 17:11:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A10532F75B;
+	Mon,  5 Oct 2026 17:45:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791220267; cv=none; b=HOXntXUhaFHIXbSjbYDcFt4JJMtHtqxNmwL8IyZ2mQwuXBsOUhOulRHdSCs0zpcRl3nkfbbKXgWdYDjAiytH0ZlIVEZtKo4lo0o3NEbY7PqIh7rHtlLAinc5PzWiNe8N4qjGfslCAwowLg3x2qga6yplV+ps8cisPz+TTfrRGkE=
+	t=1791222327; cv=none; b=J6RS615O3aI3AlnedKlFUFfD15tWlRDZ35B0yKE0bQJ/5XxqAtXgcvYHxQg6RWtgaCn7ChA617ArVCwYDAAqD0r3oBXz/4qYzLYdHEzup3bfESJ+GaKDWsNlazukF7GKdXtlzQdCqERU2jlkrJov8yau7c8CJs4iwhwWN1nz+GA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791220267; c=relaxed/simple;
-	bh=4S8cNXpKkbPdNq7sYbv67jo59HB9VfgZeryGUR4ExSI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VzmXoin6O1HgrdZ1WxMTFsY6S+kfxbbdYKboddqi73vkz4+VrsxG03gfi7AVTycTQBi3CR4n5Z8vS7kxeXJQLRWIJhbiWKEMUOdD4CS2k5n5I5eKtfsp7qLfZ9IhhyfIhgL6K2vAVOWESrjCcTOx5xB5pJ+coq/AbiZZrKqvRhI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ol/xJsFg; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791222327; c=relaxed/simple;
+	bh=IwsxrNH+EERJhHnXgxoH8s/TyW3qc7oljlQpmLF3eEs=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=Tpb9W/tYPujQ3r4B0RCmolymn+nRkopc6WwHe2kZGFIkCDFzzAIwEEm2g9A4BzvxBtnNEhVxQyaio3G22xQg3aodhOT7hLoxpRKeZZ/WB9hFht++0Aa1ebtfA/olWAVvDmkE3VJq+/1LGjUVSBoypBtozK1ZtK8IrlntexOiz2s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aCOhz+LA; arc=none smtp.client-ip=198.175.65.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ol/xJsFg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C07521F00893;
-	Mon,  5 Oct 2026 17:11:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791220266;
-	bh=HYh2rxKMx2Wm+Lvc6QK3nB5xBauzxm6BmT4G4eVxSRw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ol/xJsFgT2Yczz6kItqZg4PP+pPv2843l7xlxzUkrJigmBhMGNe0PAkqpxaMgl7+R
-	 e0rZEDY8t4JKy/E54WTLLVpxIxf4gtJKewD84TlTTR+qRVPimWeUVX/xY6VlaaGM+N
-	 VoeT7ZwIZhH9zLh1L5Ci3GpGlrF9Ss8XT0RSi/BdGEJo/ibQkv88zFUfH65ZSv8iTS
-	 zERF4e1IFNdmw6A/EQ+HbwGY8UNtKK/+eYoQZ3d2P69bBQgucMVeJeZ/socIyT2QlI
-	 iwz6KVzrVYsvjLGn5FdXBV2iHoIIz6VWDqVhn52hWnz2mM6PV3DUmUWcK36ZPm5aja
-	 yDGeUGGFxRwsg==
-Date: Mon, 5 Oct 2026 12:11:05 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: linux-rockchip@lists.infradead.org,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Brian Masney <bmasney+clk@redhat.com>, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jerome Brunet <jbrunet+clk@baylibre.com>, linux-pm@vger.kernel.org,
-	Stephen Boyd <sboyd@kernel.org>, kernel@collabora.com,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linux-clk@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 3/7] dt-bindings: devfreq: event: rockchip,dfi: add
- rk3576
-Message-ID: <179122026463.1037372.13014542138147307791.robh@kernel.org>
-References: <20260921-b4-rockchip-dfi-rk3576-support-v2-0-04f847016321@collabora.com>
- <20260921-b4-rockchip-dfi-rk3576-support-v2-3-04f847016321@collabora.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aCOhz+LA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791222326; x=1822758326;
+  h=from:to:in-reply-to:references:subject:message-id:date:
+   mime-version:content-transfer-encoding;
+  bh=IwsxrNH+EERJhHnXgxoH8s/TyW3qc7oljlQpmLF3eEs=;
+  b=aCOhz+LAHrY8oGPuM6p2or25A0j3ztPmf9q2Vb2EJVBaChJDBpUSdJOA
+   guM0iivypGrpy/6T+otNl5UyvNcqd2JnQu8YqXdwrBbLK+2OU4m4OWc7C
+   RuX+XkOngeFlvSI3yXAozkXLCraPWlwfvlXToq6zwL+7zNcLeh+U47lGo
+   L3ztKuKSN4HMyFxRQTibarQbcekeaZp0zBEyaacjs2TvGE1WDPNRFxLvi
+   8BuNp59DwnYO0hcZgx8Uar8N5TJSEDrq94TdfxK6bAQFyHFnCsyzHAuS1
+   mV+R4nphQRs6ZVXZdxNeGn/h1iHaNxDNkDjR4UG72WRZx/oyIXEo19SJK
+   A==;
+X-CSE-ConnectionGUID: qZGlOkTaQhyCQf9i4tnOSw==
+X-CSE-MsgGUID: aKFXR40XTn2pG3pF1Ku+Bw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11926"; a="102064029"
+X-IronPort-AV: E=Sophos;i="6.27,142,1787036400"; 
+   d="scan'208";a="102064029"
+Received: from fmviesa012.fm.intel.com ([10.60.135.152])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2026 10:45:25 -0700
+X-CSE-ConnectionGUID: rOkuFnvaSKmWv75+idvWAg==
+X-CSE-MsgGUID: AX+4CZ0hSP6SNCCGI9dBkw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,142,1787036400"; 
+   d="scan'208";a="937401"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.199])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2026 10:45:23 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+ platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Xi Pardee <xi.pardee@linux.intel.com>
+In-Reply-To: <20260919051830.565240-1-xi.pardee@linux.intel.com>
+References: <20260919051830.565240-1-xi.pardee@linux.intel.com>
+Subject: Re: [PATCH] platform/x86/intel/pmc: Fix stale NVL PCD-S S0ix_LPM
+ telemetry constants
+Message-Id: <179122231918.27048.14002305732775722679.b4-ty@b4>
+Date: Mon, 05 Oct 2026 20:45:19 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260921-b4-rockchip-dfi-rk3576-support-v2-3-04f847016321@collabora.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15.2
 
+On Fri, 18 Sep 2026 22:18:28 -0700, Xi Pardee wrote:
 
-On Mon, 21 Sep 2026 23:15:05 +0200, Sebastian Reichel wrote:
-> From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> The Nova Lake PCD-S S0ix_LPM telemetry layout changed. The PCD-S telemetry
+> GUID was changed to reflect the layout change, per the client GUID
+> revision rule.
 > 
-> The RK3576 has DFI hardware for monitoring the DDR's bandwidth much
-> like other rockchip SoCs do. Unlike the RK3588 however, it only has two
-> memory channels, so only two per-channel pclks for DFI.
+> nvl_pcds_d3_status_1_map[] was correctly updated, but two companion
+> constants were never updated to match:
 > 
-> Add a compatible for this SoC's variant, and add it to the conditionals
-> at the bottom of the bindings file.
-> 
-> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> ---
->  .../bindings/devfreq/event/rockchip,dfi.yaml          | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
+> [...]
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Thank you for your contribution, it has been applied to my local
+review-ilpo-next branch. Note it will show up in the public
+platform-drivers-x86/review-ilpo-next branch only once I've pushed my
+local branch there, which might take a while.
+
+FYI [if applicable to your patch], as per Linus' policy change, also
+fixes are mostly routed through for-next unless the fix is for a
+commit introduced in the most recent cycle or is clearly a regression
+fix.
+
+The list of commits applied:
+[1/1] platform/x86/intel/pmc: Fix stale NVL PCD-S S0ix_LPM telemetry constants
+      commit: fcad4877a04ea40d0402015a3c4bae89677aea12
+
+--
+ i.
 
