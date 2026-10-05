@@ -1,133 +1,162 @@
-Received: from fhigh-b7-smtp.messagingengine.com (fhigh-b7-smtp.messagingengine.com [202.12.124.158])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f199.google.com (mail-oi1-f199.google.com [209.85.167.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58F9C313E2C
-	for <linux-pm@vger.kernel.org>; Mon,  5 Oct 2026 04:45:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.158
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33B7E54707B
+	for <linux-pm@vger.kernel.org>; Mon,  5 Oct 2026 05:28:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791175509; cv=none; b=F0AH0tQZgqN401mDsDvao8oocEN0JENIf/BEpngWKdhR7Ek1afwoCUE4FozNZ2L9A8CfJptRyWnC4gwvNSZeLHga6rZeWPhhpOWCzrbUK/aM7L6PbslyO14f2A1Z/KvBBTB7qVTSZMP6ETIcssWkclvQbMrh+pLdeiWjnCGsLv8=
+	t=1791178105; cv=none; b=XqsESuO6qDgh7aQ8lHy6fYlTa6cYDwI4wgo86PInn+5LNtsgKPCmolspLk/E8h5RquB6XxhPkow4LdS8yjgMZyTGErLtdSoSwfmxYRiL04ycEWUZbvX9hO4t+6bOM2fxocWex9wrwNHKVjl5mNWL9+IZSmfJh5GMIVZbm8q7/uI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791175509; c=relaxed/simple;
-	bh=KCoGmQb88q+Knp6pMuvy5UuU8Flj/RHwhMfh34hgdWw=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=h4GQjvBCWVd7G5/PG4634BXReEOJ3QWyYaLwTZF4fyW7Wez8aHxlanW7rZZ7fmrqlJqCddDsYcr2/ii5HnLGv3JPHjlkKkW7ZQcWr1SQfckb3Ws080Hod5F2IUr0DsjJEb30JZq64oLGJrlHUFrvAMGK5wtXbcStPYT7cdoQ/9Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fastmailteam.com; spf=pass smtp.mailfrom=fastmailteam.com; dkim=pass (2048-bit key) header.d=fastmailteam.com header.i=@fastmailteam.com header.b=AKj8kKJB; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=kaOD1A44; arc=none smtp.client-ip=202.12.124.158
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fastmailteam.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fastmailteam.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fastmailteam.com header.i=@fastmailteam.com header.b="AKj8kKJB";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="kaOD1A44"
-Received: from phl-compute-10.internal (phl-compute-10.internal [10.202.2.50])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 8606D7A01F4
-	for <linux-pm@vger.kernel.org>; Mon,  5 Oct 2026 00:45:07 -0400 (EDT)
-Received: from phl-imap-15 ([10.202.2.104])
-  by phl-compute-10.internal (MEProxy); Mon, 05 Oct 2026 00:45:07 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	fastmailteam.com; h=cc:cc:content-transfer-encoding:content-type
-	:content-type:date:date:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to; s=fm3; t=1791175506; x=1791261906; bh=qglmIri7xdlBWCLzpwS5X
-	EsTcXNBXH4avwhR/k0igSA=; b=AKj8kKJBc4R2ufcbBHn/j4DUz8X9/eUB3BLig
-	Qd4nd5BijW8nPH494p9YtnvNR36ZXMHwSp7BdiO7QvMLIWUJ38XnCf0twN39t2OU
-	lwkKPS+Wsyc1WBKfv2YgEOI64Vt0KTbQFIOqYD7th4sy57+bKMbygZaDBqmwiMI5
-	u+enr93xtZRSIrzNr1+4QsCNd3l1z0hKPEhF9pOmBUOLsiYKzLqyzznpss3n8qV3
-	5IqUxWAqGkdtXTvtWDsRnb+UBJhHQ7Xgr0V1G0uHZ/OPttAGrWAgTM4zOA2IgGer
-	P2sjIv3oeM+j+itCVcp7IggHcb4+L0uhOUsKy4JzdY/MgGwNQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1791175506; x=
-	1791261906; bh=qglmIri7xdlBWCLzpwS5XEsTcXNBXH4avwhR/k0igSA=; b=k
-	aOD1A44Yhn5Z+BoVemFcD9v1qnQEuCFhZlKTboKJ4SasPCWnKcdPHZU78iI9E1Ez
-	dRD2+a6t/H5pIjLe8GKSYyTI6KNSd73RMog+NrjlXoGp2bFfnpnUNzpgXhY9KH5h
-	0bHGA9ke9dgCHASpYxiIO5VB1nsytWZYuzZy22OYunbC2Pdy7olvB9w7CXWS88se
-	tSAS2MmMwhALFLpMgYtcFCgfN4Kkagb+XZnqIdAnJ2XIzgEgiV9xcRRAlYESZi1/
-	zA59QHLagWUvXx4Q+PxH5uO65CVdBEeF9b5z2JPe1cvsZMxTGR3sno9oBFDdX8gd
-	37My9Tgma3G6Vr+kK/YmQ==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
-	repo=github.com/dkim2wg/interop; date=2026-09-30; sw=lmtpprox;
-	action=sign d=fastmailteam.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1791175506; d=fastmailteam.com;
-	mf=PGFuZHJld0BmYXN0bWFpbHRlYW0uY29tPg==;
-	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
-	s=fm3:rsa-sha256:bFZv5dkBV+bVoNb4dLBYLSoqxB0Zp/o7NZfXMFx7aCJaKis
-	gtDuhhHiKga+oG0ZLVY48+e2ew8SwT/p8JFIHBwaFMi5GCd51A5f/55cM5aiDkQf
-	iE9cvjYCSd7wHo76Bt8FzJdCulipYYln7o+E4HN1G30dIy7no/h8Lv+Uj73AmVhM
-	USoiuQ4iAp8krkHEALxuMIypb6BC5aTh1RYTtnO+gSLqeMddnwY+fP4U+l/JRwXa
-	2L+nRvK4Fn4vdJQ8RHjVivmhTefI5F6VYfbf8d2QdhYGLp7+wZPE6bD4BJmlgGFd
-	MPfM2dfO2vujDGQ6c8DWZv2dmnpjxrExzkTFfCA==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
-	repo=github.com/dkim2wg/interop; date=2026-09-30; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
-	from,in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:UcZLLDJ9VPM0fdfHMdip830I4beEgd5Z372OiUFPA7M=:KCoGmQb88q+Knp6pMuvy5UuU8Flj/RHwhMfh34hgdWw=;
-X-ME-Sender: <xms:UivDajljkA17WJbfOkdLGx5ORjZz3LUdxt6lOwJPzbXSW5wUdHU1gQ>
-    <xme:UivDahpJukGse_HYofJRx6lfgkOm5rYIDNiFRA1mRT2kJzWVpRdwCjNZG-a8WczYc
-    yE95CuPetexipVTPy_trYpXgHWcrNYl9oUbhjHN1kexMmGfeL8>
-X-ME-Proxy-Cause: dmFkZTFhD78CMu6lFaDtX4rWOfXbZEYEDYkeVMB2OuZ4D5BxJ6aRcsCqidyphgtTA39+jf
-    IfK481qN28UnkSzQ/tkG2UHu8d+7+MFDM+/OcMAFY+auFYPEYI9uEDWMfmpHBffN6JRdtK
-    qkyz8r8OeKdIHSZHvoFG7BwjRo95PMIJFv4LXIC86tNWvsXLf3mz+/g81om38rc8bgh0yT
-    zaYVLEbKmSg74NfMcqRXopkiZ1xgVoNrX814KCVdin0yqTlfL9BBAUN+SmfoAL4pUK5zTm
-    I3pTJqb2O5tpAjqW+xVhMEp+9aHnaSxSXnZPU7eXCcE2AWldU6kojjyAD2onLfznnaBkgz
-    HfEick9dyEpUttXLXcxi1qsIms/mh0ZyPoqD3KrjZaOUg4n52fxirz3uDwZO3jPGscPOFI
-    2lzPAihQofsw0294YA99Ig62xSQ3jgS18wyqJ2KSaCngI9c6ccxdI0lmc+rUNDRCB/8iBa
-    2l4QA5V/3QfjL57yUw7s/rnkDQhcrGX0zpMI+/Y+58xJivNh93+/ktoZZQIlvghYlRuVmb
-    OlWlX/tnJkazVxHP3XbKcCYOqQJ+DzCk9L/oj0ANXSfISgNwgkYus15kZMlXhsdglVjHqy
-    LA4PbUYg2s4KZ7aseRQAOtdluy2/Xs1AxjlVRBP+hsL5u3zz9LKpk38NH+4A
-X-ME-Proxy: <xmx:UivDaslo1KB07tkLjYXza_iq47jUkKBsGjkDvHgkc5oGAbtVTepmvA>
-    <xmx:UivDaoYara_uGuyOarUzQCdOoH53DstThDefZQrqS4R1lHd751pLww>
-    <xmx:UivDavHntm3uJApYGu73hUGiSaiB7IcdU-JMHfEGl-7IG4Q_bXW4hw>
-    <xmx:UivDavZI5AuozkbFCHeUip66yfBxo9jMTluBbrlJzcUoDpB5dpOIPg>
-    <xmx:UivDambX9B72rBK20tnRWilXvs8p7YWvbG1KymgsaF9ud6SSgufYxIin>
-Feedback-ID: ib8be4bd5:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 0BAB0780070; Mon,  5 Oct 2026 00:45:06 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	s=arc-20240116; t=1791178105; c=relaxed/simple;
+	bh=AIYWRZ4YPnh9ZCVIIvCg/hpg7gMM4O8IM7/Jq8WPxCs=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=lDp0P/1400WY7SQqsfOUY4Y6nFZjOPZDNgTydbWA4pxJ3njx89GuoUpObhn/G3hw+4gawoVl3uQO8mist+zBHx8dEWmGvf8JvSMpc7Bjc9KnnVPZF1psahXh3hc+7Wl5IUSvREkMF4fimMfjIdX/dzTYzCbXp6VjtI6U2RvqqUw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f199.google.com with SMTP id 5614622812f47-4f9e7ea8bfcso150307b6e.0
+        for <linux-pm@vger.kernel.org>; Sun, 04 Oct 2026 22:28:23 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791178103; x=1791782903;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BkyXZbYMCtvs8D6wKoOix7C+Vk31t3PribzbBIf6BP8=;
+        b=p3f7rRgeN4XI2Ole6lp8oOMb4TnUsqe8y8hMzv274UoyNjRXIpwX5P7GdG3WyLSpjR
+         2Q5wLHw/3m384ZysHETl9PqaUPqodA/xu0T3dIi3xV90B4lfjdVuA+bggL4sMw8eopzg
+         HPtmSsB3zIWHCygejBnRcmK/xmzLAHNML6gPE/YqwEH5o0B4fxU5GTo9Nsq+rtFIYdNb
+         N8XNYgRO0oY2F1/IayUQx54/YGJ/tKSU9VS1/w4TrZ0kIMjn5ALCtW/OfWG42xHKm6hU
+         n0Mrr0zoUiG23MLIjhIIU807ZG/NELWUdscxeOK7xKM7qW5eB3Qk2jLbQdHAqZJqmBbU
+         Do5Q==
+X-Forwarded-Encrypted: i=1; AKwUvBwQLhnMfP7zh1eh0+V50C4FugNItvZm0nPU7U87rL+x89NSZzmup3Uhwr68S1cHha60Ge8ynSsvRA==@vger.kernel.org
+X-Gm-Message-State: AFuF++lawS+LqBPlMGJ4R8KlfnYBpx9jCAyKD3aSWjMNW5bs8AVdqH7i
+	kh2Hzyxfqp2e65rDHcaKB8n4NDYAbuD7HpumRunUYZ68flLqNqDpSvLS5oz1Uj/3s+39wC+L6nU
+	1vInNLzDPbo1LRT5O/tEtY9bTKE5BqIaNcPDJHnKzoKY4YZIQp4g2I2cegO8=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Mon, 05 Oct 2026 15:44:45 +1100
-From: "Andrew Pam" <andrew@fastmailteam.com>
-To: "Tzung-Bi Shih" <tzungbi@kernel.org>
-Cc: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
- "Sebastian Reichel" <sre@kernel.org>, "Benson Leung" <bleung@chromium.org>,
- "Guenter Roeck" <groeck@chromium.org>,
- "Matt DeVillier" <matt.devillier@gmail.com>, chrome-platform@lists.linux.dev,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <8fa29694-88cb-41b7-95d6-4d2cf9647d4a@app.fastmail.com>
-In-Reply-To: <asMlkcx5P3Qgolgh@google.com>
-References: <20261004225606.30577-1-andrew@fastmailteam.com>
- <asMlkcx5P3Qgolgh@google.com>
-Subject: Re: [PATCH] power: supply: cros_charge-control: restore EC state on resume
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+X-Received: by 2002:a05:6808:1a1d:b0:4cb:f21b:6f8d with SMTP id
+ 5614622812f47-4f529d35c9amr8250049b6e.32.1791178102976; Sun, 04 Oct 2026
+ 22:28:22 -0700 (PDT)
+Date: Sun, 04 Oct 2026 22:28:22 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ac33576.53659fcc.25f34.0004.GAE@google.com>
+Subject: [syzbot] [pm?] kernel BUG in mark_free_pages
+From: syzbot <syzbot+609c80047e3e808b465c@syzkaller.appspotmail.com>
+To: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	pavel@kernel.org, rafael@kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Mon, 5 Oct 2026, at 15:20, Tzung-Bi Shih wrote:
-> On Mon, Oct 05, 2026 at 09:56:06AM +1100, Andrew Pam wrote:
-> > Nothing notices the reset. Commit 4fc88ba435da ("power: supply:
-> > cros_charge-control: adopt EC charge state on probe") made the driver
-> 
-> The commit 4fc88ba435da doesn't exist.
+Hello,
 
-Thanks for the review. The patch is against Sebastian's power-supply for-next, where that is Matt's patch you reviewed, applied on 10 September:
+syzbot found the following issue on:
 
-https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/commit/?id=4fc88ba435da
+HEAD commit:    6addb4f38557 Merge tag 'edac_urgent_for_v7.3_rc6' of git:/..
+git tree:       upstream
+console+strace: https://syzkaller.appspot.com/x/log.txt?x=16d3d7f5580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=23e5acac5c98285f
+dashboard link: https://syzkaller.appspot.com/bug?extid=609c80047e3e808b465c
+compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=121d2835580000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=161d2835580000
 
-It isn't in mainline or chrome-platform yet, so I have made that explicit in the v2 commit message.
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/484fafd2304b/disk-6addb4f3.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/3a897e82997f/vmlinux-6addb4f3.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/57fc9f6de4c3/bzImage-6addb4f3.xz
 
-> > initialise its cached state from the EC, but it does so only on probe,
->                               ^^^^
-> To be precise, this should be "to".
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+609c80047e3e808b465c@syzkaller.appspotmail.com
 
-Reworded in v2 as "made the driver adopt the EC's charge state, but only at probe".
+Freezing user space processes
+Freezing user space processes completed (elapsed 0.009 seconds)
+OOM killer disabled.
+PM: hibernation: Preallocating image memory
+page:ffffea0005400000 is uninitialized and poisoned
+page dumped because: VM_BUG_ON_PAGE(PagePoisoned(page))
+There is not page extension available.
+------------[ cut here ]------------
+kernel BUG at ./include/linux/mm.h:2402!
+Oops: invalid opcode: 0000 [#1] SMP KASAN NOPTI
+CPU: 0 UID: 0 PID: 5632 Comm: syz-executor292 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 08/26/2026
+RIP: 0010:page_to_nid include/linux/mm.h:2402 [inline]
+RIP: 0010:page_zone include/linux/mm.h:2622 [inline]
+RIP: 0010:mark_free_pages+0x49a/0x4b0 kernel/power/snapshot.c:1266
+Code: 5d e9 3a b9 44 0a e8 15 c9 22 00 90 0f 0b e8 0d fe 41 0a e8 08 c9 22 00 48 8b 7c 24 08 48 c7 c6 64 6c 48 8e e8 97 db 82 ff 90 <0f> 0b e8 ef c8 22 00 90 0f 0b e8 e7 c8 22 00 90 0f 0b 0f 1f 40 00
+RSP: 0018:ffffc900035a7ad8 EFLAGS: 00010046
+RAX: 26156de6b9890800 RBX: 0000000000010000 RCX: 26156de6b9890800
+RDX: 0000000000000000 RSI: 8000000000000001 RDI: 0000000000000000
+RBP: 0000000000000000 R08: ffffffff8f6917a3 R09: 1ffffffff1ed22f4
+R10: dffffc0000000000 R11: fffffbfff1ed22f5 R12: ffff88823fff8100
+R13: 0000000000150000 R14: ffffffffffffffff R15: 0300000000000000
+FS:  00007f23975186c0(0000) GS:ffff888124cc6000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007ffe53995418 CR3: 0000000021bc3000 CR4: 0000000000350ef0
+Call Trace:
+ <TASK>
+ count_data_pages kernel/power/snapshot.c:1417 [inline]
+ hibernate_preallocate_memory+0x14f/0x750 kernel/power/snapshot.c:1859
+ hibernation_snapshot+0xd5/0x3d0 kernel/power/hibernate.c:416
+ hibernate+0x28f/0x680 kernel/power/hibernate.c:813
+ state_store+0x234/0x290 kernel/power/main.c:821
+ kernfs_fop_write_iter+0x3a4/0x540 fs/kernfs/file.c:345
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x612/0xba0 fs/read_write.c:687
+ ksys_write+0x150/0x270 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:61 [inline]
+ do_syscall_64+0x166/0x520 arch/x86/entry/syscall_64.c:84
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f23975400a9
+Code: c0 79 93 eb d5 48 8d 7c 1d 00 eb 99 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 d0 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f23975181d8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f23975f0b48 RCX: 00007f23975400a9
+RDX: 0000000000000005 RSI: 0000200000000100 RDI: 0000000000000003
+RBP: 00007f23975f0b40 R08: 35203a6b63617473 R09: 35203a6b63617473
+R10: 35203a6b63617473 R11: 0000000000000246 R12: 00007f23975c2378
+R13: 0000200000000500 R14: 0000200000000600 R15: 00656e696c66666f
+ </TASK>
+Modules linked in:
+---[ end trace 0000000000000000 ]---
+RIP: 0010:page_to_nid include/linux/mm.h:2402 [inline]
+RIP: 0010:page_zone include/linux/mm.h:2622 [inline]
+RIP: 0010:mark_free_pages+0x49a/0x4b0 kernel/power/snapshot.c:1266
+Code: 5d e9 3a b9 44 0a e8 15 c9 22 00 90 0f 0b e8 0d fe 41 0a e8 08 c9 22 00 48 8b 7c 24 08 48 c7 c6 64 6c 48 8e e8 97 db 82 ff 90 <0f> 0b e8 ef c8 22 00 90 0f 0b e8 e7 c8 22 00 90 0f 0b 0f 1f 40 00
+RSP: 0018:ffffc900035a7ad8 EFLAGS: 00010046
+RAX: 26156de6b9890800 RBX: 0000000000010000 RCX: 26156de6b9890800
+RDX: 0000000000000000 RSI: 8000000000000001 RDI: 0000000000000000
+RBP: 0000000000000000 R08: ffffffff8f6917a3 R09: 1ffffffff1ed22f4
+R10: dffffc0000000000 R11: fffffbfff1ed22f5 R12: ffff88823fff8100
+R13: 0000000000150000 R14: ffffffffffffffff R15: 0300000000000000
+FS:  00007f23975186c0(0000) GS:ffff888124cc6000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007ffe53995418 CR3: 0000000021bc3000 CR4: 0000000000350ef0
 
-I have also taken your other three suggestions: dev_set_drvdata(), a dev_err() when reprogramming fails, and the nested .driver initialiser. v2 also fixes the resume hook's comment, which still said the driver never reads the state back from the EC. That hasn't been true since 4fc88ba435da. And v2 adds Fixes: and Cc: stable: the driver has had no resume handling since it was added in 6.11, so stable kernels lose the charge limit across hibernation too. v2 follows shortly.
 
-Thanks,
-Andrew
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
