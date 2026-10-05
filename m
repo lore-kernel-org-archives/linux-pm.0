@@ -1,111 +1,132 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 895CB44064F;
-	Mon,  5 Oct 2026 13:56:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57742494805;
+	Mon,  5 Oct 2026 14:00:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791208619; cv=none; b=JESsZ22xC/eJYsjEx1oOIElw/KqN2HKVnhviAS35vtVz3CYBhnZoRafpYzsw40rXY+cdw/FIViPfG3wWHxT5JKFRhnAhEDzS+XwbYwfvZ706G/4PAfKhWbEtRzNPq+TR68qDerEXRy4SOK/TW3Z2cSFbGQ0BFHCDEAVhAQR9hO0=
+	t=1791208828; cv=none; b=Fq59kSst0yL2hGcavFgC8DFuEuzp4d40yYhJksR9PyIdbnYtlZhXQyYR5AUpaOklDH9dpIP9MKQoGbHdqs5Qwbad5kihU5mXFEyq/nQtrwasVgvpAFWURKIfe3gWwdDPbYO/L6/KTpcmbomwaJccRwJb6/9rgKHqM6U4IxJnksM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791208619; c=relaxed/simple;
-	bh=SK3Krdfcr/bfSOUInUeZSYJC5Wkmh5QSaJKElpcr+vY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=dkAuLA+tKkg0de4025cT5XnVX2s8Anpo+E1w4l5cqoe7gXjVWI8zN/GGS3WdZ+VOD8OBXz0pzE92H+mt8mQeAazjntxQhutLf78jJnSIDf1U92X1LXP1mmtpUhQDORj80TbFGJv87MIFbU7OaIsDXOzFGblqfye6EBhjhxrqzOM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E1LUJD4P; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E1LUJD4P"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5AB5FC2BCC7;
-	Mon,  5 Oct 2026 13:56:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1791208619;
-	bh=SK3Krdfcr/bfSOUInUeZSYJC5Wkmh5QSaJKElpcr+vY=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=E1LUJD4P8uJVJpD1BuewM9NxYOSEOONhClF+r8eTcm5XkcfSBdPEeTsDiQYc8RTRz
-	 OhRAqMzAvdDemDebfIW7ina8ZjCTGv6quTPfLo9Wij3wNK9GhDYVOt0Jc3xy6MimOX
-	 102doZMaAW/42xj80PzxqrRuYP+ONoNhQ8R4GS6Tt00XhOTU5ecMqy52pMSrODIiDz
-	 XYCqOt/hU2PLalzlIRvdEiMSI8q7FWwAC2hCAfRNep7PEZgNlw6SKBCgRvynbKsAy8
-	 RlPyvMRNQ7J5tRrMjveuV9jcx+ITNto2MOjAEAa0Ijyu1HFCYgpmODzoIkR2eYUwzX
-	 cn4Jfbta0SaPQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A6DCA5FFC;
-	Mon,  5 Oct 2026 13:56:59 +0000 (UTC)
-From: Robert Killick via B4 Relay <devnull+robert.killick.dev@kernel.org>
-Date: Mon, 05 Oct 2026 14:56:45 +0100
-Subject: [PATCH] power: supply: sysfs: Ratelimit "unavailable enum value"
- warning
+	s=arc-20240116; t=1791208828; c=relaxed/simple;
+	bh=ZX5xUToHuWaNOd+bCaQzYXpRy+E8h/GxkuOaBVGHj2A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uzp3QYWlQ+RQTv1PfIEDNvVXtUo6z7q6zfPuxCwM5re+hkCyCA5zx5GKUETs3mQPs7L9J0w9prxDk0CQrscUR/XxwRZ5LRlb453tMtDTUDYTcW++hHm0iHPlgVgGIAkXZlmf77PD8UpBhix7z3Yk2YmxjscXQvPxU/SoEzQzQmI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.helo=mail.mainlining.org; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.helo=mail.mainlining.org
+Message-ID: <e590764c-1ef7-4166-9c2d-a96a89029736@mainlining.org>
+Date: Mon, 5 Oct 2026 17:00:05 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 00/19] Add Initial Support For MSM8952, Add General
+ Mobile Shamrock
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Srinivas Kandagatla <srini@kernel.org>,
+ Ulf Hansson <ulfh@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
+ "Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+ Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>,
+ Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov
+ <lumag@kernel.org>, Abhinav Kumar <abhinav.kumar@linux.dev>,
+ Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>,
+ Marijn Suijten <marijn.suijten@somainline.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Robert Marko <robimarko@gmail.com>, Guru Das Srinagesh <linux@gurudas.dev>,
+ Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Kees Cook <kees@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli"
+ <gpiccoli@igalia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ David Heidelberg <david@ixit.cz>, phone-devel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mmc@vger.kernel.org, iommu@lists.linux.dev, mfd@lists.linux.dev,
+ dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+ Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org,
+ linux-input@vger.kernel.org,
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Abel Vesa <abel.vesa@oss.qualcomm.com>
+References: <20260921-msm8952-initial-support-v3-0-b96fd3fe298b@mainlining.org>
+ <179098834078.3641559.798772743228949994.b4-ty@b4>
+From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+Content-Language: en-US
+In-Reply-To: <179098834078.3641559.798772743228949994.b4-ty@b4>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261005-ratelimit-enum-warn-v1-1-b77b48de3c47@killick.dev>
-X-B4-Tracking: v=1; b=H4sIAJysw2oC/yXMQQrCMBBG4auUWTuQplDEqxQXk/hXR2wqk1SF0
- rs36vJbvLdShikynZqVDC/NOqeK9tBQvEm6gvVSTd75vnXOs0nBQyctjLRM/BZLPHa9kxAFxwC
- q5dMw6ud3Hc5/5yXcEct3Rdu2A20oTJJ3AAAA
-X-Change-ID: 20261002-ratelimit-enum-warn-f360abcae8be
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Robert Killick <robert@killick.dev>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791208618; l=1773;
- i=robert@killick.dev; s=20261002; h=from:subject:message-id;
- bh=0hIDydFjkseUzAVKpA0Mfmz7dmmCFwTP/Z/j3AT+hZE=;
- b=sFQgoHZ4wP22jFB/GdDWa/XWgIP/v5TNoGFBwDvVp5cGiKx6Xo15yuEiNq44lNxNVnLkSi5hm
- Otk0mSJu1ofAYCt5TDMig/d6MgIjWz4k6E+gi7NieZPM035PVKox02c
-X-Developer-Key: i=robert@killick.dev; a=ed25519;
- pk=mhwmEhQGVPJdSo1NraEdUm+3PmWZr7havGKq6I7tqaE=
-X-Endpoint-Received: by B4 Relay for robert@killick.dev/20261002 with
- auth_id=1103
-X-Original-From: Robert Killick <robert@killick.dev>
-Reply-To: robert@killick.dev
 
-From: Robert Killick <robert@killick.dev>
+On Sat,  3 Oct 2026 03:46:52 +0300, Dmitry Baryshkov wrote:
+> On Mon, 21 Sep 2026 21:18:51 +0300, Muzaffer Kadir wrote:
+>> MSM8952 is a SoC with 8 core cpu and Adreno 405 gpu.
+>>
+>> Ported without uart connection. ramoops and usb
+>> mainly used to debug.
+>> USB is not enabled in this series because it
+>> depends on the not yet upstreamed (and not developed by me)
+>> pmi8950_smbcharger.
+>>
+>> [...]
+> 
+> Applied to ttt, thanks!
+> 
+> [01/19] dt-bindings: clock: qcom: Add MSM8952 global clock controller
+>         (no commit info)
+> [02/19] clk: qcom: Add global clock controller driver for MSM8952
+>         (no commit info)
+> [03/19] dt-bindings: nvmem: Add compatible for MSM8952
+>         (no commit info)
+> [04/19] dt-bindings: power: rpmpd: Add MSM8952 power domains
+>         (no commit info)
+> [05/19] dt-bindings: mmc: sdhci-msm: Add MSM8952 compatible
+>         (no commit info)
+> [06/19] dt-bindings: vendor-prefixes: Add General Mobile
+>         (no commit info)
+> [07/19] dt-bindings: arm: qcom: Document MSM8952 SoC binding
+>         (no commit info)
+> [08/19] dt-bindings: iommu: qcom,iommu: Add MSM8952 IOMMU to SMMUv2 compatibles
+>         (no commit info)
+> [09/19] dt-bindings: mfd: qcom,tcsr: Add compatible for MSM8952
+>         (no commit info)
+> [10/19] dt-bindings: display/msm: qcom, mdp5: Add MSM8952 compatible
+>         https://gitlab.freedesktop.org/lumag/msm/-/commit/df6ce9e6447e
+> [11/19] dt-bindings: firmware: qcom,scm: Document MSM8952 SCM
+>         (no commit info)
+> [12/19] dt-bindings: clock: qcom,rpmcc: Add MSM8952 compatible
+>         (no commit info)
+> [13/19] drm: msm: mdp5: Add MDP5 configuration for MSM8952
+>         https://gitlab.freedesktop.org/lumag/msm/-/commit/7af226f9aa59
+> [14/19] soc: qcom: ubwc: Add UBWC config for MSM8952
+>         (no commit info)
+> [15/19] dt-bindings: thermal: tsens: Add MSM8952
+>         (no commit info)
+> [16/19] thermal: qcom: tsens: Add support for MSM8952 tsens
+>         (no commit info)
+> [17/19] arm64: dts: qcom: Add initial support for MSM8952
+>         (no commit info)
+> [18/19] dt-bindings: input: touchscreen: goodix: Add binding for GT970
+>         (no commit info)
+> [19/19] arm64: dts: qcom: generalmobile-shamrock: new device
+>         (no commit info)
 
-power_supply_show_enum_with_available() warns every time a driver
-reports a value that is not in its declared set of available values.
-For usb_type this happens on every sysfs read and on every uevent, so a
-driver that reports such a value and calls power_supply_changed()
-frequently can flood the kernel log.
+Hi Dmitry,
 
-This can happen with drivers that pass a firmware-provided value
-through unchanged, as qcom_battmgr does for usb_type. On a OnePlus 10
-Pro (SM8450), whose firmware reports a vendor-specific usb_type, this
-produced ~128 warnings per second and kept systemd-journald at ~30% CPU.
+Thanks for accepting MDP5 patches.
 
-The bug that causes the bad value needs fixing in the driver itself,
-but one misbehaving driver should not be able to flood the kernel log.
-Use dev_warn_ratelimited(), as power_supply_show_property() already
-does for its own errors, so the problem is still reported, just not on
-every read.
-
-Signed-off-by: Robert Killick <robert@killick.dev>
----
- drivers/power/supply/power_supply_sysfs.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index b0f524d152cf..9704557ffe1d 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -310,7 +310,8 @@ static ssize_t power_supply_show_enum_with_available(
- 	}
- 
- 	if (!match) {
--		dev_warn(dev, "driver reporting unavailable enum value %d\n", value);
-+		dev_warn_ratelimited(dev, "driver reporting unavailable enum value %d\n",
-+				     value);
- 		return -EINVAL;
- 	}
- 
-
----
-base-commit: 4fc88ba435dadbc05990951e3f3fbd8ccd2df140
-change-id: 20261002-ratelimit-enum-warn-f360abcae8be
+The message lists all 19 patches, but only 10 and 13 have commit
+links, the rest say "(no commit info)". Does this mean the whole
+series was applied, or only the MDP5 ones?
 
 Best regards,
---  
-Robert Killick <robert@killick.dev>
-
+Muzaffer Kadir
 
