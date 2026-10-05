@@ -1,93 +1,77 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Received: from mail-43101.protonmail.ch (mail-43101.protonmail.ch [185.70.43.101])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A10532F75B;
-	Mon,  5 Oct 2026 17:45:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E63F4825C8
+	for <linux-pm@vger.kernel.org>; Mon,  5 Oct 2026 17:47:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791222327; cv=none; b=J6RS615O3aI3AlnedKlFUFfD15tWlRDZ35B0yKE0bQJ/5XxqAtXgcvYHxQg6RWtgaCn7ChA617ArVCwYDAAqD0r3oBXz/4qYzLYdHEzup3bfESJ+GaKDWsNlazukF7GKdXtlzQdCqERU2jlkrJov8yau7c8CJs4iwhwWN1nz+GA=
+	t=1791222462; cv=none; b=q9xbWdIOevRI6eJIs+ATAxuew1nUWQlP1sL89mEJD267kin73baTc/WRWgzNYbulytJciaq9UEOnQzUAN++TUiAH788QLHmszQGiwLvKJ0/UUMtNaPhK/D7brg9gIpIQ+4Xl3hy2WAjvo1TevvwGWU/sNzOWGTqi5qiBHnneqKI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791222327; c=relaxed/simple;
-	bh=IwsxrNH+EERJhHnXgxoH8s/TyW3qc7oljlQpmLF3eEs=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Tpb9W/tYPujQ3r4B0RCmolymn+nRkopc6WwHe2kZGFIkCDFzzAIwEEm2g9A4BzvxBtnNEhVxQyaio3G22xQg3aodhOT7hLoxpRKeZZ/WB9hFht++0Aa1ebtfA/olWAVvDmkE3VJq+/1LGjUVSBoypBtozK1ZtK8IrlntexOiz2s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aCOhz+LA; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1791222462; c=relaxed/simple;
+	bh=yApz2mq8XiJepKkfDAITxGQeptAO8n7VIcq9D1JzGxc=;
+	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=ES5LeS9Fpt/b4+Swzcd48Vn+LPVfl+rqrtf68YDtYb8JAecN2Z6wrhy1QDxd9agYQzY2HcDdlDY6iU951ja4kgXof8GhBr87NeVkMzVuhSpKnV59P4hu9S2v0251xtxcVuZwE+jxl5nvNsGYrFpLgOLw5xwsI2R4x0bEXj4bwGM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=jhskImOm; arc=none smtp.client-ip=185.70.43.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aCOhz+LA"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791222326; x=1822758326;
-  h=from:to:in-reply-to:references:subject:message-id:date:
-   mime-version:content-transfer-encoding;
-  bh=IwsxrNH+EERJhHnXgxoH8s/TyW3qc7oljlQpmLF3eEs=;
-  b=aCOhz+LAHrY8oGPuM6p2or25A0j3ztPmf9q2Vb2EJVBaChJDBpUSdJOA
-   guM0iivypGrpy/6T+otNl5UyvNcqd2JnQu8YqXdwrBbLK+2OU4m4OWc7C
-   RuX+XkOngeFlvSI3yXAozkXLCraPWlwfvlXToq6zwL+7zNcLeh+U47lGo
-   L3ztKuKSN4HMyFxRQTibarQbcekeaZp0zBEyaacjs2TvGE1WDPNRFxLvi
-   8BuNp59DwnYO0hcZgx8Uar8N5TJSEDrq94TdfxK6bAQFyHFnCsyzHAuS1
-   mV+R4nphQRs6ZVXZdxNeGn/h1iHaNxDNkDjR4UG72WRZx/oyIXEo19SJK
-   A==;
-X-CSE-ConnectionGUID: qZGlOkTaQhyCQf9i4tnOSw==
-X-CSE-MsgGUID: aKFXR40XTn2pG3pF1Ku+Bw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11926"; a="102064029"
-X-IronPort-AV: E=Sophos;i="6.27,142,1787036400"; 
-   d="scan'208";a="102064029"
-Received: from fmviesa012.fm.intel.com ([10.60.135.152])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2026 10:45:25 -0700
-X-CSE-ConnectionGUID: rOkuFnvaSKmWv75+idvWAg==
-X-CSE-MsgGUID: AX+4CZ0hSP6SNCCGI9dBkw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,142,1787036400"; 
-   d="scan'208";a="937401"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.199])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2026 10:45:23 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
- platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Xi Pardee <xi.pardee@linux.intel.com>
-In-Reply-To: <20260919051830.565240-1-xi.pardee@linux.intel.com>
-References: <20260919051830.565240-1-xi.pardee@linux.intel.com>
-Subject: Re: [PATCH] platform/x86/intel/pmc: Fix stale NVL PCD-S S0ix_LPM
- telemetry constants
-Message-Id: <179122231918.27048.14002305732775722679.b4-ty@b4>
-Date: Mon, 05 Oct 2026 20:45:19 +0300
+	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="jhskImOm"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
+	s=protonmail3; t=1791222452; x=1791481652;
+	bh=yApz2mq8XiJepKkfDAITxGQeptAO8n7VIcq9D1JzGxc=;
+	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=jhskImOmtDUJOdJIuwhao4p9oO9Df/ozNWIqwh9PLqbxwAG7Pnov5jasYRFYOQiy7
+	 mzJwPrIvpfSwfJ11RUsBo+TGVJv7jwlTMI8ZGAnJbiAQSg7rP9xOYchWKqQYyQrSCT
+	 NcrCcBgB9MU2ZA8sYIYuO8oOhDyp/1U+b04ZzluYhUyAeBluZQWDjUDhW4gwJQv4EG
+	 rVZoTdfP3G7TvpntVO20AY1AcmpZTv1L4sr+bDzV+e1buzj7DBb0AlNHbxdgG7RWn5
+	 7QikfIhdfBDsGuvB/ehinzHvN6d4rrx6c3xHisfcKwy2igVdMO4BcpuS/TzFF94jYF
+	 bKLSF2mBq8CQA==
+Date: Mon, 05 Oct 2026 17:47:27 +0000
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+From: Alexander Koskovich <akoskovich@pm.me>
+Cc: Luca Weiss <luca.weiss@fairphone.com>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alexander Koskovich <akoskovich@pm.me>
+Subject: [PATCH] cpufreq: Add Milos to cpufreq-dt-platdev blocklist
+Message-ID: <20261005-milos-cpufreq-blocklist-v1-1-7af4eba81696@pm.me>
+Feedback-ID: 37836894:user:proton
+X-Pm-Message-ID: be5d155c6d87f6914a868e893a769b451f16b483
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15.2
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 18 Sep 2026 22:18:28 -0700, Xi Pardee wrote:
+The Qualcomm Milos platform uses the qcom-cpufreq-hw driver so add it
+to the cpufreq-dt-platdev driver's blocklist.
 
-> The Nova Lake PCD-S S0ix_LPM telemetry layout changed. The PCD-S telemetry
-> GUID was changed to reflect the layout change, per the client GUID
-> revision rule.
-> 
-> nvl_pcds_d3_status_1_map[] was correctly updated, but two companion
-> constants were never updated to match:
-> 
-> [...]
+Signed-off-by: Alexander Koskovich <akoskovich@pm.me>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thank you for your contribution, it has been applied to my local
-review-ilpo-next branch. Note it will show up in the public
-platform-drivers-x86/review-ilpo-next branch only once I've pushed my
-local branch there, which might take a while.
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq=
+-dt-platdev.c
+index 371ca1fe9020..574c5bec4831 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -155,6 +155,7 @@ static const struct of_device_id blocklist[] __initcons=
+t =3D {
+ =09{ .compatible =3D "nvidia,tegra234", },
+=20
+ =09{ .compatible =3D "qcom,apq8096", },
++=09{ .compatible =3D "qcom,milos", },
+ =09{ .compatible =3D "qcom,msm8909", },
+ =09{ .compatible =3D "qcom,msm8996", },
+ =09{ .compatible =3D "qcom,msm8998", },
 
-FYI [if applicable to your patch], as per Linus' policy change, also
-fixes are mostly routed through for-next unless the fix is for a
-commit introduced in the most recent cycle or is clearly a regression
-fix.
+---
+base-commit: bf1ee2bd5c2da8992f33c8950ef194aaff74ed6c
+change-id: 20261005-milos-cpufreq-blocklist-b7bbe1a4eb5b
 
-The list of commits applied:
-[1/1] platform/x86/intel/pmc: Fix stale NVL PCD-S S0ix_LPM telemetry constants
-      commit: fcad4877a04ea40d0402015a3c4bae89677aea12
+Best regards,
+-- =20
+Alexander Koskovich <akoskovich@pm.me>
 
---
- i.
 
