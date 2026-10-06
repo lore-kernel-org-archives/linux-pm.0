@@ -1,94 +1,112 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0BDA4195C8;
-	Tue,  6 Oct 2026 13:32:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEC003E5594;
+	Tue,  6 Oct 2026 13:49:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791293577; cv=none; b=fPUt7T/EwGEV5YFAIxqtE+dgbS4laA9dt/3ltTvhKSS6/9z63TSsWR/L0+rzkwdqRE2uPrFmIIheS9n9sKGc3U0Ox33O31vn5y/KEnhwuKNFSEte0hFVssIGtLUPeejKOZfqnRTof5VKV1jYYCrtzzGn1W7k5Gco6M/XtEh+OwY=
+	t=1791294585; cv=none; b=hGKXsscht0n9PWTHN/ZokmnN8VptYZQSGH1auwj/x3uf1LOXu+wtVpQ+aLg9at5whdGBThRWaxNEyDS1HRLnZC5XxZj9tk8jRRLyjmz+dA9ik4S+Lesb03trqRS3RqhMk3ulorZYLs4xO3dO/V+nNIsAN0Oci+ZX5oJJCudCsy4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791293577; c=relaxed/simple;
-	bh=rDBfT6pAvhNxalF+kSQQ02i8OGbRSXeGMZh1ZRM8VEs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=b1MeNVf6+hMwrqt5DjJwRB6C/mFcLvl72mDkdHWx2JM17flxWaHb6OLsz3M3/mMUPAxVgjHnlBBAipT96xxwHCTx4ORN9jPxic+1mUODAp8tSioen4g/m7VmQa50XLPVqtpfaK0Vl0KejpCkWO1BoJXwAbow/Zw56XYjgWWLLCQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=h8BaYucA; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791294585; c=relaxed/simple;
+	bh=uBgbl1rRbaHSomTk5m24hvLxF+0fQvh6cs5qFlMOE6E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PQFDgx/zbE7cjMsVMXhnUQoykTolrrRwo9VJoMKfqJAgC8dlDP44BcM7B57Vub8v2DE4XtIPhbAx5FS+bJxvuIrPBt78sj0ioVFrEkjxkKId32Se7YDFLFN+05L5DzZHLzQ2JjINC5Kafa1nwfu/FuBjW2CcFaIc+M7D9CcFkQw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=Qo8WdHOh; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=tJgSBLJd; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="h8BaYucA"
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 7520F1F000FF;
-	Tue,  6 Oct 2026 13:32:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791293575;
-	bh=6CZikXboQ4pJcmLiTLM5ulPxyvEM102hfSjAIL4v6vU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=h8BaYucACLeuFvkOnlGfyIh75DNQcKCrpxM0dABHEBNL9cA2ScG1G5IdfMJNBjaKt
-	 77fZ2SVWNl0zPmlQtmDq+w02mOnT149nxE/OWIFUmB1KiTDESmuC1MhjY1dFUhlFZd
-	 Mc23Akff+DL8RyVJPKKQTNwQFN2s6PrOzQ8A+vQ8RPu37LHJGOgjJbJcH//glHuBC8
-	 sLD6LpxWGDllIHhb2XUoQtQP/fQbpvRfPuKRFyeaEpLKe+qvtxfMGV0vYfAPfS2QBj
-	 Lkkc+WJlBfxS0v2CjTu9a8Jxb1wjR6b0JKNFKyG1VTcQXBS5z+xvwktxaR4wIfLXlD
-	 vrxSf+DLZs1Vw==
-From: Kevin Hilman <khilman@kernel.org>
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>, Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio
- <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, Daniel Lezcano
- <daniel.lezcano@oss.qualcomm.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Maulik Shah
- <maulik.shah@oss.qualcomm.com>
-Subject: Re: [PATCH 0/3] pmdomain: Support system-suspend-only domain idle
- states
-In-Reply-To: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
-References: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
-Date: Tue, 06 Oct 2026 06:32:55 -0700
-Message-ID: <7h7bjv0xa0.fsf@baylibre.com>
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="Qo8WdHOh";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="tJgSBLJd"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=From:To:Subject:Date:Message-ID; t=1791294555; bh=084aF7ITkXxD+91+eYU3/5E
+	pJ1wNR0wYrX/tH5rZlVQ=; b=Qo8WdHOhbFBhjGcAK2DBeF5zjL4nMsPDSwvYD9S2KhiArvQEFM
+	WY8QtddBGND8OLFziqm3CsgELKbFgvCqu0XCewzGxxtkD5WQUSBvqLorwCJO56QntphngHMI7v8
+	Wef+WjnV2yvxzOWi6MS7/8hcLXl5mkr49GHfi4dKBWktgm8f9G+vbo/W1p/+l/MGHSRGe+v44Cb
+	UhTt4FTYdqugrpGbh9mgxZSE/UfHcmHkrCH6/t+fc0qgfzEkJqJ9AZN/5oRxOXAhYpqdRoxnWAf
+	aLtqw6cAdQqKC8DJ2urwoX3SRM/UgnXWd1KDqlK3fyzX661AqFJVyKmYaD5ZcsRCd8g==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=From:To:Subject:Date:Message-ID; t=1791294555; bh=084aF7ITkXxD+91+eYU3/5E
+	pJ1wNR0wYrX/tH5rZlVQ=; b=tJgSBLJdRRl87bfuSueo6cvzPr3p+Tk9150+EhFYQG1Jt7HU+P
+	qSgLHOjVct7K2E6Z6UkrM6zjwQuYOuGnECCA==;
+Message-ID: <f0b58a7b-6257-4dc3-b0f3-eba76ecc774f@mainlining.org>
+Date: Tue, 6 Oct 2026 16:49:12 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 4/7] thermal: qcom: tsens: Add support for MSM8952
+ tsens
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Srinivas Kandagatla <srini@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, "Joerg Roedel (AMD)" <joro@8bytes.org>,
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+ Konrad Dybcio <konradybcio@kernel.org>, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Bjorn Andersson <andersson@kernel.org>,
+ Abel Vesa <abelvesa@kernel.org>, Kees Cook <kees@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli"
+ <gpiccoli@igalia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ David Heidelberg <david@ixit.cz>, phone-devel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, iommu@lists.linux.dev,
+ linux-pm@vger.kernel.org, linux-input@vger.kernel.org
+References: <20261006-msm8952-initial-support-v4-0-ecdcc1ac620c@mainlining.org>
+ <20261006-msm8952-initial-support-v4-4-ecdcc1ac620c@mainlining.org>
+ <suzsbvsdlfrfsnvaerphqdycaaaiu5inh5uw5wups4jmfozkbt@n4lsb5pfdhbw>
+From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+Content-Language: en-US
+In-Reply-To: <suzsbvsdlfrfsnvaerphqdycaaaiu5inh5uw5wups4jmfozkbt@n4lsb5pfdhbw>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Maulik Shah <maulik.shah@oss.qualcomm.com> writes:
+On Tue, 6 Oct 2026 16:19:04 +0300, Dmitry Baryshkov wrote:
+> On Tue, Oct 06, 2026 at 03:15:11PM +0300, Muzaffer Kadir via B4 Relay wrote:
+>> From: Muzaffer Kadir <muzafferkadir@mainlining.org>
+>>
+>> Add support for tsens v1 block that exists on MSM8952
+>> with 11 tsens sensors. Sensor Offsets and slope values
+>> are taken from downstream.
+>>
+>> Link: https://android.googlesource.com/kernel/msm.git/+/refs/tags/android-wear-7.0.0_r0.3/drivers/thermal/msm-tsens.c#1621
+>> Signed-off-by: Muzaffer Kadir <muzafferkadir@mainlining.org>
+>> ---
+>>  drivers/thermal/qcom/tsens-v1.c | 44 +++++++++++++++++++++++++++++++++++++++++
+>>  drivers/thermal/qcom/tsens.c    |  3 +++
+>>  drivers/thermal/qcom/tsens.h    |  2 +-
+>>  3 files changed, 48 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+>> index faa5d00788ca..f4201748ea29 100644
+>> --- a/drivers/thermal/qcom/tsens-v1.c
+>> +++ b/drivers/thermal/qcom/tsens-v1.c
+>> @@ -145,6 +145,37 @@ static const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
+>>  	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
+>>  };
+>>  
+>> +static int __init init_8952(struct tsens_priv *priv)
+>> +{
+>> +	for (int i = 0; i < priv->num_sensors; ++i)
+>> +		priv->sensor[i].slope = 3200;
+> 
+> Where are these values coming from? The driver that you pointed out
+> reads them from the QFPROM (like other tsens platforms do).
 
-[...]
+Hi Dmitry,
 
-> All domain idle states described in devicetree are currently considered
-> during the regular idle path. This limits which states can be described in
-> devicetree. Due to hardware constraints, some domain idle states are only
-> applicable to system-wide suspend, including suspend-to-idle (s2idle).
->
-> To allow these states to be described in DT and used only during system
-> suspend, this series adds a boolean system-state property to domain idle
-> state bindings and a corresponding system_state boolean in genpd. The
-> genpd governors skip these states during normal operation. The system
-> suspend selection path remains unchanged, allowing these states during
-> suspend while retaining the existing wakeup latency checks for s2idle.
->
-> This series applies to cluster idle states with the "domain-idle-state"
-> compatible string managed by genpd and its governors, but can be extended
-> to CPU idle states with the "arm,idle-state" compatible string if the same
-> restriction is needed for CPUidle states too.
->
-> Assisted-by: Codex:GPT-6
-> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+Slope is coming from this:
+https://android.googlesource.com/kernel/msm.git/+/refs/tags/android-wear-7.0.0_r0.3/arch/arm/boot/dts/qcom/msm8952.dtsi#550
 
-Acked-by: Kevin Hilman <khilman@baylibre.com>
+calib_offset values are coming from these:
+https://android.googlesource.com/kernel/msm.git/+/refs/tags/android-wear-7.0.0_r0.3/drivers/thermal/msm-tsens.c#1756
+https://android.googlesource.com/kernel/msm.git/+/refs/tags/android-wear-7.0.0_r0.3/drivers/thermal/msm-tsens.c#1800
 
-Thank you for submitting this.  I have been considering how to add
-exactly this feature, so I add an enthusaistic +1 to the need for
-this feature.
+Should I drop them?
 
-On TI SoCs where we use s2idle, we have similar reasons to have
-domain-idle-states that should only be available during system-wide
-suspend-to-idle.
-
-The current hack to supporting this is to just use absurdly high
-residency numbers for these system states such that the runtime CPUidle
-never picks the states.  But this is a hack, and is not describing the
-hardware, so I would much rather see a way to describe this in DT.
-
-Thanks,
-
-Kevin
+Best regards,
+Muzaffer Kadir
