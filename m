@@ -1,108 +1,118 @@
-Received: from mail-dy1-f180.google.com (mail-dy1-f180.google.com [74.125.82.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D48531EE7C6
-	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 04:48:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC2F73C7E19
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 08:03:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791262140; cv=none; b=c7LE8/BwlkDDupxFk+YPcEXn75BEZEptAUdGY9PGp6aMPqggreycyA0KXHT7FamSX2xyWL+L2Qxq1OanFo82QhmmRP8x6eJ+/dj5wQiBpBVq9Bc8xgFlYqwr1CtXdMFB8wLf6gBeXpOtmS312XPzjtDDEfzfp0JAZ82EMtb8IG0=
+	t=1791273804; cv=none; b=jJbvp09hu1lwciNWA0mzNWF+RjxiWfPxlA81clU1NB1yerpFqy2QHOmJQcThFtVuPeSOC+kuL7fBg7s/EXRziQWPQ6z4PcYHO3MkvtwUBzJAkMdvG94tFOwTr0eZWvJJgxpp5HeDCYVWSgRIYXYjNhOF9WIXgD42joVH9OWFWkM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791262140; c=relaxed/simple;
-	bh=0XGucEfSTFkwRP7XDjqeT+rZM5a2fwSXqv+Mzeq/nDI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ros/3XwUM7YcWoMnu3TzyaEWXWSFLcdP51HCi+ntUcr6gjiFKilpuLdiqAEG61IFgIYKGFVHCEBy1p43f0M1wJxtTPL4GpKsmlwn3lvNzhvl+xuu8eTBaa3zJJPdOy4o7kAZmi6Nimr+bbfEGqVBRCiEl+pP3/4JDFq3Ij21kQY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=nbMCmHLS; arc=none smtp.client-ip=74.125.82.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1791273804; c=relaxed/simple;
+	bh=nPvPw7A9YAIxMjZ4/b6RvdHVeDmDsPUX45cjSQ90p/0=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BNrtTcx4skt0FH6/eRmv6tp7LK6CQvaJSH4dEsb2P6JL2yDeuHb0kZ0MWIAdArkCRy6c+6hCx2mL8789+V4XHSVO+BiN3ZxtiwFsqFfkTaBdVvt2UPrIWksu0sSuG14eyAFsOKRjKdZPjF7s1anK/j/y4i+7+fANnI1I0xwfD0A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CaNa3tt4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nbMCmHLS"
-Received: by mail-dy1-f180.google.com with SMTP id 5a478bee46e88-33c2520ad38so189423eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 05 Oct 2026 21:48:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791262138; x=1791866938; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=9Mk2WRBAwChkq4s/3x9cH1VHTem4z6ve30tIS5Pq+dE=;
-        b=nbMCmHLS6fxuEH+lGuwx/OtXk3sjEdKHyvkaDLsDoS41drNR1sHQD2CLXUoe4OMcPh
-         Gl/vpmj6p6AciN1JE51/CXNWP2+UOZUKGaRfteILqy3rlDufsgCLPCanfowgmgisOuqK
-         vV2y1nXs2SVK9yUfEuUnvjfqjZz29oYW26MD+3WKNyKafCQgKvqhMaYblze4mj+1tgKw
-         kowUu/DwRFj6+i6l7Y3jZeFzUmXTIruQP+EIB9ufsFvlaP2Zc7wqesZzAEVZMuGDuP3e
-         ns9phdvcMVxN1hKUtx9ORbjC/nhl91T/GqiV0PF8+Ir0yLS32o9qXJPIgiSwlfslTiAR
-         r39g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791262138; x=1791866938;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=9Mk2WRBAwChkq4s/3x9cH1VHTem4z6ve30tIS5Pq+dE=;
-        b=xq4zndxEVaH1KVkifcFeP3r9gFocbGQhuNDP7GYL44gsZ47qwETSIB2MriwRFSJpV8
-         qMjyGdsqV5deCmHbEyICaFdk9BImMz6QgjIlzV0++4YG9OBZAmoMbZq1d9mJRNjRHLS2
-         TScOi9S7J1q9b9bXCMbyXMwx1V4hni0CJZ6/1uLS9cNAYtdv7L9WLRIAat8h2tvB/5kk
-         JR5K8yovVLYJkmKiq9ONWwnxwbBNx3PeZ1R25CIarrN/ARN76mWK4oWwEB/QpSAlGtWq
-         rrkRkIJCAj2tvjLcSfwxmEo28BJ1JTnNL/wTGc7c4cH1NQfLyfedAe1SmaxjtSigfM8C
-         RTlA==
-X-Forwarded-Encrypted: i=1; AKwUvBzRTKXIrk/FTiXeLoJwxHiBLFlRrSBFkDzdF24TRCXinslM22VbXhVAdSZHuTKYopSir4pZhhziZw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lbT7yXB8shCghb5DJUl4XPRrY4BD40VcWx6YfLcK1UgYpjj2cD
-	fOcND2+IGhUNE7NlLkEbtb/hmNmNW6iU7FeqZ52aVFSQ8DksX6PnIqywnvrOGp9Z8C4=
-X-Gm-Gg: AYBFou0dgHt39yWTjus0cK1j1SZShQ0oeZn8D5KrNC6mX18QbWQRI/XNv66iiYnNM/S
-	mHE13mVj+jXYUYKw1zVis/OvD/l7+GnoOLm4v9EyNjAC6fR+axgTCaL8R716ZfJYshJyIxVaA/y
-	rdGvbmYyp+vW5jEV/uW3Gip8xVqcwUOvy9vXAVeESxJK5L0fqq/11IMMpM/HBbuRU1AXRTD75Pm
-	VSUpau6oh6SwzELypLfH4wc19ASR8uV1zO3oRHrTY+KchWJAYciUrQeb94tvHIvYiw+3ZpuH8+8
-	m1uAlr2DZKtVOuXN1VJ5cqn9NZxsUYg4uEiaMRk/ji11+MepsT7qim4YOzTdLXyBtGHIs1HL3Gc
-	AsDawQ4EvhyGpS67goTM0CVhVkJkQvUAd5od5BJ45fP73AMxH/rECK3pVcHeFqmyMNjltEqpLwe
-	fPc1Lh/96UwUvF627xzvYh5HByQDAAIOeTR3GcOPJxeMZeLgRW8Xw5YkDwgrOLsajuYzvFr138T
-	cHAxJu0btw=
-X-Received: by 2002:a05:7022:6ab:b0:130:7246:10aa with SMTP id a92af1059eb24-15ec6306fd2mr585485c88.12.1791262137611;
-        Mon, 05 Oct 2026 21:48:57 -0700 (PDT)
-Received: from localhost ([122.172.87.224])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-15d819cbed6sm6887345c88.4.2026.10.05.21.48.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Oct 2026 21:48:56 -0700 (PDT)
-Date: Tue, 6 Oct 2026 10:18:53 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Alexander Koskovich <akoskovich@pm.me>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Luca Weiss <luca.weiss@fairphone.com>,
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: Add Milos to cpufreq-dt-platdev blocklist
-Message-ID: <asR9tbmrai1i9nTm@vireshk-B250M-D3H>
-References: <20261005-milos-cpufreq-blocklist-v1-1-7af4eba81696@pm.me>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CaNa3tt4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD4DE1F00898
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 08:03:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791273800;
+	bh=r+KgD9DoUrWu5arzVLlDs3fSXX52ocXw8x+r8c9Z1cw=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=CaNa3tt4uTwfPlcLhPdln6QJYXq+DP9tyPKPke9OHd/6cACMGxqPmf28yD9Hdupgg
+	 MfloJhes60g10D4cKYMXig6Llvow7IQBSVlg0Ng9S4ESqVnANgTwhUWFedjRzGdy1A
+	 yQjini86leUZHV3bHOjvrVtwVX74DMIS/UqSbCkPDdFg1CZsN+1L7w6lhkK3QwRe1t
+	 q82nXvzKMwgZajTmrtvhGR+vGSA8/URn6WxKXigKDM0xUTXRCRDh2DssmEu7HNLV1X
+	 iRQdEtgPlbszuE59FOYYJat3v4+3RHRBSxw0A7vqomOc4bceJtLwr/DDCIs+p4/V+C
+	 x8JQptANGSq5g==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5ba4180a65aso206836e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 01:03:20 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxORHk966K63xdcnotcZ/skJJFVe8btpDwD/jfTYA4SEbbbJoL2XqxFALTvp4NvhMWVV2w+N2o2yg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJI5ysYFH8WBjNe0pin5W/+Sh+UsCA+qZygnlwO++5AE6FMbHh4
+	lvK9XqlmNc/6ZgyBqyuV5OQQgyjPz508hqIOWer+sprvEQq/LN/F6mz1JuzU9zkeVuQsqlUpWB9
+	suhZFR/8LXa7Aq7LS5LyjxoqSB8u/OMbP5UZFAetSgw==
+X-Received: by 2002:a05:6512:683:b0:5bb:a4ba:8ded with SMTP id
+ 2adb3069b0e04-5bccc718dd2mr276015e87.44.1791273799477; Tue, 06 Oct 2026
+ 01:03:19 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 6 Oct 2026 11:03:17 +0300
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 6 Oct 2026 11:03:17 +0300
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20261004165124.4277-1-franzelfranzel@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261005-milos-cpufreq-blocklist-v1-1-7af4eba81696@pm.me>
+References: <20261004165124.4277-1-franzelfranzel@gmail.com>
+Date: Tue, 6 Oct 2026 11:03:17 +0300
+X-Gmail-Original-Message-ID: <CAMRc=Mf_szZhsZEB8pmZkGh5pB6AEims68rc1tXE=XGAcMuEvg@mail.gmail.com>
+X-Gm-Features: AclHuK9nmK19llwqJ_oPdR-YeWv5o1OfhU6oMZraAD3H4lY4H8sCG9gdf0YepLk
+Message-ID: <CAMRc=Mf_szZhsZEB8pmZkGh5pB6AEims68rc1tXE=XGAcMuEvg@mail.gmail.com>
+Subject: Re: [PATCH v2] power: sequencing: qcom-wcn: power off WLAN at probe
+To: Manivannan Sadhasivam <mani@kernel.org>, =?UTF-8?Q?Fran=C3=A7ois_Roux?= <franzelfranzel@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, 
+	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	regressions@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 05-10-26, 17:47, Alexander Koskovich wrote:
-> The Qualcomm Milos platform uses the qcom-cpufreq-hw driver so add it
-> to the cpufreq-dt-platdev driver's blocklist.
-> 
-> Signed-off-by: Alexander Koskovich <akoskovich@pm.me>
+On Sun, 4 Oct 2026 18:51:24 +0200, "Fran=C3=A7ois Roux"
+<franzelfranzel@gmail.com> said:
+> The WLAN enable GPIO is requested with GPIOD_ASIS and then kept at its
+> current level, so that a WLAN module left powered on by the firmware is
+> not switched off. The FIXME explains why: toggling it would take the
+> PCIe link down, and the controller driver could not recover from that.
+>
+> That reasoning held while the PCIe link was trained before the
+> sequencer probed. Since commit b921aa3f8dec ("PCI/pwrctrl: Switch to
+> pwrctrl create, power on/off, destroy APIs"), qcom_pcie_host_init()
+> powers the endpoint through pwrctrl before it starts link training, and
+> defers until the pwrctrl driver is bound. That driver cannot bind
+> before this sequencer has probed. Power-on therefore always comes
+> before link training, and keeping the firmware state is now harmful.
+>
+> On the Microsoft Surface Pro 11 (X1E80100), the WCN7850 sits on a
+> PCIe port without a PERST# GPIO. While pci-pwrctrl-pwrseq is not yet
+> bound, the host init is deferred about ten times, and each attempt
+> powers the PHY and controller back down. The later power-on only sets
+> a GPIO that is already high, so the chip is never reset and the link
+> never comes up:
+>
+>   qcom-pcie 1c08000.pcie: Device found, but not active
+>
+> The endpoint is not enumerated and ath12k never probes. Bluetooth on
+> the same chip fails too ("QCA Failed to send TLV segment (-110)").
+>
+> Request the GPIO as GPIOD_OUT_LOW. The chip is then off when the
+> sequencer probes, and pwrctrl powers it up cleanly right before link
+> training. Drop the FIXME and the code that preserved the firmware
+> state.
+>
+> Tested on a Surface Pro 11:
+>  - b921aa3f8dec plus a one-line version of this change: endpoint
+>    enumerated at 2.4 s, ath12k and Bluetooth working.
+>  - next-20260929 plus this patch: "PCIe Gen.3 x2 link up" at 3.4 s,
+>    ath12k and Bluetooth working, Wi-Fi connected.
+> Without the change, neither kernel enumerates the endpoint.
+>
+> The culprit was found by bisecting v6.17..v7.1, with the DTB and
+> .config held constant.
+>
+> Fixes: b921aa3f8dec ("PCI/pwrctrl: Switch to pwrctrl create, power on/off=
+, destroy APIs")
+> Closes: https://lore.kernel.org/all/CAPjyS8dY0Q_o3XmFjuKZZsjhzhoSNL+ZGJtw=
+5cQt8HiV3sUtxA@mail.gmail.com/
+> Cc: stable@vger.kernel.org
+> Assisted-by: LLM
+> Signed-off-by: Fran=C3=A7ois Roux <franzelfranzel@gmail.com>
 > ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 371ca1fe9020..574c5bec4831 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -155,6 +155,7 @@ static const struct of_device_id blocklist[] __initconst = {
->  	{ .compatible = "nvidia,tegra234", },
->  
->  	{ .compatible = "qcom,apq8096", },
-> +	{ .compatible = "qcom,milos", },
->  	{ .compatible = "qcom,msm8909", },
->  	{ .compatible = "qcom,msm8996", },
->  	{ .compatible = "qcom,msm8998", },
 
-Applied. Thanks.
+Mani: this looks good to me, any objections to me queuing it for v7.3?
 
--- 
-viresh
+Bart
