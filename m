@@ -1,74 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 439362931FF;
-	Tue,  6 Oct 2026 09:15:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07BA83E4115
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 10:30:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791278145; cv=none; b=BzwxcxBqbjr4gpi1wLbBO/sWR/glSQUwswGbYfQ8x/nZ0AyNudYZ1If5OQHo57SZmP5nJRN7PVZciwTnKcezbdqZHxx4YVi58YE0vXxHvCnFPXxDgeBGfS/7FsnmVxfSdah9rLSDFF/Qs90pHkvPxVCkdyMRF+A0mGqqMAA+b64=
+	t=1791282655; cv=none; b=jAMJoswcuww2PR3Ypb3IFbcJ/wju3LQfDp39JZE8s7TaqRiiinZNFHGylg8p/JYLJhLIWxco32ut93D03zmj1qQD7Oy9CVYnxkwPmRwlxAMuI3NEkbbjtKyIbc2sPqS7cgbBxdzJh6v4BsOED74pRK5OLvYqRInYpu162OCJyXc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791278145; c=relaxed/simple;
-	bh=IC9jYlGcN33Cz769CDyMMeJpbLA96yr5Z7uTADJtW4U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Qr1cPrqp2SFsXCStP9gUFfwho/KdR7PiLNinJ17NS+tki2wYb8fpgyHutdTabXdhASx4WI+bB6pm05xgrzTQNGuoeot6dIdbiSRpSs/dMntqpqgzQSw/xQU/qW8vVPDsWsNayTLEBaBwMaV/4mbxwZ8zXvlvYGsoejV93X3JNa8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RXgcVwCP; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791282655; c=relaxed/simple;
+	bh=xQbV5GbBp43r4Try8maWYx6KPArL8fbqa1bW31iNOu0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nPJAcTWfIEBUJAi9CCmQffuiXY4eaYjrxPYiSDhAmJs+k7Rb3Hj9nLIutV1N+DMCRUHwWqH7iHg551Tl9V+D4F/q5kwhXP+03eXKDDU0vX2NtQgNHUAxD5DD7W2r7tqcvegGT4n/b8oRppPClXMF4JeztQ5nySs5ygaSJN1nG5s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dD0cwu0N; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RXgcVwCP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 490F91F000FF;
-	Tue,  6 Oct 2026 09:15:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dD0cwu0N"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1EBB1F0089F
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 10:30:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791278142;
-	bh=oavwmkQ4ETGA4dUaKiMnunlWg5wtQHH0vwHuNn7pQzY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=RXgcVwCPFtY9GNzxCb3FICtfCsJV9C9l6rKiqQ0Bc+1M2jltIGUAMJ0x/DqJSXvW0
-	 v8FShLZ5922TcznQ0Md4U/tHTw425vZJuEoycFwzptAnSnYjbYFiofxG3Ad7fsm5vb
-	 AGwvzbL2a30If51RXV/AJx5Qozn9Hhsxa7Eyu6WZWhk2H2HYZCVZ0club8x1u8p1Xc
-	 1VLCVUp6IlIfJT2EB14SgxCWf61VVG1nvZ2n8/DRZPI0MDagGXB3AoV1UAMrPxi+Sn
-	 XsUwTnGteccjeQJOOrinUydQUF4o63Cvyw5SgxP0iL7fbgfqUQVW6Fyr80RH2/4Q+Y
-	 1Av9r/geeNqPw==
-Date: Tue, 6 Oct 2026 10:15:38 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 2/3] pmdomain: Add support for system-suspend-only states
-Message-ID: <20261006-romantic-stalwart-seriema-90e71d@sudeepholla>
-References: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
- <20261005-s2idle_state-v1-2-3c402c66f388@oss.qualcomm.com>
+	s=k20260515; t=1791282653;
+	bh=5ZaN40cf3gaPYVrOntAep/0sU9jdzMlSTIwHDqydOaY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=dD0cwu0NaDmzI6FDzUr53SqL2l2laUa5BRdUfSDXpMeJulyDsNvKsVevM17EV3FEd
+	 UnKpbzoEAi1KOzIDEnEX7hQZBVO5C3K16NnV0NfEVsa75lDW43NjtZdYPMUCx8kT6T
+	 V8dDmhAxtndAcxWds7MxUMrjuRmmQvQuryZPTJHIBHYHLkXZGXoeemLfEexl0uadYO
+	 x7OD+ttM+AOxtRzH0yQD4Mh6ONR7x4isxees6zA9pEdZ9XuqQ8uB2KiPLHPnoUTkJP
+	 jQfDo++ybon7Jrf/vh/St2hPwor3pVNafuKsj1hcHTvtBSXNJsk2YgzKp/i53Om+GZ
+	 xpXvOTPX/BvJQ==
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-3a9841363b5so3079201fa.2
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 03:30:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByiJriXZTmFkRaAzkjWHQBQIXOLjxUEEEZmxZClenIk01c8nw/5dN8+o27+IL6f+ktRTTIl3ThCRw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIjPA6OH0rY44cH7gkesMr7PJaG3oGVzPgdHZnnqnlV0lromOmN
+	QjGUdSQ1k0DNEic4ioNpCsUcN78g0RzqpszJ5Jh3F1mAZrpxXTATlc6KvZhKSfbJzlPbOHvWDXa
+	HdSRCZGbWzIZ0SA492RiVv5rzrSFVIWI=
+X-Received: by 2002:a2e:9fca:0:b0:3a9:969e:98a6 with SMTP id
+ 38308e7fff4ca-3a99af67db3mr1737921fa.25.1791282652577; Tue, 06 Oct 2026
+ 03:30:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261005-s2idle_state-v1-2-3c402c66f388@oss.qualcomm.com>
+References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
+In-Reply-To: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Tue, 6 Oct 2026 12:30:40 +0200
+X-Gmail-Original-Message-ID: <CAD++jL=gFt9kKZH9T-m8B_pbwRvzc35tTrMn5V238d3528DpUg@mail.gmail.com>
+X-Gm-Features: AclHuK_AtwEo8WT_r25jczYf_hFshziwzfIIOr6vEXjFvPYUcVAgc5OmT1Oo8GM
+Message-ID: <CAD++jL=gFt9kKZH9T-m8B_pbwRvzc35tTrMn5V238d3528DpUg@mail.gmail.com>
+Subject: Re: [PATCH v3 00/18] pmdomain: st: ux500: Implement ux500 power domains
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	dmaengine@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Frank Li <Frank.Li@nxp.com>, 
+	Frank Li <Frank.li@oss.nxp.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Mark Brown <broonie@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, Frank Li <Frank.Li@kernel.org>, 
+	Lee Jones <lee@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 05, 2026 at 08:59:43PM +0530, Maulik Shah wrote:
-> Some domain idle states require system-wide coordination and should not be
-> selected during regular CPU idle. However those states remain valid for
-> system-wide suspend like s2idle.
-> 
-> Add a per-state system_state boolean and populate it from the system-state
-> property. Make the genpd governor skip these states during CPU idle. Leave
-> the system wide suspend path unchanged so s2idle can select them.
-> 
+Hi Ulf,
 
-Instead of this I am thinking if we can QoS cpu latency setting and block
-system level states normally. Since s2idle is user driven, it should be
-controllable via user-space and we don't have to define bindings again
-if systems that use platform-coordinated needs this too. They may not
-use domain-idle-states.
+On Mon, Sep 21, 2026 at 12:48=E2=80=AFAM Linus Walleij <linusw@kernel.org> =
+wrote:
 
--- 
-Regards,
-Sudeep
+> This series pays off technical debt from the beginning of the device
+> tree for ARM initiative in the early 2010s.
+
+I have so many fixes series that need to land for v7.4 that this is
+mostly targeted at v7.4 at this point.
+
+However:
+
+> Linus Walleij (18):
+>       dt-bindings: power: Convert Ux500 PM domains to schema
+>       dt-bindings: arm: ux500: Drop NR_DOMAINS
+>       dt-bindings: arm: Add the actual power domains on U8500
+
+What do you think about applying these three patches to the
+PM domain tree as a starter for v7.4 if it's not too late?
+
+They are reviewed by binding maintainers and should be
+uncontroversial and will make it possible to avoid trouble when
+merging more stuff later.
+
+Yours,
+Linus Walleij
