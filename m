@@ -1,174 +1,112 @@
-Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011058.outbound.protection.outlook.com [52.101.52.58])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 349A746D57D;
-	Tue,  6 Oct 2026 14:37:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.58
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791297454; cv=fail; b=j5U098IsDgAgpNo7N3SWBAzhGbEc8+8mEA+lmKiAU1H4b3jBaa5xduB3HMEc8Zn1weM96r9NZEDHp0r5FRVfRGX6Ja814MYfyStUH4ZOdW85NS9N9nl2z8Ba3oFPIISnTHfGWF/SSLZL1Iejp7aW6JzbUnR9uixcY4sQc+ZcVEE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791297454; c=relaxed/simple;
-	bh=TxT5YdXptfZI9cyjHS7tb4N0bLPtcK3+riJAFvGrYlA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=OdDD1WObU7ijSGZ7axHrZCP6oXYdTPYJdGJul6maK05KQq8eMMhRHuC3ONyZs2ZSnlwaQ4tog0ujHY/kuLwLYGF7uc7z0H+V3whnOaGvAJ6ZE5J9CiFrDWwatq4mtMKNpxVFoV4jtvFOADm9fOEcDE0udgBj7fvKMfHb2OXJUVg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=WTTQ36fR; arc=fail smtp.client-ip=52.101.52.58
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B9BA49C4BE;
+	Tue,  6 Oct 2026 15:09:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791299353; cv=none; b=VBj92SIpJpWcVizsD+nLtoclfc65DujxFK5qLjdu1oGjoJnObBTRy01/68yTYu82oQ4iDkcRSi7ujmWo1pBiwXKK31bynOj4ich+x1iZrNW1mBiemaFh0XiCr1AzByQd6A7fA6Tg3CU0p5eF4yHE62C6CB4fvnLyHyMRVxSnEDc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791299353; c=relaxed/simple;
+	bh=I9bhbYltPkS0lWeeqq7JSwvOPSvncjDBaQk3HRw1u34=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=R9M13bB/rU/WVMIN0Y2hzkoSWH5Qt9OLQjEuoj9b0JEAXMBe9tcxshz4//L9Qse0IJB6vORVD/+hQMfAZIV66IB3ibXIF7a47R/IkN6GJFCx5rGxy6nJ6E12WPht0sGCE3Gxk/qQ8aMLsxAE3Jn8NknZiSw2zLCNpi+CpAXmUaY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oeD9QMK/; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="WTTQ36fR"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=X+2BNFZIqX5tRTHV6zdAeDR+E0fAwCJejADGPQw2RNVuCM33cU99+le/dtgBxz5xAThsDp1Pv5FLoGNS4bEfDRR7eTwdcvneMaC9XCFpQ9YMha64+hhURIaipjSr9Jg5XS0HrmA5fNE1Hxypu55bu7CZNH71Zmz1gjXffYuJnhNVRwWFpfyPgFWSnCfqPf1vFbAgc2Z/IS6VQ00wLh4GUK2bMRZAJcbc05fi2n8JRXq4rYmsQN1hXE6sRQzLaM05jUArC6quw9pLgTiRD2sJ29vQvFcaGPvjip4iRP1gF3C7dGvaK0CT7IQw70Kn6rRxeJSg15ZydeRdgPUqcqf2Hg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=KPSwPRvFlVMhFV8P4l7kLQGoFjpY58YolgBv5kWVDdI=;
- b=tgmOd7hCga0TpXFwzsRAI+lLnxogciL2MhU94lHbd3a1uFkPEsQnwlRBJzYmTAKSFUfuHkMf5DAP058hQn43kFLvvBLYsaLR0WWsuTpJiubhA2fWrvOdxI/IM/mwR96WPjqu2y0SfUqOdKX8shTMGODTrrwViHOtMN5i9BW6XGu06o+f741JX3UoGbYrGsjEU3S1psMmkZkOEjHh29k7djpY+u4KWASRdi+c6g0wT5WYzLeiaAgRwXrVdTa2elp+LEdED3vSkTiXFnOBfrY1rs5CIvx8hb5fqAsUtmnpM6387omXvGPk2jW+Gr9LpU79qkpBHTkmuzY3nq8GHv7Itg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=KPSwPRvFlVMhFV8P4l7kLQGoFjpY58YolgBv5kWVDdI=;
- b=WTTQ36fRqdJq2a/j596h3OqclKiIPuvgOelfh9nWVvsLlFTQVf2/KRpMeD5KK5NOo0FZZ+oJn+WopBDkSrJ3+dMCzqOMEOokZUBcMm7uvF1w83b0G6Y6XZs8YIifp+2EJD2tiZkG7yZfRQE7Fsj0KetjR6HHw8/0ZTwWhQhqD7s=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by DS0PR12MB8526.namprd12.prod.outlook.com (2603:10b6:8:163::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.20; Tue, 6 Oct
- 2026 14:37:24 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%7]) with mapi id 15.21.0472.016; Tue, 6 Oct 2026
- 14:37:24 +0000
-Message-ID: <051b667e-eaa9-4ad8-86ce-1a326a612284@amd.com>
-Date: Tue, 6 Oct 2026 09:37:21 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] PCI/USB4: AMD Phoenix 1022:14ef runtime suspend prevents
- JHL9480 downstream enumeration
-To: "Kovacs, Alexander" <Alexander.Kovacs@amd.com>,
- Freeman Z <SHD-ISAC@outlook.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "westeri@kernel.org" <westeri@kernel.org>,
- "andreas.noever@gmail.com" <andreas.noever@gmail.com>,
- "YehezkelShB@gmail.com" <yehezkelshb@gmail.com>,
- "rafael@kernel.org" <rafael@kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "S, Sanath" <Sanath.S@amd.com>,
- "Natikar, Basavaraj" <Basavaraj.Natikar@amd.com>,
- "Martinez, Juan" <Juan.Martinez@amd.com>,
- "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>
-References: <f8b929da-b4ae-48ae-9667-3eb93aa0a4bd@amd.com>
- <20260925115041.GX106095@black.igk.intel.com>
- <5d065dcb-a4b9-4e9d-aeee-8a9bd1d875d7@amd.com>
- <TYCPR01MB10927F1B586DACDC97FFB606A96802@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <7822cb02-f32b-4f02-ba65-4b90ebc42ce8@amd.com>
- <TYCPR01MB109279CDE9AAF47B40FD1770996802@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <DS7PR12MB9550D1A8CB397E8C7FF0C7D69C8A2@DS7PR12MB9550.namprd12.prod.outlook.com>
- <TYCPR01MB109276162440B6A8CC34DEC73968A2@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <BL4PR12MB953383C9C73C9715FB9C5A339C962@BL4PR12MB9533.namprd12.prod.outlook.com>
- <TYCPR01MB1092779F2FA9CE76D5A76E4C396962@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <BL4PR12MB9533056AD6DE8C89370D6F6E9C962@BL4PR12MB9533.namprd12.prod.outlook.com>
- <TYCPR01MB10927C563CDDD5216CDFCD4D696962@TYCPR01MB10927.jpnprd01.prod.outlook.com>
- <DS7PR12MB9550E85CCAED9C8C0D19DCA79C952@DS7PR12MB9550.namprd12.prod.outlook.com>
-Content-Language: en-US
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <DS7PR12MB9550E85CCAED9C8C0D19DCA79C952@DS7PR12MB9550.namprd12.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: CH2PR18CA0049.namprd18.prod.outlook.com
- (2603:10b6:610:55::29) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oeD9QMK/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38C4F1F0089B;
+	Tue,  6 Oct 2026 15:09:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791299352;
+	bh=TXACSYhLXtVOS9sONVQPPWY9uQYglM+Zmt4FkOCBx3E=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=oeD9QMK/tXxY4ZxQ0+Gmxg5aPRwX8W4X1AsK0sM2/mcxH5WLbLIqfNtfXKgb//leF
+	 XSP48glRRhnj3pQa1VCq6PUqbetMprs1Ae1hsidFDVuXLj8C5jyU+QvHptSuSxkQfE
+	 OLjdV7BpPGqd7FFkWefViFpHPP966uaE8UsT1h3MUaiHorajeVhPBIeWZQmBY2K+cl
+	 OsoIa3GrOv8mEummzhMcMh6UXe19qhig9gh4u0Z0tqjxFK3uuzBls/sZGPruZopO6V
+	 gZab5ew9dzEGQqga0VIjn5fWAV8Olsicn1jGw5NFyHA+7kLvJVBwxbRdYKVdchrNiA
+	 4DV5zTUQMDIKA==
+Message-ID: <2639e56d-1fcd-4f20-b065-0066a6d841a4@kernel.org>
+Date: Tue, 6 Oct 2026 17:09:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|DS0PR12MB8526:EE_
-X-MS-Office365-Filtering-Correlation-Id: ed315226-8b79-4507-7891-08df23b755f9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|23010399003|7416014|366016|1800799024|22082099003|18002099003|10067099003|4143699003|56012099006|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	gTJt5LFPRFlvS7ltQ34QC2wUYRNVzsxkn1tsvmJl2yqeZBUHQqg2Aamzpd1/f8hZav5XLAHCDZThlNys/vnHMQWtgUtFkI2LlIzuJ+cYBhhYFza3K074DJcfbkPO4qFu2bjYUvkVZD8ZMiSyx6ztbBOnMQZJ92zk4QlRjFLQy72ccLGeFtqXudg+jtDBnlA64BFQkdnsnygI8Z/6YvP7Ru8spCacyM6myI41IwbKjaa9TDVRwq2d/r8mG5a+tMKJy/ss/KcTGk/vLIq2gX0UjbvA8VZWMyYL+Pm+GAAFR6lgGUepSs+gop4JvhgmP6hQ3qe+AwYomf9gDSLkF/Uz+kTBMPlA7f8zu2rm5IJEzEbdayCVOp4lOqOlei4fsJNanSE/rjASsRzDPmshh1jnmiaH0I5Zd+EAJXi1XfDZBeDswPs3cBn9hJqdLYvBBOgKss/veMlNqylWPl1qEhUAUhotqgK87Vecx6R7HhYseYhO5oWtko47pmmqjcRU2NsxWu+pm+MdoNktsITbqWfOXqLy5GDg0txywEcS23ztoKZUeoGndztvv6H92sdsnbpPUcBbZxKKnu342fiBvcXQI9on+8eo7hr0FIyfHDJ/Qql4ulNuzt/dAHfJNPUiTTmbktvSkVSkckdZHUWabm9ewElscUVBU7vMF/8CHoH02t8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(7416014)(366016)(1800799024)(22082099003)(18002099003)(10067099003)(4143699003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Z3JPOURJS0hZaWxtMkhsYktyQXkrTXZaNFZHekJVbUtmNDNETi9oWm9CV0tH?=
- =?utf-8?B?bkU0ZlhJOUNOVkN5RXJpamY4YXdHUXoxdTJTNm5aaGxGMkwxNzVwclNxYUwz?=
- =?utf-8?B?T01KV1JwV3Z3amhXTURhZExrTW13aHBpZG4rSGtWNzM0czhUQTg3MUZFclRP?=
- =?utf-8?B?K0Uzd0RNRWh1c3NFUUJRcnNGaGhZODRDQVFNTFFQcmZzSGI0SXVRMVpjSmpI?=
- =?utf-8?B?VjlHZDZDV2RFNHdPZGplamJ3cFRwTHJvWUtJMDFub2NyMElOZXdFK0dTck1H?=
- =?utf-8?B?N0tENFR5UjNWVjlGQUZ0Q0xiYnUrcllzMUR1UEpzY2dQMEhSTGNnVHRBZ0xN?=
- =?utf-8?B?WWJNdFNBMVUyWGR6U2piTFpOck5TNEYrWVhSUUVYRUpHdnpWZ1krNS9TMktv?=
- =?utf-8?B?TUVoNlZFcWJvTmJna09pdWdhRXhGcGQ1WWZWTENYRXVzd1dMaEdKdEhLZWFz?=
- =?utf-8?B?V3dRWWovU2xpZXhtOWVIS0lTdVhYazNsMFREbHYwbUY3TmYwZG40VjZ2ZHQ5?=
- =?utf-8?B?ZEQ4ZGkvNTAxTnB4dWZaWUtiZEZsN1pSbkNKTzRsT1lSaWNsR3RlMElCTXNk?=
- =?utf-8?B?cVVTbVdHSDNETXBEbzNpTVl1UXlwVm1ZMHFJOEZ4WmZWanFFcTlHYVJ4S2Ev?=
- =?utf-8?B?VXJ0a2VrOGt3M21KS3BmbUtLenFpTGFWM1Z4VzBTOWZPbm5abWNIMnh3a1Uy?=
- =?utf-8?B?YmNSbVlXQUpMMHBrV2VkdWowdVZESElaTUJGeDJ2MmduNjhmWnlTMFRxREZH?=
- =?utf-8?B?N2pvT2d3QWRFa29PSnpKMGxxNy9pOU5kSGVydXRuSC9iUjB0dVhZUWg3TDM0?=
- =?utf-8?B?bFdRU3ZQK3VJenh6STFyVDBWTk5LS3JueWM0T054TEEzNWF6OCt2TzdEQkZP?=
- =?utf-8?B?WUpCeS8walQ5THRMbDY3V3FLTGdMS3d3UHArUzVmT2Zvd0ZNTk1qUWQxQ05V?=
- =?utf-8?B?Q2V5VTdmOVpMOFZXUE50RVdaMm5JbDdBRTIyS0NIa1lzUmRmUSt1VkN2NkVQ?=
- =?utf-8?B?czNsck4rNHdzRVZRWFJkSlpNNWlOVUgxYmdib1h6M0NUWU1aMlI1Ym5qZ25y?=
- =?utf-8?B?MXdURmtqL2xCSzZDNnhIQUdNL0RCNVBMdnpjU2Jtc3JUT0lwQWNpUGVSK1RZ?=
- =?utf-8?B?Rk5hb2s1cTkyM2FGNEhncWRMZUVLSzRKNURlT1BSMlFiOHlEWDV3RWZBZitP?=
- =?utf-8?B?RkJBSG0yOTVkV0o1elVBTUdETG1NdzhIWEtNYXludCtxbEZXYVdMMS80a085?=
- =?utf-8?B?WWJhVFozL1l1cWgxWXFBMHR0T2JqdFdxV1hOOWVQTm4wVWdEempCVU1jWkZ6?=
- =?utf-8?B?a2RZOUN2RGpXTG5rTzh2WXA4U252VzhVSnFJeGNTdjg5MzVLaURRZXgzUXg2?=
- =?utf-8?B?U3kzVnBFYkF1UVpJM2RqRHhtQ3VGckFyRnNSMGZxelZiVFlnVXM5Tm0zRDY3?=
- =?utf-8?B?MGxNck90aVFhYkxiYytQdmpWKzZDU25oblUxaDVsb1BoeVFtaFl5Ny9xTVpq?=
- =?utf-8?B?d2dBMjRtWUJXdGRnSjhncVpKZHVZVzVBSGdZVXp6MFFMTVA5eGw3ZWhFWC9D?=
- =?utf-8?B?VDhLaVk5MS9CM2tYbGVSY2N6bldMZXlhdzV0VWF4eGxFMExmSjUycjVYdnB0?=
- =?utf-8?B?S09SdndsUHpYbE8wNFZrYnE2WmVuVzlLZDUyODhEVGlGSVNaQVlmcjFvRjhT?=
- =?utf-8?B?ODViZTdMME12Z004VTBwRis0clNhY1dTSVFNS1RJQmVSRlZLYlNMcmdXeDkz?=
- =?utf-8?B?L1R5MEhkbHJtaWJmaFJRaFlDYXdIRWoxN0gwNHRaUE9GcWJqVyt3YlNCY20v?=
- =?utf-8?B?NWdEWWpDUjVSUlRURXpPSlZ1SUkyR1g3RlAwWSs4SEVHL2htZlY4MTRPRnFZ?=
- =?utf-8?B?UlUrcXhGelpoQWF0NU9QY1NKV2p6ZCtXcy9tcSs2NHdkZTNWbUtNb2Y2OWRK?=
- =?utf-8?B?V0hGK0JMSGdvbis3YThGbTRpd0tUZ2gwUFhMMHdtZVorUjRTT0lrR0d2L2RM?=
- =?utf-8?B?K2ZnMmNHdS9NOTdsR1NsQm43RHBGOWJKRkZPRkNqNjRBUm5vczJBQytwREll?=
- =?utf-8?B?UGxiTHk4N1NQbVJBK2tLcDFjV1FsVStiMW5uSWNTN3FvN0dwVnRRMjBISWpG?=
- =?utf-8?B?N0c5Zmp6VmZnOEUyMnBFUmJHTXRFSGhPOEhURnFPVlNOWnJ2QzRxNFdOc0VT?=
- =?utf-8?B?YVR5MlRvWXAzS0lLZzE0TjdkejdWNkExTW12dXl0RWR1bmZGQ0lwblVGQy8x?=
- =?utf-8?B?MDgwRGR0SHlQWjBjNFREbDJxVDhKZzZRUlZuUFJKWDRTeHR6Rk5BZ0xUNnI2?=
- =?utf-8?Q?oJJsE0APLGlVAxnJO8?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ed315226-8b79-4507-7891-08df23b755f9
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Oct 2026 14:37:23.9742
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: d+MjJsq1Afhsk8EuIapjgeQJc5VK6nFJxukymZnHUhxsWUEXSl1PWljm7/xmNomcve+kENDuBVZWJav6NHytlQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8526
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/5] dt-bindings: soc: rockchip: add boot ROM download
+ boot mode
+To: Alexey Charkov <alchark@flipper.net>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+ Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, Shawn Lin <shawn.lin@rock-chips.com>
+References: <20260929-b4-rk3576-reboot-mode-v2-0-5a34ca72065a@flipper.net>
+ <20260929-b4-rk3576-reboot-mode-v2-1-5a34ca72065a@flipper.net>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260929-b4-rk3576-reboot-mode-v2-1-5a34ca72065a@flipper.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On 10/6/26 09:33, Kovacs, Alexander wrote:
-> AMD General
+On 29/09/2026 12:28, Alexey Charkov wrote:
+> Rockchip boot ROMs enter USB download mode, commonly known as maskrom,
+> when they find 0xef08a53c in the register they take the boot mode from.
+> Add the magic under the name U-Boot already uses for it, so that boards
+> able to request it can do so symbolically.
 > 
-> Freeman,
-> 
-> Ok, regarding the 00:03.1 device, I am seeing that it is misnamed in the tables.
-> 
-> BIOS Bug Report: Thunderbolt/USB4 tunnel port `_DSD` misnamed `XDSD` (00:03.1 / NHI0 path)
-> 
-> But that more than like does not have any bearing on the root dock enumeration issue...
-> 
-> I am unable to create a case where I can replicate your fail on my test system yet.
-> 
-_DSD -> XDSD is a strategy I've seen employed when someone wants to pick 
-up reference code but has a difference in their design (for example they 
-don't have a retimer connected to the second USB4 router and disabled 
-the IP.
+> Tested-by: Shawn Lin <shawn.lin@rock-chips.com>
 
-I don't know for sure; but my guess this is a strategy to avoid 
-technical debt and mistakes when merging future reference code versions.
+This is a fake test, you cannot test bindings how we understand Linux
+kernel testing. Please drop such blanket-fake test tags from all patches
+where this is not relevant.
+
+
+Best regards,
+Krzysztof
