@@ -1,70 +1,70 @@
-Received: from mail-dl1-f47.google.com (mail-dl1-f47.google.com [74.125.82.47])
+Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com [74.125.82.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E5324DF4D4
-	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 23:20:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFA1B509F0E
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 23:20:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791328854; cv=none; b=hWIb/ZBwmXzOliNXxl36g2WdwcRyJk7sDa5e1QnxmvfAZtEYNcjYVV7VRmVOITbzDoPtrOg+hXVaHbztVsXQz6CnI6k8gFUegvRAVeBzU1KOQ7HTxVOY5zo/sDFZirnAEnYdyXRmq7jVo7LhZyjGxoG+9ZxhptYjZaZqM5MakrA=
+	t=1791328858; cv=none; b=q7PqXJ4G/AMU8VajLZGv41p/DNw7g4NQMDI53ZUFXndIi6/ZltmvnwbAgs4SIYuYXK0sjmZfYJ7/K8f0J1KRReHi4aDeU7PU81sMskCoJ3stz+H1G1VBEq/rmtVE3YiAFLPdXbTYQuaXnCLU35WK+ZAAZ/ie3KEPVwQw8HTQqoo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791328854; c=relaxed/simple;
-	bh=kiICEqOeglw2XhrB/k+kI2Fjx84mu7DdAPoRB55wjkM=;
+	s=arc-20240116; t=1791328858; c=relaxed/simple;
+	bh=WA7PuvtbUthLvcW/Lb0HQQwhnWNVFVTphdPk0OJcCfY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hMBUn+tPubSdagE53xKjDNuhvEpZ6vBnQCbx6vv9wxBZeYXY+QiF8bgR682VFRx0wnUTC3Qe1SqA8KZPiGZ6chpRyiNUslPd2gDpCC3do1+jh8QmIjNZeoyOa7I8FjBRIpDyN5NKk5t1NH9yfQgcpS1gAuiZlsIKbhWuG8NSML8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=SiNncF2d; arc=none smtp.client-ip=74.125.82.47
+	 MIME-Version; b=GFpmADgCxHFsxpetRESNfNDB/7+1aCU5j7lQJAAXqwspb12P8o9v9dlFlfGIyr9JyaGVJoWt/4W9n3+vqqhUmqpSk+jD5MPlj/bwqLzw4TUzAV+Wf7fnqa38B3RffowcgRmvhF5fG+3BYpZykxL1s1ACYMn2YXZiVjEotG0cmx8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=ZA9esMEL; arc=none smtp.client-ip=74.125.82.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="SiNncF2d"
-Received: by mail-dl1-f47.google.com with SMTP id a92af1059eb24-141395927feso1727620c88.0
-        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 16:20:28 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="ZA9esMEL"
+Received: by mail-dy1-f172.google.com with SMTP id 5a478bee46e88-3514b90bb89so1823315eec.1
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 16:20:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1791328828; x=1791933628; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1791328830; x=1791933630; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=U6RGc5+cjEK9f48M6mR6i/w8C3QZRcmDe6I17iH2K3I=;
-        b=SiNncF2dQNqGsaPsFnXVolnEsAuOld+b293Df7vGaZeSJlAikWsNeIWDw8f6DZNst3
-         zL7HIQ2OWE98itZP7dfQ6lxP3FiW/lExfJ+5idk3mMGZ210a0QEYBuzav+46+i9Qgb1Z
-         iRNHAJBpn83O40SIHpHF9WlwKw1m41DTtGbRI=
+        bh=s1IGI0iM7+36zwsjin4BRCszBFYYHuuKMw3/Hy9I2ks=;
+        b=ZA9esMELG5GiLmJHD5/3J8S2U7vjcXdDHdTC2pi1zzQKESxslAFD1ef8SDqHbI+85J
+         q8XXTLgvXbW+jp+JD4Ejcaoh4qp3iTjhaZLiutzdXwZG9+Tgac0YVwAVPjLZmQhw0vVC
+         QGs9ZRKAaGgHIWLsx5hqL57+4AfE8ZxqctKpU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791328828; x=1791933628;
+        d=1e100.net; s=20260707; t=1791328830; x=1791933630;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=U6RGc5+cjEK9f48M6mR6i/w8C3QZRcmDe6I17iH2K3I=;
-        b=OfS3XETRu6njz0t2RU4urRQJI1ZARktnrfdk6WBmqONDyHeSJrlhSm28aBFwmb1M7E
-         gntRbdRh//3badS9Cc5Z6zOxKNzm3bF/xxJGyP/qZhEkY0OaqO04gErND8jyiD85j2Ed
-         PHt357oBPL+fJYpgCKRT7uoYpMW7SJq21xolOpRT4O6vSMSP5AQgefLRjIBo7vza+ez6
-         FBTz2EPqMRYv8TPKjdvB3e52k8XuCRSXPUXDYwdNx/6DZ82/jyRzRhOputdfU/jQRA+c
-         wUFvOKCgOUyvtosXzy96lGz3CKIrUIrsx1tZKg8FQCPggeOQwnk7hAOqNN5ShSS92utS
-         fTqA==
-X-Gm-Message-State: AFuF++mCcLa4l2qaLIZU+Qi9W/hbnZMxf2aqEJyh6uGBp8xLSYNSv31F
-	59ZRDPzn1OZTyLo2ascCZbVxNlnSx8ZC2A/Gx/xwgxkYsdwmvBmPZHHzcCQo0JrXvxzzQMbdi2z
-	KgjA=
-X-Gm-Gg: AYBFou0IW8NBfNK/Eua20riLOluysQAwfE9SFm68BonHKSyA/CsJRl/Il/zNu2fLo0x
-	ozRhUq0nwJWQYHBj8AuMF+X4PnfT86yOqij4Ia8QiBuytSL0Xv7yNe71BBzRtV8lvdFg2yuVOXM
-	CY14FYicarM2rpTHCbLPr1MEAzImCxyajb3/f1Mqa5lOGotX6QmXn3AsdoP93Ga+ctLX2kN8mlg
-	7Avv3W+k4m3RpJbTPzODv+N3Qsbai/ROAC8jJv3qBguKNXwfBGiP9QuCUfOGpVpI9tAwrhGvNId
-	7UghrsN+I1V+TcX0VhHxnY+qKp6QoFhUV5FpjPLB0O19L/4/9fhnXZ3f7t6P7zQkCPhjYB3ym5y
-	hXRFpJraXTBPgFYB7q0ZiC1/At78k2M/P7XgPlYyu8w9J8j/uII1v5LF4FD0AmQoZJ1VU3OsABc
-	EXDaxz1aFdQrKmCT9990WBKJLJdxdjS00ADbp4mqCsT/B6xOtkTb3PsDKxOXecN2dbIA/LBLIYk
-	FDWu3DaENz70X2VMqGAXjSgUiQ3tfExiMh04kk=
-X-Received: by 2002:a05:7022:225:b0:143:298e:459f with SMTP id a92af1059eb24-16207e73dbfmr475520c88.42.1791328827603;
-        Tue, 06 Oct 2026 16:20:27 -0700 (PDT)
+        bh=s1IGI0iM7+36zwsjin4BRCszBFYYHuuKMw3/Hy9I2ks=;
+        b=Bw/nc9iP0gmmdyCibeeWts8U7RZsaN3u/V3niyAFfS1MJRGwLwde4TlRmYmvqPDXc4
+         no2JmRUI30rnFi0BxKdAQud7NQTkaHRVe+/eeaIexEh2vdRoLHnsEcx0qd2pTdMyEGq+
+         Tmv5mNNq20S8qCtrqQo5ilUegx4RO+gmx8Sd5Y29x6Cyt9sVC9CqsvxkV4QRXjiM+OCs
+         0A+54aCFtwMdzIKYC2fK5QGLhCI+LrotqT1ruotM7vvy3SUAtWx6iGpZSl+9Z1P3eVDd
+         T9oa605Bq9gs2l2mYoDd3uwJ93ZKLfRkzeXQMcPkQRDuY/0WzepKh0ft4XKlN91Tiu5h
+         0ovg==
+X-Gm-Message-State: AFq9FYJ7sHFRvdgScVMARi9CCB3pzRZZzC7AB8J2M6KIXtmB/0e1Q/BV
+	Ls80Fd6ioGLG88DWpnf6yUVYZTSzjAsFOid7tZ1D0dnlfHTWu9HMrYQlaBzImVTcEpGLT7uBlnb
+	6OLg=
+X-Gm-Gg: AYBFou32pWl7CtPWslYnJoY8C3z3hfdoo/TmR9hx7xPe3RO+6dLyZt2KFCXArbb35rw
+	qH4twfXu17NzsGJSbAD7zj0SJy2W1vim8Roa2lArbN3OQjuY25qzM94AnQWSJ+NRC/mYuwljJdj
+	cypjKLYWFZu/WyNJ/OCpTfJo1Kr1H4P+gqyT6KGB2qPCTSt2VGiXuHgWCbCuYB/Y7t8esA0EPEN
+	ezHHO6VREYqLPNPQi5vhWvDgxWPBVWkmEZXZvoe4/1SP69IJT0qDCC3qdYVS/MgXP0FpRD6eQK7
+	ZXb6kSBwj8mGD5GfMQ6/Qwr5G+7R5Rdiy9iEuaTpZw2SERdzBe6Thj6Cj3gtAoRBnOJgrDEK2Cj
+	MtwRoGMIMvUz7ReJCouSt9n4NtY4jnhpI52p21EmPVtXyYmAAo7UGE9CEZqT7BzmT8AE84S2qHt
+	56q+J1QB0Z5AI2XNTuCVASxmZnb4rK6TOaeb1TW5mM+f34EAE1nP278q8/UX+z6VBFoET0n4c6Z
+	c0mEdLdUYwMDB05aTyVrbZRt5hNoKcVT9RTyw==
+X-Received: by 2002:a05:693c:65d2:b0:34e:f644:9083 with SMTP id 5a478bee46e88-3515ddad0a3mr331617eec.23.1791328829695;
+        Tue, 06 Oct 2026 16:20:29 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:63eb:e7f9:1d47:7d47])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-161564723fesm1537626c88.0.2026.10.06.16.20.26
+        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3515aeb6013sm1701105eec.5.2026.10.06.16.20.28
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 06 Oct 2026 16:20:26 -0700 (PDT)
+        Tue, 06 Oct 2026 16:20:29 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-pm@vger.kernel.org,
 	Ulf Hansson <ulfh@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 12/13] PM: runtime: Drop pm_runtime_put_autosuspend() return code
-Date: Tue,  6 Oct 2026 16:13:40 -0700
-Message-ID: <20261006161337.12.Ibc0cfab4a29c61d5582a164da2d9e98049c20910@changeid>
+Subject: [PATCH 13/13] PM: runtime: Drop pm_request_{idle,autosuspend}() return codes
+Date: Tue,  6 Oct 2026 16:13:41 -0700
+Message-ID: <20261006161337.13.If024833d8fe53aa824fa29ebd6959702ec7062e0@changeid>
 X-Mailer: git-send-email 2.56.0.360.g66cac248cb-goog
 In-Reply-To: <20261006231900.3230373-1-briannorris@chromium.org>
 References: <20261006231900.3230373-1-briannorris@chromium.org>
@@ -76,93 +76,135 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The primary role of pm_runtime_put_autosuspend() is to update the last
-access time and decrement the runtime PM usage counter of the given
-device.  It always does that regardless of the value returned by it
-later.
+No in-tree callers (outside of KUnit tests) use the return values of
+pm_request_idle() or pm_request_autosuspend().
 
-In addition, if the runtime PM usage counter after decrementation turns
-out to be zero, a timer or work item is queued up to check whether or
-not the device can be suspended once its autosuspend delay has elapsed.
-This is not guaranteed to succeed though and even if it is successful,
-the device may still not be suspended going forward.
+As with pm_runtime_put() and pm_runtime_put_autosuspend(), these
+functions asynchronously queue up a timer or work item to check whether
+or not the device can be suspended, which is not guaranteed to succeed
+and may return a negative error code in many valid situations (for
+example, when user space has written "on" to the device's runtime PM
+"control" file in sysfs, or when the device's usage counter is
+non-zero).
 
-There are multiple valid reasons why pm_runtime_put_autosuspend() may
-not decide to queue up the timer or work item mentioned above,
-including, but not limited to, the case when user space has written
-"on" to the device's runtime PM "control" file in sysfs.  In some of
-those cases, pm_runtime_put_autosuspend() returns a negative error code
-(even though the device's runtime PM usage counter has been successfully
-decremented by it) which is very confusing.
-
-Accordingly, to avoid the confusion mentioned above, change the return
-types of pm_runtime_put_autosuspend() and __pm_runtime_put_autosuspend()
-to void, similar to commit 3afd8df02433 ("PM: runtime: Change
-pm_runtime_put() return type to void").
+Accordingly, change the return types of pm_request_idle() and
+pm_request_autosuspend() to void, similar to commit 3afd8df02433 ("PM:
+runtime: Change pm_runtime_put() return type to void").
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
-This patch must be applied after all the preceding patches. Presumably
-that can wait for other maintainers.
+This patch is independent of the rest and could be applied on its own. I
+put in this series because it has the same justification as the more
+noisy one, "PM: runtime: Drop pm_runtime_put_autosuspend() return code"
 
- include/linux/pm_runtime.h | 32 ++++----------------------------
- 1 file changed, 4 insertions(+), 28 deletions(-)
+ drivers/base/power/runtime-test.c |  8 --------
+ include/linux/pm_runtime.h        | 31 ++++---------------------------
+ 2 files changed, 4 insertions(+), 35 deletions(-)
 
+diff --git a/drivers/base/power/runtime-test.c b/drivers/base/power/runtime-test.c
+index 24865ce844fc..ac3d7277e0c5 100644
+--- a/drivers/base/power/runtime-test.c
++++ b/drivers/base/power/runtime-test.c
+@@ -43,7 +43,6 @@ static void pm_runtime_already_suspended_test(struct kunit *test)
+ 
+ 	KUNIT_EXPECT_EQ(test, 1, pm_runtime_suspend(dev));
+ 	KUNIT_EXPECT_EQ(test, 1, pm_runtime_autosuspend(dev));
+-	KUNIT_EXPECT_EQ(test, 1, pm_request_autosuspend(dev));
+ 
+ 	pm_runtime_get_noresume(dev);
+ 	KUNIT_EXPECT_EQ(test, 1, pm_runtime_put_sync_autosuspend(dev));
+@@ -81,7 +80,6 @@ static void pm_runtime_idle_test(struct kunit *test)
+ 	KUNIT_EXPECT_EQ(test, 0, pm_runtime_idle(dev));
+ 	KUNIT_EXPECT_TRUE(test, pm_runtime_suspended(dev));
+ 	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_runtime_idle(dev));
+-	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_request_idle(dev));
+ }
+ 
+ static void pm_runtime_disabled_test(struct kunit *test)
+@@ -112,9 +110,7 @@ static void pm_runtime_disabled_test(struct kunit *test)
+ 
+ 	KUNIT_EXPECT_EQ(test, -EACCES, pm_runtime_resume_and_get(dev));
+ 	KUNIT_EXPECT_EQ(test, -EACCES, pm_runtime_idle(dev));
+-	KUNIT_EXPECT_EQ(test, -EACCES, pm_request_idle(dev));
+ 	KUNIT_EXPECT_EQ(test, -EACCES, pm_request_resume(dev));
+-	KUNIT_EXPECT_EQ(test, -EACCES, pm_request_autosuspend(dev));
+ 	KUNIT_EXPECT_EQ(test, -EACCES, pm_runtime_suspend(dev));
+ 	KUNIT_EXPECT_EQ(test, -EACCES, pm_runtime_resume(dev));
+ 	KUNIT_EXPECT_EQ(test, -EACCES, pm_runtime_autosuspend(dev));
+@@ -154,9 +150,7 @@ static void pm_runtime_error_test(struct kunit *test)
+ 
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, pm_runtime_resume_and_get(dev));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, pm_runtime_idle(dev));
+-	KUNIT_EXPECT_EQ(test, -EINVAL, pm_request_idle(dev));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, pm_request_resume(dev));
+-	KUNIT_EXPECT_EQ(test, -EINVAL, pm_request_autosuspend(dev));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, pm_runtime_suspend(dev));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, pm_runtime_resume(dev));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, pm_runtime_autosuspend(dev));
+@@ -189,9 +183,7 @@ static void pm_runtime_error_test(struct kunit *test)
+ 	 * (already resumed).
+ 	 */
+ 	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_runtime_idle(dev));
+-	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_request_idle(dev));
+ 	KUNIT_EXPECT_EQ(test, 1, pm_request_resume(dev));
+-	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_request_autosuspend(dev));
+ 	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_runtime_suspend(dev));
+ 	KUNIT_EXPECT_EQ(test, 1, pm_runtime_resume(dev));
+ 	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_runtime_autosuspend(dev));
 diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 322e3b17f987..b0e7dfb3805f 100644
+index b0e7dfb3805f..418a51319a62 100644
 --- a/include/linux/pm_runtime.h
 +++ b/include/linux/pm_runtime.h
-@@ -593,22 +593,10 @@ static inline void pm_runtime_put(struct device *dev)
+@@ -447,21 +447,10 @@ static inline int pm_runtime_resume(struct device *dev)
   *
-  * Decrement the runtime PM usage counter of @dev and if it turns out to be
-  * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
+  * Asynchronously request the PM core to evaluate whether @dev can be idled
+  * or suspended, invoking its ->runtime_idle() callback if provided.
 - *
 - * Return:
-- * * %1: Success. Usage counter dropped to zero, but device was already suspended.
 - * * %0: Success.
 - * * %-EINVAL: Runtime PM error.
 - * * %-EACCES: Runtime PM disabled.
-- * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
-- *   change ongoing.
+- * * %-EAGAIN: Runtime PM usage counter non-zero, Runtime PM status change
+- *   ongoing or device not in %RPM_ACTIVE state.
 - * * %-EBUSY: Runtime PM child_count non-zero.
 - * * %-EPERM: Device PM QoS resume latency 0.
 - * * %-EINPROGRESS: Suspend already in progress.
 - * * %-ENOSYS: %CONFIG_PM not enabled.
   */
--static inline int __pm_runtime_put_autosuspend(struct device *dev)
-+static inline void __pm_runtime_put_autosuspend(struct device *dev)
+-static inline int pm_request_idle(struct device *dev)
++static inline void pm_request_idle(struct device *dev)
  {
--	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
-+	__pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
+-	return __pm_runtime_idle(dev, RPM_ASYNC);
++	__pm_runtime_idle(dev, RPM_ASYNC);
  }
  
  /**
-@@ -619,23 +607,11 @@ static inline int __pm_runtime_put_autosuspend(struct device *dev)
-  * Update the last access time of @dev and decrement its runtime PM usage
-  * counter. If the counter drops to zero, asynchronously request the PM core to
-  * suspend the device once its autosuspend delay has elapsed.
+@@ -487,23 +476,11 @@ static inline int pm_request_resume(struct device *dev)
+  *
+  * Update the last access time of @dev and asynchronously request the PM core
+  * to suspend it after the autosuspend delay has elapsed.
 - *
 - * Return:
-- * * %1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * %1: Success; device was already suspended.
 - * * %0: Success.
 - * * %-EINVAL: Runtime PM error.
 - * * %-EACCES: Runtime PM disabled.
-- * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
-- *   change ongoing.
+- * * %-EAGAIN: Runtime PM usage counter non-zero or Runtime PM status change
+- *   ongoing.
 - * * %-EBUSY: Runtime PM child_count non-zero.
 - * * %-EPERM: Device PM QoS resume latency 0.
 - * * %-EINPROGRESS: Suspend already in progress.
 - * * %-ENOSYS: %CONFIG_PM not enabled.
   */
--static inline int pm_runtime_put_autosuspend(struct device *dev)
-+static inline void pm_runtime_put_autosuspend(struct device *dev)
+-static inline int pm_request_autosuspend(struct device *dev)
++static inline void pm_request_autosuspend(struct device *dev)
  {
  	pm_runtime_mark_last_busy(dev);
--	return __pm_runtime_put_autosuspend(dev);
-+	__pm_runtime_put_autosuspend(dev);
+-	return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
++	__pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
  }
  
- DEFINE_GUARD(pm_runtime_noresume, struct device *,
+ /**
 -- 
 2.56.0.360.g66cac248cb-goog
 
