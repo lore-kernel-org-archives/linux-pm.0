@@ -1,69 +1,69 @@
-Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E23A149EC7C
-	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 16:03:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 574EE49EC4B
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 16:03:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791302582; cv=none; b=EPWvsbyuywr/AXnpu0cC9Jv3yM9tYMXwvDFOawGAGezbCFhdiURYOVWEXwx6JaDafU2FrzTSW6xmDmWAezTLt0+KtKJ+Y7xvtthjwLWRnwUQKERTktb+f56vSxQSrCn8EHyKgtB/wnOUAb/bphrmypcV0TnHWe89Kl3gdwFuwTw=
+	t=1791302584; cv=none; b=oLm7Ku0jf2kkfLJASb55TU2yt7IEtX2Dvj7BaQ6s4G0kT0J5GwKcu47AWw/IoZv7ZtjHZ4GkwXsOtnU60YkaNT3Wysw4kk+Niz73iyN7UWKIqTTdGBAQM71laX5n7MmMZEkPWGHl0JVbhBVSdEfbozt2MiWnXQl/vZc9Pkj6V3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791302582; c=relaxed/simple;
-	bh=Qk5juJXyHQAA0FzltH0EG8o2EdUhAIQpUus6d2gQKFo=;
+	s=arc-20240116; t=1791302584; c=relaxed/simple;
+	bh=0e6tYFYX4RQShFvq6ANsw1VBCkVay04TpNqpD+jAhLg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CnOOhMSx5Xbzo4uU6J0vNhjBjFfaeIMe7zDvagmDbdvwfZqCcBxBPPXw1khBNoQYpBnMjCEA0dPSSaR87EXWgHlDPoEczz7xK2dp4wC7Xiv9wlGBMp3r8eTLFY6MwtKe6OSqsqR49FWkDFbnJMrOJAUzO0vaZnir8vjkuoItb3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=tfPt7BVO; arc=none smtp.client-ip=209.85.221.46
+	 In-Reply-To:To:Cc; b=LNIJ7JGfd0gRCaBSNGFaZGGfisT2hWyYOBsGB+b7/HUPszFJWALmF06SQmgoWGYD5fCrf2WNeaeFtk2YWR2qq3kZgkmzg+mfXbbT64fQSGhOd3xfkB/UGUIx41jEdQMwn3CQGQENyyJnmbNSrhFJ30+bWLwvZBNE78qFOtwlBzQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=lMY1PhzO; arc=none smtp.client-ip=209.85.221.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="tfPt7BVO"
-Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-48c4649b3aaso617620f8f.2
-        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 09:03:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="lMY1PhzO"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-48b0584ad71so714558f8f.0
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 09:03:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1791302579; x=1791907379; darn=vger.kernel.org;
+        d=flipper.net; s=google; t=1791302580; x=1791907380; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=lAKGigWSN+rmthZd67UvTxza7+7ujThB0c4R/68QCpQ=;
-        b=tfPt7BVOOgUN3dFO5QifMZqX1tWg8CR4dy5RDH4Di2ywAhcPSGQC4Q7FwelDleLUi4
-         v5d4HBU+yJrjgieHmT6z6KMvU2ucobZgraBlhJf3RZ/JOTp5uw8TjsuqrCQA1JdJdY8w
-         lQbpogvPyrKmas0lh+Uq1QRYwbGPoG2ZQ4xpvl2kq2f3LiQVgcBG/cyCuD2sD5/D4beb
-         3QGQ9VbKdqXO+rf1gTe6ogbNir2rxAUkhJyqq66l4EHCygG6EphofGPiOoU6ceFjXG7F
-         tuZiKc3pAROvhFuUhvHGFZsjfIftrbkr/vpXtM9jLX7efkRHlteQJPaA+BWJiKFrtpmx
-         KtpA==
+        bh=kFmPMHLkzQ2v2gUtJGa7P11ujTnCxcTV6HWX7PibVsQ=;
+        b=lMY1PhzOh9Rjk//wb4nZO8TajTq7opBnGSiCNVCPfMu3Z+sjeAfWIDVMN6YYVTzFry
+         0HiPdkAF1EPUqnuA/Col2t6oivQEYQ6QzkpdonL7AtKs4TLojf2KqEAKbpi4UJeUMf80
+         5CrFVqYdyTc56+Dni2bike+ctxc1lIvWyZvWGjmdtIjlXR32KtTrjs0eSQ42q7+vx6Ys
+         kMKswJ2p+wIkOO9AUkBk7Zk9V95Z5RD5+/WQwPzfgnU/MSP4opXnEQFIT7Mt7SkzF6kQ
+         de9NhyAJLCEzBw2jUjgvj7ciZgD+Ckm3zd46Us//P9vZAf9EsiK9rZCizg5dxMwKd2l7
+         AwBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791302579; x=1791907379;
+        d=1e100.net; s=20260707; t=1791302580; x=1791907380;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=lAKGigWSN+rmthZd67UvTxza7+7ujThB0c4R/68QCpQ=;
-        b=BZsDAsQ8anpJWdX8+ImxXuWN1qaVSTMGPmoy15U25zUWhkEXltNq9FZPPo1OqchPaz
-         bMVmFICdDb+u/gDF+zd4qdDIrRjO2PM88NYtCiNhBUWJY7jOa4dK7t6Nm/qFYKJgLuJs
-         4B7MTHvTkmOf/nz4RZFhzQ15bZQraL6OTCFs9vfChcAmu9haE00nUpfV64H7xrcE47eK
-         L43ppp2v7sxX1q00xoArm8JedhAHmVqvTJ9WFTZeYEe9YmUr4bFz5ltxpyylULVLyAPW
-         zVfkNmNfiXyKu54CR+YXR9rglTJmgEXq59Wf1WMcCckwX5cPIkXwLXa3meJwL80oq1Ug
-         EtHQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzLXZ47mu1Efv5JsCCV/hcdY3Pel3APoNwdU3zjzNdBWFG7jygahtXFvhb7QtK2yvgNlAcgF6eP7g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIToM9cebVv6Lwk2IZ5wgZp5Iq81WnnxpJMAL8qR+qfWh4tYr7z
-	sB46ocMfXw9uWkNlgRiwOyzz6bGVgV8xQtaD5/eP1OvvX6++mEJozW5hZaxuAWX9Rfw=
-X-Gm-Gg: AYBFou2Ec7J42wHrAfC4KQZK6tON2+8FsAGzeVnTaeZoS7Kb5BnNd4lEgkkkF8r9Jes
-	cuMiZquXNyAuVOiRj/TOtHwXNsUHr/Pcla8PWiGzSHMB9mu0WXD1l8lnUJmEENOu1fOTjVsMQmo
-	EXUzW1r6krCUK/uu/YzlqpS6bMqpWOkL8SBbLwnhKK7zquO9gGNUDzD/63QfYtejCqb41XkhX/H
-	AHSXmvXVwWLy6n3+ZKaGWwLfwTN4qcdnkixEU+hCZGGxRcPP7lV8G9bQoP9w3sFBeil9Okk0UPk
-	E9hLu19y/KJGCINrmlOZSAfqJtt1PEl/DGPnoovVYwQx2e6Fp3kQgY4CNtJplHNJqaQp2H8prlZ
-	BUtV5VnrBYvTh42tBBGyc9KX+21Y9B+EbubiRoyD2fB4nePtG1XMQAWwpghz6glXp8EzrmoFvQ9
-	F3GL/L7tDLfTaAW/zg92JiPEuPg4ulfsnG7ShVdV9xBF8vC6J+aRMBXg2wRu9RGFTATd9xKu6Bp
-	A0+OKOJd148BU6ayw==
-X-Received: by 2002:a05:6000:2c04:b0:48c:55c1:fb50 with SMTP id ffacd0b85a97d-48c6d1cbc24mr3125986f8f.40.1791302579018;
-        Tue, 06 Oct 2026 09:02:59 -0700 (PDT)
+        bh=kFmPMHLkzQ2v2gUtJGa7P11ujTnCxcTV6HWX7PibVsQ=;
+        b=nz4pT/SepZLmZUgAH4gWMM7V0pnw6wwAPBQntVGbX+oPEF9oQRSWrRiE3YF+FNbffw
+         P607KMMSfWc4FiN9F4nxIE0Xk49INSGtHa2gjZ6MmzBRRpEH8nrFNnpeFSZL94b0kArX
+         wyF8AYgVA4/42egIwHEiefPDIUO0TYvCgqErmw9KA/73BoKs1inRLfxX/ePkvvIezt0e
+         zDJpi1Ivxq45VFQkRLSY4KNjA1O3SkixsFwuazrfkKhb4Rotirsic8T9iUU4cOYax11L
+         3aI34gCzxDxrraTlcIYdxtFGeRvYhpQeGlX28TikdynCcWsrUDmnfr0Sw7/IzgF+dOFp
+         Ex9A==
+X-Forwarded-Encrypted: i=1; AKwUvBxEkY4WxMBZ2GH6vZ03ndPmNxjS4gVL67X+qntjI/dmclW7CnU5qq1g9fudcVOibrI+dXXgT/FKgA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIdPGCpwk2498UQChzF4jEsX2qhVCHUJ1+3/Isb+VUuZGbqRhDc
+	WmuHjUvIytKM4mHMFjrC2TzpnDkPTZ26LXb7LOgaYieS/sGEtpAF+ntLT0AmdVFql4I=
+X-Gm-Gg: AYBFou3VbHC20Dl40hKmYcopmoslu7YzYglFc0+xo8CLZsbkNqYlpudfvVME1lJDHkH
+	hPj0PjP5mnTaEXHCaVq5Z5bFyXhSbAvrAjVwMtFDUSsIIP1ct3J+shuv+4jkXV0UBpIrE09y6ig
+	Kz+jU0DOiTOnZCvS2vWweIfpjHmCbmY+Tb3VrBYj1MJf9z2VlS8EnzYEokH29Yy90AOZxn42o3H
+	AiGNdOMKwORfETr8Q0JcV/ELwHkokIDhrkjRyZ82qQWcvbwjOGseF+7NX+3KYRWkRqRONVbpp76
+	dYxYxKDCtmFzkG4N0EEdHnwB/d7QVKOIYqqt38xm/CWDSPsNSfE6SEKM4ju8t/GOvrNn6nacH85
+	3+Q/oZCnKubDS/npa5rptQ6CfOXKwmVIuyuSR7qPoTRZM/d5v+r+lgIR0lU9sM36xur66YWciyn
+	jXYDS/qGpF8QZexpu9N7iTOqsFTDdyKdrF9KInwRfkPtPIXVS50Fn9SHlejBjsIAVNARuYZclgR
+	H2Mu7agnZfhal+s/w==
+X-Received: by 2002:a05:6000:1868:b0:48b:1b1:af12 with SMTP id ffacd0b85a97d-48c6d1b289cmr3246959f8f.56.1791302580197;
+        Tue, 06 Oct 2026 09:03:00 -0700 (PDT)
 Received: from alchark-surface.localdomain ([193.85.242.110])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48c71d2014asm369641f8f.38.2026.10.06.09.02.57
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48c71d2014asm369641f8f.38.2026.10.06.09.02.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Oct 2026 09:02:58 -0700 (PDT)
+        Tue, 06 Oct 2026 09:02:59 -0700 (PDT)
 From: Alexey Charkov <alchark@flipper.net>
-Date: Tue, 06 Oct 2026 20:02:40 +0400
-Subject: [PATCH v3 2/5] dt-bindings: power: reset: syscon-reboot-mode:
- allow supplies
+Date: Tue, 06 Oct 2026 20:02:41 +0400
+Subject: [PATCH v3 3/5] power: reset: syscon-reboot-mode: enable supplies
+ for the next stage
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,7 +72,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261006-b4-rk3576-reboot-mode-v3-2-6edba064693b@flipper.net>
+Message-Id: <20261006-b4-rk3576-reboot-mode-v3-3-6edba064693b@flipper.net>
 References: <20261006-b4-rk3576-reboot-mode-v3-0-6edba064693b@flipper.net>
 In-Reply-To: <20261006-b4-rk3576-reboot-mode-v3-0-6edba064693b@flipper.net>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -83,47 +83,124 @@ Cc: Alexey Charkov <alchark@flipper.net>,
  linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1488; i=alchark@flipper.net;
- h=from:subject:message-id; bh=Qk5juJXyHQAA0FzltH0EG8o2EdUhAIQpUus6d2gQKFo=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWQdlV69416CV0SY0q2a6g3/lvREXw3JaLVe8uyHhWGR7
- GMBx/nRHRNZGMS4GCzFFFnmfltiO9WIb9YuD4+vMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
- oZGOsY4RAxenAEy14HFGhk4V3ggHMe6XpyPkA48GW/nN6T3hbZU8zyvO5D3b5Ip3cQz/QxiLTU0
- r8xh17WrDPwscuvcndcftWYsZL9Slchi2tJ9gBgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4150; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=0e6tYFYX4RQShFvq6ANsw1VBCkVay04TpNqpD+jAhLg=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWQdlV6dmFi/P2DCg2L+uH3PrBfJ8925eMmo71bowYTPB
+ +w1bVeu6pjIwiDGxWAppsgy99sS26lGfLN2eXh8hZnDygQyRFqkgQEIWBj4chPzSo10jPRMtQ31
+ DI10jHWMGLg4BWCqH/5nZFiU9lPx6e+jf3wi1h681HXUY2HK4e8zbOJfqMVeMLj0rDaQkeFWWZR
+ QnENJ8uWYz7/q9nPtv7y+ZfbpojXXJ/Qf/TBPyI8FAA==
 X-Developer-Key: i=alchark@flipper.net; a=openpgp;
  fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-Whatever program that acts on a reboot mode runs before a full OS, so it
-may lack the capability to enable the regulators it depends on, and a
-reset that preserves the mode register generally leaves the regulators as
-the previously running system left them.
+Requesting a boot mode on some SoCs such as the Rockchip RK3576 hands the
+request to the boot ROM in a register that a full reset would clear, so
+any reset that carries it has to leave the PMIC untouched. This means that
+the regulators stay in whichever power state the running OS left them,
+which may be unsuitable for the early boot code. E.g. on RK3576 the DDR
+initialization blob runs on the way back and accesses registers which
+Linux normally leaves powered down, resulting in an unrecoverable abort.
 
-Allow a reboot mode node to name such supplies, so that they can be
-turned on while the mode is being requested.
+Get every supply named in the reboot mode node and enable it when a mode
+is written, which is when a mode is being requested. The supplies are
+deliberately left enabled afterwards: the system is on its way down, and
+what runs next cannot turn them on.
 
+Tested-by: Shawn Lin <shawn.lin@rock-chips.com>
 Signed-off-by: Alexey Charkov <alchark@flipper.net>
----
- .../devicetree/bindings/power/reset/syscon-reboot-mode.yaml       | 8 ++++++++
- 1 file changed, 8 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-index 79ffc78b23ea..5ed70c87269e 100644
---- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
-@@ -36,6 +36,14 @@ patternProperties:
-   "^mode-.*$":
-     maxItems: 1
+------
+
+Current implementation of of_regulator_bulk_get_all() never writes the
+supply names, instead leaving them uninitialized, while the regulator
+core uses the field in error paths to provide meaningful error messages
+to the user. This has been highlighted by Sashiko on v1, and is addressed
+separately in [1]
+
+[1] https://lore.kernel.org/all/20260929-regulator-get-all-v1-1-e887c66a47f1@flipper.net/
+---
+ drivers/power/reset/syscon-reboot-mode.c | 41 ++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/drivers/power/reset/syscon-reboot-mode.c b/drivers/power/reset/syscon-reboot-mode.c
+index e0772c9f70f7..5ef882d81816 100644
+--- a/drivers/power/reset/syscon-reboot-mode.c
++++ b/drivers/power/reset/syscon-reboot-mode.c
+@@ -10,6 +10,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/reboot.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/consumer.h>
++#include <linux/slab.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/reboot-mode.h>
  
-+  "^[a-z0-9]+(-[a-z0-9]+)*-supply$":
-+    description:
-+      Supply that has to be powered for whatever program acts on the mode.
-+      That could be a boot ROM with no access to regulators, and a warm reset
-+      leaves them as the previously running system left them and not necessarily
-+      what their expected out-of-reboot state is. Any supply described here is
-+      enabled when a mode is requested, and stays enabled.
+@@ -18,6 +20,8 @@ struct syscon_reboot_mode {
+ 	struct reboot_mode_driver reboot;
+ 	u32 offset;
+ 	u32 mask;
++	struct regulator_bulk_data *supplies;
++	int num_supplies;
+ };
+ 
+ static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
+@@ -28,6 +32,20 @@ static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
+ 
+ 	syscon_rbm = container_of(reboot, struct syscon_reboot_mode, reboot);
+ 
++	/*
++	 * Whatever acts on the mode (e.g. boot ROM) runs before the operating
++	 * system, and may need supplies that the running system had powered
++	 * down. Enable them here, and deliberately leave them enabled: the
++	 * system is on its way down, and what runs next may not know how to
++	 * turn them on.
++	 */
++	if (syscon_rbm->num_supplies) {
++		ret = regulator_bulk_enable(syscon_rbm->num_supplies,
++					    syscon_rbm->supplies);
++		if (ret < 0)
++			dev_err(reboot->dev, "enabling reboot mode supplies failed\n");
++	}
 +
- unevaluatedProperties: false
+ 	ret = regmap_update_bits(syscon_rbm->map, syscon_rbm->offset,
+ 				 syscon_rbm->mask, magic);
+ 	if (ret < 0)
+@@ -36,6 +54,14 @@ static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
+ 	return ret;
+ }
  
- required:
++static void syscon_reboot_mode_put_supplies(void *data)
++{
++	struct syscon_reboot_mode *syscon_rbm = data;
++
++	regulator_bulk_free(syscon_rbm->num_supplies, syscon_rbm->supplies);
++	kfree(syscon_rbm->supplies);
++}
++
+ static int syscon_reboot_mode_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -59,6 +85,21 @@ static int syscon_reboot_mode_probe(struct platform_device *pdev)
+ 
+ 	of_property_read_u32(pdev->dev.of_node, "mask", &syscon_rbm->mask);
+ 
++	ret = of_regulator_bulk_get_all(&pdev->dev, pdev->dev.of_node,
++					&syscon_rbm->supplies);
++	if (ret < 0)
++		return dev_err_probe(&pdev->dev, ret,
++				     "can't get reboot mode supplies\n");
++
++	syscon_rbm->num_supplies = ret;
++	if (syscon_rbm->num_supplies) {
++		ret = devm_add_action_or_reset(&pdev->dev,
++					       syscon_reboot_mode_put_supplies,
++					       syscon_rbm);
++		if (ret)
++			return ret;
++	}
++
+ 	ret = devm_reboot_mode_register(&pdev->dev, &syscon_rbm->reboot);
+ 	if (ret)
+ 		dev_err(&pdev->dev, "can't register reboot mode\n");
 
 -- 
 2.55.0
