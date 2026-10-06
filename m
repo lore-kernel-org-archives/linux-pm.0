@@ -1,293 +1,233 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl1-f48.google.com (mail-dl1-f48.google.com [74.125.82.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BC1038B133;
-	Tue,  6 Oct 2026 22:25:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B049B4FB9C9
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 23:19:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791325526; cv=none; b=Td8xtuqmDP8Xf7pkeL0wxb547qy2VsJSjtxNq1ErskFDpxd8+Va/Bq8PCtCTixDMfto8G4Iy4EskI582kmLrFu9JJI3jO3NxKtTigRsFZN/OYAK1H8vZQKnyGEUsFAmNa+GomHrHORn5QDYZN8U36QLYUZsBp19pWrtgjgPWAg0=
+	t=1791328799; cv=none; b=r9af8wvE8bCgHZFt9UoZUY0wB+x/tUHavg1R+T6LHQwE8TnDGFnnWRMQJCGlfgfBOnSNGbUBRXUSm+7vjlTH0azLBe1Q2Ub5h6uelIc2RABPQLLvZlFkr0gysjVbk2z/xF+qhPy69jmAcCf9OPQdbtFCdh5UlgREaOOWViFpuPc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791325526; c=relaxed/simple;
-	bh=MRUNbbGSRipNTyhpQmWoUw4X7Usb36nhRQGhXPen5ro=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=M5qLmBRPUWlOECq66qplhWZ+G2KigvWahEyjVfspUIwuBcC76a17ceouvcV6tvEFMh2D2dm7GINqlLTdFiXNYQtCs5aTFueA9TV4AsHr/o/P6ZWKoEhI2wWUN8lkgoyH3OV3VH8fcnJGdMOn6rGZOTSdlsURRR8vbxI3i45522U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aCUvc7jF; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1791328799; c=relaxed/simple;
+	bh=P7oecALR/wCKBNyKL3ajEPimn0nV+l81GMYEnAFRGkM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HpPm40esrZbEpwvPHqIY6Xe0SewyRWlzRPw9oesGMljIWgvXTJMYqV9Z7I/TjudlkeDdbkhzLIYvRmjduT1C9EX096zKrt84+2ETmndHvhhiawwu/SJWOqGa84hfaprnXg2kn/dQiiHSLfAT/85tSEMDRewHWtomS3f4E6GJ5wI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=Qu9oONBi; arc=none smtp.client-ip=74.125.82.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aCUvc7jF"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791325524; x=1822861524;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=MRUNbbGSRipNTyhpQmWoUw4X7Usb36nhRQGhXPen5ro=;
-  b=aCUvc7jFrKdhADwWJSlpJwPYCDSB7NYvESseajenYOR3XoZJk59A2+wU
-   pgrCz/s5+GeD5xtzQFaRXquCEX85Rg3XIfQ5ci1ENjQaEqzAkhPAVEEek
-   VYXrepj/yWK4ovw8nrD596lyO9R58OjBHJCU0FmUf28Ujt9eili7zWa9I
-   PN+fDmlXnNEgNhQUMJ4pFuu9owxZBZnwmpPkMsyipF4dJz5MNL/j1WJ0T
-   AteQRfURPa/w19Ov5EqtQnxBXzNCxIAejhZ43uT+JF1/WCGck/CWpHRqO
-   FNeblN19+34f9i5BJdx4xTeqRVobnPu82v1zRGgNyhnOsLZi4yAkkmHhl
-   g==;
-X-CSE-ConnectionGUID: Jt9rCt8xRBq5vIkbNyOuhg==
-X-CSE-MsgGUID: AfeYurOmRjWLO/GCohjUpQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11927"; a="102609366"
-X-IronPort-AV: E=Sophos;i="6.27,143,1787036400"; 
-   d="scan'208";a="102609366"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Oct 2026 15:25:23 -0700
-X-CSE-ConnectionGUID: D4W+FHbsQv6JOeI0em29Rg==
-X-CSE-MsgGUID: kMpCA7U8TuG0ktOv6QJg7Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,143,1787036400"; 
-   d="scan'208";a="280545973"
-Received: from unknown (HELO [10.241.243.185]) ([10.241.243.185])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Oct 2026 15:25:24 -0700
-Message-ID: <95c9b871ab66588afdf09d6ec9bac577c139b8d8.camel@linux.intel.com>
-Subject: Re: [PATCH 06/18 v2] sched/fair: Prepare select_task_rq_fair() to
- be called for new cases
-From: Tim Chen <tim.c.chen@linux.intel.com>
-To: Vincent Guittot <vincent.guittot@linaro.org>, mingo@redhat.com, 
-	peterz@infradead.org, juri.lelli@redhat.com, dietmar.eggemann@arm.com, 
-	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
- vschneid@redhat.com, 	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
- lukasz.luba@arm.com, 	rafael@kernel.org, linux-pm@vger.kernel.org,
- tj@kernel.org, void@manifault.com, 	arighi@nvidia.com, changwoo@igalia.com,
- sched-ext@lists.linux.dev
-Cc: qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com
-Date: Tue, 06 Oct 2026 15:25:23 -0700
-In-Reply-To: <20261002154415.2270586-7-vincent.guittot@linaro.org>
-References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
-	 <20261002154415.2270586-7-vincent.guittot@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Qu9oONBi"
+Received: by mail-dl1-f48.google.com with SMTP id a92af1059eb24-15943c9c005so583950c88.1
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 16:19:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1791328786; x=1791933586; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=L71GPMsk4GSIdxEygBnLFVf0LVf2CMTomc/BzDysxCo=;
+        b=Qu9oONBiAHrYHtYN59RK9IbVZz92On8/5XjZdNEzonq5e1IqjPuwZEdtTmph05NdrQ
+         5g94TMWmD8iMlaMNgcRDdfgiVz+Y17r6mMsFj5fydMDQjuaUQcDIPEiv7EWrgOUVrtRZ
+         WzAFxBPuNT41Z9M7b4SaudPb3WlMfkyeQadlg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791328786; x=1791933586;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=L71GPMsk4GSIdxEygBnLFVf0LVf2CMTomc/BzDysxCo=;
+        b=mlb24oD/0FzqzMQlq3RGkxtwHhppF8cdirg2fihhbfXIdms5u39lEHxyry12JF1ryA
+         GYOfU64RokiqmJGyNQeJmSPXUkKlIa5nByGoLmVUsSap38JTQCej91itWl7gKmKam9dZ
+         eNnHeyLQnHNwpzTI9TX/ed3NyxyN+5uj4er5v4zex9b889ujQFKhEwLM61kQFB+KOHAa
+         3Sb/O4cJ9KEKZGnj1njddnfBf+srFp5cK75o1keaa2xfNPEeFiyJ/udcF/xTXKQlllTc
+         DqXrlBLYbstLqb8Dzqw9xw0BNhsNpR0MgwaltzKJE3zHvrd4AMHqwgLwqrcUa95lAeFd
+         m+sA==
+X-Gm-Message-State: AFuF++kSMhCXtFFYNnC36BqGe/UCsX81aI3qCCn2A+igTgLHqDDy0z35
+	dSMFbbZI4kDFtBL9s4bL6Q3gCJVJTkUVOS8B2zOLcO9lVUkbvrFvZ/qx9nQggrX3RQ==
+X-Gm-Gg: AYBFou3WnF6wVR8mybfo/GpwzZi0XULHM5kDAAw7Xesyq9nudRFI64McyG2/b2z8pT5
+	ndQsY4ODrPmAFX7/dxGKDULjaITsnXAofqRqnJfV/m3Z+fgrlHkeWfJkrdwTdCk0d0Nu8cXB0BD
+	+nXc/b7yb8o5MVMBPTq9uH07HQAO/C/MirfUf0/zb3cqLUVc2CWX/qctNgoQij9priiJO4pT/UB
+	oJlGMa1ubqKuRod0qrjBQVqsA8ICVTN0Je3ZevKwFupqZx9IB9YJxGZtmH6PdFGQYkDLd/qDKo5
+	AAHiflBs3yLNXlwfzuqUBeD9lczccOLKhzDfj3lATtkVEkwUbFifTyM6LAUHy27XkTfRTc+Os6m
+	U0yV6J7msz9FcIKfEltZc/wJIgxxRvdm5WqK6+MpUPfc5KOsUNeVk7iikXBX3A2vlPQfDYs6s8H
+	wvr62vIx0MZUlzEcM2IzoKRaU1Ciii6+C8hDap5AIEsBJ2nEV4GXMbrr4OQvlAC4ru/XUiRTHrw
+	+GghfbQwXFmrv/7FWnRhzue7KXCRpl1rXJ9wg==
+X-Received: by 2002:a05:701b:4553:10b0:151:7831:e401 with SMTP id a92af1059eb24-162045b8dcfmr323314c88.15.1791328785498;
+        Tue, 06 Oct 2026 16:19:45 -0700 (PDT)
+Received: from localhost ([2a00:79e0:2e7c:8:63eb:e7f9:1d47:7d47])
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-161680e191esm1583634c88.11.2026.10.06.16.19.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 06 Oct 2026 16:19:44 -0700 (PDT)
+From: Brian Norris <briannorris@chromium.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	Ulf Hansson <ulfh@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	Brian Norris <briannorris@chromium.org>,
+	"Bryan O'Donoghue" <bod@kernel.org>,
+	=?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Alex Elder <elder@kernel.org>,
+	Andy Shevchenko <andy@kernel.org>,
+	Bard Liao <yung-chuan.liao@linux.intel.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Cezary Rojewski <cezary.rojewski@intel.com>,
+	Daniel Baluta <daniel.baluta@nxp.com>,
+	David Lechner <dlechner@baylibre.com>,
+	Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Hadar Gat <hadar.gat@arm.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Jessica Zhang <jesszhan0024@gmail.com>,
+	Johan Hovold <johan@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Jyri Sarha <jyri.sarha@iki.fi>,
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Liam Girdwood <liam.r.girdwood@linux.intel.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Mark Brown <broonie@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>,
+	Melissa Wen <mwen@igalia.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Olivia Mackall <olivia@selenic.com>,
+	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+	Rui Miguel Silva <rmfrfs@gmail.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Takashi Iwai <tiwai@suse.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+	Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+	Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
+	dri-devel@lists.freedesktop.org,
+	greybus-dev@lists.linaro.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	linux-gpio@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	linux-spi@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	sound-open-firmware@alsa-project.org
+Subject: [PATCH 00/13] PM: runtime: Convert pm_runtime_put_autosuspend() and friends to a void function
+Date: Tue,  6 Oct 2026 16:13:28 -0700
+Message-ID: <20261006231900.3230373-1-briannorris@chromium.org>
+X-Mailer: git-send-email 2.56.0.360.g66cac248cb-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Fri, 2026-10-02 at 17:44 +0200, Vincent Guittot wrote:
-> Update select_task_rq_fair() to be called out of the 3 current cases whic=
-h
-> are :
-> - wake up
-> - exec
-> - fork
->=20
-> We wants to select a rq in some new cases like pushing a runnable task on=
- a
-> better CPU than the local one. In such case, it's not a wakeup , nor an
-> exec nor a fork. We make sure to not distrub these cases but still
-> go through EAS and fast-path.
->=20
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  kernel/sched/core.c |  2 +-
->  kernel/sched/fair.c | 57 ++++++++++++++++++++++++++-------------------
->  2 files changed, 34 insertions(+), 25 deletions(-)
->=20
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index f38cf5a37a8a..837dc74c9a8d 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -3618,7 +3618,7 @@ static int select_fallback_rq(int cpu, struct task_=
-struct *p)
->  }
-> =20
->  /*
-> - * The caller (fork, wakeup) owns p->pi_lock, ->cpus_ptr is stable.
-> + * The caller (fork, wakeup, push) owns p->pi_lock, ->cpus_ptr is stable=
-.
->   */
->  static inline
->  int select_task_rq(struct task_struct *p, int cpu, int *wake_flags)
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 19a0e67827f7..f12678850ce2 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -9800,46 +9800,55 @@ static int find_energy_efficient_cpu(struct task_=
-struct *p, int prev_cpu)
->  }
-> =20
->  /*
-> - * select_task_rq_fair: Select target runqueue for the waking task in do=
-mains
-> - * that have the relevant SD flag set. In practice, this is SD_BALANCE_W=
-AKE,
-> - * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
-> + * select_task_rq_fair: Select a target runqueue for the task.
-> + * There are 2 ways to select the target runqueue:
-> + * - The fast path which only looks for an idle CPU in the LLC or the sm=
-allest
-> + *   asymmetric domain (i.e. the lowest domain with all compute capaciti=
-es).
-> + * - The slow path which looks for the idlest CPU in the highest domain =
-with
-> + *   the relevant SD flag set.
->   *
-> - * Balances load by selecting the idlest CPU in the idlest group, or und=
-er
-> - * certain conditions an idle sibling CPU if the domain has SD_WAKE_AFFI=
-NE set.
-> + * In practice, WF_EXEC and WF_FORK uses the slow path whereas WF_TTWU a=
-nd no
-> + * flag (Push) uses the fast path.
->   *
-> - * Returns the target CPU number.
->   */
->  static int
-> -select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
-> +select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flag=
-s)
->  {
-> -	int sync =3D (wake_flags & WF_SYNC) && !(current->flags & PF_EXITING);
-> +	int sync =3D (select_flags & WF_SYNC) && !(current->flags & PF_EXITING)=
-;
-> +	int want_sibling =3D !(select_flags & (WF_EXEC | WF_FORK));
-> +	int new_cpu, cpu =3D smp_processor_id();
->  	struct sched_domain *tmp, *sd =3D NULL;
-> -	int cpu =3D smp_processor_id();
-> -	int new_cpu =3D prev_cpu;
-> -	int want_affine =3D 0;
->  	/* SD_flags and WF_flags share the first nibble */
-> -	int sd_flag =3D wake_flags & 0xF;
-> +	int sd_flag =3D select_flags & 0xF;
-> +	int want_affine =3D 0;
-> =20
->  	/*
-> -	 * required for stable ->cpus_allowed
-> +	 * Required for stable ->cpus_allowed
->  	 */
->  	lockdep_assert_held(&p->pi_lock);
-> -	if (wake_flags & WF_TTWU) {
-> +
-> +	if (select_flags & WF_TTWU) {
->  		record_wakee(p);
-> =20
-> -		if ((wake_flags & WF_CURRENT_CPU) &&
-> +		if ((select_flags & WF_CURRENT_CPU) &&
->  		    cpumask_test_cpu(cpu, p->cpus_ptr))
->  			return cpu;
-> +	}
-> =20
-> -		if (!is_rd_overutilized(this_rq()->rd)) {
-> -			new_cpu =3D find_energy_efficient_cpu(p, prev_cpu);
-> -			if (new_cpu >=3D 0)
-> -				return new_cpu;
-> -			new_cpu =3D prev_cpu;
-> -		}
-> +	/*
-> +	 * We don't want EAS to be called for exec or fork but it should be
-> +	 * called for any other case such as wake up or push callback.
-> +	 */
-> +	if (!is_rd_overutilized(this_rq()->rd) && want_sibling) {
-> +		new_cpu =3D find_energy_efficient_cpu(p, prev_cpu);
-> +		if (new_cpu >=3D 0)
-> +			return new_cpu;
-> +	}
-> =20
-> +	if (select_flags & WF_TTWU)
->  		want_affine =3D !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
-> -	}
-> +
-> +	new_cpu =3D prev_cpu;
-> =20
->  	for_each_domain(cpu, tmp) {
->  		/*
-> @@ -9871,8 +9880,8 @@ select_task_rq_fair(struct task_struct *p, int prev=
-_cpu, int wake_flags)
->  		return sched_balance_find_dst_cpu(sd, p, cpu, prev_cpu, sd_flag);
-> =20
->  	/* Fast path */
-> -	if (wake_flags & WF_TTWU)
-> -		return select_idle_sibling(p, prev_cpu, new_cpu);
-> +	if (want_sibling)
-> +		new_cpu =3D select_idle_sibling(p, prev_cpu, new_cpu);
+Similar to this effort:
 
-Hi Vincent,
+  Subject: [PATCH v1 00/23] PM: runtime: Convert pm_runtime_put() to a void function
+  https://lore.kernel.org/all/6245770.lOV4Wx5bFT@rafael.j.wysocki/
 
-With this change, a push also goes through select_idle_sibling(), and
-select_idle_sibling() sets p->recent_used_cpu =3D prev on every call.
+i.e., commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+type to void") and friends.
 
-For a wakeup, prev is the CPU where the task ran last, and the old
-value of the hint becomes a second candidate for the next wakeup. For
-a push, prev is the CPU where the task is queued now. If the push
-doesn't move the task, the hint becomes the current CPU. When the task
-later sleeps and wakes up on this CPU, recent_used_cpu is equal to
-prev, so the wakeup has no second candidate. Each push attempt that
-fails does this again.
+As with pm_runtime_put(), there is very little value in return-code
+checking for any of the other async __pm_runtime_suspend() and
+__pm_runtime_idle() APIs:
 
-Perhaps something like the following fix below on top of the series. It
-passes the select flags to select_idle_sibling() and
-updates the hint only for WF_TTWU. When fair_push_task() moves the
-task, it saves the source CPU as the hint, which is what the hint
-holds after a wakeup migration.
+  pm_runtime_put_autosuspend()
+  pm_request_idle()
+  pm_request_autosuspend()
 
-Tim
+Checking the return code is more likely to
+produce a race condition (fighting with user space writing "on" to the
+"control" attribute) than to tell a consumer useful info.
 
----
- kernel/sched/fair.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+Nobody outside KUnit tests checks pm_request_idle() or
+pm_request_autosuspend() return codes, but there are a number of
+pm_runtime_put_autosuspend() callers that check its return code. Thus,
+this series largely deals with pm_runtime_put_autosuspend().
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index fd22731949c5..3eb8a0170902 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -1381,7 +1381,7 @@ static bool update_deadline(struct cfs_rq *cfs_rq, st=
-ruct sched_entity *se)
+Patches 1-11 are independent of each other, and similarly to the last
+series, I expect the respective maintainers can pick them up. We can
+apply patch 12 later. Patch 13 is also independent, but included in this
+topic for completeness. It can be applied any time.
 
- #include "pelt.h"
+This touches a lot of trees/maintainers, so I tried to keep CC's only
+for the relevant patch(es), plus the cover letter. I hope that's not too
+noisy.
 
--static int select_idle_sibling(struct task_struct *p, int prev_cpu, int cp=
-u);
-+static int select_idle_sibling(struct task_struct *p, int prev_cpu, int cp=
-u, int select_flags);
- static unsigned long task_h_load(struct task_struct *p);
- static unsigned long capacity_of(int cpu);
+- Brian
 
-@@ -9072,7 +9072,7 @@ static inline bool asym_fits_cpu(unsigned long util,
- /*
-  * Try and locate an idle core/thread in the LLC cache domain.
-  */
--static int select_idle_sibling(struct task_struct *p, int prev, int target=
-)
-+static int select_idle_sibling(struct task_struct *p, int prev, int target=
-, int select_flags)
- {
-        bool has_idle_core =3D false;
-        struct sched_domain *sd;
-@@ -9131,7 +9131,9 @@ static int select_idle_sibling(struct task_struct *p,=
- int prev, int target)
 
-        /* Check a recently used CPU as a potential idle candidate: */
-        recent_used_cpu =3D p->recent_used_cpu;
--       p->recent_used_cpu =3D prev;
-+       /* A push only updates the hint when it moves the task */
-+       if (select_flags & WF_TTWU)
-+               p->recent_used_cpu =3D prev;
-        if (recent_used_cpu !=3D prev &&
-            recent_used_cpu !=3D target &&
-            cpus_share_cache(recent_used_cpu, target) &&
-@@ -10015,6 +10017,7 @@ static bool fair_push_task(struct rq *rq)
+Brian Norris (13):
+  hwrng: cctrng: Discard pm_runtime_put_autosuspend() return value
+  drm: Discard pm_runtime_put_autosuspend() return values
+  iio: Discard pm_runtime_put_autosuspend() return values
+  media: venus: Discard pm_runtime_put_autosuspend() return values
+  pinctrl: qcom: lpass-lpi: Discard pm_runtime_put_autosuspend() return
+    values
+  spi: ti-qspi: Discard pm_runtime_put_autosuspend() return value
+  greybus: Discard pm_runtime_put_autosuspend() return value
+  ALSA: hda: Discard pm_runtime_put_autosuspend() return value
+  ASoC: codecs: lpass: Discard pm_runtime_put_autosuspend() return
+    values
+  ASoC: intel: atom: Discard pm_runtime_put_autosuspend() return value
+  ASoC: SOF: Discard pm_runtime_put_autosuspend() return values
+  PM: runtime: Drop pm_runtime_put_autosuspend() return code
+  PM: runtime: Drop pm_request_{idle,autosuspend}() return codes
 
-        deactivate_task(rq, next_task, 0);
-        set_task_cpu(next_task, new_cpu);
-+       next_task->recent_used_cpu =3D prev_cpu;
-        raw_spin_rq_unlock(rq);
+ drivers/base/power/runtime-test.c             |  8 ---
+ drivers/char/hw_random/cctrng.c               |  6 +-
+ drivers/gpu/drm/panel/panel-simple.c          |  8 +--
+ drivers/gpu/drm/tidss/tidss_drv.c             |  7 +--
+ drivers/gpu/drm/v3d/v3d_drv.h                 |  4 +-
+ drivers/iio/accel/bmc150-accel-core.c         | 14 ++---
+ drivers/iio/accel/fxls8962af-core.c           | 11 +---
+ drivers/iio/accel/kxcjk-1013.c                | 15 ++---
+ drivers/iio/accel/mma8452.c                   | 15 +++--
+ drivers/iio/accel/mma9551_core.c              | 15 +++--
+ drivers/iio/adc/rcar-gyroadc.c                |  4 +-
+ drivers/iio/adc/ti-ads1015.c                  |  8 +--
+ drivers/iio/chemical/atlas-sensor.c           |  4 +-
+ .../common/hid-sensors/hid-sensor-trigger.c   | 14 ++---
+ drivers/iio/gyro/bmg160_core.c                | 17 +++--
+ drivers/iio/gyro/fxas21002c_core.c            | 12 ++--
+ drivers/iio/imu/kmx61.c                       | 17 +++--
+ drivers/iio/light/apds9960.c                  |  2 +-
+ drivers/iio/light/isl29028.c                  | 15 +----
+ drivers/iio/light/pa12203001.c                |  3 +-
+ drivers/iio/light/rpr0521.c                   | 15 +++--
+ drivers/iio/light/tsl2583.c                   | 27 ++------
+ drivers/iio/light/us5182d.c                   |  3 +-
+ drivers/media/platform/qcom/venus/vdec.c      | 10 ++-
+ drivers/media/platform/qcom/venus/venc.c      | 10 ++-
+ drivers/pinctrl/qcom/pinctrl-lpass-lpi.c      | 16 +++--
+ drivers/spi/spi-ti-qspi.c                     |  6 +-
+ drivers/staging/greybus/power_supply.c        |  8 +--
+ include/linux/greybus/bundle.h                | 12 +---
+ include/linux/pm_runtime.h                    | 63 +++----------------
+ include/sound/hdaudio.h                       |  8 +--
+ sound/hda/core/device.c                       | 13 ++--
+ sound/soc/codecs/lpass-rx-macro.c             |  4 +-
+ sound/soc/codecs/lpass-tx-macro.c             |  4 +-
+ sound/soc/codecs/lpass-va-macro.c             | 17 ++---
+ sound/soc/codecs/lpass-wsa-macro.c            |  8 +--
+ sound/soc/intel/atom/sst/sst.h                |  2 +-
+ sound/soc/intel/atom/sst/sst_drv_interface.c  |  4 +-
+ sound/soc/intel/atom/sst/sst_pvt.c            |  9 +--
+ sound/soc/sof/control.c                       |  6 +-
+ sound/soc/sof/sof-client-ipc-flood-test.c     |  5 +-
+ .../soc/sof/sof-client-ipc-kernel-injector.c  |  4 +-
+ sound/soc/sof/sof-client-ipc-msg-injector.c   |  6 +-
+ sound/soc/sof/sof-client-probes.c             | 18 ++----
+ 44 files changed, 152 insertions(+), 325 deletions(-)
 
-        raw_spin_rq_lock(new_rq);
-@@ -10225,7 +10228,7 @@ select_task_rq_fair(struct task_struct *p, int prev=
-_cpu, int select_flags)
+-- 
+2.56.0.360.g66cac248cb-goog
 
-        /* Fast path */
-        if (want_sibling)
--               new_cpu =3D select_idle_sibling(p, prev_cpu, new_cpu);
-+               new_cpu =3D select_idle_sibling(p, prev_cpu, new_cpu, selec=
-t_flags);
-
-        return new_cpu;
- }
