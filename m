@@ -1,44 +1,45 @@
 Received: from mail.haxxors.com (mail.haxxors.com [85.14.200.35])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 794342D5937;
-	Tue,  6 Oct 2026 02:54:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 291B7311C36;
+	Tue,  6 Oct 2026 02:54:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.14.200.35
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791255263; cv=none; b=qxG/BACRK+Lg4fbElEvtaWH10zJdu8x0PPXXng78mHIOFdBzBSf1KkuTUHx9wNo5tXjExJeIh7Wp6PyrkCFteq2gH0m/FyD6hz/e62M1G2WnuxUl/fwUs0mfjepJzGYhhmxp3JZu6Fyu6B5m38fOr3Fbp6bU07o2fUTycfXus/8=
+	t=1791255266; cv=none; b=Z0deq4xN4HMdyxygsPHkN1GASp+VxQ/xzPXPULHRU9x8N89dkuZGpV8I3Cp14S95yimEir+r97s+zykUndHY+FwZtyZk4YsdLZ44euZ8oKg/iH5b5Guz94uvO0Rii2JXz1Lax7hiIF0Y8IeMK+iEMJfMsVwqvXNn117QcHESAUk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791255263; c=relaxed/simple;
-	bh=tTOUIlrN6RXi5iGSd9bnj5mNskIjB/wDmRMr+3djGVk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ZeWMAjYTpgeJxmx8hUJLO5j3ZZuctrGFx5RWTN3HwK0PvaJal9lcJ9dPV2DlyCFaOh6W1MB/1fwGpcfcliwJTKKuC6SurhgNcu/1cyZ5u0aU8pfMf5OPeb203rJaaWkIJQXBIwoN18z9ZjyN1Xphxo+pQY8xtS2J4p4uXMnbtWw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=buechner.me; spf=pass smtp.mailfrom=buechner.me; dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b=suSJjezq; dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b=XUSX/tNN; arc=none smtp.client-ip=85.14.200.35
+	s=arc-20240116; t=1791255266; c=relaxed/simple;
+	bh=0FklO53WXz7f54itp1hkBvY8/zcxtH4skJdGafJMBT4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ofzSNPr3YNeq19zD+xHP6Fj3M8Lbc/sMn2yYfeVmqcG4oSuQbgoHwVfGA4bqDKuv5Q1MdUafUMrqeJt9o+RHrDCjc2uXo1AfdmxtCmXYSwZ10HgZZmsCTgcgjRjRWc6mDfUSZV993NDuiBm79DISvzjYvLCSZYCn14zEEJnywPc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=buechner.me; spf=pass smtp.mailfrom=buechner.me; dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b=mVv0d8ZU; dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b=oLmqOqXT; arc=none smtp.client-ip=85.14.200.35
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=buechner.me
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=buechner.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b="suSJjezq";
-	dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b="XUSX/tNN"
+	dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b="mVv0d8ZU";
+	dkim=pass (1024-bit key) header.d=buechner.me header.i=@buechner.me header.b="oLmqOqXT"
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=buechner.me; s=mail;
-	t=1791255259; bh=tTOUIlrN6RXi5iGSd9bnj5mNskIjB/wDmRMr+3djGVk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=suSJjezqeXNCIBcgKZ0GGsLcYFyre/yi20ddEgorXFaffQAAETVqUQUkYZsikL6GM
-	 qwtTxFMKaQNVGpFQtONNLaDA06NoGaWYFX4dDGEyrpfMHJ+9xogdQ7FbzeU6rMJmJc
-	 9EszNO8S5fR3IHJ7KHwMK0lnOyk1tVd3V0aHkukE=
+	t=1791255262; bh=0FklO53WXz7f54itp1hkBvY8/zcxtH4skJdGafJMBT4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=mVv0d8ZUbZkXgfEHG2oy5CGwlLFXbbpzd2N2l2bNQEupWfTEHAx2lvn0/5/xlkRXn
+	 +CcZzQN/vop8y50Hw+BPxUHjbL0/KOue1dsjEyc90wVqcoMv8DsiA/tnhKy5+65Id9
+	 rlMiFhFzmdDl3jF1MZTfRjmowPBWab9rz0h5bmzs=
 Received: from localhost (localhost [127.0.0.1])
-	by mail.haxxors.com (Postfix) with ESMTP id 5058C530C0;
-	Tue, 06 Oct 2026 04:54:19 +0200 (CEST)
+	by mail.haxxors.com (Postfix) with ESMTP id 7B1CD53105;
+	Tue, 06 Oct 2026 04:54:22 +0200 (CEST)
 X-Virus-Scanned: Debian amavis at mail.haxxors.com
 Received: from mail.haxxors.com ([127.0.0.1])
  by localhost (mail.haxxors.com [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XP-CvpgDBQc0; Tue,  6 Oct 2026 04:54:17 +0200 (CEST)
+ id PIj6XKHpFbrk; Tue,  6 Oct 2026 04:54:20 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=buechner.me; s=mail;
-	t=1791255257; bh=tTOUIlrN6RXi5iGSd9bnj5mNskIjB/wDmRMr+3djGVk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=XUSX/tNNPDs2rJdDKK7kz4edg5Yx6lMF5KIWCKtEVFjg+UaXry4sWIKZisBvj7FWk
-	 0WlgjkpLxHATmtLc1r/RIE5LCMRuKFwff4YPechiAWrlQ/QDJENkoihi2V9AU0epnK
-	 UKG+yeOirEA8Rc927TSN+gh/uUFtRlPQDgh8xs4o=
+	t=1791255260; bh=0FklO53WXz7f54itp1hkBvY8/zcxtH4skJdGafJMBT4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=oLmqOqXTelinS3n35s9bWySXydUzShspuFhfR4+MY+XnSegOn34CeNnod7p6aisro
+	 E7uC9khrXaucpgH3qwUWHTr9j6BR1/TOYiXuIt5u0icz8ZOzyUa/VmooyyLeOolNUI
+	 3VLKYP3YBvrPeMUiXWkfAoO9mkKZo7LegvV5oJkQ=
 Received: from esports.myloc.de (p200300ee8f09a300264bfefffe4ffb4b.dip0.t-ipconnect.de [IPv6:2003:ee:8f09:a300:264b:feff:fe4f:fb4b])
 	(Authenticated sender: nils@buechner.me)
-	by mail.haxxors.com (Postfix) with ESMTPSA id 7F9AC530B9;
-	Tue, 06 Oct 2026 04:54:17 +0200 (CEST)
+	by mail.haxxors.com (Postfix) with ESMTPSA id A680A530C7;
+	Tue, 06 Oct 2026 04:54:20 +0200 (CEST)
 From: =?UTF-8?q?Nils=20B=C3=BCchner?= <nils@buechner.me>
 To: Daniel Lezcano <daniel.lezcano@kernel.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -51,10 +52,12 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org,
 	=?UTF-8?q?Nils=20B=C3=BCchner?= <nils@buechner.me>
-Subject: [PATCH 0/2] mediatek: Make SVS work on MT8183
-Date: Tue,  6 Oct 2026 04:54:08 +0200
-Message-ID: <20261006025410.506443-1-nils@buechner.me>
+Subject: [PATCH 1/2] thermal/drivers/mediatek/auxadc: Register per-sensor thermal zones
+Date: Tue,  6 Oct 2026 04:54:09 +0200
+Message-ID: <20261006025410.506443-2-nils@buechner.me>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261006025410.506443-1-nils@buechner.me>
+References: <20261006025410.506443-1-nils@buechner.me>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,55 +67,143 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On MT8183 mtk-svs does not probe with mainline, so the SoC never gets
-its calibrated voltages and runs at the default OPP voltages. Two
-independent problems stand in the way:
+The driver registers only thermal zone 0, which reports the hottest of
+all sensors. The MT8183 devicetree also describes a zone per sensor
+(soc, gpu, md1, cpu-little, cpu-big, abb as sensor ids 1-6), and
+mtk-svs looks up the "gpu-thermal" zone for its GPU banks. Without it
+SVS fails to probe on MT8183:
 
-1. auxadc_thermal registers only thermal zone 0 (the hottest sensor),
-   while mtk-svs looks up the "gpu-thermal" zone that the MT8183
-   devicetree describes:
+  SVSB_GPU: cannot get "gpu-thermal" thermal zone
+  mtk-svs 1100bc00.svs: error -ENODEV: svs bank resource setup fail
 
-     SVSB_GPU: cannot get "gpu-thermal" thermal zone
-     mtk-svs 1100bc00.svs: error -ENODEV: svs bank resource setup fail
+so the SoC never gets its calibrated, lower voltages.
 
-   Patch 1 registers every sensor that has a devicetree zone.
+Additionally register every sensor that has a devicetree zone, using
+sensor id = sensor number + 1, read from that sensor's own measurement
+register. Sensors without a zone are skipped, so SoCs whose devicetrees
+only describe zone 0 are unaffected.
 
-2. With that zone available, init01 requires each bank's buck to read
-   back vboot immediately after the bank was moved to its vboot OPP.
-   The GPU buck follows devfreq, which has not acted yet when the GPU
-   is idle, so the whole probe fails with -EPERM:
+Runtime-tested on an Acer Chromebook Spin 311 (MT8183, juniper) with a
+7.0-based kernel (the hardware is not set up to boot mainline);
+build-tested on mainline with W=1. On the device: all six
+sensor zones register and read plausible values (31-34 C idle, close
+to the board sensors), and mtk-svs finds gpu-thermal.
 
-     SVSB_GPU: buck voltage: 700000uV, expected vboot: 800000uV
-     mtk-svs 1100bc00.svs: error -EPERM: svs start fail
+The change and this changelog were drafted with an AI coding assistant
+during a debugging session on the hardware; they were reviewed and
+tested by the submitter.
 
-   Patch 2 polls for up to 500ms and, failing that, skips only the
-   affected bank instead of all of them.
-
-With both applied, all four banks (CPU little, CPU big, CCI, GPU)
-calibrate at boot on an Acer Chromebook Spin 311 (juniper), e.g. CPU
-little at 1.99 GHz goes from 1050 to 1000 mV and the GPU runs 800 MHz at
-775 mV, stable under sustained full load.
-
-Testing: runtime-tested on the device with a 7.0-based kernel (the
-hardware is not set up to boot mainline); build-tested on mainline with
-W=1. Only MT8183 was available for testing.
-
-The patches touch different subsystems (thermal, MediaTek SoC) and do
-not depend on each other to build; patch 2 only matters on MT8183 once
-patch 1 provides the zone.
-
-Both patches were developed with an AI coding assistant while debugging
-on the hardware (see the Assisted-by tags); I reviewed and tested them.
-
-Nils Büchner (2):
-  thermal/drivers/mediatek/auxadc: Register per-sensor thermal zones
-  soc: mediatek: mtk-svs: Don't fail init01 on a bank whose buck is not
-    at vboot yet
-
- drivers/soc/mediatek/mtk-svs.c            | 34 ++++++++--
+Assisted-by: Claude Opus 5.5
+Signed-off-by: Nils Büchner <nils@buechner.me>
+---
  drivers/thermal/mediatek/auxadc_thermal.c | 80 ++++++++++++++++++++++-
- 2 files changed, 106 insertions(+), 8 deletions(-)
+ 1 file changed, 79 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
+index 9ee2e7283..59c8eaf87 100644
+--- a/drivers/thermal/mediatek/auxadc_thermal.c
++++ b/drivers/thermal/mediatek/auxadc_thermal.c
+@@ -308,6 +308,13 @@ struct mtk_thermal_bank {
+ 	int id;
+ };
+ 
++/* A single sensor, exposed as its own thermal zone (DT sensor id = sensor + 1) */
++struct mtk_thermal_sensor {
++	struct mtk_thermal *mt;
++	int bank;
++	int index;
++};
++
+ struct mtk_thermal_data {
+ 	s32 num_banks;
+ 	s32 num_sensors;
+@@ -870,6 +877,77 @@ static const struct thermal_zone_device_ops mtk_thermal_ops = {
+ 	.get_temp = mtk_read_temp,
+ };
+ 
++static int mtk_read_sensor_temp(struct thermal_zone_device *tz, int *temperature)
++{
++	struct mtk_thermal_sensor *sensor = thermal_zone_device_priv(tz);
++	struct mtk_thermal *mt = sensor->mt;
++	const struct mtk_thermal_data *conf = mt->conf;
++	struct mtk_thermal_bank *bank = &mt->banks[sensor->bank];
++	int temp;
++	u32 raw;
++
++	mtk_thermal_get_bank(bank);
++	raw = readl(mt->thermal_base + conf->msr[sensor->index]);
++	temp = mt->raw_to_mcelsius(mt, conf->bank_data[sensor->bank].sensors[sensor->index],
++				   raw);
++	mtk_thermal_put_bank(bank);
++
++	if (!mtk_thermal_temp_is_valid(temp))
++		return -EAGAIN;
++
++	*temperature = temp;
++
++	return 0;
++}
++
++static const struct thermal_zone_device_ops mtk_thermal_sensor_ops = {
++	.get_temp = mtk_read_sensor_temp,
++};
++
++/*
++ * Zone 0 reports the hottest sensor. Also register every individual sensor
++ * the devicetree describes (sensor id = sensor number + 1): MT8183 SVS looks
++ * up its GPU bank temperature through the "gpu-thermal" zone and cannot
++ * probe without it. Sensors without a devicetree zone are skipped.
++ */
++static int mtk_thermal_register_sensors(struct mtk_thermal *mt)
++{
++	const struct mtk_thermal_data *conf = mt->conf;
++	struct thermal_zone_device *tzdev;
++	struct mtk_thermal_sensor *sensor;
++	int id, b, i;
++
++	for (id = 1; id <= conf->num_sensors; id++) {
++		sensor = NULL;
++		for (b = 0; b < conf->num_banks && !sensor; b++) {
++			for (i = 0; i < conf->bank_data[b].num_sensors; i++) {
++				if (conf->bank_data[b].sensors[i] != id - 1)
++					continue;
++				sensor = devm_kzalloc(mt->dev, sizeof(*sensor), GFP_KERNEL);
++				if (!sensor)
++					return -ENOMEM;
++				sensor->mt = mt;
++				sensor->bank = b;
++				sensor->index = i;
++				break;
++			}
++		}
++		if (!sensor)
++			continue;
++
++		tzdev = devm_thermal_of_zone_register(mt->dev, id, sensor,
++						      &mtk_thermal_sensor_ops);
++		if (IS_ERR(tzdev)) {
++			if (PTR_ERR(tzdev) == -ENODEV)
++				continue;
++			return dev_err_probe(mt->dev, PTR_ERR(tzdev),
++					     "failed to register sensor %d\n", id);
++		}
++	}
++
++	return 0;
++}
++
+ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
+ 				  u32 apmixed_phys_base, u32 auxadc_phys_base,
+ 				  int ctrl_id)
+@@ -1294,7 +1372,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
+ 
+-	return 0;
++	return mtk_thermal_register_sensors(mt);
+ }
+ 
+ static struct platform_driver mtk_thermal_driver = {
 -- 
 2.53.0
 
