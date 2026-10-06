@@ -1,81 +1,70 @@
-Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
+Received: from mail-dl1-f47.google.com (mail-dl1-f47.google.com [74.125.82.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B257851AEFF
-	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 23:20:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E5324DF4D4
+	for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2026 23:20:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791328850; cv=none; b=YVpB4M6wo43nkDfMU9IqHPqxR/9OmTx47oXn4WZM64+fpDyaTZ9jX7NlKan758+aia+TKQFkbo+Kde0Bu4WgIYbBrFYx1/rv5Jgiwj10cByuwBLK8IWqygdHsUZ7W7da5N1XLjudZh16GFeTLFRGTu1PqIM6HeLqmo00HlXx5G0=
+	t=1791328854; cv=none; b=hWIb/ZBwmXzOliNXxl36g2WdwcRyJk7sDa5e1QnxmvfAZtEYNcjYVV7VRmVOITbzDoPtrOg+hXVaHbztVsXQz6CnI6k8gFUegvRAVeBzU1KOQ7HTxVOY5zo/sDFZirnAEnYdyXRmq7jVo7LhZyjGxoG+9ZxhptYjZaZqM5MakrA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791328850; c=relaxed/simple;
-	bh=CTerUSH9LQfA2XtEGuqOy5Es4RXD9p0qFPYTOjjvblc=;
+	s=arc-20240116; t=1791328854; c=relaxed/simple;
+	bh=kiICEqOeglw2XhrB/k+kI2Fjx84mu7DdAPoRB55wjkM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kOmjcwLiREvokFaFI9//s0QAgmAOjg0DXA13tOGamzBrtTF0z4XMYn7Zw0SItcEjG7ZFP+RylgLmWss2Jo4VF6lVTCOslCgLyurmN6jiXVSsHZx5LLdqUDd4eNYysIKe9gu+33cm4SjBRlzjHnb0KQC0qccj0myvxDRmT63K/78=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=TNjL9HZz; arc=none smtp.client-ip=74.125.82.175
+	 MIME-Version; b=hMBUn+tPubSdagE53xKjDNuhvEpZ6vBnQCbx6vv9wxBZeYXY+QiF8bgR682VFRx0wnUTC3Qe1SqA8KZPiGZ6chpRyiNUslPd2gDpCC3do1+jh8QmIjNZeoyOa7I8FjBRIpDyN5NKk5t1NH9yfQgcpS1gAuiZlsIKbhWuG8NSML8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=SiNncF2d; arc=none smtp.client-ip=74.125.82.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="TNjL9HZz"
-Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-34c89609923so254974eec.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 16:20:26 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="SiNncF2d"
+Received: by mail-dl1-f47.google.com with SMTP id a92af1059eb24-141395927feso1727620c88.0
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2026 16:20:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1791328825; x=1791933625; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1791328828; x=1791933628; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=WZAE9NSsGVCNDJfkFk+D3J312SzagpTg6rFyuPqGum8=;
-        b=TNjL9HZzZpu5z/SjIRgpH+HCSOmkxC1Oke/1kAW8HHvdr930o5tHgkByUcLDyjAotr
-         ldrsMMRBChk+2pG4XuDOqHWYF+4zaoxuMgHk4u2hf7x4UJ0VBPuWkoKuOLJ7YTVNbeLl
-         9LoSBschgNUR4RYPPK+eiIY3bTedGS1RvKId0=
+        bh=U6RGc5+cjEK9f48M6mR6i/w8C3QZRcmDe6I17iH2K3I=;
+        b=SiNncF2dQNqGsaPsFnXVolnEsAuOld+b293Df7vGaZeSJlAikWsNeIWDw8f6DZNst3
+         zL7HIQ2OWE98itZP7dfQ6lxP3FiW/lExfJ+5idk3mMGZ210a0QEYBuzav+46+i9Qgb1Z
+         iRNHAJBpn83O40SIHpHF9WlwKw1m41DTtGbRI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791328825; x=1791933625;
+        d=1e100.net; s=20260707; t=1791328828; x=1791933628;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=WZAE9NSsGVCNDJfkFk+D3J312SzagpTg6rFyuPqGum8=;
-        b=lWZHQeugT0n6UvUQ5evGxuXufJ4tR48pWRaRrFZoouN48fKgbZcohyd8GdvzLWQ3yZ
-         FLDmI/VdVP02ZYREXBhqb1hv6Nl7b+M646oOD52oyfIV3G/H+SHUCFBpxTdDO73pWOsC
-         ZsHxysEIaw/beg7xZGDyWG52MqyO28xhy0HXMTj3yl+/usGwdeL/Tp6wfhDyfrDkInis
-         NOjSgh/ggjelcg9lS0RKB9VRor3gKN0YXRuP2lhakXAOpYOSAi5zrEkQf+wCDqTE16tv
-         O71+ifQ7gEpQxsMlhGu8uVjBwRjHAAgAWkZSFU0mcBo63yJVE71uy3mEo1FHcXUTqLsC
-         liSw==
-X-Gm-Message-State: AFq9FYIZoZ8xqpgX+dQjYY0obZf8BidSGTjG5Xy6bD6OHO1zkzkYMm9V
-	bspG6/oqdSsumtIBA3PPI6Ha75tlsExZ8PjKG19vXxNvj/czLY5nZbhRSbi+VQ5buQ==
-X-Gm-Gg: AYBFou09gJ5iZC1Q5MtPBRfmJIal+c5jwt0hsWk7SaAMy+fC+B6Ln313XMtMJrWn6Ti
-	KQbMO1hU8Cn72Bhb4CA4gRHPjIXa/kuOvfUmnnGik6MBxvHGJtoPeplFfbZfsI9QXikicjlwRAc
-	eHdPvwK374fXMGTzTCqgKq3Vlw+VSqz3vdhqKR0f02flPqjUlu9qBxuM2oe4DsC4wmKuQUKecTK
-	anGWXW8Uwtt7df1uexJVU72+TgE6wlKRt8mYcdWOTondT5PFwRRIS5+xUoJSaEtFhZsVKQWftsu
-	Uc4+C8vf77d6hy4Dh9bTe4TuNTjwwAFDdV769sIMl+G06kRdipEbDg0hwmhO+3Z3V+47/TbunDb
-	fQKoe5sB2yS1ys6TroBbK8zLISMWkh3yt1DqkzdYmkNT0tl34244R16P99cGJ+ivU6gNEmfBK8X
-	AIA2Ko8ICCBeWl52nSLoVlug/kdjJJpKvBGHwWp2ywwepMOPay//8jkT0bmGK45tyCuS4lYV6JO
-	VmggwweKbUf7d2XheFlxf9abf3hB6uPgu2Vzw==
-X-Received: by 2002:a05:7301:488e:b0:34b:529d:6263 with SMTP id 5a478bee46e88-3515de84167mr350155eec.33.1791328825471;
-        Tue, 06 Oct 2026 16:20:25 -0700 (PDT)
+        bh=U6RGc5+cjEK9f48M6mR6i/w8C3QZRcmDe6I17iH2K3I=;
+        b=OfS3XETRu6njz0t2RU4urRQJI1ZARktnrfdk6WBmqONDyHeSJrlhSm28aBFwmb1M7E
+         gntRbdRh//3badS9Cc5Z6zOxKNzm3bF/xxJGyP/qZhEkY0OaqO04gErND8jyiD85j2Ed
+         PHt357oBPL+fJYpgCKRT7uoYpMW7SJq21xolOpRT4O6vSMSP5AQgefLRjIBo7vza+ez6
+         FBTz2EPqMRYv8TPKjdvB3e52k8XuCRSXPUXDYwdNx/6DZ82/jyRzRhOputdfU/jQRA+c
+         wUFvOKCgOUyvtosXzy96lGz3CKIrUIrsx1tZKg8FQCPggeOQwnk7hAOqNN5ShSS92utS
+         fTqA==
+X-Gm-Message-State: AFuF++mCcLa4l2qaLIZU+Qi9W/hbnZMxf2aqEJyh6uGBp8xLSYNSv31F
+	59ZRDPzn1OZTyLo2ascCZbVxNlnSx8ZC2A/Gx/xwgxkYsdwmvBmPZHHzcCQo0JrXvxzzQMbdi2z
+	KgjA=
+X-Gm-Gg: AYBFou0IW8NBfNK/Eua20riLOluysQAwfE9SFm68BonHKSyA/CsJRl/Il/zNu2fLo0x
+	ozRhUq0nwJWQYHBj8AuMF+X4PnfT86yOqij4Ia8QiBuytSL0Xv7yNe71BBzRtV8lvdFg2yuVOXM
+	CY14FYicarM2rpTHCbLPr1MEAzImCxyajb3/f1Mqa5lOGotX6QmXn3AsdoP93Ga+ctLX2kN8mlg
+	7Avv3W+k4m3RpJbTPzODv+N3Qsbai/ROAC8jJv3qBguKNXwfBGiP9QuCUfOGpVpI9tAwrhGvNId
+	7UghrsN+I1V+TcX0VhHxnY+qKp6QoFhUV5FpjPLB0O19L/4/9fhnXZ3f7t6P7zQkCPhjYB3ym5y
+	hXRFpJraXTBPgFYB7q0ZiC1/At78k2M/P7XgPlYyu8w9J8j/uII1v5LF4FD0AmQoZJ1VU3OsABc
+	EXDaxz1aFdQrKmCT9990WBKJLJdxdjS00ADbp4mqCsT/B6xOtkTb3PsDKxOXecN2dbIA/LBLIYk
+	FDWu3DaENz70X2VMqGAXjSgUiQ3tfExiMh04kk=
+X-Received: by 2002:a05:7022:225:b0:143:298e:459f with SMTP id a92af1059eb24-16207e73dbfmr475520c88.42.1791328827603;
+        Tue, 06 Oct 2026 16:20:27 -0700 (PDT)
 Received: from localhost ([2a00:79e0:2e7c:8:63eb:e7f9:1d47:7d47])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-3515af67000sm1727136eec.17.2026.10.06.16.20.23
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-161564723fesm1537626c88.0.2026.10.06.16.20.26
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 06 Oct 2026 16:20:24 -0700 (PDT)
+        Tue, 06 Oct 2026 16:20:26 -0700 (PDT)
 From: Brian Norris <briannorris@chromium.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-pm@vger.kernel.org,
 	Ulf Hansson <ulfh@kernel.org>,
 	linux-kernel@vger.kernel.org,
-	Brian Norris <briannorris@chromium.org>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Daniel Baluta <daniel.baluta@nxp.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Takashi Iwai <tiwai@suse.com>,
-	Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	linux-sound@vger.kernel.org,
-	sound-open-firmware@alsa-project.org
-Subject: [PATCH 11/13] ASoC: SOF: Discard pm_runtime_put_autosuspend() return values
-Date: Tue,  6 Oct 2026 16:13:39 -0700
-Message-ID: <20261006161337.11.I90762189ee6537c5deb0725ede365d641607377e@changeid>
+	Brian Norris <briannorris@chromium.org>
+Subject: [PATCH 12/13] PM: runtime: Drop pm_runtime_put_autosuspend() return code
+Date: Tue,  6 Oct 2026 16:13:40 -0700
+Message-ID: <20261006161337.12.Ibc0cfab4a29c61d5582a164da2d9e98049c20910@changeid>
 X-Mailer: git-send-email 2.56.0.360.g66cac248cb-goog
 In-Reply-To: <20261006231900.3230373-1-briannorris@chromium.org>
 References: <20261006231900.3230373-1-briannorris@chromium.org>
@@ -87,186 +76,93 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Printing error messages on pm_runtime_put_autosuspend() returning
-negative values is not particularly useful.
+The primary role of pm_runtime_put_autosuspend() is to update the last
+access time and decrement the runtime PM usage counter of the given
+device.  It always does that regardless of the value returned by it
+later.
 
-Returning an error code from pm_runtime_put_autosuspend() merely means
-that it has not queued up a timer or work item to check whether or not
-the device can be suspended and there are many perfectly valid
-situations in which that can happen, like after writing "on" to the
-device's runtime PM "control" attribute in sysfs for one example.
+In addition, if the runtime PM usage counter after decrementation turns
+out to be zero, a timer or work item is queued up to check whether or
+not the device can be suspended once its autosuspend delay has elapsed.
+This is not guaranteed to succeed though and even if it is successful,
+the device may still not be suspended going forward.
 
-Accordingly, update the SOF driver to simply discard the return value of
-pm_runtime_put_autosuspend().
+There are multiple valid reasons why pm_runtime_put_autosuspend() may
+not decide to queue up the timer or work item mentioned above,
+including, but not limited to, the case when user space has written
+"on" to the device's runtime PM "control" file in sysfs.  In some of
+those cases, pm_runtime_put_autosuspend() returns a negative error code
+(even though the device's runtime PM usage counter has been successfully
+decremented by it) which is very confusing.
 
-This will facilitate a planned change of the
-pm_runtime_put_autosuspend() return type to void in the future, similar
-to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
-type to void").
+Accordingly, to avoid the confusion mentioned above, change the return
+types of pm_runtime_put_autosuspend() and __pm_runtime_put_autosuspend()
+to void, similar to commit 3afd8df02433 ("PM: runtime: Change
+pm_runtime_put() return type to void").
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
-This patch is independent of the rest of the series, except for the end
-(changing the return type). I expect it can be applied by individual
-maintainers, and we pick up the end once the dust is settled.
+This patch must be applied after all the preceding patches. Presumably
+that can wait for other maintainers.
 
- sound/soc/sof/control.c                        |  6 ++----
- sound/soc/sof/sof-client-ipc-flood-test.c      |  5 +----
- sound/soc/sof/sof-client-ipc-kernel-injector.c |  4 +---
- sound/soc/sof/sof-client-ipc-msg-injector.c    |  6 ++----
- sound/soc/sof/sof-client-probes.c              | 18 ++++++------------
- 5 files changed, 12 insertions(+), 27 deletions(-)
+ include/linux/pm_runtime.h | 32 ++++----------------------------
+ 1 file changed, 4 insertions(+), 28 deletions(-)
 
-diff --git a/sound/soc/sof/control.c b/sound/soc/sof/control.c
-index 74d997a4f620..8718c293c5b9 100644
---- a/sound/soc/sof/control.c
-+++ b/sound/soc/sof/control.c
-@@ -185,7 +185,7 @@ int snd_sof_bytes_ext_volatile_get(struct snd_kcontrol *kcontrol, unsigned int _
- 	struct snd_soc_component *scomp = scontrol->scomp;
- 	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
- 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
--	int ret, err;
-+	int ret;
- 
- 	/* ignore the ext_volatile_get call if the callbacks are not provided */
- 	if (!tplg_ops || !tplg_ops->control ||
-@@ -205,9 +205,7 @@ int snd_sof_bytes_ext_volatile_get(struct snd_kcontrol *kcontrol, unsigned int _
- 								binary_data,
- 								size);
- 
--	err = pm_runtime_put_autosuspend(scomp->dev);
--	if (err < 0)
--		dev_err_ratelimited(scomp->dev, "%s: failed to idle %d\n", __func__, err);
-+	pm_runtime_put_autosuspend(scomp->dev);
- 
- 	return ret;
- }
-diff --git a/sound/soc/sof/sof-client-ipc-flood-test.c b/sound/soc/sof/sof-client-ipc-flood-test.c
-index 2396cc35489a..a86dd5630790 100644
---- a/sound/soc/sof/sof-client-ipc-flood-test.c
-+++ b/sound/soc/sof/sof-client-ipc-flood-test.c
-@@ -157,7 +157,6 @@ static ssize_t sof_ipc_flood_dfs_write(struct file *file, const char __user *buf
- 	unsigned long ipc_duration_ms = 0;
- 	bool flood_duration_test = false;
- 	unsigned long ipc_count = 0;
--	int err;
- 	char *string;
- 	int ret;
- 
-@@ -223,9 +222,7 @@ static ssize_t sof_ipc_flood_dfs_write(struct file *file, const char __user *buf
- 		ret = sof_debug_ipc_flood_test(cdev, flood_duration_test,
- 					       ipc_duration_ms, ipc_count);
- 
--	err = pm_runtime_put_autosuspend(dev);
--	if (err < 0)
--		dev_err_ratelimited(dev, "debugfs write failed to idle %d\n", err);
-+	pm_runtime_put_autosuspend(dev);
- 
- 	/* return count if test is successful */
- 	if (ret >= 0)
-diff --git a/sound/soc/sof/sof-client-ipc-kernel-injector.c b/sound/soc/sof/sof-client-ipc-kernel-injector.c
-index 02d0d97ad1a0..751d6a0bef79 100644
---- a/sound/soc/sof/sof-client-ipc-kernel-injector.c
-+++ b/sound/soc/sof/sof-client-ipc-kernel-injector.c
-@@ -66,9 +66,7 @@ static ssize_t sof_kernel_msg_inject_dfs_write(struct file *file, const char __u
- 	if (!ret)
- 		sof_client_ipc_rx_message(cdev, hdr, priv->kernel_buffer);
- 
--	ret = pm_runtime_put_autosuspend(dev);
--	if (ret < 0)
--		dev_err_ratelimited(dev, "debugfs write failed to idle %d\n", ret);
-+	pm_runtime_put_autosuspend(dev);
- 
- 	return count;
- };
-diff --git a/sound/soc/sof/sof-client-ipc-msg-injector.c b/sound/soc/sof/sof-client-ipc-msg-injector.c
-index 932ab459c079..2eaec52ab439 100644
---- a/sound/soc/sof/sof-client-ipc-msg-injector.c
-+++ b/sound/soc/sof/sof-client-ipc-msg-injector.c
-@@ -122,7 +122,7 @@ static int sof_msg_inject_send_message(struct sof_client_dev *cdev)
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 322e3b17f987..b0e7dfb3805f 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -593,22 +593,10 @@ static inline void pm_runtime_put(struct device *dev)
+  *
+  * Decrement the runtime PM usage counter of @dev and if it turns out to be
+  * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
+- *
+- * Return:
+- * * %1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * %0: Success.
+- * * %-EINVAL: Runtime PM error.
+- * * %-EACCES: Runtime PM disabled.
+- * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *   change ongoing.
+- * * %-EBUSY: Runtime PM child_count non-zero.
+- * * %-EPERM: Device PM QoS resume latency 0.
+- * * %-EINPROGRESS: Suspend already in progress.
+- * * %-ENOSYS: %CONFIG_PM not enabled.
+  */
+-static inline int __pm_runtime_put_autosuspend(struct device *dev)
++static inline void __pm_runtime_put_autosuspend(struct device *dev)
  {
- 	struct sof_msg_inject_priv *priv = cdev->data;
- 	struct device *dev = &cdev->auxdev.dev;
--	int ret, err;
-+	int ret;
- 
- 	ret = pm_runtime_resume_and_get(dev);
- 	if (ret < 0 && ret != -EACCES) {
-@@ -140,9 +140,7 @@ static int sof_msg_inject_send_message(struct sof_client_dev *cdev)
- 			dev_err(dev, "IPC message send failed: %d\n", ret);
- 	}
- 
--	err = pm_runtime_put_autosuspend(dev);
--	if (err < 0)
--		dev_err_ratelimited(dev, "debugfs write failed to idle %d\n", err);
-+	pm_runtime_put_autosuspend(dev);
- 
- 	return ret;
+-	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
++	__pm_runtime_suspend(dev, RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
  }
-diff --git a/sound/soc/sof/sof-client-probes.c b/sound/soc/sof/sof-client-probes.c
-index 124f55508159..32e31d6aa9bb 100644
---- a/sound/soc/sof/sof-client-probes.c
-+++ b/sound/soc/sof/sof-client-probes.c
-@@ -211,7 +211,7 @@ static ssize_t sof_probes_dfs_points_read(struct file *file, char __user *to,
- 	int remaining, offset;
- 	size_t num_desc;
- 	char *buf;
--	int i, ret, err;
-+	int i, ret;
  
- 	if (priv->extractor_stream_tag == SOF_PROBES_INVALID_NODE_ID) {
- 		dev_warn(dev, "no extractor stream running\n");
-@@ -258,9 +258,7 @@ static ssize_t sof_probes_dfs_points_read(struct file *file, char __user *to,
- 	kfree(desc);
+ /**
+@@ -619,23 +607,11 @@ static inline int __pm_runtime_put_autosuspend(struct device *dev)
+  * Update the last access time of @dev and decrement its runtime PM usage
+  * counter. If the counter drops to zero, asynchronously request the PM core to
+  * suspend the device once its autosuspend delay has elapsed.
+- *
+- * Return:
+- * * %1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * %0: Success.
+- * * %-EINVAL: Runtime PM error.
+- * * %-EACCES: Runtime PM disabled.
+- * * %-EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *   change ongoing.
+- * * %-EBUSY: Runtime PM child_count non-zero.
+- * * %-EPERM: Device PM QoS resume latency 0.
+- * * %-EINPROGRESS: Suspend already in progress.
+- * * %-ENOSYS: %CONFIG_PM not enabled.
+  */
+-static inline int pm_runtime_put_autosuspend(struct device *dev)
++static inline void pm_runtime_put_autosuspend(struct device *dev)
+ {
+ 	pm_runtime_mark_last_busy(dev);
+-	return __pm_runtime_put_autosuspend(dev);
++	__pm_runtime_put_autosuspend(dev);
+ }
  
- pm_error:
--	err = pm_runtime_put_autosuspend(dev);
--	if (err < 0)
--		dev_err_ratelimited(dev, "debugfs read failed to idle %d\n", err);
-+	pm_runtime_put_autosuspend(dev);
- 
- exit:
- 	kfree(buf);
-@@ -294,7 +292,7 @@ sof_probes_dfs_points_write(struct file *file, const char __user *from,
- 	struct sof_probe_point_desc *desc;
- 	u32 num_elems, *array;
- 	size_t bytes;
--	int ret, err;
-+	int ret;
- 
- 	if (priv->extractor_stream_tag == SOF_PROBES_INVALID_NODE_ID) {
- 		dev_warn(dev, "no extractor stream running\n");
-@@ -327,9 +325,7 @@ sof_probes_dfs_points_write(struct file *file, const char __user *from,
- 			ret = count;
- 	}
- 
--	err = pm_runtime_put_autosuspend(dev);
--	if (err < 0)
--		dev_err_ratelimited(dev, "debugfs write failed to idle %d\n", err);
-+	pm_runtime_put_autosuspend(dev);
- exit:
- 	kfree(array);
- 	return ret;
-@@ -360,7 +356,7 @@ sof_probes_dfs_points_remove_write(struct file *file, const char __user *from,
- 	struct sof_probes_priv *priv = cdev->data;
- 	const struct sof_probes_ipc_ops *ipc = priv->ipc_ops;
- 	struct device *dev = &cdev->auxdev.dev;
--	int ret, err;
-+	int ret;
- 	u32 *array;
- 
- 	if (priv->extractor_stream_tag == SOF_PROBES_INVALID_NODE_ID) {
-@@ -385,9 +381,7 @@ sof_probes_dfs_points_remove_write(struct file *file, const char __user *from,
- 			ret = count;
- 	}
- 
--	err = pm_runtime_put_autosuspend(dev);
--	if (err < 0)
--		dev_err_ratelimited(dev, "debugfs write failed to idle %d\n", err);
-+	pm_runtime_put_autosuspend(dev);
- exit:
- 	kfree(array);
- 	return ret;
+ DEFINE_GUARD(pm_runtime_noresume, struct device *,
 -- 
 2.56.0.360.g66cac248cb-goog
 
