@@ -1,246 +1,211 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010061.outbound.protection.outlook.com [52.101.201.61])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl1-f47.google.com (mail-dl1-f47.google.com [74.125.82.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55CA8392C3C;
-	Wed,  7 Oct 2026 15:06:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.61
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791385575; cv=fail; b=n2sdxUzZFguq0k2C5L/dzQpLR7FUIHpAHA4YxYeOhMfi3TST6xlIZcsEImNzpMpYFUPhj8r+q/Cb0TWHpSvoWGbwDqBqrWzRDy0Mwi2cmocw4uOd/3mObwFvjWKYlRxrNYrMbKqRAmT9aawK/1Ik7YOfihS3o0/YivaHJ9pt0eE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791385575; c=relaxed/simple;
-	bh=oAW75nx3DgVNuyt8pxEfxkAd1AIUNVJJNw89Q+S8vW0=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=Ac2Wvj84oXZijeYM53TsqX+8dX0IE2KBA1V736lXcA7iYAkj80LQsaQ6HSgK93hqux7g4DYmoX7ffs8C8cn4Astd54iHkLdFZLamc6oNISpL55SqbfZEHqiHbUEtpGURHRssLskVfundatJSkuZlTH1v1hEJhfVM6ZPRvej5ZAo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=L2tx7+Hq; arc=fail smtp.client-ip=52.101.201.61
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95CF649B5CC
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2026 15:19:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.47
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791386372; cv=none; b=nVyDCVfd/PaBw17k/3B7w8cFOI+Je8lk3MWJIYMgokneZFHg0Fmju3OTNBIFdL2vUnrsqxYlh47n5k2+BqpR3G9av3J+ZCPO9hWa3EOU/7LlheIVu+OlmVNZKPTlhd/Mhgl8FfD1gQIihkSBQV9400W50ZeYwLiVvn1WMO88eZA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791386372; c=relaxed/simple;
+	bh=u0kuFr8GZgVrxMy2uq+D0t8qRpztHKRJU2wGEM/rk34=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KH8UBNjcS6H8HVCk02Dl8OZtNRWUOzxwig3/qhZ2oCxXlMIW55J0IjTjTjOQnC7/aAMUzZ4UD5caDP/LELZimDfyfqb3tcN+PhXw/tt4YbEV6O9Lvyzuk5VftypZ+5Ca2K8X1xADY3R7LelNR6DeNGEt2aaMtWfEgmt4GRi+y+s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=MAgLaP9C; arc=none smtp.client-ip=74.125.82.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="L2tx7+Hq"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=FtFsCjWSR9CaXMbx6D4AjpBXoR+Z6XATxn4UGORKsPbJlveI+etG+Nt/vixr86aAt5WB3oHWr36gsC7DOZiPGeOEsuzWwzcbPTdfxwRdxaQM6rGK6GBcScsxjEijgzvZo4Y/z5Cub6EbBRPS4C9Ckha7cnCyYA9UzOeP4xPFx181zTzg5fa4v5jBQ+kTExZgKVEvjjpKjbnqX16EqPZ0WftdccSwP7hle+x/p8JzzCEX+L2BYumIHF4FEGX6QPrdIPhkbtrBojJTVtWWOgVgi8sVLpkO4McSZBVvo1CoQMnDg3TnkhfVRl9IGMFWC4tPBtPU1eAvY4PCdNQfwKZPbQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UPFXuriYs4dMcm58axm3h5HxC6qurkCSVDAhOTiPn1I=;
- b=tr/8kPJwCXemaQseOXx9elrFe+xbh+CVnF02CFtQmShtha0a8qRvEh97AjW1cEvt5g7XkRMsQ067ZYenC7T9NCA7xSk7MVA3c7fiJSaKYa2xJ0iTCGlSrfxARRbMbI1+nQeBxFwnLuI5iK34EgrlgM9rMK9ZuAdzoJsmOmq2uRh3b8waa+Z6G9WOhFqDAdLoAxwgMqLK1o+JjESP75iK+Q+Gs/DxB6MmDlXBlALnGLY5+EA3KK7kTJaLVBDjYm2Alm9PGPRfZK/hGf3d6/VOk4fIOOIyfW5O5u6hqGq8MJrqusDrMiML2TVsp3KobyUuf7UmHGQj1gUZSNTvWBn8mA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UPFXuriYs4dMcm58axm3h5HxC6qurkCSVDAhOTiPn1I=;
- b=L2tx7+Hq6ElzCAhwX/r35kBen/TPXSH2KIsOa3+m3VBksMdYcHmNdxaD4+/UfUH9RRrn/1EMY17wYQ1ENYmuYE+k7iQmzzBptzYPVqd8YgA5oNnuCvp/RAPHLhn4xgkgLjb13WWPE0xP+F14Nm4ZV0bg/wh5pFScRHj0K0rltV8=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by BN7PPFDE2ACDA69.namprd12.prod.outlook.com (2603:10b6:40f:fc02::6e6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Wed, 7 Oct
- 2026 15:06:02 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%7]) with mapi id 15.21.0496.010; Wed, 7 Oct 2026
- 15:06:00 +0000
-Message-ID: <a387ee24-ef09-4983-865c-47ef43fa0964@amd.com>
-Date: Wed, 7 Oct 2026 10:05:58 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq/amd-pstate: Supply nominal/lowest freq for
- TRX40-based motherboards
-Content-Language: en-US
-To: Kyle Gospodnetich <me@kylegospodneti.ch>
-Cc: Giovanni Gherdovich <ggherdovich@suse.cz>, Huang Rui <ray.huang@amd.com>,
- Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261007144150.15113-1-ggherdovich@suse.cz>
- <27b226c7-f30b-4863-96e6-6798232863c5@amd.com>
- <nfzkXrDTHHjIW_SUzjPg0gOHamPmFkMiNw8Xyzu1ET_un0fM-tmdI3ChdnOkXAkrh_nX4jiwmzCK6GgWwOsfDti3ta-vlRMihfH4dGUgBCU=@kylegospodneti.ch>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <nfzkXrDTHHjIW_SUzjPg0gOHamPmFkMiNw8Xyzu1ET_un0fM-tmdI3ChdnOkXAkrh_nX4jiwmzCK6GgWwOsfDti3ta-vlRMihfH4dGUgBCU=@kylegospodneti.ch>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SA1P222CA0057.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:806:2c1::6) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="MAgLaP9C"
+Received: by mail-dl1-f47.google.com with SMTP id a92af1059eb24-16079d54c17so1000586c88.0
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 08:19:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1791386367; x=1791991167; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=96cxVunsuLpr5pVfosRg07KKEkNX5G2jAVACbngKLkk=;
+        b=MAgLaP9CjdDsWJDMLJGs2vbPyTKMiiH50XWlMIa/7gY537sgjlEEdAcxU30S1Ic76N
+         QPrufuCjQpcCgdcL52WTxpfE3R8QCqiQWVcWV97Rs3lxdqeraYrAq/sX6Lw1bV/YnWDY
+         ZjQSyvRhCYGPzK/eH6UIMI3BykXmj4G6H6GnM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791386367; x=1791991167;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=96cxVunsuLpr5pVfosRg07KKEkNX5G2jAVACbngKLkk=;
+        b=TS0f5G5cUNkFbC+6QfxGFY7K92IclJaN+dwLhwgbM+pzY3Nr0mVDwpFeHSX1osMAed
+         2kAO32Ifx8CR1Ux5cVrs6SEeJ2P7IDJMkgOFPv9HHOM5ppUAmUEITxFuKiJ8zb2ARD/f
+         GuIpwV4DstuFwCbeJCOY2jYRCiMty/gMbIx26sPrt9wRjwgXgcYCpiL0+WNoM7twJ+bL
+         lsu4M4HU8KUVtGzeZLfbsLCCiT8li+WknzyNVfoAjUgKtQr2+T02/jpFVqalqNMIa1aV
+         0PThRd+7Ryrsp8OnpfcQihqzdLwTKn8XTkWHAerQov/eFE+bC7S1J7TUDUq55w+9myum
+         X89A==
+X-Forwarded-Encrypted: i=1; AKwUvBw8ee3jZhzj4vP1MJi1IeP/HgLlNvugpbyKXNgqMJc5vIflGQl1NpeY7UoRMRHCsFNWWf26tp4IYA==@vger.kernel.org
+X-Gm-Message-State: AFuF++laZVAtkl5QgJmSYbLIVM1z2zVw5TIZe3P5LdP5/aRoj5V20uzl
+	4uQWF7n6nJFgN43qK5z04suWtIhj1vfJvESD0kLA8jeLGG891rPRc4DP1tyyLdoryQ==
+X-Gm-Gg: AYBFou3EJKDmEcAGvUOYW0pQsOBJrytbEvHJu0nD/4GN8wVJf2AREkRUDJ+MYyS9/St
+	v9qT0p6mtbzbZiYZsORziRfweWT+iWqoQFys2D4wukKd0WBlzeHjDxhR2eSNH0zVeIkqIVp2KEA
+	6KsorQILydME+NdHEyrMSXl9iwHr62EkPPwlhlDrD4Pmcmg/EAMaO0AuSoOBNhzULm9XHchgJX3
+	p3l5Kj7mHWeyLBx5LtPzUGwydYrLiStoLlS+8iyMZVb7xj9yeACMIU+uzS+EUWYa7h8+6X2a0gu
+	EkkTC7LNdUWWIMp4y4kwGP1XwgQ1p0KQeobRnWU22ou8/x7/CDbQISWwdr/co0BN6akFfDJhsZv
+	yDu2OhMYpMN9Pxj+zMgHK2SH6Hb4wfX8EUTgE/QzexfQj8Bo4WeIfcxiotHa9j8wU2xJ0+dVGzV
+	iYChLP5w4XiusUBeYGedanJvlr/QM/AuEbHAdWwOgh1t1m0sXn0Nf/H5L84KbnpOZF7VZ+QYQ/k
+	QlqsJsGL6o00CRIu5/BqKB11pmKuFGyTIbEDA==
+X-Received: by 2002:a05:701b:270f:b0:143:342a:3d3d with SMTP id a92af1059eb24-161f61365a3mr3134914c88.0.1791386357677;
+        Wed, 07 Oct 2026 08:19:17 -0700 (PDT)
+Received: from localhost ([2a00:79e0:2e7c:8:63eb:e7f9:1d47:7d47])
+        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-1616727976csm7679456c88.8.2026.10.07.08.19.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 07 Oct 2026 08:19:17 -0700 (PDT)
+Date: Wed, 7 Oct 2026 08:19:15 -0700
+From: Brian Norris <briannorris@chromium.org>
+To: Alex Elder <elder@ieee.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+	Ulf Hansson <ulfh@kernel.org>, linux-kernel@vger.kernel.org,
+	Alex Elder <elder@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Johan Hovold <johan@kernel.org>,
+	Rui Miguel Silva <rmfrfs@gmail.com>, greybus-dev@lists.linaro.org,
+	linux-staging@lists.linux.dev
+Subject: Re: [PATCH 07/13] greybus: Discard pm_runtime_put_autosuspend()
+ return value
+Message-ID: <asZi8-2TJsIWVD_b@google.com>
+References: <20261006231900.3230373-1-briannorris@chromium.org>
+ <20261006161337.7.Ib0925681ca623093ddf812cc4de848e10ec07c73@changeid>
+ <5b4a1156-d05b-470e-952c-1958982f5ae3@ieee.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|BN7PPFDE2ACDA69:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0bb5bb41-bf81-4de8-102f-08df24847f31
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|366016|376014|1800799024|10067099003|56012099006|4143699003|22082099003|11063799006|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	OU56dCSRmxcq3+2n0N/0Buw8ZKD7JxPLX/HLYBv7FkVLBNWOfsWdHKzIRQYKTE/gEwIlQaT9+2VBaBQL8X6Q39BuXsJqMoPQPerOcVxY1ey7+1CXTjB1s4EefICO5+DrPa39X5MuGRzdUmt7Fveb9YI+pqixghS14/BjNwFuZR4IKch7vTL7UNLe1XgegLXNrVqxe41gzpOUkJ9OFavOAVbqb7psHcJnx6pPWlHkHQIHm3hMbLcVb1BeaxAB9mniDQM+ghYaE4kI0o5SZSEagc7+HQJdhQxWLKlt937H8MlnpFt8GlJA+9u2ZB+rIs+FYckLs0fyW5U3oiHYBm2ffGZTkWd+GArBwMg8FDtf7a22aC41XtuQP1Z2BnTi8yRqfb2vGlz8NVU11uNZgxpvn51kKLCKFJadFbo6GVOhLwwYaIvnCv5Fbh8D7BsEIQEGbPEvqeWaS1dAZDTnE+0yq48ZcVMVyTSxZMX4BnP6S4egnpmYDZ6Z0CIK1vLfTn6GQjrLfI6pQGTr2LjhRz1B+cA73KytmSQDHiZUl5bLkHCazGqkMLS3Ycu8q8TJBrZ2+iTBdiFLr4tIsvijLi4KPy5hbUj6x28yeITZpftNYLWUEPvYWkngiCsxcXn/dOAMcdrVdXD1rGbRV5WMyRUsnP+PH+bcufUf4jmgrIess9c=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(10067099003)(56012099006)(4143699003)(22082099003)(11063799006)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?c0dKcmc4RkVJbGFZZWphMU4wWGYyT3pNWE5QRmlQYlNnNlJUSTFidS9hVzhQ?=
- =?utf-8?B?Y0NqSlZ5em9pZ3F5RC82aFYxZ2dXd3lkT0dNbTFEVkJzVmN3ZjlFMXpjYzNB?=
- =?utf-8?B?TUd3WWNFa2pJMmdxSXBhU3QyVHU2TzR1SCtzelBCYUMxY0ZkUUxDbG9YdHNQ?=
- =?utf-8?B?Sy8wc2MxSG1CZC84WWh3aGZvK29HZkJMYXBCaGE0emtHTkV0VWVwWGxBUDRT?=
- =?utf-8?B?TS9QOERud2RVNWRpRnJOejlnb05jb3BKSUhmU1JmS2crVXdrang0NUhRYVlW?=
- =?utf-8?B?U1FyZlVWQjJrZFBaNWN3R2JxZGp5K0N0cUdKMC9jNC9GbDlNaHB2WURBRGRp?=
- =?utf-8?B?U2pzdFJCNGlBd0tFd2lXNUhOb2VTY2haZzc4djlTSEJPRjdQV0hrajV1ZTNu?=
- =?utf-8?B?Ujk5MnF5aEhNU2ZWTTcwUm1PdDQrVGV5NTJFL1Rkb3FFcFJSMU0rVjlyN3B0?=
- =?utf-8?B?RUJPa1MyTE5ka3k0RG16ejA3VUt6eVU1V1UwUVYvbHVpanF2TGJiL2tVUXEx?=
- =?utf-8?B?ZWV0T1cxM29HZEJZY2FoVFVSbEoyenZUZjBvd2RLSlBHM1JZMUI0TWlsZzFi?=
- =?utf-8?B?RU95ZDRDTG8wUGxwV1dZdEEyL1lxWFdpQXdDdVZ2NWJBS0pBZXpwUlBQVDI5?=
- =?utf-8?B?Mk9USS9TWEhBemN4NkRrODVJUnlIdSt5aERoUldERE1yVzAxYmd0c29pQTdU?=
- =?utf-8?B?WnYzR1pPdkQrUUEzYWNoVzY5ZHhDRU9Nd2xPcXVrU0ZoWU5nM3NHWEJaMUk2?=
- =?utf-8?B?Q2xycHdSckNjTWVidDBtc0lxV2pKcWdHQ2wxdTQzdlFnZjloZWcraVRjSlFW?=
- =?utf-8?B?MXk4UkJHdEtiQ2hJVVNRTDdJd1EvRlJxUUc0MkUxaHphNTZxdTFOc2lFRllV?=
- =?utf-8?B?aXcxQitoWEdQMm5aMDZrNFpVVzNQOTErcjRtMUJRbjVLMkZPN1pkYi9jUkFk?=
- =?utf-8?B?L29Pc205ZUQ3NDRpLzVzdm1pSjZFOXpmaU1HVnpxS01xUTNpbjBWWjJMTmNv?=
- =?utf-8?B?QS80UFN0Y0Y4dlR5ZGhpR2xBUERjdEQxZWZyZElNL3pYNEg1MUd3YkJ5ZXRq?=
- =?utf-8?B?VDBkVXdmV2o0ZmdWaUF4Y0IrQjNPYmRDdjM5SmY1Ny9XcFRiZ0dzMzJPaCtN?=
- =?utf-8?B?dGl2ZUdoU0NheVpVRlMrQzZONU8vZDZsQjdSQVAzeXQ5RCtYOXVHRit1QWZR?=
- =?utf-8?B?cEhaKzc3aWlxLzVWK1c1bTJnMTdNSDZuNEkraElkOUZ5ZzlqcmxNNnYxZ3lR?=
- =?utf-8?B?TTRNU2JUZ3BmZjJvVEw3d3VTRWVmalZvNHJ2YTRJc3FZcUJyNEVqYVI1M3Zy?=
- =?utf-8?B?Q3pLVW1ZWlV5aWlyb2JUYU0wdjJTS1phQVhtK3ZvVzFZUkNveUp4S0ljYnF3?=
- =?utf-8?B?N1p2OFFsMDFYeGhhOGZVTWJja1hPYk1qaVZYMWI1bUEydjJqUXdsRDMveXVR?=
- =?utf-8?B?aDJPdFJuNFdzYXZsdTJwNFVpVFUwb3pWNmtkTFJBUnIwQS9QMlJjMnFibTEv?=
- =?utf-8?B?VkFoUjFOdFBvdkZ0c0ErTmtEakU4eDdTY1dMcWh0b1pkRmZHVXZFYUI5WE9n?=
- =?utf-8?B?bUp5L2Y3dlR0YkNUcStYMFQxSTNCNFIvbk1NbE9YUTBwc0J4Y3R2a1hJRVVn?=
- =?utf-8?B?OCtWT0ZmbGRlSjJFbWRKRWlxY1lYUUsxWE5RcnNKVkNyYkt1NUR4aUpBQ05k?=
- =?utf-8?B?NStxU1MzcnBQdmNOaDNHbWpBeWRvbWJtc0ZvNUovZ1lCODY0OTQwWmhRa0hx?=
- =?utf-8?B?eVhlbytFYXVnb2FHNVdoMTJWVFV1SW5EekxXWVljdG9RSjJqWStDUHpMK0hr?=
- =?utf-8?B?R2dOeGdxV0xaa0NhOFhOTy9DTGFsSmtLNXRaNU9KRUJiVVVQQUJYMm1ucVV0?=
- =?utf-8?B?MThpRDJ6b2xXNUJPSVRPSHdBOGkrMzdUSzZpSG9CNy90ZkY5S2x6dGFnZ1VQ?=
- =?utf-8?B?cTJUUXJIYzN5YmNVY1B1OFo3Si9PRzhnOXpzVVFjSkptMmo4dEg0bTZRS2hy?=
- =?utf-8?B?ZWhKaVVTT0NrdENhZUV0Y0RxRUJPcGZJU2M2SGlYUytDa2RvU0hkQjBJdUgv?=
- =?utf-8?B?UktvZHNtMml2NFBibEJSUVRmTEFBbUhtaWR4cjVqZnlLaTR0Yzd5aUx6TUlm?=
- =?utf-8?B?cG5XYy9qSjREYURFWkNaWHdJSThrUkNKMVJiQzl4M0x5MzUxSnI5Wlk5UDZT?=
- =?utf-8?B?bk1oMGNyOXp6N0E2aDA2RmVKZDNSNW5hV1RhNlVUSUwxN3dKODg4anZ1bGlO?=
- =?utf-8?B?VWhTMGlVbVNLbktXRGp2amNVOE1VS1hkdGFXb1h2dURhaVUxSUVXa3Q2K1RM?=
- =?utf-8?B?TjcvU09oTjJwUkQzdzZFdVpkeU5RUXBSak8rUGw5NFpZRXBYb3Qydz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0bb5bb41-bf81-4de8-102f-08df24847f31
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Oct 2026 15:06:00.1477
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QnNtoXduuVfZLOarfbd2EGdLOCKOmWPl1TWhNoT+LmbvOpk2ogfg0SswePe6j4hKcmgWVpNZxuqOyRGqACshmg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PPFDE2ACDA69
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5b4a1156-d05b-470e-952c-1958982f5ae3@ieee.org>
 
-Kyle,
+Hi Alex,
 
-Can you please confirm more about your system?  System Model, vendor, 
-BIOS version, BIOS vendor, CPU model.
+On Wed, Oct 07, 2026 at 09:28:45AM -0500, Alex Elder wrote:
+> On 10/6/26 6:13 PM, Brian Norris wrote:
+> > Returning an error code from pm_runtime_put_autosuspend() merely means
+> > that it has not queued up a timer or work item to check whether or not
+> > the device can be suspended and there are many perfectly valid
+> > situations in which that can happen, like after writing "on" to the
+> > device's runtime PM "control" attribute in sysfs for one example.
+> 
+> If I understand this right, "put autosuspend" is basically an
+> unconditional "put" with the assumption that auto-suspend will
+> ensure the eventual suspend occurs sometime after the reference
+> count reaches zero.
+
+Yes. Similar pattern for any other pm_runtime_put... variant -- they
+always decrement the reference counter, even if they otherwise return
+non-zero/error.
+
+It definitely can be confusing, and it's one reason for $subject series
+-- to remove confusing API surface when it doesn't help. (Similar story
+for pm_runtime_get_sync() -- it increments the reference count, even on
+error. That's why pm_runtime_resume_and_get() was invented.)
+
+> > Modify gb_pm_runtime_put_autosuspend() to discard the
+> > pm_runtime_put_autosuspend() return value, change its return type to
+> > void, and update its caller in the Greybus power supply driver
+> > accordingly.  Also drop the redundant pm_runtime_mark_last_busy() call
+> > from gb_pm_runtime_put_autosuspend() while we're here, as this is
+> > already part of pm_runtime_put_autosuspend().
+> 
+> I support including this fix in this patch.
+> 
+> > Note that this resolves a bug in the power_supply driver: in tracking
+> > 'gbpsy->pm_acquired', it erroneously assumed that
+> > pm_runtime_put_autosuspend() would not release a refcount when it
+> > returned a non-zero value. That's a false assumption.
+> 
+> So is it safe for this code to assume the reference count has
+> been decremented in this case?
+
+Correct.
+
+> The comments say we're trying
+> to ensure there's exactly one get/put pair.  (I don't know the
+> reasoning behind that though.)
+
+I didn't look too far into this, but on first glance, it looks like
+gb_power_supply_state_change() can receieve a number of different
+properties, several of which mean "off". We only want the first "off" to
+drop a reference count.
+
+That seems like a fairly typical sort of pattern, and the right answer
+is to ignore the return code, because the reference count was
+decremented unconditionally.
+
+> > This will facilitate a planned change of the
+> > pm_runtime_put_autosuspend() return type to void in the future, similar
+> > to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> > type to void").
+> > 
+> > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> 
+> Despite my questions/comments I think this looks good.
+> 
+> Reviewed-by: Alex Elder <elder@riscstar.com>
 
 Thanks,
+Brian
 
-On 10/7/26 10:04, Kyle Gospodnetich wrote:
-> Yes this does appear to be the same problem, thank you!
+> > ---
+> > This patch is independent of the rest of the series, except for the end
+> > (changing the return type). I expect it can be applied by individual
+> > maintainers, and we pick up the end once the dust is settled.
+> > 
+> >   drivers/staging/greybus/power_supply.c |  8 ++------
+> >   include/linux/greybus/bundle.h         | 12 +++---------
+> >   2 files changed, 5 insertions(+), 15 deletions(-)
+> > 
+> > diff --git a/drivers/staging/greybus/power_supply.c b/drivers/staging/greybus/power_supply.c
+> > index 44bd8a72fa50..beefcbaf3681 100644
+> > --- a/drivers/staging/greybus/power_supply.c
+> > +++ b/drivers/staging/greybus/power_supply.c
+> > @@ -377,12 +377,8 @@ static void gb_power_supply_state_change(struct gb_power_supply *gbpsy,
+> >   			gbpsy->pm_acquired = true;
+> >   	} else {
+> >   		if (gbpsy->pm_acquired) {
+> > -			ret = gb_pm_runtime_put_autosuspend(connection->bundle);
+> > -			if (ret)
+> > -				dev_err(&connection->bundle->dev,
+> > -					"Fail to set wake unlock for none charging\n");
+> > -			else
+> > -				gbpsy->pm_acquired = false;
+> > +			gb_pm_runtime_put_autosuspend(connection->bundle);
+> > +			gbpsy->pm_acquired = false;
+> >   		}
+> >   	}
+> > diff --git a/include/linux/greybus/bundle.h b/include/linux/greybus/bundle.h
+> > index df8d88424cb7..361a94d3499b 100644
+> > --- a/include/linux/greybus/bundle.h
+> > +++ b/include/linux/greybus/bundle.h
+> > @@ -59,14 +59,9 @@ static inline int gb_pm_runtime_get_sync(struct gb_bundle *bundle)
+> >   	return 0;
+> >   }
+> > -static inline int gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle)
+> > +static inline void gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle)
+> >   {
+> > -	int retval;
+> > -
+> > -	pm_runtime_mark_last_busy(&bundle->dev);
+> > -	retval = pm_runtime_put_autosuspend(&bundle->dev);
+> > -
+> > -	return retval;
+> > +	pm_runtime_put_autosuspend(&bundle->dev);
+> >   }
+> >   static inline void gb_pm_runtime_get_noresume(struct gb_bundle *bundle)
+> > @@ -82,8 +77,7 @@ static inline void gb_pm_runtime_put_noidle(struct gb_bundle *bundle)
+> >   #else
+> >   static inline int gb_pm_runtime_get_sync(struct gb_bundle *bundle)
+> >   { return 0; }
+> > -static inline int gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle)
+> > -{ return 0; }
+> > +static inline void gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle) {}
+> >   static inline void gb_pm_runtime_get_noresume(struct gb_bundle *bundle) {}
+> >   static inline void gb_pm_runtime_put_noidle(struct gb_bundle *bundle) {}
 > 
-> -------- Original Message --------
-> On Wednesday, 10/07/26 at 07:56 Mario Limonciello <mario.limonciello@amd.com> wrote:
-> + Kyle
-> 
-> Kyle,
-> 
-> By chance is this the same system that you were talking to me about offline?
-> 
-> 
-> 
-> On 10/7/26 09:41, Giovanni Gherdovich wrote:
->> Some motherboard based on the TRX40 chipset has been reported to ship
->> firmware lacking lowest and nominal frequency values in the
->> _CPC ACPI package. That is, it supports CPPC V2 but not CPPC V3.
->> Firmware updates aren't available.
-> 
-> Can you please add more information about the vendor/model of the MB, etc?
->>
->> amd-pstate requires explicit knowledge of nominal frequency, so it
->> can't load on this hardware. The driver already has a mechanism (the
->> so-called "quirks") to accommodate for missing nominal freq in ACPI
->> tables, so here we use it to match against CPU family, model, core
->> count, and BIOS version.
-> 
-> Yeah; it's intended for this specific case of really old hardware that
-> the BIOS isn't going to fix it.
-> 
-> I don't understand why core count matters though.
-> 
->>
->> Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
->> ---
->>    drivers/cpufreq/amd-pstate.c | 31 +++++++++++++++++++++++++++++++
->>    1 file changed, 31 insertions(+)
->>
->> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
->> index 8bfd46d60843..532ff16dd076 100644
->> --- a/drivers/cpufreq/amd-pstate.c
->> +++ b/drivers/cpufreq/amd-pstate.c
->> @@ -145,6 +145,11 @@ static struct quirk_entry quirk_amd_7k62 = {
->>    	.lowest_freq = 550,
->>    };
->>
->> +static struct quirk_entry quirk_amd_ryzen_threadripper_3000_24c = {
->> +	.nominal_freq = 3800,
->> +	.lowest_freq = 550,
->> +};
->> +
->>    static inline u8 freq_to_perf(union perf_cached perf, u32 nominal_freq, unsigned int freq_val)
->>    {
->>    	u32 perf_val = DIV_ROUND_UP_ULL((u64)freq_val * perf.nominal_perf, nominal_freq);
->> @@ -174,6 +179,22 @@ static int __init dmi_matched_7k62_bios_bug(const struct dmi_system_id *dmi)
->>    	return 0;
->>    }
->>
->> +static int __init dmi_matched_trx40_bios_bug(const struct dmi_system_id *dmi)
->> +{
->> +	/**
->> +	 * Match the Ryzen Threadripper 3000 series, 24-core SKU, sTRX4 socket / TRX40 chipset.
->> +	 */
->> +	if (boot_cpu_data.x86 == 0x17 &&
->> +	    boot_cpu_data.x86_model >= 0x30 && boot_cpu_data.x86_model <= 0x3F &&
->> +	    topology_num_cores_per_package() == 24) {
-> 
-> Does the number of cores actually matter?  Do you mean to say if you
-> swap the CPU to another part CPPC works?
-> 
->> +		quirks = dmi->driver_data;
->> +		pr_info("Overriding nominal and lowest frequencies for %s\n", dmi->ident);
-> 
-> The BIOS bug specifically is lack of values, not invalid values, right?
-> Just want to make sure I'm following this right.
-> 
->> +		return 1;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->>    static const struct dmi_system_id amd_pstate_quirks_table[] __initconst = {
->>    	{
->>    		.callback = dmi_matched_7k62_bios_bug,
->> @@ -184,6 +205,16 @@ static const struct dmi_system_id amd_pstate_quirks_table[] __initconst = {
->>    		},
->>    		.driver_data = &quirk_amd_7k62,
->>    	},
->> +	{
->> +		.callback = dmi_matched_trx40_bios_bug,
->> +		.ident = "AMD Ryzen Threadripper 3000",
->> +		.matches = {
->> +			DMI_MATCH(DMI_BIOS_VENDOR,  "American Megatrends International"),
->> +			DMI_MATCH(DMI_BIOS_VERSION, "2.80"),
->> +			DMI_MATCH(DMI_BIOS_DATE,    "05/17/2022"),
->> +		},
->> +		.driver_data = &quirk_amd_ryzen_threadripper_3000_24c,
->> +	},
->>    	{}
->>    };
->>    MODULE_DEVICE_TABLE(dmi, amd_pstate_quirks_table);
-> 
-
