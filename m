@@ -1,281 +1,550 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D20E63C0606
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2026 11:51:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 846E73D171C;
+	Wed,  7 Oct 2026 12:07:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791373896; cv=none; b=bh05NskpukWt8VQ+pdw7daIALmiex4Z5Xy7XB+Hu2O/3YBbWThXQIyIH4AgJzp7P9YDKQXHJA0dac+e+Us5bwvV0eEWyVXDTVB6icCjckeWdRuEtuTUNFv70m7CRaFU4GVlScMOqGCcyfqS1qfiwLrv0F6Njv+3/ITsAS77ATSs=
+	t=1791374880; cv=none; b=Y8GSkEvoLGR4TETMFXhaYftSQ8t50oblKLnxgGxTlDi4UgL07dlCUk7mKvwgFb6TFIMqdrdwD5as2JNufaFUwZnP04NT75Jw6SE8czvAiv1nSFRzxyx+W3QjKcWxlg2uOmZ30gZlUCT4CmkTHjngN5OV8vJV1XCduTbMISZ4ItQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791373896; c=relaxed/simple;
-	bh=LpFlYyMb2zB0aUYWDfn++RHM4Z40HNmIneYQrmoAcK8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pO8irlbCZfDQ6EC6N91zBTAmNgtFUALlPS2a+ZJhDIPDF102B5qTJXu/oGuaDdY+7wmmjgMDsAK6vUPVQm1+s5pIaZDwPuWtjwWUPt9XaPGa8EAeuZ19gYiIZeENXrj3+or/lPyF7iCU+sj52mV0Kv8nTC1gJOo41p0Z0sYX1Ws=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=jCpXFkwV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RTH/dIE2; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1791374880; c=relaxed/simple;
+	bh=nPgBo7XNNbqSNft8xzOVmh2uwGFaBeJjY72UFYvG0Mc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=oOBZAeACT4SyLfRlRmpblG3hn1Ys072irWygtFMX2YeHfnc1IyyBUZN7IL9DnT2/j4CzVMNQQVEWnWoXmksvw1pp7e99QHth7gF53RSq23cxY+I2zy42+K8ic3K+D/9IBQvxYEVNlCQMDZ1rxbP96CdOgIzkv9xQ+o8EIZhc+v8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=oav3kvzC; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="jCpXFkwV";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RTH/dIE2"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 697BV6wg609856
-	for <linux-pm@vger.kernel.org>; Wed, 7 Oct 2026 11:51:20 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="oav3kvzC"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 697BVLaB3787064;
+	Wed, 7 Oct 2026 12:07:16 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	XtdNBtyuMYUvpdnC3AqmffuEoE7lo8mm8sw8bIFZvDA=; b=jCpXFkwVbJv22Gtp
-	PfcOpQJynVnz4u4uXnFSYjyjYXDH4dvY8rsSKtmSqpqJbRHlKFclK0AmuRD6ECe7
-	tN6Gmb9HUAl5YF3oKIsZZc0Blymr3e30s74AHayPsChoqSO/ezS1V95lI3DhR/j7
-	7c9YGqTA0yO2aJ0DrhgOWDG6du7LQSnsap1K5KenZhGsh+81c4RiYnHP1/2TSn5y
-	NGJ1l+e7VCkN5Zhg0t7WD+p0b2blnDUj8kVhY6d4O4HMibIkK3mPxXRJKgtPOZ0G
-	Z4h7xe5nWDangcEAg62F5ChmHJlewNj6B7dw2G/41n4XTAK1sxCwpu06rx7Wj31l
-	cUtI7A==
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5fc5994q-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 11:51:19 +0000 (GMT)
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-91792488228so91379156d6.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 04:51:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791373879; x=1791978679; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XtdNBtyuMYUvpdnC3AqmffuEoE7lo8mm8sw8bIFZvDA=;
-        b=RTH/dIE2cfH/+1SXj5Gkx6kL/rb2x8SgiOUMMqaFE3XAe6Zk71fyxX8O9WuWeo9iA6
-         Mkz5fIEpnv9pRBNhqJIb7+88phWYjy9X13dtKRkHVJK8rMNtZBpYtE8f4+J5Bo6poty8
-         an27anpEXKIJQCPhEMlFSpz0ITJ7k3T1rhX3pP2GZewhP7HWWVHj7YSSofP34qwMi2TL
-         PMJOF62i9jaJ4KIZzzvxCtscPEGyQOs2uuvkwmCvWIb0+UmcOnXgg/0Wlzcmc2b3+CXO
-         lVDf+5w58k4uysywOCYbhsC2Lhx2Gxiu98FuYtaFGl+o03PDUmrZnJsmbAhdeKD8WEFs
-         vWMQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791373879; x=1791978679;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=XtdNBtyuMYUvpdnC3AqmffuEoE7lo8mm8sw8bIFZvDA=;
-        b=ulSG9GUAnxDdkn2ihiz22nPL5eEmpNkHNCL2tKlqzGWkPrkfCkNkSKNowSufYvHMwS
-         x8dBE5KFGb50nitKdCIVFp6qMZtrpPG5xPisg5/DsbDnU+gDDIRNeItQrw3XTMb/lv9Z
-         y6cAem7/V2bxWp5b3Siy7U0coI3r1j52nIJMMfnGelPNDQ5uiiV8wzOmu5gqnykAp3pl
-         7BW8WfbnyoaGdbWk1AFzv6rEUS/ipMzn580vUblN+Cy+SAG6UXe4/AbaEopxuIjZHX/9
-         5FferR4ay69yTgXEmk6KENd2rXy2IwPcv6k4CHY0ECcONCRnC2RyDtG+syDC0XFWK08S
-         2p9w==
-X-Forwarded-Encrypted: i=1; AKwUvBxHr53/BGw6+DxBEDIhjwoLyLxr9CjS9K7laYqU8q3oxf4tLMfXAm1hnLFdHWJnCESG/75CPdvv9A==@vger.kernel.org
-X-Gm-Message-State: AFuF++kc/rQiNFYkSoyKfXpPI2k68q9vDOoGr7rIuqelPC7TCSf6aRdo
-	TWF7u4UYM4korj+qdZoOSOX5TTBt7sWQe/CloY3tBeL4K26ZQMm8WSoxqJTTeqvKPi35US3h453
-	6xuiqcGr+4LGLKZyC3xh2rHHcifPwAlLcolwzjQsMQYr1CSArxiN9fAn6DKqgOw==
-X-Gm-Gg: AYBFou3AEPRJCEsiAArQckPr6+PYDw18/6IJYdqbPXNxJl7ioEIi5hfhtuibIKTRxZO
-	mTJFrcb/hB8LPSGUXw7590fhjiXuhxgE3VVKvaa5EpyY0rk1Pz76JUh+1ViryChmbAxSRUXlLWJ
-	PbhFAENZ0ejPUECojJbqRfYrZQsmA2kSo0vOlzi3VWrSCI1aWH8AeUWFrCzdlkqov2yS/JWq2Jm
-	GLMq4IZy74upGyHssdBBTPf/cRnAtxV8EFYy1mlFmQSAC5NAeEgKq4CNmzNmh1pFHKfyX6RJfZj
-	4mhSUgSC7x2sVWcmpDxktpKklV7E3WywHyFFXkvLAK5d941X9DUUfRjXettflvIEKrw3CrKOadS
-	gWNcuGQkEEl2gJ9dIFwlt/ChtC2g1O6J3tZJ8ADXFGGMq
-X-Received: by 2002:a05:620a:31a8:b0:93e:634a:99c8 with SMTP id af79cd13be357-93e9b71c00cmr339090985a.25.1791373878652;
-        Wed, 07 Oct 2026 04:51:18 -0700 (PDT)
-X-Received: by 2002:a05:620a:31a8:b0:93e:634a:99c8 with SMTP id af79cd13be357-93e9b71c00cmr339084385a.25.1791373877989;
-        Wed, 07 Oct 2026 04:51:17 -0700 (PDT)
-Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48c71d2d563sm4984894f8f.41.2026.10.07.04.51.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 07 Oct 2026 04:51:17 -0700 (PDT)
-Message-ID: <7bb74631-6703-4a30-a7a7-424ce6340a03@oss.qualcomm.com>
-Date: Wed, 7 Oct 2026 13:51:11 +0200
+	CdqCL6s3aRLlxJOxNot9tOrIZiua8b7e3tQ/DCfNkKI=; b=oav3kvzC1ZPJhIqN
+	BCZ+5xeRLdskqYNvqc1xZjHZdEZPpV7LoY8+Q7T9KU02BmDYy97djkz9rYzXoeti
+	P5OpclpMAPpEsi8BJgJjjdoUSHRLfv2a9AsdkfyvrFCytLNaOPnqdxFmDd+4JLs0
+	lSfTrl90iBw6D0C5/2RgRw875zPxN66fWPO1PKLHescygbNTbGYcvJrqg+nmnosc
+	95xpmr69iB81Hw3Ha8VrHEcdGedUEvTcyCEvd1zpYgJI+Wg70JdWQyGLL+YI5SkN
+	F+n/dGJgFxAhQ7ESFB7SiDFo2QMHs1PsWiHCyUxziI7dH/uZ3f7XnUVOIKKUIOTe
+	xlDqqA==
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5hdcrxq9-65
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 07 Oct 2026 12:07:15 +0000 (GMT)
+Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 69776n4B1872904;
+	Wed, 7 Oct 2026 07:06:49 GMT
+Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 69776m1s1872875;
+	Wed, 07 Oct 2026 07:06:49 +0000 (GMT)
+From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Date: Wed, 07 Oct 2026 12:36:37 +0530
+Subject: [PATCH v16 2/6] reboot: hw_protection_trigger: use standardized
+ numeric shutdown/reboot reasons instead of strings
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird Beta
-Subject: Re: [PATCH 1/2] thermal/drivers/mediatek/auxadc: Register per-sensor
- thermal zones
-To: =?UTF-8?Q?Nils_B=C3=BCchner?= <nils@buechner.me>,
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261007-pscrr-framework-v16-2-3642c277bebb@oss.qualcomm.com>
+References: <20261007-pscrr-framework-v16-0-3642c277bebb@oss.qualcomm.com>
+In-Reply-To: <20261007-pscrr-framework-v16-0-3642c277bebb@oss.qualcomm.com>
+To: Sebastian Reichel <sre@kernel.org>, Benson Leung <bleung@chromium.org>,
+        Tzung-Bi Shih <tzungbi@kernel.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-References: <20261006025410.506443-1-nils@buechner.me>
- <20261006025410.506443-2-nils@buechner.me>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20261006025410.506443-2-nils@buechner.me>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA3MDA0NyBTYWx0ZWRfX/JRMrepkdGtQ
- kWUCb/UJyQCTSluISYG0Vw8F0sLemTMT3Dp9spfjfM9P7ucRseUC0gsZDq16HrKQ5bGw9hnfo9F
- JFSKGttvqh4eOpp2uEW3V/JxXeLl1oY=
-X-Proofpoint-GUID: hODmmW1zgXFFX4fhLgjAXKCf1to2uPxq
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA3MDA0NyBTYWx0ZWRfX0P+10qcbBjJc
- trhmvzpe6+ShNBzsVYBtfe0ympfkBWagDPRt5wgmrGapXEaH9oH0eQrSv9VwfkEvaO6s/ra4upq
- 8lHA/FuBDs9QQInF34Joe5tUUhjgDQDB0JnCk36kTmZj2q1BKnC/6RD92nPFkNUND/1DdzOGerD
- r/6PzkeFvoEX5gLcwF6nbtWFZFJA+NmVlc2ZjGR6cicnGZUCPgF2YS3xQS5ZpNh9hF8i+UmYJAu
- khd0Dr7ssjm/lTb3+sBC32iFboMcOR22qWDRmtTW13DVU8Ky57FpdXZf70CCSH1BSvjS4IADJxs
- ygn3XI/QIGgloUetYDyI732dQE7Wb9OJJD2oAkLublKyqm02AWzRhAi6f1KFwpKDUX54mZUyZzj
- 6OZW4+30yjP73PbqMcvdIuRfU49NpjW9anX2WJHQJqgT87WBa8k3gK7J45BNmY5KqWWtc2Wmlbo
- Ckm6iArQi+c0A7ZqryQ==
-X-Proofpoint-ORIG-GUID: hODmmW1zgXFFX4fhLgjAXKCf1to2uPxq
-X-Authority-Analysis: v=2.4 cv=a6+lZkSF c=1 sm=1 tr=0 ts=6ac63237 cx=c_pps
- a=oc9J++0uMp73DTRD5QyR2A==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=twVTte8M8PIwAJgjBN8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=iYH6xdkBrDN1Jqds4HTS:22
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Oleksij Rempel <o.rempel@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, chrome-platform@lists.linux.dev,
+        avaneesh.dwivedi@oss.qualcomm.com,
+        Umang Chheda <umang.chheda@oss.qualcomm.com>,
+        Ulf Hansson <ulfh@kernel.org>,
+        Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
+        Bradley Morgan <brads@mainlining.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>
+X-Mailer: b4 0.14.3
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-GUID: qhAqzLHjsO0bs-knIWtSd_OFQI7Dyxfl
+X-Authority-Analysis: v=2.4 cv=aKFlOr9m c=1 sm=1 tr=0 ts=6ac635f3 cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=pGLkceISAAAA:8
+ a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8 a=OuZLqq7tAAAA:8 a=EUspDBNiAAAA:8
+ a=7sc-FwRdcYxzY__InfsA:9 a=QEXdDO2ut3YA:10 a=cvBusfyB2V15izCimMoJ:22
+ a=AKGiAy9iJ-JzxKVHQNES:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA3MDA0OCBTYWx0ZWRfX8fzQ+R7KqaNw
+ cmUOrXYD7Vy8dHupeDW1q7Zv2leygUSPSbHNN9AI2DF9phkj7aoe38QEeJLaWdoh9sYJyw/lbXZ
+ 8ZrssCNZELIFved03ABoZKYyyeoLY34=
+X-Proofpoint-ORIG-GUID: qhAqzLHjsO0bs-knIWtSd_OFQI7Dyxfl
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA3MDA0OCBTYWx0ZWRfX1lEfzQd9rm1i
+ nenHWs6Sdkx7ctsFL/pVCp5bP6gZNrvGA7h8LP5CMSH9vGOLsWnmWRa7v+Jp5zUv7/l2cX5G5ni
+ yUHRxinL+ak4Si4Tm69Rd0cFO/rDMSV5hOkptJC/mya2L47L0xEQkqCf693QiBSUFIVZ0j0shgx
+ lUStHY9K4TksuHeO3w+7+rDXZXA+6EFNKcn4qZiZ/mR9h9N78nQ767Um+pwgCvBmRm8LRMsQmsE
+ uTgSoF3TnY9a2Eh48yz8kGpPE9ICLYjZffqd1+ux9nduYFi1RXlQG1Ls40eUM1CupVF7KwvQdUL
+ YNaIhecO/bxpnhjjenrtxXAGrwJoxz75YNdKUQN3oREVvzGVHJrbb4NVV2N/s5cYvKpUY9XEKyZ
+ rxWA3r/VdiyvG1etn0HS59Lc9y47ZPksytO5/CE/b3S+5ENsfLecJ09fBgaDsJHTpzZ1sBDt36z
+ 2S8fM8aJga19iWLG0DQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-07_04,2026-10-06_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 adultscore=0 suspectscore=0 malwarescore=0
- lowpriorityscore=0 bulkscore=0 spamscore=0 clxscore=1015 impostorscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2610070047
+ suspectscore=0 phishscore=0 malwarescore=0 priorityscore=1501 impostorscore=0
+ bulkscore=0 adultscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610070048
 
-On 10/6/26 04:54, Nils Büchner wrote:
-> The driver registers only thermal zone 0, which reports the hottest of
-> all sensors. The MT8183 devicetree also describes a zone per sensor
-> (soc, gpu, md1, cpu-little, cpu-big, abb as sensor ids 1-6), and
-> mtk-svs looks up the "gpu-thermal" zone for its GPU banks. Without it
-> SVS fails to probe on MT8183:
-> 
->    SVSB_GPU: cannot get "gpu-thermal" thermal zone
->    mtk-svs 1100bc00.svs: error -ENODEV: svs bank resource setup fail
-> 
-> so the SoC never gets its calibrated, lower voltages.
-> 
-> Additionally register every sensor that has a devicetree zone, using
-> sensor id = sensor number + 1, read from that sensor's own measurement
-> register. Sensors without a zone are skipped, so SoCs whose devicetrees
-> only describe zone 0 are unaffected.
-> 
-> Runtime-tested on an Acer Chromebook Spin 311 (MT8183, juniper) with a
-> 7.0-based kernel (the hardware is not set up to boot mainline);
-> build-tested on mainline with W=1. On the device: all six
-> sensor zones register and read plausible values (31-34 C idle, close
-> to the board sensors), and mtk-svs finds gpu-thermal.
-> 
-> The change and this changelog were drafted with an AI coding assistant
-> during a debugging session on the hardware; they were reviewed and
-> tested by the submitter.
-> 
-> Assisted-by: Claude Opus 5.5
-> Signed-off-by: Nils Büchner <nils@buechner.me>
-> ---
->   drivers/thermal/mediatek/auxadc_thermal.c | 80 ++++++++++++++++++++++-
->   1 file changed, 79 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
-> index 9ee2e7283..59c8eaf87 100644
-> --- a/drivers/thermal/mediatek/auxadc_thermal.c
-> +++ b/drivers/thermal/mediatek/auxadc_thermal.c
-> @@ -308,6 +308,13 @@ struct mtk_thermal_bank {
->   	int id;
->   };
->   
-> +/* A single sensor, exposed as its own thermal zone (DT sensor id = sensor + 1) */
-> +struct mtk_thermal_sensor {
-> +	struct mtk_thermal *mt;
-> +	int bank;
-> +	int index;
-> +};
-> +
->   struct mtk_thermal_data {
->   	s32 num_banks;
->   	s32 num_sensors;
-> @@ -870,6 +877,77 @@ static const struct thermal_zone_device_ops mtk_thermal_ops = {
->   	.get_temp = mtk_read_temp,
->   };
->   
-> +static int mtk_read_sensor_temp(struct thermal_zone_device *tz, int *temperature)
-> +{
-> +	struct mtk_thermal_sensor *sensor = thermal_zone_device_priv(tz);
-> +	struct mtk_thermal *mt = sensor->mt;
-> +	const struct mtk_thermal_data *conf = mt->conf;
-> +	struct mtk_thermal_bank *bank = &mt->banks[sensor->bank];
-> +	int temp;
-> +	u32 raw;
-> +
-> +	mtk_thermal_get_bank(bank);
-> +	raw = readl(mt->thermal_base + conf->msr[sensor->index]);
-> +	temp = mt->raw_to_mcelsius(mt, conf->bank_data[sensor->bank].sensors[sensor->index],
-> +				   raw);
-> +	mtk_thermal_put_bank(bank);
-> +
-> +	if (!mtk_thermal_temp_is_valid(temp))
-> +		return -EAGAIN;
-> +
-> +	*temperature = temp;
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct thermal_zone_device_ops mtk_thermal_sensor_ops = {
-> +	.get_temp = mtk_read_sensor_temp,
-> +};
-> +
-> +/*
-> + * Zone 0 reports the hottest sensor. Also register every individual sensor
-> + * the devicetree describes (sensor id = sensor number + 1): MT8183 SVS looks
-> + * up its GPU bank temperature through the "gpu-thermal" zone and cannot
-> + * probe without it. Sensors without a devicetree zone are skipped.
-> + */
-> +static int mtk_thermal_register_sensors(struct mtk_thermal *mt)
-> +{
-> +	const struct mtk_thermal_data *conf = mt->conf;
-> +	struct thermal_zone_device *tzdev;
-> +	struct mtk_thermal_sensor *sensor;
-> +	int id, b, i;
-> +
-> +	for (id = 1; id <= conf->num_sensors; id++) {
-> +		sensor = NULL;
-> +		for (b = 0; b < conf->num_banks && !sensor; b++) {
-> +			for (i = 0; i < conf->bank_data[b].num_sensors; i++) {
-> +				if (conf->bank_data[b].sensors[i] != id - 1)
-> +					continue;
-> +				sensor = devm_kzalloc(mt->dev, sizeof(*sensor), GFP_KERNEL);
-> +				if (!sensor)
-> +					return -ENOMEM;
-> +				sensor->mt = mt;
-> +				sensor->bank = b;
-> +				sensor->index = i;
-> +				break;
-> +			}
-> +		}
-> +		if (!sensor)
-> +			continue;
+Prepares the kernel for the Power State Change Reason (PSCR) recorder,
+which will store shutdown and reboot reasons in persistent storage.
 
-Please move routines into self-explanatory functions and make this 
-initialization function simpler to understand
+Instead of using string-based reason descriptions, which are often too
+large to fit within limited storage spaces (e.g., RTC clocks with only 8
+bits of battery-backed storage), we introduce `enum psc_reason`. This
+enumerates predefined reasons for power state changes, making it
+efficient to store and retrieve shutdown causes.
 
-> +
-> +		tzdev = devm_thermal_of_zone_register(mt->dev, id, sensor,
-> +						      &mtk_thermal_sensor_ops);
-> +		if (IS_ERR(tzdev)) {
-> +			if (PTR_ERR(tzdev) == -ENODEV)
-> +				continue;
-> +			return dev_err_probe(mt->dev, PTR_ERR(tzdev),
-> +					     "failed to register sensor %d\n", id);
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->   static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
->   				  u32 apmixed_phys_base, u32 auxadc_phys_base,
->   				  int ctrl_id)
-> @@ -1294,7 +1372,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
->   	if (ret)
->   		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
->   
-> -	return 0;
-> +	return mtk_thermal_register_sensors(mt);
->   }
->   
->   static struct platform_driver mtk_thermal_driver = {
+Key changes:
+- Introduced `enum psc_reason`, defining structured reasons for power state
+  changes.
+- Replaced string-based shutdown reasons with `psc_reason` identifiers.
+- Implemented `get_psc_reason()` and `set_psc_reason()` for tracking the
+  last shutdown cause.
+- Added `psc_reason_to_str()` to map enum values to human-readable strings.
+- Updated `hw_protection_trigger()` to use `psc_reason` instead of string
+  parameters.
+- Updated all consumers of `hw_protection_trigger()` to pass an appropriate
+  `psc_reason` value instead of a string.
+- All structured logs now go through a single `pr_emerg()` in
+  `__hw_protection_trigger()`, providing consistent output:
+    HARDWARE PROTECTION <action>: <reason-code> (<reason-string>)
+
+Co-developed-by: Oleksij Rempel <o.rempel@pengutronix.de>
+Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Acked-by: Mark Brown <broonie@kernel.org>
+Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Bradley Morgan <brads@mainlining.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+
+changes v16:
+- Add Reviewed-by tag from Bradley Morgan.
+- Add Reviewed-by tag from Daniel Lezcano.
+- Remove unused PSCR_MAX_REASON macro - Daniel Lezcano.
+- Rename "Invalid" string to "Invalid reason" - Daniel Lezcano
+changes v12:
+- drop Tested-by: Faruque Ansari and Francesco Valla; the end-to-end
+  recording flow they tested has been reworked (multi-provider) and the
+  recorder driver is no longer part of the series - re-testing is welcome
+changes v10
+- regulator_handle_critical: set pscr = PSCR_UNKNOWN for default case
+- add Acked-by: Daniel Lezcano ..
+changes v9:
+- Remove redundant pr_crit() messages before hw_protection_trigger()
+- Replace psc_reason_to_str() switch with static const string array
+- Mark psc_last_reason as static
+changes v8:
+- add Acked/Reviewed-by.
+changes v6:
+- added in this version
+(cherry picked from commit 29591d88486c392e2264de73c4e90106f181b33c)
+---
+ drivers/platform/chrome/cros_ec_lpc.c |   2 +-
+ drivers/regulator/core.c              |  16 ++---
+ drivers/regulator/irq_helpers.c       |   9 +--
+ drivers/thermal/thermal_core.c        |   3 +-
+ include/linux/reboot.h                |  78 ++++++++++++++++++++++-
+ kernel/reboot.c                       | 112 ++++++++++++++++++++++++++++++++--
+ 6 files changed, 198 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/platform/chrome/cros_ec_lpc.c b/drivers/platform/chrome/cros_ec_lpc.c
+index 78cfff80cdea..00e98d12ddbc 100644
+--- a/drivers/platform/chrome/cros_ec_lpc.c
++++ b/drivers/platform/chrome/cros_ec_lpc.c
+@@ -455,7 +455,7 @@ static void cros_ec_lpc_acpi_notify(acpi_handle device, u32 value, void *data)
+ 		blocking_notifier_call_chain(&ec_dev->panic_notifier, 0, ec_dev);
+ 		kobject_uevent_env(&ec_dev->dev->kobj, KOBJ_CHANGE, (char **)env);
+ 		/* Begin orderly shutdown. EC will force reset after a short period. */
+-		__hw_protection_trigger("CrOS EC Panic", -1, HWPROT_ACT_SHUTDOWN);
++		__hw_protection_trigger(PSCR_EC_PANIC, -1, HWPROT_ACT_SHUTDOWN);
+ 		/* Do not query for other events after a panic is reported */
+ 		return;
+ 	}
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 631b55142809..90c406a4a045 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -5551,26 +5551,26 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
+ static void regulator_handle_critical(struct regulator_dev *rdev,
+ 				      unsigned long event)
+ {
+-	const char *reason = NULL;
++	enum psc_reason pscr;
+ 
+ 	if (!rdev->constraints->system_critical)
+ 		return;
+ 
+ 	switch (event) {
+ 	case REGULATOR_EVENT_UNDER_VOLTAGE:
+-		reason = "System critical regulator: voltage drop detected";
++		pscr = PSCR_UNDER_VOLTAGE;
+ 		break;
+ 	case REGULATOR_EVENT_OVER_CURRENT:
+-		reason = "System critical regulator: over-current detected";
++		pscr = PSCR_OVER_CURRENT;
+ 		break;
+ 	case REGULATOR_EVENT_FAIL:
+-		reason = "System critical regulator: unknown error";
++		pscr = PSCR_REGULATOR_FAILURE;
++		break;
++	default:
++		pscr = PSCR_UNKNOWN;
+ 	}
+ 
+-	if (!reason)
+-		return;
+-
+-	hw_protection_trigger(reason,
++	hw_protection_trigger(pscr,
+ 			      rdev->constraints->uv_less_critical_window_ms);
+ }
+ 
+diff --git a/drivers/regulator/irq_helpers.c b/drivers/regulator/irq_helpers.c
+index 5b3cfac28667..712e0ce840e7 100644
+--- a/drivers/regulator/irq_helpers.c
++++ b/drivers/regulator/irq_helpers.c
+@@ -64,15 +64,16 @@ static void regulator_notifier_isr_work(struct work_struct *work)
+ reread:
+ 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
+ 		if (!d->die)
+-			return hw_protection_trigger("Regulator HW failure? - no IC recovery",
++			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++
+ 		ret = d->die(rid);
+ 		/*
+ 		 * If the 'last resort' IC recovery failed we will have
+ 		 * nothing else left to do...
+ 		 */
+ 		if (ret)
+-			return hw_protection_trigger("Regulator HW failure. IC recovery failed",
++			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 
+ 		/*
+@@ -263,13 +264,13 @@ static irqreturn_t regulator_notifier_isr(int irq, void *data)
+ 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
+ 		/* If we have no recovery, just try shut down straight away */
+ 		if (!d->die) {
+-			hw_protection_trigger("Regulator failure. Retry count exceeded",
++			hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 					      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 		} else {
+ 			ret = d->die(rid);
+ 			/* If die() failed shut down as a last attempt to save the HW */
+ 			if (ret)
+-				hw_protection_trigger("Regulator failure. Recovery failed",
++				hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 		}
+ 	}
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index ac928c199829..3618986c1cab 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -319,11 +319,10 @@ static void thermal_zone_device_halt(struct thermal_zone_device *tz,
+ 	 * Its a must for forced_emergency_poweroff_work to be scheduled.
+ 	 */
+ 	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
+-	const char *msg = "Temperature too high";
+ 
+ 	dev_emerg(&tz->device, "%s: critical temperature reached\n", tz->type);
+ 
+-	__hw_protection_trigger(msg, poweroff_delay_ms, action);
++	__hw_protection_trigger(PSCR_OVER_TEMPERATURE, poweroff_delay_ms, action);
+ }
+ 
+ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index aa08c3bbbf59..190b5838fda1 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -178,6 +178,73 @@ void ctrl_alt_del(void);
+ extern void orderly_poweroff(bool force);
+ extern void orderly_reboot(void);
+ 
++
++/**
++ * enum psc_reason - Enumerates reasons for power state changes.
++ *
++ * This enum defines various reasons why a system might transition into a
++ * shutdown, reboot, or kexec state. While originally intended for hardware
++ * protection events, `psc_reason` can be extended to track other system
++ * transitions, such as controlled reboots triggered by software or
++ * maintenance operations.
++ *
++ * The values in this enumeration provide structured and standardized
++ * identifiers that replace free-form string descriptions. They are designed
++ * to be stored efficiently, making them suitable for use in environments
++ * with limited storage, such as battery-backed RTC registers, non-volatile
++ * memory, or bootloader communication mechanisms.
++ *
++ * Importantly, the order of these values **must remain stable**, as
++ * bootloaders, user-space tools, or post-mortem investigation utilities
++ * may rely on their numerical representation for consistent behavior.
++ *
++ * @PSCR_UNKNOWN: Unknown or unspecified reason for the power state change.
++ *	This value serves as a default when no explicit cause is recorded.
++ *
++ * @PSCR_UNDER_VOLTAGE: Shutdown or reboot triggered due to supply voltage
++ *      dropping below a safe threshold. This helps prevent instability or
++ *      corruption caused by insufficient power.
++ *
++ * @PSCR_OVER_CURRENT: System shutdown or reboot due to excessive current draw,
++ *      which may indicate a short circuit, an overloaded power rail, or other
++ *      hardware faults requiring immediate action.
++ *
++ * @PSCR_REGULATOR_FAILURE: A critical failure in a voltage regulator, causing
++ *      improper power delivery. This may be due to internal component failure,
++ *      transient conditions, or external load issues requiring mitigation.
++ *
++ * @PSCR_OVER_TEMPERATURE: System shutdown or reboot due to excessive thermal
++ *	conditions. This attempts to prevent hardware damage when temperature
++ *	sensors detect unsafe levels, often impacting CPUs, GPUs, or power
++ *	components.
++ *
++ * @PSCR_EC_PANIC: Shutdown or reboot triggered by an Embedded Controller (EC)
++ *	panic. The EC is a microcontroller responsible for low-level system
++ *	management, including power sequencing, thermal control, and battery
++ *	management. An EC panic may indicate critical firmware issues, power
++ *	management errors, or an unrecoverable hardware fault requiring
++ *	immediate response. The EC reports the panic itself (e.g. the ACPI
++ *	notify value ACPI_NOTIFY_CROS_EC_PANIC on ChromeOS EC hardware); the
++ *	kernel only relays that report, see cros_ec_lpc_acpi_notify().
++ *
++ * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
++ *	value is useful for range checking and potential future extensions
++ *	while maintaining compatibility.
++ */
++enum psc_reason {
++	PSCR_UNKNOWN,
++	PSCR_UNDER_VOLTAGE,
++	PSCR_OVER_CURRENT,
++	PSCR_REGULATOR_FAILURE,
++	PSCR_OVER_TEMPERATURE,
++	PSCR_EC_PANIC,
++
++	/* Number of reasons */
++	PSCR_REASON_COUNT,
++};
++
++const char *psc_reason_to_str(enum psc_reason reason);
++
+ /**
+  * enum hw_protection_action - Hardware protection action
+  *
+@@ -191,13 +258,13 @@ extern void orderly_reboot(void);
+  */
+ enum hw_protection_action { HWPROT_ACT_DEFAULT, HWPROT_ACT_SHUTDOWN, HWPROT_ACT_REBOOT };
+ 
+-void __hw_protection_trigger(const char *reason, int ms_until_forced,
++void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
+ 			     enum hw_protection_action action);
+ 
+ /**
+  * hw_protection_trigger - Trigger default emergency system hardware protection action
+  *
+- * @reason:		Reason of emergency shutdown or reboot to be printed.
++ * @reason:		Reason of emergency shutdown or reboot.
+  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
+  *			triggering it. Negative value disables the forced
+  *			shutdown or reboot.
+@@ -206,11 +273,16 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
+  * hardware from further damage. The exact action taken is controllable at
+  * runtime and defaults to shutdown.
+  */
+-static inline void hw_protection_trigger(const char *reason, int ms_until_forced)
++static inline void hw_protection_trigger(enum psc_reason reason,
++					 int ms_until_forced)
+ {
+ 	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_DEFAULT);
+ }
+ 
++enum psc_reason get_psc_reason(void);
++enum psc_reason get_psc_first_reason(void);
++void set_psc_reason(enum psc_reason reason);
++
+ /*
+  * Emergency restart, callable from an interrupt handler.
+  */
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index d177d89fcc33..c3552653a881 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -13,6 +13,7 @@
+ #include <linux/kexec.h>
+ #include <linux/kmod.h>
+ #include <linux/kmsg_dump.h>
++#include <linux/power/power_on_reason.h>
+ #include <linux/rcupdate.h>
+ #include <linux/reboot.h>
+ #include <linux/sched/signal.h>
+@@ -50,6 +51,8 @@ int reboot_default = 1;
+ int reboot_cpu;
+ enum reboot_type reboot_type = BOOT_ACPI;
+ int reboot_force;
++static enum psc_reason psc_last_reason = PSCR_UNKNOWN;
++static enum psc_reason psc_first_reason = PSCR_UNKNOWN;
+ 
+ struct sys_off_handler {
+ 	struct notifier_block nb;
+@@ -1011,10 +1014,108 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
+ 			      msecs_to_jiffies(action_delay_ms));
+ }
+ 
++/**
++ * get_psc_reason - Retrieve the last recorded power state change reason.
++ *
++ * This function returns the most recent power state change reason stored
++ * in `psc_last_reason`. The value is set using `set_psc_reason()` when a
++ * shutdown, reboot, or kexec event occurs.
++ *
++ * The reason can be used for system diagnostics, post-mortem analysis, or
++ * debugging unexpected power state changes. Bootloaders or user-space tools
++ * may retrieve this value to determine why the system last transitioned to
++ * a new power state.
++ *
++ * Return: A value from `enum psc_reason`, indicating the last known power
++ * state change reason.
++ */
++enum psc_reason get_psc_reason(void)
++{
++	return READ_ONCE(psc_last_reason);
++}
++EXPORT_SYMBOL_GPL(get_psc_reason);
++
++/**
++ * get_psc_first_reason - Retrieve the first power state change reason.
++ *
++ * Returns the first meaningful (non-PSCR_UNKNOWN) reason recorded during this
++ * boot, i.e. the root cause, as opposed to get_psc_reason() which returns the
++ * most recent one. A later event (a watchdog pretimeout, a kernel panic, ...)
++ * updates the last reason but leaves this one untouched, so a recorder using
++ * the "first" record policy can preserve the original cause.
++ *
++ * Return: A value from `enum psc_reason`.
++ */
++enum psc_reason get_psc_first_reason(void)
++{
++	return READ_ONCE(psc_first_reason);
++}
++EXPORT_SYMBOL_GPL(get_psc_first_reason);
++
++/**
++ * set_psc_reason - Set the reason for the last power state change.
++ *
++ * @reason: A value from `enum psc_reason` indicating the cause of the power
++ *          state change.
++ *
++ * This function records the reason for a shutdown, reboot, or kexec event
++ * by storing it in `psc_last_reason`. It ensures that the value remains
++ * consistent within the running system, allowing retrieval via
++ * `get_psc_reason()` for diagnostics, logging, or post-mortem analysis.
++ *
++ * Persistence Consideration:
++ * - This function **does not persist** the recorded reason across power cycles.
++ * - After a system reset or complete power loss, the recorded reason is lost.
++ * - To store power state change reasons persistently, additional tools such as
++ *   the Power State Change Reason Recorder (PSCRR) framework should be used.
++ */
++void set_psc_reason(enum psc_reason reason)
++{
++	WRITE_ONCE(psc_last_reason, reason);
++
++	/*
++	 * Latch the first meaningful reason of this boot as the root cause, so
++	 * that a later event overwriting the last reason does not hide it from
++	 * a recorder using the "first" record policy.
++	 */
++	if (reason != PSCR_UNKNOWN &&
++	    READ_ONCE(psc_first_reason) == PSCR_UNKNOWN)
++		WRITE_ONCE(psc_first_reason, reason);
++}
++EXPORT_SYMBOL_GPL(set_psc_reason);
++
++static const char * const pscr_reason_strs[] = {
++	[PSCR_UNKNOWN]            = POWER_ON_REASON_UNKNOWN,
++	[PSCR_UNDER_VOLTAGE]      = POWER_ON_REASON_BROWN_OUT,
++	[PSCR_OVER_CURRENT]       = POWER_ON_REASON_OVER_CURRENT,
++	[PSCR_REGULATOR_FAILURE]  = POWER_ON_REASON_REGULATOR_FAILURE,
++	[PSCR_OVER_TEMPERATURE]   = POWER_ON_REASON_OVER_TEMPERATURE,
++	[PSCR_EC_PANIC]           = POWER_ON_REASON_EC_PANIC,
++};
++
++/**
++ * psc_reason_to_str - Converts a power state change reason enum to a string.
++ * @reason: The `psc_reason` enum value to be converted.
++ *
++ * This function provides a human-readable string representation of the power
++ * state change reason, making it easier to interpret logs and debug messages.
++ *
++ * Return:
++ * - A string corresponding to the given `psc_reason` value.
++ * - `"Invalid reason"` if the value is not recognized.
++ */
++const char *psc_reason_to_str(enum psc_reason reason)
++{
++	if (reason < 0 || reason >= PSCR_REASON_COUNT)
++		return "Invalid reason";
++	return pscr_reason_strs[reason];
++}
++EXPORT_SYMBOL_GPL(psc_reason_to_str);
++
+ /**
+  * __hw_protection_trigger - Trigger an emergency system shutdown or reboot
+  *
+- * @reason:		Reason of emergency shutdown or reboot to be printed.
++ * @reason:		Reason of emergency shutdown or reboot.
+  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
+  *			triggering it. Negative value disables the forced
+  *			shutdown or reboot.
+@@ -1026,7 +1127,7 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
+  * pending even if the previous request has given a large timeout for forced
+  * shutdown/reboot.
+  */
+-void __hw_protection_trigger(const char *reason, int ms_until_forced,
++void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
+ 			     enum hw_protection_action action)
+ {
+ 	static atomic_t allow_proceed = ATOMIC_INIT(1);
+@@ -1034,8 +1135,11 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
+ 	if (action == HWPROT_ACT_DEFAULT)
+ 		action = hw_protection_action;
+ 
+-	pr_emerg("HARDWARE PROTECTION %s (%s)\n",
+-		 hw_protection_action_str(action), reason);
++	set_psc_reason(reason);
++
++	pr_emerg("HARDWARE PROTECTION %s: %i (%s)\n",
++		 hw_protection_action_str(action), reason,
++		 psc_reason_to_str(reason));
+ 
+ 	/* Shutdown should be initiated only once. */
+ 	if (!atomic_dec_and_test(&allow_proceed))
+
+-- 
+2.34.1
 
