@@ -1,155 +1,187 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com [209.85.160.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 783BD413230
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2026 13:34:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC40C4AD7EF
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2026 14:28:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791380065; cv=none; b=VEFd+GP6E+/WID+pi7JvlPpB6Nonixw4UubAmLLIDcfzAbnFqr8PGnxmzj58b6GKjgerGBsaiaqp6zVeCQYDP3VzD49JdjZnrcVp8xdggcQqm8DUwAn8YrrYs6PBdVazlkJDugxrs6WZ/+T6ABvYymL4AMthwuxV941x2Ijz/Mo=
+	t=1791383334; cv=none; b=rHo6/fDRyjU+KLvjhpWLQ1CNOoHk3IVnCTQBc13uUieg4LUoDFvezvpjwio742nxjzBPhgfsiG46yr0pqucVYyhuouN5iM166SvqmW1yWCEz+B0vBWNBJJuk0CrKJjSyfE1teH91Nm5owEVZmSp3FvFBZFUHHtXqV1Y4q+JkXC4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791380065; c=relaxed/simple;
-	bh=J+Ry4cwzeCUVHqt0PFF643jrxb991egaVN/95KRrhGE=;
+	s=arc-20240116; t=1791383334; c=relaxed/simple;
+	bh=KVQ5MgRmaQYYQf25j/wqXLwVGYvs2wwXh38dzhL7l3s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QKnw+OogugS7RWJkPVPzfYp9xjxxfulXK+jcAiNTFINcWxJlZ6zzg/kszzLT0LD+fdv9HhcmCK0e2y2Wt0ppUS2V3ci5rQAfqPt1G0HzpvBKS81Op4UY/PqlWmU5CWqjkRcEt1rtdJDYEnMu9ld4mdMXf/Bciwts6uus2/xRhEg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=VRIIwtD6; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=dfYB6Ui0; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=sT/cWAH8gYzyyHDvmkHGFL0dLykmIVsm7RQmPRsiA5Y9ogp25XrWYnAWxubmE10STGCvmQFGjZvKCU+OmXk7fAGmnxDV3JobsyMegrewr6+O3fgjuw1UMdfLpOCSmCmdJBEaeZNrVaL2GI444Hpg9RXEhgLmCGhinYARENCZelc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ieee.org; spf=pass smtp.mailfrom=ieee.org; dkim=pass (1024-bit key) header.d=ieee.org header.i=@ieee.org header.b=KLdsr+bN; arc=none smtp.client-ip=209.85.160.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ieee.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ieee.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="VRIIwtD6";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="dfYB6Ui0"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 697BVN4u2364110
-	for <linux-pm@vger.kernel.org>; Wed, 7 Oct 2026 13:34:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	lF50zyxySUMbpLVqNm3u6N8Uxl/mwFSB/O+gwZMjDSI=; b=VRIIwtD6+oDhGMUf
-	sNIZltXXA1EXTqKxH8xFZvfvxYKGZ2aWM9C/Z6/6JDWyjTw8aQYARM5cFrCm58lB
-	xVAweVG1Dvwu8bQ40WenwtoLru9chgdhOL5jU5XuKp6mIUXhe1BP21Uu/IA4Z74g
-	bLTsJPQ0EU9JN3UtHF6CX33GoCZSNR34LaEPdU6MmXKo5+XYABLLYOCeP4aHlKuR
-	UYFGj0LL5PmwezFwy198Lc+Ybei4asqtX9Z3460ebjlkgqRnxoSUC35KfkChS9mD
-	va7NjMteIBMgnRP+EhX5WHoqYfm+ByAac41wjyQCh1FHrk9tQms3O8AI8A7/XVS2
-	yLiPFg==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5fw8smb6-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 13:34:11 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-92e82060977so569185a.1
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 06:34:11 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=ieee.org header.i=@ieee.org header.b="KLdsr+bN"
+Received: by mail-qt1-f173.google.com with SMTP id d75a77b69052e-534e6545939so33175611cf.3
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 07:28:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791380051; x=1791984851; darn=vger.kernel.org;
+        d=ieee.org; s=google; t=1791383328; x=1791988128; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=lF50zyxySUMbpLVqNm3u6N8Uxl/mwFSB/O+gwZMjDSI=;
-        b=dfYB6Ui0VlWqaqSQqYtb103zA+K3YPFEUHwN7XAVeA70q+P6iD5xezu3Y+hsb0U4tE
-         3KbSPI365Ka11jnGWzE+SNr1vEVPvYa4K+47CA+X/uFreRthUgabru+ei6S4kAZvIipS
-         tG42+NWSC84Vm93kcmAqtgTm+hkfVR9KUlBgvV0ujXFRNuEngmiMk/wW+Jt0SJzSsS83
-         89eznDPUEbD38UVkS3hbEyLO8d6MroiR79j49l49EGZcPphdNjrgRLHh04LepTgD9oXj
-         XjUtNMdJFsh0ihpJFpkcIb3omb6kfkw2nWiOfMjEQ/d2dDK6KBFWkNonDkhvuHZDvMvq
-         r2pQ==
+        bh=95l/b3hRWMzn0R2We8bkKJczOlV+bNp1xvkg05eCbus=;
+        b=KLdsr+bNMeDJukBCVzMwHcunmNKL51kFNNOuiSmw61Eybt+CCyOhKTlajlrZKQcEJj
+         vVgDM0Em3ScfAOnHuxpFOKcNSpD+r+mDs3xr9j9FpgcIwWis0W7j1mTl2M3hd9Vy01H7
+         ljEEaIGIGAXltPdh9E+WgG/FboWiD5JDj+jmk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791380051; x=1791984851;
+        d=1e100.net; s=20260707; t=1791383328; x=1791988128;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=lF50zyxySUMbpLVqNm3u6N8Uxl/mwFSB/O+gwZMjDSI=;
-        b=NhOCwYW5AI39PWEUXRbtaso70Hz3DJlRiliIuQdVNhTyiCIexxN5c+w3RypgYcKLiH
-         SZHM9CkNknRhb73ZPoHRmjoBtbLsk7UVjBbt1eSU3WaibV1yjiv8wS2xCLrctwGT04X+
-         zKxgpacnmwl8n5tT0hrCARkAoMAKD6EntTQntfbxacbgKmDzZrwQ4KeyuF6QU9Kt6oyf
-         6Rh4IczV1XG6ZSGIJcUqqG4vFEu1ota3LBUqY6yB2Q1hCdCZSwbNHFYWND//fwfp/OZ0
-         l+VQ9CVOL5/URrmuOHVygPrvRN0IOymmuSDlCW17+ggLcoUJ0rwvQMbL1cI1sQ/UHcyJ
-         07yA==
-X-Forwarded-Encrypted: i=1; AKwUvBwKu/EZ57DZ0eJgZbSBsC6o26XN6VvEdbqt7FZmJaYI0bnR68mV9KHgDdqH1UZV/OyJTHTXauADEg==@vger.kernel.org
-X-Gm-Message-State: AFuF++lrrvaN5TkW+FUBHIGXu2l9VVrhmRWHtyKUHb3b32QbXwdvswI1
-	mfMFQqXAZMB9lTWaccPfOVkaomNFp5AnEDSNBomA05iwPrEflHhcfl3BkiN1092JrdGl1oPGZUR
-	QhL0WADHchx9TDqvGa1LLf7vVZLWd8g9hf5ehGoLkPhNOhydHfVDn2JtSgbF6Pw==
-X-Gm-Gg: AYBFou3klakg0nucXd8vdv/0WjEiN+yBFVlvSUDvk9Mnda8fpr0XUyOxqtVKDSYMgai
-	XVBRi7hnVjvNhRtCR1IaUEEt/c+UH42B9bZp+YO7JCyZs6r/zRi3mhbF3Ne07G4e4TzqCY8gOoU
-	T1P80Nh9VjCBkRUa16EFmS3Vsql5cOyGbZVGYYLBGRViYiI4nmdaW5K8IS8M9LboNAoIJmvtLPl
-	nLeDNnkJGzNvSf2jgYTUT4+y4T/CYAG/U0uzCRmPCfwiD8ylfXrvCII7NYVFpoSjmhJVDlJIneh
-	XgROGgMjl8as7nRreBQNQqwxDWyCt1Aur99/BVxD41+3eWSJGm0oFYz0SaumtsEMa2uyEXw/6EO
-	B5/nWiz7PvVZq5UK2dRu/X9/b7/35qqyH/XERCjN0ErST
-X-Received: by 2002:a05:620a:4808:b0:939:fe55:402a with SMTP id af79cd13be357-93e860dc342mr1130814385a.31.1791380050644;
-        Wed, 07 Oct 2026 06:34:10 -0700 (PDT)
-X-Received: by 2002:a05:620a:4808:b0:939:fe55:402a with SMTP id af79cd13be357-93e860dc342mr1130806585a.31.1791380049939;
-        Wed, 07 Oct 2026 06:34:09 -0700 (PDT)
-Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a17f486b6fsm52614375e9.1.2026.10.07.06.34.05
+        bh=95l/b3hRWMzn0R2We8bkKJczOlV+bNp1xvkg05eCbus=;
+        b=uifo742yRJQbPO9YAxQI7QqB1djw6eSoY9EfJ1iTGp4s6MIW4271Ed3isUoiX+d9WP
+         C9j9TAVvIHyjzEME2Uxew4m3LvyzdBIxaDLYcAIN9x0xsEnKIcxEateVt4t22UEu2rGB
+         huA8gqvZM1bGhpmoCc3dZm1h3Os19g3lJaf+ToaM0KXYWlYxVXWbsACpev2yfvkA2l8f
+         BoQJu432lad5V+LHZw4R7ve3lAP6QO351/hsdlBLQ05S/XIvTv+SYArNzLe+eEe9feYR
+         RB/EIV+WRnOhg0NkZxDdYZb7Wyx/chHWs5I/yQZqYMB23GbnNfHFbWHe2H9sJ5wdFapq
+         YmCA==
+X-Gm-Message-State: AFuF++mOcRbwssgSxMbmkWg6nk1mAqav0GriabkZ6sWM4xCzMtZQ8ByO
+	mDeuLVZ1bIKNKcb4CM2fD/SXq3q/8SEaNhSgmZw39mEE4AMxUVpdLwB44lBIBW6bwZ68OwzM6sF
+	xP2SYZg==
+X-Gm-Gg: AYBFou0nuiXSG5H7u2Z9X6fLz/Nds1q0DvmVVTMJW+6uFM3O2H9ZD667V96NKrFeCfN
+	dCwfKTbRnIFvUYwO31eW/wiVbDRSWMjRLiwovBXDzJEo5ZA/1bVms9UKxJQ7xrGQaEvprwz5Mg8
+	Oxn0TGpjJ6VLZP/oPL6oeqR5umZVgP21iVMZgPFjpysrosKVYDuHnUXAj1vbuWX2eFK4plMmz0f
+	LhjQLeqh96DtmnP7w7ET/dV53lW0NrIsJAvvl1yyoEG6zdRUr9ig5SOZxJy4JetZxyClSLcVGGG
+	mxxP3WJMW/X+h52V1MLrhE0NycWv9dlRNbWqUAbet4TK1Bk2GMXwT7pmT0hfXo/FnFS1NKKZ+PE
+	kT7aB/ySckgpLznmlwOUm9q+Hwk2Mnpr0ZM8P5O721IPCpuBCnKg7gNvaxhO6cLfAWSN+wBxQiu
+	xXF3UvW2RZG0WvNXI+1yWCVIgh9ogFj+PpP8CkFmuSlAGwBSrkM+QpX1JyFGQnsfnJf34HSqxCo
+	l6U
+X-Received: by 2002:a05:622a:2512:b0:535:d7e:dc4 with SMTP id d75a77b69052e-535753b8838mr37078081cf.19.1791383328200;
+        Wed, 07 Oct 2026 07:28:48 -0700 (PDT)
+Received: from [172.22.22.28] ([73.62.185.64])
+        by smtp.googlemail.com with ESMTPSA id d75a77b69052e-535721ec7b1sm21527631cf.30.2026.10.07.07.28.46
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 07 Oct 2026 06:34:08 -0700 (PDT)
-Message-ID: <6e73ffc6-41ee-4ea0-a9e3-3286d6c72cb8@oss.qualcomm.com>
-Date: Wed, 7 Oct 2026 15:34:03 +0200
+        Wed, 07 Oct 2026 07:28:47 -0700 (PDT)
+Message-ID: <5b4a1156-d05b-470e-952c-1958982f5ae3@ieee.org>
+Date: Wed, 7 Oct 2026 09:28:45 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird Beta
-Subject: Re: [PATCH] tools/thermal/tmon: Fix string truncation warning in
- optarg copy
-To: Florian Fainelli <florian.fainelli@broadcom.com>,
-        linux-kernel@vger.kernel.org
-Cc: bcm-kernel-feedback-list@broadcom.com,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Jacob Pan
- <jacob.jun.pan@linux.intel.com>,
-        "open list:THERMAL"
- <linux-pm@vger.kernel.org>
-References: <20260929201951.408456-1-florian.fainelli@broadcom.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 07/13] greybus: Discard pm_runtime_put_autosuspend()
+ return value
+To: Brian Norris <briannorris@chromium.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>,
+ linux-kernel@vger.kernel.org, Alex Elder <elder@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Johan Hovold <johan@kernel.org>, Rui Miguel Silva <rmfrfs@gmail.com>,
+ greybus-dev@lists.linaro.org, linux-staging@lists.linux.dev
+References: <20261006231900.3230373-1-briannorris@chromium.org>
+ <20261006161337.7.Ib0925681ca623093ddf812cc4de848e10ec07c73@changeid>
 Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260929201951.408456-1-florian.fainelli@broadcom.com>
+From: Alex Elder <elder@ieee.org>
+In-Reply-To: <20261006161337.7.Ib0925681ca623093ddf812cc4de848e10ec07c73@changeid>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA3MDA1MyBTYWx0ZWRfX8RhPlBO3Kq3D
- CK9+dT8dl7g8rldn1OiGnusRlymzu+OWsEt9BHbL06Agj2o2ws4AYs1OinArtHwCJxlsWIheijH
- XwAUGb5LcA/w/cZppA4TfGadpQASRqg=
-X-Proofpoint-ORIG-GUID: Cp1Mu_A4POoI09Sy7y3B4TTByZOIQ_Z_
-X-Proofpoint-GUID: Cp1Mu_A4POoI09Sy7y3B4TTByZOIQ_Z_
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA3MDA1MyBTYWx0ZWRfX2vWAjuv0yzks
- fcWAwr1kr1nwyw+Snt+g/SrF6KkSdVRoduFfixyqsJjA4Uuk2CzxGdsTIoa/spFHmRQjNiJo0AR
- cSucwE2x6J1DqT0wzGAnQxk1Vt1MtrR3nIs+xVSt2srQctGqiPhS3wxeKtmTcsmBMmzEvFqyWij
- 7gWn6RtKUVHYT8rLZfXTfKIcg1X5bEgL5mpqGuhIFz6Q8+s6uJxvMtMiD6uUAhmyoRuEA1GiSic
- 2iiwwQGmMvGCg84TjAzWpZeL4raZob/s6URQzfVzHgIgifs/gqDWkJmyNutplu44Wlns2HA+SJh
- QyU+RGksCENlb1N+4FIzruFrSX8y3ucA3JYGF4POapPkAmseyARMMI5dFSv9jftAU+FXZF8xXPo
- qPPf1jSAIK/k7SZ+Byq59FWF+uPz4m+WWoGFjYptxOURGt3RIEuAxFOXLQPSqz9fl03Lr5L/m/z
- 43xnQXFueYXVz1JLLFQ==
-X-Authority-Analysis: v=2.4 cv=Af0kjHXG c=1 sm=1 tr=0 ts=6ac64a53 cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=Q-fNiiVtAAAA:8 a=s7NgktmowLUAvCqQ5TwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=PEH46H7Ffwr30OY-TuGO:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-07_04,2026-10-06_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0
- adultscore=0 priorityscore=1501 spamscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610070053
+Content-Transfer-Encoding: 7bit
 
-On 9/29/26 22:19, Florian Fainelli wrote:
-> GCC warns about possible string truncation with -Wstringop-truncation:
+On 10/6/26 6:13 PM, Brian Norris wrote:
+> Returning an error code from pm_runtime_put_autosuspend() merely means
+> that it has not queued up a timer or work item to check whether or not
+> the device can be suspended and there are many perfectly valid
+> situations in which that can happen, like after writing "on" to the
+> device's runtime PM "control" attribute in sysfs for one example.
+
+If I understand this right, "put autosuspend" is basically an
+unconditional "put" with the assumption that auto-suspend will
+ensure the eventual suspend occurs sometime after the reference
+count reaches zero.
+
+> Modify gb_pm_runtime_put_autosuspend() to discard the
+> pm_runtime_put_autosuspend() return value, change its return type to
+> void, and update its caller in the Greybus power supply driver
+> accordingly.  Also drop the redundant pm_runtime_mark_last_busy() call
+> from gb_pm_runtime_put_autosuspend() while we're here, as this is
+> already part of pm_runtime_put_autosuspend().
+
+I support including this fix in this patch.
+
+> Note that this resolves a bug in the power_supply driver: in tracking
+> 'gbpsy->pm_acquired', it erroneously assumed that
+> pm_runtime_put_autosuspend() would not release a refcount when it
+> returned a non-zero value. That's a false assumption.
+
+So is it safe for this code to assume the reference count has
+been decremented in this case?  The comments say we're trying
+to ensure there's exactly one get/put pair.  (I don't know the
+reasoning behind that though.)
+
+> This will facilitate a planned change of the
+> pm_runtime_put_autosuspend() return type to void in the future, similar
+> to commit 3afd8df02433 ("PM: runtime: Change pm_runtime_put() return
+> type to void").
 > 
->    tmon.c: In function ‘main’:
->    tmon.c:233:25: warning: ‘__builtin_strncpy’ specified bound 20 equals
-> destination size [-Wstringop-truncation]
->      233 |                         strncpy(ctrl_cdev, optarg,
-> 	CDEV_NAME_SIZE);
->          |
-> ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> 
-> Replace strncpy() with snprintf() to guarantee NUL-termination and
-> silence the compiler warning.
-> 
-> Fixes: 94f69966faf8 ("tools/thermal: Introduce tmon, a tool for thermal subsystem")
-> Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+
+Despite my questions/comments I think this looks good.
+
+Reviewed-by: Alex Elder <elder@riscstar.com>
 > ---
-Applied, thanks
+> This patch is independent of the rest of the series, except for the end
+> (changing the return type). I expect it can be applied by individual
+> maintainers, and we pick up the end once the dust is settled.
+> 
+>   drivers/staging/greybus/power_supply.c |  8 ++------
+>   include/linux/greybus/bundle.h         | 12 +++---------
+>   2 files changed, 5 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/staging/greybus/power_supply.c b/drivers/staging/greybus/power_supply.c
+> index 44bd8a72fa50..beefcbaf3681 100644
+> --- a/drivers/staging/greybus/power_supply.c
+> +++ b/drivers/staging/greybus/power_supply.c
+> @@ -377,12 +377,8 @@ static void gb_power_supply_state_change(struct gb_power_supply *gbpsy,
+>   			gbpsy->pm_acquired = true;
+>   	} else {
+>   		if (gbpsy->pm_acquired) {
+> -			ret = gb_pm_runtime_put_autosuspend(connection->bundle);
+> -			if (ret)
+> -				dev_err(&connection->bundle->dev,
+> -					"Fail to set wake unlock for none charging\n");
+> -			else
+> -				gbpsy->pm_acquired = false;
+> +			gb_pm_runtime_put_autosuspend(connection->bundle);
+> +			gbpsy->pm_acquired = false;
+>   		}
+>   	}
+>   
+> diff --git a/include/linux/greybus/bundle.h b/include/linux/greybus/bundle.h
+> index df8d88424cb7..361a94d3499b 100644
+> --- a/include/linux/greybus/bundle.h
+> +++ b/include/linux/greybus/bundle.h
+> @@ -59,14 +59,9 @@ static inline int gb_pm_runtime_get_sync(struct gb_bundle *bundle)
+>   	return 0;
+>   }
+>   
+> -static inline int gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle)
+> +static inline void gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle)
+>   {
+> -	int retval;
+> -
+> -	pm_runtime_mark_last_busy(&bundle->dev);
+> -	retval = pm_runtime_put_autosuspend(&bundle->dev);
+> -
+> -	return retval;
+> +	pm_runtime_put_autosuspend(&bundle->dev);
+>   }
+>   
+>   static inline void gb_pm_runtime_get_noresume(struct gb_bundle *bundle)
+> @@ -82,8 +77,7 @@ static inline void gb_pm_runtime_put_noidle(struct gb_bundle *bundle)
+>   #else
+>   static inline int gb_pm_runtime_get_sync(struct gb_bundle *bundle)
+>   { return 0; }
+> -static inline int gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle)
+> -{ return 0; }
+> +static inline void gb_pm_runtime_put_autosuspend(struct gb_bundle *bundle) {}
+>   
+>   static inline void gb_pm_runtime_get_noresume(struct gb_bundle *bundle) {}
+>   static inline void gb_pm_runtime_put_noidle(struct gb_bundle *bundle) {}
+
