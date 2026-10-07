@@ -1,165 +1,133 @@
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+Received: from mta0.migadu.com (out-2.mta0.migadu.com [91.218.175.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DA49408600
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2026 21:59:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.48
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791410349; cv=pass; b=cvAoCkvfTM5nMA3ehSujF1HSUGJdJTct75b22LadkZjr6m18ZoJHRYNgw6kSyEksvexmMOIF/l96mohGlwEUoVHcPeCNYyxGog3gliqV+Lb+oyNRvWB8U7ifmxIqmZjYIBWjRokIogluF6oNvPcM04McLOJNaMihQl4xz6JjDt4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791410349; c=relaxed/simple;
-	bh=NdpHyiQEK20ZJUkrXWW8lkNpvrkh/Tq1SrhZFgg2dxc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VGlqh0R/ZnLD1UHljtT/jGAZwB6zZRfXAUajr5QJo1GIGJ7C0q0Lth2O+u6wtWHw0UTX3FJkOY22G1Q796qM0HANuhX3iy3bp8rq9DXLhUpCQ2qdGy0WVIei6v4DbnpZ6NqlsLf5I2ryJfJ4rdoq5CJ17qB1AGih1o2rFiuGoso=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=K6F154/d; arc=pass smtp.client-ip=209.85.218.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FCA440F75C
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2026 22:58:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.2
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791413896; cv=none; b=Na6YCzfEL4xKJz+1xwKjEfvMwqlMi/ZRic0TSG7CNXdU9QWMzF4al56V1FDjjmZxbt2f6KPPbLqDk1m/txxbC9DR6VWR5FaUrRUh6hx7w0rZa6MHgRF4GzZKUhQepUAhfSzdeovObhvqeJUS2/ulI/RzcqI9be9T5MVCjemRBmo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791413896; c=relaxed/simple;
+	bh=RAGAIJgpd+yNXgc/pjpoo393pq4WyBOz0tuS3p6kpL0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LzUfIOhp9HENO8TAcHvYMKhTBQP6KhzaLNLz9UFIj2P4xjl2bpSg8wBHsQxTEgqgYEKTkrzX94AmShTYnvCmOcIzxzMvhHeOn5tgHUpqnzUwZC4ebJvxnH1G0Al56viTr+NZajToGsXnwfWj+Xe+2v9KbEBCAQ6H1tYcbAkyHDs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool; spf=pass smtp.mailfrom=packett.cool; dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b=Enkh/caw; arc=none smtp.client-ip=91.218.175.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="K6F154/d"
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c2e2db5e8e4so765064466b.0
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 14:59:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791410346; cv=none;
-        d=google.com; s=arc-20260327;
-        b=WzVHHAnTBG7q1xIaCCi6mgYFX/CpUAjEAA6G14T/p69i/g5tuZL0qBi1GZ1c1uKlb7
-         FGvwpXFMGvNP9kIbjCKNg4bYlFgr/LTovD8CGxDiskUq1He9ggaIMg9s1Pk3oz3OrMrE
-         5DOhRgT+oQGfHXzyr7oCppqk3RAJGlXyAQjdhGwCgGiCKQdiglIB4QG2XWiZXGjNYk97
-         ke5VBKUr7qu0NmmdKz8P9VFMkiJazSagGzl+OSB2OnU0wvFz0jeow9Dy2wm4ls2dzEAZ
-         OS22M0Yw+Dlex/IH6KmAac+LwJLwkl0upo8gKk09PSV60su1Po02+eV/dai5RxjVrOOp
-         C3xA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=gTupLQqOTwq3jH2ZB+au6HoSAz3uNI5sbJCpfgUjYak=;
-        fh=565sIlDF6D7UUQksXf9S+Ty9Ij1wnEe5zVgegBfsfPQ=;
-        b=Jbd0gxTEhCjSCU/DNKwJxbpgHg+UQVLRUdEgYW+KIx4Sw+/g6eU08DDG7IEiK0/6Q9
-         D5dewla7ZImYYEPjRCxCyJIyIqF6JK7DmbjY2zudRnjKXXLDtqomrJ2bpkX0szWrkPj0
-         NryTnHhWFqGipwQ+dv+bnTmhuGGTW3QGAZOy8e3A4nv0oZbiHhzoJlNhiWoC8cZtLtrd
-         jamvaHxIY/U2dttHgQMMZFwTRWIXH6LGmT43GBCeLOTQcdpLFRT9c1hXHbprf50Rlhr+
-         4P4aREqoW6iOyOuFGgZpfAksL12WeGOdlpscHqba70jcXA4t2A3o3lF1BBgYNU8QLl9P
-         9J5A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1791410346; x=1792015146; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=gTupLQqOTwq3jH2ZB+au6HoSAz3uNI5sbJCpfgUjYak=;
-        b=K6F154/dH/kooP5BOsLg7rgu5qE8VoRb28+/aNuZpnEpw0lM1KSAQ6DkMWyNBHhEBf
-         GZiW3IXZiWIpy/9qc4fuQM9n6MYZOmoMwQfpuDAxHuK2TNEqPSREmOJLUmO2ogrXj4JF
-         DBtXCu3VhHpX4my6zYmFxJoBIYF2ACGxya8FTbfXZXgwgnirO0jMxTexip47BCNPnEP+
-         Zi48FERJjhw7AwGZiBiim+6gbFznxH62uAn/YWu+kZfOgReSSI9kEAIHxpdoXygZQOyO
-         P8oEfpCyzpEcGmgGCUFgmqkFXwtEh73CDjcjL0K3QpdfGETYlQTCGTm3Fa8edo9RpZ0i
-         ishA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791410346; x=1792015146;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gTupLQqOTwq3jH2ZB+au6HoSAz3uNI5sbJCpfgUjYak=;
-        b=IMwas5ELCZ0FAUqccPdRKiyH00XTKelA7wYjxUxUqdES4UsluG2g4j91GCMozhufv9
-         WSXgm+EsSvi8HqdNicxgaffPluXMVDhcyjgzHimCVxdq1PcGpvojFKAk/73kWer72Dbr
-         FWpyNY7DklcJEuXEeGQ4tOPxsAF/+JfmBrrlmFXcD/UKOdY5kTgQwKjMLax4l9wYnZrL
-         CtP9tvCCxF6cDjAh2NQ1rxhi2xNThkYNhiAlTatNjytn/PsmJd9DcaXdXVsZDZNor0fo
-         PTfkUKQTJOeBrc2NWIWm4TorKqa/jdEsqrgk7pIpkc9U9nQkGLTbjXC221w8GOARxl+d
-         vbjw==
-X-Forwarded-Encrypted: i=1; AKwUvBwjMgHSwSAvvwa2YAqhmLiZPEVqNXNb2t2Tk6HNYKtXKdhuvG8Z3jGnjxs2Dp5lUy6U2IpVfVtkWQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++lYQSR0tVJ3tKuA5dWCVBjkyxlKwHq3uDtOMSd+wpB2COp78BEO
-	rjOdL4WSA4VOAeOGXCBh7GBmzyJEWpJjqNhxhIXI8XDo7GQ095nQRiA2/b/lzq9sK8aW2j9+oaK
-	eUkaAzSLlJlabv253WyxiuUKe/BXifkOmXE8T5f8uKA==
-X-Gm-Gg: AYBFou1zT5EpO/OWZI9I11vOBzmx7sJubJ8cxoeYUoVJfuJcfvRQulFO1URe+Hr0GCf
-	5/85XyykBoHMXuEbRZ9bTRPBVHTdpj0xeYRlfQmgTfTOLO7O/W19UdkDr8Nw7THBuCS8RIOfCMI
-	eWBywcqKW9eoLxT9WmGQMHwMR1oBGaBqJry0ymx55rqBo4eVr3IpejeroO4hRJA/6ju8BZBiOqO
-	hVutIg7t81k36JQ+pEtkf1kPK2CfmM+rjm8+oaaisxa5Tb7+UfLuVmAj1nLHJ75VEZAwVm421vG
-	7nGR0dofEvAqUbOJKAwdly6KK9rFUfAq6F78xfT4vHJqBA3wMAAlf+NGE+4IH3Rb14Y=
-X-Received: by 2002:a17:907:3d52:b0:c2e:7daa:23e2 with SMTP id
- a640c23a62f3a-c317c18cedbmr350164566b.48.1791410345894; Wed, 07 Oct 2026
- 14:59:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b="Enkh/caw"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=RAGAIJgpd+yNXgc/pjpoo393pq4WyBOz0tuS3p6kpL0=;
+ c=simple/simple; d=packett.cool;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1791413891; v=1; x=1792018691;
+ b=Enkh/cawuU5PU1rr2dWSpr2BD/GDAPKF6LBdp0eSiqWA6kaB7MhMzSdRfipIoUvs8PWbpW5M
+ VI7gNulmwDN5+VwZ41Hx/0dHdKUYUUnnfcIgG98igSpbu31Cn6FncMxI5hym1TTPIljRwtnAuvC
+ s4dW/idZHCp7CWVa8mNylRI2GiOKdGsQXiNVBLtbNqShSGI0lftbrEaDFJ2K3yFpjrJFpUdPjWQ
+ Vb5arhfUfsBHdkx9x2ikZVRl4/KmyqV9Wo1Q3udTBCYN73B/+SYVzeBeZTodSwyLWD9Zco0fWVK
+ Zv4zPzJuMAXML6d7pcaNY8Taj36Y6fVrE/bj22O3xUXKw==
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 66b877c89b98a8fd;
+	Wed, 07 Oct 2026 22:58:01 +0000
+X-Mizu-Trace-ID: 66b877c89b98a8fd
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <bc7730e4-8b47-4c2b-84ef-277749f2aab8@packett.cool>
+Date: Wed, 7 Oct 2026 19:57:54 -0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261006-b4-rk3576-reboot-mode-v3-0-6edba064693b@flipper.net>
- <20261006-b4-rk3576-reboot-mode-v3-2-6edba064693b@flipper.net> <20261007212432.GA381404-robh@kernel.org>
-In-Reply-To: <20261007212432.GA381404-robh@kernel.org>
-From: Alexey Charkov <alchark@flipper.net>
-Date: Thu, 8 Oct 2026 01:58:55 +0400
-X-Gm-Features: AclHuK9YQekpwAgg-J06h9HjpyEEerPcos0qnPQI7GTm7jMZgcXE5m4c13MgYQo
-Message-ID: <CAKTNdwFo03jFGMeJQpxXp1yOX+cG+6BZOYf1eGGZTdZWAFdz5A@mail.gmail.com>
-Subject: Re: [PATCH v3 2/5] dt-bindings: power: reset: syscon-reboot-mode:
- allow supplies
-To: Rob Herring <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Heiko Stuebner <heiko@sntech.de>, Sebastian Reichel <sre@kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 5/8] Bluetooth: hci_qca: Support QCA2066 on M.2
+ connector via pwrseq
+To: Loic Poulain <loic.poulain@oss.qualcomm.com>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann
+ <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+References: <20261005-monza-wireless-v7-0-5a6de7662dcb@oss.qualcomm.com>
+ <20261005-monza-wireless-v7-5-5a6de7662dcb@oss.qualcomm.com>
+Content-Language: en-US
+From: Val Packett <val@packett.cool>
+In-Reply-To: <20261005-monza-wireless-v7-5-5a6de7662dcb@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 8, 2026 at 1:24=E2=80=AFAM Rob Herring <robh@kernel.org> wrote:
+
+On 10/5/26 9:21 AM, Loic Poulain wrote:
+> For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable is
+> controlled by the W_DISABLE2# signal managed by the pcie-m2 power sequencer
+> rather than a dedicated BT enable GPIO.
 >
-> On Tue, Oct 06, 2026 at 08:02:40PM +0400, Alexey Charkov wrote:
-> > Whatever program that acts on a reboot mode runs before a full OS, so i=
-t
-> > may lack the capability to enable the regulators it depends on, and a
-> > reset that preserves the mode register generally leaves the regulators =
-as
-> > the previously running system left them.
-> >
-> > Allow a reboot mode node to name such supplies, so that they can be
-> > turned on while the mode is being requested.
-> >
-> > Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> > ---
-> >  .../devicetree/bindings/power/reset/syscon-reboot-mode.yaml       | 8 =
-++++++++
-> >  1 file changed, 8 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboo=
-t-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-m=
-ode.yaml
-> > index 79ffc78b23ea..5ed70c87269e 100644
-> > --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.=
-yaml
-> > +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.=
-yaml
-> > @@ -36,6 +36,14 @@ patternProperties:
-> >    "^mode-.*$":
-> >      maxItems: 1
-> >
-> > +  "^[a-z0-9]+(-[a-z0-9]+)*-supply$":
-> > +    description:
-> > +      Supply that has to be powered for whatever program acts on the m=
-ode.
-> > +      That could be a boot ROM with no access to regulators, and a war=
-m reset
-> > +      leaves them as the previously running system left them and not n=
-ecessarily
-> > +      what their expected out-of-reboot state is. Any supply described=
- here is
-> > +      enabled when a mode is requested, and stays enabled.
+> When the serdev controller has an OF graph (indicating it is connected to
+> an M.2 connector), acquire the 'uart' pwrseq target from the connector's
+> power sequencer and use it to control BT power instead of the bt-enable
+> GPIO. This is factored out into qca_serdev_get_m2_pwrseq().
 >
-> Sorry, but no. If we allow this, then what next? clocks? power-domains?
-> GPIO lines? The list is endless. Maybe if a not generic binding is used,
-> but still pretty much pure configuration.
+> Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
+> ---
+>   drivers/bluetooth/hci_qca.c | 47 +++++++++++++++++++++++++++++++++++----------
+>   1 file changed, 37 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+> index 1d27ff98034ba99d0783e48db5c605f3b31117ea..b6ec1a57248e2cf4bd138898ffc5cad45b1b4a8b 100644
+> --- a/drivers/bluetooth/hci_qca.c
+> +++ b/drivers/bluetooth/hci_qca.c
+> @@ -1875,6 +1875,9 @@ static int qca_power_on(struct hci_dev *hdev)
+>   			/* Controller needs time to bootup. */
+>   			msleep(150);
+>   		}
+> +
+> +		if (qcadev->bt_power.pwrseq)
+> +			pwrseq_power_on(qcadev->bt_power.pwrseq);
+>   	}
+>   
+>   	clear_bit(QCA_BT_OFF, &qca->flags);
+> @@ -2396,6 +2399,34 @@ static int qca_init_regulators(struct qca_power *qca,
+>   	return 0;
+>   }
+>   
+> +static void qca_serdev_put_pwrseq(void *data)
+> +{
+> +	pwrseq_put(data);
+> +}
+> +
+> +static int qca_serdev_get_m2_pwrseq(struct qca_serdev *qcadev)
+> +{
+> +	struct serdev_device *serdev = qcadev->serdev_hu.serdev;
+> +	struct pwrseq_desc *pwrseq;
+> +
+> +	if (!of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))
+> +		return 0;
+Seems like of_graph_is_present does *not* return false for the existing 
+(non-connector) setup which is currently used in all the laptop device 
+trees..
+> +
+> +	/* The pwrseq is looked up on the serdev controller (which holds the
+> +	 * OF graph to the M.2 connector), but its lifetime must follow this
+> +	 * serdev consumer device, not the controller. So acquire it with the
+> +	 * non-devres pwrseq_get() and release it via a devres action bound to
+> +	 * &serdev->dev instead of using devm_pwrseq_get(&serdev->ctrl->dev).
+> +	 */
+> +	pwrseq = pwrseq_get(&serdev->ctrl->dev, "uart");
+> +	if (IS_ERR(pwrseq))
+> +		return PTR_ERR(pwrseq);
+> [..]
 
-These are the resources which are required to handle the reboot mode
-request, they are not exactly configuration. There is a limited and
-hardware defined number of IP blocks which need to be powered for the
-reboot mode request to complete successfully. In my case (Rockchip
-RK3576), these are the IPs that need to be made aware of the trained
-DDR memory parameters: if they are unpowered _at warm reboot_ then the
-boot process stalls immediately with an exception (cold reboot is
-handled by the power-on default state of the PMIC).
+So this returns EPROBE_DEFER and bluetooth gets deferred forever :(
 
-I see that this may be abused to hack around what should be a
-bootloader's job, so it would be great to find a way to explicitly
-limit the scope of these - though I couldn't think of one yet. Any
-suggestions would be much appreciated.
+~val
 
-Best regards,
-Alexey
