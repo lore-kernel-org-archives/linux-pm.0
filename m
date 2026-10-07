@@ -1,209 +1,169 @@
-Received: from mail-4318.protonmail.ch (mail-4318.protonmail.ch [185.70.43.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86D073D5C1E;
-	Wed,  7 Oct 2026 17:43:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CE213BF679;
+	Wed,  7 Oct 2026 17:55:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791395002; cv=none; b=lAAQh3pTdKd+UiZZI2ldmkZyf0zu1/523RaGK628crmiSVOeEjs+bqgAux5r+49Cbb0mOGTfksAYzvjNNoaHP5Hg/9X38M6chxv/O4SYgcOfeiB9BNGLw2lOS+HAykuK6veOVfjlYUlQaNunpHh7pJM/NDUFIHRVvwgS8PNBoMQ=
+	t=1791395727; cv=none; b=dMQPXH3jy95oPMX5dhRU8Mgyc8usqkN93OzzmJ+bD8GuI6Nv07dUfYwtceNhkp/zg9geGUw5x+6B7pODlclLYEDUmeLG9v1Pp2BjBoPPNOjGodTdswRvtf6J73L9GRFWP61MO0czKZfgdzO2ZBH2dpMaSIScw50dLYjjjsZJeQk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791395002; c=relaxed/simple;
-	bh=eeBqwf8gqt4d/ZsIbXQKZ9OWeoOxgevBxhvA5snf/9c=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qiSsSQ8b/tMfYl+laCV6MYlgdn27yvgF4jsVNWOgHGch79xgmi1vtJzB3wpOWmr2Vbe3ywHCJvMxyV4E3tkJKDG3isIPwCcbp+tZfW77m/baq2KrmAuD89ZxQjx71TxnYsNgjHdO8A7dUlv8xaUYDr1UnK+1MBVs2xRlu7LJ3ZM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kylegospodneti.ch; spf=pass smtp.mailfrom=kylegospodneti.ch; dkim=pass (2048-bit key) header.d=kylegospodneti.ch header.i=@kylegospodneti.ch header.b=ADLF1Y0v; arc=none smtp.client-ip=185.70.43.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kylegospodneti.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylegospodneti.ch
+	s=arc-20240116; t=1791395727; c=relaxed/simple;
+	bh=C9yfwdCFUFaflhWGnqJx++BjuGQaVBswaweZexH+PSs=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=pYrWoltCil8zbzP7nCAN4GXgGqX6U3rtNl+q1zJ9XFiKGBCfEZmS/IyDiPNf9clASEpAm5G7/W/1CC1gKv6/DsjVJ0JBYQrjD7Ih0/ZX1iFtKib76Yd9jDxoqVR8HC9g8TeyzBNiu3PGm9CiH9dV3FnSAjAaeU0y6y3ny4kdjTw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DU1MWTWI; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kylegospodneti.ch header.i=@kylegospodneti.ch header.b="ADLF1Y0v"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kylegospodneti.ch;
-	s=protonmail3; t=1791394997; x=1791654197;
-	bh=cUY8mEJkGo9cFvsny6P6Omyp+nLjVdYRpntB9GhXt2I=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=ADLF1Y0v8DZUAWgdnVts+ILCMcPD03I5CmL+jyQ4SW7KBD+ObVkdVkVP3kU6OwtOM
-	 Kq9YdKAme7G9d08wg6MHS5pYMsMh6OBiuimOAy4BaAnrKJ0shH0IvXxPHabnKEW/su
-	 u/xUK1odlewnVo/9pk978TIHCrpRAMFhvDwqWOzzjToYWd4w7Jc4wYV0WKa985eb4Q
-	 bbbMOMo22UXT0ZwjG8fN2uZgxyvN4M++Ur0S3y7E07hor28CZuOZ3oGiitzfwXI5i2
-	 h4HDEapR5OsnJ2/sQGBT2mqWNQVJK8BRl7KTRKqRVTsc2pD+IkUCHIi4wy19qTO/C8
-	 /TwW/4DS/jhZg==
-Date: Wed, 07 Oct 2026 17:43:11 +0000
-To: Mario Limonciello <mario.limonciello@amd.com>
-From: Kyle Gospodnetich <me@kylegospodneti.ch>
-Cc: Giovanni Gherdovich <ggherdovich@suse.cz>, Huang Rui <ray.huang@amd.com>, Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>, "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq/amd-pstate: Supply nominal/lowest freq for TRX40-based motherboards
-Message-ID: <DC1J2LrrQ6hdyQJ_ThQRfGrnzKLI5qCCQYGA5I2LhASN8j8MLcpfvJ2T4Qn_8xmO2TB4MW9Sl6LyQKkuANWwowWXafKbEqJ8pXEBEnmE2yA=@kylegospodneti.ch>
-In-Reply-To: <N6r-1w2v2oSkh5ABRHMoj9_YQ7F7eICWqD2rdyL7M1SmbVzhiK0plLXBCzZbDmO8M6w28qHy--pue6kfl1k8B-j03x5f6VYC2DlQ_spmIpc=@kylegospodneti.ch>
-References: <20261007144150.15113-1-ggherdovich@suse.cz> <27b226c7-f30b-4863-96e6-6798232863c5@amd.com> <nfzkXrDTHHjIW_SUzjPg0gOHamPmFkMiNw8Xyzu1ET_un0fM-tmdI3ChdnOkXAkrh_nX4jiwmzCK6GgWwOsfDti3ta-vlRMihfH4dGUgBCU=@kylegospodneti.ch> <a387ee24-ef09-4983-865c-47ef43fa0964@amd.com> <N6r-1w2v2oSkh5ABRHMoj9_YQ7F7eICWqD2rdyL7M1SmbVzhiK0plLXBCzZbDmO8M6w28qHy--pue6kfl1k8B-j03x5f6VYC2DlQ_spmIpc=@kylegospodneti.ch>
-Feedback-ID: 27885724:user:proton
-X-Pm-Message-ID: 77226f50eee4752a34f9eeb17027162ffdc6a9f2
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DU1MWTWI"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791395726; x=1822931726;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=C9yfwdCFUFaflhWGnqJx++BjuGQaVBswaweZexH+PSs=;
+  b=DU1MWTWIIxl8q2UDRcOmJZIiLPwkUnKiUg0CPnrQlD69RKXi4NBSKjOF
+   wuHVyE1r7fON6yKv70wS6aIEAlM6pBAG/rraNEztaQq50lz7iNbJ565p4
+   vlKuP4L3Hbo597ZqABzT+0Kwok1HcXuRgASngZ1N2PrwWJAwtq4AoZVEh
+   q1M/auJFvIhmnVrA0+PhvJDl1FEE4qN2eY9NufsULl1E9/LLDfFHHBz63
+   UCOWN/FzyOuzz9p//QwZQJ2HVtBAht9NVbhKj2AOMnsXUSXqV3+Gbvfsy
+   0dOULaFc3brIEU0hWm7Ly62f8380WXGjMQ9KModjnCI0sBbe4B3vfe2mq
+   w==;
+X-CSE-ConnectionGUID: XvWPACqERG6Gfovhe7pEww==
+X-CSE-MsgGUID: XNkHU5nKRYCcRfFA3PyMPg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11928"; a="67305"
+X-IronPort-AV: E=Sophos;i="6.27,144,1787036400"; 
+   d="scan'208";a="67305"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2026 10:55:16 -0700
+X-CSE-ConnectionGUID: fMvzl4HuTBa1zKTdtBZMvQ==
+X-CSE-MsgGUID: CA2CNo/vT1u4VDB5k2ZQfQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,144,1787036400"; 
+   d="scan'208";a="285591577"
+Received: from unknown (HELO [10.241.243.185]) ([10.241.243.185])
+  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2026 10:55:15 -0700
+Message-ID: <62547ac28298442a246abe0471647e36518a93cb.camel@linux.intel.com>
+Subject: Re: [PATCH 11/18 v2] sched/fair: Support not wakeup case in
+ select_idle_sibling
+From: Tim Chen <tim.c.chen@linux.intel.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>, mingo@redhat.com, 
+	peterz@infradead.org, juri.lelli@redhat.com, dietmar.eggemann@arm.com, 
+	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+ vschneid@redhat.com, 	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
+ lukasz.luba@arm.com, 	rafael@kernel.org, linux-pm@vger.kernel.org,
+ tj@kernel.org, void@manifault.com, 	arighi@nvidia.com, changwoo@igalia.com,
+ sched-ext@lists.linux.dev
+Cc: qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
+	sshegde@linux.ibm.com
+Date: Wed, 07 Oct 2026 10:55:15 -0700
+In-Reply-To: <20261002154415.2270586-12-vincent.guittot@linaro.org>
+References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
+	 <20261002154415.2270586-12-vincent.guittot@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 
-Missed one,
+On Fri, 2026-10-02 at 17:44 +0200, Vincent Guittot wrote:
+> With push callback mecanism, select_task_rq_fair can be called for a task
+> that is already enqueued. Task into account this case when choosing idle
+> CPU.
+>=20
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  kernel/sched/fair.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 6ed3e5bb7fd6..38eb80dbd1a4 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -7974,10 +7974,13 @@ static int choose_sched_idle_rq(struct rq *rq, st=
+ruct task_struct *p)
+>  	return sched_idle_rq(rq) && !task_has_idle_policy(p);
+>  }
+> =20
+> +static int idle_cpu_without(int cpu, struct task_struct *p);
+> +
+>  static int choose_idle_cpu(int cpu, struct task_struct *p)
+>  {
+>  	return available_idle_cpu(cpu) ||
+> -	       choose_sched_idle_rq(cpu_rq(cpu), p);
+> +	       choose_sched_idle_rq(cpu_rq(cpu), p) ||
+> +	       idle_cpu_without(cpu, p);
+>  }
+> =20
+>  static void
 
-Release Date: 05/17/2022
 
+Hi Vincent,
 
-On Wednesday, October 7th, 2026 at 10:36 AM, Kyle Gospodnetich <me@kylegosp=
-odneti.ch> wrote:
+One concern I have is that many CPUs will try to push
+their tasks onto the same idle CPU and causes over stacking.
 
-> AMD Ryzen Threadripper 3960X
-> MSI TRX40-PRO-10G
-> https://www.msi.com/Motherboard/TRX40-PRO-10G/support
-> I am using 7C60v1A3(Beta version), I will update to the latest today -- j=
-ust learning that exists.
-> dmidecode reports that as:
-> Vendor: American Megatrends International, LLC.
-> Version: 1.80
->=20
-> I've had to disable pstate with:
-> amd_pstate.enable=3D0 initcall_blacklist=3Damd-pstate
->=20
-> Without that my system grinds to a hault, takes upwards of 15 minutes jus=
-t to hit the desktop.
->=20
-> Thanks, let me know if anything else is needed.
-> -Kyle Gospodnetich
->=20
->=20
-> On Wednesday, October 7th, 2026 at 8:06 AM, Mario Limonciello <mario.limo=
-nciello@amd.com> wrote:
->=20
-> > Kyle,
-> >
-> > Can you please confirm more about your system?  System Model, vendor,
-> > BIOS version, BIOS vendor, CPU model.
-> >
-> > Thanks,
-> >
-> > On 10/7/26 10:04, Kyle Gospodnetich wrote:
-> > > Yes this does appear to be the same problem, thank you!
-> > >
-> > > -------- Original Message --------
-> > > On Wednesday, 10/07/26 at 07:56 Mario Limonciello <mario.limonciello@=
-amd.com> wrote:
-> > > + Kyle
-> > >
-> > > Kyle,
-> > >
-> > > By chance is this the same system that you were talking to me about o=
-ffline?
-> > >
-> > >
-> > >
-> > > On 10/7/26 09:41, Giovanni Gherdovich wrote:
-> > >> Some motherboard based on the TRX40 chipset has been reported to shi=
-p
-> > >> firmware lacking lowest and nominal frequency values in the
-> > >> _CPC ACPI package. That is, it supports CPPC V2 but not CPPC V3.
-> > >> Firmware updates aren't available.
-> > >
-> > > Can you please add more information about the vendor/model of the MB,=
- etc?
-> > >>
-> > >> amd-pstate requires explicit knowledge of nominal frequency, so it
-> > >> can't load on this hardware. The driver already has a mechanism (the
-> > >> so-called "quirks") to accommodate for missing nominal freq in ACPI
-> > >> tables, so here we use it to match against CPU family, model, core
-> > >> count, and BIOS version.
-> > >
-> > > Yeah; it's intended for this specific case of really old hardware tha=
-t
-> > > the BIOS isn't going to fix it.
-> > >
-> > > I don't understand why core count matters though.
-> > >
-> > >>
-> > >> Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
-> > >> ---
-> > >>    drivers/cpufreq/amd-pstate.c | 31 +++++++++++++++++++++++++++++++
-> > >>    1 file changed, 31 insertions(+)
-> > >>
-> > >> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-psta=
-te.c
-> > >> index 8bfd46d60843..532ff16dd076 100644
-> > >> --- a/drivers/cpufreq/amd-pstate.c
-> > >> +++ b/drivers/cpufreq/amd-pstate.c
-> > >> @@ -145,6 +145,11 @@ static struct quirk_entry quirk_amd_7k62 =3D {
-> > >>    =09.lowest_freq =3D 550,
-> > >>    };
-> > >>
-> > >> +static struct quirk_entry quirk_amd_ryzen_threadripper_3000_24c =3D=
+idle_cpu_without() doesn't check nr_running. Its comment says:
+
+         * rq->nr_running can't be used but an updated version without the
+         * impact of p on cpu must be used instead. The updated nr_running
+         * be computed and tested before calling idle_cpu_without().
+
+and update_sg_wakeup_stats() does this:
+
+        if (!nr_running && idle_cpu_without(i, p))
+
+choose_idle_cpu() calls it without that test. So a CPU that runs its
+idle task but already has a queued task is now idle for every caller:
+the target, prev and recent_used_cpu checks, __select_idle_cpu(),
+select_idle_smt() and select_idle_capacity(). This affects wakeups
+too, not only pushes.
+
+For a wakeup to an idle CPU, the wakelist usually sets ttwu_pending,
+which idle_cpu_without() checks. A push enqueues the task directly, so
+after a push the destination stays idle for everyone until it
+schedules. If it wakes up from a deep idle state, this can take a
+while, and other CPUs can push or wake their tasks onto it in the
+meantime.
+
+The fixup below removes p from nr_running when p is queued on the CPU,
+and calls idle_cpu_without() only when nothing else is queued. The
+tick case that this patch is for still works: p is the only task, so
+its CPU is still idle without it.
+
+It is build tested only.
+
+Thanks,
+Tim
+
+---
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 3eb8a0170902..cb00f24a58fa 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -7978,9 +7978,16 @@ static int idle_cpu_without(int cpu, struct task_str=
+uct *p);
+
+ static int choose_idle_cpu(int cpu, struct task_struct *p)
  {
-> > >> +=09.nominal_freq =3D 3800,
-> > >> +=09.lowest_freq =3D 550,
-> > >> +};
-> > >> +
-> > >>    static inline u8 freq_to_perf(union perf_cached perf, u32 nominal=
-_freq, unsigned int freq_val)
-> > >>    {
-> > >>    =09u32 perf_val =3D DIV_ROUND_UP_ULL((u64)freq_val * perf.nominal=
-_perf, nominal_freq);
-> > >> @@ -174,6 +179,22 @@ static int __init dmi_matched_7k62_bios_bug(con=
-st struct dmi_system_id *dmi)
-> > >>    =09return 0;
-> > >>    }
-> > >>
-> > >> +static int __init dmi_matched_trx40_bios_bug(const struct dmi_syste=
-m_id *dmi)
-> > >> +{
-> > >> +=09/**
-> > >> +=09 * Match the Ryzen Threadripper 3000 series, 24-core SKU, sTRX4 =
-socket / TRX40 chipset.
-> > >> +=09 */
-> > >> +=09if (boot_cpu_data.x86 =3D=3D 0x17 &&
-> > >> +=09    boot_cpu_data.x86_model >=3D 0x30 && boot_cpu_data.x86_model=
- <=3D 0x3F &&
-> > >> +=09    topology_num_cores_per_package() =3D=3D 24) {
-> > >
-> > > Does the number of cores actually matter?  Do you mean to say if you
-> > > swap the CPU to another part CPPC works?
-> > >
-> > >> +=09=09quirks =3D dmi->driver_data;
-> > >> +=09=09pr_info("Overriding nominal and lowest frequencies for %s\n",=
- dmi->ident);
-> > >
-> > > The BIOS bug specifically is lack of values, not invalid values, righ=
-t?
-> > > Just want to make sure I'm following this right.
-> > >
-> > >> +=09=09return 1;
-> > >> +=09}
-> > >> +
-> > >> +=09return 0;
-> > >> +}
-> > >> +
-> > >>    static const struct dmi_system_id amd_pstate_quirks_table[] __ini=
-tconst =3D {
-> > >>    =09{
-> > >>    =09=09.callback =3D dmi_matched_7k62_bios_bug,
-> > >> @@ -184,6 +205,16 @@ static const struct dmi_system_id amd_pstate_qu=
-irks_table[] __initconst =3D {
-> > >>    =09=09},
-> > >>    =09=09.driver_data =3D &quirk_amd_7k62,
-> > >>    =09},
-> > >> +=09{
-> > >> +=09=09.callback =3D dmi_matched_trx40_bios_bug,
-> > >> +=09=09.ident =3D "AMD Ryzen Threadripper 3000",
-> > >> +=09=09.matches =3D {
-> > >> +=09=09=09DMI_MATCH(DMI_BIOS_VENDOR,  "American Megatrends Internati=
-onal"),
-> > >> +=09=09=09DMI_MATCH(DMI_BIOS_VERSION, "2.80"),
-> > >> +=09=09=09DMI_MATCH(DMI_BIOS_DATE,    "05/17/2022"),
-> > >> +=09=09},
-> > >> +=09=09.driver_data =3D &quirk_amd_ryzen_threadripper_3000_24c,
-> > >> +=09},
-> > >>    =09{}
-> > >>    };
-> > >>    MODULE_DEVICE_TABLE(dmi, amd_pstate_quirks_table);
-> > >
-> >
-> >
++       struct rq *rq =3D cpu_rq(cpu);
++       unsigned int nr_running =3D rq->nr_running;
++
++       /* idle_cpu_without() needs nr_running without p */
++       if (task_cpu(p) =3D=3D cpu && task_on_rq_queued(p))
++               nr_running--;
++
+        return available_idle_cpu(cpu) ||
+-              choose_sched_idle_rq(cpu_rq(cpu), p) ||
+-              idle_cpu_without(cpu, p);
++              choose_sched_idle_rq(rq, p) ||
++              (!nr_running && idle_cpu_without(cpu, p));
+ }
+
+ static void
+
