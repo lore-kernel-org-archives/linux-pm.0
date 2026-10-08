@@ -1,196 +1,124 @@
-Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com [209.85.208.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE69F4DE73E
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 15:27:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1580B4A4829;
+	Thu,  8 Oct 2026 15:56:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791473236; cv=none; b=lvRzfqfOu6GgewBejjnT7GKmuIval5DofF5ig8qx40ia2XF3tfgJPrZa0qe5AJfCIr9DKVmJY4WXMCdgFIQpuIihXDlVqWiTHod+3vesEXEUxa60NLxBStIYcahjmMQXl0av6wkYfHyGPw34EaS8MoM3n12AphN4Tl3Ahb4FUIs=
+	t=1791475007; cv=none; b=ePXukucp544rBjKUKhmO6lQXrCWLntvCEYGfS0oQaB4K6A9roMeQ1faLwhz2TRFo8lP5CmxffLYfsNTq1Ytj7rRSQZh/Ta5CQATGWOdyKtPSqpYwrNS06ccisbEjd3CX4S1LxLA/xefQEStehiXZ+WQxMTe5OaVdGb/nfQ6Sy/w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791473236; c=relaxed/simple;
-	bh=HL1rjdghcJEZ+/+WqreDNVzxfGI/uhNxhr0qiYRzFhA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Vosug6TWe5LVe0NYfnzuLgHxxkG2Tjxu8fnk71vBSrqtV/V6R5VPHqdB3VDtOM2uAH3d7WANooA264iCLTzZWPi00Al0gh9TVu5r0ooIWY231MndD76DsUM04+guiR8MoaqoDc4DecbKCP1mU2M+jhLhy2YvOO4+OtFl7YPbi/s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TrcCBiYP; arc=none smtp.client-ip=209.85.208.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1791475007; c=relaxed/simple;
+	bh=4T7+kwqeLF1iaqtHRRItlcp3UQ9M8yFbOlUgCboL7Zo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SVh6JWh3QJGIWb8GTxcOej+sfd/CJDeVkaH0SV818eRxqqGthsrLWugbFWTG15Tpdkn0ARVe400fePf5g3xP2WXmkfYqBcP2nf6TlhxmTbUJbYi6rkr5yvKJQNsGAH9VfPzKLJ1dIBi2us4wEsHjqfPYUEzB+c5ZH59FK+IQAk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DOopBNKS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TrcCBiYP"
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-3a87e23860cso8543501fa.0
-        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2026 08:27:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791473227; x=1792078027; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=+tlpOQ0VMeCZZG1q8nFaiwSRzS471ciSAg2AQjcR0QI=;
-        b=TrcCBiYPnUQEe2yw/XW3ck6ldJrY5zFUgbvvUz1pfltjli+k+7U/Gu0zkdvpo4lsJ5
-         ytnOZNJnvkfDIquBcGAMRf9pAPPT89YshNLWuyQkeX0yKR6JSxUCmXIf9bGWPdpx7Rvn
-         5wNrIREOrR6P+6uxsL3072DIb0ni//Qz5sukW5SOIDPIIwDOU7ZkGh4CDIfkhQdP1ycD
-         vB/XyiDRcGkyrVzWW+U+3cBebd5+DRWIGn0nK1/OuOaWDCrPKQbjP/wQnAMrnAR9k5NH
-         GY/wI8EMpdHTIUQQPO8YeHiKB6oZEQuwfNbIzcU/fNc4M8E+okha1RzvQAf7IU5KXc15
-         1wkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791473227; x=1792078027;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=+tlpOQ0VMeCZZG1q8nFaiwSRzS471ciSAg2AQjcR0QI=;
-        b=g8QzeuM7eny+2y2ugw1qZ8iI7IxQ/L5omWXBJpZcG846c5j5uxLZS8T/px2P4YHZf2
-         yaV5p8XSDB0XC+8N1VvT6rZNadBn198aL4l+2MP5QesXbp6EIPG00kmQijSFnuv+p75+
-         DPbByxrorh9T3RnQIoU7lBqMNOGyP9ldcIlmTRGDVwkx4V8yY++bdhFgyF+5lATwf2P1
-         CF2g8X5RPIZLbiUGfkzUSVwk3IfWo0NlnhG1CXcg3ETAepSYhQ2rb9OrfzwfJT5mOoPb
-         pL40MAQ6zwzt31kZvYaPywKKSgczZ80HGoco1Y2QhxdGh25I3e84ZpiND1kD1c4fb44Q
-         mf0w==
-X-Forwarded-Encrypted: i=1; AKwUvBzI1R+tGEQdBiLhU3GjAQ2MTiGDx0fWxVqi1aauvp3vvYYrWNcFhQUC/IhlH0Af8W1zGcDqlOipSw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLWub2Dig2xgZ9+Qq45dvVTXJ2V/pqpPHRr9wsLnX6v6zPRPopz
-	jCkM8izBNSNCCmcSK2XjegyFo5iMPVGxm8ZCSwV3Sp61GRk3wbDeoET7
-X-Gm-Gg: AYBFou11KYQ3RSZDmLG4/rsrDCKaS9soEE+CXz1NPcwzZ4hD83LH2TZqkYJPGMhQvfE
-	rZP8PpFYkIhDSkfcJzjgMXwzx1qQTPcdWfPnmnFDy/6EfAXoyEB7/0jUHmP00VoPlgnZ3lbEEQn
-	6l8nZSLuGbwvF6MqYpLOOmGA7puZwT/VHZYTVyTy6FcaziAbNAxtkqpTSVPeuXqhALfgvQKC1HQ
-	6jHLD3Nqz8YZbY0prSH0BwKAXkvTwGRPXYLw9MObWneqXNyazM/aFYRWhi63mW5fHalUcZmfGeN
-	S2cwwDrD8fiam1thWBC98DSCYJDUABFeVipQm2WcIcvOxO4fjQKMh9S/M1qCU1UldyYSmvPh6CT
-	cLVNlLw5SAUJqtyXhADtPDA5wydg1AjVTqRdr7FaSa6Ycxo1MC9xM3xAEJxRZCYZpIV1g+kDdDI
-	5A9Lri78QINw+sJPhANazepaiS0mQI6/lbAHaDg/JwtTzvYeRDMpRqbB7M47oxpxRjr9bz9diy+
-	dYS05c+XW5OZKyOhYhDP/0NmjltXs93/i2hwh8hkv9YSDdEwMC+RJycol4NUDNcnYPD
-X-Received: by 2002:a2e:a907:0:b0:3a7:812b:d13 with SMTP id 38308e7fff4ca-3a9ae381c9cmr5375821fa.0.1791473226456;
-        Thu, 08 Oct 2026 08:27:06 -0700 (PDT)
-Received: from wildarch.lan ([109.72.228.33])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a9c12b57a5sm397941fa.0.2026.10.08.08.27.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Oct 2026 08:27:05 -0700 (PDT)
-From: Anton Karasev <uselessfire@gmail.com>
-To: qby140326@gmail.com,
-	ilpo.jarvinen@linux.intel.com,
-	hansg@kernel.org
-Cc: platform-driver-x86@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	sre@kernel.org,
-	W_Armin@gmx.de,
-	chris@miget.com,
-	matias.civadda2342001@gmail.com,
-	kento@kekto.ru,
-	ilya.gladyshev@linux.dev,
-	ericted8810@gmail.com,
-	btx342@gmail.com,
-	wleizc7319@gmail.com,
-	wolf109909@outlook.com,
-	vlku.milos.fun@gmail.com,
-	i@rsplwe.com,
-	bozhenpeng93@gmail.com,
-	martiya.ar@gmail.com,
-	aleksejirlik@gmail.com,
-	zsanya322@gmail.com,
-	nika@nikableh.moe,
-	atomicus.xyz@gmail.com,
-	1836949523@qq.com,
-	jaojame6@gmail.com
-Subject: bitland-mifs-wmi: battery charge limit (command 0x10) on Xiaomi models
-Date: Thu,  8 Oct 2026 18:27:04 +0300
-Message-ID: <20261008-xiaomi-charge-limit-0x10-uselessfire@gmail.com>
-X-Mailer: git-send-email 2.56.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DOopBNKS"
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 082A71F000FF;
+	Thu,  8 Oct 2026 15:56:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791475005;
+	bh=t/k6GBykoXXVVoctwLm8isejRieFbFuiEFi85fJbtkw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=DOopBNKS6yal4lzmfYSh/GV3nywKxLzLrX2CjGpOtbTLj+Bo+jGJPN8a/2xVmqxXl
+	 I2UOMs6WCThc+spuZ6DNCeAQWMC5t+dIXmzb4Olg5kQw5a6T0AC4uAT4+gmYPq7nW+
+	 eg5cakOMYQKJhFbrrS5x9xHBxW32txP0bRr5v2cPturlh5Gm9k3Suil89ips4jn5vu
+	 8txFCM4DnlAIIYeFF2XzCssFGXolLNkJzk76BwNaTLEuB0PFFJ4UnqcKY6H4WBqoHv
+	 Cwa2tKcDW9yWOAu5MRqcbLOKFPl5Ervl2qpLBFBEekQwz/hEVTsuUyAz/4TPQl4cH+
+	 ACEkDx1UqtTVw==
+Date: Thu, 8 Oct 2026 18:56:41 +0300
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: Matthew Garrett <matthewg@nvidia.com>
+Cc: mjg59@srcf.ucam.org, keyrings@vger.kernel.org,
+	James.Bottomley@hansenpartnership.com,
+	linux-integrity@vger.kernel.org, rafael@kernel.org,
+	linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
+Subject: Re: [RFC] Make hibernation work with lockdown
+Message-ID: <ase9OQGWtEvDp0qH@kernel.org>
+References: <20261008132532.1155166-1-matthewg@nvidia.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261008132532.1155166-1-matthewg@nvidia.com>
 
-Hi all,
+On Thu, Oct 08, 2026 at 06:20:16AM -0700, Matthew Garrett wrote:
+> Hibernation writes out the full system state to disk in an unencrypted 
+> and unauthenticated manner. Resuming from hibernate reads that data and 
+> throws it directly into RAM, then jumps into it. This is effectively an 
+> entirely unauthenticated mechanism for putting whatever you want into 
+> kernel space. This violates the assumptions around lockdown (root can 
+> write whatever they want to the swap partition and then trigger a 
+> resume), and as such lockdown blocks hibernate.
+> 
+> This has made many people unhappy.
+> 
+> This patchset seeks to solve this problem. In order for hibernation to 
+> be trustworthy we need to be able to prove that the image was generated 
+> by the kernel and not modified after that. This is not an easy task, and 
+> requires some infrastructural framework. To that end, this patchset does 
+> the following:
+> 
+> 1) Co-opts a TPM NV index for the kernel's sole use. This is currently a 
+> placeholder and we should register one explicitly from an appropriate 
+> range in order to ensure that we don't conflict with userland.
+> 
+> 2) Does something horrifying with PCR 5 in order to prove that a given 
+> kernel supports (1). We need to extend and cap a PCR before userland is 
+> running in order to prove that the kernel has support for this feature, 
+> but since we don't currently cap any PCRs there's nothing stopping 
+> userland from doing the same and so achieving the same state. The way 
+> around this is to rely on a feature of PCR 5 - it is extended as a 
+> result of ExitBootServices being called, and since the boot stub can 
+> execute code before that happens we can perform the proof extension 
+> there and then have it implicitly capped by the firmware's extension.
+> 
+> 3) Adds support for audited TPM sessions in the kernel, allowing us to 
+> generate signed digests of the commands that were executed in that 
+> session and their results
+> 
+> 4) Adds support for generating a predictable AK that can be used to sign 
+> digests from those audit sessions
+> 
+> 5) Adds support for generating a TPM signing key in such a session, and 
+> using the signed digest to prove that the session took place in the 
+> kernel
+> 
+> 6) Signs the hibernation image with such a key
+> 
+> An old kernel that doesn't implement (1) won't be able to mimic the same 
+> PCR 5 value. Userland won't be able to mimic the NV index value because 
+> the kernel will block it. This means that the only way that key could 
+> have been created is by the kernel, and so we can trust that the image 
+> was generated by the kernel.
+> 
+> QUESTIONS:
+> 
+> 1) I haven't tried to make the key management generic, since this isn't 
+> intended to ever be exposed to userland in any way. Should it be 
+> integrated into the trusted keys layer anyway?
 
-(Sebastian, linux-pm: Cc'd for the charge_types choice below.)
+If we don't have a use case, I don't think so...
 
-On the Redmi Book Pro 16 2024 (DMI XIAOMI / TM2309, BIOS
-RMAMT6B0P0B0B), command 0x10 (WMI_FN_RGB_KB_MODE in the driver) is the
-battery interface of WMAA, and its subcommand 2 is the firmware's 80 %
-charge limit, which is why writing "fixed" to kb_mode turns the limit
-off [1]. Milos found the same handling in the tables of the TM2307 [2].
-So please do not write to command 0x10 on Xiaomi machines for now,
-kb_mode included; I have sent a patch that hides kb_mode where the
-firmware does not answer its GET [3]. I would like to support the limit
-in the driver, but the command seems to differ between Xiaomi models,
-so the first step is to find out what other firmware does with it.
+> 
+> 2) Filtering TPM commands from userland isn't ideal - anyone able to 
+> poke commands into the TPM directly is in a position to violate the 
+> assumptions here. Is there any way we can get a secret into the kernel 
+> that can be used as an auth value? It would need to be impossible to 
+> obtain from userland and it would need to be consistent over platform 
+> reboots.
 
-On this BIOS WMAA handles command 0x10 as follows ("Case (0x1000)";
-subcommand in payload bytes 0-1, value in bytes 2-5; full acpidump in
-[4]):
+We could generate a primary key and a keyedhash key that would be stored
+outside kernel while data is at rest. Then during power on they could be
+read to the kernel memory.
 
-  GET 0x10/1   EC register SOH1, presumably battery health (96 here)
-  GET 0x10/2   charge limit: 1 = on, 0 = off (bit 0 of EC LONL)
-  GET 0x10/3   1 if EC register ADPW < 0x8C (ADPW reads 140 with the
-               stock 140 W charger, 100 with a 100 W one, 0 on battery)
-  SET 0x10/2   value 1 sets bit 0 of LONL, any other value clears it
+I did not consider who would create the files in the first place.
 
-Other subcommands are not handled (the reply is all zeros, return code
-included), and nothing else in the ACPI tables touches LONL. As with
-command 0x08, the SET reply carries only the return code, so with
-23cc56f6dea6 ("platform/x86: bitland-mifs-wmi: Detect failed function
-calls") in for-next a SET also needs Chris's GET-only change [5].
+I neither did look at the code yet meaning that my comments should
+definitely be taken with a grain of salt. Just writing down a remark.
 
-With AC connected, setting the bit makes the EC change register AFBC
-from 100 to 80; nothing in the ACPI tables writes AFBC, so through the
-firmware the limit is fixed at 80 %. Charging stopped at 80 % ("Not
-charging"), switching the bit at 80 % toggled charging within about a
-second, and turning it on at 81 % stopped charging without
-discharging. The setting survived charger replugs, s2idle and about 17
-hours on AC, but not the battery running flat: after it had run empty
-in s2idle and the machine was started again on AC, the bit was clear
-and the battery charged to 100 %, with nothing in Linux writing to it.
-Whether the EC lost it with power or earlier, at a critically low
-charge, I cannot tell. I have not tested a plain reboot, a power-off or
-hibernation.
-
-Because the limit is fixed, the power supply ABI as updated in the
-power-supply tree (b3e6d01c33eb, "Documentation: sysfs-class-power:
-Update Long_Life description") calls for charge_types "Standard" /
-"Long Life" rather than charge_control_end_threshold: an ACPI battery
-hook with a power supply extension, as in acer-wmi-battery. Since
-command 0x10 is the RGB keyboard mode on the machines the driver was
-written for, this needs a per-model flag, so I would base it on the
-generalized profile handling Chris is preparing (see Ilpo's reply [6]),
-together with the TM2309 entry. One detail for it: the EC notifies BAT0
-itself (_Q0B) 0.6-1 s after the write, but an immediate
-power_supply_changed() fills the one-second _BST cache, so that
-notification reports the old status and the driver has to notify again
-a couple of seconds later.
-
-Other models: according to the notes of XiControl [7] (a Windows tool;
-in Russian, not verified by me), the Xiaomi Book Pro 14 (TM2424) takes
-a level code in 0x10/2, for limits from 40 % to 80 %;
-xiaomi_pc_manager_lite [8] maps code 4 to 90 % instead, and the TM2424
-WMAA as described in micontrol [9] (which takes these for brightness
-levels) writes 0x50, 0x5A, 0x46 ... 0x28 (80, 90, 70 ... 40) to EC
-offset 0xA7 for codes 1 and 4-8. CoreCharge [10], which writes the EC
-directly, toggles the limit with bit 0 at EC offset 0xA4 (LONL here) on
-the Redmibook Pro 14 2025 and the Xiaomi Book Pro 14 2026 and writes
-the percentage to 0xA7 as well; on TM2309 that byte is unused by ACPI
-and read 0 with the limit on and off. As any value other than 1 turns
-the limit off on TM2309, level codes cannot be written blindly, and a
-model with real levels would rather use charge_control_end_threshold.
-XiControl also found that the Redmi Book Pro 15 2022 Ryzen (TM2113)
-does not implement 0x10 at all (writes to 0x10/2 left the reply
-unchanged), so support has to be known per model.
-
-Chris, Kento, Yuming: if the SSDT of your Xiaomi Book Pro 14 is at
-hand, does its WMAA "Case (0x1000)" agree with these notes, and in
-particular, does code 4 write 0x50 or 0x5A to 0xA7? Ilya: which
-board_name does your Redmi Book Pro 15 2022 have, and does its WMAA
-handle 0x1000 at all? Aleksey (Pro 16 2025), Matias (TM2107), Ibragim
-(TM2209), Eason (TM2426): does your WMAA handle 0x1000? From
-anyone else, the part of WMAA that handles 0x10, or just the model and
-BIOS version, would help, and so would the limits Xiaomi's Windows
-software offers. Please send full acpidumps off-list (several MB).
-
-[1] https://lore.kernel.org/all/20260930015058.3076905-1-uselessfire@gmail.com/
-[2] https://lore.kernel.org/all/CAObHBTwnv+kEaFdCp+cr31HtdSo3CaRq84T8vr-Pm75yZMTHqQ@mail.gmail.com/
-[3] https://lore.kernel.org/all/20261008-bitland-kb-mode-v1-uselessfire@gmail.com/
-[4] https://bugzilla.kernel.org/attachment.cgi?id=310971
-[5] https://lore.kernel.org/all/20260928154337.154969-1-chris@miget.com/
-[6] https://lore.kernel.org/all/094577b3-7b96-72b6-4ef2-a5d1db457401@linux.intel.com/
-[7] https://github.com/Oksion/XiControl/blob/main/docs/01-wmi-protocol.md
-[8] https://github.com/CHHHHHHEN/xiaomi_pc_manager_lite
-[9] https://github.com/arcane-D7/micontrol/blob/main/docs/HARDWARE_INVESTIGATION.md
-[10] https://github.com/alex-bogatiuk/Xiaomi-CoreCharge
-
-Thanks,
-Anton Karasev
+Br, Jarkko
