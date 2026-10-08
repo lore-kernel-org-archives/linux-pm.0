@@ -1,100 +1,223 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC78D4848A6;
-	Thu,  8 Oct 2026 09:16:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55D11443C27
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 10:10:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791451003; cv=none; b=bylIY9gzqNtNlaSUQEfOr4SYWfJoLrRv1D8QO00jx6Q6ITxkrp3eZGuOor8UwT1X2nWLkGuMfSZZGZjpi3YiL7PHYYLKtzkxeAJ2aYpx3r5us06AdzlKSKVcri9elRGlCnJV6ORtX6xLo7cE9PaPjSV7bzNxMAH2/xPDkE1ACxQ=
+	t=1791454240; cv=none; b=cKNyGhxB3WpWJCxIkKJZYNvy3nh9T1SGxMY1CPTrRtfnLCiTJfVxtiYqCs5eTq18kS4KdRuZEAjEM51otEiDyAOAHRlSA5iF9g7Z87N4iCrwoFsNGE6Ss9onYkm1qOTxD8ah3jzpaEtJ6t/2R84w0jU6Fp64KJiTe+hnHnxVuNw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791451003; c=relaxed/simple;
-	bh=mL/mSPHbMI5qH4gMqEcJWv7ADQEceCa0r9sLvc2xvZo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=morgTnsGVMmUL8K6xtxAYz/6FHYArRJrl0ApDUFXJDx54Vg8H7JBpVMzo2mnech2VohnSOMZvMRrqcgIkvG0cZgCQIBfWFdrFBFVo4xzo6R3Z61KCooAIj0JxvdMHBAbGJUX/RUJcNuC/k4pf39f8/QAamfEefc8jkUTkzVOJ50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dF/tUzXN; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791454240; c=relaxed/simple;
+	bh=4tbUgFiAvEgxtY8UciHDHSbxyHXMGWw4dIFFQgGN1hI=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Bu+ftn6hqybiJjsRjQU6IR2ICJMHwXAIFDkQZuOGoe6Lp5zMDDhN9sykyEB9hwsVqpUW4pt4r+/UjUNvLkyGVgZAfTy2r8WJ9yzLqHRyvt9JHGzlpCrrKFg3iPZxNVXe93etcFgBpOpZ1VMD4RWayot1v8ahdlxQo/GChipc8/4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hwm3R+L5; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dF/tUzXN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C6721F000FF;
-	Thu,  8 Oct 2026 09:16:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hwm3R+L5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26C931F0089E
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 10:10:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791450994;
-	bh=94iaDYP74RW2YcEfiGwnFjDvT7zwpu+xasEC5nsyMFc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=dF/tUzXN91ob7lVTRO5bMkO6UCiPYJRBIJJGfha6B1T8hdKiOcP7HNj0uf3cjC2v5
-	 JunAsFXxI03bjqjjkLGZhnAuOzZVxrMKpBirktyuahF6i4qO2yC3O4m+Yvy1CsUg19
-	 MAub8VSjffhnrNar06AAPCQgx5xKGJ3lVPdSDCjxasrKn3WJ0+ml0kZ8c6tqICfS2I
-	 J0kMmhgFl7/hTZDJAvOnS1n7fk4ghwkRlFTb8T7GDh60ExUYyKgylDmsGamzsw0A95
-	 KMFcO/9QyX3Er5l7KsUFpgLwC+3oevKOKEHfeBkJRklqW49KXILdE7zmAilHi7Idts
-	 jZrw2soh86Q5A==
-Date: Thu, 8 Oct 2026 10:16:29 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Val Packett <val@packett.cool>
-Cc: Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Rob Herring <robh@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 2/3] pmdomain: Add support for system-suspend-only states
-Message-ID: <20261008-sexy-kingfisher-of-relaxation-fdbd6a@sudeepholla>
-References: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
- <20261005-s2idle_state-v1-2-3c402c66f388@oss.qualcomm.com>
- <20261006-romantic-stalwart-seriema-90e71d@sudeepholla>
- <d0e24121-49f2-4002-ad4f-bf96f6fc0861@packett.cool>
+	s=k20260515; t=1791454238;
+	bh=6Cr87NWtSTumqAI3+lv6BChO3Lye59PnJ7E6aWPgSGU=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=hwm3R+L5zS/h87y3KfkxOmQN1SrcOktm1Ml6oJd1pBluYUvH495HVW8N2lZwCPFXm
+	 EtW+yEiJnhU2eBkltA7Y4jf11zQ2CzOelGOgJTjejVqKcVJVHYXlp6PF1zFCqYam2s
+	 /YexWY1f6TbIA6QocjrcoUni135+VqorizQ+OMBAf1ji+qw/kxLALEarEw3C/8EVHY
+	 Css4DE+F/nGfl9uHzFZk3u9C7qKsiHmrR6XZ8fdZ+1c8rwEvnZlNjxYs4F9SJ5pUJE
+	 oJKzaypmeKAHEPo3Sx7iOzY6C6zWX96jHCAX/hmEkZ8zIdsL1eTx5RXJd2hBhQBOny
+	 hb9wAJHXVcdkw==
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3a20367cf82so46180231fa.1
+        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2026 03:10:38 -0700 (PDT)
+X-Gm-Message-State: AFq9FYIF5n1kxRFCiB7/XuxfwlLKcVy11yl/2uvjOKmR+IMHInFgSXcI
+	EAqnEO1+6lUbOdyq6leenPLmA21zz/2BqFyXlcITdUwadFCODR+fmKd9NsT536GCEoVEdHLic2T
+	DrxEj7bPr3LlWdhriOg6LvU1pHpE66a2EoMXWRiZgjQ==
+X-Received: by 2002:a2e:b8cd:0:b0:3a9:926c:c276 with SMTP id
+ 38308e7fff4ca-3a9a2cbc6c9mr12456541fa.17.1791454236809; Thu, 08 Oct 2026
+ 03:10:36 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 8 Oct 2026 10:10:34 +0000
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 8 Oct 2026 10:10:34 +0000
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260929122407.219448-5-prabhakar.mahadev-lad.rj@bp.renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d0e24121-49f2-4002-ad4f-bf96f6fc0861@packett.cool>
+References: <20260929122407.219448-1-prabhakar.mahadev-lad.rj@bp.renesas.com> <20260929122407.219448-5-prabhakar.mahadev-lad.rj@bp.renesas.com>
+Date: Thu, 8 Oct 2026 10:10:34 +0000
+X-Gmail-Original-Message-ID: <CAMRc=MckUuLsgqjphOs=fiyz3wCaGbGWpt_fPKStZRAroPkE3Q@mail.gmail.com>
+X-Gm-Features: AclHuK8KhVOCPFFk0C6VCi7XjvWfAzQZ9wqI5WRHeA5xhxr3xFISAjG4IBRvay8
+Message-ID: <CAMRc=MckUuLsgqjphOs=fiyz3wCaGbGWpt_fPKStZRAroPkE3Q@mail.gmail.com>
+Subject: Re: [PATCH 4/5] power: sequencing: renesas-pwrrdy: Add RZ/V2H(P) and
+ RZ/V2N A/D converter support
+To: Prabhakar <prabhakar.csengg@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, 
+	Prabhakar <prabhakar.csengg+renesas@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Oct 07, 2026 at 03:55:22PM -0300, Val Packett wrote:
-> 
-> On 10/6/26 6:15 AM, Sudeep Holla wrote:
-> > On Mon, Oct 05, 2026 at 08:59:43PM +0530, Maulik Shah wrote:
-> > > Some domain idle states require system-wide coordination and should not be
-> > > selected during regular CPU idle. However those states remain valid for
-> > > system-wide suspend like s2idle.
-> > > 
-> > > Add a per-state system_state boolean and populate it from the system-state
-> > > property. Make the genpd governor skip these states during CPU idle. Leave
-> > > the system wide suspend path unchanged so s2idle can select them.
-> > Instead of this I am thinking if we can QoS cpu latency setting and block
-> > system level states normally. Since s2idle is user driven, it should be
-> > controllable via user-space and we don't have to define bindings again
-> > if systems that use platform-coordinated needs this too. They may not
-> > use domain-idle-states.
-> 
-> Messing with latency sounds like a hack. It seems like some system-level
-> states are just explicitly provided for runtime idle while others are only
-> intended for system suspend. That intention should be captured/documented by
-> the device tree explicitly as well.
-> 
-> I don't have access to HW docs but according to someone who did some digging
-> on Windows, it seems to be this way, e.g. on Hamoa Windows enters system SS1
-> / "LPI" (0x02000154) at runtime all the time, but reserves system SS3 /
-> "DRIPS" (0x0200c354) for system suspend:
-> 
-> "A Windows WPR trace (Kernel-Processor-Power |PlatformIdleVeto|) showed that
-> Windows never enters DRIPS while the screen is on. The PEP vetoes it
-> (reasons 4/5/8) and only allows platform.SS1. DRIPS is used only in Modern
-> Standby."
-> 
+On Tue, 29 Sep 2026 14:24:06 +0200, Prabhakar <prabhakar.csengg@gmail.com> said:
+> From: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+>
+> On RZ/V2H(P) and RZ/V2N, the SYS_ADC_CFG.SY_MSTP_ADA bit controls
+> A/D converter power-down. RZ/V2H(P) has a single A/D converter unit,
+> while RZ/V2N has three units sharing the same bit.
+>
+> Add an "adc" power sequencing target for these SoCs and match it to the
+> RZ/V2H(P) ADC compatible, which is also used as the fallback compatible
+> by RZ/V2N.
+>
+> Clear SY_MSTP_ADA when the first A/D converter unit is enabled and set it
+> again when the last unit is disabled. Wait 20 us after clearing the bit
+> before allowing conversion to start, ensuring ADCLK has been running for
+> the required time.
+>
+> Bind the power sequencer to the RZ/V2H(P) and RZ/V2N auxiliary devices
+> created by the SYS driver.
+>
+> Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+> ---
+>  .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 84 +++++++++++++++++++
+>  1 file changed, 84 insertions(+)
+>
+> diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+> index 0190e53913bf..ab20b7ba9b83 100644
+> --- a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+> +++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+> @@ -5,6 +5,7 @@
+>   */
+>
+>  #include <linux/auxiliary_bus.h>
+> +#include <linux/delay.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/pwrseq/provider.h>
+> @@ -15,11 +16,68 @@
+>  #define SYS_PWRRDY_N_DSI_MASK	BIT(1)
+>  #define SYS_PWRRDY_N_CSI_MASK	BIT(2)
+>
+> +#define RZV2H_SYS_ADC_CFG		0x1600
+> +#define RZV2H_SYS_ADC_CFG_SY_MSTP_ADA	BIT(0)
+> +/* Minimum time with ADCLK running after leaving power-down mode */
+> +#define RZV2H_ADC_POWER_UP_US		20
+> +
+>  struct pwrseq_rz_info {
+>  	int (*probe)(struct auxiliary_device *adev,
+>  		     const struct auxiliary_device_id *id);
+>  };
+>
+> +static int pwrseq_rzv2h_adc_enable(struct pwrseq_device *pwrseq)
+> +{
+> +	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
+> +	int ret;
+> +
+> +	ret = regmap_clear_bits(regmap, RZV2H_SYS_ADC_CFG,
+> +				RZV2H_SYS_ADC_CFG_SY_MSTP_ADA);
+> +	if (ret)
+> +		return ret;
+> +
+> +	fsleep(RZV2H_ADC_POWER_UP_US);
+> +
+> +	return 0;
+> +}
+> +
+> +static int pwrseq_rzv2h_adc_disable(struct pwrseq_device *pwrseq)
+> +{
+> +	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
+> +
+> +	return regmap_set_bits(regmap, RZV2H_SYS_ADC_CFG,
+> +			       RZV2H_SYS_ADC_CFG_SY_MSTP_ADA);
+> +}
+> +
+> +static const struct pwrseq_unit_data pwrseq_rzv2h_adc_unit = {
+> +	.name = "adc-power-sequence",
+> +	.enable = pwrseq_rzv2h_adc_enable,
+> +	.disable = pwrseq_rzv2h_adc_disable,
+> +};
+> +
+> +static const struct pwrseq_target_data pwrseq_rzv2h_adc_target = {
+> +	.name = "adc-power",
+> +	.unit = &pwrseq_rzv2h_adc_unit,
+> +};
+> +
+> +static const struct pwrseq_target_data *pwrseq_rzv2h_targets[] = {
+> +	&pwrseq_rzv2h_adc_target,
+> +	NULL
+> +};
+> +
+> +static const char * const pwrseq_rzv2h_compats[] = {
+> +	"renesas,r9a09g057-adc",
+> +	NULL
+> +};
+> +
+> +static int pwrseq_rzv2h_match(struct pwrseq_device *pwrseq, struct device *dev)
+> +{
+> +	if (of_device_compatible_match(dev->of_node, pwrseq_rzv2h_compats))
+> +		return PWRSEQ_MATCH_OK;
+> +
+> +	return PWRSEQ_NO_MATCH;
+> +}
+> +
+>  static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mask,
+>  				   bool val)
+>  {
+> @@ -127,6 +185,20 @@ static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
+>  	return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &config));
+>  }
+>
+> +static int pwrseq_rzv2h_probe(struct auxiliary_device *adev,
+> +			      const struct auxiliary_device_id *id)
+> +{
+> +	struct pwrseq_config config = {
+> +		.parent = &adev->dev,
+> +		.owner = THIS_MODULE,
+> +		.drvdata = adev->dev.platform_data,
+> +		.match = pwrseq_rzv2h_match,
+> +		.targets = pwrseq_rzv2h_targets,
+> +	};
+> +
+> +	return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &config));
+> +}
 
-I wonder how it is done in ACPI then as no changes were introduced for this
-in _LPI tables. More reasons not to add any info to H/W table unless I am
-missing something and _LPI was indeed updated or modified.
+This probe variant looks almost exactly the same as pwrseq_rzg3l_pwrrdy_probe().
+Can't you not just store the match and targets pointers in OF match
+data and keep
+the same code in top-level probe()?
 
--- 
-Regards,
-Sudeep
+Bart
+
+> +
+>  static int pwrseq_pwrrdy_probe_common(struct auxiliary_device *adev,
+>  				      const struct auxiliary_device_id *id)
+>  {
+> @@ -140,7 +212,19 @@ static const struct pwrseq_rz_info pwrseq_rzg3l_info = {
+>  	.probe = pwrseq_rzg3l_pwrrdy_probe,
+>  };
+>
+> +static const struct pwrseq_rz_info pwrseq_rzv2h_info = {
+> +	.probe = pwrseq_rzv2h_probe,
+> +};
+> +
+>  static const struct auxiliary_device_id pwrseq_rzg3l_pwrrdy_id_table[] = {
+> +	{
+> +		.name = "rz_sysc.r9a09g056-pwrseq",
+> +		.driver_data = (kernel_ulong_t)&pwrseq_rzv2h_info,
+> +	},
+> +	{
+> +		.name = "rz_sysc.r9a09g057-pwrseq",
+> +		.driver_data = (kernel_ulong_t)&pwrseq_rzv2h_info,
+> +	},
+>  	{
+>  		.name = "rz_sysc.pwrseq-pwrrdy",
+>  		.driver_data = (kernel_ulong_t)&pwrseq_rzg3l_info,
+> --
+> 2.55.0
+>
+>
