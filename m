@@ -1,26 +1,26 @@
 Received: from CHN02-BJS-obe.outbound.protection.partner.outlook.cn (mail-bjschn02on2095.outbound.protection.partner.outlook.cn [139.219.17.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D62147ECD8;
-	Thu,  8 Oct 2026 09:12:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29E58480DC7;
+	Thu,  8 Oct 2026 09:12:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=139.219.17.95
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791450773; cv=fail; b=uytNu1pE4Bo3cL3Yu4vFjmkVbZPJCZdFqSH4B8Dn5sNpnSvDYdwZhQQv5Wm54JdZCGNf3jRbppyZy+phU9MSy7ZKGoGPV2TK7Kvz46tWvH4+dvIXPWPAenjSxPpN5gdkhB0lGwUL5ga8ujHvlo+VquC/9MHAcGPbclQEzxYP3pc=
+	t=1791450778; cv=fail; b=uBTZSkKh2s/eIhktxopUJOcjUG8Xaup52gatzLJx0r9c0IgH2i9/Ie8AwVZsZYeZqChKQlTAfN+MU7tp16+BymV4rZL3bj67ErwjAzPrsleK3hXzcBPzd2nhmhDZ5bKgstO620rbjhHI+hOJIOWylGfol26+T4njlUSb88FW4HM=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791450773; c=relaxed/simple;
-	bh=msGMaODfjcGLNGvobLiZ6XpUf0uDa4OY/7EoRg+Me6E=;
+	s=arc-20240116; t=1791450778; c=relaxed/simple;
+	bh=MrVvVU5LGrJ1R9PCNBvDukFgDRejm+F1RH3PBa56ll0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=TkOCiNPTH5IKelni6YYlG8qC2MlT8MnVH2wn7VBVw7vaX4vuGmumELLJok1Vn6HIkU+7z/q4Jqc9WlavJZSU/k8+CDKSo0Jauru9RDG+lGtN9dcTEl8jOc4+Y0htQtLvPU02DuYUvISPyuR9DNrlpQEsXi8G++o6FoaEWV0ah58=
+	 Content-Type:MIME-Version; b=fq0R8iBsTnPNWIBWk0pDMCrcmKiiz7VDGSg0eobVu6yNIctrgikBXlDz4k4e5NGIwsvj95qWgBED3Xl7oSrrW2ApcTCA567SQxF8FMC4GhKDj/AsCtexBBiXGqtFBwFCxfXC9+0mR9XF6q74UMO9hXsxw/enLSUsl7DSuaeZNgQ=
 ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=starfivetech.com; spf=pass smtp.mailfrom=starfivetech.com; arc=fail smtp.client-ip=139.219.17.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=starfivetech.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starfivetech.com
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=NSc6LT5EXZ45HRXgn8BYJ3O30OiPGEjfA0up8WOlsMXkUBgccGwIDd70vlP5phwcUnX1qS7qu/ePGJwDyjXs/dHo3GFFrU8rWe1XLP2qrqIZ2WbCArzs7MMOI0qp4AQRuD/+tHDOsrIsCiB4HOa3w0iDl3MFo37KU90VZJlfj3Uvq26PXffDzbxFVi6NFX/o4k9o5MQxXdquoEA0MzMRPtI0s0lC7KfAm/AskrWi8puTRWvfit+DHpM6TUqenhGQ6hOQ72SimajaLXi3gXu9FW4ljxLj7dYyuxfAQJYP0BeLsSl9C3wYkpeuAY86D5oBMXDdMhft2tuh+gUT3jkq+A==
+ b=O5lG8exXzJB5u+UJFr6SczygA8FrG+hnZ7Hn8xvSGX8wXG4oL2R30lqkn6QxIQIYutZxK4j/vWZEQwuKqU8798ZX7LnJlJLdf1ZXUwlblC8TOAmt6DR5dUlxs7dOwyEFgRYUMPphyO7WvkX6nCWbk1WASrVi061oo3bHT+I9jKrbMwJLG6giSDsJW6NEOcT9JU9zYiylE678nBnZ91AlpYPFqXHOSMuxr51ncCDO+F0Zu3nYNHvKqqyQV2TADTQNUYeGztVDmyUZ2G/D0xF5lekWM+oq/cXnV1DYl1jJJNlsSOjKOjJ4h8no6Uf49T9cr+IKwLNtmVbF6068Ov/wSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=XstCLkN1UlVyeAWlo+H5fxw83emWmMhY0ERMFJKOJSc=;
- b=k5dfjG2MFLroeMNajgXbamuaVL7MFSM6/T8+zjfX8AsF67zOwNFAk5hpAyk/p6JvGU5IAmC12CxlI8AZUWocQSpC0A2jRphkz+OTTir2KbrU8QUil1X0gOFBE5/dpo676hC2RnZGGvjqSv8wR4HDpuWDyHPQ96XwHRdd3iJkedKLZaU5ISyk/GcIakraZqCF02T4+6p6KEA5N7jt7fs2uv52h+gRmU+JBsfWmiw28yjwnQs6h1lyMdboQD6NGm393sHxpjOa5PCmILSKxHodsNs1qoqGjrAF/e0i9rLVzqysqJCmLtWBzu/2a2608Cu0l1VE3vE8R5FGGEtDHWAmQw==
+ bh=dw7+U8InCvvpAgTpCrKgzFEuTHHQl7hpGuLyIWVffGc=;
+ b=Zfe8PczSvbqTpIfSQk0GMuEvMYi+iynRr9kGKNnIGc06vqQym2BMJUIBjkAdBI1/EwkDa001Qs3UtxXoItcJP+1Q9RGzMmg+uwDzukike8zvaJGYVEUDc8YQqurFEhOZ7ZUedrC6SHEHdEhn7hBQ9fNzt0BhbvbJjNSB45cgVzl+yO4nEdDx9XPUPOhYF12T/gz1e52MkaYN9jn42vbIi5EUCMW/ZH0xXWx+rjmdRUwShkB+ohNYgUR+lojTtkfNg/d4D2OL+ESSJeFI0vKfT30oJCMXNKjfd5H/0Jcecb/2CGbQAxC7fug6mLmPT6r9UZaQ7GJkFvl1kyVaQQ7n7g==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=starfivetech.com; dmarc=pass action=none
  header.from=starfivetech.com; dkim=pass header.d=starfivetech.com; arc=none
@@ -30,11 +30,11 @@ Received: from NT0PR01MB1325.CHNPR01.prod.partner.outlook.cn
  (2406:e500:c510:f::11) by NT0PR01MB1309.CHNPR01.prod.partner.outlook.cn
  (2406:e500:c510:f::12) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.16; Thu, 8 Oct
- 2026 09:12:28 +0000
+ 2026 09:12:33 +0000
 Received: from NT0PR01MB1325.CHNPR01.prod.partner.outlook.cn
  ([fe80::6da4:f1ae:9ce:9a24]) by NT0PR01MB1325.CHNPR01.prod.partner.outlook.cn
  ([fe80::6da4:f1ae:9ce:9a24%6]) with mapi id 15.21.0496.010; Thu, 8 Oct 2026
- 09:12:28 +0000
+ 09:12:33 +0000
 From: Joshua Yeong <joshua.yeong@starfivetech.com>
 To: robh@kernel.org,
 	krzk+dt@kernel.org,
@@ -54,9 +54,9 @@ Cc: alex@ghiti.fr,
 	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/7] cpufreq: Add RISC-V RPMI cpufreq driver
-Date: Thu,  8 Oct 2026 17:10:29 +0800
-Message-ID: <20261008091032.2832333-6-joshua.yeong@starfivetech.com>
+Subject: [PATCH v2 6/7] pmdomain: riscv: Add RPMI performance domains as power domains
+Date: Thu,  8 Oct 2026 17:10:30 +0800
+Message-ID: <20261008091032.2832333-7-joshua.yeong@starfivetech.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261008091032.2832333-1-joshua.yeong@starfivetech.com>
 References: <20261008091032.2832333-1-joshua.yeong@starfivetech.com>
@@ -73,477 +73,103 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: NT0PR01MB1325:EE_|NT0PR01MB1309:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6d817ee7-da97-48d0-4a04-08df251c46a7
+X-MS-Office365-Filtering-Correlation-Id: 3476aa43-6fe4-4067-d032-08df251c49af
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|23010399003|7416014|52116014|921020|38350700014|56012099006|10067099003|22082099003|18002099003|3023799007;
+	BCL:0;ARA:13230040|366016|1800799024|376014|23010399003|7416014|52116014|921020|38350700014|5023799004|56012099006|10067099003|22082099003|18002099003|3023799007;
 X-Microsoft-Antispam-Message-Info:
-	aNR2AykmA1YDBZMepgXyPWs7L+oq1mavzSJ4g6Dm3tcgtb0wpc0opcI+4f0WEVVUwuwWlBafvAWwwf/dIZeqKSDA0Gy0Fl4Oj/J7DQs53ENjLNjjh9Im83PvkbvdVJ1qSlpqA4lhUoHDIo+BTFaQH2Mf/99Hzw5IUC/ZmRlKICJfBfmEFn6h+x7BWa0LakUm/tSice5gsDFzC50w9dZBnXhMO0ld63asg/facZleV3NkIaFa0/FE/UzbgqJZHFGK5N+XCwokbkRRWDbTctILZ9hVpjwoNMYsUIGhmU4FCqaluNgWU27/71eNfSJQahnt9fDG+RALmxL8yGItVOq5Bx9gRj29QhTxQ923PkSWrKv8gnouaF3gAG92L/yBB+fpQ/A90u3+stZXPdc7q4tPJKoR7aTug7XC/ZiaTJ4KfYyag/K3KYI5Amq71rcR1boDmsT/w7lk9rKaYB1jS/ylGMTjDpmVzlSahCgPvipBmMLKtSjeRhSpFlFCQMJNwJo5aS8+VurPCPjFRHjIRu/zOV7sz7fqRDMuHj93S1zxbbqpRiMo9OU+drRgWnc5/gC9bXvsecF0Lfyo7SJtmqC53A==
+	GVVBM3bMac7DoJpVsuKrzgraxzjhZQ8dD43PwPQOt18mdH3vgXs/+hRhx3NDvyeSdRupTAd6RSU7uKsuVhF0vFNs2Wnagd5DYxSfaFNxjcabQpHPBoJjhH5p8lxlZ/iaOM6JnccSvnn0iwnuLFuKfk3fvoMMjPunLoaamHOXscsQzTGxDpOENxS4XKEBzJHdYN0vYASAIAYpsZl3QgZhTHPop7Cv87Jl7rPSSf2F6VKx+2zMeJNKCZJuRA/UyUXfBfvTWZX8mHu41dlKm7YKBrdfNNJGnFLCw7Nu23zxQGvIHhgwbQuMc30NOS8rdtS44jIXAI/Z+HBNgvS7UQP2Egwl2LyHkDnlUgj4XadF2sM7wRboRSEUMEG9ZVeUCy+ee6oX7B6tzbxC8F9rCW6gYrolKj6iqiutYHoIej/vkKX0QVbJSS4kFTl2aF5vD2LaUDZNA0w90WguVpoeJQ/Y/tqXQ7C6wnGDNPkN848L79beGOPGDm9G4XdFyQtOVpw+SSprzprRWAzKp/s6fs7a7sxIGqo09vWh0i+rgwBhK49RRzp9SvL3DmEt8qi17VMOoRTBHAMAPs2XPgLo0Tp2qA==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:NT0PR01MB1325.CHNPR01.prod.partner.outlook.cn;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(7416014)(52116014)(921020)(38350700014)(56012099006)(10067099003)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1102;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:NT0PR01MB1325.CHNPR01.prod.partner.outlook.cn;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(7416014)(52116014)(921020)(38350700014)(5023799004)(56012099006)(10067099003)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?VZY5lvlOzk3pHIzMvqIefjTjtuwyoUxjcU7xbqkERpT7gd/8pm13wqQt2Ot6?=
- =?us-ascii?Q?RvL6BkHct7pyPP/9tnbPtvbIRNZoIlDlfCXVDJepGoxJ71t/cnOkKnsqD9L0?=
- =?us-ascii?Q?DdrXVDs8IZTmqT0C6NvrK6Ojz66wKakGlYCJvi+HUHbAZsVi0RO+fqkt7Zpg?=
- =?us-ascii?Q?szxN7SaHbblgLSTESYIG1d6g+iY4+3K9Znh4gsiUAZTc4Yb4gwM5qk8ZP12G?=
- =?us-ascii?Q?5Gpk4eBR4+UYHcrYPA7lQAbFOTu2G4D8YCDynEYNx8ciYELbDKChTRvSLnoe?=
- =?us-ascii?Q?734law+/WzhsT0VAUAkWryIsvT4GzVhgBX1mdhmI08/1Qo4U/VXQmRHJrCdO?=
- =?us-ascii?Q?q7d7BWlWOOEdneyZaJxUzDZvkqc8k3BEjwKYFvlnzfgW/PfEW1xbwqo2ti5+?=
- =?us-ascii?Q?zm94CYb3wkwH7Txg5kFXEX3zeduDmQXprO3n2RlXJ9NLb8xLcpa0Qg80DJsf?=
- =?us-ascii?Q?Nh+4WCoey09KRZfZ5XLNcDFUre17Pge6U3D2yxx8iXBv71Jmg0fSQU2uuAEA?=
- =?us-ascii?Q?E76rIYMoeokeTr5VGjTSd4un65eZKeM4AgC6CF3a2sid+CxhwUKq31XlPa6s?=
- =?us-ascii?Q?I+zS6pR3c6oLq7sIXUVsV+pFLkDBD4Q2Md32yCNnWEtvpWkyxY4t8LL0mam+?=
- =?us-ascii?Q?n+9gG8/bAfmKonb6lKQcbtMSehXN/kI2lMm5PzXf4C+Le6ADU/37s2GAx4B5?=
- =?us-ascii?Q?H5T62i4mjUY5qPWPjEwWzBfR8rdcWymvnO/y29v2F2W/jiE7g8FOnh4HhWqI?=
- =?us-ascii?Q?z3hw/QV16y1Xz0xsa7o7M+f1fpT4a3Yctt6P2rqjYSZ4+n1QYRt+L+6iTklE?=
- =?us-ascii?Q?Sz5TpU6tWjzcV6E0qxNFce3YcEzNRS/kze6G5gq0cy4jBX488fHoS4JtvZEX?=
- =?us-ascii?Q?OAx86MSmekf7AmVxjP4iwkFiEevfRk1o9H1W62ZxjDMw0HBiSJXTDflsbowk?=
- =?us-ascii?Q?IxUbpO6WgD+DiST93XjGmnXxEgDjK2rRSPgYMwyQxcI4sYJP7FMgIsUHSLfu?=
- =?us-ascii?Q?1nj8V5ZMpIS3n/sIpYlLIpkikwPLpeTB2Am9PieRTJ/5nVHFuXnLNAZdIN+J?=
- =?us-ascii?Q?hFBJ7D777RXyy4HBhOVq6mWxkRLYTb9nl1FyIZPjsBMA5UY1Nm1otwcj5Mv4?=
- =?us-ascii?Q?vTrdbBulGChskXvnBpaAmAV0qkQjkxbjZMv8+AfxXqIL+54N08DuppsKby4n?=
- =?us-ascii?Q?0rlJhg2DbotDZ600Zw/pKA7V6i+KG+kh4G/vnLI2LK4UVAoDmfPK0XwjNCUq?=
- =?us-ascii?Q?JM987wtzi1CVtcVZvsUDMh7/4tRWE3ATYxtwV94r631ITPFMVmBErzlukAUj?=
- =?us-ascii?Q?yJXMCJhZ/RY/CGRyRmEylBMqfBG1wXRYOKGHO9BtT3MYlrCgE8hovcdmWvLg?=
- =?us-ascii?Q?ONKnVW+jShlxsCePobIG9bsNJHEoTk9muYIH/kmmuCVf2EREWwrIGS3hEqUo?=
- =?us-ascii?Q?B8l5a1dyhdfEcVCHH3vqVUdvXwn6uf46R0UzdmfbJGM7Gk1tx8s0YHuufB2d?=
- =?us-ascii?Q?XdL4lPVAh6KV9u6J4nJzYdycCahZ8KKP8/xcnaFHsHBUGm181lYktFJvK13j?=
- =?us-ascii?Q?AgZxIq1XzXjN0fSgIIXW8iHGsNgmuSUjzA2ikGipaUWVQKvzEbxhkGlqeUvu?=
- =?us-ascii?Q?1697wNqGadJSrMo5sN+AqZurJi4vWpPlhmnTxchSHzayaj8k74xOb4rL+ONz?=
- =?us-ascii?Q?reEOpylcmapYeEN9lEgioUqMPwp/QwLvuY/apRwEsDqURHyz4hMikRDBqcMJ?=
- =?us-ascii?Q?Okj0WZnu6PUzSXo2iNMw/ORLp6T1kyo=3D?=
+	=?us-ascii?Q?kfz8QkBZOoRbdF2ChPeRtBTiuXXJZ4X6VbxgLSCvTJkJRVbfHGtj05DS33q5?=
+ =?us-ascii?Q?rzrdjv+SWlabQJXV1bYmkzOY8c1dpXlRlNWg/Rj7YQXwK7/fvaiOk1yCzRMq?=
+ =?us-ascii?Q?/UuvzQ+l/+DJMJTwRLdNAcpTOeYifqLkPOM4Cr4iwa8NGxui/ZvE1DOPoDHZ?=
+ =?us-ascii?Q?A3Z+OyZEUKCMfxnnE+ManbDmNjOM8cqqZjEHhx2ye8KMDB5eoDiiaYObPOon?=
+ =?us-ascii?Q?JXH2rxyl1E4JG257Dhk46AM5VK2KzjopggT3agBOeGTMLpdHBgWCAhjvOCMu?=
+ =?us-ascii?Q?Cw7LDvBTwsh91Z1I+jfYHwZrdO4LAmD/ti3s2EqnZY70voNOJ3jxryJsttlA?=
+ =?us-ascii?Q?FrwUt+roYyNXepmvOEkAOWtJJ0aS/W9M/qLCqsphWS+nHt+/phSA4K5KDRbl?=
+ =?us-ascii?Q?0PTrS66IUF4WLYRGYjlUkwNN3zdQ12kbjqR7L5Qfbhu+SXwKKC19MkjOjr3k?=
+ =?us-ascii?Q?JlZAIUJNu0pTyTsREo3wphmaLcj6c3j4KyvD3eh2cZGzMlYbpJBbARj9InD5?=
+ =?us-ascii?Q?AOQ5y41KC1CaemMGXT2HKeT/ZZX8FNsjQ/jBrlZQEteBz1kb8CIU8x9pJgRy?=
+ =?us-ascii?Q?hs4m1zY/EleOpk2OcWBlpQ/lQdDU/xTlhLWwOvDr2scbUNHfiV3kPBnJcpGK?=
+ =?us-ascii?Q?RwNx4RvAM1YPvJ3zQiI2D2Sujwa0ar75R0H7aT3Lwfl53XZsxT3K3vGB6bzW?=
+ =?us-ascii?Q?UWJQFTGmdSExQbovJe5/5SD516OrZ9i0TcfYysk5q5aBiVOwPCGZr8AzQYHS?=
+ =?us-ascii?Q?oBKkF8g+2MXcTrwZZquIPNKCyFxfY+6Haq5Sf69zeU8V+2K99w9eVV6mtFL7?=
+ =?us-ascii?Q?c+/7i1hLCSkKJgLe7yqGBiQolIm6jKTFAUt0QJgRo2cXbqQZa/Md99KHaNQP?=
+ =?us-ascii?Q?27my9ynuu27Ol+eTJTrWqnizCZyrQ/qAVZmWkdtJnOHWwl0Rg9EJJXejsRqg?=
+ =?us-ascii?Q?UMAt3f0FI3E9hU/0NHuArVNdUpyf2y9KQjBOy4VuzZVHYa9JUrAuBc+uQYQ8?=
+ =?us-ascii?Q?F0chPtewhKDdRRe2T8TlXjVA6NN0YB7K/ZF9yf6XG6Vct+yRefebLlSrbo7S?=
+ =?us-ascii?Q?wqFTB6TeKFlqQ74DuVs46ENKXBoQ/B8rYceudQx6rtXL3KA1caC/eqZg0dSo?=
+ =?us-ascii?Q?g0lJadvspsto+o9tVshRt0UnYLLFaVgHeUfyn0qcIN1Jo4tNYUJpHnhtsPtX?=
+ =?us-ascii?Q?3og2IlxlFhrg+qR3faQPDU/GXFEoSKH/d3nvZBU6Ffr7ZuRnuqp0E60GkPR3?=
+ =?us-ascii?Q?fsC4HHKzxtFl5jQasarXa69z7Laaa9R/R1elW1Ih4bXzljDiEzS1rEPEpexP?=
+ =?us-ascii?Q?SUKWdRg4NqK6FDGgztfbqzwvQZtNsDnsjFEepOVQHSfc6msLzmw7/VP5xS0L?=
+ =?us-ascii?Q?fwdvb30BCn1IGwVMZpKFipOkZPwiDm3uE9UdtUqeMZC2Vj5RFXk7OvKr2nUf?=
+ =?us-ascii?Q?ThlVSFbF/i73SJb82k/Ak/b/lW/MBzCSh9sB5wgcDW0AMax9P5MXVlJlnsiS?=
+ =?us-ascii?Q?1rVWfad3uarSymvif5GgMLI9UsXbS+J1LDgkqWBwvvHnOcvQVD0J3HksPyOS?=
+ =?us-ascii?Q?Lbpj6z2sLbAjXsyl5a0WUXr3+rDaEuPDczOYFXFN7FChdi/oBTV33tFV8p2s?=
+ =?us-ascii?Q?HaghBd53FyM/YJECOcWVeTLY70KU1ogj56Jwo5mqxnIJF6rejWO/UPQ35nvv?=
+ =?us-ascii?Q?c6GnBuGezA0MLXZAlw2mn7dxwxnzjl6lOcdy3Q43TSOxfg/TtZuTz4VF/p3F?=
+ =?us-ascii?Q?bZD7DzqI7lbHcTGAOVdYTu0qICgoCtE=3D?=
 X-OriginatorOrg: starfivetech.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6d817ee7-da97-48d0-4a04-08df251c46a7
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3476aa43-6fe4-4067-d032-08df251c49af
 X-MS-Exchange-CrossTenant-AuthSource: NT0PR01MB1325.CHNPR01.prod.partner.outlook.cn
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Oct 2026 09:12:28.6906
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Oct 2026 09:12:33.7804
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 06fe3fa3-1221-43d3-861b-5a4ee687a85c
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: u+3NOM1g6/G1wXJI3EmpXzaL9fXF7AaTIzEx4maEs5Y2eN2742gJYLdiUvm0fWNFIcOwUGtnyQpswvcJ6/Gnw1I/wj0GYeLXD+G6wOHSb+k=
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1oaqu7xmDQKqVq+YTwXMbFDeuQ+eeYUxpBIZixC3YzN44T+VYTRouNETnDTW4ZmQ67fxOAAOIWnzHgVM0jqKJGsy89NEC7x7HjriFzvKs1g=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: NT0PR01MB1309
 
-Add a cpufreq driver for the RISC-V RPMI performance domains that CPUs
-name through "performance-domains". The CPUs that name the same domain
-share a policy, the levels the domain advertises become its frequency
-table, and the level is set through the domain's fast channel when it
-has one, so that the governor can switch frequency from the scheduler.
-An energy model is registered from the power cost of each level.
+A device that is not a CPU has no generic way to drive an RPMI
+performance domain: "performance-domains" is only resolved by cpufreq,
+which would leave a device driver to call into RPMI directly, with
+nothing to arbitrate between devices that share a domain.
 
-The driver is a front-end over the RPMI performance service group core,
-which creates the device it binds to when a CPU names the provider.
+A device names its domain through "power-domains", is handed an
+operating point per level when it attaches, and drives the domain
+through the OPP library, while genpd settles on the highest state any
+device in the domain asks for.
+
+Like cpufreq, this is a front-end over the performance service group
+core, which creates the device it binds to when the node carries
+"#power-domain-cells".
 
 Signed-off-by: Joshua Yeong <joshua.yeong@starfivetech.com>
 ---
- drivers/cpufreq/Kconfig                       |  16 +
- drivers/cpufreq/Makefile                      |   4 +
- drivers/cpufreq/riscv-rpmi-cpufreq.c          | 294 ++++++++++++++++++
- .../firmware/riscv/riscv-rpmi-performance.c   |  55 ++++
- 4 files changed, 369 insertions(+)
- create mode 100644 drivers/cpufreq/riscv-rpmi-cpufreq.c
+ .../firmware/riscv/riscv-rpmi-performance.c   |  26 ++
+ drivers/pmdomain/riscv/Kconfig                |  16 ++
+ drivers/pmdomain/riscv/Makefile               |   1 +
+ .../pmdomain/riscv/riscv-rpmi-perf-domain.c   | 265 ++++++++++++++++++
+ 4 files changed, 308 insertions(+)
+ create mode 100644 drivers/pmdomain/riscv/riscv-rpmi-perf-domain.c
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index db83f3365698..f012b8268b5e 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -364,6 +364,22 @@ config ACPI_CPPC_CPUFREQ_FIE
- 
- 	  If in doubt, say N.
- 
-+config RISCV_RPMI_CPUFREQ
-+	tristate "RISC-V RPMI Based CPUFreq driver"
-+	depends on RISCV_RPMI_PERFORMANCE
-+	default RISCV
-+	select PM_OPP
-+	help
-+	  This adds the CPUfreq driver support for RISC-V platforms whose CPU
-+	  performance is managed through the RPMI performance service group.
-+	  CPUs reference their domain through the "performance-domains"
-+	  property. The performance domains it drives are enumerated by the
-+	  RPMI performance service group core, which is what owns the mailbox
-+	  channel.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called riscv-rpmi-cpufreq.
-+
- endif # CPU_FREQ
- 
- endmenu
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 6c7a39b7f8d2..265a6bccef4b 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -96,6 +96,10 @@ obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
- obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
- obj-$(CONFIG_POWERNV_CPUFREQ)		+= powernv-cpufreq.o
- 
-+##################################################################################
-+# RISC-V platform drivers
-+obj-$(CONFIG_RISCV_RPMI_CPUFREQ)	+= riscv-rpmi-cpufreq.o
-+
- ##################################################################################
- # Other platform drivers
- obj-$(CONFIG_BMIPS_CPUFREQ)		+= bmips-cpufreq.o
-diff --git a/drivers/cpufreq/riscv-rpmi-cpufreq.c b/drivers/cpufreq/riscv-rpmi-cpufreq.c
-new file mode 100644
-index 000000000000..1a5d0248f879
---- /dev/null
-+++ b/drivers/cpufreq/riscv-rpmi-cpufreq.c
-@@ -0,0 +1,294 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * RISC-V RPMI Based CPUFreq Driver
-+ *
-+ * Copyright (C) 2026 Shanghai StarFive Technology Co., Ltd.
-+ *
-+ * Drives the performance domains that CPUs share. The RPMI protocol and the
-+ * domain enumeration live in the performance service group core, which owns
-+ * the mailbox channel and creates the device this driver binds to.
-+ */
-+
-+#define pr_fmt(fmt) "riscv-rpmi-cpufreq: " fmt
-+
-+#include <linux/cpufreq.h>
-+#include <linux/energy_model.h>
-+#include <linux/firmware/riscv/riscv-rpmi-performance.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+
-+struct rpmi_perf_cpufreq_data {
-+	int nr_opp;
-+	struct device *cpu_dev;
-+	struct rpmi_perf_domain *domain;
-+};
-+
-+static int rpmi_perf_set_target_index(struct cpufreq_policy *policy, unsigned int index)
-+{
-+	struct rpmi_perf_cpufreq_data *data = policy->driver_data;
-+	u32 level;
-+	int ret;
-+
-+	/*
-+	 * cpufreq indexes its own frequency table, which is not the same thing
-+	 * as an RPMI level index. Go through the frequency so that the two
-+	 * only have to agree on what they mean, not on how they are numbered.
-+	 */
-+	ret = rpmi_perf_domain_freq_to_level(data->domain,
-+					     policy->freq_table[index].frequency,
-+					     &level);
-+	if (ret)
-+		return ret;
-+
-+	if (rpmi_perf_domain_has_fast_channel(data->domain))
-+		return rpmi_perf_domain_set_level_fast(data->domain, level);
-+
-+	return rpmi_perf_domain_set_level(data->domain, level);
-+}
-+
-+static unsigned int rpmi_perf_fast_switch(struct cpufreq_policy *policy,
-+					  unsigned int target_freq)
-+{
-+	struct rpmi_perf_cpufreq_data *data = policy->driver_data;
-+	u32 level;
-+
-+	if (rpmi_perf_domain_freq_to_level(data->domain, target_freq, &level))
-+		return 0;
-+
-+	if (rpmi_perf_domain_set_level_fast(data->domain, level))
-+		return 0;
-+
-+	return target_freq;
-+}
-+
-+static unsigned int rpmi_perf_get_rate(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
-+	struct rpmi_perf_cpufreq_data *data;
-+	u32 cpufreq, level;
-+
-+	if (!policy)
-+		return 0;
-+
-+	data = policy->driver_data;
-+
-+	if (rpmi_perf_domain_get_level(data->domain, &level))
-+		return 0;
-+
-+	if (rpmi_perf_domain_level_to_freq(data->domain, level, &cpufreq))
-+		return 0;
-+
-+	return cpufreq;
-+}
-+
-+static int rpmi_perf_init(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *freq_table;
-+	struct rpmi_perf_cpufreq_data *data;
-+	struct rpmi_perf_domain *domain;
-+	struct platform_device *pdev = cpufreq_get_driver_data();
-+	struct rpmi_perf **mpxy_perf = dev_get_platdata(&pdev->dev);
-+	struct of_phandle_args args;
-+	int ret, nr_opp;
-+	struct device *cpu_dev;
-+
-+	cpu_dev = get_cpu_device(policy->cpu);
-+	if (!cpu_dev) {
-+		pr_err("failed to get cpu%d device\n", policy->cpu);
-+		return -ENODEV;
-+	}
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	ret = of_perf_domain_get_sharing_cpumask(policy->cpu,
-+						 "performance-domains",
-+						 "#performance-domain-cells",
-+						 policy->cpus, &args);
-+	if (ret) {
-+		dev_err(cpu_dev, "%s: failed to get performance domain info: %d\n",
-+			__func__, ret);
-+		goto out_free_priv;
-+	}
-+
-+	/* A domain ID only means something to the provider the CPU names. */
-+	if (args.np != dev_of_node(pdev->dev.parent)) {
-+		dev_err(cpu_dev, "performance domain of %pOF, not of %pOF\n",
-+			args.np, dev_of_node(pdev->dev.parent));
-+		of_node_put(args.np);
-+		ret = -ENODEV;
-+		goto out_free_priv;
-+	}
-+
-+	domain = rpmi_perf_domain_by_id(*mpxy_perf, args.args[0]);
-+	of_node_put(args.np);
-+	if (!domain) {
-+		dev_err(cpu_dev, "performance domain %u is not usable\n",
-+			args.args[0]);
-+		ret = -EINVAL;
-+		goto out_free_priv;
-+	}
-+
-+	ret = rpmi_perf_domain_opps_add(domain, cpu_dev);
-+	if (ret) {
-+		dev_warn(cpu_dev, "failed to add opps to the device\n");
-+		goto out_free_priv;
-+	}
-+
-+	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (nr_opp <= 0) {
-+		dev_err(cpu_dev, "performance domain has no operating points\n");
-+		ret = -ENODEV;
-+		goto out_free_opp;
-+	}
-+
-+	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-+		goto out_free_opp;
-+	}
-+
-+	data->cpu_dev = cpu_dev;
-+	data->nr_opp = nr_opp;
-+	data->domain = domain;
-+
-+	/* Allow DVFS request for any domain from any CPU */
-+	policy->dvfs_possible_from_any_cpu = true;
-+	policy->driver_data = data;
-+	policy->freq_table = freq_table;
-+
-+	policy->cpuinfo.transition_latency =
-+		rpmi_perf_domain_trans_latency_us(domain) * 1000;
-+	policy->fast_switch_possible = rpmi_perf_domain_has_fast_channel(domain);
-+
-+	return 0;
-+
-+out_free_opp:
-+	dev_pm_opp_remove_all_dynamic(cpu_dev);
-+
-+out_free_priv:
-+	kfree(data);
-+
-+	return ret;
-+}
-+
-+static void rpmi_perf_exit(struct cpufreq_policy *policy)
-+{
-+	struct rpmi_perf_cpufreq_data *data = policy->driver_data;
-+
-+	dev_pm_opp_free_cpufreq_table(data->cpu_dev, &policy->freq_table);
-+	dev_pm_opp_remove_all_dynamic(data->cpu_dev);
-+	kfree(data);
-+}
-+
-+static int __maybe_unused
-+rpmi_perf_get_cpu_power(struct device *cpu_dev, unsigned long *uW,
-+			unsigned long *kHz)
-+{
-+	struct rpmi_perf_cpufreq_data *data;
-+	struct rpmi_perf_level level;
-+	struct cpufreq_policy *policy;
-+	u32 idx, count;
-+
-+	policy = cpufreq_cpu_get_raw(cpu_dev->id);
-+	if (!policy)
-+		return -EINVAL;
-+
-+	data = policy->driver_data;
-+	count = rpmi_perf_domain_level_count(data->domain);
-+
-+	/* The levels are in ascending order of frequency. */
-+	for (idx = 0; idx < count; idx++) {
-+		if (rpmi_perf_domain_level_info(data->domain, idx, &level))
-+			return -EINVAL;
-+
-+		if (level.clock_freq < *kHz)
-+			continue;
-+
-+		*uW = level.power_cost;
-+		*kHz = level.clock_freq;
-+		return 0;
-+	}
-+
-+	/* No level at or above *kHz: there is no state to describe. */
-+	return -EINVAL;
-+}
-+
-+static void rpmi_perf_register_em(struct cpufreq_policy *policy)
-+{
-+	struct em_data_callback em_cb = EM_DATA_CB(rpmi_perf_get_cpu_power);
-+	struct rpmi_perf_cpufreq_data *data = policy->driver_data;
-+
-+	em_dev_register_perf_domain(get_cpu_device(policy->cpu), data->nr_opp,
-+				    &em_cb, policy->cpus, true);
-+}
-+
-+static struct cpufreq_driver  rpmi_perf_cpufreq_driver = {
-+	.name = "rpmi-cpufreq",
-+	.flags = CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-+		 CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-+		 CPUFREQ_IS_COOLING_DEV,
-+	.verify = cpufreq_generic_frequency_table_verify,
-+	.target_index = rpmi_perf_set_target_index,
-+	.fast_switch = rpmi_perf_fast_switch,
-+	.get = rpmi_perf_get_rate,
-+	.init = rpmi_perf_init,
-+	.exit = rpmi_perf_exit,
-+	.register_em = rpmi_perf_register_em,
-+};
-+
-+static int rpmi_cpufreq_probe(struct platform_device *pdev)
-+{
-+	struct rpmi_perf **mpxy_perf = dev_get_platdata(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	int ret;
-+
-+	if (!mpxy_perf || !*mpxy_perf)
-+		return -EINVAL;
-+
-+	/*
-+	 * There is one cpufreq driver for the whole system, so only one
-+	 * provider can drive the CPUs. Refuse another one rather than point
-+	 * the registered driver at its domains.
-+	 */
-+	if (rpmi_perf_cpufreq_driver.driver_data)
-+		return dev_err_probe(dev, -EBUSY,
-+				     "CPUs are already driven by another provider\n");
-+
-+	rpmi_perf_cpufreq_driver.driver_data = pdev;
-+
-+	ret = cpufreq_register_driver(&rpmi_perf_cpufreq_driver);
-+	if (ret) {
-+		rpmi_perf_cpufreq_driver.driver_data = NULL;
-+		return dev_err_probe(dev, ret, "registering cpufreq failed\n");
-+	}
-+
-+	dev_info(dev, "%d MPXY cpufreq domains registered\n",
-+		 rpmi_perf_num_domains(*mpxy_perf));
-+
-+	return 0;
-+}
-+
-+static void rpmi_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_driver(&rpmi_perf_cpufreq_driver);
-+	rpmi_perf_cpufreq_driver.driver_data = NULL;
-+}
-+
-+static struct platform_driver rpmi_cpufreq_platdrv = {
-+	.driver = {
-+		.name = "riscv-rpmi-cpufreq",
-+	},
-+	.probe = rpmi_cpufreq_probe,
-+	.remove = rpmi_cpufreq_remove,
-+};
-+
-+module_platform_driver(rpmi_cpufreq_platdrv);
-+
-+MODULE_ALIAS("platform:riscv-rpmi-cpufreq");
-+MODULE_AUTHOR("Joshua Yeong <joshua.yeong@starfivetech.com>");
-+MODULE_DESCRIPTION("RISC-V RPMI performance cpufreq driver");
-+MODULE_LICENSE("GPL");
 diff --git a/drivers/firmware/riscv/riscv-rpmi-performance.c b/drivers/firmware/riscv/riscv-rpmi-performance.c
-index d44802f07ab0..f91f2d861dc0 100644
+index f91f2d861dc0..d532d41ecbba 100644
 --- a/drivers/firmware/riscv/riscv-rpmi-performance.c
 +++ b/drivers/firmware/riscv/riscv-rpmi-performance.c
-@@ -19,6 +19,7 @@
- #include <linux/mailbox/riscv-rpmi-message.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/slab.h>
-@@ -995,6 +996,56 @@ static void rpmi_perf_mbox_chan_release(void *data)
- 	mbox_free_channel((struct mbox_chan *)data);
+@@ -1046,6 +1046,28 @@ static int rpmi_perf_cpufreq_register(struct device *dev, struct rpmi_perf *perf
+ 	return devm_add_action_or_reset(dev, rpmi_perf_frontend_unregister, pdev);
  }
  
 +/*
-+ * cpufreq has no device tree node of its own: a CPU names its domain through
-+ * "performance-domains" on the CPU node. Create the device it binds to, but
-+ * only when some CPU actually points back here.
++ * A device that is not a CPU names its domain through "power-domains", which
++ * the power domain front-end serves on this node. Create the device it binds
++ * to, but only when the node is a power domain provider at all.
 + */
-+static bool rpmi_perf_cpus_present(struct device *dev)
-+{
-+	struct device_node *cpu_np;
-+	struct of_phandle_args args;
-+	int ret;
-+
-+	for_each_of_cpu_node(cpu_np) {
-+		ret = of_parse_phandle_with_args(cpu_np, "performance-domains",
-+						 "#performance-domain-cells", 0,
-+						 &args);
-+		if (ret)
-+			continue;
-+
-+		if (args.np == dev_of_node(dev)) {
-+			of_node_put(args.np);
-+			of_node_put(cpu_np);
-+			return true;
-+		}
-+		of_node_put(args.np);
-+	}
-+
-+	return false;
-+}
-+
-+static void rpmi_perf_frontend_unregister(void *data)
-+{
-+	platform_device_unregister((struct platform_device *)data);
-+}
-+
-+static int rpmi_perf_cpufreq_register(struct device *dev, struct rpmi_perf *perf)
++static int rpmi_perf_genpd_register(struct device *dev, struct rpmi_perf *perf)
 +{
 +	struct platform_device *pdev;
 +
-+	if (!IS_ENABLED(CONFIG_RISCV_RPMI_CPUFREQ) || !rpmi_perf_cpus_present(dev))
++	if (!IS_ENABLED(CONFIG_RISCV_RPMI_PERF_DOMAIN) ||
++	    !of_property_present(dev_of_node(dev), "#power-domain-cells"))
 +		return 0;
 +
-+	pdev = platform_device_register_data(dev, "riscv-rpmi-cpufreq",
++	pdev = platform_device_register_data(dev, "riscv-rpmi-perf-domain",
 +					     PLATFORM_DEVID_AUTO, &perf,
 +					     sizeof(perf));
 +	if (IS_ERR(pdev))
@@ -555,17 +181,321 @@ index d44802f07ab0..f91f2d861dc0 100644
  static int rpmi_perf_probe(struct platform_device *pdev)
  {
  	struct device *dev = &pdev->dev;
-@@ -1078,6 +1129,10 @@ static int rpmi_perf_probe(struct platform_device *pdev)
+@@ -1133,6 +1155,10 @@ static int rpmi_perf_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return dev_err_probe(dev, ret, "failed to register cpufreq device\n");
  
- 	dev_set_drvdata(dev, mpxy_perf);
- 
-+	ret = rpmi_perf_cpufreq_register(dev, mpxy_perf);
++	ret = rpmi_perf_genpd_register(dev, mpxy_perf);
 +	if (ret)
-+		return dev_err_probe(dev, ret, "failed to register cpufreq device\n");
++		return dev_err_probe(dev, ret, "failed to register power domain device\n");
 +
  	dev_info(dev, "%d MPXY performance domains registered\n", num_domains);
  
  	return 0;
+diff --git a/drivers/pmdomain/riscv/Kconfig b/drivers/pmdomain/riscv/Kconfig
+index 97232edc294a..6f3006d3220a 100644
+--- a/drivers/pmdomain/riscv/Kconfig
++++ b/drivers/pmdomain/riscv/Kconfig
+@@ -13,3 +13,19 @@ config RISCV_RPMI_DEVICE_POWER
+ 	  specification. The power domains advertised by the platform
+ 	  microcontroller are registered as generic power domains, so that
+ 	  devices can reference them through the "power-domains" property.
++
++config RISCV_RPMI_PERF_DOMAIN
++	tristate "RISC-V RPMI performance domains as power domains"
++	depends on RISCV_RPMI_PERFORMANCE
++	depends on PM
++	default RISCV
++	select PM_GENERIC_DOMAINS
++	help
++	  Register the performance domains of the RISC-V platform management
++	  interface (RPMI) performance service group as generic power domains,
++	  with a performance state for each level the platform microcontroller
++	  advertises. A device that is not a CPU references its domain through
++	  the "power-domains" property and drives it through the OPP library.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called riscv-rpmi-perf-domain.
+diff --git a/drivers/pmdomain/riscv/Makefile b/drivers/pmdomain/riscv/Makefile
+index 2cb0ee8ad413..32fd12ebb9cd 100644
+--- a/drivers/pmdomain/riscv/Makefile
++++ b/drivers/pmdomain/riscv/Makefile
+@@ -1,3 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
+ obj-$(CONFIG_RISCV_RPMI_DEVICE_POWER)	+= riscv-rpmi-device-power.o
++obj-$(CONFIG_RISCV_RPMI_PERF_DOMAIN)	+= riscv-rpmi-perf-domain.o
+diff --git a/drivers/pmdomain/riscv/riscv-rpmi-perf-domain.c b/drivers/pmdomain/riscv/riscv-rpmi-perf-domain.c
+new file mode 100644
+index 000000000000..fc5c512fe069
+--- /dev/null
++++ b/drivers/pmdomain/riscv/riscv-rpmi-perf-domain.c
+@@ -0,0 +1,265 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * RISC-V RPMI performance domains as generic power domains
++ *
++ * Copyright (C) 2026 Shanghai StarFive Technology Co., Ltd.
++ *
++ * A device that is not a CPU names its RPMI performance domain through
++ * "power-domains". Each domain is registered here as a generic power domain
++ * whose performance states are the levels the platform microcontroller
++ * advertises, so the device's driver drives it through the OPP library like
++ * any other power domain with performance states, and genpd settles on the
++ * highest state any device in the domain asks for.
++ *
++ * Performance state 0 means that no device in the domain asks for anything,
++ * while 0 is a valid RPMI level index. State N is therefore level index
++ * N - 1, and state 0 leaves the domain at whatever level it is running.
++ *
++ * genpd runs the domain at the highest state asked for, which is the highest
++ * level index. That is the level to run at: the specification makes the
++ * level index the platform's performance scale, which its limit services
++ * also order levels by, so a higher index is a higher level whatever the
++ * indices in between.
++ *
++ * A domain that CPUs name through "performance-domains" belongs to cpufreq,
++ * which sets its level directly, so no device is attached to it as well.
++ *
++ * The RPMI protocol and the domain enumeration live in the performance
++ * service group core, which owns the mailbox channel and creates the device
++ * this driver binds to.
++ */
++
++#include <linux/firmware/riscv/riscv-rpmi-performance.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_domain.h>
++#include <linux/pm_opp.h>
++#include <linux/units.h>
++
++struct rpmi_perf_genpd {
++	struct generic_pm_domain genpd;
++	struct rpmi_perf_domain *domain;
++	bool cpu_domain;
++};
++
++struct rpmi_perf_genpd_provider {
++	struct genpd_onecell_data data;
++	struct rpmi_perf_genpd *pds;
++};
++
++#define to_rpmi_perf_genpd(gpd) container_of(gpd, struct rpmi_perf_genpd, genpd)
++
++static int rpmi_perf_genpd_set_performance_state(struct generic_pm_domain *genpd,
++						 unsigned int state)
++{
++	struct rpmi_perf_genpd *pd = to_rpmi_perf_genpd(genpd);
++	int ret;
++
++	/* No device in the domain asks for a level, so leave it where it is. */
++	if (!state)
++		return 0;
++
++	ret = rpmi_perf_domain_set_level(pd->domain, state - 1);
++	if (ret)
++		dev_warn(&genpd->dev, "failed to set level %u: %d\n",
++			 state - 1, ret);
++
++	return ret;
++}
++
++/*
++ * The levels come from the platform microcontroller, so there is no
++ * operating-points-v2 table in the device tree. Hand each device that
++ * attaches an operating point per level instead, carrying the level's
++ * frequency and its performance state.
++ */
++static int rpmi_perf_genpd_attach_dev(struct generic_pm_domain *genpd,
++				      struct device *dev)
++{
++	struct rpmi_perf_genpd *pd = to_rpmi_perf_genpd(genpd);
++	struct dev_pm_opp_data data = {};
++	struct rpmi_perf_level level;
++	u32 idx;
++	int ret;
++
++	/* cpufreq and genpd would each set the level behind the other's back. */
++	if (pd->cpu_domain) {
++		dev_err(dev, "%s is the performance domain of a CPU\n", genpd->name);
++		return -EBUSY;
++	}
++
++	/* A domain whose level cannot be set has no state to offer. */
++	if (!rpmi_perf_domain_can_set_level(pd->domain))
++		return 0;
++
++	for (idx = 0; idx < rpmi_perf_domain_level_count(pd->domain); idx++) {
++		ret = rpmi_perf_domain_level_info(pd->domain, idx, &level);
++		if (ret)
++			goto err;
++
++		/* Frequency from RPMI is in kHz */
++		data.freq = (unsigned long)level.clock_freq * HZ_PER_KHZ;
++		data.level = level.index + 1;
++
++		ret = dev_pm_opp_add_dynamic(dev, &data);
++		if (ret)
++			goto err;
++	}
++
++	return 0;
++
++err:
++	dev_warn(dev, "failed to add operating points for %s: %d\n",
++		 genpd->name, ret);
++	dev_pm_opp_remove_all_dynamic(dev);
++
++	return ret;
++}
++
++static void rpmi_perf_genpd_detach_dev(struct generic_pm_domain *genpd,
++				       struct device *dev)
++{
++	struct rpmi_perf_genpd *pd = to_rpmi_perf_genpd(genpd);
++
++	if (rpmi_perf_domain_can_set_level(pd->domain))
++		dev_pm_opp_remove_all_dynamic(dev);
++}
++
++/* Mark the domains that CPUs name through "performance-domains". */
++static void rpmi_perf_genpd_mark_cpu_domains(struct device_node *np,
++					     struct rpmi_perf_genpd *pds,
++					     u32 num_domains)
++{
++	struct of_phandle_args args;
++	struct device_node *cpu_np;
++
++	for_each_of_cpu_node(cpu_np) {
++		if (of_parse_phandle_with_args(cpu_np, "performance-domains",
++					       "#performance-domain-cells", 0,
++					       &args))
++			continue;
++
++		if (args.np == np && args.args_count >= 1 &&
++		    args.args[0] < num_domains)
++			pds[args.args[0]].cpu_domain = true;
++
++		of_node_put(args.np);
++	}
++}
++
++static int rpmi_perf_genpd_probe(struct platform_device *pdev)
++{
++	struct rpmi_perf **mpxy_perf = dev_get_platdata(&pdev->dev);
++	struct device *dev = &pdev->dev;
++	struct rpmi_perf_genpd_provider *provider;
++	struct generic_pm_domain **domains;
++	u32 i, num_domains, registered = 0;
++	int ret;
++
++	if (!mpxy_perf || !*mpxy_perf)
++		return -EINVAL;
++
++	num_domains = rpmi_perf_num_domains(*mpxy_perf);
++
++	provider = devm_kzalloc(dev, sizeof(*provider), GFP_KERNEL);
++	if (!provider)
++		return -ENOMEM;
++
++	provider->pds = devm_kcalloc(dev, num_domains, sizeof(*provider->pds),
++				     GFP_KERNEL);
++	if (!provider->pds)
++		return -ENOMEM;
++
++	domains = devm_kcalloc(dev, num_domains, sizeof(*domains), GFP_KERNEL);
++	if (!domains)
++		return -ENOMEM;
++
++	rpmi_perf_genpd_mark_cpu_domains(dev_of_node(dev->parent), provider->pds,
++					 num_domains);
++
++	for (i = 0; i < num_domains; i++) {
++		struct rpmi_perf_genpd *pd = &provider->pds[i];
++
++		/*
++		 * A domain that could not be enumerated is left out, the way
++		 * the device power provider leaves out a domain it cannot use.
++		 * A device that names it then never gets its power domain.
++		 */
++		pd->domain = rpmi_perf_domain_by_id(*mpxy_perf, i);
++		if (!pd->domain)
++			continue;
++
++		pd->genpd.name = rpmi_perf_domain_name(pd->domain);
++		/*
++		 * A performance domain has no off state, its operating points
++		 * come from the platform microcontroller rather than from the
++		 * device tree, and its name is not guaranteed to be unique.
++		 */
++		pd->genpd.flags = GENPD_FLAG_ALWAYS_ON |
++				  GENPD_FLAG_OPP_TABLE_FW |
++				  GENPD_FLAG_DEV_NAME_FW;
++		pd->genpd.set_performance_state = rpmi_perf_genpd_set_performance_state;
++		pd->genpd.attach_dev = rpmi_perf_genpd_attach_dev;
++		pd->genpd.detach_dev = rpmi_perf_genpd_detach_dev;
++
++		ret = pm_genpd_init(&pd->genpd, NULL, false);
++		if (ret)
++			goto err;
++
++		domains[i] = &pd->genpd;
++		registered++;
++	}
++
++	provider->data.domains = domains;
++	provider->data.num_domains = num_domains;
++
++	/* The domains belong to the node the core was probed from. */
++	ret = of_genpd_add_provider_onecell(dev_of_node(dev->parent),
++					    &provider->data);
++	if (ret)
++		goto err;
++
++	platform_set_drvdata(pdev, provider);
++
++	dev_info(dev, "%u MPXY performance domains registered as power domains\n",
++		 registered);
++
++	return 0;
++
++err:
++	while (i--) {
++		if (domains[i])
++			pm_genpd_remove(domains[i]);
++	}
++
++	return dev_err_probe(dev, ret, "failed to register power domains\n");
++}
++
++static void rpmi_perf_genpd_remove(struct platform_device *pdev)
++{
++	struct rpmi_perf_genpd_provider *provider = platform_get_drvdata(pdev);
++	u32 i;
++
++	of_genpd_del_provider(dev_of_node(pdev->dev.parent));
++
++	for (i = 0; i < provider->data.num_domains; i++) {
++		if (provider->data.domains[i])
++			pm_genpd_remove(provider->data.domains[i]);
++	}
++}
++
++static struct platform_driver rpmi_perf_genpd_platdrv = {
++	.driver = {
++		.name = "riscv-rpmi-perf-domain",
++	},
++	.probe = rpmi_perf_genpd_probe,
++	.remove = rpmi_perf_genpd_remove,
++};
++
++module_platform_driver(rpmi_perf_genpd_platdrv);
++
++MODULE_ALIAS("platform:riscv-rpmi-perf-domain");
++MODULE_AUTHOR("Joshua Yeong <joshua.yeong@starfivetech.com>");
++MODULE_DESCRIPTION("Power domains for the RISC-V RPMI performance service");
++MODULE_LICENSE("GPL");
 -- 
 2.43.0
 
