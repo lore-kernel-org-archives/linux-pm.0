@@ -1,95 +1,181 @@
-Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD657383C94;
-	Thu,  8 Oct 2026 17:00:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.37.111.173
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791478836; cv=none; b=APR3mNRbbOGClrV2ZoIpV7gO/d8K31YZjGLrqPmiXvrMmuU/81Pnl1wgZXC1mtk+paRBTl5/w5zEKZm7tK5CbGeD0g/Nxmkjb8FHoe+mwSyJUrCMtgotFBv3ugSHxXd7KpFoZ5+Mp5bYTY6WvxZ5h0ZXodG/Lb1wBnuGk6pmhJA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791478836; c=relaxed/simple;
-	bh=j0T/r88lamq0hwJYh4ex6xnEltvz5Ih0WJQ29nG9WWM=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=dbJfJ5mGJzxXtK3xGa3K5nGiaGnr9RmhDVo+bTqnY57UhjarHMPyZ4eAk9tynzFeDxjQAOKt3FhAXr4517Y4TqoUYW58SCvoScCVP8EuoC3X1DevD6dydESiq8sD5Zj9uXX8lqi8y1Cks8vTNHjDSpuWNOm4k3v+aJo6GCRPXIc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com; spf=pass smtp.mailfrom=HansenPartnership.com; dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b=Xjy1ZvAM; arc=none smtp.client-ip=198.37.111.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=HansenPartnership.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2F2D34D3B9
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 17:07:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.172
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791479238; cv=pass; b=M2rmT4HD0xSIn663i7UFG5J8BAiyXGcpZQjFFDxmxezwu4mV5CRj3HFbMKFJx5fMlwrHA6Gw+Wb/QKtOPZA1b88D85lyppvRB+w44VVzatk6QrlT2yBs8QfGCWTQx5lwUkUUtAgArpPRdFMsOCVZ2hXwCAo7wa+DBWLR/ESn3P0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791479238; c=relaxed/simple;
+	bh=QqDI6Bbid4Z5TSJM6uhAIwDVDE3XcRkTjQOjWmVeRn4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ayPJP0fupBGmfNbFdxzxG/o3ChI0cIWb7+yQH1mjWheUNaE0v1b/9JE0z86y/ttndUE7VqeAN6o31s8leDcQHumPALpJ4qe7MsFerq1O/A8Hr7+U31f2dFVQzCVknjt2zlEjEPGZx1Dr1O46ETUZjdXdFB7M6tXTo0wX4J8Huo0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=CjskiTdX; arc=pass smtp.client-ip=209.85.128.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="Xjy1ZvAM"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1791478833;
-	bh=j0T/r88lamq0hwJYh4ex6xnEltvz5Ih0WJQ29nG9WWM=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=Xjy1ZvAMh/+jSBjf/rzR6THBR5wQ0dI1bVmKHtQTVHJK9a+9mcma5G8UM/wWTErD3
-	 WxbCPzckHTre5xaCiTAdrin8W1tlm+uxwELb5DcBUhMb45gi4iPps+EUJR7grJMwxF
-	 cThNoFxmLRPPvPWuSiXkMaS2cBqzkKWwAXJo1jkQ=
-Received: from [10.23.23.248] (unknown [80.188.228.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 7EAA51C027B;
-	Thu, 08 Oct 2026 13:00:31 -0400 (EDT)
-Message-ID: <bd131221bca29b5f8ba348adadf1e3930a5b57fe.camel@HansenPartnership.com>
-Subject: Re: [PATCH 11/17] tpm: Add kernel signing key creation with audited
- provenance
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthew Garrett <matthewg@nvidia.com>, mjg59@srcf.ucam.org
-Cc: keyrings@vger.kernel.org, linux-integrity@vger.kernel.org, 
-	rafael@kernel.org, linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
-Date: Thu, 08 Oct 2026 19:00:28 +0200
-In-Reply-To: <20261008132532.1155166-12-matthewg@nvidia.com>
-References: <20261008132532.1155166-1-matthewg@nvidia.com>
-	 <20261008132532.1155166-12-matthewg@nvidia.com>
-Autocrypt: addr=James.Bottomley@HansenPartnership.com;
- keydata=mQENBE58FlABCADPM714lRLxGmba4JFjkocqpj1/6/Cx+IXezcS22azZetzCXDpm2MfNE
- lecY3qkFjfnoffQiw5rrOO0/oRSATOh8+2fmJ6el7naRbDuh+i8lVESfdlkoqX57H5R8h/UTIp6gn
- 1mpNlxjQv6QSZbl551zQ1nmkSVRbA5TbEp4br5GZeJ58esmYDCBwxuFTsSsdzbOBNthLcudWpJZHU
- RfMc0ew24By1nldL9F37AktNcCipKpC2U0NtGlJjYPNSVXrCd1izxKmO7te7BLP+7B4DNj1VRnaf8
- X9+VIApCi/l4Kdx+ZR3aLTqSuNsIMmXUJ3T8JRl+ag7kby/KBp+0OpotABEBAAG0N0phbWVzIEJvd
- HRvbWxleSA8SmFtZXMuQm90dG9tbGV5QEhhbnNlblBhcnRuZXJzaGlwLmNvbT6JAVgEEwEIAEICGw
- MGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAhkBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAml2ZBI
- FCS3GUMIACgkQgUrkfCFIVNZKjQf/deRzlXZClKxTC/Ee2yEPqqS7mm/INUA49KdQQ5oIhSxkUBy0
- 9J4qjMIo5F8ZFkFTqikBqeL35LKu7O7rn8WETfX8Bxvos3HUsl3jHo34DES4MUFIpoQPgtiLRGwLb
- K0cVCAArR2u2qj4ABmTRrs1I1kvdjEw6gatOuXtEe/j5O2fvfzTq9GBr0Q3n2IAsFXi4hLlx6VPE8
- tyWUZ8BWJKtih3JAeUiXFvASL3McV0rV9RnU0VbjEQEhSE7PMYhWpnDC9AyBb0lXJllQRvC3NSkUB
- 8KVQgNNxRPss0WE/nBoZ4dFA42jTyzTz8lNylxZoAWV7WJb3QxVg4oCodRVrxxrQhSmFtZXMgQm90
- dG9tbGV5IDxqZWpiQGtlcm5lbC5vcmc+iQFVBBMBCAA/AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeA
- QIXgBYhBNVgbnPItGJxvq2a34FK5HwhSFTWBQJgS5mYBQkbNYS9AAoJEIFK5HwhSFTWBpwIAL5Bk3
- 5FB34U6iHmDzzgdCbxLTs43T/YQyJpcGIvopBvnI/fDY8oSG6Df64/O6B+1R+A8TDp6ZG5ysUWnCC
- 6GuIaEHemBYkitMPglR6+sGCMQY7O0mlsPvdssvKK1KI9Bno4VU6ogaF2qVzefSqg1Djmf/DcsxWP
- rI/jdJ8FB5AYR2rjIdDFc+zRdAJuavo1/anyY2wgpFh/3R8IOYAEfWV9nGgYkf9+tA4EIn1sxE0I3
- L5oW2N3mbyRrkzuBwO8ztMCwqEPk7moWzhokcZqMXiAIahaZdkashJC+s2X2RZSGCy+g+pvY5NN4B
- BVG5XwLgVBqbHMTcxE0fbmPqz+q6O0LEphbWVzIEJvdHRvbWxleSA8amVqYkBoYW5zZW5wYXJ0bmV
- yc2hpcC5jb20+iQFXBBMBCABBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAmODZ5ACGwMFCRs1hL0F
- CwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQgUrkfCFIVNZu0Af/TzvL2/NdgAcw9uN3x60H8
- jc4QUq14VpxcFEFEMpcj1morkX/G93V+56HBBaXZj+yK8PhxIA/SIz+sU7C/0YvKuvzakP8ZX/7WJ
- e32SOUtjfr/VTaqjIBzNj6OxLvZpmNbBw7s6DwhhNpHOWqJ/1ml+PtDRDV71IB58yVqQjp1xlNKVl
- ZppcJ5908EJzsFnRIVjiQiDSKoppqB2BCibBbrWcln7CiWMyOC/cco6SIn6twH+f7+aivJ3xGcOE2
- a9gBKF5rNi9TBoX9oyPmshv/TDmnohsVrH7AYXlGYfZTk15SWEiROh1QX8/uD9wl/gcIv5EDUpT/F
- L2jzOsA5663bw==
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CjskiTdX"
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-8ac4806e210so32513937b3.1
+        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2026 10:07:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791479236; cv=none;
+        d=google.com; s=arc-20260327;
+        b=ekDgrf38l19rq74SCHsqefnd5tXJffAsqsSe732ys0DEpRdOMQ2258gpZ+Kkhe6ZAy
+         3WfTjMGEGon7x0CDgOX5QdxZTZL4WZut8x5kvxsO+aqSGRQozXLy+xARpP+/FIkqChKA
+         EaGHcQajHIbYgbZJ6MOCaBbf/TGj11EyCxq1OZyJ9CKj23zDQydbKvKpxzylEU4PijlK
+         ra7Yvg4MxeaXY3LeqRfyzjOhJtFzoGoziyikDzSfUnua5XUgrQAbhC+Jhwm+BwxgBHbf
+         Gc59l4My+qn6hqbG0i9ZwOG2SMU49mwxRCFzTZN6sjt90m5V5QZDsfgsCzOW6McDgBG0
+         RlkA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=2vxAQYqUPu2IyOv6/hcaTpeROBNAxx/kWZ9+SB1EYqQ=;
+        fh=PNSsGid4NJlZ+NQ1YuGV9ATLmDRvkdIu3y026uCm4Xg=;
+        b=hBDsDg5cboAKwqqczej0Xhx8M9NBrvQ277DTKXXRRUjE/mxpQS03Y3jNmkIsq27jdT
+         LcFOsLrNUbw+o0K0UmiU4fWawJIvfF/ZcmtcLRxAJXAMkX5mcPHDtAHqM/UPx0eQUkGi
+         mKGfNPMME9S7bsQhguYFz+L/8Dux5rrJ8Vy4AAlATrVOw5FGGT8F3N3913l3ZzYqr9X2
+         NCbsd18TCFR35n3MRIRzJangRsR9JvIPNureD+tsCJbLgpmVafdG9fQ4O3HY3eVVZn37
+         3NfCBz/8L86RItrnSZDavlJja/LVmhyAsRR0a9S7yRAK98CSnJ69kMZHNg9wU1VRpwSM
+         L4rA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1791479236; x=1792084036; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2vxAQYqUPu2IyOv6/hcaTpeROBNAxx/kWZ9+SB1EYqQ=;
+        b=CjskiTdXhMBCOIOnG/ji8z7M7K/m2VM8bxynqze80Ch/Mad0y202dkdou7i8ZDrmGh
+         pLXt6tEMMlu6isPmJjYONw0zlbyXN57WCSfJK2IqcD5y9CXWdpou684S3S3UefBh8m08
+         d2fyETfcYmd/aBr6Fff9lHWFaF9d3TIbPFf5hE2ZYufrgNTosPdvW3Vws0Zn2h/+2r80
+         wssMtraSEYY4zJmFsPiAzFjNq+j3E1lRC5s4fLoNSHhoYsIgrzDHSyjl5h+YzswXRf5c
+         hEHXMo0+NUFC5JKAFGzM2Ff/yA4yX77jDoyM66BbKKiZWRqsL4WIOtSXFu5Y8BZjmozm
+         cU6A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791479236; x=1792084036;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=2vxAQYqUPu2IyOv6/hcaTpeROBNAxx/kWZ9+SB1EYqQ=;
+        b=EyUYXIOJiPAV1do+aEjnPtn6468OYIfOgfrHOziEqYdKmEt/AcNmSgTsYscYO5vokI
+         3r4M2DBM3UtIUT+NjrvbdjdqHp1pCBQW6KH8RuxePHWqihS551CykytaFS2AiFwJllW2
+         DdT0XjYYVzURWAzxqu//ShrWkDMo4bTxsLAnBdjq7dBSAgaQNdIRFtiFLTP0+um/Nrkr
+         mXnQHr6jGHLKZF1MF4vF/GJGe41KCJWkTmzJRXDp6wcyG/TlIbDBDFjOiD92ky7Aj13i
+         ZI9n1/vzckKmDLyqx5511yH6VQDakcN+KaA0mbOPVYlXGgWjbwG1Lg5JxN2QcuaTmal2
+         ATJA==
+X-Forwarded-Encrypted: i=1; AKwUvBxfLl4i1DQIwRJAleQ+ZeImDp2jlP492UAiWeVY6ebUCKFC9yXYdNu1p4KNcZFk1BBIBxuHLGq+/Q==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKMRxW2BhEd3njoekpJe480/9WUeQuzOkOoFs/9HDwoxQjfn8u9
+	2AiXa8RZkNFqrQX6TDu4zRViy6d9fEXLMGBGYu5TKMY9PdOplH2Qv+wEejQG/edS9HlzEibb7er
+	B2Sp+n0zxk+kjTGKWSw/v3VRIvzlRrTPkgrOwoY0MsA==
+X-Gm-Gg: AYBFou0CaEaxP50rjxUvTqUrbrNhusOV9TmG1HZ/jpBse2PYmDBxTy8u+8OQLJTfgGP
+	wxBZxPSc3gcDMZBIuqzjErzr/nCoKY+i7YoSq9ZLEwbJrXcX0PjcOvQY/RkYPSJRSRzYTsZk7vE
+	zCpqhszyRX7yB6BAc3q64zf2QXIMTlUcJYZkvhrq85T1iuMXVXBSRJz+9Uxt5p3h0/743OVVw8X
+	mFC7lt0DgqNxMTf+8Q1ZRrlJBM65Bkagbgea0+CWoEQWGmBbpwM3EnJuVlskuqBaNegCgQf/950
+	eLgUssw/zGrVZkhihGpdhO6NPF+yz6DpFoHZYJ/ElU9oWNY3x5PYFwcnUzKtqYC5zhV9MGJqGxx
+	4OxxEoCD19AOsYG0answCXKNKaXckwuOxctTagggeGZdRFZ//vHtGv4c9YhMyfMfntLT9IKHlJ9
+	3ji6j0Pcn/OFLHTTV7QHkIk6CwbYEXkovFkORDCRCLXjcjucWXRu7FVAxA5IUhKCC/qDDpKQEUU
+	BRonmyNXdlJDJqSNwrZ1TzaOJbaRcpzo5HIjpDEXaStVwWjHz4oYNsLkFH6CcK03XOwpQYjHbAO
+	3wWXJ6EiTtQi0pfh2CsQPSPOrbHCMNo4FnnOXenutf0lvNlfwdsup1uvRXh/t0DsK1ScjG4+gYz
+	hhEyLx1tDkvValJTclJMRS7MXdllIYn9bOUtFateHF4jaTN3uDOahhl4uhA0Mc4hB
+X-Received: by 2002:a05:690c:6d84:b0:8ae:b617:7113 with SMTP id
+ 00721157ae682-8b05ae92339mr32919307b3.6.1791479235462; Thu, 08 Oct 2026
+ 10:07:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20261008132532.1155166-1-matthewg@nvidia.com> <20261008132532.1155166-2-matthewg@nvidia.com>
+In-Reply-To: <20261008132532.1155166-2-matthewg@nvidia.com>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 8 Oct 2026 20:06:39 +0300
+X-Gm-Features: AclHuK_axRHHNMJXbXP5qGzIg8glDqrcsSviR3SuESczjar1LzYO3sHRH5FmG7w
+Message-ID: <CAC_iWjJJMgTCPwmVA+vhDq+qfh5U36TbBiqyzPaKeDxTaYjqsQ@mail.gmail.com>
+Subject: Re: [PATCH 01/17] tpm: Define a kernel-owned TPM NV index that can't
+ be modified by userland
+To: Matthew Garrett <matthewg@nvidia.com>
+Cc: mjg59@srcf.ucam.org, keyrings@vger.kernel.org, 
+	James.Bottomley@hansenpartnership.com, linux-integrity@vger.kernel.org, 
+	rafael@kernel.org, linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 2026-10-08 at 06:20 -0700, Matthew Garrett wrote:
-> Add tpm2_kernel_key_create(), which creates an ECDSA P-256 signing
-> key for the kernel along with evidence that the kernel, rather than
-> userspace, created it. The key is created with TPM2_CreateLoaded
-=20
-I don't think you want to do this.  TPM2_CreateLoaded was added in spec
-version 1.38.  A lot of current TPMs on the market today have spec
-versions lower than this and would reject the command (The spec version
-of the Nuvoton in my Dell XPS-13 is 1.16). Since it's really just a
-shorthand for TPM2_Create followed by TPM2_Load, you can simply do that
-instead, which would save us from a load of complaints about this not
-working.
+Hi Matthew,
 
-Regards,
+On Thu, 8 Oct 2026 at 16:25, Matthew Garrett <matthewg@nvidia.com> wrote:
+>
+> TPM NV indexes can be used for various purposes, including using them as
+> PCRs without depleting the limited number of hardware PCRs. It would be
+> beneficial to have one that's under control of the kernel in order to be
+> able to prove whether certain TPM operations occurred within the kernel
+> or not.
+>
+> Reserve NV index 0x014c4853 for use by the kernel, and filter commands
+> submitted through /dev/tpm* and /dev/tpmrm* so that userspace cannot
+> undefine or modify it. Blocking definition is more awkward so let's
+> allow that for now, not being able to modify it means there's nothing
+> interesting they can do there. The filter simply validates which handle
+> the relevant set of commands is referring to and returns -EPERM if it's
+> the kernel one.
+>
+> NV indexes are from allocated ranges and this is a range allocated to
+> Linux, so there should be no userland depending on the ability to access
+> this - but let's gate it behind a default N config option anyway.
 
-James
+I think the idea is useful overall.
+
+>
+> Signed-off-by: Matthew Garrett <matthewg@nvidia.com>
+> ---
+
+[...]
+
+> +static bool tpm2_dev_cmd_is_blocked(const u8 *buf, size_t bufsiz)
+> +{
+> +       const struct tpm_header *header = (const void *)buf;
+> +       size_t len = min_t(size_t, be32_to_cpu(header->length), bufsiz);
+
+I haven't read the entire code base but don't you have to check bufsiz
+and make sure it's a valid header before dereferencing header->length?
+
+> +       u32 cc;
+> +       int i, index;
+> +
+> +       if (len < TPM_HEADER_SIZE)
+> +               return false;
+> +
+> +       cc = be32_to_cpu(header->ordinal);
+> +
+> +       for (i = 0; i < ARRAY_SIZE(tpm2_nv_modify_cmds); i++) {
+> +               size_t offset;
+> +
+> +               if (tpm2_nv_modify_cmds[i].cc != cc)
+> +                       continue;
+> +
+> +               offset = TPM_HEADER_SIZE +
+> +                        tpm2_nv_modify_cmds[i].handle * sizeof(u32);
+> +               if (len < offset + sizeof(u32))
+> +                       return false;
+> +
+> +               index = get_unaligned_be32(&buf[offset]);
+
+nit, but get_unaligned_be32() returns a u32, might as well define the
+index as such
+
+> +
+> +               if (index == TPM2_KERNEL_NV_INDEX)
+> +                       return true;
+> +       }
+> +
+> +       return false;
+> +}
+> +#else
+> +static inline bool tpm2_dev_cmd_is_blocked(const u8 *buf, size_t bufsiz)
+> +{
+> +       return false;
+> +}
+
+[...]
+
+Regards
+/Ilias
