@@ -1,104 +1,97 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00298364EAA;
-	Thu,  8 Oct 2026 17:12:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC96B2EAD15;
+	Thu,  8 Oct 2026 17:24:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791479532; cv=none; b=Cof2Q3JKTSMOXItNU/ODqGyp0Nw2u6sEeUpiVwlGSnp3bKY1NdUFaQvB8XnIz+3dsKYlZFVT2/60T8qoykbd5d3e2M/NI6CZKzqzoviciqpvLoHuHap3aCKwlPEhvbZ0aa8UxqxgdNXrLmLlo7JmDN1VZerIJUw1G0uQyKjjMto=
+	t=1791480291; cv=none; b=iHMlREFieEiqc8Y+A2rNWpwS1oFn6GUd+jbKYp3JOu6KBQfyPphinwW3JxK3HCzWQfN/nH+Tqv5cR6rEUX67mUuF9UO4DXfYJWzesNgJu/bFPuFNM07CgVpFce0cGtf3lkppxL2V5muIrLL+7LEoJhu1s3ZPOsa0HSk2yXD+AZo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791479532; c=relaxed/simple;
-	bh=P28ojFz7RA7nhw2sMlWjvF7SYbVOPAyg3OPGn4C7gEU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=QH3w8i3gdjw3HJy4gdBnmfCz8q7QdX3st7l+gbuSpyYIHMh4mWM18z30LPWE8jy0Sm3ESCac95kqsFeAU0DWKhEh1yh7jHZ/9dR5y49GSdwI8wK/NlO3EG3u3oWxa0TSWLtly8xXDtiRHxB6tEVAAhC3FVZI+v3vVUKZEGf8m8g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=XlXdhU/8; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XlXdhU/8"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=Ib53W/id8Ca06C76erYCzQHO3f0GbCh0EqPrtlVOKVg=; b=XlXdhU/81WApKUskzstvcZML/I
-	pNtNNgZGYCutJ4SCGV83UglAIBgLWOfF2VzVfYbsNI1nepbrWsg4w96f8pKyFeMvf1ges2qmpz183
-	5SrxUaEdItrzhjvEBFq/LLq4eM9HLGFnUSN29UvK3wh2G2ujyCeFAKI18ajIoxqz10L2dHRKlvE50
-	Azaypu6fGHzM/54juz0wtxqb2AJx5u3f7ieAbZzMtdHZzjaSrBMKfH73VDk1S4u2Vx9wUkR2Xseoa
-	gXjTwJukmYscZoYTHvckpURsHETXBSpy1/uczA0b73MKEsSnvDah0NfJv2ASnVa+IYa8A/I3IuaOK
-	Q8jXN2Ww==;
-Received: from [50.53.43.113] (helo=bombadil.infradead.org)
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xErf2-00000004lFy-3QQR;
-	Thu, 08 Oct 2026 17:12:04 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-pm@vger.kernel.org
-Cc: patches@lists.linux.dev,
-	Randy Dunlap <rdunlap@infradead.org>,
-	kernel test robot <lkp@intel.com>,
-	=?UTF-8?q?Iv=C3=A1n=20Ezequiel=20Rodriguez?= <ivanrwcm25@gmail.com>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	linux-doc@vger.kernel.org
-Subject: [PATCH] docs: power: supply: fix inline strings
-Date: Thu,  8 Oct 2026 10:12:01 -0700
-Message-ID: <20261008171203.3080111-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.55.0
+	s=arc-20240116; t=1791480291; c=relaxed/simple;
+	bh=sbonmr3aZnBHQ3E8zoq/kEHvP5Nux40zeibBVc9bnnc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=kBHCISXGifQMWamTKn9J3Po/XarniN6zA+n7hiSA8jeuH9hZMMYR7u8pqr3IR7sNBEhhIAOAAX5cIjcUUCrFmytYhF0KGzUQ0B/dFf2N65ERhm/UWSXPREiseR50tm9rK9L1ToWtUauRs+2Br9C2UG7GISmRJUOgM/7eMB1ROkQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from fc87d0ffb700.home.arpa (unknown [36.110.52.2])
+	by APP-03 (Coremail) with SMTP id rQCowADH0D7Y0cdqSRwPCg--.12352S2;
+	Fri, 09 Oct 2026 01:24:40 +0800 (CST)
+From: Haotian Zhang <vulab@iscas.ac.cn>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Stephen Boyd <swboyd@chromium.org>,
+	Taniya Das <taniya.das@oss.qualcomm.com>,
+	Saravana Kannan <saravanak@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: qcom-cpufreq-hw: fix device node refcount leak in phandle parsing
+Date: Fri,  9 Oct 2026 01:24:42 +0800
+Message-Id: <20261008172442.2725544-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowADH0D7Y0cdqSRwPCg--.12352S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Cw4kJr1DWw48CrW3Ar18Krg_yoW8Xr18pa
+	y5urZ0vF95JFsFk348Aa18W3WYkanFyrWUGryxC3sIyFn3J3W3X3y0kFy0kF95KrykAFyj
+	yrs0v3WxWFWDJFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkvb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
+	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xII
+	jxv20xvEc7CjxVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVWxJVW8Jr1l84ACjcxK6I
+	8E87Iv6xkF7I0E14v26r4UJVWxJr1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
+	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r1j6r
+	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCY1x0262kKe7AKxVWUAVWU
+	twCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r
+	1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij
+	64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr
+	0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF
+	0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07bnL0OUUUUU=
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwEOA2rHpl1pJgAAsS
 
-Consistently use `string` to quote code symbols.
-This repairs the docs build warning:
+of_parse_phandle_with_args() transfers a reference to the provider node
+in out_args->np, which the caller is responsible for releasing with
+of_node_put().  Neither qcom_get_related_cpus() nor
+qcom_cpufreq_hw_cpu_init() ever puts args.np: they only put cpu_np, which
+is a different node obtained from of_cpu_device_node_get().  The
+reference is therefore leaked on every successful call, and
+qcom_get_related_cpus() leaks one per present CPU.
 
-  Documentation/power/power_supply_class.rst:211: WARNING: Inline emphasis start-string without end-string. [docutils]
+Release args.np after the parsed index has been read in both call sites.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202610050416.L69x2Wpo-lkp@intel.com/
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Fixes: 2849dd8bc72b ("cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver")
+Assisted-by: DeepSeek-V4.1-Flash
+Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
 ---
-Cc: Iván Ezequiel Rodriguez <ivanrwcm25@gmail.com>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Shuah Khan <skhan@linuxfoundation.org>
-Cc: linux-doc@vger.kernel.org
+ drivers/cpufreq/qcom-cpufreq-hw.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- Documentation/power/power_supply_class.rst |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 874ff3fb9d97..060a460716f7 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -322,6 +322,8 @@ static void qcom_get_related_cpus(int index, struct cpumask *m)
+ 
+ 		if (index == args.args[0])
+ 			cpumask_set_cpu(cpu, m);
++
++		of_node_put(args.np);
+ 	}
+ }
+ 
+@@ -554,6 +556,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 		return ret;
+ 
+ 	index = args.args[0];
++	of_node_put(args.np);
+ 	data = &qcom_cpufreq.data[index];
+ 
+ 	/* HW should be in enabled state to proceed */
+-- 
+2.25.1
 
---- linext-2026-1007.orig/Documentation/power/power_supply_class.rst
-+++ linext-2026-1007/Documentation/power/power_supply_class.rst
-@@ -97,7 +97,7 @@ AUTHENTIC
- 
- HEALTH
-   represents health of the battery. Values correspond to
--  POWER_SUPPLY_HEALTH_*, defined in include/linux/power_supply.h.
-+  `POWER_SUPPLY_HEALTH_*`, defined in include/linux/power_supply.h.
- 
- VOLTAGE_OCV
-   open circuit voltage of the battery.
-@@ -188,7 +188,7 @@ CAPACITY_ALERT_MIN
- CAPACITY_ALERT_MAX
-   maximum capacity alert value in percents.
- CAPACITY_LEVEL
--  capacity level. This corresponds to POWER_SUPPLY_CAPACITY_LEVEL_*.
-+  capacity level. This corresponds to `POWER_SUPPLY_CAPACITY_LEVEL_*`.
- 
- TEMP
-   temperature of the power supply.
-@@ -209,8 +209,8 @@ TEMP_MAX
- 
- TIME_TO_EMPTY_NOW, TIME_TO_EMPTY_AVG
-   seconds left for battery to be considered empty
--  (i.e., while battery powers a load). *_NOW is a
--  momentary reading; *_AVG is averaged over a fixed period.
-+  (i.e., while battery powers a load). `*_NOW` is a
-+  momentary reading; `*_AVG` is averaged over a fixed period.
- TIME_TO_FULL_NOW, TIME_TO_FULL_AVG
-   seconds left for battery to be considered full
-   (i.e., while battery is charging). Same now/avg distinction.
