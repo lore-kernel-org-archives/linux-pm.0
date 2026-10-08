@@ -1,223 +1,149 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from sender6-pp-e107.zoho.com (sender6-pp-e107.zoho.com [165.173.180.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55D11443C27
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 10:10:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791454240; cv=none; b=cKNyGhxB3WpWJCxIkKJZYNvy3nh9T1SGxMY1CPTrRtfnLCiTJfVxtiYqCs5eTq18kS4KdRuZEAjEM51otEiDyAOAHRlSA5iF9g7Z87N4iCrwoFsNGE6Ss9onYkm1qOTxD8ah3jzpaEtJ6t/2R84w0jU6Fp64KJiTe+hnHnxVuNw=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791454240; c=relaxed/simple;
-	bh=4tbUgFiAvEgxtY8UciHDHSbxyHXMGWw4dIFFQgGN1hI=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Bu+ftn6hqybiJjsRjQU6IR2ICJMHwXAIFDkQZuOGoe6Lp5zMDDhN9sykyEB9hwsVqpUW4pt4r+/UjUNvLkyGVgZAfTy2r8WJ9yzLqHRyvt9JHGzlpCrrKFg3iPZxNVXe93etcFgBpOpZ1VMD4RWayot1v8ahdlxQo/GChipc8/4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hwm3R+L5; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91F95391E7B;
+	Thu,  8 Oct 2026 10:31:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.180.107
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791455479; cv=pass; b=BCHNgD6tet80iPuNhKE8+eS6axGkMnn2dfzZtBQhrrt4H/5NMJB4yuDW/S7tHUTewGIYWjmlvxraxLcNRIXg21SitQGIQLyp6xbtPAs2Y+2faC+NsYa9B1NvHScErGQC+FGVPVX3Iw7TctqWzEG0+qvdSN65U5P4z0U+/x2ohxs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791455479; c=relaxed/simple;
+	bh=HA8SGj7wkjRDNhhCWgOc+4BuevohIaoxRKoUSNRKTnI=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=meSAPH7eQv5PEhLdLbLEO0XXwwEhWboAQcS5iMCko/JqC6s4sy5hOVxMXFThH6BcOPXyBrMYztGX8JuwHOy423i+3/59Ru3UbuxFa4pyEVdqXHv2oaIBSRvxcLfpKr0TOsxWn9s0BS0I+RRD+zDvLT9VkBCGKFmbJc3wXhx3GUE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me; spf=pass smtp.mailfrom=icenowy.me; dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b=Xa4CCTGd; arc=pass smtp.client-ip=165.173.180.107
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=icenowy.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icenowy.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hwm3R+L5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26C931F0089E
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 10:10:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791454238;
-	bh=6Cr87NWtSTumqAI3+lv6BChO3Lye59PnJ7E6aWPgSGU=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=hwm3R+L5zS/h87y3KfkxOmQN1SrcOktm1Ml6oJd1pBluYUvH495HVW8N2lZwCPFXm
-	 EtW+yEiJnhU2eBkltA7Y4jf11zQ2CzOelGOgJTjejVqKcVJVHYXlp6PF1zFCqYam2s
-	 /YexWY1f6TbIA6QocjrcoUni135+VqorizQ+OMBAf1ji+qw/kxLALEarEw3C/8EVHY
-	 Css4DE+F/nGfl9uHzFZk3u9C7qKsiHmrR6XZ8fdZ+1c8rwEvnZlNjxYs4F9SJ5pUJE
-	 oJKzaypmeKAHEPo3Sx7iOzY6C6zWX96jHCAX/hmEkZ8zIdsL1eTx5RXJd2hBhQBOny
-	 hb9wAJHXVcdkw==
-Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3a20367cf82so46180231fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2026 03:10:38 -0700 (PDT)
-X-Gm-Message-State: AFq9FYIF5n1kxRFCiB7/XuxfwlLKcVy11yl/2uvjOKmR+IMHInFgSXcI
-	EAqnEO1+6lUbOdyq6leenPLmA21zz/2BqFyXlcITdUwadFCODR+fmKd9NsT536GCEoVEdHLic2T
-	DrxEj7bPr3LlWdhriOg6LvU1pHpE66a2EoMXWRiZgjQ==
-X-Received: by 2002:a2e:b8cd:0:b0:3a9:926c:c276 with SMTP id
- 38308e7fff4ca-3a9a2cbc6c9mr12456541fa.17.1791454236809; Thu, 08 Oct 2026
- 03:10:36 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 8 Oct 2026 10:10:34 +0000
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 8 Oct 2026 10:10:34 +0000
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260929122407.219448-5-prabhakar.mahadev-lad.rj@bp.renesas.com>
+	dkim=pass (2048-bit key) header.d=icenowy.me header.i=uwu@icenowy.me header.b="Xa4CCTGd"
+ARC-Seal: i=1; a=rsa-sha256; t=1791455464; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=PXhlqnbIPeeyBMoq4zj6OsSao1PWn2yoke5wffLUsWw9+hZSA3HE8mAowQUYiWMyY0qtCoENa+kjOMJ56T+/8kdKmNUbp4qZMwYm08jJAm55Y7CHf2n1p5S5gfYGlomKC5mwQ0PMkJDbAey8lYRjL+SvKn6xWr3xKYqCcVSmk8E=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1791455464; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=TEVIQ7jUIEPxC+HGK4sUt5stotdCUh3Q7I4XuQyq/vU=; 
+	b=fXr22wZyjecSTBJj/MHndJ36pVf9nqiRyPB7zHwKZzGkKj05HnSbZjcxsKt69n2eJ50BhpTY4d7sbrCwCTNQjovej0+HKmC+B9hEdoTMBamGg7aBh+5P9DarQWekC5wvg7gqsThh8ooSsV7MgTVabyr3tjDvKeksDJzW1jkr6PE=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=icenowy.me;
+	spf=pass  smtp.mailfrom=uwu@icenowy.me;
+	dmarc=pass header.from=<uwu@icenowy.me>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1791455464;
+	s=zmail2; d=icenowy.me; i=uwu@icenowy.me;
+	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
+	bh=TEVIQ7jUIEPxC+HGK4sUt5stotdCUh3Q7I4XuQyq/vU=;
+	b=Xa4CCTGdyQqhGs5mz5XWPtLsG3z3tv3u/QC4Tm+jFyOf5gdqI08/GkVxdXDsiihg
+	M/SxIwLKYhKiq/yRo+yK7sYinL9mvGL9AdSK9JCmSDVH+ItV5tYKD8Xi9KjNqprp0uc
+	pvc+sfdr2Hsg58RX6Npl9fb0qsGzLihjTkNyOM1yyN1HCS3S3Y4QDTItjBEVCvxzOhZ
+	a0QBXFNNJi5d/IGDzMBDhs9vOfvIcHPh8M5aPjUrt/zqt75nhNefFXpitQEgPPY1GUD
+	r0hdD9TywyaqYQhr2uwSq/Zrl9O8bMD59JyL0A+3Nd3F3vffidBWaYN8WW/JI+kd7W1
+	XDv+CgxSCA==
+Received: by smtp.zohomail.com with SMTPS id 1791455462271972.5250923053629;
+	Thu, 8 Oct 2026 03:31:02 -0700 (PDT)
+Message-ID: <cbba422d4ba9bd4a036536a50fadc2760efa1ae2.camel@icenowy.me>
+Subject: Re: [PATCH v2 1/2] dt-bindings: power: spacemit: Add power domain
+ controller IDs
+From: Icenowy Zheng <uwu@icenowy.me>
+To: Conor Dooley <conor@kernel.org>, Yixun Lan <dlan@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+  Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul
+ Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,  Iker Pedrosa
+ <ikerpedrosam@gmail.com>, devicetree@vger.kernel.org,
+ linux-riscv@lists.infradead.org, 	spacemit@lists.linux.dev,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 08 Oct 2026 18:30:55 +0800
+In-Reply-To: <20261008-df80c21d73b287d09b6baa78@squawk>
+References: <20261008-04-k3-pm-support-v2-0-6f778a53dd2d@kernel.org>
+	 <20261008-04-k3-pm-support-v2-1-6f778a53dd2d@kernel.org>
+	 <20261008-df80c21d73b287d09b6baa78@squawk>
+Organization: Anthon Open-Source Community
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260929122407.219448-1-prabhakar.mahadev-lad.rj@bp.renesas.com> <20260929122407.219448-5-prabhakar.mahadev-lad.rj@bp.renesas.com>
-Date: Thu, 8 Oct 2026 10:10:34 +0000
-X-Gmail-Original-Message-ID: <CAMRc=MckUuLsgqjphOs=fiyz3wCaGbGWpt_fPKStZRAroPkE3Q@mail.gmail.com>
-X-Gm-Features: AclHuK8KhVOCPFFk0C6VCi7XjvWfAzQZ9wqI5WRHeA5xhxr3xFISAjG4IBRvay8
-Message-ID: <CAMRc=MckUuLsgqjphOs=fiyz3wCaGbGWpt_fPKStZRAroPkE3Q@mail.gmail.com>
-Subject: Re: [PATCH 4/5] power: sequencing: renesas-pwrrdy: Add RZ/V2H(P) and
- RZ/V2N A/D converter support
-To: Prabhakar <prabhakar.csengg@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, 
-	Prabhakar <prabhakar.csengg+renesas@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Magnus Damm <magnus.damm@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+X-ZohoMailClient: External
 
-On Tue, 29 Sep 2026 14:24:06 +0200, Prabhakar <prabhakar.csengg@gmail.com> said:
-> From: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
->
-> On RZ/V2H(P) and RZ/V2N, the SYS_ADC_CFG.SY_MSTP_ADA bit controls
-> A/D converter power-down. RZ/V2H(P) has a single A/D converter unit,
-> while RZ/V2N has three units sharing the same bit.
->
-> Add an "adc" power sequencing target for these SoCs and match it to the
-> RZ/V2H(P) ADC compatible, which is also used as the fallback compatible
-> by RZ/V2N.
->
-> Clear SY_MSTP_ADA when the first A/D converter unit is enabled and set it
-> again when the last unit is disabled. Wait 20 us after clearing the bit
-> before allowing conversion to start, ensuring ADCLK has been running for
-> the required time.
->
-> Bind the power sequencer to the RZ/V2H(P) and RZ/V2N auxiliary devices
-> created by the SYS driver.
->
-> Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> ---
->  .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 84 +++++++++++++++++++
->  1 file changed, 84 insertions(+)
->
-> diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> index 0190e53913bf..ab20b7ba9b83 100644
-> --- a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> +++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> @@ -5,6 +5,7 @@
->   */
->
->  #include <linux/auxiliary_bus.h>
-> +#include <linux/delay.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/pwrseq/provider.h>
-> @@ -15,11 +16,68 @@
->  #define SYS_PWRRDY_N_DSI_MASK	BIT(1)
->  #define SYS_PWRRDY_N_CSI_MASK	BIT(2)
->
-> +#define RZV2H_SYS_ADC_CFG		0x1600
-> +#define RZV2H_SYS_ADC_CFG_SY_MSTP_ADA	BIT(0)
-> +/* Minimum time with ADCLK running after leaving power-down mode */
-> +#define RZV2H_ADC_POWER_UP_US		20
-> +
->  struct pwrseq_rz_info {
->  	int (*probe)(struct auxiliary_device *adev,
->  		     const struct auxiliary_device_id *id);
->  };
->
-> +static int pwrseq_rzv2h_adc_enable(struct pwrseq_device *pwrseq)
-> +{
-> +	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
-> +	int ret;
-> +
-> +	ret = regmap_clear_bits(regmap, RZV2H_SYS_ADC_CFG,
-> +				RZV2H_SYS_ADC_CFG_SY_MSTP_ADA);
-> +	if (ret)
-> +		return ret;
-> +
-> +	fsleep(RZV2H_ADC_POWER_UP_US);
-> +
-> +	return 0;
-> +}
-> +
-> +static int pwrseq_rzv2h_adc_disable(struct pwrseq_device *pwrseq)
-> +{
-> +	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
-> +
-> +	return regmap_set_bits(regmap, RZV2H_SYS_ADC_CFG,
-> +			       RZV2H_SYS_ADC_CFG_SY_MSTP_ADA);
-> +}
-> +
-> +static const struct pwrseq_unit_data pwrseq_rzv2h_adc_unit = {
-> +	.name = "adc-power-sequence",
-> +	.enable = pwrseq_rzv2h_adc_enable,
-> +	.disable = pwrseq_rzv2h_adc_disable,
-> +};
-> +
-> +static const struct pwrseq_target_data pwrseq_rzv2h_adc_target = {
-> +	.name = "adc-power",
-> +	.unit = &pwrseq_rzv2h_adc_unit,
-> +};
-> +
-> +static const struct pwrseq_target_data *pwrseq_rzv2h_targets[] = {
-> +	&pwrseq_rzv2h_adc_target,
-> +	NULL
-> +};
-> +
-> +static const char * const pwrseq_rzv2h_compats[] = {
-> +	"renesas,r9a09g057-adc",
-> +	NULL
-> +};
-> +
-> +static int pwrseq_rzv2h_match(struct pwrseq_device *pwrseq, struct device *dev)
-> +{
-> +	if (of_device_compatible_match(dev->of_node, pwrseq_rzv2h_compats))
-> +		return PWRSEQ_MATCH_OK;
-> +
-> +	return PWRSEQ_NO_MATCH;
-> +}
-> +
->  static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mask,
->  				   bool val)
->  {
-> @@ -127,6 +185,20 @@ static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
->  	return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &config));
->  }
->
-> +static int pwrseq_rzv2h_probe(struct auxiliary_device *adev,
-> +			      const struct auxiliary_device_id *id)
-> +{
-> +	struct pwrseq_config config = {
-> +		.parent = &adev->dev,
-> +		.owner = THIS_MODULE,
-> +		.drvdata = adev->dev.platform_data,
-> +		.match = pwrseq_rzv2h_match,
-> +		.targets = pwrseq_rzv2h_targets,
-> +	};
-> +
-> +	return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &config));
-> +}
+=E5=9C=A8 2026-10-08=E5=9B=9B=E7=9A=84 08:27 +0100=EF=BC=8CConor Dooley=E5=
+=86=99=E9=81=93=EF=BC=9A
+> On Thu, Oct 08, 2026 at 03:44:29AM +0000, Yixun Lan wrote:
+> > Add initial power domain driver support for SpacemiT K1/K3 SoC, The
+> > Power
+> > Domain Controller is SoC internal module which is part of APMU
+> > (Advanced
+> > Power Management Unit), it is responsible for managing power across
+> > multi
+> > power domains, which includes power on/off, isolation, power-on
+> > sequence.
+>=20
+> You should prob mention that this APMU is already documented
+> elsewhere.
 
-This probe variant looks almost exactly the same as pwrseq_rzg3l_pwrrdy_probe().
-Can't you not just store the match and targets pointers in OF match
-data and keep
-the same code in top-level probe()?
+Maybe it's also meaningful to mention that APMU already has #power-
+domain-cells property, because the first reaction of me is to add such
+a property (and then found it already there).
 
-Bart
+Thanks,
+Icenowy
 
-> +
->  static int pwrseq_pwrrdy_probe_common(struct auxiliary_device *adev,
->  				      const struct auxiliary_device_id *id)
->  {
-> @@ -140,7 +212,19 @@ static const struct pwrseq_rz_info pwrseq_rzg3l_info = {
->  	.probe = pwrseq_rzg3l_pwrrdy_probe,
->  };
->
-> +static const struct pwrseq_rz_info pwrseq_rzv2h_info = {
-> +	.probe = pwrseq_rzv2h_probe,
-> +};
-> +
->  static const struct auxiliary_device_id pwrseq_rzg3l_pwrrdy_id_table[] = {
-> +	{
-> +		.name = "rz_sysc.r9a09g056-pwrseq",
-> +		.driver_data = (kernel_ulong_t)&pwrseq_rzv2h_info,
-> +	},
-> +	{
-> +		.name = "rz_sysc.r9a09g057-pwrseq",
-> +		.driver_data = (kernel_ulong_t)&pwrseq_rzv2h_info,
-> +	},
->  	{
->  		.name = "rz_sysc.pwrseq-pwrrdy",
->  		.driver_data = (kernel_ulong_t)&pwrseq_rzg3l_info,
-> --
-> 2.55.0
->
->
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> pw-bot: not-applicable
+>=20
+> Thanks,
+> Conor.
+>=20
+> >=20
+> > Signed-off-by: Yixun Lan <dlan@kernel.org>
+> > ---
+> > =C2=A0include/dt-bindings/power/spacemit,k1-power.h | 14 ++++++++++++++
+> > =C2=A0include/dt-bindings/power/spacemit,k3-power.h | 12 ++++++++++++
+> > =C2=A02 files changed, 26 insertions(+)
+> >=20
+> > diff --git a/include/dt-bindings/power/spacemit,k1-power.h
+> > b/include/dt-bindings/power/spacemit,k1-power.h
+> > new file mode 100644
+> > index 000000000000..41ef540b5c44
+> > --- /dev/null
+> > +++ b/include/dt-bindings/power/spacemit,k1-power.h
+> > @@ -0,0 +1,14 @@
+> > +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
+> > +
+> > +#ifndef _DT_BINDINGS_SPACEMIT_K1_POWER_H_
+> > +#define _DT_BINDINGS_SPACEMIT_K1_POWER_H_
+> > +
+> > +#define K1_PMDOMAIN_VPU		0
+> > +#define K1_PMDOMAIN_GPU		1
+> > +#define K1_PMDOMAIN_LCD		2
+> > +#define K1_PMDOMAIN_ISP		3
+> > +#define K1_PMDOMAIN_AUDIO	4
+> > +#define K1_PMDOMAIN_GNSS	5
+> > +#define K1_PMDOMAIN_HDMI	6
+> > +
+> > +#endif
+> > diff --git a/include/dt-bindings/power/spacemit,k3-power.h
+> > b/include/dt-bindings/power/spacemit,k3-power.h
+> > new file mode 100644
+> > index 000000000000..519fbf946312
+> > --- /dev/null
+> > +++ b/include/dt-bindings/power/spacemit,k3-power.h
+> > @@ -0,0 +1,12 @@
+> > +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
+> > +
+> > +#ifndef _DT_BINDINGS_SPACEMIT_K3_POWER_H_
+> > +#define _DT_BINDINGS_SPACEMIT_K3_POWER_H_
+> > +
+> > +#define K3_PMDOMAIN_VPU		0
+> > +#define K3_PMDOMAIN_GPU		1
+> > +#define K3_PMDOMAIN_AUDIO	2
+> > +#define K3_PMDOMAIN_LCD0	3
+> > +#define K3_PMDOMAIN_LCD1	4
+> > +
+> > +#endif
+> >=20
+> > --=20
+> > 2.56.0
+> >=20
