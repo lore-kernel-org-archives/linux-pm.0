@@ -1,163 +1,145 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6258138DC43
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 04:07:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9A8D3D3CFF;
+	Thu,  8 Oct 2026 07:18:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791432480; cv=none; b=ntNHgVwRGQbWA1PAZpDeYu14JYV3hMKPAzPzQo3WdIxOUPcXNsVV75Ce3S9hclkkrFzdL07e1Cn54FB4lAJZvrQueTiVrsLdQuHLpzGgsx7POKs1Q+/cehzu24JVBeMA6EGh73wGiojYZsPSVCO1/M4Q49VB7vkW32Kx6VhQW40=
+	t=1791443911; cv=none; b=GjcJsGNuBnC9uFjhTg+UNMydb5j1YSo725ogZGsvI3bhSkWv4NNlez0/XRK1zV2okZweg6UMtpBBjk+Hwd3d9L1hAKfCD/ju/rDqfiNm4bPq/vfVPhmxco6STsCX4f1beXXaj69siWjOXLfgUUQNxP806CfTcV60zQDdhZAaHn4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791432480; c=relaxed/simple;
-	bh=eN/CZ0g8dEhhAB4TCIZ6bYboNzAcetSZ5y4UbmprSTs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZClexiKr0Yt04ctqdVLZxedyjWt7Ku2DY/zqg+d5ZmAioVgalp5t8NxoAX5ceFmeTmd8nbwhFF3HWB7Zl0AEcd2LoFj84bDstiaKGxOOBjUxidnnRaw9mMnv+2WnS15YW2isfXM6xAthdOf5EzINDMyfijLNU4VnztqL+aHdYjQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Dwt7N5aq; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1791443911; c=relaxed/simple;
+	bh=x1Rv4vPNBzDKlppGnW5xG+IrmdjEXR8nQoRzs5+6QPw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IuC3crNDn7ZeEIF1SLiQaluOAOIH3QBgalR5n660ZuYpfmFKOYyGF5etBrN79wz65RbXZf/aefKn7Uc5z3R4x6D8qTK8niUebSQIeRklGNmgEDdWvPk72/zZmhw7j4pxeV+FW63ZWfxK2moVN11QWHQz+y65JGUamH7Wjp6bNiM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass smtp.mailfrom=suse.cz; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=RQpH7C+k; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=DXGkB7gz; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=RQpH7C+k; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=DXGkB7gz; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dwt7N5aq"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-4a17f65ab8bso9331695e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2026 21:07:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791432475; x=1792037275; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=8RXN0pRoDPRt/4/q4G7QWKtdi+MOFx+4+xgS3NP3upU=;
-        b=Dwt7N5aqm5cYyDc+huAxA+bLXtiDg6jeXvEFkMg+ckSARoR0cYQeAG5KUuatz6Whia
-         DviSzTI5DvX07Ci7/9M1oIBWOp5/+tvj5oKk/ghkCBwGZDMGlSVF0a2C0kgsxjJNUdO9
-         M3nXtMPY4Nb62XKtRO0ewmUKyA5167h5X+QBwye1Q39eGPnDG7xtiX7ULXKd0rUB2us6
-         OZ+3x8ckeZFfZzHDEF0xtEVHsyJKF2JOwN+QRZC1JQ1o+0E+j5LbZZUxB8kC93dJCHWI
-         gZncDi/V3Q3u6jmCzMO1po58UHwtvhhq68zNa5iAzukzs5ijvtq3rGSXTAsHPkthPEBH
-         M0oQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791432475; x=1792037275;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=8RXN0pRoDPRt/4/q4G7QWKtdi+MOFx+4+xgS3NP3upU=;
-        b=Ht9gORDeQ8G654RYIGyQsoEgyEfkT5dD92H+Tq12ayhqsEBmWpAuy+DSNUPkM8rP+j
-         8j/3Tp59mhxNpMvCccUzNqwq/O9ZyridaFh4atRG/3rbpMchUveeq9h61+4XbSlPJVkz
-         V1TuEnB1f2jdafpz/QEPafbXEYct7paLmQ5sIZaU58NG34Udrqhwu8e3PBun9ojhxx/L
-         Flwgz+spatD9bLnfTLDIHkYzwS6gWcXqe0xcjhqytabCuEi4SbX9j1dKGr7zHRSQDOIi
-         75hpAQo6InoQWTshDEjOWE0XhtsreXeh6DeNJIx9mbo0SzSGT5Gv/45MFObWvfeeOQFN
-         YgPw==
-X-Forwarded-Encrypted: i=1; AKwUvBy9QW3FFWXEUAwUdCsa122tdPeZQocpRccud2oZhu8lM0PQN5OM0YYtfqS6JgVokVzF2aWTW722bA==@vger.kernel.org
-X-Gm-Message-State: AFuF++nu1w74vbhIn92G7bK8AkMLuF55cqK0sjGJ/GzZTk0Xk7+oY2eI
-	6xsNTKOTcHWRL61cKEoMaStwrY2gUP0VSFC/cUVUg0OgPgh2sc+9c9Fw
-X-Gm-Gg: AYBFou3O/wKcaIMtFjGfpYvPGUxRPU9VaMiBKEoT4mwnden3W2MisnmWbdxtaNgCNI1
-	V/IVAM54bTolp6/jW/ijMskf5XQOmuw1ATNoPKH2zIb/yafdduo1QM3QwNjOIQz3wY73Fa+8cCe
-	hCnqsZCNgt6/rE4CaRdTc8PEKjBejGz5fjQZBFHkJL7khV4+nrYFo8NXFRgVihBUhmf/E4WNg20
-	QszlQg87SIVJZMcuLdEc5bUjMY0Pf/Om6umX1V1uPXVf9SlFTEKHVDlfySgJ8iDByH4z35kuaRV
-	9YvtX4M6bhQA8mSt8kioFj0E0ewU0y9aGFYLYx+8RvZbfqniXIfntXLHK6iFMql8kaLiNn0LEf7
-	F8Z3wAax+7L7ewXb7Mh+DQens0uCF2uRsX0d/95ww5KGKqP6MilOhBwNK3z5HU2FLiSb9skVuaX
-	4jLCukmNAxFcYZPzy5larfAwqEKpxmbnJ/iDLatqeKaxb9T5410LDT/AkGjkXBVdozOHE=
-X-Received: by 2002:a05:600c:c165:b0:49c:ffab:551f with SMTP id 5b1f17b1804b1-4a181b33928mr74752385e9.22.1791432475504;
-        Wed, 07 Oct 2026 21:07:55 -0700 (PDT)
-Received: from arch.local ([105.110.78.96])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a180310c9fsm91191145e9.4.2026.10.07.21.07.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Oct 2026 21:07:55 -0700 (PDT)
-From: Akram Boulahia <akram02st@gmail.com>
-To: Mario Limonciello <mario.limonciello@amd.com>,
-	Huang Rui <ray.huang@amd.com>,
-	linux-pm@vger.kernel.org
-Cc: Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-kernel@vger.kernel.org,
-	Akram Boulahia <akram02st@gmail.com>,
-	stable@vger.kernel.org,
-	Marco Scardovi <scardracs@disroot.org>
-Subject: [PATCH] cpufreq/amd-pstate: Don't fail active mode init on read-only auto_sel
-Date: Thu,  8 Oct 2026 05:07:05 +0100
-Message-ID: <20261008040705.10600-1-akram02st@gmail.com>
-X-Mailer: git-send-email 2.56.0
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="RQpH7C+k";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="DXGkB7gz";
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="RQpH7C+k";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="DXGkB7gz"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id A251B1F786;
+	Thu,  8 Oct 2026 07:18:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1791443907; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qN1yeAVBYWTNINSeZUvzmaT433y7nkZ59785Hvtm7no=;
+	b=RQpH7C+kHOIWp1SX8oNnfG+iOd9Z1wf9OwWFEKdrheR4DrCUKIP1HoRsp14Susb3/Rktty
+	l+rRndBlMwBHna0XLXyQaryJJBYhA9OLCuKRUxMVvzPl3kf3LlYm+sJEKDkk/sqSMsBk56
+	mK9BpoFvNo5WavW5SyA3OVzz3bHnt5U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1791443907;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qN1yeAVBYWTNINSeZUvzmaT433y7nkZ59785Hvtm7no=;
+	b=DXGkB7gzLqqBn0SCBwmX+9I+P+lP3BNWkbF7AySAGjBlpxeDbiQs2ysaMVArsLmo/3ocJA
+	WuAMlKpzd2iWr2Bg==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1791443907; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qN1yeAVBYWTNINSeZUvzmaT433y7nkZ59785Hvtm7no=;
+	b=RQpH7C+kHOIWp1SX8oNnfG+iOd9Z1wf9OwWFEKdrheR4DrCUKIP1HoRsp14Susb3/Rktty
+	l+rRndBlMwBHna0XLXyQaryJJBYhA9OLCuKRUxMVvzPl3kf3LlYm+sJEKDkk/sqSMsBk56
+	mK9BpoFvNo5WavW5SyA3OVzz3bHnt5U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1791443907;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qN1yeAVBYWTNINSeZUvzmaT433y7nkZ59785Hvtm7no=;
+	b=DXGkB7gzLqqBn0SCBwmX+9I+P+lP3BNWkbF7AySAGjBlpxeDbiQs2ysaMVArsLmo/3ocJA
+	WuAMlKpzd2iWr2Bg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2D54413354;
+	Thu,  8 Oct 2026 07:18:27 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id TPsUAcNDx2oXcAAAD6G6ig
+	(envelope-from <ggherdovich@suse.cz>); Thu, 08 Oct 2026 07:18:27 +0000
+Message-ID: <93ad2855-d876-4df3-a105-f08d93dc7d7d@suse.cz>
+Date: Thu, 8 Oct 2026 09:18:26 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq/amd-pstate: Supply nominal/lowest freq for
+ TRX40-based motherboards
+To: Mario Limonciello <mario.limonciello@amd.com>,
+ Huang Rui <ray.huang@amd.com>, Perry Yuan <perry.yuan@amd.com>,
+ K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261007144150.15113-1-ggherdovich@suse.cz>
+ <27b226c7-f30b-4863-96e6-6798232863c5@amd.com>
+ <93531c5c-5638-4a20-919a-8471a7222218@suse.cz>
+ <ab7921dd-1a28-4df4-a4a8-718e1489ec33@amd.com>
+Content-Language: en-US
+From: Giovanni Gherdovich <ggherdovich@suse.cz>
+In-Reply-To: <ab7921dd-1a28-4df4-a4a8-718e1489ec33@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.25
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-4.25 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-0.997];
+	NEURAL_HAM_SHORT(-0.17)[-0.827];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	RCPT_COUNT_SEVEN(0.00)[8];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo]
 
-Since commit 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active
-mode on shared memory systems"), shmem_init_perf() no longer returns
-early in active mode and always calls cppc_set_auto_sel(), which was
-needed for shared memory systems. However, on firmware where the
-Autonomous Selection Enable entry of _CPC is a constant integer rather
-than a register, that write fails with -EOPNOTSUPP. The error is
-returned, every CPU fails to initialize, cpufreq_register_driver() finds
-no policy and returns -ENODEV, and the kernel falls back to
-acpi-cpufreq:
+On Wed Oct 7, 2026 21:45, Mario Limonciello wrote:
+> 
+> Thanks! Based on the findings from the BIOS update everything in
+> this thread should be enough to either make a v2 incorporating
+> feedback (mostly making it clearer) or to drop the patch.
 
-  amd_pstate: failed to set auto_sel, ret: -95
-  amd_pstate: Failed to initialize CPU 0: -95
-  ...
-  amd_pstate: failed to register with return -19
+The patch can be dropped, as the latest BIOS release fixes the
+problem; lowest and nominal freq are present in the ACPI _CPC package,
+and amd-pstate loads without issues.
 
-This was seen on an ASUS ROG Zephyrus G14 (GA403UV, Ryzen 9 8945HS, BIOS
-308). Its _CPC tables are revision 3 with the entry fixed at 1, and
-cppc_get_auto_sel() reads back 1 on all CPUs.
+Here a summary for posterity, hardware and working firmware:
 
-If the write returns -EOPNOTSUPP while active mode is requested and
-auto_sel already reads as enabled, which is what active mode needs, the
-refused write is harmless and initialization can continue. Any other
-failure, including a refusal where the current value does not match the
-requested mode, is still returned as before.
+   Motherboard: MSI TRX40 PRO WIFI
+   CPU: AMD Ryzen Threadripper 3960X
+   BIOS Vendor: American Megatrends International
+   BIOS Version: 2.94
+   BIOS Release Date: 06/15/2026
 
-With this change, amd-pstate-epp loads on all 16 CPUs of that machine
-without warnings. amd_pstate=passive behaves as before: it still falls
-back to acpi-cpufreq with the same -95 errors, because auto_sel stays at 1
-and cannot be changed.
 
-Tested on Linux 7.3.0-rc6-00037-g7b63ef2d55f2.
-
-Fixes: 9dfd13f80c85 ("cpufreq/amd-pstate: Toggle auto_sel in active mode on shared memory systems")
-Cc: stable@vger.kernel.org
-Cc: Marco Scardovi <scardracs@disroot.org>
-Signed-off-by: Akram Boulahia <akram02st@gmail.com>
----
- drivers/cpufreq/amd-pstate.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 8bfd46d60843..05b496946d13 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -500,6 +500,7 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
- 	union perf_cached perf = READ_ONCE(cpudata->perf);
- 	u64 numerator;
- 	bool auto_sel;
-+	bool want;
- 
- 	int ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
- 	if (ret)
-@@ -518,14 +519,23 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
- 	WRITE_ONCE(cpudata->perf, perf);
- 	WRITE_ONCE(cpudata->prefcore_ranking, cppc_perf.highest_perf);
- 
-+	want = (cppc_state != AMD_PSTATE_PASSIVE);
-+
- 	ret = cppc_get_auto_sel(cpudata->cpu, &auto_sel);
- 	if (ret) {
- 		pr_warn("failed to get auto_sel, ret: %d\n", ret);
- 		return 0;
- 	}
- 
--	ret = cppc_set_auto_sel(cpudata->cpu,
--			(cppc_state == AMD_PSTATE_PASSIVE) ? 0 : 1);
-+	ret = cppc_set_auto_sel(cpudata->cpu, want);
-+
-+	/*
-+	 * Firmware may expose Autonomous Selection Enable as a read-only
-+	 * constant. If it already matches what active mode needs, the
-+	 * failed write is harmless.
-+	 */
-+	if (ret == -EOPNOTSUPP && want && auto_sel)
-+		return 0;
- 
- 	if (ret)
- 		pr_warn("failed to set auto_sel, ret: %d\n", ret);
--- 
-2.56.0
-
+Thanks,
+Giovanni
