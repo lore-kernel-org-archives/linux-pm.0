@@ -1,117 +1,156 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx1-f53.google.com (mail-yx1-f53.google.com [74.125.224.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5FBB34B40F;
-	Thu,  8 Oct 2026 20:56:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791492990; cv=none; b=S6vyQfysSSYUgb1A/3F6zGJ6+J4YYDBleYPMZvRICT+sMiyVH5l88XT9t844HNVZPrboTWvThnK7M6vIPmwmmv0tNAtKjEhsWiq1mHQFvKktdFr/axjGahQroZV/geWrhKUbqckWStvVpAQDWuum5yXcJb9f47NoIYVY4p/b9Bc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791492990; c=relaxed/simple;
-	bh=Y6T76UN4qCHC+DvqHh2J16NR8FY596eDArm5un3rlXw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=bwOeGDpEUkY6iXhkblXuoBdbbzRyRn+lbFS+SPF+5A9FKp0tI6LP9RulZ6vxPt+vCYmDnSPNykU1yuaBuvGUBgPysjzDskd0JChepQD9IP4ECo3eKGqCy828zdGxGzynRQRBBsT4+QyWi1G+cxAiOycZHCzFXVxhOCFsyJVORLw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BAi30Wpb; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFCE244B693
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2026 21:03:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791493433; cv=pass; b=HXw8a9QZh+0+jiLTVrperrlq7jIOldJNw/Xio7m+bw2raz2737boD+BM08UEqFqVuOozDCglNT7gDoKw+yBy8rxox/63YbTycmEGdZ8uwYUGQUUYSQqV1pWX24fKxEORMVs7UatOkrD6oAQN7oruI4uo411li0ReAyVhYYNxMoM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791493433; c=relaxed/simple;
+	bh=vl6P2d7bzS5ltJJCjjguAr4o4FboZty4KMxvPMf44as=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ikomK0MYjcKUm0i8Jx3T71b3VurCEGn9xQjNATC7a7eoFJunE8Vj/D5TrBePixQcvj3OKRXIDqVVcPHoTEnZEBn4ZGGftFlFyjncBCdzSwDxvnQ7qFr1G9BnzALVA5Oytu/4Ghy2hTJO08QQW9111LuM/eSSqJ8/v6Io8jWpvqI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UXb/7leP; arc=pass smtp.client-ip=74.125.224.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BAi30Wpb"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5B827C2BCC7;
-	Thu,  8 Oct 2026 20:56:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1791492990;
-	bh=Y6T76UN4qCHC+DvqHh2J16NR8FY596eDArm5un3rlXw=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=BAi30WpbAymTgI0seyLWbZ+mpm700wPW4QCAyQgoHyAAWViKTHD3BYlwV6GZekBZ5
-	 JjbpmqtVOFWzNVuyZRRjQ9IZTCbpp9BwMJg1wUWd+8zWYb/M4C/s5UpCfDXoNzmruk
-	 Ey7uIZ+szl9g++niGsy/CVeql2k2fM7xMOg46D5DjkA6YkUb3jADQl09b6U2OQnG8Q
-	 InZfLB2m2FkNDM1G7v92lFdUAeG5js1N42CdnjXpdr5VbWdidZYsz2DtppZfDc9gOT
-	 TlXEtUfm477Sb3l1eT2VGGZ3xBhbQYpEIHcpRsLQY1DLDQ9vvDcY9z/CMMjsEebKoP
-	 54MfaXY1YMGwQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A857CA6016;
-	Thu,  8 Oct 2026 20:56:30 +0000 (UTC)
-From: Fabricio Akio via B4 Relay <devnull+fabricioakio.gmail.com@kernel.org>
-Date: Thu, 08 Oct 2026 17:56:18 -0300
-Subject: [PATCH] power: supply: qcom_smbx: read the charging status without
- the power supply
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UXb/7leP"
+Received: by mail-yx1-f53.google.com with SMTP id 956f58d0204a3-67687f279b3so3478706d50.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2026 14:03:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791493425; cv=none;
+        d=google.com; s=arc-20260327;
+        b=HXy1O48qHHULK0W3kwHAS8WwI6vakWEsZlSSbOaVolsx0dR/CHykoB1LyGxhqtkynl
+         p5zwQQPshnQnoIRk3b8luH+1pwk+VgCwJJIz7docWBMxNjj2nLBmTnoJmEgn/8g3Xiwu
+         AMYdC1O7hSCmek6LJYK+qPBvnNytnRQe7Bx+CmCFcQPzB7t06iHH8IviLym0lTkoFC5i
+         8gJ3zrypCE1uADUdteSkcAOmr3L+7CuwDrFV6Zm3WBPstqK2BeLLgodAyXQvntF7jiMu
+         D6+fstDRshlglA3qhMaUnFMzuQItm6jn1yrXq4+V5YRuFs9QPI3FRVZzv4W8vg7KYHOU
+         QqeA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=vl6P2d7bzS5ltJJCjjguAr4o4FboZty4KMxvPMf44as=;
+        fh=pwWwqHionWFyMA4TfWrv5h4AOfLMRF8hZeXMjxrGmok=;
+        b=pPTi4NrrjLTSJMhiHLf6KQPdR9XYdBY+GkImSPXxxi6az98/QCvgAmH/PKXE9DWkdD
+         pf2wZlXVBRGyUd9kvay+ZMrW/1K+M3wfJJ0upfz2LRJCkZQumxzAEGyrdLb7cZ2TnZLp
+         xWsBghSTJaluWsd90N3Nq1JRiTdpqWi4txAJTd1l9uitClfRfqRDb9durGBTsP/0+g7w
+         1UITkP1I+mNiAmt2KMeLq/zifYGBX2Rxd5+RV2gBcDmfEv/xMIOW3U5uOXQigYy6K8Se
+         mauuUL0DjirzI+XgCt3kIoCyZBKcltrs3pLLkZ4lZ6C5Qsfq3WUfsgtuBtD3F87w0Bia
+         Q/Tw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791493425; x=1792098225; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=vl6P2d7bzS5ltJJCjjguAr4o4FboZty4KMxvPMf44as=;
+        b=UXb/7leP6TGNYUifCSK0ZJavuFWdrwXthwZiI6/dWlDhkOz4RHlfPFOujRweRjd/ks
+         OiWVTAmZK3nO0GggLSZfwN8B2gWdsKQnsSA10Ke8dGWQcFCYicp3IP29KG+cTVlhft1w
+         MqB6+615PiU0qCOGJw3Q6YbiFMFan84RlyjV7Yza1ad85M2NkQJjvLH25YMwb4W7MkWm
+         YhFIrndChRBySsVyrWboOrEPjUSAZ5+X4aSujD0WUKIkNPX7+GH6Z6rbyigdR49T1uSW
+         qp6t7DKOC3r4nvc8GB5W9LGamVawPCFTigLsreM+nINugjPbXlzsMQ41BFDXrMOH6PHD
+         SCQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791493425; x=1792098225;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vl6P2d7bzS5ltJJCjjguAr4o4FboZty4KMxvPMf44as=;
+        b=du0tij8R+uV95X5e+kRY4zHQxjOnQD+SErNXaHMYJwgMECKajktHHPm06Yi/z8I/cs
+         xOY9fHB/+NXrktYvx6Wj15v6g80zRiHSf5O2af0mxt4H8SLnuH/4F/5dWHv2Hgr7gdA8
+         xX5NTUej2Jd1Yj4r8nxtYdtDyNtz59jW+OxPvQhrmGMjOQ1rJ943qm6O8chqTZzrdG6y
+         DMePoS0NUCc4rf/jo3U74Ej2QldGjcYhH5UOXsTdGaTs/d+RsOslIgGVr/4gCPkZ2KRt
+         63/qI/3UD/FMUs96ysEDlJyRvURZSNZpfj56aRXqtzFuduwaVvKJ7aiBHyVAjM0nQYOO
+         YhzA==
+X-Forwarded-Encrypted: i=1; AKwUvBzQ3c7d+tbCemv1FcOw6sO/+QkQHteQ0TefDdSmtmFnquEu7eQmvbTs1lPzUARwsutXJSDWEhUHHw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKGlgq4Vj9UHt1CCsJ4xFaWY530wtJQEMwEtIHq0CSG/lYxro6R
+	rZvMioG3AJxqtXRMTKE3HHwlMqHeK1cFxJX24ClACCxKmLan1KQUm0AGDKBdONxldy3qsmJhmvw
+	BkZnEXKmEas9z5zZQZS+6cJAZIoNI5tM=
+X-Gm-Gg: AYBFou22OTkJfTTjz+XZW94ybxro5dNOOaxHU9HJmbgetzwTq4VffS8M8AyA1UD5+qZ
+	uI/zN9sSwgT7vrjHW2K+W8zbjfJi2EtaPbp+ht+9R7T+NFJpZmJPFmr8QB5grJ4kuzWyKjLdIff
+	0RFRI3gTFIfJHpQSXBUqra5mkxmwoB47pYMPoRH7ngHPT3kmCu9ezxcpEzDx4GIi46BRJ4iWwuR
+	aTh4XZcwISCzBcki1ubqIt7zpU7Trc1dHcLUOintHviGut5IbofYq2i+rvMBPAA6IA+FtxHRX3C
+	tKhO4OyfAafKubbYEiXkEHVF9Sahuu7Sr9dSWyZTmB8GNyeuTBGIbFxVYtI7SnI6xnWRUeoFez8
+	PDum3znOsyzfx3GzuuZC4KJBtDBZSJySTjWVzMbtrJUxX9deukWMD
+X-Received: by 2002:a05:690e:11cd:b0:674:1e05:9b81 with SMTP id
+ 956f58d0204a3-6793628e483mr25302d50.91.1791493425421; Thu, 08 Oct 2026
+ 14:03:45 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261008-qcom-smbx-psy-race-v1-1-cb49fe7b4336@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMTQqDMBBA4avIrDuQBBTrVaQLM07aKfjTjIoi3
- t1Yl9/ivR2Uo7BCle0QeRGVoU+wjwzo0/RvRmmTwRlXWGNK/NHQoXZ+xVE3jA0x5s7mRRmeFFq
- GFI6Rg6z/af26rbP/Mk3XCY7jBI+mD852AAAA
-X-Change-ID: 20261008-qcom-smbx-psy-race-521568f9cfde
-To: Casey Connolly <casey.connolly@linaro.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: Robin Snyders <robin@snyders.xyz>, David Heidelberg <david@ixit.cz>, 
- phone-devel@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Fabricio Akio <fabricioakio@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791492989; l=1791;
- i=fabricioakio@gmail.com; s=20260928; h=from:subject:message-id;
- bh=O+EdbHvwdTw5M/tHqymi+DAtgrlmZpJcZQoDpxK8xm4=;
- b=lzrFbO7ZYW/uyflmgDKxwI3wZl4APBpTUjgSm5J397NKEwrzL4kQjYeLuu46J9VqTW0F3z3bH
- 6YAjHnRfeGmBA1/joWaPTJKng02GLKxuv2oW8IviBrMvplzXbyBVVwa
-X-Developer-Key: i=fabricioakio@gmail.com; a=ed25519;
- pk=TlMUT8bPI/ZQzp2q24BIQTb2qSx/jdUTBlGEXIRCm54=
-X-Endpoint-Received: by B4 Relay for fabricioakio@gmail.com/20260928 with
- auth_id=1076
-X-Original-From: Fabricio Akio <fabricioakio@gmail.com>
-Reply-To: fabricioakio@gmail.com
+References: <20261008124106.665014-1-Jason@zx2c4.com> <willemdebruijn.kernel.cf8fec88827c@gmail.com>
+ <CAHmME9r+O=3i4JP94P0-gFwghfWtD=vLa1g3KB-LvW+xFbJWHA@mail.gmail.com>
+In-Reply-To: <CAHmME9r+O=3i4JP94P0-gFwghfWtD=vLa1g3KB-LvW+xFbJWHA@mail.gmail.com>
+From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+Date: Thu, 8 Oct 2026 17:03:06 -0400
+X-Gm-Features: AclHuK_qKmc6ZKE8_x2MdYae4trfNS2WogXUatNfjY-lv9_2jJsmiBMEjOiQbLM
+Message-ID: <CAF=yD-LO0u5z8SU_Aktu0-0aeM-1UknYsGc+rCpD3y9bpwxtwg@mail.gmail.com>
+Subject: Re: [PATCH net] udp_tunnel: drop packets when hibernating
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, kuba@kernel.org, 
+	pabeni@redhat.com, linux-pm@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
+	=?UTF-8?B?SsOpcsOpbXkgSmVhbg==?= <jeremy.jean@oss.cyber.gouv.fr>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Fabricio Akio <fabricioakio@gmail.com>
+On Thu, Oct 8, 2026 at 3:58=E2=80=AFPM Jason A. Donenfeld <Jason@zx2c4.com>=
+ wrote:
+>
+> Hi Willem,
+>
+> On Thu, Oct 8, 2026 at 8:37=E2=80=AFPM Willem de Bruijn
+> <willemdebruijn.kernel@gmail.com> wrote:
+> > Jason A. Donenfeld wrote:
+> > > The kernel's various networking applications keep churning away after
+> > > userspace is frozen during hibernation, even as a memory snapshot is
+> > > being made. This can lead many network applications to an inconsisten=
+t
+> > > state, replaying packets and cryptographic state changes. For example=
+,
+> > > on wireguard, there's the possibility of this sequence:
+> > >
+> > > 1) hibernating begins
+> > > 2) handshake state cleared
+> > > 3) keypairs cleared
+> > > 4) new handshake round trip completes
+> > > 5) machine memory is snapshotted
+> > > 6) packet is sent using new keypair
+> > > 7) machine is restored to state (5)
+> > > 8) packet is sent using new keypair
+> > >
+> > > The idea is to prevent (6) from happening, especially if (6) and (8)
+> > > contain different data, but the same key and nonce. Presumably the sa=
+me
+> > > issue applies to other users of udp_tunnel too.
+> > >
+> > > Fix this by just dropping sending and receiving packets during the
+> > > hibernation sequence.
+> >
+> > A few high level questions:
+> >
+> > If the issue is reuse of key + nonce during send, why include receive
+> > side functions? Specifically tunnel (encap_rcv) functions.
+>
+> Because I suppose (4) probably shouldn't be possible after (1). I
+> explicitly clear the result of (4) in a PM notifier. It seems wrong
+> for that to then be violated after. Similarly, userspace doesn't get
+> packets after that point either.
 
-smb_get_iio_chan() reads the charging status through
-power_supply_get_property(chip->chg_psy), but chip->chg_psy is assigned
-only when devm_power_supply_register() returns, and the power supply
-core already calls get_property() from inside the registration, for its
-uevents. If another driver has taken a reference to the supply by then,
-as a fuel gauge naming the charger in power-supplies does, the core lets
-the call through, and reading CURRENT_NOW or VOLTAGE_NOW dereferences
-the NULL chg_psy.
+Since this is an issue specific with security protocols and reuse of
+their state across freeze and restore, is that the more suitable
+location for this check? Drop transmit of packets with that risk
+(unique for that connection nonce) only, if freezing.
 
-Read the status from the hardware with smb_get_prop_status(), as the
-STATUS property itself does.
+> > Is this a problem specific to UDP tunnels?
+>
+> The stateless nature makes it more poignant there.
 
-Fixes: 8648aeb5d7b7 ("power: supply: add Qualcomm PMI8998 SMB2 Charger driver")
-Signed-off-by: Fabricio Akio <fabricioakio@gmail.com>
----
- drivers/power/supply/qcom_smbx.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
-index 3951326f488f..6e0796730c59 100644
---- a/drivers/power/supply/qcom_smbx.c
-+++ b/drivers/power/supply/qcom_smbx.c
-@@ -607,12 +607,10 @@ static void smb_status_change_work(struct work_struct *work)
- static int smb_get_iio_chan(struct smb_chip *chip, struct iio_channel *chan,
- 			     int *val)
- {
--	int rc;
--	union power_supply_propval status;
-+	int rc, status;
- 
--	rc = power_supply_get_property(chip->chg_psy, POWER_SUPPLY_PROP_STATUS,
--				       &status);
--	if (rc < 0 || status.intval != POWER_SUPPLY_STATUS_CHARGING) {
-+	rc = smb_get_prop_status(chip, &status);
-+	if (rc < 0 || status != POWER_SUPPLY_STATUS_CHARGING) {
- 		*val = 0;
- 		return 0;
- 	}
-
----
-base-commit: aac26bee2287c88af5be5a5ff96d783b19a28790
-change-id: 20261008-qcom-smbx-psy-race-521568f9cfde
-
-Best regards,
---  
-Fabricio Akio <fabricioakio@gmail.com>
-
-
+udp_queue_rcv_one_skb is the UDP hot path. Since it touches all
+packets, the last resort for adding checks that are relevant too only
+a small subset of packets.
