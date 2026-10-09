@@ -1,46 +1,44 @@
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010043.outbound.protection.outlook.com [52.101.193.43])
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011036.outbound.protection.outlook.com [52.101.62.36])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15FA4390600;
-	Fri,  9 Oct 2026 04:00:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ABEB2D2381;
+	Fri,  9 Oct 2026 04:00:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.36
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791518448; cv=fail; b=jLAIM/97C2pXl5OtMIrax0hm2ZR7iIXjcQW4TTjA4KlXTHmoW2iZO1PBnFyCYfF4qrGQUoYw/wlrUsR0nb2HoqyJovTlhVXve1H1ntNsNXiid2WVuOg3LXMHO/fvoFnu3xt9iPFP/Q5XSVwVCTOJXz+pFSaF2CRssotG1fn0YrU=
+	t=1791518450; cv=fail; b=LmmTAXqLGp1NfPcMwvP0RMcj6kwpDsr5Z5Fn0wm1394gnqnjw3C3mXDbk8luN7j1DWm1afhHSzKU94fhno4M+Z8L4rWme0KMD21qBQuqdnzbkDc18L4hoGvQHPFZUYepKaROs/nT4JJZsrMNEKZmEiJfz+DnoBw8SX4gj/QWCFk=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791518448; c=relaxed/simple;
-	bh=MOGW8cYAjJ1Xy30Xiiqc3T6JnHaPCQF7M4n7sqiE0MQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=NoWpxOqyLb3zKpUXjKjiOH6N6pZ2SvwBjYciRxp5Wnbi8ePoT4ft2mNRHX09ftv6UrIxU4XANEZHrNLyWi10qpyZXJ8eImBkXU8gm0DOyXZK5vFGG3PrEcmaJFLKi3ZURBLwRv+QUa1HEiwx+d+1UddK+6EHRhktfbvr12h6d4A=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=DEJ9X5/z; arc=fail smtp.client-ip=52.101.193.43
+	s=arc-20240116; t=1791518450; c=relaxed/simple;
+	bh=11D6sT1ufmxCHyuKFBfy4NrdN1jUSVm2z+xZHyNfHBk=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=aYh4ZvYmMUKLQN3qqnGcZ/5X1mdbPV/WGpbKuCkgA/EiGgYEfcfp5eR1kUxpi6a7SdXP9YqAyOUcC8Vg8taLfmGUX8LRh1rC8ZvzTEMkT9N3Vx1/VAFUCIknLDXpWQKQ9oRLcH8QV/xmNWEZU4Q61Z0Nl7m1xuCz9wmXs+kPT6A=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=mKH2CWQy; arc=fail smtp.client-ip=52.101.62.36
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="DEJ9X5/z"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="mKH2CWQy"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Wpm7IaT/+BbwSJU/nMva6VIWkPXBO3AAGadZqfio2u4+uMLGcxtb7Ju3bdDB4+dU25mWGA0IJHC+aF8PkUOoCHvGUr0C0gYt2Hqo6XoWab/VU7UH8u4mjh4nIbqNAIiXLZKP5WpvH5nHl4ory4dh7f6znTBdoJDdT5HzpvmP095t/CGlkU3YAKNJwH3XkMhxrTKA3yyM9GhdldpT7whdLRWhkshRufnehsYN5zSMBFq8cuYcLsxhuIoZJxmqFDRLCzcmZDDUsqXb5SViLqW5P+QwM54gkgU5Y+hkfJd7vVBngWn8Da1mGmz9c22tWvmxypakPq1/TrXRQol3ibqqrQ==
+ b=Z0dfqZMrZ+wuGjMO5NO/VAoM1qYrSlSwhvCf1v+sqxwJbdrjN2107ESkUknoiHsRlm2vky0RU3QO6wY7U4BOTKN/hghoyNy1kGFwcHeIjvDPbGl1H/N+uw0OpoDCTImihadHBjdRBMTQL36Xdt/aKklIUw85u66TFRYQEITM7GN9G1SdzS3r+3RLEtXQKAdFtdL4/WMhxmOAs70Wbvoz8BhXbJpeVzN39N3FdR0oEk570whgjGcHGDzTy5BD3Zos/phFSUI6M+ElW5zPVbObtoFZU3e/PQglqqzDOmooIIQHE7axyOjy7+C2wTl6PWfRwxnjWxAYIsLGiYhuwIkXNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=SfVGxv48QEgQb6dKnAvE/N/w2Rke0DbpcvctM8Hspvw=;
- b=Z2Qb0aL86JA102XJYc0DFF+nBqGTP+v8f8mB8z5pmD2ZiJHrMDI3+okmcYmXAVephlWKO2UM8Conhoha5KqB8sMT4fwfhiqn2TTZ95E2Q0IPQsEuSusDMPj4DTwwGvwtov4s7aYDw8pDoL7czc5VT66/Z0Xz9jn6RGiApzET8LRnvHbab2zv5vEbroJT4sDVG3tvMtmRveY+v1idhHCuWnuB8eTmn4jrTgqUXvFilBHVgWVzoD5iNZTkwvOrG6q9Hg656wPTFZMTDm96fvmBvOpboJmPymm+Z6q1/cdE2zbwYWJlbzxxOuobiJCo0P8j67kdvyn+Jt36rX8FXmfYsQ==
+ bh=Jj2aOik/B9GOzAeIYWcnaoepoqrCkSFyQZ4gZ6vtX58=;
+ b=ApvEtUcS5DlflUS6fECIGEBrRllHgW8AeoOxtZ6u7WMVjNa7GAyC5FOKrkrHb49sPMSI2ULUg8T9KV1vHtagKFLzAarr1k8O5e9UEeK+45Nb+zTyGTnrvkH44IdywtYhqylh76uRZTHrFSBhRhDLvF4WwVzuF6Nyn/sd6uKxCv1i0ui9LYS+9CHN9FvjBSF/IbdY/Gjss/q+pKL6BtwV4DGDF8zXHaTSzsqlYRXUMT/5eZ8ui16Wk9L3RS2apumUhmuntHALdU5OYTwlEJxrH6WyRLtEIgDedfMBwBsMMOvMzAbjelW3Mh0zlQVupVXuCnkN6fcyQaFZNYRi3FCMMA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=SfVGxv48QEgQb6dKnAvE/N/w2Rke0DbpcvctM8Hspvw=;
- b=DEJ9X5/zv0x1bJ0xlCvP6110jxag+c90t++KeXnx0A7O/+jZIufsHz7AYSatom/YZJiZMKpcpj9zBKrjiqrYkxbZEysO8P8EdvyWpeR74VcpzmmVgqMBE+LeDiT7QbJIrQRP1k6pGHWB+/2lQggxpw3k17rH+vkteo/HdJJ0KjA=
-Received: from DS1P221CA0024.NAMP221.PROD.OUTLOOK.COM (2603:10b6:8:242::14) by
- SA3PR12MB8811.namprd12.prod.outlook.com (2603:10b6:806:312::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Fri, 9 Oct
- 2026 04:00:34 +0000
+ bh=Jj2aOik/B9GOzAeIYWcnaoepoqrCkSFyQZ4gZ6vtX58=;
+ b=mKH2CWQyvobCPib6pAEmkajYK+aoxkJSj6fW7rrHFFCVGthcNv53A5c3Z/Tw1b4Fzl3Vu/f7Wj18kBsli2LXl67dNJ1vUa1iceqcgkkr7HYD/X9mRMUHDg1l+3qRFuuKVLaFGJ1uBOvDiiYhNsQeFRpG/Ad8x/bpq7QbLoNXCfw=
+Received: from DS1P221CA0020.NAMP221.PROD.OUTLOOK.COM (2603:10b6:8:242::17) by
+ SJ0PR12MB7066.namprd12.prod.outlook.com (2603:10b6:a03:4ae::5) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.472.15; Fri, 9 Oct 2026 04:00:31 +0000
 Received: from CY8PEPF00000052.namprd05.prod.outlook.com
- (2603:10b6:8:242:cafe::71) by DS1P221CA0024.outlook.office365.com
- (2603:10b6:8:242::14) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10b6:8:242:cafe::21) by DS1P221CA0020.outlook.office365.com
+ (2603:10b6:8:242::17) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.496.5 via Frontend Transport; Fri, 9
- Oct 2026 04:00:34 +0000
+ Oct 2026 04:00:31 +0000
 X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
  is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -50,18 +48,23 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from satlexmb07.amd.com (165.204.84.17) by
  CY8PEPF00000052.mail.protection.outlook.com (10.167.247.55) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.522.6 via Frontend Transport; Fri, 9 Oct 2026 04:00:34 +0000
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb07.amd.com
+ 15.21.522.6 via Frontend Transport; Fri, 9 Oct 2026 04:00:30 +0000
+Received: from Satlexmb09.amd.com (10.181.42.218) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Thu, 8 Oct
- 2026 23:00:21 -0500
+ 2026 23:00:17 -0500
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb09.amd.com
+ (10.181.42.218) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Thu, 8 Oct
+ 2026 23:00:16 -0500
 Received: from xhdnaggolla50x.amd.com (10.180.168.240) by satlexmb08.amd.com
  (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.49 via Frontend
- Transport; Thu, 8 Oct 2026 23:00:16 -0500
+ Transport; Thu, 8 Oct 2026 23:00:12 -0500
 From: Golla Nagendra <nagendra.golla@amd.com>
-Date: Fri, 9 Oct 2026 09:30:10 +0530
-Subject: [PATCH v4 1/6] dmaengine: zynqmp_dma: Use PM guard for probe-time
- runtime PM reference
+Subject: [PATCH v4 0/6] dmaengine: zynqmp_dma: Per-channel reset, IRQ guard
+ improvements, and PM fixes
+Date: Fri, 9 Oct 2026 09:30:09 +0530
+Message-ID: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,9 +73,11 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20261009-adma-pm-fix-and-per-channel-reset-v4-1-55f5fe409c55@amd.com>
-References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
-In-Reply-To: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
+X-B4-Tracking: v=1; b=H4sIAMpmyGoC/x2NQQqDMBBFryJZdySOqYSueg9xMZipBkwiE5EW8
+ e6NLt/n896hMovnrF7VoYR3n32KBcyjUuNMcWLwrrBCjV2jtQVygWAN8PFfoOhgZYHrGXkB4cw
+ bOItIrTFkuVPFswqX893oh8Kzz1uS353c22u97do2uhTME2uDXYsaGog0cXRC9ZSWhd4UXD2mo
+ IbzPP8HXPy0ugAAAA==
+X-Change-ID: 20261008-adma-pm-fix-and-per-channel-reset-d822a344a8e6
 To: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, "Michal
  Simek" <michal.simek@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
 	Kedareswara rao Appana <appana.durga.rao@xilinx.com>, Rob Herring
@@ -82,202 +87,131 @@ To: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, "Michal
 CC: <dmaengine@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
 	<devicetree@vger.kernel.org>, <git@amd.com>, Golla Nagendra
-	<nagendra.golla@amd.com>
+	<nagendra.golla@amd.com>, Jay Buddhabhatti <jay.buddhabhatti@amd.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791518416; l=5567;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791518416; l=4446;
  i=nagendra.golla@amd.com; s=20261008; h=from:subject:message-id;
- bh=MOGW8cYAjJ1Xy30Xiiqc3T6JnHaPCQF7M4n7sqiE0MQ=;
- b=/Xc8OXqm8zYevsDRIcpDAqxm3eT3jKq2aW7huHGR8pe9rV3NZ3NybtGb/JXPSvYyKK4Ld+tFw
- MDJLfO2v7nMDyciJ/VLHcfBvyn3O3R7vTWmy82w5ExLJvP0V0q0W9xY
+ bh=11D6sT1ufmxCHyuKFBfy4NrdN1jUSVm2z+xZHyNfHBk=;
+ b=fFvKej+zfwSFOlgJlG1TXU9TNwx97Ot3WHdNN4Jy8CaczJXhXaN58HZCpZa41GR2QgdGgU+N+
+ U98rgIFzDXbD+zmfoU98ySpmr4Gi3C5jQM/xR0jA8YZysicLCH2bFZF
 X-Developer-Key: i=nagendra.golla@amd.com; a=ed25519;
  pk=pCRGj/0mb0C3aDMpVVZeyBqOIQZUKGJjCKL4QZTu7nQ=
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PEPF00000052:EE_|SA3PR12MB8811:EE_
-X-MS-Office365-Filtering-Correlation-Id: 169b139b-8665-4db4-1c87-08df25b9de8d
+X-MS-TrafficTypeDiagnostic: CY8PEPF00000052:EE_|SJ0PR12MB7066:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6d9146b1-1fe6-423a-3cc9-08df25b9dc64
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|23010399003|1800799024|36860700016|376014|82310400026|22082099003|11063799006|10067099003|56012099006|921020|18002099003;
+	BCL:0;ARA:13230040|1800799024|36860700016|23010399003|7416014|376014|82310400026|921020|56012099006|11063799006|10067099003|18002099003|13003099007;
 X-Microsoft-Antispam-Message-Info:
-	Lk1Lxg1KseJ6wN9aCSacrZtcCjYYtrcpf3L9GuWi+9XwPf6wT5fyBz+sNdhD+UYhINkZnmwSatu9ZUz8iLDVWZjNJAWaaSuN9DGIBqhCXPETOOyOquhIwVhzO/N51uDqFvuB8dp7AMBjX6Fa7GMUYHJdYrZVr5goxDqvAf1jZCxp9D6pDF6/tqhJQZUAHnB1B5h+srAkecIPETdDnMg6z08H5mrtg2Tc2FlL4RmP7KOfOjd9g//rkWSCwbeeOo+aqjaNhUmgl2iv84HO39B1PYp1zHd2rREmXLZr+MioIeNHVkQbO0d1Ydk0FtZ1lN6dVg/SnHAuJZBbYctEADFfHmcmmClFfBBg6vS/T8YMqLdfAljxh8HO2SlIoha5sCgev2HIAFJ+51mUNMbQo9Jc2fQ1cfGYRsMMP09tI/xq+92kWyiBQCdy6LDCxrXV42025lqzQs2Sr4gRQLW1QCK9vhyiJMwlkhLnh96hAbrZtgDEJyn5tHWrTazF+DBggrIgxD0bYT3RsQnm+x9XfDWMDo+idIJnRh96VyAw7IX9LJ9fsz2lJpQaw1sKNGolEownJn5RJW5Sa54nbnrXCErsv+DvCH3FMVUdQN6PxDr/QmQO7QlSaKWPUbRLoyXVcLvboyy9yqQ5RgyC9vy66WS3FgYhUiz/248D7i71nCh6Qx5674lP5OH2Ei3FMUPU+b1OYnT3SkdTK5Dk49fiTnppfuVsaW+fgQPGXupB8csGkC7MkmX465qXCWC78aUzwhZ8
+	Yp0QXW6QTSc9VUdtnX/ZdFMQi/TIrlN/tUqrd0z3TkfUvTpb+h4UuWuwrDTDuInwe7HFruQamrHsLJg6C/s6thiviLR+kCuq5fTx3ROvh31RVsze4duvwC8ZncqOBKwSpysAP9hcxcoC9sxf9srOwhWFTfLkr9jKlXXifnN/LV7UJ4xl20vKbYvbWApisCUEraaZoNn+jJ07bkQ9K1qK6IZBUJ/SZQxWC0v0iSGKbtjck4d3nsRY2vDWCi+QDt8ZJJ1DA8gYP8S33miv+4rwuiJWHU4MVmv8dqDJc2ZYhKiLNOCSnhoKiFNnFT/UT++aqcMs1VeqVvf+xmqReXJm5dYCJZ6kM1IclXBGm4Tofy5oQnTsEREniHBnJNVtWUBjb90Cykf0ooP+N5MSZBdlh9zdAMhRXy9ffc3gJx/RC0IHkSoAmI5GYvcg+i3298tnb10ZkK3ZtojedBAvWNmssrLooFyRbDrRjyKncFTnwNZkxfWGfYZL0j9m7/WVNf+MToEuIL49dzqo1Hfs+CZKARF0CI1/1nGN425ukxTJnXBb6CXERcOQU8G8nifi1tRHEeX/r/BBLxvP04hZwv8N7lbu7y3IcFd+1e3eABFWDbJO1zAUG5i9u5HCFFTJCWxN87otf//LRJ5MYE9DfiLJjp74oU3NjMVL9kR6+vn2rli36Z1BIevoWoSc7rpvqXpDDcmimrQaC+hZPgxoW3H1w2GrS6v8iJj2FZUin080ZPG8Dyp/jpfB8B568JpUVA6I
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(1800799024)(36860700016)(376014)(82310400026)(22082099003)(11063799006)(10067099003)(56012099006)(921020)(18002099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(23010399003)(7416014)(376014)(82310400026)(921020)(56012099006)(11063799006)(10067099003)(18002099003)(13003099007);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	QL+qD2qjVGTV3ijpIgo99TTrbprh4HL0I0DIwMZoA3UbhchAhyNSF6sdt4MDLkWuEEBOz4UUjiv6hOBU5RHUMyoAAP9MWNKFGcRqG/r9ZsfAhNgbAWtalzchQ9ll3CAwokH+d27tOJ68u1JG3uOblIcYd9O1oWlTynUMpBUkjfOOhSE7ZAOzA8E5QOH+dn9U0/BiZyyNHfJN9g2BXdEqgCwggn0mCT0A7IuyfZiSlg1mb2Twen+aIFTERLXITklzp8sWfkv6U3bpwQ2KVZmP4WWyLzOd/Ori3JahcOn0AvkFkJb4GUeFbanl1ARd942yMG4lxT+csYUUHgYhfm8bNw0dykDl72O0N5Eg0NhUgrKp4NqwScfk7s5zyv3CBZwGNpxnrvOWN1cPNkBNihKrh7Lpg4ZnmUx5CY4U+5wMWDrwJ32t3kgxc5+A58yxhVfR
+	RVfLe9/jF0Jgpo1fCZvBFPUpMW2dIJkbyYUugopYESt+tyivsQm/KvxMH88t6xg3pQIMXZQ9kE42YRt3kQNoIfjsMyLaAZ2Xq5ld7OlId/MbehYGFdDC4BETBbssNprloBt7JMbQQNnDeWfThPH5lqzc8iPXfkXHqGZ5y15qmwaR5JkYCY84rHkzTRXOgrxPL4HARvCdUyZ63A3lQO7pMH2a8dt+IiFknNJ9yEQXgWRvY3la7KvTinUEOWkhR91MnPvzyqf/tuZn0vDF6CBp9qG2Ig3n4X1h59QRGvIAP00BIfQCKLDqiHf7UTD7B3TEgwMKHoB7vk8w65Ho1Ojre3hnZpTsmyuwk/z1TZFTVIEk3WTsaSod1gLZh/UGwndRYGPOjOt9Xpe/4wmzt5Oai2yVC5WBw1DtMl/OSjDEezDOVX47MQe669H9RJQv40RP
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2026 04:00:34.1973
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2026 04:00:30.5739
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 169b139b-8665-4db4-1c87-08df25b9de8d
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6d9146b1-1fe6-423a-3cc9-08df25b9dc64
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	CY8PEPF00000052.namprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR12MB8811
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB7066
 
-Replace pm_runtime_resume_and_get() with the PM_RUNTIME_ACQUIRE_AUTOSUSPEND
-guard to manage the probe-time runtime PM reference lifecycle. If the guard
-acquire fails, fail probe immediately so a broken device is never
-registered.
+This series extends the ZynqMP DMA driver with per-channel reset support
+for Versal Gen2 and Versal Net, improves the runtime PM guard in the IRQ
+handler, and fixes probe-time runtime PM reference handling.
 
-When runtime PM is not enabled for the device, call
-zynqmp_dma_runtime_resume() directly after pm_runtime_enable() to bring the
-clocks up for probe.
+Patch 1 replaces pm_runtime_resume_and_get() with a scoped
+PM_RUNTIME_ACQUIRE_AUTOSUSPEND() guard for the probe-time runtime PM
+reference, and adds zynqmp_dma_probe_pm_put()/_fail() helpers
+so every probe error path releases the reference and gates the clocks
+deterministically instead of relying on goto-based cleanup.
 
-On probe failure after a successful guard acquire, drop the reference with
-zynqmp_dma_probe_pm_put(), inhibit the guard destructor with
-retain_and_null_ptr(), and gate the clocks through
-zynqmp_dma_probe_fail(). When runtime PM is enabled,
-zynqmp_dma_probe_pm_put() uses pm_runtime_put_sync_suspend(). When runtime
-PM is not enabled for the device, balance the guard usage counter with
-pm_runtime_put_noidle() and gate the clocks with
-zynqmp_dma_runtime_suspend(). Runtime PM does not suspend a device that
-is already disabled, so pair every direct zynqmp_dma_runtime_suspend()
-call with pm_runtime_set_suspended() to keep the runtime PM status in
-sync with the clocks.
+Patch 2 adds a pm_runtime_if_active base guard and its _try conditional
+variant to pm_runtime.h, used via PM_RUNTIME_ACQUIRE_IF_ACTIVE(), so
+callers such as interrupt handlers can acquire a runtime PM reference
+only when the device is already active.
 
-On probe success, release the probe-time reference with
-pm_runtime_put_sync_autosuspend() when runtime PM is enabled for the
-device. When runtime PM is not enabled for the device, balance the guard
-usage counter with pm_runtime_put_noidle() only and leave the clocks
-enabled so that later channel allocation can use the hardware. Inhibit the
-guard destructor with retain_and_null_ptr(pm).
+Patch 3 uses PM_RUNTIME_ACQUIRE_IF_ACTIVE() in zynqmp_dma_irq_handler()
+to return IRQ_NONE when the device is genuinely runtime-suspended, while
+falling through to normal processing when runtime PM is disabled.
+
+Patch 4 updates the dt-binding to add the amd,versal-net-dma-1.0
+compatible string and restricts the resets property per-compatible using
+allOf:if:then:, making it required for Versal Gen2 and Versal Net and
+explicitly absent for all other platforms.
+
+Patch 5 adds the amd,versal-net-dma-1.0 entry to the driver match table
+with a dedicated versal_net_dma_config carrying has_reset=true.
+
+Patch 6 adds reset handling in the channel probe path, using the
+has_reset field in zynqmp_dma_config to conditionally call
+device_reset() on Versal Gen2 and Versal Net channels.
+
+Changes in V4:
+- Patch 1: Use PM_RUNTIME_ACQUIRE_AUTOSUSPEND() instead of
+  pm_runtime_resume_and_get(), and fail probe immediately if the guard
+  acquire fails. Add zynqmp_dma_probe_pm_put()/_fail()
+  helpers so every error path releases the reference and gates the
+  clocks without goto-based cleanup, and pair every direct
+  zynqmp_dma_runtime_suspend() call with pm_runtime_set_suspended() to
+  keep the runtime PM status in sync with the clocks
+- Patch 2: Bypass the guard when pm_runtime_get_if_active() returns
+  -EINVAL, covering disabled runtime PM and CONFIG_PM=n, so interrupt
+  handlers keep servicing interrupts instead of bailing out
+- Patch 3: Remove the IS_ENABLED(CONFIG_PM) condition from the guard
+  error check, since patch 2 already handles disabled runtime PM and
+  CONFIG_PM=n inside the guard itself
+- Patch 4: Move the allOf block under the required field
+  Add the new compatible string and the resets property in the example
+- Patch 5: No change
+- Patch 6: No change
+
+Changes in V3:
+- Patch 1: New patch - split PM usage count fix into a separate patch as
+- Patch 2: New patch - add PM_RUNTIME_ACQUIRE_IF_ACTIVE() guard and its
+  backing infrastructure to pm_runtime.h
+- Patch 3: Use PM_RUNTIME_ACQUIRE_IF_ACTIVE() guard instead of the manual
+  pm_runtime_get_if_active()/pm_runtime_put() pair from V2
+- Patch 4: Use allOf:if:then: to restrict the resets property per-
+  compatible with resets: false for non-matching platforms
+  also expand to include amd,versal-net-dma-1.0
+- Patch 5: New patch - add amd,versal-net-dma-1.0 compatible to driver
+- Patch 6: Introduce has_reset flag in zynqmp_dma_config to gate the
+  reset path; PM usage count fix split into patch 1/6
+
+- Link to v3: 
+-------------
+  --> https://lore.kernel.org/r/20260810100452.426320-1-nagendra.golla@amd.com
 
 Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
 ---
- drivers/dma/xilinx/zynqmp_dma.c | 68 ++++++++++++++++++++++++++++++-----------
- 1 file changed, 50 insertions(+), 18 deletions(-)
+---
+Golla Nagendra (5):
+      dmaengine: zynqmp_dma: Use PM guard for probe-time runtime PM reference
+      PM: runtime: Add pm_runtime_if_active guard and conditional variant
+      dmaengine: zynqmp_dma: Guard IRQ handler against spurious interrupts
+      dmaengine: zynqmp_dma: Add new compatible string for Versal Net
+      dmaengine: zynqmp_dma: Add per-channel reset support
 
-diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
-index 3b7dfa53f972..a48106e404e7 100644
---- a/drivers/dma/xilinx/zynqmp_dma.c
-+++ b/drivers/dma/xilinx/zynqmp_dma.c
-@@ -18,6 +18,7 @@
- #include <linux/slab.h>
- #include <linux/clk.h>
- #include <linux/io-64-nonatomic-lo-hi.h>
-+#include <linux/cleanup.h>
- #include <linux/pm_runtime.h>
- 
- #include "../dmaengine.h"
-@@ -1077,6 +1078,29 @@ static const struct dev_pm_ops zynqmp_dma_dev_pm_ops = {
- 			   zynqmp_dma_runtime_resume, NULL)
- };
- 
-+static void zynqmp_dma_probe_pm_put(struct device *dev)
-+{
-+	if (pm_runtime_enabled(dev))
-+		pm_runtime_put_sync_suspend(dev);
-+	else
-+		pm_runtime_put_noidle(dev);
-+}
-+
-+static int zynqmp_dma_probe_fail(struct zynqmp_dma_device *zdev, int ret)
-+{
-+	bool rpm_disabled = !pm_runtime_enabled(zdev->dev);
-+
-+	zynqmp_dma_chan_remove(zdev->chan);
-+	zynqmp_dma_probe_pm_put(zdev->dev);
-+	pm_runtime_disable(zdev->dev);
-+	if (rpm_disabled || !pm_runtime_status_suspended(zdev->dev)) {
-+		zynqmp_dma_runtime_suspend(zdev->dev);
-+		pm_runtime_set_suspended(zdev->dev);
-+	}
-+
-+	return ret;
-+}
-+
- /**
-  * zynqmp_dma_probe - Driver probe function
-  * @pdev: Pointer to the platform_device structure
-@@ -1087,7 +1111,7 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
- {
- 	struct zynqmp_dma_device *zdev;
- 	struct dma_device *p;
--	int ret;
-+	int ret, pm_err;
- 
- 	zdev = devm_kzalloc(&pdev->dev, sizeof(*zdev), GFP_KERNEL);
- 	if (!zdev)
-@@ -1128,21 +1152,30 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
- 	pm_runtime_set_autosuspend_delay(zdev->dev, ZDMA_PM_TIMEOUT);
- 	pm_runtime_use_autosuspend(zdev->dev);
- 	pm_runtime_enable(zdev->dev);
--	ret = pm_runtime_resume_and_get(zdev->dev);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "device wakeup failed.\n");
--		pm_runtime_disable(zdev->dev);
--	}
- 	if (!pm_runtime_enabled(zdev->dev)) {
- 		ret = zynqmp_dma_runtime_resume(zdev->dev);
--		if (ret)
-+		if (ret) {
-+			pm_runtime_disable(zdev->dev);
- 			return ret;
-+		}
-+	}
-+	PM_RUNTIME_ACQUIRE_AUTOSUSPEND(zdev->dev, pm);
-+	pm_err = PM_RUNTIME_ACQUIRE_ERR(&pm);
-+	if (pm_err) {
-+		retain_and_null_ptr(pm);
-+		pm_runtime_disable(zdev->dev);
-+		if (!pm_runtime_status_suspended(zdev->dev)) {
-+			zynqmp_dma_runtime_suspend(zdev->dev);
-+			pm_runtime_set_suspended(zdev->dev);
-+		}
-+		return dev_err_probe(&pdev->dev, pm_err, "device wakeup failed\n");
- 	}
- 
- 	ret = zynqmp_dma_chan_probe(zdev, pdev);
- 	if (ret) {
- 		dev_err_probe(&pdev->dev, ret, "Probing channel failed\n");
--		goto free_chan_resources;
-+		retain_and_null_ptr(pm);
-+		return zynqmp_dma_probe_fail(zdev, ret);
- 	}
- 
- 	p->dst_addr_widths = BIT(zdev->chan->bus_width / 8);
-@@ -1151,7 +1184,8 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
- 	ret = dma_async_device_register(&zdev->common);
- 	if (ret) {
- 		dev_err(zdev->dev, "failed to register the dma device\n");
--		goto free_chan_resources;
-+		retain_and_null_ptr(pm);
-+		return zynqmp_dma_probe_fail(zdev, ret);
- 	}
- 
- 	ret = of_dma_controller_register(pdev->dev.of_node,
-@@ -1159,19 +1193,17 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
- 	if (ret) {
- 		dev_err_probe(&pdev->dev, ret, "Unable to register DMA to DT\n");
- 		dma_async_device_unregister(&zdev->common);
--		goto free_chan_resources;
-+		retain_and_null_ptr(pm);
-+		return zynqmp_dma_probe_fail(zdev, ret);
- 	}
- 
--	pm_runtime_put_sync_autosuspend(zdev->dev);
-+	if (pm_runtime_enabled(zdev->dev))
-+		pm_runtime_put_sync_autosuspend(zdev->dev);
-+	else
-+		pm_runtime_put_noidle(zdev->dev);
-+	retain_and_null_ptr(pm);
- 
- 	return 0;
--
--free_chan_resources:
--	zynqmp_dma_chan_remove(zdev->chan);
--	if (!pm_runtime_enabled(zdev->dev))
--		zynqmp_dma_runtime_suspend(zdev->dev);
--	pm_runtime_disable(zdev->dev);
--	return ret;
- }
- 
- /**
+Jay Buddhabhatti (1):
+      dt-bindings: dma: xlnx,zynqmp-dma: Add Versal Net compatible support
 
+ .../bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml   | 34 ++++++--
+ drivers/dma/xilinx/zynqmp_dma.c                    | 90 +++++++++++++++++-----
+ include/linux/pm_runtime.h                         | 27 +++++++
+ 3 files changed, 125 insertions(+), 26 deletions(-)
+---
+base-commit: 2576c937f7b442df7de8e39332ff585f08b666b8
+change-id: 20261008-adma-pm-fix-and-per-channel-reset-d822a344a8e6
+
+Best regards,
 -- 
-2.43.7
+Golla Nagendra <nagendra.golla@amd.com>
 
