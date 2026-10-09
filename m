@@ -1,170 +1,89 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail-24418.protonmail.ch (mail-24418.protonmail.ch [109.224.244.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3061B2D7D47;
-	Fri,  9 Oct 2026 20:45:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CD193BF660
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 21:07:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791578746; cv=none; b=FhpI0GSeQLkpyrAeiedwblIsuO7upbd+G+7RT7Y+Mt+Wkwr9JQkttI5bk4vB71h6kiPhxr6cldyme3Ogcvu0O/CnIwZZImRzg1wJSF9I6YbHaIIDJkkTDFb4FhMukDEdxvzKxvlTIJOL6Qx4kmocXxE6plVzPhGsk8g/k80hLNE=
+	t=1791580081; cv=none; b=kCLBC2qEDq5P/wWJ/PwIqlnUrOgOWDC+fCO9iutqafQBVuRrngNSCVewF4QZXSx6KtwFwUYnHvbTPfiaF5Hm+R7fcmdeBwkunnmf1bynsp7Ou6/3d7K17ZAtC1+yTRBegoUhTyyKukle/bOxJx7IdsKSYt0cKd+zy/ECN9Qyzz0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791578746; c=relaxed/simple;
-	bh=RNeNBFzs9EeyQn3a7mFZBMc+LN7ETfRdtSMC0HY9+wI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=PPQhbynx8MEB1VuukJNM90pBthb7HWI/lnX0JfXenagFFjuV6/1z7CgR7H4iwUM6Hyb22MC+O0TZfqUXEiDXYTs163tXd/m6AML3BhQNMQa9zZ0ucLxyRjZQweQGgA2i9b27A+KedLOG/kJR0+hZCGLy5A3t4VGUINECCZkN/RM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RY+tujRX; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1791580081; c=relaxed/simple;
+	bh=5sMHZk4Hc88OhXhjJkqjDNeV6rinFGuPqsbkYItAWz0=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Jgm+BSWhHhCzgFqw3N2EfTi20b4RS67b+wm8JV5Vel9D79Z8/Be6DdTjBbI82KpiVDjoxLEv11CYDX8m7dGmbHg8hout1nbt406yI06q8KFSJYKX+UD7qjv4w0m6tPE3nvso2PHj6qSiDHAsBtFf+44UvK18448rSnBE/MOvJds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=EcgIALZD; arc=none smtp.client-ip=109.224.244.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RY+tujRX"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E5676C2BCF4;
-	Fri,  9 Oct 2026 20:45:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1791578746;
-	bh=RNeNBFzs9EeyQn3a7mFZBMc+LN7ETfRdtSMC0HY9+wI=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=RY+tujRXS+mJKSNYobHAj3uJa0MUWExmrecMcuMYArH8lrpB0cfgBfNLGXrs5uRiV
-	 CXy/dzgKcpHAH7aUsx+HPg6x/gDhIjv78TYBI4nKjfVWPJOgGzIi8ToI4hqEPBvc+/
-	 M4bUUFKJFb68JuZEYvMRUbRirPHYcf9YDFd8vYRY3XWfGhHThbe5YkgczPl8IhRYOP
-	 CZSEDnu75VPbB0H8wuFsEoKdQfy8s4MRWBPOyZwFzy62ap6v4anBhYQKmrqUIC2C7k
-	 ZZ8Bsm98E7vOWA/+xY5FLLPTe8BAefGj3xaMUiN0syLSpVIKxNU74zI/Pe78xwiB5/
-	 Ng78sUZ+pAlzA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D02F9CA9EBB;
-	Fri,  9 Oct 2026 20:45:45 +0000 (UTC)
-From: Fabricio Akio via B4 Relay <devnull+fabricioakio.gmail.com@kernel.org>
-Date: Fri, 09 Oct 2026 17:45:41 -0300
-Subject: [PATCH] interconnect: qcom: sdm660: Enable keep_alive and
- sync_state
+	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="EcgIALZD"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
+	s=protonmail3; t=1791580076; x=1791839276;
+	bh=8mepSe62s0ugerwpFuXic0aCmj871cPqnta8q4WTVwc=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=EcgIALZDakrxXNkCM/5aUw8DLoDg4bDNi/NqhDKyCh7SYpJN+NswgIxAPS/SJhsVc
+	 yKuSiRTw6+bDTvXRsZyupu2Ech353t/irzazx6llMjKcJDMC8+yzONohxNFucrOM++
+	 TQwjiggKgiATDwYUCARn/jXfbLvYmgTbPPNVJohBJTR70rBuWe8cxZg8vuQbIBKFU7
+	 JoBhf7jLZf/rlVGGGb2VnnwYmW038rqL9kSzpzt7+FF1HyyKgTw/L0pZe3uErLpO+i
+	 a7zAlJgrHp7mAH9/c2qrGJ1iMDkLIUddcmGq1CPtCKAEugdpx2ZqlrJhLUzSuOqXez
+	 ZcvQ2OT2isp5A==
+Date: Fri, 09 Oct 2026 21:07:53 +0000
+To: sashiko-bot@kernel.org
+From: Birk Skyum <birk.skyum@pm.me>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Manivannan Sadhasivam <mani@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, =?utf-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Rob Herring <robh@kernel.org>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] PCI: dwc: Power the controller down when hibernating
+Message-ID: <179158007085.33373.10495486250879471249@pm.me>
+In-Reply-To: <sashiko-outbox-166041@kernel.org>
+References: <179157746908.73485.2343672865542690797@pm.me> <sashiko-outbox-166041@kernel.org>
+Feedback-ID: 21326998:user:proton
+X-Pm-Message-ID: 97b4da40f43a418c58b48886561281d9e2d8eeff
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261009-sdm660-icc-sync-state-v1-1-77b8d2501cb2@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQrCMBCF4auUWTswCRoaryIu6mRqp9AomShK6
- d2NunnwLd6/gklRMTh2KxR5quktN7hdBzwN+SqoqRk8+eCIIlpaQiBUZrR3blOHKkgh9ikevBv
- 3DO17LzLq69c9nf+2x2UWrt8YbNsH7Hl9cnkAAAA=
-X-Change-ID: 20261009-sdm660-icc-sync-state-0698d9521f4c
-To: Georgi Djakov <djakov@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Bjorn Andersson <andersson@kernel.org>
-Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Marijn Suijten <marijn.suijten@somainline.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Alexey Minnekhanov <alexeymin@postmarketos.org>, 
- Dmitry Baryshkov <lumag@kernel.org>, 
- Martin Botka <martin.botka@somainline.org>, linux-arm-msm@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Fabricio Akio <fabricioakio@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791578744; l=3835;
- i=fabricioakio@gmail.com; s=20260928; h=from:subject:message-id;
- bh=I6FZICF6sWxIWjC/karjpr0hJtPbBkE7vMKoHoT2/KI=;
- b=Qjski/AvzPL+FBrKuw+xgtHZ9lyEj98SObL44VXbgHIGZciAb+MzmGuz6LgXNy58DYjBVwq7W
- hntLr2Qx8BvBZYBrpBnDlM2LVPklydy+RwiJW7XmJIGxB7cw8252Cfi
-X-Developer-Key: i=fabricioakio@gmail.com; a=ed25519;
- pk=TlMUT8bPI/ZQzp2q24BIQTb2qSx/jdUTBlGEXIRCm54=
-X-Endpoint-Received: by B4 Relay for fabricioakio@gmail.com/20260928 with
- auth_id=1076
-X-Original-From: Fabricio Akio <fabricioakio@gmail.com>
-Reply-To: fabricioakio@gmail.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Fabricio Akio <fabricioakio@gmail.com>
+> Does this short-circuiting && operator cause issues during hibernation?
+> [...]
+> Since pme_capable is unconditionally false, pci_pwrctrl_power_off_devices=
+()
+> will force cutting auxiliary power.
 
-The interconnect core starts every node at INT_MAX and only lowers it in
-icc_sync_state(), which this driver never hooks up. Every bus therefore
-stays at its maximum rate, in the active and the sleep set.
+That part is right. At poweroff_noirq the devices are in D3hot, the
+helper would have reported PME from D3cold, and with this patch a
+wake-enabled device loses its power anyway. In v2 I will call the
+helper first and ignore only its verdict, not its PME result:
 
-Hook up icc_sync_state(). Releasing those votes also drops buses that no
-driver votes for, so enable keep_alive on the providers with a bus clock,
-as QCM2290 does: it keeps a minimum active-set vote and leaves the sleep
-set free.
+=09if (!pci_host_common_d3cold_possible(pci->pp.bridge, &pme_capable) &&
+=09    pm_suspend_in_progress())
+=09=09return 0;
 
-On a Motorola Moto X4 (SDM630) with the screen off, this takes the
-battery current from 117 mA to 68 mA.
+At freeze_noirq the devices are in D0, so the helper stops at the first
+one and pme_capable stays false, which is what the image needs. I ran
+this version on the Yoga Slim 7x before writing, and a hibernation with
+a power-off resumes as it does with v1.
 
-Fixes: f80a1d414328 ("interconnect: qcom: Add SDM660 interconnect provider driver")
-Signed-off-by: Fabricio Akio <fabricioakio@gmail.com>
----
-Konrad Dybcio included the sync_state hook-up for this driver in a 2021
-fix of its paths [1], Marijn Suijten posted it alone the same year [2],
-and Krzysztof Kozlowski for eight Qualcomm drivers in 2022 [3]. Georgi's
-concern then was that buses with no bandwidth user would be turned off
-at sync state. keep_alive, added since for that case, keeps a minimum
-active-set vote on them; QCM2290 and SM6115 use it on all their buses.
+> wipes endpoint hardware state during the freeze phase, violating the
+> core PM contract that thaw operates on preserved hardware state.
 
-Tested on a Motorola Moto X4 (SDM630), whose board file is not in
-mainline yet, on the sdm660-mainline tree, with sdm630.dtsi's
-interconnect paths as they are in mainline: all six providers synced;
-the eMMC, the SD card and the USB gadget worked, and the phone
-suspended and resumed.
+The reset between freeze and thaw is real, and it is the price of this
+approach. pci_pm_thaw_noirq() returns the device to D0 and restores its
+config space before the driver's thaw runs, so that much is covered,
+and a driver whose thaw is its resume copes. NVMe did here. A driver
+with a lighter thaw that expects the device's own state to be intact
+would not.
 
-[1] https://lore.kernel.org/r/20210728222033.52500-1-konrad.dybcio@somainline.org
-[2] https://lore.kernel.org/r/20210904111452.248804-1-marijn.suijten@somainline.org
-[3] https://lore.kernel.org/r/20220427145616.523557-1-krzysztof.kozlowski@linaro.org
----
- drivers/interconnect/qcom/sdm660.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+I did it at freeze because I do not see how to do it at restore. The
+image says the clocks, regulators and PHY of the controller are on, so
+restore_noirq cannot bring them up without first taking them down, and
+that means writing to a PHY that may have no power, the same kind of
+access that resets the machine today. If there is a way to do this on
+the restore side, or if it belongs in pcie-qcom only, I would rather do
+that.
 
-diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom/sdm660.c
-index d8c979a12235..82dd0b916e1f 100644
---- a/drivers/interconnect/qcom/sdm660.c
-+++ b/drivers/interconnect/qcom/sdm660.c
-@@ -1514,6 +1514,7 @@ static const struct qcom_icc_desc sdm660_a2noc = {
- 	.intf_clocks = a2noc_intf_clocks,
- 	.num_intf_clocks = ARRAY_SIZE(a2noc_intf_clocks),
- 	.regmap_cfg = &sdm660_a2noc_regmap_config,
-+	.keep_alive = true,
- };
- 
- static struct qcom_icc_node * const sdm660_bimc_nodes[] = {
-@@ -1542,6 +1543,7 @@ static const struct qcom_icc_desc sdm660_bimc = {
- 	.bus_clk_desc = &bimc_clk,
- 	.regmap_cfg = &sdm660_bimc_regmap_config,
- 	.ab_coeff = 153,
-+	.keep_alive = true,
- };
- 
- static struct qcom_icc_node * const sdm660_cnoc_nodes[] = {
-@@ -1597,6 +1599,7 @@ static const struct qcom_icc_desc sdm660_cnoc = {
- 	.num_nodes = ARRAY_SIZE(sdm660_cnoc_nodes),
- 	.bus_clk_desc = &bus_2_clk,
- 	.regmap_cfg = &sdm660_cnoc_regmap_config,
-+	.keep_alive = true,
- };
- 
- static struct qcom_icc_node * const sdm660_gnoc_nodes[] = {
-@@ -1662,6 +1665,7 @@ static const struct qcom_icc_desc sdm660_mnoc = {
- 	.num_intf_clocks = ARRAY_SIZE(mm_intf_clocks),
- 	.regmap_cfg = &sdm660_mnoc_regmap_config,
- 	.ab_coeff = 153,
-+	.keep_alive = true,
- };
- 
- static struct qcom_icc_node * const sdm660_snoc_nodes[] = {
-@@ -1698,6 +1702,7 @@ static const struct qcom_icc_desc sdm660_snoc = {
- 	.num_nodes = ARRAY_SIZE(sdm660_snoc_nodes),
- 	.bus_clk_desc = &bus_1_clk,
- 	.regmap_cfg = &sdm660_snoc_regmap_config,
-+	.keep_alive = true,
- };
- 
- static const struct of_device_id sdm660_noc_of_match[] = {
-@@ -1717,6 +1722,7 @@ static struct platform_driver sdm660_noc_driver = {
- 	.driver = {
- 		.name = "qnoc-sdm660",
- 		.of_match_table = sdm660_noc_of_match,
-+		.sync_state = icc_sync_state,
- 	},
- };
- module_platform_driver(sdm660_noc_driver);
-
----
-base-commit: aac26bee2287c88af5be5a5ff96d783b19a28790
-change-id: 20261009-sdm660-icc-sync-state-0698d9521f4c
-
-Best regards,
---  
-Fabricio Akio <fabricioakio@gmail.com>
-
+I will hold v2 until a maintainer has had a look.
 
