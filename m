@@ -1,67 +1,66 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010016.outbound.protection.outlook.com [40.93.198.16])
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azon11011056.outbound.protection.outlook.com [52.101.57.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29D9D3ACA42;
-	Fri,  9 Oct 2026 04:00:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 948EA3B14C8;
+	Fri,  9 Oct 2026 04:01:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.57.56
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791518461; cv=fail; b=fKegjRx8Fb1Bg1KdrLWvYAdFoLnMe4YR3l4V0Wf2lV6TvJ7LG3IdQ8Jqut3xZVNVkzFxm/9hUrg84Fopvxo9vA/seJnfmqX6gpEtn9QpGvuWebqZ76T/wCCFUtlhkCalN6Bhf85xCbuQFaSDR/mOyvUjuGxClcCdV42ErSk3XuM=
+	t=1791518470; cv=fail; b=HZBcJeZxlC7emj1KdXTOqOOfEPscWPGXXsjnS4RC/wtsMpFriqaoJnL+wjCkk6gQ3ageCIJldE3i0kh0LnalXwbzlGMYfScn/W1F17bi6yV1nqkSBcayNAq4mKNamv975gUnf6mHlK02eRDZiQbQM49Xc8DwOfWPEdoULsoVOpI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791518461; c=relaxed/simple;
-	bh=WOWGYN4gyW4+iSBG1amVKTJ6rWwGT607d6SKgV00jmg=;
+	s=arc-20240116; t=1791518470; c=relaxed/simple;
+	bh=fGHce2equmyTiavwxAeVjmHKngXlT4F1hhSsbpK6S9Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=cjh0/jvUQB1FSTTkZddWxHiNbgKC7HVogTXPYwcskHEwtSPmz7djCufxJURN0BTxzVzKj9qFzeGO7IKBgw+spcAFzGM/B1v8DHS8nKqYZN+pJ7aWCIKt4aRJOBJfdOJ8ocU32Y6N2ODeEb3fQaZQXOsVRpHQgk01Fq0etI2YwEg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=26kqD2+2; arc=fail smtp.client-ip=40.93.198.16
+	 In-Reply-To:To:CC; b=sSVE77P/mF4YNEZgPnlSgJX2oDMfUO4GejNJzfMQDz3tocXkmyeQ/Lp+ThJZw6kk8P5bjqRxEbcO4pirM/Nt2b8bbOEEcHUE1o7yUuz6goh7NCcy3Ydepc7diApdGbKiekhTpTWrH3TVBlS4JWIrt84cLl8Y6FR6JoGmlYTKVzE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=3OPB62aF; arc=fail smtp.client-ip=52.101.57.56
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="26kqD2+2"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="3OPB62aF"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DdvKA3PqF+3uC42HDAtF7NUWAHWvbTr889VLtD8tBYjWpajcWi7lCPSJLE8NYTzh2ez69kveCYPil5ULjZBJtp0fwWBCOmnfbRs+I5xRdcD2SmF+N3XmoT4fZOereA/WkFE/idpvmcIqs88B7ZVNaLgpGov0nU0wb3RR4LFFDMyIXTrC8QG955kL44k4TErzHzdThx2S/fpgO0H6outBJgD89+8wCv0HrTlPkLHoQvMo9XAURz6lyPBv/+UjNS6D1Epa6CiqgpKmgIAcc+TcgUTB+X3wd3DAPvbE2HjW/Vgu848nzl5H5s1C5Ho0D7HGd55E8BILyk9NFNV0WJ6p9g==
+ b=tmgW1F5Sjvu7xvTU/XVSuCnx61+mM64e8zb+7Wv1DAWN6MRYoSWCcsS0LjsngAM9OF+1R0kj8yjKDecHUs+YGzFaEG6CX4P8M4wboXlcO/fORU4mit0Kh1Lpckpa8IreXti39nqHSQIrXjOJR0xQo0L/3OUfsDdwLjEb8t8dsjTBhXdeNqUY+o7nT+dCi+iQYXxfPE16O2z58dq7hfVWIK0/fv7obhZj+xQhlFzYMStoaRAa3ZkZ7sOsaYwbz/1xUvCvlX/gfgjatzoNTd+zep4ZoX8Pkt0ptgz+mKZeQoao9WET1201ClMLTTLWIye3YROPJUWNUgGEoQzGp3Gytw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NjNOEjJ3jcDl1fNjrEKQPMFT7hdfvdMO3x8qbjAzzRk=;
- b=ryDrLWjgN2Q78YzY89ss8r6CeXQ92lz2PxXJzHAh5Sq4kvKpJtr0vTTzrJUmG5icqhGKU+4IaG3EVXue8bX4guNK1/yjTXEoLBmDhoglKFDAW6GG7WhsdBSUcSet+8OMLtaKdkHqwjZoMFXTEjJnmpalMeit/gmoUBSbtcjWnKX9Fsn6Cu+1YWUb4JBUZ5zHB3Z9nSAlFj1RRoka1V739apmgSkiqM3rvYPOlTh7Z9JT22fD1ATxShFY3LOQFazwDtbEowPxHQn52iW8v6xkcyAgjOiAeNrlz0IydBlvGJlO4St4nDoVlfTb2sP6+LAT2JOMysIdoYZjnTlFHB6Txg==
+ bh=H4Gt4bUZ/e41D6IqAnJw+W7nc2PcV/oaW0DYCpbUiPE=;
+ b=rq53P5Q1MDWxspVb/8JcXQkEawQKmw4FCRydBkV7SOsnyzBwq2balPdznVW7NUiUoYZsVGH0lNiR3ys9RsBOtH+RmS9jbEeVr++bNR+GllQljq/jaspd5kPUDilKSknWBUO8b6hYIKB+ZcwWjSUR3bshnfc+OaHjJrmbLcgqoNKXup7Hh8WtycKZUVLSqiX4ZPgNOovWcAgv61+u+r7ALIXiZdmtrT3NA6d5QepZWQLuRo/tpj832YYTKB4wswV6BaVfFgE1szot/deOuKK2GCbDTCM8X+bVXodzXDnUpj3RN7VDCkevPqvgCs9kllaMzzrvkrhwzuxc2bohrspU3A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NjNOEjJ3jcDl1fNjrEKQPMFT7hdfvdMO3x8qbjAzzRk=;
- b=26kqD2+2RxEzwrBi16YRDyqEIQEWe5Fi/vWw62Ur0VbyGwAGxghAbDRAWGzLzAcIAUMcZUuK7LmunLoaNvY0tMtzQoi4kPunme8PJ80rBAYI2Mnu4NbmXjgVuGH8owyr7i1oUiH7r6EmEwOK+cjY4NTmy5UIvHQ62iovcHwSSag=
-Received: from CY5PR15CA0123.namprd15.prod.outlook.com (2603:10b6:930:68::14)
- by BY5PR12MB4145.namprd12.prod.outlook.com (2603:10b6:a03:212::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.17; Fri, 9 Oct
- 2026 04:00:48 +0000
-Received: from CY8PEPF00000053.namprd05.prod.outlook.com
- (2603:10b6:930:68:cafe::26) by CY5PR15CA0123.outlook.office365.com
- (2603:10b6:930:68::14) with Microsoft SMTP Server (version=TLS1_3,
+ bh=H4Gt4bUZ/e41D6IqAnJw+W7nc2PcV/oaW0DYCpbUiPE=;
+ b=3OPB62aF5RZwupC+l+HlIXF48J8CnC5U6mkktGyVxgEq4M1V3quWqe9QLKB5Et5OXW6gy2lWezWz5WqIWHn8KyhD5R3MoBxsXpJoXtySRVFTUwAWwuhEXjzYejc9p4HQXtljJHArc5X3QkP1UCq7E/cbYcAj90jFPkbQ9LnvFGw=
+Received: from SJ0PR03CA0020.namprd03.prod.outlook.com (2603:10b6:a03:33a::25)
+ by DM4PR12MB5938.namprd12.prod.outlook.com (2603:10b6:8:69::9) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.496.17; Fri, 9 Oct 2026 04:00:54 +0000
+Received: from SJ1PEPF00001CE6.namprd03.prod.outlook.com
+ (2603:10b6:a03:33a:cafe::26) by SJ0PR03CA0020.outlook.office365.com
+ (2603:10b6:a03:33a::25) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.20 via Frontend Transport; Fri, 9
- Oct 2026 04:00:48 +0000
+ Oct 2026 04:00:54 +0000
 X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
  is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
 Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- CY8PEPF00000053.mail.protection.outlook.com (10.167.247.57) with Microsoft
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ SJ1PEPF00001CE6.mail.protection.outlook.com (10.167.242.22) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.522.6 via Frontend Transport; Fri, 9 Oct 2026 04:00:47 +0000
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ 15.21.522.6 via Frontend Transport; Fri, 9 Oct 2026 04:00:54 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Thu, 8 Oct
- 2026 23:00:40 -0500
+ 2026 23:00:44 -0500
 Received: from xhdnaggolla50x.amd.com (10.180.168.240) by satlexmb08.amd.com
  (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.49 via Frontend
- Transport; Thu, 8 Oct 2026 23:00:35 -0500
+ Transport; Thu, 8 Oct 2026 23:00:40 -0500
 From: Golla Nagendra <nagendra.golla@amd.com>
-Date: Fri, 9 Oct 2026 09:30:14 +0530
-Subject: [PATCH v4 5/6] dmaengine: zynqmp_dma: Add new compatible string
- for Versal Net
+Date: Fri, 9 Oct 2026 09:30:15 +0530
+Subject: [PATCH v4 6/6] dmaengine: zynqmp_dma: Add per-channel reset
+ support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,7 +69,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20261009-adma-pm-fix-and-per-channel-reset-v4-5-55f5fe409c55@amd.com>
+Message-ID: <20261009-adma-pm-fix-and-per-channel-reset-v4-6-55f5fe409c55@amd.com>
 References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
 In-Reply-To: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
 To: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, "Michal
@@ -84,85 +83,91 @@ CC: <dmaengine@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<devicetree@vger.kernel.org>, <git@amd.com>, Golla Nagendra
 	<nagendra.golla@amd.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791518416; l=1554;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791518416; l=1920;
  i=nagendra.golla@amd.com; s=20261008; h=from:subject:message-id;
- bh=WOWGYN4gyW4+iSBG1amVKTJ6rWwGT607d6SKgV00jmg=;
- b=EAwWdWrRNUBn+zK95qe9fQehLjHKQUXukdh1H83YSJTdtQrVrwT60+fAOvN+qlABC5mCY02fv
- jYT/wL72C6SD7buWhyfjeMgzAzTTW5l4lvcuAwyWowB/XSmGSvhRLYJ
+ bh=fGHce2equmyTiavwxAeVjmHKngXlT4F1hhSsbpK6S9Q=;
+ b=q3F5l/IzaDYu+I6HYlk91216oLJqAF2VsyywHOItELftqcEoAOdrNpqu28Tp+0Zhf8zNgH4d3
+ u27SLc5l2pdD3UWli9yW1YKyMyAYITsWVZFC2mzN23LJqaSNiJCgTiv
 X-Developer-Key: i=nagendra.golla@amd.com; a=ed25519;
  pk=pCRGj/0mb0C3aDMpVVZeyBqOIQZUKGJjCKL4QZTu7nQ=
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PEPF00000053:EE_|BY5PR12MB4145:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8b08648a-e1e3-4071-4020-08df25b9e6b1
+X-MS-TrafficTypeDiagnostic: SJ1PEPF00001CE6:EE_|DM4PR12MB5938:EE_
+X-MS-Office365-Filtering-Correlation-Id: e16224b7-4ff5-4200-a375-08df25b9ea95
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|7416014|1800799024|82310400026|23010399003|376014|921020|56012099006|11063799006|10067099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|82310400026|1800799024|36860700016|376014|23010399003|7416014|18002099003|22082099003|921020|56012099006|6133799003|10067099003|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	Juzz8rGl0HJW15CaANefrTeTNfHHTgvDtpp4GXKhgICWeaa41qz44GaTd1zdyzKgf8jdu4T8+agf5HMCUvQA+3bxGQNGfRtD11GSCJgvonK5xX1GHv7wTu+FxHhp2TNVpc0JGco3lhFZT38QRB2yGX2UJOE2t6lIC4JJRe39QAE9K4YBDetSJRvSIwlyCIYRMIbn2C66CsJGZv4zKYBa95j6r2kx79QA6ajkCi2LxBlhO7h6iRTlogNP02qAVL4JH5y+nOKwqazJgdhcqGN5j2Pmp2MP0otZrRCKSzZ9XH4vIyvAKpMV9xXTEK/HDSFBGBNrDP+jn/rQjKkNO7iPu92bQAJLeATYyqcR16GMUlew2ElT/W+KCUeDE8AAcn6Pjij1Hlo52B5oztiO3bXtPhRUCoWRQwJVXXnrN0TgzNbzw17mrhqlafezwtBRy3fLyHiQEd3EiVTHO+Kgp6LByq+ySXxmJyvW/QXz55NLZRtPgGo5p+ScYm5LqTpT8OLTY1tqRxImU1DYkFUtPYtlFJTls7NCIui2Ru86VBNBH2zsnLSH8m9ovh18/OpGqltMVGynGYD1W+HHgt5NSCGBywHu/6pSkLM5JzuJj9V0CKcJAQDtzE55H9TjXK+QF5jnod3yFpzUU4v1Sw/8x5G1zdLWG2M3/knUjDgpcUwY6/6JlH5e14jpCSyW07cfyuxWeJcT2ErrbJrUI/qqkhNmOgJYzpHWidA1etLuySgMKlyf3B/Th2tfRLvhzc7jQvY6
+	TFSMmt2xRoqa+c4fyC4iRl10w/raW1oWufCBYlDrto7gNh5LdK0GqxaF4WHkLBFYdrFaYIFLDWAcG4kwRd6Aln+K6Umr6kT9mpRpqMeEw6trd5sc0CFyD5/VHlfKqZypGXLAGR/ZyJzdnePCkIH+JSV/G459QzFVkbjh3AB1o5iuPCP2kTRJxBj2hu7jZlVZKl9duF0e5GK2Jbrka2PPyZC9hUcyAvRv144sb2BLd5tB6FVNgm9tk2MPaQqgcuPXIkJDEXT7EO503j+fOyibDMChB/Nr7pHVSduWOUrJHbCLAboo2c3JGA1EchsAxqawy57wHIY6ulD9KpiLU5d0hxWPcr40UklsHEV8oGAxMET9nA2fuTCccPWb0DOGUfhHX6FIUEYcEq9brP8DFKAMKltLV7ndGV3SB6aoZRpbSvYcRXyEWTMZSjvR7qqBudQ489Pyt1UOReURKCFz7EqGeEdYn7RvuyEeneJXTgxjidt+vvWAFtSQZj2uHwpo7FyUeACxQhsEJe0imVE4/DZ80RQZC9iDGJdVVOgJyOUJ9p6Q9bvJRu6C245sX9/XO0nyEOzXuPhBmReZl9AtT/3ZYwMDaIDb0WZQ3tsqJj3JmgXW1u2cnRwS40K/EbA1fq81Ts0Nz2BScZpnK9+tE9K+WoBJX59CM3uqn5DTGzO2PSywT+56P9re/+22ttBr3wI5rDRyOh8torhrp1cwg+FUibtPp1dAFyLmnRdHU24+2QZAXf5ZcenAL5b1jOJ5kVSw
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(7416014)(1800799024)(82310400026)(23010399003)(376014)(921020)(56012099006)(11063799006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(36860700016)(376014)(23010399003)(7416014)(18002099003)(22082099003)(921020)(56012099006)(6133799003)(10067099003)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	NAaWW5+f5TvyTovowNjYhkfSCVOBj8QWy3z2Qslv23TCzdO3hTi6n08aT5IasStG+OXFEQu2JCMiWRjUbAhN2QclyEKMiPdIpWRojPPpxCLqXQPiSxcrDwTh8kOO7lUUqFHeeJXVLccWX2zcsuFT5DGxOnNtLoVhIjEAw97M4xEylYVe64O9uvrkEcZb/xMIuzDUPWdn72tJ+tEnz3hlHcv0kHymwKTb4mpog8YCGaPHB6Lto7D1n6EqqUrxjdC7AsjYOraDlEZkv2OAdkqRRQpEQM4O6H+rvaKwtpfqA64X5g7f1yml121Mi+OEgJCkcQyqIIfHUxC/oKjQRqCwXk+OgCdg5EiaPoEu7nWfFN+jgO45353cUxxxG40QYkR0TJj8+KydOaC0Vh5UOyZmaiYxUNPuYJgRoraD9n8ls8GILZMKG09GFWTUYNrIwGCS
+	ruwotea7M5Oyr81domeIVPxc3tWYx7GpYb616u99v5fiednApHQAIxwWStXyr076NUKQ+UJdXIIS6F/uTOapqZqxUSN0WYdzBVunvDtH0uzSylBRXK81GneSQ66gM1SwoHS/398ZhFzBGoYf+ZaZxTHa8ko18ZDHVSWLH5KeuZRk4Ijs7P9znLvZksoNSeg76uWjqH/wfK9K4Me/mywh4VJW2ZXtx14vvzmlFnZ9MTSIHRncK9NNKB+vgwUH5T4CYFAywpNexQZoj5jbrIMq6ZH1IOok7QhM0QDqKhgbHIddPqXiRTRH3U9HeM7OWPf5AykmiLiARpPEPZS9UDokGKTubqEC2fyMi7c/KLykx9lhatgaBUVVshQwgxIfE4ZFRVhDIEsh1yjFsb+VuKDqt8FlEguv/ss0IRx/2PpEiFCtLk7iEwdKAOUIVyxc2gyq
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2026 04:00:47.8569
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2026 04:00:54.4065
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8b08648a-e1e3-4071-4020-08df25b9e6b1
+X-MS-Exchange-CrossTenant-Network-Message-Id: e16224b7-4ff5-4200-a375-08df25b9ea95
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	CY8PEPF00000053.namprd05.prod.outlook.com
+	SJ1PEPF00001CE6.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4145
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5938
 
-Versal Net previously used the legacy xlnx,zynqmp-dma-1.0 compatible
-string. Add amd,versal-net-dma-1.0 to the of_device_id match table
-with SoC-specific match data via versal_net_dma_config.
+Versal Gen2 and Versal Net expose a dedicated reset line per ZDMA
+channel. Use device_reset() to trigger a mandatory reset pulse on the
+channel during probe when match data indicates reset is supported.
 
-Introduce a has_reset field in zynqmp_dma_config to indicate whether
-the compatible requires a per-channel reset during probe.
+The has_reset field in zynqmp_dma_config controls whether reset is
+performed for a given compatible. For Versal Net and Versal Gen2,
+has_reset is set to true, so device_reset() is called and probe fails
+if the resets property is missing in the device tree. For legacy SoCs,
+match_data is NULL and has_reset defaults to false,so the reset path
+is skipped entirely.
 
 Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
 ---
- drivers/dma/xilinx/zynqmp_dma.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/dma/xilinx/zynqmp_dma.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
-index b5a5e93e42d5..6881dc19435c 100644
+index 6881dc19435c..047a85342824 100644
 --- a/drivers/dma/xilinx/zynqmp_dma.c
 +++ b/drivers/dma/xilinx/zynqmp_dma.c
-@@ -258,13 +258,20 @@ struct zynqmp_dma_device {
- };
+@@ -20,6 +20,7 @@
+ #include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/cleanup.h>
+ #include <linux/pm_runtime.h>
++#include <linux/reset.h>
  
- struct zynqmp_dma_config {
-+	bool has_reset;
- 	u32 offset;
- };
+ #include "../dmaengine.h"
  
- static const struct zynqmp_dma_config versal2_dma_config = {
-+	.has_reset = true,
- 	.offset = IRQ_REG_OFFSET,
- };
+@@ -942,6 +943,14 @@ static int zynqmp_dma_chan_probe(struct zynqmp_dma_device *zdev,
+ 	if (IS_ERR(chan->regs))
+ 		return PTR_ERR(chan->regs);
  
-+/* offset = 0: Versal Net uses base IRQ register address */
-+static const struct zynqmp_dma_config versal_net_dma_config = {
-+	.has_reset = true,
-+};
++	match_data = of_device_get_match_data(&pdev->dev);
++	if (match_data && match_data->has_reset) {
++		err = device_reset(&pdev->dev);
++		if (err)
++			return dev_err_probe(&pdev->dev, err,
++					     "failed to reset channel\n");
++	}
 +
- static inline void zynqmp_dma_writeq(struct zynqmp_dma_chan *chan, u32 reg,
- 				     u64 value)
- {
-@@ -1229,6 +1236,7 @@ static void zynqmp_dma_remove(struct platform_device *pdev)
+ 	chan->bus_width = ZYNQMP_DMA_BUS_WIDTH_64;
+ 	chan->dst_burst_len = ZYNQMP_DMA_MAX_DST_BURST_LEN;
+ 	chan->src_burst_len = ZYNQMP_DMA_MAX_SRC_BURST_LEN;
+@@ -957,7 +966,6 @@ static int zynqmp_dma_chan_probe(struct zynqmp_dma_device *zdev,
+ 		return -EINVAL;
+ 	}
  
- static const struct of_device_id zynqmp_dma_of_match[] = {
- 	{ .compatible = "amd,versal2-dma-1.0", .data = &versal2_dma_config },
-+	{ .compatible = "amd,versal-net-dma-1.0", .data = &versal_net_dma_config },
- 	{ .compatible = "xlnx,zynqmp-dma-1.0", },
- 	{}
- };
+-	match_data = of_device_get_match_data(&pdev->dev);
+ 	if (match_data)
+ 		chan->irq_offset = match_data->offset;
+ 
 
 -- 
 2.43.7
