@@ -1,116 +1,96 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C92E345EB4;
-	Fri,  9 Oct 2026 12:21:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5D3CC39EF33;
+	Fri,  9 Oct 2026 12:45:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791548482; cv=none; b=EvSNmAqlgf6SLpKOu7Us8kHuGDjIyRvH7R3b56vYk5er3NMkSBbNy1Pl4yk4KJRQfPMgqlccpV8IaOp3Qel1S7JJNC8C9W4CyGMSuRatyf+xXvvpdILRHcD5yc1rbZoU6Fcuwq1WVrIubLf4F8zsVLt+jF64gdYvwueK6tniDb4=
+	t=1791549958; cv=none; b=IOLcAm6ddv1OH8V5y83/XHpOV7S96qt4Fu2AeWmHwNknqcLlFXtgT+auVskcKwDUN7QV6Zowl41d5m5A+BcZ/myWzWvki06WZ0Q28a36+/PYLREund4ii3BEpFI9+ZFS5cRgCn1xanGJcGpeqpUpmUkyoCwXpXTOtszhrFRMBv4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791548482; c=relaxed/simple;
-	bh=jgUGRmavRJiBga18v80G2L3GuQK59+VccAUFdDkAHdM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K1/FpQmBMJXUyz5h/IclUNnxetuHqNth/awhr1KfYCJIbXlY8Ctg9gRq16xvKXb6tuuB/P6pq7F2Th/mbYJm5m/tFlWrYkPOmkM4l23Vuu77fG/yOryjfTYTvjFsfHtWxlWKLi/MJC7iU/dpREqr3XwtrHRix+UpLwq6WEqjjTo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KuBG6a+J; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791549958; c=relaxed/simple;
+	bh=+XNdH8y169fMKCNtfDLtMucS75fvXgUGZ1gQ6tqsejk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=uT9bRsjN4ctDwwFkr1SPDYAmLe0Lsau33RpwQz6W6j8DOWLJ4FJIG0ad8Di1rfuTjORtIX9gyiVKdY+3nmyfZ1MC5jFTCT4ncipFVnbr/pCAAIeqFmE4RNIRcfXSDWs30ylHb3tFgQV2khGmgYVpM3lfvFYDY4z4W5jrcac4+RE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=BH4BIhGy; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KuBG6a+J"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF82D1F000FF;
-	Fri,  9 Oct 2026 12:21:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791548477;
-	bh=lOy+6gR5U+XJ/7xxW+LbuJHEriEsitu66YSZlMA/tPs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=KuBG6a+J6QA3F43i4pmhUSJ85lGk7COEODYHCb3wLty/Wy5OuQBfcLqwMGMtoXoQR
-	 17G/pitraoRzw89C+CMNtSLXcdHE7+SnhOh1thuIswxWTfzFvan3kRGgB7rrkijnAl
-	 0+yDOyMuw1yeAADKRpuAhX16lTo/kcSgFvocDF81lNqdrHspWSDFhlAHr6f/jFHefB
-	 kND+dALy9E2MPRcM4HSkjYe47Cq0/UxFtJCZeFv+1lESBF4tFriISSsLv+JFR1hyIU
-	 sUlOpbkexeFvzHU2ajlSBgXkaU1MOz07eznurZzz7DXhriqoqMWgHHtbz3Gm1zy5B5
-	 ncr0rfQ0HAOkw==
-Date: Fri, 9 Oct 2026 13:21:12 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Rob Herring <robh@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 2/3] pmdomain: Add support for system-suspend-only states
-Message-ID: <20261009-frisky-rottweiler-from-avalon-6c409e@sudeepholla>
-References: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
- <20261005-s2idle_state-v1-2-3c402c66f388@oss.qualcomm.com>
- <20261006-romantic-stalwart-seriema-90e71d@sudeepholla>
- <CAPx+jO-T_0KT3GytYu8w6QvrhXFQNZQzR496RL=McU6rnMtnPA@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="BH4BIhGy"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9E3671D14;
+	Fri,  9 Oct 2026 05:45:40 -0700 (PDT)
+Received: from [10.0.128.17] (e127648.arm.com [10.0.128.17])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 415DA3F66F;
+	Fri,  9 Oct 2026 05:45:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1791549943; bh=+XNdH8y169fMKCNtfDLtMucS75fvXgUGZ1gQ6tqsejk=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=BH4BIhGyEm20Emlm18FjBq0CJ1q4Pz9CpuDF1oMsxtsJ24ro58u0yB2mhY73VO1HN
+	 gGhKoIK5ci3xVVKodnZnkC2HnDmSEFP4zSANnr6t4rBpqB9bK9Wg/V95Y/Lf/zCcM2
+	 g+WHGivtoIvOADanipH2s9mKh4PRzL7wVWnPFPbs=
+Message-ID: <2e635fc7-3d5c-4555-b92b-9e6e405f1b23@arm.com>
+Date: Fri, 9 Oct 2026 13:45:40 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPx+jO-T_0KT3GytYu8w6QvrhXFQNZQzR496RL=McU6rnMtnPA@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpuidle: Add the shallow governors
+To: Roman Kagan <rkagan@amazon.de>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Jonathan Corbet
+ <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ nh-open-source@amazon.com
+References: <20261008-b4-cpuidle-shallow-v1-1-c19e71127b14@amazon.de>
+ <e18bd763-0d6d-4bfd-b59e-78f952c94aa2@arm.com>
+ <faf34e6e-ecd9-471a-b30e-3aa79e3ee063@arm.com>
+ <asjaR_aPwevvBw_O@ub9ea591b72db54.ant.amazon.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <asjaR_aPwevvBw_O@ub9ea591b72db54.ant.amazon.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 08, 2026 at 02:21:49PM +0200, Ulf Hansson wrote:
-> On Tue, Oct 6, 2026 at 11:15 AM Sudeep Holla <sudeep.holla@kernel.org> wrote:
-> >
-> > On Mon, Oct 05, 2026 at 08:59:43PM +0530, Maulik Shah wrote:
-> > > Some domain idle states require system-wide coordination and should not be
-> > > selected during regular CPU idle. However those states remain valid for
-> > > system-wide suspend like s2idle.
-> > >
-> > > Add a per-state system_state boolean and populate it from the system-state
-> > > property. Make the genpd governor skip these states during CPU idle. Leave
-> > > the system wide suspend path unchanged so s2idle can select them.
-> > >
-> >
-> > Instead of this I am thinking if we can QoS cpu latency setting and block
-> > system level states normally. Since s2idle is user driven, it should be
-> > controllable via user-space and we don't have to define bindings again
-> > if systems that use platform-coordinated needs this too. They may not
-> > use domain-idle-states.
+On 10/9/26 13:12, Roman Kagan wrote:
+> On Thu, Oct 08, 2026 at 07:29:43PM +0100, Christian Loehle wrote:
+>> On 10/8/26 19:17, Christian Loehle wrote:
+>>> On 10/8/26 19:06, Roman Kagan wrote:
+>>>> The idle states offered by a platform trade wakeup latency for energy
+>>>> savings, and there are situations where the trade is not worth making:
+>>>> while a latency-sensitive workload is running, or during a live update
+>>>> via kexec, where everything from the outgoing kernel stopping the
+>>>> workload to the incoming kernel resuming it is downtime, and deep idle
+>>>> states may lengthen it.
+>>>>
+>>>> The mechanisms currently available for that are all one-way.
+>>>> cpuidle.off=1, idle=poll and idle=halt can only be requested in the
+>>>> kernel command line and cannot be undone, and the PM QoS interfaces
+>>>> (/dev/cpu_dma_latency and the per-CPU pm_qos_resume_latency_us
+>>>> attribute) can only be used once user space is up, so they cannot cover
+>>>> the boot of the incoming kernel.
+>>>
+>>> You can also disable all but the shallowest idle state in sysfs:
+>>> echo 1 > /sys/devices/system/cpu/cpuX/cpuidle/stateX/disable
+>>>
+>>
+>> And I'd probably prefer having that exposed via the cmdline rather than
+>> two separate governors...
 > 
-> Even if we likely could make that work, it's seems not correct to rely
-> on userspace to make the kernel to pick the correct idle state, while
-> the decision should be based on the characteristics of the HW.
+> Doing this cmdline configuration per-cpu per-state is non-realistic.  I
+> guess you mean a single option that would express a policy, like "for
+> all cpus in the system, disable all but the shallowest state" or "...
+> all but the shallowest non-polling".  But policy is exactly what
+> governors are for.
+
+Yes, I had something like
+cpuidle.max_exit_latency_us=<N>
+in mind that then sets the disable attribute for the applicable states.
+
 > 
-> In regards to PSCI PC mode, I believe we should consider adding the
-> similar DT property for the arm,idle-state binding and make a
-> corresponding change for the regular CPUIdle path/governors. Although,
-> it doesn't necessarily need to be part of the $subject series. I would
->  be fine if that is handled later on too.
-> 
+> Why exactly does having two more separate simple, narrow-purpose
+> governors sound wrong to you?
 
-While I agree with this line of argument, I am bit worried that there is
-more deviation from ACPI _LPI binding(equivalent to these in DT). If other
-OS has manged to run the same firmware without adding such information
-to the firmware(ACPI in this case), why do we need that in DT. Is that
-information encoded elsewhere in a different form in ACPI and is this the
-right place(the idle state binding for DT) is what I am trying to understand
-here.
+Because it's a lot of duplicate code we have to maintain (and the
+documentation).
 
-Also taking the example of screen on, won't that be prevented as the
-system domain is shared by the system level idle-states we are talking
-and the screen/display device. So it never votes to power down that
-and the PSCI OSI domain idle driver must not be able to choose the system
-level state.
-
-In general, there is some device that doesn't vote to power down the domain
-and hence we can't enter the state. So my question is, will there be some
-device that doesn't explicitly register vote and hence we need an alternate
-mechanism like the one proposed in this set ? If so, what are those and
-how does that work in system suspend states.
-
-Or am I missing something more fundamental the makes all the above argument
-void.
-
--- 
-Regards,
-Sudeep
