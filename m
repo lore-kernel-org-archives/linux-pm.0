@@ -1,83 +1,77 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE03C443C31
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 12:17:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94CBD442FB6
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 12:21:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791548276; cv=none; b=oKV9c/yZJAsKm4YW1SEqHng/iigyX2KJodAazVpei04EM2GaOl08TY+FjlGE2AOh3y4nyVa2s92NqnHsgTFoSWFyJebZ2wHjrdleg0vkgkpH7oXERgE8UcjX+NB9sa2+bVY3bZk00hQUaLKVC41Ln+X8mvUGqyT1YFLRjRmcW40=
+	t=1791548474; cv=none; b=sJKSAKM/Ia2pUs05kR3g0uSzMkessX1MTlVgPlqLsTUCHmUL7X9fQmCJGGOgICRrXdxwFt28Lvxd1PNxHoN/h5kGftj2Rqb4hHqqdQ7+Bh+uEIcgNMrbzeRtoVe5zWdqG6iUBq/CpL0RTc+26BUOH9IKnpd0sUixg2pKy+1Rq2w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791548276; c=relaxed/simple;
-	bh=ZeBFVu7Fsst4uAOVgc6REmRpgUidwNjQW2vFog6mAN4=;
+	s=arc-20240116; t=1791548474; c=relaxed/simple;
+	bh=1u9XXBxua+74tlAedjJORrPRKU2VSCx0ct/hu1q6dlI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CtMOQFSErxG2VL3OjvBRmw5nIHNi0fMsayzH6ChCItd8YJVQVg4WSnwkTxAPQQpGhAiQjX6e/kCyEAqMHCjxZ1OdXwZ1sopGsF2fc7zWStVRCKZpfS+yahlygJ0PNMb4LCgfVjNqsrlcjWu5/FcwJ5vu+PHLqDGFN5jGVqLqFf8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m0UfczYg; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=YXo48AgisoUDOruQLKpSFBu/FsBBC4lzs+DLkyvbIWglKcYLDmIrTaFjChZ4DB4m5P+0wYYECFFvo15MtFJyjHo0/+y7Ylltv15EKl4Bw1LYbY2j2Yv3Hl/nvJFI5XeZWNSE5oPIyyEpOFj8mtjLbgKhLUH2BKF6m0KQJXSy/7I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=a/VEynWk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m0UfczYg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 768631F00899
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 12:17:52 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="a/VEynWk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BB801F000FF
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 12:21:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791548272;
-	bh=ZeBFVu7Fsst4uAOVgc6REmRpgUidwNjQW2vFog6mAN4=;
+	s=k20260515; t=1791548468;
+	bh=1u9XXBxua+74tlAedjJORrPRKU2VSCx0ct/hu1q6dlI=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=m0UfczYguNWEZKhK+J0FgXFZ8pA7496N2v45m1k+j6SlSFIYLSpGgTk19D0klfiHr
-	 q7iK2U3LmuGgCS8Hw0F9bDjJG1BRXf8EfnyV6gwMMmRt062TzHyi7dtlvKFGuf6a3O
-	 6wYP9ev/td38hqfz+ruqr8VYmMUs+XtwpXbOrLse+yvEF5Vrti+s7leAJb+r50XI6e
-	 njr1o2Do4yv3a6MQH1xjxhpCWPorTQm7jrzqD6czYgUzdiR+hKq8oTYGHO0b2DsHja
-	 nOaOR4MPwUkBE4tB5XWhdWhqUcO/7PhIKmV7AzN7X6cI001QrV92L8S/0WmjuSvb77
-	 kG4p/X8/M91oA==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5bcb4f23ddeso250393e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 05:17:52 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByRN3MTTgFXxp5pwhCUj0I6XsvOTXMahqMpwfWPuLU8+lMQtMi7aFlyhzqcyxL8Jnw0zhJHw5gtgg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKnkWf2SQXaDB+mjr1glEx+9CKtZVu4jfm8NPxynZUmilzxjqMz
-	ykron+7LrEyR0ppx69oEq0jLyb5MHEDrLTHNCLrL2KRobtSGl6BrPqLXZGEzvc4npELDteZzjU5
-	kMwprf1oI7lA20sYbPM5s2fk1itLFSJ0=
-X-Received: by 2002:a05:6512:39c3:b0:5bc:44d5:89ce with SMTP id
- 2adb3069b0e04-5bcde8dfb58mr708846e87.62.1791548271232; Fri, 09 Oct 2026
- 05:17:51 -0700 (PDT)
+	b=a/VEynWk9w+UWfY6ZnNfzK3s/QjUk8rzAHHYCQdMA23XMEZ0hsqJJwUSTzrzGQIJf
+	 l4whTzbipM6abc6wfprOW75Uo1SZdLrtayWeMotV3zrXSQ6oMzFLq5fkXAf5m2r0Vq
+	 ZWfYemS9hhHZpvo+ym8HgLjrD1FfXwJL+zqoHR6/TS0URaIpsZ4ixNm9HnVeYCXSMt
+	 FU863Wj3Y57FMJwN0xmefkxuW4Me6DXIQFsT9UPWjapLZrG1cvyA11fVVKmdhhUgNt
+	 k5UzB0LgeNG95cpc35e1TtV5qwRI1UZPIA7RV6HRMQwzDz1rjK5byD6tEFRlEq18yP
+	 xP5601Q3wom0Q==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5bcb1f1358aso297316e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 05:21:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwzMxMcObD+D3oez75ghpfjXzvNIJNvKnKJRp+nxDiYoMwvHu8qn9VL/+wJDDO53E7FrYhtd11sFA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLEyDXgQiZvspMeyAHXb/cEIxkbuJxnfe0ZPFUNeJaCWRUlgIS8
+	AKjVZR8Fyq/fd/A9et0LZRaPCh3y7u1T97e0gxf6VR4wUgaj8FGlRmeIMktzRIjEf5Xc57A7YPO
+	ZO7L4w3Om4Hd+tbmxbnuQTI9lY0aFbCI=
+X-Received: by 2002:a05:6512:2305:b0:5b8:ed66:2f64 with SMTP id
+ 2adb3069b0e04-5bcde356b69mr616420e87.3.1791548466889; Fri, 09 Oct 2026
+ 05:21:06 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
- <CAD++jL=gFt9kKZH9T-m8B_pbwRvzc35tTrMn5V238d3528DpUg@mail.gmail.com> <CAPx+jO-wb6NLYjnn_k7xu=Wqq61+vop9o7UM=5Y47U-WiGFXBg@mail.gmail.com>
-In-Reply-To: <CAPx+jO-wb6NLYjnn_k7xu=Wqq61+vop9o7UM=5Y47U-WiGFXBg@mail.gmail.com>
+References: <20261009112429.33318-1-phucduc.bui@gmail.com>
+In-Reply-To: <20261009112429.33318-1-phucduc.bui@gmail.com>
 From: Linus Walleij <linusw@kernel.org>
-Date: Fri, 9 Oct 2026 14:17:38 +0200
-X-Gmail-Original-Message-ID: <CAD++jLkQET3CRONQbpqdt+Y9ts3wPHdNdYz8PvbaohSjm0JF6w@mail.gmail.com>
-X-Gm-Features: AclHuK_UVxhW4eapDTA7jDAxjwJcfqkweBn8QG3EWf3yBuy98smFVfeDPpDUrY0
-Message-ID: <CAD++jLkQET3CRONQbpqdt+Y9ts3wPHdNdYz8PvbaohSjm0JF6w@mail.gmail.com>
-Subject: Re: [PATCH v3 00/18] pmdomain: st: ux500: Implement ux500 power domains
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, dmaengine@vger.kernel.org, 
-	Krzysztof Kozlowski <krzk@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Frank Li <Frank.Li@nxp.com>, 
-	Frank Li <Frank.li@oss.nxp.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Mark Brown <broonie@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, Frank Li <Frank.Li@kernel.org>, 
-	Lee Jones <lee@kernel.org>
+Date: Fri, 9 Oct 2026 14:20:51 +0200
+X-Gmail-Original-Message-ID: <CAD++jLky-Vq9VS82g03zJMfnbV-Uc0nXhbTryzaPPvMx+zCUVw@mail.gmail.com>
+X-Gm-Features: AclHuK_rLFNrPDWthwt3VKsOyakZVh0n6GYhHq_iU3sVt74jFl79BMAyFBPIzS8
+Message-ID: <CAD++jLky-Vq9VS82g03zJMfnbV-Uc0nXhbTryzaPPvMx+zCUVw@mail.gmail.com>
+Subject: Re: [PATCH] power: supply: generic-adc-battery: Propagate charged
+ GPIO errors
+To: phucduc.bui@gmail.com
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 9, 2026 at 12:04=E2=80=AFPM Ulf Hansson
-<ulf.hansson@oss.qualcomm.com> wrote:
+On Fri, Oct 9, 2026 at 1:24=E2=80=AFPM <phucduc.bui@gmail.com> wrote:
 
-> > What do you think about applying these three patches to the
-> > PM domain tree as a starter for v7.4 if it's not too late?
+> From: bui duc phuc <phucduc.bui@gmail.com>
 >
-> Assuming we get an rc7 on Monday, it's still okay for me.
+> devm_gpiod_get_optional() may return an error pointer such as
+> -EPROBE_DEFER, but gab_probe() only checks for NULL. The error
+> pointer is then passed to gpiod_to_irq() and the original error,
+> including -EPROBE_DEFER, is lost.
 >
-> Although, please re-submit these three separately in a v4 to address
-> the comment on patch1 from Krzysztof, then I can apply them.
+> Check the return value and propagate errors from the charged GPIO lookup.
+>
+> Fixes: b0327ffb133f ("power: supply: generic-adc-battery: Use GPIO descri=
+ptors")
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 
-Ooopps what was I thinking... probably I thought I had already sent it.
-https://lore.kernel.org/linux-pm/20261009-ux500-power-domains-v7-3-rc1-redu=
-x-v1-1-5eb1b90bc35e@kernel.org/
+That's right.
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
 Yours,
 Linus Walleij
