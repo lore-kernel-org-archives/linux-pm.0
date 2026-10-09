@@ -1,226 +1,226 @@
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C34E83BED42
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:57:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.45
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791557829; cv=pass; b=dFvfkg1h88513iofXdQcrtTs3g3JhLkyi6KiWeTKvDJWfIeGFB1IuNOtXBs1gWDWii0O2MkVW/L+E7vp6FOXBM+BLm7oGNSPN56lbve/bHkiYTia8yl7Kjz2/1z9FJ5NqCLm28kn6q4Pbbdt6VYxL0QesSZzTYk9tplQlXEwofk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791557829; c=relaxed/simple;
-	bh=7FMDwtFaggzwsWZRhAsGBAF1FXfEG2DezAZSb3qCdh4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RXNKopYTQ4dit6f+KSRpaLtXHO3HDiS49et5tzsO8FygNQ9yDDXf8P04QVvpXib9gbuVsyB5TR7X7XALAzU3PdjvzrCN9V7r5FXDB+giDupSt4Wm7koVjg0wh1/+GplPff+amgSmJkvHFiHLIUK+NQCbBS1JDW6qH7x8ZzZvbX8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=CiSNcDh5; arc=pass smtp.client-ip=209.85.208.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CDD1225A38;
+	Fri,  9 Oct 2026 15:06:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791558379; cv=none; b=tgAUHJEq4UE1XXwb1GxPQDckPnpxcet1EA9jLbeSaIaAndPilQmaEm6DY2GKrYTSL9h/5+s8W/7gP4MOkBlMM1jEWXa2lIXBn6d63IuLZHeI9GlIWrOUV17IprRT8wlZDGnO5FRL7dak1UQ/W2WcV0XtDkDp+CilMlZGGzIhRuQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791558379; c=relaxed/simple;
+	bh=arjM4x1zh6Y25uW04ojFfMX4lhRk5epm0Qc7C4FmLPE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WziWJPYGV/i8JKPEccC4A9YaCuo7CgcVyTEIUvcQ1pSrN3Fc1hANXZPCFORpeTV3r1WPwK0ezJyU1Zwq/d1ufQg83iBcKI0ZK4dcP6mBAnTAj4ejYoo+lLfhMp9iF/j5KYLv9VZRugWcb5ukcPv0AVJBMozZAVgfiPJQyqmr2G4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=k4S2R1LN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CiSNcDh5"
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-6acb9c018ffso3216188a12.1
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:57:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791557826; cv=none;
-        d=google.com; s=arc-20260327;
-        b=YeGhPhsERxvA4Y8j3bHCPfbLrqrW2wOhXSYzwlWoe0ILPewJoPkykU1ACJHdQW4c78
-         rwBX/P+vQjvR5EOlb7JyffThpW2+2HiA+SUaIzK6CoMsVZ2epaC+m59G7ip2GkvFH+0b
-         GYk3ZxNKZmoMsvazuNhbM8Z5596tP2cXzD0D/so+YHds3CR86Lsoj/7hIvoyP04iBJQq
-         P7Zu4RfG+rm88ETlp4yJgJVap228usMUTAkJN8KoMcW2lZfBBfJ42bku1xxbWOwiw2rZ
-         QnygLjmLPLEsff2+/DZWLbN2O1vR+xTVTRtUzblOONz7IoOOunuJh9wmJYC08wQA+d2/
-         TI3Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=9SUnuP/9pVrP+Sunop9ePoVz110aW+tgJ5DFz5LYCdA=;
-        fh=DltGOEK317iznD0gNf7h0p9KNhBn/CPQ8b+flBg6xqQ=;
-        b=nkCf2KPUmZmwqys4Vjkb9mXfdVkDZwSk+2dvL8xdtdD9NyJChh/H+Wpa4qWsLNCe3h
-         rW07HN86uSoFxQZxVL3cZiGoj9QEIkZnsjsbX57bJhNtU2gTdtSU/Bn7tvDeGVjxE40T
-         IcbG/VhbjjWKvhZV+e6mIx48Fb8lbV0n6b2wLTSaoM0Dwm0yJr3IToJoLpGjIYqOVEQF
-         8GjGMfJzLZ914IttcBLVkRpR5iXG3uMcUR38dRfCkVmt082ctPGXKIElDtUvJg5cqB5h
-         IPXCQZJbiI0T+MkgFsySqv8kPM0GwdMnYP18tXmj0VqM+ySWQXuj8eYE1+ABPWq/DK6G
-         +6AA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791557826; x=1792162626; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=9SUnuP/9pVrP+Sunop9ePoVz110aW+tgJ5DFz5LYCdA=;
-        b=CiSNcDh5q7WZ41ABH3GjObYLj1DpnDNrCwYxGeA6b3QluOym7qxU6Xbg9jeloP1HmF
-         HEhorA7zwF4HW0i1+5hVczc9CIzoPxHrnm5jpJRYaXdfmWV741hQBJLtxIMpRZX8l+44
-         9808Np84bzlp6yVQk4NRKrsdjMMoDOIXfY5SJXgs6xO9wo2An9w5ccc7vHtymEyZ+rMc
-         794xcSmhM/L9LoLR/i5BoWUaA7/LZdV/nGm+cdRYiJetG25Q7L96r7IP4WD9The1EdYD
-         Iy18eaoMy6wZGud2zidb0rzu9UGtmIsuTQxWSnLHSEfz9aU/X/RKAyvaHYAzGaHIEG8W
-         Mv4Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791557826; x=1792162626;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=9SUnuP/9pVrP+Sunop9ePoVz110aW+tgJ5DFz5LYCdA=;
-        b=p/zdg8wVxxtg/nz4aRpKMp/qGyaZQPmXmTU6LDROptJhecYq7VAWPQUDY70zf9ntbr
-         MQqK/zgcX1RmFtj6kSlmxVLATOcltfBH86RekkZgnF/L0XQiT99eGPmg0p35TvMzKadC
-         3SpO7nK6lmcz/X2PvvcILEMF/5zgDjkuutUqabwjAKMo8jtHTYyR711MPdD3VN7ixK94
-         swEvoA1AgL0CZbwlw2Y8SPngl9SlYxKE8EfUwzte94BFknIOP8gCWOO3uyuYcXf8FEUa
-         uDYWIqQCPEsGLhqplOGtV3Mzz1RCrhCIu811MJ+ZoblE15e4FnR5mBua/PFAgjsRq2/+
-         Azlg==
-X-Forwarded-Encrypted: i=1; AKwUvBzrM1pE9yXOHPhD2efaL+PRfllFsIhfwhaCwawfiyBcxcS7GkuzW6mtWARU+qwDIbZwearVY2MyIw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJgGKH/Q0jvs327QZzFu/hjuPv1YetcBqTAoZIjq4YJCfgxxME7
-	oVe0Znapw1cXUU1OxpE9iDKBxgQFxNGLMRCYfIQcBMk5ADiLhDtTgsgzrCrcuWTUzX0j+j21AKh
-	25nG4HDXvhNC81w5b1xainWEnvWhqOQ4YvMOj+5mG0w==
-X-Gm-Gg: AYBFou1erpd4usHi0TWjP1yy3XgjojQds4XD/MCclB18eC3mcn2pW0Jz+R4GOR6Wmca
-	Y2govmE3nLGvXQFRnhbV7j8YGYJJvz0WAkQQP0h2bEy/3d5SjfCxxORhpc8W6gwnY5R0tiR4gaE
-	PV1j0JuLdLwEJ+02EN41XHDVDrTYOQ8rOycivwYffDlo9a6DkeDzxg/WDH5PxTgsycrxiJwtQFm
-	vysjHeipR4rr8t90vVPQC4w6XmKQqtulzFImVMLZA19XNgk1xg3U5B5T7DRAhS4WuBQEGZ03/oL
-	2yMVRf7mDbjws0a69UQm/vMdl2JfFbZORa8V2h7sNoJvhmVZSY7Pp4EaKFxEkZXXTd7UbqhnSiC
-	57BG0RYD6s/I=
-X-Received: by 2002:a05:6402:c50f:20b0:6a9:8863:ada4 with SMTP id
- 4fb4d7f45d1cf-6b17ae874a7mr1721313a12.3.1791557826030; Fri, 09 Oct 2026
- 07:57:06 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="k4S2R1LN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D999A1F000FF;
+	Fri,  9 Oct 2026 15:06:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791558374;
+	bh=tQp9qKpSn0AbyXHJmWzYFGYGRhRlL+7tyxDSYmxGCHg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=k4S2R1LNC9kLWpX9AQaVbgAzpx43TZwz+y2OVOUd0IBU8w1ht52MCIOjMj9+ACSUi
+	 fIg0O7VrZ3wZaW2KFPuwLozZ1rBVGq3GS7Asn0Wpb1KmZaj/3vEsL+EZL4fLygwMAG
+	 3yvjL3+ICXHTpsJ27h4jNA4G1vwFMYeeMsvFWZJF0BZgYwF0m+Mb/yeD4wS+XCE/Sj
+	 +EHCCYs3FI8AJno9htU0BK+2gNRkzRiqeLSWwldIknZayfPv5rYQ0+Du1qdH+r7Lcu
+	 fB4FIQlfcVrO2mbnNxeMkxETPgvy/ZS3FkWsF9k847TdtiaNSsxMt9W9jd4icp5VnW
+	 qsjVrX+v02E8Q==
+Date: Fri, 9 Oct 2026 16:06:00 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Christian Marangi <ansuelsmth@gmail.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] dt-bindings: devfreq: Document support for Airoha
+ Subsystem Scale
+Message-ID: <20261009-7326174694c52ccce16615b2@squawk>
+References: <20261009073330.18175-1-ansuelsmth@gmail.com>
+ <20261009073330.18175-2-ansuelsmth@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261002154415.2270586-1-vincent.guittot@linaro.org> <20261008191236.152916-1-kayracizmeci@gmail.com>
-In-Reply-To: <20261008191236.152916-1-kayracizmeci@gmail.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Fri, 9 Oct 2026 16:56:54 +0200
-X-Gm-Features: AclHuK_v5n1Ouyt0X_gZmkpqODynvzfs5VCwBcw7-YKwWh2i1MU54JpfI1I1mBY
-Message-ID: <CAKfTPtB4KU_vJ12uvW0aw3CdkCvAujV+0cJYJ3zX3rPPZbCnzQ@mail.gmail.com>
-Subject: Re: [PATCH 00/18 v2] Improving latency of short slice tasks
-To: Kayra Cizmeci <kayracizmeci@gmail.com>
-Cc: arighi@nvidia.com, bsegall@google.com, changwoo@igalia.com, 
-	christian.loehle@arm.com, dietmar.eggemann@arm.com, juri.lelli@redhat.com, 
-	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, lukasz.luba@arm.com, mgorman@suse.de, 
-	mingo@redhat.com, peterz@infradead.org, pierre.gondois@arm.com, 
-	qyousef@layalina.io, rafael@kernel.org, rostedt@goodmis.org, 
-	sched-ext@lists.linux.dev, sshegde@linux.ibm.com, tj@kernel.org, 
-	void@manifault.com, vschneid@redhat.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="zaGhrI4uIhrDFZEJ"
+Content-Disposition: inline
+In-Reply-To: <20261009073330.18175-2-ansuelsmth@gmail.com>
 
-On Thu, 8 Oct 2026 at 21:13, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
->
-> Hi All,
->
-> I wanted to ran some tests for this patch series. I couldn't really
-> apply it without some issues, but I think I managed to apply
-> it cleanly this time... Tho I may have been doing something wrong.
-> Please let me know if so.
->
-> base: 4a3b51aab6e25244d97936aa65e6d5425adf98e1 (on tip/sched/core)
->
-> Command Used Each Run:
->
-> hackbench -g 4 -l 100000 > /dev/null & sudo chrt -o -T 300000 0 ~/rt-tests/cyclictest --policy=other -t 1 -i 1000 -D 20 -q -m; wait
->
-> Environment:
->
-> Zen 3 with 8 Cores and 16 Threads. And Fedora.
->
-> THE RESULTS (COOKED):
->
-> On Base in 5 runs, average values are: Min: 3.8, Act: 5.8, Avg: 8.8 and
-> Max: 2511.6 (I need tea.)
->
-> On Base + Patches in 5 runs, average values bla bla you get it:
-> Min 4, Act: 5.8, Avg: 7.2 and Max: 1781.6
->
-> Or, in the shape of art made with love and passion:
->
->  +------BASE-----+--PATCHED--+
->  | MIN   3.8     |    4      |
->  | ACT   5.8     |   5.8     |
->  | AVG   8.8     |   7.2     |
->  | MAX  2511.6   |  1781.6   |
->  +--------------+------------+
+--zaGhrI4uIhrDFZEJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for testing
+On Fri, Oct 09, 2026 at 09:33:28AM +0200, Christian Marangi wrote:
+> Airoha SoC contains multiple subsystems that are scaled to a
+> specific OPP taking the CPU clock as reference. Such subsystem
+> can enter idle or performance state based on the system load
+> and power consumption conditions.
+>=20
+> Example of such subsystems are GSW (Gigabit Switch), NPU (Custom
+> Risc Co-Processor for Network acceleration), SOE (Crypto Module) BUS...
 
->
-> Hmhp... Hope I'm not missing something. I need water. Bah.
->
-> Tested-by: Kayra Cizmeci <kayracizmeci@gmail.com>
->
-> Dancing donkey chases a car while shouting "Linux is the best, my dancing is the coolest. Cry."
->
-> Thanks,
-> Kayra
->
->
->
-> I'll add other not too important things below, these are pretty raw.
-> But if you wanna have a look you can.
->
->
-> THE RESULTS (RAW):
->
-> BASE 7.3.0-rc1+ #2:
->
-> RUN 1:
-> [1] 1950
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2115) P: 0 I:1000 C:  19990 Min:      4 Act:    6 Avg:    8 Max:    1885
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 2:
-> [1] 2132
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2297) P: 0 I:1000 C:  19990 Min:      4 Act:    6 Avg:    9 Max:    2695
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> linuxfucks@micro-softly:~$ (Opsies. Who's hostname is this? It's so cool. Wow. 'linuxfucks')
->
-> RUN 3:
-> [1] 2307
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2472) P: 0 I:1000 C:  19988 Min:      4 Act:    5 Avg:    8 Max:    3246
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 4:
-> [1] 2493
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2658) P: 0 I:1000 C:  19995 Min:      3 Act:    6 Avg:    9 Max:    1991
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 5:
-> [1] 2671
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2836) P: 0 I:1000 C:  19992 Min:      4 Act:    6 Avg:   10 Max:    2741
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> BASE + PATCHES 7.3.0-rc1+ #3:
->
-> RUN 1:
-> [1] 1490
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 1657) P: 0 I:1000 C:  19993 Min:      4 Act:    5 Avg:    7 Max:    3091
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 2:
-> [1] 1671
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 1836) P: 0 I:1000 C:  19999 Min:      4 Act:    6 Avg:    7 Max:    1529
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 3:
-> [1] 1848
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2013) P: 0 I:1000 C:  19998 Min:      4 Act:    6 Avg:    7 Max:    1455
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 4:
-> [1] 2023
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2188) P: 0 I:1000 C:  19995 Min:      4 Act:    6 Avg:    7 Max:    1524
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
-> RUN 5:
-> [1] 2200
-> # /dev/cpu_dma_latency set to 0us
-> T: 0 ( 2365) P: 0 I:1000 C:  19989 Min:      4 Act:    6 Avg:    8 Max:    1309
-> [1]+  Done                       hackbench -g 4 -l 100000 > /dev/null
->
->
->
+The device you document here does not appear to exist at all, since it
+just consumes a clock without any registers or anything. Why can't these
+operating points be added to the actual consumers: the switch, the npu,
+or event the bus itself in one case. In the bus case, I think that's
+exactly what simple-pm-bus does?
+
+Confused,
+Conor.
+
+>=20
+> Document all the required property and provide examples for the various
+> subsystem OPP + subsystem scale nodes.
+>=20
+> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> ---
+>  .../devfreq/airoha,subsystem-scale.yaml       | 114 ++++++++++++++++++
+>  1 file changed, 114 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/airoha,subs=
+ystem-scale.yaml
+>=20
+> diff --git a/Documentation/devicetree/bindings/devfreq/airoha,subsystem-s=
+cale.yaml b/Documentation/devicetree/bindings/devfreq/airoha,subsystem-scal=
+e.yaml
+> new file mode 100644
+> index 000000000000..2cf7f23a926c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/airoha,subsystem-scale.ya=
+ml
+> @@ -0,0 +1,114 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/devfreq/airoha,subsystem-scale.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Airoha SoC Subsystem Scale Driver
+> +
+> +maintainers:
+> +  - Christian Marangi <ansuelsmth@gmail.com>
+> +
+> +description:
+> +  Airoha SoC contains multiple subsystems that are scaled to a
+> +  specific OPP taking the CPU clock as reference. Such subsystem
+> +  can enter idle or performance state based on the system load
+> +  and power consumption conditions.
+> +
+> +  Example of such subsystems are GSW (Gigabit Switch), NPU (Custom
+> +  Risc Co-Processor for Network acceleration), SOE (Crypto Module) BUS...
+> +
+> +properties:
+> +  compatible:
+> +    const: airoha,an7581-subsystem-scale
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  operating-points-v2:
+> +    description:
+> +      OPP table of the related subsystem supported rates that referenced
+> +      clocks will be scaled to.
+> +
+> +required:
+> +  - compatible
+> +  - clocks
+> +  - operating-points-v2
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/en7523-clk.h>
+> +
+> +    npu_opp_table: opp-table-npu {
+> +        compatible =3D "operating-points-v2";
+> +
+> +        npu_low: opp-400000000 {
+> +           opp-hz =3D /bits/ 64 <400000000>;
+> +        };
+> +
+> +        npu_high: opp-720000000 {
+> +           opp-hz =3D /bits/ 64 <720000000>;
+> +        };
+> +    };
+> +
+> +    emi_opp_table: opp-table-emi {
+> +        compatible =3D "operating-points-v2";
+> +
+> +        emi_low: opp-400000000 {
+> +            opp-hz =3D /bits/ 64 <400000000>;
+> +        };
+> +
+> +        emi_high: opp-540000000 {
+> +           opp-hz =3D /bits/ 64 <540000000>;
+> +        };
+> +    };
+> +
+> +    bus_opp_table: opp-table-bus {
+> +        compatible =3D "operating-points-v2";
+> +
+> +        bus_low: opp-200000000 {
+> +           opp-hz =3D /bits/ 64 <200000000>;
+> +        };
+> +
+> +        bus_high: opp-300000000 {
+> +           opp-hz =3D /bits/ 64 <300000000>;
+> +        };
+> +    };
+> +
+> +    gsw_opp_table: opp-table-gsw {
+> +        compatible =3D "operating-points-v2";
+> +
+> +        gsw_low: opp-200000000 {
+> +            opp-hz =3D /bits/ 64 <200000000>;
+> +        };
+> +
+> +        gsw_high: opp-500000000 {
+> +           opp-hz =3D /bits/ 64 <500000000>;
+> +        };
+> +    };
+> +
+> +    npu-subsystem {
+> +        compatible =3D "airoha,an7581-subsystem-scale";
+> +        operating-points-v2 =3D <&npu_opp_table>;
+> +        clocks =3D <&scuclk EN7523_CLK_NPU>;
+> +    };
+> +
+> +    emi-subsystem {
+> +        compatible =3D "airoha,an7581-subsystem-scale";
+> +        operating-points-v2 =3D <&emi_opp_table>;
+> +        clocks =3D <&scuclk EN7523_CLK_EMI>;
+> +    };
+> +
+> +    bus-subsystem {
+> +        compatible =3D "airoha,an7581-subsystem-scale";
+> +        operating-points-v2 =3D <&bus_opp_table>;
+> +        clocks =3D <&scuclk EN7523_CLK_BUS>;
+> +    };
+> +
+> +    gsw-subsystem {
+> +        compatible =3D "airoha,an7581-subsystem-scale";
+> +        operating-points-v2 =3D <&gsw_opp_table>;
+> +        clocks =3D <&scuclk EN7523_CLK_GSW>;
+> +    };
+> --=20
+> 2.55.0
+>=20
+
+--zaGhrI4uIhrDFZEJ
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaskC2AAKCRB4tDGHoIJi
+0vHQAP9VdBfVFtl2ISLYhS47stNP+ai3qyFcWCFZ6CIQaGCO0QEAuCa0IZD8T1iw
+wtFRHl5l0EynvOJijfAoExZEoHNzcwo=
+=Mdmf
+-----END PGP SIGNATURE-----
+
+--zaGhrI4uIhrDFZEJ--
