@@ -1,351 +1,188 @@
-Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCBFA4DEC34
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:31:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0C993BD64D
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:33:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791556320; cv=pass; b=R6OqLA/l8sPHL17tcWwyafmnlPSyeL6mMljvyKIXira4tgvsdlPIXNOeqwjsb/1tOxHroryjqZNU3MW6jRqSKzcVM3JxIwtqlCoRdt0s90KOLk9397wDcidbNgc+oH0uhVC21Lm6SBx5IUc+uKMPVjt2Us0+dzwFwPFUH1CX1OM=
+	t=1791556423; cv=pass; b=urN+xInF8I7BN9jnlzVA8k44beA1jCXA7Cr/7cZxMmUMsqdkVtytZmJ6qi5MV3SdMznLauRpPSZf4KVckb26u4MyxlRuphRel232GorvHqDww/0fXyb9CwdlX8MlUlHI9jzuzWgdxRlDl5H5cZZVHhdM8YXGU4JgfGakglfKSf4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791556320; c=relaxed/simple;
-	bh=8WemYrC/oSkykk2cbuno6NjVlVtiVXE9sVqDSzzwasY=;
+	s=arc-20240116; t=1791556423; c=relaxed/simple;
+	bh=NZeBJC9QSEBrvBodfj4dor8expShVcP7Yt9IwugqSeg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Em4yBbvvbSjg6+wKpg6EBw9D7WuV/ezOfq+MJc8KeaCYg2bpA5flHLBY8nBdIH+CbBL2tnUeMpeCL4QQ/VQ8kcCcZFqOkRiq0Nd5fa6pHr6h2TQNi0PHGHnCUICFwdCFYEDpBNo0ZtssA4w5pZ/SK4qwJRUmlSDJXiowq9F+swA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QslhYVNM; arc=pass smtp.client-ip=209.85.218.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 To:Cc:Content-Type; b=cICngEPPOTVAQ3YmnH+phaJ2YKJa4R2oArHi9DLYEZDQ+Ldg9xSDZKwqcZYogEOvzv50ZYtJwO7rG7RghTsHL31Wd7eIqgKd6aFty/1j5zYxXRIeWTRJlwWNVCAr1MiBwY3D223wWe4h2rhFvk0Q+ACiVx5NkhCKmHF8AyZ3Zu4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ahi9aH3/; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=jNTK//UV; arc=pass smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QslhYVNM"
-Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-c2a4e013a44so1002857866b.2
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:31:55 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791556314; cv=none;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ahi9aH3/";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="jNTK//UV"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 699DKcq82408328
+	for <linux-pm@vger.kernel.org>; Fri, 9 Oct 2026 14:33:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	vp36po/cz04TMtA4qWYnSTEK6SQr6l93s1NVoQTANc4=; b=ahi9aH3/VFaXEAr5
+	8I2va2ktkJ+UNgIhUkf332tEbBGJGMS3n3T9vHBLzRGvj47hq5PjQO8vWDr4n54u
+	qbe711kjDwiLaPSdYyO2MYgQteioYq6WvMvHAvra/xOV+P7e1mua5dqaz9Hf1nNi
+	oGx3Ej5UtMdt6+R9RbBcHGEjY+157e4ozXPU2lznlMFpRyVaeOTOKgYTxWmn8dvS
+	dmqkK/Ds7+63M8r+JHAhUtMjWGvx1JH7lTj0SiPeV+e0Qx+S1abEE17qoBBnVUcx
+	92vY68O56UVYbPAQHDSbiRirux34GWUoJ3SKQI+tCe2188ovFRyVEA20IzPA4G6g
+	8sQK4w==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h6ekvc9et-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 14:33:40 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2e61a8eb087so39147805ad.0
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:33:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791556420; cv=none;
         d=google.com; s=arc-20260327;
-        b=D3Z5FmB25ZPeXnL8Q+WR625Nm5WGfLLtC1nR3948j0q0O+WOEgRTejIS5I6acrObpb
-         xiRhj13JXsUO8H7Spn/WW2HIBfvgpZyf4lBlFMVMmsVmx96hGhEX74PkObbCkyem7B5u
-         3Y6vFRzkf6tf83m78zvSbXfSW1bT2crBIcOSu7xnQZNh8/UsNbrxOmGKFF84nqYEyxDW
-         mnWRFHOAXpGVk8a6snBoZvSrCZsEYxO/Gw3g2Qf5OvijOOAEgsVs8l7k5jxWSdyS54v7
-         5nEdhwKC0Bacu/0CnojChHMs8jZU+zBVyYDd4XArdKf6l8PLj+8z/A1+iaImU0jEL56n
-         Cjpw==
+        b=SjliUUDWIaLbii3LhH19ojarZ689jWcxwbIAR5R1CILq166b2uWpOks5DQfTQkH8vS
+         ZDf//OGs61i0HXwbPxWNyaPPuUXjF+QlmtaRxGtPpTRFyHSKXI4+LhtHkJC+z2Bs7pZ0
+         KVDnH5cUkTI5/vovCbmID7N11rEXcs76CoBSUlosJMqZWid35JoWJEpOoKdU/cfNd6Ez
+         f1I2I0fEUnssKiJcJBnpgGYjgNtN1D9z4TVWNX5kyACgp1DrOSUrEjGstuP+NCA3dtpR
+         1Q8v18y7IixQ7CjBMblEOKm0mR0e7tabnrWLji9olHbajOhTUdiYybCMmaUcG4W10DGc
+         FOgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=5PSoFAItGPZhsVEIFbAaCSaiW8S1Vyp54l9kPWqyoWk=;
-        fh=ijx0beYCPav2FWk6opiroSgi755jsIAAHUne7/uxD5g=;
-        b=V4CMP4PSxZ0tR5jJKH+pzM1BR+U5EFj+MxvdAOy02bNb612UA8uQIWElm/WSes/Rwo
-         FKpcMKOs2O6wMM5mZzv6Cr5S5sPtpcVE6fHdjQOa3oLS5U1irWk2JEYLJLNZTM0g4Nuc
-         FdKj0th77naPYaRt1FrRT278UogG/FhDSHGZJQcxzWwaIkV8HLgUzwtddz40AsOI4Etg
-         Dcm4AjUcb1wjV/b6EIXqMi6ezdD+fu926sa+qGcGZdfak/sGgw/QHYLmwliLvaB11pxG
-         kv4abO2lL7jrt8TJtCvLkNZYkyKs07u0QaXH23aMLH9GOZZdApFRI7fjd70O2fIZgInv
-         OEHg==;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=vp36po/cz04TMtA4qWYnSTEK6SQr6l93s1NVoQTANc4=;
+        fh=30+88CPh8gDJ/XUJISR1ytU9WT1kHTPexjbFzX5hoT4=;
+        b=HlBMQifZvF3AM42f7ryURym189WQbONemZCdvOZUyfJNWTKKHjfv/426m5Ai5kb4n+
+         k/mhW5YeOX4S+U/Le6wcsUlZd76t8GTpjHmFQzovPRNHu9w84lSe25E8CobB8UQsU7Ei
+         fm8ufUf4xxj2bCVCbxmALOu0UESJvLqW6dg/dmRwlZ21HaSXaBC6IHYQO8UPFIKjc+4d
+         K61LhfAZdkYr/a6ootnLLEmsARWqnoGyg2Xhs+/qw92s+pVVcukhc231u5lbkjCWQsB/
+         WL9Tmtet1EKd4CEwzPXpShY8b4Vo82SArb0BkWjgwNVk+0qr2eDyEtreSlXqD/aMxQbg
+         HfgQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791556314; x=1792161114; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=5PSoFAItGPZhsVEIFbAaCSaiW8S1Vyp54l9kPWqyoWk=;
-        b=QslhYVNMJf1686/44TXPgy0zE6zKXZfYdgspJFzaSNvAOe4nXD4yj5VAkvVgWWJMWn
-         UG1AkYrSPR72HYcN7sc1Sp7J8s/HiijB0bCGFel+oM0+L3sbuOaa9m3cKbPmgfmb+EYe
-         v+GD7fGLei5mho9AiHQuPY0C3Cpw3BcQwTmM2INH7B/viqseWgKObbuuLqxMLm8o/YKN
-         f3b/B1Hdt/jO2WQLmOWIVtCDZQn+o5RMut39Fwc7dX3uwCYCqqAZxP8BPFOY5eDypY4D
-         tPtpdc2/jzVbSl2uE4sMf6WquyGAMsCmIniHiSwc4xyhzpDB09f9WrrvqBIq9o95LHsh
-         MzDQ==
+        d=oss.qualcomm.com; s=google; t=1791556420; x=1792161220; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=vp36po/cz04TMtA4qWYnSTEK6SQr6l93s1NVoQTANc4=;
+        b=jNTK//UVVpZ/DQt63VOJOQ8lFgOLzRYVpXK07yflZ3yhKQURtpBVXTUS9oO0bLoz1V
+         GwNQITh9qVwqgK7oJaXwnP8KV3wjmp5f5oR5+Sc78hK3HLnUhv3FVWjW//irY1Dln7yz
+         nymE6aHc3jjogZqJ3ddpesHtLplF65hYs1GF0/KVGda02couMBJKxDi2midYtNKapKLx
+         owEgVr319bhI1T/4toaIEKVnpi8wiZ4WO393BSdOpDGRd+iFK2Nk6awmkSAJkDsSJgpg
+         GDXW204IEcwiYQaK44vK0yLXLSa+Jb+1ADnw8CpB4acvRNrCrR0urREmZhZU8g+8IzJc
+         PzpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791556314; x=1792161114;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=5PSoFAItGPZhsVEIFbAaCSaiW8S1Vyp54l9kPWqyoWk=;
-        b=nv7OREGe7fOJ3VO3ziBbEvNwQ7twtTB/UGh84bE6foWynK5ptYHsFVYET7o1ciP0bn
-         Ur96Z/TeoVIw3P/evubJeJHxP2b79SYv6bcSvTfMKOi/brsbeVTNI0MY8psD7qaNi2Mk
-         AGRcJ7QimsZEYi/zpoWULRVilsZVwuxf8n8DuBXFhAg33qZaJYc8FYcDYuW8UoJzQZjg
-         CybYNE6Bqrgb9PicsGsRwi1vnc5sQUNjYTxss48a7yeI36WGSEBz63VlaICkopyDQdiN
-         YmqC5gIuuI+G6cu1I1bNSfCVt6pIBdl96BQVL2llgo6wB0uvWFFd0JDNGwJK78ZIYD2L
-         GWgA==
-X-Forwarded-Encrypted: i=1; AKwUvBz+09eeQHixvlwKK6VkkDAdzJwx/PxgGyrq3sG9wG/6YfxUYhbDcR72IzPAIiXMPm62+uyOazsU9g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKPkaaN4FDIb1tOUVHni0ZR+H+KRStTERVk7foWf5NRv/kgpQWf
-	vo4/efLN1u7SkZ6I7dsHTCO12b7rtvpMQtbWWtSDOp6W0jJD1lP5Jj/qNo6UdSgwALCmMmHV5qI
-	ri8xPhyonud8yu+S+KevGLNchAsuj7Tr/tl7GLSR7Gg==
-X-Gm-Gg: AYBFou02zOy6zom1EpD0RxL2ITzdzVVvEBVplvyuZy/8mrUnDwaQShM5uxQGwoqLpZX
-	g6l07M0v5Z/olnO2qYZ/0kVUO3ZgTtv1Y5lXEwjN1unVzKYBoV6NxTzXr1MpRltvnpUTacd5LSy
-	EwiJsKv4bgPSYYD3w4rKnyCDIGxfgsS6eJPobxCfN9RAwpnasuEDGrd2+sZMzx+4TS9Y6996L0n
-	qiJTbvCfkTYbwmX9jvexNE0s1I9dvzy1e7Wb16mfR/J/8q+Z9fLiEnNKXsx2wFWe5LNxWbAQELi
-	SYu/GMGQNuKt9lU3lG65tAVklfx88gHaibKse1MfXlOWjXFTEj+06lXXxEoU/FltyXEmqX9CG63
-	dKqv1xkIQ63og9o75LrECjg==
-X-Received: by 2002:a17:907:a08a:b0:c2d:d289:e9ed with SMTP id
- a640c23a62f3a-c31aa0293b1mr220927066b.44.1791556311764; Fri, 09 Oct 2026
- 07:31:51 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1791556420; x=1792161220;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vp36po/cz04TMtA4qWYnSTEK6SQr6l93s1NVoQTANc4=;
+        b=1BrG+LOOL0sc8gPoS1y41Kb30HNt0C8+MpetMxhWYypYDeAuxg+7BYlN4FvITp/7qD
+         fDjLzQHLHyeELFtluNZcPclytjXa/iVUvSVXq/3mk1sNk2LyOJLueaNqnY2+FtCsFHjP
+         ZCj+vKUcnOuoj8sR3gvY6TOAwaeNpA491UySjsFwGFRn1zSxuIIFJ9pVTfcEJRzUz9PT
+         TIXScbqnGYUFScJ44WB07v+PGPZ7CoT0jTayjaEtOKWYRmZdXg9bbQF2SRmsOvTFfbmo
+         oFItwpROk692Lm7aH60DkA8FzgqpjYTLAj7E8dSM+vaCSCau9mfsY6XGYmW38Gw1q//T
+         dayQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxWHhUrcqev0XB3gbUxdo9K6KdxHLB39AXBNH7jxEtk32I6NYBy1c2aya0kpoIeb54gESXC147b0g==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJiqsidFOci8tpR2qzfuAMVAhhzKtOLpsEJYGJglZ+V2CN+mCNn
+	CelA7RnJbo3kFiVcNI3IT4GymfQSwuKbJSRAzjDDp6Va4oZQ5Z24ShfH9tndbINXyN3sctvCgGR
+	3EXRlGCwOsv/x1PsZcSV3MqcCfDQ9fFSWHZbECIpd/6HikrEgKI11k57bYKAEJxMHOHLfkeP2iU
+	MxAASX62M40nu7NH2aZHHZKED6NoLKwFrgsmrO
+X-Gm-Gg: AYBFou1KWb7f6adDAOMVdWa714z0PLnzj84cL/cTESh84rlShzhRmA/6+djQFGk0+ul
+	THoAkByQm4TSa198CsoiB3Fx57qyHnOtGBL9U5KWdgjSTo+3yQU4UgVALWPyrRXwSJsl2Eo+I9T
+	EOJGtR/fzewEFNdlwEk87NbbosZIENy888/+nyummNRUIqHU7azOV6++iTLw==
+X-Received: by 2002:a17:903:2f92:b0:2e5:98d7:8202 with SMTP id d9443c01a7336-2e842cd44b8mr19505915ad.13.1791556419671;
+        Fri, 09 Oct 2026 07:33:39 -0700 (PDT)
+X-Received: by 2002:a17:903:2f92:b0:2e5:98d7:8202 with SMTP id
+ d9443c01a7336-2e842cd44b8mr19505565ad.13.1791556419166; Fri, 09 Oct 2026
+ 07:33:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
- <20261002154415.2270586-8-vincent.guittot@linaro.org> <asWyZtW7zPVo3k-A@chenyu-dev>
-In-Reply-To: <asWyZtW7zPVo3k-A@chenyu-dev>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Fri, 9 Oct 2026 16:31:40 +0200
-X-Gm-Features: AclHuK-MW_1VEazm_dXyGcrzmICV3562LXn8DvrGfbug8xrX-mkbFJMdjIJUVpo
-Message-ID: <CAKfTPtCyRiBbxT_bU8egEuXtRsOW6TGw3TczyObBLKsE99dMpQ@mail.gmail.com>
-Subject: Re: [PATCH 07/18] sched/fair: Add push task mechanism for fair
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
-	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
-	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
-	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com, chen.yu@linux.dev
+References: <20261009-ux500-power-domains-v7-3-rc1-redux-v1-0-5eb1b90bc35e@kernel.org>
+In-Reply-To: <20261009-ux500-power-domains-v7-3-rc1-redux-v1-0-5eb1b90bc35e@kernel.org>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Fri, 9 Oct 2026 16:33:28 +0200
+X-Gm-Features: AclHuK8BLLsnCLnhdwop9PNp8hP17bfQmxcAxbY57H8p7JbbxjDD7-48aE_iQho
+Message-ID: <CAPx+jO9BiY=v=BQ20qjgmq6SJ99NK7krTHTMdGcTfR_dshodJA@mail.gmail.com>
+Subject: Re: [PATCH 0/3] pmdomain: Basic DT defines for ux500 power domains
+To: Linus Walleij <linusw@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-ORIG-GUID: 2LdxRR1PHqa5dtwaKq1Ii5NuTMKfeJqx
+X-Authority-Analysis: v=2.4 cv=csYOAF4i c=1 sm=1 tr=0 ts=6ac8fb44 cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=3WHJM1ZQz_JShphwDgj5:22 a=VwQbUJbxAAAA:8 a=XH1a5p_xQohBom4lpSYA:9
+ a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA5MDA1NyBTYWx0ZWRfX8DM26SKwjKFH
+ fsjwZ0EmHwPDZt+0tP/+QbIB9wVdGNl8+GCSXaH4Zl9DwUsCDouEo6iHOk8LfGCgeeM3K/txOyj
+ wki1fAGo4DuFvcMBuHJS2FJ12LPPrK5DhysdMmWmrz5aFD5YWnkijbAsEOG0G07vEfxLEYxcNIC
+ tyXIZiu5VYeD6GKUhyRq4peWYH6Jr2hPC2BAPeUOR+7k9nfzBPsavctskLG5i3C/dsRAHxbJ+XI
+ 91sBbit/t9pjDFfy9GRPwzZRRefYKUWticke7OR5A9s/nZcQLi8mK/uKx1FDrPe+ym5ByqqfF7+
+ pkW6dZIYuNFts1EFzd+7oYIpbdU/36PdRjRmGpgrioSdjmhI0nUtF8I4vbrwpMZSInXc5U3hKSX
+ cKKJgVDVVB/6z37Ies4/6qHVkeLdgJ6qxz0YDr768jOWKVact3WztV5LT+mzJ+vn2B4ednJB1P5
+ 2tUweq5N57z83Gqwx3Q==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA5MDA1NyBTYWx0ZWRfX/xNPaSwFzbJ0
+ uOFV3O1/L15h2z5Xrb+FzKpQyxDSBUVFvjymppLytwK2xqehS2WdtiwrB32VnDhglCSHv/N1bcc
+ WEky4Uz6Y4oFmDD62PNjhXIM2FUrllc=
+X-Proofpoint-GUID: 2LdxRR1PHqa5dtwaKq1Ii5NuTMKfeJqx
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-09_04,2026-10-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
+ lowpriorityscore=0 adultscore=0 phishscore=0 bulkscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610090057
 
-On Wed, 7 Oct 2026 at 04:59, Chen Yu <yu.c.chen@intel.com> wrote:
+On Fri, Oct 9, 2026 at 2:15=E2=80=AFPM Linus Walleij <linusw@kernel.org> wr=
+ote:
 >
-> On Fri, Oct 02, 2026 at 05:44:04PM +0200, Vincent Guittot wrote:
-> > EAS is based on wakeup events to efficiently place tasks on the system, but
-> > there are cases where a task doesn't have wakeup events anymore or at a far
-> > too low pace. For such situation, we can take advantage of the task being
-> > put back in the enqueued list to check if it should be pushed on another
-> > CPU.
-> >
-> > Add a push task mechanism that enables fair scheduler to push runnable
-> > tasks. EAS will be one user but other feature like filling idle CPUs or
-> > short slice tasks can also take advantage of it.
-> >
+> This is three preparatory patches for v7.4.
 >
-> A hackbench was launched on a Xeon server with 192 cores, using the default
-> settings to see if there was any regression. According to the test results,
-> there is no obvious difference, so I think it is good now. Later, I'll also
-> test with a mix of different time slice workloads:
+> These three are an excerpt from the earlier sent series,
+> updated according to comments and collecting ACKs.
 >
-> =========================================
-> Hackbench comparison
-> BASE: baseline
-> TEST: push
-> =========================================
-> MODE     G  FD |         BASE(s) |         TEST(s) |   DIFF% | RESULT
-> ------- -- ----+-----------------+-----------------+---------+----------
-> process 16  20 |     76.438/0.2% |     76.310/0.1% |   0.17% | IMPROVED
-> process  1  20 |     52.532/2.3% |     51.217/1.1% |   2.50% | IMPROVED
-> process  4  20 |     61.754/0.6% |     61.758/1.8% |  -0.01% | REGRESSED
-> process  8  20 |     76.817/0.5% |     79.049/0.2% |  -2.91% | REGRESSED
-> threads 16  20 |     66.290/1.5% |     67.120/3.5% |  -1.25% | REGRESSED
-> threads  1  20 |     62.311/2.3% |     61.518/1.7% |   1.27% | IMPROVED
-> threads  4  20 |     56.376/0.8% |     57.455/0.8% |  -1.91% | REGRESSED
-> threads  8  20 |     63.871/3.8% |     68.611/0.3% |  -7.42% | REGRESSED
+> It also fixes an urgent dependency (my bad).
 >
-> Besides, as suggested by Qais, cache-aware scheduling could also be a user
-> of the push mechanism. This is an evaluation patch that uses task push for
-> cache-aware scheduling by allowing the cache-aware sensitive task to leverage
-> the push path to be pushed to its preferred LLC.
+> The main ux500 power domain rework is targeted for v7.5.
 >
-> In my opinion, task pushing is triggered less frequently than task wakeup,
-> because it has a high bar to be launched(preempted runnable task)
-> This could reduce the risk of contention between the task pushing and the
-> cache-aware load balancer, and achieve faster task aggregation on its
-> preferred LLC.
->
-> We have launched a simple migration test based on the following change, and
-> will update later to see what the result is.
->
+> Signed-off-by: Linus Walleij <linusw@kernel.org>
 > ---
->  kernel/sched/fair.c  | 88 ++++++++++++++++++++++++++++++++++++++++----
->  kernel/sched/sched.h |  1 +
->  2 files changed, 82 insertions(+), 7 deletions(-)
+> Linus Walleij (3):
+>       dt-bindings: power: Convert Ux500 PM domains to schema
+>       dt-bindings: arm: ux500: Drop NR_DOMAINS
+>       dt-bindings: arm: Add the actual power domains on U8500
 >
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 7eea0414fd46..d5c6bbf04b47 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -1391,7 +1391,8 @@ static bool update_deadline(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  .../devicetree/bindings/arm/ux500/power_domain.txt | 35 ----------------=
+--
+>  .../power/stericsson,ux500-pm-domains.yaml         | 41 ++++++++++++++++=
+++++++
+>  MAINTAINERS                                        |  1 +
+>  drivers/pmdomain/st/ste-ux500-pm-domain.c          |  2 ++
+>  include/dt-bindings/arm/ux500_pm_domains.h         | 17 +++++++--
+>  5 files changed, 59 insertions(+), 37 deletions(-)
+> ---
+> base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+> change-id: 20261009-ux500-power-domains-v7-3-rc1-redux-acdf755a5efc
 >
->  #include "pelt.h"
->
-> -static int select_idle_sibling(struct task_struct *p, int prev_cpu, int cpu);
-> +static int select_idle_sibling(struct task_struct *p, int prev_cpu, int cpu,
-> +                              int push_cpu);
->  static unsigned long task_h_load(struct task_struct *p);
->  static unsigned long capacity_of(int cpu);
->
-> @@ -9325,7 +9326,8 @@ static inline bool asym_fits_cpu(unsigned long util,
->  /*
->   * Try and locate an idle core/thread in the LLC cache domain.
->   */
-> -static int select_idle_sibling(struct task_struct *p, int prev, int target)
-> +static int select_idle_sibling(struct task_struct *p, int prev, int target,
-> +                              int push_cpu)
->  {
->         bool has_idle_core = false;
->         struct sched_domain *sd;
-> @@ -9348,6 +9350,19 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
->          */
->         lockdep_assert_irqs_disabled();
->
-> +       /*
-> +        * push_cpu must be checked before the target: when
-> +        * a task is pushed from the tick, it is rq->curr, so
-> +        * idle_cpu_without() would consider the target as
-> +        * idle and keep the task on its current (non-preferred) LLC.
-> +        */
-> +       if (push_cpu != -1 && push_cpu != target && !cpus_share_cache(push_cpu, target)) {
-> +               target = push_cpu;
-> +               if (choose_idle_cpu(push_cpu, p) &&
-> +                   asym_fits_cpu(task_util, util_min, util_max, push_cpu))
-> +                       goto select_smt_priority;
-> +       }
-> +
->         if (choose_idle_cpu(target, p) &&
->             asym_fits_cpu(task_util, util_min, util_max, target))
->                 goto select_smt_priority;
-> @@ -10156,6 +10171,15 @@ static bool check_pushable_short_task(struct rq *rq, struct task_struct *p)
->         return false;
->  }
->
-> +#ifdef CONFIG_SCHED_CACHE
-> +static int check_pushable_cache_task(int this_cpu, struct task_struct *p);
-> +#else
-> +static inline int check_pushable_cache_task(int this_cpu, struct task_struct *p)
-> +{
-> +       return -1;
-> +}
-> +#endif
-> +
->  static bool fair_check_pushable_task(struct rq *rq, struct task_struct *p, struct task_struct *next)
->  {
->         if (!__check_pushable_fair_task(rq, p))
-> @@ -10167,6 +10191,9 @@ static bool fair_check_pushable_task(struct rq *rq, struct task_struct *p, struc
->         if (check_pushable_short_task(rq, p))
->                 return true;
->
-> +       if (check_pushable_cache_task(rq->cpu, p) != -1)
-> +               return true;
-> +
->         return false;
->  }
->
-> @@ -10231,7 +10258,7 @@ static bool fair_push_task(struct rq *rq)
->         if (!raw_spin_trylock(&next_task->pi_lock))
->                 return true;
->
-> -       new_cpu = select_task_rq_fair(next_task, prev_cpu, 0);
-> +       new_cpu = select_task_rq_fair(next_task, prev_cpu, WF_RQ_PUSH);
->
->         /* Task doesn't need to migrate */
->         if (new_cpu == prev_cpu)
-> @@ -10335,7 +10362,7 @@ static inline bool tick_pushable_task(struct task_struct *p, struct rq *rq, stru
->         if (!raw_spin_trylock(&p->pi_lock))
->                 return false;
->
-> -       new_cpu = select_task_rq_fair(p, cpu, 0);
-> +       new_cpu = select_task_rq_fair(p, cpu, WF_RQ_PUSH);
->
->         raw_spin_unlock(&p->pi_lock);
->
-> @@ -10382,7 +10409,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flags)
->  {
->         int sync = (select_flags & WF_SYNC) && !(current->flags & PF_EXITING);
->         int want_sibling = !(select_flags & (WF_EXEC | WF_FORK));
-> -       int new_cpu, cpu = smp_processor_id();
-> +       int new_cpu, cpu = smp_processor_id(), push_cpu;
->         struct sched_domain *tmp, *sd = NULL;
->         /* SD_flags and WF_flags share the first nibble */
->         int sd_flag = select_flags & 0xF;
-> @@ -10414,6 +10441,15 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flags)
->         if (select_flags & WF_TTWU)
->                 want_affine = !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
->
-> +       /*
-> +        * Only a push triggered by cache aware scheduling will push the
-> +        * task towards its preferred LLC. Pushes for other reasons, like short
-> +        * slice task, uses the default push strategy.
-> +        */
-> +       push_cpu = -1;
-> +       if (select_flags & WF_RQ_PUSH)
-> +               push_cpu = check_pushable_cache_task(prev_cpu, p);
-
-Is there any reason that you do'nt want to migrate the task at wakeup too ?
-
-> +
->         new_cpu = prev_cpu;
->
->         for_each_domain(cpu, tmp) {
-> @@ -10441,7 +10477,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flags)
->                         break;
->         }
->
-> -       /* Slow path */
-> +       /* Slow path,  push task will not go inside due to flags = 0 */
->         if (unlikely(sd)) {
->                 new_cpu = sched_balance_find_dst_cpu(sd, p, cpu, prev_cpu, sd_flag);
->                 return select_idle_smt_cpu(p, new_cpu);
-> @@ -10449,7 +10485,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flags)
->
->         /* Fast path */
->         if (want_sibling)
-> -               new_cpu = select_idle_sibling(p, prev_cpu, new_cpu);
-> +               new_cpu = select_idle_sibling(p, prev_cpu, new_cpu, push_cpu);
->
->         return new_cpu;
->  }
-> @@ -11572,6 +11608,44 @@ static bool migrate_degrades_llc(struct task_struct *p, struct lb_env *env)
->         return true;
->  }
->
-> +/*
-> + * Return the preferred CPU that task p running on this_cpu should be
-> + * pushed to for better LLC locality, or -1 if no such push is wanted.
-> + */
-> +static int check_pushable_cache_task(int this_cpu, struct task_struct *p)
-> +{
-> +       struct sched_cache_group *grp;
-> +       int pref_cpu;
-> +
-> +       if (!sched_cache_enabled())
-> +               return -1;
-> +
-> +       /* preemption already disabled */
-> +       grp = rcu_dereference_all(p->sched_cache_grp);
-> +       if (!grp)
-> +               return -1;
-> +
-> +       pref_cpu = READ_ONCE(grp->cpu);
-> +       /* If the task's pref_cpu is on the wrong(non-preferred) LLC, move it there */
-> +       if (pref_cpu == -1 || cpus_share_cache(pref_cpu, this_cpu))
-> +               return -1;
-> +
-> +       if (!cpumask_test_cpu(pref_cpu, p->cpus_ptr) ||
-> +           !cpumask_test_cpu(pref_cpu, cpu_active_mask))
-> +               return -1;
-> +
-> +#ifdef CONFIG_NUMA_BALANCING
-> +       if (static_branch_likely(&sched_numa_balancing) &&
-> +           p->numa_preferred_nid != NUMA_NO_NODE &&
-> +           p->numa_preferred_nid != cpu_to_node(pref_cpu))
-> +               return -1;
-> +#endif
-> +       if (can_migrate_llc(this_cpu, pref_cpu, task_util(p), true) == mig_forbid)
-> +               return -1;
-> +
-> +       return pref_cpu;
-> +}
-> +
->  #else
->  static inline bool get_llc_stats(int cpu, unsigned long *util,
->                                  unsigned long *cap)
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index 95a18c0d21c6..85527034572d 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -2559,6 +2559,7 @@ static inline int task_on_rq_migrating(struct task_struct *p)
->  #define WF_CURRENT_CPU         0x40 /* Prefer to move the wakee to the current CPU. */
->  #define WF_RQ_SELECTED         0x80 /* ->select_task_rq() was called */
->  #define WF_TTWU_RQ             0x100 /* Wakeup completed through ttwu_runnable() */
-> +#define WF_RQ_PUSH             0x200 /* Push the task  */
->
->  static_assert(WF_EXEC == SD_BALANCE_EXEC);
->  static_assert(WF_FORK == SD_BALANCE_FORK);
+> Best regards,
 > --
-> 2.43.0
+> Linus Walleij <linusw@kernel.org>
 >
+
+Applied for next, thanks!
+
+Note that these changes are also available on the immutable "dt" branch.
+
+Kind regards
+Uffe
