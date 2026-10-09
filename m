@@ -1,86 +1,145 @@
-Received: from mail-pl1-f228.google.com (mail-pl1-f228.google.com [209.85.214.228])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A83753E7166
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 08:33:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.228
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DECD53CF02E;
+	Fri,  9 Oct 2026 09:40:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791534790; cv=none; b=YsvNq2wOSJmEqmy0WbtTvI1GRMov91+dcwGXxq8q14gIaMtr1T81a3fxzpZV0Pv/1PkxQb7Sk/wlP3szLfF5FfQt1A7RuC0IJNUEfV9cFV1Y53gZXbrlpUk1dGKslAyAT7y+acu+FlvUspdK1JP8AFEyToCCHqpvuJMvyBS5P54=
+	t=1791538839; cv=none; b=bDAkEWU8vksJWvkoYTWfTaPfOeb8r962OVQ8Ni8gr4PR4+9NGXAI8ZvMMaLm78eLzzhTIOn2etu7FMhwEXB9GNta5A2fJMhRNJZGEaXKnzv4f5WEAF1Ysvz1GHJSkA88b5GjxSpKJ4EPO0ite6ewTsQrR8y/j3yHxGOCM3tq7pE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791534790; c=relaxed/simple;
-	bh=J4a7upmFwO+cU/sHwsmNf67cBdZkLVJd4Qid6QJFvAs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L06MIhVV0TSEDJZOxDgJVO9H2dE1CuGAPlPBQDHZKoXn7y5KD2ecnT1RhGkWaVRxNX6xzpRl9LSkAsRw6TGwvPYh/Vurj9usXL01r3HAR+O7OTlzRDzBl7s8s0nIP8R3MW2E0UxKOMy2ALn5VBWatp68wAxQykRLO3FsgRUiPSs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=srcf.ucam.org; spf=pass smtp.mailfrom=cavan.codon.org.uk; arc=none smtp.client-ip=209.85.214.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=srcf.ucam.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cavan.codon.org.uk
-Received: by mail-pl1-f228.google.com with SMTP id d9443c01a7336-2e812e2b31bso9283235ad.3
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 01:33:08 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791534788; x=1792139588;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=5SJdflHLsTV8n6Eka/t1oY8KzfLbWWcjpATxg+lrvcw=;
-        b=d5SgKAGhl9VQQAbzZMwUs8esO60+KeyeoOzfjxzW+xhY3dJvtgrUtJGT3QIu9KrYEq
-         UWfyUt9OjuFxYOFPNQXOYJPRIgs/4kOW7dZ12iEBn7S3WxIpxn//qRNy2Bj8VTjUG9R9
-         5tUq6OUq+wVq0ThwMZfkz91YRuq+TbfHzoN+aKLGSUYQl6P/dB6GHcXL3NBMiBwbUKEu
-         +TJPUcvG+PRBA2pMAm+2Dpje5MBwJzxWXX+lpJ+9WBOhkPYxdOm9mpKy2nFnCl00yuHo
-         uq34jI6Fj1Awcn+c+xcbRWk9JoJcEetJwBG8l5padjesAJvphRQ47JZn0f+hSpNZEHqn
-         dF3Q==
-X-Forwarded-Encrypted: i=1; AKwUvBz0ubJI/5Nka6kecNYQZ67zjMQpYkF1qN8ow3kdNccxpEUspGkmma8pR8MO26iWlgBCno+QOE7vLg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLyZ21RaUDre/LOY88qMJtkTNTKi77lgiUz/WvuGXn+m0zP7+Hb
-	81TO+yX1xhPPaIJXnSc3B+ykiSOppeTnX9TNtSup8r6o9ouB7SaXKsTzEdYIweSicUyqf5bdfXX
-	golw42r3Jd4q0H+m+fmFxD+QnYj1u32EenFmI
-X-Gm-Gg: AYBFou1ewjI4EJeBnYKu+6AgTTGX9czBPeA/YlFSbx4jIUG5jXBKAgQjPym1dy7uIKX
-	B1qu7qK7m0HmuhWaX0f5I2O9EehQE80jD6rUpKDRSuSimkHMdVPpkT9rK2uOkX/v1qrLaTYS6DZ
-	WRwPzRspg/SrIer8R8ipWkLAMPiTdAiOZPmaBtWdOTZ4eY7cf0l6gclQU6jOosUdNLuvNCv6h1K
-	dTDtZ/z12nbYsTSs9wyu7AzClACqv35p68VOcMlNM2OEqs/z4sbcPPpIxx5yw9dhBKv9+FeeBF0
-	k6DPe8SSDOuIla+ami1NZlrgThkjnmZnfje7cjatn91lfrxmf6sAZJirG5XUzlhZXWsj++gwY7b
-	DKfuVQhc0WsEMEAj3buC2Oiar6zYs3r6BipvEBdLH
-X-Received: by 2002:a17:903:32cd:b0:2e2:d7d6:6563 with SMTP id d9443c01a7336-2e842ce162fmr8538245ad.43.1791534787870;
-        Fri, 09 Oct 2026 01:33:07 -0700 (PDT)
-Received: from cavan.codon.org.uk (207-53-253-74.PUBLIC.monkeybrains.net. [207.53.253.74])
-        by smtp-relay.gmail.com with ESMTPS id d9443c01a7336-2e841f88d23sm606575ad.22.2026.10.09.01.33.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Oct 2026 01:33:07 -0700 (PDT)
-X-Relaying-Domain: codon.org.uk
-Received: by cavan.codon.org.uk (Postfix, from userid 1000)
-	id 2332C12862DD; Fri, 09 Oct 2026 01:33:07 -0700 (PDT)
-Date: Fri, 9 Oct 2026 01:33:07 -0700
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jarkko Sakkinen <jarkko@kernel.org>
-Cc: Matthew Garrett <matthewg@nvidia.com>, keyrings@vger.kernel.org,
-	James.Bottomley@hansenpartnership.com,
-	linux-integrity@vger.kernel.org, rafael@kernel.org,
-	linux-pm@vger.kernel.org, linux-efi@vger.kernel.org
-Subject: Re: [PATCH 01/17] tpm: Define a kernel-owned TPM NV index that can't
- be modified by userland
-Message-ID: <asimw1D5J0ZqM4i3@srcf.ucam.org>
-References: <20261008132532.1155166-1-matthewg@nvidia.com>
- <20261008132532.1155166-2-matthewg@nvidia.com>
- <asfDZiuFKCuuRysC@kernel.org>
+	s=arc-20240116; t=1791538839; c=relaxed/simple;
+	bh=9t2R2/V/GTyQMOc6PpXwcjM4hPBP1sboGSjSJYoDiu8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CM1wR3Ax7lo1hA+peShXwv8YNZhXj3zsPTo4eTZ5e95mEFlmXULZB4nIx79yLiuAzRZqi719APDlNVsEcXZ2j93OeP5NmO7ysdwTB+2iueaWF2vmGN9RtwSF4Yq2YOrjG3CdxHe38BAOJsy0y6gosuGSdPyHA++FO3p3PJU220Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Mnq7i3HY; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Mnq7i3HY"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5E5061570;
+	Fri,  9 Oct 2026 02:40:21 -0700 (PDT)
+Received: from [10.57.87.202] (unknown [10.57.87.202])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 009153F8C6;
+	Fri,  9 Oct 2026 02:40:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1791538824; bh=9t2R2/V/GTyQMOc6PpXwcjM4hPBP1sboGSjSJYoDiu8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Mnq7i3HYVNV2Kdu2uWFP/n9Heb6knlRmXTK42lahgc4MVuCji8dQ2PNJGsDg7psrJ
+	 yjlI2HcrPujK7RtI7VIoIe88f99WmQEUXhzO01+Ao+RLIpi/EKK84UE3QrHekPyjVv
+	 hrcBQzpOjCQtLYEzu3GtyFP947i+lgpVfo+CmLJs=
+Message-ID: <32a250e5-0c56-43ce-ab80-8c4375542b59@arm.com>
+Date: Fri, 9 Oct 2026 10:40:21 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <asfDZiuFKCuuRysC@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: Don't track pressure if policy->max equals top
+ of freq_table
+To: Giovanni Gherdovich <ggherdovich@suse.cz>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Huang Rui <ray.huang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Pierre Gondois <pierre.gondois@arm.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261009082928.21847-1-ggherdovich@suse.cz>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20261009082928.21847-1-ggherdovich@suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 08, 2026 at 07:23:02PM +0300, Jarkko Sakkinen wrote:
+On 10/9/26 09:29, Giovanni Gherdovich wrote:
+> The acpi-cpufreq driver stores non-boost frequencies in
+> policy->freq_table, but policy->cpuinfo.max_freq contains the max
+> boost frequency.
+> 
+> policy->max is constrained to be, at most, the largest value in
+> freq_table. This means that under nominal conditions, policy->max is
+> substantially lower than policy->cpuinfo.max_freq, resulting in large
+> values of cpufreq_pressure, on all CPUs, for no reason.
+> The result is large performance regressions on compute/memory intensive
+> benchmarks that use a limited number of CPUs; tasks migrate more and
+> lose locality. My tests are with the "NAS Parallel Benchmarks" suite,
+> limiting to 1/4 of available CPUs.
+> 
+> This change sets cpufreq_pressure to zero if policy->max is equal
+> (or above) the maximum frequency in freq_table.
+> 
+> Here a concrete example from a 1st generation AMD EPYC (Naples) using
+> acpi-cpufreq. Under nominal conditions (no capping, no throttling):
+> 
+> freq_table               : 1200 MHz, 1700 MHz, 2200 MHz
+> policy->max              : 2200 MHz (maximum from freq_table)
+> policy->cpuinfo.max_freq : 3200 MHz (max boost)
+> 
+> Before this change, in the example above we'd get a cpufreq_pressure
+> value of 320 (32% pressure); with the change, the pressure is zero as
+> it's expected to be.
+> 
+> Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+> ---
+> Clarifying the recipients list, beyond the cpufreq maintainers:
+> 
+> Mario Limonciello, Huang Rui: the patch isn't for amd-pstate, but
+>    AMD EPYC up to Genoa (Zen4) defaults to acpi-cpufreq, so they may come
+>    across this if they haven't already.
+> Vincent Guittot: for the cpufreq_pressure and scheduler load balancer
+>    implications.
+> Ricardo Neri: he's been looking at cpufreq_pressure on x86, albeit
+>    this patch isn't for intel_pstate.
+> Pierre Gondois: he looked at policy->max in freq_table.c earlier this year.
 
-> > +static bool tpm2_dev_cmd_is_blocked(const u8 *buf, size_t bufsiz)
-> 
-> This function could have less generic name.
-> 
-> tpm2_dev_is_kernel_nv_change?
-> 
-> I'm not a huge fan of this name either but it does say quite clearly
-> what the function does at least. Just a suggestion.
 
-I left it that way on the assumption that it might get extended at some 
-point - maybe that's not a big concern.
+I'm assuming this isn't on top of
+f341dc4d934a ("cpufreq: intel_pstate: Fix max_freq fallback in cpufreq_update_pressure()")
+Care to retry?
+
+> 
+>  drivers/cpufreq/cpufreq.c    | 3 +++
+>  drivers/cpufreq/freq_table.c | 1 +
+>  include/linux/cpufreq.h      | 1 +
+>  3 files changed, 5 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 54dde8419bdc..aa652750f711 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2601,6 +2601,9 @@ static void cpufreq_update_pressure(struct cpufreq_policy *policy)
+>  	 */
+>  	if (max_freq <= capped_freq) {
+>  		pressure = 0;
+> +	} else if (policy->freq_table && policy->max_table_freq &&
+> +		   policy->max_table_freq <= capped_freq) {
+> +		pressure = 0;
+>  	} else {
+>  		max_capacity = arch_scale_cpu_capacity(cpu);
+>  		pressure = max_capacity -
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index ea994647abc8..55c3293685c2 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -50,6 +50,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
+>  	}
+>  
+>  	policy->cpuinfo.min_freq = min_freq;
+> +	policy->max_table_freq = max_freq;
+>  	/*
+>  	 * If the driver has set its own cpuinfo.max_freq above max_freq, leave
+>  	 * it as is.
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index d3d0d9d02aa4..4a3316e47f4e 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -67,6 +67,7 @@ struct cpufreq_policy {
+>  	unsigned int		max;    /* in kHz */
+>  	unsigned int		cur;    /* in kHz, only needed if cpufreq
+>  					 * governors are used */
+> +	unsigned int		max_table_freq; /* max freq in the table */
+>  	unsigned int		suspend_freq; /* freq to set during suspend */
+>  
+>  	unsigned int		policy; /* see above */
+
