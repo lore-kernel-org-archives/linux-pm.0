@@ -1,94 +1,72 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+Received: from mail-dl1-f48.google.com (mail-dl1-f48.google.com [74.125.82.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F10294CC261
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 11:16:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E94A4CDA3C
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 11:24:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791544601; cv=none; b=KGF+EGPyPEbyesUCkLUIIg1DOr1m59gmARU3dRVhYjquichTCVmoCKvXjsBqsK0KMLNMEFTwEd3NnZzzAF6TBi9xAVcZt4h3Q8Bk0MGH6ld6ROq4SfYTTv5HM4hoSzMG10Cbs46bcMXS4bSjtd7mqYgux5WHS24ohXZcr+BBnYc=
+	t=1791545091; cv=none; b=hDLFiu0ta0pao45OuZqr3Iviium8Lq1TOG31Mt8OZ3KtzovaQyb1oZGPRizSbJnh/WRo5Uiu1J7+bZ78pbBDyYDrIC++WivkrzIgii5PgbnYvAEx9TJE2tQ1C1HvEZzFT0dBAhavviQNc2NCygTiQCi1RTOj0X6qr6epvvy7Hds=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791544601; c=relaxed/simple;
-	bh=7oNXmCayF+uoWO7ThUQwKuLtcd+yuCMSaHRdecbZ64U=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JDMSXLwBNyG9s3dI2dUS9ew+xV8p/t5CMwM4I2DqX/og2wUGa3mj6eoCDmtII3TacR7y3ds2Zo842jW1M9wk8eZ1ToK6yd/eqkrMuwYdmC6d08Wq3eBFvVJ/RB0HVvH3jr8Bhxd0eCHz2HNLKBoBq8jisKH6JbfDDQ5bes4mddc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Q+Q1/ak5; arc=none smtp.client-ip=209.85.128.48
+	s=arc-20240116; t=1791545091; c=relaxed/simple;
+	bh=lzV/JOwZceG3YxOPL82K2UBdcZS5W230ZAh1fveVVcM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bb+1sic1CFCGWignvOgyVeLPiRZxmpCMFZrP0D6EpidBtt0MH2G8uEOTJ+kJrkuBvAO+MseF5BVtOpf4KQ8VezFMOeKDCTPcaUUHaV8KkxRwo5P2l7KHM4xWUwRHQh9SQpuk4XWFbWZ4WFXKFM3I1ruSe1ei7bOnpJ1GsXa+Fn4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=K9aL5ot1; arc=none smtp.client-ip=74.125.82.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q+Q1/ak5"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4a172da1049so1181105e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 04:16:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K9aL5ot1"
+Received: by mail-dl1-f48.google.com with SMTP id a92af1059eb24-157fe9d771bso1958370c88.0
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 04:24:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791544591; x=1792149391; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=itsLuONkjBfdmzhzJnq5Bn90MLJfbhblfMvMLn4gNLU=;
-        b=Q+Q1/ak5hbNySeXthchK2E4p3/T4ydsNIRERjftg2rzflPU0dh3dqGmBvXtXTzJaD0
-         ogf5wTRcFcw7xIhKfw/Qkj18b+IDhGGBU9LmzytJDffL3oI5P7/rJ0UF2g1ZDhJ8Y8/r
-         8Rr1Yqr3bKAFJTBA4ckqAflyYWm4FQatA94+PhVIBeDVy76niPrDofC/ThJLFRnHDVX4
-         oWY6SnLQEYCRtxpSvx231TGlT9FulUTiVPLfm8O84vo/5vTIz7j1gdWlIHdHg3tAB8iJ
-         GLkeU3cfYV3xzJQ33Btk9t2HmmDMlHQObhelVtOHKHo2AsMMhmwneQTAwxetpJXUFXgW
-         vJOg==
+        d=gmail.com; s=20251104; t=1791545082; x=1792149882; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=je2Q3HHMwOmDG5bekFREQfFaKgEfAjyCYUmGYt2rUu0=;
+        b=K9aL5ot1AVomxF4MmjhtFiX4L5DWlQr1g/wmvMuOdSzTLg1quU2zmro2CDX4cUIYgu
+         YMWhuJ87k7RusHDoCQ+Nh2SKvOWynLBisA00Ec/ZhzirRLemu1UDrmvxaLEqWVz4tpPb
+         Z+AvQA6Lf4RGwrlCRBhrxu+gyv5kh8Yv3LZxaoTHA05Llbb9u0i6UHTlhWXcFfGFLK+J
+         b8Mly2zCms7m1+8ZYys4w/wqL3VunMM/JJlNho/hk0DXlv/Y438I50QrDBsV1UGl+zxJ
+         LDMOxB89VeW4nDNXHAXTCIjgmLMOGf/+DVXC5OCO7XKCAfhcMO/EYCAqGnBmri8jRYfg
+         mwHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791544591; x=1792149391;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=itsLuONkjBfdmzhzJnq5Bn90MLJfbhblfMvMLn4gNLU=;
-        b=Wpqh0QeRDj80+VjAmjqAO7OqL8ZncQ5SqcVFPc3ryAA2LnncAVymfgnJbO7nB8EF0W
-         NUvhSxe8EiOrO0uck2BXLu7crBFb9PCSnYJkydafNyfoWpff8TFx93E0t5ZWRJyYNS8w
-         xKpNBGxfEuiaZTFBTMSKOF6FMroU5o1QkyozBs6WiDaXE9Yf23TgsQp6Kd1MC3DehMQm
-         eBJ4vd4dlEO3bhOEo7fpKkrQN88xOck825GtakHbQLdYHJbPCawd/i+1HMN8gM4RCBAg
-         vcVN19DowswQlmzDD5rix1jVEjiZCo/ALqc/7NMWPiSkqteoMAaqCCvyX/8pS6tCoyo2
-         CeiA==
-X-Forwarded-Encrypted: i=1; AKwUvBx2492TNTY9gkZxI/mxkAR0F9ZYlt3cautVZpGQWUPYZIy2PxUXugpnDkh5/iVGNK8hscXCRdxT2A==@vger.kernel.org
-X-Gm-Message-State: AFuF++nggfT8YEFv5N2D5F75/v6tLRMmUeinBim3EGiD8wZC90ns57wF
-	vMKdew6tnAmLsZUxxaapX/MrSOBJepGOslipK/Bjd1mQgpv/LoB3JQ+6
-X-Gm-Gg: AYBFou3vxHA+4UWvkewc7RFZF4loL88oewhsHttuvqSNozOVDy7Ou55SFRVzY9B++4Q
-	QCilMPE9SdSJm6upe6zbwx+6c+7heczktewKmrKnuEyiD2i5I6RNu6/VVJyoWzRKYYgcFf/ErPL
-	KLuloRGCzVAcDMemqAa/UYnbfuRm8X1rqHveaYanAKac/oltcTTuVpLDP5YFwiQT3uLlSJBwIZV
-	8jm1GCaiITAbo7GUSsmTyEPAL1CDpCFFjsf7DK4mbybYMegVF816AHKasS/gURVP7e7MRjymssM
-	wvtQ0MSI1xJf5+HpxaaW52C41rzzSjN8/uyxEu/ZIv3xbd9uZLi2w769NKkYM+FwKa/WPg+i7N4
-	TkI1yJYk3pKRFDyocdYjb9A5/cSonST8kPXnvsADmkKTrwjIkOQ/r7Gyd4jwI6uq/s3xbwicem+
-	2BRWXeGgRAfy4C/OKT9XocwaDv28l+Fn1eodELoaEhY3S2OXuXal77jvF0CcfKIM9LTv4sF5r5A
-	XPSZDDEzkWTl9OqXzD95PP3v/gP21M=
-X-Received: by 2002:a05:600c:8b02:b0:4a0:1973:f05a with SMTP id 5b1f17b1804b1-4a18e47e19fmr31556705e9.2.1791544590796;
-        Fri, 09 Oct 2026 04:16:30 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a18f3b43efsm46733545e9.1.2026.10.09.04.16.28
+        d=1e100.net; s=20260707; t=1791545082; x=1792149882;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=je2Q3HHMwOmDG5bekFREQfFaKgEfAjyCYUmGYt2rUu0=;
+        b=Z98grbSXxZtsZ/dLxCHIhwmkYFHu3oQRGpd1XrE70AGURRMwTRntXL1XCgsu9KlaIN
+         7IsjJFEgxxxigrMDMhvDGCKdjUf2vuTQG+j64+wyaFiKJ0e31dVvM+b/exqAmFjdjtn6
+         FpA/jFzWcApYnR3PhtW5jr4PIaftlAFwr325CA8KZvmfa6Ul7c54FHddxcf79xy4/9Ck
+         DKOwUbNnQzgGYK6JhA1tW9uxcZVs6ebfYlOM24bRBqHbO7bW4vZIDBuCL96YlVKU0scx
+         obbyqddvQnjN/gfLRMmrQ0PiNu7HW+Z4FSuCyEmT/dKMcPfCItvwtOhNJVc13knnAKNh
+         ZR2A==
+X-Gm-Message-State: AFuF++lTayKD7naiHIMvcJSVO8MRyX0KLB5uZtthpr2gWqlOYnsEPR6z
+	F4HZ9ZSocHmH1fEHJlBGHUAN/tl5H1vyMB5BY4HFRGDVJufpMHUVS1llocoRYA==
+X-Gm-Gg: AYBFou0a1LVcm16iukpx8Rnsb8cXXIjX7yoMBLm7z2noNQ/6N95ZxBNMSXT9Rh01lRl
+	/i9w3TAWA5OSlk4AEKBMwkktNCLsJ+8rYz9f80dgnC9bevLIg5kK/uqnXXwPORLQpTiaHgOODje
+	6YNearTSuanSHmZ/VR9OVMUBVjtQw1ElNjIS1o95o7F3o4zZrbk+9P6bxDogDQOiXHWgeLaSZDJ
+	eCvvXU8pB3Fs9iwaXZTTiXRrIWNjoFI+wExc5s/AhFaMBSyue5I4MH6iFYwRlPDKC/Qnsxmy/RL
+	MPmQWt/K0A9A+de09xo8PDNcbsE+KeUUQSVWkjCKiSSljdfNWGNBQ45UGHuGxP4P+/QnIUhpFww
+	k+VQm3Wf4QIQLGyq6fkIylP0XurA9XCBDK7JeK5+HCAdro9n5+FeUAT1i3YkY2Y5rJzUGA4HG30
+	vBgVUv1M5S6IpDK2Z9wbbFTpY5s8bjKbnSuFOIYd4iPtlcRzJ1vDtsDp2AfZF9CuIwo6AhB+Ahy
+	3UM6QkKikm52mtFRYK4n2lEdGM3quidGimqa2/QMbc/dCochzrem12e4FFfWc9pUC3fv6rObfwp
+	DQXF6BBuT/3S6w==
+X-Received: by 2002:a05:701b:2309:b0:153:7a27:b89 with SMTP id a92af1059eb24-16a5ed4008cmr2359046c88.21.1791545081842;
+        Fri, 09 Oct 2026 04:24:41 -0700 (PDT)
+Received: from phuc-desktop.. ([183.91.15.56])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-16996eac537sm6304632c88.1.2026.10.09.04.24.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Oct 2026 04:16:30 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: vincent.guittot@linaro.org
-Cc: arighi@nvidia.com,
-	bsegall@google.com,
-	changwoo@igalia.com,
-	christian.loehle@arm.com,
-	dietmar.eggemann@arm.com,
-	juri.lelli@redhat.com,
-	kprateek.nayak@amd.com,
+        Fri, 09 Oct 2026 04:24:41 -0700 (PDT)
+From: phucduc.bui@gmail.com
+To: Sebastian Reichel <sre@kernel.org>,
+	Linus Walleij <linusw@kernel.org>
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	lukasz.luba@arm.com,
-	mgorman@suse.de,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	pierre.gondois@arm.com,
-	qyousef@layalina.io,
-	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sched-ext@lists.linux.dev,
-	sshegde@linux.ibm.com,
-	tj@kernel.org,
-	void@manifault.com,
-	vschneid@redhat.com
-Subject: Re: [PATCH 14/18 v2] sched/fair: Enable push task for preempt short
-Date: Fri,  9 Oct 2026 14:16:26 +0300
-Message-ID: <20261009111627.4861-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261002154415.2270586-15-vincent.guittot@linaro.org>
-References: <20261002154415.2270586-15-vincent.guittot@linaro.org>
+	bui duc phuc <phucduc.bui@gmail.com>
+Subject: [PATCH] power: supply: generic-adc-battery: Propagate charged GPIO errors
+Date: Fri,  9 Oct 2026 18:24:29 +0700
+Message-ID: <20261009112429.33318-1-phucduc.bui@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -97,55 +75,35 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-> Enable push mecanism for the preempt short feature which is the
-> 1st feature using it.
+From: bui duc phuc <phucduc.bui@gmail.com>
 
-IDK typo count of 'mecanism'. It would be cool if I counted the typos I found in this thread.
-They're so important. But, I didn't counted them
+devm_gpiod_get_optional() may return an error pointer such as
+-EPROBE_DEFER, but gab_probe() only checks for NULL. The error
+pointer is then passed to gpiod_to_irq() and the original error,
+including -EPROBE_DEFER, is lost.
 
-> @@ -3475,6 +3475,9 @@ static void partition_sched_domains_locked(int ndoms_new, cpumask_var_t doms_new
->  	sched_energy_set(has_eas);
->  #endif
->  
-> +	if (sched_feat(PREEMPT_SHORT))
-> +		static_branch_inc_cpuslocked(&sched_push_task);
-> +
+Check the return value and propagate errors from the charged GPIO lookup.
 
-Well, as I checked it seems like first user of the push 'mecanism' can't be disabled.
-This could be the correct behavior too tho? If we want to open it and do not let it
-close even when PREEMPT_SHORT is false...
+Fixes: b0327ffb133f ("power: supply: generic-adc-battery: Use GPIO descriptors")
+Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
+---
+ drivers/power/supply/generic-adc-battery.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-But I think you wanted to connect this to PREEMPT_SHORT, no?
-Well if no, then well I have no words. If yes, I have.
+diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
+index 185f55d2fd70..f3ca3ebb2533 100644
+--- a/drivers/power/supply/generic-adc-battery.c
++++ b/drivers/power/supply/generic-adc-battery.c
+@@ -238,6 +238,9 @@ static int gab_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, ret, "Failed to register delayed work\n");
+ 
+ 	adc_bat->charge_finished = devm_gpiod_get_optional(&pdev->dev, "charged", GPIOD_IN);
++	if (IS_ERR(adc_bat->charge_finished))
++		return dev_err_probe(&pdev->dev, PTR_ERR(adc_bat->charge_finished),
++				     "failed to get charged GPIO\n");
+ 	if (adc_bat->charge_finished) {
+ 		int irq;
+ 
+-- 
+2.43.0
 
-I done a quick test, adding this line to here:
-
-        if (sched_feat(PREEMPT_SHORT))
-                static_branch_inc_cpuslocked(&sched_push_task);
-       pr_info("push key count=%d\n", static_key_count(&sched_push_task.key)); <--- This
-
-And booting up the kernel. Playing with CPU1's online status and closing PREEMPT_SHORT.
-And...
-
-[    0.967146] push key count=1
-0
-1
-[    0.967146] push key count=1
-[   42.408439] push key count=2
-[   42.475103] push key count=3
-NO_PREEMPT_SHORT
-0
-1
-[    0.967146] push key count=1
-[   42.408439] push key count=2
-[   42.475103] push key count=3
-[   42.562426] push key count=3
-[   42.619255] push key count=3
-
-This is a bit messy since it's raw, but as you can see even when we
-close PREEMPT_SHORT this not decreases. It just stays on and grows over time.
-
-That's what I'll say, maybe I'm missing something.
-
-Thanks,
-Kayra
