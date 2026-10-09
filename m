@@ -1,118 +1,82 @@
-Received: from pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com [44.245.243.92])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 342154D09F4;
-	Fri,  9 Oct 2026 12:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=44.245.243.92
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B95639DBD4;
+	Fri,  9 Oct 2026 12:15:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791547989; cv=none; b=YlxfVsfj4X/wJ24/0dzjhzHxdRrbfwtFMV/jNEFO9QcW+IKK5MSy29kO5be6lf4/WO2uk96E4zVddRRpgeQ4pxTpFXp3WbK4xi09tZy35MBaaCnfVS62o78L4wt9U7wfZ3mfc9VteU+wAItdPqAryi0oayNYT5sYG0sSY/EoFe0=
+	t=1791548120; cv=none; b=uOtcDLimV4UxLfn2El+o4HouLxn8O09Pje2LDaYJvi0AkDCgcUBjABZtTAHZgnzes8jc0MWD15JKLh8pB6qCJDfuKyymJwvOLwppNLUYET16RLS1jsCgYj5eyc6/OOLLAKvxJvmGaVxXm8V1urW1fcG9JiOMua+ZC7itbg6gaHg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791547989; c=relaxed/simple;
-	bh=OTNomCQwJL3N5zmMnY4VTlp2HhXw0YP72DMMiv/28dE=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PQgAhyRbvBXEp5B1WMRpPkck4+bOd7vmGTD3MJauX4yHsWG5PrGHx+2Mgh5qkrqrapE1REUK+ylc50ok/O7/21DunRplNfvNFactP5NSM7/TnDf+zmSzIruPwJnM6jxq54mpgutBdalOOFb2M7SawMVbWR64NhEDyVsjZlO7PAQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de; spf=pass smtp.mailfrom=amazon.de; dkim=pass (2048-bit key) header.d=amazon.de header.i=@amazon.de header.b=P1nyq4lU; arc=none smtp.client-ip=44.245.243.92
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.de
+	s=arc-20240116; t=1791548120; c=relaxed/simple;
+	bh=LHPPv/t59nA8EN2qA1mpKu9sNUeZkB4PCIETi/K4wJ8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=aBiRtGjtUIPQXHU74qRidKwZzlFvJOP5PeMcLwAZYoJME2KxxyboQWZAOqsjlHFynP5WXPj5AErZFER3LBUOdo9lTiFyQpGW1Ju9UiopnsBShQFRJ7BRcN/91A+flp3Zp3cyUi178sI7H/tqa8UmGABNM4veGaLZFFwFh19JBNg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QtKdvOVu; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amazon.de header.i=@amazon.de header.b="P1nyq4lU"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.de; i=@amazon.de; q=dns/txt; s=amazoncorp2;
-  t=1791547982; x=1823083982;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=vSc7S0sErgSHpP9oJR+kqo0I61w+8l/PYMOF21YwtA8=;
-  b=P1nyq4lU4hy/JfsShj7IjUWZXeDUYGarJRzNT4mL+7HS5mIFwlPKYC4s
-   P/8Jvsrn4p0qddw9ziETpeu7KSL6OVV/wr6cHc3OCpWBN93N4aOZ9Cvhh
-   wxEnSc/k6tbRTnvbvp+kckP4ODJjSzcKaczB/rb9ay4OEF2mzkBa4zKYX
-   po9wYP5gOSNsiu4vqHJIce1aibQ+sjVY19QewTEFRWy5RINZQIt+OUA0b
-   zYK9jJqcYCFkv5CxN6V2cBXQoHBIsNE9QMHz5YDDiwBsQunlAEvzuolux
-   Q1+UyVNtdPXvmUUmvui5km5wOvIDNDAaBI/5FoEUKeKGrZyZ6mYIFvzJU
-   g==;
-X-CSE-ConnectionGUID: 3brt9oRuTPKwLfaPFx2A8A==
-X-CSE-MsgGUID: ApmFh9biQ66jpIZrUWrBtg==
-X-IronPort-AV: E=Sophos;i="6.27,148,1787011200"; 
-   d="scan'208";a="30339871"
-Received: from ip-10-5-9-48.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.9.48])
-  by internal-pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Oct 2026 12:12:59 +0000
-Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.53:12018]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.45.50:2525] with esmtp (Farcaster)
- id 924e5c0b-2973-4857-8323-402bbf408de7; Fri, 9 Oct 2026 12:12:59 +0000 (UTC)
-X-Farcaster-Flow-ID: 924e5c0b-2973-4857-8323-402bbf408de7
-Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.49;
- Fri, 9 Oct 2026 12:12:58 +0000
-Received: from localhost (10.1.213.6) by EX19D001UWA001.ant.amazon.com
- (10.13.138.214) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.49; Fri, 9 Oct 2026
- 12:12:58 +0000
-Date: Fri, 9 Oct 2026 14:12:55 +0200
-From: Roman Kagan <rkagan@amazon.de>
-To: Christian Loehle <christian.loehle@arm.com>
-CC: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
-	<daniel.lezcano@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan
-	<skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
-	<linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <nh-open-source@amazon.com>
-Subject: Re: [PATCH] cpuidle: Add the shallow governors
-Message-ID: <asjaR_aPwevvBw_O@ub9ea591b72db54.ant.amazon.com>
-Mail-Followup-To: Roman Kagan <rkagan@amazon.de>,
-	Christian Loehle <christian.loehle@arm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	nh-open-source@amazon.com
-References: <20261008-b4-cpuidle-shallow-v1-1-c19e71127b14@amazon.de>
- <e18bd763-0d6d-4bfd-b59e-78f952c94aa2@arm.com>
- <faf34e6e-ecd9-471a-b30e-3aa79e3ee063@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QtKdvOVu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A21EF1F00893;
+	Fri,  9 Oct 2026 12:15:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791548108;
+	bh=crVrt+azV6VzH/3rk8Jcr3ieOc5saBo85Edk21IHDvU=;
+	h=From:Subject:Date:To:Cc;
+	b=QtKdvOVuxyrLExAgcfojOGE+jucpqApSPmlC61pMOIDaSLHUJVvvMp9FHrREWYtlz
+	 m3WkHEUQ5eCTUfu9xTeNmWpSQHony31ZnygnU4B1sl+n9eoAHgqudKukosMDamyAeZ
+	 kHj1ghhX6WQsiSnOdReW4FMkmwmiVpJj71DV0w3aT2S05Ohnb7zGeqX/VZuKq4y8HU
+	 AP81kXGm2i+p3LfJF1rbSruI2hijsxKMYFA2RSRsoudIbJht4DCS/CJ3PIgrWYnQuy
+	 qJd91Kb47nBauXXVAjJS8zT6g8lqkSPQI9flmmPCYXeoks9mWfGEztfS3rYS3rrWGj
+	 LmtDMB6a+nbqA==
+From: Linus Walleij <linusw@kernel.org>
+Subject: [PATCH 0/3] pmdomain: Basic DT defines for ux500 power domains
+Date: Fri, 09 Oct 2026 14:15:03 +0200
+Message-Id: <20261009-ux500-power-domains-v7-3-rc1-redux-v1-0-5eb1b90bc35e@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <faf34e6e-ecd9-471a-b30e-3aa79e3ee063@arm.com>
-X-ClientProxiedBy: EX19D031UWC002.ant.amazon.com (10.13.139.212) To
- EX19D001UWA001.ant.amazon.com (10.13.138.214)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3NQQqEMAxA0atI1gZSpSMzVxlclDZ1sphWUtSCe
+ HeLy7f5/4TCKlzg052gvEuRnBpM34H/ubQwSmiGgYaXIXrjVi0RrvlgxZD/TlLBfcIR1RtUDlt
+ F50OcrHWWo4cWWpWj1Gfyna/rBhOFN7d0AAAA
+X-Change-ID: 20261009-ux500-power-domains-v7-3-rc1-redux-acdf755a5efc
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Linus Walleij <linusw@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ Krzysztof Kozlowski <krzk@kernel.org>
+X-Mailer: b4 0.14.3
 
-On Thu, Oct 08, 2026 at 07:29:43PM +0100, Christian Loehle wrote:
-> On 10/8/26 19:17, Christian Loehle wrote:
-> > On 10/8/26 19:06, Roman Kagan wrote:
-> >> The idle states offered by a platform trade wakeup latency for energy
-> >> savings, and there are situations where the trade is not worth making:
-> >> while a latency-sensitive workload is running, or during a live update
-> >> via kexec, where everything from the outgoing kernel stopping the
-> >> workload to the incoming kernel resuming it is downtime, and deep idle
-> >> states may lengthen it.
-> >>
-> >> The mechanisms currently available for that are all one-way.
-> >> cpuidle.off=1, idle=poll and idle=halt can only be requested in the
-> >> kernel command line and cannot be undone, and the PM QoS interfaces
-> >> (/dev/cpu_dma_latency and the per-CPU pm_qos_resume_latency_us
-> >> attribute) can only be used once user space is up, so they cannot cover
-> >> the boot of the incoming kernel.
-> > 
-> > You can also disable all but the shallowest idle state in sysfs:
-> > echo 1 > /sys/devices/system/cpu/cpuX/cpuidle/stateX/disable
-> > 
-> 
-> And I'd probably prefer having that exposed via the cmdline rather than
-> two separate governors...
+This is three preparatory patches for v7.4.
 
-Doing this cmdline configuration per-cpu per-state is non-realistic.  I
-guess you mean a single option that would express a policy, like "for
-all cpus in the system, disable all but the shallowest state" or "...
-all but the shallowest non-polling".  But policy is exactly what
-governors are for.
+These three are an excerpt from the earlier sent series,
+updated according to comments and collecting ACKs.
 
-Why exactly does having two more separate simple, narrow-purpose
-governors sound wrong to you?
+It also fixes an urgent dependency (my bad).
 
-Thanks,
-Roman.
+The main ux500 power domain rework is targeted for v7.5.
+
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+Linus Walleij (3):
+      dt-bindings: power: Convert Ux500 PM domains to schema
+      dt-bindings: arm: ux500: Drop NR_DOMAINS
+      dt-bindings: arm: Add the actual power domains on U8500
+
+ .../devicetree/bindings/arm/ux500/power_domain.txt | 35 ------------------
+ .../power/stericsson,ux500-pm-domains.yaml         | 41 ++++++++++++++++++++++
+ MAINTAINERS                                        |  1 +
+ drivers/pmdomain/st/ste-ux500-pm-domain.c          |  2 ++
+ include/dt-bindings/arm/ux500_pm_domains.h         | 17 +++++++--
+ 5 files changed, 59 insertions(+), 37 deletions(-)
+---
+base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+change-id: 20261009-ux500-power-domains-v7-3-rc1-redux-acdf755a5efc
+
+Best regards,
+-- 
+Linus Walleij <linusw@kernel.org>
+
