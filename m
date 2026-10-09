@@ -1,443 +1,113 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97E591FE471;
-	Fri,  9 Oct 2026 01:58:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9AEF530BF4F;
+	Fri,  9 Oct 2026 02:57:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791511093; cv=none; b=Nsfqq7HVBVgHqmkbqcy/ypE7SBe2peU2zwJfC3JO11cyeZ50HRz5Remby6uQC/g7SjQpv7Y7EwWQm/0VV1vmpwIt9upvumenwm/Jf4XUmt0mDn04ntMZALd/zcNMmkkCJ3u8UYh59WlXeT1zIhzjl+pHmbUp2NHmLeeJPtVXxIs=
+	t=1791514644; cv=none; b=u2exe0WTGNSxTS9gx4sLXEWh8QMrMXaSUg3nhWKamtxJ1vJh05gQp8zRrog86HeVkZtl1xOH2PLlvITngqopAFDiuf5yK26NlrT2U/XFJIEwGL9edoDyVVyiwTwZcLmYy5TpOD1+mHqnV9ShTHNCRUNJ/Pj/qFE3hCb9S1EhCI4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791511093; c=relaxed/simple;
-	bh=Ssa9RMpdCUqcoxtMUFOU4/eomJ7fGRCthjt3m6UbLk8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SQDLDEuFSDeiq+aUAiYfCkZIyz5/bKKtVymQauw+fIp+Q2uG25+ZmeQ3ExLqo11luDnMcvHIl4BBOi728QolXMyEnqZ/xmDw6DbAy2Tcd9aC5be5y0oa71G9UgmdB09fqC5JK4FuWnK6bdPqHiGE52qMq+3ArxQKG/UL2NvgDwE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Xk8IyIkl; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Xk8IyIkl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791511092; x=1823047092;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Ssa9RMpdCUqcoxtMUFOU4/eomJ7fGRCthjt3m6UbLk8=;
-  b=Xk8IyIklnp3J75Ai7G5+fUjRvh3GL/zgy/XMOhFJktrmEB1aGcAz4Jng
-   pvNc2Vi24mdbIbfP4C84kk8z4MRAjbhnRYYW1WIb0jm32Gmh2S1JHC3eY
-   6NBiIAAMNh8t3ojO4BThhS6ZKBqg7t4kWrOiuZ7K21eaWX2iTKrR7DjBc
-   keCdl1NXg6gqBGZTx9L5DISf9FP1AJEPqqHA90snt1PUV8wVtwIOTk8JD
-   tkI106iN97rXJEP4r4XePZCpfjplJn+ztHnFsp5crgaweSsFFYm1WGOGm
-   DepCPu6WM9UFKVt+GdFi8BVNNjPzTeFs4ibK0X/CBTdu7HN743V5B4I49
-   g==;
-X-CSE-ConnectionGUID: 6GctPszKR6aOTYgoe/mHFA==
-X-CSE-MsgGUID: 0Nk2jSYeQ1edZFrqLZW9Ow==
-X-IronPort-AV: E=McAfee;i="6800,10657,11929"; a="301568"
-X-IronPort-AV: E=Sophos;i="6.27,147,1787036400"; 
-   d="scan'208";a="301568"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Oct 2026 18:58:11 -0700
-X-CSE-ConnectionGUID: rqjf5P6jSDii/VV5wCPVrA==
-X-CSE-MsgGUID: Jk+EVrYcR62pIs6UgQAU4Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,147,1787036400"; 
-   d="scan'208";a="556000"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by fmviesa007.fm.intel.com with ESMTP; 08 Oct 2026 18:58:07 -0700
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xEzs5-000000005Ae-0px4;
-	Fri, 09 Oct 2026 01:58:05 +0000
-Date: Fri, 9 Oct 2026 09:57:24 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>, rafael@kernel.org,
-	lenb@kernel.org, pavel@kernel.org, willemdebruijn.kernel@gmail.com,
-	kuba@kernel.org, pabeni@redhat.com, linux-pm@vger.kernel.org,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, "Jason A. Donenfeld" <Jason@zx2c4.com>,
-	stable@vger.kernel.org,
-	=?iso-8859-1?B?Suly6W15?= Jean <jeremy.jean@oss.cyber.gouv.fr>
-Subject: Re: [PATCH net] udp_tunnel: drop packets when hibernating
-Message-ID: <202610090909.eskhKpxA-lkp@intel.com>
-References: <20261008124106.665014-1-Jason@zx2c4.com>
+	s=arc-20240116; t=1791514644; c=relaxed/simple;
+	bh=yl0TJHDzu98frW9uc9TMTi8QQB5q74ARsjqKyCP9KRg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=pIsRM/dvcXV0xYhw3CU/9HMdfOro/epstuyKv/oZQ0Zqu8V+VhqlA0sO+QmaADasGcMhR5ogMam4jyUim0JoHvIyC2rjzmSDCLIcxGqoihkdM8tdgEZsaMFEUuTsHknEWcm0aQiOqhJMIyC2UmlDRZe0/5+jsV7wHJpghPZYt48=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [223.64.68.159])
+	by gateway (Coremail) with SMTP id _____8DxpvARWMhqB_wTAA--.58582S3;
+	Fri, 09 Oct 2026 10:57:21 +0800 (CST)
+Received: from kernelserver (unknown [223.64.68.159])
+	by front1 (Coremail) with SMTP id qMiowJAx2c0KWMhqikwqAA--.24079S3;
+	Fri, 09 Oct 2026 10:57:20 +0800 (CST)
+From: Binbin Zhou <zhoubinbin@loongson.cn>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>,
+	Huacai Chen <chenhuacai@loongson.cn>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	zhanghongchen <zhanghongchen@loongson.cn>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>
+Cc: Huacai Chen <chenhuacai@kernel.org>,
+	Xuerui Wang <kernel@xen0n.name>,
+	loongarch@lists.linux.dev,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Binbin Zhou <zhoubinbin@loongson.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH v7 1/8] thermal/drivers/loongson2: Fix negative temperature conversion in set_trips
+Date: Fri,  9 Oct 2026 10:57:04 +0800
+Message-ID: <38f8e7cde8e454e7c6b72cb1b9a1c54e67c8a7fa.1791512067.git.zhoubinbin@loongson.cn>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <cover.1791512067.git.zhoubinbin@loongson.cn>
+References: <cover.1791512067.git.zhoubinbin@loongson.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261008124106.665014-1-Jason@zx2c4.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowJAx2c0KWMhqikwqAA--.24079S3
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAQEPCGrIS3YAyAAAsQ
+X-Coremail-Antispam: 1Uk129KBj93XoW7Cw4xuFy3XFWxGw17ZF18JFc_yoW8AFyxpa
+	y3C34qkrZrJr4DZw1DAayrXFZ8A34ftFZrWF4xGw13C398J34agrWUJFy5X3ySkryUXFyY
+	vr95KrWDCFWDA3gCm3ZEXasCq-sJn29KB7ZKAUJUUUU7529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUBYb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r126r13M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_
+	Gr0_Gr1UM2kKe7AKxVWUXVWUAwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYI
+	kI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUtVWr
+	XwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI4
+	8JMxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j
+	6r4UMxCIbckI1I0E14v26r1Y6r17MI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwV
+	AFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv2
+	0xvE14v26r4j6ryUMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4
+	v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AK
+	xVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7IU8W89tUUUUU==
 
-Hi Jason,
+The `MILLI` is defined as an unsigned long constant. When the
+temperatures passed to loongson2_thermal_set_trips() are negative, the
+expression `low / MILLI` triggers implicit conversion of the signed
+operand to unsigned long, and the division is then carried out in
+unsigned arithmetic.
 
-kernel test robot noticed the following build errors:
+For example, with a low trip of -40000 (milli-degree Celsius):
 
-[auto build test ERROR on net/main]
+    -40000 / 1000UL = 18446744073709511   /* unsigned long */
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jason-A-Donenfeld/udp_tunnel-drop-packets-when-hibernating/20261008-144021
-base:   net/main
-patch link:    https://lore.kernel.org/r/20261008124106.665014-1-Jason%40zx2c4.com
-patch subject: [PATCH net] udp_tunnel: drop packets when hibernating
-config: parisc-randconfig-1000-20261009 (https://download.01.org/0day-ci/archive/20261009/202610090909.eskhKpxA-lkp@intel.com/config)
-compiler: hppa-linux-gcc (GCC) 8.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261009/202610090909.eskhKpxA-lkp@intel.com/reproduce)
+After truncation to the 32-bit register field this becomes
+1271310379, instead of the expected 60 (i.e. -40 + HECTO). Writing such
+bogus value into the trip register leaves most of the upper bits set,
+which may hit status/trigger bits and cause spurious thermal interrupts.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202610090909.eskhKpxA-lkp@intel.com/
+Fix this by explicitly casting MILLI to int so that the division is
+performed in signed arithmetic.
 
-All errors (new ones prefixed by >>):
+Cc: stable@vger.kernel.org
+Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal management support")
+Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+---
+ drivers/thermal/loongson2_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-   In file included from include/linux/list.h:11,
-                    from include/linux/kobject.h:19,
-                    from include/linux/cdev.h:5,
-                    from drivers/char/virtio_console.c:7:
-   drivers/char/virtio_console.c: In function '__send_to_port':
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:66:18: note: in definition of macro '__smp_load_acquire'
-     union { typeof(*p) __val; char __c[1]; } __u;   \
-                     ^
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:67:9: note: in definition of macro '__smp_load_acquire'
-     typeof(p) __p = (p);      \
-            ^
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:67:19: note: in definition of macro '__smp_load_acquire'
-     typeof(p) __p = (p);      \
-                      ^
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
-   In file included from <command-line>:
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
-   In file included from include/linux/list.h:11,
-                    from include/linux/kobject.h:19,
-                    from include/linux/cdev.h:5,
-                    from drivers/char/virtio_console.c:7:
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:69:18: note: in definition of macro '__smp_load_acquire'
-     switch (sizeof(*p)) {      \
-                     ^
-   drivers/char/virtio_console.c:636:6: note: in expansion of macro 'smp_load_acquire'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:636:33: note: in expansion of macro 'pm_freezing'
-     if (smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
-   drivers/char/virtio_console.c: In function 'put_chars':
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:66:18: note: in definition of macro '__smp_load_acquire'
-     union { typeof(*p) __val; char __c[1]; } __u;   \
-                     ^
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:67:9: note: in definition of macro '__smp_load_acquire'
-     typeof(p) __p = (p);      \
-            ^
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:67:19: note: in definition of macro '__smp_load_acquire'
-     typeof(p) __p = (p);      \
-                      ^
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
-   In file included from <command-line>:
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   include/linux/compiler_types.h:682:9: note: in definition of macro '__compiletime_assert'
-      if (!(condition))     \
-            ^~~~~~~~~
-   include/linux/compiler_types.h:702:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-     ^~~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:2: note: in expansion of macro 'compiletime_assert'
-     compiletime_assert(__native_word(t),    \
-     ^~~~~~~~~~~~~~~~~~
-   include/linux/compiler_types.h:705:21: note: in expansion of macro '__native_word'
-     compiletime_assert(__native_word(t),    \
-                        ^~~~~~~~~~~~~
-   arch/parisc/include/asm/barrier.h:68:2: note: in expansion of macro 'compiletime_assert_atomic_type'
-     compiletime_assert_atomic_type(*p);    \
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/asm-generic/barrier.h:176:29: note: in expansion of macro '__smp_load_acquire'
-    #define smp_load_acquire(p) __smp_load_acquire(p)
-                                ^~~~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
-   In file included from include/linux/list.h:11,
-                    from include/linux/kobject.h:19,
-                    from include/linux/cdev.h:5,
-                    from drivers/char/virtio_console.c:7:
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   arch/parisc/include/asm/barrier.h:69:18: note: in definition of macro '__smp_load_acquire'
-     switch (sizeof(*p)) {      \
-                     ^
-   drivers/char/virtio_console.c:1173:6: note: in expansion of macro 'smp_load_acquire'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-         ^~~~~~~~~~~~~~~~
-   drivers/char/virtio_console.c:1173:33: note: in expansion of macro 'pm_freezing'
-         smp_load_acquire(&portdev->pm_freezing)) /* pairs with freeze/restore */
-                                    ^~~~~~~~~~~
-   In file included from drivers/char/virtio_console.c:12:
-   drivers/char/virtio_console.c: In function 'virtcons_probe':
->> include/linux/freezer.h:79:21: error: expected identifier before '(' token
-    #define pm_freezing (false)
-                        ^
-   drivers/char/virtio_console.c:2071:11: note: in expansion of macro 'pm_freezing'
-     portdev->pm_freezing = false;
-              ^~~~~~~~~~~
+diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
+index 4d40fc706a53..f5ff0cac1442 100644
+--- a/drivers/thermal/loongson2_thermal.c
++++ b/drivers/thermal/loongson2_thermal.c
+@@ -108,7 +108,7 @@ static int loongson2_thermal_set_trips(struct thermal_zone_device *tz, int low,
+ {
+ 	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
+ 
+-	return loongson2_thermal_set(data, low/MILLI, high/MILLI, true);
++	return loongson2_thermal_set(data, low / (int)MILLI, high / (int)MILLI, true);
+ }
+ 
+ static const struct thermal_zone_device_ops loongson2_2k1000_of_thermal_ops = {
+-- 
+2.52.0
 
-
-vim +79 include/linux/freezer.h
-
-    77	
-    78	#else /* !CONFIG_FREEZER */
-  > 79	#define pm_freezing (false)
-    80	static inline bool frozen(struct task_struct *p) { return false; }
-    81	static inline bool freezing(struct task_struct *p) { return false; }
-    82	static inline void __thaw_task(struct task_struct *t) {}
-    83	
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
