@@ -1,254 +1,195 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB0EF48BD5B
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 09:59:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36D5149DB90
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 10:04:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791539992; cv=pass; b=uaJF/MdJneMKMfqe/aursi3EMhfWgPNiQp9SvFDLp2sfnOqxY6F3CVKh0u6FQG2vfxlnpfgNSMM6q2XQayDS3INpNqzWjvxO+/1sofQUhMQNDv5100RqDSyoCG/yvDCjZDXMj/VOAVrwcUZvApcDWY4p5JilB79T6N88Q4w3mhM=
+	t=1791540245; cv=pass; b=BhuZZVxtwLbaZtvF2eyOrDka+HHNgnjsl1x1FYB68mUI6T8X8+mGn9y9EgeQf6nzgrPElRhhigAa/WfcMX2KofntfoH3+YCOIrwepY6ErBQqG17V9Dwmy4eLs0HlCz2wLLkfQ9LglI6OrPnZbZN81ChApzzcj1WmoBpncwtI0IM=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791539992; c=relaxed/simple;
-	bh=i7++zG8AWQ/7X1mmcKKFhfNKYOrusr69yRalwyg4/cA=;
+	s=arc-20240116; t=1791540245; c=relaxed/simple;
+	bh=PiIEJBacYP8RPpVhrEdxj6N1ZBrQAEJntz0xmldB7uQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hQmj1UVecwk7CtytFzo0LB2cTzxmbsIpKJmVm4bryhxwVV6ITaNrRiLeyYDLijVf0jmErH3AR1aKe4KXUVbKGWTJYvQBSrUUEigLaY7kk1HMd27xuJPf+r/kR25bTqzCJMEyjYrv2H4U9fibBinX56Vzqihp4QM3XQ7oJDg6Bsg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fvCv2CsO; arc=pass smtp.client-ip=209.85.128.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=COJe818scryf8G7GFrqSyQp0wIQqdDmG0cqU90ndQpPXWebxneYLZg5FAA9WpsjQyuFKtaKfasKPascdLg3/3eVANN5HZ1Tn74/1g5/096OtKHGMJ21Jl2/2VxR3acd4Ljz+zKeRFY7nTuSUZV2hdLJuYqtkKz4aA9JX+UHePpY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=WEXjmYKV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Cn+iYpeF; arc=pass smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fvCv2CsO"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4a1635f7c89so64440925e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 02:59:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791539989; cv=none;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="WEXjmYKV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Cn+iYpeF"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6998KH7i230902
+	for <linux-pm@vger.kernel.org>; Fri, 9 Oct 2026 10:04:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	RGFAbqayoGzkNoR9L5GgWnoZmVxL7JzSyp3JwWFjq1k=; b=WEXjmYKVBun7yiWt
+	YcX80+2wv35fcTXvK0ES0ZsZU2i6UqtGQUdqQ4VwyEeUF/DSdreHDgunke9Bt6Zb
+	uScCI2vzXkW/VEx2NnFgsweM1StFeweU8GOg82xUFPbMEEMB5NkDKsgUgKSkizv4
+	zY5MHEbeGsyttEzp9ebcb3RpBQXkvjgKnoSv8ArUfBs/s5/Y6GOMqcgILZDcv/pS
+	pEcgCWyXzVgPO46tMgTDwL6Q3MsUFTZ0c2FA0U+PYKGZBGvML8OXH3wDKGQHqrkL
+	9HJuqxwi9YNtGh4mdyRvz/KF+F+jklfT+CQgBQ8hU22qEI+ihK0+Ax9tR3OQTFbk
+	B8hibg==
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h6fxu30v0-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 10:04:00 +0000 (GMT)
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-88c76888646so4610045b3a.1
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 03:04:00 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791540240; cv=none;
         d=google.com; s=arc-20260327;
-        b=ETt4SJx6plFdKPrQG08P9BhJmdh6EEipoDRANhe5vXU1cnN1iktu/9Kzm0GXUfmPTQ
-         GmH5W5rCgG3wAgjYFjl5LH6oBWO0559sXedn1TsNKHNb5zYtAmcfdZUGFJYCOKvtcEO6
-         fx5KBhTePqbXRttulVPUbH4RTaFVj88G2CJIHmyMTsysoY3Yt5L0LVoBe4H/fmQnHj9W
-         oekif0Ox1E9T8J7pARS/6FceDcYIV0+5OHb1qJpYv5aBoMt7Tcu5PAZrdMEKN5uhjzC3
-         xK++LwbBdaVqf+kpv1gdzyhp9D013KGfLHA7MzYWYBvWIvg2RtjQwFniB8FS9Au4iOor
-         XPCQ==
+        b=fjzBT91NAwsGX2w+EUE67aRYz3LWv/FbLqTERXHBZs4ET9Li+tu5c560ZWTlAyFZAY
+         C06suYGHwJsRfwoZJxQZ1geklTz1exJutt07gBhEJPjAFK6GSdoNzXX0Aa0zMyz7NMON
+         8plh9qZWU2dtRfxSssECPgbh7MnQ2vd4Napz14g+CrjLtfm+yGlJdxoQ80nPkyA/1yXC
+         qo2qQtLaAVLy5e8g/McO5ObqoIqboaLY9MhelRpo2hF6/67mbOlODniKXkpl6hrC0+5d
+         3JOfXPao/lhjjp/JYsP4K93HIIOD2dOx05IQsRP0B9p0HKo3RhcZBbZhPQJHjmLmkQep
+         Mhzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=DP8waD2qmyevQkHk4p1Bx+MKMco6/5BSdUOLT/BBidw=;
-        fh=qVO1pH25RWi7kNBVUF6b7GRL2UK/xGxsB0+htjzmOco=;
-        b=iUue+helvuUvUIH4ComiCv/Wr6WhNt0MKYEzc+fDlAexzj8v/vLKp1/EMCnmFN4Jwx
-         KIchpZH3R5eawBSWIxB9NYj/VhWqw8syEW0FUHA6ifH1sX0rN7ER9MxCqnj9qP5RCU4w
-         onEh7+KOMYm+kwcDEzrLfaoKoQQbW/C9o3Q9o92JvPNC8e7eC2WOd6gEz6zJImm6B3AH
-         caJST+LWrAAIK7OjYYuRVfyXen1dvChw98dZLOpt0hMmkz7lylpMMwZ4k/dGHA4nyxjA
-         1G5wv4OcJZexN5uStJh42BtHhhve5Wm6oi/Mx5hfqODFbrlFNFSpUP/OZcFK8bEULEjh
-         +9Bg==;
+        bh=RGFAbqayoGzkNoR9L5GgWnoZmVxL7JzSyp3JwWFjq1k=;
+        fh=Pb0POMgyoRqQG7FT3LIXtk4hhBBgxaytzXj2RFQHuWs=;
+        b=CNXcXZc9CPbTHH1A0w+fHiFRzIyHaLIR5Qiet/1uXwm3twY+HmgRED+zV8j7YVUJ5q
+         a2S0q4GfQn1AL3xUA+z9YrsanLsw/CdB6yo0sI4A+2DMMXYADlIZPm3MK95U4gmzOUXt
+         E7Ube1EpMBkMx2Ox7sKSaTKwaSjpsYgOaBoH/S9pg+Ynl5fx0tLi1Gy2KbuVkDM+t8NG
+         kjWcW63uMnhPmKN+3KvaULgq6Antw/9ZcBe7nwNGN+gzGeCoUgsk3vCDHmwXtHglHLn7
+         vWzSqo+BvYHpJaRqY7PwRpK6kD7Dpi4Zj1ZZV7IV07xlQ4sxIwyKXd2kgObW/euSnLDf
+         wpIQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791539989; x=1792144789; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1791540240; x=1792145040; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=DP8waD2qmyevQkHk4p1Bx+MKMco6/5BSdUOLT/BBidw=;
-        b=fvCv2CsOwtAvcyKKRWNfjyCHHmI1iPWsTfH3EawSfSC10aG+ygccxRARgXoVva+/yf
-         37OPSQaoOLgIOxIs1YgOjWvcA8B2daciBl4kN/jO2A4WsJyHEYrDcVx/mIZUwaz1Ac9Y
-         HKRXnu5YYbTQ13q+9I2BtD0vgCdbNFWDHiTXLmyv1aI4dFzjiMIUWaKpLZFgVVZqaAIc
-         PqbAw7bqmjsgP/QRoiCEATXLtRC/LYHq8IQHkyvCsUtI2d7f5V9fEtgT2Vr0bRFIjddA
-         EaAU1wHKUfKRqF/3oU/Mrrat26aDZt6AgnHZN2D8V8A+b7qgDbXCAZ9ojb4RrQuiVLzV
-         dQOw==
+        bh=RGFAbqayoGzkNoR9L5GgWnoZmVxL7JzSyp3JwWFjq1k=;
+        b=Cn+iYpeF1wxWB/Q0vk9Za/mHwuHK06nHpCGozYkDbM+vXFQ2g4q0UNeXahm2KN4uhd
+         xn8E8Uiv36mBANv4zZCfb5JDWjLgoZW8tmpoVeGCybcd814vGxq2fkgC197ze+aYUdwt
+         DE0dlz0yo75hLo2f1L4qo0/pps+aZjyrWNzbJYzdL+laGVvpYpqe2ktVDXyK4FgvUpdq
+         0QbCge1F2m17mHp0zcAJl1vjmwFSZw5fPtTwQ26hUBqCcPdrnfP3mOmhz8RpEZW1PanJ
+         807dOGN9P65bL4qSNy8RXKJrembzW2Hs2XYShaSfTmdG6O4/UKAqlh0zGGUUd0GMcBsJ
+         KBBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791539989; x=1792144789;
+        d=1e100.net; s=20260707; t=1791540240; x=1792145040;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=DP8waD2qmyevQkHk4p1Bx+MKMco6/5BSdUOLT/BBidw=;
-        b=FXrSREO3PQiZhHkt2a18QiXpU9Rh0YT7XT4drYhGFjofz35JAPru4NKGTjjfqd5h8o
-         /uIcdAp1wnk2gP3MH8+qZlDU3gZjIuVKdWwf2hkCoFyGpJsGQju1VhAbeK4Imli+Kup/
-         aQU03aTKHy1GVbxLh3ySGGy/ULmwIX+hNkoxn4CYeD1skj6rnwtfv6uYcxS+ydDPX6mL
-         0a1WIHPXY/ZwnnSB4zveFz8Ym6rP1rHwID4Rc5rRZV/WmBq9Ru2fHB08kT1lEDrwqkDj
-         6IpNPKMOsm5k9ZzXDDPLSNoiVhwcP1yuxLttJF6czVcCjKV7TufpkDP6p2Y6cQ99yq5d
-         g7hw==
-X-Gm-Message-State: AFuF++m6u/nup2K4B5p+MyQfRQRwVFoX/L9e8bZuFHlx2GPf06Iv5XWX
-	PFdxjuGl+BOrWJIGq+9l7Qdn+sSSEfJzTd83oDeiHBx50PjmNQxX7+uqq2iHSIG3M0X5QEOc7AD
-	Uyteru/Fpi1cC2y338Y7ODZPZGV00I/M=
-X-Gm-Gg: AYBFou1BmnjoqGVOkCRlpQwGMWBGOs9KA2hFxgo17dJXkSnHp6Lm0J/Xr3XaIx+7thH
-	xpPhid8PpXHHF3qYFcKmVyGrmWn3EEgpNnSl2WY4zpOyhBaJ+kmF9Ye0Dilx22J/5bedHeti5WU
-	zJVAebDH3eKNjdQ7Izxj1K99TOY11EQWLCq1JsbfueuxzYPI8kvMjWWk3xdvIPngTAqnMI9N4Iq
-	WkuzVFWSs2SW2U8JRLqO+crgXR1HJ42ZbESW1R0txDWEoRmCM8dp3RsqCNNnEKg9d0Q5i6zgrol
-	ls/mu9gDQQNz4t1HvtKSViYytgZ+OjyhIkqFrGvk4JYKoxyS903E1KnhLhq9qoFZiA5nEYi4uHs
-	fvmPwyvR8FejVC8+HDGVXcahbBKUTSpDNxdaBK+kFrSK532YDGSp37+afIIyKRvgN5vF7DtWdag
-	==
-X-Received: by 2002:a05:600c:524a:b0:49b:9202:6f80 with SMTP id
- 5b1f17b1804b1-4a18e4a4f2amr24783385e9.6.1791539988785; Fri, 09 Oct 2026
- 02:59:48 -0700 (PDT)
+        bh=RGFAbqayoGzkNoR9L5GgWnoZmVxL7JzSyp3JwWFjq1k=;
+        b=rLRoAKxohNOKk0k+ayteZH7qSUxzWJl1hj84T1rhGtYFOyNYijh7bDUFzyjwetTuIr
+         VCNzWdGO46V4mhR6PA6BxQHf1rycoz5gaolkjVpiVVddYPELW9i+3oQ8d1ueNqtZkouA
+         Zj7BdOED5DY4WYLpDcF2xVVFpCbg15MB79xEd2cUIIb6cqdoQ7OrxMabdvFu6h2ywOpU
+         5Vqg28Gjcd1G9sLP9l+jLCVT7BAo1GUohC8RNlf8Cy7wrFnS4ax0kF2U8JbtofbgHeDw
+         PKg9q+0I1bjJBXFaNjF59f2alcujwBQnQNMC59swssh/s1p0hbWJmEAyOKGNR05gOWv3
+         zRGQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzbnL69jrZaNJpqbGbV8qLTfo0au8/YQi72do7uwVdLIzE3AHW6kZtBjlipXEwC9dVHXV3X/IQ4YA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJPJsSk9UlC+gfWJKMsporuGz7esa6gZm16nATI3tgivv87+fhe
+	s+zP4E2sGq0XFdpijLtRfMNrsONBm/prtIVvXwDG+7QiCz8SNWQgw+JmRY11dbqCSW2XkmTm0Ub
+	1BgT6Tnvoa0nIYrwfCYAAuJqX7EFnVGHnRKvGSGsTq+yPTLtmepB6LhQIb2IyLSVmn4tjyn1FRI
+	2Lx+6pNwcnm2sl2k33RGAzwMrMhLKv3x2rg/4R
+X-Gm-Gg: AYBFou1y2PtbB/4jvynwLpAv/EDoCTO+3wPDujH28qbm5OjDbll4PGKYcRwFlVmPABG
+	lTr9K/M2+vZGZyHYN5K8AstgJkWxRq/XBS9gvu6Q7d/LbfFXa998OsSA/fEoSx05h9S+TGGDGGv
+	3MgzY9bCAqUXOL2LV6tLCR1/jpsE77CgGjqmqE8gpfcggKvGYO2FczaEeCsw==
+X-Received: by 2002:a05:6a00:4f87:b0:881:1fb6:a81 with SMTP id d2e1a72fcca58-897c3ff538amr1154981b3a.3.1791540239793;
+        Fri, 09 Oct 2026 03:03:59 -0700 (PDT)
+X-Received: by 2002:a05:6a00:4f87:b0:881:1fb6:a81 with SMTP id
+ d2e1a72fcca58-897c3ff538amr1154954b3a.3.1791540239339; Fri, 09 Oct 2026
+ 03:03:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260929122407.219448-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <20260929122407.219448-5-prabhakar.mahadev-lad.rj@bp.renesas.com> <CAMRc=MckUuLsgqjphOs=fiyz3wCaGbGWpt_fPKStZRAroPkE3Q@mail.gmail.com>
-In-Reply-To: <CAMRc=MckUuLsgqjphOs=fiyz3wCaGbGWpt_fPKStZRAroPkE3Q@mail.gmail.com>
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Fri, 9 Oct 2026 10:59:22 +0100
-X-Gm-Features: AclHuK8v8wJ0xixm3ryTG5vUqFvUu0_BpBhVKHGRmBMB2paMCe66RtJNZrKZm2Y
-Message-ID: <CA+V-a8tV1uoBuRLyZHE_tqL9zU2hzZ9BNkwVMABL4aAEGEFQeA@mail.gmail.com>
-Subject: Re: [PATCH 4/5] power: sequencing: renesas-pwrrdy: Add RZ/V2H(P) and
- RZ/V2N A/D converter support
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, 
-	Prabhakar <prabhakar.csengg+renesas@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>
+References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org> <CAD++jL=gFt9kKZH9T-m8B_pbwRvzc35tTrMn5V238d3528DpUg@mail.gmail.com>
+In-Reply-To: <CAD++jL=gFt9kKZH9T-m8B_pbwRvzc35tTrMn5V238d3528DpUg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Fri, 9 Oct 2026 12:03:46 +0200
+X-Gm-Features: AclHuK9hQAW8ziR1wvAdOw0nLveraf3a0x0LG_1OOR8LPyJDyZu5bXvxmgGRPSA
+Message-ID: <CAPx+jO-wb6NLYjnn_k7xu=Wqq61+vop9o7UM=5Y47U-WiGFXBg@mail.gmail.com>
+Subject: Re: [PATCH v3 00/18] pmdomain: st: ux500: Implement ux500 power domains
+To: Linus Walleij <linusw@kernel.org>
+Cc: Ulf Hansson <ulfh@kernel.org>, linux-arm-kernel@lists.infradead.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, dmaengine@vger.kernel.org,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+        Frank Li <Frank.Li@nxp.com>, Frank Li <Frank.li@oss.nxp.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Mark Brown <broonie@kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Frank Li <Frank.Li@kernel.org>, Lee Jones <lee@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA5MDAzOSBTYWx0ZWRfX/KVct4Oz9aXS
+ 1nYViK+Cz5CHOuod7C2VlHCGWwnrt/fZFSTldksr1Vl7mQJEGPSdY+ZtMn3eK6cZ2IJwd6gu/Ci
+ M8E5PYpmePw05jJxKRUDbd9S+VxrkgjLGt9NZZOtoI2p7Ly5a+BDPwbnvRpSRJN5CI7JEx7QqJw
+ tGLueV/ux4oQL9Z6x9/7H60sJLFYxE4edamAD4kZnF4FMm6QrzwMgMwsDicXcJjWotiPnGd7+TB
+ kPrFHzf4XArFls2YtLsmipRmcph/ELm40X0xkk6cYV6t4o++9l3Oz7vBQlFvbIwlWJFXke3iRoG
+ xUg5rTmBPb+mBvK7ndeilKJiwrUz51OXIyd8lyGWyDD1FhzDPP4f+sCJqCha7rlidt9K4JZAHs3
+ BTAGp6McmENUbiczvOivx9GsnsEDhrIgORMpb6PqrIHoyppjDRo7m2TUW8lthxQ4Brgpj6kGaWa
+ ThTrchMSjKWFD6SdTrA==
+X-Authority-Analysis: v=2.4 cv=QbjzLcbv c=1 sm=1 tr=0 ts=6ac8bc10 cx=c_pps
+ a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8 a=MPZ65LRjT8IzFkvHGtsA:9
+ a=QEXdDO2ut3YA:10 a=zc0IvFSfCIW2DFIPzwfm:22
+X-Proofpoint-GUID: NNQR2Semjg67UlbTTjBKmryN5lk6e0tk
+X-Proofpoint-ORIG-GUID: NNQR2Semjg67UlbTTjBKmryN5lk6e0tk
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA5MDAzOSBTYWx0ZWRfX3zipjmNBm3A3
+ czSRXqV/SmimGqqCl2FtxXeOlOhXyTwz+oI/J+2F1hNelzUpBwAEhlJsQxNAjJHWanQyggGu6UL
+ 0HNfk4JOKT7emf+KgL6sz8L/Kq6dzWE=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-09_03,2026-10-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ bulkscore=0 phishscore=0 impostorscore=0 suspectscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610090039
 
-Hi Bartosz,
-
-Thank you for the review.
-
-On Thu, Oct 8, 2026 at 11:10=E2=80=AFAM Bartosz Golaszewski <brgl@kernel.or=
-g> wrote:
+On Tue, Oct 6, 2026 at 12:30=E2=80=AFPM Linus Walleij <linusw@kernel.org> w=
+rote:
 >
-> On Tue, 29 Sep 2026 14:24:06 +0200, Prabhakar <prabhakar.csengg@gmail.com=
-> said:
-> > From: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> >
-> > On RZ/V2H(P) and RZ/V2N, the SYS_ADC_CFG.SY_MSTP_ADA bit controls
-> > A/D converter power-down. RZ/V2H(P) has a single A/D converter unit,
-> > while RZ/V2N has three units sharing the same bit.
-> >
-> > Add an "adc" power sequencing target for these SoCs and match it to the
-> > RZ/V2H(P) ADC compatible, which is also used as the fallback compatible
-> > by RZ/V2N.
-> >
-> > Clear SY_MSTP_ADA when the first A/D converter unit is enabled and set =
-it
-> > again when the last unit is disabled. Wait 20 us after clearing the bit
-> > before allowing conversion to start, ensuring ADCLK has been running fo=
-r
-> > the required time.
-> >
-> > Bind the power sequencer to the RZ/V2H(P) and RZ/V2N auxiliary devices
-> > created by the SYS driver.
-> >
-> > Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> > ---
-> >  .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 84 +++++++++++++++++++
-> >  1 file changed, 84 insertions(+)
-> >
-> > diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers=
-/power/sequencing/pwrseq-renesas-pwrrdy.c
-> > index 0190e53913bf..ab20b7ba9b83 100644
-> > --- a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> > +++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> > @@ -5,6 +5,7 @@
-> >   */
-> >
-> >  #include <linux/auxiliary_bus.h>
-> > +#include <linux/delay.h>
-> >  #include <linux/module.h>
-> >  #include <linux/of.h>
-> >  #include <linux/pwrseq/provider.h>
-> > @@ -15,11 +16,68 @@
-> >  #define SYS_PWRRDY_N_DSI_MASK        BIT(1)
-> >  #define SYS_PWRRDY_N_CSI_MASK        BIT(2)
-> >
-> > +#define RZV2H_SYS_ADC_CFG            0x1600
-> > +#define RZV2H_SYS_ADC_CFG_SY_MSTP_ADA        BIT(0)
-> > +/* Minimum time with ADCLK running after leaving power-down mode */
-> > +#define RZV2H_ADC_POWER_UP_US                20
-> > +
-> >  struct pwrseq_rz_info {
-> >       int (*probe)(struct auxiliary_device *adev,
-> >                    const struct auxiliary_device_id *id);
-> >  };
-> >
-> > +static int pwrseq_rzv2h_adc_enable(struct pwrseq_device *pwrseq)
-> > +{
-> > +     struct regmap *regmap =3D pwrseq_device_get_drvdata(pwrseq);
-> > +     int ret;
-> > +
-> > +     ret =3D regmap_clear_bits(regmap, RZV2H_SYS_ADC_CFG,
-> > +                             RZV2H_SYS_ADC_CFG_SY_MSTP_ADA);
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     fsleep(RZV2H_ADC_POWER_UP_US);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int pwrseq_rzv2h_adc_disable(struct pwrseq_device *pwrseq)
-> > +{
-> > +     struct regmap *regmap =3D pwrseq_device_get_drvdata(pwrseq);
-> > +
-> > +     return regmap_set_bits(regmap, RZV2H_SYS_ADC_CFG,
-> > +                            RZV2H_SYS_ADC_CFG_SY_MSTP_ADA);
-> > +}
-> > +
-> > +static const struct pwrseq_unit_data pwrseq_rzv2h_adc_unit =3D {
-> > +     .name =3D "adc-power-sequence",
-> > +     .enable =3D pwrseq_rzv2h_adc_enable,
-> > +     .disable =3D pwrseq_rzv2h_adc_disable,
-> > +};
-> > +
-> > +static const struct pwrseq_target_data pwrseq_rzv2h_adc_target =3D {
-> > +     .name =3D "adc-power",
-> > +     .unit =3D &pwrseq_rzv2h_adc_unit,
-> > +};
-> > +
-> > +static const struct pwrseq_target_data *pwrseq_rzv2h_targets[] =3D {
-> > +     &pwrseq_rzv2h_adc_target,
-> > +     NULL
-> > +};
-> > +
-> > +static const char * const pwrseq_rzv2h_compats[] =3D {
-> > +     "renesas,r9a09g057-adc",
-> > +     NULL
-> > +};
-> > +
-> > +static int pwrseq_rzv2h_match(struct pwrseq_device *pwrseq, struct dev=
-ice *dev)
-> > +{
-> > +     if (of_device_compatible_match(dev->of_node, pwrseq_rzv2h_compats=
-))
-> > +             return PWRSEQ_MATCH_OK;
-> > +
-> > +     return PWRSEQ_NO_MATCH;
-> > +}
-> > +
-> >  static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 m=
-ask,
-> >                                  bool val)
-> >  {
-> > @@ -127,6 +185,20 @@ static int pwrseq_rzg3l_pwrrdy_probe(struct auxili=
-ary_device *adev,
-> >       return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &c=
-onfig));
-> >  }
-> >
-> > +static int pwrseq_rzv2h_probe(struct auxiliary_device *adev,
-> > +                           const struct auxiliary_device_id *id)
-> > +{
-> > +     struct pwrseq_config config =3D {
-> > +             .parent =3D &adev->dev,
-> > +             .owner =3D THIS_MODULE,
-> > +             .drvdata =3D adev->dev.platform_data,
-> > +             .match =3D pwrseq_rzv2h_match,
-> > +             .targets =3D pwrseq_rzv2h_targets,
-> > +     };
-> > +
-> > +     return PTR_ERR_OR_ZERO(devm_pwrseq_device_register(&adev->dev, &c=
-onfig));
-> > +}
+> Hi Ulf,
 >
-> This probe variant looks almost exactly the same as pwrseq_rzg3l_pwrrdy_p=
-robe().
-> Can't you not just store the match and targets pointers in OF match
-> data and keep
-> the same code in top-level probe()?
+> On Mon, Sep 21, 2026 at 12:48=E2=80=AFAM Linus Walleij <linusw@kernel.org=
+> wrote:
 >
-Ok I will switch to the proposed approach and send a v2.
+> > This series pays off technical debt from the beginning of the device
+> > tree for ARM initiative in the early 2010s.
+>
+> I have so many fixes series that need to land for v7.4 that this is
+> mostly targeted at v7.4 at this point.
+>
+> However:
+>
+> > Linus Walleij (18):
+> >       dt-bindings: power: Convert Ux500 PM domains to schema
+> >       dt-bindings: arm: ux500: Drop NR_DOMAINS
+> >       dt-bindings: arm: Add the actual power domains on U8500
+>
+> What do you think about applying these three patches to the
+> PM domain tree as a starter for v7.4 if it's not too late?
 
-Cheers,
-Prabhakar
+Assuming we get an rc7 on Monday, it's still okay for me.
+
+Although, please re-submit these three separately in a v4 to address
+the comment on patch1 from Krzysztof, then I can apply them.
+
+>
+> They are reviewed by binding maintainers and should be
+> uncontroversial and will make it possible to avoid trouble when
+> merging more stuff later.
+
+See above, I think you missed the comment from Krzysztof.
+
+>
+> Yours,
+> Linus Walleij
+
+Kind regards
+Uffe
