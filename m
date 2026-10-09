@@ -1,89 +1,83 @@
-Received: from mail-24418.protonmail.ch (mail-24418.protonmail.ch [109.224.244.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CD193BF660
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 21:07:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBAE53CF21A
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 21:16:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791580081; cv=none; b=kCLBC2qEDq5P/wWJ/PwIqlnUrOgOWDC+fCO9iutqafQBVuRrngNSCVewF4QZXSx6KtwFwUYnHvbTPfiaF5Hm+R7fcmdeBwkunnmf1bynsp7Ou6/3d7K17ZAtC1+yTRBegoUhTyyKukle/bOxJx7IdsKSYt0cKd+zy/ECN9Qyzz0=
+	t=1791580609; cv=none; b=rQV8txGCM1efgsrgx8KKYFrnSUlmCZM2zxpKy4b3C6+5VzknS1ms21Qk86gz+ocmb+Wy4u7hm7p4wnma797tJiOL+XsqTkhHanhaGxMVH7hkE6fkwysXcEmgaMEKjQpI2Dl7z/RVbmtp1eJW+wlZN1TGDIU2RmgcooB1PU5dlfA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791580081; c=relaxed/simple;
-	bh=5sMHZk4Hc88OhXhjJkqjDNeV6rinFGuPqsbkYItAWz0=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Jgm+BSWhHhCzgFqw3N2EfTi20b4RS67b+wm8JV5Vel9D79Z8/Be6DdTjBbI82KpiVDjoxLEv11CYDX8m7dGmbHg8hout1nbt406yI06q8KFSJYKX+UD7qjv4w0m6tPE3nvso2PHj6qSiDHAsBtFf+44UvK18448rSnBE/MOvJds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=EcgIALZD; arc=none smtp.client-ip=109.224.244.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
+	s=arc-20240116; t=1791580609; c=relaxed/simple;
+	bh=pOjh8O8Oq6aRVh6JgsLLuSInkH3+kGN0eVIPZ+j+jmc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mRLBUpxnx+3z+z6Yo+sS6Tyy9WPqWlrBJa/QZPnMPdD1alnNnL+ebd2TmHGCNrQWnaq//yeUB4C2GoqP/wxYnyIVs/PxgUIl8Re22X8K2YK6p7EnrUd2wpytRVUx2lxXwC2QgOWwAsWuvVGWIxJhrIwP7BgfqW0a/s9DEqlr3/k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cG+2CrOd; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="EcgIALZD"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1791580076; x=1791839276;
-	bh=8mepSe62s0ugerwpFuXic0aCmj871cPqnta8q4WTVwc=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=EcgIALZDakrxXNkCM/5aUw8DLoDg4bDNi/NqhDKyCh7SYpJN+NswgIxAPS/SJhsVc
-	 yKuSiRTw6+bDTvXRsZyupu2Ech353t/irzazx6llMjKcJDMC8+yzONohxNFucrOM++
-	 TQwjiggKgiATDwYUCARn/jXfbLvYmgTbPPNVJohBJTR70rBuWe8cxZg8vuQbIBKFU7
-	 JoBhf7jLZf/rlVGGGb2VnnwYmW038rqL9kSzpzt7+FF1HyyKgTw/L0pZe3uErLpO+i
-	 a7zAlJgrHp7mAH9/c2qrGJ1iMDkLIUddcmGq1CPtCKAEugdpx2ZqlrJhLUzSuOqXez
-	 ZcvQ2OT2isp5A==
-Date: Fri, 09 Oct 2026 21:07:53 +0000
-To: sashiko-bot@kernel.org
-From: Birk Skyum <birk.skyum@pm.me>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Manivannan Sadhasivam <mani@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, =?utf-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Rob Herring <robh@kernel.org>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] PCI: dwc: Power the controller down when hibernating
-Message-ID: <179158007085.33373.10495486250879471249@pm.me>
-In-Reply-To: <sashiko-outbox-166041@kernel.org>
-References: <179157746908.73485.2343672865542690797@pm.me> <sashiko-outbox-166041@kernel.org>
-Feedback-ID: 21326998:user:proton
-X-Pm-Message-ID: 97b4da40f43a418c58b48886561281d9e2d8eeff
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cG+2CrOd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D8AE1F00899
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 21:16:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791580608;
+	bh=pOjh8O8Oq6aRVh6JgsLLuSInkH3+kGN0eVIPZ+j+jmc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=cG+2CrOd/QgTwToV1AwTrkzyFuPmqfc73GdFV7wNvYOFnXZWbZWW/rrgmv46M8QYd
+	 /coo1iRKTKUtKMdYTOT9l2sZy7jyZF6JHKG42SK9Yvohzctg1HD/lqYGjIZ9leOfAE
+	 tV94AUotzs5KkNtvmqM0jwdlURnWerRBOt1KAvdHH9uVLTv8lBAUYBGp+WV/73feVu
+	 SP0MhUlNc6O/DtAyJEWAWEmsKbt5y5f2OTFgYewpx1UmHilkQ/atenLnBQ23ZWxisa
+	 wVylB5egjye+9e7J6pojE2czF6KCRzjr2GjzIFc1QRrtLA3ggcgPhYLStpTLCEqGG6
+	 z3/NcrfY8ydGg==
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3a9787a14ecso1882491fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 14:16:48 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzKVjauEgodiOvsSIn+IR+SovFA9/vyvzGDCalSr0Avmwv9ofcWeQd4uMJEMoBBwUDNYH5X4g6L8w==@vger.kernel.org
+X-Gm-Message-State: AFq9FYI2OONB0kgjUxtwHm2xMTWiVpptZUFP1+fHSzA7rojhCSxX2i+j
+	iLs1SUdSiQy9wKEA98ry96bHWCHmeiuQ7Xv6jI6J+yiRT0tqMzC23rWaVIKK5YY82TIvUwM0tND
+	xAwO28i9ZylaiPs+OJu/ThnsVPa5oEa0=
+X-Received: by 2002:a05:651c:198f:b0:3a7:69bd:80ad with SMTP id
+ 38308e7fff4ca-3a9c5253754mr7279251fa.6.1791580607219; Fri, 09 Oct 2026
+ 14:16:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <20260921-ux500-power-domains-v7-1-v3-0-9352be6b86b1@kernel.org>
+ <20260921-ux500-power-domains-v7-1-v3-5-9352be6b86b1@kernel.org>
+ <CAL_Jsq+1O+os8=YGUoKg6zCm-r0gQ35baKX=z65uTQNB0i=RVQ@mail.gmail.com>
+ <CAD++jLm+yRo9e1UDhnaYrdPq28mdyYKQZ6tdKuUa3UG85imkNA@mail.gmail.com>
+ <20261009131902.GA1195061-robh@kernel.org> <CAPx+jO9F6wUG9M_cV-xiF-KAKD5kJ02n+yE6L9vocs=KWaKFTw@mail.gmail.com>
+In-Reply-To: <CAPx+jO9F6wUG9M_cV-xiF-KAKD5kJ02n+yE6L9vocs=KWaKFTw@mail.gmail.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 9 Oct 2026 23:16:34 +0200
+X-Gmail-Original-Message-ID: <CAD++jLkkWUpkg6gwZuRzwwLU5E_9AsLiv8PSjT04dvNFj4DBBA@mail.gmail.com>
+X-Gm-Features: AclHuK9p2mVaeX7VK8JUI4a76kwVWB2K8tlFEwycQPwaH1SFyM2rvP_ArIybIGc
+Message-ID: <CAD++jLkkWUpkg6gwZuRzwwLU5E_9AsLiv8PSjT04dvNFj4DBBA@mail.gmail.com>
+Subject: Re: [PATCH v3 05/18] dt-bindings: display: ste,mcde: Allow power domains
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Mark Brown <broonie@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Vinod Koul <vkoul@kernel.org>, 
+	Frank Li <Frank.Li@kernel.org>, Lee Jones <lee@kernel.org>, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	dmaengine@vger.kernel.org, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-> Does this short-circuiting && operator cause issues during hibernation?
-> [...]
-> Since pme_capable is unconditionally false, pci_pwrctrl_power_off_devices=
-()
-> will force cutting auxiliary power.
+On Fri, Oct 9, 2026 at 4:38=E2=80=AFPM Ulf Hansson <ulf.hansson@oss.qualcom=
+m.com> wrote:
 
-That part is right. At poweroff_noirq the devices are in D3hot, the
-helper would have reported PME from D3cold, and with this patch a
-wake-enabled device loses its power anyway. In v2 I will call the
-helper first and ignore only its verdict, not its PME result:
+> I have queued up three patches [1] for next from Linus via my pmdomain
+> tree. The patches are also available for you to pull via my immutable
+> dt branch. I assume that should resolve this problem?
 
-=09if (!pci_host_common_d3cold_possible(pci->pp.bridge, &pme_capable) &&
-=09    pm_suspend_in_progress())
-=09=09return 0;
+Way quicker than sending and having a revert accepted, and
+way way more productive :D
 
-At freeze_noirq the devices are in D0, so the helper stops at the first
-one and pme_capable stays false, which is what the image needs. I ran
-this version on the Yoga Slim 7x before writing, and a hibernation with
-a power-off resumes as it does with v1.
+Thanks Ulf!
 
-> wipes endpoint hardware state during the freeze phase, violating the
-> core PM contract that thaw operates on preserved hardware state.
-
-The reset between freeze and thaw is real, and it is the price of this
-approach. pci_pm_thaw_noirq() returns the device to D0 and restores its
-config space before the driver's thaw runs, so that much is covered,
-and a driver whose thaw is its resume copes. NVMe did here. A driver
-with a lighter thaw that expects the device's own state to be intact
-would not.
-
-I did it at freeze because I do not see how to do it at restore. The
-image says the clocks, regulators and PHY of the controller are on, so
-restore_noirq cannot bring them up without first taking them down, and
-that means writing to a PHY that may have no power, the same kind of
-access that resets the machine today. If there is a way to do this on
-the restore side, or if it belongs in pcie-qcom only, I would rather do
-that.
-
-I will hold v2 until a maintainer has had a look.
-
+Yours,
+ Linus Walleij
