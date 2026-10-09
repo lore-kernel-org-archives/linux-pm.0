@@ -1,204 +1,258 @@
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6D993B2FDB
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:18:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A32144CF44
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:26:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791555490; cv=pass; b=kTokgohtFbDUCg8CG3yw9mqMiyz+45nCU24afuZUCoKx9rcRoSMCH5sM8pgrIY+PJqilbs7V4f6HfiWaOHkw1Y9p8siGAXw5V1s8jMxtbPbwiiGOkNku2bS1php4nJp8EyPm7EnaBypa5mxVyH87CaPMuZH6y7l0345VY9tL3vo=
+	t=1791556017; cv=pass; b=N3xyCisc3MOUixZvDKfo3HPS5nmRhyRMU6P5BvtYL9GqqjWq3HI5Wxpfn8kyYH4skZdcjbwUCUWKR57OlJeqb6SRU8zPHYSDVuBjAd1fo1eRCAo+3GgVkfGvBl6U247gPJBBU9SjTs6NBSToiJpvD3TUk7nacQN8MJRgDwMtXiA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791555490; c=relaxed/simple;
-	bh=yXkOOHEp5xbA8RyWHIG6SKO9apysMTvV+h4+HDrM66E=;
+	s=arc-20240116; t=1791556017; c=relaxed/simple;
+	bh=hjigRTpAheShvm4CUT48bphb627DqEDqb9jtmCAaHI0=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WbMLf7k+HnMLggSle+K0fp+p3Ch1K7s0vl1Fkt3SFmGhU4MAqKIa1hZ1xZJ/Cry6ML6QzJee9MrqwyT4fZGXGvhTogFCC5Wj/Muhvf09uUwI36TJVkUVoQdp6j4NoyhMns8FZn9Ech4K4fkIytRgvokUGa5Elmw+kT7eeEEjSKg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=yoJiEh7r; arc=pass smtp.client-ip=209.85.208.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 To:Cc:Content-Type; b=Em3gPwnFW/S3D9sCjfNkv6ttfQ8J7b0ljPsacUpCTQOOopHUZJsJg1K9Kh5H5nn0hzArg4+1vzCcnQKK3bxdf/n6MmApnhySMvpp+wl64JosNgDmiOE6WCMBdELQK6orlygaIZ3qCplU2RHLzIyf1ZxgufJQra9r0tpTincEdVE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=KVytQEUj; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=JsLuZIfC; arc=pass smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yoJiEh7r"
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6afafc89b48so6526811a12.2
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:18:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791555480; cv=none;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="KVytQEUj";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="JsLuZIfC"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 699DK4ld1908357
+	for <linux-pm@vger.kernel.org>; Fri, 9 Oct 2026 14:26:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Yn5+ecY3l/7Ibm3VZ5iLKxtcMms0hMKLnboQJLRWmU4=; b=KVytQEUjtqCMeEs+
+	IlaupvZ6HdAWnkXDlu8DGKXcQmaWAhzC0hIo4Kuw+rT2SBbUn608lxqOTXIFx76T
+	24L1342L5BBnS/nn70pm7616hPPD6f+ub6C4saRgX6+Oh5yryqCVFUtGYKaOhS5c
+	zgLsWmqEj7ZaZEp7S/eO0Y/80s9DthnY4YhFmWXCUUjG7ul5bG/KUKBoWQNbcyK3
+	SQomoBHOudb/+o7riht2a3wZk6GBA4h3jy4kmfuoh5pbe4K3LKlS+uf88C5flLl/
+	Ktj+xd+ptKntIzvpPsUgq9MqW0h+HO0ZSIZQ1DpnZt13t7Hv9dAIdLS7e3cjOm9O
+	ia+Nsg==
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h6yk7gk8m-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 14:26:55 +0000 (GMT)
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-892ccb01fbfso2107320b3a.1
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:26:55 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791556015; cv=none;
         d=google.com; s=arc-20260327;
-        b=J/r47jB9lK4mZ2/lyAFMw3t0H11gnqtBNB2cEgWZIwxLmlXBBEA86aWHvGsteY8wcn
-         ZC3VCV5E2bMRne2s4fecuuxASRMc7wnQT5BN8ZDj3EjdlHooORuvkzAA6DyAqTBktu/1
-         kfv/6u8f214CUcsKygPpaz6hfsQNgiBe5xB1kMBJHFbEqd/X4RZV6dBgm+LH9pnDIwxG
-         txzQM0Xigh5nVzCKJhZQKrN0ljTWoAOAjelMa3dEB64jlfNXs48CfzY8+8CbmdtOxWNh
-         b9shCxP0QJ6LH5t57MF/qarR4jwWTYv1Zs9CekD1siforWiOBzAW64a6lpTTB5E5P86U
-         i0RA==
+        b=LwwYB/vNrVK2Dd6stabr1WQFRjRJtRb9PxCmUSSgmXeoUr8T0qjkaBP7HLDiVL9klg
+         p92t2/MKqSRBaNbBgoxf7oIjJJUsFCKx7+UgPRRdeC87W50ooQOLUCWvM8IhBbTnDMXO
+         KjeWPCBDwF4DoBKRgFrnu+BWblkcxVfA8PGvoHUeSeJAbNrHvOUXR+XM3rhoT3x7hxMc
+         odV7r2DBexhoXPbECTZzvNQIVWKi4pd0AT8wnYtGlIGxCfka5eNB8YhAP5FBbcl7CiFv
+         yh81WSxBgMEn7M4Dftn4/T0yVOORFn7d0ESwV2Qg6FCjGroUXG1JB7ALOJ0qDEErTIQq
+         GHKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=mjfQzImx89RahkOfgksZ5+FFpeca3hXEAlgOHPVxIY4=;
-        fh=RqV3HYUb5oa5ALB5pHkCq00kSCFrdEL9trqSYoNBkIQ=;
-        b=GZkp9qEXzP2YhCXYxqQRR9sY6V11gSg4yXzk/AyuUEcUlYrjz2RCx1q9mtjGmIJMZx
-         q4grKwbbal2hu0WgI+V2apkELYbA9pLJqN+ym/P1vPmsKaPlXzGzd/Io4iC4g9/4neCV
-         ttEYh5sOPGpjR0LkoaMu/Aam3e8mkySXpAFDvuP3tXiau9kBM5TG97tkmpjwip+zKP2s
-         v60e1S/yojWhx5Y0R0DsBD8Pnqfp2PIT9a333BORN1FJbZp1HUYmN/M4bEWdtI1e9gHL
-         RRcsai2DqPh93rAihv7GptoKF3ss+Ybq4nMRdNezS6ag4+qE9o5HJ/Q+LOfr95ErFTIp
-         PpaA==;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Yn5+ecY3l/7Ibm3VZ5iLKxtcMms0hMKLnboQJLRWmU4=;
+        fh=EB6vxjWFVLRAmBpjDiIE8rUzcs6Q+ERX9wwjq+N7kfU=;
+        b=YlIxElNH1cQiEWtdJ/zaFAt6Wf0F83C6fu8D/lGPHcYbPoXY+mJcVFLoKQBXSVxOsa
+         yocbKD6cyVG4zevYcVwQ+bc6rWhzATRLYy5RoOE380TMYrX6Mb2NxIcy/a1aqBBfb+zG
+         mO0s+c8k2sPHgiAsVlKvoH4cajMiXk9utPIAeiXDQr3TUsA5VUvl2WhDvJgxQuve+jEr
+         uL95hStTOVlJD4dF2VbZx/K0DcsLPxfNn03d5r7bZjSo0moDrHv7tGo4u4s6AdDYE/Rz
+         xUeU/05R3dnc6468ia4EgQ+JQ5jD6g8E2O6GJfBG7nTtAgrKsgKVKjoEXHiU2HMphoXT
+         27XQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791555480; x=1792160280; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=mjfQzImx89RahkOfgksZ5+FFpeca3hXEAlgOHPVxIY4=;
-        b=yoJiEh7rMJUI9DCeWnhkOq0rD2LIzXJD0M9JkRjaZcpTncnI8bNNNuC1WeeogM3C2w
-         3M54CMRBazJK/CiB32AHVkSanB15eJhkW5i65Ld+KiljyurVuy3PsqH6VbUg0WQIh2gE
-         OLiRwWFhh8W4UAKPip4l3eoYA8cEqT9BgVxWD/w9okmaNOjOXZjW+/PRLGwStqWHlM0e
-         RT1uUFss+8UKUa4km50vDQYvr8DFzqOVneYbO/UxvkbsAhwUkNJYliM65N+QTCObNQJv
-         ypRchJNlCQKnJ3khuqoLSM4dKhVmVcInZEd/3wSLU4E7hogc/aTWuNeRqEu813Voui86
-         y6yA==
+        d=oss.qualcomm.com; s=google; t=1791556015; x=1792160815; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Yn5+ecY3l/7Ibm3VZ5iLKxtcMms0hMKLnboQJLRWmU4=;
+        b=JsLuZIfC5BqvWQG8Lc3WgF39aqJJoKsW90tCSxOfRJqf4BAJ+bwJLgfn4vSUtLdtgu
+         7xjOHxN94tWIH1HYRD8bpw6BC2AQjeATE8tMFMWhUDVfrtNPGzhwgTzUjPrTxtP51f/o
+         ZmZKgiNCKgORBYpwbeFyY0NQWKuVyGlwL39WwH5gN4Xx0EnRKEy8/QrWK0sJYpBiJKm2
+         zEOWfrgcJVoOGzeWIYOLLYCo6Z5q4EXcHIJEE/5gYtKKMus8l0igMjoFOeZJPFVwtdJz
+         hNJj9vA+3lwDTHPGstjSFOBF4RShX1s/7DdkGtv3e+H6YnrYwWV4bmYgqHU9od761ec1
+         6g3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791555480; x=1792160280;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=mjfQzImx89RahkOfgksZ5+FFpeca3hXEAlgOHPVxIY4=;
-        b=qomTkhN9fFXUakpAzVhoaHY4YiU0PzioDkaXnqMiHlwGjz+arhv+ev6JG7zndk0Tat
-         yjhSP2i/vyM0oiQT7VCb1jXEVGL5R00RBNB8ucSqU1C5gvNG3wLbxD+JyrrrjIgFdebo
-         rfVw8HPWhTrz68x+k8Lzrf8DT5jwo5Cdagb09A81mrtg/T7c/yA+6HmmrgREFFZH+wTe
-         W3NqoEK4dv3BaOmSskkMyrzzxm5DX/IPMFYJEil9DioGW0xhUJlZ42rCSepbo0TmA1ab
-         mmwaZa328xa6gz7IkA62aSfHUWebiu9OafqhyrDFdWqCTBBwLc7nXbLlIOLSeT2I+ehe
-         0USg==
-X-Forwarded-Encrypted: i=1; AKwUvBwxihJ9uUtWWkZyYRT1DIjtQUJ3FcBnzek6Xz+w5FM1f07K0+BGk/TxAtt6hn31XhHRKoSwcaWT9g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYISLbVXSGsVEsx5LbSgtKh64C41XfDHZAcbOAMCZQTpBA8f+vFP
-	E2TmS0kMkg+DZZgeIY4VSZ6ujAutbdK3yX86Ma/kzg4ZQfVLhPpMBVNufSpBjXYFVd89cB/RArl
-	Q9nXHjWizzfjk+OjBBQgiS/aDwavpD+bUyNWceE2ljQ==
-X-Gm-Gg: AYBFou2vkEK2pIPh4wZ0brDEINcPek3Pmkie8MZdSAK/NfmH7WmUlJHnNOYj0AAkTkZ
-	cS18a0GF51ag5EKq52ZJtecqc8YC3NxvFB81f6W93FLOQ/kSS2CwX59zBLpFmX+H7M+GQht6dWV
-	h3MpJ54HdThlOiY1CiyoEH7e/Tggfy6v5W/Btv4nfG5xZ4zoxOZXaWwTRD3F7/2Wjgn7Gw39dEr
-	H8yvFraWqEDBUkMCyVAmCwD+klBFepJFup0COPBNsySMMS6wrdX0zWrSyJ0poej7pe+vYmrJ5V9
-	atAkAPJF1M5UV2cyCPE+cSS/Trvw8ALJETzVIbhAQ1+DPWoMIBqjWWSwkVpx3z7QWBT/C8TeawO
-	aFUatB+uGxkI=
-X-Received: by 2002:a05:6402:4606:b0:6ac:6b18:345b with SMTP id
- 4fb4d7f45d1cf-6b17c24e477mr1307684a12.17.1791555479602; Fri, 09 Oct 2026
- 07:17:59 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1791556015; x=1792160815;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Yn5+ecY3l/7Ibm3VZ5iLKxtcMms0hMKLnboQJLRWmU4=;
+        b=IY5ReHesfIRz9khrkuZVCr4Vj0pnx4JzoT1ZtpDgHFc90MfK8ZcJNmhNAVyvLSe5DO
+         ZFbeYo01XLi4ZQt7HekvC00LLLYQF6PwfDGegXZTW4tj14R2BjkjagPki8SZO6VfZisi
+         7YB3ziquUoW3furJRhrt4lvpvYiXfTevashsBspYginr48nps+2fnr/UG+AqRDyNiBKR
+         wKL4beo1IvgO8MrrERpAxT8PqXoBpym8XBsfOgTfWMhaw/uZyCVLSUHZQehgfSUiRibC
+         psWocdkYuDp32Dpoc3CcCSBg8i+YFBjcihJYsrmtBOjKW8C3uJXM3xB5aXcSiOxKQatO
+         WyzA==
+X-Forwarded-Encrypted: i=1; AKwUvBzwhxrxsp1xEE8j0nAfBbAx55JETS9jCctJCGeYvhRonmP+Q8lzik40+BxPkXhmd+Namqyc9IzlJA==@vger.kernel.org
+X-Gm-Message-State: AFuF++ltZ4aG442Z9iotESAbHbX+g00DFf4/rpFbYHJF6qNMQ15qpejq
+	yR2VPaItmfCC4q06qxmM9NzgnibFE+qvaJSk+2zxXgaG/OCjLYdwtxbIINPGOsdbKolFbPKrlz/
+	1FsPTaWuptNZx/J/3KIS0hJZQ3yCYiPzNgNK6P3chunJcHxiElny04lQGMLi9pLSR86B22ZiNQI
+	ZrBkaKNFT3MjOV2bWOl0J7GPXGLNJkLy392F6G
+X-Gm-Gg: AYBFou3QxfOJ9I+3m15y7JV+dL/3FDRF1ytaJ2jg2fSEa08ltLzl1KFT4jrj9VCwX1b
+	JBUdZif+l293aIro9kl+9KPpdIm9kmZkwIcmlVnYM8Vn3ClK6MhuC7F5Nts4zphsdtmLS6zv0YX
+	fqons1fSPpilSTTevrQpJbmqF2/xa0jOWF5jJWXA2xQ6uRrFitT7XirLyvIg==
+X-Received: by 2002:a05:6a20:c79a:b0:3e0:b71b:a8f2 with SMTP id adf61e73a8af0-3e16c010522mr1735826637.40.1791556014672;
+        Fri, 09 Oct 2026 07:26:54 -0700 (PDT)
+X-Received: by 2002:a05:6a20:c79a:b0:3e0:b71b:a8f2 with SMTP id
+ adf61e73a8af0-3e16c010522mr1735661637.40.1791556009444; Fri, 09 Oct 2026
+ 07:26:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
- <20261002154415.2270586-19-vincent.guittot@linaro.org> <179bcb50be21f834423f9b5c068b5fce4cb65871.camel@linux.intel.com>
-In-Reply-To: <179bcb50be21f834423f9b5c068b5fce4cb65871.camel@linux.intel.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Fri, 9 Oct 2026 16:17:48 +0200
-X-Gm-Features: AclHuK8Pboa48bG0Ygkxu5EGL_q1lSvm8cRTKP-bJ5A1NhoyUuVzmn0zHI8xqpo
-Message-ID: <CAKfTPtDcw6J72dJkbemySR1WKE_sWB0exXp_X1=DZSdO9BbrQA@mail.gmail.com>
-Subject: Re: [PATCH 18/18 v2] sched/fair: Take into account slice in EAS
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
-	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
-	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
-	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com
+References: <20261005-s2idle_state-v1-0-3c402c66f388@oss.qualcomm.com>
+ <20261005-s2idle_state-v1-2-3c402c66f388@oss.qualcomm.com>
+ <20261006-romantic-stalwart-seriema-90e71d@sudeepholla> <CAPx+jO-T_0KT3GytYu8w6QvrhXFQNZQzR496RL=McU6rnMtnPA@mail.gmail.com>
+ <20261009-frisky-rottweiler-from-avalon-6c409e@sudeepholla>
+In-Reply-To: <20261009-frisky-rottweiler-from-avalon-6c409e@sudeepholla>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Fri, 9 Oct 2026 16:26:38 +0200
+X-Gm-Features: AclHuK_Vubf4k8TpvsD1c7GgWbgnBlZu6M1U_szLd1fRdLCNfDEiyzf-bluvzDo
+Message-ID: <CAPx+jO-_aY5pMnWyy1hAs1WRmfW33vc317jdtBsEXYBoHsPfxA@mail.gmail.com>
+Subject: Re: [PATCH 2/3] pmdomain: Add support for system-suspend-only states
+To: Sudeep Holla <sudeep.holla@kernel.org>
+Cc: Maulik Shah <maulik.shah@oss.qualcomm.com>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Authority-Analysis: v=2.4 cv=D63SufRj c=1 sm=1 tr=0 ts=6ac8f9af cx=c_pps
+ a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=yOCtJkima9RkubShWh1s:22 a=VwQbUJbxAAAA:8 a=xZBbqvtqD373e08s9rwA:9
+ a=QEXdDO2ut3YA:10 a=zc0IvFSfCIW2DFIPzwfm:22
+X-Proofpoint-GUID: -apSuOcpTcpjhaxPo2NBh85HJo423CWN
+X-Proofpoint-ORIG-GUID: -apSuOcpTcpjhaxPo2NBh85HJo423CWN
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA5MDA1NyBTYWx0ZWRfXyJgj9xCCCFgj
+ VT9+XG1w8OWMgJVN7y3uoTSyXHNZ97FScW6WvS7SV3/wdl//hzWz01nhzf4UN2UY3lwSBdxbxSm
+ rzT3aPXWRzDNuqnkRWcRn00EAzeTIO3Rj/B/na1uHoacrqPP49SkYuiAkotszxApJCskoq3Y7Uf
+ H7HF1Uwq/V+XjoG0qZ1JrlvXNtS73hIJ59hpm8EkQi+D1xUyxP9q5yzl/ZN890OClubXD6A9y9a
+ Z/3HPK/lLGYZoFa3tHMTfZ1tIXPjigvvGKzfKBBOXkbvfB0aSFah3iviYy8iqfqeeT84ElEc1XP
+ rLsmsbJRBV0Xi9pxeIYWSLqmZTpnQtV4SHMGR0QqNlM2DmPXEAWNael784w7wkaSLbzJjB0lUsO
+ YNsSK0h6P2oqQD/MMGiFHedOF10b5WBjIb851jeFJCgUzV9IhXJyAQHFNniiqTtH7bHRB4JaRla
+ 6O+HkYS+mjapZ5dJQJw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA5MDA1NyBTYWx0ZWRfX9Wt1CjVuVPfa
+ NjwtNVSsv6eJEX8Spf3bIHy31rIN4Sw6EYv90zEav2wNRpiIsoOa3QKcjpZEuWRLa/d6IDLI925
+ NaevSn3b+46blimPvCE0z5PHC/rbLsk=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-09_04,2026-10-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 adultscore=0 phishscore=0 malwarescore=0 bulkscore=0
+ priorityscore=1501 clxscore=1015 impostorscore=0 spamscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610090057
 
-On Fri, 9 Oct 2026 at 00:53, Tim Chen <tim.c.chen@linux.intel.com> wrote:
+On Fri, Oct 9, 2026 at 2:21=E2=80=AFPM Sudeep Holla <sudeep.holla@kernel.or=
+g> wrote:
 >
-> On Fri, 2026-10-02 at 17:44 +0200, Vincent Guittot wrote:
-> > When the cost is the same, take into account the slice of a task to try to
-> > select a CPU where is will run first.
+> On Thu, Oct 08, 2026 at 02:21:49PM +0200, Ulf Hansson wrote:
+> > On Tue, Oct 6, 2026 at 11:15=E2=80=AFAM Sudeep Holla <sudeep.holla@kern=
+el.org> wrote:
+> > >
+> > > On Mon, Oct 05, 2026 at 08:59:43PM +0530, Maulik Shah wrote:
+> > > > Some domain idle states require system-wide coordination and should=
+ not be
+> > > > selected during regular CPU idle. However those states remain valid=
+ for
+> > > > system-wide suspend like s2idle.
+> > > >
+> > > > Add a per-state system_state boolean and populate it from the syste=
+m-state
+> > > > property. Make the genpd governor skip these states during CPU idle=
+. Leave
+> > > > the system wide suspend path unchanged so s2idle can select them.
+> > > >
+> > >
+> > > Instead of this I am thinking if we can QoS cpu latency setting and b=
+lock
+> > > system level states normally. Since s2idle is user driven, it should =
+be
+> > > controllable via user-space and we don't have to define bindings agai=
+n
+> > > if systems that use platform-coordinated needs this too. They may not
+> > > use domain-idle-states.
 > >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >  kernel/sched/fair.c | 13 +++++++++++--
-> >  1 file changed, 11 insertions(+), 2 deletions(-)
+> > Even if we likely could make that work, it's seems not correct to rely
+> > on userspace to make the kernel to pick the correct idle state, while
+> > the decision should be based on the characteristics of the HW.
 > >
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 94554f165f42..d60bb6db4ce9 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -9598,8 +9598,17 @@ static int check_cpu_with_task(struct task_struct *p, int cpu)
-> >   */
-> >  static bool update_best_cpu(struct energy_cpu_stat *target,
-> >                           struct energy_cpu_stat *min,
-> > -                         int prev, struct sched_domain *sd)
-> > +                         int prev, struct sched_domain *sd,
-> > +                         struct task_struct *p)
-> >  {
-> > +     unsigned long task_slice = p->se.slice;
-> > +
-> > +     /*  Select the one where you can run first */
-> > +     if (task_slice < get_rq_min_slice(cpu_rq(target->cpu)) &&
-> > +         task_slice >= get_rq_min_slice(cpu_rq(min->cpu)))
-> > +             return true;
-> > +
-> > +     /* Favor previous CPU */
-> >       if (target->cpu == prev)
-> >               return true;
+> > In regards to PSCI PC mode, I believe we should consider adding the
+> > similar DT property for the arm,idle-state binding and make a
+> > corresponding change for the regular CPUIdle path/governors. Although,
+> > it doesn't necessarily need to be part of the $subject series. I would
+> >  be fine if that is handled later on too.
+> >
 >
-> Hi Vincent,
->
-> The slice check above comes before "Favor previous CPU", so I read the intent
-> as: the CPU where the task can run first wins, even
-> against prev_cpu. But the slice check can fail for prev CPU
-> and we can skip to "Favor previous CPU" and pick prev CPU, even
-> though the task can run on min CPU first but not
-> necessarily on prev CPU first.
+> While I agree with this line of argument, I am bit worried that there is
+> more deviation from ACPI _LPI binding(equivalent to these in DT). If othe=
+r
+> OS has manged to run the same firmware without adding such information
+> to the firmware(ACPI in this case), why do we need that in DT. Is that
+> information encoded elsewhere in a different form in ACPI and is this the
+> right place(the idle state binding for DT) is what I am trying to underst=
+and
+> here.
 
-yes, I wil fix it
+I don't have the information about ACPI at hand, so I will leave that
+to Maulik to be answered. Or perhaps, someone else already has this
+information and can share that with us?
+
+In any case, I don't see any other reasonable way to describe this in
+DT at this point.
 
 >
-> Take an idle CPU X and a busy prev_cpu. Any task can
-> run first on X, because an empty rq has min_slice == ULONG_MAX:
+> Also taking the example of screen on, won't that be prevented as the
+> system domain is shared by the system level idle-states we are talking
+> and the screen/display device. So it never votes to power down that
+> and the PSCI OSI domain idle driver must not be able to choose the system
+> level state.
 >
-> - prev_cpu scanned first: when X is the target, the slice check
->   selects X.
-> - X scanned first: when prev_cpu is the target, the slice check fails,
->   and "Favor previous CPU" then selects prev_cpu.
+> In general, there is some device that doesn't vote to power down the doma=
+in
+> and hence we can't enter the state. So my question is, will there be some
+> device that doesn't explicitly register vote and hence we need an alterna=
+te
+> mechanism like the one proposed in this set ? If so, what are those and
+> how does that work in system suspend states.
+
+Assuming I understand the above use case, you are thinking that the
+display device (for example) is a part of a cluster PM domain, right?
+
+If that's the case, besides that the cluster PM domain topology must
+be modelled accordingly, the display device should be hooked up to the
+cluster PM domain it belongs to.
+
+Beyond that, it's the corresponding display driver that becomes
+responsible for what should happen during system suspend. If the
+screen needs to stay on it may need to call device_set_awake_path()
+for the display device - unless it's a decision for user space that
+can control the behaviour for the display device via its sysfs node.
+If things are managed accordingly, genpd_finish_suspend() may decide
+to keep the corresponding PM domain powered on during system suspend.
+
+The above said, $subject patch doesn't change any of this. It only
+allows us to use more states (deeper), which are limited to system
+suspend (s2idle).
+
 >
-> In the second case the task is stacked on the busy prev_cpu even though
-> it may not run first there.
+> Or am I missing something more fundamental the makes all the above argume=
+nt
+> void.
 >
-> Perhaps something like the following is better.
->
-> ---
->  kernel/sched/fair.c | 12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
->
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index a47c6521a411..3fe305d690eb 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -9830,11 +9830,15 @@ static bool update_best_cpu(struct energy_cpu_stat *target,
->                             struct task_struct *p)
->  {
->         unsigned long task_slice = p->se.slice;
-> +       bool target_first = task_slice < get_rq_min_slice(cpu_rq(target->cpu));
-> +       bool min_first = task_slice < get_rq_min_slice(cpu_rq(min->cpu));
->
-> -       /*  Select the one where you can run first */
-> -       if (task_slice < get_rq_min_slice(cpu_rq(target->cpu)) &&
-> -           task_slice >= get_rq_min_slice(cpu_rq(min->cpu)))
-> -               return true;
-> +       /*
-> +        * Select the one where you can run first. Check both ways, or the
-> +        * result depends on the order of the CPUs in the PD.
-> +        */
-> +       if (target_first != min_first)
-> +               return target_first;
->
->         /* Favor previous CPU */
->         if (target->cpu == prev)
->
->
-> Tim
->
-> >       if (min->cpu == prev)
-> > @@ -9762,7 +9771,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
-> >                        */
-> >                       if (target_perf < min_stat.min_perf)
-> >                               find_pd_cost(pd->em_pd, target_perf, &target_stat);
-> > -                     else if (!update_best_cpu(&target_stat, &min_stat, prev_cpu, sd))
-> > +                     else if (!update_best_cpu(&target_stat, &min_stat, prev_cpu, sd, p))
-> >                               continue;
-> >
-> >                       /* Save the new most efficient CPU of the PD */
+> --
+> Regards,
+> Sudeep
+
+Did that make sense?
+
+Kind regards
+Uffe
