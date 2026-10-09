@@ -1,139 +1,209 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 670534DD6DB
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:04:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC09B4E4308
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:06:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.42
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791554664; cv=pass; b=HxngT4Gjv/zQlfdtffR6pTIcQ+bPaRAPR3bq+6Ko+1ymibT/CZz1whhHJphb73+Hd9Lv6FWahvbqpDd3zaLPklKtYBIyWtRR6U+G+iAB6WmF345mtdPLNld8E31521BfJ0u/mMTGGsjantVD5OxsYLkLrTBpNwUsMoYc8aR5DdM=
+	t=1791554795; cv=pass; b=juOZrl/q665hFxuhAob1Xsn8HT5PjGFl1yMiljf57KEJNsIWbByVQUrXxyRamRfymtp4Sqo7k6yOEK0iNkiQ30ARtchAanp1+RPW946wIMkWoFU3IhfHBufax6ka0zOEC7dDyoStHXG0rG6rRkD9/BjDx6qf3q4ZFZoEvZUJQH4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791554664; c=relaxed/simple;
-	bh=+HnSit/5/uIBAXvpoT34XbcMxm0QUvBctmOU9VDQG8g=;
+	s=arc-20240116; t=1791554795; c=relaxed/simple;
+	bh=GyiWe4iERIHzqUToTB83us7UkhnVWZQdkG38gBexcNk=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OGxSt3UNxXusIHkjKQMzR9gGEl2SwPbGw9UC1Unw0OEiulS8hdp6ao/xniHhTEnzvSRSQb8y0indMWz2au4qmxJCCtWjT6MJiiyenUuJv5+TREfQqGMzTZtNRnT73WL8PrGDqIFXJ9z+UP+inKcXwmlG92v2L4UbZEmdphz8vvM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=UwhCR56/; arc=pass smtp.client-ip=209.85.218.46
+	 To:Cc:Content-Type; b=MAL1eNf+0ac+VTEIWpfXhaerqWUExBs2nBaOeutGHoBA1iTo+TGWEZ8PaytUGtc8pEpGSwwdP5M8XyMzXcvowGfOS7m7IPZdOZbr4QLNbiM1g2lDWFJ6fk5WGR0O+AF6Cy00uw2tJJMUKo3AdxBCqqcmfIOWCxAx4+zaQBQAW+E=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NkKQnaAu; arc=pass smtp.client-ip=209.85.208.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UwhCR56/"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-c31745ad205so302965866b.0
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:04:23 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791554662; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NkKQnaAu"
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6afb0d2a586so7961032a12.1
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:06:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791554786; cv=none;
         d=google.com; s=arc-20260327;
-        b=fGyvUpEZStuVGaczT1PNIr0l3wmnviSeO/1zDEtgp7DJXsU3/rjwcYWkKgA2YmLluA
-         bJ9EkZ3QxatREtijM6Wzi8oFUThf1PjRYX7SdBxrQMuPGWcjf6pbZA4OJm282N+pijbj
-         L9eK8Y5U2cZTCilABTvOKJyY4fJYjiGBq3VOPcpQ/Pt8bfBLHn4ts8Ikt8CZxRWzYYlX
-         /MfopJFMLqLOxAgQ2jozCq4pXPNhtDMrJ0qpLzlCLMXSpGEyABDpp9wjX+0zNbQxMcEQ
-         nF0fSHUYy2ZSRmDPSgSehMykQXujK9kZ0GhmcpCI08phymorJy+qsQbmeLI4mYklJdZY
-         737w==
+        b=asLohpxXRVr81ZDmKltDkjAYaIdBQabzeB5xWX0wiaGzGc315hyoN56EE4r9ZjUWpn
+         0sS6SOaxG++E3NBnTPwP/uhx41yk1Fg4mg1SITAQvKNIujb2YRbT5ZDkLJRQtXpIbs97
+         8ucvY8PJfd48EGWUJClTkCz7+bO33Vb1j0Aqk2hnm9qJJVN6D8Ztaay2ITQU0rxO2c2A
+         FKuISd0NZj3qPob+vKlACUJS4langE6PC4wvGhlHMddKrhti8xv322xjve3qbYD6wzda
+         bNo7m54jgGJMbNo4bzNjcWK4n4W90SrOt+kwis2VkVSAaiCKCFpPY2TiV4dFMHJXagWF
+         iipw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=IeMqwdQ4R4qb72l2CyUr/K1XQPmObo/435VbGVCnIr8=;
-        fh=YZHWnsrfh26u06OrX9iL1LStd5yVm05kXqxEp8klDSs=;
-        b=hjC2O7CQCGaPqOXqrRaGEtpdf8sL+2dnULE+3viWypX69h3iAIvpgGDdAfoWZDZ0lw
-         zwRODw76rY85v5Th/BO5gUmpxFv9ubBkvlvLVphbvyO00Hkwfd1Ti7lhUQEE2n9ODTbd
-         /YX89yNHOnCa0ZSba7VyjvxiMEkuT40OHjXfOoNZ9uUlgJZpB4z6B8RfS8QR/BzO253M
-         nifXuZMN8NZyMRMg00p7qvv6crDWh1aY9X20M3+3dJbVRBtQGQN75uxVP26OHcq3DtlW
-         CnPTYGFUtua6dCi6XmunnN3T+c4T394TA8KV0/dIAtvc7O90mDodxRh0/h+E5vlTmpC0
-         ZZDg==;
+        bh=3FaEcDATObijynFDqDaL/0W94AAQKaPSJm7mGfTHxe4=;
+        fh=fl5Ei6Qor14jE6zTg/+s8vuEIjPoViSpPrlMY4qWe0w=;
+        b=hOhfb6Yw4rh3VMfNKjSBkU+95U6dK26eGteQHyl5ohym/J+nCVUZKXaVooIgcJbxWZ
+         wGnToi8qD9cjia0bQoePlv3DbTQqyIHmAYDy3s7Bf+x4eIg+kBKpPDyP2Z9S850nwf8P
+         Mfl5fnf8s0n1KwetMf6QT0XUwiZX7ZwLBRyt1VA7W2t3vHVhWUZ0BoHbozr/WEgSKyy8
+         f+JTc2bqqEj/58+yLBTtzyb8RpCtjm620Vz9slLbn5OpyGtG9xWhG9qwba7MjPoYHF1p
+         a5tMLstNzl5uY/CJ53lClXv301kL1PaBvBNlb5yGmNccOO8jmDlWDneCcTKXpPKpB28g
+         0HrA==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791554662; x=1792159462; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1791554786; x=1792159586; darn=vger.kernel.org;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=IeMqwdQ4R4qb72l2CyUr/K1XQPmObo/435VbGVCnIr8=;
-        b=UwhCR56/4HCe/U7/N5flKGhytQ1/JkHyzbwYvLl1CHqK7HfFdYmxGfI2eyoZnO3fYx
-         vy6Km0qIuY10atB4p+IijZMsjVOdhmYtprvjScxTQke2BZk/03vUwxblqe5gKmuks9Vr
-         Xm0iKxD2zBYO4yfziXgssRzNdQqPIpfpzL8henl7egCMtfttSpswKzS6ba3/fWMQ3Gox
-         v0n7K2c0NmEnTHLxtkzgFaCphBRczWFf9jbplBh10+GOU2l1/+v1UR9ZuL16S+133POp
-         114YdIDBOuNYb0rx2dIP3BOj9cjZXG5sC2FqvE1LeWyTfn+afy6+rt9+6FApDOEo92en
-         w7Zw==
+        bh=3FaEcDATObijynFDqDaL/0W94AAQKaPSJm7mGfTHxe4=;
+        b=NkKQnaAu8P/WzFV0i2B9nHpVmPgcZI9q59RuvN8aGozqMxMsTbteuaAibYt3seX4qF
+         QIXYfslWESXklA8PA6hnkxdl2O3ZBGhh56Yc7OzUNgaMgQ1qi6kCndutJ3CIBkirDmfi
+         UcK4FdSJAmCtmJ3BLRpDza9iyZBsLu/jemTgDd6VC4GFssmfFOFNjIECTaNhYLpyyWV2
+         U6XT750QMwsJpuHOpj4+gmnhj3Kew9jmccPcRoOiNNcaFkEirYMb7lpfmfWE4JwFyXfQ
+         1zZvMnBoiyZpX5TdE7XgV8okwb0ubB0475pGEw1nl15nK8HD9ZkkBB7aLUmKKuDplAhL
+         b1QQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791554662; x=1792159462;
+        d=1e100.net; s=20260707; t=1791554786; x=1792159586;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=IeMqwdQ4R4qb72l2CyUr/K1XQPmObo/435VbGVCnIr8=;
-        b=0PXZd30xKkWg6dyNaH/f5BlbbgqX/cyzuIzrkAChcLIb9JAHMUIfnDwHPxjjCq38cb
-         I9eHXPsyXxOlCUVPRQ7dNtY/POfYqNVInkJmo0p1qVgSQ6T8DA/7I8CDsVjhJiHYUZF/
-         yyT+iJJT8IHirnUa26ERQvOD5LHHeANj7hkkMCdmKD3whjuWzkncwcB3w3981g9ooq3O
-         rfMxunoUQm1gEESxrrr2aYnev1LfrfKrMPUuKdCn36VZX6QuvVIo2KXmuRNTpxPRlEGK
-         ez7LOksZ3sT2W6x/BiH9CDqt7CcHBQmFfQ3xuz64jg6UYx5BHWzElTWE3Q77eRQY7El5
-         8GxA==
-X-Forwarded-Encrypted: i=1; AKwUvBwDI65INRoC6vq8CmkkgpJheEf+bwe3pux5mzklDtrculJSpT6TYcKSla6Yqq5vWLvbVa6Yp7An2g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJgpxSVBS+ELTDEgv2CVF7WIfbe2Jw77ktM33ebHR4+L+5LEsuQ
-	jjdrmIkukqoiS+uxGl3KFcmEDj3U1qynvdtaIb667wPy//3WcYJw+fxq8WqhEiUqZwkUd7a/354
-	MHBWnOKYJNW9kiEjoPtPDMBotpWb74RTW1sE56RyGpQ==
-X-Gm-Gg: AYBFou0mYwpka/VhA2BCnrUlVyCLnsF6+IcAxnlEEYqtUcDOqHyBGsvKEmCysNfWveJ
-	amZHdaoaGYZfdMRGo1YtY/W6XFbhVvAanvYRuLISncgcOX95DidmUxSguws8RtROe6g/WeI2ywt
-	L+4LD7FBqaPk5Zst9bCLwGMsKm2ZIB4+G9xaG+waKKHXMDaBspJJD6ucrWoPmSbNSRyjXs4YlbO
-	V6gyURPVEZZsvnjTtfr/IiXj6FnInBZ0F4sBJQYc2aFgYpvIDJBPO2x+bUKUwRH5LHsm1esB8eF
-	eaLwW1O/9hcznlhFNZGEeB1dp4XuyBfsgFXTHgrBDf7hIxnx+7uUtcwconDiK17ixuPz7HdeAzj
-	fWxfYnci0xs8=
-X-Received: by 2002:a17:906:d555:b0:c25:5159:6a25 with SMTP id
- a640c23a62f3a-c31a7006d53mr258933566b.6.1791554661604; Fri, 09 Oct 2026
- 07:04:21 -0700 (PDT)
+        bh=3FaEcDATObijynFDqDaL/0W94AAQKaPSJm7mGfTHxe4=;
+        b=LycIm/w/4AxhHwoEeXFu+fIn9VI2uFDuoR0HqGyAaLILj7k5L0kSfnOcOC1JTX1sLu
+         vVpqIgZQSQbAsRqeLhvX7FhVHci6bBWo1PSdU9Gvo7KJRp/MF9OElRcLH7s/Layduwjt
+         IYb2ZvkzxWfqpInTWfGjL6Epp2NGArdTFGbDAURDv6kHUrkMgX3MvX8zcZdp/w9ekx/P
+         L5FREdJvhMBRJqSOQXbi1Gy+aKzMBlt4vApdD+Y/k+Wiqo5NYjfqgIUOW5uWDmtDf4bB
+         Z/y4ltOZh6qwhZ+sgdFjcwBsuM/sP3n6d464z4xn6sd+WsUvjaH4qiAi62HpfKT6YwaR
+         SSSw==
+X-Forwarded-Encrypted: i=1; AKwUvBxEq+g5jAp/6iHCVxbKuOj9w2N29n3dHNiXQ/WTVbzK4MKnajD81AEFiTZrrzXEcJciYAapIDtJLg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYL615coMvZtaJ5CGDy5WivLTb9M23LzXlPjc4cKrjHFDQKVeY6j
+	upQzQqeHLP/fZ7Ovoe6n+VHX6BjmAPCa+/7ADlXPuRTr9jVMzHx31cCYuxSR0bw/tiV54W3UKpJ
+	yOzhD5XbgM+runCmCcnrmkkVR0rR3adgzmhzfT6yM6g==
+X-Gm-Gg: AYBFou3oCDgq6kqrRzK7wLNSPzyLrySscXK5yya6EMIsWLl+iPklNGQXvTpPxbQBP0N
+	YvAuuOPX1d0/l0NVStnBfSDttlsLp8aPor1EhRoYimcmuN3/WbTt/bvtfUlklDCgs5Qwd2n0IU4
+	usxD2w/SqB2CzIthp+7qIblqv8bN1iDyEMbAVoMU9qYIIl77KQF7uWRc3/kndCgNcfqpZU8oF47
+	4bTRFDXMMCgIn9Qn/5QINFJY8NVNO7SYFzmZhyDVhoZMHciWmijqVbKjfqsQ1k+ASJ3H6t/8+yr
+	OVMA6k6T5KhwwBafnvej+SeCC0ZX3Cmvk8PWSsZjSkmd24lZV48+Z6QCBbjbav4tjb9NdZ/kN6z
+	wnNVt56Zju/Q=
+X-Received: by 2002:a17:907:2d24:b0:c2d:bcf7:37f9 with SMTP id
+ a640c23a62f3a-c31aa07a9d9mr224233766b.26.1791554786570; Fri, 09 Oct 2026
+ 07:06:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261002154415.2270586-11-vincent.guittot@linaro.org> <20261009055318.29609-1-kayracizmeci@gmail.com>
-In-Reply-To: <20261009055318.29609-1-kayracizmeci@gmail.com>
+References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
+ <20261002154415.2270586-12-vincent.guittot@linaro.org> <62547ac28298442a246abe0471647e36518a93cb.camel@linux.intel.com>
+In-Reply-To: <62547ac28298442a246abe0471647e36518a93cb.camel@linux.intel.com>
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Fri, 9 Oct 2026 16:04:10 +0200
-X-Gm-Features: AclHuK_rHLMmKPRTiOq8naJcPCrEjVVB0YgPUjC0ODNFXpu1g2ATxHoAse5_WlY
-Message-ID: <CAKfTPtBvGYp2S4P-k_SsFAXMVSSQ6j4F4LO44uUoDo5ZaUe1Bg@mail.gmail.com>
-Subject: Re: [PATCH 10/18 v2] sched/fair: Add force push task mechanism for fair
-To: Kayra Cizmeci <kayracizmeci@gmail.com>
-Cc: arighi@nvidia.com, bsegall@google.com, changwoo@igalia.com, 
-	christian.loehle@arm.com, dietmar.eggemann@arm.com, juri.lelli@redhat.com, 
-	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, lukasz.luba@arm.com, mgorman@suse.de, 
-	mingo@redhat.com, peterz@infradead.org, pierre.gondois@arm.com, 
-	qyousef@layalina.io, rafael@kernel.org, rostedt@goodmis.org, 
-	sched-ext@lists.linux.dev, sshegde@linux.ibm.com, tj@kernel.org, 
-	void@manifault.com, vschneid@redhat.com
+Date: Fri, 9 Oct 2026 16:06:13 +0200
+X-Gm-Features: AclHuK8OZXoY2HDF-7oweWSjqlOmblYb-OtXlDEjMe9WKYUdoHkKC6piT5Ymiy8
+Message-ID: <CAKfTPtCGK1Rw_gMRjdQ3EJ80RJNe0eu0aK-+arhw6C0_Oe0ofw@mail.gmail.com>
+Subject: Re: [PATCH 11/18 v2] sched/fair: Support not wakeup case in select_idle_sibling
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
+	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
+	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
+	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
+	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
+	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
+	sshegde@linux.ibm.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 9 Oct 2026 at 07:53, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+On Wed, 7 Oct 2026 at 19:55, Tim Chen <tim.c.chen@linux.intel.com> wrote:
 >
-> >       task_tick_cache(rq, curr);
+> On Fri, 2026-10-02 at 17:44 +0200, Vincent Guittot wrote:
+> > With push callback mecanism, select_task_rq_fair can be called for a task
+> > that is already enqueued. Task into account this case when choosing idle
+> > CPU.
 > >
-> > -     update_misfit_status(curr, rq);
-> > -     check_update_overutilized_status(task_rq(curr));
-> > +     if (!tick_pushable_task(curr, rq, rf)) {
-> > +             update_misfit_status(curr, rq);
-> > +             check_update_overutilized_status(task_rq(curr));
-> > +     }
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > ---
+> >  kernel/sched/fair.c | 5 ++++-
+> >  1 file changed, 4 insertions(+), 1 deletion(-)
 > >
-> >       task_tick_core(rq, curr);
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 6ed3e5bb7fd6..38eb80dbd1a4 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -7974,10 +7974,13 @@ static int choose_sched_idle_rq(struct rq *rq, struct task_struct *p)
+> >       return sched_idle_rq(rq) && !task_has_idle_policy(p);
 > >  }
+> >
+> > +static int idle_cpu_without(int cpu, struct task_struct *p);
+> > +
+> >  static int choose_idle_cpu(int cpu, struct task_struct *p)
+> >  {
+> >       return available_idle_cpu(cpu) ||
+> > -            choose_sched_idle_rq(cpu_rq(cpu), p);
+> > +            choose_sched_idle_rq(cpu_rq(cpu), p) ||
+> > +            idle_cpu_without(cpu, p);
+> >  }
+> >
+> >  static void
 >
-> Hm.
 >
-> I think this mechanism added on here does not works.
+> Hi Vincent,
+>
+> One concern I have is that many CPUs will try to push
+> their tasks onto the same idle CPU and causes over stacking.
+>
+> idle_cpu_without() doesn't check nr_running. Its comment says:
+>
+>          * rq->nr_running can't be used but an updated version without the
+>          * impact of p on cpu must be used instead. The updated nr_running
+>          * be computed and tested before calling idle_cpu_without().
 
-Ah yes, while factorizing the code, I removed this main diff between
-tick and put events
+
+Yes, I missed this part and will fix it
+
+I'm going to merge the check of check nr_running in idle_cpu_without()
+
+
 
 >
-> Before fair_check_pushable_task() is called, we check
-> if nr_running is bigger than 1. If it is we return false.
-> So when we enter fair_check_pushable_task(), nr_running is
-> equal or smaller than 1. We first run __check_pushable_fair_task()
-> but it doesn't really matters, since it's output
-> can only return false. Next block is skipped to since
-> next == NULL. When we're at the check_pushable_short_task(),
-> the h_nr_runnable check is always true on this path,
-> so we return false.
+> and update_sg_wakeup_stats() does this:
 >
-> It this intentional? Or am I missing something?
+>         if (!nr_running && idle_cpu_without(i, p))
+>
+> choose_idle_cpu() calls it without that test. So a CPU that runs its
+> idle task but already has a queued task is now idle for every caller:
+> the target, prev and recent_used_cpu checks, __select_idle_cpu(),
+> select_idle_smt() and select_idle_capacity(). This affects wakeups
+> too, not only pushes.
+>
+> For a wakeup to an idle CPU, the wakelist usually sets ttwu_pending,
+> which idle_cpu_without() checks. A push enqueues the task directly, so
+> after a push the destination stays idle for everyone until it
+> schedules. If it wakes up from a deep idle state, this can take a
+> while, and other CPUs can push or wake their tasks onto it in the
+> meantime.
+>
+> The fixup below removes p from nr_running when p is queued on the CPU,
+> and calls idle_cpu_without() only when nothing else is queued. The
+> tick case that this patch is for still works: p is the only task, so
+> its CPU is still idle without it.
+>
+> It is build tested only.
 >
 > Thanks,
-> Kayra
+> Tim
+>
+> ---
+>
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 3eb8a0170902..cb00f24a58fa 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -7978,9 +7978,16 @@ static int idle_cpu_without(int cpu, struct task_struct *p);
+>
+>  static int choose_idle_cpu(int cpu, struct task_struct *p)
+>  {
+> +       struct rq *rq = cpu_rq(cpu);
+> +       unsigned int nr_running = rq->nr_running;
+> +
+> +       /* idle_cpu_without() needs nr_running without p */
+> +       if (task_cpu(p) == cpu && task_on_rq_queued(p))
+> +               nr_running--;
+> +
+>         return available_idle_cpu(cpu) ||
+> -              choose_sched_idle_rq(cpu_rq(cpu), p) ||
+> -              idle_cpu_without(cpu, p);
+> +              choose_sched_idle_rq(rq, p) ||
+> +              (!nr_running && idle_cpu_without(cpu, p));
+>  }
+>
+>  static void
+>
 >
