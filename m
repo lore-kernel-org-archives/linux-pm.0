@@ -1,166 +1,204 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3383A470E91
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:07:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6D993B2FDB
+	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 14:18:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.42
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791554856; cv=pass; b=ZEMIGJnGbBdya6adgh/8GTIwWHosIfv+aXSg2lrSKm+xg1JUayGy4dTbUrHS5Us4H03vaWobMmxGnqdFNzHX+CmQC0q5O8aIsPZK7AOAeCVVwvhE9yudGZW8ZpNcZrbn29ZdReGnoranljADdrbf8d7vvdjjO5K49nFkJU60mqA=
+	t=1791555490; cv=pass; b=kTokgohtFbDUCg8CG3yw9mqMiyz+45nCU24afuZUCoKx9rcRoSMCH5sM8pgrIY+PJqilbs7V4f6HfiWaOHkw1Y9p8siGAXw5V1s8jMxtbPbwiiGOkNku2bS1php4nJp8EyPm7EnaBypa5mxVyH87CaPMuZH6y7l0345VY9tL3vo=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791554856; c=relaxed/simple;
-	bh=b4rMtXSyvgzVOdG4ilTjHKgvnbsQsAYQrWnRRDEOIYQ=;
+	s=arc-20240116; t=1791555490; c=relaxed/simple;
+	bh=yXkOOHEp5xbA8RyWHIG6SKO9apysMTvV+h4+HDrM66E=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=cKfLNJY4qH5xLYqpxkEzO87YAQhW5JXoUVJMZ68fZDmcvKmxoynmE09LatImJ8+KX0i1YR0qjZk42zxKUAvhtjQ+AP89pqDNhNvfDmrgG0uU892igGWA6Df+YTrzwylDqDzA+Os06marqx11/FvGGVwdAqBPs6axppWKwH7zDXw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tI28d+vc; arc=pass smtp.client-ip=209.85.218.52
+	 To:Cc:Content-Type; b=WbMLf7k+HnMLggSle+K0fp+p3Ch1K7s0vl1Fkt3SFmGhU4MAqKIa1hZ1xZJ/Cry6ML6QzJee9MrqwyT4fZGXGvhTogFCC5Wj/Muhvf09uUwI36TJVkUVoQdp6j4NoyhMns8FZn9Ech4K4fkIytRgvokUGa5Elmw+kT7eeEEjSKg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=yoJiEh7r; arc=pass smtp.client-ip=209.85.208.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tI28d+vc"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-c2e7496f947so657436166b.1
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:07:30 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791554848; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yoJiEh7r"
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6afafc89b48so6526811a12.2
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2026 07:18:01 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791555480; cv=none;
         d=google.com; s=arc-20260327;
-        b=YZF1WuNEXS8cXtAVHaB46bxq9BZm4TIaw3iWanH58qFXr94UkyPlHv/1c/a+AlO/Xv
-         QY8LD8gXQxNLb25nPstRpBGxlOcdDrKzLFG1HhbxOfc5yaUg3CL3q/FrvGeGMyZD0KQY
-         rqo74+W/yyHkUl45r7wwdwmMZk0GssaPRC8WyY3e5U3QfctYrceCotXxR5GfwjpZRb3j
-         DUoglDkTGMQCR+THRjrkaj13LvVSceyH6jjaz2xk+Ob82tER+jdzEUhkfRuvAoLZZUWa
-         hvOcolS01NdGMf4YX37YysBd+BqKHiuEFBFhckBRiF4t1Pqvkd0WHXo2CopHEdG/MS+Y
-         AgOw==
+        b=J/r47jB9lK4mZ2/lyAFMw3t0H11gnqtBNB2cEgWZIwxLmlXBBEA86aWHvGsteY8wcn
+         ZC3VCV5E2bMRne2s4fecuuxASRMc7wnQT5BN8ZDj3EjdlHooORuvkzAA6DyAqTBktu/1
+         kfv/6u8f214CUcsKygPpaz6hfsQNgiBe5xB1kMBJHFbEqd/X4RZV6dBgm+LH9pnDIwxG
+         txzQM0Xigh5nVzCKJhZQKrN0ljTWoAOAjelMa3dEB64jlfNXs48CfzY8+8CbmdtOxWNh
+         b9shCxP0QJ6LH5t57MF/qarR4jwWTYv1Zs9CekD1siforWiOBzAW64a6lpTTB5E5P86U
+         i0RA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=aPA7l/cDhFmUwI+RbBKmxxOCeGT4OK8rl1qxZjkWe6o=;
-        fh=NSPMMHNA6bYrIQhiPwvbse+o6bsdVwn7+3LOIcLDnG4=;
-        b=c9FPMiU3hgS2tClpmDpdz/ZI5S1ugJ6kyMDKNcZPoqiJnVaHWyMqEtbpa51DpIzvjo
-         3EGpP+uR1YpYi9etKGBHREtc/JlU8SNCx9xolPBe8YX1gF7m+h3QfmNPvUDi6dZpnecw
-         VUZkq5k0BYQDNp2bG6jFzS32BkohSkDbHLYANBYLVwEmLbNmB/sJ2VFlJGDdQHSpCYE+
-         2yTVA1soqFDMtzM/Q0Ymd/+glUffrhFf7tCVUncd8kZJWTobS3lT5GFAU8Zzw4N+CwDL
-         ZIoxAT/yAVRNf1cFplVXev6/XuuE+onNtsmYGF1po4zl3I2pqilSeBT1ZRXjxjXCPx8M
-         l9Bw==;
+        bh=mjfQzImx89RahkOfgksZ5+FFpeca3hXEAlgOHPVxIY4=;
+        fh=RqV3HYUb5oa5ALB5pHkCq00kSCFrdEL9trqSYoNBkIQ=;
+        b=GZkp9qEXzP2YhCXYxqQRR9sY6V11gSg4yXzk/AyuUEcUlYrjz2RCx1q9mtjGmIJMZx
+         q4grKwbbal2hu0WgI+V2apkELYbA9pLJqN+ym/P1vPmsKaPlXzGzd/Io4iC4g9/4neCV
+         ttEYh5sOPGpjR0LkoaMu/Aam3e8mkySXpAFDvuP3tXiau9kBM5TG97tkmpjwip+zKP2s
+         v60e1S/yojWhx5Y0R0DsBD8Pnqfp2PIT9a333BORN1FJbZp1HUYmN/M4bEWdtI1e9gHL
+         RRcsai2DqPh93rAihv7GptoKF3ss+Ybq4nMRdNezS6ag4+qE9o5HJ/Q+LOfr95ErFTIp
+         PpaA==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791554848; x=1792159648; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1791555480; x=1792160280; darn=vger.kernel.org;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=aPA7l/cDhFmUwI+RbBKmxxOCeGT4OK8rl1qxZjkWe6o=;
-        b=tI28d+vcT32QNDXXxD57CMlYBpY0uzxmVlYA4pTnMZtsVPZu9Te/6iN6ABoKOseL6t
-         lJfdMeJgOEg8ikoXEV7KBGOKonFLFV5PKbp1v9w5fn+zSldEysQJCAKe92B4tEme8vmL
-         eFEphO3THRBHvZFXl1gwAKRftY8Mxc3SknwTVYRKx8wBKTvHLEOpxflZQS+P6ON/EyaR
-         61vWsa04MyOGvpqByi5YR0GDJIkjE33aX+gvyMWeEZuXPiSOr/GbISpEC+72vwkb4n8X
-         xnihV0WnCUmla7yRP+dRJOs2kBHgIdiEIs4o49RIt60R8breNsnApwnSBMXlo0W9W/6O
-         TiEg==
+        bh=mjfQzImx89RahkOfgksZ5+FFpeca3hXEAlgOHPVxIY4=;
+        b=yoJiEh7rMJUI9DCeWnhkOq0rD2LIzXJD0M9JkRjaZcpTncnI8bNNNuC1WeeogM3C2w
+         3M54CMRBazJK/CiB32AHVkSanB15eJhkW5i65Ld+KiljyurVuy3PsqH6VbUg0WQIh2gE
+         OLiRwWFhh8W4UAKPip4l3eoYA8cEqT9BgVxWD/w9okmaNOjOXZjW+/PRLGwStqWHlM0e
+         RT1uUFss+8UKUa4km50vDQYvr8DFzqOVneYbO/UxvkbsAhwUkNJYliM65N+QTCObNQJv
+         ypRchJNlCQKnJ3khuqoLSM4dKhVmVcInZEd/3wSLU4E7hogc/aTWuNeRqEu813Voui86
+         y6yA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791554848; x=1792159648;
+        d=1e100.net; s=20260707; t=1791555480; x=1792160280;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=aPA7l/cDhFmUwI+RbBKmxxOCeGT4OK8rl1qxZjkWe6o=;
-        b=C/7zAOqUuNHMxU3GCDH29leswJ48KHV3khLEUYou+bSlDIdZnGVGZ4lwCpXcyquXhc
-         ErYTIOOUQAWSssI04tAhvTHMuvgHPJCJkDmjX/+aZlh3k2YZGNLuuuKLgkFL5FYQJXwg
-         PqZP8bcRzktBMSwTyXWCvG4iK9UfSf7TxAt7Mc3ZuFyp4aoivYKdVkLJmFgfsoZjDEt3
-         wKZB2rGZsuczKeDiUIvSS/t8FkjI6Yx6AXPmCczP5OBByAPyTqi2cTjKy116ipJH8fMs
-         yAnaGXuaw1MQHL/JC7GVj1U9FEc6SbGo5+gTLFIIuSCK1D5InNAKkSpTEcCDrXsjfLcQ
-         k1aQ==
-X-Forwarded-Encrypted: i=1; AKwUvBx+r8MVAt45WtADJkeRv56oBhVJ9UDNOgmKKZ9YcBSF1hFoTNiX/Vgm0olxgUR+aIV2V6NljE1B4A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLTJD6ApEXH7/ZJbAbeYdt0zkCu+Dy/AdIJT39nLtFHjBbtr8Yy
-	PaK/oF6gQAB4WRX7yHGFugfzhadGuRkdfE3qJ1vRji0uBd0dG6i0L6ueElP4NUel54NSFoPvD3f
-	ZqgCLLP9OZ9wq+YmOLn9lqyjZdHAt/9RgseaBVqrnRw==
-X-Gm-Gg: AYBFou1xcChGWdLODhsilofxmJ382xUcSudD+EuPj9cpo9bIBUYMrlPyRVsxulvouiA
-	AfSFiwYPRdeXbfHEmxgx0X0lLSRkDWCAbfmkywC1FpN5BBAV1TsU8OEynberEshGWxopWd/1067
-	jWlwyuEvyt3+lLn+98YVin46ha3TPwCWaO7Vn93s/TEtT5xWwrhAHeBe8ZnVBghE4IFBi+W4btG
-	5pIXvFOjS8OIumQeFxvDCSPf0cq80LcRftZuoZ3NMC3UY9eH7kW41gOLQezvTG6LeI9SXz6QqSq
-	bzmTF6KoR6/84WetFMde016exRG25iFmMVxfbF+L90qnyrD0YBcTxDx5yYH1T8/K6Ui+Ns+TwcM
-	J2xdFDxCOPudrNfLxxVUJ2A==
-X-Received: by 2002:a17:907:9618:b0:c24:4128:c19f with SMTP id
- a640c23a62f3a-c31a9d0a1efmr229344366b.11.1791554848238; Fri, 09 Oct 2026
- 07:07:28 -0700 (PDT)
+        bh=mjfQzImx89RahkOfgksZ5+FFpeca3hXEAlgOHPVxIY4=;
+        b=qomTkhN9fFXUakpAzVhoaHY4YiU0PzioDkaXnqMiHlwGjz+arhv+ev6JG7zndk0Tat
+         yjhSP2i/vyM0oiQT7VCb1jXEVGL5R00RBNB8ucSqU1C5gvNG3wLbxD+JyrrrjIgFdebo
+         rfVw8HPWhTrz68x+k8Lzrf8DT5jwo5Cdagb09A81mrtg/T7c/yA+6HmmrgREFFZH+wTe
+         W3NqoEK4dv3BaOmSskkMyrzzxm5DX/IPMFYJEil9DioGW0xhUJlZ42rCSepbo0TmA1ab
+         mmwaZa328xa6gz7IkA62aSfHUWebiu9OafqhyrDFdWqCTBBwLc7nXbLlIOLSeT2I+ehe
+         0USg==
+X-Forwarded-Encrypted: i=1; AKwUvBwxihJ9uUtWWkZyYRT1DIjtQUJ3FcBnzek6Xz+w5FM1f07K0+BGk/TxAtt6hn31XhHRKoSwcaWT9g==@vger.kernel.org
+X-Gm-Message-State: AFq9FYISLbVXSGsVEsx5LbSgtKh64C41XfDHZAcbOAMCZQTpBA8f+vFP
+	E2TmS0kMkg+DZZgeIY4VSZ6ujAutbdK3yX86Ma/kzg4ZQfVLhPpMBVNufSpBjXYFVd89cB/RArl
+	Q9nXHjWizzfjk+OjBBQgiS/aDwavpD+bUyNWceE2ljQ==
+X-Gm-Gg: AYBFou2vkEK2pIPh4wZ0brDEINcPek3Pmkie8MZdSAK/NfmH7WmUlJHnNOYj0AAkTkZ
+	cS18a0GF51ag5EKq52ZJtecqc8YC3NxvFB81f6W93FLOQ/kSS2CwX59zBLpFmX+H7M+GQht6dWV
+	h3MpJ54HdThlOiY1CiyoEH7e/Tggfy6v5W/Btv4nfG5xZ4zoxOZXaWwTRD3F7/2Wjgn7Gw39dEr
+	H8yvFraWqEDBUkMCyVAmCwD+klBFepJFup0COPBNsySMMS6wrdX0zWrSyJ0poej7pe+vYmrJ5V9
+	atAkAPJF1M5UV2cyCPE+cSS/Trvw8ALJETzVIbhAQ1+DPWoMIBqjWWSwkVpx3z7QWBT/C8TeawO
+	aFUatB+uGxkI=
+X-Received: by 2002:a05:6402:4606:b0:6ac:6b18:345b with SMTP id
+ 4fb4d7f45d1cf-6b17c24e477mr1307684a12.17.1791555479602; Fri, 09 Oct 2026
+ 07:17:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261002154415.2270586-15-vincent.guittot@linaro.org> <20261009111627.4861-1-kayracizmeci@gmail.com>
-In-Reply-To: <20261009111627.4861-1-kayracizmeci@gmail.com>
+References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
+ <20261002154415.2270586-19-vincent.guittot@linaro.org> <179bcb50be21f834423f9b5c068b5fce4cb65871.camel@linux.intel.com>
+In-Reply-To: <179bcb50be21f834423f9b5c068b5fce4cb65871.camel@linux.intel.com>
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Fri, 9 Oct 2026 16:07:16 +0200
-X-Gm-Features: AclHuK93qwibmCeDReqU3VlqkUs03L7RaL6WzAc8RexM6-c3eryuJOq2Yp8j9Do
-Message-ID: <CAKfTPtCwv5f1D0uDqa2vePcYzavgut1W1Mab7pz3o7a1vTYO9w@mail.gmail.com>
-Subject: Re: [PATCH 14/18 v2] sched/fair: Enable push task for preempt short
-To: Kayra Cizmeci <kayracizmeci@gmail.com>
-Cc: arighi@nvidia.com, bsegall@google.com, changwoo@igalia.com, 
-	christian.loehle@arm.com, dietmar.eggemann@arm.com, juri.lelli@redhat.com, 
-	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, lukasz.luba@arm.com, mgorman@suse.de, 
-	mingo@redhat.com, peterz@infradead.org, pierre.gondois@arm.com, 
-	qyousef@layalina.io, rafael@kernel.org, rostedt@goodmis.org, 
-	sched-ext@lists.linux.dev, sshegde@linux.ibm.com, tj@kernel.org, 
-	void@manifault.com, vschneid@redhat.com
+Date: Fri, 9 Oct 2026 16:17:48 +0200
+X-Gm-Features: AclHuK8Pboa48bG0Ygkxu5EGL_q1lSvm8cRTKP-bJ5A1NhoyUuVzmn0zHI8xqpo
+Message-ID: <CAKfTPtDcw6J72dJkbemySR1WKE_sWB0exXp_X1=DZSdO9BbrQA@mail.gmail.com>
+Subject: Re: [PATCH 18/18 v2] sched/fair: Take into account slice in EAS
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
+	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
+	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
+	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
+	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
+	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
+	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
+	sshegde@linux.ibm.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 9 Oct 2026 at 13:16, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+On Fri, 9 Oct 2026 at 00:53, Tim Chen <tim.c.chen@linux.intel.com> wrote:
 >
-> > Enable push mecanism for the preempt short feature which is the
-> > 1st feature using it.
->
-> IDK typo count of 'mecanism'. It would be cool if I counted the typos I found in this thread.
-> They're so important. But, I didn't counted them
->
-> > @@ -3475,6 +3475,9 @@ static void partition_sched_domains_locked(int ndoms_new, cpumask_var_t doms_new
-> >       sched_energy_set(has_eas);
-> >  #endif
+> On Fri, 2026-10-02 at 17:44 +0200, Vincent Guittot wrote:
+> > When the cost is the same, take into account the slice of a task to try to
+> > select a CPU where is will run first.
 > >
-> > +     if (sched_feat(PREEMPT_SHORT))
-> > +             static_branch_inc_cpuslocked(&sched_push_task);
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > ---
+> >  kernel/sched/fair.c | 13 +++++++++++--
+> >  1 file changed, 11 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 94554f165f42..d60bb6db4ce9 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -9598,8 +9598,17 @@ static int check_cpu_with_task(struct task_struct *p, int cpu)
+> >   */
+> >  static bool update_best_cpu(struct energy_cpu_stat *target,
+> >                           struct energy_cpu_stat *min,
+> > -                         int prev, struct sched_domain *sd)
+> > +                         int prev, struct sched_domain *sd,
+> > +                         struct task_struct *p)
+> >  {
+> > +     unsigned long task_slice = p->se.slice;
 > > +
+> > +     /*  Select the one where you can run first */
+> > +     if (task_slice < get_rq_min_slice(cpu_rq(target->cpu)) &&
+> > +         task_slice >= get_rq_min_slice(cpu_rq(min->cpu)))
+> > +             return true;
+> > +
+> > +     /* Favor previous CPU */
+> >       if (target->cpu == prev)
+> >               return true;
 >
-> Well, as I checked it seems like first user of the push 'mecanism' can't be disabled.
-> This could be the correct behavior too tho? If we want to open it and do not let it
-> close even when PREEMPT_SHORT is false...
+> Hi Vincent,
+>
+> The slice check above comes before "Favor previous CPU", so I read the intent
+> as: the CPU where the task can run first wins, even
+> against prev_cpu. But the slice check can fail for prev CPU
+> and we can skip to "Favor previous CPU" and pick prev CPU, even
+> though the task can run on min CPU first but not
+> necessarily on prev CPU first.
 
-I didn't want to make the push mechanism enabled by default but only
-when something uses it. Short slice tasks are the 1st user.
-
-I wanted to keep a simple way to disable it at boot when it isn't used.
-
->
-> But I think you wanted to connect this to PREEMPT_SHORT, no?
-> Well if no, then well I have no words. If yes, I have.
->
-> I done a quick test, adding this line to here:
->
->         if (sched_feat(PREEMPT_SHORT))
->                 static_branch_inc_cpuslocked(&sched_push_task);
->        pr_info("push key count=%d\n", static_key_count(&sched_push_task.key)); <--- This
->
-> And booting up the kernel. Playing with CPU1's online status and closing PREEMPT_SHORT.
-> And...
->
-> [    0.967146] push key count=1
-> 0
-> 1
-> [    0.967146] push key count=1
-> [   42.408439] push key count=2
-> [   42.475103] push key count=3
-> NO_PREEMPT_SHORT
-> 0
-> 1
-> [    0.967146] push key count=1
-> [   42.408439] push key count=2
-> [   42.475103] push key count=3
-> [   42.562426] push key count=3
-> [   42.619255] push key count=3
-
-This should not happen. I will fix it
-
+yes, I wil fix it
 
 >
-> This is a bit messy since it's raw, but as you can see even when we
-> close PREEMPT_SHORT this not decreases. It just stays on and grows over time.
+> Take an idle CPU X and a busy prev_cpu. Any task can
+> run first on X, because an empty rq has min_slice == ULONG_MAX:
 >
-> That's what I'll say, maybe I'm missing something.
+> - prev_cpu scanned first: when X is the target, the slice check
+>   selects X.
+> - X scanned first: when prev_cpu is the target, the slice check fails,
+>   and "Favor previous CPU" then selects prev_cpu.
 >
-> Thanks,
-> Kayra
+> In the second case the task is stacked on the busy prev_cpu even though
+> it may not run first there.
+>
+> Perhaps something like the following is better.
+>
+> ---
+>  kernel/sched/fair.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+>
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index a47c6521a411..3fe305d690eb 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -9830,11 +9830,15 @@ static bool update_best_cpu(struct energy_cpu_stat *target,
+>                             struct task_struct *p)
+>  {
+>         unsigned long task_slice = p->se.slice;
+> +       bool target_first = task_slice < get_rq_min_slice(cpu_rq(target->cpu));
+> +       bool min_first = task_slice < get_rq_min_slice(cpu_rq(min->cpu));
+>
+> -       /*  Select the one where you can run first */
+> -       if (task_slice < get_rq_min_slice(cpu_rq(target->cpu)) &&
+> -           task_slice >= get_rq_min_slice(cpu_rq(min->cpu)))
+> -               return true;
+> +       /*
+> +        * Select the one where you can run first. Check both ways, or the
+> +        * result depends on the order of the CPUs in the PD.
+> +        */
+> +       if (target_first != min_first)
+> +               return target_first;
+>
+>         /* Favor previous CPU */
+>         if (target->cpu == prev)
+>
+>
+> Tim
+>
+> >       if (min->cpu == prev)
+> > @@ -9762,7 +9771,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
+> >                        */
+> >                       if (target_perf < min_stat.min_perf)
+> >                               find_pd_cost(pd->em_pd, target_perf, &target_stat);
+> > -                     else if (!update_best_cpu(&target_stat, &min_stat, prev_cpu, sd))
+> > +                     else if (!update_best_cpu(&target_stat, &min_stat, prev_cpu, sd, p))
+> >                               continue;
+> >
+> >                       /* Save the new most efficient CPU of the PD */
