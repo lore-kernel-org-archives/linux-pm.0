@@ -1,151 +1,69 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C317A424642
-	for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2026 06:31:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E8DE3537D2;
+	Fri,  9 Oct 2026 06:53:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791527508; cv=none; b=Qoqc1avBQ2WOD/xAXW78ZrwywM8LKiDQFdr+PZ5zgpjdYmF83etsIJ/2KNN53HlKfsnROS2wd4ytM+3xkigx496YKYL5ypZTvzqQB7PfCql+EWY35H1MHpF1q4gbUz6mcgwg6UsBQlSEh4KPihq4uYWoOrKORsYxIJdEed+00PU=
+	t=1791528811; cv=none; b=mBjEg1ez9IK6g4Iey5emLd7B8Wwwsh4Rt/H/3gYdbkNdYie8wTGG7ZS/wqYT5+5InL+FXdl9UQ5CGRQS5IFt9cimyxjH90fqKkur6+l8j+1vKpvllwA+MFtzFN0qSURGiFtEAhTC4u5wb1xJ9jZEoIAbQ5vAcVrx7VSBSifDGlk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791527508; c=relaxed/simple;
-	bh=G8p969TSPt4pRVkrqnzxS3mmH3ELFFspsjEpF+ZfLvU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WZipEzYgDal9mfM6WCFZ5DbElbT7dbwNAEy5y391gbolYdmSnt68qiJ152aHZ49NbUyuTWl3aVn5vMJ92IHRVA/aNvVGXv61mSJiKHxezcr37HX+l/HGBfeIfbeZCGXhc0RRWBm9lejbVVKTN01BPYZfM7wZGWPxqk9Zbre5x/I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Vi7w+Jv+; arc=none smtp.client-ip=209.85.128.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1791528811; c=relaxed/simple;
+	bh=TF6GnToXoLBBTFqHdB7OCEka4zG8vEPbEoc8ux2XlD0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iC3VXTTFL8ttxBLDCdyU9igFjWAaUpjIVq1GWUE2jQqSCuHaji7uHtVjQ051YYgdDnCqK0pgL/9CpoLnwrbF3WV6QOG/+YsnLlngDeLgOC/PwXniR5kuLbU3pXL01K/Q54HjffjqrbFjJEcpI0xN5CWUU48PwDZ1V/AJ/UCE1eI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UsA7nHtl; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Vi7w+Jv+"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-49e6b771d06so4457715e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2026 23:31:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791527505; x=1792132305; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=/prsEyltlekkl/5pKA40pBQXK0nwU4kVOsJT37viE/Y=;
-        b=Vi7w+Jv+kTuWpR2zqD04rBbY+7txxW51rM9IshH9lE7fgUzp4+T56d8m5wYQ6coNoW
-         fHljJAaZNSf7Z2Nr58vw29jH5sG8ehtwOxqduznxl7AbS6qFNuvCFCQLRkIcPt43FKWM
-         Jjy16DohP+I97Pz7ieNfHjBKmLXkMLaqbJUjMsfVr7j8r4vj6Dy5iIJDGLtO4IdciCNr
-         5s6Ab9/KZ7PcmnFrM9Ar7l8kmTLhUx3pEZmNBb4KH3WTO267cPhKPowhCFYTnhKkXkWl
-         9jVzGgZ0X9SCDYeo2dlH2a9y9YyktCwAHFqRL8TNWyneh6UGf5K68WHOmj2cViakN/3S
-         2upg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791527505; x=1792132305;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=/prsEyltlekkl/5pKA40pBQXK0nwU4kVOsJT37viE/Y=;
-        b=lThas5Dgv1D5I9+J/zWr0Z8lQdgN12FfoQi18AskswQS3uWzDGFpOC/wlccnrr7Baf
-         pJxGNVxwyAIyo8zcMwvCRjKRL4c/MGIyQkR4HcTtFcWsVNg93TzPWCoYIZIsh1O4AgPs
-         nAHYt2RPfHdAJcQCv6TdL7w6ha5736BtWoTk56ROl7gSUepLMbbOXECUIO8gbUpGzLXy
-         /HwGs++/SsJziKY2mn1hmWYUIx2B5mesmzSMLoACiJpifrGGjHRQiXGXz8uHgmXHqPhx
-         7UTIk59z0cnLfV+Ej2L7sxuIll4p67cFE3tJMwVwp7DroduY1fn+pDuG4G4mL067o7Dh
-         /yVw==
-X-Forwarded-Encrypted: i=1; AKwUvBwxkzzGCNb3ZS+vwJYOqPahn5yDE3RjWePFPr2NSPZlGkbV4JRtwuYoKIecYmdqRyeq2iNH3L53TQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++nKWyjBQUtwMZWz8ZrwK3uOZTiL6ueWnXcrkieu5qX678Mzpy+M
-	NkD36ZpPfYuUfy2UhzGg/8HpAvdCqTxIA3dw60fVeWPBMqVV8PuojMtuj7HVaQ==
-X-Gm-Gg: AYBFou2TNH8Ziudu5q+EW9c6lcWY+0r+VFRh7VvMZ0fXL0feCiC2eIUqhaiapf1YqOl
-	xnELbLRfTNN4cxIo7UiJQTI/UFvVpOQSMqBU71fk6TWi0ZUOQz027rMEhn9VuqdiZD3G4uPZGJU
-	2Lkmw0tdNQmkIibpoglUAkhkEj8U3eJG54o3wXCVcGmYKpHh587meN68+Ec2jT2kSTucOukxBZf
-	D5CRy+LlGj2MQHhmJNHwnmJkz3PP2HUBIZSl9Fypn6o/q3v2Ufuc6tU9g+wzzFPhc0gSMYEdgnY
-	qzPnZWotN0WyaFOvYx2cv6gyyM4IVmj3OqpUf9LQ2OqUCwrnGH3V90ozjJWJumo2XvQp7F2GgoW
-	4G+NU7/L0ZAngNGhu6+TfGyjYe0ojKbR0a8wVZt+d3RS85tIwg9R15C0ausGkksuo/v4SuXKtgM
-	VFsoUkeZ2q0e69tLMDazqQZdYHtq5RRDJGpFBQzjpLXjqNvJu3GcEUjE/j/JbDNdgGvSa7n0okH
-	33sLJmeVb+yJsdOiRhX
-X-Received: by 2002:a05:600c:a086:b0:4a0:1f9e:5f78 with SMTP id 5b1f17b1804b1-4a18e3ea887mr14032945e9.0.1791527504788;
-        Thu, 08 Oct 2026 23:31:44 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a18bf0abcesm39170955e9.1.2026.10.08.23.31.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Oct 2026 23:31:44 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: tim.c.chen@linux.intel.com
-Cc: arighi@nvidia.com,
-	bsegall@google.com,
-	changwoo@igalia.com,
-	christian.loehle@arm.com,
-	dietmar.eggemann@arm.com,
-	juri.lelli@redhat.com,
-	kprateek.nayak@amd.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	lukasz.luba@arm.com,
-	mgorman@suse.de,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	pierre.gondois@arm.com,
-	qyousef@layalina.io,
-	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sched-ext@lists.linux.dev,
-	sshegde@linux.ibm.com,
-	tj@kernel.org,
-	vincent.guittot@linaro.org,
-	void@manifault.com,
-	vschneid@redhat.com
-Subject: Re: [PATCH 18/18 v2] sched/fair: Take into account slice in EAS
-Date: Fri,  9 Oct 2026 09:31:40 +0300
-Message-ID: <20261009063140.30016-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <179bcb50be21f834423f9b5c068b5fce4cb65871.camel@linux.intel.com>
-References: <179bcb50be21f834423f9b5c068b5fce4cb65871.camel@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UsA7nHtl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E34B1F000FF;
+	Fri,  9 Oct 2026 06:53:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791528810;
+	bh=8ZW60/51gHl6R6BZEMKR+YXq98dMzpk40zWpuDqBsxg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=UsA7nHtlHG63JM4b5FeBNBamuArLilgiweCQ08kXKkMO1qVFhIMJGsh8rU4Vnei00
+	 SSPHEwX+MNClEt7P+4zBobmQcWaBfbnK7OkwxH6ath2b4IJLz9MMURHfW0Qf0+q5oC
+	 BXWfmwgfzSmKhw8mtqwu99teEdz9q1mb6z8PeT/Xz547d+16BUcJgjU3nZ7b/qspQQ
+	 +6qaUbJ2xh2uWYkQjTSchmvO+5y6aSqv1BkLkzQRsxQ6WyUUr8pVt5JeqS0Ucrf1PI
+	 Ju3JoUGipOJuNrXs4hhmdZqfKNMGirwin5ktWCFboPf74StIatuP8I81VLgpGqs4ea
+	 FO8nf88bCjPmw==
+Date: Fri, 9 Oct 2026 08:53:26 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Fabricio Akio <fabricioakio@gmail.com>
+Cc: Casey Connolly <casey.connolly@linaro.org>, 
+	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Abel Vesa <abelvesa@kernel.org>, Robin Snyders <robin@snyders.xyz>, 
+	David Heidelberg <david@ixit.cz>, phone-devel@vger.kernel.org, 
+	Richard Acayan <mailingradian@gmail.com>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH 1/4] dt-bindings: power: supply: qcom,pmi8998-charger:
+ add chg-state-change
+Message-ID: <20261009-winged-lion-from-asgard-acd5ce@quoll>
+References: <20261003-qcom-smbx-chg-state-change-v1-0-fffaef446932@gmail.com>
+ <20261003-qcom-smbx-chg-state-change-v1-1-fffaef446932@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261003-qcom-smbx-chg-state-change-v1-1-fffaef446932@gmail.com>
 
-Hi Tim,
+On Sat, Oct 03, 2026 at 04:45:21PM -0300, Fabricio Akio wrote:
+> The charger raises an interrupt when its charging state changes. Allow
+> it as an optional fifth interrupt.
+> 
+> Signed-off-by: Fabricio Akio <fabricioakio@gmail.com>
+> ---
+>  .../devicetree/bindings/power/supply/qcom,pmi8998-charger.yaml       | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
->                             struct task_struct *p)
->  {
->         unsigned long task_slice = p->se.slice;
-> +       bool target_first = task_slice < get_rq_min_slice(cpu_rq(target->cpu));
-> +       bool min_first = task_slice < get_rq_min_slice(cpu_rq(min->cpu));
->
-> -       /*  Select the one where you can run first */
-> -        if (task_slice < get_rq_min_slice(cpu_rq(target->cpu)) &&
-> -           task_slice >= get_rq_min_slice(cpu_rq(min->cpu)))
-> -               return true;
-> +       /*
-> +        * Select the one where you can run first. Check both ways, or the
-> +        * result depends on the order of the CPUs in the PD.
-> +        */
-> +       if (target_first != min_first)
-> +               return target_first;
->
->        /* Favor previous CPU */
->        if (target->cpu == prev)
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-> Take an idle CPU X and a busy prev_cpu. Any task can
-> run first on X, because an empty rq has min_slice == ULONG_MAX:
+Best regards,
+Krzysztof
 
-> - prev_cpu scanned first: when X is the target, the slice check
->   selects X.
-> - X scanned first: when prev_cpu is the target, the slice check fails,
->   and "Favor previous CPU" then selects prev_cpu.
-
-> In the second case the task is stacked on the busy prev_cpu even though
-> it may not run first there.
-
-Agreed. 
-
-But ULONG_MAX doesn't always means that the rq is empty.
-(See my 18/4 review, maybe I'm getting something wrong)
-
-Also, I assume prev == min-cpu.
-
-Scene:
-
-target is X, min is prev, prev has a 5 ms sliced task while X is empty and task_slice = 4
-target_first comes true and min_first comes true they're equal and min is chosen.
-
-If however, the task_slice was bigger or equal to 5, as correctly target would be chosen.
-
-LGTM atleast. Eh. (ULONG_MAX could be a problem tho.)
-
-Thanks, 
-Kayra
