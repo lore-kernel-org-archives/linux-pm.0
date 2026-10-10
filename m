@@ -1,39 +1,39 @@
-Received: from mail-244122.protonmail.ch (mail-244122.protonmail.ch [109.224.244.122])
+Received: from mail-24418.protonmail.ch (mail-24418.protonmail.ch [109.224.244.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9ECCE46A60A;
-	Sat, 10 Oct 2026 11:23:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.122
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A10A413799
+	for <linux-pm@vger.kernel.org>; Sat, 10 Oct 2026 11:35:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791631431; cv=none; b=XGWWivb+fsKNk9INsI+hNZiQjMGSMTc3dq69GM+pEFgKh8evtEjVCvfWAApLkiy9fWN3fZ0zI1qpj0W460+3lXSoxuPungYeI93SsTp2O8NBuzkL7WaVrQtOssToyKF4xdjNkcKIKrP3M+wBmrrune+Xyfyi4O2R+gbqi84+M/o=
+	t=1791632135; cv=none; b=kus5wNgbg8SKaelaHRuT114OBA1rigryoDERCQXCd2fZZNEgIQlSfxASOgI5z2FFfXbuCp9FK6if1TSg+lUjbIecnPWmEw5LtlNFlO3J75+EV8/1hO0+qrMbnTsDQ66esrbo3jjbSgXb/1NB0yt+jGHyvzNdTQJFDz+IVhluYa4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791631431; c=relaxed/simple;
-	bh=29EACdLxzYRratyDbeWoNXVIHRUiUVtnepkFCk69mzE=;
-	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=ERxiy6IzpwjXFnQgqGrA+agkNWDgxSlyJI1+oafeM2BXuAmslCkFzJPwlAk8vZwyISsbCRGRhKojvuvg4FU2WKRmtAya0FSK7ObDNsCUr/0HuTlHkTtnXR2WoOIqb3kHdWXxnGQYiR0piALEy6Ht+T5uQkUPJghYqH6sI6FCUSM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=Ci6dayoF; arc=none smtp.client-ip=109.224.244.122
+	s=arc-20240116; t=1791632135; c=relaxed/simple;
+	bh=/itNkXNH1JxfAtbgLYU43ReT1lu9d2Vv6u4JiAK4MLo=;
+	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=J5XViTIiWjK6zzPSdFdoSjwmZkVDnsjWYuPu4cBr2KXZrzO9AfyRgIIqAPmdGKxeirnnzrU4cUhkLMnwYhmN6UM7Q2pnsavty9PTQcqwQjydZwx0l/mTIFTraeFJX8Qg7LkHYxFuQkcKrm1AVujQZhxguHMoTUXot7MNVyWR2pY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=IQstWvGz; arc=none smtp.client-ip=109.224.244.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="Ci6dayoF"
+	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="IQstWvGz"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1791631421; x=1791890621;
-	bh=oo79LKWTx4aAtArHq4xXSoc7i/wEN7VwGdsWaQW6NV8=;
+	s=protonmail3; t=1791632130; x=1791891330;
+	bh=u/XyS0fFwdXSO/nAyUmGOgyVOEMZmfrG8b3gOmGgnns=;
 	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
 	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=Ci6dayoFUMY/k81NymBOBaqSuC3q9llTEfP0Sh1/TyVzD0VdE/QJnnlpzaz2j7e+K
-	 hgk864ShChkLFGmLQkwf9CqHMIq8dNeNAfxxzn2Yqg7obJA9XI4DJtyXnxolUCIr5Y
-	 THfL5HTQyLigYecEPQop6RPkv3+BvH9rhyEqukKlI5WThxcNZW+GiwnUQt1puerxRj
-	 uCpXr0VBncgvXKPla3S9uLRjjNeSx33PWnp12Wdfoi++dtXXZ48oiXHosVNip8+qJc
-	 jmLSSNcNYDj/WTbynCKKFvwTqMsNHayJiYQzWkeo+IC/jV1maXaJrVNDkgIshY/vfd
-	 S6NbjfnkwwvIQ==
-Date: Sat, 10 Oct 2026 11:23:36 +0000
-To: Bjorn Andersson <andersson@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Linus Walleij <linusw@kernel.org>
+	b=IQstWvGzGoGHE9qtWPZKn15AgkUBc9Y37IAtSf7cXw5Wjym8pRqR8Olw8iw7I7ZBo
+	 BLXGUajVCl/Jej5bolpLBedu25L8K5ve/STNLIx6Zdl4HiPOWU34W9ux3nMupyAlVe
+	 WwwRI0J7SfK0dQ4UE5ARATUqJ3tLdJQyNBVevj6X8Gy0DGQceSlRDbJPpYdjgkozGf
+	 9hfUvAmQC1qaNLGs9hnlk9WTna/B46xWP9KtjmTU3cDx6ZOOZubjKwm0uZJIzCDE+6
+	 9edbf9voQHuFWdqtDMCtrruPDLGApA3oNJzzg3mMj5C9eEQJ1jh5DS4Gqmvo9W8euN
+	 dK79ioPKjC+ew==
+Date: Sat, 10 Oct 2026 11:35:26 +0000
+To: Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>
 From: Birk Skyum <birk.skyum@pm.me>
-Cc: linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] pinctrl: qcom: Restore the pin configuration after hibernation
-Message-ID: <179163141354.18006.80461347454353634@pm.me>
+Cc: linux-bluetooth@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Bluetooth: hci_qca: Reset the in-band sleep state on power off
+Message-ID: <179163212446.46972.2306254853726299632@pm.me>
 Feedback-ID: 21326998:user:proton
-X-Pm-Message-ID: 9005c5cbff3375a4d0631500baca45f5b1b2f650
+X-Pm-Message-ID: 884b30a7e7cc678a90e94af3bff0cc6b2f0676a5
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,234 +43,82 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-A hibernation image is restored after a power cycle. The TLMM registers
-then hold what the boot firmware and the kernel that loaded the image
-made of them. The restored kernel has the configuration it applied in
-memory only, and nothing writes it to the hardware again, so every pin
-that the loading kernel did not set up the same way stays wrong.
+qca_power_off() cuts the power of the controller but leaves the host
+side of the in-band sleep (IBS) protocol as it was. tx_ibs_state and
+rx_ibs_state are initialised in qca_open() only, so a controller that
+qca_setup() powers on again meets whatever state the last session ended
+in.
 
-On a Lenovo Yoga Slim 7x (X1E80100) the Bluetooth and Wi-Fi enable lines
-are two of them. Their drivers are loaded from the root file system, so
-the kernel that loads the image never touches the pins. This is
-/sys/kernel/debug/gpio before the hibernation and after the resume:
+If that state is HCI_IBS_TX_WAKING, the host is waiting for a wake
+acknowledgment, and qca_hci_shutdown() has deleted the timer that
+sends the wake indication again. The setup still works, because frames
+bypass IBS while QCA_IBS_DISABLED is set. Once the flag is cleared,
+qca_enqueue() puts every frame on tx_wait_q and nothing takes it off:
 
-  gpio116 : out low  func0 2mA no pull
-  gpio117 : out high func0 2mA no pull
+  Bluetooth: hci0: QCA setup on UART is completed
+  Bluetooth: hci0: Opcode 0x0c03 failed: -110
 
-  gpio116 : in  low  func0 2mA pull down
-  gpio117 : out high func0 16mA no pull
+A restore from hibernation gets there on a Lenovo Yoga Slim 7x
+(WCN7850). The controller has been through a power cycle, while the
+restored kernel holds the state from before the image was taken. Its
+wake indications go unanswered, the commands behind them time out, and
+the core closes the device and sets it up again. From then on
+tx_ibs_state reads 1 in debugfs and Bluetooth stays dead until hci_uart
+is reloaded.
 
-The driver that owns gpio116 still believes it drives the line.
-
-Save the control, output and interrupt configuration registers of every
-valid pin in freeze_noirq and write them back in restore_noirq, the
-output level first, so that a pin drives the right level from the
-moment it becomes an output. Enabling the raw interrupt status can
-latch an interrupt, so the status is cleared afterwards, as
-msm_gpio_irq_set_type() does.
-
-msm_pinctrl_dev_pm_ops gets the two callbacks and x1e80100 starts using
-these ops. With that x1e80100 also gets their suspend and resume
-callbacks, which apply the sleep and default state of the controller's
-own pins where a board defines them.
+When the controller loses power, put both sides back to asleep, which
+is where qca_open() starts, and stop the two IBS timers.
 
 Signed-off-by: Birk Skyum <birk.skyum@pm.me>
 ---
-RFC because the two callbacks go into msm_pinctrl_dev_pm_ops, which the
-sc7180, sc7280, sdm845 and sm7150 drivers use as well, and I can only
-test x1e80100. If you would rather have this for x1e80100 alone, or
-done another way, I am happy to redo it.
+Tested on a Lenovo Yoga Slim 7x with Arch Linux ARM's v7.2 kernel and
+hci_uart rebuilt with this change. qca_open(), qca_enqueue() and
+qca_hci_shutdown() are the same there as in bluetooth-next, which this
+is based on and where it builds without warnings (W=3D1).
 
-Tested on a Lenovo Yoga Slim 7x with Arch Linux ARM's v7.2 kernel plus
-this patch. The kernel also carried the PCI change in [1], without
-which this machine does not resume at all, the smp2p change in [2] and
-a GENI serial change that is not ready for the list. The patch is
-based on pinctrl/devel, where it builds without warnings (W=3D1,
-CONFIG_HIBERNATION=3Dy).
+Each run is a fresh boot, a hibernation with a real power-off and a
+resume, with Bluetooth powered before it:
 
-- Without the patch, gpio116 and gpio117 come back as shown above
-  after a hibernation with a real power-off. With it, in four such
-  hibernations, the TLMM part of /sys/kernel/debug/gpio differs only
-  in the level read on two inputs (gpio93 and gpio153).
-- pm_test=3Dcore and test_resume pass.
-- A suspend (deep) and wake still works. On x1e80100 it now goes
-  through msm_pinctrl_suspend() and msm_pinctrl_resume().
+- Without the patch Bluetooth is dead afterwards in four runs out of
+  four, with the log above. In the one run where I read it, debugfs
+  showed tx_ibs_state=3D1, ibs_sent_wakes=3D109 and ibs_recv_wake_acks=3D8.
+- With the patch it is powered again by itself in two runs out of two,
+  about 20 seconds after the resume. The log shows a failed version
+  read and "Retry BT power ON:0" before a setup that works. In the run
+  where I read it, debugfs showed tx_ibs_state=3D0 afterwards.
+- Powering the controller off and on with bluetoothctl still works.
 
-Not covered here: the LPASS LPI pin controller, whose pins also came
-back at their reset values after a hibernation.
+The 20 seconds are the commands that time out before the core gives up
+on the old session. This patch does not change that part.
+
+The kernel also carried the hibernation changes in [1], [2] and [3],
+without which this machine does not get this far, and a GENI serial
+change that is not ready for the list.
 
 [1] https://lore.kernel.org/r/179157746908.73485.2343672865542690797@pm.me
 [2] https://lore.kernel.org/r/179158127177.70185.5691100900886332545@pm.me
+[3] https://lore.kernel.org/r/179163141354.18006.80461347454353634@pm.me
 
- drivers/pinctrl/qcom/pinctrl-msm.c      | 106 +++++++++++++++++++++++-
- drivers/pinctrl/qcom/pinctrl-x1e80100.c |   1 +
- 2 files changed, 105 insertions(+), 2 deletions(-)
+ drivers/bluetooth/hci_qca.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/pinctrl/qcom/pinctrl-msm.c b/drivers/pinctrl/qcom/pinc=
-trl-msm.c
-index 27f06bbc1..fba8a4165 100644
---- a/drivers/pinctrl/qcom/pinctrl-msm.c
-+++ b/drivers/pinctrl/qcom/pinctrl-msm.c
-@@ -39,6 +39,14 @@
- #define MAX_NR_TILES 4
- #define PS_HOLD_OFFSET 0x820
+diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+index 7089e9b63..19a75faba 100644
+--- a/drivers/bluetooth/hci_qca.c
++++ b/drivers/bluetooth/hci_qca.c
+@@ -2235,6 +2235,11 @@ static void qca_power_off(struct hci_uart *hu)
+ =09spin_lock_irqsave(&qca->hci_ibs_lock, flags);
+ =09set_bit(QCA_IBS_DISABLED, &qca->flags);
+ =09qca_flush(hu);
++=09/* A controller that loses power is asleep when it comes back. */
++=09timer_delete(&qca->wake_retrans_timer);
++=09timer_delete(&qca->tx_idle_timer);
++=09qca->tx_ibs_state =3D HCI_IBS_TX_ASLEEP;
++=09qca->rx_ibs_state =3D HCI_IBS_RX_ASLEEP;
+ =09spin_unlock_irqrestore(&qca->hci_ibs_lock, flags);
 =20
-+/* Register values of one pin, kept across a hibernation. */
-+struct msm_pin_state {
-+=09u32 ctl;
-+=09u32 io;
-+=09u32 intr_cfg;
-+=09u32 intr_target;
-+};
-+
- /**
-  * struct msm_pinctrl - state for a pinctrl-msm device
-  * @dev:            device handle.
-@@ -58,6 +66,7 @@
-  * @soc:            Reference to soc_data of platform specific data.
-  * @regs:           Base addresses for the TLMM tiles.
-  * @phys_base:      Physical base address
-+ * @saved:          Pin registers kept while a hibernation image is taken.
-  */
- struct msm_pinctrl {
- =09struct device *dev;
-@@ -80,6 +89,8 @@ struct msm_pinctrl {
- =09const struct msm_pinctrl_soc_data *soc;
- =09void __iomem *regs[MAX_NR_TILES];
- =09u32 phys_base[MAX_NR_TILES];
-+
-+=09struct msm_pin_state *saved;
- };
-=20
- #define MSM_ACCESSOR(name) \
-@@ -1583,9 +1594,93 @@ static __maybe_unused int msm_pinctrl_resume(struct =
-device *dev)
- =09return pinctrl_force_default(pctrl->pctrl);
- }
-=20
--SIMPLE_DEV_PM_OPS(msm_pinctrl_dev_pm_ops, msm_pinctrl_suspend,
--=09=09  msm_pinctrl_resume);
-+static bool msm_pin_has_own_intr_target(struct msm_pinctrl *pctrl,
-+=09=09=09=09=09const struct msm_pingroup *g)
-+{
-+=09return !pctrl->intr_target_use_scm && g->intr_target_reg &&
-+=09       g->intr_target_reg !=3D g->intr_cfg_reg;
-+}
-+
-+/* Remember how the pins are set up when a hibernation image is taken. */
-+static int msm_pinctrl_freeze_noirq(struct device *dev)
-+{
-+=09struct msm_pinctrl *pctrl =3D dev_get_drvdata(dev);
-+=09const struct msm_pingroup *g;
-+=09struct msm_pin_state *s;
-+=09unsigned long flags;
-+=09unsigned int i;
-+
-+=09raw_spin_lock_irqsave(&pctrl->lock, flags);
-+=09for (i =3D 0; i < pctrl->chip.ngpio; i++) {
-+=09=09if (!gpiochip_line_is_valid(&pctrl->chip, i))
-+=09=09=09continue;
-+
-+=09=09g =3D &pctrl->soc->groups[i];
-+=09=09s =3D &pctrl->saved[i];
-+=09=09s->ctl =3D msm_readl_ctl(pctrl, g);
-+=09=09s->io =3D msm_readl_io(pctrl, g);
-+=09=09if (!g->intr_cfg_reg)
-+=09=09=09continue;
-+
-+=09=09s->intr_cfg =3D msm_readl_intr_cfg(pctrl, g);
-+=09=09if (msm_pin_has_own_intr_target(pctrl, g))
-+=09=09=09s->intr_target =3D msm_readl_intr_target(pctrl, g);
-+=09}
-+=09raw_spin_unlock_irqrestore(&pctrl->lock, flags);
-+
-+=09return 0;
-+}
-+
-+/*
-+ * The image is restored after a power cycle, when the pins are back at wh=
-at
-+ * the firmware and the kernel that loaded the image made of them. Nothing=
- else
-+ * writes the configuration again, so put back what was there.
-+ */
-+static int msm_pinctrl_restore_noirq(struct device *dev)
-+{
-+=09struct msm_pinctrl *pctrl =3D dev_get_drvdata(dev);
-+=09const struct msm_pingroup *g;
-+=09struct msm_pin_state *s;
-+=09unsigned long flags;
-+=09unsigned int i;
-+=09u32 val;
-+
-+=09raw_spin_lock_irqsave(&pctrl->lock, flags);
-+=09for (i =3D 0; i < pctrl->chip.ngpio; i++) {
-+=09=09if (!gpiochip_line_is_valid(&pctrl->chip, i))
-+=09=09=09continue;
-+
-+=09=09g =3D &pctrl->soc->groups[i];
-+=09=09s =3D &pctrl->saved[i];
-+
-+=09=09/* Set the level before the pin starts driving it. */
-+=09=09val =3D msm_readl_io(pctrl, g);
-+=09=09val &=3D ~BIT(g->out_bit);
-+=09=09val |=3D s->io & BIT(g->out_bit);
-+=09=09msm_writel_io(val, pctrl, g);
-+
-+=09=09msm_writel_ctl(s->ctl, pctrl, g);
-+=09=09if (!g->intr_cfg_reg)
-+=09=09=09continue;
-=20
-+=09=09if (msm_pin_has_own_intr_target(pctrl, g))
-+=09=09=09msm_writel_intr_target(s->intr_target, pctrl, g);
-+=09=09msm_writel_intr_cfg(s->intr_cfg, pctrl, g);
-+
-+=09=09/* Enabling the raw status can latch an interrupt. */
-+=09=09if (s->intr_cfg & BIT(g->intr_raw_status_bit))
-+=09=09=09msm_ack_intr_status(pctrl, g);
-+=09}
-+=09raw_spin_unlock_irqrestore(&pctrl->lock, flags);
-+
-+=09return 0;
-+}
-+
-+const struct dev_pm_ops msm_pinctrl_dev_pm_ops =3D {
-+=09SYSTEM_SLEEP_PM_OPS(msm_pinctrl_suspend, msm_pinctrl_resume)
-+=09.freeze_noirq =3D pm_sleep_ptr(msm_pinctrl_freeze_noirq),
-+=09.restore_noirq =3D pm_sleep_ptr(msm_pinctrl_restore_noirq),
-+};
- EXPORT_SYMBOL(msm_pinctrl_dev_pm_ops);
-=20
- int msm_pinctrl_probe(struct platform_device *pdev,
-@@ -1663,6 +1758,13 @@ int msm_pinctrl_probe(struct platform_device *pdev,
- =09if (ret)
- =09=09return ret;
-=20
-+=09if (IS_ENABLED(CONFIG_HIBERNATION)) {
-+=09=09pctrl->saved =3D devm_kcalloc(&pdev->dev, pctrl->chip.ngpio,
-+=09=09=09=09=09    sizeof(*pctrl->saved), GFP_KERNEL);
-+=09=09if (!pctrl->saved)
-+=09=09=09return -ENOMEM;
-+=09}
-+
- =09platform_set_drvdata(pdev, pctrl);
-=20
- =09dev_dbg(&pdev->dev, "Probed Qualcomm pinctrl driver\n");
-diff --git a/drivers/pinctrl/qcom/pinctrl-x1e80100.c b/drivers/pinctrl/qcom=
-/pinctrl-x1e80100.c
-index e4c0abcd9..bfe122fc7 100644
---- a/drivers/pinctrl/qcom/pinctrl-x1e80100.c
-+++ b/drivers/pinctrl/qcom/pinctrl-x1e80100.c
-@@ -1855,6 +1855,7 @@ static struct platform_driver x1e80100_pinctrl_driver=
- =3D {
- =09.driver =3D {
- =09=09.name =3D "x1e80100-tlmm",
- =09=09.of_match_table =3D x1e80100_pinctrl_of_match,
-+=09=09.pm =3D &msm_pinctrl_dev_pm_ops,
- =09},
- =09.probe =3D x1e80100_pinctrl_probe,
- };
+ =09/* Non-serdev device usually is powered by external power
 --=20
-2.53.0
+2.56.0
 
 
