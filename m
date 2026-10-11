@@ -1,161 +1,103 @@
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.nozomi.space (mail.nozomi.space [139.162.184.125])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08541366057
-	for <linux-pm@vger.kernel.org>; Sun, 11 Oct 2026 17:40:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F35B623E334;
+	Sun, 11 Oct 2026 18:48:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.162.184.125
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791740446; cv=none; b=tqukRogAtJgzNmNzyxDNewNPzwQ6rWINfcHJBVPOWQ33JBK60MIol+Dm/VoGb4A2IqF3ca8tf8jTS4KHc+o89470rJMUtVAcxk7p0qlXLX1MnmhiP/76wIW6G6AMMncdyub/ZuOGkl6MuQwU0ulx9dhHg+n5XgS27MdjCQvRILY=
+	t=1791744482; cv=none; b=W2b7mKQCkuf2IQRuN8iaGijLhSGMTvRspL0pRe9+OJu0+OLA1QeHnYUtP4egj2Wq3abTM0SdzvL+0bfJUA+UD6FhfJ2+3+ZY1sI1j/c7jBAWKjRR7j+gBKOD1KIroBWgT1QjXzA2Re3L9NqdWqQHBAAE5UVGUf4CU4h+qrLZdN4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791740446; c=relaxed/simple;
-	bh=w3rpF15i6oAhEioYAhAAF+3ymkyfHG5hhIacF+l8vRQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cu9DAqjN0+ROP7J/rUxq5NrbbS0thbPQi2VBC3Sc+sO16IJPrTygREHQmgpL/sNiCUWnZZypYuIspEkRJiIRWaCRAQWD6yN2+USXTL5b+xEm+2LbulaapsTUISjG9f/0I7iq7rYDtbGIGic5iI9O9nuLsmAVPJvot8HKAS2Xv0A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pNzK/Mbv; arc=none smtp.client-ip=209.85.221.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1791744482; c=relaxed/simple;
+	bh=rTFeGKLoAJm8570beEA9BPdUtoApvrLuQNqr3X0IDzk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Io0bq88TyEw4dHS2VzRzRnbmtpQTUZ5+9MITvug7ioxK+MU7fsJj86UNg05OGYr5zL0Y+DRMMLawE3U9joHWJ0KtjCXLEEcqjC9lgxlbl+QhxX3ncAbb7wwk0sTRwg3xk+HlkE2vtd0mseRgGK7XEGZWSc+pmXtSGmUe9wV4DlU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=nozomi.space; spf=pass smtp.mailfrom=nozomi.space; dkim=pass (2048-bit key) header.d=nozomi.space header.i=@nozomi.space header.b=dWwTa3BD; arc=none smtp.client-ip=139.162.184.125
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=nozomi.space
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nozomi.space
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pNzK/Mbv"
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-48c5b7d5865so102931f8f.2
-        for <linux-pm@vger.kernel.org>; Sun, 11 Oct 2026 10:40:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791740443; x=1792345243; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Zvh6uQ9bGzCwbdbYbC1n1+7RZUsbZpcs8nWAcUfwSlg=;
-        b=pNzK/MbvaGVD96sGgqNDpwDXdrmVs8spLgt000yM3PEEO12zAuWICes0SOSP6Sj86J
-         vLp2OiI1RD16t14XvmrmsQkLzcy/rVTv3Ok2Dp337ZeG2yFyC5cTImFHCqSdXWRbDLRd
-         Ldm6klsv5EKbiqJSxuiiRlt+GkX1YOtOX4sa2wy3UOdzoyqClxpUzg5fJdcBTQXmCY4u
-         QaogKvQ7ZoeljCfJ0kih4CXp4t1n85pMcLzBvgcCfuVeXOoe7OwALHylyLP9iPRhXGUx
-         kUWFI6kyf9QGxP84MegV8T9smXLb+9rqkeop+ZtAi7uzReYQiZzkEqX/S65HXToSUOoY
-         Jztw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791740443; x=1792345243;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Zvh6uQ9bGzCwbdbYbC1n1+7RZUsbZpcs8nWAcUfwSlg=;
-        b=Uf6gPUbmioIIXcxviTpu4fAMbMbxkQsU1LpJ9CNtUdOAVMIx7pLLV7hot4j8hZsG0L
-         ML0WsCzNTFn6bQ3bKkRFj3O6JOdEL37qqhXG0B+lhTF+U/YQtHpRsWiS/IP3PXMg5WpX
-         o22RcApyJwvjbH0ttuzfLGSN0BbvqYrOfGBJDhNeXeAyGrTHZuOLBPwwCnikQxAgQ/bm
-         32XX5tkMu9v01Bhzz2vCz2V5XNB+JocUaFHfCx6AKigloQqj8ceCU+tD0xnM75RcBShK
-         XFptUBF5CaGutyCwzUUbAs6HGRF1addXvAOjqKsWR7URlEbzRHRuSXaptjBfOULEv+Vb
-         ByCQ==
-X-Forwarded-Encrypted: i=1; AKwUvByl/VOYAmn1Oe60/0WpF4jxg092wJVmvMIt1nLlts9ZGug2MI2D8NGNXnDWXSsKhLxzDfjcjLhIWA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYK/W2BN4T/oXubtY2iK/PBr46fnvjsQJ23iOraPkUDZwkLnsCB3
-	tfpM0nap7Fvjbq7XHFzBpNNN1tb6Wxxa6pEjTUXcy8NK5S7G3iei56pl
-X-Gm-Gg: AYBFou2R6EFTC9BR6pHqJg1QIMZ31wO+bX/wK9/+ntgZ7Riohm0Xybv+DoR9HfemmCU
-	5Usg6SYzzxQfihUvoirM96nwR62QL9TWqcDDsD9675NT5dmeZRlJOYX74cvUhym0dS/k5W1pe/j
-	+0M8i/OVYh3MX5cCLD2WkmdZ9g7LuPCkmmdHCAUUseeiR8SwRabOc6MBXZF5zWIBtyOD1iA3vRe
-	gu1UNntAqy+Xl/OI3olXTRX9nMJnDDOlMDY/DJhSVId+D9dI23tY8E6pfgoLP2vg5Xs1V4MBKYT
-	J9QN3tHNX7Hc+7ROYLrC2TaJxqkSBnc2bTs7YHYKn6Y23vy6jz8bSYiLtCfkgr0XeiA73/Y5TKs
-	nWFS009LVgZo0Evu/xkgXu9+iksat+DYBlervQ8wwRFWrWwB538VP/yC/ZoERTzjGFSxDN1BJeJ
-	aHGuKXgLj/p/j4Ts5PdubZHdhr8tEoo4cSwwYH43hcYdIb2L1GaILIiUEN8laLZC/hUx52iI9g6
-	umZoCAWKszQwcsQD67M
-X-Received: by 2002:a05:6000:46cd:b0:487:10cb:ac16 with SMTP id ffacd0b85a97d-48dbaade0e8mr7581774f8f.4.1791740443065;
-        Sun, 11 Oct 2026 10:40:43 -0700 (PDT)
-Received: from lima-kdev.local ([85.100.66.184])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48db9463049sm15688482f8f.4.2026.10.11.10.40.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 11 Oct 2026 10:40:41 -0700 (PDT)
-From: Kayra Cizmeci <kayracizmeci@gmail.com>
-To: vincent.guittot@linaro.org
-Cc: arighi@nvidia.com,
-	bsegall@google.com,
-	changwoo@igalia.com,
-	christian.loehle@arm.com,
-	dietmar.eggemann@arm.com,
-	juri.lelli@redhat.com,
-	kayracizmeci@gmail.com,
-	kprateek.nayak@amd.com,
-	linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=nozomi.space header.i=@nozomi.space header.b="dWwTa3BD"
+From: =?UTF-8?q?Micha=C5=82=20Kope=C4=87?= <michal@nozomi.space>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nozomi.space;
+	s=mail; t=1791744479;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=wY0ppPAZSs1jsS2/VNGUZBFu80zBzZfLXtPwdAUISaQ=;
+	b=dWwTa3BDqT16TIP6e83lNQFR79CtfGZmUceJZKR0SQWjIjG6rUKd+IYMERFIFB/4SSacoA
+	zWLRzGo3DJf6c+Js1NB+5Cxr7/2+z2T+RJStqaUh4JpZF1cBokyF1V0kZiddPbmJtkStF9
+	zPKTO0rxY8GxwMh14TVINAtq2a33BCI54yUY2uxOR5vZrNGWHqTTjFsR9ansP+B9P/+e2B
+	+OkUQ365IsPqX+w3OibfpFbhbSmRPtU1tDJrHAEgqdodTKFz21i+muRRwIGZqi3KRqVcd3
+	QtyJSf+JppH91Bay4YPnGQRAayW9WxS3WTuScEIhAkiVg9Jca6/oNGgYjL/uSA==
+To: ulfh@kernel.org,
+	angelogioacchino.delregno@collabora.com
+Cc: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	matthias.bgg@gmail.com,
 	linux-pm@vger.kernel.org,
-	lukasz.luba@arm.com,
-	mgorman@suse.de,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	pierre.gondois@arm.com,
-	qyousef@layalina.io,
-	rafael@kernel.org,
-	rostedt@goodmis.org,
-	sched-ext@lists.linux.dev,
-	sshegde@linux.ibm.com,
-	tj@kernel.org,
-	void@manifault.com,
-	vschneid@redhat.com
-Subject: Re: [PATCH 10/18 v2] sched/fair: Add force push task mechanism for fair
-Date: Sun, 11 Oct 2026 20:40:38 +0300
-Message-ID: <20261011174038.5334-1-kayracizmeci@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <CAKfTPtCAbreGDhesDmFNvXEzjj+anmOH1=jqT-1B6Lfj0FfPqw@mail.gmail.com>
-References: <CAKfTPtCAbreGDhesDmFNvXEzjj+anmOH1=jqT-1B6Lfj0FfPqw@mail.gmail.com>
+	devicetree@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	=?UTF-8?q?Micha=C5=82=20Kope=C4=87?= <michal@nozomi.space>
+Subject: [PATCH v2 0/4] pmdomain: mediatek: Enable the GPU timestamp counter on MT8188
+Date: Sun, 11 Oct 2026 20:47:51 +0200
+Message-ID: <20261011184755.2058017-1-michal@nozomi.space>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-> >
-> > On Fri, 9 Oct 2026 at 07:53, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
-> > >
-> > > >       task_tick_cache(rq, curr);
-> > > >
-> > > > -     update_misfit_status(curr, rq);
-> > > > -     check_update_overutilized_status(task_rq(curr));
-> > > > +     if (!tick_pushable_task(curr, rq, rf)) {
-> > > > +             update_misfit_status(curr, rq);
-> > > > +             check_update_overutilized_status(task_rq(curr));
-> > > > +     }
-> > > >
-> > > >       task_tick_core(rq, curr);
-> > > >  }
-> > >
-> > > Hm.
-> > >
-> > > I think this mechanism added on here does not works.
-> >
-> > Ah yes, while factorizing the code, I removed this main diff between
-> > tick and put events
+On MT8188 the GPU timestamp counter reads zero until a register in the
+MFGCFG block feeds it the SoC system timer, and MFGCFG loses that
+setting whenever the MFG1 power domain is turned off. As a result, the
+SYSTEM_TIMESTAMP query and the timestamps written by GPU jobs are always
+zero, which breaks timestamp queries in userspace drivers.
 
-> In fact this is on purpose.
-> fair_check_pushable_task() is the function that is called to decide
-> wether we try to push or not a task. In the case of short task, we
-> will not push a task that is already alone on the rq
+v1 restored the register from panfrost through a new mediatek,mfgcfg
+phandle on the GPU node. As Krzysztof pointed out, the register is lost
+by the power domain, so v2 restores it there instead: the power
+controller lists MFGCFG in access-controllers and writes the register
+every time MFG1 has been powered on.
 
-I'm confused. So, is the added tick push mechanism not working at all
-on purpose? For future use or something IDK.
+Patch 4 converts mt8188.dtsi from the deprecated per-domain
+mediatek,infracfg phandles to access-controllers. A devicetree with it
+needs the driver changes of patches 2 and 3, because older kernels
+expect exactly one access controller on MT8188 and fail to probe the
+power controller otherwise. Older devicetrees keep working with the new
+driver, without the timestamp.
 
-Before the fair_check_pushable_task call on tick_pushable_task():
+MT8370 uses the MT8188 power controller and mt8188.dtsi, so it is
+covered as well.
 
-if (rq->nr_running > 1)
-	return false;
+Tested on the Lenovo Chromebook Duet (MT8188): the timestamp counts at
+13 MHz, also after suspend and resume.
 
-So now at the rest of the function, nr_running have to be equal or smaller than 1.
+Changes in v2:
+- Restore the register from the MFG1 power domain instead of panfrost,
+  and drop the GPU phandle (Krzysztof).
+- Drop the panfrost patch, which makes the review comments about error
+  propagation and MT8370 moot.
 
-We call fair_check_pushable_task() with next = NULL.
+v1: https://lore.kernel.org/all/20261003200132.866240-1-michal@nozomi.space/
 
-There are only 2 paths that can return true, one of them requires next to be true,
-so it never works. The other one:
+Michał Kopeć (4):
+  dt-bindings: power: mediatek: Add the MT8188 access controllers
+  pmdomain: mediatek: Restore a register after powering a domain on
+  pmdomain: mediatek: mt8188: Enable the GPU timestamp counter
+  arm64: dts: mediatek: mt8188: Use access-controllers in the power
+    controller
 
-if (check_pushable_short_task(rq, p))
-	return true;
+ .../power/mediatek,power-controller.yaml      | 16 +++++++++++++-
+ arch/arm64/boot/dts/mediatek/mt8188.dtsi      | 22 +------------------
+ drivers/pmdomain/mediatek/mt8188-pm-domains.h | 16 +++++++++++++-
+ drivers/pmdomain/mediatek/mtk-pm-domains.c    | 19 ++++++++++++++++
+ drivers/pmdomain/mediatek/mtk-pm-domains.h    | 15 +++++++++++++
+ 5 files changed, 65 insertions(+), 23 deletions(-)
 
-And check_pushable_short_task() does this:
-
-if (cfs_rq->h_nr_runnable <= 1)
-	return false;
-
-As I know, h_nr_runnable should be smaller than (or equal maybe) to nr_running.
-
-nr_running can be 1 max, so if h_nr_runnable can't pass nr_running it will
-always be smaller or equal to 1.
-
-Maybe I'm missing something from the start :-)
-
-Thanks,
-
-Kayra
+-- 
+2.56.0
 
