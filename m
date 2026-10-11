@@ -1,162 +1,191 @@
-Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDE6617BB21;
-	Sun, 11 Oct 2026 06:04:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.37.111.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6499E3502A8
+	for <linux-pm@vger.kernel.org>; Sun, 11 Oct 2026 07:21:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791698675; cv=none; b=mr29qir0m87GN35yKxGfjdMM8wrtQthMHBrpr9ceygXOk1I8/S7fHf3fe0cXI52rfGu9YRL4ydTKTKasCmvSahfO0ta5wo8atLJaVpbq4LiSWehPfs6LYIfBMejTYxGe1av1PhBQ8UePFetVFVvCBD09wPdGBdX7gHOLtyojs9I=
+	t=1791703305; cv=none; b=Ekxydsd0IpSmaRQK4F6lT9OTZ/LagnKJamgFGGSSfcbpQy1RBACxZ/MDmczMrqjdstsnoidZj4d9bBdHrO3XswDtYG+I3w9jdALymK5rFIAhiaHT0yTrLyAAX2idt+BOfU4bn/JicrH0tYegC3BoV6673aBYNsKqf9xQkmfNpYI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791698675; c=relaxed/simple;
-	bh=qQmjMVGfaoMxzHce3jAIh0i8dWumuMSkvNeLa89ofOg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=IXuMSo4E5DtVa+jEm41CGqybyb9fASeQihWK4VfR1zwpSZ5InGb7Wns6M/QcsJ5MIDUx+helMnURQgMymBb09Bkc9xxXZ8xbNRWHECsqDcCLhLWpUpGMwgsnxtBLfiQR5+MNwmtOvuP0khg0+9YZXlhfMqRBMJA8/kdN9oFhR8M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com; spf=pass smtp.mailfrom=HansenPartnership.com; dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b=OlyHu7sq; arc=none smtp.client-ip=198.37.111.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=HansenPartnership.com
+	s=arc-20240116; t=1791703305; c=relaxed/simple;
+	bh=0K4gCIyFe0Er8Bw8iuCwJ+ik6MmAivx3xfVB75VoEW4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qezQgEMHHhbaalQCh7WsLjM2tahf8pKIJLzihxQQzhuV3uPwdd8hT9qbNYIFT3HoPwcO/v+rovZSLP8nLQGDgyNvzbmkDt7IFSxsykfEchjLl4zxCTKI0GtLnAcLZKB+wm+EVZzSDG761T3bkvGTHOIgZNsDclKmzMVnfVEsMr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XBCH/wnL; arc=none smtp.client-ip=209.85.216.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="OlyHu7sq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1791698671;
-	bh=qQmjMVGfaoMxzHce3jAIh0i8dWumuMSkvNeLa89ofOg=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=OlyHu7sql5n1DPvf0QO7QrverNqxwTSplVcPTSLUjdQNjcIKpFO/T8AwNREvVS5at
-	 JYbKrz7+kY1AkngO8sGlCngMT2OVL9ZX6tWEFBSSUVZERO2J7SRDHt4sFIvZYru8Kl
-	 FU7U0lBg+nweVA+UfeQLxDli8Z7iEMdzG0MhEJGQ=
-Received: from [10.23.23.39] (unknown [80.188.228.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 8A9D51C0374;
-	Sun, 11 Oct 2026 02:04:30 -0400 (EDT)
-Message-ID: <059384e86fd256618498b9a7214b6421d38fdf1f.camel@HansenPartnership.com>
-Subject: Re: [PATCH 01/17] tpm: Define a kernel-owned TPM NV index that
- can't be modified by userland
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Matthew Garrett <matthewg@nvidia.com>, keyrings@vger.kernel.org, 
-	linux-integrity@vger.kernel.org, rafael@kernel.org,
- linux-pm@vger.kernel.org, 	linux-efi@vger.kernel.org
-Date: Sun, 11 Oct 2026 08:04:27 +0200
-In-Reply-To: <asqthz69ohnMVCye@srcf.ucam.org>
-References: <20261008132532.1155166-1-matthewg@nvidia.com>
-	 <20261008132532.1155166-2-matthewg@nvidia.com>
-	 <435907614242e82ecde1767a967a3110fca6fb37.camel@HansenPartnership.com>
-	 <asqthz69ohnMVCye@srcf.ucam.org>
-Autocrypt: addr=James.Bottomley@HansenPartnership.com;
- keydata=mQENBE58FlABCADPM714lRLxGmba4JFjkocqpj1/6/Cx+IXezcS22azZetzCXDpm2MfNE
- lecY3qkFjfnoffQiw5rrOO0/oRSATOh8+2fmJ6el7naRbDuh+i8lVESfdlkoqX57H5R8h/UTIp6gn
- 1mpNlxjQv6QSZbl551zQ1nmkSVRbA5TbEp4br5GZeJ58esmYDCBwxuFTsSsdzbOBNthLcudWpJZHU
- RfMc0ew24By1nldL9F37AktNcCipKpC2U0NtGlJjYPNSVXrCd1izxKmO7te7BLP+7B4DNj1VRnaf8
- X9+VIApCi/l4Kdx+ZR3aLTqSuNsIMmXUJ3T8JRl+ag7kby/KBp+0OpotABEBAAG0N0phbWVzIEJvd
- HRvbWxleSA8SmFtZXMuQm90dG9tbGV5QEhhbnNlblBhcnRuZXJzaGlwLmNvbT6JAVgEEwEIAEICGw
- MGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAhkBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAml2ZBI
- FCS3GUMIACgkQgUrkfCFIVNZKjQf/deRzlXZClKxTC/Ee2yEPqqS7mm/INUA49KdQQ5oIhSxkUBy0
- 9J4qjMIo5F8ZFkFTqikBqeL35LKu7O7rn8WETfX8Bxvos3HUsl3jHo34DES4MUFIpoQPgtiLRGwLb
- K0cVCAArR2u2qj4ABmTRrs1I1kvdjEw6gatOuXtEe/j5O2fvfzTq9GBr0Q3n2IAsFXi4hLlx6VPE8
- tyWUZ8BWJKtih3JAeUiXFvASL3McV0rV9RnU0VbjEQEhSE7PMYhWpnDC9AyBb0lXJllQRvC3NSkUB
- 8KVQgNNxRPss0WE/nBoZ4dFA42jTyzTz8lNylxZoAWV7WJb3QxVg4oCodRVrxxrQhSmFtZXMgQm90
- dG9tbGV5IDxqZWpiQGtlcm5lbC5vcmc+iQFVBBMBCAA/AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeA
- QIXgBYhBNVgbnPItGJxvq2a34FK5HwhSFTWBQJgS5mYBQkbNYS9AAoJEIFK5HwhSFTWBpwIAL5Bk3
- 5FB34U6iHmDzzgdCbxLTs43T/YQyJpcGIvopBvnI/fDY8oSG6Df64/O6B+1R+A8TDp6ZG5ysUWnCC
- 6GuIaEHemBYkitMPglR6+sGCMQY7O0mlsPvdssvKK1KI9Bno4VU6ogaF2qVzefSqg1Djmf/DcsxWP
- rI/jdJ8FB5AYR2rjIdDFc+zRdAJuavo1/anyY2wgpFh/3R8IOYAEfWV9nGgYkf9+tA4EIn1sxE0I3
- L5oW2N3mbyRrkzuBwO8ztMCwqEPk7moWzhokcZqMXiAIahaZdkashJC+s2X2RZSGCy+g+pvY5NN4B
- BVG5XwLgVBqbHMTcxE0fbmPqz+q6O0LEphbWVzIEJvdHRvbWxleSA8amVqYkBoYW5zZW5wYXJ0bmV
- yc2hpcC5jb20+iQFXBBMBCABBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAmODZ5ACGwMFCRs1hL0F
- CwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQgUrkfCFIVNZu0Af/TzvL2/NdgAcw9uN3x60H8
- jc4QUq14VpxcFEFEMpcj1morkX/G93V+56HBBaXZj+yK8PhxIA/SIz+sU7C/0YvKuvzakP8ZX/7WJ
- e32SOUtjfr/VTaqjIBzNj6OxLvZpmNbBw7s6DwhhNpHOWqJ/1ml+PtDRDV71IB58yVqQjp1xlNKVl
- ZppcJ5908EJzsFnRIVjiQiDSKoppqB2BCibBbrWcln7CiWMyOC/cco6SIn6twH+f7+aivJ3xGcOE2
- a9gBKF5rNi9TBoX9oyPmshv/TDmnohsVrH7AYXlGYfZTk15SWEiROh1QX8/uD9wl/gcIv5EDUpT/F
- L2jzOsA5663bw==
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XBCH/wnL"
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-3856d6fbcb3so391039a91.2
+        for <linux-pm@vger.kernel.org>; Sun, 11 Oct 2026 00:21:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791703304; x=1792308104; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=u+jU3Rmrk/nbOZWjxjv/jI52nizg3YlU+qRiUWSN3FI=;
+        b=XBCH/wnLmre59r9B9sZ6NI/Z8XhscuLCXYpCil5REkeioODn3P8PE+nesYKuLvmQob
+         jHUOHrCWgE1jTFXQ98MB/CbjIzExUY2iwUJ9RlLQiU8n6edWRPvbM63b55q/dSIDUSuv
+         nHwM93S5o3mpaHdjZtOcADdiL6Bt1R7m1rjb7AxdFXH2VGZvhd2jJVepmyjniwF6Z/0s
+         bKPDuKC7MsQhjuSI56qwNxXk80wooxUsSrqNVOGPE9iCFrlKX1mTa1SAUlfY3z5tPweT
+         mqK6RtrEa39inglkFx0V++cjheskzVLCPXXcerfGamjwrZoRd+bWDTYcIH9Cxv9hFP4H
+         uaFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791703304; x=1792308104;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=u+jU3Rmrk/nbOZWjxjv/jI52nizg3YlU+qRiUWSN3FI=;
+        b=s0s1IC+KeyPEhsMa4VlHMuLV0KeQWuB5mgX+XIgwXaOjI9KSLwvbX0XW14fNU7xXrk
+         Wq9RDBVY5vdp73xS6N7/Q8rcdDlfGWMWV4nBJE8xHrIJrqCJQmT3UemnePQwfxBANTqg
+         MlbWwjXzU8E7LwygfAGgkHQZw88bl5iZClLrykfdh393KqAO1i0fcnevH+ZxrOmowlbG
+         aZpLPO+2Y8fUU4/WQN2UUf/D6Jc5vFtftWmAs2sn4kVcam1X9kWbiXsEIB2CpmeD/gqV
+         Z2mBZetMbMY3MasUhvbP/vL/v2mCYBpL2qjMqLTsIKZO4HyqR9ujvoIEJ19BF2NaY7pq
+         8g4w==
+X-Gm-Message-State: AFq9FYInInrn78OGVxinmdeXIbwcZmfdTxqn4sv/YlSnnJMqBYtAt6wu
+	MVS/VgEcxDIED0z+u4lP7YcBFrkvzvUEcPZRoY0CTbZgTd794CNmn9Hv
+X-Gm-Gg: AYBFou3b2r5B2hI3l0KpY3RPgcQpDQUrn9m5ORTPDB6PlnAd5N5l+1d/YbteXnaB7iX
+	ZChg6u7LsQN325qYLK667fOVH5mcFGP1J9UiGWAYf62c4tVTeUCTK6iUCRL9zdhh9UHRGuZGHct
+	K8JfWNL5E//5kjslLA9vlklq2pP324VUNPnxzLM7CpO9uJOWdRqPCZckAgnjLBs2F6YbzS9xg0G
+	aFs+L1YcKsmxT/Y4yx14nJ+iUrt47qtAyTVFLstb8eRslmLTHbyeKOn+SEOO1FUS5mzCuKUf2dd
+	NDiNI0bxLkhwb1WqCgGIWGEITgkqwAOZSvMFyQ1x1nVF8oXmMkBsUJOQnlunFWz91AojOa8EE/K
+	7UIhLcY9Exf1frqzfa9NQIJYTffGzNUkHLDjDhx47sIBb9DtRjjyGdMKRQxkZ7V1dgeX/jIYOLN
+	cwsajIyGycufy7Tcxs7nqrYEs3PHouBLThyOpIVpJxnEDmrsjE2WuYy57jAlz7TiZ6ff3Q2ZS1Z
+	flSDybMZePTyGMsVntDjpxjSbRUrTPK/tfMZGAsUSAn16YVlwuWXXgQ7uHu6ejE3w==
+X-Received: by 2002:a17:90a:d450:b0:3a0:a912:e759 with SMTP id 98e67ed59e1d1-3ab3a79dd33mr5323176a91.25.1791703303511;
+        Sun, 11 Oct 2026 00:21:43 -0700 (PDT)
+Received: from localhost.localdomain ([58.186.105.39])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab36ed053csm11591358a91.4.2026.10.11.00.21.38
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sun, 11 Oct 2026 00:21:41 -0700 (PDT)
+From: Adrian Nguyen <thenguyen1024@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Casey Connolly <casey.connolly@linaro.org>,
+	Adrian Nguyen <thenguyen1024@gmail.com>
+Subject: [PATCH v1 0/2] power: supply: Add Qualcomm SMB1351 charger driver
+Date: Sun, 11 Oct 2026 14:21:33 +0700
+Message-ID: <20261011072135.12757-1-thenguyen1024@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Sat, 2026-10-10 at 14:26 -0700, Matthew Garrett wrote:
-> On Sat, Oct 10, 2026 at 11:22:34AM +0200, James Bottomley wrote:
->=20
-> > The reason I never really proposed such a scheme is the rollback
-> > problem (old version of OS or non-Linux OS can create the NV index
-> > from user space bypassing the kernel only block) which you try to
-> > solve with PCR5.=C2=A0 Do you have any data for how widespread measurin=
-g
-> > exitbootservices is?=C2=A0 I know edk2 does it, but I just looked on my
-> > XPS13 and I only have two PCR5 events: a separator and the GPT
-> > table, so it's definitely in violation, but if Dells don't do this
-> > then it's indicative that many other manufacturers might not as
-> > well.
->=20
-> Does your log replay correctly for PCR 5? It's *extremely* common for
-> the extension to happen without logging, since logging needs to be
-> done  into the late events table and almost nobody got that right
-> until a few years ago (hence=20
-> https://github.com/google/go-attestation/blob/master/attest/eventlog_work=
-arounds.go#L70
-> )
+The Vsmart Active 1 (SDM660, PM660) has a Qualcomm SMB1351 parallel
+charger at 0x1d on blsp_i2c2, next to the PM660 charger. Its version
+register reads 0xb2, which the downstream driver identifies as an
+SMB1350. Without a driver it runs on its OTP defaults: charging is
+enabled through an active-low pin that the PM660 holds low, with a
+4.5 V float voltage on a 4.4 V battery. It is powered from VBUS alone,
+so it does not answer on I2C without VBUS and starts over from those
+defaults whenever VBUS comes back. As a result, whenever the PM660
+suspends its USB input, the SMB1351 charges the battery on its own.
+Since commit 98d68b74ebb9 ("power: supply: qcom_smbx: allow disabling
+charging"), qcom_smbx does that when user space writes 0 to the status
+property of the PM660 charger to stop charging.
 
-It seems to.  This is what tpm2-eventlog returns (edited only to show
-PCR 5):
+Patch 1 documents the chip with the battery it charges, its STAT output
+as an optional interrupt and, on a parallel charger, the PMIC charger
+that shares its USB input. The SMB1350 gets its own compatible with
+qcom,smb1351 as the fallback. Patch 2 adds a driver that keeps the
+SMB1351 from charging: each time the PMIC charger reports a change, it
+hands the charge enable control to I2C with charging disabled and sets
+the float voltage from the battery. A status or charge_type read that
+finds the chip reset, or not answering, makes it configure the chip
+again. Its power supply reports whether the chip has VBUS, the charging
+status, the charge type and the float voltage set in the chip. Parallel
+charging is left for later, since it also needs the PMIC charger to
+split the current and to drive the enable pin. Patch 2 also explains
+why this is a new driver rather than part of smb347-charger.
 
----
-version: 1
-events:
-- EventNum: 20
-  PCRIndex: 5
-  EventType: EV_SEPARATOR
-  DigestCount: 2
-  Digests:
-  - AlgorithmId: sha1
-    Digest: "9069ca78e7450a285173431b3e52c5c25299e473"
-  - AlgorithmId: sha256
-    Digest: "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b811=
-19"
-  EventSize: 4
-  Event: "00000000"
-- EventNum: 22
-  PCRIndex: 5
-  EventType: EV_EFI_GPT_EVENT
-  DigestCount: 2
-  Digests:
-  - AlgorithmId: sha1
-    Digest: "bcd4ef027ee6b70a1ce07b37378da7ad02bfc545"
-  - AlgorithmId: sha256
-    Digest: "ed5eaf5ac436743417c862277ac71e1f202e6ff734fcf9a4ecdabc0d045d20=
-a3"
-  EventSize: 484
-  Event: "4546492050415254000001005c000000de83a7fd000000000100000000000000a=
-f129e3b0000000022000000000000008e129e3b00000000fc1e83487e221840b908f829a235=
-f48b02000000000000008000000080000000983fc1db030000000000000028732ac11ff8d21=
-1ba4b00a0c93ec93bb131ae393c3797438f4a8bf58beeaef50008000000000000ff07100000=
-000000000000000000000000000000000000000000000000000000000000000000000000000=
-000000000000000000000000000000000000000000000000000000000000000000000000000=
-0000000000000000af3dc60f838472478e793d69d8477de4cde1b4fc71d4a245a89533bb0b5=
-24e9b0008100000000000ff0f5e3b0000000000000000000000000000000000000000000000=
-000000000000000000000000000000000000000000000000000000000000000000000000000=
-000000000000000000000000000000000000000000000006dfd5706aba4c44384e50933c84b=
-4f4fb29b70a77c1da04da9d7f36291c77dc000105e3b000000008e129e3b000000000000000=
-000000000000000000000000000000000000000000000000000000000000000000000000000=
-000000000000000000000000000000000000000000000000000000000000000000000000000=
-000"
-pcrs:
-  sha256:
-    5  : 0x9c41c9e22fb5275e84b88f7eda8a764961f67ede9dfad9626e84208c9f7de63c
+Making qcom_smbx drive the enable pin high would also keep the chip
+off, but only because of the pin polarity in its OTP, which the
+downstream driver does not rely on: it programs the polarity over I2C.
+A driver that programs the enable control over I2C works whatever the
+PMIC does with the pin, gets the chip described in DT, and gives
+parallel charging something to build on.
 
-and
+Tested on the Vsmart Active 1 with a 7.2-based kernel from the
+sdm660-mainline tree [1] (its qcom-sdm660-7.2.y branch plus a few
+pending pull requests), with the same driver as this series,
+CONFIG_CHARGER_QCOM_SMB1351=m and a DT node [2] that also passes
+dtbs_check against this binding:
 
-jejb@lingrow:~> cat /sys/class/tpm/tpm0/pcr-sha256/5
-9C41C9E22FB5275E84B88F7EDA8A764961F67EDE9DFAD9626E84208C9F7DE63C
+- With the PM660 USB input suspended (on that kernel through
+  charge_behaviour=force-discharge, which the sdm660-mainline tree adds
+  to qcom_smbx and which sets the same USBIN_SUSPEND bit as writing 0
+  to status), the battery discharges at 250 to 470 mA and the SMB1351
+  reports "Not charging". Without the driver it charged the battery at
+  about 390 mA in that state.
+- After an unplug, smb1351-charger goes offline 2.35 s after the PM660
+  charger reports the change (2.37 s in a second run), when the
+  driver's retries run out.
+- After a replug, the chip is back on its OTP defaults (0x03 = 0xf2,
+  0x06 = 0x6b) and is configured again (0x03 = 0xed, 0x06 = 0x0b)
+  within about 0.4 s of VBUS settling. This also works while the PM660
+  has its USB input suspended, because the PM660 charger still reports
+  plug events then. In that run nothing read the status, so the PM660
+  events alone were enough.
+- Writing the OTP enable setting (0x06 = 0x6b) behind the driver's back
+  makes the next status read return "Unknown", and the chip is
+  configured again within a second.
+- Probing without VBUS, unbind/bind, and unloading the module inside
+  the retry windows work without warnings.
+
+While the PM660 has its USB input suspended, smb1351-charger still
+reports online = 1, because VBUS is present, so user space such as
+UPower sees external power in that state.
+
+On sre/for-next (5c1c602463d5), the driver builds without warnings
+with ARCH=arm64 LLVM=1 W=1 (clang 23.1.3), sparse (C=2) and the
+coccinelle report scripts find nothing in it, dt_binding_check and
+dt-check-style --mode=strict pass for the new schema, and
+checkpatch.pl --strict only asks whether MAINTAINERS needs updating
+for the new files.
+
+The Vsmart Active 1 DT is only in the sdm660-mainline tree so far, and
+the SMB1351 node for it is in [2]. sdm630-sony-xperia-nile.dtsi also
+mentions an SMB1351 on blsp_i2c2, and msm8996pro-xiaomi-scorpio.dts
+names a STAT_SMB1351 line, so the binding may find more users.
+
+About the Assisted-by tags: this series was made with an LLM coding
+assistant over longer interactive sessions. I asked it to find out why
+the battery kept charging while the PM660 had its USB input suspended,
+and later to fix that in the kernel. It read the SMB1351 registers over
+i2c-dev and the PM660 registers through regmap debugfs on the phone,
+compared them with the stock DT and the downstream driver, and laid out
+the options. After I chose a separate I2C driver, it wrote the binding,
+the driver, the commit messages and this cover letter, and ran the
+build checks and the device test scripts above. It also ran sparse and
+the coccinelle report scripts on the driver; they found nothing, and
+patch 2 names them in its Assisted-by tag. I did the cable tests on
+the phone and reviewed the result.
+
+[1] https://github.com/sdm660-mainline/linux
+[2] https://github.com/sdm660-mainline/linux/pull/241
+
+Adrian Nguyen (2):
+  dt-bindings: power: supply: Add Qualcomm SMB1351 charger
+  power: supply: Add Qualcomm SMB1351 charger driver
+
+ .../bindings/power/supply/qcom,smb1351.yaml   |  71 +++
+ drivers/power/supply/Kconfig                  |  14 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/qcom_smb1351.c           | 426 ++++++++++++++++++
+ 4 files changed, 512 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/qcom,smb1351.yaml
+ create mode 100644 drivers/power/supply/qcom_smb1351.c
 
 
-So that's a match.
+base-commit: 5c1c602463d597c5189ddc5a73dece588ba2c57a
+-- 
+2.43.0
 
-Regards,
-
-James
