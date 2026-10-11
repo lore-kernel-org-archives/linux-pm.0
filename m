@@ -1,88 +1,151 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F15194657D0;
-	Sun, 11 Oct 2026 22:34:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D984D364949;
+	Sun, 11 Oct 2026 23:42:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791758044; cv=none; b=s/2FHaJ8DWas5JsyPcuJ+sNqT+fGaM7dAlDV/7veEAT5aqarAEa1XHF8cTk433uFQ/tH8qDveG1OcYSn8ADboWvxy7nS92fzVRMN9kinAqx9xaRBG4vQyzvIrIk/rIoS+VNbTgWoK2qPPlTx7BxW8vpZVVB+XaQ6vf98OAz7m9Y=
+	t=1791762167; cv=none; b=IbXnHCCVtAQx8I7CfY9RYYKYD1S/ZlKd+phrnyGIleKVlfD+cV1+rxMiNvASlRBiquFjVifqNI1Afqrv+GByyjKnmxUd9Pxvyv8J5ffilj6fVCb50j6kujkXm1HPlHwmXZezlARvYL+hGv01qwS7IXHPSG3d4XEgOQibQ/9wUrA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791758044; c=relaxed/simple;
-	bh=ilTDsjY3wNtsMuQ5D3FDRYeOOyyKiC4mkkn461Ul6ns=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DSiBjRZdb0WHUpJ7dIWH6umTHL7iId7IVy43PHXubZKkW3OorLmX5XO6usRSWxX00//pYctgAg+N2ahsr/beA14P6Tatk0WEY9Yulef5OUwKeCjoUJR3YgMUH7XaKE6+8oS9eU6wt3dy8jRBrXXF8JKhQa62dAwLOI6mB/OZy+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OMbPooAf; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791762167; c=relaxed/simple;
+	bh=3ASDPkh7bFKxV+Xlko8luTX0hthlzKfSL5EvxXMrGDw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oG6B8V9x3Ey8d+RSCDeD7+6WjpoQsGxh1p4HxRJBLzrCw3lvDYbQ9R/6KolhEzX4lqr38TdAXneuo4etDDEdEOvWXECKMOzZdrOqracxdOnsVIJxK6KzdduLIQ1nHYjHwOk17scQo9mmKkZGFJcupI16gtZyDCEqYL8AGwdwfNY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=pUzafdlx; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OMbPooAf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54B501F0089C;
-	Sun, 11 Oct 2026 22:34:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791758043;
-	bh=atIILfwLScRUJCYA6cDxbcECYZQF8DJALLaAm0N21v8=;
-	h=From:To:Cc:Subject:Date;
-	b=OMbPooAffrS9szZxHBy0zVtViG4cX2Kj5IN1dN4HTnmaByVCO/b5OuaPUXatabMbP
-	 8rZReyO4J8jnumoreOT5U+q3pRBeAzLe21K3yLczHv6iKAAZ2yDkCJoLUk4VR6D+wX
-	 cLVngDUigSHKtZmtmGjJNYOqKRr1/96VL27pBNt+GUKwIaOt5gPt4/BsTUg+kyICqH
-	 pNTTwzGv+uhYNneTA1K/eGdqRz7RKHG2bU6b2Ta/Bq84V9mQugNWaPTGL4m1YXw695
-	 Z5hfKvzCf/3uOEMzCfdps0IU57IUxQduCz7CHNxJ5FQT/55YOGYmQ37hfLgZfq9s8R
-	 SR7lAh456Bctg==
-From: Sasha Levin <sashal@kernel.org>
-To: Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Sasha Levin <sashal@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] cpupower: fix building cpufreq-bench with STATIC=true and O=
-Date: Sun, 11 Oct 2026 18:33:30 -0400
-Message-ID: <20261011223358.2327625-2-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="pUzafdlx"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 96D2B1570;
+	Sun, 11 Oct 2026 16:42:40 -0700 (PDT)
+Received: from [192.168.178.6] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 81C713F673;
+	Sun, 11 Oct 2026 16:42:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1791762163; bh=3ASDPkh7bFKxV+Xlko8luTX0hthlzKfSL5EvxXMrGDw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=pUzafdlx1tK6QaNcWKkotjZII53Z7zal0ciES89s7LaZwp5XKCZNwcNi27al3bdvF
+	 yAb5GnFBzNfp4qZRRQq7DRBjWeviWuN0Z1Gxti5bQXs42Z8sBfTwpPcdYygaYdB6xL
+	 UyLdBk4I0q5GlvKFfs08jpnJcDiKdm7CwqXunbBw=
+Message-ID: <33d9cbb5-d4fb-4f16-b63e-5ae89051952a@arm.com>
+Date: Mon, 12 Oct 2026 01:42:39 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to non-boost
+ freq on boost disable
+To: Ananthu C V <ananthu.cv@oss.qualcomm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Jie Zhan <zhanjie9@hisilicon.com>,
+ Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+ linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Oleg Keri <okerixx@gmail.com>
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
+Content-Language: en-GB
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-With STATIC=true, cpufreq-bench links lib/cpufreq.o and lib/cpupower.o,
-which it expects in $(OUTPUT)../lib/. That is where the parent Makefile
-builds them when bench's OUTPUT is the bench directory, but with O=,
-bench gets the parent's output directory and the objects are in
-$(OUTPUT)lib/. bench then tries to build them itself, outside the output
-directory, and fails:
+On 29.09.26 13:38, Ananthu C V wrote:
+> Commit 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if
+> max boost is known") introduced a guard for cpuinfo max updates to only
+> increase, to preserve driver-set values above the freq table maximum.
+> Later commit db80ad776cd2 ("cpufreq: Remove driver default policy->min/max
+> init") dropped the 'policy->max = max_freq' assignment from
+> cpufreq_frequency_table_cpuinfo, leaving that one-way-guard to be the only
+> path for cpuinfo max and consequently policy max to be updated, causing
+> both values to be stuck at boost frequency even when boost is disabled.
+> 
+> Unconditionally track the highest non-boost frequency (max_base_freq)
+> in the freq table. If boost frequencies are available, use the highest
+> frequency from the table/max_base_freq instead of cpuinfo->max_freq to
+> control boost values, so the value can decrease again when boost is
+> disabled.
+> 
+> Fixes: db80ad776cd2 ("cpufreq: Remove driver default policy->min/max init")
+> Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
+> ---
+>  drivers/cpufreq/cpufreq.c    | 16 +++++++++++++++-
+>  drivers/cpufreq/freq_table.c |  9 ++++++++-
+>  include/linux/cpufreq.h      |  3 +++
+>  3 files changed, 26 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 96515880b4ac..5e6afb6f8826 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -574,6 +574,8 @@ static ssize_t show_local_boost(struct cpufreq_policy *policy, char *buf)
+>  
+>  static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+>  {
+> +	unsigned int max_freq;
+> +	unsigned int max_table_freq;
+>  	int ret;
+>  
+>  	if (policy->boost_enabled == enable)
+> @@ -587,7 +589,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+>  		return ret;
+>  	}
+>  
+> -	ret = freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
+> +	max_table_freq = cpufreq_frequency_table_max(policy);
+> +
+> +	if (policy_has_boost_freq(policy)) {
+> +		max_freq = enable ? max_table_freq : policy->cpuinfo.max_base_freq;
+> +
+> +		if (!max_freq)
+> +			/* when the freq table contains only boost frequencies */
+> +			max_freq = max_table_freq;
+> +	} else {
+> +		max_freq = policy->cpuinfo.max_freq;
+> +	}
+> +
+> +	ret = freq_qos_update_request(&policy->boost_freq_req, max_freq);
 
-  Fatal error: can't create <O>//../lib/cpufreq.o: No such file or directory
+This looks pretty convoluted. You have to find the correct freq argument
+for freq_qos_update_request() for freq_table drivers but work around
+this for e.g. the CPPC driver.
 
-Use the objects in lib/ under the parent's output directory, which is
-one level up from bench when it is a relative path.
+cpufreq_driver->set_boost() of e.g. the freq_table scmi-cpufreq driver
+does not adjust policy->cpuinfo.max_freq for 'boost state = 0':
 
-Fixes: e51207f003047 ("cpupower: Provide STATIC variable in Makefile for debug builds")
-Assisted-by: LLM
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- tools/power/cpupower/bench/Makefile | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+cpufreq_boost_set_sw() {
 
-diff --git a/tools/power/cpupower/bench/Makefile b/tools/power/cpupower/bench/Makefile
-index 34e5894476eba..ea74ef4d01b64 100644
---- a/tools/power/cpupower/bench/Makefile
-+++ b/tools/power/cpupower/bench/Makefile
-@@ -10,11 +10,12 @@ ifneq ($(O),)
- 	OUTPUT := $(O)/
- endif
- endif
-+LIBOUTPUT := $(if $(filter /%,$(OUTPUT)),,../)$(OUTPUT)
- 
- ifeq ($(strip $(STATIC)),true)
- LIBS = -L../ -L$(OUTPUT) -lm
- OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o \
--       $(OUTPUT)../lib/cpufreq.o $(OUTPUT)../lib/cpupower.o
-+       $(LIBOUTPUT)lib/cpufreq.o $(LIBOUTPUT)lib/cpupower.o
+ cpufreq_frequency_table_cpuinfo()
+
+  policy->cpuinfo.min_freq = min_freq
+
+  if (policy->cpuinfo.max_freq < max_freq) <-- (*)
+   policy->cpuinfo.max_freq = max_freq
+}
+
+whereas the one of the cppc_cpufreq driver does:
+
+cppc_cpufreq_set_boost() {
+
+ if (state)
+   policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf)
  else
- LIBS = -L../ -L$(OUTPUT) -lm -lcpupower
- OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o
--- 
-2.53.0
+   policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf)
+}
 
+(*) This was added by 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq
+directly if max boost is known"). With this the
+
+policy_set_boost(policy, enable) {
+
+ cpufreq_driver->set_boost(policy, enable)
+
+ freq_qos_update_request(..., policy->cpuinfo.max_freq)
+}
+
+[...]
