@@ -1,148 +1,146 @@
-Received: from mta0.migadu.com (out-238.mta0.migadu.com [91.218.175.238])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64EA83B2FD1
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 19:10:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.238
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5BA74D37B3
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 19:13:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791832243; cv=none; b=Gy0/Y0WLmFb9UYXdSdy6R+nFLLgJSzKPY37o57SKMoK9RnRMSDnwLpKyxZYiF+sgHZyOKxkX88sk7bu2+oJ6XCCdsLI8fo+HSrJHmzopUWGEO+dBRrA4DKu2qrHgI7UDjJkCarpCojuKCSuV9Jwg3b8iVoN5ClC43h01ybl2KIY=
+	t=1791832421; cv=none; b=IElEcY0XyK8Vevqxx3aFkZ/EQNHRMCYZ2X/RBnUYO18XsOrmTPvDl+hMm7VgDyF4lT0Ev5yRJ4VYzYaBapaI9a8Z0qc3jAv3e8qMqoGGp0KED8JfPUR3CAOfsb9UCJq6O2FaYnnAqqWBR38V4aWqYdY3MdlalxyKe2QzPDo4rdE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791832243; c=relaxed/simple;
-	bh=dLukfl9aaEAOrrRPH269Sia2X8apvGWB2LGSoU+njfo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VGdNLpA+j3ucYjPYRhE7ngHNLjn3yb6N3YLPoXsy9Pm2Fi1tYtpa+Sv5wxanFeP00eR1HjGV1OklhtD7gfgsgt5vbk8dcTrB+duqmAOuG/mJY5kIQ9JDgdZj4hWnFyyyuu4D06vQ2Tf7fY8T++ONZh626mdWFf5wulOyy/8rkwQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool; spf=pass smtp.mailfrom=packett.cool; dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b=eZYoLxVJ; arc=none smtp.client-ip=91.218.175.238
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
+	s=arc-20240116; t=1791832421; c=relaxed/simple;
+	bh=+qmz+yBeXRlBRx+OdP1RU/IGoFJLfquctyGFdtp+Fp0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nZs6nxrZ2r9iCeUzVT61pW1vvnou+mb/Q5HKhH+rCBk/gcmKzfLQGj9SkO27sifk6aSa13ElosXhpuqvzfoud7PzL+NOYNaqxjHbndl7yN29epa+3Jwd1Jw2Fm1oH2GGxqhkrnHwkl9QnwwELBIX6l3c39Ka2A4xGcl/jPDZERo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Vr9MD9aq; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b="eZYoLxVJ"
-X-Envelope-To: linux-pm@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=dLukfl9aaEAOrrRPH269Sia2X8apvGWB2LGSoU+njfo=;
- c=simple/simple; d=packett.cool;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1791832238; v=1; x=1792437038;
- b=eZYoLxVJTImQyzpOKtMfM5XrdCjb4FbIhSPbrP9qUwEV0A8dc+akk/LF1OvesUAjJdnICrJw
- 6U/wwXvtYUS48p1Q2y++jsElMnjEXQ3XIGeswQrA/K02/GF8rxlzqWlqEGtIYWbAI3P8IqE8I03
- wucjGolsxxSkfc6LzGhaM11majSNMmp1RIiB5oYOvanB2JxBPO1CzDJkFxKQPUuzLWp5Dkxp74a
- KMS+7QbqLRK8gKqCfesP8Gh8dz0Dma+BCf39qVKasOJVdpcuccp5sBtLJz4Cefdcy4/Q6LvaqwT
- GVLNOX6MdZ8Mkkaf24GwecXG8lvDsJiXO5JXI3EfiFkIA==
-X-Envelope-To: linux-pm@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id 9c03da5cd8c2d228;
-	Mon, 12 Oct 2026 19:10:38 +0000
-X-Mizu-Trace-ID: 9c03da5cd8c2d228
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <906ebec9-de19-4a1e-9472-dcf8529fa232@packett.cool>
-Date: Mon, 12 Oct 2026 16:10:26 -0300
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Vr9MD9aq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC2F81F0089B
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 19:13:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791832419;
+	bh=Aps8kHLqi/8jFYidGtO0vryj1o6o4s/CXu0xm5bD3hI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Vr9MD9aq/0c/K8dttGgHbcaFVyWghRXbaJ6aaaKBVDfEno5glVgugPNXPq3k06LIU
+	 SkfY5+HUu7AUNsjPrjRHtb/ZVvXSHEv6wp5MO3yXaaICa/8Amvv6ic3izHhBfbRoyy
+	 Gs6xiftz0Ep5iYn537eYMMrYpxj5DIoN/YPplNJQkwRDEhgorXpfM0nTTY33HFt9p3
+	 Cso4oUrpq4qCfUfPBsNgwp89s2hB+mjjkU6UTC5rPWUoHDacxWmW7YkKAlrixK5Nr1
+	 ahgRCzp979VYn7+1R9S36QMyLpexKe6JWyc5rL3pa0aueoALBqmuLvV/Qi3iBg3s2E
+	 3ArL9oQFRqGBQ==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5ba35c0df4fso1754186e87.0
+        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 12:13:39 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwkM7UnyxKuq0zgPUsJgqE7nF4SDin9pcy1V4jJGEajhXOsJD9fBUv1cr+7SeNqNYgysV8P6mBnVw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKpn1qvtNeewXZOMBV6V6HSFvBo6S6ivIYGo5uwNCLl/BrF/0PM
+	eoTn2WRJyquSWQthuPvsp2Kga21wo+RSQ7R3n2eqGLWFOqa8PNEDcT0eu+Tf+bgaTWsXUf8ax9Y
+	H3AwTWdOA7/FaNDd/WBEOPSONsQc0tU8=
+X-Received: by 2002:a05:6512:3042:b0:5b8:f125:f48 with SMTP id
+ 2adb3069b0e04-5bcde8e2d0cmr3421626e87.57.1791832418176; Mon, 12 Oct 2026
+ 12:13:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 5/8] Bluetooth: hci_qca: Support QCA2066 on M.2
- connector via pwrseq
-To: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Cc: Manivannan Sadhasivam <mani@kernel.org>,
- Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann
- <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
- Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Wei Deng <wei.deng@oss.qualcomm.com>
-References: <20261005-monza-wireless-v7-0-5a6de7662dcb@oss.qualcomm.com>
- <20261005-monza-wireless-v7-5-5a6de7662dcb@oss.qualcomm.com>
- <bc7730e4-8b47-4c2b-84ef-277749f2aab8@packett.cool>
- <CAFEp6-3Mt-CCJEz=RAJUh6pxH-Ssgkqfx3QQfyzvS9HwzFp9QQ@mail.gmail.com>
-Content-Language: en-US
-From: Val Packett <val@packett.cool>
-In-Reply-To: <CAFEp6-3Mt-CCJEz=RAJUh6pxH-Ssgkqfx3QQfyzvS9HwzFp9QQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20261002061507.1600269-1-suzuki.poulose@arm.com>
+ <20261002061507.1600269-8-suzuki.poulose@arm.com> <ar-PiBQGye4_hQa6@arm.com>
+In-Reply-To: <ar-PiBQGye4_hQa6@arm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 12 Oct 2026 21:11:34 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gqSsA=tdKuQB1uExYas8F0BaxUm+eh8xaxxP6YAFB6cg@mail.gmail.com>
+X-Gm-Features: AclHuK92lB5NiS5iBnplzk_ORuBnuUMmcADY6EqE6mt-4e6s6zZBLocPPGyqu5E
+Message-ID: <CAJZ5v0gqSsA=tdKuQB1uExYas8F0BaxUm+eh8xaxxP6YAFB6cg@mail.gmail.com>
+Subject: Re: [PATCH v22 07/10] kernel: hibernate: Add an arch hook for
+ preventing hiberation
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Suzuki K Poulose <suzuki.poulose@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, kvm@vger.kernel.org, 
+	kvmarm@lists.linux.dev, maz@kernel.org, will@kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	steven.price@arm.com, aneesh.kumar@kernel.org, oupton@kernel.org, 
+	gshan@redhat.com, joey.gouly@arm.com, tabba@google.com, yuzenghui@huawei.com, 
+	linux-coco@lists.linux.dev, gankulkarni@os.amperecomputing.com, 
+	sdonthineni@nvidia.com, alpergun@google.com, fj0570is@fujitsu.com, 
+	WeiLin.Chang@arm.com, lpieralisi@kernel.org, enju.kohei@fujitsu.com, 
+	sudeep.holla@arm.com, jonathan.cameron@oss.qualcomm.com, 
+	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org, 
+	Sudeep Holla <sudeep.holla@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On 10/9/26 1:40 PM, Loic Poulain wrote:
-> Hi Val,
+On Fri, Oct 2, 2026 at 1:03=E2=80=AFPM Catalin Marinas <catalin.marinas@arm=
+.com> wrote:
 >
-> On Thu, Oct 8, 2026 at 12:58 AM Val Packett <val@packett.cool> wrote:
->>
->> On 10/5/26 9:21 AM, Loic Poulain wrote:
->>> For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable is
->>> controlled by the W_DISABLE2# signal managed by the pcie-m2 power sequencer
->>> rather than a dedicated BT enable GPIO.
->>>
->>> When the serdev controller has an OF graph (indicating it is connected to
->>> an M.2 connector), acquire the 'uart' pwrseq target from the connector's
->>> power sequencer and use it to control BT power instead of the bt-enable
->>> GPIO. This is factored out into qca_serdev_get_m2_pwrseq().
->>>
->>> Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
->>> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
->>> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
->>> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
->>> ---
->>>    drivers/bluetooth/hci_qca.c | 47 +++++++++++++++++++++++++++++++++++----------
->>>    1 file changed, 37 insertions(+), 10 deletions(-)
->>>
->>> diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
->>> index 1d27ff98034ba99d0783e48db5c605f3b31117ea..b6ec1a57248e2cf4bd138898ffc5cad45b1b4a8b 100644
->>> --- a/drivers/bluetooth/hci_qca.c
->>> +++ b/drivers/bluetooth/hci_qca.c
->>> @@ -1875,6 +1875,9 @@ static int qca_power_on(struct hci_dev *hdev)
->>>                        /* Controller needs time to bootup. */
->>>                        msleep(150);
->>>                }
->>> +
->>> +             if (qcadev->bt_power.pwrseq)
->>> +                     pwrseq_power_on(qcadev->bt_power.pwrseq);
->>>        }
->>>
->>>        clear_bit(QCA_BT_OFF, &qca->flags);
->>> @@ -2396,6 +2399,34 @@ static int qca_init_regulators(struct qca_power *qca,
->>>        return 0;
->>>    }
->>>
->>> +static void qca_serdev_put_pwrseq(void *data)
->>> +{
->>> +     pwrseq_put(data);
->>> +}
->>> +
->>> +static int qca_serdev_get_m2_pwrseq(struct qca_serdev *qcadev)
->>> +{
->>> +     struct serdev_device *serdev = qcadev->serdev_hu.serdev;
->>> +     struct pwrseq_desc *pwrseq;
->>> +
->>> +     if (!of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))
->>> +             return 0;
->> Seems like of_graph_is_present does *not* return false for the existing
->> (non-connector) setup which is currently used in all the laptop device
->> trees..
-> If I understand the issue correctly, this can only occur when a UART
-> 'port' is left unconnected, in which case the failure is legitimate.
-> The laptop device trees should be fixed accordingly, either by
-> connecting the port to the corresponding M.2 device or by using the
-> usual Bluetooth UART child-node approach. I don't see this issue in
-> mainline.
+> On Fri, Oct 02, 2026 at 07:15:03AM +0100, Suzuki K Poulose wrote:
+> > Add a hook to allow arch code disable hibernation. On arm64, with an RM=
+M active,
+> > there could be pages that are delegated to the "Realm" security state. =
+Any
+> > access to them are fatal (e.g., hibernate save image or restoring an im=
+age to
+> > a delegated page). pKVM host also has its restrictions on enabling hibe=
+rnation.
+> >
+> > Add a weak arch hook to let the architectures have a say.
+> >
+> > Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> > Cc: Len Brown <lenb@kernel.org>
+> > Cc: Pavel Machek <pavel@kernel.org>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: Sudeep Holla <sudeep.holla@kernel.org>
+> > Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
+> > Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+>
+> Nit: the subject prefix for kernel/power/ usually is
+>
+>         PM: hibernate: ....
+>
+> I can fix it locally, no need to respin (and probably the wrap the long
+> lines in the commit log, we tend to keep them shorter).
+>
+> > ---
+> >  include/linux/suspend.h  | 1 +
+> >  kernel/power/hibernate.c | 8 +++++++-
+> >  2 files changed, 8 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> > index b02876f1ae38a..a3815027773c5 100644
+> > --- a/include/linux/suspend.h
+> > +++ b/include/linux/suspend.h
+> > @@ -401,6 +401,7 @@ int hibernate_quiet_exec(int (*func)(void *data), v=
+oid *data);
+> >  int hibernate_resume_nonboot_cpu_disable(void);
+> >  int arch_hibernation_header_save(void *addr, unsigned int max_size);
+> >  int arch_hibernation_header_restore(void *addr);
+> > +bool arch_hibernation_available(void);
+> >
+> >  #else /* CONFIG_HIBERNATION */
+> >  static inline void register_nosave_region(unsigned long b, unsigned lo=
+ng e) {}
+> > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> > index d2479c69d71a4..9d9d53828542f 100644
+> > --- a/kernel/power/hibernate.c
+> > +++ b/kernel/power/hibernate.c
+> > @@ -106,11 +106,17 @@ bool hibernation_in_progress(void)
+> >       return !atomic_read(&hibernate_atomic);
+> >  }
+> >
+> > +__weak bool arch_hibernation_available(void)
+> > +{
+> > +     return true;
+> > +}
+> > +
+> >  bool hibernation_available(void)
+> >  {
+> >       return nohibernate =3D=3D 0 &&
+> >               !security_locked_down(LOCKDOWN_HIBERNATION) &&
+> > -             !secretmem_active() && !cxl_mem_active();
+> > +             !secretmem_active() && !cxl_mem_active() &&
+> > +             arch_hibernation_available();
+>
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+>
+> Raphael, any objection to this patch going in through the arm64 tree? It
+> matches the style of other __weak functions in this file.
 
-So it looks like this is because commit 014501d141ed ("arm64: dts: qcom: 
-hamoa: Add graph port/endpoint anchors to pcie4_port0 and uart14") 
-unconditionally added the uart14 endpoint to hamoa.dtsi itself in 
-preparation for the future transition to proper M.2 descriptions.
+No objection, and feel free to add an ACK from me to this one.
 
-The laptop dts'es themselves still have the older child-node description 
-for bluetooth, with a dummy port { uart14_ep: endpoint {}; }; that's not 
-used yet.
-
-Could the check be extended to actually verify that there's actually 
-something the graph endpoint is connected to? Or should that commit be 
-reverted?
-
-Thanks,
-~val
-
+Thanks!
