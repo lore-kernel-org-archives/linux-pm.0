@@ -1,33 +1,85 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 62CE03932CD;
-	Mon, 12 Oct 2026 11:04:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83B2641D62D
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 11:06:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791803054; cv=none; b=mpA8mDKA0EyUQGYBmtKrn1JW3Zh7/YAkFcTxM1wPxr8T5DTUMb7Lxfv36z7vAEGZ3C2Hk1yfYFQ393arKbvJoqIKDpzeSxCmKlqeP+smfRBRjYpCgds4dZxCAPHpnOGwrc8I6N9pEE/gW36znQYRIXOehx7yC+kRWlQ78aEMaVI=
+	t=1791803190; cv=none; b=rGF0+kJxF1DozdK2N8MPXHs1fNBvU6Ulfky+zwCBKqD+TcHOPpzPSRlw1sPpZAmXiRiUMHrlgS2gK8+Q4FzaQDqtF4bou68tQdyllSpMhFTea71RNhcrnHVrWXlRQ/LIN306UNjIEEJyD25KmWbrYfs+XdD8VpQfF19NEijyQro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791803054; c=relaxed/simple;
-	bh=Uoger/6i+U9R/3R8Mxjg0FsI30PjlNy00uruFl2bnhw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kT5yO9qFdY7aiOxFpvsSOqwCPv+jOhks359YztLP4UEaUqvwfkcTt5+sq97yO6fWlwrqmabpfI27FXhy0fXQG9+KgIoHumKTRz7QfHq9Hu4O5f0+eyI3eQHsGPtsIEtjG4EER9WW37WNafkk/Z7g7ZBMHyojLA/Vg6+FYCthjWs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=oG9FLrOL; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1791803190; c=relaxed/simple;
+	bh=A72ciOolcvKp1dYuivzjI6CjBbAygAt15osgfOUzlcs=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=Ga12MOc4LMI4eB/i2lYwHgQolAOykQv6xhLMViX8rgzVYb/VGwQ049sb19WpM9Oz27nogwCbUqiqxAmtU2dcCxMN1IxrGvEdKsxcpfHjrTeafs+BqigEw61CLmNo5GLebRsgx/uPV76AKhHUliKCNL9xmyHYFfV5kGge2po43qw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=cHBzu5+w; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=erUZbrH9; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="oG9FLrOL"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3A5BF1655;
-	Mon, 12 Oct 2026 04:04:08 -0700 (PDT)
-Received: from [10.57.12.163] (unknown [10.57.12.163])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0ECCF3F882;
-	Mon, 12 Oct 2026 04:04:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791803051; bh=Uoger/6i+U9R/3R8Mxjg0FsI30PjlNy00uruFl2bnhw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oG9FLrOLY8KTiQ9oAF6jOpwHmMrnhcwd59ravjOZFd2iijqO6S2wzS8qd7dVww1p5
-	 oRQfMSvT/00lzftmGojNbzpu4nOZtHb27cBs3PHntwCrs4RTfXrcD3eEA44sNMsSLd
-	 REYGoD+8Qqm2n0Wuh0h8UtKv6BGHaFFI91oixOQs=
-Message-ID: <34106881-8ca0-4c9f-a4d2-0ff0b35460dc@arm.com>
-Date: Mon, 12 Oct 2026 12:04:33 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="cHBzu5+w";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="erUZbrH9"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8K8Og2796117
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 11:06:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	UPAzFbkqHrqh1U+dVDo3vXYHCvqIopcxz3ms4FKDc10=; b=cHBzu5+we6WupVaS
+	tnvfDd9JbxZgNF5hGfQTVs5xFNqTepMf2Qw7L3+s41Vn9hRxK5ybm0FKXmM9FXOw
+	MRwHoAa3LqyzpxYiQQThNlJizRKqor3BZEwnTKvbpxqlIINX0o3GMy1g1mfnc4st
+	zXQK0YT6AaLKgNwL8tbi2tq53279pxm5yd5Ar3GEHvdv/DqBf6WhrmxAPTXfwsDr
+	TyoUlebmiXb7a/JuLR4m6sa0puT5QNyZV24l4hRfqf+ZPoK+TnS5lk4at0642KNj
+	jWNkYbZLPqCfx4Z3/SBt4xEiousrB4wyPzJBPNTY18tYtQm+4B6J3Qp3O/XpyeKD
+	btVMxg==
+Received: from mail-yw1-f199.google.com (mail-yw1-f199.google.com [209.85.128.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h8uh3gxyt-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 11:06:24 +0000 (GMT)
+Received: by mail-yw1-f199.google.com with SMTP id 00721157ae682-88322409239so19556807b3.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 04:06:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1791803183; x=1792407983; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :references:cc:to:subject:from:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=UPAzFbkqHrqh1U+dVDo3vXYHCvqIopcxz3ms4FKDc10=;
+        b=erUZbrH9hyG3nikPs5lsg/7WTS0Ivy7nGfMOOTaatC127GCiN1O73ZYiW3z6HvNJoJ
+         UybjosYIv1+qMwaMBwQxtRKV3euNAOn6T1bPhQ9xucGsBzRbzZrdg+9u2GOt5JA8cpx2
+         fV/aPYQsX+k++mX/aAgybsu0yLrYy8YFz7NV3EQOfl1hWbCymR5fbXvqewJc+t9imn9p
+         iK5/SBvrDhqVvXpOO+G4nRX2mI+mOT0OPdH/UDRNR1l9lZFXkA77CE6bEo7El1rL3WlD
+         vf0KB308ryhLXwGB2oxBocImBYExK7j1/wJyHgFDRC/Bw8xIxgND8KNNrt7yNfIWiyt6
+         YUaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791803183; x=1792407983;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :references:cc:to:subject:from:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=UPAzFbkqHrqh1U+dVDo3vXYHCvqIopcxz3ms4FKDc10=;
+        b=1IdCDZWSkMjDDRMXKuNB0lDqbkfxogjdrVsMUvNCxpBNO1DrCgW2PYPgn4PMF381YM
+         PNOdgRYMGOJEZYKfF3RyqCIx2SfwfKrl1Bc0pFQRzYBC3KdLayWHwRQaIAUmDDS+0BvC
+         KhjCA/XJr1FJ1oHad/rmSwFkIUO7nQOevn82TJrImReqFahsQzy78JmQH2jhrSYj+tfO
+         sJnJ4a/ps5VjTMpcHQfLO54uPaeQHzuKswNauzsK0deMoT/YgFrY/zuYu40BFCCzKbUP
+         E8n5iuZEz6l9DGozv06SRUVA6p1su3mRYBlGUmscIM+BwMH/AYHdQtcdMRFSrZaB7Igo
+         r1CA==
+X-Gm-Message-State: AFq9FYLkkA9pQiyC/Q8CJkd9sKgAm/56Mj/uP9mnY6Z4ETNIYbai7zWX
+	OC3dqmmOi8AiSmT3lDeo5t6876Gt+AhMpG9Pn/VI/rkCjuPTYZUfmp/nNxN7M8+bh3Ak6vdPp9e
+	vHjJY/HeAGIUyI5/mfWQiki+KavQIp9frNDvndcRa7LLMABHTIpMdM7CxDys3
+X-Gm-Gg: AYBFou1Gh3cYwc4Oln6ouu4BIoqY2PUTQ1DCqdCkXMaoHrAzlH5pgp36ocWD7i4ppkT
+	p6VPflYL6RANLb3evkiQu0qv6EnN7yJYo/z0UCW5P+G7grOiNJ2I7EyRhpDAqwVqK9/+FCm9A2s
+	2IANW2vtqymaYhuz+JTd18Wi8xwONFBcUlRGX8/a0VG+mmK6kDbqn10Xm536/QIN1y9WyBQYCP3
+	B4rdNFa5JfWBEnNp9DW4SzvgkC594XB2Lpe/brHwlgDajzTGpoOhF/+ZQFCvXreYymdK3c5D3/G
+	l2I4+RBFoZS9vro8w4iqLCJM5+HnO/8LoeBFB+quqonG2YlyQhSehOFKliqRhpbTC6XK9VLBqca
+	o7Bd3oE5hdSW+bavWZ47DXqJElMTH5A==
+X-Received: by 2002:a05:690c:e3ca:b0:8b0:a587:9447 with SMTP id 00721157ae682-8b0a587af48mr7610777b3.38.1791803183006;
+        Mon, 12 Oct 2026 04:06:23 -0700 (PDT)
+X-Received: by 2002:a05:690c:e3ca:b0:8b0:a587:9447 with SMTP id 00721157ae682-8b0a587af48mr7610007b3.38.1791803177727;
+        Mon, 12 Oct 2026 04:06:17 -0700 (PDT)
+Received: from [10.218.33.235] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b07f22edfasm31501227b3.34.2026.10.12.04.06.08
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 12 Oct 2026 04:06:17 -0700 (PDT)
+Message-ID: <8774f401-7efa-4577-8d03-6fe652e856e3@oss.qualcomm.com>
+Date: Mon, 12 Oct 2026 16:36:06 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,48 +87,204 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] PM: QoS: Add a sysfs CPU latency request with a
- boot-time value
-To: Roman Kagan <rkagan@amazon.de>
-Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Pasha Tatashin <pasha.tatashin@soleen.com>,
- Mike Rapoport <rppt@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
- Christian Loehle <christian.loehle@arm.com>,
- Pratyush Yadav <pratyush@kernel.org>, kexec@lists.infradead.org,
- nh-open-source@amazon.com, "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Shuah Khan <skhan@linuxfoundation.org>, Len Brown <lenb@kernel.org>
-References: <20261010-b4-cpuidle-shallow-v2-1-adede7dd9077@amazon.de>
+From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Subject: Re: [PATCH v4 2/3] power: reset: pscrr: add watchdog pretimeout
+ reason tracking
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Wim Van Sebroeck
+ <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>, Benson Leung <bleung@chromium.org>,
+        Tzung-Bi Shih <tzungbi@kernel.org>,
+        Oleksij Rempel <o.rempel@pengutronix.de>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        =?UTF-8?Q?S=C3=B8ren_Andersen?=
+ <san@skov.dk>,
+        Guenter Roeck <groeck@chromium.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        Ahmad Fatoum <a.fatoum@pengutronix.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        avaneesh.dwivedi@oss.qualcomm.com,
+        Umang Chheda <umang.chheda@oss.qualcomm.com>
+References: <20260805-pscrr-reboot-reason-v4-0-54ef517084cc@oss.qualcomm.com>
+ <20260805-pscrr-reboot-reason-v4-2-54ef517084cc@oss.qualcomm.com>
+ <07562f41-c269-48b7-9ca2-be324282a456@oss.qualcomm.com>
 Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20261010-b4-cpuidle-shallow-v2-1-adede7dd9077@amazon.de>
+In-Reply-To: <07562f41-c269-48b7-9ca2-be324282a456@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA0NCBTYWx0ZWRfXzK+uu4217dcS
+ dzLHpfetSaATz/uG7iguRaaUIyx8ObJPfpcgLyVLnRv48PExtxPFwodyrVyEKlnHeuupEo/pAmC
+ FpTdsFdwd/95Oxr6Y2GRN93aRv4MacPgoWPUN65BIX/ZLFWzl/dLBYp+8HYharuRDMCws5aiR/N
+ wJ93jouHZ8gTP8WPuv4j3XnuIwUwDZnvPcZd8HoEhPLdux9bdDs4Bi6X+7dvfx/oTsDXHeQtf77
+ 8lst9ScYSYLHvGwFfrjbxUZWDqvphgo5yIOBc1p0LWrcdKdg1KCE0+MMIT8/5uK6f5ZYvFafhUe
+ qIJ7j8owofzR7IQZvFEdVQsnzje36yWh9srs7Jupozl27lA+XCi3qIwk5X7qIuFZeFSVbjCdlIT
+ ZP5IAQls8hCwKDxZSvRowyt9nZ17wE5H+jTjyhv9vIjOd2v7uUhsdJKCYk9jyCtFQHvtwNHqaeX
+ EiOR+GIe1UYuBX5WSsA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA0NCBTYWx0ZWRfXzEnKsxvOjr/D
+ zcslkvlUlbqtIt5fi6ZywiG6yj5LTEQcIImkfggyDpjMibC37T7+jaf9Eaukg7GXASHxAZbIaf8
+ HplDS5lOuyLhZEpstH3bjDSThv0Sso0=
+X-Authority-Analysis: v=2.4 cv=QO391QLL c=1 sm=1 tr=0 ts=6accbf30 cx=c_pps
+ a=72HoHk1woDtn7btP4rdmlg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=EUspDBNiAAAA:8 a=fO_Mk5cv7Jo2rvO2W84A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=kA6IBgd4cpdPkAWqgNAz:22
+X-Proofpoint-ORIG-GUID: sCTm0lYNNzgfrmgIBekA0YXIBkwOp_FY
+X-Proofpoint-GUID: sCTm0lYNNzgfrmgIBekA0YXIBkwOp_FY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-12_03,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 malwarescore=0 suspectscore=0
+ priorityscore=1501 impostorscore=0 phishscore=0 adultscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610120044
 
 
+Hi Daniel Lezcano,
 
-On 10/10/26 14:29, Roman Kagan wrote:
-> The idle states offered by a platform trade wakeup latency for energy
-> savings, and there are situations where the trade is not worth making:
-> while a latency-sensitive workload is running, or during a live update
-> via kexec, where everything from the outgoing kernel stopping the
-> workload to the incoming kernel resuming it is downtime, and deep idle
-> states may lengthen it.
+On 07-Oct-26 4:24 PM, Daniel Lezcano wrote:
+> On 8/5/26 10:54, Faruque Ansari wrote:
+>> Watchdog pretimeout resets are not recorded with a dedicated 
+>> reason,
+>> causing subsequent boots to report PSCR_UNKNOWN and making it 
+>> difficult
+>> to distinguish them from other unexpected resets.
+>>
+>> Add PSCR_WATCHDOG_PRETIMEOUT as a dedicated reason code and 
+>> prevent the
+>> panic notifier from overwriting a watchdog pretimeout reason with
+>> PSCR_KERNEL_PANIC when the pretimeout governor triggers a panic.
+>>
+>> Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+>> ---
+>>   drivers/power/reset/pscrr/pscrr.c     | 11 +++++++----
+>>   include/linux/power/power_on_reason.h |  1 +
+>>   include/linux/reboot.h                |  4 ++++
+>>   kernel/reboot.c                       |  1 +
+>>   4 files changed, 13 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/power/reset/pscrr/pscrr.c b/drivers/power/ 
+>> reset/pscrr/pscrr.c
+>> index 8c45b84059a9..b7e6239e207e 100644
+>> --- a/drivers/power/reset/pscrr/pscrr.c
+>> +++ b/drivers/power/reset/pscrr/pscrr.c
+>> @@ -529,12 +529,15 @@ static struct notifier_block 
+>> pscrr_reboot_nb = {
+>>   static int pscrr_panic_notifier(struct notifier_block *nb,
+>>                   unsigned long action, void *unused)
+>>   {
+>> -    struct pscrr_provider_dir *dir;
+>> -    set_psc_reason(PSCR_KERNEL_PANIC);
+>> +    /*
+>> +     * Do not overwrite a watchdog pretimeout reason already 
+>> set by the
+>> +     * pretimeout path before it triggered this panic.
+>> +     */
+>> +    if (get_psc_reason() != PSCR_WATCHDOG_PRETIMEOUT)
+>> +        set_psc_reason(PSCR_KERNEL_PANIC);
 > 
-[snip]
+> It does not sounds correct.
+> 
+> May be you should move the set_psc_reason() to different places 
+> for panic.
+> 
+> I did not explore the panic() function but I would suggest to 
+> have something like:
+> 
+> panic(..., ) --> defaults to PSCR_KERNEL_PANIC
+> 
+> panic_with_pscrr(..., reason)
+> 
+> Then pscrr_panic_notifier() only does the record
 
-For your scenario, when doing kexec to the new kernel, the normal
-disable procedure for idle states for each CPU doesn't work?
-You would like to keep this information also in the booting
-system (via bootcmd) so the CPUs are still not allowed to go deeper
-idle during boot, is that right?
-Isn't it FW responsibility?
+Thanks for your review.
 
-BTW, I'm not a fun of one global knob for all CPUs. I would
-favor extending the usage of the new sysfs and make it per-CPU.
-That would allow more scenarios used by user-space daemons at
-runtime and not to create yet another sysfs interface.
+I agree that handling the kernel panic reason in this notifier 
+may not be the ideal approach today. However, my intention is to 
+add userspace crash recording support in the future as well. 
+Since this notifier already serves as the common point for 
+recording restart reasons, it seems like the most appropriate 
+place to handle userspace-triggered reboot reasons when that 
+support is added.
 
-Regards,
-Lukasz
+For consistency, I added the handling for kernel panic and 
+watchdog reset reasons here as well. While they are not strictly 
+required for the current use case, this notifier is the most 
+suitable place to record reboot reasons. Keeping all reboot 
+reason handling in one place will also make it easier to add 
+userspace reboot/crash recording support in the future, without 
+introducing a separate mechanism later.
+
+
+Thanks,
+Faruque Ansari
+
+> 
+>> -    list_for_each_entry(dir, &pscrr_dirs, node)
+>> -        pscrr_do_record(dir, get_psc_reason());
+>> +    pscrr_record_current();
+>>       return NOTIFY_DONE;
+>>   }
+>> diff --git a/include/linux/power/power_on_reason.h b/include/ 
+>> linux/power/power_on_reason.h
+>> index 8c99bdd75021..8e3889fa43ef 100644
+>> --- a/include/linux/power/power_on_reason.h
+>> +++ b/include/linux/power/power_on_reason.h
+>> @@ -21,5 +21,6 @@
+>>   #define POWER_ON_REASON_EC_PANIC "EC panic"
+>>   #define POWER_ON_REASON_EXTERNAL "external reset"
+>>   #define POWER_ON_REASON_KERNEL_PANIC "kernel panic"
+>> +#define POWER_ON_REASON_WATCHDOG_PRETIMEOUT "watchdog pretimeout"
+>>   #endif /* POWER_ON_REASON_H */
+>> diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+>> index a117dd5eaecd..6d5ecc6cdc00 100644
+>> --- a/include/linux/reboot.h
+>> +++ b/include/linux/reboot.h
+>> @@ -243,6 +243,9 @@ extern void orderly_reboot(void);
+>>    *
+>>    * @PSCR_KERNEL_PANIC: Reset that followed a kernel panic.
+>>    *
+>> + * @PSCR_WATCHDOG_PRETIMEOUT: Recorded when a watchdog 
+>> pretimeout fires, before
+>> + *  the pretimeout governor brings the system down.
+>> + *
+>>    * @PSCR_REASON_COUNT: Number of defined power state change 
+>> reasons. This
+>>    *    value is useful for range checking and potential future 
+>> extensions
+>>    *    while maintaining compatibility.
+>> @@ -267,6 +270,7 @@ enum psc_reason {
+>>       PSCR_CPU_CLK_FAIL,
+>>       PSCR_XTAL_FAIL,
+>>       PSCR_KERNEL_PANIC,
+>> +    PSCR_WATCHDOG_PRETIMEOUT,
+>>       /* Number of reasons */
+>>       PSCR_REASON_COUNT,
+>> diff --git a/kernel/reboot.c b/kernel/reboot.c
+>> index 979ecf3b093c..fad4ef9681a6 100644
+>> --- a/kernel/reboot.c
+>> +++ b/kernel/reboot.c
+>> @@ -1110,6 +1110,7 @@ static const struct psc_reason_desc 
+>> psc_reason_descs[] = {
+>>       [PSCR_CPU_CLK_FAIL]     = { "cpu-clock-failure", 
+>> POWER_ON_REASON_CPU_CLK_FAIL },
+>>       [PSCR_XTAL_FAIL]     = { "crystal-failure",      
+>> POWER_ON_REASON_XTAL_FAIL },
+>>       [PSCR_KERNEL_PANIC]     = { "kernel-panic",      
+>> POWER_ON_REASON_KERNEL_PANIC },
+>> +    [PSCR_WATCHDOG_PRETIMEOUT] = { "watchdog-pretimeout", 
+>> POWER_ON_REASON_WATCHDOG_PRETIMEOUT },
+>>   };
+>>   /**
+>>
+> 
+
