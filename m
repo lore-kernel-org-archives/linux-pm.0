@@ -1,124 +1,111 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEF62499F20
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 17:03:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 674BB4AC152
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 18:28:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791824619; cv=none; b=Qd18gwtZgEJ8BlfSwIllkw1jfy9W6mnJusa8KRl1Gsa7rCW94HYUNMJhRZO2COulZ3yMUBJnDuvnO6rQk0nmxlbaq8P8g7t8MQZsIMAyjfp8a+ohVD/zQWE96vZ1QvXfh4ciMPPzpds+mHyaLPCJM+TFNF55hTL0sjmfZTZXGi8=
+	t=1791829726; cv=none; b=QkzWW1QTudMVEZIA3M5z7V/BGYCpAZquIZH5USdlFp83bXBTBggLyVYwVCMP6DAQPfCXneMNVEGQvNrYr5NEPeM0ilZh8WQruhOgCsGMPbuUBVJdp5EcOJi69YiJ8lKhfgl+irGXrzL+dh0rHmbeT+ZgyllPPwQRK0Almgj64Pk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791824619; c=relaxed/simple;
-	bh=sa5Dltz9jKS1Hc/7BOWrugc65ShvmHZpD72JmQsEcq4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dpqxEV92pnhQcjDRx20NRLCcsr2cYapNXEx55HEHoJQPuf+e8+2GIEuYJZ9zAfKtnWV1UTj4JbP1SWLrAwLopaIulVgNV0z/lXNy8dBgOj+q21kiqD7SWYhwWMZvqzQvZKk8qMzQLcsqnY2vBdBpv15TsKkYU8jLd8SHQKNaC5A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QK+XYU/t; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791829726; c=relaxed/simple;
+	bh=eeuJHxAGlkeiy/cVd0cZdyhkOUBK9Xe/qcok54fo4Sw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WXfer/idGTsDH0T/6LRvB+cVJBg6TzhALbYplL1tr6wolrpQZtspbm8ogHSpMxXBqFgcjdtxVQ4Pmb+kXh9Ilcx0/KlH2UimjwXpkBt8wY46J5xUYRi0z1uPZx2MvkRPw24AeF3SeOJWqOO1F8iOUzlRWpa55lxqIMKS/F4eqMc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hVLLUxXY; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QK+XYU/t"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65F361F0089C;
-	Mon, 12 Oct 2026 17:03:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hVLLUxXY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22A8A1F008A2
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 18:28:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791824618;
-	bh=8WQBwopmBsWV4HMoqsZo59nooKNXRYmk7IATRwJ3ilo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=QK+XYU/t/HetML9LxHjYVZ8EbZcf4seqYKAOaOUDX+MRksZ089wL8XpRo/CDtM0jx
-	 CCeFwnT3RdcA9W2LNBlSl2Uj5+noicBJGa6bJKd4hPD6PS4uD2XoJTmWkanc7G6PB0
-	 7PVeHQxznN1XcfPBSIdIcENW5mQWKVxUNklMQtVU/9FJ1qWYxRUwYSKOZQWbdH7l1F
-	 Do94tw992RgtIN4Cau1WK3UhPS6b3n68rU71DPqZuvTZpnJI1PSHm1EsNDzOGBkxWI
-	 4JRKMfoROAQONeRKqvZRQnmPELD5vHc58AuCVMv1gp3Ixb1odY2+tRx61tHV1veA8a
-	 Y7oegwAu9wd8A==
-Message-ID: <4e900c35-ccdd-4c86-a5bc-b31f3913c7b8@kernel.org>
-Date: Mon, 12 Oct 2026 12:03:37 -0500
+	s=k20260515; t=1791829725;
+	bh=zTwZEcqT4cuHUrLj8dCqmZcCri8FqNJ+g1r6s3P087g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=hVLLUxXYzkADMI4XSUUwQwKR94kEohv+2/tI3fCd64abXrWPStMN+eMtCEtFSYRkf
+	 7P7XdDKuEP2j/jE2d481u8hx5WUuSfIBLacyR2zyOhej6pfqQcMRsjjl8ZEcy7H6w4
+	 kogcCgZmrgHt/2tOqCgPrVbY8x2BgDuC01C7VjpuDyL5SJPfT4LSeV4Qp3O91ahdkR
+	 yRLzJPhMhTT3K5KfV6ENw6gdMTPqHReot/wefbwJC/KA7DpC2ru/JhicX87B0mkOKd
+	 eh2HgrxGVnOoY/bhL8T6hDK5YUyCtChNfnE7vgAZC8+jJHaWY4Q8E0JXHaMLqRD9LO
+	 Bh5uZfi4AnhuQ==
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-6a374bea882so3194389a12.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 11:28:45 -0700 (PDT)
+X-Gm-Message-State: AFq9FYIOvI27/JhLbMsdWd5Tn6NpJvUDUxT4fE/lzlvlU0kmJC06K/8j
+	AKjSEuJ8DHv2A9hTp9ZmWvKdG1UAIr6ol8iTDVfS37s7r3cMIZBao+52jKNWg4YY6IOtt+nRsI5
+	e7RI2gr6SA/XSB42OvlBJPG/oR80+AyQ=
+X-Received: by 2002:a05:6402:51cc:b0:6b1:c2cd:dafc with SMTP id
+ 4fb4d7f45d1cf-6b1c2cde1d6mr2882683a12.20.1791829724092; Mon, 12 Oct 2026
+ 11:28:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [GIT PULL] amd-pstate 7.4 content (10/4/26)
-Content-Language: en-US
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>
-References: <4bc0e16b-f8a8-49a9-aaab-c7161ffdba89@kernel.org>
- <CAJZ5v0j5Um-NRcgax2ZRfN5NAj=W3ADSe-PiSiQ_sTda86_73g@mail.gmail.com>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <CAJZ5v0j5Um-NRcgax2ZRfN5NAj=W3ADSe-PiSiQ_sTda86_73g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <CACiNov445=gavzZY=Yz74HNMUgd2BKoYoazWFDRRsz9uhA_rfA@mail.gmail.com>
+ <CACiNov6n4Sr4nkAnTXJ9ZmMz022KebfAM8Hf2JV_EZ+KVa9THg@mail.gmail.com> <CACiNov5XvayanL6SED-z1pLY9rMnyVbCdf=RyyhLXzDSLcXuVg@mail.gmail.com>
+In-Reply-To: <CACiNov5XvayanL6SED-z1pLY9rMnyVbCdf=RyyhLXzDSLcXuVg@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Date: Mon, 12 Oct 2026 14:28:30 -0400
+X-Gmail-Original-Message-ID: <CAJvTdK=ydvyCLU7RCiy8hbt8kuD22z=030tKB2yczcFJ7+4aRQ@mail.gmail.com>
+X-Gm-Features: AclHuK8an2c27zHREZGv_iu_DSkxqOFc-IhGBRizCaeunuW9CJT5BW5CW5dWNqM
+Message-ID: <CAJvTdK=ydvyCLU7RCiy8hbt8kuD22z=030tKB2yczcFJ7+4aRQ@mail.gmail.com>
+Subject: Re: [REPORT] Kaby Lake-H (MacBookPro14,3): package C-state stuck at
+ PC3 on Linux, macOS reaches PC10
+To: Angel <angellindo@gmail.com>
+Cc: linux-pm@vger.kernel.org, rafael@kernel.org, 
+	artem.bityutskiy@linux.intel.com, 
+	rajneesh bhardwaj <irenic.rajneesh@gmail.com>, xi.pardee@linux.intel.com, hansg@kernel.org, 
+	ilpo.jarvinen@linux.intel.com, platform-driver-x86@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 10/12/26 07:31, Rafael J. Wysocki (Intel) wrote:
-> On Sun, Oct 4, 2026 at 3:10 PM Mario Limonciello <superm1@kernel.org> wrote:
->>
->> The following changes since commit c8663e0457e6e6c72006478f4b6da99060030ec1:
->>
->>     cpufreq/amd-pstate: Remove obsolete amd_dynamic_epp documentation
->> (2026-09-10 14:33:59 -0500)
->>
->> are available in the Git repository at:
->>
->>
->> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
->> tags/amd-pstate-v7.4-2026-10-14
->>
->> for you to fetch changes up to 6b64d65c83688db2e58fbd9de7c74090f15271b7:
->>
->>     cpufreq: amd-pstate-ut: Fix max_freq and EPP test failures on Zen6
->> (2026-10-01 13:05:07 -0500)
->>
->> ----------------------------------------------------------------
->> amd-pstate content for 7.4 (10/4/26)
->>
->> * Fixups for a few bugs identified by Sashiko
->> * Initial support for maximum frequency capacity handling on Zen6 / client
->> * Updated EPP tunings for Zen6 / client
->>
->> ----------------------------------------------------------------
->> Mario Limonciello (7):
->>         cpufreq/amd-pstate: Fix TOCTOU when changing driver mode via sysfs
->>         ACPI: CPPC: Refactor boost ratio handling
->>         cpufreq/acpi-cpufreq: Use amd_get_boost_ratio()
->>         cpufreq/amd-pstate: Get Highest Freq for a CPU
->>         cpufreq: amd-pstate: Restore previous mode when changing driver
->> mode fails
->>         cpufreq: amd-pstate: Propagate cppc_set_auto_sel() errors on mode
->> change
->>         cpufreq: amd-pstate-ut: Fix max_freq and EPP test failures on Zen6
->>
->> Vishal Badole (1):
->>         cpufreq: amd-pstate: Update Zen6 client EPP tuning values
->>
->> Wentao Guan (1):
->>         cpufreq/amd-pstate: Skip auto_sel write when it already matches
->> the mode
->>
->> Xueqin Luo (1):
->>         cpufreq/amd-pstate: Restore previous EPP if profile_name
->> allocation fails
->>
->>    arch/x86/kernel/acpi/cppc.c     | 166
->> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------------
->>    drivers/cpufreq/acpi-cpufreq.c  |  17 ++++++++---------
->>    drivers/cpufreq/amd-pstate-ut.c |  54
->> +++++++++++++++++++++++++++++++++++++---------------
->>    drivers/cpufreq/amd-pstate.c    | 116
->> +++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------------------------------------
->>    drivers/cpufreq/amd-pstate.h    |  44
->> ++++++++++++++++++++++++++++++++++++++++++
->>    include/acpi/cppc_acpi.h        |  14 ++++++++++++--
->>    6 files changed, 264 insertions(+), 147 deletions(-)
-> 
-> Pulled and added to linux-pm.git/linux-next, but please see my
-> resolution of the conflict with the acpi-cppc branch in
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?id=71fb903c3dfe94af1a8c6b5df7705747d6ff7f4e
-> 
-> and let me know if it is correct.
-> 
-> Thanks!
+I applaud you for making a 9-year old laptop useful well after its
+vendor dropped software support.
 
-I glanced through and agree with conflict resolution.
+Though running and debugging Linux on it would have been significantly
+more interesting 9-years ago...
 
-I'll do some tests as well with the linux-pm/linux-next branch and raise 
-further patches on top of that if there are any problems.
+This platform has an AMD GPU, and MacOS is not open source.  We have
+no idea what
+levers MacOS may have pulled to allow the processor to get past PC3.
 
-Thanks!
+You've found a way to get idle power down to 1.7W from 3.5W
+without PC6 or PC10.  Is that not enough -- are you really counting on
+the old battery in this box?
+
+In any case, the problem at hand is this box is blocked on PC6.  You
+need to get past that to get to PC10.
+
+-Len
+
+On Wed, Oct 7, 2026 at 11:48=E2=80=AFPM Angel <angellindo@gmail.com> wrote:
+>
+> Two more data points:
+>
+> 1. Reproduced on a stock distro kernel with nothing else running:
+>    Arch Linux live ISO, 7.2.2-arch1-1, default cmdline, no out-of-tree
+>    patches, no desktop, intel_idle. turbostat, 6 x 10 s per stage:
+>      idle, console on:                        PC3 93-94 %, PC6..PC10
+> 0, PkgWatt 3.8 W
+>      console blanked:                       PC3 98.8-99.0 %, PC6..PC10 0,=
+ 3.5 W
+>      + amdgpu/snd_hda unbound:   PC3 98.8-99.0 %, PC6..PC10 0, 3.5 W
+>    Cores sit in C7 99.6 % and GFX RC6 99 %.
+>
+> 2. macOS on the same unit with the same firmware setting I use on
+>    Linux (gmux forced to the iGPU, gpuswitch 0) reaches PC7 ~95 % at
+>    ~0.2 W with a USB stick plugged in (PC10 ~80 % with nothing
+>    plugged). So the forced-iGPU mode is not the cause.
+>
+>    Earlier I also tried, on Linux, taking all three PEG links down at
+>    once (Link Disable) and putting both Thunderbolt controllers into
+>    the same state macOS uses (RTPC(0) + _PS3/PCDA: Gen1, D3hot, power
+>    GPIOs low). Package power dropped to ~1.7 W but PC6..PC10 stayed 0
+>    in every case.
+>
+> Thanks,
+> Angel Lindo <angellindo@gmail.com>
+>
+
+
+--=20
+Len Brown, Intel Open Source Technology Center
