@@ -1,174 +1,200 @@
-Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+Received: from mta0.migadu.com (out-210.mta0.migadu.com [91.218.175.210])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC009448CEC
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 08:18:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.50
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791793126; cv=pass; b=Zos2me05HzM3QLzN5XmboJdodXWrpi2Zh43GTE4Pyt9abc12c87Bfw0sA/1+muy27suT/hNmBRw/y4dGpMR6RUd7jRTG7PflN0EtNBHCnHXoboSehEwvLSxwAn3rK+hISO0Te2jAmb8BSIYH4wL6s+B2QygtM9D0SKVoiXhiT7k=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791793126; c=relaxed/simple;
-	bh=+cgBnKpA956E9oC3dPcEvrFaJuDQAJAIwVEJgcDrCgU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mIe9H0VXRPDB4uG42LyKy27dhHHnEywPDAEl++18DEGUw10r2uEz94l5AoUoij9EuZnAYtx/VXFdAU4mcX620kE3V7yY67jS+YFb0rZhQ+jTk8Qt75ZM9Jl3Tdxu4x8YrI+NMPAnNU+8qtLv7LTq9eIIx1MkxjjKm8t6IB1Rv0U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=eyn6+JVN; arc=pass smtp.client-ip=209.85.218.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABCB245C6E6
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 08:22:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.210
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791793373; cv=none; b=s3K439mqZQoKoaadZKqC2rVh9xjrP2ly3enMzKOA7fpli7p9PWIbecxwuRoB4s1WtHowO7jbo/ijDS2reUkiXVUz3knsWJN8c4wstrQI1713zaH4n+hulBewwh/MWEyswrkyfXa5kJqU5n4f00JdrBHfcXXjlQ6g2ZpI9Mub1nk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791793373; c=relaxed/simple;
+	bh=2PZG4oBTWctUcn47EeBywXvnSBFOGvbeX9RPvQyatEY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ThlF3NSP19pN7IMiWwGmZbyMFxuBA6EgCazlH7nhNQCAEDAveMBJ0RS/V6nQvyx0AArcW/9Ur4BDPO9DxCSEpkipiTxKU0cZYlyyNnlf5L6oqYdz0th6ml0CzrnClMXQ309fkHeLX5mxrwwrEf9vvwGOttgzMVxpdNHqzJ+F1+4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=QSToD6HK; arc=none smtp.client-ip=91.218.175.210
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eyn6+JVN"
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-c31a34de844so239143466b.3
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 01:18:44 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791793123; cv=none;
-        d=google.com; s=arc-20260327;
-        b=ObVvdA3DQrM/rsW7kWanvvNLHbzWTX5Wy4cqZc/V7dW7zISNy0GhIVEmu6+jtmsJPY
-         zFq5kOZXg7d9ehlPQiLpJgkZsNdCsFGEZqidcpZjBEyd+2AyTp0eLzG1fp+hORvH8lAu
-         If36bm9V+YQ2i4Y0t7XmvcWTtYV3Y6MXontck14Va/m8cVvVRfAnxpogFL/X0juKZLBS
-         xvqlJD4/Aocb0ZWUus4g0XJjAakiCEcGzIsso65YfU49dtU2SabgdmvgntmnvRiwCXGS
-         3makwDpJwjobiz1/sGlpMcl7lo7WPAL389JggZUMBKZunjy9J+6XQ7+RPzhukS6/c3B1
-         zLSQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=zSGc2gSvInI+9O2ij46iITf1yj50GR8jSWXc3T4EcG4=;
-        fh=w4V6Qxqlcp4HvBJdRgB8BS6jPiVqd0pTzkCGcE/OaFc=;
-        b=ajHehOnU0i8naLWVtIw3DUB8bKYszUWp02olTsx1DmkdmH4PlCICLBmXA3LHnVSeBn
-         NiahWtOP56RUuvHEKFWFY/Kkx1Z2HqEBC/6UWOSxJZo3hYOeA6hFOV67axe8y7t4Hmx6
-         vdVCs3GsYDulqIJNTAnS6h5eNZ9rSSVjPNy3NpupVWVBQIH5g44dcS2DLHFHOAycLQu5
-         fSiuJ6hri8QzLAHTE1v8FgZ+3C0/pn1Vy86uhQM4DFm/13b8+dNyAo9uAh7s5RwxPG9B
-         MvA3b+9/J9Fq3L4I0NB94plWRL1to0khJ8jSXym6AQ0f+ydruTtPydv68GlfNM47v2Vj
-         iknw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791793123; x=1792397923; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=zSGc2gSvInI+9O2ij46iITf1yj50GR8jSWXc3T4EcG4=;
-        b=eyn6+JVNq6toaTEpom54udG10HGMfVRoqi5ipDvof/sRly/8NHLD3n6Kt/9oTjRJ4t
-         BYUK18Iod//l3EDN9mTJIl3KuguTqXrR4pBtp17FUdEIXG9tDIAiJCSz8swISpMOYJDN
-         UZ3Fb6SIxgzm3R2M7YY0E22ITiNzpj3PGSgwrid9NDPKi4XKyJXu6WkAXME4uS5hW1MC
-         K4D/+unTFruqKsXLUY/LfSnXLFaZA5InYInlIhlSMJPDvuswDwjZJ5OvMXmTB9996lxm
-         b3WNaCsufIP2GxHGzV/58VUTi6/mCzKZRK/7Y+Jr/cKy8E5TEDBvTO9OGTRmkW0/nrG/
-         OpQA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791793123; x=1792397923;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=zSGc2gSvInI+9O2ij46iITf1yj50GR8jSWXc3T4EcG4=;
-        b=aEN4pgxn1iJXmsu/VN/b1TdiMG0eeD0YkJEQknPpDlE8ySgTbXwYR4FtPyTWemP/VX
-         IPEfpEHvdsH9qbR1hPF+HbtDZ2r4D8lmyF+XKOzIwVKXKp1ZE8HxOntz5qxGzyRmfZM0
-         cdnDPLkdrjF9E2Bm7TdGv3ewtNl9cBcAuMSEs4PoH1d6wEyaRLDi8eupmE9UplDj05na
-         7F6KfNrwIJI+W33rX1Z2NnANCEDxhIabOTnDE3QiAwEncjvartDvXa+eYBsxNWXn9NcT
-         FKK/VSV3DWAiXynMDoP1TySpElayeTOHBwHisBxnI1ueGNBB0oNkfeGJks8696fBNwmu
-         uRSg==
-X-Forwarded-Encrypted: i=1; AKwUvByo7SC43h2IFHEW6ChGsjBeht1wC7j1uaLDWa1IPsowmHA2LeW7hNkirWJojk1N8hWBWa/idiKL5A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLM60SO2vQUUCrq5carXWsPFwpcIxc18OhzcCLGokGUJpkLiurW
-	v0PoEkRIfVvmB3/lXyo0nRL8piqa2o4CBcHOkjsNF6KfFG5mEjVMfSa7dvLEj4T4GxmLt6/2Fwu
-	ifO9dyXycD7zWkCMvVTs1HHeRxBrpyuEDkA+yX0x7Xg==
-X-Gm-Gg: AYBFou3ZBBad9A+dRcD6Me2+m6oqfgerL0ULav9TBpt93kWB5/FYOND6VUFonpw3CFz
-	jD83iqV23IcU6vq485oEfUxSGngj/hFxyseCgzKquOUbfiXKfye25P1yeBmzanDyiUhxNYWhuhN
-	0NWsS/rrP31uE1ewIb75ab6VSmBoRCA1P9OzwXd+jCZ6CHHC+vgNjUjgt2Zr0Vo58aWILHkVRx7
-	xjwxN+jT8GOdd8+cjNz9ekAQYtgVa41xyixs/3Fiiuj4GSnndcX5xQfGdHwAHCCjhZXP77uWPhP
-	EcX4aM8tNdStzYkK84tP76mzAHaxOABG5H+Yzw4RouHfu++4EXdf36PiXmYWFl5xO4vJ+2rOmBh
-	fryZVDPdj2ikD
-X-Received: by 2002:a17:907:d1a:b0:c2a:704c:8c8e with SMTP id
- a640c23a62f3a-c31a9fced4fmr940287766b.11.1791793122980; Mon, 12 Oct 2026
- 01:18:42 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="QSToD6HK"
+X-Envelope-To: linux-pm@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=2PZG4oBTWctUcn47EeBywXvnSBFOGvbeX9RPvQyatEY=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1791793369; v=1; x=1792398169;
+ b=QSToD6HKA3NCTTwZ9qSyY1JuKFbS0Xrl1KSPgDfdybTEtL7svlFfizgNRi9bMYJJLdz5uwFv
+ zKTE2Dvew1+JQFHrwTsHUx0F3rjJWiYORX0GtB/xFsO2qn2bkdk5bC35+4p29ZKjSLxjdZ5944z
+ h0H1HJxt7RGDEKK2SUs+X/oY=
+X-Envelope-To: linux-pm@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 85626153b49a7cd1;
+	Mon, 12 Oct 2026 08:22:49 +0000
+X-Mizu-Trace-ID: 85626153b49a7cd1
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <7842535e-ae71-4de3-b16d-14d55b514df5@linux.dev>
+Date: Mon, 12 Oct 2026 16:22:25 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CAKfTPtCAbreGDhesDmFNvXEzjj+anmOH1=jqT-1B6Lfj0FfPqw@mail.gmail.com>
- <20261011174038.5334-1-kayracizmeci@gmail.com>
-In-Reply-To: <20261011174038.5334-1-kayracizmeci@gmail.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Mon, 12 Oct 2026 10:18:30 +0200
-X-Gm-Features: AclHuK-DP5qVnsuYOeIrtkpyOkecXNVv-1nV6z-W92W9g6i97Pk7RW1tEN3H67A
-Message-ID: <CAKfTPtBDcfk+TEEjD07RBLpCAusKqa0K4AWuFrcCtdw9uGsXCQ@mail.gmail.com>
-Subject: Re: [PATCH 10/18 v2] sched/fair: Add force push task mechanism for fair
-To: Kayra Cizmeci <kayracizmeci@gmail.com>
-Cc: arighi@nvidia.com, bsegall@google.com, changwoo@igalia.com, 
-	christian.loehle@arm.com, dietmar.eggemann@arm.com, juri.lelli@redhat.com, 
-	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, lukasz.luba@arm.com, mgorman@suse.de, 
-	mingo@redhat.com, peterz@infradead.org, pierre.gondois@arm.com, 
-	qyousef@layalina.io, rafael@kernel.org, rostedt@goodmis.org, 
-	sched-ext@lists.linux.dev, sshegde@linux.ibm.com, tj@kernel.org, 
-	void@manifault.com, vschneid@redhat.com
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 00/15] sched: introduce for_each_process_rculock and
+ for_each_thread_rculock
+To: Peter Zijlstra <peterz@infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
+ "Paul E. McKenney" <paulmck@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Josh Poimboeuf <jpoimboe@kernel.org>,
+ =?UTF-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>,
+ Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@kernel.org>,
+ Ye Liu <liuye@kylinos.cn>
+Cc: David Hildenbrand <david@kernel.org>, Miaohe Lin <linmiaohe@huawei.com>,
+ Naoya Horiguchi <nao.horiguchi@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, =?UTF-8?Q?G=C3=BCnther_Noack?=
+ <gnoack3000@gmail.com>, Lorenzo Stoakes <ljs@kernel.org>,
+ SJ Park <sj@kernel.org>, Gregory Price <gourry@gourry.net>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ rcu@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+ rientjes@google.com, shakeel.butt@linux.dev, xu.xin16@zte.com.cn,
+ chengming.zhou@linux.dev, will@kernel.org, boqun@kernel.org,
+ frederic@kernel.org, neeraj.upadhyay@kernel.org, joelagnelf@nvidia.com,
+ josh@joshtriplett.org, urezki@gmail.com, juri.lelli@redhat.com,
+ vincent.guittot@linaro.org, tony.luck@intel.com, reinette.chatre@intel.com,
+ x86@kernel.org, paul@paul-moore.com, jmorris@namei.org, serge@hallyn.com,
+ pavel@kernel.org, lance.yang@linux.dev, mhiramat@kernel.org,
+ pmladek@suse.com, longman@redhat.com, mathieu.desnoyers@efficios.com,
+ jiangshanlai@gmail.com, qiang.zhang@linux.dev, dietmar.eggemann@arm.com,
+ bsegall@google.com, mgorman@suse.de, vschneid@redhat.com,
+ kprateek.nayak@amd.com, mark.rutland@arm.com, Dave.Martin@arm.com,
+ james.morse@arm.com, babu.moger@amd.com
+References: <20260921092101.89285-1-ye.liu@linux.dev>
+Content-Language: en-US
+From: Ye Liu <ye.liu@linux.dev>
+In-Reply-To: <20260921092101.89285-1-ye.liu@linux.dev>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Sun, 11 Oct 2026 at 19:40, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
->
-> > >
-> > > On Fri, 9 Oct 2026 at 07:53, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
-> > > >
-> > > > >       task_tick_cache(rq, curr);
-> > > > >
-> > > > > -     update_misfit_status(curr, rq);
-> > > > > -     check_update_overutilized_status(task_rq(curr));
-> > > > > +     if (!tick_pushable_task(curr, rq, rf)) {
-> > > > > +             update_misfit_status(curr, rq);
-> > > > > +             check_update_overutilized_status(task_rq(curr));
-> > > > > +     }
-> > > > >
-> > > > >       task_tick_core(rq, curr);
-> > > > >  }
-> > > >
-> > > > Hm.
-> > > >
-> > > > I think this mechanism added on here does not works.
-> > >
-> > > Ah yes, while factorizing the code, I removed this main diff between
-> > > tick and put events
->
-> > In fact this is on purpose.
-> > fair_check_pushable_task() is the function that is called to decide
-> > wether we try to push or not a task. In the case of short task, we
-> > will not push a task that is already alone on the rq
->
-> I'm confused. So, is the added tick push mechanism not working at all
-> on purpose? For future use or something IDK.
+Hi, Peter
 
-The push mecanism part is generic and includes a push on put prev and
-a push on tick when the task is alone and never put back in the
-runnable list. For short slice tasks, we don't use the push on tick as
-there is no reason to push a short slice task that is alone on the
-cpu. The push on tick will be useful for other cases like misfit task,
-EAS and cache aware. The latters are not part of this patch
+Friendly ping on this series, posted three weeks ago. You previously
+requested splitting the combined kernel/ conversion into per-subsystem
+patches, which has been done in v4.
+No rush — just want to make sure this is on your radar.
 
+Thanks,
+Ye Liu
+
+在 2026/9/21 17:20, Ye Liu 写道:
+> From: Ye Liu <liuye@kylinos.cn>
 >
-> Before the fair_check_pushable_task call on tick_pushable_task():
+> Introduce for_each_process_rculock(), for_each_thread_rculock() and
+> for_each_process_thread_rculock() macros that combine the existing
+> iteration macros with scoped_guard(rcu), so that the RCU read lock
+> is automatically acquired before iteration and released when the
+> loop exits — including via break, goto, or return.
 >
-> if (rq->nr_running > 1)
->         return false;
+> The rest of the series converts manual rcu_read_lock()/
+> rcu_read_unlock() and guard(rcu)() pairs across mm/, kernel/, fs/,
+> lib/ and security/ to use the new macros.
 >
-> So now at the rest of the function, nr_running have to be equal or smaller than 1.
+> Suggested by Michal Hocko for the oom_kill path [2].
 >
-> We call fair_check_pushable_task() with next = NULL.
+> Signed-off-by: Ye Liu <liuye@kylinos.cn>
 >
-> There are only 2 paths that can return true, one of them requires next to be true,
-> so it never works. The other one:
+> ---
+> Changes since v3 [4]:
+>   - Fix patch 5 (cpu/hotplug): title and commit message incorrectly
+>     said "thread iterator" and "for_each_thread_rculock" while the
+>     code converts for_each_process() to for_each_process_rculock().
 >
-> if (check_pushable_short_task(rq, p))
->         return true;
+> Note: Patches 4, 11, and 13 received automated reviews from sashiko-bot
+> in the v3 thread [4] that were verified as false positives:
 >
-> And check_pushable_short_task() does this:
+>   - Patch 4: claimed the folio lock is dropped before collect_procs(),
+>     leading to a NULL deref on folio->mapping; the lock is held in all
+>     call paths.
+>   - Patch 11: claimed mixing goto/scope-based cleanup in
+>     alloc_retstack_tasklist(); the goto free label handles memory
+>     cleanup, not lock management.
+>   - Patch 13: claimed mixing goto/scope-based cleanup in
+>     __set_oom_adj(); goto err_unlock manages oom_adj_mutex while
+>     scoped_guard(rcu) manages the RCU read lock — different resources.
 >
-> if (cfs_rq->h_nr_runnable <= 1)
->         return false;
+> Changes since v2 [3]:
+>   - Split the kernel/ patch into per-subsystem patches, as the
+>     combined patch could not be applied (Peter Zijlstra, Steven
+>     Rostedt).
+>   - Move changelog below the --- separator so it is excluded from
+>     the commit message (Lorenzo Stoakes).
+>   - Indent loop body in macro definitions to show scoped_guard
+>     scope (Lorenzo Stoakes).
 >
-> As I know, h_nr_runnable should be smaller than (or equal maybe) to nr_running.
+> Changes since v1 [1]:
+>   - Rename macros from *_rcu to *_rculock, as suggested by Steven
+>     Rostedt and acked by Thomas Gleixner, to avoid confusion with
+>     existing *_rcu() list iterators that expect the caller to hold
+>     the RCU read lock.
+>   - Improve the comment on for_each_process_thread_rculock() to
+>     document that 'break' only exits the inner loop and 'goto' is
+>     needed to exit both loops (Thomas Gleixner).
+>   - Rename the stale 'unlock:' label to 'out:' in hung_task.c, as
+>     noted by Günther Noack.
+>   - Clarify in patch 4 that page_pgoff() is safe outside the RCU
+>     read-side critical section (SJ Park).
+>   - CC all relevant maintainers on every patch (Lorenzo Stoakes).
+>   - Drop the mm: prefix from patch 1, as the macros are in
+>     include/linux/sched/signal.h (Michal Hocko).
 >
-> nr_running can be 1 max, so if h_nr_runnable can't pass nr_running it will
-> always be smaller or equal to 1.
+> [1] https://lore.kernel.org/all/20260904083001.553587-1-ye.liu@linux.dev/
+> [2] https://lore.kernel.org/all/20260813092933.562028-1-ye.liu@linux.dev/
+> [3] https://lore.kernel.org/all/20260907081334.1152889-1-ye.liu@linux.dev/
+> [4] https://lore.kernel.org/all/20260911075800.491472-1-ye.liu@linux.dev/
 >
-> Maybe I'm missing something from the start :-)
+> Ye Liu (15):
+>   sched: introduce for_each_process_rculock and for_each_thread_rculock
+>   mm/oom_kill: convert process/thread iterators to for_each_*_rculock
+>   mm/ksm: convert process iterator to for_each_process_rculock
+>   mm/memory-failure: convert process iterator to
+>     for_each_process_rculock
+>   cpu/hotplug: convert process iterator to for_each_process_rculock
+>   freezer: convert thread iterator to for_each_thread_rculock
+>   hung_task: convert process/thread iterators to for_each_*_rculock
+>   locking/lockdep: convert process/thread iterators to
+>     for_each_*_rculock
+>   rcu: convert process/thread iterator to
+>     for_each_process_thread_rculock
+>   sched: convert process/thread iterators to for_each_*_rculock
+>   tracing/fgraph: convert process/thread iterator to
+>     for_each_process_thread_rculock
+>   unwind: convert process/thread iterator to
+>     for_each_process_thread_rculock
+>   fs: convert process/thread iterators to for_each_*_rculock
+>   lib: convert process iterator to for_each_process_rculock
+>   security/landlock: convert thread iterator to for_each_thread_rculock
 >
-> Thanks,
+>  fs/proc/base.c               |  4 +---
+>  fs/resctrl/rdtgroup.c        |  8 ++------
+>  include/linux/sched/signal.h | 26 ++++++++++++++++++++++++++
+>  kernel/cpu.c                 |  4 +---
+>  kernel/freezer.c             |  4 +---
+>  kernel/hung_task.c           | 11 ++++-------
+>  kernel/locking/lockdep.c     |  4 +---
+>  kernel/rcu/update.c          |  4 +---
+>  kernel/sched/core.c          |  3 +--
+>  kernel/sched/debug.c         |  4 +---
+>  kernel/trace/fgraph.c        |  8 ++------
+>  kernel/unwind/deferred.c     |  3 +--
+>  lib/is_single_threaded.c     |  5 +----
+>  mm/ksm.c                     |  4 +---
+>  mm/memory-failure.c          | 16 ++++------------
+>  mm/oom_kill.c                | 20 +++++---------------
+>  security/landlock/tsync.c    |  8 ++------
+>  17 files changed, 55 insertions(+), 81 deletions(-)
 >
-> Kayra
->
+> --
+> 2.25.1
+
+-- 
+Thanks,
+Ye Liu
+
