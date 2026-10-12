@@ -1,418 +1,158 @@
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011010.outbound.protection.outlook.com [52.101.62.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A20BE47143B;
-	Mon, 12 Oct 2026 14:07:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791814050; cv=none; b=iMEco6IlGYd2vo8CI8VpYDh+6tjiUBWZftf6NdV6UJLPBZv2sm5nNxsr0ZIYOE0OZ34VLzlaQOpOXiO9kJUWN9H9O3QE0VpIsdceeir7ffkG/+fhqYNiaLvGYoEVKAbboMejbvRM2i9hEOIiUY5hyDhOEWyeHO+RBrm7xdJ4+Wo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791814050; c=relaxed/simple;
-	bh=IOsm0a+mLy0LCidkdXj7UvnPgFNUeOkicKRaAc59L+A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Xfoo4qltycdX9Rl4/uudGsHcZSs4mo71XpWO4Vze70/b+Xa9MVM/AVA/AuojprnPsdSS3t0qgEkTrmz06NErKtmEk38NrbZD89mEunmaS0PYAl/e5GYCYU5wVjcsSH61/UdShvztll+/UEH9KP4w1CXtwN6Kn/dM1yYPoWSpSNw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=Jhdh5bqp; arc=none smtp.client-ip=148.163.158.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F4BD493D5A;
+	Mon, 12 Oct 2026 15:16:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.10
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791818219; cv=fail; b=VL2H0rnshVDVA1W1e9N4up7GdbzJ3SFZYjsJ7K3ruk6YPnpViI6zS6Pf5zFr4QK0wqm6pIy6tDsiMjxV3kfe/Ro+9jaeKUuVZceBGQnWCtuKVGmgm4avPYs5d68Hl6MIhO0YU+yGFo7HjlzLvJlWIV1lL9bhMOLe68RRfaDxoC8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791818219; c=relaxed/simple;
+	bh=d596gQJhwCbTDElc3INSOdwzaE9A8CU+Ua2fG+0qriw=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=uNPcmKkgUKrT/AjT+3LyLdCJUxlRtI+L9Ji3nUINXH4i1YWfRXPQQX7NDjrEM3CdzxUGZZj67gbL3K+QqKRW4BsLE3iHj5aml+ZJr92lituoPt7FtPdFICFqBihLn8nPZP2fUe1AQgcjvO/q5iBNHI4zbd7o32GRnt3J+1DoGFY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=dUTKxPb2; arc=fail smtp.client-ip=52.101.62.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Jhdh5bqp"
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69CCEFfQ3209708;
-	Mon, 12 Oct 2026 14:06:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=qeA59R
-	IsoXY8Nl/lTPQrbb7DOeUe2FMJ5fUyWua3TpU=; b=Jhdh5bqpULQ+Za5fjIYbt9
-	Zvw/M8kJBWFT1ILh2De34ESxTbveBYXgRyLni+YXvwyLaNplXKYLyQ7zvb0MiWuS
-	MrfScu12aS6DTk8uPYz8l74CQrnAzAf99knPMJkGlbLcmrgeXZtaJoF+1K7zd0qQ
-	nZ2FNVrAwbz/tcxrp74sU4pqSRDdeJUPFJVnTN/jPnVFTnYhbCHAOc2U6S1DD/fm
-	VYdR+jCEhSa7gUAV3v6659AMnUiOc+/a8p1fnypvvBUSVcALEUXVtENtUjwhuJAC
-	PdqHaGV0i/0Gzv4t7fQEj88US0xfZ1HlzJs9POrKG1Jpi+pisJPeDLh0Xm+63ehQ
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv08xjn-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 14:06:58 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69CC4tZR1212027;
-	Mon, 12 Oct 2026 14:06:58 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h80pjnfk3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 14:06:58 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CE6uw841484666
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 14:06:56 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0427A20040;
-	Mon, 12 Oct 2026 14:06:56 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4130E20043;
-	Mon, 12 Oct 2026 14:06:51 +0000 (GMT)
-Received: from [9.124.214.197] (unknown [9.124.214.197])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Oct 2026 14:06:51 +0000 (GMT)
-Message-ID: <a18e6fe1-e14e-46be-9779-3704ab8625a0@linux.ibm.com>
-Date: Mon, 12 Oct 2026 19:36:50 +0530
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="dUTKxPb2"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ueb116BzsK6Y/tL3TQ3vBTEbZGmy5TI93m1r4gun2zOuS7moRzAvjxFVbNgzGBjTyH/mNAF+y05XKJvpSCn0tOzSJ1rBQ80ZtyS1+QjIzBmzuJdJ6w0bUDiXO7C3DhPpuE8OQywzVG2YpnuKDSOfl9gD6Fave4UkdDWOuo/eluY+4kejQRe7bXXoK8ZmYxXIohqkBd2R0njjQiJ9Wx8RMGtTUIwdAFW0daOo9NFWVc9dsOqDHdeqmjEXv+1o017at/h9SE58hXSjZhZoQT53a2vdkrBvgRbV1/OWCRLLJEYWjQPlUpOPy14OOyRfK938slPjSV7vbycvmLrT9VezqQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=eaYFB2QASazihBf6ZCJjKYsRufOtVfvKVsW3nYba2PE=;
+ b=Z/iWh5OSWOZPkfM4U4qiPWYlEOMZY7mr8p12rbK5ug4YW5epGeVXGMJbtQFkE0am9KM7PSrjClEOzPjiYyWAfPGdJZdEKXZzlw3UuyfIH6mMPiiQIKYmACSrimmAxkfJ8OrS/BKy5/34+aXbC09nCzrSQPzTwhEo8iNGA/BUS+afar4PWtKFTwKdeQJ+n5GGZbGFxD5FozrKt4X87nebV6pUiCIPDZej1brcsyOCAzv/COL0sKTIycCqWM9gqaPTZTK460SQndGKCrqkMyjmdYRtd6GmIf6dmG82R3kHi6nJ9tp/zKT9VBxrKBt/0rVsFcjJuXb4ulJyssAN6sJf1Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=eaYFB2QASazihBf6ZCJjKYsRufOtVfvKVsW3nYba2PE=;
+ b=dUTKxPb2zUKPUygx/5cEjj9PwE25sQn1fJ2ZYTYVqYLT6RU7HYaNPa4aWFkDytOrpF/AfBy39NfZD+9Hc6hclS0MQ0/1CtHNWoJhJI8imn45cFHnHTA/3VvSEOibWGwAyaYWiRUlEqR8oTA0V/tB9CUVQAERv7uTkav2HNcDOlA=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
+ by PH0PR12MB7486.namprd12.prod.outlook.com (2603:10b6:510:1e9::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.23; Mon, 12 Oct
+ 2026 15:16:48 +0000
+Received: from PH8PR12MB6914.namprd12.prod.outlook.com
+ ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
+ ([fe80::2893:177a:72b0:6000%7]) with mapi id 15.21.0496.020; Mon, 12 Oct 2026
+ 15:16:48 +0000
+Message-ID: <9c76b6ac-114c-40ed-9f2a-e3f8fff68059@amd.com>
+Date: Mon, 12 Oct 2026 10:16:45 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq/amd-pstate: Don't fail active mode init on
+ read-only auto_sel
+Content-Language: en-US
+To: Akram Boulahia <akram02st@gmail.com>
+Cc: kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, perry.yuan@amd.com, rafael@kernel.org,
+ ray.huang@amd.com, scardracs@disroot.org, stable@vger.kernel.org,
+ viresh.kumar@linaro.org
+References: <851316da-2cfa-4a22-947c-1838532d05cf@amd.com>
+ <20261009001022.6660-1-akram02st@gmail.com>
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <20261009001022.6660-1-akram02st@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR03CA0016.namprd03.prod.outlook.com
+ (2603:10b6:610:b0::21) To PH8PR12MB6914.namprd12.prod.outlook.com
+ (2603:10b6:510:1cb::21)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 07/18] sched/fair: Add push task mechanism for fair
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com,
-        mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
-        linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org,
-        linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com,
-        arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev
-References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
- <20261002154415.2270586-8-vincent.guittot@linaro.org>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <20261002154415.2270586-8-vincent.guittot@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA1NCBTYWx0ZWRfX4p+WsUFUAH0H
- dCRl9htz6V++UPeJI2iws/QzfKo6ilzYJJ8+mdjvloDKXM8XGGzSMRXW7pW2VhmumqC+DSHuh0s
- HwEkeKlirUOKapQwwc5sqKEgPe3xyJyOgbIH8gxgJ634WgfWJTdPnePaQxrR0hTQta/VdiJ9bF4
- ugp0KthXDcrC7zwrU89PvkuoKjXV50WFDNC8DDiYOWywmbherl/d8U4cHMW5Olj8eDmD8APvll+
- L2vV3cRjlBr9aunmeXl+WcEnpO5MwDgJfXO8npk+xW24v4XoitGqzdq5gP9Nm/wcfU96MOJp3Eq
- W0pVZcl7hh5ozcE2VA0UYcbRtWr6eYNMd/VNA0NWBOsLrKTf6GxUBc9HKX1GBK/levMoedvXlLm
- 0FUCRixq0p6E6rdRob2mMTSgooCBRfu/pQ/76V250IyRtBbiVlz+lNBwQkzWNgAvChFgjoFtOfy
- o2xFjv/b9WT/y+FO7Jw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA1NCBTYWx0ZWRfXxNXr7Cp9pqfr
- lKr869FxfCcMwsHjdsjhHQ829T/Dfz8FwzOsG82pC5h9C6GZqaftDS6YEmBqrXfzPK/FkJra84q
- aDQpgr2VkgY2ybHCNE60nXBawWe4RWQ=
-X-Proofpoint-ORIG-GUID: ZMLqM1gFd0IG0N0c9dSWWIUCfWed7K-8
-X-Authority-Analysis: v=2.4 cv=a6KlZkSF c=1 sm=1 tr=0 ts=6acce983 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=KKAkSRfTAAAA:8
- a=gqQX_c8xQYifrDOYiekA:9 a=QEXdDO2ut3YA:10 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-GUID: nAiyoH0XI1M5C1XsWKxNvGf400sQ1cvL
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-12_04,2026-10-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0 clxscore=1011
- phishscore=0 priorityscore=1501 lowpriorityscore=0 impostorscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610120054
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|PH0PR12MB7486:EE_
+X-MS-Office365-Filtering-Correlation-Id: bd52c69a-14dd-44eb-e8f7-08df2873d594
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|56012099006|11063799006|4143699003|10067099003|22082099003|18002099003|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	JHFYfkIe9SxV9GOqIeDsG3TzydZo7z02XLVlW+NtscoyyUMyOpwV2qCj15A+bRoU8czRy9gx2PVwEOZHGF6kFei2Bs34DK8Q1ykGwyCRn1/DNtlpwHN/K1wFyMRISGjWetVGZfbuoMQcEDjxfi3oq609AKbNQhEyiDWol9cnydtrd2D1M9w6A66PepdldhV4uvtxtLElsVOEavw6P5sZae7KczRcl5ND8qmbo0HYcZed66TYx7DWeNXfn+iPZO3OFHVJEPuzxny2uyPEQII320mDOxB9DWhRxI9WM7Wz8cRJBEcnCtUiZ62SAjfrCQW0erG2DUvXvZ9yBNejN8SxGj0SGi/YW4f8a8KpWDCvxPsu0H9htSOEVXYIj6Bia2FnNZOpWufeOG2E2RDWNLr2keRM1dhHllJ4fYdiQWbOZTiC3P2DJnHZf3Sr4/1kBLl1Iar+n1APbKmxvr0KT+ogb6u67XsuZor8xGkPcp+40BnmjpVbRfGOwaDySutRziv8SifnopzWTMTFvBOVp90hOUSs+1rsjM3CFkh+lwb8AJmCTnzIF+M5r+9nQd/unEpBu5QbIRTpbzk0kMQRwJTEXac8ZF8K3/p8SLLQkS2OMfJM0i3BojPC+H9Pd+B7Ygv5hoFpfKZ0ujWXqrdcxQuGY5LHKqwmlO6Xw7OHWzHZ+jU=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(56012099006)(11063799006)(4143699003)(10067099003)(22082099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?c05HVmg1QlZoRVljVzViZWNqSkFHTjZCWGlJMHFTakNXdTlPbmZ2cGE1dElw?=
+ =?utf-8?B?VUJXVWIzS2YzeEU3bFRXdjc5OUJnYk05a29YWXc1cStyQnZrSmdKNWRCcE9q?=
+ =?utf-8?B?eVE1aDFFYU9hSEpnaDRKWlpldVlUM1l5WlEwUWQvSlk2QlY5MnlaYVVERmtJ?=
+ =?utf-8?B?YnZZOFExdnNhSlNhamFBQU9KdDBrZDBuMVpmb3pVaWFSN3E0YVRhNnRDNjZD?=
+ =?utf-8?B?V2p5M0dudDYyV3dVU2c3T3lmQ3VuVnErbnZSK3JwU0JqSVhuN3hYMTBjOFkv?=
+ =?utf-8?B?YVlwL016WDdJZmxyajhXU0hSdGNLM01PRTZNd3FYQXZpY2R0QmdaYWFBYUZx?=
+ =?utf-8?B?WTFUSVpjTHNsbXRmb0ZVNmxzNVBzZHI5TFZqd0tvenlacHhOSEtpK3RRdi9j?=
+ =?utf-8?B?NEZqQ2c1Z0hlRGRYdFZaSEFvcGFBSXRCcjlRSGRnT3RjR09qeGY3SjR0Zk5N?=
+ =?utf-8?B?Z2ZjcVMyeTRtSGxDMlpwZGhXTkRKc2JrcVhLSnJYQTlnZGZiRXF4eVEzYlZh?=
+ =?utf-8?B?emlISG9TN09UcGp3M0lTeWxsV1dKTHBqZW8rV1NRQ2Jrb2VUaHpYZWw3QVpV?=
+ =?utf-8?B?Z3RSUDh1OWVPQ2JIRE83QmtqMHd5MDVXeUVUdm9qb1M3dm9wT3QrVVZZdVBy?=
+ =?utf-8?B?ZWZ5a2xlaHFtVW5yclZ3ZjJKWWpwM1ZrMU94dm8yYXFYVjNVRnhTWlBSZGdT?=
+ =?utf-8?B?WlRnNHA5VkNKR2hwQlJKSXRkdGhaZDVMRnhGVHM0RWZoZ29QaU9IZ0ZvQ1dX?=
+ =?utf-8?B?emFCeXA1R3pHTEdXdTY5ODh6WHlqb3d6aEVTU0JGMHBaVXkzQ2F3VCtnRkFB?=
+ =?utf-8?B?TUEyNm9hcWFWSXNJNENIcE1RN2hIMXgxKzZpblI5N1E0ckRFSkxodU1iT05q?=
+ =?utf-8?B?cnM2a1oxNWZybTVJQXRjeHZoQzMrOHRyQURCUFd4ZlZ0R2VKQ1Jqb2RJVDg1?=
+ =?utf-8?B?UUpZUXFWUE1nQzhUZC9WYnB1WEUvZHpLZHNRaWt5Z2N4QWw5OVhqeUNkR1h1?=
+ =?utf-8?B?R0pYUGdzeUU5UVJscDdGWFdvaEFEZWdZM3o1MWdPQm9iM0R2OFRrM3FmZlNF?=
+ =?utf-8?B?dFQyRG82bzQ4VEx0RFR3ZS92SVJMQVQ4ZW9qb1VRMnhObUQ5VnZIdE1pQ1gz?=
+ =?utf-8?B?UnM5Qkh5VHQ5ZVArdXJhd0VoN0xpK3BHQ0xMVkR2KzRPWjhoaUM0UEVpVkxt?=
+ =?utf-8?B?ZDJ0SWtIMzZZWHUrdCs3dXI1Q1BKM2VZeGYrbUZGNHBsVkJGNDRQQmdGaitp?=
+ =?utf-8?B?eURZZXgrSGpjRWNlM3k3T2h5b2s5QnNiRm9sOTV5MU1hYkhlVVhKWld3Vlhu?=
+ =?utf-8?B?enZGbnZxZlJLSkFBYnQ5RzVVNFFVU1o4NWR4M01OcVZ1RVBJQzFCODNrV3JN?=
+ =?utf-8?B?M1JGOUVBRXF3dXovZ1VFSjhhQ2lsa0N1Qm9FWEtiSXdIb3NaMnpvUzgvZ0Ru?=
+ =?utf-8?B?aTZSL1RjTXh2OTliM0NZNjcwY3JCeVFZMnZUZFdoRytiVk9oeDdaOHNPaXQy?=
+ =?utf-8?B?ZWJnT2llazZnZ2VnQUt1M1kzeFkrMnpJMVlzZnNWMUZjL2VPVjZvWE9Wdk5o?=
+ =?utf-8?B?SExVc1hoODF0WkNsd1hZTHNFcXRsblBlQ0s3TndnSW5qOEp1ak1OSGpRRXNw?=
+ =?utf-8?B?YzBpa1k1SUZlKzdnRHVnY0swRlZwUGVDN3RYUHd0Ni82bzRQNlFWR2dTYm5r?=
+ =?utf-8?B?RGVSeVhuL3hjSmNlNkpmQ0RPWTFQQ3l6Wm1HMnFmRndYMVg5dGJMQ05aOENi?=
+ =?utf-8?B?Lzlncy93U2dINldGUjNyVEJsbTNFMUtSQlluTkZpakoxVmRLOC9pdUNRQ0s3?=
+ =?utf-8?B?RWl0Q0p4V2tFQmNoTFpiSk1kaHJvdkdNWURQRTlPNjJOV3JXU0o0ZnVZMkJE?=
+ =?utf-8?B?c2xqSlJVTTRadVhsYzFSZ2ltR3kySkJuR2lTR0RlVU4wSnVLWVdTd2oyczJj?=
+ =?utf-8?B?ZW1ZaFVJUnR1eDFUZXNycDV1bGxKakJib0pXeEtYUWtxdVVvUnpkMFR5UXVO?=
+ =?utf-8?B?RlJNbkJhYXBJcGd2NEpxUTNMcVhhUEphYVRyV0lkZnlCZEJuOFFnUG9uQzA5?=
+ =?utf-8?B?djlMbUlxeFAyVXZvRUo4Z2ZybnhObUNEalg0dENLRm9KbXNuR1Rvc0NBL2Vn?=
+ =?utf-8?B?ZUs3MzRpUjdBTjdNQzF3bENFU09zOGZ6eVVoZTA2d0xmU21lUmhONlNqZ01G?=
+ =?utf-8?B?REkreU9BS1dDY3lYVy9zUVc1dkRDRHFOb3Y5SmhVaDhVbkd1dy9rdWtzSUUw?=
+ =?utf-8?B?OTAyUkdSbjJoc1RwQzlUS01GeW5xeW5mK1YydEhkdFBJL2FraFl5VXBaU1Vv?=
+ =?utf-8?Q?nyjCYdSg5Op3fxZDPf?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bd52c69a-14dd-44eb-e8f7-08df2873d594
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Oct 2026 15:16:48.1772
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: NeKZBGxkXJBfsa25vBR3RvIsmOCSqKdrM1PZnvelrdPmFiONLF6q0g27AaoEz2Gz+OvMeEfe6hjwWYcrLUk47A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB7486
 
-Hi Vincent,
 
-Disclaimer:
-I haven't read the full series yet. I will try to do. Sorry in case i read
-it wrong.
-Thought of quickly checking the push path since i had recently worked on it.
 
-On 10/2/26 9:14 PM, Vincent Guittot wrote:
-> EAS is based on wakeup events to efficiently place tasks on the system, but
-> there are cases where a task doesn't have wakeup events anymore or at a far
-> too low pace. For such situation, we can take advantage of the task being
-> put back in the enqueued list to check if it should be pushed on another
-> CPU.
+On 10/8/26 19:10, Akram Boulahia wrote:
+> On Thu, Oct 8, 2026 at 10:12 PM Mario Limonciello wrote:
+>> You're in a really weird path if you have an 8945HS that is using
+>> shared memory.  That system has MSR access.
+>>
+>> IE this sounds like a severe BIOS bug.  Let's see what happens after
+>> you update BIOS.  If it's still failing please share an acpidump
+>> somewhere (like a kernel bugzilla).
+>>
+>> Need to make sure we understand why your system is behaving this way
+>> before making code changes.
 > 
-> Add a push task mechanism that enables fair scheduler to push runnable
-> tasks. EAS will be one user but other feature like filling idle CPUs or
-> short slice tasks can also take advantage of it.
+> Thanks, you were right. After updating the BIOS from 308 to 311,
+> amd-pstate works on this GA403UV with an unpatched 7.2.8 kernel. Active
+> mode loads as amd-pstate-epp, amd_pstate=passive loads as amd-pstate,
+> and the "CPPC feature is supported but currently disabled by the BIOS"
+> line is gone.
 > 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->   kernel/sched/core.c  |   4 +-
->   kernel/sched/fair.c  | 163 +++++++++++++++++++++++++++++++++++++++++++
->   kernel/sched/sched.h |   7 ++
->   3 files changed, 172 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 837dc74c9a8d..18692b752814 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -2553,8 +2553,8 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
->    *
->    * Returns (locked) new rq. Old rq's lock is released.
->    */
-> -static struct rq *move_queued_task(struct rq *rq, struct rq_flags *rf,
-> -				   struct task_struct *p, int new_cpu)
-> +struct rq *move_queued_task(struct rq *rq, struct rq_flags *rf,
-> +			    struct task_struct *p, int new_cpu)
->   	__must_hold(__rq_lockp(rq))
->   {
->   	lockdep_assert_rq_held(rq);
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index f12678850ce2..00078ac7fada 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -8179,6 +8179,8 @@ static void dequeue_hierarchy(struct task_struct *p, int flags)
->   	}
->   }
->   
-> +static void fair_remove_pushable_task(struct rq *rq, struct task_struct *p);
-> +
->   /*
->    * The part of dequeue_task_fair() that is needed to dequeue delayed tasks.
->    *
-> @@ -8195,6 +8197,7 @@ static bool __dequeue_task(struct rq *rq, struct task_struct *p, int flags)
->   	bool task_delayed = flags & DEQUEUE_DELAYED;
->   
->   	clear_buddies(cfs_rq, se);
-> +	fair_remove_pushable_task(rq, p);
->   
->   	update_curr_eevdf(cfs_rq);
->   	update_entity_lag(cfs_rq, se);
-> @@ -9799,6 +9802,157 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
->   	return target;
->   }
->   
-> +DEFINE_STATIC_KEY_FALSE(sched_push_task);
-> +
-> +static inline bool sched_push_task_enabled(void)
-> +{
-> +	return static_branch_unlikely(&sched_push_task);
-> +}
-> +
-> +static bool __check_pushable_fair_task(struct rq *rq, struct task_struct *p)
-> +{
-> +	if (!task_on_rq_queued(p))
-> +		return false;
-> +
-> +	if (p->se.sched_delayed)
-> +		return false;
-> +
-> +	if (p->nr_cpus_allowed <= 1)
-> +		return false;
-> +
-> +	return true;
-> +}
-> +
-> +static bool fair_check_pushable_task(struct rq *rq, struct task_struct *p, struct task_struct *next)
-> +{
-> +	if (!__check_pushable_fair_task(rq, p))
-> +		return false;
-> +
-> +	return false;
-> +}
-> +
-> +static inline int has_pushable_tasks(struct rq *rq)
-> +{
-> +	return !plist_head_empty(&rq->cfs.pushable_tasks);
-> +}
-> +
+> So the BIOS update was the real fix, and this patch only worked around
+> the old BIOS state. It also doesn't handle passive mode properly. Please
+> drop it.
 
-Should this use static key?
-
-> +static struct task_struct *pick_next_pushable_fair_task(struct rq *rq)
-> +{
-> +	struct task_struct *p;
-> +
-> +	if (!has_pushable_tasks(rq))
-> +		return NULL;
-> +
-> +	p = plist_first_entry(&rq->cfs.pushable_tasks,
-> +			      struct task_struct, pushable_tasks);
-> +
-> +	WARN_ON_ONCE(rq->cpu != task_cpu(p));
-> +	WARN_ON_ONCE(task_current(rq, p));
-> +	WARN_ON_ONCE(p->nr_cpus_allowed <= 1);
-> +	WARN_ON_ONCE(!task_on_rq_queued(p));
-> +
-> +	/*
-> +	 * Remove task from the pushable list as we try only once after that
-> +	 * the task has been put back in enqueued list.
-> +	 */
-> +	plist_del(&p->pushable_tasks, &rq->cfs.pushable_tasks);
-> +
-> +	return p;
-> +}
-> +
-> +static int
-> +select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags);
-> +
-> +/*
-> + * See if the non running fair tasks on this rq can be sent on other CPUs
-> + * that fits better with their profile.
-> + */
-> +static bool fair_push_task(struct rq *rq)
-> +{
-> +	struct task_struct *next_task;
-> +	int prev_cpu, new_cpu;
-> +	struct rq_flags rf;
-> +	struct rq *cur_rq;
-
-You likely need below to keep clang's context tracking to be happy.
-
-	context_unsafe_alias(rq);
-
-> +
-> +	next_task = pick_next_pushable_fair_task(rq);
-> +	if (!next_task)
-> +		return false;
-> +
-> +	if (is_migration_disabled(next_task))
-> +		return true;
-
-If migration is disabled, then it shouldn't endup on pushable_tasks?
-
-> +
-> +	/* We might release rq lock */
-> +	get_task_struct(next_task);
-> +
-> +	prev_cpu = rq->cpu;
-> +
-> +	/*
-> +	 * We need to release rq lock and take both task and rq w/o
-> +	 * triggering a deadlock.
-> +	 */
-> +	raw_spin_rq_unlock(rq);
-> +
-> +	cur_rq = task_rq_lock(next_task, &rf);
-> +
-> +	/* Task already migrated */
-> +	if (cur_rq->cpu != prev_cpu)
-> +		goto skip_push;
-> +
-> +	new_cpu = select_task_rq_fair(next_task, prev_cpu, 0);
-> +
-> +	/* Task doesn't need to migrate */
-> +	if (new_cpu == prev_cpu)
-> +		goto skip_push;
-> +
-> +	update_rq_clock(cur_rq);
-> +	cur_rq = move_queued_task(cur_rq, &rf, next_task, new_cpu);
-> +
-> +skip_push:
-> +	task_rq_unlock(cur_rq, next_task, &rf);
-> +
-> +	/* Restore rq state */
-> +	raw_spin_rq_lock(rq);
-> +	put_task_struct(next_task);
-> +
-> +	return true;
-> +}
-> +
-> +static void fair_push_tasks(struct rq *rq)
-> +{
-> +	/* fair_push_task() will return true if it moved a fair task */
-> +	while (fair_push_task(rq))
-> +		;
-> +}
-
-Would it better to iterate through the list? This is bit difficult
-to read at first.
-
-In failure cases also, it can return true. No? for example,
-is_migration_disabled(), It is needed since you need to iterate the
-rq to see if there is a task to move.
-
-> +
-> +static DEFINE_PER_CPU(struct balance_callback, fair_push_head);
-> +
-> +static inline void fair_queue_push_tasks(struct rq *rq)
-> +{
-> +	if (!sched_push_task_enabled() || !has_pushable_tasks(rq))
-> +		return;
-> +
-> +	queue_balance_callback(rq, &per_cpu(fair_push_head, rq->cpu), fair_push_tasks);
-> +}
-> +
-> +static void fair_remove_pushable_task(struct rq *rq, struct task_struct *p)
-> +{
-> +	if (sched_push_task_enabled())
-> +		plist_del(&p->pushable_tasks, &rq->cfs.pushable_tasks);
-> +}
-> +
-> +static void __fair_add_pushable_task(struct rq *rq, struct task_struct *p)
-> +{
-> +	plist_del(&p->pushable_tasks, &rq->cfs.pushable_tasks);
-> +	plist_node_init(&p->pushable_tasks, p->prio);
-> +	plist_add(&p->pushable_tasks, &rq->cfs.pushable_tasks);
-> +}
-> +
-> +static void fair_add_pushable_prev(struct rq *rq, struct task_struct *prev, struct task_struct *next)
-> +{
-> +	if (sched_push_task_enabled() && fair_check_pushable_task(rq, prev, next))
-> +		__fair_add_pushable_task(rq, prev);
-> +}
-> +
->   /*
->    * select_task_rq_fair: Select a target runqueue for the task.
->    * There are 2 ways to select the target runqueue:
-> @@ -10272,6 +10426,12 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev, struct t
->   	cfs_rq->curr = NULL;
->   	if (se->on_rq)
->   		__enqueue_entity(cfs_rq, se);
-> +
-> +	/*
-> +	 * The previous task might be eligible for being pushed on another cpu
-> +	 * if it is still active.
-> +	 */
-> +	fair_add_pushable_prev(rq, prev, next);
->   }
->   
->   /*
-> @@ -15379,6 +15539,7 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, enum snt_e
->   		goto repick;
->   
->   	clear_buddies(cfs_rq, se);
-> +	fair_remove_pushable_task(rq, p);
->   
->   	if (on_rq)
->   		__dequeue_entity(cfs_rq, se);
-> @@ -15423,6 +15584,7 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, enum snt_e
->   
->   	update_misfit_status(p, rq);
->   	sched_fair_update_stop_tick(rq, p);
-> +	fair_queue_push_tasks(rq);
->   
->   repick:
->   	/*
-> @@ -15439,6 +15601,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
->   {
->   	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
->   	cfs_rq->zero_vruntime = (u64)(-(1LL << 20));
-> +	plist_head_init(&cfs_rq->pushable_tasks);
->   	raw_spin_lock_init(&cfs_rq->removed.lock);
->   }
->   
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index e025d2a6c302..74130bd2a2c8 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -721,6 +721,8 @@ struct cfs_rq {
->   		unsigned long	runnable_avg;
->   	} removed;
->   
-> +	struct plist_head	pushable_tasks;
-> +
->   #ifdef CONFIG_FAIR_GROUP_SCHED
->   	u64			last_update_tg_load_avg;
->   	unsigned long		tg_load_avg_contrib;
-> @@ -3877,6 +3879,8 @@ static inline bool sched_energy_enabled(void) { return false; }
->   
->   #endif /* !(CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL) */
->   
-> +DECLARE_STATIC_KEY_FALSE(sched_push_task);
-> +
->   #ifdef CONFIG_MEMBARRIER
->   
->   /*
-> @@ -4209,6 +4213,9 @@ void move_queued_task_locked(struct rq *src_rq, struct rq *dst_rq, struct task_s
->   	wakeup_preempt(dst_rq, task, 0);
->   }
->   
-> +extern struct rq *move_queued_task(struct rq *rq, struct rq_flags *rf,
-> +				   struct task_struct *p, int new_cpu);
-> +
->   static inline
->   bool task_is_pushable(struct rq *rq, struct task_struct *p, int cpu)
->   {
-
+Thanks, less quirks or unintended codepaths is the best outcome.
