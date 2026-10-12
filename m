@@ -1,147 +1,80 @@
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFDE3373BFE
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 09:18:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.45
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791796699; cv=pass; b=diuW3POFmqVMUTE+7XlkHq+BgYBTzqhZVCqxfS8v29tlTCue4RcDV7vzTA/SWlqrA90jNvcc2jRwyjnO0hMvmbNZzF3vbImG8yBapWV+XlymfsQl/OD9Lfl37zT21Ar4vUtj9mm8XgjTl9UEJQ7/1cca0L49jzAuR1z6NcOEqsI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791796699; c=relaxed/simple;
-	bh=Qjk7fnAlrbE4/F3NsAOgm3PV1I2II+ar/lUKWdrB090=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=KhNUmWuaDa3lhZdQkblQe5VVAGOhYV550i0OB1uq+1g+CH02IYe/xyOrlXb3MaSwdazCjrfZ9we5llCV0XxKaGb/J1qCzJd/EPY3cNjtgKx/dzvZo3NX3q1gmrnL06v3z+NZfpmJwKCX9SvixY5eyVIpqkNdzonFOHI+ZvnNSTA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=pMnsCeN/; arc=pass smtp.client-ip=209.85.218.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1F3743CEF7;
+	Mon, 12 Oct 2026 09:21:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791796916; cv=none; b=LdjATBKIsah7JGKFMZxKaqNNymy8f3QWPIGXe4s4tGeURJJl/qmgJdxh2KL/oUHUYX/QVa2Spqm/3WioktvoilUypT/HBIH/YQLcSCp2T3NklivFReZ8T+eeBou4onsRxqHcAiD7HFHBI6jqRbhlj0XCHEOfFxJmhc8WMas17IE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791796916; c=relaxed/simple;
+	bh=6f3HJw63bCvW4/pIKwU8wj8+PAGOPGmFZFBiErtgAU4=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=SH2uo/CaPgsTaAojNgssp1//1sa03X1t6qUXIL9gxUNf+sWoJoMzypD+hG3KKEM84epZ2bm+2UKR9jBW6NcjaArTfWUUNvArYIFon0a6lBhxbG2Z1d4a6l04nq2ZO+u561/lilTo/6RO8TrPLutFVKQqGtQ4Zdv7AZAil54IpX8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DmN4FXht; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pMnsCeN/"
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c315729ad50so289984066b.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 02:18:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791796696; cv=none;
-        d=google.com; s=arc-20260327;
-        b=bHFwL9ShEZ06NpNpY3CcFfKe296zNGdUGiISycuWrHaGu6bGBSCxg//gxDW+/pIgji
-         kbY/wjxUvdiXqXEuUEXJ59ZdKByI4AFwROXLcRwqULSyKYzpW0X2WJ9ssrRZUPS20+hM
-         BNgrvYzCZcoCHFsb6i9JTXwsInQ9uUnyhDn+FIsRpeCC6hxSj8tFuA0usceR2J6AzSng
-         lVSdx2iwjX2LyyQqEjCXY8A7ObxqrWHQ3e2mg+1dz0zQ4jo138SvXw/kcAumefRfX6OY
-         AL4ubjyHElfNqJCO9nSnIinu+pk2yNtya0KcuFgenCSBxdJz7OecMafpaDtIypqGygQg
-         UPWg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=1biN2HNTY83zhnJs+D3TwuOQxRRYiRudFmWbhPoQzOg=;
-        fh=XDyBkxGSKVhMJbTVZQcyiVYgkVYGgckZHMWWcqpJUu4=;
-        b=WvFJwZ3wn1GeLagR7hfX8D7tsqNxmsQeDYMcWZm14mN4K62iv9WiwMw2AnpNFz1eBL
-         f6P4suJT2ZIcuQZxPHVPZaV3h+5DI5mBsgEDFfDFjf99V+EEI9shXhrQvco9TL7A3EXI
-         hnIf06/avhysNkzdfs0YDxoAjCBenoaC0eRH65R1s4PARr/Pofbc8OTU4A7ti7+kDZzb
-         YVy67w+z8gf/LoPL94pn+MFAoM/oVvNMaLM6sdvt+21HbAuORaeh38ScF7uEAVT5sGs5
-         h3cbcfyxafThEt8rBaicMOUJBhLiD4b1XhRQsb7G4NihTcURWMV8GJO4Hviyx6RWsnHy
-         ZVIg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791796696; x=1792401496; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1biN2HNTY83zhnJs+D3TwuOQxRRYiRudFmWbhPoQzOg=;
-        b=pMnsCeN/KynwljdXrJMzjynLfit6Jn85Nn517Pwz/1Gf2sdNtbjLImH6k7VLnZpwI5
-         O+CbuWnWFasQz7Xbnm23C+PnfaJl0oX/8505h+ilCKshlYFh1NUdyHgQBh/+ys6DBJ7J
-         TlFxpXCbCJPoDkd+e7hngQXt3lafvlOIacySLmdEODjJNIFSKf+7/o/vu0DgH1T+oRKH
-         dfEjU/o5o0dSehOpfaMAE6oJsb0pEOSXOebVIUDB6fOcw83KoaR1tbxqUb87N1bdz8p3
-         wXUotbX+kBKpusWbf083XqIaMETyqtuwZ/Vp8T11LKU+giYLezgRF7Fb1RWlZhOj/6Wl
-         CC3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791796696; x=1792401496;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=1biN2HNTY83zhnJs+D3TwuOQxRRYiRudFmWbhPoQzOg=;
-        b=fbIGZ/5guFcFkHlBCUC2el+20QFn5+VqePBkR2qf0f3xf3oS+iYVZJb4fBCIYWqVl0
-         UzVq+X1DcO1OOXShO645GGxNmDVEVwOzf0Hx9sso9fb8TIulmAEatBqmZ0v0GCO7L5sG
-         lJxTCrRillRT7H+ubD9hYCAmUdh1VEKkVqgqpyW7SNhMzjmsgbGaoxKWdO5sPXsvmasI
-         ZuuZT9ZccUUpxsG18fqA++uIgsO+CUV0ECP9y1rtvLzx4FxJVUdAZtLLE19BW7l0P1y4
-         tjpLJ4fBWoF3FAZpRsz/bR8iEaNygPiYDy2c+TF+73i7Vb83+Gr2NaQuUVULc7V3dTfo
-         Cwtw==
-X-Forwarded-Encrypted: i=1; AKwUvBwgGWIgdm+xiiJ4RfpMwFo3ird8DfONUbjMmxqszH1L/B4VM6dOuypAQQBOPT5ZWsYVxQedotlxLA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJYg8FNx5vtmyzOn1TzzZzlsY/IfxewXPim+gfhDA5XDMGQdW75
-	gr5+ax5tNgoVy/jj+HbY+xmeYe3RV6AGI0kiBJ7RSkascI3b/U7a7wmKrVu3HL5NC6PMfrQ2qZE
-	a2sIvzbPj0cDVdEl4DMuMCpqHLHbF2Nr6On3tE4CL9A==
-X-Gm-Gg: AYBFou1xMEoHcY/L7u2LZ8lyzP2a07HWjz0U4PrSiepwIeDaRrv5O86AFztnFfUmUBQ
-	ciXmx49zdbWU1IbUOtY5wgxR6ddkHiCP1zIrOTx/eS7KwhplESEXZdY4Vwc43sHl5jXvr1X951y
-	JqCOmgVTB/mQphOc2TgipmbIYXFqekynv95PaVQwK5rCY9VO1FV+5TyzIonkuInEQcx6q0tOlxl
-	I0jNPZlvkbtVKgsDVUrsmmW2YwUkL+DlFbqFopaMy6h1YSupgiUWkCFU0+Y2bIUi3Y+ynWOxc8I
-	kdvLLt4rP7lrkQ351iiVOMyzERswromkLjBxa05s8rmZ3VpYYcVZBC2ocJx39xJLBdEEcHSu5fq
-	Jq3Q2sZq3QPnu
-X-Received: by 2002:a17:907:c0b:b0:c29:5215:b2d2 with SMTP id
- a640c23a62f3a-c31aa016eb5mr943230966b.23.1791796696105; Mon, 12 Oct 2026
- 02:18:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DmN4FXht"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BBCB1F0089B;
+	Mon, 12 Oct 2026 09:21:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791796915;
+	bh=4oEf2wAnf0mETCtZw9G8f28F1g5F48JNocaZq+Rl0ag=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=DmN4FXhtjNKZfHEifo8HnOr6yeJZ7qVqAr9AYDkIrNsJtAcwd0Z6e7j7lQzg8TawC
+	 PJuiKaVwC6aPqHZK/BZ7QhrnXJTFPsXa+U+qb+0OmhEMEtuq+ff/ywCjknPMWzP+TX
+	 4RkeOHjUvHjVqJJoSlED8Qr3BrGvfzcoIZ6LiWfAMSEX9CgBX8VNGEb/Wmz9D9Stu4
+	 AyOhSrH24vCrWj36mVfPG3wPwp9cZmXQGqJnARW7AU9r1GEFWGW6DCdH9MeKhJTiTV
+	 FveirNayGSctxSDPMo25o1HaVmrwemFokHaDdSLhn4kSceqUvairGTiZQaP4xkmHdb
+	 KkMMUBSuUmkWA==
+From: Christian Brauner <brauner@kernel.org>
+To: Oleg Nesterov <oleg@redhat.com>, Aviv Vaknin <vaknins33@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, 
+ "Eric W. Biederman" <ebiederm@xmission.com>, 
+ Bradley Morgan <brads@mainlining.org>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+In-Reply-To: <20261002202820.3433318-1-vaknins33@gmail.com>
+References: <20261002202820.3433318-1-vaknins33@gmail.com>
+Subject: Re: [PATCH v2] pid_namespace: make zap_pid_ns_processes()
+ freezable
+Message-Id: <20261012-abwickeln-lerngruppen-anekdote-47c586bd5073@brauner>
+Date: Mon, 12 Oct 2026 11:21:51 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261002154415.2270586-1-vincent.guittot@linaro.org>
- <20261002154415.2270586-8-vincent.guittot@linaro.org> <asWyZtW7zPVo3k-A@chenyu-dev>
- <CAKfTPtCyRiBbxT_bU8egEuXtRsOW6TGw3TczyObBLKsE99dMpQ@mail.gmail.com> <aspc8doovTKdBqPC@chenyu-dev>
-In-Reply-To: <aspc8doovTKdBqPC@chenyu-dev>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Mon, 12 Oct 2026 11:18:04 +0200
-X-Gm-Features: AclHuK821TZ5FWAZ4M6gg4tQ483l6POneLRhBIaL6kMutdLqFFMPJC-y16mM1as
-Message-ID: <CAKfTPtAy-n5_Dj-9x2qxcu=i7eo9DmZ2aaxig_nbyNDbP2m_Mw@mail.gmail.com>
-Subject: Re: [PATCH 07/18] sched/fair: Add push task mechanism for fair
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, 
-	linux-kernel@vger.kernel.org, lukasz.luba@arm.com, rafael@kernel.org, 
-	linux-pm@vger.kernel.org, tj@kernel.org, void@manifault.com, 
-	arighi@nvidia.com, changwoo@igalia.com, sched-ext@lists.linux.dev, 
-	qyousef@layalina.io, christian.loehle@arm.com, pierre.gondois@arm.com, 
-	sshegde@linux.ibm.com, chen.yu@linux.dev
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev-3d1b8
 
-On Sat, 10 Oct 2026 at 17:55, Chen Yu <yu.c.chen@intel.com> wrote:
->
-> On Fri, Oct 09, 2026 at 04:31:40PM +0200, Vincent Guittot wrote:
-> > On Wed, 7 Oct 2026 at 04:59, Chen Yu <yu.c.chen@intel.com> wrote:
->
-> [ ... ]
->
-> > > @@ -10414,6 +10441,15 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int select_flags)
-> > >         if (select_flags & WF_TTWU)
-> > >                 want_affine = !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
-> > >
-> > > +       /*
-> > > +        * Only a push triggered by cache aware scheduling will push the
-> > > +        * task towards its preferred LLC. Pushes for other reasons, like short
-> > > +        * slice task, uses the default push strategy.
-> > > +        */
-> > > +       push_cpu = -1;
-> > > +       if (select_flags & WF_RQ_PUSH)
-> > > +               push_cpu = check_pushable_cache_task(prev_cpu, p);
-> >
-> > Is there any reason that you do'nt want to migrate the task at wakeup too ?
-> >
->
-> The wakeup path seems to be too fast to aggregate the tasks, so that multiple
-> CPUs try to migrate the task to the same LLC without synchronization - a task
-> bouncing issue was observed when cache-aware migration was enabled in the wakeup
-> path. We can double-check in the latest kernel to see if that is still the case,
-> and to see if we can mitigate that.
+On Fri, 02 Oct 2026 23:28:20 +0300, Aviv Vaknin wrote:
+> When the init of a pid namespace exits, zap_pid_ns_processes() waits
+> until all other pids in the namespace are freed. A tracer outside the
+> namespace that does not reap its traced zombies keeps those pids
+> allocated, so this wait has no upper bound, and while it lasts every
+> suspend attempt fails:
+> 
+>   Freezing user space processes failed after 20.006 seconds (2 tasks refusing to freeze, wq_busy=0):
+> 
+> [...]
 
-Yeah, the goal is to use the same select function for all events;
-wakeup and push events should be seen as the same event
+Applied to the vfs.fixes branch of the vfs/vfs.git tree.
+Patches in the vfs.fixes branch should appear in linux-next soon.
 
-Also you should separate the check for adding the task in the pushable
-list in fair_check_pushable_task from the decision to select pref_cpu
-in select_task_rq_fair. The check added in fair_check_pushable_task is
-mainly used to decide if it worth going deeper in the decision with
-select_task_rq_fair
+Please report any outstanding bugs that were missed during review in a
+new review to the original patch series allowing us to drop it.
 
-Vincent
+It's encouraged to provide Acked-bys and Reviewed-bys even though the
+patch has now been applied. If possible patch trailers will be updated.
 
->
-> thanks,
-> Chenyu
+Note that commit hashes shown below are subject to change due to rebase,
+trailer updates or similar. If in doubt, please check the listed branch.
+
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
+branch: vfs.fixes
+
+[1/1] pid_namespace: make zap_pid_ns_processes() freezable
+      https://git.kernel.org/vfs/vfs/c/23194f382636
+
