@@ -1,151 +1,96 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D984D364949;
-	Sun, 11 Oct 2026 23:42:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from outboundhk.mxmail.xiaomi.com (outboundhk.mxmail.xiaomi.com [118.143.206.90])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5719934389F;
+	Mon, 12 Oct 2026 01:52:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=118.143.206.90
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791762167; cv=none; b=IbXnHCCVtAQx8I7CfY9RYYKYD1S/ZlKd+phrnyGIleKVlfD+cV1+rxMiNvASlRBiquFjVifqNI1Afqrv+GByyjKnmxUd9Pxvyv8J5ffilj6fVCb50j6kujkXm1HPlHwmXZezlARvYL+hGv01qwS7IXHPSG3d4XEgOQibQ/9wUrA=
+	t=1791769928; cv=none; b=j8h7YSJKYVtDfQx17SpIPyfClRIFRXdoPN7o2BcKZwhXYY6goVBb6XEsa7GB9G7jRcO3LFLHKW/EhuatUxElaY1UJHvyK03iejgCy2RPLP3Gu5WYtRReaQwqFcMthcpWdqcltKTgvxJUPKkQqzGubv56/yXL6EuO4OkkvPrxxow=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791762167; c=relaxed/simple;
-	bh=3ASDPkh7bFKxV+Xlko8luTX0hthlzKfSL5EvxXMrGDw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oG6B8V9x3Ey8d+RSCDeD7+6WjpoQsGxh1p4HxRJBLzrCw3lvDYbQ9R/6KolhEzX4lqr38TdAXneuo4etDDEdEOvWXECKMOzZdrOqracxdOnsVIJxK6KzdduLIQ1nHYjHwOk17scQo9mmKkZGFJcupI16gtZyDCEqYL8AGwdwfNY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=pUzafdlx; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="pUzafdlx"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 96D2B1570;
-	Sun, 11 Oct 2026 16:42:40 -0700 (PDT)
-Received: from [192.168.178.6] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 81C713F673;
-	Sun, 11 Oct 2026 16:42:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791762163; bh=3ASDPkh7bFKxV+Xlko8luTX0hthlzKfSL5EvxXMrGDw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=pUzafdlx1tK6QaNcWKkotjZII53Z7zal0ciES89s7LaZwp5XKCZNwcNi27al3bdvF
-	 yAb5GnFBzNfp4qZRRQq7DRBjWeviWuN0Z1Gxti5bQXs42Z8sBfTwpPcdYygaYdB6xL
-	 UyLdBk4I0q5GlvKFfs08jpnJcDiKdm7CwqXunbBw=
-Message-ID: <33d9cbb5-d4fb-4f16-b63e-5ae89051952a@arm.com>
-Date: Mon, 12 Oct 2026 01:42:39 +0200
+	s=arc-20240116; t=1791769928; c=relaxed/simple;
+	bh=uDY1OtPjEfSqET3LcEeoQoG1zALRw1y0T3oJ1Qiaj58=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=S5v2PJ99019qXybioRtmyHuG2xWuPhoWtDtthuilnErWoCe/mOdwUAgMcVuYau5M0FHG3QK1SHevaXGqZhFpmFDMR8ZTKu+7oAH5mWHRkkKBlVXcvW4io1iSv6jXJ8fue+sROv6au2HcnkFS0IMYWzjivmFQIu4Ag5NhwZvdPmg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com; spf=pass smtp.mailfrom=xiaomi.com; arc=none smtp.client-ip=118.143.206.90
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xiaomi.com
+X-CSE-ConnectionGUID: q0t2evFUTcahwmBUXNjhqQ==
+X-CSE-MsgGUID: snYutKplSDCAAIXpwG3p3w==
+X-IronPort-AV: E=Sophos;i="6.27,152,1786982400"; 
+   d="scan'208";a="165298655"
+From: =?gb2312?B?1uzi/ces?= <zhukaiqian@xiaomi.com>
+To: Ulf Hansson <ulfh@kernel.org>, "\"Rafael J. Wysocki\"" <rafael@kernel.org>
+CC: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, "Lorenzo
+ Pieralisi" <lpieralisi@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: cpuidle: psci: cluster PM domain left off when idle-CPU wakeup races
+ with dpm_suspend_late()
+Thread-Topic: cpuidle: psci: cluster PM domain left off when idle-CPU wakeup
+ races with dpm_suspend_late()
+Thread-Index: Ad1YnJkwJL8OoP4vTdmeCR9mrZsMxA==
+Date: Mon, 12 Oct 2026 01:51:54 +0000
+Message-ID: <f2743fab3df84a1db8139e17f66a76db@xiaomi.com>
+Accept-Language: en-US
+Content-Language: zh-CN
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] cpufreq: fix policy max not returning to non-boost
- freq on boost disable
-To: Ananthu C V <ananthu.cv@oss.qualcomm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Jie Zhan <zhanjie9@hisilicon.com>,
- Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Oleg Keri <okerixx@gmail.com>
-References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
- <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
-Content-Language: en-GB
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20260929-schedutil-boost-frequency-handling-v3-2-68de169498c7@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-On 29.09.26 13:38, Ananthu C V wrote:
-> Commit 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq directly if
-> max boost is known") introduced a guard for cpuinfo max updates to only
-> increase, to preserve driver-set values above the freq table maximum.
-> Later commit db80ad776cd2 ("cpufreq: Remove driver default policy->min/max
-> init") dropped the 'policy->max = max_freq' assignment from
-> cpufreq_frequency_table_cpuinfo, leaving that one-way-guard to be the only
-> path for cpuinfo max and consequently policy max to be updated, causing
-> both values to be stuck at boost frequency even when boost is disabled.
-> 
-> Unconditionally track the highest non-boost frequency (max_base_freq)
-> in the freq table. If boost frequencies are available, use the highest
-> frequency from the table/max_base_freq instead of cpuinfo->max_freq to
-> control boost values, so the value can decrease again when boost is
-> disabled.
-> 
-> Fixes: db80ad776cd2 ("cpufreq: Remove driver default policy->min/max init")
-> Signed-off-by: Ananthu C V <ananthu.cv@oss.qualcomm.com>
-> ---
->  drivers/cpufreq/cpufreq.c    | 16 +++++++++++++++-
->  drivers/cpufreq/freq_table.c |  9 ++++++++-
->  include/linux/cpufreq.h      |  3 +++
->  3 files changed, 26 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 96515880b4ac..5e6afb6f8826 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -574,6 +574,8 @@ static ssize_t show_local_boost(struct cpufreq_policy *policy, char *buf)
->  
->  static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
->  {
-> +	unsigned int max_freq;
-> +	unsigned int max_table_freq;
->  	int ret;
->  
->  	if (policy->boost_enabled == enable)
-> @@ -587,7 +589,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
->  		return ret;
->  	}
->  
-> -	ret = freq_qos_update_request(&policy->boost_freq_req, policy->cpuinfo.max_freq);
-> +	max_table_freq = cpufreq_frequency_table_max(policy);
-> +
-> +	if (policy_has_boost_freq(policy)) {
-> +		max_freq = enable ? max_table_freq : policy->cpuinfo.max_base_freq;
-> +
-> +		if (!max_freq)
-> +			/* when the freq table contains only boost frequencies */
-> +			max_freq = max_table_freq;
-> +	} else {
-> +		max_freq = policy->cpuinfo.max_freq;
-> +	}
-> +
-> +	ret = freq_qos_update_request(&policy->boost_freq_req, max_freq);
-
-This looks pretty convoluted. You have to find the correct freq argument
-for freq_qos_update_request() for freq_table drivers but work around
-this for e.g. the CPPC driver.
-
-cpufreq_driver->set_boost() of e.g. the freq_table scmi-cpufreq driver
-does not adjust policy->cpuinfo.max_freq for 'boost state = 0':
-
-cpufreq_boost_set_sw() {
-
- cpufreq_frequency_table_cpuinfo()
-
-  policy->cpuinfo.min_freq = min_freq
-
-  if (policy->cpuinfo.max_freq < max_freq) <-- (*)
-   policy->cpuinfo.max_freq = max_freq
-}
-
-whereas the one of the cppc_cpufreq driver does:
-
-cppc_cpufreq_set_boost() {
-
- if (state)
-   policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf)
- else
-   policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf)
-}
-
-(*) This was added by 538b0188da46 ("cpufreq: ACPI: Set cpuinfo.max_freq
-directly if max boost is known"). With this the
-
-policy_set_boost(policy, enable) {
-
- cpufreq_driver->set_boost(policy, enable)
-
- freq_qos_update_request(..., policy->cpuinfo.max_freq)
-}
-
-[...]
+SGksIGFsbA0KDQpUaGlzIGlzIHJlcG9ydGluZyBhIHJhY2Ugb2JzZXJ2ZWQgb24gdjYuMTguMjEg
+QW5kcm9pZCBLZXJuZWwgZHVyaW5nIHRoZQ0KQVJNIENQVSBzMmlkbGUuDQoNCkluIFBTQ0kgT1NJ
+IG1vZGUgd2l0aCB0aGUgaGllcmFyY2hpY2FsIENQVSB0b3BvbG9neSwgYSBDUFUgY2FuIGNvbWUg
+b3V0IG9mDQppZGxlIGFmdGVyIGRwbV9zdXNwZW5kX2xhdGUoKSBoYXMgYWxyZWFkeSBkaXNhYmxl
+ZCBydW50aW1lIFBNIGZvciBpdHMNCmRldmljZS4gVGhlIGlkbGUgZXhpdCB0aGVuIHJlc3RvcmVz
+IHRoZSBjbHVzdGVyIFBNIGRvbWFpbiB0aHJvdWdoIHRoZQ0KcnVudGltZSBQTSBwYXRoLCBob3dl
+dmVyLCBzaW5jZSB0aGUgcnVudGltZSBQTSBpcyBkaXNhYmxlZCwgaXQgYmVjb21lcyBhDQpuby1v
+cCBhbmQgdGhlIGRvbWFpbiBzdGF5cyBwb3dlcmVkIG9mZiBpbiBzb2Z0d2FyZSB3aGlsZSB0aGUg
+Q1BVIGlzIHJ1bm5pbmcuDQpUaGUgQ1BVIHRoZW4gc2lsZW50bHkgc3RvcHMgcmVxdWVzdGluZyB0
+aGUgY2x1c3Rlci9zeXN0ZW0gcG93ZXIgbGV2ZWwgaW4NCkNQVV9TVVNQRU5ELg0KDQpUaGUgcmFj
+ZQ0KLS0tLS0tLS0NCmRwbV9zdXNwZW5kX2xhdGUoKSB3YWtlcyBhbGwgaWRsZSBDUFVzIGZpcnN0
+IGFuZCBvbmx5IHRoZW4gd2Fsa3MgdGhlIGRldmljZQ0KbGlzdCwgZGlzYWJsaW5nIHJ1bnRpbWUg
+UE0gcGVyIGRldmljZSBhcyBpdCBnb2VzOg0KDQogIGRwbV9zdXNwZW5kX2xhdGUoKQ0KICAgIHdh
+a2VfdXBfYWxsX2lkbGVfY3B1cygpICAgICAgICAgICAgICAgPC0tIGFzeW5jaHJvbm91cyBjcHUg
+d2FrZXVwDQogICAgICBkZXZpY2Vfc3VzcGVuZF9sYXRlKGRldiwgLi4uKQ0KICAgICAgICBfX3Bt
+X3J1bnRpbWVfZGlzYWJsZShkZXYsZmFsc2UpICAgIDwtLSBkaXNhYmxlX2RlcHRoKysNCg0Kd2Fr
+ZV91cF9hbGxfaWRsZV9jcHVzKCkgb25seSByZXF1ZXN0cyB0aGF0IHRoZSBpZGxlIENQVXMgbGVh
+dmUgaWRsZTsgaXQNCmRvZXMgbm90IHdhaXQgZm9yIHRoZW0uIEEgQ1BVIHBhcmtlZCBpbiBhIGRl
+ZXAgUFNDSSBzdGF0ZSBjYW4gdGFrZSBhIGxvbmcgdGltZQ0KdG8gY29tZSBiYWNrIHRoYXQgaXRz
+IGlkbGUgZXhpdCBsYW5kcyBhZnRlciB0aGUgcnVudGltZSBkaXNhYmxlOg0KDQogIENQVTA6IGRw
+bV9zdXNwZW5kX2xhdGUoKSAgICAgICAgICAgICBDUFV4OiBwYXJrZWQgaW4gaWRsZQ0KICAtLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0gICAgICAgICAgICAgLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQ0KICB3YWtlX3VwX2FsbF9pZGxlX2NwdXMoKQ0KICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHBvd2VyaW5nIE9ODQogIGRldmljZV9zdXNwZW5kX2xh
+dGUocGRfZGV2KQ0KICAgIF9fcG1fcnVudGltZV9kaXNhYmxlKHBkX2RldikNCiAgICAgIGRpc2Fi
+bGVfZGVwdGgrKw0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvd2VyZWQg
+T04NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBfX3BzY2lfZW50ZXJfZG9t
+YWluX2lkbGVfc3RhdGUoKQ0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHBtX3J1bnRpbWVfZ2V0X3N5bmMocGRfZGV2KQ0KICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgbm8tb3A6IGRpc2FibGVfZGVwdGggPiAwDQoNClNvIGdlbnBkX3J1bnRp
+bWVfcmVzdW1lKCkgbmV2ZXIgcnVucyBhbmQgdGhlIGRvbWFpbiBpcyBuZXZlciBwb3dlcmVkIGJh
+Y2sgb24uDQpMYXRlciwgYXMgdGhlIENQVSBhbmQgaXRzIGRvbWFpbiByZW1haW5zIE9GRiwgUFND
+SSBDUFUgczJpZGxlIHNpbGVudGx5IHNraXBzIHRoZSBnZW5wZA0Kc3VzcGVuZC4gV2hlbiB0aGUg
+Q1BVIHBvd2VycyBvZmYgd2l0aCB0aGUgcnVudGltZSBQRCBkaXNhYmxlZCwgaXQgY2FuJ3Qgd2Fr
+ZXVwIHRvDQpPTiBuZXh0IHRpbWUgZXZlbiB3aGVuIHRoZSBTMklETEVfU1RBVEVfRU5URVIgaXMg
+c2V0Lg0KDQpBIGZpeCBjb3VsZCBiZSB3aXRoaW4gdGhlIGRwbV9zdXNwZW5kX2xhdGUsIHdhaXQg
+dW50aWwgYWxsIHRoZSBDUFVzIGJhY2sNCmJlZm9yZSB0aGUgcnVudGltZSBQTSBpcyBkaXNhYmxl
+ZC4gT3IsIGluIHRoZSBQU0NJIGRyaXZlciwgd2hlbiB0aGUgQ1BVcyB3YWtlIHVwIGFuZA0KUzJJ
+RExFX1NUQVRFX0VOVEVSIGlzIHNldCwgZm9yY2libHkgcmVzdG9yZSBpdHMgZG9tYWluIHRvIHRo
+ZSBPTiBzdGF0ZS4NCg0KV2hhdCBkbyB5b3UgdGhpbms/DQoNCg0KVGhhbmtzLA0KS2FpcWlhbg0K
+DQojLyoqKioqKrG+08q8/rywxuS4vbz+uqzT0NChw9e5q8u+tcSxo8Pc0MXPoqOsvfbP3tPat6LL
+zbj4yc/D5rXY1rfW0MHQs/a1xLj2yMu78si61+mho7371rnIzrrOxuTL+8jL0tTIzrrO0M7Kvcq5
+08OjqLD8wKi1q7K7z97T2sirsr+78rK/t9a12NC5wrahori01sahorvyyaK3oqOpsb7Tyrz+1tC1
+xNDFz6Kho8jnufvE+rTtytXBy7G+08q8/qOsx+vE+sGivLS157uwu/LTyrz+zajWqreivP7Iy7Ki
+yb6z/bG+08q8/qOhIFRoaXMgZS1tYWlsIGFuZCBpdHMgYXR0YWNobWVudHMgY29udGFpbiBjb25m
+aWRlbnRpYWwgaW5mb3JtYXRpb24gZnJvbSBYSUFPTUksIHdoaWNoIGlzIGludGVuZGVkIG9ubHkg
+Zm9yIHRoZSBwZXJzb24gb3IgZW50aXR5IHdob3NlIGFkZHJlc3MgaXMgbGlzdGVkIGFib3ZlLiBB
+bnkgdXNlIG9mIHRoZSBpbmZvcm1hdGlvbiBjb250YWluZWQgaGVyZWluIGluIGFueSB3YXkgKGlu
+Y2x1ZGluZywgYnV0IG5vdCBsaW1pdGVkIHRvLCB0b3RhbCBvciBwYXJ0aWFsIGRpc2Nsb3N1cmUs
+IHJlcHJvZHVjdGlvbiwgb3IgZGlzc2VtaW5hdGlvbikgYnkgcGVyc29ucyBvdGhlciB0aGFuIHRo
+ZSBpbnRlbmRlZCByZWNpcGllbnQocykgaXMgcHJvaGliaXRlZC4gSWYgeW91IHJlY2VpdmUgdGhp
+cyBlLW1haWwgaW4gZXJyb3IsIHBsZWFzZSBub3RpZnkgdGhlIHNlbmRlciBieSBwaG9uZSBvciBl
+bWFpbCBpbW1lZGlhdGVseSBhbmQgZGVsZXRlIGl0ISoqKioqKi8jDQo=
