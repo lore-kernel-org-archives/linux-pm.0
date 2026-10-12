@@ -1,100 +1,174 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id EBE6043BDCD;
-	Mon, 12 Oct 2026 07:57:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791791879; cv=none; b=rD6vx+LKBhJMf9nepjfiyxk4Z2BP1udWohcIcNmS8Is0lPJJ5uVS755Kobz7VTrTqaxMfEaBct1lqj4Tvqdu2tXFX1DN42HMqxTU+3BB/gVf6lHU7sE0IAUramWv3DOPL+4NYSrsmyIP+SBBVPWc8DLbev1QYsaN2cOP+X34500=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791791879; c=relaxed/simple;
-	bh=7JqLAOa1EyGe4HapsMeO5QWw/F4ZSfyXto1wc+DnCZg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=AB57urhgHGV26pgyse1J2iRT49ywn/7QFojunaV73z9RUWf5ffoArC3xw+omw+laNYcyDZ6x0ydNu8m93+I7V+eCThZ1up2+e31ROSnYcnBGZn/T5vnES7ctiQJbu6tvZtr9cwKu4bFbaDLS0vp9ldjSn+vm+JpJWk4umgK5zsA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=a5WY6OZL; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC009448CEC
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 08:18:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.50
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791793126; cv=pass; b=Zos2me05HzM3QLzN5XmboJdodXWrpi2Zh43GTE4Pyt9abc12c87Bfw0sA/1+muy27suT/hNmBRw/y4dGpMR6RUd7jRTG7PflN0EtNBHCnHXoboSehEwvLSxwAn3rK+hISO0Te2jAmb8BSIYH4wL6s+B2QygtM9D0SKVoiXhiT7k=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791793126; c=relaxed/simple;
+	bh=+cgBnKpA956E9oC3dPcEvrFaJuDQAJAIwVEJgcDrCgU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mIe9H0VXRPDB4uG42LyKy27dhHHnEywPDAEl++18DEGUw10r2uEz94l5AoUoij9EuZnAYtx/VXFdAU4mcX620kE3V7yY67jS+YFb0rZhQ+jTk8Qt75ZM9Jl3Tdxu4x8YrI+NMPAnNU+8qtLv7LTq9eIIx1MkxjjKm8t6IB1Rv0U=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=eyn6+JVN; arc=pass smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="a5WY6OZL"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E25951650;
-	Mon, 12 Oct 2026 00:57:53 -0700 (PDT)
-Received: from [10.57.12.163] (unknown [10.57.12.163])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1F8023F882;
-	Mon, 12 Oct 2026 00:57:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791791877; bh=7JqLAOa1EyGe4HapsMeO5QWw/F4ZSfyXto1wc+DnCZg=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=a5WY6OZL8ew1myYgDvp9xZewbEw+qBNvGPS9d4rrDOIgWKOQb168Ovj/Dba9lI22k
-	 kZSTKA7wyaLV1aacZEl7e0Oahxf80O2iIxS7INjaTDQfmqUeUXNTOnI8fPPP4plO+d
-	 uszowVYnU8Ye7EWwRDZEj5LWP44Jmjzaa//AikDY=
-Message-ID: <117bc415-6bbb-4739-81b9-d2bf718056ba@arm.com>
-Date: Mon, 12 Oct 2026 08:58:21 +0100
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eyn6+JVN"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-c31a34de844so239143466b.3
+        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 01:18:44 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791793123; cv=none;
+        d=google.com; s=arc-20260327;
+        b=ObVvdA3DQrM/rsW7kWanvvNLHbzWTX5Wy4cqZc/V7dW7zISNy0GhIVEmu6+jtmsJPY
+         zFq5kOZXg7d9ehlPQiLpJgkZsNdCsFGEZqidcpZjBEyd+2AyTp0eLzG1fp+hORvH8lAu
+         If36bm9V+YQ2i4Y0t7XmvcWTtYV3Y6MXontck14Va/m8cVvVRfAnxpogFL/X0juKZLBS
+         xvqlJD4/Aocb0ZWUus4g0XJjAakiCEcGzIsso65YfU49dtU2SabgdmvgntmnvRiwCXGS
+         3makwDpJwjobiz1/sGlpMcl7lo7WPAL389JggZUMBKZunjy9J+6XQ7+RPzhukS6/c3B1
+         zLSQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=zSGc2gSvInI+9O2ij46iITf1yj50GR8jSWXc3T4EcG4=;
+        fh=w4V6Qxqlcp4HvBJdRgB8BS6jPiVqd0pTzkCGcE/OaFc=;
+        b=ajHehOnU0i8naLWVtIw3DUB8bKYszUWp02olTsx1DmkdmH4PlCICLBmXA3LHnVSeBn
+         NiahWtOP56RUuvHEKFWFY/Kkx1Z2HqEBC/6UWOSxJZo3hYOeA6hFOV67axe8y7t4Hmx6
+         vdVCs3GsYDulqIJNTAnS6h5eNZ9rSSVjPNy3NpupVWVBQIH5g44dcS2DLHFHOAycLQu5
+         fSiuJ6hri8QzLAHTE1v8FgZ+3C0/pn1Vy86uhQM4DFm/13b8+dNyAo9uAh7s5RwxPG9B
+         MvA3b+9/J9Fq3L4I0NB94plWRL1to0khJ8jSXym6AQ0f+ydruTtPydv68GlfNM47v2Vj
+         iknw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1791793123; x=1792397923; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zSGc2gSvInI+9O2ij46iITf1yj50GR8jSWXc3T4EcG4=;
+        b=eyn6+JVNq6toaTEpom54udG10HGMfVRoqi5ipDvof/sRly/8NHLD3n6Kt/9oTjRJ4t
+         BYUK18Iod//l3EDN9mTJIl3KuguTqXrR4pBtp17FUdEIXG9tDIAiJCSz8swISpMOYJDN
+         UZ3Fb6SIxgzm3R2M7YY0E22ITiNzpj3PGSgwrid9NDPKi4XKyJXu6WkAXME4uS5hW1MC
+         K4D/+unTFruqKsXLUY/LfSnXLFaZA5InYInlIhlSMJPDvuswDwjZJ5OvMXmTB9996lxm
+         b3WNaCsufIP2GxHGzV/58VUTi6/mCzKZRK/7Y+Jr/cKy8E5TEDBvTO9OGTRmkW0/nrG/
+         OpQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791793123; x=1792397923;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=zSGc2gSvInI+9O2ij46iITf1yj50GR8jSWXc3T4EcG4=;
+        b=aEN4pgxn1iJXmsu/VN/b1TdiMG0eeD0YkJEQknPpDlE8ySgTbXwYR4FtPyTWemP/VX
+         IPEfpEHvdsH9qbR1hPF+HbtDZ2r4D8lmyF+XKOzIwVKXKp1ZE8HxOntz5qxGzyRmfZM0
+         cdnDPLkdrjF9E2Bm7TdGv3ewtNl9cBcAuMSEs4PoH1d6wEyaRLDi8eupmE9UplDj05na
+         7F6KfNrwIJI+W33rX1Z2NnANCEDxhIabOTnDE3QiAwEncjvartDvXa+eYBsxNWXn9NcT
+         FKK/VSV3DWAiXynMDoP1TySpElayeTOHBwHisBxnI1ueGNBB0oNkfeGJks8696fBNwmu
+         uRSg==
+X-Forwarded-Encrypted: i=1; AKwUvByo7SC43h2IFHEW6ChGsjBeht1wC7j1uaLDWa1IPsowmHA2LeW7hNkirWJojk1N8hWBWa/idiKL5A==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLM60SO2vQUUCrq5carXWsPFwpcIxc18OhzcCLGokGUJpkLiurW
+	v0PoEkRIfVvmB3/lXyo0nRL8piqa2o4CBcHOkjsNF6KfFG5mEjVMfSa7dvLEj4T4GxmLt6/2Fwu
+	ifO9dyXycD7zWkCMvVTs1HHeRxBrpyuEDkA+yX0x7Xg==
+X-Gm-Gg: AYBFou3ZBBad9A+dRcD6Me2+m6oqfgerL0ULav9TBpt93kWB5/FYOND6VUFonpw3CFz
+	jD83iqV23IcU6vq485oEfUxSGngj/hFxyseCgzKquOUbfiXKfye25P1yeBmzanDyiUhxNYWhuhN
+	0NWsS/rrP31uE1ewIb75ab6VSmBoRCA1P9OzwXd+jCZ6CHHC+vgNjUjgt2Zr0Vo58aWILHkVRx7
+	xjwxN+jT8GOdd8+cjNz9ekAQYtgVa41xyixs/3Fiiuj4GSnndcX5xQfGdHwAHCCjhZXP77uWPhP
+	EcX4aM8tNdStzYkK84tP76mzAHaxOABG5H+Yzw4RouHfu++4EXdf36PiXmYWFl5xO4vJ+2rOmBh
+	fryZVDPdj2ikD
+X-Received: by 2002:a17:907:d1a:b0:c2a:704c:8c8e with SMTP id
+ a640c23a62f3a-c31a9fced4fmr940287766b.11.1791793122980; Mon, 12 Oct 2026
+ 01:18:42 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] PM: EM: allocate the cpumask for every perf domain
-To: Karl Mehltretter <kmehltretter@gmail.com>
-Cc: Changwoo Min <changwoo@igalia.com>, "Rafael J . Wysocki"
- <rafael@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-References: <20260910205234.5392-1-kmehltretter@gmail.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260910205234.5392-1-kmehltretter@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <CAKfTPtCAbreGDhesDmFNvXEzjj+anmOH1=jqT-1B6Lfj0FfPqw@mail.gmail.com>
+ <20261011174038.5334-1-kayracizmeci@gmail.com>
+In-Reply-To: <20261011174038.5334-1-kayracizmeci@gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Mon, 12 Oct 2026 10:18:30 +0200
+X-Gm-Features: AclHuK-DP5qVnsuYOeIrtkpyOkecXNVv-1nV6z-W92W9g6i97Pk7RW1tEN3H67A
+Message-ID: <CAKfTPtBDcfk+TEEjD07RBLpCAusKqa0K4AWuFrcCtdw9uGsXCQ@mail.gmail.com>
+Subject: Re: [PATCH 10/18 v2] sched/fair: Add force push task mechanism for fair
+To: Kayra Cizmeci <kayracizmeci@gmail.com>
+Cc: arighi@nvidia.com, bsegall@google.com, changwoo@igalia.com, 
+	christian.loehle@arm.com, dietmar.eggemann@arm.com, juri.lelli@redhat.com, 
+	kprateek.nayak@amd.com, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, lukasz.luba@arm.com, mgorman@suse.de, 
+	mingo@redhat.com, peterz@infradead.org, pierre.gondois@arm.com, 
+	qyousef@layalina.io, rafael@kernel.org, rostedt@goodmis.org, 
+	sched-ext@lists.linux.dev, sshegde@linux.ibm.com, tj@kernel.org, 
+	void@manifault.com, vschneid@redhat.com
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Karl,
+On Sun, 11 Oct 2026 at 19:40, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+>
+> > >
+> > > On Fri, 9 Oct 2026 at 07:53, Kayra Cizmeci <kayracizmeci@gmail.com> wrote:
+> > > >
+> > > > >       task_tick_cache(rq, curr);
+> > > > >
+> > > > > -     update_misfit_status(curr, rq);
+> > > > > -     check_update_overutilized_status(task_rq(curr));
+> > > > > +     if (!tick_pushable_task(curr, rq, rf)) {
+> > > > > +             update_misfit_status(curr, rq);
+> > > > > +             check_update_overutilized_status(task_rq(curr));
+> > > > > +     }
+> > > > >
+> > > > >       task_tick_core(rq, curr);
+> > > > >  }
+> > > >
+> > > > Hm.
+> > > >
+> > > > I think this mechanism added on here does not works.
+> > >
+> > > Ah yes, while factorizing the code, I removed this main diff between
+> > > tick and put events
+>
+> > In fact this is on purpose.
+> > fair_check_pushable_task() is the function that is called to decide
+> > wether we try to push or not a task. In the case of short task, we
+> > will not push a task that is already alone on the rq
+>
+> I'm confused. So, is the added tick push mechanism not working at all
+> on purpose? For future use or something IDK.
 
-On 9/10/26 21:52, Karl Mehltretter wrote:
-> em_create_pd() allocates space for the trailing cpus[] flexible array
-> only for CPU devices.  A performance domain registered for another
-> device therefore has no storage for its cpumask.
-> 
-> All performance domains are added to em_pd_list.  The netlink interface
-> does not distinguish CPU and non-CPU domains when it calls
-> cpumask_weight() or iterates over pd->cpus.  A request for a non-CPU
-> domain reads cpumask_size() bytes beyond the allocation and can report
-> bits from the following memory as CPU attributes.
-> 
-> KASAN reports slab-out-of-bounds reads for both dump and by-ID requests
-> against a synthetic non-CPU performance domain.
-> 
-> GET_PERF_DOMAINS does not require GENL_ADMIN_PERM, so an unprivileged
-> request can reach this path when a GPU or another devfreq device has
-> registered an energy model.
-> 
-> Allocate the cpumask for non-CPU domains too.  The zeroed mask remains
-> empty, as required for the documented unused field.
-> 
-> Fixes: d8eef0453132 ("PM: EM: Implement em_nl_get_pds_doit()")
-> Cc: stable@vger.kernel.org
-> Assisted-by: LLM
-> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
-> ---
->   kernel/power/energy_model.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> index e610cf8e9a06..fd07c564c201 100644
-> --- a/kernel/power/energy_model.c
-> +++ b/kernel/power/energy_model.c
-> @@ -439,7 +439,9 @@ static int em_create_pd(struct device *dev, int nr_states,
->   
->   		cpumask_copy(em_span_cpus(pd), cpus);
->   	} else {
-> -		pd = kzalloc_obj(*pd);
-> +		/* Readers expect pd->cpus to exist and remain empty. */
-> +		pd = kzalloc_flex(*pd, cpus,
-> +				  BITS_TO_LONGS(large_cpumask_bits));
->   		if (!pd)
->   			return -ENOMEM;
->   	}
+The push mecanism part is generic and includes a push on put prev and
+a push on tick when the task is alone and never put back in the
+runnable list. For short slice tasks, we don't use the push on tick as
+there is no reason to push a short slice task that is alone on the
+cpu. The push on tick will be useful for other cases like misfit task,
+EAS and cache aware. The latters are not part of this patch
 
-my apologies for the delay.
-The patch looks good, thanks for catching this!
-
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+>
+> Before the fair_check_pushable_task call on tick_pushable_task():
+>
+> if (rq->nr_running > 1)
+>         return false;
+>
+> So now at the rest of the function, nr_running have to be equal or smaller than 1.
+>
+> We call fair_check_pushable_task() with next = NULL.
+>
+> There are only 2 paths that can return true, one of them requires next to be true,
+> so it never works. The other one:
+>
+> if (check_pushable_short_task(rq, p))
+>         return true;
+>
+> And check_pushable_short_task() does this:
+>
+> if (cfs_rq->h_nr_runnable <= 1)
+>         return false;
+>
+> As I know, h_nr_runnable should be smaller than (or equal maybe) to nr_running.
+>
+> nr_running can be 1 max, so if h_nr_runnable can't pass nr_running it will
+> always be smaller or equal to 1.
+>
+> Maybe I'm missing something from the start :-)
+>
+> Thanks,
+>
+> Kayra
+>
