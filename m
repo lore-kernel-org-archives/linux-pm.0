@@ -1,73 +1,69 @@
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
+Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31EF0494833
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 15:20:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E1D64BB810
+	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 15:46:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791818449; cv=none; b=RYVGhuNjrtdC2warm9ZKORr2k3uWbUFvPjqMEWTzOwl0u8jAXd1FQYElic3loFdLsEsaIY/Q07ZkuaYlFSmx3wTqis8uwPRYH1wAaOoWG0UadZcYa+Ht0uFcLS92aG6tp+ndzP4sNJzPeBOTQi2Sgi1o7RGo09CpsnZgAtjh+oA=
+	t=1791819984; cv=none; b=pm2QAMjq184GJcpHPercKY0EiTfF21guyQp8vL0pqmM7tx9MRFaHGvXdgFpsA64VGv8UssmVmOBwp+OSkEYAKX/FUQ8pOOhWq0IDIEXAjIgV9omYcxNhGr5878CdqklaRSToP1/YBMqiIY4YL6FH0ObKVpTzbmmQoYucFqQJPNY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791818449; c=relaxed/simple;
-	bh=hYDKT3xArZmciyLfJYiXIMbcjnMjQlt/qr8tZhfeJQw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lywnc+JuhhxjnX3cVxjXCT7rSygEtgSO+cYz0dJGR8TdugxCpaAY3z2JllxC0Oi/zHY5Nl00+gTsyYuu4tmTtLHdSewsoXEkrTc2SahsrdiiSl06W5fcpgND0M2k27Fg3pAaHWCTl528Q2kyMFPqTvfFtTj64g3cetmm0YkIJ2Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pNaENbaa; arc=none smtp.client-ip=74.125.82.179
+	s=arc-20240116; t=1791819984; c=relaxed/simple;
+	bh=WsYQRqZVkYfAC0uocIQCG3hADVXXJg52uM4QwsZS/VM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FOSb1OEIRJ0prP+vyxhWjNyMSQTnmut7ZG8OCD3nuZi1KedwAoSex2L5ELRH8//SGQ49sP5p+0p7/vL4N/Tp2L5qfObP3j0UgB2RwnmJnieIgvTkPl1xPmXBh1Gy5bmIQ6u0B/XGqgGFzMA9744tHetdkydloS+dawy/bGfjF5o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pJ9KvtdX; arc=none smtp.client-ip=74.125.82.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pNaENbaa"
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-35b647aac23so519341eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 08:20:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pJ9KvtdX"
+Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-3535bf8b3e0so3236897eec.0
+        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 08:46:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791818447; x=1792423247; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1791819982; x=1792424782; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=yar2nzXprexqPKj2vgCvzCiguNq4T5j0jFeUqERpoec=;
-        b=pNaENbaaVScDLNmnSaWKX3ru1C9yAOfmpXsdmT/AeTzYiOJSRVaf7LVscoFZ77QM1a
-         etmLL10qNNRyDIISglgeyew8e3inIm5spA+FpruBQQVyrs8UvBuLG0mNQyB3Isc0jvIl
-         MUAkLYXbmonY3Px1omiIZWXJi1fszmraW6CH2Qxsmokn8n/qbbljJQARZo8OiaI6/O85
-         XaGW2Nku9KTrwQmy3K/jSvdhbWl9zrHtMVmhHfudQwuc+gCUWlL+EwYWf/SrpG+5CDZq
-         f1/YjoHXzW+dYxW1DeDeU+261+Q0iXjsRilWC7KGcE2MRqnDPZ1QFYBczgQhaqJxM2rt
-         gC5w==
+        bh=NAuVFfQbxwKnXcYGVkoP45E/v8P/ovYGz0j3wut9/Dk=;
+        b=pJ9KvtdXW+l9rUsPrCdb6JKioO2Prixdx4MaCp5jAIuyBohZmCvXTgX2Z0Haz2Sgfw
+         31NHqmiImhmH6W2byXMbbRYcIobhKGM28Alqoh3udIy9fDXR8snKpIEzGCWPctq4geNY
+         1V1ChZznBgrMv+0ONzjoDRxxWT326BRWTJ+w5dnM1xivr/2ixMdWfZ7nkM8VlyBaLaqz
+         m0CSrPNjP8M0eIpxkBHoWI/2fCExSlQ4pPwmnO5kVUfAsVtnhLzKQaRaAjl/SWmw9r3k
+         och8Vr/IVrKls9MdH81qSvxGQygU4NAHbYsyf231+KbGpck9BaNsEKro+ICl2/GIvlM7
+         lzfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791818447; x=1792423247;
+        d=1e100.net; s=20260707; t=1791819982; x=1792424782;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=yar2nzXprexqPKj2vgCvzCiguNq4T5j0jFeUqERpoec=;
-        b=RjdClGYoJa3XV9LImXtB8vKWHihC93Zxv4X5wJQVS0j3g299G6+KvmglmE7kybpLH9
-         ezw3+qnDTGEU6FcFMGvli34xudLOHj7gT3+wZIShc/icynLMZ2qQjNW8btsW075lp/Bs
-         1IjJQqQQYoH4DUz2XtJ3HgWQ/nsY9ndKOeVo1dS+/5TkrnIUQ9XsJcdbTwO7YE0XaD5K
-         syQ8sj5EjAoFGd8al8fSidh2BXhpCxof3WHmFyrNIda/i3568eUs9cTPdbaN6rVCkUqr
-         11JDJP8TokQn+64wbJIGO0nB2ScxLj2V1G/5nRheS0ltpymFG2uMFzJ0DPo2WMpO/W9q
-         ybpg==
-X-Forwarded-Encrypted: i=1; AKwUvBwvqlIVXrnsaVcL2P4S/X+Bz+Xzvvy7YOsjcC70/UtXCj+O2cSwXS26h2kERsp0vAy+9clSTBhO+g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLz5vhZQUckrEUy/1a4Npk1x090+NFWoIWJcxRvZCjI0EgRJtS8
-	mSyHU5VSFc77cgcyjKcTp/mfKiZv+kTjbnMCPiqBOL7ssHCrXK7eiMUw
-X-Gm-Gg: AYBFou0e0ehMrnhjAOvAET0mMrRj5+7xHiOYmvefO7ZhwPhuZO5hYK5ELG3JtYpaWlz
-	7XIYYUp6TF5/5I5eb+lvUJOqRmtGUCek6NYGOASJQL4vYrwG2YmVLEEyGNQr0dzi4Rm7npBrpCr
-	HPp0HvRoVngltkhVzWidus38qQ76VE6nJaAhjKx64QC/8WzxKzewbs+jiMKWmvv/fWZOEx89jEX
-	6nrCg/M/xRjTvvCjmrP8K/flWWVPZ4bF9G9FZXwtG0MElUGXINZNJwLJWrRPU1xCbgn5Mg8DlFU
-	USKkutZz14fn13IotnW7tYjeQPTIAFNqSkUOqsLuY1nX69DH+cqEPPg6gJVd2LDmk0gwaCs5lWg
-	7t04Yq2Aq8M6arMAVbRNaeMBCjOFwwM7EBdDhv4dxSZJcCX5JNED6ktr2A1d9Lp61EAgn3qVytz
-	3v3dfBghFWhdLoOw3uFwWo7VOFTGcXWjh+hvr/nQDA4x6TOvUUy6MfWyrXTcZeO3Ef7IR3YWDhL
-	+KQSwzBMlBZbrnGlwTPNijNBHtxEJTgh52CYpG40VhyXuXIEwbz177FzrP0MtjangdRN6ie
-X-Received: by 2002:a05:7301:241c:b0:353:7f47:8168 with SMTP id 5a478bee46e88-3537f479117mr15344492eec.17.1791818446888;
-        Mon, 12 Oct 2026 08:20:46 -0700 (PDT)
+        bh=NAuVFfQbxwKnXcYGVkoP45E/v8P/ovYGz0j3wut9/Dk=;
+        b=YJaD5cdw6hYo8cVCL1vKdW4GOlszGqOtLQW+WfEeDfC1gTuJRYKcy1pmlZVF18zw+Q
+         +IUX/t3FYZ9MW+aufRSD61jiHYQpz5kV+NFKz9+2G3o6POJrvMbXxF5H/cwEcLBlBdNl
+         svkrqFm63vqI8Y0KQTXeBONisMDWocZUXbFjzX8+yHInkI/N8hxvgAd/Jzm8oY2koZ+J
+         DnTFhPNaRmiTXoivAaC7A3EFE0VV+hst7J9i1rvUtrwWU6nM6ZE7GLHAumxExPpCgm6z
+         SCPkoVhe6EiX++UBFQbUX9SYsGMSzzYANRghexFqY4qHnMvzECxwYO8Vu3jB/3XIEsGm
+         uJMQ==
+X-Gm-Message-State: AFq9FYL9lPGH7dPZJOFjJrmYpmHqKUjAP28nvkHvLLDCsdBCbyoWlEdd
+	I2ePxsplxl/PqNvL843NWdlaohcd9stqr3hzR+97i0k/Zr2aK9cknd1lONUwwT2J2C0=
+X-Gm-Gg: AYBFou1jenvyPTAQbboRMFRTRUgJNhdLOzdEU+eyrGbL/0HheGPehGqWiL5fPGeSkCC
+	iNbsx+pCTjwS4q+o2m4fCP+8MLd49VKWdMTSz4LX/bM/frr9p2JkC9n9mh4Szf2e8/H3tC72gBD
+	4uX3Gn06CMXum7R/ZMoKDOSpjcT8XkbzKzge+HpmYTkC2MJCpD7iGzgdGhF/y9vTWfeatC+quXi
+	dQL4MWPmtOly24A1Ak78JG2d0uRnlh21UAovGl7MTg6ahwNtRlkik0UjoijrTRuUKDjVXIP0WD9
+	iUOjgYXKlQTdKI/96fUBKzgdbN35SjsxNqsh20Bshg1iqqTWd7y5Gprz3EwKC2vW9lQwoS9fYuD
+	S9TTHAEE6Dby/JNK7oWIpZqIij8A20PqPRGmEnx5w4zjKiM6GzJtvYr3BgiYRaUvGooucd9gI8y
+	/ONipKA/N4h5PuAS/f55JN4jNhj4yOeuYCg3tmmyT+sV+YlkcmxEzxEqzXRARLNu3htMt2daXOj
+	No30azPUJFVziDWJrseezXUkVXFhbYt8ju8b/J5Y0Um6gZPXzhl4ExD/WZdO66ljDPMnwGz
+X-Received: by 2002:a05:7022:ea8c:b0:149:1feb:6dae with SMTP id a92af1059eb24-16a62bcc7c8mr12280029c88.39.1791819982235;
+        Mon, 12 Oct 2026 08:46:22 -0700 (PDT)
 Received: from localhost.localdomain ([2405:201:301c:f8cd:c1bb:8d21:6c07:8107])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-35a352d4b05sm14939172eec.19.2026.10.12.08.20.43
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-169a1becf08sm33838996c88.5.2026.10.12.08.46.19
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 12 Oct 2026 08:20:46 -0700 (PDT)
+        Mon, 12 Oct 2026 08:46:21 -0700 (PDT)
 From: Aryan Sinha <sinha.aryan03@gmail.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Aryan Sinha <sinha.aryan03@gmail.com>
-Subject: [PATCH] thermal/fw: Fix kernel-doc parameter names
-Date: Mon, 12 Oct 2026 20:50:32 +0530
-Message-ID: <20261012152037.33461-1-sinha.aryan03@gmail.com>
+Subject: [PATCH] power: supply: sgm41542: Use secs_to_jiffies()
+Date: Mon, 12 Oct 2026 21:16:12 +0530
+Message-ID: <20261012154614.42203-1-sinha.aryan03@gmail.com>
 X-Mailer: git-send-email 2.46.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -77,47 +73,36 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The kernel-doc for thermal_fwnode_cooling_device_register() still names the
-old device tree arguments np and of_index, and
-devm_thermal_fwnode_cooling_device_register() documents fw_index rather
-than fwn_index. Rename them to match the code and reword the device tree
-reference as a firmware node one.
+Both watchdog kicks are a flat five seconds written the long way. Use
+secs_to_jiffies() from the same header instead.
 
 Signed-off-by: Aryan Sinha <sinha.aryan03@gmail.com>
 ---
- drivers/thermal/thermal_fw.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/power/supply/sgm41542_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_fw.c b/drivers/thermal/thermal_fw.c
-index e8bd2049c..7c28bfada 100644
---- a/drivers/thermal/thermal_fw.c
-+++ b/drivers/thermal/thermal_fw.c
-@@ -11,13 +11,13 @@
+diff --git a/drivers/power/supply/sgm41542_charger.c b/drivers/power/supply/sgm41542_charger.c
+index 888096252..118b4c700 100644
+--- a/drivers/power/supply/sgm41542_charger.c
++++ b/drivers/power/supply/sgm41542_charger.c
+@@ -468,7 +468,7 @@ static int sgm4154x_set_watchdog_timer(struct sgm4154x_device *sgm, u8 time)
+ 		if (!sgm->watchdog_enable)
+ 			queue_delayed_work(sgm->sgm_monitor_wq,
+ 					   &sgm->sgm_delay_work,
+-					   msecs_to_jiffies(1000 * 5));
++					   secs_to_jiffies(5));
+ 		sgm->watchdog_enable = true;
+ 	} else {
+ 		sgm->watchdog_enable = false;
+@@ -970,7 +970,7 @@ static void sgm_charger_work(struct work_struct *work)
+ 	if (sgm->watchdog_enable)
+ 		queue_delayed_work(sgm->sgm_monitor_wq,
+ 				   &sgm->sgm_delay_work,
+-				   msecs_to_jiffies(1000 * 5));
++				   secs_to_jiffies(5));
+ }
  
- /**
-  * thermal_fwnode_cooling_device_register() - register an thermal cooling device
-- * @np:		a pointer to a device tree node.
-- * @of_index:	a cooling device index in the cooling controller
-+ * @fwnode:	a pointer to a firmware node.
-+ * @fwn_index:	a cooling device index in the cooling controller
-  * @type:	the thermal cooling device type.
-  * @devdata:	device private data.
-  * @ops:		standard thermal cooling devices callbacks.
-  *
-- * This function will register a cooling device with device tree node reference.
-+ * This function will register a cooling device with a firmware node reference.
-  * This interface function adds a new thermal cooling device (fan/processor/...)
-  * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-  * to all the thermal zone devices registered at the same time.
-@@ -71,7 +71,7 @@ __devm_thermal_fwnode_cooling_device_register(struct device *dev, struct fwnode_
- /**
-  * devm_thermal_fwnode_cooling_device_register() - register a thermal cooling device
-  * @dev:	a valid struct device pointer of a sensor device.
-- * @fw_index:	a cooling device index in the cooling controller
-+ * @fwn_index:	a cooling device index in the cooling controller
-  * @type:	the thermal cooling device type.
-  * @devdata:	device private data.
-  * @ops:	standard thermal cooling devices callbacks.
+ static void sgm4154x_disable_irq_wake(void *data)
 -- 
 2.46.0
 
