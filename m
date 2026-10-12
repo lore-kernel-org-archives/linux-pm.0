@@ -1,162 +1,128 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 159E43A6F11
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 18:46:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0B66139C00F;
+	Mon, 12 Oct 2026 18:46:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791830770; cv=none; b=eKdWsprZnwfTIOPfq1Ho0tKAKCkaGYHYiWAZZgmzQ5rGSWyowIOM2iwszPS/ztzfxAaJc00qGc/MbvKQ6ao8//Tm0kOU3J+Q41vdalPNWHgot+gSI39via12WSLtNLqy7VIozTlsW5/zOvfYuyxH2xAKEoVeNYxvRcMvks5UfoM=
+	t=1791830776; cv=none; b=F7FhlKjLAyX0l4Yz6YzlimxzD18MZNACUTjqNLz+3bi41v8dWvmrEAMDyeKrKcFXY9CCjmpkqxOtA/6vkzSzFflEimy9Nc9VtkOqoBteTmkfT8Gco+AmxLNphzDEmRPT1bfSwrlLzCxAV1Hfn125/nZ8rKiwv3b3D9Tf0/7LWzY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791830770; c=relaxed/simple;
-	bh=wJbzi3CjEWYRW6F8QGjB5MCTpn7eSajB29LpxYDyDmo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gWBSszUqtOQX6YUjX+lI6BhMlzL4AwanUOMxW3DhWKAcLf5SsOcIM6/TzSJc9YZid+DEfEhveRlqLPelaosBCtddpnXP6KbrqEoqhG8zQSWniZIjr01HCjj4nXQ5b6ckkgVwmLZkK5k+gC2zy7yjdReMMVOc4G5k/y6tZI4o+g0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fhNT1XW5; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791830776; c=relaxed/simple;
+	bh=+ujaKplCQ6++6KLPen6z7I1XFJ/cgkXPDvWY7vBUhn4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hB8vGvZ0NLGEgwJVoUibjg+aSLKyF0M3Q96R5l9k7Biha25XrPlqIsBVUkdLhYeuWJqx1KCW3VphIZJSLvU29be6Ix5AL+m4IWj15nrpIU5h5Qep5Wq6j/Tk50zffpJznk4CXH7SlyeTKHfenZN+mhOroDk4raIs5dj5o7HA770=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Z59FemzO; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fhNT1XW5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 903FD1F008A4
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 18:46:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791830765;
-	bh=/MEr9TnYRLEADPm5dzJuPJHXku6tQFEe33VUaq9byuA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=fhNT1XW5NUlRnPw2Fivx9Ih549qwrcSW7eJTooUp25OG4U85bx6y89U9yu2QZezoY
-	 VYoo4RGdZ6fSJH/oRLNPTdWosFIZecXQLfy/s3P+kr0gaMAqFeFRxOoYDDZSWPIo8r
-	 PMoE4XuJwzcX0Jip3GzH1i69yARx2MqavXPoGexxo6Uffc9PqLsd4/JVyJOx/1BqTH
-	 fxi5he5vJ0kwD+zUpA8Qwdh1Ydjtz0rPtA4GQEUQx2yljoU19u8sKkcNSiWzb42gJL
-	 mpWT8s5HfHE0EKb/II9Ec0U82pY4wU0wLeCLlEZpHuPn47kcbwAb24z9OEwjntz2wU
-	 O6jKN4SiBHveg==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5bccc96684dso380921e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 11:46:05 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwq7efa5tP226x6j7LhnvGHjgdeUwEu77xjWlVVc7Eup/tPOj0aP1cw41eqv8JSR/k7neIh/pC/9w==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKvEMH3H1QPrQi9iOVYsqngu6GU7S69QpmkecB6uMx2lrAXqPzU
-	QvQaYCXcV2qdTFcRmShTYmY9HEz2wFGUTSfM86XqqIZdu/48DiEs4f5d9tIIqi3tepvHtgLuxD2
-	VPxtNdQtJyVRtrLVa7XFqeYx0JibC1PM=
-X-Received: by 2002:a05:6512:3a92:b0:5b8:eb3a:759b with SMTP id
- 2adb3069b0e04-5bcde8bdabdmr3719119e87.42.1791830763879; Mon, 12 Oct 2026
- 11:46:03 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Z59FemzO"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 259E51476;
+	Mon, 12 Oct 2026 11:45:59 -0700 (PDT)
+Received: from [192.168.178.6] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BFA543F673;
+	Mon, 12 Oct 2026 11:45:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1791830762; bh=+ujaKplCQ6++6KLPen6z7I1XFJ/cgkXPDvWY7vBUhn4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Z59FemzOQpc7bqIkoHYIOOp9K/vNSa/eqDkQbHH6IFLUA759VRS6nY5jOnWNNRqm3
+	 iYPMcoiFgtuixtbW/RtzEA9LswFuGIuZ3xlgkq94y1GklNcztyYdU+m//046l3JEUF
+	 GpXNa9XPVz18n6ql+X6+j9sHuRe+Vw5Ib9nZOMAg=
+Message-ID: <cfb79ffe-41b7-4e58-b3f5-fc9a28a4e413@arm.com>
+Date: Mon, 12 Oct 2026 20:45:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261009-adma-pm-fix-and-per-channel-reset-v4-0-55f5fe409c55@amd.com>
- <20261009-adma-pm-fix-and-per-channel-reset-v4-2-55f5fe409c55@amd.com>
-In-Reply-To: <20261009-adma-pm-fix-and-per-channel-reset-v4-2-55f5fe409c55@amd.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 12 Oct 2026 20:44:00 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iLOJ49Zn_vPbpbqhPQ_F3W5PCpFN1VnxOzoxL7Y4PN+A@mail.gmail.com>
-X-Gm-Features: AclHuK_xrLBr4L5nslTfPR7n5tDlLGvjFUHFyA86wwCkbsTjUQQ1gKk2AD2PTHM
-Message-ID: <CAJZ5v0iLOJ49Zn_vPbpbqhPQ_F3W5PCpFN1VnxOzoxL7Y4PN+A@mail.gmail.com>
-Subject: Re: [PATCH v4 2/6] PM: runtime: Add pm_runtime_if_active guard and
- conditional variant
-To: Golla Nagendra <nagendra.golla@amd.com>
-Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
-	Michal Simek <michal.simek@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Kedareswara rao Appana <appana.durga.rao@xilinx.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Michael Tretter <m.tretter@pengutronix.de>, Harini Katakam <harini.katakam@amd.com>, 
-	Shyam Pandey <radhey.shyam.pandey@amd.com>, dmaengine@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, git@amd.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/2] arch_topology: seed capacity_freq_ref with highest
+ available frequency
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
+ Ananthu C V <ananthu.cv@oss.qualcomm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Jie Zhan <zhanjie9@hisilicon.com>,
+ Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+ linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Oleg Keri <okerixx@gmail.com>
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-1-68de169498c7@oss.qualcomm.com>
+ <fbd7fe35-5e14-4589-a072-909e49a92e76@oss.qualcomm.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Content-Language: en-GB
+In-Reply-To: <fbd7fe35-5e14-4589-a072-909e49a92e76@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Fri, Oct 9, 2026 at 6:00=E2=80=AFAM Golla Nagendra <nagendra.golla@amd.c=
-om> wrote:
->
-> Add a pm_runtime_if_active base guard and its _try conditional variant
-> to pm_runtime.h for drivers that need to conditionally acquire a runtime
-> PM reference only when the device is already active.
->
-> The base guard must not be used directly via guard()/scoped_guard()
-> because pm_runtime_get_if_active() only acquires a reference when it
-> returns 1; the destructor unconditionally calls pm_runtime_put(), which
-> would underflow usage_count on a suspended device. The base guard
-> exists solely to back the DEFINE_GUARD_COND _try variant.
->
-> The _try variant (used via PM_RUNTIME_ACQUIRE_IF_ACTIVE) satisfies the
-> _try API contract that guards must not produce an error when runtime PM
-> is disabled for the device. When pm_runtime_get_if_active() returns
-> -EINVAL (runtime PM disabled), the expression calls
-> pm_runtime_get_noresume() to pre-balance the destructor's unconditional
-> pm_runtime_put(), then returns 1 so the guard condition succeeds
-> (bypass). This mirrors the behaviour of pm_runtime_active_try which
-> uses RPM_TRANSPARENT for the same purpose. When the device is genuinely
-> runtime-suspended (return value 0), the guard condition fails and
-> ACQUIRE_ERR returns true, allowing callers such as interrupt handlers to
-> skip MMIO accesses.
->
-> Signed-off-by: Golla Nagendra <nagendra.golla@amd.com>
-> ---
->  include/linux/pm_runtime.h | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
->
-> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-> index 64921b10ac74..ae2a8740ffb3 100644
-> --- a/include/linux/pm_runtime.h
-> +++ b/include/linux/pm_runtime.h
-> @@ -609,6 +609,13 @@ DEFINE_GUARD(pm_runtime_active, struct device *,
->              pm_runtime_get_sync(_T), pm_runtime_put(_T));
->  DEFINE_GUARD(pm_runtime_active_auto, struct device *,
->              pm_runtime_get_sync(_T), pm_runtime_put_autosuspend(_T));
-> +/*
-> + * Do not use directly -- the destructor calls pm_runtime_put()
-> + * unconditionally, which underflows if no reference was acquired.
-> + * Use only via the _try variant below.
-> + */
-> +DEFINE_GUARD(pm_runtime_if_active, struct device *,
-> +            pm_runtime_get_if_active(_T), pm_runtime_put(_T));
->  /*
->   * Use the following guards with ACQUIRE()/ACQUIRE_ERR().
->   *
-> @@ -624,6 +631,23 @@ DEFINE_GUARD_COND(pm_runtime_active_auto, _try,
->                   pm_runtime_get_active(_T, RPM_TRANSPARENT), _RET =3D=3D=
- 0)
->  DEFINE_GUARD_COND(pm_runtime_active_auto, _try_enabled,
->                   pm_runtime_resume_and_get(_T), _RET =3D=3D 0)
-> +/*
-> + * The _try contract is that no error is produced when runtime PM is dis=
-abled,
-> + * so bypass the guard when pm_runtime_get_if_active() returns -EINVAL: =
-take a
-> + * reference with pm_runtime_get_noresume() to pre-balance the destructo=
-r's
-> + * pm_runtime_put() and return 1 so the guard condition succeeds. Interr=
-upt
-> + * handlers then keep servicing interrupts when runtime PM is disabled f=
-or the
-> + * device or CONFIG_PM is not enabled.
-> + */
-> +DEFINE_GUARD_COND(pm_runtime_if_active, _try,
-> +                 ({
-> +                       int _r =3D pm_runtime_get_if_active(_T);
+On 11.10.26 16:16, Zhongqiu Han wrote:
+> On 9/29/2026 7:38 PM, Ananthu C V wrote:
+
+[...]
+
+> Besides, could you comment patch v2 Dietmar's comments? It seems that
+> patch 1/2 exposes a pre-existing ordering issue. On DT systems,
+> cpu_scale is normalized only from the CPUFREQ_CREATE_POLICY notification
+> of the last policy, so the cpufreq pressure of every other policy is
+> computed in cpufreq_init_policy() from the raw, not yet normalized,
+> capacity, and stays cached until the next cpufreq_set_policy() for that
+> policy. So far this was harmless because capacity_freq_ref == policy-
+>>max at boot, so the pressure was 0 regardless of the capacity. With
+> 1/2, capacity_freq_ref covers the boost frequencies while boost is
+> disabled at boot, so policy->max < capacity_freq_ref becomes the common
+> case and the stale value becomes visible (102 vs 79 on Juno R0, as
+> reported by Dietmar). Perhaps the limits of all policies could be
+> refreshed once from parsing_done_workfn(), after the capacities have
+> been normalized?
+> 
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -454,9 +454,27 @@ core_initcall(register_cpufreq_notifier);
+> 
+>  static void parsing_done_workfn(struct work_struct *work)
+>  {
+> +    int cpu;
 > +
-> +                       if (_r =3D=3D -EINVAL)
-> +                               pm_runtime_get_noresume(_T);
-> +                       _r =3D=3D -EINVAL ? 1 : (_r ?: -EAGAIN);
-> +                 }),
-> +                 _RET =3D=3D 1)
->
->  /* ACQUIRE() wrapper macros for the guards defined above. */
->
-> @@ -639,6 +663,9 @@ DEFINE_GUARD_COND(pm_runtime_active_auto, _try_enable=
-d,
->  #define PM_RUNTIME_ACQUIRE_IF_ENABLED_AUTOSUSPEND(_dev, _var)  \
->         ACQUIRE(pm_runtime_active_auto_try_enabled, _var)(_dev)
->
-> +#define PM_RUNTIME_ACQUIRE_IF_ACTIVE(_dev, _var)       \
-> +       ACQUIRE(pm_runtime_if_active_try, _var)(_dev)
+>      cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+>                       CPUFREQ_POLICY_NOTIFIER);
+>      free_cpumask_var(cpus_to_visit);
 > +
->  /*
->   * ACQUIRE_ERR() wrapper macro for guard pm_runtime_active.
->   *
->
-> --
+> +    /*
+> +     * The cpufreq pressure of all policies but the last one has been
+> +     * computed before topology_normalize_cpu_scale(), so refresh it now
+> +     * that cpu_scale is final.
+> +     */
+> +    for_each_possible_cpu(cpu) {
+> +        struct cpufreq_policy *policy __free(put_cpufreq_policy) =
+> +            cpufreq_cpu_get(cpu);
+> +
+> +        if (!policy || cpu != policy->cpu)
+> +            continue;
+> +
+> +        guard(cpufreq_policy_write)(policy);
+> +        refresh_frequency_limits(policy);
+> +    }
+Yes, IMHO, something like this is needed.
 
-For the record, I'm still unconvinced about the guard definitions above.
+[    1.169158] cpufreq_notifier_max(): current=[kworker/u26:0 46] policy->related_cpus=[]												(1)
+[    1.169209] init_cpu_capacity_callback(): current=[kworker/u26:0 46] policy->related_cpus=[0,3-5]
+[    1.169992] cpufreq_update_pressure(): current=[kworker/u26:0 46] policy->related_cpus=[0,3-5] policy->max=700000 pressure=102 max_capacity=578 capped_freq=700000 max_freq=850000
+[    1.170203] cpufreq_update_pressure(): current=[kworker/2:2 67] policy->related_cpus=[0,3-5] policy->max=700000 pressure=102 max_capacity=578 capped_freq=700000 max_freq=850000 	(2)
+[    1.170835] cpufreq_notifier_max(): current=[kworker/u26:0 46] policy->related_cpus=[]												(1)
+[    1.170872] init_cpu_capacity_callback(): current=[kworker/u26:0 46] policy->related_cpus=[1-2]
+[    1.174516] cpufreq_update_pressure(): current=[kworker/u26:0 46] policy->related_cpus=[1-2] policy->max=800000 pressure=280 max_capacity=1024 capped_freq=800000 max_freq=1100000
+[    1.175261] cpufreq_update_pressure(): current=[kworker/2:2 67] policy->related_cpus=[1-2] policy->max=800000 pressure=280 max_capacity=1024 capped_freq=800000 max_freq=1100000	(2)
+[    1.187698] cpufreq_update_pressure(): current=[kworker/2:0 28] policy->related_cpus=[0,3-5] policy->max=700000 pressure=79 max_capacity=446 capped_freq=700000 max_freq=850000	(3)
+[    1.187847] cpufreq_update_pressure(): current=[kworker/2:0 28] policy->related_cpus=[1-2] policy->max=800000 pressure=280 max_capacity=1024 capped_freq=800000 max_freq=1100000	(3)
 
-Please try to reimplement the series without them for the time being.
+The work scheduled in (1) also still operates on raw capacity (2).
 
-Thanks!
+(3) shows your extension in parsing_done_workfn() work function which
+    gets scheduled when all CPUs are initialised, so
+    topology_normalize_cpu_scale() had been called.
+
+Not sure whether we can call cpufreq_update_limits(cpu) there instead
+(maybe extended with a 'only do this for policy->cpu'?). So we won't
+have to expose cpufreq internals in /drivers/base/arch_topology.c.
