@@ -1,138 +1,238 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1487A503BD1
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 14:38:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791902293; cv=none; b=QKjA9twjVjF3CIA8qAHk3aTsVj5aEBd4xS95JSXt6/Z4rg7vUhBbbeI9SIJO4N13zKWG9pfreh8SFR2+5RsHhfP/Pkj4FI4nr/SYnfZ1r8qwn/QKqbr67nFrw8BYfEhAjxs54E90GsyDO1FQCmc3Zz92IjfGY+rc0Mf96CElxTI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791902293; c=relaxed/simple;
-	bh=Fy4hww/bwmxQbL1BwdmGfWhDcfwRm+UBIieq6CF5cl4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EkkmKpU86vJQ04w2V/YpNl8rNnQFETCxu+S1UcDn0tkqbcK3nnvAUZQaMAF5kPvHfBXoMm+mTb3X0q8zu9KoZ6SPNGrwHgZzGxBP0wMi8vsOyt3CwXbS9RwxbtHRsQvpe5KSl+bjcXtbXDWp9cRQmWpYUvm1/JsQd2/0PlymBc8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=b1pbe1si; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB7D628850E;
+	Tue, 13 Oct 2026 17:09:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791911346; cv=pass; b=S2M2Rrl0BoU7IJtU6BNbf5PzvIDDoU4Xzd7ecqdGl6zPxGUvESGDYy/ZZEzASaGK6JSJSHFJRqcYodmW6o29shwLT42xdk4KSBH2YdmyJO4wI+7UX1ynI2L41V+No/oLMiHwC0zgsUR6Hn3fy8mgYDRHeYCpSC2dzmUoRi+Mijw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791911346; c=relaxed/simple;
+	bh=IpWmyPQgsVDGSNt6llldAaDS55/CjrI5G8XAEbzytUY=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=R4tTKU2NrL4PzmcMaaaLGvxWwsRxhzXN0W4+T4+stsnUc1IlSM5T8ILBLt0zs5pi73iNEvdG8Vy3DrGWYZEsI9jdJK4L16MYjgSLsYGx87xXuZNjlQN4SQOFY5xFQBFgdJEERftxiTkb7RAaM/RNNJELeACeRU4zpHpULRk2RtA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=crV1fo8Y; arc=pass smtp.client-ip=165.173.182.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="b1pbe1si"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4a172eb31f0so24482995e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 07:38:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1791902290; x=1792507090; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Fy4hww/bwmxQbL1BwdmGfWhDcfwRm+UBIieq6CF5cl4=;
-        b=b1pbe1si2E3iCvTwpnUvD68ItEgscrvhe6z0QxoCT4Lk9Q+AaVPC8gosjyH+hNVD5Q
-         n6H3H6tqols9NIuIA8vK8bzggzNpPcL+1V0bGEPaLuHRCWItBkIAQ9vzqCMfqmI9duvB
-         W4nkhH6e2QrqNSUtASVrG5tSq1C/73+cYsWeXh21p6wpAk4IaeWDR2AYzCBBlFq2Mfm5
-         WqidzRV1LIfUgOjXwc/3uwZ6i0LFczf5l83yd8xX2eh0DMtOI7f9qpSpgmEdMI2xcC6k
-         1sQSRAWM9D/zdnr6eMD9aGPQINnLnByV1S5sQnfxZV16fDr/YLuB9ZZqSkP3XJTSPcm/
-         VGDA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791902290; x=1792507090;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Fy4hww/bwmxQbL1BwdmGfWhDcfwRm+UBIieq6CF5cl4=;
-        b=CrRmXo3cTztUGadstpDsD4mN1DviC2IloeQIq8++2BKb15BmTsoXjpdA7f3GGBQIfP
-         POWJPKfaDdeochaOCifd5+bTKp3Z6R76iF0dG3apxvy9LeNiZczzEr7vVQHCQD//jbfk
-         EKIsGG29LCB8lGxKPtX1fWeO6lowE9fqX+8ylgfAdX0vUgF0zL6at8KzfhSG45oVdE5V
-         7RY8JfC0L34IH+n/K2oTvo5UYIVQEBPtzT4Iab5XduT5e2KcL4XaqIHSkm5/wEyJ+B0x
-         M7atUpUyw0ZOlbGPuAeqRHZVKz52Qvc/KKTsVzc//vcXQ8PnsmEq4JA0q6iK5Q1kW4fI
-         e4cw==
-X-Forwarded-Encrypted: i=1; AKwUvBx+A06fNaB2U8mSbQ+88IfLpeTa5lNQC7YDcMpiQv3JclH7G/gE4iEljXhgBoNRqpT7nuxoYVnKVA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ/AgvrKYyXCVG1mDjtt+hYuD7ueYPUI4r0IO/xm6JjX08HFCEh
-	/Rs4+yLYN2iyh6PLAemSaDYzZwg3uamhNv4ZuHCi+JkzBXo/YfyFR4Yvy/YOfUcX3KU=
-X-Gm-Gg: AYBFou0bQowRB2voSpDe5o2T6EjrA1vK8fuMEig/8nAgskAtpB3J1hgY617mCbFbof0
-	EmojtdF+6bGNBgg/T/CNYo0FhCBwBYlRF/hvCVNZNjnJrTrQEoInsTGE0c7dBMpWwoYUkMtsT+z
-	wLlENwFzRz/2WmbnBfCn0ZwNCf0C8MyOHchYkmLE1eHkSS78OZNVNsOGkGZ3ef2f/1/2Sd4ZXkD
-	t0FZkiAzOuql/0RIx6hA7VxExKHnl2IsOxWPYJpVvs7ieML3MYOqcuqF+wz53CTuqiZG+yT/bJy
-	kCvhRepHB0QroDV8Rl56GlRzC+OslQg1hbhMzapWknZz2vbXUwSHHvfh96jhVG/KvTRio0iTt08
-	Z2q2o27V3C1BX+0jR7grSF7SWRQ1xWEQ7jG6Q2ai255l6WWbTzwejjTW5uG8izO5hvfOwvbuEQo
-	DrB1UCcdWrQzELUC+pXyHDn2jnjPhnFQeraUpyqU48hJtSW1G3pjfOdQuiIT9lDaBsY9Uo/MRr0
-	KrHkOVA
-X-Received: by 2002:a05:600c:310b:b0:4a1:813f:2a5b with SMTP id 5b1f17b1804b1-4a18e4a9da8mr235341925e9.14.1791902290063;
-        Tue, 13 Oct 2026 07:38:10 -0700 (PDT)
-Received: from [10.11.12.111] ([79.115.63.240])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a19c8244edsm198277585e9.2.2026.10.13.07.38.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 13 Oct 2026 07:38:09 -0700 (PDT)
-Message-ID: <4576292d-2c3c-47db-8422-9f9e730cfecc@linaro.org>
-Date: Tue, 13 Oct 2026 17:38:06 +0300
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="crV1fo8Y"
+ARC-Seal: i=1; a=rsa-sha256; t=1791911289; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=mfIrgCehaFLWkqQlKS3VGS/pVkr8f/IJcq+kyeJFupdLA1r+8xcHckG/fObYTQ8XyHlM64BmsjHJgCfbyq4yxP2Ydgjdb1Movyux++039RQqCJlW2ueM5uzWFHv8Eb8D1VPaut857b7B7brqUCN2Cg4Ao3zI82XPexP75WRQNk4=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1791911289; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=CPCHlzrectKcVe5zKVmVCz7i/1K/BPfs+kZWr+grD+A=; 
+	b=HVqKbb/RCQM8ErQ8SuUyStdNgAQ9Tez0WDXfTA9MV8jqN14HgG7kXGe94U4bsR/kZXgHfIFFnjTy0GtBC9/FKz1Y1ZCOtnMt4YaADnM3M/nyKFvu3XC6PKGpiS5gM4YcRdKpqGgtdAJIKpnyhA1/VCk/tdSWm+ezAzxXKdzrHWM=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1791911289;
+	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
+	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
+	bh=CPCHlzrectKcVe5zKVmVCz7i/1K/BPfs+kZWr+grD+A=;
+	b=crV1fo8YbkJbpb35sFsOE8gBHoQlUgv538AH1dZ2xwJ0KF1074KXwAM42FxwOV7E
+	XDZkD681c73S0ZTkE4fBSpttwlB4yLpcmE04VmTNgqsFGcU2HoxjzVWzG40dyHriE8X
+	4/xXjyHD5nMYBQeLOAGtPnp9sOXidkuMCasolZeE=
+Received: by smtp.zohomail.com with SMTPS id 1791911287188743.1518436996159;
+	Tue, 13 Oct 2026 10:08:07 -0700 (PDT)
+From: Daniel Almeida <daniel.almeida@collabora.com>
+Subject: [PATCH v6 0/7] Clk improvements
+Date: Tue, 13 Oct 2026 14:07:39 -0300
+Message-Id: <20261013-clk-type-state-v6-0-a5e9977b3509@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 0/5] thermal: samsung: Add support for Google GS101 TMU
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
- Krzysztof Kozlowski <krzk@kernel.org>, Kees Cook <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Peter Griffin <peter.griffin@linaro.org>,
- =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>
-Cc: jyescas@google.com, linux-kernel@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-hardening@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-References: <20260603-acpm-tmu-v8-0-0f1810a356e6@linaro.org>
- <8142519a-0062-4f0f-b978-980e049f99c1@oss.qualcomm.com>
- <fe159792-c58a-46a9-950b-6c21d2172601@linaro.org>
- <04a1331f-1375-471e-a674-87039aeb0328@oss.qualcomm.com>
-Content-Language: en-US
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-In-Reply-To: <04a1331f-1375-471e-a674-87039aeb0328@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6XRTW7DIBAF4KtErEs1A+HHWfUeVReAxzVqElJMr
+ UaR716ctLIUZ9flW7wPRu/CBsqRBrbbXFimMQ4xHWvQTxsWend8Jx7bmpkAoaCBhof9By/nE/G
+ huEI8ADpn2lYpbFktnTJ18fsKvr7V3OV04KXP5BbGiBUzIkduG+2VtKg7419C2u+dT9k9h3SY5
+ T4OJeXz9aejmP3/aLd7EFZVwYGjb0xA9F5LvKvON43y73UNCGZFyEoY00qSRKoJ4hGxXQiNdkV
+ sK2E9gRXGarDwiFALYUCvCFUJbYLqpNAOdbgnpttamT6/6urld7Jp+gEsdWizEwIAAA==
+X-Change-ID: 20250909-clk-type-state-c01aa7dd551d
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Michal Wilczynski <m.wilczynski@samsung.com>, 
+ Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
+ Fu Wei <wefu@redhat.com>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+ Jerome Brunet <jbrunet+clk@baylibre.com>, Miguel Ojeda <ojeda@kernel.org>, 
+ Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Trevor Gross <tmgross@umich.edu>, Tamir Duberstein <tamird@kernel.org>, 
+ Alexandre Courbot <acourbot@nvidia.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, 
+ linux-pwm@vger.kernel.org, linux-clk@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, 
+ Boris Brezillon <boris.brezillon@collabora.com>, 
+ =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+ Maurice Hieronymus <mhi@mailbox.org>
+X-Mailer: b4 0.15.2
+X-ZohoMailClient: External
 
+This series contains a few improvements that simplify clock handling for
+drivers.
 
+Patch 1 converts clk.rs to the kernel-vertical style for imports.
 
-On 10/13/26 5:31 PM, Daniel Lezcano wrote:
-> On 10/13/26 16:26, Tudor Ambarus wrote:
->>
->>
->> On 10/13/26 4:33 PM, Daniel Lezcano wrote:
->>> Hi Tudor,
->>
->> Hi!
->>
->>>
->>> I noticed I picked up your series without notifying you
->>>
->>> However, I did not pay attention but picked also the dts files.
->>>
->>> Shall I drop them ? (AFAICS there is one comment) and let you handle them separately ?
->>>
->>
->> Yes, please. dts and defconfig patches shall go via the Samsung SoC tree.
->>
->> About the driver itself, I was about to send a v9, where I addressed
->> some issues sashiko spotted. Do you prefer to drop everything and wait
->> for my v9? Otherwise I can do incremental patches.
-> Well the v8 is in my tree since a while now and I'm about to send a PR. The patches can be dropped but the v9 will have to wait for the next release. If you want this v8 in, it depends on the sashiko report. Is it minor or major ?
+Patch 2 replaces OptionalClk with Clk::get_optional(). There is no struct
+optional_clk in C, and Clk already allows a NULL pointer.
 
-They are minor corner-case races (an interrupt firing midway through
-system suspend after runtime PM is force-suspended, and module unload
-racing with a concurrent sysfs temperature read), plus a few small
-cleanups (adding `select REGMAP_MMIO`, implementing `.change_mode()`,
-and renaming the driver from "gs-tmu" to "exynos-acpm-tmu").
+Patch 3 implements the same typestate pattern that has been used
+successfully for Regulators. This is needed because otherwise drivers
+will be responsible for unpreparing and disabling clocks themselves and
+ultimately handling the reference counts on their own. This is
+undesirable. The patch automatically encodes this information using the
+type system so that no misuse can occur.
 
-None of them affect normal operation, so please keep patches 1-3
-(dt-bindings, driver, MAINTAINERS) for your PR and just drop patches 4
-and 5 (dts and defconfig). I will send incremental patches on top to
-address those items.
+Patch 4 adds guards that prepare and/or enable a clock for the lifetime
+of the guard without consuming the Clk, so that a driver can keep a
+long-lived Clk<Prepared> and enable it for scoped sections.
 
-Thanks!
-ta
+Patch 5 makes things more convenient by offering devres-managed APIs. This
+lets drivers set clock parameters once and forget about lifetime
+management.
+
+Patch 6 adds ExclusiveClk<T>, which holds rate exclusivity over a Clk<T>
+in any state until it is dropped.
+
+Patch 7 uses it in pwm-th1520 to lock the clock rate for the lifetime of
+the driver data.
+
+---
+Changes in v6:
+- Rebased onto the latest clk-next.
+- Moved the import style conversion to the front (Alexandre, Onur).
+- Kept Alexandre's and Onur's Reviewed-by on the imports patch, and
+  Alexandre's on the devres patch. Dropped Alexandre's Reviewed-by on the
+  type-state patch, which changed too much since v5.
+- Split the OptionalClk removal into its own patch (Gary).
+- Replaced "rust: clk: implement Clone for Clk<T>" with EnabledGuard,
+  PreparedGuard and PrepareEnabledGuard (Alexandre, Gary). Clones shared
+  a single struct clk, so per-consumer state such as the rate
+  exclusivity taken by clk_rate_exclusive_get() was shared between them.
+- Dropped Clk::<Prepared>::with_enabled(), superseded by EnabledGuard.
+- Named the ClkState constants ENABLED and PREPARED from the start
+  (Alexandre).
+- Implemented Debug for Error<State> (Alexandre).
+- Documented that dropping a prepared or enabled Clk may sleep
+  (Alexandre).
+- Used a different connection id for the second clock in the example
+  (Alexandre).
+- Used `?` in the per-state get() and get_optional() shortcuts.
+- Dropped the trailing `//` from doctest imports (Alexandre).
+- Removed the intra-doc links from SAFETY comments (Onur) and reworded
+  the devm_enable_optional() documentation (Alexandre).
+- Expanded the devres commit message (Gary).
+- Added ExclusiveClk and its pwm-th1520 user, based on Maurice
+  Hieronymus's series [1], with ExclusiveClk made generic over the clock
+  state, ExclusiveClk::new() in place of Clk::rate_exclusive_get(), and
+  a new ExclusiveClk::into_inner().
+- Link to v5: https://patch.msgid.link/20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com
+
+[1] https://lore.kernel.org/rust-for-linux/20260711-rate-exclusive-get-th1520-v4-0-8244a0666a71@mailbox.org/
+
+Changes in v5:
+- Rebased onto the latest clk-next.
+- New patch: "rust: clk: implement Clone for Clk<T>". Each clone is an
+  independent view of the same underlying clock, owning its own
+  prepare/enable counts; the raw pointer is shared through an Arc so
+  clk_get()/clk_put() stay balanced. Follows the v3 discussion with
+  Boris Brezillon and Gary Guo.
+- Moved rate() and set_rate() from Clk<Enabled> to all states; the C API
+  does not restrict these to enabled clocks, and some clocks can only
+  change rate before being prepared.
+- Made Clk::<Enabled>::disable() infallible, matching unprepare() and
+  the void C API (Onur).
+- Fixed a typo in the "# Invariants" section, fixed SAFETY comments
+  that referred to the non-existent `self.0` field, and added missing
+  INVARIANT comments on the state transitions.
+- Added the missing rustdoc link definitions for clk_unprepare and
+  clk_put (Maurice).
+- Dropped the redundant `Result` import and the `use
+  kernel::error::Result;` lines from the doctests; the prelude already
+  provides it (Miguel).
+- Added #[inline] to the devm_* helpers.
+- Link to v4: https://patch.msgid.link/20260618-clk-type-state-v4-0-8be082786080@collabora.com
+
+Changes in v4:
+- Rebased onto clk-next. Alice Ryhl's "rust: clk: implement Send and Sync"
+  series is now merged upstream, so it is no longer carried as a dependency.
+- Fixed the build with CONFIG_CPUFREQ_DT_RUST=y. The generic DT cpufreq
+  driver only has the (unbound) per-CPU device, so it cannot hand a
+  &Device<Bound> to Policy::set_clk(). Added a pub(crate) Clk::get_unbound()
+  for the few in-tree abstractions that operate on a device outside a bind
+  scope; set_clk() now takes &Device and uses it. Clk::get()/get_optional()
+  and the devm_* helpers still require &Device<Bound>.
+- Added impl From<Error<State>> for kernel::error::Error, so the fallible
+  state transitions can be used with `?` (and chained) instead of
+  .map_err(|e| e.error).
+- Added Clk::<Prepared>::with_enabled(), which runs a closure with the clock
+  temporarily enabled, scoping the Enabled state without giving up the
+  prepared clock.
+- Documented how to change a clock's state at runtime via an enum, for
+  drivers that enable/disable across resume/suspend.
+- Link to v3: https://lore.kernel.org/r/20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com
+
+Changes in v3:
+- Rebased on top of 6.19-rc4
+- Dropped patch 1 (from Alice), added her series as a dependency instead
+- Fixed Tyr, PWM_TH1520 drivers
+- Changed clk.rs imports to kernel-vertical style
+- Added support get_optional shortcut for Prepared and Enabled (i.e.:
+  Clk::<Enabled>::get_optional())
+- Fixed misplaced #[inline] tag
+
+Thanks, Danilo {
+  - Moved the devres changes into its own patch
+  - Require &Device<Bound> for all functions where a &Device is used
+  - Account for con_in in SAFETY comments where applicable
+  - Added backticks
+}
+
+- Link to v2: https://lore.kernel.org/r/20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com
+
+Changes in v2:
+- Added Alice's patch as patch 1, since it is a dependency.
+- Added devm helpers (like we did for Regulator<T>)
+- Fixed missing clk_put() call in Drop (Danilo)
+- Fixed missing parenthesis and wrong docs (Viresh)
+- Removed extra "dev" parameter from "shutdown" example (Danilo)
+- Removed useless type annotation from example (Danilo)
+- Link to v1: https://lore.kernel.org/rust-for-linux/20250729-clk-type-state-v1-1-896b53816f7b@collabora.com/#r
+
+---
+Daniel Almeida (6):
+      rust: clk: use 'kernel vertical style' for imports
+      rust: clk: replace `OptionalClk` with `Clk::get_optional()`
+      rust: clk: use the type-state pattern
+      rust: clk: add guards for scoped prepare and enable
+      rust: clk: add devres-managed clks
+      rust: clk: add `ExclusiveClk`
+
+Maurice Hieronymus (1):
+      pwm: th1520: Lock clock rate with clk_rate_exclusive_get
+
+ drivers/cpufreq/rcpufreq_dt.rs |   7 +-
+ drivers/gpu/drm/tyr/driver.rs  |  32 +-
+ drivers/pwm/pwm_th1520.rs      |  25 +-
+ rust/kernel/clk.rs             | 834 +++++++++++++++++++++++++++++++++++------
+ rust/kernel/cpufreq.rs         |   8 +-
+ 5 files changed, 748 insertions(+), 158 deletions(-)
+---
+base-commit: d3645b43ad60fe1ab3b4a869f6908414d5831a65
+change-id: 20250909-clk-type-state-c01aa7dd551d
+
+Best regards,
+--  
+Daniel Almeida <daniel.almeida@collabora.com>
+
