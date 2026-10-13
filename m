@@ -1,32 +1,32 @@
 Received: from morty.yoxcu.de (morty.yoxcu.de [194.36.144.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 234FA5437FE;
-	Tue, 13 Oct 2026 20:26:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C11A85476C3;
+	Tue, 13 Oct 2026 20:35:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.36.144.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791923190; cv=none; b=CtTMFt0GSv4L7E8aW5G9OSxqpWhjtFNo7tfjGu37Hvf5YyzOQu1Git/S6t5aAGlVr+gK3UY1+o8QwwUEy7Qm8EtQ3vTbUjbN0o9iyLN/tVTPwAXx2LIAMBfV5hEMWXtlAsE2fUDAJInfeuBnhsKeCzuQDcgkWEDV0fyhbGNCuHE=
+	t=1791923761; cv=none; b=pfPVC/JwsuRs6xe6v0lq+ZDQVVT6qupZD8jclpgGGLKcXAA2Ty3f8I+6+vgyIgJhcmh5JrMMGVKHjDrcNsNvjpj+HaUl7ZoffXYoA1n2/iuL5UJd5nuK4oZP2KsN0qBWrNKozxoLLEoaYXDLfwUx+zBd1ELgqslqC3S7m758XFQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791923190; c=relaxed/simple;
-	bh=e7OaXtRaIUPN6KYJqgmrutd005XtXbDuy5qcL3itMZg=;
+	s=arc-20240116; t=1791923761; c=relaxed/simple;
+	bh=G+4k0DbIkofuK4ZHWG8dk8Zd+da10qW7L9QSo5QX7V4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=O4jNtKUgXkV50wZHXfjHDva+teT/gjetMne6V7MDuufEm3ZtBEPD6C+aj4baN15WTs4a65U66tcxUKKhJAGd7NNGbS3bDkZBBlVytCOGh8nOm2RyzAXAtpN4Bq2JsZZNL/NBRC11ZS1OKBAbhFCBPYmvNq0fHveNQmkMX47CAFw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de; spf=pass smtp.mailfrom=yoxcu.de; dkim=pass (2048-bit key) header.d=yoxcu.de header.i=@yoxcu.de header.b=JAq2c9tl; arc=none smtp.client-ip=194.36.144.171
+	 MIME-Version; b=rUp2ORBcls1aQL106Y76JRDzoA8+ws4+b9EF+ZCOfTe4NaCa8E91ffy4AW3gHVWxfibcAcWkyKo5uv7UFVXgcd79l64sclnRw+xLVy1d7VV0HR1Bo5r0PiTI4E+vW1ev9BydY6wnuTX/u8wwNYrSlgINJO+W68cG/IID1v3jTpM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de; spf=pass smtp.mailfrom=yoxcu.de; dkim=pass (2048-bit key) header.d=yoxcu.de header.i=@yoxcu.de header.b=d7IR8RLK; arc=none smtp.client-ip=194.36.144.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=yoxcu.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yoxcu.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yoxcu.de header.i=@yoxcu.de header.b="JAq2c9tl"
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 2B0AA1D87E62;
-	Tue, 13 Oct 2026 22:26:25 +0200 (CEST)
+	dkim=pass (2048-bit key) header.d=yoxcu.de header.i=@yoxcu.de header.b="d7IR8RLK"
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id A743A1D873DC;
+	Tue, 13 Oct 2026 22:26:22 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yoxcu.de; s=dkim;
-	t=1791923185; h=from:subject:date:message-id:to:cc:mime-version:
+	t=1791923183; h=from:subject:date:message-id:to:cc:mime-version:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=SjLgg6eeaAg4win7q0F1mhz2B/Z2dOV+sRH+5a6YmUE=;
-	b=JAq2c9tlV6izlK1l+nI3W9qsr9+PqKJaJK1chT8SpHRSxS7IV9oX8CSg/Sya22Q2RUOv2u
-	eav97KdPSaAEH1+PsL15wow1yBMXpB1uQ0FmvZTO1LT7HyBYNyt7jCXN/ADCi6CYuOajyx
-	MX6dt4w0Tcnnfy60fPyvhQjiba6yLrVTrI25+TYnhW2L/HxTI2B7WnMU6oTz9mXntImEIu
-	1vq2vfMagfFqDdPbFGl2ahCtxiLejeRywJ30kmm7FuA+r0ObRJiunmXrh+GMMI0xfZFByR
-	Esz3ans/hUL3wFftDZFWM1jQy1UiEJ7pD51pJde9BTUePbKG/cPKQRmn6sBF6Q==
+	bh=8Qk7F5n8c/zIZNfNad5MRuZVvMzRkJ6tYzSA6ksx2IQ=;
+	b=d7IR8RLKU6X2bZZz9BtJUe4YUZuEuBjD4F/eOvNrF4VYuDIxBzJ1yx87/5O2Yq7KT2knoD
+	u1vy8B9VXeqVhFfNQuBPvMZm2VzqHk+xJQ4nxIT8OF4e7ADfRzLACza2+9gcknOKwhngYM
+	hD9xpe4gi0TWBCzFwvhilHQAD5byfiUSapfSQFj/JrRE7pPFHtJjgoNbw7EOufr2wHEWkR
+	UjPDvHREPlTrbYSzpWGCjWsRfI8i4W2+p//QhV/AymANtkiA2BthQHHX4QterPSgxE5HJF
+	37vxVKWY3LmqRnvyUpnhXq4Ap0DJNhdVhVYV8IfvNVYLyaNOTKmuoMbWRANM0A==
 From: yoxcu <mick@yoxcu.de>
 To: Georgi Djakov <djakov@kernel.org>
 Cc: Rob Herring <robh@kernel.org>,
@@ -39,9 +39,9 @@ Cc: Rob Herring <robh@kernel.org>,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Michael Auer <mick@yoxcu.de>
-Subject: [PATCH RFC 2/2] interconnect: qcom: sdm845: Own the ALC BCM to drop its boot vote
-Date: Tue, 13 Oct 2026 22:26:11 +0200
-Message-ID: <20261013202611.3070778-3-mick@yoxcu.de>
+Subject: [PATCH RFC 1/2] dt-bindings: interconnect: qcom,sdm845: Add MASTER_ALC
+Date: Tue, 13 Oct 2026 22:26:10 +0200
+Message-ID: <20261013202611.3070778-2-mick@yoxcu.de>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261013202611.3070778-1-mick@yoxcu.de>
 References: <20261013202611.3070778-1-mick@yoxcu.de>
@@ -56,73 +56,28 @@ X-Last-TLS-Session-Version: TLSv1.3
 
 From: Michael Auer <mick@yoxcu.de>
 
-On the OnePlus 6 the bootloader leaves a vote on the ALC BCM
-(rpmh_read() on the APPS DRV returns 0x2000000f). No driver owns this
-BCM, so the vote is never removed and the SoC never reaches AOSS sleep
-or CX collapse (qcom_stats aosd and cxsd stay at 0).
-
-Add a node without consumers for the ALC BCM on mem_noc. The provider
-then owns the BCM and drops the vote at sync_state.
-
-With this change ALC reads 0 after boot and suspend reaches CX
-collapse. The average current in an idle push standby test (Wi-Fi on)
-was 35.6 mA, against 43.7 mA with the ALC vote kept in the sleep set.
+Add an ID for the ALC node on mem_noc. The node has no consumers, so
+no DTS is expected to use the ID. The driver needs it to own the ALC
+BCM.
 
 Assisted-by: LLM
 Signed-off-by: Michael Auer <mick@yoxcu.de>
 ---
- drivers/interconnect/qcom/sdm845.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ include/dt-bindings/interconnect/qcom,sdm845.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
-index 1c434fd12ead..2a35ed7fce49 100644
---- a/drivers/interconnect/qcom/sdm845.c
-+++ b/drivers/interconnect/qcom/sdm845.c
-@@ -1114,6 +1114,13 @@ static struct qcom_icc_node ebi = {
- 	.buswidth = 4,
- };
+diff --git a/include/dt-bindings/interconnect/qcom,sdm845.h b/include/dt-bindings/interconnect/qcom,sdm845.h
+index 67b500e24915..fda8e367359e 100644
+--- a/include/dt-bindings/interconnect/qcom,sdm845.h
++++ b/include/dt-bindings/interconnect/qcom,sdm845.h
+@@ -108,6 +108,7 @@
+ #define SLAVE_SERVICE_MEM_NOC		12
+ #define MASTER_LLCC			13
+ #define SLAVE_EBI1			14
++#define MASTER_ALC			15
  
-+/* No consumers, owns the ALC BCM so sync_state drops the boot vote */
-+static struct qcom_icc_node alc = {
-+	.name = "alc",
-+	.channels = 1,
-+	.buswidth = 1,
-+};
-+
- static struct qcom_icc_node qhs_mdsp_ms_mpu_cfg = {
- 	.name = "qhs_mdsp_ms_mpu_cfg",
- 	.channels = 1,
-@@ -1250,6 +1257,14 @@ static struct qcom_icc_bcm bcm_acv = {
- 	.nodes = { &ebi },
- };
- 
-+static struct qcom_icc_bcm bcm_alc = {
-+	.name = "ALC",
-+	.enable_mask = BIT(0),
-+	.keepalive = false,
-+	.num_nodes = 1,
-+	.nodes = { &alc },
-+};
-+
- static struct qcom_icc_bcm bcm_mc0 = {
- 	.name = "MC0",
- 	.keepalive = true,
-@@ -1646,6 +1661,7 @@ static const struct qcom_icc_desc sdm845_gladiator_noc = {
- static struct qcom_icc_bcm * const mem_noc_bcms[] = {
- 	&bcm_mc0,
- 	&bcm_acv,
-+	&bcm_alc,
- 	&bcm_sh0,
- 	&bcm_sh1,
- 	&bcm_sh2,
-@@ -1669,6 +1685,7 @@ static struct qcom_icc_node * const mem_noc_nodes[] = {
- 	[SLAVE_SERVICE_MEM_NOC] = &srvc_memnoc,
- 	[MASTER_LLCC] = &llcc_mc,
- 	[SLAVE_EBI1] = &ebi,
-+	[MASTER_ALC] = &alc,
- };
- 
- static const struct qcom_icc_desc sdm845_mem_noc = {
+ #define MASTER_CNOC_MNOC_CFG		0
+ #define MASTER_CAMNOC_HF0		1
 -- 
 2.43.0
 
