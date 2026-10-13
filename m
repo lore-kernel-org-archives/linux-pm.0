@@ -1,179 +1,146 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ABF15237B8
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 17:23:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16596476CF1;
+	Tue, 13 Oct 2026 17:35:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791912185; cv=none; b=tGPm9MQ/f/ldXZovvb0cbrlZHbtuZrjetmPnLn6Q6uiw2WsK3WxjyMSZG3IWDNjpHKqh6iqEEtkkG76LiFwvxayyFH3qbw8u5eN6xM9zH0djwFDN8f4CIuJ28oVZsWuhDyfhYaxY7C3pwW8/C3roM1RmatF7/5H7eebeqchJ//4=
+	t=1791912904; cv=none; b=I2SX+JiG2a7RBnhlnO7hmqOvB7VLwGZXFhHFis57oQ786LU+RjCn15ES6JW3UfAuRWY2jNutL5n0Oxso9yuOk1aICDXLwFtBngsRkw3wP57OkCbkk/UdQABVP8d1+JGk4/ynPV0vzehX/6iSOO44y++/c70SmY74mNcFDjGm9iU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791912185; c=relaxed/simple;
-	bh=6oHp6iOgu3vSfUvFoKGR28aA37BnryUeRpYDhY2R2Vw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jcHk0ZzTwhuTniW/SnmIlFl8RcAiyst+PkIQsaiCdyxEe1FDmUsC50yBK+y0XGJH5h7eWYqdAN0DHGqLP122aNyD/YZCuAFeg1b9282/hReFgs1KIcDJzXkZU+QtqQr6OBJ3/PrVSQBnq3t+rUvu4GcFLe5T1gB6Q5tvRMSx9u8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bM4vImJe; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791912904; c=relaxed/simple;
+	bh=y/X75DFMsJzsDjB9Jbo2Kj0HLFl1a/CrkiotRQ657Is=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=tM+4oKOz1kSbIYpNqZTeZ+0HVqhM6QKW+3hL4TYPJUW6q95yFT+GSDAgCsGM3df+s7cd0r+U2eW1XznumDlpUSd9LKSlG4H3YX3pZTdnLsogmuLdoYD4xCk8K2nIu9C83F4BT2cU38JuWDnaR0I+2V+m3w0BQ9RMHrmrDRfkitc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PQv3YNpe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bM4vImJe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF79A1F008A1
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 17:23:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791912182;
-	bh=58vcH4XOh3Uxb0/yHZpvGzQapqHFOqeDk7/phElXVhw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=bM4vImJeNOabcnbRhYbq9bIHyCVf6FStYaRomHk+BwpDrO8rxLv/G/eqw/PQT4a4O
-	 9zdDaMeFWhCffixJHEoQ6Q01mBo+I89j+lWWvCy4PB/z8l/10Bgo6hgo34ToVcVrI9
-	 Lzj1m/uhPzx5smipyd+L9dSHjKU/91/R1Q/wFVbcCRmCsP3dWI2LNSG3bpFYPuKExD
-	 +PfJTT7QOVaDF//gYqAjKu3nnXEGnLaCTOA0lJy0pSuWStN4EVTJNFIPls9OifnZsE
-	 JFwN3qFYqyRdnLx5JdVtMARHzUV+xTCOwQq5U9UFMW5wvo61rg264FFxbda+3yxpcZ
-	 LskmvOEsJjBXg==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5bb7ae22913so2017916e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 10:23:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzykJXDyldsGCQGBEOtpZFDjj9IqP2+VgxestA3e50u4KMiWlil724N3Y/nBOZjoZgwqTeyNe8PAA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKKCHzAWh1x4u3F3fETRy+OEamuUf9CG+0OTYVXwBneeu+PjV+6
-	JGaVb0YtJWhzNiE7501yG/JyWbeXBjsYCMN7HfEVnlwZgp7eaBtyeLydGjmF5+WEwl1cHQs+8A6
-	Rhy0UtewYU/3gbc6dwjNFw/adAcEDn/o=
-X-Received: by 2002:a05:6512:1389:b0:5b8:f3d5:f301 with SMTP id
- 2adb3069b0e04-5bcde35148bmr4362168e87.6.1791912181025; Tue, 13 Oct 2026
- 10:23:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PQv3YNpe"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B51A3C2BCF4;
+	Tue, 13 Oct 2026 17:35:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1791912903;
+	bh=y/X75DFMsJzsDjB9Jbo2Kj0HLFl1a/CrkiotRQ657Is=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=PQv3YNpetWGez1mdIFKP/h4mEuOFFLZ085b/JFXhreEmlZIW3gTbvGsi8YavEQXpN
+	 +cxBA1aFJDGAzp3RDdWtinpFkcxXl07qW9Xb85ZfTCQ5F7vw0aStJnjoOqsnqF+wJC
+	 hw2EFqSTnL9xrcVHTDQ9cnVvwED4Tdx0G/AQHdkw2M25TMHNA/ec+Hgcbe3y7RauW0
+	 0ngQrkMZW1YyZvhix2pzGiH3j7F+iwf0OAtTA2nPyP7U5fSVGbo9QCw4PMR5TQd1oU
+	 Y6vVRGnY0NwlHZKBN8y1w4crN1P8pe0MJEEW0v4bR1MsCCKjxqAbXup3jWBnDnL12v
+	 6RMtThNOwIwoQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AEAACC6B12;
+	Tue, 13 Oct 2026 17:35:03 +0000 (UTC)
+From: Brandon Williams via B4 Relay <devnull+turbine.bmw.gmail.com@kernel.org>
+Date: Tue, 13 Oct 2026 13:34:51 -0400
+Subject: [PATCH] power: supply: qcom_battmgr: Notify charger supplies of
+ online changes
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <37N_jFulf7n-Z55NfKfE71C_wVPxYvZ0xD_iRUg2fXu7TypDiF5PStQ6siSfVBih6fThg5WoPes8U5ZQpfVm_teMFcUGXFxz2DdMbfSWuws=@proton.me>
- <20261012225141.13683-1-aliamemis@disroot.org> <fb993dd3-ee56-4e3d-aa16-573f011518f1@oss.qualcomm.com>
- <CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com> <044e9df4-1399-4ceb-80f8-f7cfe031d04f@oss.qualcomm.com>
-In-Reply-To: <044e9df4-1399-4ceb-80f8-f7cfe031d04f@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 13 Oct 2026 19:20:55 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0isCM3K3U6HSdDnvXzBX41AgQMFYxqLx3KvMA0W_91-ew@mail.gmail.com>
-X-Gm-Features: AclHuK8Dko4T7OiAi5h3jqpw8o-XWUajlqhmOiANoa1OJ9welDWIOCCTNuHuWCM
-Message-ID: <CAJZ5v0isCM3K3U6HSdDnvXzBX41AgQMFYxqLx3KvMA0W_91-ew@mail.gmail.com>
-Subject: Re: [PATCH] ACPI: battery: Re-read battery information in the
- complete callback
-To: johannes.goede@oss.qualcomm.com
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, =?UTF-8?Q?Ali_Ahmet_Memi=C5=9F?= <aliamemis@disroot.org>, 
-	Len Brown <lenb@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
-	Charis Stratakis <c.stratakis@proton.me>, linux-acpi@vger.kernel.org, 
-	linux-pm@vger.kernel.org, regressions@lists.linux.dev, 
-	Mark Pearson <mpearson-lenovo@squebb.ca>, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261013-upstream-battmgr-charger-online-v1-1-731973e133a0@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXNQQqDMBCF4avIrDtgYpHaq5QuknSMU2qUmSiCe
+ HfTdvnB4387KAmTwr3aQWhl5SkVmEsFYXApEvKrGGxtW1ObBpdZs5Ab0bucxyhYZhJJcEofToS
+ hs7YxvnfXWwelMgv1vP0eHs+/dfFvCvmbheM4ARFO3mKDAAAA
+X-Change-ID: 20261013-upstream-battmgr-charger-online-c92231bfa489
+To: Sebastian Reichel <sre@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
+ Brandon Williams <turbine.bmw@gmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791912902; l=3326;
+ i=turbine.bmw@gmail.com; s=20261013; h=from:subject:message-id;
+ bh=2nahTR5uEsrzwi6gEYo9VL4sGI7ylJdvvKlUHbSEfWM=;
+ b=LM56MtNNV6v+m7qf2P94pum++gKuqCP+2iZYUeT0ZwrYUbcRp4vk1/EeN/2uHg1OKY7eQ8nj4
+ kevYfc+h5ziAyRr/Ifq8E3uREv8SLLuU13AvHBQeYaI/pV8TaeJpTEG
+X-Developer-Key: i=turbine.bmw@gmail.com; a=ed25519;
+ pk=Bpa28klX84MV14dvc8stQXHQtbFQK0xDK15qggaz3JA=
+X-Endpoint-Received: by B4 Relay for turbine.bmw@gmail.com/20261013 with
+ auth_id=1171
+X-Original-From: Brandon Williams <turbine.bmw@gmail.com>
+Reply-To: turbine.bmw@gmail.com
 
-Hi Hans,
+From: Brandon Williams <turbine.bmw@gmail.com>
 
-On Tue, Oct 13, 2026 at 3:36=E2=80=AFPM <johannes.goede@oss.qualcomm.com> w=
-rote:
->
-> Hi Rafael,
->
-> On 13-Oct-26 13:58, Rafael J. Wysocki (Intel) wrote:
-> > On Tue, Oct 13, 2026 at 11:33=E2=80=AFAM <johannes.goede@oss.qualcomm.c=
-om> wrote:
-> >>
-> >> Hi,
-> >>
-> >> On 13-Oct-26 00:46, Ali Ahmet Memi=C5=9F wrote:
-> >>> Since commit d33e89d12295 ("thermal: core: Suspend thermal zones late=
-r
-> >>> and resume them earlier"), thermal zones are resumed from dpm_complet=
-e(),
-> >>> before the PM_POST_SUSPEND notifier that re-reads _BIX and _BST. On
-> >>> ThinkPad P1 Gen2 and P53, INT3403 _TMP calls \GTST which switches the=
- EC
-> >>> page selector (HIID) without taking the BATM mutex used by the batter=
-y
-> >>> methods. ACPICA releases the interpreter lock around EC accesses
-> >>
-> >> I'm wondering if this "ACPICA releases the interpreter lock around EC
-> >> accesses" is not the real problem here.
-> >
-> > Yes, it most likely is.
-> >
-> > What actually happens is that ACPICA drops the interpreter lock and
-> > the namespace lock in several cases listed in the
-> > acpi_ex_exit_interpreter() documentation comment, the majority of
-> > which involve having to wait.
-> >
-> > The bottom line though is that the interpreter and namespace locks
-> > cannot be expected to be held throughout AML evaluation because it is
-> > not known in advance if any of the cases in question will appear.
-> >
-> >> Recently I've learned / heard
-> >> from a trusted source that Windows ACPI subsystem is very much single
-> >> threaded. So it is nice that ACPI has these mutexes and other stuff
-> >> to support multi-threading but as long as Windows ACPI interpreter is
-> >> not multi-threaded I think we may need to consider to copy Windows
-> >> behavior.
-> >
-> > This is also my conclusion, at least to some extent.
-> >
-> > The problem with it though is that in some cases parallel evaluation
-> > of AML is actually useful.  For example, say two PCI devices are
-> > powered up at the same time and AML waits for each of them.  The async
-> > suspend/resume aligns those waits to take place simultaneously instead
-> > of serializing them which allows some time to be saved.
-> >
-> >> So maybe the EC accesses should keep the interpreter lock locked durin=
-g
-> >> EC accesses.
-> >
-> > The problem here is that it is hard to say in advance whether or not
-> > _BIX or _BST will access the EC and whether or not that will clash
-> > with _TMP evaluation for a seemingly unrelated thermal zone.
-> >
-> >> And even go further and maybe we need to introduce a big-acpi-lock,
-> >> which I guess the interpreter lock more or less is? And just serialize
-> >> all ACPI accesses since most ACPI tables clearly do not handle
-> >> multi-threaded access to ACPI methods well ?
-> >
-> > I would be inclined to do so except for device power management
-> > methods, that is _ON, _OFF, and _PSx, that are not the problematic
-> > ones, at least as far as I know.
->
-> That sounds like a reasonable compromise which should fix both
-> this case as well as help with bko221065 .
->
-> >> Another example of multi-threaded ACPI calls causing problems is:
-> >>
-> >> https://bugzilla.kernel.org/show_bug.cgi?id=3D221065
-> >
-> > Right.
-> >
-> > So I guess the idea would be to add locking to acpi_evaluate_object()?
->
-> Yes that seems like a nice single point of entry to do this where
-> all the various helpers eventually end up.
+On SC8280XP and X1E80100 the AC, USB and wireless supplies take their
+online state from the charging source in the battery status response.
+The firmware sends no notification for those supplies when the charging
+source changes, and the driver only announces the battery, so userspace
+never learns that the charger was plugged in or out. UPower keeps the
+state it read at startup: a laptop booted on the charger never goes on
+battery.
 
-That, of course, would require updating ACPICA code and I'm not sure
-if doing it upstream is useful.  For example, if some hosts already
-use locking around acpi_evaluate_object(), this modification won't
-help them and it will certainly be a change in behavior.
+Call power_supply_changed() for a supply whose online state changes when
+a status response is parsed. A supply that is not registered yet, when
+the battery is read during probe, reports its state when it registers.
 
-This means that we'll likely end up with a Linux-specific divergence
-from the upstream which can be lived with, but it won't be nice.
+Tested on a Microsoft Surface Pro 11 (X1E80100): after restarting UPower
+on the charger, unplugging now sets OnBattery, and plugging in clears it.
 
-> > An alternative might be to introduce an "exclusive" variant of
-> > acpi_evaluate_object() with built-in locking and use it in the cases
-> > that are known-problematic.
->
-> So here we have _TMP and _BIX / _BST and in bko221065 we have
-> a bunch of again batteyr methods + UCSI racing. I'm afraid if
-> we add something like acpi_evaluate_object_exclusive() we'll end
-> up eventually using that almost everywhere.
+Fixes: 29e8142b5623 ("power: supply: Introduce Qualcomm PMIC GLINK power supply")
+Cc: stable@vger.kernel.org
+Assisted-by: Claude:claude-opus-5-5
+Signed-off-by: Brandon Williams <turbine.bmw@gmail.com>
+---
+ drivers/power/supply/qcom_battmgr.c | 26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
-While I think that your concern is valid, this can be done without
-touching the ACPICA code at all.
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index a7237ba09be1..4ca340981922 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -1255,6 +1255,23 @@ static unsigned int qcom_battmgr_sc8280xp_convert_temp(unsigned int temperature)
+ 	return DIV_ROUND_CLOSEST(temperature, 10);
+ }
+ 
++/*
++ * The charger supplies' online state comes from the battery status response,
++ * and the firmware sends no notification of its own when it changes, so
++ * announce the change here. A supply that is not registered yet announces its
++ * state when it is.
++ */
++static void qcom_battmgr_sc8280xp_set_online(struct power_supply *psy,
++					     bool *online, bool value)
++{
++	if (*online == value)
++		return;
++
++	*online = value;
++	if (psy)
++		power_supply_changed(psy);
++}
++
+ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
+ 					   const struct qcom_battmgr_message *resp,
+ 					   size_t len)
+@@ -1324,9 +1341,12 @@ static void qcom_battmgr_sc8280xp_callback(struct qcom_battmgr *battmgr,
+ 		battmgr->status.temperature = qcom_battmgr_sc8280xp_convert_temp(le32_to_cpu(resp->status.temperature));
+ 
+ 		source = le32_to_cpu(resp->status.charging_source);
+-		battmgr->ac.online = source == BATTMGR_CHARGING_SOURCE_AC;
+-		battmgr->usb.online = source == BATTMGR_CHARGING_SOURCE_USB;
+-		battmgr->wireless.online = source == BATTMGR_CHARGING_SOURCE_WIRELESS;
++		qcom_battmgr_sc8280xp_set_online(battmgr->ac_psy, &battmgr->ac.online,
++						 source == BATTMGR_CHARGING_SOURCE_AC);
++		qcom_battmgr_sc8280xp_set_online(battmgr->usb_psy, &battmgr->usb.online,
++						 source == BATTMGR_CHARGING_SOURCE_USB);
++		qcom_battmgr_sc8280xp_set_online(battmgr->wls_psy, &battmgr->wireless.online,
++						 source == BATTMGR_CHARGING_SOURCE_WIRELESS);
+ 		if (battmgr->info.last_full_capacity != 0) {
+ 			/*
+ 			 * 100 * battmgr->status.capacity can overflow a 32bit
 
-Also, we don't actually know how many "bad" cases there are and so far
-we have identified a few.  If they are not too widespread, changing
-behavior everywhere for everyone may not be adequate.
+---
+base-commit: 4eb2586bd40db27d77cc5b724ca9386ed0c71d53
+change-id: 20261013-upstream-battmgr-charger-online-c92231bfa489
 
-> Maybe do things the other way around and serializing all the calls
-> by default and adding an acpi_evaluate_object_unlocked() to be used
-> in cases where we want the speedup of multi-threading like
-> the _ON, _OFF and _PSx you mentioned above ?
+Best regards,
+--  
+Brandon Williams <turbine.bmw@gmail.com>
 
-Yes, depending on which way is more practical, that can be done.
+
