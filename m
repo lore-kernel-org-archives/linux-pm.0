@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD554476CF1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1037477987;
 	Tue, 13 Oct 2026 02:36:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791858998; cv=none; b=dZH/A+6z4C+fdz4gZkYrV1fdrMg4jtZzcEUnJPbvybc1jD7qJ33JvtV6yeTq2BH9Kl2GRiTUb0iLnxhtiDxOsctD7eUkKzq0ZhS/V7vhHipaxHYzBwFePPFteFKopOimhwqzqF4h1AoRPHNWX0G56BiLvaQRvUVJCTZAAtg5SNY=
+	t=1791858999; cv=none; b=ndQaAzHIbNAQ+NbYQLc0PVJuOlsLwDSoRJ7Aq5Zyb1jci/2pSdjwk05ZGbs+F5Vey1y0lMV4ETIkMY7kuQA6qup9pzWLOwnABy22ST0qAtziaRqWTCleuCWTXdOm97lw6tytpgT9D9HbYOGFuKoRpyHUusMj5J2WrrRJAtbI/GE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791858998; c=relaxed/simple;
-	bh=/ENcQ9rKYlJBY78ObfNLhqdgC7PShzthxe+0hsOPRWU=;
+	s=arc-20240116; t=1791858999; c=relaxed/simple;
+	bh=QPDHIfw7ukQJ3hWE4NMCtWgNTTWn3Q2MZQEaHOV3lSk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZRtOOMwOEFHv1tf44JzQDNx+kjYMkj4+to3rk0R3VFcsdVkydGWFD4zhDKe8rqVp+N1J4u3AJedl8AfirwMDgQIwXzQmcABa+S66Fd2+N87PoKmw5Fyp6WZNf/vCfKjvDzcFL3EmWHSGggd4SJTmXQsWqTJI4gRVvfCMHwEnHtI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dX4NQ0Nd; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=UGTHqszGa/Lm06tsS6uSEFg0nIzwHPl8CwaZDit+zqq6x803xrs0w7lUY6RFHczed5zyuh5QBvE9B2A0usYQVKrtSxR7u4jpsIpB6E/2Es53mMaMNrLMu4PdXSaSSVEn4PYwtdNujSfmEHxjCi7ectY732HU83tsaGb/EUjDbro=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ao2nEPk7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dX4NQ0Nd"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 31635C4DDEA;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ao2nEPk7"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id CE507C2BCFF;
 	Tue, 13 Oct 2026 02:36:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1791858998;
-	bh=/ENcQ9rKYlJBY78ObfNLhqdgC7PShzthxe+0hsOPRWU=;
+	bh=QPDHIfw7ukQJ3hWE4NMCtWgNTTWn3Q2MZQEaHOV3lSk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=dX4NQ0NdD2QPj4Fo6Mh+ob3qziuArGSxOgum1YkfZtYJr1miiFu3rDYoS1FqY58Mp
-	 BpLtsK9UgvDHIGJ2NkuH/vDfcEYZY5++cJ2lczfURLLo1nD57nvbpAzTInYZogDRat
-	 eliNRos+atZKYBwbGNaIG8PUB+gmVXskXg9joO+sy38yH5xW2LjAVBalhz2PEzGsL5
-	 zxH6RUwuF2A7UF/X2BwRAjnkaubLN3v0fYTL6z9TC4srbUqF6vpAgGllNFWA1v5nCn
-	 X/MLvaXo/5txS79KdFYmYcdIBOJywlmcnzi4dIF6hDxt0G8q7Fr5i8fvkqS+v6E8n1
-	 0t+mcAO3IFFvQ==
+	b=Ao2nEPk7emgdLTKQxAEfyMYnKgNXFDYewXCJdm6G9jF2PPJl/Uvek4Zav2w/xXJB1
+	 1ixjWdLEdKtczsRSroX/sWQAyA1TedyPlXxIcncdqheDvpom6ufpAOgz+uGqdJj3Bl
+	 kaZhL1d994smUSDkJv+XWb4r2mjCoXT4M6ikmA9TTz96jysZkgN+YOwTaQo8Z62o42
+	 OeUUjFpU9BBaZJ3jqLQNg5D6dktKX1LEWZtvdi4jeJWn6wssRKgd4gAjQ8XotC77my
+	 41xotu1oKtrNAVFWd8UNv9hlucl5CSgNOHsd5BBVvbcnj56NuqcvgRERxYvpB2zQM5
+	 wdQVAHNYbLieg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A564CC6B03;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB912CA9ED0;
 	Tue, 13 Oct 2026 02:36:38 +0000 (UTC)
 From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Mon, 12 Oct 2026 20:36:37 -0600
-Subject: [PATCH v12 06/40] dyndbg.lds.S: fix lost dyndbg sections in
- modules
+Date: Mon, 12 Oct 2026 20:36:45 -0600
+Subject: [PATCH v12 14/40] dyndbg: refactor param_set_dyndbg_classes and
+ below
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261012-dd-cmap-part2-clean-v12-6-3c8cc5725def@gmail.com>
+Message-Id: <20261012-dd-cmap-part2-clean-v12-14-3c8cc5725def@gmail.com>
 References: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
 In-Reply-To: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
 To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
@@ -67,13 +67,14 @@ Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org, 
  linux-modules@vger.kernel.org, linux-doc@vger.kernel.org, 
  linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
- Jim Cromie <jim.cromie@gmail.com>
+ Jim Cromie <jim.cromie@gmail.com>, 
+ Louis Chauvet <louis.chauvet@bootlin.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791858995; l=5098;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791858995; l=6792;
  i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=GVa+JISyaOIBbonPye2T/V/PFEj55G7uS2nqxUBKA2c=;
- b=lvK71rInhJzOsSUMIY69lnxBlpkdKYd1Z8x0DN3TOZQ+5ANofNPAhZK/LA+VAkw/J9uk6yxW6
- VoFPvhkBrD5DWjmYFBL68iFI58YufNBGdvxGMpCV2FjaCXPe0YauJG8
+ bh=odl1V/VMh+UIrrmqU9jDNQVvpvKfmGuh3/VT//0V6/4=;
+ b=K9bFa2AOyEY0lIwfa7tAMigy3AQ7qddOhvJ08ejRsQNG8OX24C6p3ej21awijrBeTrHIo0Tvm
+ 0dOJd5MEu6FD/l6TnyZwU3Q3uDDEbio4Z4VxcXfy50jyCMmYWXFOcYo
 X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
  pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
 X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
@@ -83,148 +84,173 @@ Reply-To: jim.cromie@gmail.com
 
 From: Jim Cromie <jim.cromie@gmail.com>
 
-With CONFIG_DRM_USE_DYNAMIC_DEBUG=y, several build configs had
-problems with __dyndbg* sections getting lost in drm drivers.  Fix
-this by following the model demonstrated in codetag.lds.h.
+Refactor the callchain below param_set_dyndbg_classes(1) to allow
+mod-name specific settings.  Split (1) into upper/lower fns, adding
+modname param to lower, and passing NULL in from upper.  Below that,
+add the same param to ddebug_apply_class_bitmap(), and pass it thru to
+_ddebug_queries(), replacing NULL with the param.
 
-Introduce include/asm-generic/dyndbg.lds.h, to bundle dynamic-debug's
-multiple sections together, into 2 macros:
+This allows the callchain to update the classmap in just one module,
+vs just all as currently done.  While the sysfs param is unlikely to
+ever update just one module, the callchain will be used for modprobe
+handling, which should update only that just-probed module.
 
-vmlinux.lds.h DATA_DATA: move the 2 BOUNDED_SECTION_BY(__dyndbg*)
-calls into dyndbg.lds.h DYNDBG_SECTIONS(). vmlinux.lds.h now includes
-the new file and calls the new macro.
+In ddebug_apply_class_bitmap(), also check for actual changes to the
+bits before announcing them, to declutter logs.
 
-MOD_DYNDBG_SECTIONS keeps the 2 sections by name, aligns them and sets
-the output address to 0 when the sections are empty.
-
-dyndbg.lds.h includes (reuses) bounded-section.lds.h
-
-scripts/module.lds.S: now calls MOD_DYNDBG_SECTIONS right before the
-CODETAG macro (consistent with their placements in vmlinux.lds.h), and
-also includes dyndbg.lds.h
-
-This isolates vmlinux.lds.h from further __dyndbg section additions.
-
-CC: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
-Reviewed-by: Petr Pavlu <petr.pavlu@suse.com>
+Reviewed-by: Louis Chauvet <louis.chauvet@bootlin.com>
 ---
-v3: move #includes to top, drop extra ALIGN(8) in DYNDBG_SECTIONS, add RvBy
-
-v2: Address linker script review feedback for relocatable modules.
-
-MOD_DYNDBG_SECTIONS() used the BOUNDED_SECTION_BY() macro, which
-proved problematic for kernel modules for two reasons:
-
-1. Unwanted Empty Sections:
-   BOUNDED_SECTION_BY() automatically generates `__start` and `__stop`
-   symbols. When applied to `MOD_DYNDBG_SECTIONS()`, the linker assumes
-   the sections are populated due to the symbol definitions, forcing an
-   empty `__dyndbg` and `__dyndbg_classes` output section in every
-   compiled module, even those without dynamic debug configuration.
-   Since the module loader uses `section_objs()` to locate data via
-   ELF headers instead of relying on `__start`/`__stop` symbols, these
-   assignments are completely unnecessary.
-
-2. Non-zero Output Addresses:
-   During relocatable linking (e.g., `ld.bfd -r`), omitting an explicit
-   base address causes the section to inherit the current location
-   counter. This results in non-zero sh_addr values in `.ko` files,
-   which is confusing, degrades compressibility, and can cause issues
-   with external tools parsing the ELF.
-
-Fix both issues by dropping `BOUNDED_SECTION_BY()` in favor of a simple
-`KEEP(*(...))` constraint and explicitly defining the sections with a `0`
-base address: `__dyndbg 0 : ALIGN(8) { ... }`.
-
-fixup-inc-vml
+v2: move RvB after SoB
+v8: drop kdoc on static fn,
 ---
- MAINTAINERS                       |  1 +
- include/asm-generic/dyndbg.lds.h  | 18 ++++++++++++++++++
- include/asm-generic/vmlinux.lds.h |  6 ++----
- scripts/module.lds.S              |  2 ++
- 4 files changed, 23 insertions(+), 4 deletions(-)
+ lib/dynamic_debug.c | 73 ++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 47 insertions(+), 26 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 98954b1746f6..af888d6c660c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9259,6 +9259,7 @@ DYNAMIC DEBUG
- M:	Jason Baron <jbaron@akamai.com>
- M:	Jim Cromie <jim.cromie@gmail.com>
- S:	Maintained
-+F:	include/asm-generic/dyndbg.lds.h
- F:	include/linux/dynamic_debug.h
- F:	lib/dynamic_debug.c
- F:	lib/test_dynamic_debug.c
-diff --git a/include/asm-generic/dyndbg.lds.h b/include/asm-generic/dyndbg.lds.h
-new file mode 100644
-index 000000000000..9d8951bef688
---- /dev/null
-+++ b/include/asm-generic/dyndbg.lds.h
-@@ -0,0 +1,18 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __ASM_GENERIC_DYNDBG_LDS_H
-+#define __ASM_GENERIC_DYNDBG_LDS_H
-+
-+#include <asm-generic/bounded_sections.lds.h>
-+#define DYNDBG_SECTIONS()					\
-+	BOUNDED_SECTION_BY(__dyndbg, ___dyndbg)			\
-+	BOUNDED_SECTION_BY(__dyndbg_classes, ___dyndbg_classes)
-+
-+#define MOD_DYNDBG_SECTIONS()						\
-+	__dyndbg 0 : ALIGN(8) {						\
-+		KEEP(*(__dyndbg))					\
-+	}								\
-+	__dyndbg_classes 0 : ALIGN(8) {					\
-+		KEEP(*(__dyndbg_classes))				\
-+	}
-+
-+#endif /* __ASM_GENERIC_DYNDBG_LDS_H */
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index c3376665d027..48f00c5e8762 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -52,6 +52,7 @@
- 
- #include <asm-generic/bounded_sections.lds.h>
- #include <asm-generic/codetag.lds.h>
-+#include <asm-generic/dyndbg.lds.h>
- 
- #ifndef LOAD_OFFSET
- #define LOAD_OFFSET 0
-@@ -344,10 +345,7 @@
- 	*(.data..do_once)						\
- 	STRUCT_ALIGN();							\
- 	*(__tracepoints)						\
--	/* implement dynamic printk debug */				\
--	. = ALIGN(8);							\
--	BOUNDED_SECTION_BY(__dyndbg_classes, ___dyndbg_classes)		\
--	BOUNDED_SECTION_BY(__dyndbg, ___dyndbg)				\
-+	DYNDBG_SECTIONS()						\
- 	CODETAG_SECTIONS()						\
- 	LIKELY_PROFILE()		       				\
- 	BRANCH_PROFILE()						\
-diff --git a/scripts/module.lds.S b/scripts/module.lds.S
-index d0f200428957..5950ff8edc31 100644
---- a/scripts/module.lds.S
-+++ b/scripts/module.lds.S
-@@ -5,6 +5,7 @@
-  */
- 
- #include <asm-generic/codetag.lds.h>
-+#include <asm-generic/dyndbg.lds.h>
- 
- SECTIONS {
- 	/DISCARD/ : {
-@@ -56,6 +57,7 @@ SECTIONS {
- 		*(.rodata..L*)
- 	}
- 
-+	MOD_DYNDBG_SECTIONS()
- 	MOD_SEPARATE_CODETAG_SECTIONS()
+diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
+index d0e793a05655..bbe32fab74e8 100644
+--- a/lib/dynamic_debug.c
++++ b/lib/dynamic_debug.c
+@@ -618,9 +618,10 @@ static int ddebug_exec_queries(char *query, const char *modname)
+ 	return nfound;
  }
  
+-/* apply a new bitmap to the sys-knob's current bit-state */
++/* apply a new class-param setting */
+ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+-				     unsigned long *new_bits, unsigned long *old_bits)
++				     unsigned long *new_bits, unsigned long *old_bits,
++				     const char *query_modname)
+ {
+ #define QUERY_SIZE 128
+ 	char query[QUERY_SIZE];
+@@ -628,7 +629,9 @@ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+ 	int matches = 0;
+ 	int bi, ct;
+ 
+-	v2pr_info("apply: 0x%lx to: 0x%lx\n", *new_bits, *old_bits);
++	if (*new_bits != *old_bits)
++		v2pr_info("apply bitmap: 0x%lx to: 0x%lx for %s\n", *new_bits,
++			  *old_bits, query_modname ?: "'*'");
+ 
+ 	for (bi = 0; bi < map->length; bi++) {
+ 		if (test_bit(bi, new_bits) == test_bit(bi, old_bits))
+@@ -637,12 +640,16 @@ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+ 		snprintf(query, QUERY_SIZE, "class %s %c%s", map->class_names[bi],
+ 			 test_bit(bi, new_bits) ? '+' : '-', dcp->flags);
+ 
+-		ct = ddebug_exec_queries(query, NULL);
++		ct = ddebug_exec_queries(query, query_modname);
+ 		matches += ct;
+ 
+ 		v2pr_info("bit_%d: %d matches on class: %s -> 0x%lx\n", bi,
+ 			  ct, map->class_names[bi], *new_bits);
+ 	}
++	if (*new_bits != *old_bits)
++		v2pr_info("applied bitmap: 0x%lx to: 0x%lx for %s\n", *new_bits,
++			  *old_bits, query_modname ?: "'*'");
++
+ 	return matches;
+ }
+ 
+@@ -651,22 +658,17 @@ static int ddebug_apply_class_bitmap(const struct ddebug_class_param *dcp,
+ 
+ #define CLASSMAP_BITMASK(width) ((1UL << (width)) - 1)
+ 
+-/**
+- * param_set_dyndbg_classes - class FOO >control
+- * @instr: string echo>d to sysfs, input depends on map_type
+- * @kp:    kp->arg has state: bits/lvl, map, map_type
+- *
+- * Enable/disable prdbgs by their class, as given in the arguments to
+- * DECLARE_DYNDBG_CLASSMAP.  For LEVEL map-types, enforce relative
+- * levels by bitpos.
+- *
+- * Returns: 0 or <0 if error.
++/*
++ * param-setter helper to validate numeric input, clamp its value by
++ * the classmap type and size, and apply the bits.
+  */
+-int param_set_dyndbg_classes(const char *instr, const struct kernel_param *kp)
++static int param_set_dyndbg_module_classes(const char *instr,
++					   const struct kernel_param *kp,
++					   const char *mod_name)
+ {
+ 	const struct ddebug_class_param *dcp = kp->arg;
+ 	const struct ddebug_class_map *map = dcp->map;
+-	unsigned long inrep, new_bits, old_bits;
++	unsigned long inrep, new_bits, old_bits, old_val;
+ 	int rc, totct = 0;
+ 
+ 	rc = kstrtoul(instr, 0, &inrep);
+@@ -686,9 +688,10 @@ int param_set_dyndbg_classes(const char *instr, const struct kernel_param *kp)
+ 				KP_NAME(kp), inrep, CLASSMAP_BITMASK(map->length));
+ 			inrep &= CLASSMAP_BITMASK(map->length);
+ 		}
+-		v2pr_info("bits:%lx > %s\n", inrep, KP_NAME(kp));
+-		totct += ddebug_apply_class_bitmap(dcp, &inrep, dcp->bits);
+-		*dcp->bits = inrep;
++		old_val = READ_ONCE(*dcp->bits);
++		v2pr_info("bits:0x%lx > %s.%s\n", inrep, mod_name ?: "*", KP_NAME(kp));
++		totct += ddebug_apply_class_bitmap(dcp, &inrep, &old_val, mod_name);
++		WRITE_ONCE(*dcp->bits, inrep);
+ 		break;
+ 	case DD_CLASS_TYPE_LEVEL_NUM:
+ 		/* input is bitpos, of highest verbosity to be enabled */
+@@ -697,11 +700,12 @@ int param_set_dyndbg_classes(const char *instr, const struct kernel_param *kp)
+ 				KP_NAME(kp), inrep, map->length);
+ 			inrep = map->length;
+ 		}
+-		old_bits = CLASSMAP_BITMASK(*dcp->lvl);
++		old_val = READ_ONCE(*dcp->lvl);
++		old_bits = CLASSMAP_BITMASK(old_val);
+ 		new_bits = CLASSMAP_BITMASK(inrep);
+ 		v2pr_info("lvl:%ld bits:0x%lx > %s\n", inrep, new_bits, KP_NAME(kp));
+-		totct += ddebug_apply_class_bitmap(dcp, &new_bits, &old_bits);
+-		*dcp->lvl = inrep;
++		totct += ddebug_apply_class_bitmap(dcp, &new_bits, &old_bits, mod_name);
++		WRITE_ONCE(*dcp->lvl, inrep);
+ 		break;
+ 	default:
+ 		pr_warn("%s: bad map type: %d\n", KP_NAME(kp), map->map_type);
+@@ -710,16 +714,33 @@ int param_set_dyndbg_classes(const char *instr, const struct kernel_param *kp)
+ 	vpr_info("%s: total matches: %d\n", KP_NAME(kp), totct);
+ 	return 0;
+ }
++
++/**
++ * param_set_dyndbg_classes - classmap-based kernel parameter setter
++ * @instr: string value to set (numeric bitmask or level)
++ * @kp:    kernel parameter info referencing classmap state
++ *
++ * Enable or disable all class'd pr_debug callsites in the classmap,
++ * independent of the module they're in.
++ *
++ * Returns: 0 on success, or a negative error code.
++ */
++int param_set_dyndbg_classes(const char *instr, const struct kernel_param *kp)
++{
++	return param_set_dyndbg_module_classes(instr, kp, NULL);
++}
+ EXPORT_SYMBOL(param_set_dyndbg_classes);
+ 
+ /**
+- * param_get_dyndbg_classes - classes reader
++ * param_get_dyndbg_classes - classmap kparam getter
+  * @buffer: string description of controlled bits -> classes
+  * @kp:     kp->arg has state: bits, map
+  *
+- * Reads last written state, underlying prdbg state may have been
+- * altered by direct >control.  Displays 0x for DISJOINT, 0-N for
+- * LEVEL Returns: #chars written or <0 on error
++ * Reads last written state, underlying pr_debug states may have been
++ * altered by direct >control.  Displays 0x for DISJOINT classmap
++ * types, 0-N for LEVEL types.
++ *
++ * Returns: ct of chars written or <0 on error
+  */
+ int param_get_dyndbg_classes(char *buffer, const struct kernel_param *kp)
+ {
 
 -- 
 2.56.0
