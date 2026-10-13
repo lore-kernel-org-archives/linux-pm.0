@@ -1,205 +1,134 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D24C34EDCDB
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:33:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40B034F6477
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:00:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791891199; cv=none; b=Yb8o7Q3vrUvJNxn5KJiBd+hiOKEV8uIiqzG5/UQ2x/Q6LY3Q+OwUyfDaLa+CVzVdVH9YzmMRxetnYDNAr2PW9mGsFHMaGzN3z1vKSOQChVPGbQNFgC75HYgxaIBzOMThx9hXU3338o4AsoCBwLBM1cHzs27vyC7YxierU2BYp0Y=
+	t=1791892824; cv=none; b=E3qVkqCayc5P7VKivCxmTK6jpawOQrn2UneJbw4uPn960js9TWr4ImDFNtT09Wv7WGVPwuJwI5rQXXdb2ZXFb8SaS8W8OB1uiV18DfmqrPykSnjULtpWL/kTLiXnUzrpoVWrrcjf87b1gXhwHH5S5COqVKgN85LQ2Xsk0m15ZSI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791891199; c=relaxed/simple;
-	bh=SeTmFJlc7xESDzB6Iw10CIl8mg+WowrPSAr6+Ksx4bg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rDUGZaELu1FsEG2ce5zU88LBXZr2ZhFYzPMU6c7jRHZeHdXCGlUC6We27P73PUsORVBZt4rCnaznv+xl7k21PurJZJTd5Adk4syf04DQBY+NV+zTl8u36SSASGzY2/lN22pmVnimFd3N35o6BcZBZVvceK4Zx7mfvq0fHR+hiAI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=WEsD157k; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1791892824; c=relaxed/simple;
+	bh=lsBHDyCfIWhi3VwWkUb2uLpFXgL/GQX1v3gq+h23/wI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qCidzUd2/N2E4d7QZGKmgfCCKOSPGFUIgUOAmJL9NvVwwSV5yMJw27THnK3APnweFXYmhes1NJ3ydYSBpmDLNNMasL6KANHuLeekuTbBc7OeTpKQ1cHg18o37rohVAgv4RCcWNhB8HjsnbT6EXq8xm7S5fFXZ1zAuaBXpg5ET8Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Czf3JnBC; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="WEsD157k"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a0286c981dso24378135e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 04:33:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1791891194; x=1792495994; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=anitmvt5QBwY9lobKzDJl69qsHc8ScLJ3DQrPkwQ6aE=;
-        b=WEsD157k7Qj/mlLooqinrQqIsxoUT5P+6SBfFm06g+BC9fjZmtKtIWcYq3PKYdBf/5
-         v1K5OV5hOvlHwKAho5ml7OmPQKjvCA63/ZqIhoV6ePuDIH+e9KemMJxS36tdnccc1g2z
-         VxxaZba9DSrAnS9Lg7LBR6ADj7EZigCj/8J8kHCdzSWIYjU4qR6FIDY1IKPGjB+T+11F
-         Ghc6KQnSkqnFRFGqPxIdMtKxDqEz7XyUhMbZ/FWQDNcTQsyInBbXRLkXr8EC9N2iMY+D
-         nNCK5idnsJwe2kwWwvY7RVuw00blLrla7USHD+aA/4Naues3LqC76sQpXrxz38lia2i7
-         lzSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791891194; x=1792495994;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=anitmvt5QBwY9lobKzDJl69qsHc8ScLJ3DQrPkwQ6aE=;
-        b=PieFwb0xFGhNjqrvm++h88kEsLYKPuq2WQx949aypenaRNEyLqXZNLYWkeBhfbr50t
-         uOZUpMewR2HvkKMfkg15jBO+KYdCmAH0/roNgx6bklUGQQNJAmoZJKCx40HdQMerVRgy
-         rvlt1m66Jtujy/TZytBooKtI87iGU7WiQWbixV7hQw7q+nX0uQr0yzcxWxrK9T75RZbb
-         MhN1T8yfnArYr45aZRBPJ135cRjJtOtG1Tf/WUBW5GBd/QN3n8D4rYLDMpxz8jGqcPxj
-         Ub8qk/PqhN0An1g6OZMybOgNyp+VGbe0KHfcFJTYtqySXFqOMyPrWNho+JozpuWZbJXU
-         nv9g==
-X-Forwarded-Encrypted: i=1; AKwUvByEFEdtGCGHCeEHN1GcWVBvDA/A72sPK+VjGMHgx72GNUkrsOQixTK2AM0pmWcQN/jRSqnssKH2zQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIczDivHxY+z5hoVtWEQw36fDPhiwS3Fcj29VIzxEM1VLnBoKC9
-	G1SYNRttRlVsG3FHz1HTQhUpbPhNvigp97TKu3cnyy/SIt10Bl4MtKFafxBUGUIABYs=
-X-Gm-Gg: AYBFou2LTlb8BbOaz0a1fJDB8/aCXwOixAwdC+sxzccOagcgeDXHNRZaYUY7UrvjrTZ
-	zDQ/DvakjfORg9bdrx+hgEotrykLpQ1NIar6tsinURmp77zzeJTDaLh32mkcgOLcpGG1wtXuf71
-	EmvIn/FngntRqKn8EbjH5kvTdR2/rE5G5aYaib8/9l5mSuTZJtpIfXPc9BlKUwhzSL+zzKdMcfb
-	NHcflLP95UFA7Hh/RT1CIAdePftoTrGfB1K5nf/xABHeOLCfRXKF4PGZxrAmsj5CY+wBXQJROPD
-	g24Aodgt7ROyczesyZMGw35d1MQkUuc2THuIJF5UubdrJ+fxiPWbKxygXa0M4vOkdKnbXOydkYr
-	KJOtg9SI28tPNEsCpt546ALP7O/ElDVqOg7FEg2hSxb74K0ypvNLHa+S4vzWEQ6q4equ+gDfEkS
-	exB1+Q79QSDBkj5hYlVnIpBFRIV/ARevjgrbLmWBkwI1+rAXqOYhjTZ0jnW1NvG7HbXBW/seAy
-X-Received: by 2002:a05:600c:46c5:b0:4a0:eae0:769a with SMTP id 5b1f17b1804b1-4a18e4cd224mr244258165e9.28.1791891193452;
-        Tue, 13 Oct 2026 04:33:13 -0700 (PDT)
-Received: from pathway.suse.cz ([176.114.240.130])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0bc50e0sm5960955f8f.49.2026.10.13.04.33.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Oct 2026 04:33:13 -0700 (PDT)
-Date: Tue, 13 Oct 2026 13:33:10 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: jim.cromie@gmail.com
-Cc: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	Jonathan Corbet <corbet@net.net>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nicolas Schier <nsc@kernel.org>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Ogness <john.ogness@linutronix.de>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
-	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
-	linux-modules@vger.kernel.org, linux-doc@vger.kernel.org,
-	linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org,
-	Philipp Hahn <phahn-oss@avm.de>
-Subject: Re: [PATCH v12 33/40] dyndbg: Ignore additional arguments from pr_fmt
-Message-ID: <as4W9hToBqAvbzJ-@pathway.suse.cz>
-References: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
- <20261012-dd-cmap-part2-clean-v12-33-3c8cc5725def@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Czf3JnBC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16D0A1F008A5
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:00:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791892823;
+	bh=mwF5fDDf9ldJfUewdzwZbaLTxq4SylhnnpsHOc72+Xg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Czf3JnBCYxZBG/6gPVggkFvvfxaAgRfFRxVp96bGfuYwwxRvnU3Q4TgkrZ62MWBFN
+	 nqclFv6aFFWBSDx3FuVz1GUzQ2NjiFZjzeWa12m84XOxzAIiqxP66PWBPR9beCOWCQ
+	 iEQj7jBfqGz3jykbcepuz0XCzBE7x1vyreRA863RdJFxkgE3D4yG3eUHHSRchG6PXG
+	 6hHzyt+8a/3/xPLxG+Fy3i8z2Se+IY8LHFYi0gy1zxSdALQqxYOgXaY2IhEXmyA0Pc
+	 dpEv1pVNSSvFTZWzai4Mp+PHeNy4l0vJsajxus8f7t7HLP6nT1SfBrem1Ei5nxZl17
+	 sTZiiWCFMmR/g==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5bce4e278baso2942323e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 05:00:23 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwqXouIupyBrVJlFDyrIroZxjAURrXA/h3VBYXylmB0ptlQpeQ87B3KNGRocRXc4/oyHwKPQVOeDg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIfG6ylMH3LcB+VGxYpHVGsPBCN7/e1Ss6YzKqd1+lGDjpSzcmB
+	vzrdK4vwZ8Xv7rV0pBSbED0Zceb/THAfUtp3pKYyKi2yJUnagWxl8SOm+QaSvbtXxEQLCpXGzHj
+	ZyoPvF/3K8GIz23J0jmjzvZQDAjSWbTM=
+X-Received: by 2002:a05:6512:304b:b0:5bc:b4e5:37f2 with SMTP id
+ 2adb3069b0e04-5bcdd501368mr3713074e87.18.1791892820950; Tue, 13 Oct 2026
+ 05:00:20 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261012-dd-cmap-part2-clean-v12-33-3c8cc5725def@gmail.com>
+References: <37N_jFulf7n-Z55NfKfE71C_wVPxYvZ0xD_iRUg2fXu7TypDiF5PStQ6siSfVBih6fThg5WoPes8U5ZQpfVm_teMFcUGXFxz2DdMbfSWuws=@proton.me>
+ <20261012225141.13683-1-aliamemis@disroot.org> <fb993dd3-ee56-4e3d-aa16-573f011518f1@oss.qualcomm.com>
+In-Reply-To: <fb993dd3-ee56-4e3d-aa16-573f011518f1@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 13 Oct 2026 13:58:15 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com>
+X-Gm-Features: AclHuK_C_dbr3KeIp2vqfLebsjNfIQiI7_fB5E-myb508s6cuKhwC9dTzsMdEoA
+Message-ID: <CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: battery: Re-read battery information in the
+ complete callback
+To: johannes.goede@oss.qualcomm.com
+Cc: =?UTF-8?Q?Ali_Ahmet_Memi=C5=9F?= <aliamemis@disroot.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
+	Charis Stratakis <c.stratakis@proton.me>, linux-acpi@vger.kernel.org, 
+	linux-pm@vger.kernel.org, regressions@lists.linux.dev, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon 2026-10-12 20:37:04, Jim Cromie via B4 Relay wrote:
-> From: Philipp Hahn <phahn-oss@avm.de>
-> 
-> pr_fmt can be used to add a common prefix to any output from a module:
-> 	#define pr_fmt(fmt) KBUILD_MODNAME ".%s " fmt, __func__
-> 
-> But adding additional arguments breaks dynamic debug:
-> > error: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" passed 4 arguments, but takes just 3
-> > |         pr_debug_ratelimited("%s", "Hello world!");
-> > |                                                  ^
-> > note: macro "DEFINE_DYNAMIC_DEBUG_METADATA_CLS" defined here
-> > | #define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)       \
-> > |
-> > error: ‘DEFINE_DYNAMIC_DEBUG_METADATA_CLS’ undeclared (first use in this function)
-> > |         DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
-> > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On Tue, Oct 13, 2026 at 11:33=E2=80=AFAM <johannes.goede@oss.qualcomm.com> =
+wrote:
+>
+> Hi,
+>
+> On 13-Oct-26 00:46, Ali Ahmet Memi=C5=9F wrote:
+> > Since commit d33e89d12295 ("thermal: core: Suspend thermal zones later
+> > and resume them earlier"), thermal zones are resumed from dpm_complete(=
+),
+> > before the PM_POST_SUSPEND notifier that re-reads _BIX and _BST. On
+> > ThinkPad P1 Gen2 and P53, INT3403 _TMP calls \GTST which switches the E=
+C
+> > page selector (HIID) without taking the BATM mutex used by the battery
+> > methods. ACPICA releases the interpreter lock around EC accesses
+>
+> I'm wondering if this "ACPICA releases the interpreter lock around EC
+> accesses" is not the real problem here.
 
-I wonder what this error about undeclared macro means.
+Yes, it most likely is.
 
-> > note: in expansion of macro ‘DEFINE_DYNAMIC_DEBUG_METADATA’
-> > |         DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));         \
-> > |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > note: in expansion of macro ‘pr_debug_ratelimited’
-> > |         pr_debug_ratelimited("%s", "Hello world!");
-> > |         ^~~~~~~~~~~~~~~~~~~~
-> 
-> Add an additional ', ...' to DEFINE_DYNAMIC_DEBUG_METADATA_CLS to slurp
-> any additional argument, which `pr_fmt` might add.
-> 
-> --- a/include/linux/dynamic_debug.h
-> +++ b/include/linux/dynamic_debug.h
-> @@ -351,7 +351,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
->  		dump_stack();					\
->  }
->  
-> -#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt)	\
-> +#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)	\
->  	static struct _ddebug  __aligned(8)			\
->  	__section("__dyndbg_descs") name = {			\
->  		.modname = KBUILD_MODNAME,			\
-> diff --git a/include/linux/printk.h b/include/linux/printk.h
-> index f594c1266bfd..5d701952e739 100644
-> --- a/include/linux/printk.h
-> +++ b/include/linux/printk.h
-> @@ -742,7 +742,7 @@ do {									\
->  	static DEFINE_RATELIMIT_STATE(_rs,				\
->  				      DEFAULT_RATELIMIT_INTERVAL,	\
->  				      DEFAULT_RATELIMIT_BURST);		\
-> -	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));		\
-> +	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, fmt);		\
+What actually happens is that ACPICA drops the interpreter lock and
+the namespace lock in several cases listed in the
+acpi_ex_exit_interpreter() documentation comment, the majority of
+which involve having to wait.
 
-IMHO, this changes the existing behavior. The prefix added by
-pr_fmt() will no longer be stored in DEFINE_DYNAMIC_DEBUG_METADATA().
-Is this intentional, please?
+The bottom line though is that the interpreter and namespace locks
+cannot be expected to be held throughout AML evaluation because it is
+not known in advance if any of the cases in question will appear.
 
-Anyway, if we do not longer pass pr_fmt(fmt) then we should not
-need to add "..." into DEFINE_DYNAMIC_DEBUG_METADATA_CLS().
+> Recently I've learned / heard
+> from a trusted source that Windows ACPI subsystem is very much single
+> threaded. So it is nice that ACPI has these mutexes and other stuff
+> to support multi-threading but as long as Windows ACPI interpreter is
+> not multi-threaded I think we may need to consider to copy Windows
+> behavior.
 
-By other words, we newly pass just the format "fmt" without the parametes.
-The 4th parameter was added by pr_fmt().
+This is also my conclusion, at least to some extent.
 
+The problem with it though is that in some cases parallel evaluation
+of AML is actually useful.  For example, say two PCI devices are
+powered up at the same time and AML waits for each of them.  The async
+suspend/resume aligns those waits to take place simultaneously instead
+of serializing them which allows some time to be saved.
 
-IMHO, the right solution is to keep pr_fmt(fmt) here and extend both
-BEFINE_DYNAMIC_DEBUG_METADATA() and
-DEFINE_DYNAMIC_DEBUG_METADATA_CLS()
-to accept var args. I would expect something like:
+> So maybe the EC accesses should keep the interpreter lock locked during
+> EC accesses.
 
-#define DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, cls, fmt, ...)	\
-...
+The problem here is that it is hard to say in advance whether or not
+_BIX or _BST will access the EC and whether or not that will clash
+with _TMP evaluation for a seemingly unrelated thermal zone.
 
-#define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)		\
-	DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt, ##__VA_ARGS__)
+> And even go further and maybe we need to introduce a big-acpi-lock,
+> which I guess the interpreter lock more or less is? And just serialize
+> all ACPI accesses since most ACPI tables clearly do not handle
+> multi-threaded access to ACPI methods well ?
 
+I would be inclined to do so except for device power management
+methods, that is _ON, _OFF, and _PSx, that are not the problematic
+ones, at least as far as I know.
 
-or maybe, we could "eat" the extra parameters in
-DEFINE_DYNAMIC_DEBUG_METADATA. It would mean to keep
-DEFINE_DYNAMIC_DEBUG_METADATA_CLS() as is and just add the "..." into
-DEFINE_DYNAMIC_DEBUG_METADATA(), aka
+> Another example of multi-threaded ACPI calls causing problems is:
+>
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D221065
 
-#define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt, ...)		\
-	DEFINE_DYNAMIC_DEBUG_METADATA_CLS(name, _DPRINTK_CLASS_DFLT, fmt)
+Right.
 
+So I guess the idea would be to add locking to acpi_evaluate_object()?
 
-Or do I miss something, please?
-
-It is possible that the macros work another way. Or this depends
-on another change. I checked only this patch...
-
-Best Regards,
-Petr
-
-PS: I was curious what Sashiko says about this change and it seems
-    that it does not review this patchset from some reasons.
-
->  	if (DYNAMIC_DEBUG_BRANCH(descriptor) &&				\
->  	    __ratelimit(&_rs))						\
->  		__dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS__);	\
+An alternative might be to introduce an "exclusive" variant of
+acpi_evaluate_object() with built-in locking and use it in the cases
+that are known-problematic.
