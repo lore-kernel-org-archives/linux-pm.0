@@ -1,220 +1,303 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24ED53B42FC
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:26:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39DD84EBAEB
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:28:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791890799; cv=none; b=NnCJyQomVATpla1v3IurH5kE7CRyHDF3qg84QIARTH3L36YXn6IkjOeGr+j10xOZZ8p8dUj5M4fNBfyPkB9Ix/O6ITANRQZfe5nRJNrCPUtXIjgYs03tTjJh5js6OwSrdMcCpl6s+n6lyvc251mE53MGvEGiZ0OLKlHL+lbVFKA=
+	t=1791890921; cv=none; b=NZcBn6GC3LiQ4DPYzipTffaQIxnLGcndpL+kmrM5GO18L1mGDVklE4NSVtxCM1OqThx/bRCPYrWGQEqc+CF0Ezk6aIOzCY4IbE+UGTs5Lz/UYKXoIw/+MxkSJEMeuEEi2qvu4VWEuSL4M2yA0AWqwB09kTIyJBg3VbHPiUVw8L4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791890799; c=relaxed/simple;
-	bh=f30R+NPZIgKRdOpL7rg6rJZt4SiA4r4YoLdU7gMcN0A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Umb/kzwjvq/B7yBgzAeWy8Q1Tfr9PKd9wKGw+dNy1yv7SAgol07zoHOLWFWOr2bl9cl3yWPSp+Yxjw3Rsi30Dw9mwQ5lWyeYcBjSPgR3jzOKndnSdBe4ohyBck46chbuEC8eYnoxkb+Yr1WF7zqatZKE0Ku2UECMjBmZaPCeLSQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=MOWoDuG+; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=erPfkcZi; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1791890921; c=relaxed/simple;
+	bh=HN6XptzcoudNzRj4ZXmG0JwPr60rSlO5PO4+/eOdLdI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KBdODgyoTENNvZaQD81yqFXYkWZlnMZmTuHbmbiC00Oj/NdAxFg5BFF3cD07i1RSqSvfhLj9z3SezRl9CKViTY52Dlrkq+5K0t3PWMFsnhSKLWCCD6TAnaiCkDCp1GC/w/U8++1Q5WCkv19ZyT1HTam6vhjmKCvnlSo9NVhiqY0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=nniA5vjR; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=adOHC20z; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="MOWoDuG+";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="erPfkcZi"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D6ZUXF3210078
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:26:37 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="nniA5vjR";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="adOHC20z"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D8HQOB988760
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:28:39 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=+sRwej529jiGXn/urVBwYwVr
-	RTLegOaro2P5M15s5TE=; b=MOWoDuG+5//WdChuKmGiNL+kgHFLG4q3Z0aOY8Ui
-	ADY0AEYhZSZ2MqVUcwomzp0lMsifM7iHJk3nQ7wucOla77nThGbQMIZmfKBt4IN7
-	chIpo3VS+FhDYXGd7v41j18HlPSJZeAVrlczs9RKJjk5rEw6yZpziFhKK8vZuOU3
-	dsKIm8oIHXWWMA4cg8Ge1pfcg/Fjg4AnQqoW6JlCsGYDyIn++BenkElm6wp+M80P
-	P34rwOcr2UvQdbqGPLZ4eYYvVmBd30iQ6hPc2weK6fF2QKuZ0Ir9HbxFVmNdLJk9
-	oSpdJtT7p51RgZzj8s/cZc5o/fvRqTjwl/c4TVraKgL7TA==
-Received: from mail-dl1-f72.google.com (mail-dl1-f72.google.com [74.125.82.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h9fgjh6pe-1
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Rcn4mFMnCGkwABHUVZsFsGzh0zOF9QcSjkE0SqwCV14=; b=nniA5vjRz/7Sqnh/
+	n2s2MJ5TTbRUcfl7FZMHhIc487f3zmV+fWV2YSPDKoZOZxFILHnYCdoG/VQp8imV
+	pOBpj503tejv5N/JeE5kev3PQSZ8WCzP5sbJwvt5NE7MtpGApwpjhrJMDtqTEpzB
+	VDyHtNAvvcfsZ/DCSfRwwT5tBYxPHysCuTsd0e2mh7wqzubUU4Cokh8usHXlWvo5
+	xtD2PZQLvLagAG69+9hymmaPn5lT+soxbzsSYk0p+lP/VEd+7KmQw9bnf5dQ+fqN
+	Tnr2L5qXa6R4eq5KEShVQSAjCet/n39lH5NTkLw+siYbzQBeHXYDrKcqpm6QJjcv
+	VgwobA==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h98hcanpv-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:26:37 +0000 (GMT)
-Received: by mail-dl1-f72.google.com with SMTP id a92af1059eb24-143826c4a13so1774532c88.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 04:26:37 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 11:28:39 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-3abb4c24125so2468300a91.3
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 04:28:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791890797; x=1792495597; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=+sRwej529jiGXn/urVBwYwVrRTLegOaro2P5M15s5TE=;
-        b=erPfkcZi8yg5Aj5KHUvu6sPz2/n+hS4SXwqB3xACEw+VSTe9IkK/I83ZJQLR3ueeGC
-         dMJpBKs6qkkiSEM0X+ePKq7WMAhAxLES7e9CmD3O6LDoSHOpGbvRFpZIIRNk4oSd3pH/
-         oNEJpk4x5R9a3yg1n9O7ISSoU1bfDM/s4HyPT8yAui31DtNSdLP72IucAmdt72Obtzt3
-         tQSD3ouF1SxFo5QnSUOAGQhy8jwicNrzIXXmEVY2k9r0rDFfnV4L+GeaoE4530HzzcAC
-         TJGVG/Q5R2FFxHYGm4Nq7S/VvBlU0VbOPsBDggCC+CK/0q8e4t56GWos1hR+6M2C6Id5
-         LAbw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791890797; x=1792495597;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1791890919; x=1792495719; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=+sRwej529jiGXn/urVBwYwVrRTLegOaro2P5M15s5TE=;
-        b=s0pZgrglH6E4x1bjY2ZwMgv/6Cfaask6d3Uy4de54m3dbGSzBer8La0RZ0+7Qy8FGO
-         1h5DQBfa6oYeGBNvly8oQTTvY2PxYNY+3UNrHBVbfQK0lFbr80T+KdeqL7v49FzE7Z0n
-         qlZIg8L+Q6k7p5Ao2dP2ZH8ZHGx9bwc84aA3wHN8rHVtfszTiSgioFPlFD1gODigZFwn
-         ESeXsJcnbee1BtU1fbm8IcubuVarKXd79+GjaE4zEJsAuxGYHC3yGnltHF3udHh8qzCv
-         UdCwTlkw/OxqJgwnCPLDpQUQsRlm4PA6CW4IaUKhvgjKCiFX5nVcTT6mzNicuEtKHoEN
-         bJkA==
-X-Forwarded-Encrypted: i=1; AKwUvBztb+7qzB6xYjlZHJlCX6ZZ1acOZMWV+MyvGzHMYt2uFuiAmmkPuCkcFA+6IgZNfIQBSLQs/dhHDg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYILXyHb4SKZDnzf9AbRHuphZ/GQ2fWW1vMnuMcLinmr3nqujJbk
-	HrrAkJ4O+Oo0Pu6MuR1lUKzdwQkO+hRpuFvdlfUpnJ1si1sSbFxmNmXoeFKhGh1FgEJjUmCmEcd
-	mUr6T2A3iWwHd/mulIMu7DhC+HgyLcopXb9lOj32Fv8TWfj3zxfXDfVsDZs3Tvg==
-X-Gm-Gg: AYBFou1I6R++kZKYHnw2sod9MJVALTwmi9+Rah+5sYPdmXwOat1OTQt2cCDp6jL1fGQ
-	VQuo8j2+6GMSaztPmQYXByzWcf8FOrwJ1Jal6FZKKcWA0Z9RZBZnEEB8YoXjBL0yT+Ws2oU6/La
-	8T6Y6D7QHq/zSxaDTpZFgcXdIHuFt1eXDVpNCodugGSzA43k3lywD22N9YiJahN/8PxIQuKXUtu
-	qG3xZDAFVE1pkeAIkTmsjSDRCaX1BMTR4HHG4liKP+KaxBpWrbZxKVEdEFScDeAp+zVE7IB2veU
-	MulPr0Y551AqrfiHyclSeDChqLw6P778VhJLPyWrksZCO74heT8aulOVWLgPuxcK4dUUwBZH+eh
-	JszUbTuS5cUfuw7r0n2vtwoGN+G3PCzcSPNT5HahFAHo3LYrB4F2o65Znu1WDwtRxL7HvyT7wjn
-	k9QKviyovs3samWm88Mw==
-X-Received: by 2002:a05:7022:e884:b0:14f:b80a:33a5 with SMTP id a92af1059eb24-16a5d35f1cdmr24644762c88.28.1791890796512;
-        Tue, 13 Oct 2026 04:26:36 -0700 (PDT)
-X-Received: by 2002:a05:7022:e884:b0:14f:b80a:33a5 with SMTP id a92af1059eb24-16a5d35f1cdmr24644718c88.28.1791890795729;
-        Tue, 13 Oct 2026 04:26:35 -0700 (PDT)
-Received: from hu-nirjroy-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1698de65af7sm41863099c88.0.2026.10.13.04.26.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Oct 2026 04:26:35 -0700 (PDT)
-Date: Tue, 13 Oct 2026 16:56:27 +0530
-From: Nirjhar Roy <nirjhar.roy@oss.qualcomm.com>
-To: Hui Su <sh_def@163.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-        Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
-        Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
-        K Prateek Nayak <kprateek.nayak@amd.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] cpufreq: schedutil: Serialize start against rate
- limit updates
-Message-ID: <as4VY4F4VuAQmr1c@hu-nirjroy-blr.qualcomm.com>
-References: <20261007155820.3194105-1-sh_def@163.com>
+        bh=Rcn4mFMnCGkwABHUVZsFsGzh0zOF9QcSjkE0SqwCV14=;
+        b=adOHC20zoUDXNJSWn+FCMtKdQfnJCN4zRXMtouOgb5mLsxJ6KjSSOq7qS69ZPfauC/
+         I/vMShkNKvI8qSMDnYH4ETB+hFc71v7GBvxMmS4RWywegNe+Aihh+BM3QQhWpmkBqogp
+         oUtM4NC18YiTZyctIOj0VgK+VXWw4IhWGpu6EKCdZTKbubZVfSciLlmDg+vUq1xoCJe3
+         PVMwwov5EKGK8Ckn2hQkqaej+3h1EAsra89Xd1owvAcG8eraP2iX3bFIX4i8dg00PV7T
+         HIlS+IQnDxqvnZH8RMNvqblMWOAmphki8ZOI5xPQ5zf3vgnOl18EEzKlhqoTxRCTaUv6
+         qy/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791890919; x=1792495719;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Rcn4mFMnCGkwABHUVZsFsGzh0zOF9QcSjkE0SqwCV14=;
+        b=DMjw6lPbPwQSDy0S4ykNinPvdg245RS6DIhgwciMvc0F0HsUU3jMdMlZddC43wSDGs
+         J0rSKhl5DEnrEFuhnukUDRnir+nGGte1DtrvIQ3GMYJphxsyawAfqwIhG9c3cc9CWCCg
+         pyySpOZThwBR0WEjlkKrFeZxtEw0MIjBZvHhSXgDGGYIqNASeBoYhc7frorwljIbABlJ
+         Ov5w+S8qg85VbaVkWnHGS2ozWLoH156SZXaP1Cu7GKAdA/d2a67A9+0obS0QeMaspg5y
+         sfTbsCaasiJGiuBMYfJGFMt9MqfSHYF+fsn+iPcBIHw6d7sBwmcX5ncWXibs49oGpGHe
+         eOIw==
+X-Forwarded-Encrypted: i=1; AKwUvBygT6xJcAUFzghIJxgORPhXlDUf/R3MDOlmtIi981vCK9evlJePstqiqYqXQRR122lul4s0KiRwIA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKm+oBVRLEBOQYMNKILzslMv/4gffPrgQr9PG9wm41utoR1uyip
+	Adxo9NGVZe/dtQHaMx2V3HH0IvfJzKBOn0Ov5VNoset6NzqKD8bT/c9PT0Ph3WA6L/kMOVWYdaI
+	ApUFtklWOwKz0fjVO5uDYRujJJq8l416VmnZG1fACNDXymWENCTSk64hHQBELGw==
+X-Gm-Gg: AYBFou0YwExhyYrFPC1A192AW24u+jt3EwTQE4tPBixLWEqe8UlGz0G1sXgVAE5Gauq
+	6WQkIPuwe6DfUKlFb3G+TWX7gCsjeGL3bbWWGIH0voRGd8Wxv932mYFCtUSRMHisOgVO0x4q/Fy
+	kGh6cOIx3MTN0LR62tZr8ZXHGHO9r2yF//TwLSCYgF8Hb70PPoRaWpWmqq5gc2a/rQobq0fzGZ/
+	GcjivGWXlbp8K9r29X3NmttnqF43DzQrZg7azGg4DMxHKGd7Z/pbQonv66Ns2Hba9ahQVxVcf1J
+	f/s8uyM+8BRaToK0pgFY5B10INU+QdWEyG+dvp0J6k3vb1NKZX8l6F2Vr1l89zfg6PnyBUS++Ue
+	XyHG9P3M63HYTnRxF1rRq9K5m5HCbCsVWqAxtefblxi53spkj+flCNo8dfe2L4EEgTeOdjI1M
+X-Received: by 2002:a17:90b:4c4f:b0:3ab:27eb:338e with SMTP id 98e67ed59e1d1-3ab3ac54a33mr9617246a91.52.1791890918496;
+        Tue, 13 Oct 2026 04:28:38 -0700 (PDT)
+X-Received: by 2002:a17:90b:4c4f:b0:3ab:27eb:338e with SMTP id 98e67ed59e1d1-3ab3ac54a33mr9617204a91.52.1791890917770;
+        Tue, 13 Oct 2026 04:28:37 -0700 (PDT)
+Received: from [10.133.33.242] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab393efd88sm12249694a91.3.2026.10.13.04.28.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 13 Oct 2026 04:28:37 -0700 (PDT)
+Message-ID: <77749e58-84d6-43c1-bd37-98d0046231a1@oss.qualcomm.com>
+Date: Tue, 13 Oct 2026 19:28:31 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261007155820.3194105-1-sh_def@163.com>
-X-Proofpoint-GUID: qPInwX9DrpLmCoDO7v8NYa8XFcZX54o4
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA0NSBTYWx0ZWRfX6QLPkjlDg0TX
- T252VJsvkTRU1c0SYitlZhjGH09Wj3HpcJzjfZajYWzIOq3x2t+mrLxd0kd2+MrmnZuKe80OT93
- sziq9hhYwV7Wyhm0fiTTcNqXRUpNMNbfKCY+unj7e5Bg1vjewdoKZc9L07gCAGhNLQcOUXac1A3
- wV2hQenefwGyL2TgR8pES6pSMNoZa1Wqw8Ww2DeAUHhwY9PXHC6/pDDGbqQKgI8F4DWKkweAjuY
- zn59Tl73mrD84lS/XbdYeOfO/FEegOES98EU9yimNwpacDtnTtiPwC2sUiOlFmAyI808K6lkx0I
- foy0zi0jv0PoM8ZfSnv7tbBYNKZ4Gb3ohpcccU+ecnVQsIP6huu8Yi5i2hqkDzNZsvItB8s38A1
- WRY8gETR0D+lpTscOGMjf0Sbk9uEyAKa6D3qPdvC5OVRNMl9yGutHs1m4DNBCssF+todPtInxVX
- O01EWblQTIzeaYe+piw==
-X-Proofpoint-ORIG-GUID: qPInwX9DrpLmCoDO7v8NYa8XFcZX54o4
-X-Authority-Analysis: v=2.4 cv=PedqFShd c=1 sm=1 tr=0 ts=6ace156d cx=c_pps
- a=bS7HVuBVfinNPG3f6cIo3Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=VwQbUJbxAAAA:8 a=Byx-y9mGAAAA:8 a=EUspDBNiAAAA:8 a=Gmc05hTQ9VndzER7qmEA:9
- a=CjuIK1q_8ugA:10 a=vBUdepa8ALXHeOFLBtFW:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA0NSBTYWx0ZWRfX8oRgWQGdlb0Y
- M93QF8lkM7YnJmfH45/SVHeHEULxFiL+WeSFZVcvM+wSAnlvfof4FWhw1AwXTpDS/gKVJbsgmRK
- QIOBRpVpkgkIj/Z7xnJaZRDx1kq5BQw=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/2] arch_topology: seed capacity_freq_ref with highest
+ available frequency
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Ananthu C V <ananthu.cv@oss.qualcomm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Sudeep Holla <sudeep.holla@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Danilo Krummrich <dakr@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Jie Zhan <zhanjie9@hisilicon.com>,
+        Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+        linux-pm@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Oleg Keri <okerixx@gmail.com>, zhongqiu.han@oss.qualcomm.com
+References: <20260929-schedutil-boost-frequency-handling-v3-0-68de169498c7@oss.qualcomm.com>
+ <20260929-schedutil-boost-frequency-handling-v3-1-68de169498c7@oss.qualcomm.com>
+ <fbd7fe35-5e14-4589-a072-909e49a92e76@oss.qualcomm.com>
+ <cfb79ffe-41b7-4e58-b3f5-fc9a28a4e413@arm.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <cfb79ffe-41b7-4e58-b3f5-fc9a28a4e413@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA0NSBTYWx0ZWRfX58OreFoTXvLs
+ sPbEe7wPXWkHDMZyQzse2HD9gtf4kN8oFd6tLBPwEE6bFfDtRkQaU9tOnWDy/Xk3Teb5YDZDU8E
+ IGsW2MzTPU9t3D74cr9ReoRYqvyyIkuKQH+S81Fy5Fv9BzdRKnfeGcVIwBZzNxVM2YiqQKwuBqC
+ qDetXE89iUt+LWAKq3x5HpCVO1btFkqOWuoq3hsDDlQ0P4RGfpJCIkxVnZlR+9SkYBrWlRMwGVE
+ Q4XLjOOHklq0eNXELrHIIAb+Dz1EcFLgll7lZ8ILMuxAQVDtoOSlXcXvFJHjnwa5tXL/+07FxOC
+ mB9VGueKxHjP6Yk3o9pl2wZwPjyzD/BZovPHo+zmDemWHudFCfAD4yYsTlZJ0oTE1rmYv5QEGjh
+ adyBZVVSfAiy73GBkWEnz+pv5tGi+o0esKxY+g0NJBqgPd5ODIPusPhMI5FpwCUIB4hqjyYpJSh
+ xAP2KE7IU8K8TNw2foA==
+X-Authority-Analysis: v=2.4 cv=VPVIDNPX c=1 sm=1 tr=0 ts=6ace15e7 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=9bVTjAMtGWzbgpHzqb8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-ORIG-GUID: MP-BBH_UtLtpoSAP_oP3WL_zytXj3Ual
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA0NSBTYWx0ZWRfXzY2oPokBkUwu
+ dRZG6BclKKrQeTFVSvW32rFYXbGmEUTtc5chA4Qr8fK2WLJV0sVpbno3JMxn58YJOnaw+7G0icG
+ lJsJwn0r8vvLh4mxvmGSAmbc7B5JlGI=
+X-Proofpoint-GUID: MP-BBH_UtLtpoSAP_oP3WL_zytXj3Ual
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 spamscore=0 priorityscore=1501 clxscore=1011
- adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0
+ bulkscore=0 priorityscore=1501 malwarescore=0 impostorscore=0 spamscore=0
+ suspectscore=0 lowpriorityscore=0 adultscore=0 phishscore=0 clxscore=1015
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610130045
 
-On Thu, Oct 08, 2026 at 12:58:20AM +0900, Hui Su wrote:
-> rate_limit_us_store() is called with the governor attribute set
-> update_lock held, but sugov_start() updates freq_update_delay_ns from
-> the same tunable without taking that lock.
+On 10/13/2026 2:45 AM, Dietmar Eggemann wrote:
+> On 11.10.26 16:16, Zhongqiu Han wrote:
+>> On 9/29/2026 7:38 PM, Ananthu C V wrote:
 > 
-> This allows the two paths to interleave as follows:
+> [...]
 > 
->         sugov_start()             rate_limit_us_store()
+>> Besides, could you comment patch v2 Dietmar's comments? It seems that
+>> patch 1/2 exposes a pre-existing ordering issue. On DT systems,
+>> cpu_scale is normalized only from the CPUFREQ_CREATE_POLICY notification
+>> of the last policy, so the cpufreq pressure of every other policy is
+>> computed in cpufreq_init_policy() from the raw, not yet normalized,
+>> capacity, and stays cached until the next cpufreq_set_policy() for that
+>> policy. So far this was harmless because capacity_freq_ref == policy-
+>>> max at boot, so the pressure was 0 regardless of the capacity. With
+>> 1/2, capacity_freq_ref covers the boost frequencies while boost is
+>> disabled at boot, so policy->max < capacity_freq_ref becomes the common
+>> case and the stale value becomes visible (102 vs 79 on Juno R0, as
+>> reported by Dietmar). Perhaps the limits of all policies could be
+>> refreshed once from parsing_done_workfn(), after the capacities have
+>> been normalized?
+>>
+>> --- a/drivers/base/arch_topology.c
+>> +++ b/drivers/base/arch_topology.c
+>> @@ -454,9 +454,27 @@ core_initcall(register_cpufreq_notifier);
+>>
+>>   static void parsing_done_workfn(struct work_struct *work)
+>>   {
+>> +    int cpu;
+>> +
+>>       cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+>>                        CPUFREQ_POLICY_NOTIFIER);
+>>       free_cpumask_var(cpus_to_visit);
+>> +
+>> +    /*
+>> +     * The cpufreq pressure of all policies but the last one has been
+>> +     * computed before topology_normalize_cpu_scale(), so refresh it now
+>> +     * that cpu_scale is final.
+>> +     */
+>> +    for_each_possible_cpu(cpu) {
+>> +        struct cpufreq_policy *policy __free(put_cpufreq_policy) =
+>> +            cpufreq_cpu_get(cpu);
+>> +
+>> +        if (!policy || cpu != policy->cpu)
+>> +            continue;
+>> +
+>> +        guard(cpufreq_policy_write)(policy);
+>> +        refresh_frequency_limits(policy);
+>> +    }
+> Yes, IMHO, something like this is needed.
 > 
->         read old rate_limit_us
->                                   write new rate_limit_us
->                                   publish the new delay
->         publish the old delay
+> [    1.169158] cpufreq_notifier_max(): current=[kworker/u26:0 46] policy->related_cpus=[]												(1)
+> [    1.169209] init_cpu_capacity_callback(): current=[kworker/u26:0 46] policy->related_cpus=[0,3-5]
+> [    1.169992] cpufreq_update_pressure(): current=[kworker/u26:0 46] policy->related_cpus=[0,3-5] policy->max=700000 pressure=102 max_capacity=578 capped_freq=700000 max_freq=850000
+> [    1.170203] cpufreq_update_pressure(): current=[kworker/2:2 67] policy->related_cpus=[0,3-5] policy->max=700000 pressure=102 max_capacity=578 capped_freq=700000 max_freq=850000 	(2)
+> [    1.170835] cpufreq_notifier_max(): current=[kworker/u26:0 46] policy->related_cpus=[]												(1)
+> [    1.170872] init_cpu_capacity_callback(): current=[kworker/u26:0 46] policy->related_cpus=[1-2]
+> [    1.174516] cpufreq_update_pressure(): current=[kworker/u26:0 46] policy->related_cpus=[1-2] policy->max=800000 pressure=280 max_capacity=1024 capped_freq=800000 max_freq=1100000
+> [    1.175261] cpufreq_update_pressure(): current=[kworker/2:2 67] policy->related_cpus=[1-2] policy->max=800000 pressure=280 max_capacity=1024 capped_freq=800000 max_freq=1100000	(2)
+> [    1.187698] cpufreq_update_pressure(): current=[kworker/2:0 28] policy->related_cpus=[0,3-5] policy->max=700000 pressure=79 max_capacity=446 capped_freq=700000 max_freq=850000	(3)
+> [    1.187847] cpufreq_update_pressure(): current=[kworker/2:0 28] policy->related_cpus=[1-2] policy->max=800000 pressure=280 max_capacity=1024 capped_freq=800000 max_freq=1100000	(3)
 > 
-> The sysfs tunable then contains the new value while
-> freq_update_delay_ns contains the old one. Unlike a transient torn
-> read, the stale delay remains in effect until another rate limit update
-> or governor restart.
+> The work scheduled in (1) also still operates on raw capacity (2).
 > 
-> Serialize sugov_start() against sysfs stores by taking the existing
-> governor attribute set lock around sugov_update_rate_limit_us(). Use
-> gov_attr_set_lock() and gov_attr_set_unlock() to keep locking details
-> within the attribute set interface. This keeps the fix off the scheduler
-> hot path.
+> (3) shows your extension in parsing_done_workfn() work function which
+>      gets scheduled when all CPUs are initialised, so
+>      topology_normalize_cpu_scale() had been called.
 > 
-> Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler utilization data")
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> Signed-off-by: Hui Su <sh_def@163.com>
-> ---
-> Changes in v2:
-> - Wrap governor attribute set locking in helpers as suggested by
->   Zhongqiu Han.
-> 
-> v1: https://lore.kernel.org/lkml/20260929103635.3780346-1-sh_def@163.com/
-> 
->  include/linux/cpufreq.h          | 10 ++++++++++
->  kernel/sched/cpufreq_schedutil.c |  4 ++++
->  2 files changed, 14 insertions(+)
-> 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 35ce665edfd8..5448eb0a0885 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -694,6 +694,16 @@ static inline struct gov_attr_set *to_gov_attr_set(struct kobject *kobj)
->  	return container_of(kobj, struct gov_attr_set, kobj);
->  }
->  
-> +static inline void gov_attr_set_lock(struct gov_attr_set *attr_set)
-> +{
-> +	mutex_lock(&attr_set->update_lock);
-> +}
-> +
-> +static inline void gov_attr_set_unlock(struct gov_attr_set *attr_set)
-> +{
-> +	mutex_unlock(&attr_set->update_lock);
-> +}
-> +
+> Not sure whether we can call cpufreq_update_limits(cpu) there instead
+> (maybe extended with a 'only do this for policy->cpu'?). So we won't
+> have to expose cpufreq internals in /drivers/base/arch_topology.c.
 
-Can use the above wrappers in governor_store()? Right now it directly calls mutex_{lock, unlock}(&attr_set->update_lock) ?
---NR
- 
+Thanks for the test verification and the discussion.
 
->  void gov_attr_set_init(struct gov_attr_set *attr_set, struct list_head *list_node);
->  void gov_attr_set_get(struct gov_attr_set *attr_set, struct list_head *list_node);
->  unsigned int gov_attr_set_put(struct gov_attr_set *attr_set, struct list_head *list_node);
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 49ccd6f1c185..b847311c307d 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -861,7 +861,11 @@ static int sugov_start(struct cpufreq_policy *policy)
->  	void (*uu)(struct update_util_data *data, u64 time, unsigned int flags);
->  	unsigned int cpu;
->  
-> +	/* Serialize against rate_limit_us_store(). */
-> +	gov_attr_set_lock(&sg_policy->tunables->attr_set);
->  	sugov_update_rate_limit_us(sg_policy);
-> +	gov_attr_set_unlock(&sg_policy->tunables->attr_set);
-> +
->  	sg_policy->last_freq_update_time	= 0;
->  	sg_policy->next_freq			= 0;
->  	sg_policy->work_in_progress		= false;
-> 
-> base-commit: 63de2367f6d280904a9c5e5bbc7c75bb91c5b3d8
-> 
+Unless I'm missing something, it seems to me that
+cpufreq_update_limits() is mainly intended for platform limit changes.
+When a driver implements ->update_limits(), it is up to the driver
+whether the policy gets refreshed at all (it seems that amd-pstate only
+updates the preferred core ranking). Otherwise, it goes through
+cpufreq_policy_refresh(), which calls ->get() first and WARNs and skips
+the refresh if that returns 0, for example when the policy goes inactive
+under us.
+
+In comparison, refresh_frequency_limits() seems to match what we need
+here more closely: it simply re-applies the limits and therefore
+recomputes the pressure, without going through any of the above.
+
+However, calling refresh_frequency_limits() directly from drivers/base
+arch_topology.c does expose some cpufreq internals there. I wonder if it
+would make sense to add a wrapper around cpufreq_update_pressure()
+directly, something like:
+
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -454,9 +454,19 @@ core_initcall(register_cpufreq_notifier);
+
+  static void parsing_done_workfn(struct work_struct *work)
+  {
++	int cpu;
++
+  	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+  					 CPUFREQ_POLICY_NOTIFIER);
+  	free_cpumask_var(cpus_to_visit);
++
++	/*
++	 * The cpufreq pressure of all policies but the last one has been
++	 * computed before topology_normalize_cpu_scale(), so update it now
++	 * that cpu_scale is final.
++	 */
++	for_each_possible_cpu(cpu)
++		cpufreq_refresh_pressure(cpu);
+  }
+
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2611,6 +2611,27 @@ static void cpufreq_update_pressure(struct 
+cpufreq_policy *policy)
+  		WRITE_ONCE(per_cpu(cpufreq_pressure, cpu), pressure);
+  }
+
++/**
++ * cpufreq_refresh_pressure() - Recompute cpufreq pressure for a CPU's 
+policy.
++ * @cpu: CPU whose policy's cpufreq pressure is to be recomputed.
++ *
++ * To be called when arch_scale_cpu_capacity() of @cpu has changed while
++ * the limits of its policy have not.
++ *
++ * Takes the policy rwsem, so the caller must not hold it.
++ */
++void cpufreq_refresh_pressure(unsigned int cpu)
++{
++	struct cpufreq_policy *policy __free(put_cpufreq_policy) = 
+cpufreq_cpu_get(cpu);
++	if (!policy)
++		return;
++
++	guard(cpufreq_policy_write)(policy);
++
++	if (!policy_is_inactive(policy))
++		cpufreq_update_pressure(policy);
++}
++
+
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -251,6 +251,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, 
+int io_busy);
+  void refresh_frequency_limits(struct cpufreq_policy *policy);
+  void cpufreq_update_policy(unsigned int cpu);
+  void cpufreq_update_limits(unsigned int cpu);
++void cpufreq_refresh_pressure(unsigned int cpu);
+  bool have_governor_per_policy(void);
+  bool cpufreq_supports_freq_invariance(void);
+  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
+
+
+-- 
+Thx and BRs,
+Zhongqiu Han
