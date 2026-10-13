@@ -1,166 +1,113 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-106119.protonmail.ch (mail-106119.protonmail.ch [79.135.106.119])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F8FA3E5EF7
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 01:20:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.43
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791854428; cv=pass; b=Voj6VYlTtauc3h+V1SomofSgZPR3ut5kQF1ftShwOd7mz0ARTuXz5/h2sf7rwbFb90fCNZY3mtRvo4Eq+3J11syV4DRLHxpGHjMbmUTfJKC1wnK730Oy8VD0etIJHXOM3Pnd+o/K6EqCenevFbUE18FDeqYNKL/PSgj9YuH8T2I=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791854428; c=relaxed/simple;
-	bh=GLdPP9wdTOmg3Lh8rLtRDBnHGBuo68uFmOzknvlhkJI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SMnaTrngHOqVnPK080BrvGCbop+eJvZxJJ4SVKHn+cCjAaQp5n0PlaB3MP1u1jqkZa+7XtgWOTZU3ZissHU22AmPOxKaTEvfLmatgwm8xK06ZcfO2EUrKZMqBIsgebvpZbwM+X1Rwsyv/LPI0HVuOqLOxIogmHUSPMMvZ2BAPYw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SDDr7RJc; arc=pass smtp.client-ip=209.85.218.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0F5A348C4C;
+	Tue, 13 Oct 2026 01:40:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.119
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791855629; cv=none; b=hH4ysJ3JpvZcRbZK417C0b2YW4QShIrv65VNtdYEBe0iHnv9D864q6h6O/OUmalo7UlaJWHNA4dAyD27fhbYo0iNyn72i4c48W11uuEqJujNbeCM6ASC8+IR3EECAWdHcZeONR4VkMDmehYfcKEWEFzCBG6GYqEsno6S4ToNAq0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791855629; c=relaxed/simple;
+	bh=qj0/+cMxaIjvgJPXNv2KdAcvS7E+bqvRcs7uhBsEU8M=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=YkuC9Zfr/lpay8CFF9eC1UJsyLxxPhyZVPzKuUMfOsYu4RHnGCxcBgEDyQ0NFQ28kdHwjQ+Bt4WE72XiGJxqnq05JnQuOu9B+s6ivI7arkU4AIqmkasznIG3zASQMJPhNLGbwlT4p8M3likchqgY9ZuSMPUMoP72DHhGaoTjYpM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=jXDAt/ZK; arc=none smtp.client-ip=79.135.106.119
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SDDr7RJc"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-c2e8e738ae0so387994966b.1
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 18:20:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791854420; cv=none;
-        d=google.com; s=arc-20260327;
-        b=grlFe4b5UU6+s+RxBrmsvjB7z7k/vE3GJ+tIIM+Knl9rZ05xwuITV8lw7Ju8S0yttx
-         h72ODAOphKSNa1ubVCsxxshK6uiIQexNLFmHWIYms/VPZNU835X/lxcdZg5ExiXZNYSk
-         iUKezQE+lMPrOm+KASsGWy21PvYnxROlL+LRAvD32mgeZgKRlNtqN5bG3IcUMzabcBzf
-         F4LbQDx7WZud6MMU7i5441yViShSHFcm5xuzbAyWpg9eP8ybobSu8CnRXV5zhjHaECA0
-         j6g7RugjqmAjMVIea+ISs3rvNMGe5xE6IfMcAF4wiOHzISXR8jBE7rhmX3XiO2NBkOtI
-         cduw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=eDiCNa90nkNCt2ySXS6KYJDJLT9XVCk1KGiWa9GtHAM=;
-        fh=xByXtoZfQlinnCCzi9d2J52KDttQ9892Uq+gpASStjc=;
-        b=OCVBFrA+XH0H5KrAg/fVzJJvNQ84KW1o5qxOeedCf6el5s8ftjf4+2ZRuZJAUMpjUY
-         g6e8Cas/Tix6kc1mub1NDKV+QXYfATGc8wLEe+TaH9F60iKD4s5F97acAOAdxnXejaQl
-         V+K5PaIkz+Xa7drvyxuTqhnap4fzogkUA0y7C93UNJ14ywvXX9Ea1aLou8fuY/Sbe6l7
-         CqCaSjOqG7Lgm+hJydY2i3YAuspSaRAJvxoMAsoZiA9L6JuvJzAk8COVYBdHgGpOt6E4
-         wHhK/ldPH4xvywVfZ91IpDHFKVfDiHhmS7LG0mFIRO4I8f4iPuIThYdlpMyHvWeNxAoZ
-         4dtA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791854420; x=1792459220; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=eDiCNa90nkNCt2ySXS6KYJDJLT9XVCk1KGiWa9GtHAM=;
-        b=SDDr7RJcD50209XiYVlGtKVzVGK0341G6s7mIi4MXGNJwxjdSqXlxg1HTQcZyFUmZW
-         svNrjobcTS9Z+K8eHEdqu3LithUMYDGe26DrcAv2VMgJHbXDl/9TVKHNlsKPYUwOlpUh
-         jx/O4Ej9Nlkn0mW1BYIJz4lm9HuotuaZ4cbzZV8oIGck4kuNGSgu0rauz2FQEzzmyrov
-         /nRdXsi7kuCXOYrKqpt5JuQaq5I86hUyQn0b8xmUMXcSg2JlkGFrYotlYTJz4tbkoVNC
-         cfrSRuSOS8N49t606ivWj/66KLRTSfIHucO1UTPX+qWrD5D/pYcgDA2+Lt+8EZSbi5tC
-         FOtg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791854420; x=1792459220;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=eDiCNa90nkNCt2ySXS6KYJDJLT9XVCk1KGiWa9GtHAM=;
-        b=k8j/vjN186HfPsRc0jW+UuAOnjELNmJX/xbLaqRVQJ6LCgb9u3I3gCjjDXtii1oZiw
-         1ucMTjN9kUx6iRE8fV8d8pL61lCfxPSIdAS12TvzNp6xAVL8DajTTnrAVnyBKHTZ9GV7
-         Cw4YhZanaw7QWLNuajxT9KgDJ3HwnCbV2AboleWHV+Df791r64mTUIZS0DeUJ8QpDR4A
-         2tQm6V57gJL6huWMnHFGbSO6YGHgydThD9qkF2ysHnGlMVxpmbhKddirOafAJ8a2v7LY
-         mN8o8knhj7kLoUTI7IggOW+G6xh/RtTvt29f38YkpZbZ2UTvt3GxAoAfXLgN8ZTFwJx6
-         cYfQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz8kLyYEuYph2rcXYBFi2GfHQpa117hyt1DQQ8fYOrXL3/H6CkRAiEqsjfrZCWA5yFxcYcI4LDqvA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIvzqTCy+8Q+Q+tNlmgXvYwcribJm52nprQHDpMra9vZBoJoIsk
-	8sZp4h8ALN3pIHIYR0sDls33Ib0RG5Km3+Q+igZxuLskamFmywW33H2/QUdW3bzdjN8V3oUjZMH
-	q0vNzlMOhuAhWCLCH/dfwHuCVc0wRkn0=
-X-Gm-Gg: AYBFou35o4VUsbkEEh34v9ASka4Fb4YXLL6lRFZoiEtW7kFEXimckz85JcZcolwnZIt
-	3u09H++FcblWejO3I85XHzTc71OnQr26895WZpUR23qzoDzyKaDR5pyp/Of4IIgmrYJjKjraKiR
-	tN6Yd4G48LlzVX4t3aeLsHUQQQvCaaukYSk3qcr9bcT0QGEMroXnaigOex2OUuXl4d/VZR4qBUX
-	JqgHDKBaDXLHfi4ktUQ0rQPACwR3vK6HpB7cAYxbTR01EYbpXed4e81sExlT6bR41L2Rad1TmyC
-	TpyLGlo9n9MnyHLIoWFGX3Ul+0Vcms/Kv7GWYVnleMl1T6idK5aDd6w=
-X-Received: by 2002:a17:907:9816:b0:c2e:378c:8ceb with SMTP id
- a640c23a62f3a-c31a9fa39abmr1029769166b.36.1791854420304; Mon, 12 Oct 2026
- 18:20:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="jXDAt/ZK"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=protonmail2; t=1791855620; x=1792114820;
+	bh=HoWCXQr+g599YdKydg+WnwnnXEKIjUbnMEfi/3N88JE=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=jXDAt/ZK6RWS6OOn5eA1IsPVyzbWfw6ulFmcImX46OBCKHeyYFWjhncw9MjY1Fhd2
+	 j+5SGF4NHlgLI9vAR9xnhzgmS/FGvB779L33WHZ5/F5TAUwnAjJaXP98v/btdTyLIW
+	 +e90zW+/dODvVxa75BgqR09UgcEJ4aWktXIuzLTldV9cF9z6IxmnOtwIHOvxxpsxjL
+	 vH5aAIod83mrAKu1JzHqAF9LVCfe++27SA7olhR6Z9DCgrryEQC0CCZrb5x5cY5nPH
+	 DqoGM5VTYaEW3pt3waiw7PvhuqVIKHJ9CshLJLdLE/X323kDrYak3FmYHk/xPiTHzZ
+	 QKBfS+G9fw/IA==
+Date: Tue, 13 Oct 2026 01:40:17 +0000
+To: =?utf-8?Q?Ali_Ahmet_Memi=C5=9F?= <aliamemis@disroot.org>
+From: Charis Stratakis <c.stratakis@proton.me>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Armin Wolf <W_Armin@gmx.de>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, regressions@lists.linux.dev, Mark Pearson <mpearson-lenovo@squebb.ca>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: battery: Re-read battery information in the complete callback
+Message-ID: <RzdkKLBwqo3DyCK02-SY8TzjXuAuqzmM5cuV7LddeKdLyZhPu_av9VmcP8a7ZE5Uzt1sJo4AoMaN9reZpMo6jSQ2P1G3ooDL1rn2atKO2O8=@proton.me>
+In-Reply-To: <20261012225841.15260-1-aliamemis@disroot.org>
+References: <37N_jFulf7n-Z55NfKfE71C_wVPxYvZ0xD_iRUg2fXu7TypDiF5PStQ6siSfVBih6fThg5WoPes8U5ZQpfVm_teMFcUGXFxz2DdMbfSWuws=@proton.me> <20261012225141.13683-1-aliamemis@disroot.org> <20261012225841.15260-1-aliamemis@disroot.org>
+Feedback-ID: 224044180:user:proton
+X-Pm-Message-ID: 73d09911cc629e8dc5db4d7b2310de8aeb35d0a7
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1791512067.git.zhoubinbin@loongson.cn> <38f8e7cde8e454e7c6b72cb1b9a1c54e67c8a7fa.1791512067.git.zhoubinbin@loongson.cn>
- <66a8df16-01c5-4653-9fb5-7d746f03f782@oss.qualcomm.com>
-In-Reply-To: <66a8df16-01c5-4653-9fb5-7d746f03f782@oss.qualcomm.com>
-From: Binbin Zhou <zhoubb.aaron@gmail.com>
-Date: Tue, 13 Oct 2026 09:20:08 +0800
-X-Gm-Features: AclHuK83THTSYAs-3kkd9FBwRhF3injKe2tsHVZYn3kSJvncbd8B50m-i70KpDA
-Message-ID: <CAMpQs4KiGsC0=xwM+4M0GMWy9XEc60sTpPACK1s97p_JURUr-Q@mail.gmail.com>
-Subject: Re: [PATCH v7 1/8] thermal/drivers/loongson2: Fix negative
- temperature conversion in set_trips
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Binbin Zhou <zhoubinbin@loongson.cn>, Huacai Chen <chenhuacai@loongson.cn>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Yinbo Zhu <zhuyinbo@loongson.cn>, zhanghongchen <zhanghongchen@loongson.cn>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev, 
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi Daniel:
+On Tuesday, October 13th, 2026 at 12:58 AM, Ali Ahmet Memi=C5=9F <aliamemis=
+@disroot.org> wrote:
 
-On Tue, Oct 13, 2026 at 5:57=E2=80=AFAM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> On 10/9/26 04:57, Binbin Zhou wrote:
-> > The `MILLI` is defined as an unsigned long constant. When the
-> > temperatures passed to loongson2_thermal_set_trips() are negative, the
-> > expression `low / MILLI` triggers implicit conversion of the signed
-> > operand to unsigned long, and the division is then carried out in
-> > unsigned arithmetic.
-> >
-> > For example, with a low trip of -40000 (milli-degree Celsius):
-> >
-> >      -40000 / 1000UL =3D 18446744073709511   /* unsigned long */
-> >
-> > After truncation to the 32-bit register field this becomes
-> > 1271310379, instead of the expected 60 (i.e. -40 + HECTO). Writing such
-> > bogus value into the trip register leaves most of the upper bits set,
-> > which may hit status/trigger bits and cause spurious thermal interrupts=
-.
-> >
-> > Fix this by explicitly casting MILLI to int so that the division is
-> > performed in signed arithmetic.
-> >
-> > Cc: stable@vger.kernel.org
-> > Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal managemen=
-t support")
-> > Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
-> > ---
-> >   drivers/thermal/loongson2_thermal.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loon=
-gson2_thermal.c
-> > index 4d40fc706a53..f5ff0cac1442 100644
-> > --- a/drivers/thermal/loongson2_thermal.c
-> > +++ b/drivers/thermal/loongson2_thermal.c
-> > @@ -108,7 +108,7 @@ static int loongson2_thermal_set_trips(struct therm=
-al_zone_device *tz, int low,
-> >   {
-> >       struct loongson2_thermal_data *data =3D thermal_zone_device_priv(=
-tz);
-> >
-> > -     return loongson2_thermal_set(data, low/MILLI, high/MILLI, true);
-> > +     return loongson2_thermal_set(data, low / (int)MILLI, high / (int)=
-MILLI, true);
->
-> What about using MILLIDEGREE_PER_DEGREE ?
+> Hi Charis, could you test this on the P1 Gen2?
+>=20
 
-Yes, that's more suitable. I've been looking for the right macro for a
-while now.
->
-> >   }
-> >
-> >   static const struct thermal_zone_device_ops loongson2_2k1000_of_therm=
-al_ops =3D {
->
+I've rebuilt the Fedora 7.2.10 kernel with the patch for F44 to test it, th=
+e hunks are identical to 7.3-rc7. As before, no vanilla
+kernel was installed, all testing on my laptop, with Claude's help.
 
---=20
-Thanks.
-Binbin
+The test is cycles of "rtcwake -m no -s 25; systemctl suspend", checking en=
+ergy_full, voltage_min_design and serial_number
+after each resume, with int3403_thermal loaded throughout. I ran it as ABA =
+so that nothing else could drift:
+
+  7.2.8-200.fc44, stock          10 of 10 resumes corrupted
+  7.2.10 + this patch             0 of 20 resumes corrupted
+  7.2.8-200.fc44, stock again     8 of 10 resumes corrupted
+
+18 of 20 on stock against 0 of 20 patched.
+
+Tested-by: Charalampos Stratakis <c.stratakis@proton.me>
+
+Here is what Claude reports, hope it makes sense as I don't have much knowl=
+edge of the kernel's workings:
+
+
+Both flavours from my report show up: energy_full =3D 328.1x Wh, which make=
+s
+capacity read ~20%, together with voltage_min_design =3D 32.81x V, and one
+cycle with energy_now =3D 328960000, i.e. 424%, with energy_full intact. On=
+e
+bad cycle is worth singling out because it supports the \GTST explanation,
+it returned voltage_min_design correctly as 15360000 while energy_full was
+328160000. So the page selector flips in the middle of _BIX and which
+fields come back wrong depends on where in the read the _TMP burst lands,
+rather than the whole structure being read from page 0x60.
+
+I also traced the EC (ec.c dyndbg) on the patched kernel for one resume,
+which shows the ordering the patch relies on:
+
+  .223100  WR 81=3D01, 00, 02, 06, 04, 05 with the 0xA0-0xAF reads, i.e.
+           _BIX and _BST from the complete callback
+  .236664  last battery page selection
+  .239670  WR 81=3D60, first \GTST
+  .270916  last of 13 consecutive \GTST bursts
+
+Nothing from the battery is interleaved among those bursts, and the next
+battery access is 5.7s later from userspace polling. Worth noting that
+"Restarting tasks: Done" (.240802) and "PM: suspend exit" (.251365) both
+fall inside the \GTST burst, so PM_POST_SUSPEND, where the refresh used to
+happen, is right in the middle of it.
+
+The firmware bug itself is of course untouched, so a _BST that races a _TMP
+at runtime can still return garbage. Those were the transient 424% readings
+and they self-heal on the next read because of the 1s cache. Would a
+plausibility check in acpi_battery_get_state() be welcome for that, re-
+evaluating _BST once and warning FW_BUG when capacity_now exceeds
+design_capacity by a wide margin? It would sit next to the existing
+workarounds there. I realise it only catches the obviously absurd values
+and not wrong ones that look plausible, so I am not sure it is worth it.
+
+Regards,
+Charalampos Stratakis
