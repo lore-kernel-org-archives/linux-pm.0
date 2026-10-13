@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8895947D44F;
-	Tue, 13 Oct 2026 02:36:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 219F347ECF0;
+	Tue, 13 Oct 2026 02:36:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791859000; cv=none; b=iSyCfegyK8Jh4PXDMMrjkZPsJP4Ff0OYgHhlBuEuxXb4YSQe801MWuABJGLsODVcHOAmt6P/PMEN12gZCSay1bvBAZgqC3ahtXOjAA8ab4Wi2hgUFVPVCqEsQQ1lLTnEZs3PvOCUwjYdoyjvF5RDji1gXY5dIhmvaBGqkUbOcgY=
+	t=1791859001; cv=none; b=BTNsFAP/+jsu9WU1QQU3LXfSXcwZbQtibeSZuDEbAZKOEdoRVv4bG43LJtgZZ8jojZ73Rk0/K1kGIFJdtFzXF8up975eY3De+CP4CBPX4ijl1sEV6mdd23p+rsvqDUqIbpsmsNEC7GfRZ+/QRcxHBmzMMqUcNJOiFI/7oTrzoyM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791859000; c=relaxed/simple;
-	bh=sU+wXJ+ys4qCtMJM95xYfXEN5DcQxvolz6ACV7wzY+E=;
+	s=arc-20240116; t=1791859001; c=relaxed/simple;
+	bh=+MmqXShFhhN5cvdEH4/Gaw882mn9bk7HIlFuginpP18=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=I6TRwwofVg/RQsIYLvMcYkNYPdvaM8OVPJ+rwn6tIB9wsCzHMQCyjASkGKE87G8F4MYhJ4bTG8BHtzImd4mOUQ3aadafEDYiY3Lepk1yCgHThXngiqUlTbD3WwQnYG7IB5yggnvZ4/MEAfnN9svJsAaE/idMj87ZGfI+mWRRumY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d6zDZVNa; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=TZTK3y3nbn7JAedeGL9utAFZH2Vg/aU6eci16IVO5j5kRkfHQ82pGNpoI3fWV+cWg/ny5ivS6dCWKvMa6YbJMG8Bw418ei7otK84MzwT22Rn7OyG5vN51iYaB+xg7KXnhyQussoxIwyMP6PHoOIL1P+Tx7WFgGAMptlGn3QcJ54=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VlfO2LTJ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d6zDZVNa"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 63152C2BD05;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VlfO2LTJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E70A4C2BCFF;
 	Tue, 13 Oct 2026 02:36:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1791859000;
-	bh=sU+wXJ+ys4qCtMJM95xYfXEN5DcQxvolz6ACV7wzY+E=;
+	s=k20201202; t=1791859001;
+	bh=+MmqXShFhhN5cvdEH4/Gaw882mn9bk7HIlFuginpP18=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=d6zDZVNapixQrKWCnMLLKXU9Qy0ogbsHVD4LF7KAvWUJ9dF/9EMEhvVZDvKeOjHk7
-	 09QwcSf9dpJB9VyJbgt9kbevqF/VOO25S1xyTTkw114bUSVs3fF1UgX0MBbSuVeI2l
-	 +000vG7nGqoCGhg2Xewf84Bza7GgjeSpepvW2Aw5m1AzrOTJFtM6uWtz0G6/yLqFpu
-	 9/3heNw7bdQkStRV1thIx7n0SPBq234+xPbz2iybzCLGnGvVAB4JXqd/i7Hnpgdfxl
-	 /Mlx4My7236H5UPosaTT4p81AHf4a6C/t7ruGR5OiVVPVFYtLqYn2ltcEN6DmKh3Cm
-	 DYOWO9Pu338ww==
+	b=VlfO2LTJQhrAh6hL/FwpdP19as3POgSuYJhgJ8KgLTF/dcVPB6XQMBbtK1L3tjnw+
+	 efP7ZrS1rz+vz9vrHnOuy4kTp9J4XA+0QlQqUgGZHeuLXch9QtfEfiEDMiJy69Yh1R
+	 J17lEiW3JhDnkcsFLYNpcWRiRUDK/93ijfq0fpBV+D4lrswAk5BaQHcX1U1gNJy4yX
+	 rn4/y3k5k3+YHkuPRENEuc3vDETdhWr1ejDdJX1P1Vx1gMITxDsTZccMam+3QeOFa+
+	 p0B2kTeFX717TSrx+meN9xcRoMZ3qHJwRJn9VFqNy0G4Qc5c8Jc6Lyg5Onr4pNs0Mv
+	 QIqoKjFsXoSsA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50D47CC6B09;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D04F2CA9ED0;
 	Tue, 13 Oct 2026 02:36:40 +0000 (UTC)
 From: Jim Cromie via B4 Relay <devnull+jim.cromie.gmail.com@kernel.org>
-Date: Mon, 12 Oct 2026 20:37:01 -0600
-Subject: [PATCH v12 30/40] dyndbg: split multi-query strings with @
+Date: Mon, 12 Oct 2026 20:37:07 -0600
+Subject: [PATCH v12 36/40] dyndbg: add +c flag to count pr_debug calls
+ without printing
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261012-dd-cmap-part2-clean-v12-30-3c8cc5725def@gmail.com>
+Message-Id: <20261012-dd-cmap-part2-clean-v12-36-3c8cc5725def@gmail.com>
 References: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
 In-Reply-To: <20261012-dd-cmap-part2-clean-v12-0-3c8cc5725def@gmail.com>
 To: Jason Baron <jbaron@akamai.com>, Shuah Khan <shuah@kernel.org>, 
@@ -68,11 +69,11 @@ Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
  linux-kbuild@vger.kernel.org, linux-pm@vger.kernel.org, 
  Jim Cromie <jim.cromie@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791858995; l=9157;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791858995; l=14921;
  i=jim.cromie@gmail.com; s=20260203; h=from:subject:message-id;
- bh=UAPI+bql5xcOoAtvWwGuJKRaoPMw5YcxCRGKbM9nfAU=;
- b=oQUGaoz0d6dRvPdhAJa625HMhaZix4ymC+v8X6j2uqgPg6sgRVScy9rzkxEbF9jTDYfmeGL8s
- +Wt8s/EwmLIAyJspFk6mTgAo4SjKpjqy79qI31Ss67+lYrUhEoOg05d
+ bh=W3gmOqdXiHuHC4Hvd1QBlxXBL2k1JqUz2wKGdFlsv5A=;
+ b=+IOpOUU0KlmvKTGkcpJSdmGVuxd4D39jMYOSFldCf8zATa3JA+yvPX2gIk5T/Mmo+Bzy8EuEH
+ fTPvjvw+GkQAvvWR/a96+Ve3vFDkyS/pfPMB0CflAT1NqByrUtZXWyd
 X-Developer-Key: i=jim.cromie@gmail.com; a=ed25519;
  pk=C6E5ODlPQo7ZBynATXH9wg7K6HxP0pIXyf4s38Qw0XE=
 X-Endpoint-Received: by B4 Relay for jim.cromie@gmail.com/20260203 with
@@ -82,225 +83,447 @@ Reply-To: jim.cromie@gmail.com
 
 From: Jim Cromie <jim.cromie@gmail.com>
 
-Since
-commit 85f7f6c0edb8 ("dynamic_debug: process multiple debug-queries on a line")
+Introduce a +c flag, to increment a per-cpu counter: ddebug_count
+when a flagged pr_debug() is called.
 
-Multi-query commands have been allowed:
+Reset the counter with:
+  echo reset_stats > /proc/dynamic_debug/control
 
-  modprobe drm dyndbg="class DRM_UT_CORE +p; class DRM_UT_KMS +p"
-  modprobe drm dyndbg=<<EOX
-     class DRM_UT_CORE +p
-     class DRM_UT_KMS +p
-  EOX
+and see the count value with:
+  tail -n1 /proc/dynamic_debug/control
+  #: total count: 2295401
 
-More recently, the need for quoting was avoided by treating a comma
-like a space/token-terminator:
+This counter lets us count callrates of arbitrary sets of "enabled"
+pr_debugs, over user defined intervals, without actually doing the
+printk work.  Each increment represents a fetch from main memory and a
+bit test, which are now elided because the pr_debug is backed by a
+static-key.
 
-  modprobe drm dyndbg=class,DRM_UT_CORE,+p\;class,DRM_UT_KMS,+p
+CONFIG_DRM_USE_DYNAMIC_DEBUG=y gives drm a per callsite static-key to
+avoid the cache-line insult of actually reading __drm_debug.  On my
+amdgpu + nvidia laptop, thats ~3200 callsites.
 
-That works, but it needs the escaped semicolon, which is a shell
-special-char (one of the bash control operators), so it is brittle
-when passed in/down/around scripts.
+The benchmarks below are from a recent build running on my asus
+amdgpu + nouveau laptop, using scripts from below the snip.
 
-So this patch adds '@' to the existing ';' and '\n' multi-command
-separators, which is more shell-friendly, so you can more fully avoid
-quoting and escaping hassles.
+  #> count_hits 30 hammer_vk --
+  Banging on: hammer_vk (&)
+  [1] 100847
+  [1]+  Done                       hammer_vk
+  #: total hits: 2295401
 
-Update selftests script, adding a multi-query split on @
+  #> count_hits 30 hammer_vk -- DRM_UT_CORE
+  Banging on: hammer_vk (&)
+  [1] 99910
+  [1]+  Done                       hammer_vk
+  #: total hits: 2204406
 
+Notably, the DRM_UT_CORE category dominates the call traffic, not
+DRM_UT_VBL or any others, which contribute little extra to the above.
+
+To see the distribution of debug categories (for vkcube load)
+
+  #> isolate_drm_hits 2> /dev/null
+  Starting isolation study: 10s per class using vkcube
+  ----------------------------------------------------------
+  DRM CLASS            | TOTAL HITS
+  ----------------------------------------------------------
+  DRM_UT_CORE          | 85305
+  DRM_UT_DRIVER        | 0
+  DRM_UT_KMS           | 1435
+  DRM_UT_PRIME         | 0
+  DRM_UT_ATOMIC        | 13645
+  DRM_UT_VBL           | 4071
+  DRM_UT_STATE         | 1780
+  DRM_UT_LEASE         | 0
+  DRM_UT_DP            | 0
+  DRM_UT_DRMRES        | 0
+  FOO                  | 0
+
+REVIEW:
+
+In every minute, 12 vkcubes issue ~4.6M drm_debug_enabled(__drm_debug)
+macro-calls.  To test the bits, they all *may* go out to main memory,
+though __drm_debug is ro-mostly.  Still, theres significant cache-line
+eviction, and potentially meaningful costs we can avoid.
+
+With CONFIG_DRM_USE_DYNAMIC_DEBUG=y, each pr_debug call-site is
+replaced by a static-key, with the off-cost of few NOOPs, avoiding all
+the cache-line thrashing.
+
+NOTES:
+
+The +c flag invokes the callsite, but avoids the heavy syslog writing.
+It is currently independent of +p, but it could be compressed into a
+state-machine, and the bit recovered, but not til we need to do so.
+
+The +c flag has no predictive quality; to count usr_dbg() callsites,
+you must have reimplemnted them already with pr_debug.  This just
+gives DRM folks some numbers to consider, to balance against the work
+needed to test this series.
+
+Assisted-by: Gemini-CLI:gemini-2.5-pro
 Signed-off-by: Jim Cromie <jim.cromie@gmail.com>
 ---
+v11:
+. only print counted_calls in control epilogue when count > 0.
+
 v10:
-. replace strpbrk() with quote-aware ddebug_find_delimiter() to ignore '@' inside quotes.
+. add __DYNAMIC_DEBUG_BRANCH() checking _ENABLED while DYNAMIC_DEBUG_BRANCH() checks _ACTIVE.
+. add early return guards in __dynamic_*_dbg() helpers checking _ACTIVE.
+
+. add __DYNAMIC_DEBUG_BRANCH() checking _ENABLED while DYNAMIC_DEBUG_BRANCH() checks _ACTIVE.
+. add early return guards in __dynamic_*_dbg() helpers checking _ACTIVE.
 
 v9:
-. update FT_multi_query command in dyndbg_selftest.sh to actively test @ delimiter.
-v5: avoid +t flag in content tests - pid is not predictable.
-    remove Reviewed-by: <louis.chauvet@bootlin.com> - too many changes
+. add missing kfree(tmpbuf) in reset_stats handler before early return.
+. sum across for_each_possible_cpu() in get_ddebug_call_count() for hotplug stability.
+. update !CONFIG_JUMP_LABEL branch check to check _DPRINTK_FLAGS_ENABLED.
 
-v2:
+function ddcmd () {
+    local cmd="$*"
+    # Direct write - assume the parent script is run with 'sudo' or as root
+    [ -f /proc/dynamic_debug/control ] || return 1;
+    if ! echo "$cmd" > /proc/dynamic_debug/control 2>/tmp/dd_err; then
+        local ret=$?
+        echo "ERROR ($ret): $(cat /tmp/dd_err)" #>&2
+        # Check dmesg for the "!" syntax error on wk-baseline
+        dmesg | grep -i "dyndbg" | tail -n 2 #>&2
+        return $ret
+    fi
+}
 
-replace '%' with '@' as multi-query splitter, as it is:
- - not a sshell special cahr
- - allows matching on format strings with format specifiers
+function _get_cal_count() {
+    if [ ! -f /proc/interrupts ]; then
+        echo 0
+        return
+    fi
+    # sum all CPU columns for any line starting with CAL:
+    # the awk starts at $2 to skip the label (CAL:)
+    # NF-2 skips the trailing text "Function call interrupts"
+    grep "^ *CAL:" /proc/interrupts | \
+        awk '{ for(i=2; i<=NF-2; i++) sum+=$i } END { print sum+0 }'
+}
+
+function wrap_cal_count() {
+    local cal_before
+    cal_before=$(_get_cal_count)
+    printf " wrapping: %s\n" "$*" #>&2
+    #time \
+	"$@" || return 1
+    local cal_after
+    cal_after=$(_get_cal_count)
+    local delta=$(( ${cal_after:-0} - ${cal_before:-0} ))
+    printf "Delta-CAL (IPI): %d\n" "$delta" #>&2
+}
+
+TEST_CLASSES_LIST="D2_CORE D2_DRIVER D2_KMS D2_PRIME D2_ATOMIC D2_VBL D2_STATE D2_LEASE D2_DP D2_DRMRES V0 V1 V2 V3 V4 V5 V6 V7"
+
+DRM_CLASSES_LIST="DRM_UT_CORE DRM_UT_DRIVER DRM_UT_KMS DRM_UT_PRIME DRM_UT_ATOMIC DRM_UT_VBL DRM_UT_STATE DRM_UT_LEASE DRM_UT_DP DRM_UT_DRMRES"
+
+function dd_setup_() {
+    local flags="${1:-+p}"
+    # Use $2 if provided, otherwise fallback to the full list
+    local CLASSES_LIST="$2"
+    local q=""
+    local C
+
+    # Safeguard: if list is empty, don't do anything
+    [[ -z "$CLASSES_LIST" ]] && echo "no classes!" && return 0
+
+    for C in $CLASSES_LIST; do
+        q+="class $C $flags ; "
+    done
+    #echo "sending: $q"
+    ddcmd "$q"
+}
+
+function dd_setup_test() {
+    modprobe test_dynamic_debug || return 1
+    dd_setup_ $1 "${2:-$TEST_CLASSES_LIST}"
+}
+
+function dd_setup_drm() {
+    dd_setup_ $1 "${2:-$DRM_CLASSES_LIST}"
+}
+
+function count_hits() {
+    local duration=60
+    [[ "$1" =~ ^[0-9]+$ ]] && { duration=$1; shift; }
+
+    local cmd_to_run=()
+    local custom_classes=""
+    while [[ $# -gt 0 ]]; do
+        if [[ "$1" == "--" ]]; then
+            shift
+            custom_classes="$*"
+            break
+        fi
+        cmd_to_run+=("$1")
+        shift
+    done
+
+    ddcmd reset_stats
+    dd_setup_drm "+c" "$custom_classes"
+
+    if [[ ${#cmd_to_run[@]} -gt 0 ]]; then
+        echo "Banging on: ${cmd_to_run[*]} (&)"
+        # Use eval so bash functions work
+        eval "${cmd_to_run[*]} &"
+        local cmd_pid=$!
+        sleep "$duration"
+        killall vkcube 2>/dev/null
+        kill "$cmd_pid" 2>/dev/null
+    else
+        sleep "$duration"
+    fi
+
+    dd_setup_drm "-c" "$custom_classes"
+    tail -n1 /proc/dynamic_debug/control
+}
+
+function hammer_vk() {
+    for i in {1..12}; do vkcube >/dev/null 2>&1 & done
+}
+
+function isolate_drm_hits() {
+    local duration=${1:-10}
+    local cmd=${2:-vkcube}
+
+    echo "Starting isolation study: ${duration}s per class using ${cmd}"
+    echo "----------------------------------------------------------"
+    printf "%-20s | %-10s\n" "DRM CLASS" "TOTAL HITS"
+    echo "----------------------------------------------------------"
+
+    for class in $DRM_CLASSES_LIST FOO; do
+        # Run count_hits for the specific class
+        # Use 'capture' logic to grab only the hit count from the tail output
+        result=$(count_hits "$duration" "$cmd" -- "$class" | grep "total hits" | awk '{print $NF}')
+
+        printf "%-20s | %-10s\n" "$class" "$result"
+    done
+    #result=$(count_hits "$duration" "$cmd" -- "FOO" | grep "total hits" | awk '{print $NF}')
+    #printf "%-20s | %-10s\n" "$class" "$result"
+}
+
+[ $SHLVL == 2 -a -n "$*" ] && echo " doing: $* in $PWD" #>&2
+
+if [ $SHLVL == 2 ]; then
+    # run args as cmd
+    $@
+fi
 ---
- Documentation/admin-guide/dynamic-debug-howto.rst  |  8 +++--
- lib/dynamic_debug.c                                | 26 ++++++++++++++++-
- .../selftests/dynamic_debug/dyndbg_selftest.sh     | 34 +++++++++++++++-------
- 3 files changed, 53 insertions(+), 15 deletions(-)
+ include/linux/dynamic_debug.h | 40 +++++++++++++++++++++++++++----------
+ lib/dynamic_debug.c           | 46 +++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 72 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/admin-guide/dynamic-debug-howto.rst b/Documentation/admin-guide/dynamic-debug-howto.rst
-index b9fbb2a12955..a8962ab22aaf 100644
---- a/Documentation/admin-guide/dynamic-debug-howto.rst
-+++ b/Documentation/admin-guide/dynamic-debug-howto.rst
-@@ -85,10 +85,12 @@ by spaces, tabs, or commas.  So these are all equivalent::
-   :#> ddcmd '  file   svcsock.c     line  1603 +p  '
-   :#> ddcmd file,svcsock.c,line,1603,+p
+diff --git a/include/linux/dynamic_debug.h b/include/linux/dynamic_debug.h
+index dc755a24f1d6..d228b4a852c3 100644
+--- a/include/linux/dynamic_debug.h
++++ b/include/linux/dynamic_debug.h
+@@ -41,6 +41,9 @@ struct _ddebug {
+ #define _DPRINTK_FLAGS_INCL_TID		(1<<4)
+ #define _DPRINTK_FLAGS_INCL_SOURCENAME	(1<<5)
+ #define _DPRINTK_FLAGS_INCL_STACK	(1<<6)
++#define _DPRINTK_FLAGS_COUNT		(1<<7)
++
++#define _DPRINTK_FLAGS_BRANCH (_DPRINTK_FLAGS_PRINT | _DPRINTK_FLAGS_COUNT)
  
--Command submissions are bounded by a write() system call.
--Multiple commands can be written together, separated by ``;`` or ``\n``::
-+Command submissions are bounded by a write() system call.  Multiple
-+commands can be written together, separated by ``@``, ``;`` or ``\n``::
+ #define _DPRINTK_FLAGS_INCL_ANY		\
+ 	(_DPRINTK_FLAGS_INCL_MODNAME | _DPRINTK_FLAGS_INCL_FUNCNAME |\
+@@ -375,13 +378,13 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
  
--  :#> ddcmd "func pnpacpi_get_resources +p; func pnp_assign_mem +p"
-+  :#> ddcmd func foo +p @ func bar +p
-+  :#> ddcmd func foo +p \; func bar +p
-+  :#> ddcmd "func foo +p ; func bar +p"
-   :#> ddcmd <<"EOC"
-   func pnpacpi_get_resources +p
-   func pnp_assign_mem +p
+ #define _DPRINTK_KEY_INIT .key.dd_key_true = (STATIC_KEY_TRUE_INIT)
+ 
+-#define DYNAMIC_DEBUG_BRANCH(descriptor) \
+-	static_branch_likely(&descriptor.key.dd_key_true)
++#define __DYNAMIC_DEBUG_BRANCH(descriptor) \
++	static_branch_likely(&(descriptor).key.dd_key_true)
+ #else
+ #define _DPRINTK_KEY_INIT .key.dd_key_false = (STATIC_KEY_FALSE_INIT)
+ 
+-#define DYNAMIC_DEBUG_BRANCH(descriptor) \
+-	static_branch_unlikely(&descriptor.key.dd_key_false)
++#define __DYNAMIC_DEBUG_BRANCH(descriptor) \
++	static_branch_unlikely(&(descriptor).key.dd_key_false)
+ #endif
+ 
+ #else /* !CONFIG_JUMP_LABEL */
+@@ -389,15 +392,30 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
+ #define _DPRINTK_KEY_INIT
+ 
+ #ifdef DEBUG
+-#define DYNAMIC_DEBUG_BRANCH(descriptor) \
+-	likely(descriptor.flags & _DPRINTK_FLAGS_PRINT)
++#define __DYNAMIC_DEBUG_BRANCH(descriptor) \
++	likely((descriptor).flags & _DPRINTK_FLAGS_BRANCH)
+ #else
+-#define DYNAMIC_DEBUG_BRANCH(descriptor) \
+-	unlikely(descriptor.flags & _DPRINTK_FLAGS_PRINT)
++#define __DYNAMIC_DEBUG_BRANCH(descriptor) \
++	unlikely((descriptor).flags & _DPRINTK_FLAGS_BRANCH)
+ #endif
+ 
+ #endif /* CONFIG_JUMP_LABEL */
+ 
++void ddebug_increment_call_count(void);
++#define DYNAMIC_DEBUG_COUNT(descriptor) do {			\
++	if (unlikely((descriptor).flags & _DPRINTK_FLAGS_COUNT)) \
++		ddebug_increment_call_count();			\
++} while (0)
++
++#define DYNAMIC_DEBUG_BRANCH(descriptor) ({				\
++	bool __dd_print = false;					\
++	if (__DYNAMIC_DEBUG_BRANCH(descriptor)) {			\
++		DYNAMIC_DEBUG_COUNT(descriptor);			\
++		__dd_print = !!((descriptor).flags & _DPRINTK_FLAGS_PRINT); \
++	}								\
++	__dd_print;							\
++})
++
+ /*
+  * Factory macros: ($prefix)dynamic_func_call($suffix)
+  *
+@@ -409,6 +427,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
+  * (|_cls):	adds in _DPRINT_CLASS_DFLT as needed
+  * (|_no_desc):	former gets callsite descriptor as 1st arg (for prdbgs)
+  */
++
+ #define __dynamic_func_call_cls(id, cls, fmt, func, ...) do {	\
+ 	DEFINE_DYNAMIC_DEBUG_METADATA_CLS(id, cls, fmt);	\
+ 	if (DYNAMIC_DEBUG_BRANCH(id)) {				\
+@@ -423,8 +442,8 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
+ #define __dynamic_func_call_cls_no_desc(id, cls, fmt, func, ...) do {	\
+ 	DEFINE_DYNAMIC_DEBUG_METADATA_CLS(id, cls, fmt);		\
+ 	if (DYNAMIC_DEBUG_BRANCH(id)) {					\
+-		func(__VA_ARGS__);					\
+-		__dynamic_dump_stack(id);				\
++		func(__VA_ARGS__);				\
++		__dynamic_dump_stack(id);			\
+ 	}								\
+ } while (0)
+ #define __dynamic_func_call_no_desc(id, fmt, func, ...)			\
+@@ -512,6 +531,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
+ #define DYNAMIC_DEBUG_CLASSMAP_PARAM_REF(_name, _bits, _var, _flags)	\
+ 	module_param_named(_name, _bits, uint, 0600)
+ #define DEFINE_DYNAMIC_DEBUG_METADATA(name, fmt)
++#define __DYNAMIC_DEBUG_BRANCH(descriptor) false
+ #define DYNAMIC_DEBUG_BRANCH(descriptor) false
+ #define DECLARE_DYNDBG_CLASSMAP(...)
+ 
 diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
-index 6482fd28def4..636a88994a77 100644
+index 023784dcdc80..47a830dbd564 100644
 --- a/lib/dynamic_debug.c
 +++ b/lib/dynamic_debug.c
-@@ -622,6 +622,30 @@ static int ddebug_exec_query(char *query_string, const char *modname)
- 	return nfound;
+@@ -19,12 +19,14 @@
+ #include <linux/kallsyms.h>
+ #include <linux/types.h>
+ #include <linux/mutex.h>
++#include <linux/percpu.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/list.h>
+ #include <linux/sysctl.h>
+ #include <linux/ctype.h>
+ #include <linux/string.h>
++
+ #include <linux/parser.h>
+ #include <linux/string_helpers.h>
+ #include <linux/uaccess.h>
+@@ -71,6 +73,21 @@ struct flag_settings {
+ 	unsigned int mask;
+ };
+ 
++static DEFINE_PER_CPU(unsigned long, ddebug_call_count);
++void ddebug_increment_call_count(void)
++{
++	this_cpu_inc(ddebug_call_count);
++}
++EXPORT_SYMBOL(ddebug_increment_call_count);
++
++static void reset_ddebug_call_count(void)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		per_cpu(ddebug_call_count, cpu) = 0;
++}
++
+ static bool ddebug_class_map_in_range(const int class_id,
+ 				      const struct ddebug_class_map *map);
+ static bool ddebug_class_user_in_range(const int class_id,
+@@ -101,6 +118,7 @@ static const struct { unsigned flag:8; char opt_char; } opt_array[] = {
+ 	{ _DPRINTK_FLAGS_INCL_LINENO, 'l' },
+ 	{ _DPRINTK_FLAGS_INCL_TID, 't' },
+ 	{ _DPRINTK_FLAGS_INCL_STACK, 'd' },
++	{ _DPRINTK_FLAGS_COUNT, 'c' },
+ 	{ _DPRINTK_FLAGS_NONE, '_' },
+ };
+ 
+@@ -364,10 +382,10 @@ static int ddebug_change(const struct ddebug_query *query, struct flag_settings
+ 			if (newflags == dp->flags)
+ 				continue;
+ #ifdef CONFIG_JUMP_LABEL
+-			if (dp->flags & _DPRINTK_FLAGS_PRINT) {
+-				if (!(newflags & _DPRINTK_FLAGS_PRINT))
++			if (dp->flags & _DPRINTK_FLAGS_BRANCH) {
++				if (!(newflags & _DPRINTK_FLAGS_BRANCH))
+ 					static_branch_disable(&dp->key.dd_key_true);
+-			} else if (newflags & _DPRINTK_FLAGS_PRINT) {
++			} else if (newflags & _DPRINTK_FLAGS_BRANCH) {
+ 				static_branch_enable(&dp->key.dd_key_true);
+ 			}
+ #endif
+@@ -726,6 +744,12 @@ static int ddebug_exec_queries(char *query, const char *modname)
+ 		if (!query || !*query || *query == '#')
+ 			continue;
+ 
++		if (!strncmp(query, "reset_stats", 11) &&
++		    !*skip_spaces_and_commas(query + 11)) {
++			reset_ddebug_call_count();
++			continue;
++		}
++
+ 		if (modname)
+ 			v2pr_info("query %d: module %s \"%s\"\n", i, modname, query);
+ 		else
+@@ -1105,6 +1129,7 @@ static __init int dyndbg_setup(char *str)
+ 
+ __setup("dyndbg=", dyndbg_setup);
+ 
++
+ /*
+  * File_ops->write method for <debugfs>/dynamic_debug/control.  Gathers the
+  * command text from userspace, parses and executes it.
+@@ -1262,6 +1287,16 @@ static const char *ddebug_class_name(struct _ddebug_info *di, struct _ddebug *dp
+ 	return NULL;
  }
  
-+/*
-+ * Split multi-query string on delimiters (@, ;, \n), ignoring delimiters
-+ * that appear inside single or double quoted strings.
-+ */
-+static char *ddebug_find_delimiter(char *str, const char *delims)
++static unsigned long get_ddebug_call_count(void)
 +{
-+	bool in_quote = false;
-+	char quote_char = 0;
++	unsigned long total = 0;
++	int cpu;
 +
-+	for (; *str; str++) {
-+		if (*str == '"' || *str == '\'') {
-+			if (!in_quote) {
-+				in_quote = true;
-+				quote_char = *str;
-+			} else if (*str == quote_char) {
-+				in_quote = false;
-+			}
-+		} else if (!in_quote && strchr(delims, *str)) {
-+			return str;
-+		}
-+	}
-+	return NULL;
++	for_each_possible_cpu(cpu)
++		total += per_cpu(ddebug_call_count, cpu);
++	return total;
 +}
 +
- /* handle multiple queries in query string, continue on error, return
-    last error or number of matching callsites.  Module name is either
-    in the modname arg (for boot args) or perhaps in query string.
-@@ -632,7 +656,7 @@ static int ddebug_exec_queries(char *query, const char *modname)
- 	int i, errs = 0, exitcode = 0, rc, nfound = 0;
- 
- 	for (i = 0; query; query = split) {
--		split = strpbrk(query, ";\n");
-+		split = ddebug_find_delimiter(query, "@;\n");
- 		if (split)
- 			*split++ = '\0';
- 
-diff --git a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-index eb508c804782..6e5f23866ccc 100755
---- a/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-+++ b/tools/testing/selftests/dynamic_debug/dyndbg_selftest.sh
-@@ -131,7 +131,6 @@ function ddcmd_load () {
-     local val="$4"
- 
-     # 1. Setup the control filters (using positional ddcmd range-check)
--    echo  "$query" "$range"
-     ddcmd "$query" "$range"
- 
-     # 2. Execute the workload and capture syslog prints
-@@ -325,9 +324,20 @@ function FT_basic_queries {
-     ddcmd "file $f +l"  "$f"
-     ddcmd "file $f -m"  "$f"
-     ddcmd "file $f =_"  "$f"
-+}
+ /*
+  * Seq_ops show method.  Called several times within a read()
+  * call from userspace, with ddebug_lock held.  Formats the
+@@ -1281,7 +1316,10 @@ static int ddebug_proc_show(struct seq_file *m, void *p)
+ 		return 0;
+ 	}
+ 	if (p == EPILOGUE_TOKEN) {
+-		/* use this soon */
++		unsigned long count = get_ddebug_call_count();
 +
-+function FT_multi_query {
-+    v_echo "${GREEN}# MULTI_QUERY_TESTS ${NC}"
-+    if [ $LACK_DD_BUILTIN -eq 1 ]; then
-+	echo "SKIP - test requires dynamic_debug built into kernel"
-+	return
-+    fi
-+    local f='kernel/params.c'
-+    ddcmd =_ # zero everything
++		if (count)
++			seq_printf(m, "#: counted_calls: %lu\n", count);
+ 		return 0;
+ 	}
  
--    # multi-query commands split on ; on a single line
-+    # multi-query commands on a single line, split on ;/@ respectively
-     ddcmd "file $f +mf ; file $f func parse_args +sl" "$f"
-+    ddcmd "file $f -f @ file $f func parse_args -l"   "$f"
- 
-     # verify multi-cmd input, newline separated, with embedded comments
-     ddcmd =_ # reset before multiline query to capture full transition
-@@ -373,7 +383,7 @@ function FT_test_classes {
-     verify_control_slice '\[test_dynamic_debug\]'
- 
-     # 2. Verify state transition and live-printing end-to-end via ddcmd_load!
--    ddcmd_load "class D2_CORE +pmf;class D2_KMS +pls;class D2_ATOMIC +pml" \
-+    ddcmd_load "class,D2_CORE,+pmf;class,D2_KMS,+pls;class,D2_ATOMIC,+pml" \
-         '\[test_dynamic_debug\]' \
-         "/sys/module/test_dynamic_debug/parameters/do_classes" "1"
- 
-@@ -467,6 +477,7 @@ builtin_tests=(
-     FT_grammar_errs
-     FT_basic_queries
-     FT_comma_terminators
-+    FT_multi_query
- )
- 
- # Modular Feature Tests (Require CONFIG_MODULES=y and test_dynamic_debug*.ko available)
-@@ -489,8 +500,8 @@ modular_tests=(
- #
- # ==============================================================================
- function GOLDEN_RECORDS {
--    cat << 'EOF' | {
--#K= 26fd1565f209b383d9f2fbf0b54cd5fc FT_grammar_errs.1
-+    cat << 'EO_DYNDBG_GOLDEN_REFS' | {
-+#K= 95b249c7ec2cbd5a436f96060b2bee37 FT_grammar_errs.1
- #K= 200c01632c52a63f6d186da1c6460740 FT_grammar_errs.2
- #K= 7d7141900ce6e32f15c99202309c63a4 FT_grammar_errs.3
- #K= 1bb798a5831d0119789d424ef6cb55c4 FT_grammar_errs.4
-@@ -510,7 +521,7 @@ function GOLDEN_RECORDS {
- #K= cb8288d607b0c5282125852f3ab05107 FT_grammar_errs.18
- #K= b371c6ba52503d037dbc43da788af8be FT_grammar_errs.19
- #K= 98e2bd3e4f3da58536496a38ec3e6238 FT_grammar_errs.20
--#K= 02b210b2646aceb68f3d6d2876a3d57a FT_grammar_errs.21
-+#K= c4e8b7261811e9fdf0c80fa9e374a29e FT_grammar_errs.21
- #K= 51030cd01ed601a68dd48356902954b1 FT_grammar_errs.22
- #K= af8818de076407d4e7f4e384ba110ac5 FT_grammar_errs.23
- #K= 023ba04ffced833b4776fb4fcaae7755 FT_grammar_errs.24
-@@ -530,7 +541,7 @@ function GOLDEN_RECORDS {
- #K= 130bf64b92a5e34d1c4cce98899084e1 FT_grammar_errs.38
- #K= 9681a05658f1a50e3434aa991b5ce992 FT_grammar_errs.39
- #K= 38506317363a188fbb7a417ff50457a9 FT_grammar_errs.40
--#K= 02b210b2646aceb68f3d6d2876a3d57a FT_grammar_errs.41
-+#K= c4e8b7261811e9fdf0c80fa9e374a29e FT_grammar_errs.41
- #K= 8c08a8b5cacbf885d022360ed856e7a1 FT_grammar_errs.42
- #K= f0f4d894a49bd2c1856cf4f013f83e54 FT_grammar_errs.43
- #K= 25b92d52cb299fa8d84c5584e490bd97 FT_grammar_errs.44
-@@ -554,14 +565,15 @@ function GOLDEN_RECORDS {
- #K= db17180b59444e5e34a8fc20c40e4530 FT_basic_queries.2
- #K= f7bd56bd407ff255ef2e3b5fb093ae6a FT_basic_queries.3
- #K= 4ce44468b3b5f80ae42ade1f261b952f FT_basic_queries.4
--#K= 02e4fd94602e108cb89bfc70d47a5dad FT_basic_queries.5
--#K= f03a7ca7316e8db4c0e16523dc41e75d FT_basic_queries.6
--#K= c518a50ba30ba8099d0dc874a27ecf16 FT_basic_queries.7
- #K= c8bbbac639f244ed9088208ebb7d83a6 FT_comma_terminators.1
- #K= bed6350f058f600910837dae83a12f56 FT_comma_terminators.2
- #K= 6e8599556a312200fb6d484565b6c52f FT_comma_terminators.3
- #K= 68b329da9893e34099c7d8ad5cb9c940 FT_comma_terminators.4
- #K= adc1ef04304c861c87fe294a8ba4e402 FT_comma_terminators.5
-+#K= 02e4fd94602e108cb89bfc70d47a5dad FT_multi_query.1
-+#K= c0fc482bbf18b9d5ffd6743b18bc34f7 FT_multi_query.2
-+#K= f03a7ca7316e8db4c0e16523dc41e75d FT_multi_query.3
-+#K= c518a50ba30ba8099d0dc874a27ecf16 FT_multi_query.4
- #K= 91838b4012c50a1dc1d9e210ba8d68f8 FT_test_classes.1
- #K= a15ec4843acd721fbdfddc0b512c8032 FT_test_classes.2
- #K= 2cee6842c9cdee5cb3bf50b2e3914813 FT_test_classes.3
-@@ -606,7 +618,7 @@ function GOLDEN_RECORDS {
- #K= 0239d8c0808eef396782362613f675b0 FT_modprobe_w_param.34
- #K= 4819f715ba485c493afb455542f7ab8c FT_modprobe_w_param.35
- #K= 0239d8c0808eef396782362613f675b0 FT_modprobe_w_param.36
--EOF
-+EO_DYNDBG_GOLDEN_REFS
-         # Read the K-recs and skip those for tests that can't run
-         while read -r line; do
-             # Filter built-in if needed
 
 -- 
 2.56.0
