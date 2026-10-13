@@ -1,121 +1,179 @@
-Received: from sender5-op-o11.zoho.com (sender5-op-o11.zoho.com [165.173.182.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD7D533B6F8;
-	Tue, 13 Oct 2026 17:15:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=165.173.182.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791911742; cv=pass; b=tKYoH2RZHtqutz4yU666rW25ncOvJree9BI8oKQPalLseEA0XHrP2Xive699IMiCVXPhzwkuD5FlGNbBEph4QLE0F15wnhwV4l2bUNAzEJk2eL3pHDGAgybMCOxSZhXZqHU7ZnOPuFLkZuBln+SibbjOgyz0ht61B8NmrzPl2pg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791911742; c=relaxed/simple;
-	bh=ooJLDxSCJEcVNbGZxg1axPiit16FO3fuMRpP0KRlDPk=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=ZWMUmptZZsG/NWaC+tMmOCyUiW7StEuKjD+TiUJc2/sVn/EhfjeKinFEHzDcLVzPPm+q3GtGjutuYko5YHKg2scN5iEIq+rC+1miT1DAlu+t0qzH76ICAX94X6NHC7u5ixgp+KY1ErztXFSe3knlB5od3k1Ey5YGsHl+hlPp/h8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=L2snzBiw; arc=pass smtp.client-ip=165.173.182.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ABF15237B8
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 17:23:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791912185; cv=none; b=tGPm9MQ/f/ldXZovvb0cbrlZHbtuZrjetmPnLn6Q6uiw2WsK3WxjyMSZG3IWDNjpHKqh6iqEEtkkG76LiFwvxayyFH3qbw8u5eN6xM9zH0djwFDN8f4CIuJ28oVZsWuhDyfhYaxY7C3pwW8/C3roM1RmatF7/5H7eebeqchJ//4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791912185; c=relaxed/simple;
+	bh=6oHp6iOgu3vSfUvFoKGR28aA37BnryUeRpYDhY2R2Vw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=jcHk0ZzTwhuTniW/SnmIlFl8RcAiyst+PkIQsaiCdyxEe1FDmUsC50yBK+y0XGJH5h7eWYqdAN0DHGqLP122aNyD/YZCuAFeg1b9282/hReFgs1KIcDJzXkZU+QtqQr6OBJ3/PrVSQBnq3t+rUvu4GcFLe5T1gB6Q5tvRMSx9u8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bM4vImJe; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="L2snzBiw"
-ARC-Seal: i=1; a=rsa-sha256; t=1791911689; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=LEUbPmrFFXDtibm9yP4sUR8lKhChibHMPgsjkBJaZp0Bn8BJ0VM7qHrepUd0ZGcJ+4tGxVHTZGfiiJa9X7Hu+rAxX6sHhQxaUb0EhQ1o86YZT6dkqMM274ROs6NkUO5LuujbH9EtLpdsEmOnltkU/Lb8k6zQ62GMaBQ3FTnGLdU=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1791911689; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=ooJLDxSCJEcVNbGZxg1axPiit16FO3fuMRpP0KRlDPk=; 
-	b=SkHzPEO07ayq12RR3CekkEHgsVq5BMU3Nk5xwKaDeJipRDEhMnmPLGmY6yzbm928ZOSGqy7xMJu8Mt3Gh2YqMqlSaYdclNSVOk+a8by9VqEc2CvqXKlniNzbKyL79ilXu6DwTf3zdyLA+SwLZIwOlJUYzA9hxVW4yfaryFuQ7ck=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
-	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1791911689;
-	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
-	h=Content-Type:Mime-Version:Subject:Subject:From:From:In-Reply-To:Date:Date:Cc:Cc:Content-Transfer-Encoding:Message-Id:Message-Id:To:To:Reply-To;
-	bh=ooJLDxSCJEcVNbGZxg1axPiit16FO3fuMRpP0KRlDPk=;
-	b=L2snzBiwFRm2Un298G96nKH8dJJlCKmxondKGHWWovfCxW19Q9t75c2+DNbUymRi
-	lUFE/oGR6g17iOLdARIo4IlhGOeotfdA9y380MiIEFtE8t4DcC931MmVyL/ZOE9XHkq
-	FraynjClPudlBUeIfmeY8/sv9c3Lp08dzOuyZgPU=
-Received: by smtp.zohomail.com with SMTPS id 17919116876531023.9332615568634;
-	Tue, 13 Oct 2026 10:14:47 -0700 (PDT)
-Content-Type: text/plain;
-	charset=utf-8
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bM4vImJe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF79A1F008A1
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 17:23:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791912182;
+	bh=58vcH4XOh3Uxb0/yHZpvGzQapqHFOqeDk7/phElXVhw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=bM4vImJeNOabcnbRhYbq9bIHyCVf6FStYaRomHk+BwpDrO8rxLv/G/eqw/PQT4a4O
+	 9zdDaMeFWhCffixJHEoQ6Q01mBo+I89j+lWWvCy4PB/z8l/10Bgo6hgo34ToVcVrI9
+	 Lzj1m/uhPzx5smipyd+L9dSHjKU/91/R1Q/wFVbcCRmCsP3dWI2LNSG3bpFYPuKExD
+	 +PfJTT7QOVaDF//gYqAjKu3nnXEGnLaCTOA0lJy0pSuWStN4EVTJNFIPls9OifnZsE
+	 JFwN3qFYqyRdnLx5JdVtMARHzUV+xTCOwQq5U9UFMW5wvo61rg264FFxbda+3yxpcZ
+	 LskmvOEsJjBXg==
+Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5bb7ae22913so2017916e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 10:23:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzykJXDyldsGCQGBEOtpZFDjj9IqP2+VgxestA3e50u4KMiWlil724N3Y/nBOZjoZgwqTeyNe8PAA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKKCHzAWh1x4u3F3fETRy+OEamuUf9CG+0OTYVXwBneeu+PjV+6
+	JGaVb0YtJWhzNiE7501yG/JyWbeXBjsYCMN7HfEVnlwZgp7eaBtyeLydGjmF5+WEwl1cHQs+8A6
+	Rhy0UtewYU/3gbc6dwjNFw/adAcEDn/o=
+X-Received: by 2002:a05:6512:1389:b0:5b8:f3d5:f301 with SMTP id
+ 2adb3069b0e04-5bcde35148bmr4362168e87.6.1791912181025; Tue, 13 Oct 2026
+ 10:23:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.100.1.1.11\))
-Subject: Re: [PATCH v6 6/7] rust: clk: add `ExclusiveClk`
-From: Daniel Almeida <daniel.almeida@collabora.com>
-In-Reply-To: <20261013-clk-type-state-v6-6-a5e9977b3509@collabora.com>
-Date: Tue, 13 Oct 2026 14:14:28 -0300
-Cc: linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- linux-riscv@lists.infradead.org,
- linux-pwm@vger.kernel.org,
- linux-clk@vger.kernel.org,
- rust-for-linux@vger.kernel.org,
- Boris Brezillon <boris.brezillon@collabora.com>,
- =?utf-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>,
- Maurice Hieronymus <mhi@mailbox.org>
+MIME-Version: 1.0
+References: <37N_jFulf7n-Z55NfKfE71C_wVPxYvZ0xD_iRUg2fXu7TypDiF5PStQ6siSfVBih6fThg5WoPes8U5ZQpfVm_teMFcUGXFxz2DdMbfSWuws=@proton.me>
+ <20261012225141.13683-1-aliamemis@disroot.org> <fb993dd3-ee56-4e3d-aa16-573f011518f1@oss.qualcomm.com>
+ <CAJZ5v0gS4agVUkCO6M=VW4Wi2y1-s+k23bpzmX9aAZ0Rsv4z9Q@mail.gmail.com> <044e9df4-1399-4ceb-80f8-f7cfe031d04f@oss.qualcomm.com>
+In-Reply-To: <044e9df4-1399-4ceb-80f8-f7cfe031d04f@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 13 Oct 2026 19:20:55 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0isCM3K3U6HSdDnvXzBX41AgQMFYxqLx3KvMA0W_91-ew@mail.gmail.com>
+X-Gm-Features: AclHuK8Dko4T7OiAi5h3jqpw8o-XWUajlqhmOiANoa1OJ9welDWIOCCTNuHuWCM
+Message-ID: <CAJZ5v0isCM3K3U6HSdDnvXzBX41AgQMFYxqLx3KvMA0W_91-ew@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: battery: Re-read battery information in the
+ complete callback
+To: johannes.goede@oss.qualcomm.com
+Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, =?UTF-8?Q?Ali_Ahmet_Memi=C5=9F?= <aliamemis@disroot.org>, 
+	Len Brown <lenb@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
+	Charis Stratakis <c.stratakis@proton.me>, linux-acpi@vger.kernel.org, 
+	linux-pm@vger.kernel.org, regressions@lists.linux.dev, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <FCA1D99F-AB7A-414E-AF99-BCCDF2B54FF3@collabora.com>
-References: <20261013-clk-type-state-v6-0-a5e9977b3509@collabora.com>
- <20261013-clk-type-state-v6-6-a5e9977b3509@collabora.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Danilo Krummrich <dakr@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>,
- Michal Wilczynski <m.wilczynski@samsung.com>,
- Drew Fustini <fustini@kernel.org>,
- Guo Ren <guoren@kernel.org>,
- Fu Wei <wefu@redhat.com>,
- =?utf-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- Stephen Boyd <sboyd@kernel.org>,
- Brian Masney <bmasney+clk@redhat.com>,
- Jerome Brunet <jbrunet+clk@baylibre.com>,
- Miguel Ojeda <ojeda@kernel.org>,
- Boqun Feng <boqun@kernel.org>,
- Gary Guo <gary@garyguo.net>,
- =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>,
- Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>,
- Tamir Duberstein <tamird@kernel.org>,
- Alexandre Courbot <acourbot@nvidia.com>
-X-Mailer: Apple Mail (2.3901.100.1.1.11)
-X-ZohoMailClient: External
 
+Hi Hans,
 
+On Tue, Oct 13, 2026 at 3:36=E2=80=AFPM <johannes.goede@oss.qualcomm.com> w=
+rote:
+>
+> Hi Rafael,
+>
+> On 13-Oct-26 13:58, Rafael J. Wysocki (Intel) wrote:
+> > On Tue, Oct 13, 2026 at 11:33=E2=80=AFAM <johannes.goede@oss.qualcomm.c=
+om> wrote:
+> >>
+> >> Hi,
+> >>
+> >> On 13-Oct-26 00:46, Ali Ahmet Memi=C5=9F wrote:
+> >>> Since commit d33e89d12295 ("thermal: core: Suspend thermal zones late=
+r
+> >>> and resume them earlier"), thermal zones are resumed from dpm_complet=
+e(),
+> >>> before the PM_POST_SUSPEND notifier that re-reads _BIX and _BST. On
+> >>> ThinkPad P1 Gen2 and P53, INT3403 _TMP calls \GTST which switches the=
+ EC
+> >>> page selector (HIID) without taking the BATM mutex used by the batter=
+y
+> >>> methods. ACPICA releases the interpreter lock around EC accesses
+> >>
+> >> I'm wondering if this "ACPICA releases the interpreter lock around EC
+> >> accesses" is not the real problem here.
+> >
+> > Yes, it most likely is.
+> >
+> > What actually happens is that ACPICA drops the interpreter lock and
+> > the namespace lock in several cases listed in the
+> > acpi_ex_exit_interpreter() documentation comment, the majority of
+> > which involve having to wait.
+> >
+> > The bottom line though is that the interpreter and namespace locks
+> > cannot be expected to be held throughout AML evaluation because it is
+> > not known in advance if any of the cases in question will appear.
+> >
+> >> Recently I've learned / heard
+> >> from a trusted source that Windows ACPI subsystem is very much single
+> >> threaded. So it is nice that ACPI has these mutexes and other stuff
+> >> to support multi-threading but as long as Windows ACPI interpreter is
+> >> not multi-threaded I think we may need to consider to copy Windows
+> >> behavior.
+> >
+> > This is also my conclusion, at least to some extent.
+> >
+> > The problem with it though is that in some cases parallel evaluation
+> > of AML is actually useful.  For example, say two PCI devices are
+> > powered up at the same time and AML waits for each of them.  The async
+> > suspend/resume aligns those waits to take place simultaneously instead
+> > of serializing them which allows some time to be saved.
+> >
+> >> So maybe the EC accesses should keep the interpreter lock locked durin=
+g
+> >> EC accesses.
+> >
+> > The problem here is that it is hard to say in advance whether or not
+> > _BIX or _BST will access the EC and whether or not that will clash
+> > with _TMP evaluation for a seemingly unrelated thermal zone.
+> >
+> >> And even go further and maybe we need to introduce a big-acpi-lock,
+> >> which I guess the interpreter lock more or less is? And just serialize
+> >> all ACPI accesses since most ACPI tables clearly do not handle
+> >> multi-threaded access to ACPI methods well ?
+> >
+> > I would be inclined to do so except for device power management
+> > methods, that is _ON, _OFF, and _PSx, that are not the problematic
+> > ones, at least as far as I know.
+>
+> That sounds like a reasonable compromise which should fix both
+> this case as well as help with bko221065 .
+>
+> >> Another example of multi-threaded ACPI calls causing problems is:
+> >>
+> >> https://bugzilla.kernel.org/show_bug.cgi?id=3D221065
+> >
+> > Right.
+> >
+> > So I guess the idea would be to add locking to acpi_evaluate_object()?
+>
+> Yes that seems like a nice single point of entry to do this where
+> all the various helpers eventually end up.
 
-> On 13 Oct 2026, at 14:07, Daniel Almeida =
-<daniel.almeida@collabora.com> wrote:
->=20
-> Some drivers derive their configuration from a clock rate and cannot
-> tolerate the rate changing underneath them. In C, they claim rate
-> exclusivity with clk_rate_exclusive_get(), after which the clock
-> framework refuses rate changes from other consumers until
-> clk_rate_exclusive_put() is called.
->=20
-> Add ExclusiveClk<T>, which takes a Clk<T> in any state and holds rate
-> exclusivity until it is dropped. ExclusiveClk::new() calls
-> clk_rate_exclusive_get(), and dropping the ExclusiveClk or calling
-> ExclusiveClk::into_inner() calls clk_rate_exclusive_put().
-> ExclusiveClk dereferences to the Clk<T>, so the rate can still be read
-> and changed through it. Since a Clk cannot be cloned, the ExclusiveClk
-> is the only handle to the consumer that holds the exclusivity.
->=20
-> pwm-th1520 is the first user, in the next patch.
->=20
-> Co-developed-by: Maurice Hieronymus <mhi@mailbox.org>
-> Signed-off-by: Maurice Hieronymus <mhi@mailbox.org>
+That, of course, would require updating ACPICA code and I'm not sure
+if doing it upstream is useful.  For example, if some hosts already
+use locking around acpi_evaluate_object(), this modification won't
+help them and it will certainly be a change in behavior.
 
-Maurice, I changed a few things in the design, so I took ownership with
-your co-developed-by tag.
+This means that we'll likely end up with a Linux-specific divergence
+from the upstream which can be lived with, but it won't be nice.
 
-Let me know if that works for you, or what you would rather see instead.
+> > An alternative might be to introduce an "exclusive" variant of
+> > acpi_evaluate_object() with built-in locking and use it in the cases
+> > that are known-problematic.
+>
+> So here we have _TMP and _BIX / _BST and in bko221065 we have
+> a bunch of again batteyr methods + UCSI racing. I'm afraid if
+> we add something like acpi_evaluate_object_exclusive() we'll end
+> up eventually using that almost everywhere.
 
-=E2=80=94 Daniel=
+While I think that your concern is valid, this can be done without
+touching the ACPICA code at all.
+
+Also, we don't actually know how many "bad" cases there are and so far
+we have identified a few.  If they are not too widespread, changing
+behavior everywhere for everyone may not be adequate.
+
+> Maybe do things the other way around and serializing all the calls
+> by default and adding an acpi_evaluate_object_unlocked() to be used
+> in cases where we want the speedup of multi-threading like
+> the _ON, _OFF and _PSx you mentioned above ?
+
+Yes, depending on which way is more practical, that can be done.
