@@ -1,178 +1,164 @@
-Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21D853AEF58
-	for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 23:17:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.181
+Received: from ustc.edu.cn (smtp.ustc.edu.cn [202.38.64.46])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1F1CD31A55B;
+	Tue, 13 Oct 2026 00:21:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.38.64.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791847042; cv=none; b=exJtEXR41WuxuSLyut5/g07XiKEzf3py5CQfIqHR1tKH1ySdUAc9uhrYjDFnmctXbv+WBCSv6k5ZZlU3mNis9SWHiFzKMv9+ngmnZ2VErLS/RtzbHRD9EvAeoLhxjpZxmjh7v1ESk/2FLnaaIKvEyP8kDLlM62CGyp7zn5h9IdQ=
+	t=1791850889; cv=none; b=Gxm1uUVy+mX5q6oW99gI+l/eWlr0ULunvPAccMH5vZy6aOvM76o5+5cw59hEcaArczDJvFXSH1Y7Tt0/B6GoKMyOaZTBEnHtPeMZw4Dnlq6094gPFCPHQWIjmywvzQPA9u6CouM8u3JMis0uyS1CTwW9EH9ZpAiD8pyTNFLdIvk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791847042; c=relaxed/simple;
-	bh=zpGJ2C9ZXKZREZPO809kC3o2ILZTcWpcszBp/d5beEk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MJYHN9IRYriagc7O61aL+YUo5LCMra7MflTqieyzgyfkbMJ8hS04oNbmKTgnQg45cmhw8TYgQy0+cbqRonLTV6Nd9OjRjHwqud4hX2UqoDHfgwYhKF6/uqkwMkva6FF3MhYJSMXm1aaKCSu8p1zY/U6IXYJojgtQDNvYTiZJ82I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=AUjxFOJH; arc=none smtp.client-ip=74.125.82.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1791850889; c=relaxed/simple;
+	bh=3IyRHAqESPnkbVSajEO3Jn9YI38E+fzQv+s0f+BpK9o=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=g9bRSLA7680Di05lvi3dlUXDhMpr0CQu2b1LftUkNx+xTJh5p4sdHV7rnPw5KE2KTbl32RhxZdS2Fk7SieAw9x2MRFRxG0BKXHqHhan8D2bWd7dgNwuOgatu7/Aes8yaer51QztswC1xY8Q633Z5/kXj9JpFPnSs6wOaxIv2VpI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn; spf=pass smtp.mailfrom=mail.ustc.edu.cn; dkim=pass (1024-bit key) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.b=dSK4aFMR; arc=none smtp.client-ip=202.38.64.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mail.ustc.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ustc.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="AUjxFOJH"
-Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-3282db206d3so4312974eec.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2026 16:17:19 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=mail.ustc.edu.cn header.i=@mail.ustc.edu.cn header.b="dSK4aFMR"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1791847039; x=1792451839; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=jULzgmU90GwExwiOegz46rYdLgOhwZJMHx733RDhwSw=;
-        b=AUjxFOJHMFNqdn0qSQdV+lgeYQ7Hohkc5r1F4cSK2jsT50hlnsYWRf1N1zMTf2ShuZ
-         6sIFLZ6U7ayNwu/ZKwOEi3QHWLWamBhZjiWJWKl6yQesEzy7gnbBScJhbuhG7lJqBoka
-         uO9RLNxGlEjncYrlU2P//vgRmRF2FGYW7DG18=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791847039; x=1792451839;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=jULzgmU90GwExwiOegz46rYdLgOhwZJMHx733RDhwSw=;
-        b=mMigLcbOKoya14kPKK2A6DHfsr3y1YgQRnN6eCByNqsQRrqz6LxtmwHdOKEYZJWdRe
-         iTj+2dLyWZPA5ACpkH7ZWMlMT3zYIQd9Dy+SHlWtJuEHkph4Wig1nftSdK57QO7PvXas
-         BW0r/w1myNxKLjy+6R2HNpcPFSrCIPShoMyiql9dH/uOrTVgBBcyQkpRMMLLXnJskABl
-         hDFMnoy1/iokJvLYFBKTZOsNGVRlGJFczsIhWFw2Iwoos87EYLk9D2X4Hfr0uX/iFjnm
-         wnzPaVz2JFQTYFH1PDNooZfzWt96Oy4wQtGGK1/UHwwWVHydpMxF6qc0CLdOHK8Ih2YK
-         9Oow==
-X-Forwarded-Encrypted: i=1; AKwUvBwyBD+ltZ9VOG/0lDyOvjDsg2PQymAgNG3MQAmXineVpAc1ox3anSSs38D5OUBycEjhNLAHgh0KMw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLSYu5OYg1fd8obgHfRtkOwYboI4rKHY3xliriHktsdqjT2IFpM
-	eaRwaXoQnvm/5bhQcdVcsnx+i4mhqtYHngl8/iB7lfla3rP5N/rnk/caba+K4sX7nA==
-X-Gm-Gg: AYBFou3mGdxZ/wOAsM34Ld+Rzx0vCqBnn2NsT+GbzBrvEMfTcm6ZfHEhmvTCmhU7Pki
-	d4QTaRanGspGCXAGf4JQQOgPSWrXElXHb8eeYP+tnGxbHwd+GwVLd9FME7ZtrTLjXmDatmM9Zf5
-	senwX/D3JalIHP6hP7SiNPn2NSc8df6w95Ng305WYWZkL1jBThVxW1VPoxiOWeAn8Aa+63XWAai
-	jb25iaaZlxUyqSM3z9RtuO7TfluGRMvAIFUVe+IkOtygwF9H2rZUpPUmOzC2LYmEATObjbImyF1
-	Kpeh4W8Ye47AgKJLKJTYgPU25lAnMc1DaIdCT2z/xxl7xG8BbuVtViYec1y0AYsi+1QhMP6ND21
-	iUCzAf/KEyQZnqGRyQZ0AGL9j6bIflyAQ4YdngOJIlvvY4pXRYLYGKTXb8NI1Qq+xQaCBMEUBjM
-	pG0qHz/rFhrI5pbjyqsZOIpqjiGIveUwrHytPsU688cJSCmTvzEgsVkVAmricqw4AqbxwpNGfsR
-	JAOo896PvwkyRqSdPb7BkvM2coc5PWKE8PAm6RErow5erqg
-X-Received: by 2002:a05:7022:1703:b0:166:b307:5855 with SMTP id a92af1059eb24-16a4ee7e657mr14543536c88.0.1791847038615;
-        Mon, 12 Oct 2026 16:17:18 -0700 (PDT)
-Received: from localhost ([2a00:79e0:2e7c:8:4c0f:2208:f55a:d12f])
-        by smtp.gmail.com with UTF8SMTPSA id a92af1059eb24-169a1becf08sm36095925c88.5.2026.10.12.16.17.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Oct 2026 16:17:17 -0700 (PDT)
-Date: Mon, 12 Oct 2026 16:17:15 -0700
-From: Brian Norris <briannorris@chromium.org>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	linux-iio@vger.kernel.org, Andy Shevchenko <andy@kernel.org>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
+	Message-ID:MIME-Version:Content-Transfer-Encoding; bh=RD/oeknw+n
+	JIUaT8TcNT5qfIfKre8vK0H0zLEuANyPc=; b=dSK4aFMR29C/Wawz3pDSHt2AL7
+	pN1QnQJEPDC2KTuZ+DfbB3x95xskjFkbB4oyfh4j7AAtG1UdOgV/3N2zO1gP4Kui
+	yNSWU+5zaje0Xjw280lHA0WHAgvD/7d5Zp/143hiXFND6RFr3RApeMTkAH8zzkzZ
+	5n3CTMTfumVKAk0Hg=
+Received: from 5700g-x8664.ustc.edu.cn (unknown [114.214.192.228])
+	by mailimap2024 (Coremail) with SMTP id 3pYKCgBHNx6Fec1qVrHcAQ--.931S2;
+	Tue, 13 Oct 2026 08:21:25 +0800 (CST)
+From: Qianhui Xu <xiaqinghuan@mail.ustc.edu.cn>
+To: linux-pm@vger.kernel.org,
+	Sebastian Reichel <sre@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Fabrice Gasnier <fabrice.gasnier@st.com>,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 3/5] PM: runtime: Propagate last_busy from dependent to
- dependency
-Message-ID: <as1qe_J37Njol797@google.com>
-References: <20261002230714.507921-1-briannorris@chromium.org>
- <20261002160309.3.I40c0bc917fa0b13111251844e9a54feb1d9cd7d2@changeid>
- <asEdiIT7l49vhn7i@ashevche-desk.local>
- <asPm6HYpEIAYJ4a3@google.com>
- <as074Em1m9d5s1yO@ashevche-desk.local>
+	Xu Qianhui <xiaqinghuan@mail.ustc.edu.cn>
+Subject: [PATCH] power: supply: qcom_battmgr: do not report power_now on SM8750
+Date: Tue, 13 Oct 2026 08:21:24 +0800
+Message-ID: <20261013002124.332111-1-xiaqinghuan@mail.ustc.edu.cn>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <as074Em1m9d5s1yO@ashevche-desk.local>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:3pYKCgBHNx6Fec1qVrHcAQ--.931S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxXF47AFW7Xw1DZF4UKr4Uurg_yoWruF1fpa
+	95JFZIyw1vyF43Aa47AF4Ikw4xKr4vy343Krn7W34Iv3W3trn2gr9rtFnxK348A3s3ZFyY
+	kw4ak343Cr47GrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvj14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r
+	4UJVWxJr1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2Wl
+	Yx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbV
+	WUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AF
+	wI0_JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4
+	xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1D
+	MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I
+	0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWU
+	JVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUeK
+	sjUUUUU
+X-CM-SenderInfo: 50ld1x5qjk3t3q6ptxnoox23vfohv3gofq/1tbiARETB2rNcIkC0AANsF
 
-(Note to self: drop linux-stm32@st-md-mailman.stormreply.com from future
-postings. It's failing hard, and not (AFAICT) just because I'm not
-subscribed.) 
+From: Xu Qianhui <xiaqinghuan@mail.ustc.edu.cn>
 
-On Mon, Oct 12, 2026 at 10:58:24PM +0300, Andy Shevchenko wrote:
-> On Mon, Oct 05, 2026 at 11:05:28AM -0700, Brian Norris wrote:
-> > On Sat, Oct 03, 2026 at 06:21:44PM +0300, Andy Shevchenko wrote:
-> > > On Fri, Oct 02, 2026 at 04:03:07PM -0700, Brian Norris wrote:
-> 
-> ...
-> 
-> > > > Cc: Ulf Hansson <ulfh@kernel.org>
-> > > 
-> > > Can go under the '---' cutter, so it won't pollute the commit message in the
-> > > Git history.
-> > 
-> > This is a well-documented convention.
-> > 
-> > Documentation/process/submitting-patches.rst
-> > 
-> >   If a person has had the opportunity to comment on a patch, but has not
-> >   provided such comments, you may optionally add a ``Cc:`` tag to the patch.
-> >   This tag documents that potentially interested parties have been included in
-> >   the discussion.
-> > 
-> > I'm directly referencing Ulf's suggestions (Link tag), so I'm also
-> > making it explicit that I'm CC'ing him.
-> 
-> This piece of the documentation was written long time ago before we have got
-> the kernel.org controlled mailing archives (now it's lore.kernel.org). I argue
-> that this piece is outdated and we need to look at all aspects of the commit
-> message. Perhaps having one might not lead to the issue, but exempli gratia 20
-> is. I still think it should be moved to under '---' to show the good example.
+The SM8750 QBG firmware fills BATT_POWER_NOW via its maximum-load updater
+instead of an instantaneous measurement: the property getter indexes
+context + 0x6a8 + 4 * property, so property 22 (BATT_POWER_NOW) reads the
+offset written by the maximum-load path.  Exposing that as power_now makes
+userspace report e.g. 89 W while the battery is charging below 1 W, or
+above 100 W while discharging at about 4 W.
 
-Well, it's not 20; it's 1, with a clear reason. So not sure what you're
-saying. Anyway, I've prepped that for v2.
+The SM8750 PMIC GLINK node is already described in DT
+("qcom,sm8750-pmic-glink" in sm8750-mtp/qrd), but the driver has no entry
+for it, so it falls back to QCOM_BATTMGR_SM8350 and advertises POWER_NOW.
 
-Do you think you could propose a documentation update, if it's really so
-out-of-date with current practice?
+Add the SM8750 variant and a battery descriptor that reuses the SM8550
+properties without POWER_NOW.  The property array is reordered so that
+POWER_NOW is the last entry, which keeps the new descriptor a two-line
+addition; property ordering itself is not ABI.
 
-FWIW, a quick look at the v7.1..v7.2 git log shows over 10,000 Cc lines
-that aren't for stable@ or similar, with over 900 different addressees,
-across roughly 1300 different commits. (For comparison, there are 17,833
-commits in v7.1..v7.2.)
+Voltage, current, charge counters and the charge-control thresholds are
+retained.
 
-It seems like you'll have a hard job trying to apply your rule to
-everybody's changes, especially if it conflicts with the documentation.
+Tested on Lenovo Legion Y700 Gen4 (TB322FC, SM8750P): charging and
+discharging, UPower state-of-charge and rate are unchanged and power_now
+is no longer exposed.
 
-> > > > Signed-off-by: Brian Norris <briannorris@chromium.org>
-> > > > ---
-> > > 
-> > >  Cc: ...
-> 
-> ...
-> 
-> > > > +/*
-> > > > + * Propagate last_busy timestamp from one device to another. This can, for
-> > > > + * example, prevent overactive suspend when a dependency's usage is primarily
-> > > > + * driven by one of its dependents.
-> > > > + */
-> 
-> ^^^
-> 
-> > > But here you already have an outdated ones, no? Why is this not a problem?
-> > 
-> > The "target" device (a supplier or parent) can't suspend before this
-> > point, because the dependent device still holds a reference -- so an
-> > "outdated" last_busy is not relevant yet. The target last_busy *might*
-> > become relevant after this point, so this is the point at which it needs
-> > updated (propagated).
-> > 
-> > That's what I mean in the commit message by:
-> > 
-> >   propagate last_busy timestamps from a dependent device to its
-> >   dependencies any time it may allow a dependency to suspend -- i.e.,
-> >   when releasing a refcount for its parent or suppliers.
-> > 
-> > Please let me know if I should add some clarification somewhere --
-> > perhaps also in the comments here on rpm_propagate_last_busy()? Or if
-> > you see some other problem in the reasoning.
-> 
-> Perhaps a word to the top function comment?
+Signed-off-by: Xu Qianhui <xiaqinghuan@mail.ustc.edu.cn>
+---
+ drivers/power/supply/qcom_battmgr.c | 29 +++++++++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
 
-OK, I've tried to factor that into my drafts for an eventual v2.
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index 7716eb9e1a..dbc98ac8a7 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -24,6 +24,7 @@ enum qcom_battmgr_variant {
+ 	QCOM_BATTMGR_SC8280XP,
+ 	QCOM_BATTMGR_SM8350,
+ 	QCOM_BATTMGR_SM8550,
++	QCOM_BATTMGR_SM8750,
+ 	QCOM_BATTMGR_X1E80100,
+ };
+ 
+@@ -916,9 +917,13 @@ static const enum power_supply_property sm8550_bat_props[] = {
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+ 	POWER_SUPPLY_PROP_INTERNAL_RESISTANCE,
+ 	POWER_SUPPLY_PROP_STATE_OF_HEALTH,
+-	POWER_SUPPLY_PROP_POWER_NOW,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
++	/*
++	 * Kept last on purpose: SM8750 reuses this list without POWER_NOW,
++	 * see sm8750_bat_psy_desc.
++	 */
++	POWER_SUPPLY_PROP_POWER_NOW,
+ };
+ 
+ static const struct power_supply_desc sm8550_bat_psy_desc = {
+@@ -931,6 +936,23 @@ static const struct power_supply_desc sm8550_bat_psy_desc = {
+ 	.property_is_writeable = qcom_battmgr_bat_is_writeable,
+ };
+ 
++/*
++ * The SM8750 QBG firmware fills BATT_POWER_NOW from its maximum-load updater
++ * instead of from an instantaneous measurement, so the published value is not
++ * a present power reading (it reports the maximum load, e.g. 89 W while the
++ * battery is actually charging below 1 W).  Do not advertise POWER_NOW on
++ * this platform.
++ */
++static const struct power_supply_desc sm8750_bat_psy_desc = {
++	.name = "qcom-battmgr-bat",
++	.type = POWER_SUPPLY_TYPE_BATTERY,
++	.properties = sm8550_bat_props,
++	.num_properties = ARRAY_SIZE(sm8550_bat_props) - 1,
++	.get_property = qcom_battmgr_bat_get_property,
++	.set_property = qcom_battmgr_bat_set_property,
++	.property_is_writeable = qcom_battmgr_bat_is_writeable,
++};
++
+ static int qcom_battmgr_ac_get_property(struct power_supply *psy,
+ 					enum power_supply_property psp,
+ 					union power_supply_propval *val)
+@@ -1617,6 +1639,7 @@ static const struct of_device_id qcom_battmgr_of_variants[] = {
+ 	{ .compatible = "qcom,sc8180x-pmic-glink", .data = (void *)QCOM_BATTMGR_SC8280XP },
+ 	{ .compatible = "qcom,sc8280xp-pmic-glink", .data = (void *)QCOM_BATTMGR_SC8280XP },
+ 	{ .compatible = "qcom,sm8550-pmic-glink", .data = (void *)QCOM_BATTMGR_SM8550 },
++	{ .compatible = "qcom,sm8750-pmic-glink", .data = (void *)QCOM_BATTMGR_SM8750 },
+ 	{ .compatible = "qcom,x1e80100-pmic-glink", .data = (void *)QCOM_BATTMGR_X1E80100 },
+ 	/* Unmatched devices falls back to QCOM_BATTMGR_SM8350 */
+ 	{}
+@@ -1690,7 +1713,9 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+ 			return dev_err_probe(dev, PTR_ERR(battmgr->wls_psy),
+ 					     "failed to register wireless charing power supply\n");
+ 	} else {
+-		if (battmgr->variant == QCOM_BATTMGR_SM8550)
++		if (battmgr->variant == QCOM_BATTMGR_SM8750)
++			psy_desc = &sm8750_bat_psy_desc;
++		else if (battmgr->variant == QCOM_BATTMGR_SM8550)
+ 			psy_desc = &sm8550_bat_psy_desc;
+ 		else
+ 			psy_desc = &sm8350_bat_psy_desc;
+-- 
+2.53.0
 
-Thanks!
-
-Brian
