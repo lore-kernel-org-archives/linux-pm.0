@@ -1,87 +1,87 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79FA14F93D8
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:49:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD1194FC8DC
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:49:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791895762; cv=none; b=LPL7MvRwt2vn81RJvk05eM4GH/gGbHvEstecSrCTdskk57nEn3ouJsw9d50nw92PcIqQqLMqH8n/dQkLpN1gNprSm6+Z5THR0YXz6csKp1Nkg2okMTydo5LZb1YBg2kI1cHJAp5EFK8hxL4gDKBXB6s3zb6JKS2sUqKWIUKaRuA=
+	t=1791895766; cv=none; b=FvnetIAloTzWNP8jqUsJzZX3xegxBsprQMXKXjUEZnb2FU1WsOV/B4msbpDRmMoqm0lnPpJKhYKO7OcGMF2UYaOedX1o6fm1c8UP6axUxB9/6FhG0+JoQiCTJ/9/3RtyZ/RGVCPW2oj+2QaDte66T/HwmN6juFbRMoK1R1mCaUU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791895762; c=relaxed/simple;
-	bh=RI3F12SevTkxJPN9goh6IWbxPxV0Q0zeA5ZFx8o4kIM=;
+	s=arc-20240116; t=1791895766; c=relaxed/simple;
+	bh=b9uNQFPyon1Nkfa1BGZz4J1Q61BhK/8GrLO97o/igzo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=b7TMklFONRKiMkmOMlN7u2baEjMn7RPTlsSzrjUYg48zLfZEcPHrxmj9oO4h/eduGqzWnIP5cQ3kKFXkCkoTJqhwZR/pXeWdklEvDAMlfIImuY9wauTBnWCP5AB/Ige20tl1lnsfr4GNjulVq6xGhUyaGEax3lYSrtr36HqxDyM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eNYC5f1K; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=MV0rLHis; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:Cc; b=sllY19cPMQtrQbz+Vro+kTHuMmDW0ekqt2aK1pR0XfIcw77a2MYp7Ng9KKUjA2uAMmAsdybtvm47z2wGeP3KkG7QU+WNoPBmvr56ijw3YjzIqgCTWYkFsT8zC+1Z3nzNRobQUibBh9ukElS3SBQWtcBapJD1X9aVAUivXC5i1Eg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=T7dBMLTI; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OWc+GBFq; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eNYC5f1K";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="MV0rLHis"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="T7dBMLTI";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OWc+GBFq"
 Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D8WbDv923065
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:49:20 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D8RIkm923086
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:49:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	6EkGSQB5G4xh3Cu3jcLEoid3Ki9D2Jc+PUbM+vx44pY=; b=eNYC5f1Kg7QIVs8v
-	w5a62JIXXQcX4Dzp4yDic6HGdWiF2tNg3Q8ywXmkv0ZejxTm3QDcJxyexWMHhU75
-	iXsJa/CiJ9zxXmBNMVljZ4ElEjp/94vXfLBGENf3GFvg1+eTs+7Qu+yXtXF4nrOu
-	V4VAXysKCKfGv/8nJHDJsa9vQ8Vk+grbUWEqHJVlSAjJf9QG7gruY65ADjh7Lhh8
-	ygMr0Vq3Uavgmi2rAs8NTD7S0J+6sSm0+8x+8qTnn6JXtuuHkjme3Lyp7Y85tZmi
-	YzF9p7+n/lVQrBvFQT/abwV7LWYm7IZZdRputTvbbCESQT4iFAWz7FDVUpZ4BQNo
-	dX4xYQ==
+	vm4xU8oQLv8uyf2zachTCzY7k+RLBTFtPS938xas440=; b=T7dBMLTIw/HCaKVN
+	VZtt8uI87P3lPKQNkq5XVh/gGu+wDkYcBuizznLQFdi5hKKstBptdC7OGAyqOZfO
+	zBnZP1EHAlTWwjyR/l/x0LaKX5EBFmyaIB7f0Yw1mrK+QnCe371aI3pQYZGF2LFb
+	C4g99h955aWL3atLI/M0fM5ZH5A7F+bL2FHkLdqWFA+TxkEJZoeykkF53rit8UFV
+	T/LII2+I5MmUBS2a7v1T7WuC6Wh87D4oH3C37kEcQ2riPxNssDQilRNclBiEHNNT
+	oO+ZuN6YZgFH5ySOre9J7gHtk0XzZXrcuN5Jl7w1awMUf3ntoxbGP+pBL9WFPXcD
+	dpd27A==
 Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h98h1u08b-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h98h1u08g-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:49:20 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93e46c120dfso311686985a.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 05:49:20 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 12:49:22 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93cc7a6e4e1so937652585a.1
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2026 05:49:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791895760; x=1792500560; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1791895762; x=1792500562; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=6EkGSQB5G4xh3Cu3jcLEoid3Ki9D2Jc+PUbM+vx44pY=;
-        b=MV0rLHisPico5rc0n6fRQLGsLYWNIhmEyN9gf5MXiSptZpMaBMru1A5zgblbqFJzms
-         02gA1aDyKilzbtJebjMr7xfxn1Csd8WnID2LDh6vqdS/s/3wykFFXUc4P+qJZdGqGOIL
-         OM/W2P1PwxOJ3p1afMJ2VG7I89HOny6xt10RNTaXJxFSbBMEPYUv2PrRXfyO/lgcLop1
-         OjMoPI45RDaKDH1NDimlT6onjqVUksC5COLDLCPWkEiICvv5Jv411kQtsR/MqNYGx/GP
-         FZ/Pxph6TRQ2sCMBhnmZtTQyvw3Z6LC5d6SHFusGhQ3e7wmhzSOXvT5RUPxyeAHIltbm
-         JY5g==
+        bh=vm4xU8oQLv8uyf2zachTCzY7k+RLBTFtPS938xas440=;
+        b=OWc+GBFqSsLfq3b6phGyGWVpfUK+b+7qioZHwJqaDa2+7R0Cd2C+woo+sAAYMhw4W7
+         l0NZS4xCCw0FTAnfDJbGVk2ElbLPrQbLQWhPTgZqrXJQ/lKgM8TJ9uTs0/bLIO8hepRY
+         v+v3P4wWyoSoIzETiEwDuBHDBCR8IVVhJex7Rvw9vHDISDnowKVtS5ieyJvf5c4TTUvz
+         mFHbAUwlHlWDUXfjvmVRWDM01wWAsTSyadRMJxYH8b9l6fIKdaUpUe+G52Z69biX3tEq
+         mWqA8QJHQbAtXWrDKVHWx320GfTpQzJwG7V11AYEfT0zShnio20dZ6FgT3dnKmFoqi52
+         HJ5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791895760; x=1792500560;
+        d=1e100.net; s=20260707; t=1791895762; x=1792500562;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=6EkGSQB5G4xh3Cu3jcLEoid3Ki9D2Jc+PUbM+vx44pY=;
-        b=VKMFqrefCYyyhenHrUBPZ35WWn46R0o8S1aJWopwsUNFCjIzzHmCugJyO1jYIcTVAY
-         CyMF4g0XLJyM9e9tYnzNTMeP9m4R04aatWAzPi3csQHvqceUk6XNieh0IB9sZMdZB3Fq
-         CP3/ERE2PdpbgG56auHwQoCUh1j2NJooUZ7oV7JigFhQPkaVm9EGb09ZzTIg5aw/FbDS
-         9bbhjh1zXiJVo9qE4+oZX0s1R9aNst29Nxhtd7NAKnUCwcCC5u6Wb5FrA5v+43OCccTR
-         /0U2o4d/qDIjcqfpMH42BCS81T8RWtylbq4J0fxy3WKhwPZ2/o14+bRu0TMZgt01SAIa
-         /Q+g==
-X-Gm-Message-State: AFq9FYK3Ouuf1mpPS2pfR8ICXiUl9yMEBz/Zp7ZyZ0ASpbKnKRNp+GJH
-	N37oD8IoBmy+QEn79LArDkf35zqBQXE63ifZzjwhmGMgxxH7k9iGLOoxS5KWuD61kCSIl8Dg6Aw
-	QATT/BJ9r8BjMXMA50KMOptRJLy439PJ8F8ARGOPZHg44rF2DV0WShA5Z5UlDeA==
-X-Gm-Gg: AYBFou2EbobQwFA7zfoLRhPk8E75wSnD2QSd8PFMaixxziBXHssvkwR8MXo9UAIPZIL
-	LwPn2XcgbeukXQPCd89hDP0jhvKQj901msZQA0gTlwtC0mHjvn0CkDU15ksUMG0CrFs2Rn9qnj+
-	rAy9LUVrg/YBT7sMQlDmWsV0Q0nd6cgB46T6Xp63F2TD8WyGOxKyI+PxBqzqOF3cVpJ5+09CauE
-	I3LeTLHYDWp2rBszk8vShH+iNZgNLfC1OxNZnq9EEnuPnSBXeo3PAHxwtls3ifZM/xjbcv9de5Y
-	xxoOklUMtOplehtof8bViSu4edTjkpWwHrsyvAh9ELzzGOut+UVzEUIUqZf629LdxCwc+IVyUIj
-	oki/WmX28
-X-Received: by 2002:a05:620a:6186:b0:939:2d77:d6a8 with SMTP id af79cd13be357-93ebd248378mr2006159085a.34.1791895759263;
+        bh=vm4xU8oQLv8uyf2zachTCzY7k+RLBTFtPS938xas440=;
+        b=bW7Cgt4RCNkdbcwjsMPUych3vXWrPGTxp6XDMGgwKX95oP+J8ZnNynpqhj+V0IgiIh
+         Y5XVe/6SLFB6ARIIy924+ZYB+/dK8D2hmtX8dBUSzINPcKHuAwcI2ADco4WxFw1Obsyj
+         DZa2ah7HaNKVyZhzKGvS3ZRuti1qqEXQxTHVHDOecPFv5q/b9F3Dq1qj+yQ1Xz99SeqK
+         M9KW3oezKgQND9BaV0jIQZ2RzSP/EMtIKoEmMrWE6EkwP2jVuWgB0e+BKxjFTl8EB8uJ
+         J4PayqRC2CmlU4DkqB/5qOeV6f8LO0CxIzZuWD3qmdDmGYV46G3k8tmuawQMHQ2d4glQ
+         7bmg==
+X-Gm-Message-State: AFq9FYINTY5S142FWmrooj5UsPVStoqmWbssNoQBhyc4wfKy7T8noFLb
+	EBvSuJIUUW/6z+jI2+mB+Sg+zFVqT2BBVm8kXam2TuyILVPik81yEa9EMP5lZjmZ/Gx8M2xBte3
+	n71lvPHX9I5LpzJjXdixf+0zmGRKHGPJD4bfkqdm870JGyr9s8Jnu3ZC1x+KaTA==
+X-Gm-Gg: AYBFou3ATyNpOjaqUoLM0sIJyjsSkunYE+n7Rid9P0P7MNuYpyS2/Fi4CsmgiEipfw/
+	L5CjLJe8TBLmDio2IXXpdvkXRvlF/xc8NFkpSA8QIEtGJa4BVe2RLM8CBPiXMU4/eovyIFQM+1o
+	f/110TCQk9fq7B0fiL1VXkPJHQKblBNTov68/ikCnAi6/U5r1VLkd3/ir0Gsy6hdcq10rKHSEA+
+	gMJ5pCdtMHUR/FTAzcJ7J4aGoazo8IxBMEyXsAFuVWJU6RvJXxUcKUpTDc4zHVKoTPdUteayD1G
+	fnMFjOqKJ0wjJAfQIupSm/tXrngMDO4CDAvjLR3raW/Ue5tdLTXOcXtUbtrW2lUFWRLWHneEQvO
+	5atraG9qL
+X-Received: by 2002:a05:620a:2988:b0:93e:b9a3:f47c with SMTP id af79cd13be357-93ebd246acfmr2004003585a.34.1791895761778;
+        Tue, 13 Oct 2026 05:49:21 -0700 (PDT)
+X-Received: by 2002:a05:620a:2988:b0:93e:b9a3:f47c with SMTP id af79cd13be357-93ebd246acfmr2003992985a.34.1791895759940;
         Tue, 13 Oct 2026 05:49:19 -0700 (PDT)
-X-Received: by 2002:a05:620a:6186:b0:939:2d77:d6a8 with SMTP id af79cd13be357-93ebd248378mr2006153185a.34.1791895758460;
-        Tue, 13 Oct 2026 05:49:18 -0700 (PDT)
 Received: from [127.0.1.1] ([86.121.170.215])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0ab6361sm4351081f8f.32.2026.10.13.05.49.16
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0ab6361sm4351081f8f.32.2026.10.13.05.49.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Oct 2026 05:49:17 -0700 (PDT)
+        Tue, 13 Oct 2026 05:49:19 -0700 (PDT)
 From: Abel Vesa <abel.vesa@oss.qualcomm.com>
-Date: Tue, 13 Oct 2026 15:48:39 +0300
-Subject: [PATCH 1/4] pmdomain: core: Support a boot performance floor until
- sync_state
+Date: Tue, 13 Oct 2026 15:48:40 +0300
+Subject: [PATCH 2/4] pmdomain: core: Prepare boot performance floors before
+ system suspend
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -90,49 +90,49 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261013-genpd-boot-performance-floor-v1-1-a765dc83e6d7@oss.qualcomm.com>
+Message-Id: <20261013-genpd-boot-performance-floor-v1-2-a765dc83e6d7@oss.qualcomm.com>
 References: <20261013-genpd-boot-performance-floor-v1-0-a765dc83e6d7@oss.qualcomm.com>
 In-Reply-To: <20261013-genpd-boot-performance-floor-v1-0-a765dc83e6d7@oss.qualcomm.com>
 To: Ulf Hansson <ulfh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, Abel Vesa <abel.vesa@oss.qualcomm.com>
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5761;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3217;
  i=abel.vesa@oss.qualcomm.com; h=from:subject:message-id;
- bh=RI3F12SevTkxJPN9goh6IWbxPxV0Q0zeA5ZFx8o4kIM=;
- b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBqzijG9sOIIh2to6kmnPpHcN9UXyPBObu2TfRIt
- WIbSVfctGSJAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCas4oxgAKCRAbX0TJAJUV
- VrXsD/9duWy7N2cDcEqY7GrL1szQvGWBdpdQqObeK5qRkIH+2ZejBBiEV+TVdY4FpkUr+uKZByl
- vZZYwpbaMptFWvRIFhy3d5lAFN+kPlWRkqmlf8bKdvvl28QwZfL7R4bsWuHoBmT6NBkmcrjFFmD
- 8TbWsLXx5Zmm6KgKhjG7UgS7smnSTNH4bDaGfOeIHKLD4K9C/oo7u3VhfDfpv+ShU/kFQE+3Dfw
- 5xSZ/TVFNmVZGOVG4T9Ta9VbVAnpzQ8j4V/NsffS/ylxwSE6aHdTEWeKSXjEOLGMzvBx8pUcW0z
- VsSnEsR0PZ6UF3F1mId793uHavFdozD8IuHWe5v1HJ+fxaglcIoLN7CQ46XdIAxDtAeOFNguv5k
- hNK+MnDercTwIeBYzkOlOdp5+iLzEFHcsDs9O7PXkLIqP6kOpXLYzsSemUIVC7/NfBogdqh3uYI
- PYx2VgwxxJ47ZaRQkFpUSxoWXBBYpyRow5tlvNzW6wyC62MGpeKAfBl0VNNwyHUckkhpHcIi433
- cdnM7BQeG4cOXxmPTd/YAYU0OQzyJ6/+aRgCBiq0tm1CmR5ruqCKeXZ4rGZqoErPFJ6EdfTWJ0f
- cF5apkkam0QAG6GvfsC5/F8vw0P1vk9KBc+OrOsqUY/AZ3NTbOmGcA0jAdrvNz4VCaN5SuR4X3V
- GKMwGOIlG/17HGg==
+ bh=b9uNQFPyon1Nkfa1BGZz4J1Q61BhK/8GrLO97o/igzo=;
+ b=owEBbQKS/ZANAwAKARtfRMkAlRVWAcsmYgBqzijGYxlUUuri/lNeG7eC/U7HgteZ4uDhrl0te
+ KyIguX1OrCJAjMEAAEKAB0WIQRO8+4RTnqPKsqn0bgbX0TJAJUVVgUCas4oxgAKCRAbX0TJAJUV
+ VuL1EACCj73YIsYWqF5lOjal7V7poRQGz6bx0fHmejZtmqzGxpJStVURQYNRVRbUIriEUYze8my
+ fbEntYfKbXbSIzR3qfqn7vpvTyrscR/CrpZLM6M+rgpmmoP8HTDYkMBuFpEl/UumTI3lg/d+Rgc
+ Z0R6WllxSO4baSVwPBh2IIY9DnbEGLmp1qrW7dw08pAqsdu+N33I6tEDQ28clQAv0NHc98lQTSJ
+ AhkzGoCXMItZrwUmdbiKoUnS9fMWK29GPbQowaudcWpXfj18MbP78Cq0wwj7qfkLsxfHicc+Zhl
+ gDKYfASivyBn/0DVJw2IFCB/WLUosS8ssN/9pJPb0SmU087N0+R/prvpxzacGIOKCqEm3GoLypO
+ ajKBIxMhiZrXBA9+yBQvOj8O8+6du+6WXjTNGLyMzC/ynsILaBDIwTfepi6TAUIYNO6bn00U5sx
+ KXsxpZL4j7CAsAwG4xSd4kyadUh595fzRbXOxvwVWsRZPTurDqYz4clqekv2O2SnU+jb8SLgzkN
+ 6mI86vh27mBW63J+gGby6P0R64taFn96PicM5d1SfJTvTj7bq0zbpNp0TPaHOPJEeFCLry1O790
+ UuRYDCn04UGqJRLFCVhqYZVlphVlfReYPiO/lQ382zVRhM194SWk6sY2gvWb+1ZkfQhHh//NOiY
+ D/cZ6I2xWHQl/dA==
 X-Developer-Key: i=abel.vesa@oss.qualcomm.com; a=openpgp;
  fpr=6AFF162D57F4223A8770EF5AF7BF214136F41FAE
-X-Authority-Analysis: v=2.4 cv=VqC2kO2n c=1 sm=1 tr=0 ts=6ace28d0 cx=c_pps
+X-Authority-Analysis: v=2.4 cv=VqC2kO2n c=1 sm=1 tr=0 ts=6ace28d2 cx=c_pps
  a=qKBjSQ1v91RyAK45QCPf5w==:117 a=Rt3kCFFBWhWisHNmluDamg==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
  a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=F9_3u8r9BEeauM6hPIwA:9 a=QEXdDO2ut3YA:10
+ a=EUspDBNiAAAA:8 a=u51hWZNLl4U8JzI3j34A:9 a=QEXdDO2ut3YA:10
  a=NFOGd7dJGGMPyQGDc5-O:22
-X-Proofpoint-GUID: TUt1TnQAJd6COReen2aD4AWNUo3ssfrl
-X-Proofpoint-ORIG-GUID: TUt1TnQAJd6COReen2aD4AWNUo3ssfrl
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA1MCBTYWx0ZWRfX8Q/L7EUnrAh1
- tjFMvWGdVc5CG1kQwikOBUHdzOwIajm+tjSdrVtGTV7FHd57KY9QV6JPWCz28scvQjiAG46TpSl
- 7Axsmf+ABmsZ8UgWZcjkWV6Jh1KVbr0=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA1MCBTYWx0ZWRfX+uZH4zAF15zb
- fWxKaFiaquAqMY+E9MGvzddO6l+2B45bX/A5N+8qpRxM5PHZce4BXVTbBxyLNMhNMu9XNVh4b9w
- rLaFx1c6+iLAxNHdnzLzLN9I4cdG0irayj+LuwAfSF+l8fWtDCrI2fshDFGYe5cC2vc1cEbjDlo
- E2gw31hjPA4K3g+VOX8M01wZ7dDJHzBLite4hkLJQXD3UkX3p4hQXpr+WuElBeuzGDBYGAweI33
- IxKVLjfnJY7lkE/Qj33xB6/IOEtyCFb5MDPnq7K7poWcE3qzahSKqEKI9wrAHEzCXLC6IzfCn4s
- UZvVnfq9Z/C+6ou3DuBso90gW+8efJa/xztvmXEnRQQUAR51M49CLXSxcG2iBnPJuPzCS4tQKVW
- EwK5+BfJa0pr3fyf7muQBeQKa1hFjJ9ePOnyZZ+aElCj5AN70uQHgdq3KSM7nBvv3okkeG2Q3wD
- zvMTTu2d4pwUFcrKasA==
+X-Proofpoint-GUID: FbW0y9bd8SxYyNmUJLS7MeoNaEN2j45t
+X-Proofpoint-ORIG-GUID: FbW0y9bd8SxYyNmUJLS7MeoNaEN2j45t
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA1MCBTYWx0ZWRfXxsXk0CutZUxt
+ tB9VWqhq8MB9ZnevxH7d/wNE+asbk4leeaRqJRxcvy8aRQCaOC62Gyp/6DpGE3Mz68XW9P9vQQp
+ Z17eUEHXYh2A0/HCQ1E1Jm4C414QXLA=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA1MCBTYWx0ZWRfX1T6GWecGUjvY
+ HUJ+4GDioBcAntTJxrpywQAJnQyiPVtMK1Lmu9o8FrV7SjmE24dh2OSDLJElwn8l7YqxmhCaOzt
+ IHkSXOiX2iy3EZTOsEOy5kdyir0U1Cg9f9gWjhe5XVFhe9dJvy6LSuN4z0ggWsqBbTnjiWsK8SV
+ YZSWlz2DfUSo4t6KIWvcjYB31QMV0m3GBr2/uO8ATcvtx1QsDcrNBB7I/y1W/JbLGaPNp7MBG7N
+ 0U/IDpfqdOMnJUp5W8ydreXbWJnObiQ/jbcUPhyYdfgY4o2641f8zxIlrENwaH4zUI8E3hamc4O
+ 8DdN/9h7lXs+d9qtm6pdfzniMAJDj5jzpyXh09U+/qJERDRMwZt2El3jYSoog6ttK8E0PoWJl1N
+ lmEGNP67QDVL0IdSeCyG9VwNqvt0Ff7/KGpZOwlC4O9r8rCjABCflLFJCJmuVRQG5KVVvzrM6iW
+ lqt3Hzc58eHS6ftYp6g==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
@@ -142,154 +142,91 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610130050
 
-Some providers retain conservative performance votes until their
-sync_state() callbacks run to accommodate hardware configured by
-firmware. Enforcing this policy inside the provider hides the floor
-from genpd when aggregating performance requirements towards parents.
+A system suspend can occur before a provider has received sync_state().
+If a domain has not been used through runtime PM, its boot performance
+floor may not have been applied when genpd_sync_power_on() enables it
+during resume-noirq.
 
-Add a provider-specified boot_performance_state for domains using
-GENPD_FLAG_POWER_UNKNOWN. Clamp the effective domain vote without
-changing individual consumer requests, and reaggregate those requests
-when sync_state releases the floor. Zero imposes no additional floor.
+Prepare boot performance floors from genpd_prepare(), where performance
+callbacks may sleep. Walk the parent hierarchy even when the device's
+own domain has no boot floor: a parent without direct consumers would
+otherwise miss preparation entirely. Take parent locks in the existing
+child-to-parent order and propagate preparation failures to the PM core.
 
-Apply the floor before runtime power-on even without a preceding
-performance request. Do not skip an unchanged consumer request if the
-boot performance floor has yet to be applied.
+Also retain boot power protection in genpd_sync_power_off() for domains
+with a boot performance floor. This prevents the system-sleep path from
+withdrawing their power vote while boot protection remains active.
 
-Report sync-time performance errors and continue the normal power-off
-attempt. Leave the provider sync callbacks and existing performance
-error handling in place, without introducing retries or a new recovery
-policy.
+Keep performance programming out of resume-noirq. Domains with their
+floor already satisfied do not need another performance update, and
+no floor is imposed after sync_state() releases boot protection.
 
 Assisted-by: LLM
 Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 ---
- drivers/pmdomain/core.c   | 45 ++++++++++++++++++++++++++++++++++++++++-----
- include/linux/pm_domain.h |  6 ++++++
- 2 files changed, 46 insertions(+), 5 deletions(-)
+ drivers/pmdomain/core.c | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 964e44c2f78f..6f2b406ce049 100644
+index 6f2b406ce049..4ff55175d899 100644
 --- a/drivers/pmdomain/core.c
 +++ b/drivers/pmdomain/core.c
-@@ -512,6 +512,10 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 	struct gpd_link *link = NULL;
- 	int ret;
- 
-+	/* Keep consumer votes intact; clamp only the effective domain vote. */
-+	if (genpd_is_power_unknown(genpd) && genpd->stay_on)
-+		state = max(state, genpd->boot_performance_state);
-+
- 	if (state == genpd->performance_state)
- 		return 0;
- 
-@@ -555,6 +559,12 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 	return ret;
- }
- 
-+static bool genpd_needs_boot_performance_state(struct generic_pm_domain *genpd)
-+{
-+	return genpd_is_power_unknown(genpd) && genpd->stay_on &&
-+		genpd->performance_state < genpd->boot_performance_state;
-+}
-+
- static int genpd_set_performance_state(struct device *dev, unsigned int state)
+@@ -1538,7 +1538,9 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
  {
- 	struct generic_pm_domain *genpd = dev_to_genpd(dev);
-@@ -563,7 +573,7 @@ static int genpd_set_performance_state(struct device *dev, unsigned int state)
- 	int ret;
+ 	struct gpd_link *link;
  
- 	prev_state = gpd_data->performance_state;
--	if (prev_state == state)
-+	if (prev_state == state && !genpd_needs_boot_performance_state(genpd))
- 		return 0;
+-	if (!genpd_status_on_unlocked(genpd) || genpd_is_always_on(genpd))
++	if (!genpd_status_on_unlocked(genpd) || genpd_is_always_on(genpd) ||
++	    (genpd_is_power_unknown(genpd) && genpd->stay_on &&
++	     genpd->boot_performance_state))
+ 		return;
  
- 	gpd_data->performance_state = state;
-@@ -1180,6 +1190,14 @@ static int genpd_power_on(struct generic_pm_domain *genpd, struct device *dev,
- 		}
- 	}
- 
-+	/* A consumer may enable a domain without first requesting an OPP. */
-+	if (genpd_needs_boot_performance_state(genpd)) {
-+		ret = _genpd_set_performance_state(genpd,
-+						 genpd->performance_state, depth);
-+		if (ret)
-+			goto err;
-+	}
-+
- 	ret = _genpd_power_on(genpd, true);
- 	if (ret)
- 		goto err;
-@@ -3794,6 +3812,25 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 	if (genpd->suspended_count != genpd->device_count
+@@ -1623,6 +1625,31 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
+ 	genpd->status = GENPD_STATE_ON;
  }
- EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
  
-+/* Called with the domain lock held. */
-+static void genpd_sync_boot_state(struct generic_pm_domain *genpd)
++/* Called with the domain lock held, before entering noirq. */
++static int genpd_prepare_boot_performance(struct generic_pm_domain *genpd,
++					 unsigned int depth)
 +{
-+	unsigned int state;
++	struct gpd_link *link;
 +	int ret;
 +
-+	genpd->stay_on = false;
-+	if (genpd_is_power_unknown(genpd) && genpd->boot_performance_state) {
-+		/* Reaggregate real votes, excluding the boot performance floor. */
-+		state = _genpd_reeval_performance_state(genpd, 0);
-+		ret = _genpd_set_performance_state(genpd, state, 0);
++	/* Parents may need a boot floor even when this domain does not. */
++	list_for_each_entry(link, &genpd->child_links, child_node) {
++		struct generic_pm_domain *parent = link->parent;
++
++		genpd_lock_nested(parent, depth + 1);
++		ret = genpd_prepare_boot_performance(parent, depth + 1);
++		genpd_unlock(parent);
 +		if (ret)
-+			pr_err("%s: Failed to sync boot performance state: %d\n",
-+			       genpd->name, ret);
++			return ret;
 +	}
 +
-+	genpd_power_off(genpd, false, 0);
++	if (genpd_needs_boot_performance_state(genpd))
++		return _genpd_set_performance_state(genpd,
++						   genpd->performance_state, depth);
++
++	return 0;
 +}
 +
  /**
-  * of_genpd_sync_state() - A common sync_state function for genpd providers
-  * @np: The device node the genpd provider is associated with.
-@@ -3813,8 +3850,7 @@ void of_genpd_sync_state(struct device_node *np)
- 	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
- 		if (genpd->provider == of_fwnode_handle(np)) {
- 			genpd_lock(genpd);
--			genpd->stay_on = false;
--			genpd_power_off(genpd, false, 0);
-+			genpd_sync_boot_state(genpd);
- 			genpd_unlock(genpd);
- 		}
- 	}
-@@ -3841,8 +3877,7 @@ static void genpd_provider_sync_state(struct device *dev)
+  * genpd_prepare - Start power transition of a device in a PM domain.
+  * @dev: Device to start the transition of.
+@@ -1644,6 +1671,12 @@ static int genpd_prepare(struct device *dev)
+ 		return -EINVAL;
  
- 	case GENPD_SYNC_STATE_SIMPLE:
- 		genpd_lock(genpd);
--		genpd->stay_on = false;
--		genpd_power_off(genpd, false, 0);
-+		genpd_sync_boot_state(genpd);
- 		genpd_unlock(genpd);
- 		break;
+ 	genpd_lock(genpd);
++	/* Performance callbacks may sleep; prepare the hierarchy before noirq. */
++	ret = genpd_prepare_boot_performance(genpd, 0);
++	if (ret) {
++		genpd_unlock(genpd);
++		return ret;
++	}
+ 	genpd->prepared_count++;
+ 	genpd_unlock(genpd);
  
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 14e0e346c610..5927d9485054 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -129,6 +129,11 @@ struct dev_pm_domain_list {
-  *				powered on during boot, genpd will prevent it
-  *				from being powered off until the ->sync_state
-  *				callback is invoked for it.
-+ *				Providers may also set boot_performance_state
-+ *				before pm_genpd_init() to specify a performance
-+ *				floor until sync_state. This must be a valid
-+ *				provider performance level, not a corner index.
-+ *				Zero disables the boot performance floor.
-  */
- #define GENPD_FLAG_PM_CLK	 (1U << 0)
- #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
-@@ -221,6 +226,7 @@ struct generic_pm_domain {
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
- 	unsigned int performance_state;	/* Aggregated max performance state */
-+	unsigned int boot_performance_state; /* Provider-specified boot floor */
- 	cpumask_var_t cpus;		/* A cpumask of the attached CPUs */
- 	bool synced_poweroff;		/* A consumer needs a synced poweroff */
- 	bool stay_on;			/* Stay powered-on during boot. */
 
 -- 
 2.54.0
