@@ -1,35 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B53AC2D5408;
-	Wed, 14 Oct 2026 12:21:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08F884E06CF;
+	Wed, 14 Oct 2026 12:21:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791980479; cv=none; b=tbczHHOHWATzOIigokW4s3OgBGdv05GDuHxUqkAAFDSMxnI1LC+PBxdl6/AXqb80ozNoCo712Y5N+m0IzQGVFjYrBt96UUkxFkJIVQQitPdiq0oznuYM105OUFlAD5hLWCy3Vbcb/3+l+htpJ9P7bUFI8qzKR9tdzUOZp0ivCjk=
+	t=1791980488; cv=none; b=J3AiFc7fvD3FTTZCdcfdW84DPKmeWmVDojoRDpuO29WHiDC2PE4DPVIOCnBARzIDMO2irZav6W2SRbv3ruXh0s/Y68XIW+UUN2aY9WiTKPzJH1V9q143184q6GiqpGrIqqXeVS0/5ZasTvtg9JUGpz09NXaM3bb23/jHOuX1+nY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791980479; c=relaxed/simple;
-	bh=DM5MYBNl3JGDhDQ9QhF3Zj7v13P6GaMIqUHlP/frmlM=;
+	s=arc-20240116; t=1791980488; c=relaxed/simple;
+	bh=eiNwYZ7DOFYz3AQwYcMsSob3GKgtEV0IN0VL3ZAjzWw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PYtukfwPFgxqjN3UvsQae+2qHIlUkc9+1qLg1WDt/Yy1S2qa5XBmoAoVAssB2kJoMqn8E29ztJvuIZr8HVMVqagqWyJZk3pWKjnqEIN9D1/Kewd/JyWtgdSzYqZ+y68+l6QlpcwpZyH8r0X9O83////C3GctGVciWkOYMy9PdsY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Vr70URGB; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=DekFj3rcj46sU10dCxV5OxQCoKiCHZZazSU23J+GJggLP3Azh4poz02zUqR7eeN9YxdKJ96ncC3NSD5+FHhhHngZtd+kBcWdh5H+Jhzomdnc6UKXIe5FuaiihlXn5hIDXvy8CVZ/PL53AX/KJq9qX8zrKkQ4VCISARc5QY+nZX4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JotajdHa; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Vr70URGB"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9931F00893;
-	Wed, 14 Oct 2026 12:21:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JotajdHa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 164D91F000FF;
+	Wed, 14 Oct 2026 12:21:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791980478;
-	bh=nh5alTK4xrJTENPjV1WZHzTMgyOk1csc/UDMlXRrT0I=;
+	s=k20260515; t=1791980486;
+	bh=KIHm1yTXRciQaF/4NUVnaqeKiQ+BfThlseQUpXLObw8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Vr70URGBCJrK+JiWzeizOjNHGwVJ3eAfUqPdbWnAH8/di4fI6C+StITkek2U8jS5I
-	 rPUMqf34NFdpBtOAjP4JQaGcEUMaiQGv3mwa81qS0zD1MCYthXC52y7R2/ypkvfMyP
-	 LJIEjajpddMdyLPI05VRLTwTpIA9BwC0iRKJ/jPFBijyg0FD0Hnaqdcas6tTEoFmlc
-	 SDbeD/vUM9K9J0F4A3LzoBuQFf2GUnTBkkMHwRGTaENtAKWd+YWuTLIRWbq5fY9VE3
-	 6chSIcXgLp8c3cePr/A1U0kilcP4QMqrne5c2GPRMtya0OAjv7kODJgXDFSj6i49yH
-	 SU59bXJLJH76g==
+	b=JotajdHanhSOfE0efZYkx0sSZp8zl+hy2iJ1w0FV6qwT1NdJa+4pGTNK0wjSOhMob
+	 EyzHdkv4mYsx4E3tDB+eNlZeW254kYimQhKnoV4M1rA173KlhYwrU8K5vVsmrbPbI2
+	 MVdcatjXNtEaOYljuhEhka++xpCeuWhf0vb+Icke6dBxEjV1mTkPF+SOXv3Ycu249a
+	 ul27LXqrT2j7EeXc79XgnDW7BZHkolRzK1ppgG4Zsum4BTd9ujOa4kPgdQGIR5qFr0
+	 P40Zi6BJ/Q7KUQRILjZEouhKHtreRirMZ3rTFu/zTtEoZb05a8HPCPW/fTgASzsfdw
+	 UZpZ1TJoOMRPg==
 From: Konrad Dybcio <konradybcio@kernel.org>
-Date: Wed, 14 Oct 2026 14:19:05 +0200
-Subject: [PATCH RFC 05/16] pmdomain: core: Support subdomains without
- pstate propagation
+Date: Wed, 14 Oct 2026 14:19:06 +0200
+Subject: [PATCH RFC 06/16] pmdomain: core: Support indexed power-domain
+ attachment lists
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,7 +38,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261014-topic-qc_clk_dvfs-v1-5-3041b788e9f7@oss.qualcomm.com>
+Message-Id: <20261014-topic-qc_clk_dvfs-v1-6-3041b788e9f7@oss.qualcomm.com>
 References: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
 In-Reply-To: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
 To: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
@@ -59,165 +59,109 @@ Cc: linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
  Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791980431; l=5574;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791980431; l=3569;
  i=konrad.dybcio@oss.qualcomm.com; s=20230215; h=from:subject:message-id;
- bh=3MgVPdpSwtTbln/x2FF2QgeE6U02v2wn9JHrhohqpn8=;
- b=+4SiRyE+EY15kiFNd2AUP7GVXbDYQwYD0rNdCIxPb9ytTO5U6p0UTpA2JeAfz5+UaergjVKRk
- XMxIrxCEe5/A6vw16lR8swqkmg/aM2m8+DAkU5i9xzNs7a6c0U0rpB3
+ bh=+zrmwbRm1lRyjdyVcYV76KG9HFfwAwPJRbhm/3do0I0=;
+ b=J/2tiyXwubrGiuL9VF0P7bRHwXMibSujZ2+L3DskOI+3d+WDWsM3FMbF0IzMo3E+UK30B3+Xz
+ Tzp6X6Nrq9dDsfHTYhJ+NSL2I4EDyXhcPOqObS8HhULc5mwSxSQrxXX
 X-Developer-Key: i=konrad.dybcio@oss.qualcomm.com; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 
 From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-A subdomain may need its parent to be powered on without requiring its
-performance state to follow the child's. GenPD currently couples these
-requirements, so increasing the child's performance state can also
-raise the parent even when it only needs to remain on.
-
-Allow subdomain links to opt out of performance-state propagation while
-preserving power ordering and active-child accounting.
+dev_pm_domain_attach_list() can attach domains selected by name or attach
+all domains listed for a device. Allow callers to select an explicit list
+of power-domain indices as well, retaining the original DT indices for
+the virtual attachments.
 
 Assisted-by: LLM
 Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 ---
- drivers/pmdomain/core.c   | 32 ++++++++++++++++++++++++++++----
- include/linux/pm_domain.h | 14 ++++++++++++++
- 2 files changed, 42 insertions(+), 4 deletions(-)
+ drivers/base/power/common.c | 24 +++++++++++++++++-------
+ include/linux/pm_domain.h   |  8 +++++---
+ 2 files changed, 22 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 76ff0d9a229c..80ea70930cc6 100644
---- a/drivers/pmdomain/core.c
-+++ b/drivers/pmdomain/core.c
-@@ -463,6 +463,9 @@ static void _genpd_rollback_parent_state(struct gpd_link *link, int depth)
- 	struct generic_pm_domain *parent = link->parent;
- 	int parent_state;
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 8beedde6dba7..6a2d8ee473cd 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -179,9 +179,9 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_name);
+  *
+  * This function helps to attach a device to its multiple PM domains. The
+  * caller, which is typically a driver's probe function, may provide a list of
+- * names for the PM domains that we should try to attach the device to, but it
+- * may also provide an empty list, in case the attach should be done for all of
+- * the available PM domains.
++ * names or indices for the PM domains that we should try to attach the device
++ * to, but it may also provide an empty list, in case the attach should be done
++ * for all of the available PM domains.
+  *
+  * Callers must ensure proper synchronization of this function with power
+  * management callbacks.
+@@ -211,9 +211,14 @@ int dev_pm_domain_attach_list(struct device *dev,
+ 	if (!np)
+ 		return 0;
  
-+	if (link->flags & GENPD_SUBDOMAIN_NO_PERF_STATE_PROPAGATION)
-+		return;
-+
- 	genpd_lock_nested(parent, depth + 1);
- 
- 	parent_state = link->prev_performance_state;
-@@ -484,6 +487,9 @@ static int _genpd_set_parent_state(struct generic_pm_domain *genpd,
- 	struct generic_pm_domain *parent = link->parent;
- 	int parent_state, ret;
- 
-+	if (link->flags & GENPD_SUBDOMAIN_NO_PERF_STATE_PROPAGATION)
-+		return 0;
-+
- 	/* Find parent's performance state */
- 	ret = genpd_xlate_performance_state(genpd, parent, state);
- 	if (unlikely(ret < 0))
-@@ -2257,7 +2263,8 @@ int dev_pm_genpd_remove_notifier(struct device *dev)
- EXPORT_SYMBOL_GPL(dev_pm_genpd_remove_notifier);
- 
- static int genpd_add_subdomain(struct generic_pm_domain *genpd,
--			       struct generic_pm_domain *subdomain)
-+			       struct generic_pm_domain *subdomain,
-+			       unsigned int flags)
- {
- 	struct gpd_link *link, *itr;
- 	int ret = 0;
-@@ -2265,6 +2272,8 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
- 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
- 	    || genpd == subdomain)
- 		return -EINVAL;
-+	if (flags & ~GENPD_SUBDOMAIN_NO_PERF_STATE_PROPAGATION)
++	if (data && data->pd_names && data->pd_indices)
 +		return -EINVAL;
- 
- 	/*
- 	 * If the domain can be powered on/off in an IRQ safe
-@@ -2298,6 +2307,7 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
- 	}
- 
- 	link->parent = genpd;
-+	link->flags = flags;
- 	list_add_tail(&link->parent_node, &genpd->parent_links);
- 	link->child = subdomain;
- 	list_add_tail(&link->child_node, &subdomain->child_links);
-@@ -2319,16 +2329,30 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
-  */
- int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 			   struct generic_pm_domain *subdomain)
-+{
-+	return pm_genpd_add_subdomain_with_flags(genpd, subdomain, 0);
-+}
-+EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain);
 +
-+/**
-+ * pm_genpd_add_subdomain_with_flags - Add a configured subdomain relationship.
-+ * @genpd: Leader PM domain to add the subdomain to.
-+ * @subdomain: Subdomain to be added.
-+ * @flags: Subdomain-link configuration flags.
-+ */
-+int pm_genpd_add_subdomain_with_flags(struct generic_pm_domain *genpd,
-+				      struct generic_pm_domain *subdomain,
-+				      unsigned int flags)
- {
- 	int ret;
+ 	if (data && data->pd_names) {
+ 		num_pds = data->num_pd_names;
+ 		by_id = false;
++	} else if (data && data->pd_indices) {
++		num_pds = data->num_pd_indices;
+ 	} else {
+ 		num_pds = of_count_phandle_with_args(np, "power-domains",
+ 						     "#power-domain-cells");
+@@ -240,13 +245,18 @@ int dev_pm_domain_attach_list(struct device *dev,
+ 		link_flags |= DL_FLAG_RPM_ACTIVE;
  
- 	mutex_lock(&gpd_list_lock);
--	ret = genpd_add_subdomain(genpd, subdomain);
-+	ret = genpd_add_subdomain(genpd, subdomain, flags);
- 	mutex_unlock(&gpd_list_lock);
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain);
-+EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain_with_flags);
- 
- /**
-  * pm_genpd_remove_subdomain - Remove a subdomain from an I/O PM domain.
-@@ -3271,7 +3295,7 @@ int of_genpd_add_subdomain(const struct of_phandle_args *parent_spec,
- 		goto out;
- 	}
- 
--	ret = genpd_add_subdomain(parent, subdomain);
-+	ret = genpd_add_subdomain(parent, subdomain, 0);
- 
- out:
- 	mutex_unlock(&gpd_list_lock);
+ 	for (i = 0; i < num_pds; i++) {
+-		if (by_id)
++		if (by_id) {
++			unsigned int pd_index = data && data->pd_indices ?
++				data->pd_indices[i] : i;
++
+ 			pd_dev = data && data->pd_suffix ?
+-				genpd_dev_pm_attach_by_id_suffix(dev, i, data->pd_suffix) :
+-				dev_pm_domain_attach_by_id(dev, i);
+-		else
++				genpd_dev_pm_attach_by_id_suffix(dev, pd_index,
++							    data->pd_suffix) :
++				dev_pm_domain_attach_by_id(dev, pd_index);
++		} else {
+ 			pd_dev = dev_pm_domain_attach_by_name(dev,
+ 							data->pd_names[i]);
++		}
+ 		if (IS_ERR_OR_NULL(pd_dev)) {
+ 			ret = pd_dev ? PTR_ERR(pd_dev) : -ENODEV;
+ 			goto err_attach;
 diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 98aca4a4aede..322453da7fae 100644
+index 322453da7fae..f5e340e32f48 100644
 --- a/include/linux/pm_domain.h
 +++ b/include/linux/pm_domain.h
-@@ -277,8 +277,12 @@ struct gpd_link {
- 	/* Sub-domain's per-master domain performance state */
- 	unsigned int performance_state;
- 	unsigned int prev_performance_state;
-+	unsigned int flags;
+@@ -32,9 +32,9 @@
+  *
+  * PD_FLAG_REQUIRED_OPP:	Assign required_devs for the required OPPs. The
+  *				index of the required OPP must correspond to the
+- *				index in the array of the pd_names. If pd_names
+- *				isn't specified, the index just follows the
+- *				index for the attached PM domain.
++ *				index in the pd_names or pd_indices array. If neither
++ *				is specified, the index just follows the index for the
++ *				attached PM domain.
+  *
+  * PD_FLAG_ATTACH_POWER_ON:	Power on the domain during attach.
+  *
+@@ -50,6 +50,8 @@
+ struct dev_pm_domain_attach_data {
+ 	const char * const *pd_names;
+ 	u32 num_pd_names;
++	const unsigned int *pd_indices;
++	u32 num_pd_indices;
+ 	const char *pd_suffix;
+ 	u32 pd_flags;
  };
- 
-+/* Preserve power ordering and accounting, but do not forward performance states. */
-+#define GENPD_SUBDOMAIN_NO_PERF_STATE_PROPAGATION	BIT(0)
-+
- struct gpd_timing_data {
- 	s64 suspend_latency_ns;
- 	s64 resume_latency_ns;
-@@ -323,6 +327,9 @@ int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev);
- int pm_genpd_remove_device(struct device *dev);
- int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 			   struct generic_pm_domain *subdomain);
-+int pm_genpd_add_subdomain_with_flags(struct generic_pm_domain *genpd,
-+				      struct generic_pm_domain *subdomain,
-+				      unsigned int flags);
- int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 			      struct generic_pm_domain *subdomain);
- int pm_genpd_init(struct generic_pm_domain *genpd,
-@@ -367,6 +374,13 @@ static inline int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- {
- 	return -ENOSYS;
- }
-+static inline int pm_genpd_add_subdomain_with_flags(
-+					struct generic_pm_domain *genpd,
-+					struct generic_pm_domain *subdomain,
-+					unsigned int flags)
-+{
-+	return -ENOSYS;
-+}
- static inline int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 					    struct generic_pm_domain *subdomain)
- {
 
 -- 
 2.56.0
