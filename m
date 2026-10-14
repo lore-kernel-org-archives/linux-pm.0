@@ -1,123 +1,318 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13B2838655A
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 18:58:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 623A741442F
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 19:02:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792004317; cv=none; b=u9xPhZrsflnpdtTbLzxMukETRfiGmRdRVFxu7wuZL19ocKAoxqR1mbCeG3U6Zs2EkPM5YQF89eE64ezrwqTr4yS94yn8S6ilInXItZXgdUEUKyV/8SGSv1JvH69ajL16/gT/oSWaivPa2BwhqRo45SSfo2D4O36Dz6Aq2iEY3bw=
+	t=1792004561; cv=none; b=KwSvlQSxkJu3Xf4AlDvhcO+jbfHX9eCqnfFEWcNEplGL3sibZexKOAjjWsg6uRlX/RcyhJW+XAkjtu08szeqEd+lOxqf3hh19iKp3yN9sVZtnNrhXVqE25mQa2q23ozJQgWJwvnaRPEZaynm4ZLoNBIy3LsUIceCutwvLoiAE9M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792004317; c=relaxed/simple;
-	bh=A7AZH8u6xZfVyivgyLoGB9MIP8KEZWlP5cCLbGiuRTI=;
+	s=arc-20240116; t=1792004561; c=relaxed/simple;
+	bh=5nQ7Gb4Lv+YzkIA8MvsSkhr+WIiCiNF1zfmsSL1l/PM=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WQnew40NM497U1CUHaykoWN1ndXz/yLDM6HpTsOdv9Wj0+Kdh9aHk+I3zCmCxhUTcQOtVH31CE2iMRdYbqH/VQbb1nvwo9F+A4/J3lNXouTPNdvvt9EzVva7j1R1JQsbtte85kUZdZb55NwV8cYbdZN9sXUlJUusgoctWpplXlI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eubdz39G; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=CwLD33ImmmVNyUa0pgza9bkAmU9L1Vag7mAVxMBm0WAL+1H16JFq/Y4mY2UcJoXte/C0Vz8Sgkr0QY4A8+m5AaxVmPer8vk6rSnV+jRFJzryxkmJ30w4mL9yTLPlMwNDbDSxcFbKAg7/WTXGWV+LN6Wiqq2qrJ5aycmrU1pY4fc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B1quyXeU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eubdz39G"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2A471F000C6
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 18:58:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B1quyXeU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B3EA1F000C5
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 19:02:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792004315;
-	bh=anX1IJWSMuicvC/rJP/1rz/QekscKlLJOjsgMgqa9ew=;
+	s=k20260515; t=1792004560;
+	bh=P4yHuE9oecKRchkhtoS+YYilxu5k7VBhUCJf+GQfY8Y=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=eubdz39GTNqLVv0zV0BXTHWtgLzfwoFx/qMpQPMdAI9Tq4GR/HOj8FPkmGgExWKzf
-	 5J0HcUcaKUcJ6V61guh9zsdP9Fjrxd0D6tp+Yz/WHvIg4XojhTvvW7hJQpMxGtbQMz
-	 OQmkOQiPkoK1VgMzMgAMNgwZOoVWpMFiQc5BkBuGimjjKH3C7AzikHW9tnK5OwaTNP
-	 3x9f+xmmaTShWbRatNZr/2f+aHv2Q9thjENxkZLRcaj8+2/zEx+nPMBiKE522GP9lL
-	 RpKvt366q9Rcd8x2rttcw+633YpfcbnYpiA+rvN7mh2k3znxV/ujvOr6Li/mM7eC6c
-	 zeNB/cqsoHDFQ==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5bcb3726952so625210e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 11:58:35 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwOowSa7QY1rt1/Z38HWW2+7W2N5pYBQpD/DSY7ig2das2s1aeXjcuPFYvPUYQHLzz4KuE6sos6sw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLm6h8yjtYI2mqYQo2gjKgWhKT/xcRSnaAe1hIh3dzSIHmO444W
-	i0gYtICDhAsrwkzETxpFbfuUkyJXKyw6BANG9IgNOjEXsuPW8D+DhA1FBIFD6H20sDQ048H6Wkr
-	wZjmRVFLvuVWdwfHIVKXelxRdemtVQJk=
-X-Received: by 2002:a05:6512:15a6:b0:5b8:998c:e94 with SMTP id
- 2adb3069b0e04-5bcde8bde34mr6055261e87.46.1792004314035; Wed, 14 Oct 2026
- 11:58:34 -0700 (PDT)
+	b=B1quyXeUINvPQnKradNXMVOE0EbuJOVUIQbdvFeO6us1v6G9cXnotvEnDT+NMIv+W
+	 e9SxzrJyuIh2YBpqq7lersYlsOlDAXxiCUTlguvWkUEzKZFHm/+rAxJlljDpkKT9ic
+	 2xBgJN137t6HzalIfMFzUiiSg3fS+w0twPdUUO53u3agSEN7R9+B4q+OI5vSb0kTgh
+	 mzBMBKJ+dutZ57O5hhgN1tnoJ/MuacglY9gIaNmpkNjisr+GK+bgvF4s3gSPW2odXF
+	 sFrdX15271cBVXJnhFYJO7GrKHe/7abcDgaLOTD228aLqP/YgjyDIYmNII43BGvf2k
+	 WmysQ0KW90xLA==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5bcb2eceb3eso4098833e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 12:02:40 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByNu8kyLnpo5ZI5BgS0x/0323AAKVtlNXFuD37vrX61C1QO3dCfMaLUvw2nuhsqIZqoRvqHJTQKfA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLOC6ttGHW+Lo/jQcj5A66bln6nq+GkNWI9PRZDApullisYxBb1
+	Tja243ZOUZkKQ7SR1Fm9RJiU496J1CHf0XGQ8iuxMXuXEdWpNSHoTenH08W9yzH7S4iMG8dY13d
+	3rR1jNNkJgSczdyAzlQ8NKkpX/DAnsJc=
+X-Received: by 2002:a05:6512:110a:b0:5b8:edeb:5c29 with SMTP id
+ 2adb3069b0e04-5bcde6caf7cmr5889762e87.43.1792004558562; Wed, 14 Oct 2026
+ 12:02:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261013034235.2678177-1-sh_def@163.com>
-In-Reply-To: <20261013034235.2678177-1-sh_def@163.com>
+References: <20261001155118.1750028-1-briannorris@chromium.org> <20261001085009.v4.1.I45a794e4452e3df22419acdd8f11e2b788b3413f@changeid>
+In-Reply-To: <20261001085009.v4.1.I45a794e4452e3df22419acdd8f11e2b788b3413f@changeid>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 14 Oct 2026 20:56:27 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g1vmjdVBs6A0AEzcfNJb-uX7uvxQgRb6ieGzA6e3HKKA@mail.gmail.com>
-X-Gm-Features: AclHuK8u086bxt4j6UkoVHFuzpBnPTF_NmYyDk0WzxL-5pthywQOy01h_uva0fI
-Message-ID: <CAJZ5v0g1vmjdVBs6A0AEzcfNJb-uX7uvxQgRb6ieGzA6e3HKKA@mail.gmail.com>
-Subject: Re: [PATCH v3] cpufreq: schedutil: Serialize start against rate limit updates
-To: Hui Su <sh_def@163.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Ingo Molnar <mingo@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-	Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>, 
-	Valentin Schneider <vschneid@redhat.com>, K Prateek Nayak <kprateek.nayak@amd.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+Date: Wed, 14 Oct 2026 21:00:31 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gWtAZq0S1KiGxQOEc-F+CuuzfuFrKuWFxVi96_9xeS6g@mail.gmail.com>
+X-Gm-Features: AclHuK8zQ9j5WuHNIYyFttdCRYP73O4C3zpqSyDn3-lMGkkWE_KYkNQJEov19HA
+Message-ID: <CAJZ5v0gWtAZq0S1KiGxQOEc-F+CuuzfuFrKuWFxVi96_9xeS6g@mail.gmail.com>
+Subject: Re: [PATCH v4 1/2] PM: runtime: Expand introduction with core
+ concepts and structure
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, linux-doc@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Doug Anderson <dianders@chromium.org>, Len Brown <lenb@kernel.org>, Ulf Hansson <ulfh@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 13, 2026 at 5:43=E2=80=AFAM Hui Su <sh_def@163.com> wrote:
+On Thu, Oct 1, 2026 at 5:51=E2=80=AFPM Brian Norris <briannorris@chromium.o=
+rg> wrote:
 >
-> rate_limit_us_store() updates the tunable and freq_update_delay_ns under
-> update_lock, but sugov_start() reads the tunable without it. Startup can
-> therefore overwrite the new delay with one based on a stale value.
+> I commonly see people have difficulty learning how runtime PM works
+> because of the following key points [*]:
 >
-> Serialize the startup update with sysfs stores by taking update_lock in a
-> schedutil-local wrapper.
+>  1) there are several boolean concepts in runtime PM, with somewhat
+>     similar meanings:
 >
-> Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler=
- utilization data")
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-> Signed-off-by: Hui Su <sh_def@163.com>
+>      enabled / disabled
+>      active / suspended
+>      allowed / forbidden
+>
+>  2) if these concepts are documented at all, they're scattered across
+>     the kerneldoc or Documentation/
+>
+>  3) the runtime_pm.rst docs don't make any attempt to ease a reader into
+>     understanding the concepts, and instead jump straight into how it's
+>     implemented (queues, 'struct device' fields, helpers).
+>
+> Let's try to remedy this a bit by discussing the core concepts and
+> highlights at the top of the introduction, and introduce a few
+> sub-headings, so it's easier to navigate different aspects of the
+> introduction.
+>
+> While shuffling the intro around, I also see that the existing text
+> largely mirrors the layout of the following sections (2, 3, and 4), but
+> does so out of order. Reorder those, and point to section numbers.
+>
+> [*] In addition to API complexity. I count 61 pm_*() helpers, 7 of which
+>     are variations of put() and 8 of which are variations of get().
+>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
 > ---
-> Changes in v3:
-> - Use a schedutil-local scoped wrapper and clarify the locking comment.
 >
-> v2: https://lore.kernel.org/lkml/20261007155820.3194105-1-sh_def@163.com/
-> ---
->  kernel/sched/cpufreq_schedutil.c | 12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
+> Changes in v4:
+>  * Significantly overhaul introduction, based on Rafael's
+>    feedback/rewrite
+>  * Drop most implementation details (struct fields) and API names from
+>    intro
+>  * Expand the "in use" and dependencies concepts in the introduction
 >
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sche=
-dutil.c
-> index 49ccd6f1c185..1d0878dad4b0 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -73,6 +73,16 @@ static void sugov_update_rate_limit_us(struct sugov_po=
-licy *sg_policy)
->                 (s64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
->  }
+> Changes in v2:
+> Address review feedback around descriptions of "enabled" and "active". I
+> know not every point of discussion was settled, but I hope this updated
+> version resolves many of them and provides a better basis for further
+> improvement.
+>  * Avoid calling enabled and active "orthogonal"
+>  * Describe more of their inter-relationship
+>  * Prioritize talking about "enabled" first, since that's the first
+>    concept a reader should know about
+>  * Brief mentions of parent/child and supplier/consumer, and dependency
+>    handling
+>  * Other tweaks
 >
-> +static void sugov_update_rate_limit_us_sync(struct sugov_policy *sg_poli=
-cy)
-> +{
-> +       /*
-> +        * Serialize with rate_limit_us_store() to prevent this path from
-> +        * overwriting the new delay with one based on an old tunable val=
-ue.
-> +        */
-> +       guard(mutex)(&sg_policy->tunables->attr_set.update_lock);
-> +       sugov_update_rate_limit_us(sg_policy);
-> +}
+>  Documentation/power/runtime_pm.rst | 114 ++++++++++++++++++++++++-----
+>  1 file changed, 95 insertions(+), 19 deletions(-)
+>
+> diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/run=
+time_pm.rst
+> index 68903d93a3e7..e4407b687f8b 100644
+> --- a/Documentation/power/runtime_pm.rst
+> +++ b/Documentation/power/runtime_pm.rst
+> @@ -13,31 +13,107 @@ Runtime Power Management Framework for I/O Devices
+>  1. Introduction
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> -Support for runtime power management (runtime PM) of I/O devices is prov=
+ided
+> -at the power management core (PM core) level by means of:
+> -
+> -* The power management workqueue pm_wq in which bus types and device dri=
+vers can
+> -  put their PM-related work items.  It is strongly recommended that pm_w=
+q be
+> -  used for queuing all work items related to runtime PM, because this al=
+lows
+> -  them to be synchronized with system-wide power transitions (suspend to=
+ RAM,
+> -  hibernation and resume from system sleep states).  pm_wq is declared i=
+n
+> -  include/linux/pm_runtime.h and defined in kernel/power/main.c.
+> -
+> -* A number of runtime PM fields in the 'power' member of 'struct device'=
+ (which
+> -  is of the type 'struct dev_pm_info', defined in include/linux/pm.h) th=
+at can
+> -  be used for synchronizing runtime PM operations with one another.
+> +Runtime power management (or runtime PM, sometimes also referred to as R=
+PM)
+> +allows individual I/O devices that are not in active use to be put into
+> +low-power states, in which they may not be operational or even accessibl=
+e, and
+> +go back to the fully operational state as needed.  Power can be reduced =
+this
+> +way without waiting for a transition into a system-wide sleep state.
 > +
->  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64=
- time)
->  {
->         s64 delta_ns;
-> @@ -861,7 +871,7 @@ static int sugov_start(struct cpufreq_policy *policy)
->         void (*uu)(struct update_util_data *data, u64 time, unsigned int =
-flags);
->         unsigned int cpu;
+> +Core Concepts
+> +-------------
+> +
+> +Runtime PM operates around a few device-level concepts =E2=80=94 whether=
+ a device is
+> +**active** or **suspended**; whether runtime PM is **enabled** or **disa=
+bled**;
+> +whether runtime PM is **allowed** or **forbidden**; and whether a device=
+ is
+> +**in use**.
+> +
+> +* **Active**: Runtime PM tracks whether or not devices are in active use=
+, which
+> +  generally means that they are accessible and operational, and may be d=
+epended
+> +  on by something (for example, other devices or user space).  This is
+> +  represented by the **active** meta-state.  By contrast, the **suspende=
+d**
+> +  meta-state represents a promise that the given device will not be acce=
+ssed.
+> +  This covers devices in low-power states, but it also may include devic=
+es that
+> +  are not fully operational.  There are also two transient meta-states,
+> +  **suspending** and **resuming**, representing transitions between **ac=
+tive**
+> +  and **suspended** often referred to as *runtime suspend* and *runtime
+> +  resume*, or just *suspend* and *resume*, respectively.  Every device h=
+andled
+> +  by runtime PM is in one of these four meta-states at any time, and its
+> +  meta-state is expected to reflect its actual physical configuration (t=
+hat is,
+> +  for instance, if the device is not accessible, it must not be **active=
+**).
+> +  The term "runtime PM status" used in what follows refers to the meta-s=
+tates
+> +  described above.
+> +
+> +* **Enabled**: In order to track the runtime PM status and carry out
+> +  transitions between **active** and **suspended**, runtime PM needs to =
+be
+> +  **enabled** for the given device.  If it is **disabled**, runtime PM
+> +  generally leaves the device alone.  This means in particular that the =
+runtime
+> +  PM status of a device and its actual physical configuration may get ou=
+t of
+> +  sync after disabling runtime PM for it.  Additionally, the runtime PM =
+status
+> +  of a device may need to be explicitly adjusted to reflect its current
+> +  physical configuration before enabling runtime PM for it (e.g., during=
+ device
+> +  probe).  Once runtime PM is **enabled**, it begins managing PM status =
+=E2=80=94
+> +  performing *runtime suspend* and *runtime resume* transitions based on=
+ its
+> +  understanding of whether a device is in use.
+> +
+> +  As a rule, all devices are initialized with runtime PM **disabled**, t=
+hough
+> +  some bus types (such as PCI) manage some RPM initialization automatica=
+lly,
+> +  and therefore probe devices in an **enabled** state.  For other device=
+s,
+> +  drivers must enable runtime PM on their own to opt in.
+> +
+> +* **Allowed**: Runtime PM may be **forbidden** even though it has been e=
+nabled.
+> +  Doing so causes the given device to transition into the **active** met=
+a-state
+> +  and prevents it from being suspended.  In other words, a device with
+> +  forbidden runtime PM remains **active** at least until runtime PM is
+> +  **allowed** for it again.  This mechanism can be managed by in-kernel =
+APIs,
+> +  but more importantly, it is also available to user space via the
+> +  ``/sys/devices/.../power/control`` sysfs attribute of the given device=
+.
+> +  Namely, writing ``on`` to that attribute forbids runtime PM, and writi=
+ng
+> +  ``auto`` allows it.  User space may modify that attribute at any time,=
+ so the
+> +  ability to transition a device into the **suspended** meta-state via r=
+untime
+> +  PM must not be relied on for correctness.
+> +
+> +* **In use**: Runtime PM determines whether a device should be transitio=
+ned to
+> +  an **active** state by its understanding of whether a device is in use=
+.  The
+> +  first way a device is considered **in use** is by its own usage count =
+=E2=80=94 a
+> +  reference counter driven by a variety of get()/put() APIs.  Additional=
+ly, a
+> +  device may be considered **in use** by having active dependents =E2=80=
+=94 either
+> +  child devices, or device-linked consumers.  When a device is no longer=
+ in
+> +  use, runtime PM may choose to transition it to the **suspended** state=
+.
+> +
+> +  Thus, when a device moves from **suspended** to **active**, it may als=
+o cause
+> +  its dependencies to resume, unless they are **active** already.  Conve=
+rsely,
+> +  suspending a device may also cause its otherwise-unused dependencies t=
+o
+> +  suspend.
+> +
+> +* **Autosuspend**: Runtime PM also supports a feature called "autosuspen=
+d."
+> +  This is different than the ``control`` notion of "auto" (i.e., **allow=
+ed**).
+> +  Autosuspend is covered in `Section 9`_.
+> +
+> +Implementation Structure
+> +------------------------
+> +
+> +Support for runtime power management is provided at the power management=
+ core
+> +(PM core) level by means of:
 >
-> -       sugov_update_rate_limit_us(sg_policy);
-> +       sugov_update_rate_limit_us_sync(sg_policy);
->         sg_policy->last_freq_update_time        =3D 0;
->         sg_policy->next_freq                    =3D 0;
->         sg_policy->work_in_progress             =3D false;
+>  * Three device runtime PM callbacks in 'struct dev_pm_ops' (defined in
+> -  include/linux/pm.h).
+> +  include/linux/pm.h). See `Section 2`_.
+> +
+> +* A number of runtime PM fields in the 'power' member of 'struct device'=
+ that
+> +  can be used for synchronizing runtime PM operations with one another. =
+These
+> +  are covered in `Section 3`_.
 >
+>  * A set of helper functions defined in drivers/base/power/runtime.c that=
+ can be
+>    used for carrying out runtime PM operations in such a way that the
+> -  synchronization between them is taken care of by the PM core.  Bus typ=
+es and
+> -  device drivers are encouraged to use these functions.
+> +  synchronization between them is taken care of by the PM core. Bus type=
+s and
+> +  device drivers are encouraged to use these functions. They are covered=
+ in
+> +  `Section 4`_.
+>
+> -The runtime PM callbacks present in 'struct dev_pm_ops', the device runt=
+ime PM
+> -fields of 'struct dev_pm_info' and the core helper functions provided fo=
+r
+> -runtime PM are described below.
+> +* The power management workqueue pm_wq in which bus types and device dri=
+vers can
+> +  put their PM-related work items. It is strongly recommended that pm_wq=
+ be
+> +  used for queuing all work items related to runtime PM, because this al=
+lows
+> +  them to be synchronized with system-wide power transitions (suspend to=
+ RAM,
+> +  hibernation and resume from system sleep states). pm_wq is declared in
+> +  include/linux/pm_runtime.h and defined in kernel/power/main.c.
+>
+>  .. _Section 2:
+>
+> --
 
 Applied as 7.4 material, thanks!
