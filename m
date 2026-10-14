@@ -1,63 +1,63 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99FC93F106E
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:19:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3452D47D47A
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:19:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792009170; cv=none; b=bElRfTtbggDwuuHd28/mGnPbw0pVjdg5LF6TpAvHoR68/6Ts9nH6cfhz7L3Nbbkbz5HOkiv1H8yS3yOvXh77zagRT3xwo9+nLeJscDcmE4RX/KBEcCgYZ5b7iogVGIT1S2U2TBSWPNSWV3X3xLxQsHsRiCX67nw/3nqnqtWcy7o=
+	t=1792009172; cv=none; b=rkSgNWUGPSqTjXwn+EtIxZjEMsCEyNPeVJcFGFYwXzMSwDWJ6EWWGYIM6TkpYN1Yu7qEBY1B2jJvtIFOX8+yx8iOudyG+cb6D21QkTnypLcIyPgDXe462F/0WgcD6UrQDaZRRP331RfFR5kBQB7+8sw3sIELR9GIAd9Y2gMCNrI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792009170; c=relaxed/simple;
-	bh=hlq9v1xz4I6qAUWjVpb4nNhVa135YD2FakmeLpyxxy4=;
+	s=arc-20240116; t=1792009172; c=relaxed/simple;
+	bh=X0mEEhygK0MLHthM3WIi/83jtbol6g35/nqCm65nqrM=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=dX8uJsxZsA5rnKk1Y25d9BlaQzMjcFCC+FrMfpEJTBeXCmq5VJJOeCXlYFRb2QQ7QPlG0xXZ1Tkz2X09NxemHf+3iWQXkpi3CuABMXHsjMt2CH28XxVOVsNVK1pNThGqR8ylpfdQi/Q9xmwdTHqFopUdLZnVwRX7JAwVFG3Olz0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=IB+HH0TX; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=x+77NFxO; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=i8+D6K1tGIofRcpSgs4eMtpAaF118ex7qVOSJr7Xnp8BOHFQpX1I1+ZmS15jn1aRuPzuDhmFD5D79WF/7aytYg5318LXPrks0C7H3K9PEpZjs8dDscMFD2pBn7xWAS3REQ1lW83oV36N+FBpdWDoxY1UFKcSPZLwvJwod3oAgYc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=O5AOhYLw; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=fsnZQAbn; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="IB+HH0TX";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="x+77NFxO"
-Date: Wed, 14 Oct 2026 20:19:25 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="O5AOhYLw";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="fsnZQAbn"
+Date: Wed, 14 Oct 2026 20:19:27 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1792009167;
+	s=2020; t=1792009168;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Ixo7c1Obi9Ci/hl50bwyyoJTrEOzc67zRQY5qbb6fxM=;
-	b=IB+HH0TXbf+FY5U2gQFX+Kske6dCNPdAdrCO4bEE5QlEDBBEYk4HFyEBMe+3LGj5wbcM90
-	8IlEyoXUkrsQbUUESfrPDuqh/c+Fobn8YHaQr/wpIOFomNJAz2HESzSZuzVqg5OFdXhjBj
-	Tof8GOMd9r7fIFTIEM/3XHKyB9vuCuDAoFIbAX+3wcaVmHYiaVsHdVHiqJs74oeIvacqdG
-	gIM2TnJlFK8dl60dcjo7JAYCUYNAaQmOr6rjO8w2rG3R/RelhSochgk+Y8/YY+36+fmCu9
-	hgr9hh0ZPHxL1Kokcc0M5DkIlCawK2Ktft65xIt0CSOWal3ufznADEwM13Nyfw==
+	bh=o46f6KWtzr0lCxk65DsOqlXbdylytDabtYJnrEGmFCA=;
+	b=O5AOhYLwFToFbcU/8c233sdIMnN9DMNEyaHd+aIphyEuFN/uZ0Jk8Plx+cZ/Jj/JkuCTPl
+	YuPOhYqdxOWLwJCFfwWZUYyHZkTcfMWL4MWEUc4geZhQ1+tGkW+TtPB6ISxPjo+yCf6WPd
+	eEZXoK7tXEL6Uy+RO84/4OUpX5FTfX8xrz3uO14ULC8fBx/ZjKNkmErXGjagdPgW1pB0mQ
+	p0anKMqXz1LIcePEfJn/61Z+pNlmrTAC0jNLfUK2Lr9j+HbEFBC5zn1CDc9V7DAR16HTfv
+	T9fhqptxNqvbfYh8on5NtVS4ZuNQoyrWiiUHKxNPwBPf5KXsJzyECB6iEf4jXQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1792009167;
+	s=2020e; t=1792009168;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Ixo7c1Obi9Ci/hl50bwyyoJTrEOzc67zRQY5qbb6fxM=;
-	b=x+77NFxOmb2Gwy2EPrts1ammIwRnWntYaL95KSktw4v6L58x7FDkiokXMaXPAPXJ95xwrS
-	to2PAQAqvdlYCIBA==
-From: "thermal-bot for Karl Mehltretter" <tip-bot2@linutronix.de>
+	bh=o46f6KWtzr0lCxk65DsOqlXbdylytDabtYJnrEGmFCA=;
+	b=fsnZQAbniMTE+nxYIXIUa5AZce85zPTVJ3TA2M/C3aztBWhvDrQk3p2QYql0SvxYDNnpxL
+	WKIbdUObN/kUEdAQ==
+From: "thermal-bot for Aryan Sinha" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/linux-next] thermal: ti-soc-thermal: Fix the return
- value in ti_bandgap_get_sensor_data() kernel-doc
-Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+Subject:
+ [thermal: thermal/linux-next] thermal/fw: Fix kernel-doc parameter names
+Cc: Aryan Sinha <sinha.aryan03@gmail.com>,
  Daniel Lezcano <daniel.lezcano@kernel.org>, daniel.lezcano@oss.qualcomm.com
-In-Reply-To: <20260912062252.42762-1-kmehltretter@gmail.com>
-References: <20260912062252.42762-1-kmehltretter@gmail.com>
+In-Reply-To: <20261012152037.33461-1-sinha.aryan03@gmail.com>
+References: <20261012152037.33461-1-sinha.aryan03@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <179200916564.2666337.3986405898798814354.tip-bot2@tip-bot2>
+Message-ID: <179200916727.2666337.4855679415933911644.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -68,51 +68,63 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     82bb005cd9cf5a9df4cfe4a52db90346ac5fd17a
+Commit-ID:     379ae6766d1a7a1f78f1d97b6c72a262f14960e8
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//82bb005cd9cf5a9df4cfe4a52db90346ac5fd17a
-Author:        Karl Mehltretter <kmehltretter@gmail.com>
-AuthorDate:    Sat, 12 Sep 2026 08:22:52 +02:00
+git//379ae6766d1a7a1f78f1d97b6c72a262f14960e8
+Author:        Aryan Sinha <sinha.aryan03@gmail.com>
+AuthorDate:    Mon, 12 Oct 2026 20:50:32 +05:30
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Wed, 14 Oct 2026 09:45:41 +02:00
 
-thermal: ti-soc-thermal: Fix the return value in ti_bandgap_get_sensor_data()=
- kernel-doc
+thermal/fw: Fix kernel-doc parameter names
 
-ti_bandgap_get_sensor_data() returns an ERR_PTR() if the bandgap
-instance or sensor ID is invalid. Otherwise it returns the stored sensor
-data, which can be NULL if no data has been set or the stored value has
-been cleared.
+The kernel-doc for thermal_fwnode_cooling_device_register() still names the
+old device tree arguments np and of_index, and
+devm_thermal_fwnode_cooling_device_register() documents fw_index rather
+than fwn_index. Rename them to match the code and reword the device tree
+reference as a firmware node one.
 
-This mismatch was already present in omap_bandgap_get_sensor_data() when
-the driver was introduced in staging.
-
-Document the validation errors while retaining NULL as a possible stored
-value.
-
-Fixes: 8feaf0ce1a04 ("staging: OMAP4+: thermal: introduce bandgap temperature=
- sensor")
-Assisted-by: LLM
-Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+Signed-off-by: Aryan Sinha <sinha.aryan03@gmail.com>
+Link: https://patch.msgid.link/20261012152037.33461-1-sinha.aryan03@gmail.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20260912062252.42762-1-kmehltretter@gmail.com
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_fw.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti=
--soc-thermal/ti-bandgap.c
-index 507fe67..815ca07 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -576,7 +576,8 @@ int ti_bandgap_set_sensor_data(struct ti_bandgap *bgp, in=
-t id, void *data)
-  * @bgp: pointer to bandgap instance
-  * @id: sensor id
+diff --git a/drivers/thermal/thermal_fw.c b/drivers/thermal/thermal_fw.c
+index e8bd204..7c28bfa 100644
+--- a/drivers/thermal/thermal_fw.c
++++ b/drivers/thermal/thermal_fw.c
+@@ -11,13 +11,13 @@
+=20
+ /**
+  * thermal_fwnode_cooling_device_register() - register an thermal cooling de=
+vice
+- * @np:		a pointer to a device tree node.
+- * @of_index:	a cooling device index in the cooling controller
++ * @fwnode:	a pointer to a firmware node.
++ * @fwn_index:	a cooling device index in the cooling controller
+  * @type:	the thermal cooling device type.
+  * @devdata:	device private data.
+  * @ops:		standard thermal cooling devices callbacks.
   *
-- * Return: data stored by set function with sensor id on success or NULL
-+ * Return: the stored sensor data, which may be %NULL, or an ERR_PTR()
-+ * if @bgp or @id is invalid.
-  */
- void *ti_bandgap_get_sensor_data(struct ti_bandgap *bgp, int id)
- {
+- * This function will register a cooling device with device tree node refere=
+nce.
++ * This function will register a cooling device with a firmware node referen=
+ce.
+  * This interface function adds a new thermal cooling device (fan/processor/=
+...)
+  * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind it=
+self
+  * to all the thermal zone devices registered at the same time.
+@@ -71,7 +71,7 @@ __devm_thermal_fwnode_cooling_device_register(struct device=
+ *dev, struct fwnode_
+ /**
+  * devm_thermal_fwnode_cooling_device_register() - register a thermal coolin=
+g device
+  * @dev:	a valid struct device pointer of a sensor device.
+- * @fw_index:	a cooling device index in the cooling controller
++ * @fwn_index:	a cooling device index in the cooling controller
+  * @type:	the thermal cooling device type.
+  * @devdata:	device private data.
+  * @ops:	standard thermal cooling devices callbacks.
