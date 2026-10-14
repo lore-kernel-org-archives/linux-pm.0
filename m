@@ -1,65 +1,63 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F9503955C7
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:19:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99FC93F106E
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:19:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792009170; cv=none; b=kGc0kFCikaSOvTFS5d7a7lHAXntiqiCPod1AJNDJrRfundvhMlMj0ofb9WxdCk3ZsEvkTEAopCjbln0s/RjpyALIqKSFTu+MTanAE7nbqBOEnxBkwZpSR4lSlpPApTfq+w+2y2Qq4jQcaNiqpULSo8m/z8NMQvPYjquk7wOBDG4=
+	t=1792009170; cv=none; b=bElRfTtbggDwuuHd28/mGnPbw0pVjdg5LF6TpAvHoR68/6Ts9nH6cfhz7L3Nbbkbz5HOkiv1H8yS3yOvXh77zagRT3xwo9+nLeJscDcmE4RX/KBEcCgYZ5b7iogVGIT1S2U2TBSWPNSWV3X3xLxQsHsRiCX67nw/3nqnqtWcy7o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1792009170; c=relaxed/simple;
-	bh=zeyda70pH1GVehf1TbyHnGEHPRhURVo74bexXA/89Hw=;
+	bh=hlq9v1xz4I6qAUWjVpb4nNhVa135YD2FakmeLpyxxy4=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=OlZ8WfBLDkQ9pYjY+ZORX6EeGYmB1G85dA/68YeN1zv9sr0EUn7eS+7gMhI+YkliNRPTdWnU1zM3YRBwFHJLsQzfwcjkjAQJ1bK/xR5oak/E5gX/BFNhWmxD8yOgsCgK4iUBjrmsi2/gaZnW/ncrtCghnGX7cd7ksrBcS8ehT5g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=XGy8lWA1; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=VsDJDdoB; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=dX8uJsxZsA5rnKk1Y25d9BlaQzMjcFCC+FrMfpEJTBeXCmq5VJJOeCXlYFRb2QQ7QPlG0xXZ1Tkz2X09NxemHf+3iWQXkpi3CuABMXHsjMt2CH28XxVOVsNVK1pNThGqR8ylpfdQi/Q9xmwdTHqFopUdLZnVwRX7JAwVFG3Olz0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=IB+HH0TX; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=x+77NFxO; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="XGy8lWA1";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="VsDJDdoB"
-Date: Wed, 14 Oct 2026 20:19:24 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="IB+HH0TX";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="x+77NFxO"
+Date: Wed, 14 Oct 2026 20:19:25 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1792009165;
+	s=2020; t=1792009167;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ILv9cPWkeh16z/ovSiCxnG8/65gVZAUSQSzN9Fc/ns0=;
-	b=XGy8lWA1eM9IAXBC7QCzMPp3dGhLSMrwXxEqM1vGfLhXJJfSOwJpOo9YmHYLN6nLlYtTHd
-	XB2UaLddhqjOqOkT5CqiKl7R5IuL/4e2tQNtcVPPq2EjawzIGSMwhLBH45c/k0Bxd74JiI
-	KrvqYEnZbS7oBquySs6OLh4slsepqAXoktDtHM9/J9yj+QjfDh4LM6OxmJZbsfMJtBpMs/
-	IjZuY3+PRbKOtSDi/5y7zqWaO5T3JR4dKcMz6GgOn+cdaz/3ZotH6HDMJkD7hK3HcXcqWP
-	y9TbSwrVpiIkFu+jz+tUyOIMxdMYw7UWY+Yr5kuorZ9lApWzHptzMpJsxylEWg==
+	bh=Ixo7c1Obi9Ci/hl50bwyyoJTrEOzc67zRQY5qbb6fxM=;
+	b=IB+HH0TXbf+FY5U2gQFX+Kske6dCNPdAdrCO4bEE5QlEDBBEYk4HFyEBMe+3LGj5wbcM90
+	8IlEyoXUkrsQbUUESfrPDuqh/c+Fobn8YHaQr/wpIOFomNJAz2HESzSZuzVqg5OFdXhjBj
+	Tof8GOMd9r7fIFTIEM/3XHKyB9vuCuDAoFIbAX+3wcaVmHYiaVsHdVHiqJs74oeIvacqdG
+	gIM2TnJlFK8dl60dcjo7JAYCUYNAaQmOr6rjO8w2rG3R/RelhSochgk+Y8/YY+36+fmCu9
+	hgr9hh0ZPHxL1Kokcc0M5DkIlCawK2Ktft65xIt0CSOWal3ufznADEwM13Nyfw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1792009165;
+	s=2020e; t=1792009167;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ILv9cPWkeh16z/ovSiCxnG8/65gVZAUSQSzN9Fc/ns0=;
-	b=VsDJDdoBn7iHPviOkbI5T4kqZaXKNnM4e2oVaP1bsJLGQhPEaBR/Sfm+OH9eb1/Ue8BA4f
-	g40Emp98t/Eek3Aw==
-From: "thermal-bot for Pengpeng Hou" <tip-bot2@linutronix.de>
+	bh=Ixo7c1Obi9Ci/hl50bwyyoJTrEOzc67zRQY5qbb6fxM=;
+	b=x+77NFxOmb2Gwy2EPrts1ammIwRnWntYaL95KSktw4v6L58x7FDkiokXMaXPAPXJ95xwrS
+	to2PAQAqvdlYCIBA==
+From: "thermal-bot for Karl Mehltretter" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [thermal: thermal/linux-next] thermal/drivers/rzg3e: Propagate reset
- assertion failure from suspend
-Cc: Pengpeng Hou <hppiscas@163.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
- daniel.lezcano@oss.qualcomm.com
-In-Reply-To: <20261014031814.7230-1-hppiscas@163.com>
-References: <20261014031814.7230-1-hppiscas@163.com>
+Subject: [thermal: thermal/linux-next] thermal: ti-soc-thermal: Fix the return
+ value in ti_bandgap_get_sensor_data() kernel-doc
+Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, daniel.lezcano@oss.qualcomm.com
+In-Reply-To: <20260912062252.42762-1-kmehltretter@gmail.com>
+References: <20260912062252.42762-1-kmehltretter@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <179200916415.2666337.17610219212102196549.tip-bot2@tip-bot2>
+Message-ID: <179200916564.2666337.3986405898798814354.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -70,64 +68,51 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     2dc1f296b5754dd2441fc8b6613a362a47f6b98f
+Commit-ID:     82bb005cd9cf5a9df4cfe4a52db90346ac5fd17a
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//2dc1f296b5754dd2441fc8b6613a362a47f6b98f
-Author:        Pengpeng Hou <hppiscas@163.com>
-AuthorDate:    Wed, 14 Oct 2026 11:18:14 +08:00
+git//82bb005cd9cf5a9df4cfe4a52db90346ac5fd17a
+Author:        Karl Mehltretter <kmehltretter@gmail.com>
+AuthorDate:    Sat, 12 Sep 2026 08:22:52 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Wed, 14 Oct 2026 09:46:07 +02:00
+CommitterDate: Wed, 14 Oct 2026 09:45:41 +02:00
 
-thermal/drivers/rzg3e: Propagate reset assertion failure from suspend
+thermal: ti-soc-thermal: Fix the return value in ti_bandgap_get_sensor_data()=
+ kernel-doc
 
-rzg3e_thermal_suspend() powers off an active sensor and then ignores
-failure to assert its reset. System sleep can therefore continue without
-the clean reset state expected by resume.
+ti_bandgap_get_sensor_data() returns an ERR_PTR() if the bandgap
+instance or sensor ID is invalid. Otherwise it returns the stored sensor
+data, which can be NULL if no data has been set or the stored value has
+been cleared.
 
-Return the reset error and, when the sensor had been active, try to
-restore power before failing suspend. This is best-effort recovery:
-reset assertion failure may leave partial hardware state, so restoring
-power is not guaranteed to succeed. Preserve the original reset error.
+This mismatch was already present in omap_bandgap_get_sensor_data() when
+the driver was introduced in staging.
 
-The issue was found by our static-analysis tool and manually reviewed.
+Document the validation errors while retaining NULL as a possible stored
+value.
 
-Fixes: dc67521c20b7 ("thermal/drivers/renesas/rzg3e: Fix add thermal driver f=
-or the Renesas RZ/G3E SoC")
-Assisted-by: gpt 5
-Signed-off-by: Pengpeng Hou <hppiscas@163.com>
+Fixes: 8feaf0ce1a04 ("staging: OMAP4+: thermal: introduce bandgap temperature=
+ sensor")
+Assisted-by: LLM
+Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Reviewed-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-Link: https://patch.msgid.link/20261014031814.7230-1-hppiscas@163.com
+Link: https://patch.msgid.link/20260912062252.42762-1-kmehltretter@gmail.com
 ---
- drivers/thermal/renesas/rzg3e_thermal.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/renesas/rzg3e_thermal.c b/drivers/thermal/renesa=
-s/rzg3e_thermal.c
-index a1ceff7..e806d13 100644
---- a/drivers/thermal/renesas/rzg3e_thermal.c
-+++ b/drivers/thermal/renesas/rzg3e_thermal.c
-@@ -512,15 +512,19 @@ static int rzg3e_thermal_runtime_resume(struct device *=
-dev)
- static int rzg3e_thermal_suspend(struct device *dev)
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti=
+-soc-thermal/ti-bandgap.c
+index 507fe67..815ca07 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -576,7 +576,8 @@ int ti_bandgap_set_sensor_data(struct ti_bandgap *bgp, in=
+t id, void *data)
+  * @bgp: pointer to bandgap instance
+  * @id: sensor id
+  *
+- * Return: data stored by set function with sensor id on success or NULL
++ * Return: the stored sensor data, which may be %NULL, or an ERR_PTR()
++ * if @bgp or @id is invalid.
+  */
+ void *ti_bandgap_get_sensor_data(struct ti_bandgap *bgp, int id)
  {
- 	struct rzg3e_thermal_priv *priv =3D dev_get_drvdata(dev);
-+	bool active =3D pm_runtime_active(dev);
-+	int ret;
-=20
- 	/* If device is active, power it off */
--	if (pm_runtime_active(dev))
-+	if (active)
- 		rzg3e_thermal_power_off(priv);
-=20
- 	/* Assert reset to ensure clean state after resume */
--	reset_control_assert(priv->rstc);
-+	ret =3D reset_control_assert(priv->rstc);
-+	if (ret && active)
-+		rzg3e_thermal_power_on(priv);
-=20
--	return 0;
-+	return ret;
- }
-=20
- static int rzg3e_thermal_resume(struct device *dev)
