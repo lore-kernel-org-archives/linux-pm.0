@@ -1,34 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1DEB4E77FD;
-	Wed, 14 Oct 2026 12:21:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE20B4E73CC;
+	Wed, 14 Oct 2026 12:21:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791980513; cv=none; b=MvjPJKPuH04Yw5AGLkU55rE7Z+BG5WP4XRDcPeSf9I/IA7E/ffSlhbUohc0b4fSlgxOdvDXjrzMXv/3t6MlxzMuvep3O/RMe0K/uIjJ/KukRALG5oUM0N/AN95vJOEkAqO9pQRLwWNAwdKJxcM2DDxqjhqjiWmw1UMpnOlUW3+o=
+	t=1791980519; cv=none; b=sCdGc/S+TgweTVMhHVBITDQqHgluDVHj0g5DXI2hhYs5LPaKiKbm8WC416gpdTDmYo2ZpNLHtdpSTdEwVrn7uUlR5O/S6yLFpvFSTaP4F7yVNg2tgekjZzZ2Xec8Kvb8Zg7wed+/FeoYP8Le9CilliDeDqqmxgzKcpeOch5BouQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791980513; c=relaxed/simple;
-	bh=UcUjq/8ToXUIwQ5/SLR1xiXAzCmtVVGEiZ+SwFlCDac=;
+	s=arc-20240116; t=1791980519; c=relaxed/simple;
+	bh=8OMna/KLGjI0egQ5mOc3EaWbW4KBirffU+LVFR73S80=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=N3LWi3XOvneSgOvQM1lO1hm+f1JQ6scheytcpz4Sl3ZQueOSSF3J/lrVm5uq79qSyJwfY0GoIMH0dcsb58JEpYJZhpHK+pgDvenDNKzEl4/ofoywDeXYCnBoOEiStiJcM+nHtRZuD+OdGofPcai3jIXnN+4UHtCDRBhUQ5SO1Os=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RRWnlcXC; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=D77wZDiNyIVnDtbJxOCX4Jq37ynHjTe97A/EhsE2FlSqAUHT68G10wtCIEXnWyMAHyko0h14OIxR0K3WCtjcY7spPJh/lSrZ/Tul5Lq1sHouA72YTUkM3B4bqxE9Vx903c7KCLLAHwNICLISObi4ZWuxTKudTSFHOWs/W4IFUQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y+0Ce3v4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RRWnlcXC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 200C11F00893;
-	Wed, 14 Oct 2026 12:21:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y+0Ce3v4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 267D51F000FF;
+	Wed, 14 Oct 2026 12:21:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791980510;
-	bh=7TcByaLz7UEr/AVpjt8s6DymuSjCt4p9P7xeqTR3vUU=;
+	s=k20260515; t=1791980517;
+	bh=5V+2zRLYtk8mULwaRk7ZQHnulu8saTddbqYC1vASJiM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=RRWnlcXCVJMCBc4vp9nF85GWSErIGZwSJmc4mUvBWKy2DRr9pjLzImA4hewcew6/6
-	 7IvvXXD4NUBJ2vPx/I96Tr5+2+XwbLpcatq2a/9b+CUuNNDx9BoxfGcos188QoSgFq
-	 tXymt2DZdhLCqryANVSXz1b390SLwlARmIMYjkTOsDV4eMp1oMguF/IJBqfmI98972
-	 48pwRxT8o2GOWqr+0CYPtVA/bTnBwe9NmPv3HY3W9k+8VeRomL0G/6F4P8gE6GLZi5
-	 D8j7m+wezuxY0LbojCd8+zXYrN4np4hSfi0yCI/ARXX2Ec20TNss/rUEyIJ14CWl1A
-	 oTR+WnpaUgalQ==
+	b=Y+0Ce3v4Zangc/YI2crn5kMk0QjEaaj5/3K5fKH4uE6WwSQthu7YDTKD1Usu6guwQ
+	 zAZyyuBznifOyGt0ElEkXJkkUoU157TgylP8d4D62B0tYmq6SHFQ2kprc6MgA8mKN1
+	 YEZFI7s118p3U0ftTcjAteVW8MP8u5s0PKf8ay/JZnf+yj8plRm9+GcYjMVr7U9AvS
+	 Id1NMJ5K0tXCI3xWi8Hg0sfU5zn05DBq1+hi1Po5tN6WQKbODzxvecHVTuGhwSYF2l
+	 MF2Tf0RtUn3BeqfEu2kvGN5zj7973jiPeOWSECrqyFh/FCoaPrY1f6RxW9vqe1WZIc
+	 lBSFITeO7FNWA==
 From: Konrad Dybcio <konradybcio@kernel.org>
-Date: Wed, 14 Oct 2026 14:19:09 +0200
-Subject: [PATCH RFC 09/16] clk: qcom: clk-alpha-pll: Add DVFS (un)prepare
+Date: Wed, 14 Oct 2026 14:19:10 +0200
+Subject: [PATCH RFC 10/16] clk: qcom: clk-alpha-pll: Vote for the PLL
+ calibration frequency
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,7 +38,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261014-topic-qc_clk_dvfs-v1-9-3041b788e9f7@oss.qualcomm.com>
+Message-Id: <20261014-topic-qc_clk_dvfs-v1-10-3041b788e9f7@oss.qualcomm.com>
 References: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
 In-Reply-To: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
 To: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
@@ -58,541 +59,279 @@ Cc: linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
  Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791980431; l=19734;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791980431; l=8367;
  i=konrad.dybcio@oss.qualcomm.com; s=20230215; h=from:subject:message-id;
- bh=2WMR+BY0Z3R0+QxO89Uea2UrN3CMd8aAypkb+tIP2LQ=;
- b=qABmNTBZdPDox5TFemtCUq/KbWnNkh4B6RaizY2n4V2uZJToU9zlm7QOsqERZ1MYBQCtMy0f+
- TmQjLuGJLn2DHkCCSN1DOL76C89385WUbsfEMCH6bTmXe/T6HmXVpiF
+ bh=Ay0Zbi2cn4ekfRWSw8xzw+DH5Ff5Kj4IvCP4O2lqwk4=;
+ b=IB+IYD8Mc4N8Btuo2b62IxdIWehE5yhkJpYmwO28vFcDl+kGSMUbs92QoaeUTJDDHEzujtIcE
+ bbnweKMsX9UA+g0gz61fJRaJbFsHPRbRAciuTTkXCfLd5v9jUS1WsqM
 X-Developer-Key: i=konrad.dybcio@oss.qualcomm.com; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 
 From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-Alpha PLLs have strict power requirements for a given frequency.
-Ensure they can be accounted for with the new clk-dvfs (un)prepare
-operations.
+Lucid EVO class PLLs calibrate themselves the first time they are
+prepared, running at (CAL_L * parent_rate) Hz. That is typically well
+above the rate the PLL is later operated at, but the prepared vote only
+covers the operating rate, so calibration can run without the rail
+requirement for the frequency it actually uses.
+
+Raise the vote to cover the calibration frequency while a PLL that still
+needs calibration is brought up, and return to the operating rate once it
+is done. Failing to drop the vote again leaves the higher one in place
+until unprepare and is only reported.
 
 Assisted-by: LLM
 Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 ---
- drivers/clk/qcom/clk-alpha-pll.c | 232 +++++++++++++++++++++++++++++++++++++--
- 1 file changed, 223 insertions(+), 9 deletions(-)
+ drivers/clk/qcom/clk-alpha-pll.c | 113 +++++++++++++++++++++++++++++----------
+ drivers/clk/qcom/clk-dvfs.c      |   8 ++-
+ drivers/clk/qcom/clk-dvfs.h      |   1 +
+ 3 files changed, 91 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/clk/qcom/clk-alpha-pll.c b/drivers/clk/qcom/clk-alpha-pll.c
-index 60173b076cc5..5dc6b1adc929 100644
+index 5dc6b1adc929..f6e73e2fbe76 100644
 --- a/drivers/clk/qcom/clk-alpha-pll.c
 +++ b/drivers/clk/qcom/clk-alpha-pll.c
-@@ -11,6 +11,7 @@
- #include <linux/delay.h>
- 
- #include "clk-alpha-pll.h"
-+#include "clk-dvfs.h"
- #include "common.h"
- 
- #define PLL_MODE(p)		((p)->offset + 0x0)
-@@ -1182,6 +1183,10 @@ clk_trion_pll_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
- }
- 
- const struct clk_ops clk_alpha_pll_fixed_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_enable,
- 	.disable = clk_alpha_pll_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -1190,6 +1195,10 @@ const struct clk_ops clk_alpha_pll_fixed_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_fixed_ops);
- 
- const struct clk_ops clk_alpha_pll_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_enable,
- 	.disable = clk_alpha_pll_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -1200,6 +1209,10 @@ const struct clk_ops clk_alpha_pll_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_ops);
- 
- const struct clk_ops clk_alpha_pll_huayra_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_enable,
- 	.disable = clk_alpha_pll_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -1210,6 +1223,10 @@ const struct clk_ops clk_alpha_pll_huayra_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_huayra_ops);
- 
- const struct clk_ops clk_alpha_pll_hwfsm_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_hwfsm_enable,
- 	.disable = clk_alpha_pll_hwfsm_disable,
- 	.is_enabled = clk_alpha_pll_hwfsm_is_enabled,
-@@ -1220,6 +1237,10 @@ const struct clk_ops clk_alpha_pll_hwfsm_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_hwfsm_ops);
- 
- const struct clk_ops clk_alpha_pll_fixed_trion_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_trion_pll_enable,
- 	.disable = clk_trion_pll_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -1310,6 +1331,10 @@ static int clk_alpha_pll_postdiv_set_rate(struct clk_hw *hw, unsigned long rate,
- }
- 
- const struct clk_ops clk_alpha_pll_postdiv_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.recalc_rate = clk_alpha_pll_postdiv_recalc_rate,
- 	.determine_rate = clk_alpha_pll_postdiv_determine_rate,
- 	.set_rate = clk_alpha_pll_postdiv_set_rate,
-@@ -1317,6 +1342,10 @@ const struct clk_ops clk_alpha_pll_postdiv_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_postdiv_ops);
- 
- const struct clk_ops clk_alpha_pll_postdiv_ro_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.determine_rate = clk_alpha_pll_postdiv_ro_determine_rate,
- 	.recalc_rate = clk_alpha_pll_postdiv_recalc_rate,
- };
-@@ -1500,7 +1529,7 @@ static int alpha_pll_fabia_set_rate(struct clk_hw *hw, unsigned long rate,
- 	return __clk_alpha_pll_update_latch(pll);
- }
- 
--static int alpha_pll_fabia_prepare(struct clk_hw *hw)
-+static int __alpha_pll_fabia_prepare(struct clk_hw *hw)
- {
- 	struct clk_alpha_pll *pll = to_clk_alpha_pll(hw);
- 	const struct pll_vco *vco;
-@@ -1555,8 +1584,26 @@ static int alpha_pll_fabia_prepare(struct clk_hw *hw)
- 	return 0;
- }
- 
-+static int alpha_pll_fabia_prepare(struct clk_hw *hw)
-+{
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
-+	if (ret)
-+		return ret;
-+
-+	ret = __alpha_pll_fabia_prepare(hw);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
-+}
-+
- const struct clk_ops clk_alpha_pll_fabia_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_fabia_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_fabia_enable,
- 	.disable = alpha_pll_fabia_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -1567,6 +1614,10 @@ const struct clk_ops clk_alpha_pll_fabia_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_fabia_ops);
- 
- const struct clk_ops clk_alpha_pll_fixed_fabia_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_fabia_enable,
- 	.disable = alpha_pll_fabia_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -1653,6 +1704,10 @@ clk_trion_pll_postdiv_set_rate(struct clk_hw *hw, unsigned long rate,
- }
- 
- const struct clk_ops clk_alpha_pll_postdiv_trion_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.recalc_rate = clk_trion_pll_postdiv_recalc_rate,
- 	.determine_rate = clk_trion_pll_postdiv_determine_rate,
- 	.set_rate = clk_trion_pll_postdiv_set_rate,
-@@ -1699,6 +1754,10 @@ static int clk_alpha_pll_postdiv_fabia_set_rate(struct clk_hw *hw,
- }
- 
- const struct clk_ops clk_alpha_pll_postdiv_fabia_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.recalc_rate = clk_alpha_pll_postdiv_fabia_recalc_rate,
- 	.determine_rate = clk_alpha_pll_postdiv_fabia_determine_rate,
- 	.set_rate = clk_alpha_pll_postdiv_fabia_set_rate,
-@@ -1785,12 +1844,32 @@ static int __alpha_pll_trion_prepare(struct clk_hw *hw, u32 pcal_done)
- 
- static int alpha_pll_trion_prepare(struct clk_hw *hw)
- {
--	return __alpha_pll_trion_prepare(hw, TRION_PCAL_DONE);
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
-+	if (ret)
-+		return ret;
-+
-+	ret = __alpha_pll_trion_prepare(hw, TRION_PCAL_DONE);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
- }
- 
- static int alpha_pll_lucid_prepare(struct clk_hw *hw)
- {
--	return __alpha_pll_trion_prepare(hw, LUCID_PCAL_DONE);
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
-+	if (ret)
-+		return ret;
-+
-+	ret = __alpha_pll_trion_prepare(hw, LUCID_PCAL_DONE);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
- }
- 
- static int __alpha_pll_trion_set_rate(struct clk_hw *hw, unsigned long rate,
-@@ -1847,7 +1926,10 @@ static int alpha_pll_trion_set_rate(struct clk_hw *hw, unsigned long rate,
- }
- 
- const struct clk_ops clk_alpha_pll_trion_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_trion_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_trion_pll_enable,
- 	.disable = clk_trion_pll_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -1858,7 +1940,10 @@ const struct clk_ops clk_alpha_pll_trion_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_trion_ops);
- 
- const struct clk_ops clk_alpha_pll_lucid_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_lucid_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_trion_pll_enable,
- 	.disable = clk_trion_pll_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -1869,6 +1954,10 @@ const struct clk_ops clk_alpha_pll_lucid_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_lucid_ops);
- 
- const struct clk_ops clk_alpha_pll_postdiv_lucid_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.recalc_rate = clk_alpha_pll_postdiv_fabia_recalc_rate,
- 	.determine_rate = clk_alpha_pll_postdiv_fabia_determine_rate,
- 	.set_rate = clk_alpha_pll_postdiv_fabia_set_rate,
-@@ -1918,6 +2007,10 @@ static int clk_alpha_pll_agera_set_rate(struct clk_hw *hw, unsigned long rate,
- }
- 
- const struct clk_ops clk_alpha_pll_agera_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_enable,
- 	.disable = clk_alpha_pll_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -2054,7 +2147,7 @@ static void alpha_pll_lucid_5lpe_disable(struct clk_hw *hw)
-  * The Lucid 5LPE PLL requires a power-on self-calibration which happens
-  * when the PLL comes out of reset. Calibrate in case it is not completed.
+@@ -4,6 +4,7 @@
+  * Copyright (c) 2021, 2023-2024, Qualcomm Innovation Center, Inc. All rights reserved.
   */
--static int alpha_pll_lucid_5lpe_prepare(struct clk_hw *hw)
-+static int __alpha_pll_lucid_5lpe_prepare(struct clk_hw *hw)
- {
- 	struct clk_alpha_pll *pll = to_clk_alpha_pll(hw);
- 	struct clk_hw *p;
-@@ -2079,6 +2172,21 @@ static int alpha_pll_lucid_5lpe_prepare(struct clk_hw *hw)
- 	return 0;
+ 
++#include <linux/bitfield.h>
+ #include <linux/kernel.h>
+ #include <linux/export.h>
+ #include <linux/clk-provider.h>
+@@ -369,6 +370,7 @@ EXPORT_SYMBOL_GPL(clk_alpha_pll_regs);
+ #define LUCID_EVO_ENABLE_VOTE_RUN       BIT(25)
+ #define LUCID_EVO_PLL_L_VAL_MASK        GENMASK(15, 0)
+ #define LUCID_EVO_PLL_CAL_L_VAL_SHIFT	16
++#define LUCID_EVO_PLL_CAL_L_VAL_MASK	GENMASK(23, 16)
+ #define LUCID_OLE_PLL_RINGOSC_CAL_L_VAL_SHIFT	24
+ 
+ /* PONGO ELU PLL specific setting and offsets */
+@@ -2577,7 +2579,7 @@ static int alpha_pll_lucid_evo_enable(struct clk_hw *hw)
+ 	return ret;
  }
  
-+static int alpha_pll_lucid_5lpe_prepare(struct clk_hw *hw)
-+{
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
-+	if (ret)
-+		return ret;
-+
-+	ret = __alpha_pll_lucid_5lpe_prepare(hw);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
-+}
-+
- static int alpha_pll_lucid_5lpe_set_rate(struct clk_hw *hw, unsigned long rate,
- 					 unsigned long prate)
- {
-@@ -2133,7 +2241,10 @@ static int clk_lucid_5lpe_pll_postdiv_set_rate(struct clk_hw *hw, unsigned long
- }
- 
- const struct clk_ops clk_alpha_pll_lucid_5lpe_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_lucid_5lpe_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_lucid_5lpe_enable,
- 	.disable = alpha_pll_lucid_5lpe_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2144,6 +2255,10 @@ const struct clk_ops clk_alpha_pll_lucid_5lpe_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_lucid_5lpe_ops);
- 
- const struct clk_ops clk_alpha_pll_fixed_lucid_5lpe_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_lucid_5lpe_enable,
- 	.disable = alpha_pll_lucid_5lpe_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2153,6 +2268,10 @@ const struct clk_ops clk_alpha_pll_fixed_lucid_5lpe_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_fixed_lucid_5lpe_ops);
- 
- const struct clk_ops clk_alpha_pll_postdiv_lucid_5lpe_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.recalc_rate = clk_alpha_pll_postdiv_fabia_recalc_rate,
- 	.determine_rate = clk_alpha_pll_postdiv_fabia_determine_rate,
- 	.set_rate = clk_lucid_5lpe_pll_postdiv_set_rate,
-@@ -2319,6 +2438,10 @@ static int clk_zonda_pll_set_rate(struct clk_hw *hw, unsigned long rate,
- }
- 
- const struct clk_ops clk_alpha_pll_zonda_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_zonda_pll_enable,
- 	.disable = clk_zonda_pll_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2520,7 +2643,17 @@ static void alpha_pll_lucid_evo_disable(struct clk_hw *hw)
- 
- static int alpha_pll_lucid_evo_prepare(struct clk_hw *hw)
- {
--	return _alpha_pll_lucid_evo_prepare(hw, false);
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
-+	if (ret)
-+		return ret;
-+
-+	ret = _alpha_pll_lucid_evo_prepare(hw, false);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
- }
- 
- static void alpha_pll_reset_lucid_evo_disable(struct clk_hw *hw)
-@@ -2530,7 +2663,17 @@ static void alpha_pll_reset_lucid_evo_disable(struct clk_hw *hw)
- 
- static int alpha_pll_reset_lucid_evo_prepare(struct clk_hw *hw)
- {
--	return _alpha_pll_lucid_evo_prepare(hw, true);
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
-+	if (ret)
-+		return ret;
-+
-+	ret = _alpha_pll_lucid_evo_prepare(hw, true);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
- }
- 
- static unsigned long alpha_pll_lucid_evo_recalc_rate(struct clk_hw *hw,
-@@ -2557,6 +2700,10 @@ static int clk_lucid_evo_pll_postdiv_set_rate(struct clk_hw *hw, unsigned long r
- }
- 
- const struct clk_ops clk_alpha_pll_fixed_lucid_evo_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_lucid_evo_enable,
- 	.disable = alpha_pll_lucid_evo_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2566,6 +2713,10 @@ const struct clk_ops clk_alpha_pll_fixed_lucid_evo_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_fixed_lucid_evo_ops);
- 
- const struct clk_ops clk_alpha_pll_postdiv_lucid_evo_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.recalc_rate = clk_alpha_pll_postdiv_fabia_recalc_rate,
- 	.determine_rate = clk_alpha_pll_postdiv_fabia_determine_rate,
- 	.set_rate = clk_lucid_evo_pll_postdiv_set_rate,
-@@ -2573,7 +2724,10 @@ const struct clk_ops clk_alpha_pll_postdiv_lucid_evo_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_postdiv_lucid_evo_ops);
- 
- const struct clk_ops clk_alpha_pll_lucid_evo_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_lucid_evo_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_lucid_evo_enable,
- 	.disable = alpha_pll_lucid_evo_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2584,7 +2738,10 @@ const struct clk_ops clk_alpha_pll_lucid_evo_ops = {
- EXPORT_SYMBOL_GPL(clk_alpha_pll_lucid_evo_ops);
- 
- const struct clk_ops clk_alpha_pll_reset_lucid_evo_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_reset_lucid_evo_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_lucid_evo_enable,
- 	.disable = alpha_pll_reset_lucid_evo_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2594,7 +2751,7 @@ const struct clk_ops clk_alpha_pll_reset_lucid_evo_ops = {
- };
- EXPORT_SYMBOL_GPL(clk_alpha_pll_reset_lucid_evo_ops);
- 
--static int alpha_pll_pongo_elu_prepare(struct clk_hw *hw)
-+static int __alpha_pll_pongo_elu_prepare(struct clk_hw *hw)
+-static void _alpha_pll_lucid_evo_disable(struct clk_hw *hw, bool reset)
++static int alpha_pll_lucid_evo_disable_checked(struct clk_hw *hw, bool reset)
  {
  	struct clk_alpha_pll *pll = to_clk_alpha_pll(hw);
  	struct regmap *regmap = pll->clkr.regmap;
-@@ -2624,6 +2781,21 @@ static int alpha_pll_pongo_elu_prepare(struct clk_hw *hw)
- 	return 0;
- }
+@@ -2586,29 +2588,45 @@ static void _alpha_pll_lucid_evo_disable(struct clk_hw *hw, bool reset)
  
-+static int alpha_pll_pongo_elu_prepare(struct clk_hw *hw)
+ 	ret = regmap_read(regmap, PLL_USER_CTL(pll), &val);
+ 	if (ret)
+-		return;
++		return ret;
+ 
+ 	/* If in FSM mode, just unvote it */
+ 	if (val & LUCID_EVO_ENABLE_VOTE_RUN) {
+-		clk_disable_regmap(hw);
+-		return;
++		return regmap_update_bits(regmap, pll->clkr.enable_reg,
++					  pll->clkr.enable_mask,
++					  pll->clkr.enable_is_inverted ?
++					  pll->clkr.enable_mask : 0);
+ 	}
+ 
+ 	/* Disable the global PLL output */
+ 	ret = regmap_update_bits(regmap, PLL_MODE(pll), PLL_OUTCTRL, 0);
+ 	if (ret)
+-		return;
++		return ret;
+ 
+ 	/* Disable the PLL outputs */
+ 	ret = regmap_update_bits(regmap, PLL_USER_CTL(pll), PLL_OUT_MASK, 0);
+ 	if (ret)
+-		return;
++		return ret;
+ 
+ 	/* Place the PLL mode in STANDBY */
+-	regmap_write(regmap, PLL_OPMODE(pll), PLL_STANDBY);
++	ret = regmap_write(regmap, PLL_OPMODE(pll), PLL_STANDBY);
++	if (ret)
++		return ret;
+ 
+ 	if (reset)
+-		regmap_update_bits(regmap, PLL_MODE(pll), PLL_RESET_N, 0);
++		return regmap_update_bits(regmap, PLL_MODE(pll), PLL_RESET_N, 0);
++
++	return 0;
++}
++
++static void _alpha_pll_lucid_evo_disable(struct clk_hw *hw, bool reset)
 +{
 +	int ret;
 +
-+	ret = qcom_clk_dvfs_prepare(hw);
++	ret = alpha_pll_lucid_evo_disable_checked(hw, reset);
 +	if (ret)
-+		return ret;
-+
-+	ret = __alpha_pll_pongo_elu_prepare(hw);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
-+}
-+
- static int alpha_pll_pongo_elu_enable(struct clk_hw *hw)
- {
++		pr_warn("%s: failed to disable PLL: %d\n",
++			clk_hw_get_name(hw), ret);
+ }
+ 
+ static int _alpha_pll_lucid_evo_prepare(struct clk_hw *hw, bool reset)
+@@ -2616,10 +2634,12 @@ static int _alpha_pll_lucid_evo_prepare(struct clk_hw *hw, bool reset)
  	struct clk_alpha_pll *pll = to_clk_alpha_pll(hw);
-@@ -2687,7 +2859,10 @@ static unsigned long alpha_pll_pongo_elu_recalc_rate(struct clk_hw *hw,
- }
+ 	struct clk_hw *p;
+ 	u32 val = 0;
+-	int ret;
++	int ret, cleanup_ret;
  
- const struct clk_ops clk_alpha_pll_pongo_elu_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
- 	.prepare = alpha_pll_pongo_elu_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_pongo_elu_enable,
- 	.disable = alpha_pll_pongo_elu_disable,
- 	.recalc_rate = alpha_pll_pongo_elu_recalc_rate,
-@@ -2786,6 +2961,10 @@ static int clk_rivian_evo_pll_determine_rate(struct clk_hw *hw,
- }
- 
- const struct clk_ops clk_alpha_pll_rivian_evo_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = alpha_pll_lucid_5lpe_enable,
- 	.disable = alpha_pll_lucid_5lpe_disable,
- 	.is_enabled = clk_trion_pll_is_enabled,
-@@ -2899,6 +3078,10 @@ static int clk_alpha_pll_stromer_set_rate(struct clk_hw *hw, unsigned long rate,
- }
- 
- const struct clk_ops clk_alpha_pll_stromer_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_enable,
- 	.disable = clk_alpha_pll_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -2964,9 +3147,32 @@ static int clk_alpha_pll_stromer_plus_set_rate(struct clk_hw *hw,
- 	return 0;
- }
- 
-+static int clk_alpha_pll_stromer_plus_prepare(struct clk_hw *hw)
-+{
-+	int ret;
-+
-+	ret = qcom_clk_dvfs_prepare(hw);
+ 	/* Return early if calibration is not needed. */
+-	regmap_read(pll->clkr.regmap, PLL_MODE(pll), &val);
++	ret = regmap_read(pll->clkr.regmap, PLL_MODE(pll), &val);
 +	if (ret)
 +		return ret;
-+
-+	ret = clk_alpha_pll_enable(hw);
-+	if (ret)
-+		qcom_clk_dvfs_unprepare(hw);
-+
-+	return ret;
-+}
-+
-+static void clk_alpha_pll_stromer_plus_unprepare(struct clk_hw *hw)
-+{
-+	clk_alpha_pll_disable(hw);
-+	qcom_clk_dvfs_unprepare(hw);
-+}
-+
- const struct clk_ops clk_alpha_pll_stromer_plus_ops = {
--	.prepare = clk_alpha_pll_enable,
--	.unprepare = clk_alpha_pll_disable,
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = clk_alpha_pll_stromer_plus_prepare,
-+	.unprepare = clk_alpha_pll_stromer_plus_unprepare,
- 	.is_enabled = clk_alpha_pll_is_enabled,
- 	.recalc_rate = clk_alpha_pll_recalc_rate,
- 	.determine_rate = clk_alpha_pll_stromer_determine_rate,
-@@ -2995,6 +3201,10 @@ void clk_regera_pll_configure(struct clk_alpha_pll *pll, struct regmap *regmap,
- EXPORT_SYMBOL_GPL(clk_regera_pll_configure);
+ 	if (!(val & LUCID_EVO_PCAL_NOT_DONE))
+ 		return 0;
  
- const struct clk_ops clk_alpha_pll_regera_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_zonda_pll_enable,
- 	.disable = clk_zonda_pll_disable,
- 	.is_enabled = clk_alpha_pll_is_enabled,
-@@ -3202,6 +3412,10 @@ static int clk_alpha_pll_slew_enable(struct clk_hw *hw)
+@@ -2628,12 +2648,9 @@ static int _alpha_pll_lucid_evo_prepare(struct clk_hw *hw, bool reset)
+ 		return -EINVAL;
+ 
+ 	ret = alpha_pll_lucid_evo_enable(hw);
+-	if (ret)
+-		return ret;
++	cleanup_ret = alpha_pll_lucid_evo_disable_checked(hw, reset);
+ 
+-	_alpha_pll_lucid_evo_disable(hw, reset);
+-
+-	return 0;
++	return ret ?: cleanup_ret;
  }
  
- const struct clk_ops clk_alpha_pll_slew_ops = {
-+	.resource_acquire = qcom_clk_dvfs_resource_acquire,
-+	.resource_release = qcom_clk_dvfs_resource_release,
-+	.prepare = qcom_clk_dvfs_prepare,
-+	.unprepare = qcom_clk_dvfs_unprepare,
- 	.enable = clk_alpha_pll_slew_enable,
- 	.disable = clk_alpha_pll_disable,
- 	.recalc_rate = clk_alpha_pll_recalc_rate,
+ static void alpha_pll_lucid_evo_disable(struct clk_hw *hw)
+@@ -2641,21 +2658,69 @@ static void alpha_pll_lucid_evo_disable(struct clk_hw *hw)
+ 	_alpha_pll_lucid_evo_disable(hw, false);
+ }
+ 
+-static int alpha_pll_lucid_evo_prepare(struct clk_hw *hw)
++/*
++ * Calibration runs at CAL_L * parent_rate, which may exceed the operating rate
++ * covered by the normal DVFS vote. Raise the vote temporarily to keep the
++ * hardware in-spec during that step.
++ */
++static int alpha_pll_lucid_evo_dvfs_prepare(struct clk_hw *hw, bool reset)
+ {
++	struct clk_alpha_pll *pll = to_clk_alpha_pll(hw);
++	unsigned long rate = clk_hw_get_rate(hw);
++	unsigned long cal_rate = 0;
++	struct clk_hw *p;
++	u32 val;
+ 	int ret;
+ 
+ 	ret = qcom_clk_dvfs_prepare(hw);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = _alpha_pll_lucid_evo_prepare(hw, false);
++	ret = regmap_read(pll->clkr.regmap, PLL_MODE(pll), &val);
+ 	if (ret)
+-		qcom_clk_dvfs_unprepare(hw);
++		goto err_unprepare;
+ 
++	if (val & LUCID_EVO_PCAL_NOT_DONE) {
++		p = clk_hw_get_parent(hw);
++		if (!p) {
++			ret = -EINVAL;
++			goto err_unprepare;
++		}
++
++		ret = regmap_read(pll->clkr.regmap, PLL_L_VAL(pll), &val);
++		if (ret)
++			goto err_unprepare;
++
++		cal_rate = (unsigned long)FIELD_GET(LUCID_EVO_PLL_CAL_L_VAL_MASK, val) *
++			   clk_hw_get_rate(p);
++	}
++
++	if (cal_rate > rate) {
++		ret = qcom_clk_dvfs_prepare_rate(hw, cal_rate);
++		if (ret)
++			goto err_unprepare;
++	}
++
++	ret = _alpha_pll_lucid_evo_prepare(hw, reset);
++	if (ret)
++		goto err_unprepare;
++
++	if (cal_rate > rate && qcom_clk_dvfs_prepare_rate(hw, rate))
++		pr_warn("%s: failed to drop calibration DVFS vote\n",
++			clk_hw_get_name(hw));
++
++	return 0;
++
++err_unprepare:
++	qcom_clk_dvfs_unprepare(hw);
+ 	return ret;
+ }
+ 
++static int alpha_pll_lucid_evo_prepare(struct clk_hw *hw)
++{
++	return alpha_pll_lucid_evo_dvfs_prepare(hw, false);
++}
++
+ static void alpha_pll_reset_lucid_evo_disable(struct clk_hw *hw)
+ {
+ 	_alpha_pll_lucid_evo_disable(hw, true);
+@@ -2663,17 +2728,7 @@ static void alpha_pll_reset_lucid_evo_disable(struct clk_hw *hw)
+ 
+ static int alpha_pll_reset_lucid_evo_prepare(struct clk_hw *hw)
+ {
+-	int ret;
+-
+-	ret = qcom_clk_dvfs_prepare(hw);
+-	if (ret)
+-		return ret;
+-
+-	ret = _alpha_pll_lucid_evo_prepare(hw, true);
+-	if (ret)
+-		qcom_clk_dvfs_unprepare(hw);
+-
+-	return ret;
++	return alpha_pll_lucid_evo_dvfs_prepare(hw, true);
+ }
+ 
+ static unsigned long alpha_pll_lucid_evo_recalc_rate(struct clk_hw *hw,
+diff --git a/drivers/clk/qcom/clk-dvfs.c b/drivers/clk/qcom/clk-dvfs.c
+index 4af78eb0c78d..145ad57a48e4 100644
+--- a/drivers/clk/qcom/clk-dvfs.c
++++ b/drivers/clk/qcom/clk-dvfs.c
+@@ -244,10 +244,9 @@ static int qcom_clk_dvfs_remove_vote(struct qcom_clk_dvfs_rail_voter *rail_voter
+ 	return ret;
+ }
+ 
+-int qcom_clk_dvfs_prepare(struct clk_hw *hw)
++int qcom_clk_dvfs_prepare_rate(struct clk_hw *hw, unsigned long rate)
+ {
+ 	struct qcom_clk_dvfs_clock *clock = to_clk_regmap(hw)->dvfs;
+-	unsigned long rate = clk_hw_get_rate(hw);
+ 	unsigned int level;
+ 	size_t i;
+ 	int ret;
+@@ -281,6 +280,11 @@ int qcom_clk_dvfs_prepare(struct clk_hw *hw)
+ 	return ret;
+ }
+ 
++int qcom_clk_dvfs_prepare(struct clk_hw *hw)
++{
++	return qcom_clk_dvfs_prepare_rate(hw, clk_hw_get_rate(hw));
++}
++
+ void qcom_clk_dvfs_unprepare(struct clk_hw *hw)
+ {
+ 	struct qcom_clk_dvfs_clock *clock = to_clk_regmap(hw)->dvfs;
+diff --git a/drivers/clk/qcom/clk-dvfs.h b/drivers/clk/qcom/clk-dvfs.h
+index 48c7487614c1..bb8edd466818 100644
+--- a/drivers/clk/qcom/clk-dvfs.h
++++ b/drivers/clk/qcom/clk-dvfs.h
+@@ -28,6 +28,7 @@ int qcom_clk_dvfs_resource_release(struct clk_hw *hw,
+ 				 void *cookie,
+ 				 enum clk_resource_change_result result);
+ int qcom_clk_dvfs_prepare(struct clk_hw *hw);
++int qcom_clk_dvfs_prepare_rate(struct clk_hw *hw, unsigned long rate);
+ void qcom_clk_dvfs_unprepare(struct clk_hw *hw);
+ 
+ int qcom_clk_dvfs_register(struct device *dev,
 
 -- 
 2.56.0
