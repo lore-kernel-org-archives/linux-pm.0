@@ -1,43 +1,78 @@
-Received: from mail-24417.protonmail.ch (mail-24417.protonmail.ch [109.224.244.17])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0BB9568FC4
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 17:37:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C76A33630BF;
+	Wed, 14 Oct 2026 17:44:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791999434; cv=none; b=dhI5r9NwefmokWiWF+R28s/JTXu5y/solYKQZXGxsWJG/BxYAJNXggfMipvqdrtjcj6bH2oTMVEeXt21M//Ush2BvbDw5NKxXuzQCp/5D0MiK6oqJckAEK9lHWmv3vjhnWs8WYuDPdW8sUkohge/xP+5A4bVv4gcgtW3gK0uxwc=
+	t=1791999898; cv=none; b=Dc1TYLYG+fNLL87FnhtG13ALZqiONB0+tF1fWo03zLBNGw9n5iEsQkEq8gfnXVCVc+S7sDEijtkIsCilXPcYK8GokYEWTRd90+dN2tsduVkrIHitGHEqqW9ut27DVAgVNncqJGgdIVKwY8lcMnl5sxhzmURR7cviu7Dq80Vl0S8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791999434; c=relaxed/simple;
-	bh=1SMkCRdoRBjsVsaziVaYOSodTI9Wuhxzjm5gPl7Eyl8=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=R1lk+XFXiDqanAXf2eHkFcM7yYSW5qYz1pNTfeqMIlgQXPTs/XIbf668crGFOMXPg71hJ4hlkY7tY8Z26cypYwu8vBNANi4AXGhYrqEO2fdu2D4KDmCdj0xXZtrs8ZeOdF5QtkD8XlI+DpfrTyJjAAPPcDFlxYyljGoq0Aw3FCw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=SMnSFhyI; arc=none smtp.client-ip=109.224.244.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
+	s=arc-20240116; t=1791999898; c=relaxed/simple;
+	bh=4AbmuGaQmg8yTQKRE3P7KnMLvr6mh8Ei2C0jhRF37cs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fFyM7PKc95k5I4lS7+DWzH7JUT+y8I9oppGvPmdAcjTcKUOlkozhPLghs6o3ajntIJS29Ae5HyIN0fMSOw0uDGNyuccBThGaMTxJ/XLBkEy0A3TjftpIMiwLG9x3+svr71Q+esWlnsfqAOsZcOZaEs604gIbpcptj4VkR4MLm+g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Y/JbqQJU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="SMnSFhyI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1791999423; x=1792258623;
-	bh=1SMkCRdoRBjsVsaziVaYOSodTI9Wuhxzjm5gPl7Eyl8=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=SMnSFhyIe/OfLXxkudufl0RBJLr/RdIpESooK5QhQ+EmSj1KDzZ6WDwnRYhbOF4CI
-	 mDfNAGpLK+rxN+2vxVSzJo34qmNk93F4fb0MEzgfuWAb7k1cLPvKFAU7bUEBcXT7o0
-	 E89mw8C0j1uI4Yv0merA3GiHvFQf94KMarc4jYlTQU8XnoiM7NojmkLc5zGYmG33iD
-	 PF0SoqCeSVAXldz3nA1ogy6jeIbQVni33zbo7SrYjtnOahAjA6pxROWk/MLYIoVK2z
-	 iOLxYwBK3GSQpLglWw42DfcQC43lDF38+FSXxeuhVSHKtn7irw9ogZ1afa2/e2KNyT
-	 pK8OEVgkW3icg==
-Date: Wed, 14 Oct 2026 17:36:59 +0000
-To: Vladyslav Tymoshchuk <tvlad744@gmail.com>
-From: Birk Skyum <birk.skyum@pm.me>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, linux-bluetooth@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Bluetooth: hci_qca: Reset the in-band sleep state on power off
-Message-ID: <179199941686.68860.2209253288195283916@pm.me>
-In-Reply-To: <20261014162025.3733-1-tvlad744@gmail.com>
-References: <179163212446.46972.2306254853726299632@pm.me> <20261014162025.3733-1-tvlad744@gmail.com>
-Feedback-ID: 21326998:user:proton
-X-Pm-Message-ID: 6a2bf6aea44a9d005d91d109720fda8945066e41
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Y/JbqQJU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 330F01F000C4;
+	Wed, 14 Oct 2026 17:44:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1791999896;
+	bh=sTxxFIiD6mgFs2UdEY1I8MyQnekZZiyPvhQw7RuhHrg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Y/JbqQJUIEWFLFscjenxW9GCe5wNUa4lKG/qtufKEMdVe8I7JjwbgDqX5hbrhnbnk
+	 g11pdaabApMfzBMkfpM3w5n1u6n4ty6P15W2DYuVy6e5rpnrYB4vdZc0i3KcsTyQQY
+	 TKLv1ClTGNe42312p3oiyQs34X3dYVxDiKaB2oxQ=
+Date: Wed, 14 Oct 2026 19:45:00 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Kees Cook <kees@kernel.org>, Ian Rogers <irogers@google.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Nayna Jain <nayna@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	David Teigland <teigland@redhat.com>,
+	Alexander Aring <aahringo@redhat.com>,
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Richard Weinberger <richard@nod.at>,
+	Zhihao Cheng <chengzhihao1@huawei.com>,
+	Felix Kuehling <Felix.Kuehling@amd.com>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	driver-core@lists.linux.dev, llvm@lists.linux.dev,
+	linux-hardening@vger.kernel.org, linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+	gfs2@lists.linux.dev, xen-devel@lists.xenproject.org,
+	linux-s390@vger.kernel.org, linux-mtd@lists.infradead.org,
+	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] kobject: Require explicit initialization of struct
+ kobj_type::release
+Message-ID: <2026101434-scam-padding-87a5@gregkh>
+References: <20261013223946.1836757-1-irogers@google.com>
+ <2026101425-why-boring-4f2d@gregkh>
+ <202610140932.5F9CFCE5@keescook>
+ <CANiq72=4WQ1B1oCSW=69u_Z=FFLE56hYCqDwWr+poQdzSTS31A@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -45,29 +80,37 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiq72=4WQ1B1oCSW=69u_Z=FFLE56hYCqDwWr+poQdzSTS31A@mail.gmail.com>
 
-Hi Vladyslav,
+On Wed, Oct 14, 2026 at 06:44:18PM +0200, Miguel Ojeda wrote:
+> On Wed, Oct 14, 2026 at 6:37 PM Kees Cook <kees@kernel.org> wrote:
+> >
+> > I'd really like to have the attribute available, and I've got at least
+> > one user I can apply today that don't require fix-ups (seq_file), so
+> > if Miguel is okay with it, I'd like to snag patch 1 and send it with
+> > my seq_file "first user" for this coming merge window so it's available
+> > starting with v7.4-rc1, and we don't end up needing to wait 10 weeks for
+> > other subsystems to be able to use it. And the kobj fixups can continue
+> > in parallel. Does that sounds okay?
+> 
+> Of course, please feel free to pick it up (with the small tweak I
+> requested) if you have a user.
+> 
+> And if you don't pick the user, I could still pick the first patch up
+> through the compiler attributes tree if you and other folks want to
+> use it after -rc1.
+> 
+> Greg: adding the attribute itself should be safe and would unblock
+> others that may want to "protect" themselves, without having to wait
+> for every potential user to get fixed (but of course I agree they
+> should get fixed -- we should not forget about them, if that is your
+> concern).
 
-On Wed, 14 Oct 2026 19:20:24 +0300, Vladyslav Tymoshchuk wrote:
-> Would you fold this into a v2? I am happy to test it on this board and
-> give my Tested-by there.
+I agree, not a problem to add the attribute now as long as it doesn't
+break the build.
 
-Yes, and thanks for the second trigger and the numbers.
+thanks,
 
-I ran your quick power cycle on the Yoga Slim 7x (WCN7850) with
-v7.3-rc7, ten cycles per module, power on 1 s after the power off and a
-scan after each. All of them pass here, with the stock module too, so
-this board does not show the failure. It does show the stale state.
-Right after the power off, debugfs reads tx_ibs_state=3D2 and
-rx_ibs_state=3D1 with the stock module, and 0 and 0 with v1 and with your
-version. Your version also builds without warnings (W=3D1) on today's
-bluetooth-next.
-
-v2 takes your code, describes the AWAKE trigger next to the WAKING one,
-and carries Fixes: 3e4be65eb82c and Cc: stable. The code is yours, so I
-will add you as Co-developed-by, which needs your Signed-off-by. Reply
-with it and it goes in above mine.
-
-Birk
-
+greg k-h
