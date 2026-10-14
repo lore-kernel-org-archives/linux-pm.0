@@ -1,35 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0C234E73D8;
-	Wed, 14 Oct 2026 12:21:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E20503B0585;
+	Wed, 14 Oct 2026 12:21:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791980465; cv=none; b=hl8dbf+UlpNklczSgnrlrg1nOKsSv/KPUANGVIo9FzMJbIKoMRH0maIEO9QGUHG7zLor5ewyfCOFgp63/JHY0SFX3gFvYDhfvjdbGTTsezQaswF4srH3oEikNhHNzXrFFTOlhhADC+bFV7bast0euopj/e1Flaq6hPAvXWymyvE=
+	t=1791980472; cv=none; b=ddcYj+0+OijWW8Y5GREdByboAjWIm3tuEKH1SNcbD5uK2Ff0Qe/2m0miZb0UPPvxJ+6rlDrCoZDGG0I39tX8ivORoZMNiMxMUyhvCbJpdQwoB2ksnaqm3Db3vi+sjlts5SreuAGhN2zShofdsOiNqAQ4GIg3NwkafJkTXny26rc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791980465; c=relaxed/simple;
-	bh=YlMtUctVJRp5GWqkAP011pWd77/1pd6AA7HYF/hZixo=;
+	s=arc-20240116; t=1791980472; c=relaxed/simple;
+	bh=SPB1n9BBRuyNbnuBUtaMeI4KEpvsRwE4GrMFtFzRESc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LXymQyT//L5A7jY6QJeYmGMk76MMPVzTVPQzpchlP1+5voyFeXchSVqIxhktgsXlOv6xWNefpQaAO3xR+pOdxhyvimCJ1sfF/DGK+j3J/NnPMOkAPhK+R4/+PAX6aHtljkmkoDJL61yHzaLepcjUVHziDNAdUoe/rWXgBNK74IU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UM8WZiWp; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:To:Cc; b=Hw0271uwLEjmRdk/drr1ASuHI5qCaez6aKOGQS3K1evvsOHrVlb7qtoZHws7U7bx5a6DSnW2Osvoskm5TbQ3W15w9UtYoXX/2ZZZEET0ctNc3lQovxSkrkKOXhNtqZ4q5w+RDJLLV6HPphrp7wXdYMM2EjYtZV8Jqy03o5PiiDY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QML0Bk1e; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UM8WZiWp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E24C71F00893;
-	Wed, 14 Oct 2026 12:20:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QML0Bk1e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 489AD1F000FF;
+	Wed, 14 Oct 2026 12:21:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791980463;
-	bh=zLCybkrOGqOxtOyXL/E7onAq2N3aGYMHDzjL8g5IC4k=;
+	s=k20260515; t=1791980470;
+	bh=mUCKgHP4v69upG5/BCHHcez7QDFXBmWWjs4MjJ5QWGg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=UM8WZiWp197ST4u2RMvPDgDLviKNmeqbalHFyzZ5rO2BgqyP9sbdbMuemrM8SH4Gv
-	 8VFytL+oVMwU7LWhO/P8ZiRgGPcFYx55iVlFG12FJjHFoHmvRzhETwzCnLjHQEVaze
-	 YjUNZ7dpKgxQw2h/Fw5K5dtirKxjEfi25tZDvhX9ImNeyYmggz2iV6DYk6+wRdx4hg
-	 kiqL6jwpyNdGtNU6kDqyWaQefk/V//2xIN1sHQEunOYkBMetcPDzuc/p8xjFUp3w3F
-	 R6HksX5Gxi4+L0KiIE/2x5QUOXDxgfceK0fyUvXRBg5LPFrXmmX9LJHX0zCB+TGkZF
-	 sR/1Xsqj8idOg==
+	b=QML0Bk1eT7aratz6eBkctMP3gD59d1YPmfwWu1hQwM9h/W+d/4VGHuxXyqAOqWR9D
+	 F+ZsrM23GlRU9X/h63OCrEnEIeDx76VRXn80Vgs9siUXjzPPnv2vkZphgjlTgxSuNu
+	 kGwu6jeYIEa7REGL+ZWJo6KwMHdz/H7FjlsDtVwBZI0N7Vq9G+00lUCnQPZhFUufli
+	 cuw4G5JI8bySlILfehbDuxLj5AQ7e0FD5Pj65y6bpmLw/Vh9SP6M+2ZN8wfQcoBYmn
+	 efz/Vv6tHg7SVvtJ42TJtZE96diAMBPZT+mBgtiKgNsvfpI/k1zIOhMQDRhZjjj8rU
+	 oVOzTw8CSFTdg==
 From: Konrad Dybcio <konradybcio@kernel.org>
-Date: Wed, 14 Oct 2026 14:19:03 +0200
-Subject: [PATCH RFC 03/16] OPP: Retry failed default single-clock
- transitions
+Date: Wed, 14 Oct 2026 14:19:04 +0200
+Subject: [PATCH RFC 04/16] pmdomain: core: Support named indexed virtual
+ attachments
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,7 +38,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261014-topic-qc_clk_dvfs-v1-3-3041b788e9f7@oss.qualcomm.com>
+Message-Id: <20261014-topic-qc_clk_dvfs-v1-4-3041b788e9f7@oss.qualcomm.com>
 References: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
 In-Reply-To: <20261014-topic-qc_clk_dvfs-v1-0-3041b788e9f7@oss.qualcomm.com>
 To: Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
@@ -59,198 +59,142 @@ Cc: linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
  Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791980431; l=6611;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791980431; l=4556;
  i=konrad.dybcio@oss.qualcomm.com; s=20230215; h=from:subject:message-id;
- bh=dC9bPdU4yRibTue+RleczVjyqvIQKVcqEfNHe0XK/QY=;
- b=oyB2N862jB1I6q3v1b8oq5/VaMtzH5flhclgrLztDKQppeVZw/SeZcDrNS037jkR7UufBNmnL
- wSDjN4ZEmaCDdcvkzszlPrvWN4LjsJTnOjzmEvhNoP3sFAePBseRNdW
+ bh=+TsxnG8yHZmmA9GCAKt/06CcLNhucIEhhQ3OAAEosfk=;
+ b=WpEC3prD3F34ZyHQHT0QTtzDii+5WqmIQzwe3ztk1ZH7xFusjUDLSTEWo4CYHzVIk91spwcI2
+ d26dpClg0K8CjEarTpARORoYM2ls52gp3MUpfWtYUdhQSXEADAJwWiH
 X-Developer-Key: i=konrad.dybcio@oss.qualcomm.com; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 
 From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-A failed OPP transition need not leave the clock at the last successful
-OPP's frequency. If hardware changed before the error, the default
-single-clock path can subsequently skip a necessary retry because its
-cached OPP matches the request. It can also choose voltage and dependency
-ordering relative to the wrong operating point.
+A device may need separate virtual GenPD attachments to the same
+power-domain index for distinct purposes. dev_pm_domain_attach_list()
+can make indexed attachments, but cannot give the resulting virtual
+devices distinct names.
 
-Treat an incomplete transition as dirty and use the observed clock rate
-to establish retry direction. Do not trust same-OPP or same-rate
-shortcuts, or allow table disable, until the state has been reconciled.
+genpd_dev_pm_attach_by_id() derives a virtual-device name from only
+the consumer device and power-domain index. Repeating the attachment
+therefore collides with the existing virtual device.
 
-Limit this to the default single-clock path: custom callbacks can have
-additional state which cannot be recovered from a clock-rate readback.
+Add an optional suffix to indexed virtual attachments and let
+dev_pm_domain_attach_list() pass it through.
 
 Assisted-by: LLM
 Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 ---
- drivers/opp/core.c | 72 +++++++++++++++++++++++++++++++++++++++++++++++-------
- drivers/opp/opp.h  |  2 ++
- 2 files changed, 65 insertions(+), 9 deletions(-)
+ drivers/base/power/common.c |  4 +++-
+ drivers/pmdomain/core.c     | 28 +++++++++++++++++++++++++---
+ include/linux/pm_domain.h   | 11 +++++++++++
+ 3 files changed, 39 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 4ccce7b6afcb..340911d2971e 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1073,11 +1073,11 @@ _opp_config_clk_single(struct device *dev, struct opp_table *opp_table,
- 	}
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 9bef9248a705..8beedde6dba7 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -241,7 +241,9 @@ int dev_pm_domain_attach_list(struct device *dev,
  
- 	ret = clk_set_rate(opp_table->clk, freq);
-+	opp_table->current_rate_single_clk = clk_get_rate(opp_table->clk);
- 	if (ret) {
-+		opp_table->config_dirty_single_clk = true;
- 		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
- 			ret);
--	} else {
--		opp_table->current_rate_single_clk = freq;
- 	}
+ 	for (i = 0; i < num_pds; i++) {
+ 		if (by_id)
+-			pd_dev = dev_pm_domain_attach_by_id(dev, i);
++			pd_dev = data && data->pd_suffix ?
++				genpd_dev_pm_attach_by_id_suffix(dev, i, data->pd_suffix) :
++				dev_pm_domain_attach_by_id(dev, i);
+ 		else
+ 			pd_dev = dev_pm_domain_attach_by_name(dev,
+ 							data->pd_names[i]);
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index 964e44c2f78f..76ff0d9a229c 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -3596,8 +3596,9 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+  * turned on, then ERR_PTR(-EPROBE_DEFER) is returned to ensure that the device
+  * is not probed and to re-try again later.
+  */
+-struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+-					 unsigned int index)
++static struct device *__genpd_dev_pm_attach_by_id(struct device *dev,
++						  unsigned int index,
++						  const char *suffix)
+ {
+ 	struct device *virt_dev;
+ 	int num_domains;
+@@ -3620,7 +3621,11 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 	if (!virt_dev)
+ 		return ERR_PTR(-ENOMEM);
  
- 	return ret;
-@@ -1261,6 +1261,28 @@ static void _find_current_opp(struct device *dev, struct opp_table *opp_table)
- 	opp_table->current_opp = opp;
+-	dev_set_name(virt_dev, "genpd:%u:%s", index, dev_name(dev));
++	if (suffix)
++		dev_set_name(virt_dev, "genpd:%u:%s:%s", index, dev_name(dev),
++			     suffix);
++	else
++		dev_set_name(virt_dev, "genpd:%u:%s", index, dev_name(dev));
+ 	virt_dev->bus = &genpd_bus_type;
+ 	virt_dev->release = genpd_release_dev;
+ 	virt_dev->of_node = of_node_get(dev->of_node);
+@@ -3643,8 +3648,25 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 
+ 	return virt_dev;
+ }
++
++struct device *genpd_dev_pm_attach_by_id(struct device *dev,
++					 unsigned int index)
++{
++	return __genpd_dev_pm_attach_by_id(dev, index, NULL);
++}
+ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
+ 
++struct device *genpd_dev_pm_attach_by_id_suffix(struct device *dev,
++						unsigned int index,
++						const char *suffix)
++{
++	if (!suffix || !*suffix)
++		return ERR_PTR(-EINVAL);
++
++	return __genpd_dev_pm_attach_by_id(dev, index, suffix);
++}
++EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id_suffix);
++
+ /**
+  * genpd_dev_pm_attach_by_name - Associate a device with one of its PM domains.
+  * @dev: The device used to lookup the PM domain.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 14e0e346c610..98aca4a4aede 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -50,6 +50,7 @@
+ struct dev_pm_domain_attach_data {
+ 	const char * const *pd_names;
+ 	u32 num_pd_names;
++	const char *pd_suffix;
+ 	u32 pd_flags;
+ };
+ 
+@@ -484,6 +485,9 @@ int of_genpd_remove_child_ids(struct device_node *np,
+ int genpd_dev_pm_attach(struct device *dev);
+ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 					 unsigned int index);
++struct device *genpd_dev_pm_attach_by_id_suffix(struct device *dev,
++						unsigned int index,
++						const char *suffix);
+ struct device *genpd_dev_pm_attach_by_name(struct device *dev,
+ 					   const char *name);
+ #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+@@ -538,6 +542,13 @@ static inline struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 	return NULL;
  }
  
-+static bool _opp_uses_default_single_clk(struct opp_table *opp_table)
++static inline struct device *
++genpd_dev_pm_attach_by_id_suffix(struct device *dev, unsigned int index,
++				 const char *suffix)
 +{
-+	return opp_table->config_clks == _opp_config_clk_single &&
-+	       opp_table->clk_count == 1;
++	return NULL;
 +}
 +
-+static struct dev_pm_opp *_find_current_opp_strict(struct opp_table *opp_table)
-+{
-+	unsigned long freq;
-+
-+	if (IS_ERR(opp_table->clk))
-+		return ERR_CAST(opp_table->clk);
-+
-+	freq = clk_get_rate(opp_table->clk);
-+	if (!freq)
-+		return ERR_PTR(-ERANGE);
-+
-+	opp_table->current_rate_single_clk = freq;
-+
-+	return _find_freq_ceil(opp_table, &freq);
-+}
-+
- static int _disable_opp_table(struct device *dev, struct opp_table *opp_table)
+ static inline struct device *genpd_dev_pm_attach_by_name(struct device *dev,
+ 							 const char *name)
  {
- 	int ret;
-@@ -1297,20 +1319,40 @@ static int _disable_opp_table(struct device *dev, struct opp_table *opp_table)
- static int _set_opp(struct device *dev, struct opp_table *opp_table,
- 		    struct dev_pm_opp *opp, void *clk_data, bool forced)
- {
-+	bool default_single = _opp_uses_default_single_clk(opp_table);
-+	struct dev_pm_opp *actual_opp __free(put_opp) = NULL;
- 	struct dev_pm_opp *old_opp;
- 	int scaling_down, ret;
- 
--	if (unlikely(!opp))
--		return _disable_opp_table(dev, opp_table);
-+	if (unlikely(!opp)) {
-+		if (default_single && opp_table->config_dirty_single_clk)
-+			return -EBUSY;
-+
-+		if (default_single)
-+			opp_table->config_dirty_single_clk = true;
-+
-+		ret = _disable_opp_table(dev, opp_table);
-+		if (!ret && default_single)
-+			opp_table->config_dirty_single_clk = false;
-+
-+		return ret;
-+	}
- 
- 	/* Find the currently set OPP if we don't know already */
- 	if (unlikely(!opp_table->current_opp))
- 		_find_current_opp(dev, opp_table);
- 
- 	old_opp = opp_table->current_opp;
-+	if (default_single && opp_table->config_dirty_single_clk) {
-+		actual_opp = _find_current_opp_strict(opp_table);
-+		if (IS_ERR(actual_opp))
-+			return PTR_ERR(actual_opp);
-+		old_opp = actual_opp;
-+	}
- 
- 	/* Return early if nothing to do */
--	if (!forced && old_opp == opp && opp_table->enabled) {
-+	if (!forced && !opp_table->config_dirty_single_clk &&
-+	    old_opp == opp && opp_table->enabled) {
- 		dev_dbg_ratelimited(dev, "%s: OPPs are same, nothing to do\n", __func__);
- 		return 0;
- 	}
-@@ -1324,6 +1366,9 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
- 	if (scaling_down == -1)
- 		scaling_down = 0;
- 
-+	if (default_single)
-+		opp_table->config_dirty_single_clk = true;
-+
- 	/* Scaling up? Configure required OPPs before frequency */
- 	if (!scaling_down) {
- 		ret = _set_required_opps(dev, opp_table, opp, true);
-@@ -1391,10 +1436,12 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
- 	}
- 
- 	opp_table->enabled = true;
--	dev_pm_opp_put(old_opp);
-+	dev_pm_opp_put(opp_table->current_opp);
- 
- 	/* Make sure current_opp doesn't get freed */
- 	opp_table->current_opp = dev_pm_opp_get(opp);
-+	if (default_single)
-+		opp_table->config_dirty_single_clk = false;
- 
- 	return ret;
- }
-@@ -1432,8 +1479,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		 * equivalent to a clk_set_rate()
- 		 */
- 		if (!_get_opp_count(opp_table)) {
--			return opp_table->config_clks(dev, opp_table, NULL,
--						      &target_freq, false);
-+			int ret;
-+
-+			ret = opp_table->config_clks(dev, opp_table, NULL,
-+						     &target_freq, false);
-+			if (!ret && _opp_uses_default_single_clk(opp_table))
-+				opp_table->config_dirty_single_clk = false;
-+
-+			return ret;
- 		}
- 
- 		freq = clk_round_rate(opp_table->clk, target_freq);
-@@ -1460,7 +1513,8 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		 * value of the frequency. In such a case, do not abort but
- 		 * configure the hardware to the desired frequency forcefully.
- 		 */
--		forced = opp_table->current_rate_single_clk != freq;
-+		forced = opp_table->config_dirty_single_clk ||
-+			 opp_table->current_rate_single_clk != freq;
- 	}
- 
- 	return _set_opp(dev, opp_table, opp, &freq, forced);
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 9eba63e01a9e..4f0ec888effa 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -172,6 +172,7 @@ enum opp_table_access {
-  * @parsed_static_opps: Count of devices for which OPPs are initialized from DT.
-  * @shared_opp: OPP is shared between multiple devices.
-  * @current_rate_single_clk: Currently configured frequency for single clk.
-+ * @config_dirty_single_clk: Whether the single clk cached state is untrustworthy
-  * @current_opp: Currently configured OPP for the table.
-  * @suspend_opp: Pointer to OPP to be used during device suspend.
-  * @required_opp_tables: List of device OPP tables that are required by OPPs in
-@@ -221,6 +222,7 @@ struct opp_table {
- 	unsigned int parsed_static_opps;
- 	enum opp_table_access shared_opp;
- 	unsigned long current_rate_single_clk;
-+	bool config_dirty_single_clk;
- 	struct dev_pm_opp *current_opp;
- 	struct dev_pm_opp *suspend_opp;
- 
 
 -- 
 2.56.0
