@@ -1,55 +1,54 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 623A741442F
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 19:02:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A4D33C09F3
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 19:10:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792004561; cv=none; b=KwSvlQSxkJu3Xf4AlDvhcO+jbfHX9eCqnfFEWcNEplGL3sibZexKOAjjWsg6uRlX/RcyhJW+XAkjtu08szeqEd+lOxqf3hh19iKp3yN9sVZtnNrhXVqE25mQa2q23ozJQgWJwvnaRPEZaynm4ZLoNBIy3LsUIceCutwvLoiAE9M=
+	t=1792005005; cv=none; b=FcwVxuAvLCQJhAlM3zGZVMWShVdYUNZdSGHdjVlghaAGRsCDYijOyf2VrJraMQcD012BXi6gbTteAcl18EZvt5Caf+3lBXqfcIXDe1594Sm625iL32WfNUa+Abzvmoiehst+1pUxbFUoyHJ4zesKBG1zxwjqsKaJLlcvfUifa78=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792004561; c=relaxed/simple;
-	bh=5nQ7Gb4Lv+YzkIA8MvsSkhr+WIiCiNF1zfmsSL1l/PM=;
+	s=arc-20240116; t=1792005005; c=relaxed/simple;
+	bh=CPb4WsqW5lDxN5DmQve2puOIjx/DnRYWQ2pGqcxR37k=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CwLD33ImmmVNyUa0pgza9bkAmU9L1Vag7mAVxMBm0WAL+1H16JFq/Y4mY2UcJoXte/C0Vz8Sgkr0QY4A8+m5AaxVmPer8vk6rSnV+jRFJzryxkmJ30w4mL9yTLPlMwNDbDSxcFbKAg7/WTXGWV+LN6Wiqq2qrJ5aycmrU1pY4fc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B1quyXeU; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=YhVpA7xgirgT0d1t4b+xjWebN5qdBsSJtXe+oyMRusAQc5rGAmDCTPO00LEzgMab3hhvE9CM9mg137fyrnrY2PN5oLC1XtL3bwA+1nZALu89yPXKLl+PjbZf9UiNFKE2ADmcTkZG4D4n091SlRmZPQ5mrekOcplvHSq/GtKVFSk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e4+njpI6; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B1quyXeU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B3EA1F000C5
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 19:02:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e4+njpI6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 295581F000C9
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 19:10:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792004560;
-	bh=P4yHuE9oecKRchkhtoS+YYilxu5k7VBhUCJf+GQfY8Y=;
+	s=k20260515; t=1792005004;
+	bh=LBewyNKx8kNLRf8WZ/HnKHYFZ2VU7KYZ/2nmLm9r2KI=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=B1quyXeUINvPQnKradNXMVOE0EbuJOVUIQbdvFeO6us1v6G9cXnotvEnDT+NMIv+W
-	 e9SxzrJyuIh2YBpqq7lersYlsOlDAXxiCUTlguvWkUEzKZFHm/+rAxJlljDpkKT9ic
-	 2xBgJN137t6HzalIfMFzUiiSg3fS+w0twPdUUO53u3agSEN7R9+B4q+OI5vSb0kTgh
-	 mzBMBKJ+dutZ57O5hhgN1tnoJ/MuacglY9gIaNmpkNjisr+GK+bgvF4s3gSPW2odXF
-	 sFrdX15271cBVXJnhFYJO7GrKHe/7abcDgaLOTD228aLqP/YgjyDIYmNII43BGvf2k
-	 WmysQ0KW90xLA==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5bcb2eceb3eso4098833e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 12:02:40 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByNu8kyLnpo5ZI5BgS0x/0323AAKVtlNXFuD37vrX61C1QO3dCfMaLUvw2nuhsqIZqoRvqHJTQKfA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLOC6ttGHW+Lo/jQcj5A66bln6nq+GkNWI9PRZDApullisYxBb1
-	Tja243ZOUZkKQ7SR1Fm9RJiU496J1CHf0XGQ8iuxMXuXEdWpNSHoTenH08W9yzH7S4iMG8dY13d
-	3rR1jNNkJgSczdyAzlQ8NKkpX/DAnsJc=
-X-Received: by 2002:a05:6512:110a:b0:5b8:edeb:5c29 with SMTP id
- 2adb3069b0e04-5bcde6caf7cmr5889762e87.43.1792004558562; Wed, 14 Oct 2026
- 12:02:38 -0700 (PDT)
+	b=e4+njpI6WWX3EU++CLYVdgOBZ71ItvDtGZEcGnJd1xuQcyW9l4sR8gYcpVoZg26CF
+	 mL1RklmSE7vI1jw4+BgS8kC0fo0D7KOYjcqzfDqvTikmD/z5KIlobnmOgWf5l9bzh0
+	 FlIn9MfSi8ZLWfp8rsnAgwUL+iNXWNT4lUCOZ3l/mI8AnnOKdKlSzPUNWudVkIz6XJ
+	 vW/Tg9Xnrpy5GxJhdO1kjsiW6QHIQCHKqox/ZfM/yr1vDpVunC3hzsEw/HYtN5Sb7e
+	 y/VQVPMLdkdMJ3CTAxxyfah26bZauFigfL+7QrWLeB0HXqzWlSKTHH5tzaUJWzhcnj
+	 DZ2sJ2ava5J7Q==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-3a49a022221so31368741fa.3
+        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 12:10:04 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxCamtYpZdbCNu86KPa3YqHqAJ4Mj03Xj1olclKPB3JKaWWkC+0fgFKXjKPPZiUDR5SDM3qPHjOIA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKowN7W/N2ykwyyCcpGH6Ez4xvxCof9SUOrqD5GKWeV4JJIv7Iu
+	qtHMWoLnryW7ggNp6AXhpmKRu602ov7bYGP3Ga+y1W+skQWvu5goz6TR1wAcdM6055sIFn5WSpe
+	7mNMfwisuS0BGUWXlcjC93VtqWL7YzVA=
+X-Received: by 2002:a05:6512:3047:b0:5b8:f4d4:8004 with SMTP id
+ 2adb3069b0e04-5bcde6b4604mr6317929e87.15.1792005002482; Wed, 14 Oct 2026
+ 12:10:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261001155118.1750028-1-briannorris@chromium.org> <20261001085009.v4.1.I45a794e4452e3df22419acdd8f11e2b788b3413f@changeid>
-In-Reply-To: <20261001085009.v4.1.I45a794e4452e3df22419acdd8f11e2b788b3413f@changeid>
+References: <20261001155118.1750028-1-briannorris@chromium.org> <20261001085009.v4.2.I75ceea7b1afd016e08922e47b82e6eb36de144fe@changeid>
+In-Reply-To: <20261001085009.v4.2.I75ceea7b1afd016e08922e47b82e6eb36de144fe@changeid>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 14 Oct 2026 21:00:31 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gWtAZq0S1KiGxQOEc-F+CuuzfuFrKuWFxVi96_9xeS6g@mail.gmail.com>
-X-Gm-Features: AclHuK8zQ9j5WuHNIYyFttdCRYP73O4C3zpqSyDn3-lMGkkWE_KYkNQJEov19HA
-Message-ID: <CAJZ5v0gWtAZq0S1KiGxQOEc-F+CuuzfuFrKuWFxVi96_9xeS6g@mail.gmail.com>
-Subject: Re: [PATCH v4 1/2] PM: runtime: Expand introduction with core
- concepts and structure
+Date: Wed, 14 Oct 2026 21:07:54 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hMHutu69acgSR7KsmcLs0McZK+-3OFoiqFrU5GnJzTNQ@mail.gmail.com>
+X-Gm-Features: AclHuK9F865un8J1qhb-2gPhSak0oWK8xKAT4V2S2G2tepc2x7QVPaA-2eJ46Xg
+Message-ID: <CAJZ5v0hMHutu69acgSR7KsmcLs0McZK+-3OFoiqFrU5GnJzTNQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] PM: runtime: Add Example Driver Patterns section
 To: Brian Norris <briannorris@chromium.org>
 Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, linux-doc@vger.kernel.org, 
 	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
@@ -60,259 +59,187 @@ Content-Transfer-Encoding: quoted-printable
 On Thu, Oct 1, 2026 at 5:51=E2=80=AFPM Brian Norris <briannorris@chromium.o=
 rg> wrote:
 >
-> I commonly see people have difficulty learning how runtime PM works
-> because of the following key points [*]:
->
->  1) there are several boolean concepts in runtime PM, with somewhat
->     similar meanings:
->
->      enabled / disabled
->      active / suspended
->      allowed / forbidden
->
->  2) if these concepts are documented at all, they're scattered across
->     the kerneldoc or Documentation/
->
->  3) the runtime_pm.rst docs don't make any attempt to ease a reader into
->     understanding the concepts, and instead jump straight into how it's
->     implemented (queues, 'struct device' fields, helpers).
->
-> Let's try to remedy this a bit by discussing the core concepts and
-> highlights at the top of the introduction, and introduce a few
-> sub-headings, so it's easier to navigate different aspects of the
-> introduction.
->
-> While shuffling the intro around, I also see that the existing text
-> largely mirrors the layout of the following sections (2, 3, and 4), but
-> does so out of order. Reorder those, and point to section numbers.
->
-> [*] In addition to API complexity. I count 61 pm_*() helpers, 7 of which
->     are variations of put() and 8 of which are variations of get().
+> The runtime PM API surface is pretty large, but there are a few common
+> patterns that many drivers should follow. Add some illustrative
+> examples, to help guide the most common audience for runtime PM docs --
+> driver writers.
 >
 > Signed-off-by: Brian Norris <briannorris@chromium.org>
 > ---
 >
 > Changes in v4:
->  * Significantly overhaul introduction, based on Rafael's
->    feedback/rewrite
->  * Drop most implementation details (struct fields) and API names from
->    intro
->  * Expand the "in use" and dependencies concepts in the introduction
+>  * "state" to "status", to be consistent with Introduction terminology
+>
+> Changes in v3:
+>  * Rewrite Examples to avoid devm_* at first, to highlight correct
+>    approaches
+>  * Include error-handling and remove() in any probe() Examples
+>  * Advise more caution when using devm_*, as ordering issues are subtle
 >
 > Changes in v2:
-> Address review feedback around descriptions of "enabled" and "active". I
-> know not every point of discussion was settled, but I hope this updated
-> version resolves many of them and provides a better basis for further
-> improvement.
->  * Avoid calling enabled and active "orthogonal"
->  * Describe more of their inter-relationship
->  * Prioritize talking about "enabled" first, since that's the first
->    concept a reader should know about
->  * Brief mentions of parent/child and supplier/consumer, and dependency
->    handling
->  * Other tweaks
+>  * Add appropriate teardown to "Probe with Hardware Powered Off"
+>    Example, as the remove() + power-off behavior is subtle here, and
+>    easy to get wrong
 >
->  Documentation/power/runtime_pm.rst | 114 ++++++++++++++++++++++++-----
->  1 file changed, 95 insertions(+), 19 deletions(-)
+>  Documentation/power/runtime_pm.rst | 475 ++++++++++++++++++++++++++++-
+>  1 file changed, 473 insertions(+), 2 deletions(-)
 >
 > diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/run=
 time_pm.rst
-> index 68903d93a3e7..e4407b687f8b 100644
+> index e4407b687f8b..cb25e0bb4ca7 100644
 > --- a/Documentation/power/runtime_pm.rst
 > +++ b/Documentation/power/runtime_pm.rst
-> @@ -13,31 +13,107 @@ Runtime Power Management Framework for I/O Devices
->  1. Introduction
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> @@ -429,7 +429,8 @@ in ->probe(). Usually this means calling pm_runtime_d=
+isable(),
+>  pm_runtime_dont_use_autosuspend() etc. Alternatively, drivers can use
+>  devm_pm_runtime_enable() during probe, which automatically takes care of
+>  calling pm_runtime_disable() and pm_runtime_dont_use_autosuspend() upon =
+driver
+> -detachment.
+> +detachment. See also the Examples in `Section 10`_ for some effective
+> +strategies for driver teardown.
 >
-> -Support for runtime power management (runtime PM) of I/O devices is prov=
-ided
-> -at the power management core (PM core) level by means of:
-> -
-> -* The power management workqueue pm_wq in which bus types and device dri=
-vers can
-> -  put their PM-related work items.  It is strongly recommended that pm_w=
-q be
-> -  used for queuing all work items related to runtime PM, because this al=
-lows
-> -  them to be synchronized with system-wide power transitions (suspend to=
- RAM,
-> -  hibernation and resume from system sleep states).  pm_wq is declared i=
-n
-> -  include/linux/pm_runtime.h and defined in kernel/power/main.c.
-> -
-> -* A number of runtime PM fields in the 'power' member of 'struct device'=
- (which
-> -  is of the type 'struct dev_pm_info', defined in include/linux/pm.h) th=
-at can
-> -  be used for synchronizing runtime PM operations with one another.
-> +Runtime power management (or runtime PM, sometimes also referred to as R=
-PM)
-> +allows individual I/O devices that are not in active use to be put into
-> +low-power states, in which they may not be operational or even accessibl=
-e, and
-> +go back to the fully operational state as needed.  Power can be reduced =
-this
-> +way without waiting for a transition into a system-wide sleep state.
+>  The user space can effectively disallow the driver of the device to powe=
+r manage
+>  it at run time by changing the value of its /sys/devices/.../power/contr=
+ol
+> @@ -654,7 +655,9 @@ The implementation is well suited for asynchronous us=
+e in interrupt contexts.
+>  However such use inevitably involves races, because the PM core can't
+>  synchronize ->runtime_suspend() callbacks with the arrival of I/O reques=
+ts.
+>  This synchronization must be handled by the driver, using its private lo=
+ck.
+> -Here is a schematic pseudo-code example::
+> +Here is a schematic pseudo-code example:
 > +
-> +Core Concepts
-> +-------------
+> +.. code-block:: c
+>
+>         foo_read_or_write(struct foo_priv *foo, void *data)
+>         {
+> @@ -720,3 +723,471 @@ pm_runtime_autosuspend_expiration() from within the=
+ ->runtime_suspend()
+>  callback while holding its private lock.  If the function returns a nonz=
+ero
+>  value then the delay has not yet expired and the callback should return
+>  -EAGAIN.
 > +
-> +Runtime PM operates around a few device-level concepts =E2=80=94 whether=
- a device is
-> +**active** or **suspended**; whether runtime PM is **enabled** or **disa=
-bled**;
-> +whether runtime PM is **allowed** or **forbidden**; and whether a device=
- is
-> +**in use**.
+> +.. _Section 10:
 > +
-> +* **Active**: Runtime PM tracks whether or not devices are in active use=
-, which
-> +  generally means that they are accessible and operational, and may be d=
-epended
-> +  on by something (for example, other devices or user space).  This is
-> +  represented by the **active** meta-state.  By contrast, the **suspende=
-d**
-> +  meta-state represents a promise that the given device will not be acce=
-ssed.
-> +  This covers devices in low-power states, but it also may include devic=
-es that
-> +  are not fully operational.  There are also two transient meta-states,
-> +  **suspending** and **resuming**, representing transitions between **ac=
-tive**
-> +  and **suspended** often referred to as *runtime suspend* and *runtime
-> +  resume*, or just *suspend* and *resume*, respectively.  Every device h=
-andled
-> +  by runtime PM is in one of these four meta-states at any time, and its
-> +  meta-state is expected to reflect its actual physical configuration (t=
-hat is,
-> +  for instance, if the device is not accessible, it must not be **active=
-**).
-> +  The term "runtime PM status" used in what follows refers to the meta-s=
-tates
-> +  described above.
+> +10. Example Driver Patterns
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
 > +
-> +* **Enabled**: In order to track the runtime PM status and carry out
-> +  transitions between **active** and **suspended**, runtime PM needs to =
-be
-> +  **enabled** for the given device.  If it is **disabled**, runtime PM
-> +  generally leaves the device alone.  This means in particular that the =
-runtime
-> +  PM status of a device and its actual physical configuration may get ou=
-t of
-> +  sync after disabling runtime PM for it.  Additionally, the runtime PM =
-status
-> +  of a device may need to be explicitly adjusted to reflect its current
-> +  physical configuration before enabling runtime PM for it (e.g., during=
- device
-> +  probe).  Once runtime PM is **enabled**, it begins managing PM status =
-=E2=80=94
-> +  performing *runtime suspend* and *runtime resume* transitions based on=
- its
-> +  understanding of whether a device is in use.
+> +The runtime PM API is large and complex, but most device drivers follow =
+a small
+> +set of canonical patterns when interacting with runtime PM. This section
+> +illustrates standard patterns for device probing, performing I/O, and ha=
+ndling
+> +interrupts.
 > +
-> +  As a rule, all devices are initialized with runtime PM **disabled**, t=
-hough
-> +  some bus types (such as PCI) manage some RPM initialization automatica=
-lly,
-> +  and therefore probe devices in an **enabled** state.  For other device=
-s,
-> +  drivers must enable runtime PM on their own to opt in.
-> +
-> +* **Allowed**: Runtime PM may be **forbidden** even though it has been e=
-nabled.
-> +  Doing so causes the given device to transition into the **active** met=
-a-state
-> +  and prevents it from being suspended.  In other words, a device with
-> +  forbidden runtime PM remains **active** at least until runtime PM is
-> +  **allowed** for it again.  This mechanism can be managed by in-kernel =
-APIs,
-> +  but more importantly, it is also available to user space via the
-> +  ``/sys/devices/.../power/control`` sysfs attribute of the given device=
-.
-> +  Namely, writing ``on`` to that attribute forbids runtime PM, and writi=
-ng
-> +  ``auto`` allows it.  User space may modify that attribute at any time,=
- so the
-> +  ability to transition a device into the **suspended** meta-state via r=
-untime
-> +  PM must not be relied on for correctness.
-> +
-> +* **In use**: Runtime PM determines whether a device should be transitio=
-ned to
-> +  an **active** state by its understanding of whether a device is in use=
-.  The
-> +  first way a device is considered **in use** is by its own usage count =
-=E2=80=94 a
-> +  reference counter driven by a variety of get()/put() APIs.  Additional=
-ly, a
-> +  device may be considered **in use** by having active dependents =E2=80=
-=94 either
-> +  child devices, or device-linked consumers.  When a device is no longer=
- in
-> +  use, runtime PM may choose to transition it to the **suspended** state=
-.
-> +
-> +  Thus, when a device moves from **suspended** to **active**, it may als=
-o cause
-> +  its dependencies to resume, unless they are **active** already.  Conve=
-rsely,
-> +  suspending a device may also cause its otherwise-unused dependencies t=
-o
-> +  suspend.
-> +
-> +* **Autosuspend**: Runtime PM also supports a feature called "autosuspen=
-d."
-> +  This is different than the ``control`` notion of "auto" (i.e., **allow=
-ed**).
-> +  Autosuspend is covered in `Section 9`_.
-> +
-> +Implementation Structure
+> +Probe and Initialization
 > +------------------------
 > +
-> +Support for runtime power management is provided at the power management=
- core
-> +(PM core) level by means of:
->
->  * Three device runtime PM callbacks in 'struct dev_pm_ops' (defined in
-> -  include/linux/pm.h).
-> +  include/linux/pm.h). See `Section 2`_.
+> +Basic Probe
+> +~~~~~~~~~~~
 > +
-> +* A number of runtime PM fields in the 'power' member of 'struct device'=
- that
-> +  can be used for synchronizing runtime PM operations with one another. =
-These
-> +  are covered in `Section 3`_.
->
->  * A set of helper functions defined in drivers/base/power/runtime.c that=
- can be
->    used for carrying out runtime PM operations in such a way that the
-> -  synchronization between them is taken care of by the PM core.  Bus typ=
-es and
-> -  device drivers are encouraged to use these functions.
-> +  synchronization between them is taken care of by the PM core. Bus type=
-s and
-> +  device drivers are encouraged to use these functions. They are covered=
- in
-> +  `Section 4`_.
->
-> -The runtime PM callbacks present in 'struct dev_pm_ops', the device runt=
-ime PM
-> -fields of 'struct dev_pm_info' and the core helper functions provided fo=
-r
-> -runtime PM are described below.
-> +* The power management workqueue pm_wq in which bus types and device dri=
-vers can
-> +  put their PM-related work items. It is strongly recommended that pm_wq=
- be
-> +  used for queuing all work items related to runtime PM, because this al=
-lows
-> +  them to be synchronized with system-wide power transitions (suspend to=
- RAM,
-> +  hibernation and resume from system sleep states). pm_wq is declared in
-> +  include/linux/pm_runtime.h and defined in kernel/power/main.c.
->
->  .. _Section 2:
->
-> --
+> +A driver that powers on its hardware during probe and does not use autos=
+uspend
+> +can initialize runtime PM using standard helpers:
+> +
+> +.. code-block:: c
+> +
+> +       static int foo_probe(struct platform_device *pdev)
+> +       {
+> +               struct device *dev =3D &pdev->dev;
+> +               struct foo_priv *priv;
+> +               int ret;
+> +
+> +               priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +               if (!priv)
+> +                       return -ENOMEM;
+> +
+> +               platform_set_drvdata(pdev, priv);
+> +
+> +               /* Power on and initialize hardware registers... */
+> +
+> +               /*
+> +                * The code above left hardware powered on and operationa=
+l, so
+> +                * tell the PM core that the device is active before enab=
+ling
+> +                * runtime PM.
+> +                */
+> +               pm_runtime_set_active(dev);
+> +               pm_runtime_enable(dev);
+> +
+> +               /*
+> +                * Perform remaining driver setup (e.g. register interrup=
+ts, device nodes).
+> +                * If any step fails after enabling runtime PM:
+> +                */
+> +               ret =3D foo_register_device(priv);
+> +               if (ret)
+> +                       goto err_pm_disable;
+> +
+> +               /*
+> +                * Upon successful return from ->probe(), the driver core
+> +                * automatically executes pm_request_idle(dev), allowing =
+the
+> +                * device to suspend asynchronously if its usage counter =
+is zero.
+> +                */
+> +               return 0;
+> +
+> +       err_pm_disable:
+> +               pm_runtime_disable(dev);
+> +               if (!pm_runtime_status_suspended(dev)) {
+> +                       /*
+> +                        * Power back off, in case device did not suspend=
+ yet.
+> +                        * For example, leverage your .runtime_suspend()
+> +                        * implementation:
+> +                        */
+> +                       foo_runtime_suspend(dev);
 
-Applied as 7.4 material, thanks!
+There are two reasons why this may not work, here and below.
+
+First off, if a non-trivial PM domain or bus type etc is involved, its
+.runtime_suspend() callback may need to be invoked in addition to
+foo_runtime_suspend() to actually power off the device.  That's why
+pm_runtime_force_suspend() looks for the callback to invoke.
+
+Second, if the driver expects the device to be powered up and
+operational at the beginning of probe, which this one does AFAICS, it
+better should leave the device in that state on failing probe and
+remove or its own expectations regarding the initial state will not be
+met when it is re-probed.
+
+> +                       pm_runtime_set_suspended(dev);
+> +               }
+> +               return ret;
+> +       }
+> +
+> +       static void foo_remove(struct platform_device *pdev)
+> +       {
+> +               struct device *dev =3D &pdev->dev;
+> +               struct foo_priv *priv =3D platform_get_drvdata(pdev);
+> +
+> +               foo_unregister_device(priv);
+> +
+> +               pm_runtime_disable(dev);
+> +               /*
+> +                * The runtime PM status is not guaranteed at this point.=
+ We
+> +                * could be either suspended or active, so we need to han=
+dle
+> +                * both.
+> +                */
+> +               if (!pm_runtime_status_suspended(dev)) {
+> +                       /* Power back off, in case device did not suspend=
+ yet. */
+> +                       foo_runtime_suspend(dev);
+> +                       pm_runtime_set_suspended(dev);
+> +               }
+> +       }
+> +
