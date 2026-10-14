@@ -1,257 +1,144 @@
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011052.outbound.protection.outlook.com [52.101.62.52])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2550747DF8C;
-	Wed, 14 Oct 2026 07:27:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791962855; cv=fail; b=jTMCkVibMRezsrbQ26ckYwZIgRnjtozIJCefn2iDKFeOkmqv1ssP3tD/ggCNyNd5nO4EZFEH3nIZY6NI+iahuHzDGshc5PmxWl2GzrkWRS0UeT6EQSmzBuuh1LyRn9OjlDWQs34bOUms93LINKoelOCvn6v0ujkLe09perUPBo4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791962855; c=relaxed/simple;
-	bh=43sbg2HA9VtZ6AM6yqlC2cG6cbs8uvO9skesdZnFmBs=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=tE+W3ZMf3kLAjj0fliTu6cUKQUmZH2AW54ChotN4ahreSlitx2jCAxTNy4+9wxfrEPIYiLk6dWE9G8dN2GRrjqncfcwOQJT02ksWu+uIw4uusIsJV8WSnG54vlLatx4QOrPx72cnkBZkufmqizvWI9Z7ZSKYPaKkJ2aa+Ysk/+g=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=sAFOQ5PX; arc=fail smtp.client-ip=52.101.62.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 600044A6CD8
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 08:28:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1791966487; cv=none; b=hfyNsGDJidQaqdi2Fz2wr9sZxIxycK2VFzyIwHF/zkPdsJxrK35Eb7HKZR118pTOcFy0XvDT6vu0t7SJ3DoelY+hQj9RYD3ubj1UAQpM4faA3te14uGNemnXGfbD8jg95g8zUfIKRfkbmzQDXhprIC0nJvWmHZIQalrUlKNMI5g=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1791966487; c=relaxed/simple;
+	bh=hA5Jep5pACbObsfPa/fLER2WRbYqlyN+IWuj26mmClk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=qsjJN4Oc3ZFAqRuyIBVw+RD2t2KeB3Z+drp4PyTgk5QTr2EdvTiUquLITB3+0XPUKDhXx7oPSdB1FOIgVchKEDfBFr5MWKqSXetKmmae4Uddoz2x/wtFnNROEbV81RaBLz6pappAeOWj8q9GuuK7NWKU7uxKOfXYkFIOftABtmg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=J/Vb5+OT; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=FvWIGz+n; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="sAFOQ5PX"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=FISzAHiyNbFXskWG/Ho8O80P7g35WBz16PT4/am950CgFDmdHqgRRvhedZDNRhdkYv28T23UNg7oXsXvjpXFeFp56GimBLpvTn4F2t7JrNqMlcEQOApIcYSrN2zMkTHHCb8o+c40x4gKRMhpYmulRN8r/S2c5IGmG0MBLZJUFlhB5IyoLXl9Q1zAsh0RqRYlS5FJf9M50LfF5gp+1qVW14xgWX0R/E0RD0qGQSVh7Q9A6tOBbmBjHUFFKjUDSEBS0xdEBIZ9GY+++HC+2ZtvbpA36+/xNpSZGgyITkb7fvjKDvybzsVus4C/MprWBKxSDUngK1D1Lj5G6DA9WTVB3A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=cdegQbfVYb7rxAdhJuisV8UafP7vtVKjc+m8LO/6j2g=;
- b=pu6QGJoh/56Lb1POVcPzfnJEIfJr0wus/q0S8WmhKbkN+62J+KhwPPqnJ3LGAJIEIwJlg0vGUobIS5NJmh2N9TOW2ue9hyn2Z674roWq0B8bn5xrxrKwdtOwt6yrIy3qVWzIM2L0xyv0D11hFVtOwW5T0wNsv7FnFlbxGWFbEVsXa4pA8Ss4XiPwhfVRU7JV0rkEUvPehLFtlBVzSiDmG6zDbRIES3uf7xFSgqZIjCw6koTdb0CnlrZbg4Xjf/NAr1aka8Zo6bpBFjEohmRxqtG7eXO00vkZyY5VlG1zpyZt+/Rr7GNwt5/qewZ0MODMA/1Inc9cOcxB8NoTZQGVhQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=cdegQbfVYb7rxAdhJuisV8UafP7vtVKjc+m8LO/6j2g=;
- b=sAFOQ5PXqZaWSun2nl3bjv0V6n8jV+j3ysNCff7Myus6Ss6iIUMhY0DRMHPlKq3NgGbEG47gVVAELNy3xE5OF7lBSYxBHiYVpOzAGhmV1kN71ZOZwF6s2sbOcNRvN6hRTDq8BkIfKO+Rg0fxN3CQnVR8k6mQsDkEfyqHVZdf8m0=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by CY1PR12MB9557.namprd12.prod.outlook.com (2603:10b6:930:fe::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.13; Wed, 14 Oct
- 2026 07:27:18 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::ce69:cfae:774d:a65c]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::ce69:cfae:774d:a65c%3]) with mapi id 15.21.0522.011; Wed, 14 Oct 2026
- 07:27:18 +0000
-Message-ID: <4154bb7d-c97a-402b-979a-0f49d7a02c53@amd.com>
-Date: Wed, 14 Oct 2026 09:27:06 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/11] Compiler Attributes: Add
- __require_explicit_initialization macro
-To: Ian Rogers <irogers@google.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich
- <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
- Kees Cook <kees@kernel.org>, Nathan Chancellor <nathan@kernel.org>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Viresh Kumar <viresh.kumar@linaro.org>, David Teigland
- <teigland@redhat.com>, Alexander Aring <aahringo@redhat.com>,
- Juergen Gross <jgross@suse.com>, Stefano Stabellini
- <sstabellini@kernel.org>,
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>,
- Zhihao Cheng <chengzhihao1@huawei.com>,
- Felix Kuehling <Felix.Kuehling@amd.com>,
- Alex Deucher <alexander.deucher@amd.com>, driver-core@lists.linux.dev,
- llvm@lists.linux.dev, linux-hardening@vger.kernel.org,
- linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-acpi@vger.kernel.org, gfs2@lists.linux.dev,
- xen-devel@lists.xenproject.org, linux-s390@vger.kernel.org,
- linux-mtd@lists.infradead.org, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20261013223946.1836757-1-irogers@google.com>
- <20261013223946.1836757-2-irogers@google.com>
-Content-Language: en-US
-From: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-In-Reply-To: <20261013223946.1836757-2-irogers@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: FR4P281CA0327.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:eb::11) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="J/Vb5+OT";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="FvWIGz+n"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69E6lEf42088418
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 08:28:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=X/S5SRmbTexKmsjmoZdpsnlp
+	+I+xKbH89Xqk3Tt2TQo=; b=J/Vb5+OTiCuO5oBT1cUQpH44EzoDl8aMYiuwNo3U
+	+8tMf8oJDgglHc10Mrm+/F253hakhKEnVDaQ59fs3VMpQiDqmKTcoFkuRVADPVV2
+	tzvkl3rmFHz7Dw2k8sI4+zsHJZLhmnV22iPDG4DASih6k+VWTHPmXq6mSOMKdAIj
+	dlW0GpP2mjZPDekHXKDsMWkaFR5QsAivJmAw98SVlY8fNpoZN3XcElodBtqYh1Zl
+	j0/KliDizHtucSam3winuX6RTotlBTURlkaoxkUHG/MUQqJZjzO6WHV2MIa6Xcrg
+	P0YjC6kv5HNALn/rccCW3IIypKp3wSBSd6A/QHAMx50Svw==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h9x49hufq-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 08:28:04 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93cb93c874bso135985085a.0
+        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 01:28:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1791966483; x=1792571283; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=X/S5SRmbTexKmsjmoZdpsnlp+I+xKbH89Xqk3Tt2TQo=;
+        b=FvWIGz+nHpwrSCuY14FOJOH+7iJmTzlxGOp1T/12vtm/B83VgbHLwjVJVdLdvIiRMU
+         LDjpADRfEuQnFbgOo3MY+LVNmOx+KqG/BU35x3kUFDBUAS69vsQHWfrL4sXk0MXBPaFl
+         HE66pbR9eqV8zoXAviag9FVHITWzUH/3+dUIjScBnC7huJoikJbPLWOyo5491COpHVR1
+         +dPPfDzYsNtQKApFAgqa0FrwL/ScqrEVNhqKs0NAwLmIKaGiPopJ4D9IsHe845xoqcxl
+         /kyiMUgofOac5PELIWUGqoDtrhKsEcxakzEm4A/5uRL8vxwZcAbw5FyGnXI5dTw1wl9v
+         KQlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791966483; x=1792571283;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=X/S5SRmbTexKmsjmoZdpsnlp+I+xKbH89Xqk3Tt2TQo=;
+        b=rjjv2PpKQrxHFEwRxEOwQZC3Hk32FYXy/D95IgVnkx5a8MP2afZv6EGm6ZFUoT2/nI
+         nNC6+/5dDdwxh1CoTskuotU6RKlOed5Y7kZ25EoKrHNXXYnxI1sbNp3fJ0nLReWbgT3l
+         pcBDZtv39EUZWck8pGImMxzsPDrImafIOSxtzKcVcno9hMf5KBWPvnEsF+sGK0njWfye
+         wRq9pQcW7uNf3FSSJFQYKeaAVEOp1P1et4xCvLw4xd9TZ3WiDRnieiO628aRr2X1L18H
+         Wu93EaEos5hWrFBCdCgNJ6U5HCg6IEH1CJsGT0JwZlmFYIfz4WnEMqhIU5yUEqU0N/g6
+         DVMw==
+X-Forwarded-Encrypted: i=1; AKwUvBwFdeFgjQkBrp+dh0KdpCQ9CijJRjFdHBQBAvHM7kTZ0bju/OsWVbFh+URhmsrr3gjD7SLl2WSWJg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKLo/q+PDqCx/jQmxgurRQgAE+hGQtkVwiBS3YbPyq238rY2qlt
+	hhEsAepY3lWZqzXQKVNntcCpXSx+cr1F/Qi/BSspknZNvju9sfrCIsDaHe0SU2njxO3YJ/cYlot
+	1hR3ck4XSJpTa3bio2fPE3YUaQST82QEKfaHoDoVc6fdJNeBdgTSQCCstD+KzAw==
+X-Gm-Gg: AYBFou21cpjYa+dgR5VqLp0XESAsbVzwVqCJqVoeyzDFt2D7LIH6Q4DPL3ESKcEwJ2A
+	4k1MTY41imWMMAYJhrOEhegUBGW30+DoN0oloXXswUqlKbcoU0AjRxXtMqpsUThCm4BS5Vy/IVb
+	DZXsHODy0QYBZN0lempYjqL0HVnU8w/UhvFlKLDQKXLwXz8SSrgJvPFkCdmuzbzOzQE3TkB/jIf
+	1+FtcwdIKol1QBD1XW2Vfe+3NpJ85QgHK0XPz2uCH0aNlCOKX9faefKa1Ii1fVXuJem/kIzSwr6
+	+VYXjIZtVmA6HH+/kk1m1yLP5O6blWhci0GTmgw425jTy85+37Yu1IhY3bNY7tkthgmeBaMnnBN
+	taJF0IKMP3dWWDKmi
+X-Received: by 2002:a05:620a:4010:b0:93e:e1f9:4c2e with SMTP id af79cd13be357-93ee1f94f88mr1234645985a.5.1791966483489;
+        Wed, 14 Oct 2026 01:28:03 -0700 (PDT)
+X-Received: by 2002:a05:620a:4010:b0:93e:e1f9:4c2e with SMTP id af79cd13be357-93ee1f94f88mr1234642685a.5.1791966482859;
+        Wed, 14 Oct 2026 01:28:02 -0700 (PDT)
+Received: from oss.qualcomm.com ([86.121.170.215])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0514ab1sm13464144f8f.0.2026.10.14.01.28.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 14 Oct 2026 01:28:01 -0700 (PDT)
+Date: Wed, 14 Oct 2026 11:28:00 +0300
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+To: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+        Brian Masney <bmasney+clk@redhat.com>,
+        Jerome Brunet <jbrunet+clk@baylibre.com>,
+        Konrad Dybcio <konradybcio@kernel.org>, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: Re: [PATCH v2 3/3] arm64: dts: qcom: ipq5210: Enable interconnect
+ capability to clock controller
+Message-ID: <vhqpbhknc4p4syz3y7jyeesg2vqsrcakv3p6r3tnla7v2kr6c5@kpgsr3rmhjvx>
+References: <20261013-icc-v2-0-196b219e25c1@oss.qualcomm.com>
+ <20261013-icc-v2-3-196b219e25c1@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|CY1PR12MB9557:EE_
-X-MS-Office365-Filtering-Correlation-Id: 41e289b2-7011-4388-a159-08df29c493bc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|23010399003|56012099006|11063799006|4143699003|261009221227099003|261009223027099003|10067099003|18002099003|22082099003|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	BdC3OWiE215+NFZJKX+JRn/yJtBkqqprUiCnha4t5KMYNF49oIdBwAYRi5wxOcsQ1sWQH+Qhcl4te21euxRgP1H6RqN89sZG6HVaDYD4lL2fu0hEDDbHTekwYfAypN6i+nPVzQSsA6X+Vtoo9I9xRUPkm+gLkaxVm9rWOVoTjJY23USSMb8FH4Ooxjzf2etLU/BBQ8fUb1nSJ0K/P0jWBishZQfDFNNz5EjjJg9ctul7zw3+GPOw8GGQGeZiet1XePOj8QRwfzr9frlFox1TqNtjDFhJz284KRYInuJl0MYYQMF40w4dlgakZ49HD3bzByLpck+pm8LlBt15XNve8CrL0vK/dRKYBKTOtaF8Y/XTGyslLZTFAiTri3kSAciGuzY54FOobZa75FW0gxOIAYoyPQnslbORp0TeD8ylPOzXP1Dq49CH890BlZhnce0wHsE4pMmwodrs6LruRZindtAYO8j0CkvFQZ2/zfaBcZn9ZaJAj7xK9hmmss4PHSWvxQNg7vS/mhu2GCWQO9mZQ/9EAWJndH7EUbtk8PV+tNL5eVdIqjwXb7hOC/clRHNoZHBgWsN4CgMLZdtLT4egUf6pLiIRKfWSgWPboNWevc5zXrv2F0dsvwll6dIys/yY
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(23010399003)(56012099006)(11063799006)(4143699003)(261009221227099003)(261009223027099003)(10067099003)(18002099003)(22082099003)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Q1I0S1dyeTBoWFhsbzNHS3RoVVNISG44WThsVENqZEF6WlpDWlp3WmZkY3hY?=
- =?utf-8?B?cUhHTmN1bXg1VlM2QWFyYnVEaUNqN3lzZzFWVUNyM1NUZXlxTTNrR3U5bEZa?=
- =?utf-8?B?a2d5YmphWEwvQzN4enNyWi9EQkVuVzltYjhEdXBqbEFWRGh6ZmFqTlBJeExC?=
- =?utf-8?B?RWo1WmRhQldMSkNKSHF1MVEzbm1oQmV0dVhDMk9vN2xqeEw4OGdYa1pNMlpI?=
- =?utf-8?B?MkgzSjZwYkhUSHE2QkNMYkhFWFladWxmZFY0MllLUllUbmRlaGhWemJ6cXk1?=
- =?utf-8?B?K01FRzQwOUJsTnNIRXB6S1ZtMjhyb1RJZVRKUnNkbXVPL2FNaVpKQncydVox?=
- =?utf-8?B?U1lWbG1IY1V1d1BSSEUwZHUycW9KblhQL2pLUjgyQTJjU29nYTU1VUlvbzhx?=
- =?utf-8?B?RHA5eHErWEI5b0xoWk9jSE81M296QlozSnBkYnB5dTVqU0c0TzczbUM2MFNr?=
- =?utf-8?B?bUZETjJiTDM5c2p1WWtTbHJlaXQrb2lUYVdJZEgrc29MRllzbGhzNlJDMWIv?=
- =?utf-8?B?T3RJQVhjUFE0dVRSWE9NenlMWjVhdVlSaWRGdlJyS0o5RnFhbmxCWUpmbFN4?=
- =?utf-8?B?bGlDTEJxQ1gweWJrdm5OdEJqT2tzejlRVlArdzI5bks2MU5JTmRxS3pQY2pi?=
- =?utf-8?B?YndQRHhSNDJjWmZkYUlkemxha0pxSVFocTlxMzhMSVE2dFdOOGRocTNTTDE1?=
- =?utf-8?B?eVlzWEpLaHVTdWtjeE83eGQwY01KeFdvSVNwVG1pWnpOWUhnN1lLUG4vendI?=
- =?utf-8?B?bWFRSEM1UWpJd3JwQm05M3FLRFBkdjFuZTN5ZXFpTjJ4eEpzb2Y2K3ExVThX?=
- =?utf-8?B?eS9OVzFWQ3I1T3BrbmpYeFNFVWMwQk55cVhnQWNJQUN2SzBpK2owTVM5RHdn?=
- =?utf-8?B?KzVRbjYwc1VQQzlxRWRzVXAwWk1kOEh5R2dYSmNtUlFaOGRTdGRpemZjMEto?=
- =?utf-8?B?UHI4bzV6NE1FdFdUMnBjZDJrVWIwb3ZLSWw5c2tiVWpvWnFHcXp1dE15c25q?=
- =?utf-8?B?RVV1NlNRY2N1b3hndUNyTmM2YlVyOHZiVVZtT1o3ckNHSW1PcVVtS0p0dEI2?=
- =?utf-8?B?a0VxWWQzc2czNlpDZTFZay83emgvejZoclVJK2k2Rnhpa0FOMXQxam84OUwr?=
- =?utf-8?B?ZUJyNmxDMXNJTTEvT1hHdDRVUjhHT1ZmblBTVzY0aVVadFpFSFJrN0JIRDVY?=
- =?utf-8?B?ZCsrMW9KRmZVTXcwK3hucVNpSFAxTDh3cllwV0lhR2wrR0xNWGY2bkFIeTF0?=
- =?utf-8?B?MjVlajA2VllCSUowcGNQa1QxcmhFL1FlNGptQThjelUwTmRwaUVoNTFoYWJv?=
- =?utf-8?B?WUdtaXlKSE9jd3J2eVhkRFVsSFZORkhWZ2J1enZ5T3FMZldNYWk0YS9tQllE?=
- =?utf-8?B?ZkdibW4yZ1VGWVh0K3p2Q3E3RVBndll3RWNrN2QvUEt5ZFcyU3RKWVZWbHZv?=
- =?utf-8?B?VS9iVDA1VTRTVkFjWkEzVTU1VzFINXJWTW1aUnp0Y1gxSnNibHpZSUtzYkhm?=
- =?utf-8?B?eGkrcnhWZ21sbWcrU3E2S1dsZkFhVGxmY1YvU29kbnFBUlRXUVh3UkhXbDB2?=
- =?utf-8?B?bVpFWUdrY2t3dTFJbE5qRmFjTVplZncreXNNQ3lIZitWQmdrdVk1QytpZVRF?=
- =?utf-8?B?MVptMXlxbERhb3pQUk4zcTBDZU5yL091bmFvbDlnQ1JnNDhUaE1FSWw2NU5Y?=
- =?utf-8?B?bFV0QTliYmlMdTZoWU9ZUnBvK242aERMSnlKVTdjZGwwTUVUeHVmTUJRczZt?=
- =?utf-8?B?ejVReSt1UUEzaXFMdmZHOWpHQmdkNzZDdzRpUkRLSml5UitoWS9MNGJpMllo?=
- =?utf-8?B?S05SUm1WUVNlM2oxdEJvUDdYYkw4cVVOZEFsSFp1NElRWjJlb2hiRXlFVXZm?=
- =?utf-8?B?S3hJK2RHUmpWMHBjZmNQNGFyWURERzc4dDhqYlBNcDZzSXVzZTdKbkRYLytp?=
- =?utf-8?B?bjE1U3pYNFRxQ3pCeURKdTlKYjlDMjdFcVZ1MmRXYWFYSGNjc202NjNvaFc5?=
- =?utf-8?B?bWhwMFgwZFFvalcvK29tRXN1ZTRwUUprMlludG84VWFYNE9manVFTlRLdG95?=
- =?utf-8?B?UlVRbGZzeE8yazFjcjRXTHZiK1hwSVAxV3RFVGFsYlIvUHpjODR3WW9WVGFT?=
- =?utf-8?B?a0xJcGpSdXBpSFdtajBOUVc5NTV5MElDSUpnMEpOalFUbnMrcElYeHVEcUlh?=
- =?utf-8?B?V0NEenIyLzJtUFVrcHJiN2VIQW9zK3RLcWVpRWo4ejltVW9oWE8rU2xuVjIv?=
- =?utf-8?B?N1hUZUNFTDU1N01SUnhyV1BXZ1JGallORXRRZ3NocUFkbE9zVkcwNGNIMVND?=
- =?utf-8?Q?hrqF6gI8LVp4KZy4bx?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 41e289b2-7011-4388-a159-08df29c493bc
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Oct 2026 07:27:18.1391
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: EPCX3t4rIs/vo7QVV+VbzZJKjMFIcuzUma/vpFm4ZHQP4jkDSIXRKWx/DcFcaCPG
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY1PR12MB9557
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261013-icc-v2-3-196b219e25c1@oss.qualcomm.com>
+X-Authority-Analysis: v=2.4 cv=YJcKWhGx c=1 sm=1 tr=0 ts=6acf3d14 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=Rt3kCFFBWhWisHNmluDamg==:17
+ a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=EUspDBNiAAAA:8 a=x4xV_kGm9pRGdifk3eoA:9 a=CjuIK1q_8ugA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE0MDAzMyBTYWx0ZWRfX/l5TKaWCEaPo
+ 7aNolgK6THEDm5O/f2VEECMx8cVP8nQuOuaZI1xqKMLRJcXT05eTE7udYxIQvkeVN28SyKF2KMI
+ kPe7MKXnnQkU3/N4g6oAJbIOoT3DoRTSHZowl+G3jxutgEHfOPRsoX2YE0yas+5mwk+SxWJ3j4D
+ mxWP7TJs+DqDAKNhzgcA7xqEF1lZrgVBUQFo9Ve2gtnZcBDiJi1jhQts7Uu/i41Cq4FY4rXCOkV
+ C0n6gEhJfHOpgWn99BPaHjKkglymOXB7qHqE89aTv+jIIVMgOdQlTaKcXgvR/iZS2FDfRuwsQFS
+ 7QRDHEcZQrinoKHJwAbptC/8OMtgQvgep311szX9TS6CILgd098AOFEy0K3sWyPYSMRA4vOYUfh
+ fZ2o+yqG37rMY9SXprQXLSh4UosoiFt1svxJfi00Ev4YU9vbSsWe8hvo07SohKa5qrOotVVoNkH
+ /YJBIoMZ6UGuHff/5IA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE0MDAzMyBTYWx0ZWRfXxvxkExi9NA1d
+ nJNLe8rAhN3Q65/4ecvWog0iZSjd3tAGHSJIHvT6Pvc+iyodoykdsyeelI6LitJhfJWnul9WRMF
+ VUndTTrWLK+b/XK/83i518+rbXQuihU=
+X-Proofpoint-GUID: XlRcGWe4FmT45kW4EJlupxOR1OHi8wZF
+X-Proofpoint-ORIG-GUID: XlRcGWe4FmT45kW4EJlupxOR1OHi8wZF
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 clxscore=1015 impostorscore=0 malwarescore=0
+ spamscore=0 suspectscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610140033
 
-On 10/14/26 00:39, Ian Rogers wrote:
-> Clang supports the 'require_explicit_initialization' attribute on struct
-> fields to indicate that a field must be initialized explicitly by the
-> user when the object is constructed. When an aggregate initializer or
-> uninitialized variable omits an annotated field, Clang emits a
-> -Wuninitialized-explicit-init warning (enabled by default).
+On 26-10-13 12:39:45, Varadarajan Narayanan wrote:
+> Add 'interconnect-cells' to the clock controller node. This will be
+> used for enabling NOC related clocks using icc-clk framework.
 > 
-> Add the __require_explicit_initialization macro to
-> include/linux/compiler_attributes.h (which is included by
-> include/linux/compiler_types.h and include/linux/compiler.h) so kernel
-> structs with error-prone initialization (such as mandatory callbacks or
-> cleanup handlers) can enforce explicit initialization at compile time,
-> as discussed at the Linux Plumbers Conference.
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
 
-Oh yes please! That is so nice to have, I have like halve a dozen use cases for this in the stuff I'm maintaining just of hand :D
-
-I'm not an expert for compiler interaction so I can't really review this patch, but please leave me a note when that is merged.
-
-Thanks a lot for that,
-Christian.
-
-> 
-> Also teach Sphinx (Documentation/conf.py), kernel-doc
-> (tools/lib/python/kdoc/xforms_lists.py), and checkpatch.pl about the new
-> attribute macro.
-> 
-> Link: https://lpc.events/event/20/contributions/2392/
-> Assisted-by: Antigravity:gemini-3.1-pro
-> Signed-off-by: Ian Rogers <irogers@google.com>
-> ---
->  Documentation/conf.py                 |  1 +
->  include/linux/compiler_attributes.h   | 11 +++++++++++
->  scripts/checkpatch.pl                 |  1 +
->  tools/lib/python/kdoc/xforms_lists.py |  1 +
->  4 files changed, 14 insertions(+)
-> 
-> diff --git a/Documentation/conf.py b/Documentation/conf.py
-> index 5ab26ce89daf..3e5cb9ca0970 100644
-> --- a/Documentation/conf.py
-> +++ b/Documentation/conf.py
-> @@ -203,6 +203,7 @@ c_id_attributes = [
->      "__noreturn",
->      "__packed",
->      "__pure",
-> +    "__require_explicit_initialization",
->      "__section",
->      "__always_unused",
->      "__maybe_unused",
-> diff --git a/include/linux/compiler_attributes.h b/include/linux/compiler_attributes.h
-> index 476c4c560d17..60522ab80c5a 100644
-> --- a/include/linux/compiler_attributes.h
-> +++ b/include/linux/compiler_attributes.h
-> @@ -322,6 +322,17 @@
->   */
->  #define __pure                          __attribute__((__pure__))
-> 
-> +/*
-> + * Optional: not supported by gcc
-> + *
-> + * clang: https://clang.llvm.org/docs/AttributeReference.html#require-explicit-initialization
-> + */
-> +#if __has_attribute(__require_explicit_initialization__)
-> +# define __require_explicit_initialization __attribute__((__require_explicit_initialization__))
-> +#else
-> +# define __require_explicit_initialization
-> +#endif
-> +
->  /*
->   *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-section-function-attribute
->   *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-section-variable-attribute
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index 8a7787d228a6..4a3ae6b0100a 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -6871,6 +6871,7 @@ sub process {
->                                 "noreturn"                      => "__noreturn",
->                                 "packed"                        => "__packed",
->                                 "pure"                          => "__pure",
-> +                               "require_explicit_initialization" => "__require_explicit_initialization",
->                                 "section"                       => "__section",
->                                 "used"                          => "__used",
->                                 "weak"                          => "__weak"
-> diff --git a/tools/lib/python/kdoc/xforms_lists.py b/tools/lib/python/kdoc/xforms_lists.py
-> index e3dda2fe8a53..32066fbbe763 100644
-> --- a/tools/lib/python/kdoc/xforms_lists.py
-> +++ b/tools/lib/python/kdoc/xforms_lists.py
-> @@ -36,6 +36,7 @@ class CTransforms:
->          (CMatch("CRYPTO_MINALIGN_ATTR"), ""),
->          (CMatch("__private"), ""),
->          (CMatch("__rcu"), ""),
-> +        (CMatch("__require_explicit_initialization"), ""),
->          (CMatch("____cacheline_aligned_in_smp"), ""),
->          (CMatch("____cacheline_aligned"), ""),
->          (CMatch("__cacheline_group_(?:begin|end)"), ""),
-> --
-> 2.56.0.385.gd3acb90ef8-goog
-> 
-
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
