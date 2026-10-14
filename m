@@ -1,63 +1,63 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4076492E26
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:20:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7952447A881
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:20:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792009209; cv=none; b=dUxKMGSRlx0eTsD/g/8EoEw3nlC/eMa7pooF52WsDSkJDCWtLeWayW07p+tp/j8+GrlB4CmAidMtda7yl77On2Ci7nppnc9k6cPcEnsBG2YOHQdSxAu0UF0APR8gMFDMF5xaz1NAAGijKVeCPD6AtNuzLKaOinhHrF/RHCapSsI=
+	t=1792009210; cv=none; b=G4hvUptAPwaUl6RyaO12Ix4+FNIZhAN2ctJEkLRzCHNoaAj4+oZpvjKHSh97AXWVVfKvKKRVLsYVOMccbI45wNoPEsopU1EO54b4r2qYZg94HimIcWiOjkHr/w+XpBUBaA2u0T2vtHzzl1Qe//EsnDOrSJXSqzqtxPgkSSmySz0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792009209; c=relaxed/simple;
-	bh=XanHk1c24MGkhOzXFhGam2TSlbW1orqn+kkEr1+z5BQ=;
+	s=arc-20240116; t=1792009210; c=relaxed/simple;
+	bh=mAvGbWCuJ+d+DjOteTVMIgPmFpgW9L/FnFz4jrtlvDw=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=A/Du9DkPk6Wd87VMp8nA4u0CA52nYWvr0gumV5gtWQZdeYSAuD03cBBDP2W592w9e+ZwCDyd371ym1bdzVwsPd3M6MCGWg3s9QIxTOCxg4MwC+Bt6PAMLKf/rkyeHfTlrHDCU81W/i3cXRMk+zo117mCVQiE21wZj8T36NVsp+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=WDYkrf7b; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=wKBVQqkQ; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=TzKQreT0bZ68qI08dBIrQkK92Q0kTCqjGPqdy412UVuQa/ykMsyO1rhawdwag/oiqOrnm2opHVYv1gznpa3f4t9JLZfLHRAxgx0PMZNFVaQ1eO4p+H3R0xD+kOE2rddtPJcYxnBQ+G/vA/ZBhH4193IP0Yz7VTJtoIGcsUaeJbY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=e7wqdJIr; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=+u6BDMLF; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="WDYkrf7b";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="wKBVQqkQ"
-Date: Wed, 14 Oct 2026 20:20:04 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="e7wqdJIr";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="+u6BDMLF"
+Date: Wed, 14 Oct 2026 20:20:05 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1792009205;
+	s=2020; t=1792009207;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=H43jgSEFx/948IE5kuFwV3feaGyYV5BumN2X+PEJgX0=;
-	b=WDYkrf7bfSBE6vr3+OYr0uTUD652uELX7VREOtVItjykiJc4g2URC+5lWF6nMIOy1OsIyZ
-	lmCavEw0GbpoK4zKavjeVo6Dw0mtDAJbeJa7/BdPi5+z2EtrNG1lc+6NJFtlBfKUpdolVC
-	o+3dSs3X7Eg7vUHtX+mM46qkHsTFVP3EeyPKSk5PSAVj4lNVFg3SMd6lQ44Zl4R4N5DtkL
-	s3KIT9H/FUe6YE0eekThaSO9PyfrX2riiVtNUCwqte0k3/pBlZgfa6vv6gdiXpQqG/iWSN
-	CfNC1QOOxcGgcaMnDTBLsgYuvC/fg5xhEXUr8Oy3YVHZjh4KdlJDwSQ9mOlWKA==
+	bh=DXokeD5rkJUQiPhcqjZy6RiYhCMR3avhVYSF6bbw9LI=;
+	b=e7wqdJIrMLskpSM/ypY2d6AkeNd9IzUrdqHCByCRvZLgDLK5xtWz0ibVpvRNyNv8uStOZX
+	X5dUcCW5mmHikCkucFo2/4AjraEJlesGGfdT//8vfTBeIKkKowMpbdfv7nYF1I5SxPtFE4
+	4shMli3m7RCo1FlnRr4gKX+6vs7TFvKtWpNfnmWlsDvpfBQmRVCJ3uoG99T5fyFu/bHzow
+	U5mDkFwhYtbY5OPORfz7vrqJisnNNDnbWga3SLCY0RlVbSKXeacMbagqdUO3Hzcl5FRyXV
+	5wsmd5hoAKdGXYQWMHVeT8T8PNJlV/0rSJMJJIJlxGYo3l+tPRqq07FQqtq75A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1792009205;
+	s=2020e; t=1792009207;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=H43jgSEFx/948IE5kuFwV3feaGyYV5BumN2X+PEJgX0=;
-	b=wKBVQqkQ7HiyLIj9eSWM3IEFNz+wPi+BOGvcCwBpNrUtfeHCtjiUCe8o2B4C5cwtDmW3Hv
-	TGQq4ti17nnQn+CA==
+	bh=DXokeD5rkJUQiPhcqjZy6RiYhCMR3avhVYSF6bbw9LI=;
+	b=+u6BDMLFOhF4AVcxNXqtx4ccKnSjemif3f1hQBd02eoHhKZo83vwygzFfL8/oNj3XaBJ2a
+	8YnC/eMZy2zbcgDA==
 From: "thermal-bot for Ovidiu Panait" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [thermal: thermal/linux-next] thermal/drivers/renesas/rzg3e: Remove
- redundant pm_runtime_mark_last_busy() calls
+ unneeded low/high check in set_trips()
 Cc: Ovidiu Panait <ovidiu.panait.rb@renesas.com>,
  Daniel Lezcano <daniel.lezcano@kernel.org>, daniel.lezcano@oss.qualcomm.com
-In-Reply-To: <20260916120003.87018-6-ovidiu.panait.rb@renesas.com>
-References: <20260916120003.87018-6-ovidiu.panait.rb@renesas.com>
+In-Reply-To: <20260916120003.87018-5-ovidiu.panait.rb@renesas.com>
+References: <20260916120003.87018-5-ovidiu.panait.rb@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <179200920430.2666337.2569616217761938193.tip-bot2@tip-bot2>
+Message-ID: <179200920580.2666337.6605320325881180633.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -68,57 +68,46 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     c337b60bdadc819c39f802d8e6418c320c580e0e
+Commit-ID:     a5f1de6d789484f308ff9b571835b3e2e7385444
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//c337b60bdadc819c39f802d8e6418c320c580e0e
+git//a5f1de6d789484f308ff9b571835b3e2e7385444
 Author:        Ovidiu Panait <ovidiu.panait.rb@renesas.com>
-AuthorDate:    Wed, 16 Sep 2026 12:00:03=20
+AuthorDate:    Wed, 16 Sep 2026 12:00:02=20
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Sun, 27 Sep 2026 23:00:37 +02:00
+CommitterDate: Mon, 21 Sep 2026 17:48:30 +02:00
 
-thermal/drivers/renesas/rzg3e: Remove redundant pm_runtime_mark_last_busy() c=
-alls
+thermal/drivers/renesas/rzg3e: Remove unneeded low/high check in set_trips()
 
-pm_runtime_put_autosuspend() already calls pm_runtime_mark_last_busy()
-internally, so the explicit calls are not needed. Remove them.
+The hardware manual doesn't specify that the trip settings must be
+strictly low < high, just that when the CMPCOND bit is 0, an interrupt
+will be raised when the acquired temperature data is > ULIM or < LLIM.
+
+Also, the thermal core already guarantees low < high.
+
+Remove the redundant check.
 
 Signed-off-by: Ovidiu Panait <ovidiu.panait.rb@renesas.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Link: https://patch.msgid.link/20260916120003.87018-6-ovidiu.panait.rb@renesa=
+Link: https://patch.msgid.link/20260916120003.87018-5-ovidiu.panait.rb@renesa=
 s.com
 ---
- drivers/thermal/renesas/rzg3e_thermal.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/thermal/renesas/rzg3e_thermal.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/drivers/thermal/renesas/rzg3e_thermal.c b/drivers/thermal/renesa=
 s/rzg3e_thermal.c
-index ffe2b87..a1ceff7 100644
+index 58fdcc6..ffe2b87 100644
 --- a/drivers/thermal/renesas/rzg3e_thermal.c
 +++ b/drivers/thermal/renesas/rzg3e_thermal.c
-@@ -262,7 +262,6 @@ static int rzg3e_thermal_get_temp(struct thermal_zone_dev=
-ice *tz, int *temp)
- 		*temp, *temp / 1000, abs(*temp) % 1000, code);
+@@ -275,10 +275,6 @@ static int rzg3e_thermal_set_trips(struct thermal_zone_d=
+evice *tz,
+ 	u32 val;
+ 	int ret;
 =20
- out:
--	pm_runtime_mark_last_busy(priv->dev);
- 	pm_runtime_put_autosuspend(priv->dev);
- 	return ret;
- }
-@@ -313,7 +312,6 @@ static int rzg3e_thermal_set_trips(struct thermal_zone_de=
-vice *tz,
- 	/* Unmask compare IRQ */
- 	writel(TSU_SIER_CMPIE, priv->base + TSU_SIER);
-=20
--	pm_runtime_mark_last_busy(priv->dev);
- 	pm_runtime_put_autosuspend(priv->dev);
-=20
- 	return 0;
-@@ -485,7 +483,6 @@ static int rzg3e_thermal_probe(struct platform_device *pd=
-ev)
- 	if (ret)
- 		dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
-=20
--	pm_runtime_mark_last_busy(dev);
- 	pm_runtime_put_autosuspend(dev);
-=20
- 	dev_info(dev, "RZ/G3E thermal sensor registered\n");
+-	/* Hardware requires low < high */
+-	if (low >=3D high)
+-		return -EINVAL;
+-
+ 	ret =3D pm_runtime_resume_and_get(priv->dev);
+ 	if (ret < 0)
+ 		return ret;
