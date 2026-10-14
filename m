@@ -1,63 +1,111 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63E482F30;
-	Wed, 14 Oct 2026 01:08:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0882727144B;
+	Wed, 14 Oct 2026 03:18:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791940123; cv=none; b=AXxlireHeaRKtMUdEzzljdoup/f+yevdcqqcZRXwT4fdhSU2XoRy2dKt5qfSf4KlKGOW4LBsxvgOt58GO9jBGChbMXNgFO4QHnPfk8nWWS6CayPmid90f8eSs0v4rbxEKTlPqcgXGwsmAJ6fKmiNGHN6a5jZfL6iZXQnigy8Mlk=
+	t=1791947939; cv=none; b=F2TZGqeIXkyCfKvumsPIiT9xyyfNYJ6cjSPYxxD+JtiJcXhsqlXNq+csP0bcm1FarKYC/F352oIngAjRONtUref69JJnJellQqIsbSZtq0/TqW9mgT2rcvLUQEBHUusdwnIzlkBleT3fmXQ5DdPPywnr01srJAxaIw4hzMA2F2g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791940123; c=relaxed/simple;
-	bh=xe5I9USZq0NzjRBC7co1qlXZ3qQwSIdc/rSR/F1oNlQ=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=eAYYDAu4RFu8qo/k1tzccGFZ0swOUQW3oDdxIfUzkVahGxx/6toVutxC7SJlGRU4kfkRBdr3jTxORAFElNi1dp4TLAdUDTPn8RcXyFdF5LMQBzfabTKJFfss2CP6D/uYfzb/RlvvqSJU/eU2FLwQwWx6PbWTCGjaH61HwxM3Nqw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M525/WwW; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791947939; c=relaxed/simple;
+	bh=zHSUzkNjToUp8uTEjmar6xN8IxpNlXiXqkogfTNjOQI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ggas6e7Kj7p0F43R3GkZAKlHZYMpV4Ms6+UxxLDv0ygbXOPYXUCnuZEEhSWq4DZtXeukGe5EL1Tu2+cxPKRxoTAQcC1YkFLINjHC/QgRzaCPG49i4o3Y1COejx5Gyx6ZsEtzzsqK9u9G8mmJS05nLdTwWKZv8JiFpsoHiraYdT8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=Jy8S9Ih1; arc=none smtp.client-ip=117.135.210.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M525/WwW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 091E21F000FF;
-	Wed, 14 Oct 2026 01:08:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791940122;
-	bh=GRIp7KhwCAi0ClV148cvmSOD3OjIvcolOyiXiMGHIhQ=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=M525/WwWXVoqKvapIlltgdazum+HpzAarUqVCCCe9mNJP/1zLr8O6KWoIGBs2Ljl+
-	 OTutJkmou852zBRUNoJh1JJSqvoh9F3KjlgnkotqqXHokz6pI6APX2ViQILCZYUXCy
-	 Wn2nzgE7T2zJoz+ORCIkuQs5kun69woxqukr5zy62tsMeq6fbLtn3O4pFibUwBnZT4
-	 vQQEeJkaGRJA3c1KXg7HjgjrSIFmqjXq0Z3IvTzyr/E+/mg6azTvTLhCx876wllC3R
-	 5V2KhiIe58zJHDV7edVXHDU6EtsV8lJc++3JrHWG5YYvvlMjrLYYTUV2N7Ta+NlZjj
-	 YwS9Q5tX1r26Q==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id F15F739E8A57;
-	Wed, 14 Oct 2026 01:08:41 +0000 (UTC)
-Subject: Re: [GIT PULL] power-supply changes for 7.3-rc
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <as7BWpR9ytU4Ihdd@venus>
-References: <as7BWpR9ytU4Ihdd@venus>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <as7BWpR9ytU4Ihdd@venus>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v7.3-rc
-X-PR-Tracked-Commit-Id: 5b4bd13e0552926648a46c2c9a12a24dfaee3715
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: d77bd0d469e1923e587bb919301c0bb29093e30a
-Message-Id: <179194012048.1544263.8307529566537051165.pr-tracker-bot@kernel.org>
-Date: Wed, 14 Oct 2026 01:08:40 +0000
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="Jy8S9Ih1"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=/w
+	b5x9YJdon9KKr9z8ynJWG16vj2SwCyxobw86ApWOQ=; b=Jy8S9Ih1ULVyA1mtbs
+	LA5ySToPsTMqrgyNaZOh/JURkQ6EZgpPAU4AgZ9KYQtE2SXzDhKHd7G0i771uqoq
+	35qKlH9yo77uIzSz5O4wSMe0VUcvceALIC5/+HigHQ6eYvAE11tD2eMBTS/+iq+v
+	8ieeIV/LnX6OO3maGywBnKRW8=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp3 (Coremail) with SMTP id PigvCgA3Hqt49M5qklMYEg--.56197S2;
+	Wed, 14 Oct 2026 11:18:17 +0800 (CST)
+From: Pengpeng Hou <hppiscas@163.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Pengpeng Hou <hppiscas@163.com>,
+	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>
+Subject: [PATCH v2] thermal: rzg3e: Propagate reset assertion failure from suspend
+Date: Wed, 14 Oct 2026 11:18:14 +0800
+Message-ID: <20261014031814.7230-1-hppiscas@163.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:PigvCgA3Hqt49M5qklMYEg--.56197S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7AryrurykZr1UAF1UWFyrCrg_yoW8tw4kpa
+	n5Gr4UCr4kWF18Ja17AF1kZF9YkaySkFW3XrZ5Gwn5ZF43Z3y3tFyYgFWYv348Gr18tFy0
+	kF4jyw15CF4DArJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pi2Nt7UUUUU=
+X-CM-SenderInfo: 5kssx2xfdvqiywtou0bp/xtbC7hupcmrO9HtbhQAA3b
 
-The pull request you sent on Wed, 14 Oct 2026 01:40:34 +0200:
+rzg3e_thermal_suspend() powers off an active sensor and then ignores
+failure to assert its reset. System sleep can therefore continue without
+the clean reset state expected by resume.
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v7.3-rc
+Return the reset error and, when the sensor had been active, try to
+restore power before failing suspend. This is best-effort recovery:
+reset assertion failure may leave partial hardware state, so restoring
+power is not guaranteed to succeed. Preserve the original reset error.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/d77bd0d469e1923e587bb919301c0bb29093e30a
+The issue was found by our static-analysis tool and manually reviewed.
 
-Thank you!
+Fixes: dc67521c20b7 ("thermal/drivers/renesas/rzg3e: Fix add thermal driver for the Renesas RZ/G3E SoC")
+Reviewed-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+Assisted-by: gpt 5
+Signed-off-by: Pengpeng Hou <hppiscas@163.com>
+---
+Changes since the RFC:
+- resend without RFC and add Claudiu's Reviewed-by, as Daniel requested
+- add the introducing Fixes tag and clarify the best-effort recovery
+- rebase on current mainline; retain the reviewed code
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Previous version:
+https://lore.kernel.org/all/20260828092123.9707-1-pengpeng@iscas.ac.cn/
+
+ drivers/thermal/renesas/rzg3e_thermal.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/renesas/rzg3e_thermal.c b/drivers/thermal/renesas/rzg3e_thermal.c
+index c44f5b8858d02a7d4d6a5fbe8a8b189ab22568ba..7686a45341b3dcddccbfee11a7f832f9e1d76a15 100644
+--- a/drivers/thermal/renesas/rzg3e_thermal.c
++++ b/drivers/thermal/renesas/rzg3e_thermal.c
+@@ -499,15 +499,19 @@ static int rzg3e_thermal_runtime_resume(struct device *dev)
+ static int rzg3e_thermal_suspend(struct device *dev)
+ {
+ 	struct rzg3e_thermal_priv *priv = dev_get_drvdata(dev);
++	bool active = pm_runtime_active(dev);
++	int ret;
+ 
+ 	/* If device is active, power it off */
+-	if (pm_runtime_active(dev))
++	if (active)
+ 		rzg3e_thermal_power_off(priv);
+ 
+ 	/* Assert reset to ensure clean state after resume */
+-	reset_control_assert(priv->rstc);
++	ret = reset_control_assert(priv->rstc);
++	if (ret && active)
++		rzg3e_thermal_power_on(priv);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int rzg3e_thermal_resume(struct device *dev)
+
+base-commit: 4056b3c9d3c92ea45955641dbafeb9b960e146ef
+
