@@ -1,65 +1,64 @@
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CEE9492E26
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:19:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A514B4A3F16
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2026 20:19:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792009199; cv=none; b=KypLyLhioWde3ZRwohTVMXtMP9i+qQs7j1O1Ms7KQonF9dH1i6aSNNm6Rns+CfdP8CN8X0k0AG9+zj/zYlmUrCkqcal0biHYQwXslf/3OhYiohVflI0CD3ugSYbFM29jbj2OH5GxxmL7SLTLQtlHTGTePmB3es+B4phPoxg4RKk=
+	t=1792009200; cv=none; b=mjqC3CISkFyFPDjtYmwv7XfEtc0p5roF5roq96bVr+d9BH2EpXIymfdRlvV+Fm0kzJm6A0wUtKWGWqSZmg0o9elYzSoJT0/saUu3dIKGpDcVNAcimmJcUmyMTS+E06EXqnZYtwyLKDz6NsdKI/GgARBesCGiHtMyHHCfN1KjAYI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792009199; c=relaxed/simple;
-	bh=IgIWJkIvDljwWhjJck8LxN+9j7nLYQ5ROq5KxOp1k/Q=;
+	s=arc-20240116; t=1792009200; c=relaxed/simple;
+	bh=E6JLMKGzR3phK46ntwRjReZ/3CPmFt+WLqcUJna95/U=;
 	h=Date:From:To:Subject:Cc:In-Reply-To:References:MIME-Version:
-	 Message-ID:Content-Type; b=ayktC+1DTKm5CgCfrBJ15Onq43DGhHzbMD3VbqgOjmVGWI0+2JSKneo/mrNpoHa2YZRlGNXveijdNZOTIYenXyjRo9J8VhtmS0FJSBM2QDe8DZ+eWERuNUmXlR2rX4nu5ZzZKih8tRlNYo9vxyLRX1XbLfv5uME4Pgvr9FTNYWQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=xG1FUnKa; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=oIkrlO8n; arc=none smtp.client-ip=193.142.43.55
+	 Message-ID:Content-Type; b=m03oj0X9dxQhVLfDDzl6L0/v6rdiHom3WH45vebjf9LD7ONu2ojVIm64aPOPWZISm7lDHBYoPapLEQmjGVJrVP/oEJv28SLYzkNp7Ds1lCh4cqFcShsx2u20dad0KRf08QRuqaB9S2zQWANVFn6BUDsBRY7pgP+/jqNBFs3dB9Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=VG306zdf; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=/CvUPnIC; arc=none smtp.client-ip=193.142.43.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="xG1FUnKa";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="oIkrlO8n"
-Date: Wed, 14 Oct 2026 20:19:54 -0000
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="VG306zdf";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="/CvUPnIC"
+Date: Wed, 14 Oct 2026 20:19:56 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1792009196;
+	s=2020; t=1792009198;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=YeS7eJVZg1V4d6n7p7tfyt4v1NL/j+GEJIpdICmUF5E=;
-	b=xG1FUnKaFKxQlq9E6KytKEme50e0rLClH+QzItHV0PB/t8MOhGQdN3eEZFFqJ9lLXtfsOJ
-	gS5Ca7CyZbF8qIcq4WUc+w4ESx5w+TJqC9F1tnJ6qFm7gGipJ+m03lWe41AS29/eAmOiTZ
-	DlSWN8jerk93j5OMjJJXLZ/nZoVHjp+ApHU2CuC9taGiOXLfxp1harbBWKoYxHaW9ZQrVF
-	abEGrqCJIB7zFFVgLRAyPjLccNklPgPQDxbZlz8t73dF8WWyuekNvlckcUnoh1NdSS7gwQ
-	+YEX71hZ2bsoeJXixjYbMNLHBNFeC/lw2uSGJBbu3M00/Hdga/Ddg4WKNxjIVQ==
+	bh=qOsTHB5cXdHrX5v/xovnwU9BizxClP8OHHl1Um4oybw=;
+	b=VG306zdf9hWIChGJo4WQL8qRE+b2MzHoot3LRHA1bsz89z3I+7n3h5hdy/mOiMYIOqGYMm
+	IRbs9ngXje7lGgsLnv5lANWujTlP6mOdIgppCYHP3fhOUZ/fhecYefJbVnKCzm9SujwFCK
+	N1iXBDeqNatxDyjEMp2VyOVNzn28kIhQRxtEHrNWk2JQtCmf4/m/CEfJlklAAB/AzN2D7K
+	hvs0dpEWyxMYkXq5z/gSAj/QwmcfC09cM4B+x7u1MncbvHbxLTPyz4bpDN6ldyO8PndFe+
+	B5Mtp6/odRMINFtEe/fXg6U2iRSlURT0/hUuTWyttC6HX7/TIkP7xu1z8IuyUQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1792009196;
+	s=2020e; t=1792009198;
 	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=YeS7eJVZg1V4d6n7p7tfyt4v1NL/j+GEJIpdICmUF5E=;
-	b=oIkrlO8nD8keq+IeP+e+sj/F37zV4feMH1Fdwkeutz6hM8FsOt0XPA4Wd+TJIuzpnphFnh
-	/dFq32CnTHbFIhBQ==
-From: "thermal-bot for Tudor Ambarus" <tip-bot2@linutronix.de>
+	bh=qOsTHB5cXdHrX5v/xovnwU9BizxClP8OHHl1Um4oybw=;
+	b=/CvUPnIC++HA28avuT98eO9mcHCg66WxYp3UQE9h90IL6tYaW9477KA+NiuJMi1vCRFPB1
+	kuEIwEGkDXjjOfAw==
+From: "thermal-bot for Rob Herring (Arm)" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Subject:
- [thermal: thermal/linux-next] dt-bindings: thermal: Add Google GS101 TMU
-Cc: Tudor Ambarus <tudor.ambarus@linaro.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
- Peter Griffin <peter.griffin@linaro.org>, daniel.lezcano@oss.qualcomm.com
-In-Reply-To: <20260603-acpm-tmu-v8-1-0f1810a356e6@linaro.org>
-References: <20260603-acpm-tmu-v8-1-0f1810a356e6@linaro.org>
+ [thermal: thermal/linux-next] thermal: of: Match trip property helper types
+Cc: "Rob Herring (Arm)" <robh@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ daniel.lezcano@oss.qualcomm.com
+In-Reply-To: <20260612215009.1884665-1-robh@kernel.org>
+References: <20260612215009.1884665-1-robh@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <179200919468.2666337.17118439006360102773.tip-bot2@tip-bot2>
+Message-ID: <179200919627.2666337.1346270576339984722.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe:
  Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
@@ -70,114 +69,65 @@ Content-Transfer-Encoding: quoted-printable
 The following commit has been merged into the thermal/linux-next branch of th=
 ermal:
 
-Commit-ID:     ddb39deb06e0f816bba0cbcc3a658661df308f8d
+Commit-ID:     4f6d1a9ea172c22e6c67e2ec06fb0f20e07e7225
 Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//ddb39deb06e0f816bba0cbcc3a658661df308f8d
-Author:        Tudor Ambarus <tudor.ambarus@linaro.org>
-AuthorDate:    Wed, 03 Jun 2026 13:00:16=20
+git//4f6d1a9ea172c22e6c67e2ec06fb0f20e07e7225
+Author:        Rob Herring (Arm) <robh@kernel.org>
+AuthorDate:    Fri, 12 Jun 2026 16:50:09 -05:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Mon, 28 Sep 2026 17:59:24 +02:00
+CommitterDate: Mon, 28 Sep 2026 17:54:14 +02:00
 
-dt-bindings: thermal: Add Google GS101 TMU
+thermal: of: Match trip property helper types
 
-Document the Thermal Management Unit (TMU) found on the Google GS101 SoC.
+The thermal-zone binding defines "temperature" as a signed int32
+value and "hysteresis" as an unsigned int32 value. Using helpers with
+matching types avoids dt_property_check mismatches and preserves the
+signed interpretation needed for trips below zero.
 
-The GS101 TMU utilizes a hybrid control model shared between the
-Application Processor (AP) and the ACPM (Alive Clock and Power Manager)
-firmware. This hybrid ACPM TMU architecture is also present on other
-Samsung Exynos SoCs (e.g., AutoV920, Exynos850).
+Read "temperature" with the signed helper and keep "hysteresis" on the
+unsigned helper using separate typed temporaries before storing them in
+the trip structure.
 
-While the TMU is a standard memory-mapped IP block, on this platform
-the AP's direct register access is restricted to the interrupt pending
-(INTPEND) registers for event identification. High-level functional
-tasks, such as sensor initialization, threshold programming, and
-temperature reads, are delegated to the ACPM firmware.
-
-Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+Assisted-by: Codex:gpt-5-5
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Reviewed-by: Peter Griffin <peter.griffin@linaro.org>
-Link: https://patch.msgid.link/20260603-acpm-tmu-v8-1-0f1810a356e6@linaro.org
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Link: https://patch.msgid.link/20260612215009.1884665-1-robh@kernel.org
 ---
- Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml | 69 +++=
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 69 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/google,gs101-tm=
-u-top.yaml
+ drivers/thermal/thermal_of.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.y=
-aml b/Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml
-new file mode 100644
-index 0000000..75560eb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml
-@@ -0,0 +1,69 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/google,gs101-tmu-top.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Samsung Exynos ACPM Thermal Management Unit (TMU)
-+
-+maintainers:
-+  - Tudor Ambarus <tudor.ambarus@linaro.org>
-+
-+description:
-+  The Samsung Exynos ACPM TMU is a thermal sensor block found on Exynos
-+  based platforms (such as Google GS101 and Exynos850). It supports
-+  both direct register-level access and firmware-mediated management
-+  via the ACPM (Alive Clock and Power Manager) firmware.
-+
-+  On these platforms, the hardware is managed in a hybrid fashion. The
-+  Application Processor (AP) maintains direct memory-mapped access
-+  exclusively to the interrupt pending registers to identify thermal
-+  events. All other functional aspects - including sensor
-+  initialization, threshold configuration, and temperature acquisition
-+  - are handled by the ACPM firmware. The AP coordinates these
-+  operations through the ACPM IPC protocol.
-+
-+properties:
-+  compatible:
-+    const: google,gs101-tmu-top
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    items:
-+      - description: APB peripheral clock (PCLK) for TMU register access.
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+
-+  samsung,acpm-ipc:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: Phandle to the ACPM IPC node.
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - interrupts
-+  - "#thermal-sensor-cells"
-+  - samsung,acpm-ipc
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/google,gs101.h>
-+
-+    thermal-sensor@100a0000 {
-+        compatible =3D "google,gs101-tmu-top";
-+        reg =3D <0x100a0000 0x800>;
-+        clocks =3D <&cmu_misc CLK_GOUT_MISC_TMU_TOP_PCLK>;
-+        interrupts =3D <GIC_SPI 769 IRQ_TYPE_LEVEL_HIGH 0>;
-+        #thermal-sensor-cells =3D <1>;
-+        samsung,acpm-ipc =3D <&acpm_ipc>;
-+    };
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 0217a49..deaae7a 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -63,22 +63,23 @@ static int thermal_of_get_trip_type(struct device_node *n=
+p,
+ static int thermal_of_populate_trip(struct device_node *np,
+ 				    struct thermal_trip *trip)
+ {
+-	int prop;
++	u32 hysteresis;
++	s32 temperature;
+ 	int ret;
+=20
+-	ret =3D of_property_read_u32(np, "temperature", &prop);
++	ret =3D of_property_read_s32(np, "temperature", &temperature);
+ 	if (ret < 0) {
+ 		pr_err("missing temperature property\n");
+ 		return ret;
+ 	}
+-	trip->temperature =3D prop;
++	trip->temperature =3D temperature;
+=20
+-	ret =3D of_property_read_u32(np, "hysteresis", &prop);
++	ret =3D of_property_read_u32(np, "hysteresis", &hysteresis);
+ 	if (ret < 0) {
+ 		pr_err("missing hysteresis property\n");
+ 		return ret;
+ 	}
+-	trip->hysteresis =3D prop;
++	trip->hysteresis =3D hysteresis;
+=20
+ 	ret =3D thermal_of_get_trip_type(np, &trip->type);
+ 	if (ret < 0) {
