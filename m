@@ -1,198 +1,145 @@
-Received: from mail-yx1-f51.google.com (mail-yx1-f51.google.com [74.125.224.51])
+Received: from mail-yx1-f42.google.com (mail-yx1-f42.google.com [74.125.224.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10FEB54147B
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 17:07:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DBAF3F3295
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 17:38:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.42
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792084046; cv=pass; b=Y5+g+L5aG6/XkByPZcfELnVBULtNngObVcJQVc5kk0Peuok4z+Z0qEEifPpykTTAR+2ul5OWRx4eFvXEcNbSRgiUBfbgXgT5dX4meqjPLfihclJ2N1ADZxXMTVMYb8mDJKPMY3EV58d1mTnbYh8wW5AaiZpuCPMnVwtVn2hEanw=
+	t=1792085907; cv=pass; b=cBFILgCxU8CYHDvjKVdS7oVbcvm1GIo+Irlkaw0mLlwmIhOkFfFCkX62mLSB6WoQpXImVGYLIWkI2M3N+r0tiFKYjbivufZ5ayMvbrW8rshxtBHQs0i7W3Oms+3MKy5/IDpwYo7KhDEmrbwrz4DKhm8gdxSyA/GpuN4ODgDDNW8=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792084046; c=relaxed/simple;
-	bh=TQWSF+hQXVkwcjIKu5CbKZ1m9kqfy6YQdFbRnYAAUMI=;
+	s=arc-20240116; t=1792085907; c=relaxed/simple;
+	bh=bkxFv5PX8ujIxdonqIilaYDobdJDnLk8tXzGrWmcSt8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ptdewj54U9FmANHXsh+u71DBdLyohDLPxnt0kvvv0pg3m2ZD4VJLfMJki4Zty7hNrE0bHQGCCV5oLTclxHYxSvCRQcSrO+n4MiS2roAtRRx3ZXV1JCoYWGrwn3zMsMgRd6SPQacTEFaHjHbEUxx+rFnTYUhpoNzT2afr0LvXoQA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=m6kD8zXW; arc=pass smtp.client-ip=74.125.224.51
+	 To:Cc:Content-Type; b=XG/FDFRl8Q710YDlm49HBRt1oQen5nnwq3frgY29xsGyDulFSDJ3IpNDAc2xPZTNrFEddJuU6VooX8vBo1jbGZU5mg1h7AixvqsLx0c+/zkXMz6uEEkK005+UlAdeEaMwMKjl37YgVwGwfI83xefLiqiYm9FsG7Nxb51x5VGIGo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FdY0tTI6; arc=pass smtp.client-ip=74.125.224.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m6kD8zXW"
-Received: by mail-yx1-f51.google.com with SMTP id 956f58d0204a3-676804a3a22so5578757d50.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:07:14 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792084034; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FdY0tTI6"
+Received: by mail-yx1-f42.google.com with SMTP id 956f58d0204a3-6740e7ae219so4652562d50.1
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:38:18 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792085897; cv=none;
         d=google.com; s=arc-20260327;
-        b=WAMsJr1SnYjtc2KSOxBn58KKvU0W8xGgKsmjpr4gQeURk8vsXdKzrN08CuudPww5tA
-         XeUyNHEnT4DRQi6h5XE74hQ7Dx4MGE06GvVw+05VWdnSUZmDk+GY5BH+b5I5fZiwCKXt
-         1kU+LlQcBiDo0m37VffKXQK3b2OFKmJbFWWw4jFpFpoRGJD0b161+gAMOClgBMpFqfFP
-         otuHbXQcdj2kTL6S20DBoFpqcj9jpVTB6MdHgljUrCp/xQ6yQF4QVa8U70ZNtccvRp1h
-         otPN1UviXB7BdJOFT8La3JVqA413xQpDr36xhBEZc7a9d3Pz4UEHd4eLfvRfF7tGBUQV
-         xcyQ==
+        b=c+qgTZxYNBwF2NUZEsvcxCfuUCl4xyvWoRz31kfY4lzxon7IssxgLujIrrd7rji8dN
+         aprvl7+vazDAW1kTI8rSSwfmHDyb0WPjsrAcDY2rFYOVyE4O9dk1c8LMiiazp3yn4rL6
+         GZhGdaHhxORur2pa9ouz6BWXe1C/RCOiQlKvuj8LSXxAffG/G08FyXymle853vKzvC/X
+         n44hxjguK5us+uQSW7kmznoV4heH1duAb0GQUjUqeTf3Xjo3H7HPDRsdsfBflD++wQt5
+         WLaMBblGFxKqcObwmTqj6C3we2rA+KM37mfJA5sb97Nuw6/WkQMa7/aJhKMmw8K0R6aO
+         MQ2A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=NVmHsDqBQJBCxGh36k+fMkdYB80rlDP45cvKKDDFmfE=;
-        fh=Av3ULytgBtZdu50bXMscQfTHJ50epylYV2GY6lPB19M=;
-        b=WpCg8l8L1Bf4OUZt7J1b3zEnptSrm/Okd/d8NjM4WFJ251hmiV/z6eJ1GFrlurGz0P
-         hsMfrGJWI4kbVMbPjps79Y2Q2TCcg5TkopSG7KGsUBuWMLhRx/lHmTSo9hJTMfiRLe7B
-         Zjlur24ksA4Sg7Uz+KqfUUJMvS66J+m76Io1xWWb4+nYLtYL0AgJ6Ui01WZ9WJfPDOoy
-         +yJE94I4HcRUpvhrzSbeCiewa7bc9uBTOvIofHPfHY/G5uwk/WxRFnTb4DwNbJxlLeR+
-         G2miIeKTBBe+/0fpR6WzQCE6RH1gVKJjfJ3b43ZMojE+TSDWlrkcij7SIzyu4X/yjgZl
-         CV+Q==;
+        bh=RNR7hf8UYLE+m8+IlSqf9D9Kn/JvEzNZNospuZY38uA=;
+        fh=KAKZi3wig1rISgA4ITN1FJr5FURYs9OJyZh7oNKZyvA=;
+        b=ZGZnJ6osrzulXpK0Pyh3Fsu1qebStn+EEoCUgXO3gygk4nWe3aN0kj6lVgmztV0Bd3
+         6ByOZ+Qnh8GnYXfbCWXf5qN98/yj0lXhFwPwZXquvPHCVEUeehMizjysftVqIBhPYpBx
+         gp+0FNt77VSrvAQT3SdBEiqAAlVDi1G3scljHwSKQIQjwjeozlmebwKv4Kkb1soFFJWS
+         haiUR5TVjhCulHX2Ksp4UCZtKVHO+Op2g+CmniBi7HB3SW1v1eofJjHzbzJSH4MkbadG
+         mJvlv6BlgSo1/SPVU7SjIZyjs+MepPJobagPtoELRb9H0yABoLy1mm/a8tjwwZOb8Y8x
+         8eww==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792084034; x=1792688834; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1792085897; x=1792690697; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=NVmHsDqBQJBCxGh36k+fMkdYB80rlDP45cvKKDDFmfE=;
-        b=m6kD8zXWcnmAiMQzVyuLdidYavXtf+nQ7ABr3woBFglpqfezYAe8wvEANjiTg5RvWv
-         ou5XcH4D+9KegDL6JVchuviQsJjDVplt1gMuB2Jo5ABdm57SXXfwq7IEx4dySTyuvTrp
-         Kcuf0Rn0dbOzVLf9byOY0ksZjidHLtNZKtVqnn9kHHZtYgzJJZDMz8B6OumJYNWngfr/
-         1L1tNCawWilOWbVq1B8cOqWtBNdG/yRYT/Jav85vZAySj9zP3D7TxP7sX8fjeKW/SA2m
-         /BojeSywaiHwEJEmP+lx4E52BeSt+DqmZ4yblcJYt4f28++i8Cfx2t/RRDxzJp439Hpx
-         y6fw==
+        bh=RNR7hf8UYLE+m8+IlSqf9D9Kn/JvEzNZNospuZY38uA=;
+        b=FdY0tTI65LLFbSDM/PkmptpQRO/LkHkyKCAY9mHUMFpQa/S6Ox3Yk0ohOXs6nYBv7a
+         LSgYooxuKothhty/g1dDYggLu2Iwfl4MufA0UGt+NuH52fQdUvPhJviJnAKKXCVlE6FK
+         MXueZ5y8g6dGvYt+I1JZLjj4anjvLk9Y+v2jV6gHpQyvX+pVyu/UGw5m4vSBhwwXqpDu
+         7+6Y+OAd4F1e3qja7s14n57vtS3/yjc6Fn7Y5Nl63xNcVLEDjC/ulSeHQXea0Y4wBzPn
+         xC7EeuMmbwSbY1P8cq6KORdYHXYDpN/iil6Mj8ehEULWWhpE+ehGB0H35YSm1NC8cyKD
+         48ww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792084034; x=1792688834;
+        d=1e100.net; s=20260707; t=1792085897; x=1792690697;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=NVmHsDqBQJBCxGh36k+fMkdYB80rlDP45cvKKDDFmfE=;
-        b=U/ydfdd2YtWG9D7zC+rc1ngMuRvC3IPvMNWdG46QXZWzQ0eOIg3STVYTZG/KuFgT0V
-         +7CetrBrpHTS/P8vLJLvYLDeW2q0CTHSQuz2xnK6SXyuBu55ZKvq4dH54Z+rFobYoold
-         NxRwtssOIwvmGvFd6L8S3IS2RlT/ibun5x1H2X9cah26yeXyH9w273joH3oxlMvv9Kgi
-         05KUzUISF0DA/lHJj5p4d/w1QcCEoCnDunLojKv4J+DE+33oCw6jHxXiw6dFg3kuTvO2
-         XjtfB3j2iY4sDVR77QpbsCyhRr4pX2yio9Owy8UvG6dc30HRIftz4oKdj/ToJ4jZR7um
-         ab5Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzl611MiOb87CeSDrSZXcr7AAofYr9D7nPhyb1qUMJzBH9KJY9lXIpogoZEsZQM1XJ+dviImgWS1g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ2PDUlUnwcKk45Eek/JfHiWRhaeqKGzzC6AbV78Au+6+C9uPNV
-	eHwonbn3gYnD8vAOy4JJA03YUMQUYu0GVCycyrdoYj7LyfIARVw87FXgCXv1o99Ik0InMqV+PJr
-	x8iNrt6tzy4RyOqVc4K1+RrXpGzqYMD4=
-X-Gm-Gg: AYBFou2ymbZyS9XT0m2Mb9RTWhnByRKmdfXMnf9maJzxIGty909jTttmT80dKAf1A8h
-	Vl3FIzzBriSM7VuzeQVvLHHLnBtgIklM/KgoL3A9qL22V9OHuQXPqyoyHQbgdq0Omq8dMuDZ/lm
-	LHhe23l9jOdjRIAskKyBrIHhhgc/GJidUJ5ApuX8cUEy0cXBjbVjqrQG8yBrltA1Xn0QWyKZtuy
-	HUnrt2plNeytfduGAiGLZmg+lpg1OgLmQgdJ0H2Th1OiK/wavp5rAPNJMGiduMPiKDWuXrFDpj7
-	yZcmpbyDoCBJ5HF7RNTZ85DCaSjzqCbP0Be6+gumoxSumH0zQaX3/LIp
-X-Received: by 2002:a05:690e:bc5:b0:679:8da6:28cf with SMTP id
- 956f58d0204a3-6798da62973mr1956198d50.98.1792084033716; Thu, 15 Oct 2026
- 10:07:13 -0700 (PDT)
+        bh=RNR7hf8UYLE+m8+IlSqf9D9Kn/JvEzNZNospuZY38uA=;
+        b=GuEGe1HJkqw6RG62o6U/leQj+H9kx87ZWkhQJ2to5amdDb5fwmPPoXvhd2h41pcrE4
+         yjz+0wmcFVXE5We+gzNccwizingIodGYs8m8xGmVHS0pSh1wO9fuexL1rX1t60jB0nI8
+         vM7Xv0uz4jmthlW691UjZ/PeCdUp7pco4OEhxoQqVKRJ0NtovC5jfIxh8yswqpr2WeUQ
+         bNiqodfI1HMhqE2/i65T4oZstYX+Mw7W4lKPzoOKNhcNvJhRqVx43yLAqRFhwhw9IDnt
+         kq5Bp7mhVNjLd/fzG4EF3suf26PR1GYA9deTiSrsJRWSK63dT5/Gtn5Ui9tQ13K74T7H
+         uA+Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxhSBQyM+t69hgFYwuvWeHJCiIQVm11XuKtS1exCUMANpe24I9eULTvv3YxqTb5u08A5a9tFpU8Ug==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIrRSd13FsI9tPE5GoZpQMqQkSr1cOHHagheuSrds3eDFP/zdyS
+	4wdsMNBQm9rMgu3XfDuw2olHryp/sjobIYxezgNtZcEqJOA4Q3WNYmTnHj9DXhZceUVdLtkSfT5
+	O1Ed+Ng4+t04EuDuk9/mrsElJ4XPHfJ0Jag==
+X-Gm-Gg: AYBFou0inRl3ZqDriEPwWXIOEZ4NMCRKRMseWYxv0BgYA4iDJMVq8BAHvPBov8cS/96
+	lFA9GnxzW1rk1b0ohJbKxasHBFzdrX1iG8B0axnew/r5raqne5MURM56F3GYx0gsZIomO8SNaJa
+	joRd4H9uQ8nahStewakjPQtqa/PEKR6sMZVhGLh5oH3vVaBEPCiA580sRGcGJcepvhMy5/GEr1d
+	tsk94AJQGbPhgYFX84WS3c686b5XPJsg8EFxzf0vqO+HTeEY4J0BDn3WLmpcaKxcp5siFi+yUoZ
+	OMa8fSQQEE1FsIi5AvVTWpfrb7wB8xvd4U1KynlHbD9cKmildhNoVulQp9twplv4yBM=
+X-Received: by 2002:a05:690e:1c07:b0:679:aa90:d272 with SMTP id
+ 956f58d0204a3-679aa90dd58mr432536d50.108.1792085897078; Thu, 15 Oct 2026
+ 10:38:17 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261008-04-k3-pm-support-v2-0-6f778a53dd2d@kernel.org>
- <20261008-04-k3-pm-support-v2-1-6f778a53dd2d@kernel.org> <20261008-df80c21d73b287d09b6baa78@squawk>
- <cbba422d4ba9bd4a036536a50fadc2760efa1ae2.camel@icenowy.me>
-In-Reply-To: <cbba422d4ba9bd4a036536a50fadc2760efa1ae2.camel@icenowy.me>
+References: <20261008-04-k3-pm-support-v2-0-6f778a53dd2d@kernel.org> <20261008-04-k3-pm-support-v2-2-6f778a53dd2d@kernel.org>
+In-Reply-To: <20261008-04-k3-pm-support-v2-2-6f778a53dd2d@kernel.org>
 From: Iker Pedrosa <ikerpedrosam@gmail.com>
-Date: Thu, 15 Oct 2026 19:06:00 +0200
-X-Gm-Features: AclHuK8t02_cYn6UunMFOXXUfkheTlCkH2rjdH9KDS5vlihve2Jh2xK0A1qMWCU
-Message-ID: <CABdCQ=MQ5soNSRQ97aOytYCjtKpqZJ0frP3mqh+mL2Dsw+A7Gg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] dt-bindings: power: spacemit: Add power domain
- controller IDs
-To: Icenowy Zheng <uwu@icenowy.me>
-Cc: Conor Dooley <conor@kernel.org>, Yixun Lan <dlan@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+Date: Thu, 15 Oct 2026 19:38:00 +0200
+X-Gm-Features: AclHuK-mkmvLNzpAloyGNWEU1xEwlRugYfUHBOpsjJVuzj_o9PRbUr7KYWotes8
+Message-ID: <CABdCQ=PAHxwH1+1OkLiW2ad+PTxNY6OmmPwOwAR3EoDe6Mt7Zg@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] pmdomain: spacemit: Add power domain driver
+To: Yixun Lan <dlan@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Icenowy Zheng <uwu@icenowy.me>, devicetree@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 08, 2026 at 03:44:29AM +0000, Yixun Lan wrote:
-> Add initial power domain driver support for SpacemiT K1/K3 SoC, The Power
-> Domain Controller is SoC internal module which is part of APMU (Advanced
-> Power Management Unit), it is responsible for managing power across multi
-> power domains, which includes power on/off, isolation, power-on sequence.
+El jue, 8 oct 2026 a las 5:45, Yixun Lan (<dlan@kernel.org>) escribi=C3=B3:
+>
+>   SpacemiT's PMU (Power Management Unit) consist of several power domains
+> which can be managed independently, depending on different application
+> scenario, each domain can be powered on/off for saving power.
 
-Tested on an OrangePi RV2 as part of basic enablement for the PowerVR
-GPU. An RFC series for basic GPU support will build on this.
+Tested on an OrangePi RV2 with the PowerVR GPU power domain. A few
+comments below.
+
+> +struct spacemit_pm_domain_param {
+> +       int reg_pwr_ctrl;
+> +       int bit_hw_mode;
+> +       int bit_sleep2;
+> +       int bit_sleep1;
+> +       int bit_isolation;
+> +       int bit_auto_pwr_on;
+> +       int bit_hw_pwr_stat;
+> +       int bit_pwr_stat;
+> +       int use_hw;
+
+bit_* fields hold values 0-15, u8 would be more precise than an int.
+Similarly, reg_pwr_ctrl fits in u16 and use_hw could be bool.
+
+> +static int spacemit_pd_power_on(struct generic_pm_domain *domain)
+> ...
+> +               dev_err(&domain->dev, "power-on domain: %d, error\n", spd=
+->pm_index);
+
+You could include the domain name failing, that would help identify
+what's causing the problem. You are already including the name in the
+"power-off" error message.
+
+> +static int spacemit_pm_domain_probe(struct auxiliary_device *adev,
+> +                                   const struct auxiliary_device_id *id)
+> ...
+> +       pmu->genpd_data.domains     =3D (struct generic_pm_domain **)pmu-=
+>domains;
+
+This cast relies on genpd being the first member of struct
+spacemit_pm_domain. Reordering the struct silently breaks it. Consider
+allocating a separate struct generic_pm_domain ** array and storing
+&pd->genpd explicitly
 
 Tested-by: Iker Pedrosa <ikerpedrosam@gmail.com>
-Reviewed-by: Iker Pedrosa <ikerpedrosam@gmail.com>
-
-El jue, 8 oct 2026 a las 12:31, Icenowy Zheng (<uwu@icenowy.me>) escribi=C3=
-=B3:
->
-> =E5=9C=A8 2026-10-08=E5=9B=9B=E7=9A=84 08:27 +0100=EF=BC=8CConor Dooley=
-=E5=86=99=E9=81=93=EF=BC=9A
-> > On Thu, Oct 08, 2026 at 03:44:29AM +0000, Yixun Lan wrote:
-> > > Add initial power domain driver support for SpacemiT K1/K3 SoC, The
-> > > Power
-> > > Domain Controller is SoC internal module which is part of APMU
-> > > (Advanced
-> > > Power Management Unit), it is responsible for managing power across
-> > > multi
-> > > power domains, which includes power on/off, isolation, power-on
-> > > sequence.
-> >
-> > You should prob mention that this APMU is already documented
-> > elsewhere.
->
-> Maybe it's also meaningful to mention that APMU already has #power-
-> domain-cells property, because the first reaction of me is to add such
-> a property (and then found it already there).
->
-> Thanks,
-> Icenowy
->
-> > Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> > pw-bot: not-applicable
-> >
-> > Thanks,
-> > Conor.
-> >
-> > >
-> > > Signed-off-by: Yixun Lan <dlan@kernel.org>
-> > > ---
-> > >  include/dt-bindings/power/spacemit,k1-power.h | 14 ++++++++++++++
-> > >  include/dt-bindings/power/spacemit,k3-power.h | 12 ++++++++++++
-> > >  2 files changed, 26 insertions(+)
-> > >
-> > > diff --git a/include/dt-bindings/power/spacemit,k1-power.h
-> > > b/include/dt-bindings/power/spacemit,k1-power.h
-> > > new file mode 100644
-> > > index 000000000000..41ef540b5c44
-> > > --- /dev/null
-> > > +++ b/include/dt-bindings/power/spacemit,k1-power.h
-> > > @@ -0,0 +1,14 @@
-> > > +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> > > +
-> > > +#ifndef _DT_BINDINGS_SPACEMIT_K1_POWER_H_
-> > > +#define _DT_BINDINGS_SPACEMIT_K1_POWER_H_
-> > > +
-> > > +#define K1_PMDOMAIN_VPU            0
-> > > +#define K1_PMDOMAIN_GPU            1
-> > > +#define K1_PMDOMAIN_LCD            2
-> > > +#define K1_PMDOMAIN_ISP            3
-> > > +#define K1_PMDOMAIN_AUDIO  4
-> > > +#define K1_PMDOMAIN_GNSS   5
-> > > +#define K1_PMDOMAIN_HDMI   6
-> > > +
-> > > +#endif
-> > > diff --git a/include/dt-bindings/power/spacemit,k3-power.h
-> > > b/include/dt-bindings/power/spacemit,k3-power.h
-> > > new file mode 100644
-> > > index 000000000000..519fbf946312
-> > > --- /dev/null
-> > > +++ b/include/dt-bindings/power/spacemit,k3-power.h
-> > > @@ -0,0 +1,12 @@
-> > > +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> > > +
-> > > +#ifndef _DT_BINDINGS_SPACEMIT_K3_POWER_H_
-> > > +#define _DT_BINDINGS_SPACEMIT_K3_POWER_H_
-> > > +
-> > > +#define K3_PMDOMAIN_VPU            0
-> > > +#define K3_PMDOMAIN_GPU            1
-> > > +#define K3_PMDOMAIN_AUDIO  2
-> > > +#define K3_PMDOMAIN_LCD0   3
-> > > +#define K3_PMDOMAIN_LCD1   4
-> > > +
-> > > +#endif
-> > >
-> > > --
-> > > 2.56.0
-> > >
