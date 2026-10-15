@@ -1,128 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E76C51B178
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 12:30:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45F664C67F9
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 12:45:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792067432; cv=none; b=cPg9OmEuInPeR2XKGVbT29oSgTB43lUQbbvD17241Ig6UCvK6EFG9lca11/aAlzV0XjPj6lbgKyYjMJI16aKwWoflTZJEK+5THAGH7eFiJWIj8kCkpvk3QecEp2hdfrXNokrz/tGhC0ZOhtA2/AQts5dm2WY4sCI68qrTQ48yHE=
+	t=1792068316; cv=none; b=pIWbb/f55Eq8fP4WuEIRRi5AFr1CNP2peU2Od/g73Zmt1Rx5YlZqVlyt2q2+N08ojxhyB5oH4L9qhTbHe0DD5NfnBA+cXKfxBbq0wens+LdC4tH20J/GmJ9YDULJJVq7LNA/TzIzgNd/RtDVF6B0ZKwNgCjkj5OBfajPy9KKWvg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792067432; c=relaxed/simple;
-	bh=7xp5FaQsIIC3pv9y2INkZKrDNbfRB0vB60u/6QFeOc4=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=laikJbkhQWLaa1MnDyOP0M8UmrQ+JxzXfSSkVmYlpQ2SvT8Kgn33wxAk51Fyd8MUTlBzQRh9gJRUqnN0LzQFhhVdCxEL0zFzz3YDdPGH01C2lzAJqgBnXTtQ9ywkWidCcDpibGH43vkRaXWrhQDh4ZsDdzcNHwF4o3RyPg+jVNw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EHUq3C5S; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792068316; c=relaxed/simple;
+	bh=j4bWdL2KdzuWTN7mQcdzbBE3anUhrJg5Qh62aTSfhog=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=eeLOAtj+7NsCzhFdxfbSN4+DOAzBW3BBvHWil1+huUlYBXYxp6vhH2rnO8PoG/AliXvLYqlSWKMIA5MQJoqwjXdSVvPr8WQZPitgIn66J1jr+EfMzEbJJuqkGgEHNU418l9PUoKOP/3fYDHILwryouWGEfruT63b8gnifV5Jjpk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=gkEMpKuu; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EHUq3C5S"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E3D11F000CA
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 12:30:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792067429;
-	bh=0Hrr6m57SxPTnWIbx/gib9CZ2mA67LGZI8LQGZp5kb0=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=EHUq3C5SlN2p/vApuLOW400yPE+gOhqlx8PjGcoCu3KU9aFjNKGZZQXHylkLcO5SL
-	 1zlFxrskiG+j5+yjkFOvZFHIsEFy+zT4MjGhary8lVrZVLgjrJIEVuXGVMU3WBGxVx
-	 qLglji5kahswtHOIyWAKUsIyeGMU2y9aLNF0OPOU/8E7OeRrf0k4v7H1qAgXUaqIOy
-	 sudncVr7TFI2Fq1Y3DSzEJpQl0G7mPArQcwEshcBxs/Bz8u+8Pf8H9ZNg/swmUVG0g
-	 ZFr2BaNqYZq1pyPCFZp42RQ7pc3qqTeEXwk1iC3pKB/h5X5vP0zdF/I1X0FUpfDQls
-	 H0qybqiQ+0IhQ==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5be3ea5a7adso448955e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 05:30:29 -0700 (PDT)
-X-Gm-Message-State: AFq9FYIa/9RaCwab+3IuQEAPeegJz4bMJcTt0aSyPABnyN9tuDkT3ET9
-	7oytWcehtYhvuxE8QJyoqZJ+oNgnswmJCfh9AZzI5J8LqABDCD4eznHWfUg/uY9sH9AMctXAnIM
-	j5DKltjGwEHmRTbsAQskuSA+kg3m58fYVVjRyuIiUzQ==
-X-Received: by 2002:a05:6512:438d:b0:5bc:ec2d:15ac with SMTP id
- 2adb3069b0e04-5bcec2d192fmr5464537e87.63.1792067427716; Thu, 15 Oct 2026
- 05:30:27 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 15 Oct 2026 05:30:26 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 15 Oct 2026 05:30:26 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <CA+V-a8toBu8SkOft-LHxgR0OEy0pz8sMGMze3GCG5z6n-YuZgQ@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="gkEMpKuu"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-48c4649b35bso384830f8f.3
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 05:45:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1792068313; x=1792673113; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=5Il+ddCvnfoN5BE2PTqdZxQP835L2JzCkXFfKNhKcR0=;
+        b=gkEMpKuuiZju3dY3nJTJkhpwyWzd0DF21vBLece/CRWwY/ho1cjniWk0xPech7HhOv
+         qxVoaavz4VhMF2Z4HUncGzoJlE8FfWIh0Nn1/HQnid1xpDEVcRIJWHeYN23bf4BNgevY
+         vd22S4b8aQVSGXzX8akUHu+yDokTc5RGRBapK+JXDNly8s/6U7QcxG/W7Mh6Y/Qzw5OP
+         2OwkZcI9V8gsCr6cfKPRJS5xCAcv729qwlhL/FOiaijiPqR34YB5UvYAEw7zD9O3saVp
+         HADZLtA91EbIAi+vrF/FX4D4DkG5dnYkjwPQ30WcoZgkF5aIHVJm6BlF3RtrP3Sqrjrn
+         jb0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792068313; x=1792673113;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=5Il+ddCvnfoN5BE2PTqdZxQP835L2JzCkXFfKNhKcR0=;
+        b=0WF+FYfsr+Hpx8Qb7+c0mJisJV5EV9L8LdkGze/3c0eU9j4qiHIospNRNVvzqN/qZt
+         +uIq9JWiGRYyXJfC41Q2o3yr2Bd+oCGBQKeTYETdupiKfFQFrv8LNu8d6EMJluZogPmo
+         /M57oqYIrO4VOuNYkbsZY2sNpQgING1vihKqUr9ILuDwSTfgui/2vWFoI2nL0fRo2Vag
+         KS4tQfnq533FH8kZe5k5YndOa4OPoWkW/gkb3TJaIPyapRKoHCtfPerREFp0oJRWmye8
+         TdSjYNKWap2wKZgUt2SiofVJ3R4ldzNdRGR0e4/77yHvkb7BKckKObAON0r00QsvLjac
+         p10w==
+X-Gm-Message-State: AFq9FYLOIXUQ66FiuoC7JfJRPpePFqGtxFxkPin0hWu3XFigi6pyT4dB
+	1pnVfOWO9o3V6N0AO3CzoVFTsrEpUQ3OkNF7Cd0M6shci3ppwmIQixEi5btu64LZziI=
+X-Gm-Gg: AYBFou3a4stLv9OgUDeq4Rf8uySbLF3gau86ZU7Q7iyWzbE3gDpGFRYePwTh5o2SdaB
+	//gdJcH0vVIRiLZGCskxFMoQr+cUwjU1763zY75R2JtSmpke5k67OonofLZUMg85VzV+uLJLR7S
+	lpacf0azys/z4fmVuvHpNSaS5AgQh0G5iKqmNifl/Uc3Rg0HbPzftgg7zce3CugM5WRUwN7GBXK
+	39yUwouuqOY5UEgaiQVFtTVkhbqbc/VA7mLCJrj3RlttPelSVdB8Xq6A1ZNqI8lE87YB7RJ+5Yu
+	SxxjTv1sd1M8AH0vL5w9bBtlxmOgaCruyQL0GSGZfY3eWG9IUDI03KpEkXWD+zUofSSAyxRYuRx
+	EdfCcbApMYOkfc4AU0di1tcMyvT3An9Ry8wLYyORcIOG/+MtO3kWiNr/TbBCf+Vx+EFX07r/7dR
+	CevmVm4XuqQeC6aew1P648KVcmPKKQKkVhkKlt9O5xGD9raRrbNA6NBTBeNjv+JIb9caOvoPJ8u
+	Jv3evA6aMsHyKh8JmKlrAV+EANI3bLQqBr1ck0K1sVmrGB1KDnYSSo=
+X-Received: by 2002:a05:6000:41cd:b0:48d:f14a:9179 with SMTP id ffacd0b85a97d-48df14a92cdmr7027218f8f.48.1792068313379;
+        Thu, 15 Oct 2026 05:45:13 -0700 (PDT)
+Received: from alchark-surface.localdomain (bba-86-98-194-229.alshamil.net.ae. [86.98.194.229])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0ab4edfsm19586102f8f.26.2026.10.15.05.45.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 15 Oct 2026 05:45:08 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Date: Thu, 15 Oct 2026 16:45:03 +0400
+Subject: [PATCH] power: supply: bq257xx: Describe the dev field in the
+ driver data structure
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261009165710.1320233-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <20261009165710.1320233-6-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <CAMRc=Met2DuvMz4fZjSn4as56uaKaN4K3Nt_ub=4BjaLQe5nmw@mail.gmail.com> <CA+V-a8toBu8SkOft-LHxgR0OEy0pz8sMGMze3GCG5z6n-YuZgQ@mail.gmail.com>
-Date: Thu, 15 Oct 2026 05:30:26 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Mdiy6uj_m_fDOO9x2xXeS7hthMW5OARSOCZzJK1itPnpw@mail.gmail.com>
-X-Gm-Features: AclHuK8kyjgILBxHt4nWraWJn0B_VsgRqbvk_2gFUR2tJYG-2UYXBRYX5DWMtO8
-Message-ID: <CAMRc=Mdiy6uj_m_fDOO9x2xXeS7hthMW5OARSOCZzJK1itPnpw@mail.gmail.com>
-Subject: Re: [PATCH v2 5/5] soc: renesas: Kconfig: Select POWER_SEQUENCING_RENESAS_PWRRDY
- for RZ/V2H and RZ/V2N
-To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261015-bq257xx-dev-comment-v1-1-c87ee6a3b251@flipper.net>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQ6CMBBA0auQWTMJLbQ1XoWwsMOoY0LRFkkTw
+ t0punyL/zdIHIUTXKsNIq+SZA4Fqq6AnrfwYJSxGHSjrWqUQf/RxuWMI69I8zRxWPDiyGiyru2
+ sh1K+I98l/6798Hf6+hfTcq5g3w/p9fQrdwAAAA==
+X-Change-ID: 20261015-bq257xx-dev-comment-87c52c67346b
+To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, 
-	Prabhakar <prabhakar.csengg+renesas@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ kernel test robot <lkp@intel.com>, Alexey Charkov <alchark@flipper.net>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1214; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=j4bWdL2KdzuWTN7mQcdzbBE3anUhrJg5Qh62aTSfhog=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWRdOHX5enzCpVxpoxlqoj8LFIK3MvYU2b3RbHNf8FPEc
+ efc9Sk5HRNZGMS4GCzFFFnmfltiO9WIb9YuD4+vMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
+ oZGOsY4RAxenAEy1hDXDf1eTI48Ujh1TtdnJKW0k+T2Ip+3lD+/JX6tCLfIZdiTUCjH8M/LsecA
+ 94XzGzPCne7xU4l425k4SN7+2rZRJSe0k370DrAA=
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-On Thu, 15 Oct 2026 12:48:21 +0200, "Lad, Prabhakar"
-<prabhakar.csengg@gmail.com> said:
-> Hi Bartosz,
->
-> Thank you for the review.
->
-> On Thu, Oct 15, 2026 at 10:45=E2=80=AFAM Bartosz Golaszewski <brgl@kernel=
-.org> wrote:
->>
->> On Fri, 9 Oct 2026 18:57:10 +0200, Prabhakar <prabhakar.csengg@gmail.com=
-> said:
->> > From: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
->> >
->> > The RZ/V2H and RZ/V2N SYSC drivers register auxiliary devices for
->> > power sequencing, which require the pwrseq-renesas-pwrrdy driver to bi=
-nd
->> > to them.
->> >
->> > Select POWER_SEQUENCING and POWER_SEQUENCING_RENESAS_PWRRDY from the
->> > RZ/V2H and RZ/V2N SYSC configurations so the power sequencer driver is
->> > built whenever SYSC support for these SoCs is enabled.
->> >
->> > Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
->> > ---
->> > v1->v2:
->> > - No change
->> > ---
->> >  drivers/soc/renesas/Kconfig | 4 ++++
->> >  1 file changed, 4 insertions(+)
->> >
->> > diff --git a/drivers/soc/renesas/Kconfig b/drivers/soc/renesas/Kconfig
->> > index b7abca4559df..32cd0d9c8758 100644
->> > --- a/drivers/soc/renesas/Kconfig
->> > +++ b/drivers/soc/renesas/Kconfig
->> > @@ -517,9 +517,13 @@ config SYS_R9A09G047
->> >  config SYS_R9A09G056
->> >       bool "Renesas System controller support for R9A09G056 (RZ/V2N)" =
-if COMPILE_TEST
->> >       select SYSC_RZ
->> > +     select POWER_SEQUENCING
->>
->> That's implied by the symbol below though?
->>
-> POWER_SEQUENCING_RENESAS_PWRRDY will only be visible when
-> POWER_SEQUENCING is enabled. If dropped, randconfig might generate the
-> following warning:
->
-> $ make menuconfig
->
-> WARNING: unmet direct dependencies detected for POWER_SEQUENCING_RENESAS_=
-PWRRDY
->   Depends on [n]: POWER_SEQUENCING [=3Dn] && (SYSC_RZ [=3Dy] || COMPILE_T=
-EST [=3Dy])
->   Selected by [y]:
->   - SYS_R9A09G056 [=3Dy] && SOC_RENESAS [=3Dy]
->
+The commit moving the device initialization to the new .init callback
+missed the description of the newly introduced dev field in the driver
+data structure - add an entry to the kerneldoc.
 
-Makes sense.
+No code changes.
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202610120726.XkN50Smh-lkp@intel.com/
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+ drivers/power/supply/bq257xx_charger.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/supply/bq257xx_charger.c
+index 2177cee29a4f..569608bc0d6a 100644
+--- a/drivers/power/supply/bq257xx_charger.c
++++ b/drivers/power/supply/bq257xx_charger.c
+@@ -54,6 +54,7 @@ struct bq257xx_chip_info {
+  * @chip: hw specific functions
+  * @bq: parent MFD device
+  * @charger: power supply device
++ * @dev: charger platform device
+  * @online: charger input is present
+  * @charging: charger is actively charging the battery
+  * @fast_charge: charger is in fast charge mode
+
+---
+base-commit: d419d682257d813f6cb7a28e42b35d0edf4ad038
+change-id: 20261015-bq257xx-dev-comment-87c52c67346b
+
+Best regards,
+--  
+Alexey Charkov <alchark@flipper.net>
+
