@@ -1,131 +1,141 @@
-Received: from mail-dy1-f177.google.com (mail-dy1-f177.google.com [74.125.82.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F61E45DF77
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 18:41:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.177
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792089707; cv=pass; b=IBWnyfqltjqht1XQzyigMRRS7q7ZuATxDgS2Pkt3N7Sa+kSF0sxIRFKo/Plrn3BTnq6MhkVSLnAdS7PxP0SeGPfOue+4c79HMDMWLk/quWjPkQcG/zrxN6jmBrvmNLwYbT+ohs00xzeY+O9xS2whwMoSaqb2fz31bGSLrK2xgJA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792089707; c=relaxed/simple;
-	bh=xauoRU92rayWXBiUnhY4lqEI/RzVYWTkJ5X0x3hjblE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kQW1gZbISfsF+zlNuqZec9P57ZpOdUSIoJRA7SbmHsK2Z/z3SIKkzh8UP0P5bxBAlDo/4yn8oRlpilNGUUR6H1O/P6Vcc3eZcotm4HPcnDjU8Q8zKVEF2pFv/K5ljrcPxqwJOuhutzK2He3/Ic/YdfWWq/G/O1q/I0HhhLfRdj4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=D+x9goKG; arc=pass smtp.client-ip=74.125.82.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 633E03F8231;
+	Thu, 15 Oct 2026 18:42:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792089768; cv=none; b=fZxrNb390QfsHbH9P4MQe+FdsXw3z+aOgwobhaump5002brK7G5vfUNJnwC9YROwsg0cJ8OYstb7s6Y3qvwA4jn7xwbPqKPkkqVoAjmM17sbKwYkRtCcCFo8Z6frDj1Ln3fOEbZGQT1V5xXpbfoi9121fLO3Y5oVwdEdtgvryXg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792089768; c=relaxed/simple;
+	bh=tDYWq06Lr0v8aO4d/FRTH+CAmRSgkd1Ug4MoqdpKYsg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FWcdTPylywntQXNJ+tiwqApJbSIz+sOCRv9MPZ39pIK/puVEweepqZX+YNXs/5qa4pfuU8JZXUvlP6wNSLyzAaT6U888mxGo0emxlpvqdrh9RuPrMD7kPKYQcQ2/M6Vhw70CTwhdCS1pIVx3aLQ30qu5yIMUh09TRA7/L80PRpE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D5ALtjyC; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D+x9goKG"
-Received: by mail-dy1-f177.google.com with SMTP id 5a478bee46e88-35ef6b49813so2522407eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 11:41:45 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792089704; cv=none;
-        d=google.com; s=arc-20260327;
-        b=kf6kck9+l/LVLHfG9auxVaO+WlcLoJqx3q58j7r+tnQCzwm09kwyvONoBXXwT4x5Wy
-         qKo/OWmyjcCJCQBMJRjUI7mRhmIG9Mj/pnwUvwaGE9TuR3I+4lL2rqRqP4iU+D1hEgep
-         7cDl8zOFRa1h+ONehe6jcG2buepjdFv2LTUZcRGxr7VNTHn2AEIpsPaNF5xfi1UKnoW3
-         K3o5Grl06+hYcF+YHqxFuMtEsPLf7dMRymDEnLKg7yMzbt8Id6/5sXPTD6NLa9bRKuKz
-         NrKpVzwy9T1EPs3h3okBc2987XUQMdRoTmaJ/9wfHX8tMQKl4bEODFmGOJHUxrTqFrUy
-         Dijw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=rsIPZgYgrzIClGBhGTKauA1e1WQnsO82rJ+gDiB7nEg=;
-        fh=7AVFD/pBaf2S4Clp1JfA61skvl3dlZqDeMdNP/ZVDNc=;
-        b=KHRZJ1f8xiyvfPCm0ht1b9xOcPFPtLzzr+fct4tdRfw1NwLZdi16css2cpdAYuIPzp
-         JoNPxHURnXLALQC7SpvXhk/4OOs0/QVeUbjQ7WuwjXDi2y7gsBTQScgC9xuifWNiINO0
-         oD+yVuXuX62XCkaJFZUSr4p+huq1TxNIKVJWRZliwrjZC6ctfc36lKdEAx56IvQiZmxZ
-         zG4/59VP6szvwOWj4gxeyscNrpqqoou6ikYp/yLpaYB7B70ZSGvXLrgk5BchdUSznV4R
-         aobcpGgbFii4SDauKxRG1EC7IYWa7fXAaA/NUdThKgiHyVbmFgyhbQwbjr4EpAOkoi0q
-         oFNQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792089704; x=1792694504; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=rsIPZgYgrzIClGBhGTKauA1e1WQnsO82rJ+gDiB7nEg=;
-        b=D+x9goKGpfvnl9hCynIoU/Y+0NFqZ7WirIuX6nMhBfHcDA2HUKIJVwq665QzT/6/Ap
-         A/+Lm1PdYvR37sHqfiRmmbNUORvFIIqxOzbKh1NPcc9zHysO1RKfLlxwVDQoPLblq2BS
-         oYRsCOP/iKDu9u7N4MRx1K2zgUKTkrr7oj0dHgtC76Dp+qycvi7ewwrGSe6r7RAsgwh4
-         x15HDivoawBFaFdgcmvz5+L5fOTcV6n6Rxuq+wPN+O7o+0UuIiw5PyKLfWrUtlb0G9O8
-         wIyrudOcUFKeZNt1XX0/P4qWEJm4QmV1xnN0lPQVDNi56AwZamHh+5OL5h8eaUxEhO/K
-         EytA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792089704; x=1792694504;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rsIPZgYgrzIClGBhGTKauA1e1WQnsO82rJ+gDiB7nEg=;
-        b=MFankUK9u/pYykvwnJEOc/eN5xnW8vigQ5OBh0zt/vHeogaPeUmfgDJt45vJ2bQDWt
-         doR6lnkCVdh77iy3S8vMy8sUxHxtUVmmBXirPBD+/N3EI8hn0c//RDzkK3xqxq/L1g2z
-         s3v3vOj9+DKjM7iHDWlTl0WVt7b0ekHglSNzZJB1+3HSsPpUyFJxz15vN+k76GH3WtP5
-         l52uQUs5uf+ITJLcW6M0rev8xJCToI4KTbCYfAsh/cAGnAgmcf3LSdj816ytwSQioQgd
-         Ng6hITmTFxajMwasVOtOhGRxd0wTsXP5VahEKEfnc+CL/c8UK8SwUAsG4oO22CPZPAI4
-         4xTg==
-X-Forwarded-Encrypted: i=1; AKwUvByuo+8nnBk0+rqADEWFOBDFB8V6wwJUie9/1GOXbjcDncn/UVG+CyHcz0dWSwYgfAa3PrjunKkzAg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJaHKmkOVSgQtT8hDK66yxktwkevh5LXmKyKYjzcsszSRXJ7TLK
-	cVsg5BSoQA9a7rKFVP4fQkelf+877qFCuw871UfW5oyxyi8HhKJnqRVe39SCzbm0fOJu23QBRFj
-	otqPJtOcPnmU6sYADq/DoqbLranSotlEVZA==
-X-Gm-Gg: AYBFou11IS83ezF0ndjB2tmkNZomhHP/5I0k3O6g7MDEIoUShrM6HUE8nY+na38nRGn
-	UQ5fCzKbygHfDX23ytZQP+haGW/plAzQ4sYqxZu1gp7+VipZrmYw4BcbGch0ub61dkt4wnQ6Kpn
-	ibiciFZQVyoMeWO5Qso1Agp4LbxhCf0jgQ+iBE/hZFpT7gsqxlbPbDQcRULIhF9uA0h64VDdcEI
-	3Vl1cbdb95draOf2naZqJKsekvmodCHjob50ovMqGJvh2HKDWWr/GRsLS79a7Guqdd73pkwz2B9
-	C3KTBnXL+d06HKCTbVoGuQt2i0NwmRQc6U5bXt1NpA9rVj2ytLhNo0rQtf6TglkmjjiwYdtIws+
-	MEM0boFeWlzhR
-X-Received: by 2002:a05:693c:2a12:b0:35d:2c2b:215a with SMTP id
- 5a478bee46e88-35d2c2b2220mr10102451eec.35.1792089703889; Thu, 15 Oct 2026
- 11:41:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D5ALtjyC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FF051F000C4;
+	Thu, 15 Oct 2026 18:42:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792089765;
+	bh=dg/1OSkrW8sX2euc3aZ8a5bssRkph0JoeOFI3JZD560=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=D5ALtjyC68GN/mpi+ZK8E1mWTMEDomCnS/ERWCEN6bBJPQCtugUMl+B22l+1wJ87o
+	 Hf+WjNfvU8VHb/MOo35aSpSbbtiJhvFwkuvJy8SdvTs4tED3cQebluDVjjUjxXz1RV
+	 10NtAzv7C/NQEJIftkQyH6he5O0wyi7/R2K/bcps+aobJQauR6XU/5Rlvb/ksM6j/L
+	 59oVD/dzJZQhZZ9ETV4mkQ0Wny9IbBXisFIw8Uq9voEdcR0398E47anliP1+RMUf+R
+	 NcmjNIg3KkyRf2CsCMhsGMRZueAB/J4ydYChvpem9THId0Ab9GKuFOOBhOgZqJyrv/
+	 Y3fVl4kmGEfLQ==
+Message-ID: <f482b724-7217-412c-a0d9-7d8e322fcc84@kernel.org>
+Date: Thu, 15 Oct 2026 13:42:43 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261013173504.451391-7-clamor95@gmail.com> <f26b6bba-2c2e-46b3-9350-0ba0785cf3ba@web.de>
-In-Reply-To: <f26b6bba-2c2e-46b3-9350-0ba0785cf3ba@web.de>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 15 Oct 2026 21:41:31 +0300
-X-Gm-Features: AclHuK-9dwgzuV_rOZ05ZsN-0-b2YgDg6QoraK02oNxRoGvJeYL0q4NRa-SbCE4
-Message-ID: <CAPVz0n2ubBgOGO5q4ZBYkw-eDSuNh-MpdBk7uoWW69m2QduSgQ@mail.gmail.com>
-Subject: Re: [PATCH v11 6/7] power: supply: Add driver for ASUS Transformer battery
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	linux-pm@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org, mfd@lists.linux.dev, 
-	Conor Dooley <conor+dt@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Florian Krischer <florian.krischer@fkr.dev>, Ion Agorria <ion@agorria.com>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 3/4] platform profile: Add firmware-neutral aggregate
+ sysfs interface
+Content-Language: en-US
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: Mark Pearson <mpearson-lenovo@squebb.ca>, Armin Wolf <W_Armin@gmx.de>,
+ Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+ Hans de Goede <hansg@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Maximilian Luz <luzmaximilian@gmail.com>,
+ Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+ "Derek J . Clark" <derekjohn.clark@gmail.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Jai Luthra <jai.luthra@ideasonboard.com>,
+ Greg KH <gregkh@linuxfoundation.org>, Jack Wu <jackbb_wu@compal.com>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-pm@vger.kernel.org,
+ "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>,
+ Kurt Borja <kuurtb@gmail.com>
+References: <20261014132500.3817549-1-daniel.lezcano@oss.qualcomm.com>
+ <20261014132500.3817549-4-daniel.lezcano@oss.qualcomm.com>
+ <c751e18d-57e9-4ce6-95dc-1bf53a7a4808@gmx.de>
+ <CAJZ5v0jQQsXP4v7dymuHZhy2oVjPwV9eXhqV4bGPUgMyGyUsUQ@mail.gmail.com>
+ <1cba0f2a-38cd-42b2-a773-9dca5d7519e5@app.fastmail.com>
+ <68128016-661b-4b78-bac1-b7e23029d8de@kernel.org>
+ <CAJZ5v0gHHoJVm9o-ZzD38jWpGbAZML4AMEpSmy9C9n5TSVYppg@mail.gmail.com>
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <CAJZ5v0gHHoJVm9o-ZzD38jWpGbAZML4AMEpSmy9C9n5TSVYppg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-=D1=87=D1=82, 15 =D0=B6=D0=BE=D0=B2=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 21:0=
-6 Markus Elfring <Markus.Elfring@web.de> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> =E2=80=A6
-> > +++ b/drivers/power/supply/asus-transformer-ec-battery.c
-> > @@ -0,0 +1,289 @@
-> =E2=80=A6
-> > +static const unsigned int asus_ec_battery_prop_offs[] =3D {
-> > +     [POWER_SUPPLY_PROP_STATUS] =3D 1,
-> =E2=80=A6
-> > +};
-> > +
-> > +static int asus_ec_battery_get_value(struct asus_ec_battery_data *priv=
-,
-> > +                                  enum power_supply_property psp)
-> > +{
-> > +     int ret, offs;
-> =E2=80=A6
->
-> The referenced array provides unsigned integers.
-> Would you like to specify a more appropriate data type for the correspond=
-ing variable?
->
+On 10/15/26 13:33, Rafael J. Wysocki (Intel) wrote:
+> On Thu, Oct 15, 2026 at 8:28 PM Mario Limonciello <superm1@kernel.org> wrote:
+>>
+>> On 10/15/26 13:04, Mark Pearson wrote:
+>>>
+>>> On Thu, Oct 15, 2026, at 7:30 AM, Rafael J. Wysocki (Intel) wrote:
+>>>> On Wed, Oct 14, 2026 at 11:31 PM Armin Wolf <W_Armin@gmx.de> wrote:
+>>>>>
+>>>>> Am 14.10.26 um 15:24 schrieb Daniel Lezcano:
+>>>>>
+>>>>>> The per-provider class interface is firmware-independent, but system-
+>>>>>> wide profile selection is only exposed under /sys/firmware/acpi.
+>>>>>>
+>>>>>> Add /sys/kernel/platform_profile/{choices,profile}, sharing the existing
+>>>>>> aggregate callbacks and semantics with the legacy interface. Keep
+>>>>>> attributes hidden until a provider is registered and remove them after
+>>>>>> the last provider.
+>>>>>>
+>>>>>> Notify both aggregate frontends on profile changes. Also notify the
+>>>>>> provider class device on a direct profile write, matching its documented
+>>>>>> POLLPRI ABI. Restore aggregate visibility after a failed registration.
+>>>>>
+>>>>> IMHO the aggregate sysfs interface only exists for backwards-compatibility,
+>>>>> so i would be very happy if you could just make the associated code optional
+>>>>> and instead teach platform-profiles-daemon to use the individual class devices
+>>>>> instead.
+>>>>
+>>>> It is not just a matter of opinion AFAICS, the aggregate interface has
+>>>> been regarded as legacy for quite a while (see commit 778b94d7ac17
+>>>> "ACPI: platform_profile: Add support for hidden choices" for example)
+>>>> and it was retained exactly for backwards compatibility reasons IIRC.
+>>>>
+>>>> I'm with Armin on this.
+>>>>
+>>>> Thanks!
+>>>
+>>> I don't think we can get rid of the legacy aggregate interface - which I think is what you and Armin are asking for? What does making it optional mean?
+>>>
+>>> Reading through the patch series it seemed quite reasonable to me to move it out from under ACPI but still have the old interface working. What are the alternatives?
+>>>
+>>> User space (and users) are still using the aggregate interface in my experience
+>>>
+>>> Mark
+>>
+>> If we want to get rid of the legacy interface eventually I think this is
+>> how you can do it:
+>>
+>> 1) Wrap it with a boolean Kconfig.  Default to enabled.
+>> 2) Add some messaging in this Kconfig that it's being removed after the
+>> LTS kernel from 2028.
+>> 3) Emit a pr_notice_once() or similar that it's deprecated and will be
+>> removed in the future.
+>> 4) Modify all (known) userspace software to stop using it.
+>> 5) Wait for userspace software to tag new releases.
+>> 6) Change default to disabled.
+>> 7) Wait some time.
+>> 7) Next LTS is declared.
+>> 7) Drop kconfig and legacy code.
+> 
+> That should work, but my point is rather to avoid adding another
+> aggregate interface to replace the old one and instead switch over the
+> ecosystem to the existing (and documented) class device platform
+> profile interface.
+> 
+> The legacy aggregate one may simply be removed when everybody stops
+> using it (which may take a while and it may be moved to staging at one
+> point).
 
-This is a nitpick, it does not affect anything.
+Right totally agreed.  I was meaning userspace software should switch to 
+class interfaces not add a new aggregate one.
 
-> Regards,
-> Markus
