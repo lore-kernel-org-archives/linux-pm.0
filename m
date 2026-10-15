@@ -1,281 +1,226 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 770324B4043;
-	Thu, 15 Oct 2026 07:53:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792050802; cv=none; b=kBaVXKaVgMPKpIfqVQBZaJwa7jK2OLRvWv2+cVmdAWP3l3NdHkRFH1AsZ8cKjhg8U1Cv2cpOi96CqhQqKl1IJtLkx+vGMBxdqlMZ2kJaWie4d1w5ufm63cg2/TKZakkYy3r6IViiGPRjGqq/4RYqtISLx7/lo3WYI26iQ+aAb0g=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792050802; c=relaxed/simple;
-	bh=vxw4nMxaECnIc0YHwRfwBILmFkhBQvUD6HX2LsSEB34=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HWhtucL6whVh2AFhOMQhDiS7p5zalmiofgmYVRo0Uq8xkgyBeeDO1sKvlUmsbgFo3GIIFdWf+4aXEOCmhQ14JpkJfPNAQ5+FiHQ1VAebYkGqSGfOL3HzsPR9gnJ2lwO8UFcvNGrZeXdRiwwfsuQJQXxoazSKbgMmFeqJly96bmc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=lvi5hYAf; arc=none smtp.client-ip=213.167.242.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 604ED4C753C
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 07:54:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.48
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792050900; cv=pass; b=YxlEHX+e6H/oxhvdQXO5ogNWyv+dAhCPvC8i2roeHVJ1B3y8Gvn0jVCvwZTAd5QthqJdsv5eDUfnJW8SSpGy8Ivv9ILmRrZymFuhn//nfNrO6LjkZaZYYvH9y3s5/+MjcWRmliI44l8QnhhBarOEBH4LsFsusaGMOJFw5qf0HWk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792050900; c=relaxed/simple;
+	bh=QUhjA9hwUmTXGUjT356rZPUadcbJKMeW3gD2q9pu7ZU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RB/GrXwAyuAczjs/fDbEtGCQ3tDwnMbfuqn4nd95hItvxh9ADZ9G2C8VFcAADFyN4pHAeGawpdfUCFf/JvBDbjtYN+ITDlykBl2WaU0Bp0EScW+d/+WLtuJ0QN6dCRVwcX5FvUOY56yz8IPgFNB90Zvyc6oQVFcnuFjTXdXSavQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OO/ApVEH; arc=pass smtp.client-ip=209.85.208.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="lvi5hYAf"
-Received: from neptunite.rasen.tech (unknown [IPv6:2400:2411:160:2f00:6f1c:794c:1e6c:a09b])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 2F52A22B;
-	Thu, 15 Oct 2026 09:51:10 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1792050676;
-	bh=vxw4nMxaECnIc0YHwRfwBILmFkhBQvUD6HX2LsSEB34=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=lvi5hYAfM4BWFRsETfm0uGfpWapVjYU2VpcNuFRkjB+U+ngs7xLfB4EoFcYz7Hdnp
-	 DF5RxeNI9kEZl/vuXVl2HRkjjJiZgiG+ErQ6bxTiIuIeaaE6XUrbFKY73ARwPPQgmZ
-	 qa5fXAjNPNXUEr4oSuiqfSrPHye42VXaaQF0TQWU=
-From: Paul Elder <paul.elder+renesas@ideasonboard.com>
-Date: Thu, 15 Oct 2026 16:51:55 +0900
-Subject: [PATCH DNI v3 15/15] media: rcar-fcp: Check device revision at
- probe time
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OO/ApVEH"
+Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-6b2237b596cso1128851a12.0
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 00:54:57 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792050895; cv=none;
+        d=google.com; s=arc-20260327;
+        b=PCTPLYFh3IdXTyHbYuUvX6c27dzR2ggLnBpHIRGiUbjLmzZt1rgY2d4BpWMC76W7u3
+         4LTEnfn1ocaYuzJbBnNUM3vnHXybrr04Bb9AWDsqjBuO0/BVKhmVMAOCoZQAF6siv9hg
+         gg8juFXE74tiLl/o4vcS8Jyhl9smDIWWRtNTHzVONKcYsV6z2i9hyZ6alEIZ2EtQ3Li9
+         elCj/QQE7U1VWNHEjh5lMX8qkJxylfqv2wLvX2OsCo8705a9vbqDjjbg6FhE3Z1KtbLn
+         SgEbH21khXqiQslYcuFrMdKnvJyEmZrQB2uto/JRClIq4CkQ627ZEhDZPvHXHy1zXKUb
+         37PA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=/sGN7s60I9kDns7tf8RWcyBjmY1L2WRY6Qxl0o1md1A=;
+        fh=JZkoe7OQRPHHkYeHIUQe/01L8b9k4h9Q5o9V3Zo5mow=;
+        b=RDSTw7kCJHfUDHwcC5r1OXCqq6tZFSs5iO2wrNyZyXR5v802zyvFycYtivOnAYtYyB
+         y9txcvvPqdJd1xXZA4PNdzj4j1g/TgSI93oJVI6WaS64MI0dov6rYXDVO54O4fGz5Y8z
+         DSEjeaO7Stb2gTfe+/7GL2oWwO0lVIiA1FjP6+lxCKOOaFjOuQoC5SQ6mqIzv7zAbry0
+         WlcIh29y5uMco7HbUhiZcAhoSfT4M6gBxsdkv+JvS2k1W3/abnv2lKaCJWkKCqd90NZb
+         EssWir8vV344Wga00ENF0fKQ61dVEtVupgTs1gBrE08oYqtEfU1nl+ANNvdNybNPPkfu
+         /Hrg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792050895; x=1792655695; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=/sGN7s60I9kDns7tf8RWcyBjmY1L2WRY6Qxl0o1md1A=;
+        b=OO/ApVEHdlMA+521QfgUyewuRF+kf2hjs0PRCNJq9e9UyMF+NZg4yE8noEbW0VQqiw
+         heeCecfx2SAxsXGljKL8xJcsWHmovEBJ9XE1lJKaKjN6cHPseUAOFx+4YupAR+a+u91y
+         9zcqeE4bNofPGI3CJ1aDfILvdWZINkT+V6a60FcuHlaY9ccgNRIV0HnG+0UNFD3bBCWq
+         Ngp0MVzqCwUy01JBK5LJgypWF2pyVVInExRXgBvz/sc97GSwGS9xkfQkEyISSIJlfFRi
+         XLLz5o4tuiTZmUD5qzvJAUh1OhV/VHAFuGaSZQ8croGvTQtjxplABAs3Roy/E1sdKDgn
+         BUNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792050895; x=1792655695;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=/sGN7s60I9kDns7tf8RWcyBjmY1L2WRY6Qxl0o1md1A=;
+        b=2L36nU9FDViibLw7s5UAwlHbC84Dc9owi85jCgwhZWZZOkOKIITkcsA20eehec8+gi
+         oNZW7YotWimeXlfz2cpwn+Dhj7p8l14dG63QeHfTWWgQPlcihQSfrtQDQQFaXyexccfo
+         GvlH25/pdPDejUeyL4TEj3c2Uj8ySAW1nO6MWbTK1/oTV1E5/rKgaxirtksgdKY/y1EL
+         U+9fYNJxd34t7No+y3mn3vutvDTHvr0tKTqiIkS6JnSGfJxHusBYCXvw3KA5mCKdR62y
+         CXJVshQDXHzHaBxlDLJQTiUSBy/QWisnk0P2dULeCsLxmXkAT+H6cwudnk0PkzZ6Maex
+         3TwQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwKlAe+FS0l8WcLANMgpjI0oMIEqz9Wsl5PORSgBhkD4kWH5XlK6iDmf5YxKNZuscN+sBFMmlGWmw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIQQ8/3uR2V+vUsOs8VFQAVyRWsUZn7zuSJpAzamgTyKf++KGdW
+	vdJqILHefsZQNqK1Ep1J/ymQC/lh3jYEqr5rmnAfDfQjpsL8PkjYv8nEMxUgBpwc6u/jAcxzK5P
+	I6EZVDe5oQMahqFIRb/Qac27DFMr932g=
+X-Gm-Gg: AYBFou1cRaENhOoVdBCAoES5BW86BrrpsbjR2l3v/rPNPn3Dwm7DscZfMuSfukwYtW6
+	doNYq+WVUR8riet6l1iWdqqEq12FQuBtxI0gOv7RxST4HSnzp46Tzb20iObtC+rgApf4gbQUOi+
+	lJyt7OIdQee2+ajlNq9q8LQnzAapN399/qn/3HpCc5aK08Mls2U4780XdORQQx2vhQnikCTPwKk
+	ZCibxean68TdswlmIfEZeXiwoUGXV5HxDNvZl2jklXqzF1tGYSO2S6zlfFIyoR3tCQC2uHH/KFC
+	jpGb2+zpC5tI+UZQLpG+EA7tBhGqoKzhZdStNGG8S7Jz5MJ0v9PdPXFprKBdPgPt+mi9kH+O3XV
+	HTpDXu/0KzEWEXa4Wah1hDSI=
+X-Received: by 2002:a17:907:c60e:10b0:c32:110d:682f with SMTP id
+ a640c23a62f3a-c32110d6952mr1085661366b.18.1792050895249; Thu, 15 Oct 2026
+ 00:54:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-15-e052903a3832@ideasonboard.com>
-References: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-0-e052903a3832@ideasonboard.com>
-In-Reply-To: <20261015-epaul-v7-3-rc1-x5h-vsp-fcp-v3-0-e052903a3832@ideasonboard.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>, 
- Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
- Jerome Brunet <jbrunet+clk@baylibre.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
- Ulf Hansson <ulfh@kernel.org>, 
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
- Mauro Carvalho Chehab <mchehab@kernel.org>, 
- Philipp Zabel <p.zabel@pengutronix.de>, 
- Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
-Cc: linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-media@vger.kernel.org, 
- Paul Elder <paul.elder+renesas@ideasonboard.com>, 
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-X-Mailer: b4 0.14.2
+References: <20261013173504.451391-1-clamor95@gmail.com> <20261013173504.451391-3-clamor95@gmail.com>
+ <d5f54636c25e0e60731adc200a63ceb5@gmail.com>
+In-Reply-To: <d5f54636c25e0e60731adc200a63ceb5@gmail.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Thu, 15 Oct 2026 10:54:40 +0300
+X-Gm-Features: AclHuK8G-cs7nBf_jb7Nz-sYHdY2hV4DGcnygUqGWeotEdcljE4mZaNjbadyaBQ
+Message-ID: <CAPVz0n2yR9C4Jan9=0=ck-RyKk1m19s3q4wfLCz9Bvw1TYNS0A@mail.gmail.com>
+Subject: Re: [PATCH v11 2/7] mfd: Add driver for ASUS Transformer embedded controller
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
+	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	Florian Krischer <florian.krischer@fkr.dev>, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
+	mfd@lists.linux.dev, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+=D1=87=D1=82, 15 =D0=B6=D0=BE=D0=B2=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 04:3=
+6 Dmitry Torokhov <dmitry.torokhov@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> Hi Svyatoslav,
+>
+> On Tue, Oct 13, 2026 at 08:34:58PM +0300, Svyatoslav Ryhel wrote:
+> > +// SPDX-License-Identifier: GPL-2.0-or-later
+> > +
+> > +#include <linux/array_size.h>
+> > +#include <linux/debugfs.h>
+>
+> Unused include (left over after debugfs support was dropped).
+>
 
-Verify that the device revision register reports a valid value,
-otherwise reject the device.
+Noted
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Signed-off-by: Paul Elder <paul.elder+renesas@ideasonboard.com>
----
-Changes since v2:
+> > +/**
+> > + * struct asus_ec_chip_info
+> > + *
+> > + * @name: prefix associated with the EC
+> > + * @variant: id of programming model of EC
+> > + * @mode: state of Factory Mode bit in EC control register
+> > + * @read_size: size of block to read
+> > + * @keyboard_mask: mask of keyboard packets
+> > + */
+> > +struct asus_ec_chip_info {
+> > +     const char *name;
+> > +     enum asusec_variant variant;
+> > +     enum asusec_mode fmode;
+> > +     u8 read_size;
+> > +     u8 keyboard_mask;
+> > +};
+> > +
+> > +/**
+> > + * struct asus_ec_data
+> > + *
+> > + * @ec: public part shared with all cells (must be first)
+> > + * @ecreq_lock: prevents simultaneous access to EC
+> > + * @ecreq_gpio: EC request GPIO
+> > + * @client: pointer to EC's i2c_client
+> > + * @info: pointer to EC's version description
+> > + * @ec_buf: buffer for EC read
+> > + * @logging_disabled: flag disabling logging on reset events
+> > + */
+> > +struct asus_ec_data {
+> > +     struct asusec_core ec;
+> > +     struct mutex ecreq_lock;
+> > +     struct gpio_desc *ecreq_gpio;
+> > +     struct i2c_client *client;
+> > +     const struct asus_ec_chip_info *info;
+> > +     u8 ec_buf[ASUSEC_ENTRY_BUFSIZE];
+> > +};
+>
+> scripts/kernel-doc warns on these two structs:
+> - In struct asus_ec_chip_info, the kerneldoc says @mode while the field i=
+s
+>   named fmode.
+> - In struct asus_ec_data, @logging_disabled no longer exists.
+>
 
-- Add FCP type information
-- Reject devices with an unsupported version
+Noted
 
-Changes since v1:
+> > +int asus_dockram_access_ctl(struct i2c_client *client, u64 *out, u64 m=
+ask,
+> > +                         u64 xor)
+> > +{
+> > +     struct dockram_ec_data *ddata =3D i2c_get_clientdata(client);
+> > +     u8 *buf =3D ddata->ctl_buf;
+> ...
+> > +static struct i2c_client *devm_asus_dockram_get(struct device *dev)
+> > +{
+> > +     struct i2c_client *parent =3D to_i2c_client(dev);
+> > +     struct i2c_client *dockram;
+> > +     struct dockram_ec_data *ddata;
+> > +     int ret;
+> > +
+> > +     dockram =3D i2c_new_ancillary_device(parent, "dockram",
+> > +                                        parent->addr + ASUSEC_DOCKRAM_=
+OFFSET);
+> > +     if (IS_ERR(dockram))
+> > +             return dockram;
+> > +
+> > +     ret =3D devm_add_action_or_reset(dev, asus_ec_release_dockram_dev=
+,
+> > +                                    dockram);
+> > +     if (ret)
+> > +             return ERR_PTR(ret);
+> > +
+> > +     ddata =3D devm_kzalloc(&dockram->dev, sizeof(*ddata), GFP_KERNEL)=
+;
+> > +     if (!ddata)
+> > +             return ERR_PTR(-ENOMEM);
+> > +
+> > +     i2c_set_clientdata(dockram, ddata);
+> > +     mutex_init(&ddata->ctl_lock);
+> > +
+> > +     return dockram;
+> > +}
+>
+> Attaching ddata to &dockram->dev via devm_kzalloc() and
+> i2c_set_clientdata() is fragile because dockram is bound to the I2C dummy
+> driver. If the dummy driver is unbound from dockram via sysfs, the driver
+> core frees &dockram->dev devres allocations and clears dockram's
+> driver_data to NULL, so the next call to asus_dockram_access_ctl() will
+> dereference NULL.
+>
+> Instead of allocating a separate struct dockram_ec_data on the ancillary
+> i2c_client, could ctl_lock and ctl_buf live in struct asus_ec_data (or
+> struct asusec_core) and have asus_dockram_access_ctl() take struct
+> asusec_core *ec?
+>
+> Thanks.
+>
 
-- Use devm_platform_ioremap_resource()
----
- drivers/media/platform/renesas/rcar-fcp.c | 132 +++++++++++++++++++++++++++---
- 1 file changed, 121 insertions(+), 11 deletions(-)
+I did this since dockram and ec can be accessed and work
+independently, hence separate locks and buffers. I would like this to
+remain as it is, but you have a point here. Adding check if dockram
+client is not NULL should resolve possible issues with
+asus_dockram_access_ctl calls.
 
-diff --git a/drivers/media/platform/renesas/rcar-fcp.c b/drivers/media/platform/renesas/rcar-fcp.c
-index 76d4c250b30815d9eac58f9b54ad923748df79f6..5f2c483f71f42f0fc614db216c54d65e2372e8fb 100644
---- a/drivers/media/platform/renesas/rcar-fcp.c
-+++ b/drivers/media/platform/renesas/rcar-fcp.c
-@@ -14,28 +14,78 @@
- #include <linux/list.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
-+#include <linux/property.h>
- #include <linux/reset.h>
- #include <linux/slab.h>
- 
- #include <media/rcar-fcp.h>
- 
--#define RCAR_FCP_REG_RST		0x0010
--#define RCAR_FCP_REG_RST_SOFTRST	BIT(0)
--#define RCAR_FCP_REG_STA		0x0018
--#define RCAR_FCP_REG_STA_ACT		BIT(0)
-+#define RCAR_FCP_REG_VCR			0x0000
-+#define RCAR_FCP_REG_VCR_CATEGORY		(1 << 8)
-+#define RCAR_FCP_REG_VCR_REVISION_H3_ES1	(1 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_M3W		(2 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_V3M		(3 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_H3		(4 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_D3		(5 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_M3N		(6 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_V3H		(7 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_E3		(8 << 0)
-+#define RCAR_FCP_REG_VCR_REVISION_X5H_V1	(12 << 0)
-+
-+#define RCAR_FCP_REG_CFG0			0x0004
-+#define RCAR_FCP_REG_CFG0_FCPVSEL		BIT(1)
-+
-+#define RCAR_FCP_REG_RST			0x0010
-+#define RCAR_FCP_REG_RST_RIIFRST		BIT(22)
-+#define RCAR_FCP_REG_RST_RSIFRST		BIT(21)
-+#define RCAR_FCP_REG_RST_DCMPRST		BIT(20)
-+#define RCAR_FCP_REG_RST_MODRST			BIT(4)
-+#define RCAR_FCP_REG_RST_SOFTRST		BIT(0)
-+
-+#define RCAR_FCP_REG_STA			0x0018
-+#define RCAR_FCP_REG_STA_ACT			BIT(0)
-+
-+#define RCAR_FCP_REG_TL_CTRL			0x0070
-+#define RCAR_FCP_REG_TL_CTRL_TLEN		BIT(31)
-+#define RCAR_FCP_REG_TL_CTRL_VPOS_C(n)		((n) << 16)
-+#define RCAR_FCP_REG_TL_CTRL_VPOS_Y(n)		((n) << 0)
-+
-+#define RCAR_FCP_REG_PICINFO1			0x00c4
-+#define RCAR_FCP_REG_PICINFO1_STRIDE_DIV16	((n) << 0)
-+
-+#define RCAR_FCP_REG_BA_ANC_Y0			0x0100
-+#define RCAR_FCP_REG_BA_ANC_Y1			0x0104
-+#define RCAR_FCP_REG_BA_ANC_Y2			0x0108
-+#define RCAR_FCP_REG_BA_ANC_C			0x010c
-+#define RCAR_FCP_REG_BA_REF_Y0			0x0110
-+#define RCAR_FCP_REG_BA_REF_Y1			0x0114
-+#define RCAR_FCP_REG_BA_REF_Y2			0x0118
-+#define RCAR_FCP_REG_BA_REF_C			0x011c
-+
-+enum rcar_fcp_type {
-+	RCAR_FCPF,
-+	RCAR_FCPV,
-+};
- 
- struct rcar_fcp_device {
- 	struct list_head list;
- 	struct device *dev;
- 	void __iomem *base;
- 	struct reset_control *rstc;
-+	enum rcar_fcp_type type;
- };
- 
- static LIST_HEAD(fcp_devices);
- static DEFINE_MUTEX(fcp_lock);
- 
-+static inline u32 rcar_fcp_read(struct rcar_fcp_device *fcp, u32 reg)
-+{
-+	return ioread32(fcp->base + reg);
-+}
-+
- static inline void rcar_fcp_write(struct rcar_fcp_device *fcp, u32 reg, u32 val)
- {
- 	iowrite32(val, fcp->base + reg);
-@@ -154,15 +204,67 @@ EXPORT_SYMBOL_GPL(rcar_fcp_soft_reset);
-  * Platform Driver
-  */
- 
-+static int rcar_fcp_setup(struct rcar_fcp_device *fcp)
-+{
-+	static const char * const models[] = {
-+		[RCAR_FCPF] = "FCPF",
-+		[RCAR_FCPV] = "FCPV",
-+	};
-+	static struct {
-+		u32 version;
-+		const char *name;
-+	} versions[] = {
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3_ES1, "H3 ES1.x" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3W, "M3W" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3M, "V3M" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_H3, "H3" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_D3, "D3" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_M3N, "M3N" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_V3H, "V3H" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_E3, "E3" },
-+		{ RCAR_FCP_REG_VCR_CATEGORY | RCAR_FCP_REG_VCR_REVISION_X5H_V1, "X5H v1.0" },
-+	};
-+
-+	unsigned int i;
-+	u32 version;
-+
-+	/* Check the device version register. */
-+	version = rcar_fcp_read(fcp, RCAR_FCP_REG_VCR);
-+
-+	for (i = 0; i < ARRAY_SIZE(versions); ++i) {
-+		if (versions[i].version == version)
-+			break;
-+	}
-+
-+	if (i >= ARRAY_SIZE(versions)) {
-+		dev_err(fcp->dev, "Invalid FCP version 0x%08x\n", version);
-+		return -ENODEV;
-+	}
-+
-+	dev_dbg(fcp->dev, "%s %s device found\n", models[fcp->type],
-+		versions[i].name);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id rcar_fcp_of_match[] = {
-+	{ .compatible = "renesas,fcpf", .data = (void *)RCAR_FCPF },
-+	{ .compatible = "renesas,fcpv", .data = (void *)RCAR_FCPV },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, rcar_fcp_of_match);
-+
- static int rcar_fcp_probe(struct platform_device *pdev)
- {
- 	struct rcar_fcp_device *fcp;
-+	int ret;
- 
- 	fcp = devm_kzalloc(&pdev->dev, sizeof(*fcp), GFP_KERNEL);
- 	if (fcp == NULL)
- 		return -ENOMEM;
- 
- 	fcp->dev = &pdev->dev;
-+	fcp->type = (enum rcar_fcp_type)device_get_match_data(&pdev->dev);
- 
- 	platform_set_drvdata(pdev, fcp);
- 
-@@ -178,12 +280,27 @@ static int rcar_fcp_probe(struct platform_device *pdev)
- 				     "failed to get reset control\n");
- 
- 	pm_runtime_enable(&pdev->dev);
-+	ret = pm_runtime_resume_and_get(&pdev->dev);
-+	if (ret < 0)
-+		goto error_pm_disable;
-+
-+	ret = rcar_fcp_setup(fcp);
-+	if (ret < 0)
-+		goto error_pm_put;
-+
-+	pm_runtime_put(&pdev->dev);
- 
- 	mutex_lock(&fcp_lock);
- 	list_add_tail(&fcp->list, &fcp_devices);
- 	mutex_unlock(&fcp_lock);
- 
- 	return 0;
-+
-+error_pm_put:
-+	pm_runtime_put(&pdev->dev);
-+error_pm_disable:
-+	pm_runtime_disable(&pdev->dev);
-+	return ret;
- }
- 
- static void rcar_fcp_remove(struct platform_device *pdev)
-@@ -215,13 +332,6 @@ static const struct dev_pm_ops fcp_pm_ops = {
- 	RUNTIME_PM_OPS(fcp_pm_runtime_suspend, fcp_pm_runtime_resume, NULL)
- };
- 
--static const struct of_device_id rcar_fcp_of_match[] = {
--	{ .compatible = "renesas,fcpf" },
--	{ .compatible = "renesas,fcpv" },
--	{ },
--};
--MODULE_DEVICE_TABLE(of, rcar_fcp_of_match);
--
- static struct platform_driver rcar_fcp_platform_driver = {
- 	.probe		= rcar_fcp_probe,
- 	.remove		= rcar_fcp_remove,
-
--- 
-2.47.3
-
+> --
+> Dmitry
