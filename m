@@ -1,145 +1,182 @@
-Received: from mail-yx1-f42.google.com (mail-yx1-f42.google.com [74.125.224.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fhigh-b6-smtp.messagingengine.com (fhigh-b6-smtp.messagingengine.com [202.12.124.157])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DBAF3F3295
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 17:38:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.42
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792085907; cv=pass; b=cBFILgCxU8CYHDvjKVdS7oVbcvm1GIo+Irlkaw0mLlwmIhOkFfFCkX62mLSB6WoQpXImVGYLIWkI2M3N+r0tiFKYjbivufZ5ayMvbrW8rshxtBHQs0i7W3Oms+3MKy5/IDpwYo7KhDEmrbwrz4DKhm8gdxSyA/GpuN4ODgDDNW8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792085907; c=relaxed/simple;
-	bh=bkxFv5PX8ujIxdonqIilaYDobdJDnLk8tXzGrWmcSt8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XG/FDFRl8Q710YDlm49HBRt1oQen5nnwq3frgY29xsGyDulFSDJ3IpNDAc2xPZTNrFEddJuU6VooX8vBo1jbGZU5mg1h7AixvqsLx0c+/zkXMz6uEEkK005+UlAdeEaMwMKjl37YgVwGwfI83xefLiqiYm9FsG7Nxb51x5VGIGo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FdY0tTI6; arc=pass smtp.client-ip=74.125.224.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D45033D45E6
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 18:05:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.157
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792087507; cv=none; b=HSi86YxnZl9Ioja3OEtR2WIKip/kTj55AtnCMBhu7MJoTQqEvcfg+VS4INT0WLUfTYgks74z++ZMdo8z7UuDL0XZH7m9ocCGkUWZKS+vyrvu3JA7XUc66fJnMLYEm55jIE9HucbBsFxQodntPP+Z0QU/OGm8m5grVjnqU7jb5p0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792087507; c=relaxed/simple;
+	bh=4yB2Y5u8aFXapmD6u+a/gLWVA/skpYwbSVTikTd58WE=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=Gy1l5kVAhlyFnLjwIFQEnxTjkhPlQc2/g/EjL+Oxon/AHZAcbOAUJLv1T3GY6Fg21rK7ru6jIobuROnhQA7fWAKoa2k09XYj96RNbOy00wjS58utAmTxPHw4D3lKwKMfjL0iI0VFMOnAtxTdLQsXTu/c3TAa5Q0UHVa2cIcSqIo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=squebb.ca; spf=pass smtp.mailfrom=squebb.ca; dkim=pass (2048-bit key) header.d=squebb.ca header.i=@squebb.ca header.b=nOz3+1D3; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=uqR8JExy; arc=none smtp.client-ip=202.12.124.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=squebb.ca
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=squebb.ca
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FdY0tTI6"
-Received: by mail-yx1-f42.google.com with SMTP id 956f58d0204a3-6740e7ae219so4652562d50.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:38:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792085897; cv=none;
-        d=google.com; s=arc-20260327;
-        b=c+qgTZxYNBwF2NUZEsvcxCfuUCl4xyvWoRz31kfY4lzxon7IssxgLujIrrd7rji8dN
-         aprvl7+vazDAW1kTI8rSSwfmHDyb0WPjsrAcDY2rFYOVyE4O9dk1c8LMiiazp3yn4rL6
-         GZhGdaHhxORur2pa9ouz6BWXe1C/RCOiQlKvuj8LSXxAffG/G08FyXymle853vKzvC/X
-         n44hxjguK5us+uQSW7kmznoV4heH1duAb0GQUjUqeTf3Xjo3H7HPDRsdsfBflD++wQt5
-         WLaMBblGFxKqcObwmTqj6C3we2rA+KM37mfJA5sb97Nuw6/WkQMa7/aJhKMmw8K0R6aO
-         MQ2A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=RNR7hf8UYLE+m8+IlSqf9D9Kn/JvEzNZNospuZY38uA=;
-        fh=KAKZi3wig1rISgA4ITN1FJr5FURYs9OJyZh7oNKZyvA=;
-        b=ZGZnJ6osrzulXpK0Pyh3Fsu1qebStn+EEoCUgXO3gygk4nWe3aN0kj6lVgmztV0Bd3
-         6ByOZ+Qnh8GnYXfbCWXf5qN98/yj0lXhFwPwZXquvPHCVEUeehMizjysftVqIBhPYpBx
-         gp+0FNt77VSrvAQT3SdBEiqAAlVDi1G3scljHwSKQIQjwjeozlmebwKv4Kkb1soFFJWS
-         haiUR5TVjhCulHX2Ksp4UCZtKVHO+Op2g+CmniBi7HB3SW1v1eofJjHzbzJSH4MkbadG
-         mJvlv6BlgSo1/SPVU7SjIZyjs+MepPJobagPtoELRb9H0yABoLy1mm/a8tjwwZOb8Y8x
-         8eww==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792085897; x=1792690697; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=RNR7hf8UYLE+m8+IlSqf9D9Kn/JvEzNZNospuZY38uA=;
-        b=FdY0tTI65LLFbSDM/PkmptpQRO/LkHkyKCAY9mHUMFpQa/S6Ox3Yk0ohOXs6nYBv7a
-         LSgYooxuKothhty/g1dDYggLu2Iwfl4MufA0UGt+NuH52fQdUvPhJviJnAKKXCVlE6FK
-         MXueZ5y8g6dGvYt+I1JZLjj4anjvLk9Y+v2jV6gHpQyvX+pVyu/UGw5m4vSBhwwXqpDu
-         7+6Y+OAd4F1e3qja7s14n57vtS3/yjc6Fn7Y5Nl63xNcVLEDjC/ulSeHQXea0Y4wBzPn
-         xC7EeuMmbwSbY1P8cq6KORdYHXYDpN/iil6Mj8ehEULWWhpE+ehGB0H35YSm1NC8cyKD
-         48ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792085897; x=1792690697;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=RNR7hf8UYLE+m8+IlSqf9D9Kn/JvEzNZNospuZY38uA=;
-        b=GuEGe1HJkqw6RG62o6U/leQj+H9kx87ZWkhQJ2to5amdDb5fwmPPoXvhd2h41pcrE4
-         yjz+0wmcFVXE5We+gzNccwizingIodGYs8m8xGmVHS0pSh1wO9fuexL1rX1t60jB0nI8
-         vM7Xv0uz4jmthlW691UjZ/PeCdUp7pco4OEhxoQqVKRJ0NtovC5jfIxh8yswqpr2WeUQ
-         bNiqodfI1HMhqE2/i65T4oZstYX+Mw7W4lKPzoOKNhcNvJhRqVx43yLAqRFhwhw9IDnt
-         kq5Bp7mhVNjLd/fzG4EF3suf26PR1GYA9deTiSrsJRWSK63dT5/Gtn5Ui9tQ13K74T7H
-         uA+Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxhSBQyM+t69hgFYwuvWeHJCiIQVm11XuKtS1exCUMANpe24I9eULTvv3YxqTb5u08A5a9tFpU8Ug==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIrRSd13FsI9tPE5GoZpQMqQkSr1cOHHagheuSrds3eDFP/zdyS
-	4wdsMNBQm9rMgu3XfDuw2olHryp/sjobIYxezgNtZcEqJOA4Q3WNYmTnHj9DXhZceUVdLtkSfT5
-	O1Ed+Ng4+t04EuDuk9/mrsElJ4XPHfJ0Jag==
-X-Gm-Gg: AYBFou0inRl3ZqDriEPwWXIOEZ4NMCRKRMseWYxv0BgYA4iDJMVq8BAHvPBov8cS/96
-	lFA9GnxzW1rk1b0ohJbKxasHBFzdrX1iG8B0axnew/r5raqne5MURM56F3GYx0gsZIomO8SNaJa
-	joRd4H9uQ8nahStewakjPQtqa/PEKR6sMZVhGLh5oH3vVaBEPCiA580sRGcGJcepvhMy5/GEr1d
-	tsk94AJQGbPhgYFX84WS3c686b5XPJsg8EFxzf0vqO+HTeEY4J0BDn3WLmpcaKxcp5siFi+yUoZ
-	OMa8fSQQEE1FsIi5AvVTWpfrb7wB8xvd4U1KynlHbD9cKmildhNoVulQp9twplv4yBM=
-X-Received: by 2002:a05:690e:1c07:b0:679:aa90:d272 with SMTP id
- 956f58d0204a3-679aa90dd58mr432536d50.108.1792085897078; Thu, 15 Oct 2026
- 10:38:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=squebb.ca header.i=@squebb.ca header.b="nOz3+1D3";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="uqR8JExy"
+Received: from stl-compute-04.internal (stl-compute-04.internal [10.204.2.64])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 1FC497A0127
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 14:05:00 -0400 (EDT)
+Received: from stl-imap-02 ([10.204.2.93])
+  by stl-compute-04.internal (MEProxy); Thu, 15 Oct 2026 14:05:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=squebb.ca; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1792087499;
+	 x=1792173899; bh=4yB2Y5u8aFXapmD6u+a/gLWVA/skpYwbSVTikTd58WE=; b=
+	nOz3+1D3B7kmETDqfhoc4wGO9LkMBq1XrhBM2/+O4BRxAkXMoTAF5GBIn6trNkmq
+	wYMLv/FZ3+NgLwNlPKtS8bNMH935QS7pIslaRr1cMk9e/xFGr9Cg7oTJqW2hpJi/
+	GdR79o7IKJO1pY0FjKPa+CK4PXQUJ+vcDTrIv8qkZMggeku2gVTi5N8+to/3dO1J
+	4tVS8RaV6nUtktHj74Yx0ebyehIXzD3AsvHDcqaFA0j1r9IuOeQyJ8Qko3YJZBPF
+	m29euqAGuanknDfH81eCAcjLw7aPDzAl0IZJHKt0wXMIN6Sm2wRLxtO0Whyj1w3A
+	4UqF/Q6Z5aQW7jyzz68qjQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1792087499; x=
+	1792173899; bh=4yB2Y5u8aFXapmD6u+a/gLWVA/skpYwbSVTikTd58WE=; b=u
+	qR8JExyt99pvtLQjlc74UCl9CezdGswi2vqeJmQ6AdSVFVdDk1b9NabZjZl/Ouk3
+	BiQWGdE2/koO6CkzN2fMb53uX2clWJFOSrKhNrwqcKDe1aLzdL2inURYnMI/ku0w
+	vf+2sxro7TTzJWCw2j/7vKNLEeAYDU4c9kw3+1xqLPiqJ6iQThpVlfButfJ4uCy7
+	nqn2fxpjAXTaIlv61/KlYWV5fZlQO14XeNIRsC4UWacffsSmvO70NnoILqD2zGCX
+	v0woIoBDtcAhRHdBNLfiFv2wrUhN15PDw3gEje/QbbWrymB59bH7Pzb2x1hbU6Wi
+	ftjq+vOyE1auGaIt6zViA==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
+	repo=github.com/dkim2wg/interop; date=2026-10-04; sw=lmtpprox;
+	action=sign d=squebb.ca a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1792087499; d=squebb.ca;
+	mf=PG1wZWFyc29uLWxlbm92b0BzcXVlYmIuY2E+;
+	rt=PGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4=;
+	s=fm3:rsa-sha256:QY3eHIQJDc86aTCv7P0yOnQDSYjcCqfSuMVBUVqwLIxLKrK
+	22rx9SOBiPqRArEz9Y0hHtakmbUzkvven7+4YRx8dZrLvvCk5bSdCE/WaWUjB1x7
+	Ybf4WSjvyhKCjrR0PL2E9ulu9oCsYV+spijzZgBcxLOR892Z3HLElqGrLLP5c4Xi
+	GD+qhp1kReK7Me+/aTCZ4F2RKrLYc+aI0cpdg0xV1V0NoTm1e0qysJe+CyBgi9WA
+	GDGOF0VuNnO0EVXzggH3subxi4/KJMbWw5N+PQYvmiQefsQEwWVh4NSVY4GBlR8b
+	EQvu4P3xm51AuHNVumPgAzlyssMWl6IzZCufARw==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
+	repo=github.com/dkim2wg/interop; date=2026-10-04; sw=lmtpprox;
+	action=mi-m=1; hc=12;
+	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
+	from,in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:yyqQTI0aMpJ4JKDe6Q1dI9JFftws1lzFENsS2EhJTuY=:4yB2Y5u8aFXapmD6u+a/gLWVA/skpYwbSVTikTd58WE=;
+X-ME-Sender: <xms:yhXRatjSwADLJShPvaI_fpvcawV4RsAgPuHQJRbN44PWZLhWzwqL4A>
+    <xme:yhXRas2pNhqOUki0C9AA1Hk2wdOQ5cN9XOmYq-NJZl8wSqFmbQO606Ienda6dHj4x
+    AmCqnq-qjEbauxEdzpP-kt3_-36FLMmWVVnAuPb9FAAogWU6Z3lpoG0>
+X-ME-Proxy-Cause: dmFkZTGK8zdX4ZQ1sZzKIFuSMxNbjxQ/R06Lb1pbAAXv19stb0UBuhJD0X+/7UZSTWpED+
+    VibnngELO1eljGnxafpmOCCHVDuBfgVnyg7mo5UsNrSPiBPLeurtfVwfvEJT97p3W3CaEi
+    azgiTF3JWvrj+1o76Y8oiMlMFh/8ypUdkUYgj8R/lhyMryDSeF23wVnp0Sm/iusqt0qM5n
+    mKLbNgMZuxaPnpsplVC0vBkouL8Hz8pQQPGRSEV2XoTJjIFvQwiRnOsCwJcAnf5bl+IXl+
+    Vhw6uwLw5rUSA2kbpDeQQTDryEYgZWWfkZjEr5uzcCl5vSurmMAjafqHOkVwzZwnTFlTbp
+    xv3h6fGniz8ZepQGKV6CvyPFPx1Y5Fmvm5xHgBpnjrNC1NpZ2UjOtjABpHIrW45yIAAPqQ
+    KK7O+uFRpt/6s5UssCW/SqxOYsN48Iljg7BOZCET5dEKHJ5eG03OlIS3ndan+g7bIJvkox
+    Hs9AxSZ0+OiNGh3fEmAhy4ECyVkOiBZWjF0H3XRyDuxYQEXfh3A6OYi0YcnJBRuTHSkCKt
+    P/BE++RPnd5fdlfkpWc6R1Purenkk7dp62Ng3p71krZMMY2QrgNPpEOt4SJXTu+BjBk9u8
+    47tjhUA/ijr2bhp5ORzMPbdCqwPnP2jS0UUv7xcgkOEULOwuWi34uTqFctSA
+X-ME-Proxy: <xmx:yhXRagRDsLQ0ZGHoTD07qU8GI-ahKEEgAtMYp7aGd6R0_At1m9-RnQ>
+    <xmx:yhXRave7Th43vCEdAG29pxvmhLjuXZ6ogG8_1d4PKXLb_PPrXRv9Ng>
+    <xmx:yhXRahSjGBvEMmB1hM-jC9MTYpx44Psx1P62W1n9ygJ5YS7eS-6R0w>
+    <xmx:yhXRaj1d4LOTmqctiAtbVOHgPUNj7PbiU4egbHj-ndDxEi2lnVlX6w>
+    <xmx:yxXRahOTUvFK5HGx47QocYlJKHqVequ9b5Qb7hQ-Hcp8Z2KNsFQ2p_-e>
+Feedback-ID: ibe194615:Fastmail
+Received: by mailuser.stl.internal (Postfix, from userid 501)
+	id 5F0FE2C0007C; Thu, 15 Oct 2026 14:04:58 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261008-04-k3-pm-support-v2-0-6f778a53dd2d@kernel.org> <20261008-04-k3-pm-support-v2-2-6f778a53dd2d@kernel.org>
-In-Reply-To: <20261008-04-k3-pm-support-v2-2-6f778a53dd2d@kernel.org>
-From: Iker Pedrosa <ikerpedrosam@gmail.com>
-Date: Thu, 15 Oct 2026 19:38:00 +0200
-X-Gm-Features: AclHuK-mkmvLNzpAloyGNWEU1xEwlRugYfUHBOpsjJVuzj_o9PRbUr7KYWotes8
-Message-ID: <CABdCQ=PAHxwH1+1OkLiW2ad+PTxNY6OmmPwOwAR3EoDe6Mt7Zg@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] pmdomain: spacemit: Add power domain driver
-To: Yixun Lan <dlan@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Icenowy Zheng <uwu@icenowy.me>, devicetree@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-ThreadId: Ao5-L1TSHHD-
+Date: Thu, 15 Oct 2026 14:04:38 -0400
+From: "Mark Pearson" <mpearson-lenovo@squebb.ca>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, "Armin Wolf" <W_Armin@gmx.de>,
+ "Daniel Lezcano" <daniel.lezcano@oss.qualcomm.com>,
+ "Hans de Goede" <hansg@kernel.org>
+Cc: "Jonathan Corbet" <corbet@lwn.net>,
+ "Shuah Khan" <skhan@linuxfoundation.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ "Maximilian Luz" <luzmaximilian@gmail.com>,
+ "Shyam Sundar S K" <Shyam-sundar.S-k@amd.com>,
+ "Derek J . Clark" <derekjohn.clark@gmail.com>,
+ "Daniel Lezcano" <daniel.lezcano@kernel.org>,
+ "Zhang Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>,
+ "Jai Luthra" <jai.luthra@ideasonboard.com>,
+ "Greg KH" <gregkh@linuxfoundation.org>, "Jack Wu" <jackbb_wu@compal.com>,
+ "Mario Limonciello" <superm1@kernel.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-pm@vger.kernel.org,
+ "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>,
+ "Kurt Borja" <kuurtb@gmail.com>
+Message-Id: <1cba0f2a-38cd-42b2-a773-9dca5d7519e5@app.fastmail.com>
+In-Reply-To: 
+ <CAJZ5v0jQQsXP4v7dymuHZhy2oVjPwV9eXhqV4bGPUgMyGyUsUQ@mail.gmail.com>
+References: <20261014132500.3817549-1-daniel.lezcano@oss.qualcomm.com>
+ <20261014132500.3817549-4-daniel.lezcano@oss.qualcomm.com>
+ <c751e18d-57e9-4ce6-95dc-1bf53a7a4808@gmx.de>
+ <CAJZ5v0jQQsXP4v7dymuHZhy2oVjPwV9eXhqV4bGPUgMyGyUsUQ@mail.gmail.com>
+Subject: Re: [PATCH v1 3/4] platform profile: Add firmware-neutral aggregate sysfs
+ interface
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-El jue, 8 oct 2026 a las 5:45, Yixun Lan (<dlan@kernel.org>) escribi=C3=B3:
+
+On Thu, Oct 15, 2026, at 7:30 AM, Rafael J. Wysocki (Intel) wrote:
+> On Wed, Oct 14, 2026 at 11:31=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> w=
+rote:
+>>
+>> Am 14.10.26 um 15:24 schrieb Daniel Lezcano:
+>>
+>> > The per-provider class interface is firmware-independent, but syste=
+m-
+>> > wide profile selection is only exposed under /sys/firmware/acpi.
+>> >
+>> > Add /sys/kernel/platform_profile/{choices,profile}, sharing the exi=
+sting
+>> > aggregate callbacks and semantics with the legacy interface. Keep
+>> > attributes hidden until a provider is registered and remove them af=
+ter
+>> > the last provider.
+>> >
+>> > Notify both aggregate frontends on profile changes. Also notify the
+>> > provider class device on a direct profile write, matching its docum=
+ented
+>> > POLLPRI ABI. Restore aggregate visibility after a failed registrati=
+on.
+>>
+>> IMHO the aggregate sysfs interface only exists for backwards-compatib=
+ility,
+>> so i would be very happy if you could just make the associated code o=
+ptional
+>> and instead teach platform-profiles-daemon to use the individual clas=
+s devices
+>> instead.
 >
->   SpacemiT's PMU (Power Management Unit) consist of several power domains
-> which can be managed independently, depending on different application
-> scenario, each domain can be powered on/off for saving power.
+> It is not just a matter of opinion AFAICS, the aggregate interface has
+> been regarded as legacy for quite a while (see commit 778b94d7ac17
+> "ACPI: platform_profile: Add support for hidden choices" for example)
+> and it was retained exactly for backwards compatibility reasons IIRC.
+>
+> I'm with Armin on this.
+>
+> Thanks!
 
-Tested on an OrangePi RV2 with the PowerVR GPU power domain. A few
-comments below.
+I don't think we can get rid of the legacy aggregate interface - which I=
+ think is what you and Armin are asking for? What does making it optiona=
+l mean?
 
-> +struct spacemit_pm_domain_param {
-> +       int reg_pwr_ctrl;
-> +       int bit_hw_mode;
-> +       int bit_sleep2;
-> +       int bit_sleep1;
-> +       int bit_isolation;
-> +       int bit_auto_pwr_on;
-> +       int bit_hw_pwr_stat;
-> +       int bit_pwr_stat;
-> +       int use_hw;
+Reading through the patch series it seemed quite reasonable to me to mov=
+e it out from under ACPI but still have the old interface working. What =
+are the alternatives?
 
-bit_* fields hold values 0-15, u8 would be more precise than an int.
-Similarly, reg_pwr_ctrl fits in u16 and use_hw could be bool.
+User space (and users) are still using the aggregate interface in my exp=
+erience
 
-> +static int spacemit_pd_power_on(struct generic_pm_domain *domain)
-> ...
-> +               dev_err(&domain->dev, "power-on domain: %d, error\n", spd=
-->pm_index);
-
-You could include the domain name failing, that would help identify
-what's causing the problem. You are already including the name in the
-"power-off" error message.
-
-> +static int spacemit_pm_domain_probe(struct auxiliary_device *adev,
-> +                                   const struct auxiliary_device_id *id)
-> ...
-> +       pmu->genpd_data.domains     =3D (struct generic_pm_domain **)pmu-=
->domains;
-
-This cast relies on genpd being the first member of struct
-spacemit_pm_domain. Reordering the struct silently breaks it. Consider
-allocating a separate struct generic_pm_domain ** array and storing
-&pd->genpd explicitly
-
-Tested-by: Iker Pedrosa <ikerpedrosam@gmail.com>
+Mark
