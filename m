@@ -1,177 +1,170 @@
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57EED4D7D3A
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:48:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.50
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792061332; cv=pass; b=fJl9SE1dyYC61s1SLCSwejCVemNDDiAlWld8zCEay3BE0+xBFuqyvQF12nBsZjmpMQH+bPbl0xgo+WlS4GoDBqtDXyaHHhxkAH6jnt7ZZEArS4EiUFhePuIKfXsBGN/MOQ5EVbWtJe+KnFcGVC9GXZMfawn+COYF9ED9WQHGHvA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792061332; c=relaxed/simple;
-	bh=FmmRZ608D4C2zUwqRQSrC5bNE6F6es2uQjBujj5jDeg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gEgdloMRMHZOhHB/iiL/0L6fBA16gIjxokY2VmXvPH1fg9FrM2xWlk91FnkhjqCuWVFGStojHEMitw4jraaJ0zVd8GyvlNUiC9D6cqwzWrbJnT2tkfb3i1nSUVjOUcR/wO2Eodl/QSlannqFaHoKnNRfeLPJdy39Ie/ogdOLuII=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HGHY4KRj; arc=pass smtp.client-ip=209.85.221.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE62251477E
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:55:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792061739; cv=none; b=Pp3Bc+ey4+yKuPkWY4B+hO+7eDSoTzZ4R2StalEsyOQG71wumOUQHhoAqfRAAR1fxZHgnpgcqZC5Kq76OmNlUJSTibsvxU4HknpPHzdrwCNnShV3H7mGsMdiCnknTFfan3CujLiXRfgqIY7r52E7z7ajuz0ccrvfNbipwnBtv34=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792061739; c=relaxed/simple;
+	bh=Zuj0Mp5Z80P5Xe4Uv2Evzpt8jsUT1HsihC1ZLba1Ap8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=gZ8HtS7PWRQ04FmDtsKZ9J+hpU2GJ3VjCRdnvMNMvqPNnClZSuWDfgtmghdzFKlqIUSejVT0Yruf3pvo3rP2C+qY/+9wKTZBXxCrEVWsjWBZkfZLvVG7CvfKiZoZPX/pliAvb8hbZc1PrDrl03V8uKBswlVV6ZaWhX84j6nBOFA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Z0C7Z0My; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=kfcUbHUn; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HGHY4KRj"
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-48b0584ad71so3065201f8f.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 03:48:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792061328; cv=none;
-        d=google.com; s=arc-20260327;
-        b=ENZb8glRodWtSGasTAAHaBSZUTydS3Kz1gy+B3G6xNmgkqOOZ/WtoHzv20syBqYp8a
-         mo9kvNcsZTFtv+gWzmiOMoDSV6fc2oBgQ7AOTX02bFR1iGmcU/AtsQ96q8dM3kh550yH
-         qu1C/NnipKktHfsgA9Ehu3dxCsUfp8/9zyZqPlcI0QhvLLfoPyCwAulUv2inzlV1QWaN
-         8cwsBSrqbpMHTsMjApQ1gtFs3mf1DlpyT+sr5CJ5qxY1uNof5S/zKo2FDjTB1zvw5QXD
-         eitV8bwuRLTMDxvOYDkB2QBxOoZE0oeRZY1lxWaWVGQJi0pwIR5HfInCsq0WH7APBekH
-         P8SA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=p8Bpe0WzfKNt750+YudJl1Zs2RvA8+Qnb6B1KoIdGiE=;
-        fh=qVO1pH25RWi7kNBVUF6b7GRL2UK/xGxsB0+htjzmOco=;
-        b=syIwl6kUVRcRxAvZ4ptxX4F87I1uPJWClhPgtoTuVLnFcSWP4qpsuwNj25HdQ1FpY0
-         tmfWREPcw71eDQ6au3X/FFa1eSyHiqcHPPWKRlOVZbroGSVLxwp1I+Kl2jCVI+hNGrNB
-         Ri0fwI/h1etrvDlEOHYlUexrh6dgsVFJDApr2nWrk8lLxc5q+OQ+pVexYwNWMvDovV/i
-         wGW6uLWt0AL5L0tNnkO4SZws6uhq1mgxzeX8LpErQ9ELEXOFcf46lRo4ccdnkiANf+3K
-         muDFr5HbSJM13XUuDotOJoHEh5sql/q0Shv/r0lhUhk5PQ2/1XRSKyD2T3SrpdqHZ9yF
-         0wQQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Z0C7Z0My";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="kfcUbHUn"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69FAPuXM1596370
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:55:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=JwyFlz/ChE0rMDIH1WU3Ms
+	Q60a3WnORnoupBPMHI0Hk=; b=Z0C7Z0MyMyX8Q0oAR65iBflkULmBYpO2HVpLaR
+	xHr/BSFLuyvIRn7UyyWhaT9JQsY6f33yD0dAmZoDuX4qwLbmMzuyGzer7ESxy3aq
+	JSp2KcaV9oKBj5D4huMN4rpTZwJd/5PLqwtbUdM/ZY2psPotWktMtuhxNpB4hP6a
+	/nvh9v998GfJxE9vE/2sYeaOPm53ijpSjPqEuFgmxciawzUA2u7Y+HUbQOFPzrsq
+	IvQ6w7saU+nrixqTI8goanAfaa/NQmuPpCjNoQuZGq6+OVA+iwT1KsQT7uzlCppO
+	fQMZVqfJpHvh99PrdY+AgxX47lkWWe0vRhDhVUXg9OhW1ogA==
+Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4haw2v83fs-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 10:55:37 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-30bcb065bfdso9216129eec.0
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 03:55:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792061328; x=1792666128; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=p8Bpe0WzfKNt750+YudJl1Zs2RvA8+Qnb6B1KoIdGiE=;
-        b=HGHY4KRjFFixMp8LxPY4W3sl6Fm2iSsRXws7p5amThHrS1bIMSDbzUcJsNhVHSSSkc
-         vpnNNCGYFQbntsLd1GE47O4adACIyeRq2DalBo3fGycYeghLHa3mtfdd3qsuyz0nFAaW
-         2vPK87O6CwFiW3efiCeV6a4apP+vsoIe2IbsQ3D4FTIf4NUUQkZa4kuwJVQddzSUlDJJ
-         lCRMqyX1xuV5bJQl5pSFtMD2GbL0inp/SlPPmbq08jAJmjCbMIayUjGZWeDrjGeLiU3q
-         uMMyguf1Ewiy3k94edtnPsZrMx+7Th1M635N8HKSf1SJkhMr4Tc3ntl5kNofpTjMnxil
-         9UNQ==
+        d=oss.qualcomm.com; s=google; t=1792061737; x=1792666537; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=JwyFlz/ChE0rMDIH1WU3MsQ60a3WnORnoupBPMHI0Hk=;
+        b=kfcUbHUnXROwd9A3w594JyhXGc9wjlG47sljGEO9czhVcbSeqaioQcmH5oUF4ehRkV
+         v6FlUfjfXFu5ZPhQfcK0gagNAivJG0cdqeeT61pUakO4nspq+OStEMKFhSg9OS5zMVuF
+         nivRmvBQxnTt+5Iw+6qjJVljd1YdlL4x6Ob36iCTbPgMIZm9SmhomoDWv793UtHMJ/NF
+         5Ba99vaI4TMbPyKIGTdHxxo44KwQlaCyerzGdfSVCZizm5L/HxoK5585NwlaP86MpTqL
+         yzg2P9zYQ4sTioQ2cvPMwqXzfP6RlHWv3Xb9/bfRFiykwXyK8fKPxRKJOfEDQ0l5/RJR
+         nTfA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792061328; x=1792666128;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=p8Bpe0WzfKNt750+YudJl1Zs2RvA8+Qnb6B1KoIdGiE=;
-        b=xgh8ybekoXcfoBD+aAc0nIL3zPyu09TvB4bT/AUx8foKqpvoi+aeQE39ZdoZQFiXHk
-         ShEuWGA1nvHVl2qCXXaoX+Bn6QKXRDEttjMNmoWtsIjVXZLHjO32UAKUkGX/JrcghTEG
-         jvqr/ox+5jmxzCvvXYv1TGgBC/LnbywVQxeqa4cSOl9+LUFB1iyGBaF/mCyczXWsB9nl
-         1H2EoDeU2P2k8LqbdQ2SLl3tu7mxmkJb0IK/hywY4HbWoS7SNCV5JT/lLSk4urpKa854
-         YcXwtoRldrZskhQ84CqZU9rjd0qbIu9rCPzf6SSD0nT4aGh9V2vRMTMXiz1F42mfwSRO
-         bUtg==
-X-Gm-Message-State: AFq9FYKofDna3Ztp6/tl7CI2BkBp0w+3cUC4rzvpUyyj+V2Qq0S30DCS
-	7TABREiwPslbmFpX/A+QqHeyQcmen8fkygLVD0YZ/TYdcBJTyvHJxpZk0Rosls+9YilRgrl1Eu1
-	EF2FDBF/8sQCWkJ4eYXDYnt9XJFtdIRD3OLA7YLQ=
-X-Gm-Gg: AYBFou1gwzfKERhooFmeiYJH6WGk3Mqkvko8ftR81+mGWAPIy4AV7xwVIYfoFJ3ybhO
-	ZEs1AkBp5cc1Gdqp9pzGnFAP0f09xV0qvRzzZedoPpt7oJNK3KOl0OapZx6TsmOfxrhQIVh1KE3
-	M0jEk9cNPPVdoF55b5lFT8G4G4simbf1k+2w9wIYIradg/sUxEMf4Vd/ca56RiRk2Ubm2Nvn2GH
-	pXdhQEUaxZpC+dvMNqjpOvj1o9Jtd95ZNcpZ5HLDwcHqwu4D6ukxMaMH8v8Yyx8d9wOBfHFqdfQ
-	6B0gmIIz/tlRePtiOSMl22ryth+e6fMLyI9NKwzAfZ5zK2yIJPqUWhW4Tf1wxVukaGwesqPMX1p
-	BdYeW7MgNyqYOpVhG3MRptbjJ3K4GdEVgWdxFB0LzD/FtEpqnbiFZioLjHTyYWDOxyZbhMIXXWM
-	QVtc/nyj1G
-X-Received: by 2002:a05:6000:4305:b0:48d:f2a3:3a4 with SMTP id
- ffacd0b85a97d-48df2a3048amr4041591f8f.16.1792061328335; Thu, 15 Oct 2026
- 03:48:48 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1792061737; x=1792666537;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=JwyFlz/ChE0rMDIH1WU3MsQ60a3WnORnoupBPMHI0Hk=;
+        b=zqctpNnPpssj2ljw96GlAh5jBLIs7W7AIfUilYSUO8GWZWUWehu6gB/vYoMOFbMg1S
+         KfT7dpdJMNNDzye1NwvoqkZx3L+GJAFfQUnFKB3UAl2YiRbJEvvPHXlNVwEzaN2V897r
+         qYaRlQsBTgrEa+q/x7Alh8Lu9lL7tPK4EeWjEX82772zm1sUdM/pINtYCwmGGuuoXuBP
+         iQhvE+C3C/kO4/KS63WFdLLF1LwX3TwvdboG7iHneG1xO/qY9XcAudyljKLXEPAp9Eyz
+         2UAR+o2vYzlBmsckPnTFIt4vF+6s11TaOSPvkHFa3STx0MUAlgi3hegsC6bC/UHaR34O
+         GhsQ==
+X-Gm-Message-State: AFq9FYIxi/8B9jCRpyY8TplT51nFKPgZH0+YUIjj/M5uM4ylP87FZqCX
+	1TXyj6aMHcmbCT1TOutD81EJStUIZWy8so9uO3JtkQ+ocm6BBFBJlQQEks5u9+eZ1ToTvHugROi
+	S41ExwQUloTEdy0f7zWlaNoAN0e1X95N1xu6iF0L7G4MyDIe4VgpfVofkhMNhJfhQ/o4oSg==
+X-Gm-Gg: AYBFou05zWVLSbB9WTKYJzbYup7j7oxch4l4xTi1K84YI7cGb8D5quEE5HOVimjSyeX
+	i2rpmvaQUZtK74QfA2JuyVAyfHida1Uv0kLSi0bCYH7iiAwEYPBqBiUHzX41N+uLouxDy7Fyl5J
+	743ve8gOiqa+Qm4HJQPy+V59Nwj+cHj36VURxOONZgRrilsx9NmSlhY+Egj1WOoajFoOr9NAwpg
+	MXdQevaEaD6z2o0YsU9G8a5S9/xgU4V/ghxxLu/bqw7ZwzjILWrOOfKaeopcAumWRz69mwi9ZCV
+	ftldGZcC0zF+6t9I9A5VdN6ekj/PthZH+XkVkS0rpyfUJey8vaWWMr1h5Q5HRJEJI9BzrtfI4m8
+	v2z1RNW7J0swQPdeoNtBVoaSqVR9DFmib1zj3a8FKrAiWtAkCEwRXUmuVXtctKp774KDfDC65pF
+	qJILc4FCACzega3JUQNVK01tq1nvau
+X-Received: by 2002:a05:701b:4503:10b0:158:7ea9:4a5c with SMTP id a92af1059eb24-16a60066981mr25230151c88.27.1792061736465;
+        Thu, 15 Oct 2026 03:55:36 -0700 (PDT)
+X-Received: by 2002:a05:701b:4503:10b0:158:7ea9:4a5c with SMTP id a92af1059eb24-16a60066981mr25230128c88.27.1792061735948;
+        Thu, 15 Oct 2026 03:55:35 -0700 (PDT)
+Received: from hu-varada-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3537ca7133asm72352996eec.14.2026.10.15.03.55.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 15 Oct 2026 03:55:35 -0700 (PDT)
+From: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+Date: Thu, 15 Oct 2026 16:25:28 +0530
+Subject: [PATCH] dt-bindings: cpufreq: qcom-nvmem: Allow generic OPP tables
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261009165710.1320233-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <20261009165710.1320233-6-prabhakar.mahadev-lad.rj@bp.renesas.com> <CAMRc=Met2DuvMz4fZjSn4as56uaKaN4K3Nt_ub=4BjaLQe5nmw@mail.gmail.com>
-In-Reply-To: <CAMRc=Met2DuvMz4fZjSn4as56uaKaN4K3Nt_ub=4BjaLQe5nmw@mail.gmail.com>
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Thu, 15 Oct 2026 11:48:21 +0100
-X-Gm-Features: AclHuK9GL7dcegAHXj9a4i5LIQhbxiG32N7YkVxCBuH5SJV_-Wy1REjdRCS5iRg
-Message-ID: <CA+V-a8toBu8SkOft-LHxgR0OEy0pz8sMGMze3GCG5z6n-YuZgQ@mail.gmail.com>
-Subject: Re: [PATCH v2 5/5] soc: renesas: Kconfig: Select POWER_SEQUENCING_RENESAS_PWRRDY
- for RZ/V2H and RZ/V2N
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, 
-	Prabhakar <prabhakar.csengg+renesas@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261015-opp-v1-1-f18fb6f9bae1@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAB+x0GoC/y3MwQrCMBCE4VcJe3ahKUa0ryI9pHGie2gSk1QKp
+ e9usB7/Yfg2KsiCQoPaKOMjRWJooU+K3MuGJ1geranv+ovutOGYEl+9MYB2t8l6as+U4WX9Kff
+ x6Iz30rB6jDTZAnZxnqUOKmCt/AfPNO77Fxa+wcaGAAAA
+X-Change-ID: 20261015-opp-8f55ee1c9baf
+To: Ilia Lin <ilia.lin@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE1MDA0MyBTYWx0ZWRfX51UHg/aU4hrM
+ iIYds2jTybYKjHtiw7fgmtGqZpurPD7m9IhM1DA59i+ViFAFMfVKpIqlVOLaqwC8KTUyNajCW03
+ +/yBsQBfAkP3UvEdjgBqdOJEIilqpA09jx1wxz0UmreeP5scM4KSawl9vPowGz4KTgO7HRlUuiG
+ sNdq2BWU+ewAHG1OcYUpem/j8EsvslsbqjvneNw+W2jS9MiBKGu/uJ1FUw1Vye+Bdf//bqtO1pC
+ E4whF7imr9Xq+V+CnfQ6tjL8SpFsN2EmLtRrVHSTJxKTdgzPy3SyOFnPr5bfHMFjIa7eFavrHmE
+ nf7Jxt6WebfZCLS5IjoumLMW8IbLWa+xC5FrwITrgffvWqI7Au0GFqD3CVNo/lwqoUu/QRulTti
+ IeW17bizQ77M646lH+/s9YvZz3XiUhXbeASuRj28rgJ02LNHDfOVFwjpCf3s0bmajOOeA1QTU2Q
+ jZ1Lc+Cgve+Sli/luKw==
+X-Proofpoint-ORIG-GUID: K9vRqO5hAIsjbfWZSEu6A1sPfeUxS7N3
+X-Proofpoint-GUID: K9vRqO5hAIsjbfWZSEu6A1sPfeUxS7N3
+X-Authority-Analysis: v=2.4 cv=G/CJgNk5 c=1 sm=1 tr=0 ts=6ad0b129 cx=c_pps
+ a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
+ a=EUspDBNiAAAA:8 a=hxkfFdRD5dxKw9vi-7wA:9 a=QEXdDO2ut3YA:10
+ a=6Ab_bkdmUrQuMsNx7PHu:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE1MDA0MyBTYWx0ZWRfXxhuhQa3+n318
+ guiBIUyCnq4bM43z8loyitgo9F04kGG/6GsydHBBbKu/LY1wA5ddS0Yb3uRFXxmvsKJFK4vd1na
+ wGP3F9VpdgZqOvEhEvN3myWjnltUxZ0=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-14_01,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ impostorscore=0 suspectscore=0 adultscore=0 phishscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610150043
 
-Hi Bartosz,
+The OPP table node-name pattern also matches peripheral OPP tables on
+supported SoCs. However, it only handles Qualcomm CPU and level OPP
+compatibles, causing unevaluatedProperties errors for generic
+operating-points-v2 tables.
 
-Thank you for the review.
+Reference the generic OPP binding when compatible is operating-points-v2
+so these tables are validated against the appropriate schema.
 
-On Thu, Oct 15, 2026 at 10:45=E2=80=AFAM Bartosz Golaszewski <brgl@kernel.o=
-rg> wrote:
->
-> On Fri, 9 Oct 2026 18:57:10 +0200, Prabhakar <prabhakar.csengg@gmail.com>=
- said:
-> > From: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> >
-> > The RZ/V2H and RZ/V2N SYSC drivers register auxiliary devices for
-> > power sequencing, which require the pwrseq-renesas-pwrrdy driver to bin=
-d
-> > to them.
-> >
-> > Select POWER_SEQUENCING and POWER_SEQUENCING_RENESAS_PWRRDY from the
-> > RZ/V2H and RZ/V2N SYSC configurations so the power sequencer driver is
-> > built whenever SYSC support for these SoCs is enabled.
-> >
-> > Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> > ---
-> > v1->v2:
-> > - No change
-> > ---
-> >  drivers/soc/renesas/Kconfig | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >
-> > diff --git a/drivers/soc/renesas/Kconfig b/drivers/soc/renesas/Kconfig
-> > index b7abca4559df..32cd0d9c8758 100644
-> > --- a/drivers/soc/renesas/Kconfig
-> > +++ b/drivers/soc/renesas/Kconfig
-> > @@ -517,9 +517,13 @@ config SYS_R9A09G047
-> >  config SYS_R9A09G056
-> >       bool "Renesas System controller support for R9A09G056 (RZ/V2N)" i=
-f COMPILE_TEST
-> >       select SYSC_RZ
-> > +     select POWER_SEQUENCING
->
-> That's implied by the symbol below though?
->
-POWER_SEQUENCING_RENESAS_PWRRDY will only be visible when
-POWER_SEQUENCING is enabled. If dropped, randconfig might generate the
-following warning:
+Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+---
+ Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-$ make menuconfig
+diff --git a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
+index 547265b8b118..fa9330cb3223 100644
+--- a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
+@@ -60,6 +60,13 @@ patternProperties:
+         then:
+           $ref: /schemas/opp/opp-v2-qcom-level.yaml#
+ 
++      - if:
++          properties:
++            compatible:
++              const: operating-points-v2
++        then:
++          $ref: /schemas/opp/opp-v2.yaml#
++
+     unevaluatedProperties: false
+ 
+ allOf:
 
-WARNING: unmet direct dependencies detected for POWER_SEQUENCING_RENESAS_PW=
-RRDY
-  Depends on [n]: POWER_SEQUENCING [=3Dn] && (SYSC_RZ [=3Dy] || COMPILE_TES=
-T [=3Dy])
-  Selected by [y]:
-  - SYS_R9A09G056 [=3Dy] && SOC_RENESAS [=3Dy]
+---
+base-commit: ab8eada9868faeee95f25d81d3d6fed0d1c98b78
+change-id: 20261015-opp-8f55ee1c9baf
 
-Cheers,
-Prabhakar
+Best regards,
+-- 
+Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
 
-> Bart
->
-> > +     select POWER_SEQUENCING_RENESAS_PWRRDY
-> >
-> >  config SYS_R9A09G057
-> >       bool "Renesas System controller support for R9A09G057 (RZ/V2H)" i=
-f COMPILE_TEST
-> >       select SYSC_RZ
-> > +     select POWER_SEQUENCING
-> > +     select POWER_SEQUENCING_RENESAS_PWRRDY
-> >
-> >  endif # SOC_RENESAS
-> > --
-> > 2.55.0
-> >
-> >
