@@ -1,82 +1,140 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD2647A0DE
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:35:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EA124749DA
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:48:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792154108; cv=none; b=TDZvRV89DelUDKJ69UIgeDI/NMQ43UjmzeepnZJt8oT0ZmaDjBu3k1NPTdv9XvKSD0+vKJ5grcFfCRT8GlzqxZjg2xwm7vroTxumjsEIO2KAiYV5utKzHQ1i6zBluvqS5G7Bj3Y6hPAr/6RP68S9rmoazjMlgwoQOjsLkjDBjgg=
+	t=1792154893; cv=none; b=UPGCEYgNbDuYc6PZSXc67sB5srjQYGV6Nqk/UjFP+SuEGWlKy+74/RzuR1GfXEXFl5uJFdDF4uGnshjiogfYlQcUc+ycVWknpB+QZQd4VcfX2IQZs4MNqgd63Xc1axKidfoNqYF5WYJ4gLFLdiqQAg/QwhbyHV/G9aZtCEoMJu8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792154108; c=relaxed/simple;
-	bh=KJMaIRd1Wz2StYLkzuTGe2FFJE4FwOZc/zYJMMrt/Cg=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=i7ZrVj1pal+Y54MjRCbFNWA7cGViW7Tzq0KYcsrVkZw9FZDnaaWo/HQamCa/rAsZV4HHtUv7y2N88mH+cXFIFiND2ia46oDBM5ESd+jMywJgFGe338eRhMSSt8LpjLL581ASK82LA/IiD96wKww3ezDNlMXbWZFq99PWVWCjGlU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=khFz+gPo; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792154893; c=relaxed/simple;
+	bh=0TVCsmzY/81htvR++4cTAiAIRTvIj7D8gDHBKG4Q9Rs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QuAMGbCqaHeVC3jpApfv2iV/BQxZPPoDUKoGLWIXG1mHZ3FYtbZl5OaE+C6Mb0VHXlkSl7uldTXz80/DMXErtsOZqOg2GOXabkiychRbqBy7p8LpaHgw/6JhZ38m2YYifRuTWx5NtMWYVdDNbo8P82nt3AMWiSwXkRwocr+DcHE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HqnnARWB; arc=none smtp.client-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="khFz+gPo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EF951F000C8
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:35:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792154107;
-	bh=KJMaIRd1Wz2StYLkzuTGe2FFJE4FwOZc/zYJMMrt/Cg=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=khFz+gPo7qCZeP2kVfoZGuMuZGpw6va2P1I/L3YDadrvQTzK64qbzTirgQ8v4FO8h
-	 Rou4tXogblJ8kah1yu/duaC1ms5M48Ywla4inUFo8iYi52ehE5G0hiXaJc75Q/D430
-	 77/8vR1XK4GSqt0PdlqJ3I8ExMLuYJ6rhoNWdAwRhRF7BUkbqL7rgxwe1KGaiomQYK
-	 AFu8A6C9VTJCGJWgQJnLQDN265hu9sxxH6ARuuaMVp9JG3LONjhZL1c88nhOcD10Xo
-	 MgzpTEp/UYYYzRjv54oyMGwFPw8T+74r0ivw9NYXS9S30/MU8kAcVC2zb3WlD0Ic85
-	 b2A+V05R+kxmw==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3ab01c46697so13031321fa.1
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 05:35:06 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzV7VSFc8q99le13Vyts4YuR4KBmERfOB58DT0ysN8MBa2bk9XWGKbHFgDOVbPHWEQ5FkmRxcDnjA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIWzcL/iAjXIIAgszYc3Qz/7NLGdDLiCF1mIs3B6MBxQ15IdKac
-	C6ks+naQUrMpj7mnjutvBi1Uu2TjZgq4aLCnEtWii9Od0wI6PCrRSU+ajERcv0Ph3fuaggY57rb
-	HbluzuyQIRb2G2TRZmDL8j/jFA/f5Xc5MJ847aSbN3w==
-X-Received: by 2002:a05:651c:19a7:b0:3a6:6f3d:c804 with SMTP id
- 38308e7fff4ca-3a9c538bfacmr55474691fa.19.1792154105792; Fri, 16 Oct 2026
- 05:35:05 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 16 Oct 2026 08:35:03 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 16 Oct 2026 08:35:03 -0400
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20261014121910.1509541-2-linghui.wu@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HqnnARWB"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2e49fbf92aaso38181935ad.0
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 05:48:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792154891; x=1792759691; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=bYFd/aXrTIJ5csfvBQlIimd/vU0Z6n10xKS50+9y7/Q=;
+        b=HqnnARWBmBpdOt9hhczrE49hJ2bxO1Ygdftpc6HSfXsranao9xirqwsQ1SBqeR4aT9
+         sHLIA2+x1LqY6lzjOSRMJE1Nil4Ni1/zcWCCHVt6cJqwVjB0aBNou6XkIjD9FJDwIYf1
+         remnN3Qx/R/N2yXockUO6/lmjj4ONzKqfLFgNsiZxprBrH6EqVxh4xDiiT9yetgdK3e6
+         rCgRKzI265Q4GI307mPCxeSzoFJnfqEl7jXHNw/AvsIgYY9K3Zbc0GU50+kGnZZ4OlRg
+         7GRfpJVerG6SguSYDgD/CUuhoRXvR5sxZanJ6rjgPEhAcl8O66ujBY9g3UBXmrVHcKqp
+         IR4A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792154891; x=1792759691;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=bYFd/aXrTIJ5csfvBQlIimd/vU0Z6n10xKS50+9y7/Q=;
+        b=UsOZ8cEgIu+iZ2x95377P5R6xKY/j4UguWQFuf1kWa5RD9gkz/0/BAoi3ENbWiiDzo
+         ewQ+kDSWXuVJ2u9Is3nmTCe7V59W9h+Uce1YHLRpDXzmC8hZvh2C7EKAuU4u0oUty1ZO
+         syv4UxA1tTFKntCAGo5rAlh2JTUDOx3Z/Dl36GCzMIDRuBFXyeByxiSJIuqiG/9Uz4xH
+         sUNdLOXvE2d7rS6DCyF1PYIdRAC2KVZfAf1tkF6gZnp8oZpUEpinaAS4/E1Zt5diUgJL
+         DAHLeYP7AhH0mFSlkVMHS4v7fsyk91mD/ZEC+2qVot/q7JCfM4lzUR/sRHNaOVHu6DAS
+         peUg==
+X-Forwarded-Encrypted: i=1; AKwUvByLJWDXxJV2hnyj6oAtxP/Eftx+3d3f9IvHLTgBg6LZns6xko0BdOJ3nhGHQ6NvXmf+uzeUzqgYkg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIppAk+ABeD176yZCJQndiTEscyGlIUcVfQtjMtcHuWBt92WLYQ
+	guL3Yb5TXczd4wa5oXcEfUEkr9hP9ZLGf6pigYxzSD/poSnGmCu4xNXn
+X-Gm-Gg: AYBFou2HB5IavOkhU9rvYrLRG/DU9TLH+97a5TSjROX3CqHokIP60sCnNKFbjkre7ax
+	yMF/TwV7RnyPKq7mMtUSq4khDSZuZsVhlCFwDqLFzHK8CnrnT7OLWV8Uf+hxXoqqhN/bGM1dTz2
+	OLnblfmFcqZkPL0u8DYjuc9Gs1DenKtjE3aMNG4laApbHmIee+MBvgZDvGoQBTInfeT8WMH9hdb
+	Id1ODaqxbIpSHDEuIQ1Xk6bchgl5ZGk9RbU7QoJ/36vWJDl1JTubZpVrMhFR2AaAZ9667mYSvZg
+	OOrC2uIsylSZYaGBq3JAgXUuse/r2Vej91NoRCizO3irYGlu7ZfMtEEvrZhYclJW7j47kSGv2Rx
+	kQfUcPmgikhVtY8vVP06DvWb6HLArSu8FDAdeFbscD4jxA02gp+3zdlqMMjGVd4KxE1Zuc6ZnQf
+	tI7XTZDF/bUAaOmWB11hlfvYICbP7l0TW2BGJxNelxIqpyESJ16oIXYCaZYOzXVFZ1t4+3LSyGY
+	sicNmH01A5pTg==
+X-Received: by 2002:a17:903:2b0c:b0:2e9:9a19:c43 with SMTP id d9443c01a7336-2e99a190debmr10184515ad.15.1792154891342;
+        Fri, 16 Oct 2026 05:48:11 -0700 (PDT)
+Received: from DESKTOP-NM9EKIA ([125.134.240.130])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e834ef9sm9833775ad.42.2026.10.16.05.48.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Oct 2026 05:48:10 -0700 (PDT)
+From: Joonhoe Kim <26rote@gmail.com>
+To: sre@kernel.org
+Cc: konrad.dybcio@oss.qualcomm.com,
+	kamal.wadhwa@oss.qualcomm.com,
+	anjelique.melendez@oss.qualcomm.com,
+	dhruvin.rajpura@oss.qualcomm.com,
+	andersson@kernel.org,
+	dmitry.baryshkov@oss.qualcomm.com,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] power: supply: qcom_battmgr: fix the battery current sign on Kaanapali
+Date: Fri, 16 Oct 2026 21:48:05 +0900
+Message-ID: <20261016124806.1789-1-26rote@gmail.com>
+X-Mailer: git-send-email 2.55.0.windows.5
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261014121910.1509541-1-linghui.wu@oss.qualcomm.com> <20261014121910.1509541-2-linghui.wu@oss.qualcomm.com>
-Date: Fri, 16 Oct 2026 08:35:03 -0400
-X-Gmail-Original-Message-ID: <CAMRc=Mf5fw0+J8uyPgO6j_ooEnB06DoXVRDkpk+JiwcPw2uCFg@mail.gmail.com>
-X-Gm-Features: AclHuK-OTs0buPx-1r5yVX8Ujv5PkAKBIfDAdTiHHnUDkJSI6OM5b9nTO6kfpkY
-Message-ID: <CAMRc=Mf5fw0+J8uyPgO6j_ooEnB06DoXVRDkpk+JiwcPw2uCFg@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/3] dt-bindings: power: sequencing: qcom-wcn:
- document wakeup-source
-To: Linghui Wu <linghui.wu@oss.qualcomm.com>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>, 
-	Hangtian Zhu <hangtian.zhu@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Wed, 14 Oct 2026 14:19:08 +0200, Linghui Wu
-<linghui.wu@oss.qualcomm.com> said:
-> Some WCN3990-family designs connect SW_CTRL to an interrupt capable of
-> waking the application processor.
->
-> Document the dedicated "wakeup" interrupt and wakeup-source property for
-> the WCN PMU node.
->
-> Signed-off-by: Linghui Wu <linghui.wu@oss.qualcomm.com>
-> ---
+The Kaanapali battery firmware reports the battery current with
+discharge positive: on a Lenovo Legion Tab Y700 Gen 5 current_now reads
+-9.1 A while charging and +0.57 A on battery. The power_supply ABI has
+charging positive, and upower reports such a charging battery as
+discharging.
 
-The commit subject should say: "dt-bindings: regulator: ...". There's no such
-thing as power sequencing as far as DT bindings are concerned.
+Other firmware behind the same callback uses the ABI sign [1], so
+negate the value only for qcom,kaanapali-pmic-glink.
 
-Bart
+Fixes: 16a7c32e586e ("power: supply: qcom_battmgr: Add support for Glymur and Kaanapali")
+Link: https://lore.kernel.org/all/20260829054546.86210-1-jan.brummer@tabos.org/ [1]
+Signed-off-by: Joonhoe Kim <26rote@gmail.com>
+---
+I could only check this on one device, not on MTP or QRD firmware.
+Anjelique, could you confirm the sign there?
+
+Both patches apply before or after my two battmgr patches still under
+review (USB_ADAP_TYPE v2 and the USB input current limit).
+
+ drivers/power/supply/qcom_battmgr.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index a7237ba09be1..0d55458b2881 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -313,6 +313,7 @@ struct qcom_battmgr {
+ 	struct pmic_glink_client *client;
+ 
+ 	enum qcom_battmgr_variant variant;
++	bool current_inverted;
+ 
+ 	struct power_supply *ac_psy;
+ 	struct power_supply *bat_psy;
+@@ -1435,6 +1436,8 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
+ 			break;
+ 		case BATT_CURR_NOW:
+ 			battmgr->status.current_now = le32_to_cpu(resp->intval.value);
++			if (battmgr->current_inverted)
++				battmgr->status.current_now = -battmgr->status.current_now;
+ 			break;
+ 		case BATT_TEMP:
+ 			val = le32_to_cpu(resp->intval.value);
+@@ -1659,6 +1662,9 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+ 	else
+ 		battmgr->variant = QCOM_BATTMGR_SM8350;
+ 
++	battmgr->current_inverted = device_is_compatible(dev->parent,
++							 "qcom,kaanapali-pmic-glink");
++
+ 	ret = qcom_battmgr_charge_control_thresholds_init(battmgr);
+ 	if (ret < 0)
+ 		return dev_err_probe(dev, ret,
+
+base-commit: b810335a0699d1810683796b0e3ffe8827ddfe6c
+-- 
+2.43.0
+
