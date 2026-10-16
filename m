@@ -1,120 +1,94 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D79541DED8;
-	Fri, 16 Oct 2026 07:43:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78BB12DA749;
+	Fri, 16 Oct 2026 07:55:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792136603; cv=none; b=Bx/2FusB0Nqe+uqbGbNIwmY1DL0DpkRPJSY5fwyJz5Y2Q6GwAvCFRFHof/sJQADTfjlhfbB9sxdBfcZ25Uki1WOg0mmMKkSR2pFGtpv8Zv8E27BULjXZ4Eb2UlTXZQE8EkufLoP9ksU2sE8nObdEv9NZWtfCvmnulfd+cAl7w1k=
+	t=1792137333; cv=none; b=Dbxi83uTOwXj59eVl8eLpHky9hBGqGwYl+qd9Fyq+ODPZSH5w7mjoMl3XykJAqtVLyvg5Z0cSI+rP92nFFdFPEhynkODFnT3/xTJWChRN86PHL6xG2T/lAP54gRbYGvpZzU/sk6axk7P1fDdF8Th2hzg2WZEL0ArjWMzH8+bHE8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792136603; c=relaxed/simple;
-	bh=mhJJOiGSAySJ9mUo6G70qcgxDi+mETTMgMGHEkSRrZQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KYfxXfIVLJiZj8HGUiUTA9+jCTl2z1+SIeJTflDE564sA957yZTpFirI4DCbFMsLLRSkC838ZvDFN1ypEJt3iVp2sjYwwnmJaGg6GI6XrIkjcS6WJuKKnl+KoDnM0kwrNjVqzrLECZx3/1alScMpt8haO7O1Ayk2g2YBwglTj+Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rd5Epjv5; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1792137333; c=relaxed/simple;
+	bh=s2qkuz77nZb+KEAcPiNu4S5EkdFXyCs0e22k3+Jyfuo=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=OVAMfzRNNkvUHbFmwAC/VXCtHJQO+rjUIH3djQsZNv5fOHP3rl3Y1Ktnl4kUxr6/bwvD7Q8ZuMqZiwMk1BCQ4AD6g+pr1Vqxaz1qYzvTXdYWRB+sHkd5NLrCKmh6M/edXJnoFgp4vUWXHK/+x3yZEgWQmNOyNQvT1hIl+0q1I2I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d79fYZ1l; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rd5Epjv5"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 92AE7C2BD00;
-	Fri, 16 Oct 2026 07:43:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1792136602;
-	bh=mhJJOiGSAySJ9mUo6G70qcgxDi+mETTMgMGHEkSRrZQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=rd5Epjv5ZNDk13xDFDcn4hXK1WxmYIoDwTccqODq6XhzONNdjPZqW2RgG9fSvQpAN
-	 fzNm6AWcscR8VQh1msxERCJDhwY7dam6LWDzDXu08RKHYSrSJ5Njx1SZSjabpgBgKM
-	 Dsb1v5zubd8GB30UgXuM+lzsw0I2sT9T9EaSemV6G31J4KVao0oUbSQmiIsdJuCpia
-	 ECWriGG2l0TCAs4w/LxVeIZo8aXaDjIuVuTJU566GkNgmydq6ZUzalA425vewBVrm8
-	 QaCyeOzc64oRp7yKPX4ns+jjqTUJ3NdwZR84HQjxsv05TsmZkXiFJ6+HnjD/rSIK//
-	 50m0QHJzuWqYQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 756AACCA46D;
-	Fri, 16 Oct 2026 07:43:22 +0000 (UTC)
-From: Haoning CHENG via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
-Date: Fri, 16 Oct 2026 15:43:19 +0800
-Subject: [PATCH RESEND v11 2/3] thermal/drivers/imx: Fix rounding and clamp
- for i.MX7D alarm
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d79fYZ1l"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DD101F000C4;
+	Fri, 16 Oct 2026 07:55:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792137331;
+	bh=1G3X/wKLWQ8BtSB601M3ucPdAke4dgZzTbZ/O9Bh7aA=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=d79fYZ1l/3iad7+p0OOm0c4iu1ttaMzqjl5q6/IAYOjO5oyKyDkxbXjMp2exDnFi8
+	 ErcZPHJFK4lX7BbYenXGuGDmuiqS9oOWTdUgwyAwx6ulkRr/pjuMWvBLkAuqkMq4ii
+	 Hf1lQJtKyzbdDvcFwfa8Jwce5iuXBk1uXnDl9xhH2RakAMVgdY8cGlJL6kPClo9ugg
+	 Yv4R9CnT1A42bVkf71OFoVdjGEg56v89XoIds+2J1t4PPpP0gHIBBxZXq4DFqu/dXr
+	 qSjmiX+ArNBuP/NDcWJ99efsQ+WyUDdWCkjqaQi7U2WF5Io3Huxda+4pe5vrBelwOn
+	 bMeNRPIYTK4Vw==
+Content-Type: multipart/mixed; boundary="===============7152762966294616627=="
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Message-Id: <e8d14ff76206a79ef0d97847df7802345cf747603e554bb2c015c155113fd3f3@mail.kernel.org>
+In-Reply-To: <20261016070837.440748-16-ankur.a.arora@oracle.com>
+References: <20261016070837.440748-16-ankur.a.arora@oracle.com>
+Subject: Re: [PATCH v16 15/16] barrier: timeout validity checks for smp_cond_load_relaxed_timeout()
+From: bot+bpf-ci@kernel.org
+To: ankur.a.arora@oracle.com,linux-kernel@vger.kernel.org,linux-arch@vger.kernel.org,linux-arm-kernel@lists.infradead.org,linux-pm@vger.kernel.org,bpf@vger.kernel.org
+Cc: arnd@arndb.de,catalin.marinas@arm.com,will@kernel.org,peterz@infradead.org,akpm@linux-foundation.org,mark.rutland@arm.com,harisokn@amazon.com,cl@gentwo.org,ast@kernel.org,rafael@kernel.org,daniel.lezcano@kernel.org,memxor@gmail.com,zhenglifeng1@huawei.com,xueshuai@linux.alibaba.com,rdunlap@infradead.org,david.laight.linux@gmail.com,broonie@kernel.org,boris.ostrovsky@oracle.com,ashok.bhat@arm.com,ankur.a.arora@oracle.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,mason@kernel.org,ihor.solodrai@linux.dev
+Date: Fri, 16 Oct 2026 07:55:29 +0000 (UTC)
+
+--===============7152762966294616627==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261016-b4-symana21-11221-imx-thermal-support-upstream-6-18-v11-2-b80952ad27d6@cn.bosch.com>
-References: <20261016-b4-symana21-11221-imx-thermal-support-upstream-6-18-v11-0-b80952ad27d6@cn.bosch.com>
-In-Reply-To: <20261016-b4-symana21-11221-imx-thermal-support-upstream-6-18-v11-0-b80952ad27d6@cn.bosch.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
- Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>, 
- Frank Li <Frank.Li@nxp.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792136598; l=1704;
- i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
- bh=9D7qX15817iSb+CvnZ+YgaTi5ivABKiNn7DaNl6d+D8=;
- b=QTdxPyVh9i+tDNJQHQbs6X5wRrRFVMdipSTtK30+5tr0CDv/2gJpTOkfg+62ds1QqQmfeqDA8
- LTMuohO8wWBCO5gqwolSiYJ5Y2avhBTENrUmX4nDEdJdSMwRHxxzrqu
-X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
- pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
-X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
- with auth_id=860
-X-Original-From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
-Reply-To: Haoning.CHENG@cn.bosch.com
 
-From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+> barrier: timeout validity checks for smp_cond_load_relaxed_timeout()
 
-Convert the alarm temperature from millicelsius to degrees for i.MX7D
-using ceiling division instead of integer division, ensuring rounding
-errors do not cause the alarm to trigger below the intended threshold.
-Use DIV_ROUND_UP() for non-negative values and plain integer division
-for negative values, since C rounds toward zero which is equivalent to
-ceiling when the divisor is positive.
+TL;DR: Nits only, in the new KUnit test: iteration bounds print as unprefixed
+hex ("10" for 16), which is confusing in test names, and a format string has a
+stray double space.
 
-Add clamp() to ensure the hardware register value stays within the 9-bit
-range (0..0x1ff) of the i.MX7D alarm field, preventing silent truncation
-if an out-of-range value is written.
+> diff --git a/lib/tests/barrier-timeout-test.c b/lib/tests/barrier-timeout-test.c
+> index 9c12cd36e7d2..88b374ceb78b 100644
+> --- a/lib/tests/barrier-timeout-test.c
+> +++ b/lib/tests/barrier-timeout-test.c
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Signed-off-by: Haoning Cheng <Haoning.CHENG@cn.bosch.com>
+[ ... ]
+
+> +static void expiry_param_to_desc(const struct smp_cond_expiry_params *p, char *desc)
+> +{
+> +	char iters[32] = "";
+> +
+> +	if (p->miniters != -1)
+> +		snprintf(iters, 32, ">= %llx", (u64)p->miniters);
+> +	else if (p->maxiters != -1)
+> +		snprintf(iters, 32, "%s %llx", p->maxiters == 0 ? "==" : "<=", (u64)p->maxiters);
+> +
+> +	snprintf(desc, KUNIT_PARAM_DESC_SIZE,
+> +		 "smp_cond_*_timeout: clock=%s,  timeout=%s, iterations %s",
+> +		 "synthetic", p->desc, iters);
+> +}
+
+This isn't a bug, but would printing the iteration bound in decimal (%lld)
+or with a 0x prefix make the test names easier to match against the checks?
+
+With "%llx" and no prefix, the U32_MAX row (miniters = 1 << (32-28)) is
+reported as "iterations >= 10" and the 1<<33 row (miniters = 1 << (33-28))
+as "iterations >= 20", while test_smp_cond_relaxed() actually checks for
+>= 16 and >= 32.  The timeout labels in the same table use the "1<<33"
+style, so the hex counts read inconsistently in the KTAP output.
+
+Also, is the double space after "clock=%s," in the format string intended?
+
+
 ---
- drivers/thermal/imx_thermal.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 38c993d1bcb3..7f7d1116b9d6 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -240,10 +240,16 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
- 
- 	data->alarm_temp = alarm_temp;
- 
--	if (data->socdata->version == TEMPMON_IMX7D)
--		alarm_value = alarm_temp / 1000 + data->c1 - 25;
--	else
-+	if (data->socdata->version == TEMPMON_IMX7D) {
-+		if (alarm_temp >= 0)
-+			alarm_temp = DIV_ROUND_UP(alarm_temp, 1000);
-+		else
-+			alarm_temp /= 1000;
-+		alarm_value = alarm_temp + data->c1 - 25;
-+		alarm_value = clamp(alarm_value, 0, 0x1ff);
-+	} else {
- 		alarm_value = (data->c2 - alarm_temp) / data->c1;
-+	}
- 
- 	regmap_write(map, soc_data->high_alarm_ctrl + REG_CLR,
- 		     soc_data->high_alarm_mask);
-
--- 
-2.43.0
-
-
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/38867477666
+--===============7152762966294616627==--
