@@ -1,119 +1,82 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BE3FC4772B8;
-	Fri, 16 Oct 2026 12:22:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD2647A0DE
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:35:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792153344; cv=none; b=mLTxKEs5k0qHjvdnK7UGt6i/JElzaVaW/mxo6mxkqkIuOrRKjFckjoca1R/w31Od/CXh2+PelQLY7JOBzOyQbCMNFGpaHIdBYyKdm5vGWL2cgfHSTUEqE9qeuhP4mAvTN1OJtphHMTfLIU+3ak4KpIGy76mLA+dZIx5NtsOfp9Y=
+	t=1792154108; cv=none; b=TDZvRV89DelUDKJ69UIgeDI/NMQ43UjmzeepnZJt8oT0ZmaDjBu3k1NPTdv9XvKSD0+vKJ5grcFfCRT8GlzqxZjg2xwm7vroTxumjsEIO2KAiYV5utKzHQ1i6zBluvqS5G7Bj3Y6hPAr/6RP68S9rmoazjMlgwoQOjsLkjDBjgg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792153344; c=relaxed/simple;
-	bh=NULbTvIQZ/oHcmP/aTrGATa4IJHfneiO9zb4SUFhYOw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tqnnVB4rLz8rEIDGb2O/sgXNEqg+8LAm5G3cHxL1tG1rOasPb+Bfgvb8x8lzMcWE6rvqazE14ZLhaMHDbaRkb8g48cFezRLZNq3Jzi1LT85bjoQgVjEV4IYysip8u/Zy+eGygtFbQL+/RLKpsFqLgqVO9rc9KmP2YjdriM4431k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=shhqUlli; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1792154108; c=relaxed/simple;
+	bh=KJMaIRd1Wz2StYLkzuTGe2FFJE4FwOZc/zYJMMrt/Cg=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=i7ZrVj1pal+Y54MjRCbFNWA7cGViW7Tzq0KYcsrVkZw9FZDnaaWo/HQamCa/rAsZV4HHtUv7y2N88mH+cXFIFiND2ia46oDBM5ESd+jMywJgFGe338eRhMSSt8LpjLL581ASK82LA/IiD96wKww3ezDNlMXbWZFq99PWVWCjGlU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=khFz+gPo; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="shhqUlli"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BE4C914BF;
-	Fri, 16 Oct 2026 05:22:18 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E1F923F871;
-	Fri, 16 Oct 2026 05:22:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1792153342; bh=NULbTvIQZ/oHcmP/aTrGATa4IJHfneiO9zb4SUFhYOw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=shhqUlli7w1Npoly5BGrBS9Jy9AZY2n6Qb6sU26nBEEnyq71sbkEQEBxvCyhG8TkX
-	 g9tiyckxqyXXZraYz+0AqS9HqbmBj0vPQm+YEl3Fp3yPWsjb16Hsdua5atbQo6HLCb
-	 /BewOKm9GMLZuErY0jpDtTffJNkkLeQHDbyrauGg=
-Date: Fri, 16 Oct 2026 13:22:16 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ankur Arora <ankur.a.arora@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	bpf@vger.kernel.org, arnd@arndb.de, will@kernel.org,
-	peterz@infradead.org, akpm@linux-foundation.org,
-	mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org,
-	ast@kernel.org, rafael@kernel.org, daniel.lezcano@kernel.org,
-	memxor@gmail.com, zhenglifeng1@huawei.com,
-	xueshuai@linux.alibaba.com, rdunlap@infradead.org,
-	david.laight.linux@gmail.com, broonie@kernel.org,
-	boris.ostrovsky@oracle.com, ashok.bhat@arm.com,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Christoph Lameter <cl@linux.com>
-Subject: Re: [PATCH v16 03/16] arm64/delay: move, fixup usecs_to_cycles()
-Message-ID: <atIW-GIWaN6-w44R@arm.com>
-References: <20261016070837.440748-1-ankur.a.arora@oracle.com>
- <20261016070837.440748-4-ankur.a.arora@oracle.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="khFz+gPo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EF951F000C8
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:35:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792154107;
+	bh=KJMaIRd1Wz2StYLkzuTGe2FFJE4FwOZc/zYJMMrt/Cg=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=khFz+gPo7qCZeP2kVfoZGuMuZGpw6va2P1I/L3YDadrvQTzK64qbzTirgQ8v4FO8h
+	 Rou4tXogblJ8kah1yu/duaC1ms5M48Ywla4inUFo8iYi52ehE5G0hiXaJc75Q/D430
+	 77/8vR1XK4GSqt0PdlqJ3I8ExMLuYJ6rhoNWdAwRhRF7BUkbqL7rgxwe1KGaiomQYK
+	 AFu8A6C9VTJCGJWgQJnLQDN265hu9sxxH6ARuuaMVp9JG3LONjhZL1c88nhOcD10Xo
+	 MgzpTEp/UYYYzRjv54oyMGwFPw8T+74r0ivw9NYXS9S30/MU8kAcVC2zb3WlD0Ic85
+	 b2A+V05R+kxmw==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3ab01c46697so13031321fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 05:35:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzV7VSFc8q99le13Vyts4YuR4KBmERfOB58DT0ysN8MBa2bk9XWGKbHFgDOVbPHWEQ5FkmRxcDnjA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIWzcL/iAjXIIAgszYc3Qz/7NLGdDLiCF1mIs3B6MBxQ15IdKac
+	C6ks+naQUrMpj7mnjutvBi1Uu2TjZgq4aLCnEtWii9Od0wI6PCrRSU+ajERcv0Ph3fuaggY57rb
+	HbluzuyQIRb2G2TRZmDL8j/jFA/f5Xc5MJ847aSbN3w==
+X-Received: by 2002:a05:651c:19a7:b0:3a6:6f3d:c804 with SMTP id
+ 38308e7fff4ca-3a9c538bfacmr55474691fa.19.1792154105792; Fri, 16 Oct 2026
+ 05:35:05 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 16 Oct 2026 08:35:03 -0400
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 16 Oct 2026 08:35:03 -0400
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20261014121910.1509541-2-linghui.wu@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261016070837.440748-4-ankur.a.arora@oracle.com>
+References: <20261014121910.1509541-1-linghui.wu@oss.qualcomm.com> <20261014121910.1509541-2-linghui.wu@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 08:35:03 -0400
+X-Gmail-Original-Message-ID: <CAMRc=Mf5fw0+J8uyPgO6j_ooEnB06DoXVRDkpk+JiwcPw2uCFg@mail.gmail.com>
+X-Gm-Features: AclHuK-OTs0buPx-1r5yVX8Ujv5PkAKBIfDAdTiHHnUDkJSI6OM5b9nTO6kfpkY
+Message-ID: <CAMRc=Mf5fw0+J8uyPgO6j_ooEnB06DoXVRDkpk+JiwcPw2uCFg@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/3] dt-bindings: power: sequencing: qcom-wcn:
+ document wakeup-source
+To: Linghui Wu <linghui.wu@oss.qualcomm.com>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>, 
+	Hangtian Zhu <hangtian.zhu@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, Oct 16, 2026 at 12:08:24AM -0700, Ankur Arora wrote:
-> diff --git a/arch/arm64/include/asm/delay-const.h b/arch/arm64/include/asm/delay-const.h
-> new file mode 100644
-> index 000000000000..6ccdfe0a4130
-> --- /dev/null
-> +++ b/arch/arm64/include/asm/delay-const.h
-> @@ -0,0 +1,35 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +#ifndef _ASM_DELAY_CONST_H
-> +#define _ASM_DELAY_CONST_H
-> +
-> +#include <linux/math64.h>
-> +#include <linux/types.h>
-> +#include <asm/param.h>	/* For HZ */
-> +
-> +/* 2**32 / 1000000 (rounded up) */
-> +#define __usecs_to_xloops_mult	0x10C7UL
-> +
-> +/* 2**32 / 1000000000 (rounded up) */
-> +#define __nsecs_to_xloops_mult	0x5UL
-> +
-> +extern unsigned long loops_per_jiffy;
-> +static inline u64 xloops_to_cycles(u64 xloops)
-> +{
-> +	u64 loops_per_sec = (u64)loops_per_jiffy * HZ;
-> +
-> +	return mul_u64_u64_shr(xloops, loops_per_sec, 32);
-> +}
-> +
-> +static inline u64 usecs_to_cycles(u64 time_usecs)
-> +{
-> +	return xloops_to_cycles(time_usecs * __usecs_to_xloops_mult);
-> +}
-> +
-> +static inline u64 nsecs_to_cycles(u64 time_nsecs)
-> +{
-> +	return xloops_to_cycles((time_nsecs) * __nsecs_to_xloops_mult);
-> +}
-> +
-> +u64 notrace __delay_cycles(void);
-> +
-> +#endif	/* _ASM_DELAY_CONST_H */
+On Wed, 14 Oct 2026 14:19:08 +0200, Linghui Wu
+<linghui.wu@oss.qualcomm.com> said:
+> Some WCN3990-family designs connect SW_CTRL to an interrupt capable of
+> waking the application processor.
+>
+> Document the dedicated "wakeup" interrupt and wakeup-source property for
+> the WCN PMU node.
+>
+> Signed-off-by: Linghui Wu <linghui.wu@oss.qualcomm.com>
+> ---
 
-The bot reports are valid, moving these into headers pulled elsewhere
-will clash with existing functions with the same name. You fixed one but
-there's another. Isn't it easier to just add an arm64_ prefix to these?
+The commit subject should say: "dt-bindings: regulator: ...". There's no such
+thing as power sequencing as far as DT bindings are concerned.
 
-Alternatively, I think we only need nsecs_to_cycles(). We have an out of
-line call to __delay_cycles() already, so can we not just add a new
-function to use directly and avoid polluting the headers:
-
-u64 arm64_wfet_deadline(u64 timeout_ns)
-{
-        return __delay_cycles() + nsecs_to_cycles(timeout_ns);
-}
-EXPORT_SYMBOL_GPL(arm64_wfet_deadline);
-
-I prefer the latter if it works.
-
--- 
-Catalin
+Bart
