@@ -1,86 +1,86 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF2794734F4
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 13:52:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBBC24D957E
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 14:13:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792158747; cv=none; b=b60NxVtTawWeOF5h9LZpu2Xbii9N/R8lyUU3PwCPA73o7R3OTLCBLofYmRpgY6xYjrCAvHr9tlje7HuvfPQ2kpFhYaNyS5DMiOOK27mHzWhBHiERTnz9mvByayIDNdBPEAAFhdF0S91r18WOA/A3DlGpIIQ5zgIK43ib1LO7LBY=
+	t=1792159984; cv=none; b=U1Qo2vlkwAuUCZusm2TKdIVLZCuhNo4yVzFhH+O7KMRtDk/bIFpW5Frnh8up4zcr91QtplaLdxZiGwEIaqUhfitjM4sp1x2DexmM5CVdlCMFCpU05md0nd4q61+plmhZkDBOyiuj15LGrDie6E83mwO/cZsKYwWkfy0a+wMyXdE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792158747; c=relaxed/simple;
-	bh=MHO3LECZcEweI/doUlmKSgCO016jmc/EpAtBXq32j/k=;
+	s=arc-20240116; t=1792159984; c=relaxed/simple;
+	bh=Lj9okW55cq/izswbCWi5maI/hYgwlh2oddbUEhyXCU4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HoF0gD92uvG2zBlP7a4go3chqRQN937CTJR2d9bYGR8ZSEVPVcHjheZOL8EmxpHtEPTUZWphJ8Bb313TiEvKhbFTU/4OWFTBnfgFjeyN9FzJKbgeuubvQgbtjMuF0Ekbbd1JoNvT0TtjMlP6mMZJNPopiKhRXWPe+PLLtIAZtvQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hUtbpD59; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=gERNHePL; arc=none smtp.client-ip=205.220.180.131
+	 In-Reply-To:Content-Type; b=LjqsNU0VJ70FkJgTfrQLeHw4ZDcOwLvQLUBk6z6WuB7Zz9Yp8XbPrrEZ5V4oxl1AfgWDMyPm3XQ7A5A5EWWSUXS4JJp/8Q3CLZENd5A0KXCXQ3b4NziHIULq3Nb0zGett6NcyvdWyXHGI8J9Uz5wQxugYM53gxvlJQQcHQ7y9X0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=RIpDKy9K; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=WRR8akGO; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hUtbpD59";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="gERNHePL"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAAKYA1946480
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 13:52:25 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="RIpDKy9K";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="WRR8akGO"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GE5l1U2153759
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 14:12:59 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mLxB7J/nBOK8LYeIBB5tLp00PP2z/rgyyGfBPU2+HMA=; b=hUtbpD59cnUS8jwj
-	4bVBT2MsUQ4gInT6zUwX+tS0YF7Le3FXDFoKKpLw/rpSbloRgm6B5Bu2k4aXE/vC
-	oZNhOMcqBV8M+QX5tmg/oF9KOsZOi5Xo0HRdNhEmL2NouwnJVTEq3osoIc/AEror
-	2zasqoqEOqcUmFj90LPQENLsVTRCOIp3kmVEpvSowFRWMoY6Hbl03rAKRBuzIlix
-	l1IgZppnuXb7sAMrcSMcSBO4mC9nK4IVHgB/96yNH/CZp1lfHoBXUNPQ3JJ00rFh
-	26srT0SQMUbGjmg9LXFA+zr9TLoGhEJW9KBTrEBrA3BVwkD+/VXmoxkaHhjcXkcD
-	F9aoEA==
-Received: from mail-vk1-f197.google.com (mail-vk1-f197.google.com [209.85.221.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hbg5ys8f4-1
+	Hi1p+Zr/AI/+p7WdYUaf3hbMm1zS/1PGSTeC4ULoTkg=; b=RIpDKy9KhJbvrrzr
+	EgJTfCljkxaFQ+bmMM7o5slaDQonwaCkewjQrKjWU/xSa+SKu0HV9O13dRN0ij/8
+	onGC+AVVVNZrIcu3Fuf+RK+6QlLAH+OFbvFtdrwUd67gs9kt7lq0WmFEgqow0gEb
+	b8E7FN2+fqFGNTqWTlKxlmC+f+DtLC/eNYTmTV9ItrASTpngMV7/WZ8PtKR+JiaR
+	skEM9A617L3FV0q89i05cuWk0F9NtrUcpGDQed14k1dP3Hr/fzj92v+VC/TExild
+	BFUhnvXNhouW49jAR6pH5lyNpZmZcHI8sEf9f7wwVyax85v4h7doMo8E12dLmPMz
+	X+GWtw==
+Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hbhumrug3-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 13:52:24 +0000 (GMT)
-Received: by mail-vk1-f197.google.com with SMTP id 71dfb90a1353d-5d44237e2faso357272e0c.3
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 06:52:24 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 14:12:59 +0000 (GMT)
+Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-7c100f6f8ffso270507137.3
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 07:12:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1792158744; x=1792763544; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1792159978; x=1792764778; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=mLxB7J/nBOK8LYeIBB5tLp00PP2z/rgyyGfBPU2+HMA=;
-        b=gERNHePLi7IUS5l0Ys57EFWm3wx1JSUdNShzJO0MyIDj6IQsSINHvGeaRHfYrU0mCA
-         H+LKFfXBGM4aOaP0RpLWTfq+0B1bd5aeMSQICDtVH8ZFdoWqA4Y1Q7RtfE229k9AfF+1
-         LREIjUpzl0fHIP31Ff5+IblX6i9I6LXgbO93YfmkO8LrZS+N0AsZiG/YHnWbLxt9Vgxj
-         qJvElHB23DUaeTe/CFoPwU9jaai6i6fhIQk8q+88DiwNp2z4VLFKrJt7r95YOP/X10Do
-         2TGHvRUm2GC/meajaVmavSni/Et85aE5IYKr8aJuBJHiRPdQ/IZZt2zTsjkiKW9ICHff
-         w1Dw==
+        bh=Hi1p+Zr/AI/+p7WdYUaf3hbMm1zS/1PGSTeC4ULoTkg=;
+        b=WRR8akGOAqJEasR1xj/nafdVwrugruY6GaiSSeqeoY0+2099M+EFRCLGlNwWoUUk82
+         a7lD21UbLiQ8ee6RjFmiR6NVk5sHbwYx+MBbXLEoPh4HPNcoHq0LRHQUUIBXnfzDgLY6
+         0vCmuTXdmcPcCQY8C8sHXYdP2IUNh/MNU8M1y61IbiTNt8JuNt9HkfCdOJkLismJA0eM
+         0pchP+dNh2qyVp3tvMwSnPEgWGq1NSoMhtQ0oCumZXFGvtuSQ5mp+5XlXXNuMWn1+IbF
+         WIfglUfkhtrdGzhfkzZAbtNr8KMrryXWDzpiWFIWu207L1ZkRqT4xhNGXBB26dUeUYYP
+         pB+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792158744; x=1792763544;
+        d=1e100.net; s=20260707; t=1792159978; x=1792764778;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=mLxB7J/nBOK8LYeIBB5tLp00PP2z/rgyyGfBPU2+HMA=;
-        b=0U/QEmq3k9CiOnpHaQGMUilZGtArkaEd49eA07nbpbGgwp9jKB4sMHz4Wl9gyekMp/
-         aze9g7VFgzPxt732vyjsV8xHU5xZtQPKRZ2QTQDX+8tq2vbpoEUE0NxgdJfIfqyPFfeC
-         tWNKuOdjpsVph38w6fAGXqUbRNh+Fku+yZglbR0/a5p4an9Zo+60T4yhuWVF11s/oAu3
-         1lK3mI0ETVGw3r07hiIhc26ZGIF5CsgZ4oclRaKfszbLX5omZnx15Kg+6TC2QOUlrH/0
-         2r8AEfEQ4H20OcdrN58jUZ+jPhICTHkzyAc5pJkhOM3cFFmFI0sKgyHvDWzt1GVowqMv
-         32Rw==
-X-Gm-Message-State: AFq9FYKbwgWIhbVRsGJjG2gp4me50IbKir3hhu3avqDYLnyPr1YusFyg
-	bSdzetCbgWF/dWnDEAgWnn03YOdpfwJ/OVNbih1UfXEGFdZz3ylpt+LE1zvxkDEdxZvEpZvjkCw
-	WhcUlu+S4/xO7U0WrjaeplGLlOxixMsfSvDlPrrs5PHcKhXCe5Xxa66+OVewIsqqUB8pEIA==
-X-Gm-Gg: AYBFou1iWHI34zutb7CKpafoAyrxcFsZfS24UmnK/8ac3ISWIa7+QqFpItibiN8hgXy
-	8a1clTd+VS+j7X66/k8Od8i4WC2Hwhw0/swioU+aOoQPpRbadrnRvCVkdzfXXLU9/Ag5zVY5twP
-	aDrOteANoo0u2G9sS9uM/+1NdNNmj5jYiQzwNks8cjU76U84L/z26uT7gSKZ3U4LRRLspM3sij6
-	+w31iEL6nO5LCgSE7zbcQxf+mHVYkzvxlPk/MdTDX/q7nGT1tfGktkeN9AI05uVbrByj1Cq7aSr
-	TzorXSUKv2FC0u1qEIX/cM8HZzfFdPvALktt929aFPAQZdHnfKu0+ay2vqvsLabrAJVteH4kslg
-	flUbYerGhYK0bIyFTU0qVOw==
-X-Received: by 2002:a05:6122:889a:b0:5e6:589b:eeec with SMTP id 71dfb90a1353d-5eaaa6a1a9cmr1898e0c.5.1792158744190;
-        Fri, 16 Oct 2026 06:52:24 -0700 (PDT)
-X-Received: by 2002:a05:6122:889a:b0:5e6:589b:eeec with SMTP id 71dfb90a1353d-5eaaa6a1a9cmr1883e0c.5.1792158743730;
-        Fri, 16 Oct 2026 06:52:23 -0700 (PDT)
+        bh=Hi1p+Zr/AI/+p7WdYUaf3hbMm1zS/1PGSTeC4ULoTkg=;
+        b=wgt3oNe4svdjFH0Mz6gzdAXbfSC7kFRxv09gTiW7s981PxVCmMjH1KpEkVFW/K4YSq
+         8r8jJjnq99yv6Y4F4d96EnuWMr3FYlgABT7ORO2cSCwLzs9szhck6xSNDcITYCjBHCvd
+         05CcBmoq1ODOjN9HUjtuT/abf3Y6cWpHyf2jEfLYHM+jDPEsA1WZORHPsAcF5PlVqS7U
+         5GyhEwYlE3v6Dc6K9b+ObmEmpRDmB1Gi/rRlRhzK3Mq2Ho9iHukEFuG7c53mIVjLlnlm
+         TxmGv6ba+ha1LYcWiwNwaQRltyjHturjFDxQ+72QibQCsZldVNivxrvPGBwTseep5lJm
+         dz5g==
+X-Gm-Message-State: AFq9FYIjKVSR4g/6WbF9Xar5hFsfAcMfRpuDCE/PxFvlYDZbhFo7KHRN
+	O4NHz6o2A09j1qpHsOhWK06dUlpDwEOLlhlz2Y5MRR0hDWZq21Thqb5DTZCd/Z+cP/yV2fPcNp3
+	o+KnpZo+rXIcX+H1fHdhqoBy2itX2SFeaNaKnG7qmFz1PwOISbGjK28AzgGUkkQ==
+X-Gm-Gg: AYBFou3ZC7UUEsdp3eDmqwoVr0cEqW7F2S4148UxkfgBnl4lFakU1DP+5h3QlRiF3rI
+	dSc74zh6DFwV3AW8U2c+kCOBnxb1qFeEYRRTcsh2Vvpp/gc/dcPkuqDvl6eESIWOs0tqKDY8P7t
+	NaYJLqI6pwJFjZXbSOhkPcrEZyY+rh/uxfXETtPGcj/fM0gouFkxHMF1VQ+U0N/AGcYQEUl35FB
+	zcH8A7bBDA7gZxD412cLktMuK0aMeCTO9CFzRO5MM/mu3QLC/0TdmpKdpxjUIEvKdcfe/iOvX0L
+	v6y606dINQaHvHQifiId8Pdpty03orFHkPtoMkLomVmGdL1YJ13uskgDGxn+M06bS5bGxHcaalv
+	1JnO0/ND8fDwtNzZv80/PyA==
+X-Received: by 2002:a05:6123:553:10b0:5c9:6766:5353 with SMTP id 71dfb90a1353d-5eaaa404abbmr55047e0c.3.1792159978424;
+        Fri, 16 Oct 2026 07:12:58 -0700 (PDT)
+X-Received: by 2002:a05:6123:553:10b0:5c9:6766:5353 with SMTP id 71dfb90a1353d-5eaaa404abbmr55033e0c.3.1792159977897;
+        Fri, 16 Oct 2026 07:12:57 -0700 (PDT)
 Received: from [192.168.226.26] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c40914c3f00sm70474466b.48.2026.10.16.06.52.21
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c4091eb256csm74841166b.78.2026.10.16.07.12.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 16 Oct 2026 06:52:22 -0700 (PDT)
-Message-ID: <fefaa398-7542-486e-8cba-7f875ab021a0@oss.qualcomm.com>
-Date: Fri, 16 Oct 2026 15:52:21 +0200
+        Fri, 16 Oct 2026 07:12:57 -0700 (PDT)
+Message-ID: <21a95133-eba9-4655-95b4-9aa947c081f9@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 16:12:54 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -88,8 +88,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/4] clk: qcom: apss-ipq9650: Add IPQ9650 APSS clock
- controller driver
+Subject: Re: [PATCH 1/4] interconnect: icc-clk: support N:1 master-to-slave
+ topology
 To: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
         Georgi Djakov <djakov@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -103,61 +103,74 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
         devicetree@vger.kernel.org
 References: <20261007-ipq9650_apss_clk-v1-0-fd4c2b3cbdea@oss.qualcomm.com>
- <20261007-ipq9650_apss_clk-v1-4-fd4c2b3cbdea@oss.qualcomm.com>
+ <20261007-ipq9650_apss_clk-v1-1-fd4c2b3cbdea@oss.qualcomm.com>
 Content-Language: en-US
 From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20261007-ipq9650_apss_clk-v1-4-fd4c2b3cbdea@oss.qualcomm.com>
+In-Reply-To: <20261007-ipq9650_apss_clk-v1-1-fd4c2b3cbdea@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: adc2Qu2uWdx0874NFcZQ0vWmlRwWCmFl
-X-Authority-Analysis: v=2.4 cv=M+HYuCws c=1 sm=1 tr=0 ts=6ad22c18 cx=c_pps
- a=JIY1xp/sjQ9K5JH4t62bdg==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1NiBTYWx0ZWRfX3jt6RkufBp2G
+ 8Cs3HRJiSrUL0OZMa7CYaKb1YZmLRttCH4yO7PG6jLCjiVtwwl5NdCGngwPxgURGX3tKZkfOOV4
+ SEzx4zGb44iIHlu/w8iFHDh3n1PlNYo=
+X-Authority-Analysis: v=2.4 cv=H+BOUOYi c=1 sm=1 tr=0 ts=6ad230eb cx=c_pps
+ a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=YTQOkCY0yVHAAEeTYYAA:9 a=QEXdDO2ut3YA:10 a=tNoRWFLymzeba-QzToBc:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1NSBTYWx0ZWRfX6EBmrsNuVe5q
- Z/QmCDtRZFuCuvRSAwxmoNEFCSq29pt6x2Ifo9Oy9ijBZp/t45PRag2+HM9Pp0QnwJ050lBdvlw
- ow1bcp0mGGR/3jQbPrqDvvjLQ28ucdI=
-X-Proofpoint-GUID: adc2Qu2uWdx0874NFcZQ0vWmlRwWCmFl
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1NSBTYWx0ZWRfX+AcC68+8sj2e
- 5b7hgw/xI/OX4QViToGbHg6IQBvDAJl/maCRi4TIuzegi7iloeCEvgAUBTiCEbZxrwPTmoXpQut
- BcNpNMlXlK86Vequ0KOrNf1VseHK8tzx/T+Y8EeM3mgDW3rBRo9Ug+6v4zFc8jDp7iRVpn0eGSo
- NDXMkeuae2Vl0avGwrC+Zu5mJQXg+Aw5nsWJ1vtaplmnable119a24kMx23jJaQ7B09BvrO8ZmB
- fvzYAzbFLj1pDmuHsIEulY0acqNv8GQOSLwOrzbbRnMwDJ4u+mKComSDhdFuGw2GFb9LfiPsJNy
- a6RMeuuaj6BuPlYMLKkurjUaultYI6i/z/dyVlZGKI3L48Q6d7nh3YnDTqzh3vegmP8kOQq/v7K
- onlGY3EHOwno9IhxUhLOb94+3/AYt32lUv19VpUNUWnjl87yHdo1TiFINLZgPu66WnA/wMlEvhX
- 6lpCJ88B7QuUMlAxpVQ==
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=DPFxZCFM3FP1ELaAjbQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=-aSRE8QhW-JAV6biHavz:22
+X-Proofpoint-GUID: QBaX0wDF5LbRBQTFvVUk6YXd1UoZ_q0Q
+X-Proofpoint-ORIG-GUID: QBaX0wDF5LbRBQTFvVUk6YXd1UoZ_q0Q
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1NiBTYWx0ZWRfX9A4xACYxeiFb
+ reek7NRx0dIu1mCVneTUhu3XmFsjHxXzhwiouwihTrEz07TvAus2eB2lMsfBp2OvwBKEXmXH6ZC
+ FU+DUElNTXkP8ZY43fmc7rmBD7jsnT4mMzz4dd/6VR7aWATbEQ+hstDI9g8yLFbRrMNKrb+Z5h+
+ 8amnSFTwUDrF74hYHi2TAGkNwZSNGnix9ZcogKke9OcpXSJjR206xz1mrFOnHTBJ8nRHxd7S5xT
+ b3vVIWxribKfHdHSaPyXS36tL0jjqwqt8rwj8xmd0B8eFSCsgDluDIkWJ3zzpGjPXzskZv2iMit
+ rhweolR2Z4bHopfn11BvNBi24kp2Rx1ONi0pvtoIDRP721cduTeTdHIlbv+mw9blxtWdasYWfBH
+ sVVBGSGESJDvwht9fKcBsPpQjOoKILPo0GxTQus9E7fJ6C8HFrxIJobSWrNo5EgF6W1hayEIZ66
+ 7l1QdwuFVOvtlAxQV6A==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-16_01,2026-10-14_01,2025-10-01_01
+ definitions=2026-10-16_02,2026-10-14_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 lowpriorityscore=0 phishscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 adultscore=0 impostorscore=0 bulkscore=0 malwarescore=0
+ spamscore=0 malwarescore=0 bulkscore=0 phishscore=0 priorityscore=1501
+ adultscore=0 clxscore=1015 lowpriorityscore=0 impostorscore=0 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610160055
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610160056
 
 On 10/7/26 8:50 AM, Kathiravan Thirumoorthy wrote:
-> The APSS clock controller on IPQ9650 provides the CPU and L3 clocks.
-> The four Cortex-A55 cores (silver), the Cortex-A78 core (gold) and the
-> L3 are each clocked by their own Zonda PLL. Each clock is selected
-> through a glitch-free mux (GFM) whose parents are XO, GPLL0 and the
-> corresponding PLL. The gold mux can also select the PLL's post-divider
+> icc_clk_register() assumes each icc_clk_data entry describes a unique
+> master/slave pair and creates both nodes for every entry. When several
+> masters share the same slave_id, the shared slave node is created and
+> added again on each later entry. icc_node_create() returns the existing
+> node, so icc_node_add() hits WARN_ON(node->provider):
 
 [...]
 
-> +static struct clk_branch apss_silver_core_clk = {
-> +	.halt_reg = 0x8c,
-> +	.clkr = {
-> +		.enable_reg = 0x8c,
-> +		.enable_mask = BIT(0),
-> +		.hw.init = &(struct clk_init_data) {
-> +			.name = "apss_silver_clk",
-> +			.parent_hws = (const struct clk_hw*[]) {
-> +				&silver_apss_pll_gfmux.hw,
-> +			},
-> +			.num_parents = 1,
-> +			.flags = CLK_SET_RATE_PARENT | CLK_IS_CRITICAL,
+> -	return clk_set_rate(qn->clk, icc_units_to_bps(src->peak_bw));
+> +	/*
+> +	 * Multiple master nodes can share the same underlying clock (N:1
+> +	 * topology, e.g. several CPU clusters voting on one L3 clock).
+> +	 * Aggregate the peak bandwidth across all of them before setting
+> +	 * the rate, otherwise the last caller wins and can undervote what
+> +	 * another master already asked for.
+> +	 */
+> +	list_for_each_entry(node, &provider->nodes, node_list) {
+> +		struct icc_clk_node *n = node->data;
+> +
+> +		if (n && clk_is_match(n->clk, qn->clk))
+> +			rate = max(rate, icc_units_to_bps(node->peak_bw));
+> +	}
 
-Do the clocks have to be enabled even if the CPUs are offline?
+GPT has the following concern:
+
+[P2] Recompute the shared clock rate when a master drops its vote  
+drivers/interconnect/icc-clk.c:36-42
+
+The zero-bandwidth path returns before the new shared-clock aggregation.
+If one master had set the shared clock to a high rate and then drops its
+vote while another master still votes, the clock remains at the old,
+higher rate: the remaining master’s icc_clk_set() is not necessarily
+called. Recompute the maximum vote from all nodes sharing the clock on
+this path, and apply that rate when other masters still have votes.
 
 Konrad
