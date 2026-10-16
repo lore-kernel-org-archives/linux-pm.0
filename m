@@ -1,150 +1,90 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39DD2246784
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:05:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41E6D47ECF9
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:06:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792152327; cv=none; b=ASx3XobtE3D+lzEnZysYvukhmOsWq5OcPqB8JasQ+lOA0GqEIH1958p+cm/MQkaNgSoYtiPPA200YbeflCGKJgDy7PcNBJT95mrSSt+kLbY2DjeJPKRuJzBIKuyXRqmY9bLrISeyXZ2Oq/1mFd2GLMs24aF9SoZh8qH4ifCsHuc=
+	t=1792152370; cv=none; b=BnllGZh2nhZlA9wQQZsr2aZ6eJ7zXCxcJiBg4ruNBvQwjZmPf21b28YLr7l8bmYA2jYH41SWnHYyHy1Aj9HJqIl4Zt7YSxag4fXhrZLSuWm56cnNoJVBn/wu+5YFotBCeb3nvQFo7HikkuHQhWLj6pO6VdD/FUEWCIX4yEyrw0Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792152327; c=relaxed/simple;
-	bh=ZT4UWgyvQV2vX7ps7s0MEnfrc/x35JSD0OOc3762CgA=;
+	s=arc-20240116; t=1792152370; c=relaxed/simple;
+	bh=xNEVlMkXFFl56beLu9OwRlFYPhqZ/tX+fw7U4mwLuFI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oQ5DHrdFXIhQqpakCwGvL7d3Jf4loNO1bliFFOGmbnAYGLFdtXQGGuc5hXv/kdN3Aq77sO80t0sQ9NX8nFt/cuGeiRwhl2iswzzTVmrcjsmra1UF/OWDuSUq7iEBRtBXzMgbwqM+lvUHWXQRmcqvFVCsiTcKe7U65nNZxi4hE8U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A/r1TTiU; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=NTiW/+LtzlzML3cmEegUd0vofdRybnbclCFrAgkJcsM+9W0CX++zpG5dV84YJ6WumMOg6B5o6B4wLq7s3Aa9CdIs23ldny4BWi+dyJk4zLAFJHgXp9c6VKQnD0Py3N5ZdlJ5HYlmIbIcGTcVIBeL7EADzHz2lTuje1Uo99uQmiA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Qjfebli0; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A/r1TTiU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8C5A1F000C4
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:05:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qjfebli0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C83CF1F000C5
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 12:06:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792152325;
-	bh=6Tp/it52Kj0+X1xNDwfnJi2g8xLLZd1hA0zwEBNXg0s=;
+	s=k20260515; t=1792152368;
+	bh=z615JxEuk4WvMRb3fgdn1010HhazyHWcvydII0xt/vw=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=A/r1TTiU2mQivtZ9P1k66LqOcQW4IHdtcv5FPO8OkqQU5j+RKUCsZmK7XwSlJppP3
-	 WjPDTv4LLThSFV6mTtmvFivF6dXZruvVMHjHMBZgxGjD/AIkH/sKkuUXmk6AhyPT9n
-	 IIDedwKSfCOCB9g7321qJMDL+tjr/9+PJHHqoCExKXorjBSsjRXbKtt7OvExs7xEgr
-	 dqD6eYWQcmn3H1fYSzMhPg8lZettUihKZ6UkNWcwo5N8hUKpM8ydgr9skZDBD7x0kP
-	 4w0Ak94bGFzt5mtqEB3cww73tKoPqmhU/ZQc2/gZPpq+LE2gAdHF+SG/b6WC8B5Q9k
-	 7sZkw/t57pdxg==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5be42ae8eb1so1043831e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 05:05:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwfoId0yzEiUeqyGImSlBmrZqGDnlTNIIBxsGQKNvgOU3zXjphMP5cGISjohHlR5A6ze2Dzjp/ONA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKC3ClN+nsFnDR7DKZ/H0elZWJKUYuth/B1VndEn2tF04y9gtGW
-	cxIEqjBx40N7lA1WoqSPJKl3O295DyGIKscYavINNOQ6NmLrgytn5JIAgat84AGTz+bBOFHrVEC
-	5n55nItDIQNEFO58jFZ/dK8x/rj6oPFs=
-X-Received: by 2002:ac2:4f0f:0:b0:5be:4e1b:5f96 with SMTP id
- 2adb3069b0e04-5be4e1b609dmr265012e87.58.1792152324261; Fri, 16 Oct 2026
- 05:05:24 -0700 (PDT)
+	b=Qjfebli0iNKmNpBW2u39kTocpP326muebfW4qCpijtnIyIUHd0AkNMTHie6UDTqoA
+	 iY6vOLDE3C+uNZ4C+TPJCaX9b1ZG2KFTUOPeYOehKIBr+1Agt/tBh5kNJPYfBmN2+V
+	 xvJa+unTYOTRXcKES8bDIvFLPiDcwVUaaGv/2fU+bmHGOSjZyxLYNj1Oo3m3UQoaB/
+	 96sst0agPvx/67zq760KI2NZ7fRgkmydcIGUZs2TGm66zaR3FsjkkZ8+LpPczj2oiG
+	 fA9ud2vcZNNzDJbz48xo4jT4vpPW0dIdHQ+QrKuxpAS0BJfQ1aX41lLeqUMIcKfiVz
+	 p/21AUFr/nKvQ==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5be4b61fd3dso570858e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 05:06:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxPSkcdRW+hZ7WcnTG/6aIg8iMaeg3x/se6nesj89UFBqTk4XxaU4ej7AAfszj7bRY0kOIK2cdFnQ==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJO9NHQSz4wjaO/wx0PaeCTSVH9AiENvexN3dt6qkjZu0RpqDwZ
+	+Cafgcr3hBQIF013TZWUIKxNWV3bsfBHwfAdU/24cJIDAuAU0pRT9YL2EIcvM+G0waVaCxT/uWJ
+	HP5UKeiLp3dzcEATH4OJSSD8F235V9AQ=
+X-Received: by 2002:a05:6512:3189:b0:5b8:c05d:2ab6 with SMTP id
+ 2adb3069b0e04-5bcde3b0b87mr7509182e87.30.1792152367255; Fri, 16 Oct 2026
+ 05:06:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <atHBZAGuEvFABQxV@vireshk-B250M-D3H>
-In-Reply-To: <atHBZAGuEvFABQxV@vireshk-B250M-D3H>
+References: <atHBKtyNwXb8jK25@vireshk-B250M-D3H>
+In-Reply-To: <atHBKtyNwXb8jK25@vireshk-B250M-D3H>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 16 Oct 2026 14:03:13 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hANP5fuhyOvW4tWXwvv=PVq2=34xzRgPeEjBH00UzRAQ@mail.gmail.com>
-X-Gm-Features: AclHuK-nVbIQQpfPsV2RZEtJXTiAGQ7eT51biJIzFRZ6vEGv9eeyJ7TMF8z1oN0
-Message-ID: <CAJZ5v0hANP5fuhyOvW4tWXwvv=PVq2=34xzRgPeEjBH00UzRAQ@mail.gmail.com>
-Subject: Re: [GIT PULL] cpufreq/arm updates for 7.4
+Date: Fri, 16 Oct 2026 14:03:55 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g+OWSdmjPQB0EEi5tNXY99gCWQpgiHsaa+y2eZqFqRpA@mail.gmail.com>
+X-Gm-Features: AclHuK8msS1Yo7x-wEOeZ4_GDB2b4-RgpCMAtAvDRT8huMZ1asYHcW7vtsiCyik
+Message-ID: <CAJZ5v0g+OWSdmjPQB0EEi5tNXY99gCWQpgiHsaa+y2eZqFqRpA@mail.gmail.com>
+Subject: Re: [GIT PULL] OPP updates 7.4
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 16, 2026 at 8:17=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
+On Fri, Oct 16, 2026 at 8:16=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
 rg> wrote:
 >
-> The following changes since commit cee9395acd8043be0644b25c34bfa86623f2b9=
-35:
+> The following changes since commit 1f6de65e3314519ce462bfd3a1d29e918f97e4=
+e5:
 >
->   Linux 7.3-rc1 (2026-08-30 13:34:40 -0700)
+>   opp: fix use after free in _update_opp_table_clk() (2026-09-09 10:23:05=
+ +0530)
 >
 > are available in the Git repository at:
 >
->   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufr=
-eq-arm-updates-7.4
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/opp-u=
+pdates-7.4
 >
-> for you to fetch changes up to 81792daacfb41ca07b04bd3956ea9e672080cc98:
+> for you to fetch changes up to 706081c6b9327dd611dd72b20130a77f0f059b6e:
 >
->   cpufreq: loongson3: Replace IOCSR read/write with MMIO ones (2026-10-16=
- 11:12:33 +0530)
->
-> ----------------------------------------------------------------
-> CPUFreq arm updates for 7.4
->
-> - Minor fixes to in various cpufreq drivers (Alexander Koskovich, Daniel
->   Schwierzeck, Frank Zhang, Haotian Zhang, Kathiravan Thirumoorthy,
->   Sumeet Pawnikar, and Xueqin Luo).
->
-> - Fix wrong behaviors on multi-node servers in Loongson driver (Huacai Ch=
-en).
->
-> - Reject NULL from cpufreq_cpu_get() in the Rust code (Mehmet Koseoglu).
->
-> - Add suspend OPP to mediatek driver and DT (Ryan Brue).
+>   OPP: Fix the return value in dev_pm_opp_get_of_node() kernel-doc (2026-=
+10-01 11:40:49 +0530)
 >
 > ----------------------------------------------------------------
-> Alexander Koskovich (1):
->       cpufreq: Add Milos to cpufreq-dt-platdev blocklist
+> OPP updates for 7.4
 >
-> Daniel Schwierzeck (1):
->       cpufreq: airoha: fix probe failure with correct error check
+> - Fix the return value in dev_pm_opp_get_of_node() kernel-doc (Karl Mehlt=
+retter).
 >
-> Frank Zhang (1):
->       rust: rcpufreq_dt: add module alias
+> ----------------------------------------------------------------
+> Karl Mehltretter (1):
+>       OPP: Fix the return value in dev_pm_opp_get_of_node() kernel-doc
 >
-> Haotian Zhang (1):
->       cpufreq: qcom-cpufreq-hw: fix device node refcount leak in phandle =
-parsing
->
-> Huacai Chen (5):
->       cpufreq: loongson3: Make this driver depend on MACH_LOONGSON64
->       cpufreq: loongson3: Adjust the width of id and val in smc_message
->       cpufreq: loongson3: Replace per-package mutex with per-node
->       cpufreq: loongson3: Use global physical CPU ID in get/target callba=
-cks
->       cpufreq: loongson3: Replace IOCSR read/write with MMIO ones
->
-> Kathiravan Thirumoorthy (1):
->       cpufreq: qcom-nvmem: Add IPQ9650 support
->
-> Mehmet Koseoglu (1):
->       rust: cpufreq: reject NULL from cpufreq_cpu_get()
->
-> Ryan Brue (2):
->       cpufreq: mediatek: Enter system sleep at the suspend OPP
->       arm64: dts: mediatek: mt8173: Mark the lowest CPU OPPs for suspend
->
-> Sumeet Pawnikar (1):
->       cpufreq: Use %pe to print error pointers symbolically
->
-> Xueqin Luo (3):
->       cpufreq: sparc-us2e: fix frequency table index copy-paste error
->       cpufreq: tegra194: fix double-pointer error in get_cpu_ndiv
->       cpufreq: sti: avoid NULL dereference in dev_err()
->
->  arch/arm64/boot/dts/mediatek/mt8173.dtsi |  2 ++
->  drivers/cpufreq/Kconfig                  |  1 +
->  drivers/cpufreq/airoha-cpufreq.c         |  2 +-
->  drivers/cpufreq/bmips-cpufreq.c          |  4 ++--
->  drivers/cpufreq/cppc_cpufreq.c           |  4 ++--
->  drivers/cpufreq/cpufreq-dt-platdev.c     |  2 ++
->  drivers/cpufreq/loongson3_cpufreq.c      | 73 ++++++++++++++++++++++++++=
-++++++++++++++++++++++-------------------------
->  drivers/cpufreq/mediatek-cpufreq.c       |  2 ++
->  drivers/cpufreq/qcom-cpufreq-hw.c        |  3 +++
->  drivers/cpufreq/qcom-cpufreq-nvmem.c     |  9 +++++++++
->  drivers/cpufreq/qoriq-cpufreq.c          |  3 +--
->  drivers/cpufreq/rcpufreq_dt.rs           |  1 +
->  drivers/cpufreq/s3c64xx-cpufreq.c        |  5 ++---
->  drivers/cpufreq/sparc-us2e-cpufreq.c     | 11 +++++------
->  drivers/cpufreq/sti-cpufreq.c            |  4 ++--
->  drivers/cpufreq/tegra194-cpufreq.c       |  2 +-
->  rust/kernel/cpufreq.rs                   | 22 ++++++++++++++++------
->  17 files changed, 100 insertions(+), 50 deletions(-)
+>  drivers/opp/of.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > --
 
