@@ -1,123 +1,332 @@
-Received: from mail-qv1-f44.google.com (mail-qv1-f44.google.com [209.85.219.44])
+Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31C593845AC
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 02:34:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E20022F6188
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 02:45:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.198
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792118080; cv=none; b=LhL/g0QOtqG/0QkQaW6s+gU84p+qzpWiH8e1Y+vtl6cSaGWuOFNE48of5rmI+MPxfWUZeGi+EqHA6D/Lw4kpszDONy2LXgB3gWbkhXzDCX54TweF8gLZA2MFfbWbsvFvSRNK+Rc2U3RE1KGgZ6U0DEt/0Crl5Ys5Kp8chJP11Kg=
+	t=1792118740; cv=none; b=jaTNmUe1WIzyS9EDDtwHuAiK8HUs08Kd8VM61629r63tDem4kOtJQTYbil24eNcTdGUFmQQcYT1qWrqrCHj0gFZp+CZFZC6yEJ1+ddEBOb//2LhL3Q5TuAeEGRebw2Q4B97GGIPqoNvJWDpiiUpJH/k+FDVLCorI7s5Idz/XOD8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792118080; c=relaxed/simple;
-	bh=Pr5xAIu0MxvNLeiU8vK6icLPvs/OZauFDuqJMoK1UYk=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=BvceXDMS+ewQMFkzR2cXykV4AjdgjzC6s3ZGF/Rv7vlmALk6H4YRrfW+/HSN4dYgTzL73uvY6sn2P+udgwWsoOpBk37UtPGNQMFwK0/1iMuj0yjlVUwtwlgmz79/IDts+rFBLfJFmjDmbQiniwLV25FvFcTuAI5TKdJlC3HnchI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jplxtfv1; arc=none smtp.client-ip=209.85.219.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jplxtfv1"
-Received: by mail-qv1-f44.google.com with SMTP id 6a1803df08f44-918f75a68f0so94136386d6.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 19:34:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792118077; x=1792722877; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:content-type:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KFt+NkiDlD6gbaWYo0pDmycQ7qIWrP9xpnL4311ehgk=;
-        b=jplxtfv1UnWPwnzH1CIyq8OMgGve3I0c/m2kqeNlkv8CMErZgvYshsnO2tqSwU+0hk
-         zq1AS/khOMBfP5jxAHnSntn+L6LPubF+MTT0ivK8dKOmFuOKXe9ezvhq+aIVoxgh8G8p
-         b60Lp/hyGpNT8X2jtzGpWNCHB8zUsSCKgv9CjKYK5SQoof4Okc0naFTMcm9WWaLiQWMv
-         1oAccASQO98S70ACX8QpKLQ9tT4XNCntlSmr7kzh5chgJg+oe+B50bvGLmuZUgpN347m
-         TkP2hosaxmOj8dM24Cz5WyfeLYX7qaCQZPQASV1yN6AP1YQhRck/Evr1wCqyggQzBsYg
-         fKww==
+	s=arc-20240116; t=1792118740; c=relaxed/simple;
+	bh=IE3vhzJCpcsuRVqgAbpm2icf0SaJyRmEDDrxW0o0f8E=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=bmNbkJdpu1k1ia6c1MnjaWYVfoPmi65V2tGcuvPfLM5t3CbauhYvgSr3QujeJI14/9AChrTp5Y3/Fu9geVPmUxrKqXu0H3reMt8d/rb2wOvYlKkcKKjpcJAJba1vfjdUT0nM20OwmR+hMSdlzP9EKvhFdMTEajS2UfzO8bk7Zts=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.198
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-4eb0b989f0eso1059744b6e.0
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2026 19:45:37 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792118077; x=1792722877;
-        h=content-transfer-encoding:mime-version:content-type:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=KFt+NkiDlD6gbaWYo0pDmycQ7qIWrP9xpnL4311ehgk=;
-        b=VRr3cArfZVz1VgmLI0sNuOsaRkRTJ/hpLyxd0okaCadHcYzsG3BMqOvAJydnVSrlhy
-         3r2ABsTHbu26+LScw6FpLKcSPEGIJJ8w1CMoWUS6C2h0ENpp7uhOFVSlBfW220oNxbWU
-         r80tHwuONzdIiyAEAPxoGG6Rw3gaH/EqoQdHV+M20ardtqQ8HVgjwv/NqZBud1zB2YXU
-         pTzVzSGyHoWIlEq8bNx/VnpJkhU6r7abhRIcs+7LYzAZyGoKjTgcA/nw3OsVuB7y/u9y
-         lt3IZRjc4R1Rf6y+eKuGxgpkmXiYWhN45rLfFNZxwJ6tFgutI8YOMI9q0BAM4LNtZ/Q3
-         HiHA==
-X-Gm-Message-State: AFq9FYIMc2B+vpsLy9m396sFsChOcQYIc2zUB+JJDHjZOCp9YhkQb5mN
-	ErBEpEycfckdL1pKigoN+nIyrG1if0JlVgiL+7aDfrdNNabonBrbDdQ=
-X-Gm-Gg: AYBFou1pw23I4nu5vJ+9eKMxbi5AHhWUjg/FB8N1tjryuWIQqwrWaJtg7yswDceyk21
-	0mH4MSPf3t6AbG6/k5pq2tCA0q/Ae9JlMkUdLnoiQm0juKH6cEopOcvcHFRcS8SMYOyn0EylG9b
-	6Keq82cbYG1PhdHY8DT+nT1aMOWTHP8dSElkW/5mlqPAszbaXs0HI0/YbQeAYMN6aZSSUCNCA/M
-	1UnrbU/ocLfzJ4FIFBlTzwy9dbA4hVD2u8moRHGqv+SZAk2rEsl0kuAct6B0f9JmGl/fje16BVV
-	TwWjwrgS5nVRg3e5FNhQgCc6Yo3cQpr8heoyx94BgZCrhA+bfhDNnY5wiNS0C/8TIYqCHOTxQwz
-	QKxcA7OOUYaQ2dzblHSSHtDSDSTPG4TkXvnw+Iqb8pB0p+oj7t9UfdwN2aN8qBZmpMdxxvIEN1n
-	F4ry9rlUSNuQFwnsIT04eSn5p6HIYBUSphsyZ/nsIM40GPtViFQyXUrBFy3sVWrtetSxPZMN96q
-	2TK3O7u5QWEqtqDPIViGl58pfRlQrGxP6QjpwbyUwvWHapFTaPiTZDtFtKPrJYhLkw+/5VSCzs0
-	Nx4Ax/PbjT49GK1M0/NghG07pYjS
-X-Received: by 2002:a05:6214:ca6:b0:914:7df6:ca80 with SMTP id 6a1803df08f44-91b554c3d31mr370932266d6.20.1792118077081;
-        Thu, 15 Oct 2026 19:34:37 -0700 (PDT)
-Received: from i4-gl-tmk5904-1.ad.psu.edu ([130.203.156.90])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91bcbb0b231sm10907126d6.31.2026.10.15.19.34.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Oct 2026 19:34:35 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH] power: supply: act8945a: Disable status work on removal
-Date: Thu, 15 Oct 2026 22:34:33 -0400
-Message-ID: <179211805459.3650807.8742309660995961596.G171@gmail.com>
-X-Mailer: git-send-email 2.53.0
-Content-Type: text/plain; charset="utf-8"
+        d=1e100.net; s=20260707; t=1792118737; x=1792723537;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=XX3/oYkLjmdjSqbDcP/sp/YOpYFp+mZ+ZxYseY0tPWg=;
+        b=nHuq7CbEGKoTj59Z2ZDn5mrBYDmTiMyXAyzxe9ZqzlbE++7LbKlLStstnFYDMA/BWs
+         rGOhh3E78Fy79SUJFhQs5lHMpdgSJO32rretdtdEuMQpsltWQKE4Hw2hJsxiS+7dFNbM
+         YJg5ObxvMBwbO2hpWoHuT0JuGc2lj2FHI08sZzEuUTZWeSflEIL3gMPk6Rf0paV19nPI
+         P7ZIPFs/6qM9629Edz6xe3SmpqF7q0mYHtLeSd6Zm9P094nLiR9mu09lpjx6lwjSu2lA
+         GudMT97bK+a5EVxwT3PT4ejEwVx4pmANzo7239/PZUO7B4SY1q26R8Oq3xTcerMY2T+O
+         Qsng==
+X-Forwarded-Encrypted: i=1; AKwUvBxFiGd0SCwBjMPQZcbW0UuCvd+Oed49Gokv0xW3aiH4stOftECPwuGV0eUIfhAdeEZlYrJqo3IT2A==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKLOHSlaKmPID9KOwBMDNy9Vj1Dt0J2UYl6z2ZCmktAU48DL0XN
+	CTwJbO5ktcwUtcNFQxDr9Ehptp1b422zcUWjgoipG3fGSMuZVU+J9SPHrOFL3jmQe9I1ra/U5XV
+	fgPKZDTZNFAEbyJugz2HVlojQ+d4GiFWXHSI1okqN6auRLCYMPAGVAbKvQXU=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6808:e85:b0:4ea:935e:43d6 with SMTP id
+ 5614622812f47-5370270df29mr1157162b6e.45.1792118737052; Thu, 15 Oct 2026
+ 19:45:37 -0700 (PDT)
+Date: Thu, 15 Oct 2026 19:45:37 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ad18fd1.7514cce4.1ece07.0120.GAE@google.com>
+Subject: [syzbot] [pm?] BUG: sleeping function called from invalid context in __synchronize_srcu
+From: syzbot <syzbot+136ee4ebfb4a81dab91b@syzkaller.appspotmail.com>
+To: dakr@kernel.org, driver-core@lists.linux.dev, gregkh@linuxfoundation.org, 
+	lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	pavel@kernel.org, rafael@kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-Clearing init_done does not synchronize with either status interrupt. A
-handler can observe init_done set, be delayed, and schedule the status
-work after cancel_work_sync() has returned. The work can then access the
-power supply after its managed cleanup.
+Hello,
 
-Use disable_work_sync() to reject subsequent queueing and drain any
-existing execution. The charger allocation remains valid until both
-managed IRQs have been released, so a late handler can safely attempt to
-queue the disabled work.
+syzbot found the following issue on:
 
-This issue was identified as part of our ongoing research while
-reviewing kernel code.
+HEAD commit:    0fcb05b72344 Merge tag 'libcrypto-fixes-for-linus' of git:..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=13f2ce8e580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=44ac479246d4559b
+dashboard link: https://syzkaller.appspot.com/bug?extid=136ee4ebfb4a81dab91b
+compiler:       gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
+userspace arch: i386
 
-Fixes: a09209acd6a8 ("power: supply: act8945a_charger: Add status change update support")
-Assisted-by: LLM
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+Unfortunately, I don't have any reproducer for this issue yet.
+
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/d900f083ada3/non_bootable_disk-0fcb05b7.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/7de97b060425/vmlinux-0fcb05b7.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/fe04791ba0c2/bzImage-0fcb05b7.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+136ee4ebfb4a81dab91b@syzkaller.appspotmail.com
+
+BUG: sleeping function called from invalid context at kernel/workqueue.c:4561
+in_atomic(): 1, irqs_disabled(): 0, non_block: 0, pid: 13343, name: syz-executor
+preempt_count: 100, expected: 0
+RCU nest depth: 1, expected: 0
+locks held by syz-executor/13343: 3, last CPU#0:
+ #0: ffff888026340460 (sb_writers#5){.+.+}-{0:0}, at: filename_unlinkat+0x1ad/0x730 fs/namei.c:5725
+ #1: ffffffff8fdec3e0 (rcu_read_lock){....}-{1:3}, at: rcu_lock_acquire include/linux/rcupdate.h:309 [inline]
+ #1: ffffffff8fdec3e0 (rcu_read_lock){....}-{1:3}, at: rcu_read_lock include/linux/rcupdate.h:849 [inline]
+ #1: ffffffff8fdec3e0 (rcu_read_lock){....}-{1:3}, at: find_lock_entries+0x10f/0x1190 mm/filemap.c:2188
+ #2: ffffc90000007c98 ((&vub300->inactivity_timer)){+.-.}-{0:0}, at: call_timer_fn+0x11d/0x5f0 kernel/time/timer.c:1745
+Preemption disabled at:
+[<ffffffff81c9ef13>] softirq_handle_begin kernel/softirq.c:486 [inline]
+[<ffffffff81c9ef13>] handle_softirqs+0xf3/0x9d0 kernel/softirq.c:621
+CPU: 0 UID: 0 PID: 13343 Comm: syz-executor Tainted: G             L      syzkaller #0 PREEMPT(full) 
+Tainted: [L]=SOFTLOCKUP
+=============================
+WARNING: suspicious RCU usage
+syzkaller #0 Tainted: G        W    L     
+-----------------------------
+kernel/rcu/srcutree.c:1464 Illegal synchronize_srcu() in same-type SRCU (or in RCU) read-side critical section!
+
+other info that might help us debug this:
+
+
+rcu_scheduler_active = 2, debug_locks = 1
+locks held by syz-executor/13343: 3, last CPU#0:
+ #0: 
+ffff888026340460
+ (
+sb_writers
+#5
+){.+.+}-{0:0}
+, at: filename_unlinkat+0x1ad/0x730 fs/namei.c:5725
+ #1: 
+ffffffff8fdec3e0 (rcu_read_lock){....}-{1:3}, at: rcu_lock_acquire include/linux/rcupdate.h:309 [inline]
+ffffffff8fdec3e0 (rcu_read_lock){....}-{1:3}, at: rcu_read_lock include/linux/rcupdate.h:849 [inline]
+ffffffff8fdec3e0 (rcu_read_lock){....}-{1:3}, at: find_lock_entries+0x10f/0x1190 mm/filemap.c:2188
+ #2: ffffc90000007c98 ((&vub300->inactivity_timer)){+.-.}-{0:0}, at: call_timer_fn+0x11d/0x5f0 kernel/time/timer.c:1745
+
+stack backtrace:
+CPU: 0 UID: 0 PID: 13343 Comm: syz-executor Tainted: G        W    L      syzkaller #0 PREEMPT(full) 
+Tainted: [W]=WARN, [L]=SOFTLOCKUP
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+Call Trace:
+ <IRQ>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x100/0x190 lib/dump_stack.c:120
+ lockdep_rcu_suspicious.cold+0x4f/0xb2 kernel/locking/lockdep.c:6972
+ __synchronize_srcu+0x29d/0x300 kernel/rcu/srcutree.c:1464
+ wakeup_source_remove drivers/base/power/wakeup.c:201 [inline]
+ wakeup_source_unregister.part.0+0x12c/0x540 drivers/base/power/wakeup.c:237
+ wakeup_source_unregister+0x1f/0x30 drivers/base/power/wakeup.c:236
+ mmc_host_classdev_release+0x42/0x120 drivers/mmc/core/host.c:69
+ device_release+0xd2/0x270 drivers/base/core.c:2640
+ kobject_cleanup lib/kobject.c:689 [inline]
+ kobject_release lib/kobject.c:720 [inline]
+ kref_put include/linux/kref.h:65 [inline]
+ kobject_put+0x1f7/0x640 lib/kobject.c:737
+ put_device+0x1f/0x30 drivers/base/core.c:3884
+ vub300_delete drivers/mmc/host/vub300.c:379 [inline]
+ kref_put include/linux/kref.h:65 [inline]
+ vub300_inactivity_timer_expired drivers/mmc/host/vub300.c:747 [inline]
+ vub300_inactivity_timer_expired+0x42f/0x550 drivers/mmc/host/vub300.c:742
+ call_timer_fn+0x198/0x5f0 kernel/time/timer.c:1748
+ expire_timers kernel/time/timer.c:1799 [inline]
+ __run_timers+0x757/0xb00 kernel/time/timer.c:2374
+ __run_timer_base kernel/time/timer.c:2386 [inline]
+ __run_timer_base kernel/time/timer.c:2378 [inline]
+ run_timer_base+0x114/0x190 kernel/time/timer.c:2395
+ run_timer_softirq+0x1a/0x50 kernel/time/timer.c:2405
+ handle_softirqs+0x1e6/0x9d0 kernel/softirq.c:645
+ __do_softirq kernel/softirq.c:679 [inline]
+ invoke_softirq kernel/softirq.c:519 [inline]
+ __irq_exit_rcu+0x16a/0x210 kernel/softirq.c:758
+ irq_exit_rcu+0x9/0x30 kernel/softirq.c:775
+ instr_sysvec_apic_timer_interrupt arch/x86/kernel/apic/apic.c:1062 [inline]
+ sysvec_apic_timer_interrupt+0xa3/0xc0 arch/x86/kernel/apic/apic.c:1062
+ </IRQ>
+ <TASK>
+ asm_sysvec_apic_timer_interrupt+0x1a/0x20 arch/x86/include/asm/idtentry.h:674
+RIP: 0010:__sanitizer_cov_trace_pc+0x46/0x70 kernel/kcov.c:213
+Code: 00 01 00 ff 74 1e f6 c4 01 74 44 a9 00 00 00 0f 75 3d f7 c1 00 00 00 f0 75 35 8b 82 44 17 00 00 85 c0 74 2b 8b 82 18 17 00 00 <83> f8 02 75 20 48 8b 8a 20 17 00 00 8b 92 1c 17 00 00 48 8b 01 48
+RSP: 0000:ffffc9002334f5d8 EFLAGS: 00000246
+RAX: 0000000000000000 RBX: ffffc9002334f6c0 RCX: 0000000000000000
+RDX: ffff888073702580 RSI: ffffffff8bd06124 RDI: ffff888073702580
+RBP: 0000000000002a3b R08: 0000000000000006 R09: 0000000000002a3b
+R10: fffffffffffffffe R11: 0000000000000001 R12: fffffffffffffffe
+R13: ffff888050b7a680 R14: 0000000000000000 R15: dffffc0000000000
+ xas_find+0xc4/0x8e0 lib/xarray.c:1408
+ find_get_entry mm/filemap.c:2085 [inline]
+ find_lock_entries+0x176/0x1190 mm/filemap.c:2189
+ shmem_undo_range+0x212/0x1570 mm/shmem.c:1143
+ shmem_truncate_range mm/shmem.c:1289 [inline]
+ shmem_evict_inode+0x3b1/0xca0 mm/shmem.c:1420
+ evict+0x3c2/0xad0 fs/inode.c:822
+ iput_final fs/inode.c:2014 [inline]
+ iput.part.0+0x989/0x1050 fs/inode.c:2063
+ iput+0x35/0x40 fs/inode.c:2029
+ filename_unlinkat+0x466/0x730 fs/namei.c:5752
+ __do_sys_unlink fs/namei.c:5783 [inline]
+ __se_sys_unlink fs/namei.c:5780 [inline]
+ __ia32_sys_unlink+0x45/0x60 fs/namei.c:5780
+ do_syscall_32_irqs_on arch/x86/entry/syscall_32.c:79 [inline]
+ __do_fast_syscall_32+0x13a/0x8b0 arch/x86/entry/syscall_32.c:291
+ do_fast_syscall_32+0x32/0x70 arch/x86/entry/syscall_32.c:316
+ entry_SYSENTER_compat_after_hwframe+0x84/0x8e
+RIP: 0023:0xf7f95fec
+Code: d2 74 05 c1 e8 0c 89 02 8b 5d fc 31 c0 c9 c3 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 0f 1f 00 51 52 55 89 e5 0f 34 cd 80 <5d> 5a 59 c3 90 2e 8d b4 26 00 00 00 00 8d b4 26 00 00 00 00 58 b8
+RSP: 002b:00000000ffb7b7c8 EFLAGS: 00000292
+ ORIG_RAX: 000000000000000a
+RAX: ffffffffffffffda RBX: 00000000ffb7b870 RCX: 0000000000008000
+RDX: 00000000f741aff4 RSI: 0000000000000000 RDI: 00000000ffb7c904
+RBP: 00000000ffb7b870 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+ </TASK>
+ODEBUG: object ffffc90000007a60 is NOT on stack ffffc90023348000, but annotated.
+------------[ cut here ]------------
+1
+WARNING: lib/debugobjects.c:672 at debug_object_is_on_stack lib/debugobjects.c:672 [inline], CPU#0: syz-executor/13343
+WARNING: lib/debugobjects.c:672 at lookup_object_or_alloc.part.0.cold+0x19/0x40 lib/debugobjects.c:705, CPU#0: syz-executor/13343
+Modules linked in:
+
+CPU: 0 UID: 0 PID: 13343 Comm: syz-executor Tainted: G        W    L      syzkaller #0 PREEMPT(full) 
+Tainted: [W]=WARN, [L]=SOFTLOCKUP
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:debug_object_is_on_stack lib/debugobjects.c:672 [inline]
+RIP: 0010:lookup_object_or_alloc.part.0.cold+0x19/0x40 lib/debugobjects.c:705
+Code: c4 60 5b 5d 41 5c 41 5d 41 5e 41 5f c3 cc cc cc cc 83 c5 01 89 2d 20 28 7d 1b 4c 89 e6 48 c7 c7 c0 65 62 8c e8 e1 c7 eb ff 90 <0f> 0b 90 e9 62 70 fe 03 83 c5 01 89 2d ff 27 7d 1b 49 39 c4 73 da
+RSP: 0000:ffffc900000078f0 EFLAGS: 00010082
+
+RAX: 0000000000000050 RBX: ffff8880150a88f8 RCX: 0000000000000000
+RDX: 0000000000000050 RSI: ffffffff81e9ad09 RDI: fffff52000000f0f
+RBP: 0000000000000001 R08: 0000000000000007 R09: 0000000000000000
+R10: 0000000000000101 R11: 0000000000000001 R12: ffffc90000007a60
+R13: ffff888073702580 R14: 0000000000000001 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffff88809574a000(0063) knlGS:0000000056b1e480
+CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+CR2: 00000000f737dffc CR3: 000000004e89d000 CR4: 0000000000352ef0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 000000000000000e DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Call Trace:
+ <IRQ>
+ lookup_object_or_alloc lib/debugobjects.c:682 [inline]
+ __debug_object_init+0x2a9/0x3d0 lib/debugobjects.c:798
+ __synchronize_srcu+0x1c3/0x300 kernel/rcu/srcutree.c:1475
+ wakeup_source_remove drivers/base/power/wakeup.c:201 [inline]
+ wakeup_source_unregister.part.0+0x12c/0x540 drivers/base/power/wakeup.c:237
+ wakeup_source_unregister+0x1f/0x30 drivers/base/power/wakeup.c:236
+ mmc_host_classdev_release+0x42/0x120 drivers/mmc/core/host.c:69
+ device_release+0xd2/0x270 drivers/base/core.c:2640
+ kobject_cleanup lib/kobject.c:689 [inline]
+ kobject_release lib/kobject.c:720 [inline]
+ kref_put include/linux/kref.h:65 [inline]
+ kobject_put+0x1f7/0x640 lib/kobject.c:737
+ put_device+0x1f/0x30 drivers/base/core.c:3884
+ vub300_delete drivers/mmc/host/vub300.c:379 [inline]
+ kref_put include/linux/kref.h:65 [inline]
+ vub300_inactivity_timer_expired drivers/mmc/host/vub300.c:747 [inline]
+ vub300_inactivity_timer_expired+0x42f/0x550 drivers/mmc/host/vub300.c:742
+ call_timer_fn+0x198/0x5f0 kernel/time/timer.c:1748
+ expire_timers kernel/time/timer.c:1799 [inline]
+ __run_timers+0x757/0xb00 kernel/time/timer.c:2374
+ __run_timer_base kernel/time/timer.c:2386 [inline]
+ __run_timer_base kernel/time/timer.c:2378 [inline]
+ run_timer_base+0x114/0x190 kernel/time/timer.c:2395
+ run_timer_softirq+0x1a/0x50 kernel/time/timer.c:2405
+ handle_softirqs+0x1e6/0x9d0 kernel/softirq.c:645
+ __do_softirq kernel/softirq.c:679 [inline]
+ invoke_softirq kernel/softirq.c:519 [inline]
+ __irq_exit_rcu+0x16a/0x210 kernel/softirq.c:758
+ irq_exit_rcu+0x9/0x30 kernel/softirq.c:775
+ instr_sysvec_apic_timer_interrupt arch/x86/kernel/apic/apic.c:1062 [inline]
+ sysvec_apic_timer_interrupt+0xa3/0xc0 arch/x86/kernel/apic/apic.c:1062
+ </IRQ>
+ <TASK>
+ asm_sysvec_apic_timer_interrupt+0x1a/0x20 arch/x86/include/asm/idtentry.h:674
+RIP: 0010:__sanitizer_cov_trace_pc+0x46/0x70 kernel/kcov.c:213
+Code: 00 01 00 ff 74 1e f6 c4 01 74 44 a9 00 00 00 0f 75 3d f7 c1 00 00 00 f0 75 35 8b 82 44 17 00 00 85 c0 74 2b 8b 82 18 17 00 00 <83> f8 02 75 20 48 8b 8a 20 17 00 00 8b 92 1c 17 00 00 48 8b 01 48
+RSP: 0000:ffffc9002334f5d8 EFLAGS: 00000246
+
+RAX: 0000000000000000 RBX: ffffc9002334f6c0 RCX: 0000000000000000
+RDX: ffff888073702580 RSI: ffffffff8bd06124 RDI: ffff888073702580
+RBP: 0000000000002a3b R08: 0000000000000006 R09: 0000000000002a3b
+R10: fffffffffffffffe R11: 0000000000000001 R12: fffffffffffffffe
+R13: ffff888050b7a680 R14: 0000000000000000 R15: dffffc0000000000
+ xas_find+0xc4/0x8e0 lib/xarray.c:1408
+ find_get_entry mm/filemap.c:2085 [inline]
+ find_lock_entries+0x176/0x1190 mm/filemap.c:2189
+ shmem_undo_range+0x212/0x1570 mm/shmem.c:1143
+ shmem_truncate_range mm/shmem.c:1289 [inline]
+ shmem_evict_inode+0x3b1/0xca0 mm/shmem.c:1420
+ evict+0x3c2/0xad0 fs/inode.c:822
+ iput_final fs/inode.c:2014 [inline]
+ iput.part.0+0x989/0x1050 fs/inode.c:2063
+ iput+0x35/0x40 fs/inode.c:2029
+ filename_unlinkat+0x466/0x730 fs/namei.c:5752
+ __do_sys_unlink fs/namei.c:5783 [inline]
+ __se_sys_unlink fs/namei.c:5780 [inline]
+ __ia32_sys_unlink+0x45/0x60 fs/namei.c:5780
+ do_syscall_32_irqs_on arch/x86/entry/syscall_32.c:79 [inline]
+ __do_fast_syscall_32+0x13a/0x8b0 arch/x86/entry/syscall_32.c:291
+ do_fast_syscall_32+0x32/0x70 arch/x86/entry/syscall_32.c:316
+ entry_SYSENTER_compat_after_hwframe+0x84/0x8e
+RIP: 0023:0xf7f95fec
+Code: d2 74 05 c1 e8 0c 89 02 8b 5d fc 31 c0 c9 c3 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 0f 1f 00 51 52 55 89 e5 0f 34 cd 80 <5d> 5a 59 c3 90 2e 8d b4 26 00 00 00 00 8d b4 26 00 00 00 00 58 b8
+RSP: 002b:00000000ffb7b7c8 EFLAGS: 00000292
+ ORIG_RAX: 000000000000000a
+RAX: ffffffffffffffda RBX: 00000000ffb7b870 RCX: 0000000000008000
+RDX: 00000000f741aff4 RSI: 0000000000000000 RDI: 00000000ffb7c904
+RBP: 00000000ffb7b870 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+ </TASK>
+----------------
+Code disassembly (best guess):
+   0:	00 01                	add    %al,(%rcx)
+   2:	00 ff                	add    %bh,%bh
+   4:	74 1e                	je     0x24
+   6:	f6 c4 01             	test   $0x1,%ah
+   9:	74 44                	je     0x4f
+   b:	a9 00 00 00 0f       	test   $0xf000000,%eax
+  10:	75 3d                	jne    0x4f
+  12:	f7 c1 00 00 00 f0    	test   $0xf0000000,%ecx
+  18:	75 35                	jne    0x4f
+  1a:	8b 82 44 17 00 00    	mov    0x1744(%rdx),%eax
+  20:	85 c0                	test   %eax,%eax
+  22:	74 2b                	je     0x4f
+  24:	8b 82 18 17 00 00    	mov    0x1718(%rdx),%eax
+* 2a:	83 f8 02             	cmp    $0x2,%eax <-- trapping instruction
+  2d:	75 20                	jne    0x4f
+  2f:	48 8b 8a 20 17 00 00 	mov    0x1720(%rdx),%rcx
+  36:	8b 92 1c 17 00 00    	mov    0x171c(%rdx),%edx
+  3c:	48 8b 01             	mov    (%rcx),%rax
+  3f:	48                   	rex.W
+
+
 ---
-Compile-tested with GCC, W=1 (x86_64). No runtime testing.
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
- drivers/power/supply/act8945a_charger.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index 7e4b087..61381d2 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -14,6 +14,7 @@
- #include <linux/power_supply.h>
- #include <linux/regmap.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/workqueue.h>
- 
- static const char *act8945a_charger_model = "ACT8945A";
- static const char *act8945a_charger_manufacturer = "Active-semi";
-@@ -641,7 +642,7 @@ static void act8945a_charger_remove(struct platform_device *pdev)
- 	struct act8945a_charger *charger = platform_get_drvdata(pdev);
- 
- 	charger->init_done = false;
--	cancel_work_sync(&charger->work);
-+	disable_work_sync(&charger->work);
- }
- 
- static struct platform_driver act8945a_charger_driver = {
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
