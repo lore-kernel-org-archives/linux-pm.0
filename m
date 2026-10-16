@@ -1,138 +1,137 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4115A5AA68E
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 18:14:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B5A83E40F3;
+	Fri, 16 Oct 2026 21:41:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792174448; cv=none; b=FfsTYSY2IRQtZf83PKQOfXepNPJbI2Ai+LIj0aOUazaMxNMFdEWlIQxp7xWJGLtCzZHbYbJZe2hxNL2F+2+QHNQ1zdn91HlFbtdTpyVccQRdpK1HBJ9CzgDZsnr+OzlEXHirRCOkTWU5tHXJMDg3nmxz2OGnpIefaOlV6OVyUeE=
+	t=1792186886; cv=none; b=UnSjcU/lNWSZRLkW2SSAs6LvIUNjWXbvgCmMcG+etm0GxWb5Z4Mg8YFp/8LU5A6a/i7SXELpfjr94d9CZFOqAVzMlFCxPqh45saz8yVJ/9B+w641T8fDBx25Cpghzn+78T2MAZM1Xbjsr1FjuSMqFHtQtt0BVTQr+z0lbpakmAM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792174448; c=relaxed/simple;
-	bh=zk5f7rYUCgAujA4xNfzK1tOFfboCm/vc3PI6IsXp2bc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Igjwwxy+0OzDj8LlNr55/1VVrTeGpAQsUM3l+9Kc3dKUKk0VnRE/ZNnFbZVLEfO0LI54Xj4no4qePfAmU4SgghF4CqAumyox2IYKotEdzjqDH33o9KnDXibn5c04lHDf/EzfhngTgFi1ro+QFDBeSb74hw9iyStf2//ACWnewLs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=og9i1Yby; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792186886; c=relaxed/simple;
+	bh=QIgnUXlbiLx9EEgz8FvAf9L1rd4SgT2sOP93nNhslrI=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=Fe5ip5/oLDFUzQNsWiwC93riaiaHLDY66F7AP/kJWAiIY2TaxfLPj/NP6tMuHkyEsVeIQSouHjFhr0nf9zM2l2lwu57Kp3YBcxqDQ4geHoH7w0NeB4+vPyjshszY0WjywnLjqVq8D2XgLj447QrtqMi6MIazwQK0d7bUX40lGhY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RDMeX8KF; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="og9i1Yby"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 270831F000C4
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 18:14:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RDMeX8KF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E28DE1F000C4;
+	Fri, 16 Oct 2026 21:41:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792174447;
-	bh=zk5f7rYUCgAujA4xNfzK1tOFfboCm/vc3PI6IsXp2bc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=og9i1YbyMvkGWE31YYjLLlCmx4TNbMU11jRMhoYA064UuP80DCTn1SgCFPDfND7dM
-	 vph7ADqxASybnVV2dd20KG5mIXXUmlQGFgazScs5eIwaJ5uzIIsHapeW0PIwP3gSAL
-	 RsDQRRwOvgktBxnMMKzW3PdXQxO14J+IcrNKoSW982fXTrT2vnVf8RnODIPy6A5lyw
-	 09vPv3CfwmHqLsDIjkRobsOrhGyuO/x1mniIBLyPLz95U2oXLWlYlzP8eFJ/H9U7tz
-	 lmkHYv+2dhx1+hvhozO8z1TBDXOpdU3hS2p4OJgcAlNS87QKvl5VpZnBOx7HyjRv0N
-	 J4HyQdkWLU4LQ==
-Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-3a980c01033so1246311fa.3
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 11:14:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBy0FSGuGwoNoqPPljC9R01NWWM9owpK+TrS3i6fA3bunqIO9LKgPIRxgn+KT/QTzzGBZgcMfIEiKQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYI91FzIxNdMfGuwh1iD4Xbq1jYW9Y5+WRObyPkP2F4JGd59k79b
-	08OxM1og1HGsGjSqB9PS1BVOZ2Whn3upa7KQAgIuwKzODdyqT/UrsJk9sMkmtSkrEENFd+9iEzz
-	h8WbmrjnaepDoUTzB2EyuV8kX93O2dBs=
-X-Received: by 2002:a05:6512:318b:b0:5be:428e:2be7 with SMTP id
- 2adb3069b0e04-5be50a4eedfmr94462e87.11.1792174445585; Fri, 16 Oct 2026
- 11:14:05 -0700 (PDT)
+	s=k20260515; t=1792186885;
+	bh=JUDBnrW28gehfNTEclfWXj2rC2kKDVBh4m1iqdq7Kcs=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=RDMeX8KFOkhHjI8n3QCztKH7owT2CMLZhL2q5VLujdEJw+F4BpxLmbj+krUwuj60e
+	 ug7DziDcFJAmUFfFuwzP/qT/s961bofdw52yR5MBmPNIQxVE3w9XXKa0JoIyG+zGls
+	 eGgjtLt/d5t3jBZ8/CVH4Si+A4WKbemwC+YCBDHffEscD5+L57E8oD+T4m5Sj2FlrI
+	 dWXuAGDu6R+nKnvAmZRdMw9AdXh8VT5XfHI8HWlChBHmYDdE+BtxFa5p/e1OEiuTid
+	 is1AD8152LCBSmcbiN7Nin+Y/7DbbIcLhFQLCG0kO38QqlfixDzjHs583rHrHohvnv
+	 ePl6EdRzIlN4A==
+Date: Fri, 16 Oct 2026 16:41:23 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Navon John Lukose <navonjohnlukose@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Mario Limonciello <Mario.Limonciello@amd.com>,
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+	Francisco =?utf-8?B?QmVsdHLDoW4gTWlsbGFsw6lu?= <fbeltranmillalen@gmail.com>
+Subject: Re: [PATCH] PCI/PM: Skip the suspend_noirq config save if
+ runtime-suspended
+Message-ID: <20261016214123.GA1884818@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261001155118.1750028-1-briannorris@chromium.org>
- <20261001085009.v4.2.I75ceea7b1afd016e08922e47b82e6eb36de144fe@changeid>
- <CAJZ5v0hMHutu69acgSR7KsmcLs0McZK+-3OFoiqFrU5GnJzTNQ@mail.gmail.com>
- <as_i5MEz3WfnDQmf@google.com> <CAJZ5v0i+77gt-KmMYdxxzS4uGzxFArrYGpoDnjrfknpPOkAuHg@mail.gmail.com>
- <atE9urIHXAJZXu6k@google.com> <CAJZ5v0g56J9e9qdiR8W+BfmEbbedvpD8hop4+n9=rkFEsDG_Jw@mail.gmail.com>
- <CAJZ5v0gNQqffxcdzWff=z3hi0BXzJBOV6WKgf6RXuOydzQJQMw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gNQqffxcdzWff=z3hi0BXzJBOV6WKgf6RXuOydzQJQMw@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 16 Oct 2026 20:11:54 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iQ35Xm0r8UcRVYq=ZBGyPcfkp5Dtbk5etnyMsEm9wjAA@mail.gmail.com>
-X-Gm-Features: AclHuK-KnhYRgSCe8hzWRnOOPWPOm-JRlMsjeyojKk-1gcbbUhfQ7VLWB9vTpQQ
-Message-ID: <CAJZ5v0iQ35Xm0r8UcRVYq=ZBGyPcfkp5Dtbk5etnyMsEm9wjAA@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] PM: runtime: Add Example Driver Patterns section
-To: Brian Norris <briannorris@chromium.org>
-Cc: linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, 
-	Ulf Hansson <ulfh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260923022511.24932-1-navonjohnlukose@gmail.com>
 
-On Fri, Oct 16, 2026 at 8:05=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
->
-> On Fri, Oct 16, 2026 at 7:42=E2=80=AFPM Rafael J. Wysocki (Intel)
-> <rafael@kernel.org> wrote:
-> > On Thu, Oct 15, 2026 at 10:55=E2=80=AFPM Brian Norris <briannorris@chro=
-mium.org> wrote:
-> > > On Thu, Oct 15, 2026 at 10:11:04PM +0200, Rafael J. Wysocki (Intel) w=
-rote:
-> > > > On Wed, Oct 14, 2026 at 10:15=E2=80=AFPM Brian Norris <briannorris@=
-chromium.org> wrote:
-> > > > > On Wed, Oct 14, 2026 at 09:07:54PM +0200, Rafael J. Wysocki (Inte=
-l) wrote:
-> > > > > > On Thu, Oct 1, 2026 at 5:51=E2=80=AFPM Brian Norris <briannorri=
-s@chromium.org> wrote:
-> > > > > > >
->
-> [cut]
->
-> > >
-> > > I kinda think the point of most of this power domain architecture is
-> > > that a typical driver just doesn't have to worry about it at all (in
-> > > probe(), and if you use runtime PM properly), so I'd prefer not
-> > > mentioning it in the Basic example. But sure.
-> >
-> > Well, your basic example needs to be put in a certain context because
-> > it may not be generally applicable everywhere.
-> >
-> > I think that you should make it clear what the driver's expectations
-> > regarding the physical state of the device at the probe time are and
-> > the general rule is that it is better to leave the device in the same
-> > state in which it is expected to be found next time.
->
-> To be somewhat more precise, if the driver expects to find the device
-> completely off and the runtime PM callbacks are set up to make it
-> operational, runtime PM can be used to power it up in probe:
->
-> /* Assume the runtime PM status to be "suspended". */
-> pm_runtime_enable(dev);
-> pm_runtime_get_sync(dev);
->
-> but then in remove or on probe errors the "power off" state needs to
-> be restored manually:
->
-> pm_runtime_disable(dev);
-> /* Allow the parent and suppliers (if any) to suspend. */
-> pm_runtime_set_suspended(dev);
-> device_specific_power_off(dev);
->
-> However, if the driver expects to find the device operational (for
-> example, because it assumes the ACPI PM domain to be there), it may
-> just update the runtime PM status before enabling runtime PM:
->
-> /* Assume the runtime PM status to be "suspended". */
-> pm_runtime_set_active(dev);
+[+cc Francisco, tangentially related to your series at
+https://lore.kernel.org/linux-pci/20260930141914.6678-1-fbeltranmillalen@gmail.com/t/#u]
 
-And I forgot to add
+On Wed, Sep 23, 2026 at 07:55:11AM +0530, Navon John Lukose wrote:
+> pci_pm_suspend_noirq() saves config space unconditionally when the driver
+> of the device has no PM callbacks, which includes unbound devices.  If
+> such a device is runtime-suspended, the bridge above it may be in a
+> low-power state with the link down.  Depending on the platform, the
+> config reads then either hang the CPU or return all ones, which overwrite
+> the snapshot taken at runtime suspend and are written back to the device
+> on resume.
 
-pm_runtime_get_noresume(dev);
+Right, bridges in non-D0 states don't forward requests downstream, so
+they end with Unsupported Request (PCIe r7.0, sec 5.3.1) or master
+abort (PCI PM r1.2, sec 6).  It's up to the host bridge to choose how
+to report those.
 
-here (to prevent runtime suspend from being triggered by toggling the
-"control" sysfs attribute from "on" to "auto" at this point).
+> Skip the save if the device is runtime-suspended, as pci_pm_freeze()
+> does, since pci_pm_runtime_suspend() has already saved the config space.
 
-> pm_runtime_enable(dev);
->
-> but then in remove or on probe errors it may just leave the device in
-> its current physical state (whatever it is) and assume somebody else
-> to take care of turning it off subsequently:
->
-> pm_runtime_disable(dev);
-> /* Allow the parent and suppliers (if any) to suspend. */
-> pm_runtime_set_suspended(dev);
->
-> These are two distinct cases that are rather hard to cover in one
-> simple example.
+pci_pm_freeze() doesn't call pci_save_state() itself, so I guess it's
+the combination of pci_pm_freeze() and pci_pm_freeze_noirq(), where if
+not runtime-suspended, pci_pm_freeze() clears dev->state_saved so
+pci_pm_freeze_noirq() will call pci_save_state()?
+
+> Use pm_runtime_status_suspended(), because runtime PM is disabled by the
+> noirq phase and pm_runtime_suspended() would always be false.
+> 
+> Fixes: 931ff68a5a53 ("PCI PM: Restore config spaces of all devices during early resume")
+> Cc: stable@vger.kernel.org # v6.19+
+> Signed-off-by: Navon John Lukose <navonjohnlukose@gmail.com>
+
+Seems ok to me, but would be good to get Rafael's ack.
+
+> ---
+> Found on a Lenovo Yoga 83KF (Arrow Lake-H).  A driverless O2 Micro SD
+> reader at 57:00.0 with power/control=auto lets its root port 00:1c.0
+> runtime-suspend to D3hot.  The port then swallows the ECAM reads in
+> pci_save_state(), and the forward-progress watchdog raises a fatal machine
+> check at the ECAM load in pci_mmcfg_read().
+> 
+> The same port returns all ones for CF8/CFC reads.  A local quirk hid the
+> reader's extended config space so the save did only those reads, and it
+> was tried once on each kernel.  The unpatched kernel still died, and the
+> patched one resumed with no "restore config" writes for the reader.
+> 
+> !pci_dev->state_saved would only work for one cycle per boot, because
+> pci_restore_state() clears it and pci_pm_runtime_suspend() does not run
+> again for a device left in RPM_SUSPENDED.
+> 
+> Stable starts at v6.19 because the fix relies on a2f1e22390ac2 ("PCI/ERR:
+> Ensure error recoverability at all times").  Older trees still return
+> early from pci_restore_state() when state_saved is false, so a backport
+> there also needs "pci_dev->state_saved = true;" on the skip path.
+> 
+> Tested on 7.2.5 with the root port in D3hot, three suspend/resume cycles
+> in one boot.  The unpatched kernel dies on the first.  W=1 and sparse
+> clean.
+> 
+>  drivers/pci/pci-driver.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index e16aa59dd..bdc8bad57 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -915,7 +915,15 @@ static int pci_pm_suspend_noirq(struct device *dev)
+>  		return pci_legacy_suspend_late(dev);
+>  
+>  	if (!pm) {
+> -		pci_save_state(pci_dev);
+> +		/*
+> +		 * The bridge above a runtime-suspended device may be in a
+> +		 * low-power state with the link down, which makes the device's
+> +		 * config space inaccessible.  pci_pm_runtime_suspend() has
+> +		 * saved it already.
+> +		 */
+> +		if (!pm_runtime_status_suspended(dev))
+> +			pci_save_state(pci_dev);
+> +
+>  		goto set_unknown;
+>  	}
+>  
+> -- 
+> 2.55.0
+> 
