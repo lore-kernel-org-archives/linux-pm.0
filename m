@@ -1,33 +1,87 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9F8CC4D09FB;
-	Fri, 16 Oct 2026 13:32:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDC9D4D7D36
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 13:35:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792157540; cv=none; b=AADb0k0m5ITMh6ibsvUJgie4REJb6GRcjNhkm3oSYtaIXljPPzDJA5qGwuE37LtXti/R2ZMIZB1oIbfdGhEsfUnLoFpr0LpGQc3KYoEJJIczpZXRdTPx7lQy9Mn3LwvRIogwSJ+cxYzBrvfb1j9LFqzAiKC3PrOii9GV38vxCp8=
+	t=1792157706; cv=none; b=CPZ+PChtmCMtxC0nSziMQxyckzFscnYgFbOd4DisHSAd0J3+FgNiQ3tgE68oRhZK/Vv4sDMi+j2epoPs6/p+U1SgN1pRiBsknYzOdcPxkwr53stahwvc+Ufxk1T0qO3i7M8Kq1HOHTBDp3KHXhVNQTEzfEc8bJGPHfKabYWqaFI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792157540; c=relaxed/simple;
-	bh=Ks0USjugD7SuRhWKVfn4U8BL6MvP82+P9txCurG7QKs=;
+	s=arc-20240116; t=1792157706; c=relaxed/simple;
+	bh=dRZedsXewJ7k0dyhzhYnHamgKjexRp9Kdmjv0oGUStA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=r0ArJp47Rj9RtBT1JsvD+aMfu5F2xUejhln0xEn4CKsN4qmcEUziCutscFaRUeRSsEA9Ly0JufHUm7wnPY9oxVSlGePgqtatLnMs9v3UwOTDpDLXQ0HAgyhf7IXZvchJ6kveLVWPvY7cf4Oo60SaXUXsOkFWfCFvrKwG06wyIvE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ZE1wwLUL; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=dcoIZDnMA3EZSDxaXZHA8chmRL0+SPuMMsLNgjri4pazz2L7oOBnKFRDZSbeSZbHQv1NQg7kDplqDKYQuXTlzaf3MA7ebE72/nfPsH02dcxyvXv1DZ4U+XZV8f1boDR8iGP71RC/fnmaA9Nd8UEZwHpS7/UWQ6eKQ7uwwQn4h4Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=nKIsq1Yt; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=KFb5WlY3; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ZE1wwLUL"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C67E814BF;
-	Fri, 16 Oct 2026 06:32:13 -0700 (PDT)
-Received: from [10.57.84.235] (unknown [10.57.84.235])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 703DF3F673;
-	Fri, 16 Oct 2026 06:32:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1792157537; bh=Ks0USjugD7SuRhWKVfn4U8BL6MvP82+P9txCurG7QKs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ZE1wwLULw9k3L5q79FDNXYmyFkwf/21565zyniXsKaWTLWKLZuECGqu6QX7WnTj4j
-	 IVtSodNs3104ey4DzsHBOLdIB06rq8Ok5t2kNs4TtgCHQu2pKMLo7ytc429se6Ns3k
-	 Uk46SgTROoJdkDuBtsI38UfswX9i6ZnN4xns+g8k=
-Message-ID: <81963d52-0d49-4fb5-b9c8-e1199999aeb4@arm.com>
-Date: Fri, 16 Oct 2026 14:32:13 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="nKIsq1Yt";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="KFb5WlY3"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GBUiwj1281439
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 13:35:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	njwMX125nYX7Y7esAb3jpSpeXBBuKrFsO53FPtwpfrk=; b=nKIsq1Ytw8tE6UbQ
+	rxgaLGfpqwjy8DGVazmvj4GzP7oq4Lz7JoePkCzfJ16uoPx5TSGQ/b2gPuXOU69O
+	M5CQRRknKY479QI3FXU6TOAVecZkAtsJnuqoPdzX4DYc2JerXeHheLe18/P4iM3A
+	fwCJATRY0sC9QBLNbHLBvSdEX6K9qGUtGnKfLQIEu9u6z9Atl0USZiwhHox4xzhy
+	Io2T2cDn8OdCKMjdvbgT80iw570HRmI1NHXLu/5HKTxRKCiUIDAqyJlTJ2jaIzEa
+	htUOlkbWbeexhENDXlGSFsl8UsHCMSrnxH9ohSc/kKrZ16dEKlHMp6yaZV5r2eBr
+	HmGhDg==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hbk3v0ddg-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 13:35:01 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-5362ce9df1eso1544791cf.2
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2026 06:35:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1792157701; x=1792762501; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=njwMX125nYX7Y7esAb3jpSpeXBBuKrFsO53FPtwpfrk=;
+        b=KFb5WlY3UjzpDXOgsWFmoNZfiXHN/fz9/C92jS27oqt4v2PF32kIUIJMx0V7D6mROd
+         WmqT9rsXOcGiHe1CAIKMx2cVBbESq9SWXIfbS7MH2+TS9pwsV0n9kHjkXKEnlHDweWJ5
+         mSY113bpHB7oulB3mcA/yxyH5rA61SVpd+ujlyiZTECf9geSfiTZghllB7BrMN2wjXl0
+         hG7KiYijdVUaP+R1zcxSe7ksU7EWoAWCoSjv5yxTRF2mIc74Nbl4QNL7NouOsXKhU22k
+         SzdSHMXQVRne3CuULk/iETGIaf00ETc4SsaNSM3e+7nZFWqRmkvEQE/jRRTGzp+NyVPr
+         iwvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792157701; x=1792762501;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=njwMX125nYX7Y7esAb3jpSpeXBBuKrFsO53FPtwpfrk=;
+        b=w5yGiBYzYg91kQJplOzegrtVtcw9fvN40rESF8LFqRmOxtSHYuLhbTsVOoHmZRSddL
+         fDw9T8MzLQran6+EVmI+xecou5c2SDwU7qOXweZz+KPCXD9AzMcXF612IHQd0j/0RvMa
+         FbOi2pqAkW1J0AZGU12ul5JoX757N7JKWf1O/fpzWHYx1/2UihnWQAcEiimQ9AdZtd4u
+         k0aBqp4GyXUNmycakvyEa/w9CTa1rO1yzSGDi7/dXJBXArnpXDQ0fHHIsGq/EVPES8+w
+         +EvMCc15GvTQGSMNeNVqEnTLpI3S5S/d4UujTbKcCkPjFCxhW8O7E8pIcanY1Rp2BHXe
+         Cpcg==
+X-Forwarded-Encrypted: i=1; AKwUvBwIxmJ+GlJfLGaTVCjjjM3WLe4AmDjFdi69XL/Jx3SHjgDiHvXoijZh8qXW29SEiZBNdIBcXWXVDg==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK9DG8BKqgcumMiPPno1JAd/BPBv4EYBjTB1GwBsl9rs54WOWEW
+	A3Ay5CyA0G/nt9xKyNyny5RQmSL0NZV93v9bk/APO9I0tduVpPP7TX51iVV7vPlxIcMutE9uyMv
+	LUt7BUq2eG7zzdf6A9JTsyAV701KlucnySlx2jEoVa1ZkiOvZ+140iFwb3S6RhQ==
+X-Gm-Gg: AYBFou1+erlsMNB/+BqVjwqfTH8+sSSpwKPw1u8J7dAT1GREWQdVzrz8J80Hbm+vMAN
+	PPS/5v1kOG5BenFW5xNDhDLyoMMozfbHhsU03VX9Cho85UZpmWdVbr2MWY3h74da1/wJZ4QbonK
+	Id4xymEUL7SOe29Z33TUZwepJlMmPjHzT2+Ww8BFbFXRPpGiQAy1JUvtddjlEJrzvBzWkQTmXpc
+	EvpZ0jgWQoMEIftJ448ef7jDmtGvbxW+WA4zSp8FBdDVPdsAT+X2+gjrzBoEM+wY6bjb6wS/ut3
+	NGtLvDP1uXN7pd4UH24hbCDjkkOXDVBaa/nUH7M29knJOvrKfjRr014rLTK5IPREmGNMZaVape3
+	7VRiwpLZNeGXH9yUhSUr0WQ==
+X-Received: by 2002:a05:622a:1791:b0:535:162c:2e81 with SMTP id d75a77b69052e-535a014c6c7mr430286081cf.5.1792157700707;
+        Fri, 16 Oct 2026 06:35:00 -0700 (PDT)
+X-Received: by 2002:a05:622a:1791:b0:535:162c:2e81 with SMTP id d75a77b69052e-535a014c6c7mr430285181cf.5.1792157700035;
+        Fri, 16 Oct 2026 06:35:00 -0700 (PDT)
+Received: from [192.168.226.26] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c4091eb14a7sm73711666b.76.2026.10.16.06.34.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 16 Oct 2026 06:34:59 -0700 (PDT)
+Message-ID: <0e5b7d2e-e141-4ce4-a873-b65bd9ef3c4a@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 15:34:57 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,258 +89,106 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC] cpuidle: runtime exit latency prediction and timer
- compensation
-To: Cong Zhang <cong.zhang@oss.qualcomm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Aiqun Yu (Maria)" <aiqun.yu@oss.qualcomm.com>, kernel@oss.qualcomm.com,
- trilok.soni@oss.qualcomm.com
-References: <2a5dd3fd-a03f-4ffb-827c-2937bf664c75@oss.qualcomm.com>
+Subject: Re: [PATCH 1/2] power: supply: qcom_battmgr: fix the battery current
+ sign on Kaanapali
+To: Joonhoe Kim <26rote@gmail.com>, sre@kernel.org,
+        Jingyi Wang <jingyi.wang@oss.qualcomm.com>
+Cc: kamal.wadhwa@oss.qualcomm.com, anjelique.melendez@oss.qualcomm.com,
+        dhruvin.rajpura@oss.qualcomm.com, andersson@kernel.org,
+        dmitry.baryshkov@oss.qualcomm.com, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20261016124806.1789-1-26rote@gmail.com>
 Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <2a5dd3fd-a03f-4ffb-827c-2937bf664c75@oss.qualcomm.com>
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20261016124806.1789-1-26rote@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: 3Y0oEWx31KW2NHz-LeGqSqyAnfbbDIrG
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1NCBTYWx0ZWRfXxmTHRDqBDlD2
+ d1fkFuclpbOjGwhXyYHaXU5keN+ei225l8v60otuv0q3V8geD0NoKSqyMxgQ2OV/wNE4kna9Mmf
+ 1nAoHCKlEVgPwvuokaq3ubuaaW8Vse0=
+X-Authority-Analysis: v=2.4 cv=BZdNQbt2 c=1 sm=1 tr=0 ts=6ad22805 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=gZfuR-GZJQvasSKj:21 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=VwQbUJbxAAAA:8 a=DYa_1O34AAAA:8 a=pGLkceISAAAA:8 a=nbsK_V1Wq9JmJ-PpB0gA:9
+ a=QEXdDO2ut3YA:10 a=uxP6HrT_eTzRwkO_Te1X:22 a=piCpHeHFVjWJlYWd443B:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1NCBTYWx0ZWRfX95+cKvEZgN2R
+ 9vGJUuxWS0kEFb20ldPHIOP02eh0ijnvgOvAwQ75I1PcPi1ATrDAoIvlDbjIa7sAx1a754DZndo
+ qN/Lv4XvmdRPjNsZxSeBWqhGhw/xk4WQD9c1vkahopzAwFywAMLx3T7vBbm7WRmi8vULad5i0K0
+ FUlYdV9eWnP3S4q8M6KDu2TdkXcmcwnbCucYtyCnFrQ0/51JnrVW70pfpMYLeuBX1O4oGXZYtFd
+ +2dNPTsQJRn307i+c/8hMfDfwWVv5vO2XheGKbtQ1vnv2NRDBw0fwxmRi4kVMV8Zx+R7d1sSwsx
+ ZkJbuECnYZq4yB/tIqPyBKN0+oCVSPgR16/wCnt0JyP0Bky3w6LbSB2Ae61LDwbHeFXow9umv9d
+ BhQN/oGyu9v6oV1m2ka79kqKdiH1u6oQOis+B+YjigOyuaPat035XBK1vtiPcKk8CBt76nntsD3
+ jrXym0inIcySI+rmzPw==
+X-Proofpoint-ORIG-GUID: 3Y0oEWx31KW2NHz-LeGqSqyAnfbbDIrG
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-16_01,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 impostorscore=0 priorityscore=1501 phishscore=0
+ malwarescore=0 adultscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610160054
 
-On 10/16/26 11:41, Cong Zhang wrote:
-> Hi all,
+On 10/16/26 2:48 PM, Joonhoe Kim wrote:
+> The Kaanapali battery firmware reports the battery current with
+> discharge positive: on a Lenovo Legion Tab Y700 Gen 5 current_now reads
+> -9.1 A while charging and +0.57 A on battery. The power_supply ABI has
+> charging positive, and upower reports such a charging battery as
+> discharging.
 > 
-> 1. Abstract
-> -----------
+> Other firmware behind the same callback uses the ABI sign [1], so
+> negate the value only for qcom,kaanapali-pmic-glink.
 > 
-> This RFC proposes a way to measure and predict CPU idle exit latency at run
-> time in the kernel. It also discusses how to use the prediction to reduce the
-> delay between the expected hrtimer expiry time, called hrtimer rooster timer
-> solution.
+> Fixes: 16a7c32e586e ("power: supply: qcom_battmgr: Add support for Glymur and Kaanapali")
+> Link: https://lore.kernel.org/all/20260829054546.86210-1-jan.brummer@tabos.org/ [1]
+> Signed-off-by: Joonhoe Kim <26rote@gmail.com>
+> ---
+> I could only check this on one device, not on MTP or QRD firmware.
+> Anjelique, could you confirm the sign there?
 > 
-> This idea was presented at the 2026 Linux Plumbers Conference [1]:
-> [1]https://lpc.events/event/20/contributions/2595/
-> We would like to continue the discussion of this approach here in this RFC.
-> 
-> 2. Background
-> ------------
-> 
-> An hrtimer callback can run later than hrtimer next event, the expected expiry
-> time. This is a known behavior in the kernel. Hrtimer expiry only means that
-> the IRQ will be generated at the corresponding time. The callback still waits
-> for wakeup, resume, and the rest of the timer IRQ handling path. This can
-> delay its execution.
-> 
-> When an hrtimer expires while a CPU is idle, the timer IRQ starts waking the
-> CPU. The hardware resumes first. The firmware resumes next. The kernel can
-> start running after that. We call the period start from receiving the IRQ to
-> the entry of kernel execution as idle exit latency. Different CPU
-> architectures and platforms have this kind of idle exit latency.
-> 
-> The kernel currently uses a static idle exit latency from the device tree.
-> This value describes the worst case. It does not directly show the idle exit
-> latency under current conditions. A more accurate idle exit latency estimation
-> will cause less confusion and less power impact in real use cases. A similar
-> upstream discussion also points out that using a static worst-case value to
-> estimate typical latency can cause errors [2]:
-> [2]https://lore.kernel.org/all/44c4ee5a-34ec-4b23-b06b-05bd0fda6585@arm.com/
-> 
-> Other related upstream discussions cover genpd CPU latency QoS [3]:
-> [3]https://lore.kernel.org/all/20250709-pmdomain_qos-v2-1-976b12257899@oss.qualcomm.com/
-> and IRQ timing infrastructure removal [4]:
-> [4]https://lore.kernel.org/all/20251210082242.360936-2-maz@kernel.org/
-> 
-> This RFC therefore discusses how to measure and predict idle exit latency in
-> the Kernel context, and how the prediction may be used for hrtimer handle
-> latency accommodation and other kernel Decisions needed to consider the idle
-> exit latency.
-> 
-> 3. Runtime measurement and prediction
-> -------------------------------------
-> 
-> Different than other interrupts, timer interrupts will have the info of
-> expected time to be triggered. So, We assume the hrtimer expire time and it’s
-> handle latency can be used for specific idle exit latency runtime measurement.
-> We identify the cpu idle level, different cpu, cluster idle level is the key
-> difference of the idle exit latency variation. This section describes how the
-> kernel collects runtime samples and gets a typical exit latency under current
-> conditions. The collection step records valid samples. Prediction uses a
-> sample window to make a dynamic estimate for each condition.
-> 
-> 3.1 CPU sample collection
-> -------------------------
-> 
-> When the CPU enters idle, record the CPU idle level it actually enters and the
-> current programmed hrtimer next event. The idle exit path records when the CPU
-> is awake and running again. This point is before any IRQ handler or hrtimer
-> handler.
-> 
-> In this RFC, observed exit latency is defined as the time when the CPU is exit
-> from idle in kernel idle driver minus the programmed hrtimer expire time:
-> 
->     cpu idle exit time stamp - programmed hrtimer expired time
-> 
-> Keep separate records for each CPU ID and idle level.
-> 
-> There is much noise that will affect this period, for example other
-> unpredicted interrupt coming at the same time. We only take the measured and
-> expected time into consideration. A sample is valid only when all these
-> conditions are held:
-> 
->   - The target CPU entered the target idle level.
->   - The target hrtimer has expired.
->   - The target CPU had only the target timer IRQ pending.
-> 
-> These conditions make sure that the recorded resume time belongs to the target
-> hrtimer, not to an early wakeup caused by another interrupt. Samples that fail
-> these conditions are marked invalid and excluded from exit latency statistics.
-> 
-> 3.2 Cluster exit latency
-> ------------------------
-> 
-> A single CPU chooses the CPU idle level, while multiple CPUs choose the
-> cluster idle level together. When the first CPU wakes, the resume process
-> includes the resume time for the whole cluster. We use the exit latency of the
-> first woken CPU as the cluster exit latency.
-> 
-> The cluster case uses the same measurement method as the CPU case. The last
-> CPU that makes the cluster enter sleep records the cluster ID and cluster idle
-> level for this entry. At exit, the first CPU in the cluster resumes after
-> wakeup represents the sample.
-> 
-> The validity conditions for a cluster sample are similar to those for a CPU
-> sample:
-> 
->   - The cluster entered the recorded idle level.
->   - The target hrtimer has expired.
->   - The target CPU had only the target timer IRQ pending.
->   - Other CPUs in the cluster had no pending IRQ except timer IRQ.
-> 
-> Mark samples that fail these conditions as invalid. Exclude them from cluster
-> exit latency statistics and prediction.
-> 
-> 3.3 Why measure in the kernel
-> -----------------------------
-> 
-> A user-space program can use a periodic timer to measure the time from hrtimer
-> next event until the thread runs again. This time does not accurately
-> represent CPU exit latency for these reasons:
-> 
->   - The time when the thread runs again includes scheduler and user-space path
->     overhead. It cannot show the exact time when the CPU resumed after wakeup.
->   - User space usually does not know which CPU idle level the CPU entered, or
->     which cluster idle level the whole cluster entered.
->   - User space cannot reliably tell whether the target hrtimer, an IPI, a
->     device
->     IRQ, or another pending interrupt woke the CPU.
->   - To send test results back to the kernel in real time, user space would
->     need
->     an extra user-to-kernel interface. The results cannot then be sent
->     directly and continuously to a running cpuidle governor, or used directly
->     for hardware timer programming and compensation.
-> 
-> 3.4 Prediction from historical samples
-> ---------------------------------------
-> 
-> For current experiment, we use a simple way to do the prediction to the valid
-> history samples. The predictor keeps a separate fixed-length window of recent
-> samples for every CPU and idle level. It keeps another window for every
-> cluster and cluster idle level. The current prediction is the average of the
-> samples in the window.
-> 
-> 4. Possible use cases
-> --------------------
-> The “more accurate” idle exit latency can be used in different areas. It can
-> replace the current static idle exit latency used in current kernel
-> components. And One another possible use is hrtimer compensation. We will take
-> this as a specific example.
-> 
-> 4.1 hrtimer compensation
-> ------------------------
-> 
-> Idle Exit latency is one important part of the delay before an hrtimer
-> callback. When cpu is about to go to idle, we can predict the possible current
-> idle exit latency and do compensate. the prediction can set the hardware
-> wakeup time before hrtimer next event. This can compensate for the delay
-> caused by idle exit latency.
-> 
-> We call this early wakeup interrupt Rooster IRQ. Its lead time covers the time
-> needed for hardware and firmware to resume. Rooster IRQ fires before the
-> original hrtimer expiry time, so the CPU can resume close to the expected
-> time. It does not change the software hrtimer expiry time or run the hrtimer
-> callback early.
-> 
-> Rooster IRQ only adds a new hardware timer used for wakeup. This can use The
-> cpu local arch timer and a global/broadcast timer. The rooster timer is set
-> before hrtimer next expire time.
-> 
-> In the CPU case, use the prediction for the CPU and idle level to set that
-> CPU's Local timer. The local timer wakes the CPU early.
-> 
-> In the cluster case, a platform may have several global timer frames. A
-> separate frame can be assigned to each cluster that needs an early wakeup. The
-> last CPU that makes the cluster enter sleep sets a rooster cluser timer. It
-> uses the prediction for the cluster idle level to set the rooster wakeup time.
-> The rooster cluster timer directly wakes the first CPU in the target cluster
-> that needs to resume.
-> 
-> If the platform has only one global timer, or if the local timer stops at the
-> target idle level, a global/broadcast timer can wake an intermediate CPU
-> first. That CPU then sends the wakeup interrupt to the target CPU through an
-> IPI. The rooster timer lead time must cover the exit latency of the
-> intermediate CPU's cluster and the target CPU or cluster.
-> 
-> 5. Prototype status and results
-> ------------------------------
-> 
-> The measurement and prediction mechanism has been validated with real hardware
-> on Qualcomm's platform.
-> 
-> The LPC slides show sample results over a period. The sampled exit latency
-> stays fairly stable during that period. A prediction based on recent sample
-> averages also follows changes in the samples reasonably well.
-> 
-> On device, we enabled compensation with one global timer and broadcast. We
-> measured the difference between the actual CPU resume time and the expected
-> hrtimer expiry time. t1 is the time when the CPU resumes kernel execution. t0
-> is the original hrtimer expiry time. In the table, "Before compensation" is
-> the reference with the same definition. "After compensation" is the result
-> with this compensation path enabled. The unit is us:
-> 
->     Metric: mean absolute value of t1 - t0, us
->     State               | CPU C4 | Cluster CL4 | Cluster CL5
->     -------------------+--------+-------------+------------
->     Before compensation | 19.824 | 61.991      | 1929.767
->     After compensation  |  0.073 |  0.191      |   10.738
-> 
-> 6. Discussion
-> -------------
-> 
-> The prototype code is still being cleaned up. We would like to discuss the
-> design and get community feedback before we finalize the code. The feedback
-> will guide the next implementation direction.
-> 
+> Both patches apply before or after my two battmgr patches still under
+> review (USB_ADAP_TYPE v2 and the USB input current limit).
 
-So a few thoughts that are still in my head from the LPC talk:
++Jingyi could you please check if this applies to QRD/MTP?
 
-1. Existing hardware mitigations.
-For example Intel accomplishes this with a hardware feature called
-C-state pre-wake, how will these co-exist?
+Konrad
 
-2. What about platforms without OS-coordinated cluster states?
-What about the platform influencing idle states more generally?
-(In particular with platform-coordinated cluster-off you should
-see two range of latencies, one which was true cluster-off and
-the other was unrealised cluster-off that is really just CPU off).
-
-3. Does any workload actually care? What's the performance improvement?
-How does it affect power? Especially w.r.t existing latency constaints
-
-I have a bunch of methodological questions about the sampling, but
-presumably they would all be answered by the code.
-(Are we still sampling while the mitigation is applied? If so how is
-exit latency observed distinguished from prediction error? What if the
-first waking CPU is not the cluster-wake-initiating? What if the
-CPU wakes up too early because of the mitigation? (if this enters the
-idle loop again, this influences the governor massively of course).)
-
-Also if "replace the current static idle exit latency" actually means
-for the QoS constaints too, then I think we shouldn't do this, it's
-deliberately a worst-case.
+> 
+>  drivers/power/supply/qcom_battmgr.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+> index a7237ba09be1..0d55458b2881 100644
+> --- a/drivers/power/supply/qcom_battmgr.c
+> +++ b/drivers/power/supply/qcom_battmgr.c
+> @@ -313,6 +313,7 @@ struct qcom_battmgr {
+>  	struct pmic_glink_client *client;
+>  
+>  	enum qcom_battmgr_variant variant;
+> +	bool current_inverted;
+>  
+>  	struct power_supply *ac_psy;
+>  	struct power_supply *bat_psy;
+> @@ -1435,6 +1436,8 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
+>  			break;
+>  		case BATT_CURR_NOW:
+>  			battmgr->status.current_now = le32_to_cpu(resp->intval.value);
+> +			if (battmgr->current_inverted)
+> +				battmgr->status.current_now = -battmgr->status.current_now;
+>  			break;
+>  		case BATT_TEMP:
+>  			val = le32_to_cpu(resp->intval.value);
+> @@ -1659,6 +1662,9 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+>  	else
+>  		battmgr->variant = QCOM_BATTMGR_SM8350;
+>  
+> +	battmgr->current_inverted = device_is_compatible(dev->parent,
+> +							 "qcom,kaanapali-pmic-glink");
+> +
+>  	ret = qcom_battmgr_charge_control_thresholds_init(battmgr);
+>  	if (ret < 0)
+>  		return dev_err_probe(dev, ret,
+> 
+> base-commit: b810335a0699d1810683796b0e3ffe8827ddfe6c
